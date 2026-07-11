@@ -1,0 +1,106 @@
+{
+  "artifact_type": "fx_cointegration_pre_q02_strategy_contract_repair",
+  "recorded_at_utc": "2026-07-11T01:00:42Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_13119",
+  "slug": "usdjpy-euraud",
+  "logical_symbol": "QM5_13119_USDJPY_EURAUD_COINTEGRATION_D1",
+  "selection": {
+    "mission_fallback_used": true,
+    "reason": "The sign-aware 66-pair scan has seven strict rows and all seven already have EA builds; QM5_12532 and QM5_12533 both have logical Q02 PASS evidence, so there was no anchor ONINIT or NO_HISTORY blocker to repair.",
+    "chosen_existing_sleeve": "QM5_13119 USDJPY.DWX/EURAUD.DWX",
+    "chosen_state": "final strict scan row, built and pending its first logical-basket Q02 run",
+    "scan_command": "python framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+    "scan_metrics": {
+      "dev_net_sharpe": 0.5059112597468951,
+      "oos_net_sharpe": 0.8837435894739475,
+      "oos_return_pct": 16.014828282752738,
+      "oos_state_changes": 23,
+      "fixed_beta": -1.4182482311707278,
+      "half_life_days": 77.4565445658866
+    }
+  },
+  "defect": {
+    "class": "CARD_TO_CODE_ZSCORE_WINDOW_MISMATCH",
+    "card_contract": "Score the newest closed D1 spread against the preceding 60 closed D1 observations.",
+    "research_contract": "pairs_backtest() builds win from k-LOOK through k-1 and scores spread k outside that window.",
+    "before": "The EA copied 60 bars beginning at shift 1, included spreads[0] in the mean and sample standard deviation, and then scored spreads[0] against a window containing itself.",
+    "impact": "Entry z-scores were mechanically compressed relative to the approved card and the scan that selected the pair.",
+    "not_an_authorized_parameter_change": true
+  },
+  "repair": {
+    "history_bars_requested": 61,
+    "scored_observation_index": 0,
+    "calibration_indices": "1..60",
+    "calibration_bars": 60,
+    "scored_observation_in_calibration": false,
+    "beta_changed": false,
+    "thresholds_changed": false,
+    "risk_logic_changed": false,
+    "basket_symbols_changed": false
+  },
+  "risk_contract": {
+    "environment": "backtest",
+    "risk_mode": "RISK_FIXED",
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "verification": {
+    "strict_compile": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "compile_isolation": "Compiled from a detached clean-header worktree plus the scoped EA patch so unrelated dirty framework/include work in C:/QM/repo could not enter the EX5.",
+    "compile_log": "framework/build/compile/20260711_005702_clean/QM5_13119_usdjpy-euraud.compile.log",
+    "compile_summary": "D:/QM/reports/compile/20260711_005702/summary.csv",
+    "build_check": "PASS",
+    "build_check_failures": 0,
+    "build_check_warnings": 0,
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260711_010013.json",
+    "card_lint": "PASS for canonical, approved, and EA-doc mirrors",
+    "spec_validation": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "symbol_scope_violations": 0,
+    "regression_test": "python -m pytest tools/strategy_farm/tests/test_fx_basket_manifests.py -q",
+    "regression_test_result": "15 passed",
+    "mq5_sha256": "b63451e9f6a86129f6772a1142efce59b43d3f251eecb152400d35a10bdff6f1",
+    "ex5_sha256": "9dff91aa18285c9f61f4e606c60a0cb154838a5c672c5b04726d3e3d0fead728",
+    "spec_sha256": "56505da931d89fd48548ae4f9aff9084cbd3f5192c327d8230235eb5ca8b19ca",
+    "manifest_sha256": "17ddb247f681342473dc3aa72c08a945d80b748b98983735600fc45552bb3854",
+    "setfile_sha256": "2ba08a10a458cc6bb2259100c5dc9cb2f194adce54b30fc1583b140c08edfbb0",
+    "setfile_build_hash": "5d37d178f4603cde67bed63f8d6e4d3b222dfb9dddfe833d6736fa03ecf0fd97"
+  },
+  "q02": {
+    "work_item_id": "f8767f2f-4bcb-4b32-b857-cf9063b1c935",
+    "phase": "Q02",
+    "status": "pending",
+    "verdict": null,
+    "attempt_count": 0,
+    "claimed_by": null,
+    "priority_track": true,
+    "pending_or_active_rows_for_ea_phase": 1,
+    "duplicate_rows_created": 0,
+    "queue_action": "Preserved the existing logical-basket row; the worker resolves the repaired MQ5/EX5 and setfile from their canonical paths when the factory resumes."
+  },
+  "factory_state": {
+    "factory_off_flag_present": true,
+    "active_work_item_rows": 3,
+    "active_q02_rows": 3,
+    "running_factory_terminal_processes": 0,
+    "cpu_ceiling": 7,
+    "cpu_ceiling_reached": false,
+    "manual_backtest_started": false,
+    "dispatch_invoked": false,
+    "stop_reason": "FACTORY_OFF.flag is an explicit maintenance boundary; do not start or dispatch MT5 manually."
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "ml_or_banned_indicator_added": false
+  }
+}

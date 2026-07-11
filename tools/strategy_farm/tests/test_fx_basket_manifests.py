@@ -176,3 +176,15 @@ def test_qm5_9184_manifest_has_logical_audusd_nzdusd_setfile() -> None:
     assert declared == {"AUDUSD.DWX", "NZDUSD.DWX"}
     assert logical_setfile.exists()
     assert _mq5_allowed_symbols(ea_dir) <= declared
+
+
+def test_qm5_13119_zscore_uses_strictly_prior_calibration_window() -> None:
+    ea_dir = REPO / "framework" / "EAs" / "QM5_13119_usdjpy-euraud"
+    source = (ea_dir / "QM5_13119_usdjpy-euraud.mq5").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+
+    assert "const int history_count = lookback + 1;" in source
+    assert source.count("PERIOD_D1, 1, history_count") == 4
+    assert source.count("for(int i = 1; i < history_count; ++i)") == 2
+    assert "g_spread_z = (spreads[0] - g_spread_mean) / g_spread_sd;" in source

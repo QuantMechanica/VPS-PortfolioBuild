@@ -6,7 +6,7 @@ status: APPROVED
 type: strategy
 created: 2026-07-10
 created_by: Research
-last_updated: 2026-07-10
+last_updated: 2026-07-11
 source_id: SRC02
 source_citation: "QuantMechanica OWNER-requested all-sign reproduction of the 2026-06-09 66-pair FX cointegration scan on Darwinex .DWX D1 data; methodology grounded in Chan, Ernest P. (2009), Quantitative Trading, Wiley, Chapter 7 and Example 3.6."
 strategy_type_flags:
@@ -298,6 +298,7 @@ data_requirements: "USDJPY.DWX and EURAUD.DWX D1 plus tester-currency conversion
 | v1 | 2026-07-10 | next non-duplicate strict all-sign 66-pair candidate extraction | G0 | APPROVED |
 | v2 | 2026-07-10 | explicit forex-book mission approval and atomic QM5_13119 allocation | Q01 | APPROVED_FOR_BUILD |
 | v3 | 2026-07-10 | strict compile and one logical-basket enqueue; smoke deferred at seven-job CPU ceiling | Q02 | PENDING_CPU_CEILING |
+| v4 | 2026-07-11 | align EA z-score with the card's strictly prior 60-bar calibration window; preserve the existing logical Q02 row | Q02 | PENDING_FACTORY_OFF |
 
 ## 15. Pipeline Phase Status
 
@@ -305,7 +306,7 @@ data_requirements: "USDJPY.DWX and EURAUD.DWX D1 plus tester-currency conversion
 |---|---|---|---|
 | G0 Research Intake | 2026-07-10 | APPROVED | explicit forex-book mission + this card + `docs/research/FX_COINTEGRATION_USDJPY_EURAUD_REVIEW_2026-07-10.md` |
 | Q01 Build Validation | 2026-07-10 | PASS | `D:/QM/reports/framework/21/build_check_20260710_160754.json`; strict compile 0 errors/0 warnings |
-| Q02 Baseline Screening | 2026-07-10 | PENDING_CPU_CEILING | work item `f8767f2f-4bcb-4b32-b857-cf9063b1c935` |
+| Q02 Baseline Screening | 2026-07-11 | PENDING_FACTORY_OFF | work item `f8767f2f-4bcb-4b32-b857-cf9063b1c935`; `artifacts/qm5_13119_prior_window_repair_20260711.json` |
 
 ## 16. Lessons Captured
 
@@ -315,3 +316,6 @@ data_requirements: "USDJPY.DWX and EURAUD.DWX D1 plus tester-currency conversion
   neutrality must not be described as currency or directional neutrality.
 - 2026-07-10: Seven paced work items were active at handoff, so Q02 was left
   pending and no manual smoke, MT5 launch, or dispatch was attempted.
+- 2026-07-11: The initial EA included the newest closed spread in its own
+  60-bar calibration sample. The repair now scores that observation against
+  60 strictly prior closed spreads, matching both the card and source scan.
