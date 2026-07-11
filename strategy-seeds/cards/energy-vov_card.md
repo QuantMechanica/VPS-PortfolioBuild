@@ -253,15 +253,15 @@ portfolio admission, or portfolio KPI path is authorized.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-11 | initial XTI/XNG realized-VoV rank proxy | Q02 | BUILDING |
+| v1 | 2026-07-11 | initial XTI/XNG realized-VoV rank proxy | Q02 | Q01 PASS; Q02 PENDING |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-11 | APPROVED under OWNER commodity-sleeve mission; R1-R4 and dedup clean | this card |
-| Q01 Build Validation | 2026-07-11 | PENDING | artifacts/qm5_13146_build_result.json |
-| Q02 Baseline Screening | 2026-07-11 | PENDING | docs/ops/evidence/2026-07-11_qm5_13146_energy_vov_q02_enqueue.md |
+| Q01 Build Validation | 2026-07-11 | PASS - strict compile 0/0; build check 0 failures/0 warnings | artifacts/qm5_13146_build_result.json |
+| Q02 Baseline Screening | 2026-07-11 | ENQUEUED - pending work item 0ea56657-2d8a-413d-9ac4-9c7b25501099 | docs/ops/evidence/2026-07-11_qm5_13146_energy_vov_q02_enqueue.md |
 
 ## Lessons Captured
 
