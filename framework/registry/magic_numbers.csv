@@ -14984,3 +14984,13 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11906,watthana-candlestick-rsi-stoch-ea-h1,7,EURJPY.DWX,119060007,2026-07-11,Codex,active
 11906,watthana-candlestick-rsi-stoch-ea-h1,8,GBPJPY.DWX,119060008,2026-07-11,Codex,active
 11906,watthana-candlestick-rsi-stoch-ea-h1,9,AUDJPY.DWX,119060009,2026-07-11,Codex,active
+11903,lawler-supply-demand-zones-20-dma-h1,0,EURUSD.DWX,119030000,2026-07-11,Codex,active
+11903,lawler-supply-demand-zones-20-dma-h1,1,GBPUSD.DWX,119030001,2026-07-11,Codex,active
+11903,lawler-supply-demand-zones-20-dma-h1,2,USDJPY.DWX,119030002,2026-07-11,Codex,active
+11903,lawler-supply-demand-zones-20-dma-h1,3,USDCAD.DWX,119030003,2026-07-11,Codex,active
+11903,lawler-supply-demand-zones-20-dma-h1,4,USDCHF.DWX,119030004,2026-07-11,Codex,active
+11903,lawler-supply-demand-zones-20-dma-h1,5,AUDUSD.DWX,119030005,2026-07-11,Codex,active
+11903,lawler-supply-demand-zones-20-dma-h1,6,NZDUSD.DWX,119030006,2026-07-11,Codex,active
+11903,lawler-supply-demand-zones-20-dma-h1,7,EURJPY.DWX,119030007,2026-07-11,Codex,active
+11903,lawler-supply-demand-zones-20-dma-h1,8,GBPJPY.DWX,119030008,2026-07-11,Codex,active
+11903,lawler-supply-demand-zones-20-dma-h1,9,AUDJPY.DWX,119030009,2026-07-11,Codex,active

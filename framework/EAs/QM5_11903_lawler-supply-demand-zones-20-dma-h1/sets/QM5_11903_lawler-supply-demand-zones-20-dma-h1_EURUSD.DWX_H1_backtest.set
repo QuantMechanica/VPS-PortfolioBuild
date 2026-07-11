@@ -3,32 +3,33 @@
 ; ea_id:        11903
 ; ea_slug:      lawler-supply-demand-zones-20-dma-h1
 ; ea_version:   v5.0
-; set_version:  s20260620-001
+; set_version:  s20260711-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   2c759798c0cb09461a4f8fbb6b682895cd56eb57100fabab8377eef60ffb4f10
 ; author:       Development
-; date:         2026-06-20
+; date:         2026-07-11
 ;==========================================================
+qm_ea_id=11903
 qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11903_lawler-supply-demand-zones-20-dma-h1.md
+strategy_dma_period=20
+strategy_dma_slope_bars=10
+strategy_atr_period=14
+strategy_erc_atr_mult=2.0
+strategy_zone_min_candles=1
+strategy_zone_max_candles=10
+strategy_zone_validity=240
+strategy_target_rr=3.0
+strategy_time_stop_bars=480
+strategy_sl_buffer_pips=5
+strategy_entry_buffer_pips=1
+strategy_max_spread_points=0

@@ -1,0 +1,177 @@
+{
+  "artifact_type": "diverse_fx_q02_infrastructure_repair_requeue",
+  "recorded_at_utc": "2026-07-11T08:44:00Z",
+  "unit_of_work": "repair one approved structural FX EA blocked at Q02 by infrastructure and enqueue a diversity-weighted stage-1 wave",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_11903",
+  "ea_slug": "lawler-supply-demand-zones-20-dma-h1",
+  "priority_selection": {
+    "selected_mission_priority": 2,
+    "approved_build_preflight": "No priority-1 diversity card was faithfully buildable from the available DWX universe at this wake.",
+    "skipped_cards": [
+      {
+        "ea_id": "QM5_1459",
+        "reason": "requires unavailable lumber and IEF inputs and retains an unresolved data gate"
+      },
+      {
+        "ea_id": "QM5_1457",
+        "reason": "requires unavailable Treasury/yield, IEF, BIL, and DBC inputs"
+      },
+      {
+        "ea_id": "QM5_13031",
+        "reason": "M15 XAU/index scalper in the already saturated asset class and outside the requested low-frequency emphasis"
+      }
+    ],
+    "chosen_recovery": "QM5_11903 is an approved ten-pair H1 FX sleeve with 120 historical Q02 INFRA_FAIL rows, no economic Q02 verdict, and no Q03-or-later result."
+  },
+  "source_status": {
+    "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11903_lawler-supply-demand-zones-20-dma-h1.md",
+    "local_card_copy": "framework/EAs/QM5_11903_lawler-supply-demand-zones-20-dma-h1/docs/strategy_card.md",
+    "local_copy_matches_approved_card_sha256": true,
+    "source_citation": "Jasper Lawler, Price Action Trading Strategy: Supply & Demand Zones, FlowBank, 28 June 2021; underlying market-structure concept attributed to Richard Wyckoff",
+    "g0_status": "APPROVED",
+    "r1_track_record": "PASS",
+    "r2_mechanical": "PASS",
+    "r3_data_available": "PASS",
+    "r4_ml_forbidden": "PASS",
+    "strategy_shape": "H1 one-to-ten-bar narrow base, two-ATR expansion close, SMA20 ten-bar slope, first fresh zone retest, five-pip structure stop, primary 3R target",
+    "expected_trades_per_year_per_symbol": 30,
+    "structural_only": true,
+    "ml_or_adaptive_logic": false
+  },
+  "claim": {
+    "agent_task_id": "35726d80-e5cb-4d01-bdc2-ce08c03ad2ee",
+    "claim_key": "manual:codex:agents/board-advisor:QM5_11903:q02-infra-recovery:20260711T080831Z",
+    "claimed_by": "codex:agents/board-advisor",
+    "claimed_at_utc": "2026-07-11T08:08:32.100701+00:00",
+    "guarded_state": "REVIEW",
+    "database_backup_before_claim": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_11903_claim_20260711T080831Z.sqlite"
+  },
+  "prior_failure": {
+    "historical_q02_rows": 120,
+    "historical_q02_status": "failed",
+    "historical_q02_verdict": "INFRA_FAIL",
+    "economic_q02_verdicts": 0,
+    "q03_or_later_rows": 0,
+    "reported_failure": "summary_missing_retries_exhausted",
+    "diagnosis": [
+      "No QM5_11903 magic rows or resolver entries existed, leaving every approved symbol/slot unable to satisfy framework initialization.",
+      "All ten retained setfiles used slot zero, omitted qm_ea_id and the strategy inputs, and retained pending build metadata.",
+      "The binary was stale relative to the current source/framework package.",
+      "The source used forbidden raw series calls, global PositionsTotal gating, hard-coded point-to-pip scaling, and an entry news gate ahead of management and exits.",
+      "SPEC.md was absent and the retained report/log evidence was insufficient to classify any failure as economic."
+    ],
+    "pre_repair_build_check": {
+      "result": "FAIL",
+      "failures": 9,
+      "report": "D:/QM/reports/framework/21/build_check_20260711_081251.json"
+    }
+  },
+  "repair": {
+    "framework_series_helpers": "Raw iHigh/iLow/iClose calls were replaced by a one-record CopyRates reader plus QM_ATR and QM_SMA. The reader is restricted to the shared H1 new-bar path and carries the reviewed perf-allowed tag for the bounded ten-candle structural scan.",
+    "bar_gating": "Zone state, trend exit, and entry evaluation share one QM_IsNewBar(_Symbol, PERIOD_H1) edge.",
+    "position_scope": "Open-position checks and exits are restricted to the current symbol and resolved magic.",
+    "risk_and_price_units": "Pip buffers use framework conversion/normalization helpers; backtest inputs are fixed-risk only.",
+    "management_order": "Friday close, management, and strategy exits remain reachable before the entry-only news gate.",
+    "request_initialization": "QM_EntryRequest is zeroed and every required field is explicitly assigned.",
+    "card_conformance": "Base-end ATR, SMA20 ten-bar slope, 240-bar zone validity, five-pip stop, 3R primary target, slope exit, and 480-bar timeout use the approved defaults.",
+    "deterministic_interpretation": "The card's undefined forward-looking 'next visible' ZigZag target is not used; the explicitly primary 3R target is used. A retest is recognized on the first completed H1 bar trading through the limit level and submitted at market on the following tick. Both choices are disclosed in SPEC.md.",
+    "parameter_tuning_performed": false,
+    "spec_restored": true,
+    "exact_approved_card_copied": true,
+    "setfiles_regenerated": 10,
+    "setfile_contract": {
+      "environment": "backtest",
+      "risk_mode": "RISK_FIXED",
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1,
+      "unique_magic_slots": 10,
+      "slots": "0..9"
+    },
+    "magic_rows": {
+      "EURUSD.DWX": 119030000,
+      "GBPUSD.DWX": 119030001,
+      "USDJPY.DWX": 119030002,
+      "USDCAD.DWX": 119030003,
+      "USDCHF.DWX": 119030004,
+      "AUDUSD.DWX": 119030005,
+      "NZDUSD.DWX": 119030006,
+      "EURJPY.DWX": 119030007,
+      "GBPJPY.DWX": 119030008,
+      "AUDJPY.DWX": 119030009
+    }
+  },
+  "verification": {
+    "spec_validation": "PASS",
+    "build_guardrails": "PASS, zero findings across source and ten setfiles",
+    "symbol_scope": "SINGLE_SYMBOL_OK, zero violations",
+    "skill_build_guard": "PASS: EA registry row, magic rows, and EA directory present",
+    "build_check": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260711_084321.json",
+      "report_sha256": "1224C8C986D9C2D884BC6EAEDA20FBC8E99E90A80464C5BEA18A143730A1A6C2"
+    },
+    "strict_compile": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "C:/QM/repo/framework/build/compile/20260711_084110/QM5_11903_lawler-supply-demand-zones-20-dma-h1.compile.log",
+      "log_sha256": "A1CFAB0EA5349A9647C2FDA347F8D4CF235D6129FCE0EF4E09FDFC9D045A14B6",
+      "summary": "D:/QM/reports/compile/20260711_084110/summary.csv",
+      "summary_sha256": "7728C14F3245837822E569D3373555FE9C127029A18235037641C41ABC95CF36",
+      "compile_isolation": "The main-path source was compiled using the compile wrapper and framework include tree from a synthetic staged snapshot. The staged resolver blob and normalized source blob were equality-guarded before compile; a clean-snapshot build check also passed with zero failures and warnings."
+    },
+    "sha256": {
+      "mq5_source": "106EA1D65020AEAB8C70B04B2317552A7D223F36BDF81D0D49E67952ED259F30",
+      "compiled_ex5": "8F80936DC1D808821A5F3699D6DF81FE0E2A3C5F1BB15C0FDB1E938AE780CCF1",
+      "spec": "C5833BC8EC610E62E64A7457856BC908E61CDC7E920A6D0257FE4B4299B239A8",
+      "approved_card_and_local_copy": "90B67A82CFDE246D8B735D0798743E38D13E1F5678F09077D3904F9BFF61DF01",
+      "committed_magic_registry_blob": "46E13746C6774F7F7BF516B61736411900A1BA7CA0D6339310BF6307F5A3374D",
+      "resolver_registry_macro_after_windows_checkout": "A7B5149F14FD661CFE6F79E36FC68A9C2E93CB6A2AF06AA05AD467630E13BFC9",
+      "committed_magic_resolver_blob": "2EA28B1369F6B4A173DB9AC92B0A874CDC50B806DEBED133EBE5324F1DB3B237"
+    },
+    "bounded_smoke": {
+      "result": "NOT_RUN_FACTORY_OFF_AND_CAPACITY_STOP",
+      "reason": "FACTORY_OFF.flag was active and four existing MetaTester processes occupied backtest hosts; no additional tester CPU was started."
+    }
+  },
+  "q02_handoff": {
+    "db_path": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "stage1_selection_reason": "EURUSD is the liquid source carrier, GBPJPY adds a non-USD cross, and AUDUSD adds commodity/carry sensitivity; the probes span EUR, USD, GBP, JPY, and AUD.",
+    "pending_work_items": {
+      "EURUSD.DWX": "1711f39f-a0cf-4425-bcce-7f4f45ac1503",
+      "GBPJPY.DWX": "5321b5b6-87a9-473c-9bbc-dbd9cd2e665f",
+      "AUDUSD.DWX": "496ee481-7b5c-408a-903f-8e1ecad6cd69"
+    },
+    "pending_contract": "Q02 / pending / attempt 0 / unclaimed",
+    "deferred_symbols": [
+      "GBPUSD.DWX",
+      "USDJPY.DWX",
+      "USDCAD.DWX",
+      "USDCHF.DWX",
+      "NZDUSD.DWX",
+      "EURJPY.DWX",
+      "AUDJPY.DWX"
+    ],
+    "deferred_sidecar": "D:/QM/strategy_farm/state/q02_deferred_symbols.json",
+    "dispatch_attempted": false,
+    "database_backup_before_enqueue": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_11903_q02_enqueue_20260711T082413Z.sqlite",
+    "sidecar_backup_before_enqueue": "D:/QM/strategy_farm/state/backups/q02_deferred_symbols_before_qm5_11903_20260711T082413Z.json",
+    "database_backup_before_diversity_correction": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_11903_diversity_stage_correction_20260711T083009Z.sqlite",
+    "sidecar_backup_before_diversity_correction": "D:/QM/strategy_farm/state/backups/q02_deferred_symbols_before_qm5_11903_diversity_stage_correction_20260711T083009Z.json"
+  },
+  "runtime_and_safety": {
+    "factory_off_flag_present": true,
+    "existing_metatester_processes_observed": 4,
+    "backtest_capacity_stop_honored": true,
+    "manual_backtest_or_smoke_started": false,
+    "worker_or_terminal_interrupted": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
