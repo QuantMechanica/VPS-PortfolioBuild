@@ -1,0 +1,117 @@
+{
+  "mission_unit": "priority_2_diverse_fx_q02_infra_repair_requeue",
+  "timestamp_utc": "2026-07-11T05:26:25.379743+00:00",
+  "agent": "codex:agents/board-advisor",
+  "branch": "agents/board-advisor",
+  "claim": {
+    "agent_task_id": "82fc6aa5-5a27-4c28-b4c4-970283480b4a",
+    "source_work_item_id": "266083da-2354-4fb3-bc02-bedc6130ee21",
+    "collision_guard": "No competing active agent task, pending/active Q02-Q03 row, strategy verdict, or downstream work existed for QM5_1236."
+  },
+  "selection": {
+    "priority_1_result": "No faithful low-frequency diverse build was available: the pending build queue contained an unavailable lumber proxy, an unavailable rates/bonds card, and a high-frequency XAU/NDX scalper.",
+    "ea_id": "QM5_1236",
+    "ea_label": "QM5_1236_gh-donchian-55",
+    "card_status": "APPROVED",
+    "instrument_class": "forex",
+    "symbol": "NZDUSD.DWX",
+    "timeframe": "D1",
+    "structural_edge": "completed-bar 55-day Donchian breakout with 20-day channel exit and ATR risk",
+    "source_citation": "https://github.com/topics/algorithmic-trading",
+    "source_review": "Approved card records R1-R4 PASS and a deterministic, non-ML rule set.",
+    "expected_trades_per_year_per_symbol": 18,
+    "ml_used": false
+  },
+  "prior_q02": {
+    "total_rows": 144,
+    "done_infra_fail_rows": 1,
+    "failed_infra_fail_rows": 143,
+    "strategy_verdict_rows": 0,
+    "open_rows": 0,
+    "latest_nzdusd_failure": "summary_missing_retries_exhausted"
+  },
+  "diagnosis": {
+    "old_ex5_sha256": "B0549B9841102CBBA595D1FD553DE93C57C38FF7370326B6CF3AFC2097CC9266",
+    "old_ex5_bytes": 266022,
+    "old_binary_commit": "586d0c0995d75dde793821dc78b236f1784f4c38",
+    "old_binary_commit_at": "2026-06-21T17:26:41+02:00",
+    "newer_framework_include_count": 20,
+    "initial_strict_gate": {
+      "compile": "PASS: 0 errors, 0 warnings",
+      "build_check": "FAIL: 8 forbidden raw-series calls and 1 DWX zero-spread advisory",
+      "report": "D:/QM/reports/framework/21/build_check_20260711_052100.json"
+    },
+    "package_defects": [
+      "SPEC.md was missing.",
+      "The EA used raw iHigh/iLow/iTime/iClose/Bars calls rejected by the current framework performance guard.",
+      "D1 management and exit series work ran on every tick instead of once per completed D1 bar, preserving the reportless timeout risk.",
+      "The historical spread reader used a zero-spread guard shape flagged for DWX tester compatibility.",
+      "All 12 backtest setfiles omitted qm_ea_id, explicit strategy inputs, and an approved-card defaults source."
+    ]
+  },
+  "repair": {
+    "changes": [
+      "Replaced raw bar-series calls with QM_ReadBar while preserving the approved 55/20 channel calculations.",
+      "Moved D1 management, exit, and entry evaluation behind QM_IsNewBar and kept news gating entry-only.",
+      "Made zero or unavailable modeled spread explicitly tradeable and read historical spreads through QM_ReadBar.",
+      "Added the canonical seven-section SPEC.md.",
+      "Regenerated all 12 declared-symbol backtest setfiles from the approved card and EA defaults.",
+      "Kept all backtest setfiles at RISK_FIXED=1000, RISK_PERCENT=0, and PORTFOLIO_WEIGHT=1.",
+      "Recompiled against the current V5 framework and synchronized setfile build hashes."
+    ],
+    "mq5_sha256": "797E048A936FAE2050B0A1B43F506FF42E0DDF8C79E8822046306248FFFAAC37",
+    "new_ex5_sha256": "3D161D442DBD8B9087E0AD46106EAD9E0BA0ABD5C522F9373A4AD7BC73583690",
+    "nzdusd_setfile_sha256": "9CF213652046ED94F84051AF057F64E48CC7339012C2A51AA58082F554B6A682",
+    "canonical_setfile_count": 12
+  },
+  "validation": {
+    "spec_document": "PASS",
+    "build_guardrails": "PASS: 0 findings",
+    "symbol_scope": "SINGLE_SYMBOL_OK: 0 violations",
+    "strict_compile": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "C:/QM/repo/framework/build/compile/20260711_053101/QM5_1236_gh-donchian-55.compile.log",
+      "summary": "D:/QM/reports/compile/20260711_053101/summary.csv"
+    },
+    "build_check": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260711_052837.json"
+    }
+  },
+  "requeue": {
+    "action": "reset_existing_q02_infra_row_to_pending",
+    "work_item_id": "266083da-2354-4fb3-bc02-bedc6130ee21",
+    "phase": "Q02",
+    "symbol": "NZDUSD.DWX",
+    "status_after": "pending",
+    "verdict_after": null,
+    "attempt_count_after": 0,
+    "claimed_by_after": null,
+    "from_date_after": "2017.01.01",
+    "to_date_after": "2024.12.31",
+    "open_same_ea_q02_q03_after": 1,
+    "database_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_1236_nzdusd_q02_requeue_20260711T052625Z.sqlite",
+    "conditional_guard": "Exact work-item/EA/phase/symbol and prior failed/INFRA_FAIL/unclaimed state, live farm claim, no competing task, no open duplicate, and no strategy/downstream verdict."
+  },
+  "runtime": {
+    "factory_off": true,
+    "factory_off_since": "2026-07-10T17:25:52Z",
+    "queue_at_handoff": {
+      "pending": 3630,
+      "active": 3
+    },
+    "manual_backtest_started": false,
+    "backtest_cpu_added": false,
+    "note": "The retry is pending; no terminal or MetaTester process was started or interrupted."
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}

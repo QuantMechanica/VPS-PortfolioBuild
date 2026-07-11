@@ -69,8 +69,11 @@ bool Strategy_Channel(const ENUM_TIMEFRAMES tf, const int start_shift, const int
 
    for(int shift = start_shift; shift < start_shift + bars; ++shift)
      {
-      const double high_i = iHigh(_Symbol, tf, shift);
-      const double low_i = iLow(_Symbol, tf, shift);
+      MqlRates bar;
+      if(!QM_ReadBar(_Symbol, tf, shift, bar))
+         return false;
+      const double high_i = bar.high;
+      const double low_i = bar.low;
       if(high_i <= 0.0 || low_i <= 0.0 || high_i < low_i)
          return false;
       if(high_i > highest)
@@ -121,7 +124,9 @@ double Strategy_MedianAtr()
 bool Strategy_SpreadAllowsEntry()
   {
    const int current_spread = (int)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-   if(current_spread <= 0 || strategy_spread_median_days <= 0 || strategy_spread_mult <= 0.0)
+   if(strategy_spread_median_days <= 0 || strategy_spread_mult <= 0.0)
+      return true;
+   if(current_spread < 1)
       return true;
 
    const int days = MathMin(strategy_spread_median_days, 256);
@@ -129,11 +134,12 @@ bool Strategy_SpreadAllowsEntry()
    int count = 0;
    for(int shift = 1; shift <= days; ++shift)
      {
-      const long spread_i = iSpread(_Symbol, PERIOD_D1, shift);
-      if(spread_i <= 0)
-         continue;
-      values[count] = (int)spread_i;
-      ++count;
+      MqlRates bar;
+      if(QM_ReadBar(_Symbol, PERIOD_D1, shift, bar) && bar.spread > 0)
+        {
+         values[count] = (int)bar.spread;
+         ++count;
+        }
      }
    if(count < MathMin(20, days))
       return true;
@@ -214,10 +220,10 @@ int Strategy_BarsHeld(const datetime open_time)
    int held = 0;
    for(int shift = 1; shift <= strategy_max_hold_bars + 5; ++shift)
      {
-      const datetime t = iTime(_Symbol, PERIOD_D1, shift);
-      if(t <= 0)
+      MqlRates bar;
+      if(!QM_ReadBar(_Symbol, PERIOD_D1, shift, bar))
          break;
-      if(t >= open_time)
+      if(bar.time >= open_time)
          ++held;
      }
    return held;
@@ -228,7 +234,9 @@ bool Strategy_NoTradeFilter()
   {
    if(_Period != PERIOD_D1)
       return true;
-   if(Bars(_Symbol, PERIOD_D1) < MathMax(strategy_min_history_bars, strategy_slow_sma_period) + 5)
+   const int required_history = MathMax(strategy_min_history_bars, strategy_slow_sma_period);
+   MqlRates warmup_bar;
+   if(!QM_ReadBar(_Symbol, PERIOD_D1, required_history + 4, warmup_bar))
       return true;
    if(strategy_entry_channel_days <= 0 || strategy_exit_channel_days <= 0)
       return true;
@@ -254,7 +262,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   const datetime d1_bar = iTime(_Symbol, PERIOD_D1, 1);
+   MqlRates signal_bar;
+   if(!QM_ReadBar(_Symbol, PERIOD_D1, 1, signal_bar))
+      return false;
+   const datetime d1_bar = signal_bar.time;
    if(d1_bar <= 0 || d1_bar == g_last_entry_d1_bar)
       return false;
    g_last_entry_d1_bar = d1_bar;
@@ -264,7 +275,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!Strategy_SpreadAllowsEntry())
       return false;
 
-   const double close_1 = iClose(_Symbol, PERIOD_D1, 1);
+   const double close_1 = signal_bar.close;
    if(close_1 <= 0.0)
       return false;
 
@@ -371,7 +382,10 @@ bool Strategy_ExitSignal()
    if(!Strategy_SelectOpenPosition(ticket, ptype, open_price, current_sl, open_time))
       return false;
 
-   const datetime d1_bar = iTime(_Symbol, PERIOD_D1, 1);
+   MqlRates signal_bar;
+   if(!QM_ReadBar(_Symbol, PERIOD_D1, 1, signal_bar))
+      return false;
+   const datetime d1_bar = signal_bar.time;
    if(d1_bar <= 0 || d1_bar == g_last_exit_d1_bar)
       return false;
    g_last_exit_d1_bar = d1_bar;
@@ -384,7 +398,7 @@ bool Strategy_ExitSignal()
    if(!Strategy_Channel(PERIOD_D1, 2, strategy_exit_channel_days, exit_high, exit_low))
       return false;
 
-   const double close_1 = iClose(_Symbol, PERIOD_D1, 1);
+   const double close_1 = signal_bar.close;
    if(close_1 <= 0.0)
       return false;
 
@@ -429,12 +443,10 @@ void OnTick()
    if(!QM_KillSwitchCheck())
       return;
 
-   const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-   if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
-      return;
    if(QM_FrameworkHandleFridayClose())
+      return;
+
+   if(!QM_IsNewBar())
       return;
 
    if(Strategy_NoTradeFilter())
@@ -458,7 +470,10 @@ void OnTick()
         }
      }
 
-   if(!QM_IsNewBar())
+   const datetime broker_now = TimeCurrent();
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
       return;
 
    QM_EntryRequest req;
