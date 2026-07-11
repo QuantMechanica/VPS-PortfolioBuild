@@ -14998,3 +14998,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13140,energy-aliq-rank,1,XNGUSD.DWX,131400001,2026-07-11,Development,active
 13141,energy-ie-rank,0,XTIUSD.DWX,131410000,2026-07-11,Development,active
 13141,energy-ie-rank,1,XNGUSD.DWX,131410001,2026-07-11,Development,active
+13142,energy-sal-rank,0,XTIUSD.DWX,131420000,2026-07-11,Development,active
+13142,energy-sal-rank,1,XNGUSD.DWX,131420001,2026-07-11,Development,active
