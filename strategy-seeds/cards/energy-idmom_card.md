@@ -245,15 +245,15 @@ portfolio admission, or portfolio KPI path is authorized.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-11 | initial XTI/XNG 11-month idiosyncratic-momentum rank | Q02 | BUILDING |
+| v1 | 2026-07-11 | initial XTI/XNG 11-month idiosyncratic-momentum rank | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-11 | APPROVED under OWNER commodity-sleeve mission; R1-R4 and dedup clean | this card |
-| Q01 Build Validation | 2026-07-11 | PENDING | artifacts/qm5_13145_build_result.json |
-| Q02 Baseline Screening | 2026-07-11 | PENDING | docs/ops/evidence/2026-07-11_qm5_13145_energy_idmom_q02_enqueue.md |
+| Q01 Build Validation | 2026-07-11 | PASS: clean staged resolver; strict compile and build check 0/0 | artifacts/qm5_13145_build_result.json |
+| Q02 Baseline Screening | 2026-07-11 | ENQUEUED: pending, attempt 0 | docs/ops/evidence/2026-07-11_qm5_13145_energy_idmom_q02_enqueue.md |
 
 ## Lessons Captured
 
