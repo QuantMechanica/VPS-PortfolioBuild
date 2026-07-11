@@ -243,15 +243,15 @@ portfolio admission, or portfolio KPI path is authorized.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-12 | initial 36-month XTI/XNG relative-trend basket | Q02 | Q01 build pending |
+| v1 | 2026-07-12 | initial 36-month XTI/XNG relative-trend basket | Q02 | Q01 PASS; Q02 ENQUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-12 | APPROVED under OWNER commodity-sleeve mission; R1-R4 and dedup clean | this card |
-| Q01 Build Validation | - | pending | - |
-| Q02 Baseline Screening | - | pending enqueue | - |
+| Q01 Build Validation | 2026-07-12 | PASS - strict compile 0 errors/0 warnings; validators PASS | `docs/ops/evidence/2026-07-12_qm5_13149_energy_trend36_q02_enqueue.md` |
+| Q02 Baseline Screening | 2026-07-12 | ENQUEUED - pending, attempt 0, unclaimed | work item `be4eb919-5e5a-4b0b-8c88-561a5fcc2b1e` |
 
 ## Lessons Captured
 

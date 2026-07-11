@@ -31,5 +31,6 @@ guard, and orphan cleanup.
 
 Approval preserves the source's insignificant two-portfolio result,
 insignificant cross-sectional slope, broad-futures-to-two-CFD narrowing,
-continuous-CFD basis, and legging as binding Q02 kill risks. No live artifact
-or portfolio admission is approved.
+continuous-CFD basis, and legging as binding Q02 kill risks. Q01 passed and
+logical basket work item `be4eb919-5e5a-4b0b-8c88-561a5fcc2b1e` is pending at
+Q02. No live artifact or portfolio admission is approved.

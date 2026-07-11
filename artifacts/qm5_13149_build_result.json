@@ -1,0 +1,181 @@
+{
+  "task_id": "525938b6-d501-415b-838c-a7dd3d12d3a5",
+  "ea_id": "QM5_13149",
+  "ea_label": "QM5_13149_energy-trend36",
+  "slug": "energy-trend36",
+  "strategy": "Monthly XTI/XNG 36-completed-month average-return high-minus-low basket",
+  "strategy_id": "HOLLSTEIN-3YR-2021_XTI_XNG_S01",
+  "source_id": "HOLLSTEIN-3YR-2021",
+  "source_links": [
+    "https://doi.org/10.1142/S2010139221500178",
+    "https://centaur.reading.ac.uk/100920/1/SSRN-id3567629.pdf"
+  ],
+  "symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "logical_symbol": "QM5_13149_XTI_XNG_TREND36_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13149_energy-trend36",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13149_energy-trend36\\QM5_13149_energy-trend36.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13149_energy-trend36\\QM5_13149_energy-trend36.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13149_energy-trend36\\SPEC.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13149_energy-trend36\\basket_manifest.json",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13149_energy-trend36.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_13149_energy-trend36_card.md",
+  "canonical_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\energy-trend36_card.md",
+  "source_packet_path": "C:\\QM\\repo\\strategy-seeds\\sources\\HOLLSTEIN-3YR-2021\\source.md",
+  "repo_artifact_path": "C:\\QM\\repo\\artifacts\\qm5_13149_build_result.json",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13149_energy-trend36\\sets\\QM5_13149_energy-trend36_QM5_13149_XTI_XNG_TREND36_D1_D1_backtest.set"
+  ],
+  "magic_base": 131490000,
+  "magic": [
+    {
+      "slot": 0,
+      "symbol": "XTIUSD.DWX",
+      "magic": 131490000,
+      "registry_status": "active"
+    },
+    {
+      "slot": 1,
+      "symbol": "XNGUSD.DWX",
+      "magic": 131490001,
+      "registry_status": "active"
+    }
+  ],
+  "registry_validation": {
+    "ea_id_row": "13149,energy-trend36,HOLLSTEIN-3YR-2021_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-12",
+    "magic_rows": [
+      "13149,energy-trend36,0,XTIUSD.DWX,131490000,2026-07-12,Development,active",
+      "13149,energy-trend36,1,XNGUSD.DWX,131490001,2026-07-12,Development,active"
+    ],
+    "resolver_contains_ea": true,
+    "resolver_rows_kept": 14890,
+    "magic_registry_sha256": "3D64196E57E5724A04C5676C51138BAFDE2AB90EE92FFDF2DCA2751F08939D2D",
+    "resolver_file_sha256": "BD77C811003A16C5EF595658B84AE77D1E90CE8841C25DA11BDB07BB72261B8F",
+    "note": "The build commit stages the clean HEAD registries plus only EA 13149. The canonical generator excludes the pre-existing invalid rows already absent from the HEAD resolver; unrelated dirty fleet allocations remain solely in the working tree."
+  },
+  "build_commit": "1c0929c588691c3277342e91cef36dc6ecf82ac5",
+  "mq5_sha256": "68200CB592E653D950EECE6C131D2FE73FE920700E2388FA3808D776767A6C64",
+  "ex5_sha256": "E74269A668551BAAA43DA2A94D3D906F48FC92E9930825C2CEA2FB3B5D429049",
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260711_224256\\QM5_13149_energy-trend36.compile.log",
+  "compile_summary": "D:\\QM\\reports\\compile\\20260711_224256\\summary.csv",
+  "compile_reproducibility": "PASS_SOURCE_RECOMPILE_FROM_CLEAN_BUILD_COMMIT",
+  "clean_verification_compile_log": "D:\\QM\\reports\\compile\\20260711_225212\\QM5_13149_energy-trend36.compile.log",
+  "clean_verification_compile_log_sha256": "2E03B46282C3286BF749A164C5BBF7B3A051A68D921360A620FFD3F67FDBF18E",
+  "clean_verification_build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260711_225212.json",
+  "clean_verification_result": "PASS_0_ERRORS_0_WARNINGS_0_FAILURES",
+  "build_check_passed": true,
+  "build_check_failures": 0,
+  "build_check_warnings": 0,
+  "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260711_224256.json",
+  "spec_validation": "PASS",
+  "guardrail_validation": "PASS",
+  "symbol_scope_validation": "BASKET_OK",
+  "card_schema_validation": "PASS",
+  "g0_card_validation": "PASS",
+  "setfile_build_hash": "cb288de42c5ac002ed9b81a165b47346615100881a80cf32c3356814d6e112de",
+  "setfile_sha256": "DCB6BA08CD8BC7DEF1B1524E63202F769071D8D5E370BDA9FDB71BA052F1F954",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Build-only paced Q02 enqueue requested; no manual MT5 tester, dispatch tick, worker tick, terminal launch, or backtest was started.",
+  "blocked_reason": null,
+  "open_questions": [
+    "The paper's directly relevant two-portfolio 3Y Reversal result and cross-sectional slope are statistically insignificant; this Q02 package has a deliberately low prior and makes no efficacy claim.",
+    "The source uses a broad futures cross-section and fixed-maturity excess returns; this executable narrows the sort to two continuous CFDs, so it is a falsification proxy rather than a replication.",
+    "Equal fixed-risk opposite directions do not establish dollar, beta, volatility, factor, or realized market neutrality; legging, financing, XNG gaps, and CFD construction may dominate the signal."
+  ],
+  "validations": {
+    "dedup": "FUZZY_SAME_SOURCE_MANUALLY_RESOLVED_DISTINCT",
+    "card_schema": "PASS",
+    "g0_card": "PASS",
+    "spec_doc": "PASS",
+    "build_guardrails": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "strict_compile": "PASS_0_ERRORS_0_WARNINGS",
+    "build_check": "PASS_0_FAILURES_0_WARNINGS",
+    "risk_mode": "PASS",
+    "setfile_build_hash": "PASS"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1,
+    "package_allocation": "equal fixed-risk halves with independent frozen ATR(20) x 3.5 hard stops"
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "reputable_primary_source": true,
+    "opposite_side_energy_basket": true,
+    "market_neutral_claimed": false,
+    "manual_backtest_cpu_used": false
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false
+  },
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_13149",
+    "enqueued": [
+      {
+        "work_item_id": "be4eb919-5e5a-4b0b-8c88-561a5fcc2b1e",
+        "symbol": "QM5_13149_XTI_XNG_TREND36_D1",
+        "host_symbol": "XTIUSD.DWX",
+        "timeframe": "D1",
+        "status": "pending",
+        "setfile": "QM5_13149_energy-trend36_QM5_13149_XTI_XNG_TREND36_D1_D1_backtest.set",
+        "enqueued_at": "2026-07-11T22:49:48+00:00"
+      }
+    ],
+    "skipped": []
+  },
+  "q02": {
+    "phase": "Q02",
+    "work_item_id": "be4eb919-5e5a-4b0b-8c88-561a5fcc2b1e",
+    "status_at_handoff": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "symbol": "QM5_13149_XTI_XNG_TREND36_D1",
+    "host_symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13149_energy-trend36\\sets\\QM5_13149_energy-trend36_QM5_13149_XTI_XNG_TREND36_D1_D1_backtest.set",
+    "risk_payload": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "enqueued_at_utc": "2026-07-11T22:49:48+00:00",
+    "note": "Auto-enqueued by farmctl record-build as one logical basket. No manual dispatch, tester, worker tick, terminal launch, or backtest was started."
+  },
+  "file_hashes_sha256": {
+    "mq5": "68200CB592E653D950EECE6C131D2FE73FE920700E2388FA3808D776767A6C64",
+    "ex5": "E74269A668551BAAA43DA2A94D3D906F48FC92E9930825C2CEA2FB3B5D429049",
+    "spec": "D227C906681A3AD65E353B11AFE056DF881A4F6F106179CC076F24A56875F2E0",
+    "basket_manifest": "403B4EEB349EA7F6C753623BA32F82463D792844F4996FD1AF98ED8E2123AB1D",
+    "setfile": "DCB6BA08CD8BC7DEF1B1524E63202F769071D8D5E370BDA9FDB71BA052F1F954",
+    "canonical_card_pre_enqueue": "7F2BBD2503E99C8EFF2A004B18AB2A63572C37EAB9C963C2B2C3FE0F5F3EAB6D",
+    "canonical_card_post_enqueue": "15F7036B8E365E079F7845813EF82FBE8839349BEE3ADE400836E539891D93BA",
+    "approved_card_pre_enqueue": "149A1396B50AD21C6C60562829DE8B2334DA04408720E263CC05275E28982F79",
+    "approved_card": "425706A0C4123F4B8B1B51F59AE630626102729C29740C8466B27AE6243AD2A8",
+    "source_packet": "C41FFDCB4B2FBCB7319E4DF176C27DAA536A5D024075F682FAE9A5AC2F6801CF",
+    "enqueue_evidence": "4EDB414298CF7EE90FBC0AFA83B24F62CA859EF1579C7993C135D92C5CCBC411",
+    "magic_registry": "3D64196E57E5724A04C5676C51138BAFDE2AB90EE92FFDF2DCA2751F08939D2D",
+    "resolver": "BD77C811003A16C5EF595658B84AE77D1E90CE8841C25DA11BDB07BB72261B8F"
+  }
+}
