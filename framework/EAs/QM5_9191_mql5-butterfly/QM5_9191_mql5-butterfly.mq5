@@ -37,7 +37,7 @@ input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input int    strategy_pivot_strength      = 3;     // bars each side for swing pivot confirmation
-input int    strategy_pivot_lookback      = 100;   // max bars to scan for pivots
+input int    strategy_pivot_lookback      = 600;   // max closed bars to scan for pivots
 input int    strategy_atr_period          = 14;    // ATR period for stop + min-XA filter
 input double strategy_min_xa_atr_mult     = 1.0;  // minimum XA leg as ATR multiple
 input double strategy_ratio_tol           = 0.05; // ±tolerance for Fibonacci ratio checks
@@ -49,6 +49,7 @@ input double strategy_ratio_tol           = 0.05; // ±tolerance for Fibonacci r
 #define QM_BFLY_CD_LOW       1.270
 #define QM_BFLY_CD_HIGH      1.618
 #define QM_BFLY_TP1_RATIO    0.618   // TP1 at 61.8% of AD from D
+#define QM_BFLY_MAX_PIVOTS   200     // bound pattern search work per new bar
 
 // Cached per-bar pattern state
 struct BflySignal
@@ -78,19 +79,36 @@ int CollectAlternatingPivots(const string sym, const ENUM_TIMEFRAMES tf,
                               SwingPoint &pts[], int &cnt)
   {
    cnt = 0;
-   ArrayResize(pts, lookback);
+   if(strength < 1 || lookback <= 2 * strength)
+      return 0;
+
+   // Fetch the closed-bar window once. Repeated iHigh/iLow calls over a long
+   // harmonic lookback caused tester runs to expire without a summary.
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(sym, tf, 1, lookback + 1, rates); // perf-allowed: called after QM_IsNewBar()
+   if(copied <= 2 * strength)
+      return 0;
+
+   const int last_candidate = MathMin(lookback - strength,
+                                      copied - strength - 1);
+   if(last_candidate < strength)
+      return 0;
+
+   const int pivot_capacity = MathMin(last_candidate, QM_BFLY_MAX_PIVOTS);
+   ArrayResize(pts, pivot_capacity);
    int last_type = 0;
 
-   for(int i = strength; i <= lookback - strength && cnt < 50; i++)
+   for(int i = strength; i <= last_candidate && cnt < pivot_capacity; i++)
      {
-      const double h = iHigh(sym, tf, i);   // perf-allowed: bespoke structural pivot scan
-      const double l = iLow(sym, tf, i);    // perf-allowed
+      const double h = rates[i].high;
+      const double l = rates[i].low;
 
       bool is_h = true, is_l = true;
       for(int j = 1; j <= strength; j++)
         {
-         if(iHigh(sym, tf, i - j) >= h || iHigh(sym, tf, i + j) >= h) is_h = false;  // perf-allowed
-         if(iLow(sym, tf, i - j)  <= l || iLow(sym, tf, i + j)  <= l) is_l = false;  // perf-allowed
+         if(rates[i - j].high >= h || rates[i + j].high >= h) is_h = false;
+         if(rates[i - j].low  <= l || rates[i + j].low  <= l) is_l = false;
         }
 
       if(is_h && last_type != 1)
@@ -219,6 +237,9 @@ bool Strategy_NoTradeFilter()
 // Entry Signal — Butterfly pattern confirmation at D
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.symbol_slot        = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // Update per-bar state (called only when QM_IsNewBar() == true in framework OnTick)
    AdvanceState_OnNewBar();
 
@@ -335,15 +356,6 @@ void OnTick()
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
@@ -365,6 +377,17 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
+
+   // News filters gate new entries only; risk controls and exits always run.
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
 
    if(!QM_IsNewBar())
       return;

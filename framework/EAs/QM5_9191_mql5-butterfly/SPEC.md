@@ -4,7 +4,7 @@
 **Slug:** `mql5-butterfly`
 **Source:** `ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb` (see `strategy-seeds/sources/ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb/`)
 **Author of this spec:** Claude
-**Last revised:** 2026-06-10
+**Last revised:** 2026-07-11
 
 ---
 
@@ -19,7 +19,7 @@ The EA detects completed Butterfly XABCD harmonic patterns on closed H1 bars. Fi
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
 | `strategy_pivot_strength` | 3 | 1–10 | Bars each side required to confirm a swing high/low pivot |
-| `strategy_pivot_lookback` | 100 | 20–200 | Maximum bars to scan for pivot detection |
+| `strategy_pivot_lookback` | 600 | 100–1,000 | Maximum closed bars to scan for pivot detection; fetched once per new bar |
 | `strategy_atr_period` | 14 | 5–50 | ATR period for stop-loss distance and minimum XA filter |
 | `strategy_min_xa_atr_mult` | 1.0 | 0.5–5.0 | Minimum XA leg size as a multiple of ATR(14); filters micro-patterns |
 | `strategy_ratio_tol` | 0.05 | 0.01–0.15 | Symmetric tolerance applied to each Fibonacci ratio check (±5%) |
@@ -88,3 +88,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-10 | Initial build from card | a53456b5-fffc-4803-bfd4-153c9d0c3b6d |
+| v1.1 | 2026-07-11 | Q02 infrastructure recovery | Expanded the low-frequency pattern window and replaced repeated series calls with one bounded `CopyRates` read so tester runs can complete and emit summaries. |
