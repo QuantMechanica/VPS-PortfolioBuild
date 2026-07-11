@@ -1,0 +1,108 @@
+{
+  "artifact_type": "fx_cointegration_q05_pass_q06_enqueue",
+  "branch": "agents/board-advisor",
+  "head_at_evidence_creation": "a964c42707a262ce7207d39e1ef506aa73658526",
+  "created_at_utc": "2026-07-11T18:49:25Z",
+  "ea_id": "QM5_13117",
+  "expert": "QM5_13117_eurgbp-audjpy",
+  "logical_symbol": "QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1",
+  "pair": [
+    "EURGBP.DWX",
+    "AUDJPY.DWX"
+  ],
+  "selection": {
+    "action": "advance_existing_forex_card",
+    "reason": "The sign-aware 66-pair scan has exactly seven strict rows and all seven already have approved cards plus basket EA builds. QM5_13117 was the only strict sleeve with a legitimate pending successor after repaired Q02/Q03 and Q04 PASS evidence.",
+    "strict_sign_aware_survivor_count": 7,
+    "unbuilt_strict_survivor_count": 0,
+    "anchor_status": {
+      "QM5_12532": "Q02 PASS, Q04 PASS, Q05 FAIL; no ONINIT or NO_HISTORY Q02 blocker.",
+      "QM5_12533": "Q02 PASS, Q04 FAIL; no ONINIT or NO_HISTORY Q02 blocker."
+    },
+    "scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md plus framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+    "method_source": "Ernest P. Chan, Quantitative Trading (Wiley, 2009), Example 3.6 and Chapter 7"
+  },
+  "validated_build": {
+    "mq5_sha256": "14ddccb7ac7fe8b1c1e9cec4c6a59c7045481de99f15e1728fb38a76cfe6bcd1",
+    "ex5_sha256": "aa8ff930a973632b0dbd9b2694ccf20869f441a4fa7c9eac670339800eb199ef",
+    "basket_manifest_sha256": "e8d1fcf2e2b5cd96258b4c4aef496871c54f247ad671e449a3d2f92a2d186387",
+    "backtest_setfile_sha256": "c584bcf5b274ae293ebd0ea60ba9ba7ea0ca5a4afda09da2fb50423322531b83",
+    "build_changed": false
+  },
+  "risk_contract": {
+    "environment": "q05_stress_medium",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "timeframe": "D1",
+    "structural_only": true,
+    "ml_or_banned_indicators_added": false
+  },
+  "q05_result": {
+    "work_item_id": "782c0516-b649-4b3b-87e8-12d76d828b64",
+    "command": "python tools/strategy_farm/terminal_worker.py --terminal T1 --root D:/QM/strategy_farm --work-item-id 782c0516-b649-4b3b-87e8-12d76d828b64 --timeout-minutes 480",
+    "execution_mode": "factory_off_single_item",
+    "terminal": "T1",
+    "status": "done",
+    "verdict": "PASS",
+    "reason": "pf=1.460:dd_pct=3.05",
+    "history_from": "2018.07.02",
+    "history_to": "2024.12.31",
+    "trades": 176,
+    "profit_factor": 1.46,
+    "net_profit": 7593.86,
+    "drawdown_money": 3049.81,
+    "aggregate_drawdown_pct": 3.04981,
+    "report_drawdown_pct": 2.86,
+    "real_ticks": true,
+    "deterministic": true,
+    "oninit_failure": false,
+    "log_bomb": false,
+    "timed_out": false,
+    "aggregate_path": "D:/QM/reports/work_items/782c0516-b649-4b3b-87e8-12d76d828b64/QM5_13117/Q05/QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1/aggregate.json",
+    "summary_path": "D:/QM/reports/work_items/782c0516-b649-4b3b-87e8-12d76d828b64/QM5_13117/20260711_175115/summary.json",
+    "generated_setfile": "framework/EAs/QM5_13117_eurgbp-audjpy/sets/QM5_13117_eurgbp-audjpy_QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1_D1_q05_stress_medium.set",
+    "generated_setfile_sha256": "c4b2c62130bbe42b9f193b6e1b03d6d329b6b551785fe035d011a0bec886526d",
+    "generated_setfile_build_hash": "4d9aee1701ea38dfa655d983b803ecaba51d6d7f0cd2bef59547b53b63f085d3"
+  },
+  "q06_handoff": {
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_13117 --phase Q06",
+    "work_item_id": "25bf4e21-8b84-4386-9cd6-f5aa8b2f4fcf",
+    "status_at_verification": "pending",
+    "verdict": null,
+    "claimed_by": null,
+    "attempt_count": 0,
+    "promoted_from_phase": "Q05",
+    "promoted_from_work_item": "782c0516-b649-4b3b-87e8-12d76d828b64",
+    "open_q06_rows": 1,
+    "duplicate_created": false,
+    "tester_launched_for_q06": false
+  },
+  "database_safety": {
+    "pre_q05_backup": "D:/QM/strategy_farm/state/backups/farm_state_pre_qm5_13117_q05_20260711T175108Z.sqlite",
+    "pre_q06_backup": "D:/QM/strategy_farm/state/backups/farm_state_pre_qm5_13117_q06_20260711T184818Z.sqlite",
+    "live_quick_check": "ok",
+    "backup_quick_checks": "ok"
+  },
+  "capacity": {
+    "factory_off_flag_preexisting_and_preserved": true,
+    "cpu_ceiling": 7,
+    "mission_factory_terminal_count": 1,
+    "post_run_unrelated_terminals_observed": [
+      "T2",
+      "T3"
+    ],
+    "cpu_ceiling_reached": false
+  },
+  "safety": {
+    "t_live_observed_read_only": true,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "live_manifest_touched": false
+  }
+}
