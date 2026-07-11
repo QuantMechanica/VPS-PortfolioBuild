@@ -1,0 +1,54 @@
+{
+  "task_id": "26d3f077-c4c7-4fb9-babc-997d8f53cc3d",
+  "ea_id": "QM5_13130",
+  "ea_label": "QM5_13130_xti-xng-lowmax",
+  "slug": "xti-xng-lowmax",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13130_xti-xng-lowmax.md",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13130_xti-xng-lowmax",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13130_xti-xng-lowmax\\QM5_13130_xti-xng-lowmax.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13130_xti-xng-lowmax\\QM5_13130_xti-xng-lowmax.ex5",
+  "mq5_sha256": "71a6a14d82df396a37f8552fe8016e6e86dd10c4bd3be662355c30c52b79e5a2",
+  "ex5_sha256": "443302394d71feeb8d91d898d7be345fd77ac5ad8f7fdfbc36d5f0f0b8c62937",
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260711_012055\\QM5_13130_xti-xng-lowmax.compile.log",
+  "compile_summary": "D:\\QM\\reports\\compile\\20260711_012055\\summary.csv",
+  "build_check_passed": true,
+  "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260711_012055.json",
+  "build_check_advisories": [],
+  "spec_validation": "PASS",
+  "guardrail_validation": "PASS",
+  "symbol_scope_validation": "BASKET_OK",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13130_xti-xng-lowmax\\sets\\QM5_13130_xti-xng-lowmax_QM5_13130_XTI_XNG_LOWMAX_D1_D1_backtest.set"
+  ],
+  "setfile_sha256": "41ad2993e9a593cffcbed4be1cecb80de18adf6de7d5f8a488fc154109a08d31",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Build-only workflow; no manual backtest or terminal automation started before Q02 enqueue.",
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_13130",
+    "enqueued": [
+      {
+        "work_item_id": "d96cc22a-4825-4d48-9ca3-0253cf3c4ac5",
+        "symbol": "QM5_13130_XTI_XNG_LOWMAX_D1",
+        "host_symbol": "XTIUSD.DWX",
+        "timeframe": "D1",
+        "status": "pending",
+        "setfile": "QM5_13130_xti-xng-lowmax_QM5_13130_XTI_XNG_LOWMAX_D1_D1_backtest.set",
+        "enqueued_at": "2026-07-11T01:17:32+00:00"
+      }
+    ],
+    "skipped": []
+  },
+  "registry_validation": {
+    "ea_id_row": "13130,xti-xng-lowmax,HOLLSTEIN-MAX-2021_XTI_XNG_S01,active",
+    "magic_rows": [
+      "13130,xti-xng-lowmax,0,XTIUSD.DWX,131300000,active",
+      "13130,xti-xng-lowmax,1,XNGUSD.DWX,131300001,active"
+    ],
+    "resolver_contains_ea": true,
+    "global_validator_note": "Targeted registry, resolver, card, spec, build, and basket-scope checks passed; three pre-existing missing-directory resolver warnings were not changed."
+  },
+  "notes": "New low-frequency market-neutral energy sleeve: monthly XTI/XNG cross-sectional low-MAX rank from the five largest daily returns in the prior 252 completed D1 observations, equal fixed package risk, no ML/banned indicators. The primary source's full-sample null and post-financialization-only evidence are retained as Q02 kill risks. No T_Live, AutoTrading, portfolio gate, live setfile, deploy manifest, or backtest dispatch was touched."
+}
