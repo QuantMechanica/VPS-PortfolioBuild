@@ -1,0 +1,106 @@
+{
+  "artifact_type": "diverse_fx_q02_repaired_binary_handoff",
+  "recorded_at_utc": "2026-07-11T17:09:16.711054+00:00",
+  "branch": "agents/board-advisor",
+  "mission_priority": 2,
+  "ea": {
+    "ea_id": "QM5_11907",
+    "ea_label": "QM5_11907_davey-momentum-big-range-h1",
+    "strategy_shape": "H1 closed-bar volatility-expansion momentum with ATR stop, 2R target, and 24-bar time exit",
+    "source": "Kevin J. Davey, My 5 Favorite Entries, Entry 1 Momentum and Big Range",
+    "g0_status": "APPROVED",
+    "instrument_class": "forex",
+    "expected_trades_per_year_per_symbol": 45,
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "ml_used": false
+  },
+  "selection": {
+    "reason": "The approved-card build frontier through QM5_13144 was already committed and QM5_13145 was under a distinct concurrent build. The remaining pending build cards require unavailable rates/lumber inputs or target the saturated XAU/index class. QM5_11907 is an approved reputable-source ten-pair FX sleeve whose repaired binary had no economic verdict, open work item, downstream row, or competing lease.",
+    "prior_repair_artifact": "artifacts/qm5_11907_fx_magic_repair_cpu_ceiling_stop_20260710.json",
+    "prior_repair_outcome": "Magic, setfile-slot, SPEC, source-corset, and stale-binary repairs passed, but the only smoke invocation collided with a foreign worker terminal and hit the runtime ceiling before Q02 enqueue.",
+    "non_duplicate_unit": "Complete the previously omitted Q02 handoff; do not repeat the smoke or alter strategy logic."
+  },
+  "claim": {
+    "agent_task_id": "78c294d1-e6cc-4e6e-bcfb-ab809d884763",
+    "claim_key": "manual:codex:agents/board-advisor:QM5_11907:q02-handoff:20260711T170557Z",
+    "claimed_by": "codex:agents/board-advisor:qm5_11907:q02-handoff:20260711T170557Z",
+    "claimed_at_utc": "2026-07-11T17:05:57.153162+00:00",
+    "database_backup_before_claim": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_11907_q02_handoff_20260711T170557Z.sqlite",
+    "collision_guards": {
+      "open_q02_q03_rows": 0,
+      "q04_or_later_rows": 0,
+      "unexpired_competing_leases": 0
+    }
+  },
+  "validation": {
+    "spec_validation": "PASS",
+    "build_check": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260711_170609.json",
+      "report_sha256": "64b9bd4fa77191467ac8e69d7a8a3849301bc80f6e6a5da72a55df67d6e7466d"
+    },
+    "compile": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "C:/QM/repo/framework/build/compile/20260711_170610/QM5_11907_davey-momentum-big-range-h1.compile.log",
+      "log_sha256": "c2f128710c05ea4cc2217b271caa0332cb076420a5441a4981b7f6f1be939da4"
+    },
+    "mq5_sha256": "665060db8fee0407266d43e2965c4845f7047ffd25616d328cf05ada022338cd",
+    "ex5_sha256": "8f8db747dab7c5bd8825e895b6ec767284b7e48b90e471027a2f403928d7cd04",
+    "setfile_contract": {
+      "count": 10,
+      "timeframe": "H1",
+      "symbol_slots": "0..9 unique",
+      "risk_fixed_all": 1000,
+      "risk_percent_all": 0
+    },
+    "smoke": {
+      "result": "NOT_REPEATED",
+      "reason": "The prior one-pass invocation already stopped at the CPU/runtime ceiling after a foreign-terminal collision; this handoff performed static/compile verification only."
+    }
+  },
+  "q02_handoff": {
+    "strategy": "Reset three existing INFRA_FAIL rows in place; create no duplicate work items.",
+    "enqueued_at_utc": "2026-07-11T17:09:16.711054+00:00",
+    "stage1_selection_reason": "EURUSD source carrier plus GBPJPY non-USD cross plus AUDUSD commodity/carry-sensitive major span EUR, USD, GBP, JPY, and AUD.",
+    "pending_work_items": {
+      "EURUSD.DWX": "e0911bc9-6e0b-48bb-8e95-212de2de4204",
+      "GBPJPY.DWX": "d2b5a446-0ea0-4bc1-9a70-6b5120403660",
+      "AUDUSD.DWX": "293d275d-fcd2-4899-9e7b-9f8dcd09d6c2"
+    },
+    "pending_contract": {
+      "phase": "Q02",
+      "status": "pending",
+      "verdict": null,
+      "attempt_count": 0,
+      "claimed_by": null,
+      "effective_min_trades": 40,
+      "priority_track": true
+    },
+    "deferred_symbols": [
+      "GBPUSD.DWX",
+      "USDJPY.DWX",
+      "USDCAD.DWX",
+      "USDCHF.DWX",
+      "NZDUSD.DWX",
+      "EURJPY.DWX",
+      "AUDJPY.DWX"
+    ],
+    "deferred_sidecar": "D:/QM/strategy_farm/state/q02_deferred_symbols.json",
+    "database_backup_before_enqueue": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_11907_q02_enqueue_20260711T170916Z.sqlite",
+    "deferred_sidecar_backup": "D:/QM/strategy_farm/state/backups/q02_deferred_symbols_before_qm5_11907_20260711T170916Z.json"
+  },
+  "runtime_and_safety": {
+    "factory_off_observed": true,
+    "manual_dispatch_attempted": false,
+    "backtest_cpu_added": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
