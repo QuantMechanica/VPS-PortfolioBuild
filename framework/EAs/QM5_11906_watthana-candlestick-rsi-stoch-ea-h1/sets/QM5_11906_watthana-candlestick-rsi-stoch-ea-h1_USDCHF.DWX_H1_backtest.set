@@ -3,32 +3,35 @@
 ; ea_id:        11906
 ; ea_slug:      watthana-candlestick-rsi-stoch-ea-h1
 ; ea_version:   v5.0
-; set_version:  s20260620-001
+; set_version:  s20260711-001
 ; symbol:       USDCHF.DWX
 ; timeframe:    H1
 ; environment:  backtest
-; magic_slot:   0
+; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   d69b1ab966f2c76ace1cc3f87f8cb5c2d35f522d94f7b58ad1c319fe5e87cc08
 ; author:       Development
-; date:         2026-06-20
+; date:         2026-07-11
 ;==========================================================
-qm_magic_slot_offset=0
+qm_ea_id=11906
+qm_magic_slot_offset=4
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11906_watthana-candlestick-rsi-stoch-ea-h1.md
+strategy_rsi_period=14
+strategy_rsi_oversold=30.0
+strategy_rsi_overbought=70.0
+strategy_stoch_k_period=14
+strategy_stoch_d_period=3
+strategy_stoch_slowing=3
+strategy_stoch_oversold=20.0
+strategy_stoch_overbought=80.0
+strategy_body_shadow_ratio=2.0
+strategy_trend_lookback=5
+strategy_trend_min_pips=10.0
+strategy_atr_period=14
+strategy_atr_sl_mult=2.0
+strategy_time_stop_bars=120

@@ -1,0 +1,165 @@
+{
+  "timestamp_utc": "2026-07-11T06:41:34+00:00",
+  "unit_of_work": "Q02 infrastructure recovery and diverse FX stage-1 requeue",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_11906",
+  "ea_slug": "watthana-candlestick-rsi-stoch-ea-h1",
+  "strategy_shape": "H1 structural long-shadow candle reversal with RSI and Stochastic confluence",
+  "diversity_rationale": "Restores an approved ten-pair FX sleeve while the current Q08 FAIL_SOFT survivors are concentrated in index, metal, and energy instruments.",
+  "priority_selection": {
+    "selected_mission_priority": 2,
+    "approved_build_preflight": "No higher-diversity approved card was faithfully buildable with the available DWX universe.",
+    "skipped_cards": [
+      {
+        "ea_id": "QM5_1457",
+        "reason": "requires unavailable Treasury, IEF, BIL, and DBC inputs"
+      },
+      {
+        "ea_id": "QM5_1459",
+        "reason": "requires unavailable lumber and IEF inputs and retains an unresolved data gate"
+      },
+      {
+        "ea_id": "QM5_13031",
+        "reason": "targets the already saturated XAU/index class at M15 cadence"
+      }
+    ]
+  },
+  "source_status": {
+    "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11906_watthana-candlestick-rsi-stoch-ea-h1.md",
+    "source_citation": "Watthana Pongsena et al., Developing a Forex Expert Advisor Based on Japanese Candlestick Patterns and Technical Trading Strategies, IJTEF 9(6), 2018, DOI 10.18178/ijtef.2018.9.6.622",
+    "g0_status": "APPROVED",
+    "r1_track_record": "PASS",
+    "r2_mechanical": "PASS",
+    "r3_data_available": "PASS",
+    "r4_ml_forbidden": "PASS",
+    "risk_mode": "RISK_FIXED",
+    "fixed_risk_money": 1000,
+    "expected_trades_per_year_per_symbol": 50
+  },
+  "prior_failure": {
+    "phase": "Q02",
+    "verdict": "INFRA_FAIL",
+    "scope": "latest retained wave on all ten approved FX symbols",
+    "reported_failure": "summary_missing_retries_exhausted",
+    "diagnosis": [
+      "No active QM5_11906 rows existed in magic_numbers.csv, so the V5 framework could not validate any symbol/slot mapping during initialization.",
+      "All ten setfiles used slot zero, omitted qm_ea_id and all strategy inputs, and retained a pending build hash.",
+      "The checked-in EX5 was stale relative to the source and current framework includes.",
+      "News gating preceded position management and strategy exits instead of applying to entries only."
+    ]
+  },
+  "claim": {
+    "claimant": "codex:agents/board-advisor:qm5-11906:20260711T062240Z",
+    "claimed_at_utc": "2026-07-11T06:22:40+00:00",
+    "completed_at_utc": "2026-07-11T06:41:34+00:00",
+    "claimed_work_items": {
+      "AUDJPY.DWX": "e9c0d3b1-0eb7-41d4-971f-4d3592d607c0",
+      "AUDUSD.DWX": "e9bf166a-b280-498c-b8f5-b0d0efd9b884",
+      "EURJPY.DWX": "1a110f5a-b6e5-4fe8-bd8e-198602b924e7",
+      "EURUSD.DWX": "afecabd3-5168-48c4-b968-ce0e9eb72e62",
+      "GBPJPY.DWX": "c6a4d4e7-62af-4971-8868-a20d2fb9ad98",
+      "GBPUSD.DWX": "d9e13fd8-8202-457d-b2fb-1820d4e265a0",
+      "NZDUSD.DWX": "bf0d4fe8-cf98-49e0-ae97-df8139656c5a",
+      "USDCAD.DWX": "b865dd35-6419-47f4-b35f-81918d304710",
+      "USDCHF.DWX": "ff9aa245-d849-495c-b2a7-d6a32a2c1594",
+      "USDJPY.DWX": "fe6f20e4-7ade-42f6-ae3d-4251b147948a"
+    }
+  },
+  "repair": {
+    "magic_rows": {
+      "EURUSD.DWX": { "symbol_slot": 0, "magic": 119060000 },
+      "GBPUSD.DWX": { "symbol_slot": 1, "magic": 119060001 },
+      "USDJPY.DWX": { "symbol_slot": 2, "magic": 119060002 },
+      "USDCAD.DWX": { "symbol_slot": 3, "magic": 119060003 },
+      "USDCHF.DWX": { "symbol_slot": 4, "magic": 119060004 },
+      "AUDUSD.DWX": { "symbol_slot": 5, "magic": 119060005 },
+      "NZDUSD.DWX": { "symbol_slot": 6, "magic": 119060006 },
+      "EURJPY.DWX": { "symbol_slot": 7, "magic": 119060007 },
+      "GBPJPY.DWX": { "symbol_slot": 8, "magic": 119060008 },
+      "AUDJPY.DWX": { "symbol_slot": 9, "magic": 119060009 }
+    },
+    "resolver_regenerated": true,
+    "spec_restored": true,
+    "approved_card_copied_into_ea_docs": true,
+    "strict_recompile": true,
+    "closed_bar_state_cached": true,
+    "entry_only_news_gate_restored": true,
+    "setfiles_regenerated": 10,
+    "setfile_contract": {
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "strategy_parameter_count_each": 14,
+      "unique_magic_slots": 10
+    },
+    "setfile_build_hashes": {
+      "AUDJPY.DWX": "66e2dc394bdb9e2d5b09c98990da2dc43057f0d89b0167303626055f7c3eb99f",
+      "AUDUSD.DWX": "db572bad905d871ddddc02300b5ed34f5777a526ac9b7abdea444a7b73118615",
+      "EURJPY.DWX": "f11e2d341feec3ef0b8680d991a9279112b6f68ab7021a767a1bae88963edc6c",
+      "EURUSD.DWX": "bc5b2c6f62488f7cd88c7f8b2b238ce97188e7a730f7fb392204fa63a56a5e01",
+      "GBPJPY.DWX": "88a0670a6d278047f671aae95e3a39199920f6449ecc479a27a2ac23cdefb0ee",
+      "GBPUSD.DWX": "24a9d5023b9d6b987421a16749f50051f8f0c942a792ac9830eadcb77cbf8342",
+      "NZDUSD.DWX": "7019de8cdf6deccb659675e6af597567bf33a32ca03d1570219fadb69a9f989a",
+      "USDCAD.DWX": "0d69ee2b5b19765afea07e485343f54eef28afcb69a10b715894b44bc27a4ba6",
+      "USDCHF.DWX": "d69b1ab966f2c76ace1cc3f87f8cb5c2d35f522d94f7b58ad1c319fe5e87cc08",
+      "USDJPY.DWX": "8708177cc3c34db387547a7a2f713d5843591825380c6a23068061e34b8886bf"
+    },
+    "sha256": {
+      "mq5_source": "37F58E9B7F4878703AC7C157BFFF31F7933B4B521B077B30C44527261E3F9928",
+      "compiled_ex5": "308CFA7D308FF7009BC1EACEA777BC96B1BA1A3005A75ACDA733CC8789C77F15",
+      "magic_registry": "11A11A1CE9290B267CFBE1D2379F6872D3771EDED28D02D60E66FE8D028CC8E6",
+      "magic_resolver": "9900936DF73BE7B1DF0343F95B022B4C55C3F9DA66D33BEC6B76A7CDDEC6F624"
+    }
+  },
+  "validation": {
+    "spec_validation": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "build_check": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260711_063804.json"
+    },
+    "strict_compile": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "C:/QM/repo/framework/build/compile/20260711_063804/QM5_11906_watthana-candlestick-rsi-stoch-ea-h1.compile.log"
+    },
+    "bounded_smoke": {
+      "result": "NOT_RUN_FACTORY_OFF",
+      "reason": "FACTORY_OFF.flag was active; no tester CPU was added."
+    }
+  },
+  "farm_db_requeue": {
+    "db_path": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "strategy": "reset the claimed latest rows in place to avoid duplicates and apply the OWNER three-symbol stage-1 cap",
+    "stage1_selection_reason": "EURUSD is the paper carrier; GBPJPY adds a non-USD cross; AUDUSD adds a commodity/carry-sensitive major. Together the probes span EUR, USD, GBP, JPY, and AUD.",
+    "pending_work_items": {
+      "EURUSD.DWX": "afecabd3-5168-48c4-b968-ce0e9eb72e62",
+      "GBPJPY.DWX": "c6a4d4e7-62af-4971-8868-a20d2fb9ad98",
+      "AUDUSD.DWX": "e9bf166a-b280-498c-b8f5-b0d0efd9b884"
+    },
+    "deferred_symbols": [
+      "AUDJPY.DWX",
+      "EURJPY.DWX",
+      "GBPUSD.DWX",
+      "NZDUSD.DWX",
+      "USDCAD.DWX",
+      "USDCHF.DWX",
+      "USDJPY.DWX"
+    ],
+    "deferred_sidecar": "D:/QM/strategy_farm/state/q02_deferred_symbols.json",
+    "factory_off_observed": true,
+    "dispatch_attempted": false,
+    "db_backup_before_requeue": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_11906_fx_requeue_20260711T063850Z.sqlite",
+    "deferred_sidecar_backup": "D:/QM/strategy_farm/state/q02_deferred_symbols_before_qm5_11906_20260711T063850Z.json"
+  },
+  "safety": {
+    "backtest_cpu_ceiling_hit": false,
+    "manual_q02_dispatch_started": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}

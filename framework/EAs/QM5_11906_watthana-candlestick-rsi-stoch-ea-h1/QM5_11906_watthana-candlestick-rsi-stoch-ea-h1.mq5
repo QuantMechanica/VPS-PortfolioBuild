@@ -14,7 +14,7 @@ input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT               = 0.5;
+input double RISK_PERCENT               = 0.0;
 input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
@@ -48,18 +48,29 @@ input int    strategy_atr_period        = 14;
 input double strategy_atr_sl_mult       = 2.0;
 input int    strategy_time_stop_bars    = 120;
 
+bool   g_closed_bar_state_ready = false;
+bool   g_bullish_pattern        = false;
+bool   g_bearish_pattern        = false;
+double g_closed_rsi             = 0.0;
+double g_closed_stoch_k         = 0.0;
+double g_closed_atr             = 0.0;
+
 // -----------------------------------------------------------------------------
 // Helper Functions
 // -----------------------------------------------------------------------------
 
 int GetTrend(int shift)
 {
-   double close_curr = iClose(_Symbol, PERIOD_H1, shift);
-   double close_past = iClose(_Symbol, PERIOD_H1, shift + strategy_trend_lookback);
+   // perf-allowed: fixed closed-bar reads for the card's bespoke candle and
+   // prior-trend definition. The callers run only from the latched H1 new-bar
+   // path in Strategy_RefreshClosedBarState().
+   double close_curr = iClose(_Symbol, PERIOD_H1, shift); // perf-allowed
+   double close_past = iClose(_Symbol, PERIOD_H1, shift + strategy_trend_lookback); // perf-allowed
    if(close_curr <= 0.0 || close_past <= 0.0) return 0; // FLAT
-   
-   double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   double min_change = strategy_trend_min_pips * 10 * point;
+
+   const int trend_pips = (int)MathRound(MathAbs(strategy_trend_min_pips));
+   const double min_change = QM_StopRulesPipsToPriceDistance(_Symbol, trend_pips);
+   if(min_change <= 0.0) return 0;
    
    if(close_curr > close_past + min_change) return 1;  // UP
    if(close_curr < close_past - min_change) return -1; // DOWN
@@ -70,10 +81,9 @@ bool IsHammer(int shift)
 {
    if(GetTrend(shift) != -1) return false;
    
-   double open  = iOpen(_Symbol, PERIOD_H1, shift);
-   double close = iClose(_Symbol, PERIOD_H1, shift);
-   double low   = iLow(_Symbol, PERIOD_H1, shift);
-   double high  = iHigh(_Symbol, PERIOD_H1, shift);
+   double open  = iOpen(_Symbol, PERIOD_H1, shift); // perf-allowed
+   double close = iClose(_Symbol, PERIOD_H1, shift); // perf-allowed
+   double low   = iLow(_Symbol, PERIOD_H1, shift); // perf-allowed
    
    if(open - close > 0) // bearish candle body
    {
@@ -91,10 +101,9 @@ bool IsInvertedHammer(int shift)
 {
    if(GetTrend(shift) != -1) return false;
    
-   double open  = iOpen(_Symbol, PERIOD_H1, shift);
-   double close = iClose(_Symbol, PERIOD_H1, shift);
-   double low   = iLow(_Symbol, PERIOD_H1, shift);
-   double high  = iHigh(_Symbol, PERIOD_H1, shift);
+   double open  = iOpen(_Symbol, PERIOD_H1, shift); // perf-allowed
+   double close = iClose(_Symbol, PERIOD_H1, shift); // perf-allowed
+   double high  = iHigh(_Symbol, PERIOD_H1, shift); // perf-allowed
    
    double body = MathAbs(open - close);
    if(open - close >= 0) // bearish or doji
@@ -112,10 +121,9 @@ bool IsHangingMan(int shift)
 {
    if(GetTrend(shift) != 1) return false;
    
-   double open  = iOpen(_Symbol, PERIOD_H1, shift);
-   double close = iClose(_Symbol, PERIOD_H1, shift);
-   double low   = iLow(_Symbol, PERIOD_H1, shift);
-   double high  = iHigh(_Symbol, PERIOD_H1, shift);
+   double open  = iOpen(_Symbol, PERIOD_H1, shift); // perf-allowed
+   double close = iClose(_Symbol, PERIOD_H1, shift); // perf-allowed
+   double low   = iLow(_Symbol, PERIOD_H1, shift); // perf-allowed
    
    if(open - close < 0) // bullish candle body
    {
@@ -132,10 +140,9 @@ bool IsShootingStar(int shift)
 {
    if(GetTrend(shift) != 1) return false;
    
-   double open  = iOpen(_Symbol, PERIOD_H1, shift);
-   double close = iClose(_Symbol, PERIOD_H1, shift);
-   double low   = iLow(_Symbol, PERIOD_H1, shift);
-   double high  = iHigh(_Symbol, PERIOD_H1, shift);
+   double open  = iOpen(_Symbol, PERIOD_H1, shift); // perf-allowed
+   double close = iClose(_Symbol, PERIOD_H1, shift); // perf-allowed
+   double high  = iHigh(_Symbol, PERIOD_H1, shift); // perf-allowed
    
    double body = MathAbs(open - close);
    if(open - close <= 0) // bullish or doji
@@ -149,6 +156,24 @@ bool IsShootingStar(int shift)
    return false;
 }
 
+bool Strategy_RefreshClosedBarState()
+{
+   g_closed_bar_state_ready = false;
+   g_bullish_pattern = false;
+   g_bearish_pattern = false;
+   g_closed_rsi = QM_RSI(_Symbol, PERIOD_H1, strategy_rsi_period, 1);
+   g_closed_stoch_k = QM_Stoch_K(_Symbol, PERIOD_H1, strategy_stoch_k_period,
+                                  strategy_stoch_d_period, strategy_stoch_slowing, 1);
+   g_closed_atr = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
+   if(g_closed_rsi <= 0.0 || g_closed_stoch_k <= 0.0 || g_closed_atr <= 0.0)
+      return false;
+
+   g_bullish_pattern = (IsHammer(1) || IsInvertedHammer(1));
+   g_bearish_pattern = (IsHangingMan(1) || IsShootingStar(1));
+   g_closed_bar_state_ready = true;
+   return true;
+}
+
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
@@ -160,28 +185,23 @@ bool Strategy_NoTradeFilter()
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
 {
-   if(PositionsTotal() > 0) return false;
-
-   const double rsi = QM_RSI(_Symbol, PERIOD_H1, strategy_rsi_period, 1);
-   const double stoch_k = QM_Stoch_K(_Symbol, PERIOD_H1, strategy_stoch_k_period, strategy_stoch_d_period, strategy_stoch_slowing, 1);
-   const double atr1 = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
-
-   if(rsi <= 0.0 || stoch_k <= 0.0 || atr1 <= 0.0) return false;
+   if(!g_closed_bar_state_ready) return false;
+   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0) return false;
 
    bool signal_long  = false;
    bool signal_short = false;
 
    // Bullish Setup
-   if(rsi < strategy_rsi_oversold && stoch_k < strategy_stoch_oversold)
+   if(g_closed_rsi < strategy_rsi_oversold && g_closed_stoch_k < strategy_stoch_oversold)
    {
-      if(IsHammer(1) || IsInvertedHammer(1))
+      if(g_bullish_pattern)
          signal_long = true;
    }
    
    // Bearish Setup
-   if(rsi > strategy_rsi_overbought && stoch_k > strategy_stoch_overbought)
+   if(g_closed_rsi > strategy_rsi_overbought && g_closed_stoch_k > strategy_stoch_overbought)
    {
-      if(IsHangingMan(1) || IsShootingStar(1))
+      if(g_bearish_pattern)
          signal_short = true;
    }
 
@@ -191,7 +211,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double entry = (side == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK) : SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(entry <= 0.0) return false;
 
-   const double sl = QM_StopATRFromValue(_Symbol, side, entry, atr1, strategy_atr_sl_mult);
+   const double sl = QM_StopATRFromValue(_Symbol, side, entry, g_closed_atr, strategy_atr_sl_mult);
    if(sl <= 0.0) return false;
 
    req.type = side;
@@ -200,6 +220,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.tp = 0.0;
    req.reason = (side == QM_BUY) ? "WATTHANA_REVERSAL_LONG" : "WATTHANA_REVERSAL_SHORT";
    req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
 
    return true;
 }
@@ -223,20 +244,19 @@ bool Strategy_ExitSignal()
          if(bars >= strategy_time_stop_bars) return true;
       }
       
-      const double rsi = QM_RSI(_Symbol, PERIOD_H1, strategy_rsi_period, 1);
-      const double stoch_k = QM_Stoch_K(_Symbol, PERIOD_H1, strategy_stoch_k_period, strategy_stoch_d_period, strategy_stoch_slowing, 1);
-      
       ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       
       // Auto-reverse conditions
-      if(ptype == POSITION_TYPE_BUY)
+      if(g_closed_bar_state_ready && ptype == POSITION_TYPE_BUY)
       {
-         if(rsi > strategy_rsi_overbought || stoch_k > strategy_stoch_overbought || IsHangingMan(1) || IsShootingStar(1)) 
+         if(g_closed_rsi > strategy_rsi_overbought ||
+            g_closed_stoch_k > strategy_stoch_overbought || g_bearish_pattern)
             return true;
       }
-      else if(ptype == POSITION_TYPE_SELL)
+      else if(g_closed_bar_state_ready && ptype == POSITION_TYPE_SELL)
       {
-         if(rsi < strategy_rsi_oversold || stoch_k < strategy_stoch_oversold || IsHammer(1) || IsInvertedHammer(1)) 
+         if(g_closed_rsi < strategy_rsi_oversold ||
+            g_closed_stoch_k < strategy_stoch_oversold || g_bullish_pattern)
             return true;
       }
    }
@@ -266,17 +286,18 @@ void OnTick()
 {
    if(!QM_KillSwitchCheck()) return;
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now)) return;
-   
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows) return;
-   
    if(QM_FrameworkHandleFridayClose()) return;
    if(Strategy_NoTradeFilter()) return;
+
+   // Latch the single-consume framework event once. Refreshing the closed-bar
+   // cache here keeps position exits current even when the later news gate
+   // suppresses entries.
+   const bool new_bar = QM_IsNewBar();
+   if(new_bar)
+   {
+      QM_EquityStreamOnNewBar();
+      Strategy_RefreshClosedBarState();
+   }
 
    Strategy_ManageOpenPosition();
 
@@ -292,10 +313,20 @@ void OnTick()
       }
    }
 
-   if(!QM_IsNewBar()) return;
-   QM_EquityStreamOnNewBar();
+   // News blackout gates new entries only. Position management, hard stops,
+   // and oscillator/candle exits above remain live through news windows.
+   if(Strategy_NewsFilterHook(broker_now)) return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows) return;
+
+   if(!new_bar) return;
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
    {
       ulong out_ticket = 0;
