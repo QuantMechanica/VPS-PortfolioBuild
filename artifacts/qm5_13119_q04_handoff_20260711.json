@@ -1,0 +1,152 @@
+{
+  "artifact_type": "fx_cointegration_q04_handoff",
+  "branch": "agents/board-advisor",
+  "base_head_before_handoff": "26df092c5de5fef7b4f5dee41796bdfddd855cb4",
+  "created_at_utc": "2026-07-11T13:02:47.7375164Z",
+  "ea_id": "QM5_13119",
+  "expert": "QM5_13119_usdjpy-euraud",
+  "logical_symbol": "QM5_13119_USDJPY_EURAUD_COINTEGRATION_D1",
+  "pair": [
+    "USDJPY.DWX",
+    "EURAUD.DWX"
+  ],
+  "selection": {
+    "action": "advance_existing_forex_card",
+    "reason": "The published 66-pair scan has only two positive-hedge survivors and the strict sign-aware reproduction has exactly seven qualifying rows; all seven already have approved cards and basket EA builds. QM5_13119 had a fresh Q03 PASS and no Q04 row.",
+    "anchor_status": {
+      "QM5_12532": "Q02 PASS, Q04 PASS, Q05 FAIL; no open ONINIT or NO_HISTORY Q02 blocker.",
+      "QM5_12533": "Q02 PASS, Q04 FAIL; no open ONINIT or NO_HISTORY Q02 blocker."
+    },
+    "strict_sign_aware_rows": [
+      {
+        "rank": 1,
+        "pair": "GBPUSD/USDCAD",
+        "ea_id": "QM5_12978",
+        "built": true
+      },
+      {
+        "rank": 2,
+        "pair": "EURJPY/GBPJPY",
+        "ea_id": "QM5_12533",
+        "built": true
+      },
+      {
+        "rank": 3,
+        "pair": "AUDUSD/NZDUSD",
+        "ea_id": "QM5_12532",
+        "built": true
+      },
+      {
+        "rank": 4,
+        "pair": "USDCAD/NZDUSD",
+        "ea_id": "QM5_13003",
+        "built": true
+      },
+      {
+        "rank": 5,
+        "pair": "AUDUSD/EURGBP",
+        "ea_id": "QM5_13106",
+        "built": true
+      },
+      {
+        "rank": 6,
+        "pair": "EURGBP/AUDJPY",
+        "ea_id": "QM5_13117",
+        "built": true
+      },
+      {
+        "rank": 7,
+        "pair": "USDJPY/EURAUD",
+        "ea_id": "QM5_13119",
+        "built": true
+      }
+    ],
+    "scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md plus framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+    "method_source": "Ernest P. Chan, Quantitative Trading (Wiley, 2009), Example 3.6 and Chapter 7"
+  },
+  "scan_metrics": {
+    "dev_net_sharpe": 0.5059112597,
+    "oos_net_sharpe": 0.8837435895,
+    "oos_return_pct": 16.014828283,
+    "oos_state_changes": 23,
+    "fixed_beta": -1.4182482311707278,
+    "half_life_days": 77.45654457
+  },
+  "validated_build": {
+    "repair_commit": "b92667599587ad889b24f4be4d25427981b9a0d3",
+    "mq5_sha256": "7aacf8d12b90d3838c70d18984556df5060864c182281e31a1bafbfac6a947f1",
+    "ex5_sha256": "a3988df814790762be229b84e3483ae460128f6e6a056a673a74edd544834a5e",
+    "basket_manifest_sha256": "718150ded145287458aed5f0376ca5fe22377949cc00f2941f1a1604f59f6e90",
+    "backtest_setfile_sha256": "5dfdda38d1a2edf21cb78ab4174c5c75300160d87f91d8271e4673c384b008c5",
+    "setfile_build_hash": "f081167251a3130fe084abde2191f61cd658e378033f19b61c9d6fa1f8f1941d"
+  },
+  "risk_contract": {
+    "environment": "backtest",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "timeframe": "D1",
+    "structural_only": true,
+    "ml_or_banned_indicators_added": false
+  },
+  "q03_predecessor": {
+    "work_item_id": "e786ef7d-aaf8-4813-aae1-1e2f34f62ccb",
+    "status": "done",
+    "verdict": "PASS",
+    "deterministic": true,
+    "total_trades_per_run": 136,
+    "profit_factor_per_run": 1.06,
+    "net_profit_per_run": 966.39,
+    "drawdown": 3033.82,
+    "drawdown_pct": 2.92,
+    "evidence_path": "D:/QM/reports/work_items/e786ef7d-aaf8-4813-aae1-1e2f34f62ccb/QM5_13119/20260711_103353/summary.json"
+  },
+  "q04_handoff": {
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_13119 --phase Q04",
+    "work_item_id": "addea337-31f5-4267-b002-1281eaf9f94c",
+    "status_at_verification": "pending",
+    "verdict": null,
+    "claimed_by": null,
+    "attempt_count": 0,
+    "created_at_utc": "2026-07-11T13:01:57+00:00",
+    "event_id": 246748,
+    "event_name": "cascade_backtest_enqueued",
+    "promotion_source": "farmctl_enqueue_backtest_ea",
+    "promoted_from_phase": "Q02",
+    "promoted_from_work_item": "77ec9572-e064-44bd-a756-51647aa383b9",
+    "q04_default_probe": true,
+    "q04_latest_full_year": 2024,
+    "q04_history_checked_window": "2023-2024",
+    "q04_history_checked_scope": "basket_manifest_symbols",
+    "same_target_rows": 1,
+    "same_target_open_rows": 1,
+    "duplicate_q04_created": false,
+    "tester_launched_by_handoff": false,
+    "note": "The supported cascade API routes Q04 default probes from a Q02 PASS. The independent repaired-binary Q03 PASS remains the determinism predecessor for this operator handoff. A second historical Q02 PASS was skipped after the newly pending Q04 row was found."
+  },
+  "database_safety": {
+    "backup_path": "D:/QM/strategy_farm/state/backups/farm_state_pre_qm5_13119_q04_handoff_20260711T130155Z.sqlite",
+    "live_quick_check": "ok",
+    "backup_quick_check": "ok"
+  },
+  "capacity": {
+    "scan_at_utc": "2026-07-11T13:02:47.7375164Z",
+    "factory_terminal_count": 0,
+    "metatester_count": 0,
+    "cpu_ceiling": 7,
+    "cpu_ceiling_reached": false,
+    "factory_off_flag_present": false,
+    "q04_dispatch_requested": false
+  },
+  "safety": {
+    "t_live_observed_read_only": true,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "live_manifest_touched": false
+  }
+}
