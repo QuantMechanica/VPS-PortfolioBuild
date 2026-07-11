@@ -278,8 +278,8 @@ portfolio admission, or portfolio KPI path is authorized.
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-11 | APPROVED by OWNER mission directive | this card |
-| Q01 Build Validation | 2026-07-11 | PENDING | `artifacts/qm5_13142_build_result.json` |
-| Q02 Baseline Screening | 2026-07-11 | PENDING | `docs/ops/evidence/2026-07-11_qm5_13142_energy_salience_rank_q02_enqueue.md` |
+| Q01 Build Validation | 2026-07-11 | PASS: strict compile and build check, 0 errors/warnings/failures | `artifacts/qm5_13142_build_result.json` |
+| Q02 Baseline Screening | 2026-07-11 | ENQUEUED: pending, attempt 0, unclaimed | `docs/ops/evidence/2026-07-11_qm5_13142_energy_salience_rank_q02_enqueue.md` |
 
 ## Lessons Captured
 
