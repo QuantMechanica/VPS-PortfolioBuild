@@ -1,0 +1,176 @@
+{
+  "task_id": "337f6ff8-9124-4d63-ad64-f7b32c7770fc",
+  "ea_id": "QM5_13140",
+  "ea_label": "QM5_13140_energy-aliq-rank",
+  "slug": "energy-aliq-rank",
+  "strategy": "Monthly XTI/XNG Amihud-illiquidity high-minus-low basket",
+  "strategy_id": "YIYI-ALIQ-2025_XTI_XNG_S01",
+  "source_id": "YIYI-ALIQ-2025",
+  "source_links": [
+    "https://onlinelibrary.wiley.com/doi/10.1002/fut.22559",
+    "https://doi.org/10.1002/fut.22559",
+    "https://acfr.aut.ac.nz/__data/assets/pdf_file/0006/927429/commodity_20240701.pdf"
+  ],
+  "symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "symbols_registered": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "logical_symbol": "QM5_13140_XTI_XNG_ALIQ_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13140_energy-aliq-rank",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13140_energy-aliq-rank\\QM5_13140_energy-aliq-rank.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13140_energy-aliq-rank\\QM5_13140_energy-aliq-rank.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13140_energy-aliq-rank\\SPEC.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13140_energy-aliq-rank\\basket_manifest.json",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13140_energy-aliq-rank_card.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_13140_energy-aliq-rank_card.md",
+  "canonical_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\energy-aliq-rank_card.md",
+  "source_packet_path": "C:\\QM\\repo\\strategy-seeds\\sources\\YIYI-ALIQ-2025\\source.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13140_energy-aliq-rank\\sets\\QM5_13140_energy-aliq-rank_QM5_13140_XTI_XNG_ALIQ_D1_D1_backtest.set"
+  ],
+  "magic_base": 131400000,
+  "magic": [
+    {
+      "slot": 0,
+      "symbol": "XTIUSD.DWX",
+      "magic": 131400000,
+      "registry_status": "active"
+    },
+    {
+      "slot": 1,
+      "symbol": "XNGUSD.DWX",
+      "magic": 131400001,
+      "registry_status": "active"
+    }
+  ],
+  "registry_validation": {
+    "ea_id_row": "13140,energy-aliq-rank,YIYI-ALIQ-2025_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-11",
+    "magic_rows": [
+      "13140,energy-aliq-rank,0,XTIUSD.DWX,131400000,2026-07-11,Development,active",
+      "13140,energy-aliq-rank,1,XNGUSD.DWX,131400001,2026-07-11,Development,active"
+    ],
+    "resolver_contains_ea": true,
+    "resolver_rows_kept": 14873,
+    "magic_registry_sha256": "7BA7584C9858C45111A89680D25627DADC2F0916CDB80D5A3D700141F1AAE30D",
+    "resolver_file_sha256": "47A3C717E2BA3011D9E2B6C8D43F3A1BDE4F41501869B0F6D6B57EE78AE4050D",
+    "note": "Resolver was generated from the staged registry, preserving the pre-existing QM5_13122 row and dropping only the three historical missing-directory IDs 1001, 1015, and 1016."
+  },
+  "mq5_sha256": "AAE0E65EFF3EAF72EACF1CD2D3BE41CEC38426AD725E95EADB653B13FFF60DE3",
+  "ex5_sha256": "304278EFEE71B059272899365B70A63C1B2C22F1D7A748A19F69FE17197D09AA",
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log": "C:\\QM\\worktrees\\codex-13140-index-20260711-0924\\framework\\build\\compile\\20260711_092610\\QM5_13140_energy-aliq-rank.compile.log",
+  "compile_summary": "D:\\QM\\reports\\compile\\20260711_092610\\summary.csv",
+  "compile_reproducibility": "PASS_CLEAN_STAGED_RESOLVER",
+  "build_check_passed": true,
+  "build_check_failures": 0,
+  "build_check_warnings": 0,
+  "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260711_092034.json",
+  "spec_validation": "PASS",
+  "guardrail_validation": "PASS",
+  "symbol_scope_validation": "BASKET_OK",
+  "card_schema_validation": "PASS",
+  "g0_card_validation": "PASS",
+  "setfile_build_hash": "aae0e65eff3eaf72eacf1cd2d3be41cec38426ad725e95eadb653b13fff60de3",
+  "setfile_sha256": "3EFB6EFA0FA6F3D013D7485F7ACDE64B5CC4C1C55C3E648DF1484A9D082B4FE8",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Build-only workflow and paced Q02 enqueue requested; no manual MT5 tester, dispatch tick, worker tick, or backtest was started.",
+  "blocked_reason": null,
+  "open_questions": [
+    "The source uses exchange dollar volume; MT5 tick volume is only an activity proxy and is the primary Q02 kill risk.",
+    "The source validates top and bottom 30 percent portfolios across 34 commodity futures, not a two-traded-leg continuous-CFD carrier.",
+    "The source's ALIQ one-way sort is positive, but ALIQ is not significant in its IPCA specification; no IPCA machinery is implemented.",
+    "Realized portfolio orthogonality is unclaimed until a later portfolio gate measures it."
+  ],
+  "validations": {
+    "dedup": "CLEAN",
+    "card_schema": "PASS",
+    "g0_card": "PASS",
+    "spec_doc": "PASS",
+    "build_guardrails": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "strict_compile": "PASS_0_ERRORS_0_WARNINGS",
+    "build_check": "PASS_0_FAILURES_0_WARNINGS",
+    "risk_mode": "PASS"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1,
+    "package_allocation": "equal fixed-risk halves"
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "reputable_primary_source": true,
+    "risk_balanced_long_short_basket": true,
+    "market_neutral_claimed": false,
+    "manual_backtest_cpu_used": false
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false
+  },
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_13140",
+    "enqueued": [
+      {
+        "work_item_id": "c0a7b2d3-2134-4334-b118-abf5c0986b0e",
+        "symbol": "QM5_13140_XTI_XNG_ALIQ_D1",
+        "host_symbol": "XTIUSD.DWX",
+        "timeframe": "D1",
+        "status": "pending",
+        "setfile": "QM5_13140_energy-aliq-rank_QM5_13140_XTI_XNG_ALIQ_D1_D1_backtest.set",
+        "enqueued_at": "2026-07-11T09:29:06+00:00"
+      }
+    ],
+    "skipped": []
+  },
+  "q02": {
+    "phase": "Q02",
+    "work_item_id": "c0a7b2d3-2134-4334-b118-abf5c0986b0e",
+    "status_at_handoff": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "symbol": "QM5_13140_XTI_XNG_ALIQ_D1",
+    "host_symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13140_energy-aliq-rank\\sets\\QM5_13140_energy-aliq-rank_QM5_13140_XTI_XNG_ALIQ_D1_D1_backtest.set",
+    "risk_payload": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "enqueued_at_utc": "2026-07-11T09:29:06+00:00",
+    "note": "Auto-enqueued by farmctl record-build as one logical basket. No manual dispatch, tester, worker tick, or backtest was started."
+  },
+  "file_hashes_sha256": {
+    "mq5": "AAE0E65EFF3EAF72EACF1CD2D3BE41CEC38426AD725E95EADB653B13FFF60DE3",
+    "ex5": "304278EFEE71B059272899365B70A63C1B2C22F1D7A748A19F69FE17197D09AA",
+    "spec": "15E16BCD2251680ADAEABD9BF48FC6C38634DC5F8639F7D1E5F3B7FF7068D3E6",
+    "basket_manifest": "E1C04E7F27B0C226649C3B48D3470B3553E5786043627E275768D0D284F6AB6A",
+    "setfile": "3EFB6EFA0FA6F3D013D7485F7ACDE64B5CC4C1C55C3E648DF1484A9D082B4FE8",
+    "canonical_card": "9EB16B4E7CFF7535DB90EFA403146987151FDBDFC37EA01D13F714B7A245850A",
+    "approved_card": "8DB1D009A5D029D5C1A2581E18576EE319A2C52F83CED6430A7CCE8C9ABFCEA8",
+    "source_packet": "EB8D48BA2F04350634370358961686F24E7842AF09CBE30614FC001452558B85",
+    "resolver": "47A3C717E2BA3011D9E2B6C8D43F3A1BDE4F41501869B0F6D6B57EE78AE4050D"
+  }
+}
