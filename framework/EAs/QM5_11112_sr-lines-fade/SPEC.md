@@ -110,3 +110,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-17 | Initial build from card | board-advisor build |
+| v2 | 2026-07-11 | Q02 infrastructure recovery | Explicitly initialize entry slot/expiry, keep management and hard exits active through entry blackouts, and reject wrong-side structural targets |

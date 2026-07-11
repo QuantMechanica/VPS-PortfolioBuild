@@ -201,6 +201,11 @@ bool Strategy_NoTradeFilter()
 // structural state advanced by AdvanceState_OnNewBar earlier this tick.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   // Keep the request self-contained even when this EA is compiled against a
+   // framework revision that predates QM_EntryRequest's default constructor.
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -244,11 +249,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       sl = QM_StopRulesNormalizePrice(_Symbol, sl);
       if(sl <= 0.0 || sl >= entry)
          return false;
+      const double tp = QM_StopRulesNormalizePrice(_Symbol, g_level_above);
+      if(tp <= entry)
+         return false;
 
       req.type   = QM_BUY;
       req.price  = 0.0;   // framework fills market price at send
       req.sl     = sl;
-      req.tp     = QM_StopRulesNormalizePrice(_Symbol, g_level_above); // target = opposite level
+      req.tp     = tp; // target = opposite level
       req.reason = "sr_fade_long";
       return true;
      }
@@ -267,11 +275,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       sl = QM_StopRulesNormalizePrice(_Symbol, sl);
       if(sl <= 0.0 || sl <= entry)
          return false;
+      const double tp = QM_StopRulesNormalizePrice(_Symbol, g_level_below);
+      if(tp <= 0.0 || tp >= entry)
+         return false;
 
       req.type   = QM_SELL;
       req.price  = 0.0;
       req.sl     = sl;
-      req.tp     = QM_StopRulesNormalizePrice(_Symbol, g_level_below); // target = opposite level
+      req.tp     = tp; // target = opposite level
       req.reason = "sr_fade_short";
       return true;
      }
@@ -299,7 +310,7 @@ bool Strategy_ExitSignal()
       return false;
 
    const int    bar_secs = PeriodSeconds(_Period);
-   const datetime now_bar = iTime(_Symbol, _Period, 0); // current (forming) bar open time
+   const datetime now_bar = iTime(_Symbol, _Period, 0); // perf-allowed: one forming-bar timestamp for the bounded structural time stop.
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
@@ -384,21 +395,10 @@ void OnTick()
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
-   if(Strategy_NoTradeFilter())
-      return;
-
+   // Management and hard exits must remain active during entry blackouts.
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -418,12 +418,27 @@ void OnTick()
    if(!QM_IsNewBar())
       return;
 
-   // First per-closed-bar work: advance cached structural levels.
+   // Advance structural state on every closed bar, including bars where a new
+   // entry is later blocked by spread or news controls.
    AdvanceState_OnNewBar();
 
    QM_EquityStreamOnNewBar();
 
+   // Spread and news controls gate entries only.
+   if(Strategy_NoTradeFilter())
+      return;
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;

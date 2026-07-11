@@ -1,0 +1,122 @@
+{
+  "mission_unit": "priority_2_diverse_fx_q02_stale_binary_recovery",
+  "timestamp_utc": "2026-07-11T10:11:38.613960+00:00",
+  "agent": "codex:agents/board-advisor",
+  "branch": "agents/board-advisor",
+  "selection": {
+    "ea_id": "QM5_11112",
+    "label": "QM5_11112_sr-lines-fade",
+    "reason": "Highest-value collision-free structural recovery after ten-FX candidates were excluded for missing allocation, an existing repair, an open Q02 cohort, or a competing farm task.",
+    "preclaim_state": {
+      "terminal_q02_infra_fail_rows": 48,
+      "economic_q02_verdict_rows": 0,
+      "open_q02_rows": 0,
+      "q03_or_later_rows": 0,
+      "nonterminal_agent_tasks": 0
+    }
+  },
+  "farm_claim": {
+    "agent_task_id": "66870ba5-b818-4507-b727-7ed41e61a532",
+    "claim_key": "manual:codex:agents/board-advisor:QM5_11112:q02-infra-recovery:20260711T100321Z",
+    "claimed_at_utc": "2026-07-11T10:03:21.160410+00:00",
+    "db_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_11112_q02_repair_claim_20260711T100321Z.sqlite",
+    "collision_guard": "No pending/active work item, downstream phase, economic verdict, or nonterminal agent task for QM5_11112."
+  },
+  "ea": {
+    "instrument_class": "forex_plus_metal",
+    "symbols": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "USDJPY.DWX",
+      "XAUUSD.DWX"
+    ],
+    "timeframe": "H1",
+    "mechanism": "fractal/ATR support-resistance rejection fade",
+    "source": "EarnForex, Support-and-Resistance-Lines public GitHub repository and MQL5 source",
+    "source_id": "0693c604-4f96-56ef-be79-15efe9f48b86",
+    "g0_status": "APPROVED",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "ml_used": false
+  },
+  "diagnosis": {
+    "prior_ex5_compiled_utc": "2026-06-17T18:08:38Z",
+    "prior_ex5_size_bytes": 240966,
+    "prior_ex5_sha256": "6E38F0BD059789BB98F3293B4083D70D7090E4EE4D1F3BB286AB609A606B2AC0",
+    "failure_evidence": "All 48 retained Q02 rows ended INFRA_FAIL with summary_missing_retries_exhausted and no economic verdict.",
+    "root_cause": "The deployed EX5 predates the 2026-07-06 QM_EntryRequest default-constructor fix, while this EA's source did not explicitly initialize symbol_slot or expiration_seconds. A signal could therefore send stack garbage into magic resolution. The EA also placed spread/news entry gates above position management and hard exits.",
+    "scope": "Package-local stale-binary and request-initialization repair; no shared framework or registry edit."
+  },
+  "repair": {
+    "changes": [
+      "Zero-initialize every QM_EntryRequest before signal evaluation.",
+      "Set req.symbol_slot to qm_magic_slot_offset and req.expiration_seconds to zero inside Strategy_EntrySignal.",
+      "Run position management and hard exits before entry-only spread/news gates.",
+      "Advance structural level state on every closed bar even when a later entry gate blocks trading.",
+      "Reject support/resistance targets that normalize to the wrong side of the market entry.",
+      "Refresh all four setfile build hashes while retaining slots 0-3, RISK_FIXED=1000, and RISK_PERCENT=0."
+    ],
+    "spec_validation": "PASS",
+    "build_guard": "PASS",
+    "strict_build_check": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260711_100532.json"
+    },
+    "clean_snapshot_compile": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "D:/QM/reports/compile/20260711_1006_qm5_11112_clean/QM5_11112_sr-lines-fade.compile.log",
+      "note": "Final EX5 compiled from a detached HEAD framework snapshot plus the repaired EA source, using relative QM includes so unrelated working-tree include edits were excluded."
+    },
+    "mq5_sha256": "1FC704D37C56AB045D1916E0A830A425D5EE97895371E619BE255076E11A0BB3",
+    "ex5_sha256": "93FD99666C7D803ABE026381DAD41D1DFC0FB14AD029CBF0264408F4606F8120",
+    "setfile_sha256": {
+      "EURUSD.DWX": "7966F118AB43AD75C6CEE77A0B322531BEC87D15C82E82A14D295760DE60A7B7",
+      "GBPUSD.DWX": "FF418F655F1BD7A627F6A6B6408F05823744A770A20278A99C2185ABE54B3646",
+      "USDJPY.DWX": "895BCB52E2BBBC51E33AB09CFBE06F0A3407F75779CA7FA77B2C8BEDF5C25A46",
+      "XAUUSD.DWX": "1F2366EA2A09D885547E0FB7403676A66DABB78F572020880CA053F965F17A1F"
+    }
+  },
+  "smoke": {
+    "result": "PASS",
+    "summary": "D:/QM/reports/smoke/QM5_11112/20260711_100916/summary.json",
+    "terminal": "T1",
+    "symbol": "EURUSD.DWX",
+    "period": "H1",
+    "year": 2024,
+    "model": 4,
+    "runs": 1,
+    "total_trades": 32,
+    "oninit_failure_detected": false,
+    "model4_log_marker_detected": true,
+    "profit_factor": 0.32,
+    "net_profit": -9861.08,
+    "max_equity_drawdown_pct": 13.20,
+    "interpretation": "Runtime/build smoke only. The weak one-year economics are not promoted as evidence of edge quality; Q02 owns that decision."
+  },
+  "q02_handoff": {
+    "work_item_id": "5f08fb95-cf8b-4378-b8eb-6aec56005367",
+    "symbol": "EURUSD.DWX",
+    "timeframe": "H1",
+    "status": "pending",
+    "attempt_count": 0,
+    "enqueued_at_utc": "2026-07-11T10:11:38.613960+00:00",
+    "db_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_11112_q02_enqueue_20260711T101138Z.sqlite",
+    "duplicate_guard": "Exactly one pending/active QM5_11112 row after insertion.",
+    "bounded_cost_reason": "Only the smoke-validated EURUSD carrier was queued; the other three approved carriers remain unqueued until Q02 supplies an economic verdict.",
+    "factory_off_at_enqueue": true
+  },
+  "cpu_and_safety": {
+    "pre_smoke_db_active_rows": 3,
+    "pre_smoke_metatester_processes": 1,
+    "backtest_cpu_ceiling_hit": false,
+    "manual_smoke_retries": 0,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
