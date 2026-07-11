@@ -32,7 +32,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
+pipeline_phase: Q02
 review_focus: "Falsify whether the source's lower-tail risk characteristic survives as a monthly opposite-side XTI/XNG carrier. It adds downside-tail compensation rather than index, metal, RSI, trend, or seasonality exposure; realized book orthogonality is unclaimed until Q09."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -258,15 +258,15 @@ portfolio admission, or portfolio KPI path is authorized.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-11 | initial monthly XTI/XNG expected-shortfall basket | Q01 | BUILDING |
+| v1 | 2026-07-11 | initial monthly XTI/XNG expected-shortfall basket | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-11 | APPROVED by OWNER mission directive | this card |
-| Q01 Build Validation | 2026-07-11 | BUILDING | pending |
-| Q02 Baseline Screening | TBD | TBD | TBD |
+| Q01 Build Validation | 2026-07-11 | PASS: clean staged resolver; strict compile and build check 0/0 | artifacts/qm5_13143_build_result.json |
+| Q02 Baseline Screening | 2026-07-11 | ENQUEUED: pending, attempt 0 | docs/ops/evidence/2026-07-11_qm5_13143_energy_es_rank_q02_enqueue.md |
 
 ## Lessons Captured
 
