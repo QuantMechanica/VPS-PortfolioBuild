@@ -15,8 +15,8 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
 input int    qm_news_stale_max_hours      = 336;
 input string qm_news_min_impact           = "high";
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
@@ -37,7 +37,8 @@ input int    strategy_atr_period         = 14;
 input double strategy_atr_sl_mult        = 2.0;
 input double strategy_min_deviation_pct  = 0.0;
 
-int g_last_hp_signal = 0;
+int  g_last_hp_signal = 0;
+bool g_hp_signal_valid = false;
 
 void ResetEntryRequest(QM_EntryRequest &req)
   {
@@ -217,36 +218,6 @@ bool GetOurPosition(ENUM_POSITION_TYPE &position_type, ulong &ticket)
    return false;
   }
 
-bool ClosePositionsNotMatchingSignal(const int signal)
-  {
-   bool all_ok = true;
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      const bool long_position = (position_type == POSITION_TYPE_BUY);
-      const bool signal_still_matches = (signal > 0 && long_position) || (signal < 0 && !long_position);
-      if(signal_still_matches)
-         continue;
-
-      if(!QM_TM_ClosePosition(ticket, QM_EXIT_OPPOSITE_SIGNAL))
-         all_ok = false;
-     }
-
-   return all_ok;
-  }
-
 bool Strategy_NoTradeFilter()
   {
    if(_Period != PERIOD_D1)
@@ -258,13 +229,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    ResetEntryRequest(req);
 
-   int signal = 0;
-   if(!CalculateHPTrendSignal(signal))
+   if(!g_hp_signal_valid)
       return false;
-   g_last_hp_signal = signal;
 
-   if(!ClosePositionsNotMatchingSignal(signal))
-      return false;
+   const int signal = g_last_hp_signal;
    if(signal == 0)
       return false;
 
@@ -298,13 +266,16 @@ void Strategy_ManageOpenPosition()
 
 bool Strategy_ExitSignal()
   {
-   if(g_last_hp_signal == 0)
+   if(!g_hp_signal_valid)
       return false;
 
    ENUM_POSITION_TYPE position_type;
    ulong ticket = 0;
    if(!GetOurPosition(position_type, ticket))
       return false;
+
+   if(g_last_hp_signal == 0)
+      return true;
 
    const bool long_position = (position_type == POSITION_TYPE_BUY);
    if(long_position && g_last_hp_signal <= 0)
@@ -354,6 +325,43 @@ void OnTick()
    if(!QM_KillSwitchCheck())
       return;
 
+   if(QM_FrameworkHandleFridayClose())
+      return;
+
+   if(Strategy_NoTradeFilter())
+      return;
+
+   // Consume the D1 edge once. The expensive HP solve and all strategy exits
+   // share this cached closed-bar state, so news can gate entries without ever
+   // suspending position management or reversal exits.
+   const bool new_d1_bar = QM_IsNewBar(_Symbol, PERIOD_D1);
+   if(new_d1_bar)
+     {
+      int next_signal = 0;
+      g_hp_signal_valid = CalculateHPTrendSignal(next_signal);
+      if(g_hp_signal_valid)
+         g_last_hp_signal = next_signal;
+      QM_EquityStreamOnNewBar();
+     }
+
+   Strategy_ManageOpenPosition();
+
+   if(new_d1_bar && Strategy_ExitSignal())
+     {
+      const int magic = QM_FrameworkMagic();
+      for(int i = PositionsTotal() - 1; i >= 0; --i)
+        {
+         const ulong ticket = PositionGetTicket(i);
+         if(!PositionSelectByTicket(ticket))
+            continue;
+         if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+            continue;
+         if(PositionGetInteger(POSITION_MAGIC) != magic)
+            continue;
+         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+        }
+     }
+
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
@@ -363,34 +371,8 @@ void OnTick()
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
    else
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
+   if(!news_allows || !new_d1_bar || !g_hp_signal_valid)
       return;
-   if(QM_FrameworkHandleFridayClose())
-      return;
-
-   if(Strategy_NoTradeFilter())
-      return;
-
-   Strategy_ManageOpenPosition();
-
-   if(Strategy_ExitSignal())
-     {
-      const int magic = QM_FrameworkMagic();
-      for(int i = PositionsTotal() - 1; i >= 0; --i)
-        {
-         const ulong ticket = PositionGetTicket(i);
-         if(!PositionSelectByTicket(ticket))
-            continue;
-         if(PositionGetInteger(POSITION_MAGIC) != magic)
-            continue;
-         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
-        }
-     }
-
-   if(!QM_IsNewBar())
-      return;
-
-   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))

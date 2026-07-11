@@ -3,32 +3,37 @@
 ; ea_id:        12357
 ; ea_slug:      tmom-fx-hp
 ; ea_version:   v5.0
-; set_version:  s20260618-001
+; set_version:  s20260711-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   ea7acdf81ed0c42e4d2148b1a673e7eee12b65bd8b749a879ce5b65cf33547d8
 ; author:       Development
-; date:         2026-06-18
+; date:         2026-07-11
 ;==========================================================
+qm_ea_id=12357
 qm_magic_slot_offset=4
-RISK_FIXED=1000
+qm_rng_seed=42
 RISK_PERCENT=0
+RISK_FIXED=1000
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12357_tmom-fx-hp.md
+strategy_hp_lambda=1600.0
+strategy_hp_lookback=100
+strategy_slope_lag=4
+strategy_warmup_bars=130
+strategy_atr_period=14
+strategy_atr_sl_mult=2.0
+strategy_min_deviation_pct=0.0
