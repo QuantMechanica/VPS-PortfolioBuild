@@ -1,0 +1,176 @@
+{
+  "timestamp_utc": "2026-07-11T18:48:45.043509+00:00",
+  "unit_of_work": "priority_2_diverse_fx_q02_infrastructure_recovery",
+  "branch": "agents/board-advisor",
+  "agent": "codex:agents/board-advisor",
+  "commit": "this evidence commit",
+  "selection": {
+    "mission_priority": 2,
+    "priority_1_result": "No unbuilt approved card with a faithful repository target remained in the audited approved-card backlog.",
+    "approved_card_ids_audited": 2974,
+    "approved_ids_without_ea_directory": 0,
+    "ea_id": "QM5_11400",
+    "ea_label": "QM5_11400_davey-big-range-momentum-d1",
+    "instrument_class": "forex",
+    "symbols_recovered": [
+      "AUDUSD.DWX",
+      "GBPUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "timeframe": "D1",
+    "diversity_rationale": "Restores an FX candidate while current Q08 FAIL_SOFT survivors are concentrated in indices, metals, and energy."
+  },
+  "source_status": {
+    "approved_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11400_davey-big-range-momentum-d1.md",
+    "source_citation": "Kevin J. Davey, My 5 Favorite Entries, Entry #1: Momentum and Big Range",
+    "g0_status": "APPROVED",
+    "r1_track_record": "PASS",
+    "r2_mechanical": "PASS",
+    "r3_data_available": "PASS",
+    "r4_ml_forbidden": "PASS",
+    "expected_trades_per_year_per_symbol": 12,
+    "structural_edge": "Completed D1 range exceeds its trailing mean plus two standard deviations, confirmed by close-direction momentum and managed with ATR brackets.",
+    "ml_used": false
+  },
+  "claim": {
+    "agent_task_id": "20285037-c663-40c9-bb3e-d8d3eb42d3dd",
+    "lease_key": "manual:codex:agents/board-advisor:QM5_11400:q02-infra-recovery",
+    "claimed_at_utc": "2026-07-11T18:40:50.790210+00:00",
+    "claim_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_11400_q02_recovery_20260711T184050Z.sqlite",
+    "collision_guard": "Selected rows were exact failed/INFRA_FAIL attempt-2 rows, unclaimed, with no open EA row, competing active task, behavioral Q02 verdict, or downstream carrier row."
+  },
+  "prior_failure": {
+    "phase": "Q02",
+    "status": "failed",
+    "verdict": "INFRA_FAIL",
+    "attempt_count": 2,
+    "reported_failure": "summary_missing_retries_exhausted",
+    "surviving_selected_worker_logs": false,
+    "surviving_selected_summaries": false,
+    "behavioral_failure_detected_for_selected_symbols": false,
+    "same_ea_real_q02_proof": {
+      "work_item_id": "8b0e4343-c78d-4cee-b0d4-fe52beb7e1e1",
+      "symbol": "EURUSD.DWX",
+      "summary": "D:/QM/reports/work_items/8b0e4343-c78d-4cee-b0d4-fe52beb7e1e1/QM5_11400/20260624_145513/summary.json",
+      "result": "PASS",
+      "model": 4,
+      "real_ticks_marker_detected": true,
+      "oninit_failure_detected": false,
+      "total_trades": 72,
+      "min_trades_required": 60,
+      "profit_factor": 0.73
+    }
+  },
+  "repair": {
+    "source_logic_changed": false,
+    "clean_worktree_head": "a964c4270",
+    "strict_recompile": true,
+    "setfile_build_hashes_synchronized": true,
+    "setfile_contract": {
+      "risk_mode": "RISK_FIXED",
+      "risk_fixed": 1000,
+      "risk_percent": 0
+    },
+    "sha256": {
+      "mq5_source": "1B9CB377059AE04BC80A2BCA8FB529860E181369E68C16B7D120CC72FA6AEAF6",
+      "spec": "A42D930FB094028307B6BF6569EEC12B2914FC77875736DFA28F2CF13BC713F6",
+      "ex5_before": "515EFA6EECE6A0BB0C8D53EC81977CF33240EE3717F467CA83A4133184370E7A",
+      "ex5_after": "F35B73E2BDDEBA4B7DAB3BD5723A5D19EEE1233FE483A58C6B992C394E26573F",
+      "compile_log": "F95077069196B70F4FCCDDFF4B4E74D8B0913D9E64272C48ACB0914AFA75F0A4",
+      "setfiles": {
+        "AUDUSD.DWX": "837AE6556D7A033D0CB73012A9082BF0902D4134492608CED4E4A5BCD2B7EC46",
+        "GBPUSD.DWX": "E27D22CEB5310454538B1C8401D27034F18AD41BFCA465B675063903040F25A5",
+        "USDJPY.DWX": "442EA1AB24DC1531150732A44BAA7C8CB7FE462FE6887AE23126A7753358985C"
+      }
+    },
+    "setfile_build_hashes": {
+      "AUDUSD.DWX": "5240f904ebddef8ebbe7afd3da50485babccce56e700b36ff00ae2c4b89f34b3",
+      "EURUSD.DWX": "1f9c81bd3720b72127a0bcd63cdffead42c3060a48a9a9639f2fc15428a761e2",
+      "GBPUSD.DWX": "bdc0079274ef3fc4bc7cd37b5181b63fcce661b6cc756038ed9d5058d71c3995",
+      "USDJPY.DWX": "ba394fe7e86041f5980922b10baaf8a59f9d63cc9fbd224b497e7c9b961cb465"
+    }
+  },
+  "validation": {
+    "build_guardrails": {
+      "result": "PASS",
+      "findings": 0
+    },
+    "build_check": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 1,
+      "report": "D:/QM/reports/framework/21/build_check_20260711_185325.json",
+      "advisory": "EA_PERF_UNGATED_BAR_DATA at QM5_11400_davey-big-range-momentum-d1.mq5:136"
+    },
+    "strict_compile": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "summary": "D:/QM/reports/compile/20260711_qm5_11400_recovery/20260711_184251/summary.csv",
+      "log": "D:/QM/reports/compile/20260711_qm5_11400_recovery/20260711_184251/QM5_11400_davey-big-range-momentum-d1.compile.log"
+    },
+    "backtest": {
+      "result": "NOT_RUN_FACTORY_OFF",
+      "cpu_added": false
+    }
+  },
+  "requeue": {
+    "timestamp_utc": "2026-07-11T18:48:45.043509+00:00",
+    "action": "reset_three_existing_q02_infra_rows_in_place",
+    "new_rows_inserted": 0,
+    "database_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_11400_fx_q02_requeue_20260711T184845Z.sqlite",
+    "work_items": {
+      "AUDUSD.DWX": {
+        "id": "87be4bef-f7d1-41a1-99e0-bb8661b4a3f6",
+        "status_after": "pending",
+        "attempt_count_after": 0,
+        "claimed_by_after": null,
+        "verdict_after": null
+      },
+      "GBPUSD.DWX": {
+        "id": "a9dafc08-65e5-4594-8c7a-23b23033bf02",
+        "status_after": "pending",
+        "attempt_count_after": 0,
+        "claimed_by_after": null,
+        "verdict_after": null
+      },
+      "USDJPY.DWX": {
+        "id": "47816a7b-eee2-43d9-b068-f890fc238a43",
+        "status_after": "pending",
+        "attempt_count_after": 0,
+        "claimed_by_after": null,
+        "verdict_after": null
+      }
+    },
+    "queue_before": {
+      "active": 3,
+      "pending": 3662,
+      "done": 45972,
+      "failed": 46132
+    },
+    "queue_after": {
+      "active": 3,
+      "pending": 3665,
+      "done": 45972,
+      "failed": 46129
+    }
+  },
+  "runtime": {
+    "factory_off": true,
+    "factory_off_since_utc": "2026-07-10T17:25:52Z",
+    "existing_process_snapshot": {
+      "metatester64": 3,
+      "terminal64": 6
+    },
+    "manual_backtest_started": false,
+    "terminal_or_tester_interrupted": false,
+    "dispatch_attempted": false
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "live_setfile_touched": false
+  }
+}
