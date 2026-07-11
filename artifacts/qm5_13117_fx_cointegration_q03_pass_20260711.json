@@ -1,0 +1,146 @@
+{
+  "artifact_type": "fx_cointegration_q03_pass",
+  "branch": "agents/board-advisor",
+  "created_at_utc": "2026-07-11T09:45:22Z",
+  "ea_id": "QM5_13117",
+  "expert": "QM5_13117_eurgbp-audjpy",
+  "logical_symbol": "QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1",
+  "pair": [
+    "EURGBP.DWX",
+    "AUDJPY.DWX"
+  ],
+  "selection": {
+    "action": "advance_existing_forex_card",
+    "reason": "The strict sign-aware 66-pair frontier contains seven qualifying rows and every row already has an approved card and EA folder; creating another pair would duplicate the built frontier or weaken the documented source threshold.",
+    "anchor_status": {
+      "QM5_12532": "Q02 PASS, Q04 PASS, Q05 FAIL; no open ONINIT or NO_HISTORY Q02 blocker",
+      "QM5_12533": "Q02 PASS, Q04 FAIL; no open ONINIT or NO_HISTORY Q02 blocker"
+    },
+    "strict_sign_aware_rows": [
+      {
+        "pair": "GBPUSD/USDCAD",
+        "ea_id": "QM5_12978",
+        "built": true
+      },
+      {
+        "pair": "EURJPY/GBPJPY",
+        "ea_id": "QM5_12533",
+        "built": true
+      },
+      {
+        "pair": "AUDUSD/NZDUSD",
+        "ea_id": "QM5_12532",
+        "built": true
+      },
+      {
+        "pair": "USDCAD/NZDUSD",
+        "ea_id": "QM5_13003",
+        "built": true
+      },
+      {
+        "pair": "AUDUSD/EURGBP",
+        "ea_id": "QM5_13106",
+        "built": true
+      },
+      {
+        "pair": "EURGBP/AUDJPY",
+        "ea_id": "QM5_13117",
+        "built": true
+      },
+      {
+        "pair": "USDJPY/EURAUD",
+        "ea_id": "QM5_13119",
+        "built": true
+      }
+    ],
+    "scan_command": "python framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+    "scan_metrics": {
+      "dev_net_sharpe": 0.416833593,
+      "oos_net_sharpe": 0.8918614046,
+      "oos_return_pct": 4.475153414,
+      "oos_state_changes": 20,
+      "fixed_beta": -0.12202869296345396,
+      "half_life_days": 36.83805248
+    }
+  },
+  "build_preflight": {
+    "repair_commit": "72237d508",
+    "mq5_sha256": "14ddccb7ac7fe8b1c1e9cec4c6a59c7045481de99f15e1728fb38a76cfe6bcd1",
+    "ex5_sha256": "aa8ff930a973632b0dbd9b2694ccf20869f441a4fa7c9eac670339800eb199ef",
+    "basket_manifest_sha256": "e8d1fcf2e2b5cd96258b4c4aef496871c54f247ad671e449a3d2f92a2d186387",
+    "setfile_sha256": "c584bcf5b274ae293ebd0ea60ba9ba7ea0ca5a4afda09da2fb50423322531b83",
+    "setfile_build_hash": "4d9aee1701ea38dfa655d983b803ecaba51d6d7f0cd2bef59547b53b63f085d3",
+    "basket_symbols": [
+      "EURGBP.DWX",
+      "AUDJPY.DWX",
+      "GBPUSD.DWX",
+      "USDJPY.DWX"
+    ]
+  },
+  "risk_contract": {
+    "environment": "backtest",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "q03": {
+    "work_item_id": "dc01fd4d-0f8f-414a-a6b1-80441204fefc",
+    "parent_task_id": "caf51649-e9fa-4db9-ba79-53632a514992",
+    "status": "done",
+    "verdict": "PASS",
+    "terminal": "T3",
+    "started_at_utc": "2026-07-11T08:19:56Z",
+    "completed_at_utc": "2026-07-11T09:44:03Z",
+    "from_date": "2018.07.02",
+    "to_date": "2022.12.31",
+    "model": 4,
+    "period": "D1",
+    "requested_runs": 2,
+    "attempted_runs": 2,
+    "non_ok_attempts": 0,
+    "deterministic": true,
+    "minimum_trades": 25,
+    "oninit_failure_detected": false,
+    "real_ticks_marker_detected": true,
+    "log_bomb_detected": false,
+    "total_trades_each_run": 112,
+    "profit_factor_each_run": 1.46,
+    "net_profit_each_run": 4991.52,
+    "drawdown_each_run": 3049.81,
+    "drawdown_pct_each_run": 2.86,
+    "report_size_bytes_each_run": 267090,
+    "run_01_duration": "00:39:19.918",
+    "run_02_duration": "00:44:23.850",
+    "evidence_path": "D:/QM/reports/work_items/dc01fd4d-0f8f-414a-a6b1-80441204fefc/QM5_13117/20260711_081957/summary.json",
+    "parent_surviving_symbols": [
+      "QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1"
+    ],
+    "q04_rows_created": 0,
+    "duplicate_q03_rows_created": false
+  },
+  "capacity": {
+    "factory_off_flag_present_after_run": true,
+    "observed_maximum_factory_terminals_including_target": 3,
+    "backtest_cpu_ceiling": 7,
+    "cpu_ceiling_reached": false,
+    "target_terminal_running_after_run": false,
+    "additional_mission_backtests_started": 0
+  },
+  "database": {
+    "quick_check": "ok",
+    "q03_open_rows_after_run": 0,
+    "q03_done_pass_rows_for_logical_symbol": 1,
+    "q04_rows_for_ea": 0
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "ml_or_banned_indicator_added": false
+  }
+}
