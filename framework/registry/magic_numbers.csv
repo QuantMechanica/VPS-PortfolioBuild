@@ -15010,3 +15010,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13146,energy-vov,1,XNGUSD.DWX,131460001,2026-07-11,Development,active
 13147,energy-jumpbeta,0,XTIUSD.DWX,131470000,2026-07-11,Development,active
 13147,energy-jumpbeta,1,XNGUSD.DWX,131470001,2026-07-11,Development,active
+13148,energy-rank-lmh,0,XTIUSD.DWX,131480000,2026-07-11,Development,active
+13148,energy-rank-lmh,1,XNGUSD.DWX,131480001,2026-07-11,Development,active

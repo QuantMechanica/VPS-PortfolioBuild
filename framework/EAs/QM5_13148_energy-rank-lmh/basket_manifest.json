@@ -1,0 +1,16 @@
+{
+  "logical_symbol": "QM5_13148_XTI_XNG_RANK_LMH_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "Logical two-leg XTI/XNG fixed-origin normalized-price rank basket from approved card FERNHOLZ-KOCH-RANK-2016_XTI_XNG_S01. Run on XTIUSD.DWX D1; at the first tradable bar of every broker month, normalize each latest completed close to its own close at the locked common 2017-01-03 origin, require a common anchor and endpoint plus at least 20 post-anchor bars, buy the lower normalized-price leg, short the higher leg, and evaluate the package rather than standalone legs. The source uses 30 daily-rebalanced collateralized futures; the two-CFD narrowing, monthly cadence, fixed-origin dependence, continuous-CFD basis, financing, gaps, and legging are binding Q02 falsification risks."
+  ]
+}
