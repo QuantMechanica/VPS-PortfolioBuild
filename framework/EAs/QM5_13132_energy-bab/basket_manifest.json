@@ -1,0 +1,16 @@
+{
+  "logical_symbol": "QM5_13132_XTI_XNG_BAB_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "Logical two-leg XTI/XNG betting-against-beta basket from approved card FRAZZINI-BAB-2014_XTI_XNG_S01. Run on XTIUSD.DWX D1 and evaluate the paired package rather than standalone legs. At each broker-month transition, estimate shrunk one-year Dimson betas against an inverse-volatility two-energy benchmark, buy lower beta, sell higher beta, and reject excessive post-rounding beta mismatch. Q02 is a strict two-CFD carrier falsification; no source performance or portfolio admission is claimed."
+  ]
+}
