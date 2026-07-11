@@ -1,0 +1,136 @@
+{
+  "artifact_type": "fx_cointegration_framework_repair_q02_requeue",
+  "recorded_at_utc": "2026-07-11T05:14:34Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_13119",
+  "slug": "usdjpy-euraud",
+  "logical_symbol": "QM5_13119_USDJPY_EURAUD_COINTEGRATION_D1",
+  "selection": {
+    "mission_fallback_used": true,
+    "reason": "QM5_12532 and QM5_12533 both have a logical-basket Q02 PASS and are no longer blocked by ONINIT or NO_HISTORY. Every strict row from the sign-aware 66-pair extension is already built, so creating another card would duplicate the scan. The mission therefore authorizes advancing an existing forex card.",
+    "strict_rows_built": [
+      "QM5_12978 GBPUSD.DWX/USDCAD.DWX",
+      "QM5_12533 EURJPY.DWX/GBPJPY.DWX",
+      "QM5_12532 AUDUSD.DWX/NZDUSD.DWX",
+      "QM5_13003 USDCAD.DWX/NZDUSD.DWX",
+      "QM5_13106 AUDUSD.DWX/EURGBP.DWX",
+      "QM5_13117 EURGBP.DWX/AUDJPY.DWX",
+      "QM5_13119 USDJPY.DWX/EURAUD.DWX"
+    ],
+    "chosen_existing_sleeve": "QM5_13119 USDJPY.DWX/EURAUD.DWX",
+    "why_this_sleeve": "It is the final strict scan row and had a pending Q02 plus an unresolved mechanical build-review finding, so clearing that blocker is non-duplicate funnel work.",
+    "method_source": "Ernest P. Chan, Quantitative Trading (Wiley, 2009), Example 3.6 and Chapter 7",
+    "scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md plus analyze_cross_asset_v3.py --include-negative-hedges"
+  },
+  "pre_repair_q02": {
+    "work_item_id": "f8767f2f-4bcb-4b32-b857-cf9063b1c935",
+    "canonical_db_status": "done",
+    "canonical_db_verdict": "PASS",
+    "promotion_status": "PASS_SUPERSEDED",
+    "model": "real_ticks",
+    "period": "2018-07-02 through 2022-12-31",
+    "attempted_runs": 1,
+    "non_ok_attempts": 0,
+    "trades": 136,
+    "profit_factor": 1.06,
+    "net_profit": 954.43,
+    "max_drawdown": 3024.38,
+    "max_drawdown_pct": 2.91,
+    "oninit_failure_detected": false,
+    "log_bomb_detected": false,
+    "summary_path": "D:/QM/reports/work_items/f8767f2f-4bcb-4b32-b857-cf9063b1c935/QM5_13119/20260711_043425/summary.json",
+    "superseded_reason": "The tested binary predated the host-leg framework-routing repair and therefore cannot promote to Q03."
+  },
+  "framework_review": {
+    "build_task_id": "537f2dc1-b542-42d2-95a3-b6d72ddcd65d",
+    "review_task_id": "f78a8047-8437-4964-a9ba-7d170bfe9596",
+    "verdict": "FAIL",
+    "failed_section": "framework_corset",
+    "finding": "The USDJPY logical host reached QM_BasketOpenPosition instead of the mandatory reachable QM_TM_OpenPosition path."
+  },
+  "repair": {
+    "host_symbol_scope": "Strategy_IsHostSymbol now accepts only USDJPY.DWX, the manifest logical host.",
+    "host_order_path": "USDJPY.DWX is opened through QM_TM_OpenPosition with a temporarily normalized host package risk weight.",
+    "companion_order_path": "EURAUD.DWX remains a QM_BasketOpenPosition companion order with explicit normalized package-weight lots.",
+    "risk_context_restore": "The prior global risk configuration is restored after the host order attempt; an opened host is flattened if restoration fails.",
+    "conversion_history": "AUDUSD.DWX remains the EURAUD risk-sizing conversion dependency; EURUSD.DWX was added after the tester requested it for USD account-P/L conversion. Both are conversion-only and warmed before entry.",
+    "fixed_beta_changed": false,
+    "zscore_rules_changed": false,
+    "entry_threshold_changed": false,
+    "exit_threshold_changed": false,
+    "structural_only": true,
+    "ml_or_banned_indicator_added": false
+  },
+  "risk_contract": {
+    "environment": "backtest",
+    "risk_mode": "RISK_FIXED",
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1,
+    "package_split": "1:abs(beta), normalized across both legs"
+  },
+  "verification": {
+    "strict_compile": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "compile_isolation": "Detached clean worktree at C:/QM/worktrees/codex-13119-repair-20260711; semantic MQ5 diff against the main scoped patch was empty when ignoring line-ending whitespace.",
+    "compile_log": "C:/QM/worktrees/codex-13119-repair-20260711/framework/build/compile/20260711_050605/QM5_13119_usdjpy-euraud.compile.log",
+    "compile_summary": "D:/QM/reports/compile/20260711_050605/summary.csv",
+    "build_check": "PASS",
+    "build_check_failures": 0,
+    "build_check_warnings": 0,
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260711_050630.json",
+    "spec_validation": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "symbol_scope_violations": 0,
+    "basket_regression_tests": "17 passed",
+    "mq5_sha256": "7aacf8d12b90d3838c70d18984556df5060864c182281e31a1bafbac6a947f1",
+    "ex5_sha256": "a3988df814790762be229b84e3483ae460128f6e6a056a673a74edd544834a5e",
+    "spec_sha256": "a6d7156b6c0cb986334f1cf9e12b1192e227ca579bf1b65ef2ceed14fa4ff2f",
+    "manifest_sha256": "718150ded145287458aed5f0376ca5fe22377949cc00f2941f1a1604f59f6e90",
+    "card_mirror_sha256": "b9ac172ea3c2fdcbef0a36f484b5f433f0fa037163ab598bc52b97f721aadf74",
+    "setfile_sha256": "b4ad75aa7e65a22e57e384d1a7841880bac1bddc317d5c193bacc747be4750c4",
+    "setfile_build_hash": "f081167251a3130fe084abde2191f61cd658e378033f19b61c9d6fa1f8f1941d"
+  },
+  "repaired_q02": {
+    "work_item_id": "77ec9572-e064-44bd-a756-51647aa383b9",
+    "phase": "Q02",
+    "status": "pending",
+    "verdict": null,
+    "attempt_count": 0,
+    "claimed_by": null,
+    "created_at_utc": "2026-07-11T05:12:14+00:00",
+    "logical_symbol": "QM5_13119_USDJPY_EURAUD_COINTEGRATION_D1",
+    "basket_symbols": [
+      "USDJPY.DWX",
+      "EURAUD.DWX",
+      "AUDUSD.DWX",
+      "EURUSD.DWX"
+    ],
+    "traded_symbols": [
+      "USDJPY.DWX",
+      "EURAUD.DWX"
+    ],
+    "enqueue_source": "record_build_result.auto_q02",
+    "duplicate_or_skipped_rows": 0
+  },
+  "farm_state": {
+    "factory_off_flag_present": true,
+    "active_work_item_rows": 3,
+    "active_q02_rows": 3,
+    "paced_T1_to_T5_terminal_or_tester_processes": 0,
+    "cpu_ceiling_reached": false,
+    "repaired_q02_dispatched": false,
+    "database_integrity": "ok",
+    "pre_rework_database_backup": "D:/QM/strategy_farm/state/backups/farm_state_pre_qm5_13119_build_rework_20260711T051004Z.sqlite"
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false
+  }
+}

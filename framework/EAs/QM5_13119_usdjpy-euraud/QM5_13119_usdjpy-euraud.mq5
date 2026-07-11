@@ -61,7 +61,7 @@ int Strategy_SlotForSymbol(const string symbol)
 
 bool Strategy_IsHostSymbol()
   {
-   return (_Symbol == g_leg_usdjpy || _Symbol == g_leg_euraud);
+   return (_Symbol == g_leg_usdjpy);
   }
 
 bool Strategy_IsPairPosition()
@@ -78,11 +78,11 @@ bool Strategy_EnsureBasketScope()
    if(g_basket_scope_ready)
       return true;
 
-   // EURAUD settles outside the USD tester currency. Keep the
-   // manifest-declared AUD/USD conversion history in the same warmup scope
-   // so valuation is available before the first package entry.
-   string allowed[3] = {"USDJPY.DWX", "EURAUD.DWX", "AUDUSD.DWX"};
-   for(int i = 0; i < 3; ++i)
+   // EURAUD settles outside the USD tester currency. Risk sizing converts its
+   // AUD quote through AUDUSD, while MT5 account-P/L conversion requests
+   // EURUSD. Warm both manifest-declared routes before package entry.
+   string allowed[4] = {"USDJPY.DWX", "EURAUD.DWX", "AUDUSD.DWX", "EURUSD.DWX"};
+   for(int i = 0; i < 4; ++i)
       SymbolSelect(allowed[i], true);
 
    QM_SymbolGuardInit(allowed);
@@ -224,6 +224,57 @@ bool Strategy_OpenLeg(const string symbol,
 
    const int digits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
    const double stop_dist = strategy_atr_sl_mult * atr;
+   const double stop_price = QM_OrderTypeIsBuy(type)
+                             ? NormalizeDouble(entry - stop_dist, digits)
+                             : NormalizeDouble(entry + stop_dist, digits);
+
+   // The logical host must pass through the V5 Trade Manager. Temporarily
+   // scale the shared risk context to this leg's normalized package weight,
+   // then restore it before the companion leg is sized. This preserves one
+   // RISK_FIXED budget across the two-leg package.
+   if(symbol == _Symbol)
+     {
+      if(slot != qm_magic_slot_offset)
+         return false;
+
+      QM_EntryRequest host_req;
+      host_req.type = type;
+      host_req.price = 0.0;
+      host_req.sl = stop_price;
+      host_req.tp = 0.0;
+      host_req.reason = reason;
+      host_req.symbol_slot = slot;
+      host_req.expiration_seconds = 0;
+
+      const QM_RiskMode prior_mode = g_qm_risk_mode;
+      const double prior_percent = g_qm_risk_percent;
+      const double prior_fixed = g_qm_risk_fixed;
+      const double prior_weight = g_qm_risk_portfolio_weight;
+      const double prior_cap = g_qm_risk_per_trade_cap_money;
+      const double host_weight = prior_weight * risk_weight / risk_weight_sum;
+      if(!QM_RiskSizerConfigure(prior_mode,
+                                prior_percent,
+                                prior_fixed,
+                                host_weight,
+                                prior_cap))
+         return false;
+
+      ulong ticket = 0;
+      const bool opened = QM_TM_OpenPosition(host_req, ticket);
+      const bool restored = QM_RiskSizerConfigure(prior_mode,
+                                                   prior_percent,
+                                                   prior_fixed,
+                                                   prior_weight,
+                                                   prior_cap);
+      if(!restored)
+        {
+         if(opened)
+            Strategy_ClosePair(QM_EXIT_STRATEGY);
+         return false;
+        }
+      return opened;
+     }
+
    const double lots = Strategy_LotsForLeg(symbol, risk_weight, risk_weight_sum);
    if(lots <= 0.0)
       return false;
@@ -232,8 +283,7 @@ bool Strategy_OpenLeg(const string symbol,
    req.symbol = symbol;
    req.type = type;
    req.price = 0.0;
-   req.sl = QM_OrderTypeIsBuy(type) ? NormalizeDouble(entry - stop_dist, digits)
-                                    : NormalizeDouble(entry + stop_dist, digits);
+   req.sl = stop_price;
    req.tp = 0.0;
    req.lots = lots;
    req.reason = reason;

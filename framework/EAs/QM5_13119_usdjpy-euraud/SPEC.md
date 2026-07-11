@@ -4,7 +4,7 @@
 **Slug:** usdjpy-euraud  
 **Source:** SRC02_S10  
 **Author:** Codex  
-**Last revised:** 2026-07-10
+**Last revised:** 2026-07-11
 
 ## 1. Strategy Logic
 
@@ -18,6 +18,11 @@ sells both. Fixed risk is divided in `1:abs(beta)` weight. Every leg has a hard
 `2.0 * ATR(20, D1)` stop; failed partial entry or an orphaned leg triggers
 package cleanup. There is no adaptive beta, grid, martingale, averaging,
 pyramiding, partial exit, or trailing stop.
+
+The logical-host USDJPY entry is opened through `QM_TM_OpenPosition`; the
+EURAUD companion remains a basket order. The host's temporary normalized risk
+weight and the companion's explicit lot calculation therefore consume one
+shared `RISK_FIXED` package rather than one budget per leg.
 
 ## 2. Parameters
 
@@ -35,7 +40,8 @@ pyramiding, partial exit, or trailing stop.
 
 - USDJPY.DWX: logical host and traded spread numerator, magic slot 0.
 - EURAUD.DWX: traded beta-weighted leg, magic slot 1.
-- AUDUSD.DWX: USD tester conversion/history dependency only; never traded.
+- AUDUSD.DWX: EURAUD quote-currency risk conversion dependency; never traded.
+- EURUSD.DWX: MT5 account-P/L conversion dependency observed in Q02; never traded.
 - All other symbols are out of strategy scope.
 
 ## 4. Timeframe
@@ -46,8 +52,8 @@ pyramiding, partial exit, or trailing stop.
   EA may enter.
 - The newest closed spread is scored against the strictly preceding 60 closed
   spreads; it is not included in its own mean or standard-deviation estimate.
-- The EA selects and warms the manifest-declared AUDUSD.DWX conversion history
-  with the traded legs before the first package entry.
+- The EA selects and warms the manifest-declared AUDUSD.DWX and EURUSD.DWX
+  conversion histories with the traded legs before the first package entry.
 
 ## 5. Expected Behaviour
 
@@ -91,3 +97,4 @@ ATR hard stop on each leg.
 | v1 | 2026-07-10 | Initial build from approved card | 537f2dc1-b542-42d2-95a3-b6d72ddcd65d |
 | v2 | 2026-07-10 | Warm manifest-declared USD conversion history before Q02 | existing Q02 row preserved |
 | v3 | 2026-07-11 | Exclude the scored spread from its prior 60-bar z-score calibration window | existing Q02 row preserved |
+| v4 | 2026-07-11 | Route the logical host through the V5 trade manager, declare MT5's EURUSD account-P/L conversion history, and rebuild cleanly | repaired Q02 row `77ec9572-e064-44bd-a756-51647aa383b9` |

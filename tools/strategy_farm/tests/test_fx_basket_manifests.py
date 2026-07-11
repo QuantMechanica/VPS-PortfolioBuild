@@ -190,6 +190,20 @@ def test_qm5_13119_zscore_uses_strictly_prior_calibration_window() -> None:
     assert "g_spread_z = (spreads[0] - g_spread_mean) / g_spread_sd;" in source
 
 
+def test_qm5_13119_routes_host_through_trade_manager_and_declares_conversion_history() -> None:
+    ea_dir = REPO / "framework" / "EAs" / "QM5_13119_usdjpy-euraud"
+    source = (ea_dir / "QM5_13119_usdjpy-euraud.mq5").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    manifest = json.loads((ea_dir / "basket_manifest.json").read_text(encoding="utf-8-sig"))
+    declared = {manifest["host_symbol"], *manifest["basket_symbols"]}
+
+    assert "return (_Symbol == g_leg_usdjpy);" in source
+    assert "QM_TM_OpenPosition(host_req, ticket)" in source
+    assert {"USDJPY.DWX", "EURAUD.DWX", "AUDUSD.DWX", "EURUSD.DWX"} <= declared
+    assert _mq5_allowed_symbols(ea_dir) <= declared
+
+
 def test_qm5_13117_zscore_uses_strictly_prior_calibration_window() -> None:
     ea_dir = REPO / "framework" / "EAs" / "QM5_13117_eurgbp-audjpy"
     source = (ea_dir / "QM5_13117_eurgbp-audjpy.mq5").read_text(

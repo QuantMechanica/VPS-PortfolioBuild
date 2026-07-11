@@ -288,7 +288,7 @@ target_modules:
   close: "Mean-reach package exit plus framework Friday close and kill switch."
 estimated_complexity: medium
 estimated_test_runtime: "basket Q02 approximately 60-120 minutes; use paced fleet only"
-data_requirements: "USDJPY.DWX and EURAUD.DWX D1 plus tester-currency conversion history declared by basket manifest"
+data_requirements: "USDJPY.DWX and EURAUD.DWX D1 plus AUDUSD.DWX risk-conversion and EURUSD.DWX account-P/L conversion history declared by basket manifest"
 ```
 
 ## 14. Pipeline History
@@ -299,14 +299,16 @@ data_requirements: "USDJPY.DWX and EURAUD.DWX D1 plus tester-currency conversion
 | v2 | 2026-07-10 | explicit forex-book mission approval and atomic QM5_13119 allocation | Q01 | APPROVED_FOR_BUILD |
 | v3 | 2026-07-10 | strict compile and one logical-basket enqueue; smoke deferred at seven-job CPU ceiling | Q02 | PENDING_CPU_CEILING |
 | v4 | 2026-07-11 | align EA z-score with the card's strictly prior 60-bar calibration window; preserve the existing logical Q02 row | Q02 | PENDING_FACTORY_OFF |
+| v5 | 2026-07-11 | preserve the pre-repair real-tick PASS as superseded, route the USDJPY host through the V5 trade manager, declare EURUSD conversion history, clean-build, and enqueue a distinct repaired-binary baseline | Q02 | PENDING_FACTORY_OFF |
 
 ## 15. Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-10 | APPROVED | explicit forex-book mission + this card + `docs/research/FX_COINTEGRATION_USDJPY_EURAUD_REVIEW_2026-07-10.md` |
-| Q01 Build Validation | 2026-07-10 | PASS | `D:/QM/reports/framework/21/build_check_20260710_160754.json`; strict compile 0 errors/0 warnings |
-| Q02 Baseline Screening | 2026-07-11 | PENDING_FACTORY_OFF | work item `f8767f2f-4bcb-4b32-b857-cf9063b1c935`; `artifacts/qm5_13119_prior_window_repair_20260711.json` |
+| Q01 Build Validation | 2026-07-11 | PASS | repaired source: `D:/QM/reports/framework/21/build_check_20260711_050630.json`; strict compile `D:/QM/reports/compile/20260711_050605/summary.csv`, 0 errors/0 warnings |
+| Q02 Baseline Screening (pre-repair binary) | 2026-07-11 | PASS_SUPERSEDED | 136 trades, PF 1.06, net +954.43, DD 2.91%; `D:/QM/reports/work_items/f8767f2f-4bcb-4b32-b857-cf9063b1c935/QM5_13119/20260711_043425/summary.json` |
+| Q02 Baseline Screening (repaired binary) | 2026-07-11 | PENDING_FACTORY_OFF | work item `77ec9572-e064-44bd-a756-51647aa383b9`; `artifacts/qm5_13119_framework_repair_q02_requeue_20260711.json` |
 
 ## 16. Lessons Captured
 
@@ -319,3 +321,10 @@ data_requirements: "USDJPY.DWX and EURAUD.DWX D1 plus tester-currency conversion
 - 2026-07-11: The initial EA included the newest closed spread in its own
   60-bar calibration sample. The repair now scores that observation against
   60 strictly prior closed spreads, matching both the card and source scan.
+- 2026-07-11: The pre-repair real-tick run completed without ONINIT or history
+  failure, but mechanical review showed its USDJPY host order bypassed
+  `QM_TM_OpenPosition`; that PASS is retained as superseded and cannot promote
+  the EA.
+- 2026-07-11: The tester requested EURUSD.DWX for account-currency P/L
+  conversion even though AUDUSD.DWX covers the EA's EURAUD risk sizing. Both
+  conversion-only histories are now declared and warmed for the repaired Q02.
