@@ -83,8 +83,10 @@ resolver, compile, and build checks found no 13139 defect.
 - Symbol-scope validator: `BASKET_OK`.
 - MQ5 SHA256:
   `3EB41E81CF5F3C2DECE9FEDDC9786DFF3857ABB6227F73EAE8029BBA9F147DAD`.
+- Clean staged-resolver reproducibility compile: PASS, 0 errors, 0 compiler
+  warnings.
 - EX5 SHA256:
-  `33B94C3F5C5A532CB46D295AC1CE728AFCDDA104847AD32A85D87AB38CF2A8BA`.
+  `D1567C048D560E46AB9E33CD959929060A1EE2FAC2B554C3DE4BD1DA0A17A0BD`.
 
 ## Risk And Setfile Evidence
 
