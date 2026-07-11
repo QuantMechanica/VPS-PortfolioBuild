@@ -17,7 +17,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
+pipeline_phase: Q02
 ---
 
 # Approved Card Copy - QM5_13147_energy-jumpbeta
