@@ -1,0 +1,118 @@
+{
+  "mission_unit": "priority_2_diverse_fx_q02_infra_repair_requeue",
+  "timestamp_utc": "2026-07-11T04:16:12+00:00",
+  "agent": "codex-agents-board-advisor",
+  "branch": "agents/board-advisor",
+  "claim": {
+    "agent_task_id": "3deb8431-ea22-4dfb-9c69-e5ae0ccd79a1",
+    "state_at_requeue": "IN_PROGRESS",
+    "collision_guard": "The transaction required the Codex farm claim, no competing active agent task for the EA, and no pending/active Q02-Q03 work item."
+  },
+  "selection": {
+    "priority_1_result": "No faithful low-frequency diverse build was available: the only pending approved cards were an unavailable lumber proxy, an unavailable rates/bonds strategy, and a high-frequency XAU/NDX scalper.",
+    "ea_id": "QM5_10912",
+    "ea_label": "QM5_10912_grimes-failtest",
+    "card_status": "APPROVED",
+    "timeframe": "H1",
+    "structural_edge": "Adam H. Grimes failure-test reversal after a false break of a recent pivot (Wyckoff spring/upthrust family)",
+    "source_citation": "Adam H. Grimes, Fundamental Trading Patterns and The Failure Test articles",
+    "expected_trades_per_year_per_symbol": 35,
+    "ml_used": false,
+    "diverse_q02_symbols": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ]
+  },
+  "prior_q02": {
+    "total_rows": 60,
+    "done_rows": 2,
+    "failed_rows": 58,
+    "infra_fail_rows": 60,
+    "pass_rows": 0,
+    "strategy_or_other_verdict_rows": 0,
+    "open_rows": 0,
+    "latest_failure": "summary_missing_retries_exhausted",
+    "earlier_retained_failure": "run_smoke_fail:ONINIT_FAILED;INCOMPLETE_RUNS"
+  },
+  "diagnosis": {
+    "old_ex5_sha256": "91D72CFFAD0A4E5CF0550AA312AD6A1B4FB94D11F66525CC8ECCFC890050A916",
+    "old_ex5_mtime_utc": "2026-06-21T15:00:04Z",
+    "newer_framework_include_count": 20,
+    "setfile_defects": [
+      "qm_ea_id was absent",
+      "all strategy inputs were absent",
+      "the card defaults source was unresolved"
+    ],
+    "framework_wiring_defect": "News gating preceded Friday-close, management, and strategy exits instead of gating entries only."
+  },
+  "repair": {
+    "changes": [
+      "Moved Friday-close, no-trade, management, and exit handling ahead of news entry gating.",
+      "Regenerated all five card-symbol backtest setfiles from the approved card and EA defaults.",
+      "Kept every setfile at RISK_FIXED=1000, RISK_PERCENT=0, PORTFOLIO_WEIGHT=1.",
+      "Recompiled the EA against the current V5 framework and synchronized setfile build hashes."
+    ],
+    "mq5_sha256": "E9D0B9BFB81D8378CBEF14955F99E773BDDE5D255E0E0087EF8B4D16578B05B3",
+    "new_ex5_sha256": "7B35351B971508374773FEE8989AF02700074D8A4C7408601C820114D7F9450C",
+    "canonical_setfile_count": 5,
+    "eurusd_setfile_sha256": "B0EDBED54CDB2B9336C8465E4742BCEBFC6401D1E4C4273A776F67A4A8AEFA8F",
+    "gbpusd_setfile_sha256": "DD99012B2EA177C43298D0A694DB930D2A00B4FAA14CCCD9A4796DD3503200C9"
+  },
+  "validation": {
+    "spec_document": "PASS",
+    "build_guardrails": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "strict_compile": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "C:/QM/repo/framework/build/compile/20260711_041248/QM5_10912_grimes-failtest.compile.log",
+      "summary": "D:/QM/reports/compile/20260711_041248/summary.csv"
+    },
+    "build_check": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260711_041306.json"
+    }
+  },
+  "requeue": {
+    "action": "reset_two_existing_terminal_q02_infra_rows_to_pending",
+    "database_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_10912_fx_q02_requeue_20260711T041505Z.sqlite",
+    "conditional_guard": "Exact EA/phase/symbol/work-item match, prior status=done and verdict=INFRA_FAIL, unclaimed rows, no open Q02-Q03 duplicate, and no competing active farm claim.",
+    "rows": [
+      {
+        "work_item_id": "106ffc18-89d5-4126-b14b-2252f838090e",
+        "symbol": "EURUSD.DWX",
+        "status_after": "pending",
+        "attempt_count_after": 0,
+        "claimed_by_after": null,
+        "archived_report_root": "D:/QM/reports/work_items/106ffc18-89d5-4126-b14b-2252f838090e.requeued_20260711T0416120000"
+      },
+      {
+        "work_item_id": "00e35d9c-680f-4829-9544-088976a79060",
+        "symbol": "GBPUSD.DWX",
+        "status_after": "pending",
+        "attempt_count_after": 0,
+        "claimed_by_after": null,
+        "archived_report_root": "D:/QM/reports/work_items/00e35d9c-680f-4829-9544-088976a79060.requeued_20260711T0416120000"
+      }
+    ],
+    "q02_pending_after": 2,
+    "q02_q03_active_after": 0
+  },
+  "runtime": {
+    "factory_off_flag": "D:/QM/strategy_farm/state/FACTORY_OFF.flag",
+    "factory_off_at": "2026-07-10T17:25:52Z",
+    "manual_backtest_started": false,
+    "backtest_cpu_added": false,
+    "metatester_process_started": false,
+    "note": "Two terminal64 processes predated this unit (started 2026-07-08); neither was modified."
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
