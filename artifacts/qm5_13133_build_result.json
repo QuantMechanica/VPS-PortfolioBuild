@@ -1,0 +1,172 @@
+{
+  "task_id": "a480301d-56c8-489e-bb2f-3594eacecec5",
+  "ea_id": "QM5_13133",
+  "ea_label": "QM5_13133_energy-ivol",
+  "slug": "energy-ivol",
+  "strategy": "Monthly XTI/XNG pure idiosyncratic-volatility long-short spread",
+  "strategy_id": "FUERTES-MOMIVOL-2015_XTI_XNG_S02",
+  "source_id": "FUERTES-MOMIVOL-2015",
+  "source_links": [
+    "https://doi.org/10.1002/fut.21656",
+    "https://openaccess.city.ac.uk/id/eprint/6418/",
+    "https://openaccess.city.ac.uk/id/eprint/6418/1/JFM_SSRN_13Jan2014.pdf"
+  ],
+  "symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX",
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "read_only_factor_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "symbols_registered": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "logical_symbol": "QM5_13133_XTI_XNG_IVOL_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13133_energy-ivol",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13133_energy-ivol\\QM5_13133_energy-ivol.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13133_energy-ivol\\QM5_13133_energy-ivol.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13133_energy-ivol\\SPEC.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13133_energy-ivol\\basket_manifest.json",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13133_energy-ivol.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_13133_energy-ivol_card.md",
+  "canonical_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\energy-ivol_card.md",
+  "source_packet_path": "C:\\QM\\repo\\strategy-seeds\\sources\\FUERTES-MOMIVOL-2015\\source.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13133_energy-ivol\\sets\\QM5_13133_energy-ivol_QM5_13133_XTI_XNG_IVOL_D1_D1_backtest.set"
+  ],
+  "magic_base": 131330000,
+  "magic": [
+    {
+      "slot": 0,
+      "symbol": "XTIUSD.DWX",
+      "magic": 131330000,
+      "registry_status": "active"
+    },
+    {
+      "slot": 1,
+      "symbol": "XNGUSD.DWX",
+      "magic": 131330001,
+      "registry_status": "active"
+    }
+  ],
+  "mq5_sha256": "921556727ACFC8A508C9D933848E0271B73DEB49306BF7B54F9E093D7C800B48",
+  "ex5_sha256": "7A19953A6914E539983E0DDAC492595F5FBD610A1AFBD7821942D20C07FF5581",
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260711_050001\\QM5_13133_energy-ivol.compile.log",
+  "compile_summary": "D:\\QM\\reports\\compile\\20260711_050001\\summary.csv",
+  "build_check_passed": true,
+  "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260711_050014.json",
+  "build_check_advisories": [],
+  "spec_validation": "PASS",
+  "guardrail_validation": "PASS",
+  "symbol_scope_validation": "BASKET_OK",
+  "setfile_sha256": "EC72623F51DBC9D1162879B9D5D94E53158B8E310CEC10CC2AD1DCB987D390EF",
+  "setfile_build_hash": "196ad989009dbd617d4ceff01909760054f88514d59b3777a1e08a277d07c02a",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Build-only workflow and paced Q02 enqueue requested; no manual MT5 tester, dispatch tick, worker tick, or backtest was started.",
+  "blocked_reason": null,
+  "open_questions": [
+    "The source validates diversified futures long-short portfolios, not this two-traded-leg DWX carrier; Q02 must validate package frequency and economics.",
+    "The EA uses continuous Darwinex CFD proxies and an equal-weight four-proxy factor, so futures-roll and benchmark-basis translation remain falsification risks.",
+    "Realized portfolio orthogonality is unclaimed until Q09 measures it."
+  ],
+  "registry_validation": {
+    "ea_id_row": "13133,energy-ivol,FUERTES-MOMIVOL-2015_XTI_XNG_S02,active,CEO+CTO mission allocation,2026-07-11",
+    "magic_rows": [
+      "13133,energy-ivol,0,XTIUSD.DWX,131330000,2026-07-11,Codex,active",
+      "13133,energy-ivol,1,XNGUSD.DWX,131330001,2026-07-11,Codex,active"
+    ],
+    "resolver_contains_ea": true,
+    "resolver_rows_kept": 14848,
+    "resolver_sha256": "97BF475A9B0F017B8FF7C148123BD1F8C1A6DCCC2F9708072B8C77F3FC9726A9",
+    "global_validator_note": "Targeted registry, resolver, card, spec, build, guardrail, and basket-scope checks passed; three pre-existing missing-directory resolver warnings for IDs 1001, 1015, and 1016 were not changed."
+  },
+  "validations": {
+    "dedup": "CLEAN_AFTER_MANUAL_REVIEW",
+    "card_schema": "PASS",
+    "g0_card": "PASS",
+    "spec_doc": "PASS",
+    "build_guardrails": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "risk_mode": "PASS"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "reputable_primary_source": true,
+    "market_neutral_basket": true,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "autotrading_touched": false,
+    "manual_backtest_cpu_used": false
+  },
+  "file_hashes_sha256": {
+    "mq5": "921556727ACFC8A508C9D933848E0271B73DEB49306BF7B54F9E093D7C800B48",
+    "ex5": "7A19953A6914E539983E0DDAC492595F5FBD610A1AFBD7821942D20C07FF5581",
+    "spec": "1984FAC3057F29BB0654B25AEA1F33EA1DECCF67811FD12BD1414247E2FA3FB1",
+    "basket_manifest": "61280A4BD0EF9F9C1879C5916E5F819A5D03CE61F3DA13AC10CD385ABE4C9250",
+    "setfile": "EC72623F51DBC9D1162879B9D5D94E53158B8E310CEC10CC2AD1DCB987D390EF",
+    "canonical_card": "C1B85E1EC2F5FD5F08085A398B4422C82576FCC1940FDABDF772237757B7C913",
+    "source_packet": "AAE65C969D624070BE348E3F515AB3B9B75E86FE5356FDDE79E5C3CC95D74BB9"
+  },
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_13133",
+    "enqueued": [
+      {
+        "work_item_id": "964d9d79-f9a6-40f8-9027-0efc7b01a394",
+        "symbol": "QM5_13133_XTI_XNG_IVOL_D1",
+        "host_symbol": "XTIUSD.DWX",
+        "timeframe": "D1",
+        "status": "pending",
+        "setfile": "QM5_13133_energy-ivol_QM5_13133_XTI_XNG_IVOL_D1_D1_backtest.set",
+        "enqueued_at": "2026-07-11T05:02:18+00:00"
+      }
+    ],
+    "skipped": []
+  },
+  "q02": {
+    "phase": "Q02",
+    "work_item_id": "964d9d79-f9a6-40f8-9027-0efc7b01a394",
+    "status_at_handoff": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "symbol": "QM5_13133_XTI_XNG_IVOL_D1",
+    "host_symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13133_energy-ivol\\sets\\QM5_13133_energy-ivol_QM5_13133_XTI_XNG_IVOL_D1_D1_backtest.set",
+    "risk_payload": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "enqueued_at_utc": "2026-07-11T05:02:18+00:00",
+    "note": "Auto-enqueued by farmctl record-build as one logical basket. No manual dispatch, smoke test, worker tick, or backtest was started."
+  }
+}
