@@ -1,6 +1,6 @@
 {
-  "artifact_type": "fx_cointegration_pre_q03_strategy_contract_repair",
-  "recorded_at_utc": "2026-07-11T02:09:26Z",
+  "artifact_type": "fx_cointegration_repaired_q02_requeue",
+  "recorded_at_utc": "2026-07-11T02:13:49Z",
   "branch": "agents/board-advisor",
   "ea_id": "QM5_13117",
   "slug": "eurgbp-audjpy",
@@ -19,7 +19,7 @@
       {"pair": "USDJPY/EURAUD", "ea_id": "QM5_13119", "built": true}
     ],
     "chosen_existing_sleeve": "QM5_13117 EURGBP.DWX/AUDJPY.DWX",
-    "chosen_state": "Q02 PASS with one existing Q03 successor pending",
+    "chosen_state": "Historical Q02 PASS superseded for the repaired binary; exactly one repaired Q02 rerun pending",
     "scan_metrics": {
       "dev_net_sharpe": 0.416833593,
       "oos_net_sharpe": 0.8918614046,
@@ -79,26 +79,30 @@
     "regression_test_result": "16 passed",
     "mq5_sha256": "14ddccb7ac7fe8b1c1e9cec4c6a59c7045481de99f15e1728fb38a76cfe6bcd1",
     "ex5_sha256": "aa8ff930a973632b0dbd9b2694ccf20869f441a4fa7c9eac670339800eb199ef",
-    "spec_sha256": "e22e79b9259752fc0746f8963f6be6af867ffc0ecfa94171a62e594e15ebf54c",
+    "spec_sha256": "835144224f2f7cc079ab62a1bc5c942d853af3a98bf6b349dfe5d8b98cdd7705",
     "manifest_sha256": "e8d1fcf2e2b5cd96258b4c4aef496871c54f247ad671e449a3d2f92a2d186387",
     "setfile_sha256": "c584bcf5b274ae293ebd0ea60ba9ba7ea0ca5a4afda09da2fb50423322531b83",
     "setfile_build_hash": "4d9aee1701ea38dfa655d983b803ecaba51d6d7f0cd2bef59547b53b63f085d3",
-    "card_sha256": "3a055537c84a8d46bf290afcb734c7bdabe40e07d6851dcd783d935adf53f12a"
+    "card_sha256": "08652d7c7fc8e18bd95de610bea035d8ff81e574ceca64671c064709fe51029e"
   },
   "funnel": {
-    "q02_work_item_id": "ed75430e-2ff4-4ea1-9d50-e49a7912d323",
-    "q02_status": "done",
-    "q02_verdict": "PASS",
-    "q03_work_item_id": "dc01fd4d-0f8f-414a-a6b1-80441204fefc",
-    "q03_status": "pending",
-    "q03_verdict": null,
-    "q03_attempt_count": 0,
-    "q03_claimed_by": null,
-    "open_q03_rows": 1,
-    "all_q03_rows": 1,
-    "duplicate_rows_created": 0,
-    "queue_action": "Preserved and provenance-enriched the existing Q03 row; no new work item and no dispatch invocation.",
-    "database_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_13117_prior_window_repair_20260711T020825Z.sqlite"
+    "historical_q02_work_item_id": "ed75430e-2ff4-4ea1-9d50-e49a7912d323",
+    "historical_q02_status": "done",
+    "historical_q02_verdict": "PASS",
+    "historical_q02_scope": "pre-repair binary only",
+    "invalidated_q03_work_item_id": "dc01fd4d-0f8f-414a-a6b1-80441204fefc",
+    "invalidated_q03_status": "failed",
+    "invalidated_q03_verdict": "INVALID",
+    "replacement_q02_work_item_id": "fb649d4a-3a9e-42e8-ae99-b492d2c65f5e",
+    "replacement_q02_status": "pending",
+    "replacement_q02_verdict": null,
+    "replacement_q02_attempt_count": 0,
+    "replacement_q02_claimed_by": null,
+    "open_q02_rows": 1,
+    "open_q03_rows": 0,
+    "duplicate_open_q02_rows": 0,
+    "queue_action": "Invalidated the stale unrun Q03 successor and enqueued exactly one Q02 baseline for the repaired binary; no dispatch invocation.",
+    "database_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_13117_repaired_q02_requeue_20260711T021349Z.sqlite"
   },
   "factory_state": {
     "factory_off_flag_present": true,
@@ -106,7 +110,7 @@
     "running_factory_terminal_processes": 0,
     "manual_backtest_started": false,
     "dispatch_invoked": false,
-    "stop_reason": "FACTORY_OFF.flag is an explicit maintenance boundary; leave the repaired Q03 row pending for paced workers after the factory resumes."
+    "stop_reason": "FACTORY_OFF.flag is an explicit maintenance boundary; leave the repaired Q02 row pending for paced workers after the factory resumes."
   },
   "safety": {
     "t_live_touched": false,

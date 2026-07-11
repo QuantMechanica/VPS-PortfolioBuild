@@ -32,7 +32,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q03
+pipeline_phase: Q02
 expected_pf: 1.05
 expected_dd_pct: 25.0
 portfolio_scope: basket
@@ -298,7 +298,7 @@ data_requirements: "EURGBP.DWX and AUDJPY.DWX D1 plus tester-currency conversion
 | v2 | 2026-07-10 | explicit forex-book mission approval and atomic QM5_13117 allocation | Q01 | APPROVED_FOR_BUILD |
 | v3 | 2026-07-10 | strict compile and one logical-basket enqueue; smoke deferred at seven-job CPU ceiling | Q02 | PENDING_CPU_CEILING |
 | v4 | 2026-07-11 | targeted paced real-tick baseline completed; unique priority successor enqueued | Q03 | Q02_PASS_Q03_PENDING |
-| v5 | 2026-07-11 | align EA z-score with the card's strictly prior 60-bar calibration window; preserve the existing logical Q03 row | Q03 | PENDING_FACTORY_OFF |
+| v5 | 2026-07-11 | align EA z-score with the strictly prior 60-bar calibration window; invalidate stale Q03 and enqueue one repaired baseline | Q02 | PENDING_FACTORY_OFF |
 
 ## 15. Pipeline Phase Status
 
@@ -306,8 +306,9 @@ data_requirements: "EURGBP.DWX and AUDJPY.DWX D1 plus tester-currency conversion
 |---|---|---|---|
 | G0 Research Intake | 2026-07-10 | APPROVED | explicit forex-book mission + this card + `docs/research/FX_COINTEGRATION_EURGBP_AUDJPY_REVIEW_2026-07-10.md` |
 | Q01 Build Validation | 2026-07-10 | PASS | `D:/QM/reports/framework/21/build_check_20260710_145341.json`; strict compile 0 errors/0 warnings |
-| Q02 Baseline Screening | 2026-07-11 | PASS | work item `ed75430e-2ff4-4ea1-9d50-e49a7912d323`; PF 1.75, 104 trades, 2.82% DD, +6582.67 net |
-| Q03 Parameter Sweep | 2026-07-11 | PENDING_FACTORY_OFF | work item `dc01fd4d-0f8f-414a-a6b1-80441204fefc`; `artifacts/qm5_13117_prior_window_repair_20260711.json` |
+| Q02 Baseline Screening (pre-repair binary) | 2026-07-11 | PASS_SUPERSEDED | work item `ed75430e-2ff4-4ea1-9d50-e49a7912d323`; PF 1.75, 104 trades, 2.82% DD, +6582.67 net |
+| Q03 Parameter Sweep | 2026-07-11 | INVALIDATED | work item `dc01fd4d-0f8f-414a-a6b1-80441204fefc`; downstream gate cannot precede repaired Q02 |
+| Q02 Baseline Screening (repaired binary) | 2026-07-11 | PENDING_FACTORY_OFF | work item `fb649d4a-3a9e-42e8-ae99-b492d2c65f5e`; `artifacts/qm5_13117_prior_window_repair_20260711.json` |
 
 ## 16. Lessons Captured
 
@@ -326,3 +327,5 @@ data_requirements: "EURGBP.DWX and AUDJPY.DWX D1 plus tester-currency conversion
 - 2026-07-11: The initial EA included the newest closed spread in its own
   60-bar calibration sample. The repair now scores that observation against
   60 strictly prior closed spreads, matching both the card and source scan.
+- 2026-07-11: Since the source changed after the first Q02 PASS, the unrun Q03
+  successor was invalidated and one repaired-binary Q02 baseline was queued.

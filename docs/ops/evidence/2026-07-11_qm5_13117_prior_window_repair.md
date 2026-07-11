@@ -7,16 +7,18 @@
 
 ## Outcome
 
-Advanced the existing forex fallback without creating another basket or queue
-row. `QM5_13117` already passed Q02 and had one pending Q03 successor. Its EA,
-however, did not implement the approved card's z-score window: the newest
-closed spread was included in the same 60-bar mean and standard deviation used
-to score it.
+Advanced the existing forex fallback without creating another basket. The
+historical `QM5_13117` Q02 PASS used the pre-repair binary, and its pending Q03
+successor had not run. The EA did not implement the approved card's z-score
+window: the newest closed spread was included in the same 60-bar mean and
+standard deviation used to score it.
 
 The EA now requests 61 aligned closed D1 observations, scores index 0, and
 calibrates only on indices 1 through 60. Beta, thresholds, symbols, risk, and
 package mechanics are unchanged. This is a card-to-code conformance repair,
-not a parameter variation.
+not a parameter variation. Because code changed, the old Q02 PASS cannot
+certify the repaired binary: the unrun Q03 row was invalidated and exactly one
+replacement Q02 baseline was enqueued.
 
 ## Selection
 
@@ -31,10 +33,9 @@ final USDJPY/EURAUD sleeve (`QM5_13119`), so a new build would be duplicate.
 The original anchors are not Q02 setup blockers: `QM5_12532` and `QM5_12533`
 both have logical-basket Q02 PASS evidence.
 
-`QM5_13117` is the clean existing continuation: Q02 PASS, with exactly one Q03
-row already pending. Its reproduced scan metrics are DEV net Sharpe `0.4168`,
-OOS net Sharpe `0.8919`, OOS return `4.4752%`, 20 OOS state changes, beta
-`-0.12202869296345396`, and a 36.84-day half-life.
+`QM5_13117` is the clean existing continuation. Its reproduced scan metrics are
+DEV net Sharpe `0.4168`, OOS net Sharpe `0.8919`, OOS return `4.4752%`, 20 OOS
+state changes, beta `-0.12202869296345396`, and a 36.84-day half-life.
 
 ## Verification
 
@@ -59,11 +60,12 @@ new `.ex5`.
 
 ## Queue And Capacity
 
-The existing Q03 work item
-`dc01fd4d-0f8f-414a-a6b1-80441204fefc` remains pending, unclaimed, and at
-attempt 0. Its payload now records the repaired MQ5/EX5/setfile hashes and
-clean-build evidence. There is still exactly one Q03 row for `QM5_13117`; no
-duplicate was created.
+The stale, unrun Q03 work item
+`dc01fd4d-0f8f-414a-a6b1-80441204fefc` is now `failed/INVALID`. Replacement
+Q02 work item `fb649d4a-3a9e-42e8-ae99-b492d2c65f5e` is pending, unclaimed,
+and at attempt 0. Its payload records the repaired MQ5/EX5/setfile hashes and
+clean-build evidence. Exactly one Q02 row is open for `QM5_13117`; no duplicate
+open baseline was created.
 
 `FACTORY_OFF.flag` remains present and no factory MT5 terminal is running.
 No dispatch, smoke, or manual backtest was started. The row is left for the

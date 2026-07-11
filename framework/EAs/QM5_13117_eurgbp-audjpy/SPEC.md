@@ -91,4 +91,4 @@ ATR hard stop on each leg.
 |---|---|---|---|
 | v1 | 2026-07-10 | Initial build from approved card | 5bd33354-c9f1-4221-8e51-e78767867913 |
 | v2 | 2026-07-10 | Warm manifest-declared USD conversion histories before Q02 | existing Q02 row preserved |
-| v3 | 2026-07-11 | Exclude the scored spread from its prior 60-bar z-score calibration window | existing Q03 row preserved |
+| v3 | 2026-07-11 | Exclude the scored spread from its prior 60-bar z-score calibration window | stale Q03 invalidated; repaired Q02 rerun enqueued |
