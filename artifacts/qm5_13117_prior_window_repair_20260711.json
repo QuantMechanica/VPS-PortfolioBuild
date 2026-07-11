@@ -1,0 +1,121 @@
+{
+  "artifact_type": "fx_cointegration_pre_q03_strategy_contract_repair",
+  "recorded_at_utc": "2026-07-11T02:09:26Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_13117",
+  "slug": "eurgbp-audjpy",
+  "logical_symbol": "QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1",
+  "selection": {
+    "mission_fallback_used": true,
+    "reason": "The sign-aware 66-pair scan has seven strict rows and all seven already have EA builds. QM5_12532 and QM5_12533 both have logical Q02 PASS evidence, so there was no anchor ONINIT or NO_HISTORY blocker to repair.",
+    "scan_command": "python framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+    "strict_rows": [
+      {"pair": "GBPUSD/USDCAD", "ea_id": "QM5_12978", "built": true},
+      {"pair": "EURJPY/GBPJPY", "ea_id": "QM5_12533", "built": true},
+      {"pair": "AUDUSD/NZDUSD", "ea_id": "QM5_12532", "built": true},
+      {"pair": "USDCAD/NZDUSD", "ea_id": "QM5_13003", "built": true},
+      {"pair": "AUDUSD/EURGBP", "ea_id": "QM5_13106", "built": true},
+      {"pair": "EURGBP/AUDJPY", "ea_id": "QM5_13117", "built": true},
+      {"pair": "USDJPY/EURAUD", "ea_id": "QM5_13119", "built": true}
+    ],
+    "chosen_existing_sleeve": "QM5_13117 EURGBP.DWX/AUDJPY.DWX",
+    "chosen_state": "Q02 PASS with one existing Q03 successor pending",
+    "scan_metrics": {
+      "dev_net_sharpe": 0.416833593,
+      "oos_net_sharpe": 0.8918614046,
+      "oos_return_pct": 4.475153414,
+      "oos_state_changes": 20,
+      "fixed_beta": -0.12202869296345396,
+      "half_life_days": 36.83805248
+    }
+  },
+  "anchor_status": {
+    "QM5_12532": "Q02 PASS, Q04 PASS, Q05 FAIL; not Q02-blocked",
+    "QM5_12533": "Q02 PASS, Q04 FAIL; not Q02-blocked"
+  },
+  "defect": {
+    "class": "CARD_TO_CODE_ZSCORE_WINDOW_MISMATCH",
+    "card_contract": "Score the newest closed D1 spread against the preceding 60 closed D1 observations.",
+    "research_contract": "pairs_backtest() builds win from k-LOOK through k-1 and scores spread k outside that window.",
+    "before": "The EA copied 60 bars beginning at shift 1, included spreads[0] in the mean and sample standard deviation, and then scored spreads[0] against a window containing itself.",
+    "impact": "Entry z-scores were mechanically compressed relative to the approved card and the scan that selected the pair.",
+    "not_an_authorized_parameter_change": true
+  },
+  "repair": {
+    "source_commit": "72237d508",
+    "history_bars_requested": 61,
+    "scored_observation_index": 0,
+    "calibration_indices": "1..60",
+    "calibration_bars": 60,
+    "scored_observation_in_calibration": false,
+    "beta_changed": false,
+    "thresholds_changed": false,
+    "risk_logic_changed": false,
+    "basket_symbols_changed": false
+  },
+  "risk_contract": {
+    "environment": "backtest",
+    "risk_mode": "RISK_FIXED",
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "verification": {
+    "strict_compile": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "compile_isolation": "Compiled from a detached clean-header worktree at commit 72237d508 so unrelated dirty framework/include changes in C:/QM/repo could not enter the EX5.",
+    "compile_log": "framework/build/compile/20260711_020616_clean/QM5_13117_eurgbp-audjpy.compile.log",
+    "compile_summary": "D:/QM/reports/compile/20260711_020616/summary.csv",
+    "build_check": "PASS",
+    "build_check_failures": 0,
+    "build_check_warnings": 0,
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260711_020710.json",
+    "card_lint": "PASS for canonical, approved, and EA-doc mirrors",
+    "spec_validation": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "symbol_scope_violations": 0,
+    "regression_test": "python -m pytest tools/strategy_farm/tests/test_fx_basket_manifests.py -q",
+    "regression_test_result": "16 passed",
+    "mq5_sha256": "14ddccb7ac7fe8b1c1e9cec4c6a59c7045481de99f15e1728fb38a76cfe6bcd1",
+    "ex5_sha256": "aa8ff930a973632b0dbd9b2694ccf20869f441a4fa7c9eac670339800eb199ef",
+    "spec_sha256": "e22e79b9259752fc0746f8963f6be6af867ffc0ecfa94171a62e594e15ebf54c",
+    "manifest_sha256": "e8d1fcf2e2b5cd96258b4c4aef496871c54f247ad671e449a3d2f92a2d186387",
+    "setfile_sha256": "c584bcf5b274ae293ebd0ea60ba9ba7ea0ca5a4afda09da2fb50423322531b83",
+    "setfile_build_hash": "4d9aee1701ea38dfa655d983b803ecaba51d6d7f0cd2bef59547b53b63f085d3",
+    "card_sha256": "3a055537c84a8d46bf290afcb734c7bdabe40e07d6851dcd783d935adf53f12a"
+  },
+  "funnel": {
+    "q02_work_item_id": "ed75430e-2ff4-4ea1-9d50-e49a7912d323",
+    "q02_status": "done",
+    "q02_verdict": "PASS",
+    "q03_work_item_id": "dc01fd4d-0f8f-414a-a6b1-80441204fefc",
+    "q03_status": "pending",
+    "q03_verdict": null,
+    "q03_attempt_count": 0,
+    "q03_claimed_by": null,
+    "open_q03_rows": 1,
+    "all_q03_rows": 1,
+    "duplicate_rows_created": 0,
+    "queue_action": "Preserved and provenance-enriched the existing Q03 row; no new work item and no dispatch invocation.",
+    "database_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_13117_prior_window_repair_20260711T020825Z.sqlite"
+  },
+  "factory_state": {
+    "factory_off_flag_present": true,
+    "active_work_item_rows": 3,
+    "running_factory_terminal_processes": 0,
+    "manual_backtest_started": false,
+    "dispatch_invoked": false,
+    "stop_reason": "FACTORY_OFF.flag is an explicit maintenance boundary; leave the repaired Q03 row pending for paced workers after the factory resumes."
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "ml_or_banned_indicator_added": false
+  }
+}

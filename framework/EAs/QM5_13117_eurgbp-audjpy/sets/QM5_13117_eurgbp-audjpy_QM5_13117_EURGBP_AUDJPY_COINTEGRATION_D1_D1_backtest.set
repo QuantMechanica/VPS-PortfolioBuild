@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        13117
 ; ea_slug:      eurgbp-audjpy
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   2f1e358766a53521b6be73097b33a746a2a4fb68bfdec2a9473b62d42c03e796
+; build_hash:   4d9aee1701ea38dfa655d983b803ecaba51d6d7f0cd2bef59547b53b63f085d3
 ; author:       Development
 ; date:         2026-07-10
 ;==========================================================
