@@ -1,0 +1,16 @@
+{
+  "logical_symbol": "QM5_13146_XTI_XNG_VOV_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "Logical two-leg XTI/XNG realized volatility-of-volatility basket from approved card HOLLSTEIN-VOV-2021_XTI_XNG_S01. Run on XTIUSD.DWX D1; at the first tradable bar of every broker month, form 252 overlapping 20-return realized-volatility estimates for each leg, calculate population dispersion divided by mean RV, buy lower realized VoV, short higher realized VoV, and evaluate the package rather than standalone legs. The source uses option-implied volatility; the OHLC-only proxy, two-CFD narrowing, continuous-CFD basis, gaps, and legging are binding Q02 falsification risks."
+  ]
+}
