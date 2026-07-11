@@ -47,6 +47,7 @@ input double strategy_sl_atr_mult       = 0.35;  // SL = setup bar extreme + X*A
 input double strategy_tp_r_mult         = 1.5;   // TP in R multiples
 input int    strategy_time_stop_bars    = 12;    // max hold in H4 bars
 input int    strategy_atr_period        = 14;    // ATR period for SL and filters
+input int    strategy_max_spread_points = 50;    // entry-only spread ceiling (points; 0=off)
 
 // ---- File-scope cached state (advanced once per closed H4 bar) ----
 bool   g_state_valid  = false;
@@ -69,7 +70,7 @@ void AdvanceState_OnNewBar()
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
    // perf-allowed: bespoke 252-bar z-score requires raw close history; called once per H4 bar
-   if(CopyRates(_Symbol, PERIOD_H4, 1, NEEDED, rates) < NEEDED)
+   if(CopyRates(_Symbol, PERIOD_H4, 1, NEEDED, rates) < NEEDED) // perf-allowed: OnTick gates this path with QM_IsNewBar().
       return;
 
    // DI = 100 * (close - SMA(di_period)) / SMA(di_period) for each of ZWINDOW bars
@@ -129,12 +130,37 @@ void AdvanceState_OnNewBar()
 // No Trade Filter
 bool Strategy_NoTradeFilter()
 {
-   return false;
+   return (_Period != PERIOD_H4);
+}
+
+bool Strategy_SpreadAllowsEntry()
+{
+   if(strategy_max_spread_points <= 0)
+      return true;
+
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(point <= 0.0 || ask <= 0.0 || bid <= 0.0 || ask < bid)
+      return false;
+
+   return ((ask - bid) / point <= (double)strategy_max_spread_points);
 }
 
 // Trade Entry
 bool Strategy_EntrySignal(QM_EntryRequest &req)
 {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(!Strategy_SpreadAllowsEntry())
+      return false;
+
    // Advance bar state (QM_IsNewBar gate in OnTick ensures this runs once per bar)
    AdvanceState_OnNewBar();
    if(!g_state_valid || !g_slope_ok) return false;

@@ -29,6 +29,7 @@ The Disparity Index (DI) measures price deviation from its 20-bar SMA as a perce
 | `strategy_tp_r_mult` | 1.5 | 1.0–3.0 | Take-profit in R multiples |
 | `strategy_time_stop_bars` | 12 | 4–48 | Maximum hold in H4 bars before forced exit |
 | `strategy_atr_period` | 14 | 7–21 | ATR period for SL sizing and slope filter |
+| `strategy_max_spread_points` | 50 | 0–500 | Entry-only spread ceiling in broker points; `0` disables the gate |
 
 ---
 
@@ -95,3 +96,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-11 | Initial build from card | 74f515e0-92d4-4131-b349-5fd7e2c2b09c |
+| v2 | 2026-07-11 | Q02 infrastructure recovery | Added the required entry spread gate and explicit request initialization; refreshed fixed-risk setfiles and binary. |
