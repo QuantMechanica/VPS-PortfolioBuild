@@ -1,0 +1,10 @@
+section,weighting,ann_pct,var95_pct,efficiency,darwin_pct_yr,sharpe,filled
+full_sample,A_inverse_vol_current,8.471,0.9128,9.28,60.3,2.233,yes
+full_sample,B_max_sharpe_tangency,10.071,1.2733,7.909,51.4,2.49,yes
+full_sample,C_direct_var95_darwin,8.729,0.6849,12.744,82.8,2.149,yes
+IS_first60_OOS_last40,A_inverse_vol_current,13.247,0.8633,15.345,99.7,3.365,
+IS_first60_OOS_last40,B_max_sharpe_tangency,10.754,1.7564,6.123,39.8,2.094,
+IS_first60_OOS_last40,C_direct_var95_darwin,12.518,1.6242,7.707,50.1,2.009,
+IS_last60_OOS_first40,A_inverse_vol_current,4.905,0.8966,5.471,35.6,1.555,
+IS_last60_OOS_first40,B_max_sharpe_tangency,2.793,1.253,2.229,14.5,0.779,
+IS_last60_OOS_first40,C_direct_var95_darwin,3.265,2.7516,1.187,7.7,0.426,
