@@ -33,4 +33,5 @@ exits; same-month deal-history guard; and orphan cleanup.
 Approval preserves the option-factor-to-realized-volatility substitution,
 endogenous two-CFD factor, return-based smooth/jump separation, continuous-CFD
 basis, gaps, legging, and costs as binding Q02 kill risks. Live artifacts,
-portfolio admission, and portfolio-gate changes are not approved.
+portfolio admission, and portfolio-gate changes are not approved. Q01 passed
+and Q02 work item `d792f306-3b9c-4ff6-b317-61c1137e6c92` is pending.

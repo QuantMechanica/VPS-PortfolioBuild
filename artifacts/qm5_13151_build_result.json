@@ -1,0 +1,180 @@
+{
+  "task_id": "87b13690-2103-4e01-8b5c-d10219d3e17a",
+  "ea_id": "QM5_13151",
+  "ea_label": "QM5_13151_energy-volbeta",
+  "slug": "energy-volbeta",
+  "strategy": "Monthly XTI/XNG cross-sectional rank on market-controlled sensitivity to non-jump common realized-volatility innovations",
+  "strategy_id": "HOLLSTEIN-AGGVOL-2021_XTI_XNG_S01",
+  "source_id": "HOLLSTEIN-AGGVOL-2021",
+  "source_links": [
+    "https://doi.org/10.1142/S2010139221500178",
+    "https://centaur.reading.ac.uk/100920/1/SSRN-id3567629.pdf"
+  ],
+  "symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "logical_symbol": "QM5_13151_XTI_XNG_VBETA_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_13151_energy-volbeta",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_13151_energy-volbeta/QM5_13151_energy-volbeta.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_13151_energy-volbeta/QM5_13151_energy-volbeta.ex5",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_13151_energy-volbeta/SPEC.md",
+  "basket_manifest": "C:/QM/repo/framework/EAs/QM5_13151_energy-volbeta/basket_manifest.json",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_13151_energy-volbeta.md",
+  "approved_card_path": "C:/QM/repo/strategy-seeds/cards/approved/QM5_13151_energy-volbeta_card.md",
+  "canonical_card_path": "C:/QM/repo/strategy-seeds/cards/energy-volbeta_card.md",
+  "source_packet_path": "C:/QM/repo/strategy-seeds/sources/HOLLSTEIN-AGGVOL-2021/source.md",
+  "runtime_build_result_path": "D:/QM/strategy_farm/artifacts/builds/87b13690-2103-4e01-8b5c-d10219d3e17a.json",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_13151_energy-volbeta/sets/QM5_13151_energy-volbeta_QM5_13151_XTI_XNG_VBETA_D1_D1_backtest.set"
+  ],
+  "magic_base": 131510000,
+  "magic": [
+    {
+      "slot": 0,
+      "symbol": "XTIUSD.DWX",
+      "magic": 131510000,
+      "registry_status": "active"
+    },
+    {
+      "slot": 1,
+      "symbol": "XNGUSD.DWX",
+      "magic": 131510001,
+      "registry_status": "active"
+    }
+  ],
+  "registry_validation": {
+    "ea_id_row": "13151,energy-volbeta,HOLLSTEIN-AGGVOL-2021_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-12",
+    "magic_rows": [
+      "13151,energy-volbeta,0,XTIUSD.DWX,131510000,2026-07-12,Development,active",
+      "13151,energy-volbeta,1,XNGUSD.DWX,131510001,2026-07-12,Development,active"
+    ],
+    "resolver_contains_ea": true,
+    "resolver_rows_kept": 14893,
+    "magic_registry_sha256": "96047053970221F6433B86AE6DF98C92B92CA5F270C05562D7A4C217CC681BA6",
+    "resolver_file_sha256": "89A1D4A7CC7267FCF641039C2002214BC53233B54582866095EDF330A1E16B77",
+    "resolver_registry_sha_match": true,
+    "preexisting_missing_dir_rows_dropped": [1001, 1015, 1016, 13122],
+    "note": "Clean committed registries plus only EA 13151 were used. Resolver generation and strict compilation ran in a core.autocrlf=false isolated checkout, so the embedded registry SHA matches the committed LF registry. Unrelated dirty fleet allocations were not staged."
+  },
+  "build_commit": "c1282e11c4161ebe5b422922fbf2d77a85c9c0d6",
+  "mq5_sha256": "036B90F22016941F3C3E87C85CA261CE93ECABA4F6FED4CA249DAC3463ACFC16",
+  "ex5_sha256": "5CDA2A9B904E34E0503BC5335E9C7D76AB1C31BAD998DDCDADA99A38D38F33D5",
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log": "D:/QM/reports/compile/20260712_040808/QM5_13151_energy-volbeta.compile.log",
+  "compile_log_sha256": "12AEDE187DAB711C3F15360A1E7DC226BD5C0E23CA5C35EC0D145F0BD8348C8C",
+  "compile_summary": "D:/QM/reports/compile/20260712_040808/summary.csv",
+  "compile_reproducibility": "PASS_SOURCE_RECOMPILE_FROM_LF_SAFE_CLEAN_COMMITTED_TREE",
+  "build_check_passed": true,
+  "build_check_failures": 0,
+  "build_check_warnings": 0,
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260712_040808.json",
+  "build_check_report_sha256": "5B0BDAFF300F9BF455BFBE0575C2D96D5F8A12531606CFF10A236EAA05819FD5",
+  "spec_validation": "PASS",
+  "guardrail_validation": "PASS",
+  "symbol_scope_validation": "BASKET_MANIFEST_OK",
+  "card_schema_validation": "PASS",
+  "g0_card_validation": "PASS",
+  "setfile_build_hash": "771cf55f01477f0a82def4140ecbd559c01c904f2602d8ad5423b7ca0b58439b",
+  "setfile_sha256": "81FDF86FF9422A6C53BC1E29ADC3A2DEF7EF4A85E583A8D4D42217F5D84EC14A",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Build-only paced Q02 enqueue requested; no manual MT5 tester, dispatch tick, worker tick, terminal launch, smoke test, or backtest was started.",
+  "blocked_reason": null,
+  "open_questions": [
+    "The paper's continuous aggregate-volatility result does not clear its paper-wide multiple-testing threshold, so the prior is deliberately low.",
+    "The source uses an option-derived market-wide factor while this executable uses changes in an endogenous two-contract energy benchmark's realized volatility.",
+    "Opposite-side energy exposure and a distinct signal do not establish low realized correlation to the certified book; later portfolio gates alone can measure it."
+  ],
+  "validations": {
+    "dedup": "CLEAN_PRE_ALLOCATION",
+    "card_schema": "PASS",
+    "g0_card": "PASS",
+    "spec_doc": "PASS",
+    "build_guardrails": "PASS",
+    "symbol_scope": "BASKET_MANIFEST_OK",
+    "strict_compile": "PASS_0_ERRORS_0_WARNINGS",
+    "build_check": "PASS_0_FAILURES_0_WARNINGS",
+    "risk_mode": "PASS",
+    "setfile_build_hash": "PASS",
+    "resolver_registry_sha_match": "PASS"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "reputable_primary_source": true,
+    "smooth_volatility_beta_not_jump_beta_vov_or_total_beta": true,
+    "manual_backtest_cpu_used": false
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false
+  },
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_13151",
+    "enqueued": [
+      {
+        "work_item_id": "d792f306-3b9c-4ff6-b317-61c1137e6c92",
+        "symbol": "QM5_13151_XTI_XNG_VBETA_D1",
+        "timeframe": "D1",
+        "status": "pending",
+        "attempt_count": 0,
+        "claimed_by": null,
+        "setfile": "QM5_13151_energy-volbeta_QM5_13151_XTI_XNG_VBETA_D1_D1_backtest.set",
+        "enqueued_at": "2026-07-12T04:10:24+00:00"
+      }
+    ],
+    "skipped": []
+  },
+  "q02": {
+    "phase": "Q02",
+    "work_item_id": "d792f306-3b9c-4ff6-b317-61c1137e6c92",
+    "status_at_handoff": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "symbol": "QM5_13151_XTI_XNG_VBETA_D1",
+    "host_symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_13151_energy-volbeta/sets/QM5_13151_energy-volbeta_QM5_13151_XTI_XNG_VBETA_D1_D1_backtest.set",
+    "risk_payload": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "enqueued_at_utc": "2026-07-12T04:10:24+00:00",
+    "note": "Auto-enqueued by farmctl record-build. No dispatch, tester, worker tick, terminal launch, or backtest was started."
+  },
+  "file_hashes_sha256": {
+    "mq5": "036B90F22016941F3C3E87C85CA261CE93ECABA4F6FED4CA249DAC3463ACFC16",
+    "ex5": "5CDA2A9B904E34E0503BC5335E9C7D76AB1C31BAD998DDCDADA99A38D38F33D5",
+    "spec": "5A422BBD8BDCE8721665351494F87BE0D8F0C048D9EE7639718132E2D07D1E2A",
+    "embedded_card": "85A0A93082E69979CCF012A3AC2D40B14F65B1391FFFC680F5CF35DC5566B7C4",
+    "basket_manifest": "CD8CEEC263B82146CE632E28546E7696EAE44C6EA59751505FA7BB8362A87197",
+    "setfile": "81FDF86FF9422A6C53BC1E29ADC3A2DEF7EF4A85E583A8D4D42217F5D84EC14A",
+    "canonical_card_pre_enqueue": "4433AEAAAAB0E7C3259D423D3C42BD392997337C993D166669373F9F179C33CF",
+    "canonical_card_post_enqueue": "68320B58484E48B0771EB1AA5D6D82EF92F5BA8F9902761FD51DC0BFAACEE0F2",
+    "approved_card_pre_enqueue": "1D93137AED571DA96CB95F00D7072FF93549589317807B4B9162B64B50B5B1B0",
+    "approved_card_post_enqueue": "DF3DDA4DBB40B49E666EBD287CB9925174A704BECC228559FB8EF199794AD369",
+    "runtime_card": "4433AEAAAAB0E7C3259D423D3C42BD392997337C993D166669373F9F179C33CF",
+    "source_packet": "F8DB880A24BD0F24D75AFA0DF4DF192EE019321391E304B8B45A84929BA334DC",
+    "enqueue_evidence": "F9E0DB30EFA7552C716C83441F962E9E461B1FC75407F976F9CBB6815B41639E",
+    "ea_registry": "B8EA463CC1028E7B7B2F614328FA26ADE74C6E8C20B5A3354911D812EBE5C109",
+    "magic_registry": "96047053970221F6433B86AE6DF98C92B92CA5F270C05562D7A4C217CC681BA6",
+    "resolver": "89A1D4A7CC7267FCF641039C2002214BC53233B54582866095EDF330A1E16B77"
+  }
+}
