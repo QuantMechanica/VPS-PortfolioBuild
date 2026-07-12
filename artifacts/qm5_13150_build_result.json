@@ -1,0 +1,167 @@
+{
+  "task_id": "62dcab41-07d3-42d1-994b-32e35f37e0f1",
+  "ea_id": "QM5_13150",
+  "ea_label": "QM5_13150_wti-signmom",
+  "slug": "wti-signmom",
+  "strategy": "Monthly WTI return-sign momentum using the fixed fraction of non-negative returns over 12 completed months",
+  "strategy_id": "PAPAILIAS-RSM-2021_XTI_S02",
+  "source_id": "PAPAILIAS-RSM-2021",
+  "source_links": [
+    "https://doi.org/10.1016/j.jbankfin.2021.106063",
+    "https://pureadmin.qub.ac.uk/ws/files/229452162/RSM_011220.pdf"
+  ],
+  "symbols": [
+    "XTIUSD.DWX"
+  ],
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_13150_wti-signmom",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_13150_wti-signmom/QM5_13150_wti-signmom.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_13150_wti-signmom/QM5_13150_wti-signmom.ex5",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_13150_wti-signmom/SPEC.md",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_13150_wti-signmom.md",
+  "approved_card_path": "C:/QM/repo/strategy-seeds/cards/approved/QM5_13150_wti-signmom_card.md",
+  "canonical_card_path": "C:/QM/repo/strategy-seeds/cards/wti-signmom_card.md",
+  "source_packet_path": "C:/QM/repo/strategy-seeds/sources/PAPAILIAS-RSM-2021/source.md",
+  "runtime_build_result_path": "D:/QM/strategy_farm/artifacts/builds/62dcab41-07d3-42d1-994b-32e35f37e0f1.json",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_13150_wti-signmom/sets/QM5_13150_wti-signmom_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "magic_base": 131500000,
+  "magic": [
+    {
+      "slot": 0,
+      "symbol": "XTIUSD.DWX",
+      "magic": 131500000,
+      "registry_status": "active"
+    }
+  ],
+  "registry_validation": {
+    "ea_id_row": "13150,wti-signmom,PAPAILIAS-RSM-2021_XTI_S02,active,Research+Development (OWNER commodity-sleeve mission),2026-07-12",
+    "magic_rows": [
+      "13150,wti-signmom,0,XTIUSD.DWX,131500000,2026-07-12,Development,active"
+    ],
+    "resolver_contains_ea": true,
+    "resolver_rows_kept": 14891,
+    "magic_registry_sha256": "815945957F6F5142AA1B1FF413769ED633CF2108DFCD03707A8C1BEF1BCF4831",
+    "resolver_file_sha256": "7FBAF4564418F393DC7B8F80D7163E2B09DC73E38E9051DC038D338361337BB5",
+    "resolver_registry_sha_match": true,
+    "note": "Clean HEAD registries plus only EA 13150 were committed. Resolver generation and strict compilation used an LF-preserving isolated staged tree; unrelated dirty fleet allocations were not staged."
+  },
+  "build_commit": "9f0348c2298c929d954abaf3755022b2ef4ca93a",
+  "mq5_sha256": "0C038939EC0AC03AE5D76379B37FC21F15C8EB3A5BA93A3FC1331AE30310AAAC",
+  "ex5_sha256": "C798CCDF23E0CDB05100496858B2E188DC1DE97410EE6B27EA4CC220A2169C79",
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log": "D:/QM/reports/compile/20260712_021050/QM5_13150_wti-signmom.compile.log",
+  "compile_log_sha256": "080838F0D02A043C9A7F8DE27352B257652C841ABFAD1ACDB4031D7EE2CC6FC2",
+  "compile_summary": "D:/QM/reports/compile/20260712_021050/summary.csv",
+  "compile_reproducibility": "PASS_SOURCE_RECOMPILE_FROM_LF_SAFE_CLEAN_STAGED_TREE",
+  "build_check_passed": true,
+  "build_check_failures": 0,
+  "build_check_warnings": 0,
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260712_021057.json",
+  "build_check_report_sha256": "2A2CB1392F95402B9E6C86FA85D8244C061E734D0B16B8B7C11A1A2C0087552B",
+  "spec_validation": "PASS",
+  "guardrail_validation": "PASS",
+  "symbol_scope_validation": "SINGLE_SYMBOL_OK",
+  "card_schema_validation": "PASS",
+  "g0_card_validation": "PASS",
+  "setfile_build_hash": "0baad49d5117aca7f14668602ef90e0b9a601e4b47b5b53bfa9f235abc3678bc",
+  "setfile_sha256": "B55CA435C6BC35A3C94C9465D5B383FD75B1D5C3516CD6295520C03401CBB1FD",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Build-only paced Q02 enqueue requested; no manual MT5 tester, dispatch tick, worker tick, terminal launch, smoke test, or backtest was started.",
+  "blocked_reason": null,
+  "open_questions": [
+    "The source's individual WTI RSM0.4 appendix result has a larger maximum drawdown than conventional TSM; the Q02 prior is deliberately low.",
+    "The source uses rolled futures and portfolio volatility scaling while this executable uses a continuous Darwinex CFD and a fixed-risk ATR stop.",
+    "Different WTI exposure and a count-of-signs statistic do not establish low realized correlation to the certified book; later portfolio gates alone can measure it."
+  ],
+  "validations": {
+    "dedup": "FUZZY_SAME_SOURCE_SYMBOL_EXTENSION_MANUALLY_RESOLVED",
+    "card_schema": "PASS",
+    "g0_card": "PASS",
+    "spec_doc": "PASS",
+    "build_guardrails": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "strict_compile": "PASS_0_ERRORS_0_WARNINGS",
+    "build_check": "PASS_0_FAILURES_0_WARNINGS",
+    "risk_mode": "PASS",
+    "setfile_build_hash": "PASS",
+    "resolver_registry_sha_match": "PASS"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "reputable_primary_source": true,
+    "wti_count_of_signs_not_cumulative_tsmom": true,
+    "manual_backtest_cpu_used": false
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false
+  },
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_13150",
+    "enqueued": [
+      {
+        "work_item_id": "a88b8890-3cb2-4ec7-bff0-bc72325057dd",
+        "symbol": "XTIUSD.DWX",
+        "timeframe": "D1",
+        "status": "pending",
+        "attempt_count": 0,
+        "claimed_by": null,
+        "setfile": "QM5_13150_wti-signmom_XTIUSD.DWX_D1_backtest.set",
+        "enqueued_at": "2026-07-12T02:13:38+00:00"
+      }
+    ],
+    "skipped": []
+  },
+  "q02": {
+    "phase": "Q02",
+    "work_item_id": "a88b8890-3cb2-4ec7-bff0-bc72325057dd",
+    "status_at_handoff": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "symbol": "XTIUSD.DWX",
+    "host_symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_13150_wti-signmom/sets/QM5_13150_wti-signmom_XTIUSD.DWX_D1_backtest.set",
+    "risk_payload": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "enqueued_at_utc": "2026-07-12T02:13:38+00:00",
+    "note": "Auto-enqueued by farmctl record-build. No dispatch, tester, worker tick, terminal launch, or backtest was started."
+  },
+  "file_hashes_sha256": {
+    "mq5": "0C038939EC0AC03AE5D76379B37FC21F15C8EB3A5BA93A3FC1331AE30310AAAC",
+    "ex5": "C798CCDF23E0CDB05100496858B2E188DC1DE97410EE6B27EA4CC220A2169C79",
+    "spec": "A1CBD242BF49FF51CFCCF85EE88FD208B8C638F0CB3FE3E9AA13822D52858F08",
+    "embedded_card": "C1DC286C21563697C9FB4F9D8993AEDAA2FF7F6D7DC65C126DF492463DEDAAA6",
+    "setfile": "B55CA435C6BC35A3C94C9465D5B383FD75B1D5C3516CD6295520C03401CBB1FD",
+    "canonical_card_pre_enqueue": "963EF3C51845261B13CC65AE2BFA16AF34296C24797DA4BF0885A024F2D67481",
+    "canonical_card_post_enqueue": "938C15D4734A96B67AF3E904AD485FEA821330BAD0520D62EECD4F49A57F27A6",
+    "approved_card_pre_enqueue": "196122C170BA78D611CF3350099E9EA5D3F352441B0581E616EB55EC5AF793F9",
+    "approved_card_post_enqueue": "C53D4E1670F576269BAED8BF5294DAEE72B4823FA68D33729423C5D068E1A68C",
+    "source_packet": "5EFDB021EE4D1B00A2D7CE356A5EACA85511896C4FD999A5B069B5F936ABA32F",
+    "enqueue_evidence": "DB7E2A5CF61D38AF41AAE7D4DA321D165C66C9BE3EAA9A18D1F92B2C97075B50",
+    "ea_registry": "CF67FA2754EC171AE0F0967AE95D3217ED00C548AAFC12B0E6AAD8BA51F55F24",
+    "magic_registry": "815945957F6F5142AA1B1FF413769ED633CF2108DFCD03707A8C1BEF1BCF4831",
+    "resolver": "7FBAF4564418F393DC7B8F80D7163E2B09DC73E38E9051DC038D338361337BB5"
+  }
+}

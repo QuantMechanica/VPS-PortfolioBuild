@@ -31,4 +31,5 @@ The WTI carrier is explicitly linked to the existing XNG source sibling. Its
 signal statistic remains distinct from cumulative-return WTI TSMOM. Approval
 preserves the paper's adverse individual WTI drawdown, futures-to-CFD basis,
 cost, and unproven book correlation as binding pipeline risks. No live artifact
-or portfolio admission is approved.
+or portfolio admission is approved. Q01 passed and Q02 work item
+`a88b8890-3cb2-4ec7-bff0-bc72325057dd` is pending.
