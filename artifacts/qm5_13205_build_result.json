@@ -1,0 +1,186 @@
+{
+  "task_id": "2774ef4d-0a43-47e6-b5ff-abf01a614630",
+  "ea_id": "QM5_13205",
+  "ea_label": "QM5_13205_xau-xag-qc",
+  "slug": "xau-xag-qc",
+  "strategy": "Monthly exact conditional-quantile XAU/XAG relative-value envelope with weekly paired decisions",
+  "strategy_id": "SCHWEIKERT-QC-2018_XAU_XAG_S01",
+  "source_id": "SCHWEIKERT-QC-2018",
+  "source_links": [
+    "https://doi.org/10.1016/j.jbankfin.2017.11.010",
+    "https://karstenschweikert.github.io/qcoint/qcoint_20171121_preprint.pdf"
+  ],
+  "symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "logical_symbol": "QM5_13205_XAU_XAG_QC_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_13205_xau-xag-qc",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_13205_xau-xag-qc/QM5_13205_xau-xag-qc.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_13205_xau-xag-qc/QM5_13205_xau-xag-qc.ex5",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_13205_xau-xag-qc/SPEC.md",
+  "basket_manifest": "C:/QM/repo/framework/EAs/QM5_13205_xau-xag-qc/basket_manifest.json",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_13205_xau-xag-qc.md",
+  "approved_card_path": "C:/QM/repo/strategy-seeds/cards/approved/QM5_13205_xau-xag-qc_card.md",
+  "canonical_card_path": "C:/QM/repo/strategy-seeds/cards/xau-xag-qc_card.md",
+  "source_packet_path": "C:/QM/repo/strategy-seeds/sources/SCHWEIKERT-QC-2018/source.md",
+  "runtime_build_result_path": "D:/QM/strategy_farm/artifacts/builds/2774ef4d-0a43-47e6-b5ff-abf01a614630.json",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_13205_xau-xag-qc/sets/QM5_13205_xau-xag-qc_QM5_13205_XAU_XAG_QC_D1_D1_backtest.set"
+  ],
+  "magic_base": 132050000,
+  "magic": [
+    {
+      "slot": 0,
+      "symbol": "XAUUSD.DWX",
+      "magic": 132050000,
+      "registry_status": "active"
+    },
+    {
+      "slot": 1,
+      "symbol": "XAGUSD.DWX",
+      "magic": 132050001,
+      "registry_status": "active"
+    }
+  ],
+  "registry_validation": {
+    "ea_id_row": "13205,xau-xag-qc,SCHWEIKERT-QC-2018_XAU_XAG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-12",
+    "resolver_contains_ea": true,
+    "resolver_rows_kept": 14908,
+    "magic_registry_sha256": "F5C513740F19213D9EB0ED9696D4D8CEEC40C63C1C36CE533C25D4DACCF86C1F",
+    "resolver_file_sha256": "3E5019D0112373B5507E13AF0B0C1A139F012F95948D09B4527235F9F6533C90",
+    "resolver_registry_sha_match": true,
+    "committed_ea_registry_sha256": "A090CB7B9B053CC8516F92F547B4745FB9F3074DF39D444160199DC364106C9B",
+    "note": "The EA-ID registry commit contains only the 13205 row; unrelated pre-existing working-tree fleet rows were preserved unstaged."
+  },
+  "build_commit": "eb668adde587582aaebda5b6db4ddcec6f330837",
+  "mq5_sha256": "76972C494B91BBFDCFE6A62384E9050DB9E5DFE221F7251C6FECAE2838B8771B",
+  "ex5_sha256": "D5D7BF2C37F3F6005BE769F18530CD8AE523D33FFD0AD34ACFD9E04A3053AF74",
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log": "C:/QM/repo/framework/build/compile/20260712_190104/QM5_13205_xau-xag-qc.compile.log",
+  "compile_log_sha256": "9D9842F2492C8B9782127FDE4D44DB47DDBBF152118C6F4A64F286EF48CA9B47",
+  "compile_summary": "D:/QM/reports/compile/20260712_190104/summary.csv",
+  "compile_summary_sha256": "DD13B11C1809EC3640E7BDAFA91CD10C2EE70143CF14D06FEE650BAC1FC60247",
+  "build_check_passed": true,
+  "build_check_failures": 0,
+  "build_check_warnings": 0,
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260712_190104.json",
+  "build_check_report_sha256": "8DFA334143428213F6ED427D52B87FF9D88183A9A7722868C1428BF68C88CEE2",
+  "spec_validation": "PASS",
+  "guardrail_validation": "PASS",
+  "symbol_scope_validation": "BASKET_OK",
+  "card_schema_validation": "PASS",
+  "g0_card_validation": "PASS_APPROVED_FRONTMATTER",
+  "semantic_review": "PASS_ALL_SIX_RESTART_SAFETY_PARAMETER_FIDELITY_AND_GOVERNANCE_FINDINGS_RESOLVED",
+  "setfile_build_hash": "8195bf0199d5392ecdf086c8e85645b20495297e7798b4b547909e1956db7602",
+  "setfile_sha256": "F1668B54B120825A5B4D80736081F8C7E00A5156B8188A20AC3AFEF0F4A3B07E",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Build-only paced Q02 enqueue requested; no manual MT5 tester, dispatch tick, worker tick, terminal launch, smoke test, or backtest was started.",
+  "blocked_reason": null,
+  "open_questions": [
+    "The paper does not publish a profitable forecasting or trading rule and reports material upper-tail fragility; expected PF 1.01 is a deliberately near-null prior.",
+    "Logs, rolling 504-pair formation, 10/50/90 quantiles, slope-span gate, envelope entries, median exits, and risk rules are disclosed QM mechanizations rather than a paper replication.",
+    "A beta-target opposite-leg package does not establish realized decorrelation from the certified metal/index book; only later portfolio gates may measure it."
+  ],
+  "validations": {
+    "dedup": "CLEAN_PRE_ALLOCATION",
+    "card_schema": "PASS",
+    "g0_card": "PASS_APPROVED_FRONTMATTER",
+    "spec_doc": "PASS",
+    "build_guardrails": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "strict_compile": "PASS_0_ERRORS_0_WARNINGS",
+    "build_check": "PASS_0_FAILURES_0_WARNINGS",
+    "semantic_reaudit": "PASS",
+    "quantile_solver_deterministic_check": "PASS_25_CASES_X_3_TAUS_AGAINST_EXHAUSTIVE_CANDIDATES",
+    "joint_risk_notional_algebra": "PASS",
+    "risk_mode": "PASS",
+    "setfile_build_hash": "PASS",
+    "resolver_registry_sha_match": "PASS"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "market_neutral_intent_not_claimed_result": true,
+    "risk_fixed_backtest_setfile": true,
+    "reputable_primary_source": true,
+    "quantile_specific_check_loss_logic_load_bearing": true,
+    "manual_backtest_cpu_used": false
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false
+  },
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_13205",
+    "enqueued": [
+      {
+        "work_item_id": "be5ffa78-fdfb-4718-af89-5f7fc7e8dee3",
+        "symbol": "QM5_13205_XAU_XAG_QC_D1",
+        "timeframe": "D1",
+        "status": "pending",
+        "attempt_count": 0,
+        "claimed_by": null,
+        "setfile": "QM5_13205_xau-xag-qc_QM5_13205_XAU_XAG_QC_D1_D1_backtest.set",
+        "enqueued_at": "2026-07-12T19:07:11+00:00"
+      }
+    ],
+    "skipped": []
+  },
+  "q02": {
+    "phase": "Q02",
+    "work_item_id": "be5ffa78-fdfb-4718-af89-5f7fc7e8dee3",
+    "status_at_handoff": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "symbol": "QM5_13205_XAU_XAG_QC_D1",
+    "host_symbol": "XAUUSD.DWX",
+    "timeframe": "D1",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_13205_xau-xag-qc/sets/QM5_13205_xau-xag-qc_QM5_13205_XAU_XAG_QC_D1_D1_backtest.set",
+    "basket_symbols": [
+      "XAUUSD.DWX",
+      "XAGUSD.DWX"
+    ],
+    "risk_payload": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "enqueued_at_utc": "2026-07-12T19:07:11+00:00",
+    "note": "Auto-enqueued by farmctl record-build. No dispatch, tester, worker tick, terminal launch, or backtest was started."
+  },
+  "file_hashes_sha256": {
+    "mq5": "76972C494B91BBFDCFE6A62384E9050DB9E5DFE221F7251C6FECAE2838B8771B",
+    "ex5": "D5D7BF2C37F3F6005BE769F18530CD8AE523D33FFD0AD34ACFD9E04A3053AF74",
+    "spec": "FCDA16520FA7F2E5D83D33F68111D39669560E5753F4503499AA272FEF00AC34",
+    "embedded_card": "4A5A37D0DDC2843459211632592AD35F4651F324AED11F09568BBB6C54FFB1B2",
+    "basket_manifest": "6587999491EEC4290CF4681DE3BAF60731D9DD99F5991B04987C25DAE1D97EE5",
+    "setfile": "F1668B54B120825A5B4D80736081F8C7E00A5156B8188A20AC3AFEF0F4A3B07E",
+    "canonical_card_pre_enqueue": "8A3A459ACB45A59EB56AEDF5A1A63B2E371B2FF26C6564B76D3ACACCC60569E2",
+    "approved_card_pre_enqueue": "7EF6774FADFAD25631069EF92B0C60C6788569990996A7D81355F7CDD88E8CC2",
+    "canonical_card_post_enqueue": "55FC3EF2E5701C988C4E14B4A94551DDA98625C2402AD139846202E7DE8431A5",
+    "approved_card_post_enqueue": "355FB3C4E9177266F1B991C4654D989A099A2AD3B1E97A76B9081A39ABB0D5AE",
+    "runtime_card_pre_enqueue": "89FEEE54C8E257BB5F311C269E5268CF590CF2A1052A124F1F34AABCB16C31D5",
+    "runtime_card_post_enqueue": "A408D44CEB454775748027E3083940C798C49702778E5F1D2D1F8F82A6D2666A",
+    "source_packet": "7C409472768550C1F3A4A58CB22E12A6E915EB752B09ABC8E9B98F3E99048FFA",
+    "enqueue_evidence": "F3C4BB24D3ECA0EFB6E1582689D887F55E73E99446EBE5D5D9F9D69EF2A5BED1",
+    "ea_registry": "A090CB7B9B053CC8516F92F547B4745FB9F3074DF39D444160199DC364106C9B",
+    "magic_registry": "F5C513740F19213D9EB0ED9696D4D8CEEC40C63C1C36CE533C25D4DACCF86C1F",
+    "resolver": "3E5019D0112373B5507E13AF0B0C1A139F012F95948D09B4527235F9F6533C90"
+  }
+}

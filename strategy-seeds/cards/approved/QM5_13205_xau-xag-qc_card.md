@@ -17,7 +17,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
+pipeline_phase: Q02
 ---
 
 # Approved Card Copy - QM5_13205_xau-xag-qc
@@ -49,3 +49,11 @@ Replacing asymmetric check-loss coefficients with OLS, a fixed beta, z-score,
 raw ratio, channel, stochastic, Kalman, or return-spread logic is outside this
 approval and collides with existing builds. Live artifacts, portfolio
 admission, and portfolio-gate changes are not approved.
+
+## Q01/Q02 handoff
+
+Q01 passed strict compilation with zero errors/warnings, the full build check
+with zero failures/warnings, SPEC/card/guardrail/basket-scope validation, and
+an independent semantic re-audit. On 2026-07-12, `farmctl record-build`
+enqueued one logical Q02 item, `be5ffa78-fdfb-4718-af89-5f7fc7e8dee3`,
+pending at attempt 0 and unclaimed. No tester or backtest was launched.

@@ -32,7 +32,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
+pipeline_phase: Q02
 review_focus: "Strictly falsify a state-dependent XAU/XAG conditional-quantile envelope. Exact constrained check-loss regression, quantile-varying slopes, the beta-asymmetry gate, source adverse evidence, beta-target notional sizing, and one logical basket are load-bearing."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -279,7 +279,7 @@ falsification risks, not claims of replication.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-12 | initial state-dependent XAU/XAG quantile envelope | Q01 | PASS |
+| v1 | 2026-07-12 | initial state-dependent XAU/XAG quantile envelope | Q02 | ENQUEUED |
 
 ## Pipeline phase status
 
@@ -287,7 +287,7 @@ falsification risks, not claims of replication.
 |---|---|---|---|
 | G0 Research Intake | 2026-07-12 | APPROVED | this card |
 | Q01 Build Validation | 2026-07-12 | PASS | strict compile/build-check evidence pending Q02 handoff record |
-| Q02 Baseline Screening | TBD | TBD | TBD |
+| Q02 Baseline Screening | 2026-07-12 | ENQUEUED | docs/ops/evidence/2026-07-12_qm5_13205_xau_xag_qc_q02_enqueue.md |
 
 ## Lessons captured
 
