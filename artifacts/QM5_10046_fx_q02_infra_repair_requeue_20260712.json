@@ -1,0 +1,112 @@
+{
+  "ea_id": "QM5_10046",
+  "ea_slug": "ff-momentum-div-h4",
+  "branch": "agents/board-advisor",
+  "unit": "diverse_q02_infrastructure_recovery",
+  "instrument_class": "forex",
+  "card_status": "APPROVED",
+  "source": {
+    "type": "forum",
+    "pointer": "https://www.forexfactory.com/thread/423512-best-trading-system-only-momentum",
+    "reputable_source_gate": "R1-R4 PASS on approved Strategy Card"
+  },
+  "claim": {
+    "event": "repair_claimed",
+    "timestamp_utc": "2026-07-12T05:00:48+00:00",
+    "agent": "codex:agents/board-advisor:qm5-10046:20260712T050048Z",
+    "lease_key": "manual:codex:agents/board-advisor:QM5_10046:q02-infra-recovery",
+    "lease_expires_at": "2026-07-12T08:00:48+00:00"
+  },
+  "prior_state": {
+    "phase": "Q02",
+    "failed_infra_work_items": 48,
+    "pending_work_items": 0,
+    "usable_business_verdicts": 0
+  },
+  "diagnosis": [
+    "Entry rejected ask == bid even though Darwinex .DWX tester bars can legitimately model zero spread.",
+    "Exit and entry each consumed QM_IsNewBar independently, so the first consumer could starve the second.",
+    "News gating ran before position management and rule-based exits instead of blocking new entries only.",
+    "Backtest setfiles omitted the locked strategy inputs and carried obsolete filter-library keys."
+  ],
+  "repair": [
+    "Reject only inverted quotes (ask < bid), while retaining non-positive quote guards.",
+    "Latch one H4 new-bar event and share it between opposite-divergence exit and entry evaluation.",
+    "Keep position management and exits ahead of the entry-only news gate.",
+    "Zero-initialize QM_EntryRequest and refresh all four explicit RISK_FIXED setfiles."
+  ],
+  "strategy_logic_changed": false,
+  "symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "XAUUSD.DWX"
+  ],
+  "timeframe": "H4",
+  "risk": {
+    "mode": "RISK_FIXED",
+    "value": 1000,
+    "portfolio_weight": 1
+  },
+  "validation": {
+    "spec": "PASS",
+    "build_check": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:\\QM\\reports\\framework\\21\\build_check_20260712_050513.json"
+    },
+    "compile": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "summary": "D:\\QM\\reports\\compile\\20260712_050522\\summary.csv"
+    },
+    "smoke": {
+      "result": "PASS",
+      "symbol": "EURUSD.DWX",
+      "period": "H4",
+      "year": 2024,
+      "model": 4,
+      "terminal": "T6",
+      "deterministic": true,
+      "runs": 2,
+      "trades_each_run": 37,
+      "profit_factor_each_run": 0.72,
+      "net_profit_each_run": -3775.1,
+      "drawdown_each_run": 6650.35,
+      "oninit_failure": false,
+      "log_bomb": false,
+      "summary": "D:\\QM\\reports\\smoke\\QM5_10046\\20260712_050548\\summary.json"
+    }
+  },
+  "hashes": {
+    "mq5_sha256": "3758f7a81bbc15a20b397e3468719bda7f4b1744d08efcc6d47fda1fe03599e5",
+    "ex5_sha256": "96b3bba936142621e5fe97e0da478c84e75a6470578ebbf35427a666590fc8f8",
+    "setfile_build_hashes": {
+      "EURUSD.DWX": "d224d1d4489bc2507ee57202b7f5c34ddbfc5e6d8e7996894f09ba23743bad4b",
+      "GBPUSD.DWX": "4229a7722cb0f38734e467f107a99a5da6125a8ce8c0c34e6dd160eacaea6c0a",
+      "USDJPY.DWX": "e94bf890f09346c873946bd898fcee866e774df11629849da970ad2dbc15b64b",
+      "XAUUSD.DWX": "8fbbdae54d634c482856a528c241851af3df213d25d653371bf5d4fa51b21bc3"
+    }
+  },
+  "q02_enqueue": {
+    "review_task_id": "9ee29ddc-b765-440a-8013-81b82ae7db95",
+    "task_id": "be8bd717-b91f-4a6c-83b8-586a1909bef9",
+    "status": "pending",
+    "work_items": {
+      "EURUSD.DWX": "7d971502-c148-4717-aecf-ee2b93fb6372",
+      "GBPUSD.DWX": "7826c881-a5ba-4d57-8be8-d4954604bc5e",
+      "USDJPY.DWX": "91510762-d36b-4753-ba44-18e2595419c8",
+      "XAUUSD.DWX": "a42b78c6-2bb8-45e8-b1c0-4403f2269c54"
+    },
+    "factory_off_preserved": true,
+    "dispatch_invoked": false
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "t_live_manifest_touched": false,
+    "autotrading_toggled": false
+  }
+}

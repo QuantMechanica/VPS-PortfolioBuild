@@ -236,7 +236,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(point <= 0.0 || ask <= 0.0 || bid <= 0.0 || ask <= bid)
+   // Darwinex tester bars can legitimately model a zero spread (ask == bid).
+   // Reject inverted quotes, but do not fail closed on that valid `.DWX` case.
+   if(point <= 0.0 || ask <= 0.0 || bid <= 0.0 || ask < bid)
       return false;
 
    const double spread_buffer = (ask - bid) + MathMax(0.0, strategy_extra_buffer_points) * point;
@@ -337,9 +339,6 @@ bool Strategy_ExitSignal()
    if(!HasOurPosition(pos_type))
       return false;
 
-   if(!QM_IsNewBar(_Symbol, (ENUM_TIMEFRAMES)_Period))
-      return false;
-
    double point_c = 0.0;
    double point_f = 0.0;
    if(pos_type == POSITION_TYPE_BUY)
@@ -397,24 +396,19 @@ void OnTick()
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
    if(Strategy_NoTradeFilter())
       return;
 
+   // Consume the closed-bar event exactly once. Entry and opposite-divergence
+   // exit both use the same latched event instead of racing two QM_IsNewBar calls.
+   const bool is_new_bar = QM_IsNewBar(_Symbol, (ENUM_TIMEFRAMES)_Period);
+
    Strategy_ManageOpenPosition();
 
-   if(Strategy_ExitSignal())
+   if(is_new_bar && Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
       for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -428,12 +422,25 @@ void OnTick()
         }
      }
 
-   if(!QM_IsNewBar())
+   // News blocks new risk only. Position management and rule-based exits above
+   // remain active throughout event windows.
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
+   if(!is_new_bar)
       return;
 
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;

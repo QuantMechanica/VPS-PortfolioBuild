@@ -4,7 +4,7 @@
 **Slug:** ff-momentum-div-h4
 **Source:** 6e967762-b26d-59a3-b076-35c17f2e7c36 (see `strategy-seeds/sources/6e967762-b26d-59a3-b076-35c17f2e7c36/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-11
+**Last revised:** 2026-07-12
 
 ---
 
@@ -95,3 +95,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-11 | Initial build from card | 529592ee-729a-4d48-ac53-ae4414ed2e74 |
+| v1.1 | 2026-07-12 | Q02 infrastructure recovery | Allowed valid zero-spread `.DWX` quotes, latched the new-bar event once, moved news gating to entry-only, and refreshed explicit RISK_FIXED setfiles. Strategy rules are unchanged. |
