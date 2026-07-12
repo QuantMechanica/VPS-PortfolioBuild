@@ -1,0 +1,158 @@
+{
+  "generated_at_utc": "2026-07-12T08:42:01.2363360Z",
+  "operator": "codex:agents/board-advisor",
+  "branch": "agents/board-advisor",
+  "base_commit": "86571fa0f5d554277fb4b7794857a68a1171fe11",
+  "mission_unit": "priority_2_diverse_fx_q02_infra_repair_and_single_row_requeue",
+  "selection": {
+    "priority_1_available": false,
+    "reason": "The only unbuilt approved diversity cards require unavailable rates/lumber feeds; the remaining build candidate is a high-frequency index/metal card. QM5_1634 is an approved low-frequency structural H1 breakout on two FX symbols and gold, has no downstream economic verdict, and its latest Q02 cohort ended only in infrastructure failures.",
+    "ea_id": "QM5_1634",
+    "ea_label": "QM5_1634_mql5-consolid-break",
+    "source_id": "ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb",
+    "source": "Allan Munene Mutiiria, Developing an Expert Advisor (EA) based on the Consolidation Range Breakout strategy in MQL5, 2024-07-17, article 15311",
+    "approval": "G0 APPROVED; R1-R4 PASS",
+    "symbols": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "XAUUSD.DWX"
+    ],
+    "timeframe": "H1",
+    "expected_trades_per_year_per_symbol": 20,
+    "effective_q02_min_trades": 10
+  },
+  "farm_coordination": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "agent_task_id": "babba558-999c-4a5a-823d-f9866cf3035c",
+    "claim_key": "manual:codex:agents/board-advisor:QM5_1634:q02-infra-repair:20260712T082750Z",
+    "claim_owner": "codex:agents/board-advisor",
+    "claim_acquired_at_utc": "2026-07-12T08:27:50.957989+00:00",
+    "claim_expires_at_utc": "2026-07-12T10:27:50.957989+00:00",
+    "claim_database_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_1634_q02_infra_claim_20260712T082750Z.sqlite",
+    "competing_active_claims_at_requeue": 0,
+    "open_q02_q03_rows_before_requeue": 0,
+    "downstream_rows_before_requeue": 0
+  },
+  "prior_failure_evidence": {
+    "latest_q02_cohort_created_at": "2026-06-19T05:49:05+00:00",
+    "eurusd": {
+      "work_item_id": "b95cbf7e-9799-4ea9-8428-f24cf70d4730",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "attempt_count": 99,
+      "reason": "summary_missing_retries_exhausted"
+    },
+    "gbpusd": {
+      "work_item_id": "93e9bf32-f6d9-45b9-aaf1-51e3d49af5d9",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "reason": "ONINIT_FAILED;INCOMPLETE_RUNS"
+    },
+    "xauusd": {
+      "work_item_id": "8b661e8f-b7df-4324-b967-3a918f14d5f1",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "reason": "summary_missing_retries_exhausted"
+    },
+    "pre_repair_source_sha256": "e75cfd9431252de23f379df99c297c9d17cead08c846e8bd26e124da0cd92be8",
+    "pre_repair_ex5_sha256": "468c38fb29e954c1e821e180bc41823215e4d77433b8b62ce3e73290f7baab5f",
+    "pre_repair_ex5_bytes": 272452
+  },
+  "diagnosis": [
+    "The breakout signal used close[1] while bar 1 was included in its own highest-high/lowest-low range, making close[1] above that high or below that low mathematically impossible.",
+    "The multi-bar consolidation width was compared directly with one-bar ATR, a DWX zero-trade translation class; the cap now uses a square-root-of-window volatility baseline.",
+    "range_min_bars was inert because the old scan always counted range_lookback bars. The repaired scan evaluates contiguous suffixes from the approved minimum through the configured lookback and retains the longest qualifying range.",
+    "The breakout bar leaked into the ATR used to classify the prior consolidation. Classification now uses ATR shift 2; stop sizing remains on the completed signal bar at shift 1.",
+    "The EA lacked a validated SPEC and its backtest setfiles omitted qm_ea_id, authoritative card traceability, and current nonzero build hashes.",
+    "Undocumented session/spread filters and the wall-clock 24-hour exit were removed so Q02 measures the approved consolidation breakout, SL/TP, and optional midpoint exit."
+  ],
+  "repair": {
+    "source": "framework/EAs/QM5_1634_mql5-consolid-break/QM5_1634_mql5-consolid-break.mq5",
+    "spec": "framework/EAs/QM5_1634_mql5-consolid-break/SPEC.md",
+    "approval_receipt": "framework/EAs/QM5_1634_mql5-consolid-break/docs/strategy_card.md",
+    "new_source_sha256": "c63ec006f46666aeca4f2534b8a074ee85ffbce932996752bdd0a47e6da9cb1c",
+    "new_ex5_sha256": "9f15049f34b8fdaed9b540b0e3303491a60831d01ecdfe353873e0e39cf28bea",
+    "new_ex5_bytes": 318364,
+    "setfiles": {
+      "EURUSD.DWX": {
+        "path": "framework/EAs/QM5_1634_mql5-consolid-break/sets/QM5_1634_mql5-consolid-break_EURUSD.DWX_H1_backtest.set",
+        "sha256": "bb8f1052aa19d9bd1b01e9aae8bedb105082a2317bd5ac7e79f54c95b3ca2362",
+        "magic_slot": 0
+      },
+      "GBPUSD.DWX": {
+        "path": "framework/EAs/QM5_1634_mql5-consolid-break/sets/QM5_1634_mql5-consolid-break_GBPUSD.DWX_H1_backtest.set",
+        "sha256": "97c668c0d6ff91722d5b2eae19a59373b006a7901ccce50ed939456d41160f65",
+        "magic_slot": 1
+      },
+      "XAUUSD.DWX": {
+        "path": "framework/EAs/QM5_1634_mql5-consolid-break/sets/QM5_1634_mql5-consolid-break_XAUUSD.DWX_H1_backtest.set",
+        "sha256": "dba30b738d4430c6fc13502904a2fd6cbc5a82b73ec3db2ca62a0adabba2385c",
+        "magic_slot": 2
+      },
+      "risk_contract": "backtest RISK_FIXED=1000, RISK_PERCENT=0, PORTFOLIO_WEIGHT=1",
+      "strategy_inputs_explicit": true,
+      "qm_ea_id_explicit": true,
+      "card_defaults_source_authoritative": true
+    }
+  },
+  "validation": {
+    "spec_validator": {
+      "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_1634_mql5-consolid-break",
+      "result": "PASS"
+    },
+    "build_check": {
+      "command": "pwsh -NoProfile -File framework/scripts/build_check.ps1 -EALabel QM5_1634_mql5-consolid-break",
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260712_083922.json"
+    },
+    "strict_compile": {
+      "command": "pwsh -NoProfile -File framework/scripts/compile_one.ps1 -EALabel QM5_1634_mql5-consolid-break -Strict",
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "C:/QM/repo/framework/build/compile/20260712_083943/QM5_1634_mql5-consolid-break.compile.log",
+      "summary": "D:/QM/reports/compile/20260712_083943/summary.csv"
+    },
+    "git_diff_check": "PASS"
+  },
+  "queue_handoff": {
+    "action": "reset one existing EURUSD Q02 INFRA_FAIL row in place",
+    "work_item_id": "b95cbf7e-9799-4ea9-8428-f24cf70d4730",
+    "symbol": "EURUSD.DWX",
+    "phase": "Q02",
+    "status_after": "pending",
+    "verdict_after": null,
+    "attempt_count_after": 0,
+    "claimed_by_after": null,
+    "updated_at_utc": "2026-07-12T08:41:24.490479+00:00",
+    "database_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_1634_q02_requeue_20260712T084124Z.sqlite",
+    "duplicate_work_item_created": false,
+    "open_q02_q03_rows_after": 1,
+    "manual_dispatch_started": false
+  },
+  "fleet_ceiling": {
+    "factory_off_flag": "D:/QM/strategy_farm/state/FACTORY_OFF.flag",
+    "factory_off_flag_last_write_utc": "2026-07-10T17:25:52.3261035Z",
+    "terminal64_process_count": 3,
+    "pipeline_terminal_observed": "T4",
+    "non_pipeline_terminals_observed_read_only": [
+      "T_Live",
+      "FTMO"
+    ],
+    "backtest_or_smoke_launched": false,
+    "stop_at_ceiling_respected": true
+  },
+  "safety": {
+    "structural_only": true,
+    "ml_or_banned_indicator_added": false,
+    "risk_fixed_backtest_contract": true,
+    "duplicate_queue_row_created": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "manual_mt5_backtest_launched": false
+  }
+}

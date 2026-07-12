@@ -34,8 +34,6 @@ input int    range_min_bars        = 10;
 input double range_max_atr         = 1.5;
 input double atr_sl_mult           = 1.0;
 input double rr_target             = 2.0;
-input int    max_spread_points     = 25;
-input int    no_trade_first_bars   = 2;
 
 // ----------------------------------------------------------------------
 // Helper functions
@@ -45,33 +43,52 @@ input int    no_trade_first_bars   = 2;
 // Consolidation range detection
 // ----------------------------------------------------------------------
 double g_consol_high = 0, g_consol_low = 0;
-int g_consol_start_bar = 0;
 bool g_consol_active = false;
 
 void FindConsolidation()
 {
    g_consol_high = 0;
-   g_consol_low = DBL_MAX;
-   double range_sum = 0;
-   int range_count = 0;
-   const double atr14 = QM_ATR(_Symbol, PERIOD_H1, 14, 1);
+   g_consol_low = 0;
+   g_consol_active = false;
+
+   // Shift 2 keeps the breakout bar out of both the range and the volatility
+   // baseline used to classify that preceding range.
+   const double atr14 = QM_ATR(_Symbol, PERIOD_H1, 14, 2);
    if(atr14 <= 0) { g_consol_active = false; return; }
 
-   for(int b = 1; b <= range_lookback; b++)
+   // The signal is close[1], so the consolidation window must end at bar 2.
+   // Including bar 1 in its own high/low made close[1] > range high (or below
+   // range low) impossible and starved every entry.
+   double scan_high = 0.0;
+   double scan_low = DBL_MAX;
+   for(int b = 2; b <= range_lookback + 1; b++)
    {
-      double h = iHigh(_Symbol, PERIOD_H1, b);
-      double l = iLow(_Symbol, PERIOD_H1, b);
-      if(h > g_consol_high) g_consol_high = h;
-      if(l < g_consol_low) g_consol_low = l;
-      range_sum += (h - l);
-      range_count++;
+      const double h = iHigh(_Symbol, PERIOD_H1, b); // perf-allowed: bounded structural OHLC scan, called only after QM_IsNewBar.
+      const double l = iLow(_Symbol, PERIOD_H1, b);  // perf-allowed: bounded structural OHLC scan, called only after QM_IsNewBar.
+      if(h <= 0.0 || l <= 0.0 || h < l)
+        {
+         g_consol_active = false;
+         return;
+        }
+      if(h > scan_high) scan_high = h;
+      if(l < scan_low) scan_low = l;
+
+      const int candidate_bars = b - 1;
+      if(candidate_bars < range_min_bars)
+         continue;
+
+      // Scale each candidate window to its own multi-bar volatility baseline.
+      // Comparing a multi-bar high-low directly with one ATR is the DWX
+      // zero-trade class. Retain the longest qualifying contiguous suffix.
+      const double total_range = scan_high - scan_low;
+      const double multi_bar_atr = atr14 * MathSqrt((double)candidate_bars);
+      if(total_range > 0.0 && total_range <= range_max_atr * multi_bar_atr)
+        {
+         g_consol_high = scan_high;
+         g_consol_low = scan_low;
+         g_consol_active = true;
+        }
    }
-
-   if(range_count < range_min_bars) { g_consol_active = false; return; }
-   double avg_range = range_sum / range_count;
-   double total_range = g_consol_high - g_consol_low;
-
-   g_consol_active = (total_range < range_max_atr * atr14);
 }
 
 
@@ -112,13 +129,12 @@ void CloseAll(const QM_ExitReason reason)
 // ----------------------------------------------------------------------
 bool Strategy_NoTradeFilter()
   {
-   if(max_spread_points > 0)
-   {
-      const int spread = (int)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-      if(spread > max_spread_points) return true;
-   }
-   const int bars_today = Bars(_Symbol, PERIOD_H1, iTime(_Symbol, PERIOD_D1, 0), TimeCurrent());
-   if(bars_today < no_trade_first_bars + 1) return true;
+   if(_Period != PERIOD_H1)
+      return true;
+   if(range_lookback < 2 || range_min_bars < 2 ||
+      range_min_bars > range_lookback || range_max_atr <= 0.0 ||
+      atr_sl_mult <= 0.0 || rr_target <= 0.0)
+      return true;
    return false;
 
   }
@@ -129,7 +145,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    FindConsolidation();
    if(!g_consol_active) return false;
 
-   const double close1 = iClose(_Symbol, PERIOD_H1, 1);
+   const double close1 = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed: one closed-bar structural breakout read after QM_IsNewBar.
    if(close1 <= 0) return false;
 
    bool long_signal = false, short_signal = false;
@@ -170,7 +186,7 @@ bool Strategy_ExitSignal()
   {
    if(!HasPosition()) return false;
    const int magic = QM_FrameworkMagic();
-   const double close = iClose(_Symbol, PERIOD_H1, 1);
+   const double close = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed: O(1) closed-bar exit reference.
    if(close <= 0) return false;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -180,25 +196,18 @@ bool Strategy_ExitSignal()
       if(PositionGetString(POSITION_SYMBOL) != _Symbol) continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic) continue;
 
-      const ENUM_POSITION_TYPE pt = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      const double mid = (g_consol_high + g_consol_low) / 2.0;
+      // The entry scan leaves the triggering range in memory. After an EA or
+      // terminal restart that state is intentionally absent, so skip only the
+      // optional midpoint exit instead of treating DBL_MAX as a real range.
+      if(g_consol_active)
+        {
+         const ENUM_POSITION_TYPE pt = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+         const double mid = (g_consol_high + g_consol_low) / 2.0;
+         if((pt == POSITION_TYPE_BUY && close <= mid) ||
+            (pt == POSITION_TYPE_SELL && close >= mid))
+            return true;
+        }
 
-      // Re-entry into range (close back past midpoint)
-      if((pt == POSITION_TYPE_BUY && close <= mid) ||
-         (pt == POSITION_TYPE_SELL && close >= mid))
-      {
-         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
-         continue;
-      }
-
-      // Time stop: 24 bars
-      const datetime entry_time = (datetime)PositionGetInteger(POSITION_TIME);
-      const int bars_held = (int)((TimeCurrent() - entry_time) / PeriodSeconds(PERIOD_H1));
-      if(bars_held >= 24)
-      {
-         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
-         continue;
-      }
    }
    return false;
 
@@ -236,33 +245,51 @@ void OnDeinit(const int reason)
   }
 
 void OnTick()
-  {{
-   if(!QM_KillSwitchCheck()) return;
+  {
+   if(!QM_KillSwitchCheck())
+      return;
+
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now)) return;
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   if(QM_FrameworkHandleFridayClose())
+      return;
+   if(Strategy_NoTradeFilter())
+      return;
+
+   // Management and exits remain live through news windows. The news gate
+   // below suppresses new entries only.
+   Strategy_ManageOpenPosition();
+   if(Strategy_ExitSignal())
+     {
+      CloseAll(QM_EXIT_STRATEGY);
+      return;
+     }
+
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
    else
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows) return;
-   if(QM_FrameworkHandleFridayClose()) return;
-   if(Strategy_NoTradeFilter()) return;
-   Strategy_ManageOpenPosition();
-   Strategy_ExitSignal();
-   if(!QM_IsNewBar()) return;
+   if(!news_allows)
+      return;
+
+   if(!QM_IsNewBar())
+      return;
    QM_EquityStreamOnNewBar();
+
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
-   {{
+   {
       ulong out_ticket = 0;
       QM_TM_OpenPosition(req, out_ticket);
-   }}
-  }}
+   }
+  }
 
 
-void OnTimer() {{ QM_FrameworkOnTimer(); }}
+void OnTimer() { QM_FrameworkOnTimer(); }
 void OnTradeTransaction(const MqlTradeTransaction &trans, const MqlTradeRequest &request, const MqlTradeResult &result)
-  {{ QM_FrameworkOnTradeTransaction(trans, request, result); }}
-double OnTester() {{ QM_ChartUI_Refresh(); return QM_DefaultObjective(); }}
+  { QM_FrameworkOnTradeTransaction(trans, request, result); }
+double OnTester() { QM_ChartUI_Refresh(); return QM_DefaultObjective(); }
 
