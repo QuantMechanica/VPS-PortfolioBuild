@@ -19,7 +19,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
+pipeline_phase: Q02
 ---
 
 # Approved Card Copy - QM5_13203_energy-downbeta
@@ -45,5 +45,5 @@ Approval preserves raw-return/risk-free-zero and SP500-for-CRSP substitutions,
 the backtest-only read-only factor, factor-history overlap, two-CFD narrowing,
 continuous-CFD basis, gaps, legging, and costs as binding Q02 kill risks.
 SP500.DWX must never receive an order or traded magic. Live artifacts,
-portfolio admission, and portfolio-gate changes are not approved. Q01 build
-validation and Q02 enqueue remain pending.
+portfolio admission, and portfolio-gate changes are not approved. Q01 passed
+and Q02 work item `503e2088-87a8-4663-8cec-a105bae90bfb` is pending.

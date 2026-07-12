@@ -34,7 +34,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
+pipeline_phase: Q02
 review_focus: "Strictly falsify an insignificant source sign: low SP500 downside-beta XTI/XNG leg long and high-beta leg short. The paper concludes DownBeta is unpriced; raw SP500/CFD returns, rf=0, the two-name rank, and the backtest-only factor are binding caveats. This is not energy BAB, jump beta, smooth-volatility beta, idiosyncratic volatility, ratio reversion, return-sign momentum, or XNG RSI."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -287,15 +287,15 @@ portfolio admission, or portfolio KPI path is authorized.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-12 | initial XTI/XNG SP500-downside-beta proxy | Q01 | G0 APPROVED; BUILD PENDING |
+| v1 | 2026-07-12 | initial XTI/XNG SP500-downside-beta proxy | Q02 | Q01 PASS; Q02 ENQUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-12 | APPROVED under OWNER commodity-sleeve mission; R1-R4 and dedup clean | this card |
-| Q01 Build Validation | TBD | PENDING | TBD |
-| Q02 Baseline Screening | TBD | NOT ENQUEUED | TBD |
+| Q01 Build Validation | 2026-07-12 | PASS - strict compile 0 errors/0 warnings; validators PASS | `docs/ops/evidence/2026-07-12_qm5_13203_energy_downbeta_q02_enqueue.md` |
+| Q02 Baseline Screening | 2026-07-12 | ENQUEUED - pending, attempt 0, unclaimed | work item `503e2088-87a8-4663-8cec-a105bae90bfb` |
 
 ## Lessons Captured
 
