@@ -1,0 +1,16 @@
+{
+  "logical_symbol": "QM5_13151_XTI_XNG_VBETA_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "Logical two-leg XTI/XNG smooth-volatility-beta basket from approved card HOLLSTEIN-AGGVOL-2021_XTI_XNG_S01. Run on XTIUSD.DWX D1; at the first tradable bar of each broker month, form 272 synchronized completed returns, lock an inverse-volatility energy benchmark over the latest 252 observations, calculate changes in 20-return realized volatility while zeroing two-sigma return-jump days, estimate each leg's incremental smooth-volatility coefficient while controlling for the benchmark return, buy higher beta, short lower beta, and evaluate the package rather than standalone legs. The source uses an option-derived market-wide continuous-volatility factor; the OHLC-only realized-energy proxy, endogenous two-CFD narrowing, return-based jump exclusion, continuous-CFD basis, gaps, and legging are binding Q02 falsification risks."
+  ]
+}
