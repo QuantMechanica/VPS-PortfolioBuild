@@ -2,7 +2,8 @@
 
 ## Approval And Source Identity
 
-- Mission approval: OWNER-directed new commodity/energy sleeve, 2026-07-10.
+- Mission approvals: OWNER-directed commodity/energy sleeves on 2026-07-10
+  (XNG extraction) and 2026-07-12 (WTI extraction).
 - Source type: peer-reviewed paper.
 - Citation: Papailias, Fotis; Liu, Jiadong; and Thomakos, Dimitrios D. (2021),
   "Return Signal Momentum," *Journal of Banking & Finance* 124, Article
@@ -54,6 +55,21 @@ parameter adaptation and a different strategy.
 - These are futures results, not validation of the Darwinex continuous CFD
   carrier. Q02 must independently determine trade count and economics.
 
+## Evidence Relevant To WTI
+
+- Table 1 and Appendix C Table C.1 explicitly include WTI futures, beginning
+  with the CL1 series.
+- Individual-instrument Table G.1 reports annualised mean return of 0.113 for
+  WTI RSM0.4 versus 0.093 for conventional TSM in the source sample.
+- Individual-instrument Table G.2 reports a WTI RSM0.4 Sharpe ratio of 0.302
+  versus 0.247 for conventional TSM.
+- Table G.3 is an adverse boundary, not supporting evidence: WTI RSM0.4 has a
+  larger reported maximum drawdown than TSM. The V5 card therefore carries a
+  low prior and leaves all efficacy, drawdown, cost, and correlation claims to
+  the pipeline.
+- These are rolled-futures results. They do not validate the Darwinex
+  continuous CFD, its financing/roll construction, or the V5 ATR-stop overlay.
+
 ## Author Claim Boundary
 
 The paper states: "A new type of momentum based on the signs of past returns is
@@ -62,12 +78,17 @@ individual-natural-gas performance number is imported as a V5 expectation.
 
 ## Extraction Verdict
 
-One strategy is extracted from this source for this mission:
+Two symbol-specific strategies are extracted across the two bounded OWNER
+missions:
 
 - `PAPAILIAS-RSM-2021_XNG_S01`: monthly XNG return-sign momentum with a fixed
   12-month sign-probability signal and one-month holding period.
+- `PAPAILIAS-RSM-2021_XTI_S02`: monthly WTI return-sign momentum with the same
+  source-defined fixed 12-month sign-probability signal and one-month holding
+  period. This is a WTI source-panel extraction, not a claim that changing the
+  carrier creates a new statistical anomaly.
 
 The source also describes a time-varying threshold and many cross-asset
-portfolio variants. They are not extracted here because the mission is bounded
-to one concrete commodity edge and the fixed-threshold XNG carrier is complete.
-
+portfolio variants. They are not extracted here because each mission is
+bounded to one concrete commodity edge and the two fixed-threshold carriers are
+complete.
