@@ -1,0 +1,129 @@
+{
+  "artifact_type": "q02_infra_repair_requeue",
+  "created_at_utc": "2026-07-12T02:45:50Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_11874",
+  "ea_label": "QM5_11874_usdjpy-24hr-range-breakout",
+  "instrument_diversity": {
+    "asset_class": "forex",
+    "period": "H1",
+    "symbols": [
+      "AUDJPY.DWX",
+      "GBPJPY.DWX",
+      "USDJPY.DWX"
+    ],
+    "expected_trades_per_year_per_symbol": 80,
+    "cadence": "one daily 24-hour range setup"
+  },
+  "source": {
+    "source_id": "92f2b500-b152-5bcc-802b-bc8fde49df4f",
+    "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11874_usdjpy-24hr-range-breakout.md",
+    "g0_status": "APPROVED",
+    "citation": "JanusTrader, 100 Pips Daily Trading System, forexstrategiesresources.com, 2012, local PDF archive"
+  },
+  "farm_claim": {
+    "lease_key": "manual:codex:agents/board-advisor:QM5_11874:q02_infra_recovery",
+    "assigned_agent": "codex:agents/board-advisor:qm5-11874:20260712T023845Z",
+    "expires_at_utc": "2026-07-12T05:38:45+00:00",
+    "enqueue_backup": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_qm5_11874_q02_enqueue_20260712T024519Z.sqlite"
+  },
+  "diagnosis": {
+    "classification": "INFRA_ONLY",
+    "prior_q02_business_verdict_present": false,
+    "downstream_phase_present": false,
+    "prior_build_task_id": "a7dedc7d-2be2-4f65-8e42-672b99f3f800",
+    "prior_q02_failure": "summary_missing_retries_exhausted",
+    "findings": [
+      "The retained EX5 and setfile build hashes predated the current V5 framework state.",
+      "Every historical Q02 attempt ended without a usable tester summary or strategy evidence.",
+      "The original build task failed an older raw-series static check; the current source carries the required bounded perf-allowed annotations and now passes strict build validation.",
+      "A fresh deterministic smoke was required to distinguish a package fault from the legacy worker/report failures."
+    ]
+  },
+  "repair": {
+    "source_changed": false,
+    "source_path": "framework/EAs/QM5_11874_usdjpy-24hr-range-breakout/QM5_11874_usdjpy-24hr-range-breakout.mq5",
+    "source_sha256": "54E2BC4A04B32211E4023418C1CF0F28497D62C480DB2FBBAAAF06794A151462",
+    "binary_path": "framework/EAs/QM5_11874_usdjpy-24hr-range-breakout/QM5_11874_usdjpy-24hr-range-breakout.ex5",
+    "binary_sha256": "364F62887AB6BE12CF8608C80517D909B7B508CB69DAB59EBB8254E7DE041C2E",
+    "changes": [
+      "Recompiled the unchanged approved strategy against the current V5 framework.",
+      "Refreshed canonical build hashes in all three RISK_FIXED backtest setfiles.",
+      "Recorded the infrastructure recovery and validation evidence in SPEC.md."
+    ],
+    "setfile_sha256": {
+      "AUDJPY.DWX": "E7A706189DB41DBECF4E5912C2683252D0FFC5532358313E0AF9AF3514BC30C0",
+      "GBPJPY.DWX": "F53250ABC9A2956C1376792FE96C2F2A108553B2C23132063560FCAB9B275690",
+      "USDJPY.DWX": "E41DFF5610B715C8E0E586B6F178FCD6574689ACB6EF77CD693023EB97ECAE46"
+    }
+  },
+  "validation": {
+    "spec_validation": "PASS",
+    "build_check": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:\\QM\\reports\\framework\\21\\build_check_20260712_023920.json"
+    },
+    "strict_compile": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "summary": "D:\\QM\\reports\\compile\\20260712_023920\\summary.csv",
+      "log": "C:\\QM\\repo\\framework\\build\\compile\\20260712_023920\\QM5_11874_usdjpy-24hr-range-breakout.compile.log"
+    },
+    "dedicated_smoke": {
+      "result": "PASS",
+      "reason_classes": [
+        "OK"
+      ],
+      "summary": "D:\\QM\\reports\\smoke\\QM5_11874\\20260712_024013\\summary.json",
+      "terminal": "T6",
+      "symbol": "AUDJPY.DWX",
+      "period": "H1",
+      "year": 2024,
+      "model": 4,
+      "deterministic": true,
+      "runs": 2,
+      "total_trades": 183,
+      "profit_factor_observed": 0.87,
+      "net_profit_observed": -17151.23,
+      "drawdown_observed_pct": 24.58,
+      "oninit_failure": false,
+      "scope_note": "The smoke proves initialization, report production, determinism, and trade generation only. Q02 owns the economic verdict; the weak 2024 economics are preserved without promotion."
+    }
+  },
+  "q02_enqueue": {
+    "task_id": "fc01f8ec-3f59-4531-92fc-314a43a7b39d",
+    "status": "pending",
+    "created_at_utc": "2026-07-12T02:45:50+00:00",
+    "window": "2017-2022",
+    "work_items": [
+      {
+        "id": "3696e47e-c0c8-403d-a9f8-d7ad0d7d3fad",
+        "symbol": "AUDJPY.DWX",
+        "status": "pending"
+      },
+      {
+        "id": "9ab6782c-2f94-4007-90e8-e14b900c5364",
+        "symbol": "GBPJPY.DWX",
+        "status": "pending"
+      },
+      {
+        "id": "93b8629f-b209-4fdc-96c1-5370215fda2e",
+        "symbol": "USDJPY.DWX",
+        "status": "pending"
+      }
+    ],
+    "skipped": []
+  },
+  "safety": {
+    "factory_off_flag_preserved": true,
+    "q02_dispatched": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "cpu_ceiling_hit": false
+  }
+}

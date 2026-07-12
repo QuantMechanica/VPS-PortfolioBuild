@@ -4,7 +4,7 @@
 **Slug:** usdjpy-24hr-range-breakout
 **Source:** 92f2b500-b152-5bcc-802b-bc8fde49df4f (see local PDF archive)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-20
+**Last revised:** 2026-07-12
 
 ---
 
@@ -88,8 +88,25 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 ---
 
+## 8. Q02 Infrastructure Recovery
+
+The legacy Q02 attempts ended as `INFRA_FAIL` with
+`summary_missing_retries_exhausted`; they produced neither a usable tester
+summary nor strategy evidence. On 2026-07-12 the EA was rebuilt against the
+current V5 framework, refreshing all three canonical backtest setfile hashes.
+Strict build validation passed with zero errors and zero warnings
+(`D:\QM\reports\framework\21\build_check_20260712_023920.json`). A bounded
+2024 `AUDJPY.DWX` H1 smoke then produced valid deterministic reports and passed
+with `reason_classes=OK`
+(`D:\QM\reports\smoke\QM5_11874\20260712_024013\summary.json`). The repaired
+`.ex5` SHA-256 is
+`364F62887AB6BE12CF8608C80517D909B7B508CB69DAB59EBB8254E7DE041C2E`.
+
+---
+
 ## Revision History
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
+| v1.1 | 2026-07-12 | Q02 infrastructure recovery | Refreshed stale framework-linked `.ex5`, updated setfile build hashes, and verified AUDJPY smoke PASS before Q02 requeue. |
 | v1 | 2026-06-20 | Initial build from card | a7dedc7d-2be2-4f65-8e42-672b99f3f800 |
