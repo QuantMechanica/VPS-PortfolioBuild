@@ -3,32 +3,30 @@
 ; ea_id:        11160
 ; ea_slug:      dwx-brk-risk
 ; ea_version:   v5.0
-; set_version:  s20260620-001
+; set_version:  s20260711-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   c2448715d42f9e49766e2d3732ffaa8f28e8adc96cd62f666a1a72694787d517
 ; author:       Development
-; date:         2026-06-20
+; date:         2026-07-11
 ;==========================================================
+qm_ea_id=11160
 qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11160_dwx-brk-risk.md
+strategy_breakout_lookback=48
+strategy_atr_period=14
+strategy_brk_range_atr_mult=0.75
+strategy_atr_stop_mult=1.5
+strategy_tp_rr=1.5
+strategy_max_holding_bars=18
+strategy_be_trigger_rr=1.0
+strategy_spread_pct_of_stop=10.0
+strategy_skip_minutes_after_open=15
