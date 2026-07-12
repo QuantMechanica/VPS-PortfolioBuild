@@ -1,0 +1,933 @@
+[00:00:00] All
+[00:00:12] right, let's get started.
+[00:00:15] Can everyone hear me? Yeah. All right.
+[00:00:19] Okay, let's go. So, welcome everyone to
+[00:00:23] my presentation. So, first things first,
+[00:00:26] I'm going to try to keep it between 30
+[00:00:29] and 45 minutes.
+[00:00:32] So,
+[00:00:33] as a trader, you need to have patience
+[00:00:36] and discipline. Without patience or
+[00:00:40] discipline,
+[00:00:41] you're just not going to be a successful
+[00:00:44] trader. That's just how it is. So,
+[00:00:47] that's what it is. If you're watching
+[00:00:50] the recording of this and you want to
+[00:00:52] speed it up on YouTube, just go ahead
+[00:00:55] and try it out. You know, you know it
+[00:00:57] works. I tend to sometimes speak a
+[00:01:01] little bit slow. So, I think the 1.5
+[00:01:04] even that will work.
+[00:01:07] So, and let's be honest,
+[00:01:11] if you can sit through a 30 to 45 minute
+[00:01:15] presentation,
+[00:01:17] you're probably not actually serious
+[00:01:20] about trading. ICT has at this moment
+[00:01:25] 846 videos
+[00:01:27] and his average video is like hour and a
+[00:01:31] half, maybe two hours. So
+[00:01:36] try to make it through these 30 to 45
+[00:01:39] minutes. All right. Okay. Let's go here.
+[00:01:44] So why should you watch this? I try to
+[00:01:48] simplify
+[00:01:50] everything in this presentation. So it
+[00:01:53] should be easy to comprehend. All the
+[00:01:57] concepts are pretty easy to grasp. So
+[00:02:02] this is not only for new traders that
+[00:02:04] want to maybe speed up their learning
+[00:02:06] curve. This is also for maybe profitable
+[00:02:09] traders traders
+[00:02:12] that are looking for an edge. Maybe
+[00:02:15] that's the only thing they're missing or
+[00:02:17] they're break even and they just need
+[00:02:21] that one more extra little thing to make
+[00:02:24] them profitable.
+[00:02:26] Just mean no fluff, no rants.
+[00:02:29] and I will show you my unique way of
+[00:02:32] trading ICT smart money concepts woff
+[00:02:37] and I'm going to show you some of my own
+[00:02:40] sauce here today. So stick around, stay
+[00:02:44] tuned. You should be able to at least
+[00:02:49] take one useful thing away from this
+[00:02:52] presentation if you watch all the way
+[00:02:56] through the end. All right.
+[00:02:59] So, we'll go through market maker
+[00:03:02] models/mov.
+[00:03:04] Then we'll look at how to apply standard
+[00:03:08] deviation with the flip tool. And we'll
+[00:03:11] just use fair value gaps, new week
+[00:03:14] opening gaps, new day opening gaps,
+[00:03:17] equal highs and lows. So,
+[00:03:20] really very simple stuff. just put all
+[00:03:24] together and then we'll look at examples
+[00:03:27] and
+[00:03:29] entry strategies. All right, so that's
+[00:03:33] pretty much the entry here. All right,
+[00:03:34] let's go.
+[00:03:37] So here
+[00:03:39] is
+[00:03:41] the market maker model.
+[00:03:44] And if you've been studying ICT, you
+[00:03:48] already know this. But again, in a few
+[00:03:50] minutes, I will show you my own unique
+[00:03:54] way of trading these and spilling some
+[00:03:58] sauce. All right.
+[00:04:00] So, basically
+[00:04:02] the market does two things.
+[00:04:06] Consolidations,
+[00:04:08] expansions,
+[00:04:09] consolidations,
+[00:04:11] expansions.
+[00:04:13] And then there's a reversal
+[00:04:16] which is most of the time a
+[00:04:19] consolidation expansion.
+[00:04:22] And then there might be a number of
+[00:04:26] these reaccumulation phases. And then
+[00:04:29] eventually it comes to a distribution
+[00:04:33] which then where the market maker buy
+[00:04:37] model ends is where the market maker
+[00:04:40] sell model starts.
+[00:04:43] Really
+[00:04:44] sure here we see it starting here. But
+[00:04:48] really what is this? This is just really
+[00:04:52] a part of the buy model, right? And
+[00:04:56] there could be one reaccumulation phase
+[00:05:00] or two. Sometimes there aren't really
+[00:05:03] any. Price just zips up
+[00:05:07] and then there's a distribution and then
+[00:05:10] sell off and then we'll have obviously
+[00:05:14] the market reversal
+[00:05:16] over here. I'm sorry. Smart money
+[00:05:20] reversal.
+[00:05:22] All right. So, what's up next here?
+[00:05:26] Yeah, there is uh
+[00:05:29] a few different types of consolidation,
+[00:05:32] right? It's
+[00:05:35] the most simple ones to remember is just
+[00:05:39] an accumulation.
+[00:05:41] Then here, this is a reaccumulation.
+[00:05:45] This is just a second re-accumulation.
+[00:05:50] And then we have distributions
+[00:05:53] and redistributions, right? So
+[00:05:57] an accumulation is a reversal.
+[00:06:01] A distribution is a reversal.
+[00:06:05] Then a reaccumulation, which is by the
+[00:06:09] way, this is a reaccumulation. This
+[00:06:13] should be labeled as the accumulation
+[00:06:17] and yeah at the same time it's the smart
+[00:06:19] money reversal and so this is only
+[00:06:23] another reaccumulation
+[00:06:26] and then another one and a distribution.
+[00:06:30] So these are just the reaccumulation is
+[00:06:34] just a continuation. Right. Right.
+[00:06:38] There's more buying going on and then
+[00:06:40] price goes higher and then some more
+[00:06:43] buying and price goes higher again and
+[00:06:47] then eventually it will reverse
+[00:06:51] like over here. And same here. This is a
+[00:06:56] distribution
+[00:06:58] and then expansion down. And this is
+[00:07:02] actually also a red distribution. So
+[00:07:06] just a continuation pattern really
+[00:07:10] because there's more selling going on
+[00:07:13] then expansion lower more selling
+[00:07:18] the redistribution the continuation and
+[00:07:21] then eventually it will bottom out and
+[00:07:24] then we'll start again over here with
+[00:07:27] another smart money reversal in a form
+[00:07:30] of a accumulation and then everything
+[00:07:33] starts over
+[00:07:35] All right. So now let's take a more
+[00:07:39] detailed look at accumulation. So this
+[00:07:43] and distribution this here. All right.
+[00:07:50] All right. So don't freak out. This
+[00:07:53] maybe looks complicated, but we really
+[00:07:57] are only going to look at this part
+[00:07:59] here. So this
+[00:08:03] is just zoomed in of this part here,
+[00:08:08] right?
+[00:08:11] This is just this
+[00:08:15] on a smaller sorry on a lower time
+[00:08:18] frame.
+[00:08:20] All right.
+[00:08:22] So
+[00:08:24] most
+[00:08:27] ICT or smart mind traders they will
+[00:08:30] simply what will they do? How will they
+[00:08:32] use the standard deviation?
+[00:08:36] They just measure the bottom
+[00:08:40] and the top. So the lowest point and the
+[00:08:42] highest point of the accumulation
+[00:08:45] and they'll just throw their standard
+[00:08:48] deviation, their flip tool on there and
+[00:08:50] that's how they get their standard
+[00:08:52] deviation.
+[00:08:54] They might even
+[00:08:56] sometimes measure like the last leg. So
+[00:09:00] like maybe this one here or maybe this
+[00:09:03] one or this one.
+[00:09:06] But how I trade is most of the time I
+[00:09:10] will be looking for
+[00:09:13] this swing here. So what is this right?
+[00:09:16] Price is coming down expansion
+[00:09:20] and then stops here right and this first
+[00:09:24] move up the first swing into the
+[00:09:27] opposite direction.
+[00:09:30] The first swing
+[00:09:32] at starting a consolidation. And of
+[00:09:35] course in this example, it's an
+[00:09:38] accumulation, right? This is the
+[00:09:39] accumulation schematic. All right. So
+[00:09:43] that's just that's the only thing we're
+[00:09:45] going to look at right now. The first
+[00:09:47] swing
+[00:09:49] the low
+[00:09:51] and so swing low, swing high. White call
+[00:09:54] this seller climax and automatic rally.
+[00:09:59] Whatever. You don't need to remember
+[00:10:01] that. Only thing you need to remember is
+[00:10:05] swing low, swing high. The first swing,
+[00:10:09] right?
+[00:10:13] Then same well inverse thing
+[00:10:20] of the distribution,
+[00:10:23] right? So this
+[00:10:26] is this
+[00:10:28] on a lower time frame. So this is again
+[00:10:31] it's just the inverse of the
+[00:10:32] accumulation right price
+[00:10:35] was moving up up up and this is the
+[00:10:38] buyers climax and then we have the
+[00:10:41] automatic reaction is what called it all
+[00:10:46] right so just the exact inverse of this
+[00:10:48] obviously right this is
+[00:10:52] accumulation which is bullish this is
+[00:10:54] distribution
+[00:10:56] bearish
+[00:10:58] all All right.
+[00:11:01] And then
+[00:11:02] we'll have
+[00:11:05] a sweep of the low and maybe a second
+[00:11:08] sweep. Like I've called this a spring.
+[00:11:12] You know, ICT smart money concepts.
+[00:11:14] We'll just call it a sweep. Sweep of the
+[00:11:16] low, right? Sometimes there is one,
+[00:11:19] sometimes there is a second one.
+[00:11:21] Sometimes the low doesn't get swept,
+[00:11:24] right? and just comes really close maybe
+[00:11:27] once and then price reverses maybe a
+[00:11:30] second time and maybe then it sweeps it
+[00:11:33] or maybe the second time doesn't sweep
+[00:11:36] it either. Okay,
+[00:11:39] same thing here just the bearish
+[00:11:42] version. All right. So, let's make this
+[00:11:48] less complicated
+[00:11:53] because very often
+[00:11:57] what do these look like?
+[00:12:02] Sometimes a constellation is not this
+[00:12:04] slow. It's not this dragged out. Not
+[00:12:08] that much chop. It's kind of like
+[00:12:12] faster spit up. So, it's called a fast
+[00:12:15] move or a TP. Why? Well, it just looks
+[00:12:19] like a TP, right? Okay. Anyway,
+[00:12:22] so then again, we will still have that
+[00:12:24] first swing, right? Price is coming
+[00:12:28] down, makes a low, swing low, swing
+[00:12:31] high, and then maybe there's a sweep
+[00:12:34] that's making a lower low from here.
+[00:12:37] Maybe there isn't, right?
+[00:12:41] staying
+[00:12:43] with the bearish scenario. Price is
+[00:12:46] moving up. Then
+[00:12:49] the buyer climax
+[00:12:51] swing high and it makes a swing, right?
+[00:12:55] A high, a low, and then sometimes again
+[00:12:59] this gets swept. Sometimes it doesn't.
+[00:13:02] Sometimes, right, it just comes close
+[00:13:05] and then sells off.
+[00:13:08] All right. So now let's look at
+[00:13:15] the reaccumulations
+[00:13:18] and the red distributions.
+[00:13:24] All right. So this
+[00:13:27] is this
+[00:13:30] on a lower time frame.
+[00:13:34] So same thing here. Price is moving up
+[00:13:39] and down. And so this makes the first
+[00:13:42] swing, right? A high, swing high, swing
+[00:13:45] low. The very first
+[00:13:48] significant
+[00:13:49] swing high and swing low. So that's this
+[00:13:53] is the move that we're looking for.
+[00:13:57] The first significant
+[00:14:00] swing high, swing low. very first
+[00:14:02] significant swing into the opposite
+[00:14:06] direction,
+[00:14:08] right?
+[00:14:11] Just like here, but instead of it being
+[00:14:14] a regular accumulation where price is
+[00:14:17] coming from
+[00:14:19] a higher area and is moving down and it
+[00:14:23] makes the first swing.
+[00:14:25] Price in a reaccumulation, right, is
+[00:14:28] coming from below and it moves up and
+[00:14:31] makes the first swing, right? In the
+[00:14:34] opposite direction. Pretty simple. All
+[00:14:37] right. And then we'll have
+[00:14:41] the bearish
+[00:14:44] the redistribution right the price is
+[00:14:48] coming down. So this is this here. This
+[00:14:52] is only this on a lower time frame. All
+[00:14:56] right. Price is coming down from here
+[00:15:00] and saw a climax to automatic rally.
+[00:15:06] Right. The first swing, the first
+[00:15:08] significant swing that started a
+[00:15:12] consolidation, right?
+[00:15:15] All right.
+[00:15:19] Next step.
+[00:15:23] All right. So, how
+[00:15:26] will we trade this?
+[00:15:29] When exactly are we going to look for
+[00:15:32] reversals, right? What and when are we
+[00:15:36] going to measure? Are we going to look
+[00:15:38] for this move here or right this is the
+[00:15:42] fast move the TP if you want TP pattern
+[00:15:48] so we're always looking for the first
+[00:15:50] swing. All right.
+[00:15:52] And then
+[00:15:54] also when we're looking for the first
+[00:15:57] swing for a reversal, right?
+[00:16:00] We're going to look at higher time frame
+[00:16:03] PD rays. If you're not familiar with ICP
+[00:16:07] lingo, it's just a higher time frame
+[00:16:11] support zone or level, whatever you want
+[00:16:14] to call it, right? Like this being the
+[00:16:18] PD ray or the support zone area,
+[00:16:22] whatever support, that's what we're
+[00:16:24] looking for.
+[00:16:26] And then
+[00:16:28] this could be obviously like right below
+[00:16:33] the first swing low.
+[00:16:36] It could even be like a little bit lower
+[00:16:40] and we'll see the sweep. Maybe it's a
+[00:16:44] fair value gap, right? and it makes its
+[00:16:47] swing low on the very top and then we'll
+[00:16:51] see one more sweep to the middle of the
+[00:16:54] fair value gap or also known as
+[00:16:57] consequent encroachment.
+[00:17:01] Right? So, we're looking for a higher
+[00:17:04] time frame something support area. So,
+[00:17:08] this could be a higher time frame for a
+[00:17:11] valley gap or a new day opening gap, new
+[00:17:15] week opening gap, or if you like trading
+[00:17:18] order blocks, this could be a higher
+[00:17:21] time frame order block. All right?
+[00:17:25] And so any of those could be, you know,
+[00:17:28] even if it's here, right? We'll have the
+[00:17:33] body basically
+[00:17:36] close here.
+[00:17:38] And then we'll have that swing.
+[00:17:41] And then we'll get a sweep. And
+[00:17:44] preferably that sweep
+[00:17:46] should only be like a wick below
+[00:17:50] our whatever support area you're going
+[00:17:53] to use. All right.
+[00:17:57] And then
+[00:17:59] that's where we measure
+[00:18:02] this first swing here. Again, I keep on
+[00:18:04] repeating this first swing.
+[00:18:07] because that's like the main part that
+[00:18:11] you should take away from here from this
+[00:18:13] from this part of the presentation,
+[00:18:15] right? Maybe
+[00:18:17] it is the most important part of the
+[00:18:20] entire presentation. So,
+[00:18:24] if you won't learn anything else today,
+[00:18:27] just try to remember this. All right?
+[00:18:31] And then we have the same
+[00:18:33] in the bearish version, right? the
+[00:18:37] distribution. Same thing. We're looking
+[00:18:40] maybe
+[00:18:41] for a fair value gap, higher time frame,
+[00:18:44] fair value gap. And the same thing,
+[00:18:46] right? Just the inverse. All right, I'm
+[00:18:48] going to not go through it cuz it's
+[00:18:51] literally the exact inverse of it. So,
+[00:18:53] I'm going to save some time. And now,
+[00:18:57] let's move on to how to set up
+[00:19:02] your fib your fib tool. All right.
+[00:19:08] All right. So, here is our fit tool with
+[00:19:13] the standard deviations.
+[00:19:15] And here are the settings.
+[00:19:19] Not zero, 0.5, one, maybe one, two,
+[00:19:22] three, four, and five. That's all.
+[00:19:26] All right. So, again, for the 20th time,
+[00:19:30] maybe maybe more, we'll measure this
+[00:19:33] first swing. Yes, there might be a sweep
+[00:19:36] or two
+[00:19:39] or no sweeps at all. Anyway,
+[00:19:43] so then this
+[00:19:46] will be our first take profit.
+[00:19:51] So we will observe price, right? What
+[00:19:55] will it do?
+[00:19:58] It could move up like really fast. We
+[00:20:02] could see even like a wick
+[00:20:05] and then like a quick reaction,
+[00:20:10] really strong reaction off of the one.
+[00:20:13] Right at that point,
+[00:20:17] maybe maybe our take profit got hit.
+[00:20:19] Maybe it didn't.
+[00:20:22] Important part is when we see a big
+[00:20:24] reaction here off the one, that's a
+[00:20:28] bearish sign, right? Price
+[00:20:32] might
+[00:20:34] not want to continue its bullish move
+[00:20:38] up. All right.
+[00:20:42] Or
+[00:20:45] what else could it do?
+[00:20:48] It can just chop around here and then
+[00:20:53] get me pretty close and then
+[00:20:57] right do nothing.
+[00:20:59] That two obviously is bearish. All
+[00:21:03] right. So point is this first level here
+[00:21:08] of our standard deviation is a very good
+[00:21:12] test. Right? How does price react when
+[00:21:16] it gets close to the one?
+[00:21:20] What we want to see obviously
+[00:21:23] can move up through it preferably and
+[00:21:27] then a retest, right? Retest and then
+[00:21:31] continue
+[00:21:35] and obviously retest it and then it will
+[00:21:39] just take more profit at the number two
+[00:21:42] here and then
+[00:21:45] we'll leave a runner to the number
+[00:21:48] three. Okay, I have four and five here
+[00:21:53] because right now
+[00:21:56] because everything that's going on in
+[00:21:57] the world market the market is extremely
+[00:22:01] volatile.
+[00:22:03] You've seen it, I'm pretty sure. Extreme
+[00:22:05] volatility. So right now
+[00:22:09] we can see if price is willing to come
+[00:22:13] up to all the way to the four, maybe
+[00:22:14] even to the five, right? the on all
+[00:22:18] these levels
+[00:22:20] we should most of the time see some kind
+[00:22:23] of reaction right I mean it's really
+[00:22:25] bullish sure it can just go right
+[00:22:27] through the levels without any big
+[00:22:30] retraces or pullbacks.
+[00:22:35] So in normal market conditions, this is
+[00:22:37] really like my final target number
+[00:22:41] three. But again, right now we can
+[00:22:44] anticipate maybe going to the four or
+[00:22:47] maybe even to the five. All right.
+[00:22:51] Also
+[00:22:54] when we draw out our standard deviation,
+[00:22:58] how can we kind of verify? Okay. Did we
+[00:23:02] measure the right swing, the right move?
+[00:23:05] Then we'll look to our left and we'll
+[00:23:08] check, well, was there another swing
+[00:23:11] high at this at the number one level or
+[00:23:14] maybe at the two? And then
+[00:23:18] if so, that's a pretty good sign. All
+[00:23:21] right, you did everything right.
+[00:23:24] And
+[00:23:26] I will
+[00:23:28] show some examples in the next part when
+[00:23:31] uh we go through the examples.
+[00:23:38] All right. So let's look at some
+[00:23:40] examples. So we have a reaccumulation
+[00:23:44] here, right? Why accumulation? Right?
+[00:23:48] Price is making our highs here. We're in
+[00:23:51] an uptrend, right?
+[00:23:54] And then this is an expansion
+[00:23:57] and
+[00:23:59] here price is reaccumulating. Then we'll
+[00:24:03] see another expansion and a
+[00:24:06] consolidation which ended up being a
+[00:24:09] distribution. Right? It sold off here.
+[00:24:12] All right. So expansion and we have the
+[00:24:17] first significant swing. Swing high,
+[00:24:21] swing low.
+[00:24:24] And then our our higher time frame PD
+[00:24:28] raise
+[00:24:29] we have right over here. This is a new
+[00:24:32] day opening gap and formed right here.
+[00:24:35] So extend it out. Then here we have a
+[00:24:40] higher time frame fair value gap. So put
+[00:24:43] it on the chart. Right. This is a
+[00:24:45] 15minut. So 1 hour is a higher time
+[00:24:48] frame.
+[00:24:50] All right. So what will we measure here?
+[00:24:55] Let's zoom in maybe onto the five
+[00:24:58] minute.
+[00:25:04] All right.
+[00:25:06] So again, expansion
+[00:25:09] swing high and swing low.
+[00:25:14] Let's zoom in here a little bit more.
+[00:25:23] Yes. So there is a gap, right? But
+[00:25:29] we can recognize this as a swing high
+[00:25:32] and a swing low. Even though even if
+[00:25:36] there's a gap because we had the close
+[00:25:40] of the day on the previous day and then
+[00:25:42] the open here of the next day. So close
+[00:25:45] was actually here. All right.
+[00:25:48] So,
+[00:25:50] let's turn on the magnet.
+[00:25:57] All right. So, we see a reaction here
+[00:26:02] pretty much exactly at the negative one,
+[00:26:05] right? Which should be your first take
+[00:26:08] profit.
+[00:26:11] And then we saw pretty pretty good
+[00:26:14] strong reaction, right? Price sold off
+[00:26:18] pretty strongly here.
+[00:26:25] Made two well relative equal, right?
+[00:26:30] This one a little bit lower.
+[00:26:32] So we had what is this? It's a sweep of
+[00:26:36] what?
+[00:26:38] The first
+[00:26:41] swing
+[00:26:43] after an expansion. All right. This is,
+[00:26:46] do you recognize it? That fast move or
+[00:26:49] the T or the TP move. All right. Let me
+[00:26:54] draw it out here.
+[00:26:56] All right.
+[00:26:58] One,
+[00:27:01] two.
+[00:27:04] So, we can measure
+[00:27:06] this first swing.
+[00:27:19] And
+[00:27:26] this one here too, right? If you were
+[00:27:30] bearish,
+[00:27:33] you could have had you take your first
+[00:27:35] take profit somewhere around here,
+[00:27:38] right? Because why this is the top of
+[00:27:43] the new day opening gap and then
+[00:27:47] right you can
+[00:27:50] move your stop loss to break even and
+[00:27:52] see if price wants to continue which it
+[00:27:54] did and then one sweep
+[00:27:58] a little bit of a retrace here
+[00:28:01] back to this high and then another
+[00:28:06] sweep.
+[00:28:13] All right. So, let's
+[00:28:16] go back to the 50 minute real quick.
+[00:28:25] All right. So,
+[00:28:28] as I mentioned earlier,
+[00:28:31] a lot of traders they will just do what?
+[00:28:35] They will just measure
+[00:28:37] the lowest point
+[00:28:40] and the highest point of the whole
+[00:28:43] accumulation
+[00:28:44] or whatever consolidation is
+[00:28:47] accumulation accumulation distribution
+[00:28:50] redistribution that is measure the
+[00:28:53] lowest and highest point of the whole
+[00:28:56] consolidation.
+[00:28:59] But
+[00:29:02] why do I measure this first move?
+[00:29:07] Because
+[00:29:08] you'll see it's a lot more accurate.
+[00:29:12] So here we could see. Sure. Right.
+[00:29:17] It gave us the one over here. First take
+[00:29:20] profit. Okay. I mean it would have
+[00:29:23] worked but did it give us
+[00:29:28] really good precision?
+[00:29:31] Not really.
+[00:29:36] Here we have a four and look at that
+[00:29:39] some pretty good precision
+[00:29:42] five. It didn't reach the five, but
+[00:29:47] that's why
+[00:29:49] we went to a lower time frame and
+[00:29:52] measured a smaller cycle within the
+[00:29:57] bigger cycle. Right? It was this
+[00:30:02] first swing after this downward
+[00:30:06] expansion.
+[00:30:08] And let's see. Five gave us pretty much
+[00:30:13] almost exactly
+[00:30:15] the height of this whole cycle.
+[00:30:20] The very very top of this distribution.
+[00:30:26] All right,
+[00:30:28] let's continue.
+[00:30:40] All right. So, we had a 1 hour failing
+[00:30:43] gap for here on the higher time frame.
+[00:30:47] And keep in mind, we had these two
+[00:30:50] relative equal lows over here. I will
+[00:30:54] take off this over here. All right.
+[00:31:01] So, then let's take a look.
+[00:31:04] at the distribution.
+[00:31:09] I'll just move back here real quick. So,
+[00:31:12] you could have held your last take
+[00:31:16] profit at the five, right? This would
+[00:31:19] have been almost I mean almost to the
+[00:31:23] tick exactly the high.
+[00:31:26] All right.
+[00:31:28] So, now let's take a look at this
+[00:31:30] distribution here.
+[00:31:33] And we have a new week opening gap that
+[00:31:36] formed right over here. Okay, just real
+[00:31:38] quick.
+[00:31:40] It doesn't always have to be a new day
+[00:31:44] opening gap like over here or a new week
+[00:31:49] opening gap. These PD rates could be
+[00:31:53] fair value gaps or order blocks or
+[00:31:57] whatever
+[00:32:00] things you like to use as support and
+[00:32:03] resistance or however you trade.
+[00:32:08] And then we had a small new day opening
+[00:32:11] gap right over here. All right. So
+[00:32:14] again,
+[00:32:16] what would you measure here? Maybe let's
+[00:32:18] go back to the 15 minute real quick.
+[00:32:24] So again, expansion
+[00:32:27] and first significant
+[00:32:32] swing.
+[00:32:36] Okay, so real quick here,
+[00:32:39] you're going to have to
+[00:32:42] look at charts
+[00:32:45] and go back test.
+[00:32:48] to see, okay, what does it mean the
+[00:32:51] first significant
+[00:32:54] swing, right?
+[00:32:57] Because you could say, well, this is
+[00:32:59] this is like the first swing or maybe
+[00:33:00] this is the first swing.
+[00:33:03] Yeah, but and this is kind of like now
+[00:33:06] common sense, right? I mean, look at
+[00:33:08] this whole big move. Large expansion. Am
+[00:33:12] I going to measure this? Really? No, not
+[00:33:15] really. This is really not not that
+[00:33:18] significant, right?
+[00:33:21] Same here. Not that really significant
+[00:33:25] if you consider
+[00:33:28] this really big move, really large
+[00:33:31] expansion.
+[00:33:33] So again, I'm going to have to go look
+[00:33:36] at charts a lot, back test a lot, and
+[00:33:39] have to train your eyes, train your
+[00:33:41] mind, and it will just eventually stand
+[00:33:46] out like a sore thumb. But without you
+[00:33:50] back testing and looking at charts a
+[00:33:52] lot, you will probably not see it. But I
+[00:33:56] promise you, once you see it, you can't
+[00:34:00] unsee it. Okay? So I'll show you this
+[00:34:06] is it.
+[00:34:16] Okay. So here in this example
+[00:34:19] at this time this was like an all-time
+[00:34:22] high. So obviously there is nothing
+[00:34:25] above here. no higher time frame,
+[00:34:29] anything that would suggest, okay,
+[00:34:32] there's some resistance or whatever.
+[00:34:35] But we have this new week opening gap.
+[00:34:40] And then we'll just observe price. We
+[00:34:43] have this level here, right? Our final
+[00:34:47] take profit. This is really like the
+[00:34:50] final target, right? And it did respect
+[00:34:53] that level.
+[00:34:57] And then as I said, we observe the
+[00:35:00] price. What did it do here? Went below.
+[00:35:06] Then we open gap. Not for the first
+[00:35:07] time. Okay, that's true. Actually went
+[00:35:10] back up above it again. But then this
+[00:35:13] this is the move here, right? It went
+[00:35:16] below all the lows here. And we had
+[00:35:21] several candles, candle bodies, not only
+[00:35:25] just wicks, right? So, this is a big
+[00:35:28] sign. Okay. Hey, pay attention. This is
+[00:35:31] starting to look pretty bearish. Then
+[00:35:33] what else
+[00:35:35] do we have here? You have a 15minute
+[00:35:39] fair value gap over here.
+[00:35:44] And it's within the new week opening
+[00:35:46] gap. And it's it's very close right
+[00:35:50] around the middle of the new week
+[00:35:53] opening gap. So this is a significant
+[00:35:57] fair value gap. All right.
+[00:36:00] And what happened here? Price got
+[00:36:03] rejected
+[00:36:05] again. If you see this, okay, it's
+[00:36:08] pretty bearish, right?
+[00:36:10] You could have tried a short right here,
+[00:36:13] right?
+[00:36:15] put your stop loss above here or maybe
+[00:36:18] above here
+[00:36:21] and then take profit one,
+[00:36:24] take profit two.
+[00:36:27] Oh, and by the way, remember these two
+[00:36:30] relative equal lows.
+[00:36:33] That was another sign. Hey, price might
+[00:36:36] want to come back down over here or this
+[00:36:39] direction, right? Even though this will
+[00:36:42] get swept. Oh, we have this L now here
+[00:36:49] and then you can
+[00:36:54] extend this one our fair value gap Y
+[00:36:58] again
+[00:36:59] it's
+[00:37:01] similar like to this fair gap here
+[00:37:03] that's within the unique opening gap
+[00:37:06] this is really close to
+[00:37:10] and overlapping the new day opening gap
+[00:37:14] And what do you know?
+[00:37:16] Our three three standard deviation
+[00:37:19] almost exactly aligns with the top of
+[00:37:22] this gap. And what a coincidence.
+[00:37:30] Yep. Respected our number three level
+[00:37:35] and this high time frame. Pretty right.
+[00:37:41] All right.
+[00:37:45] So now here we'll have an example
+[00:37:50] of what
+[00:37:55] it's another fast move
+[00:37:59] that TP move remember.
+[00:38:02] And now this is interesting here.
+[00:38:06] What is
+[00:38:09] the swing swing low? That's pretty
+[00:38:11] obvious.
+[00:38:12] But what's the swing high here?
+[00:38:14] Admittedly here, this one is a little
+[00:38:17] bit tricky, but I will show it anyway.
+[00:38:21] So swing high could have been this here,
+[00:38:23] right? So what what happened here? Price
+[00:38:25] went up a quick wick back down again.
+[00:38:31] So you could consider this the swing
+[00:38:35] high
+[00:38:38] or you could consider this the swing
+[00:38:40] high.
+[00:38:41] So now what you can do, you just measure
+[00:38:45] both
+[00:38:47] swing low to this high and then again
+[00:38:49] the same swing low to these eyes here.
+[00:38:53] And then what's nice here though?
+[00:38:56] So we were expecting a reversal. Why? We
+[00:39:00] had two higher time frame PD rays here,
+[00:39:04] right? Or support areas or zones,
+[00:39:08] whatever you want to call it.
+[00:39:10] and then price formed a smaller
+[00:39:14] 15-minute fair value gap here. Went
+[00:39:18] through it here. So, you got your
+[00:39:21] inversion fair value gap. Okay, real
+[00:39:24] quick. What is that? We have one regular
+[00:39:28] fair value gap here.
+[00:39:31] Price goes through. We'll have a nice We
+[00:39:34] have a nice
+[00:39:36] candle body close above
+[00:39:40] So now it became an inverted fair value
+[00:39:43] gap.
+[00:39:45] The very simple way to think about this
+[00:39:48] is
+[00:39:50] again this was here resistance
+[00:39:53] price went through and retested and now
+[00:39:57] it became well actually when it went
+[00:39:59] through already became what resistance
+[00:40:01] flipping to support.
+[00:40:04] That's one way you can look at it. Not
+[00:40:06] going to go more into it.
+[00:40:09] But let's
+[00:40:10] draw our
+[00:40:18] bibs.
+[00:40:19] Here's one.
+[00:40:23] And here the other one.
+[00:40:27] Okay. So, your entry
+[00:40:30] could have been right over here. Right.
+[00:40:32] inverted
+[00:40:34] and now we're waiting for a retest and
+[00:40:37] we go long here. Right?
+[00:40:40] Then the very conservative take profit
+[00:40:43] take profit one here and look at that.
+[00:40:47] This aligns
+[00:40:49] almost with this high here. And it's
+[00:40:52] also exactly
+[00:40:55] on the bottom part of this fair value
+[00:40:58] gap. And it's within that new week
+[00:41:01] opening gap.
+[00:41:02] So
+[00:41:04] remember how I mentioned earlier, you
+[00:41:06] can kind of verify
+[00:41:09] if you measure the right thing, the
+[00:41:12] right swing, if price aligns
+[00:41:15] with
+[00:41:17] highs and lows on the left, which it
+[00:41:21] does here.
+[00:41:23] And not only that, it's also within
+[00:41:26] again this be opening gap and this rally
+[00:41:29] gap. All right, let's continue.
+[00:41:43] And also, let's not forget we have these
+[00:41:46] equal highs here and here. So again,
+[00:41:50] price likes to go for equal highs and
+[00:41:55] equal lows.
+[00:41:59] So you could have taken here your second
+[00:42:02] take profit and then what happened over
+[00:42:04] here.
+[00:42:10] This is not supposed to be here. All
+[00:42:12] right.
+[00:42:15] Kind of disrupts the flow of the
+[00:42:17] presentation. All right. Let's forget
+[00:42:20] about that. So we had again a higher
+[00:42:23] time frame for value gap and I think
+[00:42:28] this is a 5 minute yep
+[00:42:33] and a new day opening gap and a small
+[00:42:38] fair gap I think also it's a 5m minute
+[00:42:41] right within this new day opening gap
+[00:42:47] and we have these equal lows here
+[00:42:52] and a smaller
+[00:42:56] lower time frame gap here. All right.
+[00:42:59] So, you took your take profit here and
+[00:43:01] price we can assume now is going to go
+[00:43:06] to some of these one of these equal
+[00:43:08] highs here. Right? And we have the
+[00:43:12] number three over here.
+[00:43:16] Now, if you wanted to have more
+[00:43:19] confirmation,
+[00:43:21] maybe more precision,
+[00:43:24] you can measure
+[00:43:27] this swing here
+[00:43:30] and it gave us this level here.
+[00:43:34] If you were not sure, well, was this the
+[00:43:36] right swing?
+[00:43:38] You could have even measured
+[00:43:41] this swing here. And what do we have
+[00:43:43] here? They're like kind of like a
+[00:43:46] cluster, right? You have the three over
+[00:43:48] here and the two. It's almost on the
+[00:43:51] same level. And we have these equal
+[00:43:54] highs over here. So, we have a lot of
+[00:43:56] confluence, right?
+[00:43:59] So, for me, this will be my final take
+[00:44:03] profit over here.
+[00:44:06] Once again,
+[00:44:08] you had this higher time frame
+[00:44:11] preval
+[00:44:18] here. So, this is bullish, right? And
+[00:44:22] again, this could have helped you maybe
+[00:44:25] enter here again like a re-entry or
+[00:44:28] maybe add or a whole separate trade.
+[00:44:36] So final target is over here. Let's see
+[00:44:40] real quick here. And
+[00:44:44] look at that.
+[00:44:46] And then you always want to take if you
+[00:44:48] have multiple levels, always take like
+[00:44:52] the lower one. Again,
+[00:44:56] take profit always like a few points
+[00:45:00] before the levels, right? Don't be don't
+[00:45:04] be greedy and don't expect that 100%
+[00:45:09] exact
+[00:45:12] precision, right? Because sometimes or
+[00:45:15] let's say
+[00:45:16] whatever sometimes it will just not
+[00:45:19] exactly get there to the tick, right?
+[00:45:23] Take profits early. All right.
+[00:45:40] All right. So, real quick here,
+[00:45:42] you would have not been wrong to even
+[00:45:45] already take your profit, your final
+[00:45:48] take profit over here because why? It's
+[00:45:51] a new opening gap, which very often it's
+[00:45:55] a pretty strong PD rate or support and
+[00:45:59] resistance area, whatever you want to
+[00:46:02] call it.
+[00:46:05] And then look at that. We have what do
+[00:46:08] we have here? A swing is forming, right?
+[00:46:13] So why would you want to measure this
+[00:46:16] swing here?
+[00:46:21] We have
+[00:46:24] this cluster here. We have equal highs
+[00:46:27] here. So usually or sorry very often
+[00:46:32] price
+[00:46:34] will either sweep
+[00:46:36] highs, equal highs or equal lows and
+[00:46:40] then often we'll see reversal. All
+[00:46:44] right.
+[00:46:46] And also we see here again this cluster
+[00:46:50] and we see the three here which is again
+[00:46:54] very often this is like a final target
+[00:46:58] the number three. We have another three
+[00:47:00] over here. Again we have these equal
+[00:47:02] highs here.
+[00:47:04] Can price
+[00:47:06] wick above you know take out stops and
+[00:47:10] just to take liquidity above these
+[00:47:13] highs? Yeah, it can do that.
+[00:47:17] So, we can just observe
+[00:47:21] if it does it what happens after, right?
+[00:47:25] If price again, this is like another
+[00:47:28] test similar to our number one standard
+[00:47:32] deviation.
+[00:47:35] Will price even take out these highs? If
+[00:47:38] it can't even take out the highs,
+[00:47:42] that's a bearish sign. All right. So,
+[00:47:44] let's see real quick here.
+[00:47:48] And
+[00:47:50] no, it didn't even take out these highs.
+[00:47:55] So again the signs were
+[00:47:58] this cluster here these equal highs here
+[00:48:01] here rather
+[00:48:03] and we had a small 5m minute fair gap
+[00:48:08] and price rejected from it went below
+[00:48:13] this new day opening up again kind of
+[00:48:15] rejected
+[00:48:17] one more move up and there was another
+[00:48:22] five minute No, I'm sorry.
+[00:48:27] This is a could be both. Could be both.
+[00:48:32] Yeah, this is this one here.
+[00:48:35] Like this is a 15-minute premi gap.
+[00:48:39] Again, lines up pretty nicely with this
+[00:48:42] new day opening gap. And price rejected
+[00:48:46] again.
+[00:48:48] And we add some equal lows here and
+[00:48:53] equal lows here which price already
+[00:48:57] did go for.
+[00:48:59] So what could you do now if you miss
+[00:49:02] this entry here? I honestly would have
+[00:49:05] tried a short over here because why?
+[00:49:09] Again these clusters here and these
+[00:49:11] equal highs here. Price couldn't take it
+[00:49:14] out.
+[00:49:17] Only kind of negative
+[00:49:20] part would have been you know getting
+[00:49:22] into short above this opening gap. So
+[00:49:26] this would have been actually a very
+[00:49:28] good entry here. All right.
+[00:49:32] And then if you would have been very
+[00:49:34] conservative conservative
+[00:49:37] could have taken your first quick profit
+[00:49:41] over here because why this week opening
+[00:49:44] up
+[00:49:45] strong 80 right but it went through and
+[00:49:50] here comes like a retest. So this is a
+[00:49:53] pretty good entry over here too.
+[00:49:57] And let's see real quick. You have
+[00:50:00] number three over here again with this
+[00:50:04] newly opening gap.
+[00:50:06] So I would have targeted just above this
+[00:50:10] gap. Let's see what happens.
+[00:50:14] And there you go. It went even below the
+[00:50:17] three went to this five minute here. And
+[00:50:21] you could say this one hour. So, good
+[00:50:25] target to take profits were here and
+[00:50:28] here and maybe over here. I would have
+[00:50:31] not honestly waited that long.
+[00:50:35] So, I hope you're getting it. It's
+[00:50:39] really not that difficult.
+[00:50:45] All right. So, about to
+[00:50:49] end the presentation. Adjust one more
+[00:50:52] thing.
+[00:50:56] Can you
+[00:50:58] recognize this one here?
+[00:51:00] Reaccumulation.
+[00:51:03] Another reaccumulation.
+[00:51:05] One more reaccumulation
+[00:51:07] distribution
+[00:51:09] and then expansion down.
+[00:51:13] And we have a fastening or TP
+[00:51:20] distribution from here.
+[00:51:23] All right. So, if you
+[00:51:26] stuck with me all the way to the end of
+[00:51:29] this video, congratulations.
+[00:51:32] Maybe watch it one more time or a couple
+[00:51:34] more times
+[00:51:37] and try to see these
+[00:51:40] cycles
+[00:51:42] within
+[00:51:44] larger cycles. They're everywhere.
+[00:51:48] All right, so I think I'll end him here
+[00:51:51] again. And thanks for watching. Like and
+[00:51:54] subscribe
+[00:51:55] and leave a comment. And see you guys
+[00:51:58] next time.

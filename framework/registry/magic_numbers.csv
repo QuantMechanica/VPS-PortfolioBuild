@@ -3565,6 +3565,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10377,et-ma50-cross,2,XAUUSD.DWX,103770002,2026-05-25,Development,active
 10377,et-ma50-cross,3,GDAXI.DWX,103770003,2026-05-25,Development,active
 10377,et-ma50-cross,4,SP500.DWX,103770004,2026-05-25,Development,active
+10377,et-ma50-cross,5,AUDJPY.DWX,103770005,2026-07-11,Codex,active
+10377,et-ma50-cross,6,GBPJPY.DWX,103770006,2026-07-11,Codex,active
 10378,et-daily-limfade,0,SP500.DWX,103780000,2026-05-25,Development,active
 10378,et-daily-limfade,1,NDX.DWX,103780001,2026-05-25,Development,active
 10378,et-daily-limfade,2,WS30.DWX,103780002,2026-05-25,Development,active
@@ -14994,6 +14996,13 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11903,lawler-supply-demand-zones-20-dma-h1,7,EURJPY.DWX,119030007,2026-07-11,Codex,active
 11903,lawler-supply-demand-zones-20-dma-h1,8,GBPJPY.DWX,119030008,2026-07-11,Codex,active
 11903,lawler-supply-demand-zones-20-dma-h1,9,AUDJPY.DWX,119030009,2026-07-11,Codex,active
+13135,xau-sma50-hold,0,XAUUSD.DWX,131350000,2026-07-11,Codex,retired
+13136,jpy-sma20-riskon,0,AUDJPY.DWX,131360000,2026-07-11,Codex,retired
+13136,jpy-sma20-riskon,1,GBPJPY.DWX,131360001,2026-07-11,Codex,retired
+13137,breadth-tue,0,SP500.DWX,131370000,2026-07-11,Codex,active
+13137,breadth-tue,1,WS30.DWX,131370001,2026-07-11,Codex,active
+13137,breadth-tue,2,XAUUSD.DWX,131370002,2026-07-11,Codex,active
+13138,xau-m5-ema20,0,XAUUSD.DWX,131380000,2026-07-11,Codex,active
 13140,energy-aliq-rank,0,XTIUSD.DWX,131400000,2026-07-11,Development,active
 13140,energy-aliq-rank,1,XNGUSD.DWX,131400001,2026-07-11,Development,active
 13141,energy-ie-rank,0,XTIUSD.DWX,131410000,2026-07-11,Development,active
@@ -15017,5 +15026,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13150,wti-signmom,0,XTIUSD.DWX,131500000,2026-07-12,Development,active
 13151,energy-volbeta,0,XTIUSD.DWX,131510000,2026-07-12,Development,active
 13151,energy-volbeta,1,XNGUSD.DWX,131510001,2026-07-12,Development,active
+13200,ndx-convex-orb,0,NDX.DWX,132000000,2026-07-11,Codex,retired
+13201,dax-convex-orb,0,GDAXI.DWX,132010000,2026-07-11,Codex,retired
+13202,ws30-fri-pm-long,0,WS30.DWX,132020000,2026-07-11,Codex,active
 13203,energy-downbeta,0,XTIUSD.DWX,132030000,2026-07-12,Development,active
 13203,energy-downbeta,1,XNGUSD.DWX,132030001,2026-07-12,Development,active
+13204,sd-first-swing-rev,0,NDX.DWX,132040000,2026-07-12,Claude,active
+13204,sd-first-swing-rev,1,EURUSD.DWX,132040001,2026-07-12,Claude,active
+13204,sd-first-swing-rev,2,WS30.DWX,132040002,2026-07-12,Claude,active
