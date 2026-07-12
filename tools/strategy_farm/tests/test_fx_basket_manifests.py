@@ -214,3 +214,20 @@ def test_qm5_13117_zscore_uses_strictly_prior_calibration_window() -> None:
     assert source.count("PERIOD_D1, 1, history_count") == 4
     assert source.count("for(int i = 1; i < history_count; ++i)") == 2
     assert "g_spread_z = (spreads[0] - g_spread_mean) / g_spread_sd;" in source
+
+
+def test_qm5_12978_zscore_uses_strictly_prior_calibration_window() -> None:
+    ea_dir = (
+        REPO
+        / "framework"
+        / "EAs"
+        / "QM5_12978_edgelab-gbpusd-usdcad-cointegration"
+    )
+    source = (
+        ea_dir / "QM5_12978_edgelab-gbpusd-usdcad-cointegration.mq5"
+    ).read_text(encoding="utf-8", errors="ignore")
+
+    assert "const int history_count = lookback + 1;" in source
+    assert source.count("PERIOD_D1, 1, history_count") == 4
+    assert source.count("for(int i = 1; i < history_count; ++i)") == 2
+    assert "g_spread_z = (spreads[0] - g_spread_mean) / g_spread_sd;" in source
