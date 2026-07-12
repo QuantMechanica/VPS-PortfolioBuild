@@ -1,0 +1,16 @@
+{
+  "logical_symbol": "QM5_13205_XAU_XAG_QC_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "notes": [
+    "Logical two-leg XAU/XAG state-dependent conditional-quantile basket from approved card SCHWEIKERT-QC-2018_XAU_XAG_S01. Run on XAUUSD.DWX D1 and evaluate one paired package rather than standalone legs. Monthly exact constrained asymmetric-check-loss regressions at 10%, 50%, and 90% use 504 synchronized completed formation pairs with the newest pair held out; weekly tail-envelope entries target beta:1 XAU:XAG dollar notionals and jointly scale frozen ATR-stop risk to RISK_FIXED=1000. Source non-forecastability, upper-tail fragility, QM estimator/trading substitutions, continuous-CFD basis, gaps, legging, and residual hedge error are binding Q02 kill risks. No portfolio admission or decorrelation is claimed."
+  ]
+}
