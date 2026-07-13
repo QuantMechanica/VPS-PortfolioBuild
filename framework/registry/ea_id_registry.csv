@@ -3492,7 +3492,6 @@ QM5_11558,carter-t-m5-psar-macd64128-ema100,42530cb3-0265-534a-89cc-150f80733ff5
 11733,tc-m5-s15-ema-bb-channel-macd,40a4454c-64ff-5015-8538-9f7b32abc0e9,active,Development,2026-06-21
 11429,carter-london-open-box-breakout-m5,ec63ff86-b6dd-522b-ac8e-d90de82e2dee,active,Claude,2026-06-21
 11463,goodwin-j-session-high-breakout-usdjpy,038d2a5d-1c89-5745-afdb-2cd76b623b77,active,Claude,2026-06-21
-11733,tc-m5-s15-ema-bb-channel-macd,40a4454c-64ff-5015-8538-9f7b32abc0e9,active,Development,2026-06-21
 11347,rbt-adx-momentum-m5,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,Research,2026-06-20
 11265,qt-awesome,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Development,2026-06-21
 1238,tv-vwap-rsi-cont,30591366-874b-5bee-b47c-da2fca20b728,active,Development,2026-06-21
@@ -4049,3 +4048,4 @@ QM5_1491,ehlers-sinewave-leadsine-cross-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,
 13210,mulham-asian-sweep-london,YT-MULHAM-2026-07_ASIAN-SWEEP-LONDON_S01,active,Research+Development (OWNER Mulham channel mandate),2026-07-13
 13211,mulham-tgif-weekly-fade,YT-MULHAM-2026-07_TGIF-WEEKLY-FADE_S01,active,Research+Development (OWNER Mulham channel mandate),2026-07-13
 13212,mulham-us500-org,YT-MULHAM-2026-07_US500-ORG_S01,active,Research+Development (OWNER Mulham channel mandate),2026-07-13
+20001,master-xauusd,MASTER-XAUUSD-MULTI-MAGIC-V1,active,Development,2026-07-13

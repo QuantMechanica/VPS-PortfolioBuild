@@ -14481,7 +14481,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12933,aa-tom-sma10-card,0,SP500.DWX,129330000,2026-07-07,Development,active
 12933,aa-tom-sma10-card,1,NDX.DWX,129330001,2026-07-07,Development,active
 12933,aa-tom-sma10-card,2,WS30.DWX,129330002,2026-07-07,Development,active
-
 12934,aa-comm-spot-rev-card,0,XAUUSD.DWX,129340000,2026-07-07,Development,active
 12934,aa-comm-spot-rev-card,1,XAGUSD.DWX,129340001,2026-07-07,Development,active
 12934,aa-comm-spot-rev-card,2,XTIUSD.DWX,129340002,2026-07-07,Development,active
@@ -15039,3 +15038,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13031,wayward-bbrsi-stopmr,0,XAUUSD.DWX,130310000,2026-07-13,Claude,active
 13031,wayward-bbrsi-stopmr,1,NDX.DWX,130310001,2026-07-13,Claude,active
 13207,ws30-fri-t20a,0,WS30.DWX,132070000,2026-07-13,Codex,active
+20001,master-xauusd,0,XAUUSD.DWX,200010000,2026-07-13,Codex,active
