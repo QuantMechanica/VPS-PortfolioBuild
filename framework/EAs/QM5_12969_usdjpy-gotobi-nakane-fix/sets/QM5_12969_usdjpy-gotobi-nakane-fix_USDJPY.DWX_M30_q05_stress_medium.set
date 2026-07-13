@@ -3,16 +3,16 @@
 ; ea_id:        12969
 ; ea_slug:      usdjpy-gotobi-nakane-fix
 ; ea_version:   v5.0
-; set_version:  s20260707-stress-med
+; set_version:  s20260713-stress-med
 ; symbol:       USDJPY.DWX
 ; timeframe:    M30
 ; environment:  q05_stress_medium
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   21c7bc28edabdb57330ce1e5a7604aca442135145229e496445d5afbe2913667
+; build_hash:   1cf133ed963ccd3e27178c0a82de9f2fd46a4899d7edc804cff9e8900b658fca
 ; author:       Development
-; date:         2026-07-07
+; date:         2026-07-13
 ;==========================================================
 qm_ea_id=12969
 qm_magic_slot_offset=0
