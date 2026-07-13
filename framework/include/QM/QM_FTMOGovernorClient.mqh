@@ -1,73 +1,112 @@
 #ifndef QM_FTMO_GOVERNOR_CLIENT_MQH
 #define QM_FTMO_GOVERNOR_CLIENT_MQH
 
-string QM_FTMO_ClientKey(const long account_login,
-                         const string policy_id,
-                         const string suffix)
+#include <QM/QM_FTMOGovernorPolicy.mqh>
+
+bool QM_FTMO_ClientGenerationValid(const double value)
   {
-   return StringFormat("QM.FTMO.%I64d.%s.%s",account_login,policy_id,suffix);
+   if(!MathIsValidNumber(value) || value < 2.0 || value != MathFloor(value))
+      return false;
+   return (((long)value % 2) == 0);
   }
 
 bool QM_FTMO_ReadGovernorScale(const string policy_id,
-                               const double required_policy_version,
+                               const string challenge_instance_id,
                                const int heartbeat_max_age_seconds,
                                double &risk_scale,
                                string &block_reason)
   {
-   risk_scale = 0.0;
-   block_reason = "GOVERNOR_UNKNOWN";
-   if(StringLen(policy_id) <= 0 || heartbeat_max_age_seconds <= 0)
+   risk_scale=0.0;
+   block_reason="GOVERNOR_UNKNOWN";
+   if(policy_id != "FTMO_P1_GOVERNOR_V1" ||
+      !QM_FTMO_IdentifierValid(challenge_instance_id) ||
+      heartbeat_max_age_seconds <= 0 || heartbeat_max_age_seconds > 5)
      {
-      block_reason = "GOVERNOR_CLIENT_CONFIG_INVALID";
+      block_reason="GOVERNOR_CLIENT_CONFIG_INVALID";
       return false;
      }
 
-   const long login = AccountInfoInteger(ACCOUNT_LOGIN);
-   const string ready_key = QM_FTMO_ClientKey(login,policy_id,"ready");
-   const string version_key = QM_FTMO_ClientKey(login,policy_id,"version");
-   const string heartbeat_key = QM_FTMO_ClientKey(login,policy_id,"heartbeat_utc");
-   const string lock_key = QM_FTMO_ClientKey(login,policy_id,"entry_lock");
-   const string scale_key = QM_FTMO_ClientKey(login,policy_id,"risk_scale");
-   if(!GlobalVariableCheck(ready_key) || !GlobalVariableCheck(version_key) ||
-      !GlobalVariableCheck(heartbeat_key) || !GlobalVariableCheck(lock_key) ||
+   const long login=AccountInfoInteger(ACCOUNT_LOGIN);
+   const string generation_key=QM_FTMO_StateKey(login,challenge_instance_id,"generation");
+   const string ready_key=QM_FTMO_StateKey(login,challenge_instance_id,"ready");
+   const string version_key=QM_FTMO_StateKey(login,challenge_instance_id,"version");
+   const string fingerprint_key=QM_FTMO_StateKey(login,challenge_instance_id,"fingerprint");
+   const string heartbeat_key=QM_FTMO_StateKey(login,challenge_instance_id,"heartbeat_utc");
+   const string day_key=QM_FTMO_StateKey(login,challenge_instance_id,"day_key");
+   const string lock_key=QM_FTMO_StateKey(login,challenge_instance_id,"entry_lock");
+   const string scale_key=QM_FTMO_StateKey(login,challenge_instance_id,"risk_scale");
+   if(!GlobalVariableCheck(generation_key) || !GlobalVariableCheck(ready_key) ||
+      !GlobalVariableCheck(version_key) || !GlobalVariableCheck(fingerprint_key) ||
+      !GlobalVariableCheck(heartbeat_key) || !GlobalVariableCheck(day_key) ||
+      !GlobalVariableCheck(lock_key) ||
       !GlobalVariableCheck(scale_key))
      {
-      block_reason = "GOVERNOR_STATE_MISSING";
-      return false;
-     }
-   if(GlobalVariableGet(ready_key) < 0.5)
-     {
-      block_reason = "GOVERNOR_NOT_READY";
-      return false;
-     }
-   if(MathAbs(GlobalVariableGet(version_key)-required_policy_version) > 0.000001)
-     {
-      block_reason = "GOVERNOR_POLICY_MISMATCH";
+      block_reason="GOVERNOR_STATE_MISSING";
       return false;
      }
 
-   const datetime now_utc = TimeGMT();
-   const datetime heartbeat_utc = (datetime)GlobalVariableGet(heartbeat_key);
-   const long age = (long)(now_utc-heartbeat_utc);
+   const double generation_before=GlobalVariableGet(generation_key);
+   if(!QM_FTMO_ClientGenerationValid(generation_before))
+     {
+      block_reason="GOVERNOR_SNAPSHOT_IN_PROGRESS";
+      return false;
+     }
+   const double ready_before=GlobalVariableGet(ready_key);
+   const double version=GlobalVariableGet(version_key);
+   const double fingerprint=GlobalVariableGet(fingerprint_key);
+   const datetime heartbeat_utc=(datetime)GlobalVariableGet(heartbeat_key);
+   const double published_day_key=GlobalVariableGet(day_key);
+   const double entry_lock=GlobalVariableGet(lock_key);
+   const double published_scale=GlobalVariableGet(scale_key);
+   const double generation_after=GlobalVariableGet(generation_key);
+   const double ready_after=GlobalVariableGet(ready_key);
+
+   if(generation_before != generation_after ||
+      !QM_FTMO_ClientGenerationValid(generation_after) ||
+      ready_before != ready_after)
+     {
+      block_reason="GOVERNOR_SNAPSHOT_CHANGED";
+      return false;
+     }
+   if(ready_before < 0.5)
+     {
+      block_reason="GOVERNOR_NOT_READY";
+      return false;
+     }
+   if(!QM_FTMO_Near(version,QM_FTMO_V1_POLICY_VERSION) ||
+      fingerprint != QM_FTMO_V1_FINGERPRINT_NUMBER)
+     {
+      block_reason="GOVERNOR_POLICY_MISMATCH";
+      return false;
+     }
+
+   const datetime now_utc=TimeGMT();
+   const long age=(long)(now_utc-heartbeat_utc);
    if(heartbeat_utc <= 0 || age < 0 || age > heartbeat_max_age_seconds)
      {
-      block_reason = "GOVERNOR_HEARTBEAT_STALE";
+      block_reason="GOVERNOR_HEARTBEAT_STALE";
       return false;
      }
-   if(GlobalVariableGet(lock_key) >= 0.5)
+   if(!MathIsValidNumber(published_day_key) ||
+      published_day_key != (double)QM_FTMO_PragueDayKey(now_utc))
      {
-      block_reason = "GOVERNOR_ENTRY_LOCKED";
+      block_reason="GOVERNOR_DAY_MISMATCH";
+      return false;
+     }
+   if(!MathIsValidNumber(entry_lock) || entry_lock >= 0.5)
+     {
+      block_reason="GOVERNOR_ENTRY_LOCKED";
+      return false;
+     }
+   if(!MathIsValidNumber(published_scale) || published_scale <= 0.0 ||
+      published_scale > 1.0)
+     {
+      block_reason="GOVERNOR_SCALE_INVALID";
       return false;
      }
 
-   const double published_scale = GlobalVariableGet(scale_key);
-   if(!MathIsValidNumber(published_scale) || published_scale <= 0.0 || published_scale > 1.0)
-     {
-      block_reason = "GOVERNOR_SCALE_INVALID";
-      return false;
-     }
-   risk_scale = published_scale;
-   block_reason = "ALLOW";
+   risk_scale=published_scale;
+   block_reason="ALLOW";
    return true;
   }
 

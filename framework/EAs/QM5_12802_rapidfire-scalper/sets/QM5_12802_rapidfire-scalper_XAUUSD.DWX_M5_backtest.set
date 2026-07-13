@@ -14,21 +14,43 @@
 ; author:       Development
 ; date:         2026-06-30
 ;==========================================================
+qm_ea_id=12802
 qm_magic_slot_offset=0
+qm_rng_seed=42
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+qm_news_temporal=3
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0
+; Strategy parameters frozen from the approved card and current MQ5 defaults.
+strategy_timeframe=5
+strategy_sma_period=60
+strategy_sar_step=0.20
+strategy_sar_maximum=0.20
+strategy_profile_mode=0
+strategy_fixed_sl_points=200
+strategy_fixed_tp_points=200
+strategy_percent_sl=0.40
+strategy_percent_tp=0.40
+strategy_session_start_hour_broker=8
+strategy_session_end_hour_broker=23
+strategy_allow_monday=true
+strategy_allow_tuesday=true
+strategy_allow_wednesday=true
+strategy_allow_thursday=true
+strategy_allow_friday=true
+strategy_allow_saturday=false
+strategy_allow_sunday=false
+strategy_trailing_mode=1
+strategy_trailing_trigger_points=20
+strategy_trailing_points=10
+strategy_trailing_trigger_pct_of_sl=10.0
+strategy_trailing_distance_pct_of_sl=5.0
+strategy_previous_candle_shift=1
+strategy_fast_ma_period=5

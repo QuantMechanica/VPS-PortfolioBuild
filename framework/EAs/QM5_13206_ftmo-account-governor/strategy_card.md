@@ -22,17 +22,18 @@ g0_approval_reasoning: "OWNER-authorized safety controller build. Approval permi
 ## Scope
 
 No-trade risk controller for a dedicated FTMO 2-Step account. It implements a
-central entry lock, equity-room scaling, Prague-day state, and retrying
-liquidation for a signed magic whitelist. It does not create alpha and does not
-grant any strategy deployment right.
+challenge-bound central entry lock, effective-floor equity scaling, Prague-day
+state, target capture, and retrying liquidation for a signed magic whitelist.
+It does not create alpha and does not grant any strategy deployment right.
 
 ## Mechanical Contract
 
 - Dry-run and invalid-account defaults.
-- Persistent account/policy-scoped state.
+- Persistent account/challenge-scoped state with explicit one-shot bootstrap.
 - Lock is durable before order operations.
 - Foreign magics are excluded.
-- Client heartbeat and policy mismatch fail closed.
+- Seqlock client heartbeat, singleton lease, and policy-fingerprint mismatch
+  fail closed.
 - No ML, adaptation, martingale, grid, or discretionary input.
 
 ## Release Boundary
