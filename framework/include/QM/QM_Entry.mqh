@@ -152,10 +152,13 @@ void QM_EntryLogReject(const QM_EntryRequest &req, const QM_EntryResult result, 
    QM_LogEvent(QM_WARN, "ENTRY_REJECTED", payload);
 }
 
-QM_EntryResult QM_Entry(const QM_EntryRequest &req,
-                        ulong &out_ticket,
-                        const int explicit_magic = 0,
-                        const double explicit_risk_percent = 0.0)
+QM_EntryResult QM_EntryInternal(const QM_EntryRequest &req,
+                                ulong &out_ticket,
+                                const int explicit_magic,
+                                const double explicit_risk_percent,
+                                const bool use_explicit_risk_mode,
+                                const QM_RiskMode explicit_risk_mode,
+                                const double explicit_risk_value)
 {
    out_ticket = 0;
 
@@ -244,9 +247,13 @@ QM_EntryResult QM_Entry(const QM_EntryRequest &req,
    // legacy two-argument risk sizer (including fixed-money mode). Any nonzero
    // explicit value takes the new path, where invalid negatives resolve to
    // zero lots and reject instead of silently falling back to global risk.
-   const double lots = (explicit_risk_percent == 0.0)
-                       ? QM_LotsForRisk(_Symbol, sl_points)
-                       : QM_LotsForRisk(_Symbol, sl_points, explicit_risk_percent);
+   double lots = 0.0;
+   if(use_explicit_risk_mode)
+      lots = QM_LotsForRisk(_Symbol, sl_points, explicit_risk_mode, explicit_risk_value);
+   else
+      lots = (explicit_risk_percent == 0.0)
+             ? QM_LotsForRisk(_Symbol, sl_points)
+             : QM_LotsForRisk(_Symbol, sl_points, explicit_risk_percent);
    if(lots <= 0.0)
    {
       QM_EntryLogReject(req, QM_ENTRY_REJECTED_RISK, "lots_for_risk_zero");
@@ -298,6 +305,40 @@ QM_EntryResult QM_Entry(const QM_EntryRequest &req,
    );
    QM_LogEvent(QM_INFO, "ENTRY_ACCEPTED", payload);
    return QM_ENTRY_OK;
+}
+
+// Legacy/Phase-1 entry signature. The zero-percent sentinel and its sizing
+// expression remain unchanged inside QM_EntryInternal.
+QM_EntryResult QM_Entry(const QM_EntryRequest &req,
+                        ulong &out_ticket,
+                        const int explicit_magic = 0,
+                        const double explicit_risk_percent = 0.0)
+{
+   return QM_EntryInternal(req,
+                           out_ticket,
+                           explicit_magic,
+                           explicit_risk_percent,
+                           false,
+                           QM_RISK_MODE_UNSET,
+                           0.0);
+}
+
+// Phase 2.5 explicit per-call mode/value overload. Even an invalid explicit
+// mode routes through the explicit sizer and rejects with zero lots; it never
+// falls back to the process-wide configuration.
+QM_EntryResult QM_Entry(const QM_EntryRequest &req,
+                        ulong &out_ticket,
+                        const int explicit_magic,
+                        const QM_RiskMode explicit_risk_mode,
+                        const double explicit_risk_value)
+{
+   return QM_EntryInternal(req,
+                           out_ticket,
+                           explicit_magic,
+                           0.0,
+                           true,
+                           explicit_risk_mode,
+                           explicit_risk_value);
 }
 
 #endif // QM_ENTRY_MQH

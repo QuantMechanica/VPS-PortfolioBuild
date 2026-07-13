@@ -171,6 +171,33 @@ bool QM_TM_OpenPosition(const QM_EntryRequest &req,
    return ok;
   }
 
+// Phase 2.5 explicit per-call risk mode/value overload. It has distinct arity
+// from the legacy/Phase-1 signature above, so all existing calls retain their
+// original default arguments and percentage semantics.
+bool QM_TM_OpenPosition(const QM_EntryRequest &req,
+                        ulong &out_ticket,
+                        const int explicit_magic,
+                        const QM_RiskMode explicit_risk_mode,
+                        const double explicit_risk_value)
+  {
+   const QM_EntryResult result = QM_Entry(req,
+                                          out_ticket,
+                                          explicit_magic,
+                                          explicit_risk_mode,
+                                          explicit_risk_value);
+   const bool ok = (result == QM_ENTRY_OK);
+   const string payload = StringFormat(
+      "{\"symbol\":\"%s\",\"type\":\"%s\",\"ok\":%s,\"ticket\":%I64u,\"entry_result\":\"%s\"}",
+      QM_LoggerEscapeJson(_Symbol),
+      QM_LoggerEscapeJson(QM_OrderTypeToString(req.type)),
+      ok ? "true" : "false",
+      out_ticket,
+      QM_LoggerEscapeJson(QM_EntryResultToString(result))
+   );
+   QM_LogEvent(ok ? QM_INFO : QM_WARN, "TM_OPEN", payload);
+   return ok;
+  }
+
 bool QM_TM_RemovePendingOrder(const ulong ticket, const string reason)
   {
    if(ticket == 0 || !OrderSelect(ticket))
