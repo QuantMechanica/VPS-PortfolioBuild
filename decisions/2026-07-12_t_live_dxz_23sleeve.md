@@ -100,3 +100,23 @@ Probation: 1556, 10706, 13128 gelten als Probation-Sleeves (42d-Review, Salvage-
 
 **Nächster Schritt:** OWNER-Chart-Session nach `C:\QM\deploy\DXZ23_2026-07-12\ANLEITUNG_DXZ23.md`
 (15 Preset-Reloads + 8 neue Charts). Danach Claude-Verify: 23× INIT_OK + Magic-Set 23/23.
+
+---
+
+## ABSCHLUSS-VERIFY — BUCH LIVE ALS 23-SLEEVE (2026-07-13)
+
+OWNER hat alle Charts geschlossen und von null neu aufgebaut (Anleitung
+„Von Null", Vault-Kopie `08 Current State/ANLEITUNG Sonntag - DXZ-23...`).
+
+**Claude-Schlusscheck (Journal + EA-Logs, 13.07. vormittags):**
+- 23/23 `loaded successfully` (08:25–08:37), **0 Fehler/Removals** im Journal
+- **Magic-Set 23/23 exakt** — INIT_OK-Events tragen genau die 23 Soll-Magics
+- Korrektur während der Session: 11708 war auf EURUSD **H1** geladen (D1-EA,
+  Entry-Gate läuft auf Chart-TF) → OWNER auf D1 umgestellt; frisches INIT_OK
+  09:43:07 mit `tf=D1`, magic 117080000 bestätigt
+- AutoTrading: durchgehend unangetastet
+
+**Damit ist das DXZ-Buch live als 23-Sleeve** (Konto 4000090541, Gesamt-Risiko
+9.75, Sharpe-Erwartung 2.35 / MaxDD 3.32% auf verifizierter Stream-Basis,
+~60%/Jahr Darwin-normalisiert). First-Tick: 13.07. ~23:00 Broker-Zeit.
+Probation-Review (42d): 1556, 10706, 13128.
