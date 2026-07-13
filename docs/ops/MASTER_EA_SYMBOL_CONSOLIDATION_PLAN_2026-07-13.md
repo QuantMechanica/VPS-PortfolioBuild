@@ -111,6 +111,11 @@ Sizing-Modus desselben Moduls.
 - **Gate:** (a) risk_sizer-Unit-Test beweist explizit-FIXED == global-FIXED (identisches
   risk_money + Lots für gleiche Inputs); (b) ein bestehender Single-EA (12567) reproduziert
   weiter 73/$4.676,76 (backward-compat). Kein Phase-3-Modul nötig — reiner Framework-Beweis.
+- **Status Phase 2.5: ✅ ABGESCHLOSSEN + gemerged (9b4202b1e).** Overloads
+  `QM_RiskSizerRiskMoney(equity, mode, value)` + `QM_LotsForRisk(sym, sl, mode, value)`
+  (PERCENT delegiert an Phase-1-Pfad; FIXED spiegelt Global-Branch ohne Global-Mutation),
+  durch `QM_TM_OpenPosition` + `QM_Entry` gethreadet. Gates GRÜN (T8, unabhängig):
+  Unit `AssertExact` explicit-FIXED==global-FIXED (2 PASS, 0 fails) + 12567 = 73/$4.676,76.
 
 **Phase 3 — die 5 XAU-Strategien als Module portieren (headless SONNET):**
 - Je Strategie: Entry/Exit/Manage-Logik 1:1 aus dem Standalone-EA übernehmen, TF-hart,
