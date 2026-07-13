@@ -235,6 +235,15 @@ try {
     $includeSyncTargets = $includeTargets
 
     while ($true) {
+        # FORCE-REBUILD (2026-07-12): MetaEditor /compile skips the build silently when the
+        # target .ex5 already exists (it does NOT check include mtimes) — it even touches the
+        # file mtime and reports success. Every framework-include fix rollout ("recompile all
+        # EAs") was therefore a farm-wide NO-OP for EAs whose .mq5 was unchanged. Deleting the
+        # target first forces a true rebuild. Evidence: docs/ops/evidence/, DXZ-23 verify sweep.
+        if (Test-Path -LiteralPath $ex5Path) {
+            Remove-Item -LiteralPath $ex5Path -Force
+        }
+
         $arguments = @(
             "/compile:$mq5Path",
             "/log:$compileLogPath"
