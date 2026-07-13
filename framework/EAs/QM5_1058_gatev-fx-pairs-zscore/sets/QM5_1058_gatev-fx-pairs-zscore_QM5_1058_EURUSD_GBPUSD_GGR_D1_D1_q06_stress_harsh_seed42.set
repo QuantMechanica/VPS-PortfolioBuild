@@ -3,7 +3,7 @@
 ; ea_id:        1058
 ; ea_slug:      gatev-fx-pairs-zscore
 ; ea_version:   v5.0
-; set_version:  s20260710-stress-harsh
+; set_version:  s20260713-stress-harsh
 ; symbol:       QM5_1058_EURUSD_GBPUSD_GGR_D1
 ; host_symbol:  EURUSD.DWX
 ; timeframe:    D1
@@ -13,7 +13,7 @@
 ; portfolio_weight: 1
 ; build_hash:   dd441e6564743ee64af4bf06b966920f28c2f37a46c47538bf327fc95692c000
 ; author:       Development
-; date:         2026-07-10
+; date:         2026-07-13
 ;==========================================================
 qm_magic_slot_offset=0
 qm_rng_seed=42
