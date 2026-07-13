@@ -53,6 +53,9 @@ je-Magic-q08-Stream extrahieren → gegen den EINZELN verifizierten Standalone-S
 Strategie diffen (die Referenzen aus dem 13.07.-Sweep: 10403 209/$14.411, 10513 76/$9.649,
 12567 73/$4.677, 12989 51/$13.878, 1556 53/$6.370). **Match = Konsolidierung ändert kein
 Verhalten.** Erst dann geht's live. (Nutzt die Verifikations-Infra vom 12./13.07.)
+Für Centgenauigkeit läuft die Regression im **RISK_FIXED**-Modus mit den Standalone-Backtest-
+Werten (Phase 2.5 liefert den expliziten FIXED-Pfad); Live-RISK_PERCENT ist ein separater
+Sizing-Modus desselben Moduls.
 
 ## Phasenplan + Delegation
 
@@ -95,12 +98,29 @@ Verhalten.** Erst dann geht's live. (Nutzt die Verifikations-Infra vom 12./13.07
   Zusätzlich: `-MinTrades 0` wird von run_smoke auf den 5/yr-Ökonomie-Floor überschrieben →
   ein No-Op-Skelett meldet `MIN_TRADES_NOT_MET` trotz sauberem Run (run_01 status=OK zählt).
 
+**Phase 2.5 — Expliziter Fixed-Lot-Sizing-Pfad (headless CODEX) [NEU, OWNER-Wahl A 13.07.]:**
+- Befund: die per-Modul-Regression (Phase 3/4) muss das Standalone-**RISK_FIXED**-Backtest-
+  Sizing centgenau reproduzieren. Standalones sizen im Backtest über RISK_FIXED (fixes
+  Risiko-*Geld* `g_qm_risk_fixed`, Lots aus SL-Distanz). Phase 1 lieferte NUR einen expliziten
+  PERCENT-Pfad (`QM_RiskSizerRiskMoney(equity, explicit_risk_percent)` / `QM_LotsForRisk(...,
+  explicit_risk_percent)`) — der explizite FIXED-Branch fehlt.
+- Fix: paralleler expliziter FIXED-Pfad (mode+value je Call), der den globalen FIXED-Branch
+  (base_risk = fixed, × portfolio_weight, per_trade_cap) 1:1 spiegelt, ohne Globals zu
+  mutieren. Durch `QM_TM_OpenPosition` threaden. Phase-1-PERCENT-Overload bleibt (backward-
+  kompatibel; ggf. als Wrapper mode=PERCENT).
+- **Gate:** (a) risk_sizer-Unit-Test beweist explizit-FIXED == global-FIXED (identisches
+  risk_money + Lots für gleiche Inputs); (b) ein bestehender Single-EA (12567) reproduziert
+  weiter 73/$4.676,76 (backward-compat). Kein Phase-3-Modul nötig — reiner Framework-Beweis.
+
 **Phase 3 — die 5 XAU-Strategien als Module portieren (headless SONNET):**
 - Je Strategie: Entry/Exit/Manage-Logik 1:1 aus dem Standalone-EA übernehmen, TF-hart,
-  Original-Magic-Kontext, Live-Risk als Default. Pro Modul der committete Standalone-Code
-  als Quelle (nach dem 13.07.-Rebuild verifiziert).
-- **Gate je Modul:** Master mit NUR diesem Modul aktiv reproduziert den Standalone-Stream
-  centgenau (Einzel-Regression vor der Integration).
+  Original-Magic-Kontext. **Dualmodus (CLAUDE.md-Pflicht):** Regression = expliziter FIXED-Pfad
+  mit dem `g_qm_risk_fixed`-Wert aus dem Standalone-Backtest-Set; Live = expliziter PERCENT-Pfad
+  mit dem deployten Sub-Sleeve-Risk. Pro Modul der committete Standalone-Code als Quelle
+  (nach dem 13.07.-Rebuild verifiziert).
+- **Gate je Modul:** Master mit NUR diesem Modul aktiv, im **FIXED**-Regressionsmodus,
+  reproduziert den Standalone-q08-Stream **centgenau** (Einzel-Regression vor der Integration).
+  Deploy-Lektion aus Phase 2 beachten (Worktree-`.ex5` vor dem Smoke ins Terminal kopieren).
 
 **Phase 4 — Integration + Full-Regression (CLAUDE fährt, Codex fixt Drift):**
 - Alle 5 Module aktiv, Full-History-Backtest, je-Magic-Stream-Diff gegen alle 5 Referenzen.
