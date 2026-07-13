@@ -23,7 +23,7 @@ G:\My Drive\QuantMechanica - Company Reference\_HOME.md
 
 It mirrors identity, the pipeline, processes, infrastructure, current state, and the
 Hard Rules (`01 Identity/Hard Rules`). The canonical pipeline phase names live in
-`03 Pipeline/` (the **Qxx** series, Q00–Q14). Read the vault first when something is
+`03 Pipeline/` (the **Qxx** series, Q00–Q13). Read the vault first when something is
 unclear about *what the company is*.
 
 **Conflict resolution: filesystem state > vault > Notion.**
@@ -40,7 +40,8 @@ unclear about *what the company is*.
 If filesystem conflicts with notes, trust filesystem and report the inconsistency.
 
 For live company audits, also read `docs/ops/COMPANY_AUDIT_LIVE_SOURCES_2026-05-30.md`.
-It records the current Paperclip-free runtime source order, Q00–Q14 phase naming,
+It records the current Paperclip-free runtime source order, the Qxx phase naming
+(Q00–Q13 since the OWNER-ratified rewrite 2026-05-23),
 `D:\QM\mt5\T1..T10` factory layout, and `C:\QM\mt5\T_Live` isolation. Generated
 `public-data` snapshots and `D:\QM\reports\state\pipeline_state.json` may still expose
 legacy `P*` compatibility keys and must not override live Qxx work-item evidence.
@@ -53,9 +54,10 @@ decommissioned; do not reintroduce it.
 - Controller: `C:/QM/repo/tools/strategy_farm/`
 - Runtime / artifacts: `D:/QM/strategy_farm/`
 - State DB: `D:/QM/strategy_farm/state/farm_state.sqlite` (`work_items`, `agent_tasks`, …)
-- Pipeline: 15 gates **Q00–Q14** (storage keeps legacy `P*` keys for compatibility;
-  operator surfaces display only **Qxx**). Q08 and Q11 are hard real-evidence gates;
-  Q12–Q14 are OWNER/manual gates.
+- Pipeline: 14 gates **Q00–Q13** (storage keeps legacy `P*` keys for compatibility;
+  operator surfaces display only **Qxx**). Q02–Q10 are automated evidence gates —
+  Q10 full-history confirmation is the closing per-(EA, symbol) verdict; Q11–Q13
+  (portfolio, operational readiness, live burn-in) are OWNER/manual gates.
 - The T1–T10 factory works the backtest queue; MT5 saturation is the primary throughput
   metric.
 
