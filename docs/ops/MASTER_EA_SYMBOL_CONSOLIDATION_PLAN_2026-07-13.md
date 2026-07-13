@@ -126,6 +126,14 @@ Sizing-Modus desselben Moduls.
 - **Gate je Modul:** Master mit NUR diesem Modul aktiv, im **FIXED**-Regressionsmodus,
   reproduziert den Standalone-q08-Stream **centgenau** (Einzel-Regression vor der Integration).
   Deploy-Lektion aus Phase 2 beachten (Worktree-`.ex5` vor dem Smoke ins Terminal kopieren).
+- **Status Phase 3: ✅ ABGESCHLOSSEN + gemerged.** Pilot 12567 (`0792b2967`) + die 4 restlichen
+  (`a16eaef6b`). Module: CumRsi2Commodity/EtTurtle20x/Mql5Ichimoku/GrimesNestedPbV2(H4)/AaZakMom12.
+  Interface `RiskPercent()`→`RiskMode()`+`RiskValue()` (Dualmodus), `CQMMasterSlotModule`-Platzhalter
+  entfernt. **Alle 5 per-Modul-Gates GREEN_MATCH centgenau** (T8, autoritativ):
+  12567 73/$4.676,76 · 10403 209/$14.411,17 · 10513 76/$9.649,32 · 12989 51/$13.878,26 ·
+  1556 53/$6.369,87 — je nur die Original-Magic. Prozess-Lektion: `claude -p` (headless Sonnet)
+  darf NICHTS backgrounden → Prompt muss „synchron + committen vor exit" hart vorschreiben;
+  Claude fährt die autoritativen Gates.
 
 **Phase 4 — Integration + Full-Regression (CLAUDE fährt, Codex fixt Drift):**
 - Alle 5 Module aktiv, Full-History-Backtest, je-Magic-Stream-Diff gegen alle 5 Referenzen.
