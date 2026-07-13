@@ -46,15 +46,38 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 REGISTRY_CSV = REPO_ROOT / "framework" / "registry" / "magic_numbers.csv"
+EA_ID_REGISTRY = REPO_ROOT / "framework" / "registry" / "ea_id_registry.csv"
 RESOLVER_MQH = REPO_ROOT / "framework" / "include" / "QM" / "QM_MagicResolver.mqh"
 EA_ROOT = REPO_ROOT / "framework" / "EAs"
 
 
+def registered_ea_ids_by_slug() -> dict[str, int]:
+    """Canonical active/reserved ea_id lookup used by named master directories."""
+    result: dict[str, int] = {}
+    if not EA_ID_REGISTRY.is_file():
+        return result
+    with EA_ID_REGISTRY.open(encoding="utf-8-sig", newline="") as f:
+        for raw in csv.DictReader(f):
+            slug = (raw.get("slug") or "").strip()
+            ea_id_raw = (raw.get("ea_id") or "").strip()
+            status = (raw.get("status") or "").strip().lower()
+            if not slug or not ea_id_raw.isdigit() or status == "retired":
+                continue
+            result[slug] = int(ea_id_raw)
+    return result
+
+
 def active_ea_ids(*, keep_obsolete: bool) -> set[int]:
-    """Set of ea_id ints whose dir exists under framework/EAs (not _obsolete_*)."""
+    """Set of ea_id ints whose dir exists under framework/EAs (not _obsolete_*).
+
+    Normal EAs encode the numeric ID in ``QM5_<id>_<slug>``. Symbol masters use
+    the class-style ``QM5_M<symbol>_<slug>`` name required by the consolidation
+    plan, so their canonical ID is resolved from ea_id_registry.csv by slug.
+    """
     if keep_obsolete:
         return None  # type: ignore[return-value]
     ids: set[int] = set()
+    ea_ids_by_slug = registered_ea_ids_by_slug()
     if not EA_ROOT.is_dir():
         return ids
     for entry in EA_ROOT.iterdir():
@@ -65,6 +88,12 @@ def active_ea_ids(*, keep_obsolete: bool) -> set[int]:
         m = re.match(r"^QM5_(\d{4,5})(?:_|$)", entry.name)
         if m:
             ids.add(int(m.group(1)))
+            continue
+        master = re.match(r"^QM5_M[A-Z0-9]+_(?P<slug>[a-z0-9][a-z0-9-]*[a-z0-9])$", entry.name)
+        if master:
+            ea_id = ea_ids_by_slug.get(master.group("slug"))
+            if ea_id is not None:
+                ids.add(ea_id)
     return ids
 
 
