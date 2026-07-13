@@ -800,6 +800,7 @@ void QM_FrameworkQ08EmitFromHistory()
    // MUST be decided on the open — deciding it on the close silently drops every TP/SL exit
    // (observed: 54/1762 closes with magic 0, all take-profit winners, $46.7k, on QM5_10546).
    ulong owned_pos[];
+   long  owned_magic[];
    for(int i = 0; i < total; ++i)
      {
       const ulong deal = HistoryDealGetTicket(i);
@@ -808,12 +809,15 @@ void QM_FrameworkQ08EmitFromHistory()
       const long entry = HistoryDealGetInteger(deal, DEAL_ENTRY);
       if(entry != DEAL_ENTRY_IN && entry != DEAL_ENTRY_INOUT)
          continue;
-      if(!QM_FrameworkOwnsMagicSymbol(HistoryDealGetInteger(deal, DEAL_MAGIC),
+      const long opening_magic = HistoryDealGetInteger(deal, DEAL_MAGIC);
+      if(!QM_FrameworkOwnsMagicSymbol(opening_magic,
                                       HistoryDealGetString(deal, DEAL_SYMBOL)))
          continue;
       const int n = ArraySize(owned_pos);
       ArrayResize(owned_pos, n + 1);
+      ArrayResize(owned_magic, n + 1);
       owned_pos[n] = (ulong)HistoryDealGetInteger(deal, DEAL_POSITION_ID);
+      owned_magic[n] = opening_magic;
      }
    // Pass 2: emit one TRADE_CLOSED line per closing deal of a position we opened.
    for(int i = 0; i < total; ++i)
@@ -826,8 +830,9 @@ void QM_FrameworkQ08EmitFromHistory()
          continue;
       const ulong pos_id = (ulong)HistoryDealGetInteger(deal, DEAL_POSITION_ID);
       bool owned = false;
+      long opening_magic = 0;
       for(int k = ArraySize(owned_pos) - 1; k >= 0; --k)
-         if(owned_pos[k] == pos_id) { owned = true; break; }
+         if(owned_pos[k] == pos_id) { owned = true; opening_magic = owned_magic[k]; break; }
       if(!owned)
          continue;
       const string sym        = HistoryDealGetString(deal, DEAL_SYMBOL);
@@ -844,8 +849,8 @@ void QM_FrameworkQ08EmitFromHistory()
       entry_time = QM_FrameworkMaeFindEntryTimeInHistory(pos_id, entry_time > 0 ? entry_time : (datetime)d_t);
       mae_acct = MathMin(mae_acct, net);
       g_qm_q08_trade_log += StringFormat(
-         "{\"event\":\"TRADE_CLOSED\",\"time\":%I64d,\"entry_time\":%I64d,\"mae_acct\":%.2f,\"net\":%.2f,\"profit\":%.2f,\"swap\":%.2f,\"commission\":%.2f,\"volume\":%.2f,\"notional\":%.2f,\"symbol\":\"%s\"}\r\n",
-         d_t, (long)entry_time, mae_acct, net, profit, swap, commission, vol, notional, QM_LoggerEscapeJson(sym));
+         "{\"event\":\"TRADE_CLOSED\",\"magic\":%I64d,\"time\":%I64d,\"entry_time\":%I64d,\"mae_acct\":%.2f,\"net\":%.2f,\"profit\":%.2f,\"swap\":%.2f,\"commission\":%.2f,\"volume\":%.2f,\"notional\":%.2f,\"symbol\":\"%s\"}\r\n",
+         opening_magic, d_t, (long)entry_time, mae_acct, net, profit, swap, commission, vol, notional, QM_LoggerEscapeJson(sym));
       if(StringLen(g_qm_q08_trade_log) >= 32768)
          QM_FrameworkQ08Flush();
      }
