@@ -65,3 +65,16 @@ Folgeklasse: nach Hard-Kill von Streunern halten deren Agents kurz Datei-Handles
 - Factory-Terminals loggen sich beim Start ins Live-Konto ein (OWNER 07-12: by design ok).
 - News-Kalender byte-stabil seit Mai (als Drift-Verdächtiger ausgeschlossen).
 - `QM_NewBook_LiveVsBook_Sunday` Task-Fail 07-12 06:00Z (0x1, Log endet nach START) — offen.
+
+## AUFLÖSUNG (13.07.): Kein Phantom — Harness-Umgebung war der Faktor
+
+Die Requalifikation auf den committeten Frisch-Builds über die **kanonische Kette**
+(aggregate.py → run_smoke-Baseline) reproduziert die Original-Referenzen exakt:
+1556 = 53 Trades / $6.369,87; 10706 = 367 Trades (Report-Net $71.673 ≈ Original-Q08-PnL
+$71.674,91; Stream $76.920,28 = Referenz centgenau). Die Raw-tester.ini-Läufe des Sweeps
+wichen nur bei diesen beiden (news-sensitiven) EAs ab (64/364 Trades — ohne
+Harness-News-Umgebung). **Lektion: Verifikation news-sensitiver EAs immer über die
+kanonische Kette; Raw-Treiber sind nur für news-insensitive EAs beweiskräftig** (18/23
+matchten centgenau). Requal-Verdicts: beide **Q09 PASS_PORTFOLIO** (1556 corr 0.285,
+verbessert Sharpe UND MaxDD; 10706 corr 0.095). Evidenz: `D:/QM/reports/requal_20260713/`.
+Damit sind **23/23 Sleeves verifiziert** (12778-Langlauf als Annex). Staging neu gebaut.

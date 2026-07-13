@@ -1,18 +1,24 @@
 # DL — T_Live DXZ-Buch 15 → 23 Sleeves (2026-07-12)
 
-**Status: DRAFT — DEPLOY BLOCKIERT bis Requalifikation 1556/10706 abgeschlossen
-(OWNER 13.07.: „Echte Reparatur zuerst").** Kein T_Live-File angefasst; AutoTrading
-unberührt. Staging `C:\QM\deploy\DXZ23_2026-07-12\` ist **STALE** (prä-Verifikations-
-Binaries) und wird nach der Requalifikation neu gebaut.
+**Status: VOLL VERIFIZIERT — WARTET AUF OWNER-FREIGABE (Schritt 2 des Workflows).**
+Kein T_Live-File angefasst; AutoTrading unberührt. Staging `C:\QM\deploy\DXZ23_2026-07-12\`
+neu gebaut 13.07. mit den echten committeten Binaries (`cf2264bb0`), Summe RISK 9.7501.
 
-**⚠️ VERIFIKATIONS-UPDATE 12./13.07. (OWNER-mandatierter Full-Book-Sweep):**
-21/23 Sleeves verifiziert (18 exakt auf den Cent, 13128 in Tick-Varianz, 11165/AUDCAD
-= Manifest-Basis; 12778 Langlauf). **1556/10706: die Q08/Q09-Evidenz vom 07-11 stammt
-von Phantom-Builds** (Quellstand nie committet) — echte Requalifikation der committeten
-Builds läuft (`D:/QM/reports/requal_20260713/`). Dabei entdeckt + gefixt: farmweite
-MetaEditor-No-Op-Compile-Klasse (compile_one-Fix `abd2b1847`, echte Binaries `cf2264bb0`).
-Volle Befunde: `docs/ops/evidence/dxz23_verification_sweep_2026-07-12.md`.
-Nach Requal: Gewichte auf finalen Streams neu rechnen, Staging neu, dann erst Freigabe.
+**VERIFIKATIONS-PROTOKOLL 12./13.07. (OWNER-mandatierter Full-Book-Sweep):**
+- 18/23 Sleeves reproduzieren ihre Referenz-Streams **auf den Cent** (Raw-Full-History-Reruns).
+- 13128: Trades exakt (56), Net in dokumentierter NDX-Tick-Varianz.
+- 11165/AUDCAD: frisch 207 = Manifest-Basis (zwischenzeitliche „133"-Referenz war Stale-Stream).
+- **1556 + 10706: requalifiziert auf committeten Frisch-Builds** — kanonischer Q08-Baseline
+  reproduziert die Original-Referenzen exakt (1556: 53/$6.369,87; 10706: 367/Stream $76.920,28)
+  → **Q09 PASS_PORTFOLIO beide** (1556 corr 0.285, Sharpe+DD-Verbesserung; 10706 corr 0.095).
+  Evidenz: `D:/QM/reports/requal_20260713/`. Der „Phantom-Build"-Verdacht löste sich auf:
+  Raw-Treiber-Läufe ohne kanonische Harness-Umgebung weichen bei news-sensitiven EAs ab —
+  **Verifikation news-sensitiver EAs immer über die kanonische Kette.**
+- Dabei entdeckt + gefixt (farmweit): MetaEditor-No-Op-Compile-Klasse (`abd2b1847`), echte
+  Binaries committet (`cf2264bb0`). Volle Befunde:
+  `docs/ops/evidence/dxz23_verification_sweep_2026-07-12.md`.
+- Manifest-Gewichte + KPIs (Sharpe 2.348 / MaxDD 3.32%) unverändert gültig — aktuelle
+  Streams == Manifest-Basis == Referenzen. 12778-Langlauf-Verifikation als Annex offen.
 
 ## Entscheidung (beantragt)
 
