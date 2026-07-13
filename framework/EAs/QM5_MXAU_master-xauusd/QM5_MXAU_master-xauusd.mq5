@@ -5,6 +5,7 @@
 #include <QM/QM_Common.mqh>
 #include <QM/QM_StrategyModule.mqh>
 #include <QM/modules/QM_Mod_Template.mqh>
+#include <QM/modules/QM_Mod_CumRsi2Commodity.mqh>
 
 // =============================================================================
 // QuantMechanica V5 — XAUUSD symbol-master skeleton
@@ -61,8 +62,11 @@ input bool   strategy2_enabled            = false;
 input double strategy2_risk_percent       = 0.0;
 
 input group "Strategy 3 — QM5_12567 cum-rsi2-commodity (D1)"
-input bool   strategy3_enabled            = false;
-input double strategy3_risk_percent       = 0.0;
+input bool        strategy3_enabled       = false;
+// Phase-3 dual-mode: PERCENT/0.794 is the deployed live sub-sleeve risk;
+// backtest regression sets FIXED/1000 via the regression set file.
+input QM_RiskMode strategy3_risk_mode     = QM_RISK_MODE_PERCENT;
+input double      strategy3_risk_value    = 0.794;
 
 input group "Strategy 4 — QM5_12989 grimes-nested-pb-v2 (H4)"
 input bool   strategy4_enabled            = false;
@@ -101,11 +105,11 @@ public:
    virtual double          RiskPercent() const { return m_risk_percent; }
   };
 
-CQMMasterSlotModule g_strategy1_module;
-CQMMasterSlotModule g_strategy2_module;
-CQMMasterSlotModule g_strategy3_module;
-CQMMasterSlotModule g_strategy4_module;
-CQMMasterSlotModule g_strategy5_module;
+CQMMasterSlotModule    g_strategy1_module;
+CQMMasterSlotModule    g_strategy2_module;
+CQMModCumRsi2Commodity g_strategy3_module;
+CQMMasterSlotModule    g_strategy4_module;
+CQMMasterSlotModule    g_strategy5_module;
 
 CQMStrategyModule *g_master_modules[QM_MASTER_MODULE_COUNT];
 bool                g_master_module_initialized[QM_MASTER_MODULE_COUNT];
@@ -124,7 +128,7 @@ void QM_MasterConfigureModules()
   {
    g_strategy1_module.Configure(strategy1_enabled, QM_MASTER_ALLOWED_MAGICS[0], PERIOD_D1, strategy1_risk_percent);
    g_strategy2_module.Configure(strategy2_enabled, QM_MASTER_ALLOWED_MAGICS[1], PERIOD_D1, strategy2_risk_percent);
-   g_strategy3_module.Configure(strategy3_enabled, QM_MASTER_ALLOWED_MAGICS[2], PERIOD_D1, strategy3_risk_percent);
+   g_strategy3_module.Configure(strategy3_enabled, strategy3_risk_mode, strategy3_risk_value);
    g_strategy4_module.Configure(strategy4_enabled, QM_MASTER_ALLOWED_MAGICS[3], PERIOD_H4, strategy4_risk_percent);
    g_strategy5_module.Configure(strategy5_enabled, QM_MASTER_ALLOWED_MAGICS[4], PERIOD_D1, strategy5_risk_percent);
 
@@ -164,7 +168,8 @@ bool QM_MasterInitModules()
 
       const long magic = module.Magic();
       const ENUM_TIMEFRAMES tf = module.TF();
-      const double risk_percent = module.RiskPercent();
+      const QM_RiskMode risk_mode = module.RiskMode();
+      const double risk_value = module.RiskValue();
       if(magic != QM_MASTER_ALLOWED_MAGICS[i])
         {
          QM_LogEvent(QM_ERROR, "MASTER_MODULE_MAGIC_NOT_ALLOWED",
@@ -177,10 +182,16 @@ bool QM_MasterInitModules()
          QM_LogEvent(QM_ERROR, "MASTER_MODULE_TF_CURRENT", StringFormat("{\"slot\":%d}", i + 1));
          return false;
         }
-      if(risk_percent <= 0.0)
+      if(risk_mode != QM_RISK_MODE_PERCENT && risk_mode != QM_RISK_MODE_FIXED)
+        {
+         QM_LogEvent(QM_ERROR, "MASTER_MODULE_RISK_MODE_INVALID",
+                     StringFormat("{\"slot\":%d,\"risk_mode\":%d}", i + 1, (int)risk_mode));
+         return false;
+        }
+      if(risk_value <= 0.0)
         {
          QM_LogEvent(QM_ERROR, "MASTER_MODULE_RISK_NOT_POSITIVE",
-                     StringFormat("{\"slot\":%d,\"risk_percent\":%.8f}", i + 1, risk_percent));
+                     StringFormat("{\"slot\":%d,\"risk_value\":%.8f}", i + 1, risk_value));
          return false;
         }
       if(!module.Init(_Symbol))
@@ -204,8 +215,8 @@ bool QM_MasterInitModules()
         }
 
       QM_LogEvent(QM_INFO, "MASTER_MODULE_INIT_OK",
-                  StringFormat("{\"slot\":%d,\"magic\":%I64d,\"tf\":%d,\"risk_percent\":%.8f}",
-                               i + 1, magic, (int)tf, risk_percent));
+                  StringFormat("{\"slot\":%d,\"magic\":%I64d,\"tf\":%d,\"risk_mode\":%d,\"risk_value\":%.8f}",
+                               i + 1, magic, (int)tf, (int)risk_mode, risk_value));
      }
    return true;
   }
