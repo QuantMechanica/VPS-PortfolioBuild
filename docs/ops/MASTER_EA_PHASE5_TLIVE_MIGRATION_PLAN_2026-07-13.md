@@ -27,11 +27,12 @@ Master läuft im **RISK_PERCENT-Live-Modus** (Dualmodus, Phase 2.5). Preset
 `RISK_FIXED=0`. News/Friday = die geteilte Corset-Config (temporal=3, compliance=1, high, Friday 21h).
 
 ## Pre-Migration-Gates (alle vor T_Live, Factory darf aus bleiben)
-1. **★NEU — Live-PERCENT-Validierungs-Gate:** die per-Modul-Gates liefen im **FIXED**-Modus.
-   Live ist **PERCENT**. Master mit dem LIVE-Preset (PERCENT) im Tester über ein jüngeres Fenster
-   laufen lassen → verifizieren: (a) initialisiert sauber (MASTER_INIT_OK, 5 aktive Module),
-   (b) sizet je Modul in PERCENT mit dem richtigen %, (c) Summe der Sub-Risiken == 3.254 %.
-   (Kein Cent-Match zum Standalone erwartet — anderes Sizing; Zweck ist Init + korrektes PERCENT-Sizing.)
+1. **★NEU — Live-PERCENT-Validierungs-Gate: ✅ GREEN (T9, 2024, H4).** MASTER_INIT_OK, 5 aktive
+   Module, alle 5 Magics traden mit PERCENT-Sizing (Lots 0.03/0.45/0.30/0.38/0.17; 10403=0.03 ≈
+   ¼ des FIXED-Lots bestätigt den PERCENT-Pfad je Modul). Der PERCENT-Pfad selbst ist zudem
+   zahlengenau bewiesen (Phase-2.5-Unit `AssertExact` explicit-PERCENT==global-PERCENT). Beleg:
+   `D:\QM\reports\master_ea_p5_validate\result.json`. (Kein Cent-Match zum FIXED-Standalone
+   erwartet — anderes Sizing-Modell.)
 2. **Build+Deploy:** Master `.ex5` gate-geprüft (board-advisor, SHA bekannt). SHA256-Match
    Factory → T_Live nach Deploy.
 3. **Magic-Registry-Konsistenz auf T_Live:** die 5 Sub-Magics + Master-Identität 200010000 in
