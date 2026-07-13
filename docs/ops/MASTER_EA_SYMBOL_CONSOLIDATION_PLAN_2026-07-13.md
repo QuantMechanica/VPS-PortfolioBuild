@@ -66,6 +66,15 @@ Verhalten.** Erst dann geht's live. (Nutzt die Verifikations-Infra vom 12./13.07
 - **Gate:** ein bestehender Single-EA (z.B. 12567) kompiliert + backtestet identisch nach
   dem Framework-Change (Regression auf den 13.07.-Referenzen).
 
+**Phase 1.5 — q08-Serializer per-Magic (headless CODEX) [NEU, aus Phase-1-Review]:**
+- Befund (Codex-Design-Note 13.07.): der q08-JSONL-Writer sammelt owned position_ids, schreibt
+  aber EINE Host-EA-Datei OHNE per-Row-Magic. Damit dekomponiert der Stream NICHT je Sub-Magic.
+- Fix: `magic`-Feld je q08-Row ergänzen (aus dem Eröffnungs-Deal), backward-kompatibel
+  (Single-Magic-EAs bekommen ihre Magic in die Row, Format-Superset). Nötig für (a) das
+  per-Magic-Regression-Gate in Phase 4 und (b) spätere per-Strategie-Live-Attribution.
+- **Gate:** 12567 reproduziert weiter 73/$4.676,76; die Row trägt jetzt magic=125670003.
+- **Status Phase 1: ✅ ABGESCHLOSSEN + gemerged (c172395e); Gate GRÜN (12567 centgenau).**
+
 **Phase 2 — Master-EA-Skelett + Modul-Interface (headless CODEX):**
 - `framework/EAs/QM5_MXAU_master-xauusd/` (neue ea_id-Klasse, z.B. 20001).
 - Dispatcher-OnTick; Strategie-Modul-Interface (`StratN_Entry/Exit/Manage/NoTrade`, TF,
