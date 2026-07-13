@@ -1,0 +1,174 @@
+{
+  "schema_version": "1.0",
+  "generated_at_utc": "2026-07-12T01:07:34.3723946Z",
+  "branch": "agents/board-advisor",
+  "head_at_evidence_creation": "462117818cb23c41aa7c32879bdc2d75c82b6eb4",
+  "mission": "grow the certified V5 portfolio book with a non-duplicate market-neutral FX cointegration sleeve",
+  "decision": {
+    "new_pair_selected": false,
+    "reason": "The reputable strict all-sign 66-pair frontier has seven survivors and all seven already have approved cards and basket EA builds. The two published anchors are past Q02, so the authorized fallback advanced the strongest open existing strict sleeve.",
+    "strict_all_sign_survivor_count": 7,
+    "unbuilt_strict_survivor_count": 0,
+    "anchor_state": {
+      "QM5_12532": "Q02 PASS; Q04 PASS; Q05 FAIL",
+      "QM5_12533": "Q02 PASS; Q04 FAIL"
+    },
+    "fallback_ea": "QM5_13117_eurgbp-audjpy",
+    "research_lineage": {
+      "empirical": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md; framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+      "method": "Ernest P. Chan, Quantitative Trading (Wiley, 2009), Example 3.6 and Chapter 7",
+      "approved_card": "strategy-seeds/cards/approved/QM5_13117_eurgbp-audjpy_card.md"
+    }
+  },
+  "ea": {
+    "ea_id": "QM5_13117",
+    "slug": "eurgbp-audjpy",
+    "logical_symbol": "QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1",
+    "host_symbol": "EURGBP.DWX",
+    "traded_symbols": [
+      "EURGBP.DWX",
+      "AUDJPY.DWX"
+    ],
+    "history_symbols": [
+      "EURGBP.DWX",
+      "AUDJPY.DWX",
+      "GBPUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "timeframe": "D1",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "structural_only": true
+  },
+  "q07": {
+    "work_item_id": "22eb034c-ec8f-43e5-a695-3f60e5d9e4ba",
+    "execution_mode": "adopted_existing_factory_off_single_item",
+    "terminal": "T1",
+    "command": "python tools/strategy_farm/terminal_worker.py --terminal T1 --root D:/QM/strategy_farm --work-item-id 22eb034c-ec8f-43e5-a695-3f60e5d9e4ba --timeout-minutes 480",
+    "status": "done",
+    "verdict": "PASS",
+    "reason": "variance_pct=0.00<20.0:min_pf=1.460",
+    "history_from": "2018.07.02",
+    "history_to": "2024.12.31",
+    "model": 4,
+    "seeds": [
+      42,
+      17,
+      99,
+      7,
+      2026
+    ],
+    "metrics": {
+      "mean_pf": 1.46,
+      "min_pf": 1.46,
+      "max_pf": 1.46,
+      "pf_spread": 0.0,
+      "pf_variance_pct": 0.0,
+      "trades_per_seed": 176,
+      "drawdown_money_per_seed": 3049.81,
+      "drawdown_pct_per_seed": 3.04981
+    },
+    "per_seed": [
+      {
+        "seed": 42,
+        "pf": 1.46,
+        "trades": 176,
+        "summary": "D:/QM/reports/work_items/22eb034c-ec8f-43e5-a695-3f60e5d9e4ba/QM5_13117/20260711_203229/summary.json"
+      },
+      {
+        "seed": 17,
+        "pf": 1.46,
+        "trades": 176,
+        "summary": "D:/QM/reports/work_items/22eb034c-ec8f-43e5-a695-3f60e5d9e4ba/QM5_13117/20260711_212425/summary.json"
+      },
+      {
+        "seed": 99,
+        "pf": 1.46,
+        "trades": 176,
+        "summary": "D:/QM/reports/work_items/22eb034c-ec8f-43e5-a695-3f60e5d9e4ba/QM5_13117/20260711_221922/summary.json"
+      },
+      {
+        "seed": 7,
+        "pf": 1.46,
+        "trades": 176,
+        "summary": "D:/QM/reports/work_items/22eb034c-ec8f-43e5-a695-3f60e5d9e4ba/QM5_13117/20260711_231831/summary.json"
+      },
+      {
+        "seed": 2026,
+        "pf": 1.46,
+        "trades": 176,
+        "summary": "D:/QM/reports/work_items/22eb034c-ec8f-43e5-a695-3f60e5d9e4ba/QM5_13117/20260712_001109/summary.json"
+      }
+    ],
+    "real_ticks_all_seeds": true,
+    "deterministic_all_seeds": true,
+    "oninit_failure_any_seed": false,
+    "log_bomb_any_seed": false,
+    "timed_out_any_seed": false,
+    "aggregate": "D:/QM/reports/work_items/22eb034c-ec8f-43e5-a695-3f60e5d9e4ba/QM5_13117/Q07/QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1/aggregate.json"
+  },
+  "q08_enqueue": {
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_13117 --phase Q08",
+    "work_item_id": "d9f360d4-6fa3-47ab-bddb-6a33a616f540",
+    "status": "pending",
+    "verdict": null,
+    "claimed_by": null,
+    "attempt_count": 0,
+    "promoted_from_phase": "Q07",
+    "promoted_from_work_item": "22eb034c-ec8f-43e5-a695-3f60e5d9e4ba",
+    "created_count": 1,
+    "requeued_count": 0,
+    "skipped_count": 0,
+    "duplicate_created": false,
+    "tester_launched": false
+  },
+  "database": {
+    "pre_q08_backup": "D:/QM/strategy_farm/state/backups/farm_state_pre_qm5_13117_q08_20260712T010640Z.sqlite",
+    "live_quick_check": "ok",
+    "backup_quick_check": "ok"
+  },
+  "hashes_sha256": {
+    "mq5": "14ddccb7ac7fe8b1c1e9cec4c6a59c7045481de99f15e1728fb38a76cfe6bcd1",
+    "ex5": "aa8ff930a973632b0dbd9b2694ccf20869f441a4fa7c9eac670339800eb199ef",
+    "basket_manifest": "e8d1fcf2e2b5cd96258b4c4aef496871c54f247ad671e449a3d2f92a2d186387",
+    "execution_baseline_setfile": "f84e3096eee322e7ce2ebb7815c8e8dcd68f49afcaeeea43655996920ebae693",
+    "execution_q06_setfile": "ce373c4559a4b29d386ae4b2edce0b23d9382eafee9c4734a8c9d18021c4c0f6",
+    "seed17_setfile": "9068eeaa1fc188e5c57b28f08e522b2fc2d1b6ffa6c2da8cb9e378bb60db621c",
+    "seed2026_setfile": "c13e3c32a5492115a0db847b1c83a457bf93e36519857bb105bb64f23fd0d600",
+    "seed42_setfile": "4e22e91fac06c0b0d7735a7d92c1871999761632580063d941aba7304e40e4d7",
+    "seed7_setfile": "70fbd7089fdb8ac490d90712459033f064ad58476bdb52dd3c9209d66c50eab7",
+    "seed99_setfile": "567c8dabef888869bec950f0a02a7f4f76dba734311e7993231f079ca68f47a6"
+  },
+  "setfile_contract": {
+    "canonical_seeds": [
+      42,
+      17,
+      99,
+      7,
+      2026
+    ],
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "live_or_demo_tokens_detected": false,
+    "pre_existing_dirty_baseline_headers_staged": false
+  },
+  "capacity_and_safety": {
+    "factory_off_flag_preserved": true,
+    "cpu_ceiling_jobs": 7,
+    "mission_factory_testers": 1,
+    "peak_system_factory_testers_observed": 2,
+    "factory_testers_after_enqueue": 0,
+    "cpu_ceiling_hit": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "live_setfile_touched": false
+  }
+}

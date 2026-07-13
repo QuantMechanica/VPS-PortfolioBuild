@@ -1,0 +1,183 @@
+{
+  "generated_at_utc": "2026-07-12T09:05:32Z",
+  "operator": "codex-agents-board-advisor",
+  "branch": "agents/board-advisor",
+  "mission": "grow the certified V5 portfolio book with new forex sleeves",
+  "selected_path": "advance_existing_forex_card",
+  "selection_reason": "The strict sign-aware 66-pair frontier is exhausted and both named anchors are past Q02. QM5_1058 has Q02-Q06 PASS and an infrastructure-only Q07 timeout with no competing open row.",
+  "strict_frontier": {
+    "qualifying_rows": 7,
+    "approved_and_built_rows": 7,
+    "unbuilt_qualifying_rows": 0,
+    "anchor_status": {
+      "QM5_12532": "Q02_PASS_Q04_PASS_Q05_FAIL",
+      "QM5_12533": "Q02_PASS_Q04_FAIL"
+    },
+    "existing_pending_successor": {
+      "ea_id": "QM5_13117",
+      "phase": "Q08",
+      "work_item_id": "d9f360d4-6fa3-47ab-bddb-6a33a616f540"
+    }
+  },
+  "selected_ea": {
+    "ea_id": "QM5_1058",
+    "slug": "gatev-fx-pairs-zscore",
+    "pair": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "logical_symbol": "QM5_1058_EURUSD_GBPUSD_GGR_D1",
+    "host_symbol": "EURUSD.DWX",
+    "timeframe": "D1",
+    "basket_manifest": "framework/EAs/QM5_1058_gatev-fx-pairs-zscore/basket_manifest.json",
+    "canonical_setfile": "framework/EAs/QM5_1058_gatev-fx-pairs-zscore/sets/QM5_1058_gatev-fx-pairs-zscore_QM5_1058_EURUSD_GBPUSD_GGR_D1_D1_backtest.set",
+    "compiled_binary_bytes": 306970,
+    "expected_trades_per_year_per_symbol": 2,
+    "risk_contract": {
+      "environment": "backtest",
+      "risk_mode": "FIXED",
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "source_contract": {
+    "approved_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_1058_gatev-fx-pairs-zscore.md",
+    "g0_status": "APPROVED",
+    "r1_r4": "PASS",
+    "citation": "Gatev, Goetzmann, and Rouwenhorst (2006), Pairs Trading: Performance of a Relative-Value Arbitrage Rule, Review of Financial Studies 19(3), 797-827",
+    "mechanics": "deterministic rolling OLS and fixed z-score thresholds",
+    "ml_required": false,
+    "grid": false,
+    "martingale": false
+  },
+  "prior_pipeline": {
+    "Q02": {
+      "work_item_id": "eeeb44cc-0cc3-4127-8107-18df9f96fa3f",
+      "verdict": "PASS"
+    },
+    "Q03": {
+      "work_item_id": "fe14ff78-4fc7-467b-a54f-80c82d3887a8",
+      "verdict": "PASS"
+    },
+    "Q04": {
+      "work_item_id": "cff1ca51-2d6f-4204-8fac-804ded4a4864",
+      "verdict": "PASS"
+    },
+    "Q05": {
+      "work_item_id": "93bda5b4-793e-4c18-a7ca-677a9f7d146b",
+      "verdict": "PASS"
+    },
+    "Q06": {
+      "work_item_id": "25c0e5ba-1456-4e74-8fb1-20a729ad4cd3",
+      "verdict": "PASS"
+    },
+    "Q07": {
+      "work_item_id": "82c0189f-f4a7-4e3f-ac76-79b38037bacb",
+      "prior_status": "done",
+      "prior_db_verdict": "INFRA_FAIL",
+      "prior_aggregate_verdict": "INVALID",
+      "seed_42_timeout_sec": 5400,
+      "seed_42_invalid_reason": "invalid_summary:INCOMPLETE_RUNS,TIMEOUT",
+      "prior_reason": "seeds_invalid_evidence:[(42, 'invalid_summary:INCOMPLETE_RUNS,TIMEOUT'), (17, 'exit_code=4294967295'), (99, 'exit_code=4294967295'), (7, 'exit_code=4294967295'), (2026, 'exit_code=1')]"
+    }
+  },
+  "backup": {
+    "path": "D:/QM/strategy_farm/state/backups/farm_state_pre_qm5_1058_q07_requeue_20260712T090448Z.sqlite",
+    "source_quick_check": "ok",
+    "backup_quick_check": "ok"
+  },
+  "queue_action": {
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_1058 --phase Q07",
+    "created": [],
+    "requeued": [
+      {
+        "id": "82c0189f-f4a7-4e3f-ac76-79b38037bacb",
+        "symbol": "QM5_1058_EURUSD_GBPUSD_GGR_D1"
+      }
+    ],
+    "skipped": [],
+    "archived_report_root": "D:/QM/reports/work_items/82c0189f-f4a7-4e3f-ac76-79b38037bacb.requeued_20260712T0904540000",
+    "duplicate_work_item_created": false
+  },
+  "guarded_payload_update": {
+    "updated_rows": 1,
+    "conditional_guard": "id match AND status=pending AND claimed_by IS NULL",
+    "q07_seed_timeout_sec": 7200,
+    "timeout_min": 660,
+    "avoid_terminals": [
+      "T1"
+    ],
+    "skip_terminals": [
+      "T1"
+    ],
+    "priority_track": true,
+    "dispatch_mode": "paced_fleet_only",
+    "post_update_quick_check": "ok"
+  },
+  "post_state": {
+    "work_item_id": "82c0189f-f4a7-4e3f-ac76-79b38037bacb",
+    "status": "pending",
+    "verdict": null,
+    "attempt_count": 0,
+    "claimed_by": null,
+    "evidence_path": null,
+    "updated_at_utc": "2026-07-12T09:05:32+00:00",
+    "open_matching_q07_rows": 1,
+    "queue_rank": "queued_top[0]"
+  },
+  "runner_command_verification": {
+    "runner": "framework/scripts/q07_multiseed.py",
+    "host_symbol": "EURUSD.DWX",
+    "logical_symbol": "QM5_1058_EURUSD_GBPUSD_GGR_D1",
+    "terminal_probe": "T2",
+    "timeout_sec": 7200,
+    "latest_full_year": 2024,
+    "full_history_from": "2018.07.02",
+    "result": "PASS"
+  },
+  "validation": [
+    {
+      "command": "python -m unittest tools.strategy_farm.tests.test_farmctl_cascade.CascadePromotionTests.test_q07_runner_cmd_keeps_basket_logical_symbol",
+      "result": "PASS",
+      "tests": 1
+    },
+    {
+      "command": "python -m unittest framework.scripts.tests.test_q05_q07_verdicts",
+      "result": "PASS",
+      "tests": 23
+    },
+    {
+      "check": "basket manifest JSON and canonical RISK_FIXED setfile",
+      "result": "PASS"
+    },
+    {
+      "check": "static ML/grid/martingale forbidden-term scan",
+      "result": "PASS_NO_MATCH"
+    }
+  ],
+  "capacity": {
+    "factory_off_flag_present": true,
+    "db_active_rows": 3,
+    "db_pending_rows": 3688,
+    "terminal64_processes_observed": 3,
+    "metatester64_processes_observed": 1,
+    "free_ram_gb": 35.93,
+    "backtest_cpu_ceiling": 7,
+    "qm5_1058_dispatch_started": false
+  },
+  "safety": {
+    "manual_mt5_backtest_launched": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "strategy_source_changed": false,
+    "compiled_binary_changed": false,
+    "basket_manifest_changed": false,
+    "setfile_changed": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false
+  }
+}

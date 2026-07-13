@@ -1,0 +1,15 @@
+; FTMO account-governor build/test preset. Intentionally cannot deploy.
+expected_account_login=0
+governor_policy_id=FTMO_P1_GOVERNOR_V1
+governor_policy_version=1.0
+allowed_magics_csv=
+governor_dry_run=true
+policy_start_balance=100000.0
+policy_target_balance=110000.0
+policy_total_loss_floor=90000.0
+policy_execution_daily_stop=4500.0
+policy_profit_room_retention=0.20
+policy_full_risk_room=4000.0
+policy_minimum_trading_days=4
+governor_timer_ms=200
+close_deviation_points=50

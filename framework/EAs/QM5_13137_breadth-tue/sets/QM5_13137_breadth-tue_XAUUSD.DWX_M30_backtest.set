@@ -1,0 +1,33 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        13137
+; ea_slug:      breadth-tue
+; ea_version:   v5.0
+; set_version:  s20260711-001
+; symbol:       XAUUSD.DWX
+; timeframe:    M30
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   25d56ffde3cb4de7747a5d0f0387fb2fce2f3c45407e4c6483c83761cc262f6a
+; author:       Development
+; date:         2026-07-11
+;==========================================================
+qm_ea_id=13137
+qm_magic_slot_offset=2
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_13137_breadth-tue.md
+strategy_signal_sp=SP500.DWX
+strategy_signal_ws=WS30.DWX
+strategy_entry_hour=23
+strategy_exit_hour=23
+strategy_cash_open_hour=16
+strategy_cash_open_minute=30
+strategy_cash_close_hour=22
+strategy_cash_close_minute=30
+strategy_atr_period_d1=14
+strategy_stop_atr_mult=1.0

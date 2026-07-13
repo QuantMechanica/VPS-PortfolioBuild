@@ -136,6 +136,20 @@ bool QM_IsNewBar(const string sym = "", const ENUM_TIMEFRAMES tf = PERIOD_CURREN
    return true;
   }
 
+bool QM_ReadBar(const string sym,
+                const ENUM_TIMEFRAMES tf,
+                const int shift,
+                MqlRates &bar)
+  {
+   if(shift < 0)
+      return false;
+   MqlRates rates[1];
+   if(CopyRates(sym, tf, shift, 1, rates) != 1)
+      return false;
+   bar = rates[0];
+   return (bar.time > 0);
+  }
+
 // ----- Calendar-period cadence ---------------------------------------------
 //
 // Calendar-rebalance strategies (monthly / weekly cross-asset, cointegration

@@ -1,0 +1,102 @@
+{
+  "schema_version": "1.0",
+  "generated_at_utc": "2026-07-11T20:02:19+00:00",
+  "branch": "agents/board-advisor",
+  "mission": "grow the certified V5 portfolio book with a non-duplicate market-neutral FX cointegration sleeve",
+  "decision": {
+    "new_pair_selected": false,
+    "reason": "The reputable strict all-sign 66-pair frontier is already fully carded and built, and the two published anchors are not blocked at Q02. The authorized fallback advanced the strongest open existing strict sleeve.",
+    "anchor_state": {
+      "QM5_12532": "Q02 PASS; Q04 PASS; Q05 FAIL",
+      "QM5_12533": "Q02 PASS; Q04 FAIL"
+    },
+    "fallback_ea": "QM5_13117_eurgbp-audjpy",
+    "research_lineage": {
+      "empirical": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md; framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+      "method": "Ernest P. Chan, Quantitative Trading (Wiley, 2009), Example 3.6 and Chapter 7",
+      "card": "strategy-seeds/cards/approved/QM5_13117_eurgbp-audjpy_card.md"
+    }
+  },
+  "ea": {
+    "ea_id": "QM5_13117",
+    "slug": "eurgbp-audjpy",
+    "logical_symbol": "QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1",
+    "host_symbol": "EURGBP.DWX",
+    "traded_symbols": [
+      "EURGBP.DWX",
+      "AUDJPY.DWX"
+    ],
+    "history_symbols": [
+      "EURGBP.DWX",
+      "AUDJPY.DWX",
+      "GBPUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "timeframe": "D1",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "q06": {
+    "work_item_id": "25bf4e21-8b84-4386-9cd6-f5aa8b2f4fcf",
+    "terminal": "T1",
+    "status": "done",
+    "verdict": "PASS",
+    "stress_level": "HARSH",
+    "rejection_probability": 0.1,
+    "model": 4,
+    "history_from": "2018.07.02",
+    "history_to": "2024.12.31",
+    "trades": 176,
+    "profit_factor": 1.46,
+    "net_profit": 7593.86,
+    "drawdown_money": 3049.81,
+    "drawdown_pct": 3.04981,
+    "timed_out": false,
+    "oninit_failure": false,
+    "log_bomb": false,
+    "summary": "D:/QM/reports/work_items/25bf4e21-8b84-4386-9cd6-f5aa8b2f4fcf/QM5_13117/20260711_191737/summary.json",
+    "aggregate": "D:/QM/reports/work_items/25bf4e21-8b84-4386-9cd6-f5aa8b2f4fcf/QM5_13117/Q06/QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1/aggregate.json",
+    "generated_setfile": "framework/EAs/QM5_13117_eurgbp-audjpy/sets/QM5_13117_eurgbp-audjpy_QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1_D1_q06_stress_harsh.set"
+  },
+  "q07_enqueue": {
+    "work_item_id": "22eb034c-ec8f-43e5-a695-3f60e5d9e4ba",
+    "status": "pending",
+    "verdict": null,
+    "claimed_by": null,
+    "attempt_count": 0,
+    "promoted_from_phase": "Q06",
+    "promoted_from_work_item": "25bf4e21-8b84-4386-9cd6-f5aa8b2f4fcf",
+    "created_count": 1,
+    "skipped_count": 0,
+    "requeued_count": 0
+  },
+  "database": {
+    "pre_q06_backup": "D:/QM/strategy_farm/state/backups/farm_state_pre_qm5_13117_q06_20260711T191728Z.sqlite",
+    "pre_q07_backup": "D:/QM/strategy_farm/state/backups/farm_state_pre_qm5_13117_q07_20260711T200217Z.sqlite",
+    "backup_quick_check": "ok",
+    "live_database_quick_check": "ok"
+  },
+  "hashes_sha256": {
+    "mq5": "14ddccb7ac7fe8b1c1e9cec4c6a59c7045481de99f15e1728fb38a76cfe6bcd1",
+    "ex5": "aa8ff930a973632b0dbd9b2694ccf20869f441a4fa7c9eac670339800eb199ef",
+    "basket_manifest": "e8d1fcf2e2b5cd96258b4c4aef496871c54f247ad671e449a3d2f92a2d186387",
+    "baseline_setfile": "c2bb0b0d01f62fe7406bd3cc90dd1a5621b2814b3501213fad8b44377262cb6b",
+    "q06_setfile": "9bed0b71a1664da2e3cab90e3521e6cc2fcf02a71b36734b0600f55d5b55b71e"
+  },
+  "capacity_and_safety": {
+    "active_work_items_before_run": 3,
+    "factory_terminals_before_run": 0,
+    "factory_terminals_launched": [
+      "T1"
+    ],
+    "cpu_ceiling_jobs": 7,
+    "cpu_ceiling_hit": false,
+    "factory_off_flag_preserved": true,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}

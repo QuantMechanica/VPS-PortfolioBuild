@@ -1,0 +1,103 @@
+{
+  "schema_version": "1.0",
+  "generated_at_utc": "2026-07-12T12:52:23+00:00",
+  "branch": "agents/board-advisor",
+  "head_at_evidence_creation": "3d5ca79dec54bb7d249d3e8af2de740def4d9306",
+  "mission": "grow the certified V5 portfolio book with a non-duplicate market-neutral FX cointegration sleeve",
+  "decision": {
+    "new_pair_selected": false,
+    "reason": "All seven strict sign-aware survivors from the OWNER-requested 66-pair scan already have approved cards and EA builds. The two published anchors are past Q02 and have genuine downstream failures, so the existing-card fallback advanced the sole live strict sleeve.",
+    "strict_all_sign_survivor_count": 7,
+    "unbuilt_strict_survivor_count": 0,
+    "fallback_ea": "QM5_13117_eurgbp-audjpy",
+    "fallback_pair": [
+      "EURGBP.DWX",
+      "AUDJPY.DWX"
+    ],
+    "anchor_state": {
+      "QM5_12532": "Q02 PASS; Q04 PASS; Q05 FAIL",
+      "QM5_12533": "Q02 PASS; Q04 FAIL"
+    },
+    "research_lineage": {
+      "empirical": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md; framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+      "method": "Ernest P. Chan, Quantitative Trading (Wiley, 2009), Example 3.6 and Chapter 7",
+      "approved_card": "strategy-seeds/cards/approved/QM5_13117_eurgbp-audjpy_card.md"
+    }
+  },
+  "ea": {
+    "ea_id": "QM5_13117",
+    "slug": "eurgbp-audjpy",
+    "logical_symbol": "QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1",
+    "host_symbol": "EURGBP.DWX",
+    "traded_symbols": [
+      "EURGBP.DWX",
+      "AUDJPY.DWX"
+    ],
+    "history_symbols": [
+      "EURGBP.DWX",
+      "AUDJPY.DWX",
+      "GBPUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "timeframe": "D1",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "structural_only": true
+  },
+  "pipeline_state": {
+    "Q02": "PASS",
+    "Q03": "PASS",
+    "Q04": "PASS",
+    "Q05": "PASS",
+    "Q06": "PASS",
+    "Q07": "PASS",
+    "Q08": "pending"
+  },
+  "q08_priority": {
+    "work_item_id": "d9f360d4-6fa3-47ab-bddb-6a33a616f540",
+    "status": "pending",
+    "verdict": null,
+    "attempt_count": 0,
+    "claimed_by": null,
+    "priority_track_before": false,
+    "priority_track_after": true,
+    "queue_rank_before": 138,
+    "queue_rank_after": 1,
+    "pending_count_before": 3688,
+    "pending_count_after": 3688,
+    "open_q08_rows_after": 1,
+    "new_work_items_created": 0,
+    "duplicate_work_items_created": 0,
+    "timestamps_preserved": true,
+    "updated_at": "2026-07-12T01:06:42+00:00",
+    "audit_event": {
+      "event": "priority_track_set",
+      "event_id": 246804,
+      "timestamp": "2026-07-12T12:52:23+00:00"
+    }
+  },
+  "database": {
+    "path": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "pre_mutation_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_13117_q08_priority_20260712T125223Z.sqlite",
+    "live_quick_check": "ok",
+    "backup_quick_check": "ok"
+  },
+  "capacity_and_safety": {
+    "factory_off_flag_preserved": true,
+    "cpu_ceiling_jobs": 7,
+    "factory_testers_observed": 1,
+    "cpu_total_pct_sample": 20.7,
+    "cpu_ceiling_hit": false,
+    "manual_mt5_dispatch_started": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "live_setfile_touched": false
+  }
+}

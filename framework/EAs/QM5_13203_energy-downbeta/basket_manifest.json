@@ -1,0 +1,20 @@
+{
+  "logical_symbol": "QM5_13203_XTI_XNG_DOWNBETA_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX",
+    "SP500.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "read_only_factor_symbols": [
+    "SP500.DWX"
+  ],
+  "notes": [
+    "Logical two-leg XTI/XNG downside-beta basket from approved card HOLLSTEIN-DOWNBETA-2021_XTI_XNG_S01. Run on XTIUSD.DWX D1 and evaluate the paired package rather than standalone legs. At each broker-month transition, use 252 synchronized completed D1 returns, define downside observations as SP500 returns strictly below their full-window mean, require at least 100 such observations, estimate each energy leg's downside beta to read-only SP500.DWX, buy lower beta, short higher beta, split fixed package risk equally, and apply frozen ATR hard stops. SP500.DWX is a read-only factor and must never be traded. The broad-futures source, insignificant source spread, two-energy-CFD narrowing, custom-symbol factor, continuous-CFD basis, gaps, and legging are binding Q02 falsification risks; no portfolio admission or decorrelation is claimed."
+  ]
+}

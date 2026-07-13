@@ -1,0 +1,30 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        13138
+; ea_slug:      xau-m5-ema20
+; ea_version:   v5.0
+; set_version:  s20260711-001
+; symbol:       XAUUSD.DWX
+; timeframe:    M5
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   1f0dde7ff33871152141bcf556a2b6f6641d63fbf94a59115517f8bd050ab803
+; author:       Development
+; date:         2026-07-11
+;==========================================================
+qm_ea_id=13138
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_13138_xau-m5-ema20.md
+strategy_fast_ema_m5=20
+strategy_mid_ema_m5=50
+strategy_ha_warmup_bars=200
+strategy_stop_pct=10.0
+strategy_target_pct=1.0
+strategy_target_delay_bars=12
+strategy_max_hold_bars=5760

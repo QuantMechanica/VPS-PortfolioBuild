@@ -1,0 +1,29 @@
+{
+  "task_id": "2ce555a1-f57a-4949-8d33-2f36dfb7ea29",
+  "ea_id": "QM5_11160",
+  "ea_dir": "framework/EAs/QM5_11160_dwx-brk-risk",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11160_dwx-brk-risk\\QM5_11160_dwx-brk-risk.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11160_dwx-brk-risk\\QM5_11160_dwx-brk-risk.ex5",
+  "magic_base": 111600000,
+  "symbols_registered": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "GDAXI.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11160_dwx-brk-risk\\sets\\QM5_11160_dwx-brk-risk_EURUSD.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11160_dwx-brk-risk\\sets\\QM5_11160_dwx-brk-risk_GBPUSD.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11160_dwx-brk-risk\\sets\\QM5_11160_dwx-brk-risk_USDJPY.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11160_dwx-brk-risk\\sets\\QM5_11160_dwx-brk-risk_GDAXI.DWX_H1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11160_dwx-brk-risk\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "framework_error",
+  "smoke_report_path": "D:\\QM\\reports\\smoke\\QM5_11160\\20260712_000022\\summary.json",
+  "blocked_reason": "framework_error stale_ex5: compile_one reported PASS but the repository binary remained byte-identical to pre-repair HEAD blob 208a2e3447aa2880cd7447aaae4ecb0ae32425c8, so the smoke exercised stale code",
+  "open_questions": [
+    "Rework directive: force a fresh EX5 regeneration, verify its Git/SHA-256 blob differs from the retained pre-repair binary before dispatch, and then perform a fresh one-pass smoke. The stale binary's journal showed repeated EA_MAGIC_NOT_REGISTERED failures with garbage symbol_slot values (commonly 572516304); the repaired MQ5 explicitly assigns the slot but was not exercised. This wake did not compile or re-smoke after discovering the stale artifact."
+  ]
+}

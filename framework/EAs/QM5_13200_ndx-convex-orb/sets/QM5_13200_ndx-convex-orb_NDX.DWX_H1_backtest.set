@@ -1,0 +1,30 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        13200
+; ea_slug:      ndx-convex-orb
+; ea_version:   v5.0
+; set_version:  s20260711-001
+; symbol:       NDX.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   PENDING
+; author:       Codex
+; date:         2026-07-11
+;==========================================================
+qm_ea_id=13200
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+strategy_atr_period=14
+strategy_buffer_atr=0.05
+strategy_max_range_atr=1.75
+strategy_target_rr=8.0
+strategy_range_start_hour_ny=9
+strategy_range_bars=2
+strategy_trigger_hour_ny=11
+strategy_pending_end_hour_ny=12
+strategy_exit_hour_ny=16

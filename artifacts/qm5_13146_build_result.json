@@ -1,0 +1,180 @@
+{
+  "task_id": "fdb723b1-0e21-4091-9758-8ddc0fc6d8d2",
+  "ea_id": "QM5_13146",
+  "ea_label": "QM5_13146_energy-vov",
+  "slug": "energy-vov",
+  "strategy": "Monthly XTI/XNG realized volatility-of-volatility rank basket",
+  "strategy_id": "HOLLSTEIN-VOV-2021_XTI_XNG_S01",
+  "source_id": "HOLLSTEIN-VOV-2021",
+  "source_links": [
+    "https://doi.org/10.1142/S2010139221500178",
+    "https://centaur.reading.ac.uk/100920/1/SSRN-id3567629.pdf"
+  ],
+  "symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "symbols_registered": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "logical_symbol": "QM5_13146_XTI_XNG_VOV_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13146_energy-vov",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13146_energy-vov\\QM5_13146_energy-vov.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13146_energy-vov\\QM5_13146_energy-vov.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13146_energy-vov\\SPEC.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13146_energy-vov\\basket_manifest.json",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13146_energy-vov.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_13146_energy-vov_card.md",
+  "canonical_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\energy-vov_card.md",
+  "source_packet_path": "C:\\QM\\repo\\strategy-seeds\\sources\\HOLLSTEIN-VOV-2021\\source.md",
+  "repo_artifact_path": "C:\\QM\\repo\\artifacts\\qm5_13146_build_result.json",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13146_energy-vov\\sets\\QM5_13146_energy-vov_QM5_13146_XTI_XNG_VOV_D1_D1_backtest.set"
+  ],
+  "magic_base": 131460000,
+  "magic": [
+    {
+      "slot": 0,
+      "symbol": "XTIUSD.DWX",
+      "magic": 131460000,
+      "registry_status": "active"
+    },
+    {
+      "slot": 1,
+      "symbol": "XNGUSD.DWX",
+      "magic": 131460001,
+      "registry_status": "active"
+    }
+  ],
+  "registry_validation": {
+    "ea_id_row": "13146,energy-vov,HOLLSTEIN-VOV-2021_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-11",
+    "magic_rows": [
+      "13146,energy-vov,0,XTIUSD.DWX,131460000,2026-07-11,Development,active",
+      "13146,energy-vov,1,XNGUSD.DWX,131460001,2026-07-11,Development,active"
+    ],
+    "resolver_contains_ea": true,
+    "resolver_rows_kept": 14885,
+    "magic_registry_sha256": "17BFFA837697E5CB34DD59D4A171198F839030F699CB2404E6E2B16BCAB1B566",
+    "resolver_file_sha256": "7710239A132E747C05C62236F5DA05DDFD9EB87FDF2F15587F3B7F7B165B528D",
+    "note": "Resolver was generated from the clean staged build, preserving the pre-existing QM5_13122 binding and dropping only historical missing-directory IDs 1001, 1015, and 1016. Unrelated dirty fleet allocations were excluded."
+  },
+  "build_commit": "1f4b6b599b09881ea963736c8f098ba668cdffae",
+  "mq5_sha256": "24C51AC8E34AE1E5E287EC5DEC0E273F2B6B4631E4824F39986C2DECB4163556",
+  "ex5_sha256": "6663CC326E2C53F06A3C3DAAC96133E6A62E914514C104DEC44EEFAABAC963FC",
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log": "D:\\QM\\reports\\compile\\20260711_182316\\QM5_13146_energy-vov.compile.log",
+  "compile_summary": "D:\\QM\\reports\\compile\\20260711_182316\\summary.csv",
+  "compile_reproducibility": "PASS_CLEAN_STAGED_RESOLVER",
+  "build_check_passed": true,
+  "build_check_failures": 0,
+  "build_check_warnings": 0,
+  "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260711_182316.json",
+  "spec_validation": "PASS",
+  "guardrail_validation": "PASS",
+  "symbol_scope_validation": "BASKET_OK",
+  "card_schema_validation": "PASS",
+  "g0_card_validation": "PASS",
+  "setfile_build_hash": "6505cdc0d98a8b0b9b15465286cd5d0972681e145228bdc1b3d29003a66c4288",
+  "setfile_sha256": "ED8429D4460C6BDAC7C0FB148D5E1B0302943E49ECAD6C3144A191808FC423FD",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Build-only paced Q02 enqueue requested; no manual MT5 tester, dispatch tick, worker tick, terminal launch, or backtest was started.",
+  "blocked_reason": null,
+  "open_questions": [
+    "The source signal uses option-implied volatility; the executable substitutes nested realized volatility and must be retired if that proxy does not survive Q02.",
+    "The source sorts 26 commodity futures; the fixed two-CFD XTI/XNG carrier is a deliberately narrow falsification and may not preserve the cross-sectional premium.",
+    "Continuous-CFD construction, XNG gaps, monthly legging, and costs can dominate a low-density two-leg package.",
+    "Opposite directions and equal fixed-risk halves do not establish dollar, beta, volatility, factor, or realized market neutrality; later portfolio testing alone may establish orthogonality."
+  ],
+  "validations": {
+    "dedup": "CLEAN_PRE_ALLOCATION; POST_ALLOCATION_EXACT_MATCH_IS_SELF",
+    "card_schema": "PASS",
+    "g0_card": "PASS",
+    "spec_doc": "PASS",
+    "build_guardrails": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "strict_compile": "PASS_0_ERRORS_0_WARNINGS",
+    "build_check": "PASS_0_FAILURES_0_WARNINGS",
+    "risk_mode": "PASS",
+    "setfile_build_hash": "PASS"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1,
+    "package_allocation": "equal fixed-risk halves with independent frozen ATR(20) x 3.5 hard stops"
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "reputable_primary_source": true,
+    "opposite_side_energy_basket": true,
+    "market_neutral_claimed": false,
+    "manual_backtest_cpu_used": false
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false
+  },
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_13146",
+    "enqueued": [
+      {
+        "work_item_id": "0ea56657-2d8a-413d-9ac4-9c7b25501099",
+        "symbol": "QM5_13146_XTI_XNG_VOV_D1",
+        "host_symbol": "XTIUSD.DWX",
+        "timeframe": "D1",
+        "status": "pending",
+        "setfile": "QM5_13146_energy-vov_QM5_13146_XTI_XNG_VOV_D1_D1_backtest.set",
+        "enqueued_at": "2026-07-11T18:30:23+00:00"
+      }
+    ],
+    "skipped": []
+  },
+  "q02": {
+    "phase": "Q02",
+    "work_item_id": "0ea56657-2d8a-413d-9ac4-9c7b25501099",
+    "status_at_handoff": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "symbol": "QM5_13146_XTI_XNG_VOV_D1",
+    "host_symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13146_energy-vov\\sets\\QM5_13146_energy-vov_QM5_13146_XTI_XNG_VOV_D1_D1_backtest.set",
+    "risk_payload": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "enqueued_at_utc": "2026-07-11T18:30:23+00:00",
+    "note": "Auto-enqueued by farmctl record-build as one logical basket. No manual dispatch, tester, worker tick, terminal launch, or backtest was started."
+  },
+  "file_hashes_sha256": {
+    "mq5": "24C51AC8E34AE1E5E287EC5DEC0E273F2B6B4631E4824F39986C2DECB4163556",
+    "ex5": "6663CC326E2C53F06A3C3DAAC96133E6A62E914514C104DEC44EEFAABAC963FC",
+    "spec": "5F23754FB7BC835167D854B5BFCD394910D3C9910A4B3F6B8D8805916EE26239",
+    "basket_manifest": "8FE85B6D7B59276FADC3D13F1843E2E1967C04BEE3C2BA8C3F84CA909A30D222",
+    "setfile": "ED8429D4460C6BDAC7C0FB148D5E1B0302943E49ECAD6C3144A191808FC423FD",
+    "canonical_card_pre_enqueue": "893632FE3E422CFDD605C03FE02F2AD6F4BEB0B9730FB6483BE842CEEEA57500",
+    "canonical_card_post_enqueue": "DA6CA97515C9D0535ED0618FFA60E2E530FF9E907384D9DC3CE54C789DCDC2C0",
+    "approved_card": "559AE211FBCCD886D1425E80F82751748D12753D91ED1B352E76369AF8B4EF5A",
+    "source_packet": "3E7498844F45AC627C9F45B21D684B23DE91EDAD63C25D11F0986FBE11E559D1",
+    "magic_registry": "17BFFA837697E5CB34DD59D4A171198F839030F699CB2404E6E2B16BCAB1B566",
+    "resolver": "7710239A132E747C05C62236F5DA05DDFD9EB87FDF2F15587F3B7F7B165B528D"
+  }
+}

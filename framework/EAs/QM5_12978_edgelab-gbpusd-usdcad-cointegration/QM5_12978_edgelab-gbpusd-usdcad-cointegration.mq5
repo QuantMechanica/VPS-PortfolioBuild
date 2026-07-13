@@ -160,6 +160,7 @@ bool Strategy_RefreshSpreadState()
   {
    g_state_ready = false;
    const int lookback = MathMax(20, strategy_z_lookback_d1);
+   const int history_count = lookback + 1;
 
    if(!Strategy_EnsureBasketScope())
       return false;
@@ -168,29 +169,43 @@ bool Strategy_RefreshSpreadState()
 
    double gbpusd[];
    double usdcad[];
+   datetime gbpusd_time[];
+   datetime usdcad_time[];
    ArraySetAsSeries(gbpusd, true);
    ArraySetAsSeries(usdcad, true);
-   if(CopyClose(g_leg_gbpusd, PERIOD_D1, 1, lookback, gbpusd) != lookback) // perf-allowed: Strategy_EntrySignal is called only after the framework QM_IsNewBar gate.
+   ArraySetAsSeries(gbpusd_time, true);
+   ArraySetAsSeries(usdcad_time, true);
+   if(CopyClose(g_leg_gbpusd, PERIOD_D1, 1, history_count, gbpusd) != history_count) // perf-allowed: Strategy_EntrySignal is called only after the framework QM_IsNewBar gate.
       return false;
-   if(CopyClose(g_leg_usdcad, PERIOD_D1, 1, lookback, usdcad) != lookback) // perf-allowed: Strategy_EntrySignal is called only after the framework QM_IsNewBar gate.
+   if(CopyClose(g_leg_usdcad, PERIOD_D1, 1, history_count, usdcad) != history_count) // perf-allowed: Strategy_EntrySignal is called only after the framework QM_IsNewBar gate.
+      return false;
+   if(CopyTime(g_leg_gbpusd, PERIOD_D1, 1, history_count, gbpusd_time) != history_count) // perf-allowed: new-bar gated alignment check.
+      return false;
+   if(CopyTime(g_leg_usdcad, PERIOD_D1, 1, history_count, usdcad_time) != history_count) // perf-allowed: new-bar gated alignment check.
       return false;
 
-   double sum = 0.0;
    double spreads[];
-   ArrayResize(spreads, lookback);
-   for(int i = 0; i < lookback; ++i)
+   ArrayResize(spreads, history_count);
+   for(int i = 0; i < history_count; ++i)
      {
+      if(gbpusd_time[i] <= 0 || gbpusd_time[i] != usdcad_time[i])
+         return false;
       if(gbpusd[i] <= 0.0 || usdcad[i] <= 0.0)
          return false;
       spreads[i] = MathLog(gbpusd[i]) - strategy_beta * MathLog(usdcad[i]);
       if(!MathIsValidNumber(spreads[i]))
          return false;
-      sum += spreads[i];
      }
+
+   // Score the newest closed spread against a strictly prior calibration
+   // window, matching pairs_backtest() in analyze_cross_asset_v3.py.
+   double sum = 0.0;
+   for(int i = 1; i < history_count; ++i)
+      sum += spreads[i];
 
    g_spread_mean = sum / (double)lookback;
    double var_sum = 0.0;
-   for(int i = 0; i < lookback; ++i)
+   for(int i = 1; i < history_count; ++i)
      {
       const double d = spreads[i] - g_spread_mean;
       var_sum += d * d;

@@ -1,0 +1,125 @@
+{
+  "generated_at_utc": "2026-07-12T03:17:53Z",
+  "operator": "codex-headless-board-advisor",
+  "branch": "agents/board-advisor",
+  "head_at_audit": "e89a60f7d73a32502ff54a870044543051a50079",
+  "mission": "grow the certified V5 portfolio book with new forex sleeves",
+  "unit_of_work": "post-scan FX cointegration frontier reconciliation and paced CPU-ceiling handoff",
+  "research_decision": {
+    "strict_scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "strict_scan_result": "Only EURJPY/GBPJPY and AUDUSD/NZDUSD cleared the published positive-hedge DEV/OOS/trade-count criteria; both are built and past Q02.",
+    "approved_cards_with_cointegration_reference_checked": 28,
+    "approved_cards_without_matching_framework_ea": 0,
+    "unbuilt_reputable_source_pair_found": false,
+    "decision": "Do not create a duplicate or relax the reputable-source/scan criteria to manufacture a weaker card. Use the existing-forex fallback only when a non-terminal row and paced tester capacity are both available."
+  },
+  "anchor_status": {
+    "QM5_12532": {
+      "pair": "AUDUSD.DWX/NZDUSD.DWX",
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "latest_state": [
+        "Q02:PASS",
+        "Q04:PASS",
+        "Q05:FAIL"
+      ],
+      "q02_blocked": false,
+      "q02_pass_work_item_id": "e4890d77-b865-4a48-b946-315faefca920"
+    },
+    "QM5_12533": {
+      "pair": "EURJPY.DWX/GBPJPY.DWX",
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "latest_state": [
+        "Q02:PASS",
+        "Q04:FAIL"
+      ],
+      "q02_blocked": false,
+      "q02_pass_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62"
+    }
+  },
+  "sign_aware_frontier_status": {
+    "QM5_13117": {
+      "pair": "EURGBP.DWX/AUDJPY.DWX",
+      "logical_symbol": "QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1",
+      "latest_state": [
+        "Q02:PASS",
+        "Q03:PASS",
+        "Q04:PASS",
+        "Q05:PASS",
+        "Q06:PASS",
+        "Q07:PASS",
+        "Q08:PENDING"
+      ],
+      "q08_work_item_id": "d9f360d4-6fa3-47ab-bddb-6a33a616f540",
+      "action": "Preserved the already-enqueued Q08 row. No Q08 contribution or portfolio-gate path was touched."
+    },
+    "QM5_13119": {
+      "pair": "USDJPY.DWX/EURAUD.DWX",
+      "logical_symbol": "QM5_13119_USDJPY_EURAUD_COINTEGRATION_D1",
+      "latest_state": [
+        "Q02:PASS",
+        "Q03:PASS",
+        "Q04:FAIL"
+      ],
+      "q04_work_item_id": "addea337-31f5-4267-b002-1281eaf9f94c",
+      "action": "Stopped at the terminal Q04 business verdict; no retry or duplicate was created."
+    },
+    "QM5_13106": {
+      "pair": "AUDUSD.DWX/EURGBP.DWX",
+      "logical_symbol": "QM5_13106_AUDUSD_EURGBP_COINTEGRATION_D1",
+      "latest_state": [
+        "Q02:PASS",
+        "Q04:FAIL"
+      ],
+      "stale_pending_q03_work_item_id": "1e2f36e1-a88c-4ee1-b23d-0b2aa2027cc6",
+      "action": "Did not dispatch the out-of-order pending Q03 row after the later Q04 FAIL."
+    }
+  },
+  "existing_forex_fallback": {
+    "ea_id": "QM5_11874",
+    "description": "JPY-cross 24-hour range sleeve",
+    "pending_q02_symbols": [
+      "AUDJPY.DWX",
+      "GBPJPY.DWX",
+      "USDJPY.DWX"
+    ],
+    "q02_parent_task_id": "fc01f8ec-3f59-4531-92fc-314a43a7b39d",
+    "action": "Preserved the three fresh zero-attempt Q02 rows created by the immediately preceding infrastructure-recovery commit; no duplicate enqueue or dispatch was performed."
+  },
+  "cpu_ceiling_observed": {
+    "factory_off_asserted": true,
+    "launch_gate_max": 1,
+    "metatester64_processes": 1,
+    "occupied_terminal": "T4",
+    "tester_pid": 8596,
+    "tester_started_local": "2026-07-12T04:50:32+02:00",
+    "active_run_config": "D:/QM/reports/pipeline_ftmo_joint/fresh_10814_usdjpy_20260712/QM5_10814/20260712_021754/raw/run_02/tester.ini",
+    "stop_reason": "The single paced tester slot was already occupied: metatester64 count equaled launch_gate_max. The mission requires stopping at the backtest CPU ceiling."
+  },
+  "result": {
+    "new_card_created": false,
+    "new_ea_built": false,
+    "new_q02_work_item_created": false,
+    "duplicate_work_item_created": false,
+    "farm_state_mutated": false,
+    "manual_mt5_backtest_launched": false,
+    "dispatch_command_run": false,
+    "committed_work": "Fresh branch-local reconciliation records the now-built sign-aware frontier, terminal phase outcomes, the stale out-of-order Q03 row that must not consume capacity, the already-enqueued forex fallback, and the exact paced-ceiling blocker."
+  },
+  "guardrails": {
+    "risk_mode_expected": "RISK_FIXED",
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false
+  },
+  "commands_run_summary": [
+    "read the complete strict FX scan and applicable strategy-card/build/pipeline skill boundaries",
+    "verified live work-item histories for QM5_12532, QM5_12533, QM5_13106, QM5_13117, and QM5_13119",
+    "compared 28 approved cards containing cointegration references with framework EA directories",
+    "reconciled MT5 processes read-only and confirmed the one-slot paced CPU ceiling",
+    "left all existing farm rows and protected portfolio/live surfaces unchanged"
+  ]
+}

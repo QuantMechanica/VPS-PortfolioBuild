@@ -31,4 +31,10 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=framework/EAs/QM5_12484_shv-ma-cross/SPEC.md
+strategy_sma_fast_period=20
+strategy_sma_slow_period=50
+strategy_atr_period=20
+strategy_sl_atr_mult=3.0
+strategy_time_stop_bars=80
+strategy_spread_pct_of_stop=15.0

@@ -12,7 +12,9 @@
 
 The EA trades the GBPUSD.DWX and USDCAD.DWX D1 cointegration spread. It
 computes `S = ln(GBPUSD) - beta * ln(USDCAD)` with beta defaulting to
-`-1.140460285727`, then calculates a 60-bar rolling z-score of that spread.
+`-1.140460285727`. The newest closed spread is scored against the strictly
+preceding 60 closed D1 spreads; it is not included in its own rolling mean or
+sample-standard-deviation calibration window.
 
 It opens a short-spread package when z is above +2.0 and a long-spread package
 when z is below -2.0. Because beta is negative, the second-leg hedge direction is
@@ -110,3 +112,4 @@ Q02 tester note: the manifest pins `tester_currency=USD` and
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-03 | Initial full-scan top-unbuilt FX cointegration basket build | Built from the 12768 two-leg basket pattern with sign-aware negative-beta leg direction |
+| v2 | 2026-07-12 | Restore research/card z-score window parity | Score the newest closed spread against 60 prior time-aligned spreads before repaired Q02 |

@@ -4,7 +4,7 @@
 **Slug:** binario-ma-band
 **Source:** 0693c604-4f96-56ef-be79-15efe9f48b86
 **Author of this spec:** Codex
-**Last revised:** 2026-06-07
+**Last revised:** 2026-07-11
 
 ---
 
@@ -85,8 +85,15 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 ---
 
+## 8. Q02 Infrastructure Recovery
+
+The 2026-07-11 recovery refreshes all four canonical D1 backtest setfiles from the approved card and current EA input contract, rebuilds the retained pre-framework-change binary, and preserves the exact card rules. The closed-bar EMA channel is cached by `QM_CalendarPeriodKey(PERIOD_D1)` so Model-4 position management does not issue two indicator reads on every tick; the cache changes only when the source's completed D1 channel can change. News filtering now gates new exposure only, leaving Friday close, stop management, and exits active during blackout windows.
+
+---
+
 ## Revision History
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
+| v1.1 | 2026-07-11 | Q02 infrastructure recovery | Current binary and RISK_FIXED setfiles; D1 channel cache; entry-only news gate. |
 | v1 | 2026-06-07 | Initial build from card | 1e88c241-ec51-4716-9c04-be8d4c7fcbed |

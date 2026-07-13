@@ -115,8 +115,13 @@ bool Strategy_HasOpenPosition(ENUM_POSITION_TYPE &pos_type)
 
 bool Strategy_CrossAboveMA()
   {
-   const double close_prev = iClose(_Symbol, _Period, 2);
-   const double close_curr = iClose(_Symbol, _Period, 1);
+   MqlRates previous_bar;
+   MqlRates current_bar;
+   if(!QM_ReadBar(_Symbol, (ENUM_TIMEFRAMES)_Period, 2, previous_bar) ||
+      !QM_ReadBar(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, current_bar))
+      return false;
+   const double close_prev = previous_bar.close;
+   const double close_curr = current_bar.close;
    const double ma_prev = QM_SMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_ma_period, 2, PRICE_CLOSE);
    const double ma_curr = QM_SMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_ma_period, 1, PRICE_CLOSE);
    return (close_prev < ma_prev && close_curr > ma_curr);
@@ -124,8 +129,13 @@ bool Strategy_CrossAboveMA()
 
 bool Strategy_CrossBelowMA()
   {
-   const double close_prev = iClose(_Symbol, _Period, 2);
-   const double close_curr = iClose(_Symbol, _Period, 1);
+   MqlRates previous_bar;
+   MqlRates current_bar;
+   if(!QM_ReadBar(_Symbol, (ENUM_TIMEFRAMES)_Period, 2, previous_bar) ||
+      !QM_ReadBar(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, current_bar))
+      return false;
+   const double close_prev = previous_bar.close;
+   const double close_curr = current_bar.close;
    const double ma_prev = QM_SMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_ma_period, 2, PRICE_CLOSE);
    const double ma_curr = QM_SMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_ma_period, 1, PRICE_CLOSE);
    return (close_prev > ma_prev && close_curr < ma_curr);
@@ -136,7 +146,10 @@ bool Strategy_D1TrendAllows(const QM_OrderType side)
    if(!strategy_use_d1_sma200)
       return true;
 
-   const double d1_close = iClose(_Symbol, PERIOD_D1, 1);
+   MqlRates d1_bar;
+   if(!QM_ReadBar(_Symbol, PERIOD_D1, 1, d1_bar))
+      return false;
+   const double d1_close = d1_bar.close;
    const double d1_sma = QM_SMA(_Symbol, PERIOD_D1, 200, 1, PRICE_CLOSE);
    if(d1_close <= 0.0 || d1_sma <= 0.0)
       return false;
@@ -154,9 +167,9 @@ bool Strategy_StopDistanceAllowed(const double entry, const double sl)
 
    const double stop_points = MathAbs(entry - sl) / point;
    const double spread_points = (double)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-   if(spread_points <= 0.0)
-      return true;
-   return (stop_points >= 4.0 * spread_points);
+   if(spread_points > 0.0)
+      return (stop_points >= 4.0 * spread_points);
+   return true;
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
@@ -174,9 +187,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(strategy_ma_period < 2 || strategy_atr_period < 1 || strategy_stop_atr_mult <= 0.0)
       return false;
-   if(Bars(_Symbol, _Period) < strategy_ma_period + 3)
-      return false;
-
    ENUM_POSITION_TYPE pos_type;
    if(Strategy_HasOpenPosition(pos_type))
       return false;

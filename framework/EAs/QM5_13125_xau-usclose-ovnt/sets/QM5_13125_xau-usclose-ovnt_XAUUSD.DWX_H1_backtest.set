@@ -1,0 +1,30 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        13125
+; ea_slug:      xau-usclose-ovnt
+; ea_version:   v5.0
+; set_version:  s20260710-001
+; symbol:       XAUUSD.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; author:       Development
+; date:         2026-07-10
+; build_hash:   0aae5ccf73b0f3237541d45e3fe2dccb2a604adee676d2c7dd1f326c9f9ab81e
+;==========================================================
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_mode_legacy=0
+strategy_entry_hour_broker=23
+strategy_exit_hour_broker=16
+strategy_atr_period=14
+strategy_stop_atr_mult=1.0
+strategy_max_spread_atr_frac=0.02
+strategy_max_entry_delay_sec=120
+strategy_max_hold_hours=72

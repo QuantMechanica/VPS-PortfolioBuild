@@ -1,0 +1,137 @@
+{
+  "artifact_type": "q02_infra_repair_requeue",
+  "created_at_utc": "2026-07-11T21:55:50Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_11072",
+  "ea_label": "QM5_11072_binario-ma-band",
+  "instrument_diversity": {
+    "asset_class": "forex",
+    "period": "D1",
+    "symbols": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "USDJPY.DWX",
+      "USDCAD.DWX"
+    ],
+    "expected_trades_per_year_per_symbol": 26
+  },
+  "source": {
+    "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11072_binario-ma-band.md",
+    "g0_status": "APPROVED",
+    "citation": "EarnForex, Binario, GitHub repository and MQL5 source, https://github.com/EarnForex/Binario"
+  },
+  "farm_claim": {
+    "agent_task_id": "d6e022d7-227c-4df6-beac-0860112ef807",
+    "assigned_agent": "codex:agents/board-advisor",
+    "state_at_repair": "IN_PROGRESS",
+    "claim_backup": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_qm5_11072_q02_repair_claim_20260711T213839Z.sqlite",
+    "review_repair_backup": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_qm5_11072_review_repair_enqueue_20260711T215518Z.sqlite"
+  },
+  "diagnosis": {
+    "classification": "INFRA_ONLY",
+    "prior_q02_business_verdict_present": false,
+    "downstream_phase_present": false,
+    "prior_review_task_id": "f617d199-c4c2-4ac2-895f-887289f0cc1c",
+    "prior_review_verdict": "REJECT_REWORK",
+    "prior_review_only_blocker": "The smoke report was contaminated by another EA on a contended terminal; the reviewer found no MQ5, registry, naming, or mechanical defect.",
+    "package_findings": [
+      "The retained EX5 predated the current framework/package state.",
+      "All four setfiles had pending build hashes, obsolete qm_filter inputs, and no strategy inputs.",
+      "Two closed-D1 EMA values were read on every Model-4 tick while a position was open.",
+      "The news gate returned before Friday close, position management, and exits."
+    ]
+  },
+  "repair": {
+    "source_path": "framework/EAs/QM5_11072_binario-ma-band/QM5_11072_binario-ma-band.mq5",
+    "source_sha256": "1D54F4606ADE6FDD2961379B8947B7622BAE4F94EF1296F2BA1938EE88290C0B",
+    "binary_path": "framework/EAs/QM5_11072_binario-ma-band/QM5_11072_binario-ma-band.ex5",
+    "binary_sha256": "E226F246A715CB89B54FF21C2DE7A674D0B65609D2F46E0293DD7BC85C9131F5",
+    "changes": [
+      "Cache the completed D1 EMA-high/EMA-low channel by QM_CalendarPeriodKey.",
+      "Keep Friday close, position management, and exits active during news blackouts; gate only new exposure.",
+      "Zero-initialize entry request structures and restrict the exit loop to the chart symbol.",
+      "Regenerate four canonical D1 backtest setfiles with RISK_FIXED=1000, RISK_PERCENT=0, registered magic slots 0-3, and card parameters 144/20/115.",
+      "Refresh the local strategy-card copy and SPEC recovery record."
+    ]
+  },
+  "validation": {
+    "skill_build_guard": "PASS",
+    "spec_validation": "PASS",
+    "build_guardrails": "PASS",
+    "build_check": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:\\QM\\reports\\framework\\21\\build_check_20260711_215550.json"
+    },
+    "strict_compile": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "summary": "D:\\QM\\reports\\compile\\20260711_214514\\summary.csv",
+      "log": "D:\\QM\\reports\\compile\\20260711_214514\\QM5_11072_binario-ma-band.compile.log",
+      "log_sha256": "AAF8D346D866F41EDFE7FD229E9224E194AD6FC7D1AA953788F28AADF721AD51"
+    },
+    "dedicated_smoke": {
+      "result": "PASS",
+      "reason_classes": ["OK"],
+      "summary": "D:\\QM\\reports\\smoke\\QM5_11072\\20260711_214832\\summary.json",
+      "terminal": "T8",
+      "symbol": "EURUSD.DWX",
+      "period": "D1",
+      "year": 2024,
+      "model": 4,
+      "runs": 1,
+      "total_trades": 26,
+      "minimum_trades": 3,
+      "oninit_failure": false,
+      "profit_factor_observed": 0.78,
+      "net_profit_observed": -1735.36,
+      "scope_note": "This smoke satisfies the Q01 trade-generation directive only; Q02 remains the economic screen."
+    }
+  },
+  "review_repair": {
+    "review_task_id": "f617d199-c4c2-4ac2-895f-887289f0cc1c",
+    "original_verdict_preserved": "REJECT_REWORK",
+    "new_verdict": "APPROVE_FOR_BACKTEST",
+    "updated_at_utc": "2026-07-11T21:55:18+00:00"
+  },
+  "q02_enqueue": {
+    "task_id": "decf54eb-cc29-41d1-b4b9-f5625cb2bf35",
+    "status": "pending",
+    "created_at_utc": "2026-07-11T21:55:23+00:00",
+    "window": "2017-2022",
+    "work_items": [
+      {
+        "id": "6a5f6678-d8a5-4ada-bcae-fee49ec685c9",
+        "symbol": "EURUSD.DWX",
+        "status": "pending"
+      },
+      {
+        "id": "8b93dfe1-94d8-427a-87fc-60f35f304b3d",
+        "symbol": "GBPUSD.DWX",
+        "status": "pending"
+      },
+      {
+        "id": "84c505e7-b5e4-4f9f-b2c0-69a9944471c9",
+        "symbol": "USDJPY.DWX",
+        "status": "pending"
+      },
+      {
+        "id": "5a6ce70f-38e6-4a3d-b953-8c935a4865f2",
+        "symbol": "USDCAD.DWX",
+        "status": "pending"
+      }
+    ],
+    "skipped": []
+  },
+  "safety": {
+    "factory_off_flag_preserved": true,
+    "q02_dispatched": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "cpu_ceiling_hit": false
+  }
+}

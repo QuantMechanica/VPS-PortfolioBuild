@@ -110,12 +110,12 @@ void Strategy_UpdateAORegime()
    if(ao2 <= 0.0 && ao1 > 0.0)
      {
       g_strategy_regime_dir = 1;
-      g_strategy_regime_cross_time = iTime(_Symbol, PERIOD_D1, 1);
+      g_strategy_regime_cross_time = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: H1 new-bar regime transition only
      }
    else if(ao2 >= 0.0 && ao1 < 0.0)
      {
       g_strategy_regime_dir = -1;
-      g_strategy_regime_cross_time = iTime(_Symbol, PERIOD_D1, 1);
+      g_strategy_regime_cross_time = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: H1 new-bar regime transition only
      }
 
    if(g_strategy_regime_cross_time > 0 &&

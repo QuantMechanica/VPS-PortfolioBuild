@@ -10,7 +10,7 @@
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   7149d1d9c4e406269ae6a39756385187d406b5974b2fe2a07e0240b4544f9fc3
 ; author:       Development
 ; date:         2026-06-06
 ;==========================================================
@@ -31,4 +31,20 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=C:\QM\repo\framework\EAs\QM5_10916_grimes-impulse\SPEC.md
+strategy_atr_period=14
+strategy_ema_period=50
+strategy_impulse_bars=5
+strategy_impulse_min_closes=3
+strategy_impulse_atr_mult=2.0
+strategy_min_pullback_bars=2
+strategy_max_pullback_bars=8
+strategy_max_retrace_fraction=0.382
+strategy_pullback_range_atr_mult=0.80
+strategy_stop_buffer_atr_mult=0.25
+strategy_max_stop_atr_mult=2.50
+strategy_target_r_multiple=1.50
+strategy_trail_trigger_r=1.00
+strategy_trail_atr_mult=2.00
+strategy_spread_stop_fraction=0.10
+strategy_time_exit_bars=18

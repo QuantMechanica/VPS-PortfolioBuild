@@ -4,13 +4,13 @@
 **Slug:** mql5-lr-slope
 **Source:** b8b5125a-c67f-5bbc-baff-33456e08f5b2 (see `strategy-seeds/sources/b8b5125a-c67f-5bbc-baff-33456e08f5b2/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-05-29
+**Last revised:** 2026-07-11
 
 ---
 
 ## 1. Strategy Logic
 
-The EA trades closed-bar crosses between a linear-regression-slope oscillator and its signal average. A long signal occurs when the latest closed bar's slope crosses above the signal line; a short signal occurs when it crosses below. Existing positions are closed on the opposite closed-bar cross, while hard stop, target, Friday close, news exits, and kill-switch handling remain in the V5 framework. The P2 baseline uses ATR(14) 2.0 stop distance and 1.5R target.
+The EA trades closed-bar crosses between a linear-regression-slope oscillator and its signal average. A long signal occurs when the latest closed bar's slope crosses above the signal line; a short signal occurs when it crosses below. The bounded regression window is read once and cached on each new H4 bar. Existing positions are closed on the opposite closed-bar cross, while hard stop, target, Friday close, and kill-switch handling remain in the V5 framework. News blackouts gate new entries only. The P2 baseline uses ATR(14) 2.0 stop distance and 1.5R target.
 
 ---
 
@@ -50,7 +50,7 @@ The EA trades closed-bar crosses between a linear-regression-slope oscillator an
 |---|---|
 | Base timeframe | H4 |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Bar gating | One `QM_IsNewBar(_Symbol, PERIOD_H4)` decision per tick; the regression cross is cached once per new H4 bar for both exit and entry evaluation. |
 
 ---
 
@@ -94,3 +94,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-05-29 | Initial build from card | 700cd1a2-0074-48f7-a3fa-52c034a4bf34 |
+| v2 | 2026-07-11 | Q02 infrastructure performance recovery | Replaced per-tick nested history reads with one bounded H4 `CopyRates`, moved the news gate to new entries, and preserved opposite-cross exits during blackouts. |

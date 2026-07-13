@@ -77,6 +77,39 @@ input int    strategy_ma_period         = 144;
 input int    strategy_pip_difference    = 20;
 input int    strategy_take_profit_pips  = 115;
 
+// The channel uses the last completed D1 bar, so its values can only change
+// once per broker day. Cache it by the sanctioned framework calendar key
+// instead of reading two indicator buffers on every Model-4 tick while a
+// position is open.
+int    g_band_cache_key  = 0;
+double g_band_cache_high = 0.0;
+double g_band_cache_low  = 0.0;
+
+bool Strategy_ReadClosedBand(double &ma_high, double &ma_low)
+  {
+   const int closed_day_key = QM_CalendarPeriodKey(PERIOD_D1, _Symbol, 1);
+   if(closed_day_key <= 0)
+      return false;
+
+   if(closed_day_key != g_band_cache_key ||
+      g_band_cache_high <= 0.0 ||
+      g_band_cache_low <= 0.0)
+     {
+      const double next_high = QM_EMA(_Symbol, PERIOD_D1, strategy_ma_period, 1, PRICE_HIGH);
+      const double next_low = QM_EMA(_Symbol, PERIOD_D1, strategy_ma_period, 1, PRICE_LOW);
+      if(next_high <= 0.0 || next_low <= 0.0 || next_high < next_low)
+         return false;
+
+      g_band_cache_key = closed_day_key;
+      g_band_cache_high = next_high;
+      g_band_cache_low = next_low;
+     }
+
+   ma_high = g_band_cache_high;
+   ma_low = g_band_cache_low;
+   return true;
+  }
+
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -93,6 +126,7 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   ZeroMemory(req);
    req.type = QM_SELL_STOP;
    req.price = 0.0;
    req.sl = 0.0;
@@ -152,15 +186,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const double spread = ask - bid;
-   const double ma_high = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_ma_period, 1, PRICE_HIGH);
-   const double ma_low = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_ma_period, 1, PRICE_LOW);
-   if(ma_high <= 0.0 || ma_low <= 0.0 || ma_high < ma_low)
+   double ma_high = 0.0;
+   double ma_low = 0.0;
+   if(!Strategy_ReadClosedBand(ma_high, ma_low))
       return false;
 
    const double entry_offset = strategy_pip_difference * pip;
    const double profit_offset = (strategy_pip_difference + strategy_take_profit_pips) * pip;
 
    QM_EntryRequest buy_req;
+   ZeroMemory(buy_req);
    buy_req.type = QM_BUY_STOP;
    buy_req.price = QM_TM_NormalizePrice(_Symbol, ma_high + spread + entry_offset);
    buy_req.sl = QM_TM_NormalizePrice(_Symbol, ma_low - pip);
@@ -220,9 +255,9 @@ void Strategy_ManageOpenPosition()
          continue;
 
       const double spread = ask - bid;
-      const double ma_high = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_ma_period, 1, PRICE_HIGH);
-      const double ma_low = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_ma_period, 1, PRICE_LOW);
-      if(ma_high <= 0.0 || ma_low <= 0.0 || ma_high < ma_low)
+      double ma_high = 0.0;
+      double ma_low = 0.0;
+      if(!Strategy_ReadClosedBand(ma_high, ma_low))
          continue;
 
       const double profit_offset = (strategy_pip_difference + strategy_take_profit_pips) * pip;
@@ -323,17 +358,6 @@ void OnTick()
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
-   // when both new axes are at their OFF defaults.
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
@@ -341,6 +365,7 @@ void OnTick()
       return;
 
    // Per-tick: trade management can adjust SL/TP on open positions.
+   // Management and exits stay active through news blackout windows.
    Strategy_ManageOpenPosition();
 
    // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
@@ -354,13 +379,25 @@ void OnTick()
             continue;
          if(PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
+         if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+            continue;
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
 
-   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
-   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
-   // call, not every incoming tick.
+   // News policy gates only NEW exposure. Friday close, channel-stop updates,
+   // and mechanical exits above remain live throughout blackout windows.
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
    if(!QM_IsNewBar())
       return;
 
@@ -369,6 +406,7 @@ void OnTick()
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;

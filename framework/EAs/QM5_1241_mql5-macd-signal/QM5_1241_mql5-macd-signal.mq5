@@ -49,6 +49,10 @@ input double          strategy_spread_mult        = 2.0;
 
 datetime g_last_exit_bar = 0;
 bool     g_exit_now      = false;
+ulong    g_be_attempt_ticket = 0;
+datetime g_be_attempt_bar    = 0;
+ulong    g_close_attempt_ticket = 0;
+datetime g_close_attempt_bar    = 0;
 
 bool Strategy_SelectOurPosition(ulong &ticket, ENUM_POSITION_TYPE &ptype, double &open_price, datetime &open_time)
   {
@@ -280,8 +284,26 @@ void Strategy_ManageOpenPosition()
 
    const double initial_risk = MathAbs(tp - open_price) / strategy_take_profit_r;
    const double moved = is_buy ? (market - open_price) : (open_price - market);
-   if(initial_risk > 0.0 && moved >= initial_risk * strategy_be_trigger_r)
-      QM_TM_MoveSL(ticket, open_price, "mql5_macd_be_after_1r");
+   if(initial_risk <= 0.0 || moved < initial_risk * strategy_be_trigger_r)
+      return;
+
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const double current_sl = PositionGetDouble(POSITION_SL);
+   const bool already_at_break_even = is_buy
+                                      ? (current_sl >= open_price - point)
+                                      : (current_sl > 0.0 && current_sl <= open_price + point);
+   if(already_at_break_even)
+      return;
+
+   const datetime attempt_bar = iTime(_Symbol, strategy_timeframe, 0);
+   if(attempt_bar <= 0)
+      return;
+   if(g_be_attempt_ticket == ticket && g_be_attempt_bar == attempt_bar)
+      return;
+   g_be_attempt_ticket = ticket;
+   g_be_attempt_bar = attempt_bar;
+
+   QM_TM_MoveSL(ticket, open_price, "mql5_macd_be_after_1r");
   }
 
 bool Strategy_ExitSignal()
@@ -379,6 +401,7 @@ void OnTick()
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
+      const datetime attempt_bar = iTime(_Symbol, strategy_timeframe, 0);
       for(int i = PositionsTotal() - 1; i >= 0; --i)
         {
          const ulong ticket = PositionGetTicket(i);
@@ -386,6 +409,10 @@ void OnTick()
             continue;
          if(PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
+         if(g_close_attempt_ticket == ticket && g_close_attempt_bar == attempt_bar)
+            continue;
+         g_close_attempt_ticket = ticket;
+         g_close_attempt_bar = attempt_bar;
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }

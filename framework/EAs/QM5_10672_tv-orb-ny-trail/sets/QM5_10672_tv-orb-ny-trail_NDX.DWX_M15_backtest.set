@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   3e50e663d1cc7dc17bf88e93368acb4d3b24c7524a4774be994e7cff6e23290e
 ; author:       Development
 ; date:         2026-05-31
 ;==========================================================
@@ -31,4 +31,18 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=C:\QM\repo\framework\EAs\QM5_10672_tv-orb-ny-trail\SPEC.md
+strategy_opening_range_minutes=15
+strategy_open_hour=15
+strategy_open_minute=30
+strategy_max_entry_hour=20
+strategy_max_entry_minute=0
+strategy_force_close_enabled=true
+strategy_force_close_hour=21
+strategy_force_close_minute=55
+strategy_stop_pct=0.5
+strategy_rr_target=2.0
+strategy_atr_period=14
+strategy_atr_trail_mult=2.0
+strategy_max_consec_losses_day=2
+strategy_max_spread_points=100

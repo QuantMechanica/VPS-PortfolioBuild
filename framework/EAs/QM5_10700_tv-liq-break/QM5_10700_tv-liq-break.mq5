@@ -103,14 +103,14 @@ bool IsAllowedBaselineTimeframe()
 
 bool IsPivotHighAt(const int shift, const int lookback)
   {
-   const double candidate = iHigh(_Symbol, _Period, shift);
+   const double candidate = iHigh(_Symbol, _Period, shift); // perf-allowed: bounded pivot scan behind the framework new-bar gate.
    if(candidate <= 0.0)
       return false;
 
    for(int j = 1; j <= lookback; ++j)
      {
-      const double newer = iHigh(_Symbol, _Period, shift - j);
-      const double older = iHigh(_Symbol, _Period, shift + j);
+      const double newer = iHigh(_Symbol, _Period, shift - j); // perf-allowed: bounded pivot scan behind the framework new-bar gate.
+      const double older = iHigh(_Symbol, _Period, shift + j); // perf-allowed: bounded pivot scan behind the framework new-bar gate.
       if(newer <= 0.0 || older <= 0.0)
          return false;
       if(newer > candidate || older > candidate)
@@ -121,14 +121,14 @@ bool IsPivotHighAt(const int shift, const int lookback)
 
 bool IsPivotLowAt(const int shift, const int lookback)
   {
-   const double candidate = iLow(_Symbol, _Period, shift);
+   const double candidate = iLow(_Symbol, _Period, shift); // perf-allowed: bounded pivot scan behind the framework new-bar gate.
    if(candidate <= 0.0)
       return false;
 
    for(int j = 1; j <= lookback; ++j)
      {
-      const double newer = iLow(_Symbol, _Period, shift - j);
-      const double older = iLow(_Symbol, _Period, shift + j);
+      const double newer = iLow(_Symbol, _Period, shift - j); // perf-allowed: bounded pivot scan behind the framework new-bar gate.
+      const double older = iLow(_Symbol, _Period, shift + j); // perf-allowed: bounded pivot scan behind the framework new-bar gate.
       if(newer <= 0.0 || older <= 0.0)
          return false;
       if(newer < candidate || older < candidate)
@@ -147,7 +147,7 @@ bool FindTwoRecentPivotHighs(const int lookback,
 
    const int first_shift = lookback + 1;
    const int last_shift = MathMax(first_shift + 1, scan_bars);
-   if(Bars(_Symbol, _Period) <= last_shift + lookback + 2)
+   if(Bars(_Symbol, _Period) <= last_shift + lookback + 2) // perf-allowed: one history-readiness check before the bounded pivot scan.
       return false;
 
    for(int shift = first_shift; shift <= last_shift; ++shift)
@@ -156,10 +156,10 @@ bool FindTwoRecentPivotHighs(const int lookback,
          continue;
 
       if(latest_high <= 0.0)
-         latest_high = iHigh(_Symbol, _Period, shift);
+         latest_high = iHigh(_Symbol, _Period, shift); // perf-allowed: selected pivot value from the bounded new-bar scan.
       else
         {
-         previous_high = iHigh(_Symbol, _Period, shift);
+         previous_high = iHigh(_Symbol, _Period, shift); // perf-allowed: selected pivot value from the bounded new-bar scan.
          return (previous_high > 0.0);
         }
      }
@@ -176,7 +176,7 @@ bool FindTwoRecentPivotLows(const int lookback,
 
    const int first_shift = lookback + 1;
    const int last_shift = MathMax(first_shift + 1, scan_bars);
-   if(Bars(_Symbol, _Period) <= last_shift + lookback + 2)
+   if(Bars(_Symbol, _Period) <= last_shift + lookback + 2) // perf-allowed: one history-readiness check before the bounded pivot scan.
       return false;
 
    for(int shift = first_shift; shift <= last_shift; ++shift)
@@ -185,10 +185,10 @@ bool FindTwoRecentPivotLows(const int lookback,
          continue;
 
       if(latest_low <= 0.0)
-         latest_low = iLow(_Symbol, _Period, shift);
+         latest_low = iLow(_Symbol, _Period, shift); // perf-allowed: selected pivot value from the bounded new-bar scan.
       else
         {
-         previous_low = iLow(_Symbol, _Period, shift);
+         previous_low = iLow(_Symbol, _Period, shift); // perf-allowed: selected pivot value from the bounded new-bar scan.
          return (previous_low > 0.0);
         }
      }
@@ -199,13 +199,13 @@ bool PriorLiquidityLevels(const int length, double &upper, double &lower)
   {
    upper = 0.0;
    lower = 0.0;
-   if(length <= 1 || Bars(_Symbol, _Period) <= length + 3)
+   if(length <= 1 || Bars(_Symbol, _Period) <= length + 3) // perf-allowed: one history-readiness check before the bounded liquidity scan.
       return false;
 
    for(int shift = 2; shift <= length + 1; ++shift)
      {
-      const double h = iHigh(_Symbol, _Period, shift);
-      const double l = iLow(_Symbol, _Period, shift);
+      const double h = iHigh(_Symbol, _Period, shift); // perf-allowed: bounded liquidity-level scan behind the framework new-bar gate.
+      const double l = iLow(_Symbol, _Period, shift); // perf-allowed: bounded liquidity-level scan behind the framework new-bar gate.
       if(h <= 0.0 || l <= 0.0)
          return false;
 
@@ -341,8 +341,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!PriorLiquidityLevels(strategy_liquidity_length, liquidity_high, liquidity_low))
       return false;
 
-   const double close_1 = iClose(_Symbol, _Period, 1);
-   const double close_2 = iClose(_Symbol, _Period, 2);
+   const double close_1 = iClose(_Symbol, _Period, 1); // perf-allowed: closed breakout bar behind the framework new-bar gate.
+   const double close_2 = iClose(_Symbol, _Period, 2); // perf-allowed: preceding closed bar behind the framework new-bar gate.
    if(close_1 <= 0.0 || close_2 <= 0.0)
       return false;
 

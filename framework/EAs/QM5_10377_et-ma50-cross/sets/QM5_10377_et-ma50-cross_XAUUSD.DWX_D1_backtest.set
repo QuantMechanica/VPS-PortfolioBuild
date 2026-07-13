@@ -1,0 +1,32 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10377
+; ea_slug:      et-ma50-cross
+; ea_version:   v5.0
+; set_version:  s20260711-001
+; symbol:       XAUUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   fed95e33ab0388059416d2c1c8de9ebb481321c1260b11693c8affcac2218cfa
+; author:       Development
+; date:         2026-07-11
+;==========================================================
+qm_ea_id=10377
+qm_magic_slot_offset=2
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_mode_legacy=0
+qm_friday_close_enabled=false
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10377_et-ma50-cross.md
+strategy_ma_period=50
+strategy_atr_period=14
+strategy_stop_atr_mult=3.0
+strategy_symmetric_shorts=false
+strategy_use_d1_sma200=false

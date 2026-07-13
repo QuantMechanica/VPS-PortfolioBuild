@@ -1,0 +1,16 @@
+{
+  "logical_symbol": "QM5_13147_XTI_XNG_JBETA_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "Logical two-leg XTI/XNG realized common-jump-beta basket from approved card HOLLSTEIN-AGGJUMP-2021_XTI_XNG_S01. Run on XTIUSD.DWX D1; at the first tradable bar of every broker month, form 252 synchronized completed returns, build a fixed inverse-volatility energy benchmark, define realized jump innovations at two sample standard deviations, estimate each leg's incremental jump coefficient while controlling for the continuous benchmark, buy lower jump beta, short higher jump beta, and evaluate the package rather than standalone legs. The source uses an option-derived equity-market jump factor; the OHLC-only energy proxy, endogenous two-CFD narrowing, D1 jump approximation, continuous-CFD basis, gaps, and legging are binding Q02 falsification risks."
+  ]
+}

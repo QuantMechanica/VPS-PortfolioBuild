@@ -1,0 +1,193 @@
+{
+  "task_id": "157f04fa-d348-4e26-a4e3-73b1d0ceee5c",
+  "ea_id": "QM5_13203",
+  "ea_label": "QM5_13203_energy-downbeta",
+  "slug": "energy-downbeta",
+  "strategy": "Monthly XTI/XNG low-minus-high rank on conditional downside beta to a read-only SP500 factor",
+  "strategy_id": "HOLLSTEIN-DOWNBETA-2021_XTI_XNG_S01",
+  "source_id": "HOLLSTEIN-DOWNBETA-2021",
+  "source_links": [
+    "https://doi.org/10.1142/S2010139221500178",
+    "https://centaur.reading.ac.uk/100920/1/SSRN-id3567629.pdf"
+  ],
+  "symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "factor_symbols": [
+    "SP500.DWX"
+  ],
+  "logical_symbol": "QM5_13203_XTI_XNG_DOWNBETA_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_13203_energy-downbeta",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_13203_energy-downbeta/QM5_13203_energy-downbeta.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_13203_energy-downbeta/QM5_13203_energy-downbeta.ex5",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_13203_energy-downbeta/SPEC.md",
+  "basket_manifest": "C:/QM/repo/framework/EAs/QM5_13203_energy-downbeta/basket_manifest.json",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_13203_energy-downbeta.md",
+  "approved_card_path": "C:/QM/repo/strategy-seeds/cards/approved/QM5_13203_energy-downbeta_card.md",
+  "canonical_card_path": "C:/QM/repo/strategy-seeds/cards/energy-downbeta_card.md",
+  "source_packet_path": "C:/QM/repo/strategy-seeds/sources/HOLLSTEIN-DOWNBETA-2021/source.md",
+  "runtime_build_result_path": "D:/QM/strategy_farm/artifacts/builds/157f04fa-d348-4e26-a4e3-73b1d0ceee5c.json",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_13203_energy-downbeta/sets/QM5_13203_energy-downbeta_QM5_13203_XTI_XNG_DOWNBETA_D1_D1_backtest.set"
+  ],
+  "magic_base": 132030000,
+  "magic": [
+    {
+      "slot": 0,
+      "symbol": "XTIUSD.DWX",
+      "magic": 132030000,
+      "registry_status": "active"
+    },
+    {
+      "slot": 1,
+      "symbol": "XNGUSD.DWX",
+      "magic": 132030001,
+      "registry_status": "active"
+    }
+  ],
+  "registry_validation": {
+    "ea_id_row": "13203,energy-downbeta,HOLLSTEIN-DOWNBETA-2021_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-12",
+    "magic_rows": [
+      "13203,energy-downbeta,0,XTIUSD.DWX,132030000,2026-07-12,Development,active",
+      "13203,energy-downbeta,1,XNGUSD.DWX,132030001,2026-07-12,Development,active"
+    ],
+    "resolver_contains_ea": true,
+    "resolver_rows_kept": 14895,
+    "magic_registry_sha256": "D084F7421F6CB0AC7BED49CFA377CE0C495FBF5CBAA0B11E1A6B252C525A96FF",
+    "resolver_file_sha256": "5140622CB30A8844CE0E1285463A8FBD8A3753133949163C44AFAB2B7DE58F9A",
+    "resolver_registry_sha_match": true,
+    "preexisting_missing_dir_rows_dropped": [1001, 1015, 1016, 13122],
+    "note": "The feature commit was assembled in a core.autocrlf=false isolated checkout from clean HEAD plus only EA 13203. The embedded resolver digest matches the committed LF magic registry. Unrelated dirty fleet allocations in the canonical worktree were not staged."
+  },
+  "build_commit": "84a39712c2f9c8146371743e14643ecd0737ff85",
+  "mq5_sha256": "E3F62318710DC0A821FC50BAA75C31DB7F55CA4C3508385CF91F148BA059D7BC",
+  "ex5_sha256": "AE4C28D49BAB75FD83E63351745FC6E19EB461B738E127A54329D74328EA0C78",
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log": "D:/QM/reports/compile/20260712_073757/QM5_13203_energy-downbeta.compile.log",
+  "compile_log_sha256": "1154907D0C5D9B4F5A62E4834B8B1FDE754BDE91C41F441476115F618896E15D",
+  "compile_summary": "D:/QM/reports/compile/20260712_073757/summary.csv",
+  "compile_reproducibility": "PASS_SOURCE_RECOMPILE_FROM_LF_SAFE_CLEAN_COMMITTED_TREE",
+  "build_check_passed": true,
+  "build_check_failures": 0,
+  "build_check_warnings": 0,
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260712_073757.json",
+  "build_check_report_sha256": "AC0CC354E15E9450B85B18F4007D4F1DA57728251F8BBAC3B912ABECAC59A264",
+  "spec_validation": "PASS",
+  "guardrail_validation": "PASS",
+  "symbol_scope_validation": "BASKET_MANIFEST_OK",
+  "card_schema_validation": "PASS",
+  "g0_card_validation": "PASS_APPROVED_FRONTMATTER",
+  "setfile_build_hash": "d64705baf78b793ea7c91cedea69cfdaafc8e148a1a460a1cafa20fa515a98ec",
+  "setfile_sha256": "13F746837B07B7EFC1FB057A41965DD34BBF50F9FE2CBFD9DADC036C536B4D9F",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Build-only paced Q02 enqueue requested; no manual MT5 tester, dispatch tick, worker tick, terminal launch, smoke test, or backtest was started.",
+  "blocked_reason": null,
+  "open_questions": [
+    "The paper concludes downside beta is unpriced and its high-minus-low spread is statistically insignificant; this is a deliberately near-null prior.",
+    "The source uses commodity and CRSP excess returns while this executable uses raw continuous energy-CFD returns and read-only SP500.DWX with an implicit zero risk-free return.",
+    "Opposite-side energy exposure and distinct conditional-beta logic do not establish low realized correlation to the certified book; later portfolio gates alone can measure it."
+  ],
+  "validations": {
+    "dedup": "CLEAN_PRE_ALLOCATION",
+    "card_schema": "PASS",
+    "g0_card": "PASS_APPROVED_FRONTMATTER",
+    "spec_doc": "PASS",
+    "build_guardrails": "PASS",
+    "symbol_scope": "BASKET_MANIFEST_OK",
+    "strict_compile": "PASS_0_ERRORS_0_WARNINGS",
+    "build_check": "PASS_0_FAILURES_0_WARNINGS",
+    "risk_mode": "PASS",
+    "setfile_build_hash": "PASS",
+    "resolver_registry_sha_match": "PASS"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "reputable_primary_source": true,
+    "conditional_downside_beta_not_total_jump_or_volatility_beta": true,
+    "sp500_factor_read_only": true,
+    "manual_backtest_cpu_used": false
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false
+  },
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_13203",
+    "enqueued": [
+      {
+        "work_item_id": "503e2088-87a8-4663-8cec-a105bae90bfb",
+        "symbol": "QM5_13203_XTI_XNG_DOWNBETA_D1",
+        "timeframe": "D1",
+        "status": "pending",
+        "attempt_count": 0,
+        "claimed_by": null,
+        "setfile": "QM5_13203_energy-downbeta_QM5_13203_XTI_XNG_DOWNBETA_D1_D1_backtest.set",
+        "enqueued_at": "2026-07-12T07:47:08+00:00"
+      }
+    ],
+    "skipped": []
+  },
+  "q02": {
+    "phase": "Q02",
+    "work_item_id": "503e2088-87a8-4663-8cec-a105bae90bfb",
+    "status_at_handoff": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "symbol": "QM5_13203_XTI_XNG_DOWNBETA_D1",
+    "host_symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_13203_energy-downbeta/sets/QM5_13203_energy-downbeta_QM5_13203_XTI_XNG_DOWNBETA_D1_D1_backtest.set",
+    "basket_symbols": [
+      "XTIUSD.DWX",
+      "XNGUSD.DWX",
+      "SP500.DWX"
+    ],
+    "traded_symbols": [
+      "XTIUSD.DWX",
+      "XNGUSD.DWX"
+    ],
+    "risk_payload": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "enqueued_at_utc": "2026-07-12T07:47:08+00:00",
+    "note": "Auto-enqueued by farmctl record-build. No dispatch, tester, worker tick, terminal launch, or backtest was started."
+  },
+  "file_hashes_sha256": {
+    "mq5": "E3F62318710DC0A821FC50BAA75C31DB7F55CA4C3508385CF91F148BA059D7BC",
+    "ex5": "AE4C28D49BAB75FD83E63351745FC6E19EB461B738E127A54329D74328EA0C78",
+    "spec": "E0802DA795EBF7AE61F84E39DE94BF7264061A905A909A5E4EBF7F639F5DC326",
+    "embedded_card": "EF690435D30D113D7C68FEF57E778884BE9AC3E3834BBBD1AF00EA54158B8F60",
+    "basket_manifest": "5305FC6D06E59CECEC5294B6DFC7ABD3A092A5F1E8B51283E2D701F0DBFCA528",
+    "setfile": "13F746837B07B7EFC1FB057A41965DD34BBF50F9FE2CBFD9DADC036C536B4D9F",
+    "canonical_card_pre_enqueue": "4F4FFD2FA3639A0360F5BE10053DED1434EB9801ABFCD129D381486D6AFDAE58",
+    "approved_card_pre_enqueue": "939548844F486B2BD2E001B7AD34F6B7556D8DB00F47AF726200DC33072016FA",
+    "canonical_card_post_enqueue": "292C755FDDE10F388B187788B7F1363875F12E032EC82102F0AEE22D2372B3F3",
+    "approved_card_post_enqueue": "EE156F27D71E5D5D1E95B1D3345F341CE826C6F9D3770289FDECAB6CA4F101D8",
+    "runtime_card": "4F4FFD2FA3639A0360F5BE10053DED1434EB9801ABFCD129D381486D6AFDAE58",
+    "source_packet": "288E6EBC16C515E37B604BE047946F3091975A3CB4F988BBCDA87632CD81FC9D",
+    "enqueue_evidence": "97151EF28CBC081C4BF3B04EE4C43407FA47F5F9F0FA247D958933765B73E033",
+    "ea_registry": "41B29E9FC2E4E8F3F973B4A8B0B7EA68195812BE35AE7ECCDF676446D46F0A0B",
+    "magic_registry": "D084F7421F6CB0AC7BED49CFA377CE0C495FBF5CBAA0B11E1A6B252C525A96FF",
+    "resolver": "5140622CB30A8844CE0E1285463A8FBD8A3753133949163C44AFAB2B7DE58F9A"
+  }
+}

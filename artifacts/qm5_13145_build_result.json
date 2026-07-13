@@ -1,0 +1,187 @@
+{
+  "task_id": "4bc3ccc2-8021-46e1-8130-8c3b3e96dc92",
+  "ea_id": "QM5_13145",
+  "ea_label": "QM5_13145_energy-idmom",
+  "slug": "energy-idmom",
+  "strategy": "Monthly XTI/XNG 11-month idiosyncratic-momentum rank basket",
+  "strategy_id": "SHPAK-IDMOM-2017_XTI_XNG_S01",
+  "source_id": "SHPAK-IDMOM-2017",
+  "source_links": [
+    "https://www.cbba-europe.eu/wp-content/uploads/2018/07/CBBA-Europe-review_July-2018.pdf",
+    "https://ssrn.com/abstract=3035397",
+    "https://doi.org/10.2139/ssrn.3035397"
+  ],
+  "symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX",
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "read_only_factor_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "symbols_registered": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "logical_symbol": "QM5_13145_ENERGY_IDMOM_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13145_energy-idmom",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13145_energy-idmom\\QM5_13145_energy-idmom.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13145_energy-idmom\\QM5_13145_energy-idmom.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13145_energy-idmom\\SPEC.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13145_energy-idmom\\basket_manifest.json",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13145_energy-idmom_card.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_13145_energy-idmom_card.md",
+  "canonical_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\energy-idmom_card.md",
+  "source_packet_path": "C:\\QM\\repo\\strategy-seeds\\sources\\SHPAK-IDMOM-2017\\source.md",
+  "repo_artifact_path": "C:\\QM\\repo\\artifacts\\qm5_13145_build_result.json",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13145_energy-idmom\\sets\\QM5_13145_energy-idmom_QM5_13145_ENERGY_IDMOM_D1_D1_backtest.set"
+  ],
+  "magic_base": 131450000,
+  "magic": [
+    {
+      "slot": 0,
+      "symbol": "XTIUSD.DWX",
+      "magic": 131450000,
+      "registry_status": "active"
+    },
+    {
+      "slot": 1,
+      "symbol": "XNGUSD.DWX",
+      "magic": 131450001,
+      "registry_status": "active"
+    }
+  ],
+  "registry_validation": {
+    "ea_id_row": "13145,energy-idmom,SHPAK-IDMOM-2017_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-11",
+    "magic_rows": [
+      "13145,energy-idmom,0,XTIUSD.DWX,131450000,2026-07-11,Development,active",
+      "13145,energy-idmom,1,XNGUSD.DWX,131450001,2026-07-11,Development,active"
+    ],
+    "resolver_contains_ea": true,
+    "resolver_rows_kept": 14883,
+    "magic_registry_sha256": "2697207EEBA0694894F7A04462D696CED8AD265497B490B18F5B95649059BD8F",
+    "resolver_file_sha256": "8DA381CAD906D2078F808D83C780F55435921384B71762F7B55770A17CA3C12F",
+    "note": "Resolver was generated from the clean staged build, preserving the pre-existing QM5_13122 binding and dropping only historical missing-directory IDs 1001, 1015, and 1016. Unrelated dirty fleet allocations were excluded."
+  },
+  "build_commit": "051319ac337d02cf253375d5a07fc81b02f4f875",
+  "mq5_sha256": "431A7C33BBF05A32F8A3D2DE9B0EB87E958F4A54841FE5242A900980405DF5DF",
+  "ex5_sha256": "450B1C1CE5CAD5CF37599E0F2FEEBD4F29A5B2B8ABEFE96DB8FE9D097C803164",
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log": "D:\\QM\\reports\\compile\\20260711_170610\\QM5_13145_energy-idmom.compile.log",
+  "compile_summary": "D:\\QM\\reports\\compile\\20260711_170610\\summary.csv",
+  "compile_reproducibility": "PASS_CLEAN_STAGED_RESOLVER",
+  "build_check_passed": true,
+  "build_check_failures": 0,
+  "build_check_warnings": 0,
+  "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260711_170610.json",
+  "spec_validation": "PASS",
+  "guardrail_validation": "PASS",
+  "symbol_scope_validation": "BASKET_OK",
+  "card_schema_validation": "PASS",
+  "g0_card_validation": "PASS",
+  "setfile_build_hash": "0fc196fdfd555073ec890b3dfc2f93e4eee0814523f1e0aa49f960243b48c4b1",
+  "setfile_sha256": "CC017DD6E948AB5574C13EC20D31C6C76F582CFEB0FAF521412D13FEA5FE4AB1",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Build-only paced Q02 enqueue requested; no manual MT5 tester, dispatch tick, worker tick, terminal launch, or backtest was started.",
+  "blocked_reason": null,
+  "open_questions": [
+    "The source is a complete academic working paper and professional research publication rather than a peer-reviewed finance-journal article; source quality remains a Q02 kill risk.",
+    "The source residualizes against market, term-structure, and size factors; the fixed four-CFD proxy implements only the price-native market component and must be retired if that narrowing does not survive.",
+    "The source notes weak standalone short-leg evidence; this two-name winner-minus-loser carrier must clear the full paired-package gates without changing direction or adding a rescue filter.",
+    "Opposite directions and equal fixed-risk halves do not establish dollar, beta, volatility, factor, or realized market neutrality; later portfolio testing alone may establish orthogonality."
+  ],
+  "validations": {
+    "dedup": "CLEAN_PRE_ALLOCATION; POST_ALLOCATION_EXACT_MATCH_IS_SELF",
+    "card_schema": "PASS",
+    "g0_card": "PASS",
+    "spec_doc": "PASS",
+    "build_guardrails": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "strict_compile": "PASS_0_ERRORS_0_WARNINGS",
+    "build_check": "PASS_0_FAILURES_0_WARNINGS",
+    "risk_mode": "PASS",
+    "setfile_build_hash": "PASS"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1,
+    "package_allocation": "equal fixed-risk halves with independent frozen ATR(20) x 3.5 hard stops"
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "reputable_primary_source": true,
+    "opposite_side_energy_basket": true,
+    "market_neutral_claimed": false,
+    "manual_backtest_cpu_used": false
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false
+  },
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_13145",
+    "enqueued": [
+      {
+        "work_item_id": "613e2613-e9b1-4a30-befe-79ac8bc0e2d1",
+        "symbol": "QM5_13145_ENERGY_IDMOM_D1",
+        "host_symbol": "XTIUSD.DWX",
+        "timeframe": "D1",
+        "status": "pending",
+        "setfile": "QM5_13145_energy-idmom_QM5_13145_ENERGY_IDMOM_D1_D1_backtest.set",
+        "enqueued_at": "2026-07-11T17:14:40+00:00"
+      }
+    ],
+    "skipped": []
+  },
+  "q02": {
+    "phase": "Q02",
+    "work_item_id": "613e2613-e9b1-4a30-befe-79ac8bc0e2d1",
+    "status_at_handoff": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "symbol": "QM5_13145_ENERGY_IDMOM_D1",
+    "host_symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13145_energy-idmom\\sets\\QM5_13145_energy-idmom_QM5_13145_ENERGY_IDMOM_D1_D1_backtest.set",
+    "risk_payload": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "enqueued_at_utc": "2026-07-11T17:14:40+00:00",
+    "note": "Auto-enqueued by farmctl record-build as one logical basket. No manual dispatch, tester, worker tick, terminal launch, or backtest was started."
+  },
+  "file_hashes_sha256": {
+    "mq5": "431A7C33BBF05A32F8A3D2DE9B0EB87E958F4A54841FE5242A900980405DF5DF",
+    "ex5": "450B1C1CE5CAD5CF37599E0F2FEEBD4F29A5B2B8ABEFE96DB8FE9D097C803164",
+    "spec": "2E4DD8844192CCC768DD4CFFD68ABBD45887BC7B28A491327E404AEE68C2E779",
+    "basket_manifest": "4BA4400058277855C784DD68B13DC04CF14E2055BB6763608002B95BB9551D8B",
+    "setfile": "CC017DD6E948AB5574C13EC20D31C6C76F582CFEB0FAF521412D13FEA5FE4AB1",
+    "canonical_card_pre_enqueue": "F925DD9ADBC8FF8005BE7213800EB0A0B2BBC139140E3D8D0014D52BFAA8DB0C",
+    "canonical_card_post_enqueue": "FF47CE74ABAFF6986DB944FF4B0455357B1FBB5C418478EB84ABBC45101E7C33",
+    "approved_card": "5B9636D622A67F3A213E8138285694CDA4040E7D88B09EBF1970F31500E4518B",
+    "source_packet": "AE7EC08874FE771A4AD236A0CD6D60EB135318A292417FB2855EC626A65DA34F",
+    "magic_registry": "2697207EEBA0694894F7A04462D696CED8AD265497B490B18F5B95649059BD8F",
+    "resolver": "8DA381CAD906D2078F808D83C780F55435921384B71762F7B55770A17CA3C12F"
+  }
+}

@@ -25,8 +25,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: BUILD
-last_updated: 2026-07-03
+pipeline_phase: Q02_REQUEUED
+last_updated: 2026-07-12
 g0_approval_reasoning: "R1 PASS Chan cointegration method plus OWNER-requested in-house 66-pair FX scan; R2 PASS deterministic fixed-pair z-score basket; R3 PASS GBPUSD.DWX and USDCAD.DWX data exist in scan universe; R4 PASS no ML/grid/martingale."
 expected_pf: 1.10
 expected_dd_pct: 25.0
@@ -87,7 +87,7 @@ the pipeline is the judge.
 
 - Evaluate only after a new closed D1 bar.
 - Compute `spread = ln(GBPUSD) - (-1.140460285727) * ln(USDCAD)`.
-- Compute a 60-bar rolling z-score of the spread.
+- Score the newest closed spread against the preceding 60 closed spread observations; do not include the scored observation in its own mean or sample standard deviation.
 - If no pair package is open and z > +2.0, open a short-spread package: short GBPUSD and short USDCAD.
 - If no pair package is open and z < -2.0, open a long-spread package: long GBPUSD and long USDCAD.
 - Size each leg from V5 fixed risk, split by absolute hedge weights.
@@ -168,3 +168,7 @@ gates.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-07-03 | initial full-scan top-unbuilt FX cointegration basket card | G0 | APPROVED |
+| v2 | 2026-07-03 | compiled basket EA and logical basket Q02 enqueued as work item b1656e8e-d9dc-4a7b-b5a2-ba8e3ff0150b | Q02 | PASS |
+| v3 | 2026-07-03 | automatic Q03 completed on the same logical basket as work item 30907ff5-af52-448b-81b4-1e008539602f | Q03 | PASS |
+| v4 | 2026-07-03 | Q04 completed on logical basket work item bf98a2c5-0ed2-4410-abbe-7e66fe97e843; strategy failed before portfolio consideration | Q04 | FAIL |
+| v5 | 2026-07-12 | align EA with the scan's strictly prior 60-bar z-score calibration window; strict rebuild and one repaired logical-basket requeue as work item 06539d34-2fef-4ac0-b11c-779de3d87a83 | Q02 | PENDING_FACTORY_OFF |

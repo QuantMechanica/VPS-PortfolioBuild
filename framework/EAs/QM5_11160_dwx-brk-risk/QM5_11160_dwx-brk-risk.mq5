@@ -71,79 +71,87 @@ input double strategy_spread_pct_of_stop = 10.0;  // skip if spread > this % of 
 input int    strategy_skip_minutes_after_open = 15; // skip first N min of the trading week
 
 // -----------------------------------------------------------------------------
-// Helpers (closed-bar reads only; perf-allowed single-shift bar accessors)
+// Helpers (closed-bar state is refreshed exactly once per chart bar)
 // -----------------------------------------------------------------------------
 
-// Rolling channel high over bars [2 .. lookback+1] (excludes the breakout bar
-// at shift 1). perf-allowed: bounded single pass per closed-bar entry gate.
-double ChannelHigh()
+int    g_breakout_signal    = 0;
+double g_breakout_atr       = 0.0;
+double g_breakout_bar_high  = 0.0;
+double g_breakout_bar_low   = 0.0;
+bool   g_breakout_state_ready = false;
+
+// Cache the just-closed breakout bar and its prior channel in one bounded
+// history read. The previous implementation called iHigh/iLow across all 48
+// channel bars from both entry and the per-tick exit path, which made long Q02
+// tests report-missing before the worker deadline.
+bool RefreshBreakoutState()
   {
-   double hi = 0.0;
-   const int first = 2;
-   const int last  = strategy_breakout_lookback + 1;
-   for(int s = first; s <= last; ++s)
+   g_breakout_signal      = 0;
+   g_breakout_atr         = 0.0;
+   g_breakout_bar_high    = 0.0;
+   g_breakout_bar_low     = 0.0;
+   g_breakout_state_ready = false;
+
+   if(strategy_breakout_lookback < 1 || strategy_atr_period < 1)
+      return false;
+
+   const int bars_needed = strategy_breakout_lookback + 1;
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, _Period, 1, bars_needed, rates); // perf-allowed: bounded closed-bar channel, called only after QM_IsNewBar().
+   if(copied != bars_needed)
+      return false;
+
+   const double atr = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
+   const double close1 = rates[0].close;
+   const double high1  = rates[0].high;
+   const double low1   = rates[0].low;
+   if(atr <= 0.0 || close1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0 || high1 <= low1)
+      return false;
+
+   double channel_high = 0.0;
+   double channel_low  = 0.0;
+   for(int i = 1; i <= strategy_breakout_lookback; ++i)
      {
-      const double h = iHigh(_Symbol, _Period, s); // perf-allowed: closed-bar read
-      if(h <= 0.0)
-         continue;
-      if(hi == 0.0 || h > hi)
-         hi = h;
+      const double high = rates[i].high;
+      const double low  = rates[i].low;
+      if(high <= 0.0 || low <= 0.0 || high < low)
+         return false;
+      if(channel_high == 0.0 || high > channel_high)
+         channel_high = high;
+      if(channel_low == 0.0 || low < channel_low)
+         channel_low = low;
      }
-   return hi;
+   if(channel_high <= 0.0 || channel_low <= 0.0 || channel_high <= channel_low)
+      return false;
+
+   g_breakout_atr         = atr;
+   g_breakout_bar_high    = high1;
+   g_breakout_bar_low     = low1;
+   g_breakout_state_ready = true;
+
+   if((high1 - low1) < strategy_brk_range_atr_mult * atr)
+      return true;
+   if(close1 > channel_high)
+      g_breakout_signal = +1;
+   else if(close1 < channel_low)
+      g_breakout_signal = -1;
+
+   return true;
   }
 
-double ChannelLow()
-  {
-   double lo = 0.0;
-   const int first = 2;
-   const int last  = strategy_breakout_lookback + 1;
-   for(int s = first; s <= last; ++s)
-     {
-      const double l = iLow(_Symbol, _Period, s); // perf-allowed: closed-bar read
-      if(l <= 0.0)
-         continue;
-      if(lo == 0.0 || l < lo)
-         lo = l;
-     }
-   return lo;
-  }
-
-// +1 fresh long breakout / -1 fresh short breakout / 0 none, evaluated on the
-// last closed bar (shift 1) against the prior channel. Range filter applied.
 int BreakoutSignal()
   {
-   const double atr = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr <= 0.0)
-      return 0;
-
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: closed-bar read
-   const double high1  = iHigh(_Symbol, _Period, 1);
-   const double low1   = iLow(_Symbol, _Period, 1);
-   if(close1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0)
-      return 0;
-
-   const double bar_range = high1 - low1;
-   if(bar_range < strategy_brk_range_atr_mult * atr)
-      return 0;
-
-   const double ch_hi = ChannelHigh();
-   const double ch_lo = ChannelLow();
-   if(ch_hi <= 0.0 || ch_lo <= 0.0)
-      return 0;
-
-   if(close1 > ch_hi)
-      return +1;
-   if(close1 < ch_lo)
-      return -1;
-   return 0;
+   return g_breakout_state_ready ? g_breakout_signal : 0;
   }
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-// Cheap O(1) per-tick gate: weekly-open skip + spread guard. Fail-open on the
-// .DWX zero modeled spread.
+// Entry-only weekly-open skip + spread guard. OnTick invokes this once per
+// closed bar after management and exits, so it cannot suppress open-position
+// safety paths. Fail-open on the .DWX zero modeled spread.
 bool Strategy_NoTradeFilter()
   {
    // --- Skip the first N minutes of the trading week (broker time) ---
@@ -160,7 +168,7 @@ bool Strategy_NoTradeFilter()
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block on it
 
-   const double atr = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
+   const double atr = g_breakout_state_ready ? g_breakout_atr : 0.0;
    if(atr <= 0.0)
       return false; // no ATR yet — defer, do not block
 
@@ -179,6 +187,13 @@ bool Strategy_NoTradeFilter()
 // Long/short breakout entry. Caller guarantees QM_IsNewBar() == true.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.price              = 0.0;
+   req.sl                 = 0.0;
+   req.tp                 = 0.0;
+   req.reason             = "";
+   req.symbol_slot        = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -187,12 +202,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(sig == 0)
       return false;
 
-   const double atr = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
+   const double atr = g_breakout_state_ready ? g_breakout_atr : 0.0;
    if(atr <= 0.0)
       return false;
 
-   const double high1 = iHigh(_Symbol, _Period, 1); // perf-allowed: closed-bar read
-   const double low1  = iLow(_Symbol, _Period, 1);
+   const double high1 = g_breakout_bar_high;
+   const double low1  = g_breakout_bar_low;
    if(high1 <= 0.0 || low1 <= 0.0)
       return false;
 
@@ -352,6 +367,21 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
   {
+   if(strategy_breakout_lookback < 1 ||
+      strategy_atr_period < 1 ||
+      strategy_brk_range_atr_mult <= 0.0 ||
+      strategy_atr_stop_mult <= 0.0 ||
+      strategy_tp_rr <= 0.0 ||
+      strategy_max_holding_bars < 1 ||
+      strategy_be_trigger_rr < 0.0 ||
+      strategy_spread_pct_of_stop < 0.0 ||
+      strategy_skip_minutes_after_open < 0 ||
+      strategy_skip_minutes_after_open > 1440)
+     {
+      Print("INIT_PARAMETERS_INCORRECT: invalid dwx-brk-risk strategy inputs");
+      return INIT_PARAMETERS_INCORRECT;
+     }
+
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
                         RISK_PERCENT,
@@ -386,24 +416,21 @@ void OnTick()
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
-   if(Strategy_NoTradeFilter())
-      return;
+   const bool new_bar = QM_IsNewBar();
+   if(new_bar)
+     {
+      QM_EquityStreamOnNewBar();
+      RefreshBreakoutState();
+     }
 
+   // Per-tick break-even management remains active through all entry filters.
    Strategy_ManageOpenPosition();
 
-   if(Strategy_ExitSignal())
+   // Both card exits are closed-bar rules; consume the cached signal once.
+   if(new_bar && Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
       for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -413,16 +440,32 @@ void OnTick()
             continue;
          if(PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
+         if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+            continue;
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
 
-   if(!QM_IsNewBar())
+   if(!new_bar)
       return;
 
-   QM_EquityStreamOnNewBar();
+   if(Strategy_NoTradeFilter())
+      return;
+
+   // News gates apply to NEW entries only; risk management and exits above
+   // must keep running during blocked windows.
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
