@@ -15038,3 +15038,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13205,xau-xag-qc,1,XAGUSD.DWX,132050001,2026-07-12,Development,active
 13031,wayward-bbrsi-stopmr,0,XAUUSD.DWX,130310000,2026-07-13,Claude,active
 13031,wayward-bbrsi-stopmr,1,NDX.DWX,130310001,2026-07-13,Claude,active
+13207,ws30-fri-t20a,0,WS30.DWX,132070000,2026-07-13,Codex,active
