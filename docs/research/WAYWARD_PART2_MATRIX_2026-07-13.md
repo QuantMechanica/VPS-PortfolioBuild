@@ -57,3 +57,31 @@ auf einem edgelosen Kern — auf einem Kern MIT Edge könnte es Q02/Q08-Metriken
 Kandidaten im Bestand mit MR-Charakter: 12567 (cum-RSI2), 10018 (BB-shadow-reversal),
 12989 (nested-pb). Vorschlag: kleines Experiment „HTF-Confluence-Gate" als v2-Variante
 auf 1–2 Bestands-MR-EAs — nur mit OWNER-Go (Challenger-Regeln, kein Auto-Swap).
+
+---
+
+## Anhang: HTF-Confluence-Transfer-Experiment (OWNER „los gehts", 2026-07-13)
+
+Frage: Hebt das HTF-BB-Confluence-Primitiv (Wayward Part 2, +0.20 PF auf edgelosem Kern)
+auch Bestands-MR-EAs MIT Edge? Getestet als Toggle (default OFF, live-neutral), HTF=D1
+a priori fixiert (kein Fishing). D1-EAs (12567/11132) ausgeschlossen: W1=0 Bars auf .DWX.
+Valider Vergleich = hOFF↔hON in DERSELBEN Raw-Umgebung (news-Harness fehlt bei beiden;
+11165 ist news-sensitiv → Absolutwerte ≠ kanonische Referenz, aber Delta sauber).
+
+| EA (Typ) | Symbol | hOFF | hON | Effekt |
+|---|---|---|---|---|
+| **10018** (pure BB-Fade) | EURUSD H1 | 1215tr / PF 0.88 / DD **80.6%** | 317tr / PF 0.83 / DD **37.7%** | −74% Trades, **DD halbiert**, PF −0.05 |
+| **11165** (Trend-Pullback, LIVE) | EURUSD H1 | 224tr / PF 1.07 | **0 Trades** (Voll-Lauf, 50.681 Bars) | Gate **inkompatibel** |
+| **11165** | AUDCAD H1 | 183tr / PF 1.07 | ~0 (gleiche Struktur) | Gate inkompatibel |
+
+**Verdikt: das Primitiv transferiert NICHT nützlich.**
+1. Auf **pure-Fade**-EAs (10018): zähmt den Drawdown drastisch, erzeugt aber KEINEN
+   PF-Edge (0.88→0.83) — exakt wie am Wayward-Ursprung. Reiner DD-Reduzierer.
+2. Auf **Trend-Pullback**-EAs (11165, der Live-Gewinner): **logisch inkompatibel** —
+   „kaufe Dip im Aufwärtstrend" (Preis > SMA200) widerspricht „Preis jenseits des
+   HTF-Bands"; die Confluence killt praktisch alle Trades (0 über 9 Jahre).
+
+**Konsequenz:** kein Challenger-Kandidat. Experiment-Edits zurückgenommen (11165+10018
+= HEAD, live-neutral), Karte 13031 bleibt dokumentiertes Negativ. Die HTF-Confluence ist
+ein fade-spezifischer DD-Dämpfer, kein Edge-Generator — für unsere Survivor-Ökonomie
+(COST-Gates selektieren, PF-Edge zählt) uninteressant.
