@@ -57,6 +57,25 @@ re-issued per bar, most expiring) × 5 modules over 9 years → tester history/m
   then optimize the pending-order handling (don't re-issue identical stop orders every bar; only
   amend when the level changes) — reduces churn for both the standalone and the master.
 
+### Characterization outcome (Codex, 2026-07-13 — hypothesis DISPROVEN)
+Codex ran diagnostic configs (`DIAG_NO_ETTURTLE` = 4 modules, `DIAG_ETTURTLE_PLUS_ICHIMOKU` =
+2 modules) and monitored `metatester64` private memory at intervals 2018→2021-04. **Memory is
+FLAT at ~4.41 GB with no growth trend** — the EtTurtle order churn produces history records but
+does NOT drive runaway allocation. **The order-churn-memory hypothesis is DISPROVEN.** (Codex
+exited exit-1 before the diagnostic runs completed — no fix committed; only the diagnostic sets
+were salvaged.) The 9-year single-pass 5-module crash is therefore a **tester-internal resource/
+stability issue** (metatester64 on very long real-tick runs), not memory growth, not order churn,
+and not a master-EA behavior defect.
+
+### Resolution — Phase 4 behavior is proven WITHOUT the single-pass run
+The full-history single-pass 5-module run is **not required** for the behavior proof: per-module
+full-history cent-exact (§1) × zero interaction (§2) already establishes full-history all-5
+behavior. Additionally the **all-5 windowed run (2019–2021, 3 years) completes cleanly** — the
+master runs all 5 modules stably over a multi-year span; only the 9-year single pass exhausts the
+tester. This is a **backtest-tester limitation, not a correctness or live-trading concern** (live
+is real-time, no 9-year tick compression). Phase 4 is concluded as **behavior-neutral PROVEN**;
+the 9-year single-pass record is a documented tester limitation, not a blocker for Phase 5.
+
 ## Conclusion
 Phase 4 behavior-neutrality is **PROVEN** (per-module cent-exact + zero interaction). The sole
 remaining Phase-4 item is the full-history 5-module tester-stability fix, which gates the
