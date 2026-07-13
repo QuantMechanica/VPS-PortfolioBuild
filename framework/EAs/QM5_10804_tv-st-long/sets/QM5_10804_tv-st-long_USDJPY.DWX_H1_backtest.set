@@ -31,4 +31,12 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=framework/EAs/QM5_10804_tv-st-long/SPEC.md
+strategy_st_atr_period=10
+strategy_st_multiplier=3.0
+strategy_safety_atr_period=14
+strategy_safety_atr_mult=2.0
+strategy_st_warmup_bars=200
+strategy_enable_max_bars_exit=true
+strategy_max_bars_h4=120
+strategy_max_bars_d1=60

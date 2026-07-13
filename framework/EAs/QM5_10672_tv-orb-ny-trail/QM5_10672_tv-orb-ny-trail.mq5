@@ -161,7 +161,7 @@ bool Strategy_InEntryWindow(const int minute_of_day)
 
 void Strategy_UpdateOpeningRange()
   {
-   const datetime bar_time = iTime(_Symbol, _Period, 1);
+   const datetime bar_time = iTime(_Symbol, _Period, 1); // perf-allowed: one closed opening-range timestamp read behind the framework new-bar gate.
    if(bar_time <= 0)
       return;
 
@@ -177,8 +177,8 @@ void Strategy_UpdateOpeningRange()
 
    if(since_open < MathMax(1, strategy_opening_range_minutes))
      {
-      const double high1 = iHigh(_Symbol, _Period, 1);
-      const double low1 = iLow(_Symbol, _Period, 1);
+      const double high1 = iHigh(_Symbol, _Period, 1); // perf-allowed: one closed opening-range high read behind the framework new-bar gate.
+      const double low1 = iLow(_Symbol, _Period, 1); // perf-allowed: one closed opening-range low read behind the framework new-bar gate.
       if(high1 <= 0.0 || low1 <= 0.0)
          return;
       if(g_or_high <= 0.0 || high1 > g_or_high)
@@ -291,13 +291,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       Strategy_ConsecutiveLossesToday() >= strategy_max_consec_losses_day)
       return false;
 
-   const datetime bar_time = iTime(_Symbol, _Period, 1);
+   const datetime bar_time = iTime(_Symbol, _Period, 1); // perf-allowed: one closed signal-bar timestamp read behind the framework new-bar gate.
    if(bar_time <= 0 || !Strategy_InEntryWindow(Strategy_MinutesOfDay(TimeCurrent())))
       return false;
    if(!g_or_defined || g_or_high <= g_or_low || g_or_low <= 0.0)
       return false;
 
-   const double close1 = iClose(_Symbol, _Period, 1);
+   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: one closed breakout close read behind the framework new-bar gate.
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(close1 <= 0.0 || ask <= 0.0 || bid <= 0.0)

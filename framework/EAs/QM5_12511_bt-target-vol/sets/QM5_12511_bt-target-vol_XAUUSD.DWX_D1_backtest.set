@@ -32,3 +32,14 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
+strategy_target_annual_vol=0.10
+strategy_vol_lookback_d1=252
+strategy_short_vol_lookback_d1=20
+strategy_spread_median_days=60
+strategy_spread_median_mult=2.0
+strategy_single_symbol_cap=0.40
+strategy_entry_weight_threshold=0.05
+strategy_exit_weight_threshold=0.02
+strategy_rebalance_tolerance=0.0
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=4.0

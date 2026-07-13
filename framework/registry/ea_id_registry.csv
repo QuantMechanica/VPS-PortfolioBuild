@@ -4020,6 +4020,10 @@ QM5_1491,ehlers-sinewave-leadsine-cross-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,
 13132,energy-bab,FRAZZINI-BAB-2014_XTI_XNG_S01,active,CEO+CTO mission allocation,2026-07-11
 13133,energy-ivol,FUERTES-MOMIVOL-2015_XTI_XNG_S02,active,CEO+CTO mission allocation,2026-07-11
 13134,energy-vr-mom,MEHLITZ-AUER-MEM-2024_XTI_S01,active,CEO+CTO mission allocation,2026-07-11
+13135,xau-sma50-hold,OWNER-FTMO-SURVIVORS-20260711_S02,retired,OWNER-delegated CEO+CTO FTMO allocation,2026-07-11
+13136,jpy-sma20-riskon,OWNER-FTMO-SURVIVORS-20260711_S03,retired,OWNER-delegated CEO+CTO FTMO allocation,2026-07-11
+13137,breadth-tue,OWNER-FTMO-SURVIVORS-20260711_S04,active,OWNER-delegated CEO+CTO FTMO allocation,2026-07-11
+13138,xau-m5-ema20,OWNER-FTMO-SURVIVORS-20260711_S05,active,OWNER-delegated CEO+CTO FTMO allocation,2026-07-11
 13139,energy-cv-rank,SZYMANOWSKA-CV-2014_XTI_XNG_S01,active,OWNER-delegated CEO+CTO mission allocation,2026-07-11
 13140,energy-aliq-rank,YIYI-ALIQ-2025_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-11
 13141,energy-ie-rank,HAN-IE-2023_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-11
@@ -4033,5 +4037,8 @@ QM5_1491,ehlers-sinewave-leadsine-cross-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,
 13149,energy-trend36,HOLLSTEIN-3YR-2021_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-12
 13150,wti-signmom,PAPAILIAS-RSM-2021_XTI_S02,active,Research+Development (OWNER commodity-sleeve mission),2026-07-12
 13151,energy-volbeta,HOLLSTEIN-AGGVOL-2021_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-12
+13200,ndx-convex-orb,CODEX-FTMO-CONVEX-ORB-20260711_S01,retired,OWNER-delegated CEO+CTO FTMO allocation,2026-07-11
+13201,dax-convex-orb,CODEX-FTMO-DAX-CONVEX-ORB-20260711_S01,retired,OWNER-delegated CEO+CTO FTMO allocation,2026-07-11
+13202,ws30-fri-pm-long,CODEX-FTMO-WS30-FRI-PM-20260711_S01,active,OWNER-delegated CEO+CTO FTMO allocation,2026-07-11
 13203,energy-downbeta,HOLLSTEIN-DOWNBETA-2021_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-12
 13205,xau-xag-qc,SCHWEIKERT-QC-2018_XAU_XAG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-12

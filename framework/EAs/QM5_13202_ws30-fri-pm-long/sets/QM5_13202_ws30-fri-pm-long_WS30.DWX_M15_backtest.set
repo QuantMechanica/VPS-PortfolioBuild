@@ -1,0 +1,26 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        13202
+; ea_slug:      ws30-fri-pm-long
+; ea_version:   v5.0
+; set_version:  s20260711-001
+; symbol:       WS30.DWX
+; timeframe:    M15
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   PENDING
+; author:       Codex
+; date:         2026-07-11
+;==========================================================
+qm_ea_id=13202
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+strategy_atr_bars=56
+strategy_stop_atr=1.0
+strategy_entry_hhmm_ny=1330
+strategy_exit_hhmm_ny=1600
+strategy_weekday_ny=5

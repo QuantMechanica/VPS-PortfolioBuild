@@ -129,8 +129,11 @@ bool Strategy_LongRoleReversal(const double level, double &rr_low)
    const int bars = MathMax(1, strategy_role_reversal_bars);
    for(int shift = 1; shift <= bars; ++shift)
      {
-      const double low = iLow(_Symbol, PERIOD_H1, shift);
-      const double close = iClose(_Symbol, PERIOD_H1, shift);
+      MqlRates bar;
+      if(!QM_ReadBar(_Symbol, PERIOD_H1, shift, bar))
+         return false;
+      const double low = bar.low;
+      const double close = bar.close;
       if(low <= 0.0 || close <= 0.0)
          return false;
       if(low <= level && close > level)
@@ -145,8 +148,11 @@ bool Strategy_ShortRoleReversal(const double level, double &rr_high)
    const int bars = MathMax(1, strategy_role_reversal_bars);
    for(int shift = 1; shift <= bars; ++shift)
      {
-      const double high = iHigh(_Symbol, PERIOD_H1, shift);
-      const double close = iClose(_Symbol, PERIOD_H1, shift);
+      MqlRates bar;
+      if(!QM_ReadBar(_Symbol, PERIOD_H1, shift, bar))
+         return false;
+      const double high = bar.high;
+      const double close = bar.close;
       if(high <= 0.0 || close <= 0.0)
          return false;
       if(high >= level && close < level)
@@ -171,12 +177,21 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(Strategy_HasOurOpenPosition())
       return false;
 
-   const double h1_high = iHigh(_Symbol, PERIOD_H1, 1);
-   const double h1_low = iLow(_Symbol, PERIOD_H1, 1);
-   const double h4_high = iHigh(_Symbol, PERIOD_H4, 1);
-   const double h4_low = iLow(_Symbol, PERIOD_H4, 1);
-   const double m5_close = iClose(_Symbol, PERIOD_M5, 1);
-   const double m30_close = iClose(_Symbol, PERIOD_M30, 1);
+   MqlRates h1_bar;
+   MqlRates h4_bar;
+   MqlRates m5_bar;
+   MqlRates m30_bar;
+   if(!QM_ReadBar(_Symbol, PERIOD_H1, 1, h1_bar) ||
+      !QM_ReadBar(_Symbol, PERIOD_H4, 1, h4_bar) ||
+      !QM_ReadBar(_Symbol, PERIOD_M5, 1, m5_bar) ||
+      !QM_ReadBar(_Symbol, PERIOD_M30, 1, m30_bar))
+      return false;
+   const double h1_high = h1_bar.high;
+   const double h1_low = h1_bar.low;
+   const double h4_high = h4_bar.high;
+   const double h4_low = h4_bar.low;
+   const double m5_close = m5_bar.close;
+   const double m30_close = m30_bar.close;
    const double atr = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    if(h1_high <= 0.0 || h1_low <= 0.0 || h4_high <= 0.0 || h4_low <= 0.0 ||

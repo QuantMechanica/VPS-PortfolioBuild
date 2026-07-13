@@ -115,9 +115,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(magic <= 0 || QM_TM_OpenPositionCount(magic) > 0)
       return false;
 
-   const double close1 = iClose(_Symbol, _Period, 1);
-   const double low1 = iLow(_Symbol, _Period, 1);
-   const double high1 = iHigh(_Symbol, _Period, 1);
+   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read behind the framework new-bar entry gate.
+   const double low1 = iLow(_Symbol, _Period, 1); // perf-allowed: single closed-bar read behind the framework new-bar entry gate.
+   const double high1 = iHigh(_Symbol, _Period, 1); // perf-allowed: single closed-bar read behind the framework new-bar entry gate.
    const double lower = QM_BB_Lower(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 1);
    const double upper = QM_BB_Upper(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 1);
    const double atr = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);

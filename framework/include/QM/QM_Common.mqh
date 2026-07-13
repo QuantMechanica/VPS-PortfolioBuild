@@ -556,15 +556,25 @@ bool QM_FrameworkCurrencyRateToAccount(const string from_currency, const string 
       return true;
 
    double px = 0.0;
+   const bool prefer_dwx = (StringFind(_Symbol, ".DWX") >= 0);
    const string direct = from_currency + account_currency;
-   if(QM_FrameworkSymbolPrice(direct, px) || QM_FrameworkSymbolPrice(direct + ".DWX", px))
+   bool found = false;
+   if(prefer_dwx)
+      found = QM_FrameworkSymbolPrice(direct + ".DWX", px) || QM_FrameworkSymbolPrice(direct, px);
+   else
+      found = QM_FrameworkSymbolPrice(direct, px) || QM_FrameworkSymbolPrice(direct + ".DWX", px);
+   if(found)
      {
       rate = px;
       return true;
      }
 
    const string inverse = account_currency + from_currency;
-   if((QM_FrameworkSymbolPrice(inverse, px) || QM_FrameworkSymbolPrice(inverse + ".DWX", px)) && px > 0.0)
+   if(prefer_dwx)
+      found = QM_FrameworkSymbolPrice(inverse + ".DWX", px) || QM_FrameworkSymbolPrice(inverse, px);
+   else
+      found = QM_FrameworkSymbolPrice(inverse, px) || QM_FrameworkSymbolPrice(inverse + ".DWX", px);
+   if(found && px > 0.0)
      {
       rate = 1.0 / px;
       return true;

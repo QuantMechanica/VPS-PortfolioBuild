@@ -2,9 +2,12 @@
 
 **EA ID:** QM5_12990
 **Slug:** grimes-context-pb-v2
-**Source:** D2C_13SLEEVE_EXIT_SURGERY_AUDIT_2026-07-03 challenger of QM5_10939
+**Underlying source:** Adam H. Grimes, "Context in Pullbacks: What Should Happen?", 2023-11-29
+**Parent card:** `D:/QM/strategy_farm/artifacts/cards_approved/QM5_10939_grimes-context-pb.md`
+**Card of record:** `strategy_card.md`
+**Exit-surgery lineage:** `docs/ops/evidence/D2C_13SLEEVE_EXIT_SURGERY_AUDIT_2026-07-03.md`
 **Author of this spec:** Codex
-**Last revised:** 2026-07-03
+**Last revised:** 2026-07-13
 
 ---
 
@@ -44,15 +47,11 @@ The EA trades H4 continuation pullbacks only when the D1 trend context agrees. A
 
 ## 3. Symbol Universe
 
-**Designed for:**
-- EURUSD.DWX - card-listed liquid forex major with H4/D1 OHLC support.
-- GBPUSD.DWX - card-listed liquid forex major with H4/D1 OHLC support.
-- USDJPY.DWX - card-listed liquid forex major with H4/D1 OHLC support.
-- XAUUSD.DWX - card-listed liquid metal CFD with H4/D1 OHLC support.
-- GDAXI.DWX - matrix-available DAX CFD equivalent for the card's GER40.DWX target.
+**Designed and registered for:**
+- GBPUSD.DWX - the only approved v2 challenger symbol; H4 entries with D1 context, magic slot 1.
 
-**Explicitly NOT for:**
-- GER40.DWX - card-listed name is not present in `dwx_symbol_matrix.csv`; GDAXI.DWX is registered instead.
+All other symbols from parent `QM5_10939` are outside this variant's card and
+registry scope.
 
 ---
 
@@ -70,8 +69,8 @@ The EA trades H4 continuation pullbacks only when the D1 trend context agrees. A
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | 28 |
-| Typical hold time | Up to 18 H4 bars, roughly three trading days. |
+| Trades / year / symbol | Approximately 10 in the current 2017-2025 reconstruction. |
+| Typical hold time | Up to 36 H4 bars (144 hours). |
 | Expected drawdown profile | Controlled by structural stop capped at 2.25 ATR and one active position per symbol/magic. |
 | Regime preference | Context-filtered trend continuation after volatility expansion and controlled pullback. |
 | Win rate target (qualitative) | Medium |
@@ -80,12 +79,15 @@ The EA trades H4 continuation pullbacks only when the D1 trend context agrees. A
 
 ## 6. Source Citation
 
-This card was mechanised from:
+The underlying strategy was mechanised from:
 
 **Source ID:** fbfd7f6e-462a-55c8-9efa-9005a70c9f5c
 **Source type:** blog
 **Pointer:** Adam H. Grimes, "Context in Pullbacks: What Should Happen?", 2023-11-29
-**R1-R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_10939_grimes-context-pb.md`
+**Parent R1-R4 verdict (Q00):** all PASS; see the parent card above.
+
+The v2 delta is governed by local `strategy_card.md`. The exit-surgery proposal
+and source-diff audit show that only the breakeven trigger and time exit changed.
 
 ---
 
@@ -105,4 +107,6 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-06 | Initial build from card | 544e801a-8c4f-4bdc-87b6-40d7820e8ee3 |
+| v1 | 2026-06-06 | Parent `QM5_10939` implementation | Original contextual-pullback mechanics. |
+| v2 | 2026-07-03 | GBPUSD exit-surgery challenger | BE 1.0R to 1.5R; time exit 18 to 36 H4 bars. |
+| v2.1 | 2026-07-13 | Lineage correction | Restricted scope to registered GBPUSD and linked the v2 card. |

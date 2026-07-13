@@ -31,4 +31,12 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=framework/EAs/QM5_11891_unger-daily-factor-indecision-pattern/SPEC.md
+strategy_body_range_threshold=0.50
+strategy_signal_shift=1
+strategy_trigger_offset_pips=1
+strategy_stop_atr_period=14
+strategy_stop_atr_mult=1.50
+strategy_target_atr_mult=3.00
+strategy_holding_max_d1_bars=5
+strategy_order_expiration_hours=24

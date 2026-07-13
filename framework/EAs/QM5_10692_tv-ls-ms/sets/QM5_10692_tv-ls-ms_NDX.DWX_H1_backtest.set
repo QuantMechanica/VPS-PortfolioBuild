@@ -31,7 +31,19 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=framework/EAs/QM5_10692_tv-ls-ms/SPEC.md
 ; time-sensitive strategy params (mq5 defaults, made explicit for build guard 2026-07-10)
+strategy_pivot_lookback=5
+strategy_structure_lookback=5
+strategy_max_bars_after_sweep=20
+strategy_atr_period=14
+strategy_atr_median_bars=100
+strategy_min_atr_median_ratio=0.50
+strategy_atr_stop_mult=1.20
+strategy_atr_stop_cap_mult=3.00
+strategy_reward_r=2.00
+strategy_max_hold_bars=24
+strategy_session_filter=true
 strategy_session_start_hour=7
 strategy_session_end_hour=21
+strategy_max_spread_points=0
