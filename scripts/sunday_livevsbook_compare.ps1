@@ -10,13 +10,19 @@
 $ErrorActionPreference = 'Stop'
 $py       = 'C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.exe'
 $tool     = 'C:\QM\repo\tools\strategy_farm\portfolio\portfolio_live_forward_from_logs.py'
-$manifest = 'D:\QM\reports\portfolio\portfolio_manifest_current_live_15sleeve_REF_20260708.json'
+# Repointed 2026-07-13: DXZ-23 book deployed 2026-07-13 (decisions/2026-07-12_t_live_dxz_23sleeve.md);
+# the 23-sleeve manifest is the deployed basis (risk sum 9.75, Sharpe 2.348 / MaxDD 3.32% ref).
+$manifest = 'D:\QM\reports\portfolio\portfolio_manifest_sunday_23sleeve_DRAFT_20260711.json'
 $stamp    = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
 $date     = (Get-Date).ToString('yyyyMMdd')
 $out      = "D:\QM\reports\portfolio\live_burnin\livevsbook_sunday_$date.json"
 $log      = 'D:\QM\reports\state\sunday_livevsbook_compare.log'
 
 "$stamp  START sunday live-vs-book compare -> $out" | Out-File -Append -Encoding utf8 $log
+# PS 5.1: with ErrorActionPreference=Stop, python's harmless stderr warning
+# ("Could not find platform independent libraries") became a terminating
+# NativeCommandError via 2>&1 and killed the run right after START.
+$ErrorActionPreference = 'Continue'
 & $py $tool --manifest $manifest --generated-at-utc $stamp --out $out 2>&1 |
     Tee-Object -Variable result | Out-File -Append -Encoding utf8 $log
 "$stamp  DONE exit=$LASTEXITCODE" | Out-File -Append -Encoding utf8 $log

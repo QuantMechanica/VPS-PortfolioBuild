@@ -23,6 +23,12 @@ try {
         throw "Python executable not found: $PythonExe"
     }
 
+    # PS 5.1: with ErrorActionPreference=Stop, any native stderr line routed via 2>&1
+    # becomes a terminating NativeCommandError (python's harmless "Could not find
+    # platform independent libraries" warning killed this task hourly). Real failures
+    # are caught via the explicit $LASTEXITCODE checks below.
+    $ErrorActionPreference = "Continue"
+
     & $PythonExe (Join-Path $RepoRoot "scripts\build_pipeline_state.py") 2>&1 |
         ForEach-Object { Write-TaskLog $_ }
     if ($LASTEXITCODE -ne 0) {
