@@ -5,7 +5,11 @@
 #include <QM/QM_Common.mqh>
 #include <QM/QM_StrategyModule.mqh>
 #include <QM/modules/QM_Mod_Template.mqh>
+#include <QM/modules/QM_Mod_EtTurtle20x.mqh>
+#include <QM/modules/QM_Mod_Mql5Ichimoku.mqh>
 #include <QM/modules/QM_Mod_CumRsi2Commodity.mqh>
+#include <QM/modules/QM_Mod_GrimesNestedPbV2.mqh>
+#include <QM/modules/QM_Mod_AaZakMom12.mqh>
 
 // =============================================================================
 // QuantMechanica V5 — XAUUSD symbol-master skeleton
@@ -23,8 +27,7 @@ const int    QM_MASTER_MAGIC_SLOT             = 0;
 const double QM_MASTER_BOOTSTRAP_RISK_PERCENT = 1.0;
 const string QM_MASTER_SYMBOL                 = "XAUUSD.DWX";
 
-// Closed allowlist for the five XAU pilot sleeves.  These are identities only;
-// no strategy signal, exit, or management logic is present in Phase 2.
+// Closed allowlist for the five XAU pilot sleeves.
 const long QM_MASTER_ALLOWED_MAGICS[QM_MASTER_MODULE_COUNT] =
   {
    104030002L, // strategy1: QM5_10403, slot 2, D1
@@ -54,12 +57,18 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy 1 — QM5_10403 et-turtle20x (D1)"
-input bool   strategy1_enabled            = false;
-input double strategy1_risk_percent       = 0.0;
+input bool        strategy1_enabled       = false;
+// Phase-3-REST dual-mode: PERCENT/0.234 is the deployed live sub-sleeve risk;
+// backtest regression sets FIXED/1000 via the regression set file.
+input QM_RiskMode strategy1_risk_mode     = QM_RISK_MODE_PERCENT;
+input double      strategy1_risk_value    = 0.234;
 
 input group "Strategy 2 — QM5_10513 mql5-ichimoku (D1)"
-input bool   strategy2_enabled            = false;
-input double strategy2_risk_percent       = 0.0;
+input bool        strategy2_enabled       = false;
+// Phase-3-REST dual-mode: PERCENT/0.324 is the deployed live sub-sleeve risk;
+// backtest regression sets FIXED/1000 via the regression set file.
+input QM_RiskMode strategy2_risk_mode     = QM_RISK_MODE_PERCENT;
+input double      strategy2_risk_value    = 0.324;
 
 input group "Strategy 3 — QM5_12567 cum-rsi2-commodity (D1)"
 input bool        strategy3_enabled       = false;
@@ -69,47 +78,27 @@ input QM_RiskMode strategy3_risk_mode     = QM_RISK_MODE_PERCENT;
 input double      strategy3_risk_value    = 0.794;
 
 input group "Strategy 4 — QM5_12989 grimes-nested-pb-v2 (H4)"
-input bool   strategy4_enabled            = false;
-input double strategy4_risk_percent       = 0.0;
+input bool        strategy4_enabled       = false;
+// Phase-3-REST dual-mode: PERCENT/0.257 is the deployed live sub-sleeve risk;
+// backtest regression sets FIXED/1000 via the regression set file.
+input QM_RiskMode strategy4_risk_mode     = QM_RISK_MODE_PERCENT;
+input double      strategy4_risk_value    = 0.257;
 
 input group "Strategy 5 — QM5_1556 aa-zak-mom12 (D1)"
-input bool   strategy5_enabled            = false;
-input double strategy5_risk_percent       = 0.0;
+input bool        strategy5_enabled       = false;
+// Phase-3-REST dual-mode: PERCENT/0.640 is the deployed live sub-sleeve risk;
+// backtest regression sets FIXED/1000 via the regression set file.
+input QM_RiskMode strategy5_risk_mode     = QM_RISK_MODE_PERCENT;
+input double      strategy5_risk_value    = 0.640;
 
-// Phase-2 slot binding: it exposes input-backed module metadata while all
-// inherited hooks remain no-ops.  Phase 3 replaces each instance with its real
-// module class; the dispatcher and lifecycle below remain unchanged.
-class CQMMasterSlotModule : public CQMStrategyModule
-  {
-private:
-   bool            m_enabled;
-   long            m_magic;
-   ENUM_TIMEFRAMES m_tf;
-   double          m_risk_percent;
-
-public:
-   void Configure(const bool enabled,
-                  const long magic,
-                  const ENUM_TIMEFRAMES tf,
-                  const double risk_percent)
-     {
-      m_enabled = enabled;
-      m_magic = magic;
-      m_tf = tf;
-      m_risk_percent = risk_percent;
-     }
-
-   virtual bool            Enabled()     const { return m_enabled; }
-   virtual long            Magic()       const { return m_magic; }
-   virtual ENUM_TIMEFRAMES TF()          const { return m_tf; }
-   virtual double          RiskPercent() const { return m_risk_percent; }
-  };
-
-CQMMasterSlotModule    g_strategy1_module;
-CQMMasterSlotModule    g_strategy2_module;
+// Phase-3-REST: every slot now runs its real module class (slot 3's pilot
+// plus the 4 modules ported here); the Phase-2 CQMMasterSlotModule
+// input-backed placeholder is gone. Dispatcher and lifecycle below unchanged.
+CQMModEtTurtle20x      g_strategy1_module;
+CQMModMql5Ichimoku     g_strategy2_module;
 CQMModCumRsi2Commodity g_strategy3_module;
-CQMMasterSlotModule    g_strategy4_module;
-CQMMasterSlotModule    g_strategy5_module;
+CQMModGrimesNestedPbV2 g_strategy4_module;
+CQMModAaZakMom12       g_strategy5_module;
 
 CQMStrategyModule *g_master_modules[QM_MASTER_MODULE_COUNT];
 bool                g_master_module_initialized[QM_MASTER_MODULE_COUNT];
@@ -126,11 +115,11 @@ int                 g_master_tick_tf_count = 0;
 
 void QM_MasterConfigureModules()
   {
-   g_strategy1_module.Configure(strategy1_enabled, QM_MASTER_ALLOWED_MAGICS[0], PERIOD_D1, strategy1_risk_percent);
-   g_strategy2_module.Configure(strategy2_enabled, QM_MASTER_ALLOWED_MAGICS[1], PERIOD_D1, strategy2_risk_percent);
+   g_strategy1_module.Configure(strategy1_enabled, strategy1_risk_mode, strategy1_risk_value);
+   g_strategy2_module.Configure(strategy2_enabled, strategy2_risk_mode, strategy2_risk_value);
    g_strategy3_module.Configure(strategy3_enabled, strategy3_risk_mode, strategy3_risk_value);
-   g_strategy4_module.Configure(strategy4_enabled, QM_MASTER_ALLOWED_MAGICS[3], PERIOD_H4, strategy4_risk_percent);
-   g_strategy5_module.Configure(strategy5_enabled, QM_MASTER_ALLOWED_MAGICS[4], PERIOD_D1, strategy5_risk_percent);
+   g_strategy4_module.Configure(strategy4_enabled, strategy4_risk_mode, strategy4_risk_value);
+   g_strategy5_module.Configure(strategy5_enabled, strategy5_risk_mode, strategy5_risk_value);
 
    g_master_modules[0] = GetPointer(g_strategy1_module);
    g_master_modules[1] = GetPointer(g_strategy2_module);
