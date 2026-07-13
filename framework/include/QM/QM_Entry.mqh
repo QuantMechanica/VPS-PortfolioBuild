@@ -152,7 +152,10 @@ void QM_EntryLogReject(const QM_EntryRequest &req, const QM_EntryResult result, 
    QM_LogEvent(QM_WARN, "ENTRY_REJECTED", payload);
 }
 
-QM_EntryResult QM_Entry(const QM_EntryRequest &req, ulong &out_ticket)
+QM_EntryResult QM_Entry(const QM_EntryRequest &req,
+                        ulong &out_ticket,
+                        const int explicit_magic = 0,
+                        const double explicit_risk_percent = 0.0)
 {
    out_ticket = 0;
 
@@ -188,10 +191,22 @@ QM_EntryResult QM_Entry(const QM_EntryRequest &req, ulong &out_ticket)
       return QM_ENTRY_REJECTED_RISK;
    }
 
-   const int magic = QM_MagicChecked(g_qm_entry_ea_id, req.symbol_slot, _Symbol);
+   // A positive per-call magic is already registry-checked by QM_MagicFor and
+   // must reach MqlTradeRequest unchanged so the opening deal carries the
+   // sub-strategy identity. Only zero selects the original resolver path; a
+   // negative failed-resolution sentinel must reject rather than silently
+   // opening under the host magic.
+   int magic = explicit_magic;
+   if(magic == 0)
+      magic = QM_MagicChecked(g_qm_entry_ea_id, req.symbol_slot, _Symbol);
    if(magic <= 0)
    {
       QM_EntryLogReject(req, QM_ENTRY_REJECTED_BROKER, "magic_resolution_failed");
+      return QM_ENTRY_REJECTED_BROKER;
+   }
+   if(explicit_magic != 0 && !QM_KillSwitchOwnsMagic((long)magic))
+   {
+      QM_EntryLogReject(req, QM_ENTRY_REJECTED_BROKER, "magic_context_not_registered");
       return QM_ENTRY_REJECTED_BROKER;
    }
 
@@ -225,7 +240,13 @@ QM_EntryResult QM_Entry(const QM_EntryRequest &req, ulong &out_ticket)
    }
 
    const double sl_points = QM_EntrySLPoints(entry_price, req.sl);
-   const double lots = QM_LotsForRisk(_Symbol, sl_points);
+   // Exactly zero means no override and deliberately calls the untouched
+   // legacy two-argument risk sizer (including fixed-money mode). Any nonzero
+   // explicit value takes the new path, where invalid negatives resolve to
+   // zero lots and reject instead of silently falling back to global risk.
+   const double lots = (explicit_risk_percent == 0.0)
+                       ? QM_LotsForRisk(_Symbol, sl_points)
+                       : QM_LotsForRisk(_Symbol, sl_points, explicit_risk_percent);
    if(lots <= 0.0)
    {
       QM_EntryLogReject(req, QM_ENTRY_REJECTED_RISK, "lots_for_risk_zero");

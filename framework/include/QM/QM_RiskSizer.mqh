@@ -74,6 +74,26 @@ double QM_RiskSizerRiskMoney(const double equity)
    return weighted_risk;
   }
 
+// Phase 1 master-EA support: resolve one strategy's explicit percentage without
+// mutating the process-wide risk configuration. Portfolio weighting and the
+// per-trade money cap remain the same framework safety rails as on the legacy
+// global path.
+double QM_RiskSizerRiskMoney(const double equity,
+                             const double explicit_risk_percent)
+  {
+   if(equity <= 0.0 || explicit_risk_percent <= 0.0)
+      return 0.0;
+
+   const double base_risk = equity * (explicit_risk_percent / 100.0);
+   double weighted_risk = base_risk * g_qm_risk_portfolio_weight;
+   if(weighted_risk <= 0.0)
+      return 0.0;
+
+   if(g_qm_risk_per_trade_cap_money > 0.0 && weighted_risk > g_qm_risk_per_trade_cap_money)
+      weighted_risk = g_qm_risk_per_trade_cap_money;
+   return weighted_risk;
+  }
+
 double QM_RiskSizerQuantizeLots(const double raw_lots,
                                 const double volume_min,
                                 const double volume_max,
@@ -337,6 +357,57 @@ double QM_LotsForRisk(const string symbol, const double sl_points)
          return 0.0;
 
       // Use a safety fraction so the bracket pair (two pending stops) stays affordable.
+      double margin_cap_lots = (free_margin * 0.90) / margin_per_lot;
+      lots = QM_RiskSizerQuantizeLots(MathMin(lots, margin_cap_lots),
+                                      snapshot.volume_min,
+                                      snapshot.volume_max,
+                                      snapshot.volume_step);
+     }
+
+   return lots;
+  }
+
+// Explicit per-strategy percentage overload. The two-argument function above
+// intentionally remains intact so every existing EA follows its original
+// global percent/fixed-money sizing path bit-for-bit.
+double QM_LotsForRisk(const string symbol,
+                      const double sl_points,
+                      const double explicit_risk_percent)
+  {
+   QM_SymbolRiskSnapshot snapshot;
+   if(!QM_RiskSizerReadSymbolSnapshot(symbol, snapshot))
+      return 0.0;
+
+   double equity = AccountInfoDouble(ACCOUNT_EQUITY);
+   double risk_money = QM_RiskSizerRiskMoney(equity, explicit_risk_percent);
+   if(risk_money <= 0.0)
+      return 0.0;
+
+   double lots = QM_LotsForRiskFromSnapshot(snapshot, risk_money, sl_points);
+   if(lots <= 0.0)
+      return 0.0;
+
+   // Keep the same available-margin ceiling as the legacy sizing path,
+   // including the DWX fallback when SYMBOL_MARGIN_INITIAL is unavailable.
+   double margin_per_lot = snapshot.margin_initial;
+   if(margin_per_lot <= 0.0)
+     {
+      double leverage = (double)AccountInfoInteger(ACCOUNT_LEVERAGE);
+      if(leverage <= 0.0)
+         leverage = 100.0;
+      double price = SymbolInfoDouble(symbol, SYMBOL_ASK);
+      if(price <= 0.0)
+         price = SymbolInfoDouble(symbol, SYMBOL_BID);
+      if(price > 0.0 && snapshot.contract_size > 0.0)
+         margin_per_lot = (price * snapshot.contract_size) / leverage;
+     }
+
+   if(margin_per_lot > 0.0)
+     {
+      double free_margin = AccountInfoDouble(ACCOUNT_MARGIN_FREE);
+      if(free_margin <= 0.0)
+         return 0.0;
+
       double margin_cap_lots = (free_margin * 0.90) / margin_per_lot;
       lots = QM_RiskSizerQuantizeLots(MathMin(lots, margin_cap_lots),
                                       snapshot.volume_min,

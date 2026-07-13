@@ -32,6 +32,19 @@ bool g_qm_fw_initialized      = false;
 bool g_qm_fw_friday_close_enabled = true;
 int  g_qm_fw_friday_close_hour_broker = 21;
 
+// Opt-in sub-strategy identities for one symbol-master instance. The host
+// magic above remains the default for every legacy EA; this array is populated
+// only by explicit QM_MagicFor calls after framework initialization.
+struct QM_FrameworkMagicContext
+  {
+   int    ea_id;
+   int    slot;
+   int    magic;
+   string symbol;
+  };
+
+QM_FrameworkMagicContext g_qm_fw_magic_contexts[];
+
 // Q04 simulated commission (USD per lot, round-trip), applied EA-side.
 // The MT5 tester applies NO commission to custom .DWX symbols (they are MT5 Custom
 // symbols; the broker groups file does not govern them), so PF from the tester report
@@ -122,6 +135,7 @@ bool QM_FrameworkInit(const int ea_id,
    g_qm_fw_magic = QM_MagicChecked(ea_id, magic_slot_offset, _Symbol);
    if(g_qm_fw_magic <= 0)
       return false;
+   ArrayResize(g_qm_fw_magic_contexts, 0);
    g_qm_q08_trade_log = "";
    if(g_qm_q08_fh != INVALID_HANDLE)
      {
@@ -231,6 +245,53 @@ int QM_FrameworkMagic()
    return g_qm_fw_magic;
   }
 
+// Resolve and remember an original strategy identity for this single-symbol
+// framework instance. Binding both resolution and ownership to _Symbol keeps
+// the context identical to the symbol used by QM_Entry.
+int QM_MagicFor(const int ea_id, const int slot)
+  {
+   // Context ownership is part of this API's contract. Pure pre-init
+   // resolution remains available through QM_MagicChecked; fail here rather
+   // than return a magic that q08/Friday-close/kill-switch do not own.
+   if(!g_qm_fw_initialized)
+      return -1;
+
+   const string context_symbol = _Symbol;
+   const int magic = QM_MagicChecked(ea_id, slot, context_symbol);
+   if(magic <= 0)
+      return -1;
+
+   // Re-resolving the host identity needs no additional framework context.
+   if(magic == g_qm_fw_magic)
+      return QM_KillSwitchRegisterMagic((long)magic) ? magic : -1;
+
+   const int count = ArraySize(g_qm_fw_magic_contexts);
+   for(int i = 0; i < count; ++i)
+     {
+      if(g_qm_fw_magic_contexts[i].magic == magic &&
+         g_qm_fw_magic_contexts[i].symbol == context_symbol)
+         return QM_KillSwitchRegisterMagic((long)magic) ? magic : -1;
+     }
+
+   if(ArrayResize(g_qm_fw_magic_contexts, count + 1) != count + 1)
+      return -1;
+   g_qm_fw_magic_contexts[count].ea_id = ea_id;
+   g_qm_fw_magic_contexts[count].slot = slot;
+   g_qm_fw_magic_contexts[count].magic = magic;
+   g_qm_fw_magic_contexts[count].symbol = context_symbol;
+   if(!QM_KillSwitchRegisterMagic((long)magic))
+     {
+      ArrayResize(g_qm_fw_magic_contexts, count);
+      return -1;
+     }
+   return magic;
+  }
+
+int QM_FrameworkMagicContextCount()
+  {
+   return ArraySize(g_qm_fw_magic_contexts);
+  }
+
 bool QM_FrameworkFridayCloseNow(const datetime broker_time = 0)
   {
    if(!g_qm_fw_friday_close_enabled)
@@ -251,6 +312,15 @@ bool QM_FrameworkOwnsMagicSymbol(const long magic, const string symbol)
   {
    if(magic == (long)g_qm_fw_magic)
       return true;
+
+   const int context_count = ArraySize(g_qm_fw_magic_contexts);
+   for(int i = 0; i < context_count; ++i)
+     {
+      if(magic != (long)g_qm_fw_magic_contexts[i].magic)
+         continue;
+      if(symbol == "" || symbol == g_qm_fw_magic_contexts[i].symbol)
+         return true;
+     }
 
    if(!QM_SymbolGuardIsBasket())
       return false;
@@ -469,7 +539,9 @@ int QM_FrameworkCloseAllByMagic(const long magic, const string reason)
 
 int QM_FrameworkCloseAllOwnedPositions(const string reason)
   {
-   if(!QM_SymbolGuardIsBasket())
+   // Preserve the exact legacy single-magic fast path unless the EA has
+   // explicitly registered sub-strategy contexts.
+   if(!QM_SymbolGuardIsBasket() && QM_FrameworkMagicContextCount() == 0)
       return QM_FrameworkCloseAllByMagic((long)g_qm_fw_magic, reason);
 
    int closed = 0;
@@ -676,6 +748,7 @@ void QM_FrameworkOnTradeTransaction(const MqlTradeTransaction &trans,
    if(QM_KillSwitchKSCheck())
      {
       QM_FrameworkCloseAllOwnedPositions("ks_distribution_divergence");
+      QM_KillSwitchDeleteOwnedPendings();
       // The fatal log inside QM_KillSwitchKSCheck already carries the d / d_crit / n.
       // Manual halt-flag is the most reliable cross-restart suppression.
       // H2 fix (2026-07-05): sandbox-relative path (the old D:\QM\... literal was
@@ -866,6 +939,7 @@ void QM_FrameworkShutdown()
    ArrayResize(g_qm_q08_mae_closed, 0);
    if(g_qm_fw_initialized)
       QM_LogEvent(QM_INFO, "DEINIT", "{}");
+   ArrayResize(g_qm_fw_magic_contexts, 0);
    g_qm_fw_initialized = false;
   }
 

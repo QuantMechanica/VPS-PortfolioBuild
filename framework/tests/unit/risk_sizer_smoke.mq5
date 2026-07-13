@@ -45,6 +45,15 @@ int OnInit()
    if(!AssertNear("lots_percent", lots_pct, 2.0))
       return INIT_FAILED;
 
+   double explicit_pct_risk = QM_RiskSizerRiskMoney(100000.0, 0.25);
+   if(!AssertNear("explicit_percent_risk_money", explicit_pct_risk, 250.0))
+      return INIT_FAILED;
+
+   // A per-call override must not mutate the configured legacy percentage.
+   double pct_risk_after_override = QM_RiskSizerRiskMoney(100000.0);
+   if(!AssertNear("percent_risk_after_override", pct_risk_after_override, 1000.0))
+      return INIT_FAILED;
+
    if(!QM_RiskSizerConfigure(QM_RISK_MODE_FIXED, 0.0, 1000.0, 0.5, 300.0))
       return INIT_FAILED;
 
@@ -54,6 +63,10 @@ int OnInit()
 
    double lots_capped = QM_LotsForRiskFromSnapshot(snap, capped_weighted_risk, 500.0);
    if(!AssertNear("lots_weighted_capped", lots_capped, 0.60))
+      return INIT_FAILED;
+
+   double explicit_capped_risk = QM_RiskSizerRiskMoney(100000.0, 2.0);
+   if(!AssertNear("explicit_percent_weighted_capped", explicit_capped_risk, 300.0))
       return INIT_FAILED;
 
    Print("RISK_SIZER_SMOKE_PASS");

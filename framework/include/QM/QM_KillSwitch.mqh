@@ -16,6 +16,7 @@
 
 int    g_qm_ks_ea_id                     = 0;
 long   g_qm_ks_magic                     = 0;
+long   g_qm_ks_additional_magics[];
 double g_qm_ks_daily_loss_halt_pct       = 0.0;
 double g_qm_ks_portfolio_dd_halt_pct     = 0.0;
 double g_qm_ks_per_trade_risk_cap_pct    = 1.0;
@@ -330,6 +331,65 @@ bool QM_KillSwitchOwnExposureExists(const long magic)
    return false;
 }
 
+bool QM_KillSwitchOwnsMagic(const long magic)
+{
+   if(!g_qm_ks_initialized || magic <= 0)
+      return false;
+   if(magic == g_qm_ks_magic)
+      return true;
+
+   const int count = ArraySize(g_qm_ks_additional_magics);
+   for(int i = 0; i < count; ++i)
+      if(g_qm_ks_additional_magics[i] == magic)
+         return true;
+   return false;
+}
+
+// Opt-in symbol-master ownership. Legacy EAs never register an additional
+// magic, so their single-pass flatten path remains unchanged.
+bool QM_KillSwitchRegisterMagic(const long magic)
+{
+   if(!g_qm_ks_initialized || magic <= 0)
+      return false;
+   if(QM_KillSwitchOwnsMagic(magic))
+      return true;
+
+   const int count = ArraySize(g_qm_ks_additional_magics);
+   if(ArrayResize(g_qm_ks_additional_magics, count + 1) != count + 1)
+      return false;
+   g_qm_ks_additional_magics[count] = magic;
+   return true;
+}
+
+int QM_KillSwitchCloseOwnedPositions()
+{
+   int closed = QM_KillSwitchClosePositionsByMagic(g_qm_ks_magic);
+   const int count = ArraySize(g_qm_ks_additional_magics);
+   for(int i = 0; i < count; ++i)
+      closed += QM_KillSwitchClosePositionsByMagic(g_qm_ks_additional_magics[i]);
+   return closed;
+}
+
+int QM_KillSwitchDeleteOwnedPendings()
+{
+   int deleted = QM_KillSwitchDeletePendingsByMagic(g_qm_ks_magic);
+   const int count = ArraySize(g_qm_ks_additional_magics);
+   for(int i = 0; i < count; ++i)
+      deleted += QM_KillSwitchDeletePendingsByMagic(g_qm_ks_additional_magics[i]);
+   return deleted;
+}
+
+bool QM_KillSwitchOwnedExposureExists()
+{
+   if(QM_KillSwitchOwnExposureExists(g_qm_ks_magic))
+      return true;
+   const int count = ArraySize(g_qm_ks_additional_magics);
+   for(int i = 0; i < count; ++i)
+      if(QM_KillSwitchOwnExposureExists(g_qm_ks_additional_magics[i]))
+         return true;
+   return false;
+}
+
 bool QM_KillSwitchPortfolioSignalTriggered(double &signal_value, bool &value_present)
 {
    signal_value = 0.0;
@@ -366,8 +426,8 @@ void QM_KillSwitchTrip(const string reason, const string details_json)
    // Persist BEFORE the close sweep: a crash mid-flatten must not lose the halt.
    QM_KillSwitchSaveState();
 
-   const int closed = QM_KillSwitchClosePositionsByMagic(g_qm_ks_magic);
-   const int pendings_deleted = QM_KillSwitchDeletePendingsByMagic(g_qm_ks_magic);
+   const int closed = QM_KillSwitchCloseOwnedPositions();
+   const int pendings_deleted = QM_KillSwitchDeleteOwnedPendings();
    QM_LogFatal("KILL_SWITCH_TRIGGERED",
                StringFormat("{\"reason\":\"%s\",\"ea_id\":%d,\"magic\":%I64d,\"closed_positions\":%d,\"pendings_deleted\":%d,\"details\":%s}",
                             QM_LoggerEscapeJson(reason),
@@ -388,6 +448,7 @@ bool QM_KillSwitchInit(const int ea_id,
 {
    g_qm_ks_ea_id = ea_id;
    g_qm_ks_magic = magic;
+   ArrayResize(g_qm_ks_additional_magics, 0);
    g_qm_ks_daily_loss_halt_pct = MathMax(0.0, daily_loss_halt_pct);
    g_qm_ks_portfolio_dd_halt_pct = MathMax(0.0, portfolio_dd_halt_pct);
    g_qm_ks_per_trade_risk_cap_pct = MathMax(0.0, per_trade_risk_cap_pct);
@@ -549,10 +610,10 @@ bool QM_KillSwitchCheck()
       if(now_retry - g_qm_ks_halt_retry_ts >= 60)
       {
          g_qm_ks_halt_retry_ts = now_retry;
-         if(QM_KillSwitchOwnExposureExists(g_qm_ks_magic))
+         if(QM_KillSwitchOwnedExposureExists())
          {
-            const int closed_retry = QM_KillSwitchClosePositionsByMagic(g_qm_ks_magic);
-            const int deleted_retry = QM_KillSwitchDeletePendingsByMagic(g_qm_ks_magic);
+            const int closed_retry = QM_KillSwitchCloseOwnedPositions();
+            const int deleted_retry = QM_KillSwitchDeleteOwnedPendings();
             QM_LogEvent(QM_ERROR,
                         "KILL_SWITCH_FLATTEN_RETRY",
                         StringFormat("{\"reason\":\"%s\",\"closed\":%d,\"pendings_deleted\":%d}",

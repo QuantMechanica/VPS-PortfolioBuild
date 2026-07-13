@@ -149,9 +149,15 @@ bool QM_TM_CloseByVolume(const ulong ticket,
    return ok;
   }
 
-bool QM_TM_OpenPosition(const QM_EntryRequest &req, ulong &out_ticket)
+bool QM_TM_OpenPosition(const QM_EntryRequest &req,
+                        ulong &out_ticket,
+                        const int explicit_magic = 0,
+                        const double explicit_risk_percent = 0.0)
   {
-   const QM_EntryResult result = QM_Entry(req, out_ticket);
+   const QM_EntryResult result = QM_Entry(req,
+                                          out_ticket,
+                                          explicit_magic,
+                                          explicit_risk_percent);
    const bool ok = (result == QM_ENTRY_OK);
    const string payload = StringFormat(
       "{\"symbol\":\"%s\",\"type\":\"%s\",\"ok\":%s,\"ticket\":%I64u,\"entry_result\":\"%s\"}",
