@@ -80,6 +80,20 @@ Verhalten.** Erst dann geht's live. (Nutzt die Verifikations-Infra vom 12./13.07
 - Dispatcher-OnTick; Strategie-Modul-Interface (`StratN_Entry/Exit/Manage/NoTrade`, TF,
   Magic-Kontext, Risk). Inputs `strategyN_*`. Registry-Eintrag + Resolver.
 - **Gate:** kompiliert 0/0; mit 0 aktiven Modulen = No-Op-Backtest sauber.
+- **Status Phase 2: ✅ ABGESCHLOSSEN + gemerged (430f917c5 Merge, 0832efc4e .ex5-Rebuild).**
+  `CQMStrategyModule`-Interface (Init/Deinit/Enabled/Magic/TF/RiskPercent/NoTrade/ManageOpen/
+  CheckExit/CheckEntry) + `QM_ModuleOwnsPosition`. Dispatcher: Corset einmal → per-Modul
+  Manage/Exit immer → Entry auf Modul-TF-NewBar (auch bei entries_blocked konsumiert →
+  kein Late-Entry-Bug). Master eröffnet NIE unter Host-Magic 200010000; 5 XAU-Sub-Magics
+  als Closed-Allowlist; Init-Guards (Magic-Allowlist, TF≠CURRENT, Risk>0). Gate GRÜN
+  (T8, unabhängig): Compile 0/0, No-Op-Smoke 0 Trades, MASTER_INIT_OK host_magic=200010000
+  active_modules=0, Model-4 real ticks.
+- **★Gate-Lektion (für Phase 3/4):** `run_smoke.ps1` deployt die `.ex5` fest aus
+  `C:\QM\repo`, NICHT aus dem Worktree. Vor-Merge-Gates aus einem Worktree müssen die
+  `.ex5` erst manuell ins Ziel-Terminal (`D:\QM\mt5\T<n>\MQL5\Experts\QM\`) kopieren, sonst
+  `REPORT_MISSING` (deploy_skip=source_missing). Nach dem Merge greift der Deploy automatisch.
+  Zusätzlich: `-MinTrades 0` wird von run_smoke auf den 5/yr-Ökonomie-Floor überschrieben →
+  ein No-Op-Skelett meldet `MIN_TRADES_NOT_MET` trotz sauberem Run (run_01 status=OK zählt).
 
 **Phase 3 — die 5 XAU-Strategien als Module portieren (headless SONNET):**
 - Je Strategie: Entry/Exit/Manage-Logik 1:1 aus dem Standalone-EA übernehmen, TF-hart,
