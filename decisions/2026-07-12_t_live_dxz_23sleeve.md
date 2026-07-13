@@ -82,3 +82,21 @@ hätte das Buch ~5× de-riskt — **nicht verwendet**; das 23er-Manifest ist auf
 5. Claude verifiziert 23× INIT_OK + Magic-Set und ergänzt dieses Record um das Verify-Protokoll
 
 Probation: 1556, 10706, 13128 gelten als Probation-Sleeves (42d-Review, Salvage-Herkunft markiert).
+
+---
+
+## FREIGABE + FILE-SIDE-DEPLOY (2026-07-13)
+
+**OWNER-Freigabe erteilt 13.07. (Chat: „freigabe erteilt").**
+
+**Claude-Verifikationsprotokoll (Schritt 3, 13.07. Vormittag):**
+- 23/23 Presets nach `T_Live\MT5_Base\MQL5\Presets\` deployed, SHA256 Staging→T_Live verifiziert
+- 7/7 neue EA-Binaries nach `T_Live\...\Experts\Live EAs\` deployed, SHA256 verifiziert
+  (11165 nutzt bewusst das laufende Live-Binary)
+- Preset-Inhalte 23/23: RISK_FIXED=0 ✓, RISK_PERCENT>0 ✓, Magic-Formel ea_id·10000+slot ✓
+- Summe RISK_PERCENT deployed: 9.7501 (Ziel-Gesamt-Risiko 9.75) ✓
+- News-Kalender aktuell (täglicher 03:30-Refresh) ✓
+- AutoTrading: UNANGETASTET (läuft; Chart-Session ändert nur Charts/Presets)
+
+**Nächster Schritt:** OWNER-Chart-Session nach `C:\QM\deploy\DXZ23_2026-07-12\ANLEITUNG_DXZ23.md`
+(15 Preset-Reloads + 8 neue Charts). Danach Claude-Verify: 23× INIT_OK + Magic-Set 23/23.
