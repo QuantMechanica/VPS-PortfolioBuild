@@ -94,6 +94,31 @@ double QM_RiskSizerRiskMoney(const double equity,
    return weighted_risk;
   }
 
+// Phase 2.5 master-EA support: resolve an explicit per-strategy risk mode
+// without mutating the process-wide risk configuration. PERCENT deliberately
+// delegates to the Phase-1 overload above so its arithmetic stays identical.
+// FIXED mirrors the global fixed-money branch: fixed base risk, portfolio
+// weighting, then the configured per-trade money cap.
+double QM_RiskSizerRiskMoney(const double equity,
+                             const QM_RiskMode explicit_mode,
+                             const double explicit_value)
+  {
+   if(explicit_mode == QM_RISK_MODE_PERCENT)
+      return QM_RiskSizerRiskMoney(equity, explicit_value);
+
+   if(explicit_mode != QM_RISK_MODE_FIXED || equity <= 0.0 || explicit_value <= 0.0)
+      return 0.0;
+
+   const double base_risk = explicit_value;
+   double weighted_risk = base_risk * g_qm_risk_portfolio_weight;
+   if(weighted_risk <= 0.0)
+      return 0.0;
+
+   if(g_qm_risk_per_trade_cap_money > 0.0 && weighted_risk > g_qm_risk_per_trade_cap_money)
+      weighted_risk = g_qm_risk_per_trade_cap_money;
+   return weighted_risk;
+  }
+
 double QM_RiskSizerQuantizeLots(const double raw_lots,
                                 const double volume_min,
                                 const double volume_max,
@@ -389,6 +414,61 @@ double QM_LotsForRisk(const string symbol,
 
    // Keep the same available-margin ceiling as the legacy sizing path,
    // including the DWX fallback when SYMBOL_MARGIN_INITIAL is unavailable.
+   double margin_per_lot = snapshot.margin_initial;
+   if(margin_per_lot <= 0.0)
+     {
+      double leverage = (double)AccountInfoInteger(ACCOUNT_LEVERAGE);
+      if(leverage <= 0.0)
+         leverage = 100.0;
+      double price = SymbolInfoDouble(symbol, SYMBOL_ASK);
+      if(price <= 0.0)
+         price = SymbolInfoDouble(symbol, SYMBOL_BID);
+      if(price > 0.0 && snapshot.contract_size > 0.0)
+         margin_per_lot = (price * snapshot.contract_size) / leverage;
+     }
+
+   if(margin_per_lot > 0.0)
+     {
+      double free_margin = AccountInfoDouble(ACCOUNT_MARGIN_FREE);
+      if(free_margin <= 0.0)
+         return 0.0;
+
+      double margin_cap_lots = (free_margin * 0.90) / margin_per_lot;
+      lots = QM_RiskSizerQuantizeLots(MathMin(lots, margin_cap_lots),
+                                      snapshot.volume_min,
+                                      snapshot.volume_max,
+                                      snapshot.volume_step);
+     }
+
+   return lots;
+  }
+
+// Explicit per-strategy mode/value overload. PERCENT routes through the
+// untouched Phase-1 overload; FIXED uses the mode-aware money resolver and
+// otherwise follows the same snapshot, quantization, and margin-cap path.
+double QM_LotsForRisk(const string symbol,
+                      const double sl_points,
+                      const QM_RiskMode explicit_mode,
+                      const double explicit_value)
+  {
+   if(explicit_mode == QM_RISK_MODE_PERCENT)
+      return QM_LotsForRisk(symbol, sl_points, explicit_value);
+   if(explicit_mode != QM_RISK_MODE_FIXED)
+      return 0.0;
+
+   QM_SymbolRiskSnapshot snapshot;
+   if(!QM_RiskSizerReadSymbolSnapshot(symbol, snapshot))
+      return 0.0;
+
+   double equity = AccountInfoDouble(ACCOUNT_EQUITY);
+   double risk_money = QM_RiskSizerRiskMoney(equity, explicit_mode, explicit_value);
+   if(risk_money <= 0.0)
+      return 0.0;
+
+   double lots = QM_LotsForRiskFromSnapshot(snapshot, risk_money, sl_points);
+   if(lots <= 0.0)
+      return 0.0;
+
    double margin_per_lot = snapshot.margin_initial;
    if(margin_per_lot <= 0.0)
      {
