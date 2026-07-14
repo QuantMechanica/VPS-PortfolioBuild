@@ -316,12 +316,13 @@ bool Strategy_MonthAlreadyEntered(const int month_key)
 void Strategy_AdvanceSignal_OnNewBar()
   {
    g_monthly_rebalance_bar = false;
-   const datetime decision_bar_time = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: cached timestamp on the D1 new-bar path.
-   const datetime prior_bar_time = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: exact first-tradable-bar month transition check.
-   const int current_month_key = Strategy_MonthKeyForTime(decision_bar_time);
-   const int prior_month_key = Strategy_MonthKeyForTime(prior_bar_time);
-   if(current_month_key <= 0 || prior_month_key <= 0 ||
-      current_month_key == prior_month_key)
+   const int current_month_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
+   const int prior_month_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 1);
+   if(current_month_key <= 0 || prior_month_key <= 0 || current_month_key == prior_month_key)
+      return;
+
+   const datetime decision_bar_time = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: one cached timestamp on the D1 new-bar path.
+   if(decision_bar_time <= 0)
       return;
 
    g_monthly_rebalance_bar = true;
