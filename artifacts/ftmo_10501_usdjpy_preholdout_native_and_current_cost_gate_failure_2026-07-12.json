@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_NATIVE_AND_CURRENT_FTMO_ECONOMICS",
+  "ea_id": 10501,
+  "symbol": "USDJPY.DWX",
+  "period": "H1",
+  "history": "2017-01-01/2023-12-31",
+  "model": 4,
+  "deterministic": true,
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10501_usdjpy_h1_preholdout_wave38_20260712\\QM5_10501\\20260712_182400\\summary.json",
+  "summary_sha256": "AAEC02ACABACBD38736A48C3D36E3CB2DD4534D1E83D022D8C44742A87151CFC",
+  "report_sha256": [
+    "BC2B1E316C6B2FB84F642E46B023A19E0A8DC5BACC73828D9EBD0BFAF35264AE",
+    "72117D1DB27AD57DD3B1F6E686822F9DC8FA8FEF4AB3A7BB91B910A76F9A4C5A"
+  ],
+  "native": {
+    "trades": 1296,
+    "profit_factor": 0.864582,
+    "net_profit": -95006.22,
+    "close_to_close_max_drawdown": 104980.72
+  },
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\10501_USDJPY_H1_T1_PREHOLDOUT_FRESH_20260712.jsonl",
+    "rows": 1296,
+    "sha256": "E8BC1CEB26F011435A1935B468D8A180C1B441133A0CC5580AA7CA617F58626B",
+    "report_reconciliation": "PASS_EXACT_COUNT_AND_NET",
+    "corrected_net_delta": 0.0,
+    "net_tolerance": 12.96
+  },
+  "current_cost_artifact": "artifacts/ftmo_10501_usdjpy_preholdout_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "profit_factor": 0.853806,
+    "net_profit": -103236.86,
+    "close_to_close_max_drawdown": 110708.99
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "negative_calendar_years": [2017, 2018, 2019, 2020, 2021, 2022, 2023],
+    "reason_for_reject": "Fresh full-history economics are catastrophically negative before and after current FTMO costs despite an exact MAE stream."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_years": [2024, 2025],
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

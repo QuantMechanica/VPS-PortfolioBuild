@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_PENDING_XAU_SYMBOL_MUTEX",
+  "candidate": {
+    "ea_id": 12375,
+    "expert": "QM\\QM5_12375_tmom-masset-trend",
+    "symbol": "XAUUSD.DWX",
+    "period": "D1",
+    "setfile": "framework/EAs/QM5_12375_tmom-masset-trend/sets/QM5_12375_tmom-masset-trend_XAUUSD.DWX_D1_backtest.set",
+    "setfile_sha256": "4BA0C66EE4485B37680168D868DEFF163C5C99713C4D8EFFC675B1E6AD965B56"
+  },
+  "selection_source": {
+    "rule": "Highest-density unrefreshed XAU Q04-Q07 survivor. The old Q08 stream omitted most report trades, so only a fresh current-framework stream may enter the book.",
+    "q04": {"path": "D:\\QM\\reports\\pipeline\\QM5_12375\\Q04\\aggregate.json", "sha256": "73075D7ADC04F05DF0EF4A68A5642C999696D701B3A0F7E6536E224DF8291539", "verdict": "PASS", "fold_profit_factors": [1.39, 1.80, 3.17], "fold_trades": [50, 57, 52], "old_stream_guard": "FAIL_COUNT_RECONCILIATION"},
+    "q05": {"path": "D:\\QM\\reports\\pipeline\\QM5_12375\\Q05\\aggregate.json", "sha256": "9280831011D026AC1A464EDF8E95D3AA80764E8A89C4558ED0BA9E9D819051CC", "verdict": "PASS", "profit_factor": 1.49, "trades": 330},
+    "q06": {"path": "D:\\QM\\reports\\pipeline\\QM5_12375\\Q06\\aggregate.json", "sha256": "D3A3221633EE0BC5EA47B1D9AB6916C7CCE5F50B9D4389C55A03CBF524F794DA", "verdict": "PASS", "harsh_profit_factor": 1.44, "trades": 326},
+    "q07": {"path": "D:\\QM\\reports\\pipeline\\QM5_12375\\Q07\\aggregate.json", "sha256": "37FBA0375E9C316011B9E4488D4C8969E363F99D6B8C873E32A5FC60B7792963", "verdict": "PASS", "minimum_seed_profit_factor": 1.44, "seed_variance_pct": 0.0}
+  },
+  "fresh_evidence_contract": {
+    "history": "2017-01-01 through 2025-12-31",
+    "model": 4,
+    "required_identical_runs": 2,
+    "current_framework_strict_compile": true,
+    "joint_mae_stream_required": true,
+    "exact_report_stream_reconciliation_required": true,
+    "current_ftmo_cost_reconstruction_required": true,
+    "strict_q02_pf_floor": 1.2,
+    "strict_q02_minimum_trades_per_calendar_year": 5
+  },
+  "portfolio_contract": {
+    "weight_grid_pct": [0.5, 1.0, 2.0, 3.0, 5.0, 7.5, 10.0],
+    "development_survivor_rule": "A fixed candidate representation and weight must improve both threshold and adverse preholdout pass rates.",
+    "sealed_holdout_open_rule": "Open once only for a frozen development survivor."
+  },
+  "execution": {
+    "preferred_terminal": "first_free_of_T1_T4",
+    "symbol_mutex": "XAUUSD.DWX",
+    "must_start_after": "fresh_11181_xau_m5_wave15_20260712 terminal exit"
+  },
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

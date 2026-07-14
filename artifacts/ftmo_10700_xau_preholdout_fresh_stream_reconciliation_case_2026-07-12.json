@@ -1,0 +1,8 @@
+[
+  {
+    "ea_id": 10700,
+    "symbol": "XAUUSD.DWX",
+    "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10700_xau_h1_preholdout_wave40_20260712\\QM5_10700\\20260712_183721\\summary.json",
+    "stream_path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\10700_XAUUSD_H1_T2_PREHOLDOUT_FRESH_20260712.jsonl"
+  }
+]

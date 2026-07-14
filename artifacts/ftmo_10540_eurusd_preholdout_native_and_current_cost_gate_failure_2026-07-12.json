@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_NATIVE_AND_CURRENT_FTMO_ECONOMICS",
+  "ea_id": 10540,
+  "symbol": "EURUSD.DWX",
+  "period": "H1",
+  "history": "2017-01-01/2023-12-31",
+  "model": 4,
+  "deterministic": true,
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10540_eurusd_h1_preholdout_wave38_20260712\\QM5_10540\\20260712_182400\\summary.json",
+  "summary_sha256": "D550242CEE3B7839ECC1CDF71C0E6942B873ECBDEDD260986E3319C153D71CD4",
+  "report_sha256": [
+    "80F5B64DA800CE8EAFF973654E88E3C340432F31BD58182ECDDDB8A89A617D4A",
+    "B98598D7D76D7BAA0319A9D07054B4CA7D4FCED52A5FFE914DE5D6D6A8E9BDBD"
+  ],
+  "native": {
+    "trades": 1498,
+    "profit_factor": 0.839522,
+    "net_profit": -90987.53,
+    "close_to_close_max_drawdown": 97461.98
+  },
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\10540_EURUSD_H1_T4_PREHOLDOUT_FRESH_20260712.jsonl",
+    "rows": 1498,
+    "sha256": "745FF0527DE6BB6C5C39F90D3554FD5ACE6EC036E01CBE4FACAD87BBA74D244B",
+    "report_reconciliation": "PASS_EXACT_COUNT_NET_DELTA_WITHIN_TOLERANCE",
+    "corrected_net_delta": -0.6,
+    "net_tolerance": 14.98
+  },
+  "current_cost_artifact": "artifacts/ftmo_10540_eurusd_preholdout_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "profit_factor": 0.842934,
+    "net_profit": -88860.1,
+    "close_to_close_max_drawdown": 95387.05
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "negative_calendar_years": [2017, 2018, 2019, 2020, 2021, 2022, 2023],
+    "reason_for_reject": "Fresh full-history economics are catastrophically negative before and after current FTMO costs despite an exact MAE stream."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_years": [2024, 2025],
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

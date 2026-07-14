@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "INVALIDATED_NOT_ELIGIBLE_EVIDENCE",
+  "reason": "The T_Export bar files extend into 2026. The first shard invocation excluded 2017, 2020, 2023, 2024, and 2025 but omitted 2026, so 2026 rolling starts contaminated the intended 2018/2019/2021/2022 development set.",
+  "invalid_artifacts": [
+    "artifacts/ftmo_incumbent_profit_feedback_dev_threshold_r15_2026-07-12.json",
+    "artifacts/ftmo_incumbent_profit_feedback_dev_adverse_r15_2026-07-12.json",
+    "artifacts/ftmo_incumbent_profit_feedback_dev_threshold_r18_2026-07-12.json",
+    "artifacts/ftmo_incumbent_profit_feedback_dev_adverse_r18_2026-07-12.json",
+    "artifacts/ftmo_incumbent_profit_feedback_dev_threshold_r20_2026-07-12.json",
+    "artifacts/ftmo_incumbent_profit_feedback_dev_adverse_r20_2026-07-12.json",
+    "artifacts/ftmo_incumbent_profit_feedback_dev_threshold_r22_2026-07-12.json",
+    "artifacts/ftmo_incumbent_profit_feedback_dev_adverse_r22_2026-07-12.json",
+    "artifacts/ftmo_incumbent_profit_feedback_dev_threshold_r25_2026-07-12.json",
+    "artifacts/ftmo_incumbent_profit_feedback_dev_adverse_r25_2026-07-12.json"
+  ],
+  "corrective_action": "Repeat the unchanged predeclared policies with excluded years 2017,2020,2023,2024,2025,2026 and retain the V1 files only as audit evidence.",
+  "selection_allowed": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

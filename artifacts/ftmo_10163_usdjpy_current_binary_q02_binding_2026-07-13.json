@@ -1,0 +1,81 @@
+{
+  "blockers": [],
+  "cohort_metrics": null,
+  "deterministic": true,
+  "ea_id": 10163,
+  "files": {
+    "card": {
+      "modified_utc": "2026-05-21T04:17:13.034960+00:00",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10163_tv-rsi-macd-long\\docs\\strategy_card.md",
+      "sha256": "c624349f9ae667677a969ee655f6d3d900427befbe24e6e3ee48de4c35c6b19c",
+      "size_bytes": 3485
+    },
+    "ex5": {
+      "modified_utc": "2026-07-12T17:00:03.606430+00:00",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10163_tv-rsi-macd-long\\QM5_10163_tv-rsi-macd-long.ex5",
+      "sha256": "ebcf2d60572fb960d399e46c52628cfe47cb90500a9893950ce9d09207bd9da2",
+      "size_bytes": 317348
+    },
+    "mq5": {
+      "modified_utc": "2026-07-05T13:55:40.312402+00:00",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10163_tv-rsi-macd-long\\QM5_10163_tv-rsi-macd-long.mq5",
+      "sha256": "62fab568257268993f4630f6ca70fc054b179e3dd72edf55c2cc445f42842a20",
+      "size_bytes": 15234
+    },
+    "setfile": {
+      "modified_utc": "2026-06-09T20:59:03.715798+00:00",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10163_tv-rsi-macd-long\\sets\\QM5_10163_tv-rsi-macd-long_USDJPY.DWX_H1_backtest.set",
+      "sha256": "4307d99efc46461cc7b90b4ff52f279eedcbb4dba650dc731698dd1e7ec14dce",
+      "size_bytes": 1167
+    },
+    "spec": {
+      "modified_utc": "2026-06-09T20:21:43.750082+00:00",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10163_tv-rsi-macd-long\\SPEC.md",
+      "sha256": "18dff1675bc708f1b64d2414afa8c5e7f90be4d819f4f64659cbf2351d136067",
+      "size_bytes": 5389
+    },
+    "summary": {
+      "modified_utc": "2026-07-13T09:11:42.891849+00:00",
+      "path": "D:\\QM\\reports\\ftmo_requalification\\20260713\\10163_usdjpy_q02_current\\QM5_10163\\20260713_085516\\summary.json",
+      "sha256": "8e5cbb7ae0cec5bac64cc858c60613f8754031034eebc6186845c881d6ebb5c0",
+      "size_bytes": 2948
+    }
+  },
+  "metrics": {
+    "drawdown": 3300.08,
+    "net_profit": 14871.01,
+    "profit_factor": 1.35,
+    "trades": 798
+  },
+  "model": 4,
+  "period": "H1",
+  "phase": "Q02",
+  "promotion_note": "BOUND_PASS does not waive FTMO cost reconciliation or Q04-Q10.",
+  "reports": [
+    {
+      "modified_utc": "2026-07-13T09:04:03.831971+00:00",
+      "path": "D:\\QM\\reports\\ftmo_requalification\\20260713\\10163_usdjpy_q02_current\\QM5_10163\\20260713_085516\\raw\\run_01\\report.htm",
+      "sha256": "071b51440bf79461ca18460eaf4df925749bb5272dc0493e002ba68bfc251cbb",
+      "size_bytes": 1698356
+    },
+    {
+      "modified_utc": "2026-07-13T09:11:41.527019+00:00",
+      "path": "D:\\QM\\reports\\ftmo_requalification\\20260713\\10163_usdjpy_q02_current\\QM5_10163\\20260713_085516\\raw\\run_02\\report.htm",
+      "sha256": "d14cee0e7159bef28c06b35618b7bd9743ccad9c6c4c6b9ab71663eff420b034",
+      "size_bytes": 1698356
+    }
+  ],
+  "run_contract": {
+    "description": "current-binary deterministic replay",
+    "minimum_runs": 2,
+    "observed_runs": 2,
+    "require_identical_metrics": true
+  },
+  "schema_version": 1,
+  "scope": "native_current_binary_q02_only",
+  "seed_evidence": [],
+  "source_summary_deterministic": true,
+  "status": "BOUND_PASS",
+  "symbol": "USDJPY.DWX",
+  "terminal": "T2"
+}

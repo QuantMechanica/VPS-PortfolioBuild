@@ -1,0 +1,172 @@
+{
+  "fail_count": 3,
+  "pass_count": 2,
+  "results": [
+    {
+      "contract": "one_entry_one_exit_duplicate_closing_commission",
+      "corrected_net_delta": 1156.97,
+      "count_delta": -2,
+      "ea_id": 10118,
+      "net_tolerance": 7.16,
+      "reasons": [
+        "trade_count_mismatch:714!=716",
+        "corrected_net_mismatch:delta=1156.97:tolerance=7.16"
+      ],
+      "report": {
+        "drawdown": 26807.73,
+        "exists": true,
+        "net_profit": 35545.14,
+        "path": "D:\\QM\\reports\\smoke_ftmo_density\\QM5_10118\\20260710_172927\\summary.json",
+        "profit_factor": 1.09,
+        "report_canonical_path": "D:\\QM\\reports\\smoke_ftmo_density\\QM5_10118\\20260710_172927\\raw\\run_01\\report.htm",
+        "result": "PASS",
+        "trade_count": 716,
+        "usable_run": "run_01"
+      },
+      "status": "FAIL",
+      "stream": {
+        "closing_commission": -3515.28,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 0,
+        "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\10118_NDX_DWX.jsonl",
+        "raw_net": 40217.39,
+        "round_trip_corrected_net": 36702.11,
+        "trade_count": 714
+      },
+      "symbol": "NDX.DWX"
+    },
+    {
+      "contract": "one_entry_one_exit_duplicate_closing_commission",
+      "corrected_net_delta": -0.13,
+      "count_delta": 0,
+      "ea_id": 10916,
+      "net_tolerance": 6.11,
+      "reasons": [],
+      "report": {
+        "drawdown": 15360.14,
+        "exists": true,
+        "net_profit": 75181.8,
+        "path": "D:\\QM\\reports\\smoke_ftmo_density\\QM5_10916\\20260710_172935\\summary.json",
+        "profit_factor": 1.26,
+        "report_canonical_path": "D:\\QM\\reports\\smoke_ftmo_density\\QM5_10916\\20260710_172935\\raw\\run_03\\report.htm",
+        "result": "PASS",
+        "trade_count": 611,
+        "usable_run": "run_03"
+      },
+      "status": "PASS",
+      "stream": {
+        "closing_commission": -2756.97,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 0,
+        "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\10916_GDAXI_DWX.jsonl",
+        "raw_net": 77938.64,
+        "round_trip_corrected_net": 75181.67,
+        "trade_count": 611
+      },
+      "symbol": "GDAXI.DWX"
+    },
+    {
+      "contract": "one_entry_one_exit_duplicate_closing_commission",
+      "corrected_net_delta": -46702.34,
+      "count_delta": -54,
+      "ea_id": 10546,
+      "net_tolerance": 17.62,
+      "reasons": [
+        "trade_count_mismatch:1708!=1762",
+        "corrected_net_mismatch:delta=-46702.34:tolerance=17.62"
+      ],
+      "report": {
+        "drawdown": 61991.04,
+        "exists": true,
+        "net_profit": 143387.49,
+        "path": "D:\\QM\\reports\\smoke_ftmo_density\\QM5_10546\\20260710_172945\\summary.json",
+        "profit_factor": 1.13,
+        "report_canonical_path": "D:\\QM\\reports\\smoke_ftmo_density\\QM5_10546\\20260710_172945\\raw\\run_02\\report.htm",
+        "result": "PASS",
+        "trade_count": 1762,
+        "usable_run": "run_02"
+      },
+      "status": "FAIL",
+      "stream": {
+        "closing_commission": -7.24,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 0,
+        "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\10546_XAUUSD_DWX.jsonl",
+        "raw_net": 96692.39,
+        "round_trip_corrected_net": 96685.15,
+        "trade_count": 1708
+      },
+      "symbol": "XAUUSD.DWX"
+    },
+    {
+      "contract": "one_entry_one_exit_duplicate_closing_commission",
+      "corrected_net_delta": -0.21,
+      "count_delta": 0,
+      "ea_id": 10569,
+      "net_tolerance": 3.41,
+      "reasons": [],
+      "report": {
+        "drawdown": 55883.09,
+        "exists": true,
+        "net_profit": -27029.81,
+        "path": "D:\\QM\\reports\\smoke_ftmo_density\\QM5_10569\\20260710_181744\\summary.json",
+        "profit_factor": 0.82,
+        "report_canonical_path": "D:\\QM\\reports\\smoke_ftmo_density\\QM5_10569\\20260710_181744\\raw\\run_01\\report.htm",
+        "result": "PASS",
+        "trade_count": 341,
+        "usable_run": "run_01"
+      },
+      "status": "PASS",
+      "stream": {
+        "closing_commission": -1771.0,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 0,
+        "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\10569_EURUSD_DWX.jsonl",
+        "raw_net": -25259.02,
+        "round_trip_corrected_net": -27030.02,
+        "trade_count": 341
+      },
+      "symbol": "EURUSD.DWX"
+    },
+    {
+      "contract": "one_entry_one_exit_duplicate_closing_commission",
+      "corrected_net_delta": -11192.55,
+      "count_delta": -3,
+      "ea_id": 10706,
+      "net_tolerance": 3.67,
+      "reasons": [
+        "trade_count_mismatch:364!=367",
+        "corrected_net_mismatch:delta=-11192.55:tolerance=3.67"
+      ],
+      "report": {
+        "drawdown": 25358.57,
+        "exists": true,
+        "net_profit": 65214.23,
+        "path": "D:\\QM\\reports\\smoke_ftmo_density\\QM5_10706\\20260710_181752\\summary.json",
+        "profit_factor": 1.31,
+        "report_canonical_path": "D:\\QM\\reports\\smoke_ftmo_density\\QM5_10706\\20260710_181752\\raw\\run_01\\report.htm",
+        "result": "PASS",
+        "trade_count": 367,
+        "usable_run": "run_01"
+      },
+      "status": "FAIL",
+      "stream": {
+        "closing_commission": -5145.72,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 0,
+        "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\10706_GBPUSD_DWX.jsonl",
+        "raw_net": 59167.4,
+        "round_trip_corrected_net": 54021.68,
+        "trade_count": 364
+      },
+      "symbol": "GBPUSD.DWX"
+    }
+  ],
+  "schema_version": 1,
+  "status": "FAIL"
+}

@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "INFRASTRUCTURE_BLOCKED_NO_STRATEGY_VERDICT",
+  "ea_id": 1556,
+  "symbol": "XAUUSD.DWX",
+  "period": "D1",
+  "history": "2017-01-01/2025-12-31",
+  "model": 4,
+  "binary_observations": {
+    "repo_and_t4_standard_sha256": "6166C96B457594A673ED827F9B791A4B8443E600C801DBCD1FF62EA1AF363290",
+    "t3_stale_standard_sha256": "84BAA8C05AE7A6290DA3CEAA4433E930673445264B2D0AB20A163E5382BB0A3E",
+    "t3_unique_current_source_sha256": "69B8AC07C9ACD223573BC7970D96B85F970490FB607098426CE444AFDA1C0F66",
+    "unique_name_changes_binary_identity": true
+  },
+  "t3_reconstruction": {
+    "prior_report_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_1556_xau_d1_20260712\\QM5_1556\\20260712_092036\\raw\\run_02\\report.htm",
+    "prior_report_sha256": "93BB76F876C66EFCD514BEB96906557B98ECF14C1D0F6F134418C8E9D8E45B58",
+    "unique_current_source_report_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_1556_xau_d1_unique_source_t3_20260712\\QM5_1556\\20260712_111207\\raw\\run_01\\report.htm",
+    "unique_current_source_report_sha256": "05C65730FB3C5AB94FBF8C1F2B58C11568D26B6249F30FFA13CBBA34A1E98ABF",
+    "exact_round_trip_digest": "197a883a7a1a02497fe4256307f61571ad409f2a521f9b7fa6841f667896c9e8",
+    "round_trip_sequence_equal": true,
+    "trades": 53,
+    "native_profit_factor": 1.93,
+    "native_net_profit": 6369.87,
+    "native_equity_drawdown": 2683.23,
+    "q08_stream_path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\1556_XAUUSD_DWX_T3_UNIQUE_20260712.jsonl",
+    "q08_rows": 53,
+    "q08_sha256": "B7D5D73CE64D2A8F3BE582CEC38401E19606C4B1171815E3969FA2C68DBB3834"
+  },
+  "t4_reconstruction": {
+    "report_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_1556_xau_d1_compare_t4_20260712\\QM5_1556\\20260712_093900\\raw\\run_01\\report.htm",
+    "report_sha256": "B3135BE6F76DDA7F639539B6D290D2DC8A56E3A83F701D6DD6667C92E3750553",
+    "round_trip_digest": "561e927525fd583f38264a6778f29cdfe1eb5de881822ba223dbddcc4d93b1c3",
+    "trades": 64,
+    "native_profit_factor": 1.99,
+    "native_net_profit": 8090.03,
+    "native_equity_drawdown": 2683.23
+  },
+  "conclusion": {
+    "same_terminal_reproducibility": "T3 reproduced the same 53-trade sequence with a uniquely named fresh source build.",
+    "cross_terminal_reproducibility": false,
+    "reason": "T3 and T4 still disagree by 11 exact round trips despite rebuilding current source under a cache-cold program name on T3.",
+    "stream_admitted": false,
+    "cost_gate_opened": false,
+    "portfolio_gate_opened": false
+  },
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

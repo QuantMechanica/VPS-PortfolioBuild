@@ -1,0 +1,34 @@
+{
+  "timestamp_utc": "2026-07-11T23:14:40Z",
+  "run_tag": "20260711_225008",
+  "result": "PASS",
+  "reason_classes": [
+    "OK"
+  ],
+  "ea_id": 12475,
+  "ea_label": "QM5_12475",
+  "expert": "QM\\QM5_12475_gh-macd-cross",
+  "symbol": "NDX.DWX",
+  "year": 2025,
+  "terminal": "T3",
+  "model": 4,
+  "period": "H1",
+  "from_date": "2017.10.02",
+  "to_date": "2025.12.31",
+  "runs": [
+    {
+      "run": "run_01",
+      "status": "OK",
+      "exit_code": 0,
+      "report_canonical_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_12475_20260711\\QM5_12475\\20260711_225008\\raw\\run_01\\report.htm",
+      "tester_log_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_12475_20260711\\QM5_12475\\20260711_225008\\raw\\run_01\\tester.log",
+      "total_trades": 1816,
+      "profit_factor": 1.09,
+      "drawdown": 48151.72,
+      "drawdown_pct": 31.29,
+      "net_profit": 77258.59,
+      "gross_profit": 923007.51,
+      "gross_loss": -845748.92
+    }
+  ]
+}

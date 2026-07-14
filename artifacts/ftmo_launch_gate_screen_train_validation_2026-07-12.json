@@ -1,0 +1,742 @@
+{
+  "basis": "causal_realized_shadow_book_pnl_strictly_before_challenge_start",
+  "candidate_count": 10,
+  "control": {
+    "development": {
+      "adverse_bar_fill": {
+        "daily_breach_pct": 19.450800915331808,
+        "max_breach_pct": 12.585812356979407,
+        "not_reached_pct": 22.12051868802441,
+        "pass_ci95_pct": [
+          43.16174582206852,
+          48.54828132464435
+        ],
+        "pass_pct": 45.84286803966438,
+        "runs": 1311
+      },
+      "eligible_pct": 100.0,
+      "eligible_starts": 1311,
+      "median_gap_calendar_days": 1.0,
+      "p95_gap_calendar_days": 1.0,
+      "threshold_fill": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 49.275362318840585,
+        "pass_ci95_pct": [
+          48.020205896042626,
+          53.42483524352119
+        ],
+        "pass_pct": 50.72463768115942,
+        "runs": 1311
+      },
+      "total_starts": 1311
+    },
+    "validation": {
+      "adverse_bar_fill": {
+        "daily_breach_pct": 43.452380952380956,
+        "max_breach_pct": 5.059523809523809,
+        "not_reached_pct": 16.36904761904762,
+        "pass_ci95_pct": [
+          30.20942544323534,
+          40.36508881790969
+        ],
+        "pass_pct": 35.11904761904761,
+        "runs": 336
+      },
+      "eligible_pct": 100.0,
+      "eligible_starts": 336,
+      "median_gap_calendar_days": 1.0,
+      "p95_gap_calendar_days": 1.0,
+      "threshold_fill": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 56.845238095238095,
+        "pass_ci95_pct": [
+          37.9656854579303,
+          48.49859110219641
+        ],
+        "pass_pct": 43.154761904761905,
+        "runs": 336
+      },
+      "total_starts": 336
+    }
+  },
+  "leaderboard": [
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 11.71875,
+          "max_breach_pct": 3.90625,
+          "not_reached_pct": 27.34375,
+          "pass_ci95_pct": [
+            48.373932885040404,
+            65.27882866736337
+          ],
+          "pass_pct": 57.03125,
+          "runs": 128
+        },
+        "eligible_pct": 9.763539282990084,
+        "eligible_starts": 128,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 52.799999999999955,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 37.5,
+          "pass_ci95_pct": [
+            53.86400519080884,
+            70.40757090235344
+          ],
+          "pass_pct": 62.5,
+          "runs": 128
+        },
+        "total_starts": 1311
+      },
+      "gate": "pnl_10_recovery",
+      "preholdout_pass": false,
+      "preholdout_score": 50.0,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 27.77777777777778,
+          "max_breach_pct": 11.11111111111111,
+          "not_reached_pct": 11.11111111111111,
+          "pass_ci95_pct": [
+            29.031021505169974,
+            70.96897849483003
+          ],
+          "pass_pct": 50.0,
+          "runs": 18
+        },
+        "eligible_pct": 5.357142857142857,
+        "eligible_starts": 18,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 28.59999999999996,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 50.0,
+          "pass_ci95_pct": [
+            29.031021505169974,
+            70.96897849483003
+          ],
+          "pass_pct": 50.0,
+          "runs": 18
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 19.51530612244898,
+          "max_breach_pct": 12.627551020408163,
+          "not_reached_pct": 19.77040816326531,
+          "pass_ci95_pct": [
+            44.6072156687911,
+            51.58491160959476
+          ],
+          "pass_pct": 48.08673469387755,
+          "runs": 784
+        },
+        "eligible_pct": 59.80167810831426,
+        "eligible_starts": 784,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 2.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 47.5765306122449,
+          "pass_ci95_pct": [
+            48.92434370544997,
+            55.89896174192792
+          ],
+          "pass_pct": 52.423469387755105,
+          "runs": 784
+        },
+        "total_starts": 1311
+      },
+      "gate": "pnl_20_pos",
+      "preholdout_pass": false,
+      "preholdout_score": 35.981308411214954,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 42.05607476635514,
+          "max_breach_pct": 7.476635514018691,
+          "not_reached_pct": 14.485981308411214,
+          "pass_ci95_pct": [
+            29.850345970128295,
+            42.60668754185063
+          ],
+          "pass_pct": 35.981308411214954,
+          "runs": 214
+        },
+        "eligible_pct": 63.69047619047619,
+        "eligible_starts": 214,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 3.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 58.41121495327103,
+          "pass_ci95_pct": [
+            35.190363155825935,
+            48.28385695136143
+          ],
+          "pass_pct": 41.58878504672897,
+          "runs": 214
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 18.892045454545457,
+          "max_breach_pct": 10.653409090909092,
+          "not_reached_pct": 21.448863636363637,
+          "pass_ci95_pct": [
+            45.328392147640606,
+            52.69376382732518
+          ],
+          "pass_pct": 49.00568181818182,
+          "runs": 704
+        },
+        "eligible_pct": 53.69946605644546,
+        "eligible_starts": 704,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 6.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 46.875,
+          "pass_ci95_pct": [
+            49.43179239892036,
+            56.78428882261569
+          ],
+          "pass_pct": 53.125,
+          "runs": 704
+        },
+        "total_starts": 1311
+      },
+      "gate": "pnl_10_pos",
+      "preholdout_pass": false,
+      "preholdout_score": 35.54502369668246,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 41.70616113744076,
+          "max_breach_pct": 7.109004739336493,
+          "not_reached_pct": 15.639810426540285,
+          "pass_ci95_pct": [
+            29.397874992150847,
+            42.209094940542464
+          ],
+          "pass_pct": 35.54502369668246,
+          "runs": 211
+        },
+        "eligible_pct": 62.79761904761905,
+        "eligible_starts": 211,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 3.549999999999983,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 59.71563981042654,
+          "pass_ci95_pct": [
+            33.89732801766573,
+            47.01883210102977
+          ],
+          "pass_pct": 40.28436018957346,
+          "runs": 211
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 21.0,
+          "max_breach_pct": 11.200000000000001,
+          "not_reached_pct": 20.200000000000003,
+          "pass_ci95_pct": [
+            43.257418943321426,
+            51.979177890894036
+          ],
+          "pass_pct": 47.599999999999994,
+          "runs": 500
+        },
+        "eligible_pct": 38.13882532418002,
+        "eligible_starts": 500,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 8.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 47.599999999999994,
+          "pass_ci95_pct": [
+            48.02082210910598,
+            56.74258105667859
+          ],
+          "pass_pct": 52.400000000000006,
+          "runs": 500
+        },
+        "total_starts": 1311
+      },
+      "gate": "pnl_05_20_pos",
+      "preholdout_pass": false,
+      "preholdout_score": 35.46099290780142,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 41.13475177304964,
+          "max_breach_pct": 4.964539007092199,
+          "not_reached_pct": 18.439716312056735,
+          "pass_ci95_pct": [
+            28.046146449372728,
+            43.64704116843788
+          ],
+          "pass_pct": 35.46099290780142,
+          "runs": 141
+        },
+        "eligible_pct": 41.964285714285715,
+        "eligible_starts": 141,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 6.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 60.28368794326241,
+          "pass_ci95_pct": [
+            32.015714907873175,
+            47.962393407163596
+          ],
+          "pass_pct": 39.71631205673759,
+          "runs": 141
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 19.362186788154897,
+          "max_breach_pct": 14.009111617312072,
+          "not_reached_pct": 19.362186788154897,
+          "pass_ci95_pct": [
+            43.98326849317679,
+            50.57357621854823
+          ],
+          "pass_pct": 47.26651480637813,
+          "runs": 878
+        },
+        "eligible_pct": 66.9717772692601,
+        "eligible_starts": 878,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 1.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 49.31662870159453,
+          "pass_ci95_pct": [
+            47.380633686115644,
+            53.98015513595311
+          ],
+          "pass_pct": 50.68337129840547,
+          "runs": 878
+        },
+        "total_starts": 1311
+      },
+      "gate": "pnl_40_pos",
+      "preholdout_pass": false,
+      "preholdout_score": 35.338345864661655,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 46.616541353383454,
+          "max_breach_pct": 5.263157894736842,
+          "not_reached_pct": 12.781954887218044,
+          "pass_ci95_pct": [
+            29.839766525535154,
+            41.254371365325454
+          ],
+          "pass_pct": 35.338345864661655,
+          "runs": 266
+        },
+        "eligible_pct": 79.16666666666667,
+        "eligible_starts": 266,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 1.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 57.89473684210527,
+          "pass_ci95_pct": [
+            36.32568270070295,
+            48.109622317452754
+          ],
+          "pass_pct": 42.10526315789473,
+          "runs": 266
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 20.48611111111111,
+          "max_breach_pct": 12.152777777777777,
+          "not_reached_pct": 20.13888888888889,
+          "pass_ci95_pct": [
+            43.177158642970184,
+            51.30409144475502
+          ],
+          "pass_pct": 47.22222222222222,
+          "runs": 576
+        },
+        "eligible_pct": 43.93592677345538,
+        "eligible_starts": 576,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 6.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 48.95833333333333,
+          "pass_ci95_pct": [
+            46.96593303657979,
+            55.103598180523264
+          ],
+          "pass_pct": 51.041666666666664,
+          "runs": 576
+        },
+        "total_starts": 1311
+      },
+      "gate": "pnl_10_40_pos",
+      "preholdout_pass": false,
+      "preholdout_score": 34.196891191709845,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 43.005181347150256,
+          "max_breach_pct": 6.7357512953367875,
+          "not_reached_pct": 16.06217616580311,
+          "pass_ci95_pct": [
+            27.87128664341073,
+            41.13930677249875
+          ],
+          "pass_pct": 34.196891191709845,
+          "runs": 193
+        },
+        "eligible_pct": 57.44047619047619,
+        "eligible_starts": 193,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 3.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 60.62176165803109,
+          "pass_ci95_pct": [
+            32.75691569755639,
+            46.41413889346474
+          ],
+          "pass_pct": 39.37823834196891,
+          "runs": 193
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 21.13943028485757,
+          "max_breach_pct": 9.745127436281859,
+          "not_reached_pct": 22.488755622188904,
+          "pass_ci95_pct": [
+            42.87094917962597,
+            50.421057536967275
+          ],
+          "pass_pct": 46.62668665667166,
+          "runs": 667
+        },
+        "eligible_pct": 50.87719298245614,
+        "eligible_starts": 667,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 7.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 48.425787106446776,
+          "pass_ci95_pct": [
+            47.78343789246105,
+            55.34695897312877
+          ],
+          "pass_pct": 51.57421289355323,
+          "runs": 667
+        },
+        "total_starts": 1311
+      },
+      "gate": "pnl_05_pos",
+      "preholdout_pass": false,
+      "preholdout_score": 33.33333333333333,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 43.01075268817204,
+          "max_breach_pct": 4.301075268817205,
+          "not_reached_pct": 19.35483870967742,
+          "pass_ci95_pct": [
+            26.956375774166357,
+            40.38479386014455
+          ],
+          "pass_pct": 33.33333333333333,
+          "runs": 186
+        },
+        "eligible_pct": 55.357142857142854,
+        "eligible_starts": 186,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 6.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 62.365591397849464,
+          "pass_ci95_pct": [
+            30.988525062329952,
+            44.78072982764265
+          ],
+          "pass_pct": 37.634408602150536,
+          "runs": 186
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 22.067901234567902,
+          "max_breach_pct": 14.19753086419753,
+          "not_reached_pct": 20.833333333333336,
+          "pass_ci95_pct": [
+            39.14334856261214,
+            46.74279004439738
+          ],
+          "pass_pct": 42.901234567901234,
+          "runs": 648
+        },
+        "eligible_pct": 49.4279176201373,
+        "eligible_starts": 648,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 2.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 52.46913580246913,
+          "pass_ci95_pct": [
+            43.711698498489795,
+            51.37913232133962
+          ],
+          "pass_pct": 47.53086419753087,
+          "runs": 648
+        },
+        "total_starts": 1311
+      },
+      "gate": "pnl_20_60_pos",
+      "preholdout_pass": false,
+      "preholdout_score": 32.64248704663213,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 43.523316062176164,
+          "max_breach_pct": 8.290155440414509,
+          "not_reached_pct": 15.544041450777202,
+          "pass_ci95_pct": [
+            26.421974962732865,
+            39.54048010064313
+          ],
+          "pass_pct": 32.64248704663213,
+          "runs": 193
+        },
+        "eligible_pct": 57.44047619047619,
+        "eligible_starts": 193,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 3.4499999999999886,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 62.17616580310881,
+          "pass_ci95_pct": [
+            31.282678114299,
+            44.84023812418864
+          ],
+          "pass_pct": 37.82383419689119,
+          "runs": 193
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 20.51282051282051,
+          "max_breach_pct": 14.827201783723524,
+          "not_reached_pct": 19.620958751393534,
+          "pass_ci95_pct": [
+            41.81113589417451,
+            48.30921223939038
+          ],
+          "pass_pct": 45.039018952062435,
+          "runs": 897
+        },
+        "eligible_pct": 68.42105263157895,
+        "eligible_starts": 897,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 1.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 51.39353400222966,
+          "pass_ci95_pct": [
+            45.34859075155444,
+            51.87622613989637
+          ],
+          "pass_pct": 48.60646599777034,
+          "runs": 897
+        },
+        "total_starts": 1311
+      },
+      "gate": "pnl_60_pos",
+      "preholdout_pass": false,
+      "preholdout_score": 30.514705882352942,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 48.529411764705884,
+          "max_breach_pct": 6.25,
+          "not_reached_pct": 14.705882352941178,
+          "pass_ci95_pct": [
+            25.34529663571351,
+            36.22683234983416
+          ],
+          "pass_pct": 30.514705882352942,
+          "runs": 272
+        },
+        "eligible_pct": 80.95238095238095,
+        "eligible_starts": 272,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 1.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 62.86764705882353,
+          "pass_ci95_pct": [
+            31.606986879673105,
+            43.01611716738668
+          ],
+          "pass_pct": 37.13235294117647,
+          "runs": 272
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 21.55688622754491,
+          "max_breach_pct": 5.389221556886228,
+          "not_reached_pct": 29.34131736526946,
+          "pass_ci95_pct": [
+            36.41453604626704,
+            51.293365686157024
+          ],
+          "pass_pct": 43.712574850299404,
+          "runs": 167
+        },
+        "eligible_pct": 12.738367658276125,
+        "eligible_starts": 167,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 37.70000000000002,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 50.898203592814376,
+          "pass_ci95_pct": [
+            41.625589571926355,
+            56.6183963898485
+          ],
+          "pass_pct": 49.101796407185624,
+          "runs": 167
+        },
+        "total_starts": 1311
+      },
+      "gate": "pnl_05_recovery",
+      "preholdout_pass": false,
+      "preholdout_score": 26.666666666666668,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 48.888888888888886,
+          "max_breach_pct": 2.2222222222222223,
+          "not_reached_pct": 22.22222222222222,
+          "pass_ci95_pct": [
+            15.964903521066521,
+            41.038837753134935
+          ],
+          "pass_pct": 26.666666666666668,
+          "runs": 45
+        },
+        "eligible_pct": 13.392857142857142,
+        "eligible_starts": 45,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 32.550000000000004,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 68.88888888888889,
+          "pass_ci95_pct": [
+            19.528699263653408,
+            45.66480557736682
+          ],
+          "pass_pct": 31.11111111111111,
+          "runs": 45
+        },
+        "total_starts": 336
+      }
+    }
+  ],
+  "manifest": "artifacts\\ftmo_joint_ten_sleeve_10375_11708_manifest_2026-07-12.json",
+  "policy": {
+    "daily_stop": 4500.0,
+    "full_risk_room": 4000.0,
+    "horizon_calendar_days": 30,
+    "risk_multiplier": 25.0,
+    "room_retention": 0.2
+  },
+  "preholdout_survivor_count": 0,
+  "scenario": "anchor_plus_11708_01",
+  "schema_version": 1,
+  "selected_winner": null,
+  "selection_contract": {
+    "development_years": [
+      2018,
+      2019,
+      2021,
+      2022
+    ],
+    "lookback_calendar_days": [
+      5,
+      10,
+      20,
+      40,
+      60
+    ],
+    "minimum_development_starts": 150,
+    "minimum_eligible_pct_each_split": 15.0,
+    "minimum_floor_pct_each_fill_and_split": 75.0,
+    "minimum_improvement_pct_each_fill_and_split": 2.0,
+    "minimum_validation_starts": 30,
+    "post_seal_lookback_days_excluded": 60,
+    "sealed_years_unopened": [
+      2017,
+      2020,
+      2024,
+      2025
+    ],
+    "selection_uses_sealed_years": false,
+    "validation_years": [
+      2023
+    ]
+  },
+  "status": "NO_PREHOLDOUT_SURVIVOR",
+  "timestamp_basis": "darwinex_broker_wall",
+  "trade_paths": 3480
+}

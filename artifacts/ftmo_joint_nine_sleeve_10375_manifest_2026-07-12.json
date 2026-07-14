@@ -1,0 +1,406 @@
+{
+  "schema_version": 1,
+  "snapshot_date": "2026-07-12",
+  "status": "RESEARCH_ONLY_NO_GO",
+  "deployment_allowed": false,
+  "timestamp_basis": "darwinex_broker_wall",
+  "basis": "fresh_report_reconciled_q08_mae_streams_current_ftmo_costs_with_10375_density_scout",
+  "candidate_evidence": [
+    "artifacts/ftmo_10715_stream_reconciliation_2026-07-11.json",
+    "artifacts/ftmo_10715_usdjpy_current_report_cost_reconciliation_2026-07-11.json",
+    "artifacts/ftmo_10286_stream_reconciliation_current_2026-07-11.json",
+    "artifacts/ftmo_10286_xti_q02_current_binary_2026-07-11.json",
+    "artifacts/ftmo_xti_m15_tick_export_validation_2026-07-11.json",
+    "artifacts/ftmo_10375_fresh_stream_reconciliation_2026-07-12.json",
+    "artifacts/ftmo_10375_ndx_current_report_cost_reconciliation_2026-07-12.json"
+  ],
+  "sleeves": [
+    {
+      "ea_id": 10440,
+      "symbol": "NDX.DWX",
+      "summary_path": "D:\\QM\\reports\\ftmo_10440_q02_current_20260711\\QM5_10440\\20260710_235517\\summary.json",
+      "stream_path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\10440_NDX_DWX.jsonl",
+      "base_risk_fixed": 1000.0,
+      "qualification": "research_reserve_native_equity_drawdown_above_15pct",
+      "cost": {
+        "ftmo_symbol_code": "US100.cash",
+        "commission_percent_per_side": 0.0,
+        "flat_round_trip_commission_per_lot": 0.0,
+        "swap_long_points": -626.88,
+        "swap_short_points": 19.57,
+        "contract_size": 1.0,
+        "source_contract_size": 1.0,
+        "profit_currency_to_account_rate": 1.0,
+        "derive_profit_currency_rate_from_pnl": false,
+        "digits": 2,
+        "triple_weekday": 2
+      }
+    },
+    {
+      "ea_id": 12969,
+      "symbol": "USDJPY.DWX",
+      "summary_path": "D:\\QM\\reports\\ftmo_12969_q02_current_20260711\\QM5_12969\\20260710_230445\\summary.json",
+      "stream_path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\12969_USDJPY_DWX.jsonl",
+      "base_risk_fixed": 1000.0,
+      "qualification": "ftmo_current_cost_q02_pass",
+      "cost": {
+        "ftmo_symbol_code": "USD/JPY",
+        "commission_percent_per_side": 0.0,
+        "flat_round_trip_commission_per_lot": 5.0,
+        "swap_long_points": 2.62,
+        "swap_short_points": -22.41,
+        "contract_size": 100000.0,
+        "source_contract_size": 100000.0,
+        "profit_currency_to_account_rate": 0.0066666667,
+        "derive_profit_currency_rate_from_pnl": true,
+        "digits": 3,
+        "triple_weekday": 2
+      }
+    },
+    {
+      "ea_id": 12990,
+      "symbol": "GBPUSD.DWX",
+      "summary_path": "D:\\QM\\reports\\ftmo_12990_q02_current_20260711\\QM5_12990\\20260710_232741\\summary.json",
+      "stream_path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\12990_GBPUSD_DWX.jsonl",
+      "base_risk_fixed": 1000.0,
+      "qualification": "conditional_low_frequency",
+      "cost": {
+        "ftmo_symbol_code": "GBP/USD",
+        "commission_percent_per_side": 0.0,
+        "flat_round_trip_commission_per_lot": 5.0,
+        "swap_long_points": -5.77,
+        "swap_short_points": -4.97,
+        "contract_size": 100000.0,
+        "source_contract_size": 100000.0,
+        "profit_currency_to_account_rate": 1.0,
+        "derive_profit_currency_rate_from_pnl": false,
+        "digits": 5,
+        "triple_weekday": 2
+      }
+    },
+    {
+      "ea_id": 10377,
+      "symbol": "XAUUSD.DWX",
+      "summary_path": "D:\\QM\\reports\\pipeline_ftmo_secret\\q06_10377_xau_d1_reconcile\\QM5_10377\\20260711_123600\\summary.json",
+      "stream_path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\10377_XAUUSD_D1_HARSH.jsonl",
+      "base_risk_fixed": 1000.0,
+      "qualification": "research_lead_q08_fail_soft_singleton_card",
+      "cost": {
+        "ftmo_symbol_code": "XAU/USD",
+        "commission_percent_per_side": 0.0014,
+        "flat_round_trip_commission_per_lot": 0.0,
+        "swap_long_points": -75.93,
+        "swap_short_points": -23.55,
+        "contract_size": 100.0,
+        "source_contract_size": 100.0,
+        "profit_currency_to_account_rate": 1.0,
+        "derive_profit_currency_rate_from_pnl": false,
+        "digits": 2,
+        "triple_weekday": 2
+      }
+    },
+    {
+      "ea_id": 10558,
+      "symbol": "EURUSD.DWX",
+      "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\dense_refresh_mae_20260711\\10558\\QM5_10558\\20260711_184034\\summary.json",
+      "stream_path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\10558_EURUSD_DWX_MAE_REFRESH_20260711.jsonl",
+      "base_risk_fixed": 1000.0,
+      "qualification": "fresh_reconciled_research_only_q08_fail_hard",
+      "cost": {
+        "ftmo_symbol_code": "EUR/USD",
+        "commission_percent_per_side": 0.0,
+        "flat_round_trip_commission_per_lot": 5.0,
+        "swap_long_points": -11.03,
+        "swap_short_points": 0.35,
+        "contract_size": 100000.0,
+        "source_contract_size": 100000.0,
+        "profit_currency_to_account_rate": 1.0,
+        "derive_profit_currency_rate_from_pnl": false,
+        "digits": 5,
+        "triple_weekday": 2
+      }
+    },
+    {
+      "ea_id": 11095,
+      "symbol": "GBPUSD.DWX",
+      "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\dense_refresh_mae_20260711\\11095\\QM5_11095\\20260711_184034\\summary.json",
+      "stream_path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\11095_GBPUSD_DWX_MAE_REFRESH_20260711.jsonl",
+      "base_risk_fixed": 1000.0,
+      "qualification": "fresh_reconciled_research_only_q08_fail_hard",
+      "cost": {
+        "ftmo_symbol_code": "GBP/USD",
+        "commission_percent_per_side": 0.0,
+        "flat_round_trip_commission_per_lot": 5.0,
+        "swap_long_points": -5.77,
+        "swap_short_points": -4.97,
+        "contract_size": 100000.0,
+        "source_contract_size": 100000.0,
+        "profit_currency_to_account_rate": 1.0,
+        "derive_profit_currency_rate_from_pnl": false,
+        "digits": 5,
+        "triple_weekday": 2
+      }
+    },
+    {
+      "ea_id": 10715,
+      "symbol": "USDJPY.DWX",
+      "summary_path": "D:\\QM\\reports\\smoke_dxz_rebt\\QM5_10715\\20260710_212347\\summary.json",
+      "stream_path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\10715_USDJPY_DWX_REFRESH_20260711.jsonl",
+      "base_risk_fixed": 1000.0,
+      "qualification": "density_scout_reconciled_q02_fail_pf_1_128466",
+      "cost": {
+        "ftmo_symbol_code": "USD/JPY",
+        "commission_percent_per_side": 0.0,
+        "flat_round_trip_commission_per_lot": 5.0,
+        "swap_long_points": 2.62,
+        "swap_short_points": -22.41,
+        "contract_size": 100000.0,
+        "source_contract_size": 100000.0,
+        "profit_currency_to_account_rate": 0.0066666667,
+        "derive_profit_currency_rate_from_pnl": true,
+        "digits": 3,
+        "triple_weekday": 2
+      }
+    },
+    {
+      "ea_id": 10286,
+      "symbol": "XTIUSD.DWX",
+      "summary_path": "D:\\QM\\reports\\ftmo_10286_q02_current_20260711\\QM5_10286\\20260710_235050\\summary.json",
+      "stream_path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\10286_XTIUSD_DWX.jsonl",
+      "bar_path": "D:\\QM\\reports\\ftmo\\bar_exports\\XTIUSD.DWX_M15_TICKS_2018_2025.csv",
+      "base_risk_fixed": 1000.0,
+      "qualification": "density_scout_reconciled_two_negative_active_years_high_drawdown",
+      "cost": {
+        "ftmo_symbol_code": "USOIL.cash",
+        "commission_percent_per_side": 0.0,
+        "flat_round_trip_commission_per_lot": 0.0,
+        "swap_long_points": 7.2,
+        "swap_short_points": -39.19,
+        "contract_size": 100.0,
+        "source_contract_size": 1000.0,
+        "profit_currency_to_account_rate": 1.0,
+        "derive_profit_currency_rate_from_pnl": false,
+        "digits": 3,
+        "triple_weekday": 2
+      }
+    },
+    {
+      "ea_id": 10375,
+      "symbol": "NDX.DWX",
+      "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10375_20260712\\QM5_10375\\20260711_234848\\summary.json",
+      "stream_path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\10375_NDX_DWX_FRESH_20260712.jsonl",
+      "base_risk_fixed": 1000.0,
+      "qualification": "density_scout_fresh_reconciled_q02_fail_pf_1_152826",
+      "cost": {
+        "ftmo_symbol_code": "US100.cash",
+        "commission_percent_per_side": 0.0,
+        "flat_round_trip_commission_per_lot": 0.0,
+        "swap_long_points": -626.88,
+        "swap_short_points": 19.57,
+        "contract_size": 1.0,
+        "source_contract_size": 1.0,
+        "profit_currency_to_account_rate": 1.0,
+        "derive_profit_currency_rate_from_pnl": false,
+        "digits": 2,
+        "triple_weekday": 2
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "name": "anchor_eight_control",
+      "weights": {
+        "10440:NDX.DWX": 0.128331,
+        "12969:USDJPY.DWX": 0.150156,
+        "12990:GBPUSD.DWX": 0.131823,
+        "10377:XAUUSD.DWX": 0.182457,
+        "10558:EURUSD.DWX": 0.163251,
+        "11095:GBPUSD.DWX": 0.116982,
+        "10715:USDJPY.DWX": 0.027,
+        "10286:XTIUSD.DWX": 0.1
+      }
+    },
+    {
+      "name": "anchor_plus_10375_01",
+      "weights": {
+        "10440:NDX.DWX": 0.12704769,
+        "12969:USDJPY.DWX": 0.14865444,
+        "12990:GBPUSD.DWX": 0.13050477,
+        "10377:XAUUSD.DWX": 0.18063243,
+        "10558:EURUSD.DWX": 0.16161849,
+        "11095:GBPUSD.DWX": 0.11581218,
+        "10715:USDJPY.DWX": 0.02673,
+        "10286:XTIUSD.DWX": 0.099,
+        "10375:NDX.DWX": 0.01
+      }
+    },
+    {
+      "name": "anchor_plus_10375_02",
+      "weights": {
+        "10440:NDX.DWX": 0.12576438,
+        "12969:USDJPY.DWX": 0.14715288,
+        "12990:GBPUSD.DWX": 0.12918654,
+        "10377:XAUUSD.DWX": 0.17880786,
+        "10558:EURUSD.DWX": 0.15998598,
+        "11095:GBPUSD.DWX": 0.11464236,
+        "10715:USDJPY.DWX": 0.02646,
+        "10286:XTIUSD.DWX": 0.098,
+        "10375:NDX.DWX": 0.02
+      }
+    },
+    {
+      "name": "anchor_plus_10375_03",
+      "weights": {
+        "10440:NDX.DWX": 0.12448107,
+        "12969:USDJPY.DWX": 0.14565132,
+        "12990:GBPUSD.DWX": 0.12786830999999999,
+        "10377:XAUUSD.DWX": 0.17698329000000002,
+        "10558:EURUSD.DWX": 0.15835347,
+        "11095:GBPUSD.DWX": 0.11347254,
+        "10715:USDJPY.DWX": 0.026189999999999998,
+        "10286:XTIUSD.DWX": 0.097,
+        "10375:NDX.DWX": 0.03
+      }
+    },
+    {
+      "name": "anchor_plus_10375_05",
+      "weights": {
+        "10440:NDX.DWX": 0.12191445,
+        "12969:USDJPY.DWX": 0.1426482,
+        "12990:GBPUSD.DWX": 0.12523184999999998,
+        "10377:XAUUSD.DWX": 0.17333415,
+        "10558:EURUSD.DWX": 0.15508845,
+        "11095:GBPUSD.DWX": 0.11113289999999999,
+        "10715:USDJPY.DWX": 0.02565,
+        "10286:XTIUSD.DWX": 0.095,
+        "10375:NDX.DWX": 0.05
+      }
+    },
+    {
+      "name": "anchor_plus_10375_08",
+      "weights": {
+        "10440:NDX.DWX": 0.11806452,
+        "12969:USDJPY.DWX": 0.13814352000000002,
+        "12990:GBPUSD.DWX": 0.12127716,
+        "10377:XAUUSD.DWX": 0.16786044000000003,
+        "10558:EURUSD.DWX": 0.15019092,
+        "11095:GBPUSD.DWX": 0.10762344,
+        "10715:USDJPY.DWX": 0.02484,
+        "10286:XTIUSD.DWX": 0.09200000000000001,
+        "10375:NDX.DWX": 0.08
+      }
+    },
+    {
+      "name": "anchor_plus_10375_10",
+      "weights": {
+        "10440:NDX.DWX": 0.1154979,
+        "12969:USDJPY.DWX": 0.13514040000000002,
+        "12990:GBPUSD.DWX": 0.1186407,
+        "10377:XAUUSD.DWX": 0.1642113,
+        "10558:EURUSD.DWX": 0.1469259,
+        "11095:GBPUSD.DWX": 0.10528380000000001,
+        "10715:USDJPY.DWX": 0.0243,
+        "10286:XTIUSD.DWX": 0.09000000000000001,
+        "10375:NDX.DWX": 0.1
+      }
+    },
+    {
+      "name": "anchor_plus_10375_15",
+      "weights": {
+        "10440:NDX.DWX": 0.10908135,
+        "12969:USDJPY.DWX": 0.1276326,
+        "12990:GBPUSD.DWX": 0.11204955,
+        "10377:XAUUSD.DWX": 0.15508845000000002,
+        "10558:EURUSD.DWX": 0.13876335,
+        "11095:GBPUSD.DWX": 0.0994347,
+        "10715:USDJPY.DWX": 0.022949999999999998,
+        "10286:XTIUSD.DWX": 0.085,
+        "10375:NDX.DWX": 0.15
+      }
+    },
+    {
+      "name": "anchor_plus_10375_20",
+      "weights": {
+        "10440:NDX.DWX": 0.1026648,
+        "12969:USDJPY.DWX": 0.12012480000000002,
+        "12990:GBPUSD.DWX": 0.10545840000000001,
+        "10377:XAUUSD.DWX": 0.1459656,
+        "10558:EURUSD.DWX": 0.13060080000000002,
+        "11095:GBPUSD.DWX": 0.0935856,
+        "10715:USDJPY.DWX": 0.0216,
+        "10286:XTIUSD.DWX": 0.08000000000000002,
+        "10375:NDX.DWX": 0.2
+      }
+    },
+    {
+      "name": "anchor_plus_10375_09",
+      "weights": {
+        "10440:NDX.DWX": 0.11678121000000001,
+        "12969:USDJPY.DWX": 0.13664196,
+        "12990:GBPUSD.DWX": 0.11995893,
+        "10377:XAUUSD.DWX": 0.16603587,
+        "10558:EURUSD.DWX": 0.14855841,
+        "11095:GBPUSD.DWX": 0.10645362000000001,
+        "10715:USDJPY.DWX": 0.02457,
+        "10286:XTIUSD.DWX": 0.09100000000000001,
+        "10375:NDX.DWX": 0.09
+      }
+    },
+    {
+      "name": "anchor_plus_10375_11",
+      "weights": {
+        "10440:NDX.DWX": 0.11421459,
+        "12969:USDJPY.DWX": 0.13363884,
+        "12990:GBPUSD.DWX": 0.11732247,
+        "10377:XAUUSD.DWX": 0.16238673,
+        "10558:EURUSD.DWX": 0.14529339000000002,
+        "11095:GBPUSD.DWX": 0.10411398000000001,
+        "10715:USDJPY.DWX": 0.02403,
+        "10286:XTIUSD.DWX": 0.08900000000000001,
+        "10375:NDX.DWX": 0.11
+      }
+    },
+    {
+      "name": "anchor_plus_10375_12",
+      "weights": {
+        "10440:NDX.DWX": 0.11293128,
+        "12969:USDJPY.DWX": 0.13213728000000002,
+        "12990:GBPUSD.DWX": 0.11600424,
+        "10377:XAUUSD.DWX": 0.16056216,
+        "10558:EURUSD.DWX": 0.14366088000000002,
+        "11095:GBPUSD.DWX": 0.10294416,
+        "10715:USDJPY.DWX": 0.02376,
+        "10286:XTIUSD.DWX": 0.08800000000000001,
+        "10375:NDX.DWX": 0.12
+      }
+    },
+    {
+      "name": "anchor_plus_10375_13",
+      "weights": {
+        "10440:NDX.DWX": 0.11164797,
+        "12969:USDJPY.DWX": 0.13063572,
+        "12990:GBPUSD.DWX": 0.11468600999999999,
+        "10377:XAUUSD.DWX": 0.15873759,
+        "10558:EURUSD.DWX": 0.14202837000000001,
+        "11095:GBPUSD.DWX": 0.10177434,
+        "10715:USDJPY.DWX": 0.02349,
+        "10286:XTIUSD.DWX": 0.08700000000000001,
+        "10375:NDX.DWX": 0.13
+      }
+    },
+    {
+      "name": "anchor_plus_10375_14",
+      "weights": {
+        "10440:NDX.DWX": 0.11036466,
+        "12969:USDJPY.DWX": 0.12913416,
+        "12990:GBPUSD.DWX": 0.11336778,
+        "10377:XAUUSD.DWX": 0.15691302000000001,
+        "10558:EURUSD.DWX": 0.14039586,
+        "11095:GBPUSD.DWX": 0.10060452,
+        "10715:USDJPY.DWX": 0.02322,
+        "10286:XTIUSD.DWX": 0.08600000000000001,
+        "10375:NDX.DWX": 0.14
+      }
+    }
+  ]
+}

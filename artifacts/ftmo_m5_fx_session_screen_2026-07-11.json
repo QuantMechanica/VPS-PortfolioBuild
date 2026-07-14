@@ -1,0 +1,738 @@
+{
+  "costs": {
+    "EURUSD.DWX": 0.00015,
+    "GBPJPY.DWX": 0.0325,
+    "GBPUSD.DWX": 0.00018,
+    "USDJPY.DWX": 0.0225
+  },
+  "evaluated_configurations": 2160,
+  "holdout_pass_count": 0,
+  "preholdout_leaderboard": {
+    "london_fix": [
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 17.288829,
+          "net_r": -1.377707,
+          "profit_factor": 0.97607,
+          "trades": 272,
+          "win_rate": 0.485294
+        },
+        "parameters": {
+          "direction": -1,
+          "entry_minute": 900,
+          "exit_minute": 960,
+          "stop_range_multiple": 8.0,
+          "target_r": 0.0,
+          "timezone": "Europe/London",
+          "weekday": 1
+        },
+        "positive_dev_years": 2,
+        "preholdout_score": 0.97607,
+        "symbol": "EURUSD.DWX",
+        "validation_2023": {
+          "max_drawdown_r": 4.057947,
+          "net_r": -0.242316,
+          "profit_factor": 0.981862,
+          "trades": 51,
+          "win_rate": 0.470588
+        }
+      },
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 17.288829,
+          "net_r": -2.765611,
+          "profit_factor": 0.951964,
+          "trades": 272,
+          "win_rate": 0.485294
+        },
+        "parameters": {
+          "direction": -1,
+          "entry_minute": 900,
+          "exit_minute": 960,
+          "stop_range_multiple": 8.0,
+          "target_r": 3.0,
+          "timezone": "Europe/London",
+          "weekday": 1
+        },
+        "positive_dev_years": 2,
+        "preholdout_score": 0.951964,
+        "symbol": "EURUSD.DWX",
+        "validation_2023": {
+          "max_drawdown_r": 4.057947,
+          "net_r": -0.242316,
+          "profit_factor": 0.981862,
+          "trades": 51,
+          "win_rate": 0.470588
+        }
+      },
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 5.844382,
+          "net_r": -0.867874,
+          "profit_factor": 0.95572,
+          "trades": 272,
+          "win_rate": 0.485294
+        },
+        "parameters": {
+          "direction": -1,
+          "entry_minute": 900,
+          "exit_minute": 960,
+          "stop_range_multiple": 24.0,
+          "target_r": 0.0,
+          "timezone": "Europe/London",
+          "weekday": 1
+        },
+        "positive_dev_years": 2,
+        "preholdout_score": 0.940406,
+        "symbol": "EURUSD.DWX",
+        "validation_2023": {
+          "max_drawdown_r": 1.815159,
+          "net_r": -0.2789,
+          "profit_factor": 0.940406,
+          "trades": 51,
+          "win_rate": 0.490196
+        }
+      },
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 5.844382,
+          "net_r": -0.867874,
+          "profit_factor": 0.95572,
+          "trades": 272,
+          "win_rate": 0.485294
+        },
+        "parameters": {
+          "direction": -1,
+          "entry_minute": 900,
+          "exit_minute": 960,
+          "stop_range_multiple": 24.0,
+          "target_r": 2.0,
+          "timezone": "Europe/London",
+          "weekday": 1
+        },
+        "positive_dev_years": 2,
+        "preholdout_score": 0.940406,
+        "symbol": "EURUSD.DWX",
+        "validation_2023": {
+          "max_drawdown_r": 1.815159,
+          "net_r": -0.2789,
+          "profit_factor": 0.940406,
+          "trades": 51,
+          "win_rate": 0.490196
+        }
+      },
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 5.844382,
+          "net_r": -0.867874,
+          "profit_factor": 0.95572,
+          "trades": 272,
+          "win_rate": 0.485294
+        },
+        "parameters": {
+          "direction": -1,
+          "entry_minute": 900,
+          "exit_minute": 960,
+          "stop_range_multiple": 24.0,
+          "target_r": 3.0,
+          "timezone": "Europe/London",
+          "weekday": 1
+        },
+        "positive_dev_years": 2,
+        "preholdout_score": 0.940406,
+        "symbol": "EURUSD.DWX",
+        "validation_2023": {
+          "max_drawdown_r": 1.815159,
+          "net_r": -0.2789,
+          "profit_factor": 0.940406,
+          "trades": 51,
+          "win_rate": 0.490196
+        }
+      }
+    ],
+    "london_midday": [
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 11.199782,
+          "net_r": 16.249789,
+          "profit_factor": 1.188798,
+          "trades": 271,
+          "win_rate": 0.520295
+        },
+        "parameters": {
+          "direction": -1,
+          "entry_minute": 660,
+          "exit_minute": 900,
+          "stop_range_multiple": 8.0,
+          "target_r": 0.0,
+          "timezone": "Europe/London",
+          "weekday": 1
+        },
+        "positive_dev_years": 4,
+        "preholdout_score": 1.188798,
+        "symbol": "EURUSD.DWX",
+        "validation_2023": {
+          "max_drawdown_r": 4.601573,
+          "net_r": 4.187314,
+          "profit_factor": 1.270855,
+          "trades": 51,
+          "win_rate": 0.568627
+        }
+      },
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 6.113056,
+          "net_r": 8.243379,
+          "profit_factor": 1.18761,
+          "trades": 271,
+          "win_rate": 0.531365
+        },
+        "parameters": {
+          "direction": -1,
+          "entry_minute": 660,
+          "exit_minute": 900,
+          "stop_range_multiple": 16.0,
+          "target_r": 2.0,
+          "timezone": "Europe/London",
+          "weekday": 1
+        },
+        "positive_dev_years": 4,
+        "preholdout_score": 1.18761,
+        "symbol": "EURUSD.DWX",
+        "validation_2023": {
+          "max_drawdown_r": 2.558526,
+          "net_r": 3.170455,
+          "profit_factor": 1.468832,
+          "trades": 51,
+          "win_rate": 0.607843
+        }
+      },
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 6.113056,
+          "net_r": 7.940314,
+          "profit_factor": 1.180713,
+          "trades": 271,
+          "win_rate": 0.531365
+        },
+        "parameters": {
+          "direction": -1,
+          "entry_minute": 660,
+          "exit_minute": 900,
+          "stop_range_multiple": 16.0,
+          "target_r": 0.0,
+          "timezone": "Europe/London",
+          "weekday": 1
+        },
+        "positive_dev_years": 4,
+        "preholdout_score": 1.180713,
+        "symbol": "EURUSD.DWX",
+        "validation_2023": {
+          "max_drawdown_r": 2.558526,
+          "net_r": 3.170455,
+          "profit_factor": 1.468832,
+          "trades": 51,
+          "win_rate": 0.607843
+        }
+      },
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 6.113056,
+          "net_r": 7.940314,
+          "profit_factor": 1.180713,
+          "trades": 271,
+          "win_rate": 0.531365
+        },
+        "parameters": {
+          "direction": -1,
+          "entry_minute": 660,
+          "exit_minute": 900,
+          "stop_range_multiple": 16.0,
+          "target_r": 3.0,
+          "timezone": "Europe/London",
+          "weekday": 1
+        },
+        "positive_dev_years": 4,
+        "preholdout_score": 1.180713,
+        "symbol": "EURUSD.DWX",
+        "validation_2023": {
+          "max_drawdown_r": 2.558526,
+          "net_r": 3.170455,
+          "profit_factor": 1.468832,
+          "trades": 51,
+          "win_rate": 0.607843
+        }
+      },
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 4.079815,
+          "net_r": 5.132332,
+          "profit_factor": 1.174251,
+          "trades": 271,
+          "win_rate": 0.531365
+        },
+        "parameters": {
+          "direction": -1,
+          "entry_minute": 660,
+          "exit_minute": 900,
+          "stop_range_multiple": 24.0,
+          "target_r": 0.0,
+          "timezone": "Europe/London",
+          "weekday": 1
+        },
+        "positive_dev_years": 3,
+        "preholdout_score": 1.174251,
+        "symbol": "EURUSD.DWX",
+        "validation_2023": {
+          "max_drawdown_r": 2.039017,
+          "net_r": 1.780303,
+          "profit_factor": 1.367707,
+          "trades": 51,
+          "win_rate": 0.607843
+        }
+      }
+    ],
+    "london_open": [
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 14.610478,
+          "net_r": 7.935187,
+          "profit_factor": 1.120995,
+          "trades": 271,
+          "win_rate": 0.535055
+        },
+        "parameters": {
+          "direction": 1,
+          "entry_minute": 480,
+          "exit_minute": 660,
+          "stop_range_multiple": 8.0,
+          "target_r": 0.0,
+          "timezone": "Europe/London",
+          "weekday": 0
+        },
+        "positive_dev_years": 3,
+        "preholdout_score": 1.120995,
+        "symbol": "EURUSD.DWX",
+        "validation_2023": {
+          "max_drawdown_r": 2.102451,
+          "net_r": 2.632009,
+          "profit_factor": 1.25204,
+          "trades": 51,
+          "win_rate": 0.490196
+        }
+      },
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 14.610478,
+          "net_r": 7.935187,
+          "profit_factor": 1.120995,
+          "trades": 271,
+          "win_rate": 0.535055
+        },
+        "parameters": {
+          "direction": 1,
+          "entry_minute": 480,
+          "exit_minute": 660,
+          "stop_range_multiple": 8.0,
+          "target_r": 3.0,
+          "timezone": "Europe/London",
+          "weekday": 0
+        },
+        "positive_dev_years": 3,
+        "preholdout_score": 1.120995,
+        "symbol": "EURUSD.DWX",
+        "validation_2023": {
+          "max_drawdown_r": 2.102451,
+          "net_r": 2.632009,
+          "profit_factor": 1.25204,
+          "trades": 51,
+          "win_rate": 0.490196
+        }
+      },
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 14.677367,
+          "net_r": 6.891961,
+          "profit_factor": 1.105088,
+          "trades": 271,
+          "win_rate": 0.535055
+        },
+        "parameters": {
+          "direction": 1,
+          "entry_minute": 480,
+          "exit_minute": 660,
+          "stop_range_multiple": 8.0,
+          "target_r": 2.0,
+          "timezone": "Europe/London",
+          "weekday": 0
+        },
+        "positive_dev_years": 3,
+        "preholdout_score": 1.105088,
+        "symbol": "EURUSD.DWX",
+        "validation_2023": {
+          "max_drawdown_r": 2.102451,
+          "net_r": 2.632009,
+          "profit_factor": 1.25204,
+          "trades": 51,
+          "win_rate": 0.490196
+        }
+      },
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 5.83739,
+          "net_r": 6.639431,
+          "profit_factor": 1.220436,
+          "trades": 271,
+          "win_rate": 0.535055
+        },
+        "parameters": {
+          "direction": 1,
+          "entry_minute": 480,
+          "exit_minute": 660,
+          "stop_range_multiple": 16.0,
+          "target_r": 0.0,
+          "timezone": "Europe/London",
+          "weekday": 0
+        },
+        "positive_dev_years": 3,
+        "preholdout_score": 1.089915,
+        "symbol": "EURUSD.DWX",
+        "validation_2023": {
+          "max_drawdown_r": 1.599907,
+          "net_r": 0.539319,
+          "profit_factor": 1.089915,
+          "trades": 51,
+          "win_rate": 0.490196
+        }
+      },
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 5.83739,
+          "net_r": 6.639431,
+          "profit_factor": 1.220436,
+          "trades": 271,
+          "win_rate": 0.535055
+        },
+        "parameters": {
+          "direction": 1,
+          "entry_minute": 480,
+          "exit_minute": 660,
+          "stop_range_multiple": 16.0,
+          "target_r": 2.0,
+          "timezone": "Europe/London",
+          "weekday": 0
+        },
+        "positive_dev_years": 3,
+        "preholdout_score": 1.089915,
+        "symbol": "EURUSD.DWX",
+        "validation_2023": {
+          "max_drawdown_r": 1.599907,
+          "net_r": 0.539319,
+          "profit_factor": 1.089915,
+          "trades": 51,
+          "win_rate": 0.490196
+        }
+      }
+    ],
+    "new_york_data": [
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 4.048378,
+          "net_r": 4.310183,
+          "profit_factor": 1.153493,
+          "trades": 272,
+          "win_rate": 0.511029
+        },
+        "parameters": {
+          "direction": -1,
+          "entry_minute": 510,
+          "exit_minute": 660,
+          "stop_range_multiple": 24.0,
+          "target_r": 0.0,
+          "timezone": "America/New_York",
+          "weekday": 1
+        },
+        "positive_dev_years": 3,
+        "preholdout_score": 1.13814,
+        "symbol": "EURUSD.DWX",
+        "validation_2023": {
+          "max_drawdown_r": 1.417367,
+          "net_r": 0.798802,
+          "profit_factor": 1.13814,
+          "trades": 51,
+          "win_rate": 0.490196
+        }
+      },
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 4.048378,
+          "net_r": 4.310183,
+          "profit_factor": 1.153493,
+          "trades": 272,
+          "win_rate": 0.511029
+        },
+        "parameters": {
+          "direction": -1,
+          "entry_minute": 510,
+          "exit_minute": 660,
+          "stop_range_multiple": 24.0,
+          "target_r": 2.0,
+          "timezone": "America/New_York",
+          "weekday": 1
+        },
+        "positive_dev_years": 3,
+        "preholdout_score": 1.13814,
+        "symbol": "EURUSD.DWX",
+        "validation_2023": {
+          "max_drawdown_r": 1.417367,
+          "net_r": 0.798802,
+          "profit_factor": 1.13814,
+          "trades": 51,
+          "win_rate": 0.490196
+        }
+      },
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 4.048378,
+          "net_r": 4.310183,
+          "profit_factor": 1.153493,
+          "trades": 272,
+          "win_rate": 0.511029
+        },
+        "parameters": {
+          "direction": -1,
+          "entry_minute": 510,
+          "exit_minute": 660,
+          "stop_range_multiple": 24.0,
+          "target_r": 3.0,
+          "timezone": "America/New_York",
+          "weekday": 1
+        },
+        "positive_dev_years": 3,
+        "preholdout_score": 1.13814,
+        "symbol": "EURUSD.DWX",
+        "validation_2023": {
+          "max_drawdown_r": 1.417367,
+          "net_r": 0.798802,
+          "profit_factor": 1.13814,
+          "trades": 51,
+          "win_rate": 0.490196
+        }
+      },
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 6.979955,
+          "net_r": 5.820898,
+          "profit_factor": 1.135863,
+          "trades": 272,
+          "win_rate": 0.511029
+        },
+        "parameters": {
+          "direction": -1,
+          "entry_minute": 510,
+          "exit_minute": 660,
+          "stop_range_multiple": 16.0,
+          "target_r": 2.0,
+          "timezone": "America/New_York",
+          "weekday": 1
+        },
+        "positive_dev_years": 2,
+        "preholdout_score": 1.135863,
+        "symbol": "EURUSD.DWX",
+        "validation_2023": {
+          "max_drawdown_r": 1.62605,
+          "net_r": 1.614905,
+          "profit_factor": 1.195577,
+          "trades": 51,
+          "win_rate": 0.490196
+        }
+      },
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 6.979955,
+          "net_r": 5.742429,
+          "profit_factor": 1.134031,
+          "trades": 272,
+          "win_rate": 0.511029
+        },
+        "parameters": {
+          "direction": -1,
+          "entry_minute": 510,
+          "exit_minute": 660,
+          "stop_range_multiple": 16.0,
+          "target_r": 0.0,
+          "timezone": "America/New_York",
+          "weekday": 1
+        },
+        "positive_dev_years": 2,
+        "preholdout_score": 1.134031,
+        "symbol": "EURUSD.DWX",
+        "validation_2023": {
+          "max_drawdown_r": 1.62605,
+          "net_r": 1.614905,
+          "profit_factor": 1.195577,
+          "trades": 51,
+          "win_rate": 0.490196
+        }
+      }
+    ],
+    "new_york_pm": [
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 5.414186,
+          "net_r": -2.291018,
+          "profit_factor": 0.903404,
+          "trades": 272,
+          "win_rate": 0.426471
+        },
+        "parameters": {
+          "direction": 1,
+          "entry_minute": 810,
+          "exit_minute": 960,
+          "stop_range_multiple": 24.0,
+          "target_r": 0.0,
+          "timezone": "America/New_York",
+          "weekday": 2
+        },
+        "positive_dev_years": 2,
+        "preholdout_score": 0.903404,
+        "symbol": "EURUSD.DWX",
+        "validation_2023": {
+          "max_drawdown_r": 1.965095,
+          "net_r": 0.266201,
+          "profit_factor": 1.060956,
+          "trades": 51,
+          "win_rate": 0.470588
+        }
+      },
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 5.414186,
+          "net_r": -2.291018,
+          "profit_factor": 0.903404,
+          "trades": 272,
+          "win_rate": 0.426471
+        },
+        "parameters": {
+          "direction": 1,
+          "entry_minute": 810,
+          "exit_minute": 960,
+          "stop_range_multiple": 24.0,
+          "target_r": 2.0,
+          "timezone": "America/New_York",
+          "weekday": 2
+        },
+        "positive_dev_years": 2,
+        "preholdout_score": 0.903404,
+        "symbol": "EURUSD.DWX",
+        "validation_2023": {
+          "max_drawdown_r": 1.965095,
+          "net_r": 0.266201,
+          "profit_factor": 1.060956,
+          "trades": 51,
+          "win_rate": 0.470588
+        }
+      },
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 5.414186,
+          "net_r": -2.291018,
+          "profit_factor": 0.903404,
+          "trades": 272,
+          "win_rate": 0.426471
+        },
+        "parameters": {
+          "direction": 1,
+          "entry_minute": 810,
+          "exit_minute": 960,
+          "stop_range_multiple": 24.0,
+          "target_r": 3.0,
+          "timezone": "America/New_York",
+          "weekday": 2
+        },
+        "positive_dev_years": 2,
+        "preholdout_score": 0.903404,
+        "symbol": "EURUSD.DWX",
+        "validation_2023": {
+          "max_drawdown_r": 1.965095,
+          "net_r": 0.266201,
+          "profit_factor": 1.060956,
+          "trades": 51,
+          "win_rate": 0.470588
+        }
+      },
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 18.126422,
+          "net_r": -6.59881,
+          "profit_factor": 0.903286,
+          "trades": 272,
+          "win_rate": 0.408088
+        },
+        "parameters": {
+          "direction": 1,
+          "entry_minute": 810,
+          "exit_minute": 960,
+          "stop_range_multiple": 8.0,
+          "target_r": 3.0,
+          "timezone": "America/New_York",
+          "weekday": 2
+        },
+        "positive_dev_years": 1,
+        "preholdout_score": 0.903286,
+        "symbol": "EURUSD.DWX",
+        "validation_2023": {
+          "max_drawdown_r": 3.672875,
+          "net_r": 0.090123,
+          "profit_factor": 1.007852,
+          "trades": 51,
+          "win_rate": 0.45098
+        }
+      },
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 9.489441,
+          "net_r": -4.804689,
+          "profit_factor": 0.867745,
+          "trades": 272,
+          "win_rate": 0.419118
+        },
+        "parameters": {
+          "direction": 1,
+          "entry_minute": 810,
+          "exit_minute": 960,
+          "stop_range_multiple": 16.0,
+          "target_r": 0.0,
+          "timezone": "America/New_York",
+          "weekday": 2
+        },
+        "positive_dev_years": 2,
+        "preholdout_score": 0.867745,
+        "symbol": "EURUSD.DWX",
+        "validation_2023": {
+          "max_drawdown_r": 2.447643,
+          "net_r": 0.627278,
+          "profit_factor": 1.099211,
+          "trades": 51,
+          "win_rate": 0.470588
+        }
+      }
+    ]
+  },
+  "preholdout_pass_count": 0,
+  "schema_version": 1,
+  "selected_family_winners": [],
+  "selection_contract": {
+    "cost_contract": "current FTMO commission plus conservative spread allowance",
+    "daily_position_limit": 1,
+    "development": "2018-2022",
+    "overnight_positions": 0,
+    "same_bar_rule": "stop_first",
+    "sealed_holdout": "2024-2025",
+    "search_burden": "one locked winner opened per five prespecified session families",
+    "selection_uses_holdout": false,
+    "timestamp_basis": "Darwinex broker wall converted to UTC then session-local",
+    "validation": "2023"
+  },
+  "status": "NO_HOLDOUT_SURVIVOR"
+}

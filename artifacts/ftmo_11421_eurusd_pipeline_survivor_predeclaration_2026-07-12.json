@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_RESEARCH_ONLY",
+  "deployment_allowed": false,
+  "candidate": {
+    "ea_id": 11421,
+    "expert": "QM\\QM5_11421_ohlc-daily-squeeze-reversal-d1",
+    "symbol": "EURUSD.DWX",
+    "period": "D1",
+    "setfile": "framework/EAs/QM5_11421_ohlc-daily-squeeze-reversal-d1/sets/QM5_11421_ohlc-daily-squeeze-reversal-d1_EURUSD.DWX_D1_backtest.set",
+    "source_sha256": "7BB6F4BDDF2D247C4A13AEC6B44695CCB6203362E134E017EE6BDC12B9A0FE11",
+    "setfile_sha256": "303AA04C3B4479A140A79287D20E466A3CFF2986B487761821381DC34ADF1E6D"
+  },
+  "selection_basis": {
+    "q04_fold_profit_factors": [
+      1.493,
+      1.741,
+      4.13
+    ],
+    "q05_profit_factor": 1.15,
+    "q05_drawdown_pct": 6.45,
+    "q06_profit_factor": 1.21,
+    "q07_min_profit_factor": 1.03,
+    "q07_variance_pct": 15.82,
+    "archive_q02_2024": {
+      "trades": 75,
+      "profit_factor": 1.09,
+      "net_profit": 1861.72,
+      "note": "Density lead only; current full-history and current-cost verdict remain unknown."
+    }
+  },
+  "locked_test": {
+    "history": "2017-01-01/2025-12-31",
+    "model": 4,
+    "runs": 2,
+    "minimum_trades": 45,
+    "terminal": "T4",
+    "fresh_q08_stream_required": true,
+    "exact_report_stream_reconciliation_required": true,
+    "current_ftmo_cost_reconstruction_required": true,
+    "portfolio_gate": "development normal and adverse must both strictly improve the locked incumbent before 2023 validation",
+    "sealed_years": [
+      2024,
+      2025
+    ]
+  },
+  "operational_constraints": {
+    "factory_off_required": true,
+    "symbol_mutex": "EURUSD.DWX",
+    "t_live_forbidden": true,
+    "installed_ftmo_terminal_forbidden": true,
+    "autotrading_change_forbidden": true
+  },
+  "label": "RESEARCH_ONLY_NO_GO"
+}

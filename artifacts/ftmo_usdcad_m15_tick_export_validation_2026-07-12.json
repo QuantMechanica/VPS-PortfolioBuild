@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "status": "PASS",
+  "terminal": "T3",
+  "source_contract": "read_only_CopyTicksRange_monthly_bid_aggregation",
+  "source_script": "framework/scripts/mt5_diagnostics/Export_FTMO_USDCAD_M15_Ticks.mq5",
+  "path": "D:\\QM\\reports\\ftmo\\bar_exports\\USDCAD.DWX_M15_TICKS_2018_2025.csv",
+  "rows": 197187,
+  "source_ticks": 278355063,
+  "first_broker_wall_epoch": 1514836800,
+  "last_broker_wall_epoch": 1767224700,
+  "sha256": "BA99F64F9A2D9B8D9097D21E6C67422B9E31846A47A645A952B3667998A891DD",
+  "overlap_validation": {
+    "reference_path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\USDCAD.DWX_H1.csv",
+    "overlap_rows": 43499,
+    "exact_ohlc_rows": 43499,
+    "exact_ohlc_pct": 100.0,
+    "field_mismatch_counts": {
+      "open": 0,
+      "high": 0,
+      "low": 0,
+      "close": 0
+    },
+    "maximum_absolute_field_delta": {
+      "open": 0.0,
+      "high": 0.0,
+      "low": 0.0,
+      "close": 0.0
+    }
+  },
+  "required_exit_bucket_validation": {
+    "q08_trade_number": 13,
+    "broker_wall_epoch": 1518190200,
+    "present": true
+  },
+  "boundaries": {
+    "t1_untouched": true,
+    "t_live_untouched": true,
+    "autotrading_toggled": false,
+    "orders_or_positions_modified": false
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_CURRENT_FTMO_COST_GATE",
+  "ea_id": 10805,
+  "symbol": "GDAXI.DWX",
+  "period": "H1",
+  "history": "2017-01-01/2025-12-31",
+  "model": 4,
+  "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+  "compile_log": "framework/build/compile/20260712_130548/QM5_10805_tv-bb-stormer.compile.log",
+  "compile_log_sha256": "44373370E31D26BDD7F8D5D4507FB97B0FBD55BCF43EA0CD9BB6E40F573674D6",
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10805_gdaxi_h1_wave7_20260712\\QM5_10805\\20260712_130608\\summary.json",
+  "deterministic": true,
+  "report_runs": [
+    {
+      "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10805_gdaxi_h1_wave7_20260712\\QM5_10805\\20260712_130608\\raw\\run_01\\report.htm",
+      "sha256": "A84CD316130EC68B1E1043AF4276EB3B5B36AEFAED29B461386B5E9E41578712"
+    },
+    {
+      "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10805_gdaxi_h1_wave7_20260712\\QM5_10805\\20260712_130608\\raw\\run_02\\report.htm",
+      "sha256": "4FF1B10F3FD4D699C9673309FD145043034192301FA7C66B0A153CEED398978E"
+    }
+  ],
+  "native": {
+    "trades": 1239,
+    "profit_factor": 1.041992,
+    "net_profit": 21656.82,
+    "equity_drawdown": 28325.31
+  },
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\10805_GDAXI_DWX_T4_FRESH_20260712.jsonl",
+    "rows": 1239,
+    "sha256": "F7A7D61D0FBF31955CEEB0C63AC1C336C4D57CC6C839ADC5F2859F1269A7F271",
+    "report_reconciliation": "PASS_EXACT_COUNT_NET_DELTA_WITHIN_TOLERANCE",
+    "corrected_net_delta": 0.25,
+    "net_tolerance": 12.39
+  },
+  "current_cost_artifact": "artifacts/ftmo_10805_gdaxi_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "trades": 1239,
+    "profit_factor": 1.014181,
+    "net_profit": 7399.47,
+    "close_to_close_max_drawdown": 31259.02,
+    "commission_total": 0.0,
+    "swap_total": -29549.83
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "minimum_trades_per_calendar_year": 5,
+    "annual_density_pass": true,
+    "negative_calendar_years": [2018, 2019, 2022],
+    "reason_for_reject": "The old 2024-only archive edge does not persist over full history. Current FTMO costs reduce pooled PF from 1.041992 to 1.014181, with three negative calendar years."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

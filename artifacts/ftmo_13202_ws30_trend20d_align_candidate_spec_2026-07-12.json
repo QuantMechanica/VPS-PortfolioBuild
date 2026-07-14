@@ -1,0 +1,31 @@
+{
+  "candidate_evidence": [
+    "artifacts/ftmo_13202_ws30_fresh_stream_reconciliation_2026-07-12.json",
+    "artifacts/ftmo_13202_ws30_fresh_current_report_cost_reconciliation_2026-07-12.json",
+    "artifacts/ftmo_13202_ws30_causal_filter_screen_2026-07-12.json",
+    "artifacts/cards_approved/QM5_13202_ws30-fri-pm-long.md"
+  ],
+  "sleeve": {
+    "ea_id": 13202,
+    "symbol": "WS30.DWX",
+    "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_13202_ws30_risk100_20260712\\QM5_13202\\20260712_065320\\summary.json",
+    "stream_path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\13202_WS30_DWX_FRESH_RISK100_20260712.jsonl",
+    "base_risk_fixed": 1000.0,
+    "report_pnl_scale": 10.0,
+    "qualification": "fresh_two_run_reconciled_current_ftmo_q02_pass_causal_trend20d_align_holdout_survivor_research_only",
+    "entry_filter": "trend_20d_align",
+    "cost": {
+      "ftmo_symbol_code": "US30.cash",
+      "commission_percent_per_side": 0.0,
+      "flat_round_trip_commission_per_lot": 0.0,
+      "swap_long_points": -1135.86,
+      "swap_short_points": 47.27,
+      "contract_size": 1.0,
+      "source_contract_size": 1.0,
+      "profit_currency_to_account_rate": 1.0,
+      "derive_profit_currency_rate_from_pnl": false,
+      "digits": 2,
+      "triple_weekday": 2
+    }
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "INFRASTRUCTURE_BLOCKED_NO_STRATEGY_VERDICT",
+  "ea_id": 11629,
+  "symbol": "NDX.DWX",
+  "period": "M15",
+  "history": "2017-01-01/2025-12-31",
+  "model": 4,
+  "strict_compiles": [
+    {
+      "terminal": "T4",
+      "log": "framework/build/compile/20260712_123814/QM5_11629_cat-rsi6070.compile.log",
+      "sha256": "80A443944E51C98558C8BA01625AA76F2E45B1275735024CB473AD7CEB8DC31E",
+      "result": "PASS_ZERO_ERRORS_ZERO_WARNINGS"
+    },
+    {
+      "terminal": "T1",
+      "log": "framework/build/compile/20260712_130507/QM5_11629_cat-rsi6070.compile.log",
+      "sha256": "353D4D0351F74A500529B7812BDDFA16D2ABCB5AC3AF0E163D66857C846B5F2B",
+      "result": "PASS_ZERO_ERRORS_ZERO_WARNINGS"
+    }
+  ],
+  "attempts": [
+    {
+      "terminal": "T4",
+      "summary": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_11629_ndx_m15_wave6_20260712\\QM5_11629\\20260712_124015\\summary.json",
+      "summary_sha256": "C23C1737D69D9B9B79B704330CCEC059501CEA1D8113F8D1F9E11CEE8CD19CA4",
+      "requested_runs": 2,
+      "attempted_runs": 4,
+      "valid_runs": 1,
+      "invalid_runs": 3,
+      "invalid_reason": "NDX.DWX file opening or reading error [32] followed by M0/1970 zero-bar reports",
+      "single_valid_run": {
+        "trades": 1578,
+        "native_report_profit_factor": 1.14,
+        "native_net_profit": 184082.02,
+        "equity_drawdown": 45896.39,
+        "report": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_11629_ndx_m15_wave6_20260712\\QM5_11629\\20260712_124015\\raw\\run_01\\report.htm",
+        "report_sha256": "4D18650BAEFAE438C15840605A92864592C0FEA97F1D1AE85904DFAFA227580D"
+      }
+    },
+    {
+      "terminal": "T1",
+      "summary": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_11629_ndx_m15_wave6_recovery_t1_20260712\\QM5_11629\\20260712_130526\\summary.json",
+      "summary_sha256": "DD9036A9C4DEC5409E2655B04315587111A0320E36AC6B23BC19458BA084499F",
+      "requested_runs": 2,
+      "attempted_runs": 4,
+      "valid_runs": 0,
+      "invalid_runs": 4,
+      "invalid_reason": "NDX.DWX history synchronization error followed by M0/1970 zero-bar reports"
+    }
+  ],
+  "diagnostic_stream": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\11629_NDX_DWX_T4_FRESH_RUN1_DIAGNOSTIC_20260712.jsonl",
+    "rows": 1578,
+    "sha256": "A20426D2B3980B62D81017BB3426901D86179945F54048ABC9815CDC596402E4",
+    "admitted_to_cost_or_portfolio_model": false,
+    "reason": "The required second deterministic report does not exist."
+  },
+  "strategy_verdict": null,
+  "current_cost_stage_opened": false,
+  "portfolio_stage_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "unblock_condition": "Run a controlled NDX history-lock recovery on an otherwise idle allowed terminal, then obtain two identical current-build reports before using any stream or metric.",
+  "label": "RESEARCH_ONLY_NO_GO"
+}

@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_CURRENT_FTMO_COST_GATE",
+  "ea_id": 10595,
+  "symbol": "USDJPY.DWX",
+  "period": "H4",
+  "history": "2017-01-01/2025-12-31",
+  "model": 4,
+  "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+  "compile_log": "framework/build/compile/20260712_114323/QM5_10595_mql5-stochcg.compile.log",
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10595_usdjpy_h4_wave5_20260712\\QM5_10595\\20260712_114341\\summary.json",
+  "deterministic": true,
+  "report_runs": [
+    {
+      "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10595_usdjpy_h4_wave5_20260712\\QM5_10595\\20260712_114341\\raw\\run_01\\report.htm",
+      "sha256": "05757992D484419370D6C5ABA932C66AEEEDAECB66D7E359931A090618FE6E92"
+    },
+    {
+      "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10595_usdjpy_h4_wave5_20260712\\QM5_10595\\20260712_114341\\raw\\run_02\\report.htm",
+      "sha256": "911C893D4B9FC391A0FFA0D66877FC166E4A54703E36B0E329DE78DBA5EC454F"
+    }
+  ],
+  "native": {
+    "trades": 1819,
+    "profit_factor": 1.055309,
+    "net_profit": 25462.76,
+    "equity_drawdown": 35506.97
+  },
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\10595_USDJPY_DWX_T3_FRESH_20260712.jsonl",
+    "rows": 1819,
+    "sha256": "08453E9D58C1CE5CE67D20476BE92A03ED735A94161DDA403D3B7A9FA0F9E202",
+    "report_reconciliation": "PASS_EXACT_COUNT_AND_NET"
+  },
+  "current_cost_artifact": "artifacts/ftmo_10595_usdjpy_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "trades": 1819,
+    "profit_factor": 1.021199,
+    "net_profit": 9905.4,
+    "close_to_close_max_drawdown": 42397.95,
+    "commission_total": 14687.25,
+    "swap_total": -32915.01
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "minimum_trades_per_calendar_year": 5,
+    "annual_density_pass": true,
+    "reason_for_reject": "The fresh native PF is only 1.055309; current FTMO costs reduce pooled PF to 1.021199, with 2019 and 2020 loss-making."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

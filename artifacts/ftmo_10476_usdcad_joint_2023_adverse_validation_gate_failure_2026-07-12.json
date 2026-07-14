@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_2023_ADVERSE_VALIDATION",
+  "deployment_allowed": false,
+  "candidate": {
+    "ea_id": 10476,
+    "symbol": "USDCAD.DWX",
+    "period": "H1",
+    "frozen_weight_pct": 5.0,
+    "scenario": "path_01_plus_10476_usdcad_05"
+  },
+  "incumbent": {
+    "manifest": "artifacts/ftmo_joint_eleven_sleeve_incumbent_weight_path_manifest_2026-07-12.json",
+    "scenario": "path_01_11095_gbpusd_down2",
+    "policy": {
+      "risk_multiplier": 25.0,
+      "daily_stop": 4500.0,
+      "full_risk_room": 4000.0,
+      "room_retention": 0.2
+    }
+  },
+  "development": {
+    "excluded_years": [
+      2017,
+      2020,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "rolling_runs": 1402,
+    "normal": {
+      "control_pass_pct": 59.05848787446505,
+      "candidate_pass_pct": 59.98573466476462,
+      "delta_pct_points": 0.92724679029957
+    },
+    "adverse": {
+      "control_pass_pct": 51.35520684736091,
+      "candidate_pass_pct": 51.64051355206848,
+      "delta_pct_points": 0.28530670470757,
+      "control_daily_breach_pct": 21.255349500713265,
+      "candidate_daily_breach_pct": 19.472182596291013,
+      "control_max_breach_pct": 12.696148359486447,
+      "candidate_max_breach_pct": 11.412268188302425
+    }
+  },
+  "validation_2023": {
+    "rolling_runs": 336,
+    "normal": {
+      "control_pass_pct": 43.75,
+      "candidate_pass_pct": 46.13095238095239,
+      "delta_pct_points": 2.38095238095239
+    },
+    "adverse": {
+      "control_pass_pct": 36.904761904761905,
+      "candidate_pass_pct": 31.547619047619047,
+      "delta_pct_points": -5.357142857142858,
+      "control_daily_breach_pct": 33.035714285714285,
+      "candidate_daily_breach_pct": 44.345238095238095,
+      "control_max_breach_pct": 17.261904761904763,
+      "candidate_max_breach_pct": 14.583333333333334
+    }
+  },
+  "evidence": [
+    "artifacts/ftmo_bar_governor_10476_usdcad_weight_dev_normal_2026-07-12.json",
+    "artifacts/ftmo_bar_governor_10476_usdcad_weight_dev_adverse_2026-07-12.json",
+    "artifacts/ftmo_bar_governor_10476_usdcad_weight_validation_2023_normal_2026-07-12.json",
+    "artifacts/ftmo_bar_governor_10476_usdcad_weight_validation_2023_adverse_2026-07-12.json"
+  ],
+  "sealed_holdout_opened": false,
+  "reason": "The only dual-development survivor improved normal 2023 validation but materially reduced adverse 2023 pass rate and increased daily-loss breaches. The frozen robustness gate therefore rejects the sleeve before 2024-2025.",
+  "label": "RESEARCH_ONLY_NO_GO"
+}

@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_SCREEN",
+  "family": "opening_compression_close_confirmed_breakout",
+  "hypothesis": "A narrow opening range followed by a completed close beyond that range contains more persistent directional information than an intrabar first-touch opening-range breakout.",
+  "data": {
+    "root": "D:\\QM\\mt5\\T_Export\\MQL5\\Files",
+    "symbols": [
+      "GDAXI.DWX",
+      "NDX.DWX",
+      "SP500.DWX",
+      "WS30.DWX",
+      "XAUUSD.DWX"
+    ],
+    "timeframe": "M15",
+    "allowed_end_year": 2025
+  },
+  "parameter_grid": {
+    "range_bars": [
+      4,
+      8
+    ],
+    "active_bars": [
+      4,
+      8
+    ],
+    "max_range_atr": [
+      0.75,
+      1.25
+    ],
+    "breakout_buffer_atr": [
+      0.05,
+      0.15
+    ],
+    "stop_atr": [
+      0.75,
+      1.25
+    ],
+    "target_r": [
+      2.0,
+      3.0
+    ]
+  },
+  "evaluated_configurations": 320,
+  "execution_contract": {
+    "opening_range": "High/low of the first contiguous range_bars in the declared cash session.",
+    "compression": "Opening range width must be no greater than max_range_atr times ATR56 measured on the final completed opening bar.",
+    "confirmation": "The completed signal bar close must be beyond the opening boundary plus breakout_buffer_atr times ATR56; a bar cannot confirm both directions.",
+    "entry": "Next M15 bar open after the completed confirmation bar.",
+    "stop": "Fixed stop_atr times the frozen ATR56 from the opening window.",
+    "same_bar_rule": "stop_first",
+    "daily_position_limit": 1,
+    "overnight_positions": 0,
+    "round_trip_costs_in_points": {
+      "GDAXI.DWX": 3.0,
+      "NDX.DWX": 4.0,
+      "SP500.DWX": 1.0,
+      "WS30.DWX": 4.0,
+      "XAUUSD.DWX": 0.8
+    }
+  },
+  "selection_contract": {
+    "development": "2018-2022",
+    "validation": "2023",
+    "sealed_holdout": "2024-2025",
+    "preholdout_gate": "DEV trades>=150 PF>=1.15 net>0; validation trades>=25 PF>=1.05 net>0; at least four positive development years",
+    "selection": "One global family winner by the lower of development and validation PF, then development trade count.",
+    "holdout_gate": "trades>=50 PF>=1.10 net>0 and both 2024 and 2025 positive"
+  },
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

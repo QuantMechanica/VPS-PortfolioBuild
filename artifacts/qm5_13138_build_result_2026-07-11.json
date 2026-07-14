@@ -1,0 +1,32 @@
+{
+  "task_id": "20cbe942-ebe3-499e-9a7d-9760547f27e1",
+  "ea_id": "QM5_13138",
+  "ea_dir": "framework/EAs/QM5_13138_xau-m5-ema20",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13138_xau-m5-ema20\\QM5_13138_xau-m5-ema20.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13138_xau-m5-ema20\\QM5_13138_xau-m5-ema20.ex5",
+  "magic_base": 131380000,
+  "symbols_registered": [
+    "XAUUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13138_xau-m5-ema20\\sets\\QM5_13138_xau-m5-ema20_XAUUSD.DWX_M5_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13138_xau-m5-ema20\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260711_070036\\QM5_13138_xau-m5-ema20.compile.log",
+  "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260711_070036.json",
+  "mq5_sha256": "1BDFDDB0BF4CE3E3B8F8189FA84213AED8979509212CECFF9B84E8F98A2EE827",
+  "ex5_sha256": "74E00380CCEE6517BD37F02C600005023F575B940BBF0D573AAF1777252CB68B",
+  "smoke_result": "passed",
+  "smoke_report_path": "D:\\QM\\reports\\smoke_ftmo_secret\\QM5_13138\\20260711_070833\\summary.json",
+  "blocked_reason": null,
+  "open_questions": [],
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_SCREEN",
+  "family": "us_index_opening_relative_strength",
+  "hypothesis": "A material first-30/60-minute ATR-normalized displacement of one US index relative to the other two may exhibit intraday convergence or lead-lag continuation.",
+  "data": {
+    "root": "D:\\QM\\mt5\\T_Export\\MQL5\\Files",
+    "symbols": ["NDX.DWX", "SP500.DWX", "WS30.DWX"],
+    "timeframe": "M15",
+    "allowed_end_year": 2025
+  },
+  "parameter_grid": {
+    "target_symbol": ["NDX.DWX", "SP500.DWX", "WS30.DWX"],
+    "window_bars": [2, 4],
+    "mode": ["convergence", "continuation"],
+    "relative_atr": [0.25, 0.5, 0.75],
+    "stop_atr": [0.5, 1.0],
+    "target_r": [1.0, 2.0, 3.0]
+  },
+  "evaluated_configurations": 216,
+  "execution_contract": {
+    "feature": "For each index, completed-window close minus session open divided by its own ATR at that completed close; target signal is target feature minus the mean of both peer features.",
+    "entry": "Target-index next M15 bar open after the completed synchronized window.",
+    "same_bar_rule": "stop_first",
+    "daily_position_limit": 1,
+    "overnight_positions": 0,
+    "round_trip_costs_in_points": {
+      "NDX.DWX": 4.0,
+      "SP500.DWX": 1.0,
+      "WS30.DWX": 4.0
+    }
+  },
+  "selection_contract": {
+    "development": "2018-2022",
+    "validation": "2023",
+    "sealed_holdout": "2024-2025",
+    "preholdout_gate": "DEV trades>=150 PF>=1.15 net>0; validation trades>=25 PF>=1.05 net>0; at least four positive development years",
+    "selection": "One global family winner by the lower of development and validation PF.",
+    "holdout_open_rule": "Only a preholdout survivor may be recomputed through 2025.",
+    "holdout_gate": "trades>=50 PF>=1.10 net>0 and both 2024 and 2025 positive"
+  },
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

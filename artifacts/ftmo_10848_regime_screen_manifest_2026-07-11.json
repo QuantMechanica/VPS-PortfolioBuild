@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "snapshot_date": "2026-07-11",
+  "status": "RESEARCH_ONLY_NO_GO",
+  "deployment_allowed": false,
+  "timestamp_basis": "darwinex_broker_wall",
+  "basis": "fresh_report_reconciled_q08_mae_stream_current_ftmo_gold_costs",
+  "sleeves": [
+    {
+      "ea_id": 10848,
+      "symbol": "XAUUSD.DWX",
+      "summary_path": "D:\\QM\\reports\\pipeline\\QM5_10848\\Q08\\_baseline\\QM5_10848\\20260710_132435\\summary.json",
+      "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10848_XAUUSD_DWX.jsonl",
+      "base_risk_fixed": 1000.0,
+      "qualification": "reconciled_q08_fail_soft_current_ftmo_cost_pf_1_010591",
+      "cost": {
+        "ftmo_symbol_code": "XAU/USD",
+        "commission_percent_per_side": 0.0014,
+        "flat_round_trip_commission_per_lot": 0.0,
+        "swap_long_points": -75.93,
+        "swap_short_points": -23.55,
+        "contract_size": 100.0,
+        "source_contract_size": 100.0,
+        "profit_currency_to_account_rate": 1.0,
+        "derive_profit_currency_rate_from_pnl": false,
+        "digits": 2,
+        "triple_weekday": 2
+      }
+    }
+  ],
+  "scenarios": []
+}

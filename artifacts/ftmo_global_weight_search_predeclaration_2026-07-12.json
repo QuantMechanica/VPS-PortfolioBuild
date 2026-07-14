@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_SIMULATION",
+  "objective": "Test whether regularized multivariate incumbent weights improve both threshold and adverse 30-day Phase-1 pass rates without using the sealed 2024-2025 portfolio holdout.",
+  "manifest": "artifacts/ftmo_joint_eleven_sleeve_global_weight_search_manifest_2026-07-12.json",
+  "base_manifest": "artifacts/ftmo_joint_eleven_sleeve_incumbent_weight_path_manifest_2026-07-12.json",
+  "base_scenario": "path_01_11095_gbpusd_down2",
+  "candidate_generation": {
+    "method": "seeded logistic-normal perturbation around locked weights",
+    "seed": 20260712,
+    "sigmas": [0.15, 0.3, 0.5],
+    "candidates_per_sigma": 24,
+    "candidate_count": 72,
+    "maximum_single_sleeve_weight": 0.25,
+    "maximum_l1_distance_from_control": 0.35,
+    "candidate_substitution_after_results": false
+  },
+  "fixed_policy": {
+    "risk_multiplier": 25.0,
+    "daily_stop": 4500.0,
+    "full_risk_room": 4000.0,
+    "room_retention": 0.2,
+    "open_risk_limit_ratio": 0.0,
+    "profit_risk_steps": [],
+    "elapsed_risk_steps": []
+  },
+  "data_split": {
+    "development_years": [2018, 2019, 2021, 2022],
+    "validation_years": [2023],
+    "excluded_regime_year": 2020,
+    "sealed_holdout_years": [2024, 2025],
+    "history_warmup_year": 2017
+  },
+  "selection_rule": {
+    "development_minimum_delta_pct_points_each_fill": 0.5,
+    "validation_minimum_delta_pct_points_each_fill": 0.0,
+    "ranking": "Maximize the minimum of the four control-relative pass-rate deltas: development threshold, development adverse, validation threshold, validation adverse.",
+    "tie_breakers": [
+      "higher sum of the four control-relative deltas",
+      "lower L1 distance from control",
+      "lexicographically smaller scenario name"
+    ],
+    "no_survivor_result": "Close the family without opening combined-preholdout or sealed-holdout stages."
+  },
+  "combined_preholdout_gate": {
+    "years": [2018, 2019, 2021, 2022, 2023],
+    "required": "The frozen winner must strictly improve both threshold and adverse pass rates versus the locked control under the same policy."
+  },
+  "sealed_holdout_contract": {
+    "years": [2024, 2025],
+    "open_count": 1,
+    "open_rule": "Open once only after the frozen winner passes the combined preholdout gate.",
+    "post_holdout_weight_change": false,
+    "post_holdout_policy_change": false,
+    "post_holdout_candidate_substitution": false
+  },
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

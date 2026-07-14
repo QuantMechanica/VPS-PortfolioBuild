@@ -1,0 +1,39 @@
+{
+  "fail_count": 0,
+  "pass_count": 1,
+  "results": [
+    {
+      "contract": "one_entry_one_exit_duplicate_closing_commission",
+      "corrected_net_delta": 0.01,
+      "count_delta": 0,
+      "ea_id": 10919,
+      "net_tolerance": 1.0,
+      "reasons": [],
+      "report": {
+        "drawdown": 1851.18,
+        "exists": true,
+        "net_profit": 6723.93,
+        "path": "D:\\QM\\reports\\ftmo_10919_q02_current_20260711\\QM5_10919\\20260711_000905\\summary.json",
+        "profit_factor": 4.84,
+        "report_canonical_path": "D:\\QM\\reports\\ftmo_10919_q02_current_20260711\\QM5_10919\\20260711_000905\\raw\\run_02\\report.htm",
+        "result": "FAIL",
+        "trade_count": 30,
+        "usable_run": "run_02"
+      },
+      "status": "PASS",
+      "stream": {
+        "closing_commission": -0.43,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 0,
+        "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\10919_XTIUSD_DWX.jsonl",
+        "raw_net": 6724.37,
+        "round_trip_corrected_net": 6723.94,
+        "trade_count": 30
+      },
+      "symbol": "XTIUSD.DWX"
+    }
+  ],
+  "schema_version": 1,
+  "status": "PASS"
+}

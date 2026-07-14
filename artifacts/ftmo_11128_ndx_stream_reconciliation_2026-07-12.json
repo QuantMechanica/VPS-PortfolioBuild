@@ -1,0 +1,43 @@
+{
+  "fail_count": 1,
+  "pass_count": 0,
+  "results": [
+    {
+      "contract": "one_entry_one_exit_duplicate_closing_commission",
+      "corrected_net_delta": 1305.12,
+      "count_delta": -71,
+      "ea_id": 11128,
+      "net_tolerance": 1.46,
+      "reasons": [
+        "stream_missing_mae_rows:75",
+        "trade_count_mismatch:75!=146",
+        "corrected_net_mismatch:delta=1305.12:tolerance=1.46"
+      ],
+      "report": {
+        "drawdown": 3782.23,
+        "exists": true,
+        "net_profit": 9959.54,
+        "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_11128_ndx_d1_t4_20260712\\QM5_11128\\20260712_081430\\summary.json",
+        "profit_factor": 1.37,
+        "report_canonical_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_11128_ndx_d1_t4_20260712\\QM5_11128\\20260712_081430\\raw\\run_03\\report.htm",
+        "result": "PASS",
+        "trade_count": 146,
+        "usable_run": "run_03"
+      },
+      "status": "FAIL",
+      "stream": {
+        "closing_commission": -35.98,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 75,
+        "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_11128_ndx_d1_t4_20260712\\QM5_11128\\20260712_081430\\invalid_legacy_schema_11128_NDX_DWX_q08.jsonl",
+        "raw_net": 11300.64,
+        "round_trip_corrected_net": 11264.66,
+        "trade_count": 75
+      },
+      "symbol": "NDX.DWX"
+    }
+  ],
+  "schema_version": 1,
+  "status": "FAIL"
+}

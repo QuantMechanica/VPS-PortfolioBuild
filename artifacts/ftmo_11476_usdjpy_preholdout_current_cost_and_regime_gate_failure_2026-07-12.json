@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_CURRENT_FTMO_ECONOMICS_AND_REGIME_CONCENTRATION",
+  "ea_id": 11476,
+  "symbol": "USDJPY.DWX",
+  "period": "H1",
+  "history": "2017-01-01/2024-12-31",
+  "model": 4,
+  "deterministic": true,
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_11476_usdjpy_h1_preholdout_wave41_20260712\\QM5_11476\\20260712_184810\\summary.json",
+  "summary_sha256": "B6CCFDD86ADCE85BE89732BE112034A0BA4CD638A4E549788EAB22DA80968EB7",
+  "report_sha256": [
+    "CFD4813956022338B5F732543BD2CD94035C6ADA62401145CD9F5DA5C5E71627",
+    "14FE1D2D4A1BB61AEB2235E4D68132DD0C792F9D5F3F9758C43C8B47932E0402"
+  ],
+  "native": {
+    "trades": 2506,
+    "profit_factor": 1.026402,
+    "net_profit": 16844.71,
+    "close_to_close_max_drawdown": 54323.21
+  },
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\11476_USDJPY_H1_T1_PREHOLDOUT_FRESH_20260712.jsonl",
+    "rows": 2506,
+    "sha256": "1B1403D58850082F3A953BD5F560E0C882059BD9325B019843F93431E2958CF0",
+    "report_reconciliation": "PASS_EXACT_COUNT_AND_NET",
+    "corrected_net_delta": 0.0
+  },
+  "current_cost_artifact": "artifacts/ftmo_11476_usdjpy_preholdout_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "profit_factor": 1.00331,
+    "net_profit": 2129.86,
+    "close_to_close_max_drawdown": 63821.66,
+    "commission_total": 63197.35,
+    "swap_total": -21952.19
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "negative_development_years": [2018, 2019, 2021],
+    "validation_2023_profit_factor": 0.842308,
+    "validation_2023_net_profit": -12776.07,
+    "selection_contaminated_2024_net_profit": 50139.03,
+    "reason_for_reject": "Current FTMO PF is effectively flat, 2023 validation loses money, and the selection-known 2024 profit exceeds the entire pooled profit."
+  },
+  "portfolio_screen_opened": false,
+  "selection_contaminated_year": 2024,
+  "sealed_holdout_year": 2025,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

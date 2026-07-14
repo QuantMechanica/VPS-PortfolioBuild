@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "INFRASTRUCTURE_BLOCKED_RERUN_REQUIRED",
+  "strategy_verdict": null,
+  "ea_id": 1241,
+  "symbol": "USDJPY.DWX",
+  "period": "H1",
+  "history": "2017-01-01/2025-12-31",
+  "model": 4,
+  "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+  "compile_log": "framework/build/compile/compile/20260712_141120/QM5_1241_mql5-macd-signal.compile.log",
+  "compile_log_sha256": "91862BBBC9A94D5874E1BF2E75550D1D83FC57515E3A91EBB37FF778AED409FA",
+  "source_sha256_before_fix": "79D6A9B993C269221139ABDF5F376A3148004ADFB5C36250B8C57F5B96F41F46",
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_1241_usdjpy_h1_wave10_20260712\\QM5_1241\\20260712_141141\\summary.json",
+  "summary_sha256": "D82318AF934C14588A9707376D9D731449DE397107FD5876215E27B6827F762C",
+  "attempt": {
+    "terminal": "T2",
+    "requested_runs": 2,
+    "attempted_runs": 1,
+    "result": "FAIL",
+    "reason_classes": ["LOG_BOMB", "INCOMPLETE_RUNS", "MODEL4_MARKER_REQUIRED"],
+    "report_size_bytes": 0,
+    "log_path": "D:\\QM\\mt5\\T2\\Tester\\Agent-127.0.0.1-3000\\MQL5\\Files\\QM\\QM5_1241_ea-1241.log",
+    "log_size_reported": "4.01 GB",
+    "log_retained": false
+  },
+  "diagnosis": {
+    "root_cause": "Strategy_ManageOpenPosition calls QM_TM_MoveSL on every tick after the one-R trigger without first checking whether the stop is already at break-even. QM_TM_MoveSL logs every modify attempt, creating unbounded repeated output.",
+    "economic_parameters_changed": false,
+    "repair": "Add an idempotency guard that returns when the current stop is already at or beyond break-even, then strictly recompile and rerun two full-history reports."
+  },
+  "repair_compile": {
+    "status": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+    "source_sha256": "DDBBBF746330BED414D0266CAE9D13CE9C877850A460E3DDA96750D048636C88",
+    "compile_log": "framework/build/compile/20260712_144928/QM5_1241_mql5-macd-signal.compile.log",
+    "compile_log_sha256": "00A7EC58E4CB52FA803AC201E281A388C7038527AF971AF3AE93121E0CB0C032",
+    "fresh_two_run_reconstruction": "PENDING_SAME_SYMBOL_SERIALIZATION"
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

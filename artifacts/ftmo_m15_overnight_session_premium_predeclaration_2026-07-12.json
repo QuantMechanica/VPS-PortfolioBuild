@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_SCREEN",
+  "deployment_allowed": false,
+  "hypothesis": "The return from the late cash session to the next cash open can contain a persistent overnight premium distinct from intraday incumbent returns.",
+  "data": {
+    "timestamp_basis": "Darwinex broker-wall converted to UTC and exchange-local session time",
+    "symbols": ["GDAXI.DWX", "NDX.DWX", "SP500.DWX", "WS30.DWX", "XAUUSD.DWX"],
+    "sha256": {
+      "GDAXI.DWX": "8BC3BF7E7913EE8C6C3F96AB29EEEBD9F0FD24A1A21E45895E0F7E813474E072",
+      "XAUUSD.DWX": "8A4BFDD6630C54D6DCD1042C89E90BF03C428311A6746C7EB2A572152504E1EB",
+      "NDX.DWX": "DAB877F9914D8390DEB5A559E8775C341106B69AAA28212F049BC01A95762CBE",
+      "SP500.DWX": "91011A4C8CD66E987324971239DCB8A92A2F217525F284500A52830BBA23A6F8",
+      "WS30.DWX": "0184E19063200F4CEC7330A4E988562BB70E754C76974F651CD9F69B340C8BB8"
+    },
+    "current_swap_points": {
+      "GDAXI.DWX": {"long": -424.13, "short": -27.07, "digits": 2},
+      "NDX.DWX": {"long": -626.88, "short": 19.57, "digits": 2},
+      "SP500.DWX": {"long": -86.56, "short": -68.93, "digits": 2},
+      "WS30.DWX": {"long": -1135.86, "short": 47.27, "digits": 2},
+      "XAUUSD.DWX": {"long": -75.93, "short": -23.55, "digits": 2}
+    }
+  },
+  "causal_contract": {
+    "entry": "Open of a fixed M15 bar 1, 4, or 8 bars before the cash-session end.",
+    "exit": "Open of the next available cash session plus 0, 2, or 4 M15 bars.",
+    "weekend": "Friday entries are forbidden; the next session must be within four calendar days.",
+    "risk": "Stop distance uses ATR56 known before entry; stop is resolved before target on ambiguous bars.",
+    "cost": "Existing conservative round-trip price cost plus current direction-specific FTMO overnight swap; Wednesday rollover is tripled.",
+    "maximum_one_trade_per_symbol_day": true
+  },
+  "fixed_grid": {
+    "entry_bars_before_close": [1, 4, 8],
+    "exit_bars_after_next_open": [0, 2, 4],
+    "stop_atr": [1.0, 2.0, 3.0],
+    "target_r": [0.0, 3.0],
+    "direction": ["short", "long"],
+    "entry_weekday": ["all_monday_thursday", "monday", "tuesday", "wednesday", "thursday"],
+    "total_configurations": 2700
+  },
+  "selection_contract": {
+    "development": "2018-2022",
+    "validation": "2023",
+    "sealed_holdout": "2024-2025",
+    "minimum_development_trades": 200,
+    "minimum_development_profit_factor": 1.18,
+    "minimum_positive_development_years": 4,
+    "minimum_validation_trades": 40,
+    "minimum_validation_profit_factor": 1.1,
+    "winner_count": 1,
+    "winner_score": "maximum of min(development PF, validation PF), then trade count",
+    "holdout_open_rule": "Open 2024-2025 only for the single global winner if every preholdout gate passes.",
+    "holdout_pass_rule": "At least 80 trades, PF >= 1.10, positive pooled net R, and positive 2024 and 2025 net R."
+  },
+  "label": "RESEARCH_ONLY_NO_GO"
+}

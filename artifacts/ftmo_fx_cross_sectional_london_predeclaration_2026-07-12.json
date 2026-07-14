@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_IMPLEMENTATION_AND_RUN",
+  "deployment_allowed": false,
+  "hypothesis": "The largest normalized completed-day move among liquid FX pairs contains either short-horizon continuation or reversal information at the London open; selecting only one pair per day creates independent return density without stacking correlated USD positions.",
+  "universe": [
+    {"symbol": "EURUSD.DWX", "path": "D:/QM/mt5/T_Export/MQL5/Files/EURUSD.DWX_M5.csv", "round_trip_cost_points": 0.00015},
+    {"symbol": "GBPUSD.DWX", "path": "D:/QM/mt5/T_Export/MQL5/Files/GBPUSD.DWX_M5.csv", "round_trip_cost_points": 0.00018},
+    {"symbol": "USDJPY.DWX", "path": "D:/QM/mt5/T_Export/MQL5/Files/USDJPY.DWX_M5.csv", "round_trip_cost_points": 0.0225},
+    {"symbol": "GBPJPY.DWX", "path": "D:/QM/mt5/T_Export/MQL5/Files/GBPJPY.DWX_M5.csv", "round_trip_cost_points": 0.0325}
+  ],
+  "fixed_mechanics": {
+    "timestamp_conversion": "Darwinex broker-wall epoch to UTC to Europe/London",
+    "entry_local_minute": 480,
+    "exit_local_minute": 960,
+    "one_trade_per_london_day": true,
+    "ranking": "largest absolute completed-day close return; symbol ascending tie-break",
+    "completed_day_minimum_m5_bars": 200,
+    "stop_volatility": "mean true range of the 288 M5 bars completed before entry",
+    "same_bar_rule": "stop_first",
+    "overnight_positions": false,
+    "spread_and_commission_basis": "fixed conservative current FTMO round-trip points by symbol"
+  },
+  "fixed_grid": {
+    "completed_day_lookbacks": [1, 3, 5],
+    "directions": ["momentum", "mean_reversion"],
+    "stop_atr288_multiples": [8.0, 16.0, 24.0],
+    "target_r_multiples": [1.0, 2.0, 3.0],
+    "configuration_count": 54
+  },
+  "selection_contract": {
+    "development_years": [2018, 2019, 2020, 2021, 2022],
+    "validation_year": 2023,
+    "sealed_holdout_years": [2024, 2025],
+    "development_gate": {
+      "minimum_trades": 750,
+      "minimum_profit_factor": 1.12,
+      "net_r_must_be_positive": true,
+      "minimum_positive_calendar_years": 4
+    },
+    "validation_gate": {
+      "minimum_trades": 150,
+      "minimum_profit_factor": 1.05,
+      "net_r_must_be_positive": true
+    },
+    "winner_order": "minimum_development_validation_pf_desc_then_development_pf_desc_then_trades_desc_then_parameter_key_asc",
+    "holdout_open_rule": "Open exactly one frozen winner only after both preholdout gates pass.",
+    "holdout_gate": {
+      "minimum_trades": 350,
+      "minimum_profit_factor": 1.10,
+      "net_r_must_be_positive": true,
+      "each_calendar_year_net_must_be_positive": true
+    }
+  },
+  "promotion_contract": "A holdout survivor remains research-only until Strategy Card approval, allocated EA ID, native deterministic MT5 reconstruction, current-cost reconciliation, exact M15 MAE parity, and dual-fill marginal book validation pass.",
+  "operational_constraints": {
+    "source_data_only": "T_Export .DWX CSV",
+    "t1_t5_untouched_by_python_screen": true,
+    "t_live_forbidden": true,
+    "autotrading_change_forbidden": true
+  },
+  "label": "RESEARCH_ONLY_NO_GO"
+}

@@ -1,0 +1,42 @@
+{
+  "basis": "fresh_start_entry_sized_m15_trade_cancellation_governor",
+  "excluded_years": [
+    2017,
+    2020
+  ],
+  "fill_contract": "ideal_threshold_inside_m15_bar",
+  "horizon_calendar_days": 30,
+  "manifest": "artifacts\\ftmo_joint_six_sleeve_manifest_2026-07-11.json",
+  "results": [
+    {
+      "daily_stop": 4500.0,
+      "full_risk_room": 4000.0,
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 49.79983987189752,
+        "pass_ci95_pct": [
+          48.24062592225914,
+          52.15907966119192
+        ],
+        "pass_pct": 50.200160128102475,
+        "runs": 2498
+      },
+      "mean_accepted_entries": 12.983586869495596,
+      "mean_blocked_entries": 1.090072057646117,
+      "mean_ending_balance": 102121.56097721933,
+      "mean_minimum_equity": 93100.8394701122,
+      "mean_stop_events": 2.756204963971177,
+      "mean_trading_days": 9.524819855884708,
+      "nominal_risk_pct": 25.0,
+      "risk_multiplier": 25.0,
+      "room_retention": 0.2,
+      "scenario": "six_sleeve_scout_balanced",
+      "start_windows": 2498
+    }
+  ],
+  "schema_version": 1,
+  "start_windows": 2498,
+  "status": "RESEARCH_ONLY",
+  "trade_paths": 1664
+}

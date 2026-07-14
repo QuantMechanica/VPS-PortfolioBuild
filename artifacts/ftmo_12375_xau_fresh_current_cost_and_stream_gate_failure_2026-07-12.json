@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_CURRENT_FTMO_COST_AND_STREAM_GATES",
+  "ea_id": 12375,
+  "symbol": "XAUUSD.DWX",
+  "period": "D1",
+  "history": "2017-01-01/2025-12-31",
+  "model": 4,
+  "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+  "source_sha256": "08AD403113D8BF1436A3EB99B54C3F82B15269FC62CC67A2C9E8513F950AF825",
+  "compile_log": "framework/build/compile/20260712_153438/QM5_12375_tmom-masset-trend.compile.log",
+  "compile_log_sha256": "D49CF42FDD64A4869FFE8903ED904D7F1119A901114A78BF4E03DC9BBAD0EC57",
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_12375_xau_d1_wave19_20260712\\QM5_12375\\20260712_160418\\summary.json",
+  "deterministic": true,
+  "native": {
+    "trades": 330,
+    "profit_factor": 1.489332,
+    "net_profit": 35001.75,
+    "equity_drawdown": 12677.58
+  },
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\12375_XAUUSD_DWX_T3_FRESH_20260712.jsonl",
+    "rows": 59,
+    "sha256": "60E800912F6AFE31569D1381094252931283D1A8DF8F5D7844F46A580C6179FF",
+    "report_reconciliation": "FAIL",
+    "count_delta": -271,
+    "missing_mae_rows": 59,
+    "corrected_net_delta": -81071.63
+  },
+  "current_cost_artifact": "artifacts/ftmo_12375_xau_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "trades": 330,
+    "profit_factor": 1.105232,
+    "net_profit": 8645.26,
+    "close_to_close_max_drawdown": 17927.42,
+    "commission_total": 348.18,
+    "swap_total": -26008.3
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "minimum_trades_per_calendar_year": 5,
+    "negative_calendar_years": [2020, 2021, 2022, 2023],
+    "calendar_years_below_density_floor": [2018],
+    "reason_for_reject": "Current XAU swap drag pushes pooled PF below the strict floor and drawdown above 15%; the Q08 stream is also incomplete and contains no usable MAE rows."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

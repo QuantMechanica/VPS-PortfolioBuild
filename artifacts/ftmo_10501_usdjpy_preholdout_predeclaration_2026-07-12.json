@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_FRESH_RUN",
+  "deployment_allowed": false,
+  "selection_source": {
+    "path": "D:\\QM\\strategy_farm\\artifacts\\portfolio\\prop_challenge_ftmo_report_candidate_screen_dedup_fast_20260629.json",
+    "sha256": "05298982B0E80D32BCBD835A5F1444BDF3AA1A992B284AAF756B075DA2FA2404",
+    "rule": "Remaining high-density archive candidate ending in 2022; archive profitability is weak and is treated only as a falsifiable lead."
+  },
+  "candidate": {
+    "ea_id": 10501,
+    "expert": "QM\\QM5_10501_mql5-area-macd",
+    "symbol": "USDJPY.DWX",
+    "period": "H1",
+    "archive_start": "2022-07-01",
+    "archive_end": "2022-12-30",
+    "archive_profit_factor": 1.0532395184218482,
+    "archive_trades": 367,
+    "archive_trades_per_60d": 120.327868852459,
+    "source_sha256": "16D135186B303BCBC6141AD4BE0A4D0F67E4504BC10D73CA168148B74415F087",
+    "setfile": "framework/EAs/QM5_10501_mql5-area-macd/sets/QM5_10501_mql5-area-macd_USDJPY.DWX_H1_backtest.set",
+    "setfile_sha256": "90C0E7D3F714A7A9D6234B419B7353DC50519076A7C3DF546D04AE99CB915C03"
+  },
+  "data_partition": {
+    "fresh_initial_run": "2017-01-01 through 2023-12-31",
+    "development_years": [2017, 2018, 2019, 2020, 2021],
+    "selection_contaminated_year": 2022,
+    "validation_year": 2023,
+    "sealed_holdout_years": [2024, 2025],
+    "holdout_open_rule": "Run 2024-2025 only after exact stream, current-cost, annual-quality, dual-fill development, and frozen-weight 2023 validation gates pass."
+  },
+  "fresh_evidence_contract": {
+    "model": 4,
+    "required_identical_runs": 2,
+    "minimum_trades": 250,
+    "exact_report_stream_reconciliation_required": true,
+    "current_ftmo_cost_reconstruction_required": true,
+    "minimum_current_cost_profit_factor": 1.2,
+    "minimum_trades_per_active_calendar_year": 5
+  },
+  "portfolio_contract": {
+    "weight_grid_pct": [0.5, 1.0, 2.0, 3.0, 5.0],
+    "development_survivor_rule": "One fixed weight must strictly improve both normal and adverse locked development pass rates.",
+    "validation_rule": "The same frozen weight must strictly improve both normal and adverse 2023 pass rates."
+  },
+  "operational_constraints": {
+    "terminal": "T1",
+    "factory_off_required": true,
+    "t_live_forbidden": true,
+    "installed_ftmo_terminal_forbidden": true,
+    "autotrading_change_forbidden": true
+  },
+  "label": "RESEARCH_ONLY_NO_GO"
+}

@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-13",
+  "status": "PREDECLARED_BEFORE_60D_REPLAY",
+  "purpose": "Measure the already-locked FTMO incumbent over 60 calendar days without any new selection or policy change.",
+  "manifest": "artifacts/ftmo_joint_eleven_sleeve_incumbent_weight_path_manifest_2026-07-12.json",
+  "manifest_sha256": "56EF3EB7216B743290E8C6ADD61FC5FC321E00FCED6AF438D0C168545B850847",
+  "scenario": "path_01_11095_gbpusd_down2",
+  "locked_30d_threshold_artifact": {
+    "path": "artifacts/ftmo_bar_governor_11095_down2_locked_holdout_threshold_2026-07-12.json",
+    "sha256": "ED54A09184B9DA8EA1A7D64C8FF072C8A1DEF7B0717E34953FF435B85711A9A4"
+  },
+  "locked_30d_adverse_artifact": {
+    "path": "artifacts/ftmo_bar_governor_11095_down2_locked_holdout_adverse_2026-07-12.json",
+    "sha256": "C45F0D9B8E48BC8CD8EDFFC06DBA8AC0D045638A039EDCACE6BEB17066B48A4F"
+  },
+  "policy": {
+    "risk_multiplier": 25.0,
+    "daily_stop": 4500.0,
+    "full_risk_room": 4000.0,
+    "room_retention": 0.2,
+    "profit_risk_steps": [],
+    "elapsed_risk_steps": [],
+    "open_risk_limit_ratio": 0.0
+  },
+  "replay": {
+    "horizon_calendar_days": 60,
+    "years": [2024, 2025],
+    "excluded_years": [2017, 2018, 2019, 2020, 2021, 2022, 2023],
+    "fill_contracts": ["ideal_threshold_inside_m15_bar", "adverse_bar"]
+  },
+  "selection_uses_60d_result": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

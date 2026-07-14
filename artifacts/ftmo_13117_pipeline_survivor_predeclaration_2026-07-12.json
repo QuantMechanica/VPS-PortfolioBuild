@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_FRESH_FTMO_RUN",
+  "candidate": {
+    "ea_id": 13117,
+    "expert": "QM\\QM5_13117_eurgbp-audjpy",
+    "logical_symbol": "QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1",
+    "host_symbol": "EURGBP.DWX",
+    "traded_symbols": ["EURGBP.DWX", "AUDJPY.DWX"],
+    "conversion_symbols": ["GBPUSD.DWX", "USDJPY.DWX"],
+    "period": "D1",
+    "pipeline_evidence": {
+      "q04": "PASS; 2023 PF 1.409852 over 30 trades, 2024 PF 1.540035 over 34 trades",
+      "q05_q07": "PASS through harsh stress and five seeds; PF 1.46 over 176 trades"
+    }
+  },
+  "fresh_evidence_contract": {
+    "history": "2017-01-01 through 2025-12-31",
+    "model": 4,
+    "required_identical_runs": 2,
+    "current_framework_strict_compile": true,
+    "joint_mae_stream_required": true,
+    "exact_report_stream_reconciliation_required": true,
+    "current_ftmo_two_leg_cost_reconstruction_required": true,
+    "strict_q02_pf_floor": 1.2,
+    "strict_q02_minimum_trades_per_calendar_year": 5
+  },
+  "portfolio_contract": {
+    "weight_grid_pct": [0.5, 1.0, 2.0, 3.0, 5.0, 7.5, 10.0],
+    "development_survivor_rule": "A fixed candidate representation and weight must improve both threshold and adverse preholdout pass rates.",
+    "sealed_holdout_open_rule": "Open once only for a frozen development survivor."
+  },
+  "execution_order_contract": "Start only after the active USDJPY.DWX test exits because USDJPY.DWX is required for conversion/history warmup.",
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

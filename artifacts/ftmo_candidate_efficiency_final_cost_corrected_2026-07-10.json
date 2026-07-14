@@ -1,0 +1,53 @@
+[
+  {
+    "ea_id": 10375,
+    "symbol": "NDX.DWX",
+    "trades": 1633,
+    "span_years": 7.4205,
+    "trades_per_year": 220.07,
+    "profit_factor": 1.1324,
+    "total_net_base": 55972.52,
+    "annual_net_base": 7543.0,
+    "worst_conservative_daily_mae_base": 2049.01,
+    "annual_net_per_daily_mae": 3.6813,
+    "scale_at_internal_daily_limit": 1.9522,
+    "annual_net_at_internal_daily_limit": 14725.16,
+    "median_hold_hours": 4.28,
+    "max_hold_hours": 80.32,
+    "method": "lifetime_mae_plus_entry_commission_summed_on_each_spanned_cest_day"
+  },
+  {
+    "ea_id": 12986,
+    "symbol": "GDAXI.DWX",
+    "trades": 1790,
+    "span_years": 7.4475,
+    "trades_per_year": 240.35,
+    "profit_factor": 1.0546,
+    "total_net_base": 33107.64,
+    "annual_net_base": 4445.47,
+    "worst_conservative_daily_mae_base": 1358.31,
+    "annual_net_per_daily_mae": 3.2728,
+    "scale_at_internal_daily_limit": 2.9448,
+    "annual_net_at_internal_daily_limit": 13091.18,
+    "median_hold_hours": 5.25,
+    "max_hold_hours": 23.11,
+    "method": "lifetime_mae_plus_entry_commission_summed_on_each_spanned_cest_day"
+  },
+  {
+    "ea_id": 12969,
+    "symbol": "USDJPY.DWX",
+    "trades": 331,
+    "span_years": 8.2227,
+    "trades_per_year": 40.25,
+    "profit_factor": 1.5471,
+    "total_net_base": 10974.78,
+    "annual_net_base": 1334.7,
+    "worst_conservative_daily_mae_base": 1012.37,
+    "annual_net_per_daily_mae": 1.3184,
+    "scale_at_internal_daily_limit": 3.9511,
+    "annual_net_at_internal_daily_limit": 5273.55,
+    "median_hold_hours": 7.5,
+    "max_hold_hours": 79.5,
+    "method": "lifetime_mae_plus_entry_commission_summed_on_each_spanned_cest_day"
+  }
+]

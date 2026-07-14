@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_CURRENT_FTMO_COST_GATE",
+  "ea_id": 13018,
+  "symbol": "XAGUSD.DWX",
+  "period": "D1",
+  "history": "2017-01-01/2025-12-31",
+  "model": 4,
+  "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+  "compile_log": "framework/build/compile/compile/20260712_143016/QM5_13018_xag-vol-compression-breakout.compile.log",
+  "compile_log_sha256": "963893ACF325A911004F0BC6EB416D842ED663A77C2BE4963CCB7564885810B6",
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_13018_xag_d1_wave14_20260712\\QM5_13018\\20260712_143043\\summary.json",
+  "deterministic": true,
+  "report_runs": [
+    {"path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_13018_xag_d1_wave14_20260712\\QM5_13018\\20260712_143043\\raw\\run_01\\report.htm", "sha256": "1FCB8567A72BA6A3C4209E5DC5E785F7D62BC158FB3B12607296C4C56F1ECA2D"},
+    {"path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_13018_xag_d1_wave14_20260712\\QM5_13018\\20260712_143043\\raw\\run_02\\report.htm", "sha256": "298CBE2E936C938419E7B67A548F4C0F6CE783AB7592997A842F6772903F7898"}
+  ],
+  "native": {"trades": 63, "profit_factor": 0.543523, "net_profit": -8787.09, "equity_drawdown": 8985.84},
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\13018_XAGUSD_DWX_T3_FRESH_20260712.jsonl",
+    "rows": 63,
+    "sha256": "A61B3D4509085DFDDDEF99DBE01BD0F0299123FC74174DFE3564C9E2161F3E1F",
+    "report_reconciliation": "PASS_EXACT_COUNT_AND_NET",
+    "corrected_net_delta": 0.0,
+    "net_tolerance": 1.0
+  },
+  "current_cost_artifact": "artifacts/ftmo_13018_xag_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "trades": 63,
+    "profit_factor": 0.484644,
+    "net_profit": -10313.16,
+    "close_to_close_max_drawdown": 10313.16,
+    "commission_total": 34.12,
+    "swap_total": -1491.99
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "minimum_trades_per_calendar_year": 5,
+    "negative_calendar_years": [2018, 2019, 2020, 2021, 2023, 2024],
+    "calendar_years_below_density_floor": [2017, 2024, 2025],
+    "reason_for_reject": "The approved XAG compression-breakout port is deeply loss-making natively, has no 2025 trades, and deteriorates further under current FTMO silver commission and rollover costs."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

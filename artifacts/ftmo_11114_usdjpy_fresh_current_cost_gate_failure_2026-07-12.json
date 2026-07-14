@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_CURRENT_FTMO_COST_GATE",
+  "ea_id": 11114,
+  "symbol": "USDJPY.DWX",
+  "period": "H1",
+  "history": "2017-01-01/2025-12-31",
+  "model": 4,
+  "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+  "compile_log": "framework/build/compile/20260712_113113/QM5_11114_bb-alert-break.compile.log",
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_11114_usdjpy_h1_wave3_20260712\\QM5_11114\\20260712_103135\\summary.json",
+  "deterministic": true,
+  "report_runs": [
+    {
+      "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_11114_usdjpy_h1_wave3_20260712\\QM5_11114\\20260712_103135\\raw\\run_01\\report.htm",
+      "sha256": "D77229C6CAAAB96D8B08A832539AC6B47311C5C7DF4F0EE891BEEB4D61DACB74"
+    },
+    {
+      "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_11114_usdjpy_h1_wave3_20260712\\QM5_11114\\20260712_103135\\raw\\run_02\\report.htm",
+      "sha256": "60089E0610A37FB196D45D97B9B0FF1497FB292621A7C4D44E21F5F8EF255DD4"
+    }
+  ],
+  "native": {
+    "trades": 2062,
+    "profit_factor": 1.168894,
+    "net_profit": 167671.44,
+    "equity_drawdown": 47159.68
+  },
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\11114_USDJPY_DWX_FRESH_20260712.jsonl",
+    "rows": 2062,
+    "sha256": "701C8C42030A7D59FFE2F50454004D020E7E271076FBF3D00AAE182B19C26E6A",
+    "report_reconciliation": "PASS_EXACT_COUNT_AND_NET"
+  },
+  "current_cost_artifact": "artifacts/ftmo_11114_usdjpy_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "trades": 2062,
+    "profit_factor": 1.140741,
+    "net_profit": 141249.96,
+    "close_to_close_max_drawdown": 52875.37,
+    "commission_total": 46692.8,
+    "swap_total": -45816.94
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "minimum_trades_per_calendar_year": 5,
+    "annual_density_pass": true,
+    "reason_for_reject": "Current FTMO costs reduce pooled PF from 1.168894 to 1.140741; 2017, 2018, 2019, and 2023 are loss-making."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

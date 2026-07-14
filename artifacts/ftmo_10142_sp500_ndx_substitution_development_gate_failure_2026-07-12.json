@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "NO_NORMAL_DEVELOPMENT_SURVIVOR",
+  "predeclaration": "artifacts/ftmo_10142_sp500_ndx_substitution_predeclaration_2026-07-12.json",
+  "manifest": "artifacts/ftmo_joint_10142_sp500_ndx_substitution_manifest_2026-07-12.json",
+  "normal_result": "artifacts/ftmo_bar_governor_10142_sp500_ndx_substitution_dev_normal_2026-07-12.json",
+  "development_years": [2018, 2019, 2021, 2022],
+  "control_pass_pct": 59.05848787446505,
+  "best_candidate": {
+    "scenario": "path_01_10142_sp500_from_10440_NDX_DWX_00p5",
+    "donor_key": "10440:NDX.DWX",
+    "candidate_weight_pct": 0.5,
+    "pass_pct": 58.91583452211127,
+    "delta_pct_points": -0.14265335235378074
+  },
+  "adverse_development_opened": false,
+  "validation_2023_opened": false,
+  "sealed_holdout_2024_2025_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

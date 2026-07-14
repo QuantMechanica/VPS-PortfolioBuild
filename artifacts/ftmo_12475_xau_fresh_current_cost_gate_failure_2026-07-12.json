@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_CURRENT_FTMO_COST_GATE",
+  "ea_id": 12475,
+  "symbol": "XAUUSD.DWX",
+  "period": "H1",
+  "history": "2017-01-01/2025-12-31",
+  "model": 4,
+  "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_12475_xau_h1_wave2_20260712\\QM5_12475\\20260712_095551\\summary.json",
+  "deterministic": true,
+  "valid_runs": 2,
+  "warmup_invalid_runs": 1,
+  "native": {
+    "trades": 2041,
+    "profit_factor": 1.150604,
+    "net_profit": 135301.05,
+    "equity_drawdown": 66637.62
+  },
+  "q08_stream_rows": 2041,
+  "current_cost_artifact": "artifacts/ftmo_12475_xau_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "trades": 2041,
+    "profit_factor": 0.983694,
+    "net_profit": -15623.89,
+    "close_to_close_max_drawdown": 121178.06,
+    "commission_total": 13560.49,
+    "swap_total": -137372.56
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "reason_for_reject": "Current FTMO costs reduce pooled PF from 1.150604 to 0.983694 and turn pooled net profit negative."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

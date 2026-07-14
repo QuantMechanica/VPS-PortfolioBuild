@@ -1,0 +1,2224 @@
+{
+  "basis": "report_reconciled_trade_level_ftmo_cost_continuous_calendar_conservative_mae",
+  "limitations": [
+    "Open trades are assumed to reach MAE simultaneously on every open calendar day.",
+    "Current FTMO swap snapshot is applied to the full historical sample.",
+    "Block bootstrap estimates research frequency and is not a pass guarantee."
+  ],
+  "results": [
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 0.5,
+      "nominal_risk_fixed": 1000.0,
+      "nominal_risk_pct": 1.0,
+      "scenario": "core_equal",
+      "weights": {
+        "10476:USDCAD.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.0,
+      "nominal_risk_fixed": 2000.0,
+      "nominal_risk_pct": 2.0,
+      "scenario": "core_equal",
+      "weights": {
+        "10476:USDCAD.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 99.9888888888889,
+        "pass_pct": 0.011111111111111112,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.5,
+      "nominal_risk_fixed": 3000.0,
+      "nominal_risk_pct": 3.0,
+      "scenario": "core_equal",
+      "weights": {
+        "10476:USDCAD.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 99.6,
+        "pass_pct": 0.4,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 2.0,
+      "nominal_risk_fixed": 4000.0,
+      "nominal_risk_pct": 4.0,
+      "scenario": "core_equal",
+      "weights": {
+        "10476:USDCAD.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.022222222222222223,
+        "not_reached_pct": 98.52222222222223,
+        "pass_pct": 1.4555555555555555,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 98.28629032258065,
+        "pass_pct": 1.7137096774193548,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 2.5,
+      "nominal_risk_fixed": 5000.0,
+      "nominal_risk_pct": 5.0,
+      "scenario": "core_equal",
+      "weights": {
+        "10476:USDCAD.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 1.0666666666666667,
+        "max_breach_pct": 0.1,
+        "not_reached_pct": 96.31111111111112,
+        "pass_pct": 2.522222222222222,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 1.0416666666666665,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 96.16935483870968,
+        "pass_pct": 2.788978494623656,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 3.0,
+      "nominal_risk_fixed": 6000.0,
+      "nominal_risk_pct": 6.0,
+      "scenario": "core_equal",
+      "weights": {
+        "10476:USDCAD.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 4.322222222222223,
+        "max_breach_pct": 0.7444444444444445,
+        "not_reached_pct": 89.8111111111111,
+        "pass_pct": 5.122222222222223,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 4.099462365591398,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 90.22177419354838,
+        "pass_pct": 5.678763440860215,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 4.0,
+      "nominal_risk_fixed": 8000.0,
+      "nominal_risk_pct": 8.0,
+      "scenario": "core_equal",
+      "weights": {
+        "10476:USDCAD.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 33.43333333333333,
+        "max_breach_pct": 0.011111111111111112,
+        "not_reached_pct": 57.72222222222222,
+        "pass_pct": 8.833333333333334,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 33.770161290322584,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 55.846774193548384,
+        "pass_pct": 10.383064516129032,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 5.0,
+      "nominal_risk_fixed": 10000.0,
+      "nominal_risk_pct": 10.0,
+      "scenario": "core_equal",
+      "weights": {
+        "10476:USDCAD.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 36.82222222222222,
+        "max_breach_pct": 0.011111111111111112,
+        "not_reached_pct": 52.75555555555555,
+        "pass_pct": 10.411111111111111,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 37.56720430107527,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 51.00806451612904,
+        "pass_pct": 11.424731182795698,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 6.0,
+      "nominal_risk_fixed": 12000.0,
+      "nominal_risk_pct": 12.0,
+      "scenario": "core_equal",
+      "weights": {
+        "10476:USDCAD.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 42.81111111111111,
+        "max_breach_pct": 0.05555555555555555,
+        "not_reached_pct": 46.800000000000004,
+        "pass_pct": 10.333333333333334,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 41.36424731182796,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 47.91666666666667,
+        "pass_pct": 10.719086021505376,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 7.0,
+      "nominal_risk_fixed": 14000.0,
+      "nominal_risk_pct": 14.000000000000002,
+      "scenario": "core_equal",
+      "weights": {
+        "10476:USDCAD.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 49.13333333333333,
+        "max_breach_pct": 0.06666666666666667,
+        "not_reached_pct": 41.81111111111111,
+        "pass_pct": 8.988888888888889,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 47.14381720430107,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 43.68279569892473,
+        "pass_pct": 9.173387096774194,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 8.0,
+      "nominal_risk_fixed": 16000.0,
+      "nominal_risk_pct": 16.0,
+      "scenario": "core_equal",
+      "weights": {
+        "10476:USDCAD.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 54.800000000000004,
+        "max_breach_pct": 0.08888888888888889,
+        "not_reached_pct": 37.577777777777776,
+        "pass_pct": 7.533333333333333,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 51.344086021505376,
+        "max_breach_pct": 0.16801075268817203,
+        "not_reached_pct": 40.65860215053764,
+        "pass_pct": 7.829301075268817,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 9.0,
+      "nominal_risk_fixed": 18000.0,
+      "nominal_risk_pct": 18.0,
+      "scenario": "core_equal",
+      "weights": {
+        "10476:USDCAD.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 57.833333333333336,
+        "max_breach_pct": 0.16666666666666669,
+        "not_reached_pct": 34.78888888888889,
+        "pass_pct": 7.211111111111111,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 53.293010752688176,
+        "max_breach_pct": 0.43682795698924726,
+        "not_reached_pct": 39.348118279569896,
+        "pass_pct": 6.922043010752688,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 10.0,
+      "nominal_risk_fixed": 20000.0,
+      "nominal_risk_pct": 20.0,
+      "scenario": "core_equal",
+      "weights": {
+        "10476:USDCAD.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 65.85555555555555,
+        "max_breach_pct": 0.03333333333333333,
+        "not_reached_pct": 28.255555555555556,
+        "pass_pct": 5.855555555555555,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 60.181451612903224,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 34.91263440860215,
+        "pass_pct": 4.905913978494623,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 12.0,
+      "nominal_risk_fixed": 24000.0,
+      "nominal_risk_pct": 24.0,
+      "scenario": "core_equal",
+      "weights": {
+        "10476:USDCAD.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 73.4,
+        "max_breach_pct": 0.044444444444444446,
+        "not_reached_pct": 21.633333333333333,
+        "pass_pct": 4.9222222222222225,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 68.31317204301075,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 27.016129032258064,
+        "pass_pct": 4.670698924731183,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 15.0,
+      "nominal_risk_fixed": 30000.0,
+      "nominal_risk_pct": 30.0,
+      "scenario": "core_equal",
+      "weights": {
+        "10476:USDCAD.DWX": 0.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 0.5,
+      "nominal_risk_fixed": 1500.0,
+      "nominal_risk_pct": 1.5,
+      "scenario": "tri_equal",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.37777777777777777,
+        "not_reached_pct": 99.2,
+        "pass_pct": 0.42222222222222217,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.6048387096774194,
+        "not_reached_pct": 99.39516129032258,
+        "pass_pct": 0.0,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.0,
+      "nominal_risk_fixed": 3000.0,
+      "nominal_risk_pct": 3.0,
+      "scenario": "tri_equal",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 4.844444444444444,
+        "max_breach_pct": 0.5777777777777777,
+        "not_reached_pct": 91.45555555555556,
+        "pass_pct": 3.1222222222222222,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 5.040322580645161,
+        "max_breach_pct": 0.9072580645161291,
+        "not_reached_pct": 91.66666666666666,
+        "pass_pct": 2.385752688172043,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.5,
+      "nominal_risk_fixed": 4500.0,
+      "nominal_risk_pct": 4.5,
+      "scenario": "tri_equal",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 16.155555555555555,
+        "max_breach_pct": 0.7111111111111111,
+        "not_reached_pct": 76.67777777777778,
+        "pass_pct": 6.455555555555556,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 15.557795698924732,
+        "max_breach_pct": 1.2768817204301075,
+        "not_reached_pct": 78.19220430107528,
+        "pass_pct": 4.973118279569892,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 2.0,
+      "nominal_risk_fixed": 6000.0,
+      "nominal_risk_pct": 6.0,
+      "scenario": "tri_equal",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 31.8,
+        "max_breach_pct": 0.18888888888888888,
+        "not_reached_pct": 58.34444444444444,
+        "pass_pct": 9.666666666666666,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 30.241935483870968,
+        "max_breach_pct": 0.03360215053763441,
+        "not_reached_pct": 61.357526881720425,
+        "pass_pct": 8.366935483870968,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 2.5,
+      "nominal_risk_fixed": 7500.0,
+      "nominal_risk_pct": 7.5,
+      "scenario": "tri_equal",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 37.3,
+        "max_breach_pct": 0.6333333333333333,
+        "not_reached_pct": 50.911111111111104,
+        "pass_pct": 11.155555555555557,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 34.64381720430107,
+        "max_breach_pct": 0.6048387096774194,
+        "not_reached_pct": 54.233870967741936,
+        "pass_pct": 10.51747311827957,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 3.0,
+      "nominal_risk_fixed": 9000.0,
+      "nominal_risk_pct": 9.0,
+      "scenario": "tri_equal",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 46.92222222222222,
+        "max_breach_pct": 1.1777777777777778,
+        "not_reached_pct": 40.21111111111111,
+        "pass_pct": 11.688888888888888,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 42.372311827956985,
+        "max_breach_pct": 0.47043010752688175,
+        "not_reached_pct": 43.918010752688176,
+        "pass_pct": 13.239247311827956,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 4.0,
+      "nominal_risk_fixed": 12000.0,
+      "nominal_risk_pct": 12.0,
+      "scenario": "tri_equal",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 67.60000000000001,
+        "max_breach_pct": 0.011111111111111112,
+        "not_reached_pct": 20.544444444444444,
+        "pass_pct": 11.844444444444445,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 61.727150537634415,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 24.39516129032258,
+        "pass_pct": 13.87768817204301,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 5.0,
+      "nominal_risk_fixed": 15000.0,
+      "nominal_risk_pct": 15.0,
+      "scenario": "tri_equal",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 70.45555555555556,
+        "max_breach_pct": 0.011111111111111112,
+        "not_reached_pct": 18.255555555555556,
+        "pass_pct": 11.277777777777779,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 65.49059139784946,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 21.27016129032258,
+        "pass_pct": 13.239247311827956,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 6.0,
+      "nominal_risk_fixed": 18000.0,
+      "nominal_risk_pct": 18.0,
+      "scenario": "tri_equal",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 73.75555555555555,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 15.844444444444445,
+        "pass_pct": 10.4,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 68.95161290322581,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 19.018817204301076,
+        "pass_pct": 12.029569892473118,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 7.0,
+      "nominal_risk_fixed": 21000.0,
+      "nominal_risk_pct": 21.0,
+      "scenario": "tri_equal",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 77.56666666666666,
+        "max_breach_pct": 0.03333333333333333,
+        "not_reached_pct": 13.733333333333334,
+        "pass_pct": 8.666666666666668,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 72.31182795698925,
+        "max_breach_pct": 0.20161290322580644,
+        "not_reached_pct": 17.338709677419356,
+        "pass_pct": 10.14784946236559,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 8.0,
+      "nominal_risk_fixed": 24000.0,
+      "nominal_risk_pct": 24.0,
+      "scenario": "tri_equal",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 80.4,
+        "max_breach_pct": 0.044444444444444446,
+        "not_reached_pct": 12.11111111111111,
+        "pass_pct": 7.444444444444444,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 75.40322580645162,
+        "max_breach_pct": 0.16801075268817203,
+        "not_reached_pct": 15.92741935483871,
+        "pass_pct": 8.501344086021504,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 9.0,
+      "nominal_risk_fixed": 27000.0,
+      "nominal_risk_pct": 27.0,
+      "scenario": "tri_equal",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 82.18888888888888,
+        "max_breach_pct": 0.07777777777777778,
+        "not_reached_pct": 11.088888888888889,
+        "pass_pct": 6.644444444444445,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 76.54569892473118,
+        "max_breach_pct": 0.33602150537634407,
+        "not_reached_pct": 15.020161290322582,
+        "pass_pct": 8.098118279569892,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 10.0,
+      "nominal_risk_fixed": 30000.0,
+      "nominal_risk_pct": 30.0,
+      "scenario": "tri_equal",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 86.2,
+        "max_breach_pct": 0.03333333333333333,
+        "not_reached_pct": 9.033333333333333,
+        "pass_pct": 4.733333333333333,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 80.44354838709677,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 13.34005376344086,
+        "pass_pct": 6.216397849462366,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 12.0,
+      "nominal_risk_fixed": 36000.0,
+      "nominal_risk_pct": 36.0,
+      "scenario": "tri_equal",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 89.66666666666666,
+        "max_breach_pct": 0.03333333333333333,
+        "not_reached_pct": 6.800000000000001,
+        "pass_pct": 3.5000000000000004,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 85.31586021505376,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 10.14784946236559,
+        "pass_pct": 4.536290322580645,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 15.0,
+      "nominal_risk_fixed": 45000.0,
+      "nominal_risk_pct": 45.0,
+      "scenario": "tri_equal",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 1.0,
+        "12990:GBPUSD.DWX": 1.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 0.5,
+      "nominal_risk_fixed": 1000.0,
+      "nominal_risk_pct": 1.0,
+      "scenario": "tri_balanced_total2",
+      "weights": {
+        "10476:USDCAD.DWX": 0.5,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.0,
+      "nominal_risk_fixed": 2000.0,
+      "nominal_risk_pct": 2.0,
+      "scenario": "tri_balanced_total2",
+      "weights": {
+        "10476:USDCAD.DWX": 0.5,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.011111111111111112,
+        "not_reached_pct": 99.92222222222222,
+        "pass_pct": 0.06666666666666667,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.5,
+      "nominal_risk_fixed": 3000.0,
+      "nominal_risk_pct": 3.0,
+      "scenario": "tri_balanced_total2",
+      "weights": {
+        "10476:USDCAD.DWX": 0.5,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.4333333333333333,
+        "not_reached_pct": 98.7,
+        "pass_pct": 0.8666666666666666,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.6048387096774194,
+        "not_reached_pct": 98.95833333333334,
+        "pass_pct": 0.43682795698924726,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 2.0,
+      "nominal_risk_fixed": 4000.0,
+      "nominal_risk_pct": 4.0,
+      "scenario": "tri_balanced_total2",
+      "weights": {
+        "10476:USDCAD.DWX": 0.5,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 2.0444444444444447,
+        "max_breach_pct": 0.9222222222222222,
+        "not_reached_pct": 94.38888888888889,
+        "pass_pct": 2.6444444444444444,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 2.0161290322580645,
+        "max_breach_pct": 0.9072580645161291,
+        "not_reached_pct": 94.9260752688172,
+        "pass_pct": 2.1505376344086025,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 2.5,
+      "nominal_risk_fixed": 5000.0,
+      "nominal_risk_pct": 5.0,
+      "scenario": "tri_balanced_total2",
+      "weights": {
+        "10476:USDCAD.DWX": 0.5,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 4.8,
+        "max_breach_pct": 0.6777777777777777,
+        "not_reached_pct": 89.4,
+        "pass_pct": 5.122222222222223,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 5.040322580645161,
+        "max_breach_pct": 0.9072580645161291,
+        "not_reached_pct": 89.95295698924731,
+        "pass_pct": 4.099462365591398,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 3.0,
+      "nominal_risk_fixed": 6000.0,
+      "nominal_risk_pct": 6.0,
+      "scenario": "tri_balanced_total2",
+      "weights": {
+        "10476:USDCAD.DWX": 0.5,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 18.4,
+        "max_breach_pct": 1.277777777777778,
+        "not_reached_pct": 70.96666666666667,
+        "pass_pct": 9.355555555555556,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 17.876344086021508,
+        "max_breach_pct": 1.4448924731182795,
+        "not_reached_pct": 73.18548387096774,
+        "pass_pct": 7.493279569892473,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 4.0,
+      "nominal_risk_fixed": 8000.0,
+      "nominal_risk_pct": 8.0,
+      "scenario": "tri_balanced_total2",
+      "weights": {
+        "10476:USDCAD.DWX": 0.5,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 34.044444444444444,
+        "max_breach_pct": 0.9333333333333335,
+        "not_reached_pct": 52.87777777777778,
+        "pass_pct": 12.144444444444444,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 33.568548387096776,
+        "max_breach_pct": 0.16801075268817203,
+        "not_reached_pct": 55.51075268817204,
+        "pass_pct": 10.75268817204301,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 5.0,
+      "nominal_risk_fixed": 10000.0,
+      "nominal_risk_pct": 10.0,
+      "scenario": "tri_balanced_total2",
+      "weights": {
+        "10476:USDCAD.DWX": 0.5,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 41.91111111111111,
+        "max_breach_pct": 1.3666666666666667,
+        "not_reached_pct": 43.766666666666666,
+        "pass_pct": 12.955555555555556,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 39.314516129032256,
+        "max_breach_pct": 1.2096774193548387,
+        "not_reached_pct": 45.73252688172043,
+        "pass_pct": 13.743279569892472,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 6.0,
+      "nominal_risk_fixed": 12000.0,
+      "nominal_risk_pct": 12.0,
+      "scenario": "tri_balanced_total2",
+      "weights": {
+        "10476:USDCAD.DWX": 0.5,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 60.72222222222222,
+        "max_breach_pct": 0.14444444444444443,
+        "not_reached_pct": 26.48888888888889,
+        "pass_pct": 12.644444444444444,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 59.173387096774185,
+        "max_breach_pct": 0.5040322580645161,
+        "not_reached_pct": 26.54569892473118,
+        "pass_pct": 13.776881720430106,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 7.0,
+      "nominal_risk_fixed": 14000.0,
+      "nominal_risk_pct": 14.000000000000002,
+      "scenario": "tri_balanced_total2",
+      "weights": {
+        "10476:USDCAD.DWX": 0.5,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 63.511111111111106,
+        "max_breach_pct": 0.41111111111111115,
+        "not_reached_pct": 23.344444444444445,
+        "pass_pct": 12.733333333333333,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 61.96236559139785,
+        "max_breach_pct": 0.13440860215053765,
+        "not_reached_pct": 23.45430107526882,
+        "pass_pct": 14.448924731182796,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 8.0,
+      "nominal_risk_fixed": 16000.0,
+      "nominal_risk_pct": 16.0,
+      "scenario": "tri_balanced_total2",
+      "weights": {
+        "10476:USDCAD.DWX": 0.5,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 66.25555555555556,
+        "max_breach_pct": 0.6333333333333333,
+        "not_reached_pct": 20.633333333333333,
+        "pass_pct": 12.477777777777778,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 62.23118279569893,
+        "max_breach_pct": 0.13440860215053765,
+        "not_reached_pct": 22.47983870967742,
+        "pass_pct": 15.154569892473118,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 9.0,
+      "nominal_risk_fixed": 18000.0,
+      "nominal_risk_pct": 18.0,
+      "scenario": "tri_balanced_total2",
+      "weights": {
+        "10476:USDCAD.DWX": 0.5,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 74.57777777777778,
+        "max_breach_pct": 0.022222222222222223,
+        "not_reached_pct": 14.933333333333335,
+        "pass_pct": 10.466666666666667,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 69.25403225806451,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 18.077956989247312,
+        "pass_pct": 12.668010752688172,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 10.0,
+      "nominal_risk_fixed": 20000.0,
+      "nominal_risk_pct": 20.0,
+      "scenario": "tri_balanced_total2",
+      "weights": {
+        "10476:USDCAD.DWX": 0.5,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 78.62222222222222,
+        "max_breach_pct": 0.03333333333333333,
+        "not_reached_pct": 12.788888888888888,
+        "pass_pct": 8.555555555555555,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 73.58870967741935,
+        "max_breach_pct": 0.16801075268817203,
+        "not_reached_pct": 16.061827956989248,
+        "pass_pct": 10.181451612903226,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 12.0,
+      "nominal_risk_fixed": 24000.0,
+      "nominal_risk_pct": 24.0,
+      "scenario": "tri_balanced_total2",
+      "weights": {
+        "10476:USDCAD.DWX": 0.5,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 83.61111111111111,
+        "max_breach_pct": 0.044444444444444446,
+        "not_reached_pct": 9.855555555555554,
+        "pass_pct": 6.488888888888889,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 79.3010752688172,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 13.440860215053762,
+        "pass_pct": 7.258064516129033,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 15.0,
+      "nominal_risk_fixed": 30000.0,
+      "nominal_risk_pct": 30.0,
+      "scenario": "tri_balanced_total2",
+      "weights": {
+        "10476:USDCAD.DWX": 0.5,
+        "12969:USDJPY.DWX": 0.75,
+        "12990:GBPUSD.DWX": 0.75
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 0.5,
+      "nominal_risk_fixed": 1000.0,
+      "nominal_risk_pct": 1.0,
+      "scenario": "usdcad_tilt_total2",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 0.5,
+        "12990:GBPUSD.DWX": 0.5
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.35555555555555557,
+        "not_reached_pct": 99.44444444444444,
+        "pass_pct": 0.2,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.6048387096774194,
+        "not_reached_pct": 99.39516129032258,
+        "pass_pct": 0.0,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.0,
+      "nominal_risk_fixed": 2000.0,
+      "nominal_risk_pct": 2.0,
+      "scenario": "usdcad_tilt_total2",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 0.5,
+        "12990:GBPUSD.DWX": 0.5
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 4.855555555555555,
+        "max_breach_pct": 0.5666666666666667,
+        "not_reached_pct": 92.61111111111111,
+        "pass_pct": 1.9666666666666666,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 5.040322580645161,
+        "max_breach_pct": 1.0080645161290323,
+        "not_reached_pct": 92.50672043010752,
+        "pass_pct": 1.4448924731182795,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.5,
+      "nominal_risk_fixed": 3000.0,
+      "nominal_risk_pct": 3.0,
+      "scenario": "usdcad_tilt_total2",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 0.5,
+        "12990:GBPUSD.DWX": 0.5
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 16.133333333333333,
+        "max_breach_pct": 0.5111111111111112,
+        "not_reached_pct": 79.05555555555556,
+        "pass_pct": 4.3,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 16.162634408602152,
+        "max_breach_pct": 1.1760752688172043,
+        "not_reached_pct": 79.16666666666666,
+        "pass_pct": 3.494623655913978,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 2.0,
+      "nominal_risk_fixed": 4000.0,
+      "nominal_risk_pct": 4.0,
+      "scenario": "usdcad_tilt_total2",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 0.5,
+        "12990:GBPUSD.DWX": 0.5
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 31.555555555555554,
+        "max_breach_pct": 0.07777777777777778,
+        "not_reached_pct": 61.37777777777777,
+        "pass_pct": 6.988888888888889,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 30.107526881720432,
+        "max_breach_pct": 0.03360215053763441,
+        "not_reached_pct": 63.4744623655914,
+        "pass_pct": 6.384408602150538,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 2.5,
+      "nominal_risk_fixed": 5000.0,
+      "nominal_risk_pct": 5.0,
+      "scenario": "usdcad_tilt_total2",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 0.5,
+        "12990:GBPUSD.DWX": 0.5
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 35.58888888888889,
+        "max_breach_pct": 0.21111111111111108,
+        "not_reached_pct": 55.7,
+        "pass_pct": 8.5,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 33.13172043010753,
+        "max_breach_pct": 0.5376344086021506,
+        "not_reached_pct": 58.4005376344086,
+        "pass_pct": 7.93010752688172,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 3.0,
+      "nominal_risk_fixed": 6000.0,
+      "nominal_risk_pct": 6.0,
+      "scenario": "usdcad_tilt_total2",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 0.5,
+        "12990:GBPUSD.DWX": 0.5
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 43.888888888888886,
+        "max_breach_pct": 0.4,
+        "not_reached_pct": 46.27777777777778,
+        "pass_pct": 9.433333333333334,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 38.575268817204304,
+        "max_breach_pct": 0.13440860215053765,
+        "not_reached_pct": 49.96639784946236,
+        "pass_pct": 11.323924731182796,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 4.0,
+      "nominal_risk_fixed": 8000.0,
+      "nominal_risk_pct": 8.0,
+      "scenario": "usdcad_tilt_total2",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 0.5,
+        "12990:GBPUSD.DWX": 0.5
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 52.166666666666664,
+        "max_breach_pct": 0.03333333333333333,
+        "not_reached_pct": 36.4,
+        "pass_pct": 11.4,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 43.98521505376344,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 42.909946236559136,
+        "pass_pct": 13.104838709677418,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 5.0,
+      "nominal_risk_fixed": 10000.0,
+      "nominal_risk_pct": 10.0,
+      "scenario": "usdcad_tilt_total2",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 0.5,
+        "12990:GBPUSD.DWX": 0.5
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 54.05555555555556,
+        "max_breach_pct": 0.13333333333333333,
+        "not_reached_pct": 33.77777777777778,
+        "pass_pct": 12.033333333333333,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 45.96774193548387,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 41.465053763440864,
+        "pass_pct": 12.567204301075268,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 6.0,
+      "nominal_risk_fixed": 12000.0,
+      "nominal_risk_pct": 12.0,
+      "scenario": "usdcad_tilt_total2",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 0.5,
+        "12990:GBPUSD.DWX": 0.5
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 57.05555555555556,
+        "max_breach_pct": 0.18888888888888888,
+        "not_reached_pct": 31.722222222222225,
+        "pass_pct": 11.033333333333333,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 49.29435483870967,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 39.91935483870967,
+        "pass_pct": 10.786290322580646,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 7.0,
+      "nominal_risk_fixed": 14000.0,
+      "nominal_risk_pct": 14.000000000000002,
+      "scenario": "usdcad_tilt_total2",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 0.5,
+        "12990:GBPUSD.DWX": 0.5
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 58.46666666666667,
+        "max_breach_pct": 0.46666666666666673,
+        "not_reached_pct": 30.06666666666667,
+        "pass_pct": 11.0,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 50.201612903225815,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 38.74327956989247,
+        "pass_pct": 11.05510752688172,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 8.0,
+      "nominal_risk_fixed": 16000.0,
+      "nominal_risk_pct": 16.0,
+      "scenario": "usdcad_tilt_total2",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 0.5,
+        "12990:GBPUSD.DWX": 0.5
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 60.05555555555555,
+        "max_breach_pct": 0.7333333333333333,
+        "not_reached_pct": 28.07777777777778,
+        "pass_pct": 11.133333333333335,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 52.016129032258064,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 36.72715053763441,
+        "pass_pct": 11.256720430107526,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 9.0,
+      "nominal_risk_fixed": 18000.0,
+      "nominal_risk_pct": 18.0,
+      "scenario": "usdcad_tilt_total2",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 0.5,
+        "12990:GBPUSD.DWX": 0.5
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 72.31111111111112,
+        "max_breach_pct": 0.011111111111111112,
+        "not_reached_pct": 18.822222222222223,
+        "pass_pct": 8.855555555555556,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 65.75940860215054,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 23.823924731182796,
+        "pass_pct": 10.416666666666668,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 10.0,
+      "nominal_risk_fixed": 20000.0,
+      "nominal_risk_pct": 20.0,
+      "scenario": "usdcad_tilt_total2",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 0.5,
+        "12990:GBPUSD.DWX": 0.5
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 74.95555555555555,
+        "max_breach_pct": 0.011111111111111112,
+        "not_reached_pct": 17.133333333333333,
+        "pass_pct": 7.9,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 68.38037634408603,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 21.03494623655914,
+        "pass_pct": 10.58467741935484,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 12.0,
+      "nominal_risk_fixed": 24000.0,
+      "nominal_risk_pct": 24.0,
+      "scenario": "usdcad_tilt_total2",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 0.5,
+        "12990:GBPUSD.DWX": 0.5
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 80.65555555555555,
+        "max_breach_pct": 0.011111111111111112,
+        "not_reached_pct": 13.188888888888888,
+        "pass_pct": 6.144444444444445,
+        "runs": 9000
+      },
+      "data_calendar_days": 3005,
+      "data_end": "2025-12-30",
+      "data_start": "2017-10-09",
+      "historical_rolling": {
+        "daily_breach_pct": 74.96639784946237,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 17.237903225806452,
+        "pass_pct": 7.795698924731183,
+        "runs": 2976
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 15.0,
+      "nominal_risk_fixed": 30000.0,
+      "nominal_risk_pct": 30.0,
+      "scenario": "usdcad_tilt_total2",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 0.5,
+        "12990:GBPUSD.DWX": 0.5
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 9000
+      },
+      "data_calendar_days": 2521,
+      "data_end": "2024-10-11",
+      "data_start": "2017-11-17",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 100.0,
+        "pass_pct": 0.0,
+        "runs": 2492
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 0.5,
+      "nominal_risk_fixed": 500.0,
+      "nominal_risk_pct": 0.5,
+      "scenario": "usdcad_only",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 0.0,
+        "12990:GBPUSD.DWX": 0.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.4888888888888889,
+        "not_reached_pct": 99.26666666666667,
+        "pass_pct": 0.24444444444444444,
+        "runs": 9000
+      },
+      "data_calendar_days": 2521,
+      "data_end": "2024-10-11",
+      "data_start": "2017-11-17",
+      "historical_rolling": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 1.0834670947030496,
+        "not_reached_pct": 98.91653290529695,
+        "pass_pct": 0.0,
+        "runs": 2492
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.0,
+      "nominal_risk_fixed": 1000.0,
+      "nominal_risk_pct": 1.0,
+      "scenario": "usdcad_only",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 0.0,
+        "12990:GBPUSD.DWX": 0.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 4.644444444444444,
+        "max_breach_pct": 0.4333333333333333,
+        "not_reached_pct": 93.28888888888889,
+        "pass_pct": 1.633333333333333,
+        "runs": 9000
+      },
+      "data_calendar_days": 2521,
+      "data_end": "2024-10-11",
+      "data_start": "2017-11-17",
+      "historical_rolling": {
+        "daily_breach_pct": 4.815409309791333,
+        "max_breach_pct": 0.521669341894061,
+        "not_reached_pct": 93.98073836276083,
+        "pass_pct": 0.6821829855537721,
+        "runs": 2492
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 1.5,
+      "nominal_risk_fixed": 1500.0,
+      "nominal_risk_pct": 1.5,
+      "scenario": "usdcad_only",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 0.0,
+        "12990:GBPUSD.DWX": 0.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 18.777777777777775,
+        "max_breach_pct": 0.5111111111111112,
+        "not_reached_pct": 77.96666666666667,
+        "pass_pct": 2.7444444444444445,
+        "runs": 9000
+      },
+      "data_calendar_days": 2521,
+      "data_end": "2024-10-11",
+      "data_start": "2017-11-17",
+      "historical_rolling": {
+        "daily_breach_pct": 19.341894060995184,
+        "max_breach_pct": 1.4044943820224718,
+        "not_reached_pct": 78.13001605136436,
+        "pass_pct": 1.1235955056179776,
+        "runs": 2492
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 2.0,
+      "nominal_risk_fixed": 2000.0,
+      "nominal_risk_pct": 2.0,
+      "scenario": "usdcad_only",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 0.0,
+        "12990:GBPUSD.DWX": 0.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 36.36666666666667,
+        "max_breach_pct": 0.044444444444444446,
+        "not_reached_pct": 61.0,
+        "pass_pct": 2.588888888888889,
+        "runs": 9000
+      },
+      "data_calendar_days": 2521,
+      "data_end": "2024-10-11",
+      "data_start": "2017-11-17",
+      "historical_rolling": {
+        "daily_breach_pct": 36.637239165329056,
+        "max_breach_pct": 0.04012841091492777,
+        "not_reached_pct": 62.15890850722311,
+        "pass_pct": 1.1637239165329054,
+        "runs": 2492
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 2.5,
+      "nominal_risk_fixed": 2500.0,
+      "nominal_risk_pct": 2.5,
+      "scenario": "usdcad_only",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 0.0,
+        "12990:GBPUSD.DWX": 0.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 40.955555555555556,
+        "max_breach_pct": 0.18888888888888888,
+        "not_reached_pct": 56.43333333333334,
+        "pass_pct": 2.422222222222222,
+        "runs": 9000
+      },
+      "data_calendar_days": 2521,
+      "data_end": "2024-10-11",
+      "data_start": "2017-11-17",
+      "historical_rolling": {
+        "daily_breach_pct": 40.168539325842694,
+        "max_breach_pct": 0.6420545746388443,
+        "not_reached_pct": 58.42696629213483,
+        "pass_pct": 0.7624398073836276,
+        "runs": 2492
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 3.0,
+      "nominal_risk_fixed": 3000.0,
+      "nominal_risk_pct": 3.0,
+      "scenario": "usdcad_only",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 0.0,
+        "12990:GBPUSD.DWX": 0.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 48.13333333333333,
+        "max_breach_pct": 0.6666666666666667,
+        "not_reached_pct": 49.43333333333334,
+        "pass_pct": 1.7666666666666668,
+        "runs": 9000
+      },
+      "data_calendar_days": 2521,
+      "data_end": "2024-10-11",
+      "data_start": "2017-11-17",
+      "historical_rolling": {
+        "daily_breach_pct": 45.10433386837881,
+        "max_breach_pct": 0.2407704654895666,
+        "not_reached_pct": 54.0529695024077,
+        "pass_pct": 0.6019261637239166,
+        "runs": 2492
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 4.0,
+      "nominal_risk_fixed": 4000.0,
+      "nominal_risk_pct": 4.0,
+      "scenario": "usdcad_only",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 0.0,
+        "12990:GBPUSD.DWX": 0.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 61.23333333333333,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 38.03333333333334,
+        "pass_pct": 0.7333333333333333,
+        "runs": 9000
+      },
+      "data_calendar_days": 2521,
+      "data_end": "2024-10-11",
+      "data_start": "2017-11-17",
+      "historical_rolling": {
+        "daily_breach_pct": 54.49438202247191,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 44.9438202247191,
+        "pass_pct": 0.5617977528089888,
+        "runs": 2492
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 5.0,
+      "nominal_risk_fixed": 5000.0,
+      "nominal_risk_pct": 5.0,
+      "scenario": "usdcad_only",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 0.0,
+        "12990:GBPUSD.DWX": 0.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 62.955555555555556,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 36.71111111111111,
+        "pass_pct": 0.33333333333333337,
+        "runs": 9000
+      },
+      "data_calendar_days": 2521,
+      "data_end": "2024-10-11",
+      "data_start": "2017-11-17",
+      "historical_rolling": {
+        "daily_breach_pct": 55.45746388443018,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 43.98073836276083,
+        "pass_pct": 0.5617977528089888,
+        "runs": 2492
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 6.0,
+      "nominal_risk_fixed": 6000.0,
+      "nominal_risk_pct": 6.0,
+      "scenario": "usdcad_only",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 0.0,
+        "12990:GBPUSD.DWX": 0.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 64.12222222222222,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 35.58888888888889,
+        "pass_pct": 0.28888888888888886,
+        "runs": 9000
+      },
+      "data_calendar_days": 2521,
+      "data_end": "2024-10-11",
+      "data_start": "2017-11-17",
+      "historical_rolling": {
+        "daily_breach_pct": 56.380417335473524,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 43.0577849117175,
+        "pass_pct": 0.5617977528089888,
+        "runs": 2492
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 7.0,
+      "nominal_risk_fixed": 7000.0,
+      "nominal_risk_pct": 7.000000000000001,
+      "scenario": "usdcad_only",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 0.0,
+        "12990:GBPUSD.DWX": 0.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 65.53333333333333,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 34.32222222222222,
+        "pass_pct": 0.14444444444444443,
+        "runs": 9000
+      },
+      "data_calendar_days": 2521,
+      "data_end": "2024-10-11",
+      "data_start": "2017-11-17",
+      "historical_rolling": {
+        "daily_breach_pct": 57.6645264847512,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 42.33547351524879,
+        "pass_pct": 0.0,
+        "runs": 2492
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 8.0,
+      "nominal_risk_fixed": 8000.0,
+      "nominal_risk_pct": 8.0,
+      "scenario": "usdcad_only",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 0.0,
+        "12990:GBPUSD.DWX": 0.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 67.63333333333334,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 32.27777777777778,
+        "pass_pct": 0.08888888888888889,
+        "runs": 9000
+      },
+      "data_calendar_days": 2521,
+      "data_end": "2024-10-11",
+      "data_start": "2017-11-17",
+      "historical_rolling": {
+        "daily_breach_pct": 60.39325842696629,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 39.60674157303371,
+        "pass_pct": 0.0,
+        "runs": 2492
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 9.0,
+      "nominal_risk_fixed": 9000.0,
+      "nominal_risk_pct": 9.0,
+      "scenario": "usdcad_only",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 0.0,
+        "12990:GBPUSD.DWX": 0.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 68.4,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 31.522222222222222,
+        "pass_pct": 0.07777777777777778,
+        "runs": 9000
+      },
+      "data_calendar_days": 2521,
+      "data_end": "2024-10-11",
+      "data_start": "2017-11-17",
+      "historical_rolling": {
+        "daily_breach_pct": 60.63402889245586,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 39.36597110754414,
+        "pass_pct": 0.0,
+        "runs": 2492
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 10.0,
+      "nominal_risk_fixed": 10000.0,
+      "nominal_risk_pct": 10.0,
+      "scenario": "usdcad_only",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 0.0,
+        "12990:GBPUSD.DWX": 0.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 69.27777777777779,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 30.65555555555556,
+        "pass_pct": 0.06666666666666667,
+        "runs": 9000
+      },
+      "data_calendar_days": 2521,
+      "data_end": "2024-10-11",
+      "data_start": "2017-11-17",
+      "historical_rolling": {
+        "daily_breach_pct": 61.67736757624398,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 38.32263242375602,
+        "pass_pct": 0.0,
+        "runs": 2492
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 12.0,
+      "nominal_risk_fixed": 12000.0,
+      "nominal_risk_pct": 12.0,
+      "scenario": "usdcad_only",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 0.0,
+        "12990:GBPUSD.DWX": 0.0
+      }
+    },
+    {
+      "bootstrap": {
+        "daily_breach_pct": 71.04444444444444,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 28.933333333333334,
+        "pass_pct": 0.022222222222222223,
+        "runs": 9000
+      },
+      "data_calendar_days": 2521,
+      "data_end": "2024-10-11",
+      "data_start": "2017-11-17",
+      "historical_rolling": {
+        "daily_breach_pct": 63.7239165329053,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 36.27608346709471,
+        "pass_pct": 0.0,
+        "runs": 2492
+      },
+      "horizon_calendar_days": 30,
+      "multiplier": 15.0,
+      "nominal_risk_fixed": 15000.0,
+      "nominal_risk_pct": 15.0,
+      "scenario": "usdcad_only",
+      "weights": {
+        "10476:USDCAD.DWX": 1.0,
+        "12969:USDJPY.DWX": 0.0,
+        "12990:GBPUSD.DWX": 0.0
+      }
+    }
+  ],
+  "rules": {
+    "daily_loss_amount": 5000.0,
+    "maximum_loss_amount": 10000.0,
+    "minimum_trading_days": 4,
+    "phase1_target": 110000.00000000001,
+    "starting_balance": 100000.0,
+    "timezone": "Europe/Prague"
+  },
+  "schema_version": 1,
+  "sleeves": [
+    {
+      "base_risk_fixed": 1000.0,
+      "ftmo_commission": 1722.85,
+      "ftmo_net": 9041.43,
+      "ftmo_swap": 1083.41,
+      "key": "12969:USDJPY.DWX",
+      "native_net": 10974.78,
+      "trades": 331
+    },
+    {
+      "base_risk_fixed": 1000.0,
+      "ftmo_commission": 754.0,
+      "ftmo_net": 24622.19,
+      "ftmo_swap": -1229.29,
+      "key": "12990:GBPUSD.DWX",
+      "native_net": 25624.41,
+      "trades": 91
+    },
+    {
+      "base_risk_fixed": 1000.0,
+      "ftmo_commission": 8406.2,
+      "ftmo_net": 49168.7,
+      "ftmo_swap": -2136.43,
+      "key": "10476:USDCAD.DWX",
+      "native_net": 51303.81,
+      "trades": 257
+    }
+  ],
+  "snapshot_date": "2026-07-11"
+}

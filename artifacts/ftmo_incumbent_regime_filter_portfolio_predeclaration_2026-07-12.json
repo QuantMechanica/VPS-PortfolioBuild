@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "status": "PREDECLARED_BEFORE_PORTFOLIO_EXECUTION",
+  "manifest": "artifacts/ftmo_joint_eleven_sleeve_incumbent_weight_path_manifest_2026-07-12.json",
+  "scenario": "path_01_11095_gbpusd_down2",
+  "selection_artifact": "artifacts/ftmo_incumbent_sleeve_regime_filter_screen_2026-07-12.json",
+  "objective": "Apply every sleeve rule selected on development plus 2023 validation, without selecting on individual 2024-2025 outcomes.",
+  "filter_application": {
+    "10440:NDX.DWX": "volatility_active",
+    "12969:USDJPY.DWX": "trend_24h_align",
+    "10558:EURUSD.DWX": "short_only",
+    "11095:GBPUSD.DWX": "short_only",
+    "10715:USDJPY.DWX": "trend_24h_fade",
+    "10286:XTIUSD.DWX": "trend_5d_align",
+    "10375:NDX.DWX": "long_only",
+    "11708:EURUSD.DWX": "trend_24h_align",
+    "1142:USDJPY.DWX": "trend_20d_fade"
+  },
+  "unfiltered_sleeves": ["12990:GBPUSD.DWX", "10377:XAUUSD.DWX"],
+  "weights": "unchanged from incumbent scenario",
+  "policy": {
+    "risk_multiplier": 25.0,
+    "daily_stop": 4500.0,
+    "full_risk_room": 4000.0,
+    "room_retention": 0.2
+  },
+  "development_years": [2018, 2019, 2021, 2022, 2023],
+  "sealed_holdout_years": [2024, 2025],
+  "development_gate": "Both threshold and adverse pass_pct must improve by at least 2.0 percentage points versus 56.7062818336163 and 49.29258630447085 respectively.",
+  "holdout_rule": "Open the portfolio holdout once only if the development gate passes.",
+  "individual_holdout_fields_ignored_for_portfolio_construction": true,
+  "selection_uses_portfolio_holdout": false
+}

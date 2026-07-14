@@ -1,0 +1,8 @@
+[
+  {
+    "ea_id": 12450,
+    "symbol": "USDJPY.DWX",
+    "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_12450_usdjpy_h1_wave5_20260712\\QM5_12450\\20260712_113201\\summary.json",
+    "stream_path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\12450_USDJPY_DWX_T1_FRESH_20260712.jsonl"
+  }
+]

@@ -1,0 +1,8 @@
+[
+  {
+    "ea_id": 11116,
+    "symbol": "USDJPY.DWX",
+    "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_11116_usdjpy_h4_preholdout_wave46_20260712\\QM5_11116\\20260712_193740\\summary.json",
+    "stream_path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\11116_USDJPY_H4_T1_PREHOLDOUT_FRESH_20260712.jsonl"
+  }
+]

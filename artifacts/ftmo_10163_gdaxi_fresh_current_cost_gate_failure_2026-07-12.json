@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_FRESH_CURRENT_FTMO_COST_GATE",
+  "ea_id": 10163,
+  "symbol": "GDAXI.DWX",
+  "period": "H1",
+  "variant": "baseline",
+  "history": "2017-01-01/2025-12-31",
+  "model": 4,
+  "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+  "source_sha256": "62FAB568257268993F4630F6CA70FC054B179E3DD72EDF55C2CC445F42842A20",
+  "setfile_sha256": "304E0A9513BBBE4BEB092A79DEE2B572457B44D13908EE96AB23787460365BBF",
+  "compile_log": "framework/build/compile/20260712_165351/QM5_10163_tv-rsi-macd-long.compile.log",
+  "compile_log_sha256": "4F4C288D761712C7034B4E92443D2BFB6B819F17EF6BD177DAFC71F8B8C97AB6",
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10163_gdaxi_h1_wave26_20260712\\QM5_10163\\20260712_165406\\summary.json",
+  "deterministic": true,
+  "native": {
+    "trades": 628,
+    "profit_factor": 1.143422,
+    "net_profit": 11273.31,
+    "equity_drawdown": 7588.6
+  },
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\10163_GDAXI_DWX_H1_T1_FRESH_20260712.jsonl",
+    "rows": 628,
+    "sha256": "5814E7DF5057171DF0D62A1A7478E0856811722D513C781D06791118D5FE5B94",
+    "report_reconciliation": "PASS",
+    "count_delta": 0,
+    "missing_mae_rows": 0,
+    "corrected_net_delta": -0.4,
+    "net_tolerance": 6.28
+  },
+  "current_cost_artifact": "artifacts/ftmo_10163_gdaxi_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "trades": 628,
+    "profit_factor": 1.104062,
+    "net_profit": 8260.04,
+    "close_to_close_max_drawdown": 7909.99,
+    "commission_total": 0.0,
+    "swap_total": -7291.21
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "minimum_trades_per_calendar_year": 5,
+    "negative_calendar_years": [
+      2018,
+      2019
+    ],
+    "calendar_years_below_density_floor": [
+      2017
+    ],
+    "archive_comparison": "The fresh 628-trade reconstruction replaces the old 355-trade archive. Current FTMO PF falls from the archived 1.280342 to 1.104062.",
+    "reason_for_reject": "The fresh native and current-cost PFs both fail 1.2 and the first two active years lose money."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "scope_note": "This rejects the GDAXI sleeve only and does not change any verdict for other 10163 symbols.",
+  "label": "RESEARCH_ONLY_NO_GO"
+}

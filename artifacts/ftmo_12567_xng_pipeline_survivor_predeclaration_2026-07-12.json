@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_RESEARCH_ONLY",
+  "deployment_allowed": false,
+  "candidate": {
+    "ea_id": 12567,
+    "expert": "QM\\QM5_12567_cum-rsi2-commodity",
+    "symbol": "XNGUSD.DWX",
+    "period": "D1",
+    "setfile": "framework/EAs/QM5_12567_cum-rsi2-commodity/sets/QM5_12567_cum-rsi2-commodity_XNGUSD.DWX_D1_backtest.set",
+    "source_sha256": "1692D5CF7E6F7108762A70A57BC812132824064B3CACAD5A71C5737CC9B5857D",
+    "setfile_sha256": "8C92E3B8C015B8712D9F1232923E74DAF08BC5ACD1D8E12E6F563C21D02180C9"
+  },
+  "selection_basis": {
+    "q04_fold_profit_factors": [
+      2.1889797779548212,
+      999.0,
+      3.7421818644715064
+    ],
+    "q04_fold_trades": [
+      3,
+      3,
+      6
+    ],
+    "q05_profit_factor": 1.31,
+    "q05_trades": 58,
+    "q06_profit_factor": 1.41,
+    "q07_min_profit_factor": 1.41,
+    "q07_trades": 55,
+    "q07_variance_pct": 0.0,
+    "density_warning": "The OOS folds are sparse. No low-frequency exception is granted; every calendar year must satisfy the frozen five-trade floor."
+  },
+  "locked_test": {
+    "history": "2017-01-01/2025-12-31",
+    "model": 4,
+    "runs": 2,
+    "minimum_trades": 40,
+    "terminal": "T4",
+    "fresh_q08_stream_required": true,
+    "exact_report_stream_reconciliation_required": true,
+    "current_ftmo_cost_reconstruction_required": true,
+    "portfolio_gate": "development normal and adverse must both strictly improve the locked incumbent before 2023 validation",
+    "sealed_years": [
+      2024,
+      2025
+    ]
+  },
+  "operational_constraints": {
+    "factory_off_required": true,
+    "symbol_mutex": "XNGUSD.DWX",
+    "t_live_forbidden": true,
+    "installed_ftmo_terminal_forbidden": true,
+    "autotrading_change_forbidden": true
+  },
+  "label": "RESEARCH_ONLY_NO_GO"
+}

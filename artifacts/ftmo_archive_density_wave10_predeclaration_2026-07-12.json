@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_FRESH_RUN",
+  "selection_source": {
+    "path": "D:\\QM\\strategy_farm\\artifacts\\portfolio\\prop_challenge_ftmo_report_candidate_screen_dedup_fast_20260629.json",
+    "sha256": "05298982b0e80d32bcbd835a5f1444bdf3aa1a992b284aaf756b075da2fa2404",
+    "rule": "Last unrefreshed full-2024 PASS row with archive PF above 1.20 and at least 20 trades per 60 days after excluding all incumbent, already-refreshed, and infrastructure-open candidates. Run only after the active USDJPY test exits to enforce symbol-level serialization."
+  },
+  "candidate": {
+    "ea_id": 1241,
+    "expert": "QM\\QM5_1241_mql5-macd-signal",
+    "symbol": "USDJPY.DWX",
+    "period": "H1",
+    "archive_start": "2024-01-02",
+    "archive_end": "2024-12-30",
+    "archive_pf": 1.2460729523213903,
+    "archive_trades": 185,
+    "archive_trades_per_60d": 30.57851239669422
+  },
+  "fresh_evidence_contract": {
+    "history": "2017-01-01 through 2025-12-31",
+    "model": 4,
+    "required_identical_runs": 2,
+    "current_framework_strict_compile": true,
+    "joint_mae_stream_required": true,
+    "exact_report_stream_reconciliation_required": true,
+    "current_ftmo_cost_reconstruction_required": true,
+    "strict_q02_pf_floor": 1.2,
+    "strict_q02_minimum_trades_per_calendar_year": 5
+  },
+  "portfolio_contract": {
+    "weight_grid_pct": [
+      0.5,
+      1.0,
+      2.0,
+      3.0,
+      5.0,
+      7.5,
+      10.0
+    ],
+    "development_survivor_rule": "A fixed candidate representation and weight must improve both threshold and adverse preholdout pass rates.",
+    "sealed_holdout_open_rule": "Open once only for a frozen development survivor."
+  },
+  "execution_order": {
+    "symbol_mutex": "USDJPY.DWX",
+    "must_start_after": "fresh_11118_usdjpy_h4_wave8_20260712 terminal exit"
+  },
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

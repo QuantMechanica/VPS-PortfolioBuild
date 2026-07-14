@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_RESEARCH_ONLY",
+  "deployment_allowed": false,
+  "candidate": {
+    "ea_id": 12864,
+    "expert": "QM\\QM5_12864_oilsilver-rspr",
+    "logical_symbol": "QM5_12864_XTI_XAG_RSPREAD_D1",
+    "host_symbol": "XTIUSD.DWX",
+    "traded_symbols": ["XTIUSD.DWX", "XAGUSD.DWX"],
+    "period": "D1",
+    "setfile": "framework/EAs/QM5_12864_oilsilver-rspr/sets/QM5_12864_oilsilver-rspr_QM5_12864_XTI_XAG_RSPREAD_D1_D1_backtest.set"
+  },
+  "selection_basis": {
+    "q04_fold_profit_factors": [1.097, 1.144],
+    "q05_profit_factor": 1.22,
+    "q06_harsh_profit_factor": 1.22,
+    "q07_min_profit_factor": 1.22,
+    "q07_variance_pct": 0.0,
+    "archive_full_trades": 94,
+    "portfolio_rationale": "A two-leg energy/metal relative-spread driver is absent from the locked book. Orthogonality is not assumed before joint testing."
+  },
+  "locked_test": {
+    "history": "2017-01-01/2025-12-31",
+    "model": 4,
+    "runs": 2,
+    "minimum_trades": 45,
+    "terminal": "T1",
+    "fresh_mixed_symbol_q08_stream_required": true,
+    "exact_report_stream_reconciliation_required": true,
+    "per_leg_current_ftmo_cost_reconstruction_required": true,
+    "portfolio_gate": "development normal and adverse must both strictly improve the locked incumbent before 2023 validation",
+    "sealed_years": [2024, 2025]
+  },
+  "operational_constraints": {
+    "factory_off_required": true,
+    "symbol_mutexes": ["XTIUSD.DWX", "XAGUSD.DWX"],
+    "t_live_forbidden": true,
+    "installed_ftmo_terminal_forbidden": true,
+    "autotrading_change_forbidden": true
+  },
+  "label": "RESEARCH_ONLY_NO_GO"
+}

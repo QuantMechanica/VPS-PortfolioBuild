@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_FRESH_RUN",
+  "selection_source": {
+    "path": "D:\\QM\\strategy_farm\\artifacts\\portfolio\\prop_challenge_ftmo_report_candidate_screen_dedup_fast_20260629.json",
+    "sha256": "05298982b0e80d32bcbd835a5f1444bdf3aa1a992b284aaf756b075da2fa2404",
+    "rule": "After exhausting the stronger unrefreshed full-2024 candidates, test the highest-PF remaining high-density PASS row whose archive covers only 2024-H2. Keep it in a separate weaker-evidence wave and require the same full-history gates without concession."
+  },
+  "candidate": {
+    "ea_id": 11118,
+    "expert": "QM\\QM5_11118_stoch-alert-cross",
+    "symbol": "USDJPY.DWX",
+    "period": "H4",
+    "archive_start": "2024-07-01",
+    "archive_end": "2024-12-30",
+    "archive_pf": 1.228293744695557,
+    "archive_trades": 190,
+    "archive_trades_per_60d": 62.295081967213115
+  },
+  "fresh_evidence_contract": {
+    "history": "2017-01-01 through 2025-12-31",
+    "model": 4,
+    "required_identical_runs": 2,
+    "current_framework_strict_compile": true,
+    "joint_mae_stream_required": true,
+    "exact_report_stream_reconciliation_required": true,
+    "current_ftmo_cost_reconstruction_required": true,
+    "strict_q02_pf_floor": 1.2,
+    "strict_q02_minimum_trades_per_calendar_year": 5
+  },
+  "portfolio_contract": {
+    "weight_grid_pct": [
+      0.5,
+      1.0,
+      2.0,
+      3.0,
+      5.0,
+      7.5,
+      10.0
+    ],
+    "development_survivor_rule": "A fixed candidate representation and weight must improve both threshold and adverse preholdout pass rates.",
+    "sealed_holdout_open_rule": "Open once only for a frozen development survivor."
+  },
+  "operational_boundary": {
+    "terminal": "T2",
+    "t5_disabled": true,
+    "factory_off_required": true,
+    "t_live_forbidden": true,
+    "installed_ftmo_terminal_forbidden": true,
+    "autotrading_change_forbidden": true
+  },
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

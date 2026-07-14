@@ -1,0 +1,39 @@
+{
+  "fail_count": 0,
+  "pass_count": 1,
+  "results": [
+    {
+      "contract": "one_entry_one_exit_duplicate_closing_commission",
+      "corrected_net_delta": 0.0,
+      "count_delta": 0,
+      "ea_id": 13202,
+      "net_tolerance": 3.68,
+      "reasons": [],
+      "report": {
+        "drawdown": 25982.4,
+        "exists": true,
+        "net_profit": 50555.33,
+        "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\ws30_fri_pm_native_full_20260711\\QM5_13202\\20260711_212130\\summary.json",
+        "profit_factor": 1.2,
+        "report_canonical_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\ws30_fri_pm_native_full_20260711\\QM5_13202\\20260711_212130\\raw\\run_01\\report.htm",
+        "result": "PASS",
+        "trade_count": 368,
+        "usable_run": "run_01"
+      },
+      "status": "PASS",
+      "stream": {
+        "closing_commission": -3402.88,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 0,
+        "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\13202_WS30_DWX_MAE_NATIVE_RISK100_20260711.jsonl",
+        "raw_net": 53958.21,
+        "round_trip_corrected_net": 50555.33,
+        "trade_count": 368
+      },
+      "symbol": "WS30.DWX"
+    }
+  ],
+  "schema_version": 1,
+  "status": "PASS"
+}

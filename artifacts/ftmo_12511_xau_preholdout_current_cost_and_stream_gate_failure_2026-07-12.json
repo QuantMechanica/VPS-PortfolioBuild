@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_CURRENT_FTMO_COST_AND_STREAM_GATES",
+  "ea_id": 12511,
+  "symbol": "XAUUSD.DWX",
+  "period": "D1",
+  "history": "2017-01-01/2023-12-31",
+  "model": 4,
+  "deterministic": true,
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_12511_xau_d1_preholdout_wave36_full_label_20260712\\QM5_12511\\20260712_180525\\summary.json",
+  "summary_sha256": "1B234DD784A82575DA6298FFF3A55ABAF9009C2E8B0F0BB65A687070143A9E7E",
+  "report_runs": [
+    {
+      "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_12511_xau_d1_preholdout_wave36_full_label_20260712\\QM5_12511\\20260712_180525\\raw\\run_01\\report.htm",
+      "sha256": "C6E34CD9D4822636D879DB1A0BF05C078890046BCE54A68862C3FC9054748852"
+    },
+    {
+      "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_12511_xau_d1_preholdout_wave36_full_label_20260712\\QM5_12511\\20260712_180525\\raw\\run_02\\report.htm",
+      "sha256": "5F52044349D275C4EB3BC05EC4E31B1B47D2BABCE8D16BDDF6FD3ED391139549"
+    }
+  ],
+  "native": {
+    "trades": 213,
+    "profit_factor": 1.420822,
+    "net_profit": 2025.41,
+    "close_to_close_max_drawdown": 648.48
+  },
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\12511_XAUUSD_D1_T3_PREHOLDOUT_FRESH_20260712.jsonl",
+    "rows": 20,
+    "sha256": "C87DD0AA5371DB2D9FC626626B8E8A017C2BFA691E550ABCEB1AB5492E100351",
+    "report_reconciliation": "FAIL",
+    "missing_mae_rows": 20,
+    "trade_count_delta": -193,
+    "corrected_net_delta": -2077.52,
+    "net_tolerance": 2.13
+  },
+  "current_cost_artifact": "artifacts/ftmo_12511_xau_preholdout_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "trades": 213,
+    "profit_factor": 0.988951,
+    "net_profit": -62.54,
+    "close_to_close_max_drawdown": 1140.43,
+    "commission_total": 28.72,
+    "swap_total": -2059.22
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "minimum_trades_per_active_calendar_year": 5,
+    "profit_factor_pass": false,
+    "exact_stream_pass": false,
+    "negative_development_years": [2021, 2022],
+    "validation_2023": {
+      "trades": 41,
+      "profit_factor": 0.819943,
+      "net_profit": -257.23
+    },
+    "reason_for_reject": "Current gold rollover removes the native edge and the Q08 stream is incomplete without MAE; the independent 2023 validation year is also loss-making."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_year": 2025,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

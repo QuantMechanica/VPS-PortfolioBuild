@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_CURRENT_FTMO_COST_GATE",
+  "ea_id": 10423,
+  "symbol": "XAUUSD.DWX",
+  "period": "H1",
+  "history": "2017-01-01/2025-12-31",
+  "model": 4,
+  "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+  "compile_log": "framework/build/compile/20260712_123826/QM5_10423_et-close-channel.compile.log",
+  "compile_log_sha256": "CA504C58BEF0F204598B7F309E8B9F7FF6A59173EE47E7A20DE1ED171D196FFD",
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10423_xau_h1_wave6_20260712\\QM5_10423\\20260712_124031\\summary.json",
+  "deterministic": true,
+  "report_runs": [
+    {
+      "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10423_xau_h1_wave6_20260712\\QM5_10423\\20260712_124031\\raw\\run_01\\report.htm",
+      "sha256": "3E4C3E487AD045CE974182B50CE355B525C7A793EF4B4577D36D4F6121277E1A"
+    },
+    {
+      "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10423_xau_h1_wave6_20260712\\QM5_10423\\20260712_124031\\raw\\run_02\\report.htm",
+      "sha256": "A908EA10F70B63D363E2E80DA7E35DF3203F1F9A9E5919D20D82ADCB6E8DD117"
+    }
+  ],
+  "native": {
+    "trades": 1648,
+    "profit_factor": 1.094405,
+    "net_profit": 61853.56,
+    "equity_drawdown": 41022.73
+  },
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\10423_XAUUSD_DWX_T2_FRESH_20260712.jsonl",
+    "rows": 1648,
+    "sha256": "7E10C2C15DA951AAADBA01C16DF28A66A26D968BA9140BDACDF40B15E7857847",
+    "report_reconciliation": "PASS_EXACT_COUNT_AND_NET",
+    "corrected_net_delta": 0.0
+  },
+  "current_cost_artifact": "artifacts/ftmo_10423_xau_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "trades": 1648,
+    "profit_factor": 0.940633,
+    "net_profit": -41561.38,
+    "close_to_close_max_drawdown": 82156.03,
+    "commission_total": 6670.98,
+    "swap_total": -96745.4
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "minimum_trades_per_calendar_year": 5,
+    "annual_density_pass": true,
+    "negative_calendar_years": [
+      2017,
+      2018,
+      2019,
+      2021,
+      2022,
+      2023
+    ],
+    "reason_for_reject": "The fresh native PF is only 1.094405 and current FTMO gold commission plus rollover turns the strategy negative at PF 0.940633; six calendar years are negative."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

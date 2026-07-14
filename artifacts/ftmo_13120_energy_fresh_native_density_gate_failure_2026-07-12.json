@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_NATIVE_PF_AND_DENSITY_GATES",
+  "ea_id": 13120,
+  "logical_symbol": "QM5_13120_ENERGY_MOMREV_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "traded_symbols": ["XTIUSD.DWX", "XNGUSD.DWX"],
+  "period": "D1",
+  "history": "2018-01-01/2025-12-31",
+  "model": 4,
+  "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+  "compile_log": "framework/build/compile/compile/20260712_141825/QM5_13120_energy-momrev.compile.log",
+  "compile_log_sha256": "685A1C839393864111D4858353148A735C7A0BAD599348F59A7A6550DB3B43E1",
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_13120_energy_momrev_wave11_20260712\\QM5_13120\\20260712_141848\\summary.json",
+  "deterministic": true,
+  "report_runs": [
+    {"path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_13120_energy_momrev_wave11_20260712\\QM5_13120\\20260712_141848\\raw\\run_01\\report.htm", "sha256": "176403055AA43552CE79692FDAD621E5F424C77B82DFA1526B7A3462087E970A"},
+    {"path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_13120_energy_momrev_wave11_20260712\\QM5_13120\\20260712_141848\\raw\\run_02\\report.htm", "sha256": "FFBF711FEFE7DBD381DF0BE63742B0AFA2780A4B779F5267D84C2DDC416D1C63"}
+  ],
+  "native": {"trades": 24, "profit_factor": 1.06, "net_profit": 163.76, "equity_drawdown": 949.10},
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\13120_XTIUSD_DWX_T1_FRESH_20260712.jsonl",
+    "rows": 24,
+    "sha256": "E4BC38C8912931894F64D86D4B2F2EB722DFB7DC061FE0925F1D44B2851C2528",
+    "report_reconciliation": "PASS_EXACT_COUNT_AND_NET",
+    "corrected_net_delta": 0.0,
+    "net_tolerance": 1.0
+  },
+  "gate": {
+    "strict_native_profit_factor_floor": 1.2,
+    "minimum_completed_packages": 40,
+    "reason_for_reject": "Only 24 completed packages were produced in eight years and native PF is 1.06. Both mandatory upstream gates fail."
+  },
+  "current_ftmo_cost_reconstruction_opened": false,
+  "current_ftmo_cost_reconstruction_reason": "Closed after deterministic upstream native PF and density failure.",
+  "portfolio_screen_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

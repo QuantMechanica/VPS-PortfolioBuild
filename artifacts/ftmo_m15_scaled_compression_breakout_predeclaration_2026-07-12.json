@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_SCALED_RESEARCH_SCREEN",
+  "family": "variance_scaled_opening_compression_close_breakout",
+  "parent_screen": "artifacts/ftmo_m15_compression_breakout_screen_2026-07-12.json",
+  "amendment_disclosure": "The parent screen produced at most four development trades because a multi-bar opening range was compared directly with one-bar ATR. The economic results and 2018-2023 sample counts were observed. Therefore the variance-scaled version treats all of 2018-2023 as research, leaves 2024 as the next untouched validation year, and leaves 2025 as final candidate-specific holdout.",
+  "data": {
+    "root": "D:\\QM\\mt5\\T_Export\\MQL5\\Files",
+    "symbols": [
+      "GDAXI.DWX",
+      "NDX.DWX",
+      "SP500.DWX",
+      "WS30.DWX",
+      "XAUUSD.DWX"
+    ],
+    "timeframe": "M15"
+  },
+  "parameter_grid": {
+    "range_bars": [
+      4,
+      8
+    ],
+    "active_bars": [
+      4,
+      8
+    ],
+    "max_scaled_range": [
+      0.75,
+      1.0,
+      1.25
+    ],
+    "breakout_buffer_atr": [
+      0.05,
+      0.15
+    ],
+    "stop_atr": [
+      0.75,
+      1.25
+    ],
+    "target_r": [
+      2.0,
+      3.0
+    ]
+  },
+  "evaluated_research_configurations": 480,
+  "execution_contract": {
+    "scaled_opening_range": "Opening range width divided by ATR56 and by sqrt(range_bars).",
+    "compression_gate": "Scaled opening range must be no greater than max_scaled_range.",
+    "confirmation": "Completed signal-bar close beyond the opening boundary plus breakout_buffer_atr times ATR56.",
+    "entry": "Next M15 bar open after the completed confirmation bar.",
+    "same_bar_rule": "stop_first",
+    "daily_position_limit": 1,
+    "overnight_positions": 0
+  },
+  "stage_contract": {
+    "research": "Select one global winner using only 2018-2022 development and 2023 internal validation; apply the original DEV/2023 gate.",
+    "validation_2024": "Open only for the frozen research receipt; require at least 25 trades, PF>=1.10, and positive net R.",
+    "holdout_2025": "Open only with a matching VALIDATION_PASS receipt; require at least 25 trades, PF>=1.10, and positive net R.",
+    "parameter_substitution_after_research": false
+  },
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

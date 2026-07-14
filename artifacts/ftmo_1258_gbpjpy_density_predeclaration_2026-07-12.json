@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_FRESH_RUN",
+  "deployment_allowed": false,
+  "selection_source": {
+    "path": "D:\\QM\\strategy_farm\\artifacts\\portfolio\\prop_challenge_ftmo_report_candidate_screen_dedup_fast_20260629.json",
+    "sha256": "05298982B0E80D32BCBD835A5F1444BDF3AA1A992B284AAF756B075DA2FA2404",
+    "rule": "Highest-density remaining unrefreshed PASS row on a non-USD JPY cross after higher-ranked full-history candidates were closed; retained despite sub-1.20 archive PF only because its 69.56 trades per 60 days could add independent speed."
+  },
+  "candidate": {
+    "ea_id": 1258,
+    "expert": "QM\\QM5_1258_hopwood-bermaui-rsi-h1",
+    "symbol": "GBPJPY.DWX",
+    "period": "H1",
+    "archive_start": "2024-01-02",
+    "archive_end": "2024-12-30",
+    "archive_profit_factor": 1.1817135768941276,
+    "archive_trades": 422,
+    "archive_trades_per_60d": 69.56043956043956,
+    "source_sha256": "BD9E8E4A78EC45C41FBBBB34928C8B72E9128CAC6A5A1E6B4102D77D7408C873",
+    "ex5_sha256": "26B4F76BA019D1E0BBCA86E988E54CFAF414A8E8DA0BC30DEE3D0AF37F4E8012",
+    "setfile": "framework/EAs/QM5_1258_hopwood-bermaui-rsi-h1/sets/QM5_1258_hopwood-bermaui-rsi-h1_GBPJPY.DWX_H1_backtest.set",
+    "setfile_sha256": "F82E655E388EF413EB5EA5263FEFFE8F50E20660452B1FCC8D45F72CD4BBDFC4"
+  },
+  "data_partition": {
+    "fresh_initial_run": "2017-01-01 through 2023-12-31",
+    "development_years": [2017, 2018, 2019, 2021, 2022],
+    "policy_calibration_excluded_year": 2020,
+    "validation_year": 2023,
+    "research_contaminated_year": 2024,
+    "sealed_holdout_year": 2025,
+    "holdout_open_rule": "Run 2025 only after standalone current-cost, dual-fill development, and 2023 validation gates pass."
+  },
+  "fresh_evidence_contract": {
+    "model": 4,
+    "required_identical_runs": 2,
+    "minimum_trades": 100,
+    "exact_report_stream_reconciliation_required": true,
+    "current_ftmo_cost_reconstruction_required": true,
+    "minimum_current_cost_profit_factor": 1.2,
+    "minimum_trades_per_active_calendar_year": 5
+  },
+  "portfolio_contract": {
+    "weight_grid_pct": [0.5, 1.0, 2.0, 3.0, 5.0],
+    "development_survivor_rule": "One fixed weight must strictly improve both normal and adverse locked development pass rates.",
+    "validation_rule": "The same frozen weight must strictly improve both normal and adverse 2023 pass rates."
+  },
+  "operational_constraints": {
+    "terminal": "T2",
+    "factory_off_required": true,
+    "t_live_forbidden": true,
+    "installed_ftmo_terminal_forbidden": true,
+    "autotrading_change_forbidden": true
+  },
+  "label": "RESEARCH_ONLY_NO_GO"
+}

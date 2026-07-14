@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "snapshot_date": "2026-07-12",
+  "status": "RESEARCH_ONLY_NO_GO",
+  "deployment_allowed": false,
+  "timestamp_basis": "darwinex_broker_wall",
+  "basis": "fresh_report_reconciled_10692_causal_preentry_filter_screen",
+  "sleeves": [
+    {
+      "ea_id": 10692,
+      "symbol": "NDX.DWX",
+      "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10692_ndx_20260712\\QM5_10692\\20260712_055813\\summary.json",
+      "stream_path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\10692_NDX_DWX_FRESH_20260712.jsonl",
+      "base_risk_fixed": 1000.0,
+      "qualification": "fresh_reconciled_full_complete_year_ftmo_cost_fail_causal_filter_scout",
+      "cost": {
+        "ftmo_symbol_code": "US100.cash",
+        "commission_percent_per_side": 0.0,
+        "flat_round_trip_commission_per_lot": 0.0,
+        "swap_long_points": -626.88,
+        "swap_short_points": 19.57,
+        "contract_size": 1.0,
+        "source_contract_size": 10.0,
+        "profit_currency_to_account_rate": 1.0,
+        "derive_profit_currency_rate_from_pnl": true,
+        "digits": 2,
+        "triple_weekday": 2
+      }
+    }
+  ],
+  "scenarios": []
+}

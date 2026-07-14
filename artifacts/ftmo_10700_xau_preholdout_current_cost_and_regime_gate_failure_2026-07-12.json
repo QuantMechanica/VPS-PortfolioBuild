@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_CURRENT_FTMO_COST_AND_DEVELOPMENT_REGIME_GATES",
+  "ea_id": 10700,
+  "symbol": "XAUUSD.DWX",
+  "period": "H1",
+  "history": "2017-01-01/2024-12-31",
+  "model": 4,
+  "deterministic": true,
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10700_xau_h1_preholdout_wave40_20260712\\QM5_10700\\20260712_183721\\summary.json",
+  "summary_sha256": "95D20CF4171ECDF5C3A4907CE997A0045B8F7D317B2832868D1CEEAB9A5A98EC",
+  "report_sha256": [
+    "8B842231E368947C2D670EF0249B8BC6F57CFBC474807FE8F8147A608EC68705",
+    "D31C160D4C989136631670BCB100F5D60FE595D878DD1B115AB24F3D92C15121"
+  ],
+  "native": {
+    "trades": 317,
+    "profit_factor": 1.237628,
+    "net_profit": 40589.12,
+    "close_to_close_max_drawdown": 14757.4
+  },
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\10700_XAUUSD_H1_T2_PREHOLDOUT_FRESH_20260712.jsonl",
+    "rows": 317,
+    "sha256": "E057D7505D614A64D816D24930AEAF477B63C835BC4C8D9EBC0F812BB0E789CC",
+    "report_reconciliation": "PASS_EXACT_COUNT_AND_NET",
+    "corrected_net_delta": 0.0,
+    "net_tolerance": 3.17
+  },
+  "current_cost_artifact": "artifacts/ftmo_10700_xau_preholdout_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "profit_factor": 1.085234,
+    "net_profit": 15608.57,
+    "close_to_close_max_drawdown": 22677.59,
+    "commission_total": 1443.18,
+    "swap_total": -23537.54
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "profit_factor_pass": false,
+    "negative_development_years": [2018],
+    "development_regime_note": "The archive-selected 2024 year contributes 19207.86 of 15608.57 current-cost pooled net; 2018 loses 12094.61.",
+    "reason_for_reject": "Current gold rollover reduces PF below 1.2 and the apparent edge is concentrated in the selection-contaminated 2024 regime."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_year": 2025,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

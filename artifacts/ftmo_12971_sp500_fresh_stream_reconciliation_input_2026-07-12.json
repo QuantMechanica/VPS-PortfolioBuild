@@ -1,0 +1,8 @@
+[
+  {
+    "ea_id": 12971,
+    "symbol": "SP500.DWX",
+    "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_12971_prefomc_recompiled_20260712\\QM5_12971\\20260712_052102\\summary.json",
+    "stream_path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\12971_SP500_DWX_FRESH_20260712.jsonl"
+  }
+]

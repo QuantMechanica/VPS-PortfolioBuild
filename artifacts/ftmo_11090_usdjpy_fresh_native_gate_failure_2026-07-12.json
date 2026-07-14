@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_CURRENT_FTMO_COST_GATE",
+  "ea_id": 11090,
+  "symbol": "USDJPY.DWX",
+  "period": "H1",
+  "history": "2017-01-01/2025-12-31",
+  "model": 4,
+  "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_11090_usdjpy_h1_wave3_20260712\\QM5_11090\\20260712_101053\\summary.json",
+  "deterministic": true,
+  "runs": [
+    {
+      "run": "run_01",
+      "trades": 2026,
+      "native_profit_factor": 1.02,
+      "native_net_profit": 10190.35,
+      "native_equity_drawdown": 61207.05
+    },
+    {
+      "run": "run_02",
+      "trades": 2026,
+      "native_profit_factor": 1.02,
+      "native_net_profit": 10190.35,
+      "native_equity_drawdown": 61207.05
+    }
+  ],
+  "q08_stream_rows": 2026,
+  "current_cost_artifact": "artifacts/ftmo_11090_usdjpy_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "trades": 2026,
+    "profit_factor": 0.993454,
+    "net_profit": -3953.17,
+    "close_to_close_max_drawdown": 67896.05,
+    "commission_total": 37331.85,
+    "swap_total": -16179.43
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "reason_for_reject": "Current FTMO costs reduce pooled PF from 1.016997 to 0.993454; no portfolio weight screen is permitted."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

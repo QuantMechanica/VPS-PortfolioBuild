@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "ea_id": 13122,
+  "symbol": "USDJPY.DWX",
+  "timeframe": "M1",
+  "strategy": "tokyo-fix-5m",
+  "model": 4,
+  "risk_fixed": 1000.0,
+  "target_commission_round_trip_usd_per_lot": 5.0,
+  "deterministic": true,
+  "q01": {
+    "status": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260710_192449\\QM5_13122_tokyo-fix-5m.compile.log"
+  },
+  "valid_years": [
+    {
+      "year": 2019,
+      "trades": 469,
+      "profit_factor": 0.88,
+      "net_profit": -2972.38,
+      "equity_drawdown": 4261.61,
+      "equity_drawdown_pct": 4.24,
+      "observed_commission_round_trip_usd_per_lot": 5.0015,
+      "report": "D:\\QM\\reports\\smoke\\QM5_13122_YEARS_20260710\\Y2019\\QM5_13122\\20260710_193745\\raw\\run_02\\report.htm"
+    },
+    {
+      "year": 2020,
+      "trades": 449,
+      "profit_factor": 0.78,
+      "net_profit": -6397.77,
+      "equity_drawdown": 9461.98,
+      "equity_drawdown_pct": 9.2,
+      "observed_commission_round_trip_usd_per_lot": 5.0015,
+      "report": "D:\\QM\\reports\\smoke\\QM5_13122_YEARS_20260710\\Y2020\\QM5_13122\\20260710_193745\\raw\\run_03\\report.htm"
+    },
+    {
+      "year": 2021,
+      "trades": 446,
+      "profit_factor": 0.85,
+      "net_profit": -3116.81,
+      "equity_drawdown": 5264.83,
+      "equity_drawdown_pct": 5.26,
+      "observed_commission_round_trip_usd_per_lot": 5.0012,
+      "report": "D:\\QM\\reports\\smoke\\QM5_13122_YEARS_20260710\\Y2021\\QM5_13122\\20260710_193745\\raw\\run_04\\report.htm"
+    },
+    {
+      "year": 2024,
+      "trades": 428,
+      "profit_factor": 1.11,
+      "net_profit": 4690.17,
+      "equity_drawdown": 4348.34,
+      "equity_drawdown_pct": 4.14,
+      "observed_commission_round_trip_usd_per_lot": 5.001,
+      "news_mode": "OFF_SOURCE_FIDELITY",
+      "report": "D:\\QM\\reports\\smoke\\QM5_13122_NEWS_OFF_20260710\\QM5_13122\\20260710_195939\\raw\\run_02\\report.htm"
+    }
+  ],
+  "excluded_infrastructure_runs": [
+    {
+      "year": 2022,
+      "terminal": "T4",
+      "reason_classes": ["BARS_ZERO", "INCOMPLETE_RUNS"]
+    },
+    {
+      "year": 2023,
+      "terminal": "T5",
+      "reason_classes": ["REPORT_MISSING", "ACCOUNT_NOT_SPECIFIED", "INCOMPLETE_RUNS", "MODEL4_MARKER_REQUIRED"]
+    }
+  ],
+  "pooled_valid_years": {
+    "trades": 1792,
+    "profit_factor": 0.9268,
+    "net_profit": -7796.79,
+    "positive_years": 1,
+    "years": 4
+  },
+  "q02_gate": {
+    "profit_factor_min": 1.2,
+    "status": "FAIL",
+    "reasons": [
+      "pooled_profit_factor_below_1.20",
+      "three_of_four_valid_years_net_negative",
+      "best_valid_year_profit_factor_below_1.20"
+    ]
+  },
+  "research_verdict": "RETIRED_NO_PARAMETER_RESCUE"
+}

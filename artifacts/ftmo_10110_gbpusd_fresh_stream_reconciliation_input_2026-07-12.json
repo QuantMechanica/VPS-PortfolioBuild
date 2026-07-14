@@ -1,0 +1,8 @@
+[
+  {
+    "ea_id": 10110,
+    "symbol": "GBPUSD.DWX",
+    "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10110_gbpusd_h1_wave6_20260712\\QM5_10110\\20260712_123958\\summary.json",
+    "stream_path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\10110_GBPUSD_DWX_T1_FRESH_20260712.jsonl"
+  }
+]

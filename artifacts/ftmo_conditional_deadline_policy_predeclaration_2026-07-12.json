@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_SCREEN",
+  "label": "RESEARCH_ONLY_NO_GO",
+  "hypothesis": "Late risk acceleration restricted to accounts already above starting balance but below target can reduce not-reached outcomes without levering the losing paths that made unconditional deadline acceleration fail.",
+  "manifest": "artifacts/ftmo_joint_eleven_sleeve_incumbent_weight_path_manifest_2026-07-12.json",
+  "manifest_sha256": "56EF3EB7216B743290E8C6ADD61FC5FC321E00FCED6AF438D0C168545B850847",
+  "scenario": "path_01_11095_gbpusd_down2",
+  "fixed_governor": {
+    "risk_multiplier": 25.0,
+    "daily_stop": 4500.0,
+    "full_risk_room": 4000.0,
+    "room_retention": 0.2,
+    "horizon_calendar_days": 30,
+    "open_risk_limit_ratio": 0.0
+  },
+  "control": {
+    "name": "fixed_25",
+    "conditional_steps": []
+  },
+  "candidates": [
+    {
+      "name": "d15_p0_5000_r28",
+      "conditional_steps": [{"elapsed_calendar_days": 15, "minimum_profit": 0.0, "maximum_profit": 5000.0, "risk_multiplier": 28.0}]
+    },
+    {
+      "name": "d15_p0_7500_r30",
+      "conditional_steps": [{"elapsed_calendar_days": 15, "minimum_profit": 0.0, "maximum_profit": 7500.0, "risk_multiplier": 30.0}]
+    },
+    {
+      "name": "d20_p0_5000_r30",
+      "conditional_steps": [{"elapsed_calendar_days": 20, "minimum_profit": 0.0, "maximum_profit": 5000.0, "risk_multiplier": 30.0}]
+    },
+    {
+      "name": "d20_p0_7500_r30",
+      "conditional_steps": [{"elapsed_calendar_days": 20, "minimum_profit": 0.0, "maximum_profit": 7500.0, "risk_multiplier": 30.0}]
+    },
+    {
+      "name": "d20_p0_7500_r35",
+      "conditional_steps": [{"elapsed_calendar_days": 20, "minimum_profit": 0.0, "maximum_profit": 7500.0, "risk_multiplier": 35.0}]
+    },
+    {
+      "name": "d20_p2000_8500_r35",
+      "conditional_steps": [{"elapsed_calendar_days": 20, "minimum_profit": 2000.0, "maximum_profit": 8500.0, "risk_multiplier": 35.0}]
+    },
+    {
+      "name": "d23_p0_8500_r35",
+      "conditional_steps": [{"elapsed_calendar_days": 23, "minimum_profit": 0.0, "maximum_profit": 8500.0, "risk_multiplier": 35.0}]
+    },
+    {
+      "name": "d23_p0_9500_r40",
+      "conditional_steps": [{"elapsed_calendar_days": 23, "minimum_profit": 0.0, "maximum_profit": 9500.0, "risk_multiplier": 40.0}]
+    },
+    {
+      "name": "d15_p0_4000_r28_d22_p0_8500_r35",
+      "conditional_steps": [
+        {"elapsed_calendar_days": 15, "minimum_profit": 0.0, "maximum_profit": 4000.0, "risk_multiplier": 28.0},
+        {"elapsed_calendar_days": 22, "minimum_profit": 0.0, "maximum_profit": 8500.0, "risk_multiplier": 35.0}
+      ]
+    },
+    {
+      "name": "d20_pm1000_6000_r30",
+      "conditional_steps": [{"elapsed_calendar_days": 20, "minimum_profit": -1000.0, "maximum_profit": 6000.0, "risk_multiplier": 30.0}]
+    }
+  ],
+  "selection_split": {
+    "development_years": [2018, 2019, 2021, 2022],
+    "validation_years": [2023],
+    "sealed_years": [2024, 2025],
+    "unavailable_joint_bar_year": 2020,
+    "development_excluded_years": [2017, 2020, 2023, 2024, 2025, 2026]
+  },
+  "development_survivor_rule": "The same candidate must strictly improve both normal and adverse development pass rates versus fixed_25 without increasing daily-breach or maximum-breach rate in either reconstruction.",
+  "winner_lock": "Maximize the smaller normal/adverse pass-rate improvement, then their sum; retain only one policy.",
+  "validation_open_rule": "Open 2023 only for the locked development winner and require the same strict dual improvement versus the 2023 control.",
+  "sealed_open_rule": "Open 2024-2025 once only for a policy that also survives 2023 without edits.",
+  "deployment_allowed": false
+}

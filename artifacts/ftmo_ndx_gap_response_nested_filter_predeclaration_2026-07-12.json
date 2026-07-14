@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_NESTED_FILTER_SCREEN",
+  "parent_screen": "artifacts/ftmo_m15_gap_response_screen_2026-07-12.json",
+  "post_hoc_scope_disclosure": "The frozen base parameters were selected after the 2018-2023 parent screen. Therefore those years are research only; 2024 is the next validation year and 2025 remains the final candidate-specific holdout.",
+  "symbol": "NDX.DWX",
+  "timeframe": "M15",
+  "frozen_base_parameters": {
+    "mode": "continuation",
+    "gap_atr": 1.0,
+    "response_atr": 0.15,
+    "stop_atr": 1.5,
+    "target_r": 3.0
+  },
+  "parent_research_metrics": {
+    "development_2018_2022_profit_factor": 1.153801,
+    "development_trades": 313,
+    "validation_2023_profit_factor": 1.072701,
+    "validation_2023_trades": 88,
+    "failed_year": 2019
+  },
+  "research_years": [2018, 2019, 2021, 2022, 2023],
+  "validation_year": 2024,
+  "holdout_year": 2025,
+  "filters": [
+    "raw_control",
+    "sma20_align",
+    "momentum5_align",
+    "prior_session_align",
+    "majority_2_of_3_align"
+  ],
+  "feature_contract": "Each non-control filter uses completed prior-session information only and must align with the frozen continuation trade side.",
+  "research_survivor_rule": "A non-control filter must have at least 180 research trades, pooled PF>=1.15 and strictly above raw control, at least four positive research years, and worst annual PF>=0.90.",
+  "selection_rule": "Select once by highest worst annual PF, then pooled PF, then trade count.",
+  "validation_open_rule": "Open 2024 only for the frozen research survivor; require at least 40 trades, PF>=1.10, and positive net R.",
+  "holdout_open_rule": "Open 2025 once only if the same frozen filter passes 2024; require at least 40 trades, PF>=1.10, and positive net R.",
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

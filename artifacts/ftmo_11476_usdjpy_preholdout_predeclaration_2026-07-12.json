@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_FRESH_RUN",
+  "deployment_allowed": false,
+  "selection_source": {
+    "path": "D:\\QM\\strategy_farm\\artifacts\\portfolio\\prop_challenge_ftmo_report_candidate_screen_dedup_fast_20260629.json",
+    "sha256": "05298982B0E80D32BCBD835A5F1444BDF3AA1A992B284AAF756B075DA2FA2404",
+    "rule": "Highest-PF unrefreshed archive lead confined to 2024; older development and 2023 validation remain outside the archive selection metric."
+  },
+  "candidate": {
+    "ea_id": 11476,
+    "expert": "QM\\QM5_11476_lien-k-double-bb-trend-h1",
+    "symbol": "USDJPY.DWX",
+    "period": "H1",
+    "archive_start": "2024-01-03",
+    "archive_end": "2024-12-30",
+    "archive_profit_factor": 1.5156424207918167,
+    "archive_trades": 255,
+    "archive_trades_per_60d": 42.14876033057851,
+    "source_sha256": "2A9EE156652684883DB01FAFECF38AE142C76AA03D3211373BC74D5BA2692AEC",
+    "ex5_sha256": "034179DC9EF42DB4EE1895BCBA31EDB707D3FAAC4A284ED08A6EEB944B097B64",
+    "setfile": "framework/EAs/QM5_11476_lien-k-double-bb-trend-h1/sets/QM5_11476_lien-k-double-bb-trend-h1_USDJPY.DWX_H1_backtest.set",
+    "setfile_sha256": "1A72FCCB7E8D400948C0761A53747E5A8E2919C9F6FF1E7FC080717460B7F4E3"
+  },
+  "data_partition": {
+    "fresh_initial_run": "2017-01-01 through 2024-12-31",
+    "development_years": [2018, 2019, 2020, 2021, 2022],
+    "validation_year": 2023,
+    "selection_contaminated_year": 2024,
+    "sealed_holdout_year": 2025,
+    "holdout_open_rule": "Run 2025 only after exact stream, current-cost, annual-quality, dual-fill development, and frozen-weight 2023 validation gates pass."
+  },
+  "fresh_evidence_contract": {
+    "model": 4,
+    "required_identical_runs": 2,
+    "minimum_trades": 1000,
+    "strict_compile": true,
+    "exact_report_stream_reconciliation_required": true,
+    "current_ftmo_cost_reconstruction_required": true,
+    "minimum_current_cost_profit_factor": 1.2,
+    "minimum_positive_development_years": 4
+  },
+  "portfolio_contract": {
+    "weight_grid_pct": [0.5, 1.0, 2.0, 3.0, 5.0],
+    "development_survivor_rule": "One fixed weight must strictly improve both normal and adverse locked development pass rates.",
+    "validation_rule": "The same frozen weight must strictly improve both normal and adverse 2023 pass rates."
+  },
+  "operational_constraints": {
+    "terminal": "T1",
+    "factory_off_required": true,
+    "symbol_mutex": "USDJPY.DWX",
+    "t_live_forbidden": true,
+    "installed_ftmo_terminal_forbidden": true,
+    "autotrading_change_forbidden": true
+  },
+  "label": "RESEARCH_ONLY_NO_GO"
+}

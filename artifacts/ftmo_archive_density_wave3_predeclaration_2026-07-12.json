@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_FRESH_RUNS",
+  "selection_source": {
+    "path": "D:\\QM\\strategy_farm\\artifacts\\portfolio\\prop_challenge_ftmo_report_candidate_screen_dedup_fast_20260629.json",
+    "sha256": "05298982b0e80d32bcbd835a5f1444bdf3aa1a992b284aaf756b075da2fa2404",
+    "rule": "Continue in descending old evidence quality among unrefreshed registry-conformant H1 candidates after Wave 2; exclude candidates with already-known full-history PF below 1.20."
+  },
+  "ordered_candidates": [
+    {
+      "order": 1,
+      "ea_id": 11090,
+      "expert": "QM\\QM5_11090_ma-mtf-align",
+      "symbol": "USDJPY.DWX",
+      "period": "H1",
+      "archive_pf": 1.53,
+      "archive_trades": 244,
+      "archive_trades_per_60d": 40.55
+    },
+    {
+      "order": 2,
+      "ea_id": 10468,
+      "expert": "QM\\QM5_10468_mql5-psar",
+      "symbol": "GDAXI.DWX",
+      "period": "H1",
+      "archive_pf": 1.51,
+      "archive_trades": 235,
+      "archive_trades_per_60d": 38.74
+    },
+    {
+      "order": 3,
+      "ea_id": 11114,
+      "expert": "QM\\QM5_11114_bb-alert-break",
+      "symbol": "USDJPY.DWX",
+      "period": "H1",
+      "archive_pf": 1.28,
+      "archive_trades": 256,
+      "archive_trades_per_60d": 42.2
+    }
+  ],
+  "fresh_evidence_contract": {
+    "history": "2017-01-01 through 2025-12-31",
+    "model": 4,
+    "required_identical_runs": 2,
+    "current_framework_strict_compile": true,
+    "joint_mae_stream_required": true,
+    "exact_report_stream_reconciliation_required": true,
+    "current_ftmo_cost_reconstruction_required": true,
+    "strict_q02_pf_floor": 1.2,
+    "strict_q02_minimum_trades_per_calendar_year": 5
+  },
+  "portfolio_contract": {
+    "weight_grid_pct": [0.5, 1.0, 2.0, 3.0, 5.0, 7.5, 10.0],
+    "development_survivor_rule": "Candidate representation and weight must improve both threshold and adverse preholdout pass rates.",
+    "sealed_holdout_open_rule": "Open once only for a frozen development survivor."
+  },
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

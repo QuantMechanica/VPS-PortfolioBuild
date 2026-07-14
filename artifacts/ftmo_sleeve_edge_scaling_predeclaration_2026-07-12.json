@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_DEVELOPMENT_SCREEN",
+  "deployment_allowed": false,
+  "hypothesis": "Softly reducing or increasing one sleeve's next-trade risk from only that sleeve's already realized outcomes may preserve density while avoiding the damage caused by hard shadow-PnL filters.",
+  "manifest": "artifacts/ftmo_joint_eleven_sleeve_incumbent_weight_path_manifest_2026-07-12.json",
+  "manifest_sha256": "56EF3EB7216B743290E8C6ADD61FC5FC321E00FCED6AF438D0C168545B850847",
+  "scenario": "path_01_11095_gbpusd_down2",
+  "fixed_governor": {
+    "risk_multiplier": 25.0,
+    "daily_stop": 4500.0,
+    "full_risk_room": 4000.0,
+    "room_retention": 0.2,
+    "horizon_calendar_days": 30
+  },
+  "signal_contract": {
+    "scope": "per sleeve",
+    "information_set": "Only current-FTMO-cost net outcomes whose native exit precedes the next native entry.",
+    "same_bar_exit_rule": "An exit sharing the next entry's M15 bucket is not yet observable and is excluded.",
+    "excluded_regime_outcomes": "The known incomplete-bar year 2020 is excluded from both challenge starts and rolling sleeve history, matching the locked book development contract.",
+    "warmup": "Use factor 1.0 until the full lookback is available.",
+    "score": "Sum of the most recent N realized outcomes divided by nominal risk.",
+    "application": "Multiply the complete next-trade path, commissions, floating PnL, and nominal risk by the selected factor; do not renormalize other sleeves."
+  },
+  "control": {
+    "name": "control",
+    "lookback_trades": 0,
+    "negative_factor": 1.0,
+    "positive_factor": 1.0
+  },
+  "candidates": [
+    {"name": "edge5_soft50", "lookback_trades": 5, "negative_factor": 0.5, "positive_factor": 1.0},
+    {"name": "edge5_soft75", "lookback_trades": 5, "negative_factor": 0.75, "positive_factor": 1.0},
+    {"name": "edge20_soft50", "lookback_trades": 20, "negative_factor": 0.5, "positive_factor": 1.0},
+    {"name": "edge20_soft75", "lookback_trades": 20, "negative_factor": 0.75, "positive_factor": 1.0},
+    {"name": "edge5_tilt", "lookback_trades": 5, "negative_factor": 0.75, "positive_factor": 1.25},
+    {"name": "edge20_tilt", "lookback_trades": 20, "negative_factor": 0.75, "positive_factor": 1.25}
+  ],
+  "selection_contract": {
+    "development_years": [2018, 2019, 2021, 2022],
+    "excluded_regime_year": 2020,
+    "validation_year": 2023,
+    "sealed_holdout_years": [2024, 2025],
+    "development_survivor_rule": "Strictly improve normal and adverse pass percentages versus control, with no increase in either daily- or max-breach percentage under either fill model.",
+    "winner_count": 1,
+    "winner_rule": "Maximize the smaller normal/adverse pass improvement, then their sum, then prefer the lower maximum factor.",
+    "validation_rule": "The one frozen winner must again strictly improve both 2023 fill models without increasing any breach percentage.",
+    "holdout_open_rule": "Open 2024-2025 only after the frozen winner passes validation; never promote a normal-only result."
+  },
+  "operational_constraints": {
+    "research_only": true,
+    "t1_t5_only_for_any_native_followup": true,
+    "t_live_forbidden": true,
+    "installed_ftmo_terminal_forbidden": true,
+    "autotrading_change_forbidden": true
+  },
+  "label": "RESEARCH_ONLY_NO_GO"
+}

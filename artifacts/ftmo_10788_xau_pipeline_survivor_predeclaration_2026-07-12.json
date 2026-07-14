@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_RESEARCH_ONLY",
+  "deployment_allowed": false,
+  "candidate": {
+    "ea_id": 10788,
+    "expert": "QM\\QM5_10788_tv-triple-ema-vol",
+    "symbol": "XAUUSD.DWX",
+    "period": "H4",
+    "setfile": "framework/EAs/QM5_10788_tv-triple-ema-vol/sets/QM5_10788_tv-triple-ema-vol_XAUUSD.DWX_H4_backtest.set",
+    "source_sha256": "9EC34987A08F6C8FE72B2C6491F975E851942FC9DBE4240A4E1531EBB3F849DF",
+    "setfile_sha256": "73CAF89003D58DB865A7F630A6CBB3B532DDFF58F7CCBF06BC0948934A896CE9"
+  },
+  "selection_basis": {
+    "q04_fold_profit_factors": [
+      2.2,
+      2.08,
+      2.42
+    ],
+    "q04_fold_trades": [
+      24,
+      34,
+      38
+    ],
+    "q05_profit_factor": 1.45,
+    "q05_trades": 224,
+    "q06_profit_factor": 1.44,
+    "q07_min_profit_factor": 1.44,
+    "q07_trades": 219,
+    "q07_variance_pct": 0.0,
+    "archive_q08_note": "FAIL_HARD used an incomplete 8-trade stream; a fresh exact 2017-2025 stream is mandatory and the old Q08 result is not imported."
+  },
+  "locked_test": {
+    "history": "2017-01-01/2025-12-31",
+    "model": 4,
+    "runs": 2,
+    "minimum_trades": 45,
+    "terminal": "T3",
+    "fresh_q08_stream_required": true,
+    "exact_report_stream_reconciliation_required": true,
+    "current_ftmo_cost_reconstruction_required": true,
+    "portfolio_gate": "development normal and adverse must both strictly improve the locked incumbent before 2023 validation",
+    "sealed_years": [
+      2024,
+      2025
+    ]
+  },
+  "operational_constraints": {
+    "factory_off_required": true,
+    "symbol_mutex": "XAUUSD.DWX",
+    "t_live_forbidden": true,
+    "installed_ftmo_terminal_forbidden": true,
+    "autotrading_change_forbidden": true
+  },
+  "label": "RESEARCH_ONLY_NO_GO"
+}

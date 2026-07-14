@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "candidate_id": "FTMO25-123A",
+  "status": "KILLED_A",
+  "failure_class": "ECONOMIC_NOT_INFRASTRUCTURE",
+  "manifest": {
+    "path": ".private/secret_strategy_lab/astar_path_h1_ftmo/discovery_manifest.json",
+    "sha256": "F753E1D1FE888885B4962FE7DA9C0FD6E381411FAC7AE7F9FDFAB1A9B32D01B8"
+  },
+  "integrity": {
+    "coverage_pass": true,
+    "enrichment_rows": 31410,
+    "enrichment_digest_match": true,
+    "seven_stream_verification_pass": true,
+    "occupancy_resolved": true,
+    "risk_pass": true,
+    "mae_pass": true,
+    "ratio_identity_pass": true
+  },
+  "baseline": {
+    "trades": 1314,
+    "net_r": -65.34403877262,
+    "profit_factor": 0.6584429952188395,
+    "weekday_sharpe": -2.998128320335237,
+    "bootstrap_p_mean_positive": 0.0,
+    "max_drawdown_r": 65.96903861367117,
+    "stress_2bp_net_r": -95.94290739647433,
+    "stress_5bp_net_r": -141.8412103322558
+  },
+  "entry_year_net_r": {
+    "2018": -14.5972238640594,
+    "2019": -21.6885656522614,
+    "2020": -17.6149374618315,
+    "2021": -11.4433117944677
+  },
+  "all_symbols_negative": true,
+  "both_sides_negative": true,
+  "all_variants_negative": true,
+  "b_c_authorized": false,
+  "portfolio_screen_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

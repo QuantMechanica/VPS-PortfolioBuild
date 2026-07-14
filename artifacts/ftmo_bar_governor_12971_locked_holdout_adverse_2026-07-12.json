@@ -1,0 +1,80 @@
+{
+  "basis": "fresh_start_entry_sized_m15_trade_cancellation_governor",
+  "excluded_years": [
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023
+  ],
+  "fill_contract": "adverse_bar",
+  "horizon_calendar_days": 30,
+  "manifest": "artifacts\\ftmo_joint_twelve_sleeve_1142_12971_manifest_2026-07-12.json",
+  "results": [
+    {
+      "daily_stop": 4500.0,
+      "full_risk_room": 4000.0,
+      "historical_rolling": {
+        "daily_breach_pct": 24.53637660485021,
+        "max_breach_pct": 9.557774607703282,
+        "not_reached_pct": 9.272467902995722,
+        "pass_ci95_pct": [
+          52.9384372933831,
+          60.256019252292134
+        ],
+        "pass_pct": 56.63338088445078,
+        "runs": 701
+      },
+      "mean_accepted_entries": 26.699001426533524,
+      "mean_blocked_entries": 0.9101283880171184,
+      "mean_ending_balance": 103989.88473977822,
+      "mean_minimum_equity": 94270.69142522353,
+      "mean_stop_events": 1.3951497860199715,
+      "mean_trading_days": 8.509272467902996,
+      "nominal_peak_risk_pct": 24.999999999999996,
+      "nominal_risk_pct": 24.999999999999996,
+      "peak_risk_multiplier": 25.0,
+      "profit_risk_steps": [],
+      "risk_multiplier": 25.0,
+      "room_retention": 0.2,
+      "scenario": "anchor_1142_control",
+      "start_windows": 701
+    },
+    {
+      "daily_stop": 4500.0,
+      "full_risk_room": 4000.0,
+      "historical_rolling": {
+        "daily_breach_pct": 22.111269614835948,
+        "max_breach_pct": 8.131241084165477,
+        "not_reached_pct": 12.553495007132668,
+        "pass_ci95_pct": [
+          53.511794183774306,
+          60.81766937658267
+        ],
+        "pass_pct": 57.203994293865904,
+        "runs": 701
+      },
+      "mean_accepted_entries": 28.646219686162624,
+      "mean_blocked_entries": 0.9500713266761769,
+      "mean_ending_balance": 103980.7939393776,
+      "mean_minimum_equity": 94190.37758979214,
+      "mean_stop_events": 1.4607703281027105,
+      "mean_trading_days": 9.021398002853067,
+      "nominal_peak_risk_pct": 25.0,
+      "nominal_risk_pct": 25.0,
+      "peak_risk_multiplier": 25.0,
+      "profit_risk_steps": [],
+      "risk_multiplier": 25.0,
+      "room_retention": 0.2,
+      "scenario": "anchor_1142_plus_12971_01",
+      "start_windows": 701
+    }
+  ],
+  "schema_version": 1,
+  "start_windows": 701,
+  "status": "RESEARCH_ONLY",
+  "timestamp_basis": "darwinex_broker_wall",
+  "trade_paths": 1807
+}

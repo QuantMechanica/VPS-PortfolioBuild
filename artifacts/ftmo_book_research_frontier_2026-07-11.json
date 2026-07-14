@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-11",
+  "book_name": "FTMO_PHASE1_30D_RESEARCH_FRONTIER",
+  "status": "NO_GO",
+  "deployment_allowed": false,
+  "objective": {
+    "account_size_usd": 100000,
+    "phase": 1,
+    "profit_target_pct": 10.0,
+    "maximum_daily_loss_pct": 5.0,
+    "maximum_loss_pct": 10.0,
+    "minimum_trading_days": 4,
+    "horizon_calendar_days": 30,
+    "required_pass_probability_pct": 80.0
+  },
+  "frontier": {
+    "scenario": "ndx60_fx20_20",
+    "nominal_risk_fixed": 6000.0,
+    "nominal_risk_pct": 6.0,
+    "sleeves": [
+      {
+        "ea_id": 10440,
+        "symbol": "NDX.DWX",
+        "ftmo_symbol": "US100.cash",
+        "weight": 0.6,
+        "effective_risk_fixed": 3600.0,
+        "effective_risk_pct": 3.6,
+        "qualification": "RESEARCH_RESERVE_ONLY",
+        "blocker": "native_current_binary_equity_drawdown_19.83pct"
+      },
+      {
+        "ea_id": 12969,
+        "symbol": "USDJPY.DWX",
+        "ftmo_symbol": "USD/JPY",
+        "weight": 0.2,
+        "effective_risk_fixed": 1200.0,
+        "effective_risk_pct": 1.2,
+        "qualification": "FTMO_Q02_CURRENT_COST_PASS"
+      },
+      {
+        "ea_id": 12990,
+        "symbol": "GBPUSD.DWX",
+        "ftmo_symbol": "GBP/USD",
+        "weight": 0.2,
+        "effective_risk_fixed": 1200.0,
+        "effective_risk_pct": 1.2,
+        "qualification": "CONDITIONAL_LOW_FREQUENCY",
+        "blocker": "strict_minimum_trades_per_year_gate"
+      }
+    ],
+    "bootstrap": {
+      "paths": 15000,
+      "seeds": [7, 42, 2026],
+      "block_calendar_days": 5,
+      "pass_pct": 27.24,
+      "daily_breach_pct": 37.03,
+      "maximum_loss_breach_pct": 16.27,
+      "target_not_reached_pct": 19.46
+    },
+    "historical_rolling": {
+      "windows": 2976,
+      "pass_pct": 22.45
+    }
+  },
+  "gap": {
+    "required_pass_pct": 80.0,
+    "observed_bootstrap_pass_pct": 27.24,
+    "absolute_shortfall_percentage_points": 52.76,
+    "observed_fraction_of_target": 0.3405,
+    "same_model_oracle_breach_rescue_ceiling_pct": 80.54,
+    "oracle_warning": "The ceiling assumes every daily and maximum-loss breach is converted into a pass within 30 days; it is not implementable evidence."
+  },
+  "model": {
+    "basis": "report_reconciled_trade_level_ftmo_cost_continuous_calendar_conservative_mae",
+    "ftmo_cost_snapshot": "2026-07-11",
+    "current_ftmo_costs_applied_to_full_history": true,
+    "continuous_calendar_days": true,
+    "open_trade_mae_assumption": "all open sleeve MAEs align on each calendar day",
+    "limitations": [
+      "The bootstrap is a research estimate, not a pass guarantee.",
+      "The US100 sleeve is not strict-gate qualified.",
+      "No synchronized per-bar joint-equity trace exists for this book.",
+      "No deploy setfiles or live manifest are authorized by this artifact."
+    ]
+  },
+  "evidence": {
+    "candidate_manifest": "artifacts/ftmo_candidate_book_manifest_2026-07-11.json",
+    "weight_grid": "artifacts/ftmo_candidate_book_weight_grid_phase1_30d_sim_2026-07-11.json",
+    "archive_cost_sweep": "artifacts/ftmo_q08_archive_current_cost_sweep_2026-07-11.json",
+    "archive_stream_sweep": "artifacts/ftmo_all_q08_stream_reconciliation_sweep_2026-07-11.json",
+    "symbol_snapshot": "artifacts/ftmo_symbol_snapshot_2026-07-11.json"
+  },
+  "release_gate": {
+    "required": "At least 80pct 30-calendar-day pass probability on synchronized joint-equity traces with all sleeves strict-qualified and current FTMO costs.",
+    "current": "FAIL"
+  }
+}

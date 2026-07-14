@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_SCREEN",
+  "deployment_allowed": false,
+  "hypothesis": "A synchronized US-index opening move may require a causal trailing exit rather than the fixed targets already falsified by the breadth and impulse screens.",
+  "symbols": ["NDX.DWX", "SP500.DWX", "WS30.DWX"],
+  "data_sha256": {
+    "NDX.DWX": "DAB877F9914D8390DEB5A559E8775C341106B69AAA28212F049BC01A95762CBE",
+    "SP500.DWX": "91011A4C8CD66E987324971239DCB8A92A2F217525F284500A52830BBA23A6F8",
+    "WS30.DWX": "0184E19063200F4CEC7330A4E988562BB70E754C76974F651CD9F69B340C8BB8"
+  },
+  "engine_contract": {
+    "timestamp_basis": "Darwinex broker wall GMT+2/+3 converted to UTC, then America/New_York",
+    "session": "09:30-16:00 America/New_York",
+    "signal": "Mean ATR-normalized move of NDX, SP500, and WS30 over completed opening bars, with the declared sign-agreement floor.",
+    "entry": "Equal-risk three-index package at the next M15 open in the breadth direction.",
+    "initial_stop": "Independent fixed ATR stop per leg.",
+    "trailing_stop": "After each completed bar, move the next bar's stop to the most favorable prior L-bar extreme minus/plus the fixed ATR trail distance; never loosen it.",
+    "intrabar_rule": "Test the stop active before each M15 bar first; a stop updated from that bar cannot trigger until the next bar.",
+    "exit": "Active trailing stop or fixed maximum M15 hold, with no overnight position.",
+    "cost_points_round_trip": {"NDX.DWX": 4.0, "SP500.DWX": 1.0, "WS30.DWX": 4.0},
+    "maximum_one_package_per_day": true
+  },
+  "fixed_grid": {
+    "signal_bars": [2, 4, 8],
+    "minimum_breadth_atr": [0.1, 0.25, 0.5],
+    "minimum_agreement": [2, 3],
+    "initial_stop_atr": [0.75, 1.0],
+    "trail_distance_atr": [0.75, 1.0, 1.5],
+    "trail_lookback_bars": [2, 4],
+    "maximum_hold_bars": [8, 16, 24],
+    "total_configurations": 648
+  },
+  "selection_contract": {
+    "development": "2018-2022",
+    "validation": "2023",
+    "sealed_holdout": "2024-2025",
+    "minimum_development_trades": 200,
+    "minimum_development_profit_factor": 1.15,
+    "minimum_positive_development_years": 4,
+    "minimum_validation_trades": 35,
+    "minimum_validation_profit_factor": 1.05,
+    "winner_count": 1,
+    "winner_rule": "Maximize min(development PF, validation PF), then development trades.",
+    "holdout_open_rule": "Open 2024-2025 only for the single global preholdout winner.",
+    "holdout_pass_rule": "At least 70 trades, pooled PF >= 1.10, positive pooled net R, and positive net R in both 2024 and 2025."
+  },
+  "label": "RESEARCH_ONLY_NO_GO"
+}

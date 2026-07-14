@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_NATIVE_AND_CURRENT_FTMO_ECONOMICS",
+  "ea_id": 1120,
+  "symbol": "GBPUSD.DWX",
+  "period": "M15",
+  "history": "2017-01-01/2024-12-31",
+  "model": 4,
+  "deterministic": true,
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_1120_gbpusd_m15_preholdout_wave42_20260712\\QM5_1120\\20260712_185542\\summary.json",
+  "summary_sha256": "9E20779EFF5AABC808049C503D4F8E06A53A31311CE4F7D0EE3D2581B8DC6F05",
+  "report_sha256": [
+    "A89C89F8A9BB12E4AB9F9B7CED3188067441A7B2B520A187A3CFF004F3543A50",
+    "1A5A76E8DC565DDB31058078252452220C2D2B33A8C991CAC3788EB5A1C18485"
+  ],
+  "native": {
+    "trades": 1731,
+    "profit_factor": 0.983865,
+    "net_profit": -16274.24,
+    "close_to_close_max_drawdown": 57046.08
+  },
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\1120_GBPUSD_M15_T3_PREHOLDOUT_FRESH_20260712.jsonl",
+    "rows": 1731,
+    "sha256": "866B15B9A7F55CAF6F3C1503632E55A9493CB3D09ECAE535035FE1E1345412D1",
+    "report_reconciliation": "PASS_EXACT_COUNT_AND_NET",
+    "corrected_net_delta": 0.0
+  },
+  "current_cost_artifact": "artifacts/ftmo_1120_gbpusd_preholdout_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "profit_factor": 0.993428,
+    "net_profit": -6590.05,
+    "close_to_close_max_drawdown": 50650.88
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "negative_development_years": [2018, 2019, 2021, 2022],
+    "validation_2023_profit_factor": 1.014074,
+    "validation_2023_net_profit": 1915.68,
+    "selection_contaminated_2024_profit_factor": 1.154652,
+    "reason_for_reject": "Fresh full-history economics are negative before and after current FTMO costs; four of five development years lose money."
+  },
+  "portfolio_screen_opened": false,
+  "selection_contaminated_year": 2024,
+  "sealed_holdout_year": 2025,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

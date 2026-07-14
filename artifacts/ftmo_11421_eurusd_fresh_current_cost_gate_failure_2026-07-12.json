@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_CURRENT_FTMO_COST_AND_ANNUAL_QUALITY_GATES",
+  "ea_id": 11421,
+  "symbol": "EURUSD.DWX",
+  "period": "D1",
+  "history": "2017-01-01/2025-12-31",
+  "model": 4,
+  "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+  "source_sha256": "7BB6F4BDDF2D247C4A13AEC6B44695CCB6203362E134E017EE6BDC12B9A0FE11",
+  "setfile_sha256": "303AA04C3B4479A140A79287D20E466A3CFF2986B487761821381DC34ADF1E6D",
+  "compile_log": "framework/build/compile/20260712_164945/QM5_11421_ohlc-daily-squeeze-reversal-d1.compile.log",
+  "compile_log_sha256": "E931560891007AD7EB02B5E225EB2F578F2571C792177C9AE67A364C1325BB2B",
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_11421_eurusd_d1_wave25_20260712\\QM5_11421\\20260712_165015\\summary.json",
+  "deterministic": true,
+  "native": {
+    "trades": 92,
+    "profit_factor": 1.153496,
+    "net_profit": 3837.65,
+    "equity_drawdown": 6446.62
+  },
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\11421_EURUSD_DWX_D1_T4_FRESH_20260712.jsonl",
+    "rows": 92,
+    "sha256": "7AD106530DB79E93AC24A136A451C856A3660823F5D99C0C7130A20DF90D3902",
+    "report_reconciliation": "PASS",
+    "count_delta": 0,
+    "missing_mae_rows": 0,
+    "corrected_net_delta": 0.31,
+    "net_tolerance": 1.0
+  },
+  "current_cost_artifact": "artifacts/ftmo_11421_eurusd_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "trades": 92,
+    "profit_factor": 1.140661,
+    "net_profit": 3538.11,
+    "close_to_close_max_drawdown": 5933.12,
+    "commission_total": 575.0,
+    "swap_total": -1161.89
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "minimum_trades_per_calendar_year": 5,
+    "negative_calendar_years": [
+      2019,
+      2020,
+      2022
+    ],
+    "calendar_years_below_density_floor": [
+      2017,
+      2019
+    ],
+    "reason_for_reject": "Both native and current-cost pooled PF fail 1.2, three calendar years lose money, and two years miss the density floor."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_NATIVE_ECONOMICS_CURRENT_COST_AND_STREAM_GATES",
+  "ea_id": 1258,
+  "symbol": "GBPJPY.DWX",
+  "period": "H1",
+  "history": "2017-01-01/2023-12-31",
+  "model": 4,
+  "deterministic": true,
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_1258_gbpjpy_h1_preholdout_wave37_full_label_20260712\\QM5_1258\\20260712_180600\\summary.json",
+  "summary_sha256": "E0EEF4D3FBE86DBDC07AEEBC5B0F35003A419797BF57EF7F428A65896612625D",
+  "report_runs": [
+    {
+      "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_1258_gbpjpy_h1_preholdout_wave37_full_label_20260712\\QM5_1258\\20260712_180600\\raw\\run_01\\report.htm",
+      "sha256": "DFD33F7C80472CC04005AB435C399B2AE411A5C464328365A1164537A82DE3FC"
+    },
+    {
+      "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_1258_gbpjpy_h1_preholdout_wave37_full_label_20260712\\QM5_1258\\20260712_180600\\raw\\run_02\\report.htm",
+      "sha256": "FD89C72FD4D436DE56D3B4954BA08733E56CA5D703B3A138D157A225D38ED57A"
+    }
+  ],
+  "native": {
+    "trades": 2758,
+    "profit_factor": 0.906429,
+    "net_profit": -16496.14,
+    "close_to_close_max_drawdown": 19146.26
+  },
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\1258_GBPJPY_H1_T2_PREHOLDOUT_FRESH_20260712.jsonl",
+    "rows": 2662,
+    "sha256": "E5370B6D84A255B25B073CEE96543DE96165019B5E81ADDA7621E0B28EFA30E2",
+    "report_reconciliation": "FAIL",
+    "missing_mae_rows": 2662,
+    "trade_count_delta": -96,
+    "corrected_net_delta": -6351.55,
+    "net_tolerance": 27.58
+  },
+  "current_cost_artifact": "artifacts/ftmo_1258_gbpjpy_preholdout_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "trades": 2758,
+    "profit_factor": 0.904411,
+    "net_profit": -16820.02,
+    "close_to_close_max_drawdown": 19551.01,
+    "commission_total": 7598.45,
+    "swap_total": -2580.56
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "native_profitability_pass": false,
+    "current_cost_profitability_pass": false,
+    "exact_stream_pass": false,
+    "negative_years": [2017, 2019, 2020, 2021, 2022, 2023],
+    "validation_2023": {
+      "trades": 436,
+      "profit_factor": 0.83967,
+      "net_profit": -3514.93
+    },
+    "reason_for_reject": "The fresh full-history implementation is loss-making before and after current FTMO costs; the Q08 stream is also incomplete and contains no MAE."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_year": 2025,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

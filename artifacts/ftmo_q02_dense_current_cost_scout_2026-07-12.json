@@ -1,0 +1,386 @@
+{
+  "schema_version": 1,
+  "basis": "latest_dense_positive_q02_reports_recosted_to_2026-07-11_ftmo_snapshot",
+  "rows": [
+    {
+      "ea_id": "QM5_10118",
+      "symbol": "NDX.DWX",
+      "profit_factor": 1.23,
+      "trades": 539,
+      "net_profit": 68456.67,
+      "evidence_path": "D:\\QM\\reports\\work_items\\ac44f324-f746-4dc0-bf4b-b6c9fcba5171\\QM5_10118\\20260704_223953\\summary.json",
+      "artifact": "artifacts\\ftmo_q02_cost_scout_10118_NDX_DWX_2026-07-12.json",
+      "ftmo": {
+        "trades": 539,
+        "net_profit": 43475.23,
+        "gross_profit": 347571.82,
+        "gross_loss": -304096.58,
+        "profit_factor": 1.142965,
+        "close_to_close_max_drawdown": 23992.07,
+        "commission_total": 0.0,
+        "swap_total": -57496.81,
+        "swap_rollover_units": 482
+      }
+    },
+    {
+      "ea_id": "QM5_10163",
+      "symbol": "GDAXI.DWX",
+      "profit_factor": 1.35,
+      "trades": 355,
+      "net_profit": 16905.55,
+      "evidence_path": "D:\\QM\\reports\\work_items\\b026b564-6e30-4625-a50f-0af2c3588373\\QM5_10163\\20260611_220721\\summary.json",
+      "artifact": "artifacts\\ftmo_q02_cost_scout_10163_GDAXI_DWX_2026-07-12.json",
+      "ftmo": {
+        "trades": 355,
+        "net_profit": 13929.94,
+        "gross_profit": 63618.97,
+        "gross_loss": -49689.03,
+        "profit_factor": 1.280342,
+        "close_to_close_max_drawdown": 8537.81,
+        "commission_total": 0.0,
+        "swap_total": -6052.21,
+        "swap_rollover_units": 308
+      }
+    },
+    {
+      "ea_id": "QM5_10163",
+      "symbol": "USDJPY.DWX",
+      "profit_factor": 1.36,
+      "trades": 521,
+      "net_profit": 12529.46,
+      "evidence_path": "D:\\QM\\reports\\work_items\\c4ef2e84-07ab-4b07-a4d9-21e266145efa\\QM5_10163\\20260627_074743\\summary.json",
+      "artifact": "artifacts\\ftmo_q02_cost_scout_10163_USDJPY_DWX_2026-07-12.json",
+      "ftmo": {
+        "trades": 521,
+        "net_profit": 11502.47,
+        "gross_profit": 46489.53,
+        "gross_loss": -34987.06,
+        "profit_factor": 1.328763,
+        "close_to_close_max_drawdown": 3629.15,
+        "commission_total": 1960.05,
+        "swap_total": 555.56,
+        "swap_rollover_units": 354
+      }
+    },
+    {
+      "ea_id": "QM5_10388",
+      "symbol": "NDX.DWX",
+      "profit_factor": 1.19,
+      "trades": 363,
+      "net_profit": 29154.31,
+      "evidence_path": "D:\\QM\\reports\\work_items\\18a1b941-ee73-4a00-8657-acc0142bb375\\QM5_10388\\20260704_113036\\summary.json",
+      "artifact": "artifacts\\ftmo_q02_cost_scout_10388_NDX_DWX_2026-07-12.json",
+      "ftmo": {
+        "trades": 363,
+        "net_profit": 13534.9,
+        "gross_profit": 171308.1,
+        "gross_loss": -157773.2,
+        "profit_factor": 1.085787,
+        "close_to_close_max_drawdown": 13487.08,
+        "commission_total": 0.0,
+        "swap_total": -22748.02,
+        "swap_rollover_units": 1284
+      }
+    },
+    {
+      "ea_id": "QM5_10579",
+      "symbol": "XAUUSD.DWX",
+      "profit_factor": 1.22,
+      "trades": 545,
+      "net_profit": 34283.1,
+      "evidence_path": "D:\\QM\\reports\\work_items\\86f7eef0-956a-4991-b698-2f960ff8c59a\\QM5_10579\\20260709_014606\\summary.json",
+      "artifact": "artifacts\\ftmo_q02_cost_scout_10579_XAUUSD_DWX_2026-07-12.json",
+      "ftmo": {
+        "trades": 545,
+        "net_profit": 10877.99,
+        "gross_profit": 174388.24,
+        "gross_loss": -163510.25,
+        "profit_factor": 1.066528,
+        "close_to_close_max_drawdown": 15115.26,
+        "commission_total": 1663.39,
+        "swap_total": -21741.74,
+        "swap_rollover_units": 619
+      }
+    },
+    {
+      "ea_id": "QM5_10583",
+      "symbol": "GBPJPY.DWX",
+      "profit_factor": 1.2,
+      "trades": 470,
+      "net_profit": 24999.9,
+      "evidence_path": "D:\\QM\\reports\\work_items\\3eafaae8-2522-4cf4-aaf0-cc6af6c8eac9\\QM5_10583\\20260707_164638\\summary.json",
+      "artifact": "artifacts\\ftmo_q02_cost_scout_10583_GBPJPY_DWX_2026-07-12.json",
+      "ftmo": {
+        "trades": 470,
+        "net_profit": 18637.16,
+        "gross_profit": 144652.36,
+        "gross_loss": -126015.2,
+        "profit_factor": 1.147896,
+        "close_to_close_max_drawdown": 11189.5,
+        "commission_total": 2247.15,
+        "swap_total": -7041.1,
+        "swap_rollover_units": 784
+      }
+    },
+    {
+      "ea_id": "QM5_10672",
+      "symbol": "NDX.DWX",
+      "profit_factor": 1.45,
+      "trades": 347,
+      "net_profit": 39472.96,
+      "evidence_path": "D:\\QM\\reports\\work_items\\efa3368f-c2ec-4253-aab6-319b67e7656f\\QM5_10672\\20260615_100953\\summary.json",
+      "artifact": "artifacts\\ftmo_q02_cost_scout_10672_NDX_DWX_2026-07-12.json",
+      "ftmo": {
+        "trades": 347,
+        "net_profit": 41340.15,
+        "gross_profit": 126644.79,
+        "gross_loss": -85304.63,
+        "profit_factor": 1.484618,
+        "close_to_close_max_drawdown": 11126.41,
+        "commission_total": 0.0,
+        "swap_total": -57.62,
+        "swap_rollover_units": 2
+      }
+    },
+    {
+      "ea_id": "QM5_10804",
+      "symbol": "NDX.DWX",
+      "profit_factor": 1.26,
+      "trades": 439,
+      "net_profit": 36382.58,
+      "evidence_path": "D:\\QM\\reports\\work_items\\1f2d2d10-e791-4d6d-9c22-978fc2fbed81\\QM5_10804\\20260616_161930\\summary.json",
+      "artifact": "artifacts\\ftmo_q02_cost_scout_10804_NDX_DWX_2026-07-12.json",
+      "ftmo": {
+        "trades": 439,
+        "net_profit": 24808.34,
+        "gross_profit": 166765.22,
+        "gross_loss": -141956.88,
+        "profit_factor": 1.17476,
+        "close_to_close_max_drawdown": 10257.16,
+        "commission_total": 0.0,
+        "swap_total": -25491.45,
+        "swap_rollover_units": 515
+      }
+    },
+    {
+      "ea_id": "QM5_10814",
+      "symbol": "USDJPY.DWX",
+      "profit_factor": 1.26,
+      "trades": 1066,
+      "net_profit": 129879.35,
+      "evidence_path": "D:\\QM\\reports\\work_items\\6b62190a-9f4b-4cb0-8fd4-e233dcbae254\\QM5_10814\\20260701_100438\\summary.json",
+      "artifact": "artifacts\\ftmo_q02_cost_scout_10814_USDJPY_DWX_2026-07-12.json",
+      "ftmo": {
+        "trades": 1066,
+        "net_profit": 113054.14,
+        "gross_profit": 618019.43,
+        "gross_loss": -504965.29,
+        "profit_factor": 1.223885,
+        "close_to_close_max_drawdown": 32330.5,
+        "commission_total": 25494.05,
+        "swap_total": -23593.97,
+        "swap_rollover_units": 852
+      }
+    },
+    {
+      "ea_id": "QM5_11123",
+      "symbol": "USDJPY.DWX",
+      "profit_factor": 1.2,
+      "trades": 776,
+      "net_profit": 47241.59,
+      "evidence_path": "D:\\QM\\reports\\work_items\\c7bec90c-d8f0-46b1-9854-2ce32fb45aa2\\QM5_11123\\20260705_191217\\summary.json",
+      "artifact": "artifacts\\ftmo_q02_cost_scout_11123_USDJPY_DWX_2026-07-12.json",
+      "ftmo": {
+        "trades": 776,
+        "net_profit": 37157.59,
+        "gross_profit": 274362.92,
+        "gross_loss": -237205.33,
+        "profit_factor": 1.156647,
+        "close_to_close_max_drawdown": 15628.54,
+        "commission_total": 8478.95,
+        "swap_total": -13605.35,
+        "swap_rollover_units": 1105
+      }
+    },
+    {
+      "ea_id": "QM5_11179",
+      "symbol": "USDJPY.DWX",
+      "profit_factor": 1.31,
+      "trades": 386,
+      "net_profit": 3675.67,
+      "evidence_path": "D:\\QM\\reports\\work_items\\c09d9d36-61be-4325-8179-281d93407a7f\\QM5_11179\\20260620_144107\\summary.json",
+      "artifact": "artifacts\\ftmo_q02_cost_scout_11179_USDJPY_DWX_2026-07-12.json",
+      "ftmo": {
+        "trades": 386,
+        "net_profit": 3167.2,
+        "gross_profit": 15248.46,
+        "gross_loss": -12081.25,
+        "profit_factor": 1.262159,
+        "close_to_close_max_drawdown": 1173.04,
+        "commission_total": 181.9,
+        "swap_total": 279.66,
+        "swap_rollover_units": 1422
+      }
+    },
+    {
+      "ea_id": "QM5_1142",
+      "symbol": "USDJPY.DWX",
+      "profit_factor": 1.23,
+      "trades": 1221,
+      "net_profit": 16632.34,
+      "evidence_path": "D:\\QM\\reports\\work_items\\a1a46377-81ce-4470-a98f-a484b6e63f77\\QM5_1142\\20260626_161516\\summary.json",
+      "artifact": "artifacts\\ftmo_q02_cost_scout_1142_USDJPY_DWX_2026-07-12.json",
+      "ftmo": {
+        "trades": 1221,
+        "net_profit": 16637.97,
+        "gross_profit": 89011.33,
+        "gross_loss": -72373.36,
+        "profit_factor": 1.229891,
+        "close_to_close_max_drawdown": 3564.13,
+        "commission_total": 3865.75,
+        "swap_total": 0.0,
+        "swap_rollover_units": 0
+      }
+    },
+    {
+      "ea_id": "QM5_1162",
+      "symbol": "NDX.DWX",
+      "profit_factor": 1.19,
+      "trades": 564,
+      "net_profit": 42371.42,
+      "evidence_path": "D:\\QM\\reports\\work_items\\29afdc4c-ec97-44b6-afa3-b67d0a1cad1a\\QM5_1162\\20260622_124104\\summary.json",
+      "artifact": "artifacts\\ftmo_q02_cost_scout_1162_NDX_DWX_2026-07-12.json",
+      "ftmo": {
+        "trades": 564,
+        "net_profit": 15577.68,
+        "gross_profit": 246966.77,
+        "gross_loss": -231389.09,
+        "profit_factor": 1.067322,
+        "close_to_close_max_drawdown": 20654.18,
+        "commission_total": 0.0,
+        "swap_total": -50213.48,
+        "swap_rollover_units": 731
+      }
+    },
+    {
+      "ea_id": "QM5_1162",
+      "symbol": "SP500.DWX",
+      "profit_factor": 1.13,
+      "trades": 543,
+      "net_profit": 29698.52,
+      "evidence_path": "D:\\QM\\reports\\work_items\\9d502dee-e1c3-45b0-84d1-4d6cf43682db\\QM5_1162\\20260622_124557\\summary.json",
+      "artifact": "artifacts\\ftmo_q02_cost_scout_1162_SP500_DWX_2026-07-12.json",
+      "ftmo": {
+        "trades": 543,
+        "net_profit": 20941.39,
+        "gross_profit": 243835.83,
+        "gross_loss": -222894.44,
+        "profit_factor": 1.093952,
+        "close_to_close_max_drawdown": 21894.1,
+        "commission_total": 0.0,
+        "swap_total": -32495.88,
+        "swap_rollover_units": 696
+      }
+    },
+    {
+      "ea_id": "QM5_11886",
+      "symbol": "USDJPY.DWX",
+      "profit_factor": 1.37,
+      "trades": 330,
+      "net_profit": 10550.54,
+      "evidence_path": "D:\\QM\\reports\\work_items\\cd9e5af6-4c19-4188-bcbd-b4600c26078c\\QM5_11886\\20260710_131309\\summary.json",
+      "artifact": "artifacts\\ftmo_q02_cost_scout_11886_USDJPY_DWX_2026-07-12.json",
+      "ftmo": {
+        "trades": 330,
+        "net_profit": 6453.03,
+        "gross_profit": 36252.25,
+        "gross_loss": -29799.22,
+        "profit_factor": 1.21655,
+        "close_to_close_max_drawdown": 9083.32,
+        "commission_total": 1306.15,
+        "swap_total": -2740.63,
+        "swap_rollover_units": 1216
+      }
+    },
+    {
+      "ea_id": "QM5_1219",
+      "symbol": "XAUUSD.DWX",
+      "profit_factor": 1.24,
+      "trades": 320,
+      "net_profit": 14230.46,
+      "evidence_path": "D:\\QM\\reports\\work_items\\3d57f259-6b76-4ea4-bc94-c6bf2d5bf041\\QM5_1219\\20260618_160446\\summary.json",
+      "artifact": "artifacts\\ftmo_q02_cost_scout_1219_XAUUSD_DWX_2026-07-12.json",
+      "ftmo": {
+        "trades": 320,
+        "net_profit": -1704.13,
+        "gross_profit": 64617.23,
+        "gross_loss": -66321.35,
+        "profit_factor": 0.974305,
+        "close_to_close_max_drawdown": 7821.18,
+        "commission_total": 278.4,
+        "swap_total": -15656.19,
+        "swap_rollover_units": 1744
+      }
+    },
+    {
+      "ea_id": "QM5_2012",
+      "symbol": "GBPUSD.DWX",
+      "profit_factor": 1.25,
+      "trades": 314,
+      "net_profit": 24863.98,
+      "evidence_path": "D:\\QM\\reports\\work_items\\e233bf18-3aa5-442b-ace1-c0764d6a03ab\\QM5_2012\\20260706_225939\\summary.json",
+      "artifact": "artifacts\\ftmo_q02_cost_scout_2012_GBPUSD_DWX_2026-07-12.json",
+      "ftmo": {
+        "trades": 314,
+        "net_profit": 21605.13,
+        "gross_profit": 122415.28,
+        "gross_loss": -100810.15,
+        "profit_factor": 1.214315,
+        "close_to_close_max_drawdown": 12824.84,
+        "commission_total": 2121.55,
+        "swap_total": -3864.51,
+        "swap_rollover_units": 535
+      }
+    },
+    {
+      "ea_id": "QM5_2012",
+      "symbol": "USDJPY.DWX",
+      "profit_factor": 1.17,
+      "trades": 370,
+      "net_profit": 8835.17,
+      "evidence_path": "D:\\QM\\reports\\work_items\\813c59a9-6799-4698-9d96-61ef072fdc7a\\QM5_2012\\20260621_211928\\summary.json",
+      "artifact": "artifacts\\ftmo_q02_cost_scout_2012_USDJPY_DWX_2026-07-12.json",
+      "ftmo": {
+        "trades": 370,
+        "net_profit": 6809.71,
+        "gross_profit": 58422.49,
+        "gross_loss": -51612.78,
+        "profit_factor": 1.131938,
+        "close_to_close_max_drawdown": 4802.66,
+        "commission_total": 1428.15,
+        "swap_total": -2261.1,
+        "swap_rollover_units": 622
+      }
+    },
+    {
+      "ea_id": "QM5_9267",
+      "symbol": "GBPJPY.DWX",
+      "profit_factor": 1.32,
+      "trades": 356,
+      "net_profit": 20660.64,
+      "evidence_path": "D:\\QM\\reports\\work_items\\b8194e41-bdb5-4398-afd2-55325806e053\\QM5_9267\\20260708_173551\\summary.json",
+      "artifact": "artifacts\\ftmo_q02_cost_scout_9267_GBPJPY_DWX_2026-07-12.json",
+      "ftmo": {
+        "trades": 356,
+        "net_profit": 18020.9,
+        "gross_profit": 83514.99,
+        "gross_loss": -65494.09,
+        "profit_factor": 1.275153,
+        "close_to_close_max_drawdown": 4702.75,
+        "commission_total": 1171.25,
+        "swap_total": -2985.77,
+        "swap_rollover_units": 548
+      }
+    }
+  ]
+}

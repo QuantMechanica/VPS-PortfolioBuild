@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "INFRASTRUCTURE_BLOCKED_NEGATIVE_SINGLE_RUN_DIAGNOSTIC_NO_STRATEGY_VERDICT",
+  "ea_id": 10477,
+  "symbol": "NDX.DWX",
+  "period": "H1",
+  "history": "2017-01-01/2025-12-31",
+  "model": 4,
+  "strict_compile": {
+    "log": "framework/build/compile/20260712_131031/QM5_10477_mql5-yday-today.compile.log",
+    "sha256": "54DA2C0BCDC1DE5D48E4DC3C2F20CFA33D0DB18EC163B02C2E254F7D32F1DFC1",
+    "result": "PASS_ZERO_ERRORS_ZERO_WARNINGS"
+  },
+  "summary": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10477_ndx_h1_wave7_20260712\\QM5_10477\\20260712_131047\\summary.json",
+  "summary_sha256": "C5884AEC3FBF06D71DCFF0134CB5210C9C44B05A8E4E0F3BF253717AF2008CBA",
+  "requested_runs": 2,
+  "attempted_runs": 4,
+  "valid_runs": 1,
+  "invalid_runs": 3,
+  "invalid_reason": "NDX.DWX file opening or reading error [32] followed by M0/1970 zero-bar reports",
+  "single_valid_run": {
+    "trades": 1619,
+    "native_report_profit_factor": 0.92,
+    "native_net_profit": -43974.94,
+    "equity_drawdown": 50132.56,
+    "report": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10477_ndx_h1_wave7_20260712\\QM5_10477\\20260712_131047\\raw\\run_01\\report.htm",
+    "report_sha256": "660DCD8A95DC5B88FB6920E91A5175F18F095AA9399DAB91B3C630FEBE1CA261",
+    "use": "DIAGNOSTIC_ONLY"
+  },
+  "diagnostic_stream": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\10477_NDX_DWX_T3_FRESH_RUN1_20260712.jsonl",
+    "rows": 1619,
+    "sha256": "2AA8006216086F3D844C21187503E49C80523E17DC5487B1F577DBD54AE4DFB7",
+    "admitted_to_cost_or_portfolio_model": false
+  },
+  "strategy_verdict": null,
+  "diagnostic_admission_observation": "The only valid current run is already loss-making and cannot satisfy the PF 1.20 admission floor, but the deterministic contract prevents converting that observation into a final strategy verdict.",
+  "current_cost_stage_opened": false,
+  "portfolio_stage_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "unblock_condition": "Obtain a second valid current-build NDX report after controlled symbol-history release; no further action is justified for FTMO admission unless it reproduces materially different economics.",
+  "label": "RESEARCH_ONLY_NO_GO"
+}

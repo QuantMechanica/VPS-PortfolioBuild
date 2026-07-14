@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "snapshot_date": "2026-07-12",
+  "status": "RESEARCH_ONLY_NO_GO",
+  "deployment_allowed": false,
+  "timestamp_basis": "darwinex_broker_wall",
+  "basis": "fresh_report_reconciled_11891_causal_preentry_filter_screen",
+  "sleeves": [
+    {
+      "ea_id": 11891,
+      "symbol": "GBPJPY.DWX",
+      "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_11891_gbpjpy_20260712\\QM5_11891\\20260712_060823\\summary.json",
+      "stream_path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\11891_GBPJPY_DWX_FRESH_20260712.jsonl",
+      "bar_path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\GBPJPY.DWX_M5.csv",
+      "base_risk_fixed": 1000.0,
+      "qualification": "fresh_reconciled_full_complete_year_ftmo_cost_frequency_fail_causal_filter_scout",
+      "cost": {
+        "ftmo_symbol_code": "GBP/JPY",
+        "commission_percent_per_side": 0.0,
+        "flat_round_trip_commission_per_lot": 5.0,
+        "swap_long_points": 3.61,
+        "swap_short_points": -27.58,
+        "contract_size": 100000.0,
+        "source_contract_size": 100000.0,
+        "profit_currency_to_account_rate": 1.0,
+        "derive_profit_currency_rate_from_pnl": true,
+        "digits": 3,
+        "triple_weekday": 2
+      }
+    }
+  ],
+  "scenarios": []
+}

@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "INFRASTRUCTURE_BLOCKED_NO_STRATEGY_VERDICT",
+  "ea_id": 13013,
+  "symbol": "NDX.DWX",
+  "period": "M15",
+  "history": "2017-01-01/2025-12-31",
+  "model": 4,
+  "predeclaration": "artifacts/ftmo_13013_ndx_refresh_predeclaration_2026-07-12.json",
+  "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+  "source_sha256": "A110C57633724FA88699798D11234225B100684FB73217C05BB259F03913624D",
+  "compile_log": "framework/build/compile/20260712_152553/QM5_13013_grimes-trendday-v2.compile.log",
+  "compile_log_sha256": "CA02DBF3947998B0E5D9AF030608990BBE47615A1BD07BB1CF7AE436F9677CBD",
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_13013_ndx_m15_wave18_t1_20260712\\QM5_13013\\20260712_154701\\summary.json",
+  "terminal": "T1",
+  "attempts": 4,
+  "attempt_result": {
+    "status": "INVALID",
+    "common_reasons": ["EMPTY_EXPERT", "EMPTY_SYMBOL", "M0_1970_PERIOD", "BARS_ZERO"],
+    "report_size_bytes_each": 22318,
+    "tester_log_marker": "NDX.DWX: history synchronization error"
+  },
+  "fresh_q08_stream_created": false,
+  "prior_archive_result_imported": false,
+  "strategy_verdict": null,
+  "portfolio_screen_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

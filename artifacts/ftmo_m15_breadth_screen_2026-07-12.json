@@ -1,0 +1,302 @@
+{
+  "evaluated_configurations": 648,
+  "holdout_pass_count": 0,
+  "preholdout_leaderboard": {
+    "opening_breadth_continuation": [
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 62.339622,
+          "net_r": -8.050357,
+          "profit_factor": 0.980279,
+          "trades": 604,
+          "win_rate": 0.339404
+        },
+        "parameters": {
+          "continuation": true,
+          "hold_bars": 99,
+          "min_agreement": 3,
+          "min_breadth_atr": 0.25,
+          "signal_bars": 8,
+          "stop_atr": 1.5,
+          "target_r": 4.0
+        },
+        "positive_dev_years": 2,
+        "preholdout_score": 0.980279,
+        "validation_2023": {
+          "max_drawdown_r": 14.433148,
+          "net_r": 4.589405,
+          "profit_factor": 1.038423,
+          "trades": 168,
+          "win_rate": 0.315476
+        }
+      },
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 66.545271,
+          "net_r": -8.243684,
+          "profit_factor": 0.979504,
+          "trades": 595,
+          "win_rate": 0.339496
+        },
+        "parameters": {
+          "continuation": true,
+          "hold_bars": 99,
+          "min_agreement": 3,
+          "min_breadth_atr": 0.5,
+          "signal_bars": 8,
+          "stop_atr": 1.5,
+          "target_r": 4.0
+        },
+        "positive_dev_years": 2,
+        "preholdout_score": 0.979504,
+        "validation_2023": {
+          "max_drawdown_r": 14.433148,
+          "net_r": 0.702797,
+          "profit_factor": 1.005884,
+          "trades": 167,
+          "win_rate": 0.311377
+        }
+      },
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 62.339622,
+          "net_r": -8.400271,
+          "profit_factor": 0.97944,
+          "trades": 605,
+          "win_rate": 0.338843
+        },
+        "parameters": {
+          "continuation": true,
+          "hold_bars": 99,
+          "min_agreement": 3,
+          "min_breadth_atr": 0.1,
+          "signal_bars": 8,
+          "stop_atr": 1.5,
+          "target_r": 4.0
+        },
+        "positive_dev_years": 2,
+        "preholdout_score": 0.97944,
+        "validation_2023": {
+          "max_drawdown_r": 14.433148,
+          "net_r": 4.589405,
+          "profit_factor": 1.038423,
+          "trades": 168,
+          "win_rate": 0.315476
+        }
+      },
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 77.647039,
+          "net_r": -22.486949,
+          "profit_factor": 0.946553,
+          "trades": 604,
+          "win_rate": 0.31457
+        },
+        "parameters": {
+          "continuation": true,
+          "hold_bars": 99,
+          "min_agreement": 3,
+          "min_breadth_atr": 0.25,
+          "signal_bars": 8,
+          "stop_atr": 1.5,
+          "target_r": 0.0
+        },
+        "positive_dev_years": 1,
+        "preholdout_score": 0.946553,
+        "validation_2023": {
+          "max_drawdown_r": 27.316733,
+          "net_r": -6.47795,
+          "profit_factor": 0.948021,
+          "trades": 168,
+          "win_rate": 0.285714
+        }
+      },
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 77.647039,
+          "net_r": -22.836863,
+          "profit_factor": 0.945767,
+          "trades": 605,
+          "win_rate": 0.31405
+        },
+        "parameters": {
+          "continuation": true,
+          "hold_bars": 99,
+          "min_agreement": 3,
+          "min_breadth_atr": 0.1,
+          "signal_bars": 8,
+          "stop_atr": 1.5,
+          "target_r": 0.0
+        },
+        "positive_dev_years": 1,
+        "preholdout_score": 0.945767,
+        "validation_2023": {
+          "max_drawdown_r": 27.316733,
+          "net_r": -6.47795,
+          "profit_factor": 0.948021,
+          "trades": 168,
+          "win_rate": 0.285714
+        }
+      }
+    ],
+    "opening_breadth_reversal": [
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 119.526337,
+          "net_r": -78.318485,
+          "profit_factor": 0.860639,
+          "trades": 834,
+          "win_rate": 0.335731
+        },
+        "parameters": {
+          "continuation": false,
+          "hold_bars": 8,
+          "min_agreement": 2,
+          "min_breadth_atr": 0.25,
+          "signal_bars": 4,
+          "stop_atr": 1.5,
+          "target_r": 0.0
+        },
+        "positive_dev_years": 2,
+        "preholdout_score": 0.824236,
+        "validation_2023": {
+          "max_drawdown_r": 37.823615,
+          "net_r": -27.516874,
+          "profit_factor": 0.824236,
+          "trades": 229,
+          "win_rate": 0.318777
+        }
+      },
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 124.816076,
+          "net_r": -80.012491,
+          "profit_factor": 0.861381,
+          "trades": 856,
+          "win_rate": 0.33528
+        },
+        "parameters": {
+          "continuation": false,
+          "hold_bars": 8,
+          "min_agreement": 2,
+          "min_breadth_atr": 0.1,
+          "signal_bars": 4,
+          "stop_atr": 1.5,
+          "target_r": 0.0
+        },
+        "positive_dev_years": 1,
+        "preholdout_score": 0.817929,
+        "validation_2023": {
+          "max_drawdown_r": 39.484425,
+          "net_r": -29.177684,
+          "profit_factor": 0.817929,
+          "trades": 234,
+          "win_rate": 0.316239
+        }
+      },
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 101.635486,
+          "net_r": -84.689784,
+          "profit_factor": 0.81735,
+          "trades": 602,
+          "win_rate": 0.313953
+        },
+        "parameters": {
+          "continuation": false,
+          "hold_bars": 99,
+          "min_agreement": 3,
+          "min_breadth_atr": 0.5,
+          "signal_bars": 4,
+          "stop_atr": 1.5,
+          "target_r": 4.0
+        },
+        "positive_dev_years": 0,
+        "preholdout_score": 0.81735,
+        "validation_2023": {
+          "max_drawdown_r": 22.718147,
+          "net_r": -16.514311,
+          "profit_factor": 0.855113,
+          "trades": 149,
+          "win_rate": 0.302013
+        }
+      },
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 101.635486,
+          "net_r": -85.151428,
+          "profit_factor": 0.816785,
+          "trades": 604,
+          "win_rate": 0.31457
+        },
+        "parameters": {
+          "continuation": false,
+          "hold_bars": 99,
+          "min_agreement": 3,
+          "min_breadth_atr": 0.25,
+          "signal_bars": 4,
+          "stop_atr": 1.5,
+          "target_r": 4.0
+        },
+        "positive_dev_years": 0,
+        "preholdout_score": 0.816785,
+        "validation_2023": {
+          "max_drawdown_r": 23.857197,
+          "net_r": -17.653361,
+          "profit_factor": 0.846653,
+          "trades": 150,
+          "win_rate": 0.3
+        }
+      },
+      {
+        "dev_2018_2022": {
+          "max_drawdown_r": 103.7912,
+          "net_r": -78.623879,
+          "profit_factor": 0.815636,
+          "trades": 602,
+          "win_rate": 0.313953
+        },
+        "parameters": {
+          "continuation": false,
+          "hold_bars": 8,
+          "min_agreement": 3,
+          "min_breadth_atr": 0.5,
+          "signal_bars": 4,
+          "stop_atr": 1.5,
+          "target_r": 0.0
+        },
+        "positive_dev_years": 1,
+        "preholdout_score": 0.815636,
+        "validation_2023": {
+          "max_drawdown_r": 18.044631,
+          "net_r": -2.194049,
+          "profit_factor": 0.977528,
+          "trades": 149,
+          "win_rate": 0.355705
+        }
+      }
+    ]
+  },
+  "preholdout_pass_count": 0,
+  "schema_version": 1,
+  "selected_family_winners": [],
+  "selection_contract": {
+    "daily_position_limit": "one three-leg package",
+    "development": "2018-2022",
+    "overnight_positions": false,
+    "risk": "equal one-third package risk per independently stopped leg",
+    "same_bar_rule": "stop_first",
+    "sealed_holdout": "2024-2025",
+    "search_burden": "one locked winner opened per two prespecified direction families",
+    "selection_uses_holdout": false,
+    "signal_information": "completed US cash-session M15 bars only",
+    "timestamp_basis": "Darwinex broker wall converted to UTC then America/New_York",
+    "universe": [
+      "NDX.DWX",
+      "SP500.DWX",
+      "WS30.DWX"
+    ],
+    "validation": "2023"
+  },
+  "status": "NO_HOLDOUT_SURVIVOR"
+}

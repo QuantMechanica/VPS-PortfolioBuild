@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_RESEARCH_ONLY",
+  "deployment_allowed": false,
+  "candidate": "10476:USDCAD.DWX",
+  "base_manifest": "artifacts/ftmo_joint_eleven_sleeve_incumbent_weight_path_manifest_2026-07-12.json",
+  "base_scenario": "path_01_11095_gbpusd_down2",
+  "candidate_weights_pct": [0.5, 1.0, 2.0, 3.0, 5.0, 7.5, 10.0],
+  "selection": {
+    "development_years": [2018, 2019, 2021, 2022],
+    "required": "strictly improve control in both threshold and adverse bar fills",
+    "tie_break": "maximum of the smaller normal/adverse pass-rate delta, then lower weight",
+    "validation_years": [2023],
+    "sealed_years": [2024, 2025]
+  },
+  "candidate_limitations": [
+    "No 2025 trades; the strict annual-density gate fails.",
+    "2019 and 2021 current-cost calendar years are negative.",
+    "Any result remains research-only until the complete nested portfolio sequence passes."
+  ],
+  "label": "RESEARCH_ONLY_NO_GO"
+}

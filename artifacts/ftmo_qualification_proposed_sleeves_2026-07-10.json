@@ -1,0 +1,881 @@
+{
+  "candidates": [
+    {
+      "active_magic_registered": true,
+      "blockers": [
+        "q02_evidence_predates_build",
+        "q03_evidence_predates_build",
+        "q04_evidence_predates_build",
+        "q05_evidence_predates_build",
+        "q06_not_pass:FAIL",
+        "q06_evidence_predates_build",
+        "q07_pass_missing",
+        "q08_pass_missing",
+        "q10_pass_missing",
+        "q08_baseline_stream_unlinked:q08_evidence_unavailable",
+        "fresh_intraday_mae_stream_missing"
+      ],
+      "build": {
+        "detail": "C:\\QM\\repo\\framework\\EAs\\QM5_10375_et-open-atrbrk\\QM5_10375_et-open-atrbrk.ex5",
+        "modified_at_utc": "2026-07-10T17:30:06.690270+00:00",
+        "ok": true
+      },
+      "challenge_ready": false,
+      "ea_id": "QM5_10375",
+      "phases": {
+        "Q02": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-07-04T11:30:32.697262+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\c2096995-78ee-4822-91bf-a0a4518cfb36\\QM5_10375\\20260704_112204\\summary.json",
+          "evidence_predates_build": true,
+          "updated_at": "2026-07-04T11:30:35+00:00",
+          "verdict": "PASS",
+          "work_item_id": "c2096995-78ee-4822-91bf-a0a4518cfb36"
+        },
+        "Q03": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-06-28T08:52:21.705542+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\d7793bfc-0903-44e1-995f-815d048fdaaf\\QM5_10375\\20260628_084907\\summary.json",
+          "evidence_predates_build": true,
+          "updated_at": "2026-06-28T08:52:24+00:00",
+          "verdict": "PASS",
+          "work_item_id": "d7793bfc-0903-44e1-995f-815d048fdaaf"
+        },
+        "Q04": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-07-02T05:31:01.570322+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\18c96a2f-5999-4a1d-84dd-340a8c621e24\\QM5_10375\\Q04\\NDX.DWX\\aggregate.json",
+          "evidence_predates_build": true,
+          "updated_at": "2026-07-02T05:31:03+00:00",
+          "verdict": "PASS",
+          "work_item_id": "18c96a2f-5999-4a1d-84dd-340a8c621e24"
+        },
+        "Q05": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-07-03T06:15:40.569319+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\e73c9085-d751-4ab6-8b34-a0718c9715bc\\QM5_10375\\Q05\\NDX_DWX\\aggregate.json",
+          "evidence_predates_build": true,
+          "updated_at": "2026-07-03T06:15:42+00:00",
+          "verdict": "PASS",
+          "work_item_id": "e73c9085-d751-4ab6-8b34-a0718c9715bc"
+        },
+        "Q06": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-07-02T06:04:07.024314+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\d1480910-25bc-4149-943d-5b805a6a00d1\\QM5_10375\\Q06\\NDX_DWX\\aggregate.json",
+          "evidence_predates_build": true,
+          "updated_at": "2026-07-02T06:04:10+00:00",
+          "verdict": "FAIL",
+          "work_item_id": "d1480910-25bc-4149-943d-5b805a6a00d1"
+        },
+        "Q07": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q08": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q10": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        }
+      },
+      "state": "NOT_QUALIFIED",
+      "stream": {
+        "baseline_linked": false,
+        "exists": true,
+        "fresh_mae": false,
+        "invalid_rows": 0,
+        "link_error": "q08_evidence_unavailable",
+        "missing_mae_rows": 960,
+        "modified_at_utc": "2026-07-10T18:11:04.170695+00:00",
+        "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\10375_NDX_DWX.jsonl",
+        "predates_build": false,
+        "source": "common_volatile_fallback",
+        "trade_count": 960
+      },
+      "symbol": "NDX.DWX"
+    },
+    {
+      "active_magic_registered": true,
+      "blockers": [
+        "q02_not_pass:FAIL",
+        "q02_evidence_predates_build",
+        "q03_pass_missing",
+        "q04_pass_missing",
+        "q05_pass_missing",
+        "q06_pass_missing",
+        "q07_pass_missing",
+        "q08_pass_missing",
+        "q10_pass_missing",
+        "q08_baseline_stream_unlinked:q08_evidence_unavailable"
+      ],
+      "build": {
+        "detail": "C:\\QM\\repo\\framework\\EAs\\QM5_12986_gdaxi-orb-intraday\\QM5_12986_gdaxi-orb-intraday.ex5",
+        "modified_at_utc": "2026-07-05T13:10:26.983747+00:00",
+        "ok": true
+      },
+      "challenge_ready": false,
+      "ea_id": "QM5_12986",
+      "phases": {
+        "Q02": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-07-05T12:00:16.863193+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\82c9293f-708d-486f-b9ab-6e1fd930ef8c\\QM5_12986\\20260705_115916\\summary.json",
+          "evidence_predates_build": true,
+          "updated_at": "2026-07-05T12:00:20+00:00",
+          "verdict": "FAIL",
+          "work_item_id": "82c9293f-708d-486f-b9ab-6e1fd930ef8c"
+        },
+        "Q03": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q04": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q05": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q06": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q07": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q08": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q10": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        }
+      },
+      "state": "NOT_QUALIFIED",
+      "stream": {
+        "baseline_linked": false,
+        "exists": true,
+        "fresh_mae": true,
+        "invalid_rows": 0,
+        "link_error": "q08_evidence_unavailable",
+        "missing_mae_rows": 0,
+        "modified_at_utc": "2026-07-10T16:53:26.579168+00:00",
+        "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\12986_GDAXI_DWX.jsonl",
+        "predates_build": false,
+        "source": "common_volatile_fallback",
+        "trade_count": 1790
+      },
+      "symbol": "GDAXI.DWX"
+    },
+    {
+      "active_magic_registered": true,
+      "blockers": [
+        "q08_not_pass:FAIL_SOFT",
+        "q10_pass_missing"
+      ],
+      "build": {
+        "detail": "C:\\QM\\repo\\framework\\EAs\\QM5_12969_usdjpy-gotobi-nakane-fix\\QM5_12969_usdjpy-gotobi-nakane-fix.ex5",
+        "modified_at_utc": "2026-07-04T20:16:08.052974+00:00",
+        "ok": true
+      },
+      "challenge_ready": false,
+      "ea_id": "QM5_12969",
+      "phases": {
+        "Q02": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-07-07T13:48:06.737912+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\8ba695a4-4ad7-4002-93d9-b97b2a974e76\\QM5_12969\\20260707_134104\\summary.json",
+          "evidence_predates_build": false,
+          "updated_at": "2026-07-07T13:48:09+00:00",
+          "verdict": "PASS",
+          "work_item_id": "8ba695a4-4ad7-4002-93d9-b97b2a974e76"
+        },
+        "Q03": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-07-07T13:56:13.631952+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\8f4f25e0-af4b-4008-9194-8e77046a8f7a\\QM5_12969\\20260707_135332\\summary.json",
+          "evidence_predates_build": false,
+          "updated_at": "2026-07-07T13:58:03+00:00",
+          "verdict": "PASS",
+          "work_item_id": "8f4f25e0-af4b-4008-9194-8e77046a8f7a"
+        },
+        "Q04": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-07-07T13:53:24.651615+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\851f7ae1-9b49-437a-9901-2476ca0c749f\\QM5_12969\\Q04\\USDJPY.DWX\\aggregate.json",
+          "evidence_predates_build": false,
+          "updated_at": "2026-07-07T13:53:27+00:00",
+          "verdict": "PASS",
+          "work_item_id": "851f7ae1-9b49-437a-9901-2476ca0c749f"
+        },
+        "Q05": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-07-07T14:05:46.304893+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\1b456c60-b44f-41ce-a0d6-d42ed0b14edc\\QM5_12969\\Q05\\USDJPY_DWX\\aggregate.json",
+          "evidence_predates_build": false,
+          "updated_at": "2026-07-07T14:05:48+00:00",
+          "verdict": "PASS",
+          "work_item_id": "1b456c60-b44f-41ce-a0d6-d42ed0b14edc"
+        },
+        "Q06": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-07-07T14:15:41.024021+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\55b4c89a-2c66-411a-9cd0-909925c24980\\QM5_12969\\Q06\\USDJPY_DWX\\aggregate.json",
+          "evidence_predates_build": false,
+          "updated_at": "2026-07-07T14:15:43+00:00",
+          "verdict": "PASS",
+          "work_item_id": "55b4c89a-2c66-411a-9cd0-909925c24980"
+        },
+        "Q07": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-07-07T15:18:04.876822+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\7b19cef5-64ce-4f24-a3cf-fec92aa1a2c8\\QM5_12969\\Q07\\USDJPY_DWX\\aggregate.json",
+          "evidence_predates_build": false,
+          "updated_at": "2026-07-07T15:18:07+00:00",
+          "verdict": "PASS",
+          "work_item_id": "7b19cef5-64ce-4f24-a3cf-fec92aa1a2c8"
+        },
+        "Q08": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-07-10T18:27:22.891515+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\74a089c5-194d-466f-ba0f-0536fdf32641\\QM5_12969\\Q08\\USDJPY_DWX\\aggregate.json",
+          "evidence_predates_build": false,
+          "updated_at": "2026-07-10T18:27:25+00:00",
+          "verdict": "FAIL_SOFT",
+          "work_item_id": "74a089c5-194d-466f-ba0f-0536fdf32641"
+        },
+        "Q10": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        }
+      },
+      "state": "RESEARCH_LEAD",
+      "stream": {
+        "baseline_linked": true,
+        "exists": true,
+        "fresh_mae": true,
+        "invalid_rows": 0,
+        "link_error": null,
+        "missing_mae_rows": 0,
+        "modified_at_utc": "2026-07-10T18:09:53.977784+00:00",
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12969_USDJPY_DWX.jsonl",
+        "predates_build": false,
+        "source": "q08_durable_baseline",
+        "trade_count": 331
+      },
+      "symbol": "USDJPY.DWX"
+    },
+    {
+      "active_magic_registered": true,
+      "blockers": [
+        "q02_evidence_predates_build",
+        "q03_evidence_predates_build",
+        "q04_not_pass:FAIL",
+        "q04_evidence_predates_build",
+        "q05_pass_missing",
+        "q06_pass_missing",
+        "q07_pass_missing",
+        "q08_pass_missing",
+        "q10_pass_missing",
+        "q08_baseline_stream_unlinked:q08_evidence_unavailable"
+      ],
+      "build": {
+        "detail": "C:\\QM\\repo\\framework\\EAs\\QM5_10118_tv-rsi-trend-cont\\QM5_10118_tv-rsi-trend-cont.ex5",
+        "modified_at_utc": "2026-07-10T17:30:06.660191+00:00",
+        "ok": true
+      },
+      "challenge_ready": false,
+      "ea_id": "QM5_10118",
+      "phases": {
+        "Q02": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-07-04T22:58:58.078619+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\ac44f324-f746-4dc0-bf4b-b6c9fcba5171\\QM5_10118\\20260704_223953\\summary.json",
+          "evidence_predates_build": true,
+          "updated_at": "2026-07-04T23:05:33+00:00",
+          "verdict": "PASS",
+          "work_item_id": "ac44f324-f746-4dc0-bf4b-b6c9fcba5171"
+        },
+        "Q03": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-07-04T23:30:22.534096+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\d1fb0739-f713-45d1-a6ee-1bd3a5b9fa2b\\QM5_10118\\20260704_232551\\summary.json",
+          "evidence_predates_build": true,
+          "updated_at": "2026-07-04T23:30:24+00:00",
+          "verdict": "PASS",
+          "work_item_id": "d1fb0739-f713-45d1-a6ee-1bd3a5b9fa2b"
+        },
+        "Q04": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-07-04T23:21:08.165866+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\511e602a-ea47-403f-b82b-cf326562ebf6\\QM5_10118\\Q04\\NDX.DWX\\aggregate.json",
+          "evidence_predates_build": true,
+          "updated_at": "2026-07-04T23:21:11+00:00",
+          "verdict": "FAIL",
+          "work_item_id": "511e602a-ea47-403f-b82b-cf326562ebf6"
+        },
+        "Q05": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q06": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q07": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q08": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q10": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        }
+      },
+      "state": "NOT_QUALIFIED",
+      "stream": {
+        "baseline_linked": false,
+        "exists": true,
+        "fresh_mae": true,
+        "invalid_rows": 0,
+        "link_error": "q08_evidence_unavailable",
+        "missing_mae_rows": 0,
+        "modified_at_utc": "2026-07-10T17:54:37.539288+00:00",
+        "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\10118_NDX_DWX.jsonl",
+        "predates_build": false,
+        "source": "common_volatile_fallback",
+        "trade_count": 714
+      },
+      "symbol": "NDX.DWX"
+    },
+    {
+      "active_magic_registered": true,
+      "blockers": [
+        "q02_evidence_predates_build",
+        "q03_evidence_predates_build",
+        "q04_evidence_predates_build",
+        "q05_not_pass:INFRA_FAIL",
+        "q05_evidence_predates_build",
+        "q06_pass_missing",
+        "q07_pass_missing",
+        "q08_pass_missing",
+        "q10_pass_missing",
+        "q08_baseline_stream_unlinked:q08_evidence_unavailable"
+      ],
+      "build": {
+        "detail": "C:\\QM\\repo\\framework\\EAs\\QM5_10916_grimes-impulse\\QM5_10916_grimes-impulse.ex5",
+        "modified_at_utc": "2026-07-10T17:30:06.730376+00:00",
+        "ok": true
+      },
+      "challenge_ready": false,
+      "ea_id": "QM5_10916",
+      "phases": {
+        "Q02": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-06-19T09:15:42.069723+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\7617048a-38ef-4a3c-b04f-812a1b6dacc3\\QM5_10916\\20260619_091228\\summary.json",
+          "evidence_predates_build": true,
+          "updated_at": "2026-06-19T09:15:43+00:00",
+          "verdict": "PASS",
+          "work_item_id": "7617048a-38ef-4a3c-b04f-812a1b6dacc3"
+        },
+        "Q03": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-06-19T09:28:30.725258+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\13067eff-3f49-4d05-86f6-acb1928ab813\\QM5_10916\\20260619_092646\\summary.json",
+          "evidence_predates_build": true,
+          "updated_at": "2026-06-19T09:28:33+00:00",
+          "verdict": "PASS",
+          "work_item_id": "13067eff-3f49-4d05-86f6-acb1928ab813"
+        },
+        "Q04": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-06-19T09:26:42.951666+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\cdeb1f81-efa6-4cd2-8ac4-cbcb321248fb\\QM5_10916\\Q04\\GDAXI.DWX\\aggregate.json",
+          "evidence_predates_build": true,
+          "updated_at": "2026-06-19T09:26:45+00:00",
+          "verdict": "PASS",
+          "work_item_id": "cdeb1f81-efa6-4cd2-8ac4-cbcb321248fb"
+        },
+        "Q05": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-07-03T10:23:00.796001+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\dc66cdca-e08f-4918-b054-a757a03769f6\\QM5_10916\\Q05\\GDAXI_DWX\\aggregate.json",
+          "evidence_predates_build": true,
+          "updated_at": "2026-07-03T10:23:02+00:00",
+          "verdict": "INFRA_FAIL",
+          "work_item_id": "dc66cdca-e08f-4918-b054-a757a03769f6"
+        },
+        "Q06": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q07": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q08": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q10": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        }
+      },
+      "state": "NOT_QUALIFIED",
+      "stream": {
+        "baseline_linked": false,
+        "exists": true,
+        "fresh_mae": true,
+        "invalid_rows": 0,
+        "link_error": "q08_evidence_unavailable",
+        "missing_mae_rows": 0,
+        "modified_at_utc": "2026-07-10T17:43:31.163801+00:00",
+        "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\10916_GDAXI_DWX.jsonl",
+        "predates_build": false,
+        "source": "common_volatile_fallback",
+        "trade_count": 611
+      },
+      "symbol": "GDAXI.DWX"
+    },
+    {
+      "active_magic_registered": true,
+      "blockers": [
+        "q02_not_pass:FAIL",
+        "q02_evidence_predates_build",
+        "q03_evidence_predates_build",
+        "q04_not_pass:PASS_SOFT",
+        "q04_evidence_predates_build",
+        "q05_not_pass:FAIL",
+        "q05_evidence_predates_build",
+        "q06_pass_missing",
+        "q07_pass_missing",
+        "q08_pass_missing",
+        "q10_pass_missing",
+        "q08_baseline_stream_unlinked:q08_evidence_unavailable"
+      ],
+      "build": {
+        "detail": "C:\\QM\\repo\\framework\\EAs\\QM5_10546_mql5-ma4060\\QM5_10546_mql5-ma4060.ex5",
+        "modified_at_utc": "2026-07-10T17:30:06.699294+00:00",
+        "ok": true
+      },
+      "challenge_ready": false,
+      "ea_id": "QM5_10546",
+      "phases": {
+        "Q02": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-07-10T01:19:48.445140+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\494eebb1-3b96-49f9-9b1a-d5754eabaec1\\QM5_10546\\20260710_011549\\summary.json",
+          "evidence_predates_build": true,
+          "updated_at": "2026-07-10T01:21:27+00:00",
+          "verdict": "FAIL",
+          "work_item_id": "494eebb1-3b96-49f9-9b1a-d5754eabaec1"
+        },
+        "Q03": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-07-07T19:35:55.757992+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\849a2b61-7cd3-4e1d-897d-7a34ee133b25\\QM5_10546\\20260707_193246\\summary.json",
+          "evidence_predates_build": true,
+          "updated_at": "2026-07-07T19:39:05+00:00",
+          "verdict": "PASS",
+          "work_item_id": "849a2b61-7cd3-4e1d-897d-7a34ee133b25"
+        },
+        "Q04": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-07-07T19:58:25.307631+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\9e486967-7813-40e5-8a28-81f1e1727cad\\QM5_10546\\Q04\\XAUUSD.DWX\\aggregate.json",
+          "evidence_predates_build": true,
+          "updated_at": "2026-07-07T19:58:28+00:00",
+          "verdict": "PASS_SOFT",
+          "work_item_id": "9e486967-7813-40e5-8a28-81f1e1727cad"
+        },
+        "Q05": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-07-07T20:26:43.618634+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\7c490ddb-53a0-4967-ab92-539a2b986625\\QM5_10546\\Q05\\XAUUSD_DWX\\aggregate.json",
+          "evidence_predates_build": true,
+          "updated_at": "2026-07-07T20:26:45+00:00",
+          "verdict": "FAIL",
+          "work_item_id": "7c490ddb-53a0-4967-ab92-539a2b986625"
+        },
+        "Q06": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q07": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q08": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q10": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        }
+      },
+      "state": "NOT_QUALIFIED",
+      "stream": {
+        "baseline_linked": false,
+        "exists": true,
+        "fresh_mae": true,
+        "invalid_rows": 0,
+        "link_error": "q08_evidence_unavailable",
+        "missing_mae_rows": 0,
+        "modified_at_utc": "2026-07-10T18:00:08.790542+00:00",
+        "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\10546_XAUUSD_DWX.jsonl",
+        "predates_build": false,
+        "source": "common_volatile_fallback",
+        "trade_count": 1708
+      },
+      "symbol": "XAUUSD.DWX"
+    },
+    {
+      "active_magic_registered": true,
+      "blockers": [
+        "q02_not_pass:INFRA_FAIL",
+        "q02_evidence_predates_build",
+        "q03_evidence_predates_build",
+        "q04_not_pass:INFRA_FAIL",
+        "q04_evidence_predates_build",
+        "q05_pass_missing",
+        "q06_pass_missing",
+        "q07_pass_missing",
+        "q08_pass_missing",
+        "q10_pass_missing",
+        "q08_baseline_stream_unlinked:q08_evidence_unavailable",
+        "intraday_mae_stream_predates_build"
+      ],
+      "build": {
+        "detail": "C:\\QM\\repo\\framework\\EAs\\QM5_10569_mql5-supertrend\\QM5_10569_mql5-supertrend.ex5",
+        "modified_at_utc": "2026-07-10T18:30:02.748374+00:00",
+        "ok": true
+      },
+      "challenge_ready": false,
+      "ea_id": "QM5_10569",
+      "phases": {
+        "Q02": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-06-21T20:36:30.918341+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\13832adc-dc88-48e9-90c2-48338d444c63\\QM5_10569\\20260621_203524\\summary.json",
+          "evidence_predates_build": true,
+          "updated_at": "2026-06-21T20:36:32+00:00",
+          "verdict": "INFRA_FAIL",
+          "work_item_id": "13832adc-dc88-48e9-90c2-48338d444c63"
+        },
+        "Q03": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-06-07T14:16:01.199614+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\a17d64b3-a054-463f-a125-771b59b09b4d\\QM5_10569\\20260607_141141\\summary.json",
+          "evidence_predates_build": true,
+          "updated_at": "2026-06-07T14:16:02+00:00",
+          "verdict": "PASS",
+          "work_item_id": "a17d64b3-a054-463f-a125-771b59b09b4d"
+        },
+        "Q04": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-06-23T09:03:42.886093+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\1ee5b230-4af7-47cc-b880-ae4cdeb5dac8\\QM5_10569\\Q04\\EURUSD.DWX\\aggregate.json",
+          "evidence_predates_build": true,
+          "updated_at": "2026-06-23T09:04:12+00:00",
+          "verdict": "INFRA_FAIL",
+          "work_item_id": "1ee5b230-4af7-47cc-b880-ae4cdeb5dac8"
+        },
+        "Q05": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q06": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q07": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q08": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q10": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        }
+      },
+      "state": "NOT_QUALIFIED",
+      "stream": {
+        "baseline_linked": false,
+        "exists": true,
+        "fresh_mae": true,
+        "invalid_rows": 0,
+        "link_error": "q08_evidence_unavailable",
+        "missing_mae_rows": 0,
+        "modified_at_utc": "2026-07-10T18:22:25.101810+00:00",
+        "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\10569_EURUSD_DWX.jsonl",
+        "predates_build": true,
+        "source": "common_volatile_fallback",
+        "trade_count": 341
+      },
+      "symbol": "EURUSD.DWX"
+    },
+    {
+      "active_magic_registered": true,
+      "blockers": [
+        "q02_evidence_predates_build",
+        "q03_evidence_predates_build",
+        "q04_not_pass:PASS_SOFT",
+        "q04_evidence_predates_build",
+        "q05_not_pass:FAIL",
+        "q05_evidence_predates_build",
+        "q06_pass_missing",
+        "q07_pass_missing",
+        "q08_not_pass:FAIL_SOFT",
+        "q08_evidence_predates_build",
+        "q10_pass_missing",
+        "fresh_intraday_mae_stream_missing"
+      ],
+      "build": {
+        "detail": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\QM5_10706_tv-mon-ls.ex5",
+        "modified_at_utc": "2026-07-10T18:30:02.748374+00:00",
+        "ok": true
+      },
+      "challenge_ready": false,
+      "ea_id": "QM5_10706",
+      "phases": {
+        "Q02": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-07-08T00:47:34.956629+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\ddd3588d-e0f7-4122-a1a8-80f33ac04848\\QM5_10706\\20260708_004321\\summary.json",
+          "evidence_predates_build": true,
+          "updated_at": "2026-07-08T00:49:33+00:00",
+          "verdict": "PASS",
+          "work_item_id": "ddd3588d-e0f7-4122-a1a8-80f33ac04848"
+        },
+        "Q03": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-06-14T20:50:47.477819+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\cc8fdc2e-0802-4cb7-bfd7-dcca46649a0d\\QM5_10706\\20260614_204605\\summary.json",
+          "evidence_predates_build": true,
+          "updated_at": "2026-06-14T20:50:50+00:00",
+          "verdict": "PASS",
+          "work_item_id": "cc8fdc2e-0802-4cb7-bfd7-dcca46649a0d"
+        },
+        "Q04": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-06-14T20:57:15.203432+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\1aeb4a8c-f9e4-4e55-b3ca-3704687965f6\\QM5_10706\\Q04\\GBPUSD.DWX\\aggregate.json",
+          "evidence_predates_build": true,
+          "updated_at": "2026-06-23T00:00:01Z",
+          "verdict": "PASS_SOFT",
+          "work_item_id": "1aeb4a8c-f9e4-4e55-b3ca-3704687965f6"
+        },
+        "Q05": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-06-27T17:11:33.456599+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\a04b99f5-c35d-46bf-a11f-e21e962e58bc\\QM5_10706\\Q05\\GBPUSD_DWX\\aggregate.json",
+          "evidence_predates_build": true,
+          "updated_at": "2026-06-27T17:11:36+00:00",
+          "verdict": "FAIL",
+          "work_item_id": "a04b99f5-c35d-46bf-a11f-e21e962e58bc"
+        },
+        "Q06": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q07": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q08": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-07-05T18:55:47.164716+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\19e11add-09ee-420b-a4ec-31fd03bd1b84\\QM5_10706\\Q08\\GBPUSD_DWX\\aggregate.json",
+          "evidence_predates_build": true,
+          "updated_at": "2026-07-05T18:55:50+00:00",
+          "verdict": "FAIL_SOFT",
+          "work_item_id": "19e11add-09ee-420b-a4ec-31fd03bd1b84"
+        },
+        "Q10": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        }
+      },
+      "state": "NOT_QUALIFIED",
+      "stream": {
+        "baseline_linked": true,
+        "exists": true,
+        "fresh_mae": false,
+        "invalid_rows": 0,
+        "link_error": null,
+        "missing_mae_rows": 364,
+        "modified_at_utc": "2026-07-05T18:55:42.877900+00:00",
+        "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10706_GBPUSD_DWX.jsonl",
+        "predates_build": true,
+        "source": "q08_durable_baseline",
+        "trade_count": 364
+      },
+      "symbol": "GBPUSD.DWX"
+    },
+    {
+      "active_magic_registered": true,
+      "blockers": [
+        "q02_evidence_predates_build",
+        "q03_evidence_predates_build",
+        "q04_not_pass:INFRA_FAIL",
+        "q04_evidence_predates_build",
+        "q05_pass_missing",
+        "q06_pass_missing",
+        "q07_pass_missing",
+        "q08_pass_missing",
+        "q10_pass_missing",
+        "q08_baseline_stream_unlinked:q08_evidence_unavailable",
+        "fresh_intraday_mae_stream_missing",
+        "trade_count_below_50:15"
+      ],
+      "build": {
+        "detail": "C:\\QM\\repo\\framework\\EAs\\QM5_11891_unger-daily-factor-indecision-pattern\\QM5_11891_unger-daily-factor-indecision-pattern.ex5",
+        "modified_at_utc": "2026-07-10T18:30:02.748374+00:00",
+        "ok": true
+      },
+      "challenge_ready": false,
+      "ea_id": "QM5_11891",
+      "phases": {
+        "Q02": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-07-06T02:54:34.810820+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\144aee9b-bff0-42d7-8e6f-427e14ca7b16\\QM5_11891\\20260706_024324\\summary.json",
+          "evidence_predates_build": true,
+          "updated_at": "2026-07-06T02:54:37+00:00",
+          "verdict": "PASS",
+          "work_item_id": "144aee9b-bff0-42d7-8e6f-427e14ca7b16"
+        },
+        "Q03": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-07-06T03:21:51.333905+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\7ff5b4ad-c581-46e7-a830-d055bacb33a1\\QM5_11891\\20260706_031806\\summary.json",
+          "evidence_predates_build": true,
+          "updated_at": "2026-07-06T03:21:53+00:00",
+          "verdict": "PASS",
+          "work_item_id": "7ff5b4ad-c581-46e7-a830-d055bacb33a1"
+        },
+        "Q04": {
+          "evidence_exists": true,
+          "evidence_modified_at_utc": "2026-07-06T03:18:03.323049+00:00",
+          "evidence_path": "D:\\QM\\reports\\work_items\\bcc872ea-7046-40a3-a1a6-3781872c7506\\QM5_11891\\Q04\\GBPJPY.DWX\\aggregate.json",
+          "evidence_predates_build": true,
+          "updated_at": "2026-07-06T03:18:05+00:00",
+          "verdict": "INFRA_FAIL",
+          "work_item_id": "bcc872ea-7046-40a3-a1a6-3781872c7506"
+        },
+        "Q05": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q06": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q07": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q08": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q10": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        }
+      },
+      "state": "NOT_QUALIFIED",
+      "stream": {
+        "baseline_linked": false,
+        "exists": true,
+        "fresh_mae": false,
+        "invalid_rows": 0,
+        "link_error": "q08_evidence_unavailable",
+        "missing_mae_rows": 15,
+        "modified_at_utc": "2026-07-06T03:21:47.279764+00:00",
+        "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\11891_GBPJPY_DWX.jsonl",
+        "predates_build": true,
+        "source": "common_volatile_fallback",
+        "trade_count": 15
+      },
+      "symbol": "GBPJPY.DWX"
+    }
+  ],
+  "challenge_ready_count": 0,
+  "contract": {
+    "min_trades": 50,
+    "read_only": true,
+    "required_verdict": "PASS",
+    "requires_evidence_not_older_than_binary": true,
+    "requires_fresh_entry_time_and_mae_acct": true,
+    "requires_q08_linked_durable_baseline_stream": true,
+    "strict_phases": [
+      "Q02",
+      "Q03",
+      "Q04",
+      "Q05",
+      "Q06",
+      "Q07",
+      "Q08",
+      "Q10"
+    ]
+  },
+  "counts": {
+    "NOT_QUALIFIED": 8,
+    "RESEARCH_LEAD": 1
+  },
+  "generated_at_utc": "2026-07-10T18:31:02+00:00",
+  "schema_version": 1
+}

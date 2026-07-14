@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_RESEARCH_ONLY",
+  "deployment_allowed": false,
+  "candidate": {
+    "ea_id": 12989,
+    "expert": "QM\\QM5_12989_grimes-nested-pb-v2",
+    "symbol": "XAUUSD.DWX",
+    "period": "H4",
+    "setfile": "framework/EAs/QM5_12989_grimes-nested-pb-v2/sets/QM5_12989_grimes-nested-pb-v2_XAUUSD.DWX_H4_backtest.set"
+  },
+  "selection_basis": {
+    "q04_fold_profit_factors": [3.084, 6.493, 5.674],
+    "q05_profit_factor": 1.72,
+    "q06_harsh_profit_factor": 2.08,
+    "q07_min_profit_factor": 2.08,
+    "archive_q02_conflict": "The archived single run reports 27 trades at PF 0.65 despite later phase aggregates; the fresh full-history run must resolve this contradiction without importing either verdict."
+  },
+  "locked_test": {
+    "history": "2017-01-01/2025-12-31",
+    "model": 4,
+    "runs": 2,
+    "minimum_trades": 45,
+    "terminal": "T3",
+    "fresh_q08_stream_required": true,
+    "exact_report_stream_reconciliation_required": true,
+    "current_ftmo_cost_reconstruction_required": true,
+    "portfolio_gate": "development normal and adverse must both strictly improve the locked incumbent before 2023 validation",
+    "sealed_years": [2024, 2025]
+  },
+  "operational_constraints": {
+    "factory_off_required": true,
+    "symbol_mutex": "XAUUSD.DWX",
+    "t_live_forbidden": true,
+    "installed_ftmo_terminal_forbidden": true,
+    "autotrading_change_forbidden": true
+  },
+  "label": "RESEARCH_ONLY_NO_GO"
+}

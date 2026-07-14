@@ -1,0 +1,340 @@
+{
+  "candidates": [
+    {
+      "active_magic_registered": true,
+      "blockers": [
+        "q08_pass_missing",
+        "q10_pass_missing"
+      ],
+      "build": {
+        "detail": "C:\\QM\\repo\\framework\\EAs\\QM5_12969_usdjpy-gotobi-nakane-fix\\QM5_12969_usdjpy-gotobi-nakane-fix.ex5",
+        "ok": true
+      },
+      "challenge_ready": false,
+      "ea_id": "QM5_12969",
+      "phases": {
+        "Q04": {
+          "evidence_exists": true,
+          "evidence_path": "D:\\QM\\reports\\work_items\\851f7ae1-9b49-437a-9901-2476ca0c749f\\QM5_12969\\Q04\\USDJPY.DWX\\aggregate.json",
+          "updated_at": "2026-07-07T13:53:27+00:00",
+          "verdict": "PASS",
+          "work_item_id": "851f7ae1-9b49-437a-9901-2476ca0c749f"
+        },
+        "Q05": {
+          "evidence_exists": true,
+          "evidence_path": "D:\\QM\\reports\\work_items\\1b456c60-b44f-41ce-a0d6-d42ed0b14edc\\QM5_12969\\Q05\\USDJPY_DWX\\aggregate.json",
+          "updated_at": "2026-07-07T14:05:48+00:00",
+          "verdict": "PASS",
+          "work_item_id": "1b456c60-b44f-41ce-a0d6-d42ed0b14edc"
+        },
+        "Q06": {
+          "evidence_exists": true,
+          "evidence_path": "D:\\QM\\reports\\work_items\\55b4c89a-2c66-411a-9cd0-909925c24980\\QM5_12969\\Q06\\USDJPY_DWX\\aggregate.json",
+          "updated_at": "2026-07-07T14:15:43+00:00",
+          "verdict": "PASS",
+          "work_item_id": "55b4c89a-2c66-411a-9cd0-909925c24980"
+        },
+        "Q07": {
+          "evidence_exists": true,
+          "evidence_path": "D:\\QM\\reports\\work_items\\7b19cef5-64ce-4f24-a3cf-fec92aa1a2c8\\QM5_12969\\Q07\\USDJPY_DWX\\aggregate.json",
+          "updated_at": "2026-07-07T15:18:07+00:00",
+          "verdict": "PASS",
+          "work_item_id": "7b19cef5-64ce-4f24-a3cf-fec92aa1a2c8"
+        },
+        "Q08": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q10": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        }
+      },
+      "state": "NOT_QUALIFIED",
+      "stream": {
+        "exists": true,
+        "fresh_mae": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 0,
+        "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\12969_USDJPY_DWX.jsonl",
+        "trade_count": 331
+      },
+      "symbol": "USDJPY.DWX"
+    },
+    {
+      "active_magic_registered": true,
+      "blockers": [
+        "q04_pass_missing",
+        "q05_pass_missing",
+        "q06_pass_missing",
+        "q07_pass_missing",
+        "q08_pass_missing",
+        "q10_pass_missing",
+        "fresh_intraday_mae_stream_missing",
+        "trade_count_below_50:0"
+      ],
+      "build": {
+        "detail": "C:\\QM\\repo\\framework\\EAs\\QM5_13036_balke-go-long-regime\\QM5_13036_balke-go-long-regime.ex5",
+        "ok": true
+      },
+      "challenge_ready": false,
+      "ea_id": "QM5_13036",
+      "phases": {
+        "Q04": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q05": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q06": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q07": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q08": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q10": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        }
+      },
+      "state": "NOT_QUALIFIED",
+      "stream": {
+        "exists": false,
+        "fresh_mae": false,
+        "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\13036_NDX_DWX.jsonl",
+        "trade_count": 0
+      },
+      "symbol": "NDX.DWX"
+    },
+    {
+      "active_magic_registered": true,
+      "blockers": [
+        "q07_pass_missing",
+        "q08_pass_missing",
+        "q10_pass_missing",
+        "fresh_intraday_mae_stream_missing"
+      ],
+      "build": {
+        "detail": "C:\\QM\\repo\\framework\\EAs\\QM5_11179_ft001-ema-ha\\QM5_11179_ft001-ema-ha.ex5",
+        "ok": true
+      },
+      "challenge_ready": false,
+      "ea_id": "QM5_11179",
+      "phases": {
+        "Q04": {
+          "evidence_exists": true,
+          "evidence_path": "D:\\QM\\reports\\work_items\\c162683b-b885-4152-9703-0efb12bbf748\\QM5_11179\\Q04\\XAUUSD.DWX\\aggregate.json",
+          "updated_at": "2026-06-20T11:33:00+00:00",
+          "verdict": "PASS",
+          "work_item_id": "c162683b-b885-4152-9703-0efb12bbf748"
+        },
+        "Q05": {
+          "evidence_exists": true,
+          "evidence_path": "D:\\QM\\reports\\work_items\\31033d0a-6aa1-442b-82d3-41594287235e\\QM5_11179\\Q05\\XAUUSD_DWX\\aggregate.json",
+          "updated_at": "2026-06-20T12:04:57+00:00",
+          "verdict": "PASS",
+          "work_item_id": "31033d0a-6aa1-442b-82d3-41594287235e"
+        },
+        "Q06": {
+          "evidence_exists": true,
+          "evidence_path": "D:\\QM\\reports\\work_items\\da5409f9-51fc-46cc-a395-9e5601993bde\\QM5_11179\\Q06\\XAUUSD_DWX\\aggregate.json",
+          "updated_at": "2026-06-20T12:37:17+00:00",
+          "verdict": "PASS",
+          "work_item_id": "da5409f9-51fc-46cc-a395-9e5601993bde"
+        },
+        "Q07": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q08": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        },
+        "Q10": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        }
+      },
+      "state": "NOT_QUALIFIED",
+      "stream": {
+        "exists": true,
+        "fresh_mae": false,
+        "invalid_rows": 0,
+        "missing_mae_rows": 404,
+        "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\11179_XAUUSD_DWX.jsonl",
+        "trade_count": 404
+      },
+      "symbol": "XAUUSD.DWX"
+    },
+    {
+      "active_magic_registered": true,
+      "blockers": [
+        "q08_not_pass:FAIL_SOFT",
+        "q10_pass_missing"
+      ],
+      "build": {
+        "detail": "C:\\QM\\repo\\framework\\EAs\\QM5_13013_grimes-trendday-v2\\QM5_13013_grimes-trendday-v2.ex5",
+        "ok": true
+      },
+      "challenge_ready": false,
+      "ea_id": "QM5_13013",
+      "phases": {
+        "Q04": {
+          "evidence_exists": true,
+          "evidence_path": "D:\\QM\\reports\\work_items\\8f67fd04-bb12-4b54-b9c3-b6866000bcdc\\QM5_13013\\Q04\\NDX.DWX\\aggregate.json",
+          "updated_at": "2026-07-05T09:41:44+00:00",
+          "verdict": "PASS",
+          "work_item_id": "8f67fd04-bb12-4b54-b9c3-b6866000bcdc"
+        },
+        "Q05": {
+          "evidence_exists": true,
+          "evidence_path": "D:\\QM\\reports\\work_items\\c53decc4-67ba-4769-9718-839f44a96fd4\\QM5_13013\\Q05\\NDX_DWX\\aggregate.json",
+          "updated_at": "2026-07-05T10:01:17+00:00",
+          "verdict": "PASS",
+          "work_item_id": "c53decc4-67ba-4769-9718-839f44a96fd4"
+        },
+        "Q06": {
+          "evidence_exists": true,
+          "evidence_path": "D:\\QM\\reports\\work_items\\87998789-1c8f-48ef-90a0-841a9492dbe7\\QM5_13013\\Q06\\NDX_DWX\\aggregate.json",
+          "updated_at": "2026-07-05T10:15:30+00:00",
+          "verdict": "PASS",
+          "work_item_id": "87998789-1c8f-48ef-90a0-841a9492dbe7"
+        },
+        "Q07": {
+          "evidence_exists": true,
+          "evidence_path": "D:\\QM\\reports\\work_items\\50afe7d8-b012-40dc-89d0-dc9f0484bb72\\QM5_13013\\Q07\\NDX_DWX\\aggregate.json",
+          "updated_at": "2026-07-05T11:14:49+00:00",
+          "verdict": "PASS",
+          "work_item_id": "50afe7d8-b012-40dc-89d0-dc9f0484bb72"
+        },
+        "Q08": {
+          "evidence_exists": true,
+          "evidence_path": "D:\\QM\\reports\\work_items\\c32d54f8-6fe2-4cf2-a07e-32d1fc1eabc9\\QM5_13013\\Q08\\NDX_DWX\\aggregate.json",
+          "updated_at": "2026-07-05T12:11:09+00:00",
+          "verdict": "FAIL_SOFT",
+          "work_item_id": "c32d54f8-6fe2-4cf2-a07e-32d1fc1eabc9"
+        },
+        "Q10": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        }
+      },
+      "state": "RESEARCH_LEAD",
+      "stream": {
+        "exists": true,
+        "fresh_mae": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 0,
+        "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\13013_NDX_DWX.jsonl",
+        "trade_count": 69
+      },
+      "symbol": "NDX.DWX"
+    },
+    {
+      "active_magic_registered": true,
+      "blockers": [
+        "q08_not_pass:FAIL_SOFT",
+        "q10_pass_missing"
+      ],
+      "build": {
+        "detail": "C:\\QM\\repo\\framework\\EAs\\QM5_10715_tv-asian-box\\QM5_10715_tv-asian-box.ex5",
+        "ok": true
+      },
+      "challenge_ready": false,
+      "ea_id": "QM5_10715",
+      "phases": {
+        "Q04": {
+          "evidence_exists": true,
+          "evidence_path": "D:\\QM\\reports\\work_items\\5b6be2ac-7ad6-47ed-96f5-8f24332a0df7\\QM5_10715\\Q04\\USDJPY.DWX\\aggregate.json",
+          "updated_at": "2026-06-26T17:28:47+00:00",
+          "verdict": "PASS",
+          "work_item_id": "5b6be2ac-7ad6-47ed-96f5-8f24332a0df7"
+        },
+        "Q05": {
+          "evidence_exists": true,
+          "evidence_path": "D:\\QM\\reports\\work_items\\dc22d6d8-a696-49a5-9434-fda8dde09d11\\QM5_10715\\Q05\\USDJPY_DWX\\aggregate.json",
+          "updated_at": "2026-06-26T17:58:48+00:00",
+          "verdict": "PASS",
+          "work_item_id": "dc22d6d8-a696-49a5-9434-fda8dde09d11"
+        },
+        "Q06": {
+          "evidence_exists": true,
+          "evidence_path": "D:\\QM\\reports\\work_items\\3fd79a21-d74a-4cb2-b02e-63e886871418\\QM5_10715\\Q06\\USDJPY_DWX\\aggregate.json",
+          "updated_at": "2026-06-26T18:33:17+00:00",
+          "verdict": "PASS",
+          "work_item_id": "3fd79a21-d74a-4cb2-b02e-63e886871418"
+        },
+        "Q07": {
+          "evidence_exists": true,
+          "evidence_path": "D:\\QM\\reports\\work_items\\3e8573cc-9950-4c94-8e5d-5bd0a2a4313f\\QM5_10715\\Q07\\USDJPY_DWX\\aggregate.json",
+          "updated_at": "2026-06-26T19:41:16+00:00",
+          "verdict": "PASS",
+          "work_item_id": "3e8573cc-9950-4c94-8e5d-5bd0a2a4313f"
+        },
+        "Q08": {
+          "evidence_exists": true,
+          "evidence_path": "D:\\QM\\reports\\work_items\\59a62276-643f-4368-ae2c-d2db69abe6bd\\QM5_10715\\Q08\\USDJPY_DWX\\aggregate.json",
+          "updated_at": "2026-06-26T22:39:09+00:00",
+          "verdict": "FAIL_SOFT",
+          "work_item_id": "59a62276-643f-4368-ae2c-d2db69abe6bd"
+        },
+        "Q10": {
+          "evidence_exists": false,
+          "evidence_path": null,
+          "verdict": null
+        }
+      },
+      "state": "RESEARCH_LEAD",
+      "stream": {
+        "exists": true,
+        "fresh_mae": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 0,
+        "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\10715_USDJPY_DWX.jsonl",
+        "trade_count": 1466
+      },
+      "symbol": "USDJPY.DWX"
+    }
+  ],
+  "challenge_ready_count": 0,
+  "contract": {
+    "min_trades": 50,
+    "read_only": true,
+    "required_verdict": "PASS",
+    "requires_fresh_entry_time_and_mae_acct": true,
+    "strict_phases": [
+      "Q04",
+      "Q05",
+      "Q06",
+      "Q07",
+      "Q08",
+      "Q10"
+    ]
+  },
+  "counts": {
+    "NOT_QUALIFIED": 3,
+    "RESEARCH_LEAD": 2
+  },
+  "generated_at_utc": "2026-07-09T20:43:07+00:00",
+  "schema_version": 1
+}

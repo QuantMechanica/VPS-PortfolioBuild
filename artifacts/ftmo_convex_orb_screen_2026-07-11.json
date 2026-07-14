@@ -1,0 +1,5910 @@
+{
+  "evaluated_configurations": 312,
+  "holdout_pass_count": 1,
+  "preholdout_candidates": [
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 30.200515,
+        "net_r": 49.286628,
+        "profit_factor": 1.176959,
+        "trades": 398,
+        "win_rate": 0.369347
+      },
+      "family": "convex_opening_range_breakout",
+      "parameters": {
+        "buffer_atr": 0.05,
+        "max_range_atr": 1.75,
+        "range_bars": 2,
+        "target_r": 3.0
+      },
+      "positive_dev_years": 4,
+      "preholdout_score": 1.085905,
+      "symbol": "NDX.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 15.63644,
+        "net_r": 5.526921,
+        "profit_factor": 1.085905,
+        "trades": 91,
+        "win_rate": 0.32967
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 36.286934,
+        "net_r": 60.667186,
+        "profit_factor": 1.208408,
+        "trades": 398,
+        "win_rate": 0.339196
+      },
+      "family": "convex_opening_range_breakout",
+      "parameters": {
+        "buffer_atr": 0.05,
+        "max_range_atr": 1.75,
+        "range_bars": 2,
+        "target_r": 5.0
+      },
+      "positive_dev_years": 4,
+      "preholdout_score": 1.139974,
+      "symbol": "NDX.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 13.963746,
+        "net_r": 9.337575,
+        "profit_factor": 1.139974,
+        "trades": 91,
+        "win_rate": 0.307692
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 39.147902,
+        "net_r": 65.379939,
+        "profit_factor": 1.165567,
+        "trades": 567,
+        "win_rate": 0.356261
+      },
+      "family": "convex_opening_range_breakout",
+      "parameters": {
+        "buffer_atr": 0.05,
+        "max_range_atr": 2.5,
+        "range_bars": 2,
+        "target_r": 5.0
+      },
+      "positive_dev_years": 4,
+      "preholdout_score": 1.082748,
+      "symbol": "NDX.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 21.274461,
+        "net_r": 9.219989,
+        "profit_factor": 1.082748,
+        "trades": 157,
+        "win_rate": 0.318471
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 40.847425,
+        "net_r": 65.824253,
+        "profit_factor": 1.155591,
+        "trades": 631,
+        "win_rate": 0.361331
+      },
+      "family": "convex_opening_range_breakout",
+      "parameters": {
+        "buffer_atr": 0.05,
+        "max_range_atr": 3.5,
+        "range_bars": 2,
+        "target_r": 5.0
+      },
+      "positive_dev_years": 4,
+      "preholdout_score": 1.14638,
+      "symbol": "NDX.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 22.597988,
+        "net_r": 17.784088,
+        "profit_factor": 1.14638,
+        "trades": 181,
+        "win_rate": 0.342541
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 37.293953,
+        "net_r": 58.153996,
+        "profit_factor": 1.198933,
+        "trades": 398,
+        "win_rate": 0.336683
+      },
+      "family": "convex_opening_range_breakout",
+      "parameters": {
+        "buffer_atr": 0.05,
+        "max_range_atr": 1.75,
+        "range_bars": 2,
+        "target_r": 8.0
+      },
+      "positive_dev_years": 3,
+      "preholdout_score": 1.198933,
+      "symbol": "NDX.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 13.963746,
+        "net_r": 13.779086,
+        "profit_factor": 1.206555,
+        "trades": 91,
+        "win_rate": 0.307692
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 39.701015,
+        "net_r": 64.349877,
+        "profit_factor": 1.162452,
+        "trades": 567,
+        "win_rate": 0.354497
+      },
+      "family": "convex_opening_range_breakout",
+      "parameters": {
+        "buffer_atr": 0.05,
+        "max_range_atr": 2.5,
+        "range_bars": 2,
+        "target_r": 8.0
+      },
+      "positive_dev_years": 3,
+      "preholdout_score": 1.095037,
+      "symbol": "NDX.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 20.27532,
+        "net_r": 10.589268,
+        "profit_factor": 1.095037,
+        "trades": 157,
+        "win_rate": 0.318471
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 41.283528,
+        "net_r": 64.794191,
+        "profit_factor": 1.152711,
+        "trades": 631,
+        "win_rate": 0.359746
+      },
+      "family": "convex_opening_range_breakout",
+      "parameters": {
+        "buffer_atr": 0.05,
+        "max_range_atr": 3.5,
+        "range_bars": 2,
+        "target_r": 8.0
+      },
+      "positive_dev_years": 3,
+      "preholdout_score": 1.152711,
+      "symbol": "NDX.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 20.390443,
+        "net_r": 19.153367,
+        "profit_factor": 1.157651,
+        "trades": 181,
+        "win_rate": 0.342541
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 24.996309,
+        "net_r": 85.295964,
+        "profit_factor": 1.173899,
+        "trades": 638,
+        "win_rate": 0.289969
+      },
+      "family": "convex_opening_range_breakout",
+      "parameters": {
+        "buffer_atr": 0.05,
+        "max_range_atr": 1.75,
+        "range_bars": 2,
+        "target_r": 8.0
+      },
+      "positive_dev_years": 4,
+      "preholdout_score": 1.163677,
+      "symbol": "GDAXI.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 30.3873,
+        "net_r": 26.537915,
+        "profit_factor": 1.163677,
+        "trades": 199,
+        "win_rate": 0.271357
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 24.988636,
+        "net_r": 79.832324,
+        "profit_factor": 1.158743,
+        "trades": 655,
+        "win_rate": 0.290076
+      },
+      "family": "convex_opening_range_breakout",
+      "parameters": {
+        "buffer_atr": 0.05,
+        "max_range_atr": 2.5,
+        "range_bars": 2,
+        "target_r": 8.0
+      },
+      "positive_dev_years": 4,
+      "preholdout_score": 1.158743,
+      "symbol": "GDAXI.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 30.3873,
+        "net_r": 31.20672,
+        "profit_factor": 1.192473,
+        "trades": 201,
+        "win_rate": 0.278607
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 24.988636,
+        "net_r": 77.724737,
+        "profit_factor": 1.153908,
+        "trades": 657,
+        "win_rate": 0.289193
+      },
+      "family": "convex_opening_range_breakout",
+      "parameters": {
+        "buffer_atr": 0.05,
+        "max_range_atr": 3.5,
+        "range_bars": 2,
+        "target_r": 8.0
+      },
+      "positive_dev_years": 4,
+      "preholdout_score": 1.153908,
+      "symbol": "GDAXI.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 30.3873,
+        "net_r": 31.20672,
+        "profit_factor": 1.192473,
+        "trades": 201,
+        "win_rate": 0.278607
+      }
+    }
+  ],
+  "preholdout_pass_count": 10,
+  "schema_version": 1,
+  "selected_family_winners": [
+    {
+      "family": "convex_opening_range_breakout",
+      "holdout_verdict": "PASS",
+      "metrics": {
+        "annual": {
+          "2018": {
+            "max_drawdown_r": 22.684949,
+            "net_r": 18.029881,
+            "profit_factor": 1.429907,
+            "trades": 54,
+            "win_rate": 0.37037
+          },
+          "2019": {
+            "max_drawdown_r": 37.293953,
+            "net_r": -7.438955,
+            "profit_factor": 0.92575,
+            "trades": 130,
+            "win_rate": 0.323077
+          },
+          "2021": {
+            "max_drawdown_r": 18.525578,
+            "net_r": 22.284036,
+            "profit_factor": 1.290821,
+            "trades": 103,
+            "win_rate": 0.330097
+          },
+          "2022": {
+            "max_drawdown_r": 15.611281,
+            "net_r": 25.279034,
+            "profit_factor": 1.343564,
+            "trades": 111,
+            "win_rate": 0.342342
+          },
+          "2023": {
+            "max_drawdown_r": 13.963746,
+            "net_r": 13.779086,
+            "profit_factor": 1.206555,
+            "trades": 91,
+            "win_rate": 0.307692
+          },
+          "2024": {
+            "max_drawdown_r": 14.091779,
+            "net_r": 45.974332,
+            "profit_factor": 1.666369,
+            "trades": 103,
+            "win_rate": 0.359223
+          },
+          "2025": {
+            "max_drawdown_r": 9.070004,
+            "net_r": 54.639319,
+            "profit_factor": 1.920413,
+            "trades": 100,
+            "win_rate": 0.41
+          }
+        },
+        "dev_2018_2022": {
+          "max_drawdown_r": 37.293953,
+          "net_r": 58.153996,
+          "profit_factor": 1.198933,
+          "trades": 398,
+          "win_rate": 0.336683
+        },
+        "holdout_2024_2025": {
+          "max_drawdown_r": 14.091779,
+          "net_r": 100.613651,
+          "profit_factor": 1.783863,
+          "trades": 203,
+          "win_rate": 0.384236
+        },
+        "validation_2023": {
+          "max_drawdown_r": 13.963746,
+          "net_r": 13.779086,
+          "profit_factor": 1.206555,
+          "trades": 91,
+          "win_rate": 0.307692
+        }
+      },
+      "parameters": {
+        "buffer_atr": 0.05,
+        "max_range_atr": 1.75,
+        "range_bars": 2,
+        "target_r": 8.0
+      },
+      "preholdout_score": 1.198933,
+      "symbol": "NDX.DWX",
+      "trades": [
+        {
+          "entry_time_utc": "2018-07-04T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2018-07-04",
+          "r_multiple": -0.47088281,
+          "side": -1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-07-05T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2018-07-05",
+          "r_multiple": -1.16151361,
+          "side": 1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-07-06T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2018-07-06",
+          "r_multiple": 6.3572546,
+          "side": 1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-07-09T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2018-07-09",
+          "r_multiple": -1.38251366,
+          "side": 1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-07-10T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2018-07-10",
+          "r_multiple": 0.15024374,
+          "side": -1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-07-11T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2018-07-11",
+          "r_multiple": 0.2833859,
+          "side": 1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-07-12T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2018-07-12",
+          "r_multiple": 4.11878531,
+          "side": 1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-07-13T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2018-07-13",
+          "r_multiple": -1.33428844,
+          "side": -1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-07-18T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2018-07-18",
+          "r_multiple": -1.3447639,
+          "side": -1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-07-23T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2018-07-23",
+          "r_multiple": -1.19729425,
+          "side": 1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-07-24T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2018-07-24",
+          "r_multiple": -1.37507116,
+          "side": 1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-07-26T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2018-07-26",
+          "r_multiple": -1.20039722,
+          "side": 1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-07-30T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2018-07-30",
+          "r_multiple": -1.23018744,
+          "side": 1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-08-01T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2018-08-01",
+          "r_multiple": -1.3195891,
+          "side": 1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-08-06T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2018-08-06",
+          "r_multiple": -1.35826243,
+          "side": -1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-08-08T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2018-08-08",
+          "r_multiple": -1.45143087,
+          "side": -1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-08-14T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2018-08-14",
+          "r_multiple": -1.25706941,
+          "side": -1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-08-16T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2018-08-16",
+          "r_multiple": -1.23158199,
+          "side": -1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-08-17T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2018-08-17",
+          "r_multiple": 0.45412579,
+          "side": -1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-08-20T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2018-08-20",
+          "r_multiple": 0.97850378,
+          "side": -1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-08-21T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2018-08-21",
+          "r_multiple": -1.40433213,
+          "side": -1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-08-22T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2018-08-22",
+          "r_multiple": -1.19437358,
+          "side": -1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-08-27T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2018-08-27",
+          "r_multiple": -1.65673742,
+          "side": 1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-08-28T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2018-08-28",
+          "r_multiple": -1.52992666,
+          "side": 1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-08-30T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2018-08-30",
+          "r_multiple": -1.34407545,
+          "side": 1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-09-03T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2018-09-03",
+          "r_multiple": -1.39534063,
+          "side": -1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-09-07T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2018-09-07",
+          "r_multiple": -1.2928564,
+          "side": -1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-09-10T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2018-09-10",
+          "r_multiple": 2.56312534,
+          "side": -1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-09-11T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2018-09-11",
+          "r_multiple": -1.26928255,
+          "side": -1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-09-14T15:00:00+00:00",
+          "exit_reason": "target",
+          "local_date": "2018-09-14",
+          "r_multiple": 7.50857795,
+          "side": -1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-09-17T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2018-09-17",
+          "r_multiple": -1.36324717,
+          "side": -1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-09-19T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2018-09-19",
+          "r_multiple": -1.25040243,
+          "side": -1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-09-24T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2018-09-24",
+          "r_multiple": -1.33266997,
+          "side": -1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-09-27T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2018-09-27",
+          "r_multiple": 4.42866435,
+          "side": 1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-10-01T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2018-10-01",
+          "r_multiple": -1.25450497,
+          "side": -1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-10-02T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2018-10-02",
+          "r_multiple": -1.22537025,
+          "side": 1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-10-03T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2018-10-03",
+          "r_multiple": -1.31093837,
+          "side": 1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-10-04T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2018-10-04",
+          "r_multiple": -1.1980093,
+          "side": -1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-10-11T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2018-10-11",
+          "r_multiple": 1.3680873,
+          "side": 1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-10-16T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2018-10-16",
+          "r_multiple": 4.43245002,
+          "side": 1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-10-17T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2018-10-17",
+          "r_multiple": 0.71640717,
+          "side": -1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-10-18T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2018-10-18",
+          "r_multiple": 3.67144992,
+          "side": -1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-10-25T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2018-10-25",
+          "r_multiple": -1.06417676,
+          "side": -1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-10-26T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2018-10-26",
+          "r_multiple": 2.08843262,
+          "side": 1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-10-31T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2018-10-31",
+          "r_multiple": 2.26697817,
+          "side": 1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-11-01T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2018-11-01",
+          "r_multiple": -1.19457281,
+          "side": -1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-11-02T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2018-11-02",
+          "r_multiple": 5.58143535,
+          "side": -1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-11-06T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2018-11-06",
+          "r_multiple": 2.37948597,
+          "side": 1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-11-07T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2018-11-07",
+          "r_multiple": -1.10245058,
+          "side": -1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-11-09T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2018-11-09",
+          "r_multiple": 3.6540477,
+          "side": -1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-11-19T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2018-11-19",
+          "r_multiple": 5.18803846,
+          "side": -1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-12-03T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2018-12-03",
+          "r_multiple": 1.77946133,
+          "side": -1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-12-14T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2018-12-14",
+          "r_multiple": -1.15219252,
+          "side": -1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2018-12-28T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2018-12-28",
+          "r_multiple": -0.08875329,
+          "side": -1,
+          "year": 2018
+        },
+        {
+          "entry_time_utc": "2019-01-02T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-01-02",
+          "r_multiple": 4.3482396,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-01-04T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-01-04",
+          "r_multiple": 3.19827524,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-01-07T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-01-07",
+          "r_multiple": 2.42960289,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-01-08T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-01-08",
+          "r_multiple": -1.1543061,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-01-09T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-01-09",
+          "r_multiple": -1.13193545,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-01-10T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-01-10",
+          "r_multiple": -1.16164415,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-01-11T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-01-11",
+          "r_multiple": -1.17330754,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-01-14T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-01-14",
+          "r_multiple": -1.18553798,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-01-15T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-01-15",
+          "r_multiple": 4.34689158,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-01-16T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-01-16",
+          "r_multiple": -0.30756603,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-01-21T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-01-21",
+          "r_multiple": -0.48966124,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-01-23T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-01-23",
+          "r_multiple": -1.19453901,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-01-28T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-01-28",
+          "r_multiple": 2.27142413,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-01-30T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-01-30",
+          "r_multiple": 1.58464591,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-02-04T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-02-04",
+          "r_multiple": 3.34786023,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-02-07T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-02-07",
+          "r_multiple": 2.22735474,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-02-08T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-02-08",
+          "r_multiple": -1.23431453,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-02-13T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-02-13",
+          "r_multiple": -1.22180414,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-02-18T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-02-18",
+          "r_multiple": 1.03755278,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-02-20T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-02-20",
+          "r_multiple": -1.24589444,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-02-26T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-02-26",
+          "r_multiple": 0.48025928,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-02-28T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-02-28",
+          "r_multiple": -1.20037929,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-03-04T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-03-04",
+          "r_multiple": -1.32765783,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-03-11T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-03-11",
+          "r_multiple": 4.89253285,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-03-12T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-03-12",
+          "r_multiple": 1.7230784,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-03-13T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-03-13",
+          "r_multiple": 1.89200965,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-03-15T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-03-15",
+          "r_multiple": -1.23140974,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-03-18T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-03-18",
+          "r_multiple": -1.3051106,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-03-19T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-03-19",
+          "r_multiple": -1.33655869,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-03-20T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-03-20",
+          "r_multiple": -1.25609366,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-03-22T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-03-22",
+          "r_multiple": 5.4489849,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-03-25T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-03-25",
+          "r_multiple": -1.16889599,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-03-26T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-03-26",
+          "r_multiple": -1.22370024,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-03-27T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-03-27",
+          "r_multiple": -1.20226464,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-04-02T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-04-02",
+          "r_multiple": -1.33412888,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-04-03T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-04-03",
+          "r_multiple": -1.3542062,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-04-04T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-04-04",
+          "r_multiple": -1.23067101,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-04-05T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-04-05",
+          "r_multiple": 1.18120385,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-04-08T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-04-08",
+          "r_multiple": -1.33846061,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-04-09T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-04-09",
+          "r_multiple": -1.535757,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-04-10T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-04-10",
+          "r_multiple": -1.41527623,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-04-11T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-04-11",
+          "r_multiple": 0.65495548,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-04-12T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-04-12",
+          "r_multiple": -1.23550687,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-04-17T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-04-17",
+          "r_multiple": -1.44798208,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-04-18T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-04-18",
+          "r_multiple": -1.42535415,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-04-22T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-04-22",
+          "r_multiple": -1.40734679,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-04-24T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-04-24",
+          "r_multiple": -1.45283629,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-05-06T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-05-06",
+          "r_multiple": -1.13080598,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-05-09T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-05-09",
+          "r_multiple": -1.16322486,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-05-10T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-05-10",
+          "r_multiple": 0.28792235,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-05-13T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-05-13",
+          "r_multiple": 2.7323406,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-05-14T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-05-14",
+          "r_multiple": -1.1544359,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-05-15T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-05-15",
+          "r_multiple": -1.17660044,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-05-16T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-05-16",
+          "r_multiple": -1.11876233,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-05-27T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-05-27",
+          "r_multiple": -0.41647001,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-05-29T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-05-29",
+          "r_multiple": -1.21313846,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-05-30T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-05-30",
+          "r_multiple": -1.18671335,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-05-31T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-05-31",
+          "r_multiple": -1.13758707,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-06-03T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-06-03",
+          "r_multiple": -1.2207288,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-06-05T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-06-05",
+          "r_multiple": 0.8415785,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-06-06T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-06-06",
+          "r_multiple": -0.08025899,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-06-10T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-06-10",
+          "r_multiple": 2.16362408,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-06-11T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-06-11",
+          "r_multiple": -1.2941022,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-06-12T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-06-12",
+          "r_multiple": -1.17051337,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-06-13T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-06-13",
+          "r_multiple": -1.15285303,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-06-19T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-06-19",
+          "r_multiple": -1.31214292,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-06-20T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-06-20",
+          "r_multiple": -1.23257263,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-06-21T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-06-21",
+          "r_multiple": -1.2542219,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-06-25T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-06-25",
+          "r_multiple": -1.25799912,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-06-26T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-06-26",
+          "r_multiple": -1.16315352,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-06-27T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-06-27",
+          "r_multiple": 0.13263999,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-06-28T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-06-28",
+          "r_multiple": -1.28297835,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-07-01T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-07-01",
+          "r_multiple": -1.30798845,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-07-02T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-07-02",
+          "r_multiple": -0.48102795,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-07-03T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-07-03",
+          "r_multiple": -1.22868811,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-07-04T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-07-04",
+          "r_multiple": 0.04598417,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-07-05T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-07-05",
+          "r_multiple": 1.49595533,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-07-09T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-07-09",
+          "r_multiple": 2.73116225,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-07-10T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-07-10",
+          "r_multiple": 3.56386094,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-07-11T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-07-11",
+          "r_multiple": -0.60632689,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-07-15T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-07-15",
+          "r_multiple": -1.23788284,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-07-18T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-07-18",
+          "r_multiple": -1.22004794,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-07-19T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-07-19",
+          "r_multiple": -1.19282087,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-07-23T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-07-23",
+          "r_multiple": -1.30342436,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-07-26T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-07-26",
+          "r_multiple": -1.32546786,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-08-01T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-08-01",
+          "r_multiple": -1.18217603,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-08-02T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-08-02",
+          "r_multiple": -1.14767932,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-08-05T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-08-05",
+          "r_multiple": 2.29989073,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-08-07T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-08-07",
+          "r_multiple": 0.69914569,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-08-09T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-08-09",
+          "r_multiple": -1.16000686,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-08-16T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-08-16",
+          "r_multiple": -1.13141838,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-08-23T15:00:00+00:00",
+          "exit_reason": "target",
+          "local_date": "2019-08-23",
+          "r_multiple": 7.84657324,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-08-26T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-08-26",
+          "r_multiple": -0.52925118,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-08-27T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-08-27",
+          "r_multiple": -1.12002358,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-09-03T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-09-03",
+          "r_multiple": -0.57030376,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-09-06T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-09-06",
+          "r_multiple": -1.16305851,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-09-09T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-09-09",
+          "r_multiple": -1.35527359,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-09-12T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-09-12",
+          "r_multiple": 0.15148673,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-09-13T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-09-13",
+          "r_multiple": 2.65524039,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-09-16T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-09-16",
+          "r_multiple": -0.41283569,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-09-19T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-09-19",
+          "r_multiple": 0.9658777,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-09-20T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-09-20",
+          "r_multiple": -1.25415267,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-09-23T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-09-23",
+          "r_multiple": -1.28472646,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-09-24T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-09-24",
+          "r_multiple": -1.24098978,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-09-25T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-09-25",
+          "r_multiple": -1.31381339,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-09-26T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-09-26",
+          "r_multiple": -1.28086366,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-09-27T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-09-27",
+          "r_multiple": 3.91937147,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-09-30T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-09-30",
+          "r_multiple": -1.16708687,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-10-01T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-10-01",
+          "r_multiple": -1.22314313,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-10-02T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-10-02",
+          "r_multiple": -1.15125937,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-10-04T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-10-04",
+          "r_multiple": 4.33732289,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-10-09T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-10-09",
+          "r_multiple": -1.16164648,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-10-21T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-10-21",
+          "r_multiple": -1.33085194,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-10-25T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-10-25",
+          "r_multiple": -1.44554062,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-10-28T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-10-28",
+          "r_multiple": 2.70600249,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-10-31T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-10-31",
+          "r_multiple": -1.26760328,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-11-05T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-11-05",
+          "r_multiple": -0.0694864,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-11-06T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-11-06",
+          "r_multiple": 0.84992571,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-11-12T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-11-12",
+          "r_multiple": 2.15626055,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-11-19T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-11-19",
+          "r_multiple": 1.04768479,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-11-21T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-11-21",
+          "r_multiple": 0.0515139,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-11-27T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-11-27",
+          "r_multiple": -1.35133948,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-11-28T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-11-28",
+          "r_multiple": -1.50978607,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-11-29T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2019-11-29",
+          "r_multiple": -1.32641641,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-12-04T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-12-04",
+          "r_multiple": -0.38666562,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-12-05T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-12-05",
+          "r_multiple": 0.73523563,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-12-19T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-12-19",
+          "r_multiple": 2.054955,
+          "side": 1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-12-24T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-12-24",
+          "r_multiple": -0.69689159,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-12-27T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-12-27",
+          "r_multiple": 3.21565265,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2019-12-30T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2019-12-30",
+          "r_multiple": 1.99630183,
+          "side": -1,
+          "year": 2019
+        },
+        {
+          "entry_time_utc": "2021-01-04T16:00:00+00:00",
+          "exit_reason": "target",
+          "local_date": "2021-01-04",
+          "r_multiple": 7.80601358,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-01-07T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2021-01-07",
+          "r_multiple": 3.87310739,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-01-08T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-01-08",
+          "r_multiple": -1.10200643,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-01-14T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-01-14",
+          "r_multiple": -1.10993973,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-01-15T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-01-15",
+          "r_multiple": -1.08186955,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-01-19T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-01-19",
+          "r_multiple": -1.09478753,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-01-22T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2021-01-22",
+          "r_multiple": 0.49762672,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-01-25T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-01-25",
+          "r_multiple": -1.10517815,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-02-02T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2021-02-02",
+          "r_multiple": 3.00335465,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-02-03T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2021-02-03",
+          "r_multiple": 0.75397496,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-02-05T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-02-05",
+          "r_multiple": -1.0998342,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-02-08T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-02-08",
+          "r_multiple": -1.11838948,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-02-15T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2021-02-15",
+          "r_multiple": 1.74871525,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-02-16T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2021-02-16",
+          "r_multiple": 2.67590545,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-02-18T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2021-02-18",
+          "r_multiple": -0.83703515,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-02-19T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2021-02-19",
+          "r_multiple": 1.48031496,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-02-23T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-02-23",
+          "r_multiple": -1.05027381,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-02-25T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-02-25",
+          "r_multiple": -1.0552939,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-03-01T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2021-03-01",
+          "r_multiple": 2.23875829,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-03-09T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2021-03-09",
+          "r_multiple": 3.49700623,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-03-11T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-03-11",
+          "r_multiple": -1.05222322,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-03-12T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-03-12",
+          "r_multiple": -1.05263108,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-03-15T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-03-15",
+          "r_multiple": -1.07339353,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-03-16T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2021-03-16",
+          "r_multiple": 1.50530587,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-03-19T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-03-19",
+          "r_multiple": -1.07245861,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-03-24T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2021-03-24",
+          "r_multiple": 3.30274145,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-03-29T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-03-29",
+          "r_multiple": -1.07582476,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-04-01T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2021-04-01",
+          "r_multiple": 1.99263256,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-04-05T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2021-04-05",
+          "r_multiple": 6.7145977,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-04-06T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2021-04-06",
+          "r_multiple": 0.76739965,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-04-07T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-04-07",
+          "r_multiple": -1.10999912,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-04-08T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-04-08",
+          "r_multiple": -1.11764459,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-04-09T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-04-09",
+          "r_multiple": -1.08424663,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-04-21T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-04-21",
+          "r_multiple": -1.11715849,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-04-22T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-04-22",
+          "r_multiple": -1.11936863,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-04-26T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2021-04-26",
+          "r_multiple": 2.43130509,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-04-27T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-04-27",
+          "r_multiple": -1.1648198,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-04-29T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-04-29",
+          "r_multiple": -1.12260805,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-05-06T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-05-06",
+          "r_multiple": -1.080491,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-05-11T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-05-11",
+          "r_multiple": -1.05042819,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-05-12T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-05-12",
+          "r_multiple": -1.07324522,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-05-17T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2021-05-17",
+          "r_multiple": 1.56693481,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-05-19T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-05-19",
+          "r_multiple": -1.04935573,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-05-24T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2021-05-24",
+          "r_multiple": 5.81569582,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-05-28T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-05-28",
+          "r_multiple": -1.18696893,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-05-31T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-05-31",
+          "r_multiple": -1.17382667,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-06-02T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2021-06-02",
+          "r_multiple": 0.23765571,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-06-15T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-06-15",
+          "r_multiple": -1.15912481,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-06-16T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-06-16",
+          "r_multiple": -1.22032065,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-06-21T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-06-21",
+          "r_multiple": -1.07267112,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-06-24T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2021-06-24",
+          "r_multiple": 0.68384381,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-07-12T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-07-12",
+          "r_multiple": -1.0999643,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-07-13T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-07-13",
+          "r_multiple": -1.23190326,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-07-14T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-07-14",
+          "r_multiple": -1.10661082,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-07-16T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-07-16",
+          "r_multiple": -1.11586527,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-07-22T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-07-22",
+          "r_multiple": -1.1571974,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-07-26T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-07-26",
+          "r_multiple": -1.11196865,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-07-28T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-07-28",
+          "r_multiple": -1.08094474,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-07-30T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-07-30",
+          "r_multiple": -1.0793904,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-08-03T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-08-03",
+          "r_multiple": -1.18831758,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-08-05T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-08-05",
+          "r_multiple": -1.18657338,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-08-06T15:00:00+00:00",
+          "exit_reason": "target",
+          "local_date": "2021-08-06",
+          "r_multiple": 7.65274548,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-08-17T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2021-08-17",
+          "r_multiple": 7.27902708,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-08-19T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-08-19",
+          "r_multiple": -1.06302367,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-08-20T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2021-08-20",
+          "r_multiple": 3.66829107,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-08-23T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-08-23",
+          "r_multiple": -1.21020232,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-08-26T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-08-26",
+          "r_multiple": -1.13520855,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-08-27T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-08-27",
+          "r_multiple": -1.16791856,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-08-30T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-08-30",
+          "r_multiple": -1.22643646,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-09-01T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2021-09-01",
+          "r_multiple": 1.87845984,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-09-02T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-09-02",
+          "r_multiple": -1.17990234,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-09-07T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-09-07",
+          "r_multiple": -1.1324754,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-09-08T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2021-09-08",
+          "r_multiple": 3.77807706,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-09-10T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-09-10",
+          "r_multiple": -1.15109001,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-09-13T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-09-13",
+          "r_multiple": -1.16731401,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-09-16T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2021-09-16",
+          "r_multiple": 0.39441171,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-09-17T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-09-17",
+          "r_multiple": -1.13955865,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-09-22T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-09-22",
+          "r_multiple": -1.12512289,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-09-24T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-09-24",
+          "r_multiple": -1.07559548,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-09-29T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2021-09-29",
+          "r_multiple": 0.85827184,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-10-04T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-10-04",
+          "r_multiple": -1.07020227,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-10-06T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2021-10-06",
+          "r_multiple": 1.51590496,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-10-08T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-10-08",
+          "r_multiple": -1.09304489,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-10-11T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-10-11",
+          "r_multiple": -1.05610379,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-10-12T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-10-12",
+          "r_multiple": -1.08036682,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-10-13T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-10-13",
+          "r_multiple": -1.07065889,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-10-15T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-10-15",
+          "r_multiple": -1.14974663,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-10-20T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-10-20",
+          "r_multiple": -1.14637079,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-10-25T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-10-25",
+          "r_multiple": -1.10161126,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-10-27T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2021-10-27",
+          "r_multiple": 4.17591122,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-11-01T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2021-11-01",
+          "r_multiple": 1.0862957,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-11-02T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2021-11-02",
+          "r_multiple": 3.54954875,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-11-03T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-11-03",
+          "r_multiple": -1.15964422,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-11-04T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-11-04",
+          "r_multiple": -1.17047963,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-11-11T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2021-11-11",
+          "r_multiple": 0.33174266,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-11-22T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-11-22",
+          "r_multiple": -1.14523198,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-11-29T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2021-11-29",
+          "r_multiple": 2.34000858,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-11-30T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-11-30",
+          "r_multiple": -1.05540632,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-12-01T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-12-01",
+          "r_multiple": -1.06246828,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-12-09T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-12-09",
+          "r_multiple": -1.1132984,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-12-13T16:00:00+00:00",
+          "exit_reason": "target",
+          "local_date": "2021-12-13",
+          "r_multiple": 7.80709278,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-12-20T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-12-20",
+          "r_multiple": -1.04553456,
+          "side": 1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2021-12-21T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2021-12-21",
+          "r_multiple": -1.08847321,
+          "side": -1,
+          "year": 2021
+        },
+        {
+          "entry_time_utc": "2022-01-05T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-01-05",
+          "r_multiple": -1.08322002,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-01-06T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-01-06",
+          "r_multiple": -1.06191882,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-01-17T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-01-17",
+          "r_multiple": 1.46892115,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-01-18T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-01-18",
+          "r_multiple": -1.06035751,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-01-19T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-01-19",
+          "r_multiple": -1.04309068,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-01-20T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-01-20",
+          "r_multiple": -0.35981956,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-01-27T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-01-27",
+          "r_multiple": -1.02558181,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-01-31T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-01-31",
+          "r_multiple": 2.78536514,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-02-08T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-02-08",
+          "r_multiple": -1.06048104,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-02-15T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-02-15",
+          "r_multiple": -0.7627759,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-02-23T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-02-23",
+          "r_multiple": 3.19070945,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-02-24T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-02-24",
+          "r_multiple": 3.13357326,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-02-28T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-02-28",
+          "r_multiple": 0.61523519,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-03-01T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-03-01",
+          "r_multiple": -1.03319984,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-03-04T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-03-04",
+          "r_multiple": 0.39682091,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-03-09T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-03-09",
+          "r_multiple": 0.58816967,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-03-11T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-03-11",
+          "r_multiple": 2.7571466,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-03-16T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-03-16",
+          "r_multiple": -1.07067851,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-03-17T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-03-17",
+          "r_multiple": -1.04112446,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-03-22T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-03-22",
+          "r_multiple": -1.07391227,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-03-30T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-03-30",
+          "r_multiple": -1.0728697,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-04-01T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-04-01",
+          "r_multiple": 6.31167475,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-04-04T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-04-04",
+          "r_multiple": -1.11401116,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-04-07T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-04-07",
+          "r_multiple": -1.0564929,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-04-08T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-04-08",
+          "r_multiple": 0.939487,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-04-11T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-04-11",
+          "r_multiple": 0.99036422,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-04-12T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-04-12",
+          "r_multiple": 0.88317872,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-04-14T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-04-14",
+          "r_multiple": 3.34396496,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-04-19T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-04-19",
+          "r_multiple": -1.04468275,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-04-21T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-04-21",
+          "r_multiple": -1.06413707,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-04-25T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-04-25",
+          "r_multiple": 0.69480517,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-04-26T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-04-26",
+          "r_multiple": 3.93623596,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-04-28T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-04-28",
+          "r_multiple": -1.05901321,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-05-03T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-05-03",
+          "r_multiple": -1.04500649,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-05-04T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-05-04",
+          "r_multiple": 0.24571184,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-05-05T15:00:00+00:00",
+          "exit_reason": "target",
+          "local_date": "2022-05-05",
+          "r_multiple": 7.91903419,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-05-10T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-05-10",
+          "r_multiple": -1.04401339,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-05-11T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-05-11",
+          "r_multiple": 4.21450368,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-05-16T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-05-16",
+          "r_multiple": -1.07347972,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-05-17T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-05-17",
+          "r_multiple": -0.04796948,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-05-20T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-05-20",
+          "r_multiple": 6.88529181,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-05-24T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-05-24",
+          "r_multiple": 1.58615102,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-05-30T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-05-30",
+          "r_multiple": -0.10347301,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-05-31T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-05-31",
+          "r_multiple": -1.04165365,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-06-02T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-06-02",
+          "r_multiple": -1.07214775,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-06-06T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-06-06",
+          "r_multiple": -1.10385179,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-06-14T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-06-14",
+          "r_multiple": -1.04821372,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-06-15T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-06-15",
+          "r_multiple": -0.00643259,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-06-16T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-06-16",
+          "r_multiple": -1.05500469,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-06-17T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-06-17",
+          "r_multiple": -1.07022604,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-06-20T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-06-20",
+          "r_multiple": -1.11932539,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-06-21T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-06-21",
+          "r_multiple": -1.06080017,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-06-22T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-06-22",
+          "r_multiple": -1.06878213,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-06-23T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-06-23",
+          "r_multiple": -1.05309139,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-06-27T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-06-27",
+          "r_multiple": 1.63707533,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-06-28T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-06-28",
+          "r_multiple": -1.08437547,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-06-29T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-06-29",
+          "r_multiple": -1.05368536,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-06-30T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-06-30",
+          "r_multiple": -1.08735668,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-07-05T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-07-05",
+          "r_multiple": -1.04930858,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-07-06T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-07-06",
+          "r_multiple": -1.04895362,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-07-18T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-07-18",
+          "r_multiple": -1.12167433,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-07-19T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-07-19",
+          "r_multiple": 3.30009877,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-07-25T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-07-25",
+          "r_multiple": 2.21059296,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-07-27T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-07-27",
+          "r_multiple": 3.46600781,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-07-29T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-07-29",
+          "r_multiple": -1.0728389,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-08-01T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-08-01",
+          "r_multiple": -1.07446214,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-08-03T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-08-03",
+          "r_multiple": 5.83841668,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-08-08T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-08-08",
+          "r_multiple": -1.06818542,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-08-10T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-08-10",
+          "r_multiple": 6.09024842,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-08-11T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-08-11",
+          "r_multiple": -1.07823797,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-08-15T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-08-15",
+          "r_multiple": -1.10511102,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-08-18T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-08-18",
+          "r_multiple": -1.09816295,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-08-22T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-08-22",
+          "r_multiple": 1.78698741,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-08-23T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-08-23",
+          "r_multiple": -1.08949046,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-08-24T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-08-24",
+          "r_multiple": -1.06576321,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-08-25T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-08-25",
+          "r_multiple": -1.07783994,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-08-29T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-08-29",
+          "r_multiple": -1.08678874,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-08-30T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-08-30",
+          "r_multiple": 5.2066325,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-09-02T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-09-02",
+          "r_multiple": -1.07231078,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-09-05T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-09-05",
+          "r_multiple": -1.06743738,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-09-08T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-09-08",
+          "r_multiple": -1.07696166,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-09-09T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-09-09",
+          "r_multiple": -1.08550793,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-09-12T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-09-12",
+          "r_multiple": -1.09595449,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-09-19T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-09-19",
+          "r_multiple": 1.94861607,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-09-20T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-09-20",
+          "r_multiple": -1.08938262,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-09-21T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-09-21",
+          "r_multiple": 0.5949724,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-09-22T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-09-22",
+          "r_multiple": -1.04027473,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-09-26T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-09-26",
+          "r_multiple": 0.48206096,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-09-29T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-09-29",
+          "r_multiple": 2.68558436,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-10-03T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-10-03",
+          "r_multiple": 1.5312203,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-10-04T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-10-04",
+          "r_multiple": -1.07709782,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-10-05T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-10-05",
+          "r_multiple": -0.49551644,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-10-06T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-10-06",
+          "r_multiple": 0.29985449,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-10-10T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-10-10",
+          "r_multiple": -1.07617804,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-10-11T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-10-11",
+          "r_multiple": -1.04881131,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-10-12T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-10-12",
+          "r_multiple": -1.069048,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-10-14T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-10-14",
+          "r_multiple": -1.03874012,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-10-17T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-10-17",
+          "r_multiple": 3.85876796,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-10-18T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-10-18",
+          "r_multiple": -1.05094383,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-10-21T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-10-21",
+          "r_multiple": -1.07948279,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-10-26T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-10-26",
+          "r_multiple": -1.07301459,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-10-31T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-10-31",
+          "r_multiple": 0.81982614,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-11-01T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-11-01",
+          "r_multiple": -1.10843152,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-11-02T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-11-02",
+          "r_multiple": 2.868262,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-11-09T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2022-11-09",
+          "r_multiple": 1.34627881,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-11-11T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-11-11",
+          "r_multiple": -1.07667452,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-11-14T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-11-14",
+          "r_multiple": -1.105113,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-11-28T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-11-28",
+          "r_multiple": -1.1119306,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-12-12T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-12-12",
+          "r_multiple": -1.14238314,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-12-16T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-12-16",
+          "r_multiple": -1.0680789,
+          "side": 1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2022-12-20T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2022-12-20",
+          "r_multiple": -1.06646648,
+          "side": -1,
+          "year": 2022
+        },
+        {
+          "entry_time_utc": "2023-01-09T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2023-01-09",
+          "r_multiple": 1.59691681,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-01-10T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2023-01-10",
+          "r_multiple": 1.52198546,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-01-16T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2023-01-16",
+          "r_multiple": -0.84914543,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-01-19T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-01-19",
+          "r_multiple": -1.07994918,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-01-30T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-01-30",
+          "r_multiple": -1.1037527,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-02-06T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-02-06",
+          "r_multiple": -1.0673085,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-02-20T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2023-02-20",
+          "r_multiple": 0.59088982,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-02-21T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2023-02-21",
+          "r_multiple": 2.02212965,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-03-07T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2023-03-07",
+          "r_multiple": 6.74164711,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-03-13T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-03-13",
+          "r_multiple": -1.03001675,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-03-16T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-03-16",
+          "r_multiple": -1.07848084,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-03-20T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-03-20",
+          "r_multiple": -1.0584542,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-03-23T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2023-03-23",
+          "r_multiple": 2.29787234,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-03-24T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-03-24",
+          "r_multiple": -1.07787945,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-03-27T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-03-27",
+          "r_multiple": -1.09801777,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-03-29T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2023-03-29",
+          "r_multiple": 1.51575915,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-04-03T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-04-03",
+          "r_multiple": -1.11850849,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-04-04T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2023-04-04",
+          "r_multiple": 2.43857136,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-04-18T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-04-18",
+          "r_multiple": -1.11097899,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-04-19T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-04-19",
+          "r_multiple": -1.12453716,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-05-01T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-05-01",
+          "r_multiple": -1.12609489,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-05-02T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2023-05-02",
+          "r_multiple": 5.1572933,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-05-03T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-05-03",
+          "r_multiple": -1.14164843,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-05-04T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2023-05-04",
+          "r_multiple": -0.12522225,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-05-08T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-05-08",
+          "r_multiple": -1.19596522,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-05-12T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-05-12",
+          "r_multiple": -1.18460524,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-05-15T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-05-15",
+          "r_multiple": -1.18703138,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-05-18T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-05-18",
+          "r_multiple": -1.20332952,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-05-19T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-05-19",
+          "r_multiple": -1.10816658,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-05-22T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2023-05-22",
+          "r_multiple": 1.004752,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-05-25T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-05-25",
+          "r_multiple": -1.09124757,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-05-29T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2023-05-29",
+          "r_multiple": -0.79923405,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-06-01T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-06-01",
+          "r_multiple": -1.09798175,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-06-05T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2023-06-05",
+          "r_multiple": 3.55994357,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-06-12T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-06-12",
+          "r_multiple": -1.11560336,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-06-19T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2023-06-19",
+          "r_multiple": -0.18746941,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-06-23T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2023-06-23",
+          "r_multiple": -0.58399467,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-06-26T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-06-26",
+          "r_multiple": -1.10493179,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-06-30T15:00:00+00:00",
+          "exit_reason": "target",
+          "local_date": "2023-06-30",
+          "r_multiple": 7.82212905,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-07-04T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-07-04",
+          "r_multiple": -1.29008029,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-07-06T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2023-07-06",
+          "r_multiple": 2.04418985,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-07-07T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-07-07",
+          "r_multiple": -1.18456874,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-07-11T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-07-11",
+          "r_multiple": -1.13122591,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-07-14T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2023-07-14",
+          "r_multiple": 1.31198672,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-07-17T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2023-07-17",
+          "r_multiple": 3.27183396,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-07-19T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-07-19",
+          "r_multiple": -1.14258797,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-07-21T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-07-21",
+          "r_multiple": -1.1185662,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-07-25T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-07-25",
+          "r_multiple": -1.12874599,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-07-26T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2023-07-26",
+          "r_multiple": 2.02528295,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-07-27T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-07-27",
+          "r_multiple": -1.13872546,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-07-28T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2023-07-28",
+          "r_multiple": 2.91936256,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-07-31T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-07-31",
+          "r_multiple": -1.09049554,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-08-03T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-08-03",
+          "r_multiple": -1.07666297,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-08-07T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-08-07",
+          "r_multiple": -1.09304335,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-08-11T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2023-08-11",
+          "r_multiple": 2.25330989,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-08-14T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-08-14",
+          "r_multiple": -1.08076088,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-08-15T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-08-15",
+          "r_multiple": -1.06268715,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-08-17T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-08-17",
+          "r_multiple": -1.11752238,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-08-24T15:00:00+00:00",
+          "exit_reason": "target",
+          "local_date": "2023-08-24",
+          "r_multiple": 7.90322887,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-08-25T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-08-25",
+          "r_multiple": -1.10494458,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-08-28T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-08-28",
+          "r_multiple": -1.0925704,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-08-30T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2023-08-30",
+          "r_multiple": 2.86419292,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-09-01T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-09-01",
+          "r_multiple": -1.11940808,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-09-04T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-09-04",
+          "r_multiple": -1.19389239,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-09-06T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-09-06",
+          "r_multiple": -1.13629283,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-09-07T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2023-09-07",
+          "r_multiple": 0.66172107,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-09-08T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2023-09-08",
+          "r_multiple": 1.23834625,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-09-12T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-09-12",
+          "r_multiple": -1.11832319,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-09-15T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-09-15",
+          "r_multiple": -1.17007061,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-09-19T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2023-09-19",
+          "r_multiple": 4.32573631,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-09-20T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-09-20",
+          "r_multiple": -1.15384827,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-09-22T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-09-22",
+          "r_multiple": -1.1443671,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-09-25T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-09-25",
+          "r_multiple": -1.06201344,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-09-26T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-09-26",
+          "r_multiple": -1.07878281,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-09-27T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-09-27",
+          "r_multiple": -1.11713888,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-10-02T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-10-02",
+          "r_multiple": -1.08722673,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-10-04T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2023-10-04",
+          "r_multiple": 1.46772969,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-10-09T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-10-09",
+          "r_multiple": -1.08955128,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-10-12T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-10-12",
+          "r_multiple": -1.16963015,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-10-18T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-10-18",
+          "r_multiple": -1.10023179,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-10-19T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-10-19",
+          "r_multiple": -1.0827937,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-10-20T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-10-20",
+          "r_multiple": -1.08378906,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-10-25T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-10-25",
+          "r_multiple": -1.07562968,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-10-26T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-10-26",
+          "r_multiple": -1.06060508,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-10-30T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-10-30",
+          "r_multiple": -1.12586815,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-11-01T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2023-11-01",
+          "r_multiple": 4.09005514,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-11-06T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2023-11-06",
+          "r_multiple": -1.1397223,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-11-23T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2023-11-23",
+          "r_multiple": -0.4971861,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-11-24T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2023-11-24",
+          "r_multiple": 0.35328295,
+          "side": -1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-12-11T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2023-12-11",
+          "r_multiple": 5.16169384,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2023-12-20T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2023-12-20",
+          "r_multiple": 2.32635875,
+          "side": 1,
+          "year": 2023
+        },
+        {
+          "entry_time_utc": "2024-01-08T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-01-08",
+          "r_multiple": 5.15479943,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-01-15T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-01-15",
+          "r_multiple": -0.75834582,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-01-19T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-01-19",
+          "r_multiple": -1.08713648,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-02-05T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-02-05",
+          "r_multiple": -0.24773584,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-02-12T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-02-12",
+          "r_multiple": -1.16517956,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-02-19T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-02-19",
+          "r_multiple": 0.00331874,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-02-28T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-02-28",
+          "r_multiple": -1.09311684,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-03-01T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-03-01",
+          "r_multiple": 5.64888138,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-03-04T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-03-04",
+          "r_multiple": 0.83267601,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-03-05T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-03-05",
+          "r_multiple": 4.60705123,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-03-07T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-03-07",
+          "r_multiple": 3.12563401,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-03-11T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-03-11",
+          "r_multiple": -0.21129198,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-03-14T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-03-14",
+          "r_multiple": 3.87303684,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-03-15T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-03-15",
+          "r_multiple": 5.18467838,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-03-26T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-03-26",
+          "r_multiple": 1.71199174,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-03-27T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-03-27",
+          "r_multiple": -1.11703484,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-04-01T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-04-01",
+          "r_multiple": -1.07103038,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-04-04T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-04-04",
+          "r_multiple": 3.69661672,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-04-08T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-04-08",
+          "r_multiple": -1.08350233,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-04-15T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-04-15",
+          "r_multiple": -1.11911726,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-04-17T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-04-17",
+          "r_multiple": -1.09731176,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-04-18T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-04-18",
+          "r_multiple": -1.09773721,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-04-19T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-04-19",
+          "r_multiple": -1.0394715,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-04-22T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-04-22",
+          "r_multiple": -1.06772937,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-04-23T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-04-23",
+          "r_multiple": -1.06734371,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-04-25T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-04-25",
+          "r_multiple": -0.64273229,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-04-30T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-04-30",
+          "r_multiple": 5.8154971,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-05-03T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-05-03",
+          "r_multiple": 4.76921331,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-05-06T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-05-06",
+          "r_multiple": 2.31368537,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-05-07T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-05-07",
+          "r_multiple": 1.46716787,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-05-10T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-05-10",
+          "r_multiple": -1.15026498,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-05-14T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-05-14",
+          "r_multiple": -1.16333674,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-05-20T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-05-20",
+          "r_multiple": -1.15963967,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-05-27T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-05-27",
+          "r_multiple": 4.33396204,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-05-30T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-05-30",
+          "r_multiple": -1.08343825,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-06-03T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-06-03",
+          "r_multiple": -1.11713276,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-06-10T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-06-10",
+          "r_multiple": -1.08834201,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-06-12T15:00:00+00:00",
+          "exit_reason": "target",
+          "local_date": "2024-06-12",
+          "r_multiple": 7.77957529,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-06-17T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-06-17",
+          "r_multiple": -1.11735613,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-06-20T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-06-20",
+          "r_multiple": 4.48886949,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-06-24T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-06-24",
+          "r_multiple": -1.11109678,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-06-26T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-06-26",
+          "r_multiple": -1.08600169,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-07-01T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-07-01",
+          "r_multiple": -1.07244127,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-07-03T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-07-03",
+          "r_multiple": -1.11710092,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-07-04T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-07-04",
+          "r_multiple": -1.42695944,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-07-08T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-07-08",
+          "r_multiple": -1.15174507,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-07-09T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-07-09",
+          "r_multiple": -1.14489566,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-07-15T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-07-15",
+          "r_multiple": -1.08892418,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-07-18T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-07-18",
+          "r_multiple": -1.05250156,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-07-22T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-07-22",
+          "r_multiple": -1.06214523,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-07-23T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-07-23",
+          "r_multiple": -1.0607125,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-07-24T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-07-24",
+          "r_multiple": 5.91451742,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-07-26T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-07-26",
+          "r_multiple": -1.06448381,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-07-29T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-07-29",
+          "r_multiple": -1.06556801,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-07-31T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-07-31",
+          "r_multiple": 2.4581049,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-08-01T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-08-01",
+          "r_multiple": -1.05239938,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-08-02T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-08-02",
+          "r_multiple": -1.04076611,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-08-05T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-08-05",
+          "r_multiple": -1.01724026,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-08-08T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-08-08",
+          "r_multiple": 4.27200768,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-08-09T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-08-09",
+          "r_multiple": -0.36897363,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-08-12T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-08-12",
+          "r_multiple": -1.07681282,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-08-15T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-08-15",
+          "r_multiple": 4.34353999,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-08-19T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-08-19",
+          "r_multiple": -1.09061635,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-08-20T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-08-20",
+          "r_multiple": -1.1267714,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-08-23T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-08-23",
+          "r_multiple": -1.09908786,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-08-30T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-08-30",
+          "r_multiple": -1.07975958,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-09-02T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-09-02",
+          "r_multiple": 1.12983651,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-09-03T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-09-03",
+          "r_multiple": -1.06802886,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-09-05T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-09-05",
+          "r_multiple": -1.06596656,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-09-06T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-09-06",
+          "r_multiple": -1.05928592,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-09-09T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-09-09",
+          "r_multiple": -1.06649963,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-09-13T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-09-13",
+          "r_multiple": -1.11503816,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-09-20T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-09-20",
+          "r_multiple": -1.09692103,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-09-23T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-09-23",
+          "r_multiple": -1.08376024,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-09-25T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-09-25",
+          "r_multiple": 0.95248087,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-09-26T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-09-26",
+          "r_multiple": -1.0892907,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-09-27T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-09-27",
+          "r_multiple": -1.06047222,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-10-01T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-10-01",
+          "r_multiple": 4.51350414,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-10-02T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-10-02",
+          "r_multiple": -1.04024463,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-10-03T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-10-03",
+          "r_multiple": -1.05312135,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-10-04T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-10-04",
+          "r_multiple": -1.08089271,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-10-07T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-10-07",
+          "r_multiple": 0.27419316,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-10-08T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-10-08",
+          "r_multiple": 2.65042373,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-10-09T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-10-09",
+          "r_multiple": -1.10273721,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-10-14T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-10-14",
+          "r_multiple": 1.81106937,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-10-15T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-10-15",
+          "r_multiple": -1.09087737,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-10-16T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-10-16",
+          "r_multiple": 0.22561614,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-10-17T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-10-17",
+          "r_multiple": -1.08145514,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-10-18T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-10-18",
+          "r_multiple": 0.18162274,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-10-24T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-10-24",
+          "r_multiple": -1.07823524,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-10-25T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-10-25",
+          "r_multiple": 3.69966879,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-10-28T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-10-28",
+          "r_multiple": 1.1011076,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-10-29T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-10-29",
+          "r_multiple": -1.10224762,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-10-30T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-10-30",
+          "r_multiple": 1.39691564,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-11-06T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-11-06",
+          "r_multiple": 1.09336058,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-11-08T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-11-08",
+          "r_multiple": -1.10332675,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-11-12T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-11-12",
+          "r_multiple": -1.06851117,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-11-15T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-11-15",
+          "r_multiple": 5.32088782,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-11-20T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-11-20",
+          "r_multiple": 4.1498936,
+          "side": -1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-11-22T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-11-22",
+          "r_multiple": -1.07908152,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-11-26T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2024-11-26",
+          "r_multiple": -1.10392695,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-11-28T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-11-28",
+          "r_multiple": 0.35974945,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2024-12-24T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2024-12-24",
+          "r_multiple": 4.31142915,
+          "side": 1,
+          "year": 2024
+        },
+        {
+          "entry_time_utc": "2025-01-02T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-01-02",
+          "r_multiple": 3.9204515,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-01-03T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-01-03",
+          "r_multiple": 3.42571444,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-01-09T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-01-09",
+          "r_multiple": -0.42867407,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-01-16T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-01-16",
+          "r_multiple": 1.42128527,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-01-23T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-01-23",
+          "r_multiple": -1.08635246,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-01-24T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-01-24",
+          "r_multiple": -1.0822465,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-01-27T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-01-27",
+          "r_multiple": -0.17922118,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-01-28T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-01-28",
+          "r_multiple": -1.03957499,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-02-03T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-02-03",
+          "r_multiple": -1.04234453,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-02-04T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-02-04",
+          "r_multiple": 1.2591287,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-02-05T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-02-05",
+          "r_multiple": 1.88534215,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-02-17T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-02-17",
+          "r_multiple": -1.21681896,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-02-25T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-02-25",
+          "r_multiple": 1.70815399,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-02-28T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-02-28",
+          "r_multiple": -1.03791777,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-03-05T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-03-05",
+          "r_multiple": -1.03240731,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-03-10T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-03-10",
+          "r_multiple": 3.46396235,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-03-11T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-03-11",
+          "r_multiple": -1.03624678,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-03-12T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-03-12",
+          "r_multiple": -1.04650699,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-03-13T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-03-13",
+          "r_multiple": 1.420896,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-03-14T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-03-14",
+          "r_multiple": 2.11161467,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-03-18T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-03-18",
+          "r_multiple": 2.53035809,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-03-19T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-03-19",
+          "r_multiple": -1.09284589,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-03-21T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-03-21",
+          "r_multiple": -1.05214104,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-03-28T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-03-28",
+          "r_multiple": 6.32571207,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-04-10T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-04-10",
+          "r_multiple": 3.15583962,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-04-14T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-04-14",
+          "r_multiple": -1.0296214,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-04-16T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-04-16",
+          "r_multiple": -1.04877858,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-04-22T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-04-22",
+          "r_multiple": 5.28715456,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-04-23T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-04-23",
+          "r_multiple": -1.03747511,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-04-28T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-04-28",
+          "r_multiple": -1.05720795,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-05-02T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-05-02",
+          "r_multiple": 4.65134818,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-05-07T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-05-07",
+          "r_multiple": 0.90975236,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-05-08T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-05-08",
+          "r_multiple": -1.05273815,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-05-15T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-05-15",
+          "r_multiple": 2.33609747,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-05-16T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-05-16",
+          "r_multiple": -1.06957689,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-05-19T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-05-19",
+          "r_multiple": 3.35894929,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-05-26T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-05-26",
+          "r_multiple": -1.10831512,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-05-27T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-05-27",
+          "r_multiple": -1.04918947,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-05-30T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-05-30",
+          "r_multiple": 3.18471207,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-06-02T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-06-02",
+          "r_multiple": 1.89250944,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-06-06T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-06-06",
+          "r_multiple": 0.96988306,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-06-10T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-06-10",
+          "r_multiple": -1.06965131,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-06-11T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-06-11",
+          "r_multiple": 0.50731948,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-06-16T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-06-16",
+          "r_multiple": 1.71590656,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-06-17T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-06-17",
+          "r_multiple": -0.56733917,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-06-19T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-06-19",
+          "r_multiple": 1.07161469,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-06-30T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-06-30",
+          "r_multiple": 1.06161027,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-07-01T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-07-01",
+          "r_multiple": 2.556016,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-07-03T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-07-03",
+          "r_multiple": 4.96083881,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-07-09T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-07-09",
+          "r_multiple": 0.61666478,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-07-14T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-07-14",
+          "r_multiple": -1.10662909,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-07-16T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-07-16",
+          "r_multiple": -1.1230634,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-07-17T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-07-17",
+          "r_multiple": -1.09081032,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-07-21T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-07-21",
+          "r_multiple": -1.1286543,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-07-23T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-07-23",
+          "r_multiple": -1.07761984,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-07-24T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-07-24",
+          "r_multiple": -0.30792019,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-07-30T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-07-30",
+          "r_multiple": -1.11906787,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-07-31T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-07-31",
+          "r_multiple": -1.07656026,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-08-01T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-08-01",
+          "r_multiple": -1.03967874,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-08-04T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-08-04",
+          "r_multiple": 3.83634667,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-08-07T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-08-07",
+          "r_multiple": -1.06803341,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-08-08T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-08-08",
+          "r_multiple": -1.18004984,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-08-11T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-08-11",
+          "r_multiple": -1.10970712,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-08-12T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-08-12",
+          "r_multiple": 6.48094572,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-08-13T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-08-13",
+          "r_multiple": -1.13415423,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-08-19T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-08-19",
+          "r_multiple": 6.46814697,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-08-21T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-08-21",
+          "r_multiple": -1.0565848,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-08-26T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-08-26",
+          "r_multiple": -1.06320863,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-08-28T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-08-28",
+          "r_multiple": -1.09228665,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-08-29T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-08-29",
+          "r_multiple": -1.09974529,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-09-03T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-09-03",
+          "r_multiple": -1.07712383,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-09-04T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-09-04",
+          "r_multiple": -1.07074012,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-09-08T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-09-08",
+          "r_multiple": -1.13051331,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-09-16T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-09-16",
+          "r_multiple": 1.90491055,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-09-17T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-09-17",
+          "r_multiple": -1.11321022,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-09-19T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-09-19",
+          "r_multiple": 1.95663781,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-09-22T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-09-22",
+          "r_multiple": -1.0986619,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-09-24T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-09-24",
+          "r_multiple": 5.00074794,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-09-26T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-09-26",
+          "r_multiple": -1.05586536,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-09-29T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-09-29",
+          "r_multiple": -1.08317738,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-09-30T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-09-30",
+          "r_multiple": -1.08996345,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-10-06T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-10-06",
+          "r_multiple": -1.06331726,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-10-07T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-10-07",
+          "r_multiple": -1.09425864,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-10-08T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-10-08",
+          "r_multiple": -1.08396243,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-10-15T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-10-15",
+          "r_multiple": -1.08992517,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-10-20T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-10-20",
+          "r_multiple": 3.0061946,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-10-21T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-10-21",
+          "r_multiple": -1.08026602,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-10-28T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-10-28",
+          "r_multiple": 2.70470892,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-10-30T15:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-10-30",
+          "r_multiple": 1.25638896,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-10-31T15:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-10-31",
+          "r_multiple": -1.05488151,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-11-05T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-11-05",
+          "r_multiple": 1.82952951,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-11-06T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-11-06",
+          "r_multiple": 5.21278695,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-11-07T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-11-07",
+          "r_multiple": 0.96586672,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-11-10T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-11-10",
+          "r_multiple": -1.07575245,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-11-13T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-11-13",
+          "r_multiple": 3.23839347,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-11-24T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-11-24",
+          "r_multiple": 2.43276411,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-12-01T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-12-01",
+          "r_multiple": -1.04108087,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-12-02T16:00:00+00:00",
+          "exit_reason": "stop",
+          "local_date": "2025-12-02",
+          "r_multiple": -1.06870281,
+          "side": 1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-12-03T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-12-03",
+          "r_multiple": -0.31442563,
+          "side": -1,
+          "year": 2025
+        },
+        {
+          "entry_time_utc": "2025-12-11T16:00:00+00:00",
+          "exit_reason": "time",
+          "local_date": "2025-12-11",
+          "r_multiple": -0.34109195,
+          "side": -1,
+          "year": 2025
+        }
+      ]
+    }
+  ],
+  "selection_contract": {
+    "collision_rule": "stop_first_if_stop_and_target_touch_same_H1_bar",
+    "development": "2018-2022",
+    "evidence_end_year": 2025,
+    "holdout_gate": "trades>=30 PF>=1.10 net>0 and both 2024/2025 positive",
+    "preholdout_gate": "DEV trades>=100 PF>=1.15; validation trades>=15 PF>=1.05 net>0; >=3 positive DEV years",
+    "sealed_holdout": "2024-2025",
+    "selection_uses_holdout": false,
+    "target_grid_r": [
+      3.0,
+      5.0,
+      8.0
+    ],
+    "validation": "2023"
+  },
+  "status": "HOLDOUT_SURVIVOR_FOUND"
+}

@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "status": "PASS",
+  "terminal": "T2",
+  "source_contract": "read_only_CopyTicksRange_monthly_bid_aggregation",
+  "source_script": "framework/scripts/mt5_diagnostics/Export_FTMO_XTI_M15_Ticks.mq5",
+  "path": "D:\\QM\\reports\\ftmo\\bar_exports\\XTIUSD.DWX_M15_TICKS_2018_2025.csv",
+  "rows": 188319,
+  "source_ticks": 200915710,
+  "first_broker_wall_epoch": 1514854800,
+  "last_broker_wall_epoch": 1767224700,
+  "sha256": "5CCF5E40B20378C85678CA957F3D89746A7CA8C41D995E3704BC265661AF4029",
+  "overlap_validation": {
+    "reference_path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\XTIUSD.DWX_M15.csv",
+    "overlap_rows": 100000,
+    "exact_ohlc_rows": 99944,
+    "exact_ohlc_pct": 99.944,
+    "field_mismatch_counts": {
+      "open": 23,
+      "high": 16,
+      "low": 16,
+      "close": 15
+    },
+    "maximum_absolute_field_delta": {
+      "open": 0.14,
+      "high": 0.07,
+      "low": 0.03,
+      "close": 0.05
+    }
+  },
+  "boundaries": {
+    "t1_untouched": true,
+    "t_live_untouched": true,
+    "autotrading_toggled": false,
+    "orders_or_positions_modified": false
+  }
+}

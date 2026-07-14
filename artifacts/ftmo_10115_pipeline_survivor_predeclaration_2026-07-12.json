@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_FRESH_RUN",
+  "candidate": {
+    "ea_id": 10115,
+    "expert": "QM\\QM5_10115_tv-ma-scalper-relief",
+    "symbol": "GDAXI.DWX",
+    "period": "M15",
+    "setfile": "framework/EAs/QM5_10115_tv-ma-scalper-relief/sets/QM5_10115_tv-ma-scalper-relief_GDAXI.DWX_M15_backtest.set",
+    "setfile_sha256": "39AC5DF10F1F52AB078074E2B1A813B83C195480EF7C982FD43EA2B4AF79A1D9"
+  },
+  "selection_source": {
+    "rule": "Highest-density unrefreshed non-incumbent Q04-Q07 pipeline survivor on a currently free symbol mutex. The prior current-framework attempt ended on the pre-fix unsuffixed EURUSD conversion history timeout and has no economic verdict.",
+    "q04": {"path": "D:\\QM\\reports\\pipeline\\QM5_10115\\Q04\\aggregate.json", "sha256": "7264BF5DB0ABCEC9DA6DA46AA49ED1D20C190C72026FEF583A3FB4FDE39A7F32", "verdict": "PASS", "fold_profit_factors": [1.0086, 1.4388, 1.2294], "fold_trades": [58, 58, 66]},
+    "q05": {"path": "D:\\QM\\reports\\pipeline\\QM5_10115\\Q05\\aggregate.json", "sha256": "D6EBF8F2647C1C51B91B3AF1E6D492B3569B890074F0E952609399D4EF5B0888", "verdict": "PASS", "profit_factor": 1.24, "trades": 422},
+    "q06": {"path": "D:\\QM\\reports\\pipeline\\QM5_10115\\Q06\\aggregate.json", "sha256": "4FCF038999A52419E544C6C24F575FCC84B3899C973AAE750B2CD0802E2082DE", "verdict": "PASS", "harsh_profit_factor": 1.19, "trades": 383},
+    "q07": {"path": "D:\\QM\\reports\\pipeline\\QM5_10115\\Q07\\aggregate.json", "sha256": "6B8A86DA652DD1A80FA053E07B5371631D270A580D5293FBA763AFA50267F248", "verdict": "PASS", "seed_variance_pct": 0.0}
+  },
+  "fresh_evidence_contract": {
+    "history": "2017-01-01 through 2025-12-31",
+    "model": 4,
+    "required_identical_runs": 2,
+    "current_framework_strict_compile": true,
+    "joint_mae_stream_required": true,
+    "exact_report_stream_reconciliation_required": true,
+    "current_ftmo_cost_reconstruction_required": true,
+    "strict_q02_pf_floor": 1.2,
+    "strict_q02_minimum_trades_per_calendar_year": 5
+  },
+  "portfolio_contract": {
+    "weight_grid_pct": [0.5, 1.0, 2.0, 3.0, 5.0, 7.5, 10.0],
+    "development_survivor_rule": "A fixed candidate representation and weight must improve both threshold and adverse preholdout pass rates.",
+    "sealed_holdout_open_rule": "Open once only for a frozen development survivor."
+  },
+  "execution": {"terminal": "T4", "symbol_mutex": "GDAXI.DWX"},
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

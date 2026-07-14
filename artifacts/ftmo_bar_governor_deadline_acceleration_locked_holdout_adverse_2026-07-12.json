@@ -1,0 +1,58 @@
+{
+  "basis": "fresh_start_entry_sized_m15_trade_cancellation_governor",
+  "excluded_years": [
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023
+  ],
+  "fill_contract": "adverse_bar",
+  "horizon_calendar_days": 30,
+  "manifest": "artifacts\\ftmo_joint_eleven_sleeve_incumbent_weight_path_manifest_2026-07-12.json",
+  "results": [
+    {
+      "daily_stop": 4500.0,
+      "elapsed_risk_steps": [
+        {
+          "elapsed_calendar_days": 20,
+          "risk_multiplier": 35.0
+        }
+      ],
+      "full_risk_room": 4000.0,
+      "historical_rolling": {
+        "daily_breach_pct": 21.96861626248217,
+        "max_breach_pct": 15.549215406562054,
+        "not_reached_pct": 3.2810271041369474,
+        "pass_ci95_pct": [
+          55.522445861407036,
+          62.77954225033605
+        ],
+        "pass_pct": 59.201141226818834,
+        "runs": 701
+      },
+      "mean_accepted_entries": 26.004279600570612,
+      "mean_blocked_entries": 1.042796005706134,
+      "mean_ending_balance": 104184.84381860703,
+      "mean_minimum_equity": 94237.42160598534,
+      "mean_stop_events": 1.456490727532097,
+      "mean_trading_days": 8.291012838801711,
+      "nominal_peak_risk_pct": 35.00000000000001,
+      "nominal_risk_pct": 25.000000000000007,
+      "open_risk_limit_ratio": 0.0,
+      "peak_risk_multiplier": 35.0,
+      "profit_risk_steps": [],
+      "risk_multiplier": 25.0,
+      "room_retention": 0.2,
+      "scenario": "path_01_11095_gbpusd_down2",
+      "start_windows": 701
+    }
+  ],
+  "schema_version": 1,
+  "start_windows": 701,
+  "status": "RESEARCH_ONLY",
+  "timestamp_basis": "darwinex_broker_wall",
+  "trade_paths": 1791
+}

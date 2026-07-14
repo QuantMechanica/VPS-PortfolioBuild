@@ -1,0 +1,43 @@
+{
+  "fail_count": 1,
+  "pass_count": 0,
+  "results": [
+    {
+      "contract": "one_entry_one_exit_duplicate_closing_commission",
+      "corrected_net_delta": -2077.52,
+      "count_delta": -193,
+      "ea_id": 12511,
+      "net_tolerance": 2.13,
+      "reasons": [
+        "stream_missing_mae_rows:20",
+        "trade_count_mismatch:20!=213",
+        "corrected_net_mismatch:delta=-2077.52:tolerance=2.13"
+      ],
+      "report": {
+        "drawdown": 896.62,
+        "exists": true,
+        "net_profit": 2025.41,
+        "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_12511_xau_d1_preholdout_wave36_full_label_20260712\\QM5_12511\\20260712_180525\\summary.json",
+        "profit_factor": 1.42,
+        "report_canonical_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_12511_xau_d1_preholdout_wave36_full_label_20260712\\QM5_12511\\20260712_180525\\raw\\run_02\\report.htm",
+        "result": "PASS",
+        "trade_count": 213,
+        "usable_run": "run_02"
+      },
+      "status": "FAIL",
+      "stream": {
+        "closing_commission": 0.0,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 20,
+        "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\12511_XAUUSD_D1_T3_PREHOLDOUT_FRESH_20260712.jsonl",
+        "raw_net": -52.11,
+        "round_trip_corrected_net": -52.11,
+        "trade_count": 20
+      },
+      "symbol": "XAUUSD.DWX"
+    }
+  ],
+  "schema_version": 1,
+  "status": "FAIL"
+}

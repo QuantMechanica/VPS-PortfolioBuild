@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "phase": "Q03",
+  "preregistered_at_utc": "2026-07-13T11:28:48Z",
+  "ea_id": 10163,
+  "ea_dir_name": "QM5_10163_tv-rsi-macd-long",
+  "symbol": "USDJPY.DWX",
+  "period": "H1",
+  "is_window": {
+    "from": "2017.01.01",
+    "to": "2022.12.31"
+  },
+  "model": 4,
+  "identity": {
+    "card": {
+      "path": "framework/EAs/QM5_10163_tv-rsi-macd-long/docs/strategy_card.md",
+      "sha256": "c624349f9ae667677a969ee655f6d3d900427befbe24e6e3ee48de4c35c6b19c"
+    },
+    "mq5": {
+      "path": "framework/EAs/QM5_10163_tv-rsi-macd-long/QM5_10163_tv-rsi-macd-long.mq5",
+      "sha256": "62fab568257268993f4630f6ca70fc054b179e3dd72edf55c2cc445f42842a20"
+    },
+    "ex5": {
+      "path": "framework/EAs/QM5_10163_tv-rsi-macd-long/QM5_10163_tv-rsi-macd-long.ex5",
+      "sha256": "ebcf2d60572fb960d399e46c52628cfe47cb90500a9893950ce9d09207bd9da2"
+    },
+    "baseline_setfile": {
+      "path": "framework/EAs/QM5_10163_tv-rsi-macd-long/sets/QM5_10163_tv-rsi-macd-long_USDJPY.DWX_H1_backtest.set",
+      "sha256": "0cb18c1e3a942fa9a009cb71c89ab59f6e1fb483c09950904b3b3a960a064778"
+    }
+  },
+  "axis": {
+    "name": "strategy_rsi_midline",
+    "value_type": "double",
+    "active": true,
+    "values": [
+      47.0,
+      48.0,
+      49.0,
+      50.0,
+      51.0,
+      52.0,
+      53.0
+    ]
+  },
+  "locked_parameters": {
+    "strategy_signal_tf": "PERIOD_H1",
+    "strategy_rsi_period": 14,
+    "strategy_macd_fast": 12,
+    "strategy_macd_slow": 26,
+    "strategy_macd_signal": 9,
+    "strategy_require_macd_gt0": true,
+    "strategy_use_ema_filter": true,
+    "strategy_ema_period": 200,
+    "strategy_use_oversold_ctx": false,
+    "strategy_oversold_lookback": 20,
+    "strategy_oversold_level": 30.0,
+    "strategy_atr_period": 14,
+    "strategy_sl_percent": 1.5,
+    "strategy_tp_percent": 3.0,
+    "strategy_min_sl_atr_mult": 1.0
+  },
+  "profitability": {
+    "profit_factor_strictly_greater_than": 1.0,
+    "minimum_fraction": 0.5,
+    "minimum_trades": 30,
+    "maximum_drawdown_money": null
+  },
+  "plateau": {
+    "minimum_contiguous_width": 3,
+    "run_selection": "widest_then_lower_start",
+    "cell_selection": "median",
+    "even_median": "lower"
+  },
+  "run_contract": {
+    "runs_per_cell": 2
+  }
+}

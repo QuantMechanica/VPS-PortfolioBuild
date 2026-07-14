@@ -1,0 +1,26 @@
+[
+  {
+    "ea_id": 10692,
+    "symbol": "NDX.DWX",
+    "summary_path": "D:\\QM\\reports\\ftmo_mae_refresh_20260710_after_oom\\QM5_10692\\20260710_091830\\summary.json",
+    "stream_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\10692_NDX_DWX.jsonl"
+  },
+  {
+    "ea_id": 10700,
+    "symbol": "XAUUSD.DWX",
+    "summary_path": "D:\\QM\\reports\\ftmo_mae_refresh_20260710_after_oom\\QM5_10700\\20260710_093914\\summary.json",
+    "stream_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\10700_XAUUSD_DWX.jsonl"
+  },
+  {
+    "ea_id": 10847,
+    "symbol": "GBPUSD.DWX",
+    "summary_path": "D:\\QM\\reports\\ftmo_mae_refresh_20260710_after_oom\\QM5_10847\\20260710_090821\\summary.json",
+    "stream_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\10847_GBPUSD_DWX.jsonl"
+  },
+  {
+    "ea_id": 10911,
+    "symbol": "GDAXI.DWX",
+    "summary_path": "D:\\QM\\reports\\ftmo_mae_refresh_20260710_after_oom\\QM5_10911\\20260710_094816\\summary.json",
+    "stream_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\q08_trades\\10911_GDAXI_DWX.jsonl"
+  }
+]

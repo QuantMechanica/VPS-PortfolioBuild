@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_FRESH_RUNS",
+  "selection_source": {
+    "path": "D:\\QM\\strategy_farm\\artifacts\\portfolio\\prop_challenge_ftmo_report_candidate_screen_dedup_fast_20260629.json",
+    "sha256": "05298982b0e80d32bcbd835a5f1444bdf3aa1a992b284aaf756b075da2fa2404",
+    "rule": "Continue with unrefreshed full-2024 PASS rows after Waves 2-4. Exclude candidates already falsified on the same symbol in a later full-history test, candidates already represented in the incumbent, and half-year-only rows."
+  },
+  "ordered_candidates": [
+    {
+      "order": 1,
+      "ea_id": 10469,
+      "expert": "QM\\QM5_10469_mql5-explode",
+      "symbol": "GDAXI.DWX",
+      "period": "H4",
+      "archive_pf": 1.2962,
+      "archive_trades": 267,
+      "archive_trades_per_60d": 44.01,
+      "note": "The separate NDX full-history port failed previously; GDAXI remains an unrefreshed symbol-specific hypothesis."
+    },
+    {
+      "order": 2,
+      "ea_id": 12450,
+      "expert": "QM\\QM5_12450_ea31337-matrend",
+      "symbol": "USDJPY.DWX",
+      "period": "H1",
+      "archive_pf": 1.2764,
+      "archive_trades": 212,
+      "archive_trades_per_60d": 36.98,
+      "note": "Prior validation attempts were infrastructure-invalid NO_HISTORY runs, not a strategy verdict."
+    },
+    {
+      "order": 3,
+      "ea_id": 10595,
+      "expert": "QM\\QM5_10595_mql5-stochcg",
+      "symbol": "USDJPY.DWX",
+      "period": "H4",
+      "archive_pf": 1.2246,
+      "archive_trades": 209,
+      "archive_trades_per_60d": 34.74,
+      "note": "Old sprint ranking rejected the sleeve for speed, but no current-framework full-history cost reconstruction exists."
+    }
+  ],
+  "fresh_evidence_contract": {
+    "history": "2017-01-01 through 2025-12-31",
+    "model": 4,
+    "required_identical_runs": 2,
+    "current_framework_strict_compile": true,
+    "joint_mae_stream_required": true,
+    "exact_report_stream_reconciliation_required": true,
+    "current_ftmo_cost_reconstruction_required": true,
+    "strict_q02_pf_floor": 1.2,
+    "strict_q02_minimum_trades_per_calendar_year": 5
+  },
+  "portfolio_contract": {
+    "weight_grid_pct": [0.5, 1.0, 2.0, 3.0, 5.0, 7.5, 10.0],
+    "development_survivor_rule": "A fixed candidate representation and weight must improve both threshold and adverse preholdout pass rates.",
+    "sealed_holdout_open_rule": "Open once only for a frozen development survivor."
+  },
+  "operational_boundary": {
+    "allowed_terminals": ["T1", "T2", "T3", "T4"],
+    "t5_disabled": true,
+    "factory_off_required": true,
+    "t_live_forbidden": true,
+    "installed_ftmo_terminal_forbidden": true,
+    "autotrading_change_forbidden": true
+  },
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_NATIVE_ECONOMICS_AND_INFRASTRUCTURE_NONDETERMINISM",
+  "ea_id": 9206,
+  "symbol": "GDAXI.DWX",
+  "period": "H1",
+  "history": "2017-01-01/2024-12-31",
+  "model": 4,
+  "deterministic": false,
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_9206_gdaxi_h1_preholdout_wave41_20260712\\QM5_9206\\20260712_184810\\summary.json",
+  "summary_sha256": "E58E1539B3146A2698C3D7119D1F2FCE019C32485E35061166042BBB091DA289",
+  "attempts": {
+    "requested_identical_runs": 2,
+    "attempted_runs": 4,
+    "valid_runs": 1,
+    "invalid_bars_zero_runs": 3
+  },
+  "single_valid_native_run": {
+    "report_sha256": "DB29AC7A911192C28BE27430801D6A36492A4D3BF4C1765ECDE9890591C5D3A7",
+    "trades": 1870,
+    "profit_factor": 0.94,
+    "net_profit": -47939.94,
+    "equity_drawdown": 80842.02
+  },
+  "captured_q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\9206_GDAXI_H1_T4_PREHOLDOUT_FRESH_20260712.jsonl",
+    "sha256": "92D8AF9FA2669840AF390CB83350279FA4372ACACCF3986993E257BE3C721669",
+    "admission_status": "NOT_ADMITTED_BECAUSE_DETERMINISM_GATE_FAILED"
+  },
+  "gate": {
+    "required_identical_valid_runs": 2,
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "reason_for_reject": "The deterministic evidence contract failed, and the sole valid fresh run is already materially loss-making before FTMO recosting."
+  },
+  "current_cost_reconstruction_opened": false,
+  "portfolio_screen_opened": false,
+  "selection_contaminated_year": 2024,
+  "sealed_holdout_year": 2025,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_FRESH_RUNS",
+  "purpose": "Test the strongest unrefreshed registry-conformant H1 density candidates without opening the sealed portfolio holdout.",
+  "selection_source": {
+    "path": "D:\\QM\\strategy_farm\\artifacts\\portfolio\\prop_challenge_ftmo_report_candidate_screen_dedup_fast_20260629.json",
+    "sha256": "05298982b0e80d32bcbd835a5f1444bdf3aa1a992b284aaf756b075da2fa2404",
+    "selection_rule": "Prefer old PASS rows with PF >= 1.20, at least 25 trades per 60 days, H1 execution, and a symbol that adds density or diversification to the incumbent. Exclude sleeves already refreshed in the current FTMO workstream."
+  },
+  "candidates": [
+    {
+      "ea_id": 10816,
+      "expert": "QM\\QM5_10816_tv-kalman-tl",
+      "symbol": "GDAXI.DWX",
+      "period": "H1",
+      "archive_pf": 1.73,
+      "archive_trades": 207,
+      "archive_trades_per_60d": 35.08,
+      "reason": "Highest old safe-target coverage among unrefreshed H1 candidates and diversifies the NDX-heavy index core."
+    },
+    {
+      "ea_id": 10410,
+      "expert": "QM\\QM5_10410_et-donch-6x4",
+      "symbol": "GDAXI.DWX",
+      "period": "H1",
+      "archive_pf": 1.26,
+      "archive_trades": 255,
+      "archive_trades_per_60d": 83.61,
+      "reason": "Highest old trade density among unrefreshed profitable H1 candidates."
+    },
+    {
+      "ea_id": 12475,
+      "expert": "QM\\QM5_12475_gh-macd-cross",
+      "symbol": "XAUUSD.DWX",
+      "period": "H1",
+      "archive_pf": 1.32,
+      "archive_trades": 249,
+      "archive_trades_per_60d": 41.04,
+      "reason": "Best unrefreshed profitable H1 gold candidate, providing a different mechanism from the index pair."
+    }
+  ],
+  "fresh_evidence_contract": {
+    "history": "2017-01-01 through 2025-12-31",
+    "model": 4,
+    "required_identical_runs": 2,
+    "current_framework_strict_compile": true,
+    "joint_mae_stream_required": true,
+    "exact_report_stream_reconciliation_required": true,
+    "current_ftmo_cost_reconstruction_required": true,
+    "strict_q02_pf_floor": 1.2,
+    "strict_q02_minimum_trades_per_calendar_year": 5
+  },
+  "portfolio_contract": {
+    "selection_data": "development plus 2023 validation only",
+    "weight_grid_pct": [0.5, 1.0, 2.0, 3.0, 5.0, 7.5, 10.0],
+    "development_survivor_rule": "A fixed candidate representation and weight must improve both threshold and adverse development pass rates versus the locked incumbent.",
+    "sealed_years": [2024, 2025],
+    "holdout_open_rule": "Open once only for a development survivor; no post-holdout candidate, filter, or weight substitution."
+  },
+  "operational_boundary": {
+    "allowed_terminals": ["T1", "T2", "T4"],
+    "t5_disabled": true,
+    "factory_off_required": true,
+    "t_live_forbidden": true,
+    "installed_ftmo_terminal_forbidden": true,
+    "autotrading_change_forbidden": true
+  },
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

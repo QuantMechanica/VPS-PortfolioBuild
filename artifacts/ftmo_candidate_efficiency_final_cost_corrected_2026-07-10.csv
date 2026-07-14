@@ -1,0 +1,4 @@
+ea_id,symbol,trades,span_years,trades_per_year,profit_factor,total_net_base,annual_net_base,worst_conservative_daily_mae_base,annual_net_per_daily_mae,scale_at_internal_daily_limit,annual_net_at_internal_daily_limit,median_hold_hours,max_hold_hours,method
+10375,NDX.DWX,1633,7.4205,220.07,1.1324,55972.52,7543.0,2049.01,3.6813,1.9522,14725.16,4.28,80.32,lifetime_mae_plus_entry_commission_summed_on_each_spanned_cest_day
+12986,GDAXI.DWX,1790,7.4475,240.35,1.0546,33107.64,4445.47,1358.31,3.2728,2.9448,13091.18,5.25,23.11,lifetime_mae_plus_entry_commission_summed_on_each_spanned_cest_day
+12969,USDJPY.DWX,331,8.2227,40.25,1.5471,10974.78,1334.7,1012.37,1.3184,3.9511,5273.55,7.5,79.5,lifetime_mae_plus_entry_commission_summed_on_each_spanned_cest_day

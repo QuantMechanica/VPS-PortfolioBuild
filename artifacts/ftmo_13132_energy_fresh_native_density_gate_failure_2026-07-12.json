@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_NATIVE_PROFITABILITY_AND_DENSITY_GATE",
+  "ea_id": 13132,
+  "symbol": "XTIUSD.DWX",
+  "basket_symbols": ["XTIUSD.DWX", "XNGUSD.DWX"],
+  "period": "D1",
+  "history": "2018-01-01/2025-12-31",
+  "model": 4,
+  "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+  "compile_log": "framework/build/compile/compile/20260712_143638/QM5_13132_energy-bab.compile.log",
+  "compile_log_sha256": "6E308832C20CA36C076F5D77672140FB9097DFF5C9AD36FE77B23DB4797FA4FA",
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_13132_energy_bab_wave11_20260712\\QM5_13132\\20260712_143702\\summary.json",
+  "deterministic": true,
+  "report_runs": [
+    {"path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_13132_energy_bab_wave11_20260712\\QM5_13132\\20260712_143702\\raw\\run_01\\report.htm", "sha256": "A126ECC3E2B89A97EFE7B93AD01C9F25E5152CC93C05314558C8F199C535046E"},
+    {"path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_13132_energy_bab_wave11_20260712\\QM5_13132\\20260712_143702\\raw\\run_02\\report.htm", "sha256": "796AF94718AB624B41B65CD9E24B423CC043C2DDAAB065268CB87415746F20FE"}
+  ],
+  "native": {"trades": 18, "profit_factor": 0.182320, "net_profit": -3256.02, "equity_drawdown": 3366.11},
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\13132_XTIUSD_DWX_T1_FRESH_20260712.jsonl",
+    "rows": 18,
+    "sha256": "6C07B08E21DB01F8009C272AF39E8BF7202C57737AE9C2BD34B4D5ECDD40A687",
+    "report_reconciliation": "PASS_EXACT_COUNT_AND_NET",
+    "corrected_net_delta": 0.0,
+    "net_tolerance": 1.0
+  },
+  "gate": {
+    "native_profit_factor_floor": 1.2,
+    "minimum_full_history_trades": 40,
+    "reason_for_reject": "The approved energy BAB basket is deeply loss-making natively and has only 18 trades across the full test history."
+  },
+  "current_cost_reconstruction_opened": false,
+  "portfolio_screen_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

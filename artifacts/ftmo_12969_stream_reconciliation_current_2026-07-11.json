@@ -1,0 +1,31 @@
+{
+  "contract": "one_entry_one_exit_duplicate_closing_commission",
+  "corrected_net_delta": 0.0,
+  "count_delta": 0,
+  "ea_id": 12969,
+  "net_tolerance": 3.31,
+  "reasons": [],
+  "report": {
+    "drawdown": 2016.39,
+    "exists": true,
+    "net_profit": 10974.78,
+    "path": "D:\\QM\\reports\\ftmo_12969_q02_current_20260711\\QM5_12969\\20260710_230445\\summary.json",
+    "profit_factor": 1.53,
+    "report_canonical_path": "D:\\QM\\reports\\ftmo_12969_q02_current_20260711\\QM5_12969\\20260710_230445\\raw\\run_02\\report.htm",
+    "result": "PASS",
+    "trade_count": 331,
+    "usable_run": "run_02"
+  },
+  "status": "PASS",
+  "stream": {
+    "closing_commission": -862.19,
+    "exists": true,
+    "invalid_rows": 0,
+    "missing_mae_rows": 0,
+    "path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12969_USDJPY_DWX.jsonl",
+    "raw_net": 11836.97,
+    "round_trip_corrected_net": 10974.78,
+    "trade_count": 331
+  },
+  "symbol": "USDJPY.DWX"
+}

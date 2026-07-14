@@ -1,0 +1,104 @@
+{
+  "adverse_target_met": false,
+  "basis": "one_time_sealed_holdout_of_frozen_causal_launch_model",
+  "control": {
+    "adverse_bar_fill": {
+      "daily_breach_pct": 20.114122681883025,
+      "max_breach_pct": 10.984308131241084,
+      "not_reached_pct": 9.557774607703282,
+      "pass_ci95_pct": [
+        55.66629822559372,
+        62.919441639819816
+      ],
+      "pass_pct": 59.34379457917262,
+      "runs": 701
+    },
+    "eligible_pct": 100.0,
+    "eligible_starts": 701,
+    "median_gap_calendar_days": 1.0,
+    "p95_gap_calendar_days": 1.0,
+    "threshold_fill": {
+      "daily_breach_pct": 0.0,
+      "max_breach_pct": 0.0,
+      "not_reached_pct": 30.099857346647646,
+      "pass_ci95_pct": [
+        66.40366250755213,
+        73.1797071294736
+      ],
+      "pass_pct": 69.90014265335235,
+      "runs": 701
+    },
+    "total_starts": 701
+  },
+  "feature_complete_starts": 701,
+  "holdout_years": [
+    2024,
+    2025
+  ],
+  "manifest": "artifacts\\ftmo_joint_eleven_sleeve_incumbent_weight_path_manifest_2026-07-12.json",
+  "model_id": "ridge_10_joint_top_0.15",
+  "normal_target_met": false,
+  "outcome_excluded_years": [
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023
+  ],
+  "path_excluded_years": [
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022
+  ],
+  "policy": {
+    "daily_stop": 4500.0,
+    "full_risk_room": 4000.0,
+    "horizon_calendar_days": 30,
+    "risk_multiplier": 25.0,
+    "room_retention": 0.2
+  },
+  "scenario": "path_01_11095_gbpusd_down2",
+  "schema_version": 1,
+  "score_mode": "joint",
+  "score_threshold": 0.7089664954985608,
+  "selected": {
+    "adverse_bar_fill": {
+      "daily_breach_pct": 18.34319526627219,
+      "max_breach_pct": 15.976331360946746,
+      "not_reached_pct": 5.9171597633136095,
+      "pass_ci95_pct": [
+        52.232508684616455,
+        66.8601327598383
+      ],
+      "pass_pct": 59.76331360946746,
+      "runs": 169
+    },
+    "eligible_pct": 24.108416547788874,
+    "eligible_starts": 169,
+    "median_gap_calendar_days": 1.0,
+    "p95_gap_calendar_days": 14.799999999999955,
+    "threshold_fill": {
+      "daily_breach_pct": 0.0,
+      "max_breach_pct": 0.0,
+      "not_reached_pct": 32.544378698224854,
+      "pass_ci95_pct": [
+        60.071821934254885,
+        74.06350670886115
+      ],
+      "pass_pct": 67.45562130177515,
+      "runs": 169
+    },
+    "total_starts": 701
+  },
+  "selection_artifact": "artifacts\\ftmo_causal_launch_model_screen_train_validation_2026-07-12.json",
+  "selection_uses_holdout": false,
+  "status": "TARGET_NOT_MET",
+  "target_met": false,
+  "target_pass_pct": 80.0,
+  "trade_paths": 2701
+}

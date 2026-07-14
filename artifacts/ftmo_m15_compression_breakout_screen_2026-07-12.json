@@ -1,0 +1,539 @@
+{
+  "evaluated_configurations": 320,
+  "holdout_pass_count": 0,
+  "predeclaration": "artifacts/ftmo_m15_compression_breakout_predeclaration_2026-07-12.json",
+  "preholdout_leaderboard": [
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 4.226192,
+        "net_r": -2.848349,
+        "profit_factor": 0.326025,
+        "trades": 4,
+        "win_rate": 0.25
+      },
+      "parameters": {
+        "active_bars": 4,
+        "breakout_buffer_atr": 0.05,
+        "max_range_atr": 1.25,
+        "range_bars": 4,
+        "stop_atr": 0.75,
+        "target_r": 2.0
+      },
+      "preholdout_score": 0.0,
+      "symbol": "XAUUSD.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 1.767288,
+        "net_r": -1.767288,
+        "profit_factor": 0.0,
+        "trades": 1,
+        "win_rate": 0.0
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 5.848349,
+        "net_r": -5.848349,
+        "profit_factor": 0.0,
+        "trades": 4,
+        "win_rate": 0.0
+      },
+      "parameters": {
+        "active_bars": 4,
+        "breakout_buffer_atr": 0.05,
+        "max_range_atr": 1.25,
+        "range_bars": 4,
+        "stop_atr": 0.75,
+        "target_r": 3.0
+      },
+      "preholdout_score": 0.0,
+      "symbol": "XAUUSD.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 1.767288,
+        "net_r": -1.767288,
+        "profit_factor": 0.0,
+        "trades": 1,
+        "win_rate": 0.0
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 5.109009,
+        "net_r": -5.109009,
+        "profit_factor": 0.0,
+        "trades": 4,
+        "win_rate": 0.0
+      },
+      "parameters": {
+        "active_bars": 4,
+        "breakout_buffer_atr": 0.05,
+        "max_range_atr": 1.25,
+        "range_bars": 4,
+        "stop_atr": 1.25,
+        "target_r": 2.0
+      },
+      "preholdout_score": 0.0,
+      "symbol": "XAUUSD.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 1.460373,
+        "net_r": -1.460373,
+        "profit_factor": 0.0,
+        "trades": 1,
+        "win_rate": 0.0
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 5.109009,
+        "net_r": -5.109009,
+        "profit_factor": 0.0,
+        "trades": 4,
+        "win_rate": 0.0
+      },
+      "parameters": {
+        "active_bars": 4,
+        "breakout_buffer_atr": 0.05,
+        "max_range_atr": 1.25,
+        "range_bars": 4,
+        "stop_atr": 1.25,
+        "target_r": 3.0
+      },
+      "preholdout_score": 0.0,
+      "symbol": "XAUUSD.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 1.460373,
+        "net_r": -1.460373,
+        "profit_factor": 0.0,
+        "trades": 1,
+        "win_rate": 0.0
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 4.226192,
+        "net_r": -2.848349,
+        "profit_factor": 0.326025,
+        "trades": 4,
+        "win_rate": 0.25
+      },
+      "parameters": {
+        "active_bars": 4,
+        "breakout_buffer_atr": 0.15,
+        "max_range_atr": 1.25,
+        "range_bars": 4,
+        "stop_atr": 0.75,
+        "target_r": 2.0
+      },
+      "preholdout_score": 0.0,
+      "symbol": "XAUUSD.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 1.767288,
+        "net_r": -1.767288,
+        "profit_factor": 0.0,
+        "trades": 1,
+        "win_rate": 0.0
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 5.848349,
+        "net_r": -5.848349,
+        "profit_factor": 0.0,
+        "trades": 4,
+        "win_rate": 0.0
+      },
+      "parameters": {
+        "active_bars": 4,
+        "breakout_buffer_atr": 0.15,
+        "max_range_atr": 1.25,
+        "range_bars": 4,
+        "stop_atr": 0.75,
+        "target_r": 3.0
+      },
+      "preholdout_score": 0.0,
+      "symbol": "XAUUSD.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 1.767288,
+        "net_r": -1.767288,
+        "profit_factor": 0.0,
+        "trades": 1,
+        "win_rate": 0.0
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 5.109009,
+        "net_r": -5.109009,
+        "profit_factor": 0.0,
+        "trades": 4,
+        "win_rate": 0.0
+      },
+      "parameters": {
+        "active_bars": 4,
+        "breakout_buffer_atr": 0.15,
+        "max_range_atr": 1.25,
+        "range_bars": 4,
+        "stop_atr": 1.25,
+        "target_r": 2.0
+      },
+      "preholdout_score": 0.0,
+      "symbol": "XAUUSD.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 1.460373,
+        "net_r": -1.460373,
+        "profit_factor": 0.0,
+        "trades": 1,
+        "win_rate": 0.0
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 5.109009,
+        "net_r": -5.109009,
+        "profit_factor": 0.0,
+        "trades": 4,
+        "win_rate": 0.0
+      },
+      "parameters": {
+        "active_bars": 4,
+        "breakout_buffer_atr": 0.15,
+        "max_range_atr": 1.25,
+        "range_bars": 4,
+        "stop_atr": 1.25,
+        "target_r": 3.0
+      },
+      "preholdout_score": 0.0,
+      "symbol": "XAUUSD.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 1.460373,
+        "net_r": -1.460373,
+        "profit_factor": 0.0,
+        "trades": 1,
+        "win_rate": 0.0
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 4.226192,
+        "net_r": -2.848349,
+        "profit_factor": 0.326025,
+        "trades": 4,
+        "win_rate": 0.25
+      },
+      "parameters": {
+        "active_bars": 8,
+        "breakout_buffer_atr": 0.05,
+        "max_range_atr": 1.25,
+        "range_bars": 4,
+        "stop_atr": 0.75,
+        "target_r": 2.0
+      },
+      "preholdout_score": 0.0,
+      "symbol": "XAUUSD.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 1.767288,
+        "net_r": -1.767288,
+        "profit_factor": 0.0,
+        "trades": 1,
+        "win_rate": 0.0
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 5.848349,
+        "net_r": -5.848349,
+        "profit_factor": 0.0,
+        "trades": 4,
+        "win_rate": 0.0
+      },
+      "parameters": {
+        "active_bars": 8,
+        "breakout_buffer_atr": 0.05,
+        "max_range_atr": 1.25,
+        "range_bars": 4,
+        "stop_atr": 0.75,
+        "target_r": 3.0
+      },
+      "preholdout_score": 0.0,
+      "symbol": "XAUUSD.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 1.767288,
+        "net_r": -1.767288,
+        "profit_factor": 0.0,
+        "trades": 1,
+        "win_rate": 0.0
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 5.109009,
+        "net_r": -5.109009,
+        "profit_factor": 0.0,
+        "trades": 4,
+        "win_rate": 0.0
+      },
+      "parameters": {
+        "active_bars": 8,
+        "breakout_buffer_atr": 0.05,
+        "max_range_atr": 1.25,
+        "range_bars": 4,
+        "stop_atr": 1.25,
+        "target_r": 2.0
+      },
+      "preholdout_score": 0.0,
+      "symbol": "XAUUSD.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 1.460373,
+        "net_r": -1.460373,
+        "profit_factor": 0.0,
+        "trades": 1,
+        "win_rate": 0.0
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 5.109009,
+        "net_r": -5.109009,
+        "profit_factor": 0.0,
+        "trades": 4,
+        "win_rate": 0.0
+      },
+      "parameters": {
+        "active_bars": 8,
+        "breakout_buffer_atr": 0.05,
+        "max_range_atr": 1.25,
+        "range_bars": 4,
+        "stop_atr": 1.25,
+        "target_r": 3.0
+      },
+      "preholdout_score": 0.0,
+      "symbol": "XAUUSD.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 1.460373,
+        "net_r": -1.460373,
+        "profit_factor": 0.0,
+        "trades": 1,
+        "win_rate": 0.0
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 4.226192,
+        "net_r": -2.848349,
+        "profit_factor": 0.326025,
+        "trades": 4,
+        "win_rate": 0.25
+      },
+      "parameters": {
+        "active_bars": 8,
+        "breakout_buffer_atr": 0.15,
+        "max_range_atr": 1.25,
+        "range_bars": 4,
+        "stop_atr": 0.75,
+        "target_r": 2.0
+      },
+      "preholdout_score": 0.0,
+      "symbol": "XAUUSD.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 1.767288,
+        "net_r": -1.767288,
+        "profit_factor": 0.0,
+        "trades": 1,
+        "win_rate": 0.0
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 5.848349,
+        "net_r": -5.848349,
+        "profit_factor": 0.0,
+        "trades": 4,
+        "win_rate": 0.0
+      },
+      "parameters": {
+        "active_bars": 8,
+        "breakout_buffer_atr": 0.15,
+        "max_range_atr": 1.25,
+        "range_bars": 4,
+        "stop_atr": 0.75,
+        "target_r": 3.0
+      },
+      "preholdout_score": 0.0,
+      "symbol": "XAUUSD.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 1.767288,
+        "net_r": -1.767288,
+        "profit_factor": 0.0,
+        "trades": 1,
+        "win_rate": 0.0
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 5.109009,
+        "net_r": -5.109009,
+        "profit_factor": 0.0,
+        "trades": 4,
+        "win_rate": 0.0
+      },
+      "parameters": {
+        "active_bars": 8,
+        "breakout_buffer_atr": 0.15,
+        "max_range_atr": 1.25,
+        "range_bars": 4,
+        "stop_atr": 1.25,
+        "target_r": 2.0
+      },
+      "preholdout_score": 0.0,
+      "symbol": "XAUUSD.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 1.460373,
+        "net_r": -1.460373,
+        "profit_factor": 0.0,
+        "trades": 1,
+        "win_rate": 0.0
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 5.109009,
+        "net_r": -5.109009,
+        "profit_factor": 0.0,
+        "trades": 4,
+        "win_rate": 0.0
+      },
+      "parameters": {
+        "active_bars": 8,
+        "breakout_buffer_atr": 0.15,
+        "max_range_atr": 1.25,
+        "range_bars": 4,
+        "stop_atr": 1.25,
+        "target_r": 3.0
+      },
+      "preholdout_score": 0.0,
+      "symbol": "XAUUSD.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 1.460373,
+        "net_r": -1.460373,
+        "profit_factor": 0.0,
+        "trades": 1,
+        "win_rate": 0.0
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 1.587927,
+        "net_r": -1.27737,
+        "profit_factor": 0.195574,
+        "trades": 2,
+        "win_rate": 0.5
+      },
+      "parameters": {
+        "active_bars": 4,
+        "breakout_buffer_atr": 0.05,
+        "max_range_atr": 1.25,
+        "range_bars": 4,
+        "stop_atr": 0.75,
+        "target_r": 2.0
+      },
+      "preholdout_score": 0.0,
+      "symbol": "WS30.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 0.0,
+        "net_r": 0,
+        "profit_factor": null,
+        "trades": 0,
+        "win_rate": null
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 1.587927,
+        "net_r": -1.27737,
+        "profit_factor": 0.195574,
+        "trades": 2,
+        "win_rate": 0.5
+      },
+      "parameters": {
+        "active_bars": 4,
+        "breakout_buffer_atr": 0.05,
+        "max_range_atr": 1.25,
+        "range_bars": 4,
+        "stop_atr": 0.75,
+        "target_r": 3.0
+      },
+      "preholdout_score": 0.0,
+      "symbol": "WS30.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 0.0,
+        "net_r": 0,
+        "profit_factor": null,
+        "trades": 0,
+        "win_rate": null
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 0.793701,
+        "net_r": -0.607367,
+        "profit_factor": 0.234766,
+        "trades": 2,
+        "win_rate": 0.5
+      },
+      "parameters": {
+        "active_bars": 4,
+        "breakout_buffer_atr": 0.05,
+        "max_range_atr": 1.25,
+        "range_bars": 4,
+        "stop_atr": 1.25,
+        "target_r": 2.0
+      },
+      "preholdout_score": 0.0,
+      "symbol": "WS30.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 0.0,
+        "net_r": 0,
+        "profit_factor": null,
+        "trades": 0,
+        "win_rate": null
+      }
+    },
+    {
+      "dev_2018_2022": {
+        "max_drawdown_r": 0.793701,
+        "net_r": -0.607367,
+        "profit_factor": 0.234766,
+        "trades": 2,
+        "win_rate": 0.5
+      },
+      "parameters": {
+        "active_bars": 4,
+        "breakout_buffer_atr": 0.05,
+        "max_range_atr": 1.25,
+        "range_bars": 4,
+        "stop_atr": 1.25,
+        "target_r": 3.0
+      },
+      "preholdout_score": 0.0,
+      "symbol": "WS30.DWX",
+      "validation_2023": {
+        "max_drawdown_r": 0.0,
+        "net_r": 0,
+        "profit_factor": null,
+        "trades": 0,
+        "win_rate": null
+      }
+    }
+  ],
+  "preholdout_pass_count": 0,
+  "schema_version": 1,
+  "selected_family_winners": [],
+  "selection_contract": {
+    "development": "2018-2022",
+    "entry_rule": "next_bar_open_after_completed_breakout_close",
+    "same_bar_rule": "stop_first",
+    "sealed_holdout": "2024-2025",
+    "selection_uses_holdout": false,
+    "validation": "2023"
+  },
+  "status": "NO_HOLDOUT_SURVIVOR"
+}

@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_IMPLEMENTATION_AND_EXECUTION",
+  "deployment_allowed": false,
+  "manifest": "artifacts/ftmo_joint_eleven_sleeve_incumbent_weight_path_manifest_2026-07-12.json",
+  "scenario": "path_01_11095_gbpusd_down2",
+  "hypothesis": "Causal scaling from completed daily equity changes can preserve speed in quiet regimes while reducing adverse-fill breaches after volatility expands.",
+  "locked_policy": {
+    "risk_multiplier": 25.0,
+    "daily_stop": 4500.0,
+    "full_risk_room": 4000.0,
+    "room_retention": 0.2,
+    "profit_risk_steps": [],
+    "elapsed_risk_steps": [],
+    "open_risk_limit_ratio": 0.0
+  },
+  "fixed_candidates": [
+    {"name": "vol3_target1000", "lookback_calendar_days": 3, "target_daily_equity_rms": 1000.0, "minimum_scale": 0.5, "maximum_scale": 1.25},
+    {"name": "vol3_target1500", "lookback_calendar_days": 3, "target_daily_equity_rms": 1500.0, "minimum_scale": 0.5, "maximum_scale": 1.25},
+    {"name": "vol5_target1000", "lookback_calendar_days": 5, "target_daily_equity_rms": 1000.0, "minimum_scale": 0.5, "maximum_scale": 1.25},
+    {"name": "vol5_target1500", "lookback_calendar_days": 5, "target_daily_equity_rms": 1500.0, "minimum_scale": 0.5, "maximum_scale": 1.25}
+  ],
+  "causal_contract": {
+    "daily_change": "Prague end-of-day marked equity minus the preceding Prague end-of-day marked equity",
+    "current_day_excluded": true,
+    "challenge_state_resets_flat": true,
+    "warmup_behavior": "scale 1.0 until lookback completed days exist",
+    "zero_rms_behavior": "maximum_scale",
+    "effective_risk_range": [12.5, 31.25]
+  },
+  "data_partition": {
+    "development_excluded_years": [2017, 2020, 2023, 2024, 2025, 2026],
+    "validation_year": 2023,
+    "sealed_holdout_years": [2024, 2025]
+  },
+  "selection_gate": "Candidate must strictly improve both normal and adverse development pass_pct; select maximum of the smaller improvement, ties by lower maximum risk then name.",
+  "validation_gate": "Frozen candidate must strictly improve both normal and adverse 2023 pass_pct.",
+  "holdout_open_rule": "Open 2024-2025 once only after development and 2023 validation pass.",
+  "label": "RESEARCH_ONLY_NO_GO"
+}

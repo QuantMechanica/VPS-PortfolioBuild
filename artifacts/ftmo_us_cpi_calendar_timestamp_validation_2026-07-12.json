@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PASS_FIXED_TIMESTAMP_TRANSFORM",
+  "local_sources": {
+    "news_calendar_2015_2025.csv": {
+      "path": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv",
+      "sha256": "1DC345FC262683EBFB5A60F03F0295DD51E9D3C48342E47A088CD9C8234A307E"
+    },
+    "forex_factory_calendar_clean.csv": {
+      "path": "D:/QM/data/news_calendar/forex_factory_calendar_clean.csv",
+      "sha256": "C2B196EE2A097E2B45E4A8C4CA39D50A240D23D0214A4FA7FC06398006D66A69"
+    }
+  },
+  "defect": "The local DateTime_UTC field is a fixed UTC+7 display timestamp whose calendar date is one day early for the USD CPI rows.",
+  "fixed_transform": "corrected_utc = parse(DateTime_UTC as naive) + 1 calendar day - 7 hours, then localize UTC",
+  "official_samples": [
+    {
+      "local": "2015-01-15 20:30",
+      "corrected_utc": "2015-01-16 13:30Z",
+      "official_release": "2015-01-16 08:30 ET",
+      "source": "https://www.bls.gov/news.release/archives/cpi_01162015.htm"
+    },
+    {
+      "local": "2020-01-13 20:30",
+      "corrected_utc": "2020-01-14 13:30Z",
+      "official_release": "2020-01-14 08:30 ET",
+      "source": "https://www.bls.gov/schedule/2020/home.htm"
+    },
+    {
+      "local": "2021-01-12 20:30",
+      "corrected_utc": "2021-01-13 13:30Z",
+      "official_release": "2021-01-13 08:30 ET",
+      "source": "https://www.bls.gov/news.release/archives/cpi_01132021.htm"
+    },
+    {
+      "local": "2025-01-14 20:30",
+      "corrected_utc": "2025-01-15 13:30Z",
+      "official_release": "2025-01-15 08:30 ET",
+      "source": "https://www.bls.gov/schedule/2025/"
+    }
+  ],
+  "scope": "USD headline CPI m/m only; this validation does not authorize the transform for other currencies or event families.",
+  "deployment_allowed": false,
+  "label": "RESEARCH_DATA_VALIDATION_ONLY"
+}

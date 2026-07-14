@@ -1,0 +1,391 @@
+{
+  "basis": "causal_same_year_per_sleeve_shadow_pnl_filter",
+  "control": {
+    "development": {
+      "adverse_bar_fill": {
+        "daily_breach_pct": 18.16911250873515,
+        "max_breach_pct": 11.530398322851152,
+        "not_reached_pct": 21.94269741439553,
+        "pass_ci95_pct": [
+          45.77646304056015,
+          50.94791373911352
+        ],
+        "pass_pct": 48.35779175401817,
+        "runs": 1431
+      },
+      "eligible_pct": 100.0,
+      "eligible_starts": 1431,
+      "median_gap_calendar_days": 1.0,
+      "p95_gap_calendar_days": 1.0,
+      "threshold_fill": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 47.09993011879804,
+        "pass_ci95_pct": [
+          50.30953194604676,
+          55.47507927282743
+        ],
+        "pass_pct": 52.90006988120196,
+        "runs": 1431
+      },
+      "total_starts": 1431
+    },
+    "trade_paths": 3480,
+    "validation": {
+      "adverse_bar_fill": {
+        "daily_breach_pct": 43.452380952380956,
+        "max_breach_pct": 5.059523809523809,
+        "not_reached_pct": 16.36904761904762,
+        "pass_ci95_pct": [
+          30.20942544323534,
+          40.36508881790969
+        ],
+        "pass_pct": 35.11904761904761,
+        "runs": 336
+      },
+      "eligible_pct": 100.0,
+      "eligible_starts": 336,
+      "median_gap_calendar_days": 1.0,
+      "p95_gap_calendar_days": 1.0,
+      "threshold_fill": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 56.845238095238095,
+        "pass_ci95_pct": [
+          37.9656854579303,
+          48.49859110219641
+        ],
+        "pass_pct": 43.154761904761905,
+        "runs": 336
+      },
+      "total_starts": 336
+    }
+  },
+  "leaderboard": [
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 14.535290006988118,
+          "max_breach_pct": 5.93990216631726,
+          "not_reached_pct": 36.617749825297,
+          "pass_ci95_pct": [
+            40.365023705477384,
+            45.487071747155625
+          ],
+          "pass_pct": 42.90705800139762,
+          "runs": 1431
+        },
+        "eligible_pct": 100.0,
+        "eligible_starts": 1431,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 1.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 52.20125786163522,
+          "pass_ci95_pct": [
+            45.22001979223771,
+            50.38925121030358
+          ],
+          "pass_pct": 47.79874213836478,
+          "runs": 1431
+        },
+        "total_starts": 1431
+      },
+      "entry_filter": "shadow_pnl_last_20_pos_same_year",
+      "improvements_pct": {
+        "development_adverse": -5.45073375262055,
+        "development_threshold": -5.101327742837178,
+        "validation_adverse": -6.845238095238091,
+        "validation_threshold": -11.904761904761905
+      },
+      "path_retention_pct": 69.6551724137931,
+      "preholdout_pass": false,
+      "preholdout_score": -11.904761904761905,
+      "trade_paths": 2424,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 48.51190476190476,
+          "max_breach_pct": 3.571428571428571,
+          "not_reached_pct": 19.642857142857142,
+          "pass_ci95_pct": [
+            23.72524641331235,
+            33.3135444079594
+          ],
+          "pass_pct": 28.273809523809522,
+          "runs": 336
+        },
+        "eligible_pct": 100.0,
+        "eligible_starts": 336,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 1.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 68.75,
+          "pass_ci95_pct": [
+            26.529381924193864,
+            36.39450604484888
+          ],
+          "pass_pct": 31.25,
+          "runs": 336
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 15.373864430468204,
+          "max_breach_pct": 3.3542976939203357,
+          "not_reached_pct": 44.863731656184484,
+          "pass_ci95_pct": [
+            33.95453499894121,
+            38.93445579452794
+          ],
+          "pass_pct": 36.40810621942697,
+          "runs": 1431
+        },
+        "eligible_pct": 100.0,
+        "eligible_starts": 1431,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 1.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 59.67854647099931,
+          "pass_ci95_pct": [
+            37.80904795839889,
+            42.885683274996886
+          ],
+          "pass_pct": 40.3214535290007,
+          "runs": 1431
+        },
+        "total_starts": 1431
+      },
+      "entry_filter": "shadow_pnl_last_5_pos_same_year",
+      "improvements_pct": {
+        "development_adverse": -11.949685534591204,
+        "development_threshold": -12.578616352201259,
+        "validation_adverse": -2.0833333333333286,
+        "validation_threshold": -7.738095238095234
+      },
+      "path_retention_pct": 57.35632183908046,
+      "preholdout_pass": false,
+      "preholdout_score": -12.578616352201259,
+      "trade_paths": 1996,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 27.976190476190478,
+          "max_breach_pct": 4.464285714285714,
+          "not_reached_pct": 34.523809523809526,
+          "pass_ci95_pct": [
+            28.223183210506143,
+            38.231763047199195
+          ],
+          "pass_pct": 33.035714285714285,
+          "runs": 336
+        },
+        "eligible_pct": 100.0,
+        "eligible_starts": 336,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 1.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 64.58333333333334,
+          "pass_ci95_pct": [
+            30.494039369139486,
+            40.66898460678265
+          ],
+          "pass_pct": 35.41666666666667,
+          "runs": 336
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 10.482180293501047,
+          "max_breach_pct": 3.1446540880503147,
+          "not_reached_pct": 53.459119496855344,
+          "pass_ci95_pct": [
+            30.52798108969192,
+            35.3915985966999
+          ],
+          "pass_pct": 32.914046121593294,
+          "runs": 1431
+        },
+        "eligible_pct": 100.0,
+        "eligible_starts": 1431,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 1.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 65.40880503144653,
+          "pass_ci95_pct": [
+            32.1709021376675,
+            37.093994880121436
+          ],
+          "pass_pct": 34.59119496855346,
+          "runs": 1431
+        },
+        "total_starts": 1431
+      },
+      "entry_filter": "shadow_pnl_last_3_pos_same_year",
+      "improvements_pct": {
+        "development_adverse": -15.443745632424879,
+        "development_threshold": -18.3088749126485,
+        "validation_adverse": 1.190476190476197,
+        "validation_threshold": -5.05952380952381
+      },
+      "path_retention_pct": 52.87356321839081,
+      "preholdout_pass": false,
+      "preholdout_score": -18.3088749126485,
+      "trade_paths": 1840,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 35.41666666666667,
+          "max_breach_pct": 2.380952380952381,
+          "not_reached_pct": 25.892857142857146,
+          "pass_ci95_pct": [
+            31.349151194853377,
+            41.57940192540005
+          ],
+          "pass_pct": 36.30952380952381,
+          "runs": 336
+        },
+        "eligible_pct": 100.0,
+        "eligible_starts": 336,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 1.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 61.904761904761905,
+          "pass_ci95_pct": [
+            33.06499099047471,
+            43.394620418441306
+          ],
+          "pass_pct": 38.095238095238095,
+          "runs": 336
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 11.6701607267645,
+          "max_breach_pct": 5.031446540880504,
+          "not_reached_pct": 43.745632424877705,
+          "pass_ci95_pct": [
+            37.050562700646,
+            42.11089808919276
+          ],
+          "pass_pct": 39.552760307477286,
+          "runs": 1431
+        },
+        "eligible_pct": 100.0,
+        "eligible_starts": 1431,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 1.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 58.97973445143256,
+          "pass_ci95_pct": [
+            38.499140520751304,
+            43.589472934059934
+          ],
+          "pass_pct": 41.02026554856744,
+          "runs": 1431
+        },
+        "total_starts": 1431
+      },
+      "entry_filter": "shadow_pnl_last_10_pos_same_year",
+      "improvements_pct": {
+        "development_adverse": -8.805031446540887,
+        "development_threshold": -11.87980433263452,
+        "validation_adverse": -11.60714285714285,
+        "validation_threshold": -18.75
+      },
+      "path_retention_pct": 61.293103448275865,
+      "preholdout_pass": false,
+      "preholdout_score": -18.75,
+      "trade_paths": 2133,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 40.773809523809526,
+          "max_breach_pct": 2.6785714285714284,
+          "not_reached_pct": 33.035714285714285,
+          "pass_ci95_pct": [
+            19.292693142828583,
+            28.329942242009587
+          ],
+          "pass_pct": 23.511904761904763,
+          "runs": 336
+        },
+        "eligible_pct": 100.0,
+        "eligible_starts": 336,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 1.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 75.59523809523809,
+          "pass_ci95_pct": [
+            20.118311213567637,
+            29.26985331560183
+          ],
+          "pass_pct": 24.404761904761905,
+          "runs": 336
+        },
+        "total_starts": 336
+      }
+    }
+  ],
+  "manifest": "artifacts\\ftmo_joint_ten_sleeve_10375_11708_manifest_2026-07-12.json",
+  "policy": {
+    "daily_stop": 4500.0,
+    "full_risk_room": 4000.0,
+    "horizon_calendar_days": 30,
+    "risk_multiplier": 25.0,
+    "room_retention": 0.2
+  },
+  "preholdout_survivor_count": 0,
+  "scenario": "anchor_plus_11708_01",
+  "schema_version": 1,
+  "selected_winner": null,
+  "selection_contract": {
+    "candidate_filters": [
+      "shadow_pnl_last_3_pos_same_year",
+      "shadow_pnl_last_5_pos_same_year",
+      "shadow_pnl_last_10_pos_same_year",
+      "shadow_pnl_last_20_pos_same_year"
+    ],
+    "development_years": [
+      2018,
+      2019,
+      2021,
+      2022
+    ],
+    "minimum_improvement_pct_each_fill_and_split": 1.0,
+    "minimum_path_retention_pct": 35.0,
+    "sealed_years_unopened": [
+      2017,
+      2020,
+      2024,
+      2025
+    ],
+    "selection_uses_sealed_years": false,
+    "shadow_trade_source": "all prior completed native strategy trades including rejected live trades",
+    "validation_years": [
+      2023
+    ],
+    "year_boundary": "reset"
+  },
+  "status": "NO_PREHOLDOUT_SURVIVOR"
+}

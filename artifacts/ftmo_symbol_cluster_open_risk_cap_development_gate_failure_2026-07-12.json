@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "NO_NORMAL_DEVELOPMENT_SURVIVOR",
+  "predeclaration": "artifacts/ftmo_symbol_cluster_open_risk_cap_predeclaration_2026-07-12.json",
+  "result": "artifacts/ftmo_symbol_cluster_open_risk_cap_dev_normal_2026-07-12.json",
+  "development_years": [2018, 2019, 2021, 2022],
+  "uncapped_control_pass_pct": 59.05848787446505,
+  "best_tested_cap": {
+    "symbol_open_risk_limit_ratio": 2.0,
+    "pass_pct": 58.84450784593438,
+    "delta_pct_points": -0.21398002853067056
+  },
+  "tested_symbol_open_risk_limit_ratios": [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0],
+  "adverse_development_opened": false,
+  "validation_2023_opened": false,
+  "sealed_holdout_2024_2025_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

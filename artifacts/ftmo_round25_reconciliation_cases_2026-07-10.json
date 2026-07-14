@@ -1,0 +1,56 @@
+[
+  {
+    "ea_id": 10163,
+    "symbol": "NDX.DWX",
+    "summary_path": "D:\\QM\\reports\\pipeline\\QM5_10163\\Q08\\_baseline\\QM5_10163\\20260627_202438\\summary.json",
+    "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10163_NDX_DWX.jsonl"
+  },
+  {
+    "ea_id": 10286,
+    "symbol": "XTIUSD.DWX",
+    "summary_path": "D:\\QM\\reports\\pipeline\\QM5_10286\\Q08\\_baseline\\QM5_10286\\20260710_134158\\summary.json",
+    "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10286_XTIUSD_DWX.jsonl"
+  },
+  {
+    "ea_id": 10440,
+    "symbol": "NDX.DWX",
+    "summary_path": "D:\\QM\\reports\\pipeline\\QM5_10440\\Q08\\_baseline\\QM5_10440\\20260626_230253\\summary.json",
+    "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10440_NDX_DWX.jsonl"
+  },
+  {
+    "ea_id": 10692,
+    "symbol": "NDX.DWX",
+    "summary_path": "D:\\QM\\reports\\pipeline\\QM5_10692\\Q08\\_baseline\\QM5_10692\\20260710_142151\\summary.json",
+    "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10692_NDX_DWX.jsonl"
+  },
+  {
+    "ea_id": 10848,
+    "symbol": "XAUUSD.DWX",
+    "summary_path": "D:\\QM\\reports\\pipeline\\QM5_10848\\Q08\\_baseline\\QM5_10848\\20260710_132435\\summary.json",
+    "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10848_XAUUSD_DWX.jsonl"
+  },
+  {
+    "ea_id": 10911,
+    "symbol": "GDAXI.DWX",
+    "summary_path": "D:\\QM\\reports\\pipeline\\QM5_10911\\Q08\\_baseline\\QM5_10911\\20260627_164840\\summary.json",
+    "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10911_GDAXI_DWX.jsonl"
+  },
+  {
+    "ea_id": 12475,
+    "symbol": "NDX.DWX",
+    "summary_path": "D:\\QM\\reports\\pipeline\\QM5_12475\\Q08\\_baseline\\QM5_12475\\20260710_143107\\summary.json",
+    "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12475_NDX_DWX.jsonl"
+  },
+  {
+    "ea_id": 12958,
+    "symbol": "XAUUSD.DWX",
+    "summary_path": "D:\\QM\\reports\\pipeline\\QM5_12958\\Q08\\_baseline\\QM5_12958\\20260703_072145\\summary.json",
+    "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12958_XAUUSD_DWX.jsonl"
+  },
+  {
+    "ea_id": 12990,
+    "symbol": "GBPUSD.DWX",
+    "summary_path": "D:\\QM\\reports\\pipeline\\QM5_12990\\Q08\\_baseline\\QM5_12990\\20260703_100827\\summary.json",
+    "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12990_GBPUSD_DWX.jsonl"
+  }
+]

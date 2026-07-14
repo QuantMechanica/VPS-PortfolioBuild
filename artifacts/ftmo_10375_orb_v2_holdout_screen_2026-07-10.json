@@ -1,0 +1,720 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-07-10T21:22:57.110862+00:00",
+  "research_contract": {
+    "dev_years": [
+      2020,
+      2021,
+      2022
+    ],
+    "validation_years": [
+      2023
+    ],
+    "holdout_years": [
+      2024
+    ],
+    "selection_uses_holdout": false,
+    "candidate_axes": {
+      "entry_cutoff_minutes_after_1630_broker": [
+        60,
+        120,
+        180,
+        240,
+        360
+      ],
+      "weekday_masks": {
+        "mon_fri": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "mon_thu": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "tue_fri": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "tue_thu": [
+          1,
+          2,
+          3
+        ]
+      }
+    },
+    "unchanged": [
+      "ATR period",
+      "entry ATR",
+      "target ATR",
+      "stop",
+      "spread gate",
+      "news gate"
+    ],
+    "screen_semantics": "causal removal of existing trades; exact EA backtest still required"
+  },
+  "report": {
+    "path": "D:\\QM\\reports\\ftmo_qualification\\20260710\\10375_q02_current\\QM5_10375\\20260710_180450\\raw\\run_01\\report.htm",
+    "sha256": "bbe3b304fc6c5c33556b06bfd10b4450002e759bcb0fe67319d89f4d01557cd5",
+    "native_stats": {
+      "expert": "QM5_10375_et-open-atrbrk",
+      "symbol": "NDX.DWX",
+      "period": "M5 (2020.01.01 - 2024.12.31)",
+      "net": 48431.04,
+      "gross_profit": 330793.37,
+      "gross_loss": -282362.33,
+      "pf": 1.17,
+      "total_trades": 1108,
+      "equity_drawdown": 14438.29,
+      "equity_drawdown_pct": 10.4
+    },
+    "parsed_trades": 1108,
+    "cost_basis": "native MT5 spread plus both 5.5 USD/lot round-trip index commission sides"
+  },
+  "pre_holdout_candidates": [
+    {
+      "entry_cutoff_minutes": 60,
+      "weekday_mask": "mon_fri",
+      "weekdays": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "dev": {
+        "trades": 373,
+        "net_profit": 17679.82,
+        "gross_profit": 130540.2,
+        "gross_loss": -112860.38,
+        "profit_factor": 1.156652,
+        "win_rate_pct": 56.836,
+        "close_to_close_max_drawdown": 8021.44
+      },
+      "validation": {
+        "trades": 129,
+        "net_profit": 254.54,
+        "gross_profit": 40944.97,
+        "gross_loss": -40690.43,
+        "profit_factor": 1.006256,
+        "win_rate_pct": 48.837,
+        "close_to_close_max_drawdown": 11198.83
+      }
+    },
+    {
+      "entry_cutoff_minutes": 60,
+      "weekday_mask": "mon_thu",
+      "weekdays": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "dev": {
+        "trades": 297,
+        "net_profit": 6136.72,
+        "gross_profit": 103629.74,
+        "gross_loss": -97493.02,
+        "profit_factor": 1.062945,
+        "win_rate_pct": 55.556,
+        "close_to_close_max_drawdown": 10403.94
+      },
+      "validation": {
+        "trades": 103,
+        "net_profit": -1399.52,
+        "gross_profit": 31238.47,
+        "gross_loss": -32637.99,
+        "profit_factor": 0.95712,
+        "win_rate_pct": 48.544,
+        "close_to_close_max_drawdown": 8723.15
+      }
+    },
+    {
+      "entry_cutoff_minutes": 60,
+      "weekday_mask": "tue_fri",
+      "weekdays": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "dev": {
+        "trades": 291,
+        "net_profit": 10630.74,
+        "gross_profit": 100124.52,
+        "gross_loss": -89493.78,
+        "profit_factor": 1.118787,
+        "win_rate_pct": 55.326,
+        "close_to_close_max_drawdown": 9685.94
+      },
+      "validation": {
+        "trades": 103,
+        "net_profit": 5212.05,
+        "gross_profit": 35156.88,
+        "gross_loss": -29944.83,
+        "profit_factor": 1.174055,
+        "win_rate_pct": 52.427,
+        "close_to_close_max_drawdown": 5569.42
+      }
+    },
+    {
+      "entry_cutoff_minutes": 60,
+      "weekday_mask": "tue_thu",
+      "weekdays": [
+        1,
+        2,
+        3
+      ],
+      "dev": {
+        "trades": 215,
+        "net_profit": -912.36,
+        "gross_profit": 73214.06,
+        "gross_loss": -74126.42,
+        "profit_factor": 0.987692,
+        "win_rate_pct": 53.023,
+        "close_to_close_max_drawdown": 11972.75
+      },
+      "validation": {
+        "trades": 77,
+        "net_profit": 3557.99,
+        "gross_profit": 25450.38,
+        "gross_loss": -21892.39,
+        "profit_factor": 1.162522,
+        "win_rate_pct": 53.247,
+        "close_to_close_max_drawdown": 4083.29
+      }
+    },
+    {
+      "entry_cutoff_minutes": 120,
+      "weekday_mask": "mon_fri",
+      "weekdays": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "dev": {
+        "trades": 496,
+        "net_profit": 23910.37,
+        "gross_profit": 165083.83,
+        "gross_loss": -141173.46,
+        "profit_factor": 1.169369,
+        "win_rate_pct": 56.25,
+        "close_to_close_max_drawdown": 7243.45
+      },
+      "validation": {
+        "trades": 172,
+        "net_profit": 2074.86,
+        "gross_profit": 52300.28,
+        "gross_loss": -50225.42,
+        "profit_factor": 1.041311,
+        "win_rate_pct": 49.419,
+        "close_to_close_max_drawdown": 10931.49
+      }
+    },
+    {
+      "entry_cutoff_minutes": 120,
+      "weekday_mask": "mon_thu",
+      "weekdays": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "dev": {
+        "trades": 396,
+        "net_profit": 11033.11,
+        "gross_profit": 132108.75,
+        "gross_loss": -121075.64,
+        "profit_factor": 1.091126,
+        "win_rate_pct": 55.808,
+        "close_to_close_max_drawdown": 7987.46
+      },
+      "validation": {
+        "trades": 137,
+        "net_profit": -206.57,
+        "gross_profit": 40620.07,
+        "gross_loss": -40826.64,
+        "profit_factor": 0.99494,
+        "win_rate_pct": 48.905,
+        "close_to_close_max_drawdown": 7927.23
+      }
+    },
+    {
+      "entry_cutoff_minutes": 120,
+      "weekday_mask": "tue_fri",
+      "weekdays": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "dev": {
+        "trades": 394,
+        "net_profit": 15316.24,
+        "gross_profit": 129747.97,
+        "gross_loss": -114431.73,
+        "profit_factor": 1.133846,
+        "win_rate_pct": 54.822,
+        "close_to_close_max_drawdown": 5629.09
+      },
+      "validation": {
+        "trades": 139,
+        "net_profit": 8536.39,
+        "gross_profit": 45972.5,
+        "gross_loss": -37436.11,
+        "profit_factor": 1.228026,
+        "win_rate_pct": 52.518,
+        "close_to_close_max_drawdown": 6426.7
+      }
+    },
+    {
+      "entry_cutoff_minutes": 120,
+      "weekday_mask": "tue_thu",
+      "weekdays": [
+        1,
+        2,
+        3
+      ],
+      "dev": {
+        "trades": 294,
+        "net_profit": 2438.98,
+        "gross_profit": 96772.89,
+        "gross_loss": -94333.91,
+        "profit_factor": 1.025855,
+        "win_rate_pct": 53.741,
+        "close_to_close_max_drawdown": 7824.43
+      },
+      "validation": {
+        "trades": 104,
+        "net_profit": 6254.96,
+        "gross_profit": 34292.29,
+        "gross_loss": -28037.33,
+        "profit_factor": 1.223094,
+        "win_rate_pct": 52.885,
+        "close_to_close_max_drawdown": 4989.15
+      }
+    },
+    {
+      "entry_cutoff_minutes": 180,
+      "weekday_mask": "mon_fri",
+      "weekdays": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "dev": {
+        "trades": 551,
+        "net_profit": 25669.53,
+        "gross_profit": 176787.58,
+        "gross_loss": -151118.05,
+        "profit_factor": 1.169864,
+        "win_rate_pct": 56.806,
+        "close_to_close_max_drawdown": 7625.6
+      },
+      "validation": {
+        "trades": 199,
+        "net_profit": 4195.14,
+        "gross_profit": 60335.08,
+        "gross_loss": -56139.94,
+        "profit_factor": 1.074726,
+        "win_rate_pct": 50.754,
+        "close_to_close_max_drawdown": 12089.91
+      }
+    },
+    {
+      "entry_cutoff_minutes": 180,
+      "weekday_mask": "mon_thu",
+      "weekdays": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "dev": {
+        "trades": 440,
+        "net_profit": 12982.3,
+        "gross_profit": 142587.59,
+        "gross_loss": -129605.29,
+        "profit_factor": 1.100168,
+        "win_rate_pct": 56.591,
+        "close_to_close_max_drawdown": 9393.06
+      },
+      "validation": {
+        "trades": 158,
+        "net_profit": 2099.23,
+        "gross_profit": 47415.65,
+        "gross_loss": -45316.42,
+        "profit_factor": 1.046324,
+        "win_rate_pct": 50.633,
+        "close_to_close_max_drawdown": 8790.09
+      }
+    },
+    {
+      "entry_cutoff_minutes": 180,
+      "weekday_mask": "tue_fri",
+      "weekdays": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "dev": {
+        "trades": 439,
+        "net_profit": 16702.0,
+        "gross_profit": 139802.45,
+        "gross_loss": -123100.45,
+        "profit_factor": 1.135678,
+        "win_rate_pct": 55.581,
+        "close_to_close_max_drawdown": 6404.67
+      },
+      "validation": {
+        "trades": 163,
+        "net_profit": 12046.88,
+        "gross_profit": 53686.95,
+        "gross_loss": -41640.07,
+        "profit_factor": 1.28931,
+        "win_rate_pct": 53.988,
+        "close_to_close_max_drawdown": 6532.62
+      }
+    },
+    {
+      "entry_cutoff_minutes": 180,
+      "weekday_mask": "tue_thu",
+      "weekdays": [
+        1,
+        2,
+        3
+      ],
+      "dev": {
+        "trades": 328,
+        "net_profit": 4014.77,
+        "gross_profit": 105602.46,
+        "gross_loss": -101587.69,
+        "profit_factor": 1.03952,
+        "win_rate_pct": 54.878,
+        "close_to_close_max_drawdown": 9595.32
+      },
+      "validation": {
+        "trades": 122,
+        "net_profit": 9950.97,
+        "gross_profit": 40767.52,
+        "gross_loss": -30816.55,
+        "profit_factor": 1.32291,
+        "win_rate_pct": 54.918,
+        "close_to_close_max_drawdown": 4797.96
+      }
+    },
+    {
+      "entry_cutoff_minutes": 240,
+      "weekday_mask": "mon_fri",
+      "weekdays": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "dev": {
+        "trades": 584,
+        "net_profit": 25227.72,
+        "gross_profit": 182409.07,
+        "gross_loss": -157181.35,
+        "profit_factor": 1.160501,
+        "win_rate_pct": 55.993,
+        "close_to_close_max_drawdown": 8146.23
+      },
+      "validation": {
+        "trades": 212,
+        "net_profit": 6114.22,
+        "gross_profit": 63745.06,
+        "gross_loss": -57630.84,
+        "profit_factor": 1.106093,
+        "win_rate_pct": 50.943,
+        "close_to_close_max_drawdown": 11791.98
+      }
+    },
+    {
+      "entry_cutoff_minutes": 240,
+      "weekday_mask": "mon_thu",
+      "weekdays": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "dev": {
+        "trades": 469,
+        "net_profit": 12017.62,
+        "gross_profit": 147612.47,
+        "gross_loss": -135594.85,
+        "profit_factor": 1.088629,
+        "win_rate_pct": 55.65,
+        "close_to_close_max_drawdown": 10272.82
+      },
+      "validation": {
+        "trades": 170,
+        "net_profit": 4021.51,
+        "gross_profit": 50825.63,
+        "gross_loss": -46804.12,
+        "profit_factor": 1.085922,
+        "win_rate_pct": 51.176,
+        "close_to_close_max_drawdown": 8492.16
+      }
+    },
+    {
+      "entry_cutoff_minutes": 240,
+      "weekday_mask": "tue_fri",
+      "weekdays": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "dev": {
+        "trades": 466,
+        "net_profit": 17205.77,
+        "gross_profit": 145224.62,
+        "gross_loss": -128018.85,
+        "profit_factor": 1.1344,
+        "win_rate_pct": 54.936,
+        "close_to_close_max_drawdown": 7358.17
+      },
+      "validation": {
+        "trades": 175,
+        "net_profit": 13631.74,
+        "gross_profit": 56762.71,
+        "gross_loss": -43130.97,
+        "profit_factor": 1.316055,
+        "win_rate_pct": 53.714,
+        "close_to_close_max_drawdown": 7111.22
+      }
+    },
+    {
+      "entry_cutoff_minutes": 240,
+      "weekday_mask": "tue_thu",
+      "weekdays": [
+        1,
+        2,
+        3
+      ],
+      "dev": {
+        "trades": 351,
+        "net_profit": 3995.67,
+        "gross_profit": 110428.02,
+        "gross_loss": -106432.35,
+        "profit_factor": 1.037542,
+        "win_rate_pct": 54.131,
+        "close_to_close_max_drawdown": 10032.92
+      },
+      "validation": {
+        "trades": 133,
+        "net_profit": 11539.03,
+        "gross_profit": 43843.28,
+        "gross_loss": -32304.25,
+        "profit_factor": 1.357199,
+        "win_rate_pct": 54.887,
+        "close_to_close_max_drawdown": 5376.56
+      }
+    },
+    {
+      "entry_cutoff_minutes": 360,
+      "weekday_mask": "mon_fri",
+      "weekdays": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "dev": {
+        "trades": 637,
+        "net_profit": 27216.15,
+        "gross_profit": 191781.66,
+        "gross_loss": -164565.51,
+        "profit_factor": 1.165382,
+        "win_rate_pct": 56.044,
+        "close_to_close_max_drawdown": 8650.45
+      },
+      "validation": {
+        "trades": 230,
+        "net_profit": 2801.53,
+        "gross_profit": 66373.73,
+        "gross_loss": -63572.2,
+        "profit_factor": 1.044068,
+        "win_rate_pct": 49.565,
+        "close_to_close_max_drawdown": 14046.95
+      }
+    },
+    {
+      "entry_cutoff_minutes": 360,
+      "weekday_mask": "mon_thu",
+      "weekdays": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "dev": {
+        "trades": 516,
+        "net_profit": 13998.26,
+        "gross_profit": 156586.5,
+        "gross_loss": -142588.24,
+        "profit_factor": 1.098173,
+        "win_rate_pct": 55.62,
+        "close_to_close_max_drawdown": 10182.6
+      },
+      "validation": {
+        "trades": 183,
+        "net_profit": 857.73,
+        "gross_profit": 52901.55,
+        "gross_loss": -52043.82,
+        "profit_factor": 1.016481,
+        "win_rate_pct": 49.727,
+        "close_to_close_max_drawdown": 10747.58
+      }
+    },
+    {
+      "entry_cutoff_minutes": 360,
+      "weekday_mask": "tue_fri",
+      "weekdays": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "dev": {
+        "trades": 513,
+        "net_profit": 17836.69,
+        "gross_profit": 153011.86,
+        "gross_loss": -135175.17,
+        "profit_factor": 1.131952,
+        "win_rate_pct": 54.776,
+        "close_to_close_max_drawdown": 7630.55
+      },
+      "validation": {
+        "trades": 190,
+        "net_profit": 9909.13,
+        "gross_profit": 58507.88,
+        "gross_loss": -48598.75,
+        "profit_factor": 1.203897,
+        "win_rate_pct": 52.105,
+        "close_to_close_max_drawdown": 7468.84
+      }
+    },
+    {
+      "entry_cutoff_minutes": 360,
+      "weekday_mask": "tue_thu",
+      "weekdays": [
+        1,
+        2,
+        3
+      ],
+      "dev": {
+        "trades": 392,
+        "net_profit": 4618.8,
+        "gross_profit": 117816.7,
+        "gross_loss": -113197.9,
+        "profit_factor": 1.040803,
+        "win_rate_pct": 53.827,
+        "close_to_close_max_drawdown": 11949.92
+      },
+      "validation": {
+        "trades": 143,
+        "net_profit": 7965.33,
+        "gross_profit": 45035.7,
+        "gross_loss": -37070.37,
+        "profit_factor": 1.214871,
+        "win_rate_pct": 53.147,
+        "close_to_close_max_drawdown": 5458.22
+      }
+    }
+  ],
+  "eligible_pre_holdout_count": 1,
+  "selected_rule": {
+    "entry_cutoff_minutes": 240,
+    "weekday_mask": "mon_fri",
+    "weekdays": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "dev": {
+      "trades": 584,
+      "net_profit": 25227.72,
+      "gross_profit": 182409.07,
+      "gross_loss": -157181.35,
+      "profit_factor": 1.160501,
+      "win_rate_pct": 55.993,
+      "close_to_close_max_drawdown": 8146.23
+    },
+    "validation": {
+      "trades": 212,
+      "net_profit": 6114.22,
+      "gross_profit": 63745.06,
+      "gross_loss": -57630.84,
+      "profit_factor": 1.106093,
+      "win_rate_pct": 50.943,
+      "close_to_close_max_drawdown": 11791.98
+    },
+    "holdout": {
+      "trades": 198,
+      "net_profit": 17403.13,
+      "gross_profit": 63944.04,
+      "gross_loss": -46540.91,
+      "profit_factor": 1.373932,
+      "win_rate_pct": 55.051,
+      "close_to_close_max_drawdown": 9133.3
+    },
+    "pooled": {
+      "trades": 994,
+      "net_profit": 48745.07,
+      "gross_profit": 310098.17,
+      "gross_loss": -261353.1,
+      "profit_factor": 1.18651,
+      "win_rate_pct": 54.728,
+      "close_to_close_max_drawdown": 11791.98
+    }
+  },
+  "side_diagnostics_pre_holdout_only": {
+    "all": {
+      "trades": 886,
+      "net_profit": 31798.32,
+      "gross_profit": 261530.42,
+      "gross_loss": -229732.1,
+      "profit_factor": 1.138415,
+      "win_rate_pct": 54.628,
+      "close_to_close_max_drawdown": 14046.95
+    },
+    "buy": {
+      "trades": 446,
+      "net_profit": 27435.21,
+      "gross_profit": 131630.36,
+      "gross_loss": -104195.15,
+      "profit_factor": 1.263306,
+      "win_rate_pct": 57.399,
+      "close_to_close_max_drawdown": 5563.34
+    },
+    "sell": {
+      "trades": 440,
+      "net_profit": 4363.11,
+      "gross_profit": 129900.06,
+      "gross_loss": -125536.95,
+      "profit_factor": 1.034756,
+      "win_rate_pct": 51.818,
+      "close_to_close_max_drawdown": 11024.36
+    }
+  },
+  "verdict": "HOLDOUT_FAIL"
+}

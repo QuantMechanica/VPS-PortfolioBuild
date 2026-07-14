@@ -1,0 +1,2041 @@
+{
+  "basis": "market_features_from_completed_bars_strictly_before_challenge_launch",
+  "candidate_count": 30,
+  "control": {
+    "development": {
+      "adverse_bar_fill": {
+        "daily_breach_pct": 23.954060705496307,
+        "max_breach_pct": 14.273995077932733,
+        "not_reached_pct": 10.992616899097621,
+        "pass_ci95_pct": [
+          47.9747998113871,
+          53.57895843445482
+        ],
+        "pass_pct": 50.779327317473346,
+        "runs": 1219
+      },
+      "eligible_pct": 100.0,
+      "eligible_starts": 1219,
+      "median_gap_calendar_days": 1.0,
+      "p95_gap_calendar_days": 1.0,
+      "threshold_fill": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 40.85315832649713,
+        "pass_ci95_pct": [
+          56.36283083576754,
+          61.87338436542957
+        ],
+        "pass_pct": 59.14684167350287,
+        "runs": 1219
+      },
+      "total_starts": 1219
+    },
+    "validation": {
+      "adverse_bar_fill": {
+        "daily_breach_pct": 33.035714285714285,
+        "max_breach_pct": 17.261904761904763,
+        "not_reached_pct": 12.797619047619047,
+        "pass_ci95_pct": [
+          31.92027277960414,
+          42.185299770203486
+        ],
+        "pass_pct": 36.904761904761905,
+        "runs": 336
+      },
+      "eligible_pct": 100.0,
+      "eligible_starts": 336,
+      "median_gap_calendar_days": 1.0,
+      "p95_gap_calendar_days": 1.0,
+      "threshold_fill": {
+        "daily_breach_pct": 0.0,
+        "max_breach_pct": 0.0,
+        "not_reached_pct": 56.25,
+        "pass_ci95_pct": [
+          38.54593102540925,
+          49.09536496427166
+        ],
+        "pass_pct": 43.75,
+        "runs": 336
+      },
+      "total_starts": 336
+    }
+  },
+  "feature_complete_starts": 1555,
+  "leaderboard": [
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 21.2707182320442,
+          "max_breach_pct": 15.469613259668508,
+          "not_reached_pct": 11.602209944751381,
+          "pass_ci95_pct": [
+            46.51928319838689,
+            56.76082617977997
+          ],
+          "pass_pct": 51.657458563535904,
+          "runs": 362
+        },
+        "eligible_pct": 29.696472518457753,
+        "eligible_starts": 362,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 8.299999999999955,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 41.988950276243095,
+          "pass_ci95_pct": [
+            52.86886411105046,
+            62.984997883422636
+          ],
+          "pass_pct": 58.011049723756905,
+          "runs": 362
+        },
+        "total_starts": 1219
+      },
+      "gate": "ndx_trend_consensus_down",
+      "preholdout_pass": false,
+      "preholdout_score": 51.657458563535904,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 34.61538461538461,
+          "max_breach_pct": 3.8461538461538463,
+          "not_reached_pct": 5.769230769230769,
+          "pass_ci95_pct": [
+            42.33976178720288,
+            68.4049431805987
+          ],
+          "pass_pct": 55.769230769230774,
+          "runs": 52
+        },
+        "eligible_pct": 15.476190476190476,
+        "eligible_starts": 52,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 20.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 26.923076923076923,
+          "pass_ci95_pct": [
+            59.74778016637286,
+            83.23103970483349
+          ],
+          "pass_pct": 73.07692307692307,
+          "runs": 52
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 22.385321100917434,
+          "max_breach_pct": 15.59633027522936,
+          "not_reached_pct": 11.926605504587156,
+          "pass_ci95_pct": [
+            45.908042719117084,
+            54.27415925996604
+          ],
+          "pass_pct": 50.091743119266056,
+          "runs": 545
+        },
+        "eligible_pct": 44.70877768662839,
+        "eligible_starts": 545,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 2.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 42.018348623853214,
+          "pass_ci95_pct": [
+            53.795984801255145,
+            62.05558737897675
+          ],
+          "pass_pct": 57.98165137614679,
+          "runs": 545
+        },
+        "total_starts": 1219
+      },
+      "gate": "ndx_20d_down",
+      "preholdout_pass": false,
+      "preholdout_score": 50.091743119266056,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 27.0,
+          "max_breach_pct": 4.0,
+          "not_reached_pct": 17.0,
+          "pass_ci95_pct": [
+            42.316577765223975,
+            61.535448241948096
+          ],
+          "pass_pct": 52.0,
+          "runs": 100
+        },
+        "eligible_pct": 29.761904761904763,
+        "eligible_starts": 100,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 2.69999999999996,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 36.0,
+          "pass_ci95_pct": [
+            54.235402451608735,
+            72.72877959859568
+          ],
+          "pass_pct": 64.0,
+          "runs": 100
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 19.696969696969695,
+          "max_breach_pct": 14.393939393939394,
+          "not_reached_pct": 9.848484848484848,
+          "pass_ci95_pct": [
+            50.02923486351074,
+            61.91813136608493
+          ],
+          "pass_pct": 56.060606060606055,
+          "runs": 264
+        },
+        "eligible_pct": 21.65709598031173,
+        "eligible_starts": 264,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 5.149999999999949,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 40.15151515151515,
+          "pass_ci95_pct": [
+            53.83487861275277,
+            65.5795915103402
+          ],
+          "pass_pct": 59.84848484848485,
+          "runs": 264
+        },
+        "total_starts": 1219
+      },
+      "gate": "disinflation_xau_xti_down",
+      "preholdout_pass": false,
+      "preholdout_score": 48.837209302325576,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 12.790697674418606,
+          "max_breach_pct": 22.093023255813954,
+          "not_reached_pct": 16.27906976744186,
+          "pass_ci95_pct": [
+            38.55057710813485,
+            59.223279164622674
+          ],
+          "pass_pct": 48.837209302325576,
+          "runs": 86
+        },
+        "eligible_pct": 25.595238095238095,
+        "eligible_starts": 86,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 5.799999999999997,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 50.0,
+          "pass_ci95_pct": [
+            39.66097232742094,
+            60.33902767257906
+          ],
+          "pass_pct": 50.0,
+          "runs": 86
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 23.299319727891156,
+          "max_breach_pct": 12.925170068027212,
+          "not_reached_pct": 14.285714285714285,
+          "pass_ci95_pct": [
+            45.46507524798393,
+            53.52113974074706
+          ],
+          "pass_pct": 49.48979591836735,
+          "runs": 588
+        },
+        "eligible_pct": 48.23625922887613,
+        "eligible_starts": 588,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 2.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 42.68707482993197,
+          "pass_ci95_pct": [
+            53.28025402506336,
+            61.25066446979235
+          ],
+          "pass_pct": 57.31292517006803,
+          "runs": 588
+        },
+        "total_starts": 1219
+      },
+      "gate": "xauusd_20d_down",
+      "preholdout_pass": false,
+      "preholdout_score": 46.89655172413793,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 20.0,
+          "max_breach_pct": 17.24137931034483,
+          "not_reached_pct": 15.862068965517242,
+          "pass_ci95_pct": [
+            38.9591367530486,
+            54.994160889080746
+          ],
+          "pass_pct": 46.89655172413793,
+          "runs": 145
+        },
+        "eligible_pct": 43.154761904761905,
+        "eligible_starts": 145,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 2.8499999999999943,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 51.03448275862069,
+          "pass_ci95_pct": [
+            40.96129138529977,
+            57.023141162076676
+          ],
+          "pass_pct": 48.96551724137931,
+          "runs": 145
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 20.07168458781362,
+          "max_breach_pct": 12.903225806451612,
+          "not_reached_pct": 10.39426523297491,
+          "pass_ci95_pct": [
+            50.764511515603026,
+            62.31702191809912
+          ],
+          "pass_pct": 56.63082437275986,
+          "runs": 279
+        },
+        "eligible_pct": 22.887612797374896,
+        "eligible_starts": 279,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 4.300000000000011,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 36.55913978494624,
+          "pass_ci95_pct": [
+            57.64280783100681,
+            68.87381399406512
+          ],
+          "pass_pct": 63.44086021505376,
+          "runs": 279
+        },
+        "total_starts": 1219
+      },
+      "gate": "defensive_ndx_down_xau_up",
+      "preholdout_pass": false,
+      "preholdout_score": 46.808510638297875,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 36.17021276595745,
+          "max_breach_pct": 8.51063829787234,
+          "not_reached_pct": 8.51063829787234,
+          "pass_ci95_pct": [
+            33.33168707656075,
+            60.76761677980519
+          ],
+          "pass_pct": 46.808510638297875,
+          "runs": 47
+        },
+        "eligible_pct": 13.988095238095237,
+        "eligible_starts": 47,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 40.5,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 31.914893617021278,
+          "pass_ci95_pct": [
+            53.83265689689715,
+            79.60462125036256
+          ],
+          "pass_pct": 68.08510638297872,
+          "runs": 47
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 25.770925110132158,
+          "max_breach_pct": 14.537444933920703,
+          "not_reached_pct": 13.215859030837004,
+          "pass_ci95_pct": [
+            41.93668785266856,
+            51.07399316288965
+          ],
+          "pass_pct": 46.47577092511013,
+          "runs": 454
+        },
+        "eligible_pct": 37.24364232977851,
+        "eligible_starts": 454,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 5.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 46.25550660792951,
+          "pass_ci95_pct": [
+            49.1458811147369,
+            58.28027030623248
+          ],
+          "pass_pct": 53.74449339207048,
+          "runs": 454
+        },
+        "total_starts": 1219
+      },
+      "gate": "usd_strength_usdjpy_up_xau_down",
+      "preholdout_pass": false,
+      "preholdout_score": 46.47577092511013,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 17.857142857142858,
+          "max_breach_pct": 17.857142857142858,
+          "not_reached_pct": 15.714285714285714,
+          "pass_ci95_pct": [
+            40.44181106648916,
+            56.77734950599487
+          ],
+          "pass_pct": 48.57142857142857,
+          "runs": 140
+        },
+        "eligible_pct": 41.666666666666664,
+        "eligible_starts": 140,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 3.0999999999999943,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 49.28571428571429,
+          "pass_ci95_pct": [
+            42.525005502064175,
+            58.8654142116938
+          ],
+          "pass_pct": 50.71428571428571,
+          "runs": 140
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 27.27272727272727,
+          "max_breach_pct": 11.84573002754821,
+          "not_reached_pct": 15.151515151515152,
+          "pass_ci95_pct": [
+            40.676667630884396,
+            50.872815325688336
+          ],
+          "pass_pct": 45.73002754820937,
+          "runs": 363
+        },
+        "eligible_pct": 29.77850697292863,
+        "eligible_starts": 363,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 10.099999999999966,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 44.90358126721763,
+          "pass_ci95_pct": [
+            49.95284950126113,
+            60.13325148605531
+          ],
+          "pass_pct": 55.09641873278237,
+          "runs": 363
+        },
+        "total_starts": 1219
+      },
+      "gate": "xauusd_trend_consensus_down",
+      "preholdout_pass": false,
+      "preholdout_score": 45.73002754820937,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 12.62135922330097,
+          "max_breach_pct": 24.271844660194176,
+          "not_reached_pct": 12.62135922330097,
+          "pass_ci95_pct": [
+            40.98754392292435,
+            59.94842233122258
+          ],
+          "pass_pct": 50.48543689320388,
+          "runs": 103
+        },
+        "eligible_pct": 30.654761904761905,
+        "eligible_starts": 103,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 7.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 47.57281553398058,
+          "pass_ci95_pct": [
+            42.86982092252011,
+            61.810010348214604
+          ],
+          "pass_pct": 52.42718446601942,
+          "runs": 103
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 22.893772893772894,
+          "max_breach_pct": 17.032967032967033,
+          "not_reached_pct": 11.538461538461538,
+          "pass_ci95_pct": [
+            44.36755775664038,
+            52.722512527561726
+          ],
+          "pass_pct": 48.53479853479853,
+          "runs": 546
+        },
+        "eligible_pct": 44.79081214109926,
+        "eligible_starts": 546,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 7.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 45.604395604395606,
+          "pass_ci95_pct": [
+            50.20170276032562,
+            58.52808638706804
+          ],
+          "pass_pct": 54.395604395604394,
+          "runs": 546
+        },
+        "total_starts": 1219
+      },
+      "gate": "usdjpy_trend_consensus_up",
+      "preholdout_pass": false,
+      "preholdout_score": 44.44444444444444,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 20.98765432098765,
+          "max_breach_pct": 19.1358024691358,
+          "not_reached_pct": 15.432098765432098,
+          "pass_ci95_pct": [
+            37.00938504847663,
+            52.13687540533341
+          ],
+          "pass_pct": 44.44444444444444,
+          "runs": 162
+        },
+        "eligible_pct": 48.214285714285715,
+        "eligible_starts": 162,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 5.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 48.76543209876543,
+          "pass_ci95_pct": [
+            43.59846718982879,
+            58.813474931546786
+          ],
+          "pass_pct": 51.23456790123457,
+          "runs": 162
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 20.334261838440113,
+          "max_breach_pct": 13.370473537604457,
+          "not_reached_pct": 11.420612813370473,
+          "pass_ci95_pct": [
+            49.702596169947086,
+            59.94349006114593
+          ],
+          "pass_pct": 54.874651810584965,
+          "runs": 359
+        },
+        "eligible_pct": 29.45036915504512,
+        "eligible_starts": 359,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 8.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 38.16155988857939,
+          "pass_ci95_pct": [
+            56.71312258983183,
+            66.71308682853692
+          ],
+          "pass_pct": 61.83844011142061,
+          "runs": 359
+        },
+        "total_starts": 1219
+      },
+      "gate": "xtiusd_trend_consensus_down",
+      "preholdout_pass": false,
+      "preholdout_score": 44.339622641509436,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 30.18867924528302,
+          "max_breach_pct": 13.20754716981132,
+          "not_reached_pct": 12.264150943396226,
+          "pass_ci95_pct": [
+            35.24508136976131,
+            53.83008193484405
+          ],
+          "pass_pct": 44.339622641509436,
+          "runs": 106
+        },
+        "eligible_pct": 31.547619047619047,
+        "eligible_starts": 106,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 12.799999999999997,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 53.77358490566038,
+          "pass_ci95_pct": [
+            37.033619506723056,
+            55.683156029680504
+          ],
+          "pass_pct": 46.22641509433962,
+          "runs": 106
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 19.627749576988155,
+          "max_breach_pct": 12.18274111675127,
+          "not_reached_pct": 13.028764805414554,
+          "pass_ci95_pct": [
+            51.130668046331365,
+            59.12416525344163
+          ],
+          "pass_pct": 55.16074450084603,
+          "runs": 591
+        },
+        "eligible_pct": 48.48236259228876,
+        "eligible_starts": 591,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 4.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 38.07106598984771,
+          "pass_ci95_pct": [
+            57.94909640789048,
+            65.75469859650282
+          ],
+          "pass_pct": 61.92893401015228,
+          "runs": 591
+        },
+        "total_starts": 1219
+      },
+      "gate": "xtiusd_volatility_active",
+      "preholdout_pass": false,
+      "preholdout_score": 42.7536231884058,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 26.811594202898554,
+          "max_breach_pct": 13.043478260869565,
+          "not_reached_pct": 17.391304347826086,
+          "pass_ci95_pct": [
+            34.80596261497677,
+            51.093787594669216
+          ],
+          "pass_pct": 42.7536231884058,
+          "runs": 138
+        },
+        "eligible_pct": 41.07142857142857,
+        "eligible_starts": 138,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 13.399999999999977,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 48.55072463768116,
+          "pass_ci95_pct": [
+            43.18496770610009,
+            59.63508225197071
+          ],
+          "pass_pct": 51.449275362318836,
+          "runs": 138
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 23.670212765957448,
+          "max_breach_pct": 16.090425531914892,
+          "not_reached_pct": 10.372340425531915,
+          "pass_ci95_pct": [
+            46.303175838118456,
+            53.432218406711605
+          ],
+          "pass_pct": 49.86702127659575,
+          "runs": 752
+        },
+        "eligible_pct": 61.68990976210008,
+        "eligible_starts": 752,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 2.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 42.68617021276596,
+          "pass_ci95_pct": [
+            53.7502696110838,
+            60.80304692326297
+          ],
+          "pass_pct": 57.31382978723404,
+          "runs": 752
+        },
+        "total_starts": 1219
+      },
+      "gate": "usdjpy_20d_up",
+      "preholdout_pass": false,
+      "preholdout_score": 42.47787610619469,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 25.663716814159294,
+          "max_breach_pct": 14.15929203539823,
+          "not_reached_pct": 17.699115044247787,
+          "pass_ci95_pct": [
+            36.211891288638505,
+            48.995303194701265
+          ],
+          "pass_pct": 42.47787610619469,
+          "runs": 226
+        },
+        "eligible_pct": 67.26190476190476,
+        "eligible_starts": 226,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 1.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 51.76991150442478,
+          "pass_ci95_pct": [
+            41.79961516641338,
+            54.71972471201951
+          ],
+          "pass_pct": 48.23008849557522,
+          "runs": 226
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 19.148936170212767,
+          "max_breach_pct": 14.00709219858156,
+          "not_reached_pct": 13.297872340425531,
+          "pass_ci95_pct": [
+            49.419908429599644,
+            57.62431128677559
+          ],
+          "pass_pct": 53.54609929078015,
+          "runs": 564
+        },
+        "eligible_pct": 46.267432321575065,
+        "eligible_starts": 564,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 5.099999999999909,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 40.95744680851064,
+          "pass_ci95_pct": [
+            54.93624336275252,
+            63.02651691400428
+          ],
+          "pass_pct": 59.04255319148937,
+          "runs": 564
+        },
+        "total_starts": 1219
+      },
+      "gate": "ndx_volatility_active",
+      "preholdout_pass": false,
+      "preholdout_score": 41.566265060240966,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 20.481927710843372,
+          "max_breach_pct": 21.084337349397593,
+          "not_reached_pct": 16.867469879518072,
+          "pass_ci95_pct": [
+            34.34268121425526,
+            49.17135582097751
+          ],
+          "pass_pct": 41.566265060240966,
+          "runs": 166
+        },
+        "eligible_pct": 49.404761904761905,
+        "eligible_starts": 166,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 7.399999999999949,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 55.42168674698795,
+          "pass_ci95_pct": [
+            37.22464688098768,
+            52.17723407023338
+          ],
+          "pass_pct": 44.57831325301205,
+          "runs": 166
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 21.984732824427482,
+          "max_breach_pct": 13.893129770992365,
+          "not_reached_pct": 9.618320610687023,
+          "pass_ci95_pct": [
+            50.67505930115645,
+            58.28005413472359
+          ],
+          "pass_pct": 54.50381679389314,
+          "runs": 655
+        },
+        "eligible_pct": 53.732567678424935,
+        "eligible_starts": 655,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 8.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 38.93129770992366,
+          "pass_ci95_pct": [
+            57.280405078843,
+            64.72792455170963
+          ],
+          "pass_pct": 61.06870229007634,
+          "runs": 655
+        },
+        "total_starts": 1219
+      },
+      "gate": "usdjpy_volatility_calm",
+      "preholdout_pass": false,
+      "preholdout_score": 41.23711340206185,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 28.350515463917525,
+          "max_breach_pct": 18.04123711340206,
+          "not_reached_pct": 12.371134020618557,
+          "pass_ci95_pct": [
+            34.54576697692355,
+            48.268755215406934
+          ],
+          "pass_pct": 41.23711340206185,
+          "runs": 194
+        },
+        "eligible_pct": 57.73809523809524,
+        "eligible_starts": 194,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 6.399999999999977,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 50.51546391752577,
+          "pass_ci95_pct": [
+            42.5276891442374,
+            56.461400396487925
+          ],
+          "pass_pct": 49.48453608247423,
+          "runs": 194
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 22.22222222222222,
+          "max_breach_pct": 14.25925925925926,
+          "not_reached_pct": 10.0,
+          "pass_ci95_pct": [
+            49.30175870763785,
+            57.68557176959387
+          ],
+          "pass_pct": 53.51851851851852,
+          "runs": 540
+        },
+        "eligible_pct": 44.29860541427399,
+        "eligible_starts": 540,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 2.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 40.925925925925924,
+          "pass_ci95_pct": [
+            54.87701227149332,
+            63.14294527505167
+          ],
+          "pass_pct": 59.074074074074076,
+          "runs": 540
+        },
+        "total_starts": 1219
+      },
+      "gate": "xtiusd_20d_down",
+      "preholdout_pass": false,
+      "preholdout_score": 40.11299435028249,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 29.943502824858758,
+          "max_breach_pct": 18.07909604519774,
+          "not_reached_pct": 11.864406779661017,
+          "pass_ci95_pct": [
+            33.17648005955135,
+            47.46955087370782
+          ],
+          "pass_pct": 40.11299435028249,
+          "runs": 177
+        },
+        "eligible_pct": 52.67857142857143,
+        "eligible_starts": 177,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 4.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 55.932203389830505,
+          "pass_ci95_pct": [
+            36.95684266231611,
+            51.43077589763939
+          ],
+          "pass_pct": 44.06779661016949,
+          "runs": 177
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 26.25298329355609,
+          "max_breach_pct": 14.319809069212411,
+          "not_reached_pct": 10.978520286396181,
+          "pass_ci95_pct": [
+            43.69932565288879,
+            53.22623598994137
+          ],
+          "pass_pct": 48.44868735083532,
+          "runs": 419
+        },
+        "eligible_pct": 34.372436423297785,
+        "eligible_starts": 419,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 8.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 42.004773269689736,
+          "pass_ci95_pct": [
+            53.2176248495613,
+            62.62755745277566
+          ],
+          "pass_pct": 57.995226730310264,
+          "runs": 419
+        },
+        "total_starts": 1219
+      },
+      "gate": "risk_on_ndx_usdjpy_up",
+      "preholdout_pass": false,
+      "preholdout_score": 39.726027397260275,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 23.28767123287671,
+          "max_breach_pct": 21.232876712328768,
+          "not_reached_pct": 15.753424657534246,
+          "pass_ci95_pct": [
+            32.150073240258465,
+            47.8287655697006
+          ],
+          "pass_pct": 39.726027397260275,
+          "runs": 146
+        },
+        "eligible_pct": 43.45238095238095,
+        "eligible_starts": 146,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 2.799999999999983,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 58.9041095890411,
+          "pass_ci95_pct": [
+            33.443072484567566,
+            49.205254484063616
+          ],
+          "pass_pct": 41.0958904109589,
+          "runs": 146
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 23.285714285714285,
+          "max_breach_pct": 11.571428571428571,
+          "not_reached_pct": 8.714285714285715,
+          "pass_ci95_pct": [
+            52.73011332003379,
+            60.05685722171257
+          ],
+          "pass_pct": 56.42857142857143,
+          "runs": 700
+        },
+        "eligible_pct": 57.424118129614435,
+        "eligible_starts": 700,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 4.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 34.85714285714286,
+          "pass_ci95_pct": [
+            61.5388563447976,
+            68.58156315353828
+          ],
+          "pass_pct": 65.14285714285715,
+          "runs": 700
+        },
+        "total_starts": 1219
+      },
+      "gate": "xauusd_volatility_calm",
+      "preholdout_pass": false,
+      "preholdout_score": 39.21568627450981,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 32.84313725490196,
+          "max_breach_pct": 20.588235294117645,
+          "not_reached_pct": 7.352941176470589,
+          "pass_ci95_pct": [
+            32.774468843995706,
+            46.05554887736805
+          ],
+          "pass_pct": 39.21568627450981,
+          "runs": 204
+        },
+        "eligible_pct": 60.714285714285715,
+        "eligible_starts": 204,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 2.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 55.392156862745104,
+          "pass_ci95_pct": [
+            37.94886976277802,
+            51.46613909790386
+          ],
+          "pass_pct": 44.6078431372549,
+          "runs": 204
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 24.161073825503358,
+          "max_breach_pct": 13.646532438478747,
+          "not_reached_pct": 8.501118568232663,
+          "pass_ci95_pct": [
+            49.05694392988775,
+            58.262702334748376
+          ],
+          "pass_pct": 53.691275167785236,
+          "runs": 447
+        },
+        "eligible_pct": 36.669401148482365,
+        "eligible_starts": 447,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 8.899999999999977,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 36.91275167785235,
+          "pass_ci95_pct": [
+            58.51987989822296,
+            67.43159322185062
+          ],
+          "pass_pct": 63.08724832214765,
+          "runs": 447
+        },
+        "total_starts": 1219
+      },
+      "gate": "xauusd_trend_consensus_up",
+      "preholdout_pass": false,
+      "preholdout_score": 34.84848484848485,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 47.72727272727273,
+          "max_breach_pct": 9.848484848484848,
+          "not_reached_pct": 7.575757575757576,
+          "pass_ci95_pct": [
+            27.252673004942125,
+            43.301235685924816
+          ],
+          "pass_pct": 34.84848484848485,
+          "runs": 132
+        },
+        "eligible_pct": 39.285714285714285,
+        "eligible_starts": 132,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 8.5,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 53.03030303030303,
+          "pass_ci95_pct": [
+            38.662231037538476,
+            55.448550700634925
+          ],
+          "pass_pct": 46.96969696969697,
+          "runs": 132
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 24.85549132947977,
+          "max_breach_pct": 17.91907514450867,
+          "not_reached_pct": 14.065510597302506,
+          "pass_ci95_pct": [
+            38.96436286454003,
+            47.45599481708959
+          ],
+          "pass_pct": 43.15992292870906,
+          "runs": 519
+        },
+        "eligible_pct": 42.575881870385565,
+        "eligible_starts": 519,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 10.299999999999955,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 48.94026974951831,
+          "pass_ci95_pct": [
+            46.76708807094611,
+            55.336800175561976
+          ],
+          "pass_pct": 51.05973025048169,
+          "runs": 519
+        },
+        "total_starts": 1219
+      },
+      "gate": "xauusd_volatility_active",
+      "preholdout_pass": false,
+      "preholdout_score": 33.33333333333333,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 33.33333333333333,
+          "max_breach_pct": 12.121212121212121,
+          "not_reached_pct": 21.21212121212121,
+          "pass_ci95_pct": [
+            25.863344340776447,
+            41.74595521917717
+          ],
+          "pass_pct": 33.33333333333333,
+          "runs": 132
+        },
+        "eligible_pct": 39.285714285714285,
+        "eligible_starts": 132,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 5.5,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 57.57575757575758,
+          "pass_ci95_pct": [
+            34.324610863638256,
+            50.952343481795225
+          ],
+          "pass_pct": 42.42424242424242,
+          "runs": 132
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 25.331369661266567,
+          "max_breach_pct": 14.285714285714285,
+          "not_reached_pct": 11.7820324005891,
+          "pass_ci95_pct": [
+            44.85998274949107,
+            52.3575265633128
+          ],
+          "pass_pct": 48.60088365243004,
+          "runs": 679
+        },
+        "eligible_pct": 55.70139458572601,
+        "eligible_starts": 679,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 1.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 40.79528718703976,
+          "pass_ci95_pct": [
+            55.46643075831268,
+            62.839429025872384
+          ],
+          "pass_pct": 59.20471281296024,
+          "runs": 679
+        },
+        "total_starts": 1219
+      },
+      "gate": "xtiusd_20d_up",
+      "preholdout_pass": false,
+      "preholdout_score": 33.33333333333333,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 36.477987421383645,
+          "max_breach_pct": 16.352201257861633,
+          "not_reached_pct": 13.836477987421384,
+          "pass_ci95_pct": [
+            26.475489385725492,
+            40.97751651103532
+          ],
+          "pass_pct": 33.33333333333333,
+          "runs": 159
+        },
+        "eligible_pct": 47.32142857142857,
+        "eligible_starts": 159,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 4.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 56.60377358490566,
+          "pass_ci95_pct": [
+            35.93814512725849,
+            51.16587607711844
+          ],
+          "pass_pct": 43.39622641509434,
+          "runs": 159
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 28.02547770700637,
+          "max_breach_pct": 16.24203821656051,
+          "not_reached_pct": 9.076433121019107,
+          "pass_ci95_pct": [
+            42.78640892322038,
+            50.56635395524105
+          ],
+          "pass_pct": 46.65605095541402,
+          "runs": 628
+        },
+        "eligible_pct": 51.51763740771124,
+        "eligible_starts": 628,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 5.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 43.47133757961784,
+          "pass_ci95_pct": [
+            52.62349531072892,
+            60.35444383132258
+          ],
+          "pass_pct": 56.52866242038217,
+          "runs": 628
+        },
+        "total_starts": 1219
+      },
+      "gate": "xtiusd_volatility_calm",
+      "preholdout_pass": false,
+      "preholdout_score": 32.82828282828283,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 37.37373737373738,
+          "max_breach_pct": 20.2020202020202,
+          "not_reached_pct": 9.595959595959595,
+          "pass_ci95_pct": [
+            26.668570370398992,
+            39.64162160041519
+          ],
+          "pass_pct": 32.82828282828283,
+          "runs": 198
+        },
+        "eligible_pct": 58.92857142857143,
+        "eligible_starts": 198,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 1.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 61.61616161616161,
+          "pass_ci95_pct": [
+            31.89217388162142,
+            45.31766186334111
+          ],
+          "pass_pct": 38.38383838383838,
+          "runs": 198
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 24.832214765100673,
+          "max_breach_pct": 11.073825503355705,
+          "not_reached_pct": 11.409395973154362,
+          "pass_ci95_pct": [
+            47.01778707528743,
+            58.283008932826434
+          ],
+          "pass_pct": 52.68456375838926,
+          "runs": 298
+        },
+        "eligible_pct": 24.446267432321577,
+        "eligible_starts": 298,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 16.349999999999966,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 35.57046979865772,
+          "pass_ci95_pct": [
+            58.84211925689624,
+            69.64965928671576
+          ],
+          "pass_pct": 64.42953020134227,
+          "runs": 298
+        },
+        "total_starts": 1219
+      },
+      "gate": "usdjpy_trend_consensus_down",
+      "preholdout_pass": false,
+      "preholdout_score": 32.78688524590164,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 47.540983606557376,
+          "max_breach_pct": 18.0327868852459,
+          "not_reached_pct": 1.639344262295082,
+          "pass_ci95_pct": [
+            22.335119798553627,
+            45.27819368646336
+          ],
+          "pass_pct": 32.78688524590164,
+          "runs": 61
+        },
+        "eligible_pct": 18.154761904761905,
+        "eligible_starts": 61,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 19.149999999999935,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 63.934426229508205,
+          "pass_ci95_pct": [
+            25.174111519874508,
+            48.60809463466307
+          ],
+          "pass_pct": 36.0655737704918,
+          "runs": 61
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 28.091603053435115,
+          "max_breach_pct": 14.50381679389313,
+          "not_reached_pct": 9.007633587786259,
+          "pass_ci95_pct": [
+            44.59031754404212,
+            52.22226919911922
+          ],
+          "pass_pct": 48.396946564885496,
+          "runs": 655
+        },
+        "eligible_pct": 53.732567678424935,
+        "eligible_starts": 655,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 1.5,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 40.76335877862595,
+          "pass_ci95_pct": [
+            55.4301833958069,
+            62.93538822693012
+          ],
+          "pass_pct": 59.23664122137404,
+          "runs": 655
+        },
+        "total_starts": 1219
+      },
+      "gate": "ndx_volatility_calm",
+      "preholdout_pass": false,
+      "preholdout_score": 32.35294117647059,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 45.294117647058826,
+          "max_breach_pct": 13.529411764705882,
+          "not_reached_pct": 8.823529411764707,
+          "pass_ci95_pct": [
+            25.777682811770298,
+            39.70811073424107
+          ],
+          "pass_pct": 32.35294117647059,
+          "runs": 170
+        },
+        "eligible_pct": 50.595238095238095,
+        "eligible_starts": 170,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 5.799999999999983,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 57.05882352941176,
+          "pass_ci95_pct": [
+            35.7373360977664,
+            50.45698132063813
+          ],
+          "pass_pct": 42.94117647058823,
+          "runs": 170
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 26.720647773279353,
+          "max_breach_pct": 11.538461538461538,
+          "not_reached_pct": 11.740890688259109,
+          "pass_ci95_pct": [
+            45.607896506652864,
+            54.392103493347136
+          ],
+          "pass_pct": 50.0,
+          "runs": 494
+        },
+        "eligible_pct": 40.525020508613615,
+        "eligible_starts": 494,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 7.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 40.08097165991903,
+          "pass_ci95_pct": [
+            55.536999758026894,
+            64.14798192914438
+          ],
+          "pass_pct": 59.91902834008097,
+          "runs": 494
+        },
+        "total_starts": 1219
+      },
+      "gate": "ndx_trend_consensus_up",
+      "preholdout_pass": false,
+      "preholdout_score": 30.994152046783626,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 38.01169590643275,
+          "max_breach_pct": 20.46783625730994,
+          "not_reached_pct": 10.526315789473683,
+          "pass_ci95_pct": [
+            24.54400485268017,
+            38.2794579355938
+          ],
+          "pass_pct": 30.994152046783626,
+          "runs": 171
+        },
+        "eligible_pct": 50.892857142857146,
+        "eligible_starts": 171,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 4.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 63.74269005847953,
+          "pass_ci95_pct": [
+            29.426971881459778,
+            43.691531980830625
+          ],
+          "pass_pct": 36.25730994152047,
+          "runs": 171
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 26.24113475177305,
+          "max_breach_pct": 14.716312056737587,
+          "not_reached_pct": 12.588652482269502,
+          "pass_ci95_pct": [
+            42.37568871322443,
+            50.580091570400356
+          ],
+          "pass_pct": 46.45390070921986,
+          "runs": 564
+        },
+        "eligible_pct": 46.267432321575065,
+        "eligible_starts": 564,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 8.049999999999955,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 43.08510638297872,
+          "pass_ci95_pct": [
+            52.794876720018195,
+            60.94135172691348
+          ],
+          "pass_pct": 56.91489361702128,
+          "runs": 564
+        },
+        "total_starts": 1219
+      },
+      "gate": "usdjpy_volatility_active",
+      "preholdout_pass": false,
+      "preholdout_score": 30.985915492957744,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 39.436619718309856,
+          "max_breach_pct": 16.19718309859155,
+          "not_reached_pct": 13.380281690140844,
+          "pass_ci95_pct": [
+            23.96491676799727,
+            39.008574832638246
+          ],
+          "pass_pct": 30.985915492957744,
+          "runs": 142
+        },
+        "eligible_pct": 42.26190476190476,
+        "eligible_starts": 142,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 15.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 64.08450704225352,
+          "pass_ci95_pct": [
+            28.491454682438732,
+            44.08150205877277
+          ],
+          "pass_pct": 35.91549295774648,
+          "runs": 142
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 24.88822652757079,
+          "max_breach_pct": 13.263785394932937,
+          "not_reached_pct": 10.283159463487332,
+          "pass_ci95_pct": [
+            47.78536292383625,
+            55.3264790837218
+          ],
+          "pass_pct": 51.56482861400894,
+          "runs": 671
+        },
+        "eligible_pct": 55.04511894995898,
+        "eligible_starts": 671,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 2.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 39.642324888226526,
+          "pass_ci95_pct": [
+            56.607677882826856,
+            63.98975254815269
+          ],
+          "pass_pct": 60.35767511177347,
+          "runs": 671
+        },
+        "total_starts": 1219
+      },
+      "gate": "ndx_20d_up",
+      "preholdout_pass": false,
+      "preholdout_score": 30.508474576271187,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 35.59322033898305,
+          "max_breach_pct": 22.88135593220339,
+          "not_reached_pct": 11.016949152542372,
+          "pass_ci95_pct": [
+            24.985077420317776,
+            36.656249958040384
+          ],
+          "pass_pct": 30.508474576271187,
+          "runs": 236
+        },
+        "eligible_pct": 70.23809523809524,
+        "eligible_starts": 236,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 1.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 64.83050847457628,
+          "pass_ci95_pct": [
+            29.359274878024355,
+            41.45477856203076
+          ],
+          "pass_pct": 35.16949152542373,
+          "runs": 236
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 24.03258655804481,
+          "max_breach_pct": 13.441955193482688,
+          "not_reached_pct": 13.238289205702646,
+          "pass_ci95_pct": [
+            44.887749959777,
+            53.69765555238797
+          ],
+          "pass_pct": 49.287169042769854,
+          "runs": 491
+        },
+        "eligible_pct": 40.278917145200985,
+        "eligible_starts": 491,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 6.699999999999989,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 40.122199592668025,
+          "pass_ci95_pct": [
+            55.48186449641251,
+            64.12037340644436
+          ],
+          "pass_pct": 59.877800407331975,
+          "runs": 491
+        },
+        "total_starts": 1219
+      },
+      "gate": "xtiusd_trend_consensus_up",
+      "preholdout_pass": false,
+      "preholdout_score": 29.464285714285715,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 39.285714285714285,
+          "max_breach_pct": 21.428571428571427,
+          "not_reached_pct": 9.821428571428571,
+          "pass_ci95_pct": [
+            21.81566412979486,
+            38.474891196168905
+          ],
+          "pass_pct": 29.464285714285715,
+          "runs": 112
+        },
+        "eligible_pct": 33.333333333333336,
+        "eligible_starts": 112,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 11.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 60.71428571428571,
+          "pass_ci95_pct": [
+            30.74029431755071,
+            48.541734548169515
+          ],
+          "pass_pct": 39.285714285714285,
+          "runs": 112
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 24.564183835182252,
+          "max_breach_pct": 15.530903328050712,
+          "not_reached_pct": 7.923930269413629,
+          "pass_ci95_pct": [
+            48.08260542014979,
+            55.85538565662092
+          ],
+          "pass_pct": 51.98098256735341,
+          "runs": 631
+        },
+        "eligible_pct": 51.76374077112387,
+        "eligible_starts": 631,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 2.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 39.144215530903324,
+          "pass_ci95_pct": [
+            56.99288066996656,
+            64.58731043073699
+          ],
+          "pass_pct": 60.855784469096676,
+          "runs": 631
+        },
+        "total_starts": 1219
+      },
+      "gate": "xauusd_20d_up",
+      "preholdout_pass": false,
+      "preholdout_score": 29.31937172774869,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 42.93193717277487,
+          "max_breach_pct": 17.277486910994764,
+          "not_reached_pct": 10.471204188481675,
+          "pass_ci95_pct": [
+            23.322142936441665,
+            36.132071542263816
+          ],
+          "pass_pct": 29.31937172774869,
+          "runs": 191
+        },
+        "eligible_pct": 56.845238095238095,
+        "eligible_starts": 191,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 2.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 60.20942408376963,
+          "pass_ci95_pct": [
+            33.11617861795685,
+            46.867547517100284
+          ],
+          "pass_pct": 39.79057591623037,
+          "runs": 191
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 24.507042253521128,
+          "max_breach_pct": 16.619718309859156,
+          "not_reached_pct": 6.197183098591549,
+          "pass_ci95_pct": [
+            47.48145448023889,
+            57.81336291974662
+          ],
+          "pass_pct": 52.67605633802817,
+          "runs": 355
+        },
+        "eligible_pct": 29.122231337161608,
+        "eligible_starts": 355,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 8.5,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 37.183098591549296,
+          "pass_ci95_pct": [
+            57.67737675552803,
+            67.68201184440265
+          ],
+          "pass_pct": 62.81690140845071,
+          "runs": 355
+        },
+        "total_starts": 1219
+      },
+      "gate": "inflation_xau_xti_up",
+      "preholdout_pass": false,
+      "preholdout_score": 27.0,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 40.0,
+          "max_breach_pct": 20.0,
+          "not_reached_pct": 13.0,
+          "pass_ci95_pct": [
+            19.269584149576342,
+            36.432116767945
+          ],
+          "pass_pct": 27.0,
+          "runs": 100
+        },
+        "eligible_pct": 29.761904761904763,
+        "eligible_starts": 100,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 5.199999999999989,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 59.0,
+          "pass_ci95_pct": [
+            31.86731302113651,
+            50.79856994658921
+          ],
+          "pass_pct": 41.0,
+          "runs": 100
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 28.22822822822823,
+          "max_breach_pct": 12.912912912912914,
+          "not_reached_pct": 9.60960960960961,
+          "pass_ci95_pct": [
+            43.91884793585068,
+            54.596774215441116
+          ],
+          "pass_pct": 49.249249249249246,
+          "runs": 333
+        },
+        "eligible_pct": 27.317473338802298,
+        "eligible_starts": 333,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 7.799999999999898,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 40.84084084084084,
+          "pass_ci95_pct": [
+            53.80445924440913,
+            64.30495050983114
+          ],
+          "pass_pct": 59.15915915915916,
+          "runs": 333
+        },
+        "total_starts": 1219
+      },
+      "gate": "usd_weak_usdjpy_down_xau_up",
+      "preholdout_pass": false,
+      "preholdout_score": 26.666666666666668,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 46.666666666666664,
+          "max_breach_pct": 24.761904761904763,
+          "not_reached_pct": 1.9047619047619049,
+          "pass_ci95_pct": [
+            19.14167865270055,
+            35.83871160399124
+          ],
+          "pass_pct": 26.666666666666668,
+          "runs": 105
+        },
+        "eligible_pct": 31.25,
+        "eligible_starts": 105,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 2.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 63.8095238095238,
+          "pass_ci95_pct": [
+            27.63673895854976,
+            45.71900221377803
+          ],
+          "pass_pct": 36.19047619047619,
+          "runs": 105
+        },
+        "total_starts": 336
+      }
+    },
+    {
+      "development": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 24.411134903640257,
+          "max_breach_pct": 11.349036402569594,
+          "not_reached_pct": 11.991434689507495,
+          "pass_ci95_pct": [
+            47.71830240453963,
+            56.74179761566634
+          ],
+          "pass_pct": 52.24839400428265,
+          "runs": 467
+        },
+        "eligible_pct": 38.31009023789992,
+        "eligible_starts": 467,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 5.0,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 37.901498929336185,
+          "pass_ci95_pct": [
+            57.6166094779563,
+            66.38297634505695
+          ],
+          "pass_pct": 62.098501070663815,
+          "runs": 467
+        },
+        "total_starts": 1219
+      },
+      "gate": "usdjpy_20d_down",
+      "preholdout_pass": false,
+      "preholdout_score": 25.454545454545453,
+      "validation": {
+        "adverse_bar_fill": {
+          "daily_breach_pct": 48.18181818181818,
+          "max_breach_pct": 23.636363636363637,
+          "not_reached_pct": 2.727272727272727,
+          "pass_ci95_pct": [
+            18.2381907512531,
+            34.32742061792949
+          ],
+          "pass_pct": 25.454545454545453,
+          "runs": 110
+        },
+        "eligible_pct": 32.73809523809524,
+        "eligible_starts": 110,
+        "median_gap_calendar_days": 1.0,
+        "p95_gap_calendar_days": 1.5999999999999943,
+        "threshold_fill": {
+          "daily_breach_pct": 0.0,
+          "max_breach_pct": 0.0,
+          "not_reached_pct": 65.45454545454545,
+          "pass_ci95_pct": [
+            26.316391993562394,
+            43.817511461108126
+          ],
+          "pass_pct": 34.54545454545455,
+          "runs": 110
+        },
+        "total_starts": 336
+      }
+    }
+  ],
+  "manifest": "artifacts\\ftmo_joint_eleven_sleeve_incumbent_weight_path_manifest_2026-07-12.json",
+  "policy": {
+    "daily_stop": 4500.0,
+    "full_risk_room": 4000.0,
+    "horizon_calendar_days": 30,
+    "risk_multiplier": 25.0,
+    "room_retention": 0.2
+  },
+  "preholdout_survivor_count": 0,
+  "scenario": "path_01_11095_gbpusd_down2",
+  "schema_version": 1,
+  "selected_winner": null,
+  "selection_contract": {
+    "candidate_gates": [
+      "ndx_20d_up",
+      "ndx_20d_down",
+      "ndx_trend_consensus_up",
+      "ndx_trend_consensus_down",
+      "ndx_volatility_active",
+      "ndx_volatility_calm",
+      "xauusd_20d_up",
+      "xauusd_20d_down",
+      "xauusd_trend_consensus_up",
+      "xauusd_trend_consensus_down",
+      "xauusd_volatility_active",
+      "xauusd_volatility_calm",
+      "usdjpy_20d_up",
+      "usdjpy_20d_down",
+      "usdjpy_trend_consensus_up",
+      "usdjpy_trend_consensus_down",
+      "usdjpy_volatility_active",
+      "usdjpy_volatility_calm",
+      "xtiusd_20d_up",
+      "xtiusd_20d_down",
+      "xtiusd_trend_consensus_up",
+      "xtiusd_trend_consensus_down",
+      "xtiusd_volatility_active",
+      "xtiusd_volatility_calm",
+      "risk_on_ndx_usdjpy_up",
+      "defensive_ndx_down_xau_up",
+      "inflation_xau_xti_up",
+      "disinflation_xau_xti_down",
+      "usd_strength_usdjpy_up_xau_down",
+      "usd_weak_usdjpy_down_xau_up"
+    ],
+    "development_years": [
+      2018,
+      2019,
+      2021,
+      2022
+    ],
+    "feature_symbols": [
+      "NDX.DWX",
+      "XAUUSD.DWX",
+      "USDJPY.DWX",
+      "XTIUSD.DWX"
+    ],
+    "minimum_development_starts": 150,
+    "minimum_eligible_pct_each_split": 15.0,
+    "minimum_floor_pct_each_fill_and_split": 60.0,
+    "minimum_improvement_pct_each_fill_and_split": 5.0,
+    "minimum_validation_starts": 30,
+    "return_lookbacks_observed_m15_bars": [
+      481,
+      1921
+    ],
+    "sealed_years_unopened": [
+      2017,
+      2020,
+      2024,
+      2025
+    ],
+    "selection_uses_sealed_years": false,
+    "validation_years": [
+      2023
+    ],
+    "volatility_windows_observed_m15_bars": [
+      480,
+      1440
+    ]
+  },
+  "status": "NO_PREHOLDOUT_SURVIVOR",
+  "timestamp_basis": "darwinex_broker_wall",
+  "trade_paths": 4495
+}

@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_SCREEN",
+  "label": "RESEARCH_ONLY_NO_GO",
+  "hypothesis": "Large, directionally consistent surprises in recurring US inflation, labor, consumption, and growth releases produce post-announcement USD drift after a fixed blackout.",
+  "inputs": {
+    "calendar": {
+      "path": "D:\\QM\\data\\news_calendar\\forex_factory_calendar_clean.csv",
+      "sha256": "C2B196EE2A097E2B45E4A8C4CA39D50A240D23D0214A4FA7FC06398006D66A69",
+      "selected_event_coverage": "2015-01-09 through 2025-04-04; 2025 is explicitly partial"
+    },
+    "bars": [
+      {
+        "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\EURUSD.DWX_M5.csv",
+        "sha256": "B7EC4FAE50B0E257832CB3E1217A34236F2A1E212844F9EE35B0CC7B86CE91F9"
+      },
+      {
+        "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\GBPUSD.DWX_M5.csv",
+        "sha256": "E483E548E28F611B0D53143EB1E329EFF9A568F7D8A7076AFC4CE59A8ABA31BC"
+      },
+      {
+        "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\USDJPY.DWX_M5.csv",
+        "sha256": "27D1DC7569385978EF42AE33DFCBBE1B36ED162F06ED031692A157B196159DD4"
+      }
+    ]
+  },
+  "calendar_contract": {
+    "timestamp_validation": "artifacts/ftmo_us_macro_calendar_timestamp_validation_2026-07-12.json",
+    "normalization": "Use raw date +1 day when naive hour >=18, else raw date; construct 08:30 America/New_York on that date and convert DST-aware to UTC.",
+    "duplicate_resolution": "For identical event name plus normalized timestamp, retain the row whose raw timestamp exactly matches normalized UTC; fail on equal-quality ambiguity.",
+    "event_specs": {
+      "CPI m/m": {"group": "inflation", "usd_sign": 1, "surprise_scale": 0.1},
+      "Core CPI m/m": {"group": "inflation", "usd_sign": 1, "surprise_scale": 0.1},
+      "Core PCE Price Index m/m": {"group": "inflation", "usd_sign": 1, "surprise_scale": 0.1},
+      "Non-Farm Employment Change": {"group": "labor", "usd_sign": 1, "surprise_scale": 50.0},
+      "Unemployment Rate": {"group": "labor", "usd_sign": -1, "surprise_scale": 0.1},
+      "Retail Sales m/m": {"group": "consumption", "usd_sign": 1, "surprise_scale": 0.5},
+      "Core Retail Sales m/m": {"group": "consumption", "usd_sign": 1, "surprise_scale": 0.5},
+      "Advance GDP q/q": {"group": "growth", "usd_sign": 1, "surprise_scale": 0.5}
+    },
+    "package_signal": "Sum signed normalized surprises sharing the same normalized timestamp; zero sums do not trade.",
+    "position_package": "Equal risk EURUSD and GBPUSD opposite USD direction plus USDJPY with USD direction."
+  },
+  "cost_and_execution_contract": {
+    "round_trip_price_cost": {"EURUSD.DWX": 0.00015, "GBPUSD.DWX": 0.00018, "USDJPY.DWX": 0.0225},
+    "rollover_stress_for_hold_ge_8h": {"EURUSD.DWX": 0.0001103, "GBPUSD.DWX": 0.0000577, "USDJPY.DWX": 0.02241},
+    "intrabar_order": "stop_first",
+    "entry": "first common M5 open at or after normalized release plus blackout",
+    "atr": "prior-bar ATR288; no future data"
+  },
+  "parameter_grid": {
+    "minimum_abs_score": [0.5, 1.0, 1.5],
+    "blackout_minutes": [60, 120, 180],
+    "stop_atr5": [8.0, 12.0, 16.0, 24.0],
+    "target_r": [0.0, 1.0, 2.0],
+    "hold_bars": [48, 96, 288],
+    "configuration_count": 324
+  },
+  "selection_contract": {
+    "development": "2018-2022",
+    "validation": "2023",
+    "sealed_holdout": "2024 plus available 2025 through 2025-04-04",
+    "preholdout_gate": {
+      "development_trades_min": 100,
+      "development_profit_factor_min": 1.15,
+      "development_net_r_positive": true,
+      "positive_development_years_min": 4,
+      "validation_trades_min": 18,
+      "validation_profit_factor_min": 1.05,
+      "validation_net_r_positive": true
+    },
+    "winner_lock": "One configuration maximizing min(development PF, validation PF), then development trades.",
+    "holdout_gate": {
+      "pooled_trades_min": 35,
+      "pooled_profit_factor_min": 1.1,
+      "pooled_net_r_positive": true,
+      "2024_net_r_positive": true,
+      "2025_net_r_positive": true
+    },
+    "holdout_opening": "Only the single locked preholdout winner may open 2024-2025."
+  },
+  "deployment_allowed": false
+}

@@ -1,0 +1,28 @@
+{
+  "deployment_allowed": false,
+  "frozen_filter": "majority_2_of_3_align",
+  "frozen_parameters": {
+    "gap_atr": 1.0,
+    "mode": "continuation",
+    "response_atr": 0.15,
+    "stop_atr": 1.5,
+    "target_r": 3.0
+  },
+  "holdout_2025_open_allowed": true,
+  "holdout_2025_opened": false,
+  "label": "RESEARCH_ONLY_NO_GO",
+  "metrics": {
+    "max_drawdown_r": 6.401492,
+    "net_r": 13.347994,
+    "profit_factor": 1.431696,
+    "trades": 45,
+    "win_rate": 0.377778
+  },
+  "predeclaration": "artifacts/ftmo_ndx_gap_response_nested_filter_predeclaration_2026-07-12.json",
+  "research_selection": "artifacts/ftmo_ndx_gap_response_nested_filter_research_2026-07-12.json",
+  "schema_version": 1,
+  "status": "VALIDATION_2024_PASS",
+  "symbol": "NDX.DWX",
+  "validation_gate": "trades>=40, PF>=1.10, net R>0",
+  "validation_year": 2024
+}

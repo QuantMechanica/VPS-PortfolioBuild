@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-13",
+  "status": "LOCKED_HORIZON_COMPARISON_COMPLETE",
+  "scenario": "path_01_11095_gbpusd_down2",
+  "selection_changed": false,
+  "policy_changed": false,
+  "normal": {
+    "30d": {
+      "windows": 701,
+      "pass_count": 490,
+      "pass_pct": 69.90014265335235,
+      "daily_breach_pct": 0.0,
+      "max_breach_pct": 0.0,
+      "not_reached_pct": 30.099857346647646
+    },
+    "60d": {
+      "windows": 671,
+      "pass_count": 493,
+      "pass_pct": 73.47242921013412,
+      "pass_ci95_pct": [70.00526263385214, 76.6723674795188],
+      "daily_breach_pct": 0.0,
+      "max_breach_pct": 0.0,
+      "not_reached_pct": 26.527570789865873
+    },
+    "pass_delta_pct_points": 3.57228655678177
+  },
+  "adverse": {
+    "30d": {
+      "windows": 701,
+      "pass_count": 416,
+      "pass_pct": 59.34379457917262,
+      "daily_breach_pct": 20.114122681883025,
+      "max_breach_pct": 10.984308131241084,
+      "not_reached_pct": 9.557774607703282
+    },
+    "60d": {
+      "windows": 671,
+      "pass_count": 415,
+      "pass_pct": 61.847988077496275,
+      "pass_ci95_pct": [58.11496858747191, 65.44612089832485],
+      "daily_breach_pct": 20.417287630402384,
+      "max_breach_pct": 14.157973174366617,
+      "not_reached_pct": 3.5767511177347244
+    },
+    "pass_delta_pct_points": 2.504193498323655,
+    "daily_breach_delta_pct_points": 0.3031649485193593,
+    "max_breach_delta_pct_points": 3.173665043125533,
+    "not_reached_delta_pct_points": -5.981023489968558
+  },
+  "evidence": {
+    "predeclaration": "artifacts/ftmo_incumbent_60d_locked_replay_predeclaration_2026-07-13.json",
+    "threshold_60d": {
+      "path": "artifacts/ftmo_bar_governor_11095_down2_locked_60d_threshold_2026-07-13.json",
+      "sha256": "EE6EC6B7CBD4C19CAA6C6DBF2106F3022A6D236099D2433F0FEFA4A6A83357B8"
+    },
+    "adverse_60d": {
+      "path": "artifacts/ftmo_bar_governor_11095_down2_locked_60d_adverse_2026-07-13.json",
+      "sha256": "21891AF64E1337C72471AF167351C767D5FE38B1B05B3EC197224D59B40322A5"
+    }
+  },
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

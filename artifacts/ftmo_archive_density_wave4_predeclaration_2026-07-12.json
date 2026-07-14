@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_FRESH_RUNS",
+  "selection_source": {
+    "path": "D:\\QM\\strategy_farm\\artifacts\\portfolio\\prop_challenge_ftmo_report_candidate_screen_dedup_fast_20260629.json",
+    "sha256": "05298982b0e80d32bcbd835a5f1444bdf3aa1a992b284aaf756b075da2fa2404",
+    "rule": "Continue with the strongest remaining unrefreshed full-2024 PASS rows after Waves 2 and 3. Rank by old PF, then useful trade density; exclude the half-year-only 11118 row and candidates already known below the current full-history 1.20 PF floor."
+  },
+  "ordered_candidates": [
+    {
+      "order": 1,
+      "ea_id": 10594,
+      "expert": "QM\\QM5_10594_mql5-beginner",
+      "symbol": "USDJPY.DWX",
+      "period": "H4",
+      "archive_pf": 1.3114531966262102,
+      "archive_trades": 196,
+      "archive_trades_per_60d": 32.48618784530387
+    },
+    {
+      "order": 2,
+      "ea_id": 10582,
+      "expert": "QM\\QM5_10582_mql5-ema-pred",
+      "symbol": "XAUUSD.DWX",
+      "period": "H6",
+      "archive_pf": 1.229561386661545,
+      "archive_trades": 383,
+      "archive_trades_per_60d": 63.13186813186813
+    },
+    {
+      "order": 3,
+      "ea_id": 10585,
+      "expert": "QM\\QM5_10585_mql5-dinapoli",
+      "symbol": "XAUUSD.DWX",
+      "period": "H6",
+      "archive_pf": 1.2264801007786892,
+      "archive_trades": 252,
+      "archive_trades_per_60d": 42.0
+    }
+  ],
+  "fresh_evidence_contract": {
+    "history": "2017-01-01 through 2025-12-31",
+    "model": 4,
+    "required_identical_runs": 2,
+    "current_framework_strict_compile": true,
+    "joint_mae_stream_required": true,
+    "exact_report_stream_reconciliation_required": true,
+    "current_ftmo_cost_reconstruction_required": true,
+    "strict_q02_pf_floor": 1.2,
+    "strict_q02_minimum_trades_per_calendar_year": 5
+  },
+  "portfolio_contract": {
+    "weight_grid_pct": [0.5, 1.0, 2.0, 3.0, 5.0, 7.5, 10.0],
+    "development_survivor_rule": "A fixed candidate representation and weight must improve both threshold and adverse preholdout pass rates.",
+    "sealed_holdout_open_rule": "Open once only for a frozen development survivor."
+  },
+  "operational_boundary": {
+    "allowed_terminals": ["T1", "T2", "T3", "T4"],
+    "t5_disabled": true,
+    "factory_off_required": true,
+    "t_live_forbidden": true,
+    "installed_ftmo_terminal_forbidden": true,
+    "autotrading_change_forbidden": true
+  },
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

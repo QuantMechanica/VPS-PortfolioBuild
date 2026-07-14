@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_RESEARCH_ONLY",
+  "deployment_allowed": false,
+  "candidate": {
+    "ea_id": 10558,
+    "expert": "QM\\QM5_10558_mql5-mfi-slow",
+    "symbol": "EURUSD.DWX",
+    "period": "H6",
+    "variant": "grid_007",
+    "setfile": "framework/EAs/QM5_10558_mql5-mfi-slow/sets/QM5_10558_mql5-mfi-slow_EURUSD.DWX_H6_backtest_grid_007.set",
+    "source_sha256": "17A1A33CA6EC24996351C0A2802197C71EB3D487B81E245AE9A68809FBB774BF",
+    "setfile_sha256": "B0DA8AFC7F1BEB48651C498D4FA2441D969F6E25B811E785486D58755A673691"
+  },
+  "selection_basis": {
+    "q04_verdict": "PASS_LOWFREQ",
+    "q04_pooled_profit_factor": 1.4813605539133325,
+    "q04_trades": 39,
+    "q05_profit_factor": 1.49,
+    "q05_trades": 213,
+    "q06_profit_factor": 1.36,
+    "q07_min_profit_factor": 1.36,
+    "q07_trades": 195,
+    "q07_variance_pct": 0.0,
+    "q08_profit_factor": 1.21,
+    "q08_trades": 202,
+    "q08_verdict": "FAIL_HARD",
+    "incumbent_comparison": {
+      "variant": "baseline",
+      "fresh_trades": 394,
+      "native_profit_factor": 1.21,
+      "reported_equity_drawdown": 12880.56,
+      "book_weight_pct": 14.12512181945908
+    }
+  },
+  "locked_test": {
+    "history": "2017-01-01/2025-12-31",
+    "model": 4,
+    "runs": 2,
+    "minimum_trades": 45,
+    "terminal": "T4",
+    "fresh_q08_stream_required": true,
+    "exact_report_stream_reconciliation_required": true,
+    "current_ftmo_cost_reconstruction_required": true,
+    "replacement_contract": "Replace the existing 10558:EURUSD.DWX report and stream at the identical locked weight; do not add a second sleeve and do not alter other weights.",
+    "development_gate": "The direct replacement must improve both normal and adverse locked development fills before 2023 validation.",
+    "sealed_years": [
+      2024,
+      2025
+    ]
+  },
+  "operational_constraints": {
+    "factory_off_required": true,
+    "symbol_mutex": "EURUSD.DWX",
+    "t_live_forbidden": true,
+    "installed_ftmo_terminal_forbidden": true,
+    "autotrading_change_forbidden": true
+  },
+  "label": "RESEARCH_ONLY_NO_GO"
+}

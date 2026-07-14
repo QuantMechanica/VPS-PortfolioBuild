@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_CURRENT_FTMO_COST_AND_DENSITY_GATES",
+  "ea_id": 10588,
+  "symbol": "USDJPY.DWX",
+  "period": "H6",
+  "history": "2017-01-01/2023-12-31",
+  "model": 4,
+  "deterministic": true,
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10588_usdjpy_h6_preholdout_wave35_20260712\\QM5_10588\\20260712_180501\\summary.json",
+  "summary_sha256": "511796D5910B462D126E09257E563F3E5FF3B4047F507038F5FAFF7DFD3DE506",
+  "report_runs": [
+    {
+      "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10588_usdjpy_h6_preholdout_wave35_20260712\\QM5_10588\\20260712_180501\\raw\\run_01\\report.htm",
+      "sha256": "C5B39AC7871658CA72594ADCC4300C2B574C2F57FA1EB7D8D1F0509F7FCE0207"
+    },
+    {
+      "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10588_usdjpy_h6_preholdout_wave35_20260712\\QM5_10588\\20260712_180501\\raw\\run_02\\report.htm",
+      "sha256": "3B3443F9CC47DAD72EF05AA4263A9E71B5CBEF3E89EB6845A0BED41255077DF9"
+    }
+  ],
+  "native": {
+    "trades": 344,
+    "profit_factor": 1.217504,
+    "net_profit": 24902.27,
+    "close_to_close_max_drawdown": 12805.18
+  },
+  "q08": {
+    "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\10588_USDJPY_H6_T1_PREHOLDOUT_FRESH_20260712.jsonl",
+    "rows": 344,
+    "sha256": "ED2515703ABB6773D9092BDB40426E04530D2E2476B5C9D1D7460B41094AE3F0",
+    "report_reconciliation": "PASS_EXACT_COUNT_AND_NET",
+    "corrected_net_delta": 0.0,
+    "net_tolerance": 3.44
+  },
+  "current_cost_artifact": "artifacts/ftmo_10588_usdjpy_preholdout_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "trades": 344,
+    "profit_factor": 1.16952,
+    "net_profit": 19833.46,
+    "close_to_close_max_drawdown": 14277.0,
+    "commission_total": 2961.0,
+    "swap_total": -7539.2
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "minimum_trades_per_active_calendar_year": 5,
+    "profit_factor_pass": false,
+    "annual_density_pass": false,
+    "under_density_years": [2017],
+    "negative_development_years": [2021],
+    "validation_2023": {
+      "trades": 56,
+      "profit_factor": 0.820687,
+      "net_profit": -4080.97
+    },
+    "reason_for_reject": "Current FTMO costs reduce pooled PF below 1.2; 2017 has only three trades and the independent 2023 validation year is loss-making."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_years": [2024, 2025],
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

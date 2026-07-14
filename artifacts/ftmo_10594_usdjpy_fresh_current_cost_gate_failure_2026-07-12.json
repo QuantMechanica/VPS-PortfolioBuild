@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "REJECT_CURRENT_FTMO_COST_GATE",
+  "ea_id": 10594,
+  "symbol": "USDJPY.DWX",
+  "period": "H4",
+  "history": "2017-01-01/2025-12-31",
+  "model": 4,
+  "strict_compile": "PASS_ZERO_ERRORS_ZERO_WARNINGS",
+  "recovered_summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_10594_usdjpy_h4_wave4_20260712\\QM5_10594\\20260712_104102\\recovered_summary.json",
+  "recovery_contract": "Two separately collected reports have identical metrics and exact round-trip sequences after the first wrapper exceeded its outer command timeout.",
+  "deterministic": true,
+  "native": {
+    "trades": 1328,
+    "profit_factor": 1.087502,
+    "net_profit": 32834.37,
+    "equity_drawdown": 22360.98
+  },
+  "q08": {
+    "rows_per_run": 1328,
+    "run_01_sha256": "0D7A85C25EEE9C0445E420247B821A8B0A6FD5BA1B501B6B1F1560271EF2321F",
+    "run_02_sha256": "0D7A85C25EEE9C0445E420247B821A8B0A6FD5BA1B501B6B1F1560271EF2321F",
+    "byte_identical": true
+  },
+  "current_cost_artifact": "artifacts/ftmo_10594_usdjpy_fresh_current_report_cost_reconciliation_2026-07-12.json",
+  "current_ftmo_cost": {
+    "trades": 1328,
+    "profit_factor": 1.047319,
+    "net_profit": 18054.81,
+    "close_to_close_max_drawdown": 25818.89,
+    "commission_total": 10783.95,
+    "swap_total": -23974.58
+  },
+  "gate": {
+    "strict_current_ftmo_profit_factor_floor": 1.2,
+    "reason_for_reject": "Current FTMO costs reduce pooled PF from 1.087502 to 1.047319."
+  },
+  "portfolio_screen_opened": false,
+  "sealed_holdout_opened": false,
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

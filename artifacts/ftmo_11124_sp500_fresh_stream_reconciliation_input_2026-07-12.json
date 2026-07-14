@@ -1,0 +1,8 @@
+[
+  {
+    "ea_id": 11124,
+    "symbol": "SP500.DWX",
+    "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_11124_sp500_d1_20260712\\QM5_11124\\20260712_090543\\summary.json",
+    "stream_path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\11124_SP500_DWX_FRESH_20260712.jsonl"
+  }
+]

@@ -1,0 +1,43 @@
+{
+  "fail_count": 1,
+  "pass_count": 0,
+  "results": [
+    {
+      "contract": "one_entry_one_exit_duplicate_closing_commission",
+      "corrected_net_delta": -6351.55,
+      "count_delta": -96,
+      "ea_id": 1258,
+      "net_tolerance": 27.58,
+      "reasons": [
+        "stream_missing_mae_rows:2662",
+        "trade_count_mismatch:2662!=2758",
+        "corrected_net_mismatch:delta=-6351.55:tolerance=27.58"
+      ],
+      "report": {
+        "drawdown": 19330.84,
+        "exists": true,
+        "net_profit": -16496.14,
+        "path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_1258_gbpjpy_h1_preholdout_wave37_full_label_20260712\\QM5_1258\\20260712_180600\\summary.json",
+        "profit_factor": 0.91,
+        "report_canonical_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_1258_gbpjpy_h1_preholdout_wave37_full_label_20260712\\QM5_1258\\20260712_180600\\raw\\run_02\\report.htm",
+        "result": "PASS",
+        "trade_count": 2758,
+        "usable_run": "run_02"
+      },
+      "status": "FAIL",
+      "stream": {
+        "closing_commission": -4758.15,
+        "exists": true,
+        "invalid_rows": 0,
+        "missing_mae_rows": 2662,
+        "path": "D:\\QM\\reports\\ftmo\\clean_book_streams\\1258_GBPJPY_H1_T2_PREHOLDOUT_FRESH_20260712.jsonl",
+        "raw_net": -18089.54,
+        "round_trip_corrected_net": -22847.69,
+        "trade_count": 2662
+      },
+      "symbol": "GBPJPY.DWX"
+    }
+  ],
+  "schema_version": 1,
+  "status": "FAIL"
+}

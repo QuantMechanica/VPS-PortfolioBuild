@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_FRESH_RUN",
+  "selection_source": {
+    "summary": "D:/QM/reports/work_items/59c95913-1d6a-48d7-9bc1-88645803e22a/QM5_11181/20260710_113646/summary.json",
+    "archive_period": "2024",
+    "archive_pf": 2.31,
+    "archive_trades": 113,
+    "selection_note": "The candidate narrowly missed the earlier >=20 trades/60d archive-density cutoff but has the strongest recent XAU Q02 PF among candidates with at least 100 trades."
+  },
+  "candidate": {
+    "ea_id": 11181,
+    "expert": "QM\\QM5_11181_ft003-mfi-fish",
+    "symbol": "XAUUSD.DWX",
+    "period": "M5"
+  },
+  "fresh_evidence_contract": {
+    "history": "2017-01-01 through 2025-12-31",
+    "model": 4,
+    "required_identical_runs": 2,
+    "current_framework_strict_compile": true,
+    "joint_mae_stream_required": true,
+    "exact_report_stream_reconciliation_required": true,
+    "current_ftmo_cost_reconstruction_required": true,
+    "strict_q02_pf_floor": 1.2,
+    "strict_q02_minimum_trades_per_calendar_year": 5
+  },
+  "portfolio_contract": {
+    "weight_grid_pct": [0.5, 1.0, 2.0, 3.0, 5.0, 7.5, 10.0],
+    "development_survivor_rule": "A fixed candidate representation and weight must improve both threshold and adverse preholdout pass rates.",
+    "sealed_holdout_open_rule": "Open once only for a frozen development survivor."
+  },
+  "deployment_allowed": false,
+  "label": "RESEARCH_ONLY_NO_GO"
+}

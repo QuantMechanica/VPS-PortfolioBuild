@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "INFRASTRUCTURE_FAIL_NO_STRATEGY_VERDICT",
+  "ea_id": 11128,
+  "symbol": "NDX.DWX",
+  "period": "D1",
+  "terminal": "T3",
+  "test_window": "2017-01-01/2025-12-31",
+  "purpose": "force a terminal program-cache miss with a uniquely named byte-identical current binary",
+  "binary": {
+    "expert": "FTMOQ08\\QM5_11128_tm-rsi25-75_currentq08_20260712",
+    "terminal_path": "D:\\QM\\mt5\\T3\\MQL5\\Experts\\FTMOQ08\\QM5_11128_tm-rsi25-75_currentq08_20260712.ex5",
+    "source_binary_path": "framework\\EAs\\QM5_11128_tm-rsi25-75\\QM5_11128_tm-rsi25-75.ex5",
+    "terminal_sha256": "B0B5F350A7652E03D734890F2782F57041850E4932DCA550BA3ED43EA0342A9F",
+    "source_sha256": "B0B5F350A7652E03D734890F2782F57041850E4932DCA550BA3ED43EA0342A9F",
+    "byte_identical": true
+  },
+  "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_11128_ndx_d1_currentq08_unique_expert_t3_20260712\\QM5_11128\\20260712_102207\\summary.json",
+  "attempts": 3,
+  "attempt_results": [
+    "BARS_ZERO_EMPTY_EXPERT_EMPTY_SYMBOL_M0_1970",
+    "BARS_ZERO_EMPTY_EXPERT_EMPTY_SYMBOL_M0_1970",
+    "BARS_ZERO_EMPTY_EXPERT_EMPTY_SYMBOL_M0_1970"
+  ],
+  "tester_log_marker": "NDX.DWX: history synchronization error",
+  "reason_classes": [
+    "BARS_ZERO",
+    "INCOMPLETE_RUNS",
+    "HISTORY_SYNCHRONIZATION_ERROR"
+  ],
+  "independent_t4_observation": {
+    "summary_path": "D:\\QM\\reports\\pipeline_ftmo_joint\\fresh_11128_ndx_d1_currentq08b_20260712\\QM5_11128\\20260712_085655\\summary.json",
+    "valid_trades": 163,
+    "native_profit_factor": 1.26,
+    "native_net_profit": 7702.92,
+    "admission_status": "PENDING_SECOND_CURRENT_DETERMINISTIC_RECONSTRUCTION"
+  },
+  "decision": "Do not reconcile, cost, or portfolio-screen the T3 result. Do not treat the failed attempts as evidence against the strategy. Keep 11128 NDX infrastructure-pending until a second independent current-binary run exactly matches the valid T4 report sequence."
+}

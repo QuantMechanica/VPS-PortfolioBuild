@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-07-12",
+  "status": "PREDECLARED_BEFORE_SELECTION",
+  "deployment_allowed": false,
+  "base_manifest": "artifacts/ftmo_joint_eleven_sleeve_incumbent_weight_path_manifest_2026-07-12.json",
+  "base_manifest_sha256": "56EF3EB7216B743290E8C6ADD61FC5FC321E00FCED6AF438D0C168545B850847",
+  "scenario": "path_01_11095_gbpusd_down2",
+  "hypothesis": "A sleeve/weekday combination that loses after current FTMO costs in at least four of five development years may represent a stable calendar defect rather than useful challenge density.",
+  "selection_contract": {
+    "training_years": [2018, 2019, 2020, 2021, 2022],
+    "weekday_basis": "Prague calendar weekday at trade entry",
+    "minimum_trades_each_training_year": 2,
+    "minimum_negative_years": 4,
+    "pooled_net_requirement": "strictly_negative",
+    "action": "Exclude only the qualifying entry weekdays from that sleeve; all weights and policy parameters remain locked.",
+    "no_post_selection_relaxation": true
+  },
+  "development_gate": {
+    "simulation_years": [2018, 2019, 2021, 2022],
+    "excluded_years": [2017, 2020, 2023, 2024, 2025, 2026],
+    "risk_multiplier": 25.0,
+    "daily_stop": 4500.0,
+    "full_risk_room": 4000.0,
+    "room_retention": 0.2,
+    "control_normal_pass_pct": 59.05848787446505,
+    "control_adverse_pass_pct": 51.35520684736091,
+    "survivor_rule": "The one mechanically derived manifest must strictly improve both normal and adverse pass rates."
+  },
+  "validation_gate": {
+    "year": 2023,
+    "open_rule": "Open only after the development survivor rule passes.",
+    "survivor_rule": "The unchanged weekday exclusions must strictly improve both normal and adverse 2023 pass rates."
+  },
+  "sealed_holdout": {
+    "years": [2024, 2025],
+    "open_rule": "Open once only after development and 2023 both pass."
+  },
+  "label": "RESEARCH_ONLY_NO_GO"
+}
