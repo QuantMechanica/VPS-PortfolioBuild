@@ -3,7 +3,7 @@
 ; ea_id:        13059
 ; ea_slug:      xti-audjpy-rspr
 ; ea_version:   v5.0
-; set_version:  s20260709-stress-harsh
+; set_version:  s20260714-stress-harsh
 ; symbol:       QM5_13059_XTI_AUDJPY_RSPREAD_D1
 ; host_symbol:  XTIUSD.DWX
 ; timeframe:    D1
@@ -13,7 +13,7 @@
 ; portfolio_weight: 1
 ; build_hash:   87280028f0cf174dfc21b3d1651cb9d181ae6180df8353ae331524b31474eaed
 ; author:       Development
-; date:         2026-07-09
+; date:         2026-07-14
 ;==========================================================
 qm_magic_slot_offset=0
 qm_rng_seed=99
