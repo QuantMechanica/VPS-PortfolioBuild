@@ -128,21 +128,95 @@ datetime Strategy_CurrentPairEntryTime()
    return earliest;
   }
 
-int Strategy_CurrentPairDirection()
+bool Strategy_PairCompositionValid()
   {
+   int xti_direction = 0;
+   int xng_direction = 0;
+   int xti_count = 0;
+   int xng_count = 0;
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
+      if(ticket == 0 || !PositionSelectByTicket(ticket) || !Strategy_IsPairPosition())
          continue;
-      if(PositionGetString(POSITION_SYMBOL) != g_leg_xti)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != QM_MagicChecked(qm_ea_id, 0, g_leg_xti))
-         continue;
+      const string symbol = PositionGetString(POSITION_SYMBOL);
       const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      return (position_type == POSITION_TYPE_BUY) ? 1 : -1;
+      const int direction = (position_type == POSITION_TYPE_BUY) ? 1 : -1;
+      if(symbol == g_leg_xti)
+        {
+         xti_direction = direction;
+         ++xti_count;
+        }
+      else if(symbol == g_leg_xng)
+        {
+         xng_direction = direction;
+         ++xng_count;
+        }
      }
-   return 0;
+   return (xti_count == 1 && xng_count == 1 && xti_direction == -xng_direction);
+  }
+
+int Strategy_MonthKeyForTime(const datetime value)
+  {
+   if(value <= 0)
+      return 0;
+   MqlDateTime parts;
+   TimeToStruct(value, parts);
+   if(parts.year <= 0 || parts.mon < 1 || parts.mon > 12)
+      return 0;
+   return parts.year * 100 + parts.mon;
+  }
+
+bool Strategy_IsPairMagic(const long magic)
+  {
+   const int xti_magic = QM_MagicChecked(qm_ea_id, 0, g_leg_xti);
+   const int xng_magic = QM_MagicChecked(qm_ea_id, 1, g_leg_xng);
+   return (magic == xti_magic || magic == xng_magic);
+  }
+
+bool Strategy_MonthAlreadyEntered(const int month_key)
+  {
+   if(month_key <= 0)
+      return true;
+   if(g_last_entry_month_key == month_key)
+      return true;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket) || !Strategy_IsPairPosition())
+         continue;
+      const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
+      if(Strategy_MonthKeyForTime(opened) == month_key)
+         return true;
+     }
+
+   MqlDateTime start_parts;
+   ZeroMemory(start_parts);
+   start_parts.year = month_key / 100;
+   start_parts.mon = month_key % 100;
+   start_parts.day = 1;
+   const datetime month_start = StructToTime(start_parts);
+   if(month_start <= 0 || !HistorySelect(month_start, TimeCurrent()))
+      return true; // Fail closed: a restart must not bypass the one-package-per-month guard.
+
+   const int deal_count = HistoryDealsTotal();
+   for(int i = deal_count - 1; i >= 0; --i)
+     {
+      const ulong deal_ticket = HistoryDealGetTicket(i);
+      if(deal_ticket == 0)
+         continue;
+      const long magic = HistoryDealGetInteger(deal_ticket, DEAL_MAGIC);
+      if(!Strategy_IsPairMagic(magic))
+         continue;
+      const ENUM_DEAL_ENTRY entry_kind = (ENUM_DEAL_ENTRY)HistoryDealGetInteger(deal_ticket, DEAL_ENTRY);
+      if(entry_kind != DEAL_ENTRY_IN && entry_kind != DEAL_ENTRY_INOUT)
+         continue;
+      const datetime deal_time = (datetime)HistoryDealGetInteger(deal_ticket, DEAL_TIME);
+      if(Strategy_MonthKeyForTime(deal_time) == month_key)
+         return true;
+     }
+   return false;
   }
 
 void Strategy_ClosePair(const QM_ExitReason reason)
