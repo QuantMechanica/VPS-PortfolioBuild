@@ -1227,41 +1227,59 @@ def chk_unenqueued_eas_count(con) -> dict:
 
 
 def chk_codex_bridge_heartbeat(con) -> dict:
-    """Interactive bridge heartbeat freshness."""
-    auth_broken = _is_codex_auth_broken(con)
-    # "direct pump Codex is active" via real build activity, not an instantaneous
-    # `Get-Process codex` snapshot (transient procs flip this OK<->FAIL randomly —
-    # same cry-wolf fixed in codex_auth_broken / codex_zero_activity). The legacy
-    # bridge heartbeat is expected-stale (bridge decommissioned); it's fine as long
-    # as the direct pump is building.
+    """Direct build-lane liveness (legacy /goal bridge RETIRED 2026-05-17).
+
+    state/codex_bridge_heartbeat.txt was written by the interactive Codex /goal
+    bridge, decommissioned in the pipeline-rewrite era — nothing touches the file
+    anymore, so its age grows forever. It must never page anyone toward "restart
+    the bridge": 2026-07-14 a dirty-guard build stall surfaced here as FAIL
+    "heartbeat stale 57d / inspect the interactive Codex bridge" — a pure
+    mislabel, the real cause was repo_dirty_build_guard. The check now judges
+    the DIRECT pump lane and, when silent, classifies the real cause via
+    _build_lane_block_reason (same cry-wolf hardening as codex_auth_broken).
+    Silent-lane severity stays WARN — codex_zero_activity already FAILs on
+    (0 activity + pending builds); a second FAIL here would just double-page.
+    """
+    # Real activity signal, not an instantaneous `Get-Process codex` snapshot
+    # (transient procs flip OK<->FAIL randomly — cry-wolf fixed 2026-06-09).
     _cutoff_3h = (_utc_now() - dt.timedelta(hours=3)).strftime("%Y-%m-%dT%H:%M:%SZ")
     direct_codex_active = con.execute(
         "SELECT COUNT(*) FROM tasks WHERE kind='build_ea' "
         "AND status IN ('done','failed') AND updated_at >= ?", (_cutoff_3h,)
     ).fetchone()[0] > 0
-    if not CODEX_BRIDGE_HEARTBEAT.exists():
-        return _check("codex_bridge_heartbeat", "WARN", "missing", 300,
-                      "codex bridge heartbeat file missing",
-                      "Ensure the Codex /goal poller touches state/codex_bridge_heartbeat.txt each cycle.")
-    age = int((_utc_now().timestamp()) - CODEX_BRIDGE_HEARTBEAT.stat().st_mtime)
-    if auth_broken and age > 1800:
-        return _check("codex_bridge_heartbeat", "WARN", age, 1800,
-                      f"heartbeat stale for {age}s (codex_auth_broken upstream)",
-                      "Downstream of codex_auth_broken — restart bridge after OWNER refreshes Codex login.")
-    if age > 1800:
-        if direct_codex_active:
-            return _check("codex_bridge_heartbeat", "OK", age, 1800,
-                          f"legacy bridge heartbeat stale for {age}s; direct pump Codex is active",
-                          "Interactive /goal bridge appears unused. Restart only if relying on codex_inbox polling.")
-        return _check("codex_bridge_heartbeat", "FAIL", age, 1800,
-                      f"heartbeat stale for {age}s",
-                      "Restart or inspect the interactive Codex bridge.")
-    if age > 300:
-        return _check("codex_bridge_heartbeat", "WARN", age, 300,
-                      f"heartbeat stale for {age}s",
-                      "Bridge may be idle or wedged; check Codex terminal.")
-    return _check("codex_bridge_heartbeat", "OK", age, 300,
-                  f"heartbeat age {age}s", "")
+    relic = ""
+    if CODEX_BRIDGE_HEARTBEAT.exists():
+        relic_days = (_utc_now().timestamp() - CODEX_BRIDGE_HEARTBEAT.stat().st_mtime) / 86400.0
+        relic = f" (legacy /goal bridge retired 2026-05-17; heartbeat relic {relic_days:.0f}d old)"
+    if direct_codex_active:
+        return _check("codex_bridge_heartbeat", "OK", 0, 1,
+                      f"direct pump Codex active{relic}", "")
+    n_pending = con.execute(
+        "SELECT COUNT(*) FROM tasks WHERE kind='build_ea' AND status='pending'"
+    ).fetchone()[0]
+    if n_pending == 0:
+        return _check("codex_bridge_heartbeat", "OK", 0, 1,
+                      f"build lane idle, no pending builds{relic}", "")
+    # Silent lane WITH pending builds: name the real cause, never the retired bridge.
+    if _is_codex_auth_broken(con):
+        return _check("codex_bridge_heartbeat", "WARN", 1, 1,
+                      f"no direct build activity in 3h, {n_pending} pending "
+                      f"(codex_auth_broken upstream){relic}",
+                      "Downstream of codex_auth_broken — recovers once OWNER runs `codex login`.")
+    reason, rdetail = _build_lane_block_reason(con)
+    if reason == "dirty_guard":
+        return _check("codex_bridge_heartbeat", "WARN", 1, 1,
+                      f"no direct build activity in 3h, {n_pending} pending — {rdetail}{relic}",
+                      "Build lane blocked by repo_dirty_build_guard: commit/clean the tree. "
+                      "Uncommitted SOURCE never self-heals via the pump "
+                      "(project_qm_dirty_guard_build_deadlock). Do NOT restart the retired bridge.")
+    if reason == "backpressure":
+        return _check("codex_bridge_heartbeat", "OK", 0, 1,
+                      f"builds paused by backpressure (intentional){relic}", "")
+    return _check("codex_bridge_heartbeat", "WARN", 1, 1,
+                  f"no direct build activity in 3h, {n_pending} pending, cause unconfirmed{relic}",
+                  "See codex_zero_activity; check the pump/orchestration task and the codex CLI. "
+                  "The legacy interactive bridge is retired — do NOT restart it.")
 
 
 def chk_disk_free_space(con) -> dict:
