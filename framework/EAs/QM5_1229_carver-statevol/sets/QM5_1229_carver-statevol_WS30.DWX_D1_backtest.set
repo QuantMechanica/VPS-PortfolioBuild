@@ -3,32 +3,28 @@
 ; ea_id:        1229
 ; ea_slug:      carver-statevol
 ; ea_version:   v5.0
-; set_version:  s20260618-001
+; set_version:  s20260714-001
 ; symbol:       WS30.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   30
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   09404e785d0f672acec8a5995e018ffbe45629e8797826bbdb57ad3798080889
+; build_hash:   pending
 ; author:       Development
-; date:         2026-06-18
+; date:         2026-07-14
 ;==========================================================
+qm_ea_id=1229
 qm_magic_slot_offset=30
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1229_carver-statevol.md
+strategy_vol_lookback=25
+strategy_long_vol_baseline=2500
+strategy_smooth=10
+strategy_entry_threshold=5.0
+strategy_atr_period=20
+strategy_atr_stop_mult=2.5
+strategy_min_warmup_bars=500

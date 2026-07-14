@@ -3,14 +3,14 @@
 **EA ID:** QM5_1229
 **Slug:** carver-statevol
 **Source:** 2a380bee-1ec4-50d1-a348-b10fac642c7a (see `sources/rob-carver-blog`)
-**Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Author of this spec:** Claude
+**Last revised:** 2026-07-14
 
 ---
 
 ## 1. Strategy Logic
 
-On each closed D1 bar, the EA computes 25-day standard deviation of daily percentage returns, divides it by a long-run average of that volatility, ranks the current normalized volatility against prior normalized values, and maps the percentile to a forecast from -20 to +20 with 10-day EMA smoothing. It opens long when the smoothed forecast is above +5 and short when it is below -5. Long positions close when the cached closed-bar forecast falls to 0 or lower; short positions close when it rises to 0 or higher. Every entry uses an emergency stop at 2.5 times ATR(20) on D1.
+On each closed D1 bar, the EA computes 25-day standard deviation of daily percentage returns, divides it by a growing-window long-run average of that volatility (capped at 2500 samples), ranks the current normalized volatility against all prior normalized values, and maps the percentile to a forecast from -20 to +20 with 10-day EMA smoothing. It opens long when the smoothed forecast is above +5 and short when it is below -5. Long positions close when the cached closed-bar forecast falls to 0 or lower; short positions close when it rises to 0 or higher. Every entry uses an emergency stop at 2.5 times ATR(20) on D1. A one-time historical backfill (single gated `CopyRates` call on the EA's first closed bar) seeds the volatility/percentile history from existing chart data so the `strategy_min_warmup_bars` filter is satisfied immediately rather than only after that many bars elapse live.
 
 ---
 
@@ -20,13 +20,13 @@ On each closed D1 bar, the EA computes 25-day standard deviation of daily percen
 |---|---:|---|---|
 | `strategy_vol_lookback` | 25 | 2+ | Daily percentage-return standard deviation lookback. |
 | `strategy_long_vol_baseline` | 2500 | 1+ | Preferred long-run average window for daily volatility. |
-| `strategy_smooth_period` | 10 | 1+ | EMA smoothing period applied to raw forecast. |
-| `strategy_entry_threshold` | 5.0 | 0-20 | Forecast threshold for long and short entries. |
-| `strategy_exit_threshold` | 0.0 | 0-20 | Forecast level that triggers strategy exit. |
-| `strategy_min_prior_bars` | 500 | 20+ | Minimum D1 history for smoke and percentile calculations. |
+| `strategy_smooth` | 10 | 1+ | EMA smoothing period applied to raw forecast. |
+| `strategy_entry_threshold` | 5.0 | 0-20 | Forecast threshold for long and short entries (exit is fixed at 0, per card). |
+| `strategy_min_warmup_bars` | 500 | 20+ | Minimum D1 daily_vol samples before entries are eligible. |
 | `strategy_atr_period` | 20 | 1+ | ATR period used for the emergency stop. |
-| `strategy_atr_sl_mult` | 2.5 | 0+ | ATR multiple used for the emergency stop distance. |
-| `strategy_spread_lookback` | 20 | 0+ | D1 spread lookback for the 2x median spread entry cap. |
+| `strategy_atr_stop_mult` | 2.5 | 0+ | ATR multiple used for the emergency stop distance. |
+
+> Spread cap window is fixed at 20 D1 samples (`QM_1229_SPREAD_WIN`), matching the card's "2x MedianSpread(20D)" filter — not exposed as an input since the card does not vary it.
 
 ---
 
@@ -126,3 +126,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 |---|---|---|---|
 | v1 | 2026-06-18 | Initial build from card | 0fe12180-f3b0-4f53-8fa8-5f646af594aa |
 | v2 | 2026-07-07 | Q02 infra recovery; replace per-bar full EMA rebuild with recursive D1 forecast smoothing | codex:agents/board-advisor:qm5-1229-q02-infra |
+| v3 | 2026-07-14 | REJECT_REWORK fix (codex_review 2a8d7d6d/dce68ee5): removed file-scope `g_statevol_last_bar_time` bar-time gate (framework corset violation); fixed a double->500-bar warmup compounding bug (baseline avg AND percentile-rank prior-count each independently required >=500 samples, needing ~1000+ D1 bars before any forecast could be produced) that was the root cause of 0 trades on EURUSD.DWX 2024 smoke; replaced with a one-time gated history backfill + incremental per-bar update against a single `strategy_min_warmup_bars` threshold | 97d2abe9-10ef-4a94-86c8-5e8927251cf3 |
