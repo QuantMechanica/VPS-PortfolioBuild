@@ -3,35 +3,24 @@
 ; ea_id:        13129
 ; ea_slug:      energy-rsj
 ; ea_version:   v5.0
-; set_version:  s20260711-001
-; symbol:       QM5_13129_ENERGY_RSJ_D1
-; host_symbol:  XTIUSD.DWX
+; set_version:  s20260714-001
+; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   f4dba21a9aec64310cc0df85b006d656f72a698be45cba133cc3e5005f2b3167
+; build_hash:   pending
 ; author:       Development
-; date:         2026-07-11
+; date:         2026-07-14
 ;==========================================================
 qm_ea_id=13129
 qm_magic_slot_offset=0
-qm_rng_seed=42
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; Q02 structural baseline: no external event dependency.
-qm_news_temporal=0
-qm_news_compliance=0
-qm_news_mode_legacy=0
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-; Source-aligned one-month paired holding period.
-qm_friday_close_enabled=0
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0.0
-; strategy-specific locked baseline
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\energy-rsj_card.md
 strategy_lookback_months=1
 strategy_history_bars=80
 strategy_min_return_observations=15
