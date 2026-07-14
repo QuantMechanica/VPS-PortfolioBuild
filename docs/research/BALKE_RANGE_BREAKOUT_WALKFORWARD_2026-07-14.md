@@ -46,10 +46,23 @@ timeout, per-attempt t0) and re-run; T9 tester log confirms clean trading behavi
 1. **The window WAS the failure.** With correct GMT-normalized 03:00–06:00, the strategy is
    OOS-profitable on USDJPY across 795 trades with almost no DEV→OOS degradation
    (1.24 → 1.20). 1142's Q04 FAIL was purely the mis-implemented 22:00 raw-broker window.
-2. **USDJPY = WIN (gross).** Stable walkforward signature, ~187 trades/yr.
-   **Cost caveat:** ~$86 gross/trade vs FX round-trip commission ~$45/trade at our sizing
-   → costed PF estimate ~1.09, net ≈ +$32k OOS. Thin but positive; the costed pipeline
-   gates (Q08 commission handoff) are the real judge.
+2. **USDJPY = WIN (gross AND costed).** Stable walkforward signature, ~187 trades/yr.
+   **Costed with venue truth (OWNER directive 2026-07-14: no harsh worst-case
+   assumptions):** recomputed from the actual OOS stream (795 trades, avg 4.39 lots,
+   avg notional $397k) — embedded DWX commission stripped, venue model re-applied:
+
+   | Cost model | OOS Net | PF | MaxDD | comm/trade |
+   |---|---|---|---|---|
+   | Gross (no cost) | +$76,964 | 1.223 | −$19,098 | $0 |
+   | Registry max(0.5bps, $5/lot) | +$59,496 | **1.168** | −$20,607 | $21.97 |
+   | DXZ truth ($5/lot RT) | +$59,511 | 1.168 | −$20,607 | $21.95 |
+   | FTMO truth ($3/lot RT) | +$66,492 | **1.190** | −$20,003 | $13.17 |
+   | ~~old blanket $45/trade~~ | ~~+$41,189~~ | ~~1.113~~ | — | (wrong: other EAs' lot profile) |
+
+   The earlier "~$45/trade → PF ~1.09" caveat was a blanket average measured on OTHER
+   FX EAs with larger lots — 13213's true realized commission is ~$22/trade (DXZ) /
+   ~$13/trade (FTMO). **Swap = exactly $0, not an assumption:** max hold 12.0h, zero
+   trades >24h (the 18:00 close guarantees no overnight positions).
 3. **XAU = NO WIN.** OOS PF 1.03 gross ≈ breakeven before costs, MaxDD −$40.6k vs net
    +$13.3k. Reproduces Balke's own caveat ("gold has drawdown phases") and our independent
    master-EA finding that XAU range-breakout styles whipsaw.
