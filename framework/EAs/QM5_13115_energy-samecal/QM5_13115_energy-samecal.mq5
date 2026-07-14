@@ -496,7 +496,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(!g_monthly_rebalance_bar || g_cache_month_key <= 0)
       return false;
-   if(g_cache_month_key == g_last_entry_month_key)
+   if(Strategy_MonthAlreadyEntered(g_cache_month_key))
       return false;
    if(Strategy_OpenPairLegCount() > 0)
       return false;
@@ -513,7 +513,7 @@ void Strategy_ManageOpenPosition()
    const int open_legs = Strategy_OpenPairLegCount();
    if(open_legs <= 0)
       return;
-   if(open_legs != 2 || Strategy_CurrentPairDirection() == 0)
+   if(open_legs != 2 || !Strategy_PairCompositionValid())
      {
       Strategy_ClosePair(QM_EXIT_STRATEGY);
       return;
