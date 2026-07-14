@@ -16,9 +16,21 @@
 ;==========================================================
 qm_ea_id=13123
 qm_magic_slot_offset=0
+qm_rng_seed=42
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+; Q02 structural baseline: no external event dependency (matches sibling
+; energy-basket EAs 13151/13203 and this EA's own v1 setfile s20260710-001).
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_mode_legacy=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+; Source-aligned one-month paired holding period.
+qm_friday_close_enabled=0
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=C:\QM\repo\strategy-seeds\cards\energy-val-rank_card.md
 strategy_anchor_near_months=54
