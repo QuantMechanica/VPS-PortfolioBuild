@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        13131
 ; ea_slug:      energy-kurt-rank
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   83856841ff8b5525db7b1cb7cdc71cc6fba51ed318c7786ee471aaa1853db543
+; build_hash:   ce2c3f48e0c1c098fe02043de905f6828b21968de49698e636cc5ae8b843481e
 ; author:       Development
 ; date:         2026-07-11
 ;==========================================================
