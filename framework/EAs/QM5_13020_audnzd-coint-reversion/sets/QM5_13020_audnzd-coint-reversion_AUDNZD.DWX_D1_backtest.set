@@ -1,24 +1,22 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        13020
 ; ea_slug:      audnzd-coint-reversion
 ; ea_version:   v5.0
-; set_version:  s20260706-001
+; set_version:  s20260714-001
 ; symbol:       AUDNZD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
-; tester_currency: NZD
-; tester_deposit: 150000
 ; portfolio_weight: 1
-; build_hash:   2431c1e7c8c46ae6ccce76c5bbb6e0732df87b54d75b0f5a3e3336e9540b2817
+; build_hash:   pending
 ; author:       Development
-; date:         2026-07-06
+; date:         2026-07-14
 ;==========================================================
 qm_ea_id=13020
 qm_magic_slot_offset=0
-RISK_FIXED=1500
+RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
