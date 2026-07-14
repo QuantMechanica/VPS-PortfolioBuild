@@ -45,7 +45,7 @@ EXPERT_REMOVED_RE = re.compile(
 # D2-d S3 15-sleeve book live since 2026-07-05 (decisions/2026-07-04_t_live_d2d_s3_15sleeve_book.md)
 EXPECTED_LIVE_SLEEVES = 15
 PRESET_FILE_RE = re.compile(
-    r"^slot(?P<slot>\d+)_(?P<symbol>[^_]+)_(?P<tf>[^_]+)_QM5_(?P<ea_id>\d+)_.*_magic(?P<magic>\d+)\.set$",
+    r"^slot(?P<slot>\d+)_(?P<symbol>[^_]+)_(?P<tf>[^_]+)_QM5_(?P<ea_id>\d+)_.*_magic(?P<magic>\d+)(?:_[^.]+)?\.set$",
     re.IGNORECASE,
 )
 SYNC_RE = re.compile(

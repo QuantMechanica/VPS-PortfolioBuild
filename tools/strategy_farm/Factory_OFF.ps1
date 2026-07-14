@@ -65,7 +65,16 @@ $daemons = @(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe' OR Name='
 foreach ($d in $daemons) { Stop-Process -Id $d.ProcessId -Force -ErrorAction SilentlyContinue }
 Write-Host ("  worker daemons killed : {0}" -f $daemons.Count)
 
-# 3. kill transient terminal64.exe backtest processes
+# 3. Kill run_smoke wrappers before their terminal children. Reversing this order
+#    leaves a race where a wrapper spawns another terminal after the first sweep.
+$runSmokePath = 'framework\scripts\run_smoke.ps1'
+$smokeWrappers = @(Get-CimInstance Win32_Process -Filter "Name='pwsh.exe' OR Name='powershell.exe'" -ErrorAction SilentlyContinue |
+                   Where-Object { $_.CommandLine -match [regex]::Escape($runSmokePath) -and $_.CommandLine -notmatch 'T_Live' })
+foreach ($p in $smokeWrappers) { Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue }
+Write-Host ("  run_smoke wrappers killed : {0}" -f $smokeWrappers.Count)
+Start-Sleep -Seconds 2
+
+# 4. kill transient terminal64.exe backtest processes
 #    POSITIVE path anchor (Operating Rules 2026-07-03): only factory terminals under
 #    D:\QM\mt5\ are ever killed. T_Live (C:\QM\mt5\T_Live) and the FTMO challenge
 #    terminal (C:\Program Files\FTMO...) never match the anchor.
@@ -75,14 +84,12 @@ $terms = @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorA
 foreach ($p in $terms) { Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue }
 Write-Host ("  terminal64.exe killed : {0} (factory-path-anchored; T_Live + FTMO safe)" -f $terms.Count)
 
-# 4. kill stray run_smoke wrapper pwsh processes (path-anchored; never T_Live)
-#    run_smoke post-run triggers pump_task.py; kill the wrappers so the pump
-#    resurrection chain (run_smoke -> run_pump_task -> farmctl pump) cannot fire.
-$runSmokePath = 'framework\scripts\run_smoke.ps1'
-$smokeWrappers = @(Get-CimInstance Win32_Process -Filter "Name='pwsh.exe' OR Name='powershell.exe'" -ErrorAction SilentlyContinue |
-                   Where-Object { $_.CommandLine -match [regex]::Escape($runSmokePath) -and $_.CommandLine -notmatch 'T_Live' })
-foreach ($p in $smokeWrappers) { Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue }
-Write-Host ("  run_smoke wrappers killed : {0}" -f $smokeWrappers.Count)
+# 4b. kill orphaned/local tester agents under factory roots. A killed terminal can
+#     otherwise leave metatester64.exe holding the terminal profile during an OFF window.
+$metaTesters = @(Get-CimInstance Win32_Process -Filter "Name='metatester64.exe'" -ErrorAction SilentlyContinue |
+                 Where-Object { $_.ExecutablePath -like 'D:\QM\mt5\*' -or $_.CommandLine -match 'D:\\QM\\mt5\\' })
+foreach ($p in $metaTesters) { Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue }
+Write-Host ("  metatester64.exe killed : {0} (factory-path-anchored)" -f $metaTesters.Count)
 
 Start-Sleep -Seconds 3
 $leftDaemons = @(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe'" -ErrorAction SilentlyContinue |
@@ -90,10 +97,21 @@ $leftDaemons = @(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe'" -Err
 $leftTerms   = @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
                  Where-Object { ($_.ExecutablePath -like 'D:\QM\mt5\*' -or $_.CommandLine -match 'D:\\QM\\mt5\\') `
                                 -and $_.CommandLine -notmatch 'T_Live' }).Count
+$leftMeta    = @(Get-CimInstance Win32_Process -Filter "Name='metatester64.exe'" -ErrorAction SilentlyContinue |
+                 Where-Object { $_.ExecutablePath -like 'D:\QM\mt5\*' -or $_.CommandLine -match 'D:\\QM\\mt5\\' }).Count
 
-# 5. Save pre-OFF codex_parallel; set to 0 during OFF window.
+# 5. Save pre-OFF codex_parallel; repeated OFF calls preserve the original restore value.
 $codexParallelBefore = '1'
-try { $codexParallelBefore = (Get-Content $codexParallelPath -ErrorAction Stop).Trim() } catch {}
+if (Test-Path -LiteralPath $factoryOffFlagPath) {
+    try {
+        $existingOff = Get-Content -LiteralPath $factoryOffFlagPath -Raw -ErrorAction Stop | ConvertFrom-Json
+        if ($null -ne $existingOff.codex_parallel_before) {
+            $codexParallelBefore = [string]$existingOff.codex_parallel_before
+        }
+    } catch {}
+} else {
+    try { $codexParallelBefore = (Get-Content $codexParallelPath -ErrorAction Stop).Trim() } catch {}
+}
 Set-Content -Path $codexParallelPath -Value '0' -Encoding ASCII -ErrorAction SilentlyContinue
 Write-Host ("  codex_parallel: {0} -> 0 (saved in flag file)" -f $codexParallelBefore)
 
@@ -106,10 +124,10 @@ Set-Content -Path $factoryOffFlagPath -Value $flagJson -Encoding UTF8
 Write-Host ("  FACTORY_OFF.flag written: {0}" -f $factoryOffFlagPath)
 
 Write-Host ''
-if ($leftDaemons -eq 0 -and $leftTerms -eq 0) {
-    Write-Host '  FACTORY STOPPED - 0 worker daemons, 0 terminals.' -ForegroundColor Green
+if ($leftDaemons -eq 0 -and $leftTerms -eq 0 -and $leftMeta -eq 0) {
+    Write-Host '  FACTORY STOPPED - 0 worker daemons, 0 terminals, 0 tester agents.' -ForegroundColor Green
 } else {
-    Write-Host ("  WARNING: still running - daemons={0} terminals={1}" -f $leftDaemons,$leftTerms) -ForegroundColor Red
+    Write-Host ("  WARNING: still running - daemons={0} terminals={1} tester_agents={2}" -f $leftDaemons,$leftTerms,$leftMeta) -ForegroundColor Red
     Write-Host '  Re-run this script, or check Task Scheduler.' -ForegroundColor Red
 }
 Write-Host ''

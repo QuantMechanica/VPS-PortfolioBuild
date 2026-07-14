@@ -123,6 +123,7 @@ PHASE_RUNNER_SCRIPTS = {
     "P8": "p8_news_driver.py",
 }
 Q09_PORTFOLIO_MIN_TRADES = 20
+Q08_NEIGHBORHOOD_MAX_PARAMS = 2
 NEWS_MATRIX_FALLBACK = Path(r"D:\QM\data\news_calendar\news_matrix.csv")
 NEWS_CALENDAR_CANDIDATES = (
     Path(r"D:\QM\data\news_calendar\news_calendar.csv"),
@@ -3312,6 +3313,8 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
             "--log", str(log_path),
             "--out-dir", str(report_root / ea_id / "Q08" / symbol.replace(".", "_")),
             "--terminal", terminal or "T1",
+            "--baseline-setfile", str(item_row["setfile_path"] or ""),
+            "--neighborhood-max-params", str(Q08_NEIGHBORHOOD_MAX_PARAMS),
         ]
     elif phase == "Q09":
         cmd.extend([

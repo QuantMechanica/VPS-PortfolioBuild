@@ -105,6 +105,54 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertEqual(row[0], "active")
             self.assertEqual(row[1], "T2")
 
+    def test_specific_claim_requires_factory_off_and_selects_exact_item(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "queue-first", "XAUUSD.DWX", phase="Q10")
+            self._insert_work_item(root, "target-q08", "USDJPY.DWX", phase="Q08")
+
+            refused = terminal_worker.claim_specific_atomic(root, "T2", "target-q08")
+            self.assertFalse(refused.get("claimed"))
+            self.assertEqual(refused.get("reason"), "factory_off_required")
+
+            flag = root / "state" / "FACTORY_OFF.flag"
+            flag.parent.mkdir(parents=True, exist_ok=True)
+            flag.write_text("{}", encoding="ascii")
+            claimed = terminal_worker.claim_specific_atomic(root, "T2", "target-q08")
+
+            self.assertTrue(claimed.get("claimed"))
+            self.assertEqual(claimed["item"]["id"], "target-q08")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                rows = dict(conn.execute("SELECT id, status FROM work_items").fetchall())
+                payload = json.loads(
+                    conn.execute("SELECT payload_json FROM work_items WHERE id='target-q08'").fetchone()[0]
+                )
+            self.assertEqual(rows["queue-first"], "pending")
+            self.assertEqual(rows["target-q08"], "active")
+            self.assertTrue(payload["targeted_factory_off_run"])
+
+    def test_specific_claim_refuses_busy_terminal(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "already-active",
+                "NDX.DWX",
+                phase="Q08",
+                status="active",
+                claimed_by="T2",
+            )
+            self._insert_work_item(root, "target-q08", "USDJPY.DWX", phase="Q08")
+            flag = root / "state" / "FACTORY_OFF.flag"
+            flag.parent.mkdir(parents=True, exist_ok=True)
+            flag.write_text("{}", encoding="ascii")
+
+            refused = terminal_worker.claim_specific_atomic(root, "T2", "target-q08")
+
+            self.assertFalse(refused.get("claimed"))
+            self.assertEqual(refused.get("reason"), "terminal_worker_busy")
+            self.assertEqual(refused.get("item_id"), "already-active")
+
     def test_per_symbol_lock_is_respected(self) -> None:
         with self._root() as tmp:
             root = Path(tmp) / "farm"

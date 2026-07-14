@@ -11,8 +11,8 @@ Two jobs, no side effects on anything live:
        the greedy assembler: --book-source selected proposes challenger-SWAPS (drops
        live sleeves), which are never auto (OWNER decides at the session).
 
-  (#3) FTMO trial P&L: book equity/DD trend from the pulse, per-EA fills + latest
-       day_pnl by asset class, buffer to the FTMO 5% daily / 10% total limits.
+  (#3) FTMO trial P&L: book equity/DD trend from the pulse, per-EA fills,
+       strict paid-challenge qualification, and buffer to the FTMO limits.
 
 Writes: docs/ops/evidence/pre_sunday_prep_<date>.md + state/pre_sunday_prep.json.
 Scheduled read-only Saturday; the deploy-staging build (presets/binaries/SHA) and any
@@ -106,7 +106,13 @@ def trial_pnl() -> dict:
     r: dict = {"section": "ftmo_trial_pnl"}
     try:
         pulse = json.loads(PULSE_JSON.read_text(encoding="utf-8"))
-        r["latest_pulse"] = {k: pulse.get(k) for k in ("checked_at_utc", "verdict", "equity", "day_pnl", "total_dd_pct", "day_loss_pct", "magics_seen", "expected_magics")}
+        r["latest_pulse"] = {k: pulse.get(k) for k in (
+            "checked_at_utc", "verdict", "equity", "day_pnl", "total_dd_pct",
+            "day_loss_pct", "magics_seen", "expected_magics",
+            "server_requests_lower_bound", "server_request_day_broker",
+            "equity_snapshot_age_minutes", "kill_switch_day_anchor_magics",
+            "kill_switch_book_tag_magics",
+        )}
         eq = float(pulse.get("equity") or 0)
         r["buffer_to_total_limit_pp"] = round(10.0 - float(pulse.get("total_dd_pct") or 0), 3)
         r["buffer_to_daily_limit_pp"] = round(5.0 - abs(float(pulse.get("day_loss_pct") or 0)), 3)
@@ -124,7 +130,31 @@ def trial_pnl() -> dict:
             r["worst_equity_seen"] = {"ts": worst[0], "equity": worst[1], "dd_pct": round((100000 - worst[1]) / 1000, 3)}
     except Exception as e:
         r["trend_error"] = str(e)
-    # per-EA fills + latest day_pnl by asset class
+    try:
+        sys.path.insert(0, str(REPO / "tools" / "strategy_farm"))
+        from portfolio.ftmo_qualification import build_inventory
+
+        qualification = build_inventory(DB, repo_root=REPO)
+        r["qualification"] = {
+            "counts": qualification["counts"],
+            "challenge_ready_count": qualification["challenge_ready_count"],
+            "research_leads": [
+                {"ea_id": row["ea_id"], "symbol": row["symbol"], "blockers": row["blockers"]}
+                for row in qualification["candidates"]
+                if row["state"] == "RESEARCH_LEAD"
+            ],
+        }
+        r["paid_challenge_verdict"] = (
+            "QUALIFICATION_REVIEW_REQUIRED"
+            if qualification["challenge_ready_count"] > 0
+            else "NO_GO_NO_STRICTLY_QUALIFIED_EAS"
+        )
+    except Exception as e:
+        r["qualification_error"] = str(e)
+        r["paid_challenge_verdict"] = "NO_GO_QUALIFICATION_UNAVAILABLE"
+
+    # Per-EA fills plus the account-wide snapshot observed at each EA's last tick.
+    # The snapshot is not attributable per-EA PnL.
     byclass = collections.Counter()
     filled = collections.Counter()
     per_ea = []
@@ -154,7 +184,13 @@ def trial_pnl() -> dict:
         if fills > 0:
             filled[cl] += 1
         ea = os.path.basename(fp).split("_")[1]
-        per_ea.append({"ea": ea, "symbol": sym, "class": cl, "fills": fills, "last_day_pnl": last_daypnl})
+        per_ea.append({
+            "ea": ea,
+            "symbol": sym,
+            "class": cl,
+            "fills": fills,
+            "account_day_pnl_at_last_tick": last_daypnl,
+        })
     per_ea.sort(key=lambda x: (x["class"], x["symbol"]))
     r["per_ea"] = per_ea
     r["fill_coverage"] = {cl: f"{filled[cl]}/{byclass[cl]}" for cl in ("METAL", "INDEX", "ENERGY", "FX")}
@@ -184,12 +220,20 @@ def main() -> int:
     lp = pnl.get("latest_pulse", {})
     lines += [f"- Latest pulse: verdict {lp.get('verdict')}, equity {lp.get('equity')}, total_dd {lp.get('total_dd_pct')}%, day {lp.get('day_pnl')}",
               f"- Buffer to limits: total {pnl.get('buffer_to_total_limit_pp')}pp (of 10%), daily {pnl.get('buffer_to_daily_limit_pp')}pp (of 5%)",
+              f"- Paid Challenge: **{pnl.get('paid_challenge_verdict')}**; qualification {pnl.get('qualification')}",
+              f"- Logged server-request lower bound: {lp.get('server_requests_lower_bound')} on {lp.get('server_request_day_broker')}",
+              f"- Equity snapshot age: {lp.get('equity_snapshot_age_minutes')} minutes",
+              f"- Kill-switch rollout proof: day-anchor {lp.get('kill_switch_day_anchor_magics')}/{lp.get('expected_magics')}, book-tag {lp.get('kill_switch_book_tag_magics')}/{lp.get('expected_magics')}",
               f"- Worst equity seen: {pnl.get('worst_equity_seen')}",
               f"- Fill coverage by class: {pnl.get('fill_coverage')}", ""]
-    lines.append("| EA | symbol | class | fills | last_day_pnl |")
+    lines.append("| EA | symbol | class | fills | account_day_pnl_at_last_tick |")
     lines.append("|---|---|---|---|---|")
     for e in pnl.get("per_ea", []):
-        lines.append(f"| {e['ea']} | {e['symbol']} | {e['class']} | {e['fills']} | {e['last_day_pnl']} |")
+        lines.append(
+            f"| {e['ea']} | {e['symbol']} | {e['class']} | {e['fills']} | "
+            f"{e['account_day_pnl_at_last_tick']} |"
+        )
+    lines += ["", "_The per-EA snapshot column is account-wide and is not EA-level PnL attribution._"]
     lines += ["", "_Deploy-staging (presets/binaries/SHA) + AutoTrading remain the OWNER+Claude Sunday session._"]
 
     OUT_MD.mkdir(parents=True, exist_ok=True)

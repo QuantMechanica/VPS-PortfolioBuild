@@ -38,6 +38,26 @@ def test_normalize_timeframe_aliases_daily_to_d1() -> None:
     assert live_book_pulse.normalize_timeframe("H1") == "H1"
 
 
+def test_load_live_presets_accepts_deployment_suffix(tmp_path: Path) -> None:
+    root = tmp_path / "terminal"
+    preset_dir = root / "MQL5" / "Presets"
+    preset_dir.mkdir(parents=True)
+    preset = preset_dir / (
+        "slot01_NDX_H1_QM5_10440_tm-cum-rsi2_"
+        "magic104400003_d2d_s3_live.set"
+    )
+    preset.write_text("RISK_FIXED=250\n", encoding="ascii")
+
+    rows = live_book_pulse.load_live_presets([root])
+
+    assert len(rows) == 1
+    assert rows[0]["slot"] == 1
+    assert rows[0]["ea_id"] == 10440
+    assert rows[0]["magic"] == 104400003
+    assert rows[0]["preset_tf_norm"] == "H1"
+    assert rows[0]["risk_fixed"] == "250"
+
+
 def test_compare_loaded_charts_to_presets_flags_tf_mismatch() -> None:
     presets = [
         {

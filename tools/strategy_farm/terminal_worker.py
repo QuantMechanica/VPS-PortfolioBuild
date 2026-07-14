@@ -702,6 +702,168 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
         return {"claimed": False, "reason": "sqlite_locked"}
 
 
+def claim_specific_atomic(root: Path, terminal: str, item_id: str) -> dict[str, Any]:
+    """Claim exactly one pending work item for an isolated Factory-OFF run.
+
+    This is the operator path for a targeted recovery or qualification run. It
+    deliberately refuses to operate without the software interlock so it cannot
+    race the normal priority queue. Unlike ``claim_atomic``, it never substitutes
+    a different work item when the requested row is not currently claimable.
+    """
+    factory_off_flag = root / "state" / "FACTORY_OFF.flag"
+    if not factory_off_flag.exists():
+        return {
+            "claimed": False,
+            "reason": "factory_off_required",
+            "flag": str(factory_off_flag),
+        }
+
+    def _claim() -> dict[str, Any]:
+        farmctl.init_db(root)
+        now = farmctl.utc_now()
+        db_path = root / farmctl.DB_REL
+        with sqlite3.connect(db_path, timeout=30) as conn:
+            conn.row_factory = sqlite3.Row
+            conn.execute("PRAGMA busy_timeout=30000")
+            conn.execute("BEGIN IMMEDIATE")
+            try:
+                active_terminal = conn.execute(
+                    "SELECT id FROM work_items WHERE status='active' AND claimed_by=? LIMIT 1",
+                    (terminal,),
+                ).fetchone()
+                if active_terminal:
+                    conn.commit()
+                    return {
+                        "claimed": False,
+                        "reason": "terminal_worker_busy",
+                        "item_id": active_terminal["id"],
+                    }
+
+                if root.resolve() == farmctl.DEFAULT_ROOT.resolve() and terminal in farmctl._running_mt5_terminals():
+                    conn.commit()
+                    return {"claimed": False, "reason": "terminal_process_busy", "terminal": terminal}
+
+                item = conn.execute("SELECT * FROM work_items WHERE id=?", (item_id,)).fetchone()
+                if not item:
+                    conn.commit()
+                    return {"claimed": False, "reason": "work_item_missing", "item_id": item_id}
+                if item["status"] != "pending":
+                    conn.commit()
+                    return {
+                        "claimed": False,
+                        "reason": "work_item_not_pending",
+                        "item_id": item_id,
+                        "status": item["status"],
+                    }
+
+                payload = _json_loads(item["payload_json"])
+                avoid_terminals = _payload_avoid_terminals(payload)
+                if terminal.upper() in avoid_terminals:
+                    conn.commit()
+                    return {
+                        "claimed": False,
+                        "reason": "terminal_avoided",
+                        "item_id": item_id,
+                        "avoid_terminals": sorted(avoid_terminals),
+                    }
+
+                launch_not_before = _parse_utc_iso(payload.get("launch_not_before_utc"))
+                if launch_not_before is not None:
+                    try:
+                        now_dt = datetime.fromisoformat(now).astimezone(timezone.utc)
+                    except ValueError:
+                        now_dt = datetime.now(timezone.utc)
+                    if launch_not_before > now_dt:
+                        conn.commit()
+                        return {
+                            "claimed": False,
+                            "reason": "launch_cooldown",
+                            "item_id": item_id,
+                            "launch_not_before_utc": launch_not_before.isoformat(),
+                        }
+
+                symbol_key = str(item["symbol"] or "").upper()
+                active_symbols = farmctl._active_work_item_symbols(conn)
+                if symbol_key and symbol_key in active_symbols:
+                    conn.commit()
+                    return {"claimed": False, "reason": "symbol_busy", "item_id": item_id}
+
+                if str(item["phase"]).upper() == "Q04":
+                    active_q04 = conn.execute(
+                        "SELECT id FROM work_items WHERE status='active' AND phase='Q04' AND ea_id=? LIMIT 1",
+                        (item["ea_id"],),
+                    ).fetchone()
+                    if active_q04:
+                        conn.commit()
+                        return {"claimed": False, "reason": "q04_ea_busy", "item_id": item_id}
+
+                multisym_ids = _multisymbol_ea_ids()
+                item_is_multisym = _work_item_is_multisymbol(item, payload, multisym_ids)
+                if item_is_multisym:
+                    multisym_active = any(
+                        _work_item_is_multisymbol(row, _json_loads(row["payload_json"]), multisym_ids)
+                        for row in conn.execute("SELECT ea_id, payload_json FROM work_items WHERE status='active'")
+                    )
+                    if multisym_active:
+                        conn.commit()
+                        return {"claimed": False, "reason": "multisymbol_busy", "item_id": item_id}
+                    free_ram = _free_ram_gb()
+                    if free_ram < MULTISYMBOL_RAM_MIN_FREE_GB:
+                        conn.commit()
+                        return {
+                            "claimed": False,
+                            "reason": "multisymbol_ram_low",
+                            "item_id": item_id,
+                            "free_ram_gb": round(free_ram, 1),
+                            "threshold_gb": MULTISYMBOL_RAM_MIN_FREE_GB,
+                        }
+
+                history_ok, history = _p2_history_claimable(
+                    item,
+                    terminal,
+                    farmctl._dwx_symbol_history_registry(),
+                )
+                if not history_ok:
+                    conn.commit()
+                    return {
+                        "claimed": False,
+                        "reason": "history_not_claimable",
+                        "item_id": item_id,
+                        "history": history,
+                    }
+                _merge_history_window_payload(payload, history)
+                payload.update({
+                    "claimed_at_iso": now,
+                    "claimed_by_worker_pid": os.getpid(),
+                    "targeted_factory_off_run": True,
+                    "terminal": terminal,
+                })
+                cur = conn.execute(
+                    """
+                    UPDATE work_items
+                    SET status='active', claimed_by=?, payload_json=?, updated_at=?
+                    WHERE id=? AND status='pending'
+                    """,
+                    (terminal, json.dumps(payload, sort_keys=True), now, item_id),
+                )
+                if cur.rowcount != 1:
+                    conn.rollback()
+                    return {"claimed": False, "reason": "claim_race_lost", "item_id": item_id}
+                conn.commit()
+                row = conn.execute("SELECT * FROM work_items WHERE id=?", (item_id,)).fetchone()
+                return {"claimed": True, "item": dict(row), "targeted": True}
+            except Exception:
+                conn.rollback()
+                raise
+
+    try:
+        return _with_sqlite_retry(_claim)
+    except sqlite3.OperationalError as exc:
+        if not _is_sqlite_locked(exc):
+            raise
+        return {"claimed": False, "reason": "sqlite_locked", "item_id": item_id}
+
+
 def release_stale_claims_for_terminal(root: Path, terminal: str) -> list[str]:
     """Release this terminal's active rows if the recorded smoke process is gone."""
     def _release() -> list[str]:
@@ -1943,6 +2105,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--terminal", required=True, choices=farmctl.MT5_TERMINALS)
     parser.add_argument("--root", type=Path, default=farmctl.DEFAULT_ROOT)
     parser.add_argument("--timeout-minutes", type=float, default=90.0)
+    parser.add_argument(
+        "--work-item-id",
+        help="run exactly this pending work item once; requires FACTORY_OFF.flag",
+    )
     args = parser.parse_args(argv)
     mutex = _acquire_instance_mutex(args.terminal)
     if mutex is False:
@@ -1950,6 +2116,16 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     faulthandler.enable()
     _start_stalldump_watcher(args.terminal)
+    if args.work_item_id:
+        claim = claim_specific_atomic(args.root, args.terminal, args.work_item_id)
+        if not claim.get("claimed"):
+            print(json.dumps({"event": "target_claim_refused", "terminal": args.terminal, **claim}, sort_keys=True))
+            return 2
+        item = claim["item"]
+        print(json.dumps({"event": "target_claimed", "terminal": args.terminal, "item_id": item["id"]}), flush=True)
+        result = _run_claimed_item(args.root, item, args.terminal, int(args.timeout_minutes * 60))
+        print(json.dumps({"event": "target_run_result", "terminal": args.terminal, **result}, sort_keys=True), flush=True)
+        return 0 if result.get("status") == "done" and result.get("verdict") == "PASS" else 1
     return run_loop(args.root, args.terminal, int(args.timeout_minutes * 60))
 
 

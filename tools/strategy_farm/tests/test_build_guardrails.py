@@ -169,3 +169,27 @@ def test_accepts_time_sensitive_breakout_setfile_with_explicit_time_params(tmp_p
 
     assert result["verdict"] == "PASS"
     assert result["findings"] == []
+
+
+def test_exit_weight_is_not_misclassified_as_a_time_parameter(tmp_path: Path) -> None:
+    ea = tmp_path / "QM5_9999_target-vol"
+    sets = ea / "sets"
+    sets.mkdir(parents=True)
+    (ea / "QM5_9999_target-vol.mq5").write_text(
+        """
+        input double strategy_exit_weight_threshold = 0.02;
+        input int strategy_vol_lookback = 252;
+        datetime g_last_refresh = 0;
+        """,
+        encoding="utf-8",
+    )
+    (ea / "SPEC.md").write_text("Weekly target volatility rebalance.", encoding="utf-8")
+    (sets / "QM5_9999_target-vol_XAUUSD.DWX_D1_backtest.set").write_text(
+        "RISK_FIXED=1000\nRISK_PERCENT=0\n",
+        encoding="utf-8",
+    )
+
+    result = validate_path(ea)
+
+    assert result["verdict"] == "PASS"
+    assert result["findings"] == []

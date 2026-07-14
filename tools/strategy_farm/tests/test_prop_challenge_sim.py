@@ -24,11 +24,30 @@ class PropChallengeSimTests(unittest.TestCase):
     def test_phase_target_waits_for_minimum_trading_days(self) -> None:
         phase = FTMO_2STEP.phases[0]
 
-        result = evaluate_phase([5000.0, 5000.0, 0.0, 0.0], phase, starting_capital=100_000.0)
+        result = evaluate_phase([5000.0, 5000.0, 100.0, -100.0], phase, starting_capital=100_000.0)
 
         self.assertTrue(result["passed"])
         self.assertEqual(result["target_day"], 2)
         self.assertEqual(result["days"], 4)
+        self.assertEqual(result["trading_days"], 4)
+
+    def test_idle_calendar_days_do_not_satisfy_minimum_trading_days(self) -> None:
+        phase = FTMO_2STEP.phases[0]
+
+        result = evaluate_phase([5000.0, 5000.0, 0.0, 0.0], phase, starting_capital=100_000.0)
+
+        self.assertFalse(result["passed"])
+        self.assertEqual(result["reason"], "target_not_reached")
+        self.assertEqual(result["trading_days"], 2)
+
+    def test_target_must_still_be_met_after_minimum_trading_days(self) -> None:
+        phase = FTMO_2STEP.phases[0]
+
+        result = evaluate_phase([10000.0, -1000.0, 100.0, 100.0], phase, starting_capital=100_000.0)
+
+        self.assertFalse(result["passed"])
+        self.assertEqual(result["target_day"], 1)
+        self.assertEqual(result["trading_days"], 4)
 
     def test_daily_loss_breach_is_conservative_at_threshold(self) -> None:
         phase = FTMO_2STEP.phases[0]
@@ -49,7 +68,7 @@ class PropChallengeSimTests(unittest.TestCase):
         self.assertEqual(result["max_total_loss_pct"], 11.0)
 
     def test_two_step_challenge_resets_equity_per_phase_and_consumes_days(self) -> None:
-        daily = [5000.0, 5000.0, 0.0, 0.0, 2500.0, 2500.0, 0.0, 0.0]
+        daily = [5000.0, 5000.0, 100.0, -100.0, 2500.0, 2500.0, 100.0, -100.0]
 
         result = evaluate_challenge(
             daily,
@@ -68,7 +87,7 @@ class PropChallengeSimTests(unittest.TestCase):
             common_dir = root / "common"
             out1 = root / "one.json"
             out2 = root / "two.json"
-            self._write_stream(common_dir, [6000.0, 6000.0, 0.0, 0.0, 3000.0, 3000.0, 0.0, 0.0])
+            self._write_stream(common_dir, [6000.0, 6000.0, 100.0, -100.0, 3000.0, 3000.0, 100.0, -100.0])
 
             kwargs = {
                 "common_dir": common_dir,
