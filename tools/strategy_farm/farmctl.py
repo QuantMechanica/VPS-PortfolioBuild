@@ -7777,6 +7777,13 @@ ARTIFACT_COMMIT_ALLOWLIST = (
     "framework/calibrations/VPS_SLIPPAGE_LATENCY_CALIBRATION_V2.json",
     "public-data/",
     "strategy-seeds/",
+    # Agent/factory evidence outputs (build_result JSONs, validation/research JSONs,
+    # card drafts). NOT being here meant the pump never swept artifacts/ at all:
+    # 957 files accumulated by 2026-07-14 and (with uncommitted source on top)
+    # deadlocked the build lane for 3h+; a lone deleted build_result then re-blocked
+    # it the same morning. Machine/agent-generated evidence, never human-edited
+    # code -> sweep it like public-data/. git add also stages deletions. (2026-07-14)
+    "artifacts/",
 )
 
 
