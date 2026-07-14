@@ -15040,5 +15040,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13207,ws30-fri-t20a,0,WS30.DWX,132070000,2026-07-13,Codex,active
 20001,master-xauusd,0,XAUUSD.DWX,200010000,2026-07-13,Codex,active
 13213,balke-gmt3-range-breakout,0,USDJPY.DWX,132130000,2026-07-14,Claude,active
-13213,balke-gmt3-range-breakout,1,XAUUSD.DWX,132130001,2026-07-14,Claude,active
+13213,balke-gmt3-range-breakout,1,XAUUSD.DWX,132130001,2026-07-14,Claude,retired
 9250,mql5-crt-amd,2,GDAXI.DWX,92500002,2026-07-14,Claude,active
