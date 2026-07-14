@@ -326,16 +326,40 @@ bool Strategy_MaxHoldExceeded()
    return ((long)(TimeCurrent() - entry_time) >= hold_seconds);
   }
 
+// Resolves the current package's per-leg half-risk override from whichever
+// framework risk input is active (ENV validated once at OnInit). Both legs
+// use the SAME half-value so the fixed package risk splits equally per the
+// card, regardless of which risk mode the setfile ENV selects.
+bool Strategy_HalfRiskMode(QM_RiskMode &mode, double &value)
+  {
+   mode = QM_RISK_MODE_UNSET;
+   value = 0.0;
+   if(RISK_FIXED > 0.0 && RISK_PERCENT <= 0.0)
+     {
+      mode = QM_RISK_MODE_FIXED;
+      value = RISK_FIXED * 0.5;
+      return true;
+     }
+   if(RISK_PERCENT > 0.0 && RISK_FIXED <= 0.0)
+     {
+      mode = QM_RISK_MODE_PERCENT;
+      value = RISK_PERCENT * 0.5;
+      return true;
+     }
+   return false;
+  }
+
 double Strategy_LotsForLeg(const string symbol,
-                           const double risk_fraction)
+                           const QM_RiskMode risk_mode,
+                           const double risk_value)
   {
    const double atr = QM_ATR(symbol, PERIOD_D1, strategy_atr_period_d1, 1);
    const double point = SymbolInfoDouble(symbol, SYMBOL_POINT);
-   if(atr <= 0.0 || point <= 0.0 || risk_fraction <= 0.0 || risk_fraction > 1.0)
+   if(atr <= 0.0 || point <= 0.0 || risk_value <= 0.0)
       return 0.0;
 
    const double sl_points = strategy_atr_sl_mult * atr / point;
-   double lots = QM_LotsForRisk(symbol, sl_points) * risk_fraction;
+   double lots = QM_LotsForRisk(symbol, sl_points, risk_mode, risk_value);
    const double min_lot = SymbolInfoDouble(symbol, SYMBOL_VOLUME_MIN);
    const double max_lot = SymbolInfoDouble(symbol, SYMBOL_VOLUME_MAX);
    const double step = SymbolInfoDouble(symbol, SYMBOL_VOLUME_STEP);
@@ -348,10 +372,14 @@ double Strategy_LotsForLeg(const string symbol,
    return MathMin(max_lot, NormalizeDouble(lots, 8));
   }
 
-bool Strategy_OpenLeg(const string symbol,
-                      const QM_OrderType type,
-                      const double risk_fraction,
-                      const string reason)
+// Off-host leg only (XNG when host is XTI). The host leg never goes through
+// QM_BasketOpenPosition — it is opened by the framework's own QM_TM_OpenPosition
+// path from the QM_EntryRequest that Strategy_OpenPair populates (see below).
+bool Strategy_OpenOffHostLeg(const string symbol,
+                             const QM_OrderType type,
+                             const QM_RiskMode risk_mode,
+                             const double risk_value,
+                             const string reason)
   {
    const int slot = Strategy_SlotForSymbol(symbol);
    if(slot < 0 || !Strategy_SpreadAllowed(symbol))
@@ -365,7 +393,7 @@ bool Strategy_OpenLeg(const string symbol,
 
    const int digits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
    const double stop_dist = strategy_atr_sl_mult * atr;
-   const double lots = Strategy_LotsForLeg(symbol, risk_fraction);
+   const double lots = Strategy_LotsForLeg(symbol, risk_mode, risk_value);
    if(lots <= 0.0)
       return false;
 
@@ -385,11 +413,21 @@ bool Strategy_OpenLeg(const string symbol,
    return QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, strategy_deviation_points, req, ticket);
   }
 
-bool Strategy_OpenPair(const int pair_direction)
+// Opens the off-host leg (XNG) first, then populates host_req for the XTI
+// host leg. Returns true only when host_req is ready for the framework's own
+// QM_TM_OpenPosition call in OnTick. If the off-host leg opens but the host
+// leg is subsequently rejected by the broker, Strategy_ManageOpenPosition's
+// composition check closes the orphaned off-host leg on the next tick.
+bool Strategy_OpenPair(const int pair_direction, QM_EntryRequest &host_req)
   {
    if(pair_direction == 0 || Strategy_OpenPairLegCount() > 0)
       return false;
    if(!Strategy_SpreadAllowed(g_leg_xti) || !Strategy_SpreadAllowed(g_leg_xng))
+      return false;
+
+   QM_RiskMode half_mode;
+   double half_value;
+   if(!Strategy_HalfRiskMode(half_mode, half_value))
       return false;
 
    const bool long_xti_short_xng = (pair_direction > 0);
@@ -398,16 +436,28 @@ bool Strategy_OpenPair(const int pair_direction)
    const string reason = long_xti_short_xng ? "QM5_13123_LONG_XTI_SHORT_XNG_VALUE"
                                             : "QM5_13123_SHORT_XTI_LONG_XNG_VALUE";
 
-   const bool xti_ok = Strategy_OpenLeg(g_leg_xti, xti_type, 0.5, reason);
-   const bool xng_ok = Strategy_OpenLeg(g_leg_xng, xng_type, 0.5, reason);
-   if(xti_ok && xng_ok)
-     {
-      g_pair_entry_time = TimeCurrent();
-      return true;
-     }
+   if(!Strategy_OpenOffHostLeg(g_leg_xng, xng_type, half_mode, half_value, reason))
+      return false;
 
-   Strategy_ClosePair(QM_EXIT_STRATEGY);
-   return false;
+   const double entry = QM_OrderTypeIsBuy(xti_type) ? SymbolInfoDouble(g_leg_xti, SYMBOL_ASK)
+                                                    : SymbolInfoDouble(g_leg_xti, SYMBOL_BID);
+   const double atr = QM_ATR(g_leg_xti, PERIOD_D1, strategy_atr_period_d1, 1);
+   if(entry <= 0.0 || atr <= 0.0)
+      return false; // off-host leg already open; ManageOpenPosition repairs the orphan.
+
+   const int digits = (int)SymbolInfoInteger(g_leg_xti, SYMBOL_DIGITS);
+   const double stop_dist = strategy_atr_sl_mult * atr;
+   host_req.type = xti_type;
+   host_req.price = 0.0;
+   host_req.sl = QM_OrderTypeIsBuy(xti_type) ? NormalizeDouble(entry - stop_dist, digits)
+                                             : NormalizeDouble(entry + stop_dist, digits);
+   host_req.tp = 0.0;
+   host_req.reason = reason;
+   host_req.symbol_slot = 0;
+   host_req.expiration_seconds = 0;
+
+   g_pair_entry_time = TimeCurrent();
+   return true;
   }
 
 bool Strategy_NoTradeFilter()
@@ -434,7 +484,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "QM5_13123_ENERGY_VALUE_HOST";
+   req.reason = "";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
@@ -449,8 +499,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!g_cache_signal_valid || g_cache_pair_direction == 0)
       return false;
 
-   Strategy_OpenPair(g_cache_pair_direction);
-   return false;
+   // Populates req for the XTI host leg; caller (OnTick) fires it through
+   // QM_TM_OpenPosition with the same half-risk override used for the XNG
+   // off-host leg above.
+   return Strategy_OpenPair(g_cache_pair_direction, req);
   }
 
 void Strategy_ManageOpenPosition()
@@ -574,8 +626,13 @@ void OnTick()
    ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
-      ulong out_ticket = 0;
-      QM_TM_OpenPosition(req, out_ticket);
+      QM_RiskMode half_mode;
+      double half_value;
+      if(Strategy_HalfRiskMode(half_mode, half_value))
+        {
+         ulong out_ticket = 0;
+         QM_TM_OpenPosition(req, out_ticket, 0, half_mode, half_value);
+        }
      }
   }
 

@@ -4,8 +4,8 @@
 **Slug:** `energy-val-rank`
 **Strategy ID:** `AMP-VALUE-2013_XTI_XNG_S01`
 **Source:** `AMP-VALUE-2013`
-**Author:** Codex
-**Last revised:** 2026-07-10
+**Author:** Codex; rework by Claude
+**Last revised:** 2026-07-14
 
 ## 1. Strategy Logic
 
@@ -86,3 +86,4 @@ AutoTrading, deploy manifest, portfolio gate, or admission file is touched.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-10 | initial approved-card build | strict compile/build PASS; logical-basket Q02 queued as work item `f50a1355-50ff-4637-a4f8-c482adc5abee` |
+| v2 | 2026-07-14 | codex_review FAIL x2 (`2ee47c1f`, `d81f57a5`): host leg XTIUSD.DWX was opened via `QM_BasketOpenPosition`, making `Strategy_EntrySignal`'s framework-path return unreachable. Reworked in place: XNG (off-host) opens first via `QM_BasketOpenPosition`; XTI (host) request is populated and returned from `Strategy_EntrySignal` so OnTick's own `QM_TM_OpenPosition` opens it, using a new explicit-risk-mode overload so both legs still split RISK_FIXED/RISK_PERCENT equally | task `b74b448b-22ce-4a92-9574-4216f6847f52` |
