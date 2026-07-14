@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        13129
 ; ea_slug:      energy-rsj
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   5300c7c4c7e233ce3872c5345615aa16885378bbdfdea18d8b9377b41e11cb6c
+; build_hash:   f4dba21a9aec64310cc0df85b006d656f72a698be45cba133cc3e5005f2b3167
 ; author:       Development
 ; date:         2026-07-11
 ;==========================================================
