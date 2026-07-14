@@ -1,12 +1,20 @@
 # FTMO decorrelation test (workstream B) — 2026-07-10
 
+**Status: INVALIDATED FOR BOOK DECISIONS.** The subsequent MT5 reconciliation
+shows that the reported EURUSD premise was wrong and the GBPUSD stream does not
+match its report. `10569/EURUSD` is PF `0.82`, Net Profit `-$27,029.81` in the
+fresh MT5 report, not PF `1.20`. `10706/GBPUSD` has 364 stream trades versus 367
+report trades and a corrected-net gap of `-$11,192.55`. The correlation numbers
+may describe the available stream samples, but neither sleeve may be added and
+the breach simulation is not decision-grade.
+
 Question: do FX sleeves (uncorrelated with the index+gold core) cut the book's max-breach
 tail (~30%, now the co-binding failure) and thereby compress time-to-+10%?
 
 Core = density-improved 14-sleeve book (12 − 10163 + 10118/10916/10546). FX candidates
 recompiled fresh-MAE + backtested on T8–T10, 2017–2025, Model 4:
-- 10569 EURUSD.DWX H4 (PF 1.20) — 341 trades — pure USD cross, new symbol
-- 10706 GBPUSD.DWX H1 (PF 1.28) — 364 trades — DXZ-vetted
+- 10569 EURUSD.DWX H4 (original claim PF 1.20; reconciled MT5 PF 0.82) — 341 trades
+- 10706 GBPUSD.DWX H1 (stream claim PF 1.28; MT5 PF 1.31 with a 3-trade mismatch) — 364 stream trades
 - 11891 GBPJPY.DWX D1 (PF 1.54) — did not produce a fresh stream in the window (cold-cache /
   low D1 activity); it is also the weakest decorrelator (JPY cross ≈ correlates w/ the USDJPY engine)
 
@@ -43,7 +51,8 @@ commission ≈ $45/trade is real and absent here — see reference_commission_by
 ## Verdict / recommendation
 - **Decorrelation-via-FX is directionally right but NOT quantifiable with current tools.** The
   worst-case-aligned MAE model structurally can't credit it.
-- **The density delta (A) remains the concrete, model-validated win** → ship it (pending OWNER).
+- **The density delta (A) is also invalidated by stream/report mismatches** and
+  must not ship until its inputs reconcile and the experiment is rerun.
 - To settle decorrelation properly, the next tooling investment is a **Stufe-2 joint-MAE model**:
   per-bar portfolio equity using the ACTUAL co-movement of sleeve MAEs (not the worst-case sum),
   plus FX commission injection. Only that can price whether uncorrelated FX cuts the tail enough

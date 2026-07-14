@@ -1,4 +1,19 @@
-# FTMO density lever — validation on T8–T10 (2026-07-10)
+# FTMO density lever — invalidated input audit (2026-07-10)
+
+**Status: INVALID / DO NOT USE FOR SIZING OR DEPLOYMENT.** A subsequent
+stream-to-report reconciliation found that `10118/NDX` and `10546/XAUUSD` do
+not reproduce their MT5 report trade counts or Net Profit. Only
+`10916/GDAXI` reconciles. All probability and breach results below are retained
+as historical output but must be rerun from reconciled baseline streams.
+
+| sleeve | stream trades | report trades | corrected stream net | report net | reconciliation |
+|---|---:|---:|---:|---:|---|
+| `10118/NDX` | 714 | 716 | `$36,702.11` | `$35,545.14` | FAIL |
+| `10916/GDAXI` | 611 | 611 | `$75,181.67` | `$75,181.80` | PASS |
+| `10546/XAUUSD` | 1,708 | 1,762 | `$96,685.15` | `$143,387.49` | FAIL |
+
+Machine-readable evidence:
+`artifacts/ftmo_stream_reconciliation_2026-07-10.json`.
 
 Test: does adding high-frequency, diverse sleeves make the FTMO book reach +10% FASTER
 without raising breach? Recompiled 3 candidates with the current MAE-emitting framework
