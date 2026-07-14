@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        13057
 ; ea_slug:      xti-gbpcad-rspr
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   3d772f4774bfa9405b3a0a19708482137acab4e6016e4afda9942185c5efaa1b
+; build_hash:   0ed381c207a10878407d4d25fef1baf1578e55bae57f69074ccf9e3a13b1fe6c
 ; author:       Development
 ; date:         2026-07-08
 ;==========================================================
