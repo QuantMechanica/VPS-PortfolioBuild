@@ -243,8 +243,7 @@ bool Strategy_KurtosisMeasure(const string symbol,
    return (kurtosis_measure > 0.0 && MathIsValidNumber(kurtosis_measure));
   }
 
-bool Strategy_LoadSignalState(const datetime decision_bar_time,
-                              int &pair_direction)
+bool Strategy_LoadSignalState(int &pair_direction)
   {
    pair_direction = 0;
    g_cache_xti_kurtosis = 0.0;
@@ -253,8 +252,6 @@ bool Strategy_LoadSignalState(const datetime decision_bar_time,
    g_cache_xti_observations = 0;
    g_cache_xng_observations = 0;
 
-   if(decision_bar_time <= 0)
-      return false;
    if(!Strategy_KurtosisMeasure(g_leg_xti,
                                 g_cache_xti_kurtosis,
                                 g_cache_xti_observations))
@@ -329,18 +326,17 @@ bool Strategy_MonthAlreadyEntered(const int month_key)
 void Strategy_AdvanceSignal_OnNewBar()
   {
    g_monthly_rebalance_bar = false;
-   const datetime decision_bar_time = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: cached timestamp on the D1 new-bar path.
-   const datetime prior_bar_time = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: exact first-tradable-bar month transition check.
-   const int current_month_key = Strategy_MonthKeyForTime(decision_bar_time);
-   const int prior_month_key = Strategy_MonthKeyForTime(prior_bar_time);
-   if(current_month_key <= 0 || prior_month_key <= 0 ||
-      current_month_key == prior_month_key)
+   // Framework-corset calendar cadence (not a hand-rolled iTime month key):
+   // QM_CalendarPeriodKey(PERIOD_MN1) yields the D1-derived yyyymm bucket,
+   // compared against our own stored g_cache_month_key for restart-safe
+   // once-per-month gating.
+   const int current_month_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol);
+   if(current_month_key <= 0 || current_month_key == g_cache_month_key)
       return;
 
    g_monthly_rebalance_bar = true;
    g_cache_month_key = current_month_key;
-   g_cache_signal_valid = Strategy_LoadSignalState(decision_bar_time,
-                                                   g_cache_pair_direction);
+   g_cache_signal_valid = Strategy_LoadSignalState(g_cache_pair_direction);
   }
 
 bool Strategy_MaxHoldExceeded()
@@ -395,6 +391,36 @@ bool Strategy_OpenLeg(const string symbol,
 
    const int digits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
    const double stop_dist = strategy_atr_sl_mult * atr;
+   const double sl_price = QM_OrderTypeIsBuy(type) ? NormalizeDouble(entry - stop_dist, digits)
+                                                    : NormalizeDouble(entry + stop_dist, digits);
+
+   if(symbol == g_leg_xti)
+     {
+      // Host leg (this chart's own _Symbol, slot 0) must open through the
+      // framework's standard single-entry path, not the cross-symbol basket
+      // helper. Halve whichever global risk mode is configured (FIXED for
+      // backtest, PERCENT for live) so the package still splits risk equally
+      // across both legs.
+      if(g_qm_risk_mode != QM_RISK_MODE_FIXED && g_qm_risk_mode != QM_RISK_MODE_PERCENT)
+         return false;
+      const double leg_risk_value = ((g_qm_risk_mode == QM_RISK_MODE_FIXED) ? g_qm_risk_fixed : g_qm_risk_percent)
+                                     * risk_weight / risk_weight_sum;
+      if(leg_risk_value <= 0.0)
+         return false;
+
+      QM_EntryRequest tm_req;
+      tm_req.type = type;
+      tm_req.price = 0.0;
+      tm_req.sl = sl_price;
+      tm_req.tp = 0.0;
+      tm_req.reason = reason;
+      tm_req.symbol_slot = slot;
+      tm_req.expiration_seconds = 0;
+
+      ulong host_ticket = 0;
+      return QM_TM_OpenPosition(tm_req, host_ticket, 0, g_qm_risk_mode, leg_risk_value);
+     }
+
    const double lots = Strategy_LotsForLeg(symbol, risk_weight, risk_weight_sum);
    if(lots <= 0.0)
       return false;
@@ -403,8 +429,7 @@ bool Strategy_OpenLeg(const string symbol,
    req.symbol = symbol;
    req.type = type;
    req.price = 0.0;
-   req.sl = QM_OrderTypeIsBuy(type) ? NormalizeDouble(entry - stop_dist, digits)
-                                    : NormalizeDouble(entry + stop_dist, digits);
+   req.sl = sl_price;
    req.tp = 0.0;
    req.lots = lots;
    req.reason = reason;
