@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        13118
 ; ea_slug:      energy-skew-rank
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   7f25ef8de28475d696c64ada555b046bcdf97a02b27d1bd0e1eecaf292d7577e
+; build_hash:   a39e041f4e3a868c63c514696178e40c041dde899f858583549a855d65b9f360
 ; author:       Development
 ; date:         2026-07-10
 ;==========================================================
