@@ -4,13 +4,13 @@
 **Slug:** unger-crude-prevday-meanrev
 **Source:** eb97a148-0af9-5b9c-878c-25fb5dfa34f9
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-07-14
 
 ---
 
 ## 1. Strategy Logic
 
-This EA trades M15 crude-oil mean reversion on XTIUSD.DWX. It computes the lower trigger as the lower of yesterday's low and the low from five trading sessions earlier, and the upper trigger as the higher of yesterday's high and the high from five trading sessions earlier. A long entry occurs when the last closed M15 bar trades below the lower trigger and closes back above it; a short entry occurs when the bar trades above the upper trigger and closes back below it. Positions use a 1.5 x ATR(14,M15) stop and are flattened before the configured session end.
+This EA trades M15 crude-oil mean reversion on XTIUSD.DWX. It computes the lower trigger as the lower of yesterday's low and the low from five trading sessions earlier, and the upper trigger as the higher of yesterday's high and the high from five trading sessions earlier. A long entry occurs when the last closed M15 bar trades below the lower trigger and closes back above it; a short entry occurs when the bar trades above the upper trigger and closes back below it. Positions use a 1.5 x ATR(14,M15) stop and are flattened before the configured session end. One trade per direction per day; a same-day stopout blocks further entries (either direction) for the rest of that day.
 
 ---
 
@@ -20,13 +20,13 @@ This EA trades M15 crude-oil mean reversion on XTIUSD.DWX. It computes the lower
 |---|---:|---|---|
 | strategy_atr_period | 14 | 2-100 | ATR period for M15 stop distance and D1 volatility filter. |
 | strategy_atr_sl_mult | 1.5 | 0.1-10.0 | Stop distance multiplier applied to ATR(14,M15). |
-| strategy_use_vwap_proxy_tp | true | true/false | Use prior-day typical price as the mean-reversion target. |
+| strategy_use_vwap_target | true | true/false | Use prior-day typical price (H+L+C)/3 as the mean-reversion target. |
 | strategy_tp_rr | 1.0 | 0.1-10.0 | R-multiple target when the VWAP proxy target is disabled. |
-| strategy_daily_atr_lookback | 120 | 20-300 | Number of D1 ATR observations for the volatility percentile filter. |
-| strategy_daily_atr_percentile | 25.0 | 0-100 | Skip trading when current D1 ATR is below this percentile. |
+| strategy_atr_percentile_lookback | 120 | 20-300 | Number of D1 ATR observations for the volatility percentile filter. |
+| strategy_atr_percentile_pct | 25.0 | 0-100 | Skip trading when current D1 ATR is below this percentile. |
 | strategy_skip_eia_day | true | true/false | Skip the configured EIA inventory release weekday. |
 | strategy_eia_day_of_week | 3 | 0-6 | Broker weekday to suppress for EIA inventory day, Sunday=0. |
-| strategy_session_start_hhmm | 100 | 0-2359 | Earliest broker-time HHMM for new entries. |
+| strategy_session_start_hhmm | 0 | 0-2359 | Earliest broker-time HHMM for new entries. |
 | strategy_flatten_hhmm | 2200 | 0-2359 | Broker-time HHMM for end-of-day flatten and entry cutoff. |
 | strategy_max_spread_points | 80 | 0-10000 | Maximum modeled spread in points; zero spread is allowed. |
 
@@ -94,3 +94,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-18 | Initial build from card | bca28a74-ea76-480d-b4b7-7698e98562c8 |
+| v2 | 2026-07-14 | DL-069 rebuild in place: fixed pre-2026-07-02-audit OnTick news-gate ordering (news gate was blocking position management/exit, not just new entries); replaced raw iHigh/iLow/iClose reads with the sanctioned QM_ReadBar helper; D1 cadence now uses QM_IsNewCalendarPeriod instead of ad hoc day-key math; same-day-stopout detection now uses HistorySelectByPosition on the tracked position rather than a full HistorySelect day-scan every entry check. Strategy mechanics unchanged from the card. | build task e9226b0c-21b1-4e7d-afd6-7560e8cc017e |
