@@ -73,6 +73,17 @@ try {
     if (Test-TerminalAlreadyRunning -TerminalRoot $terminalRoot) {
         throw "Unrelated terminal path was incorrectly detected."
     }
+
+    $neighborRoot = "${terminalRoot}0"
+    $script:mockTerminalProcesses = @(
+        [pscustomobject]@{
+            ExecutablePath = (Join-Path $neighborRoot "terminal64.exe")
+            CommandLine = "`"$(Join-Path $neighborRoot 'terminal64.exe')`" /portable"
+        }
+    )
+    if (Test-TerminalAlreadyRunning -TerminalRoot $terminalRoot) {
+        throw "Adjacent terminal name (for example T1 versus T10) was incorrectly detected."
+    }
 } finally {
     Remove-Item -LiteralPath $tmpRoot -Recurse -Force -ErrorAction SilentlyContinue
 }

@@ -43,7 +43,12 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from framework.scripts._phase_utils import period_from_setfile
-from framework.scripts.q05_stress_medium import summary_invalid_reason
+from framework.scripts.q05_stress_medium import (
+    _parse_pf_dd_trades,
+    _select_run_summary,
+    _text_from_completed_process,
+    summary_invalid_reason,
+)
 
 # Wrapper must outlive the tester budget, or a run finishing at the buzzer
 # loses its summary write (2026-07-06 audit G16; mirrors q05/q06).
@@ -53,7 +58,6 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from framework.scripts._phase_utils import ensure_dir, utc_now_iso, write_json
-from framework.scripts.q05_stress_medium import _parse_pf_dd_trades
 
 GATE_NAME = "Q08.5_neighborhood"
 PERTURBATION_PCT = 10.0
@@ -64,6 +68,10 @@ NON_PERTURBABLE_NAME_TOKENS = (
     "use_",
     "no_",
     "direction",
+    "time",
+    "hour",
+    "minute",
+    "hhmm",
 )
 
 
@@ -161,25 +169,6 @@ def write_perturbation_setfile(baseline_set: Path, param: str, value, out_dir: P
     return out_path
 
 
-def latest_run_smoke_summary(report_root: Path, ea_id: int, started_at: float) -> Path | None:
-    """Return the newest run_smoke summary for this EA from this invocation."""
-    base = Path(report_root) / f"QM5_{ea_id}"
-    if not base.exists():
-        return None
-    summaries = sorted(
-        base.glob("*/summary.json"),
-        key=lambda path: path.stat().st_mtime,
-        reverse=True,
-    )
-    for summary in summaries:
-        try:
-            if summary.stat().st_mtime >= started_at - 5:
-                return summary
-        except OSError:
-            continue
-    return summaries[0] if summaries else None
-
-
 def resolve_ea_expert(ea_label: str, ea_id: int) -> str:
     repo_root = Path(__file__).resolve().parents[2]
     if ea_label.startswith("QM\\"):
@@ -229,23 +218,36 @@ def fire_backtest(*, ea_id: int, ea_expert: str, symbol: str,
     ]
     creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
     started_at = time.time()
+    output_text = ""
     try:
-        subprocess.run(args, capture_output=True, text=True,
-                       timeout=timeout_sec + RUNNER_HEADROOM_SEC,
-                       creationflags=creationflags)
-    except subprocess.TimeoutExpired:
+        proc = subprocess.run(
+            args,
+            capture_output=True,
+            text=True,
+            timeout=timeout_sec + RUNNER_HEADROOM_SEC,
+            creationflags=creationflags,
+        )
+        output_text = _text_from_completed_process(proc)
+    except subprocess.TimeoutExpired as exc:
+        output_text = _text_from_completed_process(exc)
+    summary = _select_run_summary(
+        output_text,
+        report_root,
+        started_at=started_at,
+        ea_id=ea_id,
+        ea_expert=ea_expert,
+        symbol=symbol,
+        period=period,
+        terminal=terminal,
+    )
+    if summary is None:
         return None, None, 0
-    sym_clean = symbol.replace(".", "_")
-    summary = (report_root / f"QM5_{ea_id}" / "Q08" / "neighborhood"
-               / sym_clean / run_tag / "summary.json")
-    if not summary.exists():
-        summary = latest_run_smoke_summary(report_root, ea_id, started_at) or summary
     # Review 83be4dd3 M-1: infra-invalid summaries (NO_HISTORY cold cache,
     # BARS_ZERO, REPORT_FORMAT_DRIFT) carry DEFAULTED pf=0.0 in their run rows
     # — parsing them graded infra failures as plateau breaches (the exact G5
     # class, closed for timeouts but not for invalid summaries). Return the
     # infra sentinel so sub_8_5 records an invalid perturbation instead.
-    if summary.exists() and summary_invalid_reason(summary):
+    if summary_invalid_reason(summary):
         return None, None, 0
     return _parse_pf_dd_trades(summary)
 

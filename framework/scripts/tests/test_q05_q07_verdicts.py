@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import tempfile
 import unittest
 from types import SimpleNamespace
@@ -17,6 +18,37 @@ from framework.scripts import q07_multiseed as q07
 class Q05Q07VerdictTests(unittest.TestCase):
     def test_q07_default_seed_timeout_is_basket_safe(self) -> None:
         self.assertEqual(q07.DEFAULT_SEED_TIMEOUT_SEC, 5400)
+
+    def test_q07_seed_injection_handles_nonzero_magic_slot(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            baseline = Path(tmp) / "QM5_10163_USDJPY.DWX_H1_q06_stress_harsh.set"
+            baseline.write_text(
+                "qm_magic_slot_offset=8\nqm_stress_reject_probability=0.1000\n",
+                encoding="utf-8",
+            )
+
+            seeded = q07._write_seeded_setfile(baseline, 2026)
+
+            self.assertEqual(
+                seeded.read_text(encoding="utf-8").splitlines(),
+                [
+                    "qm_magic_slot_offset=8",
+                    "qm_rng_seed=2026",
+                    "qm_stress_reject_probability=0.1000",
+                ],
+            )
+
+    def test_q07_seed_override_replaces_optimizer_style_value(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            baseline = Path(tmp) / "QM5_1001_EURUSD.DWX_H1_q06_stress_harsh.set"
+            baseline.write_text(
+                "qm_rng_seed=42||42||1||2026||N\n",
+                encoding="utf-8",
+            )
+
+            seeded = q07._write_seeded_setfile(baseline, 17)
+
+            self.assertEqual(seeded.read_text(encoding="utf-8"), "qm_rng_seed=17\n")
 
     def test_q05_parser_preserves_zero_pf_and_zero_drawdown(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -126,12 +158,159 @@ class Q05Q07VerdictTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            metrics = q05._latest_report_metrics(Path(tmp))
+            metrics = q05._latest_report_metrics(
+                Path(tmp),
+                started_at=report.stat().st_mtime - 1.0,
+                expected_expert=r"QM\QM5_10939_grimes-context-pb",
+                expected_symbol="GBPUSD.DWX",
+                expected_period="H4",
+            )
 
         self.assertIsNotNone(metrics)
         self.assertEqual(metrics["pf"], 1.58)
         self.assertEqual(metrics["dd_money"], 6190.06)
         self.assertEqual(metrics["trades"], 92)
+
+    def test_q05_never_selects_fresh_foreign_ea_summary_or_report(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            foreign_summary = (
+                root / "13138_q02" / "QM5_13138" / "P2" /
+                "QM5_13138" / "20260713_063719" / "summary.json"
+            )
+            foreign_report = foreign_summary.parent / "raw" / "run_01" / "report.htm"
+
+            def fake_run(_args, **_kwargs):
+                foreign_summary.parent.mkdir(parents=True)
+                foreign_summary.write_text(
+                    json.dumps({
+                        "ea_id": 13138,
+                        "expert": r"QM\QM5_13138_xau-m5-ema20",
+                        "symbol": "XAUUSD.DWX",
+                        "period": "M5",
+                        "terminal": "T5",
+                        "runs": [{
+                            "profit_factor": 1.7,
+                            "drawdown": 400.0,
+                            "total_trades": 80,
+                        }],
+                    }),
+                    encoding="utf-8",
+                )
+                foreign_report.parent.mkdir(parents=True)
+                foreign_report.write_text(
+                    """
+                    <html><body><table>
+                    <tr><td>Expert:</td><td><b>QM5_13138_xau-m5-ema20</b></td></tr>
+                    <tr><td>Symbol:</td><td><b>XAUUSD.DWX</b></td></tr>
+                    <tr><td>Period:</td><td><b>M5 (2024.01.01 - 2024.12.31)</b></td></tr>
+                    <tr><td>Bars:</td><td><b>50000</b></td></tr>
+                    <tr><td>Profit Factor:</td><td><b>1.70</b></td></tr>
+                    <tr><td>Equity Drawdown Maximal:</td><td><b>400.00 (0.40%)</b></td></tr>
+                    <tr><td>Total Trades:</td><td><b>80</b></td></tr>
+                    </table></body></html>
+                    """,
+                    encoding="utf-8",
+                )
+                return SimpleNamespace(returncode=1, stdout="", stderr="")
+
+            with patch.object(q05.subprocess, "run", side_effect=fake_run):
+                result = q05.run_stress_backtest(
+                    ea_id=12969,
+                    ea_expert=r"QM\QM5_12969_usdjpy-gotobi-nakane-fix",
+                    symbol="USDJPY.DWX",
+                    setfile=root / "12969.set",
+                    terminal="T1",
+                    period="M30",
+                    report_root=root,
+                )
+
+        self.assertIsNone(result["summary_path"])
+        self.assertIsNone(result["report_path"])
+        self.assertEqual(result["metric_source"], None)
+        self.assertEqual(result["reason"], "summary_missing")
+
+    def test_q05_rejects_stale_matching_summary(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            summary = root / "QM5_12969" / "20260713_064357" / "summary.json"
+            summary.parent.mkdir(parents=True)
+            summary.write_text(
+                json.dumps({
+                    "ea_id": 12969,
+                    "expert": r"QM\QM5_12969_usdjpy-gotobi-nakane-fix",
+                    "symbol": "USDJPY.DWX",
+                    "period": "M30",
+                    "terminal": "T1",
+                    "runs": [{
+                        "profit_factor": 1.28,
+                        "drawdown": 1659.54,
+                        "total_trades": 38,
+                    }],
+                }),
+                encoding="utf-8",
+            )
+            os.utime(summary, (1, 1))
+
+            with patch.object(
+                    q05.subprocess, "run",
+                    return_value=SimpleNamespace(returncode=1, stdout="", stderr="")):
+                result = q05.run_stress_backtest(
+                    ea_id=12969,
+                    ea_expert=r"QM\QM5_12969_usdjpy-gotobi-nakane-fix",
+                    symbol="USDJPY.DWX",
+                    setfile=root / "12969.set",
+                    terminal="T1",
+                    period="M30",
+                    report_root=root,
+                )
+
+        self.assertIsNone(result["summary_path"])
+        self.assertEqual(result["reason"], "summary_missing")
+
+    def test_q05_accepts_fresh_matching_run_smoke_marker(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            summary = root / "QM5_12969" / "20260713_071015" / "summary.json"
+
+            def fake_run(_args, **_kwargs):
+                summary.parent.mkdir(parents=True)
+                summary.write_text(
+                    json.dumps({
+                        "ea_id": 12969,
+                        "expert": r"QM\QM5_12969_usdjpy-gotobi-nakane-fix",
+                        "symbol": "USDJPY.DWX",
+                        "period": "M30",
+                        "terminal": "T1",
+                        "runs": [{
+                            "profit_factor": 1.54,
+                            "drawdown": 2016.39,
+                            "total_trades": 331,
+                        }],
+                    }),
+                    encoding="utf-8",
+                )
+                return SimpleNamespace(
+                    returncode=0,
+                    stdout=f"run_smoke.summary={summary}\n",
+                    stderr="",
+                )
+
+            with patch.object(q05.subprocess, "run", side_effect=fake_run):
+                result = q05.run_stress_backtest(
+                    ea_id=12969,
+                    ea_expert=r"QM\QM5_12969_usdjpy-gotobi-nakane-fix",
+                    symbol="USDJPY.DWX",
+                    setfile=root / "12969.set",
+                    terminal="T1",
+                    period="M30",
+                    report_root=root,
+                )
+
+        self.assertEqual(result["summary_path"], str(summary))
+        self.assertEqual(result["metric_source"], "summary_json")
+        self.assertEqual(result["verdict"], "PASS", result)
+        self.assertEqual(result["trades"], 331)
 
     def test_q05_latest_full_year_caps_smoke_window(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -251,6 +430,11 @@ class Q05Q07VerdictTests(unittest.TestCase):
                 summary.parent.mkdir(parents=True)
                 summary.write_text(
                     json.dumps({
+                        "ea_id": 12778,
+                        "expert": r"QM\QM5_12778_demo",
+                        "symbol": "GBPJPY.DWX",
+                        "period": "D1",
+                        "terminal": "T8",
                         "runs": [{
                             "profit_factor": 1.2,
                             "drawdown": 500.0,
@@ -278,7 +462,7 @@ class Q05Q07VerdictTests(unittest.TestCase):
         self.assertEqual(timeouts, [150, 150])
         sleep_mock.assert_called_once()
         self.assertEqual(result["exit_code"], 0)
-        self.assertEqual(result["verdict"], "PASS")
+        self.assertEqual(result["verdict"], "PASS", result)
         self.assertEqual(result["summary_path"], str(summary))
 
     def test_q05_final_windows_launch_fault_is_not_summary_missing(self) -> None:
@@ -346,6 +530,50 @@ class Q05Q07VerdictTests(unittest.TestCase):
         self.assertEqual(out_path.name, "QM5_12781_demo_D1_q06_stress_harsh.set")
         self.assertIn("; environment: q06_stress_harsh", text)
         self.assertIn("qm_stress_reject_probability=0.1000", text)
+
+    def test_q06_accepts_fresh_matching_run_smoke_marker(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            summary = root / "QM5_12969" / "20260713_072000" / "summary.json"
+
+            def fake_run(_args, **_kwargs):
+                summary.parent.mkdir(parents=True)
+                summary.write_text(
+                    json.dumps({
+                        "result": "PASS",
+                        "ea_id": 12969,
+                        "expert": r"QM\QM5_12969_usdjpy-gotobi-nakane-fix",
+                        "symbol": "USDJPY.DWX",
+                        "period": "M30",
+                        "terminal": "T1",
+                        "runs": [{
+                            "profit_factor": 1.3,
+                            "drawdown": 1800.0,
+                            "total_trades": 300,
+                        }],
+                    }),
+                    encoding="utf-8",
+                )
+                return SimpleNamespace(
+                    returncode=0,
+                    stdout=f"run_smoke.summary={summary}\n",
+                    stderr="",
+                )
+
+            with patch.object(q06.subprocess, "run", side_effect=fake_run):
+                result = q06.run_harsh_backtest(
+                    ea_id=12969,
+                    ea_expert=r"QM\QM5_12969_usdjpy-gotobi-nakane-fix",
+                    symbol="USDJPY.DWX",
+                    setfile=root / "12969.set",
+                    terminal="T1",
+                    period="M30",
+                    report_root=root,
+                )
+
+        self.assertEqual(result["summary_path"], str(summary))
+        self.assertEqual(result["metric_source"], "summary_json")
+        self.assertEqual(result["verdict"], "PASS")
 
     def test_q05_passes_basket_manifest_tester_overrides(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -544,6 +772,11 @@ class Q05Q07VerdictTests(unittest.TestCase):
                 seed_summary.write_text(
                     json.dumps({
                         "result": "PASS",
+                        "ea_id": 12781,
+                        "expert": r"QM\QM5_12781_demo",
+                        "symbol": "USDJPY.DWX",
+                        "period": "D1",
+                        "terminal": "T8",
                         "runs": [{
                             "profit_factor": 1.07,
                             "drawdown": 2287.51,
@@ -611,6 +844,11 @@ class Q05Q07VerdictTests(unittest.TestCase):
                 seed_summary.write_text(
                     json.dumps({
                         "result": "PASS",
+                        "ea_id": 12781,
+                        "expert": r"QM\QM5_12781_demo",
+                        "symbol": "USDJPY.DWX",
+                        "period": "D1",
+                        "terminal": "T8",
                         "runs": [{
                             "profit_factor": 1.07,
                             "drawdown": 2287.51,
@@ -655,6 +893,11 @@ class Q05Q07VerdictTests(unittest.TestCase):
             summary.write_text(
                 json.dumps({
                     "result": "PASS",
+                    "ea_id": 12772,
+                    "expert": r"QM\QM5_12772_demo",
+                    "symbol": "EURGBP.DWX",
+                    "period": "D1",
+                    "terminal": "T8",
                     "runs": [{
                         "status": "OK",
                         "report_canonical_path": str(raw_dir / "report.htm"),
@@ -671,6 +914,11 @@ class Q05Q07VerdictTests(unittest.TestCase):
                 [42, 17, 99, 7, 2026],
                 latest_full_year=None,
                 full_history_from="2018.07.02",
+                ea_id=12772,
+                ea_expert=r"QM\QM5_12772_demo",
+                symbol="EURGBP.DWX",
+                period="D1",
+                terminal="T8",
             )
 
         self.assertEqual(sorted(recovered), [42])
@@ -694,6 +942,11 @@ class Q05Q07VerdictTests(unittest.TestCase):
             summary.write_text(
                 json.dumps({
                     "result": "PASS",
+                    "ea_id": 12772,
+                    "expert": r"QM\QM5_12772_demo",
+                    "symbol": "EURGBP.DWX",
+                    "period": "D1",
+                    "terminal": "T8",
                     "runs": [{
                         "status": "OK",
                         "report_canonical_path": str(raw_dir / "report.htm"),
@@ -710,11 +963,85 @@ class Q05Q07VerdictTests(unittest.TestCase):
                 [42, 17, 99, 7, 2026],
                 latest_full_year=None,
                 full_history_from="2018.07.02",
+                ea_id=12772,
+                ea_expert=r"QM\QM5_12772_demo",
+                symbol="EURGBP.DWX",
+                period="D1",
+                terminal="T8",
             )
 
         self.assertEqual(sorted(recovered), [17])
         self.assertEqual(recovered[17]["summary_path"], str(summary))
         self.assertEqual(recovered[17]["pf"], 1.03)
+
+    def test_q07_resume_rejects_foreign_or_unproven_seed_summaries(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            foreign_run = root / "QM5_13138" / "20260713_063719"
+            foreign_raw = foreign_run / "raw" / "run_01"
+            foreign_raw.mkdir(parents=True)
+            (foreign_raw / "tester.ini").write_text(
+                "ExpertParameters=QM5_13138_demo_q06_stress_harsh_seed42.set\n",
+                encoding="utf-8",
+            )
+            (foreign_run / "summary.json").write_text(
+                json.dumps({
+                    "result": "PASS",
+                    "ea_id": 13138,
+                    "expert": r"QM\QM5_13138_xau-m5-ema20",
+                    "symbol": "XAUUSD.DWX",
+                    "period": "M5",
+                    "terminal": "T5",
+                    "runs": [{
+                        "status": "OK",
+                        "report_canonical_path": str(foreign_raw / "report.htm"),
+                        "profit_factor": 1.5,
+                        "drawdown": 500.0,
+                        "total_trades": 90,
+                    }],
+                }),
+                encoding="utf-8",
+            )
+
+            unproven_run = root / "QM5_12969" / "20260713_071015"
+            unproven_raw = unproven_run / "raw" / "run_01"
+            unproven_raw.mkdir(parents=True)
+            (unproven_raw / "tester.ini").write_text(
+                "ExpertParameters=QM5_12969_demo_seed17.set\n",
+                encoding="utf-8",
+            )
+            (unproven_run / "summary.json").write_text(
+                json.dumps({
+                    "result": "PASS",
+                    "ea_id": 12969,
+                    "expert": r"QM\QM5_12969_usdjpy-gotobi-nakane-fix",
+                    "symbol": "USDJPY.DWX",
+                    "period": "M30",
+                    "terminal": "T1",
+                    "runs": [{
+                        "status": "OK",
+                        "report_canonical_path": str(unproven_raw / "report.htm"),
+                        "profit_factor": 1.54,
+                        "drawdown": 2016.39,
+                        "total_trades": 331,
+                    }],
+                }),
+                encoding="utf-8",
+            )
+
+            recovered = q07._recover_existing_seed_results(
+                root,
+                [42, 17],
+                latest_full_year=2025,
+                full_history_from="2017.01.01",
+                ea_id=12969,
+                ea_expert=r"QM\QM5_12969_usdjpy-gotobi-nakane-fix",
+                symbol="USDJPY.DWX",
+                period="M30",
+                terminal="T1",
+            )
+
+        self.assertEqual(recovered, {})
 
 
 if __name__ == "__main__":

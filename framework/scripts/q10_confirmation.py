@@ -18,6 +18,7 @@ import json
 import re
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 if __package__ in (None, ""):
@@ -25,9 +26,14 @@ if __package__ in (None, ""):
 
 from framework.scripts._phase_utils import (ensure_dir, utc_now_iso, write_json,
                                             resolve_ea_expert_path, period_from_setfile,
-                                            find_latest_summary, full_history_window)
-from framework.scripts.q05_stress_medium import (_parse_pf_dd_trades, STARTING_EQUITY,
-                                                 summary_invalid_reason)
+                                            full_history_window)
+from framework.scripts.q05_stress_medium import (
+    _parse_pf_dd_trades,
+    _select_run_summary,
+    _text_from_completed_process,
+    STARTING_EQUITY,
+    summary_invalid_reason,
+)
 
 # Wrapper must outlive the tester budget (2026-07-06 audit G16).
 RUNNER_HEADROOM_SEC = 120
@@ -96,27 +102,27 @@ def run_confirmation(*, ea_id: int, ea_expert: str, symbol: str,
     creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
     timed_out = False
     exit_code: int | None = None
+    output_text = ""
+    started_at = time.time()
     try:
         proc = subprocess.run(args, capture_output=True, text=True,
                               timeout=timeout_sec + RUNNER_HEADROOM_SEC,
                               creationflags=creationflags)
         exit_code = proc.returncode
-    except subprocess.TimeoutExpired:
+        output_text = _text_from_completed_process(proc)
+    except subprocess.TimeoutExpired as exc:
         timed_out = True
-    sym_clean = symbol.replace(".", "_")
-    summary = find_latest_summary(report_root)
-    # G11 (2026-07-06 audit, sibling of the G3 fix): newest-mtime adoption from
-    # a shared report root can pick up a FOREIGN EA's summary under a
-    # saturated factory (ad-hoc/manual runs use the shared default root).
-    # Never adopt a summary whose identity doesn't match this run.
-    if summary is not None:
-        try:
-            sj = json.loads(summary.read_text(encoding="utf-8-sig"))
-            if (str(sj.get("symbol") or "").upper() != symbol.upper()
-                    or int(sj.get("ea_id") or 0) != int(ea_id)):
-                summary = None
-        except (OSError, json.JSONDecodeError, ValueError):
-            summary = None
+        output_text = _text_from_completed_process(exc)
+    summary = _select_run_summary(
+        output_text,
+        report_root,
+        started_at=started_at,
+        ea_id=ea_id,
+        ea_expert=ea_expert,
+        symbol=symbol,
+        period=period,
+        terminal=terminal,
+    )
     pf, dd_money, trades = _parse_pf_dd_trades(summary) if summary else (None, None, 0)
     dd_pct = (dd_money / STARTING_EQUITY * 100.0) if dd_money is not None else None
 
@@ -152,7 +158,7 @@ def run_confirmation(*, ea_id: int, ea_expert: str, symbol: str,
         "trades": trades,
         "exit_code": exit_code,
         "summary_path": str(summary) if summary else None,
-        "report_htm": _find_report_htm(summary) if summary else None,
+        "report_htm": _find_report_htm(summary, started_at=started_at) if summary else None,
         "history_year": history_year,
         "history_from": history_from,
         "history_to": history_to,
@@ -162,14 +168,31 @@ def run_confirmation(*, ea_id: int, ea_expert: str, symbol: str,
     }
 
 
-def _find_report_htm(summary_path: Path) -> str | None:
-    """Locate the per-run .htm report next to the summary.json."""
+def _find_report_htm(summary_path: Path, *, started_at: float) -> str | None:
+    """Locate a report produced by the same fresh confirmation invocation."""
     if not summary_path.exists():
         return None
-    raw_dir = summary_path.parent / "raw" / "run_01"
-    candidate = raw_dir / "report.htm"
-    if candidate.exists():
-        return str(candidate)
+    candidates: list[Path] = []
+    try:
+        summary = json.loads(summary_path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError):
+        summary = {}
+    for run in reversed(summary.get("runs") or []):
+        for key in ("report_canonical_path", "report_source_path"):
+            raw_path = run.get(key)
+            if raw_path:
+                candidates.append(Path(str(raw_path)))
+    candidates.extend(summary_path.parent.glob("raw/run_*/report.htm"))
+    seen: set[Path] = set()
+    for candidate in candidates:
+        if candidate in seen:
+            continue
+        seen.add(candidate)
+        try:
+            if candidate.stat().st_mtime >= started_at:
+                return str(candidate)
+        except OSError:
+            continue
     return None
 
 

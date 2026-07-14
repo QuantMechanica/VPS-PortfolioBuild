@@ -63,6 +63,11 @@ def installed_terminals() -> list[str]:
     return terminals or list(TERMINALS)
 
 
+def deployment_terminals(pinned_terminal: str | None) -> list[str]:
+    """Keep binary and registry deployment inside an explicit terminal pin."""
+    return [pinned_terminal] if pinned_terminal else installed_terminals()
+
+
 def _active_registered_slugs(ea_label: str) -> set[str]:
     """DL-068/DL-069: ea_slugs with a non-retired magic_numbers.csv row = canonical builds."""
     import csv as _csv
@@ -654,7 +659,9 @@ def main() -> int:
 
     ea_dir = find_ea_dir(args.ea)
     ea_id = derive_numeric_ea_id(args.ea, ea_dir)
-    active_terminals = installed_terminals()
+    # A pinned run is also a deployment boundary. Do not copy the EA or registry
+    # into unrelated terminals when the operator explicitly selected one slot.
+    active_terminals = deployment_terminals(args.terminal)
     terminal_roots = [MT5_ROOT / t for t in active_terminals]
     ensure_magic_registry_contains_ea(ea_id)
     ensure_expert_binary_deployed(ea_dir, terminal_roots)

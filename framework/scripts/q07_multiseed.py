@@ -28,8 +28,12 @@ from framework.scripts._phase_utils import (ensure_dir, utc_now_iso, write_json,
                                             full_history_window,
                                             run_with_launch_fault_retry)
 from framework.scripts.q05_stress_medium import (
+    _find_latest_matching_summary,
     _latest_report_metrics,
     _parse_pf_dd_trades,
+    _summary_identity_matches,
+    _summary_from_run_smoke_output,
+    _text_from_completed_process,
     summary_invalid_reason,
     MIN_TRADES,
     STARTING_EQUITY,
@@ -44,68 +48,16 @@ PER_SEED_PF_MIN = 1.0
 DEFAULT_SEED_TIMEOUT_SEC = 5400
 
 
-def _text_from_completed_process(proc: subprocess.CompletedProcess | subprocess.TimeoutExpired) -> str:
-    parts: list[str] = []
-    for raw in (getattr(proc, "stdout", None), getattr(proc, "stderr", None)):
-        if raw is None:
-            continue
-        if isinstance(raw, bytes):
-            parts.append(raw.decode("utf-8", errors="replace"))
-        else:
-            parts.append(str(raw))
-    return "\n".join(part for part in parts if part)
-
-
-def _summary_from_run_smoke_output(output_text: str) -> Path | None:
-    match = re.search(r"(?m)^run_smoke\.summary=(?P<path>.+?)\s*$", output_text or "")
-    if not match:
-        return None
-    path = Path(match.group("path").strip().strip('"'))
-    return path if path.exists() else None
-
-
-def _find_latest_summary_after(report_root: Path, started_at: float) -> Path | None:
-    root = Path(report_root)
-    if not root.is_dir():
-        return None
-    cands = []
-    for summary in root.rglob("summary.json"):
-        try:
-            mtime = summary.stat().st_mtime
-        except OSError:
-            continue
-        if mtime >= started_at:
-            cands.append((mtime, summary))
-    if not cands:
-        return None
-    return max(cands, key=lambda item: item[0])[1]
-
-
-def _latest_report_metrics_after(report_root: Path, started_at: float) -> dict | None:
-    root = Path(report_root)
-    if not root.is_dir():
-        return None
-    reports = []
-    for report in root.rglob("report.htm"):
-        try:
-            mtime = report.stat().st_mtime
-        except OSError:
-            continue
-        if mtime >= started_at:
-            reports.append((mtime, report))
-    for _mtime, report in sorted(reports, reverse=True):
-        metrics = _latest_report_metrics(report.parent)
-        if metrics:
-            return metrics
-    return None
-
-
 def _seed_from_tester_ini(path: Path) -> int | None:
     try:
         text = path.read_text(encoding="utf-8", errors="ignore")
     except OSError:
         return None
-    match = re.search(r"_seed(?P<seed>\d+)\.set\b", text, flags=re.IGNORECASE)
+    match = re.search(
+        r"_q06_stress_harsh_seed(?P<seed>\d+)\.set\b",
+        text,
+        flags=re.IGNORECASE,
+    )
     if not match:
         return None
     return int(match.group("seed"))
@@ -136,7 +88,19 @@ def _seed_from_summary_path(summary_path: Path) -> int | None:
 
 def _result_from_existing_seed_summary(*, summary_path: Path, seed: int,
                                        latest_full_year: int | None,
-                                       full_history_from: str | None) -> dict | None:
+                                       full_history_from: str | None,
+                                       ea_id: int, ea_expert: str, symbol: str,
+                                       period: str, terminal: str) -> dict | None:
+    try:
+        summary = json.loads(summary_path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if not _summary_identity_matches(
+            summary, ea_id=ea_id, ea_expert=ea_expert, symbol=symbol,
+            period=period, terminal=terminal):
+        return None
+    if _seed_from_summary_path(summary_path) != seed:
+        return None
     invalid_reason = summary_invalid_reason(summary_path)
     if invalid_reason:
         return None
@@ -170,7 +134,9 @@ def _result_from_existing_seed_summary(*, summary_path: Path, seed: int,
 
 def _recover_existing_seed_results(report_root: Path, seeds: list[int],
                                    latest_full_year: int | None,
-                                   full_history_from: str | None) -> dict[int, dict]:
+                                   full_history_from: str | None, *,
+                                   ea_id: int, ea_expert: str, symbol: str,
+                                   period: str, terminal: str) -> dict[int, dict]:
     root = Path(report_root)
     search_roots: list[Path] = []
     if root.is_dir():
@@ -199,6 +165,11 @@ def _recover_existing_seed_results(report_root: Path, seeds: list[int],
             seed=seed,
             latest_full_year=latest_full_year,
             full_history_from=full_history_from,
+            ea_id=ea_id,
+            ea_expert=ea_expert,
+            symbol=symbol,
+            period=period,
+            terminal=terminal,
         )
         if result is not None:
             recovered[seed] = result
@@ -219,15 +190,28 @@ def _load_canonical_seeds() -> list[int]:
 def _write_seeded_setfile(baseline: Path, seed: int) -> Path:
     """Write a copy of `baseline` with qm_rng_seed=<seed> overridden."""
     text = baseline.read_text(encoding="utf-8", errors="replace")
-    if "qm_rng_seed=" in text:
-        new = re.sub(r"qm_rng_seed=\d+", f"qm_rng_seed={seed}", text)
+    seed_line = f"qm_rng_seed={seed}"
+    if re.search(r"(?m)^[ \t]*qm_rng_seed\s*=", text):
+        new = re.sub(
+            r"(?m)^[ \t]*qm_rng_seed\s*=.*$",
+            seed_line,
+            text,
+            count=1,
+        )
     else:
-        # Inject after qm_magic_slot_offset= line if present, else after PORTFOLIO_WEIGHT
-        anchor = "qm_magic_slot_offset="
-        if anchor in text:
-            new = text.replace(anchor + "0", f"qm_magic_slot_offset=0\nqm_rng_seed={seed}", 1)
+        # Slot offsets are not necessarily zero. Insert after the complete input
+        # line so every canonical EA receives an actual seed override.
+        anchor = re.search(r"(?m)^[ \t]*qm_magic_slot_offset\s*=.*$", text)
+        if anchor:
+            new = text[:anchor.end()] + f"\n{seed_line}" + text[anchor.end():]
         else:
-            new = text.rstrip() + f"\nqm_rng_seed={seed}\n"
+            new = text.rstrip() + f"\n{seed_line}\n"
+
+    declared = re.findall(r"(?m)^[ \t]*qm_rng_seed\s*=\s*(\d+)\s*$", new)
+    if declared != [str(seed)]:
+        raise ValueError(
+            f"seed injection failed for {baseline}: expected one {seed}, got {declared}"
+        )
     out_path = baseline.with_name(f"{baseline.stem}_seed{seed}.set")
     out_path.write_text(new, encoding="utf-8")
     return out_path
@@ -286,9 +270,31 @@ def _run_seed(*, ea_id: int, ea_expert: str, symbol: str, setfile: Path,
         timeout_detail = f"subprocess_timeout_after={exc.timeout}s"
         exit_code = 124
         output_text = _text_from_completed_process(exc)
-    summary = _summary_from_run_smoke_output(output_text) or _find_latest_summary_after(report_root, started_at)
+    summary = _summary_from_run_smoke_output(
+        output_text,
+        started_at=started_at,
+        ea_id=ea_id,
+        ea_expert=ea_expert,
+        symbol=symbol,
+        period=period,
+        terminal=terminal,
+    ) or _find_latest_matching_summary(
+        report_root,
+        started_at=started_at,
+        ea_id=ea_id,
+        ea_expert=ea_expert,
+        symbol=symbol,
+        period=period,
+        terminal=terminal,
+    )
     invalid_reason = summary_invalid_reason(summary) if summary else None
-    report_metrics = None if summary else _latest_report_metrics_after(report_root, started_at)
+    report_metrics = None if summary else _latest_report_metrics(
+        report_root,
+        started_at=started_at,
+        expected_expert=ea_expert,
+        expected_symbol=symbol,
+        expected_period=period,
+    )
     if summary:
         pf, dd_money, trades = _parse_pf_dd_trades(summary)
     elif report_metrics:
@@ -388,6 +394,8 @@ def main() -> int:
     ap.add_argument("--symbol", required=True)
     ap.add_argument("--baseline-setfile", type=Path, required=True,
                     help="Q03 plateau-median setfile (Q06 HARSH stress will be applied per Q07 spec)")
+    ap.add_argument("--expert",
+                    help="Optional pre-deployed MT5 expert path override")
     ap.add_argument("--terminal", default="T2")
     ap.add_argument("--report-root", type=Path, default=Path("D:/QM/reports/pipeline"))
     ap.add_argument("--timeout-sec", type=int, default=DEFAULT_SEED_TIMEOUT_SEC)
@@ -406,7 +414,7 @@ def main() -> int:
     ea_id = int(ea_match.group(1))
 
     repo_root = Path(__file__).resolve().parents[2]
-    ea_expert = resolve_ea_expert_path(repo_root, args.ea)
+    ea_expert = args.expert or resolve_ea_expert_path(repo_root, args.ea)
     if ea_expert is None:
         print(f"cannot resolve EA dir for {args.ea}", file=sys.stderr)
         return 2
@@ -423,6 +431,11 @@ def main() -> int:
         seeds,
         args.latest_full_year,
         args.full_history_from,
+        ea_id=ea_id,
+        ea_expert=ea_expert,
+        symbol=args.symbol,
+        period=period,
+        terminal=args.terminal,
     )
     seed_results: list[dict] = []
     for seed in seeds:

@@ -1,6 +1,8 @@
 import datetime as dt
 import json
+import os
 import tempfile
+import time
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
@@ -372,6 +374,152 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
 
         self.assertEqual(calls[0][calls[0].index("-SetFile") + 1], str(baseline))
 
+    def test_q08_baseline_fallback_rejects_stale_or_foreign_summary(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            base = root / "QM5_12969"
+            stale = base / "20260713_064357" / "summary.json"
+            stale.parent.mkdir(parents=True)
+            stale.write_text(
+                json.dumps({
+                    "ea_id": 12969,
+                    "expert": r"QM\QM5_12969_usdjpy-gotobi-nakane-fix",
+                    "symbol": "USDJPY.DWX",
+                    "period": "M30",
+                    "terminal": "T1",
+                }),
+                encoding="utf-8",
+            )
+            os.utime(stale, (1, 1))
+            started_at = time.time()
+            foreign = base / "20260713_071015" / "summary.json"
+            foreign.parent.mkdir(parents=True)
+            foreign.write_text(
+                json.dumps({
+                    "ea_id": 13138,
+                    "expert": r"QM\QM5_13138_xau-m5-ema20",
+                    "symbol": "XAUUSD.DWX",
+                    "period": "M5",
+                    "terminal": "T5",
+                }),
+                encoding="utf-8",
+            )
+
+            summary = aggregate._latest_baseline_summary(
+                root,
+                12969,
+                started_at=started_at,
+                expected_expert=r"QM\QM5_12969_usdjpy-gotobi-nakane-fix",
+                expected_symbol="USDJPY.DWX",
+                expected_period="M30",
+                expected_terminal="T1",
+            )
+
+        self.assertIsNone(summary)
+
+    def test_q08_baseline_marker_rejects_report_older_than_run(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            baseline = root / "QM5_11476_demo_USDJPY.DWX_H1_backtest.set"
+            baseline.write_text("x=1\n", encoding="utf-8")
+            report = root / "run_01" / "report.htm"
+            report.parent.mkdir(parents=True)
+            report.write_text("<html></html>", encoding="utf-8")
+            os.utime(report, (1, 1))
+            summary = root / "QM5_11476" / "20260713_071015" / "summary.json"
+            repo_root = Path(aggregate.__file__).resolve().parents[3]
+            ea_dir = sorted(
+                path for path in (repo_root / "framework" / "EAs").glob("QM5_11476_*")
+                if path.is_dir()
+            )[0]
+            expected_expert = f"QM\\{ea_dir.name}"
+
+            def fake_run(_args, **_kwargs):
+                summary.parent.mkdir(parents=True)
+                summary.write_text(
+                    json.dumps({
+                        "result": "PASS",
+                        "ea_id": 11476,
+                        "expert": expected_expert,
+                        "symbol": "USDJPY.DWX",
+                        "period": "H1",
+                        "terminal": "T9",
+                        "runs": [{
+                            "report_canonical_path": str(report),
+                            "profit_factor": 1.2,
+                            "total_trades": 50,
+                        }],
+                    }),
+                    encoding="utf-8",
+                )
+                return SimpleNamespace(
+                    returncode=0,
+                    stdout=f"run_smoke.summary={summary}\n",
+                    stderr="",
+                )
+
+            with patch("subprocess.run", side_effect=fake_run), \
+                 patch.object(
+                     aggregate,
+                     "_latest_baseline_summary",
+                     side_effect=AssertionError("marker should win"),
+                 ), \
+                 patch.object(aggregate, "_latest_structured_qm_log", return_value=None):
+                result = aggregate._run_baseline_for_trades(
+                    11476,
+                    "USDJPY.DWX",
+                    terminal="T9",
+                    baseline_setfile=baseline,
+                )
+
+        self.assertEqual(result["baseline_summary_path"], str(summary))
+        self.assertIsNone(result["baseline_report_path"])
+        self.assertGreater(result["run_started_at"], 1)
+
+    def test_q08_baseline_retry_rejects_report_older_than_run(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            report = root / "old" / "report.htm"
+            report.parent.mkdir(parents=True)
+            report.write_text("<html></html>", encoding="utf-8")
+            os.utime(report, (1, 1))
+            started_at = time.time()
+            summary = root / "QM5_12969" / "20260713_071015" / "summary.json"
+            summary.parent.mkdir(parents=True)
+            summary.write_text(
+                json.dumps({
+                    "result": "PASS",
+                    "ea_id": 12969,
+                    "expert": r"QM\QM5_12969_usdjpy-gotobi-nakane-fix",
+                    "symbol": "USDJPY.DWX",
+                    "period": "M30",
+                    "terminal": "T1",
+                    "runs": [{
+                        "report_canonical_path": str(report),
+                        "profit_factor": 1.54,
+                        "total_trades": 331,
+                    }],
+                }),
+                encoding="utf-8",
+            )
+
+            retry_summary = aggregate._latest_baseline_summary(
+                root,
+                12969,
+                started_at=started_at,
+                expected_expert=r"QM\QM5_12969_usdjpy-gotobi-nakane-fix",
+                expected_symbol="USDJPY.DWX",
+                expected_period="M30",
+                expected_terminal="T1",
+            )
+            metadata = aggregate._baseline_report_metadata(
+                retry_summary,
+                started_at=started_at,
+            )
+
+        self.assertEqual(retry_summary, summary)
+        self.assertIsNone(metadata["baseline_report_path"])
+
     def test_q08_neighborhood_resolves_canonical_v5_expert_path(self) -> None:
         expert = q08_5_neighborhood_runner.resolve_ea_expert("QM5_11476", 11476)
 
@@ -387,10 +535,26 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
                 summary = root / "QM5_11476" / "20260101_000000" / "summary.json"
                 summary.parent.mkdir(parents=True)
                 summary.write_text(
-                    '{"runs":[{"profit_factor":1.23,"drawdown":456.0,"total_trades":78}]}',
+                    json.dumps({
+                        "result": "PASS",
+                        "ea_id": 11476,
+                        "expert": r"QM\QM5_11476_demo",
+                        "symbol": "USDJPY.DWX",
+                        "period": "H1",
+                        "terminal": "T9",
+                        "runs": [{
+                            "profit_factor": 1.23,
+                            "drawdown": 456.0,
+                            "total_trades": 78,
+                        }],
+                    }),
                     encoding="utf-8",
                 )
-                return SimpleNamespace(returncode=0, stdout="", stderr="")
+                return SimpleNamespace(
+                    returncode=0,
+                    stdout=f"run_smoke.summary={summary}\n",
+                    stderr="",
+                )
 
             with patch.object(q08_5_neighborhood_runner.subprocess, "run", side_effect=fake_run):
                 pf, dd, trades = q08_5_neighborhood_runner.fire_backtest(
@@ -407,6 +571,88 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
         self.assertEqual(dd, 456.0)
         self.assertEqual(trades, 78)
 
+    def test_q08_neighborhood_rejects_stale_matching_summary(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            baseline = root / "baseline.set"
+            baseline.write_text("x=1\n", encoding="utf-8")
+            summary = root / "QM5_11476" / "20260101_000000" / "summary.json"
+            summary.parent.mkdir(parents=True)
+            summary.write_text(
+                json.dumps({
+                    "result": "PASS",
+                    "ea_id": 11476,
+                    "expert": r"QM\QM5_11476_demo",
+                    "symbol": "USDJPY.DWX",
+                    "period": "H1",
+                    "terminal": "T9",
+                    "runs": [{
+                        "profit_factor": 1.23,
+                        "drawdown": 456.0,
+                        "total_trades": 78,
+                    }],
+                }),
+                encoding="utf-8",
+            )
+            os.utime(summary, (1, 1))
+
+            with patch.object(
+                    q08_5_neighborhood_runner.subprocess,
+                    "run",
+                    return_value=SimpleNamespace(returncode=1, stdout="", stderr="")):
+                result = q08_5_neighborhood_runner.fire_backtest(
+                    ea_id=11476,
+                    ea_expert=r"QM\QM5_11476_demo",
+                    symbol="USDJPY.DWX",
+                    setfile=baseline,
+                    terminal="T9",
+                    run_tag="baseline",
+                    report_root=root,
+                )
+
+        self.assertEqual(result, (None, None, 0))
+
+    def test_q08_neighborhood_rejects_fresh_foreign_summary(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            baseline = root / "baseline.set"
+            baseline.write_text("x=1\n", encoding="utf-8")
+
+            def fake_run(_args, **_kwargs):
+                summary = root / "QM5_13138" / "20260713_063719" / "summary.json"
+                summary.parent.mkdir(parents=True)
+                summary.write_text(
+                    json.dumps({
+                        "result": "PASS",
+                        "ea_id": 13138,
+                        "expert": r"QM\QM5_13138_xau-m5-ema20",
+                        "symbol": "XAUUSD.DWX",
+                        "period": "M5",
+                        "terminal": "T5",
+                        "runs": [{
+                            "profit_factor": 1.7,
+                            "drawdown": 400.0,
+                            "total_trades": 80,
+                        }],
+                    }),
+                    encoding="utf-8",
+                )
+                return SimpleNamespace(returncode=1, stdout="", stderr="")
+
+            with patch.object(
+                    q08_5_neighborhood_runner.subprocess, "run", side_effect=fake_run):
+                result = q08_5_neighborhood_runner.fire_backtest(
+                    ea_id=11476,
+                    ea_expert=r"QM\QM5_11476_demo",
+                    symbol="USDJPY.DWX",
+                    setfile=baseline,
+                    terminal="T9",
+                    run_tag="baseline",
+                    report_root=root,
+                )
+
+        self.assertEqual(result, (None, None, 0))
+
     def test_q08_neighborhood_setfile_fallback_skips_framework_and_categorical_params(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             setfile = Path(tmp) / "demo.set"
@@ -418,6 +664,9 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
                     "PORTFOLIO_WEIGHT=1",
                     "strategy_use_slope_filter=1",
                     "strategy_direction_mode=1",
+                    "strategy_entry_jst_hhmm=200",
+                    "strategy_exit_hour=21",
+                    "strategy_session_time=930",
                     "strategy_min_exit_bars=0",
                     "strategy_bb_period=20",
                     "strategy_bb_dev_inner=1.0",

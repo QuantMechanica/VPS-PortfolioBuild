@@ -47,6 +47,12 @@ else:
         sub_8_11_mc_shuffle_dd,
     )
 
+from framework.scripts.q05_stress_medium import (
+    _summary_from_run_smoke_output,
+    _summary_identity_matches,
+    _text_from_completed_process,
+)
+
 # Execution order matches the Vault Q08 spec numbering.
 SUB_GATES = [
     ("8.1",  sub_8_1_correlation),
@@ -82,6 +88,9 @@ LOW_SAMPLE_DETAIL_TOKENS = (
 # low-freq edge to advance (to the SOFT/portfolio track or a clean PASS). Below this, nothing
 # real validated the edge and the result is INVALID. PBO (8.7) is the canonical such gate.
 DL077_MIN_QUALITY_PASSES = 1
+DEFAULT_NEIGHBORHOOD_MAX_PARAMS = 2
+NEIGHBORHOOD_RUN_TIMEOUT_SEC = 900
+NEIGHBORHOOD_RUN_HEADROOM_SEC = 120
 
 
 def _ensure_sub_gate_inputs(ea_id: int, symbol: str, terminal: str | None = None,
@@ -120,9 +129,19 @@ def _ensure_sub_gate_inputs(ea_id: int, symbol: str, terminal: str | None = None
                     "--baseline-setfile", str(baseline),
                     "--terminal", terminal or "T2",
                 ]
-                if neighborhood_max_params is not None:
-                    cmd.extend(["--max-params", str(neighborhood_max_params)])
-                proc = _sp.run(cmd, capture_output=True, text=True, timeout=1800)
+                max_params = (
+                    neighborhood_max_params
+                    if neighborhood_max_params is not None
+                    else DEFAULT_NEIGHBORHOOD_MAX_PARAMS
+                )
+                cmd.extend(["--max-params", str(max_params)])
+                expected_runs = 1 + 2 * max_params
+                outer_timeout = (
+                    expected_runs
+                    * (NEIGHBORHOOD_RUN_TIMEOUT_SEC + NEIGHBORHOOD_RUN_HEADROOM_SEC)
+                    + 60
+                )
+                proc = _sp.run(cmd, capture_output=True, text=True, timeout=outer_timeout)
                 ran["8_5_neighborhood"] = {
                     "exit_code": proc.returncode,
                     "artifact_now_exists": perturbations.exists(),
@@ -349,12 +368,13 @@ def _run_baseline_for_trades(ea_id: int, symbol: str, terminal: str | None,
     is_basket = test_symbol != symbol
     timeout_run = 5400 if is_basket else 2400
     timeout_proc = timeout_run + 120
+    test_terminal = terminal or "T1"
     args = [
         "pwsh.exe", "-NoProfile", "-File",
         str(repo_root / "framework" / "scripts" / "run_smoke.ps1"),
         "-EAId", str(ea_id), "-Expert", expert, "-Symbol", test_symbol,
         "-Year", "2025", "-FromDate", "2017.01.01", "-ToDate", "2025.12.31",
-        "-Terminal", terminal or "T1", "-Period", period,
+        "-Terminal", test_terminal, "-Period", period,
         "-Runs", "1", "-MinTrades", "1", "-Model", "4",
         "-SetFile", str(baseline), "-ReportRoot", str(report_root),
         "-DispatchPhase", "Q08", "-DispatchVersion", "q08_baseline",
@@ -362,49 +382,87 @@ def _run_baseline_for_trades(ea_id: int, symbol: str, terminal: str | None,
         "-TimeoutSeconds", str(timeout_run),
     ]
     flags = 0x08000000 if sys.platform == "win32" else 0
+    started_at = time.time()
+    output_text = ""
+    exit_code = None
+    run_error = None
     try:
         p = _sp.run(args, capture_output=True, text=True, timeout=timeout_proc, creationflags=flags)
-        summary = _latest_baseline_summary(report_root, ea_id, wait_seconds=10,
-                                           expected_symbol=test_symbol)
-        out = {"exit_code": p.returncode, "expert": expert, "period": period,
-               "test_symbol": test_symbol}
-        if summary is not None:
-            out.update(_baseline_report_metadata(summary))
-        structured_log = _latest_structured_qm_log(ea_id, symbol, terminal)
-        if structured_log is not None:
-            out["structured_log_path"] = str(structured_log)
-        return out
+        exit_code = p.returncode
+        output_text = _text_from_completed_process(p)
     except Exception as exc:
-        return {"error": repr(exc), "test_symbol": test_symbol}
+        run_error = repr(exc)
+        output_text = _text_from_completed_process(exc)
+    summary = _summary_from_run_smoke_output(
+        output_text,
+        started_at=started_at,
+        ea_id=ea_id,
+        ea_expert=expert,
+        symbol=test_symbol,
+        period=period,
+        terminal=test_terminal,
+    ) or _latest_baseline_summary(
+        report_root,
+        ea_id,
+        wait_seconds=10 if run_error is None else 0,
+        started_at=started_at,
+        expected_expert=expert,
+        expected_symbol=test_symbol,
+        expected_period=period,
+        expected_terminal=test_terminal,
+    )
+    out = {
+        "exit_code": exit_code,
+        "expert": expert,
+        "period": period,
+        "test_symbol": test_symbol,
+        "test_terminal": test_terminal,
+        "run_started_at": started_at,
+    }
+    if run_error is not None:
+        out["error"] = run_error
+    if summary is not None:
+        out.update(_baseline_report_metadata(summary, started_at=started_at))
+    structured_log = _latest_structured_qm_log(ea_id, symbol, terminal)
+    if structured_log is not None:
+        out["structured_log_path"] = str(structured_log)
+    return out
 
 
-def _latest_baseline_summary(report_root: Path, ea_id: int, wait_seconds: int = 0,
-                             expected_symbol: str | None = None) -> Path | None:
-    """Newest baseline summary, symbol-gated (2026-07-06 audit G3): the _baseline
-    dir is shared per-EA, so for multi-symbol EAs the newest summary can belong
-    to a DIFFERENT symbol's earlier run — adopting it grades wrong-symbol trades
-    as this symbol's evidence. When expected_symbol is given, only a summary
-    whose top-level symbol matches is eligible."""
+def _latest_baseline_summary(
+        report_root: Path, ea_id: int, wait_seconds: int = 0, *,
+        started_at: float, expected_expert: str, expected_symbol: str,
+        expected_period: str, expected_terminal: str) -> Path | None:
+    """Return only a fresh baseline summary for the exact expected MT5 run."""
     base = report_root / f"QM5_{ea_id}"
     deadline = time.time() + max(0, wait_seconds)
     while True:
         if base.exists():
-            summaries = sorted(base.glob("*/summary.json"), key=lambda p: p.stat().st_mtime, reverse=True)
-            for candidate in summaries:
-                if expected_symbol is None:
-                    return candidate
+            summaries: list[tuple[float, Path]] = []
+            for candidate in base.glob("*/summary.json"):
+                try:
+                    mtime = candidate.stat().st_mtime
+                except OSError:
+                    continue
+                if mtime >= started_at:
+                    summaries.append((mtime, candidate))
+            for _mtime, candidate in sorted(summaries, reverse=True):
                 try:
                     data = json.loads(candidate.read_text(encoding="utf-8-sig"))
                 except (OSError, json.JSONDecodeError):
                     continue
-                if str(data.get("symbol") or "").upper() == str(expected_symbol).upper():
+                if _summary_identity_matches(
+                        data, ea_id=ea_id, ea_expert=expected_expert,
+                        symbol=expected_symbol, period=expected_period,
+                        terminal=expected_terminal):
                     return candidate
         if time.time() >= deadline:
             return None
         time.sleep(1)
 
 
-def _baseline_report_metadata(summary_path: Path) -> dict:
+def _baseline_report_metadata(
+        summary_path: Path, *, started_at: float | None = None) -> dict:
     try:
         data = json.loads(summary_path.read_text(encoding="utf-8-sig"))
     except (OSError, json.JSONDecodeError):
@@ -412,6 +470,12 @@ def _baseline_report_metadata(summary_path: Path) -> dict:
     runs = data.get("runs") or []
     run = runs[0] if runs else {}
     report_path = run.get("report_canonical_path") or run.get("report_source_path")
+    if report_path and started_at is not None:
+        try:
+            if Path(str(report_path)).stat().st_mtime < started_at:
+                report_path = None
+        except OSError:
+            report_path = None
     return {
         "baseline_summary_path": str(summary_path),
         "baseline_result": data.get("result"),
@@ -738,14 +802,23 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
         # timed-out baseline discards the only valid trade stream — the 0-trade INVALID loop.
         baseline_run = _run_baseline_for_trades(ea_id, symbol, terminal, baseline_setfile)
         if baseline_run and not baseline_run.get("baseline_report_path"):
-            retry_summary = _latest_baseline_summary(
-                Path(f"D:/QM/reports/pipeline/QM5_{ea_id}/Q08/_baseline"),
-                ea_id,
-                wait_seconds=5,
-                expected_symbol=baseline_run.get("test_symbol"),
-            )
-            if retry_summary is not None:
-                baseline_run.update(_baseline_report_metadata(retry_summary))
+            retry_started_at = _float_or_none(baseline_run.get("run_started_at"))
+            if retry_started_at is not None:
+                retry_summary = _latest_baseline_summary(
+                    Path(f"D:/QM/reports/pipeline/QM5_{ea_id}/Q08/_baseline"),
+                    ea_id,
+                    wait_seconds=5,
+                    started_at=retry_started_at,
+                    expected_expert=str(baseline_run.get("expert") or ""),
+                    expected_symbol=str(baseline_run.get("test_symbol") or ""),
+                    expected_period=str(baseline_run.get("period") or ""),
+                    expected_terminal=str(baseline_run.get("test_terminal") or ""),
+                )
+                if retry_summary is not None:
+                    baseline_run.update(_baseline_report_metadata(
+                        retry_summary,
+                        started_at=retry_started_at,
+                    ))
         trades = common.load_trades_from_log(common_log)
         equity_stream = common.load_equity_stream(common_log) or equity_stream
         # Basket EA host-symbol fallback: if the logical-symbol path is still empty after

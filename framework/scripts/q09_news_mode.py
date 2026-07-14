@@ -24,10 +24,10 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
-import json
 import re
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 if __package__ in (None, ""):
@@ -35,6 +35,11 @@ if __package__ in (None, ""):
 
 from framework.scripts._phase_utils import (ensure_dir, utc_now_iso, write_json,
                                             resolve_ea_expert_path, period_from_setfile)
+from framework.scripts.q05_stress_medium import (
+    _parse_pf_dd_trades,
+    _select_run_summary,
+    _text_from_completed_process,
+)
 
 GATE_NAME = "Q09"
 
@@ -167,26 +172,27 @@ def main() -> int:
             "-TimeoutSeconds", str(args.timeout_sec),
         ]
         creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+        started_at = time.time()
         try:
-            subprocess.run(args_list, capture_output=True, text=True,
-                           timeout=args.timeout_sec, creationflags=creationflags)
+            proc = subprocess.run(args_list, capture_output=True, text=True,
+                                  timeout=args.timeout_sec, creationflags=creationflags)
         except subprocess.TimeoutExpired:
             matrix_rows.append({"temporal": temporal, "tag": tag,
                                  "pf": None, "trades": 0, "status": "TIMEOUT"})
             continue
-        summary = (args.report_root / f"QM5_{ea_id}" / "Q09" /
-                   sym_clean / run_tag / "summary.json")
-        pf, trades = None, 0
-        if summary.exists():
-            try:
-                sj = json.loads(summary.read_text(encoding="utf-8-sig"))
-                runs = sj.get("runs") or []
-                if runs:
-                    r0 = runs[-1]
-                    pf = float(r0.get("profit_factor") or 0) or None
-                    trades = int(r0.get("total_trades") or 0)
-            except Exception:
-                pass
+        summary = _select_run_summary(
+            _text_from_completed_process(proc),
+            args.report_root,
+            started_at=started_at,
+            ea_id=ea_id,
+            ea_expert=ea_expert,
+            symbol=args.symbol,
+            period=period,
+            terminal=args.terminal,
+        )
+        pf, _dd_money, trades = (
+            _parse_pf_dd_trades(summary) if summary else (None, None, 0)
+        )
         matrix_rows.append({"temporal": temporal, "tag": tag,
                              "pf": pf, "trades": trades,
                              "status": "OK" if pf else "NO_DATA"})

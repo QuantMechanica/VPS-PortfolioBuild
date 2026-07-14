@@ -1,7 +1,9 @@
 import json
+import os
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -44,6 +46,111 @@ class Q10ConfirmationTests(unittest.TestCase):
 
         self.assertEqual(result["verdict"], "PASS")
         self.assertTrue(result["reason"].startswith("pf=1.200:dd_pct=1.00"))
+        self.assertIsNotNone(result["report_htm"])
+
+    def test_run_confirmation_rejects_stale_matching_summary(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            report_root = Path(tmp)
+            summary = report_root / "QM5_1056" / "20260101" / "summary.json"
+            summary.parent.mkdir(parents=True)
+            summary.write_text(
+                json.dumps({
+                    "ea_id": 1056,
+                    "expert": "QM/QM5_1056_dummy/QM5_1056_dummy",
+                    "symbol": "NDX.DWX",
+                    "period": "H1",
+                    "terminal": "T2",
+                    "runs": [{
+                        "profit_factor": 1.2,
+                        "drawdown": 1000.0,
+                        "total_trades": 42,
+                    }],
+                }),
+                encoding="utf-8",
+            )
+            os.utime(summary, (1, 1))
+            completed = subprocess.CompletedProcess(
+                args=["pwsh.exe"], returncode=1, stdout="", stderr="",
+            )
+
+            with mock.patch.object(q10_confirmation.subprocess, "run", return_value=completed):
+                result = q10_confirmation.run_confirmation(
+                    ea_id=1056,
+                    ea_expert="QM/QM5_1056_dummy/QM5_1056_dummy",
+                    symbol="NDX.DWX",
+                    setfile=report_root / "baseline.set",
+                    terminal="T2",
+                    period="H1",
+                    report_root=report_root,
+                    timeout_sec=1,
+                )
+
+        self.assertIsNone(result["summary_path"])
+        self.assertEqual(result["reason"], "missing_pf_or_dd_in_summary")
+
+    def test_run_confirmation_rejects_fresh_foreign_summary(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            report_root = Path(tmp)
+            foreign = report_root / "QM5_13138" / "20260713_063719" / "summary.json"
+
+            def fake_run(_args, **_kwargs):
+                foreign.parent.mkdir(parents=True)
+                foreign.write_text(
+                    json.dumps({
+                        "ea_id": 13138,
+                        "expert": r"QM\QM5_13138_xau-m5-ema20",
+                        "symbol": "XAUUSD.DWX",
+                        "period": "M5",
+                        "terminal": "T5",
+                        "runs": [{
+                            "profit_factor": 1.7,
+                            "drawdown": 400.0,
+                            "total_trades": 80,
+                        }],
+                    }),
+                    encoding="utf-8",
+                )
+                return subprocess.CompletedProcess(
+                    args=["pwsh.exe"], returncode=1, stdout="", stderr="",
+                )
+
+            with mock.patch.object(q10_confirmation.subprocess, "run", side_effect=fake_run):
+                result = q10_confirmation.run_confirmation(
+                    ea_id=1056,
+                    ea_expert="QM/QM5_1056_dummy/QM5_1056_dummy",
+                    symbol="NDX.DWX",
+                    setfile=report_root / "baseline.set",
+                    terminal="T2",
+                    period="H1",
+                    report_root=report_root,
+                    timeout_sec=1,
+                )
+
+        self.assertIsNone(result["summary_path"])
+        self.assertEqual(result["reason"], "missing_pf_or_dd_in_summary")
+
+    def test_find_report_rejects_report_older_than_confirmation_run(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            report = root / "raw" / "run_01" / "report.htm"
+            report.parent.mkdir(parents=True)
+            report.write_text("<html></html>", encoding="utf-8")
+            os.utime(report, (1, 1))
+            started_at = time.time()
+            summary = root / "summary.json"
+            summary.write_text(
+                json.dumps({
+                    "runs": [{"report_canonical_path": str(report)}],
+                }),
+                encoding="utf-8",
+            )
+
+            selected = q10_confirmation._find_report_htm(
+                summary,
+                started_at=started_at,
+            )
+
+        self.assertIsNone(selected)
 
     def test_extract_per_trade_profits_from_synthetic_mt5_html(self) -> None:
         htm = """
@@ -75,14 +182,34 @@ class Q10ConfirmationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             report_root = Path(tmp)
             summary_dir = report_root / "QM5_1056" / "20260101"
-            summary_dir.mkdir(parents=True)
             summary_path = summary_dir / "summary.json"
-            summary_path.write_text(json.dumps(summary), encoding="utf-8")
+            report_path = summary_dir / "raw" / "run_01" / "report.htm"
             setfile = report_root / "baseline.set"
             setfile.write_text("", encoding="utf-8")
 
-            completed = subprocess.CompletedProcess(args=["pwsh.exe"], returncode=0, stdout="", stderr="")
-            with mock.patch.object(q10_confirmation.subprocess, "run", return_value=completed) as run:
+            def fake_run(_args, **_kwargs):
+                payload = dict(summary)
+                payload.setdefault("ea_id", 1056)
+                payload.setdefault("expert", "QM/QM5_1056_dummy/QM5_1056_dummy")
+                payload.setdefault("symbol", "NDX.DWX")
+                payload.setdefault("period", "H1")
+                payload.setdefault("terminal", "T2")
+                runs = [dict(run) for run in payload.get("runs") or []]
+                if runs:
+                    report_path.parent.mkdir(parents=True)
+                    report_path.write_text("<html></html>", encoding="utf-8")
+                    runs[-1]["report_canonical_path"] = str(report_path)
+                    payload["runs"] = runs
+                summary_dir.mkdir(parents=True, exist_ok=True)
+                summary_path.write_text(json.dumps(payload), encoding="utf-8")
+                return subprocess.CompletedProcess(
+                    args=["pwsh.exe"],
+                    returncode=0,
+                    stdout=f"run_smoke.summary={summary_path}\n",
+                    stderr="",
+                )
+
+            with mock.patch.object(q10_confirmation.subprocess, "run", side_effect=fake_run) as run:
                 result = q10_confirmation.run_confirmation(
                     ea_id=1056,
                     ea_expert="QM/QM5_1056_dummy/QM5_1056_dummy",

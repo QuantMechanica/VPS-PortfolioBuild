@@ -24,6 +24,7 @@ import json
 import re
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 if __package__ in (None, ""):
@@ -31,7 +32,7 @@ if __package__ in (None, ""):
 
 from framework.scripts._phase_utils import (ensure_dir, utc_now_iso, write_json,
                                             resolve_ea_expert_path, period_from_setfile,
-                                            find_latest_summary, full_history_window,
+                                            full_history_window,
                                             is_launch_fault_exit_code,
                                             run_with_launch_fault_retry)
 from framework.scripts.gen_stress_setfile import stress_setfile_text
@@ -178,12 +179,139 @@ def _parse_report_int(value: str | None) -> int | None:
     return int(parsed) if parsed is not None else None
 
 
-def _latest_report_metrics(report_root: Path) -> dict | None:
+def _text_from_completed_process(
+        proc: subprocess.CompletedProcess | subprocess.TimeoutExpired) -> str:
+    parts: list[str] = []
+    for raw in (getattr(proc, "stdout", None), getattr(proc, "stderr", None)):
+        if raw is None:
+            continue
+        if isinstance(raw, bytes):
+            parts.append(raw.decode("utf-8", errors="replace"))
+        else:
+            parts.append(str(raw))
+    return "\n".join(part for part in parts if part)
+
+
+def _normalize_expert(expert: str | None) -> str:
+    value = str(expert or "").strip().replace("/", "\\")
+    leaf = value.rsplit("\\", 1)[-1]
+    return re.sub(r"\.ex5$", "", leaf, flags=re.IGNORECASE).casefold()
+
+
+def _summary_identity_matches(
+        summary: dict, *, ea_id: int, ea_expert: str, symbol: str,
+        period: str, terminal: str) -> bool:
+    try:
+        summary_ea_id = int(summary.get("ea_id"))
+    except (TypeError, ValueError):
+        return False
+    return (
+        summary_ea_id == ea_id
+        and _normalize_expert(summary.get("expert")) == _normalize_expert(ea_expert)
+        and str(summary.get("symbol") or "").strip().casefold() == symbol.strip().casefold()
+        and str(summary.get("period") or "").strip().casefold() == period.strip().casefold()
+        and str(summary.get("terminal") or "").strip().casefold() == terminal.strip().casefold()
+    )
+
+
+def _summary_matches_run(
+        summary_path: Path, *, started_at: float, ea_id: int,
+        ea_expert: str, symbol: str, period: str, terminal: str) -> bool:
+    try:
+        if summary_path.stat().st_mtime < started_at:
+            return False
+    except OSError:
+        return False
+    summary = _load_summary(summary_path)
+    if summary is None:
+        return False
+    return _summary_identity_matches(
+        summary,
+        ea_id=ea_id,
+        ea_expert=ea_expert,
+        symbol=symbol,
+        period=period,
+        terminal=terminal,
+    )
+
+
+def _summary_from_run_smoke_output(
+        output_text: str, *, started_at: float, ea_id: int,
+        ea_expert: str, symbol: str, period: str, terminal: str) -> Path | None:
+    matches = list(re.finditer(
+        r"(?m)^run_smoke\.summary=(?P<path>.+?)\s*$",
+        output_text or "",
+    ))
+    for match in reversed(matches):
+        path = Path(match.group("path").strip().strip('"'))
+        if _summary_matches_run(
+                path, started_at=started_at, ea_id=ea_id,
+                ea_expert=ea_expert, symbol=symbol, period=period,
+                terminal=terminal):
+            return path
+    return None
+
+
+def _find_latest_matching_summary(
+        report_root: Path, *, started_at: float, ea_id: int,
+        ea_expert: str, symbol: str, period: str, terminal: str) -> Path | None:
     root = Path(report_root)
     if not root.is_dir():
         return None
-    reports = sorted(root.rglob("report.htm"), key=lambda p: p.stat().st_mtime, reverse=True)
-    for report in reports:
+    candidates: list[tuple[float, Path]] = []
+    for summary_path in root.rglob("summary.json"):
+        try:
+            mtime = summary_path.stat().st_mtime
+        except OSError:
+            continue
+        if mtime >= started_at:
+            candidates.append((mtime, summary_path))
+    for _mtime, summary_path in sorted(candidates, reverse=True):
+        if _summary_matches_run(
+                summary_path, started_at=started_at, ea_id=ea_id,
+                ea_expert=ea_expert, symbol=symbol, period=period,
+                terminal=terminal):
+            return summary_path
+    return None
+
+
+def _select_run_summary(
+        output_text: str, report_root: Path, *, started_at: float, ea_id: int,
+        ea_expert: str, symbol: str, period: str, terminal: str) -> Path | None:
+    return _summary_from_run_smoke_output(
+        output_text,
+        started_at=started_at,
+        ea_id=ea_id,
+        ea_expert=ea_expert,
+        symbol=symbol,
+        period=period,
+        terminal=terminal,
+    ) or _find_latest_matching_summary(
+        report_root,
+        started_at=started_at,
+        ea_id=ea_id,
+        ea_expert=ea_expert,
+        symbol=symbol,
+        period=period,
+        terminal=terminal,
+    )
+
+
+def _latest_report_metrics(
+        report_root: Path, *, started_at: float, expected_expert: str,
+        expected_symbol: str, expected_period: str) -> dict | None:
+    root = Path(report_root)
+    if not root.is_dir():
+        return None
+    reports: list[tuple[float, Path]] = []
+    for report in root.rglob("report.htm"):
+        try:
+            mtime = report.stat().st_mtime
+        except OSError:
+            continue
+        if mtime >= started_at:
+            reports.append((mtime, report))
+    for _mtime, report in sorted(reports, reverse=True):
         try:
             raw = report.read_bytes()
         except (OSError, UnicodeError):
@@ -205,6 +333,13 @@ def _latest_report_metrics(report_root: Path) -> dict | None:
         period = _report_cell(html, "Period")
         bars = _parse_report_int(_report_cell(html, "Bars"))
         if not expert or not symbol or not period or period.upper().startswith("M0 ") or not bars:
+            continue
+        report_period = re.split(r"[\s(]", period.strip(), maxsplit=1)[0]
+        if (
+            _normalize_expert(expert) != _normalize_expert(expected_expert)
+            or symbol.strip().casefold() != expected_symbol.strip().casefold()
+            or report_period.casefold() != expected_period.strip().casefold()
+        ):
             continue
 
         pf = _parse_report_float(_report_cell(html, "Profit Factor"))
@@ -308,6 +443,8 @@ def run_stress_backtest(*, ea_id: int, ea_expert: str, symbol: str,
     runner_timeout_sec = timeout_sec + RUNNER_HEADROOM_SEC
     timed_out = False
     timeout_detail = None
+    output_text = ""
+    started_at = time.time()
     try:
         proc = run_with_launch_fault_retry(
             args,
@@ -318,14 +455,30 @@ def run_stress_backtest(*, ea_id: int, ea_expert: str, symbol: str,
             creationflags=creationflags,
         )
         exit_code = proc.returncode
+        output_text = _text_from_completed_process(proc)
     except subprocess.TimeoutExpired as exc:
         timed_out = True
         timeout_detail = f"subprocess_timeout_after={exc.timeout}s"
         exit_code = 124
-    sym_clean = symbol.replace(".", "_")
-    summary = find_latest_summary(report_root)
+        output_text = _text_from_completed_process(exc)
+    summary = _select_run_summary(
+        output_text,
+        report_root,
+        started_at=started_at,
+        ea_id=ea_id,
+        ea_expert=ea_expert,
+        symbol=symbol,
+        period=period,
+        terminal=terminal,
+    )
     invalid_reason = summary_invalid_reason(summary) if summary else None
-    report_metrics = None if summary else _latest_report_metrics(report_root)
+    report_metrics = None if summary else _latest_report_metrics(
+        report_root,
+        started_at=started_at,
+        expected_expert=ea_expert,
+        expected_symbol=symbol,
+        expected_period=period,
+    )
     if summary:
         pf, dd_money, trades = _parse_pf_dd_trades(summary)
     elif report_metrics:
@@ -394,6 +547,8 @@ def main() -> int:
     ap.add_argument("--symbol", required=True)
     ap.add_argument("--baseline-setfile", type=Path, required=True,
                     help="Q03 plateau-median setfile; Q05 stress variant generated from this")
+    ap.add_argument("--expert",
+                    help="Optional pre-deployed MT5 expert path override")
     ap.add_argument("--terminal", default="T2")
     ap.add_argument("--report-root", type=Path, default=Path("D:/QM/reports/pipeline"))
     ap.add_argument("--timeout-sec", type=int, default=DEFAULT_TIMEOUT_SEC)
@@ -412,7 +567,7 @@ def main() -> int:
     ea_id = int(ea_match.group(1))
 
     repo_root = Path(__file__).resolve().parents[2]
-    ea_expert = resolve_ea_expert_path(repo_root, args.ea)
+    ea_expert = args.expert or resolve_ea_expert_path(repo_root, args.ea)
     if ea_expert is None:
         print(f"cannot resolve EA dir for {args.ea}", file=sys.stderr)
         return 2

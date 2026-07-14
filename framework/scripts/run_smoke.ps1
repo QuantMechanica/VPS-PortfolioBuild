@@ -628,6 +628,7 @@ function Test-TerminalAlreadyRunning {
     }
     $escapedExe = [regex]::Escape($terminalExe)
     $escapedRoot = [regex]::Escape($TerminalRoot.TrimEnd('\', '/'))
+    $rootWithBoundary = $escapedRoot + '(?:[\\/"]|$)'
     $processes = Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue
     if (-not $processes) {
         return $false
@@ -642,7 +643,7 @@ function Test-TerminalAlreadyRunning {
         $line = [string]$proc.CommandLine
         if ($line -and (
             [regex]::IsMatch($line, $escapedExe, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase) -or
-            [regex]::IsMatch($line, $escapedRoot, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+            [regex]::IsMatch($line, $rootWithBoundary, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
         )) {
             return $true
         }

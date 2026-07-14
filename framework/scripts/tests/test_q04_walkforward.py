@@ -38,6 +38,18 @@ class Q04CommissionFallbackTests(unittest.TestCase):
 
 
 class Q04WalkForwardTests(unittest.TestCase):
+    def test_period_inference_accepts_non_backtest_set_suffix(self) -> None:
+        mod = _load_module()
+
+        self.assertEqual(
+            mod.period_from_setfile(Path("QM5_13202_WS30.DWX_M15_native_parity.set")),
+            "M15",
+        )
+        self.assertEqual(
+            mod.period_from_setfile(Path("QM5_10163_USDJPY.DWX_H1_backtest.set")),
+            "H1",
+        )
+
     def test_stream_pf_cannot_override_losing_native_report(self) -> None:
         mod = _load_module()
 

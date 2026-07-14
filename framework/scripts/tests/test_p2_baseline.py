@@ -10,6 +10,18 @@ from framework.scripts import p2_baseline
 
 
 class P2BaselineTests(unittest.TestCase):
+    def test_deployment_terminals_honors_explicit_pin(self) -> None:
+        with patch("framework.scripts.p2_baseline.installed_terminals") as mock_installed:
+            self.assertEqual(p2_baseline.deployment_terminals("T3"), ["T3"])
+        mock_installed.assert_not_called()
+
+    def test_deployment_terminals_uses_installed_pool_without_pin(self) -> None:
+        with patch(
+            "framework.scripts.p2_baseline.installed_terminals",
+            return_value=["T1", "T2"],
+        ):
+            self.assertEqual(p2_baseline.deployment_terminals(None), ["T1", "T2"])
+
     @patch("framework.scripts.p2_baseline.subprocess.Popen")
     def test_invoke_run_smoke_does_not_force_allow_running_terminal_by_default(self, mock_popen) -> None:
         mock_proc = mock_popen.return_value

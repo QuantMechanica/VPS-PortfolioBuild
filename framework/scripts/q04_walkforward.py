@@ -416,7 +416,16 @@ def resolve_ea_expert_path(repo_root: Path, ea_label: str) -> str | None:
 
 
 def period_from_setfile(setfile: Path, default: str = "H1") -> str:
-    m = re.search(r"_(M1|M5|M15|M30|H1|H4|H6|H8|D1|W1|MN1)_backtest", Path(setfile).name)
+    """Resolve the tester period from any canonical set-file suffix.
+
+    Q04 also accepts diagnostic/locked sets such as ``*_M15_native_parity.set``;
+    limiting inference to ``*_M15_backtest.set`` silently launched those EAs on
+    the H1 fallback.
+    """
+    m = re.search(
+        r"_(M1|M5|M15|M30|H1|H4|H6|H8|D1|W1|MN1)(?:_|\.|$)",
+        Path(setfile).name,
+    )
     return m.group(1) if m else default
 
 
@@ -685,6 +694,10 @@ def main() -> int:
                     help="Basket evidence symbol to record when --symbol is the MT5 host")
     ap.add_argument("--setfile", type=Path, required=True,
                     help="Q03 plateau-median setfile to use across all folds")
+    ap.add_argument("--period", choices=("M1", "M5", "M15", "M30", "H1", "H4", "H6", "H8", "D1", "W1", "MN1"),
+                    help="Explicit tester period; otherwise inferred from the set-file name")
+    ap.add_argument("--expert",
+                    help="Optional pre-deployed MT5 expert path override, e.g. QM\\QM5_10377_locked")
     ap.add_argument("--terminal", default="T2", help="MT5 terminal (T1-T10)")
     ap.add_argument("--report-root", type=Path, default=Path("D:/QM/reports/pipeline"))
     ap.add_argument("--latest-full-year", type=int, default=2025,
@@ -699,11 +712,11 @@ def main() -> int:
     ea_id = int(ea_match.group(1))
 
     repo_root = Path(__file__).resolve().parents[2]
-    ea_expert = resolve_ea_expert_path(repo_root, args.ea)
+    ea_expert = args.expert or resolve_ea_expert_path(repo_root, args.ea)
     if ea_expert is None:
         print(f"cannot resolve EA dir for {args.ea} under framework/EAs", file=sys.stderr)
         return 2
-    period = period_from_setfile(args.setfile)
+    period = args.period or period_from_setfile(args.setfile)
     runner_symbol = args.symbol
     evidence_symbol = args.logical_symbol or args.symbol
 
