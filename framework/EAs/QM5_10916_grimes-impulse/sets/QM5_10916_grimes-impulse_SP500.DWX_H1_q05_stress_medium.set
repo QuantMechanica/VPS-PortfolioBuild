@@ -3,16 +3,16 @@
 ; ea_id:        10916
 ; ea_slug:      grimes-impulse
 ; ea_version:   v5.0
-; set_version:  s20260703-stress-med
+; set_version:  s20260714-stress-med
 ; symbol:       SP500.DWX
 ; timeframe:    H1
 ; environment:  q05_stress_medium
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   2f468b8a2be68a1bedb74e2c57f85f558ba4e4b89fff0b92a6a2822628d54b37
+; build_hash:   2c062a0df7b60bbb424dd74123caf6a79ede0b3d419ad19de37064a3ce44f0da
 ; author:       Development
-; date:         2026-07-03
+; date:         2026-07-14
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000
@@ -32,4 +32,20 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=C:\QM\repo\framework\EAs\QM5_10916_grimes-impulse\SPEC.md
+strategy_atr_period=14
+strategy_ema_period=50
+strategy_impulse_bars=5
+strategy_impulse_min_closes=3
+strategy_impulse_atr_mult=2.0
+strategy_min_pullback_bars=2
+strategy_max_pullback_bars=8
+strategy_max_retrace_fraction=0.382
+strategy_pullback_range_atr_mult=0.80
+strategy_stop_buffer_atr_mult=0.25
+strategy_max_stop_atr_mult=2.50
+strategy_target_r_multiple=1.50
+strategy_trail_trigger_r=1.00
+strategy_trail_atr_mult=2.00
+strategy_spread_stop_fraction=0.10
+strategy_time_exit_bars=18
