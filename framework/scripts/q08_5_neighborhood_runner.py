@@ -305,10 +305,27 @@ def main() -> int:
 
     period = period_from_setfile(args.baseline_setfile)
 
+    # Basket EAs: the tester must run on the HOST symbol (the logical symbol has
+    # no tradable stream — running on it produced 0 trades on baseline AND every
+    # perturbation, i.e. the 13117 degenerate_baseline INVALID, 2026-07-15).
+    # Evidence stays keyed by the logical symbol (out_dir above) so the Q08
+    # aggregate finds it. Mirrors farmctl._load_basket_manifest host resolution.
+    tester_symbol = args.symbol
+    manifest_path = Path(args.baseline_setfile).parent.parent / "basket_manifest.json"
+    if manifest_path.exists():
+        try:
+            _m = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
+            if str(_m.get("logical_symbol")) == args.symbol and _m.get("host_symbol"):
+                tester_symbol = str(_m["host_symbol"])
+                period = str(_m.get("host_timeframe") or period)
+                print(f"Q08.5 basket: logical {args.symbol} -> host {tester_symbol} ({period})")
+        except (OSError, json.JSONDecodeError):
+            pass
+
     # Baseline (nominal) backtest
     print(f"Q08.5 {args.ea} {args.symbol}: baseline (no perturbation, period={period})...")
     bl_pf, bl_dd, bl_trades = fire_backtest(
-        ea_id=ea_id, ea_expert=ea_expert, symbol=args.symbol,
+        ea_id=ea_id, ea_expert=ea_expert, symbol=tester_symbol,
         setfile=args.baseline_setfile, terminal=args.terminal,
         run_tag="baseline", report_root=args.report_root,
         timeout_sec=args.timeout_sec, period=period,
@@ -352,7 +369,7 @@ def main() -> int:
             setfile = write_perturbation_setfile(args.baseline_setfile, param_name, value, setfile_dir)
             print(f"  perturb {param_name}={value} ({label})...")
             pf, dd_money, trades = fire_backtest(
-                ea_id=ea_id, ea_expert=ea_expert, symbol=args.symbol,
+                ea_id=ea_id, ea_expert=ea_expert, symbol=tester_symbol,
                 setfile=setfile, terminal=args.terminal, run_tag=run_tag,
                 report_root=args.report_root, timeout_sec=args.timeout_sec,
                 period=period,
