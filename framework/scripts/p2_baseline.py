@@ -232,7 +232,7 @@ def parse_summary(summary_path: Path) -> dict:
 #
 Q02_PF_MIN = 1.20         # profit factor floor (per symbol)
 Q02_TRADES_MIN = 5        # absolute sample-size floor (per symbol); 5/yr rate set by caller
-Q02_DD_PCT_MAX = 15.0     # max drawdown ceiling, % of starting equity
+Q02_DD_PCT_MAX = 25.0     # max drawdown ceiling, % of starting equity (15->25 OWNER 2026-07-15, see decisions/)
 Q02_STARTING_EQUITY = 100_000.0   # HR4: fixed-risk backtest deposit
 
 

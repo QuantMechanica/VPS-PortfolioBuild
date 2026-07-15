@@ -10,7 +10,7 @@ actually tests, and now officially tests:
               cost STRESS lives in Q08's DL-072 cost-cushion gate: PASS needs
               the gross edge to survive 2x worst-case commission)
   Trade-rejection: 0% (Q06 HARSH only)
-  Verdict:    PF > 1.0 AND DD < 15% AND trades >= 20
+  Verdict:    PF > 1.0 AND DD < 25% AND trades >= 20 (DD 15->25 OWNER 2026-07-15)
 
 Per-symbol verdict; runs per Q04-PASS entry. The generated "*_q05_stress_medium"
 setfile differs from baseline only in headers + qm_stress_reject_probability=0.
@@ -48,7 +48,7 @@ LEVEL = "MED"
 DEFAULT_TIMEOUT_SEC = 5400
 RUNNER_HEADROOM_SEC = 120
 PF_FLOOR = 1.0
-DD_PCT_MAX = 15.0
+DD_PCT_MAX = 25.0  # 15->25 OWNER 2026-07-15: decisions/2026-07-15_dd_ceiling_25pct_portfolio_rationale.md
 MIN_TRADES = 20
 STARTING_EQUITY = 100_000.0
 INVALID_SUMMARY_REASON_CLASSES = {
