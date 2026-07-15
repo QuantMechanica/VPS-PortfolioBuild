@@ -72,6 +72,15 @@ NON_PERTURBABLE_NAME_TOKENS = (
     "hour",
     "minute",
     "hhmm",
+    # Calendar-denominated windows are STRUCTURAL anchors, not tuning knobs
+    # (5 sessions = one week of highs/lows; a 4-session week has no market
+    # meaning; the EA can never run N=4 live since it always collects N complete
+    # sessions). Bar-/period-denominated windows stay perturbable. OWNER-ratified:
+    # decisions/2026-07-15_q08_neighborhood_calendar_params.md ("day" deliberately
+    # omitted — collides with tunable daily_loss-style money caps).
+    "session",
+    "week",
+    "month",
 )
 
 
