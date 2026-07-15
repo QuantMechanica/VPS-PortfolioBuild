@@ -88,21 +88,17 @@ bool Strategy_IsFrozenMondaySessionOpen(const datetime bar_time)
 
    datetime session_from = 0;
    datetime session_to = 0;
-   const bool have_session = SymbolInfoSessionTrade(_Symbol, MONDAY, 0, session_from, session_to);
-   static int dbg_n2 = 0;
-   if(dbg_n2 < 200)
-     {
-      dbg_n2++;
-      MqlDateTime sdt0;
-      TimeToStruct(session_from, sdt0);
-      PrintFormat("DBG session have=%d from=%s to=%s sdt_hour=%d sdt_min=%d err=%d", have_session, TimeToString(session_from), TimeToString(session_to), sdt0.hour, sdt0.min, GetLastError());
-     }
-   if(!have_session)
-      return false;
+   if(!SymbolInfoSessionTrade(_Symbol, MONDAY, 0, session_from, session_to))
+      return false; // Frozen Mechanics #3: missing session boundary -> no trade
 
+   // H1 execution granularity cannot resolve a session open finer than the
+   // hour bucket (brokers commonly open a few minutes into the hour, e.g.
+   // 00:05, while the H1 bar itself starts at 00:00) -- compare hour-of-day
+   // only. An atypical boundary (session open outside this bar's hour, e.g.
+   // a holiday-shifted late open) still produces no trade.
    MqlDateTime sdt;
    TimeToStruct(session_from, sdt);
-   return (dt.hour == sdt.hour && dt.min == sdt.min);
+   return (dt.hour == sdt.hour);
   }
 
 // Frozen Mechanics #2: signal row must be calendar-adjacent Friday->Monday,
