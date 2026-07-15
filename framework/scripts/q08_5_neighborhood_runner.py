@@ -194,7 +194,8 @@ def resolve_ea_expert(ea_label: str, ea_id: int) -> str:
 def fire_backtest(*, ea_id: int, ea_expert: str, symbol: str,
                    setfile: Path, terminal: str, run_tag: str,
                    report_root: Path, timeout_sec: int = 900,
-                   period: str = "H1") -> tuple[float | None, float | None, int]:
+                   period: str = "H1",
+                   from_date: str = "2017.01.01") -> tuple[float | None, float | None, int]:
     """One full-history backtest for a perturbation; returns (pf, dd_money, trades)."""
     repo_root = Path(__file__).resolve().parents[2]
     run_smoke_ps1 = repo_root / "framework" / "scripts" / "run_smoke.ps1"
@@ -208,7 +209,7 @@ def fire_backtest(*, ea_id: int, ea_expert: str, symbol: str,
         # (an invalid year-0 window) -> 0 trades on EVERY perturbation INCLUDING the baseline
         # -> 8.5 FAILed every EA falsely (167/167 runs had a 0-trade baseline). 2026-06-26 fix.
         "-Year", "2025",
-        "-FromDate", "2017.01.01",
+        "-FromDate", from_date,
         "-ToDate", "2025.12.31",
         "-Terminal", terminal,
         # 2026-07-06 audit G6: was hardcoded "H1" — non-H1 EAs got their entire
@@ -311,6 +312,7 @@ def main() -> int:
     # Evidence stays keyed by the logical symbol (out_dir above) so the Q08
     # aggregate finds it. Mirrors farmctl._load_basket_manifest host resolution.
     tester_symbol = args.symbol
+    from_date = "2017.01.01"
     manifest_path = Path(args.baseline_setfile).parent.parent / "basket_manifest.json"
     if manifest_path.exists():
         try:
@@ -318,7 +320,13 @@ def main() -> int:
             if str(_m.get("logical_symbol")) == args.symbol and _m.get("host_symbol"):
                 tester_symbol = str(_m["host_symbol"])
                 period = str(_m.get("host_timeframe") or period)
-                print(f"Q08.5 basket: logical {args.symbol} -> host {tester_symbol} ({period})")
+                # Basket customs begin ~2018 — a 2017.01.01 start yields a
+                # 0-bar HOST chart (report Bars:0, zero trades on baseline AND
+                # every perturbation; 13117 diagnosis 2026-07-15). Match the
+                # official phase runners' basket window.
+                from_date = "2018.07.02"  # farmctl.DWX_MULTI_SYMBOL_FULL_HISTORY_FROM
+                print(f"Q08.5 basket: logical {args.symbol} -> host {tester_symbol} "
+                      f"({period}), from {from_date}")
         except (OSError, json.JSONDecodeError):
             pass
 
@@ -328,7 +336,7 @@ def main() -> int:
         ea_id=ea_id, ea_expert=ea_expert, symbol=tester_symbol,
         setfile=args.baseline_setfile, terminal=args.terminal,
         run_tag="baseline", report_root=args.report_root,
-        timeout_sec=args.timeout_sec, period=period,
+        timeout_sec=args.timeout_sec, period=period, from_date=from_date,
     )
     print(f"  baseline -> PF={bl_pf}  DD={bl_dd}  trades={bl_trades}")
 
@@ -372,7 +380,7 @@ def main() -> int:
                 ea_id=ea_id, ea_expert=ea_expert, symbol=tester_symbol,
                 setfile=setfile, terminal=args.terminal, run_tag=run_tag,
                 report_root=args.report_root, timeout_sec=args.timeout_sec,
-                period=period,
+                period=period, from_date=from_date,
             )
             perturbations.append({
                 "param": param_name,
