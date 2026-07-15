@@ -226,11 +226,17 @@ def evaluate_candidate(
     else:
         reason = "admitted"
 
-    # Challenger-swap evaluation (OWNER directive 2026-07-03):
-    # High-correlation rejects keep the original behavior: test replacement of the
-    # most-correlated incumbent. Lineage challengers also get a swap check on ANY
-    # non-admit reason because controlled exit-surgery variants may be replacements,
-    # not new diversifiers. NEVER auto-swap — live deployment stays OWNER+manifest.
+    # Challenger-swap evaluation (OWNER directive 2026-07-03, EXTENDED 2026-07-15):
+    # EVERY non-admit reason now gets a swap check — OWNER: "wenn Q09 ablehnt, muss es
+    # immer auch schaun, ob nicht ein Sleeve getauscht wird". Target incumbent depends
+    # on the reject reason:
+    #  - correlation_above_max_corr -> the MOST-CORRELATED incumbent (it's the crowd).
+    #  - no_diversification (decorrelated but adds no Sharpe/DD) -> the WEAKEST incumbent
+    #    by standalone Sharpe; the candidate may still beat a mediocre sleeve on REPLACE
+    #    even though it does not improve on ADD. The full-portfolio swap metric is the
+    #    real judge (challenger_superior needs the swapped book to actually improve).
+    #  - lineage rejections -> the lineage incumbent (controlled variant replacement).
+    # NEVER auto-swap — live deployment stays OWNER+manifest (surfaced as CHALLENGER_SUPERIOR).
     challenger_swap: dict | None = None
     lineage_incumbent = _lineage_incumbent_in_book(
         candidate,
@@ -252,6 +258,18 @@ def evaluate_candidate(
             incumbent_hint=lineage_incumbent,
         )
         challenger_swap["trigger"] = f"lineage_rejection:{reason}"
+    elif not admit:
+        # Any other reject (chiefly no_diversification, insufficient_overlap): test the
+        # candidate against the WEAKEST incumbent by standalone Sharpe.
+        weakest = _find_weakest_incumbent(book, streams)
+        if weakest is not None:
+            challenger_swap = _evaluate_challenger_swap(
+                candidate, book, aligned_keys, correlations,
+                common_dir, without_metrics, starting_capital,
+                streams=streams,
+                incumbent_hint=weakest,
+            )
+            challenger_swap["trigger"] = f"weakest_incumbent_swap:{reason}"
 
     if challenger_swap and challenger_swap.get("challenger_superior"):
         reason = "CHALLENGER_SUPERIOR"
@@ -488,6 +506,41 @@ def _profit_factor(trades: Sequence[Any]) -> float | None:
     if gross_loss == 0.0:
         return None
     return _round_float(gross_profit / gross_loss)
+
+
+def _standalone_sharpe(trades: Sequence[Any]) -> float | None:
+    """Annualized Sharpe of a sleeve's daily net-of-cost PnL (weakest-incumbent proxy)."""
+    daily = to_daily_pnl(trades)
+    vals = list(daily.values())
+    if len(vals) < 20:
+        return None
+    mean = sum(vals) / len(vals)
+    var = sum((v - mean) ** 2 for v in vals) / (len(vals) - 1)
+    if var <= 0:
+        return None
+    return mean / (var ** 0.5) * (252 ** 0.5)
+
+
+def _find_weakest_incumbent(
+    book: Sequence[Key],
+    streams: "dict[Key, Sequence[Any]] | None",
+) -> "Key | None":
+    """Return the book member with the LOWEST standalone Sharpe — the swap target for a
+    no_diversification reject (OWNER 2026-07-15). The full-portfolio swap metric in
+    _evaluate_challenger_swap is the real judge; this only picks which incumbent to test."""
+    if not streams:
+        return None
+    scored = []
+    for k in book:
+        if k not in streams:
+            continue
+        sh = _standalone_sharpe(streams[k])
+        if sh is not None:
+            scored.append((sh, k))
+    if not scored:
+        return None
+    scored.sort(key=lambda x: x[0])
+    return scored[0][1]
 
 
 def _find_most_correlated_incumbent(
