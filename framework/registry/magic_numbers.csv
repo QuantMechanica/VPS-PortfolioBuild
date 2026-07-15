@@ -15042,3 +15042,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13213,balke-gmt3-range-breakout,0,USDJPY.DWX,132130000,2026-07-14,Claude,active
 13213,balke-gmt3-range-breakout,1,XAUUSD.DWX,132130001,2026-07-14,Claude,retired
 9250,mql5-crt-amd,2,GDAXI.DWX,92500002,2026-07-14,Claude,active
+1567,demark-td-reverse-sequential-h4,10,XAGUSD.DWX,15670010,2026-07-15,Claude,active
