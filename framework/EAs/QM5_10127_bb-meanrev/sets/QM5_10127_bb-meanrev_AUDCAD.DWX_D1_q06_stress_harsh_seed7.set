@@ -1,24 +1,25 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        10847
-; ea_slug:      tv-inside-gem
+; ea_id:        10127
+; ea_slug:      bb-meanrev
 ; ea_version:   v5.0
-; set_version:  s20260715-stress-med
-; symbol:       GDAXI.DWX
-; timeframe:    H1
-; environment:  q05_stress_medium
-; magic_slot:   3
+; set_version:  s20260715-stress-harsh
+; symbol:       AUDCAD.DWX
+; timeframe:    D1
+; environment:  q06_stress_harsh
+; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   3716d6febbcad9f93798855274b8eb780557357e97e2b21e782fe2f6e6124c61
 ; author:       Development
 ; date:         2026-07-15
 ;==========================================================
-qm_magic_slot_offset=3
+qm_magic_slot_offset=0
+qm_rng_seed=7
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-qm_stress_reject_probability=0.0000
+qm_stress_reject_probability=0.1000
 ; core filter library params; filter-on/off variants must be pre-declared
 qm_filter_news_enabled=1
 qm_filter_news_mode=3
@@ -33,6 +34,3 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
-; time-sensitive strategy params (mq5 defaults, explicit for build guard 2026-07-10)
-strategy_session_start_hour=9
-strategy_session_end_hour=23
