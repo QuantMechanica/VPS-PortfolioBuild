@@ -88,7 +88,16 @@ bool Strategy_IsFrozenMondaySessionOpen(const datetime bar_time)
 
    datetime session_from = 0;
    datetime session_to = 0;
-   if(!SymbolInfoSessionTrade(_Symbol, MONDAY, 0, session_from, session_to))
+   const bool have_session = SymbolInfoSessionTrade(_Symbol, MONDAY, 0, session_from, session_to);
+   static int dbg_n2 = 0;
+   if(dbg_n2 < 200)
+     {
+      dbg_n2++;
+      MqlDateTime sdt0;
+      TimeToStruct(session_from, sdt0);
+      PrintFormat("DBG session have=%d from=%s to=%s sdt_hour=%d sdt_min=%d err=%d", have_session, TimeToString(session_from), TimeToString(session_to), sdt0.hour, sdt0.min, GetLastError());
+     }
+   if(!have_session)
       return false;
 
    MqlDateTime sdt;
