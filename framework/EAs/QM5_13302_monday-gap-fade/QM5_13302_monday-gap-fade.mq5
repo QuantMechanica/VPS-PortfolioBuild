@@ -149,13 +149,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(current_bar_time <= 0 || previous_bar_time <= 0)
       return false;
 
-   static int dbg_n = 0;
-   if(Strategy_DayOfWeek(current_bar_time) == MONDAY && dbg_n < 400)
-     {
-      dbg_n++;
-      PrintFormat("DBG cur=%s dow_cur=%d prev=%s dow_prev=%d", TimeToString(current_bar_time), Strategy_DayOfWeek(current_bar_time), TimeToString(previous_bar_time), Strategy_DayOfWeek(previous_bar_time));
-     }
-
    const bool first_monday_bar = (Strategy_DayOfWeek(current_bar_time) == MONDAY &&
                                   Strategy_DayOfWeek(previous_bar_time) == FRIDAY);
    if(!first_monday_bar)
@@ -166,10 +159,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false; // Frozen Mechanics #9: max one trade per carrier per Monday
 
    if(!Strategy_IsFrozenMondaySessionOpen(current_bar_time))
-     {
-      if(dbg_n < 400) { dbg_n++; PrintFormat("DBG session_reject cur=%s", TimeToString(current_bar_time)); }
       return false;
-     }
 
    const double open_price = iOpen(_Symbol, PERIOD_H1, 0);
    const double high_price = iHigh(_Symbol, PERIOD_H1, 0);
@@ -183,14 +173,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    double prior_close = 0.0;
    double prior_atr = 0.0;
    if(!Strategy_ReadPriorDayContext(prior_close, prior_atr))
-     {
-      if(dbg_n < 400) { dbg_n++; PrintFormat("DBG prior_ctx_reject cur=%s", TimeToString(current_bar_time)); }
       return false;
-     }
 
    const double gap = open_price - prior_close;
    const double gap_abs = MathAbs(gap);
-   if(dbg_n < 400) { dbg_n++; PrintFormat("DBG gap_check cur=%s open=%.5f prior_close=%.5f gap_abs=%.5f thresh=%.5f atr=%.5f", TimeToString(current_bar_time), open_price, prior_close, gap_abs, strategy_gap_threshold_atr*prior_atr, prior_atr); }
    if(gap_abs < strategy_gap_threshold_atr * prior_atr)
       return false; // Frozen Mechanics #4
 
