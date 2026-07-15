@@ -450,6 +450,11 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
+   if(!QM_FrameworkDeclareExecutionContract(PERIOD_H4,
+                                             QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE,
+                                             "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED"))
+      return INIT_FAILED;
+
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"ea\":\"QM5_10919_grimes_overshoot\"}");
    return INIT_SUCCEEDED;
   }

@@ -32,6 +32,19 @@ bool g_qm_fw_initialized      = false;
 bool g_qm_fw_friday_close_enabled = true;
 int  g_qm_fw_friday_close_hour_broker = 21;
 
+// Card-v2 execution contract. Friday close used to be an implicit framework
+// default, which made source-defined exits and the executable strategy diverge
+// silently. Every migrated EA must now state whether Friday close is disabled,
+// comes from the approved Card, or is an explicit framework override that
+// requires its own qualification evidence.
+enum QM_FridayCloseContractMode
+  {
+   QM_FRIDAY_CLOSE_UNDECLARED        = 0,
+   QM_FRIDAY_CLOSE_DISABLED          = 1,
+   QM_FRIDAY_CLOSE_CARD_RULE         = 2,
+   QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE = 3
+  };
+
 // Opt-in sub-strategy identities for one symbol-master instance. The host
 // magic above remains the default for every legacy EA; this array is populated
 // only by explicit QM_MagicFor calls after framework initialization.
@@ -218,6 +231,73 @@ bool QM_FrameworkInit(const int ea_id,
 
    g_qm_fw_initialized = true;
    QM_LogEvent(QM_INFO, "INIT", StringFormat("{\"magic\":%d,\"symbol\":\"%s\"}", g_qm_fw_magic, QM_LoggerEscapeJson(_Symbol)));
+   return true;
+  }
+
+// Fail-closed runtime binding for the Card-v2 execution contract. Call this in
+// OnInit immediately after QM_FrameworkInit. `declaration` is deliberately
+// required for framework overrides so a global safety policy can never mutate
+// a strategy without leaving a machine-searchable reason in source and logs.
+bool QM_FrameworkDeclareExecutionContract(
+   const ENUM_TIMEFRAMES expected_chart_tf,
+   const QM_FridayCloseContractMode friday_mode,
+   const string declaration)
+  {
+   if(!g_qm_fw_initialized)
+     {
+      Print(EA_EXECUTION_CONTRACT_UNDECLARED);
+      return false;
+     }
+
+   if((ENUM_TIMEFRAMES)_Period != expected_chart_tf)
+     {
+      QM_LogEvent(QM_ERROR,
+                  EA_INPUT_TIMEFRAME_MISMATCH,
+                  StringFormat("{\"expected_tf\":%d,\"actual_tf\":%d}",
+                               (int)expected_chart_tf,
+                               (int)_Period));
+      return false;
+     }
+
+   if(friday_mode == QM_FRIDAY_CLOSE_UNDECLARED)
+     {
+      QM_LogEvent(QM_ERROR,
+                  EA_EXECUTION_CONTRACT_UNDECLARED,
+                  "{\"field\":\"friday_close\"}");
+      return false;
+     }
+
+   const bool contract_enables_friday =
+      (friday_mode == QM_FRIDAY_CLOSE_CARD_RULE ||
+       friday_mode == QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE);
+   if(contract_enables_friday != g_qm_fw_friday_close_enabled)
+     {
+      QM_LogEvent(QM_ERROR,
+                  EA_EXECUTION_CONTRACT_MISMATCH,
+                  StringFormat("{\"field\":\"friday_close\",\"mode\":%d,\"enabled\":%s}",
+                               (int)friday_mode,
+                               g_qm_fw_friday_close_enabled ? "true" : "false"));
+      return false;
+     }
+
+   if(friday_mode == QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE && StringLen(declaration) == 0)
+     {
+      QM_LogEvent(QM_ERROR,
+                  EA_EXECUTION_CONTRACT_UNDECLARED,
+                  "{\"field\":\"friday_close_override_reason\"}");
+      return false;
+     }
+
+   const QM_LogLevel level =
+      (friday_mode == QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE) ? QM_WARN : QM_INFO;
+   QM_LogEvent(level,
+               "EXECUTION_CONTRACT",
+               StringFormat("{\"chart_tf\":%d,\"friday_mode\":%d,\"friday_enabled\":%s,\"friday_hour\":%d,\"declaration\":\"%s\"}",
+                            (int)expected_chart_tf,
+                            (int)friday_mode,
+                            g_qm_fw_friday_close_enabled ? "true" : "false",
+                            g_qm_fw_friday_close_hour_broker,
+                            QM_LoggerEscapeJson(declaration)));
    return true;
   }
 

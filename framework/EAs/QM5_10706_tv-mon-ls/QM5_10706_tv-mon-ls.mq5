@@ -382,6 +382,11 @@ int OnInit()
                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
+   if(!QM_FrameworkDeclareExecutionContract(PERIOD_H1,
+                                             QM_FRIDAY_CLOSE_CARD_RULE,
+                                             "CARD_EXIT_RULE"))
+      return INIT_FAILED;
+
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"ea\":\"QM5_10706_tv_mon_ls\"}");
    return INIT_SUCCEEDED;
   }

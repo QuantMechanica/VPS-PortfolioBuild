@@ -57,10 +57,15 @@ input int    strategy_exit_hour            = 20;   // broker hour to close on th
 input int    strategy_atr_period           = 14;
 input double strategy_stop_atr_mult        = 2.0;
 
-// ── FOMC Event Date Table (verbatim from PRE_FOMC_FLAT_IDX.mq5) ──────────────
+// ── FOMC Event Date Table ────────────────────────────────────────────────────
 // Integer keys: YYYYMMDD. One entry per FOMC meeting / announcement date.
 // Entry is placed the EVENING BEFORE (hour 21 when tomorrow == event_date).
 // Exit is placed the MORNING OF (hour 20 when today == event_date).
+// 2018-2025 are verbatim from PRE_FOMC_FLAT_IDX.mq5. The 2026 extension is the
+// same official-calendar table already used by canonical QM5_1094/1180.
+// Coverage is explicit: after 2026-12-31 the EA fails closed until this table
+// and its validity horizon are reviewed and rebuilt.
+const int g_event_calendar_valid_through_key = 20261231;
 const int g_event_dates[] = {
    20180926, 20181219,
    20190130, 20190320, 20190501, 20190619, 20190731, 20190918, 20191030, 20191211,
@@ -69,11 +74,12 @@ const int g_event_dates[] = {
    20220126, 20220316, 20220504, 20220615, 20220727, 20220921, 20221102, 20221214,
    20230201, 20230322, 20230503, 20230614, 20230726, 20230920, 20231101, 20231213,
    20240131, 20240320, 20240501, 20240612, 20240731, 20240918, 20241107, 20241218,
-   20250129, 20250319, 20250507, 20250618, 20250730, 20250917, 20251029, 20251210
+   20250129, 20250319, 20250507, 20250618, 20250730, 20250917, 20251029, 20251210,
+   20260128, 20260318, 20260429, 20260617, 20260729, 20260916, 20261028, 20261209
 };
 
 // ── Strategy State ────────────────────────────────────────────────────────────
-// (no persistent state needed beyond what the framework tracks via magic)
+bool g_event_calendar_stale_logged = false;
 
 // ── Helper: YYYYMMDD integer from a datetime ─────────────────────────────────
 int Strategy_DateKey(const datetime t)
@@ -81,6 +87,36 @@ int Strategy_DateKey(const datetime t)
    MqlDateTime dt;
    TimeToStruct(t, dt);
    return dt.year * 10000 + dt.mon * 100 + dt.day;
+  }
+
+bool Strategy_CalendarCoverageAllows(const datetime broker_time)
+  {
+   if(broker_time <= 0)
+     {
+      if(!g_event_calendar_stale_logged)
+        {
+         QM_LogEvent(QM_ERROR,
+                     SETUP_DATA_MISSING,
+                     "{\"component\":\"fomc_calendar_clock\"}");
+         g_event_calendar_stale_logged = true;
+        }
+      return false;
+     }
+
+   const int date_key = Strategy_DateKey(broker_time);
+   if(date_key <= g_event_calendar_valid_through_key)
+      return true;
+
+   if(!g_event_calendar_stale_logged)
+     {
+      QM_LogEvent(QM_ERROR,
+                  SETUP_DATA_STALE,
+                  StringFormat("{\"component\":\"fomc_calendar\",\"date_key\":%d,\"valid_through\":%d}",
+                               date_key,
+                               g_event_calendar_valid_through_key));
+      g_event_calendar_stale_logged = true;
+     }
+   return false;
   }
 
 // ── Helper: broker hour from a datetime ──────────────────────────────────────
@@ -247,9 +283,21 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
+   if(!QM_FrameworkDeclareExecutionContract(PERIOD_H1,
+                                             QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE,
+                                             "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED"))
+      return INIT_FAILED;
+
+   datetime coverage_time = TimeCurrent();
+   if(coverage_time <= 0)
+      coverage_time = TimeTradeServer();
+   if(!Strategy_CalendarCoverageAllows(coverage_time))
+      return INIT_FAILED;
+
    QM_LogEvent(QM_INFO, "INIT_OK",
-               StringFormat("{\"ea_id\":%d,\"symbol\":\"%s\",\"events\":%d,\"atr_period\":%d,\"stop_atr_mult\":%.1f}",
+               StringFormat("{\"ea_id\":%d,\"symbol\":\"%s\",\"events\":%d,\"calendar_valid_through\":%d,\"atr_period\":%d,\"stop_atr_mult\":%.1f}",
                             qm_ea_id, _Symbol, ArraySize(g_event_dates),
+                            g_event_calendar_valid_through_key,
                             strategy_atr_period, strategy_stop_atr_mult));
    return INIT_SUCCEEDED;
   }
@@ -311,6 +359,11 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
+
+   // Event calendars are finite datasets. Preserve exit/risk handling above,
+   // but never evaluate a new entry beyond the declared coverage horizon.
+   if(!Strategy_CalendarCoverageAllows(broker_now))
+      return;
 
    // 8. New-bar gate — entry logic runs once per H1 bar open
    if(!QM_IsNewBar(_Symbol, strategy_timeframe))
