@@ -237,12 +237,21 @@ risk_pct 0.5–1.0 %/Trade; Lot via QM_LotsForRisk
 
 ---
 
+### ★UPDATE 2026-07-15 (Recon-Nachschlag): Liquidity-Grab-GAP GESCHLOSSEN — negativ
+Nick Shawn LEHNT die Sweep/Stop-Hunt-These explizit ab (`6MTdytSMB8g` 10:00–10:44:
+"retail liquidity <5% of FX volume… no way to predict zone-overshoot"). → Der
+Liquidity-Grab als fadebares Entry-Setup existiert bei diesem Trader NICHT; Zonen-
+Overshoot ist unvorhersehbares Rauschen, gemanagt NUR durch (a) Stop-Puffer jenseits der
+Zone + (b) kleine Size. **Konsequenz für TRD-2: keine separate Liquidity-Grab-Logik bauen**
+— der `stop_buffer_atr`-Mechanismus oben ist bereits die korrekte (einzige) Antwort. Sein
+DCA/Grid/Hedge-Variante (paid course) = Hard-Rules-Konflikt (Grid/Martingale) → NICHT bauen.
+
 ## agy / Video-Tickets (GAPs schließen — parallel)
 1. **Goshawk ATR-Params** (atr_period, trail_mult, pyramid-unit-size, initial-stop) — nur
    On-Screen-Code im Seykota-Rebuild-Video (bLoBNKqUTIg). → Video-Frame-Analyse.
-2. **Shawn Liquidity-Grab-Mechanik** (Sweep+Rejection) — in Flagships NICHT mechanisch;
-   Kandidat-Video k1CqgStVock (SMC/Liquidity-Q&A) transkribieren.
-3. **Shawn Zonen-Breite** (Wicks vs. Bodies, touch_min) — nur visuell demonstriert.
+   (Transcript 2gMYNuIUsvA "momentum step-by-step" im Fetch — evtl. gesprochene Params.)
+2. ~~Shawn Liquidity-Grab~~ — RESOLVED negativ (s. Update oben), kein Ticket nötig.
+3. **Shawn Zonen-Breite** (Wicks vs. Bodies, touch_min) — nur visuell demonstriert → Q03-Grid.
 4. **CSM-Lag-Benchmark** — kein öffentlicher Quant-Vergleich; selbst auf DWX messen
    (ROC vs RSI vs Z-Score Responsiveness).
 
