@@ -109,6 +109,25 @@
       "stub_created_at": "2026-05-29T16:43:02+00:00",
       "stub_source": "farmctl_pump_p5_calibration_autostub"
     },
+    "EURNZD.DWX": {
+      "auto_stub": true,
+      "commission_cents_per_lot": 700.0,
+      "derive_from": "",
+      "latency_ms": {
+        "avg": 50.0,
+        "p95": 120.0
+      },
+      "slippage_points": {
+        "avg": 1.0,
+        "p95": 3.0
+      },
+      "spread_points": {
+        "median": 20.0,
+        "p95": 60.0
+      },
+      "stub_created_at": "2026-07-15T11:07:27+00:00",
+      "stub_source": "farmctl_pump_p5_calibration_autostub"
+    },
     "EURUSD.DWX": {
       "commission_cents_per_lot": 250.0,
       "latency_ms": {
