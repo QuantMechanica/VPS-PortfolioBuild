@@ -3,7 +3,7 @@
 ; ea_id:        13016
 ; ea_slug:      tv-ma-scalper-relief-v2
 ; ea_version:   v5.0
-; set_version:  s20260705-stress-med
+; set_version:  s20260715-stress-med
 ; symbol:       GDAXI.DWX
 ; timeframe:    M15
 ; environment:  q05_stress_medium
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Claude
-; date:         2026-07-05
+; date:         2026-07-15
 ;==========================================================
 qm_ea_id=13016
 qm_magic_slot_offset=0
