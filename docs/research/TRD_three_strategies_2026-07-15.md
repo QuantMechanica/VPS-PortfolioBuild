@@ -255,6 +255,19 @@ DCA/Grid/Hedge-Variante (paid course) = Hard-Rules-Konflikt (Grid/Martingale) �
 4. **CSM-Lag-Benchmark** — kein öffentlicher Quant-Vergleich; selbst auf DWX messen
    (ROC vs RSI vs Z-Score Responsiveness).
 
+## ★KONVERGENZ-BEFUND (Recon-Final 2026-07-15): Cross-Sectional Momentum
+Zwei UNABHÄNGIGE Research-Stränge zeigen auf dieselbe nächste Strategie:
+- **Goshawk 1.8** (Transcript-Recon): Cross-Sectional Momentum — SROC (smoothed ROC)
+  Trend-Maß, Minimum-Absolute-Momentum-Schwelle + relatives Ranking des Universums,
+  10–15 Holdings, wöchentliches Rebalance (Ref: Gray "Quantitative Momentum"). STRUKTURELL
+  ANDERS als TRD-1 (time-series EMA100+Donchian).
+- **Codex Multicurrency-Survey** (`MULTICURRENCY_STRATEGY_SURVEY_2026-07-15.md`): Empfehlung
+  "FX8-XSMOM 6/1 vor TSMOM 12/1 prüfen" — dieselbe rank-and-rotate-Familie auf FX8-Basket.
+→ **Das ist ein potenzielles TRD-4** (Cross-Sectional/Relative-Strength Rotation). Braucht
+OWNER-Ratifizierung des logical-basket Work-Items (Multi-Symbol, RAM-Klasse). Wenn genehmigt:
+höchste Evidenz-Konvergenz aller Kandidaten. Bonus-Fund Goshawk 1.9: bare MA-Slope = sein
+"profitabelstes System" (einfach, wenig Params) — billiger Kandidat für einen späteren Test.
+
 ## Nächster Schritt (Karten-Entwürfe)
 Priorität für Strategy-Cards: **TRD-1 (Goshawk) zuerst** — höchste Regel-Dichte, geringste
 GAPs, sauber mechanisch, passt auf unsere Index/Metall-Symbole, niedriges Freq-Risiko.
