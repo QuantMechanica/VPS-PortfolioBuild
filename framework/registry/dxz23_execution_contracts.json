@@ -1,0 +1,226 @@
+{
+  "schema_version": 2,
+  "book_id": "DXZ-23-2026-07-fidelity-remediation",
+  "contracts": [
+    {
+      "ea_id": 10403,
+      "slug": "et-turtle20x",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10403_et-turtle20x.md",
+      "source": "framework/EAs/QM5_10403_et-turtle20x/QM5_10403_et-turtle20x.mq5",
+      "strategy_timeframe": "D1",
+      "bar_gate_timeframe": "D1",
+      "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "REQUAL_REQUIRED", "card_evidence": null},
+      "calendar": {"policy": "NONE"},
+      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["friday_close_override_not_card_qualified", "remediated_binary_not_requalified"]}
+    },
+    {
+      "ea_id": 10440,
+      "slug": "mql5-ohlc-mtf",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10440_mql5-ohlc-mtf.md",
+      "source": "framework/EAs/QM5_10440_mql5-ohlc-mtf/QM5_10440_mql5-ohlc-mtf.mq5",
+      "strategy_timeframe": "H1",
+      "bar_gate_timeframe": "H1",
+      "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "REQUAL_REQUIRED", "card_evidence": null},
+      "calendar": {"policy": "NONE"},
+      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["friday_close_override_not_card_qualified", "remediated_binary_not_requalified"]}
+    },
+    {
+      "ea_id": 10476,
+      "slug": "mql5-pamxa",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10476_mql5-pamxa.md",
+      "source": "framework/EAs/QM5_10476_mql5-pamxa/QM5_10476_mql5-pamxa.mq5",
+      "strategy_timeframe": "H1",
+      "bar_gate_timeframe": "H1",
+      "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "REQUAL_REQUIRED", "card_evidence": null},
+      "calendar": {"policy": "NONE"},
+      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["friday_close_override_not_card_qualified", "remediated_binary_not_requalified"]}
+    },
+    {
+      "ea_id": 10513,
+      "slug": "mql5-ichimoku",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10513_mql5-ichimoku.md",
+      "source": "framework/EAs/QM5_10513_mql5-ichimoku/QM5_10513_mql5-ichimoku.mq5",
+      "strategy_timeframe": "D1",
+      "bar_gate_timeframe": "D1",
+      "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "REQUAL_REQUIRED", "card_evidence": null},
+      "calendar": {"policy": "NONE"},
+      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["friday_close_override_not_card_qualified", "remediated_binary_not_requalified"]}
+    },
+    {
+      "ea_id": 10692,
+      "slug": "tv-ls-ms",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10692_tv-ls-ms.md",
+      "source": "framework/EAs/QM5_10692_tv-ls-ms/QM5_10692_tv-ls-ms.mq5",
+      "strategy_timeframe": "H1",
+      "bar_gate_timeframe": "H1",
+      "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "REQUAL_REQUIRED", "card_evidence": null},
+      "calendar": {"policy": "NONE"},
+      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["friday_close_override_not_card_qualified", "remediated_binary_not_requalified"]}
+    },
+    {
+      "ea_id": 10706,
+      "slug": "tv-mon-ls",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10706_tv-mon-ls.md",
+      "source": "framework/EAs/QM5_10706_tv-mon-ls/QM5_10706_tv-mon-ls.mq5",
+      "strategy_timeframe": "H1",
+      "bar_gate_timeframe": "H1",
+      "friday_close": {"enabled": true, "hour_broker": 21, "mode": "CARD_RULE", "declaration": "CARD_EXIT_RULE", "qualification_status": "PASS", "card_evidence": "Card Exit: force-close remaining weekly position on Friday"},
+      "calendar": {"policy": "NONE"},
+      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["remediated_binary_not_requalified"]}
+    },
+    {
+      "ea_id": 10715,
+      "slug": "tv-asian-box",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10715_tv-asian-box.md",
+      "source": "framework/EAs/QM5_10715_tv-asian-box/QM5_10715_tv-asian-box.mq5",
+      "strategy_timeframe": "M15",
+      "bar_gate_timeframe": "M15",
+      "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "REQUAL_REQUIRED", "card_evidence": null},
+      "calendar": {"policy": "NONE"},
+      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["friday_close_override_not_card_qualified", "remediated_binary_not_requalified"]}
+    },
+    {
+      "ea_id": 10911,
+      "slug": "grimes-complex-pb",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10911_grimes-complex-pb.md",
+      "source": "framework/EAs/QM5_10911_grimes-complex-pb/QM5_10911_grimes-complex-pb.mq5",
+      "strategy_timeframe": "H1",
+      "bar_gate_timeframe": "H1",
+      "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "REQUAL_REQUIRED", "card_evidence": null},
+      "calendar": {"policy": "NONE"},
+      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["friday_close_override_not_card_qualified", "card_v2_qm_interpretation_migration_required", "remediated_binary_not_requalified"]}
+    },
+    {
+      "ea_id": 10919,
+      "slug": "grimes-overshoot",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10919_grimes-overshoot.md",
+      "source": "framework/EAs/QM5_10919_grimes-overshoot/QM5_10919_grimes-overshoot.mq5",
+      "strategy_timeframe": "H4",
+      "bar_gate_timeframe": "H4",
+      "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "REQUAL_REQUIRED", "card_evidence": null},
+      "calendar": {"policy": "NONE"},
+      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["friday_close_override_not_card_qualified", "card_v2_qm_interpretation_migration_required", "remediated_binary_not_requalified"]}
+    },
+    {
+      "ea_id": 10939,
+      "slug": "grimes-context-pb",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10939_grimes-context-pb.md",
+      "source": "framework/EAs/QM5_10939_grimes-context-pb/QM5_10939_grimes-context-pb.mq5",
+      "strategy_timeframe": "H4",
+      "bar_gate_timeframe": "H4",
+      "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "REQUAL_REQUIRED", "card_evidence": null},
+      "calendar": {"policy": "NONE"},
+      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["friday_close_override_not_card_qualified", "card_v2_qm_interpretation_migration_required", "remediated_binary_not_requalified"]}
+    },
+    {
+      "ea_id": 11132,
+      "slug": "tm-cum-rsi2",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11132_tm-cum-rsi2.md",
+      "source": "framework/EAs/QM5_11132_tm-cum-rsi2/QM5_11132_tm-cum-rsi2.mq5",
+      "strategy_timeframe": "D1",
+      "bar_gate_timeframe": "D1",
+      "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "REQUAL_REQUIRED", "card_evidence": null},
+      "calendar": {"policy": "NONE"},
+      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["friday_close_override_not_card_qualified", "source_does_not_define_exit_card_v2_migration_required", "remediated_binary_not_requalified"]}
+    },
+    {
+      "ea_id": 11165,
+      "slug": "weiss-rsi-ma",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11165_weiss-rsi-ma.md",
+      "source": "framework/EAs/QM5_11165_weiss-rsi-ma/QM5_11165_weiss-rsi-ma.mq5",
+      "strategy_timeframe": "H1",
+      "bar_gate_timeframe": "H1",
+      "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "BLOCKED", "card_evidence": null},
+      "calendar": {"policy": "NONE"},
+      "promotion": {"status": "BLOCKED", "block_reasons": ["deployed_binary_hash_not_bound_to_repo_source", "canonical_stream_not_bound_to_deployed_binary", "friday_close_override_not_card_qualified"]}
+    },
+    {
+      "ea_id": 11421,
+      "slug": "ohlc-daily-squeeze-reversal-d1",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11421_ohlc-daily-squeeze-reversal-d1.md",
+      "source": "framework/EAs/QM5_11421_ohlc-daily-squeeze-reversal-d1/QM5_11421_ohlc-daily-squeeze-reversal-d1.mq5",
+      "strategy_timeframe": "D1",
+      "bar_gate_timeframe": "D1",
+      "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "REQUAL_REQUIRED", "card_evidence": null},
+      "calendar": {"policy": "NONE"},
+      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["friday_close_override_not_card_qualified", "remediated_binary_not_requalified"]}
+    },
+    {
+      "ea_id": 11708,
+      "slug": "anon-market-squeeze-d1",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11708_anon-market-squeeze-d1.md",
+      "source": "framework/EAs/QM5_11708_anon-market-squeeze-d1/QM5_11708_anon-market-squeeze-d1.mq5",
+      "strategy_timeframe": "D1",
+      "bar_gate_timeframe": "D1",
+      "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "BLOCKED", "card_evidence": null},
+      "calendar": {"policy": "NONE"},
+      "promotion": {"status": "BLOCKED", "block_reasons": ["approved_card_has_conflicting_r1_status", "approved_card_body_marked_incomplete", "friday_close_override_not_card_qualified"]}
+    },
+    {
+      "ea_id": 12567,
+      "slug": "cum-rsi2-commodity",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_12567_cum-rsi2-commodity.md",
+      "source": "framework/EAs/QM5_12567_cum-rsi2-commodity/QM5_12567_cum-rsi2-commodity.mq5",
+      "strategy_timeframe": "D1",
+      "bar_gate_timeframe": "D1",
+      "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "REQUAL_REQUIRED", "card_evidence": null},
+      "calendar": {"policy": "NONE"},
+      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["friday_close_override_not_card_qualified", "remediated_binary_not_requalified"]}
+    },
+    {
+      "ea_id": 12778,
+      "slug": "edgelab-audusd-eurjpy-cointegration",
+      "card_ref": "framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/docs/strategy_card.md",
+      "source": "framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/QM5_12778_edgelab-audusd-eurjpy-cointegration.mq5",
+      "strategy_timeframe": "D1",
+      "bar_gate_timeframe": "D1",
+      "friday_close": {"enabled": true, "hour_broker": 21, "mode": "CARD_RULE", "declaration": "CARD_EXIT_RULE", "qualification_status": "BLOCKED", "card_evidence": "Card explicitly keeps framework Friday close enabled"},
+      "calendar": {"policy": "NONE"},
+      "promotion": {"status": "BLOCKED", "block_reasons": ["canonical_basket_requalification_missing", "historical_annex_used_wrong_USD_tester_currency", "q08_fail_soft_unresolved"]}
+    },
+    {
+      "ea_id": 12969,
+      "slug": "usdjpy-gotobi-nakane-fix",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_12969_usdjpy-gotobi-nakane-fix.md",
+      "source": "framework/EAs/QM5_12969_usdjpy-gotobi-nakane-fix/QM5_12969_usdjpy-gotobi-nakane-fix.mq5",
+      "strategy_timeframe": "M30",
+      "bar_gate_timeframe": "M30",
+      "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "REQUAL_REQUIRED", "card_evidence": null},
+      "calendar": {"policy": "NONE"},
+      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["friday_close_override_not_card_qualified", "remediated_binary_not_requalified"]}
+    },
+    {
+      "ea_id": 12989,
+      "slug": "grimes-nested-pb-v2",
+      "card_ref": "MISSING_CANONICAL_APPROVED_CARD",
+      "source": "framework/EAs/QM5_12989_grimes-nested-pb-v2/QM5_12989_grimes-nested-pb-v2.mq5",
+      "strategy_timeframe": "H4",
+      "bar_gate_timeframe": "H4",
+      "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "BLOCKED", "card_evidence": null},
+      "calendar": {"policy": "NONE"},
+      "promotion": {"status": "BLOCKED", "block_reasons": ["canonical_approved_card_missing", "friday_close_override_not_card_qualified"]}
+    },
+    {
+      "ea_id": 13128,
+      "slug": "pre-fomc-drift-ndx",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_13128_pre-fomc-drift-ndx.md",
+      "source": "framework/EAs/QM5_13128_pre-fomc-drift-ndx/QM5_13128_pre-fomc-drift-ndx.mq5",
+      "strategy_timeframe": "H1",
+      "bar_gate_timeframe": "H1",
+      "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "REQUAL_REQUIRED", "card_evidence": null},
+      "calendar": {"policy": "FIXED_EVENT_TABLE", "valid_through": "2026-12-31", "source": "official FOMC calendar; repo canonical QM5_1094/QM5_1180 2026 table", "stale_behavior": "INIT_AND_ENTRY_FAIL_CLOSED"},
+      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["calendar_extended_to_2026", "friday_close_override_not_card_qualified", "remediated_binary_not_requalified"]}
+    },
+    {
+      "ea_id": 1556,
+      "slug": "aa-zak-mom12",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_1556_aa-zak-mom12.md",
+      "source": "framework/EAs/QM5_1556_aa-zak-mom12/QM5_1556_aa-zak-mom12.mq5",
+      "strategy_timeframe": "D1",
+      "bar_gate_timeframe": "D1",
+      "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "BLOCKED", "card_evidence": null},
+      "calendar": {"policy": "NONE"},
+      "promotion": {"status": "BLOCKED", "block_reasons": ["friday_close_changes_monthly_source_exit_semantics", "native_exit_vs_override_ablation_required"]}
+    }
+  ]
+}

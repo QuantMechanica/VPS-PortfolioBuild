@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://quantmechanica.local/schemas/strategy-card-v2-execution-contract.json",
+  "title": "QuantMechanica Strategy Card v2 execution contract registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "book_id", "contracts"],
+  "properties": {
+    "schema_version": {"const": 2},
+    "book_id": {"type": "string", "minLength": 1},
+    "contracts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/contract"}
+    }
+  },
+  "$defs": {
+    "contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ea_id",
+        "slug",
+        "card_ref",
+        "source",
+        "strategy_timeframe",
+        "bar_gate_timeframe",
+        "friday_close",
+        "calendar",
+        "promotion"
+      ],
+      "properties": {
+        "ea_id": {"type": "integer", "minimum": 1},
+        "slug": {"type": "string", "minLength": 1},
+        "card_ref": {"type": "string", "minLength": 1},
+        "source": {"type": "string", "pattern": "\\.mq5$"},
+        "strategy_timeframe": {"$ref": "#/$defs/timeframe"},
+        "bar_gate_timeframe": {"$ref": "#/$defs/timeframe"},
+        "friday_close": {"$ref": "#/$defs/fridayClose"},
+        "calendar": {"$ref": "#/$defs/calendar"},
+        "promotion": {"$ref": "#/$defs/promotion"}
+      }
+    },
+    "timeframe": {
+      "enum": ["M1", "M5", "M15", "M30", "H1", "H4", "D1", "W1", "MN1"]
+    },
+    "fridayClose": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "hour_broker", "mode", "declaration", "qualification_status"],
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "hour_broker": {"type": ["integer", "null"], "minimum": 0, "maximum": 23},
+        "mode": {"enum": ["DISABLED", "CARD_RULE", "FRAMEWORK_OVERRIDE"]},
+        "declaration": {"type": "string"},
+        "qualification_status": {"enum": ["PASS", "REQUAL_REQUIRED", "BLOCKED"]},
+        "card_evidence": {"type": ["string", "null"]}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"mode": {"const": "DISABLED"}}},
+          "then": {"properties": {"enabled": {"const": false}, "hour_broker": {"type": "null"}}}
+        },
+        {
+          "if": {"properties": {"mode": {"enum": ["CARD_RULE", "FRAMEWORK_OVERRIDE"]}}},
+          "then": {"properties": {"enabled": {"const": true}, "hour_broker": {"type": "integer"}}}
+        },
+        {
+          "if": {"properties": {"mode": {"const": "CARD_RULE"}}},
+          "then": {"required": ["card_evidence"]}
+        }
+      ]
+    },
+    "calendar": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["policy"],
+      "properties": {
+        "policy": {"enum": ["NONE", "FIXED_EVENT_TABLE"]},
+        "valid_through": {"type": "string", "format": "date"},
+        "source": {"type": "string"},
+        "stale_behavior": {"enum": ["NOT_APPLICABLE", "INIT_AND_ENTRY_FAIL_CLOSED"]}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"policy": {"const": "FIXED_EVENT_TABLE"}}},
+          "then": {"required": ["valid_through", "source", "stale_behavior"]}
+        }
+      ]
+    },
+    "promotion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "block_reasons"],
+      "properties": {
+        "status": {"enum": ["ELIGIBLE", "REQUAL_REQUIRED", "BLOCKED"]},
+        "block_reasons": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    }
+  }
+}
