@@ -332,8 +332,13 @@ def main() -> int:
                 lfy = _m.get("latest_full_year")
                 if lfy:
                     to_date = f"{int(lfy)}.12.31"
+                # Multi-symbol basket full-history runs need ~45-50 min (every
+                # member's tick history loads); the 900s single-symbol default
+                # guaranteed timeout-kills (2026-07-15 forensics, fix #5).
+                if args.timeout_sec <= 900:
+                    args.timeout_sec = 3600
                 print(f"Q08.5 basket: logical {args.symbol} -> host {tester_symbol} "
-                      f"({period}), {from_date}..{to_date}")
+                      f"({period}), {from_date}..{to_date}, timeout {args.timeout_sec}s")
         except (OSError, json.JSONDecodeError, ValueError):
             pass
 

@@ -1390,8 +1390,13 @@ function Get-MetaTesterProcessesForTerminalRoot {
     foreach ($proc in $processes) {
         $exePath = [string]$proc.ExecutablePath
         $cmdLine = [string]$proc.CommandLine
+        # BOTH legs must anchor on root + trailing backslash: the unanchored
+        # CommandLine match made "...\T1" a SUBSTRING of "...\T10", so every T1
+        # run_smoke cleanup Force-killed T10's RUNNING tester agent mid-run (no
+        # OnDeinit -> skeleton report + silent q08 stream). 2026-07-15 QM5_13117
+        # zero-trades forensics: D:\QM\reports\deep_dive_13117\FINDINGS.md.
         $matchesRoot = ($exePath -and [regex]::IsMatch($exePath, "^$escapedRoot\\", [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)) -or
-            ($cmdLine -and [regex]::IsMatch($cmdLine, $escapedRoot, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase))
+            ($cmdLine -and [regex]::IsMatch($cmdLine, "$escapedRoot\\", [System.Text.RegularExpressions.RegexOptions]::IgnoreCase))
         if ($matchesRoot) {
             $matches += $proc
         }
