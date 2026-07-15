@@ -3,7 +3,7 @@
 ; ea_id:        11165
 ; ea_slug:      weiss-rsi-ma
 ; ea_version:   v5.0
-; set_version:  s20260706-stress-med
+; set_version:  s20260715-stress-med
 ; symbol:       EURUSD.DWX
 ; timeframe:    H1
 ; environment:  q05_stress_medium
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   d6d16f32ce19e354a9f5e4c3fff4daeabedafc6db272a8d48cded8f0855e73c4
 ; author:       Development
-; date:         2026-07-06
+; date:         2026-07-15
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000
