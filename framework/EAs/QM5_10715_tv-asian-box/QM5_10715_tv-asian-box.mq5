@@ -547,7 +547,7 @@ void OnTick()
         }
      }
 
-   if(!QM_IsNewBar(_Symbol, strategy_timeframe))
+   if(!QM_IsNewBar(_Symbol, PERIOD_M15))
       return;
 
    QM_EquityStreamOnNewBar();

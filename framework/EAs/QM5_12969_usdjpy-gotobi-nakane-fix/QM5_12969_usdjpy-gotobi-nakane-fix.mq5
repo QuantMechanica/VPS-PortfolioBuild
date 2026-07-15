@@ -339,7 +339,7 @@ void OnTick()
    if(!news_allows)
       return;
 
-   if(!QM_IsNewBar())
+   if(!QM_IsNewBar(_Symbol, PERIOD_M30))
       return;
 
    QM_EquityStreamOnNewBar();

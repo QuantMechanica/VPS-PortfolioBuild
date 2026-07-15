@@ -370,7 +370,7 @@ bool Strategy_ExitSignal()
    if(bar_seconds > 0 && open_time > 0 && TimeCurrent() - open_time >= strategy_time_exit_h4_bars * bar_seconds)
       return true;
 
-   if(!QM_IsNewBar())
+   if(!QM_IsNewBar(_Symbol, PERIOD_H4))
       return false;
 
    if(g_qm10939_retrace_exit <= 0.0)
@@ -483,7 +483,7 @@ void OnTick()
    // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
    // per-tick recompute mistakes — EntrySignal sees one new closed bar per
    // call, not every incoming tick.
-   if(!QM_IsNewBar())
+   if(!QM_IsNewBar(_Symbol, PERIOD_H4))
       return;
 
    // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled

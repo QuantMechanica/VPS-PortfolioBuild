@@ -366,7 +366,7 @@ void OnTick()
       return;
 
    // 8. New-bar gate — entry logic runs once per H1 bar open
-   if(!QM_IsNewBar(_Symbol, strategy_timeframe))
+   if(!QM_IsNewBar(_Symbol, PERIOD_H1))
       return;
 
    QM_EquityStreamOnNewBar();

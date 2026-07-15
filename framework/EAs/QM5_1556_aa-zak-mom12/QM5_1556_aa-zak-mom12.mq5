@@ -277,7 +277,7 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
-   const bool nb = QM_IsNewBar();
+   const bool nb = QM_IsNewBar(_Symbol, PERIOD_D1);
    if(!nb)
       return;
 

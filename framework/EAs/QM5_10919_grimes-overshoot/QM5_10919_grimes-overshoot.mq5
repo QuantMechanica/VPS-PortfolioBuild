@@ -504,7 +504,7 @@ void OnTick()
         }
      }
 
-   if(!QM_IsNewBar())
+   if(!QM_IsNewBar(_Symbol, PERIOD_H4))
       return;
 
    QM_EquityStreamOnNewBar();

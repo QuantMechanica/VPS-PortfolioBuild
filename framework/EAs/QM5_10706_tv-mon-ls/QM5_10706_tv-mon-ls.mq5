@@ -437,7 +437,7 @@ void OnTick()
      }
 
    // Per-closed-bar: entry-signal evaluation.
-   if(!QM_IsNewBar())
+   if(!QM_IsNewBar(_Symbol, PERIOD_H1))
       return;
 
    QM_EquityStreamOnNewBar();
