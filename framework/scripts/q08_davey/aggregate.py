@@ -53,6 +53,7 @@ from framework.scripts.q05_stress_medium import (
     _summary_identity_matches,
     _text_from_completed_process,
 )
+from framework.scripts.q08_5_neighborhood_runner import inspect_baseline_setfile
 
 # Execution order matches the Vault Q08 spec numbering.
 SUB_GATES = [
@@ -105,6 +106,10 @@ def _neighborhood_artifact_reuse_status(
     if not baseline_setfile.exists():
         return False, "baseline_setfile_missing"
     try:
+        baseline_identity = inspect_baseline_setfile(baseline_setfile, symbol)
+    except (FileNotFoundError, OSError, ValueError) as exc:
+        return False, f"baseline_setfile_invalid:{type(exc).__name__}"
+    try:
         payload = json.loads(artifact_path.read_text(encoding="utf-8-sig"))
     except (OSError, json.JSONDecodeError):
         return False, "artifact_unreadable"
@@ -120,18 +125,87 @@ def _neighborhood_artifact_reuse_status(
     except OSError:
         return False, "baseline_path_unresolvable"
 
-    expected_sha = hashlib.sha256(baseline_setfile.read_bytes()).hexdigest()
+    if str(payload.get("baseline_setfile_symbol") or "").casefold() != symbol.casefold():
+        return False, "baseline_symbol_lineage_mismatch"
+    expected_sha = str(baseline_identity["sha256"])
     if str(payload.get("baseline_setfile_sha256") or "").lower() != expected_sha:
         return False, "baseline_sha256_mismatch"
     try:
-        if int(payload.get("baseline_setfile_strategy_param_count") or 0) <= 0:
-            return False, "strategy_params_missing"
+        recorded_strategy_count = int(payload.get("baseline_setfile_strategy_param_count") or 0)
+        if recorded_strategy_count != int(baseline_identity["strategy_param_count"]):
+            return False, "strategy_param_count_mismatch"
         baseline = payload.get("baseline") or {}
         if int(baseline.get("trades") or 0) <= 0 or baseline.get("pf") is None:
             return False, "degenerate_baseline"
     except (TypeError, ValueError):
         return False, "artifact_schema_invalid"
+
+    param_source = str(payload.get("param_source") or "").strip()
+    param_source_sha = str(payload.get("param_source_sha256") or "").lower()
+    if not param_source or not param_source_sha:
+        return False, "param_source_lineage_missing"
+    try:
+        current_param_source_sha = hashlib.sha256(Path(param_source).read_bytes()).hexdigest()
+    except OSError:
+        return False, "param_source_unreadable"
+    if param_source_sha != current_param_source_sha:
+        return False, "param_source_sha256_mismatch"
+
+    evidence_status = str(payload.get("evidence_status") or "")
+    if evidence_status == "INVALID_NO_PERTURBABLE_NUMERIC_PARAMS":
+        if int(payload.get("n_params_tested") or 0) != 0 or payload.get("perturbations"):
+            return False, "no_perturbable_schema_invalid"
+        return True, "exact_baseline_lineage_no_perturbable_params"
+    if evidence_status != "VALID":
+        return False, "evidence_status_missing_or_invalid"
+    try:
+        n_params_tested = int(payload.get("n_params_tested") or 0)
+    except (TypeError, ValueError):
+        return False, "artifact_schema_invalid"
+    perturbation_rows = payload.get("perturbations") or []
+    if n_params_tested <= 0 or len(perturbation_rows) != 2 * n_params_tested:
+        return False, "perturbations_incomplete"
+    for row in perturbation_rows:
+        try:
+            if (int(row.get("trades") or 0) <= 0 or row.get("pf") is None
+                    or row.get("dd") is None):
+                return False, "perturbation_degenerate"
+        except (AttributeError, TypeError, ValueError):
+            return False, "artifact_schema_invalid"
     return True, "exact_baseline_lineage"
+
+
+def _neighborhood_lineage_invalid_result(sub_gate_input_runs: dict) -> dict | None:
+    """Return an INVALID gate result unless the exact post-run artifact is usable."""
+    meta = dict(sub_gate_input_runs.get("8_5_neighborhood") or {})
+    if meta.get("artifact_reusable_after") is True:
+        return None
+    detail = str(
+        meta.get("reuse_check_after")
+        or meta.get("error")
+        or meta.get("skipped")
+        or "neighborhood_lineage_unverified"
+    )
+    return common.make_result(
+        "8.5_neighborhood",
+        "INVALID",
+        value=None,
+        threshold=None,
+        detail=f"neighborhood_evidence_lineage_invalid:{detail}",
+    )
+
+
+def _quarantine_stale_neighborhood_artifact(artifact_path: Path) -> tuple[str | None, str | None]:
+    """Archive stale shared evidence; report an error without accepting it on failure."""
+    if not artifact_path.exists():
+        return None, None
+    stamp = dt.datetime.now(dt.UTC).strftime("%Y%m%dT%H%M%S%fZ")
+    stale_path = artifact_path.with_name(f"perturbations.stale_{stamp}.json")
+    try:
+        artifact_path.replace(stale_path)
+    except OSError as exc:
+        return None, f"stale_artifact_quarantine_failed:{type(exc).__name__}"
+    return str(stale_path), None
 
 
 def _ensure_sub_gate_inputs(ea_id: int, symbol: str, terminal: str | None = None,
@@ -173,69 +247,80 @@ def _ensure_sub_gate_inputs(ea_id: int, symbol: str, terminal: str | None = None
         # We let the runner self-resolve from --ea + --symbol via Q03 plateau
         # pick lookup; it'll log SKIP and exit non-zero if pre-reqs missing.
         if baseline is not None:
-            archived_stale_artifact = None
-            if perturbations.exists():
-                stamp = dt.datetime.now(dt.UTC).strftime("%Y%m%dT%H%M%S%fZ")
-                stale_path = perturbations.with_name(f"perturbations.stale_{stamp}.json")
-                try:
-                    perturbations.replace(stale_path)
-                    archived_stale_artifact = str(stale_path)
-                except OSError:
-                    # The runner will overwrite the original on success.  If it
-                    # fails, the reuse check remains false and the gate stays
-                    # INVALID rather than silently treating the cache as fresh.
-                    pass
-            try:
-                cmd = [
-                    py, str(repo_root / "framework" / "scripts" /
-                            "q08_5_neighborhood_runner.py"),
-                    "--ea", f"QM5_{ea_id}",
-                    "--symbol", symbol,
-                    "--baseline-setfile", str(baseline),
-                    "--terminal", terminal or "T2",
-                ]
-                max_params = (
-                    neighborhood_max_params
-                    if neighborhood_max_params is not None
-                    else DEFAULT_NEIGHBORHOOD_MAX_PARAMS
-                )
-                cmd.extend(["--max-params", str(max_params)])
-                expected_runs = 1 + 2 * max_params
-                outer_timeout = (
-                    expected_runs
-                    * (NEIGHBORHOOD_RUN_TIMEOUT_SEC + NEIGHBORHOOD_RUN_HEADROOM_SEC)
-                    + 60
-                )
-                proc = _sp.run(cmd, capture_output=True, text=True, timeout=outer_timeout)
+            archived_stale_artifact, quarantine_error = (
+                _quarantine_stale_neighborhood_artifact(perturbations)
+            )
+
+            if quarantine_error:
                 ran["8_5_neighborhood"] = {
-                    "exit_code": proc.returncode,
+                    "exit_code": -1,
+                    "error": quarantine_error,
                     "artifact_now_exists": perturbations.exists(),
                     "reuse_check": neighborhood_reuse_reason,
                     "archived_stale_artifact": archived_stale_artifact,
-                    "stdout_tail": proc.stdout[-1000:],
-                    "stderr_tail": proc.stderr[-1000:],
+                    "artifact_reusable_after": False,
+                    "reuse_check_after": "stale_artifact_not_quarantined",
                 }
-            except _sp.TimeoutExpired:
-                ran["8_5_neighborhood"] = {
-                    "exit_code": -1,
-                    "error": "timeout",
+            else:
+                run_meta = {
                     "reuse_check": neighborhood_reuse_reason,
                     "archived_stale_artifact": archived_stale_artifact,
                 }
-            except Exception as exc:
-                ran["8_5_neighborhood"] = {
-                    "exit_code": -1,
-                    "error": repr(exc),
-                    "reuse_check": neighborhood_reuse_reason,
-                    "archived_stale_artifact": archived_stale_artifact,
-                }
+                try:
+                    cmd = [
+                        py, str(repo_root / "framework" / "scripts" /
+                                "q08_5_neighborhood_runner.py"),
+                        "--ea", f"QM5_{ea_id}",
+                        "--symbol", symbol,
+                        "--baseline-setfile", str(baseline),
+                        "--terminal", terminal or "T2",
+                    ]
+                    max_params = (
+                        neighborhood_max_params
+                        if neighborhood_max_params is not None
+                        else DEFAULT_NEIGHBORHOOD_MAX_PARAMS
+                    )
+                    cmd.extend(["--max-params", str(max_params)])
+                    expected_runs = 1 + 2 * max_params
+                    outer_timeout = (
+                        expected_runs
+                        * (NEIGHBORHOOD_RUN_TIMEOUT_SEC + NEIGHBORHOOD_RUN_HEADROOM_SEC)
+                        + 60
+                    )
+                    proc = _sp.run(cmd, capture_output=True, text=True, timeout=outer_timeout)
+                    run_meta.update({
+                        "exit_code": proc.returncode,
+                        "artifact_now_exists": perturbations.exists(),
+                        "stdout_tail": proc.stdout[-1000:],
+                        "stderr_tail": proc.stderr[-1000:],
+                    })
+                except _sp.TimeoutExpired:
+                    run_meta.update({"exit_code": -1, "error": "timeout"})
+                except Exception as exc:
+                    run_meta.update({"exit_code": -1, "error": repr(exc)})
+                reusable_after, reuse_reason_after = _neighborhood_artifact_reuse_status(
+                    perturbations,
+                    baseline,
+                    symbol,
+                )
+                run_meta.update({
+                    "artifact_reusable_after": reusable_after,
+                    "reuse_check_after": reuse_reason_after,
+                })
+                ran["8_5_neighborhood"] = run_meta
         else:
-            ran["8_5_neighborhood"] = {"skipped": "no_baseline_setfile_resolvable"}
+            ran["8_5_neighborhood"] = {
+                "skipped": "no_baseline_setfile_resolvable",
+                "artifact_reusable_after": False,
+                "reuse_check_after": "no_baseline_setfile_resolvable",
+            }
     else:
         ran["8_5_neighborhood"] = {
             "reused": True,
             "artifact": str(perturbations),
             "reuse_check": neighborhood_reuse_reason,
+            "artifact_reusable_after": True,
+            "reuse_check_after": neighborhood_reuse_reason,
         }
 
     pbo_scores = Path(f"D:/QM/reports/pipeline/QM5_{ea_id}/Q08/pbo/"
@@ -938,6 +1023,11 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
 
     sub_results: list[dict] = []
     for label, mod in SUB_GATES:
+        if label == "8.5":
+            lineage_invalid = _neighborhood_lineage_invalid_result(sub_gate_input_runs)
+            if lineage_invalid is not None:
+                sub_results.append(lineage_invalid)
+                continue
         try:
             res = mod.run(
                 trades=trades,
