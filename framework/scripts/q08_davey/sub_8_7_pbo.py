@@ -50,6 +50,17 @@ def run(ea_id: int | None = None, symbol: str | None = None,
     try:
         from pbo_calculator import _load_scores, compute_pbo  # type: ignore
         scores = _load_scores(scores_path, "config_id", "slice_id", "score")
+        n_configs = len(scores)
+        if n_configs < 2:
+            return make_result(
+                GATE_NAME,
+                "INVALID",
+                value=None,
+                threshold=PBO_MAX_PCT,
+                detail=f"insufficient_distinct_configs:got={n_configs}:need>=2",
+                evidence={"scores_path": str(scores_path), "n_configs": n_configs},
+            )
+        common_slices = set.intersection(*(set(v.keys()) for v in scores.values()))
         result = compute_pbo(scores)
     except Exception as exc:
         return make_result(GATE_NAME, "INVALID",
@@ -59,11 +70,29 @@ def run(ea_id: int | None = None, symbol: str | None = None,
     pbo_pct = float(result.get("pbo_pct", 100.0))
     splits = int(result.get("splits_evaluated", 0))
     overfit = int(result.get("overfit_splits", 0))
+    if splits <= 0:
+        return make_result(
+            GATE_NAME,
+            "INVALID",
+            value=None,
+            threshold=PBO_MAX_PCT,
+            detail=(
+                "insufficient_common_even_slices:"
+                f"got={len(common_slices)}:need_even>=2"
+            ),
+            evidence={
+                "scores_path": str(scores_path),
+                "n_configs": n_configs,
+                "n_common_slices": len(common_slices),
+                "splits_evaluated": splits,
+            },
+        )
     status = "PASS" if pbo_pct < PBO_MAX_PCT else "FAIL"
 
     return make_result(
         GATE_NAME, status,
         value=round(pbo_pct, 3), threshold=PBO_MAX_PCT,
         detail=f"PBO={pbo_pct:.2f}%:max={PBO_MAX_PCT:.0f}%:splits={splits}:overfit={overfit}",
-        evidence={"splits_evaluated": splits, "overfit_splits": overfit,
+        evidence={"n_configs": n_configs, "n_common_slices": len(common_slices),
+                  "splits_evaluated": splits, "overfit_splits": overfit,
                   "scores_path": str(scores_path)})

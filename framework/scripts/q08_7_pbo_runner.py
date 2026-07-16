@@ -46,6 +46,7 @@ from framework.scripts.q08_davey.common import load_trades_from_mt5_report, pars
 
 GATE_NAME = "Q08.7_pbo"
 DEFAULT_N_SLICES = 8
+MIN_DISTINCT_CONFIGS = 2
 FARM_DB = Path(r"D:/QM/strategy_farm/state/farm_state.sqlite")
 
 
@@ -167,10 +168,14 @@ def discover_work_item_q03_configs(ea_id: int, symbol: str) -> list[tuple[str, P
         summary = Path(row["evidence_path"])
         if not summary.exists():
             continue
-        setfile = Path(row["setfile_path"] or "")
-        config_id = setfile.stem if str(setfile) else str(row["id"])
+        setfile_raw = str(row["setfile_path"] or "").strip()
+        config_id = Path(setfile_raw).stem if setfile_raw else str(row["id"])
         if config_id in seen:
-            config_id = f"{config_id}_{str(row['id'])[:8]}"
+            # Repeated deterministic runs of one setfile are evidence replicas,
+            # not distinct parameter configurations.  Treating their work-item
+            # IDs as new configs makes a one-point family look rankable and can
+            # yield a vacuous PBO=0% PASS.
+            continue
         seen.add(config_id)
         out.append((config_id, summary))
     return out
@@ -223,6 +228,13 @@ def main() -> int:
 
     if not all_trades_by_config or min_ts is None or max_ts is None:
         print("no trade-level data extractable from any sweep config", file=sys.stderr)
+        return 1
+    if len(all_trades_by_config) < MIN_DISTINCT_CONFIGS:
+        print(
+            "insufficient_distinct_q03_configs:"
+            f"got={len(all_trades_by_config)}:need>={MIN_DISTINCT_CONFIGS}",
+            file=sys.stderr,
+        )
         return 1
 
     slices = chronological_slices(min_ts, max_ts + dt.timedelta(seconds=1), args.n_slices)
