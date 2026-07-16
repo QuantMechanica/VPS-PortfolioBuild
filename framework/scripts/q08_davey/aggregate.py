@@ -82,6 +82,9 @@ LOW_SAMPLE_DETAIL_TOKENS = (
 # low-freq edge to advance (to the SOFT/portfolio track or a clean PASS). Below this, nothing
 # real validated the edge and the result is INVALID. PBO (8.7) is the canonical such gate.
 DL077_MIN_QUALITY_PASSES = 1
+DEFAULT_NEIGHBORHOOD_MAX_PARAMS = 2
+NEIGHBORHOOD_RUN_TIMEOUT_SEC = 900
+NEIGHBORHOOD_RUN_HEADROOM_SEC = 120
 
 
 def _ensure_sub_gate_inputs(ea_id: int, symbol: str, terminal: str | None = None,
