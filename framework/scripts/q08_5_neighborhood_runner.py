@@ -32,6 +32,7 @@ contract that runner must produce.)
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import subprocess
@@ -84,6 +85,62 @@ NON_PERTURBABLE_NAME_TOKENS = (
 )
 
 
+def inspect_baseline_setfile(setfile_path: Path, expected_symbol: str | None = None) -> dict:
+    """Return fail-closed identity metadata for a neighborhood baseline.
+
+    A syntactically valid V5 setfile can still be unusable for Q08.5 when the
+    strategy block is empty (the historical ``card_defaults_source=not_found``
+    class) or when it belongs to a different symbol.  Those inputs previously
+    produced a zero-trade artifact that was then cached indefinitely.
+    """
+    if not setfile_path.exists():
+        raise FileNotFoundError(f"baseline setfile missing: {setfile_path}")
+
+    raw_bytes = setfile_path.read_bytes()
+    text = raw_bytes.decode("utf-8-sig", errors="replace")
+    declared_symbol: str | None = None
+    in_strategy_block = False
+    strategy_keys: list[str] = []
+
+    for raw in text.splitlines():
+        line = raw.strip()
+        symbol_match = re.match(r";\s*symbol\s*:\s*(\S+)", line, flags=re.IGNORECASE)
+        if symbol_match:
+            declared_symbol = symbol_match.group(1).strip()
+        if line.lower().startswith("; strategy-specific params"):
+            in_strategy_block = True
+            continue
+        if not in_strategy_block or not line or line.startswith(";") or "=" not in line:
+            continue
+        key = line.split("=", 1)[0].strip()
+        if not key or key.startswith(NON_STRATEGY_PREFIXES) or key == "PORTFOLIO_WEIGHT":
+            continue
+        strategy_keys.append(key)
+
+    if expected_symbol:
+        if not declared_symbol:
+            raise ValueError(
+                f"baseline setfile missing '; symbol:' metadata: {setfile_path}"
+            )
+        if declared_symbol.casefold() != expected_symbol.casefold():
+            raise ValueError(
+                "baseline setfile symbol mismatch: "
+                f"expected={expected_symbol} declared={declared_symbol} path={setfile_path}"
+            )
+    if not strategy_keys:
+        raise ValueError(
+            f"baseline setfile has no strategy parameters: {setfile_path}"
+        )
+
+    return {
+        "path": str(setfile_path.resolve()),
+        "sha256": hashlib.sha256(raw_bytes).hexdigest(),
+        "declared_symbol": declared_symbol,
+        "strategy_param_count": len(strategy_keys),
+        "strategy_param_names": strategy_keys,
+    }
+
+
 def is_perturbable_param(key: str, value: int | float) -> bool:
     lowered = key.lower()
     if key == "PORTFOLIO_WEIGHT" or key.startswith(NON_STRATEGY_PREFIXES):
@@ -112,8 +169,7 @@ def load_plateau_pick(plateau_path: Path) -> dict:
 
 def load_params_from_setfile(setfile_path: Path) -> dict:
     """Fallback when Q03 did not publish plateau_pick.json yet."""
-    if not setfile_path.exists():
-        raise FileNotFoundError(f"baseline setfile missing: {setfile_path}")
+    identity = inspect_baseline_setfile(setfile_path)
     params: dict[str, int | float] = {}
     in_strategy_block = False
     for raw in setfile_path.read_text(encoding="utf-8", errors="replace").splitlines():
@@ -138,9 +194,13 @@ def load_params_from_setfile(setfile_path: Path) -> dict:
         if not is_perturbable_param(key, parsed):
             continue
         params[key] = parsed
-    if not params:
-        return {"params": params, "source": str(setfile_path), "source_type": "baseline_setfile_no_strategy_params"}
-    return {"params": params, "source": str(setfile_path), "source_type": "baseline_setfile"}
+    source_type = "baseline_setfile" if params else "baseline_setfile_no_perturbable_numeric_params"
+    return {
+        "params": params,
+        "source": str(setfile_path),
+        "source_type": source_type,
+        "strategy_param_count": identity["strategy_param_count"],
+    }
 
 
 def numeric_perturbation(value, pct: float):
@@ -286,6 +346,12 @@ def main() -> int:
     ea_expert = resolve_ea_expert(args.ea, ea_id)
     sym_clean = args.symbol.replace(".", "_")
 
+    try:
+        baseline_identity = inspect_baseline_setfile(args.baseline_setfile, args.symbol)
+    except (FileNotFoundError, ValueError) as exc:
+        print(f"Q08.5 invalid baseline setfile: {exc}", file=sys.stderr)
+        return 2
+
     plateau_path = args.plateau_pick or (
         args.report_root / f"QM5_{ea_id}" / "Q03" / sym_clean / "plateau_pick.json"
     )
@@ -371,6 +437,10 @@ def main() -> int:
             "n_params_tested": 0,
             "param_source": pick_source,
             "param_source_type": pick_source_type,
+            "baseline_setfile_path": baseline_identity["path"],
+            "baseline_setfile_sha256": baseline_identity["sha256"],
+            "baseline_setfile_symbol": baseline_identity["declared_symbol"],
+            "baseline_setfile_strategy_param_count": baseline_identity["strategy_param_count"],
             "generated_at_utc": utc_now_iso(),
             "note": "no_numeric_strategy_params_to_perturb",
         }
@@ -419,6 +489,10 @@ def main() -> int:
         "n_params_tested": len(chosen),
         "param_source": pick_source,
         "param_source_type": pick_source_type,
+        "baseline_setfile_path": baseline_identity["path"],
+        "baseline_setfile_sha256": baseline_identity["sha256"],
+        "baseline_setfile_symbol": baseline_identity["declared_symbol"],
+        "baseline_setfile_strategy_param_count": baseline_identity["strategy_param_count"],
         "generated_at_utc": utc_now_iso(),
     }
     write_json(out_dir / "perturbations.json", payload)
