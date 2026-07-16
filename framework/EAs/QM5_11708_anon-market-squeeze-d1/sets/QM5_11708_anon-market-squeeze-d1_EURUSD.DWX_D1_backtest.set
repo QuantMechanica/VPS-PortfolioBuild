@@ -31,4 +31,9 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11708_anon-market-squeeze-d1.md
+strategy_range_fraction=0.50
+strategy_sl_range_mult=1.50
+strategy_fallback_pips=1
+strategy_order_valid_days=1
+strategy_enable_variant_b=true
