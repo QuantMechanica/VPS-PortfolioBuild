@@ -733,6 +733,10 @@ bool ICT_TryBuildShortEntry(const ICT_Pending &pending, QM_EntryRequest &req)
    if(atr <= 0.0)
       return false;
 
+   // spec Ch6 Richtungsfilter: no shorts against a bullish HTF structure break.
+   if(UseHTFBias && ICT_HTFBias(HTF_Context_H1, HTFBiasLookback) > 0)
+      return false;
+
    const int leg = MathMax(3, MathMin(pending.bars_waited + SwingLookback + 3, ICT_IMPULSE_MAX));
 
    // dealing-range bottom = lowest low across the impulse leg.
