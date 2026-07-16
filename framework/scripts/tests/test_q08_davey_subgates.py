@@ -434,6 +434,119 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
             "fast_ema": 12,
         })
 
+    def test_q08_neighborhood_rejects_empty_strategy_block(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            setfile = Path(tmp) / "QM5_11708_demo_EURUSD.DWX_D1_backtest.set"
+            setfile.write_text(
+                "\n".join([
+                    "; symbol: EURUSD.DWX",
+                    "RISK_FIXED=1000",
+                    "RISK_PERCENT=0",
+                    "; strategy-specific params from card must be appended below this line",
+                    "; card_defaults_source=not_found",
+                ]),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(ValueError, "no strategy parameters"):
+                q08_5_neighborhood_runner.inspect_baseline_setfile(
+                    setfile,
+                    "EURUSD.DWX",
+                )
+
+    def test_q08_neighborhood_rejects_wrong_symbol_baseline(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            setfile = Path(tmp) / "baseline.set"
+            setfile.write_text(
+                "\n".join([
+                    "; symbol: AUDUSD.DWX",
+                    "; strategy-specific params from card must be appended below this line",
+                    "strategy_period=20",
+                ]),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(ValueError, "symbol mismatch"):
+                q08_5_neighborhood_runner.inspect_baseline_setfile(
+                    setfile,
+                    "EURUSD.DWX",
+                )
+
+    def test_q08_neighborhood_cache_requires_exact_baseline_identity(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            setfile = root / "QM5_10476_demo_USDCAD.DWX_H1_backtest.set"
+            setfile.write_text(
+                "\n".join([
+                    "; symbol: USDCAD.DWX",
+                    "; strategy-specific params from card must be appended below this line",
+                    "strategy_period=20",
+                ]),
+                encoding="utf-8",
+            )
+            identity = q08_5_neighborhood_runner.inspect_baseline_setfile(
+                setfile,
+                "USDCAD.DWX",
+            )
+            artifact = root / "perturbations.json"
+            artifact.write_text(
+                json.dumps({
+                    "symbol": "USDCAD.DWX",
+                    "baseline_setfile_path": identity["path"],
+                    "baseline_setfile_sha256": identity["sha256"],
+                    "baseline_setfile_strategy_param_count": identity["strategy_param_count"],
+                    "baseline": {"trades": 80, "pf": 1.4, "dd": 1000.0},
+                    "perturbations": [{"param": "strategy_period"}],
+                }),
+                encoding="utf-8",
+            )
+
+            reusable, reason = aggregate._neighborhood_artifact_reuse_status(
+                artifact,
+                setfile,
+                "USDCAD.DWX",
+            )
+            self.assertTrue(reusable)
+            self.assertEqual(reason, "exact_baseline_lineage")
+
+            setfile.write_text(setfile.read_text(encoding="utf-8") + "\nstrategy_extra=2\n")
+            reusable, reason = aggregate._neighborhood_artifact_reuse_status(
+                artifact,
+                setfile,
+                "USDCAD.DWX",
+            )
+            self.assertFalse(reusable)
+            self.assertEqual(reason, "baseline_sha256_mismatch")
+
+    def test_q08_neighborhood_legacy_cache_without_lineage_is_not_reused(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            setfile = root / "QM5_12567_demo_XAUUSD.DWX_D1_backtest.set"
+            setfile.write_text(
+                "\n".join([
+                    "; symbol: XAUUSD.DWX",
+                    "; strategy-specific params from card must be appended below this line",
+                    "strategy_period=2",
+                ]),
+                encoding="utf-8",
+            )
+            artifact = root / "perturbations.json"
+            artifact.write_text(
+                json.dumps({
+                    "symbol": "XAUUSD.DWX",
+                    "baseline": {"trades": 0, "pf": None, "params": {}},
+                }),
+                encoding="utf-8",
+            )
+
+            reusable, reason = aggregate._neighborhood_artifact_reuse_status(
+                artifact,
+                setfile,
+                "XAUUSD.DWX",
+            )
+            self.assertFalse(reusable)
+            self.assertEqual(reason, "baseline_path_lineage_missing")
+
 
 class Q08DurableSleeveStreamTests(unittest.TestCase):
     """The durable portfolio-stream persistence fidelity rule (copy / serialise / skip)."""

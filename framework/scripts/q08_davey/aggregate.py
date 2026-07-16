@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import hashlib
 import json
 import re
 import shutil
@@ -87,6 +88,46 @@ NEIGHBORHOOD_RUN_TIMEOUT_SEC = 900
 NEIGHBORHOOD_RUN_HEADROOM_SEC = 120
 
 
+def _neighborhood_artifact_reuse_status(
+    artifact_path: Path,
+    baseline_setfile: Path,
+    symbol: str,
+) -> tuple[bool, str]:
+    """Require exact baseline lineage before reusing cached Q08.5 evidence."""
+    if not artifact_path.exists():
+        return False, "artifact_missing"
+    if not baseline_setfile.exists():
+        return False, "baseline_setfile_missing"
+    try:
+        payload = json.loads(artifact_path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError):
+        return False, "artifact_unreadable"
+
+    if str(payload.get("symbol") or "").casefold() != symbol.casefold():
+        return False, "symbol_mismatch"
+    recorded_path = str(payload.get("baseline_setfile_path") or "").strip()
+    if not recorded_path:
+        return False, "baseline_path_lineage_missing"
+    try:
+        if Path(recorded_path).resolve() != baseline_setfile.resolve():
+            return False, "baseline_path_mismatch"
+    except OSError:
+        return False, "baseline_path_unresolvable"
+
+    expected_sha = hashlib.sha256(baseline_setfile.read_bytes()).hexdigest()
+    if str(payload.get("baseline_setfile_sha256") or "").lower() != expected_sha:
+        return False, "baseline_sha256_mismatch"
+    try:
+        if int(payload.get("baseline_setfile_strategy_param_count") or 0) <= 0:
+            return False, "strategy_params_missing"
+        baseline = payload.get("baseline") or {}
+        if int(baseline.get("trades") or 0) <= 0 or baseline.get("pf") is None:
+            return False, "degenerate_baseline"
+    except (TypeError, ValueError):
+        return False, "artifact_schema_invalid"
+    return True, "exact_baseline_lineage"
+
+
 def _ensure_sub_gate_inputs(ea_id: int, symbol: str, terminal: str | None = None,
                             baseline_setfile: Path | None = None,
                             neighborhood_max_params: int | None = None) -> dict:
@@ -108,12 +149,36 @@ def _ensure_sub_gate_inputs(ea_id: int, symbol: str, terminal: str | None = None
 
     perturbations = (Path(f"D:/QM/reports/pipeline/QM5_{ea_id}/Q08/"
                           f"neighborhood/{sym_clean}/perturbations.json"))
-    if not perturbations.exists():
+    baseline = baseline_setfile or _guess_baseline_setfile(repo_root, ea_id, symbol)
+    neighborhood_reusable = False
+    neighborhood_reuse_reason = "no_baseline_setfile_resolvable"
+    if baseline is not None:
+        baseline = Path(baseline)
+        neighborhood_reusable, neighborhood_reuse_reason = (
+            _neighborhood_artifact_reuse_status(
+                perturbations,
+                baseline,
+                symbol,
+            )
+        )
+
+    if not neighborhood_reusable:
         # Best-effort dispatch — requires a baseline setfile to be discoverable.
         # We let the runner self-resolve from --ea + --symbol via Q03 plateau
         # pick lookup; it'll log SKIP and exit non-zero if pre-reqs missing.
-        baseline = baseline_setfile or _guess_baseline_setfile(repo_root, ea_id, symbol)
         if baseline is not None:
+            archived_stale_artifact = None
+            if perturbations.exists():
+                stamp = dt.datetime.now(dt.UTC).strftime("%Y%m%dT%H%M%S%fZ")
+                stale_path = perturbations.with_name(f"perturbations.stale_{stamp}.json")
+                try:
+                    perturbations.replace(stale_path)
+                    archived_stale_artifact = str(stale_path)
+                except OSError:
+                    # The runner will overwrite the original on success.  If it
+                    # fails, the reuse check remains false and the gate stays
+                    # INVALID rather than silently treating the cache as fresh.
+                    pass
             try:
                 cmd = [
                     py, str(repo_root / "framework" / "scripts" /
@@ -129,15 +194,33 @@ def _ensure_sub_gate_inputs(ea_id: int, symbol: str, terminal: str | None = None
                 ran["8_5_neighborhood"] = {
                     "exit_code": proc.returncode,
                     "artifact_now_exists": perturbations.exists(),
+                    "reuse_check": neighborhood_reuse_reason,
+                    "archived_stale_artifact": archived_stale_artifact,
                     "stdout_tail": proc.stdout[-1000:],
                     "stderr_tail": proc.stderr[-1000:],
                 }
             except _sp.TimeoutExpired:
-                ran["8_5_neighborhood"] = {"exit_code": -1, "error": "timeout"}
+                ran["8_5_neighborhood"] = {
+                    "exit_code": -1,
+                    "error": "timeout",
+                    "reuse_check": neighborhood_reuse_reason,
+                    "archived_stale_artifact": archived_stale_artifact,
+                }
             except Exception as exc:
-                ran["8_5_neighborhood"] = {"exit_code": -1, "error": repr(exc)}
+                ran["8_5_neighborhood"] = {
+                    "exit_code": -1,
+                    "error": repr(exc),
+                    "reuse_check": neighborhood_reuse_reason,
+                    "archived_stale_artifact": archived_stale_artifact,
+                }
         else:
             ran["8_5_neighborhood"] = {"skipped": "no_baseline_setfile_resolvable"}
+    else:
+        ran["8_5_neighborhood"] = {
+            "reused": True,
+            "artifact": str(perturbations),
+            "reuse_check": neighborhood_reuse_reason,
+        }
 
     pbo_scores = Path(f"D:/QM/reports/pipeline/QM5_{ea_id}/Q08/pbo/"
                       f"{sym_clean}/scores.csv")
