@@ -1,12 +1,24 @@
 ---
 card_id: month-end-fx-rebalancing
-status: DRAFT_FOR_APPROVAL
+status: KILLED_AS_SPECIFIED
 ea_id: TBD
 target_symbols: [EURUSD.DWX, GBPUSD.DWX, AUDUSD.DWX]
 timeframe: D1
-priority_track: true
+priority_track: false
 origin: FX_EDGE_DISCOVERY_SCIENTIFIC_FRAMEWORK_2026-07-16 (family #2, top directional calendar edge)
+killed_by: fx-edge-army wf_28fc3bf4 (adversarial verify)
+successor: CARD_DRAFT_TURN_OF_MONTH_INDEX_LONG_2026-07-16.md (correct-direction index flow)
 ---
+
+> **KILLED AS SPECIFIED (fx-edge-army, 2026-07-16).** Three defects the army's adversarial verify caught:
+> (1) **DIRECTION INVERTED** — the entry below shorts the foreign currency after strong-equity months,
+> but the Melvin–Prins flow means BUY the pair on the reversal; as written it shorts the edge → negative EV.
+> (2) A **D1 close-to-close** signal never trades the WMR 16:00 fix window and holds *through* the post-fix
+> reversal. (3) Even sign-corrected, the FX version dies on the ~4.5-pip cost. **Salvage path only:** a
+> cost-free D1 ad-hoc probe with the sign LOCKED to Melvin–Prins direction (NDX up → BUY the pair), build
+> only if gross clears ~2× cost (INVESTIGATE item B4). The *index* turn-of-month flow (successor card) is
+> the far cleaner, ~10×-cushion expression of calendar inflows — build that instead. Kept for the lesson:
+> a plausible thesis with an inverted sign and a fix-blind timeframe is worse than no card.
 
 # Month/Quarter-End FX Hedge-Rebalancing Flow
 
