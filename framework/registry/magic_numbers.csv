@@ -15054,3 +15054,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13301,balke-minute-range-breakout,8,EURJPY.DWX,133010008,2026-07-15,Claude,active
 13301,balke-minute-range-breakout,9,GBPUSD.DWX,133010009,2026-07-15,Claude,active
 13301,balke-minute-range-breakout,10,GDAXI.DWX,133010010,2026-07-15,Claude,active
+20002,ict-icytea-core,0,EURUSD.DWX,200020000,2026-07-16,Claude,active
+20002,ict-icytea-core,1,GBPUSD.DWX,200020001,2026-07-16,Claude,active
