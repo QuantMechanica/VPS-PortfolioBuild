@@ -82,6 +82,7 @@ input bool                UseSMT                 = false;                // spec
 #define ICT_SWING_MAX               64
 #define ICT_MSS_PENDING_EXPIRY_BARS 30   // spec gives no explicit sweep->MSS window; bounded engineering assumption (see report)
 #define ICT_OB_SEARCH_WINDOW        5
+#define ICT_IMPULSE_MAX             40   // cap on the sweep->MSS impulse-leg scan (spec Ch3 S3/S4: the displacement FVG lives inside this leg, not only at the MSS bar)
 #define ICT_KZ_LONDON_START         2
 #define ICT_KZ_LONDON_END           5
 #define ICT_KZ_NEWYORK_START        7
