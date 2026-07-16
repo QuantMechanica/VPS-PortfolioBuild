@@ -537,101 +537,112 @@ bool ICT_Setup_SMT_Confirms(const bool is_low_side_sweep)
 // MSS + displacement + FVG/OB entry construction — spec Ch3 S3/S4/S5/S6, Ch4
 // -----------------------------------------------------------------------------
 
+// spec Ch3 S3/S4 + Ch4: the TWO-PHASE core model. The displacement impulse (sweep ->
+// MSS break) LEAVES a Fair Value Gap somewhere inside the leg; the entry is a limit that
+// waits for price to RETRACE back into that gap, filtered to the discount half of the
+// dealing range. The prior build collapsed both phases onto the MSS bar (it demanded a
+// 3-candle FVG in exactly bars 1-3 and it measured premium/discount off a 2-bar leg),
+// which fired ~4x/yr on EURUSD M1 and structurally landed the FVG in premium. This scans
+// the whole impulse leg for the displacement FVG and selects the highest qualifying gap
+// still in discount (the first level price meets on the retrace down).
 bool ICT_TryBuildLongEntry(const ICT_Pending &pending, QM_EntryRequest &req)
   {
-   // C = breakout/impulse bar (shift1), A = shift3 (3-candle FVG window, spec Ch4)
-   const double open_c  = iOpen(_Symbol, ExecutionTF, 1); // perf-allowed
-   const double close_c = iClose(_Symbol, ExecutionTF, 1); // perf-allowed
-   const double high_c  = iHigh(_Symbol, ExecutionTF, 1); // perf-allowed
-   const double low_c   = iLow(_Symbol, ExecutionTF, 1); // perf-allowed
-   const double high_b  = iHigh(_Symbol, ExecutionTF, 2); // perf-allowed
-   const double low_b   = iLow(_Symbol, ExecutionTF, 2); // perf-allowed
-   const double high_a  = iHigh(_Symbol, ExecutionTF, 3); // perf-allowed
-   const double low_a   = iLow(_Symbol, ExecutionTF, 3); // perf-allowed
-   if(open_c <= 0.0 || close_c <= 0.0 || high_c <= 0.0 || low_c <= 0.0 ||
-      high_b <= 0.0 || low_b <= 0.0 || high_a <= 0.0 || low_a <= 0.0)
-      return false;
-
    const double atr = QM_ATR(_Symbol, ExecutionTF, 14, 1);
    if(atr <= 0.0)
       return false;
 
-   // spec Ch4 Baustein FVG: bullish FVG = Low(C) > High(A); zone [High(A), Low(C)].
-   bool bullish_fvg = false;
-   double fvg_low = 0.0, fvg_high = 0.0;
-   if(low_c > high_a)
+   // Impulse leg = sweep bar .. MSS bar (shift 1). bars_waited bars have elapsed since the
+   // sweep was registered; scan that span plus a small margin, capped (spec Ch3 S3/S4).
+   const int leg = MathMax(3, MathMin(pending.bars_waited + SwingLookback + 3, ICT_IMPULSE_MAX));
+
+   // spec Ch3 S4 dealing-range top = highest high across the impulse leg.
+   double impulse_high = 0.0;
+   for(int k = 1; k <= leg; ++k)
      {
-      const double width = low_c - high_a;
-      if(width >= ICT_PointsToPrice(_Symbol, FVG_MinPoints))
+      const double h = iHigh(_Symbol, ExecutionTF, k); // perf-allowed
+      if(h > impulse_high) impulse_high = h;
+     }
+   const double dealing_range = impulse_high - pending.sweep_extreme;
+   if(dealing_range <= 0.0)
+      return false;
+   const double discount_ceiling = pending.sweep_extreme + 0.5 * dealing_range; // entry <= this = discount
+
+   // spec Ch4 Baustein FVG: scan every 3-candle window in the leg for a bullish FVG
+   // (Low(C) > High(A); zone [High(A), Low(C)]). Keep the highest qualifying candidate
+   // still in discount = the first gap price reaches on the retrace back down.
+   bool any_fvg = false, have_fvg = false;
+   double fvg_entry = 0.0, fvg_low_sel = 0.0, fvg_high_sel = 0.0;
+   for(int i = 1; i <= leg; ++i)
+     {
+      const double low_c  = iLow(_Symbol, ExecutionTF, i);     // perf-allowed  (C, newer)
+      const double high_a = iHigh(_Symbol, ExecutionTF, i + 2); // perf-allowed  (A, older)
+      if(low_c <= 0.0 || high_a <= 0.0 || low_c <= high_a)
+         continue;
+      if((low_c - high_a) < ICT_PointsToPrice(_Symbol, FVG_MinPoints))
+         continue;
+      any_fvg = true;
+      const double fl = high_a, fh = low_c;
+      const double cand = (EntryMode == ICT_ENTRY_FVG_CE) ? (fl + fh) * 0.5 : fh; // CE or upper edge
+      if(cand <= 0.0)
+         continue;
+      if(PremiumDiscountFilter && cand > discount_ceiling)
+         continue; // spec Ch3 S4: longs only in discount
+      if(!have_fvg || cand > fvg_entry) // highest qualifying = first touched on the retrace
         {
-         bullish_fvg = true;
-         fvg_low = high_a;
-         fvg_high = low_c;
+         have_fvg = true;
+         fvg_entry = cand;
+         fvg_low_sel = fl;
+         fvg_high_sel = fh;
         }
      }
 
-   // spec Ch3 S3: displacement = FVG-in-impulse (mandatory by default) AND/OR body>=k*ATR.
-   const double body_c = MathAbs(close_c - open_c);
+   // spec Ch3 S3: displacement = FVG-in-impulse (mandatory by default) AND/OR MSS-bar body>=k*ATR.
+   const double body_c = MathAbs(iClose(_Symbol, ExecutionTF, 1) - iOpen(_Symbol, ExecutionTF, 1)); // perf-allowed
    const bool body_ok = body_c >= DisplacementATR * atr;
-   const bool displacement_ok = RequireFVGInImpulse ? bullish_fvg : (bullish_fvg || body_ok);
+   const bool displacement_ok = RequireFVGInImpulse ? any_fvg : (any_fvg || body_ok);
    if(!displacement_ok)
       return false;
 
    if(UseSMT && !ICT_Setup_SMT_Confirms(true))
       return false;
 
-   // spec Ch4 Baustein Order Block: last down-close candle immediately before the
-   // impulse; zone = [Open, Low]. Search a small bounded window back from bar B.
-   double ob_open = 0.0, ob_low = 0.0;
-   bool ob_found = false;
-   for(int k = 2; k <= 1 + ICT_OB_SEARCH_WINDOW; ++k)
-     {
-      const double o  = iOpen(_Symbol, ExecutionTF, k); // perf-allowed
-      const double c  = iClose(_Symbol, ExecutionTF, k); // perf-allowed
-      const double lo = iLow(_Symbol, ExecutionTF, k); // perf-allowed
-      if(o <= 0.0 || c <= 0.0 || lo <= 0.0)
-         break;
-      if(c < o)
-        {
-         ob_open = o;
-         ob_low = lo;
-         ob_found = true;
-         break;
-        }
-     }
-
    double entry_price = 0.0;
-   if(EntryMode == ICT_ENTRY_FVG_EDGE)
+   if(EntryMode == ICT_ENTRY_OB_MT)
      {
-      if(!bullish_fvg) return false;
-      entry_price = fvg_high; // near/upper edge of the bullish FVG zone (spec: "FVG-Oberkante")
-     }
-   else if(EntryMode == ICT_ENTRY_FVG_CE)
-     {
-      if(!bullish_fvg) return false;
-      entry_price = (fvg_low + fvg_high) * 0.5; // spec Ch4 Baustein CE
-     }
-   else // ICT_ENTRY_OB_MT
-     {
+      // spec Ch4 Baustein OB: last down-close candle in the leg; zone [Open,Low], MT=50%.
+      // Keep the highest OB-MT still in discount (first touched on the retrace).
+      bool ob_found = false; double best_mt = 0.0;
+      for(int k = 1; k <= leg; ++k)
+        {
+         const double o  = iOpen(_Symbol, ExecutionTF, k); // perf-allowed
+         const double c  = iClose(_Symbol, ExecutionTF, k); // perf-allowed
+         const double lo = iLow(_Symbol, ExecutionTF, k); // perf-allowed
+         if(o <= 0.0 || c <= 0.0 || lo <= 0.0 || c >= o)
+            continue;
+         const double mt = (o + lo) * 0.5;
+         if(PremiumDiscountFilter && mt > discount_ceiling)
+            continue;
+         if(!ob_found || mt > best_mt) { best_mt = mt; ob_found = true; }
+        }
       if(!ob_found) return false;
-      entry_price = (ob_open + ob_low) * 0.5; // spec Ch4 Baustein OB Mean Threshold
+      entry_price = best_mt;
+     }
+   else
+     {
+      if(!have_fvg) return false;
+      entry_price = fvg_entry;
      }
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    if(entry_price <= 0.0 || entry_price >= ask)
       return false; // must be a genuine buy-limit level below current market
 
-   // spec Ch3 S4: premium/discount, dealing range = sweep-low -> impulse-high.
-   // Impulse-high approximated as the high of the 2-bar impulse leg (B,C) — see report.
-   const double impulse_high = MathMax(high_b, high_c);
-   const double dealing_range = impulse_high - pending.sweep_extreme;
-   if(dealing_range <= 0.0)
-      return false;
-   const double retracement_fraction = (impulse_high - entry_price) / dealing_range;
-   if(PremiumDiscountFilter && retracement_fraction <= 0.5)
-      return false; // not in discount (below 50%)
-   if(UseOTE && (retracement_fraction < 0.62 || retracement_fraction > 0.79))
-      return false; // spec Ch3 S4: optional OTE 0.62-0.79 refinement
+   // spec Ch3 S4: optional OTE 0.62-0.79 refinement on the dealing range.
+   if(UseOTE)
+     {
+      const double frac = (impulse_high - entry_price) / dealing_range;
+      if(frac < 0.62 || frac > 0.79) return false;
+     }
 
    // spec Ch3 S5: stop-loss = sweep extreme minus a buffer.
    double sl = pending.sweep_extreme - ICT_PointsToPrice(_Symbol, SL_BufferPoints);
@@ -663,99 +674,103 @@ bool ICT_TryBuildLongEntry(const ICT_Pending &pending, QM_EntryRequest &req)
    return true;
   }
 
-// Exact mirror of ICT_TryBuildLongEntry (spec Ch3 opener: "die Short-Seite ist exakt gespiegelt").
+// Exact mirror of ICT_TryBuildLongEntry (spec Ch3 opener: "die Short-Seite ist exakt
+// gespiegelt"): impulse-leg scan for the displacement bearish FVG, entry limit waiting
+// for the retrace UP into it, filtered to the premium half of the dealing range.
 bool ICT_TryBuildShortEntry(const ICT_Pending &pending, QM_EntryRequest &req)
   {
-   const double open_c  = iOpen(_Symbol, ExecutionTF, 1); // perf-allowed
-   const double close_c = iClose(_Symbol, ExecutionTF, 1); // perf-allowed
-   const double high_c  = iHigh(_Symbol, ExecutionTF, 1); // perf-allowed
-   const double low_c   = iLow(_Symbol, ExecutionTF, 1); // perf-allowed
-   const double high_b  = iHigh(_Symbol, ExecutionTF, 2); // perf-allowed
-   const double low_b   = iLow(_Symbol, ExecutionTF, 2); // perf-allowed
-   const double high_a  = iHigh(_Symbol, ExecutionTF, 3); // perf-allowed
-   const double low_a   = iLow(_Symbol, ExecutionTF, 3); // perf-allowed
-   if(open_c <= 0.0 || close_c <= 0.0 || high_c <= 0.0 || low_c <= 0.0 ||
-      high_b <= 0.0 || low_b <= 0.0 || high_a <= 0.0 || low_a <= 0.0)
-      return false;
-
    const double atr = QM_ATR(_Symbol, ExecutionTF, 14, 1);
    if(atr <= 0.0)
       return false;
 
-   // bearish FVG = High(C) < Low(A); zone [High(C), Low(A)].
-   bool bearish_fvg = false;
-   double fvg_low = 0.0, fvg_high = 0.0;
-   if(high_c < low_a)
+   const int leg = MathMax(3, MathMin(pending.bars_waited + SwingLookback + 3, ICT_IMPULSE_MAX));
+
+   // dealing-range bottom = lowest low across the impulse leg.
+   double impulse_low = DBL_MAX;
+   for(int k = 1; k <= leg; ++k)
      {
-      const double width = low_a - high_c;
-      if(width >= ICT_PointsToPrice(_Symbol, FVG_MinPoints))
+      const double l = iLow(_Symbol, ExecutionTF, k); // perf-allowed
+      if(l > 0.0 && l < impulse_low) impulse_low = l;
+     }
+   if(impulse_low == DBL_MAX)
+      return false;
+   const double dealing_range = pending.sweep_extreme - impulse_low;
+   if(dealing_range <= 0.0)
+      return false;
+   const double premium_floor = pending.sweep_extreme - 0.5 * dealing_range; // entry >= this = premium
+
+   // spec Ch4 Baustein FVG: bearish FVG = High(C) < Low(A); zone [High(C), Low(A)].
+   // Keep the LOWEST qualifying candidate still in premium = first touched on the retrace up.
+   bool any_fvg = false, have_fvg = false;
+   double fvg_entry = 0.0, fvg_low_sel = 0.0, fvg_high_sel = 0.0;
+   for(int i = 1; i <= leg; ++i)
+     {
+      const double high_c = iHigh(_Symbol, ExecutionTF, i);    // perf-allowed  (C, newer)
+      const double low_a  = iLow(_Symbol, ExecutionTF, i + 2); // perf-allowed  (A, older)
+      if(high_c <= 0.0 || low_a <= 0.0 || high_c >= low_a)
+         continue;
+      if((low_a - high_c) < ICT_PointsToPrice(_Symbol, FVG_MinPoints))
+         continue;
+      any_fvg = true;
+      const double fl = high_c, fh = low_a;
+      const double cand = (EntryMode == ICT_ENTRY_FVG_CE) ? (fl + fh) * 0.5 : fl; // CE or lower edge
+      if(cand <= 0.0)
+         continue;
+      if(PremiumDiscountFilter && cand < premium_floor)
+         continue; // spec Ch3 S4: shorts only in premium
+      if(!have_fvg || cand < fvg_entry) // lowest qualifying = first touched on the retrace up
         {
-         bearish_fvg = true;
-         fvg_low = high_c;
-         fvg_high = low_a;
+         have_fvg = true;
+         fvg_entry = cand;
+         fvg_low_sel = fl;
+         fvg_high_sel = fh;
         }
      }
 
-   const double body_c = MathAbs(close_c - open_c);
+   const double body_c = MathAbs(iClose(_Symbol, ExecutionTF, 1) - iOpen(_Symbol, ExecutionTF, 1)); // perf-allowed
    const bool body_ok = body_c >= DisplacementATR * atr;
-   const bool displacement_ok = RequireFVGInImpulse ? bearish_fvg : (bearish_fvg || body_ok);
+   const bool displacement_ok = RequireFVGInImpulse ? any_fvg : (any_fvg || body_ok);
    if(!displacement_ok)
       return false;
 
    if(UseSMT && !ICT_Setup_SMT_Confirms(false))
       return false;
 
-   // Order Block (bearish): last up-close candle immediately before the down impulse;
-   // zone = [Open, High] (mirror of the bullish [Open, Low]).
-   double ob_open = 0.0, ob_high = 0.0;
-   bool ob_found = false;
-   for(int k = 2; k <= 1 + ICT_OB_SEARCH_WINDOW; ++k)
-     {
-      const double o  = iOpen(_Symbol, ExecutionTF, k); // perf-allowed
-      const double c  = iClose(_Symbol, ExecutionTF, k); // perf-allowed
-      const double hi = iHigh(_Symbol, ExecutionTF, k); // perf-allowed
-      if(o <= 0.0 || c <= 0.0 || hi <= 0.0)
-         break;
-      if(c > o)
-        {
-         ob_open = o;
-         ob_high = hi;
-         ob_found = true;
-         break;
-        }
-     }
-
    double entry_price = 0.0;
-   if(EntryMode == ICT_ENTRY_FVG_EDGE)
+   if(EntryMode == ICT_ENTRY_OB_MT)
      {
-      if(!bearish_fvg) return false;
-      entry_price = fvg_low; // near/lower edge of the bearish FVG zone
-     }
-   else if(EntryMode == ICT_ENTRY_FVG_CE)
-     {
-      if(!bearish_fvg) return false;
-      entry_price = (fvg_low + fvg_high) * 0.5;
-     }
-   else // ICT_ENTRY_OB_MT
-     {
+      // spec Ch4 Baustein OB (bearish): last up-close candle in the leg; zone [Open,High], MT=50%.
+      bool ob_found = false; double best_mt = 0.0;
+      for(int k = 1; k <= leg; ++k)
+        {
+         const double o  = iOpen(_Symbol, ExecutionTF, k); // perf-allowed
+         const double c  = iClose(_Symbol, ExecutionTF, k); // perf-allowed
+         const double hi = iHigh(_Symbol, ExecutionTF, k); // perf-allowed
+         if(o <= 0.0 || c <= 0.0 || hi <= 0.0 || c <= o)
+            continue;
+         const double mt = (o + hi) * 0.5;
+         if(PremiumDiscountFilter && mt < premium_floor)
+            continue;
+         if(!ob_found || mt < best_mt) { best_mt = mt; ob_found = true; }
+        }
       if(!ob_found) return false;
-      entry_price = (ob_open + ob_high) * 0.5;
+      entry_price = best_mt;
+     }
+   else
+     {
+      if(!have_fvg) return false;
+      entry_price = fvg_entry;
      }
 
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(entry_price <= 0.0 || entry_price <= bid)
       return false; // must be a genuine sell-limit level above current market
 
-   // premium/discount, dealing range = sweep-high -> impulse-low (mirror).
-   const double impulse_low = MathMin(low_b, low_c);
-   const double dealing_range = pending.sweep_extreme - impulse_low;
-   if(dealing_range <= 0.0)
-      return false;
-   const double retracement_fraction = (entry_price - impulse_low) / dealing_range;
-   if(PremiumDiscountFilter && retracement_fraction <= 0.5)
-      return false; // not in premium (above 50%)
-   if(UseOTE && (retracement_fraction < 0.62 || retracement_fraction > 0.79))
-      return false;
+   if(UseOTE)
+     {
+      const double frac = (entry_price - impulse_low) / dealing_range;
+      if(frac < 0.62 || frac > 0.79) return false;
+     }
 
    double sl = pending.sweep_extreme + ICT_PointsToPrice(_Symbol, SL_BufferPoints);
    sl = QM_StopRulesNormalizePrice(_Symbol, sl);
