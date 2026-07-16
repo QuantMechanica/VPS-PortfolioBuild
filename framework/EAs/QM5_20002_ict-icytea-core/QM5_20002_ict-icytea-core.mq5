@@ -59,6 +59,8 @@ input bool                RequireFVGInImpulse    = true;                 // spec
 input double              FVG_MinPoints          = 10.0;                 // spec Ch4: min FVG width in points (10 = 1 pip on 5-digit)
 input ICT_EntryModeType  EntryMode              = ICT_ENTRY_FVG_EDGE;   // spec Ch3 S4 / Ch7
 input bool                PremiumDiscountFilter  = true;                 // spec Ch3 S4
+input bool                UseHTFBias             = true;                 // spec Ch6 Richtungsfilter: only trade WITH the last HTF (H1) structure break (blocks counter-trend)
+input int                 HTFBiasLookback        = 60;                   // spec Ch6: HTF bars scanned for the last swing-break structure state
 input bool                UseOTE                 = false;                // spec Ch3 S4: optional 0.62-0.79 OTE refinement
 input double              SL_BufferPoints        = 15.0;                 // spec Ch3 S5
 input double              MinRR                  = 2.0;                  // spec Ch3 S6 / Ch6
@@ -240,6 +242,50 @@ void ICT_UpdateSwings(const int lookback)
       ICT_PushSwingHigh(h, ct);
    if(is_low)
       ICT_PushSwingLow(l, ct);
+  }
+
+// -----------------------------------------------------------------------------
+// HTF directional bias — spec Ch6 "Richtungsfilter": last structure break on the HTF
+// -----------------------------------------------------------------------------
+
+// Returns +1 bullish / -1 bearish / 0 neutral from the most recent break of structure
+// on `htf`: find the newest HTF swing high and swing low (3-bar fractal), then whichever
+// was most recently taken out by a subsequent close (higher-high break = bullish BOS,
+// lower-low break = bearish BOS) sets the bias. Neutral when neither has broken (range).
+int ICT_HTFBias(const ENUM_TIMEFRAMES htf, const int lookback)
+  {
+   int sh_shift = -1, sl_shift = -1;
+   double sh = 0.0, sl = 0.0;
+   for(int s = 2; s <= lookback && (sh_shift < 0 || sl_shift < 0); ++s)
+     {
+      const double h  = iHigh(_Symbol, htf, s);     // perf-allowed: bounded HTF fractal scan
+      const double hL = iHigh(_Symbol, htf, s - 1);  // perf-allowed
+      const double hR = iHigh(_Symbol, htf, s + 1);  // perf-allowed
+      const double l  = iLow(_Symbol, htf, s);       // perf-allowed
+      const double lL = iLow(_Symbol, htf, s - 1);    // perf-allowed
+      const double lR = iLow(_Symbol, htf, s + 1);    // perf-allowed
+      if(h <= 0.0 || l <= 0.0)
+         continue;
+      if(sh_shift < 0 && h > hL && h > hR) { sh = h; sh_shift = s; }
+      if(sl_shift < 0 && l < lL && l < lR) { sl = l; sl_shift = s; }
+     }
+   if(sh_shift < 0 || sl_shift < 0)
+      return 0;
+
+   int bull_break = -1;
+   for(int s = 1; s < sh_shift; ++s)
+      if(iClose(_Symbol, htf, s) > sh) { bull_break = s; break; } // perf-allowed: most recent close above the swing high
+   int bear_break = -1;
+   for(int s = 1; s < sl_shift; ++s)
+      if(iClose(_Symbol, htf, s) < sl) { bear_break = s; break; } // perf-allowed: most recent close below the swing low
+
+   if(bull_break < 0 && bear_break < 0)
+      return 0;
+   if(bull_break < 0)
+      return -1;
+   if(bear_break < 0)
+      return +1;
+   return (bull_break <= bear_break) ? +1 : -1; // the more recent break (smaller shift) wins
   }
 
 // -----------------------------------------------------------------------------
@@ -549,6 +595,10 @@ bool ICT_TryBuildLongEntry(const ICT_Pending &pending, QM_EntryRequest &req)
   {
    const double atr = QM_ATR(_Symbol, ExecutionTF, 14, 1);
    if(atr <= 0.0)
+      return false;
+
+   // spec Ch6 Richtungsfilter: no longs against a bearish HTF structure break.
+   if(UseHTFBias && ICT_HTFBias(HTF_Context_H1, HTFBiasLookback) < 0)
       return false;
 
    // Impulse leg = sweep bar .. MSS bar (shift 1). bars_waited bars have elapsed since the
