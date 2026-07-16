@@ -47,6 +47,8 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
+input bool                TradeLongs             = false;                // Allow Long trades
+input bool                TradeShorts            = true;                 // Allow Short trades
 input ENUM_TIMEFRAMES    ExecutionTF            = PERIOD_M1;             // spec Ch7: execution timeframe (all algorithmic defs run on this TF)
 input ENUM_TIMEFRAMES    HTF_Context_M15        = PERIOD_M15;            // spec Ch7 HTF_Context #1: used for Asian-range scan; Phase 2 HTF-bias/zone hook
 input ENUM_TIMEFRAMES    HTF_Context_H1         = PERIOD_H1;             // spec Ch7 HTF_Context #2: reserved for Phase 2 HTF-bias/HTF-FVG hook (unused Phase 1)
@@ -69,7 +71,7 @@ input double              PartialAt              = 50.0;                 // spec
 input bool                BreakevenAfterPartial  = true;                 // spec Ch3 S6 / Ch6
 input int                MaxTradesPerKZ         = 2;                     // spec Ch6
 input int                TZ_Offset_NYtoBroker   = 0;                     // spec Ch2.3: manual correction (hours) on top of the QM_DSTAware NY<->broker conversion
-input bool                KZ_London_on           = true;                 // spec Ch2.3: London KZ 02:00-05:00 NY
+input bool                KZ_London_on           = false;                // spec Ch2.3: London KZ 02:00-05:00 NY
 input bool                KZ_NewYork_on          = true;                 // spec Ch2.3: New York KZ 07:00-10:00 NY
 input bool                Setup_Judas            = false;                // spec Ch5.1 (Phase 2/3 stub)
 input bool                Setup_TurtleSoup       = false;                // spec Ch5.2 (Phase 2/3 stub)
@@ -1177,9 +1179,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    ICT_UpdateSwings(SwingLookback); // spec Ch3 S1
 
-   if(ICT_ProcessLong(req))
+   if(TradeLongs && ICT_ProcessLong(req))
       return true;
-   if(ICT_ProcessShort(req))
+   if(TradeShorts && ICT_ProcessShort(req))
       return true;
 
    // spec Ch5: Phase-2/3 setup-module hooks — every stub is a no-op in Phase 1.
