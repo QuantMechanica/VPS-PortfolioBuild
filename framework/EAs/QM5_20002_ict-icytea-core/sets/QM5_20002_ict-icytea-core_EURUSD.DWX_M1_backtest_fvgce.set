@@ -21,3 +21,4 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=not_found
+EntryMode=1
