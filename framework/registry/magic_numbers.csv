@@ -15043,3 +15043,14 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13213,balke-gmt3-range-breakout,1,XAUUSD.DWX,132130001,2026-07-14,Claude,retired
 9250,mql5-crt-amd,2,GDAXI.DWX,92500002,2026-07-14,Claude,active
 1567,demark-td-reverse-sequential-h4,10,XAGUSD.DWX,15670010,2026-07-15,Claude,active
+13301,balke-minute-range-breakout,0,XAUUSD.DWX,133010000,2026-07-15,Claude,active
+13301,balke-minute-range-breakout,1,USDCAD.DWX,133010001,2026-07-15,Claude,active
+13301,balke-minute-range-breakout,2,USDCHF.DWX,133010002,2026-07-15,Claude,active
+13301,balke-minute-range-breakout,3,GBPJPY.DWX,133010003,2026-07-15,Claude,active
+13301,balke-minute-range-breakout,4,AUDUSD.DWX,133010004,2026-07-15,Claude,active
+13301,balke-minute-range-breakout,5,AUDCAD.DWX,133010005,2026-07-15,Claude,active
+13301,balke-minute-range-breakout,6,CADJPY.DWX,133010006,2026-07-15,Claude,active
+13301,balke-minute-range-breakout,7,NZDCAD.DWX,133010007,2026-07-15,Claude,active
+13301,balke-minute-range-breakout,8,EURJPY.DWX,133010008,2026-07-15,Claude,active
+13301,balke-minute-range-breakout,9,GBPUSD.DWX,133010009,2026-07-15,Claude,active
+13301,balke-minute-range-breakout,10,GDAXI.DWX,133010010,2026-07-15,Claude,active
