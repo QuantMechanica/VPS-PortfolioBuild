@@ -492,11 +492,21 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
             artifact.write_text(
                 json.dumps({
                     "symbol": "USDCAD.DWX",
+                    "param_source": identity["path"],
+                    "param_source_sha256": identity["sha256"],
                     "baseline_setfile_path": identity["path"],
                     "baseline_setfile_sha256": identity["sha256"],
+                    "baseline_setfile_symbol": "USDCAD.DWX",
                     "baseline_setfile_strategy_param_count": identity["strategy_param_count"],
                     "baseline": {"trades": 80, "pf": 1.4, "dd": 1000.0},
-                    "perturbations": [{"param": "strategy_period"}],
+                    "evidence_status": "VALID",
+                    "n_params_tested": 1,
+                    "perturbations": [
+                        {"param": "strategy_period", "delta": "-10pct", "trades": 78,
+                         "pf": 1.35, "dd": 1100.0},
+                        {"param": "strategy_period", "delta": "+10pct", "trades": 82,
+                         "pf": 1.32, "dd": 1050.0},
+                    ],
                 }),
                 encoding="utf-8",
             )
@@ -546,6 +556,98 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
             )
             self.assertFalse(reusable)
             self.assertEqual(reason, "baseline_path_lineage_missing")
+
+    def test_q08_neighborhood_cache_rejects_current_empty_or_wrong_symbol_set(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for filename, header, expected_reason in (
+                ("empty.set", "EURUSD.DWX", "baseline_setfile_invalid:ValueError"),
+                ("wrong.set", "AUDUSD.DWX", "baseline_setfile_invalid:ValueError"),
+            ):
+                setfile = root / filename
+                lines = [
+                    f"; symbol: {header}",
+                    "; strategy-specific params from card must be appended below this line",
+                ]
+                if filename == "wrong.set":
+                    lines.append("strategy_period=20")
+                setfile.write_text("\n".join(lines), encoding="utf-8")
+                artifact = root / f"{filename}.json"
+                artifact.write_text(json.dumps({"symbol": "EURUSD.DWX"}), encoding="utf-8")
+
+                reusable, reason = aggregate._neighborhood_artifact_reuse_status(
+                    artifact,
+                    setfile,
+                    "EURUSD.DWX",
+                )
+                self.assertFalse(reusable)
+                self.assertEqual(reason, expected_reason)
+
+    def test_q08_neighborhood_cache_binds_parameter_source_hash(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            setfile = root / "baseline.set"
+            setfile.write_text(
+                "\n".join([
+                    "; symbol: EURUSD.DWX",
+                    "; strategy-specific params from card must be appended below this line",
+                    "strategy_period=20",
+                ]),
+                encoding="utf-8",
+            )
+            identity = q08_5_neighborhood_runner.inspect_baseline_setfile(
+                setfile,
+                "EURUSD.DWX",
+            )
+            plateau = root / "plateau_pick.json"
+            plateau.write_text('{"params":{"strategy_period":20}}', encoding="utf-8")
+            import hashlib
+            plateau_sha = hashlib.sha256(plateau.read_bytes()).hexdigest()
+            artifact = root / "perturbations.json"
+            artifact.write_text(json.dumps({
+                "symbol": "EURUSD.DWX",
+                "param_source": str(plateau),
+                "param_source_sha256": plateau_sha,
+                "baseline_setfile_path": identity["path"],
+                "baseline_setfile_sha256": identity["sha256"],
+                "baseline_setfile_symbol": "EURUSD.DWX",
+                "baseline_setfile_strategy_param_count": 1,
+                "baseline": {"trades": 80, "pf": 1.4, "dd": 1000.0},
+                "evidence_status": "VALID",
+                "n_params_tested": 1,
+                "perturbations": [
+                    {"trades": 80, "pf": 1.3, "dd": 1100.0},
+                    {"trades": 82, "pf": 1.35, "dd": 1050.0},
+                ],
+            }), encoding="utf-8")
+            plateau.write_text('{"params":{"strategy_period":21}}', encoding="utf-8")
+
+            reusable, reason = aggregate._neighborhood_artifact_reuse_status(
+                artifact,
+                setfile,
+                "EURUSD.DWX",
+            )
+            self.assertFalse(reusable)
+            self.assertEqual(reason, "param_source_sha256_mismatch")
+
+    def test_q08_neighborhood_quarantine_failure_forces_invalid(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            artifact = Path(tmp) / "perturbations.json"
+            artifact.write_text("{}", encoding="utf-8")
+            with patch.object(Path, "replace", side_effect=OSError("locked")):
+                archived, error = aggregate._quarantine_stale_neighborhood_artifact(artifact)
+
+            self.assertIsNone(archived)
+            self.assertEqual(error, "stale_artifact_quarantine_failed:OSError")
+            result = aggregate._neighborhood_lineage_invalid_result({
+                "8_5_neighborhood": {
+                    "artifact_reusable_after": False,
+                    "error": error,
+                    "reuse_check_after": "stale_artifact_not_quarantined",
+                },
+            })
+            self.assertEqual(result["status"], "INVALID")
+            self.assertIn("stale_artifact_not_quarantined", result["detail"])
 
 
 class Q08DurableSleeveStreamTests(unittest.TestCase):

@@ -344,12 +344,17 @@ def main() -> int:
     )
     try:
         pick = load_plateau_pick(plateau_path)
-        pick_source = str(plateau_path)
+        pick_source = str(plateau_path.resolve())
         pick_source_type = "plateau_pick"
     except FileNotFoundError:
         pick = load_params_from_setfile(args.baseline_setfile)
-        pick_source = str(args.baseline_setfile)
+        pick_source = baseline_identity["path"]
         pick_source_type = "baseline_setfile_fallback"
+    try:
+        pick_source_sha256 = hashlib.sha256(Path(pick_source).read_bytes()).hexdigest()
+    except OSError as exc:
+        print(f"Q08.5 parameter source unreadable: {pick_source}: {exc}", file=sys.stderr)
+        return 2
     params = pick["params"]
     if not isinstance(params, dict):
         print(f"Q08.5 params is not a dict: {pick_source}", file=sys.stderr)
@@ -388,11 +393,13 @@ def main() -> int:
             "n_params_tested": 0,
             "param_source": pick_source,
             "param_source_type": pick_source_type,
+            "param_source_sha256": pick_source_sha256,
             "baseline_setfile_path": baseline_identity["path"],
             "baseline_setfile_sha256": baseline_identity["sha256"],
             "baseline_setfile_symbol": baseline_identity["declared_symbol"],
             "baseline_setfile_strategy_param_count": baseline_identity["strategy_param_count"],
             "generated_at_utc": utc_now_iso(),
+            "evidence_status": "INVALID_NO_PERTURBABLE_NUMERIC_PARAMS",
             "note": "no_numeric_strategy_params_to_perturb",
         }
         write_json(out_dir / "perturbations.json", payload)
@@ -440,11 +447,13 @@ def main() -> int:
         "n_params_tested": len(chosen),
         "param_source": pick_source,
         "param_source_type": pick_source_type,
+        "param_source_sha256": pick_source_sha256,
         "baseline_setfile_path": baseline_identity["path"],
         "baseline_setfile_sha256": baseline_identity["sha256"],
         "baseline_setfile_symbol": baseline_identity["declared_symbol"],
         "baseline_setfile_strategy_param_count": baseline_identity["strategy_param_count"],
         "generated_at_utc": utc_now_iso(),
+        "evidence_status": "VALID",
     }
     write_json(out_dir / "perturbations.json", payload)
     print(f"Q08.5 wrote {out_dir / 'perturbations.json'}")
