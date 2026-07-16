@@ -1,4 +1,5 @@
 import datetime as dt
+import csv
 import json
 import tempfile
 import unittest
@@ -98,6 +99,93 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
         self.assertEqual(result["status"], "INVALID")
         self.assertFalse(result["passed"])
         self.assertIn("pbo_runner_scores_missing", result["detail"])
+
+    def test_pbo_single_config_is_invalid_not_vacuous_pass(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            scores = Path(tmp) / "scores.csv"
+            with scores.open("w", encoding="utf-8", newline="") as handle:
+                writer = csv.writer(handle)
+                writer.writerow(["config_id", "slice_id", "score"])
+                for idx in range(1, 9):
+                    writer.writerow(["grid_001", f"S{idx}", 1.0 + idx / 100.0])
+
+            result = sub_8_7_pbo.run(scores_path=scores)
+
+        self.assertEqual(result["status"], "INVALID")
+        self.assertFalse(result["passed"])
+        self.assertIn("got=1:need>=2", result["detail"])
+        self.assertNotIn("PBO=0", result["detail"])
+
+    def test_pbo_two_distinct_configs_with_even_slices_is_evaluable(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            scores = Path(tmp) / "scores.csv"
+            with scores.open("w", encoding="utf-8", newline="") as handle:
+                writer = csv.writer(handle)
+                writer.writerow(["config_id", "slice_id", "score"])
+                for idx in range(1, 9):
+                    writer.writerow(["grid_001", f"S{idx}", 2.0 if idx <= 4 else 1.0])
+                    writer.writerow(["grid_002", f"S{idx}", 1.0 if idx <= 4 else 2.0])
+
+            result = sub_8_7_pbo.run(scores_path=scores)
+
+        self.assertIn(result["status"], {"PASS", "FAIL"})
+        self.assertEqual(result["evidence"]["n_configs"], 2)
+        self.assertEqual(result["evidence"]["n_common_slices"], 8)
+        self.assertEqual(result["evidence"]["splits_evaluated"], 35)
+
+    def test_pbo_non_even_common_slice_family_is_invalid(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            scores = Path(tmp) / "scores.csv"
+            with scores.open("w", encoding="utf-8", newline="") as handle:
+                writer = csv.writer(handle)
+                writer.writerow(["config_id", "slice_id", "score"])
+                for config in ("grid_001", "grid_002"):
+                    for idx in range(1, 4):
+                        writer.writerow([config, f"S{idx}", float(idx)])
+
+            result = sub_8_7_pbo.run(scores_path=scores)
+
+        self.assertEqual(result["status"], "INVALID")
+        self.assertFalse(result["passed"])
+        self.assertIn("insufficient_common_even_slices", result["detail"])
+        self.assertEqual(result["evidence"]["n_common_slices"], 3)
+
+    def test_pbo_runner_refuses_single_config_without_writing_scores(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            summary = root / "summary.json"
+            summary.write_text("{}", encoding="utf-8")
+            argv = [
+                "q08_7_pbo_runner.py",
+                "--ea", "QM5_12567",
+                "--symbol", "XAUUSD.DWX",
+                "--report-root", str(root),
+            ]
+            trades = [
+                {"ts": dt.datetime(2023, 1, 1, tzinfo=dt.UTC), "net": 10.0},
+                {"ts": dt.datetime(2024, 1, 1, tzinfo=dt.UTC), "net": -5.0},
+            ]
+            with (
+                patch.object(q08_7_pbo_runner.sys, "argv", argv),
+                patch.object(
+                    q08_7_pbo_runner,
+                    "discover_sweep_configs",
+                    return_value=[("grid_001", summary)],
+                ),
+                patch.object(
+                    q08_7_pbo_runner,
+                    "_parse_trades_from_summary",
+                    return_value=trades,
+                ),
+            ):
+                rc = q08_7_pbo_runner.main()
+
+            scores_path = (
+                root / "QM5_12567" / "Q08" / "pbo" / "XAUUSD_DWX" / "scores.csv"
+            )
+
+        self.assertEqual(rc, 1)
+        self.assertFalse(scores_path.exists())
 
     def test_pbo_runner_report_fallback_returns_datetime_timestamps(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
