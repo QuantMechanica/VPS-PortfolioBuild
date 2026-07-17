@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-17T06:07:03.7325612Z",
-    "total":  3349,
+    "generated_at":  "2026-07-17T07:07:04.2823601Z",
+    "total":  3350,
     "items":  [
                   {
                       "slug":  "ath-breakout-atr-trail",
@@ -17462,6 +17462,12 @@
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-06-20T06:52:26.2212316Z"
+                  },
+                  {
+                      "slug":  "QM5_20004_turn-of-month-index-long",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-17T06:33:11.5435583Z"
                   },
                   {
                       "slug":  "QM5_2001_nnfx-classic-ssl",

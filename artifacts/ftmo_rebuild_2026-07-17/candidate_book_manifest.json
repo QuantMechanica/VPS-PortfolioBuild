@@ -67,7 +67,7 @@
       "risk_fixed": 250.0,
       "base_risk_fixed": 1000.0,
       "weight": 1.0,
-      "q02_to_q07": "PASS",
+      "q02_to_q07": "HISTORICAL_PASS_REQUALIFICATION_INCOMPLETE_AFTER_CURRENT_BINARY_BUILD",
       "q08": "FAIL_SOFT",
       "q08_blockers": [
         "8.4_seasonal_losing_month_10",
