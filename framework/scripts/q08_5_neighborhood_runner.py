@@ -692,7 +692,14 @@ def resolve_backtest_context(
             latest_full_year = min(years)
     if is_basket and latest_full_year and not to_date:
         effective_to = f"{int(latest_full_year)}.12.31"
-    effective_timeout = max(timeout_sec, 3600) if is_basket else timeout_sec
+    # Full-history child runs scale with bar count: a 9y M5 index run cannot
+    # finish inside the flat 900s D1-era budget (13301/GDAXI wave evidence
+    # 2026-07-17: every child INCOMPLETE_RUNS,TIMEOUT at ~15min).
+    tf_floor = {"M1": 4200, "M5": 4200, "M15": 3600, "M30": 3600,
+                "H1": 1800, "H2": 1800, "H4": 1800}
+    effective_timeout = max(timeout_sec, tf_floor.get(str(period).upper(), 0))
+    if is_basket:
+        effective_timeout = max(effective_timeout, 3600)
     return {
         "logical_symbol": logical_symbol,
         "tester_symbol": tester_symbol,
