@@ -30,6 +30,8 @@
     "q08_fail_soft_allowed": false,
     "q08_invalid_subgates_allowed": false,
     "q09_portfolio_admission_required": true,
+    "ftmo_specific_q02_binding_required": true,
+    "generic_db_q02_pass_sufficient": false,
     "fresh_current_binary_required": true,
     "active_magic_required": true,
     "durable_q08_stream_required": true,
@@ -46,6 +48,7 @@
       0.25,
       0.5
     ],
+    "universal_per_idea_hard_cap_pct": 1.0,
     "internal_daily_stop_pct_range": [
       1.5,
       2.0
