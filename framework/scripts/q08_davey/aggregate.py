@@ -48,13 +48,18 @@ else:
         sub_8_11_mc_shuffle_dd,
     )
 
-from framework.scripts.q05_stress_medium import (
-    _summary_from_run_smoke_output,
-    _summary_identity_matches,
-    _text_from_completed_process,
+from framework.scripts._phase_utils import period_from_setfile
+from framework.scripts.q08_5_neighborhood_runner import (
+    ENGINE_VERSION as NEIGHBORHOOD_ENGINE_VERSION,
+    EVIDENCE_SCHEMA_VERSION as NEIGHBORHOOD_SCHEMA_VERSION,
+    MIN_VALID_PERTURBATIONS,
+    inspect_baseline_setfile,
+    resolve_backtest_context,
 )
-from framework.scripts.q08_5_neighborhood_runner import inspect_baseline_setfile
-
+from framework.scripts.q08_7_pbo_runner import (
+    ENGINE_VERSION as PBO_ENGINE_VERSION,
+    SCORES_SCHEMA_VERSION as PBO_SCHEMA_VERSION,
+)
 # Execution order matches the Vault Q08 spec numbering.
 SUB_GATES = [
     ("8.1",  sub_8_1_correlation),
@@ -114,6 +119,15 @@ def _neighborhood_artifact_reuse_status(
     except (OSError, json.JSONDecodeError):
         return False, "artifact_unreadable"
 
+    try:
+        schema_version = int(payload.get("schema_version") or 0)
+    except (TypeError, ValueError):
+        return False, "schema_version_invalid"
+    if schema_version != NEIGHBORHOOD_SCHEMA_VERSION:
+        return False, "schema_version_mismatch"
+    if str(payload.get("engine_version") or "") != NEIGHBORHOOD_ENGINE_VERSION:
+        return False, "engine_version_mismatch"
+
     if str(payload.get("symbol") or "").casefold() != symbol.casefold():
         return False, "symbol_mismatch"
     recorded_path = str(payload.get("baseline_setfile_path") or "").strip()
@@ -135,7 +149,12 @@ def _neighborhood_artifact_reuse_status(
         if recorded_strategy_count != int(baseline_identity["strategy_param_count"]):
             return False, "strategy_param_count_mismatch"
         baseline = payload.get("baseline") or {}
-        if int(baseline.get("trades") or 0) <= 0 or baseline.get("pf") is None:
+        if (
+            str(baseline.get("status") or "").upper() != "VALID"
+            or int(baseline.get("trades") or 0) <= 0
+            or baseline.get("pf") is None
+            or baseline.get("dd") is None
+        ):
             return False, "degenerate_baseline"
     except (TypeError, ValueError):
         return False, "artifact_schema_invalid"
@@ -152,27 +171,50 @@ def _neighborhood_artifact_reuse_status(
         return False, "param_source_sha256_mismatch"
 
     evidence_status = str(payload.get("evidence_status") or "")
-    if evidence_status == "INVALID_NO_PERTURBABLE_NUMERIC_PARAMS":
+    if evidence_status == "INVALID_NO_PERTURBABLE_PARAMS":
         if int(payload.get("n_params_tested") or 0) != 0 or payload.get("perturbations"):
             return False, "no_perturbable_schema_invalid"
+        if payload.get("structurally_inapplicable") is not True:
+            return False, "no_perturbable_not_structurally_inapplicable"
         return True, "exact_baseline_lineage_no_perturbable_params"
     if evidence_status != "VALID":
         return False, "evidence_status_missing_or_invalid"
     try:
         n_params_tested = int(payload.get("n_params_tested") or 0)
+        n_valid_recorded = int(payload.get("n_valid_perturbations") or 0)
     except (TypeError, ValueError):
         return False, "artifact_schema_invalid"
     perturbation_rows = payload.get("perturbations") or []
-    if n_params_tested <= 0 or len(perturbation_rows) != 2 * n_params_tested:
+    if n_params_tested <= 0 or not perturbation_rows:
         return False, "perturbations_incomplete"
+    valid_rows = 0
+    valid_hashes: set[str] = set()
     for row in perturbation_rows:
         try:
-            if (int(row.get("trades") or 0) <= 0 or row.get("pf") is None
-                    or row.get("dd") is None):
-                return False, "perturbation_degenerate"
+            status = str(row.get("status") or "").upper()
+            if status == "VALID":
+                if (
+                    int(row.get("trades") or 0) <= 0
+                    or row.get("pf") is None
+                    or row.get("dd") is None
+                ):
+                    return False, "valid_perturbation_degenerate"
+                config_hash = str(row.get("setfile_sha256") or "").lower()
+                if not config_hash or config_hash in valid_hashes:
+                    return False, "valid_config_hash_missing_or_duplicate"
+                valid_hashes.add(config_hash)
+                valid_rows += 1
+            elif status == "INVALID":
+                if not str(row.get("invalid_reason") or "").strip():
+                    return False, "invalid_perturbation_reason_missing"
+            else:
+                return False, "perturbation_status_missing"
         except (AttributeError, TypeError, ValueError):
             return False, "artifact_schema_invalid"
-    return True, "exact_baseline_lineage"
+    if valid_rows != n_valid_recorded or valid_rows < MIN_VALID_PERTURBATIONS:
+        return False, "insufficient_valid_perturbations"
+    suffix = "_with_invalid_cells" if valid_rows < len(perturbation_rows) else ""
+    return True, f"exact_baseline_lineage{suffix}"
 
 
 def _neighborhood_lineage_invalid_result(sub_gate_input_runs: dict) -> dict | None:
@@ -195,6 +237,59 @@ def _neighborhood_lineage_invalid_result(sub_gate_input_runs: dict) -> dict | No
     )
 
 
+def _pbo_refresh_artifact_status(
+        scores_path: Path, neighborhood_path: Path, started_at: float) -> tuple[bool, str]:
+    """Accept only a PBO publication produced by the current refresh attempt."""
+    meta_path = scores_path.with_name("scores_meta.json")
+    if not scores_path.exists() or not meta_path.exists():
+        return False, "fresh_scores_or_meta_missing"
+    try:
+        if scores_path.stat().st_mtime < started_at or meta_path.stat().st_mtime < started_at:
+            return False, "scores_or_meta_stale"
+        meta = json.loads(meta_path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError):
+        return False, "scores_meta_unreadable"
+    try:
+        if int(meta.get("schema_version") or 0) != PBO_SCHEMA_VERSION:
+            return False, "scores_schema_mismatch"
+    except (TypeError, ValueError):
+        return False, "scores_schema_invalid"
+    if str(meta.get("engine_version") or "") != PBO_ENGINE_VERSION:
+        return False, "scores_engine_mismatch"
+    if str(meta.get("status") or "").upper() not in {"VALID", "INVALID", "INVALID_NA"}:
+        return False, "scores_status_invalid"
+    try:
+        recorded_scores = Path(str(meta.get("scores_csv") or "")).resolve()
+        if recorded_scores != scores_path.resolve():
+            return False, "scores_path_mismatch"
+    except (OSError, ValueError):
+        return False, "scores_path_unresolvable"
+    if neighborhood_path.exists():
+        try:
+            current_sha = hashlib.sha256(neighborhood_path.read_bytes()).hexdigest()
+        except OSError:
+            return False, "neighborhood_artifact_unreadable"
+        if str(meta.get("neighborhood_artifact_sha256") or "").lower() != current_sha:
+            return False, "neighborhood_artifact_sha256_mismatch"
+    return True, "fresh_current_lineage"
+
+
+def _pbo_refresh_invalid_result(sub_gate_input_runs: dict) -> dict | None:
+    meta = dict(sub_gate_input_runs.get("8_7_pbo") or {})
+    if meta.get("artifact_reusable_after") is True:
+        return None
+    detail = str(
+        meta.get("reuse_check_after")
+        or meta.get("error")
+        or "pbo_refresh_unverified"
+    )
+    return common.make_result(
+        "8.7_pbo",
+        "INVALID",
+        value=None,
+        threshold=None,
+        detail=f"pbo_refresh_lineage_invalid:{detail}",
+    )
 def _quarantine_stale_neighborhood_artifact(artifact_path: Path) -> tuple[str | None, str | None]:
     """Archive stale shared evidence; report an error without accepting it on failure."""
     if not artifact_path.exists():
@@ -280,11 +375,22 @@ def _ensure_sub_gate_inputs(ea_id: int, symbol: str, terminal: str | None = None
                         if neighborhood_max_params is not None
                         else DEFAULT_NEIGHBORHOOD_MAX_PARAMS
                     )
+                    context = resolve_backtest_context(
+                        baseline,
+                        symbol,
+                        period_from_setfile(baseline),
+                        NEIGHBORHOOD_RUN_TIMEOUT_SEC,
+                    )
                     cmd.extend(["--max-params", str(max_params)])
+                    cmd.extend([
+                        "--timeout-sec", str(context["timeout_sec"]),
+                        "--from-date", str(context["from_date"]),
+                        "--to-date", str(context["to_date"]),
+                    ])
                     expected_runs = 1 + 2 * max_params
                     outer_timeout = (
                         expected_runs
-                        * (NEIGHBORHOOD_RUN_TIMEOUT_SEC + NEIGHBORHOOD_RUN_HEADROOM_SEC)
+                        * (int(context["timeout_sec"]) + NEIGHBORHOOD_RUN_HEADROOM_SEC)
                         + 60
                     )
                     proc = _sp.run(cmd, capture_output=True, text=True, timeout=outer_timeout)
@@ -325,24 +431,44 @@ def _ensure_sub_gate_inputs(ea_id: int, symbol: str, terminal: str | None = None
 
     pbo_scores = Path(f"D:/QM/reports/pipeline/QM5_{ea_id}/Q08/pbo/"
                       f"{sym_clean}/scores.csv")
-    if not pbo_scores.exists():
+    # Cheap, read-only recomputation prevents a legacy one-config scores.csv
+    # from permanently masking newly available neighborhood configurations.
+    pbo_needs_refresh = True
+    if pbo_needs_refresh:
+        refresh_started_at = time.time()
         try:
             proc = _sp.run([
                 py, str(repo_root / "framework" / "scripts" /
                         "q08_7_pbo_runner.py"),
                 "--ea", f"QM5_{ea_id}",
                 "--symbol", symbol,
+                "--neighborhood-artifact", str(perturbations),
             ], capture_output=True, text=True, timeout=600)
+            reusable_after, reuse_reason_after = _pbo_refresh_artifact_status(
+                pbo_scores, perturbations, refresh_started_at,
+            )
             ran["8_7_pbo"] = {
                 "exit_code": proc.returncode,
                 "artifact_now_exists": pbo_scores.exists(),
                 "stdout_tail": proc.stdout[-1000:],
                 "stderr_tail": proc.stderr[-1000:],
+                "artifact_reusable_after": reusable_after,
+                "reuse_check_after": reuse_reason_after,
             }
         except _sp.TimeoutExpired:
-            ran["8_7_pbo"] = {"exit_code": -1, "error": "timeout"}
+            ran["8_7_pbo"] = {
+                "exit_code": -1,
+                "error": "timeout",
+                "artifact_reusable_after": False,
+                "reuse_check_after": "refresh_timeout",
+            }
         except Exception as exc:
-            ran["8_7_pbo"] = {"exit_code": -1, "error": repr(exc)}
+            ran["8_7_pbo"] = {
+                "exit_code": -1,
+                "error": repr(exc),
+                "artifact_reusable_after": False,
+                "reuse_check_after": "refresh_exception",
+            }
 
     return ran
 
@@ -536,13 +662,12 @@ def _run_baseline_for_trades(ea_id: int, symbol: str, terminal: str | None,
     is_basket = test_symbol != symbol
     timeout_run = 5400 if is_basket else 2400
     timeout_proc = timeout_run + 120
-    test_terminal = terminal or "T1"
     args = [
         "pwsh.exe", "-NoProfile", "-File",
         str(repo_root / "framework" / "scripts" / "run_smoke.ps1"),
         "-EAId", str(ea_id), "-Expert", expert, "-Symbol", test_symbol,
         "-Year", "2025", "-FromDate", "2017.01.01", "-ToDate", "2025.12.31",
-        "-Terminal", test_terminal, "-Period", period,
+        "-Terminal", terminal or "T1", "-Period", period,
         "-Runs", "1", "-MinTrades", "1", "-Model", "4",
         "-SetFile", str(baseline), "-ReportRoot", str(report_root),
         "-DispatchPhase", "Q08", "-DispatchVersion", "q08_baseline",
@@ -550,87 +675,49 @@ def _run_baseline_for_trades(ea_id: int, symbol: str, terminal: str | None,
         "-TimeoutSeconds", str(timeout_run),
     ]
     flags = 0x08000000 if sys.platform == "win32" else 0
-    started_at = time.time()
-    output_text = ""
-    exit_code = None
-    run_error = None
     try:
         p = _sp.run(args, capture_output=True, text=True, timeout=timeout_proc, creationflags=flags)
-        exit_code = p.returncode
-        output_text = _text_from_completed_process(p)
+        summary = _latest_baseline_summary(report_root, ea_id, wait_seconds=10,
+                                           expected_symbol=test_symbol)
+        out = {"exit_code": p.returncode, "expert": expert, "period": period,
+               "test_symbol": test_symbol}
+        if summary is not None:
+            out.update(_baseline_report_metadata(summary))
+        structured_log = _latest_structured_qm_log(ea_id, symbol, terminal)
+        if structured_log is not None:
+            out["structured_log_path"] = str(structured_log)
+        return out
     except Exception as exc:
-        run_error = repr(exc)
-        output_text = _text_from_completed_process(exc)
-    summary = _summary_from_run_smoke_output(
-        output_text,
-        started_at=started_at,
-        ea_id=ea_id,
-        ea_expert=expert,
-        symbol=test_symbol,
-        period=period,
-        terminal=test_terminal,
-    ) or _latest_baseline_summary(
-        report_root,
-        ea_id,
-        wait_seconds=10 if run_error is None else 0,
-        started_at=started_at,
-        expected_expert=expert,
-        expected_symbol=test_symbol,
-        expected_period=period,
-        expected_terminal=test_terminal,
-    )
-    out = {
-        "exit_code": exit_code,
-        "expert": expert,
-        "period": period,
-        "test_symbol": test_symbol,
-        "test_terminal": test_terminal,
-        "run_started_at": started_at,
-    }
-    if run_error is not None:
-        out["error"] = run_error
-    if summary is not None:
-        out.update(_baseline_report_metadata(summary, started_at=started_at))
-    structured_log = _latest_structured_qm_log(ea_id, symbol, terminal)
-    if structured_log is not None:
-        out["structured_log_path"] = str(structured_log)
-    return out
+        return {"error": repr(exc), "test_symbol": test_symbol}
 
 
-def _latest_baseline_summary(
-        report_root: Path, ea_id: int, wait_seconds: int = 0, *,
-        started_at: float, expected_expert: str, expected_symbol: str,
-        expected_period: str, expected_terminal: str) -> Path | None:
-    """Return only a fresh baseline summary for the exact expected MT5 run."""
+def _latest_baseline_summary(report_root: Path, ea_id: int, wait_seconds: int = 0,
+                             expected_symbol: str | None = None) -> Path | None:
+    """Newest baseline summary, symbol-gated (2026-07-06 audit G3): the _baseline
+    dir is shared per-EA, so for multi-symbol EAs the newest summary can belong
+    to a DIFFERENT symbol's earlier run — adopting it grades wrong-symbol trades
+    as this symbol's evidence. When expected_symbol is given, only a summary
+    whose top-level symbol matches is eligible."""
     base = report_root / f"QM5_{ea_id}"
     deadline = time.time() + max(0, wait_seconds)
     while True:
         if base.exists():
-            summaries: list[tuple[float, Path]] = []
-            for candidate in base.glob("*/summary.json"):
-                try:
-                    mtime = candidate.stat().st_mtime
-                except OSError:
-                    continue
-                if mtime >= started_at:
-                    summaries.append((mtime, candidate))
-            for _mtime, candidate in sorted(summaries, reverse=True):
+            summaries = sorted(base.glob("*/summary.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+            for candidate in summaries:
+                if expected_symbol is None:
+                    return candidate
                 try:
                     data = json.loads(candidate.read_text(encoding="utf-8-sig"))
                 except (OSError, json.JSONDecodeError):
                     continue
-                if _summary_identity_matches(
-                        data, ea_id=ea_id, ea_expert=expected_expert,
-                        symbol=expected_symbol, period=expected_period,
-                        terminal=expected_terminal):
+                if str(data.get("symbol") or "").upper() == str(expected_symbol).upper():
                     return candidate
         if time.time() >= deadline:
             return None
         time.sleep(1)
 
 
-def _baseline_report_metadata(
-        summary_path: Path, *, started_at: float | None = None) -> dict:
+def _baseline_report_metadata(summary_path: Path) -> dict:
     try:
         data = json.loads(summary_path.read_text(encoding="utf-8-sig"))
     except (OSError, json.JSONDecodeError):
@@ -638,12 +725,6 @@ def _baseline_report_metadata(
     runs = data.get("runs") or []
     run = runs[0] if runs else {}
     report_path = run.get("report_canonical_path") or run.get("report_source_path")
-    if report_path and started_at is not None:
-        try:
-            if Path(str(report_path)).stat().st_mtime < started_at:
-                report_path = None
-        except OSError:
-            report_path = None
     return {
         "baseline_summary_path": str(summary_path),
         "baseline_result": data.get("result"),
@@ -831,6 +912,7 @@ def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None
     hard = False
     soft = False
     invalid = False
+    blocking_invalid = False
 
     for result in sub_results:
         name = str(result.get("name") or "unknown")
@@ -856,6 +938,8 @@ def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None
         ):
             classification[name] = "INVALID"
             invalid = True
+            if name.startswith(("8.5", "8.7")):
+                blocking_invalid = True
             continue
         tier = _classify_fail(result)
         classification[name] = tier
@@ -899,6 +983,12 @@ def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None
     # not robust regardless of a non-evaluable gate.
     if hard:
         return "FAIL_HARD", classification
+
+    # OWNER 2026-07-17: unresolved neighborhood/PBO tooling evidence is not
+    # admissible. It must remain INVALID until the configured robustness family
+    # is genuinely evaluable; other Davey passes cannot soften this condition.
+    if blocking_invalid:
+        return "INVALID", classification
 
     # DL-077 (2026-06-26, OWNER): the Davey statistical battery mostly CANNOT COMPUTE for the
     # low-frequency structural edges this funnel selects (8.2 DSR, 8.6, 8.8, 8.9, 8.10 go
@@ -970,23 +1060,14 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
         # timed-out baseline discards the only valid trade stream — the 0-trade INVALID loop.
         baseline_run = _run_baseline_for_trades(ea_id, symbol, terminal, baseline_setfile)
         if baseline_run and not baseline_run.get("baseline_report_path"):
-            retry_started_at = _float_or_none(baseline_run.get("run_started_at"))
-            if retry_started_at is not None:
-                retry_summary = _latest_baseline_summary(
-                    Path(f"D:/QM/reports/pipeline/QM5_{ea_id}/Q08/_baseline"),
-                    ea_id,
-                    wait_seconds=5,
-                    started_at=retry_started_at,
-                    expected_expert=str(baseline_run.get("expert") or ""),
-                    expected_symbol=str(baseline_run.get("test_symbol") or ""),
-                    expected_period=str(baseline_run.get("period") or ""),
-                    expected_terminal=str(baseline_run.get("test_terminal") or ""),
-                )
-                if retry_summary is not None:
-                    baseline_run.update(_baseline_report_metadata(
-                        retry_summary,
-                        started_at=retry_started_at,
-                    ))
+            retry_summary = _latest_baseline_summary(
+                Path(f"D:/QM/reports/pipeline/QM5_{ea_id}/Q08/_baseline"),
+                ea_id,
+                wait_seconds=5,
+                expected_symbol=baseline_run.get("test_symbol"),
+            )
+            if retry_summary is not None:
+                baseline_run.update(_baseline_report_metadata(retry_summary))
         trades = common.load_trades_from_log(common_log)
         equity_stream = common.load_equity_stream(common_log) or equity_stream
         # Basket EA host-symbol fallback: if the logical-symbol path is still empty after
@@ -1027,6 +1108,11 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
             lineage_invalid = _neighborhood_lineage_invalid_result(sub_gate_input_runs)
             if lineage_invalid is not None:
                 sub_results.append(lineage_invalid)
+                continue
+        if label == "8.7":
+            refresh_invalid = _pbo_refresh_invalid_result(sub_gate_input_runs)
+            if refresh_invalid is not None:
+                sub_results.append(refresh_invalid)
                 continue
         try:
             res = mod.run(
