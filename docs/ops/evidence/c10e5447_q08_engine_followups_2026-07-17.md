@@ -104,6 +104,9 @@ git diff --check
 PASS (line-ending notices only)
 ```
 
+The same two test commands were repeated after deployment from canonical `C:/QM/repo` and returned
+`63 passed` and `20 passed`; canonical `py_compile` also passed.
+
 Read-only replay against the exact QM5_11708 scores produced:
 
 ```text
