@@ -15060,3 +15060,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20005,kurisko-quad-rotation-retest,0,SP500.DWX,200050000,2026-07-17,Claude,active
 20005,kurisko-quad-rotation-retest,1,NDX.DWX,200050001,2026-07-17,Claude,active
 20005,kurisko-quad-rotation-retest,2,WS30.DWX,200050002,2026-07-17,Claude,active
+4007,index-mac5-rev,0,SP500.DWX,40070000,2026-07-17,OWNER-delegated Codex,active

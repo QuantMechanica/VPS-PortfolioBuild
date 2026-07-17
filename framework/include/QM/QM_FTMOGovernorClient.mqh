@@ -18,7 +18,9 @@ bool QM_FTMO_ReadGovernorScale(const string policy_id,
   {
    risk_scale=0.0;
    block_reason="GOVERNOR_UNKNOWN";
-   if(policy_id != "FTMO_P1_GOVERNOR_V1" ||
+   QM_FTMO_GovernorPolicy expected_policy;
+   if(!QM_FTMO_SelectPolicy(policy_id,expected_policy) ||
+      !QM_FTMO_IsExactPolicy(expected_policy) ||
       !QM_FTMO_IdentifierValid(challenge_instance_id) ||
       heartbeat_max_age_seconds <= 0 || heartbeat_max_age_seconds > 5)
      {
@@ -58,8 +60,11 @@ bool QM_FTMO_ReadGovernorScale(const string policy_id,
    const double published_day_key=GlobalVariableGet(day_key);
    const double entry_lock=GlobalVariableGet(lock_key);
    const double published_scale=GlobalVariableGet(scale_key);
-   const double generation_after=GlobalVariableGet(generation_key);
+   // The generation read must be the final read. If a publisher starts or
+   // completes after ready_after, the final generation observes odd/new state
+   // and the stale payload cannot be accepted.
    const double ready_after=GlobalVariableGet(ready_key);
+   const double generation_after=GlobalVariableGet(generation_key);
 
    if(generation_before != generation_after ||
       !QM_FTMO_ClientGenerationValid(generation_after) ||
@@ -68,13 +73,14 @@ bool QM_FTMO_ReadGovernorScale(const string policy_id,
       block_reason="GOVERNOR_SNAPSHOT_CHANGED";
       return false;
      }
-   if(ready_before < 0.5)
+   if(!MathIsValidNumber(ready_before) || !MathIsValidNumber(ready_after) ||
+      ready_before != 1.0 || ready_after != 1.0)
      {
       block_reason="GOVERNOR_NOT_READY";
       return false;
      }
-   if(!QM_FTMO_Near(version,QM_FTMO_V1_POLICY_VERSION) ||
-      fingerprint != QM_FTMO_V1_FINGERPRINT_NUMBER)
+   if(!QM_FTMO_Near(version,QM_FTMO_POLICY_VERSION) ||
+      fingerprint != QM_FTMO_PolicyFingerprintNumber(expected_policy))
      {
       block_reason="GOVERNOR_POLICY_MISMATCH";
       return false;
@@ -93,7 +99,7 @@ bool QM_FTMO_ReadGovernorScale(const string policy_id,
       block_reason="GOVERNOR_DAY_MISMATCH";
       return false;
      }
-   if(!MathIsValidNumber(entry_lock) || entry_lock >= 0.5)
+   if(!MathIsValidNumber(entry_lock) || entry_lock != 0.0)
      {
       block_reason="GOVERNOR_ENTRY_LOCKED";
       return false;

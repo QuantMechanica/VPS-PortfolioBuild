@@ -1,9 +1,24 @@
 #property strict
-#property version "1.1"
-#property description "FTMO Phase-1 account governor with challenge-bound persistent state"
+#property version "2.0"
+#property description "FTMO 2-Step P1/P2/Funded account governor with signed immutable policies"
 
 #include <Trade/Trade.mqh>
 #include <QM/QM_FTMOGovernorPolicy.mqh>
+
+input group "QuantMechanica V5 Framework"
+input int      qm_ea_id                            = 13206;
+
+input group "Risk"
+input string   signed_policy_id                    = "";
+
+input group "News"
+input bool     qm_news_filters_not_applicable      = true;
+
+input group "Friday Close"
+input bool     qm_friday_close_owned_by_sleeves    = true;
+
+input group "Strategy"
+input bool     strategy_no_trade_controller        = true;
 
 input group "Deployment Identity"
 input long     expected_account_login              = 0;
@@ -231,8 +246,8 @@ bool PublishSnapshot(const datetime now_utc,
    bool ok=StateWrite("generation",(double)odd_generation);
    ok=StateWrite("ready",0.0) && ok;
    ok=StateWrite("entry_lock",1.0) && ok;
-   ok=StateWrite("version",QM_FTMO_V1_POLICY_VERSION) && ok;
-   ok=StateWrite("fingerprint",QM_FTMO_V1_FINGERPRINT_NUMBER) && ok;
+   ok=StateWrite("version",QM_FTMO_POLICY_VERSION) && ok;
+   ok=StateWrite("fingerprint",QM_FTMO_PolicyFingerprintNumber(g_policy)) && ok;
    ok=StateWrite("risk_scale",MathMin(1.0,MathMax(0.0,scale))) && ok;
    ok=StateWrite("reason",(double)reason) && ok;
    if(include_persistent_state)
@@ -352,8 +367,8 @@ bool LoadPersistentState(const datetime now_utc)
       last_trade_day != MathFloor(last_trade_day) ||
       generation < 2.0 || generation != MathFloor(generation) ||
       ((long)generation % 2) != 0 ||
-      !QM_FTMO_Near(version,QM_FTMO_V1_POLICY_VERSION) ||
-      fingerprint != QM_FTMO_V1_FINGERPRINT_NUMBER ||
+       !QM_FTMO_Near(version,QM_FTMO_POLICY_VERSION) ||
+       fingerprint != QM_FTMO_PolicyFingerprintNumber(g_policy) ||
       (target_complete && !target_lock))
       return false;
    if((int)trading_days == 0 && (int)last_trade_day != 0)
@@ -552,11 +567,11 @@ void EvaluateAndPublish()
       g_total_lock=true;
    if(decision.reason == QM_FTMO_GOVERNOR_EFFECTIVE_DAILY_FLOOR)
       g_day_lock=true;
-   if(decision.target_reached || decision.target_complete)
-      g_target_lock=true;
+    if(g_policy.target_enabled && (decision.target_reached || decision.target_complete))
+       g_target_lock=true;
 
    const bool account_flat=(!unknown_exposure && OrdersTotal() == 0 && PositionsTotal() == 0);
-   if(g_target_lock && !g_target_complete && account_flat)
+    if(g_policy.target_enabled && g_target_lock && !g_target_complete && account_flat)
      {
       if(balance >= g_policy.target_balance &&
          g_trading_days >= g_policy.minimum_trading_days)
@@ -564,8 +579,8 @@ void EvaluateAndPublish()
       else if(balance < g_policy.target_balance && equity < g_policy.target_balance)
          g_target_lock=false;
      }
-   if(g_target_complete)
-      g_target_lock=true;
+    if(g_policy.target_enabled && g_target_complete)
+       g_target_lock=true;
 
    int publish_reason=(int)decision.reason;
    if(g_target_complete && !g_day_lock && !g_total_lock)
@@ -598,6 +613,11 @@ void EvaluateAndPublish()
 
 void MarkTradingDay(const datetime now_utc)
   {
+   if(g_policy.minimum_trading_days <= 0)
+     {
+      EvaluateAndPublish();
+      return;
+     }
    const int key=QM_FTMO_PragueDayKey(now_utc);
    if(key <= 0 || key == g_last_trade_day_key)
       return;
@@ -615,10 +635,13 @@ void MarkTradingDay(const datetime now_utc)
 int OnInit()
   {
    g_login=AccountInfoInteger(ACCOUNT_LOGIN);
-   QM_FTMO_DefaultPolicy(g_policy);
-   if(expected_account_login <= 0 || g_login != expected_account_login ||
-      !QM_FTMO_IdentifierValid(challenge_id) || challenge_start_utc <= 0 ||
-      !QM_FTMO_IsExactV1Policy(g_policy) || governor_timer_ms < 100 ||
+   if(!QM_FTMO_SelectPolicy(signed_policy_id,g_policy))
+      return INIT_PARAMETERS_INCORRECT;
+   if(qm_ea_id != 13206 || !qm_news_filters_not_applicable ||
+      !qm_friday_close_owned_by_sleeves || !strategy_no_trade_controller ||
+      expected_account_login <= 0 || g_login != expected_account_login ||
+       !QM_FTMO_IdentifierValid(challenge_id) || challenge_start_utc <= 0 ||
+       !QM_FTMO_IsExactPolicy(g_policy) || governor_timer_ms < 100 ||
       governor_timer_ms > 1000 || !ParseAllowedMagics())
       return INIT_PARAMETERS_INCORRECT;
 

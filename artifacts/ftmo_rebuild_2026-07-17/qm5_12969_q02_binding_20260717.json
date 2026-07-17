@@ -1,0 +1,154 @@
+{
+  "blockers": [],
+  "cohort_metrics": null,
+  "deterministic": true,
+  "ea_id": 12969,
+  "files": {
+    "card": {
+      "modified_utc": "2026-07-03T02:59:17.447101+00:00",
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12969_usdjpy-gotobi-nakane-fix.md",
+      "sha256": "d12307f2fbfb9c02ac7fc687d94c935db5fac0a56185165ab594cab9bb07c094",
+      "size_bytes": 4773
+    },
+    "ex5": {
+      "modified_utc": "2026-07-17T08:09:22.850708+00:00",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12969_usdjpy-gotobi-nakane-fix\\QM5_12969_usdjpy-gotobi-nakane-fix.ex5",
+      "sha256": "8cdfcf40a86d532d255c025cd797a0c8e84e184b8a54885c70996cfe2a3ae646",
+      "size_bytes": 322736
+    },
+    "mq5": {
+      "modified_utc": "2026-07-15T21:10:49.387512+00:00",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12969_usdjpy-gotobi-nakane-fix\\QM5_12969_usdjpy-gotobi-nakane-fix.mq5",
+      "sha256": "4e9503fd61e960de689128ebda343d7e078feb24dd42a25605c246f196ddfb86",
+      "size_bytes": 10659
+    },
+    "setfile": {
+      "modified_utc": "2026-07-17T08:12:04.019735+00:00",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12969_usdjpy-gotobi-nakane-fix\\sets\\QM5_12969_usdjpy-gotobi-nakane-fix_USDJPY.DWX_M30_backtest.set",
+      "sha256": "d247aacc47308cfcf33875ab87d429539106a80f01ed39cfbcb9a9442929947f",
+      "size_bytes": 981
+    },
+    "spec": {
+      "modified_utc": "2026-07-03T03:04:47.790362+00:00",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12969_usdjpy-gotobi-nakane-fix\\SPEC.md",
+      "sha256": "2694e082a3234f35b410e190c3cb9b2dc8e54e92acb438b869e4baf283b3336c",
+      "size_bytes": 3623
+    },
+    "summary": {
+      "modified_utc": "2026-07-17T08:26:00.778446+00:00",
+      "path": "D:\\QM\\reports\\ftmo_requalification\\20260717\\q02_clean\\QM5_12969\\20260717_081936\\summary.json",
+      "sha256": "8fa6406f25c8d446a9e1deca0d0fc60646908931d2e9941aa82f5d2e7893bbe2",
+      "size_bytes": 2876
+    }
+  },
+  "metrics": {
+    "drawdown": 2016.39,
+    "drawdown_pct": 1.89,
+    "net_profit": 6062.13,
+    "profit_factor": 1.57,
+    "trades": 213
+  },
+  "model": 4,
+  "native_metrics": [
+    {
+      "drawdown_money": 2016.39,
+      "drawdown_pct": 1.89,
+      "net_profit": 6062.13,
+      "profit_factor": 1.57,
+      "run": "run_01",
+      "trades": 213
+    },
+    {
+      "drawdown_money": 2016.39,
+      "drawdown_pct": 1.89,
+      "net_profit": 6062.13,
+      "profit_factor": 1.57,
+      "run": "run_02",
+      "trades": 213
+    }
+  ],
+  "period": "M30",
+  "phase": "Q02",
+  "promotion_note": "BOUND_PASS does not waive FTMO cost reconciliation or Q04-Q10.",
+  "q02_contract": {
+    "drawdown_pct_lt": 12.0,
+    "exact_runs": 2,
+    "from_date": "2017.01.01",
+    "model": 4,
+    "profit_factor_gt": 1.3,
+    "to_date": "2022.12.31",
+    "trades_gt": 200
+  },
+  "reports": [
+    {
+      "modified_utc": "2026-07-17T08:22:53.151276+00:00",
+      "path": "D:\\QM\\reports\\ftmo_requalification\\20260717\\q02_clean\\QM5_12969\\20260717_081936\\raw\\run_01\\report.htm",
+      "sha256": "5fd4e507d1ef43e3e62223bed9354e71b5efcb8aad4203fed8f07272515831d9",
+      "size_bytes": 472680
+    },
+    {
+      "modified_utc": "2026-07-17T08:25:59.292791+00:00",
+      "path": "D:\\QM\\reports\\ftmo_requalification\\20260717\\q02_clean\\QM5_12969\\20260717_081936\\raw\\run_02\\report.htm",
+      "sha256": "0df15906fd7f41d15cc979c709196f8a76fa62b6900336ccee340fb774621997",
+      "size_bytes": 472680
+    }
+  ],
+  "run_contract": {
+    "description": "current-binary deterministic replay",
+    "exact_runs": 2,
+    "minimum_runs": 2,
+    "observed_runs": 2,
+    "require_identical_metrics": true
+  },
+  "schema_version": 1,
+  "scope": "native_current_binary_q02_only",
+  "seed_evidence": [],
+  "set_input_parity": [
+    {
+      "matched_assignment_count": 10,
+      "mismatched": [],
+      "missing": [],
+      "run": "run_01",
+      "set_assignment_count": 10
+    },
+    {
+      "matched_assignment_count": 10,
+      "mismatched": [],
+      "missing": [],
+      "run": "run_02",
+      "set_assignment_count": 10
+    }
+  ],
+  "source_summary_deterministic": true,
+  "status": "BOUND_PASS",
+  "symbol": "USDJPY.DWX",
+  "terminal": "T1",
+  "tester_inis": [
+    {
+      "modified_utc": "2026-07-17T08:19:36.621835+00:00",
+      "path": "D:\\QM\\reports\\ftmo_requalification\\20260717\\q02_clean\\QM5_12969\\20260717_081936\\raw\\run_01\\tester.ini",
+      "sha256": "f605569644a5c4be2f6f297f946e083efe2d3050931b534d494360f0193b561e",
+      "size_bytes": 476
+    },
+    {
+      "modified_utc": "2026-07-17T08:22:54.668728+00:00",
+      "path": "D:\\QM\\reports\\ftmo_requalification\\20260717\\q02_clean\\QM5_12969\\20260717_081936\\raw\\run_02\\tester.ini",
+      "sha256": "9f6aec4354eb043b72b45aebd9ef40037857e47083b7a3c2ae7e47aa16d117fd",
+      "size_bytes": 476
+    }
+  ],
+  "tester_logs": [
+    {
+      "modified_utc": "2026-07-17T08:22:52.066454+00:00",
+      "path": "D:\\QM\\reports\\ftmo_requalification\\20260717\\q02_clean\\QM5_12969\\20260717_081936\\raw\\run_01\\20260717.log",
+      "sha256": "53c8c75e8ee77fff9245f768bbc49d3a9b5491d6d37a59d7ddbb2e70a00f12b1",
+      "size_bytes": 18128190
+    },
+    {
+      "modified_utc": "2026-07-17T08:25:58.212582+00:00",
+      "path": "D:\\QM\\reports\\ftmo_requalification\\20260717\\q02_clean\\QM5_12969\\20260717_081936\\raw\\run_02\\20260717.log",
+      "sha256": "6e1970318227c729adede0ce900f5ebe96e069630170dd77ba9554cd3d510fde",
+      "size_bytes": 18553024
+    }
+  ]
+}

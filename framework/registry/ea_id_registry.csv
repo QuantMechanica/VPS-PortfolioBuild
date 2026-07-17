@@ -4041,7 +4041,7 @@ QM5_1491,ehlers-sinewave-leadsine-cross-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,
 13202,ws30-fri-pm-long,CODEX-FTMO-WS30-FRI-PM-20260711_S01,active,OWNER-delegated CEO+CTO FTMO allocation,2026-07-11
 13203,energy-downbeta,HOLLSTEIN-DOWNBETA-2021_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-12
 13205,xau-xag-qc,SCHWEIKERT-QC-2018_XAU_XAG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-12
-13206,ftmo-account-governor,FTMO-RUNTIME-GOVERNOR-V1,reserved,DevOps,2026-07-13
+13206,ftmo-account-governor,FTMO-RUNTIME-GOVERNOR-V2,build_test,OWNER-delegated DevOps,2026-07-13
 13207,ws30-fri-t20a,CODEX-FTMO-WS30-FRI-PM-T20A-20260712_S01,active,Codex,2026-07-13
 13208,mulham-4h-sweep-fvg,YT-MULHAM-2026-07_4H-SWEEP-FVG_S01,active,Research+Development (OWNER Mulham channel mandate),2026-07-13
 13209,mulham-pm-range-sweep,YT-MULHAM-2026-07_PM-RANGE-SWEEP_S01,active,Research+Development (OWNER Mulham channel mandate),2026-07-13
@@ -4055,3 +4055,4 @@ QM5_1491,ehlers-sinewave-leadsine-cross-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,
 20004,turn-of-month-index-long,fx_edge_army_A3_2026-07-16,APPROVED,claude,2026-07-17
 20005,kurisko-quad-rotation-retest,KURISKO-QUADROT-2026,active,claude,2026-07-17
 4006,fx-session-flow,SRC09_S01,active,OWNER-delegated CEO+CTO FTMO allocation,2026-07-17
+4007,index-mac5-rev,SRC10_S01,active,OWNER-delegated CEO+CTO FTMO allocation,2026-07-17

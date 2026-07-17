@@ -1,0 +1,40 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        4007
+; ea_slug:      index-mac5-rev
+; ea_version:   v5.0
+; set_version:  s20260717-001
+; symbol:       SP500.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   71baccbf8619684995e6d10cf62b2b5caa82ecdb52a3ef8bcc6348729c9b4e34
+; author:       Development
+; date:         2026-07-17
+;==========================================================
+; Q02 baseline only: 2018-01-01..2024-12-31, Model 4 every real tick.
+; The governor bypass exists only inside MQL_TESTER; there is no input bypass.
+qm_ea_id=4007
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_PERCENT=0
+RISK_FIXED=1000
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=false
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0
+strategy_atr_period_d1=20
+strategy_atr_stop_mult=2.0
+strategy_application_window_seconds=900
+strategy_exit_retry_seconds=5
+strategy_entry_spread_ceiling_points=100
+strategy_governor_policy_id=
+strategy_challenge_instance_id=
+strategy_governor_heartbeat_max_age_seconds=5
