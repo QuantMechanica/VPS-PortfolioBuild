@@ -15056,3 +15056,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13301,balke-minute-range-breakout,10,GDAXI.DWX,133010010,2026-07-15,Claude,active
 20002,ict-icytea-core,0,EURUSD.DWX,200020000,2026-07-16,Claude,active
 20002,ict-icytea-core,1,GBPUSD.DWX,200020001,2026-07-16,Claude,active
+4006,fx-session-flow,0,EURUSD.DWX,40060000,2026-07-17,OWNER-delegated Codex,active
+20005,kurisko-quad-rotation-retest,0,SP500.DWX,200050000,2026-07-17,Claude,active
+20005,kurisko-quad-rotation-retest,1,NDX.DWX,200050001,2026-07-17,Claude,active
+20005,kurisko-quad-rotation-retest,2,WS30.DWX,200050002,2026-07-17,Claude,active
