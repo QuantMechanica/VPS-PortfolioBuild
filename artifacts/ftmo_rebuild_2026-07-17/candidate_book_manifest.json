@@ -1,0 +1,175 @@
+{
+  "schema_version": 1,
+  "as_of_utc": "2026-07-17T07:05:27Z",
+  "status": "RESEARCH_ONLY_NO_GO",
+  "deployment_allowed": false,
+  "paid_challenge_allowed": false,
+  "replaces_research_basis": "ROUND25_12_SLEEVE",
+  "objective": {
+    "product": "FTMO_CHALLENGE_2_STEP",
+    "phase": "PHASE_1",
+    "starting_balance": 100000.0,
+    "profit_target_pct": 10.0,
+    "maximum_daily_loss_pct": 5.0,
+    "maximum_loss_pct": 10.0,
+    "minimum_trading_days": 4,
+    "internal_research_horizon_calendar_days": 30,
+    "target_pass_pct": 80.0
+  },
+  "admission_contract": {
+    "required_phase_verdicts": {
+      "Q02": "PASS",
+      "Q03": "PASS",
+      "Q04": "PASS",
+      "Q05": "PASS",
+      "Q06": "PASS",
+      "Q07": "PASS",
+      "Q08": "PASS",
+      "Q10": "PASS"
+    },
+    "q08_fail_soft_allowed": false,
+    "q08_invalid_subgates_allowed": false,
+    "q09_portfolio_admission_required": true,
+    "fresh_current_binary_required": true,
+    "active_magic_required": true,
+    "durable_q08_stream_required": true,
+    "entry_time_and_mae_acct_required": true,
+    "minimum_stream_trades": 50,
+    "exact_report_stream_reconciliation_required": true,
+    "current_ftmo_cost_reconciliation_required": true,
+    "normal_and_adverse_joint_bar_replay_required": true,
+    "sealed_holdout_required": true,
+    "fresh_free_trial_required_before_paid_challenge": true
+  },
+  "risk_contract": {
+    "initial_risk_per_independent_idea_pct_range": [
+      0.25,
+      0.5
+    ],
+    "internal_daily_stop_pct_range": [
+      1.5,
+      2.0
+    ],
+    "internal_total_stop_pct_range": [
+      6.0,
+      7.0
+    ],
+    "correlated_exposure_caps": "DERIVE_FROM_JOINT_MAE_BEFORE_RELEASE",
+    "risk_increase_allowed_before_gates": false
+  },
+  "sleeves": [
+    {
+      "ea_id": 12969,
+      "symbol": "USDJPY.DWX",
+      "timeframe": "M30",
+      "role": "RESEARCH_ANCHOR_ONLY",
+      "state": "REQUALIFICATION_REQUIRED",
+      "risk_fixed": 250.0,
+      "base_risk_fixed": 1000.0,
+      "weight": 1.0,
+      "q02_to_q07": "PASS",
+      "q08": "FAIL_SOFT",
+      "q08_blockers": [
+        "8.4_seasonal_losing_month_10",
+        "8.7_pbo_invalid_scores_missing",
+        "8.10_low_vol_regime_negative"
+      ],
+      "q09": "PASS_PORTFOLIO",
+      "q10_external_evidence": "PASS_NOT_INGESTED_IN_CURRENT_DB",
+      "stream_reconciliation": "PASS",
+      "current_ftmo_cost_gate": "PASS",
+      "deployment_allowed": false,
+      "summary_path": "D:\\QM\\reports\\pipeline\\QM5_12969\\Q08\\_baseline\\QM5_12969\\20260713_085657\\summary.json",
+      "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\12969_USDJPY_DWX.jsonl",
+      "evidence": {
+        "q10": "D:\\QM\\reports\\pipeline_ftmo_requal_20260713\\12969_q10_isolated\\QM5_12969\\Q10\\USDJPY_DWX\\aggregate.json",
+        "stream_reconciliation": "artifacts/ftmo_12969_current_q08_stream_reconciliation_2026-07-13.json",
+        "current_cost": "artifacts/ftmo_12969_usdjpy_current_report_cost_reconciliation_2026-07-13.json",
+        "current_binary_binding": "artifacts/ftmo_12969_current_binary_q08_baseline_binding_2026-07-13.json"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "name": "anchor_only_requalification",
+      "weights": {
+        "12969:USDJPY.DWX": 1.0
+      },
+      "simulation_authorized": false,
+      "reason": "A one-sleeve anchor with Q08 FAIL_SOFT is not a book and cannot open the sealed simulation gate."
+    }
+  ],
+  "build_queue": [
+    {
+      "ea_id": 20004,
+      "slug": "turn-of-month-index-long",
+      "targets": [
+        "DE40.DWX",
+        "NDX.DWX"
+      ],
+      "state": "APPROVED_CARD_BUILD_PENDING",
+      "role_if_qualified": "CALENDAR_EQUITY_FLOW_DIVERSIFIER",
+      "task_id": "9ceb802d-1d43-4140-ae45-1874dfb79b16",
+      "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_20004_turn-of-month-index-long.md",
+      "admission": "ONLY_AFTER_FULL_HARD_GATES"
+    }
+  ],
+  "requalification_queue": [
+    {
+      "ea_id": 10377,
+      "symbol": "XAUUSD.DWX",
+      "timeframe": "D1",
+      "blocker": "Q08_FAIL_SOFT_AND_D1_LINEAGE_INCOMPLETE"
+    },
+    {
+      "ea_id": 12567,
+      "symbol": "XAUUSD.DWX",
+      "timeframe": "D1",
+      "blocker": "Q08_FAIL_SOFT_AND_CURRENT_IDENTITY_REPAIR_OPEN"
+    },
+    {
+      "ea_id": 12474,
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "M1",
+      "blocker": "Q08_FAIL_SOFT_CHOPPING_PF_0_832"
+    },
+    {
+      "ea_id": 10939,
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "H4",
+      "blocker": "Q08_FAIL_SOFT_AND_CURRENT_COST_ANNUAL_FREQUENCY_FAIL"
+    }
+  ],
+  "round25_policy": {
+    "carry_forward_allowed": false,
+    "all_12_sleeves_require_new_qualification": true,
+    "priority_exclusions": [
+      {
+        "ea_id": 10911,
+        "reason": "FTMO_TRIAL_CLOSED_PNL_MINUS_2605_70"
+      },
+      {
+        "ea_id": 10848,
+        "reason": "FTMO_TRIAL_CLOSED_PNL_MINUS_2558_37"
+      },
+      {
+        "ea_id": 10847,
+        "reason": "FTMO_TRIAL_CLOSED_PNL_MINUS_1915_96"
+      }
+    ]
+  },
+  "evidence": {
+    "qualification_inventory": "artifacts/ftmo_rebuild_2026-07-17/qualification_inventory.json",
+    "strict_rebuild_status": "docs/ops/evidence/FTMO_BOOK_REBUILD_STATUS_2026-07-10.md",
+    "full_readiness_audit": "docs/ops/evidence/FULL_SYSTEM_FTMO_READINESS_AUDIT_2026-07-09.md",
+    "prior_research_frontier": "artifacts/ftmo_research_frontier_2026-07-12.json"
+  },
+  "operational_boundary": {
+    "ftmo_terminal_touched": false,
+    "t_live_touched": false,
+    "autotrading_changed": false,
+    "presets_created": false,
+    "deploy_manifest_created": false,
+    "free_trial_authorized": false
+  }
+}
