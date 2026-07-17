@@ -1,15 +1,43 @@
 ---
 card_id: turn-of-month-index-long
-status: DRAFT_FOR_APPROVAL
-ea_id: TBD
+slug: turn-of-month-index-long
+status: APPROVED
+ea_id: QM5_20004
+type: strategy
+source_id: fx_edge_army_A3_2026-07-16
+source_citation: "McConnell, J. J., & Xu, W. (2008). Equity Returns at the Turn of the Month. Financial Analysts Journal, 64(2), 49-64. DOI 10.2469/faj.v64.n2.11. Lakonishok, J., & Smidt, S. (1988). Are Seasonal Anomalies Real? A Ninety-Year Perspective. Review of Financial Studies, 1(4), 403-425 (Journal). URL https://doi.org/10.2469/faj.v64.n2.11"
+sources:
+  - "docs/research/FX_EDGE_DISCOVERY_SCIENTIFIC_FRAMEWORK_2026-07-16.md"
+  - "docs/research/FX_EDGE_ARMY_RANKED_ACTIONS_2026-07-16.md"
 target_symbols: [DE40.DWX, NDX.DWX]
 timeframe: D1
+period: D1
+expected_trades_per_year_per_symbol: 12
 priority_track: true
 origin: fx-edge-army wf_28fc3bf4 (action A3 — highest-EV genuinely-new build); FX_EDGE_DISCOVERY framework
 supersedes_direction_error: CARD_DRAFT_MONTHEND_FX_REBALANCING (killed as-specified; see that file)
+neighborhood_note: "Calendar-discrete params (window days-before/after, exit-day N) must be perturbed +/-1 lattice step at Q08, never +/-pct (see Q08_NEIGHBORHOOD_PARAM_TYPE_AWARE_SPEC_2026-07-17)."
+g0_status: APPROVED
+g0_approval_reasoning: "R1 McConnell-Xu 2008 (Financial Analysts Journal) + Lakonishok-Smidt 1988 (RFS) turn-of-month effect; R2 non-discretionary pension/401k/payroll inflows = price-inelastic mechanism; R3 falsifiable via mandatory 2015-2025 OOS drift-not-reversal gate; R4 orthogonal new equity-calendar family, zero new "
+last_updated: 2026-07-17
+expected_pf: 1.3
+expected_dd_pct: 12.0
 ---
 
 # Turn-of-Month Equity-Index Long-Only Overlay
+
+## Source
+
+Peer-reviewed turn-of-the-month effect literature: **McConnell, J. J., & Xu, W. (2008), "Equity Returns
+at the Turn of the Month," Financial Analysts Journal, 64(2), 49-64** (DOI 10.2469/faj.v64.n2.11) — the
+market's excess return historically concentrates in the ~4-day turn-of-month window; and **Lakonishok, J.,
+& Smidt, S. (1988), "Are Seasonal Anomalies Real? A Ninety-Year Perspective," Review of Financial Studies,
+1(4), 403-425** — ninety-year persistence. Mechanism: non-discretionary, date-fixed pension / 401(k) /
+payroll-deferral inflows plus calendar-locked fund rebalancing deployed regardless of price — a
+price-inelastic structural flow, not a discretionary bet, which is why it survives publication.
+URL https://doi.org/10.2469/faj.v64.n2.11 . In-house expression from the fx-edge-army (wf_28fc3bf4, A3),
+vetted against the QuantMechanica FX-edge scientific framework (named limit-to-arbitrage flow,
+low-frequency/cost-friendly, orthogonal new family).
 
 ## thesis
 Around the turn of the month (last ~1 trading day + first ~3–4 of the new month) equity indices face
