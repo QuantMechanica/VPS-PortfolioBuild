@@ -892,6 +892,19 @@ def _classify_fail(sub_gate_result: dict) -> str:
         return "EDGE_HARD"
 
     if name.startswith("8.7"):
+        evidence = sub_gate_result.get("evidence") or {}
+        config_source = (
+            str(evidence.get("config_source") or "")
+            if isinstance(evidence, dict)
+            else ""
+        )
+        # PBO is a model-selection diagnostic.  A real Q03 cohort is therefore
+        # allowed to hard-fail, while the Q08.5 local-neighborhood fallback is
+        # only a surrogate family and cannot by itself prove selection
+        # overfitting.  Keep its signal, but cap it at SOFT.  Unknown/legacy
+        # sources remain fail-closed and retain the historical HARD behavior.
+        if config_source == "Q08.5_neighborhood":
+            return "EDGE_SOFT"
         pbo = _float_from_detail(detail, r"PBO=([-+]?\d+(?:\.\d+)?)%")
         if pbo is not None and 40.0 < pbo <= PBO_HARD:
             return "EDGE_SOFT"
@@ -1154,6 +1167,9 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
             "N_SEASON": N_SEASON,
             "CHOP_SOFT": CHOP_SOFT,
             "PBO_HARD": PBO_HARD,
+            "PBO_HARD_CONFIG_SOURCE": "Q03",
+            "PBO_NEIGHBORHOOD_FALLBACK_MAX_TIER": "EDGE_SOFT",
+            "PBO_UNKNOWN_SOURCE_POLICY": "EDGE_HARD",
         },
         "generated_at_utc": dt.datetime.now(dt.UTC).isoformat(),
         "n_trades": len(trades),

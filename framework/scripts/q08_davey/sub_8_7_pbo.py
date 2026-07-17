@@ -99,6 +99,7 @@ def run(ea_id: int | None = None, symbol: str | None = None,
     pbo_pct = float(result.get("pbo_pct", 100.0))
     splits = int(result.get("splits_evaluated", 0))
     overfit = int(result.get("overfit_splits", 0))
+    config_source = str(meta.get("config_source") or "UNKNOWN")
     if splits <= 0:
         return make_result(
             GATE_NAME,
@@ -121,7 +122,15 @@ def run(ea_id: int | None = None, symbol: str | None = None,
     return make_result(
         GATE_NAME, status,
         value=round(pbo_pct, 3), threshold=PBO_MAX_PCT,
-        detail=f"PBO={pbo_pct:.2f}%:max={PBO_MAX_PCT:.0f}%:splits={splits}:overfit={overfit}",
+        detail=(
+            f"PBO={pbo_pct:.2f}%:max={PBO_MAX_PCT:.0f}%:"
+            f"splits={splits}:overfit={overfit}:source={config_source}"
+        ),
         evidence={"n_configs": n_configs, "n_common_slices": len(common_slices),
                   "splits_evaluated": splits, "overfit_splits": overfit,
-                  "scores_path": str(scores_path)})
+                  "scores_path": str(scores_path),
+                  "config_source": config_source,
+                  "q03_candidate_configs": meta.get("q03_candidate_configs"),
+                  "neighborhood_candidate_configs": meta.get(
+                      "neighborhood_candidate_configs"
+                  )})

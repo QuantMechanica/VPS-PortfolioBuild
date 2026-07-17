@@ -274,6 +274,16 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
                 for idx in range(1, 9):
                     writer.writerow(["grid_001", f"S{idx}", 2.0 if idx <= 4 else 1.0])
                     writer.writerow(["grid_002", f"S{idx}", 1.0 if idx <= 4 else 2.0])
+            scores.with_name("scores_meta.json").write_text(
+                json.dumps({
+                    "schema_version": 2,
+                    "status": "VALID",
+                    "config_source": "Q08.5_neighborhood",
+                    "q03_candidate_configs": 1,
+                    "neighborhood_candidate_configs": 2,
+                }),
+                encoding="utf-8",
+            )
 
             result = sub_8_7_pbo.run(scores_path=scores)
 
@@ -281,6 +291,9 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
         self.assertEqual(result["evidence"]["n_configs"], 2)
         self.assertEqual(result["evidence"]["n_common_slices"], 8)
         self.assertEqual(result["evidence"]["splits_evaluated"], 35)
+        self.assertEqual(result["evidence"]["config_source"], "Q08.5_neighborhood")
+        self.assertEqual(result["evidence"]["q03_candidate_configs"], 1)
+        self.assertEqual(result["evidence"]["neighborhood_candidate_configs"], 2)
 
     def test_pbo_non_even_common_slice_family_is_invalid(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -650,6 +663,52 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
         verdict, _ = aggregate._aggregate_verdict(subs, trades=trades)
         self.assertEqual(verdict, "FAIL_HARD")
 
+    def test_pbo_neighborhood_fallback_fail_is_soft_not_model_selection_hard(self) -> None:
+        trades = [_trade(dt.datetime(2024, 1, d), 10.0) for d in range(1, 20)]
+        trades.append(_trade(dt.datetime(2024, 2, 1), -5.0))
+        subs = [
+            {"name": "8.5_neighborhood", "status": "PASS"},
+            {
+                "name": "8.7_pbo",
+                "status": "FAIL",
+                "detail": "PBO=62.86%:max=40%:splits=35:overfit=22",
+                "evidence": {"config_source": "Q08.5_neighborhood"},
+            },
+        ]
+        verdict, classification = aggregate._aggregate_verdict(subs, trades=trades)
+        self.assertEqual(verdict, "FAIL_SOFT")
+        self.assertEqual(classification["8.7_pbo"], "EDGE_SOFT")
+
+    def test_pbo_q03_cohort_fail_remains_hard(self) -> None:
+        trades = [_trade(dt.datetime(2024, 1, d), 10.0) for d in range(1, 20)]
+        trades.append(_trade(dt.datetime(2024, 2, 1), -5.0))
+        subs = [{
+            "name": "8.7_pbo",
+            "status": "FAIL",
+            "detail": "PBO=62.86%:max=40%:splits=35:overfit=22",
+            "evidence": {"config_source": "Q03"},
+        }]
+        verdict, classification = aggregate._aggregate_verdict(subs, trades=trades)
+        self.assertEqual(verdict, "FAIL_HARD")
+        self.assertEqual(classification["8.7_pbo"], "EDGE_HARD")
+        self.assertEqual(
+            aggregate._classify_fail({
+                "name": "8.7_pbo",
+                "status": "FAIL",
+                "detail": "PBO=50.00%:max=40%",
+                "evidence": {"config_source": "Q03"},
+            }),
+            "EDGE_SOFT",
+        )
+        self.assertEqual(
+            aggregate._classify_fail({
+                "name": "8.7_pbo",
+                "status": "FAIL",
+                "detail": "PBO=62.86%:max=40%",
+            }),
+            "EDGE_HARD",
+        )
+
     def test_structured_qm_log_loader_finds_tester_agent_equity_stream(self) -> None:
         # Guard the helper's contract directly without requiring a live MT5 tree.
         self.assertTrue(hasattr(aggregate, "_latest_structured_qm_log"))
@@ -964,6 +1023,36 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
             self.assertTrue(reusable)
             self.assertEqual(reason, "exact_baseline_lineage")
 
+            payload = json.loads(artifact.read_text(encoding="utf-8"))
+            valid_baseline = dict(payload["baseline"])
+            payload["baseline"] = {
+                "status": "VALID", "trades": 0, "pf": None, "dd": None,
+            }
+            artifact.write_text(json.dumps(payload), encoding="utf-8")
+            reusable, reason = aggregate._neighborhood_artifact_reuse_status(
+                artifact,
+                setfile,
+                "USDCAD.DWX",
+            )
+            self.assertFalse(reusable)
+            self.assertEqual(reason, "degenerate_baseline")
+
+            payload["baseline"] = valid_baseline
+            valid_perturbation = dict(payload["perturbations"][0])
+            payload["perturbations"][0].update({
+                "status": "VALID", "trades": 0, "pf": None,
+            })
+            artifact.write_text(json.dumps(payload), encoding="utf-8")
+            reusable, reason = aggregate._neighborhood_artifact_reuse_status(
+                artifact,
+                setfile,
+                "USDCAD.DWX",
+            )
+            self.assertFalse(reusable)
+            self.assertEqual(reason, "valid_perturbation_degenerate")
+
+            payload["perturbations"][0] = valid_perturbation
+            artifact.write_text(json.dumps(payload), encoding="utf-8")
             setfile.write_text(setfile.read_text(encoding="utf-8") + "\nstrategy_extra=2\n")
             reusable, reason = aggregate._neighborhood_artifact_reuse_status(
                 artifact,
