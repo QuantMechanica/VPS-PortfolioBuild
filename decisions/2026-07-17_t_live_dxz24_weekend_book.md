@@ -103,3 +103,25 @@ Modul ohnehin neu.
 
 Probation unverändert: 1556, 10706, 13128 (42d-Review). Neu in Probation: 13117, 13301
 (Standard-Neuaufnahme-Beobachtung; 13301 zusätzlich: Q09-Portfolio-Re-Run nach Refresh-Welle).
+
+---
+
+## FREIGABE + FILE-SIDE-DEPLOY (2026-07-17)
+
+**OWNER-Freigabe erteilt 17.07. (Chat: „Freigabe erteilt — 11165 mit erneuern, Factory
+schalte ich an").**
+
+**Claude-Deploy-Protokoll (Schritt 3, 17.07. abends, `evidence/deploy_report.json`):**
+- 24/24 dxz24-Presets nach `T_Live\MT5_Base\MQL5\Presets\` deployed, SHA256 Staging→T_Live ✓
+- 3/3 Binaries nach `T_Live\...\Experts\Live EAs\` deployed, SHA256 ✓:
+  13117 `adfa1ba6…`, 13301 `d7f10a68…`, **11165 `8f6d33a3…` (Hygiene-Redeploy per OWNER;
+  Jun-28-Original gesichert als `evidence/QM5_11165_….ex5.pre_dxz24_jun28`)**
+- Deployed-Content-Verify 24/24: RISK_FIXED=0 ✓, Magic-Formel ✓, Summe RISK_PERCENT 9.7501 ✓
+- 15 d2d_s3-Altpresets nach `Presets\_archive_pre_dxz24\` archiviert (Puls-Ambiguity-Cleanup)
+- News-Kalender 11h alt ✓ · AutoTrading UNANGETASTET ✓
+- ANLEITUNG ergänzt: 11165-Charts (AUDCAD+EURUSD) brauchen **EA-Re-Attach** (Binary-Swap),
+  nicht nur Preset-Reload
+
+**Nächster Schritt:** OWNER-Chart-Session nach `ANLEITUNG_DXZ24.md` (1 raus, 2 neu,
+10919-Restore, 22 Reloads, davon 2× Re-Attach). Danach Claude-Schlussverify: 24× INIT_OK +
+Magic-Set 24/24 + Summe RISK.
