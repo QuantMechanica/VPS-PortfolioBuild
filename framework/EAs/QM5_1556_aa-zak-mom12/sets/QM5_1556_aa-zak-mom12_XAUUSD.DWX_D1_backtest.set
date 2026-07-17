@@ -3,7 +3,7 @@
 ; ea_id:        1556
 ; ea_slug:      aa-zak-mom12
 ; ea_version:   v5.0
-; set_version:  s20260627-001
+; set_version:  s20260717-wave
 ; symbol:       XAUUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
@@ -31,4 +31,11 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=ea_input_defaults (materialized 2026-07-17: setgen param-empty repair;
+; values are the EA's compiled input defaults - the exact config every prior run used)
+strategy_momentum_lookback_d1=252
+strategy_momentum_trigger=100.0
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=3.0
+strategy_max_spread_points=0
+strategy_first_d1_bar_only=true
