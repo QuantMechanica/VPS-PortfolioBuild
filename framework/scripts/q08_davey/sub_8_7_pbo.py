@@ -12,6 +12,7 @@ been triggered for this EA yet).
 
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
@@ -46,6 +47,34 @@ def run(ea_id: int | None = None, symbol: str | None = None,
                            value=None, threshold=PBO_MAX_PCT,
                            detail=f"pbo_runner_scores_missing:{scores_path}",
                            evidence={"expected_path": str(scores_path)})
+
+    meta_path = scores_path.with_name("scores_meta.json")
+    try:
+        meta = json.loads(meta_path.read_text(encoding="utf-8-sig")) if meta_path.exists() else {}
+    except (OSError, json.JSONDecodeError):
+        meta = {}
+    try:
+        meta_schema = int(meta.get("schema_version") or 0)
+    except (TypeError, ValueError):
+        meta_schema = 0
+    if meta_schema == 2:
+        meta_status = str(meta.get("status") or "").upper()
+        if meta_status in {"INVALID", "INVALID_NA"}:
+            reason = str(meta.get("reason") or "pbo_config_family_invalid")
+            return make_result(
+                GATE_NAME,
+                "INVALID",
+                value=None,
+                threshold=PBO_MAX_PCT,
+                detail=(f"INVALID_NA:{reason}" if meta_status == "INVALID_NA" else reason),
+                evidence={
+                    "scores_path": str(scores_path),
+                    "scores_meta_path": str(meta_path),
+                    "n_configs": int(meta.get("n_configs") or 0),
+                    "n_common_slices": int(meta.get("n_common_slices") or 0),
+                    "config_source": meta.get("config_source"),
+                },
+            )
 
     try:
         from pbo_calculator import _load_scores, compute_pbo  # type: ignore

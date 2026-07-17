@@ -74,22 +74,171 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
             path = self._write_perturbations(
                 tmp,
                 {"trades": 220, "pf": 1.42, "dd": 8500},
-                [{"param": "fast_ema", "delta": "-10pct", "pf": 0.85, "dd": 9000}],
+                [{"param": "fast_ema", "delta": "-10pct", "pf": 0.85,
+                  "dd": 9000, "trades": 210}],
             )
             result = sub_8_5_neighborhood.run(perturbations_path=path)
         self.assertEqual(result["status"], "FAIL")
         self.assertIn("perturbation_breaches", result["detail"])
+
+    def test_neighborhood_pf_at_floor_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self._write_perturbations(
+                tmp,
+                {"trades": 220, "pf": 1.42, "dd": 8500},
+                [
+                    {"param": "fast_ema", "delta": "-10pct", "pf": 1.0,
+                     "dd": 8800, "trades": 215, "status": "VALID"},
+                    {"param": "fast_ema", "delta": "+10pct", "pf": 1.2,
+                     "dd": 9000, "trades": 218, "status": "VALID"},
+                ],
+            )
+            result = sub_8_5_neighborhood.run(perturbations_path=path)
+        self.assertEqual(result["status"], "FAIL")
+        self.assertEqual(result["evidence"]["breaches"][0]["reason"],
+                         "pf_not_above_floor")
 
     def test_neighborhood_robust_plateau_passes(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             path = self._write_perturbations(
                 tmp,
                 {"trades": 220, "pf": 1.42, "dd": 8500},
-                [{"param": "fast_ema", "delta": "-10pct", "pf": 1.35, "dd": 8800},
-                 {"param": "fast_ema", "delta": "+10pct", "pf": 1.38, "dd": 9000}],
+                [{"param": "fast_ema", "delta": "-10pct", "pf": 1.35,
+                  "dd": 8800, "trades": 215},
+                 {"param": "fast_ema", "delta": "+10pct", "pf": 1.38,
+                  "dd": 9000, "trades": 218}],
             )
             result = sub_8_5_neighborhood.run(perturbations_path=path)
         self.assertEqual(result["status"], "PASS")
+
+    def test_neighborhood_zero_trade_cell_is_invalid_not_breach(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self._write_perturbations(
+                tmp,
+                {"trades": 220, "pf": 1.42, "dd": 8500},
+                [{"param": "strategy_entry_z", "delta": "-10pct", "pf": 0.0,
+                  "dd": 0.0, "trades": 0}],
+            )
+            result = sub_8_5_neighborhood.run(perturbations_path=path)
+        self.assertEqual(result["status"], "INVALID")
+        self.assertIn("insufficient_valid_perturbations", result["detail"])
+        self.assertEqual(result["evidence"]["n_invalid_perturbations"], 1)
+
+    def test_neighborhood_two_valid_cells_can_pass_with_invalid_cell_logged(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self._write_perturbations(
+                tmp,
+                {"trades": 220, "pf": 1.42, "dd": 8500},
+                [
+                    {"param": "strategy_period", "delta": "-10pct", "pf": 1.2,
+                     "dd": 9000, "trades": 210, "status": "VALID"},
+                    {"param": "strategy_period", "delta": "+10pct", "pf": 1.3,
+                     "dd": 9100, "trades": 212, "status": "VALID"},
+                    {"param": "strategy_threshold", "delta": "-10pct", "pf": None,
+                     "dd": None, "trades": 0, "status": "INVALID",
+                     "invalid_reason": "BARS_ZERO"},
+                ],
+            )
+            result = sub_8_5_neighborhood.run(perturbations_path=path)
+        self.assertEqual(result["status"], "PASS")
+        self.assertEqual(result["evidence"]["n_valid_perturbations"], 2)
+        self.assertEqual(result["evidence"]["n_invalid_perturbations"], 1)
+
+    def test_neighborhood_valid_breach_dominates_invalid_cells(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self._write_perturbations(
+                tmp,
+                {"trades": 299, "pf": 1.27, "dd": 13967.4},
+                [
+                    {"param": "strategy_ao_slow_period", "delta": "-10pct",
+                     "pf": 1.11, "dd": 22190.52, "trades": 285,
+                     "status": "VALID"},
+                    {"param": "strategy_other", "delta": "+10pct", "pf": None,
+                     "dd": None, "trades": 0, "status": "INVALID",
+                     "invalid_reason": "timeout"},
+                ],
+            )
+            result = sub_8_5_neighborhood.run(perturbations_path=path)
+        self.assertEqual(result["status"], "FAIL")
+        self.assertEqual(result["evidence"]["breaches"][0]["reason"], "dd_ratio_exceeded")
+
+    def test_neighborhood_parameter_types_and_steps_are_deterministic(self) -> None:
+        beta = q08_5_neighborhood_runner.classify_param("strategy_beta", -0.122)
+        self.assertEqual(beta["class"], "structural")
+        self.assertEqual(
+            q08_5_neighborhood_runner.parameter_perturbations(
+                "strategy_beta", -0.122, {}, 10.0,
+            ),
+            [],
+        )
+
+        entry = q08_5_neighborhood_runner.parameter_perturbations(
+            "strategy_entry_z", 2.0, {}, 10.0,
+        )
+        self.assertEqual([row["value"] for row in entry], [1.8, 2.2])
+        self.assertTrue(all(row["param_class"] == "continuous" for row in entry))
+
+        weekday = q08_5_neighborhood_runner.parameter_perturbations(
+            "strategy_day_of_week", 3, {"minimum": 0, "maximum": 6, "step": 1}, 10.0,
+        )
+        self.assertEqual([row["value"] for row in weekday], [2, 4])
+        self.assertEqual([row["delta"] for row in weekday], ["-1step", "+1step"])
+
+        stepped = q08_5_neighborhood_runner.parameter_perturbations(
+            "strategy_period", 20, {"minimum": 10, "maximum": 50, "step": 5}, 10.0,
+        )
+        self.assertEqual([row["value"] for row in stepped], [15, 25])
+
+        lower_bounded = q08_5_neighborhood_runner.parameter_perturbations(
+            "strategy_period", 10, {"minimum": 10, "step": 5}, 10.0,
+        )
+        self.assertEqual([row["value"] for row in lower_bounded], [15])
+
+    def test_neighborhood_setfile_materialization_is_fail_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "baseline.set"
+            source.write_text(
+                "; symbol: EURUSD.DWX\n"
+                "RISK_FIXED=1000\nRISK_PERCENT=0\n"
+                "; strategy-specific params from card must be appended below this line\n"
+                "strategy_period=20||10||5||50||Y\n"
+                "strategy_threshold=2.0\n"
+                "strategy_beta=-0.12202869296345396\n"
+                "strategy_pair_name=EURGBP_AUDJPY\n",
+                encoding="utf-8",
+            )
+            generated = root / "generated.set"
+            identity = q08_5_neighborhood_runner.materialize_setfile(
+                source,
+                {
+                    "strategy_period": 25,
+                    "strategy_beta": -0.12202869296345396,
+                    "strategy_pair_name": "EURUSD_GBPUSD",
+                },
+                generated,
+            )
+            text = generated.read_text(encoding="utf-8")
+            self.assertIn("strategy_period=25||10||5||50||N", text)
+            self.assertIn("strategy_threshold=2.0", text)
+            self.assertIn("strategy_beta=-0.12202869296345396", text)
+            self.assertIn("strategy_pair_name=EURUSD_GBPUSD", text)
+            self.assertIn("RISK_FIXED=1000", text)
+            self.assertEqual(identity["strategy_param_count"], 4)
+            inspected = q08_5_neighborhood_runner.inspect_baseline_setfile(
+                source, "EURUSD.DWX",
+            )
+            self.assertEqual(inspected["strategy_param_count"], 4)
+            self.assertEqual(
+                q08_5_neighborhood_runner.classify_param(
+                    "strategy_pair_name", "EURGBP_AUDJPY",
+                )["class"],
+                "structural",
+            )
+            with self.assertRaisesRegex(ValueError, "missing from baseline"):
+                q08_5_neighborhood_runner.materialize_setfile(
+                    source, {"strategy_missing": 1}, root / "missing.set",
+                )
 
     def test_pbo_missing_scores_is_invalid_not_fail(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -150,7 +299,7 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
         self.assertIn("insufficient_common_even_slices", result["detail"])
         self.assertEqual(result["evidence"]["n_common_slices"], 3)
 
-    def test_pbo_runner_refuses_single_config_without_writing_scores(self) -> None:
+    def test_pbo_runner_records_single_config_as_invalid(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             summary = root / "summary.json"
@@ -174,6 +323,11 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
                 ),
                 patch.object(
                     q08_7_pbo_runner,
+                    "discover_work_item_q03_configs",
+                    return_value=[],
+                ),
+                patch.object(
+                    q08_7_pbo_runner,
                     "_parse_trades_from_summary",
                     return_value=trades,
                 ),
@@ -183,9 +337,16 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
             scores_path = (
                 root / "QM5_12567" / "Q08" / "pbo" / "XAUUSD_DWX" / "scores.csv"
             )
-
-        self.assertEqual(rc, 1)
-        self.assertFalse(scores_path.exists())
+            self.assertEqual(rc, 1)
+            self.assertTrue(scores_path.exists())
+            meta = json.loads(
+                scores_path.with_name("scores_meta.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(meta["status"], "INVALID")
+            self.assertEqual(meta["n_configs"], 1)
+            self.assertEqual(meta["rows_written"], 0)
+            with scores_path.open("r", encoding="utf-8", newline="") as handle:
+                self.assertEqual(len(list(csv.reader(handle))), 1)
 
     def test_pbo_runner_report_fallback_returns_datetime_timestamps(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -206,6 +367,87 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
         self.assertEqual(len(trades), 1)
         self.assertIsInstance(trades[0]["ts"], dt.datetime)
         self.assertEqual(trades[0]["net"], 12.5)
+
+    def test_pbo_sweep_configs_require_verified_setfile_content(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            missing_lineage = root / "grid_001"
+            missing_lineage.mkdir()
+            (missing_lineage / "summary.json").write_text("{}", encoding="utf-8")
+            for name in ("grid_002", "grid_003"):
+                config = root / name
+                config.mkdir()
+                (config / "summary.json").write_text("{}", encoding="utf-8")
+                (config / "config.set").write_text(
+                    f"; distinct header {name}\n"
+                    "; strategy-specific params\n"
+                    "strategy_period=20\n",
+                    encoding="utf-8",
+                )
+
+            configs = q08_7_pbo_runner.discover_sweep_configs(root)
+
+        self.assertEqual(len(configs), 1)
+        self.assertTrue(configs[0][0].startswith("q03_"))
+
+    def test_pbo_runner_uses_distinct_valid_neighborhood_configs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            q03_summary = root / "q03_summary.json"
+            q03_summary.write_text("{}", encoding="utf-8")
+            neighborhood_summaries = []
+            for index in range(3):
+                summary = root / f"neighborhood_{index}.json"
+                summary.write_text("{}", encoding="utf-8")
+                neighborhood_summaries.append(summary)
+            artifact = root / "perturbations.json"
+            artifact.write_text(json.dumps({
+                "baseline": {
+                    "status": "VALID", "trades": 80,
+                    "setfile_sha256": "a" * 64,
+                    "summary_path": str(neighborhood_summaries[0]),
+                },
+                "perturbations": [
+                    {"status": "VALID", "trades": 82,
+                     "setfile_sha256": "b" * 64,
+                     "summary_path": str(neighborhood_summaries[1])},
+                    {"status": "VALID", "trades": 84,
+                     "setfile_sha256": "c" * 64,
+                     "summary_path": str(neighborhood_summaries[2])},
+                    {"status": "INVALID", "trades": 0,
+                     "setfile_sha256": "d" * 64,
+                     "summary_path": str(root / "missing.json")},
+                ],
+            }), encoding="utf-8")
+            trades = [
+                {"ts": dt.datetime(2020, month, 1, tzinfo=dt.UTC),
+                 "net": 10.0 if month % 2 else -5.0}
+                for month in range(1, 9)
+            ]
+            argv = [
+                "q08_7_pbo_runner.py",
+                "--ea", "QM5_13117",
+                "--symbol", "PAIR_COMPOSITE",
+                "--report-root", str(root),
+                "--neighborhood-artifact", str(artifact),
+            ]
+            with (
+                patch.object(q08_7_pbo_runner.sys, "argv", argv),
+                patch.object(q08_7_pbo_runner, "discover_sweep_configs",
+                             return_value=[("q03_only", q03_summary)]),
+                patch.object(q08_7_pbo_runner, "discover_work_item_q03_configs",
+                             return_value=[]),
+                patch.object(q08_7_pbo_runner, "_parse_trades_from_summary",
+                             return_value=trades),
+            ):
+                rc = q08_7_pbo_runner.main()
+
+            meta_path = root / "QM5_13117" / "Q08" / "pbo" / "PAIR_COMPOSITE" / "scores_meta.json"
+            meta = json.loads(meta_path.read_text(encoding="utf-8"))
+        self.assertEqual(rc, 0)
+        self.assertEqual(meta["status"], "VALID")
+        self.assertEqual(meta["config_source"], "Q08.5_neighborhood")
+        self.assertEqual(meta["n_configs"], 3)
 
     def test_regime_missing_or_unjoinable_input_is_invalid_not_fail(self) -> None:
         trades = [_trade(dt.datetime(2024, 1, day), 10.0) for day in range(1, 4)]
@@ -355,8 +597,8 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
         self.assertIn("DSR_TIER1_FAIL", result["detail"])
 
     def test_dl077_invalid_davey_gates_route_profitable_edge_to_soft(self) -> None:
-        # DL-077: a profitable low-freq edge with a real PBO pass but INVALID high-freq Davey
-        # gates routes to FAIL_SOFT (portfolio track), NOT the old blocking INVALID verdict.
+        # OWNER 2026-07-17: an unresolved neighborhood is a blocking tooling
+        # condition even when PBO and profitability are real.
         trades = [_trade(dt.datetime(2024, 1, d), 10.0) for d in range(1, 20)]
         trades.append(_trade(dt.datetime(2024, 2, 1), -5.0))
         subs = [
@@ -368,7 +610,7 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
             {"name": "8.9_runs_test", "status": "INVALID", "detail": "too_few_for_runs"},
         ]
         verdict, _ = aggregate._aggregate_verdict(subs, trades=trades)
-        self.assertEqual(verdict, "FAIL_SOFT")
+        self.assertEqual(verdict, "INVALID")
 
     def test_dl077_no_real_quality_pass_is_invalid(self) -> None:
         # Only the trivial 8.1/8.3 passed; nothing real validated the edge -> INVALID.
@@ -415,7 +657,12 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
     def test_q08_explicit_baseline_setfile_feeds_support_runners(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             baseline = Path(tmp) / "QM5_999999_demo_EURUSD.DWX_H1_rescue_long_only_backtest.set"
-            baseline.write_text("x=1\n", encoding="utf-8")
+            baseline.write_text(
+                "; symbol: EURUSD.DWX\n"
+                "; strategy-specific params from card must be appended below this line\n"
+                "strategy_period=20\n",
+                encoding="utf-8",
+            )
             calls = []
 
             def fake_run(args, **_kwargs):
@@ -475,10 +722,25 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
                 summary = root / "QM5_11476" / "20260101_000000" / "summary.json"
                 summary.parent.mkdir(parents=True)
                 summary.write_text(
-                    '{"runs":[{"profit_factor":1.23,"drawdown":456.0,"total_trades":78}]}',
+                    json.dumps({
+                        "ea_id": 11476,
+                        "expert": r"QM\QM5_11476_demo",
+                        "symbol": "USDJPY.DWX",
+                        "period": "H1",
+                        "terminal": "T9",
+                        "runs": [{
+                            "profit_factor": 1.23,
+                            "drawdown": 456.0,
+                            "total_trades": 78,
+                        }],
+                    }),
                     encoding="utf-8",
                 )
-                return SimpleNamespace(returncode=0, stdout="", stderr="")
+                return SimpleNamespace(
+                    returncode=0,
+                    stdout=f"run_smoke.summary={summary}\n",
+                    stderr="",
+                )
 
             with patch.object(q08_5_neighborhood_runner.subprocess, "run", side_effect=fake_run):
                 pf, dd, trades = q08_5_neighborhood_runner.fire_backtest(
@@ -494,6 +756,95 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
         self.assertEqual(pf, 1.23)
         self.assertEqual(dd, 456.0)
         self.assertEqual(trades, 78)
+
+    def test_q08_neighborhood_summary_lookup_never_falls_back_to_stale(self) -> None:
+        import os
+        import time
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            summary = root / "QM5_11476" / "old" / "summary.json"
+            summary.parent.mkdir(parents=True)
+            summary.write_text(json.dumps({
+                "ea_id": 11476,
+                "expert": r"QM\QM5_11476_demo",
+                "symbol": "USDJPY.DWX",
+                "period": "H1",
+                "terminal": "T9",
+            }), encoding="utf-8")
+            os.utime(summary, (1, 1))
+            found = q08_5_neighborhood_runner.latest_run_smoke_summary(
+                root,
+                11476,
+                time.time(),
+                ea_expert=r"QM\QM5_11476_demo",
+                symbol="USDJPY.DWX",
+                period="H1",
+                terminal="T9",
+            )
+        self.assertIsNone(found)
+
+    def test_q08_neighborhood_missing_marker_does_not_bind_fresh_matching_summary(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            baseline = root / "baseline.set"
+            baseline.write_text("x=1\n", encoding="utf-8")
+
+            def fake_run(_args, **_kwargs):
+                summary = root / "QM5_11476" / "fresh" / "summary.json"
+                summary.parent.mkdir(parents=True)
+                summary.write_text(json.dumps({
+                    "ea_id": 11476,
+                    "expert": r"QM\QM5_11476_demo",
+                    "symbol": "USDJPY.DWX",
+                    "period": "H1",
+                    "terminal": "T9",
+                    "runs": [{"profit_factor": 1.23, "drawdown": 456.0,
+                              "total_trades": 78}],
+                }), encoding="utf-8")
+                return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+            with patch.object(q08_5_neighborhood_runner.subprocess, "run", side_effect=fake_run):
+                result = q08_5_neighborhood_runner.fire_backtest_details(
+                    ea_id=11476,
+                    ea_expert=r"QM\QM5_11476_demo",
+                    symbol="USDJPY.DWX",
+                    setfile=baseline,
+                    terminal="T9",
+                    run_tag="strategy_period_pos10pct",
+                    report_root=root,
+                )
+
+        self.assertEqual(result["status"], "INVALID")
+        self.assertEqual(result["invalid_reason"], "summary_missing_or_identity_mismatch")
+
+    def test_q08_pbo_refresh_rejects_stale_artifacts(self) -> None:
+        import time
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            scores = root / "scores.csv"
+            scores.write_text("config_id,slice_id,score\n", encoding="utf-8")
+            meta = scores.with_name("scores_meta.json")
+            meta.write_text(json.dumps({
+                "schema_version": q08_7_pbo_runner.SCORES_SCHEMA_VERSION,
+                "engine_version": q08_7_pbo_runner.ENGINE_VERSION,
+                "status": "VALID",
+                "scores_csv": str(scores),
+            }), encoding="utf-8")
+            started_at = time.time() + 1.0
+
+            reusable, reason = aggregate._pbo_refresh_artifact_status(
+                scores, root / "missing_perturbations.json", started_at,
+            )
+            result = aggregate._pbo_refresh_invalid_result({
+                "8_7_pbo": {
+                    "artifact_reusable_after": reusable,
+                    "reuse_check_after": reason,
+                },
+            })
+
+        self.assertFalse(reusable)
+        self.assertEqual(reason, "scores_or_meta_stale")
+        self.assertEqual(result["status"], "INVALID")
 
     def test_q08_neighborhood_setfile_fallback_skips_framework_and_categorical_params(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -579,6 +930,8 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
             artifact = root / "perturbations.json"
             artifact.write_text(
                 json.dumps({
+                    "schema_version": q08_5_neighborhood_runner.EVIDENCE_SCHEMA_VERSION,
+                    "engine_version": q08_5_neighborhood_runner.ENGINE_VERSION,
                     "symbol": "USDCAD.DWX",
                     "param_source": identity["path"],
                     "param_source_sha256": identity["sha256"],
@@ -586,14 +939,18 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
                     "baseline_setfile_sha256": identity["sha256"],
                     "baseline_setfile_symbol": "USDCAD.DWX",
                     "baseline_setfile_strategy_param_count": identity["strategy_param_count"],
-                    "baseline": {"trades": 80, "pf": 1.4, "dd": 1000.0},
+                    "baseline": {"status": "VALID", "trades": 80,
+                                 "pf": 1.4, "dd": 1000.0},
                     "evidence_status": "VALID",
                     "n_params_tested": 1,
+                    "n_valid_perturbations": 2,
                     "perturbations": [
                         {"param": "strategy_period", "delta": "-10pct", "trades": 78,
-                         "pf": 1.35, "dd": 1100.0},
+                         "pf": 1.35, "dd": 1100.0, "status": "VALID",
+                         "setfile_sha256": "a" * 64},
                         {"param": "strategy_period", "delta": "+10pct", "trades": 82,
-                         "pf": 1.32, "dd": 1050.0},
+                         "pf": 1.32, "dd": 1050.0, "status": "VALID",
+                         "setfile_sha256": "b" * 64},
                     ],
                 }),
                 encoding="utf-8",
@@ -643,7 +1000,7 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
                 "XAUUSD.DWX",
             )
             self.assertFalse(reusable)
-            self.assertEqual(reason, "baseline_path_lineage_missing")
+            self.assertEqual(reason, "schema_version_mismatch")
 
     def test_q08_neighborhood_cache_rejects_current_empty_or_wrong_symbol_set(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -693,6 +1050,8 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
             plateau_sha = hashlib.sha256(plateau.read_bytes()).hexdigest()
             artifact = root / "perturbations.json"
             artifact.write_text(json.dumps({
+                "schema_version": q08_5_neighborhood_runner.EVIDENCE_SCHEMA_VERSION,
+                "engine_version": q08_5_neighborhood_runner.ENGINE_VERSION,
                 "symbol": "EURUSD.DWX",
                 "param_source": str(plateau),
                 "param_source_sha256": plateau_sha,
@@ -700,12 +1059,16 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
                 "baseline_setfile_sha256": identity["sha256"],
                 "baseline_setfile_symbol": "EURUSD.DWX",
                 "baseline_setfile_strategy_param_count": 1,
-                "baseline": {"trades": 80, "pf": 1.4, "dd": 1000.0},
+                "baseline": {"status": "VALID", "trades": 80,
+                             "pf": 1.4, "dd": 1000.0},
                 "evidence_status": "VALID",
                 "n_params_tested": 1,
+                "n_valid_perturbations": 2,
                 "perturbations": [
-                    {"trades": 80, "pf": 1.3, "dd": 1100.0},
-                    {"trades": 82, "pf": 1.35, "dd": 1050.0},
+                    {"trades": 80, "pf": 1.3, "dd": 1100.0,
+                     "status": "VALID", "setfile_sha256": "c" * 64},
+                    {"trades": 82, "pf": 1.35, "dd": 1050.0,
+                     "status": "VALID", "setfile_sha256": "d" * 64},
                 ],
             }), encoding="utf-8")
             plateau.write_text('{"params":{"strategy_period":21}}', encoding="utf-8")

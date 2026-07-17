@@ -968,6 +968,40 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
             )
             self.assertNotIn("--setfile", cmd)
 
+    def test_q08_runner_cmd_forwards_baseline_setfile_and_neighborhood_cap(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            report_root = root / "reports"
+            setfile = root / "QM5_13117_demo_EURGBP.DWX_D1_backtest.set"
+            setfile.write_text("", encoding="utf-8")
+            conn = sqlite3.connect(":memory:")
+            conn.row_factory = sqlite3.Row
+            conn.execute(
+                """
+                CREATE TABLE work_items(
+                    phase TEXT, ea_id TEXT, symbol TEXT, setfile_path TEXT, payload_json TEXT
+                )
+                """
+            )
+            conn.execute(
+                "INSERT INTO work_items VALUES(?,?,?,?,?)",
+                ("Q08", "QM5_13117", "EURGBP.DWX", str(setfile), "{}"),
+            )
+            row = conn.execute("SELECT * FROM work_items").fetchone()
+
+            cmd = farmctl._phase_runner_cmd_for_work_item(root, row, report_root, "T8")
+
+            self.assertIsNotNone(cmd)
+            self.assertEqual(Path(cmd[1]).name, "aggregate.py")
+            self.assertEqual(cmd[cmd.index("--ea-id") + 1], "13117")
+            self.assertEqual(cmd[cmd.index("--baseline-setfile") + 1], str(setfile))
+            self.assertEqual(
+                cmd[cmd.index("--neighborhood-max-params") + 1],
+                str(farmctl.Q08_NEIGHBORHOOD_MAX_PARAMS),
+            )
+            self.assertEqual(cmd[cmd.index("--terminal") + 1], "T8")
+            self.assertNotIn("--setfile", cmd)
+
 
 if __name__ == "__main__":
     unittest.main()

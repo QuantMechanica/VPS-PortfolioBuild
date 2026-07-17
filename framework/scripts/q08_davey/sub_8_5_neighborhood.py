@@ -25,6 +25,7 @@ from .common import make_result
 GATE_NAME = "8.5_neighborhood"
 PF_FLOOR = 1.0
 DD_RATIO_MAX = 1.5
+MIN_VALID_PERTURBATIONS = 2
 
 
 def run(ea_id: int | None = None, symbol: str | None = None,
@@ -78,57 +79,97 @@ def run(ea_id: int | None = None, symbol: str | None = None,
                            detail="no_perturbations_tested_vacuous_pass",
                            evidence={"baseline": baseline})
 
+    if baseline.get("dd") is None:
+        return make_result(
+            GATE_NAME,
+            "INVALID",
+            value=None,
+            threshold=None,
+            detail="degenerate_baseline:dd_missing",
+            evidence={"baseline": baseline},
+        )
     baseline_dd = float(baseline.get("dd", 0) or 0)
     breaches: list[dict] = []
     invalid_perturbs: list[dict] = []
+    valid_perturbs: list[dict] = []
 
     for p in perturbs:
-        # 2026-07-06 audit G5 (per-perturbation edition of the degenerate-
-        # baseline guard above): pf=None means that perturbation RUN failed
-        # (timeout, missing summary — the runner returns (None, None, 0)) —
-        # infra evidence, never a plateau breach. Coercing None->0.0 here
-        # hard-failed EAs on a single slow backtest (8.5 FAIL -> EDGE_HARD).
-        # NB: a PARSED pf with 0 trades stays in the breach logic — a
-        # perturbation that kills all trades is genuine parameter fragility.
-        if p.get("pf") is None:
-            invalid_perturbs.append({"param": p.get("param", "?"),
-                                     "delta": p.get("delta", "?"),
-                                     "pf": None,
-                                     "trades": p.get("trades")})
+        try:
+            trades = int(p.get("trades") or 0)
+        except (TypeError, ValueError):
+            trades = 0
+        explicit_status = str(p.get("status") or "").upper()
+        if (
+            explicit_status == "INVALID"
+            or trades <= 0
+            or p.get("pf") is None
+            or p.get("dd") is None
+        ):
+            invalid_perturbs.append({
+                "param": p.get("param", "?"),
+                "delta": p.get("delta", "?"),
+                "pf": p.get("pf"),
+                "dd": p.get("dd"),
+                "trades": trades,
+                "reason": p.get("invalid_reason") or "zero_trades_or_missing_metrics",
+            })
             continue
         pf = float(p.get("pf", 0) or 0)
         dd = float(p.get("dd", 0) or 0)
         param = p.get("param", "?")
         delta = p.get("delta", "?")
-        if pf < PF_FLOOR:
-            breaches.append({"param": param, "delta": delta, "reason": "pf_below_floor",
-                             "pf": pf, "dd": dd})
+        valid_perturbs.append(p)
+        if pf <= PF_FLOOR:
+            breaches.append({"param": param, "delta": delta, "reason": "pf_not_above_floor",
+                             "pf": pf, "dd": dd, "trades": trades})
             continue
         if baseline_dd > 0 and dd > baseline_dd * DD_RATIO_MAX:
             ratio = dd / baseline_dd
             breaches.append({"param": param, "delta": delta, "reason": "dd_ratio_exceeded",
-                             "pf": pf, "dd": dd, "ratio": round(ratio, 3)})
-
-    if invalid_perturbs and not breaches:
-        # Untested neighborhood cells: without them the plateau claim is
-        # incomplete — INVALID (re-run), mirroring the vacuous-pass rule.
-        return make_result(
-            GATE_NAME, "INVALID",
-            value=len(invalid_perturbs), threshold=None,
-            detail=f"{len(invalid_perturbs)}_perturbation_runs_invalid",
-            evidence={"invalid_perturbations": invalid_perturbs[:8],
-                      "n_perturbations_tested": len(perturbs)})
+                             "pf": pf, "dd": dd, "trades": trades,
+                             "ratio": round(ratio, 3)})
 
     if breaches:
         return make_result(
             GATE_NAME, "FAIL",
             value=len(breaches), threshold=0,
             detail=f"{len(breaches)}_perturbation_breaches",
-            evidence={"breaches": breaches[:8], "n_perturbations_tested": len(perturbs)})
+            evidence={
+                "breaches": breaches[:8],
+                "invalid_perturbations": invalid_perturbs[:8],
+                "n_valid_perturbations": len(valid_perturbs),
+                "n_invalid_perturbations": len(invalid_perturbs),
+                "n_perturbations_tested": len(perturbs),
+            })
+
+    if len(valid_perturbs) < MIN_VALID_PERTURBATIONS:
+        return make_result(
+            GATE_NAME,
+            "INVALID",
+            value=len(valid_perturbs),
+            threshold=MIN_VALID_PERTURBATIONS,
+            detail=(
+                "insufficient_valid_perturbations:"
+                f"got={len(valid_perturbs)}:need>={MIN_VALID_PERTURBATIONS}:"
+                f"invalid={len(invalid_perturbs)}"
+            ),
+            evidence={
+                "invalid_perturbations": invalid_perturbs[:8],
+                "n_valid_perturbations": len(valid_perturbs),
+                "n_invalid_perturbations": len(invalid_perturbs),
+                "n_perturbations_tested": len(perturbs),
+            },
+        )
 
     return make_result(
         GATE_NAME, "PASS",
-        value=len(perturbs), threshold=len(perturbs),
-        detail=f"all_{len(perturbs)}_perturbations_within_plateau",
+        value=len(valid_perturbs), threshold=MIN_VALID_PERTURBATIONS,
+        detail=(
+            f"all_{len(valid_perturbs)}_valid_perturbations_within_plateau:"
+            f"invalid_dropped={len(invalid_perturbs)}"
+        ),
         evidence={"baseline_pf": baseline.get("pf"), "baseline_dd": baseline_dd,
+                  "invalid_perturbations": invalid_perturbs[:8],
+                  "n_valid_perturbations": len(valid_perturbs),
+                  "n_invalid_perturbations": len(invalid_perturbs),
                   "n_perturbations_tested": len(perturbs)})
