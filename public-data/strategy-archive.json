@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-17T07:07:04.2823601Z",
-    "total":  3350,
+    "generated_at":  "2026-07-17T15:07:06.8316981Z",
+    "total":  3354,
     "items":  [
                   {
                       "slug":  "ath-breakout-atr-trail",
@@ -946,6 +946,12 @@
                       "last_updated_utc":  "2026-06-04T09:21:00.1398284Z"
                   },
                   {
+                      "slug":  "fx-session-flow_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-17T10:43:15.2652515Z"
+                  },
+                  {
                       "slug":  "iea-omr-brk_card",
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
@@ -956,6 +962,12 @@
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-07-03T10:28:29.9444990Z"
+                  },
+                  {
+                      "slug":  "index-mac5-rev_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-17T11:12:57.2697058Z"
                   },
                   {
                       "slug":  "katz-seas-xti_card",
@@ -1202,6 +1214,12 @@
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-07-10T20:06:32.1906702Z"
+                  },
+                  {
+                      "slug":  "tom-index-long_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-17T10:07:23.7725152Z"
                   },
                   {
                       "slug":  "tsmom-9m-commodity-xtiusd_card",
@@ -15205,7 +15223,7 @@
                       "slug":  "QM5_12969_usdjpy-gotobi-nakane-fix",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-03T02:59:17.4471009Z"
+                      "last_updated_utc":  "2026-07-17T09:06:53.8301404Z"
                   },
                   {
                       "slug":  "QM5_1297_coppock-curve-cross-zero-w1",
@@ -17468,6 +17486,12 @@
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-07-17T06:33:11.5435583Z"
+                  },
+                  {
+                      "slug":  "QM5_20005_kurisko-quad-rotation-retest",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-17T09:14:54.7838120Z"
                   },
                   {
                       "slug":  "QM5_2001_nnfx-classic-ssl",
