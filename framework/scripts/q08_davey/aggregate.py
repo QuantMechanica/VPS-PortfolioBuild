@@ -662,7 +662,10 @@ def _run_baseline_for_trades(ea_id: int, symbol: str, terminal: str | None,
     # Real-tick (Model 4) multi-symbol baskets can exceed 2400s; allow 5400s.
     # The Q08 phase-runner timeout in farmctl must be >= 90 min for basket EAs.
     is_basket = test_symbol != symbol
-    timeout_run = 5400 if is_basket else 2400
+    # 2400s starved heavy full-history H1 baselines (13213 wave evidence
+    # 2026-07-18: TIMEOUT/METATESTER_HUNG at min 40). The budget is a cap,
+    # not a sleep — fast EAs still exit early.
+    timeout_run = 5400 if is_basket else 4800
     timeout_proc = timeout_run + 120
     # Data-honest window: DWX index/late-start symbols begin 2018.07.02. A fixed
     # 2017.01.01 request against the cleanly rebuilt NDX store hard-fails the
