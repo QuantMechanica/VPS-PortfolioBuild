@@ -712,6 +712,12 @@ def resolve_backtest_context(
     tf_floor = {"M1": 4200, "M5": 4200, "M15": 3600, "M30": 3600,
                 "H1": 1800, "H2": 1800, "H4": 1800}
     effective_timeout = max(timeout_sec, tf_floor.get(str(period).upper(), 0))
+    # Tick-heavy commodities/indices need a cold-cache first-sync allowance even
+    # on D1 (10403/XAU-D1 wave evidence 2026-07-18: children INVALID on a
+    # cold-XAU terminal at the flat 900s while warm terminals pass).
+    tick_heavy = ("XAU", "XAG", "XTI", "XNG", "GDAXI", "NDX", "SP500", "WS30")
+    if any(t in str(tester_symbol).upper() for t in tick_heavy):
+        effective_timeout = max(effective_timeout, 2400)
     if is_basket:
         effective_timeout = max(effective_timeout, 3600)
     return {
