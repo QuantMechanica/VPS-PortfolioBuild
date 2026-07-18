@@ -1590,7 +1590,11 @@ def _defer_launch_fault(root: Path, item_id: str, terminal: str, spawn: dict[str
     }
 
 
-def _monitor_timeout_seconds(payload: dict[str, Any], default_timeout_seconds: int) -> int:
+def _monitor_timeout_seconds(
+    payload: dict[str, Any],
+    default_timeout_seconds: int,
+    phase: str | None = None,
+) -> int:
     timeout_seconds = int(default_timeout_seconds)
     try:
         payload_timeout_min = int(payload.get("timeout_min") or 0)
@@ -1598,6 +1602,12 @@ def _monitor_timeout_seconds(payload: dict[str, Any], default_timeout_seconds: i
             timeout_seconds = max(timeout_seconds, payload_timeout_min * 60)
     except (TypeError, ValueError):
         pass
+    if str(phase or "").upper() == "Q08":
+        phase_timeout_min = farmctl._active_timeout_min_for_work_item(
+            "Q08", json.dumps(payload, sort_keys=True)
+        )
+        if phase_timeout_min is not None:
+            timeout_seconds = max(timeout_seconds, int(phase_timeout_min) * 60)
     return timeout_seconds
 
 
@@ -1607,8 +1617,11 @@ def _monitor_deadline_monotonic(
     monitor_started: float,
     *,
     adopted: bool,
+    phase: str | None = None,
 ) -> float:
-    timeout_seconds = _monitor_timeout_seconds(payload, default_timeout_seconds)
+    timeout_seconds = _monitor_timeout_seconds(
+        payload, default_timeout_seconds, phase=phase
+    )
     if adopted:
         started_at = _parse_utc_iso(payload.get("started_at_iso") or payload.get("claimed_at_iso"))
         if started_at:
@@ -1629,7 +1642,13 @@ def _monitor_spawned_work_item(
 ) -> dict[str, Any]:
     pid = spawn["pid"]
     spawn_started = time.monotonic()
-    deadline = _monitor_deadline_monotonic(payload, timeout_seconds, spawn_started, adopted=adopted)
+    deadline = _monitor_deadline_monotonic(
+        payload,
+        timeout_seconds,
+        spawn_started,
+        adopted=adopted,
+        phase=str(item.get("phase") or ""),
+    )
     log_bomb_path: str | None = None
     _lb_iter = 0
     _lb_sizes: dict = {}

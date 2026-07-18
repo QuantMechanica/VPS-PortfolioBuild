@@ -78,6 +78,7 @@ SUB_GATES = [
 N_SEASON = 3  # max CONSECUTIVE losing calendar months still 'soft' (OWNER: "am Stück")
 CHOP_SOFT = 0.90
 PBO_HARD = 55.0
+EDGE_DECAY_HARD_PF_LAST = 1.2
 LOW_SAMPLE_DETAIL_TOKENS = (
     "insufficient_trade_count",
     "insufficient_daily_returns",
@@ -89,6 +90,7 @@ LOW_SAMPLE_DETAIL_TOKENS = (
     "regime_input_missing",
     "regime_join_incomplete",
     "regimes_with_zero_trades",
+    "insufficient_pbo_splits",
 )
 
 # DL-077: minimum number of NON-TRIVIAL quality sub-gates that must actually PASS for a
@@ -908,6 +910,22 @@ def _classify_fail(sub_gate_result: dict) -> str:
             return "EDGE_SOFT"
         return "EDGE_HARD"
 
+    if name.startswith("8.8"):
+        evidence = sub_gate_result.get("evidence") or {}
+        pf_last = (
+            _float_or_none(evidence.get("pf_last"))
+            if isinstance(evidence, dict)
+            else None
+        )
+        if pf_last is None:
+            pf_last = _float_from_detail(
+                detail,
+                r"pf_decline_first=[-+]?\d+(?:\.\d+)?_last=([-+]?\d+(?:\.\d+)?)",
+            )
+        if pf_last is not None and pf_last >= EDGE_DECAY_HARD_PF_LAST:
+            return "EDGE_SOFT"
+        return "EDGE_HARD"
+
     if name.startswith("8.7"):
         evidence = sub_gate_result.get("evidence") or {}
         config_source = (
@@ -1008,6 +1026,13 @@ def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None
         # (cushion + net PF) graded gross. Re-run with a real stream.
         classification["cost_cushion"] = "INVALID"
         invalid = True
+
+    # A zero-trade baseline is not merit evidence.  It must dominate any stale or
+    # independently-computed sub-gate result (notably PBO) so an empty Q08 run can
+    # never synthesize FAIL_HARD.
+    if not trades:
+        classification["baseline_trade_count"] = "INVALID"
+        return "INVALID", classification
 
     # HARD dominates: a definitive edge failure (e.g. PBO 88%, net PF < 1.0) means the EA is
     # not robust regardless of a non-evaluable gate.
@@ -1184,9 +1209,11 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
             "N_SEASON": N_SEASON,
             "CHOP_SOFT": CHOP_SOFT,
             "PBO_HARD": PBO_HARD,
+            "PBO_MIN_SPLITS": sub_8_7_pbo.PBO_MIN_SPLITS,
             "PBO_HARD_CONFIG_SOURCE": "Q03",
             "PBO_NEIGHBORHOOD_FALLBACK_MAX_TIER": "EDGE_SOFT",
             "PBO_UNKNOWN_SOURCE_POLICY": "EDGE_HARD",
+            "EDGE_DECAY_HARD_PF_LAST": EDGE_DECAY_HARD_PF_LAST,
         },
         "generated_at_utc": dt.datetime.now(dt.UTC).isoformat(),
         "n_trades": len(trades),

@@ -84,7 +84,27 @@ class BasketWorkItemsTests(unittest.TestCase):
     def test_payload_timeout_extends_phase_active_timeout(self) -> None:
         payload = json.dumps({"timeout_min": 120})
 
-        self.assertEqual(farmctl._active_timeout_min_for_work_item("Q08", payload), 120)
+        expected = farmctl._q08_active_timeout_min({})
+        self.assertEqual(
+            farmctl._active_timeout_min_for_work_item("Q08", payload),
+            expected,
+        )
+
+    def test_q08_timeout_scales_with_child_workload(self) -> None:
+        h1 = farmctl._q08_active_timeout_min({"host_timeframe": "H1"})
+        m5 = farmctl._q08_active_timeout_min({"host_timeframe": "M5"})
+        basket = farmctl._q08_active_timeout_min({
+            "host_timeframe": "D1",
+            "portfolio_scope": "basket",
+        })
+
+        self.assertGreater(h1, farmctl.PHASE_ACTIVE_TIMEOUT_MIN["Q08"])
+        self.assertGreater(m5, h1)
+        self.assertGreaterEqual(basket, m5)
+
+        payload = {"host_timeframe": "M15"}
+        farmctl._apply_phase_timeout_min(payload, "Q08")
+        self.assertEqual(payload["timeout_min"], farmctl._q08_active_timeout_min(payload))
 
     def test_work_items_view_normalizes_numeric_ea_filter(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:

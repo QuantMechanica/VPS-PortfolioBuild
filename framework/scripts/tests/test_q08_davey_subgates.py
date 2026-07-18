@@ -295,6 +295,38 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
         self.assertEqual(result["evidence"]["q03_candidate_configs"], 1)
         self.assertEqual(result["evidence"]["neighborhood_candidate_configs"], 2)
 
+    def test_pbo_three_splits_is_low_sample_invalid(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            scores = Path(tmp) / "scores.csv"
+            with scores.open("w", encoding="utf-8", newline="") as handle:
+                writer = csv.writer(handle)
+                writer.writerow(["config_id", "slice_id", "score"])
+                for config, base in (("grid_001", 1.0), ("grid_002", 2.0)):
+                    for idx in range(1, 5):
+                        writer.writerow([config, f"S{idx}", base + idx / 10.0])
+
+            result = sub_8_7_pbo.run(scores_path=scores)
+
+        self.assertEqual(result["status"], "INVALID")
+        self.assertIn("insufficient_pbo_splits:got=3:need>=10", result["detail"])
+        self.assertEqual(result["evidence"]["splits_evaluated"], 3)
+        self.assertIn("raw_pbo_pct", result["evidence"])
+
+    def test_pbo_ten_splits_remains_evaluable(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            scores = Path(tmp) / "scores.csv"
+            with scores.open("w", encoding="utf-8", newline="") as handle:
+                writer = csv.writer(handle)
+                writer.writerow(["config_id", "slice_id", "score"])
+                for config, base in (("grid_001", 1.0), ("grid_002", 2.0)):
+                    for idx in range(1, 7):
+                        writer.writerow([config, f"S{idx}", base + idx / 10.0])
+
+            result = sub_8_7_pbo.run(scores_path=scores)
+
+        self.assertIn(result["status"], {"PASS", "FAIL"})
+        self.assertEqual(result["evidence"]["splits_evaluated"], 10)
+
     def test_pbo_non_even_common_slice_family_is_invalid(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             scores = Path(tmp) / "scores.csv"
@@ -547,6 +579,28 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
         self.assertTrue(result["passed"])
         self.assertLess(result["value"], 0)
 
+    def test_edge_decay_absolute_pf_floor_calibrates_hardness(self) -> None:
+        def decay_result(pf_last: float | None) -> dict:
+            evidence = {} if pf_last is None else {"pf_last": pf_last}
+            return {
+                "name": "8.8_edge_decay",
+                "status": "FAIL",
+                "detail": "pf_decline_first=2.090_last=1.242_pct=40.6_mode=swing_half_vs_half",
+                "evidence": evidence,
+            }
+
+        self.assertEqual(aggregate._classify_fail(decay_result(2.0)), "EDGE_SOFT")
+        self.assertEqual(aggregate._classify_fail(decay_result(1.242)), "EDGE_SOFT")
+        self.assertEqual(aggregate._classify_fail(decay_result(1.0318)), "EDGE_HARD")
+        self.assertEqual(
+            aggregate._classify_fail({
+                "name": "8.8_edge_decay",
+                "status": "FAIL",
+                "detail": "edge_decay_unparseable",
+            }),
+            "EDGE_HARD",
+        )
+
     def test_runs_test_detail_and_boolean_match_for_non_clustered_profit_stream(self) -> None:
         trades: list[dict] = []
         pattern = [1, 1, 0, 0]
@@ -644,6 +698,21 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
         subs = [{"name": "8.7_pbo", "status": "PASS"}]
         verdict, _ = aggregate._aggregate_verdict(subs, trades=[], cost_cushion_tier="EDGE_HARD")
         self.assertEqual(verdict, "INVALID")
+
+    def test_zero_trade_baseline_dominates_hard_pbo(self) -> None:
+        subs = [{
+            "name": "8.7_pbo",
+            "status": "FAIL",
+            "detail": "PBO=82.86%:max=40%:splits=35:overfit=29:source=Q03",
+            "evidence": {"config_source": "Q03"},
+        }]
+
+        verdict, classification = aggregate._aggregate_verdict(
+            subs, trades=[], cost_cushion_tier="INVALID"
+        )
+
+        self.assertEqual(verdict, "INVALID")
+        self.assertEqual(classification["baseline_trade_count"], "INVALID")
 
     def test_dl077_real_cost_fail_with_trades_still_hard(self) -> None:
         # Traded but gross <= cost -> a genuine cost failure stays FAIL_HARD.

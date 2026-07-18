@@ -16,6 +16,19 @@ import terminal_worker  # noqa: E402
 
 
 class TerminalWorkerAdoptionTests(unittest.TestCase):
+    def test_q08_monitor_uses_phase_scaled_timeout(self) -> None:
+        payload = {"timeout_min": 120, "host_timeframe": "M5"}
+        expected_min = farmctl._active_timeout_min_for_work_item(
+            "Q08", json.dumps(payload)
+        )
+
+        self.assertEqual(
+            terminal_worker._monitor_timeout_seconds(
+                payload, 90 * 60, phase="Q08"
+            ),
+            expected_min * 60,
+        )
+
     def _insert_active_item(self, root: Path, *, payload: dict[str, object]) -> dict[str, object]:
         farmctl.init_db(root)
         now = farmctl.utc_now()
