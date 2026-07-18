@@ -1,24 +1,24 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        10700
-; ea_slug:      tv-liq-break
+; ea_id:        12580
+; ea_slug:      fx-usd-exhaustion-reversal
 ; ea_version:   v5.0
-; set_version:  s20260718-stress-med
-; symbol:       XAUUSD.DWX
-; timeframe:    H1
-; environment:  q05_stress_medium
-; magic_slot:   3
+; set_version:  s20260718-stress-harsh
+; symbol:       AUDUSD.DWX
+; timeframe:    D1
+; environment:  q06_stress_harsh
+; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   bfff1aa35c0adbd30215032afa91d419286264359ab4ef3cde4c0096e8b9166a
+; build_hash:   f3ec5547becb42fee7ca6f6bc3d49b51277810223b7acae4d8dcb0381ec1d6b8
 ; author:       Development
 ; date:         2026-07-18
 ;==========================================================
-qm_magic_slot_offset=3
+qm_magic_slot_offset=2
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-qm_stress_reject_probability=0.0000
+qm_stress_reject_probability=0.1000
 ; core filter library params; filter-on/off variants must be pre-declared
 qm_filter_news_enabled=1
 qm_filter_news_mode=3
