@@ -662,11 +662,28 @@ def _run_baseline_for_trades(ea_id: int, symbol: str, terminal: str | None,
     is_basket = test_symbol != symbol
     timeout_run = 5400 if is_basket else 2400
     timeout_proc = timeout_run + 120
+    # Data-honest window: DWX index/late-start symbols begin 2018.07.02. A fixed
+    # 2017.01.01 request against the cleanly rebuilt NDX store hard-fails the
+    # tester ("history synchronization error", wave evidence 2026-07-18). Clamp
+    # from the symbol-history registry instead of requesting data that never existed.
+    from_date = "2017.01.01"
+    try:
+        import csv as _csv
+        _reg = repo_root / "framework" / "registry" / "dwx_symbol_history_ranges.csv"
+        with _reg.open("r", encoding="utf-8-sig", newline="") as _fh:
+            for _row in _csv.DictReader(_fh):
+                if (str(_row.get("symbol") or "").casefold() == test_symbol.casefold()
+                        and str(_row.get("period") or "").casefold() == period.casefold()):
+                    if int(_row.get("first_year") or 2017) >= 2018:
+                        from_date = "2018.07.02"
+                    break
+    except (OSError, TypeError, ValueError):
+        pass
     args = [
         "pwsh.exe", "-NoProfile", "-File",
         str(repo_root / "framework" / "scripts" / "run_smoke.ps1"),
         "-EAId", str(ea_id), "-Expert", expert, "-Symbol", test_symbol,
-        "-Year", "2025", "-FromDate", "2017.01.01", "-ToDate", "2025.12.31",
+        "-Year", "2025", "-FromDate", from_date, "-ToDate", "2025.12.31",
         "-Terminal", terminal or "T1", "-Period", period,
         "-Runs", "1", "-MinTrades", "1", "-Model", "4",
         "-SetFile", str(baseline), "-ReportRoot", str(report_root),

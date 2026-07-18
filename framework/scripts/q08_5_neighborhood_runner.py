@@ -671,6 +671,20 @@ def resolve_backtest_context(
     is_basket = tester_symbol.casefold() != logical_symbol.casefold()
     effective_from = from_date or ("2018.07.02" if is_basket else "2017.01.01")
     effective_to = to_date or "2025.12.31"
+    # Data-honest clamp for late-start (2018+) symbols like the rebuilt NDX store:
+    # a 2017 request hard-fails tester history sync (wave evidence 2026-07-18).
+    if not is_basket and effective_from < "2018":
+        _reg = Path(__file__).resolve().parents[1] / "registry" / "dwx_symbol_history_ranges.csv"
+        try:
+            with _reg.open("r", encoding="utf-8-sig", newline="") as _fh:
+                for _row in csv.DictReader(_fh):
+                    if (str(_row.get("symbol") or "").casefold() == tester_symbol.casefold()
+                            and str(_row.get("period") or "").casefold() == str(period).casefold()):
+                        if int(_row.get("first_year") or 2017) >= 2018:
+                            effective_from = "2018.07.02"
+                        break
+        except (OSError, TypeError, ValueError):
+            pass
     latest_full_year = manifest.get("latest_full_year")
     if is_basket and not latest_full_year:
         symbols = {
