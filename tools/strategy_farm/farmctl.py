@@ -124,6 +124,26 @@ PHASE_RUNNER_SCRIPTS = {
 }
 Q09_PORTFOLIO_MIN_TRADES = 20
 Q08_NEIGHBORHOOD_MAX_PARAMS = 2
+# Keep these budgets aligned with q08_davey.aggregate and
+# q08_5_neighborhood_runner.  The phase process runs a canonical baseline,
+# then a nominal neighborhood cell plus +/- children, then refreshes PBO.
+Q08_BASELINE_TIMEOUT_SEC = 2400
+Q08_BASKET_BASELINE_TIMEOUT_SEC = 5400
+Q08_RUNNER_HEADROOM_SEC = 120
+Q08_NEIGHBORHOOD_DEFAULT_CHILD_TIMEOUT_SEC = 900
+Q08_NEIGHBORHOOD_CHILD_HEADROOM_SEC = 120
+Q08_NEIGHBORHOOD_OUTER_HEADROOM_SEC = 60
+Q08_PBO_REFRESH_TIMEOUT_SEC = 600
+Q08_PHASE_PUBLISH_HEADROOM_SEC = 300
+Q08_CHILD_TIMEOUT_FLOOR_SEC = {
+    "M1": 4200,
+    "M5": 4200,
+    "M15": 3600,
+    "M30": 3600,
+    "H1": 1800,
+    "H2": 1800,
+    "H4": 1800,
+}
 NEWS_MATRIX_FALLBACK = Path(r"D:\QM\data\news_calendar\news_matrix.csv")
 NEWS_CALENDAR_CANDIDATES = (
     Path(r"D:\QM\data\news_calendar\news_calendar.csv"),
@@ -1713,6 +1733,13 @@ def _derive_phase_runner_verdict(summary: dict[str, Any], min_trades: int = 5, p
         return verdict_upper, reason or "phase runner waiting for required input"
     if verdict_upper in {"INFRA_FAIL", "ERROR", "TIMEOUT"}:
         return "INFRA_FAIL", reason or raw_verdict or "phase_runner_infra_fail"
+    if phase_key == "P5c" and summary.get("n_trades") is not None:
+        try:
+            q08_n_trades = int(summary.get("n_trades"))
+        except (TypeError, ValueError):
+            q08_n_trades = -1
+        if q08_n_trades == 0:
+            return "INFRA_FAIL", "q08_zero_trade_baseline"
     if verdict_upper == "INVALID":
         infra_invalid_tokens = (
             "summary_missing",
@@ -3833,6 +3860,48 @@ def _scale_timeout_for_workload(base_min: int, payload: dict[str, Any], phase: s
     return max(base_min, min(scaled, base_min * _TIMEOUT_SCALE_CAP_MULTIPLIER))
 
 
+def _q08_active_timeout_min(payload: dict[str, Any]) -> int:
+    """Return an outer Q08 budget that cannot undercut its bounded child runs."""
+    try:
+        max_params = int(
+            payload.get("q08_neighborhood_max_params")
+            or Q08_NEIGHBORHOOD_MAX_PARAMS
+        )
+    except (TypeError, ValueError):
+        max_params = Q08_NEIGHBORHOOD_MAX_PARAMS
+    max_params = max(0, min(max_params, Q08_NEIGHBORHOOD_MAX_PARAMS))
+    expected_runs = 1 + 2 * max_params
+
+    timeframe = str(payload.get("host_timeframe") or "").strip().upper()
+    child_timeout_sec = Q08_CHILD_TIMEOUT_FLOOR_SEC.get(
+        timeframe,
+        Q08_NEIGHBORHOOD_DEFAULT_CHILD_TIMEOUT_SEC,
+    )
+    is_basket = _payload_is_basket(payload)
+    if is_basket:
+        child_timeout_sec = max(child_timeout_sec, 3600)
+    elif not timeframe:
+        # Missing routing metadata must fail safe for M15/M30-class workloads.
+        child_timeout_sec = max(child_timeout_sec, 3600)
+
+    baseline_timeout_sec = (
+        Q08_BASKET_BASELINE_TIMEOUT_SEC if is_basket else Q08_BASELINE_TIMEOUT_SEC
+    )
+    neighborhood_outer_sec = (
+        expected_runs
+        * (child_timeout_sec + Q08_NEIGHBORHOOD_CHILD_HEADROOM_SEC)
+        + Q08_NEIGHBORHOOD_OUTER_HEADROOM_SEC
+    )
+    total_sec = (
+        baseline_timeout_sec
+        + Q08_RUNNER_HEADROOM_SEC
+        + neighborhood_outer_sec
+        + Q08_PBO_REFRESH_TIMEOUT_SEC
+        + Q08_PHASE_PUBLISH_HEADROOM_SEC
+    )
+    return (total_sec + 59) // 60
+
+
 def _active_timeout_min_for_work_item(phase: str, payload_json: str | None) -> int | None:
     timeout_min = PHASE_ACTIVE_TIMEOUT_MIN.get(str(phase or ""))
     if timeout_min is None:
@@ -3853,6 +3922,8 @@ def _active_timeout_min_for_work_item(phase: str, payload_json: str | None) -> i
     ):
         return max(int(timeout_min), BASKET_Q02_ACTIVE_TIMEOUT_MIN)
     phase_upper = str(phase or "").upper()
+    if phase_upper == "Q08":
+        timeout_min = max(int(timeout_min), _q08_active_timeout_min(payload))
     if phase_upper in _WORKLOAD_SCALED_PHASES:
         timeout_min = _scale_timeout_for_workload(int(timeout_min), payload, phase_upper)
     return int(timeout_min)
@@ -3866,6 +3937,11 @@ def _apply_phase_timeout_min(payload: dict[str, Any], phase: str) -> None:
         existing_timeout_min = int(payload.get("timeout_min") or 0)
     except (TypeError, ValueError):
         existing_timeout_min = 0
+    if str(phase or "").upper() == "Q08":
+        phase_timeout_min = max(
+            int(phase_timeout_min),
+            _q08_active_timeout_min(payload),
+        )
     payload["timeout_min"] = max(existing_timeout_min, int(phase_timeout_min))
 
 

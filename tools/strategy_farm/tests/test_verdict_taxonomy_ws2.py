@@ -114,6 +114,20 @@ class VerdictTaxonomyWs2Tests(unittest.TestCase):
         self.assertEqual((soft, soft_reason), ("FAIL_SOFT", "q08_soft_fail"))
         self.assertEqual((hard, hard_reason), ("FAIL_HARD", "q08_hard_fail"))
 
+    def test_q08_zero_trade_hard_result_is_infra_not_merit(self) -> None:
+        verdict, reason = farmctl._derive_phase_runner_verdict(
+            {
+                "phase": "Q08",
+                "verdict": "FAIL_HARD",
+                "reason": "hard_pbo_on_empty_baseline",
+                "n_trades": 0,
+            },
+            phase="Q08",
+        )
+
+        self.assertEqual(verdict, "INFRA_FAIL")
+        self.assertEqual(reason, "q08_zero_trade_baseline")
+
     def test_q08_aggregate_classifies_soft_chopping_fail(self) -> None:
         verdict, classification = q08_aggregate._aggregate_verdict(
             [

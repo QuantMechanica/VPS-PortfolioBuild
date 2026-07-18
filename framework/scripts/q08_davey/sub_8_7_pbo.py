@@ -26,6 +26,7 @@ if str(_FRAMEWORK_SCRIPTS) not in sys.path:
 GATE_NAME = "8.7_pbo"
 PBO_MAX = 0.40
 PBO_MAX_PCT = PBO_MAX * 100.0
+PBO_MIN_SPLITS = 10
 
 
 def run(ea_id: int | None = None, symbol: str | None = None,
@@ -115,6 +116,27 @@ def run(ea_id: int | None = None, symbol: str | None = None,
                 "n_configs": n_configs,
                 "n_common_slices": len(common_slices),
                 "splits_evaluated": splits,
+            },
+        )
+    if splits < PBO_MIN_SPLITS:
+        return make_result(
+            GATE_NAME,
+            "INVALID",
+            value=None,
+            threshold=PBO_MAX_PCT,
+            detail=f"insufficient_pbo_splits:got={splits}:need>={PBO_MIN_SPLITS}",
+            evidence={
+                "n_configs": n_configs,
+                "n_common_slices": len(common_slices),
+                "splits_evaluated": splits,
+                "overfit_splits": overfit,
+                "raw_pbo_pct": round(pbo_pct, 3),
+                "scores_path": str(scores_path),
+                "config_source": config_source,
+                "q03_candidate_configs": meta.get("q03_candidate_configs"),
+                "neighborhood_candidate_configs": meta.get(
+                    "neighborhood_candidate_configs"
+                ),
             },
         )
     status = "PASS" if pbo_pct < PBO_MAX_PCT else "FAIL"
