@@ -1,0 +1,52 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        12796
+; ea_slug:      carver-vol-trend
+; ea_version:   v5.0
+; set_version:  s20260719-stress-harsh
+; symbol:       SP500.DWX
+; timeframe:    D1
+; environment:  q06_stress_harsh
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   aee3f56cc9395bce07b30898ebd49a5e41f16a55198ab02386338219d2a67604
+; author:       Development
+; date:         2026-07-19
+;==========================================================
+qm_magic_slot_offset=1
+qm_rng_seed=99
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.1000
+; core filter library params; filter-on/off variants must be pre-declared
+qm_filter_news_enabled=1
+qm_filter_news_mode=3
+qm_filter_regime_enabled=0
+qm_filter_regime_lookback_bars=100
+qm_filter_regime_bull_return_pct=2.0
+qm_filter_regime_bear_return_pct=2.0
+qm_filter_volatility_enabled=0
+qm_filter_volatility_atr_period=14
+qm_filter_volatility_lookback_bars=50
+qm_filter_volatility_compression_ratio=0.75
+qm_filter_volatility_expansion_ratio=1.25
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=framework/EAs/QM5_12796_carver-vol-trend/docs/strategy_card.md
+strategy_tf=16408
+strategy_use_multispeed=1
+strategy_fast_period_1=8
+strategy_slow_period_1=32
+strategy_fast_period_2=16
+strategy_slow_period_2=64
+strategy_fast_period_3=32
+strategy_slow_period_3=128
+strategy_vol_lookback=25
+strategy_forecast_multiplier=1.0
+strategy_forecast_cap=20.0
+strategy_entry_forecast=0.0
+strategy_atr_period=20
+strategy_stop_atr_mult=3.0
+strategy_spread_filter=1
+strategy_max_spread_atr_mult=0.05

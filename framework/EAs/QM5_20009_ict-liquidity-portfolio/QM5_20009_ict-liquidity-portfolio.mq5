@@ -78,6 +78,15 @@ int      g_tester_attempt_budget_key = 0;
 datetime g_tester_attempt_event_time = 0;
 uint     g_tester_attempt_level_hash = 0;
 uint     g_tester_attempt_reference_hash = 0;
+MqlRates g_strategy_closed_rates[];
+int      g_strategy_closed_rate_count = 0;
+int      g_strategy_replay_budget_key = 0;
+bool     g_strategy_replay_cache_ready = false;
+double   g_strategy_replay_point = 0.0;
+double   g_strategy_replay_tick_size = 0.0;
+ICT_LevelRange g_strategy_index_opening_range;
+ICT_LevelRange g_strategy_fx_previous_week;
+ICT_SequenceResult g_strategy_cached_sequence;
 
 bool Strategy_IsIntegerStarValue(const int value,
                                  const int low,
@@ -384,7 +393,10 @@ bool Strategy_ReconstructIndex(const MqlRates &rates[],
                      min_rr,
                      tick_size,
                      point,
-                     result);
+                     result,
+                     0,
+                     count - 1,
+                     0);
    return true;
   }
 
@@ -526,7 +538,10 @@ bool Strategy_ReconstructFx(const MqlRates &rates[],
                            min_rr,
                            tick_size,
                            point,
-                           london);
+                           london,
+                           0,
+                           count - 1,
+                           0);
          if(london.consumed &&
             (!found_consumed || london.event_bar_time < earliest.event_bar_time))
            {
@@ -568,7 +583,10 @@ bool Strategy_ReconstructFx(const MqlRates &rates[],
                            min_rr,
                            tick_size,
                            point,
-                           new_york);
+                           new_york,
+                           0,
+                           count - 1,
+                           0);
          if(new_york.consumed &&
             (!found_consumed || new_york.event_bar_time < earliest.event_bar_time))
            {
@@ -679,24 +697,44 @@ string Strategy_AttemptKeyBase(const ICT_SequenceResult &signal)
                        signal.budget_key);
   }
 
+string Strategy_AttemptHistoryComment(const ICT_SequenceResult &signal)
+  {
+   return StringFormat("I09:%d:%08X:%08X",
+                       signal.budget_key,
+                       signal.frozen_level_hash,
+                       signal.reference_hash);
+  }
+
 void Strategy_LogAttemptStateIssue(const string event_name,
                                    const ICT_SequenceResult &signal,
                                    const string reason,
+                                   const int stored_state,
+                                   const datetime stored_event_time,
                                    const uint stored_level_hash,
                                    const uint stored_reference_hash)
   {
    QM_LogEvent(QM_ERROR,
                event_name,
-               StringFormat("{\"reason\":\"%s\",\"budget_key\":%d,\"current_level_hash\":%u,\"current_reference_hash\":%u,\"stored_level_hash\":%u,\"stored_reference_hash\":%u}",
+               StringFormat("{\"reason\":\"%s\",\"budget_key\":%d,\"current_event_time\":%I64d,\"current_level_hash\":%u,\"current_reference_hash\":%u,\"stored_state\":%d,\"stored_event_time\":%I64d,\"stored_level_hash\":%u,\"stored_reference_hash\":%u}",
                             QM_LoggerEscapeJson(reason),
                             signal.budget_key,
+                            (long)signal.event_bar_time,
                             signal.frozen_level_hash,
                             signal.reference_hash,
+                            stored_state,
+                            (long)stored_event_time,
                             stored_level_hash,
                             stored_reference_hash));
   }
 
-bool Strategy_ReadPersistentHash(const string key, uint &value)
+bool Strategy_AttemptIdentityValid(const ICT_SequenceResult &signal)
+  {
+   return signal.consumed && signal.budget_key > 0 &&
+          signal.event_bar_time > 0 && signal.frozen_level_hash != 0 &&
+          signal.reference_hash != 0;
+  }
+
+bool Strategy_ReadPersistentUint(const string key, uint &value)
   {
    value = 0;
    ResetLastError();
@@ -708,14 +746,119 @@ bool Strategy_ReadPersistentHash(const string key, uint &value)
    return true;
   }
 
-bool Strategy_PersistentAttemptClear(const ICT_SequenceResult &signal)
+bool Strategy_LoadPersistentAttempt(const ICT_SequenceResult &signal,
+                                    bool &exists,
+                                    int &state,
+                                    datetime &event_time,
+                                    uint &level_hash,
+                                    uint &reference_hash)
   {
-   if(signal.budget_key <= 0 || signal.frozen_level_hash == 0 ||
-      signal.reference_hash == 0)
+   exists = false;
+   state = ICT_ATTEMPT_NONE;
+   event_time = 0;
+   level_hash = 0;
+   reference_hash = 0;
+   const string base = Strategy_AttemptKeyBase(signal);
+   if(base == "")
      {
       Strategy_LogAttemptStateIssue("ICT_ATTEMPT_STATE_INVALID",
                                     signal,
-                                    "invalid_current_budget_or_hash",
+                                    "persistent_key_identity_unavailable",
+                                    ICT_ATTEMPT_NONE,
+                                    0,
+                                    0,
+                                    0);
+      return false;
+     }
+
+   const string state_key = base + "_S";
+   const string event_key = base + "_E";
+   const string level_key = base + "_L";
+   const string reference_key = base + "_R";
+   const bool state_exists = GlobalVariableCheck(state_key);
+   const bool event_exists = GlobalVariableCheck(event_key);
+   const bool level_exists = GlobalVariableCheck(level_key);
+   const bool reference_exists = GlobalVariableCheck(reference_key);
+   if(!state_exists && !event_exists && !level_exists && !reference_exists)
+      return true;
+   if(!state_exists || !event_exists || !level_exists || !reference_exists)
+     {
+      Strategy_LogAttemptStateIssue("ICT_ATTEMPT_STATE_CORRUPT",
+                                    signal,
+                                    "partial_persistent_attempt_state",
+                                    ICT_ATTEMPT_NONE,
+                                    0,
+                                    0,
+                                    0);
+      return false;
+     }
+
+   uint raw_state = 0;
+   uint raw_event_time = 0;
+   if(!Strategy_ReadPersistentUint(state_key, raw_state) ||
+      !Strategy_ReadPersistentUint(event_key, raw_event_time) ||
+      !Strategy_ReadPersistentUint(level_key, level_hash) ||
+      !Strategy_ReadPersistentUint(reference_key, reference_hash) ||
+      (raw_state != ICT_ATTEMPT_CONSUMED && raw_state != ICT_ATTEMPT_SUBMITTED) ||
+      raw_event_time == 0)
+     {
+      Strategy_LogAttemptStateIssue("ICT_ATTEMPT_STATE_CORRUPT",
+                                    signal,
+                                    "unreadable_persistent_attempt_state",
+                                    (int)raw_state,
+                                    (datetime)raw_event_time,
+                                    level_hash,
+                                    reference_hash);
+      return false;
+     }
+   exists = true;
+   state = (int)raw_state;
+   event_time = (datetime)raw_event_time;
+   return true;
+  }
+
+bool Strategy_AttemptIdentityMatches(const ICT_SequenceResult &signal,
+                                     const int stored_state,
+                                     const datetime stored_event_time,
+                                     const uint stored_level_hash,
+                                     const uint stored_reference_hash,
+                                     const string source)
+  {
+   if(stored_event_time != signal.event_bar_time)
+     {
+      Strategy_LogAttemptStateIssue("ICT_ATTEMPT_EVENT_DRIFT",
+                                    signal,
+                                    source + "_same_budget_event_drift",
+                                    stored_state,
+                                    stored_event_time,
+                                    stored_level_hash,
+                                    stored_reference_hash);
+      return false;
+     }
+   if(stored_level_hash != signal.frozen_level_hash ||
+      stored_reference_hash != signal.reference_hash)
+     {
+      Strategy_LogAttemptStateIssue("ICT_ATTEMPT_HASH_DRIFT",
+                                    signal,
+                                    source + "_same_budget_hash_drift",
+                                    stored_state,
+                                    stored_event_time,
+                                    stored_level_hash,
+                                    stored_reference_hash);
+      return false;
+     }
+   return true;
+  }
+
+bool Strategy_BindConsumedAttempt(const ICT_SequenceResult &signal)
+  {
+   if(!Strategy_AttemptIdentityValid(signal))
+     {
+      Strategy_LogAttemptStateIssue("ICT_ATTEMPT_STATE_INVALID",
+                                    signal,
+                                    "invalid_consumed_attempt_identity",
+                                    ICT_ATTEMPT_NONE,
+                                    0,
                                     0,
                                     0);
       return false;
@@ -725,99 +868,117 @@ bool Strategy_PersistentAttemptClear(const ICT_SequenceResult &signal)
    // shared across tester runs and would contaminate deterministic duplicates.
    if(MQLInfoInteger(MQL_TESTER) != 0)
      {
-      if(!g_tester_attempt_claimed ||
+      if(g_tester_attempt_state == ICT_ATTEMPT_NONE ||
          g_tester_attempt_budget_key != signal.budget_key)
+        {
+         g_tester_attempt_state = ICT_ATTEMPT_CONSUMED;
+         g_tester_attempt_budget_key = signal.budget_key;
+         g_tester_attempt_event_time = signal.event_bar_time;
+         g_tester_attempt_level_hash = signal.frozen_level_hash;
+         g_tester_attempt_reference_hash = signal.reference_hash;
          return true;
-      if(g_tester_attempt_level_hash != signal.frozen_level_hash ||
-         g_tester_attempt_reference_hash != signal.reference_hash)
-         Strategy_LogAttemptStateIssue("ICT_ATTEMPT_HASH_DRIFT",
-                                       signal,
-                                       "tester_same_budget_hash_drift",
-                                       g_tester_attempt_level_hash,
-                                       g_tester_attempt_reference_hash);
+        }
+      if(!Strategy_AttemptIdentityMatches(signal,
+                                          g_tester_attempt_state,
+                                          g_tester_attempt_event_time,
+                                          g_tester_attempt_level_hash,
+                                          g_tester_attempt_reference_hash,
+                                          "tester"))
+         return false;
+      return g_tester_attempt_state == ICT_ATTEMPT_CONSUMED;
+     }
+
+   bool exists = false;
+   int stored_state = ICT_ATTEMPT_NONE;
+   datetime stored_event_time = 0;
+   uint stored_level_hash = 0;
+   uint stored_reference_hash = 0;
+   if(!Strategy_LoadPersistentAttempt(signal,
+                                      exists,
+                                      stored_state,
+                                      stored_event_time,
+                                      stored_level_hash,
+                                      stored_reference_hash))
       return false;
+   if(exists)
+     {
+      if(!Strategy_AttemptIdentityMatches(signal,
+                                          stored_state,
+                                          stored_event_time,
+                                          stored_level_hash,
+                                          stored_reference_hash,
+                                          "live"))
+         return false;
+      return stored_state == ICT_ATTEMPT_CONSUMED;
      }
 
    const string base = Strategy_AttemptKeyBase(signal);
    if(base == "")
+      return false;
+   // Identity is written before state. A crash or failed write leaves a partial
+   // record that subsequent reads treat as consumed/fail-closed.
+   if(GlobalVariableSet(base + "_L", (double)signal.frozen_level_hash) == 0 ||
+      GlobalVariableSet(base + "_R", (double)signal.reference_hash) == 0 ||
+      GlobalVariableSet(base + "_E", (double)signal.event_bar_time) == 0 ||
+      GlobalVariableSet(base + "_S", (double)ICT_ATTEMPT_CONSUMED) == 0)
      {
-      Strategy_LogAttemptStateIssue("ICT_ATTEMPT_STATE_INVALID",
+      Strategy_LogAttemptStateIssue("ICT_ATTEMPT_PERSIST_FAILED",
                                     signal,
-                                    "persistent_key_identity_unavailable",
+                                    "consumed_state_write_failed",
+                                    ICT_ATTEMPT_NONE,
+                                    0,
                                     0,
                                     0);
       return false;
      }
-   const string marker_key = base + "_M";
-   const string level_key = base + "_L";
-   const string reference_key = base + "_R";
-   const bool marker_exists = GlobalVariableCheck(marker_key);
-   const bool level_exists = GlobalVariableCheck(level_key);
-   const bool reference_exists = GlobalVariableCheck(reference_key);
-   if(!marker_exists && !level_exists && !reference_exists)
-      return true;
-   if(!marker_exists || !level_exists || !reference_exists)
-     {
-      Strategy_LogAttemptStateIssue("ICT_ATTEMPT_STATE_CORRUPT",
-                                    signal,
-                                    "partial_persistent_attempt_state",
-                                    0,
-                                    0);
-      return false;
-     }
-
-   uint marker = 0;
-   uint stored_level_hash = 0;
-   uint stored_reference_hash = 0;
-   if(!Strategy_ReadPersistentHash(marker_key, marker) || marker != 1 ||
-      !Strategy_ReadPersistentHash(level_key, stored_level_hash) ||
-      !Strategy_ReadPersistentHash(reference_key, stored_reference_hash))
-     {
-      Strategy_LogAttemptStateIssue("ICT_ATTEMPT_STATE_CORRUPT",
-                                    signal,
-                                    "unreadable_persistent_attempt_state",
-                                    stored_level_hash,
-                                    stored_reference_hash);
-      return false;
-     }
-   if(stored_level_hash != signal.frozen_level_hash ||
-      stored_reference_hash != signal.reference_hash)
-      Strategy_LogAttemptStateIssue("ICT_ATTEMPT_HASH_DRIFT",
-                                    signal,
-                                    "same_budget_hash_drift",
-                                    stored_level_hash,
-                                    stored_reference_hash);
-   return false; // matching marker is consumed; drift/corruption is fail-closed.
+   GlobalVariablesFlush();
+   return true;
   }
 
 bool Strategy_ClaimAttempt(const ICT_SequenceResult &signal)
   {
-   if(!Strategy_PersistentAttemptClear(signal))
+   if(!Strategy_BindConsumedAttempt(signal))
       return false;
 
    if(MQLInfoInteger(MQL_TESTER) != 0)
      {
-      g_tester_attempt_claimed = true;
-      g_tester_attempt_budget_key = signal.budget_key;
-      g_tester_attempt_level_hash = signal.frozen_level_hash;
-      g_tester_attempt_reference_hash = signal.reference_hash;
+      g_tester_attempt_state = ICT_ATTEMPT_SUBMITTED;
       return true;
      }
 
-   const string base = Strategy_AttemptKeyBase(signal);
-   if(base == "")
+   bool exists = false;
+   int stored_state = ICT_ATTEMPT_NONE;
+   datetime stored_event_time = 0;
+   uint stored_level_hash = 0;
+   uint stored_reference_hash = 0;
+   if(!Strategy_LoadPersistentAttempt(signal,
+                                      exists,
+                                      stored_state,
+                                      stored_event_time,
+                                      stored_level_hash,
+                                      stored_reference_hash) ||
+      !exists || stored_state != ICT_ATTEMPT_CONSUMED ||
+      !Strategy_AttemptIdentityMatches(signal,
+                                       stored_state,
+                                       stored_event_time,
+                                       stored_level_hash,
+                                       stored_reference_hash,
+                                       "submit"))
       return false;
-   // Hashes are written before the marker. A crash or failed write leaves a
-   // partial state that the reader treats as consumed/fail-closed.
-   if(GlobalVariableSet(base + "_L", (double)signal.frozen_level_hash) == 0 ||
-      GlobalVariableSet(base + "_R", (double)signal.reference_hash) == 0 ||
-      GlobalVariableSet(base + "_M", 1.0) == 0)
+
+   const string state_key = Strategy_AttemptKeyBase(signal) + "_S";
+   ResetLastError();
+   if(!GlobalVariableSetOnCondition(state_key,
+                                    (double)ICT_ATTEMPT_SUBMITTED,
+                                    (double)ICT_ATTEMPT_CONSUMED))
      {
-      Strategy_LogAttemptStateIssue("ICT_ATTEMPT_PERSIST_FAILED",
+      Strategy_LogAttemptStateIssue("ICT_ATTEMPT_SUBMIT_TRANSITION_FAILED",
                                     signal,
-                                    "global_variable_write_failed",
-                                    0,
-                                    0);
+                                    "consumed_to_submitted_cas_failed",
+                                    stored_state,
+                                    stored_event_time,
+                                    stored_level_hash,
+                                    stored_reference_hash);
       return false;
      }
    GlobalVariablesFlush();
@@ -828,7 +989,7 @@ bool Strategy_HistoryBudgetClear(const ICT_SequenceResult &signal)
   {
    const int magic = QM_FrameworkMagic();
    if(magic <= 0 || signal.budget_key <= 0 ||
-      !Strategy_PersistentAttemptClear(signal))
+      !Strategy_BindConsumedAttempt(signal))
       return false;
    const datetime now = TimeCurrent();
    const int lookback_days = (strategy_mode == ICT_MODE_INDEX_MSS_FVG) ? 4 : 24;
@@ -855,6 +1016,7 @@ bool Strategy_HistoryBudgetClear(const ICT_SequenceResult &signal)
          (ENUM_ORDER_TYPE)HistoryOrderGetInteger(ticket, ORDER_TYPE);
       const datetime setup_time =
          (datetime)HistoryOrderGetInteger(ticket, ORDER_TIME_SETUP);
+      const string order_comment = HistoryOrderGetString(ticket, ORDER_COMMENT);
       if(GetLastError() != 0)
          return false;
       if(order_symbol != _Symbol || order_magic != magic ||
@@ -863,7 +1025,19 @@ bool Strategy_HistoryBudgetClear(const ICT_SequenceResult &signal)
       if(setup_time <= 0)
          return false;
       if(Strategy_BudgetKeyAtTime(setup_time) == signal.budget_key)
+        {
+         const string expected_comment = Strategy_AttemptHistoryComment(signal);
+         if(StringFind(order_comment, "I09:") == 0 &&
+            order_comment != expected_comment)
+            Strategy_LogAttemptStateIssue("ICT_ATTEMPT_HISTORY_IDENTITY_DRIFT",
+                                          signal,
+                                          "same_budget_history_comment_drift",
+                                          ICT_ATTEMPT_SUBMITTED,
+                                          setup_time,
+                                          0,
+                                          0);
          return false;
+        }
      }
 
    const int deal_total = HistoryDealsTotal();
@@ -1092,10 +1266,7 @@ bool Strategy_BuildEntryRequest(const ICT_SequenceResult &signal,
                                          (signal.direction > 0) ? -1 : 1);
    request.tp = Strategy_NormalizeToTick(signal.target, 0);
    // Compact 30-character history identity: budget + both replay hashes.
-   request.reason = StringFormat("I09:%d:%08X:%08X",
-                                 signal.budget_key,
-                                 signal.frozen_level_hash,
-                                 signal.reference_hash);
+   request.reason = Strategy_AttemptHistoryComment(signal);
    request.symbol_slot = qm_magic_slot_offset;
    if(!Strategy_AssignPendingExpiration(expiration_seconds, request))
       return false;
@@ -1322,6 +1493,8 @@ void OnTick()
 
 void OnTimer()
   {
+   // Retry mandatory cancellation/flat paths even when this symbol has no tick.
+   Strategy_RunMandatorySafety();
    QM_FrameworkOnTimer();
   }
 

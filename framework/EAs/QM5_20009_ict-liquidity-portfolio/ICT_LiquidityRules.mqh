@@ -196,17 +196,21 @@ uint ICT_RangeFingerprint(const int key,
    return hash;
   }
 
-bool ICT_CollectNYRange(const MqlRates &rates[],
-                        const int count,
-                        const int ny_date_key,
-                        const int start_minute,
-                        const int end_minute,
-                        const int expected_bars,
-                        const double tick_size,
-                        ICT_LevelRange &range)
+bool ICT_CollectNYRangeBounded(const MqlRates &rates[],
+                               const int count,
+                               const int scan_first_index,
+                               const int scan_last_index,
+                               const int ny_date_key,
+                               const int start_minute,
+                               const int end_minute,
+                               const int expected_bars,
+                               const double tick_size,
+                               ICT_LevelRange &range)
   {
    ICT_ResetRange(range);
-   for(int i = 0; i < count; ++i)
+   const int first = MathMax(0, scan_first_index);
+   const int last = MathMin(count - 1, scan_last_index);
+   for(int i = first; i <= last; ++i)
      {
       if(ICT_NYDateKey(rates[i].time) != ny_date_key)
          continue;
@@ -236,6 +240,27 @@ bool ICT_CollectNYRange(const MqlRates &rates[],
                                                range.high,
                                                tick_size);
    return range.valid;
+  }
+
+bool ICT_CollectNYRange(const MqlRates &rates[],
+                        const int count,
+                        const int ny_date_key,
+                        const int start_minute,
+                        const int end_minute,
+                        const int expected_bars,
+                        const double tick_size,
+                        ICT_LevelRange &range)
+  {
+   return ICT_CollectNYRangeBounded(rates,
+                                    count,
+                                    0,
+                                    count - 1,
+                                    ny_date_key,
+                                    start_minute,
+                                    end_minute,
+                                    expected_bars,
+                                    tick_size,
+                                    range);
   }
 
 bool ICT_CollectPreviousTradingWeek(const MqlRates &rates[],
@@ -322,10 +347,12 @@ int ICT_LatestPrePenetrationPivot(const MqlRates &rates[],
                                   const int count,
                                   const int penetration_index,
                                   const int wing,
-                                  const bool want_high)
+                                  const bool want_high,
+                                  const int history_first_index)
   {
    // The pivot's right wing must be closed before, not on, the penetration bar.
-   for(int i = penetration_index - wing - 1; i >= wing; --i)
+   const int first_pivot = MathMax(wing, history_first_index + wing);
+   for(int i = penetration_index - wing - 1; i >= first_pivot; --i)
      {
       const bool found = want_high ? ICT_StrictPivotHigh(rates, count, i, wing)
                                    : ICT_StrictPivotLow(rates, count, i, wing);
@@ -340,10 +367,11 @@ int ICT_LatestPrePenetrationPivot(const MqlRates &rates[],
 bool ICT_SMA_TR14At(const MqlRates &rates[],
                     const int count,
                     const int index,
+                    const int history_first_index,
                     double &atr)
   {
    atr = 0.0;
-   if(index < 14 || index >= count)
+   if(index - history_first_index < 14 || index >= count)
       return false;
    for(int i = index - 13; i <= index; ++i)
      {
@@ -388,13 +416,15 @@ bool ICT_FindReclaim(const MqlRates &rates[],
                      const int session_start_minute,
                      const int session_end_minute,
                      const int timeframe_seconds,
+                     const int event_last_index,
                      int &reclaim_index,
                      double &swept_extreme)
   {
    reclaim_index = -1;
    swept_extreme = (direction > 0) ? rates[penetration_index].low
                                    : rates[penetration_index].high;
-   const int last = MathMin(count - 1, penetration_index + reclaim_bars);
+   const int last = MathMin(MathMin(count - 1, event_last_index),
+                            penetration_index + reclaim_bars);
    for(int i = penetration_index; i <= last; ++i)
      {
       if(!ICT_IsEventBarInSession(rates[i],
@@ -447,7 +477,10 @@ bool ICT_BuildSequence(const MqlRates &rates[],
                        const double min_rr,
                        const double tick_size,
                        const double point,
-                       ICT_SequenceResult &result)
+                       ICT_SequenceResult &result,
+                       const int event_first_index,
+                       const int event_last_index,
+                       const int history_first_index)
   {
    ICT_ResetSequence(result);
    result.session = session;
@@ -457,7 +490,12 @@ bool ICT_BuildSequence(const MqlRates &rates[],
    result.frozen_level_hash = frozen_level_hash;
    result.reference_hash = reference_hash;
 
-   if(count < 20 || frozen_low <= 0.0 || frozen_high <= frozen_low ||
+   const int bounded_history_first = MathMax(0, history_first_index);
+   const int bounded_event_first = MathMax(bounded_history_first,
+                                           event_first_index);
+   const int bounded_event_last = MathMin(count - 1, event_last_index);
+   if(count < 20 || bounded_event_first > bounded_event_last ||
+      frozen_low <= 0.0 || frozen_high <= frozen_low ||
       target_long <= 0.0 || target_short <= 0.0 || tick_size <= 0.0 || point <= 0.0)
      {
       result.outcome = "INVALID_FROZEN_LEVELS";
@@ -469,7 +507,7 @@ bool ICT_BuildSequence(const MqlRates &rates[],
    int best_direction = 0;
    double best_extreme = 0.0;
 
-   for(int p = 0; p < count; ++p)
+   for(int p = bounded_event_first; p <= bounded_event_last; ++p)
      {
       if(!ICT_IsEventBarInSession(rates[p],
                                   ny_date_key,
@@ -516,6 +554,7 @@ bool ICT_BuildSequence(const MqlRates &rates[],
                              session_start_minute,
                              session_end_minute,
                              timeframe_seconds,
+                             bounded_event_last,
                              reclaim_index,
                              swept_extreme))
             continue;
@@ -554,7 +593,8 @@ bool ICT_BuildSequence(const MqlRates &rates[],
                                                           count,
                                                           best_penetration,
                                                           pivot_wing,
-                                                          best_direction > 0);
+                                                          best_direction > 0,
+                                                          bounded_history_first);
    if(pivot_index < 0)
      {
       result.outcome = "NO_CONFIRMED_PRE_SWEEP_PIVOT";
@@ -564,7 +604,8 @@ bool ICT_BuildSequence(const MqlRates &rates[],
                                              : rates[pivot_index].low;
 
    int mss_index = -1;
-   const int last_mss = MathMin(count - 1, best_reclaim + max_bars_to_mss);
+   const int last_mss = MathMin(bounded_event_last,
+                                best_reclaim + max_bars_to_mss);
    for(int i = best_reclaim + 1; i <= last_mss; ++i)
      {
       if(!ICT_IsEventBarInSession(rates[i],
@@ -592,7 +633,7 @@ bool ICT_BuildSequence(const MqlRates &rates[],
    int fvg_index = -1;
    double proximal_edge = 0.0;
    double fvg_atr = 0.0;
-   for(int i = mss_index + 1; i < count; ++i)
+   for(int i = mss_index + 1; i <= bounded_event_last; ++i)
      {
       if(!ICT_IsEventBarInSession(rates[i],
                                   ny_date_key,
@@ -600,7 +641,12 @@ bool ICT_BuildSequence(const MqlRates &rates[],
                                   session_end_minute,
                                   timeframe_seconds))
          break;
-       if(i < 2 || !ICT_SMA_TR14At(rates, count, i, fvg_atr))
+       if(i - bounded_history_first < 2 ||
+          !ICT_SMA_TR14At(rates,
+                          count,
+                          i,
+                          bounded_history_first,
+                          fvg_atr))
           continue;
 
        const double gap = (best_direction > 0)

@@ -70,10 +70,13 @@ hypothesis; it must never be described as an official ICT weekly strategy.
   placeholder `DXZ` compliance profile is not admissible for this build.
 - One position and one pending order per symbol/magic. Filled-trade and consumed-
   attempt budgets are reconstructed from bounded bars, historical orders/deals,
-  and a persistent live-terminal attempt marker containing both frozen hashes; an
-  EA restart cannot create another attempt. Same-budget hash drift and partial or
-  unreadable persistence fail closed. Tester markers are process-local so duplicate
-  tester runs cannot contaminate one another.
+  and a persistent live-terminal marker containing `event_bar_time` plus both
+  frozen hashes. State `CONSUMED` lets only that identical event progress on later
+  bars; state `SUBMITTED` is written before `OrderSend` and blocks every retry,
+  including rejects and later cancellation. An EA restart cannot create another
+  attempt. Same-budget event/hash drift and partial or unreadable persistence fail
+  closed. Tester markers are process-local so duplicate tester runs cannot
+  contaminate one another.
 
 ## 3. Sleeve A — `INDEX_MSS_FVG_AM`
 
