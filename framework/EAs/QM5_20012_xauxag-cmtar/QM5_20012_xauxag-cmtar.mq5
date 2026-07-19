@@ -255,6 +255,17 @@ bool Strategy_MaxHoldExceeded()
            (long)MathMax(1, strategy_max_hold_days) * 86400);
   }
 
+bool Strategy_PairMonthExpired()
+  {
+   datetime entry_time = g_pair_entry_time;
+   if(entry_time <= 0)
+      entry_time = Strategy_CurrentPairEntryTime();
+   const int opened_month = Strategy_MonthKey(entry_time);
+   const int current_month = Strategy_MonthKey(TimeCurrent());
+   return (opened_month > 0 && current_month > 0 &&
+           opened_month != current_month);
+  }
+
 string Strategy_AttemptStateKey()
   {
    return StringFormat("QM5_%d_XAUXAG_CMTAR_ATTEMPT_MONTH", qm_ea_id);
@@ -688,7 +699,10 @@ void Strategy_ManageOpenPosition()
       Strategy_ClosePair(QM_EXIT_STRATEGY);
       return;
      }
-   if(g_month_boundary)
+   // Compare the owned entry month on every tick. If a transient broker
+   // rejection prevents the first boundary close, lifecycle repair keeps
+   // retrying instead of silently carrying the old source-period package.
+   if(Strategy_PairMonthExpired())
      {
       Strategy_ClosePair(QM_EXIT_STRATEGY);
       return;
