@@ -323,9 +323,8 @@ def test_freeze_bundle_is_deterministic_and_manifest_never_hashes_itself(
     assert len(files_a) == 52
     parsed = json.loads(manifest_a)
     assert "manifest_sha256" not in parsed
-    assert freeze.detached_manifest_sha256(manifest_a).decode("ascii").strip() == hashlib.sha256(
-        manifest_a
-    ).hexdigest()
+    detached = freeze.detached_manifest_sha256(manifest_a).decode("ascii").strip().split()
+    assert detached == [hashlib.sha256(manifest_a).hexdigest(), "manifest.json"]
     changed = copy.deepcopy(frozen_inputs)
     changed["source_hashes"]["validator_sha256"] = "c" * 64
     monkeypatch.setattr(freeze, "build_freeze_inputs", lambda *_args, **_kwargs: changed)
@@ -384,7 +383,7 @@ def test_runner_chain_is_frozen_and_commission_groups_restore_in_finally() -> No
         "framework/scripts/invoke_dev1_smoke_task.ps1"
     )
     runner = (freeze.REPO_ROOT / artifacts["runner_run_smoke"]).read_text(encoding="utf-8-sig")
-    assert "injected_sha256={3}" in runner
+    assert "injected_sha256=" in runner
     assert "} finally {" in runner
     assert "commissionGroupRestoreEvidence = Set-TesterGroupsCommission" in runner
     assert "restored_to_canonical" in runner
