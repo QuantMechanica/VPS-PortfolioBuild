@@ -15077,3 +15077,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20004,turn-of-month-index-long,1,NDX.DWX,200040001,2026-07-19,claude,active
 20010,xau-friday-rush,0,XAUUSD.DWX,200100000,2026-07-19,claude,active
 20011,xng-thu-tue,0,XNGUSD.DWX,200110000,2026-07-19,Development,active
+13210,mulham-asian-sweep-london,0,EURUSD.DWX,132100000,2026-07-19,Codex,active
+13210,mulham-asian-sweep-london,1,XAUUSD.DWX,132100001,2026-07-19,Codex,active
