@@ -1,0 +1,18 @@
+{
+  "symbol": "EURUSD.DWX",
+  "window": "2022.01.01-2025.12.31",
+  "elapsed_s": 804.4,
+  "report": {
+    "total_trades": "47",
+    "total_net_profit": "1",
+    "profit_factor": "1.10",
+    "bars": "1443044"
+  },
+  "q08": {
+    "trades": 47,
+    "longs": 0,
+    "shorts": 0,
+    "net": 3796.59,
+    "pf": 1.21
+  }
+}
