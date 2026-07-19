@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        12580
 ; ea_slug:      fx-usd-exhaustion-reversal
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   79f651697c14e669574169831c4a05696e3f182f6669716ece71793e8a10f47f
+; build_hash:   020117248c423a1494f122fe2746cb35299ee9063e875c783a061bc2181cce0e
 ; author:       Development
 ; date:         2026-06-26
 ;==========================================================
