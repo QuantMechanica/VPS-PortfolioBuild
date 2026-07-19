@@ -94,12 +94,39 @@ class FrozenContractTests(unittest.TestCase):
         self.assertNotIn("Strategy_Reconstruct(signal)", tick)
         self.assertIn("return Strategy_Reconstruct(result); // one full replay", cached)
         self.assertIn("g_strategy_replay_cache_ready = false", cached)
+        self.assertIn("closed_bar >= g_strategy_replay_retry_not_before", cached)
+        self.assertIn("bounded closed-bar backoff recovery", cached)
+        schedule = function_body(EA, "Strategy_ScheduleReplayRetry")
+        self.assertIn("g_strategy_replay_failure_count + 1", schedule)
+        self.assertIn("retry_bars *= 2", schedule)
+        self.assertIn("? 60 : 12", schedule)
         for bound in (
             "bounded_history_first",
             "bounded_event_first",
             "bounded_event_last",
         ):
             self.assertIn(bound, function_body(RULES, "ICT_BuildSequence"))
+
+    def test_full_and_incremental_paths_share_the_frozen_sequence_engine(self) -> None:
+        full_index = function_body(EA, "Strategy_ReconstructIndex")
+        full_fx = function_body(EA, "Strategy_ReconstructFx")
+        cached_index = function_body(EA, "Strategy_UpdateIndexCache")
+        cached_fx = function_body(EA, "Strategy_RebuildFxSession")
+        logical_window = function_body(EA, "Strategy_LogicalHistoryFirstIndex")
+        sequence = function_body(RULES, "ICT_BuildSequence")
+
+        self.assertEqual(full_index.count("ICT_BuildSequence("), 1)
+        self.assertEqual(full_fx.count("ICT_BuildSequence("), 2)
+        self.assertEqual(cached_index.count("ICT_BuildSequence("), 1)
+        self.assertEqual(cached_fx.count("ICT_BuildSequence("), 1)
+        self.assertIn("count - Strategy_ReplayRequestedBars()", logical_window)
+        self.assertIn("Strategy_LogicalHistoryFirstIndex()", cached_index)
+        self.assertIn("Strategy_LogicalHistoryFirstIndex()", cached_fx)
+        self.assertIn("bounded_history_first", sequence)
+        self.assertIn("bounded_event_first", sequence)
+        self.assertIn("bounded_event_last", sequence)
+        self.assertIn("ICT_LatestPrePenetrationPivot", sequence)
+        self.assertIn("ICT_SMA_TR14At", sequence)
 
     def test_management_precedes_every_entry_filter(self) -> None:
         safety = function_body(EA, "Strategy_RunMandatorySafety")
