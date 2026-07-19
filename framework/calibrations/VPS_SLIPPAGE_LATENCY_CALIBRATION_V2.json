@@ -656,6 +656,25 @@
       "stub_created_at": "2026-07-13T05:38:20+00:00",
       "stub_source": "farmctl_pump_p5_calibration_autostub"
     },
+    "QM5_13140_XTI_XNG_ALIQ_D1": {
+      "auto_stub": true,
+      "commission_cents_per_lot": 700.0,
+      "derive_from": "D:\\QM\\reports\\work_items\\275aff7b-1563-426a-b723-8c9ab2e318dd\\QM5_13140\\Q04\\QM5_13140_XTI_XNG_ALIQ_D1\\aggregate.json",
+      "latency_ms": {
+        "avg": 50.0,
+        "p95": 120.0
+      },
+      "slippage_points": {
+        "avg": 1.0,
+        "p95": 3.0
+      },
+      "spread_points": {
+        "median": 20.0,
+        "p95": 60.0
+      },
+      "stub_created_at": "2026-07-19T15:30:38+00:00",
+      "stub_source": "farmctl_pump_p5_calibration_autostub"
+    },
     "SP500.DWX": {
       "auto_stub": true,
       "commission_cents_per_lot": 700.0,
