@@ -52,9 +52,11 @@ is a falsification question for Q02.
 ## 4. Entry Rules
 
 On `XNGUSD.DWX` D1, BUY once per broker week at Friday D1 open, the executable
-proxy for Thursday close. Persist the weekly attempt before submission.
-Require no same-magic position or entry deal, valid closed ATR(20), and spread
-not above 2500 points.
+proxy for Thursday close. Require the first tradable tick within a locked
+five-minute grace and prime later Friday attaches so they cannot enter.
+Persist the weekly attempt before news gating and submission. Require no
+same-magic position or entry deal, valid closed ATR(20), and spread not above
+2500 points.
 
 ## 5. Exit Rules
 

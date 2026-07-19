@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   174d25a5c50e85b9ddff5b46460f8cdf1911da7ccd31bc127a3f2eb80b71e22b
+; build_hash:   db96b8b8c1af62d3d65563a5f84b11b01d761bc1c95ffd0929626ebed60f8089
 ; author:       Development
 ; date:         2026-07-19
 ;==========================================================
@@ -32,6 +32,7 @@ qm_stress_reject_probability=0.0
 ; card_defaults_source=C:\QM\repo\strategy-seeds\cards\xng-thu-tue_card.md
 strategy_entry_dow=5
 strategy_exit_dow=3
+strategy_entry_grace_minutes=5
 strategy_atr_period=20
 strategy_atr_sl_mult=3.5
 strategy_max_hold_days=7

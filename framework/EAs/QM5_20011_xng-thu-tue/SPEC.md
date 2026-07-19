@@ -25,6 +25,7 @@ and must be measured rather than assumed away.
 |---|---:|---|---|
 | `strategy_entry_dow` | 5 | 5 | Friday D1-open proxy for Thursday close; Sunday is 0 |
 | `strategy_exit_dow` | 3 | 3 | Wednesday D1-open proxy for Tuesday close |
+| `strategy_entry_grace_minutes` | 5 | 5 | Locked first-tradable opening tolerance; later attaches cannot enter |
 | `strategy_atr_period` | 20 | 14, 20, 30 | Closed-D1 ATR period for the frozen hard stop |
 | `strategy_atr_sl_mult` | 3.5 | 2.5, 3.5, 4.5 | ATR multiple for the initial stop |
 | `strategy_max_hold_days` | 7 | 7 | Calendar-day stale guard |
@@ -56,7 +57,10 @@ locked. Changing them creates another strategy rather than a parameter sweep.
 | Exit cadence | Wednesday D1 open or the next tradable D1 bar |
 
 The EA uses the framework D1 bar reader and weekly calendar-period key; it has
-no W1 tester-bar dependency.
+no W1 tester-bar dependency. A fresh attach more than five minutes after the
+Friday boundary primes the framework bar tracker and cannot create a late
+entry. The weekly attempt is persisted before news gating, so a news-blocked
+opening cannot be retried after restart.
 
 ## 5. Expected Behaviour
 

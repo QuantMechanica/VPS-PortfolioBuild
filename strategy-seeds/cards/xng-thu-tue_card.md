@@ -119,11 +119,14 @@ later portfolio evidence.
 - Evaluate entries only on a new `XNGUSD.DWX` D1 bar.
 - Require the current broker-calendar D1 bar to be Friday
   (`strategy_entry_dow=5`, Sunday=0), the executable proxy for Thursday close.
+- Require the first tradable tick to arrive within the locked five-minute
+  opening grace; prime late Friday attaches so they cannot enter mid-session.
 - BUY at market; the strategy is long only.
 - Require no same-magic open position and no earlier entry deal or persisted
   entry attempt in the same broker week.
-- Persist the weekly attempt marker before order submission so a restart or
-  broker rejection cannot create a second package that week.
+- Persist the weekly attempt marker before news gating and order submission so
+  a news block, restart or broker rejection cannot create a later package that
+  week.
 - Require a valid closed-bar ATR and a nonnegative spread no greater than
   `strategy_max_spread_points`.
 - Set one frozen hard stop at `strategy_atr_sl_mult * ATR(strategy_atr_period)`
@@ -164,6 +167,7 @@ later portfolio evidence.
 |---|---:|---|---|
 | `strategy_entry_dow` | 5 | [5] | locked Friday D1 open proxy for Thursday close |
 | `strategy_exit_dow` | 3 | [3] | locked Wednesday D1 open proxy for Tuesday close |
+| `strategy_entry_grace_minutes` | 5 | [5] | locked first-tradable opening tolerance; late attaches are rejected |
 | `strategy_atr_period` | 20 | [14, 20, 30] | V5 frozen hard-stop estimate; source silent |
 | `strategy_atr_sl_mult` | 3.5 | [2.5, 3.5, 4.5] | V5 frozen hard-stop distance; source silent |
 | `strategy_max_hold_days` | 7 | [7] | stale guard only; normal hold is about five days |

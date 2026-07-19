@@ -42,6 +42,7 @@ input double qm_stress_reject_probability = 0.0;
 input group "Strategy"
 input int    strategy_entry_dow            = 5;
 input int    strategy_exit_dow             = 3;
+input int    strategy_entry_grace_minutes  = 5;
 input int    strategy_atr_period            = 20;
 input double strategy_atr_sl_mult           = 3.5;
 input int    strategy_max_hold_days         = 7;
@@ -51,6 +52,7 @@ int      g_last_entry_week_key = 0;
 string   g_attempt_state_key = "";
 bool     g_strategy_new_d1_bar = false;
 datetime g_strategy_d1_bar_time = 0;
+bool     g_entry_decision_ready = false;
 
 bool Strategy_IsXngD1()
   {
@@ -116,6 +118,28 @@ bool Strategy_RecordAttemptState(const int week_key)
    return (GlobalVariableSet(g_attempt_state_key, (double)week_key) > 0);
   }
 
+void Strategy_PrimeLateFridayAttach()
+  {
+   MqlRates current_bar;
+   ZeroMemory(current_bar);
+   if(!QM_ReadBar(_Symbol, PERIOD_D1, 0, current_bar))
+      return;
+   if(Strategy_DayOfWeek(current_bar.time) != strategy_entry_dow)
+      return;
+
+   const datetime now = TimeCurrent();
+   const long grace_seconds =
+      (long)MathMax(0, strategy_entry_grace_minutes) * 60;
+   if(now > current_bar.time &&
+      (long)(now - current_bar.time) > grace_seconds)
+     {
+      // The framework's first QM_IsNewBar call returns true. Consume that
+      // initialization edge when attaching after the approved opening window
+      // so a restart cannot manufacture a mid-Friday entry.
+      QM_IsNewBar(_Symbol, PERIOD_D1);
+     }
+  }
+
 bool Strategy_WeekAlreadyAttempted(const int week_key,
                                    const datetime decision_bar_time)
   {
@@ -152,6 +176,35 @@ bool Strategy_WeekAlreadyAttempted(const int week_key,
    return false;
   }
 
+bool Strategy_ConsumeFridayDecision()
+  {
+   g_entry_decision_ready = false;
+   if(!g_strategy_new_d1_bar || g_strategy_d1_bar_time <= 0)
+      return false;
+   if(Strategy_DayOfWeek(g_strategy_d1_bar_time) != strategy_entry_dow)
+      return false;
+
+   const datetime now = TimeCurrent();
+   const long grace_seconds =
+      (long)MathMax(0, strategy_entry_grace_minutes) * 60;
+   if(now < g_strategy_d1_bar_time ||
+      (long)(now - g_strategy_d1_bar_time) > grace_seconds)
+      return false;
+
+   const int week_key =
+      QM_CalendarPeriodKey(PERIOD_W1, _Symbol, 0);
+   if(Strategy_WeekAlreadyAttempted(week_key, g_strategy_d1_bar_time))
+      return false;
+
+   // Consume the opening decision before the news gate. If news, spread,
+   // history or broker state rejects the order, this source-defined opening
+   // cannot be retried later in the Friday session or after a restart.
+   if(!Strategy_RecordAttemptState(week_key))
+      return false;
+   g_entry_decision_ready = true;
+   return true;
+  }
+
 bool Strategy_NoTradeFilter()
   {
    if(!Strategy_IsXngD1())
@@ -159,6 +212,8 @@ bool Strategy_NoTradeFilter()
    if(qm_magic_slot_offset != 0)
       return true;
    if(strategy_entry_dow != 5 || strategy_exit_dow != 3)
+      return true;
+   if(strategy_entry_grace_minutes != 5)
       return true;
    if(strategy_atr_period != 14 &&
       strategy_atr_period != 20 &&
@@ -188,14 +243,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!g_strategy_new_d1_bar || g_strategy_d1_bar_time <= 0)
-      return false;
-   if(Strategy_DayOfWeek(g_strategy_d1_bar_time) != strategy_entry_dow)
-      return false;
-
-   const int week_key =
-      QM_CalendarPeriodKey(PERIOD_W1, _Symbol, 0);
-   if(Strategy_WeekAlreadyAttempted(week_key, g_strategy_d1_bar_time))
+   if(!g_entry_decision_ready || !g_strategy_new_d1_bar ||
+      g_strategy_d1_bar_time <= 0)
       return false;
 
    const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
@@ -223,10 +272,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    req.reason = "XNG_THU_CLOSE_TUE_CLOSE_LONG";
-   // An accepted signal consumes the weekly attempt before order submission.
-   // Stress rejection, broker rejection or restart must not create a retry.
-   if(!Strategy_RecordAttemptState(week_key))
-      return false;
    return true;
   }
 
@@ -307,6 +352,7 @@ int OnInit()
       return INIT_FAILED;
 
    Strategy_LoadAttemptState();
+   Strategy_PrimeLateFridayAttach();
    QM_LogEvent(QM_INFO, "INIT_OK",
                "{\"card\":\"QM5_20011\",\"ea\":\"xng-thu-tue\"}");
    return INIT_SUCCEEDED;
@@ -330,6 +376,7 @@ void OnTick()
 
    g_strategy_new_d1_bar = QM_IsNewBar(_Symbol, PERIOD_D1);
    g_strategy_d1_bar_time = 0;
+   g_entry_decision_ready = false;
    if(g_strategy_new_d1_bar)
      {
       MqlRates current_bar;
@@ -357,6 +404,11 @@ void OnTick()
 
    if(entry_blocked || !g_strategy_new_d1_bar ||
       g_strategy_d1_bar_time <= 0)
+      return;
+
+   // Consume the only authorized weekly decision before news gating. This
+   // makes a news-blocked Friday open terminal and restart deterministic.
+   if(!Strategy_ConsumeFridayDecision())
       return;
 
    const datetime broker_now = TimeCurrent();
