@@ -11,11 +11,27 @@ Run every ~15 min via QM_StrategyFarm_CodexFleetPacer. Idempotent. Spawns paced 
 work (more certified portfolio sleeves), not idle burn.
 """
 from __future__ import annotations
-import argparse, json, os, shutil, subprocess, sys, time
+import argparse, json, os, shutil, subprocess, sys
 import datetime as dt
 from pathlib import Path
 
+try:
+    from managed_codex import (
+        is_managed_codex_pid_live,
+        list_live_managed_codex_processes,
+        spawn_managed_codex,
+        terminate_managed_codex_pid,
+    )
+except ModuleNotFoundError:
+    from tools.strategy_farm.managed_codex import (
+        is_managed_codex_pid_live,
+        list_live_managed_codex_processes,
+        spawn_managed_codex,
+        terminate_managed_codex_pid,
+    )
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
+FARM_ROOT = Path(os.environ.get("QM_STRATEGY_FARM_ROOT", r"D:\QM\strategy_farm"))
 GOV_STATE = Path(r"D:/QM/reports/state/quota_governor_state.json")
 PACER_DIR = Path(r"D:/QM/strategy_farm/codex_pacer")
 PROMPT_DIR = PACER_DIR / "prompts"
@@ -27,7 +43,6 @@ LOG = Path(r"D:/QM/reports/state/codex_fleet_pacer.log")
 SOFT_CEIL_PCT = 92.0     # stop spawning at/above this weekly-used % (OWNER 2026-06-26: higher utilization)
 HARD_CEIL_PCT = 94.0     # kill our agents at/above this (guarantee no 100% cap-stop); 6% buffer to the cap
 DEFAULT_MAX_AGENTS = 4   # concurrency cap (CPU/backtest + safety)
-AGENT_FRESH_SEC = 240    # a live-log written within this window => agent still running
 MIN_HOURS_TO_RESET = 0.25
 PROMPT_ROTATION = ["focus_fx.md", "focus_commodity.md", "focus_backlog.md"]
 
@@ -54,24 +69,9 @@ def _resolve_codex() -> str:
     return shutil.which("codex.cmd") or shutil.which("codex") or "codex"
 
 
-def _running_agents() -> int:
-    LOG_DIR.mkdir(parents=True, exist_ok=True)
-    n = 0
-    for f in LOG_DIR.glob("agent_*.live.log"):
-        try:
-            if time.time() - f.stat().st_mtime < AGENT_FRESH_SEC:
-                n += 1
-        except OSError:
-            pass
-    return n
-
-
 def _alive(pid: int) -> bool:
-    try:
-        out = subprocess.run(["tasklist", "/FI", f"PID eq {pid}"], capture_output=True, text=True)
-        return str(pid) in out.stdout
-    except Exception:
-        return False
+    # A bare live PID is not ownership proof because Windows reuses PIDs.
+    return is_managed_codex_pid_live(FARM_ROOT, int(pid))
 
 
 def _spawn_agent(prompt_name: str) -> int | None:
@@ -81,16 +81,27 @@ def _spawn_agent(prompt_name: str) -> int | None:
         return None
     stamp = _now().strftime("%Y%m%d_%H%M%S")
     live_log = LOG_DIR / f"agent_{stamp}_{prompt_name.split('.')[0]}.live.log"
+    live_log.parent.mkdir(parents=True, exist_ok=True)
     creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
     try:
-        stdin_f = prompt.open("rb")
-        stdout_f = live_log.open("wb")
-        proc = subprocess.Popen(
-            [_resolve_codex(), "exec", "-s", "danger-full-access", "--cd", str(REPO_ROOT)],
-            stdin=stdin_f, stdout=stdout_f, stderr=subprocess.STDOUT,
-            creationflags=creationflags,
+        command = [_resolve_codex(), "exec", "-s", "danger-full-access", "--cd", str(REPO_ROOT)]
+        with prompt.open("rb") as stdin_f, live_log.open("wb") as stdout_f:
+            proc, lease = spawn_managed_codex(
+                FARM_ROOT,
+                command,
+                purpose="fleet_pacer",
+                cwd=REPO_ROOT,
+                max_age_minutes=60,
+                metadata={"prompt": prompt_name, "live_log": str(live_log)},
+                stdin=stdin_f,
+                stdout=stdout_f,
+                stderr=subprocess.STDOUT,
+                creationflags=creationflags,
+            )
+        _log(
+            f"spawned agent pid={proc.pid} lease={lease['lease_id']} "
+            f"prompt={prompt_name} log={live_log.name}"
         )
-        _log(f"spawned agent pid={proc.pid} prompt={prompt_name} log={live_log.name}")
         return proc.pid
     except Exception as exc:
         _log(f"spawn_failed prompt={prompt_name} err={exc}")
@@ -118,8 +129,9 @@ def main(argv: list[str] | None = None) -> int:
 
     hours_to_reset = max((reset - _now()).total_seconds() / 3600.0, MIN_HOURS_TO_RESET)
     rotation_idx = int(prev.get("rotation_idx", 0))
-    pids = [p for p in prev.get("agent_pids", []) if _alive(int(p))]
-    running = _running_agents()
+    fleet_leases = list_live_managed_codex_processes(FARM_ROOT, purpose="fleet_pacer")
+    pids = sorted({int(item["pid"]) for item in fleet_leases})
+    running = len(pids)
 
     # recent spend rate (%/hr) from our last observation
     rate = None
@@ -132,14 +144,16 @@ def main(argv: list[str] | None = None) -> int:
     target_rate = max(headroom / hours_to_reset, 0.0)  # %/hr to land at SOFT_CEIL at reset
 
     action = "hold"
+    hard_ceiling_stops: list[dict[str, object]] = []
     if used >= HARD_CEIL_PCT:
         # emergency: kill our agents so we never reach the 100% cap-stop
         for p in pids:
             try:
-                subprocess.run(["taskkill", "/PID", str(p), "/T", "/F"], capture_output=True)
-            except Exception:
-                pass
-        pids = []
+                stop = terminate_managed_codex_pid(FARM_ROOT, int(p))
+            except Exception as exc:
+                stop = {"stopped": False, "reason": repr(exc), "pid": int(p)}
+            hard_ceiling_stops.append(stop)
+        pids = [p for p in pids if _alive(int(p))]
         target = 0
         action = "HARD_CEIL_kill"
     elif used >= SOFT_CEIL_PCT:
@@ -176,6 +190,7 @@ def main(argv: list[str] | None = None) -> int:
         "target_rate_pct_per_hr": round(target_rate, 3), "hours_to_reset": round(hours_to_reset, 1),
         "running_before": running, "target": target, "spawned": spawned,
         "agent_pids": pids, "rotation_idx": rotation_idx, "action": action,
+        "hard_ceiling_stops": hard_ceiling_stops,
         "soft_ceil": SOFT_CEIL_PCT, "hard_ceil": HARD_CEIL_PCT, "max_agents": args.max_agents,
     }
     if not args.dry_run:

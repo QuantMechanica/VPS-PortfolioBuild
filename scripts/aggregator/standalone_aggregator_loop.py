@@ -33,6 +33,10 @@ ALLOWED_TERMINAL_STATUS = {
 }
 DISPATCH_STATE_PATH = Path(r"D:\QM\Reports\pipeline\dispatch_state.json")
 REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from tools.strategy_farm.process_identity import get_process_identity  # noqa: E402
 
 
 @dataclass(frozen=True)
@@ -80,8 +84,8 @@ def is_pid_alive(pid: int) -> bool:
     if pid <= 0:
         return False
     try:
-        os.kill(pid, 0)
-        return True
+        identity = get_process_identity(pid)
+        return bool(identity and identity.get("is_running", True))
     except Exception:
         return False
 

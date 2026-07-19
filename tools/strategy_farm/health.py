@@ -615,7 +615,7 @@ def chk_pump_task_health() -> dict:
     if result != 0:
         return _check("pump_task_lastresult", "FAIL", result, 0,
                       f"pump last exit code {result} (non-zero)",
-                      "Run pump manually: python tools/strategy_farm/farmctl.py pump; "
+                      "Run canonical pump manually: python C:\\QM\\repo\\tools\\strategy_farm\\farmctl.py pump; "
                       "check error output. Code 112 = ERROR_DISK_FULL (also: any script abort)")
     return _check("pump_task_lastresult", "OK", 0, 0, "last run exit 0", "")
 

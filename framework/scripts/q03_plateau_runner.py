@@ -86,6 +86,7 @@ from framework.scripts.q05_stress_medium import (  # noqa: E402
     _text_from_completed_process,
     summary_invalid_reason,
 )
+from tools.strategy_farm.process_identity import get_process_identity  # noqa: E402
 
 
 SCHEMA_VERSION = 1
@@ -1652,10 +1653,10 @@ def _pid_is_alive(pid: int) -> bool:
     if pid <= 0:
         return False
     try:
-        os.kill(pid, 0)
-    except OSError:
+        identity = get_process_identity(pid)
+    except Exception:
         return False
-    return True
+    return bool(identity and identity.get("is_running", True))
 
 
 def _acquire_execution_lock(out_dir: Path, contract: GridContract) -> tuple[Path, str]:

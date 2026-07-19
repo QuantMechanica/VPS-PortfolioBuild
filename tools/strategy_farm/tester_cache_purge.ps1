@@ -83,7 +83,13 @@ $protectedLookup = @{}
 foreach ($t in $protectedTerminals) { $protectedLookup[$t.ToUpperInvariant()] = $true }
 if ($DryRun) { Log "DRYRUN: would pause new dispatch, protect active/running terminals=[$($protectedTerminals -join ',')], clear only idle T*\Tester caches, restart missing workers"; return }
 
-# 1. stop factory (caches are read by running agents)
+# 1. stop factory (caches are read by running agents). Preserve the operator's
+# enable-state: a maintenance purge must never turn a deliberately disabled
+# dispatcher back on when it exits.
+$pumpTask = Get-ScheduledTask -TaskName 'QM_StrategyFarm_Pump_5min' -ErrorAction SilentlyContinue
+$tickTask = Get-ScheduledTask -TaskName 'QM_StrategyFarm_Tick_5min' -ErrorAction SilentlyContinue
+$pumpWasEnabled = ($null -ne $pumpTask -and $pumpTask.State -ne 'Disabled')
+$tickWasEnabled = ($null -ne $tickTask -and $tickTask.State -ne 'Disabled')
 Stop-ScheduledTask -TaskName 'QM_StrategyFarm_Pump_5min' -ErrorAction SilentlyContinue | Out-Null
 Disable-ScheduledTask -TaskName 'QM_StrategyFarm_Pump_5min' -ErrorAction SilentlyContinue | Out-Null
 Stop-ScheduledTask -TaskName 'QM_StrategyFarm_Tick_5min' -ErrorAction SilentlyContinue | Out-Null
@@ -151,8 +157,12 @@ Log "idle caches cleared terminals=[$($purgedTerminals -join ',')]: D: ${free}GB
 #    A plain `& $py ...` here would land workers in SYSTEM's session-0 (hazard).
 #    Workers were all killed above, so start_terminal_workers spawns a clean 10
 #    (its --dedupe CIM scan is irrelevant with nothing to dedupe).
-Enable-ScheduledTask -TaskName 'QM_StrategyFarm_Pump_5min' -ErrorAction SilentlyContinue | Out-Null
-Enable-ScheduledTask -TaskName 'QM_StrategyFarm_Tick_5min' -ErrorAction SilentlyContinue | Out-Null
+if ($pumpWasEnabled) {
+    Enable-ScheduledTask -TaskName 'QM_StrategyFarm_Pump_5min' -ErrorAction SilentlyContinue | Out-Null
+}
+if ($tickWasEnabled) {
+    Enable-ScheduledTask -TaskName 'QM_StrategyFarm_Tick_5min' -ErrorAction SilentlyContinue | Out-Null
+}
 $launcher = Join-Path $RepoRoot 'tools\strategy_farm\run_in_console_session.ps1'
 $swArgs = '"' + (Join-Path $RepoRoot 'tools\strategy_farm\start_terminal_workers.py') + '" --repo-root "' + $RepoRoot + '" --farm-root "' + $FarmRoot + '" --dedupe'
 & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $launcher -Exe $py -Arguments $swArgs -WorkDir $RepoRoot | Out-Null
@@ -181,5 +191,8 @@ foreach ($p in @(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe' OR Na
 }
 Start-Sleep -Seconds 2
 $daemons = @(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe' OR Name='python.exe'" -ErrorAction SilentlyContinue | Where-Object CommandLine -match 'terminal_worker\.py')
-Start-ScheduledTask -TaskName 'QM_StrategyFarm_Pump_5min' -ErrorAction SilentlyContinue
-Log "factory restarted: $($daemons.Count)/$($enabled.Count) workers (trimmed to one per enabled terminal; disabled=$($disabled -join ',')); pump triggered; D: free $(FreeGB)GB"
+if ($pumpWasEnabled) {
+    Start-ScheduledTask -TaskName 'QM_StrategyFarm_Pump_5min' -ErrorAction SilentlyContinue
+}
+$pumpRestartDetail = if ($pumpWasEnabled) { 'pump triggered' } else { 'pump remained disabled' }
+Log "factory restarted: $($daemons.Count)/$($enabled.Count) workers (trimmed to one per enabled terminal; disabled=$($disabled -join ',')); $pumpRestartDetail; D: free $(FreeGB)GB"

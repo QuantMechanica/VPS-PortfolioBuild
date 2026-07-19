@@ -15,9 +15,28 @@ import shutil
 import subprocess
 import sys
 import time
+import uuid
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
+
+try:
+    from managed_codex import (
+        release_managed_codex_process,
+        spawn_managed_codex,
+        terminate_managed_codex_pid,
+    )
+except ModuleNotFoundError:
+    from tools.strategy_farm.managed_codex import (
+        release_managed_codex_process,
+        spawn_managed_codex,
+        terminate_managed_codex_pid,
+    )
+
+try:
+    from process_identity import get_process_identity
+except ModuleNotFoundError:
+    from tools.strategy_farm.process_identity import get_process_identity
 
 
 REPO_ROOT = Path(r"C:\QM\repo")
@@ -191,57 +210,113 @@ Hard rules:
 """
 
 
-def process_alive(pid: int) -> bool:
-    if pid <= 0:
+def process_alive(pid: int, expected_creation_key: str | None) -> bool:
+    """Read-only, PID-reuse-safe lock-owner check.
+
+    Never use ``os.kill(pid, 0)`` on Windows: CPython implements unsupported
+    signals with ``TerminateProcess`` and signal 0 can therefore kill the very
+    process being "probed" with exit code 0.
+    """
+
+    if pid <= 0 or not str(expected_creation_key or ""):
         return False
     try:
-        os.kill(pid, 0)
+        identity = get_process_identity(int(pid))
     except Exception:
         return False
-    return True
+    return bool(
+        identity
+        and identity.get("is_running", True)
+        and str(identity.get("creation_key") or "") == str(expected_creation_key)
+    )
 
 
 def acquire_lock(agent: str, stale_minutes: int, slot: int = 1) -> tuple[bool, dict[str, Any]]:
     LOCK_DIR.mkdir(parents=True, exist_ok=True)
     lock_name = f"{agent}_orchestration.lock" if slot == 1 else f"{agent}_orchestration_{slot}.lock"
     lock_path = LOCK_DIR / lock_name
-    now = time.time()
-    if lock_path.exists():
+    owner_token = uuid.uuid4().hex
+    for _attempt in range(3):
         try:
-            data = json.loads(lock_path.read_text(encoding="utf-8"))
+            fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+        except FileExistsError:
+            now = time.time()
+            try:
+                data = json.loads(lock_path.read_text(encoding="utf-8"))
+            except Exception:
+                data = {}
+            try:
+                age_sec = now - lock_path.stat().st_mtime
+            except OSError:
+                continue
+            pid = int(data.get("pid") or 0)
+            process_creation_key = str(data.get("process_creation_key") or "")
+            if pid and process_alive(pid, process_creation_key):
+                return False, {
+                    "lock_path": str(lock_path),
+                    "reason": "previous_run_active",
+                    "pid": pid,
+                    "age_sec": round(age_sec, 1),
+                }
+            if age_sec < stale_minutes * 60:
+                return False, {
+                    "lock_path": str(lock_path),
+                    "reason": "recent_lock_owner_not_live",
+                    "pid": pid,
+                    "age_sec": round(age_sec, 1),
+                }
+            stale_path = lock_path.with_name(
+                f"{lock_path.name}.{uuid.uuid4().hex}.stale"
+            )
+            try:
+                os.replace(lock_path, stale_path)
+                stale_path.unlink(missing_ok=True)
+            except OSError:
+                continue
+            continue
+
+        try:
+            identity = get_process_identity(os.getpid())
+            if identity is None or not identity.get("is_running", True):
+                raise RuntimeError("cannot capture orchestration lock owner identity")
+            process_creation_key = str(identity.get("creation_key") or "")
+            if not process_creation_key:
+                raise RuntimeError("orchestration lock owner creation key is empty")
+            payload = {
+                "agent": agent,
+                "slot": slot,
+                "pid": os.getpid(),
+                "process_creation_key": process_creation_key,
+                "owner_token": owner_token,
+                "started_at": dt.datetime.now(dt.UTC).isoformat(),
+            }
+            with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as handle:
+                json.dump(payload, handle, indent=2, sort_keys=True)
+                handle.write("\n")
+                handle.flush()
+                os.fsync(handle.fileno())
         except Exception:
-            data = {}
-        pid = int(data.get("pid") or 0)
-        age_sec = now - lock_path.stat().st_mtime
-        if age_sec < stale_minutes * 60 and process_alive(pid):
-            return False, {
-                "lock_path": str(lock_path),
-                "reason": "previous_run_active",
-                "pid": pid,
-                "age_sec": round(age_sec, 1),
-            }
-        if age_sec < stale_minutes * 60 and not pid:
-            return False, {
-                "lock_path": str(lock_path),
-                "reason": "recent_lock_without_pid",
-                "age_sec": round(age_sec, 1),
-            }
-    payload = {
-        "agent": agent,
-        "slot": slot,
-        "pid": os.getpid(),
-        "started_at": dt.datetime.now(dt.UTC).isoformat(),
-    }
-    lock_path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
-    return True, {"lock_path": str(lock_path)}
+            try:
+                os.close(fd)
+            except OSError:
+                pass
+            lock_path.unlink(missing_ok=True)
+            raise
+        return True, {"lock_path": str(lock_path), "owner_token": owner_token}
+    return False, {"lock_path": str(lock_path), "reason": "lock_contention"}
 
 
 def release_lock(lock_info: dict[str, Any]) -> None:
     path = Path(str(lock_info.get("lock_path") or ""))
+    owner_token = str(lock_info.get("owner_token") or "")
     try:
-        if path.exists():
-            path.unlink()
-    except OSError:
+        if not path.exists() or not owner_token:
+            return
+        data = json.loads(path.read_text(encoding="utf-8"))
+        if str(data.get("owner_token") or "") != owner_token:
+            return
+        path.unlink()
+    except (OSError, ValueError, TypeError):
         pass
 
 
@@ -488,30 +563,75 @@ def run_agent_slot(agent: str, slot: int, dry_run: bool, stale_minutes: int, tim
         "worktree": worktree,
         "started_at": dt.datetime.now(dt.UTC).isoformat(),
     }
+    managed_lease_id: str | None = None
+    managed_pid: int | None = None
+    managed_process_finished = False
     try:
         if dry_run:
             payload.update({"ok": True, "returncode": 0, "dry_run_verified": True})
             return payload
         creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
         with open(prompt_path, "rb") as stdin_f, open(live_log, "wb") as stdout_f:
-            proc = subprocess.Popen(
-                cmd,
-                cwd=str(cwd),
-                stdin=stdin_f,
-                stdout=stdout_f,
-                stderr=subprocess.STDOUT,
-                env=agent_env(agent),
-                shell=(agent != "gemini"),
-                creationflags=creationflags,
-                close_fds=True,
-            )
+            popen_kwargs = {
+                "stdin": stdin_f,
+                "stdout": stdout_f,
+                "stderr": subprocess.STDOUT,
+                "env": agent_env(agent),
+                "shell": agent != "gemini",
+                "creationflags": creationflags,
+                "close_fds": True,
+            }
+            if agent == "codex":
+                proc, lease = spawn_managed_codex(
+                    FARM_ROOT,
+                    cmd,
+                    purpose="orchestration",
+                    cwd=cwd,
+                    dedupe_key="orchestration:codex",
+                    # The wrapper owns the primary timeout.  Five minutes of
+                    # lease headroom covers its result write/push cleanup while
+                    # remaining below the Task Scheduler's four-hour limit for
+                    # the default 225-minute run.
+                    max_age_minutes=timeout_minutes + 5,
+                    metadata={
+                        "slot": slot,
+                        "live_log": str(live_log),
+                        "result_path": str(result_path),
+                    },
+                    **popen_kwargs,
+                )
+                managed_lease_id = str(lease["lease_id"])
+                managed_pid = int(proc.pid)
+                payload["lease_id"] = managed_lease_id
+            else:
+                proc = subprocess.Popen(cmd, cwd=str(cwd), **popen_kwargs)
             payload["pid"] = proc.pid
             try:
                 payload["returncode"] = proc.wait(timeout=timeout_minutes * 60)
                 payload["ok"] = payload["returncode"] == 0
+                managed_process_finished = managed_pid is not None
             except subprocess.TimeoutExpired:
-                proc.kill()
+                if managed_pid is not None:
+                    stopped = terminate_managed_codex_pid(FARM_ROOT, managed_pid)
+                    payload["timeout_stop"] = stopped
+                    managed_process_finished = bool(stopped.get("stopped"))
+                    if not managed_process_finished:
+                        try:
+                            proc.wait(timeout=30)
+                            managed_process_finished = True
+                            payload["timeout_stop_completed_concurrently"] = True
+                        except subprocess.TimeoutExpired:
+                            pass
+                else:
+                    proc.kill()
                 payload.update({"ok": False, "returncode": 124, "error": "timeout"})
+        if managed_lease_id is not None and not managed_process_finished:
+            payload["push"] = {
+                "attempted": False,
+                "ok": False,
+                "reason": "managed_process_exit_unconfirmed",
+            }
+            return payload
         if worktree.get("shared_repo"):
             payload["push"] = {
                 "attempted": False,
@@ -525,9 +645,24 @@ def run_agent_slot(agent: str, slot: int, dry_run: bool, stale_minutes: int, tim
         payload.update({"ok": False, "returncode": 1, "error": repr(exc)})
         return payload
     finally:
+        # A lease may be removed only after the exact registered process is
+        # known to have exited.  If waiting or termination fails, retain it so
+        # the ownership-safe reaper can retry instead of orphaning the tree.
+        if managed_lease_id is not None and managed_process_finished:
+            removed = release_managed_codex_process(FARM_ROOT, lease_id=managed_lease_id)
+            if not removed:
+                payload["lease_retained_for_reaper"] = True
+        elif managed_lease_id is not None:
+            payload["lease_retained_for_reaper"] = True
         payload["finished_at"] = dt.datetime.now(dt.UTC).isoformat()
         result_path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
-        release_lock(lock_info)
+        if managed_lease_id is None or managed_process_finished:
+            release_lock(lock_info)
+        else:
+            payload["lock_retained_until_stale_recovery"] = True
+            result_path.write_text(
+                json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8"
+            )
 
 
 def claude_work_available() -> dict[str, Any]:
@@ -804,8 +939,10 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Run one headless agent orchestration pass.")
     parser.add_argument("--agent", choices=("codex", "gemini", "claude"), required=True)
     parser.add_argument("--dry-run", action="store_true", help="Verify prompt/lock/command without launching the model.")
-    parser.add_argument("--stale-minutes", type=int, default=180)
-    parser.add_argument("--timeout-minutes", type=int, default=240)
+    # Must remain above the 225-minute agent timeout and the PT4H task limit.
+    parser.add_argument("--stale-minutes", type=int, default=250)
+    # Leave cleanup headroom below the scheduled task's PT4H execution limit.
+    parser.add_argument("--timeout-minutes", type=int, default=225)
     parser.add_argument("--max-sessions", type=int, default=1, help="Claude-only parallel slot count.")
     args = parser.parse_args()
     result = run_agent(args.agent, args.dry_run, args.stale_minutes, args.timeout_minutes, args.max_sessions)

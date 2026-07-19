@@ -123,19 +123,9 @@ def _installed_terminals(mt5_root: Path) -> tuple[str, ...]:
 
 
 def _stop_pid(pid: int) -> bool:
-    if pid <= 0 or sys.platform != "win32":
-        return False
-    try:
-        result = subprocess.run(
-            ["taskkill", "/PID", str(pid), "/T", "/F"],
-            capture_output=True,
-            text=True,
-            timeout=15,
-            creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0,
-        )
-        return result.returncode == 0
-    except Exception:
-        return False
+    # A bare PID is not a safe termination authority because it may be reused
+    # between discovery and this call. Fail closed until an identity-bound stop exists.
+    return False
 
 
 def _load_existing(pid_file: Path) -> dict[str, int]:

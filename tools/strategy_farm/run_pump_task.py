@@ -18,6 +18,9 @@ from pathlib import Path
 REPO_ROOT = Path(r"C:\QM\repo")
 LOG_DIR = Path(r"D:\QM\strategy_farm\logs")
 FARMCTL = REPO_ROOT / "tools" / "strategy_farm" / "farmctl.py"
+CODEX_KILL_SAFETY_AUDIT = (
+    REPO_ROOT / "tools" / "strategy_farm" / "codex_kill_safety_audit.py"
+)
 LOCK_PATH = LOG_DIR / "pump_task.lock"
 LOCK_STALE_SECONDS = 20 * 60
 FACTORY_OFF_FLAG = Path(r"D:\QM\strategy_farm\state\FACTORY_OFF.flag")
@@ -63,6 +66,20 @@ def main() -> int:
         with log_path.open("w", encoding="utf-8", newline="\n") as log:
             env = os.environ.copy()
             env.setdefault("QM_AGENT_ID", "controller")
+            audit = subprocess.run(
+                [_console_python(), str(CODEX_KILL_SAFETY_AUDIT), "--json"],
+                cwd=str(REPO_ROOT),
+                stdout=log,
+                stderr=subprocess.STDOUT,
+                stdin=subprocess.DEVNULL,
+                env=env,
+                close_fds=True,
+            )
+            if audit.returncode != 0:
+                log.write(
+                    "\nPUMP_BLOCKED: unsafe process lifecycle code found in a local worktree\n"
+                )
+                return 86
             proc = subprocess.run(
                 [_console_python(), str(FARMCTL), "pump"],
                 cwd=str(REPO_ROOT),

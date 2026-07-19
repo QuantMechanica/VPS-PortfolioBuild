@@ -32,6 +32,26 @@ try:
 except ModuleNotFoundError:
     from tools.strategy_farm.phase_ids import phase_label, phase_qid
 
+try:
+    from managed_codex import (
+        ManagedCodexError,
+        count_live_managed_codex_processes,
+        reap_managed_codex_processes,
+        spawn_managed_codex,
+    )
+except ModuleNotFoundError:
+    from tools.strategy_farm.managed_codex import (
+        ManagedCodexError,
+        count_live_managed_codex_processes,
+        reap_managed_codex_processes,
+        spawn_managed_codex,
+    )
+
+try:
+    from process_identity import get_process_identity
+except ModuleNotFoundError:
+    from tools.strategy_farm.process_identity import get_process_identity
+
 
 DEFAULT_ROOT = Path(os.environ.get("QM_STRATEGY_FARM_ROOT", r"D:\QM\strategy_farm"))
 DB_REL = Path("state") / "farm_state.sqlite"
@@ -367,6 +387,46 @@ def _codex_env() -> dict[str, str]:
     env["CODEX_HOME"] = str(_CODEX_HOME)
     env["QM_AGENT_ID"] = "codex"  # DL-065: spawned identity for the scope layer
     return env
+
+
+def _spawn_owned_codex(
+    root: Path,
+    prompt_path: Path | str,
+    live_log: Path,
+    *,
+    purpose: str,
+    dedupe_key: str,
+    metadata: dict[str, Any],
+    max_age_minutes: int = 60,
+) -> tuple[subprocess.Popen[Any], dict[str, Any]]:
+    """Launch one headless Codex tree and atomically establish farm ownership."""
+
+    command = [
+        _resolve_codex(),
+        "exec",
+        "-s",
+        "danger-full-access",
+        "--cd",
+        str(REPO_ROOT),
+    ]
+    creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+    with open(prompt_path, "rb") as stdin_f, open(live_log, "wb") as stdout_f:
+        return spawn_managed_codex(
+            root,
+            command,
+            purpose=purpose,
+            cwd=REPO_ROOT,
+            max_age_minutes=max_age_minutes,
+            dedupe_key=dedupe_key,
+            metadata={**metadata, "live_log": str(live_log)},
+            stdin=stdin_f,
+            stdout=stdout_f,
+            stderr=subprocess.STDOUT,
+            env=_codex_env(),
+            shell=True,
+            creationflags=creationflags,
+            close_fds=True,
+        )
 
 
 def _resolve_gemini_command() -> tuple[list[str], bool]:
@@ -2452,6 +2512,34 @@ def _preferred_ea_dir(ea_id: str) -> Path | None:
     return top[0]
 
 
+def _capture_spawned_process_identity(proc: subprocess.Popen[Any]) -> dict[str, Any]:
+    """Bind a newly spawned worker to its immutable OS creation identity.
+
+    If identity capture fails, kill through Popen's retained process handle so
+    an unowned worker can never escape into the farm.
+    """
+
+    try:
+        identity = get_process_identity(int(proc.pid))
+        if identity is None or not identity.get("is_running", True):
+            raise RuntimeError(f"spawned process {proc.pid} exited before identity capture")
+        creation_key = str(identity.get("creation_key") or "")
+        if not creation_key:
+            raise RuntimeError(f"spawned process {proc.pid} has no creation identity")
+        return {
+            "process_creation_key": creation_key,
+            "process_image_path": str(identity.get("image_path") or ""),
+            "process_started_at_epoch": float(identity["started_at_epoch"]),
+        }
+    except Exception:
+        try:
+            proc.kill()  # retained process HANDLE on Windows; never a reopened PID
+            proc.wait(timeout=10)
+        except Exception:
+            pass
+        raise
+
+
 def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
                                     terminal: str) -> dict[str, Any]:
     """Spawn run_smoke.ps1 for one work_item, pinned to a specific terminal.
@@ -2530,10 +2618,14 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
             close_fds=True,
             env=env,
         )
-        log_fh.close()
+        try:
+            process_identity = _capture_spawned_process_identity(proc)
+        finally:
+            log_fh.close()
         return {
             "spawned": True,
             "pid": proc.pid,
+            **process_identity,
             "log_path": str(log_path),
             "report_root": str(report_root),
             "ea_dir_name": ea_id,
@@ -2753,10 +2845,14 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         creationflags=creationflags,
         close_fds=True,
     )
-    log_fh.close()
+    try:
+        process_identity = _capture_spawned_process_identity(proc)
+    finally:
+        log_fh.close()
     return {
         "spawned": True,
         "pid": proc.pid,
+        **process_identity,
         "log_path": str(log_path),
         "report_root": str(report_root),
         "ea_dir_name": ea_dir_name,
@@ -3447,10 +3543,14 @@ def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
         close_fds=True,
         env=env,
     )
-    log_fh.close()
+    try:
+        process_identity = _capture_spawned_process_identity(proc)
+    finally:
+        log_fh.close()
     return {
         "spawned": True,
         "pid": proc.pid,
+        **process_identity,
         "log_path": str(log_path),
         "report_root": str(report_root),
         "ea_dir_name": item_row["ea_id"],
@@ -3616,31 +3716,44 @@ def _active_work_item_symbols(conn: sqlite3.Connection) -> dict[str, str]:
     return {str(row["symbol"]).upper(): row["symbol"] for row in rows}
 
 
-def _stop_pid(pid: Any) -> bool:
-    try:
-        pid_int = int(pid)
-    except (TypeError, ValueError):
-        return False
-    try:
-        proc = subprocess.run(
-            ["powershell.exe", "-NoProfile", "-Command", f"Stop-Process -Id {pid_int} -Force -ErrorAction SilentlyContinue"],
-            capture_output=True,
-            text=True,
-            timeout=8,
-            creationflags=(subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0),
-        )
-        return proc.returncode == 0
-    except Exception:
-        return False
+def _stop_pid(
+    pid: Any,
+    *,
+    expected_creation_key: Any,
+    expected_image_path: Any = None,
+) -> bool:
+    """Stop only a worker whose immutable spawn identity still matches.
+
+    A historical SQLite PID is never sufficient ownership proof.  Legacy rows
+    without a creation key deliberately fail closed and are reconciled without
+    touching whichever process may now own that PID.
+    """
+
+    # Emergency fail-closed policy (2026-07-19): do not terminate even an
+    # identity-matching worker by PID from the shared controller process.  The
+    # Windows host has repeatedly lost its interactive Codex child while
+    # lifecycle integration checks ran.  Work items may be failed/requeued and
+    # factory terminals are reconciled by their dedicated slot path, but a
+    # historical worker PID is never used as a kill capability here.
+    return False
 
 
 def _stop_pid_tree(pid: Any) -> bool:
+    """Stop a spawned child process AND its entire descendant tree by PID.
+
+    Used by terminal_worker._monitor_spawned_work_item to reclaim a backtest
+    the worker itself launched and owns (run_smoke.ps1 -> terminal64.exe).
+    This is a parent-stops-own-child capability and is intentionally exempt
+    from the _stop_pid controller fail-closed policy.
+    """
     try:
         pid_int = int(pid)
     except (TypeError, ValueError):
         return False
     if sys.platform != "win32":
-        return _stop_pid(pid_int)
+        # The Strategy Farm child tree is a Windows run_smoke/terminal64 tree.
+        # Do not fall back to the controller's deliberately disabled PID stop.
+        return False
     script = rf"""
 $target = {pid_int}
 $procs = Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId
@@ -3789,7 +3902,11 @@ def _detect_active_age_timeout(con: sqlite3.Connection) -> list[dict[str, Any]]:
             reason_classes.append("ACTIVE_TIMEOUT")
         worker_pid = payload.get("pid")
         terminal = r["claimed_by"]
-        worker_stopped = _stop_pid(worker_pid)
+        worker_stopped = _stop_pid(
+            worker_pid,
+            expected_creation_key=payload.get("process_creation_key"),
+            expected_image_path=payload.get("process_image_path"),
+        )
         terminal_stopped = _stop_terminal_slot(terminal)
         payload.update({
             "reason_classes": reason_classes,
@@ -4325,6 +4442,9 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                             "p2_prescreen_to_date": payload.get("to_date"),
                             "p2_run_stage": "full_pending",
                             "pid": None,
+                            "process_creation_key": None,
+                            "process_image_path": None,
+                            "process_started_at_epoch": None,
                             "started_at_iso": None,
                             "log_path": None,
                         })
@@ -4436,7 +4556,11 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
             fast_failure = "worker_died"
         elif not terminal_alive and age_min > 1.0:
             fast_failure = "terminal_died"
-            _stop_pid(worker_pid)
+            _stop_pid(
+                worker_pid,
+                expected_creation_key=payload.get("process_creation_key"),
+                expected_image_path=payload.get("process_image_path"),
+            )
 
         # Fast-fail: worker/terminal gone + nothing produced + > 1 min (avoid races on spawn)
         if fast_failure and age_min > 1.0:
@@ -4631,6 +4755,9 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
             new_payload = {
                 "started_at_iso": started_iso,
                 "pid": spawn["pid"],
+                "process_creation_key": spawn["process_creation_key"],
+                "process_image_path": spawn.get("process_image_path"),
+                "process_started_at_epoch": spawn.get("process_started_at_epoch"),
                 "log_path": spawn["log_path"],
                 "report_root": spawn["report_root"],
                 "ea_dir_name": spawn["ea_dir_name"],
@@ -4993,7 +5120,6 @@ def _spawn_codex_for_g0_batch(root: Path) -> dict[str, Any]:
     Runs in PARALLEL with Claude G0 — claim mechanism prevents both
     workers from grabbing the same card.
     """
-    import shutil as _shutil
     drafts_dir = root / "artifacts" / "cards_draft"
     if not drafts_dir.is_dir():
         return {"spawned": False, "reason": "no cards_draft dir"}
@@ -5012,7 +5138,6 @@ def _spawn_codex_for_g0_batch(root: Path) -> dict[str, Any]:
         return {"spawned": False, "reason": "all candidates already claimed"}
     batch_paths = "\n".join(f"- {f}" for f in batch)
 
-    codex_path = _resolve_codex()
     ts = dt.datetime.utcnow().strftime("%Y%m%dT%H%M%S")
     live_log = root / "logs" / f"codex_g0_{ts}.live.log"
     live_log.parent.mkdir(parents=True, exist_ok=True)
@@ -5023,22 +5148,22 @@ def _spawn_codex_for_g0_batch(root: Path) -> dict[str, Any]:
     template = template.replace("{{batch_paths}}", batch_paths)
     prompt_path.write_text(template, encoding="utf-8", newline="\n")
 
-    creationflags = 0
-    if sys.platform == "win32":
-        creationflags = subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
-    stdin_f = open(prompt_path, "rb")
-    stdout_f = open(live_log, "wb")
-    proc = subprocess.Popen(
-        [codex_path, "exec", "-s", "danger-full-access", "--cd", str(REPO_ROOT)],
-        cwd=str(REPO_ROOT),
-        stdin=stdin_f,
-        stdout=stdout_f,
-        stderr=subprocess.STDOUT,
-        env=_codex_env(),
-        shell=True,
-        creationflags=creationflags,
-        close_fds=True,
-    )
+    try:
+        proc, lease = _spawn_owned_codex(
+            root,
+            prompt_path,
+            live_log,
+            purpose="g0_review",
+            dedupe_key="g0_review:" + ",".join(sorted(f.stem for f in batch)),
+            metadata={"cards": [f.stem for f in batch]},
+        )
+    except ManagedCodexError as exc:
+        return {
+            "spawned": False,
+            "reason": "managed_codex_registration_failed",
+            "error": repr(exc),
+            "cards": [f.stem for f in batch],
+        }
     return {
         "spawned": True,
         "batch_size": len(batch),
@@ -5046,6 +5171,7 @@ def _spawn_codex_for_g0_batch(root: Path) -> dict[str, Any]:
         "live_log": str(live_log),
         "prompt_path": str(prompt_path),
         "pid": proc.pid,
+        "lease_id": lease["lease_id"],
     }
 
 
@@ -5212,9 +5338,6 @@ def _claim_research_source_codex(root: Path) -> dict[str, Any]:
       2. status='notes_ready' (shared with Claude — first claim wins)
       3. status='pending'     (shared with Claude — first claim wins)
     """
-    import shutil as _shutil
-    codex_path = _resolve_codex()
-
     target_source = None
     research_action = None
     # Step 1: continue an active source already assigned to codex
@@ -5310,22 +5433,22 @@ def _claim_research_source_codex(root: Path) -> dict[str, Any]:
         template = template.replace("{{" + k + "}}", str(v))
     prompt_path.write_text(template, encoding="utf-8", newline="\n")
 
-    creationflags = 0
-    if sys.platform == "win32":
-        creationflags = subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
-    stdin_f = open(prompt_path, "rb")
-    stdout_f = open(live_log, "wb")
-    proc = subprocess.Popen(
-        [codex_path, "exec", "-s", "danger-full-access", "--cd", str(REPO_ROOT)],
-        cwd=str(REPO_ROOT),
-        stdin=stdin_f,
-        stdout=stdout_f,
-        stderr=subprocess.STDOUT,
-        env=_codex_env(),
-        shell=True,
-        creationflags=creationflags,
-        close_fds=True,
-    )
+    try:
+        proc, lease = _spawn_owned_codex(
+            root,
+            prompt_path,
+            live_log,
+            purpose="research",
+            dedupe_key=f"research:{src_id}",
+            metadata={"source_id": src_id, "research_action": research_action},
+        )
+    except ManagedCodexError as exc:
+        return {
+            "spawned": False,
+            "reason": "managed_codex_registration_failed",
+            "error": repr(exc),
+            "source_id": src_id,
+        }
     return {
         "spawned": True,
         "source_id": src_id,
@@ -5334,6 +5457,7 @@ def _claim_research_source_codex(root: Path) -> dict[str, Any]:
         "live_log": str(live_log),
         "prompt_path": str(prompt_path),
         "pid": proc.pid,
+        "lease_id": lease["lease_id"],
     }
 
 
@@ -5371,26 +5495,36 @@ def _spawn_codex_for_review(root: Path, build_task_row: sqlite3.Row) -> dict[str
             newline="\n",
         )
 
-    codex_path = _resolve_codex()
     live_log = root / "logs" / f"codex_ea_review_{review_task_id}.live.log"
     live_log.parent.mkdir(parents=True, exist_ok=True)
 
-    creationflags = 0
-    if sys.platform == "win32":
-        creationflags = subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
-    stdin_f = open(prompt_path, "rb")
-    stdout_f = open(live_log, "wb")
-    proc = subprocess.Popen(
-        [codex_path, "exec", "-s", "danger-full-access", "--cd", str(REPO_ROOT)],
-        cwd=str(REPO_ROOT),
-        stdin=stdin_f,
-        stdout=stdout_f,
-        stderr=subprocess.STDOUT,
-        env=_codex_env(),
-        shell=True,
-        creationflags=creationflags,
-        close_fds=True,
-    )
+    try:
+        proc, lease = _spawn_owned_codex(
+            root,
+            prompt_path,
+            live_log,
+            purpose="ea_review",
+            dedupe_key=f"ea_review:{review_task_id}",
+            metadata={
+                "review_task_id": review_task_id,
+                "build_task_id": build_task_id,
+                "ea_id": rendered.get("ea_id"),
+            },
+        )
+    except ManagedCodexError as exc:
+        with connect(root) as conn:
+            cleanup = conn.execute(
+                "DELETE FROM tasks WHERE id=? AND kind='ea_review' AND status='pending'",
+                (review_task_id,),
+            ).rowcount
+            conn.commit()
+        return {
+            "spawned": False,
+            "reason": "managed_codex_registration_failed",
+            "error": repr(exc),
+            "review_task_id": review_task_id,
+            "pending_task_removed": bool(cleanup),
+        }
     return {
         "spawned": True,
         "review_task_id": review_task_id,
@@ -5399,6 +5533,7 @@ def _spawn_codex_for_review(root: Path, build_task_row: sqlite3.Row) -> dict[str
         "verdict_path": verdict_path,
         "live_log": str(live_log),
         "pid": proc.pid,
+        "lease_id": lease["lease_id"],
     }
 
 
@@ -5477,27 +5612,36 @@ def _spawn_codex_for_pre_review(root: Path, build_task_row: sqlite3.Row) -> dict
     prompt_path.parent.mkdir(parents=True, exist_ok=True)
     prompt_path.write_text(template, encoding="utf-8", newline="\n")
 
-    import shutil as _shutil
-    codex_path = _resolve_codex()
     live_log = root / "logs" / f"codex_review_{review_task_id}.live.log"
     live_log.parent.mkdir(parents=True, exist_ok=True)
 
-    creationflags = 0
-    if sys.platform == "win32":
-        creationflags = subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
-    stdin_f = open(prompt_path, "rb")
-    stdout_f = open(live_log, "wb")
-    proc = subprocess.Popen(
-        [codex_path, "exec", "-s", "danger-full-access", "--cd", str(REPO_ROOT)],
-        cwd=str(REPO_ROOT),
-        stdin=stdin_f,
-        stdout=stdout_f,
-        stderr=subprocess.STDOUT,
-        env=_codex_env(),
-        shell=True,
-        creationflags=creationflags,
-        close_fds=True,
-    )
+    try:
+        proc, lease = _spawn_owned_codex(
+            root,
+            prompt_path,
+            live_log,
+            purpose="codex_review",
+            dedupe_key=f"codex_review:{review_task_id}",
+            metadata={
+                "review_task_id": review_task_id,
+                "build_task_id": build_task_id,
+                "ea_id": payload_build.get("ea_id"),
+            },
+        )
+    except ManagedCodexError as exc:
+        with connect(root) as conn:
+            cleanup = conn.execute(
+                "DELETE FROM tasks WHERE id=? AND kind='codex_review' AND status='pending'",
+                (review_task_id,),
+            ).rowcount
+            conn.commit()
+        return {
+            "spawned": False,
+            "reason": "managed_codex_registration_failed",
+            "error": repr(exc),
+            "codex_review_task_id": review_task_id,
+            "pending_task_removed": bool(cleanup),
+        }
     return {
         "spawned": True,
         "codex_review_task_id": review_task_id,
@@ -5506,6 +5650,7 @@ def _spawn_codex_for_pre_review(root: Path, build_task_row: sqlite3.Row) -> dict
         "verdict_path": str(verdict_path),
         "live_log": str(live_log),
         "pid": proc.pid,
+        "lease_id": lease["lease_id"],
     }
 
 
@@ -6040,33 +6185,24 @@ def _spawn_codex_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]:
         if age_sec < 60:
             return {"spawned": False, "reason": "live log activity within 60s — codex likely still running", "task_id": task_row["id"]}
 
-    # Spawn: cat prompt | codex exec -s danger-full-access --cd C:/QM/repo 2>&1 | tee live_log
-    # We do this through a shell wrapper to chain cat+tee on Windows.
-    # Detached so pump doesn't wait.
-    # Direct Popen — codex.cmd is an npm batch shim; subprocess can exec it
-    # via shell=True. stdin piped from prompt file, stdout/stderr to live_log.
-    import shutil as _shutil
-    codex_path = _resolve_codex()
-    creationflags = 0
-    if sys.platform == "win32":
-        # CREATE_NO_WINDOW: child gets a console but it stays hidden (no popup
-        # on OWNER's desktop). DETACHED_PROCESS would make codex.cmd's batch
-        # shim exit immediately without running node, so we stay attached-but-
-        # hidden via CREATE_NO_WINDOW.
-        creationflags = subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
-    stdin_f = open(prompt_path, "rb")
-    stdout_f = open(live_log, "wb")
-    proc = subprocess.Popen(
-        [codex_path, "exec", "-s", "danger-full-access", "--cd", str(REPO_ROOT)],
-        cwd=str(REPO_ROOT),
-        stdin=stdin_f,
-        stdout=stdout_f,
-        stderr=subprocess.STDOUT,
-        env=_codex_env(),
-        shell=True,
-        creationflags=creationflags,
-        close_fds=True,
-    )
+    try:
+        proc, lease = _spawn_owned_codex(
+            root,
+            prompt_path,
+            live_log,
+            purpose="build",
+            dedupe_key=f"build:{task_row['id']}",
+            metadata={"task_id": task_row["id"], "ea_id": ea_id},
+        )
+    except ManagedCodexError as exc:
+        return {
+            "spawned": False,
+            "agent": "codex",
+            "task_id": task_row["id"],
+            "ea_id": ea_id,
+            "reason": "managed_codex_registration_failed",
+            "error": repr(exc),
+        }
     return {
         "spawned": True,
         "agent": "codex",
@@ -6074,6 +6210,7 @@ def _spawn_codex_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]:
         "ea_id": ea_id,
         "pid": proc.pid,
         "live_log": str(live_log),
+        "lease_id": lease["lease_id"],
     }
 
 
@@ -7972,33 +8109,38 @@ def _auto_commit_build_artifacts(root: Path, within_sec: int = 90) -> dict[str, 
     }
 
 
-def _reap_stuck_codex_procs(max_age_min: int = 60) -> dict[str, Any]:
-    """Kill codex/node-codex processes older than max_age_min (OWNER 2026-06-05).
+def _reap_stuck_codex_procs(root: Path = DEFAULT_ROOT) -> dict[str, Any]:
+    """Reap expired Strategy Farm leases without inspecting global Codex PIDs.
 
-    Stuck codex procs (observed 18h old, twice in one day) hold the build proc-cap
-    (spawn_budget = min(MAX_PARALLEL_CODEX_BUILDS, MAX_PARALLEL_CODEX - active_codex)),
-    driving budget to 0 so NO builds spawn — the EA count silently stops growing for
-    hours. No legit codex invocation runs >60min (build 5-15min, review, 15-min
-    orchestration), so age alone is a safe kill criterion. CODEX ONLY — never claude
-    (a persistent interactive/monitoring claude session would be >60min and must live)."""
-    if sys.platform != "win32":
-        return {"reaped": 0}
-    ps = (
-        "$cut=(Get-Date).AddMinutes(-%d); "
-        "Get-CimInstance Win32_Process | Where-Object { ($_.Name -eq 'codex.exe' -or "
-        "($_.Name -eq 'node.exe' -and $_.CommandLine -match 'codex')) -and $_.CreationDate -lt $cut } | "
-        "ForEach-Object { & taskkill /PID $_.ProcessId /T /F 2>$null | Out-Null; $_.ProcessId }"
-    ) % max_age_min
-    try:
-        out = subprocess.run(
-            ["powershell.exe", "-NoProfile", "-Command", ps],
-            capture_output=True, text=True, timeout=30,
-            creationflags=(subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0),
-        )
-        pids = [ln.strip() for ln in (out.stdout or "").splitlines() if ln.strip().isdigit()]
-        return {"reaped": len(pids), "pids": pids[:20], "max_age_min": max_age_min}
-    except Exception as exc:
-        return {"reaped": 0, "error": repr(exc)}
+    Every eligible process was registered at spawn with its exact OS creation
+    identity and a role-specific expiry.  Interactive and legacy/unleased Codex
+    sessions are outside this ownership boundary and can never be selected.
+    """
+
+    return reap_managed_codex_processes(root)
+
+
+def _repair_reaped_codex_work(root: Path, reap_result: dict[str, Any]) -> dict[str, Any]:
+    """Make verdict-less review tasks retryable after an owned job was reaped."""
+
+    removed: list[str] = []
+    with connect(root) as conn:
+        for summary in reap_result.get("reaped_leases") or []:
+            purpose = str(summary.get("purpose") or "")
+            if purpose not in {"ea_review", "codex_review"}:
+                continue
+            metadata = summary.get("metadata") or {}
+            review_task_id = str(metadata.get("review_task_id") or "")
+            if not review_task_id:
+                continue
+            deleted = conn.execute(
+                "DELETE FROM tasks WHERE id=? AND kind=? AND status='pending'",
+                (review_task_id, purpose),
+            ).rowcount
+            if deleted:
+                removed.append(review_task_id)
+        conn.commit()
+    return {"pending_reviews_removed": removed, "removed_count": len(removed)}
 
 
 MAGIC_CSV_PATH = REPO_ROOT / "framework" / "registry" / "magic_numbers.csv"
@@ -8071,7 +8213,8 @@ def pump(root: Path) -> dict[str, Any]:
     # Reap stuck codex procs FIRST — they hold the build proc-cap and silently
     # halt all builds (see _reap_stuck_codex_procs). Then deterministic artifact
     # commit clears the working tree before the build guard checks it.
-    reap_result = _reap_stuck_codex_procs()
+    reap_result = _reap_stuck_codex_procs(root)
+    reap_result["work_repair"] = _repair_reaped_codex_work(root, reap_result)
     # Resync the magic resolver BEFORE the artifact commit so a stale .mqh from
     # the concurrent-build race never reaches codex_review (see _reconcile_magic_resolver).
     resolver_reconcile = _reconcile_magic_resolver(root)
@@ -8338,17 +8481,10 @@ def pump(root: Path) -> dict[str, Any]:
     if codex_low_tokens:
         MAX_PARALLEL_CODEX = min(MAX_PARALLEL_CODEX, 1)
         MAX_PARALLEL_CODEX_BUILDS = 0
-    try:
-        import shutil as _shutil
-        ps_out = subprocess.run(
-            ["powershell.exe", "-NoProfile", "-Command",
-             "(Get-Process -Name codex -ErrorAction SilentlyContinue).Count"],
-            capture_output=True, text=True, timeout=10,
-            creationflags=(subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0),
-        )
-        active_codex = int((ps_out.stdout or "0").strip() or "0")
-    except Exception:
-        active_codex = 0
+    # Capacity belongs to the farm, not to every Codex process on the desktop.
+    # Counting validated leases keeps interactive OWNER sessions out of both
+    # lifecycle management and the farm's headless concurrency budget.
+    active_codex = count_live_managed_codex_processes(root)
     try:
         ps_out = subprocess.run(
             ["powershell.exe", "-NoProfile", "-Command",
@@ -9770,14 +9906,22 @@ def _scan_terminal64_processes() -> list[dict[str, Any]]:
     for row in rows:
         if not isinstance(row, dict):
             continue
+        pid = row.get("ProcessId")
         exe = str(row.get("ExecutablePath") or "")
         cmd = str(row.get("CommandLine") or "")
         terminal = _terminal_from_path(exe)
+        try:
+            identity = get_process_identity(int(pid)) if pid is not None else None
+        except Exception:
+            identity = None
         processes.append({
-            "pid": row.get("ProcessId"),
+            "pid": pid,
             "parent_pid": row.get("ParentProcessId"),
             "terminal": terminal,
             "executable_path": exe,
+            "process_creation_key": (
+                str(identity.get("creation_key") or "") if identity else None
+            ),
             "work_item_id": _work_item_id_from_commandline(cmd),
             "pipeline_run": "\\reports\\pipeline\\" in cmd.lower(),
             "command_line": cmd,
@@ -9892,7 +10036,11 @@ def reconcile_mt5_slots(root: Path, fix_workers: bool = False, fix_orphan_termin
             status = (proc_info.get("work_item_status") or {}).get("status")
             if status == "active":
                 continue
-            stopped = _stop_pid(pid)
+            stopped = _stop_pid(
+                pid,
+                expected_creation_key=proc_info.get("process_creation_key"),
+                expected_image_path=proc_info.get("executable_path"),
+            )
             actions.append({
                 "action": "stop_orphaned_terminal64",
                 "terminal": terminal,
