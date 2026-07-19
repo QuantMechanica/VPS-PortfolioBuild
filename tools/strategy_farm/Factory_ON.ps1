@@ -40,6 +40,24 @@ if (-not $pr.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
 }
 
 $ErrorActionPreference = 'Continue'
+$processScopePath = Join-Path $PSScriptRoot 'factory_process_scope.ps1'
+try {
+    $script:QmFactoryProcessScopeVersion = $null
+    if (-not (Test-Path -LiteralPath $processScopePath -PathType Leaf)) {
+        throw "Required process-scope guard is missing: $processScopePath"
+    }
+    . $processScopePath
+    if ($script:QmFactoryProcessScopeVersion -ne 1) {
+        throw 'Process-scope guard version mismatch.'
+    }
+    foreach ($requiredFunction in @('Test-QmFactoryMt5ImagePath', 'Test-QmFactoryWorkerCommandLine')) {
+        if (-not (Get-Command -Name $requiredFunction -CommandType Function -ErrorAction SilentlyContinue)) {
+            throw "Process-scope guard lacks required function: $requiredFunction"
+        }
+    }
+} catch {
+    throw "FACTORY ON ABORTED before mutation: process-scope guard failed: $($_.Exception.Message)"
+}
 . (Join-Path $PSScriptRoot 'qm_tasks.manifest.ps1')
 
 $factoryOffFlagPath = 'D:\QM\strategy_farm\state\FACTORY_OFF.flag'
@@ -145,13 +163,12 @@ foreach ($t in $QM_ENFORCE_DISABLED_TASKS) {
 if ($drift -eq 0) { Write-Host '  [HAZARD] respawn-hazard tasks verified disabled (0 drift)' }
 Write-Host ''
 
-# 4. kill any lingering daemons + terminals (clean slate, regardless of session)
+# 4. Kill only positively identified T1..T10 daemons + terminals.
 $daemonsBefore = @(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe' OR Name='python.exe'" -ErrorAction SilentlyContinue |
-                   Where-Object { $_.CommandLine -match 'terminal_worker\.py' })
+                   Where-Object { Test-QmFactoryWorkerCommandLine -CommandLine $_.CommandLine })
 foreach ($d in $daemonsBefore) { Stop-Process -Id $d.ProcessId -Force -ErrorAction SilentlyContinue }
 $termsBefore = @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
-                 Where-Object { ($_.ExecutablePath -like 'D:\QM\mt5\*' -or $_.CommandLine -match 'D:\\QM\\mt5\\') `
-                                -and $_.CommandLine -notmatch 'T_Live' })   # factory-path-anchored; T_Live + FTMO never match
+                 Where-Object { Test-QmFactoryMt5ImagePath -Path $_.ExecutablePath -ImageName 'terminal64.exe' })
 foreach ($p in $termsBefore) { Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue }
 if ($daemonsBefore.Count -gt 0 -or $termsBefore.Count -gt 0) {
     Write-Host ("  cleared: {0} old daemon(s), {1} old terminal(s)" -f $daemonsBefore.Count, $termsBefore.Count)
@@ -165,7 +182,7 @@ $py = 'C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.exe
 Start-Sleep -Seconds 12
 
 $daemons = @(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe' OR Name='python.exe'" -ErrorAction SilentlyContinue |
-             Where-Object { $_.CommandLine -match 'terminal_worker\.py' })
+             Where-Object { Test-QmFactoryWorkerCommandLine -CommandLine $_.CommandLine })
 $inMySession = @($daemons | Where-Object { $_.SessionId -eq $mySession })
 Write-Host ("  worker daemons up : {0} / {1}  (in session {2}: {3})" -f $daemons.Count, $expectWorkers, $mySession, $inMySession.Count)
 

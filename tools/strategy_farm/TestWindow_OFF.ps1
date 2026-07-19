@@ -23,6 +23,29 @@ if (-not $pr.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
 }
 
 $ErrorActionPreference = 'Continue'
+$processScopePath = Join-Path $PSScriptRoot 'factory_process_scope.ps1'
+try {
+    $script:QmFactoryProcessScopeVersion = $null
+    if (-not (Test-Path -LiteralPath $processScopePath -PathType Leaf)) {
+        throw "Required process-scope guard is missing: $processScopePath"
+    }
+    . $processScopePath
+    if ($script:QmFactoryProcessScopeVersion -ne 1) {
+        throw 'Process-scope guard version mismatch.'
+    }
+    foreach ($requiredFunction in @(
+        'Test-QmFactoryMt5ImagePath',
+        'Test-QmFactoryWorkerCommandLine',
+        'Test-QmFactoryRunSmokeCommandLine',
+        'Test-QmFactoryPumpCommandLine'
+    )) {
+        if (-not (Get-Command -Name $requiredFunction -CommandType Function -ErrorAction SilentlyContinue)) {
+            throw "Process-scope guard lacks required function: $requiredFunction"
+        }
+    }
+} catch {
+    throw "TEST WINDOW OFF ABORTED before mutation: process-scope guard failed: $($_.Exception.Message)"
+}
 
 Write-Host ''
 Write-Host '=====================================================' -ForegroundColor Magenta
@@ -42,7 +65,7 @@ Write-Host ''
 # Step 2: Kill any residual pythonw run_pump_task.py spawns that may have been
 #         triggered by run_smoke wrappers that completed just before the kill.
 $pumpSpawns = @(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe' OR Name='python.exe'" -ErrorAction SilentlyContinue |
-                Where-Object { $_.CommandLine -match 'run_pump_task\.py' })
+                Where-Object { Test-QmFactoryPumpCommandLine -CommandLine $_.CommandLine })
 foreach ($p in $pumpSpawns) { Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue }
 Write-Host ("  Step 2: residual run_pump_task.py spawns killed: {0}" -f $pumpSpawns.Count)
 Write-Host ''
@@ -59,19 +82,19 @@ $checks = @(
        Expected='0' },
     @{ Name='terminal_worker daemons=0';
        OK=(@(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe' OR Name='python.exe'" -ErrorAction SilentlyContinue |
-             Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count -eq 0);
+              Where-Object { Test-QmFactoryWorkerCommandLine -CommandLine $_.CommandLine }).Count -eq 0);
        Expected='0 running' },
-    @{ Name='terminal64 (non-T_Live)=0';
+    @{ Name='factory terminal64 (T1..T10)=0';
        OK=(@(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
-             Where-Object { $_.CommandLine -notmatch 'T_Live' }).Count -eq 0);
+              Where-Object { Test-QmFactoryMt5ImagePath -Path $_.ExecutablePath -ImageName 'terminal64.exe' }).Count -eq 0);
        Expected='0 running' },
-    @{ Name='run_smoke wrappers=0';
+    @{ Name='factory run_smoke wrappers=0';
        OK=(@(Get-CimInstance Win32_Process -Filter "Name='pwsh.exe' OR Name='powershell.exe'" -ErrorAction SilentlyContinue |
-             Where-Object { $_.CommandLine -match [regex]::Escape('framework\scripts\run_smoke.ps1') }).Count -eq 0);
+              Where-Object { Test-QmFactoryRunSmokeCommandLine -CommandLine $_.CommandLine }).Count -eq 0);
        Expected='0 running' },
     @{ Name='run_pump_task spawns=0';
        OK=(@(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe' OR Name='python.exe'" -ErrorAction SilentlyContinue |
-             Where-Object { $_.CommandLine -match 'run_pump_task\.py' }).Count -eq 0);
+              Where-Object { Test-QmFactoryPumpCommandLine -CommandLine $_.CommandLine }).Count -eq 0);
        Expected='0 running' }
 )
 

@@ -19,6 +19,28 @@ if (-not $pr.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
 }
 
 $ErrorActionPreference = 'Continue'
+$processScopePath = Join-Path $PSScriptRoot 'factory_process_scope.ps1'
+try {
+    $script:QmFactoryProcessScopeVersion = $null
+    if (-not (Test-Path -LiteralPath $processScopePath -PathType Leaf)) {
+        throw "Required process-scope guard is missing: $processScopePath"
+    }
+    . $processScopePath
+    if ($script:QmFactoryProcessScopeVersion -ne 1) {
+        throw 'Process-scope guard version mismatch.'
+    }
+    foreach ($requiredFunction in @(
+        'Test-QmFactoryMt5ImagePath',
+        'Test-QmFactoryWorkerCommandLine',
+        'Test-QmFactoryRunSmokeCommandLine'
+    )) {
+        if (-not (Get-Command -Name $requiredFunction -CommandType Function -ErrorAction SilentlyContinue)) {
+            throw "Process-scope guard lacks required function: $requiredFunction"
+        }
+    }
+} catch {
+    throw "FACTORY OFF ABORTED before mutation: process-scope guard failed: $($_.Exception.Message)"
+}
 . (Join-Path $PSScriptRoot 'qm_tasks.manifest.ps1')
 
 $factoryOffFlagPath = 'D:\QM\strategy_farm\state\FACTORY_OFF.flag'
@@ -59,46 +81,44 @@ foreach ($t in $QM_RESPAWN_TASKS) {
 }
 Write-Host ''
 
-# 2. kill the terminal_worker.py daemons
+# 2. Kill only positively identified T1..T10 terminal_worker.py daemons.
 $daemons = @(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe' OR Name='python.exe'" -ErrorAction SilentlyContinue |
-             Where-Object { $_.CommandLine -match 'terminal_worker\.py' })
+             Where-Object { Test-QmFactoryWorkerCommandLine -CommandLine $_.CommandLine })
 foreach ($d in $daemons) { Stop-Process -Id $d.ProcessId -Force -ErrorAction SilentlyContinue }
 Write-Host ("  worker daemons killed : {0}" -f $daemons.Count)
 
 # 3. Kill run_smoke wrappers before their terminal children. Reversing this order
 #    leaves a race where a wrapper spawns another terminal after the first sweep.
-$runSmokePath = 'framework\scripts\run_smoke.ps1'
+#    The classifier requires the fixed runner plus T1..T10 (or a UUID-bound
+#    factory work-item dispatch); DEV1/DEV2 wrappers cannot match.
 $smokeWrappers = @(Get-CimInstance Win32_Process -Filter "Name='pwsh.exe' OR Name='powershell.exe'" -ErrorAction SilentlyContinue |
-                   Where-Object { $_.CommandLine -match [regex]::Escape($runSmokePath) -and $_.CommandLine -notmatch 'T_Live' })
+                   Where-Object { Test-QmFactoryRunSmokeCommandLine -CommandLine $_.CommandLine })
 foreach ($p in $smokeWrappers) { Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue }
 Write-Host ("  run_smoke wrappers killed : {0}" -f $smokeWrappers.Count)
 Start-Sleep -Seconds 2
 
 # 4. kill transient terminal64.exe backtest processes
-#    POSITIVE path anchor (Operating Rules 2026-07-03): only factory terminals under
-#    D:\QM\mt5\ are ever killed. T_Live (C:\QM\mt5\T_Live) and the FTMO challenge
-#    terminal (C:\Program Files\FTMO...) never match the anchor.
+#    POSITIVE exact-image anchor: only D:\QM\mt5\T1..T10\terminal64.exe.
+#    DEV1/DEV2, T_Live, T_Export, and unrelated terminals fail closed.
 $terms = @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
-           Where-Object { ($_.ExecutablePath -like 'D:\QM\mt5\*' -or $_.CommandLine -match 'D:\\QM\\mt5\\') `
-                          -and $_.CommandLine -notmatch 'T_Live' })
+           Where-Object { Test-QmFactoryMt5ImagePath -Path $_.ExecutablePath -ImageName 'terminal64.exe' })
 foreach ($p in $terms) { Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue }
-Write-Host ("  terminal64.exe killed : {0} (factory-path-anchored; T_Live + FTMO safe)" -f $terms.Count)
+Write-Host ("  terminal64.exe killed : {0} (exact T1..T10 image paths only)" -f $terms.Count)
 
 # 4b. kill orphaned/local tester agents under factory roots. A killed terminal can
 #     otherwise leave metatester64.exe holding the terminal profile during an OFF window.
 $metaTesters = @(Get-CimInstance Win32_Process -Filter "Name='metatester64.exe'" -ErrorAction SilentlyContinue |
-                 Where-Object { $_.ExecutablePath -like 'D:\QM\mt5\*' -or $_.CommandLine -match 'D:\\QM\\mt5\\' })
+                 Where-Object { Test-QmFactoryMt5ImagePath -Path $_.ExecutablePath -ImageName 'metatester64.exe' })
 foreach ($p in $metaTesters) { Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue }
-Write-Host ("  metatester64.exe killed : {0} (factory-path-anchored)" -f $metaTesters.Count)
+Write-Host ("  metatester64.exe killed : {0} (exact T1..T10 image paths only)" -f $metaTesters.Count)
 
 Start-Sleep -Seconds 3
-$leftDaemons = @(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe'" -ErrorAction SilentlyContinue |
-                 Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
+$leftDaemons = @(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe' OR Name='python.exe'" -ErrorAction SilentlyContinue |
+                 Where-Object { Test-QmFactoryWorkerCommandLine -CommandLine $_.CommandLine }).Count
 $leftTerms   = @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
-                 Where-Object { ($_.ExecutablePath -like 'D:\QM\mt5\*' -or $_.CommandLine -match 'D:\\QM\\mt5\\') `
-                                -and $_.CommandLine -notmatch 'T_Live' }).Count
+                 Where-Object { Test-QmFactoryMt5ImagePath -Path $_.ExecutablePath -ImageName 'terminal64.exe' }).Count
 $leftMeta    = @(Get-CimInstance Win32_Process -Filter "Name='metatester64.exe'" -ErrorAction SilentlyContinue |
-                 Where-Object { $_.ExecutablePath -like 'D:\QM\mt5\*' -or $_.CommandLine -match 'D:\\QM\\mt5\\' }).Count
+                 Where-Object { Test-QmFactoryMt5ImagePath -Path $_.ExecutablePath -ImageName 'metatester64.exe' }).Count
 
 # 5. Save pre-OFF codex_parallel; repeated OFF calls preserve the original restore value.
 $codexParallelBefore = '1'
