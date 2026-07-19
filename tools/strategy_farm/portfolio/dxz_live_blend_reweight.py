@@ -69,6 +69,7 @@ EXPECTED_EXPORT_SCOPE = "ALL_ACCOUNT_DEALS_UNFILTERED"
 FINAL24_LIVE_START = date(2026, 7, 20)
 FINAL24_MANIFEST_SHA256 = "5ce872cc4ff92fe849edcfbcb9d1fd8e4e75d0b0d9892cdc025f6590f008fb8a"
 FINAL24_DECISION_SHA256 = "41d202525796f67429d39f2676392e7139327321e6608debc7f905662619eeee"
+FINAL24_BASELINE_FINGERPRINT_SHA256 = "d40b26fe56d4ce1cd6082413a566a4c5b6f3ac2e8f1e3ce8b80ba13d2103e495"
 TASK_ID = "f1c19271-dbff-4694-a302-327605a59616"
 # raw magic -> (EA id, exact registry symbol, logical host magic).  These are the
 # only non-host magics deployed as components of a Final-24 logical sleeve.
@@ -78,6 +79,10 @@ EXPLICIT_COMPOSITE_MAGIC_ALIASES = {
 }
 COMMISSION_REGISTRY = (
     REPO_ROOT / "framework" / "registry" / "live_commission.json"
+)
+COMMISSION_SOURCE = REPO_ROOT / "tools" / "strategy_farm" / "portfolio" / "commission.py"
+PORTFOLIO_COMMON_SOURCE = (
+    REPO_ROOT / "tools" / "strategy_farm" / "portfolio" / "portfolio_common.py"
 )
 EPSILON = 1e-12
 
@@ -599,10 +604,10 @@ def verify_deal_export_metadata(
     required_to = datetime.combine(
         as_of + timedelta(days=1), datetime.min.time(), tzinfo=timezone.utc
     )
-    if history_from > required_from:
-        raise InputError("deal export starts after the requested live window")
-    if history_to_exclusive < required_to:
-        raise InputError("deal export does not cover the complete as_of UTC day")
+    if history_from != required_from:
+        raise InputError("deal export must start exactly at live_start 00:00 UTC")
+    if history_to_exclusive != required_to:
+        raise InputError("deal export must end exactly after the complete as_of UTC day")
     if history_to_exclusive > exported_at:
         raise InputError("deal export cutoff is after exported_at_utc")
     if exported_at > generated_at:
@@ -657,6 +662,23 @@ def load_risk_schedule(
             if not rows_for_magic[-1].covers(as_of):
                 raise InputError(f"risk schedule does not cover as_of for magic {magic}")
         regimes[magic] = rows_for_magic
+    # v1 is the first post-deploy evidence cut.  Until a separately signed
+    # reweight decision exists, the risk-at-entry schedule is exactly the pinned
+    # July-20 manifest—not an operator-selectable normalization input.
+    by_magic = {sleeve.magic: sleeve for sleeve in sleeves}
+    for magic, rows_for_magic in regimes.items():
+        if len(rows_for_magic) != 1:
+            raise InputError(f"v1 risk schedule must have one pinned regime for magic {magic}")
+        regime = rows_for_magic[0]
+        sleeve = by_magic[magic]
+        if regime.effective_from != live_start:
+            raise InputError(f"v1 risk regime must start on {live_start} for magic {magic}")
+        if abs(regime.risk_percent - sleeve.current_risk_percent) > 0.000001:
+            raise InputError(f"v1 risk does not match pinned manifest for magic {magic}")
+    if abs(
+        sum(rows[0].risk_percent for rows in regimes.values()) - DEFAULT_TOTAL_RISK
+    ) > 0.000001:
+        raise InputError("v1 risk schedule must preserve TOTAL_RISK 9.75")
     return dict(regimes)
 
 
@@ -902,6 +924,22 @@ def verify_pinned_backtest_inputs(
             "pinned baseline mismatch: "
             f"missing={missing!r}, extra={extra!r}, changed={changed!r}"
         )
+
+
+def baseline_input_fingerprint(current_inputs: Sequence[Mapping[str, Any]]) -> str:
+    rows = [
+        {
+            "kind": str(row.get("kind", "")),
+            "logical_magic": str(row.get("logical_magic", "")),
+            "sha256": str(row.get("sha256", "")).strip().lower(),
+            "rows": str(row.get("rows", "")),
+        }
+        for row in current_inputs
+        if row.get("kind") in {"commission_registry", "backtest_stream"}
+    ]
+    rows.sort(key=lambda row: (row["kind"], row["logical_magic"]))
+    encoded = json.dumps(rows, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
 
 
 def business_days(start: date, end: date) -> list[date]:
@@ -1390,6 +1428,19 @@ def proposal_gate(
     return not reasons, reasons
 
 
+def diagnostics_for_artifact(
+    rows: Sequence[Mapping[str, Any]], *, proposal_eligible: bool
+) -> list[dict[str, Any]]:
+    """Return diagnostics safe to persist at the current review gate."""
+
+    output = [dict(row) for row in rows]
+    if not proposal_eligible:
+        for row in output:
+            row["shadow_weight_percent_not_for_use"] = ""
+            row["shadow_delta_vs_current"] = ""
+    return output
+
+
 def _live_daily_rows(
     sleeves: Sequence[Sleeve],
     live_daily: Mapping[int, Mapping[date, float]],
@@ -1535,6 +1586,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         )
     aliases = load_magic_registry(registry_path, sleeves)
     backtest_daily, stream_inputs = load_backtest_bundle(bundle, sleeves)
+    baseline_fingerprint = baseline_input_fingerprint(stream_inputs)
+    if baseline_fingerprint != FINAL24_BASELINE_FINGERPRINT_SHA256:
+        raise InputError(
+            "sealed Final-24 baseline fingerprint mismatch: "
+            f"expected {FINAL24_BASELINE_FINGERPRINT_SHA256}, got {baseline_fingerprint}"
+        )
     pinned_inputs_path = (
         Path(args.pinned_baseline_inputs) if args.pinned_baseline_inputs else None
     )
@@ -1629,6 +1686,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         oos_verdict=oos_validation["verdict"],
     )
     status = "OWNER_REVIEW_ELIGIBLE" if eligible else "HOLD"
+    artifact_diagnostics = diagnostics_for_artifact(
+        diagnostics, proposal_eligible=eligible
+    )
 
     input_rows = [
         {"kind": "manifest", "path": str(manifest_path), "sha256": sha256_file(manifest_path), "rows": 24},
@@ -1636,6 +1696,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         {"kind": "staging_report", "path": str(staging_report_path), "sha256": sha256_file(staging_report_path), "rows": ""},
         {"kind": "magic_registry", "path": str(registry_path), "sha256": sha256_file(registry_path), "rows": ""},
         {"kind": "tool_source", "path": str(Path(__file__).resolve()), "sha256": sha256_file(Path(__file__).resolve()), "rows": ""},
+        {"kind": "python_dependency", "path": str(COMMISSION_SOURCE), "sha256": sha256_file(COMMISSION_SOURCE), "rows": ""},
+        {"kind": "python_dependency", "path": str(PORTFOLIO_COMMON_SOURCE), "sha256": sha256_file(PORTFOLIO_COMMON_SOURCE), "rows": ""},
         *stream_inputs,
     ]
     if deal_path is not None:
@@ -1676,6 +1738,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "session_calendar": "UTC weekdays; complete UTC days only",
         "live_pnl_basis": "completed position lifecycle net booked on final close day",
         "backtest_pnl_basis": "Q08 close rows adjusted by canonical commission model",
+        "pinned_baseline_fingerprint_sha256": baseline_fingerprint,
         "observed_live_sessions": len(live_dates),
         "minimum_proposal_sessions": DEFAULT_MIN_PROPOSAL_SESSIONS,
         "blend_window_sessions": args.blend_window,
@@ -1726,6 +1789,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         (registry_path, frozen_dir / "magic_numbers.csv"),
         (COMMISSION_REGISTRY, frozen_dir / "live_commission.json"),
         (Path(__file__).resolve(), frozen_dir / "dxz_live_blend_reweight.py"),
+        (COMMISSION_SOURCE, frozen_dir / "commission.py"),
+        (PORTFOLIO_COMMON_SOURCE, frozen_dir / "portfolio_common.py"),
     )
     for source, target in frozen_sources:
         shutil.copyfile(source, target)
@@ -1778,6 +1843,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "minimum_live_closed_positions": args.min_live_deals,
             "sleeve_cap": cap,
             "total_risk": total_risk,
+            "pinned_baseline_fingerprint_sha256": baseline_fingerprint,
         },
     )
     _canonical_json(
@@ -1852,7 +1918,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "blended_daily_vol_1pct",
             "shadow_weight_percent_not_for_use", "shadow_delta_vs_current", "hold_reason",
         ),
-        diagnostics,
+        artifact_diagnostics,
     )
     fold_fields = tuple(oos_folds[0])
     _write_csv(output_dir / "oos_folds.csv", fold_fields, oos_folds)
@@ -1894,14 +1960,20 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             "final_24_sleeves": len(sleeves) == 24,
             "composition_unchanged": manifest_sha == FINAL24_MANIFEST_SHA256,
             "owner_decision_pinned": sha256_file(decision_path) == FINAL24_DECISION_SHA256,
+            "sealed_baseline_pinned": baseline_fingerprint == FINAL24_BASELINE_FINGERPRINT_SHA256,
             "live_evidence_present_for_at_least_one_sleeve": live_eligible_sleeves > 0,
             "total_risk_exact_6dp": round(sum(analysis_weights.values()), 6) == round(total_risk, 6),
             "sleeve_cap_respected": max(analysis_weights.values()) <= cap + 0.0000005,
             "oos_validation_pass": oos_validation["verdict"] == "PASS",
+            "candidate_weights_withheld_on_hold": eligible or all(
+                row["shadow_weight_percent_not_for_use"] == ""
+                and row["shadow_delta_vs_current"] == ""
+                for row in artifact_diagnostics
+            ),
             "owner_review_only": True,
             "auto_apply": False,
             "deployment_action": "NONE",
-            "writes_under_live_root": not any(
+            "writes_outside_live_roots": not any(
                 _path_is_under(output_dir, root) for root in LIVE_ROOTS
             ),
         },

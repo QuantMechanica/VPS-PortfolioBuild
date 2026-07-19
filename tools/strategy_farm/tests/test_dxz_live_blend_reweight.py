@@ -356,7 +356,19 @@ def test_deal_export_metadata_binds_account_cutoff_and_sha(tmp_path: Path) -> No
     payload["account_login"] = "4000090541"
     payload["history_to_utc_exclusive"] = "2026-08-17T00:00:00Z"
     metadata_path.write_text(json.dumps(payload), encoding="utf-8")
-    with pytest.raises(blend.InputError, match="complete as_of UTC day"):
+    with pytest.raises(blend.InputError, match="end exactly"):
+        blend.verify_deal_export_metadata(
+            metadata_path,
+            deal_path,
+            date(2026, 7, 20),
+            date(2026, 8, 17),
+            datetime(2026, 8, 18, 1, tzinfo=timezone.utc),
+        )
+
+    payload["history_to_utc_exclusive"] = "2026-08-18T00:00:00Z"
+    payload["history_from_utc"] = "2026-07-19T00:00:00Z"
+    metadata_path.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(blend.InputError, match="start exactly"):
         blend.verify_deal_export_metadata(
             metadata_path,
             deal_path,
@@ -393,6 +405,48 @@ def test_deal_export_metadata_checks_raw_row_count(tmp_path: Path) -> None:
             date(2026, 7, 20),
             date(2026, 7, 21),
             datetime(2026, 7, 22, 1, tzinfo=timezone.utc),
+        )
+
+
+def test_v1_risk_schedule_is_anchored_to_manifest_and_total(tmp_path: Path) -> None:
+    sleeves = [
+        _sleeve(
+            ea_id=1000 + index,
+            symbol=f"S{index}.DWX",
+            magic=10_000_000 + index,
+            risk=0.55 if index == 0 else 0.4,
+        )
+        for index in range(24)
+    ]
+    path = tmp_path / "risk.csv"
+
+    def write(first_risk: float) -> None:
+        with path.open("w", encoding="utf-8", newline="") as handle:
+            writer = csv.DictWriter(
+                handle,
+                fieldnames=("magic", "effective_from", "effective_to", "risk_percent"),
+            )
+            writer.writeheader()
+            for index, sleeve in enumerate(sleeves):
+                writer.writerow(
+                    {
+                        "magic": sleeve.magic,
+                        "effective_from": "2026-07-20",
+                        "effective_to": "",
+                        "risk_percent": first_risk if index == 0 else sleeve.current_risk_percent,
+                    }
+                )
+
+    write(0.55)
+    regimes = blend.load_risk_schedule(
+        path, sleeves, date(2026, 7, 20), date(2026, 8, 20)
+    )
+    assert len(regimes) == 24
+
+    write(0.56)
+    with pytest.raises(blend.InputError, match="pinned manifest"):
+        blend.load_risk_schedule(
+            path, sleeves, date(2026, 7, 20), date(2026, 8, 20)
         )
 
 
@@ -535,6 +589,25 @@ def test_proposal_gate_allows_backtest_fallback_for_sparse_live_sleeves() -> Non
     )
     assert eligible is False
     assert reasons == ["NO_SLEEVE_HAS_MINIMUM_LIVE_EVIDENCE"]
+
+
+def test_hold_diagnostics_withhold_candidate_weights() -> None:
+    source = [
+        {
+            "logical_magic": 123,
+            "shadow_weight_percent_not_for_use": 0.625,
+            "shadow_delta_vs_current": 0.125,
+        }
+    ]
+
+    held = blend.diagnostics_for_artifact(source, proposal_eligible=False)
+    assert held[0]["shadow_weight_percent_not_for_use"] == ""
+    assert held[0]["shadow_delta_vs_current"] == ""
+    assert source[0]["shadow_weight_percent_not_for_use"] == 0.625
+
+    reviewable = blend.diagnostics_for_artifact(source, proposal_eligible=True)
+    assert reviewable[0]["shadow_weight_percent_not_for_use"] == 0.625
+    assert reviewable[0]["shadow_delta_vs_current"] == 0.125
 
 
 def test_canonical_json_is_byte_deterministic(tmp_path: Path) -> None:
