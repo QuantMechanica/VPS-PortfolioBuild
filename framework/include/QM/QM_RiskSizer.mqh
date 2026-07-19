@@ -28,6 +28,19 @@ double      g_qm_risk_percent               = 0.0;
 double      g_qm_risk_fixed                 = 0.0;
 double      g_qm_risk_portfolio_weight      = 1.0;
 double      g_qm_risk_per_trade_cap_money   = 0.0;
+// 2026-07-20 framework audit P0.2 — PERCENT-mode cap follows live equity.
+// When cap_pct > 0, percent-style sizing caps at equity*cap_pct/100 evaluated
+// per call, so compounding survives and a re-init cannot shift the sizing
+// regime. FIXED mode keeps the frozen money cap: backtests run RISK_FIXED
+// (HR4) and their evidence must stay bit-identical to the historical record.
+double      g_qm_risk_per_trade_cap_pct     = 0.0;
+// 2026-07-20 framework audit P1.4 — sizing clamps must leave an evidence
+// trail. The sizer stays logger-free by design; QM_Entry clears the flag
+// before sizing, reads it afterwards, and emits RISK_CLAMP.
+bool        g_qm_risk_clamp_flag            = false;
+string      g_qm_risk_clamp_kind            = "";
+double      g_qm_risk_clamp_from            = 0.0;
+double      g_qm_risk_clamp_to              = 0.0;
 
 bool QM_RiskSizerConfigure(const QM_RiskMode mode,
                            const double risk_percent,
@@ -52,6 +65,29 @@ bool QM_RiskSizerConfigure(const QM_RiskMode mode,
    return true;
   }
 
+void QM_RiskSizerSetCapPct(const double cap_pct)
+  {
+   g_qm_risk_per_trade_cap_pct = cap_pct;
+  }
+
+void QM_RiskSizerNoteClamp(const string kind, const double from_value, const double to_value)
+  {
+   g_qm_risk_clamp_flag = true;
+   g_qm_risk_clamp_kind = kind;
+   g_qm_risk_clamp_from = from_value;
+   g_qm_risk_clamp_to   = to_value;
+  }
+
+// Effective per-trade cap for percent-style sizing: live-following percentage
+// when configured, frozen money amount otherwise (direct Configure callers,
+// e.g. tests, keep the historical semantics).
+double QM_RiskSizerPercentCap(const double equity)
+  {
+   if(g_qm_risk_per_trade_cap_pct > 0.0 && equity > 0.0)
+      return equity * (g_qm_risk_per_trade_cap_pct / 100.0);
+   return g_qm_risk_per_trade_cap_money;
+  }
+
 double QM_RiskSizerRiskMoney(const double equity)
   {
    if(equity <= 0.0)
@@ -69,8 +105,14 @@ double QM_RiskSizerRiskMoney(const double equity)
    if(weighted_risk <= 0.0)
       return 0.0;
 
-   if(g_qm_risk_per_trade_cap_money > 0.0 && weighted_risk > g_qm_risk_per_trade_cap_money)
-      weighted_risk = g_qm_risk_per_trade_cap_money;
+   const double cap_global = (g_qm_risk_mode == QM_RISK_MODE_PERCENT)
+                             ? QM_RiskSizerPercentCap(equity)
+                             : g_qm_risk_per_trade_cap_money;
+   if(cap_global > 0.0 && weighted_risk > cap_global)
+     {
+      QM_RiskSizerNoteClamp("per_trade_cap", weighted_risk, cap_global);
+      weighted_risk = cap_global;
+     }
    return weighted_risk;
   }
 
@@ -89,8 +131,12 @@ double QM_RiskSizerRiskMoney(const double equity,
    if(weighted_risk <= 0.0)
       return 0.0;
 
-   if(g_qm_risk_per_trade_cap_money > 0.0 && weighted_risk > g_qm_risk_per_trade_cap_money)
-      weighted_risk = g_qm_risk_per_trade_cap_money;
+   const double cap_explicit_pct = QM_RiskSizerPercentCap(equity);
+   if(cap_explicit_pct > 0.0 && weighted_risk > cap_explicit_pct)
+     {
+      QM_RiskSizerNoteClamp("per_trade_cap", weighted_risk, cap_explicit_pct);
+      weighted_risk = cap_explicit_pct;
+     }
    return weighted_risk;
   }
 
@@ -114,8 +160,12 @@ double QM_RiskSizerRiskMoney(const double equity,
    if(weighted_risk <= 0.0)
       return 0.0;
 
+   // FIXED semantics: frozen money cap stays authoritative (see cap_pct note).
    if(g_qm_risk_per_trade_cap_money > 0.0 && weighted_risk > g_qm_risk_per_trade_cap_money)
+     {
+      QM_RiskSizerNoteClamp("per_trade_cap", weighted_risk, g_qm_risk_per_trade_cap_money);
       weighted_risk = g_qm_risk_per_trade_cap_money;
+     }
    return weighted_risk;
   }
 
@@ -383,6 +433,8 @@ double QM_LotsForRisk(const string symbol, const double sl_points)
 
       // Use a safety fraction so the bracket pair (two pending stops) stays affordable.
       double margin_cap_lots = (free_margin * 0.90) / margin_per_lot;
+      if(margin_cap_lots < lots)
+         QM_RiskSizerNoteClamp("margin_cap", lots, margin_cap_lots);
       lots = QM_RiskSizerQuantizeLots(MathMin(lots, margin_cap_lots),
                                       snapshot.volume_min,
                                       snapshot.volume_max,
@@ -434,6 +486,8 @@ double QM_LotsForRisk(const string symbol,
          return 0.0;
 
       double margin_cap_lots = (free_margin * 0.90) / margin_per_lot;
+      if(margin_cap_lots < lots)
+         QM_RiskSizerNoteClamp("margin_cap", lots, margin_cap_lots);
       lots = QM_RiskSizerQuantizeLots(MathMin(lots, margin_cap_lots),
                                       snapshot.volume_min,
                                       snapshot.volume_max,
@@ -489,6 +543,8 @@ double QM_LotsForRisk(const string symbol,
          return 0.0;
 
       double margin_cap_lots = (free_margin * 0.90) / margin_per_lot;
+      if(margin_cap_lots < lots)
+         QM_RiskSizerNoteClamp("margin_cap", lots, margin_cap_lots);
       lots = QM_RiskSizerQuantizeLots(MathMin(lots, margin_cap_lots),
                                       snapshot.volume_min,
                                       snapshot.volume_max,
@@ -539,6 +595,7 @@ double QM_RiskSizerCapLotsByOrderMargin(const string symbol,
    const double margin_epsilon = MathMax(1e-8, margin_budget * 1e-10);
    if(required_margin <= margin_budget + margin_epsilon)
       return lots;
+   const double requested_quantized = lots;   // audit P1.4: evidence baseline for the reduction below
 
    // The requested volume is unaffordable.  Search the discrete broker volume
    // grid for the greatest affordable lot count.  Recomputing OrderCalcMargin
@@ -590,6 +647,7 @@ double QM_RiskSizerCapLotsByOrderMargin(const string symbol,
       final_margin <= 0.0 || final_margin > margin_budget + margin_epsilon)
       return 0.0;
 
+   QM_RiskSizerNoteClamp("entry_margin_cap", requested_quantized, lots);
    return lots;
   }
 

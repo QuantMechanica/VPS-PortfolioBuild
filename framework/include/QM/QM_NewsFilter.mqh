@@ -556,8 +556,20 @@ bool QM_NewsInit(const string base_dir = "D:\\QM\\data\\news_calendar",
    if(!QM_NewsReadFileBytes(g_qm_news_calendar_path_primary, bytes_primary, modified_primary) ||
       !QM_NewsReadFileBytes(g_qm_news_calendar_path_secondary, bytes_secondary, modified_secondary))
      {
-      QM_NewsLogSetupMissing("calendar_file_missing_or_unreadable");
-      return false;
+      // 2026-07-20 framework audit P0.6 (P1.11 completion): the CSVs are the
+      // TESTER data source — live verdicts come from the native MT5 calendar.
+      // Outside the tester a missing/unreadable seed must degrade instead of
+      // bricking OnInit on a foreign or freshly-provisioned server. The CSV
+      // features stay unavailable (g_qm_news_available=false), which keeps
+      // the legacy NEWS_ONLY mode fail-closed and fully logged.
+      if(MQLInfoInteger(MQL_TESTER) != 0)
+        {
+         QM_NewsLogSetupMissing("calendar_file_missing_or_unreadable");
+         return false;
+        }
+      QM_LogEvent(QM_WARN, "NEWS_CSV_DEGRADED_LIVE",
+                  "{\"detail\":\"calendar_file_missing_or_unreadable\",\"live_source\":\"native_mt5_calendar\"}");
+      return true;
      }
 
    if(modified_primary > g_qm_news_latest_modified_utc)
@@ -582,8 +594,15 @@ bool QM_NewsInit(const string base_dir = "D:\\QM\\data\\news_calendar",
    if(!QM_NewsLoadCsv(g_qm_news_calendar_path_primary, rows_primary) ||
       !QM_NewsLoadCsv(g_qm_news_calendar_path_secondary, rows_secondary))
      {
-      QM_NewsLogSetupMissing("calendar_csv_parse_failed");
-      return false;
+      // audit P0.6: same live-degrade contract as the missing-file branch.
+      if(MQLInfoInteger(MQL_TESTER) != 0)
+        {
+         QM_NewsLogSetupMissing("calendar_csv_parse_failed");
+         return false;
+        }
+      QM_LogEvent(QM_WARN, "NEWS_CSV_DEGRADED_LIVE",
+                  "{\"detail\":\"calendar_csv_parse_failed\",\"live_source\":\"native_mt5_calendar\"}");
+      return true;
      }
 
    g_qm_news_rows_loaded = rows_primary + rows_secondary;
@@ -594,8 +613,15 @@ bool QM_NewsInit(const string base_dir = "D:\\QM\\data\\news_calendar",
    // is always a broken calendar, never a valid state for active news axes.
    if(g_qm_news_rows_loaded <= 0)
      {
-      QM_NewsLogSetupMissing("calendar_zero_rows_parsed");
-      return false;
+      // audit P0.6: same live-degrade contract as the missing-file branch.
+      if(MQLInfoInteger(MQL_TESTER) != 0)
+        {
+         QM_NewsLogSetupMissing("calendar_zero_rows_parsed");
+         return false;
+        }
+      QM_LogEvent(QM_WARN, "NEWS_CSV_DEGRADED_LIVE",
+                  "{\"detail\":\"calendar_zero_rows_parsed\",\"live_source\":\"native_mt5_calendar\"}");
+      return true;
      }
 
    string primary_hash = "";

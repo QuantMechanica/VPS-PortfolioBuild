@@ -122,6 +122,28 @@ bool QM_EntryHasOpenPosition(const long magic, const string symbol)
    return false;
 }
 
+// 2026-07-20 framework audit P0.5 — pending-order duplicate guard. A repeated
+// signal must not stack a second copy of the same pending leg (doubled
+// exposure once both fill). Deliberately scoped to the SAME order type so
+// bracket pairs (buy stop + sell stop) remain legal.
+bool QM_EntryHasPendingOrder(const long magic, const string symbol, const ENUM_ORDER_TYPE order_type)
+{
+   const int total = OrdersTotal();
+   for(int i = 0; i < total; ++i)
+   {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0)
+         continue;
+      if(OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != symbol)
+         continue;
+      if((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE) == order_type)
+         return true;
+   }
+   return false;
+}
+
 double QM_EntrySLPoints(const double entry_price, const double sl_price)
 {
    if(entry_price <= 0.0 || sl_price <= 0.0)
@@ -222,6 +244,17 @@ QM_EntryResult QM_EntryInternal(const QM_EntryRequest &req,
       return QM_ENTRY_REJECTED_DUPLICATE;
    }
 
+   // audit P0.5: same-type pending duplicate is a stacked bracket leg, not a
+   // new trade. Different-type pendings (the other bracket side) pass.
+   if(QM_OrderTypeIsLimit(req.type) || QM_OrderTypeIsStop(req.type))
+   {
+      if(QM_EntryHasPendingOrder((long)magic, _Symbol, QM_OrderTypeToMT5(req.type)))
+      {
+         QM_EntryLogReject(req, QM_ENTRY_REJECTED_DUPLICATE, "pending_order_same_magic_symbol_type");
+         return QM_ENTRY_REJECTED_DUPLICATE;
+      }
+   }
+
    // FW2 (2026-05-23) — Q06 HARSH stress trade-rejection simulation.
    // When stress probability > 0, draw from the central seeded RNG (sub-stream
    // "entry_reject") and drop the entry deterministically. Q05 MED runs with
@@ -251,6 +284,7 @@ QM_EntryResult QM_EntryInternal(const QM_EntryRequest &req,
    // global risk-money semantics.  Entry then applies its side/price-aware
    // OrderCalcMargin rail; direct legacy QM_LotsForRisk callers remain on their
    // historical path.  Invalid explicit values resolve to zero lots and reject.
+   g_qm_risk_clamp_flag = false;   // audit P1.4: fresh clamp evidence for THIS sizing pass
    double lots = 0.0;
    if(use_explicit_risk_mode)
       lots = QM_LotsForRiskAtEntry(_Symbol,
@@ -270,6 +304,23 @@ QM_EntryResult QM_EntryInternal(const QM_EntryRequest &req,
                                       margin_order_type,
                                       entry_price,
                                       explicit_risk_percent);
+   // audit P1.4: a sizing clamp (per-trade cap or margin rail) that reduced
+   // this entry below its risk target must leave an evidence line — silent
+   // under-sizing violates evidence-over-claims. Logged before the zero-lot
+   // reject so both outcomes carry the trail.
+   if(g_qm_risk_clamp_flag)
+   {
+      QM_LogEvent(QM_INFO, "RISK_CLAMP",
+                  StringFormat("{\"kind\":\"%s\",\"from\":%.2f,\"to\":%.2f,\"lots\":%.8f,\"symbol\":\"%s\",\"magic\":%d}",
+                               QM_LoggerEscapeJson(g_qm_risk_clamp_kind),
+                               g_qm_risk_clamp_from,
+                               g_qm_risk_clamp_to,
+                               lots,
+                               QM_LoggerEscapeJson(_Symbol),
+                               magic));
+      g_qm_risk_clamp_flag = false;
+   }
+
    if(lots <= 0.0)
    {
       QM_EntryLogReject(req, QM_ENTRY_REJECTED_RISK, "lots_for_risk_zero");

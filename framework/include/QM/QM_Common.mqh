@@ -171,9 +171,15 @@ bool QM_FrameworkInit(const int ea_id,
    QM_RiskMode mode = QM_RISK_MODE_PERCENT;
    if(risk_fixed > 0.0)
       mode = QM_RISK_MODE_FIXED;
+   // 2026-07-20 framework audit P0.2 — the PERCENT-mode per-trade cap follows
+   // live equity (cap_pct) instead of a money amount frozen at init-time
+   // equity: a frozen cap silently de-compounds percent sizing and shifts on
+   // every re-init. The money value stays as the FIXED-mode rail so RISK_FIXED
+   // backtests remain bit-identical to the historical gate evidence.
    const double risk_cap_money = AccountInfoDouble(ACCOUNT_EQUITY) * 0.01;
    if(!QM_RiskSizerConfigure(mode, risk_percent, risk_fixed, portfolio_weight, risk_cap_money))
       return false;
+   QM_RiskSizerSetCapPct(1.0);
 
    // FW7 2026-05-23 — News lazy-init (OWNER call after Q02 hang triage).
    // Originally QM_NewsInit ran for every EA, opening the calendar files and
@@ -312,8 +318,11 @@ bool QM_FrameworkSetRiskCapPct(const double cap_pct)
       return false;
    if(cap_pct <= 0.0 || cap_pct > 5.0)
       return false;
+   // audit P0.2: the pct is authoritative for PERCENT sizing (live-following);
+   // cap_money remains the FIXED-mode rail and a reference value in the log.
    const double cap_money = AccountInfoDouble(ACCOUNT_EQUITY) * (cap_pct / 100.0);
    g_qm_risk_per_trade_cap_money = cap_money;
+   QM_RiskSizerSetCapPct(cap_pct);
    if(MathAbs(cap_pct - 1.0) > 1e-9)
       QM_LogEvent(QM_INFO, "RISK_CAP_OVERRIDE",
                   StringFormat("{\"cap_pct\":%.4f,\"cap_money\":%.2f}", cap_pct, cap_money));
@@ -971,6 +980,9 @@ void QM_FrameworkQ08Flush()
 
 void QM_FrameworkShutdown()
   {
+   // audit 2026-07-20: deinit wall-time telemetry — MT5 force-kills OnDeinit
+   // after ~2.7s, so anything approaching 1s here is a live-restart hazard.
+   const uint deinit_start_ms = GetTickCount();
    if(g_qm_fw_timer_active)
      {
       EventKillTimer();
@@ -1013,8 +1025,17 @@ void QM_FrameworkShutdown()
    // does not fire an OnTradeTransaction for every close), then flush to the deterministic
    // Common\Files path so the Davey aggregator reads real per-trade P&L that matches the
    // tester report. Bounded/incremental flush inside (2026-07-10 OOM fix) keeps memory capped.
-   QM_FrameworkQ08EmitFromHistory();
-   QM_FrameworkQ08Flush();
+   // 2026-07-20 framework audit P0.1: TESTER-ONLY. Q08 is a backtest gate; on a
+   // live account this walk is HistorySelect(0,now) over the whole account
+   // history plus one nested HistorySelect per closing deal — synchronous,
+   // roughly quadratic work inside OnDeinit's ~2.7s budget. That force-kill is
+   // the observed live-restart "Abnormal termination" class, and the output is
+   // unused in live anyway.
+   if(MQLInfoInteger(MQL_TESTER) != 0)
+     {
+      QM_FrameworkQ08EmitFromHistory();
+      QM_FrameworkQ08Flush();
+     }
    if(g_qm_q08_fh != INVALID_HANDLE)
      {
       FileClose(g_qm_q08_fh);
@@ -1023,7 +1044,11 @@ void QM_FrameworkShutdown()
    ArrayResize(g_qm_q08_mae_states, 0);
    ArrayResize(g_qm_q08_mae_closed, 0);
    if(g_qm_fw_initialized)
-      QM_LogEvent(QM_INFO, "DEINIT", "{}");
+     {
+      const uint deinit_ms = GetTickCount() - deinit_start_ms;
+      QM_LogEvent(deinit_ms > 1000 ? QM_WARN : QM_INFO, "DEINIT",
+                  StringFormat("{\"duration_ms\":%u}", deinit_ms));
+     }
    ArrayResize(g_qm_fw_magic_contexts, 0);
    g_qm_fw_initialized = false;
   }
