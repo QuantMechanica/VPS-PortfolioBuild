@@ -1,5 +1,5 @@
 {
-  "logical_symbol": "QM5_10309_EURUSD_GBPUSD_COINTEG_M15",
+  "logical_symbol": "QM5_10309_EURUSD_GBPUSD_COINTEG_FX",
   "host_symbol": "GBPUSD.DWX",
   "host_timeframe": "M15",
   "tester_currency": "USD",

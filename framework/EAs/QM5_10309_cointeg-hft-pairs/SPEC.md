@@ -37,7 +37,7 @@ The EA evaluates the approved EURUSD/GBPUSD candidate as one logical M15 basket 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `QM5_10309_EURUSD_GBPUSD_COINTEG_M15` - Logical package identity used by the farm.
+- `QM5_10309_EURUSD_GBPUSD_COINTEG_FX` - Logical package identity used by the farm; the manifest binds it to M15.
 - `GBPUSD.DWX` - Tester host and registered package leg B (magic slot 1).
 - `EURUSD.DWX` - Foreign package leg A (magic slot 0).
 

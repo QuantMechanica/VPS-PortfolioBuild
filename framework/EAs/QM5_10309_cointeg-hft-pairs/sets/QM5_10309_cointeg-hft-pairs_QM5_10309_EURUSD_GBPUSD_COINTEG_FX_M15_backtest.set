@@ -4,14 +4,14 @@
 ; ea_slug:      cointeg-hft-pairs
 ; ea_version:   v5.1
 ; set_version:  s20260719-001
-; symbol:       QM5_10309_EURUSD_GBPUSD_COINTEG_M15
+; symbol:       QM5_10309_EURUSD_GBPUSD_COINTEG_FX
 ; host_symbol:  GBPUSD.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   4172dbf8ad1140b7dddd0be082b604b8a7540eacd0f8d07b2ea1674827d01fac
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-07-19
 ;==========================================================

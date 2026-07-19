@@ -673,6 +673,18 @@ int OnInit()
    QM_SymbolGuardInit(g_allowed_symbols);
    QM_BasketWarmupHistory(g_allowed_symbols, PERIOD_M15, MathMax(300, strategy_formation_days * BarsPerTradingDay()));
 
+   const int foreign_magic = QM_MagicChecked(qm_ea_id, g_slot_a, g_symbol_a);
+   if(foreign_magic <= 0 || !QM_KillSwitchRegisterMagic((long)foreign_magic))
+     {
+      QM_LogEvent(QM_ERROR,
+                  "BASKET_MAGIC_REGISTRATION_FAILED",
+                  StringFormat("{\"symbol\":\"%s\",\"slot\":%d,\"magic\":%d}",
+                               g_symbol_a,
+                               g_slot_a,
+                               foreign_magic));
+      return INIT_FAILED;
+     }
+
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
   }
@@ -697,12 +709,15 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   // Detect a broker/SL-closed leg on every host tick so the companion
+   // cannot remain as directional exposure until the next M15 bar.
+   Strategy_ManageOpenPosition();
+
    const bool new_bar = QM_IsNewBar();
    if(new_bar)
      {
       QM_EquityStreamOnNewBar();
       RefreshState();
-      Strategy_ManageOpenPosition();
       Strategy_ExitSignal();
      }
 
