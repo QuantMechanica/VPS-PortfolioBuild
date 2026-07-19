@@ -1,4 +1,4 @@
-# QM5_20009 ICT Liquidity Portfolio — frozen research contract v2
+# QM5_20009 ICT Liquidity Portfolio — frozen research contract v3
 
 **EA ID:** 20009  
 **Slug:** `ict-liquidity-portfolio`  
@@ -54,29 +54,39 @@ hypothesis; it must never be described as an official ICT weekly strategy.
   above it on the sweep bar or within `reclaim_bars`; a high sweep is mirrored.
 - MSS is the first bar *after* reclaim that closes through the most recent confirmed
   pre-penetration opposite pivot. Sweep/reclaim and MSS on one bar is invalid.
-- Only the earliest directionally matching FVG after MSS is considered. The order
-  is placed immediately at the proximal edge. If the FVG was already touched when
-  it became eligible, the attempt is void; no later FVG may rescue it.
-- In frozen v2, the volatility term is **SMA-TR(14)**: the arithmetic mean of
+- Only the earliest directionally matching FVG after MSS is considered. At its
+  close the proximal edge becomes an immutable virtual-limit intent. If that edge
+  was already touched when eligible, the attempt is void; no later FVG may rescue
+  it. On a later tick, Buy triggers only at `Ask <= edge` and Sell only at
+  `Bid >= edge`; the EA then rechecks every gate and sends one market order.
+- In frozen v3, the volatility term is **SMA-TR(14)**: the arithmetic mean of
   the latest 14 causal true ranges at the FVG bar, not Wilder-smoothed ATR.
   Stop padding is `max(2 * observed spread, sl_buffer_atr * SMA-TR(14))` beyond
   the swept extreme. A fixed target must lie beyond entry and meet `min_rr`.
 - No partial close, break-even, trailing stop, discretionary bias, SMT, OTE, order-
   block ranking, or news-reversal logic exists in v1.
-- Position management, hard time exits and pending-order cancellation execute
+- Position management, hard time exits and orphan broker-order deletion execute
   before entry-only news, session and governor filters.
 - The entry-only news gate is frozen to temporal `PRE30_POST30`, compliance
   `FTMO`, stale limit 336 hours, and minimum impact `high`; the framework's
   placeholder `DXZ` compliance profile is not admissible for this build.
-- One position and one pending order per symbol/magic. Filled-trade and consumed-
+- No strategy server-pending order is permitted. An armed virtual intent has an
+  immutable cancel boundary equal to the earlier of session end and the next
+  applicable news-blackout start. It is checked on every tick with an uncached
+  news verdict and on a UI-independent one-second live timer. Any crossed boundary,
+  news block, stale/locked/zero governor, live event-loop gap over five seconds,
+  invalid trigger geometry, restart, or send attempt permanently voids it; it
+  cannot revive after a gap or blackout.
+- One position and one virtual intent per symbol/magic. Filled-trade and consumed-
   attempt budgets are reconstructed from bounded bars, historical orders/deals,
   and a persistent live-terminal marker containing `event_bar_time` plus both
   frozen hashes. State `CONSUMED` lets only that identical event progress on later
-  bars; state `SUBMITTED` is written before `OrderSend` and blocks every retry,
-  including rejects and later cancellation. An EA restart cannot create another
-  attempt. Same-budget event/hash drift and partial or unreadable persistence fail
-  closed. Tester markers are process-local so duplicate tester runs cannot
-  contaminate one another.
+  bars; the immutable intent fields and state `SUBMITTED` are flushed when armed.
+  At touch the intent is durably removed before `OrderSend`, blocking every retry,
+  including rejects. A restart always voids an armed intent because missed ticks
+  and gate transitions cannot be disproved. Same-budget event/hash drift and
+  partial or unreadable persistence fail closed. Tester markers are process-local
+  so duplicate tester runs cannot contaminate one another.
 
 ## 3. Sleeve A — `INDEX_MSS_FVG_AM`
 
@@ -88,16 +98,17 @@ hypothesis; it must never be described as an official ICT weekly strategy.
    penetration/reclaim of either frozen boundary consumes the day. If both sides
    penetrate in the same bar, consume the day as ambiguous with no trade.
 3. Require the shared later-MSS sequence using the pre-sweep opposite pivot.
-4. Use the earliest post-MSS FVG and immediately place a limit at its proximal
-   edge. All sweep, reclaim, MSS, FVG creation, and order placement must complete
+4. Use the earliest post-MSS FVG and immediately arm its proximal edge as a
+   virtual limit. All sweep, reclaim, MSS, FVG creation, and intent arming complete
    inside `[10:00,11:00)`.
 5. Long target is the frozen opening-range high; short target is its low. Invalid
    target direction or insufficient R means no trade; never jump to a farther pool.
-6. Pending orders cancel at 11:00. Maximum one consumed attempt and one fill per NY
-   day. Any filled position hard-flats at 15:55 NY.
+6. The virtual intent expires at 11:00 or the next news-blackout start, whichever
+   is earlier. Maximum one consumed attempt and one fill per NY day. Any filled
+   position hard-flats at 15:55 NY.
 
-State machine: `PREOPEN -> RANGE_FROZEN -> PENETRATED -> RECLAIMED -> MSS -> ORDER
--> FILLED/DONE`. The key is NY date + symbol + mode; restart replay hashes the
+State machine: `PREOPEN -> RANGE_FROZEN -> PENETRATED -> RECLAIMED -> MSS ->
+VIRTUAL_LIMIT -> TRIGGERED/FILLED/DONE`. The key is NY date + symbol + mode; restart replay hashes the
 frozen opening range. Missing/incomplete range, same-bar MSS, no pre-sweep pivot,
 ambiguous sweep, touched/absent FVG, invalid target/R, or expiry are explicit
 no-trade outcomes.
@@ -112,7 +123,7 @@ be dropped after results are seen.
    exclusive from observed bars, not broker D1. At the next Sunday 17:00 freeze
    PWH/PWL. If it contains fewer than three distinct trading dates, skip the week.
 2. Eligible sessions are London `[02:00,05:00)` NY and New York `[07:00,10:00)` NY.
-   All sweep/reclaim/MSS/FVG/order events must finish in the same active session.
+   All sweep/reclaim/MSS/FVG/intent-arm events finish in the same active session.
 3. The completed reference range is Asian `[20:00,00:00)` before London and London
    `[02:00,05:00)` before New York. Incomplete reference data invalidates a session.
 4. A long candidate begins only with a PWL penetration/reclaim; a short candidate
@@ -123,11 +134,12 @@ be dropped after results are seen.
 6. The first chronological PWH/PWL reclaim in an eligible session consumes that
    symbol-week even if no later pivot, MSS, FVG, order, or fill occurs. A same-bar
    double-side penetration consumes it as ambiguous with no trade.
-7. Pending orders cancel at session end. Maximum one consumed attempt and one fill
-   per symbol/week. Filled positions hard-flat at 16:00 NY on the same day.
+7. Virtual intents expire at session end or the next news-blackout start, whichever
+   is earlier. Maximum one consumed attempt and one fill per symbol/week. Filled
+   positions hard-flat at 16:00 NY on the same day.
 
-State machine: `WEEK_FROZEN -> FIRST_SWEEP -> RECLAIMED -> MSS -> ORDER ->
-FILLED/DONE`. State is keyed by NY trading-week start + symbol + mode and records
+State machine: `WEEK_FROZEN -> FIRST_SWEEP -> RECLAIMED -> MSS -> VIRTUAL_LIMIT
+-> TRIGGERED/FILLED/DONE`. State is keyed by NY trading-week start + symbol + mode and records
 PWH/PWL and reference-range hashes for deterministic restart replay.
 
 Sleeve B is a low-frequency diversifier candidate, not an asserted independent

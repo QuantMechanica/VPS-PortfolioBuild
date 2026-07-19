@@ -6,7 +6,7 @@
 #include <QM/QM_FTMOGovernorClient.mqh>
 #include "ICT_LiquidityRules.mqh"
 
-// Frozen research build contract v2.  One attachment owns exactly one symbol,
+// Frozen research build contract v3.  One attachment owns exactly one symbol,
 // one sleeve and one registry magic.  All signal decisions use closed Bid bars.
 
 input group "QuantMechanica V5 Framework"
@@ -91,8 +91,10 @@ ICT_LevelRange g_strategy_fx_previous_week;
 ICT_SequenceResult g_strategy_cached_sequence;
 bool               g_strategy_virtual_limit_active = false;
 datetime           g_strategy_virtual_limit_deadline = 0;
+datetime           g_strategy_virtual_limit_last_gate_time = 0;
 ICT_SequenceResult g_strategy_virtual_limit_signal;
 QM_EntryRequest    g_strategy_virtual_limit_request;
+bool               g_strategy_own_timer_active = false;
 
 bool Strategy_IsIntegerStarValue(const int value,
                                  const int low,
@@ -1564,7 +1566,7 @@ bool Strategy_ClaimAttempt(const ICT_SequenceResult &signal,
 
     const string state_key = Strategy_AttemptKeyBase(signal) + "_S";
    ResetLastError();
-   if(!GlobalVariableSetOnCondition(state_key,
+    if(!GlobalVariableSetOnCondition(state_key,
                                     (double)ICT_ATTEMPT_SUBMITTED,
                                     (double)ICT_ATTEMPT_CONSUMED))
      {
@@ -1574,11 +1576,59 @@ bool Strategy_ClaimAttempt(const ICT_SequenceResult &signal,
                                     stored_state,
                                     stored_event_time,
                                     stored_level_hash,
-                                    stored_reference_hash);
+                                     stored_reference_hash);
+      Strategy_DeleteVirtualIntentFields(signal);
       return false;
      }
    GlobalVariablesFlush();
-   return true;
+    return true;
+  }
+
+void Strategy_VoidPersistedVirtualIntentOnInit(const ICT_SequenceResult &signal)
+  {
+   if(MQLInfoInteger(MQL_TESTER) != 0)
+      return;
+   const string base = Strategy_AttemptKeyBase(signal);
+   if(base == "")
+      return;
+   const bool has_virtual_fields =
+      GlobalVariableCheck(base + "_VD") ||
+      GlobalVariableCheck(base + "_VP") ||
+      GlobalVariableCheck(base + "_VW") ||
+      GlobalVariableCheck(base + "_VT") ||
+      GlobalVariableCheck(base + "_VX") ||
+      GlobalVariableCheck(base + "_VF");
+   if(!has_virtual_fields)
+      return;
+
+   bool exists = false;
+   int stored_state = ICT_ATTEMPT_NONE;
+   datetime stored_event_time = 0;
+   uint stored_level_hash = 0;
+   uint stored_reference_hash = 0;
+   const bool readable = Strategy_LoadPersistentAttempt(signal,
+                                                         exists,
+                                                         stored_state,
+                                                         stored_event_time,
+                                                         stored_level_hash,
+                                                         stored_reference_hash);
+   const bool exact_submitted = readable && exists &&
+      stored_state == ICT_ATTEMPT_SUBMITTED &&
+      Strategy_AttemptIdentityMatches(signal,
+                                      stored_state,
+                                      stored_event_time,
+                                      stored_level_hash,
+                                      stored_reference_hash,
+                                      "restart_void");
+   QM_LogEvent(exact_submitted ? QM_WARN : QM_ERROR,
+               exact_submitted ? "ICT_VIRTUAL_LIMIT_RESTART_VOID"
+                               : "ICT_VIRTUAL_LIMIT_PARTIAL_STATE_VOID",
+               StringFormat("{\"budget_key\":%d,\"stored_state\":%d}",
+                            signal.budget_key,
+                            stored_state));
+   // A restart cannot prove that no touch, news block, governor lock or stale
+   // heartbeat happened while the EA was absent. Never resurrect the intent.
+   Strategy_DeleteVirtualIntentFields(signal);
   }
 
 bool Strategy_HistoryReadFailed(const ICT_SequenceResult &signal,
@@ -1696,7 +1746,8 @@ void Strategy_ManageExposure()
       return;
    const datetime now = TimeCurrent();
 
-   // Cancellation and hard flats intentionally precede all entry-only filters.
+   // This version never parks exposure-creating orders at the broker. Remove
+   // any orphan left by an older binary before evaluating any entry gate.
    for(int i = OrdersTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = OrderGetTicket(i);
@@ -1706,9 +1757,7 @@ void Strategy_ManageExposure()
          (int)OrderGetInteger(ORDER_MAGIC) != magic ||
          !Strategy_IsOurPendingType((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE)))
          continue;
-      const datetime setup_time = (datetime)OrderGetInteger(ORDER_TIME_SETUP);
-      if(setup_time <= 0 || Strategy_ShouldCancelOrder(setup_time, now))
-         QM_TM_RemovePendingOrder(ticket, "ict_session_pending_cancel");
+      QM_TM_RemovePendingOrder(ticket, "ict_server_pending_forbidden");
      }
 
    const int now_date = ICT_NYDateKey(now);
@@ -1807,32 +1856,6 @@ bool Strategy_QuoteAllowsFreshLimit(const int direction,
    return true;
   }
 
-bool Strategy_AssignPendingExpiration(const int expiration_seconds,
-                                      QM_EntryRequest &request)
-  {
-   if(expiration_seconds <= 0)
-      return false;
-   long expiration_modes = 0;
-   if(!SymbolInfoInteger(_Symbol, SYMBOL_EXPIRATION_MODE, expiration_modes))
-      return false;
-   if((expiration_modes & (long)SYMBOL_EXPIRATION_SPECIFIED) != 0)
-     {
-      request.expiration_seconds = expiration_seconds;
-      return true;
-     }
-   if((expiration_modes & (long)SYMBOL_EXPIRATION_GTC) == 0)
-      return false;
-
-   // The one-second timer and per-tick safety path enforce the same session
-   // cancellation when the broker does not accept ORDER_TIME_SPECIFIED.
-   request.expiration_seconds = 0;
-   QM_LogEvent(QM_INFO,
-               "ICT_PENDING_EXPIRATION_GTC_FALLBACK",
-               StringFormat("{\"seconds_until_session_end\":%d}",
-                            expiration_seconds));
-   return true;
-  }
-
 int Strategy_SecondsUntilSessionEnd(const ICT_SequenceResult &signal)
   {
    MqlDateTime ny;
@@ -1854,14 +1877,22 @@ void Strategy_InitRequest(QM_EntryRequest &request)
   }
 
 bool Strategy_BuildEntryRequest(const ICT_SequenceResult &signal,
-                                QM_EntryRequest &request)
+                                QM_EntryRequest &request,
+                                string &failure_reason)
   {
+   failure_reason = "unknown";
    Strategy_InitRequest(request);
    if(!signal.signal_valid || !signal.consumed || signal.ambiguous)
+     {
+      failure_reason = "signal_invalid_or_ambiguous";
       return false;
+     }
    const int expiration_seconds = Strategy_SecondsUntilSessionEnd(signal);
    if(expiration_seconds <= 0)
+     {
+      failure_reason = "session_closed";
       return false;
+     }
 
    request.type = (signal.direction > 0) ? QM_BUY_LIMIT : QM_SELL_LIMIT;
    request.price = Strategy_NormalizeToTick(signal.entry, 0);
@@ -1871,16 +1902,18 @@ bool Strategy_BuildEntryRequest(const ICT_SequenceResult &signal,
                                          (signal.direction > 0) ? -1 : 1);
    request.tp = Strategy_NormalizeToTick(signal.target, 0);
    // Compact 30-character history identity: budget + both replay hashes.
-   request.reason = Strategy_AttemptHistoryComment(signal);
-   request.symbol_slot = qm_magic_slot_offset;
-   if(!Strategy_AssignPendingExpiration(expiration_seconds, request))
-      return false;
+    request.reason = Strategy_AttemptHistoryComment(signal);
+    request.symbol_slot = qm_magic_slot_offset;
+   request.expiration_seconds = 0; // virtual intent; never sent as a pending.
 
-   if(!Strategy_QuoteAllowsFreshLimit(signal.direction,
-                                      request.price,
-                                      request.sl,
-                                      request.tp))
+    if(!Strategy_QuoteAllowsFreshLimit(signal.direction,
+                                       request.price,
+                                       request.sl,
+                                       request.tp))
+     {
+      failure_reason = "initial_quote_or_broker_distance";
       return false;
+     }
 
    const double risk = MathAbs(request.price - request.sl);
    const double reward = (signal.direction > 0) ? request.tp - request.price
@@ -1897,18 +1930,326 @@ bool Strategy_BuildEntryRequest(const ICT_SequenceResult &signal,
                            min_fvg_atr,
                            sl_buffer_atr,
                            min_rr);
-   return risk > 0.0 && reward > 0.0 && reward / risk + 1e-12 >= min_rr;
+   if(risk <= 0.0 || reward <= 0.0 || reward / risk + 1e-12 < min_rr)
+     {
+      failure_reason = "rr_after_tick_rounding";
+      return false;
+     }
+   failure_reason = "ok";
+   return true;
   }
 
 bool Strategy_EntryNewsAllows(const datetime broker_time)
   {
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF ||
       qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      return QM_NewsAllowsTrade2(_Symbol,
-                                 broker_time,
-                                 qm_news_temporal,
-                                 qm_news_compliance);
-   return QM_NewsAllowsTrade(_Symbol, broker_time, qm_news_mode_legacy);
+      return QM_NewsAllowsTrade2Fresh(_Symbol,
+                                      broker_time,
+                                      qm_news_temporal,
+                                      qm_news_compliance);
+    return QM_NewsAllowsTrade(_Symbol, broker_time, qm_news_mode_legacy);
+  }
+
+bool Strategy_ComputeVirtualLimitDeadline(const ICT_SequenceResult &signal,
+                                          const datetime broker_now,
+                                          datetime &deadline,
+                                          string &failure_reason)
+  {
+   deadline = 0;
+   failure_reason = "unknown";
+   const int seconds_until_session_end = Strategy_SecondsUntilSessionEnd(signal);
+   if(broker_now <= 0 || seconds_until_session_end <= 0)
+     {
+      failure_reason = "session_closed";
+      return false;
+     }
+   const datetime session_deadline = broker_now + seconds_until_session_end;
+   datetime next_news_block = 0;
+   const QM_NewsBlockStartResult news_result = QM_NewsNextBlockStart(
+      _Symbol,
+      broker_now,
+      session_deadline,
+      qm_news_temporal,
+      qm_news_compliance,
+      next_news_block);
+   if(news_result == QM_NEWS_BLOCKSTART_DATA_ERROR)
+     {
+      failure_reason = "news_boundary_data_error";
+      return false;
+     }
+   deadline = session_deadline;
+   if(news_result == QM_NEWS_BLOCKSTART_FOUND)
+     {
+      if(next_news_block <= broker_now)
+        {
+         failure_reason = "news_boundary_already_active";
+         return false;
+        }
+      if(next_news_block < deadline)
+         deadline = next_news_block;
+     }
+   if(deadline <= broker_now)
+     {
+      failure_reason = "immutable_deadline_invalid";
+      return false;
+     }
+   failure_reason = "ok";
+   return true;
+  }
+
+void Strategy_ResetVirtualLimitMemory()
+  {
+   g_strategy_virtual_limit_active = false;
+   g_strategy_virtual_limit_deadline = 0;
+   g_strategy_virtual_limit_last_gate_time = 0;
+   ICT_ResetSequence(g_strategy_virtual_limit_signal);
+   Strategy_InitRequest(g_strategy_virtual_limit_request);
+  }
+
+void Strategy_DisarmVirtualLimit(const string reason)
+  {
+   if(!g_strategy_virtual_limit_active)
+      return;
+   const int budget_key = g_strategy_virtual_limit_signal.budget_key;
+   const datetime fvg_time = g_strategy_virtual_limit_signal.fvg_bar_time;
+   Strategy_DeleteVirtualIntentFields(g_strategy_virtual_limit_signal);
+   Strategy_ResetVirtualLimitMemory();
+   QM_LogEvent(QM_INFO,
+               "ICT_VIRTUAL_LIMIT_VOID",
+               StringFormat("{\"reason\":\"%s\",\"budget_key\":%d,\"fvg_time\":%I64d}",
+                            QM_LoggerEscapeJson(reason),
+                            budget_key,
+                            (long)fvg_time));
+  }
+
+bool Strategy_ArmVirtualLimit(const ICT_SequenceResult &signal,
+                              const QM_EntryRequest &request,
+                              const datetime deadline)
+  {
+   if(g_strategy_virtual_limit_active || deadline <= TimeCurrent())
+      return false;
+   if(!Strategy_ClaimAttempt(signal, request, deadline))
+      return false;
+
+   Strategy_CopySequence(signal, g_strategy_virtual_limit_signal);
+   Strategy_InitRequest(g_strategy_virtual_limit_request);
+   g_strategy_virtual_limit_request.type = request.type;
+   g_strategy_virtual_limit_request.price = request.price;
+   g_strategy_virtual_limit_request.sl = request.sl;
+   g_strategy_virtual_limit_request.tp = request.tp;
+   g_strategy_virtual_limit_request.reason = request.reason;
+   g_strategy_virtual_limit_request.symbol_slot = request.symbol_slot;
+   g_strategy_virtual_limit_request.expiration_seconds = 0;
+   g_strategy_virtual_limit_deadline = deadline;
+   g_strategy_virtual_limit_last_gate_time = TimeCurrent();
+   g_strategy_virtual_limit_active = true;
+   QM_LogEvent(QM_INFO,
+               "ICT_VIRTUAL_LIMIT_ARMED",
+               StringFormat("{\"budget_key\":%d,\"direction\":%d,\"entry\":%.8f,\"sl\":%.8f,\"tp\":%.8f,\"deadline\":%I64d}",
+                            signal.budget_key,
+                            signal.direction,
+                            request.price,
+                            request.sl,
+                            request.tp,
+                            (long)deadline));
+   return true;
+  }
+
+bool Strategy_VirtualLimitGateAllows(const datetime broker_now,
+                                     string &block_reason)
+  {
+   block_reason = "unknown";
+   if(!g_strategy_virtual_limit_active)
+     {
+      block_reason = "not_armed";
+      return false;
+     }
+   if(MQLInfoInteger(MQL_TESTER) == 0 &&
+      (g_strategy_virtual_limit_last_gate_time <= 0 ||
+       broker_now < g_strategy_virtual_limit_last_gate_time ||
+       broker_now - g_strategy_virtual_limit_last_gate_time >
+          strategy_governor_heartbeat_max_age_seconds))
+     {
+      block_reason = "gate_continuity_gap";
+      return false;
+     }
+   if(broker_now <= 0 || g_strategy_virtual_limit_deadline <= 0 ||
+      broker_now >= g_strategy_virtual_limit_deadline)
+     {
+      block_reason = "immutable_deadline";
+      return false;
+     }
+   if(!Strategy_EntryNewsAllows(broker_now))
+     {
+      block_reason = "news_blackout";
+      return false;
+     }
+   if(!Strategy_GovernorAllowsEntry())
+     {
+      block_reason = "governor_block";
+      return false;
+     }
+   g_strategy_virtual_limit_last_gate_time = broker_now;
+   block_reason = "allow";
+   return true;
+  }
+
+bool Strategy_VirtualLimitTouched(const MqlTick &quote)
+  {
+   if(!g_strategy_virtual_limit_active || quote.ask <= 0.0 || quote.bid <= 0.0 ||
+      quote.ask < quote.bid)
+      return false;
+   if(g_strategy_virtual_limit_signal.direction > 0)
+      return quote.ask <= g_strategy_virtual_limit_request.price;
+   return quote.bid >= g_strategy_virtual_limit_request.price;
+  }
+
+bool Strategy_BuildTriggeredMarketRequest(const MqlTick &quote,
+                                          QM_EntryRequest &market_request,
+                                          double &market_price,
+                                          string &failure_reason)
+  {
+   failure_reason = "unknown";
+   market_price = (g_strategy_virtual_limit_signal.direction > 0)
+                  ? quote.ask : quote.bid;
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   long stops_level = 0;
+   if(market_price <= 0.0 || point <= 0.0 ||
+      !SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL, stops_level) ||
+      stops_level < 0)
+     {
+      failure_reason = "trigger_quote_or_symbol_invalid";
+      return false;
+     }
+
+   const double stop = g_strategy_virtual_limit_request.sl;
+   const double target = g_strategy_virtual_limit_request.tp;
+   const double minimum_distance = (double)stops_level * point;
+   const double comparison_epsilon = point * 1e-7;
+   double risk = 0.0;
+   double reward = 0.0;
+   if(g_strategy_virtual_limit_signal.direction > 0)
+     {
+      risk = market_price - stop;
+      reward = target - market_price;
+     }
+   else
+     {
+      risk = stop - market_price;
+      reward = market_price - target;
+     }
+   if(risk <= 0.0 || reward <= 0.0 ||
+      risk + comparison_epsilon < minimum_distance ||
+      reward + comparison_epsilon < minimum_distance)
+     {
+      failure_reason = "trigger_beyond_stop_target_or_broker_distance";
+      return false;
+     }
+
+   int pivot_wing = 0;
+   int reclaim_bars = 0;
+   int max_bars_to_mss = 0;
+   double min_fvg_atr = 0.0;
+   double sl_buffer_atr = 0.0;
+   double min_rr = 0.0;
+   Strategy_ModeParameters(pivot_wing,
+                           reclaim_bars,
+                           max_bars_to_mss,
+                           min_fvg_atr,
+                           sl_buffer_atr,
+                           min_rr);
+   if(reward / risk + 1e-12 < min_rr)
+     {
+      failure_reason = "trigger_rr_below_floor";
+      return false;
+     }
+
+   Strategy_InitRequest(market_request);
+   market_request.type = (g_strategy_virtual_limit_signal.direction > 0)
+                         ? QM_BUY : QM_SELL;
+   market_request.price = 0.0; // framework re-resolves the current atomic side.
+   market_request.sl = stop;
+   market_request.tp = target;
+   market_request.reason = g_strategy_virtual_limit_request.reason;
+   market_request.symbol_slot = g_strategy_virtual_limit_request.symbol_slot;
+   market_request.expiration_seconds = 0;
+   failure_reason = "ok";
+   return true;
+  }
+
+void Strategy_ProcessVirtualLimit(const bool allow_trigger)
+  {
+   if(!g_strategy_virtual_limit_active)
+      return;
+   datetime broker_now = allow_trigger ? TimeCurrent() : TimeTradeServer();
+   if(broker_now <= 0)
+      broker_now = TimeCurrent();
+   string block_reason = "";
+   if(!Strategy_VirtualLimitGateAllows(broker_now, block_reason))
+     {
+      Strategy_DisarmVirtualLimit(block_reason);
+      return;
+     }
+   if(!allow_trigger)
+      return; // timers invalidate only; entries require a fresh symbol tick.
+
+   MqlTick quote;
+   ZeroMemory(quote);
+   if(!SymbolInfoTick(_Symbol, quote) || !Strategy_VirtualLimitTouched(quote))
+      return;
+
+   QM_EntryRequest market_request;
+   double market_price = 0.0;
+   string geometry_reason = "";
+   if(!Strategy_BuildTriggeredMarketRequest(quote,
+                                            market_request,
+                                            market_price,
+                                            geometry_reason))
+     {
+      Strategy_DisarmVirtualLimit(geometry_reason);
+      return;
+     }
+
+   const int budget_key = g_strategy_virtual_limit_signal.budget_key;
+   const ICT_SessionKind session = g_strategy_virtual_limit_signal.session;
+   const datetime fvg_time = g_strategy_virtual_limit_signal.fvg_bar_time;
+   const double intended_entry = g_strategy_virtual_limit_request.price;
+   double scaled_risk_percent = 0.0;
+   if(MQLInfoInteger(MQL_TESTER) == 0)
+     {
+      scaled_risk_percent = RISK_PERCENT * g_strategy_governor_scale;
+      if(scaled_risk_percent <= 0.0)
+        {
+         Strategy_DisarmVirtualLimit("governor_scaled_risk_nonpositive");
+         return;
+        }
+     }
+
+   // Persistently consume before the broker call. A reject or crash can never
+   // retry this event and can therefore never duplicate account exposure.
+   Strategy_DisarmVirtualLimit("touch_consumed_before_send");
+   ulong out_ticket = 0;
+   bool opened = false;
+   if(MQLInfoInteger(MQL_TESTER) != 0)
+      opened = QM_TM_OpenPosition(market_request, out_ticket);
+   else
+      opened = QM_TM_OpenPosition(market_request,
+                                  out_ticket,
+                                  0,
+                                  QM_RISK_MODE_PERCENT,
+                                  scaled_risk_percent);
+   QM_LogEvent(opened ? QM_INFO : QM_WARN,
+               "ICT_ENTRY_RESULT",
+               StringFormat("{\"opened\":%s,\"ticket\":%I64u,\"budget_key\":%d,\"mode\":%d,\"session\":%d,\"fvg_time\":%I64d,\"intended_limit\":%.8f,\"trigger_quote\":%.8f,\"governor_scale\":%.8f}",
+                            opened ? "true" : "false",
+                            out_ticket,
+                            budget_key,
+                            (int)strategy_mode,
+                            (int)session,
+                            (long)fvg_time,
+                            intended_entry,
+                            market_price,
+                            g_strategy_governor_scale));
   }
 
 void Strategy_LogReconstruction(const ICT_SequenceResult &result)
@@ -1940,6 +2281,7 @@ void Strategy_LogReconstruction(const ICT_SequenceResult &result)
 
 int OnInit()
   {
+   Strategy_ResetVirtualLimitMemory();
    if(!Strategy_ParametersValid())
      {
       Print("QM5_20009_INVALID_OR_NON_PREREGISTERED_PARAMETERS");
@@ -2007,14 +2349,31 @@ int OnInit()
    // may advance an incomplete sequence, but can never submit its old FVG.
    g_last_closed_bar = iTime(_Symbol, (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed: one closed-bar bootstrap read.
    ICT_SequenceResult reconstructed;
-   if(Strategy_Reconstruct(reconstructed))
-     {
-      Strategy_LogReconstruction(reconstructed);
-      if(reconstructed.consumed)
-         Strategy_BindConsumedAttempt(reconstructed);
-     }
+    if(Strategy_Reconstruct(reconstructed))
+      {
+       Strategy_LogReconstruction(reconstructed);
+       if(reconstructed.consumed)
+         {
+          Strategy_VoidPersistedVirtualIntentOnInit(reconstructed);
+          Strategy_BindConsumedAttempt(reconstructed);
+         }
+      }
    else
       QM_LogEvent(QM_WARN, "ICT_RESTART_RECONSTRUCTION_NOT_READY", "{}");
+
+   if(MQLInfoInteger(MQL_TESTER) == 0)
+     {
+      ResetLastError();
+      if(!EventSetTimer(1))
+        {
+         QM_LogEvent(QM_ERROR,
+                     "ICT_SAFETY_TIMER_INIT_FAILED",
+                     StringFormat("{\"error\":%d}", GetLastError()));
+         QM_FrameworkShutdown();
+         return INIT_FAILED;
+        }
+      g_strategy_own_timer_active = true;
+     }
 
    QM_LogEvent(QM_INFO,
                "INIT_OK",
@@ -2026,17 +2385,29 @@ int OnInit()
 void OnDeinit(const int reason)
   {
    QM_LogEvent(QM_INFO, "DEINIT", StringFormat("{\"reason\":%d}", reason));
+   if(g_strategy_own_timer_active)
+     {
+      EventKillTimer();
+      g_strategy_own_timer_active = false;
+     }
    ArrayFree(g_strategy_closed_rates);
    QM_FrameworkShutdown();
+   Strategy_ResetVirtualLimitMemory();
   }
 
 void OnTick()
   {
    // Kill-switch -> Friday sweep -> card cancels/flats, all before entry gates.
    if(!Strategy_RunMandatorySafety())
+     {
+      Strategy_DisarmVirtualLimit("mandatory_safety_block");
       return;
+     }
 
-   const bool mode_new_bar = (strategy_mode == ICT_MODE_INDEX_MSS_FVG)
+   // A virtual limit is checked on every quote, before the closed-bar gate.
+   Strategy_ProcessVirtualLimit(true);
+
+    const bool mode_new_bar = (strategy_mode == ICT_MODE_INDEX_MSS_FVG)
                              ? QM_IsNewBar(_Symbol, PERIOD_M1)
                              : QM_IsNewBar(_Symbol, PERIOD_M5);
    if(!mode_new_bar)
@@ -2059,62 +2430,53 @@ void OnTick()
       return;
 
    QM_EntryRequest request;
-   if(!Strategy_BuildEntryRequest(signal, request))
+   string build_failure = "";
+   if(!Strategy_BuildEntryRequest(signal, request, build_failure))
      {
-      QM_LogEvent(QM_INFO,
-                  "ICT_EARLIEST_FVG_VOID",
-                  StringFormat("{\"budget_key\":%d,\"fvg_time\":%I64d,\"reason\":\"touched_or_broker_distance\"}",
-                               signal.budget_key,
-                               (long)signal.fvg_bar_time));
-      return;
-     }
+       QM_LogEvent(QM_INFO,
+                   "ICT_EARLIEST_FVG_VOID",
+                  StringFormat("{\"budget_key\":%d,\"fvg_time\":%I64d,\"reason\":\"%s\"}",
+                                signal.budget_key,
+                               (long)signal.fvg_bar_time,
+                               QM_LoggerEscapeJson(build_failure)));
+       return;
+      }
 
    // Everything below this line is entry-only.  It must never suppress the
    // management section at the start of OnTick.
    const datetime broker_now = TimeCurrent();
    if(!Strategy_EntryNewsAllows(broker_now))
       return;
-   if(!Strategy_GovernorAllowsEntry())
-      return;
-
-   double scaled_risk_percent = 0.0;
-   if(MQLInfoInteger(MQL_TESTER) == 0)
+    if(!Strategy_GovernorAllowsEntry())
+       return;
+   datetime immutable_deadline = 0;
+   string deadline_failure = "";
+   if(!Strategy_ComputeVirtualLimitDeadline(signal,
+                                            broker_now,
+                                            immutable_deadline,
+                                            deadline_failure))
      {
-      scaled_risk_percent = RISK_PERCENT * g_strategy_governor_scale;
-      if(scaled_risk_percent <= 0.0)
-         return;
-     }
-   // Persist SUBMITTED before entering the framework order path. Rejection,
-   // broker failure, expiry or later cancellation can never reopen this budget.
-   if(!Strategy_ClaimAttempt(signal))
+      QM_LogEvent(QM_WARN,
+                  "ICT_VIRTUAL_LIMIT_DEADLINE_FAILED",
+                  StringFormat("{\"budget_key\":%d,\"reason\":\"%s\"}",
+                               signal.budget_key,
+                               QM_LoggerEscapeJson(deadline_failure)));
       return;
-
-   ulong out_ticket = 0;
-   bool opened = false;
-   if(MQLInfoInteger(MQL_TESTER) != 0)
-      opened = QM_TM_OpenPosition(request, out_ticket);
-   else
-      opened = QM_TM_OpenPosition(request,
-                                  out_ticket,
-                                  0,
-                                  QM_RISK_MODE_PERCENT,
-                                  scaled_risk_percent);
-   QM_LogEvent(opened ? QM_INFO : QM_WARN,
-               "ICT_ENTRY_RESULT",
-               StringFormat("{\"opened\":%s,\"ticket\":%I64u,\"budget_key\":%d,\"mode\":%d,\"session\":%d,\"fvg_time\":%I64d,\"governor_scale\":%.8f}",
-                            opened ? "true" : "false",
-                            out_ticket,
-                            signal.budget_key,
-                            (int)strategy_mode,
-                            (int)signal.session,
-                            (long)signal.fvg_bar_time,
-                            g_strategy_governor_scale));
+     }
+   if(!Strategy_ArmVirtualLimit(signal, request, immutable_deadline))
+      QM_LogEvent(QM_WARN,
+                  "ICT_VIRTUAL_LIMIT_ARM_FAILED",
+                  StringFormat("{\"budget_key\":%d}", signal.budget_key));
   }
 
 void OnTimer()
   {
    // Retry mandatory cancellation/flat paths even when this symbol has no tick.
-   Strategy_RunMandatorySafety();
+   const bool safety_allows = Strategy_RunMandatorySafety();
+   if(!safety_allows)
+      Strategy_DisarmVirtualLimit("mandatory_safety_block");
+   else
+      Strategy_ProcessVirtualLimit(false);
    QM_FrameworkOnTimer();
   }
 

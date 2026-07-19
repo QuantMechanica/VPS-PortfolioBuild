@@ -41,6 +41,17 @@ enum QM_NewsComplianceProfile
    QM_NEWS_COMPLIANCE_5ERS              // The5ers blackout schedule
   };
 
+// Tri-state result for future blackout-boundary queries.  NONE is a healthy,
+// authoritative "no applicable event through the requested deadline".  It is
+// deliberately distinct from DATA_ERROR so callers can fail closed when the
+// backing calendar cannot prove that result.
+enum QM_NewsBlockStartResult
+  {
+   QM_NEWS_BLOCKSTART_DATA_ERROR = -1,
+   QM_NEWS_BLOCKSTART_NONE       = 0,
+   QM_NEWS_BLOCKSTART_FOUND      = 1
+  };
+
 // Legacy single-enum (PRE-FW1). Kept for backwards compatibility with old
 // setfiles that still set `qm_news_mode`. Translated to (temporal, compliance)
 // by QM_NewsAllowsTrade(...).
@@ -897,7 +908,12 @@ bool QM_NewsLiveInWindow(const string symbol, const datetime server_time,
    const datetime to   = server_time + (before_minutes * 60);
    MqlCalendarValue values[];
    const int n = CalendarValueHistory(values, from, to);
-   if(n <= 0)
+   if(n < 0)
+     {
+      out_ok = false;
+      return false;
+     }
+   if(n == 0)
      {
       // No events in window — but confirm the calendar is populated at all.
       if(!QM_NewsLiveCalendarHealthy())
@@ -908,7 +924,10 @@ bool QM_NewsLiveInWindow(const string symbol, const datetime server_time,
      {
       MqlCalendarEvent ev;
       if(!CalendarEventById(values[i].event_id, ev))
-         continue;
+        {
+         out_ok = false;
+         return false;
+        }
       string imp = "LOW";
       if(ev.importance == CALENDAR_IMPORTANCE_HIGH)
          imp = "HIGH";
@@ -918,7 +937,10 @@ bool QM_NewsLiveInWindow(const string symbol, const datetime server_time,
          continue;
       MqlCalendarCountry country;
       if(!CalendarCountryById(ev.country_id, country))
-         continue;
+        {
+         out_ok = false;
+         return false;
+        }
       if(!QM_NewsEventAffectsSymbol(country.currency, symbol))
          continue;
       if(values[i].time >= from && values[i].time <= to)
@@ -1023,7 +1045,12 @@ bool QM_NewsLiveComplianceAllows(const string symbol, const datetime server_time
    const datetime from = server_time - 3600;
    const datetime to   = server_time + 3600;
    const int n = CalendarValueHistory(values, from, to);
-   if(n <= 0)
+   if(n < 0)
+     {
+      out_ok = false;
+      return false;
+     }
+   if(n == 0)
      {
       if(!QM_NewsLiveCalendarHealthy())
          out_ok = false;             // data missing → caller fails closed
@@ -1033,7 +1060,10 @@ bool QM_NewsLiveComplianceAllows(const string symbol, const datetime server_time
      {
       MqlCalendarEvent ev;
       if(!CalendarEventById(values[i].event_id, ev))
-         continue;
+        {
+         out_ok = false;
+         return false;
+        }
       string imp = "LOW";
       if(ev.importance == CALENDAR_IMPORTANCE_HIGH)
          imp = "HIGH";
@@ -1043,7 +1073,10 @@ bool QM_NewsLiveComplianceAllows(const string symbol, const datetime server_time
          continue;
       MqlCalendarCountry country;
       if(!CalendarCountryById(ev.country_id, country))
-         continue;
+        {
+         out_ok = false;
+         return false;
+        }
       if(!QM_NewsEventAffectsSymbol(country.currency, symbol))
          continue;
 
@@ -1067,6 +1100,482 @@ bool QM_NewsLiveComplianceAllows(const string symbol, const datetime server_time
          return false;               // inside a firm blackout window
      }
    return true;
+  }
+
+bool QM_NewsAxesAreValid(const QM_NewsTemporalMode temporal,
+                         const QM_NewsComplianceProfile compliance)
+  {
+   const int temporal_value = (int)temporal;
+   const int compliance_value = (int)compliance;
+   return (temporal_value >= (int)QM_NEWS_TEMPORAL_OFF &&
+           temporal_value <= (int)QM_NEWS_TEMPORAL_CLOSE_ALL_PRE &&
+           compliance_value >= (int)QM_NEWS_COMPLIANCE_NONE &&
+           compliance_value <= (int)QM_NEWS_COMPLIANCE_5ERS);
+  }
+
+// Event-time interval that must be present in the deterministic CSV to make a
+// current tester verdict authoritative.  The interval mirrors the temporal
+// window and the widest applicable per-impact firm window.
+bool QM_NewsRequiredTesterCoverage(const datetime utc_time,
+                                   const QM_NewsTemporalMode temporal,
+                                   const QM_NewsComplianceProfile compliance,
+                                   datetime &out_from_utc,
+                                   datetime &out_to_utc)
+  {
+   out_from_utc = utc_time;
+   out_to_utc = utc_time;
+   if(utc_time <= 0 || !QM_NewsAxesAreValid(temporal, compliance))
+      return false;
+
+   switch(temporal)
+     {
+      case QM_NEWS_TEMPORAL_OFF:
+         break;
+      case QM_NEWS_TEMPORAL_PRE30:
+      case QM_NEWS_TEMPORAL_CLOSE_ALL_PRE:
+         out_to_utc = utc_time + (30 * 60);
+         break;
+      case QM_NEWS_TEMPORAL_PRE60:
+         out_to_utc = utc_time + (60 * 60);
+         break;
+      case QM_NEWS_TEMPORAL_PRE30_POST30:
+         out_from_utc = utc_time - (30 * 60);
+         out_to_utc = utc_time + (30 * 60);
+         break;
+      case QM_NEWS_TEMPORAL_PRE60_POST60:
+         out_from_utc = utc_time - (60 * 60);
+         out_to_utc = utc_time + (60 * 60);
+         break;
+      case QM_NEWS_TEMPORAL_SKIP_DAY:
+        {
+         MqlDateTime utc_dt;
+         ZeroMemory(utc_dt);
+         if(!TimeToStruct(utc_time, utc_dt))
+            return false;
+         utc_dt.hour = 0;
+         utc_dt.min = 0;
+         utc_dt.sec = 0;
+         out_from_utc = StructToTime(utc_dt);
+         if(out_from_utc <= 0)
+            return false;
+         out_to_utc = out_from_utc + (24 * 60 * 60) - 1;
+         break;
+        }
+      default:
+         return false;
+     }
+
+   int firm_before_minutes = 0;
+   int firm_after_minutes = 0;
+   if(compliance == QM_NEWS_COMPLIANCE_FTMO)
+     {
+      firm_before_minutes = QM_NewsFTMOBeforeMinutes("HIGH");
+      firm_after_minutes = QM_NewsFTMOAfterMinutes("HIGH");
+      const int medium_before = QM_NewsFTMOBeforeMinutes("MEDIUM");
+      const int medium_after = QM_NewsFTMOAfterMinutes("MEDIUM");
+      const int low_before = QM_NewsFTMOBeforeMinutes("LOW");
+      const int low_after = QM_NewsFTMOAfterMinutes("LOW");
+      if(medium_before > firm_before_minutes)
+         firm_before_minutes = medium_before;
+      if(medium_after > firm_after_minutes)
+         firm_after_minutes = medium_after;
+      if(low_before > firm_before_minutes)
+         firm_before_minutes = low_before;
+      if(low_after > firm_after_minutes)
+         firm_after_minutes = low_after;
+     }
+   else if(compliance == QM_NEWS_COMPLIANCE_5ERS)
+     {
+      firm_before_minutes = QM_News5ersBeforeMinutes("HIGH");
+      firm_after_minutes = QM_News5ersAfterMinutes("HIGH");
+      const int medium_before = QM_News5ersBeforeMinutes("MEDIUM");
+      const int medium_after = QM_News5ersAfterMinutes("MEDIUM");
+      if(medium_before > firm_before_minutes)
+         firm_before_minutes = medium_before;
+      if(medium_after > firm_after_minutes)
+         firm_after_minutes = medium_after;
+     }
+
+   const datetime firm_from_utc = utc_time - (firm_after_minutes * 60);
+   const datetime firm_to_utc = utc_time + (firm_before_minutes * 60);
+   if(firm_from_utc < out_from_utc)
+      out_from_utc = firm_from_utc;
+   if(firm_to_utc > out_to_utc)
+      out_to_utc = firm_to_utc;
+   return true;
+  }
+
+// Uncached two-axis verdict for order-authorization paths that cannot tolerate
+// a bar-sized tester cache or the live 60-second cache.  This deliberately does
+// not read or write any g_qm_news_cache_* field.  Active axes always require an
+// authoritative backing calendar; setup/time/metadata failures block trading.
+bool QM_NewsAllowsTrade2Fresh(const string symbol,
+                              const datetime broker_time,
+                              const QM_NewsTemporalMode temporal,
+                              const QM_NewsComplianceProfile compliance)
+  {
+   if(!QM_NewsAxesAreValid(temporal, compliance))
+      return false;
+
+   if(temporal == QM_NEWS_TEMPORAL_OFF && compliance == QM_NEWS_COMPLIANCE_NONE)
+      return true;
+
+   if(broker_time <= 0)
+     {
+      QM_NewsLogSetupMissing("news_fresh_invalid_broker_time");
+      return false;
+     }
+
+   if(!MQLInfoInteger(MQL_TESTER))
+     {
+      const datetime server_time = broker_time;
+
+      QM_NewsLiveSelfTest(symbol);
+      bool temporal_ok = true;
+      bool compliance_ok = true;
+      const bool temporal_allows =
+         QM_NewsLiveTemporalAllows(symbol, server_time, temporal, temporal_ok);
+      const bool compliance_allows =
+         QM_NewsLiveComplianceAllows(symbol, server_time, compliance, compliance_ok);
+      if(!temporal_ok || !compliance_ok)
+        {
+         QM_NewsLogSetupMissing("live_calendar_unavailable");
+         return false;
+        }
+      return (temporal_allows && compliance_allows);
+     }
+
+   // The native Calendar API is unavailable in the Strategy Tester.  Load and
+   // query the deterministic CSV even if a caller did not go through the normal
+   // framework-init activation flag; an active fresh query must never fail open.
+   if(!g_qm_news_loaded && !QM_NewsInit())
+      return false;
+   if(!g_qm_news_available)
+     {
+      QM_NewsLogSetupMissing("calendar_unavailable");
+      return false;
+     }
+
+   const datetime utc_time = QM_BrokerToUTC(broker_time);
+   if(utc_time <= 0)
+     {
+      QM_NewsLogSetupMissing("tester_calendar_time_conversion_failed");
+      return false;
+     }
+
+   if(!g_qm_news_events_sorted)
+      QM_NewsBuildUtcIndex();
+   const int event_count = ArraySize(g_qm_news_events);
+   datetime coverage_from_utc = 0;
+   datetime coverage_to_utc = 0;
+   if(event_count <= 0 ||
+      !QM_NewsRequiredTesterCoverage(utc_time, temporal, compliance,
+                                     coverage_from_utc, coverage_to_utc) ||
+      g_qm_news_events[0].event_utc > coverage_from_utc ||
+      g_qm_news_events[event_count - 1].event_utc < coverage_to_utc)
+     {
+      QM_NewsLogSetupMissing("tester_calendar_content_coverage_gap");
+      return false;
+     }
+
+   const bool temporal_allows = QM_NewsTemporalAllows(symbol, utc_time, temporal);
+   const bool compliance_allows = QM_NewsComplianceAllows(symbol, utc_time, compliance);
+   return (temporal_allows && compliance_allows);
+  }
+
+// Compute the first instant at which one event starts blocking either axis.
+// Returns false only for an invalid axis/configuration.  out_has_start=false is
+// valid for axis combinations that define no blackout.
+bool QM_NewsBlockStartForEvent(const datetime event_time,
+                               const string impact_upper,
+                               const QM_NewsTemporalMode temporal,
+                               const QM_NewsComplianceProfile compliance,
+                               datetime &out_start,
+                               bool &out_has_start)
+  {
+   out_start = 0;
+   out_has_start = false;
+   if(event_time <= 0 || !QM_NewsAxesAreValid(temporal, compliance))
+      return false;
+
+   datetime temporal_start = 0;
+   bool temporal_has_start = false;
+   int temporal_before_minutes = 0;
+   switch(temporal)
+     {
+      case QM_NEWS_TEMPORAL_OFF:
+         break;
+      case QM_NEWS_TEMPORAL_PRE30:
+      case QM_NEWS_TEMPORAL_PRE30_POST30:
+      case QM_NEWS_TEMPORAL_CLOSE_ALL_PRE:
+         temporal_before_minutes = 30;
+         break;
+      case QM_NEWS_TEMPORAL_PRE60:
+      case QM_NEWS_TEMPORAL_PRE60_POST60:
+         temporal_before_minutes = 60;
+         break;
+      case QM_NEWS_TEMPORAL_SKIP_DAY:
+         return false; // public boundary API rejects UTC-day mode fail-closed
+      default:
+         return false;
+     }
+   if(temporal_before_minutes > 0)
+     {
+      temporal_start = event_time - (temporal_before_minutes * 60);
+      temporal_has_start = true;
+     }
+
+   int compliance_before_minutes = 0;
+   switch(compliance)
+     {
+      case QM_NEWS_COMPLIANCE_NONE:
+      case QM_NEWS_COMPLIANCE_DXZ:
+         break;
+      case QM_NEWS_COMPLIANCE_FTMO:
+         compliance_before_minutes = QM_NewsFTMOBeforeMinutes(impact_upper);
+         break;
+      case QM_NEWS_COMPLIANCE_5ERS:
+         compliance_before_minutes = QM_News5ersBeforeMinutes(impact_upper);
+         break;
+      default:
+         return false;
+     }
+
+   datetime compliance_start = 0;
+   const bool compliance_has_start = (compliance_before_minutes > 0);
+   if(compliance_has_start)
+      compliance_start = event_time - (compliance_before_minutes * 60);
+
+   if(temporal_has_start)
+     {
+      out_start = temporal_start;
+      out_has_start = true;
+     }
+   if(compliance_has_start && (!out_has_start || compliance_start < out_start))
+     {
+      out_start = compliance_start;
+      out_has_start = true;
+     }
+   return true;
+  }
+
+// Maximum distance between an event and its block-start.  The look-ahead is
+// used only to bound Calendar/CSV scans; per-event starts are still calculated
+// from the exact temporal and firm rule tables above.
+bool QM_NewsBlockStartMaxLeadSeconds(const QM_NewsTemporalMode temporal,
+                                     const QM_NewsComplianceProfile compliance,
+                                     int &out_seconds)
+  {
+   out_seconds = 0;
+   if(!QM_NewsAxesAreValid(temporal, compliance))
+      return false;
+
+   switch(temporal)
+     {
+      case QM_NEWS_TEMPORAL_OFF:
+         break;
+      case QM_NEWS_TEMPORAL_PRE30:
+      case QM_NEWS_TEMPORAL_PRE30_POST30:
+      case QM_NEWS_TEMPORAL_CLOSE_ALL_PRE:
+         out_seconds = 30 * 60;
+         break;
+      case QM_NEWS_TEMPORAL_PRE60:
+      case QM_NEWS_TEMPORAL_PRE60_POST60:
+         out_seconds = 60 * 60;
+         break;
+      case QM_NEWS_TEMPORAL_SKIP_DAY:
+         return false; // public boundary API rejects UTC-day mode fail-closed
+      default:
+         return false;
+     }
+
+   int firm_before_minutes = 0;
+   if(compliance == QM_NEWS_COMPLIANCE_FTMO)
+     {
+      firm_before_minutes = QM_NewsFTMOBeforeMinutes("HIGH");
+      const int medium_before = QM_NewsFTMOBeforeMinutes("MEDIUM");
+      const int low_before = QM_NewsFTMOBeforeMinutes("LOW");
+      if(medium_before > firm_before_minutes)
+         firm_before_minutes = medium_before;
+      if(low_before > firm_before_minutes)
+         firm_before_minutes = low_before;
+     }
+   else if(compliance == QM_NEWS_COMPLIANCE_5ERS)
+     {
+      firm_before_minutes = QM_News5ersBeforeMinutes("HIGH");
+      const int medium_before = QM_News5ersBeforeMinutes("MEDIUM");
+      if(medium_before > firm_before_minutes)
+         firm_before_minutes = medium_before;
+     }
+   const int firm_seconds = firm_before_minutes * 60;
+   if(firm_seconds > out_seconds)
+      out_seconds = firm_seconds;
+   return true;
+  }
+
+QM_NewsBlockStartResult QM_NewsNextBlockStartLive(
+   const string symbol,
+   const datetime broker_from,
+   const datetime broker_deadline,
+   const QM_NewsTemporalMode temporal,
+   const QM_NewsComplianceProfile compliance,
+   const int max_lead_seconds,
+   datetime &out_block_start_broker)
+  {
+   out_block_start_broker = 0;
+   MqlCalendarValue values[];
+   const datetime query_to = broker_deadline + max_lead_seconds;
+   const int n = CalendarValueHistory(values, broker_from, query_to);
+   if(n < 0)
+      return QM_NEWS_BLOCKSTART_DATA_ERROR;
+   if(n == 0)
+     {
+      if(!QM_NewsLiveCalendarHealthy())
+         return QM_NEWS_BLOCKSTART_DATA_ERROR;
+      return QM_NEWS_BLOCKSTART_NONE;
+     }
+
+   datetime earliest = 0;
+   for(int i = 0; i < n; i++)
+     {
+      MqlCalendarEvent event;
+      if(!CalendarEventById(values[i].event_id, event))
+         return QM_NEWS_BLOCKSTART_DATA_ERROR;
+
+      string impact = "LOW";
+      if(event.importance == CALENDAR_IMPORTANCE_HIGH)
+         impact = "HIGH";
+      else if(event.importance == CALENDAR_IMPORTANCE_MODERATE)
+         impact = "MEDIUM";
+      if(!QM_NewsImpactMeetsMinimum(impact, g_qm_news_min_impact_upper))
+         continue;
+
+      MqlCalendarCountry country;
+      if(!CalendarCountryById(event.country_id, country))
+         return QM_NEWS_BLOCKSTART_DATA_ERROR;
+      if(!QM_NewsEventAffectsSymbol(country.currency, symbol))
+         continue;
+
+      datetime candidate = 0;
+      bool has_candidate = false;
+      if(!QM_NewsBlockStartForEvent(values[i].time, impact, temporal, compliance,
+                                    candidate, has_candidate))
+         return QM_NEWS_BLOCKSTART_DATA_ERROR;
+      if(!has_candidate || candidate < broker_from || candidate > broker_deadline)
+         continue;
+      if(earliest == 0 || candidate < earliest)
+         earliest = candidate;
+     }
+
+   if(earliest <= 0)
+      return QM_NEWS_BLOCKSTART_NONE;
+   out_block_start_broker = earliest; // native Calendar timestamps are server time
+   return QM_NEWS_BLOCKSTART_FOUND;
+  }
+
+QM_NewsBlockStartResult QM_NewsNextBlockStartTester(
+   const string symbol,
+   const datetime broker_from,
+   const datetime broker_deadline,
+   const QM_NewsTemporalMode temporal,
+   const QM_NewsComplianceProfile compliance,
+   const int max_lead_seconds,
+   datetime &out_block_start_broker)
+  {
+   out_block_start_broker = 0;
+   if(!g_qm_news_loaded && !QM_NewsInit())
+      return QM_NEWS_BLOCKSTART_DATA_ERROR;
+   if(!g_qm_news_available)
+      return QM_NEWS_BLOCKSTART_DATA_ERROR;
+   if(!g_qm_news_events_sorted)
+      QM_NewsBuildUtcIndex();
+
+   const int event_count = ArraySize(g_qm_news_events);
+   if(event_count <= 0)
+      return QM_NEWS_BLOCKSTART_DATA_ERROR;
+
+   const datetime utc_from = QM_BrokerToUTC(broker_from);
+   const datetime utc_deadline = QM_BrokerToUTC(broker_deadline);
+   if(utc_from <= 0 || utc_deadline < utc_from)
+      return QM_NEWS_BLOCKSTART_DATA_ERROR;
+   const datetime query_to_utc = utc_deadline + max_lead_seconds;
+
+   // NONE is authoritative only when the deterministic CSV covers the entire
+   // event horizon needed to derive every possible block-start in the range.
+   if(g_qm_news_events[0].event_utc > utc_from ||
+      g_qm_news_events[event_count - 1].event_utc < query_to_utc)
+      return QM_NEWS_BLOCKSTART_DATA_ERROR;
+
+   datetime earliest_utc = 0;
+   const int start_index = QM_NewsLowerBoundUtc(utc_from);
+   for(int i = start_index; i < event_count; i++)
+     {
+      const QM_NewsEvent event = g_qm_news_events[i];
+      if(event.event_utc > query_to_utc)
+         break;
+      if(!QM_NewsImpactMeetsMinimum(event.impact_upper, g_qm_news_min_impact_upper))
+         continue;
+      if(!QM_NewsEventAffectsSymbol(event.currency, symbol))
+         continue;
+
+      datetime candidate_utc = 0;
+      bool has_candidate = false;
+      if(!QM_NewsBlockStartForEvent(event.event_utc, event.impact_upper,
+                                    temporal, compliance,
+                                    candidate_utc, has_candidate))
+         return QM_NEWS_BLOCKSTART_DATA_ERROR;
+      if(!has_candidate || candidate_utc < utc_from || candidate_utc > utc_deadline)
+         continue;
+      if(earliest_utc == 0 || candidate_utc < earliest_utc)
+         earliest_utc = candidate_utc;
+     }
+
+   if(earliest_utc <= 0)
+      return QM_NEWS_BLOCKSTART_NONE;
+   out_block_start_broker = QM_UTCToBroker(earliest_utc);
+   if(out_block_start_broker <= 0)
+      return QM_NEWS_BLOCKSTART_DATA_ERROR;
+   return QM_NEWS_BLOCKSTART_FOUND;
+  }
+
+// Find the earliest future instant in [broker_from, broker_deadline] at which
+// either configured news axis begins blocking the symbol.  Live timestamps are
+// native trade-server time; tester CSV timestamps are converted UTC↔broker via
+// the canonical DarwinexZero DST functions.  out_block_start_broker is zero on
+// both NONE and DATA_ERROR; callers must branch on the tri-state return value.
+QM_NewsBlockStartResult QM_NewsNextBlockStart(
+   const string symbol,
+   const datetime broker_from,
+   const datetime broker_deadline,
+   const QM_NewsTemporalMode temporal,
+   const QM_NewsComplianceProfile compliance,
+   datetime &out_block_start_broker)
+  {
+   out_block_start_broker = 0;
+   if(broker_from <= 0 || broker_deadline < broker_from ||
+      !QM_NewsAxesAreValid(temporal, compliance))
+      return QM_NEWS_BLOCKSTART_DATA_ERROR;
+
+   // The live SKIP_DAY gate is defined on a UTC calendar day while native
+   // Calendar timestamps are server time.  Until that cross-timezone boundary
+   // is represented explicitly, reject this mode rather than return a wrong
+   // midnight.  Interval modes (including PRE30_POST30) are fully supported.
+   if(temporal == QM_NEWS_TEMPORAL_SKIP_DAY)
+      return QM_NEWS_BLOCKSTART_DATA_ERROR;
+
+   int max_lead_seconds = 0;
+   if(!QM_NewsBlockStartMaxLeadSeconds(temporal, compliance, max_lead_seconds))
+      return QM_NEWS_BLOCKSTART_DATA_ERROR;
+   if(max_lead_seconds <= 0)
+      return QM_NEWS_BLOCKSTART_NONE;
+
+   if(MQLInfoInteger(MQL_TESTER))
+      return QM_NewsNextBlockStartTester(symbol, broker_from, broker_deadline,
+                                         temporal, compliance, max_lead_seconds,
+                                         out_block_start_broker);
+   return QM_NewsNextBlockStartLive(symbol, broker_from, broker_deadline,
+                                    temporal, compliance, max_lead_seconds,
+                                    out_block_start_broker);
   }
 
 // FW1 canonical query — two-axis composed via AND.

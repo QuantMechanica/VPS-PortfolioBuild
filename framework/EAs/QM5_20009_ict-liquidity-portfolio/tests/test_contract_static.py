@@ -138,16 +138,27 @@ class FrozenContractTests(unittest.TestCase):
 
         tick = function_body(EA, "OnTick")
         safety_call = tick.index("Strategy_RunMandatorySafety()")
+        virtual = tick.index("Strategy_ProcessVirtualLimit(true)")
+        new_bar = tick.index("QM_IsNewBar")
         history = tick.index("Strategy_HistoryBudgetClear")
         news = tick.index("Strategy_EntryNewsAllows")
         governor = tick.index("Strategy_GovernorAllowsEntry")
-        claim = tick.index("Strategy_ClaimAttempt(signal)")
-        entry = tick.index("QM_TM_OpenPosition")
-        self.assertLess(safety_call, history)
+        arm = tick.index("Strategy_ArmVirtualLimit")
+        self.assertLess(safety_call, virtual)
+        self.assertLess(virtual, new_bar)
+        self.assertLess(new_bar, history)
         self.assertLess(history, news)
         self.assertLess(news, governor)
-        self.assertLess(governor, claim)
-        self.assertLess(claim, entry)
+        self.assertLess(governor, arm)
+
+        process = function_body(EA, "Strategy_ProcessVirtualLimit")
+        gate = process.index("Strategy_VirtualLimitGateAllows")
+        touched = process.index("Strategy_VirtualLimitTouched")
+        consume = process.index('Strategy_DisarmVirtualLimit("touch_consumed_before_send")')
+        entry = process.index("QM_TM_OpenPosition")
+        self.assertLess(gate, touched)
+        self.assertLess(touched, consume)
+        self.assertLess(consume, entry)
 
     def test_mandatory_safety_retries_on_init_tick_and_timer(self) -> None:
         init = function_body(EA, "OnInit")
@@ -208,6 +219,9 @@ class FrozenContractTests(unittest.TestCase):
         )
         for token in required:
             self.assertIn(token, validation)
+        news_gate = function_body(EA, "Strategy_EntryNewsAllows")
+        self.assertIn("QM_NewsAllowsTrade2Fresh", news_gate)
+        self.assertNotIn("QM_NewsAllowsTrade2(_Symbol", news_gate)
         self.assertRegex(CONTRACT, r"compliance\s+`FTMO`")
         self.assertIn("placeholder `DXZ`", CONTRACT)
 
@@ -270,11 +284,18 @@ class FrozenContractTests(unittest.TestCase):
         self.assertIn("ORDER_TIME_SETUP", history)
         self.assertIn("ORDER_COMMENT", history)
         self.assertIn("if(reconstructed.consumed)", init)
+        self.assertIn("Strategy_VoidPersistedVirtualIntentOnInit", init)
         self.assertIn("Strategy_BindConsumedAttempt(reconstructed)", init)
         self.assertIn("signal.consumed && !Strategy_BindConsumedAttempt(signal)", tick)
+        arm = function_body(EA, "Strategy_ArmVirtualLimit")
         self.assertLess(
-            tick.index("Strategy_ClaimAttempt(signal)"),
-            tick.index("QM_TM_OpenPosition"),
+            arm.index("Strategy_ClaimAttempt(signal, request, deadline)"),
+            arm.index("g_strategy_virtual_limit_active = true"),
+        )
+        process = function_body(EA, "Strategy_ProcessVirtualLimit")
+        self.assertLess(
+            process.index('Strategy_DisarmVirtualLimit("touch_consumed_before_send")'),
+            process.index("QM_TM_OpenPosition"),
         )
 
     def test_tester_attempt_state_never_uses_terminal_global_variables(self) -> None:
@@ -300,7 +321,8 @@ class FrozenContractTests(unittest.TestCase):
             self.assertNotIn(call, EA)
         self.assertIn("15 * 60 + 55", EA)
         self.assertIn("16 * 60", EA)
-        self.assertIn("ict_session_pending_cancel", EA)
+        self.assertIn("ict_server_pending_forbidden", EA)
+        self.assertIn("Strategy_DisarmVirtualLimit", EA)
 
     def test_stop_and_fixed_target_contract(self) -> None:
         self.assertIn("MathMax(2.0 * observed_spread", RULES)
@@ -323,11 +345,7 @@ class FrozenContractTests(unittest.TestCase):
         self.assertIn("SYMBOL_TRADE_TICK_SIZE", EA)
         self.assertIn("Strategy_NormalizeToTick(signal.entry, 0)", EA)
         self.assertIn("(signal.direction > 0) ? -1 : 1", EA)
-        self.assertIn(
-            "Strategy_QuoteAllowsFreshLimit(signal.direction,\n"
-            "                                      request.price,",
-            EA,
-        )
+        self.assertIn("Strategy_QuoteAllowsFreshLimit(signal.direction", EA)
         build = function_body(EA, "Strategy_BuildEntryRequest")
         self.assertLess(build.index("Strategy_NormalizeToTick"), build.index("const double risk"))
         self.assertLess(build.index("Strategy_QuoteAllowsFreshLimit"), build.index("const double risk"))
@@ -349,16 +367,62 @@ class FrozenContractTests(unittest.TestCase):
         for token in required:
             self.assertIn(token, quote)
 
-    def test_pending_expiration_has_specified_then_gtc_timer_fallback(self) -> None:
-        expiration = function_body(EA, "Strategy_AssignPendingExpiration")
+    def test_virtual_limit_has_no_unattended_server_pending(self) -> None:
         build = function_body(EA, "Strategy_BuildEntryRequest")
+        trigger = function_body(EA, "Strategy_BuildTriggeredMarketRequest")
+        process = function_body(EA, "Strategy_ProcessVirtualLimit")
+        manage = function_body(EA, "Strategy_ManageExposure")
         timer = function_body(EA, "OnTimer")
-        self.assertIn("SYMBOL_EXPIRATION_MODE", expiration)
-        self.assertIn("SYMBOL_EXPIRATION_SPECIFIED", expiration)
-        self.assertIn("SYMBOL_EXPIRATION_GTC", expiration)
-        self.assertIn("request.expiration_seconds = 0", expiration)
-        self.assertIn("Strategy_AssignPendingExpiration", build)
+        self.assertNotIn("Strategy_AssignPendingExpiration", EA)
+        self.assertIn("virtual intent; never sent as a pending", build)
+        self.assertIn("? QM_BUY : QM_SELL", trigger)
+        self.assertIn("market_request.price = 0.0", trigger)
+        self.assertIn("QM_TM_OpenPosition(market_request", process)
+        self.assertNotIn("QM_TM_OpenPosition(request", function_body(EA, "OnTick"))
+        self.assertIn("ict_server_pending_forbidden", manage)
+        self.assertIn("Strategy_ProcessVirtualLimit(false);", timer)
         self.assertIn("Strategy_RunMandatorySafety();", timer)
+
+    def test_virtual_limit_touch_and_restart_are_fail_closed(self) -> None:
+        touched = function_body(EA, "Strategy_VirtualLimitTouched")
+        restart = function_body(EA, "Strategy_VoidPersistedVirtualIntentOnInit")
+        claim = function_body(EA, "Strategy_ClaimAttempt")
+        self.assertIn("quote.ask <= g_strategy_virtual_limit_request.price", touched)
+        self.assertIn("quote.bid >= g_strategy_virtual_limit_request.price", touched)
+        self.assertIn("ICT_VIRTUAL_LIMIT_RESTART_VOID", restart)
+        self.assertIn("Strategy_DeleteVirtualIntentFields(signal)", restart)
+        self.assertIn("Strategy_PersistVirtualIntentFields", claim)
+        self.assertLess(
+            claim.index("Strategy_PersistVirtualIntentFields"),
+            claim.index("GlobalVariableSetOnCondition"),
+        )
+
+        deadline = function_body(EA, "Strategy_ComputeVirtualLimitDeadline")
+        self.assertIn("QM_NewsNextBlockStart", deadline)
+        self.assertIn("QM_NEWS_BLOCKSTART_DATA_ERROR", deadline)
+        self.assertIn("next_news_block < deadline", deadline)
+        self.assertIn("next_news_block <= broker_now", deadline)
+
+        gate = function_body(EA, "Strategy_VirtualLimitGateAllows")
+        self.assertIn("g_strategy_virtual_limit_last_gate_time", gate)
+        self.assertIn("strategy_governor_heartbeat_max_age_seconds", gate)
+        self.assertIn('block_reason = "gate_continuity_gap"', gate)
+        self.assertLess(
+            gate.index('block_reason = "gate_continuity_gap"'),
+            gate.index("Strategy_EntryNewsAllows"),
+        )
+        self.assertGreater(
+            gate.index("g_strategy_virtual_limit_last_gate_time = broker_now"),
+            gate.index("Strategy_GovernorAllowsEntry"),
+        )
+
+    def test_trigger_revalidates_current_quote_rr_and_broker_distance(self) -> None:
+        trigger = function_body(EA, "Strategy_BuildTriggeredMarketRequest")
+        self.assertIn("SYMBOL_TRADE_STOPS_LEVEL", trigger)
+        self.assertIn("risk + comparison_epsilon < minimum_distance", trigger)
+        self.assertIn("reward + comparison_epsilon < minimum_distance", trigger)
+        self.assertIn("reward / risk + 1e-12 < min_rr", trigger)
+        self.assertIn("trigger_beyond_stop_target_or_broker_distance", trigger)
 
 
 if __name__ == "__main__":
