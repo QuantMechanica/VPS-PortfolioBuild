@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-19T17:07:03.8621026Z",
-    "total":  3355,
+    "generated_at":  "2026-07-19T18:07:04.6663206Z",
+    "total":  3357,
     "items":  [
                   {
                       "slug":  "ath-breakout-atr-trail",
@@ -1210,12 +1210,6 @@
                       "last_updated_utc":  "2026-05-22T08:44:36.9041626Z"
                   },
                   {
-                      "slug":  "spx-intraday-mom_card",
-                      "source":  "strategy-seeds/cards",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-07-19T16:19:51.7047074Z"
-                  },
-                  {
                       "slug":  "tokyo-fix-5m_card",
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
@@ -1400,6 +1394,12 @@
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-06-27T03:24:04.6438094Z"
+                  },
+                  {
+                      "slug":  "wti-month-ch3_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-19T18:05:40.6022000Z"
                   },
                   {
                       "slug":  "wti-month-orb_card",
@@ -14506,12 +14506,6 @@
                       "last_updated_utc":  "2026-06-29T16:37:16.9890039Z"
                   },
                   {
-                      "slug":  "QM5_12784_intraday-config-engine",
-                      "source":  "strategy_farm/artifacts/cards_approved",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-06-29T17:09:45.3668047Z"
-                  },
-                  {
                       "slug":  "QM5_12784_progo-xti",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
@@ -17498,6 +17492,24 @@
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-07-17T09:14:54.7838120Z"
+                  },
+                  {
+                      "slug":  "QM5_20006_spx-intraday-mom",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-19T18:00:35.9897802Z"
+                  },
+                  {
+                      "slug":  "QM5_20007_intraday-config-engine",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-19T17:13:35.8426277Z"
+                  },
+                  {
+                      "slug":  "QM5_20008_wti-month-ch3",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-19T18:06:44.9286907Z"
                   },
                   {
                       "slug":  "QM5_2001_nnfx-classic-ssl",

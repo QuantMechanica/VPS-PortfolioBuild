@@ -3,11 +3,11 @@ strategy_id: SZAKMARY-WTI-MCH3-2010
 source_id: SZAKMARY-WTI-MCH3-2010
 ea_id: QM5_20008
 slug: wti-month-ch3
-status: DRAFT
+status: APPROVED
 created: 2026-07-19
 created_by: Research
 last_updated: 2026-07-19
-g0_status: PENDING
+g0_status: APPROVED
 source_citation: "Szakmary, Shen and Sharma (2010), Trend-following trading strategies in commodity futures: A re-examination, Journal of Banking & Finance 34(2), 409-426, DOI 10.1016/j.jbankfin.2009.08.004."
 source_citations:
   - type: academic_paper
@@ -41,11 +41,12 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q00
+pipeline_phase: Q02
 review_focus: "Falsify the source-exact three-month month-end channel on the WTI CFD proxy; cadence is prechecked, but futures-to-CFD basis, costs, WTI-specific efficacy and realized book correlation are unproven."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
 hard_rules_at_risk: [friday_close, risk_mode_dual, cfd_futures_basis, low_frequency]
+g0_approval_reasoning: "APPROVED under the 2026-07-19 OWNER commodity-sleeve mission: R1 peer-reviewed single-source lineage; R2 source-exact L=3 monthly close channel and one-month renewal; R3 registered XTI D1 data with 8.21 signals/year cadence; R4 deterministic, ML-free and one position per magic."
 ---
 
 # WTI Monthly Three-Month Close Channel
@@ -235,12 +236,12 @@ T_Live manifest, portfolio gate, portfolio admission or portfolio KPI code.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-19 | initial source-backed WTI monthly CH3 build | Q00 | DRAFT |
+| v1 | 2026-07-19 | initial source-backed WTI monthly CH3 build | Q01 | G0 APPROVED; build pending |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
-| G0 Research Intake | 2026-07-19 | PENDING OWNER-directed R1-R4 approval | this card |
+| G0 Research Intake | 2026-07-19 | APPROVED under OWNER commodity-sleeve mission | this card |
 | Q01 Build Validation | - | pending | - |
 | Q02 Baseline Screening | - | pending enqueue | - |
