@@ -1,4 +1,4 @@
-"""Generate the deterministic Freeze-v3 center/OAAT bundle for QM5_20009.
+"""Generate the deterministic Freeze-v4 center/OAAT bundle for QM5_20009.
 
 The detached ``manifest.sha256`` is the only object that hashes ``manifest.json``.
 The manifest therefore never hashes itself.  Every set embeds a canonical
@@ -27,7 +27,7 @@ EA_SOURCE = EA_ROOT / "QM5_20009_ict-liquidity-portfolio.mq5"
 RULES_SOURCE = EA_ROOT / "ICT_LiquidityRules.mqh"
 CONTRACT = EA_ROOT / "docs" / "strategy_contract.md"
 SPEC = EA_ROOT / "SPEC.md"
-PROTOCOL = EA_ROOT / "docs" / "research_protocol_v3.json"
+PROTOCOL = EA_ROOT / "docs" / "research_protocol_v4.json"
 GENERATOR = Path(__file__).resolve()
 VALIDATOR = EA_ROOT / "tools" / "validate_research_run.py"
 AUDITOR = EA_ROOT / "tools" / "audit_mt5_report.py"
@@ -482,7 +482,7 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
     }
     if (
         unlock.get("enforcement") != "FAIL_CLOSED_DETACHED_VERDICT_RECORDS"
-        or unlock.get("verdict_root") != "D:/QM/reports/dev1/QM5_20009/freeze_v3/verdicts"
+        or unlock.get("verdict_root") != "D:/QM/reports/dev1/QM5_20009/freeze_v4/verdicts"
         or unlock.get("record_name_template") != "{phase_id}.verdict.json"
         or unlock.get("detached_sha256_suffix") != ".sha256"
         or unlock.get("nonbinding_phases") != ["DEV_SMOKE_2022"]
@@ -1048,7 +1048,7 @@ def render_set(
     evidence = {row["id"]: row for row in freeze_inputs["evidence_artifacts"]}
     lines = [
         ";==========================================================",
-        "; QM5_20009 deterministic Freeze-v3 research set",
+        "; QM5_20009 deterministic Freeze-v4 research set",
         f"; protocol_id: {freeze_inputs['protocol_id']}",
         f"; contract_freeze: {freeze_inputs['contract_freeze']}",
         f"; symbol: {symbol}",
