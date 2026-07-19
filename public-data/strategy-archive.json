@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-19T18:07:04.6663206Z",
-    "total":  3357,
+    "generated_at":  "2026-07-19T19:08:25.3148427Z",
+    "total":  3358,
     "items":  [
                   {
                       "slug":  "ath-breakout-atr-trail",
@@ -1399,7 +1399,7 @@
                       "slug":  "wti-month-ch3_card",
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-19T18:05:40.6022000Z"
+                      "last_updated_utc":  "2026-07-19T18:29:08.0511291Z"
                   },
                   {
                       "slug":  "wti-month-orb_card",
@@ -17516,6 +17516,12 @@
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-06-12T11:43:51.4058761Z"
+                  },
+                  {
+                      "slug":  "QM5_20010_xau-friday-rush",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-19T18:35:29.2976201Z"
                   },
                   {
                       "slug":  "QM5_2002_nnfx-qqe-trend",

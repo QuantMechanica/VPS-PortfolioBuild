@@ -21,7 +21,7 @@ input double PORTFOLIO_WEIGHT             = 1.0;
 
 input group "News (entry only)"
 input QM_NewsTemporalMode      qm_news_temporal    = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_FTMO;
 input int    qm_news_stale_max_hours       = 336;
 input string qm_news_min_impact            = "high";
 input QM_NewsMode qm_news_mode_legacy      = QM_NEWS_OFF;
@@ -66,6 +66,10 @@ double   g_strategy_governor_scale = 0.0;
 string   g_strategy_last_governor_block = "";
 datetime g_strategy_last_governor_log = 0;
 string   g_last_reconstruction_signature = "";
+bool     g_tester_attempt_claimed = false;
+int      g_tester_attempt_budget_key = 0;
+uint     g_tester_attempt_level_hash = 0;
+uint     g_tester_attempt_reference_hash = 0;
 
 bool Strategy_IsIntegerStarValue(const int value,
                                  const int low,
@@ -94,6 +98,14 @@ bool Strategy_ParametersValid()
       strategy_replay_bars_fx < 5000 || strategy_replay_bars_fx > 15000)
       return false;
    if(!qm_friday_close_enabled || qm_friday_close_hour_broker != 23)
+      return false;
+   // The research/live boundary uses one frozen, real FTMO entry-news profile.
+   // DXZ compliance is only a framework placeholder and is not admissible here.
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_PRE30_POST30 ||
+      qm_news_compliance != QM_NEWS_COMPLIANCE_FTMO ||
+      qm_news_stale_max_hours != 336 ||
+      qm_news_min_impact != "high" ||
+      qm_news_mode_legacy != QM_NEWS_OFF)
       return false;
 
    if(!Strategy_IsIntegerStarValue(strategy_a_pivot_wing, 1, 2, 3) ||
@@ -629,10 +641,186 @@ bool Strategy_HasPositionOrPending()
    return false;
   }
 
-bool Strategy_HistoryBudgetClear(const int budget_key)
+int Strategy_BudgetKeyAtTime(const datetime event_time)
+  {
+   return (strategy_mode == ICT_MODE_INDEX_MSS_FVG)
+          ? ICT_NYDateKey(event_time)
+          : ICT_TradingWeekKey(event_time);
+  }
+
+uint Strategy_StringFingerprint(const string value)
+  {
+   uint hash = 2166136261;
+   for(int i = 0; i < StringLen(value); ++i)
+      hash = (hash ^ (uint)StringGetCharacter(value, i)) * 16777619;
+   return hash;
+  }
+
+string Strategy_AttemptKeyBase(const ICT_SequenceResult &signal)
+  {
+   const long account_login = AccountInfoInteger(ACCOUNT_LOGIN);
+   const int magic = QM_FrameworkMagic();
+   if(account_login <= 0 || magic <= 0 || signal.budget_key <= 0)
+      return "";
+   const uint server_hash = Strategy_StringFingerprint(AccountInfoString(ACCOUNT_SERVER));
+   return StringFormat("Q09A_%08X_%I64d_%d_%d_%d",
+                       server_hash,
+                       account_login,
+                       magic,
+                       (int)strategy_mode,
+                       signal.budget_key);
+  }
+
+void Strategy_LogAttemptStateIssue(const string event_name,
+                                   const ICT_SequenceResult &signal,
+                                   const string reason,
+                                   const uint stored_level_hash,
+                                   const uint stored_reference_hash)
+  {
+   QM_LogEvent(QM_ERROR,
+               event_name,
+               StringFormat("{\"reason\":\"%s\",\"budget_key\":%d,\"current_level_hash\":%u,\"current_reference_hash\":%u,\"stored_level_hash\":%u,\"stored_reference_hash\":%u}",
+                            QM_LoggerEscapeJson(reason),
+                            signal.budget_key,
+                            signal.frozen_level_hash,
+                            signal.reference_hash,
+                            stored_level_hash,
+                            stored_reference_hash));
+  }
+
+bool Strategy_ReadPersistentHash(const string key, uint &value)
+  {
+   value = 0;
+   ResetLastError();
+   const double raw = GlobalVariableGet(key);
+   const int error = GetLastError();
+   if(error != 0 || !MathIsValidNumber(raw) || raw < 0.0 || raw > 4294967295.0)
+      return false;
+   value = (uint)(long)MathRound(raw);
+   return true;
+  }
+
+bool Strategy_PersistentAttemptClear(const ICT_SequenceResult &signal)
+  {
+   if(signal.budget_key <= 0 || signal.frozen_level_hash == 0 ||
+      signal.reference_hash == 0)
+     {
+      Strategy_LogAttemptStateIssue("ICT_ATTEMPT_STATE_INVALID",
+                                    signal,
+                                    "invalid_current_budget_or_hash",
+                                    0,
+                                    0);
+      return false;
+     }
+
+   // Tester state is deliberately process-local. Terminal GlobalVariables are
+   // shared across tester runs and would contaminate deterministic duplicates.
+   if(MQLInfoInteger(MQL_TESTER) != 0)
+     {
+      if(!g_tester_attempt_claimed ||
+         g_tester_attempt_budget_key != signal.budget_key)
+         return true;
+      if(g_tester_attempt_level_hash != signal.frozen_level_hash ||
+         g_tester_attempt_reference_hash != signal.reference_hash)
+         Strategy_LogAttemptStateIssue("ICT_ATTEMPT_HASH_DRIFT",
+                                       signal,
+                                       "tester_same_budget_hash_drift",
+                                       g_tester_attempt_level_hash,
+                                       g_tester_attempt_reference_hash);
+      return false;
+     }
+
+   const string base = Strategy_AttemptKeyBase(signal);
+   if(base == "")
+     {
+      Strategy_LogAttemptStateIssue("ICT_ATTEMPT_STATE_INVALID",
+                                    signal,
+                                    "persistent_key_identity_unavailable",
+                                    0,
+                                    0);
+      return false;
+     }
+   const string marker_key = base + "_M";
+   const string level_key = base + "_L";
+   const string reference_key = base + "_R";
+   const bool marker_exists = GlobalVariableCheck(marker_key);
+   const bool level_exists = GlobalVariableCheck(level_key);
+   const bool reference_exists = GlobalVariableCheck(reference_key);
+   if(!marker_exists && !level_exists && !reference_exists)
+      return true;
+   if(!marker_exists || !level_exists || !reference_exists)
+     {
+      Strategy_LogAttemptStateIssue("ICT_ATTEMPT_STATE_CORRUPT",
+                                    signal,
+                                    "partial_persistent_attempt_state",
+                                    0,
+                                    0);
+      return false;
+     }
+
+   uint marker = 0;
+   uint stored_level_hash = 0;
+   uint stored_reference_hash = 0;
+   if(!Strategy_ReadPersistentHash(marker_key, marker) || marker != 1 ||
+      !Strategy_ReadPersistentHash(level_key, stored_level_hash) ||
+      !Strategy_ReadPersistentHash(reference_key, stored_reference_hash))
+     {
+      Strategy_LogAttemptStateIssue("ICT_ATTEMPT_STATE_CORRUPT",
+                                    signal,
+                                    "unreadable_persistent_attempt_state",
+                                    stored_level_hash,
+                                    stored_reference_hash);
+      return false;
+     }
+   if(stored_level_hash != signal.frozen_level_hash ||
+      stored_reference_hash != signal.reference_hash)
+      Strategy_LogAttemptStateIssue("ICT_ATTEMPT_HASH_DRIFT",
+                                    signal,
+                                    "same_budget_hash_drift",
+                                    stored_level_hash,
+                                    stored_reference_hash);
+   return false; // matching marker is consumed; drift/corruption is fail-closed.
+  }
+
+bool Strategy_ClaimAttempt(const ICT_SequenceResult &signal)
+  {
+   if(!Strategy_PersistentAttemptClear(signal))
+      return false;
+
+   if(MQLInfoInteger(MQL_TESTER) != 0)
+     {
+      g_tester_attempt_claimed = true;
+      g_tester_attempt_budget_key = signal.budget_key;
+      g_tester_attempt_level_hash = signal.frozen_level_hash;
+      g_tester_attempt_reference_hash = signal.reference_hash;
+      return true;
+     }
+
+   const string base = Strategy_AttemptKeyBase(signal);
+   if(base == "")
+      return false;
+   // Hashes are written before the marker. A crash or failed write leaves a
+   // partial state that the reader treats as consumed/fail-closed.
+   if(GlobalVariableSet(base + "_L", (double)signal.frozen_level_hash) == 0 ||
+      GlobalVariableSet(base + "_R", (double)signal.reference_hash) == 0 ||
+      GlobalVariableSet(base + "_M", 1.0) == 0)
+     {
+      Strategy_LogAttemptStateIssue("ICT_ATTEMPT_PERSIST_FAILED",
+                                    signal,
+                                    "global_variable_write_failed",
+                                    0,
+                                    0);
+      return false;
+     }
+   GlobalVariablesFlush();
+   return true;
+  }
+
+bool Strategy_HistoryBudgetClear(const ICT_SequenceResult &signal)
   {
    const int magic = QM_FrameworkMagic();
-   if(magic <= 0 || budget_key <= 0)
+   if(magic <= 0 || signal.budget_key <= 0 ||
+      !Strategy_PersistentAttemptClear(signal))
       return false;
    const datetime now = TimeCurrent();
    const int lookback_days = (strategy_mode == ICT_MODE_INDEX_MSS_FVG) ? 4 : 24;
@@ -640,25 +828,60 @@ bool Strategy_HistoryBudgetClear(const int budget_key)
      {
       QM_LogEvent(QM_ERROR,
                   "ICT_HISTORY_RECONSTRUCTION_FAILED",
-                  StringFormat("{\"budget_key\":%d}", budget_key));
+                  StringFormat("{\"budget_key\":%d}", signal.budget_key));
       return false;
      }
 
-   const int total = HistoryDealsTotal();
-   for(int i = 0; i < total; ++i)
+   const int order_total = HistoryOrdersTotal();
+   if(order_total < 0)
+      return false;
+   for(int i = 0; i < order_total; ++i)
      {
-      const ulong ticket = HistoryDealGetTicket(i);
-      if(ticket == 0 || HistoryDealGetString(ticket, DEAL_SYMBOL) != _Symbol ||
-         (int)HistoryDealGetInteger(ticket, DEAL_MAGIC) != magic)
+      ResetLastError();
+      const ulong ticket = HistoryOrderGetTicket(i);
+      if(ticket == 0)
+         return false;
+      const string order_symbol = HistoryOrderGetString(ticket, ORDER_SYMBOL);
+      const int order_magic = (int)HistoryOrderGetInteger(ticket, ORDER_MAGIC);
+      const ENUM_ORDER_TYPE order_type =
+         (ENUM_ORDER_TYPE)HistoryOrderGetInteger(ticket, ORDER_TYPE);
+      const datetime setup_time =
+         (datetime)HistoryOrderGetInteger(ticket, ORDER_TIME_SETUP);
+      if(GetLastError() != 0)
+         return false;
+      if(order_symbol != _Symbol || order_magic != magic ||
+         !Strategy_IsOurPendingType(order_type))
          continue;
-      const ENUM_DEAL_ENTRY entry = (ENUM_DEAL_ENTRY)HistoryDealGetInteger(ticket, DEAL_ENTRY);
+      if(setup_time <= 0)
+         return false;
+      if(Strategy_BudgetKeyAtTime(setup_time) == signal.budget_key)
+         return false;
+     }
+
+   const int deal_total = HistoryDealsTotal();
+   if(deal_total < 0)
+      return false;
+   for(int i = 0; i < deal_total; ++i)
+     {
+      ResetLastError();
+      const ulong ticket = HistoryDealGetTicket(i);
+      if(ticket == 0)
+         return false;
+      const string deal_symbol = HistoryDealGetString(ticket, DEAL_SYMBOL);
+      const int deal_magic = (int)HistoryDealGetInteger(ticket, DEAL_MAGIC);
+      const ENUM_DEAL_ENTRY entry =
+         (ENUM_DEAL_ENTRY)HistoryDealGetInteger(ticket, DEAL_ENTRY);
+      const datetime deal_time =
+         (datetime)HistoryDealGetInteger(ticket, DEAL_TIME);
+      if(GetLastError() != 0)
+         return false;
+      if(deal_symbol != _Symbol || deal_magic != magic)
+         continue;
       if(entry != DEAL_ENTRY_IN && entry != DEAL_ENTRY_INOUT)
          continue;
-      const datetime deal_time = (datetime)HistoryDealGetInteger(ticket, DEAL_TIME);
-      const int deal_key = (strategy_mode == ICT_MODE_INDEX_MSS_FVG)
-                           ? ICT_NYDateKey(deal_time)
-                           : ICT_TradingWeekKey(deal_time);
-      if(deal_key == budget_key)
+      if(deal_time <= 0)
+         return false;
+      if(Strategy_BudgetKeyAtTime(deal_time) == signal.budget_key)
          return false;
      }
    return true;
