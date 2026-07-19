@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import configparser
 import csv
+import hashlib
 import json
 import os
 import re
@@ -25,6 +26,12 @@ DEFAULT_LIVE_ROOT = Path(r"C:\QM\mt5\T_Live")
 DEFAULT_OUTPUT_JSON = Path(r"D:\QM\reports\state\live_book_pulse.json")
 DEFAULT_APPEND_LOG = Path(r"D:\QM\reports\state\live_book_pulse.log")
 DEFAULT_ALARM_LOG = Path(r"D:\QM\strategy_farm\state\health_alarms.log")
+DEFAULT_BOOK_MANIFEST = Path(
+    os.environ.get(
+        "QM_DXZ_BOOK_MANIFEST",
+        r"D:\QM\reports\portfolio\portfolio_manifest_sunday_23sleeve_DRAFT_20260711.json",
+    )
+)
 DEFAULT_TAIL_BYTES = 4 * 1024 * 1024
 OPEN_POSITION_JOURNAL_STALE_MINUTES = 120
 FLAT_JOURNAL_STALE_MINUTES = 450
@@ -42,8 +49,8 @@ EXPERT_REMOVED_RE = re.compile(
     r"expert\s+(?P<name>QM5_(?P<ea_id>\d+)_[^(]+)\s+\((?P<symbol>[^,]+),(?P<tf>[^)]+)\)\s+removed",
     re.IGNORECASE,
 )
-# D2-d S3 15-sleeve book live since 2026-07-05 (decisions/2026-07-04_t_live_d2d_s3_15sleeve_book.md)
-EXPECTED_LIVE_SLEEVES = 15
+# Safety fallback only.  Production expectation is loaded from --book-manifest.
+EXPECTED_LIVE_SLEEVES = 23
 PRESET_FILE_RE = re.compile(
     r"^slot(?P<slot>\d+)_(?P<symbol>[^_]+)_(?P<tf>[^_]+)_QM5_(?P<ea_id>\d+)_.*_magic(?P<magic>\d+)(?:_[^.]+)?\.set$",
     re.IGNORECASE,
@@ -292,6 +299,264 @@ def normalize_timeframe(tf: Any) -> str:
     return text.removeprefix("PERIOD_")
 
 
+def file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        while chunk := handle.read(1024 * 1024):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _manifest_timeframe(row: dict[str, Any]) -> str:
+    for name in ("timeframe", "tf", "preset_tf"):
+        value = normalize_timeframe(row.get(name))
+        if value:
+            return value
+    set_path = str(row.get("backtest_set") or row.get("set_path") or "")
+    match = re.search(r"_([A-Z0-9]+)_backtest\.set$", set_path, re.IGNORECASE)
+    return normalize_timeframe(match.group(1)) if match else ""
+
+
+def load_book_manifest(path_value: str | Path | None) -> dict[str, Any]:
+    if path_value is None or not str(path_value).strip():
+        return {
+            "enabled": False,
+            "path": None,
+            "exists": False,
+            "loaded": False,
+            "expected_sleeve_count": EXPECTED_LIVE_SLEEVES,
+            "sleeves": [],
+            "error": None,
+        }
+    path = Path(path_value)
+    result: dict[str, Any] = {
+        "enabled": True,
+        "path": str(path),
+        "exists": path.is_file(),
+        "loaded": False,
+        "sha256": None,
+        "book": None,
+        "status": None,
+        "declared_sleeve_count": None,
+        "expected_sleeve_count": EXPECTED_LIVE_SLEEVES,
+        "actual_manifest_sleeve_count": 0,
+        "duplicate_key_count": 0,
+        "duplicate_keys": [],
+        "sleeves": [],
+        "error": None,
+    }
+    if not path.is_file():
+        result["error"] = "manifest_not_found"
+        return result
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError) as exc:
+        result["error"] = f"manifest_unreadable:{exc}"
+        return result
+    if not isinstance(payload, dict) or not isinstance(payload.get("sleeves"), list):
+        result["error"] = "manifest_missing_sleeves_array"
+        return result
+
+    sleeves: list[dict[str, Any]] = []
+    counts: Counter[str] = Counter()
+    for raw in payload["sleeves"]:
+        if not isinstance(raw, dict):
+            continue
+        try:
+            ea_id = int(raw.get("ea_id"))
+        except (TypeError, ValueError):
+            continue
+        symbol = str(raw.get("symbol") or "").strip()
+        symbol_norm = normalize_symbol(symbol)
+        key = f"{ea_id}|{symbol_norm}"
+        counts[key] += 1
+        try:
+            magic = int(raw["magic_number"]) if raw.get("magic_number") is not None else None
+        except (TypeError, ValueError):
+            magic = None
+        sleeves.append(
+            {
+                "key": key,
+                "ea_id": ea_id,
+                "ea_label": raw.get("ea_label"),
+                "symbol": symbol,
+                "symbol_norm": symbol_norm,
+                "magic": magic,
+                "timeframe_norm": _manifest_timeframe(raw),
+                "live_preset_path": raw.get("live_preset_path"),
+            }
+        )
+    duplicate_keys = sorted(key for key, count in counts.items() if count > 1)
+    declared = payload.get("n_sleeves")
+    try:
+        expected = int(declared)
+    except (TypeError, ValueError):
+        expected = len(sleeves)
+    result.update(
+        {
+            "loaded": True,
+            "sha256": file_sha256(path),
+            "book": payload.get("book"),
+            "status": payload.get("status"),
+            "declared_sleeve_count": declared,
+            "expected_sleeve_count": expected,
+            "actual_manifest_sleeve_count": len(sleeves),
+            "duplicate_key_count": len(duplicate_keys),
+            "duplicate_keys": duplicate_keys,
+            "sleeves": sleeves,
+        }
+    )
+    return result
+
+
+def select_manifest_presets(
+    manifest: dict[str, Any],
+    presets: list[dict[str, Any]],
+) -> dict[str, Any]:
+    if not manifest.get("loaded"):
+        return {
+            "selection_basis": "manifest_unavailable_all_discovered_presets",
+            "selected": presets,
+            "selected_count": len(presets),
+            "discovered_count": len(presets),
+            "ambiguous": [],
+        }
+    grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for preset in presets:
+        key = f"{int(preset.get('ea_id') or 0)}|{normalize_symbol(preset.get('symbol'))}"
+        grouped[key].append(preset)
+    selected: list[dict[str, Any]] = []
+    ambiguous: list[dict[str, Any]] = []
+    for expected in manifest.get("sleeves", []):
+        key = str(expected["key"])
+        candidates = list(grouped.get(key, []))
+        explicit = str(expected.get("live_preset_path") or "").strip()
+        if explicit:
+            explicit_name = Path(explicit).name.casefold()
+            exact = [row for row in candidates if Path(str(row.get("path"))).name.casefold() == explicit_name]
+            if exact:
+                candidates = exact
+        expected_magic = expected.get("magic")
+        if expected_magic is not None:
+            magic_matches = [row for row in candidates if int(row.get("magic") or 0) == int(expected_magic)]
+            if magic_matches:
+                candidates = magic_matches
+        if not candidates:
+            continue
+        candidates = sorted(
+            candidates,
+            key=lambda row: (int(row.get("modified_time_ns") or 0), str(row.get("path") or "")),
+        )
+        chosen = candidates[-1]
+        selected.append(chosen)
+        if len(candidates) > 1:
+            ambiguous.append(
+                {
+                    "key": key,
+                    "chosen": chosen.get("path"),
+                    "candidates": [row.get("path") for row in candidates],
+                    "selection_basis": "newest_matching_magic",
+                }
+            )
+    return {
+        "selection_basis": "manifest_key_then_explicit_path_then_magic_then_newest",
+        "selected": sorted(
+            selected,
+            key=lambda row: (int(row.get("slot") or 0), int(row.get("ea_id") or 0), str(row.get("symbol"))),
+        ),
+        "selected_count": len(selected),
+        "discovered_count": len(presets),
+        "ambiguous": ambiguous,
+    }
+
+
+def reconcile_manifest_to_live(
+    manifest: dict[str, Any],
+    presets: list[dict[str, Any]],
+    loaded_sleeves: list[dict[str, Any]],
+) -> dict[str, Any]:
+    if not manifest.get("loaded"):
+        return {
+            "enabled": bool(manifest.get("enabled")),
+            "checked": False,
+            "expected_count": int(manifest.get("expected_sleeve_count") or EXPECTED_LIVE_SLEEVES),
+            "missing_loaded": [],
+            "unexpected_loaded": [],
+            "missing_presets": [],
+            "unexpected_presets": [],
+            "magic_mismatches": [],
+            "timeframe_mismatches": [],
+            "mismatch_count": 0,
+        }
+
+    expected = {str(row["key"]): row for row in manifest.get("sleeves", [])}
+    loaded = {
+        f"{int(row.get('ea_id') or 0)}|{normalize_symbol(row.get('symbol'))}": row
+        for row in loaded_sleeves
+    }
+    preset_map = {
+        f"{int(row.get('ea_id') or 0)}|{normalize_symbol(row.get('symbol'))}": row
+        for row in presets
+    }
+    expected_keys = set(expected)
+    loaded_keys = set(loaded)
+    preset_keys = set(preset_map)
+    missing_loaded = [expected[key] for key in sorted(expected_keys - loaded_keys)]
+    unexpected_loaded = [loaded[key] for key in sorted(loaded_keys - expected_keys)]
+    missing_presets = [expected[key] for key in sorted(expected_keys - preset_keys)]
+    unexpected_presets = [preset_map[key] for key in sorted(preset_keys - expected_keys)]
+    magic_mismatches: list[dict[str, Any]] = []
+    timeframe_mismatches: list[dict[str, Any]] = []
+    for key in sorted(expected_keys & preset_keys):
+        expected_row = expected[key]
+        preset = preset_map[key]
+        expected_magic = expected_row.get("magic")
+        actual_magic = preset.get("magic")
+        if expected_magic is not None and int(expected_magic) != int(actual_magic or 0):
+            magic_mismatches.append(
+                {
+                    "key": key,
+                    "expected_magic": expected_magic,
+                    "actual_magic": actual_magic,
+                    "preset_path": preset.get("path"),
+                }
+            )
+        expected_tf = str(expected_row.get("timeframe_norm") or "")
+        actual_tf = normalize_timeframe(preset.get("preset_tf"))
+        if expected_tf and expected_tf != actual_tf:
+            timeframe_mismatches.append(
+                {
+                    "key": key,
+                    "expected_tf": expected_tf,
+                    "actual_tf": actual_tf,
+                    "preset_path": preset.get("path"),
+                }
+            )
+    mismatch_count = sum(
+        len(rows)
+        for rows in (
+            missing_loaded,
+            unexpected_loaded,
+            missing_presets,
+            unexpected_presets,
+            magic_mismatches,
+            timeframe_mismatches,
+        )
+    )
+    return {
+        "enabled": True,
+        "checked": True,
+        "expected_count": int(manifest.get("expected_sleeve_count") or len(expected)),
+        "missing_loaded": missing_loaded,
+        "unexpected_loaded": unexpected_loaded,
+        "missing_presets": missing_presets,
+        "unexpected_presets": unexpected_presets,
+        "magic_mismatches": magic_mismatches,
+        "timeframe_mismatches": timeframe_mismatches,
+        "mismatch_count": mismatch_count,
+    }
+
+
 def _read_setfile_values(path: Path) -> dict[str, str]:
     values: dict[str, str] = {}
     try:
@@ -337,6 +602,7 @@ def load_live_presets(terminal_roots: list[Path]) -> list[dict[str, Any]]:
                     "portfolio_weight": values.get("PORTFOLIO_WEIGHT"),
                     "path": str(path),
                     "terminal_root": str(root),
+                    "modified_time_ns": path.stat().st_mtime_ns,
                 }
             )
     return sorted(presets, key=lambda row: (int(row["slot"]), int(row["ea_id"]), str(row["symbol"])))
@@ -904,14 +1170,98 @@ def build_alarms(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
             }
         )
     terminal = snapshot.get("terminal_journals", {})
-    if terminal.get("loaded_sleeve_count") != EXPECTED_LIVE_SLEEVES:
+    manifest = snapshot.get("book_manifest", {})
+    manifest_reconcile = snapshot.get("manifest_reconcile", {})
+    expected_sleeves = int(
+        manifest_reconcile.get("expected_count")
+        or manifest.get("expected_sleeve_count")
+        or EXPECTED_LIVE_SLEEVES
+    )
+    if terminal.get("loaded_sleeve_count") != expected_sleeves:
         alarms.append(
             {
                 "class": "live_book",
                 "severity": "WARN",
                 "metric": "loaded_sleeve_count",
                 "value": terminal.get("loaded_sleeve_count"),
-                "detail": f"expected_{EXPECTED_LIVE_SLEEVES}_loaded_chart_sleeves",
+                "detail": f"expected_{expected_sleeves}_loaded_chart_sleeves_from_manifest",
+            }
+        )
+    if manifest.get("enabled") and not manifest.get("loaded"):
+        alarms.append(
+            {
+                "class": "live_book",
+                "severity": "WARN",
+                "metric": "book_manifest",
+                "value": manifest.get("path"),
+                "detail": manifest.get("error") or "book_manifest_not_loaded",
+            }
+        )
+    if manifest.get("loaded"):
+        declared = manifest.get("declared_sleeve_count")
+        actual = manifest.get("actual_manifest_sleeve_count")
+        try:
+            declared_mismatch = declared is not None and int(declared) != int(actual)
+        except (TypeError, ValueError):
+            declared_mismatch = True
+        if declared_mismatch:
+            alarms.append(
+                {
+                    "class": "live_book",
+                    "severity": "WARN",
+                    "metric": "manifest_sleeve_count",
+                    "value": actual,
+                    "detail": f"manifest_declares_{declared}_but_contains_{actual}",
+                }
+            )
+        if manifest.get("duplicate_key_count"):
+            alarms.append(
+                {
+                    "class": "live_book",
+                    "severity": "WARN",
+                    "metric": "manifest_duplicate_keys",
+                    "value": manifest.get("duplicate_key_count"),
+                    "detail": ",".join(str(value) for value in manifest.get("duplicate_keys", [])),
+                }
+            )
+        manifest_status = str(manifest.get("status") or "").upper()
+        if manifest_status not in {"APPROVED", "FROZEN", "LIVE"}:
+            alarms.append(
+                {
+                    "class": "live_book",
+                    "severity": "WARN",
+                    "metric": "manifest_status",
+                    "value": manifest.get("status"),
+                    "detail": "live_book_manifest_not_approved_frozen_or_live",
+                }
+            )
+    for category, metric in (
+        ("missing_loaded", "manifest_missing_loaded_sleeve"),
+        ("unexpected_loaded", "manifest_unexpected_loaded_sleeve"),
+        ("missing_presets", "manifest_missing_live_preset"),
+        ("unexpected_presets", "manifest_unexpected_live_preset"),
+        ("magic_mismatches", "manifest_magic_mismatch"),
+        ("timeframe_mismatches", "manifest_timeframe_mismatch"),
+    ):
+        for row in manifest_reconcile.get(category, []):
+            key = row.get("key") or f"{row.get('ea_id')}|{normalize_symbol(row.get('symbol'))}"
+            alarms.append(
+                {
+                    "class": "live_book",
+                    "severity": "WARN",
+                    "metric": metric,
+                    "value": key,
+                    "detail": json.dumps(row, sort_keys=True, default=str),
+                }
+            )
+    for row in (snapshot.get("live_presets", {}) or {}).get("ambiguous_selections", []):
+        alarms.append(
+            {
+                "class": "live_book",
+                "severity": "WARN",
+                "metric": "manifest_preset_selection_ambiguous",
+                "value": row.get("key"),
+                "detail": json.dumps(row, sort_keys=True, default=str),
             }
         )
     if not terminal.get("account_id"):
@@ -981,12 +1331,20 @@ def build_snapshot(args: argparse.Namespace) -> dict[str, Any]:
     magic_registry = load_magic_registry(magic_csv)
     terminal = parse_terminal_journals(terminal_roots, args.lookback_files, args.max_tail_bytes)
     ea_logs = parse_ea_logs(terminal_roots, magic_registry, args.max_tail_bytes)
-    live_presets = load_live_presets(terminal_roots)
+    book_manifest = load_book_manifest(getattr(args, "book_manifest", None))
+    discovered_presets = load_live_presets(terminal_roots)
+    preset_selection = select_manifest_presets(book_manifest, discovered_presets)
+    live_presets = preset_selection["selected"]
     preset_consistency = compare_loaded_charts_to_presets(live_presets, terminal.get("loaded_sleeves", []))
+    manifest_reconcile = reconcile_manifest_to_live(
+        book_manifest,
+        live_presets,
+        terminal.get("loaded_sleeves", []),
+    )
     config_files = [parse_common_ini(root / "Config" / "common.ini") for root in terminal_roots]
 
     snapshot = {
-        "schema_version": 1,
+        "schema_version": 2,
         "generated_at_utc": iso_utc(now),
         "read_only_contract": {
             "live_root": str(live_root),
@@ -1008,8 +1366,13 @@ def build_snapshot(args: argparse.Namespace) -> dict[str, Any]:
         "terminal_journals": terminal,
         "live_presets": {
             "preset_count": len(live_presets),
+            "discovered_preset_count": len(discovered_presets),
+            "selection_basis": preset_selection["selection_basis"],
+            "ambiguous_selections": preset_selection["ambiguous"],
             "presets": live_presets,
         },
+        "book_manifest": book_manifest,
+        "manifest_reconcile": manifest_reconcile,
         "preset_consistency": preset_consistency,
         "ea_logs": ea_logs,
     }
@@ -1025,6 +1388,11 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--append-log", default=str(DEFAULT_APPEND_LOG))
     parser.add_argument("--alarm-log", default=str(DEFAULT_ALARM_LOG))
     parser.add_argument("--magic-csv", default=None)
+    parser.add_argument(
+        "--book-manifest",
+        default=str(DEFAULT_BOOK_MANIFEST),
+        help="DXZ live-book manifest; empty disables manifest reconciliation",
+    )
     parser.add_argument("--lookback-files", type=int, default=10)
     parser.add_argument("--max-tail-bytes", type=int, default=DEFAULT_TAIL_BYTES)
     parser.add_argument("--no-alarm-log", action="store_true")
@@ -1056,6 +1424,10 @@ def main(argv: list[str] | None = None) -> int:
             "active_trade_manager_entry_count": snapshot["ea_logs"].get("active_trade_manager_entry_count"),
             "chart_tf_mismatch_count": snapshot["preset_consistency"].get("mismatch_count"),
             "chart_missing_loaded_count": snapshot["preset_consistency"].get("missing_loaded_count"),
+            "manifest_path": snapshot["book_manifest"].get("path"),
+            "manifest_sha256": snapshot["book_manifest"].get("sha256"),
+            "manifest_expected_sleeve_count": snapshot["manifest_reconcile"].get("expected_count"),
+            "manifest_reconcile_mismatch_count": snapshot["manifest_reconcile"].get("mismatch_count"),
             "heartbeat_minutes_since_last_journal_write": snapshot["heartbeat"].get(
                 "minutes_since_last_journal_write"
             ),

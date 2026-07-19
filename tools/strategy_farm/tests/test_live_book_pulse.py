@@ -1,4 +1,5 @@
 import os
+import json
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -185,3 +186,121 @@ def test_heartbeat_flags_missing_today_log_after_first_scan(tmp_path: Path) -> N
     assert hb["today_broker_journal_check_due"] is True
     assert hb["today_broker_journal_file_exists"] is False
     assert "today_broker_date_journal_missing_after_first_scan" in hb["alarm_reason"]
+
+
+def test_manifest_reconcile_uses_manifest_count_keys_magic_and_timeframe(tmp_path: Path) -> None:
+    path = tmp_path / "dxz_book.json"
+    path.write_text(
+        json.dumps(
+            {
+                "book": "DXZ",
+                "status": "FROZEN",
+                "n_sleeves": 2,
+                "sleeves": [
+                    {
+                        "ea_id": 10403,
+                        "symbol": "XAUUSD.DWX",
+                        "magic_number": 104030002,
+                        "backtest_set": "QM5_10403_XAUUSD.DWX_D1_backtest.set",
+                    },
+                    {
+                        "ea_id": 10706,
+                        "symbol": "GBPUSD.DWX",
+                        "magic_number": 107060001,
+                        "timeframe": "H1",
+                    },
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    manifest = live_book_pulse.load_book_manifest(path)
+    presets = [
+        {
+            "ea_id": 10403,
+            "symbol": "XAUUSD",
+            "magic": 999,
+            "preset_tf": "H1",
+            "path": "wrong.set",
+        }
+    ]
+    loaded = [{"ea_id": 10403, "symbol": "XAUUSD", "tf": "D1"}]
+
+    result = live_book_pulse.reconcile_manifest_to_live(manifest, presets, loaded)
+
+    assert manifest["expected_sleeve_count"] == 2
+    assert manifest["sha256"]
+    assert result["expected_count"] == 2
+    assert [row["key"] for row in result["missing_loaded"]] == ["10706|GBPUSD"]
+    assert [row["key"] for row in result["missing_presets"]] == ["10706|GBPUSD"]
+    assert result["magic_mismatches"][0]["expected_magic"] == 104030002
+    assert result["timeframe_mismatches"][0]["expected_tf"] == "D1"
+
+
+def test_build_alarms_uses_manifest_expected_count_not_static_fallback() -> None:
+    snapshot = {
+        "heartbeat": {"alarm": False, "alarm_details": []},
+        "terminal_journals": {"loaded_sleeve_count": 2, "account_id": "123456"},
+        "book_manifest": {
+            "enabled": True,
+            "loaded": True,
+            "status": "FROZEN",
+            "declared_sleeve_count": 2,
+            "actual_manifest_sleeve_count": 2,
+            "expected_sleeve_count": 2,
+            "duplicate_key_count": 0,
+        },
+        "manifest_reconcile": {
+            "expected_count": 2,
+            "missing_loaded": [],
+            "unexpected_loaded": [],
+            "missing_presets": [],
+            "unexpected_presets": [],
+            "magic_mismatches": [],
+            "timeframe_mismatches": [],
+        },
+        "preset_consistency": {"mismatches": []},
+    }
+
+    alarms = live_book_pulse.build_alarms(snapshot)
+
+    assert not [alarm for alarm in alarms if alarm["metric"] == "loaded_sleeve_count"]
+
+
+def test_manifest_preset_selection_chooses_newest_matching_magic() -> None:
+    manifest = {
+        "loaded": True,
+        "sleeves": [
+            {
+                "key": "10440|NDX",
+                "ea_id": 10440,
+                "symbol_norm": "NDX",
+                "magic": 104400003,
+                "live_preset_path": None,
+            }
+        ],
+    }
+    presets = [
+        {
+            "ea_id": 10440,
+            "symbol": "NDX",
+            "magic": 104400003,
+            "path": "old.set",
+            "modified_time_ns": 1,
+            "slot": 3,
+        },
+        {
+            "ea_id": 10440,
+            "symbol": "NDX",
+            "magic": 104400003,
+            "path": "dxz23_live.set",
+            "modified_time_ns": 2,
+            "slot": 3,
+        },
+    ]
+
+    result = live_book_pulse.select_manifest_presets(manifest, presets)
+
+    assert result["selected_count"] == 1
+    assert result["selected"][0]["path"] == "dxz23_live.set"
+    assert result["ambiguous"][0]["chosen"] == "dxz23_live.set"
