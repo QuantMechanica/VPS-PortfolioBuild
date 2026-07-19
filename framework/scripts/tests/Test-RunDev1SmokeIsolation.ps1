@@ -116,6 +116,35 @@ $registerElements = @($registerCommands[0].CommandElements | ForEach-Object { $_
 if ($registerElements -contains '-Force' -or $registerElements -contains '-Trigger') {
     throw 'Ephemeral DEV1 task registration must not overwrite a task or add a trigger.'
 }
+if ($controllerText.Contains('@($task.Triggers).Count', [System.StringComparison]::Ordinal)) {
+    throw 'Controller uses the broken CIM null-trigger array-count check.'
+}
+
+# Regression: a triggerless MSFT_ScheduledTask reports Triggers=$null while
+# @($task.Triggers).Count is 1. The controller contract must accept that task.
+foreach ($functionName in @('ConvertTo-QmFullPath', 'Resolve-QmAccountSid', 'Assert-QmRegisteredTaskContract')) {
+    Import-AstFunction -Ast $controllerAst -Name $functionName
+}
+$script:TaskPath = '\'
+$script:PwshPath = 'C:\Program Files\PowerShell\7\pwsh.exe'
+$expectedTaskAccount = "$env:COMPUTERNAME\QMDev1"
+$expectedTaskSid = (New-Object System.Security.Principal.NTAccount($expectedTaskAccount)).Translate([System.Security.Principal.SecurityIdentifier]).Value
+$expectedTaskArguments = '-NoLogo -NoProfile -File "C:\QM\repo\framework\scripts\invoke_dev1_smoke_task.ps1"'
+$expectedWorkingDirectory = 'C:\QM\repo'
+$mockAction = New-ScheduledTaskAction -Execute $script:PwshPath -Argument $expectedTaskArguments -WorkingDirectory $expectedWorkingDirectory
+$mockSettings = New-ScheduledTaskSettingsSet -MultipleInstances IgnoreNew
+$mockPrincipal = New-ScheduledTaskPrincipal -UserId $expectedTaskAccount -LogonType Password -RunLevel Limited
+$script:mockTriggerlessTask = New-ScheduledTask -Action $mockAction -Settings $mockSettings -Principal $mockPrincipal
+if ($null -ne $script:mockTriggerlessTask.Triggers -or @($script:mockTriggerlessTask.Triggers).Count -ne 1) {
+    throw 'Host no longer reproduces the MSFT_ScheduledTask null-trigger CIM shape; revisit regression.'
+}
+function Get-ScheduledTask {
+    param([string]$TaskName, [string]$TaskPath, [object]$ErrorAction)
+    return $script:mockTriggerlessTask
+}
+Assert-QmRegisteredTaskContract -TaskName 'QM_DEV1_STATIC_TRIGGERLESS' -ExpectedAccount $expectedTaskAccount `
+    -ExpectedSid $expectedTaskSid -ExpectedArguments $expectedTaskArguments -ExpectedWorkingDirectory $expectedWorkingDirectory
+
 $stopCommands = @($controllerAst.FindAll({
     param($node)
     $node -is [System.Management.Automation.Language.CommandAst] -and $node.GetCommandName() -eq 'Stop-Process'

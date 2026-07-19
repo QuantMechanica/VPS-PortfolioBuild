@@ -419,7 +419,9 @@ function Assert-QmRegisteredTaskContract {
         $task.Principal.RunLevel.ToString() -ne 'Limited') {
         throw "Scheduled task '$TaskName' principal drifted from the limited QMDev1 password-logon contract."
     }
-    if (@($task.Triggers).Count -ne 0) {
+    # MSFT_ScheduledTask exposes a triggerless Triggers property as $null, but
+    # array-wrapping that CIM null value produces an unexpected count of 1.
+    if ($null -ne $task.Triggers) {
         throw "Scheduled task '$TaskName' must be on-demand and have no trigger."
     }
     if (@($task.Actions).Count -ne 1) {
