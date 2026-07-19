@@ -164,7 +164,15 @@ if ($seedsValid -and $events.Count -gt 0) {
   $normalized = @()
   foreach ($event in $events) {
     try {
-      $utc = ([DateTimeOffset]::Parse([string]$event.date)).UtcDateTime
+      if ($event.date -is [DateTime]) {
+        $utc = ([DateTime]$event.date).ToUniversalTime()
+      }
+      elseif ($event.date -is [DateTimeOffset]) {
+        $utc = ([DateTimeOffset]$event.date).UtcDateTime
+      }
+      else {
+        $utc = ([DateTimeOffset]::Parse([string]$event.date)).UtcDateTime
+      }
     }
     catch {
       Write-Warning "event skipped: invalid date '$($event.date)'"

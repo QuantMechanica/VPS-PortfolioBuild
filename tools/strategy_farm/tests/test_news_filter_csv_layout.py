@@ -27,3 +27,12 @@ def test_secondary_layout_explicitly_prefers_utc_over_eet() -> None:
 
     assert utc_branch < generic_branch
     assert "Always prefer UTC over local/EET" in source
+
+
+def test_live_content_coverage_gap_is_warn_only() -> None:
+    source = NEWS_FILTER.read_text(encoding="utf-8")
+
+    warning = 'QM_LogEvent(QM_WARN, "NEWS_CALENDAR_COVERAGE_GAP"'
+    assert warning in source
+    assert 'QM_NewsLogSetupMissing("calendar_content_coverage_gap")' not in source
+    assert source.index(warning) < source.index("g_qm_news_available = true;")
