@@ -81,6 +81,48 @@ NOW = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S+00:00")
 sys.path.insert(0, r"C:\QM\repo\tools\strategy_farm")
 import farmctl  # staging helpers (_stage_q02_setfiles, _record_q02_deferral)
 REQUEUE_EXCLUDED_EAS = farmctl.load_requeue_excluded_eas()
+
+# 2026-07-19 (Q08 INFRA_FAIL storm RCA): a deterministic setgen defect in the
+# baseline setfile (zero strategy params, empty value, or a duplicate strategy
+# assignment) makes the Q08.5 neighborhood runner raise a hard ValueError on
+# EVERY run — re-enqueuing that (ea,symbol,setfile) can never succeed until the
+# setfile is regenerated, yet the blunt MAX_INFRA_ATTEMPTS counter still burns
+# up to 12 full Q08 baseline backtests per pair. Pre-validate with the runner's
+# OWN parser (single source of truth) and refuse the doomed re-enqueue.
+# framework/scripts has no __init__.py -> module import via sys.path, appended
+# (not inserted) so it can never shadow tools/strategy_farm modules.
+try:
+    sys.path.append(r"C:\QM\repo\framework\scripts")
+    from q08_5_neighborhood_runner import (
+        parse_setfile_assignments as _q08_parse_setfile,
+    )
+except Exception:  # import must NEVER break the sweep
+    _q08_parse_setfile = None
+
+
+def _q08_setfile_deterministic_defect(setfile_path):
+    """Return a defect token if this setfile will deterministically fail Q08.5.
+
+    parse_setfile_assignments raises on duplicate / empty-value strategy params
+    and returns {} when the strategy block has no non-framework params (the
+    `card_defaults_source=not_found` case). None => not a known deterministic
+    setgen defect; allow the retry (transient infra, or a repaired setfile)."""
+    if _q08_parse_setfile is None or not setfile_path:
+        return None
+    try:
+        assignments = _q08_parse_setfile(Path(setfile_path))
+    except ValueError as exc:
+        msg = str(exc).lower()
+        if "duplicate strategy parameter" in msg:
+            return "duplicate_strategy_params"
+        if "empty strategy parameter" in msg:
+            return "empty_strategy_value"
+        return "setfile_parse_error"
+    except OSError:
+        return None
+    return "empty_strategy_params" if not assignments else None
+
+
 try:
     import strategy_priority as _sp
     _SCORES = _sp.compute_scores()
@@ -314,6 +356,17 @@ for phase in ("Q02", "Q03", "Q08"):
                 {"ea_id": ea_id, "phase": phase, "symbol": symbol,
                  "reason": "setfile_missing"})
             continue
+        # Q08.5 neighborhood is the only Q08 sub-gate that hard-fails on setfile
+        # structure; scope the deterministic-defect skip to Q08 so Q02/Q03 keep
+        # their own retry semantics.
+        if phase == "Q08":
+            defect = _q08_setfile_deterministic_defect(setfile)
+            if defect:
+                report["part2_stranded"]["skipped"].append(
+                    {"ea_id": ea_id, "phase": phase, "symbol": symbol,
+                     "reason": "deterministic_setgen_defect", "defect": defect,
+                     "setfile": Path(setfile).name})
+                continue
         if pending_active_exists(ea_id, symbol, phase):
             report["part2_stranded"]["skipped"].append(
                 {"ea_id": ea_id, "phase": phase, "symbol": symbol,

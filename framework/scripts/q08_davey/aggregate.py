@@ -230,6 +230,21 @@ def _neighborhood_lineage_invalid_result(sub_gate_input_runs: dict) -> dict | No
         or meta.get("skipped")
         or "neighborhood_lineage_unverified"
     )
+    # 2026-07-19 (Q08 INFRA_FAIL storm RCA): the neighborhood support runner
+    # raises a hard ValueError when the baseline setfile is structurally
+    # un-Q08-able — zero strategy params (setgen `card_defaults_source=
+    # not_found`, never materialised) or a duplicate/empty strategy assignment.
+    # That is a DETERMINISTIC build/setgen defect, not transient infra: every
+    # retry re-reads the same setfile and reproduces it. Emit a precise token so
+    # evidence is self-describing and the stranded-INFRA sweep can refuse the
+    # doomed re-enqueue. Verdict stays INVALID and still blocks.
+    error_text = str(meta.get("error") or "")
+    if "has no strategy parameters" in error_text:
+        detail = "baseline_setfile_defect:empty_strategy_params"
+    elif "duplicate strategy parameter" in error_text:
+        detail = "baseline_setfile_defect:duplicate_strategy_params"
+    elif "empty strategy parameter" in error_text:
+        detail = "baseline_setfile_defect:empty_strategy_value"
     return common.make_result(
         "8.5_neighborhood",
         "INVALID",
