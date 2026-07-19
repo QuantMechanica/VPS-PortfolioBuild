@@ -49,6 +49,18 @@ LIVE_BOOK_PULSE = REPORTS_STATE / "live_book_pulse.json"
 FTMO_TRIAL_PULSE = REPORTS_STATE / "ftmo_trial_pulse.json"
 OWNER_DECISIONS_FILE = REPORTS_STATE / "owner_decisions.json"
 
+# Cockpit v7 additions (2026-07-19)
+# FACTORY_OFF.flag distinguishes an intentional maintenance stop from a genuine
+# outage — the top-bar status must never scream CRITICAL for an intentional OFF.
+FACTORY_OFF_FLAG = ROOT / "state" / "FACTORY_OFF.flag"
+# T_Live is READ-ONLY for the cockpit (never write here). The portable data
+# folder is MT5_Base; the terminal journal and the EA-emitted JSON logs live
+# under it.
+TLIVE_ROOT = Path(r"C:\QM\mt5\T_Live")
+TLIVE_JOURNAL_DIR = TLIVE_ROOT / "MT5_Base" / "logs"
+TLIVE_EA_LOG_DIR = TLIVE_ROOT / "MT5_Base" / "MQL5" / "Files" / "QM"
+LIVE_BOOK_SLEEVES = 24  # current live book size (label denominator only)
+
 PHASE_DISPLAY = {
     "Q01": "Q01",
     "Q02": "Q02",
@@ -249,6 +261,20 @@ def quota_snapshot() -> dict:
 
 def db_rows(query: str, params: tuple = ()) -> list[dict]:
     con = sqlite3.connect(str(DB))
+    con.row_factory = sqlite3.Row
+    try:
+        return [dict(r) for r in con.execute(query, params).fetchall()]
+    finally:
+        con.close()
+
+
+def db_rows_ro(query: str, params: tuple = ()) -> list[dict]:
+    """Read-only DB query via the sqlite ``mode=ro`` URI.
+
+    Used by the cockpit-v7 additions (LIVE BOOK / FRONTIER). The connection is
+    opened strictly read-only so a query can never mutate farm_state.sqlite.
+    """
+    con = sqlite3.connect(f"file:{DB.as_posix()}?mode=ro", uri=True)
     con.row_factory = sqlite3.Row
     try:
         return [dict(r) for r in con.execute(query, params).fetchall()]
@@ -494,6 +520,182 @@ def live_money_snapshot() -> dict:
         }
     except Exception:
         pass
+    return out
+
+
+def live_book_snapshot() -> dict:
+    """READ-ONLY T_Live pulse from the terminal journal + EA-emitted logs.
+
+    Sources (never written by the cockpit):
+      journal  C:/QM/mt5/T_Live/MT5_Base/logs/<YYYYMMDD>.log   (UTF-16, terminal)
+      ea logs  C:/QM/mt5/T_Live/MT5_Base/MQL5/Files/QM/*.log    (UTF-8 JSON lines)
+
+    Every field is honestly labelled; an unreadable/absent source stays None so
+    the surface renders 'n/a' rather than a guess. The equity value is the
+    NEWEST EA-emitted EQUITY_SNAPSHOT (a day-close figure) — it is explicitly
+    NOT real-time account equity.
+    """
+    out = {
+        "journal_date": None,
+        "journal_age_sec": None,
+        "deals_today": None,
+        "equity": None,
+        "equity_ts": None,
+        "equity_day_pnl": None,
+        "ea_logs_today": None,
+        "ea_logs_total": None,
+    }
+    # --- terminal journal: today's <YYYYMMDD>.log ---
+    today_name = dt.date.today().strftime("%Y%m%d")
+    journal = TLIVE_JOURNAL_DIR / f"{today_name}.log"
+    try:
+        if journal.exists():
+            out["journal_date"] = today_name
+            out["journal_age_sec"] = int(
+                dt.datetime.now().timestamp() - journal.stat().st_mtime
+            )
+            # MT5 logs live fills as 'deal #<n> ... done' under Trades.
+            text = journal.read_text(encoding="utf-16", errors="ignore")
+            out["deals_today"] = sum(1 for ln in text.splitlines() if "deal #" in ln.lower())
+    except Exception:
+        pass
+    # --- EA logs: newest EQUITY_SNAPSHOT + today-active sleeve count ---
+    try:
+        logs = list(TLIVE_EA_LOG_DIR.glob("QM5_*_ea-*.log"))
+        out["ea_logs_total"] = len(logs)
+        today = dt.date.today()
+        active = 0
+        newest_ts = None
+        for f in logs:
+            try:
+                st = f.stat()
+            except OSError:
+                continue
+            if dt.date.fromtimestamp(st.st_mtime) == today:
+                active += 1
+            try:
+                content = f.read_text(encoding="utf-8", errors="ignore")
+            except OSError:
+                continue
+            for line in content.splitlines():
+                if '"EQUITY_SNAPSHOT"' not in line:
+                    continue
+                try:
+                    rec = json.loads(line)
+                except Exception:
+                    continue
+                ts = str(rec.get("ts_utc") or "")
+                if newest_ts is None or ts > newest_ts:
+                    newest_ts = ts
+                    pay = rec.get("payload") or {}
+                    out["equity"] = pay.get("equity")
+                    out["equity_ts"] = ts
+                    out["equity_day_pnl"] = pay.get("day_pnl")
+        out["ea_logs_today"] = active
+    except Exception:
+        pass
+    return out
+
+
+def frontier_next_book_snapshot(since_iso: str = "2026-07-19T18:00", limit: int = 8) -> dict:
+    """READ-ONLY work_items view for the ~26.07 next-book frontier.
+
+    (a) fresh PASS at Q08/Q09/Q10 since ``since_iso``.
+    (b) Q07-PASS (ea, symbol) pairs whose latest Q08 is still pending/running.
+    Both are deduped per (ea_id, symbol); Qxx labels only.
+    """
+    out = {"fresh_pass": [], "in_flight": [], "fresh_count": 0, "inflight_count": 0}
+    # (a) fresh Q08+ PASS
+    try:
+        fresh = db_rows_ro(
+            """
+            SELECT ea_id, symbol, phase, MAX(updated_at) AS updated_at
+            FROM work_items
+            WHERE verdict='PASS' AND phase IN ('Q08','Q09','Q10','P5c','P6','P7')
+              AND updated_at >= ?
+            GROUP BY ea_id, symbol, phase
+            ORDER BY updated_at DESC
+            """,
+            (since_iso,),
+        )
+    except sqlite3.Error:
+        fresh = []
+    seen: set = set()
+    for r in fresh:
+        key = (r.get("ea_id"), r.get("symbol"))
+        if key in seen:
+            continue
+        seen.add(key)
+        out["fresh_pass"].append({
+            "ea_id": r.get("ea_id"),
+            "symbol": str(r.get("symbol") or "").replace(".DWX", ""),
+            "phase": PHASE_DISPLAY.get(str(r.get("phase")), str(r.get("phase"))),
+            "when": str(r.get("updated_at") or "")[:16].replace("T", " "),
+        })
+    out["fresh_count"] = len(out["fresh_pass"])
+
+    # (b) Q07-PASS with Q08 still in flight
+    try:
+        q07 = db_rows_ro(
+            """
+            SELECT ea_id, symbol, MAX(updated_at) AS updated_at
+            FROM work_items
+            WHERE phase IN ('Q07','P5b') AND verdict='PASS'
+            GROUP BY ea_id, symbol
+            ORDER BY updated_at DESC
+            """
+        )
+        q08_rows = db_rows_ro(
+            "SELECT ea_id, symbol, status FROM work_items "
+            "WHERE phase IN ('Q08','P5c') ORDER BY updated_at ASC"
+        )
+    except sqlite3.Error:
+        q07, q08_rows = [], []
+    latest_q08: dict = {}
+    for r in q08_rows:  # ascending → last write wins
+        latest_q08[(r.get("ea_id"), r.get("symbol"))] = str(r.get("status") or "")
+    inflight = []
+    for r in q07:
+        key = (r.get("ea_id"), r.get("symbol"))
+        status = latest_q08.get(key)
+        if status in ("pending", "active"):
+            inflight.append({
+                "ea_id": r.get("ea_id"),
+                "symbol": str(r.get("symbol") or "").replace(".DWX", ""),
+                "status": status,
+                "when": str(r.get("updated_at") or "")[:16].replace("T", " "),
+            })
+    out["inflight_count"] = len(inflight)
+    # Combined display cap: fresh PASS first (more important), then in-flight.
+    out["in_flight"] = inflight[: max(0, limit - out["fresh_count"])]
+    return out
+
+
+def ops_heartbeats_snapshot() -> list[dict]:
+    """File-age heartbeats for the scheduled ops jobs (read-only stat)."""
+    specs = [
+        ("BACKUP NIGHTLY", REPORTS_STATE / "backup_nightly.log", 26 * 3600),
+        ("QUOTA GOVERNOR", REPORTS_STATE / "quota_governor.log", 20 * 60),
+        ("CACHE PURGE", REPORTS_STATE / "tester_cache_purge.log", 10 * 60),
+        ("HEALTH.JSON", ROOT / "state" / "health.json", 20 * 60),
+    ]
+    out = []
+    for label, path, warn_sec in specs:
+        age = None
+        try:
+            if path.exists():
+                age = int(dt.datetime.now().timestamp() - path.stat().st_mtime)
+        except OSError:
+            age = None
+        if age is None:
+            status = "miss"
+        elif age <= warn_sec:
+            status = "ok"
+        elif age <= warn_sec * 2:
+            status = "warn"
+        else:
+            status = "crit"
+        out.append({"label": label, "age_sec": age, "warn_sec": warn_sec, "status": status})
     return out
 
 
@@ -1049,6 +1251,9 @@ def main() -> int:
     q08_rescue = q08_portfolio_rescue_snapshot()
     qsnap = quota_snapshot()
     money = live_money_snapshot()
+    live_book = live_book_snapshot()
+    next_book = frontier_next_book_snapshot()
+    heartbeats = ops_heartbeats_snapshot()
     q12_count = q12_review_ready_count()
 
     # Pipeline health (written by `farmctl health`, scheduled every 15 min)
@@ -1225,6 +1430,11 @@ def main() -> int:
     # === HTML — STEEL / EMERALD ===
     now_utc_full = dt.datetime.now(dt.UTC).replace(tzinfo=None).strftime("%Y-%m-%d %H:%M:%SZ")
     now_local = dt.datetime.now().strftime("%H:%M:%S")
+    # v7 freshness: embed the render epoch (ms) so a small client-side script can
+    # show a live 'Xs/Xm ago' age even when the page is viewed as a stale file://
+    # snapshot — the 2026-07-19 stale-CRITICAL confusion came from a file with no
+    # visible age.
+    render_epoch_ms = int(dt.datetime.now().timestamp() * 1000)
     # Top-bar health pill — map bottleneck severity to NOMINAL/WARN/CRITICAL.
     # OWNER call 2026-05-23: CRITICAL fires only when the Edge Lab itself is
     # down — never on output dryness ("no EA further along" = the actual work,
@@ -1244,7 +1454,27 @@ def main() -> int:
     _factory_fail_checks = [c for c in _fail_checks if c.get("name") in _FACTORY_DOWN_CHECKS]
     _factory_fail = bool(_factory_fail_checks)
     _any_fail = bool(_fail_checks)
-    if _factory_fail:
+    # v7 status hardening (2026-07-19): CRITICAL only when the factory is
+    # GENUINELY down — worker/orchestrator checks FAIL *and* no intentional
+    # FACTORY_OFF.flag present. If the flag exists the stop is deliberate, so
+    # the pill degrades to amber MAINTENANCE, never CRITICAL. Worker liveness
+    # comes from health.json's live-process-scan checks (mt5_worker_saturation)
+    # and live_worker_terminals() — never from pipeline_state.json, whose
+    # content contradicted the DB in the 2026-07-19 audit.
+    factory_off = False
+    try:
+        factory_off = FACTORY_OFF_FLAG.exists()
+    except OSError:
+        factory_off = False
+    if factory_off:
+        pill_label = "MAINTENANCE"; pill_class = "warn"
+        if _factory_fail_checks:
+            msg = "FACTORY OFF (intentional) // " + " // ".join(
+                f"{c.get('name')}: {str(c.get('detail'))[:70]}" for c in _factory_fail_checks[:1]
+            )
+        else:
+            msg = "FACTORY OFF (intentional) — workers paused by FACTORY_OFF.flag"
+    elif _factory_fail:
         pill_label = "CRITICAL"; pill_class = "crit"
         # Topbar must explain the CRITICAL, not narrate the build queue —
         # a red pill next to "coding intentionally paused" is incoherent
@@ -1436,10 +1666,15 @@ def main() -> int:
             r = f' <span class="lim-reset">&rarr;{e(str(reset))}</span>' if reset else ""
             return f'<span class="k">{label}</span> <span class="v {cls}">{int(val)}%</span>{r}'
 
-        parts = [
-            _pct_span("5H", s.get("hour_pct"), s.get("hour_reset")),
-            _pct_span("WK", s.get("week_pct"), s.get("week_reset")),
-        ]
+        # Post-2026-07-12 API change: Codex no longer exposes a 5-hour window —
+        # the weekly limit is now the primary window. Only render the 5H cell
+        # when real 5h data exists (Claude still reports it); otherwise drop it
+        # and mark weekly as PRIMARY rather than showing a mislabeled "5H —".
+        parts = []
+        if isinstance(s.get("hour_pct"), (int, float)):
+            parts.append(_pct_span("5H", s.get("hour_pct"), s.get("hour_reset")))
+        wk_label = "WK" if isinstance(s.get("hour_pct"), (int, float)) else "WK (PRIMARY)"
+        parts.append(_pct_span(wk_label, s.get("week_pct"), s.get("week_reset")))
         if src == "claude" and isinstance(s.get("sonnet_pct"), (int, float)):
             parts.append(_pct_span("WK-SONNET", s.get("sonnet_pct"), None))
         stale = not s.get("fresh")
@@ -1781,6 +2016,157 @@ def main() -> int:
     except Exception:
         build_sha = "—"
 
+    # ---------- v7. FRESHNESS BADGE ----------
+    freshness_html = (
+        '<div class="freshness" id="freshness">'
+        '<span class="lbl">Rendered</span>'
+        f'<span class="rtime">{e(now_local)}</span>'
+        '<span class="age" id="fresh-age">&middot;</span>'
+        '</div>'
+    )
+
+    # ---------- v7. LIVE BOOK (T_Live) ----------
+    def _age_short(sec) -> str:
+        if sec is None:
+            return "n/a"
+        sec = int(sec)
+        if sec < 90:
+            return f"{sec}s"
+        if sec < 5400:
+            return f"{sec // 60}m"
+        if sec < 172800:
+            return f"{sec / 3600:.1f}h"
+        return f"{sec // 86400}d"
+
+    _jage = live_book.get("journal_age_sec")
+    _deals = live_book.get("deals_today")
+    lb_deals_val = f"{_deals} DEALS" if isinstance(_deals, int) else "n/a"
+    lb_deals_cls = "hot" if isinstance(_deals, int) and _deals > 0 else ""
+    if _jage is not None:
+        lb_deals_sub = (
+            f"journal {live_book.get('journal_date') or '?'} // last write "
+            f"{_age_short(_jage)} ago // fills logged today"
+        )
+    else:
+        lb_deals_sub = "today journal not found (pre-open / rollover) — n/a"
+
+    _eq = live_book.get("equity")
+    lb_eq_val = f"${_eq:,.2f}" if isinstance(_eq, (int, float)) else "n/a"
+    _edp = live_book.get("equity_day_pnl")
+    _ets = str(live_book.get("equity_ts") or "")[:16].replace("T", " ")
+    if isinstance(_eq, (int, float)):
+        _dp_txt = (
+            f" // day {'+' if isinstance(_edp, (int, float)) and _edp >= 0 else ''}{_edp:,.2f}"
+            if isinstance(_edp, (int, float)) else ""
+        )
+        lb_eq_sub = f"last day-close equity (EA-emitted) // {_ets}Z{_dp_txt} // NOT real-time"
+    else:
+        lb_eq_sub = "no EQUITY_SNAPSHOT in EA logs — n/a"
+
+    _at = live_book.get("ea_logs_today")
+    _tot = live_book.get("ea_logs_total")
+    lb_sleeves_val = f"{_at if _at is not None else 'n/a'}/{LIVE_BOOK_SLEEVES}"
+    lb_sleeves_cls = "" if (isinstance(_at, int) and _at >= LIVE_BOOK_SLEEVES) else (
+        "warn" if isinstance(_at, int) else "alert")
+    lb_sleeves_sub = (
+        f"EA logs written today // {_tot if _tot is not None else '?'} log files on disk"
+    )
+    live_book_html = f'''
+  <div class="frontier">
+    <div class="frontier-tile">
+      <div class="f-lbl">Journal // T_Live Terminal</div>
+      <div class="f-val {lb_deals_cls}">{e(lb_deals_val)}</div>
+      <div class="f-sub">{e(lb_deals_sub)}</div>
+    </div>
+    <div class="frontier-tile">
+      <div class="f-lbl">Book Equity // Day-Close</div>
+      <div class="f-val">{e(lb_eq_val)}</div>
+      <div class="f-sub">{e(lb_eq_sub)}</div>
+    </div>
+    <div class="frontier-tile">
+      <div class="f-lbl">Active Sleeves // EA Logs Today</div>
+      <div class="f-val {lb_sleeves_cls}">{e(lb_sleeves_val)}</div>
+      <div class="f-sub">{e(lb_sleeves_sub)}</div>
+    </div>
+  </div>
+'''
+
+    # ---------- v7. NEXT-BOOK FRONTIER (~26.07) ----------
+    nbf_rows: list[str] = []
+    for r in next_book.get("fresh_pass", []):
+        nbf_rows.append(
+            '<div class="nbf-row pass">'
+            f'<span class="nbf-tag">{e(r.get("phase"))} PASS</span>'
+            f'<span class="nbf-ea">{e(r.get("ea_id"))}</span>'
+            f'<span class="nbf-sym">{e(r.get("symbol"))}</span>'
+            f'<span class="nbf-when">{e(r.get("when"))}</span>'
+            '</div>'
+        )
+    for r in next_book.get("in_flight", []):
+        nbf_rows.append(
+            '<div class="nbf-row inflight">'
+            f'<span class="nbf-tag">Q08 {e(str(r.get("status")).upper())}</span>'
+            f'<span class="nbf-ea">{e(r.get("ea_id"))}</span>'
+            f'<span class="nbf-sym">{e(r.get("symbol"))}</span>'
+            f'<span class="nbf-when">Q07 {e(r.get("when"))}</span>'
+            '</div>'
+        )
+    if not nbf_rows:
+        nbf_rows.append(
+            '<div class="nbf-row">'
+            '<span class="nbf-tag" style="color:var(--text-3)">CLEAR</span>'
+            '<span class="nbf-ea">no fresh Q08+ PASS and no Q07&rarr;Q08 in flight</span>'
+            '<span class="nbf-sym"></span><span class="nbf-when"></span>'
+            '</div>'
+        )
+    next_book_html = f'''
+  <div class="nbf">
+    <div class="nbf-summary">
+      <span><b>{next_book.get("fresh_count", 0)}</b> fresh Q08/Q09/Q10 PASS since 19.07 18:00Z</span>
+      <span><b>{next_book.get("inflight_count", 0)}</b> Q07-PASS with Q08 pending/running</span>
+    </div>
+    <div class="nbf-rows">
+      {"".join(nbf_rows)}
+    </div>
+  </div>
+'''
+
+    # ---------- v7. OPS HEARTBEATS ----------
+    def _dur_short(sec: int) -> str:
+        if sec >= 3600 and sec % 3600 == 0:
+            return f"{sec // 3600}h"
+        if sec >= 3600:
+            return f"{sec / 3600:.0f}h"
+        return f"{sec // 60}m"
+
+    hb_tiles: list[str] = []
+    for hb in heartbeats:
+        hb_tiles.append(
+            f'<div class="hb-tile hb-{e(hb["status"])}">'
+            f'<div class="hb-lbl">{e(hb["label"])}</div>'
+            f'<div class="hb-age">{e(_age_short(hb.get("age_sec")))}</div>'
+            f'<div class="hb-exp">expect &lt; {e(_dur_short(hb["warn_sec"]))}</div>'
+            '</div>'
+        )
+    hb_tiles_html = "".join(hb_tiles)
+    health_warns = [c for c in (health.get("checks") or []) if str(c.get("status") or "").upper() == "WARN"]
+    hb_warn_rows: list[str] = []
+    for c in health_warns:
+        hb_warn_rows.append(
+            '<div class="hb-warn-row">'
+            f'<span class="hb-warn-name">{e(c.get("name"))}</span>'
+            f'<span class="hb-warn-detail">{e(str(c.get("detail") or "")[:150])}</span>'
+            '</div>'
+        )
+    if not hb_warn_rows:
+        hb_warn_rows.append(
+            '<div class="hb-warn-row">'
+            '<span class="hb-warn-name" style="color:var(--signal)">NONE</span>'
+            '<span class="hb-warn-detail">no health.json WARN checks</span>'
+            '</div>'
+        )
+    hb_warns_html = "".join(hb_warn_rows)
+
 # ==== HTML assembly (STEEL/EMERALD brand · OWNER call 2026-05-23) ====
 
     # CSS lives outside the f-string to avoid brace-escaping.
@@ -1828,12 +2214,27 @@ body { padding: 32px; min-height: 100vh; }
 .topbar {
   grid-column: span 12;
   display: grid;
-  grid-template-columns: auto 1fr auto auto;
+  grid-template-columns: auto 1fr auto auto auto;
   align-items: center;
   gap: 24px;
   padding-bottom: 16px;
   border-bottom: 1px solid var(--border);
 }
+/* v7 freshness badge — live 'age' computed client-side vs render epoch */
+.freshness {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-3); white-space: nowrap; text-align: right;
+  border: 1px solid var(--border-2); padding: 7px 12px;
+}
+.freshness .lbl { color: var(--text-4); margin-right: 8px; font-size: 10px; letter-spacing: 0.16em; }
+.freshness .rtime { color: var(--text); font-weight: 700; }
+.freshness .age { color: var(--text-3); margin-left: 8px; }
+.freshness.age-warn { border-color: var(--warn); color: var(--warn); }
+.freshness.age-warn .lbl, .freshness.age-warn .age { color: var(--warn); }
+.freshness.age-crit { border-color: var(--fail); color: var(--fail); }
+.freshness.age-crit .lbl, .freshness.age-crit .age { color: var(--fail); }
 .brand {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-weight: 700; font-size: 14px;
@@ -2176,6 +2577,68 @@ body { padding: 32px; min-height: 100vh; }
 .botbar .right  { text-align: right; }
 .botbar .key    { color: var(--text-4); margin-right: 8px; }
 .botbar .val    { color: var(--text-2); }
+
+/* v7 NEXT-BOOK FRONTIER */
+.nbf { background: var(--surface-1); border: 1px solid var(--border); }
+.nbf-summary {
+  display: flex; flex-wrap: wrap; gap: 32px;
+  padding: 14px 20px; border-bottom: 1px solid var(--border);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3);
+}
+.nbf-summary b { color: var(--signal); font-weight: 700; font-size: 13px; }
+.nbf-row {
+  display: grid; grid-template-columns: 120px 130px 1fr 160px;
+  gap: 14px; padding: 10px 20px; align-items: baseline;
+  border-bottom: 1px solid var(--border);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums; font-size: 12px; color: var(--text-2);
+}
+.nbf-row:last-child { border-bottom: none; }
+.nbf-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+.nbf-row.pass .nbf-tag { color: var(--signal); }
+.nbf-row.inflight .nbf-tag { color: var(--warn); }
+.nbf-ea { color: var(--text); font-weight: 600; }
+.nbf-sym { color: var(--text-2); }
+.nbf-when { color: var(--text-3); text-align: right; font-size: 10px; letter-spacing: 0.08em; }
+
+/* v7 OPS HEARTBEATS */
+.hb-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+  background: var(--border); border: 1px solid var(--border);
+}
+.hb-tile { background: var(--surface-1); padding: 14px 18px; }
+.hb-lbl {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px; font-weight: 600; letter-spacing: 0.18em;
+  color: var(--text-3); text-transform: uppercase; margin-bottom: 8px;
+}
+.hb-age {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 24px; font-weight: 500; line-height: 1; color: var(--text); letter-spacing: -0.02em;
+}
+.hb-exp {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px; color: var(--text-4); margin-top: 6px;
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+.hb-tile.hb-ok .hb-age   { color: var(--signal); }
+.hb-tile.hb-warn .hb-age { color: var(--warn); }
+.hb-tile.hb-crit .hb-age { color: var(--fail); }
+.hb-tile.hb-miss .hb-age { color: var(--text-4); }
+.hb-warns { background: var(--surface-1); border: 1px solid var(--border); border-top: none; }
+.hb-warn-row {
+  display: grid; grid-template-columns: 230px 1fr; gap: 14px;
+  padding: 9px 20px; align-items: baseline; border-bottom: 1px solid var(--border);
+  font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px;
+}
+.hb-warn-row:last-child { border-bottom: none; }
+.hb-warn-name {
+  color: var(--warn); font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; font-size: 10px;
+}
+.hb-warn-detail { color: var(--text-3); line-height: 1.4; }
 """
 
     # ---------- COMPANY FRONTIER (OWNER 2026-06-11: cockpit = company progress) ----------
@@ -2228,7 +2691,7 @@ body { padding: 32px; min-height: 100vh; }
         '<html lang="en"><head>\n'
         '<meta charset="utf-8">\n'
         '<title>QuantMechanica // COCKPIT</title>\n'
-        '<meta http-equiv="refresh" content="30">\n'
+        '<meta http-equiv="refresh" content="120">\n'
         '<link rel="preconnect" href="https://fonts.googleapis.com">\n'
         '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
         '<link rel="preconnect" href="https://api.fontshare.com" crossorigin>\n'
@@ -2250,6 +2713,7 @@ body { padding: 32px; min-height: 100vh; }
       <span class="lbl">UTC // MISSION TIME</span>
       {e(now_utc_full)}
     </div>
+    {freshness_html}
     <div class="health-pill {pill_class}">{e(pill_label)}</div>
   </div>
 
@@ -2261,6 +2725,16 @@ body { padding: 32px; min-height: 100vh; }
       <span class="section-aux">DXZ Book // FTMO Trial // Pulse Evidence</span>
     </div>
     {money_html}
+  </div>
+
+  <!-- 2b. LIVE BOOK (T_Live) -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-glyph"></span>
+      <span class="section-title">Live Book // T_Live Terminal</span>
+      <span class="section-aux">Journal + EA Logs (read-only) // day-close, NOT real-time</span>
+    </div>
+    {live_book_html}
   </div>
 
   <!-- 3. OWNER DECISIONS + AGENT STATUS -->
@@ -2327,6 +2801,16 @@ body { padding: 32px; min-height: 100vh; }
       <span class="section-aux">Furthest Candidate // Q08 Cohort // Conversion // Throughput</span>
     </div>
     {frontier_html}
+  </div>
+
+  <!-- 4b. NEXT-BOOK FRONTIER (~26.07) -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-glyph"></span>
+      <span class="section-title">Next Book // Frontier ~26.07</span>
+      <span class="section-aux">Fresh Q08+ PASS // Q07&rarr;Q08 In Flight</span>
+    </div>
+    {next_book_html}
   </div>
 
   {progress_html}
@@ -2426,14 +2910,54 @@ body { padding: 32px; min-height: 100vh; }
     </div>
   </div>
 
+  <!-- 7b. OPS HEARTBEATS -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-glyph"></span>
+      <span class="section-title">Ops Heartbeats // Scheduled Jobs</span>
+      <span class="section-aux">File Ages // health.json WARNs</span>
+    </div>
+    <div class="hb-grid">
+      {hb_tiles_html}
+    </div>
+    <div class="hb-warns">
+      {hb_warns_html}
+    </div>
+  </div>
+
   <!-- 8. BOTTOM BAR -->
   <div class="botbar">
-    <div><span class="key">Next Refresh</span><span class="val">30S</span></div>
-    <div class="center"><span class="key">Renderer</span><span class="val">v6.0 // STEEL-EMERALD</span></div>
+    <div><span class="key">Next Refresh</span><span class="val">120S</span></div>
+    <div class="center"><span class="key">Renderer</span><span class="val">v7.0 // STEEL-EMERALD</span></div>
     <div class="right"><span class="key">Build</span><span class="val">SHA {e(build_sha)}</span></div>
   </div>
 
 </div>
+<script>
+(function() {{
+  var RENDER_EPOCH = {render_epoch_ms};
+  var ageEl = document.getElementById('fresh-age');
+  var badge = document.getElementById('freshness');
+  if (!ageEl || !badge) return;
+  function fmt(s) {{
+    s = Math.max(0, Math.floor(s));
+    if (s < 60) return s + 's ago';
+    var m = Math.floor(s / 60);
+    if (m < 60) return m + 'm ago';
+    var h = Math.floor(m / 60);
+    return h + 'h ' + (m % 60) + 'm ago';
+  }}
+  function tick() {{
+    var age = (Date.now() - RENDER_EPOCH) / 1000;
+    ageEl.textContent = fmt(age);
+    badge.classList.remove('age-warn', 'age-crit');
+    if (age > 900) badge.classList.add('age-crit');
+    else if (age > 300) badge.classList.add('age-warn');
+  }}
+  tick();
+  setInterval(tick, 1000);
+}})();
+</script>
 '''
         + '\n</body></html>\n'
     )
