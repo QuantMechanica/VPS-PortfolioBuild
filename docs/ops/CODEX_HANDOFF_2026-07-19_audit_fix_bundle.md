@@ -74,6 +74,26 @@ deleted per manifest `scratchpad\retention\TIER1_deletion_manifest.csv`).
     fix — if any surface displays Codex hour_pct it has been mislabeled since
     07-12; check `health.py` / `render_cockpit.py` consumers.
 
+## P1.11 — OWNER directive 2026-07-19 evening (news-source architecture)
+
+OWNER (verbatim intent): live EAs must source news events from the native
+MetaTrader calendar or ForexFactory THEMSELVES — no dependency on scripted CSV
+jobs — and must function independently of this VPS environment.
+
+Current state: live decisions already use ONLY the native MT5 calendar (verified:
+NEWS_LIVE_CALENDAR_SELFTEST healthy, 253-257 events/7d on T_Live). BUT
+QM_NewsInit still REQUIRES the CSV files (hardcoded D:\QM\data\news_calendar,
+mtime-stale + zero-rows gates) even outside the tester — a live EA deployed on a
+foreign machine would fail init over a file it never uses.
+
+Change: outside MQL_TESTER, drop the CSV requirement entirely (no file-presence,
+no stale gate); the live health gate is the native-calendar selftest (keep
+fail-closed only when a news axis is ACTIVE and the native calendar is empty).
+Inside the tester the CSV remains the news source (MT5 tester has no native
+calendar — structural limitation), maintained by your refresh v2. Touches
+QM_Common.mqh:179-205 + QM_NewsFilter init path; framework include change ->
+coordinate the recompile wave (admits recompile before next session).
+
 ## Still with Claude (not yours)
 
 - Category-C review/landing (55 DXZ/FTMO requal code paths, board-advisor lane).
