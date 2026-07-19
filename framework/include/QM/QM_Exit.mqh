@@ -311,7 +311,11 @@ bool QM_Exit(const ulong ticket, const QM_ExitReason reason, const double partia
       return false;
      }
 
-   const string effective_reason = is_partial ? QM_ExitReasonToString(QM_EXIT_PARTIAL) : QM_ExitReasonToString(reason);
+   // 2026-07-20 framework audit: keep the caller's TRUE reason on partial
+   // closes — "partial":true already marks the scale-out, and overwriting the
+   // reason with PARTIAL mis-buckets every scale-out in exit analytics.
+   // requested_reason stays for consumers written against the old schema.
+   const string effective_reason = QM_ExitReasonToString(reason);
    QM_LogEvent(QM_INFO,
                "EXIT",
                StringFormat("{\"ticket\":%I64u,\"symbol\":\"%s\",\"reason\":\"%s\",\"requested_reason\":\"%s\",\"partial\":%s,\"requested_lots\":%.8f,\"closed_lots\":%.8f,\"remaining_lots_est\":%.8f,\"retcode\":%u,\"order\":%I64u,\"deal\":%I64u}",

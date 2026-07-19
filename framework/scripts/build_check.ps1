@@ -225,7 +225,7 @@ function Invoke-CompileGate {
             }
 
             if ($allow.exists -and $unexpected.Count -eq 0) {
-                Add-Warning "BUILD_CHECK_WARNINGS_WAIVED: $target has $warnings warning(s) allowed by $($allow.path). CEO+CTO sign-off is required by V5 policy."
+                Add-Warning "BUILD_CHECK_WARNINGS_WAIVED: $target has $warnings warning(s) allowed by $($allow.path). OWNER sign-off is required by V5 policy."
             } elseif ($allow.exists -and $unexpected.Count -gt 0) {
                 $codesText = ($unexpected | Select-Object -Unique | Sort-Object | ForEach-Object { $_.ToString() }) -join ","
                 Add-Failure "BUILD_CHECK_STRICT_WARNINGS: $target has non-allowlisted warning codes: $codesText."
