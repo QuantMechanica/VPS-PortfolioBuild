@@ -23,6 +23,7 @@ The 10 invariants below cover every silent failure we hit overnight
 
 from __future__ import annotations
 
+import csv
 import datetime as dt
 import json
 import os
@@ -1593,6 +1594,124 @@ def chk_stranded_ea_improvements() -> dict:
                   "Register the improved slug (active) in magic_numbers.csv or remove the un-promoted dir (DL-069).")
 
 
+def _normalized_registry_ea_id(value: object) -> str:
+    text = str(value or "").strip().upper()
+    if text.startswith("QM5_"):
+        text = text[4:]
+    return text if text.isdigit() else ""
+
+
+def chk_ea_id_slug_uniqueness(repo_root: Path | None = None) -> dict:
+    """Enforce one numeric EA ID -> at most one distinct active slug.
+
+    A duplicate is FAIL only when at least two slugs are fully materialized:
+    each has both active magic rows and its exact ``QM5_<id>_<slug>`` directory.
+    Registry-only duplicates remain WARN because the resolver cannot build them,
+    but they still represent ambiguous ownership that should be retired.
+    """
+
+    root = repo_root or REPO_ROOT
+    registry = root / "framework" / "registry" / "ea_id_registry.csv"
+    magics = root / "framework" / "registry" / "magic_numbers.csv"
+    eas_dir = root / "framework" / "EAs"
+    if not registry.is_file():
+        return _check(
+            "ea_id_slug_uniqueness",
+            "WARN",
+            None,
+            0,
+            f"registry missing: {registry}",
+            "check framework/registry/ea_id_registry.csv",
+        )
+
+    active_registry: dict[str, set[str]] = {}
+    with registry.open(encoding="utf-8-sig", newline="") as handle:
+        for row in csv.DictReader(handle):
+            if str(row.get("status") or "").strip().lower() != "active":
+                continue
+            ea_id = _normalized_registry_ea_id(row.get("ea_id"))
+            slug = str(row.get("slug") or "").strip().lower()
+            if ea_id and slug:
+                active_registry.setdefault(ea_id, set()).add(slug)
+
+    active_magics: dict[str, set[str]] = {}
+    if magics.is_file():
+        with magics.open(encoding="utf-8-sig", newline="") as handle:
+            for row in csv.DictReader(handle):
+                if str(row.get("status") or "").strip().lower() != "active":
+                    continue
+                ea_id = _normalized_registry_ea_id(row.get("ea_id"))
+                slug = str(row.get("ea_slug") or "").strip().lower()
+                if ea_id and slug:
+                    active_magics.setdefault(ea_id, set()).add(slug)
+
+    on_disk: dict[str, set[str]] = {}
+    if eas_dir.is_dir():
+        for path in eas_dir.iterdir():
+            if not path.is_dir():
+                continue
+            match = re.fullmatch(r"QM5_(\d+)_(.+)", path.name, flags=re.IGNORECASE)
+            if not match:
+                continue
+            ea_id = _normalized_registry_ea_id(match.group(1))
+            slug = match.group(2).strip().lower()
+            if ea_id and slug:
+                on_disk.setdefault(ea_id, set()).add(slug)
+
+    duplicates = {
+        ea_id: slugs for ea_id, slugs in active_registry.items() if len(slugs) > 1
+    }
+    if not duplicates:
+        return _check(
+            "ea_id_slug_uniqueness",
+            "OK",
+            0,
+            0,
+            "every active numeric ea_id maps to at most one distinct active slug",
+            "",
+        )
+
+    live: list[str] = []
+    orphaned: list[str] = []
+    for ea_id in sorted(duplicates, key=lambda value: (int(value), value)):
+        slugs = duplicates[ea_id]
+        materialized = (
+            slugs
+            & active_magics.get(ea_id, set())
+            & on_disk.get(ea_id, set())
+        )
+        rendered = f"{ea_id}:{sorted(slugs)}"
+        if len(materialized) >= 2:
+            live.append(f"{rendered} materialized={sorted(materialized)}")
+        else:
+            orphaned.append(rendered)
+
+    if live:
+        orphan_note = (
+            f"; plus {len(orphaned)} registry-only duplicate(s)"
+            if orphaned
+            else ""
+        )
+        return _check(
+            "ea_id_slug_uniqueness",
+            "FAIL",
+            len(live),
+            0,
+            "live dual-slug EA ID collision(s): " + "; ".join(live) + orphan_note,
+            "Re-key one fully materialized slug to a freshly reserved ea_id, then "
+            "regenerate QM_MagicResolver.mqh before compiling.",
+        )
+
+    return _check(
+        "ea_id_slug_uniqueness",
+        "WARN",
+        len(orphaned),
+        0,
+        "registry-only duplicate active ea_id row(s): " + "; ".join(orphaned),
+        "Retire orphan duplicate registry rows; no current dual-magic/on-disk collision.",
+    )
+
+
 _LSM_HEALTH_FILE = Path(r"D:\QM\reports\state\lsm_health.json")
 
 
@@ -1642,6 +1761,7 @@ def chk_lsm_session_health() -> dict:
 
 
 ALL_CHECKS = [
+    ("ea_id_slug_uniqueness", chk_ea_id_slug_uniqueness, False),
     ("stranded_ea_improvements", chk_stranded_ea_improvements, False),
     ("codex_review_fail_rate", chk_codex_review_fail_rate, True),  # needs con
     ("cards_ready_stagnation", chk_cards_ready_stagnation, True),
