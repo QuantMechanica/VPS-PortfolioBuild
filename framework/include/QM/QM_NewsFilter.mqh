@@ -612,6 +612,27 @@ bool QM_NewsInit(const string base_dir = "D:\\QM\\data\\news_calendar",
    // doesn't pay the one-time sort cost (~50ms for 95k events).
    QM_NewsBuildUtcIndex();
 
+   // Content coverage is advisory outside the tester. File mtime proves only
+   // that a refresh job touched the seeds, not that near-future events exist.
+   // Live decisions use the native MT5 calendar, so a CSV content gap must not
+   // brick EA initialization.
+   if(!MQLInfoInteger(MQL_TESTER))
+     {
+      const int coverage_rows = ArraySize(g_qm_news_events);
+      const datetime coverage_newest =
+         (coverage_rows > 0 ? g_qm_news_events[coverage_rows - 1].event_utc : 0);
+      const datetime coverage_required = TimeGMT() + (2 * 24 * 3600);
+      if(coverage_newest < coverage_required)
+        {
+         string coverage_payload = StringFormat(
+            "{\"newest_utc\":\"%s\",\"required_utc\":\"%s\",\"rows\":%d}",
+            TimeToString(coverage_newest, TIME_DATE | TIME_SECONDS),
+            TimeToString(coverage_required, TIME_DATE | TIME_SECONDS),
+            coverage_rows);
+         QM_LogEvent(QM_WARN, "NEWS_CALENDAR_COVERAGE_GAP", coverage_payload);
+        }
+     }
+
    g_qm_news_available = true;
    return true;
   }
