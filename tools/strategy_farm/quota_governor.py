@@ -57,6 +57,10 @@ ON_DIFF = 12.0          # start throttling when used% exceeds linear pace by >=1
 OFF_DIFF = 4.0          # release only once back within +4 pts of linear pace (hysteresis)
 HARD_CEIL_PCT = 90.0    # absolute weekly safety: throttle regardless of pace
 STALE_MINUTES = 25      # if snapshot older than this, make NO new decision
+SKIP_STREAK_WARN = 8    # consecutive unavailable-metrics cycles (~2h @ 15min) before
+                         # escalating to a WARNING log line a future meta-monitor can grep
+
+CODEX_WEEK_WINDOW_SECONDS = 604800  # matches quota_pull.py._pick_rate_windows
 
 
 def _now() -> dt.datetime:
@@ -86,6 +90,33 @@ def _parse_iso(s: str | None) -> dt.datetime | None:
         return None
 
 
+def _codex_weekly_window(rl: dict) -> dict:
+    """Pick the weekly window out of a Codex raw.rate_limit block.
+
+    The vendor API has been observed in two shapes:
+      - legacy  (<=2026-07-12): primary_window=5h,             secondary_window=weekly(604800s)
+      - current (>=2026-07-12): primary_window=weekly(604800s), secondary_window=null
+    Selecting weekly purely by key name (secondary_window) silently breaks whenever the
+    vendor reassigns which key carries the weekly figures -- this happened 2026-07-12 and
+    produced 660+ consecutive "metrics unavailable" governor cycles (Codex spend unsteered
+    since 2026-07-12T18:38Z). Select the window whose OWN limit_window_seconds==604800
+    (shape-independent, mirrors quota_pull.py._pick_rate_windows); fall back to the legacy
+    secondary_window=weekly assumption if neither window carries the tag.
+    """
+    windows: dict[str, dict] = {}
+    for key in ("primary_window", "secondary_window"):
+        w = rl.get(key)
+        if isinstance(w, dict):
+            windows[key] = w
+    weekly_key = next(
+        (k for k, w in windows.items() if w.get("limit_window_seconds") == CODEX_WEEK_WINDOW_SECONDS),
+        None,
+    )
+    if weekly_key is None:
+        weekly_key = "secondary_window" if "secondary_window" in windows else None
+    return windows.get(weekly_key, {}) if weekly_key else {}
+
+
 def _agent_metrics(snap: dict, agent: str) -> dict | None:
     """Return {used_pct, elapsed_pct, diff, projected, week_reset} or None."""
     node = (snap.get(agent) or {}).get("data") or {}
@@ -102,7 +133,7 @@ def _agent_metrics(snap: dict, agent: str) -> dict | None:
     # precise weekly reset time: prefer raw epoch/iso, fall back to structured string
     reset_dt: dt.datetime | None = None
     if agent == "codex":
-        rl = (raw.get("rate_limit") or {}).get("secondary_window") or {}
+        rl = _codex_weekly_window(raw.get("rate_limit") or {})
         epoch = rl.get("reset_at")
         if epoch:
             reset_dt = dt.datetime.fromtimestamp(float(epoch), dt.timezone.utc)
@@ -175,9 +206,20 @@ def main() -> int:
     decisions: dict = {}
     for agent, flag in FLAGS.items():
         m = _agent_metrics(snap, agent)
+        prev_agent_state = prev.get("agents", {}).get(agent, {}) or {}
         if m is None:
-            _log(f"{agent}: metrics unavailable — skip")
-            out["agents"][agent] = {"error": "metrics_unavailable"}
+            streak = int(prev_agent_state.get("skip_streak", 0) or 0) + 1
+            first_unavailable = prev_agent_state.get("first_unavailable_at") or out["ts"]
+            _log(f"{agent}: metrics unavailable — skip (streak={streak})")
+            if streak >= SKIP_STREAK_WARN:
+                _log(f"WARNING: {agent} metrics unavailable for {streak} consecutive "
+                     f"cycles (since {first_unavailable}) — quota governor is NOT "
+                     f"steering this agent's spend; check quota_pull.py snapshot shape")
+            out["agents"][agent] = {
+                "error": "metrics_unavailable",
+                "skip_streak": streak,
+                "first_unavailable_at": first_unavailable,
+            }
             continue
         flag_exists = flag.exists()
         owned = bool((prev.get("agents", {}).get(agent, {}) or {}).get("owned", False))

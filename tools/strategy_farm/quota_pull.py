@@ -8,7 +8,11 @@ pages call, using the OAuth tokens the CLIs already store on disk:
   Codex : GET https://chatgpt.com/backend-api/codex/usage
           Authorization: Bearer <C:/Users/Administrator/.codex/auth.json tokens.access_token>
           chatgpt-account-id: <tokens.account_id>
-          -> rate_limit.primary_window.used_percent (5h), secondary_window (weekly)
+          -> rate_limit.{primary_window,secondary_window}, ONE of which is the weekly
+             figure (limit_window_seconds==604800) -- selected by _pick_rate_windows(),
+             NOT by a fixed key name. The vendor reassigned which key carries weekly
+             data on 2026-07-12 (was secondary_window, now primary_window with
+             secondary_window=null); a fixed-key read silently breaks on the next swap.
 
   Claude: GET https://api.anthropic.com/api/oauth/usage
           Authorization: Bearer <~/.claude/.credentials.json claudeAiOauth.accessToken>
@@ -99,6 +103,43 @@ def _fmt_reset_iso(iso: str | None) -> str | None:
         return iso
 
 
+WEEK_WINDOW_SECONDS = 604800  # 7 days; identifies the WEEKLY rate_limit window by its
+                               # own limit_window_seconds tag, independent of which JSON
+                               # key (primary_window/secondary_window) the vendor API
+                               # currently assigns it to.
+
+
+def _pick_rate_windows(rl: dict) -> tuple[dict, dict]:
+    """Split a Codex rate_limit block into (weekly_window, hourly_window).
+
+    The vendor API has been observed in two shapes:
+      - legacy  (<=2026-07-12): primary_window=5h,             secondary_window=weekly(604800s)
+      - current (>=2026-07-12): primary_window=weekly(604800s), secondary_window=null
+    Selecting weekly purely by key name (secondary_window) silently breaks when the
+    vendor reassigns which key carries the weekly figures -- this happened 2026-07-12
+    and produced 660+ consecutive "metrics unavailable" governor cycles. Instead,
+    select the window whose OWN limit_window_seconds==604800 (shape-independent);
+    whatever window is left over is treated as the short/hourly window. Falls back to
+    the legacy secondary_window=weekly assumption if neither window carries the tag
+    (e.g. both null / pre-tag API version).
+    """
+    windows: dict[str, dict] = {}
+    for key in ("primary_window", "secondary_window"):
+        w = rl.get(key)
+        if isinstance(w, dict):
+            windows[key] = w
+    weekly_key = next(
+        (k for k, w in windows.items() if w.get("limit_window_seconds") == WEEK_WINDOW_SECONDS),
+        None,
+    )
+    if weekly_key is None:
+        weekly_key = "secondary_window" if "secondary_window" in windows else None
+    weekly = windows.get(weekly_key, {}) if weekly_key else {}
+    hourly_key = next((k for k in windows if k != weekly_key), None)
+    hourly = windows.get(hourly_key, {}) if hourly_key else {}
+    return weekly, hourly
+
+
 def pull_codex() -> dict:
     auth = json.loads(CODEX_AUTH.read_text(encoding="utf-8"))["tokens"]
     headers = {
@@ -110,13 +151,12 @@ def pull_codex() -> dict:
     }
     raw = _http_json(CODEX_USAGE_URL, headers)
     rl = raw.get("rate_limit") or {}
-    prim = rl.get("primary_window") or {}
-    sec = rl.get("secondary_window") or {}
+    weekly, hourly = _pick_rate_windows(rl)
     structured = {
-        "hour_pct": prim.get("used_percent"),
-        "week_pct": sec.get("used_percent"),
-        "hour_reset": _fmt_reset_epoch(prim.get("reset_at")),
-        "week_reset": _fmt_reset_epoch(sec.get("reset_at")),
+        "hour_pct": hourly.get("used_percent"),
+        "week_pct": weekly.get("used_percent"),
+        "hour_reset": _fmt_reset_epoch(hourly.get("reset_at")),
+        "week_reset": _fmt_reset_epoch(weekly.get("reset_at")),
         "plan": raw.get("plan_type"),
         "limit_reached": rl.get("limit_reached"),
     }
