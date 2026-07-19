@@ -228,8 +228,8 @@
   "compiled_source_snapshot_exceptions": [
     {
       "path": "framework/include/QM/QM_MagicResolver.mqh",
-      "compiled_git_blob_sha1": "5dd52ece69ffe2c86135a30f5044899b0c080e8e",
-      "compiled_sha256": "0c1dade22f9427d881f121f9b8a9dca1e5f38204d661a439b415aeba501157be",
+      "compiled_git_blob_sha1": "38c08b206c163742de99d029c096ce97f0fb90de",
+      "compiled_sha256": "148f7d0d1b85ca87a57ebb86c4ab5fe845aa89f9b632cce9cb2615705094f247",
       "policy": "EXACT_COMPILED_PREFIX_PLUS_COLLISION_FREE_FOREIGN_EA_APPEND_ONLY",
       "target_ea_id": 20009,
       "target_rows": [
@@ -335,42 +335,42 @@
   "evidence_artifacts": [
     {
       "id": "ea_binary",
-      "path": "D:/QM/reports/dev1/build/compile/20260719T225606Z_234d03cd92fa45a38dce49d8e5e816f9/stage/QM5_20009_ict-liquidity-portfolio.ex5",
+      "path": "D:/QM/reports/dev1/build/compile/20260719T230541Z_3b4fd3072da843a38b025cca5e3a8ff1/stage/QM5_20009_ict-liquidity-portfolio.ex5",
       "validation": "NONEMPTY",
-      "expected_sha256": "280316d66ce770f8b03a229e739f79897dd6d7645067f58ae13f5cf9891b31b5",
+      "expected_sha256": "ddbc31e8eb1ecfc383362a735004fe46baa895ef6589f63d7d0e33a88f3e2f0e",
       "equality_group": "EA_BINARY"
     },
     {
       "id": "ea_binary_repo",
       "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/QM5_20009_ict-liquidity-portfolio.ex5",
       "validation": "NONEMPTY",
-      "expected_sha256": "280316d66ce770f8b03a229e739f79897dd6d7645067f58ae13f5cf9891b31b5",
+      "expected_sha256": "ddbc31e8eb1ecfc383362a735004fe46baa895ef6589f63d7d0e33a88f3e2f0e",
       "equality_group": "EA_BINARY"
     },
     {
       "id": "compile_evidence",
-      "path": "D:/QM/reports/dev1/build/compile/20260719T225606Z_234d03cd92fa45a38dce49d8e5e816f9/evidence.json",
+      "path": "D:/QM/reports/dev1/build/compile/20260719T230541Z_3b4fd3072da843a38b025cca5e3a8ff1/evidence.json",
       "validation": "COMPILE_EVIDENCE_PASS",
-      "expected_sha256": "850116269b9001e54e8e26fc6b6a28339c1a76cf3df988ecce03e865a75b5d03"
+      "expected_sha256": "a33ab5164e1c5d8ffecb1351925964b4d1ade198424eb19440cfda2eb8515738"
     },
     {
       "id": "compiler_log",
-      "path": "D:/QM/reports/dev1/build/compile/20260719T225606Z_234d03cd92fa45a38dce49d8e5e816f9/QM5_20009_ict-liquidity-portfolio.compile.log",
+      "path": "D:/QM/reports/dev1/build/compile/20260719T230541Z_3b4fd3072da843a38b025cca5e3a8ff1/QM5_20009_ict-liquidity-portfolio.compile.log",
       "validation": "METAEDITOR_ZERO_ERRORS_ZERO_WARNINGS"
     },
     {
       "id": "compile_include_path_audit",
-      "path": "D:/QM/reports/dev1/build/compile/20260719T225606Z_234d03cd92fa45a38dce49d8e5e816f9/include_path_audit.csv",
+      "path": "D:/QM/reports/dev1/build/compile/20260719T230541Z_3b4fd3072da843a38b025cca5e3a8ff1/include_path_audit.csv",
       "validation": "INCLUDE_PATH_AUDIT_ALL_ALLOWED"
     },
     {
       "id": "compile_include_sync_manifest",
-      "path": "D:/QM/reports/dev1/build/compile/20260719T225606Z_234d03cd92fa45a38dce49d8e5e816f9/include_sync_manifest.csv",
+      "path": "D:/QM/reports/dev1/build/compile/20260719T230541Z_3b4fd3072da843a38b025cca5e3a8ff1/include_sync_manifest.csv",
       "validation": "NONEMPTY"
     },
     {
       "id": "compile_source_manifest",
-      "path": "D:/QM/reports/dev1/build/compile/20260719T225606Z_234d03cd92fa45a38dce49d8e5e816f9/source_manifest.csv",
+      "path": "D:/QM/reports/dev1/build/compile/20260719T230541Z_3b4fd3072da843a38b025cca5e3a8ff1/source_manifest.csv",
       "validation": "NONEMPTY"
     },
     {

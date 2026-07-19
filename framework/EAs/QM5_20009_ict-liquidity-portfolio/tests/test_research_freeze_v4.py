@@ -365,13 +365,13 @@ def test_missing_evidence_fails_before_generation() -> None:
 def test_final_compile_provisioning_and_slippage_evidence_hashes_are_pinned() -> None:
     artifacts = {row["id"]: row for row in protocol()["evidence_artifacts"]}
     assert artifacts["ea_binary"]["expected_sha256"] == (
-        "280316d66ce770f8b03a229e739f79897dd6d7645067f58ae13f5cf9891b31b5"
+        "ddbc31e8eb1ecfc383362a735004fe46baa895ef6589f63d7d0e33a88f3e2f0e"
     )
     assert artifacts["ea_binary_repo"]["expected_sha256"] == artifacts["ea_binary"][
         "expected_sha256"
     ]
     assert artifacts["compile_evidence"]["expected_sha256"] == (
-        "850116269b9001e54e8e26fc6b6a28339c1a76cf3df988ecce03e865a75b5d03"
+        "a33ab5164e1c5d8ffecb1351925964b4d1ade198424eb19440cfda2eb8515738"
     )
     assert artifacts["provisioning_tick_hash_manifest"]["expected_sha256"] == (
         "65cb423348fbe1e5f04d99d9594bef80ed303ec52f6d8ad0d225fa86e4d1235c"

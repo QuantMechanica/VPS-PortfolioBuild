@@ -7,13 +7,13 @@
 ; sleeve: index
 ; variant: pivot_high
 ; changed_parameter: strategy_a_pivot_wing
-; freeze_inputs_sha256: 810a93ecee6de44bd11b20d571252d037278c532ff96d077f57ee68551f4c614
+; freeze_inputs_sha256: 6bb061324dbafce94da7a26e7ff9c9a9288f39f67707a5b9e403a62c66ecdb38
 ; ea_sha256: eb651fa13a7b19804815c4c65d39bb926906bc949bf9093d2e28520c1a1544a2
 ; rules_sha256: 8bbe64c2b6f7c98576f687c5beb312dc673d7dd710dfdedf969204a093e2b1cb
 ; contract_sha256: 5076797db39119b67ad98af07a9e262212ffad50d2ae166ad9556ed02e132cdc
-; protocol_sha256: ae983db19272a9cc229aaa17eb00db4e5adf42052794fb52788dab2d27bc780e
-; generator_sha256: 01e217db7bac465e99d5320109290740bbcb398737d1bea6d2ade8590efbdbf2
-; ex5_sha256: 280316d66ce770f8b03a229e739f79897dd6d7645067f58ae13f5cf9891b31b5
+; protocol_sha256: 3fbc28c5c5cf95c7563794fafe5c9eba01e3e8df6c5b39a2f27296da1c31e5a2
+; generator_sha256: 94c4e6f0603fd6c0471c039fd50e304532883e84c225587ab708f400d39f5f55
+; ex5_sha256: ddbc31e8eb1ecfc383362a735004fe46baa895ef6589f63d7d0e33a88f3e2f0e
 ;==========================================================
 qm_ea_id=20009
 qm_magic_slot_offset=1

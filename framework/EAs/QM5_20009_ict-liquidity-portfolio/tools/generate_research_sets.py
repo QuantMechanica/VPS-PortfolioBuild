@@ -47,8 +47,8 @@ TARGET_MAGIC_ROWS = (
 )
 EXPECTED_MAGIC_EXCEPTION = {
     "path": MAGIC_RESOLVER_PATH,
-    "compiled_git_blob_sha1": "5dd52ece69ffe2c86135a30f5044899b0c080e8e",
-    "compiled_sha256": "0c1dade22f9427d881f121f9b8a9dca1e5f38204d661a439b415aeba501157be",
+    "compiled_git_blob_sha1": "38c08b206c163742de99d029c096ce97f0fb90de",
+    "compiled_sha256": "148f7d0d1b85ca87a57ebb86c4ab5fe845aa89f9b632cce9cb2615705094f247",
     "policy": "EXACT_COMPILED_PREFIX_PLUS_COLLISION_FREE_FOREIGN_EA_APPEND_ONLY",
     "target_ea_id": 20009,
     "target_rows": [list(row) for row in TARGET_MAGIC_ROWS],
