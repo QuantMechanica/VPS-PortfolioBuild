@@ -900,7 +900,11 @@ def prebuild_validate_card(root: Path, card_path: Path, fm: dict[str, Any]) -> d
 
     if fm.get("g0_status") != "APPROVED":
         errors.append(f"g0_status_not_approved:{fm.get('g0_status')!r}")
-    for key in ("r1_track_record", "r2_mechanical", "r3_data_available", "r4_ml_forbidden"):
+    # DL-082 (2026-07-19): r1 (source/track-record) is a TIER, not a gate — the
+    # deterministic pipeline is the real validator. r2/r3/r4 stay strict PASS.
+    if str(fm.get("r1_track_record") or "").upper() not in ("PASS", "TIER_A", "TIER_B", "TIER_C"):
+        errors.append(f"r1_track_record_untiered:{fm.get('r1_track_record')!r}")
+    for key in ("r2_mechanical", "r3_data_available", "r4_ml_forbidden"):
         if str(fm.get(key) or "").upper() != "PASS":
             errors.append(f"{key}_not_PASS:{fm.get(key)!r}")
     try:
@@ -7181,7 +7185,14 @@ def _verify_card_body_coverage(card_path: Path) -> dict[str, Any]:
     text = card_path.read_text(encoding="utf-8", errors="ignore")
     _, body = _card_frontmatter_block(text)
     missing: list[str] = []
-    if not re.search(r"(19|20)\d{2}.*(Journal|DOI|doi|SSRN|arXiv|Harriman|Wiley|Springer|URL|http)", body, re.I | re.S):
+    # DL-082 (2026-07-19): scholarly citation no longer mandatory — any explicit
+    # source/rationale line qualifies (tier recorded separately; pipeline is the
+    # real validator). Mechanical completeness checks below stay strict.
+    if not re.search(
+        r"(19|20)\d{2}.*(Journal|DOI|doi|SSRN|arXiv|Harriman|Wiley|Springer|URL|http)"
+        r"|source_citation|Source|Quelle|https?://",
+        body, re.I | re.S,
+    ):
         missing.append("source_citation")
     if not re.search(r"\bEntry\b", body, re.I):
         missing.append("entry")
