@@ -4,7 +4,7 @@ source_id: FTMO_V3_ROLE3_SOURCING_2026-07-19
 ea_id: QM5_20006
 slug: spx-intraday-mom
 type: strategy
-status: DRAFT
+status: APPROVED
 source_citation: "Gao, Lei; Han, Yufeng; Li, Sophia Zhengzi; Zhou, Guofu. (2018). Market intraday momentum. Journal of Financial Economics 129(2), 394-414. DOI 10.1016/j.jfineco.2018.05.009. Net-of-cost replication: Zarattini/Aziz/Barbon (2024), SFI Research Paper N 24-97, SSRN 4824172. Theory: Bogousslavsky (2016), Journal of Finance 71(6), DOI 10.1111/jofi.12480."
 sources:
   - "Gao/Han/Li/Zhou 2018 JFE (DOI 10.1016/j.jfineco.2018.05.009)"
