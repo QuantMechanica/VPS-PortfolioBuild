@@ -6,7 +6,7 @@ Router task: `f1c19271-dbff-4694-a302-327605a59616`
 
 Book: OWNER-deployed DXZ Sunday Final-24
 
-Verdict: **HOLD — blend rule failed OOS; no live export; no weights proposed**
+Verdict: **HOLD scaffold — blend rule failed OOS; no live export; no weights proposed**
 
 ## Outcome
 
@@ -14,7 +14,9 @@ The offline extraction/reweight scaffold is implemented in
 `tools/strategy_farm/portfolio/dxz_live_blend_reweight.py`. It cannot connect to
 MT5, start a terminal, edit presets, apply weights, change `TOTAL_RISK`, or touch
 AutoTrading. It accepts only a frozen account-history export plus provenance
-metadata and produces an OWNER-review package.
+metadata and produces an OWNER-review package. This is a fail-closed evidence
+consumer, not an operational unattended monthly reweighter: the approved deal
+export producer does not yet exist.
 
 The predeclared variance blend did **not** pass the required held-out validation
 on the sealed Final-24 stream basis:
@@ -43,6 +45,11 @@ therefore template-only with zero observed Final-24 sessions and these holds:
 - `NO_SLEEVE_HAS_MINIMUM_LIVE_EVIDENCE`
 - `BLEND_RULE_OOS_FAILED`
 
+The Final-24 evidence clock starts with the first full session on 2026-07-20.
+With the fixed 21-session minimum, 2026-08-16 remains immature; the earliest
+calendar date that can reach the session gate is 2026-08-17. OOS PASS and valid
+live evidence would still be required.
+
 ## Implemented contract
 
 - Inputs are bound to the 24-sleeve manifest, final OWNER decision, deployed
@@ -58,6 +65,8 @@ therefore template-only with zero observed Final-24 sessions and these holds:
 - A real run requires an immutable deal export, metadata sidecar for account
   `4000090541` / server `Darwinex-Live`, a contemporaneous risk schedule, and the
   pinned baseline `input_sha256.csv` from this package.
+- The v1 risk schedule is restricted to one 2026-07-20 regime per Final-24 Magic,
+  exactly matching the deployed manifest and preserving `TOTAL_RISK=9.75`.
 - Evidence eligibility counts closed positions, not IN/OUT deal rows. The fixed
   monthly minimum is 21 sessions; blend alpha is `min(n_sessions / 42, 1)` and
   saturates at 42. The hard sleeve cap is exactly 1.0 and total risk remains
@@ -76,6 +85,9 @@ Canonical package:
 - `oos_validation.json` and `oos_folds.csv` — held-out result and all 78 folds.
 - `input_sha256.csv` — manifest/decision/staging/registry/tool plus 24 stream
   hashes and trade counts; this is the future live-run baseline pin.
+- `invocation_config.json` and `frozen_inputs/` — exact task/commit invocation,
+  source dependencies, registries, decision/staging inputs, and all 24 sealed
+  Q08 streams.
 - `deal_export_contract.json` — required offline export and metadata contract.
 - `manifest_snapshot.json` — exact Final-24 input snapshot.
 - `sleeve_diagnostics.csv` — backtest/live diagnostics; candidate weight and
@@ -83,6 +95,8 @@ Canonical package:
 - `owner_review_template.json` and `total_risk_review_template.md` — empty,
   no-apply OWNER decision shells.
 - `verify.json` — artifact hashes and guardrail invariants.
+- `.gitattributes` — disables line-ending conversion inside the package so the
+  recorded hashes remain byte-stable across Windows worktrees.
 
 ## Verification
 
@@ -127,7 +141,14 @@ needs an OWNER-mediated account-history export and book-level mark-to-market
 equity evidence. Realised close cashflow alone understates open-position drawdown
 and cannot support a risk increase.
 
+Before this can become an operational monthly reweighter, a reviewed offline
+deal exporter must produce the exact UTC window and account/server metadata; the
+live normalization also needs entry-equity or equivalent signed sizing lineage.
+Order setup timestamps and order-specific deployed risk are required for any
+orders created before a weight change. Scenario matrices remain intentionally
+absent while OOS is FAIL.
+
 The roadmap addendum advances extraction v1 to 2026-07-24 and the advisory
-TOTAL_RISK review toward 2026-07-26. Historical 13→23→24 data must not be pooled
+TOTAL_RISK review toward 2026-07-26. Historical 13→15→23→24 data must not be pooled
 under Final-24 weights; it requires a separately reviewed contemporaneous risk
 schedule and composition-aware evidence cut.
