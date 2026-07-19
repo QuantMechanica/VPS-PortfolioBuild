@@ -299,18 +299,21 @@
       "id": "ea_binary",
       "path": "D:/QM/reports/dev1/build/compile/20260719T193732Z_d4d06b373ceb4fc897e9dba9e80a6e9d/stage/QM5_20009_ict-liquidity-portfolio.ex5",
       "validation": "NONEMPTY",
+      "expected_sha256": "aa3c5eed93e9a7d37a935cde6c8801c82520ecb97fe9ce91547d13cbe0b54222",
       "equality_group": "EA_BINARY"
     },
     {
       "id": "ea_binary_repo",
       "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/QM5_20009_ict-liquidity-portfolio.ex5",
       "validation": "NONEMPTY",
+      "expected_sha256": "aa3c5eed93e9a7d37a935cde6c8801c82520ecb97fe9ce91547d13cbe0b54222",
       "equality_group": "EA_BINARY"
     },
     {
       "id": "compile_evidence",
       "path": "D:/QM/reports/dev1/build/compile/20260719T193732Z_d4d06b373ceb4fc897e9dba9e80a6e9d/evidence.json",
-      "validation": "COMPILE_EVIDENCE_PASS"
+      "validation": "COMPILE_EVIDENCE_PASS",
+      "expected_sha256": "8ae13d89fc4f7f12984fd61d9556c970b1732565d9a76532ae790eaf658b3978"
     },
     {
       "id": "compiler_log",
@@ -347,7 +350,8 @@
     {
       "id": "provisioning_tick_hash_manifest",
       "path": "D:/QM/reports/dev1/provisioning/20260719/source_destination_sha256.csv",
-      "validation": "PROVISIONING_HASH_MANIFEST_ALL_MATCH"
+      "validation": "PROVISIONING_HASH_MANIFEST_ALL_MATCH",
+      "expected_sha256": "65cb423348fbe1e5f04d99d9594bef80ed303ec52f6d8ad0d225fa86e4d1235c"
     },
     {
       "id": "symbol_provisioning_registry",
@@ -401,7 +405,8 @@
     {
       "id": "slippage_livefill_ledger",
       "path": "D:/QM/reports/state/slippage_ledger_v1.json",
-      "validation": "NONEMPTY"
+      "validation": "NONEMPTY",
+      "expected_sha256": "722db3646826dd793d905bad1ae4efe9ed859286255ae2907837a18da329fa90"
     },
     {
       "id": "tester_defaults",

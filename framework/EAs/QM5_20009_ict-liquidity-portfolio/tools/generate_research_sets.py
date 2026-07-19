@@ -593,13 +593,20 @@ def evidence_hashes(
             raise FreezeError(f"mandatory evidence artifact missing: {artifact_id}: {path}")
         validation = str(artifact.get("validation", "NONEMPTY"))
         _validate_artifact_payload(artifact_id, validation, path)
+        digest = sha256_file(path)
+        if "expected_sha256" in artifact:
+            expected_digest = str(artifact["expected_sha256"]).lower()
+            if not SHA256_RE.fullmatch(expected_digest) or digest != expected_digest:
+                raise FreezeError(f"mandatory evidence artifact hash mismatch: {artifact_id}: {path}")
         row: dict[str, object] = {
             "id": artifact_id,
             "path": _manifest_path(path, declared, overridden),
             "size": path.stat().st_size,
-            "sha256": sha256_file(path),
+            "sha256": digest,
             "validation": validation,
         }
+        if "expected_sha256" in artifact:
+            row["expected_sha256"] = str(artifact["expected_sha256"]).lower()
         if "version" in artifact:
             row["version"] = artifact["version"]
         if "equality_group" in artifact:

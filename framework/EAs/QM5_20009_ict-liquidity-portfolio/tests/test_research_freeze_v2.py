@@ -342,6 +342,25 @@ def test_missing_evidence_fails_before_generation() -> None:
         freeze.evidence_hashes(payload)
 
 
+def test_final_compile_provisioning_and_slippage_evidence_hashes_are_pinned() -> None:
+    artifacts = {row["id"]: row for row in protocol()["evidence_artifacts"]}
+    assert artifacts["ea_binary"]["expected_sha256"] == (
+        "aa3c5eed93e9a7d37a935cde6c8801c82520ecb97fe9ce91547d13cbe0b54222"
+    )
+    assert artifacts["ea_binary_repo"]["expected_sha256"] == artifacts["ea_binary"][
+        "expected_sha256"
+    ]
+    assert artifacts["compile_evidence"]["expected_sha256"] == (
+        "8ae13d89fc4f7f12984fd61d9556c970b1732565d9a76532ae790eaf658b3978"
+    )
+    assert artifacts["provisioning_tick_hash_manifest"]["expected_sha256"] == (
+        "65cb423348fbe1e5f04d99d9594bef80ed303ec52f6d8ad0d225fa86e4d1235c"
+    )
+    assert artifacts["slippage_livefill_ledger"]["expected_sha256"] == (
+        "722db3646826dd793d905bad1ae4efe9ed859286255ae2907837a18da329fa90"
+    )
+
+
 def test_selected_model4_data_is_rehashed_by_content_pre_and_post(tmp_path: Path) -> None:
     payload = protocol()
     payload["model4_data"]["destination_root"] = str(tmp_path)
