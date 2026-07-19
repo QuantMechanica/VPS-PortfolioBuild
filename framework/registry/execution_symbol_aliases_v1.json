@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "artifact_type": "QM_EXECUTION_SYMBOL_ALIASES",
+  "status": "ACTIVE",
+  "matching": "EXACT_CASE_SENSITIVE_VENUE_ACCOUNT_SERVER_RAW_SYMBOL",
+  "qualification_scope": "VENUE_ACCOUNT_LOGICAL_SYMBOL",
+  "cross_venue_pooling_for_qualification": false,
+  "venues": [
+    {
+      "venue_id": "DXZ_LIVE",
+      "account_id": "4000090541",
+      "server": "Darwinex-Live",
+      "symbols": [
+        {
+          "raw_symbol": "AUDCAD",
+          "logical_symbol": "AUDCAD.DWX"
+        },
+        {
+          "raw_symbol": "AUDUSD",
+          "logical_symbol": "AUDUSD.DWX"
+        },
+        {
+          "raw_symbol": "EURUSD",
+          "logical_symbol": "EURUSD.DWX"
+        },
+        {
+          "raw_symbol": "GBPUSD",
+          "logical_symbol": "GBPUSD.DWX"
+        },
+        {
+          "raw_symbol": "GDAXI",
+          "logical_symbol": "GDAXI.DWX"
+        },
+        {
+          "raw_symbol": "NDX",
+          "logical_symbol": "NDX.DWX"
+        },
+        {
+          "raw_symbol": "SP500",
+          "logical_symbol": "SP500.DWX"
+        },
+        {
+          "raw_symbol": "XAUUSD",
+          "logical_symbol": "XAUUSD.DWX"
+        }
+      ]
+    },
+    {
+      "venue_id": "FTMO_TRIAL",
+      "account_id": "1513845506",
+      "server": "FTMO-Demo",
+      "symbols": [
+        {
+          "raw_symbol": "GBPUSD",
+          "logical_symbol": "GBPUSD.DWX"
+        },
+        {
+          "raw_symbol": "GER40.cash",
+          "logical_symbol": "GDAXI.DWX"
+        },
+        {
+          "raw_symbol": "US100.cash",
+          "logical_symbol": "NDX.DWX"
+        },
+        {
+          "raw_symbol": "USDJPY",
+          "logical_symbol": "USDJPY.DWX"
+        },
+        {
+          "raw_symbol": "USOIL.cash",
+          "logical_symbol": "XTIUSD.DWX"
+        },
+        {
+          "raw_symbol": "XAUUSD",
+          "logical_symbol": "XAUUSD.DWX"
+        }
+      ]
+    }
+  ]
+}
