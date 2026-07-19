@@ -141,7 +141,8 @@
       "allowed_variants": "CENTER_ONLY",
       "duplicates": 2,
       "requires_resolved_cost_axes": true,
-      "epistemic_status": "RETROSPECTIVE_NOT_PRISTINE"
+      "epistemic_status": "RETROSPECTIVE_NOT_PRISTINE",
+      "data_availability": "BLOCKED_MISSING_VERIFIED_MODEL4_TICKS_202605_202606"
     },
     {
       "id": "PROSPECTIVE_OPERATIONAL",
@@ -218,8 +219,8 @@
     "symbol_definition_relative_path": "symbols.custom.dat",
     "history_extension": ".hcc",
     "tick_extension": ".tkc",
-    "frozen_through_month": "202606",
-    "exclude_months": ["202607"],
+    "frozen_through_month": "202604",
+    "exclude_months": ["202605", "202606", "202607"],
     "manifest_match_required": true,
     "preflight_rehash_selected_phase_files": true,
     "postflight_rehash_selected_phase_files": true

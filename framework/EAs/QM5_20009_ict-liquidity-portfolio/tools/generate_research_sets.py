@@ -362,6 +362,10 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
             "RETROSPECTIVE_NOT_PRISTINE"
         ):
             raise FreezeError("retrospective holdout epistemic status drifted")
+        if phase.get("id") == "RETRO_HOLDOUT_2026_H1" and phase.get("data_availability") != (
+            "BLOCKED_MISSING_VERIFIED_MODEL4_TICKS_202605_202606"
+        ):
+            raise FreezeError("retrospective holdout data-availability blocker drifted")
         if phase.get("id") == "PROSPECTIVE_OPERATIONAL" and phase.get("execution_kind") != (
             "FORWARD_ONLY_NOT_RETROSPECTIVE_BACKTEST"
         ):
@@ -410,8 +414,8 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
         "symbol_definition_relative_path": "symbols.custom.dat",
         "history_extension": ".hcc",
         "tick_extension": ".tkc",
-        "frozen_through_month": "202606",
-        "exclude_months": ["202607"],
+        "frozen_through_month": "202604",
+        "exclude_months": ["202605", "202606", "202607"],
         "manifest_match_required": True,
         "preflight_rehash_selected_phase_files": True,
         "postflight_rehash_selected_phase_files": True,

@@ -1,0 +1,292 @@
+from __future__ import annotations
+
+import hashlib
+import json
+import shutil
+import subprocess
+from pathlib import Path
+
+import pytest
+
+
+EA_ROOT = Path(__file__).resolve().parents[1]
+TOOLS = EA_ROOT / "tools"
+LAUNCHER = TOOLS / "run_research_phase.ps1"
+SUPPORT = TOOLS / "research_launcher_support.psm1"
+PWSh = shutil.which("pwsh")
+
+
+def _pwsh(command: str, *arguments: str) -> subprocess.CompletedProcess[str]:
+    if PWSh is None:
+        pytest.skip("PowerShell 7 is required for launcher contract tests")
+    return subprocess.run(
+        [PWSh, "-NoLogo", "-NoProfile", "-NonInteractive", "-Command", command, *arguments],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+
+def _module_command(body: str) -> str:
+    return (
+        "& { param($modulePath, $arg1, $arg2, $arg3) "
+        "Import-Module -Name $modulePath -Force -ErrorAction Stop; "
+        f"{body}" + " }"
+    )
+
+
+def test_launcher_has_one_fixed_terminal_entrypoint_and_pre_post_fences() -> None:
+    text = LAUNCHER.read_text(encoding="utf-8-sig")
+    assert text.startswith("#requires -Version 7.0")
+    assert "framework\\scripts\\run_dev1_smoke.ps1" in text
+    assert "terminal64.exe" not in text
+    assert "metatester64.exe" not in text
+    assert "Start-Process" not in text
+    assert "--receipt', $preReceiptTemporary" in text
+    assert "--postflight-receipt', $preReceiptPath" in text
+    assert text.index("'--receipt', $preReceiptTemporary") < text.index(
+        "Invoke-QmCapturedProcess -FilePath $pwshPath"
+    )
+    assert text.index("Invoke-QmCapturedProcess -FilePath $pwshPath") < text.index(
+        "'--postflight-receipt', $preReceiptPath"
+    )
+
+
+def test_launcher_fixes_tester_cost_and_account_contract() -> None:
+    text = LAUNCHER.read_text(encoding="utf-8-sig")
+    for literal in (
+        "'-EAId', '20009'",
+        "'-MinTrades', '0'",
+        "'-Model', '4'",
+        "'-CommissionPerLot', '0'",
+        "'-CommissionPerSideNative', '0'",
+        "'-TesterCurrencyOverride', 'USD'",
+        "'-TesterDepositOverride', '100000'",
+    ):
+        assert literal in text
+    assert "-AllowMissingRealTicksLogMarker" not in text
+    assert "direct_terminal_start_forbidden = $true" in text
+
+
+def test_launcher_requires_native_report_audit_and_detached_atomic_receipt() -> None:
+    launcher = LAUNCHER.read_text(encoding="utf-8-sig")
+    support = SUPPORT.read_text(encoding="utf-8-sig")
+    assert "audit_mt5_report.py" in launcher
+    assert "--duplicate-report" in launcher
+    assert "Assert-QmCostAudit" in launcher
+    assert "canonical_deal_sequence_sha256" in launcher
+    assert "Write-QmDetachedJsonReceipt" in launcher
+    assert "research_run_receipt.json" in launcher
+    assert "[System.IO.File]::Move($temporary, $full, $true)" in support
+    assert "Flush($true)" in support
+    assert "direct_runner_output_is_not_verdict_evidence = $true" in launcher
+    assert "dev_smoke_may_never_satisfy_verdict_gate" in launcher
+
+
+def test_powershell_sources_parse_without_executing_launcher() -> None:
+    command = (
+        "& { param($first, $second) $bad=@(); foreach($path in @($first,$second)){"
+        "$tokens=$null;$errors=$null;"
+        "[void][System.Management.Automation.Language.Parser]::ParseFile($path,[ref]$tokens,[ref]$errors);"
+        "$bad += @($errors) }; if($bad.Count){$bad|ForEach-Object{$_.Message};exit 2} }"
+    )
+    completed = _pwsh(command, str(LAUNCHER), str(SUPPORT))
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+
+
+def test_contract_helper_separates_nonbinding_smoke_from_binding_dev() -> None:
+    valid = _pwsh(
+        _module_command(
+            "$c=Get-QmResearchContract -Phase DEV_SMOKE_2022 -Symbol NDX.DWX "
+            "-Timeframe M1 -Variant center -FromDate 2022-01-01 -ToDate 2022-12-31 -Runs 1;"
+            "$c|ConvertTo-Json -Compress"
+        ),
+        str(SUPPORT),
+        "unused",
+        "unused",
+        "unused",
+    )
+    assert valid.returncode == 0, valid.stdout + valid.stderr
+    contract = json.loads(valid.stdout)
+    assert contract["binding"] is False
+    assert contract["infrastructure_only"] is True
+    assert contract["runs"] == 1
+
+    invalid = _pwsh(
+        _module_command(
+            "Get-QmResearchContract -Phase DEV -Symbol NDX.DWX -Timeframe M1 "
+            "-Variant center -FromDate 2021-01-01 -ToDate 2022-12-31 -Runs 1"
+        ),
+        str(SUPPORT),
+        "unused",
+        "unused",
+        "unused",
+    )
+    assert invalid.returncode != 0
+    assert "requires exactly two runs" in invalid.stderr + invalid.stdout
+
+
+def _mock_contract(report_dir: Path) -> tuple[dict[str, object], dict[str, object]]:
+    reports: list[dict[str, object]] = []
+    for ordinal in (1, 2):
+        report = report_dir / "raw" / f"run_{ordinal:02d}" / "report.htm"
+        report.parent.mkdir(parents=True)
+        report.write_text("mock", encoding="utf-8")
+        reports.append(
+            {
+                "status": "OK",
+                "real_ticks_marker": True,
+                "report_canonical_path": str(report),
+            }
+        )
+    contract: dict[str, object] = {
+        "phase": "DEV",
+        "symbol": "NDX.DWX",
+        "timeframe": "M1",
+        "kind": "index",
+        "variant": "center",
+        "from": "2021-01-01",
+        "to": "2022-12-31",
+        "runs": 2,
+        "binding": True,
+        "infrastructure_only": False,
+        "requires_resolved_cost_axes": False,
+    }
+    summary: dict[str, object] = {
+        "result": "PASS",
+        "ea_id": 20009,
+        "expert": r"QM\QM5_20009_ict-liquidity-portfolio",
+        "symbol": "NDX.DWX",
+        "terminal": "DEV1",
+        "model": 4,
+        "period": "M1",
+        "requested_runs": 2,
+        "min_trades_required": 0,
+        "deterministic": True,
+        "model4_log_marker_detected": True,
+        "oninit_failure_detected": False,
+        "log_bomb_detected": False,
+        "report_dir": str(report_dir),
+        "commission_group": {
+            "commission_per_lot": 0,
+            "commission_per_side_native": 0,
+            "injected_sha256": "a" * 64,
+            "canonical_sha256": "a" * 64,
+            "restored_sha256": "a" * 64,
+            "restored_to_canonical": True,
+        },
+        "runs": reports,
+    }
+    return contract, summary
+
+
+def test_mocked_summary_requires_model4_and_every_raw_report(tmp_path: Path) -> None:
+    contract, summary = _mock_contract(tmp_path / "report")
+    contract_path = tmp_path / "contract.json"
+    summary_path = tmp_path / "summary.json"
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+    summary_path.write_text(json.dumps(summary), encoding="utf-8")
+    command = _module_command(
+        "$s=Get-Content -Raw -LiteralPath $arg1|ConvertFrom-Json -AsHashtable -DateKind String;"
+        "$c=Get-Content -Raw -LiteralPath $arg2|ConvertFrom-Json -AsHashtable -DateKind String;"
+        "$r=Assert-QmResearchSummary -Summary $s -Contract $c;$r|ConvertTo-Json -Compress"
+    )
+    valid = _pwsh(command, str(SUPPORT), str(summary_path), str(contract_path), "unused")
+    assert valid.returncode == 0, valid.stdout + valid.stderr
+    assert len(json.loads(valid.stdout)["reports"]) == 2
+
+    summary["model4_log_marker_detected"] = False
+    summary_path.write_text(json.dumps(summary), encoding="utf-8")
+    invalid = _pwsh(command, str(SUPPORT), str(summary_path), str(contract_path), "unused")
+    assert invalid.returncode != 0
+    assert "model4_log_marker_detected=true" in invalid.stderr + invalid.stdout
+
+
+def _mock_cost_audit(contract: dict[str, object], report_paths: list[str]) -> tuple[dict, dict]:
+    inputs = {f"input_{index:02d}": str(index) for index in range(33)}
+    inputs.update({"qm_ea_id": "20009", "InpQMSimCommissionPerLot": "0.0"})
+    deal_hash = "b" * 64
+    run_hash = "c" * 64
+    audits = []
+    for report_path in report_paths:
+        audits.append(
+            {
+                "status": "PASS",
+                "report": {"path": report_path},
+                "header": {
+                    "symbol": contract["symbol"],
+                    "timeframe": contract["timeframe"],
+                    "from_date": contract["from"],
+                    "to_date": contract["to"],
+                    "initial_deposit": "100000.00",
+                    "currency": "USD",
+                    "inputs": inputs,
+                },
+                "identity": {
+                    "canonical_deal_sequence_sha256": deal_hash,
+                    "run_fingerprint_sha256": run_hash,
+                },
+                "native_integrity": {
+                    "commission_exactly_zero": True,
+                    "simulated_commission_input_exactly_zero": True,
+                },
+                "metrics": {"closed_positions": 1},
+                "same_day_swap_proof": {"status": "PASS"},
+            }
+        )
+    return (
+        {
+            "artifact_type": "QM5_20009_DEV1_MT5_REPORT_AUDIT_RECEIPT",
+            "status": "PASS",
+            "duplicate_count": 2,
+            "duplicate_fingerprint_check": "PASS",
+            "canonical_deal_sequence_sha256": deal_hash,
+            "run_fingerprint_sha256": run_hash,
+            "reports": audits,
+        },
+        inputs,
+    )
+
+
+def test_mocked_cost_audit_rejects_duplicate_deal_sequence_drift(tmp_path: Path) -> None:
+    contract, summary = _mock_contract(tmp_path / "report")
+    report_paths = [row["report_canonical_path"] for row in summary["runs"]]
+    audit, inputs = _mock_cost_audit(contract, report_paths)
+    contract_path = tmp_path / "contract.json"
+    audit_path = tmp_path / "audit.json"
+    inputs_path = tmp_path / "inputs.json"
+    reports_path = tmp_path / "reports.json"
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+    audit_path.write_text(json.dumps(audit), encoding="utf-8")
+    inputs_path.write_text(json.dumps(inputs), encoding="utf-8")
+    reports_path.write_text(json.dumps(report_paths), encoding="utf-8")
+    command = _module_command(
+        "$a=Get-Content -Raw $arg1|ConvertFrom-Json -AsHashtable -DateKind String;"
+        "$c=Get-Content -Raw $arg2|ConvertFrom-Json -AsHashtable -DateKind String;"
+        "$i=Get-Content -Raw $arg3|ConvertFrom-Json -AsHashtable -DateKind String;"
+        f"$r=Get-Content -Raw '{reports_path}'|ConvertFrom-Json;"
+        "Assert-QmCostAudit -Audit $a -Contract $c -SetInputs $i -ExpectedReports $r"
+    )
+    valid = _pwsh(command, str(SUPPORT), str(audit_path), str(contract_path), str(inputs_path))
+    assert valid.returncode == 0, valid.stdout + valid.stderr
+
+    audit["reports"][1]["identity"]["canonical_deal_sequence_sha256"] = "d" * 64
+    audit_path.write_text(json.dumps(audit), encoding="utf-8")
+    invalid = _pwsh(command, str(SUPPORT), str(audit_path), str(contract_path), str(inputs_path))
+    assert invalid.returncode != 0
+    assert "fingerprint drift" in (invalid.stderr + invalid.stdout).lower()
+
+
+def test_detached_receipt_hash_binds_atomic_json(tmp_path: Path) -> None:
+    receipt = tmp_path / "receipt.json"
+    command = _module_command(
+        "$payload=[ordered]@{schema_version=1;status='PASS';verdict='NOT_ADJUDICATED'};"
+        "$b=Write-QmDetachedJsonReceipt -Path $arg1 -Payload $payload;$b|ConvertTo-Json -Compress"
+    )
+    completed = _pwsh(command, str(SUPPORT), str(receipt), "unused", "unused")
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+    binding = json.loads(completed.stdout)
+    actual = hashlib.sha256(receipt.read_bytes()).hexdigest()
+    assert binding["sha256"] == actual
+    assert Path(f"{receipt}.sha256").read_text(encoding="utf-8").strip() == actual
+

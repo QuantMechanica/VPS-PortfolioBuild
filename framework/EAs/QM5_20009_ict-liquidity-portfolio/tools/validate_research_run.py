@@ -10,7 +10,9 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
+import tempfile
 from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Mapping
@@ -20,6 +22,27 @@ import generate_research_sets as freeze
 
 class FenceError(RuntimeError):
     pass
+
+
+def _write_receipt_atomic(path: Path, payload: Mapping[str, Any]) -> None:
+    path = path.resolve()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    encoded = (json.dumps(payload, indent=2, sort_keys=True) + "\n").encode("utf-8")
+    descriptor, temporary = tempfile.mkstemp(
+        prefix=f".{path.name}.", suffix=".tmp", dir=str(path.parent)
+    )
+    try:
+        with os.fdopen(descriptor, "wb") as handle:
+            handle.write(encoded)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, path)
+    except Exception:
+        try:
+            os.unlink(temporary)
+        except OSError:
+            pass
+        raise
 
 
 def _market(protocol: Mapping[str, Any], symbol: str) -> Mapping[str, Any]:
@@ -74,6 +97,8 @@ def validate_request(
         raise FenceError("run dates must be ISO YYYY-MM-DD") from exc
     if start > end:
         raise FenceError("run start is after run end")
+    if str(phase.get("data_availability", "")).startswith("BLOCKED_"):
+        raise FenceError(f"PHASE_DATA_UNAVAILABLE: {phase['data_availability']}")
     if phase.get("execution_kind") == "FORWARD_ONLY_NOT_RETROSPECTIVE_BACKTEST":
         raise FenceError("FORWARD_ONLY_PHASE_NOT_VALID_FOR_TESTER_RUN")
     known_variants = {name for name, _parameter, _value in freeze.variants(market["kind"])}
@@ -321,7 +346,7 @@ def main(argv: list[str] | None = None) -> int:
             if previous != result:
                 raise FenceError("postflight evidence differs from preflight receipt")
         elif args.receipt:
-            args.receipt.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+            _write_receipt_atomic(args.receipt, result)
     except (FenceError, OSError, json.JSONDecodeError) as exc:
         print(f"REJECT: {exc}")
         return 2

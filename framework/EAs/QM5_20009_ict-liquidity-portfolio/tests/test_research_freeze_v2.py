@@ -213,6 +213,24 @@ def test_prospective_phase_cannot_be_misused_as_a_retrospective_tester_run() -> 
         )
 
 
+def test_retrospective_holdout_stays_blocked_until_missing_tick_months_are_verified() -> None:
+    payload = protocol()
+    phase = next(row for row in payload["phases"] if row["id"] == "RETRO_HOLDOUT_2026_H1")
+    assert phase["data_availability"] == (
+        "BLOCKED_MISSING_VERIFIED_MODEL4_TICKS_202605_202606"
+    )
+    with pytest.raises(fence.FenceError, match="PHASE_DATA_UNAVAILABLE"):
+        fence.validate_request(
+            payload,
+            phase_id="RETRO_HOLDOUT_2026_H1",
+            symbol="NDX.DWX",
+            timeframe="M1",
+            variant="center",
+            from_date="2026-01-01",
+            to_date="2026-06-30",
+        )
+
+
 def _write_verdict(
     root: Path,
     payload: dict[str, object],
