@@ -178,6 +178,30 @@ def test_qm5_9184_manifest_has_logical_audusd_nzdusd_setfile() -> None:
     assert _mq5_allowed_symbols(ea_dir) <= declared
 
 
+def test_qm5_10309_is_one_logical_eurusd_gbpusd_two_leg_package() -> None:
+    ea_dir = REPO / "framework" / "EAs" / "QM5_10309_cointeg-hft-pairs"
+    manifest = json.loads((ea_dir / "basket_manifest.json").read_text(encoding="utf-8-sig"))
+    source = (ea_dir / "QM5_10309_cointeg-hft-pairs.mq5").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+
+    logical = manifest["logical_symbol"]
+    logical_setfile = ea_dir / "sets" / f"{ea_dir.name}_{logical}_M15_backtest.set"
+    declared = {manifest["host_symbol"], *manifest["basket_symbols"]}
+    source_symbols = set(re.findall(r'"([A-Z0-9]+\.DWX)"', source))
+
+    assert logical == "QM5_10309_EURUSD_GBPUSD_COINTEG_M15"
+    assert manifest["host_symbol"] == "GBPUSD.DWX"
+    assert manifest["host_timeframe"] == "M15"
+    assert manifest["tester_currency"] == "USD"
+    assert declared == {"EURUSD.DWX", "GBPUSD.DWX"}
+    assert source_symbols <= declared
+    assert logical_setfile.exists()
+    assert "QM_TM_OpenPosition(host_req, ticket)" in source
+    assert "QM_BasketOpenPosition(qm_ea_id" in source
+    assert "ClosePackage(QM_EXIT_STRATEGY);" in source
+
+
 def test_qm5_13119_zscore_uses_strictly_prior_calibration_window() -> None:
     ea_dir = REPO / "framework" / "EAs" / "QM5_13119_usdjpy-euraud"
     source = (ea_dir / "QM5_13119_usdjpy-euraud.mq5").read_text(
