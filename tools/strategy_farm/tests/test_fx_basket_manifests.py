@@ -190,7 +190,7 @@ def test_qm5_10309_is_one_logical_eurusd_gbpusd_two_leg_package() -> None:
     declared = {manifest["host_symbol"], *manifest["basket_symbols"]}
     source_symbols = set(re.findall(r'"([A-Z0-9]+\.DWX)"', source))
 
-    assert logical == "QM5_10309_EURUSD_GBPUSD_COINTEG_M15"
+    assert logical == "QM5_10309_EURUSD_GBPUSD_COINTEG_FX"
     assert manifest["host_symbol"] == "GBPUSD.DWX"
     assert manifest["host_timeframe"] == "M15"
     assert manifest["tester_currency"] == "USD"
@@ -199,6 +199,7 @@ def test_qm5_10309_is_one_logical_eurusd_gbpusd_two_leg_package() -> None:
     assert logical_setfile.exists()
     assert "QM_TM_OpenPosition(host_req, ticket)" in source
     assert "QM_BasketOpenPosition(qm_ea_id" in source
+    assert "QM_KillSwitchRegisterMagic((long)foreign_magic)" in source
     assert "ClosePackage(QM_EXIT_STRATEGY);" in source
 
 
