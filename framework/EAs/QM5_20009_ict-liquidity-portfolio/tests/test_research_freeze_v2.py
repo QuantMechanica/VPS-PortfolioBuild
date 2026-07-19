@@ -196,6 +196,20 @@ def test_dev_allows_frozen_unresolved_cost_status_but_oos_blocks() -> None:
         )
 
 
+def test_prospective_phase_cannot_be_misused_as_a_retrospective_tester_run() -> None:
+    payload = protocol()
+    with pytest.raises(fence.FenceError, match="FORWARD_ONLY_PHASE"):
+        fence.validate_request(
+            payload,
+            phase_id="PROSPECTIVE_OPERATIONAL",
+            symbol="NDX.DWX",
+            timeframe="M1",
+            variant="center",
+            from_date="2026-07-20",
+            to_date="2027-07-17",
+        )
+
+
 def _write_verdict(
     root: Path,
     payload: dict[str, object],
@@ -355,4 +369,3 @@ def test_runner_chain_is_frozen_and_commission_groups_restore_in_finally() -> No
     assert "} finally {" in runner
     assert "commissionGroupRestoreEvidence = Set-TesterGroupsCommission" in runner
     assert "restored_to_canonical" in runner
-

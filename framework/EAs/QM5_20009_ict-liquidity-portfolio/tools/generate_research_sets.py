@@ -251,11 +251,19 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
     )
     if observed != MARKETS:
         raise FreezeError(f"research protocol markets drifted: {observed!r}")
+    expected_dev_windows = {
+        "NDX.DWX": ("2021-01-01", "2022-12-31"),
+        "GDAXI.DWX": ("2021-01-01", "2022-12-31"),
+        "GBPUSD.DWX": ("2017-10-01", "2022-12-31"),
+        "EURUSD.DWX": ("2017-10-01", "2022-12-31"),
+    }
     for market in markets:
         start = _parse_iso_date(market.get("dev_from"), f"{market.get('symbol')} DEV from")
         end = _parse_iso_date(market.get("dev_to"), f"{market.get('symbol')} DEV to")
         if start > end or end >= date(2023, 1, 1):
             raise FreezeError(f"invalid DEV partition for {market.get('symbol')}")
+        if (market.get("dev_from"), market.get("dev_to")) != expected_dev_windows[market["symbol"]]:
+            raise FreezeError(f"DEV partition drifted for {market.get('symbol')}")
     fx_starts = {item["dev_from"] for item in markets if item["kind"] == "fx"}
     if fx_starts != {"2017-10-01"}:
         raise FreezeError("FX DEV must start at honest Model-4 coverage 2017-10-01")
@@ -278,9 +286,29 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
     }
     if set(ids) != required_ids or len(ids) != len(set(ids)):
         raise FreezeError("research protocol phase set is incomplete or duplicated")
+    expected_later_phases = {
+        "OOS_2023_H1": ("OOS", "2023-01-01", "2023-06-30", 2),
+        "OOS_2023_H2": ("OOS", "2023-07-01", "2023-12-31", 2),
+        "OOS_2024_H1": ("OOS", "2024-01-01", "2024-06-30", 2),
+        "OOS_2024_H2": ("OOS", "2024-07-01", "2024-12-31", 2),
+        "OOS_2025_H1": ("OOS", "2025-01-01", "2025-06-30", 2),
+        "OOS_2025_H2": ("OOS", "2025-07-01", "2025-12-31", 2),
+        "RETRO_HOLDOUT_2026_H1": (
+            "RETROSPECTIVE_HOLDOUT", "2026-01-01", "2026-06-30", 2
+        ),
+        "PROSPECTIVE_OPERATIONAL": (
+            "PROSPECTIVE_FORWARD_OBSERVATION", "2026-07-20", "2027-07-17", 1
+        ),
+    }
     for phase in phases:
         if phase.get("id") == "DEV":
-            if phase.get("allowed_variants") != "ALL_13":
+            if (
+                phase.get("class") != "DEV"
+                or phase.get("window") != "PER_MARKET_DEV"
+                or phase.get("allowed_variants") != "ALL_13"
+                or phase.get("duplicates") != 2
+                or phase.get("requires_resolved_cost_axes") is not False
+            ):
                 raise FreezeError("DEV must allow the complete 13-point OAAT star")
             continue
         if phase.get("id") == "DEV_SMOKE_2022":
@@ -303,12 +331,40 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
             raise FreezeError(f"later phase is not center-only: {phase.get('id')}")
         if not phase.get("requires_resolved_cost_axes"):
             raise FreezeError(f"later phase omits cost-resolution fence: {phase.get('id')}")
+        expected_phase = expected_later_phases[str(phase.get("id"))]
+        observed_phase = (
+            phase.get("class"), phase.get("from"), phase.get("to"), phase.get("duplicates")
+        )
+        if observed_phase != expected_phase:
+            raise FreezeError(f"later phase partition/class drifted: {phase.get('id')}")
+        if phase.get("id") == "RETRO_HOLDOUT_2026_H1" and phase.get("epistemic_status") != (
+            "RETROSPECTIVE_NOT_PRISTINE"
+        ):
+            raise FreezeError("retrospective holdout epistemic status drifted")
+        if phase.get("id") == "PROSPECTIVE_OPERATIONAL" and phase.get("execution_kind") != (
+            "FORWARD_ONLY_NOT_RETROSPECTIVE_BACKTEST"
+        ):
+            raise FreezeError("prospective phase must remain forward-only")
         _parse_iso_date(phase.get("from"), f"{phase.get('id')} from")
         _parse_iso_date(phase.get("to"), f"{phase.get('id')} to")
 
     tester = protocol.get("tester")
     if not isinstance(tester, Mapping) or tester.get("visible_input_count") != 35:
         raise FreezeError("tester visible_input_count must be 35")
+    expected_tester = {
+        "model": 4,
+        "execution_mode": 0,
+        "optimization": 0,
+        "initial_deposit": 100000,
+        "deposit_currency": "USD",
+        "leverage": 100,
+        "risk_fixed": 1000.0,
+        "risk_percent": 0.0,
+        "rng_seed": 42,
+        "duplicate_policy": "IDENTICAL_BINARY_INPUTS_DATA_ENVIRONMENT_AND_SEED",
+    }
+    if any(tester.get(key) != value for key, value in expected_tester.items()):
+        raise FreezeError("tester execution defaults drifted")
     if tester.get("framework_inputs") != {
         "InpQMSimCommissionPerLot": 0.0,
         "qm_chartui_enabled": False,
@@ -320,6 +376,22 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
         "NO_SIGNAL_OR_EXECUTION_SEMANTICS"
     ):
         raise FreezeError("tester chart UI override is not explicitly justified")
+
+    model4 = protocol.get("model4_data")
+    expected_model4 = {
+        "provisioning_manifest_artifact_id": "provisioning_tick_hash_manifest",
+        "destination_root": "D:/QM/mt5/DEV1/Bases",
+        "symbol_definition_relative_path": "symbols.custom.dat",
+        "history_extension": ".hcc",
+        "tick_extension": ".tkc",
+        "frozen_through_month": "202606",
+        "exclude_months": ["202607"],
+        "manifest_match_required": True,
+        "preflight_rehash_selected_phase_files": True,
+        "postflight_rehash_selected_phase_files": True,
+    }
+    if model4 != expected_model4:
+        raise FreezeError("Model-4 provisioning/fence contract drifted")
 
     unlock = protocol.get("phase_unlock")
     if not isinstance(unlock, Mapping):
@@ -342,7 +414,10 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
             "DEV", "OOS_2023_H1", "OOS_2023_H2", "OOS_2024_H1", "OOS_2024_H2",
             "OOS_2025_H1", "OOS_2025_H2",
         ],
-        "PROSPECTIVE_OPERATIONAL": ["RETRO_HOLDOUT_2026_H1"],
+        "PROSPECTIVE_OPERATIONAL": [
+            "DEV", "OOS_2023_H1", "OOS_2023_H2", "OOS_2024_H1", "OOS_2024_H2",
+            "OOS_2025_H1", "OOS_2025_H2", "RETRO_HOLDOUT_2026_H1",
+        ],
     }
     if (
         unlock.get("enforcement") != "FAIL_CLOSED_DETACHED_VERDICT_RECORDS"
@@ -379,6 +454,48 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
         row = costs.get(axis)
         if not isinstance(row, Mapping) or row.get("status") not in {"RESOLVED", "UNRESOLVED"}:
             raise FreezeError(f"invalid cost status for {axis}")
+    expected_spread = {
+        "status": "RESOLVED",
+        "model": "MODEL4_EMBEDDED_HISTORICAL_REAL_TICK_BID_ASK",
+        "additional_fixed_points": 0.0,
+        "double_count_guard": True,
+    }
+    if costs.get("spread") != expected_spread:
+        raise FreezeError("spread cost contract drifted")
+    commission = costs.get("commission")
+    expected_commission_symbols = {
+        "NDX.DWX": {
+            "dxz_per_side": 2.75, "currency": "USD", "dxz_round_trip": 5.5,
+            "ftmo_round_trip_usd": 0.0,
+        },
+        "GDAXI.DWX": {
+            "dxz_per_side": 2.75, "currency": "EUR", "dxz_round_trip": 5.5,
+            "usd_conversion": "HISTORICAL_AT_DEAL_TIME", "ftmo_round_trip_usd": 0.0,
+        },
+        "GBPUSD.DWX": {
+            "dxz_per_side": 2.5, "currency": "GBP", "dxz_round_trip": 5.0,
+            "usd_conversion": "HISTORICAL_AT_DEAL_TIME", "ftmo_round_trip_usd": 5.0,
+        },
+        "EURUSD.DWX": {
+            "dxz_per_side": 2.5, "currency": "EUR", "dxz_round_trip": 5.0,
+            "usd_conversion": "HISTORICAL_AT_DEAL_TIME", "ftmo_round_trip_usd": 5.0,
+        },
+    }
+    if not isinstance(commission, Mapping) or (
+        commission.get("status") != "RESOLVED"
+        or commission.get("gate_model") != "MAX_DXZ_FTMO_WORST_CASE_PER_ROUND_TRIP_VOLUME"
+        or commission.get("symbols") != expected_commission_symbols
+    ):
+        raise FreezeError("commission cost contract is incomplete or drifted")
+    if costs["slippage"].get("required_resolution") != (
+        "PER_SYMBOL_OBSERVED_MAX_ADVERSE_LIVE_FILL_PLUS_GAP_COMPONENT_AND_CONSERVATIVE_MULTIPLIER"
+    ):
+        raise FreezeError("slippage resolution contract drifted")
+    if costs["overnight_swap_proof"].get("required_resolution") != (
+        "DEAL_ASSERT_SAME_NY_DATE_AND_SWAP_ZERO; "
+        "SYMBOL_SWAP_SNAPSHOT_REQUIRED_ONLY_IF_ANY_OVERNIGHT_EXPOSURE_EXISTS"
+    ):
+        raise FreezeError("overnight swap proof contract drifted")
 
     artifacts = protocol.get("evidence_artifacts")
     if not isinstance(artifacts, list):

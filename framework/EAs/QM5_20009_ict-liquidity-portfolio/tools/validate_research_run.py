@@ -74,6 +74,8 @@ def validate_request(
         raise FenceError("run dates must be ISO YYYY-MM-DD") from exc
     if start > end:
         raise FenceError("run start is after run end")
+    if phase.get("execution_kind") == "FORWARD_ONLY_NOT_RETROSPECTIVE_BACKTEST":
+        raise FenceError("FORWARD_ONLY_PHASE_NOT_VALID_FOR_TESTER_RUN")
     known_variants = {name for name, _parameter, _value in freeze.variants(market["kind"])}
     if variant not in known_variants:
         raise FenceError(f"variant not in preregistered star: {variant}")
