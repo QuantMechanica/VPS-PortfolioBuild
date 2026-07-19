@@ -42,6 +42,8 @@ def test_launcher_has_one_fixed_terminal_entrypoint_and_pre_post_fences() -> Non
     assert "terminal64.exe" not in text
     assert "metatester64.exe" not in text
     assert "Start-Process" not in text
+    assert "Get-Command python.exe -All" in text
+    assert "$pythonCommands[0].Source" in text
     assert "--receipt', $preReceiptPath" in text
     assert "--postflight-receipt', $preReceiptPath" in text
     assert text.index("'--receipt', $preReceiptPath") < text.index(

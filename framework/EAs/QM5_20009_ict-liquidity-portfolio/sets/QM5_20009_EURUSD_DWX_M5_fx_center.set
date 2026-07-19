@@ -7,7 +7,7 @@
 ; sleeve: fx
 ; variant: center
 ; changed_parameter: none
-; freeze_inputs_sha256: 3bc802bb52188183a55f60039a5df5ba672ac58213b83511a1a8529cfe814487
+; freeze_inputs_sha256: 569cc8b6548fffa305b148d6292fdbd6bf72ec8a9ed173acf1c7a6630acbca47
 ; ea_sha256: bbe56946a56616e066f029c4e8bc1f6cc2eed4fbb2b3734409fe0ec33c7f20c0
 ; rules_sha256: 8bbe64c2b6f7c98576f687c5beb312dc673d7dd710dfdedf969204a093e2b1cb
 ; contract_sha256: 37285774fc50584ac4e284d574e27f378b32107fae807509455b080799018052

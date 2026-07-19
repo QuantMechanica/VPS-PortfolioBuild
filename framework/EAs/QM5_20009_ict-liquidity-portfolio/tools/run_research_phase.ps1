@@ -55,7 +55,12 @@ $canonicalGroupsPath = Join-Path $repoRoot 'framework\registry\tester_groups\Dar
 $eaBinaryPath = Join-Path $eaRoot 'QM5_20009_ict-liquidity-portfolio.ex5'
 $manifestPath = Join-Path $eaRoot 'sets\manifest.json'
 $manifestShaPath = Join-Path $eaRoot 'sets\manifest.sha256'
-$pythonPath = (Get-Command python.exe -CommandType Application -ErrorAction Stop).Source
+$pythonCommands = @(Get-Command python.exe -All -CommandType Application -ErrorAction Stop)
+if ($pythonCommands.Count -lt 1) { throw 'No Python application is available for the fixed research tools.' }
+$pythonPath = [System.IO.Path]::GetFullPath([string]$pythonCommands[0].Source)
+if (-not (Test-Path -LiteralPath $pythonPath -PathType Leaf)) {
+    throw "Selected Python application is missing: $pythonPath"
+}
 $pwshPath = Join-Path $PSHOME 'pwsh.exe'
 
 function ConvertFrom-QmProcessJson {
