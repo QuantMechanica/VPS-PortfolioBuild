@@ -39,8 +39,9 @@
       "slot": 2,
       "magic": 200090002,
       "selection_role": "LOCKED_POOLED_UNIVERSE",
-      "dev_from": "2017-01-01",
-      "dev_to": "2022-12-31"
+      "dev_from": "2017-10-01",
+      "dev_to": "2022-12-31",
+      "coverage_exception": "MODEL4_TICKS_BEGIN_2017_10; 2017_01_THROUGH_2017_09_ARE_NOT_BACKFILLED"
     },
     {
       "symbol": "EURUSD.DWX",
@@ -51,8 +52,9 @@
       "slot": 5,
       "magic": 200090005,
       "selection_role": "LOCKED_POOLED_UNIVERSE",
-      "dev_from": "2017-01-01",
-      "dev_to": "2022-12-31"
+      "dev_from": "2017-10-01",
+      "dev_to": "2022-12-31",
+      "coverage_exception": "MODEL4_TICKS_BEGIN_2017_10; 2017_01_THROUGH_2017_09_ARE_NOT_BACKFILLED"
     }
   ],
   "phases": [
@@ -187,7 +189,26 @@
     "risk_fixed": 1000.0,
     "risk_percent": 0.0,
     "rng_seed": 42,
+    "visible_input_count": 35,
+    "framework_inputs": {
+      "InpQMSimCommissionPerLot": 0.0,
+      "qm_chartui_enabled": false,
+      "qm_chartui_corner": 0
+    },
+    "commission_injection": "TESTER_PROFILE_COMMISSION_PER_LOT; EA_SIM_COMMISSION_MUST_REMAIN_ZERO",
     "duplicate_policy": "IDENTICAL_BINARY_INPUTS_DATA_ENVIRONMENT_AND_SEED"
+  },
+  "model4_data": {
+    "provisioning_manifest_artifact_id": "provisioning_tick_hash_manifest",
+    "destination_root": "D:/QM/mt5/DEV1/Bases",
+    "symbol_definition_relative_path": "symbols.custom.dat",
+    "history_extension": ".hcc",
+    "tick_extension": ".tkc",
+    "frozen_through_month": "202606",
+    "exclude_months": ["202607"],
+    "manifest_match_required": true,
+    "preflight_rehash_selected_phase_files": true,
+    "postflight_rehash_selected_phase_files": true
   },
   "costs": {
     "spread": {
@@ -239,7 +260,7 @@
         "QUALIFICATION",
         "FTMO"
       ],
-      "required_resolution": "PER_SYMBOL_P95_ADVERSE_LIVE_FILL_PLUS_GAP_COMPONENT_AND_CONSERVATIVE_MULTIPLIER",
+      "required_resolution": "PER_SYMBOL_OBSERVED_MAX_ADVERSE_LIVE_FILL_PLUS_GAP_COMPONENT_AND_CONSERVATIVE_MULTIPLIER",
       "stub_values_forbidden": true
     },
     "overnight_swap_proof": {
@@ -252,7 +273,7 @@
         "QUALIFICATION",
         "FTMO"
       ],
-      "required_resolution": "HASHED_SYMBOL_SWAP_SNAPSHOT_AND_ZERO_OVERNIGHT_POSITION_ASSERTION"
+      "required_resolution": "DEAL_ASSERT_SAME_NY_DATE_AND_SWAP_ZERO; SYMBOL_SWAP_SNAPSHOT_REQUIRED_ONLY_IF_ANY_OVERNIGHT_EXPOSURE_EXISTS"
     }
   },
   "qualification_blocking_cost_axes": [
@@ -263,7 +284,14 @@
     {
       "id": "ea_binary",
       "path": "D:/QM/reports/dev1/build/compile/20260719T193732Z_d4d06b373ceb4fc897e9dba9e80a6e9d/stage/QM5_20009_ict-liquidity-portfolio.ex5",
-      "validation": "NONEMPTY"
+      "validation": "NONEMPTY",
+      "equality_group": "EA_BINARY"
+    },
+    {
+      "id": "ea_binary_repo",
+      "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/QM5_20009_ict-liquidity-portfolio.ex5",
+      "validation": "NONEMPTY",
+      "equality_group": "EA_BINARY"
     },
     {
       "id": "compile_evidence",
@@ -303,12 +331,17 @@
       "version": "5.0.0.5833"
     },
     {
-      "id": "provisioning_manifest",
+      "id": "provisioning_tick_hash_manifest",
+      "path": "D:/QM/reports/dev1/provisioning/20260719/source_destination_sha256.csv",
+      "validation": "PROVISIONING_HASH_MANIFEST_ALL_MATCH"
+    },
+    {
+      "id": "symbol_provisioning_registry",
       "path": "framework/registry/dwx_symbol_matrix.csv",
       "validation": "NONEMPTY"
     },
     {
-      "id": "tick_coverage_manifest",
+      "id": "history_coverage_registry",
       "path": "framework/registry/dwx_symbol_history_ranges.csv",
       "validation": "NONEMPTY"
     },
@@ -352,14 +385,26 @@
       "validation": "NONEMPTY"
     },
     {
+      "id": "slippage_livefill_ledger",
+      "path": "D:/QM/reports/state/slippage_ledger_v1.json",
+      "validation": "NONEMPTY"
+    },
+    {
       "id": "tester_defaults",
       "path": "framework/registry/tester_defaults.json",
       "validation": "NONEMPTY"
     },
     {
-      "id": "commission_groups",
-      "path": "D:/QM/mt5/T1/MQL5/Profiles/Tester/Groups/Darwinex-Live_real.txt",
-      "validation": "NONEMPTY"
+      "id": "commission_groups_canonical",
+      "path": "framework/registry/tester_groups/Darwinex-Live_real.canonical.txt",
+      "validation": "NONEMPTY",
+      "equality_group": "COMMISSION_GROUPS"
+    },
+    {
+      "id": "commission_groups_dev1",
+      "path": "D:/QM/mt5/DEV1/MQL5/Profiles/Tester/Groups/Darwinex-Live_real.txt",
+      "validation": "NONEMPTY",
+      "equality_group": "COMMISSION_GROUPS"
     },
     {
       "id": "registry_execution_contract",
@@ -374,6 +419,26 @@
     {
       "id": "registry_ea_id",
       "path": "framework/registry/ea_id_registry.csv",
+      "validation": "NONEMPTY"
+    },
+    {
+      "id": "swap_baseline",
+      "path": "docs/ops/V5_SYMBOL_COMMISSION_SWAP_BASELINE.md",
+      "validation": "NONEMPTY"
+    },
+    {
+      "id": "commission_worst_case_spec",
+      "path": "docs/ops/Q08_Q11_WORSTCASE_COMMISSION_SPEC_2026-06-01.md",
+      "validation": "NONEMPTY"
+    },
+    {
+      "id": "commission_research",
+      "path": "docs/ops/DXZ_COMMISSION_RESEARCH_2026-06-01.md",
+      "validation": "NONEMPTY"
+    },
+    {
+      "id": "commission_round_trip_handoff",
+      "path": "docs/ops/evidence/Q08_ROUND_TRIP_COMMISSION_HANDOFF_2026-07-10.md",
       "validation": "NONEMPTY"
     }
   ],
