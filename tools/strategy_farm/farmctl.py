@@ -1836,6 +1836,13 @@ def _derive_phase_runner_verdict(summary: dict[str, Any], min_trades: int = 5, p
         ):
             return "FAIL", reason or "phase_runner_invalid_gate_result"
         return "INFRA_FAIL", reason or "phase_runner_invalid_report"
+    # DL-082 §3a: Q08 aggregate INFRA_RECYCLE = degenerate (0-trade) Q08.5
+    # neighborhood baseline. Main baseline traded (n_trades>0), so this is a
+    # setfile/support-run infra condition -> infra taxonomy with a distinctive
+    # reason so the stranded-INFRA sweep re-derives instead of counting a
+    # strategy fail. Never a merit verdict.
+    if verdict_upper == "INFRA_RECYCLE":
+        return "INFRA_FAIL", reason or "q08_degenerate_neighborhood_baseline"
     if verdict_upper in {"FAIL_SOFT", "FAIL_HARD", "PASS_PORTFOLIO", "FAIL_PORTFOLIO",
                          "FAIL_DD_PORTFOLIO_REVIEW", "NEED_MORE_DATA"}:  # DL-082 §4: Q05 DD parks
         return verdict_upper, reason or raw_verdict or "phase_runner_verdict"
@@ -7820,7 +7827,7 @@ def _promote_q08_soft_fails_to_q09_portfolio(
         SELECT w.* FROM work_items w
         WHERE w.status='done'
           AND w.phase='Q08'
-          AND w.verdict='FAIL_SOFT'
+          AND w.verdict IN ('FAIL_SOFT','PASS')  -- DL-082 SS3c: clean Q08 PASS advances too
           AND NOT EXISTS (
             SELECT 1 FROM work_items w2
             WHERE w2.ea_id = w.ea_id

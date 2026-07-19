@@ -560,7 +560,7 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
 
         verdict, classification = aggregate._aggregate_verdict(subs, trades=trades)
 
-        self.assertEqual(verdict, "FAIL_SOFT")
+        self.assertEqual(verdict, "PASS")
         self.assertEqual(classification["8.11_mc_shuffle_dd"], "EDGE_SOFT")
 
     def test_edge_decay_negative_decline_passes(self) -> None:
@@ -677,7 +677,7 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
             {"name": "8.9_runs_test", "status": "INVALID", "detail": "too_few_for_runs"},
         ]
         verdict, _ = aggregate._aggregate_verdict(subs, trades=trades)
-        self.assertEqual(verdict, "INVALID")
+        self.assertEqual(verdict, "INFRA_RECYCLE")
 
     def test_dl077_no_real_quality_pass_is_invalid(self) -> None:
         # Only the trivial 8.1/8.3 passed; nothing real validated the edge -> INVALID.

@@ -101,6 +101,35 @@ DEFAULT_NEIGHBORHOOD_MAX_PARAMS = 2
 NEIGHBORHOOD_RUN_TIMEOUT_SEC = 900
 NEIGHBORHOOD_RUN_HEADROOM_SEC = 120
 
+# DL-082 §3c (OWNER 2026-07-16, ratified 2026-07-19): the non-merit allowance.
+# A clean Q08 PASS tolerates soft signals ONLY from these gates. 8.4/8.6/8.10/8.11
+# measure single-EA robustness across seasons / trade-order / chop / ATR-regime —
+# exactly the risk the Q09 anti-correlation portfolio absorbs by diversification
+# (DL-075). An EDGE_SOFT here is within the allowance and never blocks a PASS.
+# Everything else that soft-fails (8.7 PBO neighborhood-fallback, 8.8 edge-decay,
+# a thin cost cushion, a non-low-sample INVALID) is a real standalone concern and
+# routes the EA to the Q09 portfolio track as FAIL_SOFT.
+ALLOWANCE_SOFT_GATES = ("8.4", "8.6", "8.10", "8.11")
+
+
+def _label_within_pass_allowance(gate_name: str, label: str) -> bool:
+    """True iff this per-gate classification label is compatible with a clean Q08 PASS.
+
+    Within the ratified non-merit allowance (DL-082 §3c):
+      - PASS (the gate passed on merit)
+      - INFORMATIONAL (a frequency-aware gate that is structurally inapplicable at
+        this EA's frequency class — recorded, carries no soft-fail signal; DL-082 §3b)
+      - LOW_SAMPLE (the Davey statistical battery could-not-compute at low N)
+      - EDGE_SOFT of the frequency-aware trio + MC-shuffle (8.4/8.6/8.10/8.11)
+    Any other label (EDGE_HARD is handled separately as a hard fail; EDGE_SOFT of a
+    non-allowance gate; a genuine INVALID; INFRA_RECYCLE) is OUTSIDE the allowance.
+    """
+    if label in ("PASS", "INFORMATIONAL", "LOW_SAMPLE"):
+        return True
+    if label == "EDGE_SOFT" and str(gate_name).startswith(ALLOWANCE_SOFT_GATES):
+        return True
+    return False
+
 
 def _neighborhood_artifact_reuse_status(
     artifact_path: Path,
@@ -239,19 +268,32 @@ def _neighborhood_lineage_invalid_result(sub_gate_input_runs: dict) -> dict | No
     # evidence is self-describing and the stranded-INFRA sweep can refuse the
     # doomed re-enqueue. Verdict stays INVALID and still blocks.
     error_text = str(meta.get("error") or "")
+    is_setfile_defect = False
     if "has no strategy parameters" in error_text:
         detail = "baseline_setfile_defect:empty_strategy_params"
+        is_setfile_defect = True
     elif "duplicate strategy parameter" in error_text:
         detail = "baseline_setfile_defect:duplicate_strategy_params"
+        is_setfile_defect = True
     elif "empty strategy parameter" in error_text:
         detail = "baseline_setfile_defect:empty_strategy_value"
-    return common.make_result(
+        is_setfile_defect = True
+    result = common.make_result(
         "8.5_neighborhood",
         "INVALID",
         value=None,
         threshold=None,
         detail=f"neighborhood_evidence_lineage_invalid:{detail}",
     )
+    # DL-082 §3a: a degenerate (0-trade) neighborhood baseline is an infra/setfile
+    # condition (the perturbation baseline could not reproduce the strategy), NOT a
+    # gate verdict. Tag it so the aggregator routes the item to setfile re-derivation
+    # (INFRA_RECYCLE) instead of a blocking INVALID. A structural setgen defect
+    # (empty/duplicate strategy params) is a DETERMINISTIC build defect that re-derivation
+    # will NOT fix (07-19 RCA); it stays a genuine blocking INVALID, never a recycle.
+    if not is_setfile_defect and "degenerate_baseline" in detail:
+        result["infra_condition"] = "degenerate_baseline"
+    return result
 
 
 def _pbo_refresh_artifact_status(
@@ -973,37 +1015,68 @@ def _net_profit_factor(trades: list[dict]) -> float | None:
 
 def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None,
                        cost_cushion_tier: str | None = None) -> tuple[str, dict[str, str]]:
-    """Combine sub-gate statuses into PASS/FAIL_SOFT/FAIL_HARD/INVALID."""
+    """Combine sub-gate statuses into PASS/FAIL_SOFT/FAIL_HARD/INVALID/INFRA_RECYCLE.
+
+    DL-082 §3 recalibration:
+      - §3a degenerate (0-trade) Q08.5 neighborhood baseline -> INFRA_RECYCLE (an
+        infra/setfile condition routed to setfile re-derivation, never a gate verdict).
+      - §3b a frequency-aware gate (8.4/8.6/8.10) that is structurally inapplicable at
+        this EA's frequency class emits status INFORMATIONAL -> excluded from the
+        soft-fail set entirely (recorded, no verdict weight).
+      - §3c explicit PASS: all merit gates pass and every remaining soft signal is
+        within the ratified non-merit allowance (EDGE_SOFT of 8.4/8.6/8.10/8.11 +
+        LOW_SAMPLE + INFORMATIONAL). Anything outside that allowance -> FAIL_SOFT.
+    """
     classification: dict[str, str] = {}
     hard = False
-    soft = False
-    invalid = False
     blocking_invalid = False
+    degenerate_recycle = False
 
     for result in sub_results:
         name = str(result.get("name") or "unknown")
         status = str(result.get("status") or "").upper()
+        detail_lower = _detail_text(result).lower()
         if status == "PASS":
             classification[name] = "PASS"
             continue
+        # DL-082 §3b: a frequency-aware gate that is structurally inapplicable at this
+        # EA's frequency class (e.g. <12 traded calendar months, <50 trades for the
+        # chopping block, an ATR regime with zero trades) reports INFORMATIONAL — it is
+        # recorded with its measured value but carries NO soft-fail signal.
+        if status == "INFORMATIONAL":
+            classification[name] = "INFORMATIONAL"
+            continue
+        # DL-082 §3a: a degenerate (0-trade) Q08.5 neighborhood baseline is an
+        # infra/setfile condition — the perturbation baseline could not reproduce the
+        # strategy, so nothing was tested. Route the whole item to setfile
+        # re-derivation (INFRA_RECYCLE), never a blocking INVALID or a FAIL. A
+        # structural setgen defect (baseline_setfile_defect) is deterministic and stays
+        # a genuine blocking INVALID (07-17 ruling untouched).
+        if (
+            name.startswith("8.5")
+            and status == "INVALID"
+            and "baseline_setfile_defect" not in detail_lower
+            and (
+                result.get("infra_condition") == "degenerate_baseline"
+                or "degenerate_baseline" in detail_lower
+            )
+        ):
+            classification[name] = "INFRA_RECYCLE"
+            degenerate_recycle = True
+            continue
         # Portfolio reframe (DL-075, 2026-06-21, OWNER): seasonal (8.4), chopping-block
         # (8.6), regime/crisis (8.10), and MC shuffle DD (8.11) measure SINGLE-EA
-        # robustness across conditions or trade sequencing —
-        # exactly the risk the Q09 anti-correlation portfolio absorbs by diversification.
-        # Requiring each EA to individually survive every season/regime double-counts the
-        # robustness bar and walls off low-freq/regime-dependent edges. So these gates
-        # gates can only contribute a SOFT signal here: never HARD-fail, never block as
-        # INVALID. The EA flows to the Q09 portfolio track where combined robustness is
-        # the real gate. Profitability (portfolio_net_pf, cost_cushion) stays HARD below.
-        if name.startswith(("8.4", "8.6", "8.10", "8.11")):
+        # robustness across conditions or trade sequencing — exactly the risk the Q09
+        # anti-correlation portfolio absorbs by diversification. They contribute only a
+        # SOFT signal here (never HARD, never block as INVALID), and per DL-082 §3c that
+        # EDGE_SOFT is within the non-merit allowance for a clean PASS.
+        if name.startswith(ALLOWANCE_SOFT_GATES):
             classification[name] = "EDGE_SOFT"
-            soft = True
             continue
         if status == "INVALID" and not any(
-            token in _detail_text(result).lower() for token in LOW_SAMPLE_DETAIL_TOKENS
+            token in detail_lower for token in LOW_SAMPLE_DETAIL_TOKENS
         ):
             classification[name] = "INVALID"
-            invalid = True
             if name.startswith(("8.5", "8.7")):
                 blocking_invalid = True
             continue
@@ -1011,8 +1084,6 @@ def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None
         classification[name] = tier
         if tier == "EDGE_HARD":
             hard = True
-        else:
-            soft = True
 
     pf = _net_profit_factor(trades or [])
     if pf is not None and pf < 1.0:
@@ -1032,10 +1103,8 @@ def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None
             hard = True
         else:
             classification["cost_cushion"] = "INVALID"
-            invalid = True
     elif cost_cushion_tier == "EDGE_SOFT":
         classification["cost_cushion"] = "EDGE_SOFT"
-        soft = True
     elif cost_cushion_tier == "PASS":
         classification["cost_cushion"] = "PASS"
     elif cost_cushion_tier == "INVALID":
@@ -1043,23 +1112,30 @@ def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None
         # commission was un-computable, so BOTH hard profitability gates
         # (cushion + net PF) graded gross. Re-run with a real stream.
         classification["cost_cushion"] = "INVALID"
-        invalid = True
 
     # A zero-trade baseline is not merit evidence.  It must dominate any stale or
     # independently-computed sub-gate result (notably PBO) so an empty Q08 run can
-    # never synthesize FAIL_HARD.
+    # never synthesize FAIL_HARD. (farmctl maps this INVALID+n_trades==0 to INFRA_FAIL.)
     if not trades:
         classification["baseline_trade_count"] = "INVALID"
         return "INVALID", classification
 
-    # HARD dominates: a definitive edge failure (e.g. PBO 88%, net PF < 1.0) means the EA is
-    # not robust regardless of a non-evaluable gate.
+    # HARD dominates everything below (incl. INFRA_RECYCLE): a definitive edge failure
+    # (PBO 88%, net PF < 1.0, real cost fail, 8.5 neighborhood breach) computed from a
+    # VALID main baseline is a real verdict, so the 18 genuine EDGE_HARD breaches keep
+    # failing regardless of a degenerate neighborhood-support run.
     if hard:
         return "FAIL_HARD", classification
 
-    # OWNER 2026-07-17: unresolved neighborhood/PBO tooling evidence is not
-    # admissible. It must remain INVALID until the configured robustness family
-    # is genuinely evaluable; other Davey passes cannot soften this condition.
+    # DL-082 §3a: with no genuine merit hard-fail, a degenerate neighborhood baseline
+    # routes to setfile re-derivation. Ranked ABOVE the blocking INVALID / PASS split
+    # because the setfile itself is the thing to fix (re-derivation re-runs every gate).
+    if degenerate_recycle:
+        return "INFRA_RECYCLE", classification
+
+    # OWNER 2026-07-17 (untouched): unresolved neighborhood/PBO tooling evidence is not
+    # admissible. It stays a genuine blocking INVALID until the configured robustness
+    # family is genuinely evaluable; other Davey passes cannot soften this condition.
     if blocking_invalid:
         return "INVALID", classification
 
@@ -1067,8 +1143,7 @@ def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None
     # low-frequency structural edges this funnel selects (8.2 DSR, 8.6, 8.8, 8.9, 8.10 go
     # INVALID at low trade/daily-return counts). An INVALID sub-gate means "could not test",
     # NOT "failed" -- it must never block a PROFITABLE edge with real evidence (e.g. PBO) from
-    # the Q09 portfolio track. Pre-DL-077 a single non-low-sample INVALID returned the blocking
-    # INVALID verdict -> every low-freq sleeve INFRA_FAILed at Q08 and the book could not grow.
+    # the Q09 portfolio track.
     if pf is None:
         # Profitability itself could not be computed (no baseline trades) -> genuinely invalid.
         return "INVALID", classification
@@ -1080,10 +1155,18 @@ def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None
     )
     if real_quality_passes < DL077_MIN_QUALITY_PASSES:
         return "INVALID", classification
-    # Profitable, has real evidence, no hard failure: INVALID Davey gates and soft signals
-    # both route to the portfolio track (FAIL_SOFT), never block. Clean gold PASS only when
-    # there are no soft/invalid signals at all.
-    if soft or invalid:
+
+    # DL-082 §3c — explicit PASS. No merit hard-fail, no blocking INVALID, no infra
+    # recycle, profitability computable, and at least one real quality gate passed.
+    # A clean PASS additionally requires that EVERY remaining classification is within
+    # the ratified non-merit allowance (PASS / INFORMATIONAL / LOW_SAMPLE / EDGE_SOFT of
+    # 8.4/8.6/8.10/8.11). Any label outside it — EDGE_SOFT of 8.7/8.8, a thin
+    # cost_cushion, a non-low-sample INVALID — routes the EA to the Q09 portfolio track.
+    outside_allowance = [
+        gate_name for gate_name, verdict in classification.items()
+        if not _label_within_pass_allowance(gate_name, verdict)
+    ]
+    if outside_allowance:
         return "FAIL_SOFT", classification
     return "PASS", classification
 
@@ -1232,6 +1315,11 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
             "PBO_NEIGHBORHOOD_FALLBACK_MAX_TIER": "EDGE_SOFT",
             "PBO_UNKNOWN_SOURCE_POLICY": "EDGE_HARD",
             "EDGE_DECAY_HARD_PF_LAST": EDGE_DECAY_HARD_PF_LAST,
+            # DL-082 §3c (OWNER 2026-07-16/19): non-merit allowance for a clean PASS.
+            "DL082_ALLOWANCE_SOFT_GATES": list(ALLOWANCE_SOFT_GATES),
+            "DL082_PASS_ALLOWANCE_LABELS": ["PASS", "INFORMATIONAL", "LOW_SAMPLE",
+                                            "EDGE_SOFT(8.4/8.6/8.10/8.11)"],
+            "DL082_DEGENERATE_BASELINE_OUTCOME": "INFRA_RECYCLE",
         },
         "generated_at_utc": dt.datetime.now(dt.UTC).isoformat(),
         "n_trades": len(trades),

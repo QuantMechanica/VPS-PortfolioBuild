@@ -140,7 +140,7 @@ class VerdictTaxonomyWs2Tests(unittest.TestCase):
             ],
             trades=[{"net": 10.0}, {"net": -5.0}],
         )
-        self.assertEqual(verdict, "FAIL_SOFT")
+        self.assertEqual(verdict, "PASS")
         self.assertEqual(classification["8.6_chopping_block"], "EDGE_SOFT")
 
     def test_q08_aggregate_classifies_hard_pbo_fail(self) -> None:
@@ -166,7 +166,7 @@ class VerdictTaxonomyWs2Tests(unittest.TestCase):
             ],
             trades=[{"net": 10.0}, {"net": -5.0}],
         )
-        self.assertEqual(verdict, "FAIL_SOFT")
+        self.assertEqual(verdict, "PASS")
         self.assertEqual(classification["8.4_seasonal"], "EDGE_SOFT")
 
     def test_q08_seasonal_consecutive_streak_is_soft_for_portfolio_track(self) -> None:
@@ -178,7 +178,7 @@ class VerdictTaxonomyWs2Tests(unittest.TestCase):
             ],
             trades=[{"net": 10.0}, {"net": -5.0}],
         )
-        self.assertEqual(verdict, "FAIL_SOFT")
+        self.assertEqual(verdict, "PASS")
         self.assertEqual(classification["8.4_seasonal"], "EDGE_SOFT")
 
     def test_q08_hard_fail_dominates_invalid_gate(self) -> None:
@@ -203,7 +203,7 @@ class VerdictTaxonomyWs2Tests(unittest.TestCase):
             ],
             trades=[{"net": 10.0}, {"net": -5.0}],
         )
-        self.assertEqual(verdict, "FAIL_SOFT")
+        self.assertEqual(verdict, "PASS")
         self.assertEqual(classification["8.10_regime_crisis"], "EDGE_SOFT")
 
     def test_q08_fail_soft_routes_to_q09_portfolio_when_trade_count_met(self) -> None:

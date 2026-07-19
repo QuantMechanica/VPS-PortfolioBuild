@@ -23,9 +23,18 @@ def run(trades: list[dict], **_) -> dict:
     profits = trade_net_profits(trades)
     n = len(profits)
     if n < 50:
-        return make_result(GATE_NAME, "INVALID",
+        # DL-082 §3b (frequency-aware). Structural requirement math: the test removes
+        # the top 5% of trades (n_remove = max(1, floor(0.05*n))) and recomputes PF on
+        # the remainder; Davey's method needs >=50 trades so the removed slice is a
+        # stable >=2-3 outliers and the retained sample still yields a meaningful PF.
+        # Below 50 trades the chopping block is STRUCTURALLY inapplicable at this
+        # frequency class. Demote to INFORMATIONAL (recorded, carrying no soft-fail
+        # signal) rather than the old INVALID that the aggregate soft-mapped anyway.
+        # At >=50 trades the gate evaluates exactly as before.
+        return make_result(GATE_NAME, "INFORMATIONAL",
                            value=n, threshold=50,
-                           detail=f"insufficient_trade_count:got={n}:need>=50")
+                           detail=f"structurally_inapplicable_low_frequency:trades={n}:need>=50",
+                           evidence={"n_trades": n})
 
     pf_full = profit_factor(profits)
     sorted_desc = sorted(profits, reverse=True)
