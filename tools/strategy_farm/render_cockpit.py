@@ -527,7 +527,7 @@ def owner_decision_rows(q12_count: int) -> list[dict]:
                 "title": str(item.get("title") or "?")[:52],
                 "detail": detail[:74],
                 "due": str(item.get("due") or ""),
-                "alert": str(item.get("severity") or "").lower() == "alert",
+                "alert": str(item.get("severity") or "").lower() in ("alert", "action"),
             })
     except Exception:
         pass
@@ -561,6 +561,26 @@ def owner_decision_rows(q12_count: int) -> list[dict]:
             "due": "",
             "alert": False,
         })
+
+    # OWNER-actionable rows (severity action/alert) sort ahead of informational
+    # ones, then due-date ascending within each group; items whose due date is
+    # more than 2 days past are dropped as stale so they cannot crowd current
+    # items out of the decisions[:8] panel cutoff (the 07-26 TOTAL_RISK review
+    # was hidden behind expired 07-12 entries in raw file order).
+    today = dt.date.today()
+
+    def _due_date(r: dict) -> dt.date | None:
+        try:
+            return dt.date.fromisoformat(str(r.get("due") or ""))
+        except ValueError:
+            return None
+
+    def _is_stale(r: dict) -> bool:
+        d = _due_date(r)
+        return d is not None and (today - d).days > 2
+
+    rows = [r for r in rows if not _is_stale(r)]
+    rows.sort(key=lambda r: (0 if r["alert"] else 1, _due_date(r) or dt.date.max))
     return rows
 
 
