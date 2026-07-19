@@ -1,0 +1,386 @@
+{
+  "schema_version": 2,
+  "protocol_id": "QM5_20009_RESEARCH_FREEZE_V2",
+  "ea_id": 20009,
+  "contract_version": "v2",
+  "contract_freeze": "2026-07-19",
+  "date_semantics": "MT5_TESTER_INCLUSIVE_FROM_AND_TO",
+  "markets": [
+    {
+      "symbol": "NDX.DWX",
+      "timeframe": "M1",
+      "sleeve": "A",
+      "kind": "index",
+      "mode": 0,
+      "slot": 0,
+      "magic": 200090000,
+      "selection_role": "PRIMARY",
+      "dev_from": "2021-01-01",
+      "dev_to": "2022-12-31"
+    },
+    {
+      "symbol": "GDAXI.DWX",
+      "timeframe": "M1",
+      "sleeve": "A",
+      "kind": "index",
+      "mode": 0,
+      "slot": 1,
+      "magic": 200090001,
+      "selection_role": "TRANSPORT_DIAGNOSTIC_ONLY",
+      "dev_from": "2021-01-01",
+      "dev_to": "2022-12-31"
+    },
+    {
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "M5",
+      "sleeve": "B",
+      "kind": "fx",
+      "mode": 1,
+      "slot": 2,
+      "magic": 200090002,
+      "selection_role": "LOCKED_POOLED_UNIVERSE",
+      "dev_from": "2017-01-01",
+      "dev_to": "2022-12-31"
+    },
+    {
+      "symbol": "EURUSD.DWX",
+      "timeframe": "M5",
+      "sleeve": "B",
+      "kind": "fx",
+      "mode": 1,
+      "slot": 5,
+      "magic": 200090005,
+      "selection_role": "LOCKED_POOLED_UNIVERSE",
+      "dev_from": "2017-01-01",
+      "dev_to": "2022-12-31"
+    }
+  ],
+  "phases": [
+    {
+      "id": "DEV",
+      "class": "DEV",
+      "window": "PER_MARKET_DEV",
+      "allowed_variants": "ALL_13",
+      "duplicates": 2,
+      "requires_resolved_cost_axes": false
+    },
+    {
+      "id": "OOS_2023_H1",
+      "class": "OOS",
+      "from": "2023-01-01",
+      "to": "2023-06-30",
+      "allowed_variants": "CENTER_ONLY",
+      "duplicates": 2,
+      "requires_resolved_cost_axes": true
+    },
+    {
+      "id": "OOS_2023_H2",
+      "class": "OOS",
+      "from": "2023-07-01",
+      "to": "2023-12-31",
+      "allowed_variants": "CENTER_ONLY",
+      "duplicates": 2,
+      "requires_resolved_cost_axes": true
+    },
+    {
+      "id": "OOS_2024_H1",
+      "class": "OOS",
+      "from": "2024-01-01",
+      "to": "2024-06-30",
+      "allowed_variants": "CENTER_ONLY",
+      "duplicates": 2,
+      "requires_resolved_cost_axes": true
+    },
+    {
+      "id": "OOS_2024_H2",
+      "class": "OOS",
+      "from": "2024-07-01",
+      "to": "2024-12-31",
+      "allowed_variants": "CENTER_ONLY",
+      "duplicates": 2,
+      "requires_resolved_cost_axes": true
+    },
+    {
+      "id": "OOS_2025_H1",
+      "class": "OOS",
+      "from": "2025-01-01",
+      "to": "2025-06-30",
+      "allowed_variants": "CENTER_ONLY",
+      "duplicates": 2,
+      "requires_resolved_cost_axes": true
+    },
+    {
+      "id": "OOS_2025_H2",
+      "class": "OOS",
+      "from": "2025-07-01",
+      "to": "2025-12-31",
+      "allowed_variants": "CENTER_ONLY",
+      "duplicates": 2,
+      "requires_resolved_cost_axes": true
+    },
+    {
+      "id": "RETRO_HOLDOUT_2026_H1",
+      "class": "RETROSPECTIVE_HOLDOUT",
+      "from": "2026-01-01",
+      "to": "2026-06-30",
+      "allowed_variants": "CENTER_ONLY",
+      "duplicates": 2,
+      "requires_resolved_cost_axes": true,
+      "epistemic_status": "RETROSPECTIVE_NOT_PRISTINE"
+    },
+    {
+      "id": "PROSPECTIVE_OPERATIONAL",
+      "class": "PROSPECTIVE_FORWARD_OBSERVATION",
+      "from": "2026-07-20",
+      "to": "2027-07-17",
+      "allowed_variants": "CENTER_ONLY",
+      "duplicates": 1,
+      "requires_resolved_cost_axes": true,
+      "execution_kind": "FORWARD_ONLY_NOT_RETROSPECTIVE_BACKTEST"
+    }
+  ],
+  "oaat": {
+    "variant_count_per_market": 13,
+    "policy": "CENTER_PLUS_SIX_LOW_HIGH_ONE_AXIS_NEIGHBOURS",
+    "sleeve_a_center": [2, 3, 9, 0.05, 0.1, 2.0],
+    "sleeve_a_axes": {
+      "pivot": [1, 3],
+      "reclaim": [1, 5],
+      "mss": [6, 12],
+      "fvg": [0.0, 0.1],
+      "stop": [0.05, 0.15],
+      "rr": [1.5, 2.5]
+    },
+    "sleeve_b_center": [2, 3, 12, 0.05, 0.1, 2.0],
+    "sleeve_b_axes": {
+      "pivot": [1, 3],
+      "reclaim": [1, 5],
+      "mss": [6, 18],
+      "fvg": [0.0, 0.1],
+      "stop": [0.05, 0.15],
+      "rr": [1.5, 2.5]
+    },
+    "sleeve_a_binding_aggregation": "NDX_POOLED_BOTH_DIRECTIONS",
+    "sleeve_a_transport_rule": "GDAXI_ALWAYS_REPORTED_NEVER_USED_FOR_SELECTION",
+    "sleeve_b_binding_aggregation": "EURUSD_GBPUSD_POOLED_LONDON_NY_LONG_SHORT",
+    "mandatory_report_cells": {
+      "A": ["NDX_LONG", "NDX_SHORT", "GDAXI_LONG", "GDAXI_SHORT"],
+      "B": [
+        "EURUSD_LONDON_LONG",
+        "EURUSD_LONDON_SHORT",
+        "EURUSD_NY_LONG",
+        "EURUSD_NY_SHORT",
+        "GBPUSD_LONDON_LONG",
+        "GBPUSD_LONDON_SHORT",
+        "GBPUSD_NY_LONG",
+        "GBPUSD_NY_SHORT"
+      ]
+    }
+  },
+  "tester": {
+    "model": 4,
+    "execution_mode": 0,
+    "optimization": 0,
+    "initial_deposit": 100000,
+    "deposit_currency": "USD",
+    "leverage": 100,
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "rng_seed": 42,
+    "duplicate_policy": "IDENTICAL_BINARY_INPUTS_DATA_ENVIRONMENT_AND_SEED"
+  },
+  "costs": {
+    "spread": {
+      "status": "RESOLVED",
+      "model": "MODEL4_EMBEDDED_HISTORICAL_REAL_TICK_BID_ASK",
+      "additional_fixed_points": 0.0,
+      "double_count_guard": true
+    },
+    "commission": {
+      "status": "RESOLVED",
+      "gate_model": "MAX_DXZ_FTMO_WORST_CASE_PER_ROUND_TRIP_VOLUME",
+      "symbols": {
+        "NDX.DWX": {
+          "dxz_per_side": 2.75,
+          "currency": "USD",
+          "dxz_round_trip": 5.5,
+          "ftmo_round_trip_usd": 0.0
+        },
+        "GDAXI.DWX": {
+          "dxz_per_side": 2.75,
+          "currency": "EUR",
+          "dxz_round_trip": 5.5,
+          "usd_conversion": "HISTORICAL_AT_DEAL_TIME",
+          "ftmo_round_trip_usd": 0.0
+        },
+        "GBPUSD.DWX": {
+          "dxz_per_side": 2.5,
+          "currency": "GBP",
+          "dxz_round_trip": 5.0,
+          "usd_conversion": "HISTORICAL_AT_DEAL_TIME",
+          "ftmo_round_trip_usd": 5.0
+        },
+        "EURUSD.DWX": {
+          "dxz_per_side": 2.5,
+          "currency": "EUR",
+          "dxz_round_trip": 5.0,
+          "usd_conversion": "HISTORICAL_AT_DEAL_TIME",
+          "ftmo_round_trip_usd": 5.0
+        }
+      }
+    },
+    "slippage": {
+      "status": "UNRESOLVED",
+      "dev_baseline_allowed": true,
+      "blocks_phase_classes": [
+        "OOS",
+        "RETROSPECTIVE_HOLDOUT",
+        "PROSPECTIVE_FORWARD_OBSERVATION",
+        "QUALIFICATION",
+        "FTMO"
+      ],
+      "required_resolution": "PER_SYMBOL_P95_ADVERSE_LIVE_FILL_PLUS_GAP_COMPONENT_AND_CONSERVATIVE_MULTIPLIER",
+      "stub_values_forbidden": true
+    },
+    "overnight_swap_proof": {
+      "status": "UNRESOLVED",
+      "dev_baseline_allowed": true,
+      "blocks_phase_classes": [
+        "OOS",
+        "RETROSPECTIVE_HOLDOUT",
+        "PROSPECTIVE_FORWARD_OBSERVATION",
+        "QUALIFICATION",
+        "FTMO"
+      ],
+      "required_resolution": "HASHED_SYMBOL_SWAP_SNAPSHOT_AND_ZERO_OVERNIGHT_POSITION_ASSERTION"
+    }
+  },
+  "qualification_blocking_cost_axes": [
+    "slippage",
+    "overnight_swap_proof"
+  ],
+  "evidence_artifacts": [
+    {
+      "id": "ea_binary",
+      "path": "D:/QM/reports/dev1/build/compile/20260719T193732Z_d4d06b373ceb4fc897e9dba9e80a6e9d/stage/QM5_20009_ict-liquidity-portfolio.ex5",
+      "validation": "NONEMPTY"
+    },
+    {
+      "id": "compile_evidence",
+      "path": "D:/QM/reports/dev1/build/compile/20260719T193732Z_d4d06b373ceb4fc897e9dba9e80a6e9d/evidence.json",
+      "validation": "COMPILE_EVIDENCE_PASS"
+    },
+    {
+      "id": "compiler_log",
+      "path": "D:/QM/reports/dev1/build/compile/20260719T193732Z_d4d06b373ceb4fc897e9dba9e80a6e9d/QM5_20009_ict-liquidity-portfolio.compile.log",
+      "validation": "METAEDITOR_ZERO_ERRORS_ZERO_WARNINGS"
+    },
+    {
+      "id": "compile_include_path_audit",
+      "path": "D:/QM/reports/dev1/build/compile/20260719T193732Z_d4d06b373ceb4fc897e9dba9e80a6e9d/include_path_audit.csv",
+      "validation": "INCLUDE_PATH_AUDIT_ALL_ALLOWED"
+    },
+    {
+      "id": "compile_include_sync_manifest",
+      "path": "D:/QM/reports/dev1/build/compile/20260719T193732Z_d4d06b373ceb4fc897e9dba9e80a6e9d/include_sync_manifest.csv",
+      "validation": "NONEMPTY"
+    },
+    {
+      "id": "compile_source_manifest",
+      "path": "D:/QM/reports/dev1/build/compile/20260719T193732Z_d4d06b373ceb4fc897e9dba9e80a6e9d/source_manifest.csv",
+      "validation": "NONEMPTY"
+    },
+    {
+      "id": "compiler_binary",
+      "path": "D:/QM/mt5/DEV1/MetaEditor64.exe",
+      "validation": "NONEMPTY",
+      "version": "5.0.0.5833"
+    },
+    {
+      "id": "terminal_binary",
+      "path": "D:/QM/mt5/DEV1/terminal64.exe",
+      "validation": "NONEMPTY",
+      "version": "5.0.0.5833"
+    },
+    {
+      "id": "provisioning_manifest",
+      "path": "framework/registry/dwx_symbol_matrix.csv",
+      "validation": "NONEMPTY"
+    },
+    {
+      "id": "tick_coverage_manifest",
+      "path": "framework/registry/dwx_symbol_history_ranges.csv",
+      "validation": "NONEMPTY"
+    },
+    {
+      "id": "news_shared_primary",
+      "path": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv",
+      "validation": "NONEMPTY",
+      "equality_group": "NEWS_PRIMARY"
+    },
+    {
+      "id": "news_shared_secondary",
+      "path": "D:/QM/data/news_calendar/forex_factory_calendar_clean.csv",
+      "validation": "NONEMPTY",
+      "equality_group": "NEWS_SECONDARY"
+    },
+    {
+      "id": "news_qmdev1_common_primary",
+      "path": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/news_calendar_2015_2025.csv",
+      "validation": "NONEMPTY",
+      "equality_group": "NEWS_PRIMARY"
+    },
+    {
+      "id": "news_qmdev1_common_secondary",
+      "path": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/forex_factory_calendar_clean.csv",
+      "validation": "NONEMPTY",
+      "equality_group": "NEWS_SECONDARY"
+    },
+    {
+      "id": "venue_cost_model",
+      "path": "framework/registry/venue_cost_model.json",
+      "validation": "NONEMPTY"
+    },
+    {
+      "id": "live_commission_model",
+      "path": "framework/registry/live_commission.json",
+      "validation": "NONEMPTY"
+    },
+    {
+      "id": "slippage_calibration",
+      "path": "framework/calibrations/VPS_SLIPPAGE_LATENCY_CALIBRATION_V2.json",
+      "validation": "NONEMPTY"
+    },
+    {
+      "id": "tester_defaults",
+      "path": "framework/registry/tester_defaults.json",
+      "validation": "NONEMPTY"
+    },
+    {
+      "id": "commission_groups",
+      "path": "D:/QM/mt5/T1/MQL5/Profiles/Tester/Groups/Darwinex-Live_real.txt",
+      "validation": "NONEMPTY"
+    },
+    {
+      "id": "registry_execution_contract",
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "validation": "NONEMPTY"
+    },
+    {
+      "id": "registry_magic",
+      "path": "framework/registry/magic_numbers.csv",
+      "validation": "NONEMPTY"
+    },
+    {
+      "id": "registry_ea_id",
+      "path": "framework/registry/ea_id_registry.csv",
+      "validation": "NONEMPTY"
+    }
+  ],
+  "freeze_attestation": {
+    "method": "DETACHED_SHA256_OF_MANIFEST_PLUS_IMMUTABLE_GIT_COMMIT",
+    "manifest_must_not_hash_itself": true,
+    "oos_unlock_requires_recorded_dev_verdict": true,
+    "holdout_unlock_requires_recorded_oos_verdict": true
+  }
+}
