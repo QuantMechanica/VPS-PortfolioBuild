@@ -18,7 +18,7 @@ import sys
 import tempfile
 import unicodedata
 from dataclasses import dataclass
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP, getcontext
 from html.parser import HTMLParser
 from pathlib import Path
@@ -467,6 +467,17 @@ def _parse_time(value: str, label: str) -> datetime:
         raise ReportFormatError(f"{label} is not MT5 server time: {value!r}") from exc
 
 
+def _new_york_date_from_broker(value: datetime) -> date:
+    """Match the frozen V5 broker-clock contract used by the EA.
+
+    QM_DSTAware defines broker time as UTC+2 outside US DST and UTC+3 during
+    US DST.  New York is UTC-5/UTC-4 on the same US boundaries, so the
+    historical broker-to-New-York wall-clock delta is invariantly seven hours.
+    """
+
+    return (value - timedelta(hours=7)).date()
+
+
 def _numeric_id(value: str, label: str, *, allow_empty: bool = False) -> str:
     cleaned = _clean_text(value).replace(" ", "")
     if allow_empty and not cleaned:
@@ -891,7 +902,11 @@ def audit_report(
     non_same_day = [
         row["exit_deal"]
         for row in closes
-        if any(entry_time.date() != row["exit_time"].date() for entry_time in row["entry_times"])
+        if any(
+            _new_york_date_from_broker(entry_time)
+            != _new_york_date_from_broker(row["exit_time"])
+            for entry_time in row["entry_times"]
+        )
     ]
     nonzero_swap = [row["exit_deal"] for row in closes if row["swap"] != ZERO]
     total_swap = sum((row["swap"] for row in closes), ZERO)
@@ -1016,7 +1031,7 @@ def audit_report(
         "cumulative_closed_balance": balance_series,
         "same_day_swap_proof": {
             "status": proof_status,
-            "date_basis": "MT5_SERVER_CALENDAR_DATE_AS_REPORTED",
+            "date_basis": "NEW_YORK_DATE_VIA_FROZEN_BROKER_MINUS_7_HOURS",
             "all_closed_positions_same_day": not non_same_day,
             "all_closed_positions_zero_swap": not nonzero_swap,
             "non_same_day_exit_deals": non_same_day,

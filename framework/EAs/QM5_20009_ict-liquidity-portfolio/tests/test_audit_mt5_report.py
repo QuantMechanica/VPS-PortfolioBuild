@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import re
 import sys
+from datetime import datetime
 from pathlib import Path
 
 import pytest
@@ -57,6 +58,19 @@ def test_german_labels_decimal_commas_and_fx_base_conversion() -> None:
     assert receipt["metrics"]["cost_adjusted_net_profit_usd"] == "994.47"
     assert receipt["closed_positions"][0]["entry_external_cost_usd"] == "2.75"
     assert receipt["closed_positions"][0]["exit_external_cost_usd"] == "2.78"
+
+
+def test_same_day_proof_uses_the_ea_frozen_new_york_date_not_server_midnight() -> None:
+    assert audit._new_york_date_from_broker(datetime(2022, 1, 2, 0, 30)) == datetime(
+        2022, 1, 1
+    ).date()
+    assert audit._new_york_date_from_broker(datetime(2022, 1, 2, 7, 0)) == datetime(
+        2022, 1, 2
+    ).date()
+    receipt = audit.audit_report(FIXTURES / "mt5_report_en.html")
+    assert receipt["same_day_swap_proof"]["date_basis"] == (
+        "NEW_YORK_DATE_VIA_FROZEN_BROKER_MINUS_7_HOURS"
+    )
 
 
 def test_utf16_report_is_detected_without_a_bom_guess(tmp_path: Path) -> None:

@@ -42,6 +42,15 @@ TARGET_MAGIC_ROWS = (
     (20009, 4, "XAUUSD.DWX", 200090004),
     (20009, 5, "EURUSD.DWX", 200090005),
 )
+EXPECTED_MAGIC_EXCEPTION = {
+    "path": MAGIC_RESOLVER_PATH,
+    "compiled_git_blob_sha1": "ef17e946f957a0601e3279f02f258a4062fb94a0",
+    "compiled_sha256": "9ca51af0bde4e0b0f775e95aca2af5e4aaaee0154641bac379b87bf7d649f9e3",
+    "policy": "EXACT_COMPILED_PREFIX_PLUS_COLLISION_FREE_FOREIGN_EA_APPEND_ONLY",
+    "target_ea_id": 20009,
+    "target_rows": [list(row) for row in TARGET_MAGIC_ROWS],
+    "dynamic_git_head_dependency": False,
+}
 
 MARKETS = (
     ("NDX.DWX", "M1", 0, 0, "index"),
@@ -388,6 +397,11 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
         "NO_SIGNAL_OR_EXECUTION_SEMANTICS"
     ):
         raise FreezeError("tester chart UI override is not explicitly justified")
+    if tester.get("commission_injection") != (
+        "RAW_TESTER_COMMISSION_ZERO; RUNNER_COMMISSION_OVERRIDES_ZERO; "
+        "EA_SIM_COMMISSION_ZERO; AUTHORITATIVE_EXTERNAL_DEAL_AUDIT"
+    ):
+        raise FreezeError("tester commission application contract drifted")
 
     model4 = protocol.get("model4_data")
     expected_model4 = {
@@ -404,6 +418,8 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
     }
     if model4 != expected_model4:
         raise FreezeError("Model-4 provisioning/fence contract drifted")
+    if protocol.get("compiled_source_snapshot_exceptions") != [EXPECTED_MAGIC_EXCEPTION]:
+        raise FreezeError("compiled source snapshot exception contract drifted")
 
     unlock = protocol.get("phase_unlock")
     if not isinstance(unlock, Mapping):
@@ -749,7 +765,11 @@ def _magic_resolver_rows_and_skeleton(payload: bytes) -> tuple[
     lines = text.splitlines()
 
     def array_payload(name: str) -> str:
-        matches = [line for line in lines if f"{name}[" in line]
+        matches = [
+            line
+            for line in lines
+            if line.lstrip().startswith("static const ") and f"{name}[" in line
+        ]
         if len(matches) != 1 or "=" not in matches[0]:
             raise FreezeError(f"MagicResolver array is missing or duplicated: {name}")
         raw = matches[0].split("=", 1)[1].strip()
@@ -804,16 +824,7 @@ def _compiled_magic_resolver_row(
     manifest_row: Mapping[str, str],
     exception: Mapping[str, Any],
 ) -> dict[str, object]:
-    expected_exception = {
-        "path": MAGIC_RESOLVER_PATH,
-        "compiled_git_blob_sha1": "ef17e946f957a0601e3279f02f258a4062fb94a0",
-        "compiled_sha256": "9ca51af0bde4e0b0f775e95aca2af5e4aaaee0154641bac379b87bf7d649f9e3",
-        "policy": "EXACT_COMPILED_PREFIX_PLUS_COLLISION_FREE_FOREIGN_EA_APPEND_ONLY",
-        "target_ea_id": 20009,
-        "target_rows": [list(row) for row in TARGET_MAGIC_ROWS],
-        "dynamic_git_head_dependency": False,
-    }
-    if exception != expected_exception:
+    if exception != EXPECTED_MAGIC_EXCEPTION:
         raise FreezeError("compiled MagicResolver snapshot exception drifted")
 
     compiled = _git_blob_bytes(str(exception["compiled_git_blob_sha1"]))

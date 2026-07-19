@@ -76,7 +76,10 @@ def test_visible_input_closure_is_exact_and_framework_overrides_are_explicit() -
     assert values["InpQMSimCommissionPerLot"] == "0.0"
     assert values["qm_chartui_enabled"] == "false"
     assert values["qm_chartui_corner"] == "0"
-    assert "EA_SIM_COMMISSION_MUST_REMAIN_ZERO" in payload["tester"]["commission_injection"]
+    assert payload["tester"]["commission_injection"] == (
+        "RAW_TESTER_COMMISSION_ZERO; RUNNER_COMMISSION_OVERRIDES_ZERO; "
+        "EA_SIM_COMMISSION_ZERO; AUTHORITATIVE_EXTERNAL_DEAL_AUDIT"
+    )
     assert payload["tester"]["chartui_override_reason"] == (
         "DISABLED_IN_NONVISUAL_TESTER_FOR_PERFORMANCE; "
         "NO_SIGNAL_OR_EXECUTION_SEMANTICS"
@@ -358,6 +361,38 @@ def test_final_compile_provisioning_and_slippage_evidence_hashes_are_pinned() ->
     assert artifacts["slippage_livefill_ledger"]["expected_sha256"] == (
         "722db3646826dd793d905bad1ae4efe9ed859286255ae2907837a18da329fa90"
     )
+    assert artifacts["report_cost_auditor"]["path"].endswith("/tools/audit_mt5_report.py")
+
+
+def test_commission_is_external_dealwise_and_double_counting_fails_closed() -> None:
+    commission = protocol()["costs"]["commission"]
+    assert commission["status"] == "RESOLVED"
+    assert commission["execution_model"] == (
+        "RAW_TESTER_ZERO_PLUS_AUTHORITATIVE_EXTERNAL_POSTPROCESSOR"
+    )
+    assert commission["raw_tester_commission_required"] == 0.0
+    assert commission["runner_commission_per_lot_required"] == 0.0
+    assert commission["runner_commission_per_side_native_required"] == 0.0
+    assert commission["ea_sim_commission_required"] == 0.0
+    assert commission["double_count_guard"] == "REJECT_ANY_NONZERO_NATIVE_REPORT_COMMISSION"
+    assert commission["symbols"]["NDX.DWX"]["per_side_usd"] == 2.75
+    assert commission["symbols"]["GDAXI.DWX"]["per_side_usd"] == 3.5
+    assert commission["symbols"]["GBPUSD.DWX"]["conversion"] == "DEAL_PRICE_BASE_TO_USD"
+
+
+def test_compiled_magic_resolver_is_a_fixed_blob_with_only_foreign_append_drift() -> None:
+    payload = protocol()
+    assert payload["compiled_source_snapshot_exceptions"] == [
+        freeze.EXPECTED_MAGIC_EXCEPTION
+    ]
+    blob = freeze._git_blob_bytes(freeze.EXPECTED_MAGIC_EXCEPTION["compiled_git_blob_sha1"])
+    assert hashlib.sha256(blob).hexdigest() == freeze.EXPECTED_MAGIC_EXCEPTION["compiled_sha256"]
+    compiled_rows, compiled_skeleton = freeze._magic_resolver_rows_and_skeleton(blob)
+    active = (freeze.REPO_ROOT / freeze.MAGIC_RESOLVER_PATH).read_bytes()
+    active_rows, active_skeleton = freeze._magic_resolver_rows_and_skeleton(active)
+    assert active_skeleton == compiled_skeleton
+    assert active_rows[: len(compiled_rows)] == compiled_rows
+    assert tuple(row for row in compiled_rows if row[0] == 20009) == freeze.TARGET_MAGIC_ROWS
 
 
 def test_selected_model4_data_is_rehashed_by_content_pre_and_post(tmp_path: Path) -> None:
