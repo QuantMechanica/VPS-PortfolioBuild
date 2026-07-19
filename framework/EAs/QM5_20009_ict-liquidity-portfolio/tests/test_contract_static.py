@@ -152,6 +152,19 @@ class FrozenContractTests(unittest.TestCase):
         self.assertIn("asian.high,\n                           asian.low,", EA)
         self.assertIn("london_reference.high,\n                           london_reference.low,", EA)
 
+    def test_pending_prices_are_aligned_to_trade_tick_grid(self) -> None:
+        self.assertIn("SYMBOL_TRADE_TICK_SIZE", EA)
+        self.assertIn("Strategy_NormalizeToTick(signal.entry, 0)", EA)
+        self.assertIn("(signal.direction > 0) ? -1 : 1", EA)
+        self.assertIn(
+            "Strategy_QuoteAllowsFreshLimit(signal.direction,\n"
+            "                                      request.price,",
+            EA,
+        )
+        build = function_body(EA, "Strategy_BuildEntryRequest")
+        self.assertLess(build.index("Strategy_NormalizeToTick"), build.index("const double risk"))
+        self.assertLess(build.index("Strategy_QuoteAllowsFreshLimit"), build.index("const double risk"))
+
 
 if __name__ == "__main__":
     unittest.main()

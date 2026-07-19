@@ -723,35 +723,57 @@ void Strategy_ManageExposure()
      }
   }
 
-bool Strategy_QuoteAllowsFreshLimit(const ICT_SequenceResult &signal)
+double Strategy_NormalizeToTick(const double price, const int rounding_direction)
+  {
+   if(price <= 0.0)
+      return 0.0;
+   double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
+   if(tick_size <= 0.0)
+      tick_size = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(tick_size <= 0.0)
+      return 0.0;
+
+   const double tick_units = price / tick_size;
+   double normalized_units = MathRound(tick_units);
+   if(rounding_direction < 0)
+      normalized_units = MathFloor(tick_units + 1e-12);
+   else if(rounding_direction > 0)
+      normalized_units = MathCeil(tick_units - 1e-12);
+   return NormalizeDouble(normalized_units * tick_size, _Digits);
+  }
+
+bool Strategy_QuoteAllowsFreshLimit(const int direction,
+                                    const double entry,
+                                    const double stop,
+                                    const double target)
   {
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(point <= 0.0 || ask <= 0.0 || bid <= 0.0 || ask < bid ||
-      signal.entry <= 0.0 || signal.stop <= 0.0 || signal.target <= 0.0)
+      entry <= 0.0 || stop <= 0.0 || target <= 0.0)
       return false;
 
    const int stops_level = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
    const double current_spread = MathMax(0.0, ask - bid);
    const double minimum_distance = MathMax(0.0, (double)stops_level * point) + current_spread;
-   if(signal.direction > 0)
+   if(direction > 0)
      {
       // Ask at/below the proximal edge means the earliest FVG was already
       // touched when it became eligible; this attempt gets no later rescue.
-      if(ask <= signal.entry || ask - signal.entry <= minimum_distance)
+      if(ask <= entry || ask - entry <= minimum_distance)
          return false;
-      if(signal.stop >= signal.entry || signal.target <= signal.entry)
+      if(stop >= entry || target <= entry)
          return false;
      }
    else
      {
-      if(bid >= signal.entry || signal.entry - bid <= minimum_distance)
+      if(bid >= entry || entry - bid <= minimum_distance)
          return false;
-      if(signal.stop <= signal.entry || signal.target >= signal.entry)
+      if(stop <= entry || target >= entry)
          return false;
      }
-   if(MathAbs(signal.entry - signal.stop) <= minimum_distance)
+   if(MathAbs(entry - stop) <= minimum_distance)
       return false;
    return true;
   }
@@ -780,17 +802,19 @@ bool Strategy_BuildEntryRequest(const ICT_SequenceResult &signal,
                                 QM_EntryRequest &request)
   {
    Strategy_InitRequest(request);
-   if(!signal.signal_valid || !signal.consumed || signal.ambiguous ||
-      !Strategy_QuoteAllowsFreshLimit(signal))
+   if(!signal.signal_valid || !signal.consumed || signal.ambiguous)
       return false;
    const int expiration_seconds = Strategy_SecondsUntilSessionEnd(signal);
    if(expiration_seconds <= 0)
       return false;
 
    request.type = (signal.direction > 0) ? QM_BUY_LIMIT : QM_SELL_LIMIT;
-   request.price = NormalizeDouble(signal.entry, _Digits);
-   request.sl = NormalizeDouble(signal.stop, _Digits);
-   request.tp = NormalizeDouble(signal.target, _Digits);
+   request.price = Strategy_NormalizeToTick(signal.entry, 0);
+   // Stops are rounded away from the entry so grid alignment can never make
+   // the frozen structural stop less conservative.
+   request.sl = Strategy_NormalizeToTick(signal.stop,
+                                         (signal.direction > 0) ? -1 : 1);
+   request.tp = Strategy_NormalizeToTick(signal.target, 0);
    request.reason = (strategy_mode == ICT_MODE_INDEX_MSS_FVG)
                     ? "ICTA_OR_MSS_FVG"
                     : ((signal.session == ICT_SESSION_LONDON)
@@ -798,6 +822,12 @@ bool Strategy_BuildEntryRequest(const ICT_SequenceResult &signal,
                        : "ICTB_NY_MSS_FVG");
    request.symbol_slot = qm_magic_slot_offset;
    request.expiration_seconds = expiration_seconds;
+
+   if(!Strategy_QuoteAllowsFreshLimit(signal.direction,
+                                      request.price,
+                                      request.sl,
+                                      request.tp))
+      return false;
 
    const double risk = MathAbs(request.price - request.sl);
    const double reward = (signal.direction > 0) ? request.tp - request.price
