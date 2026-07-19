@@ -115,17 +115,101 @@
       "additionalProperties": false,
       "required": ["policy"],
       "properties": {
-        "policy": {"enum": ["NONE", "FIXED_EVENT_TABLE"]},
+        "policy": {
+          "enum": [
+            "NONE",
+            "FIXED_EVENT_TABLE",
+            "FTMO_PRE30_POST30_NEWS_FILES_FAIL_CLOSED"
+          ]
+        },
         "valid_through": {"type": "string", "format": "date"},
         "source": {"type": "string"},
-        "stale_behavior": {"enum": ["NOT_APPLICABLE", "INIT_AND_ENTRY_FAIL_CLOSED"]}
+        "stale_behavior": {"enum": ["NOT_APPLICABLE", "INIT_AND_ENTRY_FAIL_CLOSED"]},
+        "temporal_mode": {"enum": ["PRE30_POST30"]},
+        "compliance_profile": {"enum": ["FTMO"]},
+        "minimum_impact": {"enum": ["high"]},
+        "stale_max_hours": {"const": 336},
+        "live_source": {"enum": ["NATIVE_MT5_CALENDAR"]},
+        "sources": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/calendarSource"},
+          "allOf": [
+            {
+              "contains": {
+                "properties": {"role": {"const": "SHARED_PRIMARY"}},
+                "required": ["role"]
+              }
+            },
+            {
+              "contains": {
+                "properties": {"role": {"const": "SHARED_SECONDARY"}},
+                "required": ["role"]
+              }
+            },
+            {
+              "contains": {
+                "properties": {"role": {"const": "QMDEV1_COMMON_PRIMARY"}},
+                "required": ["role"]
+              }
+            },
+            {
+              "contains": {
+                "properties": {"role": {"const": "QMDEV1_COMMON_SECONDARY"}},
+                "required": ["role"]
+              }
+            }
+          ]
+        }
       },
       "allOf": [
         {
           "if": {"properties": {"policy": {"const": "FIXED_EVENT_TABLE"}}},
           "then": {"required": ["valid_through", "source", "stale_behavior"]}
+        },
+        {
+          "if": {
+            "properties": {
+              "policy": {"const": "FTMO_PRE30_POST30_NEWS_FILES_FAIL_CLOSED"}
+            }
+          },
+          "then": {
+            "required": [
+              "temporal_mode",
+              "compliance_profile",
+              "minimum_impact",
+              "stale_max_hours",
+              "stale_behavior",
+              "live_source",
+              "sources"
+            ],
+            "properties": {
+              "stale_behavior": {"const": "INIT_AND_ENTRY_FAIL_CLOSED"}
+            }
+          }
         }
       ]
+    },
+    "calendarSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "path", "sha256", "coverage_start", "coverage_end"],
+      "properties": {
+        "role": {
+          "enum": [
+            "SHARED_PRIMARY",
+            "SHARED_SECONDARY",
+            "QMDEV1_COMMON_PRIMARY",
+            "QMDEV1_COMMON_SECONDARY"
+          ]
+        },
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "coverage_start": {"type": "string", "format": "date"},
+        "coverage_end": {"type": "string", "format": "date"}
+      }
     },
     "promotion": {
       "type": "object",

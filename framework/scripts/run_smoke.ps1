@@ -37,6 +37,10 @@ param(
     # 0 (default) = restore the canonical real Darwinex schedule unchanged (Q02/Q03).
     [ValidateRange(0, 1000)]
     [double]$CommissionPerLot = 0,
+    # Exact native-currency amount charged on every IN and OUT deal. This is a
+    # separate, empirically reconciled interface; never pass a USD round trip here.
+    [ValidateRange(0, 1000)]
+    [double]$CommissionPerSideNative = 0,
     [ValidatePattern('^[A-Z]{3}$')]
     [string]$TesterCurrencyOverride,
     [ValidateRange(0, 2147483647)]
@@ -811,7 +815,8 @@ function Set-TesterGroupsCommission {
     param(
         [Parameter(Mandatory = $true)][string]$TerminalRoot,
         [Parameter(Mandatory = $true)][string]$SymbolName,
-        [Parameter(Mandatory = $true)][double]$CommissionPerLot
+        [Parameter(Mandatory = $true)][double]$CommissionPerLot,
+        [Parameter(Mandatory = $true)][double]$CommissionPerSideNative
     )
 
     # The MT5 strategy tester reads commission from the server-keyed groups file
@@ -829,40 +834,35 @@ function Set-TesterGroupsCommission {
     $target = Join-Path $groupsDir "Darwinex-Live_real.txt"
 
     $text = [System.IO.File]::ReadAllText($canonical, [System.Text.Encoding]::Unicode)
+    $commissionMatcher = $null
+    $commissionMode = $null
     if ($CommissionPerLot -gt 0) {
-        $assetClass = Get-DwxSymbolAssetClass -RepoRoot $localRepoRoot -SymbolName $SymbolName
-        $commissionMatcher = Get-DwxCommissionMatcher -AssetClass $assetClass -SymbolName $SymbolName
-
-        # Encoding mirrors the canonical file's money-per-lot Forex block
-        # (CommissionMode=1, CommissionType=1, CommissionCharge=2). Exact USD/lot
-        # semantics are confirmed empirically by reading the tester report commission.
-        # InvariantCulture: the VPS locale uses a comma decimal separator, but MT5
-        # groups files require a dot (e.g. 7.0000, matching the canonical entries).
-        $val = $CommissionPerLot.ToString("F4", [System.Globalization.CultureInfo]::InvariantCulture)
-        $block = @(
-            "CommissionSymbol=$commissionMatcher",
-            "CommissionCharge=2",
-            "CommissionRange=0",
-            "CommissionEntry=0",
-            "CommissionValue=$val",
-            "CommissionRangeTo=1000.00",
-            "CommissionMode=1",
-            "CommissionType=1"
-        ) -join "`r`n"
-        $lines = $text -split "`r`n"
-        $out = New-Object System.Collections.Generic.List[string]
-        $inserted = $false
-        foreach ($ln in $lines) {
-            $out.Add($ln)
-            if ((-not $inserted) -and ($ln -match '^CommonUseSettings=')) {
-                $out.Add($block)
-                $inserted = $true
-            }
-        }
-        if (-not $inserted) { $out.Insert(0, $block) }
-        $text = ($out -join "`r`n")
+        # Mode=1 charged the documented USD round trip on both sides in symbol
+        # base currency. A Build-5833 Mode=0 canary then booked exactly 0.00 on
+        # every deal. Until a fixed override is empirically encoded, accepting a
+        # positive value would silently misprice research, so fail closed. The
+        # canonical Custom\... blocks remain active when the value is zero.
+        throw 'UNVALIDATED_FIXED_COMMISSION_OVERRIDE: use CommissionPerLot=0 with the canonical tester group'
+    }
+    if ($CommissionPerSideNative -gt 0) {
+        # Even a correctly dimensioned native block was ignored in an isolated
+        # Build-5833 canary because the offline tester never activated the custom
+        # groups file. Do not expose a value that the report silently drops.
+        throw 'UNAPPLIED_NATIVE_COMMISSION_OVERRIDE: DEV1 requires external deal-level cost reconciliation'
     }
     [System.IO.File]::WriteAllText($target, $text, [System.Text.Encoding]::Unicode)
+    $canonicalHash = (Get-FileHash -LiteralPath $canonical -Algorithm SHA256).Hash.ToLowerInvariant()
+    $installedHash = (Get-FileHash -LiteralPath $target -Algorithm SHA256).Hash.ToLowerInvariant()
+    return [pscustomobject]@{
+        canonical_path = $canonical
+        target_path = $target
+        canonical_sha256 = $canonicalHash
+        installed_sha256 = $installedHash
+        commission_per_lot = $CommissionPerLot
+        commission_per_side_native = $CommissionPerSideNative
+        commission_matcher = $commissionMatcher
+        commission_mode = $commissionMode
+    }
 }
 
 function Get-DwxSymbolAssetClass {
@@ -1699,11 +1699,14 @@ if ($effectiveMinTrades -ne $MinTrades) {
     $MinTrades = $effectiveMinTrades
 }
 
-# Apply (or reset) the tester commission for this run before launching. Q04 passes
-# -CommissionPerLot 7.0 to install a $7/lot round-trip entry matching the .DWX symbol;
-# all other phases pass 0 and get the canonical real schedule restored unchanged.
-Set-TesterGroupsCommission -TerminalRoot $terminalRoot -SymbolName $Symbol -CommissionPerLot $CommissionPerLot
-Write-Host ("run_smoke.commission_per_lot={0} terminal={1} symbol={2}" -f $CommissionPerLot, $effectiveTerminal, $Symbol)
+# Install the canonical tester commission schedule before launching. Positive
+# fixed overrides are fail-closed because both historical encodings were proven
+# materially wrong. The finally block restores and verifies the canonical file.
+$commissionGroupEvidence = $null
+$commissionGroupRestoreEvidence = $null
+try {
+    $commissionGroupEvidence = Set-TesterGroupsCommission -TerminalRoot $terminalRoot -SymbolName $Symbol -CommissionPerLot $CommissionPerLot -CommissionPerSideNative $CommissionPerSideNative
+    Write-Host ("run_smoke.commission_per_lot={0} native_per_side={1} terminal={2} symbol={3} injected_sha256={4}" -f $CommissionPerLot, $CommissionPerSideNative, $effectiveTerminal, $Symbol, $commissionGroupEvidence.installed_sha256)
 
 $runResults = @()
 $globalOnInitFailure = $false
@@ -2076,6 +2079,13 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
         net_profit_raw = $netProfitRaw
     }
 }
+} finally {
+    $commissionGroupRestoreEvidence = Set-TesterGroupsCommission -TerminalRoot $terminalRoot -SymbolName $Symbol -CommissionPerLot 0 -CommissionPerSideNative 0
+    if ($commissionGroupRestoreEvidence.installed_sha256 -cne $commissionGroupRestoreEvidence.canonical_sha256) {
+        throw "tester groups canonical restore hash mismatch: target=$($commissionGroupRestoreEvidence.installed_sha256) canonical=$($commissionGroupRestoreEvidence.canonical_sha256)"
+    }
+    Write-Host ("run_smoke.commission_groups_restored sha256={0} target='{1}'" -f $commissionGroupRestoreEvidence.installed_sha256, $commissionGroupRestoreEvidence.target_path)
+}
 
 $completedRuns = @($runResults | Where-Object { $_.status -eq "OK" })
 $completedRunCount = @($completedRuns).Count
@@ -2158,6 +2168,16 @@ $summary = [ordered]@{
     model4_log_marker_detected = $globalRealTicksMarker
     report_dir = $reportDir
     report_export_mode = "relative_with_absolute_fallback"
+    commission_group = [ordered]@{
+        commission_per_lot = $CommissionPerLot
+        commission_per_side_native = $CommissionPerSideNative
+        commission_matcher = $commissionGroupEvidence.commission_matcher
+        commission_mode = $commissionGroupEvidence.commission_mode
+        injected_sha256 = $commissionGroupEvidence.installed_sha256
+        canonical_sha256 = $commissionGroupEvidence.canonical_sha256
+        restored_sha256 = $commissionGroupRestoreEvidence.installed_sha256
+        restored_to_canonical = ($commissionGroupRestoreEvidence.installed_sha256 -ceq $commissionGroupRestoreEvidence.canonical_sha256)
+    }
     news_calendar = $newsCalendarDiagnostics
     runs = $runResults
 }

@@ -322,7 +322,21 @@
       "strategy_timeframe": "M1",
       "bar_gate_timeframe": "M1",
       "friday_close": {"enabled": true, "hour_broker": 23, "mode": "FRAMEWORK_OVERRIDE", "declaration": "PORTFOLIO_SAFETY_AFTER_CARD_DAILY_HARD_FLAT", "qualification_status": "BLOCKED", "card_evidence": null},
-      "calendar": {"policy": "NONE"},
+      "calendar": {
+        "policy": "FTMO_PRE30_POST30_NEWS_FILES_FAIL_CLOSED",
+        "temporal_mode": "PRE30_POST30",
+        "compliance_profile": "FTMO",
+        "minimum_impact": "high",
+        "stale_max_hours": 336,
+        "stale_behavior": "INIT_AND_ENTRY_FAIL_CLOSED",
+        "live_source": "NATIVE_MT5_CALENDAR",
+        "sources": [
+          {"role": "SHARED_PRIMARY", "path": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv", "sha256": "8e898ca1c4aed5fbc4cbe43fc176e8d8595c2e6f5f05c2984c2468527d4f5b0d", "coverage_start": "2015-01-01", "coverage_end": "2026-07-24"},
+          {"role": "SHARED_SECONDARY", "path": "D:/QM/data/news_calendar/forex_factory_calendar_clean.csv", "sha256": "3cf4b7d881b62105b70e34cb8400caa6c393b85743cce8046085c680ae05f3d1", "coverage_start": "2015-01-01", "coverage_end": "2026-07-24"},
+          {"role": "QMDEV1_COMMON_PRIMARY", "path": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/news_calendar_2015_2025.csv", "sha256": "8e898ca1c4aed5fbc4cbe43fc176e8d8595c2e6f5f05c2984c2468527d4f5b0d", "coverage_start": "2015-01-01", "coverage_end": "2026-07-24"},
+          {"role": "QMDEV1_COMMON_SECONDARY", "path": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/forex_factory_calendar_clean.csv", "sha256": "3cf4b7d881b62105b70e34cb8400caa6c393b85743cce8046085c680ae05f3d1", "coverage_start": "2015-01-01", "coverage_end": "2026-07-24"}
+        ]
+      },
       "promotion": {"status": "BLOCKED", "block_reasons": ["research_contract_not_yet_qualified", "locked_2026_holdout_unread", "synchronized_ftmo_joint_replay_missing"]}
     },
     {
@@ -336,7 +350,21 @@
       "strategy_timeframe": "M1",
       "bar_gate_timeframe": "M1",
       "friday_close": {"enabled": true, "hour_broker": 23, "mode": "FRAMEWORK_OVERRIDE", "declaration": "PORTFOLIO_SAFETY_AFTER_CARD_DAILY_HARD_FLAT", "qualification_status": "BLOCKED", "card_evidence": null},
-      "calendar": {"policy": "NONE"},
+      "calendar": {
+        "policy": "FTMO_PRE30_POST30_NEWS_FILES_FAIL_CLOSED",
+        "temporal_mode": "PRE30_POST30",
+        "compliance_profile": "FTMO",
+        "minimum_impact": "high",
+        "stale_max_hours": 336,
+        "stale_behavior": "INIT_AND_ENTRY_FAIL_CLOSED",
+        "live_source": "NATIVE_MT5_CALENDAR",
+        "sources": [
+          {"role": "SHARED_PRIMARY", "path": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv", "sha256": "8e898ca1c4aed5fbc4cbe43fc176e8d8595c2e6f5f05c2984c2468527d4f5b0d", "coverage_start": "2015-01-01", "coverage_end": "2026-07-24"},
+          {"role": "SHARED_SECONDARY", "path": "D:/QM/data/news_calendar/forex_factory_calendar_clean.csv", "sha256": "3cf4b7d881b62105b70e34cb8400caa6c393b85743cce8046085c680ae05f3d1", "coverage_start": "2015-01-01", "coverage_end": "2026-07-24"},
+          {"role": "QMDEV1_COMMON_PRIMARY", "path": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/news_calendar_2015_2025.csv", "sha256": "8e898ca1c4aed5fbc4cbe43fc176e8d8595c2e6f5f05c2984c2468527d4f5b0d", "coverage_start": "2015-01-01", "coverage_end": "2026-07-24"},
+          {"role": "QMDEV1_COMMON_SECONDARY", "path": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/forex_factory_calendar_clean.csv", "sha256": "3cf4b7d881b62105b70e34cb8400caa6c393b85743cce8046085c680ae05f3d1", "coverage_start": "2015-01-01", "coverage_end": "2026-07-24"}
+        ]
+      },
       "promotion": {"status": "BLOCKED", "block_reasons": ["transport_only_not_selection_market", "research_contract_not_yet_qualified", "synchronized_ftmo_joint_replay_missing"]}
     },
     {
@@ -350,7 +378,21 @@
       "strategy_timeframe": "M5",
       "bar_gate_timeframe": "M5",
       "friday_close": {"enabled": true, "hour_broker": 23, "mode": "FRAMEWORK_OVERRIDE", "declaration": "PORTFOLIO_SAFETY_AFTER_CARD_DAILY_HARD_FLAT", "qualification_status": "BLOCKED", "card_evidence": null},
-      "calendar": {"policy": "NONE"},
+      "calendar": {
+        "policy": "FTMO_PRE30_POST30_NEWS_FILES_FAIL_CLOSED",
+        "temporal_mode": "PRE30_POST30",
+        "compliance_profile": "FTMO",
+        "minimum_impact": "high",
+        "stale_max_hours": 336,
+        "stale_behavior": "INIT_AND_ENTRY_FAIL_CLOSED",
+        "live_source": "NATIVE_MT5_CALENDAR",
+        "sources": [
+          {"role": "SHARED_PRIMARY", "path": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv", "sha256": "8e898ca1c4aed5fbc4cbe43fc176e8d8595c2e6f5f05c2984c2468527d4f5b0d", "coverage_start": "2015-01-01", "coverage_end": "2026-07-24"},
+          {"role": "SHARED_SECONDARY", "path": "D:/QM/data/news_calendar/forex_factory_calendar_clean.csv", "sha256": "3cf4b7d881b62105b70e34cb8400caa6c393b85743cce8046085c680ae05f3d1", "coverage_start": "2015-01-01", "coverage_end": "2026-07-24"},
+          {"role": "QMDEV1_COMMON_PRIMARY", "path": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/news_calendar_2015_2025.csv", "sha256": "8e898ca1c4aed5fbc4cbe43fc176e8d8595c2e6f5f05c2984c2468527d4f5b0d", "coverage_start": "2015-01-01", "coverage_end": "2026-07-24"},
+          {"role": "QMDEV1_COMMON_SECONDARY", "path": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/forex_factory_calendar_clean.csv", "sha256": "3cf4b7d881b62105b70e34cb8400caa6c393b85743cce8046085c680ae05f3d1", "coverage_start": "2015-01-01", "coverage_end": "2026-07-24"}
+        ]
+      },
       "promotion": {"status": "BLOCKED", "block_reasons": ["engineering_hypothesis_not_official_ict_model", "research_contract_not_yet_qualified", "locked_2026_holdout_unread", "synchronized_ftmo_joint_replay_missing"]}
     },
     {
@@ -364,7 +406,21 @@
       "strategy_timeframe": "M5",
       "bar_gate_timeframe": "M5",
       "friday_close": {"enabled": true, "hour_broker": 23, "mode": "FRAMEWORK_OVERRIDE", "declaration": "PORTFOLIO_SAFETY_AFTER_CARD_DAILY_HARD_FLAT", "qualification_status": "BLOCKED", "card_evidence": null},
-      "calendar": {"policy": "NONE"},
+      "calendar": {
+        "policy": "FTMO_PRE30_POST30_NEWS_FILES_FAIL_CLOSED",
+        "temporal_mode": "PRE30_POST30",
+        "compliance_profile": "FTMO",
+        "minimum_impact": "high",
+        "stale_max_hours": 336,
+        "stale_behavior": "INIT_AND_ENTRY_FAIL_CLOSED",
+        "live_source": "NATIVE_MT5_CALENDAR",
+        "sources": [
+          {"role": "SHARED_PRIMARY", "path": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv", "sha256": "8e898ca1c4aed5fbc4cbe43fc176e8d8595c2e6f5f05c2984c2468527d4f5b0d", "coverage_start": "2015-01-01", "coverage_end": "2026-07-24"},
+          {"role": "SHARED_SECONDARY", "path": "D:/QM/data/news_calendar/forex_factory_calendar_clean.csv", "sha256": "3cf4b7d881b62105b70e34cb8400caa6c393b85743cce8046085c680ae05f3d1", "coverage_start": "2015-01-01", "coverage_end": "2026-07-24"},
+          {"role": "QMDEV1_COMMON_PRIMARY", "path": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/news_calendar_2015_2025.csv", "sha256": "8e898ca1c4aed5fbc4cbe43fc176e8d8595c2e6f5f05c2984c2468527d4f5b0d", "coverage_start": "2015-01-01", "coverage_end": "2026-07-24"},
+          {"role": "QMDEV1_COMMON_SECONDARY", "path": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/forex_factory_calendar_clean.csv", "sha256": "3cf4b7d881b62105b70e34cb8400caa6c393b85743cce8046085c680ae05f3d1", "coverage_start": "2015-01-01", "coverage_end": "2026-07-24"}
+        ]
+      },
       "promotion": {"status": "BLOCKED", "block_reasons": ["engineering_hypothesis_not_official_ict_model", "research_contract_not_yet_qualified", "locked_2026_holdout_unread", "synchronized_ftmo_joint_replay_missing"]}
     }
   ]

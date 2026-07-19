@@ -14,7 +14,7 @@ $script:AllowedSymbols = @('NDX.DWX', 'GDAXI.DWX', 'EURUSD.DWX', 'GBPUSD.DWX', '
 $script:AllowedParameterOrder = @(
     'EAId', 'EALabel', 'Symbol', 'Year', 'FromDate', 'ToDate', 'Expert', 'Period', 'Runs',
     'MinTrades', 'Model', 'TimeoutSeconds', 'SetFile', 'AllowMissingRealTicksLogMarker',
-    'CommissionPerLot', 'TesterCurrencyOverride', 'TesterDepositOverride', 'SmokeMode'
+    'CommissionPerLot', 'CommissionPerSideNative', 'TesterCurrencyOverride', 'TesterDepositOverride', 'SmokeMode'
 )
 $script:SwitchParameters = @('AllowMissingRealTicksLogMarker', 'SmokeMode')
 
@@ -213,7 +213,10 @@ try {
     $logPath = Join-Path $outputDirectory 'run.log'
     foreach ($path in @($requestPath, $outputDirectory)) { Assert-QmNoReparseComponents -Path $path }
 
-    $request = Get-Content -LiteralPath $requestPath -Raw -ErrorAction Stop | ConvertFrom-Json -AsHashtable -ErrorAction Stop
+    # PowerShell otherwise auto-converts ISO-8601 strings to DateTime. Casting that
+    # value back to string drops the trailing Z and can reinterpret UTC as local
+    # time, falsely expiring a fresh request. Keep wire dates as exact strings.
+    $request = Get-Content -LiteralPath $requestPath -Raw -ErrorAction Stop | ConvertFrom-Json -AsHashtable -DateKind String -ErrorAction Stop
     Assert-QmRequestSchema -Request $request -ExpectedRunDirectory $RunDirectory
     $runId = [string]$request.run_id
     $nonce = [string]$request.nonce

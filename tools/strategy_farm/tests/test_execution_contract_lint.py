@@ -430,6 +430,134 @@ def test_20009_multimode_runtime_declarations_are_exactly_registered() -> None:
         assert "runtime_bar_gate_missing" not in codes
 
 
+def test_20009_ftmo_news_calendar_is_exact_and_evidence_bound() -> None:
+    contracts = [item for item in _contracts() if item["ea_id"] == 20009]
+    expected_hashes = {
+        "SHARED_PRIMARY": "8e898ca1c4aed5fbc4cbe43fc176e8d8595c2e6f5f05c2984c2468527d4f5b0d",
+        "SHARED_SECONDARY": "3cf4b7d881b62105b70e34cb8400caa6c393b85743cce8046085c680ae05f3d1",
+        "QMDEV1_COMMON_PRIMARY": "8e898ca1c4aed5fbc4cbe43fc176e8d8595c2e6f5f05c2984c2468527d4f5b0d",
+        "QMDEV1_COMMON_SECONDARY": "3cf4b7d881b62105b70e34cb8400caa6c393b85743cce8046085c680ae05f3d1",
+    }
+    expected_paths = {
+        "SHARED_PRIMARY": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv",
+        "SHARED_SECONDARY": "D:/QM/data/news_calendar/forex_factory_calendar_clean.csv",
+        "QMDEV1_COMMON_PRIMARY": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/news_calendar_2015_2025.csv",
+        "QMDEV1_COMMON_SECONDARY": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/forex_factory_calendar_clean.csv",
+    }
+    calendar_codes = {
+        "calendar_news_contract_invalid",
+        "calendar_news_source_missing",
+        "calendar_news_source_hash_mismatch",
+        "calendar_news_coverage_mismatch",
+        "calendar_news_expired",
+        "calendar_news_copy_drift",
+        "runtime_news_policy_mismatch",
+    }
+
+    assert len(contracts) == 4
+    for contract in contracts:
+        calendar = contract["calendar"]
+        assert calendar["policy"] == "FTMO_PRE30_POST30_NEWS_FILES_FAIL_CLOSED"
+        assert calendar["temporal_mode"] == "PRE30_POST30"
+        assert calendar["compliance_profile"] == "FTMO"
+        assert calendar["minimum_impact"] == "high"
+        assert calendar["stale_max_hours"] == 336
+        assert calendar["stale_behavior"] == "INIT_AND_ENTRY_FAIL_CLOSED"
+        assert calendar["live_source"] == "NATIVE_MT5_CALENDAR"
+        assert {item["role"]: item["sha256"] for item in calendar["sources"]} == expected_hashes
+        assert {item["role"]: item["path"] for item in calendar["sources"]} == expected_paths
+        assert {
+            (item["coverage_start"], item["coverage_end"])
+            for item in calendar["sources"]
+        } == {("2015-01-01", "2026-07-24")}
+
+        codes = {
+            issue.code
+            for issue in lint.lint_contract(
+                contract, repo_root=ROOT, as_of=date(2026, 7, 19)
+            )
+        }
+        assert codes.isdisjoint(calendar_codes)
+
+
+def test_20009_ftmo_news_calendar_rejects_hash_drift() -> None:
+    contract = copy.deepcopy(next(item for item in _contracts() if item["ea_id"] == 20009))
+    contract["calendar"]["sources"][0]["sha256"] = "0" * 64
+
+    codes = {
+        issue.code
+        for issue in lint.lint_contract(contract, repo_root=ROOT, as_of=date(2026, 7, 19))
+    }
+    assert "calendar_news_source_hash_mismatch" in codes
+    assert "calendar_news_copy_drift" in codes
+
+
+def test_20009_ftmo_news_calendar_rejects_declared_coverage_drift() -> None:
+    contract = copy.deepcopy(next(item for item in _contracts() if item["ea_id"] == 20009))
+    contract["calendar"]["sources"][0]["coverage_end"] = "2026-07-23"
+
+    codes = {
+        issue.code
+        for issue in lint.lint_contract(contract, repo_root=ROOT, as_of=date(2026, 7, 19))
+    }
+    assert "calendar_news_coverage_mismatch" in codes
+
+
+def test_20009_ftmo_news_calendar_expires_fail_closed() -> None:
+    contract = copy.deepcopy(next(item for item in _contracts() if item["ea_id"] == 20009))
+
+    codes = {
+        issue.code
+        for issue in lint.lint_contract(contract, repo_root=ROOT, as_of=date(2026, 7, 25))
+    }
+    assert "calendar_news_expired" in codes
+
+
+def test_20009_ftmo_news_calendar_rejects_missing_source(tmp_path: Path) -> None:
+    contract = copy.deepcopy(next(item for item in _contracts() if item["ea_id"] == 20009))
+    contract["calendar"]["sources"][0]["path"] = str(tmp_path / "missing-news.csv")
+
+    codes = {
+        issue.code
+        for issue in lint.lint_contract(contract, repo_root=ROOT, as_of=date(2026, 7, 19))
+    }
+    assert "calendar_news_source_missing" in codes
+
+
+def test_20009_ftmo_news_calendar_rejects_non_fail_closed_stale_policy() -> None:
+    contract = copy.deepcopy(next(item for item in _contracts() if item["ea_id"] == 20009))
+    contract["calendar"]["stale_behavior"] = "NOT_APPLICABLE"
+
+    codes = {
+        issue.code
+        for issue in lint.lint_contract(contract, repo_root=ROOT, as_of=date(2026, 7, 19))
+    }
+    assert "calendar_news_contract_invalid" in codes
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("temporal_mode", "PRE15_POST15"),
+        ("compliance_profile", "DXZ"),
+        ("minimum_impact", "medium"),
+        ("stale_max_hours", 337),
+        ("stale_behavior", "NOT_APPLICABLE"),
+        ("live_source", "NEWS_FILES"),
+    ],
+)
+def test_20009_ftmo_news_calendar_schema_rejects_weakened_policy(
+    tmp_path: Path, field: str, value: object
+) -> None:
+    payload = json.loads(REGISTRY.read_text(encoding="utf-8"))
+    contract = next(item for item in payload["contracts"] if item["ea_id"] == 20009)
+    contract["calendar"][field] = value
+    invalid = tmp_path / "invalid_calendar_policy.json"
+    invalid.write_text(json.dumps(payload), encoding="utf-8")
+
+    assert not _schema_valid(invalid)
+
+
 def test_finite_calendar_expires_fail_closed_in_linter() -> None:
     contract = next(item for item in _contracts() if item["ea_id"] == 13128)
     issues = lint.lint_contract(contract, repo_root=ROOT, as_of=date(2027, 1, 1))

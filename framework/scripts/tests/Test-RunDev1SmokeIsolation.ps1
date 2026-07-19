@@ -66,14 +66,32 @@ foreach ($textContract in @(
     @{ Text = $controllerText; Marker = 'MultipleInstances IgnoreNew' },
     @{ Text = $controllerText; Marker = '-RunLevel Limited' },
     @{ Text = $controllerText; Marker = 'Stop-QmDev1ProcessesExact' },
+    @{ Text = $controllerText; Marker = 'Restore-QmDev1TesterGroupsCanonical' },
     @{ Text = $childText; Marker = 'System.Diagnostics.ProcessStartInfo' },
     @{ Text = $childText; Marker = "ArgumentList.Add('DEV1')" },
     @{ Text = $childText; Marker = 'Clear-QmInheritedEnvironment' },
-    @{ Text = $childText; Marker = 'ConvertFrom-Json -AsHashtable' }
+    @{ Text = $childText; Marker = 'ConvertFrom-Json -AsHashtable -DateKind String' }
 )) {
     if (-not $textContract.Text.Contains($textContract.Marker, [System.StringComparison]::Ordinal)) {
         throw "Missing DEV1 launcher contract marker: $($textContract.Marker)"
     }
+}
+
+# Both attempted fixed-commission encodings were empirically invalid on Build 5833.
+# A positive override must fail before any custom matcher can be installed.
+$commissionFunction = $runSmokeAst.Find({
+    param($node)
+    $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+        $node.Name -eq 'Set-TesterGroupsCommission'
+}, $true)
+if (-not $commissionFunction) { throw 'Set-TesterGroupsCommission was not found.' }
+$commissionFunctionText = $commissionFunction.Extent.Text
+$commissionRejectIndex = $commissionFunctionText.IndexOf('UNVALIDATED_FIXED_COMMISSION_OVERRIDE', [System.StringComparison]::Ordinal)
+$nativeRejectIndex = $commissionFunctionText.IndexOf('UNAPPLIED_NATIVE_COMMISSION_OVERRIDE', [System.StringComparison]::Ordinal)
+$commissionWriteIndex = $commissionFunctionText.IndexOf('[System.IO.File]::WriteAllText', [System.StringComparison]::Ordinal)
+if ($commissionRejectIndex -lt 0 -or $nativeRejectIndex -lt 0 -or $commissionWriteIndex -lt 0 -or
+    $commissionRejectIndex -gt $commissionWriteIndex -or $nativeRejectIndex -gt $commissionWriteIndex) {
+    throw 'Unvalidated tester commission override is not rejected before groups-file mutation.'
 }
 
 foreach ($forbiddenText in @('farmctl', 'pipeline_dispatcher', 'run_pump_task.py', 'FACTORY_OFF.flag', 'Start-Transcript', 'Export-Clixml')) {
@@ -116,6 +134,16 @@ $registerElements = @($registerCommands[0].CommandElements | ForEach-Object { $_
 if ($registerElements -contains '-Force' -or $registerElements -contains '-Trigger') {
     throw 'Ephemeral DEV1 task registration must not overwrite a task or add a trigger.'
 }
+$invalidNewItems = @($controllerAst.FindAll({
+    param($node)
+    if ($node -isnot [System.Management.Automation.Language.CommandAst] -or $node.GetCommandName() -ne 'New-Item') {
+        return $false
+    }
+    return @($node.CommandElements | ForEach-Object { $_.Extent.Text }) -contains '-LiteralPath'
+}, $true))
+if ($invalidNewItems.Count -gt 0) {
+    throw 'Controller uses unsupported New-Item -LiteralPath.'
+}
 if ($controllerText.Contains('@($task.Triggers).Count', [System.StringComparison]::Ordinal)) {
     throw 'Controller uses the broken CIM null-trigger array-count check.'
 }
@@ -133,7 +161,9 @@ $expectedTaskArguments = '-NoLogo -NoProfile -File "C:\QM\repo\framework\scripts
 $expectedWorkingDirectory = 'C:\QM\repo'
 $mockAction = New-ScheduledTaskAction -Execute $script:PwshPath -Argument $expectedTaskArguments -WorkingDirectory $expectedWorkingDirectory
 $mockSettings = New-ScheduledTaskSettingsSet -MultipleInstances IgnoreNew
-$mockPrincipal = New-ScheduledTaskPrincipal -UserId $expectedTaskAccount -LogonType Password -RunLevel Limited
+# CIM returns a registered local task as bare "QMDev1" even when registration
+# used "HOST\QMDev1"; exact SID matching must accept that display normalization.
+$mockPrincipal = New-ScheduledTaskPrincipal -UserId 'QMDev1' -LogonType Password -RunLevel Limited
 $script:mockTriggerlessTask = New-ScheduledTask -Action $mockAction -Settings $mockSettings -Principal $mockPrincipal
 if ($null -ne $script:mockTriggerlessTask.Triggers -or @($script:mockTriggerlessTask.Triggers).Count -ne 1) {
     throw 'Host no longer reproduces the MSFT_ScheduledTask null-trigger CIM shape; revisit regression.'
@@ -188,7 +218,7 @@ $script:AllowedSymbols = @('NDX.DWX', 'GDAXI.DWX', 'EURUSD.DWX', 'GBPUSD.DWX', '
 $script:AllowedParameterOrder = @(
     'EAId', 'EALabel', 'Symbol', 'Year', 'FromDate', 'ToDate', 'Expert', 'Period', 'Runs',
     'MinTrades', 'Model', 'TimeoutSeconds', 'SetFile', 'AllowMissingRealTicksLogMarker',
-    'CommissionPerLot', 'TesterCurrencyOverride', 'TesterDepositOverride', 'SmokeMode'
+    'CommissionPerLot', 'CommissionPerSideNative', 'TesterCurrencyOverride', 'TesterDepositOverride', 'SmokeMode'
 )
 $validRequest = @{
     schema_version = 1

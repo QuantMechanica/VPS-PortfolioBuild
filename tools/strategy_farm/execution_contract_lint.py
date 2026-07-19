@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import re
 from dataclasses import asdict, dataclass
@@ -53,6 +54,22 @@ MODE_TOKENS = {
     "CARD_RULE": "QM_FRIDAY_CLOSE_CARD_RULE",
     "FRAMEWORK_OVERRIDE": "QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE",
 }
+
+NEWS_FILE_CALENDAR_POLICY = "FTMO_PRE30_POST30_NEWS_FILES_FAIL_CLOSED"
+NEWS_FILE_CALENDAR_ROLES = {
+    "SHARED_PRIMARY",
+    "SHARED_SECONDARY",
+    "QMDEV1_COMMON_PRIMARY",
+    "QMDEV1_COMMON_SECONDARY",
+}
+NEWS_FILE_CALENDAR_FIELDS = {
+    "role",
+    "path",
+    "sha256",
+    "coverage_start",
+    "coverage_end",
+}
+SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 
 EXECUTION_CALL_RE = re.compile(
     r"QM_FrameworkDeclareExecutionContract\s*\(\s*"
@@ -285,6 +302,262 @@ def load_symbol_routing_rows(
             return routes, None
     except OSError as exc:
         return {}, f"cannot read symbol matrix {matrix}: {exc}"
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _calendar_csv_coverage(path: Path) -> tuple[tuple[date, date] | None, str | None]:
+    """Return the inclusive date coverage encoded by a supported news CSV."""
+
+    try:
+        with path.open("r", encoding="utf-8-sig", errors="replace", newline="") as handle:
+            reader = csv.DictReader(handle)
+            fields = {
+                str(field).strip().casefold(): str(field)
+                for field in (reader.fieldnames or [])
+                if field
+            }
+            date_field = next(
+                (
+                    fields[name]
+                    for name in ("datetime", "datetime_utc", "date")
+                    if name in fields
+                ),
+                None,
+            )
+            if date_field is None:
+                return None, "news CSV has no supported date column"
+
+            earliest: date | None = None
+            latest: date | None = None
+            for ordinal, row in enumerate(reader, start=2):
+                raw = str(row.get(date_field) or "").strip()
+                if not raw:
+                    return None, f"news CSV row {ordinal} has an empty date"
+                try:
+                    value = date.fromisoformat(raw[:10].replace(".", "-"))
+                except ValueError:
+                    return None, f"news CSV row {ordinal} has invalid date {raw!r}"
+                earliest = value if earliest is None or value < earliest else earliest
+                latest = value if latest is None or value > latest else latest
+    except OSError as exc:
+        return None, f"cannot read news CSV: {exc}"
+
+    if earliest is None or latest is None:
+        return None, "news CSV contains no data rows"
+    return (earliest, latest), None
+
+
+def _lint_ftmo_news_file_calendar(
+    calendar: dict[str, Any],
+    *,
+    text: str,
+    source: Path,
+    repo_root: Path,
+    as_of: date | None,
+    ea_id: int | None,
+) -> list[Issue]:
+    issues: list[Issue] = []
+    expected_values: dict[str, Any] = {
+        "temporal_mode": "PRE30_POST30",
+        "compliance_profile": "FTMO",
+        "minimum_impact": "high",
+        "stale_max_hours": 336,
+        "stale_behavior": "INIT_AND_ENTRY_FAIL_CLOSED",
+        "live_source": "NATIVE_MT5_CALENDAR",
+    }
+    invalid_values = [
+        f"{field}={calendar.get(field)!r}"
+        for field, expected in expected_values.items()
+        if calendar.get(field) != expected
+        or (field == "stale_max_hours" and type(calendar.get(field)) is not int)
+    ]
+    if invalid_values:
+        issues.append(
+            _issue(
+                "calendar_news_contract_invalid",
+                "exact FTMO news policy values required: " + ", ".join(invalid_values),
+                ea_id=ea_id,
+            )
+        )
+
+    sources = calendar.get("sources")
+    if not isinstance(sources, list) or len(sources) != len(NEWS_FILE_CALENDAR_ROLES):
+        issues.append(
+            _issue(
+                "calendar_news_contract_invalid",
+                "news policy requires exactly four source records",
+                ea_id=ea_id,
+            )
+        )
+        source_records: list[Any] = sources if isinstance(sources, list) else []
+    else:
+        source_records = sources
+
+    by_role: dict[str, tuple[dict[str, Any], Path, str | None]] = {}
+    declared_roles: list[str] = []
+    for ordinal, record in enumerate(source_records, start=1):
+        if not isinstance(record, dict) or set(record) != NEWS_FILE_CALENDAR_FIELDS:
+            issues.append(
+                _issue(
+                    "calendar_news_contract_invalid",
+                    f"news source {ordinal} must contain exactly {sorted(NEWS_FILE_CALENDAR_FIELDS)}",
+                    ea_id=ea_id,
+                )
+            )
+            continue
+
+        role = str(record.get("role") or "")
+        declared_roles.append(role)
+        path_value = str(record.get("path") or "").strip()
+        artifact = Path(path_value)
+        if not artifact.is_absolute():
+            artifact = repo_root / artifact
+
+        declared_hash = str(record.get("sha256") or "")
+        actual_hash: str | None = None
+        if not artifact.is_file():
+            issues.append(
+                _issue(
+                    "calendar_news_source_missing",
+                    f"{role or f'source {ordinal}'} does not exist",
+                    ea_id=ea_id,
+                    path=artifact,
+                )
+            )
+        else:
+            try:
+                actual_hash = _sha256_file(artifact)
+            except OSError as exc:
+                issues.append(
+                    _issue(
+                        "calendar_news_source_missing",
+                        f"cannot read {role or f'source {ordinal}'}: {exc}",
+                        ea_id=ea_id,
+                        path=artifact,
+                    )
+                )
+            else:
+                if not SHA256_RE.fullmatch(declared_hash) or declared_hash != actual_hash:
+                    issues.append(
+                        _issue(
+                            "calendar_news_source_hash_mismatch",
+                            f"{role or f'source {ordinal}'} SHA-256 differs from the contract",
+                            ea_id=ea_id,
+                            path=artifact,
+                        )
+                    )
+
+                coverage, coverage_error = _calendar_csv_coverage(artifact)
+                declared_start_raw = str(record.get("coverage_start") or "")
+                declared_end_raw = str(record.get("coverage_end") or "")
+                try:
+                    declared_start = date.fromisoformat(declared_start_raw)
+                    declared_end = date.fromisoformat(declared_end_raw)
+                except ValueError:
+                    declared_start = declared_end = None
+                if (
+                    coverage_error is not None
+                    or declared_start is None
+                    or declared_end is None
+                    or declared_start > declared_end
+                    or coverage != (declared_start, declared_end)
+                ):
+                    detail = coverage_error or (
+                        f"declared {declared_start_raw}..{declared_end_raw}, "
+                        f"actual {coverage[0].isoformat()}..{coverage[1].isoformat()}"
+                        if coverage is not None
+                        else f"invalid declared coverage {declared_start_raw}..{declared_end_raw}"
+                    )
+                    issues.append(
+                        _issue(
+                            "calendar_news_coverage_mismatch",
+                            f"{role or f'source {ordinal}'} coverage mismatch: {detail}",
+                            ea_id=ea_id,
+                            path=artifact,
+                        )
+                    )
+                elif as_of is not None and as_of > declared_end:
+                    issues.append(
+                        _issue(
+                            "calendar_news_expired",
+                            f"{role} coverage ended {declared_end.isoformat()} before {as_of.isoformat()}",
+                            ea_id=ea_id,
+                            path=artifact,
+                        )
+                    )
+
+        if role in by_role:
+            issues.append(
+                _issue(
+                    "calendar_news_contract_invalid",
+                    f"duplicate news source role {role!r}",
+                    ea_id=ea_id,
+                )
+            )
+        else:
+            by_role[role] = (record, artifact, actual_hash)
+
+    if set(declared_roles) != NEWS_FILE_CALENDAR_ROLES:
+        issues.append(
+            _issue(
+                "calendar_news_contract_invalid",
+                "news source roles must be exactly " + ", ".join(sorted(NEWS_FILE_CALENDAR_ROLES)),
+                ea_id=ea_id,
+            )
+        )
+
+    for shared_role, common_role in (
+        ("SHARED_PRIMARY", "QMDEV1_COMMON_PRIMARY"),
+        ("SHARED_SECONDARY", "QMDEV1_COMMON_SECONDARY"),
+    ):
+        if shared_role not in by_role or common_role not in by_role:
+            continue
+        shared_record, shared_path, shared_hash = by_role[shared_role]
+        common_record, common_path, common_hash = by_role[common_role]
+        if (
+            shared_record.get("sha256") != common_record.get("sha256")
+            or (shared_hash is not None and common_hash is not None and shared_hash != common_hash)
+        ):
+            issues.append(
+                _issue(
+                    "calendar_news_copy_drift",
+                    f"{shared_role} and {common_role} are not byte-equal",
+                    ea_id=ea_id,
+                    path=f"{shared_path} | {common_path}",
+                )
+            )
+
+    runtime_patterns = {
+        "temporal default": r"\bqm_news_temporal\s*=\s*QM_NEWS_TEMPORAL_PRE30_POST30\s*;",
+        "compliance default": r"\bqm_news_compliance\s*=\s*QM_NEWS_COMPLIANCE_FTMO\s*;",
+        "stale horizon default": r"\bqm_news_stale_max_hours\s*=\s*336\s*;",
+        "impact default": r'\bqm_news_min_impact\s*=\s*"high"\s*;',
+        "entry fail-closed call": r"if\s*\(\s*!Strategy_EntryNewsAllows\s*\([^)]*\)\s*\)\s*return\s*;",
+        "initialization fail-closed call": r"if\s*\(\s*!QM_FrameworkInit\s*\(.*?\)\s*\)\s*return\s+INIT_FAILED\s*;",
+    }
+    missing_runtime = [
+        label
+        for label, pattern in runtime_patterns.items()
+        if not re.search(pattern, text, re.DOTALL)
+    ]
+    if missing_runtime:
+        issues.append(
+            _issue(
+                "runtime_news_policy_mismatch",
+                "runtime lacks exact news policy binding: " + ", ".join(missing_runtime),
+                ea_id=ea_id,
+                path=source,
+            )
+        )
+
+    return issues
 
 
 def lint_contract(
@@ -759,7 +1032,11 @@ def lint_contract(
         issues.append(_issue("runtime_friday_enabled_mismatch", "Friday input default differs from contract", ea_id=ea_id, path=source))
 
     calendar = contract["calendar"]
-    if not isinstance(calendar, dict) or calendar.get("policy") not in {"NONE", "FIXED_EVENT_TABLE"}:
+    if not isinstance(calendar, dict) or calendar.get("policy") not in {
+        "NONE",
+        "FIXED_EVENT_TABLE",
+        NEWS_FILE_CALENDAR_POLICY,
+    }:
         issues.append(_issue("calendar_policy_invalid", "invalid calendar policy", ea_id=ea_id))
     elif calendar.get("policy") == "FIXED_EVENT_TABLE":
         valid_raw = str(calendar.get("valid_through", ""))
@@ -782,6 +1059,17 @@ def lint_contract(
                 issues.append(_issue("runtime_calendar_horizon_mismatch", "MQL calendar horizon differs from registry", ea_id=ea_id, path=source))
             if "SETUP_DATA_STALE" not in text or "Strategy_CalendarCoverageAllows" not in text:
                 issues.append(_issue("runtime_calendar_fail_closed_missing", "calendar lacks fail-closed stale guard", ea_id=ea_id, path=source))
+    elif calendar.get("policy") == NEWS_FILE_CALENDAR_POLICY:
+        issues.extend(
+            _lint_ftmo_news_file_calendar(
+                calendar,
+                text=text,
+                source=source,
+                repo_root=repo_root,
+                as_of=as_of,
+                ea_id=ea_id,
+            )
+        )
 
     return issues
 

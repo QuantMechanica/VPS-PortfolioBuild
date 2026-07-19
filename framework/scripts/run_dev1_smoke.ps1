@@ -30,6 +30,8 @@ param(
     [switch]$AllowMissingRealTicksLogMarker,
     [ValidateRange(0, 1000)]
     [double]$CommissionPerLot = 0,
+    [ValidateRange(0, 1000)]
+    [double]$CommissionPerSideNative = 0,
     [ValidatePattern('^[A-Z]{3}$')]
     [string]$TesterCurrencyOverride,
     [ValidateRange(0, 2147483647)]
@@ -48,6 +50,8 @@ $script:CredentialPath = 'C:\ProgramData\QM\DEV1\credential.clixml'
 $script:Dev1UserName = 'QMDev1'
 $script:TaskPath = '\'
 $script:PwshPath = 'C:\Program Files\PowerShell\7\pwsh.exe'
+$script:TesterGroupsCanonicalPath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\registry\tester_groups\Darwinex-Live_real.canonical.txt'))
+$script:TesterGroupsDev1Path = [System.IO.Path]::GetFullPath('D:\QM\mt5\DEV1\MQL5\Profiles\Tester\Groups\Darwinex-Live_real.txt')
 $script:AllowedSymbols = @('NDX.DWX', 'GDAXI.DWX', 'EURUSD.DWX', 'GBPUSD.DWX', 'USDJPY.DWX', 'XAUUSD.DWX')
 $script:FirewallPrograms = [ordered]@{
     'QM_DEV1_BLOCK_TERMINAL_OUT'   = 'D:\QM\mt5\DEV1\terminal64.exe'
@@ -413,8 +417,11 @@ function Assert-QmRegisteredTaskContract {
         [Parameter(Mandatory = $true)][string]$ExpectedWorkingDirectory
     )
     $task = Get-ScheduledTask -TaskName $TaskName -TaskPath $script:TaskPath -ErrorAction Stop
-    if (-not ([string]$task.Principal.UserId).Equals($ExpectedAccount, [System.StringComparison]::OrdinalIgnoreCase) -or
-        (Resolve-QmAccountSid -AccountName $task.Principal.UserId) -ne $ExpectedSid -or
+    # Registered local-account tasks are returned by the CIM provider with a bare
+    # UserId ("QMDev1") even when registration used "HOST\QMDev1". The immutable
+    # SID is the authoritative identity; rejecting the provider's display form
+    # made every real launch fail before Start-ScheduledTask.
+    if ((Resolve-QmAccountSid -AccountName $task.Principal.UserId) -ne $ExpectedSid -or
         $task.Principal.LogonType.ToString() -ne 'Password' -or
         $task.Principal.RunLevel.ToString() -ne 'Limited') {
         throw "Scheduled task '$TaskName' principal drifted from the limited QMDev1 password-logon contract."
@@ -447,17 +454,36 @@ function Write-QmRequestFile {
     [System.IO.File]::WriteAllText($Path, $json, (New-Object System.Text.UTF8Encoding($false)))
 }
 
+function Restore-QmDev1TesterGroupsCanonical {
+    foreach ($path in @($script:TesterGroupsCanonicalPath, $script:TesterGroupsDev1Path)) {
+        if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+            throw "Required tester groups file is missing: $path"
+        }
+        Assert-QmNoReparseComponents -Path $path
+    }
+    [System.IO.File]::Copy($script:TesterGroupsCanonicalPath, $script:TesterGroupsDev1Path, $true)
+    $canonicalHash = (Get-FileHash -LiteralPath $script:TesterGroupsCanonicalPath -Algorithm SHA256).Hash
+    $restoredHash = (Get-FileHash -LiteralPath $script:TesterGroupsDev1Path -Algorithm SHA256).Hash
+    if ($restoredHash -cne $canonicalHash) {
+        throw "DEV1 tester groups canonical restore hash mismatch: expected=$canonicalHash actual=$restoredHash"
+    }
+    return $restoredHash
+}
+
 $mutex = $null
 $mutexAcquired = $false
 $taskRegistered = $false
 $taskName = $null
 $credential = $null
+$identityContract = $null
 $plainPassword = $null
 $primaryError = $null
 $finalResult = $null
 $runDirectory = $null
 $resultPath = $null
 $logPath = $null
+$testerGroupsPostChildSha256 = $null
+$testerGroupsRestoredSha256 = $null
 
 try {
     Assert-QmElevatedController
@@ -522,7 +548,9 @@ try {
     $outputDirectory = Join-Path $runDirectory 'output'
     $smokeReportRoot = Join-Path $outputDirectory 'smoke'
     foreach ($directory in @($runDirectory, $controlDirectory, $outputDirectory, $smokeReportRoot)) {
-        New-Item -ItemType Directory -LiteralPath $directory -ErrorAction Stop | Out-Null
+        # New-Item has no -LiteralPath parameter. These controller-generated paths
+        # contain only fixed segments plus a GUID, so -Path cannot expand a wildcard.
+        New-Item -ItemType Directory -Path $directory -ErrorAction Stop | Out-Null
     }
     Set-QmRunDirectoryAcl -Path $runDirectory -TargetSid $identityContract.Sid -TargetRights ([System.Security.AccessControl.FileSystemRights]::ReadAndExecute)
     Set-QmRunDirectoryAcl -Path $controlDirectory -TargetSid $identityContract.Sid -TargetRights ([System.Security.AccessControl.FileSystemRights]::ReadAndExecute)
@@ -549,6 +577,7 @@ try {
         Model = $Model
         TimeoutSeconds = $TimeoutSeconds
         CommissionPerLot = $CommissionPerLot
+        CommissionPerSideNative = $CommissionPerSideNative
         TesterDepositOverride = $TesterDepositOverride
     }
     if (-not [string]::IsNullOrWhiteSpace($EALabel)) { $smokeParameters.EALabel = $EALabel }
@@ -636,6 +665,14 @@ try {
     if (-not [bool]$result.success) {
         throw "DEV1 smoke failed (code=$($result.error_code), exit=$($result.run_smoke_exit_code)); log=$logPath"
     }
+    if (-not (Test-Path -LiteralPath $script:TesterGroupsDev1Path -PathType Leaf)) {
+        throw "DEV1 tester groups file disappeared during the run: $($script:TesterGroupsDev1Path)"
+    }
+    $testerGroupsPostChildSha256 = (Get-FileHash -LiteralPath $script:TesterGroupsDev1Path -Algorithm SHA256).Hash
+    $testerGroupsCanonicalSha256 = (Get-FileHash -LiteralPath $script:TesterGroupsCanonicalPath -Algorithm SHA256).Hash
+    if ($testerGroupsPostChildSha256 -cne $testerGroupsCanonicalSha256) {
+        throw "Child returned without restoring canonical tester groups: expected=$testerGroupsCanonicalSha256 actual=$testerGroupsPostChildSha256"
+    }
     $finalResult = $result
 } catch {
     $primaryError = $_
@@ -653,6 +690,20 @@ try {
             }
         }
     }
+    if ($null -ne $identityContract) {
+        try {
+            if (@(Get-QmDev1Processes).Count -gt 0) {
+                Stop-QmDev1ProcessesExact -ExpectedOwnerSid $identityContract.Sid
+            }
+            $testerGroupsRestoredSha256 = Restore-QmDev1TesterGroupsCanonical
+        } catch {
+            if ($null -eq $primaryError) {
+                $primaryError = $_
+            } else {
+                Write-Warning "Failed to restore canonical DEV1 tester groups: $($_.Exception.Message)"
+            }
+        }
+    }
     if ($mutexAcquired -and $null -ne $mutex) {
         try { $mutex.ReleaseMutex() } catch { }
     }
@@ -662,5 +713,10 @@ try {
 if ($null -ne $primaryError) {
     throw $primaryError
 }
+
+$finalResult | Add-Member -NotePropertyName tester_groups_post_child_sha256 -NotePropertyValue $testerGroupsPostChildSha256 -Force
+$finalResult | Add-Member -NotePropertyName tester_groups_restored_sha256 -NotePropertyValue $testerGroupsRestoredSha256 -Force
+$finalResult | Add-Member -NotePropertyName tester_groups_canonical_path -NotePropertyValue $script:TesterGroupsCanonicalPath -Force
+$finalResult | Add-Member -NotePropertyName tester_groups_dev1_path -NotePropertyValue $script:TesterGroupsDev1Path -Force
 
 Write-Output ($finalResult | ConvertTo-Json -Depth 6)
