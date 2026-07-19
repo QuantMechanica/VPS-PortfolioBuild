@@ -1,27 +1,27 @@
 # =====================================================================
-#  QM_StrategyFarm_LsmHealthProbe — Session-infrastructure health probe
+#  QM_StrategyFarm_LsmHealthProbe -- Session-infrastructure health probe
 #
 #  PURPOSE:
 #    Runs every 6 hours (SYSTEM scheduler) and scores session-manager
-#    health early — before full degradation (qwinsta error 87, tasks
+#    health early -- before full degradation (qwinsta error 87, tasks
 #    fail 0x800710E0, RPC 1722) forces a hosting-panel hard reset.
 #    Five independent probes; verdict written regardless of any failures.
 #
 #  PROBES:
-#    1. qwinsta  — exit code + output parse; error 87 = LSM degradation signature
-#    2. Task self-test — LastTaskResult + cadence lag on 3 known QM tasks
-#    3. Logon session — Win32_LogonSession CIM succeeds + interactive session present
-#    4. Process spawn — Start-Process cmd /c exit 0 (CreateProcess viability)
-#    5. Uptime — informational; fed into verdict context
+#    1. qwinsta  -- exit code + output parse; error 87 = LSM degradation signature
+#    2. Task self-test -- LastTaskResult + cadence lag on 3 known QM tasks
+#    3. Logon session -- Win32_LogonSession CIM succeeds + interactive session present
+#    4. Process spawn -- Start-Process cmd /c exit 0 (CreateProcess viability)
+#    5. Uptime -- informational; fed into verdict context
 #
 #  OUTPUTS (written atomically even when system is half-dead):
-#    D:\QM\reports\state\lsm_health.json       — latest state (overwrite)
-#    D:\QM\reports\state\lsm_health_history.jsonl — one jsonl line per run (append)
+#    D:\QM\reports\state\lsm_health.json       -- latest state (overwrite)
+#    D:\QM\reports\state\lsm_health_history.jsonl -- one jsonl line per run (append)
 #
 #  VERDICT:
-#    'ok'        — all probes pass
-#    'degrading' — any single probe failing
-#    'critical'  — >=2 probes failing  OR  qwinsta error 87 + tasks failing
+#    'ok'        -- all probes pass
+#    'degrading' -- any single probe failing
+#    'critical'  -- >=2 probes failing  OR  qwinsta error 87 + tasks failing
 #
 #  Every probe is individually try/caught.  This script MUST always reach
 #  the write block, even when the system is half-dead.
@@ -32,13 +32,13 @@ $JSON_FILE   = Join-Path $STATE_DIR 'lsm_health.json'
 $JSONL_FILE  = Join-Path $STATE_DIR 'lsm_health_history.jsonl'
 
 # Tasks to probe: name + maximum allowed lag in minutes before counting as failing
-# (cadence × 2 = generous allowance for missed ticks during load spikes)
+# (cadence x 2 = generous allowance for missed ticks during load spikes)
 $TASKS_TO_CHECK = @(
     [pscustomobject]@{ Name = 'QM_StrategyFarm_QuotaGovernor';         MaxLagMinutes = 30   }   # 15-min cadence
     [pscustomobject]@{ Name = 'QM_StrategyFarm_FactoryWatchdog_15min'; MaxLagMinutes = 15   }   # 5-min cadence
     [pscustomobject]@{ Name = 'QM_StrategyFarm_FactoryRecycle_Daily';  MaxLagMinutes = 1500 }   # daily cadence
 )
-$TASK_FAIL_CODE = 2147946720   # 0x800710E0 — "The operator or administrator has refused the request"
+$TASK_FAIL_CODE = 2147946720   # 0x800710E0 -- "The operator or administrator has refused the request"
 
 # ---------------------------------------------------------------------------
 # Initialise all probe results to safe defaults
@@ -52,12 +52,12 @@ $tasks_checked       = 0
 $logon_session_ok    = $false
 $spawn_ok            = $false
 
-# Ensure output directory early — use .NET directly so it works even when
+# Ensure output directory early -- use .NET directly so it works even when
 # PowerShell provider is degraded.
 try { [System.IO.Directory]::CreateDirectory($STATE_DIR) | Out-Null } catch { }
 
 # ---------------------------------------------------------------------------
-# Probe 5 — Uptime (done first; other probes may reference it)
+# Probe 5 -- Uptime (done first; other probes may reference it)
 # ---------------------------------------------------------------------------
 try {
     $os          = Get-CimInstance -ClassName Win32_OperatingSystem -ErrorAction Stop
@@ -69,7 +69,7 @@ try {
 }
 
 # ---------------------------------------------------------------------------
-# Probe 1 — qwinsta session-list tool
+# Probe 1 -- qwinsta session-list tool
 # ---------------------------------------------------------------------------
 try {
     # Capture stdout + stderr in one stream so we catch the "Error [87]" message
@@ -95,7 +95,7 @@ try {
 }
 
 # ---------------------------------------------------------------------------
-# Probe 2 — Scheduled-task self-test
+# Probe 2 -- Scheduled-task self-test
 # ---------------------------------------------------------------------------
 foreach ($t in $TASKS_TO_CHECK) {
     $tasks_checked++
@@ -116,14 +116,14 @@ foreach ($t in $TASKS_TO_CHECK) {
             }
         }
     } catch {
-        # Task not found or info query failed — treat as failing
+        # Task not found or info query failed -- treat as failing
         $taskFailing = $true
     }
     if ($taskFailing) { $tasks_failing_count++ }
 }
 
 # ---------------------------------------------------------------------------
-# Probe 3 — Logon session enumeration (Win32_LogonSession)
+# Probe 3 -- Logon session enumeration (Win32_LogonSession)
 # ---------------------------------------------------------------------------
 try {
     $sessions    = Get-CimInstance -ClassName Win32_LogonSession -ErrorAction Stop
@@ -135,7 +135,7 @@ try {
 }
 
 # ---------------------------------------------------------------------------
-# Probe 4 — Process spawn (CreateProcess viability)
+# Probe 4 -- Process spawn (CreateProcess viability)
 # ---------------------------------------------------------------------------
 try {
     $p        = Start-Process -FilePath 'cmd.exe' -ArgumentList '/c exit 0' `
@@ -183,7 +183,7 @@ $out = [ordered]@{
 $jsonLine = ConvertTo-Json -InputObject $out -Compress
 
 # ---------------------------------------------------------------------------
-# Write outputs — each write is independently guarded so a partial failure
+# Write outputs -- each write is independently guarded so a partial failure
 # in one does not prevent the other from completing.
 # ---------------------------------------------------------------------------
 try {

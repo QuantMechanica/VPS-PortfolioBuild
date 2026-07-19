@@ -1,5 +1,5 @@
 # =====================================================================
-#  QM_StrategyFarm_HygieneReboot — Weekly preventive hygiene reboot
+#  QM_StrategyFarm_HygieneReboot -- Weekly preventive hygiene reboot
 #
 #  PURPOSE:
 #    Controlled reboot during the forex/CFD market-closed window
@@ -7,21 +7,21 @@
 #    session-manager resource exhaustion.  The ~100+ terminal64.exe
 #    spawns/day deplete LSM handles; symptoms after ~7 days uptime:
 #    qwinsta error 87, scheduled tasks fail 0x800710E0, shutdown.exe /
-#    Restart-Computer / WMI RPC 1722 — requiring a hosting-panel reset.
+#    Restart-Computer / WMI RPC 1722 -- requiring a hosting-panel reset.
 #
 #  RECOVERY CHAIN (fully automatic post-reboot via existing tasks):
-#    Autologon  →  QM_T_Live_AtLogon  →  QM_StrategyFarm_FactoryON_AtLogon
+#    Autologon  ->  QM_T_Live_AtLogon  ->  QM_StrategyFarm_FactoryON_AtLogon
 #    Forex market closes Fri ~21:00 UTC; reopens Sun ~21:00 UTC.
 #    Saturday morning is safe for live trading.
 #
-#  GUARDS — ALL four must pass; any failure logs a skip reason and exits 0:
-#    1. Local day-of-week = Saturday  AND  local hour ∈ [06, 12)
+#  GUARDS -- ALL four must pass; any failure logs a skip reason and exits 0:
+#    1. Local day-of-week = Saturday  AND  local hour in [06, 12)
 #    2. System uptime >= 5 days  (reboot too-soon is pointless churn)
 #    3. Kill-switch flag absent:  D:\QM\reports\state\HYGIENE_REBOOT_DISABLED.flag
 #    4. Debounce: last hygiene reboot > 3 days ago (or no prior record)
 #
 #  STATE FILE:  D:\QM\reports\state\hygiene_reboot_state.json
-#                { ts, uptime_days, reason:'weekly_hygiene' }  — written BEFORE reboot
+#                { ts, uptime_days, reason:'weekly_hygiene' }  -- written BEFORE reboot
 #  LOG FILE:    D:\QM\reports\state\hygiene_reboot.log  (append, UTC timestamps)
 #  KILL SWITCH: touch D:\QM\reports\state\HYGIENE_REBOOT_DISABLED.flag
 #
@@ -63,20 +63,20 @@ try { [System.IO.Directory]::CreateDirectory($STATE_DIR) | Out-Null } catch { }
 Write-Log '=== HygieneReboot guard evaluation START ==='
 
 # ---------------------------------------------------------------------------
-# Guard 1 — Saturday + 06-12 window (local time)
+# Guard 1 -- Saturday + 06-12 window (local time)
 # ---------------------------------------------------------------------------
 $now    = [System.DateTime]::Now
 $dayOk  = ($now.DayOfWeek -eq [System.DayOfWeek]::Saturday)
 $hourOk = ($now.Hour -ge $HOUR_START -and $now.Hour -lt $HOUR_END)
 Write-Log "Guard1  day=$($now.DayOfWeek)  hour=$($now.Hour)  dayOk=$dayOk  hourOk=$hourOk"
 if (-not ($dayOk -and $hourOk)) {
-    Write-Log "SKIP: Guard1 FAIL — not Saturday 06-12 local time (day=$($now.DayOfWeek) hour=$($now.Hour))"
+    Write-Log "SKIP: Guard1 FAIL -- not Saturday 06-12 local time (day=$($now.DayOfWeek) hour=$($now.Hour))"
     exit 0
 }
 Write-Log 'Guard1 PASS'
 
 # ---------------------------------------------------------------------------
-# Guard 2 — System uptime >= 5 days
+# Guard 2 -- System uptime >= 5 days
 # ---------------------------------------------------------------------------
 $uptimeDays = $null
 try {
@@ -85,30 +85,30 @@ try {
         ([System.DateTime]::Now - $os.LastBootUpTime).TotalDays, 2
     )
 } catch {
-    Write-Log "SKIP: Guard2 ERROR — could not read Win32_OperatingSystem: $($_.Exception.Message)"
+    Write-Log "SKIP: Guard2 ERROR -- could not read Win32_OperatingSystem: $($_.Exception.Message)"
     exit 0
 }
 $uptimeOk = ($uptimeDays -ge $MIN_UPTIME_DAYS)
 Write-Log "Guard2  uptimeDays=$uptimeDays  uptimeOk=$uptimeOk  (min=$MIN_UPTIME_DAYS)"
 if (-not $uptimeOk) {
-    Write-Log "SKIP: Guard2 FAIL — uptime ${uptimeDays}d < ${MIN_UPTIME_DAYS} days"
+    Write-Log "SKIP: Guard2 FAIL -- uptime ${uptimeDays}d < ${MIN_UPTIME_DAYS} days"
     exit 0
 }
 Write-Log 'Guard2 PASS'
 
 # ---------------------------------------------------------------------------
-# Guard 3 — Kill-switch flag absent
+# Guard 3 -- Kill-switch flag absent
 # ---------------------------------------------------------------------------
 $disableOk = (-not [System.IO.File]::Exists($DISABLE_FLAG))
 Write-Log "Guard3  disableFlagExists=$(-not $disableOk)  disableOk=$disableOk"
 if (-not $disableOk) {
-    Write-Log "SKIP: Guard3 FAIL — HYGIENE_REBOOT_DISABLED.flag present at $DISABLE_FLAG"
+    Write-Log "SKIP: Guard3 FAIL -- HYGIENE_REBOOT_DISABLED.flag present at $DISABLE_FLAG"
     exit 0
 }
 Write-Log 'Guard3 PASS'
 
 # ---------------------------------------------------------------------------
-# Guard 4 — Debounce: last hygiene reboot > 3 days ago (or no prior record)
+# Guard 4 -- Debounce: last hygiene reboot > 3 days ago (or no prior record)
 # ---------------------------------------------------------------------------
 $debounceOk = $true
 if ([System.IO.File]::Exists($STATE_FILE)) {
@@ -127,24 +127,24 @@ if ([System.IO.File]::Exists($STATE_FILE)) {
             $debounceOk = ($daysSince -gt $DEBOUNCE_DAYS)
             Write-Log "Guard4  lastReboot=$lastTsRaw  daysSince=$daysSince  debounceOk=$debounceOk  (min=${DEBOUNCE_DAYS}d)"
         } else {
-            Write-Log 'Guard4  state file has no ts field — debounce passes'
+            Write-Log 'Guard4  state file has no ts field -- debounce passes'
         }
     } catch {
-        Write-Log "Guard4  state parse error — treating as absent (safe/pass): $($_.Exception.Message)"
+        Write-Log "Guard4  state parse error -- treating as absent (safe/pass): $($_.Exception.Message)"
     }
 } else {
-    Write-Log 'Guard4  no prior state file — debounce passes (first run)'
+    Write-Log 'Guard4  no prior state file -- debounce passes (first run)'
 }
 if (-not $debounceOk) {
-    Write-Log "SKIP: Guard4 FAIL — last hygiene reboot was < ${DEBOUNCE_DAYS} days ago"
+    Write-Log "SKIP: Guard4 FAIL -- last hygiene reboot was < ${DEBOUNCE_DAYS} days ago"
     exit 0
 }
 Write-Log 'Guard4 PASS'
 
 # ---------------------------------------------------------------------------
-# ALL GUARDS PASSED — arm the reboot
+# ALL GUARDS PASSED -- arm the reboot
 # ---------------------------------------------------------------------------
-Write-Log 'ALL 4 guards PASSED — proceeding with weekly hygiene reboot'
+Write-Log 'ALL 4 guards PASSED -- proceeding with weekly hygiene reboot'
 
 # Write state JSON BEFORE issuing the reboot command so it persists on disk
 # even if Restart-Computer returns before the write completes. Keep the previous
@@ -166,7 +166,7 @@ try {
 }
 
 # Windows Event Log entry (best-effort; event source creation may fail if already exists
-# from another session — that is harmless)
+# from another session -- that is harmless)
 try {
     $src = 'QM_HygieneReboot'
     if (-not [System.Diagnostics.EventLog]::SourceExists($src)) {
@@ -179,7 +179,7 @@ try {
     Write-Log "WARNING: event log write failed (non-fatal): $($_.Exception.Message)"
 }
 
-Write-Log 'Issuing Restart-Computer -Force — goodbye'
+Write-Log 'Issuing Restart-Computer -Force -- goodbye'
 try {
     Restart-Computer -Force -ErrorAction Stop
     # If we are still alive a few seconds later, the call was accepted; nothing to do.
@@ -188,12 +188,12 @@ try {
     # Deep LSM degradation can break even local restarts (RPC 1722). Try the native
     # fallback once, then restore the previous state so the debounce does NOT count
     # this failed attempt as a completed reboot.
-    Write-Log "ERROR: Restart-Computer failed: $($_.Exception.Message) — trying shutdown.exe fallback"
+    Write-Log "ERROR: Restart-Computer failed: $($_.Exception.Message) -- trying shutdown.exe fallback"
     & "$env:SystemRoot\System32\shutdown.exe" /r /t 30 /f /c "QM weekly hygiene reboot (fallback)" 2>&1 |
         ForEach-Object { Write-Log "shutdown.exe: $_" }
     Start-Sleep -Seconds 60
     # Still alive -> both mechanisms failed (provider-panel reset required).
-    Write-Log 'CRITICAL: reboot NOT executed (Restart-Computer AND shutdown.exe failed) — restoring previous state; provider-panel reset required'
+    Write-Log 'CRITICAL: reboot NOT executed (Restart-Computer AND shutdown.exe failed) -- restoring previous state; provider-panel reset required'
     try {
         if ($null -ne $prevStateRaw) {
             [System.IO.File]::WriteAllText($STATE_FILE, $prevStateRaw, [System.Text.Encoding]::UTF8)

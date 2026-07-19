@@ -1,14 +1,14 @@
 # =====================================================================
 #  Install QM_StrategyFarm_HygieneReboot + QM_StrategyFarm_LsmHealthProbe
 #
-#  ╔══════════════════════════════════════════════════════════════════╗
-#  ║  DO NOT RUN WHILE THE TASK SCHEDULER IS DEGRADED               ║
-#  ║  (symptom: tasks fail 0x800710E0 / qwinsta error 87).          ║
-#  ║  Run once after the next CLEAN BOOT — from an elevated          ║
-#  ║  (Administrator) PowerShell session.                            ║
-#  ╚══════════════════════════════════════════════════════════════════╝
+#  ------------------------------------------------------------------
+#  DO NOT RUN WHILE THE TASK SCHEDULER IS DEGRADED
+#  (symptom: tasks fail 0x800710E0 / qwinsta error 87).
+#  Run once after the next CLEAN BOOT from an elevated
+#  (Administrator) PowerShell session.
+#  ------------------------------------------------------------------
 #
-#  Registers two scheduled tasks — idempotent (unregister-then-register):
+#  Registers two scheduled tasks -- idempotent (unregister-then-register):
 #
 #  QM_StrategyFarm_HygieneReboot
 #    Weekly, Saturday 07:00 local, SYSTEM principal, HighestPrivilege.
@@ -26,7 +26,7 @@
 #    Runs start_terminal_workers.py --dedupe: fills only missing worker
 #    slots without killing in-flight terminals. Started by the SYSTEM
 #    watchdog via Start-ScheduledTask (a SYSTEM child spawn would produce
-#    session-0 workers whose terminal64 dies 0xC0000142 — 2026-06-24 class).
+#    session-0 workers whose terminal64 dies 0xC0000142 -- 2026-06-24 class).
 #
 #  Usage:
 #    # From an elevated PowerShell prompt after a clean boot:
@@ -57,6 +57,53 @@ if (-not (Test-Path -LiteralPath $lsmScript)) {
     throw "LSM health probe script not found: $lsmScript"
 }
 
+function Assert-WindowsPowerShellScriptSafe {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path
+    )
+
+    $bytes = [System.IO.File]::ReadAllBytes($Path)
+    $hasUtf8Bom = (
+        $bytes.Length -ge 3 -and
+        $bytes[0] -eq 0xEF -and
+        $bytes[1] -eq 0xBB -and
+        $bytes[2] -eq 0xBF
+    )
+    if (-not $hasUtf8Bom -and ($bytes | Where-Object { $_ -gt 0x7F } | Select-Object -First 1)) {
+        throw "WINDOWS_POWERSHELL_ENCODING_UNSAFE: $Path contains non-ASCII bytes without a UTF-8 BOM."
+    }
+
+    $tokens = $null
+    $parseErrors = $null
+    [System.Management.Automation.Language.Parser]::ParseFile(
+        $Path,
+        [ref]$tokens,
+        [ref]$parseErrors
+    ) | Out-Null
+    if ($parseErrors.Count -gt 0) {
+        $detail = ($parseErrors | ForEach-Object { $_.Message }) -join '; '
+        throw "WINDOWS_POWERSHELL_PARSE_FAILED: $Path : $detail"
+    }
+}
+
+# Fail before unregistering any working task. These scripts are launched by
+# Windows PowerShell 5.1, which misdecodes BOM-less UTF-8 punctuation.
+Assert-WindowsPowerShellScriptSafe -Path $hygieneScript
+Assert-WindowsPowerShellScriptSafe -Path $lsmScript
+
+try {
+    & "$env:SystemRoot\System32\wevtutil.exe" sl `
+        'Microsoft-Windows-TaskScheduler/Operational' /e:true
+    if ($LASTEXITCODE -ne 0) {
+        throw "wevtutil exited $LASTEXITCODE"
+    }
+    Write-Host 'Enabled Task Scheduler Operational event log.'
+}
+catch {
+    Write-Warning "Could not enable Task Scheduler Operational log: $($_.Exception.Message)"
+}
+
 # Common task settings
 $commonSettings = New-ScheduledTaskSettingsSet `
     -AllowStartIfOnBatteries `
@@ -65,6 +112,15 @@ $commonSettings = New-ScheduledTaskSettingsSet `
     -MultipleInstances IgnoreNew `
     -ExecutionTimeLimit (New-TimeSpan -Minutes 10)
 
+$hygieneSettings = New-ScheduledTaskSettingsSet `
+    -AllowStartIfOnBatteries `
+    -DontStopIfGoingOnBatteries `
+    -StartWhenAvailable `
+    -MultipleInstances IgnoreNew `
+    -ExecutionTimeLimit (New-TimeSpan -Minutes 10) `
+    -RestartCount 3 `
+    -RestartInterval (New-TimeSpan -Minutes 2)
+
 # SYSTEM principal (matches quota-governor, watchdog, factory-recycle pattern)
 $sysPrincipal = New-ScheduledTaskPrincipal `
     -UserId 'SYSTEM' `
@@ -72,7 +128,7 @@ $sysPrincipal = New-ScheduledTaskPrincipal `
     -RunLevel Highest
 
 # ---------------------------------------------------------------------------
-# Task 1 — QM_StrategyFarm_HygieneReboot  (weekly, Saturday 07:00 local)
+# Task 1 -- QM_StrategyFarm_HygieneReboot  (weekly, Saturday 07:00 local)
 # ---------------------------------------------------------------------------
 $hygieneTask = 'QM_StrategyFarm_HygieneReboot'
 
@@ -95,7 +151,7 @@ Register-ScheduledTask `
     -TaskName $hygieneTask `
     -Action   $hygieneAction `
     -Trigger  $hygieneTrigger `
-    -Settings $commonSettings `
+    -Settings $hygieneSettings `
     -Principal $sysPrincipal `
     -Force `
     -Description "Weekly preventive hygiene reboot (Saturday $HygieneTime local, SYSTEM). Purges LSM resource exhaustion from terminal64.exe spawns before qwinsta error 87 / task-scheduler 0x800710E0 degradation. Guards: Saturday+06-12 window, uptime>=5d, no DISABLED.flag, debounce 3d. Recovery chain: autologon -> QM_T_Live_AtLogon -> QM_StrategyFarm_FactoryON_AtLogon. Kill switch: D:\QM\reports\state\HYGIENE_REBOOT_DISABLED.flag. Log: D:\QM\reports\state\hygiene_reboot.log." `
@@ -105,7 +161,7 @@ Enable-ScheduledTask -TaskName $hygieneTask | Out-Null
 Write-Host "Registered: $hygieneTask (weekly Saturday $HygieneTime local, SYSTEM)"
 
 # ---------------------------------------------------------------------------
-# Task 2 — QM_StrategyFarm_LsmHealthProbe  (every 6 hours)
+# Task 2 -- QM_StrategyFarm_LsmHealthProbe  (every 6 hours)
 # ---------------------------------------------------------------------------
 $lsmTask = 'QM_StrategyFarm_LsmHealthProbe'
 
@@ -140,7 +196,7 @@ Enable-ScheduledTask -TaskName $lsmTask | Out-Null
 Write-Host "Registered: $lsmTask (every ${LsmEveryHours}h, SYSTEM)"
 
 # ---------------------------------------------------------------------------
-# Task 3 — QM_StrategyFarm_WorkerDedupe  (on-demand, interactive qm-admin)
+# Task 3 -- QM_StrategyFarm_WorkerDedupe  (on-demand, interactive qm-admin)
 # ---------------------------------------------------------------------------
 $dedupeTask   = 'QM_StrategyFarm_WorkerDedupe'
 $dedupeScript = Join-Path $RepoRoot 'tools\strategy_farm\start_terminal_workers.py'
@@ -150,7 +206,7 @@ if (-not (Test-Path -LiteralPath $dedupeScript)) {
     throw "start_terminal_workers.py not found: $dedupeScript"
 }
 
-# Interactive qm-admin principal — mirrors QM_StrategyFarm_FactoryON_AtLogon.
+# Interactive qm-admin principal -- mirrors QM_StrategyFarm_FactoryON_AtLogon.
 # The watchdog (SYSTEM) starts this task on demand; the spawn then happens
 # inside the interactive session so terminal64 children are viable.
 $dedupePrincipal = New-ScheduledTaskPrincipal `
