@@ -184,15 +184,15 @@ def _parse_claude_text(text: str) -> dict:
 
 
 def quota_snapshot() -> dict:
-    """Read Tampermonkey-scraped quota snapshot from D:/QM/.../quota_snapshot.json.
+    """Read the merged quota snapshot from D:/QM/.../quota_snapshot.json.
 
-    Browser userscripts (tools/strategy_farm/userscripts/*.user.js) scrape the
-    authenticated chatgpt.com + claude.ai usage pages every 60s and POST to the
-    local receiver (tools/strategy_farm/quota_receiver.py @ 127.0.0.1:9090).
-    The receiver merges per source.
+    The normal producer is quota_pull.py, which stores shape-normalized API
+    values in ``data.structured``. Legacy browser userscripts may still POST DOM
+    text to quota_receiver.py; that text remains a supported fallback.
 
-    Parsing happens here (Python side) on the rendered DOM text, so we can
-    fix patterns without users having to reinstall Tampermonkey scripts.
+    Structured values are already USED percentages with their matching reset
+    timestamps. DOM parsing happens here only for fields the structured block
+    does not provide.
 
     Returns per-source dicts: {fresh, age_sec, hour_pct, week_pct, plan,
     hour_reset, week_reset, meters, matches, url}.
