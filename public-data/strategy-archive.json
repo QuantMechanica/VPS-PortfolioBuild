@@ -1,6 +1,6 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-19T19:08:25.3148427Z",
+    "generated_at":  "2026-07-19T20:07:43.1182557Z",
     "total":  3358,
     "items":  [
                   {
@@ -15985,7 +15985,7 @@
                       "slug":  "QM5_13209_mulham-pm-range-sweep",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-13T11:23:01.4440061Z"
+                      "last_updated_utc":  "2026-07-19T20:06:52.0724813Z"
                   },
                   {
                       "slug":  "QM5_13210_mulham-asian-sweep-london",
@@ -16003,7 +16003,7 @@
                       "slug":  "QM5_13212_mulham-us500-org",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-13T11:25:15.9716465Z"
+                      "last_updated_utc":  "2026-07-19T20:06:52.0734841Z"
                   },
                   {
                       "slug":  "QM5_1322_connors-rsi2-fx-port-d1",

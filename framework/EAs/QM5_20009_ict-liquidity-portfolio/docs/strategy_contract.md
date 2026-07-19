@@ -164,11 +164,15 @@ read. No symbol/session/direction may be dropped after observing its result.
 | Sleeve | DEV / plateau | six fixed OOS blocks | final locked retrospective holdout |
 |---|---|---|---|
 | A / NDX M1 | 2021-01-01..2022-12-31 | 2023-H1 through 2025-H2 | 2026-01-01..2026-06-30 |
-| B / EURUSD+GBPUSD M5 | 2017-01-01..2022-12-31 | 2023-H1 through 2025-H2 | 2026-01-01..2026-06-30 |
+| B / EURUSD+GBPUSD M5 | 2017-10-01..2022-12-31 | 2023-H1 through 2025-H2 | 2026-01-01..2026-06-30 |
 
 NDX cannot honestly use the framework's 2017 start because its canonical registry
 coverage begins in 2021. It is reported as a documented coverage exception, not
 backfilled from unregistered raw files.
+
+EURUSD and GBPUSD Model-4 tick files begin in October 2017. Their January through
+September 2017 interval is therefore excluded as a documented coverage exception,
+never synthesized or backfilled from a different data source.
 
 For the six OOS blocks: aggregate net PF >= 1.10, at least 4/6 net-positive,
 aggregate DD < 15%, and no block contributes more than 50% of gross positive P/L.
