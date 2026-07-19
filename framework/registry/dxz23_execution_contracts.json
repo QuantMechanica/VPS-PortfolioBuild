@@ -4,17 +4,21 @@
   "contracts": [
     {
       "ea_id": 10403,
+      "symbol": "XAUUSD.DWX",
+      "timeframe": "D1",
       "slug": "et-turtle20x",
       "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10403_et-turtle20x.md",
       "source": "framework/EAs/QM5_10403_et-turtle20x/QM5_10403_et-turtle20x.mq5",
       "strategy_timeframe": "D1",
       "bar_gate_timeframe": "D1",
-      "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "REQUAL_REQUIRED", "card_evidence": null},
+      "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "BLOCKED", "card_evidence": null},
       "calendar": {"policy": "NONE"},
-      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["friday_close_override_not_card_qualified", "remediated_binary_not_requalified"]}
+      "promotion": {"status": "BLOCKED", "block_reasons": ["unresolved_semantic_conflict_friday_close_replaces_card_continuous_channel_exit_187_of_209", "friday_close_override_not_card_qualified", "remediated_binary_not_requalified"]}
     },
     {
       "ea_id": 10440,
+      "symbol": "NDX.DWX",
+      "timeframe": "H1",
       "slug": "mql5-ohlc-mtf",
       "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10440_mql5-ohlc-mtf.md",
       "source": "framework/EAs/QM5_10440_mql5-ohlc-mtf/QM5_10440_mql5-ohlc-mtf.mq5",
@@ -22,10 +26,12 @@
       "bar_gate_timeframe": "H1",
       "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "REQUAL_REQUIRED", "card_evidence": null},
       "calendar": {"policy": "NONE"},
-      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["friday_close_override_not_card_qualified", "remediated_binary_not_requalified"]}
+      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["live_preset_strategy_parameters_not_card_qualified", "legacy_ndx_news_binary_not_requalified", "friday_close_override_not_card_qualified", "remediated_binary_not_requalified"]}
     },
     {
       "ea_id": 10476,
+      "symbol": "USDCAD.DWX",
+      "timeframe": "H1",
       "slug": "mql5-pamxa",
       "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10476_mql5-pamxa.md",
       "source": "framework/EAs/QM5_10476_mql5-pamxa/QM5_10476_mql5-pamxa.mq5",
@@ -33,10 +39,12 @@
       "bar_gate_timeframe": "H1",
       "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "REQUAL_REQUIRED", "card_evidence": null},
       "calendar": {"policy": "NONE"},
-      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["friday_close_override_not_card_qualified", "remediated_binary_not_requalified"]}
+      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["reference_host_history_horizon_rebase_required", "legacy_q08_identity_incomplete", "friday_close_override_not_card_qualified", "remediated_binary_not_requalified"]}
     },
     {
       "ea_id": 10513,
+      "symbol": "XAUUSD.DWX",
+      "timeframe": "D1",
       "slug": "mql5-ichimoku",
       "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10513_mql5-ichimoku.md",
       "source": "framework/EAs/QM5_10513_mql5-ichimoku/QM5_10513_mql5-ichimoku.mq5",
@@ -44,10 +52,12 @@
       "bar_gate_timeframe": "D1",
       "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "REQUAL_REQUIRED", "card_evidence": null},
       "calendar": {"policy": "NONE"},
-      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["friday_close_override_not_card_qualified", "remediated_binary_not_requalified"]}
+      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["live_preset_strategy_parameters_not_card_qualified", "friday_close_override_not_card_qualified", "remediated_binary_not_requalified"]}
     },
     {
       "ea_id": 10692,
+      "symbol": "NDX.DWX",
+      "timeframe": "H1",
       "slug": "tv-ls-ms",
       "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10692_tv-ls-ms.md",
       "source": "framework/EAs/QM5_10692_tv-ls-ms/QM5_10692_tv-ls-ms.mq5",
@@ -55,10 +65,12 @@
       "bar_gate_timeframe": "H1",
       "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "REQUAL_REQUIRED", "card_evidence": null},
       "calendar": {"policy": "NONE"},
-      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["friday_close_override_not_card_qualified", "remediated_binary_not_requalified"]}
+      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["legacy_ndx_news_binary_not_requalified", "friday_close_override_not_card_qualified", "remediated_binary_not_requalified"]}
     },
     {
       "ea_id": 10706,
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "H1",
       "slug": "tv-mon-ls",
       "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10706_tv-mon-ls.md",
       "source": "framework/EAs/QM5_10706_tv-mon-ls/QM5_10706_tv-mon-ls.mq5",
@@ -66,10 +78,12 @@
       "bar_gate_timeframe": "H1",
       "friday_close": {"enabled": true, "hour_broker": 21, "mode": "CARD_RULE", "declaration": "CARD_EXIT_RULE", "qualification_status": "PASS", "card_evidence": "Card Exit: force-close remaining weekly position on Friday"},
       "calendar": {"policy": "NONE"},
-      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["remediated_binary_not_requalified"]}
+      "promotion": {"status": "BLOCKED", "block_reasons": ["owner_canonical_percent_risk_contract_decision_required", "historical_double_scaled_source_manifest_rejected", "reference_risk_contract_rebase_required", "mandatory_friday_close_after_news_filter_remediation_required", "session_aware_weekend_flattening_remediation_required", "legacy_q08_full_execution_identity_incomplete", "structured_five_axis_cost_evidence_required", "remediated_binary_not_requalified"]}
     },
     {
       "ea_id": 10715,
+      "symbol": "USDJPY.DWX",
+      "timeframe": "M15",
       "slug": "tv-asian-box",
       "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10715_tv-asian-box.md",
       "source": "framework/EAs/QM5_10715_tv-asian-box/QM5_10715_tv-asian-box.mq5",
@@ -77,10 +91,12 @@
       "bar_gate_timeframe": "M15",
       "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "REQUAL_REQUIRED", "card_evidence": null},
       "calendar": {"policy": "NONE"},
-      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["friday_close_override_not_card_qualified", "remediated_binary_not_requalified"]}
+      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["reference_magic_slot_misbound", "current_bound_variant_zero_trades", "friday_close_override_not_card_qualified", "remediated_binary_not_requalified"]}
     },
     {
       "ea_id": 10911,
+      "symbol": "GDAXI.DWX",
+      "timeframe": "H1",
       "slug": "grimes-complex-pb",
       "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10911_grimes-complex-pb.md",
       "source": "framework/EAs/QM5_10911_grimes-complex-pb/QM5_10911_grimes-complex-pb.mq5",
@@ -88,10 +104,12 @@
       "bar_gate_timeframe": "H1",
       "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "REQUAL_REQUIRED", "card_evidence": null},
       "calendar": {"policy": "NONE"},
-      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["friday_close_override_not_card_qualified", "card_v2_qm_interpretation_migration_required", "remediated_binary_not_requalified"]}
+      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["signal_drift_unresolved", "native_report_missing", "friday_close_override_not_card_qualified", "card_v2_qm_interpretation_migration_required", "remediated_binary_not_requalified"]}
     },
     {
       "ea_id": 10919,
+      "symbol": "XTIUSD.DWX",
+      "timeframe": "H4",
       "slug": "grimes-overshoot",
       "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10919_grimes-overshoot.md",
       "source": "framework/EAs/QM5_10919_grimes-overshoot/QM5_10919_grimes-overshoot.mq5",
@@ -99,10 +117,12 @@
       "bar_gate_timeframe": "H4",
       "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "REQUAL_REQUIRED", "card_evidence": null},
       "calendar": {"policy": "NONE"},
-      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["friday_close_override_not_card_qualified", "card_v2_qm_interpretation_migration_required", "remediated_binary_not_requalified"]}
+      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["legacy_q08_identity_incomplete", "friday_close_override_not_card_qualified", "card_v2_qm_interpretation_migration_required", "remediated_binary_not_requalified"]}
     },
     {
       "ea_id": 10939,
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "H4",
       "slug": "grimes-context-pb",
       "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10939_grimes-context-pb.md",
       "source": "framework/EAs/QM5_10939_grimes-context-pb/QM5_10939_grimes-context-pb.mq5",
@@ -110,21 +130,35 @@
       "bar_gate_timeframe": "H4",
       "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "REQUAL_REQUIRED", "card_evidence": null},
       "calendar": {"policy": "NONE"},
-      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["friday_close_override_not_card_qualified", "card_v2_qm_interpretation_migration_required", "remediated_binary_not_requalified"]}
+      "promotion": {"status": "BLOCKED", "block_reasons": ["approved_card_g0_status_contradiction", "card_v2_qm_interpretation_owner_approval_required", "owner_news_risk_source_closure_decisions_required", "friday_close_21_owner_directive_unsealed", "mandatory_friday_close_after_news_filter_remediation_required", "session_aware_weekend_flattening_remediation_required", "deployed_binary_hash_differs_from_repository_binary", "repository_live_risk_differs_from_as_live_risk", "legacy_q08_full_identity_invalid_missing_entry_time", "six_commission_rows_bounded_ambiguous", "structured_five_axis_cost_evidence_required", "continuous_segment_requalification_required", "remediated_binary_not_requalified"]}
     },
     {
       "ea_id": 11132,
+      "symbol": "SP500.DWX",
+      "timeframe": "D1",
       "slug": "tm-cum-rsi2",
       "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11132_tm-cum-rsi2.md",
       "source": "framework/EAs/QM5_11132_tm-cum-rsi2/QM5_11132_tm-cum-rsi2.mq5",
       "strategy_timeframe": "D1",
       "bar_gate_timeframe": "D1",
+      "darwinex_zero_routing": {
+        "test_symbol": "SP500.DWX",
+        "live_order_symbol": "SP500",
+        "status": "BACKTEST_ALIAS_TO_ORDER_ROUTABLE_BROKER_SYMBOL",
+        "source_registry": "framework/registry/dwx_symbol_matrix.csv",
+        "evidence_ref": "docs/ops/evidence/DXZ_11132_SP500_DIRECT_ROUTABILITY_2026-07-16.md",
+        "automatic_symbol_inference": false,
+        "qualification_status": "REQUAL_REQUIRED",
+        "full_requalification_required": true
+      },
       "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "REQUAL_REQUIRED", "card_evidence": null},
       "calendar": {"policy": "NONE"},
-      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["friday_close_override_not_card_qualified", "source_does_not_define_exit_card_v2_migration_required", "remediated_binary_not_requalified"]}
+      "promotion": {"status": "BLOCKED", "block_reasons": ["sp500_dwx_to_sp500_alias_full_requalification_required", "friday_close_override_not_card_qualified", "source_does_not_define_exit_card_v2_migration_required", "live_preset_strategy_parameters_not_card_qualified", "active_news_axes_not_card_qualified", "approved_card_contains_stale_sp500_nonroutable_statement", "remediated_binary_not_requalified"]}
     },
     {
       "ea_id": 11165,
+      "symbol": "AUDCAD.DWX",
+      "timeframe": "H1",
       "slug": "weiss-rsi-ma",
       "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11165_weiss-rsi-ma.md",
       "source": "framework/EAs/QM5_11165_weiss-rsi-ma/QM5_11165_weiss-rsi-ma.mq5",
@@ -132,10 +166,25 @@
       "bar_gate_timeframe": "H1",
       "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "BLOCKED", "card_evidence": null},
       "calendar": {"policy": "NONE"},
-      "promotion": {"status": "BLOCKED", "block_reasons": ["deployed_binary_hash_not_bound_to_repo_source", "canonical_stream_not_bound_to_deployed_binary", "friday_close_override_not_card_qualified"]}
+      "promotion": {"status": "BLOCKED", "block_reasons": ["deployed_binary_hash_not_bound_to_repo_source", "canonical_stream_not_bound_to_deployed_binary", "audcad_live_preset_strategy_parameters_not_card_qualified", "legacy_q08_identity_incomplete", "friday_close_override_not_card_qualified"]}
+    },
+    {
+      "ea_id": 11165,
+      "symbol": "EURUSD.DWX",
+      "timeframe": "H1",
+      "slug": "weiss-rsi-ma",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11165_weiss-rsi-ma.md",
+      "source": "framework/EAs/QM5_11165_weiss-rsi-ma/QM5_11165_weiss-rsi-ma.mq5",
+      "strategy_timeframe": "H1",
+      "bar_gate_timeframe": "H1",
+      "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "BLOCKED", "card_evidence": null},
+      "calendar": {"policy": "NONE"},
+      "promotion": {"status": "BLOCKED", "block_reasons": ["deployed_binary_hash_not_bound_to_repo_source", "canonical_stream_not_bound_to_deployed_binary", "legacy_q08_identity_incomplete", "friday_close_override_not_card_qualified"]}
     },
     {
       "ea_id": 11421,
+      "symbol": "AUDUSD.DWX",
+      "timeframe": "D1",
       "slug": "ohlc-daily-squeeze-reversal-d1",
       "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11421_ohlc-daily-squeeze-reversal-d1.md",
       "source": "framework/EAs/QM5_11421_ohlc-daily-squeeze-reversal-d1/QM5_11421_ohlc-daily-squeeze-reversal-d1.mq5",
@@ -143,10 +192,25 @@
       "bar_gate_timeframe": "D1",
       "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "REQUAL_REQUIRED", "card_evidence": null},
       "calendar": {"policy": "NONE"},
-      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["friday_close_override_not_card_qualified", "remediated_binary_not_requalified"]}
+      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["audusd_reference_host_d1_horizon_rebase_required", "legacy_q08_identity_incomplete", "friday_close_override_not_card_qualified", "remediated_binary_not_requalified"]}
+    },
+    {
+      "ea_id": 11421,
+      "symbol": "EURUSD.DWX",
+      "timeframe": "D1",
+      "slug": "ohlc-daily-squeeze-reversal-d1",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11421_ohlc-daily-squeeze-reversal-d1.md",
+      "source": "framework/EAs/QM5_11421_ohlc-daily-squeeze-reversal-d1/QM5_11421_ohlc-daily-squeeze-reversal-d1.mq5",
+      "strategy_timeframe": "D1",
+      "bar_gate_timeframe": "D1",
+      "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "REQUAL_REQUIRED", "card_evidence": null},
+      "calendar": {"policy": "NONE"},
+      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["legacy_q08_identity_incomplete", "friday_close_override_not_card_qualified", "remediated_binary_not_requalified"]}
     },
     {
       "ea_id": 11708,
+      "symbol": "EURUSD.DWX",
+      "timeframe": "D1",
       "slug": "anon-market-squeeze-d1",
       "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11708_anon-market-squeeze-d1.md",
       "source": "framework/EAs/QM5_11708_anon-market-squeeze-d1/QM5_11708_anon-market-squeeze-d1.mq5",
@@ -158,6 +222,8 @@
     },
     {
       "ea_id": 12567,
+      "symbol": "XAUUSD.DWX",
+      "timeframe": "D1",
       "slug": "cum-rsi2-commodity",
       "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_12567_cum-rsi2-commodity.md",
       "source": "framework/EAs/QM5_12567_cum-rsi2-commodity/QM5_12567_cum-rsi2-commodity.mq5",
@@ -165,10 +231,25 @@
       "bar_gate_timeframe": "D1",
       "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "REQUAL_REQUIRED", "card_evidence": null},
       "calendar": {"policy": "NONE"},
-      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["friday_close_override_not_card_qualified", "remediated_binary_not_requalified"]}
+      "promotion": {"status": "BLOCKED", "block_reasons": ["xau_owner_qm_variant_news_risk_source_decisions_required", "friday_close_21_owner_directive_unsealed", "mandatory_friday_close_after_news_filter_remediation_required", "session_aware_weekend_flattening_remediation_required", "xau_deployed_binary_hash_differs_from_repository_binary", "xau_repository_live_risk_differs_from_as_live_risk", "xau_historical_double_scaled_source_manifest_rejected", "xau_legacy_q08_identity_invalid_28_of_73_missing_entry_time", "xau_full_execution_lot_pnl_identity_required", "xau_structured_five_axis_cost_evidence_required", "xau_continuous_segment_requalification_required", "remediated_binary_not_requalified"]}
+    },
+    {
+      "ea_id": 12567,
+      "symbol": "XNGUSD.DWX",
+      "timeframe": "D1",
+      "slug": "cum-rsi2-commodity",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_12567_cum-rsi2-commodity.md",
+      "source": "framework/EAs/QM5_12567_cum-rsi2-commodity/QM5_12567_cum-rsi2-commodity.mq5",
+      "strategy_timeframe": "D1",
+      "bar_gate_timeframe": "D1",
+      "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "REQUAL_REQUIRED", "card_evidence": null},
+      "calendar": {"policy": "NONE"},
+      "promotion": {"status": "BLOCKED", "block_reasons": ["xng_card_v2_base35_policy_not_approved", "xng_live_threshold_not_card_qualified", "xng_entry30_hindsight_challenger_quarantined", "friday_close_21_owner_directive_unsealed", "owner_session_close_buffer_not_signed", "mandatory_friday_close_after_news_filter_remediation_required", "session_aware_weekend_flattening_remediation_required", "structured_five_axis_cost_evidence_required", "continuous_segment_requalification_required", "target_binary_two_run_requalification_required", "q8_synchronized_intraday_mtm_required"]}
     },
     {
       "ea_id": 12778,
+      "symbol": "AUDUSD.DWX",
+      "timeframe": "D1",
       "slug": "edgelab-audusd-eurjpy-cointegration",
       "card_ref": "framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/docs/strategy_card.md",
       "source": "framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/QM5_12778_edgelab-audusd-eurjpy-cointegration.mq5",
@@ -176,10 +257,12 @@
       "bar_gate_timeframe": "D1",
       "friday_close": {"enabled": true, "hour_broker": 21, "mode": "CARD_RULE", "declaration": "CARD_EXIT_RULE", "qualification_status": "BLOCKED", "card_evidence": "Card explicitly keeps framework Friday close enabled"},
       "calendar": {"policy": "NONE"},
-      "promotion": {"status": "BLOCKED", "block_reasons": ["canonical_basket_requalification_missing", "historical_annex_used_wrong_USD_tester_currency", "q08_fail_soft_unresolved"]}
+      "promotion": {"status": "BLOCKED", "block_reasons": ["canonical_basket_requalification_missing", "reference_host_d1_horizon_rebase_required", "legacy_q08_forced_exit_omission", "historical_annex_used_wrong_USD_tester_currency", "q08_fail_soft_unresolved"]}
     },
     {
       "ea_id": 12969,
+      "symbol": "USDJPY.DWX",
+      "timeframe": "M30",
       "slug": "usdjpy-gotobi-nakane-fix",
       "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_12969_usdjpy-gotobi-nakane-fix.md",
       "source": "framework/EAs/QM5_12969_usdjpy-gotobi-nakane-fix/QM5_12969_usdjpy-gotobi-nakane-fix.mq5",
@@ -187,10 +270,12 @@
       "bar_gate_timeframe": "M30",
       "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "REQUAL_REQUIRED", "card_evidence": null},
       "calendar": {"policy": "NONE"},
-      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["friday_close_override_not_card_qualified", "remediated_binary_not_requalified"]}
+      "promotion": {"status": "BLOCKED", "block_reasons": ["unresolved_semantic_conflict_card_no_fixed_stop_vs_active_120_pip_stop_triggered_2_of_331", "friday_close_override_not_card_qualified", "remediated_binary_not_requalified"]}
     },
     {
       "ea_id": 12989,
+      "symbol": "XAUUSD.DWX",
+      "timeframe": "H4",
       "slug": "grimes-nested-pb-v2",
       "card_ref": "MISSING_CANONICAL_APPROVED_CARD",
       "source": "framework/EAs/QM5_12989_grimes-nested-pb-v2/QM5_12989_grimes-nested-pb-v2.mq5",
@@ -202,6 +287,8 @@
     },
     {
       "ea_id": 13128,
+      "symbol": "NDX.DWX",
+      "timeframe": "H1",
       "slug": "pre-fomc-drift-ndx",
       "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_13128_pre-fomc-drift-ndx.md",
       "source": "framework/EAs/QM5_13128_pre-fomc-drift-ndx/QM5_13128_pre-fomc-drift-ndx.mq5",
@@ -209,10 +296,12 @@
       "bar_gate_timeframe": "H1",
       "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "REQUAL_REQUIRED", "card_evidence": null},
       "calendar": {"policy": "FIXED_EVENT_TABLE", "valid_through": "2026-12-31", "source": "official FOMC calendar; repo canonical QM5_1094/QM5_1180 2026 table", "stale_behavior": "INIT_AND_ENTRY_FAIL_CLOSED"},
-      "promotion": {"status": "REQUAL_REQUIRED", "block_reasons": ["calendar_extended_to_2026", "friday_close_override_not_card_qualified", "remediated_binary_not_requalified"]}
+      "promotion": {"status": "BLOCKED", "block_reasons": ["unresolved_semantic_conflict_card_calendar_ends_2025_vs_source_calendar_extends_2026", "friday_close_override_not_card_qualified", "remediated_binary_not_requalified"]}
     },
     {
       "ea_id": 1556,
+      "symbol": "XAUUSD.DWX",
+      "timeframe": "D1",
       "slug": "aa-zak-mom12",
       "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_1556_aa-zak-mom12.md",
       "source": "framework/EAs/QM5_1556_aa-zak-mom12/QM5_1556_aa-zak-mom12.mq5",
@@ -220,7 +309,7 @@
       "bar_gate_timeframe": "D1",
       "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "BLOCKED", "card_evidence": null},
       "calendar": {"policy": "NONE"},
-      "promotion": {"status": "BLOCKED", "block_reasons": ["friday_close_changes_monthly_source_exit_semantics", "native_exit_vs_override_ablation_required"]}
+      "promotion": {"status": "BLOCKED", "block_reasons": ["approved_card_g0_status_contradiction", "card_v2_policy_repair_not_approved", "completed_month_mom12_reconstruction_not_built", "friday_close_changes_monthly_source_exit_semantics", "policy_reentry_ablation_required", "master_module_disposition_required", "owner_no_weekend_session_buffer_unsealed", "mandatory_friday_close_after_news_filter_remediation_required", "session_aware_weekend_flattening_remediation_required", "structured_five_axis_cost_evidence_required", "continuous_segment_requalification_required", "target_binary_two_run_requalification_required", "q8_synchronized_intraday_mtm_required"]}
     }
   ]
 }

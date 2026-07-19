@@ -2,7 +2,11 @@
 card_schema_version: 2
 ea_id: QM5_<allocated-id>
 slug: <slug>
+status: DRAFT
 g0_status: DRAFT
+symbol: <SYMBOL.DWX>
+timeframe: <M1|M5|M15|M30|H1|H4|H6|H8|D1|W1|MN1>
+variant_id: <EXACT_VARIANT_ID>
 execution_contract_ref: framework/registry/<registry>.json#ea_id=<id>
 execution_contract_status: DRAFT
 ---

@@ -1,5 +1,5 @@
 #property strict
-#property version "1.0"
+#property version "2.0"
 
 #include <QM/QM_FTMOGovernorClient.mqh>
 
@@ -12,7 +12,15 @@ int OnInit()
    if(scale != 0.0 || reason != "GOVERNOR_CLIENT_CONFIG_INVALID")
       return INIT_FAILED;
    if(!QM_FTMO_IdentifierValid("challenge_20260713") ||
-      QM_FTMO_IdentifierValid("challenge id with spaces"))
+       QM_FTMO_IdentifierValid("challenge id with spaces"))
+      return INIT_FAILED;
+   QM_FTMO_GovernorPolicy policy;
+   if(!QM_FTMO_SelectPolicy("FTMO_2S_P1_100K_V2",policy) ||
+      QM_FTMO_PolicyFingerprintNumber(policy) != QM_FTMO_P1_FINGERPRINT_NUMBER ||
+      !QM_FTMO_SelectPolicy("FTMO_2S_P2_100K_V2",policy) ||
+      QM_FTMO_PolicyFingerprintNumber(policy) != QM_FTMO_P2_FINGERPRINT_NUMBER ||
+      !QM_FTMO_SelectPolicy("FTMO_2S_FUNDED_100K_V2",policy) ||
+      QM_FTMO_PolicyFingerprintNumber(policy) != QM_FTMO_FUNDED_FINGERPRINT_NUMBER)
       return INIT_FAILED;
    if(StringLen(QM_FTMO_StateKey(12345678,"challenge_20260713","heartbeat_utc")) > 63)
       return INIT_FAILED;

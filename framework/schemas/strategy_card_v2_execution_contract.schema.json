@@ -18,6 +18,11 @@
     "contract": {
       "type": "object",
       "additionalProperties": false,
+      "dependentRequired": {
+        "symbol": ["timeframe"],
+        "timeframe": ["symbol"],
+        "variant_id": ["symbol", "timeframe"]
+      },
       "required": [
         "ea_id",
         "slug",
@@ -31,14 +36,48 @@
       ],
       "properties": {
         "ea_id": {"type": "integer", "minimum": 1},
+        "symbol": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9]{1,15}\\.DWX$"
+        },
+        "timeframe": {"$ref": "#/$defs/timeframe"},
+        "variant_id": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]{0,63}$"
+        },
         "slug": {"type": "string", "minLength": 1},
         "card_ref": {"type": "string", "minLength": 1},
         "source": {"type": "string", "pattern": "\\.mq5$"},
         "strategy_timeframe": {"$ref": "#/$defs/timeframe"},
         "bar_gate_timeframe": {"$ref": "#/$defs/timeframe"},
+        "darwinex_zero_routing": {"$ref": "#/$defs/darwinexZeroRouting"},
         "friday_close": {"$ref": "#/$defs/fridayClose"},
         "calendar": {"$ref": "#/$defs/calendar"},
         "promotion": {"$ref": "#/$defs/promotion"}
+      }
+    },
+    "darwinexZeroRouting": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "test_symbol",
+        "live_order_symbol",
+        "status",
+        "source_registry",
+        "evidence_ref",
+        "automatic_symbol_inference",
+        "qualification_status",
+        "full_requalification_required"
+      ],
+      "properties": {
+        "test_symbol": {"const": "SP500.DWX"},
+        "live_order_symbol": {"const": "SP500"},
+        "status": {"const": "BACKTEST_ALIAS_TO_ORDER_ROUTABLE_BROKER_SYMBOL"},
+        "source_registry": {"const": "framework/registry/dwx_symbol_matrix.csv"},
+        "evidence_ref": {"const": "docs/ops/evidence/DXZ_11132_SP500_DIRECT_ROUTABILITY_2026-07-16.md"},
+        "automatic_symbol_inference": {"const": false},
+        "qualification_status": {"enum": ["PASS", "REQUAL_REQUIRED", "BLOCKED"]},
+        "full_requalification_required": {"const": true}
       }
     },
     "timeframe": {
