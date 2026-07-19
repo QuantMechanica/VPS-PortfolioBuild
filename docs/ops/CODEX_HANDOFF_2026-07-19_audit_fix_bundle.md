@@ -74,6 +74,16 @@ deleted per manifest `scratchpad\retention\TIER1_deletion_manifest.csv`).
     fix — if any surface displays Codex hour_pct it has been mislabeled since
     07-12; check `health.py` / `render_cockpit.py` consumers.
 
+## P1.9 addendum (from Claude's REVIEW-300 adjudication, 2026-07-19 ~19:45)
+
+Two MORE ea_id collisions surfaced (same class as 12784, both from the 07-10
+REVIEW cohort, verified twice): **1157** (registry slug plastun-crude-oil-autumn
+vs dir QM5_1157_qp-stress-reversal-sp500) and **1619** (registry row belongs to
+an aa-* slug, dir differs). Both tasks stay in REVIEW; fold the re-key into your
+P1.9 collision pass. The other 298 cohort tasks were closed RECYCLE (source-only,
+never built — they re-enter the build queue; expect the unbuilt backlog to grow
+accordingly, build priming via farmctl build-ea).
+
 ## P1.11 — OWNER directive 2026-07-19 evening (news-source architecture)
 
 OWNER (verbatim intent): live EAs must source news events from the native
