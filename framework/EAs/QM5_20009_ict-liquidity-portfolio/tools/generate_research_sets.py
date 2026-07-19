@@ -14,6 +14,7 @@ import hashlib
 import json
 import re
 from datetime import date
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
@@ -135,6 +136,7 @@ def _resolve_include(owner: Path, raw_include: str) -> Path | None:
     return None
 
 
+@lru_cache(maxsize=1)
 def framework_include_closure() -> tuple[list[dict[str, object]], list[str]]:
     """Return every repo framework include reached by the EA, plus externals."""
 
@@ -171,6 +173,7 @@ def framework_include_closure() -> tuple[list[dict[str, object]], list[str]]:
     return rows, sorted(external)
 
 
+@lru_cache(maxsize=1)
 def visible_input_names() -> list[str]:
     includes, _external = framework_include_closure()
     sources = [EA_SOURCE]
@@ -453,6 +456,31 @@ def model4_data_files(
     return rows
 
 
+def validate_compiled_include_closure(
+    includes: Iterable[Mapping[str, object]], artifact_paths: Mapping[str, Path]
+) -> None:
+    manifest_path = artifact_paths["compile_include_sync_manifest"]
+    with manifest_path.open("r", encoding="utf-8-sig", newline="") as handle:
+        manifest_rows = list(csv.DictReader(handle))
+    compiled = {
+        str(row.get("relative_path", "")).replace("\\", "/").lower(): row
+        for row in manifest_rows
+    }
+    for include in includes:
+        repo_path = Path(str(include["path"]))
+        try:
+            relative = repo_path.relative_to("framework/include").as_posix().lower()
+        except ValueError as exc:
+            raise FreezeError(f"framework include path outside expected root: {repo_path}") from exc
+        row = compiled.get(relative)
+        if row is None:
+            raise FreezeError(f"compiled include manifest lacks active include: {relative}")
+        source_hash = str(row.get("source_sha256", "")).lower()
+        destination_hash = str(row.get("destination_sha256", "")).lower()
+        if source_hash != str(include["sha256"]) or destination_hash != source_hash:
+            raise FreezeError(f"compiled include differs from active repo include: {relative}")
+
+
 def build_freeze_inputs(
     protocol: Mapping[str, Any] | None = None,
     evidence_overrides: Mapping[str, Path] | None = None,
@@ -461,6 +489,7 @@ def build_freeze_inputs(
     validate_protocol(protocol)
     includes, external_includes = framework_include_closure()
     evidence, artifact_paths = evidence_hashes(protocol, evidence_overrides)
+    validate_compiled_include_closure(includes, artifact_paths)
     data_files = model4_data_files(protocol, artifact_paths)
     source_hashes = {
         "ea_sha256": sha256_file(EA_SOURCE),
