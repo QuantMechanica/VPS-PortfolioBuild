@@ -15075,3 +15075,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20006,spx-intraday-mom,0,SP500.DWX,200060000,2026-07-19,claude,active
 20004,turn-of-month-index-long,0,GDAXI.DWX,200040000,2026-07-19,claude,active
 20004,turn-of-month-index-long,1,NDX.DWX,200040001,2026-07-19,claude,active
+20010,xau-friday-rush,0,XAUUSD.DWX,200100000,2026-07-19,claude,active

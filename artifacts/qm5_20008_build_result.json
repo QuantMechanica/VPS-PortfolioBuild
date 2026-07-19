@@ -1,0 +1,101 @@
+{
+  "task_id": "6c3d5c57-c3c3-4939-b4f8-ed5219d36c61",
+  "ea_id": "QM5_20008",
+  "ea_label": "QM5_20008_wti-month-ch3",
+  "slug": "wti-month-ch3",
+  "strategy_id": "SZAKMARY-WTI-MCH3-2010",
+  "strategy": "WTI monthly three-month completed-close channel with one-month renewal",
+  "source_links": [
+    "https://doi.org/10.1016/j.jbankfin.2009.08.004",
+    "https://www.researchgate.net/profile/Andrew-Szakmary/publication/267715955_Price_Momentum_and_Trading_Volume_In_Commodity_Futures_Markets/links/556dae9d08aeccd7773d7aca/Price-Momentum-and-Trading-Volume-In-Commodity-Futures-Markets.pdf"
+  ],
+  "symbols": [
+    "XTIUSD.DWX"
+  ],
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_20008_wti-month-ch3",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_20008_wti-month-ch3/QM5_20008_wti-month-ch3.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_20008_wti-month-ch3/QM5_20008_wti-month-ch3.ex5",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_20008_wti-month-ch3/SPEC.md",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20008_wti-month-ch3.md",
+  "approved_card_path": "C:/QM/repo/strategy-seeds/cards/approved/QM5_20008_wti-month-ch3_card.md",
+  "canonical_card_path": "C:/QM/repo/strategy-seeds/cards/wti-month-ch3_card.md",
+  "source_packet_path": "C:/QM/repo/strategy-seeds/sources/SZAKMARY-WTI-MCH3-2010/source.md",
+  "runtime_build_result_path": "D:/QM/strategy_farm/artifacts/builds/6c3d5c57-c3c3-4939-b4f8-ed5219d36c61.json",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_20008_wti-month-ch3/sets/QM5_20008_wti-month-ch3_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "magic_base": 200080000,
+  "registry_validation": {
+    "ea_id_row": "20008,wti-month-ch3,SZAKMARY-WTI-MCH3-2010,active,Research+Development (OWNER commodity-sleeve mission),2026-07-19",
+    "magic_row": "20008,wti-month-ch3,0,XTIUSD.DWX,200080000,2026-07-19,Development,active",
+    "resolver_rows": 14943,
+    "magic_registry_sha256": "9958AB5A63730DA33A39D5EE88FDF43A7AB21587FEB49540EC5AEFBD1522D370",
+    "resolver_registry_sha_match": true
+  },
+  "commits": [
+    "b6febe9da159dd48db3fd36c9a2a9183d6809e05",
+    "e7bdaa1d95b69b1233df5073b3851f3b8a92efd3",
+    "8df86c4ac970e9ff31c159d06f855176ca300227",
+    "d2bf65d80ec523e3a64e62cf3e6b5aa770f25cf6",
+    "2ad4afab1ac854a14e95a87c5fef8a5d9a3f35bd"
+  ],
+  "build_commit": "2ad4afab1ac854a14e95a87c5fef8a5d9a3f35bd",
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log": "C:/QM/repo/framework/build/compile/20260719_181940/QM5_20008_wti-month-ch3.compile.log",
+  "compile_log_sha256": "F99DF397F0C43EB127D7E94253BB72C8EFE7ADCFC66C1EFD54D7DA94224908F0",
+  "compile_summary": "D:/QM/reports/compile/20260719_181940/summary.csv",
+  "build_check_passed": true,
+  "build_check_failures": 0,
+  "build_check_warnings": 0,
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260719_182057.json",
+  "build_check_report_sha256": "C4A9F9395E060C249A677B0E6C222EEA9032AD7CFEE1EFA1A127AB0D9D76C457",
+  "spec_validation": "PASS",
+  "guardrail_validation": "PASS",
+  "card_schema_validation": "PASS",
+  "g0_card_validation": "PASS",
+  "setfile_build_hash": "9f49977cf479e69a8ac4de4f40ea271d5fb088c44704592fca246238d7260dae",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced-fleet scan found eight MT5 test terminals already active; no manual tester, dispatch tick, worker tick, optimization, or backtest was started.",
+  "blocked_reason": null,
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "reputable_primary_source": true,
+    "manual_backtest_cpu_used": false
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "open_questions": [
+    "The peer-reviewed source studies commodity futures; Q02 must falsify transfer to the Darwinex continuous WTI CFD proxy.",
+    "The local cadence precheck is not a performance backtest and establishes neither positive expectancy nor low realized book correlation."
+  ],
+  "file_hashes_sha256": {
+    "mq5": "593C79996D3017B780A59C03CCD2518F6C5D8AFB21802F9F5C8EAE6FCACA0858",
+    "ex5": "21DF095C486911045B26A1843D668B6BA66E3CE0ADEAA5CFA4ADC1310E9244C9",
+    "spec": "F11F8577975AFBC08E8C580C1FB7A451B941ECAF3313E1A55C3334D9F5E7C64C",
+    "embedded_card": "C729E45B05660E6B82BD563D0C147EF77DA9F107954567365FA6490DE6CA56C1",
+    "setfile": "254C42E31C4E9C9FA54B0CDBE9765FD4B6FEF0AF8B87D7ABF1CAA76166C38F48",
+    "canonical_card": "0A2A21B7982257DC5D3BBB7A1F2DB1B72B5D6C35EAF5CF0076F23A25CD267F88",
+    "approved_card": "819D1A33428B21EAB6C83784409464162ACB70C3F12DF519576DD16C7009ED02",
+    "source_packet": "9E082864F7F6C85E88720FC7DC24674A8BE77C68C3479D441C7709B726691727",
+    "ea_registry": "0C4504824A062BAC00C26DAD754A0028BC44C28201770CFA574CA19D6749B5B8",
+    "magic_registry": "9958AB5A63730DA33A39D5EE88FDF43A7AB21587FEB49540EC5AEFBD1522D370",
+    "resolver": "8E82A021DB481BC2DB5A04B5445EA66302E874EEE074B744196A6280932D6638"
+  }
+}
