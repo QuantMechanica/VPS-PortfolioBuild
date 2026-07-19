@@ -1,0 +1,469 @@
+{
+  "schema_version": 1,
+  "artifact_type": "DXZ_Q8_FAIL_CLOSED_GATE_MATRIX",
+  "contract_id": "DXZ-Q8-GOLD-ONLY-GATES-20260716",
+  "created_on": "2026-07-16",
+  "status": "IN_REVIEW_BLOCKED",
+  "approval_effect": "NONE",
+  "runtime_effect": "NONE",
+  "promotion_enabled": false,
+  "semantic_approval_granted": false,
+  "target_book": "DXZ_Q8_CANDIDATE",
+  "benchmark_book": "DXZ_Q6_FROZEN",
+  "authoritative_phase_refs": [
+    "docs/ops/PIPELINE_PHASE_SPEC.md",
+    "docs/ops/PIPELINE_PHASE_ID_MAP.md"
+  ],
+  "promotion_identity": {
+    "name": "EXACT_FOUR_PART_IDENTITY",
+    "fields_in_order": [
+      "ea_id",
+      "symbol",
+      "timeframe",
+      "variant_id"
+    ],
+    "all_fields_required_non_null": true,
+    "exact_match_required_across_card_contract_manifest_run_receipt_and_gate": true,
+    "ea_only_fallback_allowed": false,
+    "sibling_symbol_or_timeframe_fallback_allowed": false,
+    "variant_alias_or_default_fallback_allowed": false,
+    "mismatch_or_missing_action": "BLOCK"
+  },
+  "verdict_policy": {
+    "name": "GOLD_ONLY",
+    "accepted_exact_verdicts": {
+      "TARGET_BINARY_RUN": "PASS",
+      "TARGET_PAIR_GATE": "PASS",
+      "CANONICAL_Q00_TO_Q11_EACH": "PASS",
+      "Q12_PORTFOLIO": "PASS_PORTFOLIO",
+      "ADJUDICATION_INTERNAL": "KEEP",
+      "TRUTH_CHAIN_INTERNAL": "CLOSED"
+    },
+    "explicitly_non_admissible": [
+      "PASS_SOFT",
+      "FAIL_SOFT",
+      "FAIL_HARD",
+      "FAIL",
+      "INVALID",
+      "EDGE_SOFT",
+      "KEEP_CANDIDATE",
+      "REPAIR",
+      "WAITING_INPUT",
+      "PARTIAL",
+      "REPORT_ONLY",
+      "UNKNOWN",
+      "NULL"
+    ],
+    "missing_unknown_or_unrecognized_action": "BLOCK",
+    "portfolio_rescue_of_non_gold_sleeve_allowed": false
+  },
+  "stage_order": [
+    "SELECTOR",
+    "EARLY_SCREEN",
+    "CANONICAL_PHASES_Q00_Q11_WITH_TARGET_PAIR_GATE_BETWEEN_Q01_AND_Q02",
+    "Q12_PORTFOLIO",
+    "PROSPECTIVE"
+  ],
+  "execution_dependency_order": [
+    "SELECTOR",
+    "EARLY_SCREEN",
+    "CANONICAL_Q00_PASS_AND_SEMANTIC_FREEZE",
+    "TARGET_BUILD_AND_CANONICAL_Q01_PASS",
+    "TWO_DESIGNATED_TARGET_BINARY_REQUAL_RUNS",
+    "TARGET_BINARY_PAIR_GATE_PASS",
+    "CANONICAL_Q02_THROUGH_Q11_GOLD_PASS",
+    "Q12_PASS_PORTFOLIO",
+    "PROSPECTIVE_POST_FREEZE"
+  ],
+  "stages": {
+    "SELECTOR": {
+      "evidence_class": "HISTORICAL_TRIAGE_ONLY",
+      "window": "2018-07-01/2022-12-31_LOCKED_AND_ALREADY_OBSERVED",
+      "thresholds": {
+        "minimum_closed_round_trips": {
+          "operator": ">=",
+          "value": 20
+        },
+        "minimum_commission_adjusted_profit_factor": {
+          "operator": ">=",
+          "value": 1.1
+        },
+        "maximum_absolute_zero_filled_monthly_correlation_to_each_frozen_Q6_sleeve": {
+          "operator": "<=",
+          "value": 0.3
+        }
+      },
+      "output_verdict": "SELECTOR_ELIGIBLE_OR_REJECT",
+      "promotion_gate": false,
+      "may_satisfy_early_screen": false,
+      "may_satisfy_any_canonical_phase": false,
+      "may_be_described_as_qualification_or_holdout": false
+    },
+    "EARLY_SCREEN": {
+      "evidence_class": "COMPUTE_DISPATCH_AND_FALSIFICATION_ONLY",
+      "requirements": [
+        "EXACT_FOUR_PART_IDENTITY_PRESENT",
+        "APPROVAL_AND_HASH_BINDINGS_PRESENT_FOR_THE_REQUESTED_ACTION",
+        "SOURCE_INCLUDE_EX5_AND_SET_CLOSURE_READABLE",
+        "STRICT_COMPILE_AND_DETERMINISTIC_SMOKE_DISPATCHABLE",
+        "CONTINUOUS_DATA_SEGMENTS_AND_WARMUP_DECLARED",
+        "CALENDAR_NEWS_ACCOUNT_CURRENCY_AND_COST_MANIFESTS_DECLARED",
+        "TRIAL_LEDGER_OPENED_BEFORE_FIRST_RESULT"
+      ],
+      "output_verdict": "SCREEN_READY_OR_BLOCKED",
+      "promotion_gate": false,
+      "may_satisfy_any_canonical_phase": false,
+      "economic_threshold_substitution_allowed": false,
+      "missing_requirement_action": "BLOCK_DISPATCH"
+    },
+    "TARGET_BINARY_PAIR_GATE": {
+      "evidence_class": "FRESH_REPAIRED_BINARY_REPRODUCIBILITY",
+      "implementation": {
+        "tool": "tools/strategy_farm/dxz_target_binary_repro_gate.py",
+        "status": "FAIL_CLOSED_READY_TELEMETRY_BLOCKED",
+        "single_run_status_required": "REPRODUCIBILITY_PENDING",
+        "expected_magic_authority": "HASH_BOUND_SOURCE_MANIFEST_SLEEVE",
+        "actual_manifest_designated_unique_sleeve_reverified": true,
+        "runtime_artifact_binding": "PHYSICAL_EXACT_RUN_DIR_HASH_CROSS_BINDING_AND_SEMANTIC_RECONSTRUCTION_REQUIRED",
+        "physically_reverified_runtime_artifacts": [
+          "runtime_log.jsonl",
+          "runtime_telemetry.json",
+          "runtime_log_transaction.json",
+          "q08_stream.jsonl"
+        ],
+        "complete_axis_descriptor_must_match_physical_sequence_count_and_sha256": true,
+        "runtime_telemetry_magic_joins_and_enrichment_rederived_from_physical_raw_log": true,
+        "full_manifest_actual_sleeve_set_and_ordinals_bound": true,
+        "single_run_requires_complete_entry_and_exit_bijections": true,
+        "q08_physical_schema": "EXACT_FLAT_QM_COMMON_TRADE_CLOSED_V1",
+        "runner_sha256_bound_within_each_run_receipt_and_across_pair": true,
+        "current_missing_runtime_axes": [
+          "ENTRY_FILL_PRICE",
+          "COMPLETE_EXIT_REASON_FOR_ALL_CLOSING_DEALS",
+          "DAILY_MTM_BOUNDARY_SNAPSHOTS",
+          "INTRADAY_MTM",
+          "USED_FREE_AND_STRESSED_MARGIN"
+        ],
+        "q00_q01_and_attempt_ledger_are_independent_upstream_gates": true
+      },
+      "prerequisites": [
+        "CANONICAL_Q00_PASS_ON_THE_EXACT_FOUR_PART_IDENTITY",
+        "CANONICAL_Q01_PASS_ON_THE_HASH_BOUND_TARGET_BUILD"
+      ],
+      "designated_runs_required": 2,
+      "extra_run_cherry_pick_allowed": false,
+      "each_run": {
+        "qualification_mode": "TARGET_BINARY_REQUAL",
+        "scope": "FULL",
+        "status": "PASS",
+        "serial": true,
+        "isolated": true,
+        "outside_t_live_and_t1_t10": true,
+        "t_live_mutation_allowed": false,
+        "same_exact_four_part_identity_required": true,
+        "same_pair_directly_verified_bindings_required": [
+          "TARGET_MANIFEST",
+          "CARD_CONTRACT",
+          "EX5_SET_ARTIFACT_OVERRIDE",
+          "SEALED_REFERENCE",
+          "FIVE_AXIS_COST_CONTRACT",
+          "WINDOW_CONTRACT",
+          "RUNTIME_LOG_TELEMETRY_TRANSACTION_AND_Q08_ARTIFACTS",
+          "RUNNER_SHA256"
+        ],
+        "source_include_data_calendar_news_and_risk_closure_required_by_independent_upstream_Q00_Q01_and_ledger_gates": true,
+        "pair_gate_directly_attests_upstream_source_include_data_calendar_news_and_risk_closure": false
+      },
+      "pair_equality_axes": [
+        "TARGET_MANIFEST_SHA256",
+        "RUNNER_SHA256",
+        "CARD_CONTRACT_SHA256",
+        "TARGET_ARTIFACT_OVERRIDE_CONTRACT_SHA256",
+        "REFERENCE_CONTRACT_SHA256",
+        "EXECUTION_COST_CONTRACT_SHA256",
+        "WINDOW_CONTRACT_SHA256",
+        "TRADE_STREAM_SHA256",
+        "SIGNAL_STREAM_SHA256",
+        "ENTRY_STREAM_SHA256",
+        "EXIT_TIME_REASON_STREAM_SHA256",
+        "LOT_STREAM_SHA256",
+        "OUTCOME_SIGN_STREAM_SHA256",
+        "NET_PNL_STREAM_SHA256",
+        "DAILY_MTM_STREAM_SHA256",
+        "INTRADAY_MTM_STREAM_SHA256",
+        "MARGIN_STREAM_SHA256"
+      ],
+      "per_run_integrity_not_cross_run_equality": [
+        "SUMMARY_FILE_AND_PAYLOAD_SHA256",
+        "SUMMARY_SIDECAR_SHA256",
+        "RECEIPT_PAYLOAD_SHA256"
+      ],
+      "pair_verdict": "PASS_ONLY_IF_BOTH_RUNS_PASS_AND_ALL_PAIR_AXES_MATCH",
+      "mismatch_missing_null_or_extra_unledgered_attempt_action": "BLOCK_AND_START_NEW_QUALIFICATION_VERSION"
+    },
+    "CANONICAL_PHASES_Q00_Q11": {
+      "evidence_class": "CANONICAL_V5_GOLD",
+      "phases": [
+        "Q00",
+        "Q01",
+        "Q02",
+        "Q03",
+        "Q04",
+        "Q05",
+        "Q06",
+        "Q07",
+        "Q08",
+        "Q09",
+        "Q10",
+        "Q11"
+      ],
+      "required_verdict_for_each_phase": "PASS",
+      "threshold_source": "docs/ops/PIPELINE_PHASE_SPEC.md",
+      "threshold_override_or_soft_rescue_allowed": false,
+      "fresh_target_version_required": true,
+      "phase_order_may_be_skipped": false,
+      "legacy_or_proxy_evidence_reuse_allowed": false,
+      "any_non_pass_or_missing_phase_action": "BLOCK_BEFORE_Q12"
+    },
+    "Q12_PORTFOLIO": {
+      "evidence_class": "MANUAL_OWNER_PORTFOLIO_CONSTRUCTION",
+      "required_verdict": "PASS_PORTFOLIO",
+      "all_eight_sleeves_must_have_gold_Q00_Q11": true,
+      "repaired_extension_pair_gates_must_pass": true,
+      "synchronized_intraday_mtm_and_margin_required": true,
+      "risk_equal_Q6_Q8_comparison_required": true,
+      "threshold_class": "ADDITIONAL_PROPOSED_Q8_GATES_NOT_PIPELINE_PHASE_SPEC_THRESHOLDS",
+      "canonical_Q12_requirements_still_apply": true,
+      "thresholds": {
+        "maximum_synchronized_intraday_mark_to_market_drawdown_percent": {
+          "operator": "<=",
+          "value": 9.5
+        },
+        "maximum_stressed_worst_broker_day_loss_percent": {
+          "operator": "<=",
+          "value": 4.0
+        },
+        "maximum_risk_percent_per_sleeve_ea_strategy_symbol": {
+          "operator": "<=",
+          "value": 1.0
+        }
+      },
+      "missing_sleeve_risk_redistribution_allowed": false,
+      "closed_trade_or_daily_only_proxy_allowed": false,
+      "owner_signature_required": true,
+      "any_missing_null_or_failed_requirement_action": "BLOCK_BOOK_ADMISSION"
+    },
+    "PROSPECTIVE": {
+      "evidence_class": "POST_FREEZE_NEW_OBSERVATION",
+      "starts_only_after_final_card_binary_set_data_calendar_cost_risk_and_gate_freeze": true,
+      "start_and_end_must_be_owner_sealed_before_start": true,
+      "backdating_allowed": false,
+      "result_dependent_shortening_allowed": false,
+      "zero_risk_shadow_until_separate_owner_authorization": true,
+      "may_repair_prior_selector_pair_canonical_or_Q12_failure": false,
+      "parameter_or_variant_change_starts_new_version": true
+    }
+  },
+  "canonical_phase_matrix": [
+    {
+      "phase": "Q00",
+      "name": "Research Intake",
+      "evidence": "APPROVED_CARD_THESIS_FAILURE_HYPOTHESIS_NATIVE_DATA_AND_TRIAL_LEDGER",
+      "accepted_verdict": "PASS"
+    },
+    {
+      "phase": "Q01",
+      "name": "Build Validation",
+      "evidence": "HASH_BOUND_BUILD_SET_IDENTITY_AND_REAL_TRADE_SMOKE",
+      "accepted_verdict": "PASS"
+    },
+    {
+      "phase": "Q02",
+      "name": "Baseline Screening",
+      "evidence": "FRESH_CANONICAL_MT5_BASELINE_NOT_SELECTOR_REUSE",
+      "accepted_verdict": "PASS"
+    },
+    {
+      "phase": "Q03",
+      "name": "Parameter Sweep",
+      "evidence": "PREDECLARED_SWEEP_WITH_COMPLETE_TRIAL_LEDGER",
+      "accepted_verdict": "PASS"
+    },
+    {
+      "phase": "Q04",
+      "name": "Cross-Sectional Robustness",
+      "evidence": "CANONICAL_CROSS_SECTIONAL_EVIDENCE",
+      "accepted_verdict": "PASS"
+    },
+    {
+      "phase": "Q05",
+      "name": "Walk-Forward OOS",
+      "evidence": "EMBARGOED_WALK_FORWARD_EVIDENCE",
+      "accepted_verdict": "PASS"
+    },
+    {
+      "phase": "Q06",
+      "name": "Calibrated Stress",
+      "evidence": "FULL_HISTORY_CALIBRATED_STRESS_MT5",
+      "accepted_verdict": "PASS"
+    },
+    {
+      "phase": "Q07",
+      "name": "Calibrated Noise",
+      "evidence": "REAL_MT5_NOISE_RERUNS",
+      "accepted_verdict": "PASS"
+    },
+    {
+      "phase": "Q08",
+      "name": "Crisis Event Slices",
+      "evidence": "REAL_MT5_NAMED_CRISIS_SLICES",
+      "accepted_verdict": "PASS"
+    },
+    {
+      "phase": "Q09",
+      "name": "Multi-Seed",
+      "evidence": "COMPLETE_CANONICAL_MULTI_SEED_SET",
+      "accepted_verdict": "PASS"
+    },
+    {
+      "phase": "Q10",
+      "name": "Statistical Validation",
+      "evidence": "FULL_TRIAL_FAMILY_DSR_PBO_FDR_AND_MONTE_CARLO",
+      "accepted_verdict": "PASS"
+    },
+    {
+      "phase": "Q11",
+      "name": "Real News Replay",
+      "evidence": "REAL_MT5_NEWS_MODE_RERUNS_AND_UTC_DEAL_REPLAY",
+      "accepted_verdict": "PASS"
+    }
+  ],
+  "trial_ledger_and_statistics": {
+    "ledger_required": true,
+    "ledger_opened_before_first_selector_sweep_ablation_or_repair_result": true,
+    "ledger_must_include": [
+      "ALL_HYPOTHESES",
+      "ALL_VARIANTS_AND_PARAMETERS",
+      "ALL_SYMBOLS_TIMEFRAMES_WINDOWS_SEEDS_AND_COST_MODELS",
+      "FAILED_ABORTED_MISSING_AND_REPEATED_RUNS",
+      "SELECTION_DECISIONS_AND_TIMESTAMPS",
+      "ARTIFACT_HASHES_AND_CODE_DATA_VERSION"
+    ],
+    "survivor_only_ledger_allowed": false,
+    "Q10_hard_statistics": {
+      "dsr": {
+        "operator": ">",
+        "value": 0.0
+      },
+      "pbo_percent": {
+        "operator": "<",
+        "value": 5.0
+      },
+      "fdr_q_value": {
+        "operator": "<",
+        "value": 0.1
+      },
+      "monte_carlo": "PASS_UNDER_CANONICAL_Q10_SPEC"
+    },
+    "statistics_must_use_complete_trial_family": true,
+    "missing_partial_or_proxy_statistics_action": "BLOCK_Q10"
+  },
+  "five_axis_cost_contract": {
+    "exact_axis_count": 5,
+    "axes": [
+      "COMMISSION",
+      "HISTORICAL_SPREAD_PROVENANCE_AND_COVERAGE",
+      "CURRENT_SPREAD_PARITY",
+      "SWAP",
+      "ADVERSE_SLIPPAGE_AND_GAP_STRESS"
+    ],
+    "required_per_sleeve_per_target_run_and_for_Q12": true,
+    "combined_and_axis_separated_results_required": true,
+    "post_result_cost_model_selection_allowed": false,
+    "missing_null_degraded_or_unbound_axis_action": "BLOCK"
+  },
+  "no_weekend_zero_tolerance": {
+    "required_metrics": {
+      "weekend_exposure_count": 0,
+      "weekend_exposure_seconds": 0,
+      "positions_after_effective_cutoff": 0,
+      "pending_orders_after_effective_cutoff": 0,
+      "post_cutoff_entry_count": 0,
+      "unresolved_close_retry_count_at_market_close": 0
+    },
+    "regular_holiday_and_early_close_sessions_must_be_covered": true,
+    "mandatory_close_may_be_suppressed_by_news_or_entry_gate": false,
+    "null_missing_unknown_or_uncovered_session_is_zero": false,
+    "null_missing_unknown_uncovered_or_nonzero_action": "BLOCK"
+  },
+  "portfolio_truth_contract": {
+    "time_resolution": "SYNCHRONIZED_INTRADAY",
+    "required_components": [
+      "COMMON_HASH_BOUND_TIMESTAMP_GRID",
+      "FLOATING_AND_REALIZED_PNL",
+      "COMMON_ACCOUNT_CURRENCY_CONVERSION",
+      "DYNAMIC_LOT_AND_MINIMUM_LOT_EFFECTS",
+      "OVERLAPPING_EXPOSURE",
+      "USED_FREE_AND_STRESSED_MARGIN",
+      "GAP_AND_SLIPPAGE_EFFECTS",
+      "RISK_ENGINE_INTERVENTION_EVENTS"
+    ],
+    "exit_only_daily_only_or_unsynchronized_proxy_allowed": false,
+    "risk_equal_comparison": {
+      "books": [
+        "DXZ_Q6_FROZEN",
+        "DXZ_Q8_CANDIDATE"
+      ],
+      "primary_basis": "EQUAL_TOTAL_COMMANDED_RISK_BUDGET",
+      "same_starting_equity_account_currency_calendar_costs_and_margin_model_required": true,
+      "risk_budget_value": null,
+      "risk_budget_must_be_owner_hash_bound_before_run": true,
+      "missing_sleeve_risk_redistribution_allowed": false
+    }
+  },
+  "drawdown_distribution_reporting": {
+    "required_for_Q12": true,
+    "required_outputs": [
+      "EMPIRICAL_PEAK_TO_TROUGH_DRAWDOWN_EPISODES",
+      "DRAWDOWN_DEPTH_DURATION_AND_RECOVERY_DISTRIBUTIONS",
+      "EMPIRICAL_QUANTILES_WITH_OBSERVATION_COUNTS",
+      "MAXIMUM_SYNCHRONIZED_INTRADAY_MTM_DRAWDOWN",
+      "WORST_BROKER_DAY_DISTRIBUTION"
+    ],
+    "bootstrap": {
+      "required_now": false,
+      "replicate_count": null,
+      "seed_contract": null,
+      "decision_threshold": null,
+      "may_become_gating_only_after_separate_pre_result_approval": true
+    },
+    "invented_bootstrap_count_or_threshold_allowed": false,
+    "missing_empirical_report_action": "BLOCK_Q12_REPORT_COMPLETENESS"
+  },
+  "current_evidence_state": {
+    "legacy_backtests": "SUFFICIENT_FOR_SELECTOR_DEFECT_DIAGNOSIS_AND_ABLATION_PLANNING_ONLY",
+    "valid_target_binary_pair_gate_runs": {
+      "12567:XNGUSD.DWX:D1:C_XNG_BASE35_POLICY": 0,
+      "1556:XAUUSD.DWX:D1:C_POLICY_REPAIR": 0
+    },
+    "fresh_gold_Q00_Q11_complete_for_both_extensions": false,
+    "fresh_Q12_pass_portfolio": false,
+    "backtest_evidence_sufficient_for_Q8_book_qualification": false
+  },
+  "reset_triggers": [
+    "CARD_OR_SEMANTICS_CHANGE",
+    "EXACT_FOUR_PART_IDENTITY_CHANGE",
+    "SOURCE_INCLUDE_EX5_OR_SET_CHANGE",
+    "DATA_SEGMENT_OR_CURRENCY_CONVERSION_CHANGE",
+    "CALENDAR_NEWS_OR_COST_MODEL_CHANGE",
+    "RISK_OR_MARGIN_MODEL_CHANGE",
+    "TRIAL_LEDGER_CHANGE_AFTER_RESULT",
+    "PAIR_GATE_MISMATCH"
+  ],
+  "approval_boundary": {
+    "gate_matrix_is_proposal_only": true,
+    "card_v2_approvals_still_required": true,
+    "owner_risk_and_book_signature_still_required": true,
+    "deploy_or_autotrading_authorized": false
+  }
+}

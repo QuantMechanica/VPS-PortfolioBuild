@@ -1,0 +1,234 @@
+{
+  "schema_version": 2,
+  "artifact_type": "DXZ_Q8_EXPANSION_REPAIR_WORKORDER",
+  "generated_utc": "2026-07-16T14:52:04Z",
+  "status": "IN_REVIEW_BUILD_BLOCKED_ON_CARD_V2_APPROVALS",
+  "runtime_effect": "NONE",
+  "active_risk_percent": 0.0,
+  "owner_chat_direction": {
+    "state": "RECORDED_UNSEALED",
+    "scope": "CONTINUE_ALL_IN_SCOPE_PREPARATION",
+    "substitutes_role_specific_or_hash_bound_approvals": false
+  },
+  "benchmark_book": "DXZ_Q6",
+  "target_book": "DXZ_Q8_CANDIDATE",
+  "gate_matrix": {
+    "status": "IN_REVIEW_BLOCKED",
+    "document": "docs/ops/DXZ_Q8_FAIL_CLOSED_GATE_MATRIX_2026-07-16.md",
+    "machine_contract": "docs/ops/evidence/dxz_q8_fail_closed_gate_matrix_20260716.json",
+    "machine_contract_sha256": "b57b1931c1355e626b50994dd4c2f49cfbcf14a6c8c1ff2e1214c5afb7e1c42e",
+    "sha256_sidecar": "docs/ops/evidence/dxz_q8_fail_closed_gate_matrix_20260716.json.sha256",
+    "promotion_enabled": false,
+    "gold_only": true
+  },
+  "candidate_extensions": [
+    {
+      "key": "12567:XNGUSD.DWX:D1",
+      "variant_id": "C_XNG_BASE35_POLICY",
+      "state": "BLOCKED_CARD_V2_RUNTIME_REQUAL",
+      "historical_entry30_promotable": false,
+      "predeclaration": "docs/ops/evidence/dxz_12567_xng_ablation_contract_20260716.json"
+    },
+    {
+      "key": "1556:XAUUSD.DWX:D1",
+      "variant_id": "C_POLICY_REPAIR",
+      "state": "BLOCKED_CARD_V2_ABLATION_REQUAL",
+      "legacy_53_trade_stream_promotable": false,
+      "predeclaration": "docs/ops/evidence/dxz_1556_xau_ablation_contract_20260716.json"
+    }
+  ],
+  "infrastructure_repairs": [
+    {
+      "id": "SLEEVE_SCOPED_EXECUTION_CONTRACTS",
+      "identity": [
+        "ea_id",
+        "symbol",
+        "timeframe",
+        "variant_id"
+      ],
+      "state": "IMPLEMENTED_FAIL_CLOSED_TESTED",
+      "target_manifest_requires_all_four_fields_explicit": true
+    },
+    {
+      "id": "TARGET_BINARY_REQUAL",
+      "state": "IMPLEMENTED_FAIL_CLOSED_TELEMETRY_BLOCKED",
+      "requires_sha_bound_override_manifest": true,
+      "requires_sealed_reference": true,
+      "single_run_qualification_status": "REPRODUCIBILITY_PENDING",
+      "runtime_log_capture": "TRANSACTIONAL_SANDBOX_ONLY_HASH_BOUND",
+      "expected_magic_authority": "HASH_BOUND_SOURCE_MANIFEST_SLEEVE",
+      "entry_fill_axis": "INCOMPLETE_REQUEST_PRICE_ONLY",
+      "daily_mtm_axis": "INCOMPLETE_INITIAL_AND_FINAL_BOUNDARIES_MISSING",
+      "mutates_t_live": false
+    },
+    {
+      "id": "TARGET_TWO_RUN_PAIR_ADJUDICATOR_TRUTH_CHAIN",
+      "state": "IMPLEMENTED_FAIL_CLOSED_TELEMETRY_BLOCKED",
+      "required_identity_axes": [
+        "trades",
+        "signals",
+        "entries",
+        "exits",
+        "lots",
+        "outcome_signs",
+        "pnl",
+        "daily_mtm",
+        "mtm",
+        "margin"
+      ],
+      "current_missing_runtime_axes": [
+        "entry_fill_price",
+        "complete_exit_reason_for_all_closing_deals",
+        "daily_mtm_boundary_snapshots",
+        "intraday_mtm",
+        "used_free_and_stressed_margin"
+      ],
+      "runtime_artifacts_physically_reverified_at_pair_gate": true,
+      "physically_reverified_runtime_artifacts": [
+        "runtime_log.jsonl",
+        "runtime_telemetry.json",
+        "runtime_log_transaction.json",
+        "q08_stream.jsonl"
+      ],
+      "complete_axis_descriptors_reconstructed_from_physical_artifacts": true,
+      "runtime_telemetry_rederived_from_physical_raw_log": true,
+      "full_manifest_actual_sleeve_set_and_ordinals_bound": true,
+      "single_run_requires_complete_entry_and_exit_bijections": true,
+      "q08_physical_schema": "EXACT_FLAT_QM_COMMON_TRADE_CLOSED_V1",
+      "runner_sha256_bound_within_each_run_receipt_and_across_pair": true,
+      "actual_target_manifest_designated_unique_sleeve_reverified": true,
+      "five_axis_cost_contract_uses_exact_four_part_keys": true,
+      "pair_pass_currently_possible": false
+    }
+  ],
+  "qualification_sequence": [
+    "HISTORICAL_SELECTOR_ONLY_PF1_10_AND_20_TRADES",
+    "NON_PROMOTIONAL_EARLY_SCREEN",
+    "Q00_GOLD_PASS_APPROVE_AND_HASH_BIND_CARD_V2_AND_EXACT_TARGET_CONTRACT",
+    "IMPLEMENT_SOURCE_AND_EXPLICIT_SET_OUTSIDE_T_LIVE",
+    "Q01_GOLD_PASS_STRICT_COMPILE_BUILD_AND_SMOKE",
+    "TWO_FULL_TARGET_BINARY_REQUAL_RUNS_AND_PAIR_GATE",
+    "FRESH_GOLD_PASS_Q02_THROUGH_Q11_COMPLETING_Q00_Q11",
+    "FIVE_AXIS_COST_CERTIFICATION",
+    "NULL_INTOLERANT_ZERO_WEEKEND_EXPOSURE",
+    "Q12_SYNCHRONIZED_INTRADAY_MTM_MARGIN_EQUAL_RISK_Q6_Q8",
+    "EMPIRICAL_DRAWDOWN_DISTRIBUTION_REPORT_NO_NEW_BOOTSTRAP_THRESHOLD",
+    "NEW_PROSPECTIVE_SHADOW_AFTER_FINAL_FREEZE",
+    "SEPARATE_OWNER_SIGNED_DEPLOYMENT"
+  ],
+  "tooling_verification": {
+    "focused_regression_tests_passed": 333,
+    "failed": 0,
+    "skipped": 0,
+    "includes": [
+      "execution_contract_identity",
+      "target_runner_and_output_guards",
+      "runtime_log_capture_and_strict_parser",
+      "authoritative_expected_magic_binding",
+      "runtime_artifact_physical_binding",
+      "physical_axis_semantic_reconstruction",
+      "physical_runtime_log_telemetry_rederivation",
+      "full_manifest_receipt_ordinal_binding",
+      "single_run_q08_runtime_bijection_contract",
+      "runner_sha256_pair_binding",
+      "actual_manifest_sleeve_reverification",
+      "five_axis_cost_identity",
+      "target_pair_gate",
+      "adjudicator",
+      "truth_chain",
+      "portfolio_admission_regressions"
+    ],
+    "qualification_backtests_launched": 0,
+    "live_mutations": 0
+  },
+  "admission_policy": {
+    "exact_identity": [
+      "ea_id",
+      "symbol",
+      "timeframe",
+      "variant_id"
+    ],
+    "canonical_Q00_Q11_required_verdict": "PASS",
+    "Q12_required_verdict": "PASS_PORTFOLIO",
+    "non_admissible_verdicts": [
+      "PASS_SOFT",
+      "FAIL_SOFT",
+      "INVALID",
+      "EDGE_SOFT",
+      "KEEP_CANDIDATE",
+      "PARTIAL",
+      "REPORT_ONLY",
+      "NULL"
+    ],
+    "portfolio_threshold_class": "ADDITIONAL_PROPOSED_Q8_GATES_NOT_PIPELINE_PHASE_SPEC_THRESHOLDS",
+    "canonical_Q12_requirements_still_apply": true,
+    "portfolio_thresholds_percent": {
+      "maximum_synchronized_intraday_mtm_drawdown": 9.5,
+      "maximum_stressed_worst_broker_day_loss": 4.0,
+      "maximum_risk_per_sleeve_ea_strategy_symbol": 1.0
+    }
+  },
+  "backtest_evidence_state": {
+    "legacy_evidence_use": "SELECTOR_DEFECT_DIAGNOSIS_AND_ABLATION_PLANNING_ONLY",
+    "q6_diagnostic_closed_trades": 1335,
+    "q6_diagnostic_sleeves": [
+      {"ea_id": 10476, "trades": 299, "profit_factor": 1.260},
+      {"ea_id": 10513, "trades": 104, "profit_factor": 1.958},
+      {"ea_id": 10706, "trades": 367, "profit_factor": 1.329},
+      {"ea_id": 11708, "trades": 178, "profit_factor": 1.320},
+      {"ea_id": 12969, "trades": 331, "profit_factor": 1.545},
+      {"ea_id": 13128, "trades": 56, "profit_factor": 2.260}
+    ],
+    "q6_exit_only_drawdown_proxy_percent": {
+      "at_2_percent_total_commanded_risk": 6.87,
+      "at_3_percent_total_commanded_risk": 10.30,
+      "qualification_use_allowed": false,
+      "missing": [
+        "synchronized_intraday_mtm",
+        "floating_pnl",
+        "common_margin",
+        "gap_path"
+      ]
+    },
+    "extension_evidence": {
+      "12567:XNGUSD.DWX:D1:C_XNG_BASE35_POLICY": {
+        "exact_target_tests": 0,
+        "legacy_base35_full_history": {"trades": 58, "profit_factor": 1.31, "exit_only_drawdown_percent": 2.25},
+        "legacy_oos_fold_trade_counts": [3, 3, 6],
+        "entry30_hindsight_selected_promotable": false
+      },
+      "1556:XAUUSD.DWX:D1:C_POLICY_REPAIR": {
+        "exact_target_tests": 0,
+        "legacy_defective_semantics": {"trades": 53, "profit_factor": 1.883},
+        "legacy_stream_promotable": false
+      }
+    },
+    "cost_evidence": {
+      "commission_full_sleeves": 19,
+      "reviewed_sleeves": 21,
+      "current_spread_parity_certified_extensions": 0,
+      "swap_parity_certified_extensions": 0,
+      "slippage_certified_extensions": 0,
+      "xng_history_quality_percent_approx": 91
+    },
+    "valid_target_pair_gate_count_by_extension": {
+      "12567:XNGUSD.DWX:D1:C_XNG_BASE35_POLICY": 0,
+      "1556:XAUUSD.DWX:D1:C_POLICY_REPAIR": 0
+    },
+    "sufficient_for_Q8_book_qualification": false,
+    "numeric_q8_drawdown_expectation_certifiable": false
+  },
+  "required_approvals_before_ea_build": [
+    "OWNER",
+    "RESEARCH",
+    "QUALITY_BUSINESS",
+    "CTO",
+    "QUALITY_TECH"
+  ],
+  "follow_on_reserves": [
+    "10939:GBPUSD.DWX:H4_AS_10706_ALTERNATIVE",
+    "10403:XAUUSD.DWX:D1_AFTER_EXIT_ABLATION",
+    "12778:AUDUSD.DWX:D1_AFTER_BASKET_REPAIR"
+  ],
+  "live_mutation_allowed": false
+}

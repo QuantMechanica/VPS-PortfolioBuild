@@ -1,0 +1,259 @@
+{
+  "schema_version": 1,
+  "artifact_type": "DXZ_QUALIFICATION_BOOK_DESIGN",
+  "book_id": "DXZ-Q6-2026-07-16",
+  "as_of": "2026-07-16",
+  "status": "DESIGN_LOCK_NOT_QUALIFIED",
+  "deployment_eligible": false,
+  "deployment_action": "NONE",
+  "autotrading_action": "NONE",
+  "active_total_risk_pct": 0.0,
+  "selection_contract": {
+    "universe": "21 technically non-empty DXZ-23 native reports",
+    "training_window": {
+      "from": "2018-07-01",
+      "to": "2022-12-31"
+    },
+    "minimum_training_closed_trades": 20,
+    "minimum_training_conservative_commission_profit_factor": 1.1,
+    "maximum_absolute_monthly_zero_fill_training_correlation": 0.3,
+    "observed_maximum_absolute_training_correlation_in_q6": 0.277,
+    "evaluation_window_used_for_qualification": false,
+    "evaluation_note": "The already inspected 2023-2025 window is development/validation evidence only and cannot be reused as untouched qualification evidence.",
+    "required_future_evidence": "new sealed continuous-segment evidence plus a prospective shadow period"
+  },
+  "risk_contract": {
+    "unit": "account_percentage_points",
+    "active_until_qualified": 0.0,
+    "qualification_harness_total_risk_pct": 2.0,
+    "qualification_harness_method": "equal commanded risk across six independently qualified sleeves",
+    "conditional_initial_total_risk_pct": 3.0,
+    "conditional_initial_status": "PROPOSAL_NOT_OWNER_RATIFIED",
+    "conditional_initial_preconditions": [
+      "synchronized mark-to-market portfolio PASS",
+      "shared-capital and margin PASS",
+      "gap and adverse-slippage stress PASS",
+      "current spread and swap parity PASS",
+      "OWNER review"
+    ],
+    "risk_percent_semantics": "absolute allocated sleeve risk",
+    "portfolio_weight": 1.0,
+    "hard_sleeve_cap_pct": 1.0,
+    "qualification_harness_sleeve_risk_pct": 0.3333333333333333,
+    "conditional_initial_sleeve_risk_pct": 0.5,
+    "qualification_harness_asset_class_caps_pct": {
+      "fx": 1.3333333333333333,
+      "metal": 0.3333333333333333,
+      "equity_index": 0.3333333333333333
+    },
+    "conditional_initial_asset_class_caps_pct": {
+      "fx": 2.0,
+      "metal": 0.5,
+      "equity_index": 0.5
+    },
+    "missing_or_failed_sleeve_policy": "ZERO_WEIGHT_AND_FULL_BOOK_RERUN_NO_AUTOMATIC_REDISTRIBUTION"
+  },
+  "candidate_sleeves": [
+    {
+      "ea_id": 10476,
+      "symbol": "USDCAD.DWX",
+      "timeframe": "H1",
+      "label": "QM5_10476_mql5-pamxa",
+      "magic_number": 104760004,
+      "asset_class": "fx",
+      "mechanism": "pamxa_oscillator_regime",
+      "active_risk_pct": 0.0,
+      "qualification_harness_risk_pct": 0.3333333333333333,
+      "conditional_initial_risk_pct": 0.5,
+      "current_conservative_pf_diagnostic": 1.26,
+      "current_native_trades_diagnostic": 299,
+      "open_qualification_reasons": [
+        "reference horizon rebase on continuous segments",
+        "full Q08 execution identity",
+        "Card-qualified session-aware no-weekend exit",
+        "five-axis execution-cost certification",
+        "clean binary requalification"
+      ]
+    },
+    {
+      "ea_id": 10513,
+      "symbol": "XAUUSD.DWX",
+      "timeframe": "D1",
+      "label": "QM5_10513_mql5-ichimoku",
+      "magic_number": 105130003,
+      "asset_class": "metal",
+      "mechanism": "ichimoku_trend",
+      "active_risk_pct": 0.0,
+      "qualification_harness_risk_pct": 0.3333333333333333,
+      "conditional_initial_risk_pct": 0.5,
+      "current_conservative_pf_diagnostic": 1.958,
+      "current_native_trades_diagnostic": 104,
+      "open_qualification_reasons": [
+        "OWNER decision on the canonical 18/6/18/68 parameter variant",
+        "approved Card-v2 binding of the selected variant",
+        "same-data ablation disclosed separately from future confirmation",
+        "Card-qualified session-aware no-weekend exit",
+        "five-axis execution-cost certification",
+        "clean binary requalification"
+      ]
+    },
+    {
+      "ea_id": 10706,
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "H1",
+      "label": "QM5_10706_tv-mon-ls",
+      "magic_number": 107060001,
+      "asset_class": "fx",
+      "mechanism": "weekly_monday_long_short",
+      "active_risk_pct": 0.0,
+      "qualification_harness_risk_pct": 0.3333333333333333,
+      "conditional_initial_risk_pct": 0.5,
+      "current_conservative_pf_diagnostic": 1.329,
+      "current_native_trades_diagnostic": 367,
+      "open_qualification_reasons": [
+        "percent-risk EUR reference rebuild",
+        "mandatory no-weekend exit before news and entry returns",
+        "session-aware holiday and early-close flattening",
+        "full Q08 execution identity",
+        "five-axis execution-cost certification",
+        "clean binary requalification"
+      ]
+    },
+    {
+      "ea_id": 11708,
+      "symbol": "EURUSD.DWX",
+      "timeframe": "D1",
+      "label": "QM5_11708_anon-market-squeeze-d1",
+      "magic_number": 117080000,
+      "asset_class": "fx",
+      "mechanism": "daily_market_squeeze",
+      "active_risk_pct": 0.0,
+      "qualification_harness_risk_pct": 0.3333333333333333,
+      "conditional_initial_risk_pct": 0.5,
+      "current_conservative_pf_diagnostic": 1.32,
+      "current_native_trades_diagnostic": 178,
+      "open_qualification_reasons": [
+        "resolve conflicting approved-Card R1 status and incomplete body",
+        "Card-qualified session-aware no-weekend exit",
+        "five-axis execution-cost certification",
+        "clean binary requalification"
+      ]
+    },
+    {
+      "ea_id": 12969,
+      "symbol": "USDJPY.DWX",
+      "timeframe": "M30",
+      "label": "QM5_12969_usdjpy-gotobi-nakane-fix",
+      "magic_number": 129690000,
+      "asset_class": "fx",
+      "mechanism": "gotobi_nakane_calendar",
+      "active_risk_pct": 0.0,
+      "qualification_harness_risk_pct": 0.3333333333333333,
+      "conditional_initial_risk_pct": 0.5,
+      "current_conservative_pf_diagnostic": 1.545,
+      "current_native_trades_diagnostic": 331,
+      "open_qualification_reasons": [
+        "OWNER decision on Card no-stop versus exercised 120-pip stop",
+        "Card-qualified session-aware no-weekend exit",
+        "resolve bounded commission ambiguity",
+        "five-axis execution-cost certification",
+        "clean binary requalification"
+      ]
+    },
+    {
+      "ea_id": 13128,
+      "symbol": "NDX.DWX",
+      "timeframe": "H1",
+      "label": "QM5_13128_pre-fomc-drift-ndx",
+      "magic_number": 131280000,
+      "asset_class": "equity_index",
+      "mechanism": "pre_fomc_event_drift",
+      "active_risk_pct": 0.0,
+      "qualification_harness_risk_pct": 0.3333333333333333,
+      "conditional_initial_risk_pct": 0.5,
+      "current_conservative_pf_diagnostic": 2.26,
+      "current_native_trades_diagnostic": 56,
+      "open_qualification_reasons": [
+        "Card calendar through 2025 versus source calendar through 2026",
+        "qualified binary synchronized to the approved calendar",
+        "Card-qualified session-aware no-weekend exit",
+        "five-axis execution-cost certification",
+        "clean binary requalification"
+      ]
+    }
+  ],
+  "reserve_policy": {
+    "automatic_substitution": false,
+    "priority": [
+      {
+        "sleeve": "12567:XNGUSD.DWX",
+        "role": "first energy growth candidate after Card qualification of threshold 30"
+      },
+      {
+        "sleeve": "1556:XAUUSD.DWX",
+        "role": "XAU alternate only after Friday-versus-monthly-exit ablation"
+      },
+      {
+        "sleeve": "10939:GBPUSD.DWX",
+        "role": "alternative to 10706, not concurrent under the locked training-correlation gate"
+      }
+    ],
+    "explicit_non_selection": [
+      {
+        "sleeve": "12567:XAUUSD.DWX",
+        "reason": "training-window PF 0.90 failed the locked selector; later strength cannot justify ex-post promotion"
+      },
+      {
+        "sleeve": "10919:XTIUSD.DWX",
+        "reason": "30 native trades over the available history do not satisfy the ratified five-trades-per-year floor"
+      }
+    ]
+  },
+  "qualification_chain": [
+    "all Card and execution-semantic decisions closed",
+    "all execution contracts ELIGIBLE",
+    "sealed source manifest with exact preset expectations",
+    "two independent FULL schema-v2 AS_LIVE_REQUAL reproductions",
+    "adjudication PASS with every sleeve KEEP",
+    "candidate BOUND_CANDIDATE_COMPLETE",
+    "Truth Chain PASS with every sleeve CLOSED",
+    "Admission/Resize Freeze Gate PASS",
+    "synchronized mark-to-market, shared-capital, margin and overlap portfolio PASS",
+    "book-level economic and risk gate PASS",
+    "OWNER-signed deploy manifest",
+    "live burn-in before any scale increase"
+  ],
+  "book_level_hard_gates": {
+    "all_sleeves_must_pass": true,
+    "minimum_average_trade_frequency_per_sleeve_per_year": 5.0,
+    "maximum_absolute_locked_window_correlation": 0.3,
+    "maximum_mark_to_market_drawdown_pct": 9.5,
+    "maximum_stressed_broker_day_loss_pct": 4.0,
+    "daily_account_kill_reference_pct": 5.0,
+    "maximum_sleeve_risk_pct": 1.0,
+    "current_or_previous_month_entry_activity_required": true,
+    "official_darwin_quote_or_rating_claim_allowed": false,
+    "owner_signature_required": true
+  },
+  "evidence_bindings": {
+    "cost_report": {
+      "path": "D:/QM/reports/portfolio/dxz_cost_evidence_20260716_v3/report.json",
+      "sha256": "98ea8553f4fb6044d757e90c964c8b6fda4f8f40f653e75510833f8f49c694fd"
+    },
+    "walkforward_proxy": {
+      "path": "D:/QM/reports/portfolio/dxz_darwinia_walkforward_proxy_20260716_v6/report.json",
+      "sha256": "417402610043196dcdfd9e3f91977def9dc42cca89fdb5e17fcbd0f8e5a1fc7b"
+    },
+    "lineage_report": {
+      "path": "D:/QM/reports/portfolio/dxz23_lineage_audit_20260716_v2/report.json",
+      "sha256": "41b540a2bfd78969494ecb03580e2ff0f7965694a717e267149717cabed6a3dd"
+    }
+  },
+  "limitations": [
+    "No candidate sleeve is qualified today; all active risk remains zero in this design.",
+    "The 2023-2025 evaluation period has already been inspected and is not untouched evidence.",
+    "Current diagnostics omit synchronized open-position mark-to-market, shared margin and official Darwinex Risk Engine interventions.",
+    "The conditional 3.0 percent initial risk ceiling is a proposal, not an OWNER-ratified replacement decision.",
+    "This design does not mutate T_Live, presets, binaries, charts, orders or AutoTrading."
+  ]
+}

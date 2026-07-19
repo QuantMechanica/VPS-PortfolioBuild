@@ -1,0 +1,470 @@
+{
+  "schema_version": 1,
+  "artifact_type": "DXZ_1556_XAUUSD_D1_ABLATION_CONTRACT",
+  "contract_id": "DXZ-Q8-1556-XAUUSD-DWX-D1-POLICY-REPAIR-20260716",
+  "created_on": "2026-07-16",
+  "status": "IN_REVIEW",
+  "approval_effect": "NONE",
+  "gate_matrix_ref": "docs/ops/evidence/dxz_q8_fail_closed_gate_matrix_20260716.json",
+  "deployment_eligible": false,
+  "canonical_card_approved": false,
+  "execution_authority": "NONE",
+  "mutation_authority": "PROPOSAL_ARTIFACTS_ONLY",
+  "scope": {
+    "ea_id": 1556,
+    "ea_label": "QM5_1556_aa-zak-mom12",
+    "slug": "aa-zak-mom12",
+    "symbol": "XAUUSD.DWX",
+    "timeframe": "D1",
+    "symbol_slot": 4,
+    "magic": 15560004,
+    "target_variant": "C_POLICY_REPAIR",
+    "target_book": "DXZ_Q8_CANDIDATE",
+    "platform": "DarwinexZero MT5"
+  },
+  "promotion_identity": {
+    "fields": [
+      "ea_id",
+      "symbol",
+      "timeframe",
+      "variant_id"
+    ],
+    "values": {
+      "ea_id": 1556,
+      "symbol": "XAUUSD.DWX",
+      "timeframe": "D1",
+      "variant_id": "C_POLICY_REPAIR"
+    },
+    "exact_match_required": true,
+    "ea_only_or_sibling_fallback_allowed": false,
+    "binding_status": "PENDING_CARD_V2_APPROVAL"
+  },
+  "proposal": {
+    "path": "docs/ops/proposed_issues/2026-07-16_q8_1556_xau_card_v2_approval.md",
+    "classification": "PROPOSED_CARD_V2_DECISION_CONTRACT",
+    "not_canonical_card": true,
+    "requires_formal_card_approval_before_build": true
+  },
+  "legacy_bindings": {
+    "canonical_card": {
+      "path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_1556_aa-zak-mom12.md",
+      "sha256": "75c450738fc0d9fb2533094fd6732c71cc21d59c04f6b9f7a0a4de21be610497",
+      "status_observed": "G0_APPROVED_LEGACY_WITH_BODY_STATUS_AMBIGUITY"
+    },
+    "repository_source": {
+      "path": "framework/EAs/QM5_1556_aa-zak-mom12/QM5_1556_aa-zak-mom12.mq5",
+      "sha256": "eb21c1d5e71288e24985802081200a15ed1fbc6a70534efbae95a0ec11d8499a",
+      "qualification_role": "LEGACY_DIAGNOSTIC_ONLY"
+    },
+    "live_binary": {
+      "path": "C:/QM/mt5/T_Live/MT5_Base/MQL5/Experts/Live EAs/QM5_1556_aa-zak-mom12.ex5",
+      "sha256": "9371a8a03008e2fd8a3fc9dbec75586f7ade71ea857e9ff8f9c3fd0fd95cb3cb",
+      "qualification_role": "LEGACY_EVIDENCE_NOT_TARGET_BINARY"
+    },
+    "live_preset": {
+      "path": "C:/QM/mt5/T_Live/MT5_Base/MQL5/Presets/slot4_XAUUSD_D1_QM5_1556_aa-zak-mom12_magic15560004_dxz23_live.set",
+      "sha256": "f6542c6e4662994bbcb29d3496db3dfcdc9f2e85156c5427523c703bd9b076fc",
+      "qualification_role": "LEGACY_EVIDENCE_NOT_TARGET_PRESET"
+    },
+    "legacy_reference_stream": {
+      "path": "D:/QM/reports/portfolio/sleeve_streams/QM/q08_trades/1556_XAUUSD_DWX.jsonl",
+      "sha256": "b7d5d73ce64d2a8f3be582cec38401e19606c4b1171815e3969fa2c68dbb3834",
+      "trade_count": 53,
+      "close_times_sha256": "99ea14afdc8ba77af5c6800ffe949434663fdcaf9659af6ef1ffef0ba8e87641"
+    },
+    "as_live_receipt": {
+      "path": "D:/QM/reports/portfolio/dxz23_as_live_requal_20260716_hardened/20260716T051551Z/runs/22_1556_XAUUSD_DWX/receipt.json",
+      "receipt_sha256": "8e0325d8d47e6ed60c77bde5085fe6fd080019029e798890ab9c31a9fd6a8bd1",
+      "qualification_role": "LEGACY_REPRODUCTION_ONLY"
+    },
+    "execution_contract": {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "observed_status": "BLOCKED",
+      "block_reasons": [
+        "friday_close_changes_monthly_source_exit_semantics",
+        "native_exit_vs_override_ablation_required"
+      ]
+    },
+    "owner_directive": {
+      "path": "decisions/2026-07-16_dxz_no_weekend_holding_owner_directive.md",
+      "status": "OWNER_DIRECTIVE_RECORDED_UNSEALED",
+      "rule": "NO_WEEKEND_POSITION_EXPOSURE",
+      "latest_regular_cutoff": "FRIDAY_21_BROKER",
+      "effective_cutoff": "MIN_FRIDAY_21_AND_LAST_TRADABLE_SESSION_BEFORE_WEEKEND"
+    }
+  },
+  "observed_semantic_defect": {
+    "classification": "MONTHLY_SIGNAL_WITH_FIRST_WEEK_ONLY_EXPOSURE",
+    "mechanism": [
+      "entry month key is consumed before the entry decision completes",
+      "framework Friday close executes before strategy exit and entry",
+      "same-month reentry is rejected by the consumed month key"
+    ],
+    "observed_closes": 53,
+    "friday_close_count": 53,
+    "friday_21_utc_count": 52,
+    "friday_20_utc_count": 1,
+    "average_hold_hours": 92.9,
+    "median_hold_hours_approx": 115.0,
+    "conclusion": "Legacy economics do not qualify the claimed monthly long-cash strategy."
+  },
+  "source_semantics": {
+    "position_mode": "LONG_OR_CASH",
+    "signal_cadence": "ONCE_PER_NEW_CALENDAR_MONTH",
+    "literal_formula": "Close(MN1,1) - Close(MN1,12)",
+    "long_rule": "MOM12 > 0",
+    "cash_rule": "MOM12 <= 0",
+    "source_exit": "MONTHLY_LONG_TO_CASH_SIGNAL_FLIP",
+    "short_allowed": false,
+    "one_position_per_magic": true
+  },
+  "qm_interpretations": {
+    "monthly_price_reconstruction": {
+      "variant_id": "QM_MONTH_END_D1_RECONSTRUCTION_V1",
+      "recent_close": "last complete XAUUSD.DWX D1 close in prior calendar month",
+      "base_close": "last complete XAUUSD.DWX D1 close in calendar month at shift 12",
+      "d1_252_proxy_allowed": false,
+      "signal_recompute": "FIRST_ELIGIBLE_D1_BAR_OF_NEW_MONTH_ONLY",
+      "signal_state": "FROZEN_UNTIL_NEXT_CALENDAR_MONTH",
+      "missing_month_behavior": "STALE_NO_ENTRY_AND_FLAT_EXISTING_POSITION"
+    },
+    "policy_reentry": {
+      "variant_id": "QM_POLICY_REPAIR_REENTRY_V1",
+      "reentry_time": "FIRST_ELIGIBLE_D1_TRADING_BAR_AFTER_WEEKEND",
+      "requires_frozen_monthly_long_state": true,
+      "same_signal_recalculation_on_reentry": false,
+      "post_cutoff_entry_allowed": false,
+      "pending_orders_after_cutoff_allowed": false,
+      "initial_stop": "3.0_TIMES_ATR_20_D1",
+      "stop_reset_on_each_real_reentry": true,
+      "trailing_stop": false,
+      "take_profit": false,
+      "scaling_grid_martingale": false
+    },
+    "entry_filters": {
+      "spread": "CURRENT_D1_SPREAD_LE_2_5_TIMES_MEDIAN_OF_20_COMPLETED_D1_BARS",
+      "news_temporal": "PRE30_POST30",
+      "news_compliance": "DXZ",
+      "news_min_impact": "high",
+      "news_stale_max_hours": 336,
+      "news_can_block_exits": false
+    }
+  },
+  "execution_override": {
+    "friday_close_enabled": true,
+    "regular_hour_broker": 21,
+    "holiday_early_close_calendar_required": true,
+    "weekend_flat_required": true,
+    "weekend_pending_orders_allowed": false,
+    "runtime_order": [
+      "KILL_SWITCH_WITH_TRIP_FLATTEN_AND_HALTED_RETRY",
+      "CALENDAR_AWARE_WEEKEND_DEADLINE",
+      "FRAMEWORK_FRIDAY_CLOSE",
+      "DATA_STALE_AND_STRATEGY_EXITS",
+      "NEWS_SPREAD_AND_ENTRY_FILTERS",
+      "POLICY_REPAIR_ENTRY_OR_REENTRY"
+    ],
+    "early_return_may_bypass_mandatory_exits": false
+  },
+  "exit_precedence": [
+    "BROKER_HARD_STOP_ALREADY_EXECUTED",
+    "KILL_SWITCH_TRIP_FLATTEN",
+    "HOLIDAY_OR_EARLY_CLOSE_WEEKEND_DEADLINE",
+    "REGULAR_FRIDAY_21_CLOSE",
+    "STALE_MONTHLY_DATA_FLAT",
+    "MONTHLY_LONG_TO_CASH_SIGNAL_FLIP"
+  ],
+  "ablation_arms": [
+    {
+      "arm_id": "R0_LEGACY_IDENTITY",
+      "signal": "D1_252_LEGACY_PROXY",
+      "friday_close": "FRIDAY_21",
+      "reentry": "NEXT_CALENDAR_MONTH_ONLY",
+      "role": "IDENTITY_CONTROL",
+      "promotion_eligible": false,
+      "hard_identity_requirement": {
+        "trade_count": 53,
+        "close_times_sha256": "99ea14afdc8ba77af5c6800ffe949434663fdcaf9659af6ef1ffef0ba8e87641"
+      }
+    },
+    {
+      "arm_id": "A_SOURCE_NATIVE",
+      "signal": "QM_MONTH_END_D1_RECONSTRUCTION_V1",
+      "friday_close": "DISABLED",
+      "reentry": "MONTHLY_ONLY",
+      "role": "SOURCE_FIDELITY_RESEARCH_CONTROL",
+      "promotion_eligible": false,
+      "disqualifier": "VIOLATES_OWNER_NO_WEEKEND_POLICY"
+    },
+    {
+      "arm_id": "B_OVERRIDE_NO_REENTRY",
+      "signal": "QM_MONTH_END_D1_RECONSTRUCTION_V1",
+      "friday_close": "EFFECTIVE_NO_WEEKEND_CUTOFF",
+      "reentry": "NEXT_CALENDAR_MONTH_ONLY",
+      "role": "SEMANTIC_DAMAGE_CONTROL",
+      "promotion_eligible": false
+    },
+    {
+      "arm_id": "C_POLICY_REPAIR",
+      "signal": "QM_MONTH_END_D1_RECONSTRUCTION_V1",
+      "friday_close": "EFFECTIVE_NO_WEEKEND_CUTOFF",
+      "reentry": "FIRST_ELIGIBLE_POST_WEEKEND_D1_BAR_WHILE_FROZEN_SIGNAL_LONG",
+      "role": "PREDECLARED_ONLY_TARGET_CANDIDATE",
+      "promotion_eligible": true,
+      "promotion_requires_target_binary_requal": true
+    }
+  ],
+  "windows": {
+    "W0_WARMUP_DIAGNOSTIC": {
+      "from": "2017-01-01",
+      "to": "2018-06-30",
+      "selection_use": false,
+      "economic_score_use": false
+    },
+    "W1_LOCKED_SELECTION": {
+      "from": "2018-07-01",
+      "to": "2022-12-31",
+      "selection_use": true,
+      "rules_frozen_before_run": true
+    },
+    "W2_CONSUMED_EVALUATION": {
+      "from": "2023-01-01",
+      "to": "2025-12-31",
+      "selection_use": false,
+      "qualification_use": false,
+      "untouched_holdout": false,
+      "role": "DEVELOPMENT_AND_ROBUSTNESS_DIAGNOSTIC_ONLY"
+    },
+    "W_FULL_RECONCILIATION": {
+      "from": "2017-01-01",
+      "to": "2025-12-31",
+      "role": "IDENTITY_CLOSE_REASON_AND_COST_RECONCILIATION"
+    },
+    "W3_PROSPECTIVE_SHADOW": {
+      "not_before": "2026-08-01",
+      "end": null,
+      "end_must_be_owner_sealed_before_start": true,
+      "backdating_allowed": false,
+      "result_dependent_shortening_allowed": false
+    }
+  },
+  "gap_policy": {
+    "target_binary_requal_requires_continuous_segments": true,
+    "reset_after_each_data_or_currency_conversion_gap": [
+      "monthly_signal_history",
+      "ATR_state",
+      "spread_median_state",
+      "positions",
+      "pending_orders"
+    ],
+    "state_or_position_may_cross_gap": false,
+    "segment_boundaries_and_warmup_must_be_hash_bound_before_execution": true
+  },
+  "fixed_test_contract": {
+    "symbol": "XAUUSD.DWX",
+    "timeframe": "D1",
+    "mt5_model": 4,
+    "data_mode": "REAL_TICKS_LITERAL_DWX",
+    "risk_fixed": "1000",
+    "risk_percent": "0",
+    "portfolio_weight": "1",
+    "momentum_threshold": "0",
+    "atr_period_d1": 20,
+    "atr_stop_multiplier": "3.0",
+    "max_positions_per_magic": 1,
+    "parameter_optimization_allowed": false,
+    "post_result_cost_model_selection_allowed": false,
+    "same_data_session_cost_currency_contract_for_all_arms": true,
+    "live_risk_decision_in_scope": false,
+    "universal_live_risk_cap_percent": "1.0"
+  },
+  "required_metrics": {
+    "identity": [
+      "signal_time_value_month_key_sha256",
+      "entry_identity_sha256",
+      "exit_identity_sha256",
+      "full_round_trip_identity_sha256",
+      "outcome_sign_sha256",
+      "lot_identity_sha256",
+      "pnl_identity_sha256"
+    ],
+    "economics": [
+      "trade_count",
+      "gross_and_net_pnl",
+      "profit_factor",
+      "win_rate",
+      "average_and_median_trade",
+      "close_to_close_max_drawdown",
+      "synchronized_mark_to_market_max_drawdown",
+      "best_and_worst_broker_day",
+      "rolling_six_month_returns"
+    ],
+    "execution": [
+      "entry_reentry_and_exit_reason_counts",
+      "exposure_days_and_time_in_market",
+      "average_and_median_holding_hours",
+      "weekend_exposure_count_and_seconds",
+      "post_cutoff_entry_count",
+      "pending_orders_at_cutoff_count",
+      "restart_duplicate_entry_count",
+      "turnover",
+      "commission",
+      "historical_and_current_spread",
+      "swap",
+      "adverse_slippage"
+    ],
+    "portfolio": [
+      "W1_zero_filled_monthly_correlation_to_each_Q6_sleeve",
+      "Q12_portfolio_verdict",
+      "Q8_synchronized_mark_to_market_drawdown",
+      "Q8_stressed_worst_broker_day",
+      "sleeve_risk_contribution"
+    ]
+  },
+  "selection_rule": {
+    "preselected_only_target_arm": "C_POLICY_REPAIR",
+    "best_pnl_arm_selection_allowed": false,
+    "R0_A_B_can_promote": false,
+    "W1_hard_thresholds": {
+      "minimum_closed_trades": 20,
+      "minimum_profit_factor": "1.10",
+      "maximum_absolute_zero_filled_monthly_correlation_to_each_Q6_sleeve": "0.30"
+    },
+    "C_execution_hard_gates": {
+      "weekend_exposure_count": 0,
+      "post_cutoff_entry_count": 0,
+      "pending_orders_at_cutoff_count": 0,
+      "restart_duplicate_entry_count": 0
+    },
+    "individual_pipeline_requirement": "FRESH_GOLD_PASS_Q00_THROUGH_Q11",
+    "portfolio_requirement": "Q12_PASS_PORTFOLIO",
+    "Q8_book_thresholds": {
+      "maximum_synchronized_mark_to_market_drawdown_percent": "9.5",
+      "maximum_stressed_worst_broker_day_percent": "4.0",
+      "maximum_risk_percent_per_sleeve_ea_strategy_symbol": "1.0"
+    },
+    "W2_may_rescue_W1_failure": false,
+    "failure_action": "PARK_OR_REJECT_1556_WITHOUT_PARAMETER_REPAIR_OR_ARM_SUBSTITUTION"
+  },
+  "ablation_harness": {
+    "deployment_eligible": false,
+    "may_contain_R0_A_B_C_switch": true,
+    "must_be_hash_bound": true,
+    "must_be_excluded_from_all_deploy_paths": true,
+    "production_target_may_expose_arm_switch": false,
+    "production_target_must_hardwire": "C_POLICY_REPAIR"
+  },
+  "target_binary_requal": {
+    "status": "TARGET_BINARY_REQUAL_REQUIRED",
+    "current_binary_qualifies": false,
+    "target_card_sha256": null,
+    "target_execution_contract_sha256": null,
+    "target_mq5_sha256": null,
+    "target_recursive_include_closure_sha256": null,
+    "target_ex5_sha256": null,
+    "target_backtest_set_sha256": null,
+    "target_live_set_sha256": null,
+    "target_data_manifest_sha256": null,
+    "target_broker_calendar_sha256": null,
+    "target_news_manifest_sha256": null,
+    "target_execution_cost_manifest_sha256": null,
+    "required_compile_result": "CLEAN_STRICT_PASS",
+    "required_independent_requalification_runs": 2,
+    "runs_must_be_serial_and_isolated": true,
+    "run_identity_must_match_on_all_axes": true,
+    "target_pair_gate_required": true,
+    "target_pair_gate_required_verdict": "PASS",
+    "legacy_stream_reuse_allowed": false,
+    "legacy_Q00_Q11_Q12_reuse_allowed": false,
+    "post_requal_required_gates": [
+      "TARGET_BINARY_TWO_RUN_PAIR_GATE_PASS",
+      "FRESH_GOLD_PASS_Q00_THROUGH_Q11",
+      "FRESH_Q12_PASS_PORTFOLIO",
+      "ADMISSION_RESIZE_FREEZE_GATE_PASS",
+      "OWNER_BOOK_ADMISSION_SIGNATURE"
+    ]
+  },
+  "master_module_blocker": {
+    "status": "BLOCKING",
+    "module_path": "framework/include/QM/modules/QM_Mod_AaZakMom12.mqh",
+    "consumer_path": "framework/EAs/QM5_MXAU_master-xauusd/QM5_MXAU_master-xauusd.mq5",
+    "development_build_skill_may_modify_include": false,
+    "required_authorities": [
+      "CTO",
+      "Quality-Tech"
+    ],
+    "allowed_dispositions": [
+      "AUTHORIZED_MODULE_SYNC_AND_FULL_MASTER_REQUAL",
+      "VERIFIED_MODULE_DISABLE_OR_DECOUPLE_AND_MASTER_MAGIC_15560004_EVIDENCE_BLOCK"
+    ],
+    "silent_standalone_master_drift_allowed": false
+  },
+  "required_signatures": [
+    {
+      "signature_id": "SOURCE_SEMANTICS_ACK",
+      "roles": ["Research"],
+      "status": "PENDING"
+    },
+    {
+      "signature_id": "CARD_V2_APPROVED",
+      "roles": ["CEO", "Quality-Business"],
+      "status": "PENDING"
+    },
+    {
+      "signature_id": "EA_ID_REUSE_APPROVED",
+      "roles": ["CEO", "CTO"],
+      "status": "PENDING"
+    },
+    {
+      "signature_id": "NO_WEEKEND_OWNER_SEAL",
+      "roles": ["OWNER"],
+      "status": "PENDING",
+      "trust_requirement": "OUT_OF_BAND_PINNED_SIGNATURE_OUTSIDE_ALL_RUN_ROOTS"
+    },
+    {
+      "signature_id": "MASTER_MODULE_DISPOSITION",
+      "roles": ["CTO", "Quality-Tech"],
+      "status": "PENDING"
+    },
+    {
+      "signature_id": "TARGET_SOURCE_CLOSURE_ACCEPTED",
+      "roles": ["Development", "CTO"],
+      "status": "PENDING"
+    },
+    {
+      "signature_id": "TARGET_BINARY_REQUAL_PASS",
+      "roles": ["Pipeline-Operator", "Quality-Tech"],
+      "status": "PENDING"
+    },
+    {
+      "signature_id": "BOOK_ADMISSION_AND_DEPLOY",
+      "roles": ["OWNER"],
+      "status": "PENDING"
+    }
+  ],
+  "falsification_and_requalification_triggers": [
+    "MOMENTUM_FORMULA_OR_THRESHOLD",
+    "MONTH_END_D1_RECONSTRUCTION",
+    "ENTRY_OR_POST_WEEKEND_REENTRY_TIME",
+    "FRIDAY_HOLIDAY_EARLY_CLOSE_RULE",
+    "EXIT_PRECEDENCE",
+    "ATR_PERIOD_MULTIPLIER_OR_RESET_RULE",
+    "NEWS_SPREAD_STALE_OR_RESTART_BEHAVIOR",
+    "SYMBOL_MAGIC_TIMEFRAME_ACCOUNT_CURRENCY_OR_COST_MODEL",
+    "SOURCE_OR_RECURSIVE_INCLUDE_CLOSURE",
+    "MASTER_MODULE_DISPOSITION",
+    "ANY_LIVE_PRESET_VALUE"
+  ],
+  "prohibited_actions_until_approval": [
+    "MUTATE_CANONICAL_APPROVED_CARD",
+    "MUTATE_MQ5",
+    "MUTATE_FRAMEWORK_INCLUDE",
+    "MUTATE_SET_OR_EX5",
+    "MUTATE_REGISTRY",
+    "RUN_MT5_OR_PIPELINE",
+    "CHANGE_RISK_OR_BOOK",
+    "DEPLOY",
+    "TOGGLE_AUTOTRADING",
+    "PROMOTE_FROM_LEGACY_53_TRADE_EVIDENCE"
+  ]
+}

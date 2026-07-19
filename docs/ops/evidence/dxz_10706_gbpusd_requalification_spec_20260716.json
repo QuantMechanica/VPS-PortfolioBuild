@@ -1,0 +1,448 @@
+{
+  "schema_version": 1,
+  "artifact_type": "DXZ_10706_GBPUSD_REQUALIFICATION_SPEC",
+  "bound_as_of_utc": "2026-07-16T11:21:39Z",
+  "scope": {
+    "ea_id": 10706,
+    "ea_slug": "tv-mon-ls",
+    "symbol": "GBPUSD.DWX",
+    "timeframe": "H1",
+    "magic": 107060001,
+    "environment": "DarwinexZero",
+    "mutation_authority": "NONE",
+    "mt5_execution_authority": "NONE"
+  },
+  "qualification_state": "BLOCKED_OWNER_TRUST_EARLY_CLOSE_AND_NEWS_ORDERING_RUNTIME_REMEDIATION",
+  "owner_gate": {
+    "status": "PENDING",
+    "decision_required": "Select one canonical PORTFOLIO_WEIGHT=1 risk tuple. Only LIVE_AS_FOUND_RP0_0564_PW1 is compatible with the currently hash-bound live preset; SOURCE_PRECISION_RP0_056389_PW1 requires a separately authorized preset rebase and a new immutable specification. The double-weight tuple is diagnostic-only and rejected.",
+    "recommended_contract_id": "LIVE_AS_FOUND_RP0_0564_PW1",
+    "selected_contract_id": null
+  },
+  "owner_trust_contract": {
+    "status": "PENDING_EXTERNAL_TRUST_ANCHORS",
+    "receipt_artifact_type": "DXZ_10706_OWNER_TRUST_RECEIPT",
+    "required_gate_ids": [
+      "RISK_CONTRACT",
+      "SEALED_INPUT",
+      "REFERENCE_SEAL"
+    ],
+    "trust_anchor_source": "OUT_OF_BAND_CALLER_EXPECTED_SHA256_ONLY",
+    "bundle_declared_hash_is_trusted": false,
+    "self_attested_inline_approval_is_accepted": false,
+    "qualification_blocked_without_all_external_expected_receipt_sha256s": true
+  },
+  "owner_directives": {
+    "weekend_holdings": {
+      "status": "OWNER_DIRECTIVE_RECORDED_UNSEALED",
+      "decision": "NO_WEEKEND_HOLDINGS",
+      "strategy_friday_exit_enabled": true,
+      "strategy_friday_exit_broker_time": "18:30",
+      "framework_friday_safety_fallback_enabled": true,
+      "framework_friday_safety_fallback_broker_hour": 21,
+      "effective_weekend_flat_cutoff": "MIN(CARD_STRATEGY_FRIDAY_18_30,FRAMEWORK_FRIDAY_21,LAST_TRADABLE_SESSION_OR_TICK_BEFORE_WEEKEND)",
+      "holiday_early_close_fallback_required": true,
+      "purpose": [
+        "WEEKEND_GAP_AVOIDANCE",
+        "PROP_FIRM_PREPARATION"
+      ],
+      "semantic_decision_open": false,
+      "qualification_receipt_still_required": true
+    }
+  },
+  "runtime_policy_gap": {
+    "status": "BLOCKING_REMEDIATION_REQUIRED",
+    "bound_source_capability": "FIXED_CARD_FRIDAY_18_30_AND_FRAMEWORK_FRIDAY_21_ONLY",
+    "bound_source_has_bound_session_calendar_fallback": false,
+    "required_future_card_runtime_behavior": "Flat no later than the earliest of the Card strategy cutoff (18:30 for 10706), framework Friday-21 safety fallback, and the last tradable session/tick before each weekend, including holiday and early-close weeks.",
+    "current_packet_mutation_authority": "NONE",
+    "promotion_allowed_before_remediated_binary_requalification": false,
+    "news_before_friday_close_ordering": {
+      "status": "BLOCKING_FOR_BOUND_10706_SOURCE_AND_PRESET",
+      "source_on_tick_order": "NEWS_CHECKS_BEFORE_QM_FrameworkHandleFridayClose",
+      "source_default_qm_news_temporal": "QM_NEWS_TEMPORAL_PRE30_POST30",
+      "source_default_qm_news_compliance": "QM_NEWS_COMPLIANCE_DXZ",
+      "live_preset_effective_qm_news_axis_keys_present": false,
+      "live_preset_legacy_unread_keys": [
+        "qm_filter_news_enabled=1",
+        "qm_filter_news_mode=3"
+      ],
+      "failure_mode": "A blocking or stale/missing news result can return before strategy and framework Friday close handling.",
+      "required_on_tick_risk_order": [
+        "QM_KillSwitchCheck",
+        "EFFECTIVE_FRIDAY_WEEKEND_FLAT_HANDLER",
+        "OPTIONAL_NEWS_AND_ENTRY_FILTERS"
+      ],
+      "kill_switch_first_is_allowed": "QM_KillSwitchCheck has its own flatten/retry behavior while halted; its bound source-closure hash remains mandatory.",
+      "farmwide_portability_rule": "Friday/weekend risk closure must execute before any optional entry/news filter for every EA, even when current news axes are NONE.",
+      "remediated_source_and_binary_requalification_required": true
+    }
+  },
+  "risk_formula": {
+    "source": "framework/include/QM/QM_RiskSizer.mqh",
+    "source_sha256": "e75d7aaa48f3eae0d298ac67ba0db4404089f9b1abc7ea361fee7662c342fbed",
+    "continuous_target_risk_formula": "equity * (RISK_PERCENT / 100) * PORTFOLIO_WEIGHT",
+    "lot_rounding": "floor_to_symbol_volume_step_then_apply_symbol_minimum_constraints",
+    "initial_equity_eur": "100000"
+  },
+  "risk_contract_candidates": [
+    {
+      "contract_id": "LIVE_AS_FOUND_RP0_0564_PW1",
+      "RISK_PERCENT": "0.0564",
+      "RISK_FIXED": "0",
+      "PORTFOLIO_WEIGHT": "1",
+      "effective_risk_percent": "0.0564",
+      "initial_continuous_target_risk_eur": "56.4",
+      "owner_selectable": true,
+      "current_anchor_compatible": true,
+      "qualification_class": "AS_LIVE_REQUAL",
+      "preset_mutation_required": false
+    },
+    {
+      "contract_id": "SOURCE_PRECISION_RP0_056389_PW1",
+      "RISK_PERCENT": "0.056389",
+      "RISK_FIXED": "0",
+      "PORTFOLIO_WEIGHT": "1",
+      "effective_risk_percent": "0.056389",
+      "initial_continuous_target_risk_eur": "56.389",
+      "owner_selectable": true,
+      "current_anchor_compatible": false,
+      "qualification_class": "REMEDIATED_NOT_CURRENTLY_AS_LIVE",
+      "preset_mutation_required": true
+    },
+    {
+      "contract_id": "DOUBLE_WEIGHT_RP0_056389_PW0_005783",
+      "RISK_PERCENT": "0.056389",
+      "RISK_FIXED": "0",
+      "PORTFOLIO_WEIGHT": "0.005783",
+      "effective_risk_percent": "0.000326097587",
+      "initial_continuous_target_risk_eur": "0.326097587",
+      "owner_selectable": false,
+      "current_anchor_compatible": false,
+      "qualification_class": "REJECTED_DIMENSIONAL_DOUBLE_SCALING",
+      "preset_mutation_required": true
+    }
+  ],
+  "risk_scale_comparison": {
+    "PORTFOLIO_WEIGHT_1_vs_0_005783_factor": "172.9206294310911291717101850",
+    "statement": "Holding every other sizing input constant, PORTFOLIO_WEIGHT=1 targets 172.9206294310911291717101850 times the continuous risk and continuous lot size of PORTFOLIO_WEIGHT=0.005783.",
+    "observed_e3_lot_range_at_live_contract": {
+      "min_lots": "0.06",
+      "max_lots": "1.20"
+    },
+    "conditional_continuous_lot_range_at_weight_0_005783": {
+      "min_lots": "0.00034698",
+      "max_lots": "0.00693960",
+      "status": "INFERENCE_ONLY",
+      "caveat": "This is linear scaling before symbol-volume flooring. A future frozen instrument snapshot must bind volume_min, volume_max, volume_step, contract_size, tick_size and the EURUSD conversion path before an executable-lot conclusion is allowed."
+    }
+  },
+  "contract_artifact_sha256s": {
+    "approved_card": "54b67c13235f6be8e47a1054a31b4e4391423f2fb870d71a327f001d17a3d366",
+    "ea_spec": "e0bb872fdfaa1cff415127d826872bb6c13529661fe18932fd9ffa67e440c647",
+    "ea_source": "fbb632c78461abc858218207768a53b50fa56a4cb63d1fa237d60de99318c5f6",
+    "source_dependency_closure": "421e42c77d391a4ef8ee8fe30ab638569f9023e23d6b62a4b2c8bcad6f378085",
+    "live_ex5": "01e34b2059de6ed505d445ce9fcbac7da0eb10d51e5cbcbbd18d38a968916078",
+    "live_preset": "b96504629a0af66c7d7dab21a08c64dbe8376ee422a925e18098c16804422a17",
+    "risk_sizer": "e75d7aaa48f3eae0d298ac67ba0db4404089f9b1abc7ea361fee7662c342fbed"
+  },
+  "source_closure_contract": {
+    "repo_root": "C:\\QM\\repo",
+    "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\QM5_10706_tv-mon-ls.mq5",
+    "resolver": "RECURSIVE_MQL5_INCLUDE_CLOSURE",
+    "canonical_path_encoding": "REPO_RELATIVE_POSIX",
+    "expected_member_count": 26,
+    "aggregate_sha256": "421e42c77d391a4ef8ee8fe30ab638569f9023e23d6b62a4b2c8bcad6f378085",
+    "critical_member_sha256s": {
+      "framework/EAs/QM5_10706_tv-mon-ls/QM5_10706_tv-mon-ls.mq5": "fbb632c78461abc858218207768a53b50fa56a4cb63d1fa237d60de99318c5f6",
+      "framework/include/QM/QM_Exit.mqh": "ee91acecac74138224dbc15b1b7420baeb15ca49c1a0a7c58df76682f1455d45",
+      "framework/include/QM/QM_KillSwitch.mqh": "855396aa05bd5a280267a62aa8b516d00fc2db7fd6d528bb02719dae341c63a8",
+      "framework/include/QM/QM_KillSwitchKS.mqh": "72e876b06e40fbe741590eb78e87c43a7da285901bfd06980b3ab64515262351",
+      "framework/include/QM/QM_NewsFilter.mqh": "148e5a373185566f049ba6b73defc486499059d5b0268b9f65af1ba220f610d2"
+    }
+  },
+  "anchor_files": [
+    {
+      "label": "approved_card",
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10706_tv-mon-ls.md",
+      "sha256": "54b67c13235f6be8e47a1054a31b4e4391423f2fb870d71a327f001d17a3d366",
+      "role": "CONTRACT"
+    },
+    {
+      "label": "ea_spec",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\SPEC.md",
+      "sha256": "e0bb872fdfaa1cff415127d826872bb6c13529661fe18932fd9ffa67e440c647",
+      "role": "CONTRACT"
+    },
+    {
+      "label": "ea_source",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\QM5_10706_tv-mon-ls.mq5",
+      "sha256": "fbb632c78461abc858218207768a53b50fa56a4cb63d1fa237d60de99318c5f6",
+      "role": "CONTRACT"
+    },
+    {
+      "label": "repo_ex5",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\QM5_10706_tv-mon-ls.ex5",
+      "sha256": "01e34b2059de6ed505d445ce9fcbac7da0eb10d51e5cbcbbd18d38a968916078",
+      "role": "CONTRACT"
+    },
+    {
+      "label": "live_ex5",
+      "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Experts\\Live EAs\\QM5_10706_tv-mon-ls.ex5",
+      "sha256": "01e34b2059de6ed505d445ce9fcbac7da0eb10d51e5cbcbbd18d38a968916078",
+      "role": "READ_ONLY_CONTRACT"
+    },
+    {
+      "label": "live_preset",
+      "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\slot1_GBPUSD_H1_QM5_10706_tv-mon-ls_magic107060001_dxz23_live.set",
+      "sha256": "b96504629a0af66c7d7dab21a08c64dbe8376ee422a925e18098c16804422a17",
+      "role": "READ_ONLY_CONTRACT"
+    },
+    {
+      "label": "risk_sizer",
+      "path": "C:\\QM\\repo\\framework\\include\\QM\\QM_RiskSizer.mqh",
+      "sha256": "e75d7aaa48f3eae0d298ac67ba0db4404089f9b1abc7ea361fee7662c342fbed",
+      "role": "CONTRACT"
+    },
+    {
+      "label": "repo_fixed_risk_backtest_set",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\sets\\QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_backtest.set",
+      "sha256": "62bc858bd99e209b3594d6b76aa124d1cfb25e9730134dfc031d185a07f8f25e",
+      "role": "DIAGNOSTIC_ONLY"
+    },
+    {
+      "label": "gbpusd_h1_literal_export",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\GBPUSD.DWX_H1.csv",
+      "sha256": "21f323f4e4a93fea4ce7f107095a62fded25fd38cc644ec9fbc88d0ec5d46924",
+      "role": "SEGMENTATION_ORACLE_ONLY"
+    },
+    {
+      "label": "diagnostic_e3_receipt",
+      "path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_effective_h1_staged_serial\\20260716T071056Z\\runs\\23_10706_GBPUSD_DWX\\receipt.json",
+      "sha256": "37a128c7efd9503737ac175f76d75165696c005b534366387f4ac77856150097",
+      "role": "DIAGNOSTIC_ONLY"
+    },
+    {
+      "label": "diagnostic_e3_report",
+      "path": "D:\\QM\\reports\\portfolio\\dxz23_as_live_requal_20260716_effective_h1_staged_serial\\20260716T071056Z\\runs\\23_10706_GBPUSD_DWX\\report.htm",
+      "sha256": "aab1bbad092dae3b499ee32c86de9b7196e9525b461b2b13df35483ec48a27ed",
+      "role": "DIAGNOSTIC_ONLY"
+    },
+    {
+      "label": "disqualified_old_reference_stream",
+      "path": "D:\\QM\\reports\\portfolio\\dxz23_audit_requal_input_20260715T221618Z\\streams\\10706_GBPUSD_DWX.jsonl",
+      "sha256": "3649e35f89030017e5e5fc07517bed476244dd22ca2534766cb8e8c25364d9a7",
+      "role": "DIAGNOSTIC_ONLY_NOT_A_REFERENCE"
+    },
+    {
+      "label": "diagnostic_source_manifest",
+      "path": "D:\\QM\\reports\\portfolio\\dxz23_audit_requal_input_20260715T221618Z\\source_manifest_AUDIT_REQUAL_INPUT.json",
+      "sha256": "ee47e67f8c9a006452ca39672f8165668381fa78e90999e05a249ac810868ac7",
+      "role": "DIAGNOSTIC_ONLY"
+    },
+    {
+      "label": "disqualified_fixed_risk_q08_report",
+      "path": "D:\\QM\\reports\\pipeline\\QM5_10706\\Q08\\_baseline\\QM5_10706\\20260713_051004\\raw\\run_01\\report.htm",
+      "sha256": "81328bdb4b412821c9c84504868cf0ad6c3ed11e8c31df6f65473b4dff689413",
+      "role": "DIAGNOSTIC_ONLY_NOT_A_REFERENCE"
+    }
+  ],
+  "diagnostic_reproduction": {
+    "classification": "SIGNAL_AND_OUTCOME_REPRODUCED_EXECUTION_NOT_REPRODUCED",
+    "old_reference_trade_count": 367,
+    "e3_trade_count": 367,
+    "entry_timestamp_matches": 367,
+    "gross_outcome_sign_matches": 367,
+    "close_timestamp_matches": 364,
+    "lot_matches": 0,
+    "old_reference_lot_sum": "1616.54",
+    "e3_lot_sum": "102.95",
+    "old_reference_status": "DISQUALIFIED_FIXED_RISK_AND_DISCONTINUOUS_DATA",
+    "pnl_comparison_status": "INVALID_DIFFERENT_RISK_AND_ACCOUNT_CURRENCY_CONTRACTS",
+    "close_mismatches": [
+      {
+        "entry_epoch": 1543928400,
+        "old_close_epoch": 1544015754,
+        "e3_close_epoch": 1544207400
+      },
+      {
+        "entry_epoch": 1620770400,
+        "old_close_epoch": 1621010414,
+        "e3_close_epoch": 1621017000
+      },
+      {
+        "entry_epoch": 1633467600,
+        "old_close_epoch": 1633616028,
+        "e3_close_epoch": 1633707001
+      }
+    ]
+  },
+  "exceptional_h1_gaps": [
+    {
+      "gap_id": "B",
+      "last_bar_open_utc": "2023-12-12T01:00:00Z",
+      "next_bar_open_utc": "2023-12-18T00:00:00Z",
+      "delta_hours": 143
+    },
+    {
+      "gap_id": "C",
+      "last_bar_open_utc": "2025-10-09T02:00:00Z",
+      "next_bar_open_utc": "2025-11-03T00:00:00Z",
+      "delta_hours": 598
+    },
+    {
+      "gap_id": "D",
+      "last_bar_open_utc": "2025-12-17T18:00:00Z",
+      "next_bar_open_utc": "2025-12-22T00:00:00Z",
+      "delta_hours": 102
+    }
+  ],
+  "segments": [
+    {
+      "segment_id": "S0",
+      "tester_from_date": "2017-10-09",
+      "tester_to_date": "2023-12-12",
+      "score_from_utc": "2017-10-10T07:00:00Z",
+      "score_to_exclusive_utc": "2023-12-12T02:00:00Z",
+      "diagnostic_e3_trade_count": 273
+    },
+    {
+      "segment_id": "S1",
+      "tester_from_date": "2023-12-18",
+      "tester_to_date": "2025-10-09",
+      "score_from_utc": "2023-12-19T07:00:00Z",
+      "score_to_exclusive_utc": "2025-10-09T03:00:00Z",
+      "diagnostic_e3_trade_count": 85
+    },
+    {
+      "segment_id": "S2",
+      "tester_from_date": "2025-11-03",
+      "tester_to_date": "2025-12-17",
+      "score_from_utc": "2025-11-04T07:00:00Z",
+      "score_to_exclusive_utc": "2025-12-17T19:00:00Z",
+      "diagnostic_e3_trade_count": 7
+    },
+    {
+      "segment_id": "S3",
+      "tester_from_date": "2025-12-22",
+      "tester_to_date": "2025-12-31",
+      "score_from_utc": "2025-12-23T07:00:00Z",
+      "score_to_exclusive_utc": "2026-01-01T00:00:00Z",
+      "diagnostic_e3_trade_count": 2
+    }
+  ],
+  "segment_execution_rules": {
+    "terminal_state_at_start": "FLAT_AND_FRESH_EA_INSTANCE",
+    "terminal_state_at_end": "FLAT",
+    "warmup_rule": "Start on Monday 00:00 UTC; do not score before Tuesday 07:00 UTC, covering ATR(14,H1) and one complete shifted logical-Monday box.",
+    "cross_gap_positions_allowed": false,
+    "cross_gap_pending_orders_allowed": false,
+    "indicator_state_carry_allowed": false,
+    "tester_forced_exit_allowed": false,
+    "weekend_holdings_allowed": false,
+    "strategy_friday_exit_enabled": true,
+    "strategy_friday_exit_broker_time": "18:30",
+    "framework_friday_safety_fallback_enabled": true,
+    "framework_friday_safety_fallback_broker_hour": 21,
+    "effective_weekend_flat_cutoff": "MIN(CARD_STRATEGY_FRIDAY_18_30,FRAMEWORK_FRIDAY_21,LAST_TRADABLE_SESSION_OR_TICK_BEFORE_WEEKEND)",
+    "bound_session_calendar_required": true,
+    "parsed_trade_interval_policy_validation_required": true,
+    "capital_reset": "EUR 100000 independently for every segment and repeat",
+    "pnl_aggregation": "Never naively sum currency PnL across independently reset segments; evaluate identities per segment and economics on a declared normalized basis."
+  },
+  "frozen_data_contract": {
+    "required_symbols": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "reason_for_eurusd": "GBPUSD profit is quoted in USD while the account is EUR; the risk sizer may resolve USD to EUR through EURUSD.DWX inversion.",
+    "required_years": [
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "required_history_artifacts": [
+      "HCC",
+      "TKC"
+    ],
+    "required_instrument_snapshot_fields": [
+      "account_currency",
+      "contract_size",
+      "digits",
+      "leverage",
+      "profit_currency",
+      "tick_size",
+      "tick_value",
+      "volume_max",
+      "volume_min",
+      "volume_step"
+    ],
+    "required_session_calendar": {
+      "source": "DARWINEXZERO_MT5_SERVER_BOUND_SESSION_EXPORT",
+      "timezone_basis": "MT5_BROKER_TIME",
+      "weekly_coverage": "EVERY_FRIDAY_IN_EFFECTIVE_WINDOW",
+      "effective_cutoff_rule": "MIN_FRIDAY_21_AND_LAST_TRADABLE_BEFORE_WEEKEND"
+    },
+    "snapshot_rule": "Copy read-only inputs into an isolated run sandbox, hash every file and a canonical manifest before run A, and require identical start/end aggregate hashes through run D.",
+    "independence_claim": "NONE. Broker/live-derived history is frozen execution input, not an independent market-data reference."
+  },
+  "identity_axes": [
+    "signal_identity_sha256",
+    "entry_identity_sha256",
+    "close_identity_sha256",
+    "outcome_sign_sha256",
+    "lot_identity_sha256",
+    "pnl_identity_sha256",
+    "full_stream_sha256"
+  ],
+  "repeat_protocol": {
+    "baseline_repeat_count": 2,
+    "baseline_mode": "DISCOVERY_COMPLETE_UNREFERENCED",
+    "baseline_is_qualifying": false,
+    "seal_provenance": "OWNER_SEALED_POST_CONSENSUS_BASELINE",
+    "seal_is_independent_reference": false,
+    "qualification_repeat_count": 2,
+    "qualification_mode": "AS_LIVE_REQUAL",
+    "required_receipt_schema_version": 2,
+    "requirements": [
+      "All four top-level run roots are pairwise distinct and outside T_Live and T1-T10.",
+      "All four receipt byte hashes are pairwise distinct.",
+      "All four canonical contract hashes and every identity-axis hash are identical and non-empty.",
+      "Baseline A and B contain no selected reference and are explicitly non-qualifying.",
+      "The owner-sealed consensus reference and seal manifest live outside every run root and bind exactly the two baseline receipt hashes.",
+      "Qualification C and D start after the seal timestamp and select the same frozen reference path and hash.",
+      "No receipt, report, generated stream or file inside any run root may be its own reference or be described as independent evidence."
+    ]
+  },
+  "required_cost_axes": [
+    "commission",
+    "historical_tester_spread",
+    "current_broker_spread_parity",
+    "current_broker_swap_rate_parity",
+    "slippage_stress"
+  ],
+  "cost_evaluation_window": {
+    "requested_from_date": "2017-10-09",
+    "requested_to_date": "2025-12-31",
+    "effective_from_date": "2017-10-09",
+    "effective_to_date": "2025-12-31"
+  },
+  "promotion_rule": "Technical identity may pass while costs remain blocked. Promotion readiness requires every cost axis to be independently CERTIFIED and hash-bound; technical reproduction alone never changes the registry or authorizes deploy.",
+  "forbidden_actions": [
+    "EDIT_APPROVED_CARD",
+    "EDIT_EA_SOURCE",
+    "EDIT_PRESET",
+    "EDIT_EX5",
+    "EDIT_REGISTRY",
+    "RUN_ON_T_LIVE",
+    "RUN_ON_T1_T10",
+    "DEPLOY",
+    "TOGGLE_AUTOTRADING"
+  ]
+}

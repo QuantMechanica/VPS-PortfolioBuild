@@ -1,5 +1,13 @@
 # Aufgabe: SP500.DWX als verfügbares Backtest-Symbol freischalten + QM5_1045 reopen
 
+> **SUPERSEDED 2026-07-16:** Dieses historische Aufgabenpapier nahm fälschlich
+> an, dass SP500 brokerseitig nicht orderbar sei. Read-only DarwinexZero-Logs
+> belegen akzeptierte Entry- und Close-Orders auf dem Brokersymbol `SP500`.
+> `SP500.DWX` bleibt das literale Testsymbol; der End-to-End-Aliasvertrag
+> `SP500.DWX -> SP500` benötigt weiterhin eine vollständige Requalifikation.
+> Autoritative Evidence:
+> `docs/ops/evidence/DXZ_11132_SP500_DIRECT_ROUTABILITY_2026-07-16.md`.
+
 **Auftraggeber:** OWNER
 **Empfänger:** Claude Code (strategy_farm policy-edit session)
 **Datum:** 2026-05-16

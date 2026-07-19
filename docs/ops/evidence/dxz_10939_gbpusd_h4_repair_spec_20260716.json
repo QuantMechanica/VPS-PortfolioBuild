@@ -1,0 +1,594 @@
+{
+  "schema_version": 1,
+  "artifact_type": "DXZ_10939_GBPUSD_H4_REPAIR_SPEC",
+  "packet_id": "DXZ-10939-GBPUSD-DWX-H4-20260716",
+  "as_of_date": "2026-07-16",
+  "status": "BLOCKED_PENDING_SIGNED_OWNER_EVIDENCE_AND_NEW_RUNS",
+  "deployment_eligible": false,
+  "scope": {
+    "ea_id": 10939,
+    "symbol": "GBPUSD.DWX",
+    "timeframe": "H4",
+    "platform": "DarwinexZero MT5",
+    "execution_authorized": false,
+    "allowed_history": "literal .DWX only",
+    "forbidden_execution_roots": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10",
+      "T_Live"
+    ]
+  },
+  "owner_directive": {
+    "status": "OWNER_DIRECTIVE_RECORDED_UNSEALED",
+    "recorded_on_date": "2026-07-16",
+    "directive": "NO_WEEKEND_HOLDINGS",
+    "required_friday_contract": {
+      "enabled": true,
+      "hour_broker": 21,
+      "decision": "FRAMEWORK_OVERRIDE_FRIDAY_21_BROKER"
+    },
+    "qualification_effect": "The directive fixes the intended semantics but does not replace the detached OWNER receipt and out-of-band trust-anchor gate."
+  },
+  "research_sources": [
+    {
+      "role": "strategy_source",
+      "url": "https://www.adamhgrimes.com/context-in-pullbacks-what-should-happen/",
+      "finding": "The article supplies qualitative pullback context only: momentum without climax, surprise, measured-move and higher-timeframe cautions. It does not specify the card's EMA, ADX, ATR, lookback, retracement, stop, target, breakeven, time-exit, Friday or news parameters."
+    },
+    {
+      "role": "commission_policy",
+      "url": "https://help.darwinex.com/execution-costs",
+      "finding": "Darwinex describes roughly 0.005% round-trip commission on Forex base-currency nominal (mathematically 0.5 basis points, not 5 basis points) and automatic account-currency conversion; spread and variable swap remain separate costs."
+    },
+    {
+      "role": "risk_context",
+      "url": "https://www.darwinexzero.com/docs/en/risk-engine",
+      "finding": "Darwinex Zero independently risk-adjusts the signal account; this does not excuse an unstable or unapproved signal-account risk contract."
+    }
+  ],
+  "baseline": {
+    "classification": "TIER_A_RESEARCH_ONLY_NOT_QUALIFIED",
+    "native_report": {
+      "requested_from_date": "2017-10-25",
+      "requested_to_date": "2025-12-31",
+      "trades": 92,
+      "native_profit_factor": 1.6234372858,
+      "native_net_eur": 4092.18,
+      "native_close_sequence_matches_sealed_reference": true
+    },
+    "conservative_commission_economics": {
+      "trades": 92,
+      "profit_factor": 1.583025585,
+      "net_eur": 3888.2672679757,
+      "close_to_close_max_drawdown_eur": 1139.9131957528,
+      "commission_rate_fraction_round_trip": 0.00005,
+      "commission_rate_percent_round_trip": 0.005,
+      "commission_rate_basis_points_round_trip": 0.5,
+      "legacy_label_note": "Any existing artifact or directory label containing 5bp is a legacy misnomer. The applied fraction 0.00005 is 0.005%, hence 0.5 bp round trip; no economic result is rescaled.",
+      "canonical_cost_evidence": {
+        "schema_version": 3,
+        "artifact_type": "DXZ_STANDALONE_COST_EVIDENCE",
+        "path": "D:/QM/reports/portfolio/dxz_cost_evidence_20260716_v3/report.json",
+        "sha256": "98ea8553f4fb6044d757e90c964c8b6fda4f8f40f653e75510833f8f49c694fd"
+      },
+      "commission_evidence_status": "BOUNDED_AMBIGUOUS_FAIL_CLOSED",
+      "ambiguous_trade_count": 6,
+      "unbounded_trade_count": 0,
+      "qualification_use": false
+    },
+    "card_semantics": {
+      "card_generation": "v1",
+      "frontmatter_g0_status": "APPROVED",
+      "body_pipeline_status": "G0 PENDING",
+      "card_v2_execution_contract_present": false,
+      "source_defined_numeric_rules": 0,
+      "qm_interpretation_required": true,
+      "friday_declared_in_card": false,
+      "news_declared_in_card": false,
+      "finding": "The numerical strategy is a QuantMechanica mechanization variant, not a verbatim source strategy. The v1 card also contradicts itself on G0 status and cannot qualify framework exits."
+    },
+    "effective_runtime": {
+      "binary_role": "deployed_binary_used_read_only_by_E4",
+      "risk_mode": "PERCENT",
+      "risk_percent": 0.2007,
+      "portfolio_weight": 1,
+      "deposit": 100000,
+      "account_currency": "EUR",
+      "friday_close_enabled": true,
+      "friday_close_hour_broker": 21,
+      "news_temporal": 3,
+      "news_compliance": 1,
+      "news_interpretation": "PRE30_POST30 plus DXZ compliance",
+      "strategy_parameter_overrides_vs_source_defaults": 0
+    },
+    "lineage_findings": [
+      "The deployed/tested EX5 differs from the repository EX5; the selected E4 run used the deployed hash.",
+      "The repository live preset differs from the deployed/read-only preset in RISK_PERCENT (0.7500 versus 0.2007).",
+      "The v1 card does not authorize the effective Friday or news behavior.",
+      "BLOCKING_REMEDIATION_REQUIRED: the current OnTick evaluates Strategy_NewsFilterHook/QM_NewsAllowsTrade and may return before QM_FrameworkHandleFridayClose. A Friday high-impact blackout can therefore suppress the mandatory no-weekend exit. Qualification requires a new source/build in which Friday mandatory-close handling precedes every news/entry filter or an independently equivalent fail-safe path.",
+      "The old sealed reference is byte-identical to a 2026-07-12 clean-book stream produced through historical T2/Common workflow and lacks a self-contained producer receipt binding binary, preset, data and segment state. It remains audit evidence, not an admissible reference for this packet."
+    ],
+    "q08_findings": {
+      "native_round_trips": 92,
+      "legacy_q08_rows": 67,
+      "legacy_q08_valid_identity_rows": 0,
+      "legacy_q08_error": "all rows lack entry_time; the stream cannot prove full entry/exit/outcome identity",
+      "sealed_reference_rows": 92,
+      "sealed_reference_admissible_for_new_qualification": false
+    },
+    "hash_bindings": [
+      {
+        "id": "approved_card_v1",
+        "role": "semantic_input",
+        "path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10939_grimes-context-pb.md",
+        "sha256": "a31314faee5c06ab57dd9ab3994d32250a658426cee76205340f79b7a9334d04",
+        "bytes": 4079
+      },
+      {
+        "id": "repo_spec",
+        "role": "semantic_input",
+        "path": "C:/QM/repo/framework/EAs/QM5_10939_grimes-context-pb/SPEC.md",
+        "sha256": "bccf9fc15c4ccf16f9b6f8d2734831cbbdfd1699eedfa47440a536062b863f13",
+        "bytes": 5107
+      },
+      {
+        "id": "repo_source",
+        "role": "candidate_source_only_not_binary_proof",
+        "path": "C:/QM/repo/framework/EAs/QM5_10939_grimes-context-pb/QM5_10939_grimes-context-pb.mq5",
+        "sha256": "2ad956417a71486a46f5bd4eab079475e1b9a43abbb17ea3db2e455b9d021461",
+        "bytes": 21456
+      },
+      {
+        "id": "repo_ex5",
+        "role": "unqualified_repository_binary",
+        "path": "C:/QM/repo/framework/EAs/QM5_10939_grimes-context-pb/QM5_10939_grimes-context-pb.ex5",
+        "sha256": "8fb85437bd67a51c2a0b050246632fc316b938b4992653479a83a573cb691e77",
+        "bytes": 328894
+      },
+      {
+        "id": "repo_live_preset",
+        "role": "unqualified_repository_preset",
+        "path": "C:/QM/repo/framework/EAs/QM5_10939_grimes-context-pb/sets/QM5_10939_grimes-context-pb_GBPUSD.DWX_H4_live.set",
+        "sha256": "1b71523e136a35a29068e5f346a308a7058e1cdf4b97e2ba7ebad7558811f538",
+        "bytes": 1788
+      },
+      {
+        "id": "repo_backtest_preset",
+        "role": "historical_fixed_risk_preset",
+        "path": "C:/QM/repo/framework/EAs/QM5_10939_grimes-context-pb/sets/QM5_10939_grimes-context-pb_GBPUSD.DWX_H4_backtest.set",
+        "sha256": "8ff4ddcb6499ebf0cb7226a955cf40615c522986c75436b0b00d4a66208d7035",
+        "bytes": 1729
+      },
+      {
+        "id": "deployed_ex5_read_only",
+        "role": "E4_binary_input_read_only",
+        "path": "C:/QM/mt5/T_Live/MT5_Base/MQL5/Experts/Live EAs/QM5_10939_grimes-context-pb.ex5",
+        "sha256": "ed64e912ab95c803cb4bbbdeb0001091bf49efe15f5358fae616804ae136bda3",
+        "bytes": 290144
+      },
+      {
+        "id": "deployed_preset_read_only",
+        "role": "E4_preset_input_read_only",
+        "path": "C:/QM/mt5/T_Live/MT5_Base/MQL5/Presets/slot1_GBPUSD_H4_QM5_10939_grimes-context-pb_magic109390001_dxz23_live.set",
+        "sha256": "8cbed5104814da856484317e7f06add7d0e17aeb033cebe424b457b43c683206",
+        "bytes": 1733
+      },
+      {
+        "id": "E4_receipt",
+        "role": "baseline_audit_evidence",
+        "path": "D:/QM/reports/portfolio/dxz23_as_live_requal_20260716_effective_h4_staged_serial/20260716T075313Z/runs/09_10939_GBPUSD_DWX/receipt.json",
+        "sha256": "54bae05a470b50452b87aa5c50ad4dfc6175cfe101645f40ae39b1d37c9b22ee",
+        "bytes": 9231
+      },
+      {
+        "id": "E4_native_report",
+        "role": "baseline_audit_evidence",
+        "path": "D:/QM/reports/portfolio/dxz23_as_live_requal_20260716_effective_h4_staged_serial/20260716T075313Z/runs/09_10939_GBPUSD_DWX/report.htm",
+        "sha256": "8db4d4e7222b6de2f25b656b16163b1ff2031dfcb48e91edd6a48fbdc2c39e60",
+        "bytes": 226282
+      },
+      {
+        "id": "E4_legacy_q08",
+        "role": "known_invalid_identity_evidence",
+        "path": "D:/QM/reports/portfolio/dxz23_as_live_requal_20260716_effective_h4_staged_serial/20260716T075313Z/runs/09_10939_GBPUSD_DWX/q08_stream.jsonl",
+        "sha256": "e2a8b9dc11e71a58a6373b80be34db60a664ea942840fa6a96b8ef082f74639a",
+        "bytes": 10673
+      },
+      {
+        "id": "E4_native_trade_stream",
+        "role": "close_sequence_evidence_only",
+        "path": "D:/QM/reports/portfolio/dxz23_as_live_requal_20260716_effective_h4_staged_serial/20260716T075313Z/runs/09_10939_GBPUSD_DWX/report_trade_stream.jsonl",
+        "sha256": "c15318c897e2328e3d7abc519bccac4cb26a3583874ec2ea0f878ae9dd122413",
+        "bytes": 13858
+      },
+      {
+        "id": "E4_tester_ini",
+        "role": "baseline_execution_contract",
+        "path": "D:/QM/reports/portfolio/dxz23_as_live_requal_20260716_effective_h4_staged_serial/20260716T075313Z/runs/09_10939_GBPUSD_DWX/tester.ini",
+        "sha256": "89863b53279c4cc7441776009a91375b6dc223883bde7f6622b5c059e4e72513",
+        "bytes": 465
+      },
+      {
+        "id": "old_sealed_reference",
+        "role": "audit_only_not_admissible_reference",
+        "path": "D:/QM/reports/portfolio/dxz23_audit_requal_input_20260715T221618Z/streams/10939_GBPUSD_DWX.jsonl",
+        "sha256": "6e667ecf604331a7a1b0c0d793345b7c08c560e399f1b3a6bf3920b1d07f4d93",
+        "bytes": 18904
+      },
+      {
+        "id": "cost_evidence_v2",
+        "role": "immutable_superseded_audit_evidence_not_a_qualification_input",
+        "path": "D:/QM/reports/portfolio/dxz_cost_evidence_20260716_v2/report.json",
+        "sha256": "ef33eb7615bc46fbffc2dcc5b82d5096dfd21d4b608e60dbcd4efc01130d1e08",
+        "bytes": 5198994
+      },
+      {
+        "id": "cost_evidence_v3",
+        "role": "canonical_schema3_commission_baseline_not_full_five_axis_certification",
+        "path": "D:/QM/reports/portfolio/dxz_cost_evidence_20260716_v3/report.json",
+        "sha256": "98ea8553f4fb6044d757e90c964c8b6fda4f8f40f653e75510833f8f49c694fd",
+        "bytes": 5275887
+      }
+    ]
+  },
+  "owner_gates": [
+    {
+      "gate_id": "CARD_V2_SEMANTICS",
+      "required_status": "APPROVED",
+      "required_decision": "QM_INTERPRETATION_VARIANT_APPROVED",
+      "requirement": "Create and approve a Card-v2 for QM5_10939 that labels every quantified EMA/ADX/ATR/lookback/retracement/stop/target/BE/time-exit rule as a QM interpretation rather than a source-defined rule, resolves the G0 APPROVED/PENDING contradiction, and declares all runtime dependencies and exit precedence."
+    },
+    {
+      "gate_id": "FRIDAY_CLOSE_POLICY",
+      "required_status": "APPROVED",
+      "required_decision": "FRAMEWORK_OVERRIDE_FRIDAY_21_BROKER",
+      "requirement": "OWNER's 2026-07-16 no-weekend-holdings directive fixes Friday close enabled at broker hour 21 for gap avoidance and prop preparation. Status remains OWNER_DIRECTIVE_RECORDED_UNSEALED until a detached receipt is pinned by the out-of-band trust anchor; a machine may not self-approve it."
+    },
+    {
+      "gate_id": "NEWS_POLICY",
+      "required_status": "APPROVED",
+      "allowed_decisions": [
+        "DXZ_PRE30_POST30",
+        "NO_NEWS_FILTER"
+      ],
+      "requirement": "OWNER explicitly approves or disables the effective PRE30/POST30 plus DXZ compliance axes and records calendar/staleness dependencies in Card-v2."
+    },
+    {
+      "gate_id": "AS_LIVE_RISK_CONTRACT",
+      "required_status": "APPROVED",
+      "required_decision": "AS_LIVE_PERCENT_EUR_100K",
+      "requirement": "OWNER approves one positive percent-risk value on EUR 100,000 with RISK_FIXED=0 and PORTFOLIO_WEIGHT=1, and freezes it before reference production. Historical fixed-1000 economics and the repo 0.7500 preset cannot stand in for the observed 0.2007 contract."
+    },
+    {
+      "gate_id": "SOURCE_OF_RECORD",
+      "required_status": "APPROVED",
+      "required_decision": "OWNER_SELECTED_SOURCE_CLOSURE",
+      "requirement": "OWNER names the source/include closure that Development may compile. The deployed EX5 and repo EX5 mismatch cannot be repaired by choosing the more profitable binary."
+    }
+  ],
+  "owner_receipt_contract": {
+    "artifact_type": "DXZ_OWNER_DECISION_RECEIPT",
+    "required_fields": [
+      "gate_id",
+      "decision",
+      "spec_sha256",
+      "approved_by",
+      "approved_at_utc"
+    ],
+    "rules": [
+      "Each gate has its own structured receipt; its embedded payload hash is integrity metadata, not approval authority.",
+      "approved_by must equal OWNER and decision must exactly equal the bundle gate decision.",
+      "spec_sha256 must bind this exact repair specification and approved_at_utc must parse as UTC.",
+      "Qualification requires an out-of-band OWNER trust-anchor path plus its expected file SHA-256 supplied separately to the validator; the anchor pins the exact receipt SHA-256 and decision for every gate.",
+      "The trust anchor must be outside the qualification bundle, every run/output/MT5 root, and every sealed input or reference artifact."
+    ],
+    "trust_anchor_artifact_type": "DXZ_10939_OWNER_TRUST_ANCHOR"
+  },
+  "owner_trust_contract": {
+    "status": "PENDING_OUT_OF_BAND_KEY_REGISTRATION",
+    "algorithm": "ED25519",
+    "public_key_format": "RAW_32_BYTES",
+    "signature_encoding": "BASE64",
+    "required_external_validator_inputs": [
+      "owner_public_key_path",
+      "owner_public_key_sha256",
+      "owner_trust_anchor_path",
+      "owner_trust_anchor_sha256"
+    ]
+  },
+  "machine_gates": [
+    "STRUCTURED_OWNER_RECEIPTS_BOUND_TO_EXACT_SPEC_AND_OUT_OF_BAND_TRUST_ANCHOR",
+    "STRUCTURED_SEALED_INPUT_MANIFEST_WITH_EFFECTIVE_CONTRACT",
+    "HASH_BOUND_SOURCE_INCLUDE_CLOSURE_AND_CLEAN_COMPILE",
+    "INDEPENDENT_SOURCE_SCAN_PROVES_FRIDAY_MANDATORY_EXIT_PRECEDES_ALL_NEWS_AND_ENTRY_FILTER_RETURNS",
+    "BOUND_KILL_SWITCH_IMPLEMENTATION_PROVES_FLATTEN_AND_RETRY_WHILE_HALTED",
+    "HASH_BOUND_STRUCTURED_LITERAL_DWX_HOST_D1_CONVERSION_SESSION_AND_INSTRUMENT_MANIFESTS",
+    "SESSION_AWARE_B_C_D_SEGMENT_RECEIPTS",
+    "SEPARATE_PROCESS_AND_STATE_RESET_PER_SEGMENT",
+    "NO_ENTRY_DURING_WARMUP",
+    "NO_POSITION_OR_PENDING_ORDER_ACROSS_ANY_GAP_OR_ENDPOINT",
+    "FULL_Q08_VERSUS_NATIVE_ENTRY_EXIT_OUTCOME_IDENTITY",
+    "STRUCTURED_NON_SELF_REFERENTIAL_REFERENCE_SEAL_FROZEN_BEFORE_TWO_VERIFICATION_RUNS",
+    "TWO_SERIAL_COLLISION_FREE_HASH_IDENTICAL_VERIFICATION_RUNS",
+    "CASEFOLD_DISTINCT_EXECUTION_SANDBOX_RUN_ISOLATION_OUTPUT_AND_MT5_IDENTIFIERS_WITH_NO_ANCESTOR_COLLISIONS",
+    "ZERO_MOVE_COMMISSION_AMBIGUITIES_RESOLVED_EXACTLY",
+    "EXTERNAL_HASH_BOUND_FIVE_AXIS_DARWINEX_ZERO_EXECUTION_COST_CERTIFICATION"
+  ],
+  "history_contract": {
+    "required_series": [
+      "GBPUSD.DWX H4 host",
+      "GBPUSD.DWX D1 context",
+      "EURUSD.DWX account-currency conversion or an equivalently hash-bound native MT5 conversion dependency",
+      "DarwinexZero broker-session and DST calendar"
+    ],
+    "structured_manifest_requirements": [
+      "Every series binds a non-empty underlying data file and a structured series-file manifest with literal .DWX symbol, timeframe, role, record count, first/last MT5-server timestamp and READ_ONLY_DARWINEXZERO_MT5_EXPORT provenance.",
+      "A structured instrument manifest binds separate structured DarwinexZero instrument files for GBPUSD.DWX and EURUSD.DWX, including digits, point, contract size and currencies.",
+      "The structured session calendar binds both symbols, five weekly sessions and explicit DST transitions in MT5 server time.",
+      "The calendar enumerates one signed weekend-flat cutoff and the next tradable reopening for every covered Friday. Each cutoff is the earlier of Friday 21:00 broker time and the last tradable DarwinexZero session before that weekend, so holidays, extended closures and early closes fail closed."
+    ],
+    "known_gap_windows_are_detection_bounds_not_exact_boundaries": [
+      {
+        "id": "B",
+        "approximate_start": "2023-12-12",
+        "approximate_end": "2023-12-18",
+        "scope": "market-wide"
+      },
+      {
+        "id": "C",
+        "approximate_start": "2025-10-08",
+        "approximate_end": "2025-11-03",
+        "scope": "FX and conversion dependencies"
+      },
+      {
+        "id": "D",
+        "approximate_start": "2025-12-17",
+        "approximate_end": "2025-12-22",
+        "scope": "market-wide"
+      }
+    ],
+    "minimum_warmup": {
+      "h4_bars": 60,
+      "h4_derivation": "pullback_max 10 + surprise 12 + breakout 30 + source safety 8",
+      "d1_bars": 50,
+      "d1_derivation": "slow EMA(50); this is a hard minimum and may be raised for convergence but never reduced"
+    },
+    "segments": [
+      {
+        "segment_id": "pre_B",
+        "role": "INFERENCE",
+        "requires_nonempty_identity": true
+      },
+      {
+        "segment_id": "post_B_pre_C",
+        "role": "INFERENCE",
+        "requires_nonempty_identity": true
+      },
+      {
+        "segment_id": "post_C_pre_D",
+        "role": "CONTINUITY_ONLY",
+        "requires_nonempty_identity": false,
+        "reason": "The bounded interval is shorter than the D1 EMA(50) minimum warmup; it cannot carry economic inference through 2025-12-31."
+      },
+      {
+        "segment_id": "post_D_tail",
+        "role": "CONTINUITY_ONLY",
+        "requires_nonempty_identity": false,
+        "reason": "The year-end tail is shorter than warmup and is continuity evidence only."
+      }
+    ],
+    "rules": [
+      "Detect exact boundaries against the hash-bound broker session calendar and intersect host, D1 and conversion coverage.",
+      "Execute each segment in a fresh process/state domain. Do not seed indicators, rolling values, Q08 history, pending orders or positions from a prior segment.",
+      "Warmup begins after the actual post-gap first session-valid bar. The strategy must be prevented from entering during warmup.",
+      "An open position or pending order at a segment endpoint invalidates the segment. Tester-forced liquidation is not a strategy exit.",
+      "Never pool B/C/D-spanning economics. Score only the inference segments after warmup; continuity-only tails cannot rescue or reject PF."
+    ]
+  },
+  "identity_contract": {
+    "canonical_stream_format": "UTF-8 JSONL, one normalized round trip per row, decimal price/volume fields encoded as strings",
+    "required_fields": [
+      "segment_id",
+      "trade_index",
+      "symbol",
+      "side",
+      "entry_time_mt5_server",
+      "entry_price",
+      "entry_reason",
+      "initial_stop",
+      "initial_target",
+      "exit_time_mt5_server",
+      "exit_price",
+      "exit_reason",
+      "volume",
+      "gross_profit_sign"
+    ],
+    "independent_sources": [
+      "Q08 emitter normalized by a Q08-specific extractor",
+      "native MT5 report semantically re-parsed by the validator with the existing MT5 round-trip parser; fields not present in standard columns use bounded MT5-comment-safe tokens QM10939E|TOKEN|SL|TP and QM10939X|TOKEN"
+    ],
+    "required_exact_digests_per_segment": [
+      "entry_identity_sha256",
+      "exit_identity_sha256",
+      "outcome_sign_sha256",
+      "close_sequence_sha256",
+      "full_round_trip_identity_sha256"
+    ],
+    "comparison_order": [
+      "Q08 versus native within each execution",
+      "reference producer versus verification run 1",
+      "reference producer versus verification run 2",
+      "verification run 1 versus verification run 2"
+    ]
+  },
+  "reference_contract": {
+    "run_groups_required": 3,
+    "roles": [
+      "one REFERENCE_PRODUCER",
+      "two VERIFICATION runs"
+    ],
+    "requirements": [
+      "The reference producer finishes and a structured reference seal binds its run ID, finish time, seal time, input-contract hash and every receipt/report/Q08/native/normalized artifact plus identity digest before either verification run starts.",
+      "All three groups use the same sealed input manifest, approved Card-v2 contract, build EX5, preset, data manifests, segment boundaries and five-axis cost contract.",
+      "Every execution receipt and the reference seal is signed by the externally supplied, hash-pinned Ed25519 OWNER qualification key; bundle/spec edits and self-rehashed SHA fields cannot bootstrap that authority.",
+      "Run IDs, execution IDs, sandbox IDs and isolation IDs are globally casefold-distinct. Output and isolated MT5 roots are globally distinct and may not equal, contain or descend from another run root.",
+      "Every generated receipt/report/Q08/normalized artifact is globally path-distinct, lies below its own output root, and never lies below a foreign root. The native report additionally lies below its own isolated MT5 root. A verification output may never be copied back as its own reference.",
+      "Control, cost, reference-seal, OWNER receipt and OWNER trust-anchor artifacts lie outside every run output and MT5 root.",
+      "The reference seal may not name itself as a sealed run artifact and may not be replaced by an empty or self-attested JSON object.",
+      "The two verification groups execute serially, collision-free, with different isolation IDs and unchanged input hashes.",
+      "All five identity digests and trade counts match exactly per segment."
+    ]
+  },
+  "commission_ambiguities": [
+    {
+      "index": 2,
+      "entry_time_mt5_server": "2018.01.02 12:00:00",
+      "exit_time_mt5_server": "2018.01.03 16:22:29",
+      "side": "buy",
+      "entry_price": "1.35486",
+      "exit_price": "1.35486",
+      "volume": "0.39"
+    },
+    {
+      "index": 7,
+      "entry_time_mt5_server": "2018.04.10 12:00:00",
+      "exit_time_mt5_server": "2018.04.11 14:33:13",
+      "side": "buy",
+      "entry_price": "1.41671",
+      "exit_price": "1.41671",
+      "volume": "0.44"
+    },
+    {
+      "index": 13,
+      "entry_time_mt5_server": "2018.08.08 12:00:00",
+      "exit_time_mt5_server": "2018.08.09 13:20:18",
+      "side": "sell",
+      "entry_price": "1.29053",
+      "exit_price": "1.29053",
+      "volume": "0.38"
+    },
+    {
+      "index": 58,
+      "entry_time_mt5_server": "2022.11.15 12:00:00",
+      "exit_time_mt5_server": "2022.11.15 20:28:59",
+      "side": "buy",
+      "entry_price": "1.18238",
+      "exit_price": "1.18238",
+      "volume": "0.16"
+    },
+    {
+      "index": 79,
+      "entry_time_mt5_server": "2024.09.23 16:00:00",
+      "exit_time_mt5_server": "2024.09.25 19:45:43",
+      "side": "buy",
+      "entry_price": "1.33277",
+      "exit_price": "1.33277",
+      "volume": "0.25"
+    },
+    {
+      "index": 80,
+      "entry_time_mt5_server": "2024.11.13 20:00:00",
+      "exit_time_mt5_server": "2024.11.14 17:22:00",
+      "side": "sell",
+      "entry_price": "1.27100",
+      "exit_price": "1.27100",
+      "volume": "0.32"
+    }
+  ],
+  "commission_resolution_contract": {
+    "required_status": "COMPLETE",
+    "ambiguous_trade_count": 0,
+    "unbounded_trade_count": 0,
+    "allowed_methods": [
+      "NATIVE_DXZ_ROUND_TRIP_COMMISSION",
+      "EXACT_BASE_NOTIONAL_AND_HASHED_ACCOUNT_CONVERSION"
+    ],
+    "requirements": [
+      "Resolve all six exact fingerprints; same-symbol K bounds remain conservative audit evidence but are not an exact resolution.",
+      "Bind the native deal commission or exact base nominal, entry/exit conversion rate, account currency and rounding rule for every fingerprint.",
+      "Commission completion does not certify historical spread, current broker spread parity, current broker swap parity or adverse slippage."
+    ]
+  },
+  "execution_cost_contract": {
+    "commission_rate_fraction_round_trip": 0.00005,
+    "commission_rate_decimal_round_trip": 0.00005,
+    "commission_rate_percent_round_trip": 0.005,
+    "commission_rate_basis_points_round_trip": 0.5,
+    "legacy_5bp_label_is_misnomer": true,
+    "canonical_standalone_commission_evidence": {
+      "schema_version": 3,
+      "artifact_type": "DXZ_STANDALONE_COST_EVIDENCE",
+      "path": "D:/QM/reports/portfolio/dxz_cost_evidence_20260716_v3/report.json",
+      "sha256": "98ea8553f4fb6044d757e90c964c8b6fda4f8f40f653e75510833f8f49c694fd",
+      "scope": "commission baseline only; six 10939 rows remain BOUNDED_AMBIGUOUS_FAIL_CLOSED"
+    },
+    "superseded_v2_qualification_use": false,
+    "required_axes": [
+      "commission",
+      "historical_tester_spread",
+      "current_broker_spread_parity",
+      "current_broker_swap_rate_parity",
+      "slippage_stress"
+    ],
+    "all_axes_must_pass": true,
+    "manifest_rules": [
+      "Use the hardened external DXZ execution-cost evidence manifest loader; bundle-local axis fields cannot self-attest PASS.",
+      "The manifest and immutable sidecar bind the exact source-manifest SHA-256, validation as-of timestamp, sleeve 10939:GBPUSD.DWX:H4 and exact evaluation window.",
+      "Every axis artifact and immutable sidecar must revalidate with PASS semantics; an empty JSON object is never cost evidence."
+    ]
+  },
+  "sealed_input_contract": {
+    "artifact_type": "DXZ_10939_SEALED_INPUT_MANIFEST",
+    "required_bindings": [
+      "Card-v2",
+      "all OWNER receipts",
+      "out-of-band OWNER trust-anchor SHA-256 (path is never bundle-supplied)",
+      "source manifest",
+      "source/include closure",
+      "compile log",
+      "EX5",
+      "approved live preset",
+      "structured literal-DWX data, series-file, instrument-file, instrument and session/DST manifests",
+      "segment-boundary manifest",
+      "Q08 extractor",
+      "native-report extractor",
+      "external execution-cost manifest",
+      "structured exact six-row commission-resolution manifest and all bound native/conversion evidence",
+      "effective runtime contract"
+    ],
+    "risk_requirements": {
+      "environment": "live",
+      "RISK_FIXED": 0,
+      "RISK_PERCENT": "exactly equal to effective_contract.risk.percent",
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "decision_rule": {
+    "qualified_status": "PASS",
+    "requirements": [
+      "all OWNER gates APPROVED",
+      "all machine gates PASS",
+      "all baseline and new bundle hashes verified",
+      "both inference segments non-empty and exactly identical across native/Q08/reference/two repeats",
+      "every scored trade proves flat at the earlier of Friday 21:00 broker time or the bound last tradable pre-weekend session; no weekend or holiday-gap interval is permitted",
+      "continuity segments reset-safe and identical even when empty",
+      "commission ambiguity count zero and all five externally revalidated execution-cost axes PASS",
+      "structured input and reference seals PASS with globally casefold-distinct run/output/MT5/execution/sandbox identities, collision-free generated paths and out-of-root control evidence"
+    ],
+    "prohibited_claims_before_pass": [
+      "sustainable strategy",
+      "DarwinIA-ready",
+      "deployment-ready",
+      "portfolio resize eligible",
+      "PF carried forward from the pooled 92-trade baseline"
+    ]
+  }
+}

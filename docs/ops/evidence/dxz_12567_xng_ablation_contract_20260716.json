@@ -1,0 +1,166 @@
+{
+  "schema_version": 1,
+  "artifact_type": "DXZ_Q8_12567_XNG_ABLATION_PREDECLARATION",
+  "generated_utc": "2026-07-16T14:52:04Z",
+  "status": "BLOCKED_PENDING_CARD_V2_AND_EXECUTION_APPROVALS",
+  "runtime_effect": "NONE",
+  "gate_matrix_ref": "docs/ops/evidence/dxz_q8_fail_closed_gate_matrix_20260716.json",
+  "sleeve": {
+    "ea_id": 12567,
+    "slug": "cum-rsi2-commodity",
+    "symbol": "XNGUSD.DWX",
+    "timeframe": "D1",
+    "magic_slot": 2,
+    "magic": 125670002
+  },
+  "promotion_identity": {
+    "fields": [
+      "ea_id",
+      "symbol",
+      "timeframe",
+      "variant_id"
+    ],
+    "values": {
+      "ea_id": 12567,
+      "symbol": "XNGUSD.DWX",
+      "timeframe": "D1",
+      "variant_id": "C_XNG_BASE35_POLICY"
+    },
+    "exact_match_required": true,
+    "ea_only_or_sibling_fallback_allowed": false,
+    "binding_status": "PENDING_CARD_V2_APPROVAL"
+  },
+  "approval_state": {
+    "owner": "PENDING",
+    "research": "PENDING",
+    "quality_business": "PENDING",
+    "cto": "PENDING",
+    "quality_tech": "PENDING",
+    "development_authorized": false
+  },
+  "source_card": {
+    "path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_12567_cum-rsi2-commodity.md",
+    "declared_status": "APPROVED_LEGACY_CARD_V1",
+    "source_entry_threshold": 35.0,
+    "card_v2_required": true
+  },
+  "selection_integrity": {
+    "entry_30_was_selected_ex_post": true,
+    "selection_window": "2017-2025_ALREADY_OBSERVED",
+    "entry_30_may_inherit_historical_qualification": false,
+    "immediate_candidate_variant": "C_XNG_BASE35_POLICY",
+    "prospective_only_variant": "D_XNG_ENTRY30_CHALLENGER"
+  },
+  "variants": [
+    {
+      "variant_id": "R0_LEGACY_IDENTITY",
+      "entry_threshold": 30.0,
+      "weekend_policy": "LEGACY_FIXED_FRIDAY_21",
+      "purpose": "IDENTITY_CONTROL_ONLY",
+      "promotable": false
+    },
+    {
+      "variant_id": "A_SOURCE_BASE35_NATIVE",
+      "entry_threshold": 35.0,
+      "weekend_policy": "DISABLED",
+      "purpose": "SOURCE_CONTROL_ONLY",
+      "promotable": false
+    },
+    {
+      "variant_id": "B_BASE35_FIXED_FRIDAY",
+      "entry_threshold": 35.0,
+      "weekend_policy": "FIXED_FRIDAY_21_NO_SESSION_FALLBACK",
+      "purpose": "NEGATIVE_EXECUTION_CONTROL",
+      "promotable": false
+    },
+    {
+      "variant_id": "C_XNG_BASE35_POLICY",
+      "entry_threshold": 35.0,
+      "weekend_policy": "SESSION_AWARE_NO_WEEKEND",
+      "purpose": "SOLE_IMMEDIATE_Q8_CANDIDATE",
+      "promotable": true
+    },
+    {
+      "variant_id": "D_XNG_ENTRY30_CHALLENGER",
+      "entry_threshold": 30.0,
+      "weekend_policy": "SESSION_AWARE_NO_WEEKEND",
+      "purpose": "PROSPECTIVE_SHADOW_CHALLENGER",
+      "promotable": false
+    }
+  ],
+  "fixed_parameters": {
+    "rsi_period": 2,
+    "cumulative_window": 2,
+    "rsi_exit": 65.0,
+    "sma_period": 200,
+    "atr_period": 14,
+    "atr_stop_multiple": 2.5,
+    "max_hold_d1_bars": 5,
+    "max_spread_points": 300,
+    "qualification_risk_fixed": 1000.0
+  },
+  "execution_precedence": [
+    "KILL_SWITCH_AND_MANDATORY_RISK_REDUCING_EXITS",
+    "SESSION_AWARE_EFFECTIVE_WEEKEND_DEADLINE",
+    "BLOCK_AND_CANCEL_POST_CUTOFF_RISK",
+    "STRATEGY_RSI_OR_TIME_EXIT",
+    "NEWS_AND_ENTRY_ONLY_GATES",
+    "NEW_D1_ENTRY_EVALUATION"
+  ],
+  "qualification": {
+    "mode": "TARGET_BINARY_REQUAL",
+    "execution_root_policy": "NEW_ISOLATED_BASE_DERIVED_SANDBOX_OUTSIDE_T_LIVE_T1_T10",
+    "literal_symbol": "XNGUSD.DWX",
+    "timeframe": "D1",
+    "tester_model": "EVERY_TICK_BASED_ON_REAL_TICKS",
+    "development_window": {
+      "from": "2018-07-01",
+      "to": "2025-12-31",
+      "status": "DEVELOPMENT_NOT_UNTOUCHED_HOLDOUT",
+      "report_slices": [
+        "2018-07-01/2022-12-31",
+        "2023-01-01/2025-12-31"
+      ]
+    },
+    "identical_runs_required": 2,
+    "target_pair_gate_required": true,
+    "target_pair_gate_required_verdict": "PASS",
+    "required_identity_hashes": [
+      "ENTRY_STREAM",
+      "EXIT_STREAM_WITH_REASON_AND_TIME",
+      "LOT_STREAM",
+      "NET_PNL_STREAM",
+      "DAILY_MTM_STREAM",
+      "RECEIPT_PAYLOAD"
+    ],
+    "cost_axes": [
+      "COMMISSION",
+      "HISTORICAL_SPREAD_PROVENANCE_AND_COVERAGE",
+      "CURRENT_SPREAD_PARITY",
+      "SWAP",
+      "SLIPPAGE_AND_GAP_STRESS"
+    ],
+    "portfolio_test": "SYNCHRONIZED_Q8_COMMON_CAPITAL_MARGIN_MTM",
+    "live_mutation_allowed": false
+  },
+  "reset_conditions": [
+    "SOURCE_CHANGE",
+    "CARD_CHANGE",
+    "VARIANT_CHANGE",
+    "SET_CHANGE",
+    "EX5_CHANGE",
+    "CALENDAR_CHANGE",
+    "COST_MODEL_CHANGE",
+    "RISK_CHANGE"
+  ],
+  "blockers": [
+    "CARD_V2_NOT_APPROVED",
+    "ENTRY30_HINDSIGHT_VARIANT_QUARANTINE_NOT_APPROVED",
+    "SESSION_AWARE_WEEKEND_HELPER_NOT_APPROVED_OR_BUILT",
+    "OWNER_SESSION_CLOSE_BUFFER_NOT_SIGNED",
+    "EXACT_FOUR_PART_TARGET_IDENTITY_NOT_HASH_BOUND",
+    "TARGET_BINARY_REQUAL_NOT_YET_QUALIFIED",
+    "FIVE_AXIS_COST_EVIDENCE_INCOMPLETE",
+    "Q8_SYNCHRONIZED_MTM_NOT_RUN"
+  ]
+}
