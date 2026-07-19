@@ -29,6 +29,15 @@ ENUM_ORDER_TYPE_FILLING QM_TradeContextResolveFilling(const string symbol)
    return ORDER_FILLING_RETURN;
 }
 
+ENUM_ORDER_TYPE_FILLING QM_TradeContextResolveRequestFilling(const MqlTradeRequest &request)
+{
+   // MT5 requires RETURN for pending orders regardless of the symbol's market
+   // execution filling flags. Deals retain the existing per-symbol resolver.
+   if(request.action == TRADE_ACTION_PENDING)
+      return ORDER_FILLING_RETURN;
+   return QM_TradeContextResolveFilling(request.symbol);
+}
+
 bool QM_TradeContextOpensExposure(const MqlTradeRequest &request)
 {
    if(request.action == TRADE_ACTION_SLTP ||

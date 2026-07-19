@@ -1,0 +1,42 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        13210
+; ea_slug:      mulham-asian-sweep-london
+; ea_version:   v5.0
+; set_version:  s20260719-001
+; symbol:       XAUUSD.DWX
+; timeframe:    M5
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   6062bba171fe35a6febff3463810578480185e4b655aa2d7cee5190cf5cefc4a
+; author:       Development
+; date:         2026-07-19
+;==========================================================
+qm_ea_id=13210
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_13210_mulham-asian-sweep-london.md
+strategy_asia_start_hour=3
+strategy_asia_start_minute=0
+strategy_asia_end_hour=7
+strategy_asia_end_minute=0
+strategy_sweep_start_hour=8
+strategy_sweep_start_minute=30
+strategy_sweep_end_hour=10
+strategy_sweep_end_minute=0
+strategy_entry_cancel_hour=12
+strategy_entry_cancel_minute=0
+strategy_flatten_hour=20
+strategy_flatten_minute=0
+strategy_atr_period=14
+strategy_asia_trend_max_frac=0.50
+strategy_asia_range_min_atr=0.30
+strategy_sl_buffer_atr=0.10
+strategy_spread_max_atr_frac=0.10
+strategy_tp_mode=QM13210_TP_OPPOSITE_BODY
+strategy_fixed_rr=3.0

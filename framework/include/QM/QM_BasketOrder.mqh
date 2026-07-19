@@ -180,7 +180,7 @@ bool QM_BasketOpenPosition(const int ea_id,
    trade_req.sl = (req.sl > 0.0) ? QM_BasketNormalizePrice(req.symbol, req.sl) : 0.0;
    trade_req.tp = (req.tp > 0.0) ? QM_BasketNormalizePrice(req.symbol, req.tp) : 0.0;
    trade_req.deviation = (deviation_points > 0) ? deviation_points : 20;
-   trade_req.type_filling = QM_TradeContextResolveFilling(req.symbol);
+   trade_req.type_filling = QM_TradeContextResolveRequestFilling(trade_req);
    trade_req.type_time = ORDER_TIME_GTC;
    if(req.expiration_seconds > 0)
    {

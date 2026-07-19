@@ -271,7 +271,7 @@ QM_EntryResult QM_EntryInternal(const QM_EntryRequest &req,
    trade_req.sl = (req.sl > 0.0) ? NormalizeDouble(req.sl, _Digits) : 0.0;
    trade_req.tp = (req.tp > 0.0) ? NormalizeDouble(req.tp, _Digits) : 0.0;
    trade_req.deviation = g_qm_entry_deviation_points;
-   trade_req.type_filling = QM_TradeContextResolveFilling(_Symbol);
+   trade_req.type_filling = QM_TradeContextResolveRequestFilling(trade_req);
    trade_req.type_time = ORDER_TIME_GTC;
    if(req.expiration_seconds > 0)
    {
