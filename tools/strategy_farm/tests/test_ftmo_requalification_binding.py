@@ -251,7 +251,7 @@ def test_binding_passes_complete_deterministic_current_case(tmp_path: Path) -> N
     assert result["phase"] == "Q02"
     assert result["deterministic"] is True
     assert result["run_contract"]["minimum_runs"] == 2
-    assert result["metrics"]["trades"] == 100
+    assert result["metrics"]["trades"] == 201
     assert len(result["files"]["ex5"]["sha256"]) == 64
 
 

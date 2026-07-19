@@ -1,3 +1,4 @@
+import json
 import sys
 from pathlib import Path
 
@@ -72,3 +73,68 @@ def test_complete_book_is_ready() -> None:
 
     assert result["status"] == "READY"
     assert result["ready_count"] == 1
+
+
+def test_candidate_manifest_is_loaded_without_installed_presets(tmp_path: Path) -> None:
+    manifest = tmp_path / "candidate_book.json"
+    manifest.write_text(
+        json.dumps({
+            "status": "RESEARCH_ONLY_NO_GO",
+            "deployment_allowed": False,
+            "sleeves": [{
+                "ea_id": "QM5_12969",
+                "symbol": "USDJPY.DWX",
+                "timeframe": "M30",
+                "base_risk_fixed": 250,
+            }],
+        }),
+        encoding="utf-8",
+    )
+
+    book = readiness.load_book_manifest(manifest)
+
+    assert book == {
+        (12969, "USDJPY.DWX"): {
+            "ea_id": "QM5_12969",
+            "symbol": "USDJPY.DWX",
+            "timeframe": "M30",
+            "base_risk_fixed": 250,
+            "risk_fixed": 250.0,
+            "tf": "M30",
+        },
+    }
+
+
+def test_empty_candidate_manifest_remains_fail_closed(tmp_path: Path) -> None:
+    manifest = tmp_path / "empty_book.json"
+    manifest.write_text('{"sleeves": []}', encoding="utf-8")
+
+    result = readiness.build_readiness(
+        readiness.load_book_manifest(manifest),
+        {"candidates": []},
+        {"results": []},
+    )
+
+    assert result["status"] == "NO_GO"
+    assert result["sleeve_count"] == 0
+    assert result["ready_count"] == 0
+
+
+def test_candidate_manifest_rejects_duplicate_sleeves(tmp_path: Path) -> None:
+    manifest = tmp_path / "duplicate_book.json"
+    manifest.write_text(
+        json.dumps({
+            "sleeves": [
+                {"ea_id": 12969, "symbol": "USDJPY.DWX", "risk_fixed": 250},
+                {"ea_id": "QM5_12969", "symbol": "usdjpy.dwx", "risk_fixed": 250},
+            ],
+        }),
+        encoding="utf-8",
+    )
+
+    try:
+        readiness.load_book_manifest(manifest)
+    except ValueError as exc:
+        assert "duplicate sleeve" in str(exc)
+    else:  # pragma: no cover - assertion clarity
+        raise AssertionError("duplicate sleeve was accepted")

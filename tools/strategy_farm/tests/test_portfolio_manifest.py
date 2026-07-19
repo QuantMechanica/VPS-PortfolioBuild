@@ -90,6 +90,7 @@ class PortfolioManifestTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "no active magic registry row"):
                 build_manifest(
                     [(100, "EURUSD.DWX")],
+                    account_risk_pct=1.0,
                     common_dir=common_dir,
                     magic_registry=magic_registry,
                 )
@@ -180,7 +181,10 @@ class PortfolioManifestTests(unittest.TestCase):
                 "kpis": {"max_drawdown_pct": 12.0},
                 "sleeves": [
                     {"ea_id": 100, "risk_percent": 2.0,
-                     "set_file_expectation": {"RISK_PERCENT": 2.0}}
+                     "set_file_expectation": {
+                         "RISK_PERCENT": 2.0,
+                         "PORTFOLIO_WEIGHT": 1.0,
+                     }}
                 ],
             }
             with mock.patch.object(
@@ -248,7 +252,7 @@ class PortfolioManifestTests(unittest.TestCase):
 
     def test_risk_percent_capped_at_1pct_per_trade(self) -> None:
         # Hard Rule (OWNER 2026-06-26): never risk >1% per trade. A heavy sleeve at high
-        # account_risk_pct must still be capped at 1% RISK_PERCENT.
+        # account_risk_pct is capped and its excess is redistributed without disappearing.
         with tempfile.TemporaryDirectory() as tmp:
             common_dir = Path(tmp)
             (common_dir / "farm_state.sqlite").touch()
@@ -262,12 +266,45 @@ class PortfolioManifestTests(unittest.TestCase):
                 m = portfolio_manifest.build_manifest(
                     [(100, "EURUSD.DWX"), (200, "GBPUSD.DWX")],
                     weights={(100, "EURUSD.DWX"): 0.9, (200, "GBPUSD.DWX"): 0.1},
-                    account_risk_pct=4.0,  # 0.9*4=3.6% would violate without the cap
+                    account_risk_pct=1.5,  # uncapped 1.35/0.15 -> capped 1.0/0.5
                     common_dir=common_dir,
                 )
             for s in m["sleeves"]:
                 self.assertLessEqual(s["risk_percent"], 1.0, s)
                 self.assertLessEqual(s["set_file_expectation"]["RISK_PERCENT"], 1.0)
+                self.assertEqual(s["set_file_expectation"]["PORTFOLIO_WEIGHT"], 1.0)
+                self.assertAlmostEqual(
+                    s["set_file_expectation"]["RISK_PERCENT"]
+                    * s["set_file_expectation"]["PORTFOLIO_WEIGHT"],
+                    s["risk_percent"],
+                )
+            self.assertAlmostEqual(sum(s["risk_percent"] for s in m["sleeves"]), 1.5)
+            self.assertAlmostEqual(
+                sum(
+                    s["set_file_expectation"]["RISK_PERCENT"]
+                    * s["set_file_expectation"]["PORTFOLIO_WEIGHT"]
+                    for s in m["sleeves"]
+                ),
+                m["allocated_total_risk_pct"],
+            )
+            self.assertAlmostEqual(m["allocated_total_risk_pct"], 1.5)
+            self.assertTrue(m["risk_target_preserved"])
+            self.assertEqual(
+                m["risk_application_contract"]["RISK_PERCENT"],
+                "absolute_allocated_sleeve_risk",
+            )
+
+    def test_infeasible_risk_target_fails_instead_of_losing_cap_excess(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            common_dir = Path(tmp)
+            with mock.patch.object(portfolio_manifest, "load_model", return_value=mock.MagicMock()), \
+                 self.assertRaisesRegex(ValueError, "cannot be allocated"):
+                portfolio_manifest.build_manifest(
+                    [(100, "EURUSD.DWX"), (200, "GBPUSD.DWX")],
+                    weights={(100, "EURUSD.DWX"): 0.9, (200, "GBPUSD.DWX"): 0.1},
+                    account_risk_pct=4.0,  # aggregate sleeve capacity is only 2.0
+                    common_dir=common_dir,
+                )
 
     def test_mc_p95_takes_conservative_max_across_methods(self) -> None:
         art = {
@@ -283,7 +320,7 @@ class PortfolioManifestTests(unittest.TestCase):
             "weights": {"100:EURUSD.DWX": 0.5},
             "sleeves": [
                 {"risk_percent": 1.0, "weight": 0.5,
-                 "set_file_expectation": {"RISK_PERCENT": 1.0, "PORTFOLIO_WEIGHT": 0.5}}
+                 "set_file_expectation": {"RISK_PERCENT": 1.0, "PORTFOLIO_WEIGHT": 1.0}}
             ],
         }
         portfolio_manifest.apply_leverage_scale(manifest, 0.5)
@@ -294,9 +331,32 @@ class PortfolioManifestTests(unittest.TestCase):
         )
         # relative weights are leverage-invariant
         self.assertEqual(manifest["sleeves"][0]["weight"], 0.5)
-        self.assertEqual(manifest["sleeves"][0]["set_file_expectation"]["PORTFOLIO_WEIGHT"], 0.5)
+        self.assertEqual(manifest["sleeves"][0]["set_file_expectation"]["PORTFOLIO_WEIGHT"], 1.0)
         with self.assertRaises(ValueError):
             portfolio_manifest.apply_leverage_scale(manifest, 0.0)
+
+    def test_apply_leverage_scale_rejects_legacy_double_scaled_contract_atomically(
+        self,
+    ) -> None:
+        manifest = {
+            "account_risk_pct": 1.0,
+            "sleeves": [
+                {
+                    "risk_percent": 1.0,
+                    "weight": 0.25,
+                    "set_file_expectation": {
+                        "RISK_PERCENT": 1.0,
+                        "PORTFOLIO_WEIGHT": 0.25,
+                    },
+                }
+            ],
+        }
+
+        with self.assertRaisesRegex(ValueError, "double-scaled risk contract"):
+            portfolio_manifest.apply_leverage_scale(manifest, 0.5)
+
+        self.assertEqual(manifest["account_risk_pct"], 1.0)
+        self.assertEqual(manifest["sleeves"][0]["risk_percent"], 1.0)
 
     def _write_stream(
         self,

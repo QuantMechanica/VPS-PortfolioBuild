@@ -421,8 +421,10 @@ class ChallengerSwapTests(unittest.TestCase):
         self.assertIsNotNone(swap["current_book_sharpe"])
         self.assertIsNotNone(swap["swap_book_sharpe"])
 
-    def test_non_corr_rejection_has_no_challenger_swap(self) -> None:
-        # Candidates rejected for reasons other than correlation should have challenger_swap=None.
+    def test_no_diversification_rejection_checks_weakest_incumbent_swap(self) -> None:
+        # OWNER 2026-07-15: every non-admit reason gets a diagnostic swap check.
+        # A no-diversification candidate is compared with the weakest incumbent,
+        # but an inferior swap remains rejected and never auto-admits.
         with tempfile.TemporaryDirectory() as tmp:
             common_dir = Path(tmp)
             stream_dir = self._stream_dir(common_dir)
@@ -440,7 +442,13 @@ class ChallengerSwapTests(unittest.TestCase):
 
         self.assertFalse(verdict["admit"])
         self.assertEqual(verdict["reason"], "no_diversification")
-        self.assertIsNone(verdict["challenger_swap"])
+        self.assertIsNotNone(verdict["challenger_swap"])
+        self.assertFalse(verdict["challenger_swap"]["challenger_superior"])
+        self.assertEqual(verdict["challenger_swap"]["incumbent"], "100:EURUSD.DWX")
+        self.assertEqual(
+            verdict["challenger_swap"]["trigger"],
+            "weakest_incumbent_swap:no_diversification",
+        )
 
     def test_lineage_rejection_runs_challenger_swap_without_auto_swap(self) -> None:
         # A lineage challenger rejected for no_diversification is not a new sleeve, but it

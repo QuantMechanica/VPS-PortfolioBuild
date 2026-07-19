@@ -36,16 +36,18 @@ def test_governor_defaults_are_non_deployable_and_need_explicit_state() -> None:
         assert setting in preset
 
 
-def test_v1_policy_is_exact_and_fingerprint_bound() -> None:
+def test_v2_policies_are_exact_and_dynamic_fingerprint_is_bound() -> None:
     policy = POLICY.read_text(encoding="utf-8")
     source = SOURCE.read_text(encoding="utf-8")
     client = CLIENT.read_text(encoding="utf-8")
 
-    assert "QM_FTMO_IsExactV1Policy" in policy
-    assert "3543540590062.0" in policy
+    assert "QM_FTMO_IsExactPolicy" in policy
+    assert "FTMO_2S_P1_100K_V2" in policy
+    assert "FTMO_2S_P2_100K_V2" in policy
+    assert "FTMO_2S_FUNDED_100K_V2" in policy
     assert "input double policy_" not in source
-    assert 'StateWrite("fingerprint",QM_FTMO_V1_FINGERPRINT_NUMBER)' in source
-    assert "fingerprint != QM_FTMO_V1_FINGERPRINT_NUMBER" in client
+    assert 'StateWrite("fingerprint",QM_FTMO_PolicyFingerprintNumber(g_policy))' in source
+    assert "fingerprint != QM_FTMO_PolicyFingerprintNumber(expected_policy)" in client
 
 
 def test_snapshot_uses_generation_and_ready_last_for_allow() -> None:
@@ -68,6 +70,12 @@ def test_client_double_reads_generation_and_fails_closed() -> None:
     assert "generation_before" in client
     assert "generation_after" in client
     assert "generation_before != generation_after" in client
+    payload = client[client.index("const double generation_before") :]
+    assert payload.index("const double ready_after") < payload.index(
+        "const double generation_after"
+    )
+    assert "ready_before != 1.0 || ready_after != 1.0" in client
+    assert "entry_lock != 0.0" in client
     for reason in (
         "GOVERNOR_CLIENT_CONFIG_INVALID",
         "GOVERNOR_STATE_MISSING",
@@ -86,7 +94,7 @@ def test_client_double_reads_generation_and_fails_closed() -> None:
 def test_target_capture_cancels_pending_and_flattens_whitelist() -> None:
     source = SOURCE.read_text(encoding="utf-8")
 
-    assert "if(decision.target_reached || decision.target_complete)" in source
+    assert "decision.target_reached || decision.target_complete" in source
     action = source[source.index("if((g_day_lock || g_total_lock || g_target_lock)") :]
     assert action.index("DeleteGovernedPendingOrders()") < action.index(
         "CloseGovernedPositions()"

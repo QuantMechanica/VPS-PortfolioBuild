@@ -1,4 +1,9 @@
-"""Combine FTMO preset inventory, strict qualification, and reconciliation."""
+"""Combine an FTMO book, strict qualification, and stream reconciliation.
+
+The installed Round25 preset inventory remains the backwards-compatible default.
+Candidate books can be checked before any preset or terminal change by passing a
+JSON manifest with a top-level ``sleeves`` list via ``--book-manifest``.
+"""
 
 from __future__ import annotations
 
@@ -20,6 +25,53 @@ def _numeric_ea(value: Any) -> int:
 
 def _key(ea_id: Any, symbol: Any) -> tuple[int, str]:
     return _numeric_ea(ea_id), str(symbol or "").upper()
+
+
+def load_book_manifest(path: Path) -> dict[tuple[int, str], dict[str, Any]]:
+    """Load a candidate book without consulting installed FTMO presets.
+
+    Empty sleeve lists are valid research scaffolds and remain fail-closed in
+    :func:`build_readiness`. Every admitted sleeve must declare a positive
+    ``risk_fixed`` or ``base_risk_fixed`` value.
+    """
+
+    document = json.loads(path.read_text(encoding="utf-8-sig"))
+    if not isinstance(document, Mapping):
+        raise ValueError("book manifest must be a JSON object")
+    raw_sleeves = document.get("sleeves")
+    if not isinstance(raw_sleeves, list):
+        raise ValueError("book manifest must contain a sleeves list")
+
+    book: dict[tuple[int, str], dict[str, Any]] = {}
+    for index, raw_sleeve in enumerate(raw_sleeves):
+        if not isinstance(raw_sleeve, Mapping):
+            raise ValueError(f"sleeves[{index}] must be a JSON object")
+        try:
+            ea_id = _numeric_ea(raw_sleeve.get("ea_id"))
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"sleeves[{index}] has an invalid ea_id") from exc
+        symbol = str(raw_sleeve.get("symbol") or "").strip().upper()
+        if not symbol:
+            raise ValueError(f"sleeves[{index}] is missing symbol")
+        risk_raw = raw_sleeve.get("risk_fixed", raw_sleeve.get("base_risk_fixed"))
+        try:
+            risk_fixed = float(risk_raw)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"sleeves[{index}] has an invalid risk_fixed") from exc
+        if risk_fixed <= 0.0:
+            raise ValueError(f"sleeves[{index}] risk_fixed must be positive")
+        key = (ea_id, symbol)
+        if key in book:
+            raise ValueError(f"duplicate sleeve in book manifest: {ea_id}:{symbol}")
+        meta = dict(raw_sleeve)
+        meta["risk_fixed"] = risk_fixed
+        meta["tf"] = (
+            raw_sleeve.get("tf")
+            or raw_sleeve.get("timeframe")
+            or raw_sleeve.get("period")
+        )
+        book[key] = meta
+    return book
 
 
 def build_readiness(
@@ -87,11 +139,35 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--qualification", type=Path, required=True)
     parser.add_argument("--reconciliation", type=Path, required=True)
+    parser.add_argument(
+        "--book-manifest",
+        type=Path,
+        help=(
+            "candidate-book JSON with a top-level sleeves list; when omitted, "
+            "the installed Round25 preset inventory is evaluated"
+        ),
+    )
     parser.add_argument("--out", type=Path)
     args = parser.parse_args(argv)
     qualification = json.loads(args.qualification.read_text(encoding="utf-8-sig"))
     reconciliation = json.loads(args.reconciliation.read_text(encoding="utf-8-sig"))
-    artifact = build_readiness(load_ftmo_book(), qualification, reconciliation)
+    if args.book_manifest:
+        try:
+            book = load_book_manifest(args.book_manifest)
+        except (OSError, json.JSONDecodeError, ValueError) as exc:
+            parser.error(str(exc))
+        book_source = {
+            "type": "candidate_manifest",
+            "path": str(args.book_manifest),
+        }
+    else:
+        book = load_ftmo_book()
+        book_source = {
+            "type": "installed_round25_presets",
+            "path": None,
+        }
+    artifact = build_readiness(book, qualification, reconciliation)
+    artifact["book_source"] = book_source
     rendered = json.dumps(artifact, indent=2, sort_keys=True) + "\n"
     if args.out:
         args.out.parent.mkdir(parents=True, exist_ok=True)
