@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -14,6 +15,7 @@ TOOLS = EA_ROOT / "tools"
 LAUNCHER = TOOLS / "run_research_phase.ps1"
 SUPPORT = TOOLS / "research_launcher_support.psm1"
 PWSh = shutil.which("pwsh")
+ANSI_ESCAPE = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
 
 
 def _pwsh(command: str, *arguments: str) -> subprocess.CompletedProcess[str]:
@@ -25,6 +27,12 @@ def _pwsh(command: str, *arguments: str) -> subprocess.CompletedProcess[str]:
         capture_output=True,
         text=True,
     )
+
+
+def _normalized_output(result: subprocess.CompletedProcess[str]) -> str:
+    """Collapse PowerShell's host-dependent ANSI wrapping for message checks."""
+    plain = ANSI_ESCAPE.sub("", result.stderr + result.stdout)
+    return " ".join(plain.split())
 
 
 def _module_command(body: str) -> str:
@@ -125,7 +133,7 @@ def test_contract_helper_separates_nonbinding_smoke_from_binding_dev() -> None:
         "unused",
     )
     assert smoke_two.returncode != 0
-    assert "requires exactly one" in smoke_two.stderr + smoke_two.stdout
+    assert "requires exactly one" in _normalized_output(smoke_two)
 
     invalid = _pwsh(
         _module_command(
@@ -138,7 +146,7 @@ def test_contract_helper_separates_nonbinding_smoke_from_binding_dev() -> None:
         "unused",
     )
     assert invalid.returncode != 0
-    assert "requires exactly two runs" in invalid.stderr + invalid.stdout
+    assert "requires exactly two runs" in _normalized_output(invalid)
 
 
 def test_report_set_match_preserves_empty_governors_and_rejects_extra_empty_input(
@@ -170,7 +178,7 @@ def test_report_set_match_preserves_empty_governors_and_rejects_extra_empty_inpu
     invalid = _pwsh(command, str(SUPPORT), str(actual_path), str(expected_path), "unused")
 
     assert invalid.returncode != 0
-    assert "Report/set input count drift" in invalid.stderr + invalid.stdout
+    assert "Report/set input count drift" in _normalized_output(invalid)
 
 
 def _mock_contract(report_dir: Path) -> tuple[dict[str, object], dict[str, object]]:
@@ -246,7 +254,7 @@ def test_mocked_summary_requires_model4_and_every_raw_report(tmp_path: Path) -> 
     summary_path.write_text(json.dumps(summary), encoding="utf-8")
     invalid = _pwsh(command, str(SUPPORT), str(summary_path), str(contract_path), "unused")
     assert invalid.returncode != 0
-    assert "model4_log_marker_detected=true" in invalid.stderr + invalid.stdout
+    assert "model4_log_marker_detected=true" in _normalized_output(invalid)
 
 
 def _mock_cost_audit(contract: dict[str, object], report_paths: list[str]) -> tuple[dict, dict]:
@@ -335,7 +343,7 @@ def test_mocked_cost_audit_rejects_duplicate_deal_sequence_drift(tmp_path: Path)
     audit_path.write_text(json.dumps(audit), encoding="utf-8")
     invalid = _pwsh(command, str(SUPPORT), str(audit_path), str(contract_path), str(inputs_path))
     assert invalid.returncode != 0
-    assert "fingerprint drift" in (invalid.stderr + invalid.stdout).lower()
+    assert "fingerprint drift" in _normalized_output(invalid).lower()
 
 
 def test_detached_receipt_hash_binds_atomic_json(tmp_path: Path) -> None:
