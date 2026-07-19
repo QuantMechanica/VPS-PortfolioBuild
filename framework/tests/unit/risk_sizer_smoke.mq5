@@ -20,6 +20,104 @@ bool AssertExact(const string label, const double actual, const double expected)
    return false;
   }
 
+bool AssertCondition(const string label, const bool condition)
+  {
+   if(condition)
+      return true;
+
+   Print(StringFormat("ASSERT_FAIL_CONDITION %s", label));
+   return false;
+  }
+
+bool AssertMarginCapForSide(const string label,
+                            const ENUM_ORDER_TYPE order_type,
+                            const double entry_price,
+                            const QM_SymbolRiskSnapshot &snapshot)
+  {
+   const double requested_lots = snapshot.volume_max;
+   const double free_margin = AccountInfoDouble(ACCOUNT_MARGIN_FREE);
+   const double margin_budget = free_margin * QM_RISK_SIZER_MARGIN_HEADROOM;
+   if(!AssertCondition(label + "_inputs",
+                       requested_lots > 0.0 && entry_price > 0.0 &&
+                       free_margin > 0.0 && margin_budget > 0.0))
+      return false;
+
+   double requested_margin = 0.0;
+   if(!AssertCondition(label + "_requested_order_calc_margin",
+                       OrderCalcMargin(order_type,
+                                       _Symbol,
+                                       requested_lots,
+                                       entry_price,
+                                       requested_margin) &&
+                       requested_margin > 0.0))
+      return false;
+
+   const double actual_lots = QM_RiskSizerCapLotsByOrderMargin(_Symbol,
+                                                                order_type,
+                                                                entry_price,
+                                                                requested_lots,
+                                                                snapshot);
+   if(!AssertCondition(label + "_positive_not_oversized",
+                       actual_lots > 0.0 && actual_lots <= requested_lots))
+      return false;
+
+   const double volume_steps = actual_lots / snapshot.volume_step;
+   if(!AssertNear(label + "_volume_grid", volume_steps, MathRound(volume_steps), 1e-8))
+      return false;
+
+   double actual_margin = 0.0;
+   if(!AssertCondition(label + "_actual_order_calc_margin",
+                       OrderCalcMargin(order_type,
+                                       _Symbol,
+                                       actual_lots,
+                                       entry_price,
+                                       actual_margin) &&
+                       actual_margin > 0.0 &&
+                       actual_margin <= margin_budget + MathMax(1e-8, margin_budget * 1e-10)))
+      return false;
+
+   if(requested_margin <= margin_budget + MathMax(1e-8, margin_budget * 1e-10))
+     {
+      if(!AssertExact(label + "_affordable_request_unchanged", actual_lots, requested_lots))
+         return false;
+      Print(StringFormat("MARGIN_CAP_NOT_REQUIRED side=%s requested=%.8f margin=%.8f budget=%.8f",
+                         label,
+                         requested_lots,
+                         requested_margin,
+                         margin_budget));
+      return true;
+     }
+
+   if(!AssertCondition(label + "_active_cap_reduces_lots", actual_lots < requested_lots))
+      return false;
+
+   const double next_lots = QM_RiskSizerQuantizeLots(actual_lots + snapshot.volume_step,
+                                                      snapshot.volume_min,
+                                                      snapshot.volume_max,
+                                                      snapshot.volume_step);
+   if(next_lots > actual_lots && next_lots <= requested_lots)
+     {
+      double next_margin = 0.0;
+      if(!AssertCondition(label + "_next_step_order_calc_margin",
+                          OrderCalcMargin(order_type,
+                                          _Symbol,
+                                          next_lots,
+                                          entry_price,
+                                          next_margin) &&
+                          next_margin > margin_budget))
+         return false;
+     }
+
+   Print(StringFormat("MARGIN_CAP_ACTIVE side=%s requested=%.8f capped=%.8f requested_margin=%.8f actual_margin=%.8f budget=%.8f",
+                      label,
+                      requested_lots,
+                      actual_lots,
+                      requested_margin,
+                      actual_margin,
+                      margin_budget));
+   return true;
+  }
+
 int OnInit()
   {
    QM_SymbolRiskSnapshot snap;
@@ -236,6 +334,26 @@ int OnInit()
       !AssertExact("explicit_percent_mode_equals_global_percent_symbol_lots",
                    explicit_percent_mode_symbol_lots,
                    global_percent_symbol_lots))
+      return INIT_FAILED;
+
+   // Entry-only margin proof.  The caller runs this fixture on NDX.DWX to
+   // exercise the active CFD/index cap; it remains valid on an affordable
+   // symbol and reports MARGIN_CAP_NOT_REQUIRED instead.
+   QM_SymbolRiskSnapshot margin_snapshot;
+   MqlTick margin_quote;
+   if(!AssertCondition("margin_snapshot",
+                       QM_RiskSizerReadSymbolSnapshot(_Symbol, margin_snapshot)) ||
+      !AssertCondition("margin_atomic_quote",
+                       SymbolInfoTick(_Symbol, margin_quote) &&
+                       margin_quote.ask > 0.0 && margin_quote.bid > 0.0) ||
+      !AssertMarginCapForSide("buy",
+                              ORDER_TYPE_BUY,
+                              margin_quote.ask,
+                              margin_snapshot) ||
+      !AssertMarginCapForSide("sell",
+                              ORDER_TYPE_SELL,
+                              margin_quote.bid,
+                              margin_snapshot))
       return INIT_FAILED;
 
    Print("RISK_SIZER_SMOKE_PASS");
