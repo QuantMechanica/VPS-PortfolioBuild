@@ -1,40 +1,26 @@
-# QM5_20009_ict-liquidity-portfolio — Strategy Spec
+# QM5_20009 ict-liquidity-portfolio — Strategy Spec
 
 **EA ID:** QM5_20009  
-**Slug:** `ict-liquidity-portfolio`  
-**Status:** frozen research build contract  
+**Status:** frozen research build contract v2  
 **Full contract:** `docs/strategy_contract.md`
 
-## Strategy modes
+The binary exposes two mutually exclusive sleeves. Every chart attachment has one
+symbol, one mode and one registered magic; signals and attempt budgets never blend.
 
-The same binary exposes two deliberately separate modes. Each chart attachment has
-one symbol, one mode, and one registered magic slot; signals are never blended
-inside a single attachment.
-
-| Mode | Primary | TF | Mechanism |
+| Mode | Locked markets | TF | Deterministic mechanism |
 |---|---|---|---|
-| `ICT_MODE_INDEX_MSS_FVG` | NDX.DWX | M5 | NY external-range sweep -> later MSS/displacement -> first post-MSS FVG limit -> opposite range liquidity |
-| `ICT_MODE_FX_WEEKLY_SWEEP` | GBPUSD.DWX | H1 | Monday-range failed break -> next-bar fade -> opposite Monday liquidity / predeclared legacy target |
+| `ICT_MODE_INDEX_MSS_FVG` | NDX.DWX; GDAXI.DWX transport | M1 | 09:30-10:00 NY opening range; 10-11 sweep/reclaim -> later MSS -> earliest FVG proximal-edge limit -> opposite OR boundary |
+| `ICT_MODE_FX_WEEKLY_SWEEP` | EURUSD.DWX + GBPUSD.DWX | M5 | previous NY-week PWH/PWL sweep in London/NY session -> later MSS -> earliest FVG limit -> fixed preceding-session boundary |
 
-Transport symbols are GDAXI.DWX (index) and USDJPY.DWX (FX). XAUUSD.DWX remains an
-exploratory registration, not a required profitability claim.
+Common execution is closed-bar and restart-reconstructed. The first chronological
+eligible reclaim consumes the day/week; no later setup may rescue an incomplete or
+failed attempt. There is no partial close, break-even or trailing stop in v1.
 
-## Execution and risk
+Model-4 real-tick tests use fixed risk, explicit costs and the preregistered center
+plus 12 one-axis neighbors. Live mode is percent-risk only and fails closed without
+the exact fresh portfolio-wide FTMO governor contract. Entry filters never suppress
+position management, pending cancellation, hard flats or framework Friday close.
 
-- Closed-bar signal computation; Model-4 real-tick order execution.
-- One position and one pending order per symbol/magic.
-- Fixed-risk backtests; percent-risk live mode only.
-- Live mode requires the exact portfolio-wide FTMO governor contract and fresh
-  heartbeat; missing/invalid state blocks entries.
-- News and governor blocks apply to entries only. Position management, risk exits,
-  day/week flat rules, and framework Friday close remain active.
-- Framework risk cap, magic resolution, structured logging, equity stream, kill
-  switch, and two-axis news filter remain mandatory.
-
-## Evidence status
-
-No performance is asserted by this specification. Qualification requires the frozen
-partitions, real-tick/cost tests, walk-forward, stress, parameter neighbourhood,
-transport checks, synchronized portfolio replay, and sealed 2026 holdout described
-in `docs/strategy_contract.md`.
-
+No performance is asserted here. Qualification requires the frozen DEV/OOS/2026-H1
+partitions, plateau, duplicate, cost/slippage, cross-market, correlation/drawdown,
+synchronized FTMO replay and unchanged V5 gates defined in the full contract.

@@ -1,27 +1,26 @@
-# QM5_20009 ICT Liquidity Portfolio — frozen research contract
+# QM5_20009 ICT Liquidity Portfolio — frozen research contract v2
 
 **EA ID:** 20009  
 **Slug:** `ict-liquidity-portfolio`  
-**Contract date:** 2026-07-19  
-**Authorization:** OWNER-delegated by the explicit user governance override in the
-2026-07-19 Codex session. This authorizes research/build/test work; it is not a
-paid-challenge or live-deploy authorization.
+**Contract freeze:** 2026-07-19  
+**Authorization:** OWNER-delegated for research, build and testing in the 2026-07-19
+Codex session. This is not authorization for a paid challenge or live deployment.
 
-## 1. Evidence boundary
+## 1. Evidence boundary and provenance
 
-This contract separates source statements from engineering choices. No result in
-`Trades_some_icy_tea.xlsx` is treated as a realized trade result. The workbook is a
-curated screenshot catalogue with strong survivorship and hindsight-label bias:
-770 rows are labelled `Trade`, but there is no systematic date, stop, realized P/L,
-or losing-signal universe. Its useful contribution is hypothesis frequency only.
+No row in `Trades_some_icy_tea.xlsx` is treated as a realized result. The workbook
+is a curated screenshot catalogue with strong survivorship and hindsight-label
+bias: 770 rows are labelled `Trade`, but it has no systematic result field, stop,
+date, or losing-signal universe. It supports vocabulary and hypothesis frequency,
+not win rate, expectancy, or target selection.
 
-Primary local inputs:
+Local inputs:
 
 - `C:\Users\Administrator\Downloads\MQL5_Strategie_Spezifikation_some_icy_tea.docx`
 - `C:\Users\Administrator\Downloads\Trades_some_icy_tea.xlsx`
   (SHA-256 `61e29a66c1a17511906020b4f6b99ea81b0693fb6c4e5b894df3d8fb2e231e70`)
 - `D:\QM\reports\ict_intake\spec.txt`
-- the approved/local ICT cards and existing EAs inspected in the 2026-07-19 inventory
+- the local ICT cards, EAs, reports and V5 framework inspected on 2026-07-19
 
 Primary online sources:
 
@@ -34,114 +33,154 @@ Primary online sources:
   https://www.mql5.com/en/docs/dateandtime/timegmt and
   https://www.mql5.com/en/docs/dateandtime/timetradeserver
 
-The common testable hypothesis supported by the local corpus is:
+The source-supported common sequence is:
 
-> external/session liquidity sweep -> later closed-bar market-structure shift with
-> displacement -> first retracement into the first post-shift FVG -> stop beyond the
-> swept extreme -> nearest opposing external/session liquidity target.
+> external/session liquidity sweep -> reclaim -> a later closed-bar market-
+> structure shift -> the earliest post-shift FVG -> first retracement to its
+> proximal edge -> stop beyond the swept extreme -> fixed opposing liquidity.
 
-This is a hypothesis to test, not a profitability claim.
+Sleeve A has direct primary-source support for the sequence and 10:00-11:00 New
+York window. Sleeve B's previous-week/session construction is an engineering
+hypothesis; it must never be described as an official ICT weekly strategy.
 
-## 2. Sleeve A — index intraday sweep/MSS/FVG
+## 2. Shared deterministic execution rules
 
-**Primary market/timeframe:** `NDX.DWX`, M5.  
-**Transport market:** `GDAXI.DWX`, M5 (never used to tune the NDX parameters).
+- Signals use completed Bid bars only and run once per new execution-timeframe bar.
+  Bar 0 and future bars are never read for a decision.
+- New-York windows are half-open. Broker time is converted through explicit
+  broker-to-UTC and US-DST rules; tester `TimeGMT()` is not historical UTC.
+- A strict pivot with wing `w` is usable only after its right wing has closed.
+- A low sweep penetrates a frozen level by at least one symbol tick and closes back
+  above it on the sweep bar or within `reclaim_bars`; a high sweep is mirrored.
+- MSS is the first bar *after* reclaim that closes through the most recent confirmed
+  pre-penetration opposite pivot. Sweep/reclaim and MSS on one bar is invalid.
+- Only the earliest directionally matching FVG after MSS is considered. The order
+  is placed immediately at the proximal edge. If the FVG was already touched when
+  it became eligible, the attempt is void; no later FVG may rescue it.
+- Stop padding is `max(2 * observed spread, sl_buffer_atr * ATR(14))` beyond the
+  swept extreme. A fixed target must lie beyond entry and meet `min_rr`.
+- No partial close, break-even, trailing stop, discretionary bias, SMT, OTE, order-
+  block ranking, or news-reversal logic exists in v1.
+- Position management, hard time exits and pending-order cancellation execute
+  before entry-only news, session and governor filters.
+- One position and one pending order per symbol/magic. Filled-trade and consumed-
+  attempt budgets are reconstructed from bounded bars plus account history; an EA
+  restart cannot create another attempt.
 
-Rules are evaluated only from completed bars; orders execute on subsequent real
-ticks.
+## 3. Sleeve A — `INDEX_MSS_FVG_AM`
 
-1. Convert broker time to `America/New_York` with an explicit US-DST calendar.
-   Tester `TimeGMT()` is not treated as true historical UTC.
-2. Build the current New-York-day external range from 00:00 through 09:30 NY.
-   This precise pool is an engineering formalization of the source's discretionary
-   "old high/low / draw on liquidity" field.
-3. Between 09:30 and 11:00 NY, one side of that range must be swept. Price must
-   close back inside on the sweep bar or within two later completed M5 bars.
-4. A subsequent completed bar — never the sweep bar — must close through the most
-   recent pre-sweep confirmed 3-bar swing on the opposite side. Its body must be at
-   least `index_displacement_atr` times ATR(14).
-5. The first directionally matching three-candle FVG completed after that MSS and
-   between 10:00 and 11:00 NY is eligible. A limit order is placed at the FVG edge
-   first encountered by a retracement (not an invented mandatory midpoint).
-6. Stop: beyond the sweep extreme by `index_stop_buffer_atr * ATR(14)`.
-7. Target: the opposite edge of the 00:00-09:30 range, i.e. the nearest frozen
-   opposing session-liquidity pool. Reject geometry below `index_min_rr`.
-8. The pending order expires at 11:00 NY. Maximum one filled trade per NY day.
-   Any open trade is flat by 16:00 NY or the framework Friday close.
+**Primary:** `NDX.DWX`, M1, both directions.  
+**Transport:** `GDAXI.DWX`, M1, reported separately and never used to tune NDX.
 
-Source-derived fields: liquidity run, later 3-bar swing break/MSS, first FVG trade,
-stop above/below the swept extreme, nearest opposing liquidity, 10:00-11:00 NY
-entry window. Engineering fields: the 00:00-09:30 range definition, two-bar reclaim,
-ATR displacement threshold/buffer, M5 port, one-trade/day, and 16:00 flat.
+1. Build and freeze the New-York cash-opening range from `[09:30,10:00)` each day.
+2. Only `[10:00,11:00)` is an entry/setup window. The first chronological
+   penetration/reclaim of either frozen boundary consumes the day. If both sides
+   penetrate in the same bar, consume the day as ambiguous with no trade.
+3. Require the shared later-MSS sequence using the pre-sweep opposite pivot.
+4. Use the earliest post-MSS FVG and immediately place a limit at its proximal
+   edge. All sweep, reclaim, MSS, FVG creation, and order placement must complete
+   inside `[10:00,11:00)`.
+5. Long target is the frozen opening-range high; short target is its low. Invalid
+   target direction or insufficient R means no trade; never jump to a farther pool.
+6. Pending orders cancel at 11:00. Maximum one consumed attempt and one fill per NY
+   day. Any filled position hard-flats at 15:55 NY.
 
-Frozen development neighbourhood (one-at-a-time, not a Cartesian search):
+State machine: `PREOPEN -> RANGE_FROZEN -> PENETRATED -> RECLAIMED -> MSS -> ORDER
+-> FILLED/DONE`. The key is NY date + symbol + mode; restart replay hashes the
+frozen opening range. Missing/incomplete range, same-bar MSS, no pre-sweep pivot,
+ambiguous sweep, touched/absent FVG, invalid target/R, or expiry are explicit
+no-trade outcomes.
 
-| Variant | displacement ATR | minimum FVG ATR | minimum R |
-|---|---:|---:|---:|
-| baseline | 1.00 | 0.05 | 1.25 |
-| disp-low / disp-high | 0.80 / 1.20 | 0.05 | 1.25 |
-| fvg-low / fvg-high | 1.00 | 0.00 / 0.10 | 1.25 |
-| rr-low / rr-high | 1.00 | 0.05 | 1.00 / 1.50 |
+## 4. Sleeve B — `FX_WEEKLY_SESSION_SWEEP`
 
-## 3. Sleeve B — FX weekly liquidity sweep
+**Locked development universe:** `EURUSD.DWX` and `GBPUSD.DWX`, M5, both
+directions. Both symbols and both London/NY cells are always reported; neither may
+be dropped after results are seen.
 
-**Primary market/timeframe:** `GBPUSD.DWX`, H1.  
-**Transport market:** `USDJPY.DWX`, H1. `XAUUSD.DWX` is exploratory only because
-the screenshot corpus contains just 26 gold examples.
+1. Define the prior NY trading week as Sunday 17:00 inclusive through Friday 17:00
+   exclusive from observed bars, not broker D1. At the next Sunday 17:00 freeze
+   PWH/PWL. If it contains fewer than three distinct trading dates, skip the week.
+2. Eligible sessions are London `[02:00,05:00)` NY and New York `[07:00,10:00)` NY.
+   All sweep/reclaim/MSS/FVG/order events must finish in the same active session.
+3. The completed reference range is Asian `[20:00,00:00)` before London and London
+   `[02:00,05:00)` before New York. Incomplete reference data invalidates a session.
+4. A long candidate begins only with a PWL penetration/reclaim; a short candidate
+   only with PWH. Then apply the shared later-MSS and earliest-FVG sequence.
+5. London long targets Asian high, London short Asian low; NY long targets London
+   high, NY short London low. Invalid direction or insufficient R means no trade;
+   never substitute a farther target.
+6. The first chronological PWH/PWL reclaim in an eligible session consumes that
+   symbol-week even if no later pivot, MSS, FVG, order, or fill occurs. A same-bar
+   double-side penetration consumes it as ambiguous with no trade.
+7. Pending orders cancel at session end. Maximum one consumed attempt and one fill
+   per symbol/week. Filled positions hard-flat at 16:00 NY on the same day.
 
-1. Reconstruct the complete Monday 00:00-24:00 New-York-time high/low from closed
-   H1 bars on every evaluation. No restart-dependent incremental state is allowed.
-2. Tuesday-Friday, the penultimate completed bar must penetrate one Monday boundary
-   by at least `weekly_liq_pct` and no more than `weekly_max_wick_pct` of that level.
-3. The latest completed bar must close back inside the Monday range. The next tick
-   enters a market fade: high sweep -> short; low sweep -> long.
-4. Stop: beyond the sweep extreme by `weekly_stop_pct` of price.
-5. Baseline target is the opposite Monday boundary. The predeclared local-source
-   challenger uses the larger of 3.5R and 1.30 Monday ranges. Target policy is
-   selected on development/walk-forward data and frozen before holdout.
-6. Reject geometry below `weekly_min_rr`. Maximum one filled trade per NY week.
-7. At +1.5R or after 24 elapsed H1 bars, move the stop to +0.1R. Force flat Friday
-   13:30 NY, with the framework Friday close as a backstop.
+State machine: `WEEK_FROZEN -> FIRST_SWEEP -> RECLAIMED -> MSS -> ORDER ->
+FILLED/DONE`. State is keyed by NY trading-week start + symbol + mode and records
+PWH/PWL and reference-range hashes for deterministic restart replay.
 
-The Monday-box realization comes from the strongest reusable local liquidity-sweep
-EA (`QM5_10706`) but fixes its restart loss, pre-send weekly lock, next-bar fill/R
-anchor, fixed broker-time Friday exit, and management-starvation defects.
+Sleeve B is a low-frequency diversifier candidate, not an asserted independent
+factor. Until synchronized return evidence proves otherwise, both sleeves count as
+the same ICT-reversal family for portfolio risk caps.
 
-Frozen development neighbourhood (one-at-a-time):
+## 5. Preregistered parameter neighbourhood
 
-| Variant | min penetration | max penetration | stop padding |
-|---|---:|---:|---:|
-| baseline | 0.00020 | 0.00250 | 0.00020 |
-| liq-low / liq-high | 0.00010 / 0.00030 | 0.00250 | 0.00020 |
-| wick-low / wick-high | 0.00020 | 0.00200 / 0.00300 | 0.00020 |
-| stop-low / stop-high | 0.00020 | 0.00250 | 0.00010 / 0.00030 |
+Categorical rules above are frozen. Each sleeve has a 13-point one-axis-at-a-time
+star: center plus low/high substitutions for six dimensions, never a Cartesian
+search and never winner-picking.
 
-## 4. Data partitions and anti-overfit rules
+| Dimension | A center `{low,high}` | B center `{low,high}` |
+|---|---|---|
+| pivot wing | `2 {1,3}` | `2 {1,3}` |
+| reclaim bars | `3 {1,5}` | `3 {1,5}` |
+| max bars after reclaim to MSS | `9 {6,12}` | `12 {6,18}` |
+| minimum FVG / ATR(14) | `0.05 {0,0.10}` | `0.05 {0,0.10}` |
+| stop buffer / ATR(14) | `0.10 {0.05,0.15}` | `0.10 {0.05,0.15}` |
+| minimum R | `2.0 {1.5,2.5}` | `2.0 {1.5,2.5}` |
 
-No parameter or entry/exit rule may change after the final configuration hash is
-frozen. Any change invalidates all downstream evidence.
+Penetration is exactly one tick and is not optimized. Plateau pass requires the
+center to pass the binding baseline, at least 9/13 variants net-profitable, and on
+each axis both neighbors retaining at least 70% of center trade count with net
+PF >= 1.0. The deployed value remains the preregistered center. A failed center
+cannot be rescued by a neighbor without a new contract/version/hash.
 
-| Sleeve | Development | selection/WF | validation | sealed final holdout |
-|---|---|---|---|---|
-| NDX M5 | 2021-2022 | 2023-2024 | 2025 | 2026-01-01..2026-06-30 |
-| GBPUSD H1 | 2017-2021 | 2022-2023 | 2024-2025 | 2026-01-01..2026-06-30 |
+## 6. Partitions, holdout and anti-overfit rules
 
-`GDAXI.DWX` and `USDJPY.DWX` are transport tests. They cannot be used to repair a
-failed primary-market holdout. All MT5 tests use Model 4 / real ticks, registered
-`.DWX` symbols, explicit costs, deterministic duplicate runs, and untouched gate
-thresholds. Results are reported gross and cost-adjusted; zero-commission reports
-cannot support a net-profitability claim.
+All implementation debugging and parameter-neighbourhood work remains inside DEV.
+Source, binary, contract and center-set hashes freeze before a later partition is
+read. No symbol/session/direction may be dropped after observing its result.
 
-## 5. FTMO boundary
+| Sleeve | DEV / plateau | six fixed OOS blocks | final locked retrospective holdout |
+|---|---|---|---|
+| A / NDX M1 | 2021-01-01..2022-12-31 | 2023-H1 through 2025-H2 | 2026-01-01..2026-06-30 |
+| B / EURUSD+GBPUSD M5 | 2017-01-01..2022-12-31 | 2023-H1 through 2025-H2 | 2026-01-01..2026-06-30 |
 
-The EA must fail closed outside the tester unless an exact FTMO governor policy,
-challenge instance ID, fresh governor heartbeat, percent-risk mode, and USD hedging
-account are present. Open-position management and mandatory exits run even when new
-entries are blocked by news or the governor.
+NDX cannot honestly use the framework's 2017 start because its canonical registry
+coverage begins in 2021. It is reported as a documented coverage exception, not
+backfilled from unregistered raw files.
 
-Historical profitability is not a promise of passing. A paid-challenge-ready claim
-requires synchronized joint-equity replay including floating P/L, commission, swap,
-CE(S)T midnight resets, current FTMO 1-Step/2-Step product semantics, daily and total
-loss rules, targets, minimum trading days, and (for 1-Step) Best Day. Closed-daily or
-bar-only approximations remain research screens.
+For the six OOS blocks: aggregate net PF >= 1.10, at least 4/6 net-positive,
+aggregate DD < 15%, and no block contributes more than 50% of gross positive P/L.
+Existing V5 Q05/Q06+ rules remain binding where stricter. These blocks are
+OOS-like, not epistemically pristine, because related 2022-2025 examples and EA
+results were already present locally.
 
+The 2026-H1 interval is a final locked retrospective holdout for this newly frozen
+contract and is read only after hashes are recorded. It is not relabelled or tuned
+if it fails. A separate prospective operational holdout starts 2026-07-20 00:00 NY
+and ends 2027-07-17 00:00 NY; adequacy is A >= 50 fills and B >= 30 pooled fills,
+otherwise its verdict is `UNDERPOWERED`, never a relaxed pass.
+
+All MT5 tests use registered `.DWX` symbols, Model 4 / real ticks, deterministic
+duplicate runs, explicit spread/commission/swap/slippage costs, and unchanged gate
+thresholds. Gross-only or zero-commission output cannot establish profitability.
+
+## 7. FTMO and deployment boundary
+
+The EA fails closed outside the tester unless the exact FTMO governor policy,
+challenge-instance ID, fresh heartbeat, percent-risk mode, and USD hedging account
+are present. A paid-challenge-ready claim additionally requires synchronized
+portfolio equity replay with floating P/L, commission, swap, CE(S)T midnight reset,
+current FTMO product rules, targets, minimum trading days and any Best-Day rule.
+Closed-daily or bar-only approximations are research screens only. Historical
+profitability cannot guarantee a future challenge pass.

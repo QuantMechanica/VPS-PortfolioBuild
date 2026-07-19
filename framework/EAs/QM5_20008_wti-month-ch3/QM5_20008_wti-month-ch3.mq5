@@ -252,14 +252,24 @@ bool Strategy_NoTradeFilter()
       strategy_channel_months != 9 &&
       strategy_channel_months != 12)
       return true;
-   if(strategy_history_bars < (strategy_channel_months + 1) * 22 ||
-      strategy_history_bars > 1000)
+   if(strategy_history_bars != 140 &&
+      strategy_history_bars != 180 &&
+      strategy_history_bars != 260 &&
+      strategy_history_bars != 400)
       return true;
-   if(strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
+   if(strategy_atr_period != 14 &&
+      strategy_atr_period != 20 &&
+      strategy_atr_period != 30)
       return true;
-   if(strategy_max_hold_days <= 0)
+   if(strategy_atr_sl_mult != 3.0 &&
+      strategy_atr_sl_mult != 4.0 &&
+      strategy_atr_sl_mult != 5.0)
       return true;
-   if(strategy_max_spread_points < 0)
+   if(strategy_max_hold_days != 35)
+      return true;
+   if(strategy_max_spread_points != 1000 &&
+      strategy_max_spread_points != 1500 &&
+      strategy_max_spread_points != 2500)
       return true;
    return false;
   }
