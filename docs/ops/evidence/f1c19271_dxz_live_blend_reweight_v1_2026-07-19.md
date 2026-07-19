@@ -1,0 +1,121 @@
+# Live-Blend-Reweighting v1 — deterministic HOLD evidence
+
+Date: 2026-07-19  
+Router task: `f1c19271-dbff-4694-a302-327605a59616`  
+Book: OWNER-deployed DXZ Sunday Final-24  
+Verdict: **HOLD — blend rule failed OOS; no live export; no weights proposed**
+
+## Outcome
+
+The offline extraction/reweight scaffold is implemented in
+`tools/strategy_farm/portfolio/dxz_live_blend_reweight.py`. It cannot connect to
+MT5, start a terminal, edit presets, apply weights, change `TOTAL_RISK`, or touch
+AutoTrading. It accepts only a frozen account-history export plus provenance
+metadata and produces an OWNER-review package.
+
+The predeclared variance blend did **not** pass the required held-out validation
+on the sealed Final-24 stream basis:
+
+| metric | capped inverse-vol baseline | live-blend rule |
+|---|---:|---:|
+| log-volatility RMSE | 0.9318575366 | 0.9643795035 |
+| decisive fold wins | 50 / 78 | 28 / 78 |
+| relative RMSE | 1.000000 | 1.0349001490 |
+
+The blend was 3.49% worse on the predeclared loss and won 35.90% of folds. The
+result is `FAIL`, so the generated OWNER template contains an empty
+`proposed_weights` array and `analysis_weights_withheld=true`. Parameters were
+not retuned after observing the failure.
+
+No authoritative T_Live deal-history export was present in the mounted stores.
+EA JSONL `EQUITY_SNAPSHOT` rows are account-wide, `TM_CLOSE` lacks realised cash
+components, journals lack Magic/cost attribution, and native `deals_*.dat` is a
+proprietary cache. None was treated as per-sleeve PnL. The evidence run is
+therefore template-only with zero observed Final-24 sessions and these holds:
+
+- `LIVE_DEAL_EXPORT_REQUIRED`
+- `LIVE_WINDOW_IMMATURE_0_OF_21_MINIMUM_SESSIONS`
+- `NO_SLEEVE_HAS_MINIMUM_LIVE_DEAL_EVIDENCE`
+- `BLEND_RULE_OOS_FAILED`
+
+## Implemented contract
+
+- Inputs are bound to the 24-sleeve manifest, final OWNER decision, deployed
+  staging-report manifest SHA, active Magic registry, canonical commission
+  registry, and all 24 sealed stream hashes/trade counts.
+- Backtest PnL uses the same `portfolio_common.load_streams` net-of-cost path as
+  the deployed book construction. All 24 manifest trade counts must match.
+- Live realised cashflow is `profit + swap + commission + fee`, attributed from
+  opening Magic through `position_id`; Magic-zero broker closes inherit the
+  opening owner. Unknown/conflicting ownership, missing opening risk, duplicate
+  deals, and `INOUT` rows fail closed.
+- A real run requires an immutable deal export, metadata sidecar for account
+  `4000090541` / server `Darwinex-Live`, a contemporaneous risk schedule, and the
+  pinned baseline `input_sha256.csv` from this package.
+- Evidence eligibility counts closed positions, not IN/OUT deal rows. The fixed
+  monthly minimum is 21 sessions; blend alpha is `min(n_sessions / 42, 1)` and
+  saturates at 42. The hard sleeve cap is exactly 1.0 and total risk remains
+  exactly 9.75.
+- Live manifests require `RISK_FIXED=0`, while every referenced backtest set is
+  checked for `RISK_FIXED>0` and `RISK_PERCENT=0`.
+- Outputs are analysis-only, composition-preserving, return-forecast-free, and
+  OWNER approval remains mandatory. Cluster caps and automatic risk increases
+  are outside v1.
+
+## Durable artifacts
+
+Canonical package:
+`C:/QM/repo/docs/ops/evidence/f1c19271_dxz_live_blend_reweight_v1_20260719/`
+
+- `oos_validation.json` and `oos_folds.csv` — held-out result and all 78 folds.
+- `input_sha256.csv` — manifest/decision/staging/registry/tool plus 24 stream
+  hashes and trade counts; this is the future live-run baseline pin.
+- `deal_export_contract.json` — required offline export and metadata contract.
+- `manifest_snapshot.json` — exact Final-24 input snapshot.
+- `sleeve_diagnostics.csv` — backtest/shadow diagnostics; weights are explicitly
+  not for use while HOLD.
+- `owner_review_template.json` and `total_risk_review_template.md` — empty,
+  no-apply OWNER decision shells.
+- `verify.json` — artifact hashes and guardrail invariants.
+
+## Verification
+
+```powershell
+cd C:/QM/repo
+python -m pytest tools/strategy_farm/tests/test_dxz_live_blend_reweight.py -q
+python -m py_compile tools/strategy_farm/portfolio/dxz_live_blend_reweight.py tools/strategy_farm/tests/test_dxz_live_blend_reweight.py
+```
+
+Result: `14 passed`; bytecode compilation PASS.
+
+Template-only reproduction:
+
+```powershell
+python tools/strategy_farm/portfolio/dxz_live_blend_reweight.py `
+  --manifest D:/QM/reports/portfolio/portfolio_manifest_sunday_final_24sleeve_DRAFT_20260719.json `
+  --decision-record C:/QM/repo/decisions/2026-07-19_t_live_dxz_sunday_final_book.md `
+  --staging-report C:/QM/deploy/DXZ_FINAL_2026-07-19/staging_report.json `
+  --backtest-bundle D:/QM/reports/portfolio/dxz_final_20260719 `
+  --magic-registry C:/QM/repo/framework/registry/magic_numbers.csv `
+  --live-start 2026-07-19 --as-of 2026-07-19 `
+  --generated-at-utc 2026-07-19T15:05:00Z `
+  --output-dir C:/QM/repo/docs/ops/evidence/f1c19271_dxz_live_blend_reweight_v1_20260719 `
+  --template-only
+```
+
+The output directory is immutable/non-empty on rerun by design; use a new dated
+directory for any later evidence cut.
+
+## Review boundary and next evidence cut
+
+This is not a pipeline verdict and does not authorize deployment. The current
+blend rule is rejected unless a separately predeclared rule earns fresh OOS
+evidence; the failed gate must not be weakened. A later TOTAL_RISK review also
+needs an OWNER-mediated account-history export and book-level mark-to-market
+equity evidence. Realised close cashflow alone understates open-position drawdown
+and cannot support a risk increase.
+
+The roadmap addendum advances extraction v1 to 2026-07-24 and the advisory
+TOTAL_RISK review toward 2026-07-26. Historical 13→23→24 data must not be pooled
+under Final-24 weights; it requires a separately reviewed contemporaneous risk
+schedule and composition-aware evidence cut.

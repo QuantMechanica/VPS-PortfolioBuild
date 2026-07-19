@@ -1,0 +1,25 @@
+{
+  "baseline_fold_wins": 50,
+  "baseline_log_rmse": 0.9318575366,
+  "blend_fold_wins": 28,
+  "blend_window_days": 42,
+  "blended_log_rmse": 0.9643795035,
+  "decisive_fold_win_rate": 0.358974359,
+  "fold_count": 78,
+  "forecast_loss": "RMSE of log(predicted sleeve daily vol / next-window realised vol)",
+  "method": "leakage_free_expanding_backtest_plus_pseudo_live_variance_blend",
+  "observation_days": [
+    10,
+    21,
+    42
+  ],
+  "oos_horizon_days": 21,
+  "pairs_scored": 1326,
+  "pass_rule": "blended_rmse<=baseline_rmse AND decisive_fold_win_rate>=0.5",
+  "relative_rmse": 1.034900149,
+  "schema_version": 1,
+  "step_days": 63,
+  "ties": 0,
+  "train_days_minimum": 252,
+  "verdict": "FAIL"
+}

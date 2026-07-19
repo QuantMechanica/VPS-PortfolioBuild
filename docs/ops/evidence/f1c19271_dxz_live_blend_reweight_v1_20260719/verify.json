@@ -1,0 +1,58 @@
+{
+  "artifacts": [
+    {
+      "path": "manifest_snapshot.json",
+      "sha256": "52ba12ed2ca3196121c3478c94bce3c84d306608f3b778c6f93e3518e346a458"
+    },
+    {
+      "path": "deal_export_contract.json",
+      "sha256": "3309469e7e94694ac0b13c01f1133af5592239ed2f5bf229fd243e788b5d5c64"
+    },
+    {
+      "path": "input_sha256.csv",
+      "sha256": "12867a2e4fe11235dcaa26d523f18968fe1af779584959f188973c72ecf39cd7"
+    },
+    {
+      "path": "live_deals_normalized.csv",
+      "sha256": "a178f0c2b24ff2ce59bbd080b19fd1dfcb51abc0d69e654afca5b375ac03cfe4"
+    },
+    {
+      "path": "live_daily_pnl.csv",
+      "sha256": "61d80b027f933638b00d559d30d8bb77b0ac32597c3e8e3ff72a47917d8a3aff"
+    },
+    {
+      "path": "sleeve_diagnostics.csv",
+      "sha256": "9418b6c57ff6f2675420e693035b5b1f1a7af45597fc5eda25448b07e68fd3db"
+    },
+    {
+      "path": "oos_folds.csv",
+      "sha256": "ac02da55258bcfb5efabc13d8b003ed8ce14dc0185e7b522546b72850653e6a3"
+    },
+    {
+      "path": "oos_validation.json",
+      "sha256": "85ebfb7aa8f6187c74c7bc92af78909093980c734c92190cecc7c53097aba2d5"
+    },
+    {
+      "path": "owner_review_template.json",
+      "sha256": "47c090f179c809be40c43aff0ea117a049773a9a8d7ccac2a6eb2efe60b89671"
+    },
+    {
+      "path": "total_risk_review_template.md",
+      "sha256": "755a72f6e879e772de2ac20ee7921af4a330010ecef5b68d0fe917d5d64e2bee"
+    }
+  ],
+  "generated_at_utc": "2026-07-19T15:05:00Z",
+  "invariants": {
+    "auto_apply": false,
+    "composition_unchanged": true,
+    "deployment_action": "NONE",
+    "final_24_sleeves": true,
+    "oos_validation_pass": false,
+    "owner_review_only": true,
+    "sleeve_cap_respected": true,
+    "total_risk_exact_6dp": true,
+    "writes_under_live_root": false
+  },
+  "schema_version": 1,
+  "status": "HOLD"
+}

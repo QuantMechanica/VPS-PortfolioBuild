@@ -1,0 +1,259 @@
+{
+  "analysis_only": true,
+  "analysis_weights_withheld": true,
+  "as_of": "2026-07-19",
+  "attributed_closed_positions": 0,
+  "auto_apply": false,
+  "autotrading_action": "NONE",
+  "blend_window_sessions": 42,
+  "book": "DXZ_FINAL_24",
+  "composition_change_allowed": false,
+  "deal_export_metadata": null,
+  "deployment_action": "NONE",
+  "generated_at_utc": "2026-07-19T15:05:00Z",
+  "hold_reasons": [
+    "LIVE_DEAL_EXPORT_REQUIRED",
+    "LIVE_WINDOW_IMMATURE_0_OF_21_MINIMUM_SESSIONS",
+    "NO_SLEEVE_HAS_MINIMUM_LIVE_DEAL_EVIDENCE",
+    "BLEND_RULE_OOS_FAILED"
+  ],
+  "input_sha256": [
+    {
+      "kind": "manifest",
+      "path": "D:\\QM\\reports\\portfolio\\portfolio_manifest_sunday_final_24sleeve_DRAFT_20260719.json",
+      "rows": 24,
+      "sha256": "5ce872cc4ff92fe849edcfbcb9d1fd8e4e75d0b0d9892cdc025f6590f008fb8a"
+    },
+    {
+      "kind": "decision_record",
+      "path": "C:\\QM\\repo\\decisions\\2026-07-19_t_live_dxz_sunday_final_book.md",
+      "rows": "",
+      "sha256": "41d202525796f67429d39f2676392e7139327321e6608debc7f905662619eeee"
+    },
+    {
+      "kind": "staging_report",
+      "path": "C:\\QM\\deploy\\DXZ_FINAL_2026-07-19\\staging_report.json",
+      "rows": "",
+      "sha256": "e1529c38fc9d37965d3ace6fa4e2a97a8f75010a2bcc369b8c4a27373565c939"
+    },
+    {
+      "kind": "magic_registry",
+      "path": "C:\\QM\\repo\\framework\\registry\\magic_numbers.csv",
+      "rows": "",
+      "sha256": "0fd00da3f1ee0e0fa4829c83e18ff90866cfb4b98222a227ca26f166189d93c6"
+    },
+    {
+      "kind": "tool_source",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\portfolio\\dxz_live_blend_reweight.py",
+      "rows": "",
+      "sha256": "55835d5646bcb88755f11f9e0a7facd9d5f7636adbdd994a1d37b0d8e2359e25"
+    },
+    {
+      "kind": "commission_registry",
+      "path": "C:\\QM\\repo\\framework\\registry\\live_commission.json",
+      "rows": "",
+      "sha256": "119f795cefce2f819f0c7aae3bddb87affbffa771f596df48d182cf89989e197"
+    },
+    {
+      "kind": "backtest_stream",
+      "logical_magic": 15560004,
+      "path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\1556_XAUUSD_DWX.jsonl",
+      "rows": 53,
+      "sha256": "b7d5d73ce64d2a8f3be582cec38401e19606c4b1171815e3969fa2c68dbb3834"
+    },
+    {
+      "kind": "backtest_stream",
+      "logical_magic": 15670007,
+      "path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\1567_EURUSD_DWX.jsonl",
+      "rows": 86,
+      "sha256": "54247fd1142f9a504ae0cceba99aa7acb0e1e1a1fac656cc2896e6edc72e693a"
+    },
+    {
+      "kind": "backtest_stream",
+      "logical_magic": 104030002,
+      "path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\10403_XAUUSD_DWX.jsonl",
+      "rows": 209,
+      "sha256": "ee7346670371c1fe8b411b9037075d2526bb94b174eb6128fddb7d8b8b34b924"
+    },
+    {
+      "kind": "backtest_stream",
+      "logical_magic": 104400003,
+      "path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\10440_NDX_DWX.jsonl",
+      "rows": 618,
+      "sha256": "d64a14f881e2cb2ae8ab376fb95b1b5a3819d527d18dc5937b44d738d3bff722"
+    },
+    {
+      "kind": "backtest_stream",
+      "logical_magic": 105130003,
+      "path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\10513_XAUUSD_DWX.jsonl",
+      "rows": 76,
+      "sha256": "81d723c9b7f570d0c25ddbbd71d801724b1c8178f2eab3e12c7b7d7a6ad3f89e"
+    },
+    {
+      "kind": "backtest_stream",
+      "logical_magic": 107060001,
+      "path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\10706_GBPUSD_DWX.jsonl",
+      "rows": 367,
+      "sha256": "3649e35f89030017e5e5fc07517bed476244dd22ca2534766cb8e8c25364d9a7"
+    },
+    {
+      "kind": "backtest_stream",
+      "logical_magic": 109110003,
+      "path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\10911_GDAXI_DWX.jsonl",
+      "rows": 331,
+      "sha256": "155ed7ce43f26c8e9fa2295bf5de6eae205a9aff592413319a53f13714b36ed8"
+    },
+    {
+      "kind": "backtest_stream",
+      "logical_magic": 109190001,
+      "path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\10919_XTIUSD_DWX.jsonl",
+      "rows": 30,
+      "sha256": "b70c60f0e30be2008374c0815dbbfa5226f621f76b89f81909e65a05bf27aecb"
+    },
+    {
+      "kind": "backtest_stream",
+      "logical_magic": 109390001,
+      "path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\10939_GBPUSD_DWX.jsonl",
+      "rows": 92,
+      "sha256": "6e667ecf604331a7a1b0c0d793345b7c08c560e399f1b3a6bf3920b1d07f4d93"
+    },
+    {
+      "kind": "backtest_stream",
+      "logical_magic": 111320000,
+      "path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\11132_SP500_DWX.jsonl",
+      "rows": 73,
+      "sha256": "1b2bc25398062d04e8572297121dd2a40d613f9e84db62a852113a97c451bb43"
+    },
+    {
+      "kind": "backtest_stream",
+      "logical_magic": 111650002,
+      "path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\11165_AUDCAD_DWX.jsonl",
+      "rows": 207,
+      "sha256": "86f929e74fa101eacca7c92d77f3fed670ae5df8cea01c742621785816fd42a3"
+    },
+    {
+      "kind": "backtest_stream",
+      "logical_magic": 111650000,
+      "path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\11165_EURUSD_DWX.jsonl",
+      "rows": 260,
+      "sha256": "bdcf2c0934689dec50feb011ebb90a72ba6fd62cf62247c1c2e1d92760f6045d"
+    },
+    {
+      "kind": "backtest_stream",
+      "logical_magic": 114210003,
+      "path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\11421_AUDUSD_DWX.jsonl",
+      "rows": 81,
+      "sha256": "8edaa1013e1993d19d90f43a13f7a073e2fae0d5bf89f833ed3fc90fe7a1fcb8"
+    },
+    {
+      "kind": "backtest_stream",
+      "logical_magic": 114210000,
+      "path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\11421_EURUSD_DWX.jsonl",
+      "rows": 92,
+      "sha256": "7ad106530db79e93ac24a136a451c856a3660823f5d99c0c7130a20df90d3902"
+    },
+    {
+      "kind": "backtest_stream",
+      "logical_magic": 117080000,
+      "path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\11708_EURUSD_DWX.jsonl",
+      "rows": 178,
+      "sha256": "c0e69074fe8b4a6a94c91129715e9545014af2c1342ea5aa93ab1d5d9372998f"
+    },
+    {
+      "kind": "backtest_stream",
+      "logical_magic": 125670003,
+      "path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\12567_XAUUSD_DWX.jsonl",
+      "rows": 73,
+      "sha256": "e938a966f4c9a2a1b8653452cbc01f6d8138355909dfad70beb6bde3b5de17f2"
+    },
+    {
+      "kind": "backtest_stream",
+      "logical_magic": 125670002,
+      "path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\12567_XNGUSD_DWX.jsonl",
+      "rows": 58,
+      "sha256": "65fe45eb6468ae8830a2aa2bb13e0f7e55baf9f5e6f8535a9442aba53601b743"
+    },
+    {
+      "kind": "backtest_stream",
+      "logical_magic": 127780000,
+      "path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\12778_AUDUSD_DWX.jsonl",
+      "rows": 195,
+      "sha256": "2f956e85c885fa32de48a1bbafb9ae235fe8bea822bdc0d665dc3c5cfc73d642"
+    },
+    {
+      "kind": "backtest_stream",
+      "logical_magic": 129690000,
+      "path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\12969_USDJPY_DWX.jsonl",
+      "rows": 331,
+      "sha256": "8b8adfa4829218e614646a302311cc26ce63611de99ba51d788847e8ff1aa445"
+    },
+    {
+      "kind": "backtest_stream",
+      "logical_magic": 129890003,
+      "path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\12989_XAUUSD_DWX.jsonl",
+      "rows": 51,
+      "sha256": "5c736d370f64ff88f6129454ece2d086ad06403caeae3848a5bbc0df3c5d8ac2"
+    },
+    {
+      "kind": "backtest_stream",
+      "logical_magic": 131170000,
+      "path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\13117_EURGBP_DWX.jsonl",
+      "rows": 208,
+      "sha256": "6df9a10a9f46fbd3df7dace6bc5cd448b904bcb28cbccfe91dde9d38915ec327"
+    },
+    {
+      "kind": "backtest_stream",
+      "logical_magic": 131280000,
+      "path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\13128_NDX_DWX.jsonl",
+      "rows": 56,
+      "sha256": "76abad49ccdac838aeecea4bdeafc3f60ed3ef131e2c28885476c6c0a687e1b3"
+    },
+    {
+      "kind": "backtest_stream",
+      "logical_magic": 132130000,
+      "path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\13213_USDJPY_DWX.jsonl",
+      "rows": 1587,
+      "sha256": "f9d0449b7f068506f8de94d2b6653f2bcea7b5f5842f78df937c5f5e8f8711b2"
+    },
+    {
+      "kind": "backtest_stream",
+      "logical_magic": 133010010,
+      "path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\13301_GDAXI_DWX.jsonl",
+      "rows": 742,
+      "sha256": "0b6a7530e65fd6632550b5eea726b6ef62ebdf5bcc5095d6f4d59bd3188ba454"
+    }
+  ],
+  "live_book_realised_deal_metrics": {
+    "annualised_vol_pct": 0.0,
+    "flat_sessions": 0,
+    "max_drawdown_pct": 0.0,
+    "negative_sessions": 0,
+    "positive_sessions": 0,
+    "sessions": 0,
+    "total_net": 0,
+    "worst_day_pct": 0.0
+  },
+  "live_eligible_sleeves": 0,
+  "live_fallback_to_backtest_sleeves": 24,
+  "live_start": "2026-07-19",
+  "manual_owner_approval_required": true,
+  "minimum_proposal_sessions": 21,
+  "observed_live_sessions": 0,
+  "oos_validation_verdict": "FAIL",
+  "proposed_weights": [],
+  "return_forecasts_used": false,
+  "schema_version": 1,
+  "sealed_backtest_current_weight_metrics": {
+    "annualised_vol_pct": 3.62319796,
+    "flat_sessions": 119,
+    "max_drawdown_pct": 2.58749017,
+    "negative_sessions": 956,
+    "positive_sessions": 1072,
+    "sessions": 2147,
+    "total_net": 72231.63434717,
+    "worst_day_pct": -0.85730608
+  },
+  "sleeve_cap_percent": 1.0,
+  "status": "HOLD",
+  "total_risk_percent": 9.75
+}
