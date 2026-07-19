@@ -1,0 +1,52 @@
+;==========================================================
+; QM5_20009 deterministic Freeze-v2 research set
+; protocol_id: QM5_20009_RESEARCH_FREEZE_V2
+; contract_freeze: 2026-07-19
+; symbol: GDAXI.DWX
+; timeframe: M1
+; sleeve: index
+; variant: pivot_high
+; changed_parameter: strategy_a_pivot_wing
+; freeze_inputs_sha256: 3bc802bb52188183a55f60039a5df5ba672ac58213b83511a1a8529cfe814487
+; ea_sha256: bbe56946a56616e066f029c4e8bc1f6cc2eed4fbb2b3734409fe0ec33c7f20c0
+; rules_sha256: 8bbe64c2b6f7c98576f687c5beb312dc673d7dd710dfdedf969204a093e2b1cb
+; contract_sha256: 37285774fc50584ac4e284d574e27f378b32107fae807509455b080799018052
+; protocol_sha256: 39b75674282c4782fef887255da2d69c78a33f54a675eae59e4e7a4c6bd576a8
+; generator_sha256: 5e4d562a454421f25b6c2aac4550dc53d8cba3dd208f389a3c80277d1627b222
+; ex5_sha256: aa3c5eed93e9a7d37a935cde6c8801c82520ecb97fe9ce91547d13cbe0b54222
+;==========================================================
+qm_ea_id=20009
+qm_magic_slot_offset=1
+qm_rng_seed=42
+RISK_PERCENT=0.0
+RISK_FIXED=1000.0
+PORTFOLIO_WEIGHT=1.0
+InpQMSimCommissionPerLot=0.0
+qm_news_temporal=3
+qm_news_compliance=2
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=23
+qm_stress_reject_probability=0.0
+qm_chartui_enabled=false
+qm_chartui_corner=0
+strategy_mode=0
+strategy_replay_bars_index=2500
+strategy_replay_bars_fx=10000
+strategy_a_pivot_wing=3
+strategy_a_reclaim_bars=3
+strategy_a_max_bars_to_mss=9
+strategy_a_min_fvg_atr=0.05
+strategy_a_sl_buffer_atr=0.10
+strategy_a_min_rr=2.0
+strategy_b_pivot_wing=2
+strategy_b_reclaim_bars=3
+strategy_b_max_bars_to_mss=12
+strategy_b_min_fvg_atr=0.05
+strategy_b_sl_buffer_atr=0.10
+strategy_b_min_rr=2.0
+strategy_governor_policy_id=
+strategy_challenge_instance_id=
+strategy_governor_heartbeat_max_age_seconds=5

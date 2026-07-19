@@ -243,6 +243,22 @@
       "dynamic_git_head_dependency": false
     }
   ],
+  "research_launcher": {
+    "entrypoint": "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/run_research_phase.ps1",
+    "support_module": "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/research_launcher_support.psm1",
+    "accepted_receipt_artifact_type": "QM5_20009_FAIL_CLOSED_RESEARCH_LAUNCHER_RECEIPT",
+    "direct_runner_output_is_verdict_evidence": false,
+    "tester_entrypoint": "framework/scripts/run_dev1_smoke.ps1",
+    "fixed_model": 4,
+    "fixed_deposit": 100000,
+    "fixed_currency": "USD",
+    "commission_per_lot": 0.0,
+    "commission_per_side_native": 0.0,
+    "pre_and_post_validator_required": true,
+    "external_report_audit_required": true,
+    "binding_duplicate_count": 2,
+    "diagnostic_smoke_duplicate_count": 1
+  },
   "costs": {
     "spread": {
       "status": "RESOLVED",
@@ -453,6 +469,16 @@
     {
       "id": "report_cost_auditor",
       "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/audit_mt5_report.py",
+      "validation": "NONEMPTY"
+    },
+    {
+      "id": "research_launcher",
+      "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/run_research_phase.ps1",
+      "validation": "NONEMPTY"
+    },
+    {
+      "id": "research_launcher_support",
+      "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/research_launcher_support.psm1",
       "validation": "NONEMPTY"
     },
     {

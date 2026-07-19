@@ -30,6 +30,9 @@ SPEC = EA_ROOT / "SPEC.md"
 PROTOCOL = EA_ROOT / "docs" / "research_protocol_v2.json"
 GENERATOR = Path(__file__).resolve()
 VALIDATOR = EA_ROOT / "tools" / "validate_research_run.py"
+AUDITOR = EA_ROOT / "tools" / "audit_mt5_report.py"
+RESEARCH_LAUNCHER = EA_ROOT / "tools" / "run_research_phase.ps1"
+RESEARCH_LAUNCHER_SUPPORT = EA_ROOT / "tools" / "research_launcher_support.psm1"
 FRAMEWORK_INCLUDE_ROOT = REPO_ROOT / "framework" / "include"
 
 MAGIC_RESOLVER_PATH = "framework/include/QM/QM_MagicResolver.mqh"
@@ -425,6 +428,32 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
     if protocol.get("compiled_source_snapshot_exceptions") != [EXPECTED_MAGIC_EXCEPTION]:
         raise FreezeError("compiled source snapshot exception contract drifted")
 
+    expected_launcher = {
+        "entrypoint": (
+            "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/run_research_phase.ps1"
+        ),
+        "support_module": (
+            "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/"
+            "research_launcher_support.psm1"
+        ),
+        "accepted_receipt_artifact_type": (
+            "QM5_20009_FAIL_CLOSED_RESEARCH_LAUNCHER_RECEIPT"
+        ),
+        "direct_runner_output_is_verdict_evidence": False,
+        "tester_entrypoint": "framework/scripts/run_dev1_smoke.ps1",
+        "fixed_model": 4,
+        "fixed_deposit": 100000,
+        "fixed_currency": "USD",
+        "commission_per_lot": 0.0,
+        "commission_per_side_native": 0.0,
+        "pre_and_post_validator_required": True,
+        "external_report_audit_required": True,
+        "binding_duplicate_count": 2,
+        "diagnostic_smoke_duplicate_count": 1,
+    }
+    if protocol.get("research_launcher") != expected_launcher:
+        raise FreezeError("research launcher evidence contract drifted")
+
     unlock = protocol.get("phase_unlock")
     if not isinstance(unlock, Mapping):
         raise FreezeError("phase unlock policy is missing")
@@ -573,6 +602,8 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
         "runner_run_dev1_smoke",
         "runner_invoke_dev1_smoke_task",
         "report_cost_auditor",
+        "research_launcher",
+        "research_launcher_support",
     }
     missing = sorted(required_artifacts - set(artifact_ids))
     if missing:
@@ -928,6 +959,9 @@ def build_freeze_inputs(
         "protocol_sha256": sha256_file(PROTOCOL),
         "generator_sha256": sha256_file(GENERATOR),
         "validator_sha256": sha256_file(VALIDATOR),
+        "auditor_sha256": sha256_file(AUDITOR),
+        "research_launcher_sha256": sha256_file(RESEARCH_LAUNCHER),
+        "research_launcher_support_sha256": sha256_file(RESEARCH_LAUNCHER_SUPPORT),
     }
     return {
         "schema_version": 2,

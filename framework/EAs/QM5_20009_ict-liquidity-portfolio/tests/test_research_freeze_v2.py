@@ -440,3 +440,22 @@ def test_runner_chain_is_frozen_and_commission_groups_restore_in_finally() -> No
     assert "} finally {" in runner
     assert "commissionGroupRestoreEvidence = Set-TesterGroupsCommission" in runner
     assert "restored_to_canonical" in runner
+
+
+def test_only_hash_bound_research_launcher_receipts_are_admissible_run_evidence() -> None:
+    payload = protocol()
+    launcher = payload["research_launcher"]
+    assert launcher["accepted_receipt_artifact_type"] == (
+        "QM5_20009_FAIL_CLOSED_RESEARCH_LAUNCHER_RECEIPT"
+    )
+    assert launcher["direct_runner_output_is_verdict_evidence"] is False
+    assert launcher["fixed_model"] == 4
+    assert launcher["fixed_deposit"] == 100000
+    assert launcher["fixed_currency"] == "USD"
+    assert launcher["commission_per_lot"] == 0.0
+    assert launcher["commission_per_side_native"] == 0.0
+    assert launcher["binding_duplicate_count"] == 2
+    assert launcher["diagnostic_smoke_duplicate_count"] == 1
+    artifacts = {row["id"]: row["path"] for row in payload["evidence_artifacts"]}
+    assert artifacts["research_launcher"] == launcher["entrypoint"]
+    assert artifacts["research_launcher_support"] == launcher["support_module"]

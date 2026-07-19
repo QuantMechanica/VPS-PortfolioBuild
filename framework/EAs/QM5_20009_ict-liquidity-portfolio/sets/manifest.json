@@ -1,0 +1,2915 @@
+{
+  "contract_freeze": "2026-07-19",
+  "ea_id": 20009,
+  "freeze_inputs": {
+    "contract_freeze": "2026-07-19",
+    "cost_axis_status": {
+      "overnight_swap_proof": "UNRESOLVED",
+      "slippage": "UNRESOLVED"
+    },
+    "evidence_artifacts": [
+      {
+        "equality_group": "COMMISSION_GROUPS",
+        "id": "commission_groups_canonical",
+        "path": "framework/registry/tester_groups/Darwinex-Live_real.canonical.txt",
+        "sha256": "25314333af81faf48e2afe2db5d52beea640cc74ec33a85a46b7c43aadb921dd",
+        "size": 26806,
+        "validation": "NONEMPTY"
+      },
+      {
+        "equality_group": "COMMISSION_GROUPS",
+        "id": "commission_groups_dev1",
+        "path": "D:/QM/mt5/DEV1/MQL5/Profiles/Tester/Groups/Darwinex-Live_real.txt",
+        "sha256": "25314333af81faf48e2afe2db5d52beea640cc74ec33a85a46b7c43aadb921dd",
+        "size": 26806,
+        "validation": "NONEMPTY"
+      },
+      {
+        "id": "commission_research",
+        "path": "docs/ops/DXZ_COMMISSION_RESEARCH_2026-06-01.md",
+        "sha256": "3b227d4a7a09453ec956a498e52bdbc0ede2357a8ae3e9145441867b529feaf0",
+        "size": 4683,
+        "validation": "NONEMPTY"
+      },
+      {
+        "id": "commission_round_trip_handoff",
+        "path": "docs/ops/evidence/Q08_ROUND_TRIP_COMMISSION_HANDOFF_2026-07-10.md",
+        "sha256": "6d06f5919f18554ec84a225b344626514111d0710f4dd60a74c5c118b8295fc0",
+        "size": 3807,
+        "validation": "NONEMPTY"
+      },
+      {
+        "id": "commission_worst_case_spec",
+        "path": "docs/ops/Q08_Q11_WORSTCASE_COMMISSION_SPEC_2026-06-01.md",
+        "sha256": "4bffb99cdb46401f2ecfa12fc23a585a61742bbeacf941f495c397ef11555087",
+        "size": 6081,
+        "validation": "NONEMPTY"
+      },
+      {
+        "expected_sha256": "8ae13d89fc4f7f12984fd61d9556c970b1732565d9a76532ae790eaf658b3978",
+        "id": "compile_evidence",
+        "path": "D:/QM/reports/dev1/build/compile/20260719T193732Z_d4d06b373ceb4fc897e9dba9e80a6e9d/evidence.json",
+        "sha256": "8ae13d89fc4f7f12984fd61d9556c970b1732565d9a76532ae790eaf658b3978",
+        "size": 2184,
+        "validation": "COMPILE_EVIDENCE_PASS"
+      },
+      {
+        "id": "compile_include_path_audit",
+        "path": "D:/QM/reports/dev1/build/compile/20260719T193732Z_d4d06b373ceb4fc897e9dba9e80a6e9d/include_path_audit.csv",
+        "sha256": "99fed92e49e7aa145b1571722df7f1f77bddee9dd6c30586f29639fd9358b77b",
+        "size": 2123,
+        "validation": "INCLUDE_PATH_AUDIT_ALL_ALLOWED"
+      },
+      {
+        "id": "compile_include_sync_manifest",
+        "path": "D:/QM/reports/dev1/build/compile/20260719T193732Z_d4d06b373ceb4fc897e9dba9e80a6e9d/include_sync_manifest.csv",
+        "sha256": "490273a1738b8327d67b14afba95daf3520331a8413e7aa2ab36cd79609a8b43",
+        "size": 21502,
+        "validation": "NONEMPTY"
+      },
+      {
+        "id": "compile_source_manifest",
+        "path": "D:/QM/reports/dev1/build/compile/20260719T193732Z_d4d06b373ceb4fc897e9dba9e80a6e9d/source_manifest.csv",
+        "sha256": "bd8ad44e199784cbbb0fe3afdaf7705287524fb35e1d71b9c9bf1b41584b26d3",
+        "size": 251,
+        "validation": "NONEMPTY"
+      },
+      {
+        "id": "compiler_binary",
+        "path": "D:/QM/mt5/DEV1/MetaEditor64.exe",
+        "sha256": "2c0c8e9e5c1239e30e8a908d9205cdb01b9cdfcf876752e43bd7a755cce58ad3",
+        "size": 109408696,
+        "validation": "NONEMPTY",
+        "version": "5.0.0.5833"
+      },
+      {
+        "id": "compiler_log",
+        "path": "D:/QM/reports/dev1/build/compile/20260719T193732Z_d4d06b373ceb4fc897e9dba9e80a6e9d/QM5_20009_ict-liquidity-portfolio.compile.log",
+        "sha256": "bc6d57ef64390c3459768dc3799c264075f740c89d0c97e96e42a2c84cdf557a",
+        "size": 12248,
+        "validation": "METAEDITOR_ZERO_ERRORS_ZERO_WARNINGS"
+      },
+      {
+        "equality_group": "EA_BINARY",
+        "expected_sha256": "aa3c5eed93e9a7d37a935cde6c8801c82520ecb97fe9ce91547d13cbe0b54222",
+        "id": "ea_binary",
+        "path": "D:/QM/reports/dev1/build/compile/20260719T193732Z_d4d06b373ceb4fc897e9dba9e80a6e9d/stage/QM5_20009_ict-liquidity-portfolio.ex5",
+        "sha256": "aa3c5eed93e9a7d37a935cde6c8801c82520ecb97fe9ce91547d13cbe0b54222",
+        "size": 382798,
+        "validation": "NONEMPTY"
+      },
+      {
+        "equality_group": "EA_BINARY",
+        "expected_sha256": "aa3c5eed93e9a7d37a935cde6c8801c82520ecb97fe9ce91547d13cbe0b54222",
+        "id": "ea_binary_repo",
+        "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/QM5_20009_ict-liquidity-portfolio.ex5",
+        "sha256": "aa3c5eed93e9a7d37a935cde6c8801c82520ecb97fe9ce91547d13cbe0b54222",
+        "size": 382798,
+        "validation": "NONEMPTY"
+      },
+      {
+        "id": "history_coverage_registry",
+        "path": "framework/registry/dwx_symbol_history_ranges.csv",
+        "sha256": "9c03b9ece4e741e31559a5e9216a5ab8a5b6929c83ee5acf6d5d440df857c03f",
+        "size": 40897,
+        "validation": "NONEMPTY"
+      },
+      {
+        "id": "live_commission_model",
+        "path": "framework/registry/live_commission.json",
+        "sha256": "119f795cefce2f819f0c7aae3bddb87affbffa771f596df48d182cf89989e197",
+        "size": 1595,
+        "validation": "NONEMPTY"
+      },
+      {
+        "equality_group": "NEWS_PRIMARY",
+        "id": "news_qmdev1_common_primary",
+        "path": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/news_calendar_2015_2025.csv",
+        "sha256": "8e898ca1c4aed5fbc4cbe43fc176e8d8595c2e6f5f05c2984c2468527d4f5b0d",
+        "size": 4436657,
+        "validation": "NONEMPTY"
+      },
+      {
+        "equality_group": "NEWS_SECONDARY",
+        "id": "news_qmdev1_common_secondary",
+        "path": "C:/Users/QMDev1/AppData/Roaming/MetaQuotes/Terminal/Common/Files/forex_factory_calendar_clean.csv",
+        "sha256": "3cf4b7d881b62105b70e34cb8400caa6c393b85743cce8046085c680ae05f3d1",
+        "size": 4306549,
+        "validation": "NONEMPTY"
+      },
+      {
+        "equality_group": "NEWS_PRIMARY",
+        "id": "news_shared_primary",
+        "path": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv",
+        "sha256": "8e898ca1c4aed5fbc4cbe43fc176e8d8595c2e6f5f05c2984c2468527d4f5b0d",
+        "size": 4436657,
+        "validation": "NONEMPTY"
+      },
+      {
+        "equality_group": "NEWS_SECONDARY",
+        "id": "news_shared_secondary",
+        "path": "D:/QM/data/news_calendar/forex_factory_calendar_clean.csv",
+        "sha256": "3cf4b7d881b62105b70e34cb8400caa6c393b85743cce8046085c680ae05f3d1",
+        "size": 4306549,
+        "validation": "NONEMPTY"
+      },
+      {
+        "expected_sha256": "65cb423348fbe1e5f04d99d9594bef80ed303ec52f6d8ad0d225fa86e4d1235c",
+        "id": "provisioning_tick_hash_manifest",
+        "path": "D:/QM/reports/dev1/provisioning/20260719/source_destination_sha256.csv",
+        "sha256": "65cb423348fbe1e5f04d99d9594bef80ed303ec52f6d8ad0d225fa86e4d1235c",
+        "size": 137854,
+        "validation": "PROVISIONING_HASH_MANIFEST_ALL_MATCH"
+      },
+      {
+        "id": "registry_ea_id",
+        "path": "framework/registry/ea_id_registry.csv",
+        "sha256": "8fc9db5e3525a0b624fca0507999f0597ea27ec6c0da8787fda7e6b05575b707",
+        "size": 357515,
+        "validation": "NONEMPTY"
+      },
+      {
+        "id": "registry_execution_contract",
+        "path": "framework/registry/dxz23_execution_contracts.json",
+        "sha256": "cc221146e492730319ec91cb517f5914bc6e74a2a595c79aebcb17237cdc610f",
+        "size": 32058,
+        "validation": "NONEMPTY"
+      },
+      {
+        "id": "registry_magic",
+        "path": "framework/registry/magic_numbers.csv",
+        "sha256": "a96cc58344af54ab86cc64953f8ecde9d249c101aa905feae636242ccf052467",
+        "size": 1157665,
+        "validation": "NONEMPTY"
+      },
+      {
+        "id": "report_cost_auditor",
+        "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/audit_mt5_report.py",
+        "sha256": "b2d2c69d4e440a751b0ab35154cc26ec8110ef3d561576633ae4572abf4e33c3",
+        "size": 48681,
+        "validation": "NONEMPTY"
+      },
+      {
+        "id": "research_launcher",
+        "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/run_research_phase.ps1",
+        "sha256": "2f624704a3145a6954b2eb89c18ce2a78a2de270391eca9642a236a31ddb5506",
+        "size": 16176,
+        "validation": "NONEMPTY"
+      },
+      {
+        "id": "research_launcher_support",
+        "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/research_launcher_support.psm1",
+        "sha256": "2262cdca755af441929530ce01e3e19485e33c8d4098a6209d4cb9a1f7f244b1",
+        "size": 19422,
+        "validation": "NONEMPTY"
+      },
+      {
+        "id": "runner_invoke_dev1_smoke_task",
+        "path": "framework/scripts/invoke_dev1_smoke_task.ps1",
+        "sha256": "d2dbef3f79b102bbaf49a6bab64bc8559010f933efdf8c781a7f011526b4a231",
+        "size": 17104,
+        "validation": "NONEMPTY"
+      },
+      {
+        "id": "runner_run_dev1_smoke",
+        "path": "framework/scripts/run_dev1_smoke.ps1",
+        "sha256": "125d4506e9318e2dcde43dbc2a65f970c2eaa2a32604cc0549a63b7d99496ecb",
+        "size": 34883,
+        "validation": "NONEMPTY"
+      },
+      {
+        "id": "runner_run_smoke",
+        "path": "framework/scripts/run_smoke.ps1",
+        "sha256": "95eebadcf0c88e0d3d08b59f3ec34281eda9b63152575fd9109ae911cef92dd7",
+        "size": 96673,
+        "validation": "NONEMPTY"
+      },
+      {
+        "id": "slippage_calibration",
+        "path": "framework/calibrations/VPS_SLIPPAGE_LATENCY_CALIBRATION_V2.json",
+        "sha256": "9ea9beb25870cfbc04ac6504449a2f6195eb63fc0bb33168d12226e63469d6b6",
+        "size": 24333,
+        "validation": "NONEMPTY"
+      },
+      {
+        "expected_sha256": "722db3646826dd793d905bad1ae4efe9ed859286255ae2907837a18da329fa90",
+        "id": "slippage_livefill_ledger",
+        "path": "D:/QM/reports/state/slippage_ledger_v1.json",
+        "sha256": "722db3646826dd793d905bad1ae4efe9ed859286255ae2907837a18da329fa90",
+        "size": 34787,
+        "validation": "NONEMPTY"
+      },
+      {
+        "id": "swap_baseline",
+        "path": "docs/ops/V5_SYMBOL_COMMISSION_SWAP_BASELINE.md",
+        "sha256": "7ee89656a8a9d058b251f13fbe66386b24f607b876f9e24b05aadc97899f0eac",
+        "size": 6640,
+        "validation": "NONEMPTY"
+      },
+      {
+        "id": "symbol_provisioning_registry",
+        "path": "framework/registry/dwx_symbol_matrix.csv",
+        "sha256": "e7844d9a18db8723db2b31d839581d0cc348140cf883200524a1af26d465821d",
+        "size": 15996,
+        "validation": "NONEMPTY"
+      },
+      {
+        "id": "terminal_binary",
+        "path": "D:/QM/mt5/DEV1/terminal64.exe",
+        "sha256": "abd32f97efea4d3ddaaf694230c13eacef228e71d5115da7202033aa226c6946",
+        "size": 109817456,
+        "validation": "NONEMPTY",
+        "version": "5.0.0.5833"
+      },
+      {
+        "id": "tester_defaults",
+        "path": "framework/registry/tester_defaults.json",
+        "sha256": "e83e02b2a776bc5022dac8714e2f948a42fdf17a3aad1e64a8c2136e5ca4797b",
+        "size": 2390,
+        "validation": "NONEMPTY"
+      },
+      {
+        "id": "venue_cost_model",
+        "path": "framework/registry/venue_cost_model.json",
+        "sha256": "7dfafe53749e5c45be0cb37568b6e3491c109f546fafaf799f6ea82efdb688d7",
+        "size": 25272,
+        "validation": "NONEMPTY"
+      }
+    ],
+    "external_compiler_includes": [
+      "Trade/Trade.mqh"
+    ],
+    "framework_include_tree_sha256": "7b4fe1683da23c6feaeb0eb2fdb041687552a611ff04e73d1755564f1ac70d12",
+    "framework_includes": [
+      {
+        "path": "framework/include/news_rules/5ers.mqh",
+        "sha256": "3642116b0bfc2390982ac96ebe418630255f37ee2e18f846afcf0f6c8948b66c",
+        "size": 536
+      },
+      {
+        "path": "framework/include/news_rules/ftmo.mqh",
+        "sha256": "c2f8dd2821774ec90ea7c4196b951c6f5b84b84a3eea41d9793a5296e8ee00ea",
+        "size": 623
+      },
+      {
+        "path": "framework/include/QM/QM_ChartUI.mqh",
+        "sha256": "5d597102945cb562ced4a69181bae10115ebac49b067f96b839c097df07b9efd",
+        "size": 18343
+      },
+      {
+        "path": "framework/include/QM/QM_Common.mqh",
+        "sha256": "2e49d3395adb45b41c3ac4398b903a0ec32996e0546a016211eb880cd71387aa",
+        "size": 42261
+      },
+      {
+        "path": "framework/include/QM/QM_DSTAware.mqh",
+        "sha256": "e5a78c1097ff3622f9066acc25fac41228f049853bca31b19c599e92dc61472f",
+        "size": 3441
+      },
+      {
+        "path": "framework/include/QM/QM_Entry.mqh",
+        "sha256": "a2eb0f597a89b7e0f4ffff508203c49201bf93d14876595907536fa5ba0314a5",
+        "size": 13143
+      },
+      {
+        "path": "framework/include/QM/QM_EquityStream.mqh",
+        "sha256": "134f1532aadcafac965a38bb9ffdddac020671ee8ece506cc519e7cfe8ddcdda",
+        "size": 5041
+      },
+      {
+        "path": "framework/include/QM/QM_Errors.mqh",
+        "sha256": "9d250781aedd31bcfe0065cb01f845a15bcdc7e5cbe957f9daeea6e8dcd77402",
+        "size": 2061
+      },
+      {
+        "path": "framework/include/QM/QM_Exit.mqh",
+        "sha256": "ee91acecac74138224dbc15b1b7420baeb15ca49c1a0a7c58df76682f1455d45",
+        "size": 12514
+      },
+      {
+        "path": "framework/include/QM/QM_FTMOGovernorClient.mqh",
+        "sha256": "c5bfa6db027ea4d9cdc98a5f3fd0f04c266ccc80b2febe8c84fd32c2a6592da0",
+        "size": 4651
+      },
+      {
+        "path": "framework/include/QM/QM_FTMOGovernorPolicy.mqh",
+        "sha256": "d38628dbeb356f4e03eb07b40834123b1707d26de9090a63ec7cfc8f32fbd353",
+        "size": 14480
+      },
+      {
+        "path": "framework/include/QM/QM_Indicators.mqh",
+        "sha256": "c63d9299ee574e312dbd93b7ed921c47d5a260d8dc27acb6b0ee27035fb1d377",
+        "size": 27656
+      },
+      {
+        "path": "framework/include/QM/QM_KillSwitch.mqh",
+        "sha256": "855396aa05bd5a280267a62aa8b516d00fc2db7fd6d528bb02719dae341c63a8",
+        "size": 27805
+      },
+      {
+        "path": "framework/include/QM/QM_KillSwitchKS.mqh",
+        "sha256": "72e876b06e40fbe741590eb78e87c43a7da285901bfd06980b3ab64515262351",
+        "size": 12478
+      },
+      {
+        "path": "framework/include/QM/QM_Logger.mqh",
+        "sha256": "09439cdffbc55989eef9081d2539618f0ed71649b5161a85e870891d4bc9ce1a",
+        "size": 5732
+      },
+      {
+        "active_drift_policy": "EXACT_COMPILED_PREFIX_PLUS_COLLISION_FREE_FOREIGN_EA_APPEND_ONLY",
+        "compiled_git_blob_sha1": "ef17e946f957a0601e3279f02f258a4062fb94a0",
+        "path": "framework/include/QM/QM_MagicResolver.mqh",
+        "sha256": "9ca51af0bde4e0b0f775e95aca2af5e4aaaee0154641bac379b87bf7d649f9e3",
+        "size": 514470,
+        "source_identity": "FIXED_COMPILED_GIT_BLOB"
+      },
+      {
+        "path": "framework/include/QM/QM_NewsFilter.mqh",
+        "sha256": "ee0115d1a8e577e0b508a20b6bbc239acb5cf8d76871801132efa1ad082d5d22",
+        "size": 45139
+      },
+      {
+        "path": "framework/include/QM/QM_OrderTypes.mqh",
+        "sha256": "78a73c201dae0cd9cc6150850effb80f6341c04f33daa7d64b52f91dafe91545",
+        "size": 1927
+      },
+      {
+        "path": "framework/include/QM/QM_RiskSizer.mqh",
+        "sha256": "e75d7aaa48f3eae0d298ac67ba0db4404089f9b1abc7ea361fee7662c342fbed",
+        "size": 17737
+      },
+      {
+        "path": "framework/include/QM/QM_SeedRNG.mqh",
+        "sha256": "b05c75dfa09937f6c09a863ec82f0a0d92109f05dfec6e3b95537dff64d79f67",
+        "size": 3402
+      },
+      {
+        "path": "framework/include/QM/QM_Signals.mqh",
+        "sha256": "e1ed249a2d0ffdd94490a1796fbbf9820b93929faaee47c1cbd6439535dedce8",
+        "size": 9802
+      },
+      {
+        "path": "framework/include/QM/QM_StopRules.mqh",
+        "sha256": "aa707e093fc5219a9e8f62fc4b403b85fd71563160f7851b5d8d52f1d95bc0e9",
+        "size": 8485
+      },
+      {
+        "path": "framework/include/QM/QM_SymbolGuard.mqh",
+        "sha256": "91fd7b4299e1515488645b4322d2b5a336cf3facd3fc21fe966c4e2fdcb969e7",
+        "size": 6395
+      },
+      {
+        "path": "framework/include/QM/QM_TM_Grid.mqh",
+        "sha256": "d3c9b41a4fd8e984b5c5f652a541551c5f135077b0aa7283909edc24d379fc98",
+        "size": 20133
+      },
+      {
+        "path": "framework/include/QM/QM_TradeContext.mqh",
+        "sha256": "192b2cbf33e8fc9eb5da381c3539eb67c37a1def80f2544fd281d9b3b188f88e",
+        "size": 5838
+      },
+      {
+        "path": "framework/include/QM/QM_TradeManagement.mqh",
+        "sha256": "c54bd7118d4dd9e282924d83dbd1dfe2ed739e189070e8eec67dc482d3e67f0f",
+        "size": 16747
+      },
+      {
+        "path": "framework/include/QM_Branding.mqh",
+        "sha256": "acadbb5f7b087ddb36103f08edabad8fcc9ac10753dbb8c0a8b9284863e16845",
+        "size": 1733
+      }
+    ],
+    "local_strategy_include_tree_sha256": "7d9408ac66c3250e3d3954801efca27f2b2a814b25101437d8ef1c36bcd93ea8",
+    "local_strategy_includes": [
+      {
+        "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/ICT_LiquidityRules.mqh",
+        "sha256": "8bbe64c2b6f7c98576f687c5beb312dc673d7dd710dfdedf969204a093e2b1cb",
+        "size": 24380
+      }
+    ],
+    "model4_data_files": [
+      {
+        "relative_path": "Custom/history/EURUSD.DWX/2017.hcc",
+        "sha256": "fb3a16fbfe83c4ddfc3687d560bc66d516f01f4210d419107439dc90edfe22e4",
+        "size": 5561829
+      },
+      {
+        "relative_path": "Custom/history/EURUSD.DWX/2018.hcc",
+        "sha256": "d70cb41f0a6aa756b0e13258908563c294504b24a34d3c712b8df56f9cc895b6",
+        "size": 22287924
+      },
+      {
+        "relative_path": "Custom/history/EURUSD.DWX/2019.hcc",
+        "sha256": "f0aa5d4e6eec1d91eb27cee31796eaa7571338b4784a5d07a69c77a033d8073b",
+        "size": 22231824
+      },
+      {
+        "relative_path": "Custom/history/EURUSD.DWX/2020.hcc",
+        "sha256": "b1751920c5cf45502bce5a1324f13dc1e60f94f4d13c1fc24b05c738ff92a876",
+        "size": 22325013
+      },
+      {
+        "relative_path": "Custom/history/EURUSD.DWX/2021.hcc",
+        "sha256": "a7666e219f12aa238a7e212741e4e7f138db527df4f61e99eaa1154499792411",
+        "size": 22180884
+      },
+      {
+        "relative_path": "Custom/history/EURUSD.DWX/2022.hcc",
+        "sha256": "d750af3ea9d20552453d4d8a9724b139c98fab9babc5e285f6ff03b8d9834eb5",
+        "size": 22249104
+      },
+      {
+        "relative_path": "Custom/history/EURUSD.DWX/2023.hcc",
+        "sha256": "5e26c6f672aa1531312dac9becc6e93d9577287062e43805c7b662c95c6a5c3b",
+        "size": 21812577
+      },
+      {
+        "relative_path": "Custom/history/EURUSD.DWX/2024.hcc",
+        "sha256": "5ff6126b9ed5e12e6a9f0dcbf2ab7ffbcfe3b2c6c7e80d4db261c026e0425be0",
+        "size": 22288473
+      },
+      {
+        "relative_path": "Custom/history/EURUSD.DWX/2025.hcc",
+        "sha256": "c5c806d345d65e1b1c8cbc4230b0e00a7a85f4b46f208b907b07f40a1c462ae4",
+        "size": 20571204
+      },
+      {
+        "relative_path": "Custom/history/EURUSD.DWX/2026.hcc",
+        "sha256": "6b11625fa0abd8e096326acf4f9df76f4284937299498f40a076fdbc9fc3cb8d",
+        "size": 5717616
+      },
+      {
+        "relative_path": "Custom/history/GBPUSD.DWX/2017.hcc",
+        "sha256": "83b68a5d2e7552680ca23bd3fdeeab972747ff231d07fba53bafe1eb0df44324",
+        "size": 5560269
+      },
+      {
+        "relative_path": "Custom/history/GBPUSD.DWX/2018.hcc",
+        "sha256": "dbe90a49e66bd59bae0e7cc5aef9bbbbab7cf86d72399f659aec5dae0a15f67e",
+        "size": 22314204
+      },
+      {
+        "relative_path": "Custom/history/GBPUSD.DWX/2019.hcc",
+        "sha256": "24ff51ad8ffaaf8c56b0773f7935cf9dfa33d840e1f5c33c1460c0eb059466d0",
+        "size": 22280544
+      },
+      {
+        "relative_path": "Custom/history/GBPUSD.DWX/2020.hcc",
+        "sha256": "b77d9d213dcc217eda1ac185def537619bc144d8d8ac26a268893fd7dae112dd",
+        "size": 22330713
+      },
+      {
+        "relative_path": "Custom/history/GBPUSD.DWX/2021.hcc",
+        "sha256": "f03910e21866a660450602ea6b87070e544246a8205769ccc70bacaf13cb37b7",
+        "size": 22169304
+      },
+      {
+        "relative_path": "Custom/history/GBPUSD.DWX/2022.hcc",
+        "sha256": "f6e8db790bdaf282f90708a029dd524094176a7b91f8632d5eaf569b3bcef39b",
+        "size": 22165284
+      },
+      {
+        "relative_path": "Custom/history/GBPUSD.DWX/2023.hcc",
+        "sha256": "80180c516253ea52ab0c95a0381a71282254b903b4d54ced4a512345114bad76",
+        "size": 21853557
+      },
+      {
+        "relative_path": "Custom/history/GBPUSD.DWX/2024.hcc",
+        "sha256": "8b4d14fefdb7fdf93574ce589f808df54747cc7e0a2f57fc19ca2bac64afb574",
+        "size": 22322604
+      },
+      {
+        "relative_path": "Custom/history/GBPUSD.DWX/2025.hcc",
+        "sha256": "a076b99cda7f07ec2140664f134c5514ec95737b566dc0bd30ed055d00d0c181",
+        "size": 20656842
+      },
+      {
+        "relative_path": "Custom/history/GBPUSD.DWX/2026.hcc",
+        "sha256": "baffc4c4837447821d39bf41e9716463a988dacc1c8171a2da13b3178d7cb6f0",
+        "size": 7001763
+      },
+      {
+        "relative_path": "Custom/history/GDAXI.DWX/2021.hcc",
+        "sha256": "3daa7f23a150d32a6e7c06225276280db2859af5ffa4bf13c7cc55356b98abec",
+        "size": 17685588
+      },
+      {
+        "relative_path": "Custom/history/GDAXI.DWX/2022.hcc",
+        "sha256": "14e72721190cb3eb5626ecb23ec36e47411505ab9badf647b82f08c95d008f52",
+        "size": 17811177
+      },
+      {
+        "relative_path": "Custom/history/GDAXI.DWX/2023.hcc",
+        "sha256": "c31c77b6343198a976e8a78929147c95982fe3628df5d092c0238a5067615d7a",
+        "size": 17184294
+      },
+      {
+        "relative_path": "Custom/history/GDAXI.DWX/2024.hcc",
+        "sha256": "623ca7d3c0be157f4ee40694144dde1a9a976060f5ba18389da362b36e4882db",
+        "size": 17281470
+      },
+      {
+        "relative_path": "Custom/history/GDAXI.DWX/2025.hcc",
+        "sha256": "c7fdc059a4cde2b4b1db999902d360e8c46c1c22f50fe8555fe787e017a6dcc4",
+        "size": 17302263
+      },
+      {
+        "relative_path": "Custom/history/GDAXI.DWX/2026.hcc",
+        "sha256": "b635ecf307d328b8dde602e3f2c8c3c6cfae799e135e1d13a42f77ac2d07a516",
+        "size": 5533794
+      },
+      {
+        "relative_path": "Custom/history/NDX.DWX/2021.hcc",
+        "sha256": "dc542de4732921fb0556f64fdc7114075713365ed8db3654bc8cad8bd535bdcb",
+        "size": 28515297
+      },
+      {
+        "relative_path": "Custom/history/NDX.DWX/2022.hcc",
+        "sha256": "f503d6eac049bcbfc83888932b0e14940b00dfe12b96b5aa45dbf6824a09d3e1",
+        "size": 31178376
+      },
+      {
+        "relative_path": "Custom/history/NDX.DWX/2023.hcc",
+        "sha256": "2a84b2ad613dab2d4bb8f15c4f0b0e257a9291ec0f3428050333d2bfebd15cc2",
+        "size": 28167618
+      },
+      {
+        "relative_path": "Custom/history/NDX.DWX/2024.hcc",
+        "sha256": "b2889b5079fa703354587b773a31e6cadf663ed34a621c73996ad65c68c96e05",
+        "size": 25678248
+      },
+      {
+        "relative_path": "Custom/history/NDX.DWX/2025.hcc",
+        "sha256": "f611e43b532f84f2ad2765122ce187dae4dad613b93a7189f09014a0c877b937",
+        "size": 26773056
+      },
+      {
+        "relative_path": "Custom/history/NDX.DWX/2026.hcc",
+        "sha256": "11110384a573423eee245ceb932e5d59fffa5616ff9da11b24c6ff05edef84aa",
+        "size": 15579780
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/201710.tkc",
+        "sha256": "4ecdfe7ce0633094d45f9b503f64ab167cd769214ecd4711feceab9ab26239c0",
+        "size": 12719896
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/201711.tkc",
+        "sha256": "db898875b2f0cf3826c8356f73c37071f221ea063837c294449d2a69c94f860c",
+        "size": 11907242
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/201712.tkc",
+        "sha256": "7b2e5454a3d72c5b93e83755ec81488da6b208c0117518fb149b978da1dbd3db",
+        "size": 11217762
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/201801.tkc",
+        "sha256": "34f9d83caef7ad7e26c89eefc9fda07ba2d78de1d7d4cee73bebfd62c71c8a89",
+        "size": 21068090
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/201802.tkc",
+        "sha256": "e0cc290c518b103a128443799ece2d78cbb7129c6d9587dfddf0fadd55c3385c",
+        "size": 20118289
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/201803.tkc",
+        "sha256": "bd93299546627444f3b48cd050868ea2d486c19fbfc11f6078bb489d0f5dfc20",
+        "size": 17165849
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/201804.tkc",
+        "sha256": "3054e67228cede28f77d5cd0d6efc8fc6c02a460abd7d1133dc4b151ef4868a9",
+        "size": 16266844
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/201805.tkc",
+        "sha256": "71bb8ca1c4f9181f29575c13c361ab60f7532d16ece488abc70cfa10aad0568d",
+        "size": 9938999
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/201806.tkc",
+        "sha256": "3290cb78491ac46a03ece6021ca27cd6768935597366a69e6c7e6671ed43c1d3",
+        "size": 4683892
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/201807.tkc",
+        "sha256": "b89bfc509bfabd738966297141db63b73c7fc23670b255c3f68ff40b55c789f4",
+        "size": 3961268
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/201808.tkc",
+        "sha256": "e8cfba51f88390da24d72da4c11b6dccc0eea07dacb6d652107c3f038b74af94",
+        "size": 4017260
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/201809.tkc",
+        "sha256": "9d343b5b1e16e99852c2d574a9695a92ad7089feeafb7eafc44a2d998dc07d41",
+        "size": 5090539
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/201810.tkc",
+        "sha256": "8441cc969bce4e5639cdae1c8f9cbd2077b064dbc171cd948f25d9fca8e5f5d2",
+        "size": 4249817
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/201811.tkc",
+        "sha256": "4fc4788b54c989f49b205d1ce7452f9213e78f8a13428be1f047f07b5c3fc657",
+        "size": 4129728
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/201812.tkc",
+        "sha256": "75f5d63c535cfbed3bb533bc0d5fc8122bdab9461f4526d1defe20e875b51aa1",
+        "size": 10161610
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/201901.tkc",
+        "sha256": "03684e2f83c69c1abb97697ca7a2ba31e3c9cda87ee8f5feb085b87dea4a4315",
+        "size": 11907778
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/201902.tkc",
+        "sha256": "a71a55a987b6ac9febd5cf5f9ebb6e4e965b3eb8a8637dee3b0dbbd9ecd4bfc1",
+        "size": 8293561
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/201903.tkc",
+        "sha256": "d928245ff4c10f8cf72da324f7a0d036889c82b77dd70dcb4bfc41108fbf1c26",
+        "size": 8893384
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/201904.tkc",
+        "sha256": "c660b5130c0f387bb296f93481e7a3d053861ead5eeca5eb20617684ac177b16",
+        "size": 6974150
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/201905.tkc",
+        "sha256": "4081af44d98940d74561be054b8d92d2166073e3da141cafe1ec9bf63c8b306b",
+        "size": 8890457
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/201906.tkc",
+        "sha256": "57fbbf5019022723b2e516c54a9ccb4511fd458246160e261ffecba8fa9358f5",
+        "size": 8974180
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/201907.tkc",
+        "sha256": "72f14e149ec4cd242d58c22e8f988d78519731f5d99efe9c0ef1822b33dc8bf7",
+        "size": 7563718
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/201908.tkc",
+        "sha256": "469da0121f7f0c762b772c896d15c597985e6cbb7bcd6022b02174390d45ea67",
+        "size": 9509515
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/201909.tkc",
+        "sha256": "7f5d3eb906d3d9e962f5802a3748efb257a1a86edbe9ea54cc06af35db5fbec7",
+        "size": 7656103
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/201910.tkc",
+        "sha256": "13b7d798ecee60d343015eca0541739fc1efc6bea18d2f8644c381b532133a41",
+        "size": 7713397
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/201911.tkc",
+        "sha256": "f5d213c2bdc56b1018a53b921639a1c8b62193bcf971f36231669a47e65842f4",
+        "size": 5198465
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/201912.tkc",
+        "sha256": "f000cea44e43a90475894d780170c227bde3dca2bd0b725912db28e17561197d",
+        "size": 5687414
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202001.tkc",
+        "sha256": "ff34a8b125fd6c8d79d8c074e9ec0871fb46f82c794591681a1839170227dabf",
+        "size": 5565232
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202002.tkc",
+        "sha256": "70410fab424573783cedd07b8fa0beffbde61bbfe336409788a102a0addf1f0c",
+        "size": 6589180
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202003.tkc",
+        "sha256": "f7d798afee7b5081475875ad2b3d44087b769a1dfbff38d7e513c130a09fbde5",
+        "size": 31620687
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202004.tkc",
+        "sha256": "61169227729e21efe6631ee355b2a3cef367671a11ac47a0f36da84c179668b2",
+        "size": 12816021
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202005.tkc",
+        "sha256": "b3d296692691a1ac939ca5244000a9a4607984178c422e707c2eeff1d52cad58",
+        "size": 10086692
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202006.tkc",
+        "sha256": "e4cc495267daede7b115eafd77164b36d7e6a75ef0227579035a7e694c3f96ed",
+        "size": 15993767
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202007.tkc",
+        "sha256": "9f40d3b10ace996fa669c60ceb190b55ebae5894091b40ffa5f0aa761f4e3c51",
+        "size": 12133324
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202008.tkc",
+        "sha256": "b8690d7aed9a99615cb31259de8780a631fb8945e68b2117fcef8f35d93b9899",
+        "size": 15157089
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202009.tkc",
+        "sha256": "5483cbab9dc14d9fcacfc73754b51ecbff33ffae173ae4179687b16b36a9df31",
+        "size": 14512677
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202010.tkc",
+        "sha256": "d314784a5d954749d0f6f879365f66c00130c6f50b0fcbe8b8af83d77f843308",
+        "size": 12220847
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202011.tkc",
+        "sha256": "3e8b94046da04b7109466819f66f6b3481f592235037741216d31c31a1d55df9",
+        "size": 12220384
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202012.tkc",
+        "sha256": "85e5304e40375fb843cd9551dd8d22431730434c6881fc6f5f3932ba3630bf10",
+        "size": 12292193
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202101.tkc",
+        "sha256": "3d6b794d3ebf0022726f72574814eebd95a30b8a4969b3d26d3a0cbf87876580",
+        "size": 11161979
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202102.tkc",
+        "sha256": "f61318d43453fbb7d9012a52ec7beb7525e3adc25751911640aec862c972f0dc",
+        "size": 9553684
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202103.tkc",
+        "sha256": "24225d33b8d2e88f79e39768a1400daa445876252b28d3539a9c8868e39dc9d3",
+        "size": 12268617
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202104.tkc",
+        "sha256": "fea37fe13e111ebd3d87f085b869bc6f3104be2f8edd1e91a1973089378ea569",
+        "size": 7689146
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202105.tkc",
+        "sha256": "9feae2b9c4f9858dc4fd98790a61a37188f1ce9192ac73cff219bbd0cd31a211",
+        "size": 8676314
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202106.tkc",
+        "sha256": "65f8a7f2beb46226a056371705b90acf401f0bb97852b4d3aa008f47c15a1f98",
+        "size": 9247282
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202107.tkc",
+        "sha256": "15861f4b3bc9af44b66ac741ce46b83c5aac82f54731c811d3ecd61346289861",
+        "size": 9637506
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202108.tkc",
+        "sha256": "78be05ac094b6dc3c5c5830ddd3dc07adabf19050273d0ed97208a23f124c251",
+        "size": 6797806
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202109.tkc",
+        "sha256": "f3ef9107648d34ca7c1aadc7fbd525cb112f7ecb4038413312b4c0d9e3f11d9e",
+        "size": 7895731
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202110.tkc",
+        "sha256": "a75fda63dca76a03ba4bb13bd77edbf0897934eb794705c60e8b49cee7273cb6",
+        "size": 7998899
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202111.tkc",
+        "sha256": "46e70275d6cead106f0cddffb1afd6e44cc149fdaa523417aef5282054c2b853",
+        "size": 9224470
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202112.tkc",
+        "sha256": "d75a7193592ed55cc686ff0e127ec694898bfa7b4ede9f5e57e645b71bedaad0",
+        "size": 9188466
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202201.tkc",
+        "sha256": "f6068197bac2fc4ddcf9998a44694584846068e6c134fd41592db5960027e49b",
+        "size": 9620278
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202202.tkc",
+        "sha256": "7132a4a95c0516128681a2a1be762847df6dd211393fccdf6286fd718be65991",
+        "size": 12189224
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202203.tkc",
+        "sha256": "27591d955e1058632d3d0d6e3de6eae52d7b94a44eb2ae13aa2f12dc810202f4",
+        "size": 17722004
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202204.tkc",
+        "sha256": "e325993f92799199a9e2e0b213ef83d7b9f1019a322d5a1441fcbbd115c206ba",
+        "size": 13418775
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202205.tkc",
+        "sha256": "bcbc55dfdce7b9ef103f3a5ab3189abf8355678598be151310f82e5d0e99d04c",
+        "size": 13848555
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202206.tkc",
+        "sha256": "d8ad7251efcd36bc2ab5dabead72951d078ae4322222167645a8d3f2c4c6c2dc",
+        "size": 9119133
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202207.tkc",
+        "sha256": "734ca00c25661905a03324fb0ce84eb0142d0079b53552d7a3dfeafdef72da10",
+        "size": 10592241
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202208.tkc",
+        "sha256": "4bab3545d79492593b3878d6c7c56044fa08aac8152078165e70277a325e5c4e",
+        "size": 9320306
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202209.tkc",
+        "sha256": "7fc69f0a31e7dd1a5fde9d316e86d43c7b0672050cf3a4f44926ff32f2a23d4a",
+        "size": 11365974
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202210.tkc",
+        "sha256": "7ed89e7d6bf1c373b53bc5fa97b78df88e5abac801bad7465511d25fb7229208",
+        "size": 14118150
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202211.tkc",
+        "sha256": "8202c48501555294b27e0d2b3bf96c95eabec81bdb19ea3dcd93f81499075433",
+        "size": 12254300
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202212.tkc",
+        "sha256": "523b5a9ad7382c9f90f09c1e8b1e5c3be7241990b78a015dbbb88f7f1a7cb69f",
+        "size": 10207922
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202301.tkc",
+        "sha256": "ffb7b321c4312dc60484e66639274ed1f0a7aa66b66aaaecd9b7a604c61830c9",
+        "size": 9425384
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202302.tkc",
+        "sha256": "1647aecfde98f201aeeb89f25a4a612ae69802736da7367105950457477cdd73",
+        "size": 7545860
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202303.tkc",
+        "sha256": "67e386a3b46c9474f8324bef42f6bb4c1290979b181f6e162200fcdd7a7e64b6",
+        "size": 8673439
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202304.tkc",
+        "sha256": "39b1f568983081cc4680f76082ba1a0a5d78f67ba8a5b97105acc8c3080cf5d8",
+        "size": 5033909
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202305.tkc",
+        "sha256": "fca7bfc406133527b61f50e16efdb362bae91b994909b6815515ba3979baa3a6",
+        "size": 5882743
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202306.tkc",
+        "sha256": "9a6e84108007acba4588f437abb27b1a088fc1c61a04bf78aac04ff9dcdc5cc9",
+        "size": 5565138
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202307.tkc",
+        "sha256": "6d951769849feb9ef171db1c11c4fe48780c444dd5c698ad785f09b843f6aa89",
+        "size": 5277498
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202308.tkc",
+        "sha256": "53e0bb0fafa53d41f7aea893aa333c65b20e9a0c51cb5ce1679a3e4d258ff4f6",
+        "size": 5521358
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202309.tkc",
+        "sha256": "c77aca34363199230ee4246c0e021e422524b140ca0c7485bc1d46f9d0271916",
+        "size": 4483943
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202310.tkc",
+        "sha256": "517f3dffc3aa62ca1b8740aa19bf3d959499b79aae59ccb7400b2dd3be509a5f",
+        "size": 5694193
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202311.tkc",
+        "sha256": "cf56911856191a44b8d48b3190adbd87577d839143794592bd81b65a897f898b",
+        "size": 4877409
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202312.tkc",
+        "sha256": "1893821c9f05b6d8f8f1388b027c827e030ec83b6d9b165c08c6676b42bf0a0b",
+        "size": 4005775
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202401.tkc",
+        "sha256": "85446960776a9a82fd74f1a61fcae049aab85eaba9b48ac3059640eb9fb51ab0",
+        "size": 5978138
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202402.tkc",
+        "sha256": "3e4f68d49ffbe83677682f13c2c07d7b479ed43a64609bf2e6a03938086e2192",
+        "size": 4835193
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202403.tkc",
+        "sha256": "55768efce85f163af42157586767f4b5c02db2c0bd13b92eed76079022c572fb",
+        "size": 4221438
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202404.tkc",
+        "sha256": "5e4acf2c5219043ea4ea4c757b7caa6b7a6a18d4fe277f972bb655dcf4bc73e3",
+        "size": 4657417
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202405.tkc",
+        "sha256": "ff81efe439418af69d63c7186283155fb110cb91e5bcfa5290aeabcd43c547c5",
+        "size": 4017145
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202406.tkc",
+        "sha256": "346f8a3386375c19b06fa24ef91d8a0a723de5b116992a6ad22f26ed6e963d4e",
+        "size": 3773237
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202407.tkc",
+        "sha256": "1de931859be72fca2381db2c978e88bcc4e86e8cf1be193c0ace0731aec8a5bd",
+        "size": 4209627
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202408.tkc",
+        "sha256": "bd87b9e73e5cf9ae930f28f3fcb080587c5def01dffcec56844b353d4db98fec",
+        "size": 5087432
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202409.tkc",
+        "sha256": "6f504bee127c09324ddff11d36957d8d20a810b3fe98ab1f241d325e6feae563",
+        "size": 5169489
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202410.tkc",
+        "sha256": "87715334391de7cf7fa80804ee32eeef26a1e2f7eb14b045ee9665763d81a88b",
+        "size": 4537558
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202411.tkc",
+        "sha256": "32140561a4982bc20eec047bd33d751122fd5c4a76a958796619b7c5305caa91",
+        "size": 6331903
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202412.tkc",
+        "sha256": "f9ae8ea2a5dc907740cf5452dd6eb6c18c95274aabb9999119de98c86799f9d2",
+        "size": 6165360
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202501.tkc",
+        "sha256": "a61582fda83289e98807cc7d5f33ee8bc8ba8c39b3c4e5a1da70dbb6bb86254d",
+        "size": 7270178
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202502.tkc",
+        "sha256": "dacabdd371a085b9aa614482fa4d5f5bc5643d4255017d44fa92175c223f6a5f",
+        "size": 6155559
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202503.tkc",
+        "sha256": "b93c07aa4836075469f1c2d18f0ee76cf0aa16d8b8e9af7d338a47c6cf2663c5",
+        "size": 7359928
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202504.tkc",
+        "sha256": "6d5d7941aacdbec66ad34eaca0ea033b03ef1b9364779149c6184ee8e0e20c5f",
+        "size": 12136980
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202505.tkc",
+        "sha256": "ec2eea74bd4d19d280205e6af3955644b7361a8d51f089ba09d6ac670ba93432",
+        "size": 8329852
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202506.tkc",
+        "sha256": "7e1f90039200ec2789f41aa66506794130a9872a54727ff2829c586e83e857c9",
+        "size": 6869461
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202507.tkc",
+        "sha256": "17b09f24b61876c047e8a5fa85c1f58efae08a4805e998d9e35f26ebf5db6670",
+        "size": 6773747
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202508.tkc",
+        "sha256": "29bb2d9ac22bc0827cc75a7c98199cb541e068028afb4b23af6edbc14825d84e",
+        "size": 5694375
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202509.tkc",
+        "sha256": "d007e80de6c9d92667b5a18b374b664b3e35171f0b59b4e7a775a6221071cfc0",
+        "size": 6026135
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202510.tkc",
+        "sha256": "cdab4af2fbe6f2adbc6d885c84ef3a1e81ebcde449a0b0d8312169c78da1b63e",
+        "size": 1656896
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202511.tkc",
+        "sha256": "479a6605b550f7d0679b9b9f17b1c8b1773e784df1d63713ef5901cce3e7caf6",
+        "size": 4618485
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202512.tkc",
+        "sha256": "4f421683a92a312ad7fdd9f182e960753dd3d443d77187ba1385e8485d72b5c5",
+        "size": 4098384
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202601.tkc",
+        "sha256": "95d1e03ef02f0f660d16c1248a8731f773736a9b0ae3e4180113ca17ac2d3161",
+        "size": 5742180
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202602.tkc",
+        "sha256": "55365f789d47ad940558822a8968fb74375397f42857642c7866a2ff2d037e2a",
+        "size": 5477562
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202603.tkc",
+        "sha256": "727b542548f1b6149a910799784a381fc8bf0182f929a3d36f121e4828653c9d",
+        "size": 10005290
+      },
+      {
+        "relative_path": "Custom/ticks/EURUSD.DWX/202604.tkc",
+        "sha256": "0165600e13feb4708dc7f5645099bb03440c13d575ae1bec651baa64fc6b7bbe",
+        "size": 2755051
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/201710.tkc",
+        "sha256": "96a09eff18d867bc2e764608daaf00b0fbcd68fd3c345c0f6c3da232f85608da",
+        "size": 19693445
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/201711.tkc",
+        "sha256": "e7576008734f391bd4a7c909ef00de2b08b08b142d21ff3dbe6e60d05847581f",
+        "size": 17154722
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/201712.tkc",
+        "sha256": "e8d04a54cbf5328966828965ad70a9f9cd02da671450e93b41ff41dbf00ebb86",
+        "size": 15239922
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/201801.tkc",
+        "sha256": "2ae5b67551472d22ebf320ba068ecde9af49956205a7de1e4c12b33e9a1bca1a",
+        "size": 23000838
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/201802.tkc",
+        "sha256": "1ea85fcbc9c26c76e8779325d6bdabf219a99f9a8561b8c7df0419b3989ac194",
+        "size": 23678285
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/201803.tkc",
+        "sha256": "2b43956f2adbf5c88084e363d05e57d71a14cce4df990344d588304c97c30fe1",
+        "size": 21420786
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/201804.tkc",
+        "sha256": "3b49872d1e007c9b387c5eadc00114d773c4a16868969d0d101f70e62c552965",
+        "size": 18049790
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/201805.tkc",
+        "sha256": "26a1613a368d8718225452b52188f96f708701e7a906fa91fef1cc8449d9f7c4",
+        "size": 12421164
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/201806.tkc",
+        "sha256": "99ea141c18daffa487dd8c64ada9fcf009b980976b34ea21e6867a3a38b7828a",
+        "size": 5190282
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/201807.tkc",
+        "sha256": "c3aeb7dd05d1fedbd2e46e0b461b47ffa20e7eb85086623b4f550659cb4f068c",
+        "size": 4913294
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/201808.tkc",
+        "sha256": "7bdad4df39d349b42395841b4aa5fb629181c8b8c3fa166ccb4a24077df87e9a",
+        "size": 4783114
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/201809.tkc",
+        "sha256": "71f70da617f948f1c9ced674612a180dad41cd8dc6c43b194be4f498187d5d97",
+        "size": 6301298
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/201810.tkc",
+        "sha256": "de139e716ce6762e5b48e2cfec47d7d28a670dfee72465b1f5347c5a1c07b167",
+        "size": 5524832
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/201811.tkc",
+        "sha256": "7cde8a41375fe23aeda2723a47f21f400f36775ace6eb842dffd048140d6e29b",
+        "size": 5737317
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/201812.tkc",
+        "sha256": "e226abd0f175256d5bc9db7c927d0909d47b8d903561563b3c7b6bca1cdf20db",
+        "size": 16838603
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/201901.tkc",
+        "sha256": "ac3615256f05d73224e59844c5d64aac64ff203ca5a768084f5c6e739ac8a294",
+        "size": 17264915
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/201902.tkc",
+        "sha256": "758acb804cd9a70017189459b783d025d6bf135f3e3f949fba618406e94aa8a6",
+        "size": 12793533
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/201903.tkc",
+        "sha256": "ddcceb63718c0a48e26fe314587719ecc41cc7dda22aefe800a2cc85deb14e7b",
+        "size": 16257492
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/201904.tkc",
+        "sha256": "225c5dd24033b6d27a4ad54c8e75b48d9ea1d0be75df4ffc06279f224d512702",
+        "size": 14185425
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/201905.tkc",
+        "sha256": "a36361767c7b8dcef9cb2494f5f02a7e7d76b2a28f9781691538928c4f74aac0",
+        "size": 16134105
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/201906.tkc",
+        "sha256": "3c259c7b6b9b200b1d52418967c14a5ec33227e519aa308f72d45db70dc6486c",
+        "size": 16090439
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/201907.tkc",
+        "sha256": "1e769165fd840b438c9a24a0781fc6bbd2b404b5a1778ec02b4ba9bceb74c331",
+        "size": 12569138
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/201908.tkc",
+        "sha256": "04b3b2c0f22e0c8ce0c241a26e9befc08109ca2e626cf7f2b4619d728f1b7dc6",
+        "size": 15954732
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/201909.tkc",
+        "sha256": "a26a94e128048fb8af220f0ad6f5d3634a9710d21778f132b2ad4ca6737a37bc",
+        "size": 12871577
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/201910.tkc",
+        "sha256": "7b6fc2f739bedcd75319cd574cfa47ffa5077ba683833742c776c7e24408244a",
+        "size": 16640616
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/201911.tkc",
+        "sha256": "6b83258941cc818ec2cf23ae56ecc3e9eaf78b8b25dfe42ddc04aeb19eb8f7f0",
+        "size": 9431579
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/201912.tkc",
+        "sha256": "c88b47be7d60735159dbaca91a386b60fdc2710c28972e352ba975718231b427",
+        "size": 12058231
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202001.tkc",
+        "sha256": "7c7a0153cf4b49177c0c515248eb0c9eaaaa9ceab030124ad12e28813053ea0e",
+        "size": 11043332
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202002.tkc",
+        "sha256": "3c3aecc3a850b28e0c7356c671d88db5bc994ad5c16fb3e0028efd430779833d",
+        "size": 10920389
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202003.tkc",
+        "sha256": "628d2e18b0179c596ba92bd624718d560ee744ac213a26265cc383c7e8e78bdf",
+        "size": 27892697
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202004.tkc",
+        "sha256": "3e803511c32e3e1ac6d5fea7a41e14be2483ea5a2f35d516bdda2c03a2c136f8",
+        "size": 14484192
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202005.tkc",
+        "sha256": "26504ebdb98af83159b7fefc2b2aff083199a938d77c65c6a5a2a7835cea8c90",
+        "size": 13787005
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202006.tkc",
+        "sha256": "904663163d88a2c2bf42d9c50bf65fb8d28f033f0c2be4d6d789ac9fd405ea24",
+        "size": 19988322
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202007.tkc",
+        "sha256": "d80d919de490a86610761f932ca72d1b69cd325cdba3cd99b04054962fa4211b",
+        "size": 15967184
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202008.tkc",
+        "sha256": "21334cd69aaae9ca681fdafbef9fbe95d718417955b8d4c0fa99d183d116279a",
+        "size": 15265734
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202009.tkc",
+        "sha256": "6f98bbe8ba8ddbc1d46993310af658bf08bca338a2a42c2c2101e8482d9d8fbb",
+        "size": 17842156
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202010.tkc",
+        "sha256": "5c96a1d919de72fc282696f636465a0c9cac3bab496fe4fdb760aafd1d45eedc",
+        "size": 16733429
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202011.tkc",
+        "sha256": "2e41508bf08654c9649c1ad7e9d090a0cd9620bbf442218bdca213c3d79037a1",
+        "size": 16396771
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202012.tkc",
+        "sha256": "555e88f8b443ed536fa2a565f3fd18d0307e73958b4b2989f20168a5de09f338",
+        "size": 16083657
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202101.tkc",
+        "sha256": "6fa0cfc5665f7206bf58a8430e3d9ff1500c8588bf21801d7462cced97be38fe",
+        "size": 13955452
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202102.tkc",
+        "sha256": "c1be7371eab06a348ac804508ee5e9453b8d7b36cafaa8a8492e421cbb44804b",
+        "size": 12704820
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202103.tkc",
+        "sha256": "a1cb402d95727de66c43f7ed5939b78292cbc5651e5fc4a6d160510503bdb07e",
+        "size": 16134427
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202104.tkc",
+        "sha256": "1f52cac03ce91b884ec36416b8207ed11bfd4d718cf4a5e7741ca31170b5f2bc",
+        "size": 9090617
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202105.tkc",
+        "sha256": "4ebf7a7a96bd7c338a6bdb3586c639854c262ed69a4a547774d152a0a23327d2",
+        "size": 10575816
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202106.tkc",
+        "sha256": "d59e9a47a69c5f67c34858e01903367a9a3f303cd503845cf3938dfda6ea2190",
+        "size": 12356387
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202107.tkc",
+        "sha256": "923cbcd587717240602393c7fbc6fbba3a489dc39095e55a4b29561cb56153d4",
+        "size": 11953335
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202108.tkc",
+        "sha256": "30d8344af23ec9e00b31d7b262fa757a3294b3358c74ea8480fe4ca34a728938",
+        "size": 6943263
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202109.tkc",
+        "sha256": "1f8667764aaf19ba0f3f44cb840ec0b7027ccf7c7246210d9884681f87fdf520",
+        "size": 8620807
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202110.tkc",
+        "sha256": "2646abe46863cf81e0f391cee09a0d1bd62b393bec0aed3d77ea5481c32b2990",
+        "size": 10548594
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202111.tkc",
+        "sha256": "5b681b9081678bd1902d80b17df63ece64d943e5d07a5087aa9faffe21aa8499",
+        "size": 12590052
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202112.tkc",
+        "sha256": "b6d29eff886fc0544c6ccb0ea61a3e2d95d9bda473950d001ccc539ec3896ce7",
+        "size": 10823316
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202201.tkc",
+        "sha256": "e0d00ab8eefbf5dff0dc46eb0ba47dc3485b35a17afe8ae0330d877e9bbe7fe5",
+        "size": 10471235
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202202.tkc",
+        "sha256": "9e63248db36468255290ff115c4c2cd9d760f9c928c8552bc888906dd57450d4",
+        "size": 12634726
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202203.tkc",
+        "sha256": "72a84fb0251c6da2b7d92c5fec29685a72c296b0eef156274b3be137f989e3fb",
+        "size": 16783177
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202204.tkc",
+        "sha256": "4134d5bdfa652fea8aa6be0f8308fde816048363c124c84d81e97cefba21f10f",
+        "size": 12661447
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202205.tkc",
+        "sha256": "f0e0540b633afe04b7667a6546de8c5254ea5edb3d164df118eb0c670619c469",
+        "size": 16774338
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202206.tkc",
+        "sha256": "a1ab41f0f87aca99ae396ee62381a345cda4d33d5978dbd599bdd0396b62a885",
+        "size": 9629589
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202207.tkc",
+        "sha256": "a9ee8ed9c14a0e53a78d286dbcedec1b6a1fe904fab4cb98faff8ba4cea8100e",
+        "size": 9117638
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202208.tkc",
+        "sha256": "abe91ed4839d8214cc7324cae7cbbcbd124927c15ce62bc35de2ffbf1796a16d",
+        "size": 8435112
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202209.tkc",
+        "sha256": "8c361d24fffc30a7ca56d3071210f0c0b9ec15b03aa130032aa20dc859a3e3c9",
+        "size": 12528373
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202210.tkc",
+        "sha256": "86fd8751c5e840bec325e1ccd68e9f711e1973ecee2b18b5e85f556bfbb54b46",
+        "size": 15394245
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202211.tkc",
+        "sha256": "3720403fe1bda49ba32e5ae2f34b0cbf69128648e65aeb5a765aa9f57c1f632c",
+        "size": 13603226
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202212.tkc",
+        "sha256": "fe42e32b98ee02cbab775b4b6611673595dedad48c13e4a7e468a2bf3f593435",
+        "size": 10914946
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202301.tkc",
+        "sha256": "2cc631aa0c315c9b7b7778bc5fcbeb1a32426272ec71791f0957c262d40ef5a6",
+        "size": 10081118
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202302.tkc",
+        "sha256": "26ee1bdce78049cc13484980bd1f22b75fffed99e4f656ee878fe83151535d1d",
+        "size": 8356427
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202303.tkc",
+        "sha256": "af3d1a395360e50eca08dd31344a08ea5e75dc81a199b84f56b31faef92179d2",
+        "size": 9479303
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202304.tkc",
+        "sha256": "b72c93b0eb1716429c10fbdaeb1e7e465463a7581c6e0216dd6d8433f3e191eb",
+        "size": 5409374
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202305.tkc",
+        "sha256": "e03f9c4f0ef7ad48325414f09376480d838f749ac4f0da1e68dc8da976e03e44",
+        "size": 6237856
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202306.tkc",
+        "sha256": "a80a56fa03d9c920d0a1e472cbf648dd0dfb229e38108e054f5058c7c61cd3a9",
+        "size": 7753892
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202307.tkc",
+        "sha256": "304fa039d49039977335d3d45707825e71cd582e97a6794a2171a018baf3100c",
+        "size": 6867964
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202308.tkc",
+        "sha256": "22035cfa0363cc483b9481850be98025774b79ff636c59ac8100e9fe5d014faf",
+        "size": 7639659
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202309.tkc",
+        "sha256": "21b11fca669dd6e9992807922dd4290ea25f6f8fbb91e02c84fb2e637be18efa",
+        "size": 6217871
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202310.tkc",
+        "sha256": "94da7a180abd336d84c9705f724eb935b39c8771d7cdbacd5deba2a343cabf7a",
+        "size": 7737375
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202311.tkc",
+        "sha256": "5034ceaf3207c3ff9e76ff2e0bac9f19ff6521a68b932647b6b60fd593a9cb81",
+        "size": 6793425
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202312.tkc",
+        "sha256": "3e1ef8d4f6a87583dca4ccd72f578123daf936f269330f3231becefb010a9c53",
+        "size": 5004619
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202401.tkc",
+        "sha256": "b2a0d08ec730b0e8dae66f1a43feb789ca8425a2ab2da7a1236b96483bdfa596",
+        "size": 7105427
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202402.tkc",
+        "sha256": "8af25070383029c3587b281e249462ca4bf34c97c93464ab7167b7a98fca3806",
+        "size": 5520711
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202403.tkc",
+        "sha256": "da298f1d29a1fc8012a90c99343a8c77f359deefbf12a329b4f32b884264c4e1",
+        "size": 5151217
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202404.tkc",
+        "sha256": "a8489202e435769219d4eb5c90a6e38575aa5aefda65cfc896ab359a9d113868",
+        "size": 6953492
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202405.tkc",
+        "sha256": "bcd5d364b251a0a0b9815893e46892426f34f3f71ed64ca4bf999a3f0bce1bf4",
+        "size": 6332783
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202406.tkc",
+        "sha256": "28f6590babbe75d3da89fb59b884228e4801a28660ac4b7c918b85bdbe07bc83",
+        "size": 5047302
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202407.tkc",
+        "sha256": "07d0e0b4bf181b6abe09bbf92c9480f439ec25bb5e1d477d9fbe0ee8294af466",
+        "size": 5748938
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202408.tkc",
+        "sha256": "9adeb02e6033381bb3b970cc2b1977984a9b00e30390a5c3e9ea9fb5ee8f77ed",
+        "size": 6996399
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202409.tkc",
+        "sha256": "2e34a5415dc24dab6f64da104e60694c53e9166b1d818784d3fdb39351b41f7a",
+        "size": 7224332
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202410.tkc",
+        "sha256": "26de38c9e4fb8ee65abe56966b1a18301bbfcef1a7ab80b704d62a1efeb941c5",
+        "size": 7778815
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202411.tkc",
+        "sha256": "bfc385fe2ff7964c38fcfa67edf92a31e546c252abe8a2ef9ca98a983e314fd6",
+        "size": 8743356
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202412.tkc",
+        "sha256": "0c3ea5824562ee3af0199041b11865ec0a7478c9dca03e154405590a0d642fea",
+        "size": 7414951
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202501.tkc",
+        "sha256": "892d4ddcc26b2a5dd4d27c6c218cea6d790e2dda056aa61ec69475e45f6bae94",
+        "size": 9193053
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202502.tkc",
+        "sha256": "c79b79d0b2767a875cf3e509db828784c17a2e4ce18cec999596c5950d59264a",
+        "size": 7831218
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202503.tkc",
+        "sha256": "2985acc280951a0d5c3810869ed35f7e53bf08ce1a74c6e273c1345cec84aeeb",
+        "size": 8726772
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202504.tkc",
+        "sha256": "721172a500c7d59513a4b1072c3fa623452d8399481e0a5134e61a62f62ed970",
+        "size": 12461123
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202505.tkc",
+        "sha256": "d61e312a2a33bc3d6afd9d6c662c86f238396517e7a5a37baa0622eb91b14fa5",
+        "size": 8120454
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202506.tkc",
+        "sha256": "c021c4378f7ad236bc6fe8fce254a64e6ee92d465dad2f1a883c1e2cad976b35",
+        "size": 7965934
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202507.tkc",
+        "sha256": "c5fecd12aeb99bbaf19967011b43fcb9fad6b2dc081b728aa710ca11ff1a0954",
+        "size": 8040035
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202508.tkc",
+        "sha256": "0dc6912907068d307063e75337c1f351e9d8e275d8043878f53c4618fb5ff32b",
+        "size": 7059962
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202509.tkc",
+        "sha256": "bd596d67d64ee45dda4c009f7c8f1994e8c8ca5e29d3b4aec71351cf1ae170a9",
+        "size": 7640377
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202510.tkc",
+        "sha256": "13cbea4171d124dd51b9bf39cc31e78149a4de5f53541360c1f72ebf5422e346",
+        "size": 2091648
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202511.tkc",
+        "sha256": "1b57a3c5616ad3aede3c30328f47733e546cf6684595a67807ac782815d8d187",
+        "size": 7549326
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202512.tkc",
+        "sha256": "899389840ddafec59e50a8ec57a45a0ba4453ac33c6682f9c154fbd25b11e911",
+        "size": 6762552
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202601.tkc",
+        "sha256": "ae2d1172ec0d35ac18f2c743edab15f6533b5719b1c53f287469f0a996cf5c31",
+        "size": 8439591
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202602.tkc",
+        "sha256": "d9a881ba427e99ce1f59dcef59bdd0095d36f9ea4ff84a6f2cc00a8fbcf15077",
+        "size": 7571639
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202603.tkc",
+        "sha256": "5a8b45622eaf24cb264eb7c55c23efde7de2383555917f99eb3e2dbfe0b2e792",
+        "size": 11766315
+      },
+      {
+        "relative_path": "Custom/ticks/GBPUSD.DWX/202604.tkc",
+        "sha256": "e99f8c102257827bd6d311b00e01bb1399e08725ff318f665a102f43a0e4b1f1",
+        "size": 6925177
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202101.tkc",
+        "sha256": "78866d089b3c9091bc4c4bb14d4ba0d48e64ae8d07174c537079320bf5516785",
+        "size": 8753972
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202102.tkc",
+        "sha256": "ba93e84511e50cae3531493728815ff18a318d29c546c435001f4064405f420b",
+        "size": 7677742
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202103.tkc",
+        "sha256": "258a7c63869f2e7d6d1cfea64c908979b4fe15b552cfed0a5e32530c6c134f4b",
+        "size": 4647870
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202104.tkc",
+        "sha256": "6eef9a17025b1d868dba4383ca07f3fe85fcdfcb01755c95684a3c576f56d31b",
+        "size": 2480070
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202105.tkc",
+        "sha256": "871750a7cb55ef816bba40ddbc0041fd3210b246476ad4deac728d446eabe009",
+        "size": 3736157
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202106.tkc",
+        "sha256": "bc856059c5c4d8297bc90f2340a372c701116d9e97948e35f7a2d00552b9652a",
+        "size": 3211190
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202107.tkc",
+        "sha256": "d05924edc4a9b4330ec122005f14935c66062733b6c1541300e018109c81a7e3",
+        "size": 4690027
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202108.tkc",
+        "sha256": "7d91860ba0b1f44cd0e364b8eda8ee0f85180986ade74645eb7f8789cc007cf4",
+        "size": 3541733
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202109.tkc",
+        "sha256": "58fa78826a1a46f4a7a4baa55b7bc3cd123755184f17e688136b382bbbd608e3",
+        "size": 5472938
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202110.tkc",
+        "sha256": "03b0d393cfcbdc2dfe5979b664530a10c4df4be6e87948dda1861a0b7d147643",
+        "size": 4643601
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202111.tkc",
+        "sha256": "8840691b3517c9d62d3f1031a430b9c3182d000f5faf4a84268b272cca84a164",
+        "size": 3880506
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202112.tkc",
+        "sha256": "e37a2fb11817afff2a3003f679e577aa3e1d43da9a54adb4dfc2829838225bcb",
+        "size": 3970188
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202201.tkc",
+        "sha256": "0fa886fcc0404c2daad542ec4fec93894a36df6ff0c485c5db9da6b086a3fa62",
+        "size": 6499838
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202202.tkc",
+        "sha256": "8a7d0254a1876aeb809a4dc651e8323148ceae6c0ac153970e6618854f429e02",
+        "size": 8523657
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202203.tkc",
+        "sha256": "f823a71593867e493efdfa7212b94ffabf16b9052daea5799578861b651bdf1e",
+        "size": 13955836
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202204.tkc",
+        "sha256": "cd6cda7ed7e8f2426b1a661f27722f02b7a7c7c412bd4d331f28715cceccd698",
+        "size": 7914258
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202205.tkc",
+        "sha256": "8f14a74ab9be82620010ece10af4471ad139681c2fe67666557c26a69958f34c",
+        "size": 9963754
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202206.tkc",
+        "sha256": "f1ad88879d192af09f2c244fa33aa86b635fbb5ffb5309dcca6a4a64c8f5c8aa",
+        "size": 3296338
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202207.tkc",
+        "sha256": "d2d828b1cb86f8fba1d671827174cbf344de66bc31bfedd4dd5ab123d1b30ab6",
+        "size": 2961877
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202208.tkc",
+        "sha256": "e65fa4cc07cec2fae3382b36e43c7de63901c16b42e594aaaca2ba5cac65441f",
+        "size": 2182051
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202209.tkc",
+        "sha256": "1fecb979596c72af0eeb4aed00c6a7b7f270e2285ed468266b5485bd6aa4cb8a",
+        "size": 3220183
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202210.tkc",
+        "sha256": "a84544cb0e86a1dd59447ff2d1ee012da81536bb9efb8f2c8b3b6d7faa2f3032",
+        "size": 3271255
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202211.tkc",
+        "sha256": "515c010d681938ff3e13892d58bcad83ed4264fc93b2c32dddf5bb947fca23ec",
+        "size": 2376369
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202212.tkc",
+        "sha256": "3f53c88a108fa4355ddf709dbb255e61efeb1b9bb2e1bc92cf3b1129896b1607",
+        "size": 2009634
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202301.tkc",
+        "sha256": "b2cf46ac884abc972d53f78841f46923ec3555d124992bfcaed91f95d4a5811c",
+        "size": 1791764
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202302.tkc",
+        "sha256": "4feef52b210840e91e68563826131a9e5a6d09c7b29a5a7b7b098b3659b7b9ff",
+        "size": 1919076
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202303.tkc",
+        "sha256": "199820509699406dcabff6e98b1676b6bfb55e5cbea5b393b9c125b33f3aff13",
+        "size": 3025461
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202304.tkc",
+        "sha256": "88f35cf9d0383aea1968d82642c9eb403b1fdbe271b4358b085f0660d444e148",
+        "size": 1202657
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202305.tkc",
+        "sha256": "24d749400a1ab088d97eb349f67952dfa5c19d4257a6f13f4ce18fd32e2c73fa",
+        "size": 1618035
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202306.tkc",
+        "sha256": "651f369fb9b939157749608c241dfa0830777fd9cad0568f48f3f13c0bf19f1b",
+        "size": 1492049
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202307.tkc",
+        "sha256": "cdb626a21a0a5d43631feeeb13f634960aefdc607898e3a49cef0be1b507705f",
+        "size": 1311948
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202308.tkc",
+        "sha256": "364ad90e6f8b11bec5948b76763b522280da6bb4730994950396ab14ada1453a",
+        "size": 1927787
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202309.tkc",
+        "sha256": "e06532cf323b823ce5a30f602509d150f1bef900d748799acfcc688d43996d4f",
+        "size": 1959038
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202310.tkc",
+        "sha256": "4451f9f67cecdbdc811bccd1d40fc65b66aa080c868d28fdf4e8a653af1b9bf9",
+        "size": 2234012
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202311.tkc",
+        "sha256": "9f75d81bb5a5bd1d9c1c2375a77610a17e1ec1383d971320b5c919d491c89666",
+        "size": 1356472
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202312.tkc",
+        "sha256": "c0caccefa93dc48fb15beb6859818f8786a7b7eb306e1f90aa7e47cfbd05246f",
+        "size": 790686
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202401.tkc",
+        "sha256": "aeca1348dc38e499ce7d88e2f37e5553ad4a512033d0718a5b65e3c19c625385",
+        "size": 1637989
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202402.tkc",
+        "sha256": "9c53c9de689317d5e2e14b68021064e34c54dd88c96266c0e969345d87e4655e",
+        "size": 1296976
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202403.tkc",
+        "sha256": "3b8710dd9bc1370736813f675be218828d7f9f3f8b3f1a888bcb0146f18e745b",
+        "size": 1199176
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202404.tkc",
+        "sha256": "ecc6840ba8a2a4ca2fde00c46421ff63bac78fe1cdc1c7ca2ba5d53c51e1e434",
+        "size": 1811058
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202405.tkc",
+        "sha256": "09a73b49051b002e09a19921dfb9a541169917dd2004bba4d3514701a150bf3b",
+        "size": 1260836
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202406.tkc",
+        "sha256": "fbc1ff650be5555a7644320b7368e64fd2867121fbd1f48c699f28ebc8f2ad6e",
+        "size": 1481603
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202407.tkc",
+        "sha256": "217dffd8df3cfdd9685ecb7f7134127e910cf2f5f80d664797d2f41098526939",
+        "size": 1957295
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202408.tkc",
+        "sha256": "8d1b616dceaa76fca7922ab5c14064acc4584263d48a4a60704a3fd4228f6d11",
+        "size": 2588572
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202409.tkc",
+        "sha256": "d82488a2e365152c6ebfb966e22e2a43bdc2b21d73fc0061af03cc7cf216fac0",
+        "size": 2003733
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202410.tkc",
+        "sha256": "7d65db249b823a5fb76457c85f16e4d70bc4eeba71b3d6f31c64e4e2e2830f7d",
+        "size": 1930000
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202411.tkc",
+        "sha256": "800e62e7ec3702fc01ee219eb3d11c4df144c7d320f7b497a1148ad2abdb8551",
+        "size": 2145613
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202412.tkc",
+        "sha256": "77dd5fc8f2613b703479932893731dd4c23b64c1bf300d1867531d3cea42122d",
+        "size": 1474334
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202501.tkc",
+        "sha256": "9b499862e1474367207f39a7f35cc8507d020ed8d607147af33145179968bdf2",
+        "size": 1825296
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202502.tkc",
+        "sha256": "599714abc5676825bd44b6d9a4a46e8f103321e86792bdaa5b76ae638934d6f0",
+        "size": 2186805
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202503.tkc",
+        "sha256": "597725dc0482c8f6c157919bf65b84afe2a983f7213008d3e8559252ed8d6def",
+        "size": 4601642
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202504.tkc",
+        "sha256": "a35d22409891a82f5098e4389240f8c191283194262d428c1edf8b3fc0f56ae5",
+        "size": 3962402
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202505.tkc",
+        "sha256": "fcd3a6f379bb3cfd2f7fe922b30efeecbaf994c7127762da69d8f83bb9520863",
+        "size": 2270318
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202506.tkc",
+        "sha256": "73e67f74f92e6abd5a59c8150d90327c864607cae20e5ae76cb8a9e872e2039e",
+        "size": 2123123
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202507.tkc",
+        "sha256": "cbfdffeb3887c733cac47e1159f9a10c72a79b1c7a40843a06c1c7ff07465f8f",
+        "size": 1866394
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202508.tkc",
+        "sha256": "1800a3ab4a50661d0a7bb018dd7edd5616a497ae29ecb12db31790fd4c6a4562",
+        "size": 1687204
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202509.tkc",
+        "sha256": "59ebc75a07bc376ad5d1ca4fb78b0f696f70dbb93567bbd8ef343b12484dbbca",
+        "size": 1759379
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202510.tkc",
+        "sha256": "6a8a0707e8c3099a1a2c156f54bbd6b1679eaa25d516337393ab6b29ba995e62",
+        "size": 2326780
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202511.tkc",
+        "sha256": "6b7479a677f327ae09384d8b466a40bd10609075292cbb302779cf97d5b24ff6",
+        "size": 2375224
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202512.tkc",
+        "sha256": "8f36aec300edeb4144500203a16fbadc9ad5e2c3399dbbe1a8c34aa78416cb42",
+        "size": 1360152
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202601.tkc",
+        "sha256": "075acfaeba33c0a37019134920d55f08c5ff9626b9bb9f422c4432a290c39183",
+        "size": 1961769
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202602.tkc",
+        "sha256": "f083aec07cb4fc2c47c7e6db6e43e140482be31a5e8a69b61678fb7701412768",
+        "size": 2465194
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202603.tkc",
+        "sha256": "fb22d5cc3ae4973c6851e615ea03720305e2ab21d793ac7e5cb46aa1e16e7857",
+        "size": 6535564
+      },
+      {
+        "relative_path": "Custom/ticks/GDAXI.DWX/202604.tkc",
+        "sha256": "8247795fbd71f8b467b02d963b2737cd3ee726f2713376471b767c1fe7576108",
+        "size": 3078086
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202101.tkc",
+        "sha256": "4baeb99ea43b795fab05cec84d15aa008f9f602eecebcb0193ed8497ec89e86b",
+        "size": 33250963
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202102.tkc",
+        "sha256": "0341d086bb0ebd1952b5c3f2fbc93efa36bbf071f664cbce9ba2a420d34fa203",
+        "size": 33993683
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202103.tkc",
+        "sha256": "b7ed1bbe388c2a60b97deda7ee5c09065c7a493b383bc1734c210b64028a1e6e",
+        "size": 48747972
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202104.tkc",
+        "sha256": "0c4cd6b2d3815a7566706f84bae43e7d183e73f944a2f1dbc7904f8815922413",
+        "size": 32908409
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202105.tkc",
+        "sha256": "b7377846b74d5914be0d6f0e2348f17a27a407cae7bede893c5ea1d352bdd005",
+        "size": 34870207
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202106.tkc",
+        "sha256": "8d4c1f11c4b06b1d858bda28625db77f63564ed2361003dcd9aef0326389888e",
+        "size": 31919156
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202107.tkc",
+        "sha256": "994c4f5e483a7daffed07517fd1d9a66423cdfc68a4c80f2912dadb631945253",
+        "size": 35905816
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202108.tkc",
+        "sha256": "54b4a012d81e6009e4d14ad7cad8b0802b6e0d501b2700ebd4522d106355cef7",
+        "size": 31222350
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202109.tkc",
+        "sha256": "789a6427e4228c02da315327a9994e0386c3ea298650e4e3646c9a3683988465",
+        "size": 35275495
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202110.tkc",
+        "sha256": "73f54282a04c9950deb6c6e4704898c3224422a3100cd5c8d7d8cb301a8bfba9",
+        "size": 37459289
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202111.tkc",
+        "sha256": "6acd094c8b2ea4db5b25049d8f2c2c69bca9317597b31cc60ff28891955cd87a",
+        "size": 34744633
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202112.tkc",
+        "sha256": "2062f4014b5f4eac122dfd6abd217fe09ed52d4b1b3e93761e3e380cbe5a0e84",
+        "size": 40612345
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202201.tkc",
+        "sha256": "55b96fa69c1020cf1cac601456f32aa74d1bda60c8bc62ba13739dfe3806edf9",
+        "size": 50792905
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202202.tkc",
+        "sha256": "dd2aff67f878675cae53ddae284a3a2e86bc6ce9fdb264dec95350430eba4305",
+        "size": 50239528
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202203.tkc",
+        "sha256": "5dda34ce0bec9ffc31ee8de5e2eaa8b1eafe19651fcd5fac46e984c7c8269936",
+        "size": 55818256
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202204.tkc",
+        "sha256": "365e11471e01b21b0de9678498ad65c496636a9dd897df893e93f547c50663ff",
+        "size": 48417963
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202205.tkc",
+        "sha256": "48ebe076c72a426bb830f726873004b0ed06f067de59c4ed3d0a6e63f3e7ccdb",
+        "size": 56355031
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202206.tkc",
+        "sha256": "15bec285fe28577c015226d838af2d4bbf4512567e53e894b24f9d4263172192",
+        "size": 52313614
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202207.tkc",
+        "sha256": "709d081fc3f5a103285322ff4c095c0db5d102328fc698c36831e9347c1aa3e9",
+        "size": 45320973
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202208.tkc",
+        "sha256": "cbba064015db56599a149c6485fc3eedccb0bb51626cf3e2766b657274e767a6",
+        "size": 45187930
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202209.tkc",
+        "sha256": "703ee23dbf3a1ff92c4bb8a6b1812b82b05f0ebe4036200a5a61475a0b174422",
+        "size": 49035089
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202210.tkc",
+        "sha256": "bd1a7b96d60e957b7e95c28a7d91fec1a8564722481bb982aab30c5668c99fd1",
+        "size": 51983860
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202211.tkc",
+        "sha256": "10a22595c0036d3923c4521b9a181a415e9034af418e64c6ae5a9e3fe15688f6",
+        "size": 46310863
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202212.tkc",
+        "sha256": "184319afe90eee9dec3e63f5e25f5543bbe690641fd24e8cb8bd4cb785c55b74",
+        "size": 40001499
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202301.tkc",
+        "sha256": "e6fd2eb454c921bd4758ebc7dec58511d480784947a200e5f1775f6411e6a733",
+        "size": 37416680
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202302.tkc",
+        "sha256": "c88fd41bb5147e47777c13dceec007ec4aa505aecbc5c6e49a9666bd20ef7231",
+        "size": 37236176
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202303.tkc",
+        "sha256": "b137ce1437485ca864bb91f148f5fea1679aa24f4fd89c0f4653408964312fb3",
+        "size": 45742501
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202304.tkc",
+        "sha256": "f41f9f7ce1b9850d2bf429c6a0050331a88413ec1ca8f9982f643bfc99071743",
+        "size": 30350252
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202305.tkc",
+        "sha256": "bb67028b15333258a463db053b6fe95a2158cdd12661426b4973a01a97be2da9",
+        "size": 33014044
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202306.tkc",
+        "sha256": "7b282a9d0103a1a999f1d155ccd7c31ae30e005ac84be25484574f8325c60a89",
+        "size": 35090160
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202307.tkc",
+        "sha256": "89d3999dea29361ff99039406c7a0e595464dd42d0bbd141bd745c5fb269195a",
+        "size": 29989798
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202308.tkc",
+        "sha256": "3327b1704397ec7bfaadde3190646b77da94ac111b5faff5ecf7f2fcfc4dd330",
+        "size": 40607491
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202309.tkc",
+        "sha256": "80c1d2766ef546823097783959970933fa138a60cc5e2458a78e5c9016d8d160",
+        "size": 34899181
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202310.tkc",
+        "sha256": "004a3dca1228244e6d8e7d7eb4835f2824b5aacdc8f354863f0b42cee4866f84",
+        "size": 43529669
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202311.tkc",
+        "sha256": "53f2a95434191afde69fecf0c43ad31c9c3c1df9b2e52f6c3eaf9a659e8e4cd7",
+        "size": 29438750
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202312.tkc",
+        "sha256": "3bc591f65fc8d50b2b88894c35aa78abea2b096a6aca72e6dfd55d122fd26d99",
+        "size": 16308682
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202401.tkc",
+        "sha256": "ce50dfe04f09a58c77df91c0be3f055a05941d409caaf859d1cbd6b0d16c9643",
+        "size": 22110447
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202402.tkc",
+        "sha256": "3b603b30ff4a96da78c0c2d7bfbb1e966f224450349a2f9ac018c0d10f13631d",
+        "size": 21281123
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202403.tkc",
+        "sha256": "b794b952b030aaafa275c3a37e4448c29092c63f16cbf797b7e03ad25a632ff3",
+        "size": 21066092
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202404.tkc",
+        "sha256": "48328ce00155389579093366d7960f10f04782367f3bce3a073a92a3603d3222",
+        "size": 25886642
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202405.tkc",
+        "sha256": "b1f60a03ceada87a748d3b05bd4f2df5d6ea3d94bdfdcf3ed5919e5a49e72aa3",
+        "size": 21761848
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202406.tkc",
+        "sha256": "d67bbabf4b79da68c86fe4799cc76c760018c3a6040a81a5cc515d3c59814fc0",
+        "size": 20568924
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202407.tkc",
+        "sha256": "f315330723a593789b28403067c2fe10f663748983c15383320901a6c02e0d5a",
+        "size": 27294064
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202408.tkc",
+        "sha256": "6e3600ab5291f853a295f02bb079f0d8a54a5afd8928b62c0b1463b220825b06",
+        "size": 29681306
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202409.tkc",
+        "sha256": "1ebce12812eff1818b2fe137d7d92016100595d781889ae65809485c2a3cff04",
+        "size": 26773359
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202410.tkc",
+        "sha256": "f48f1631d0d8e750bcd2db0427d3c8967c248c03343a63c1e79551412c95fdf1",
+        "size": 27879417
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202411.tkc",
+        "sha256": "1d2c3223364b23993fbe92e51acc42017b6ee40552fd480b9f4213c122a5261a",
+        "size": 25711618
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202412.tkc",
+        "sha256": "7166077883b5b0b80a64a584f3e880bf45997d43c5d5eb645402ff838846c152",
+        "size": 24236074
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202501.tkc",
+        "sha256": "872d08ee677e092633199b4ef7b2b069c08f06510df96556e7ed9b7028f73346",
+        "size": 31949445
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202502.tkc",
+        "sha256": "cbfdac7458c639c84009902a06c98b047450c14f7dfb623f065f653f215d436b",
+        "size": 26486798
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202503.tkc",
+        "sha256": "62302ef16344c688304f0bd74f8406be74e9d0e352d941f848b20ccb2df2f5bd",
+        "size": 35407830
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202504.tkc",
+        "sha256": "d471026243122108671481941f38a3fad4b94e1b749ecdef2d21038b4e521b98",
+        "size": 40559906
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202505.tkc",
+        "sha256": "ab45bbcbf3968c1bf7baa3148128e6bcb68708107d0fe6f1814a6ad3779ca2f9",
+        "size": 31884113
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202506.tkc",
+        "sha256": "ee9653760be7e2fe6af55aa1ab1d58a88221091ae5fef47d6e578099c2b352a6",
+        "size": 29277456
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202507.tkc",
+        "sha256": "5683cd53d47712b9da8111168df043011af274d940ffcdb97cf95578c3ac80b9",
+        "size": 27688633
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202508.tkc",
+        "sha256": "d7fcd04e966c8cc25e7e41f27c6f50b716c77f6731553ac087767617ec85d627",
+        "size": 27918145
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202509.tkc",
+        "sha256": "8d6b5a7b4c6ec083d0c21851f66a0ebc455e4a9bc96883d7539d66bb1cfa749a",
+        "size": 28583096
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202510.tkc",
+        "sha256": "74ab1cfa183784e39c7773af81d55486620609253b102f3d50dcadc49aefb90a",
+        "size": 33514298
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202511.tkc",
+        "sha256": "7e4f76e4be70ba6d18e876db3e47497b920480d9464528b6328e9a3d80324c5f",
+        "size": 40199827
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202512.tkc",
+        "sha256": "4bba00f1ba188283402e41459dff57fa814d2177be18bbbb69d78f07376b8d4b",
+        "size": 34109197
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202601.tkc",
+        "sha256": "56deef83020fde96d8a9239bedf4cc127050600bb6f5b5e76ab6929a011e601a",
+        "size": 37979432
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202602.tkc",
+        "sha256": "fd2c026418a21482ee6bcd0d7fa5ab56a41dbc8e88cbe9c71f1276fefc490c59",
+        "size": 42995916
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202603.tkc",
+        "sha256": "512e4ca6be69ee6917c35f5fc2337e62459dda5377e1b2691cf1a6f706d273d4",
+        "size": 54019794
+      },
+      {
+        "relative_path": "Custom/ticks/NDX.DWX/202604.tkc",
+        "sha256": "1bb3434a47483ddebd6354c4d39f50a5b6cc2a2fe01c36d31461d9794e1727b2",
+        "size": 42346497
+      },
+      {
+        "relative_path": "symbols.custom.dat",
+        "sha256": "6be56cd376afac7fb69bb6b30f24781f1d21e96b34bddc5b6c7e1e4f7ac09d65",
+        "size": 20480
+      }
+    ],
+    "model4_data_tree_sha256": "d941f7e0feb50970590789a2e68cba7d481aa4c19653fa09987f818f35f830db",
+    "protocol_id": "QM5_20009_RESEARCH_FREEZE_V2",
+    "schema_version": 2,
+    "source_hashes": {
+      "auditor_sha256": "b2d2c69d4e440a751b0ab35154cc26ec8110ef3d561576633ae4572abf4e33c3",
+      "contract_sha256": "37285774fc50584ac4e284d574e27f378b32107fae807509455b080799018052",
+      "ea_sha256": "bbe56946a56616e066f029c4e8bc1f6cc2eed4fbb2b3734409fe0ec33c7f20c0",
+      "generator_sha256": "5e4d562a454421f25b6c2aac4550dc53d8cba3dd208f389a3c80277d1627b222",
+      "protocol_sha256": "39b75674282c4782fef887255da2d69c78a33f54a675eae59e4e7a4c6bd576a8",
+      "research_launcher_sha256": "2f624704a3145a6954b2eb89c18ce2a78a2de270391eca9642a236a31ddb5506",
+      "research_launcher_support_sha256": "2262cdca755af441929530ce01e3e19485e33c8d4098a6209d4cb9a1f7f244b1",
+      "rules_sha256": "8bbe64c2b6f7c98576f687c5beb312dc673d7dd710dfdedf969204a093e2b1cb",
+      "spec_sha256": "4fc89cdb44578ae3f08e170699549ad887dd5ae9c83d6befbcd1eb66500a9b4d",
+      "validator_sha256": "f193266d79c81491b96f81ee49e67f03bdb4b6d588c729270e5b60b30174d936"
+    }
+  },
+  "freeze_inputs_sha256": "3bc802bb52188183a55f60039a5df5ba672ac58213b83511a1a8529cfe814487",
+  "generation": "deterministic_no_wall_clock_no_git_head",
+  "protocol_id": "QM5_20009_RESEARCH_FREEZE_V2",
+  "schema_version": 2,
+  "set_count": 52,
+  "sets": [
+    {
+      "changed_parameter": null,
+      "changed_value": null,
+      "file": "QM5_20009_NDX_DWX_M1_index_center.set",
+      "mode": 0,
+      "set_sha256": "86b306d03f215ec14da454f85a44a69c12acb40d5d1b3c8d741881af81f40269",
+      "sleeve": "index",
+      "slot": 0,
+      "symbol": "NDX.DWX",
+      "timeframe": "M1",
+      "variant": "center"
+    },
+    {
+      "changed_parameter": "strategy_a_pivot_wing",
+      "changed_value": "1",
+      "file": "QM5_20009_NDX_DWX_M1_index_pivot_low.set",
+      "mode": 0,
+      "set_sha256": "44b4a0da2a5940af835be796dda08a6f5f34e45b21eb712b185148f4f3be8907",
+      "sleeve": "index",
+      "slot": 0,
+      "symbol": "NDX.DWX",
+      "timeframe": "M1",
+      "variant": "pivot_low"
+    },
+    {
+      "changed_parameter": "strategy_a_pivot_wing",
+      "changed_value": "3",
+      "file": "QM5_20009_NDX_DWX_M1_index_pivot_high.set",
+      "mode": 0,
+      "set_sha256": "fd717aaa5deb0a33d4df134b0bd3b0c7d8eb4bb2ba5507e0071bd82a39556969",
+      "sleeve": "index",
+      "slot": 0,
+      "symbol": "NDX.DWX",
+      "timeframe": "M1",
+      "variant": "pivot_high"
+    },
+    {
+      "changed_parameter": "strategy_a_reclaim_bars",
+      "changed_value": "1",
+      "file": "QM5_20009_NDX_DWX_M1_index_reclaim_low.set",
+      "mode": 0,
+      "set_sha256": "f288789c5451e5f9fce150de5d1a494d4124b95a1562a0b548b63b4581b132ae",
+      "sleeve": "index",
+      "slot": 0,
+      "symbol": "NDX.DWX",
+      "timeframe": "M1",
+      "variant": "reclaim_low"
+    },
+    {
+      "changed_parameter": "strategy_a_reclaim_bars",
+      "changed_value": "5",
+      "file": "QM5_20009_NDX_DWX_M1_index_reclaim_high.set",
+      "mode": 0,
+      "set_sha256": "74979748e43d71af88ac8ec8fc00e1cc0a3f5951642af50a5ef63cbdcf470c32",
+      "sleeve": "index",
+      "slot": 0,
+      "symbol": "NDX.DWX",
+      "timeframe": "M1",
+      "variant": "reclaim_high"
+    },
+    {
+      "changed_parameter": "strategy_a_max_bars_to_mss",
+      "changed_value": "6",
+      "file": "QM5_20009_NDX_DWX_M1_index_mss_low.set",
+      "mode": 0,
+      "set_sha256": "3acdacdb6ba1a3377d97a48241ad656d45273cd51bcd751dfcf3614d9d5b1183",
+      "sleeve": "index",
+      "slot": 0,
+      "symbol": "NDX.DWX",
+      "timeframe": "M1",
+      "variant": "mss_low"
+    },
+    {
+      "changed_parameter": "strategy_a_max_bars_to_mss",
+      "changed_value": "12",
+      "file": "QM5_20009_NDX_DWX_M1_index_mss_high.set",
+      "mode": 0,
+      "set_sha256": "08f0181e936ec4dc77912bde63f4ecbdb7c6bba7c0d1ff04faa306f11f3312cc",
+      "sleeve": "index",
+      "slot": 0,
+      "symbol": "NDX.DWX",
+      "timeframe": "M1",
+      "variant": "mss_high"
+    },
+    {
+      "changed_parameter": "strategy_a_min_fvg_atr",
+      "changed_value": "0.0",
+      "file": "QM5_20009_NDX_DWX_M1_index_fvg_low.set",
+      "mode": 0,
+      "set_sha256": "e19c0bc1d83d69678dd3e26e3189531a29bd96a91ad7c6b521484d9a9187cffe",
+      "sleeve": "index",
+      "slot": 0,
+      "symbol": "NDX.DWX",
+      "timeframe": "M1",
+      "variant": "fvg_low"
+    },
+    {
+      "changed_parameter": "strategy_a_min_fvg_atr",
+      "changed_value": "0.10",
+      "file": "QM5_20009_NDX_DWX_M1_index_fvg_high.set",
+      "mode": 0,
+      "set_sha256": "f63316ba6798210550babbb603eb1a1a1d80d54ec001fe87aa762dfa714c0e79",
+      "sleeve": "index",
+      "slot": 0,
+      "symbol": "NDX.DWX",
+      "timeframe": "M1",
+      "variant": "fvg_high"
+    },
+    {
+      "changed_parameter": "strategy_a_sl_buffer_atr",
+      "changed_value": "0.05",
+      "file": "QM5_20009_NDX_DWX_M1_index_stop_low.set",
+      "mode": 0,
+      "set_sha256": "33042c9078ee2e51db5fc022538df7b5583d3e127f3cdf26e63cdb4532b5efcb",
+      "sleeve": "index",
+      "slot": 0,
+      "symbol": "NDX.DWX",
+      "timeframe": "M1",
+      "variant": "stop_low"
+    },
+    {
+      "changed_parameter": "strategy_a_sl_buffer_atr",
+      "changed_value": "0.15",
+      "file": "QM5_20009_NDX_DWX_M1_index_stop_high.set",
+      "mode": 0,
+      "set_sha256": "f9f5b69c52a4ec1e0f214b5245bfa4da3eaa429782f8307a42da28f1bd9efeff",
+      "sleeve": "index",
+      "slot": 0,
+      "symbol": "NDX.DWX",
+      "timeframe": "M1",
+      "variant": "stop_high"
+    },
+    {
+      "changed_parameter": "strategy_a_min_rr",
+      "changed_value": "1.5",
+      "file": "QM5_20009_NDX_DWX_M1_index_rr_low.set",
+      "mode": 0,
+      "set_sha256": "2902e48bb28f63e9d43f32e9db52b59fe121cc5dc1afcb0956dd78d740680c76",
+      "sleeve": "index",
+      "slot": 0,
+      "symbol": "NDX.DWX",
+      "timeframe": "M1",
+      "variant": "rr_low"
+    },
+    {
+      "changed_parameter": "strategy_a_min_rr",
+      "changed_value": "2.5",
+      "file": "QM5_20009_NDX_DWX_M1_index_rr_high.set",
+      "mode": 0,
+      "set_sha256": "8a1af33336b213388afcf7f3f86cdba596735b2f1cf8e14766756a436d8b214b",
+      "sleeve": "index",
+      "slot": 0,
+      "symbol": "NDX.DWX",
+      "timeframe": "M1",
+      "variant": "rr_high"
+    },
+    {
+      "changed_parameter": null,
+      "changed_value": null,
+      "file": "QM5_20009_GDAXI_DWX_M1_index_center.set",
+      "mode": 0,
+      "set_sha256": "37560c5df995b8cbabc930371d43aea5ec4d300f308e55ed4c146f1ad00e7965",
+      "sleeve": "index",
+      "slot": 1,
+      "symbol": "GDAXI.DWX",
+      "timeframe": "M1",
+      "variant": "center"
+    },
+    {
+      "changed_parameter": "strategy_a_pivot_wing",
+      "changed_value": "1",
+      "file": "QM5_20009_GDAXI_DWX_M1_index_pivot_low.set",
+      "mode": 0,
+      "set_sha256": "de82af8ebf6f9adbed500690e13a2cb6b877d50c834228f38b60507d7ef044a9",
+      "sleeve": "index",
+      "slot": 1,
+      "symbol": "GDAXI.DWX",
+      "timeframe": "M1",
+      "variant": "pivot_low"
+    },
+    {
+      "changed_parameter": "strategy_a_pivot_wing",
+      "changed_value": "3",
+      "file": "QM5_20009_GDAXI_DWX_M1_index_pivot_high.set",
+      "mode": 0,
+      "set_sha256": "fefbb46a6515a16530cd80cab6f30d5c30da1f3a8baf7ceab96dc7e1a9ac5f4f",
+      "sleeve": "index",
+      "slot": 1,
+      "symbol": "GDAXI.DWX",
+      "timeframe": "M1",
+      "variant": "pivot_high"
+    },
+    {
+      "changed_parameter": "strategy_a_reclaim_bars",
+      "changed_value": "1",
+      "file": "QM5_20009_GDAXI_DWX_M1_index_reclaim_low.set",
+      "mode": 0,
+      "set_sha256": "7921ed3ffd070a22ce948edd9303238d4a44781200868bfc43c2b8791379a8b2",
+      "sleeve": "index",
+      "slot": 1,
+      "symbol": "GDAXI.DWX",
+      "timeframe": "M1",
+      "variant": "reclaim_low"
+    },
+    {
+      "changed_parameter": "strategy_a_reclaim_bars",
+      "changed_value": "5",
+      "file": "QM5_20009_GDAXI_DWX_M1_index_reclaim_high.set",
+      "mode": 0,
+      "set_sha256": "e5f324f4f870852834f59b046156ec99549d2cf2121ed4eec60b52180a6a0236",
+      "sleeve": "index",
+      "slot": 1,
+      "symbol": "GDAXI.DWX",
+      "timeframe": "M1",
+      "variant": "reclaim_high"
+    },
+    {
+      "changed_parameter": "strategy_a_max_bars_to_mss",
+      "changed_value": "6",
+      "file": "QM5_20009_GDAXI_DWX_M1_index_mss_low.set",
+      "mode": 0,
+      "set_sha256": "46d6b21651ce630eb3a5c1644b55bab4f48fb6997da0bffc28fbfa25936bc194",
+      "sleeve": "index",
+      "slot": 1,
+      "symbol": "GDAXI.DWX",
+      "timeframe": "M1",
+      "variant": "mss_low"
+    },
+    {
+      "changed_parameter": "strategy_a_max_bars_to_mss",
+      "changed_value": "12",
+      "file": "QM5_20009_GDAXI_DWX_M1_index_mss_high.set",
+      "mode": 0,
+      "set_sha256": "aaad4866b8723cacd07269438341b7e772eba72f0e493c51585b67d222d57379",
+      "sleeve": "index",
+      "slot": 1,
+      "symbol": "GDAXI.DWX",
+      "timeframe": "M1",
+      "variant": "mss_high"
+    },
+    {
+      "changed_parameter": "strategy_a_min_fvg_atr",
+      "changed_value": "0.0",
+      "file": "QM5_20009_GDAXI_DWX_M1_index_fvg_low.set",
+      "mode": 0,
+      "set_sha256": "731b400229124e2404e6c3f4666fd54a2189c4b9aa5b1430fc3e048b2a62dfc5",
+      "sleeve": "index",
+      "slot": 1,
+      "symbol": "GDAXI.DWX",
+      "timeframe": "M1",
+      "variant": "fvg_low"
+    },
+    {
+      "changed_parameter": "strategy_a_min_fvg_atr",
+      "changed_value": "0.10",
+      "file": "QM5_20009_GDAXI_DWX_M1_index_fvg_high.set",
+      "mode": 0,
+      "set_sha256": "f6d2720b5f8080003f8752b6bb844a5cd0b953c5af11bae831f084fc0d87d893",
+      "sleeve": "index",
+      "slot": 1,
+      "symbol": "GDAXI.DWX",
+      "timeframe": "M1",
+      "variant": "fvg_high"
+    },
+    {
+      "changed_parameter": "strategy_a_sl_buffer_atr",
+      "changed_value": "0.05",
+      "file": "QM5_20009_GDAXI_DWX_M1_index_stop_low.set",
+      "mode": 0,
+      "set_sha256": "4352fbca74414e4c30f023232a8963cddf14314c8ff82efe8600e06a67624fe3",
+      "sleeve": "index",
+      "slot": 1,
+      "symbol": "GDAXI.DWX",
+      "timeframe": "M1",
+      "variant": "stop_low"
+    },
+    {
+      "changed_parameter": "strategy_a_sl_buffer_atr",
+      "changed_value": "0.15",
+      "file": "QM5_20009_GDAXI_DWX_M1_index_stop_high.set",
+      "mode": 0,
+      "set_sha256": "3db20955f61b77b4c18584802f25ceef1b85d843b785d895b346d76c153bf5a9",
+      "sleeve": "index",
+      "slot": 1,
+      "symbol": "GDAXI.DWX",
+      "timeframe": "M1",
+      "variant": "stop_high"
+    },
+    {
+      "changed_parameter": "strategy_a_min_rr",
+      "changed_value": "1.5",
+      "file": "QM5_20009_GDAXI_DWX_M1_index_rr_low.set",
+      "mode": 0,
+      "set_sha256": "9c35369a09d615985d88e485288528d8fbc682698759601a231a3b1e72a3c88c",
+      "sleeve": "index",
+      "slot": 1,
+      "symbol": "GDAXI.DWX",
+      "timeframe": "M1",
+      "variant": "rr_low"
+    },
+    {
+      "changed_parameter": "strategy_a_min_rr",
+      "changed_value": "2.5",
+      "file": "QM5_20009_GDAXI_DWX_M1_index_rr_high.set",
+      "mode": 0,
+      "set_sha256": "56d74f1dab3d7d1cb4fc7c6cad8072ebbcca9759abb4d1cb99f296958f25e8f2",
+      "sleeve": "index",
+      "slot": 1,
+      "symbol": "GDAXI.DWX",
+      "timeframe": "M1",
+      "variant": "rr_high"
+    },
+    {
+      "changed_parameter": null,
+      "changed_value": null,
+      "file": "QM5_20009_GBPUSD_DWX_M5_fx_center.set",
+      "mode": 1,
+      "set_sha256": "6a0447a455498d064e36764c18dd4762a59e874b016a5b7b776d66500a01d4b9",
+      "sleeve": "fx",
+      "slot": 2,
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "M5",
+      "variant": "center"
+    },
+    {
+      "changed_parameter": "strategy_b_pivot_wing",
+      "changed_value": "1",
+      "file": "QM5_20009_GBPUSD_DWX_M5_fx_pivot_low.set",
+      "mode": 1,
+      "set_sha256": "12193c1b78d63b3178e08606eaa1c3c4766407c7b3c314ff3347c2a07085cb37",
+      "sleeve": "fx",
+      "slot": 2,
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "M5",
+      "variant": "pivot_low"
+    },
+    {
+      "changed_parameter": "strategy_b_pivot_wing",
+      "changed_value": "3",
+      "file": "QM5_20009_GBPUSD_DWX_M5_fx_pivot_high.set",
+      "mode": 1,
+      "set_sha256": "ba982b6a8e34cfee628e0eaef4a6faa271ea3c869efccaa34914e09d709c5b95",
+      "sleeve": "fx",
+      "slot": 2,
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "M5",
+      "variant": "pivot_high"
+    },
+    {
+      "changed_parameter": "strategy_b_reclaim_bars",
+      "changed_value": "1",
+      "file": "QM5_20009_GBPUSD_DWX_M5_fx_reclaim_low.set",
+      "mode": 1,
+      "set_sha256": "d28e25f82cf21db44f065e269990a68da72d3a42d7b0538148aadb6151f9e1aa",
+      "sleeve": "fx",
+      "slot": 2,
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "M5",
+      "variant": "reclaim_low"
+    },
+    {
+      "changed_parameter": "strategy_b_reclaim_bars",
+      "changed_value": "5",
+      "file": "QM5_20009_GBPUSD_DWX_M5_fx_reclaim_high.set",
+      "mode": 1,
+      "set_sha256": "c2bdde3d8d6348ce0101526aeadeccaf3bc86b6b5abd8d28b255fa9a17aa9f9a",
+      "sleeve": "fx",
+      "slot": 2,
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "M5",
+      "variant": "reclaim_high"
+    },
+    {
+      "changed_parameter": "strategy_b_max_bars_to_mss",
+      "changed_value": "6",
+      "file": "QM5_20009_GBPUSD_DWX_M5_fx_mss_low.set",
+      "mode": 1,
+      "set_sha256": "08cc655ebf8c547adca4988cef2a639506fe44a1f437f85e5e1dd5036fa88d7b",
+      "sleeve": "fx",
+      "slot": 2,
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "M5",
+      "variant": "mss_low"
+    },
+    {
+      "changed_parameter": "strategy_b_max_bars_to_mss",
+      "changed_value": "18",
+      "file": "QM5_20009_GBPUSD_DWX_M5_fx_mss_high.set",
+      "mode": 1,
+      "set_sha256": "d40bebb9c33bac43ed67df8377d16498795eefcca13da7e79642a065b097606d",
+      "sleeve": "fx",
+      "slot": 2,
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "M5",
+      "variant": "mss_high"
+    },
+    {
+      "changed_parameter": "strategy_b_min_fvg_atr",
+      "changed_value": "0.0",
+      "file": "QM5_20009_GBPUSD_DWX_M5_fx_fvg_low.set",
+      "mode": 1,
+      "set_sha256": "d513fa5c52202dc16aebd80ce00bfc3cd9b8857097b02d8e8e11eb4996702796",
+      "sleeve": "fx",
+      "slot": 2,
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "M5",
+      "variant": "fvg_low"
+    },
+    {
+      "changed_parameter": "strategy_b_min_fvg_atr",
+      "changed_value": "0.10",
+      "file": "QM5_20009_GBPUSD_DWX_M5_fx_fvg_high.set",
+      "mode": 1,
+      "set_sha256": "79d5fdd8121a047493a4a19636ae58affe85238b7c6281adac0ae5de1f84e630",
+      "sleeve": "fx",
+      "slot": 2,
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "M5",
+      "variant": "fvg_high"
+    },
+    {
+      "changed_parameter": "strategy_b_sl_buffer_atr",
+      "changed_value": "0.05",
+      "file": "QM5_20009_GBPUSD_DWX_M5_fx_stop_low.set",
+      "mode": 1,
+      "set_sha256": "d2b1020ef7b59f03a9ef09399490a90945fdd4460abdc1b267d3036f6a4590f8",
+      "sleeve": "fx",
+      "slot": 2,
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "M5",
+      "variant": "stop_low"
+    },
+    {
+      "changed_parameter": "strategy_b_sl_buffer_atr",
+      "changed_value": "0.15",
+      "file": "QM5_20009_GBPUSD_DWX_M5_fx_stop_high.set",
+      "mode": 1,
+      "set_sha256": "cdde8ce856362c080b33ed8d2e988cbaff826da8ea86c75abd2f71d9d64f136c",
+      "sleeve": "fx",
+      "slot": 2,
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "M5",
+      "variant": "stop_high"
+    },
+    {
+      "changed_parameter": "strategy_b_min_rr",
+      "changed_value": "1.5",
+      "file": "QM5_20009_GBPUSD_DWX_M5_fx_rr_low.set",
+      "mode": 1,
+      "set_sha256": "a60de077521783c9ee03c60608a93a4800bf4a8c15ca1fe3a200f68151bb5473",
+      "sleeve": "fx",
+      "slot": 2,
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "M5",
+      "variant": "rr_low"
+    },
+    {
+      "changed_parameter": "strategy_b_min_rr",
+      "changed_value": "2.5",
+      "file": "QM5_20009_GBPUSD_DWX_M5_fx_rr_high.set",
+      "mode": 1,
+      "set_sha256": "b8f0d5bd0d441b98a31653cfad0eb303d7529f797fc39270dead8d6bcf065d89",
+      "sleeve": "fx",
+      "slot": 2,
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "M5",
+      "variant": "rr_high"
+    },
+    {
+      "changed_parameter": null,
+      "changed_value": null,
+      "file": "QM5_20009_EURUSD_DWX_M5_fx_center.set",
+      "mode": 1,
+      "set_sha256": "13a492b496c2667b5de5f02315c56c0bf4c8a85f27dc4a2bf7891a0fc7fa2f52",
+      "sleeve": "fx",
+      "slot": 5,
+      "symbol": "EURUSD.DWX",
+      "timeframe": "M5",
+      "variant": "center"
+    },
+    {
+      "changed_parameter": "strategy_b_pivot_wing",
+      "changed_value": "1",
+      "file": "QM5_20009_EURUSD_DWX_M5_fx_pivot_low.set",
+      "mode": 1,
+      "set_sha256": "cafcc8542c4127501658fed0ff6736ffa3bf5be7eb1439ae7498971456af1481",
+      "sleeve": "fx",
+      "slot": 5,
+      "symbol": "EURUSD.DWX",
+      "timeframe": "M5",
+      "variant": "pivot_low"
+    },
+    {
+      "changed_parameter": "strategy_b_pivot_wing",
+      "changed_value": "3",
+      "file": "QM5_20009_EURUSD_DWX_M5_fx_pivot_high.set",
+      "mode": 1,
+      "set_sha256": "6fdb1b737422386734d8e4261b586f49ae012b8feb5780e48dcb6a1eb4435471",
+      "sleeve": "fx",
+      "slot": 5,
+      "symbol": "EURUSD.DWX",
+      "timeframe": "M5",
+      "variant": "pivot_high"
+    },
+    {
+      "changed_parameter": "strategy_b_reclaim_bars",
+      "changed_value": "1",
+      "file": "QM5_20009_EURUSD_DWX_M5_fx_reclaim_low.set",
+      "mode": 1,
+      "set_sha256": "2a0acccd43a5bfb67b8787ab70b2e836e0c58ebc048f93527b7b248297995a94",
+      "sleeve": "fx",
+      "slot": 5,
+      "symbol": "EURUSD.DWX",
+      "timeframe": "M5",
+      "variant": "reclaim_low"
+    },
+    {
+      "changed_parameter": "strategy_b_reclaim_bars",
+      "changed_value": "5",
+      "file": "QM5_20009_EURUSD_DWX_M5_fx_reclaim_high.set",
+      "mode": 1,
+      "set_sha256": "ffcc12e426947f9ddf48cdbd4d67e11159d5520768ad9793e32101eb54af1b6d",
+      "sleeve": "fx",
+      "slot": 5,
+      "symbol": "EURUSD.DWX",
+      "timeframe": "M5",
+      "variant": "reclaim_high"
+    },
+    {
+      "changed_parameter": "strategy_b_max_bars_to_mss",
+      "changed_value": "6",
+      "file": "QM5_20009_EURUSD_DWX_M5_fx_mss_low.set",
+      "mode": 1,
+      "set_sha256": "f067efd139ef2e4ce36c3310f47ba5f46830760ad04054118781607d4aa82d80",
+      "sleeve": "fx",
+      "slot": 5,
+      "symbol": "EURUSD.DWX",
+      "timeframe": "M5",
+      "variant": "mss_low"
+    },
+    {
+      "changed_parameter": "strategy_b_max_bars_to_mss",
+      "changed_value": "18",
+      "file": "QM5_20009_EURUSD_DWX_M5_fx_mss_high.set",
+      "mode": 1,
+      "set_sha256": "c9feededc24e7f7d05e87c0b86c292e1e5a183a9cd825196bdd796f796658142",
+      "sleeve": "fx",
+      "slot": 5,
+      "symbol": "EURUSD.DWX",
+      "timeframe": "M5",
+      "variant": "mss_high"
+    },
+    {
+      "changed_parameter": "strategy_b_min_fvg_atr",
+      "changed_value": "0.0",
+      "file": "QM5_20009_EURUSD_DWX_M5_fx_fvg_low.set",
+      "mode": 1,
+      "set_sha256": "784c89d6bf4834bfadc2c0f6884085fbdf31d25bbacaf5008746d9bc45372b35",
+      "sleeve": "fx",
+      "slot": 5,
+      "symbol": "EURUSD.DWX",
+      "timeframe": "M5",
+      "variant": "fvg_low"
+    },
+    {
+      "changed_parameter": "strategy_b_min_fvg_atr",
+      "changed_value": "0.10",
+      "file": "QM5_20009_EURUSD_DWX_M5_fx_fvg_high.set",
+      "mode": 1,
+      "set_sha256": "82abb26293ba02aaac29f3cf66f13b69487da0b892627eb92c81841a20ae54cc",
+      "sleeve": "fx",
+      "slot": 5,
+      "symbol": "EURUSD.DWX",
+      "timeframe": "M5",
+      "variant": "fvg_high"
+    },
+    {
+      "changed_parameter": "strategy_b_sl_buffer_atr",
+      "changed_value": "0.05",
+      "file": "QM5_20009_EURUSD_DWX_M5_fx_stop_low.set",
+      "mode": 1,
+      "set_sha256": "eb6eaf678739a15efb689cd44c3f8af3542db241239240789ad22b0e746b1fd3",
+      "sleeve": "fx",
+      "slot": 5,
+      "symbol": "EURUSD.DWX",
+      "timeframe": "M5",
+      "variant": "stop_low"
+    },
+    {
+      "changed_parameter": "strategy_b_sl_buffer_atr",
+      "changed_value": "0.15",
+      "file": "QM5_20009_EURUSD_DWX_M5_fx_stop_high.set",
+      "mode": 1,
+      "set_sha256": "b4a202c42d56a3b51779aeaf416211d613373411f88833b43baf8b6fcfbefc23",
+      "sleeve": "fx",
+      "slot": 5,
+      "symbol": "EURUSD.DWX",
+      "timeframe": "M5",
+      "variant": "stop_high"
+    },
+    {
+      "changed_parameter": "strategy_b_min_rr",
+      "changed_value": "1.5",
+      "file": "QM5_20009_EURUSD_DWX_M5_fx_rr_low.set",
+      "mode": 1,
+      "set_sha256": "d8531dc5735dc0f02dc53d39303c50f07fc745b3ee7b21711a573d61a139a7c1",
+      "sleeve": "fx",
+      "slot": 5,
+      "symbol": "EURUSD.DWX",
+      "timeframe": "M5",
+      "variant": "rr_low"
+    },
+    {
+      "changed_parameter": "strategy_b_min_rr",
+      "changed_value": "2.5",
+      "file": "QM5_20009_EURUSD_DWX_M5_fx_rr_high.set",
+      "mode": 1,
+      "set_sha256": "8f1cdabf1dbfdaa5d43fcd8302972af0dd400814fefbd025929e55639d44f8e1",
+      "sleeve": "fx",
+      "slot": 5,
+      "symbol": "EURUSD.DWX",
+      "timeframe": "M5",
+      "variant": "rr_high"
+    }
+  ]
+}
