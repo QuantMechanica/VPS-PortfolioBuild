@@ -93,3 +93,24 @@ Flag-Reviews 11421-AUD/11165-EUR/XNG. Offene Nacharbeiten: 12474-6er-Proben (Nac
 
 **Nächster Schritt:** OWNER-Chart-Session (`ANLEITUNG_DXZ_FINAL.md`): 3 raus, 4 neu,
 10919-Restore, 19 Reloads (2× 11165-Re-Attach). Danach Claude-Schlussverify.
+
+---
+
+## SCHLUSSVERIFY — BUCH LIVE ALS SONNTAGS-FINAL-24 (2026-07-19 ~15:50)
+
+OWNER-Session: MT5-Neustart (lud beide 11165-Charts automatisch aufs neue Binary),
+4 neue Charts + 10919-Restore mit Setfiles, 19 Preset-Reloads über die neu sortierten
+`NN_Symbol_TF_EA`-Setfiles (05–23), Abschluss-Neustart zum Flush.
+
+**Claude-Schlussverify (deterministisch aus den Chart-Dateien, Profil DarwinexZero_V2):**
+- **24/24 Charts korrekt**: EA ✓, Magic-Slot ✓, RISK_PERCENT ±0.0002 ✓, RISK_FIXED=0 ✓
+- Summe RISK_PERCENT auf den Charts: **9.7499** ✓
+- Keine Extra-Charts, entfernte Sleeves (10476/10715/10692) nicht mehr geladen ✓
+- Journal fehlerfrei; AutoTrading durchgehend unangetastet
+- Preset-Hygiene: 24 Setfiles in Chart-Reihenfolge (`NN_Symbol_TF_EA.set`),
+  47 Alt-Setfiles in `_archiv_alte_setfiles\`
+
+**Damit ist das DXZ-Buch live als Sonntags-Final-24** (Konto 4000090541, Risiko 9.75,
+Sharpe-Erwartung 2.409 / MaxDD 2.59% auf versiegelter Basis). Probation-Flags:
+11421/AUD, 11165/EUR (Marginal-Reviews), 12567/XNG (Decay-42d), 13117 (runs-p),
+Neuzugänge 13117/13301/13213/1567-EUR (42d).
