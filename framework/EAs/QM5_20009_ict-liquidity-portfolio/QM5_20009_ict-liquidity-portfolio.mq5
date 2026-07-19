@@ -144,14 +144,9 @@ bool Strategy_SymbolMagicAndTimeframeValid()
         }
       if(_Symbol == "GBPUSD.DWX" && qm_magic_slot_offset == 2)
          return true;
-      if(_Symbol == "EURUSD.DWX")
-        {
-         // Frozen universe member, deliberately non-runnable until CEO+CTO
-         // allocate its missing registry/magic slot.  No user override exists.
-         Print("QM5_20009_EURUSD_MAGIC_NOT_REGISTERED: registry update required before build/run");
-         return false;
-        }
-      Print("QM5_20009_SYMBOL_MAGIC_MISMATCH: B currently permits GBPUSD.DWX/slot2; EURUSD slot is absent");
+      if(_Symbol == "EURUSD.DWX" && qm_magic_slot_offset == 5)
+         return true;
+      Print("QM5_20009_SYMBOL_MAGIC_MISMATCH: B requires GBPUSD.DWX/slot2 or EURUSD.DWX/slot5");
       return false;
      }
 
@@ -171,6 +166,15 @@ bool Strategy_NonTesterGovernorConfigValid()
       strategy_governor_heartbeat_max_age_seconds != 5 ||
       !MathIsValidNumber(RISK_FIXED) || RISK_FIXED != 0.0 ||
       !MathIsValidNumber(RISK_PERCENT) || RISK_PERCENT <= 0.0)
+      return false;
+   if(strategy_governor_policy_id == "FTMO_2S_P1_100K_V2" &&
+      MathAbs(RISK_PERCENT - 0.15) > 0.000000001)
+      return false;
+   if(strategy_governor_policy_id == "FTMO_2S_P2_100K_V2" &&
+      MathAbs(RISK_PERCENT - 0.105) > 0.000000001)
+      return false;
+   if(strategy_governor_policy_id == "FTMO_2S_FUNDED_100K_V2" &&
+      RISK_PERCENT > 0.10 + 0.000000001)
       return false;
    if(AccountInfoString(ACCOUNT_CURRENCY) != "USD" ||
       (ENUM_ACCOUNT_MARGIN_MODE)AccountInfoInteger(ACCOUNT_MARGIN_MODE) !=
@@ -841,16 +845,26 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
-   const ENUM_TIMEFRAMES expected_timeframe =
-      (strategy_mode == ICT_MODE_INDEX_MSS_FVG) ? PERIOD_M1 : PERIOD_M5;
-   if(!QM_FrameworkDeclareExecutionContract(expected_timeframe,
-                                             QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE,
-                                             "PORTFOLIO_SAFETY_AFTER_CARD_DAILY_HARD_FLAT"))
+   bool contract_declared = false;
+   if(strategy_mode == ICT_MODE_INDEX_MSS_FVG)
+      contract_declared = QM_FrameworkDeclareExecutionContract(
+         PERIOD_M1,
+         QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE,
+         "PORTFOLIO_SAFETY_AFTER_CARD_DAILY_HARD_FLAT");
+   else
+      contract_declared = QM_FrameworkDeclareExecutionContract(
+         PERIOD_M5,
+         QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE,
+         "PORTFOLIO_SAFETY_AFTER_CARD_DAILY_HARD_FLAT");
+   if(!contract_declared)
+     {
+      QM_FrameworkShutdown();
       return INIT_FAILED;
+     }
 
    // Snapshot the already-closed bar on attachment.  Historical reconstruction
    // may advance an incomplete sequence, but can never submit its old FVG.
-   g_last_closed_bar = iTime(_Symbol, expected_timeframe, 1); // perf-allowed: one closed-bar bootstrap read.
+   g_last_closed_bar = iTime(_Symbol, (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed: one closed-bar bootstrap read.
    ICT_SequenceResult reconstructed;
    if(Strategy_Reconstruct(reconstructed))
       Strategy_LogReconstruction(reconstructed);

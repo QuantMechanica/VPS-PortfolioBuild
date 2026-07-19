@@ -63,8 +63,9 @@ class FrozenContractTests(unittest.TestCase):
             '"NDX.DWX" && qm_magic_slot_offset == 0',
             '"GDAXI.DWX" && qm_magic_slot_offset == 1',
             '"GBPUSD.DWX" && qm_magic_slot_offset == 2',
-            "ICT_MODE_INDEX_MSS_FVG) ? PERIOD_M1 : PERIOD_M5",
-            "QM5_20009_EURUSD_MAGIC_NOT_REGISTERED",
+            '"EURUSD.DWX" && qm_magic_slot_offset == 5',
+            "QM_FrameworkDeclareExecutionContract(\n         PERIOD_M1,",
+            "QM_FrameworkDeclareExecutionContract(\n         PERIOD_M5,",
         )
         for token in required:
             self.assertIn(token, EA)
@@ -81,6 +82,9 @@ class FrozenContractTests(unittest.TestCase):
             "ACCOUNT_MARGIN_MODE_RETAIL_HEDGING",
             "QM_FTMO_ReadGovernorScale",
             "QM_RISK_MODE_PERCENT",
+            'strategy_governor_policy_id == "FTMO_2S_P1_100K_V2"',
+            'strategy_governor_policy_id == "FTMO_2S_P2_100K_V2"',
+            'strategy_governor_policy_id == "FTMO_2S_FUNDED_100K_V2"',
         )
         for token in required:
             self.assertIn(token, EA)
