@@ -9,7 +9,7 @@ param(
     [int]$Year,
     [string]$FromDate,
     [string]$ToDate,
-    [ValidateSet("any", "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10")]
+    [ValidateSet("any", "DEV1", "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10")]
     [string]$Terminal = "T1",
     [string]$Expert,
     [string]$Period = "H1",
@@ -55,6 +55,23 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+
+if (($Terminal -ieq "DEV1") -and $AllowRunningTerminal.IsPresent) {
+    throw "Refusing -Terminal DEV1 with -AllowRunningTerminal. DEV1 smoke runs require an idle terminal."
+}
+
+if ($Terminal -ieq "DEV1") {
+    try {
+        $dev1Account = New-Object System.Security.Principal.NTAccount("$env:COMPUTERNAME\QMDev1")
+        $dev1Sid = $dev1Account.Translate([System.Security.Principal.SecurityIdentifier]).Value
+        $currentSid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+    } catch {
+        throw "Unable to verify the required DEV1 Windows identity '$env:COMPUTERNAME\QMDev1': $($_.Exception.Message)"
+    }
+    if ($currentSid -cne $dev1Sid) {
+        throw "Refusing -Terminal DEV1 under Windows SID '$currentSid'. DEV1 requires the isolated '$env:COMPUTERNAME\QMDev1' identity (SID '$dev1Sid')."
+    }
+}
 
 if ($EAId -le 0) {
     if ([string]::IsNullOrWhiteSpace($EALabel) -or $EALabel -notmatch '^(?:QM5_)?(?<id>\d+)') {
@@ -386,8 +403,10 @@ function Resolve-TerminalRoot {
     )
 
     $root = Join-Path "D:\QM\mt5" $TerminalName
-    if ($TerminalName -notmatch '^T([1-9]|10)$') {
-        throw "Refusing non-factory terminal '$TerminalName'. Allowed factory terminals are T1..T10; T_Live is off limits."
+    $isFactoryTerminal = $TerminalName -match '^T([1-9]|10)$'
+    $isExplicitDevTerminal = $TerminalName -ieq 'DEV1'
+    if (-not $isFactoryTerminal -and -not $isExplicitDevTerminal) {
+        throw "Refusing terminal '$TerminalName'. Allowed terminals are factory T1..T10 plus explicit development terminal DEV1; T_Live is off limits."
     }
     if (-not (Test-Path -LiteralPath $root -PathType Container)) {
         throw "Terminal root does not exist: $root"
@@ -525,6 +544,9 @@ function Resolve-DispatchTerminal {
             $message = if ($decision.PSObject.Properties.Name -contains "message") { [string]$decision.message } else { "No message." }
             $errorCode = if ($decision.PSObject.Properties.Name -contains "error_code") { [string]$decision.error_code } else { "none" }
             throw "Terminal resolution returned no terminal. status=$decisionStatus error_code=$errorCode message=$message"
+        }
+        if ($decisionTerminal -notmatch '^T([1-9]|10)$') {
+            throw "Terminal resolution returned non-factory terminal '$decisionTerminal'. -Terminal any is restricted to T1..T10."
         }
         Write-Host ("run_smoke.dispatch_status={0}" -f $decisionStatus)
         Write-Host ("run_smoke.dispatch_terminal={0}" -f $decisionTerminal)
@@ -1591,13 +1613,26 @@ Write-Host ("run_smoke.stage=resolved_terminal terminal={0}" -f $effectiveTermin
 $terminalRoot = Resolve-TerminalRoot -TerminalName $effectiveTerminal
 $terminalExe = Resolve-TerminalExecutable -TerminalRoot $terminalRoot
 Write-Host ("run_smoke.stage=resolved_terminal_exe terminal={0} exe='{1}'" -f $effectiveTerminal, $terminalExe)
-Set-BacktestTerminalConfig -TerminalRoot $terminalRoot -TerminalName $effectiveTerminal
+
+# Resolve every DEV1 isolation boundary before mutating terminal configuration,
+# deploying an expert, or creating report directories.
+$resolvedReportRoot = [System.IO.Path]::GetFullPath($ReportRoot)
+if ($effectiveTerminal -ieq "DEV1") {
+    $dev1ReportRoot = [System.IO.Path]::GetFullPath("D:\QM\reports\dev1")
+    $dev1Prefix = $dev1ReportRoot.TrimEnd('\') + '\'
+    if (($resolvedReportRoot -ine $dev1ReportRoot) -and
+        (-not $resolvedReportRoot.StartsWith($dev1Prefix, [System.StringComparison]::OrdinalIgnoreCase))) {
+        throw "DEV1 ReportRoot must stay under 'D:\QM\reports\dev1'. Got: $resolvedReportRoot"
+    }
+}
 
 if (($Terminal -ine "any") -and (-not $AllowRunningTerminal.IsPresent)) {
     if (Test-TerminalAlreadyRunning -TerminalRoot $terminalRoot) {
         throw "Terminal instance is already running for $terminalRoot. Stop it first or pass -AllowRunningTerminal."
     }
 }
+
+Set-BacktestTerminalConfig -TerminalRoot $terminalRoot -TerminalName $effectiveTerminal
 
 if (-not $Expert) {
     if ($EALabel) {
@@ -1626,9 +1661,13 @@ Write-Host ("run_smoke.stage=resolved_setfile setfile='{0}'" -f $SetFile)
 
 $runTag = (Get-Date).ToUniversalTime().ToString("yyyyMMdd_HHmmss")
 $eaLabel = "QM5_{0}" -f $EAId
-$reportDir = Join-Path $ReportRoot "$eaLabel\$runTag"
+$reportDir = Join-Path $resolvedReportRoot "$eaLabel\$runTag"
 $rawDir = Join-Path $reportDir "raw"
-$frameworkEvidenceDir = "D:\QM\reports\framework\22"
+$frameworkEvidenceDir = if ($effectiveTerminal -ieq "DEV1") {
+    Join-Path $resolvedReportRoot "_framework_evidence\22"
+} else {
+    "D:\QM\reports\framework\22"
+}
 
 New-Item -ItemType Directory -Path $rawDir -Force | Out-Null
 New-Item -ItemType Directory -Path $frameworkEvidenceDir -Force | Out-Null
@@ -2170,7 +2209,9 @@ Write-Output "run_smoke.evidence=$evidencePath"
 
     Invoke-DispatchCompletion -OriginalTargetTerminal $Terminal -EAIdValue $EAId -SymbolName $Symbol -PeriodName $Period -YearValue $Year -SetFilePath $SetFile -DispatchPhaseValue $DispatchPhase -DispatchVersionValue $DispatchVersion -DispatchSubGateHashValue $DispatchSubGateHash
 
-if (Test-Path 'D:\QM\strategy_farm\state\FACTORY_OFF.flag') {
+if ($effectiveTerminal -ieq "DEV1") {
+    Write-Output "run_smoke.stage=post_run_pump_skipped (DEV1 isolation)"
+} elseif (Test-Path 'D:\QM\strategy_farm\state\FACTORY_OFF.flag') {
     Write-Output "run_smoke.stage=post_run_pump_skipped (FACTORY_OFF.flag)"
 } else {
     try {

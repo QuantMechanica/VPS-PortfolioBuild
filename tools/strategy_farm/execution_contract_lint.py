@@ -683,19 +683,23 @@ def lint_contract(
             )
         )
 
-    calls = list(EXECUTION_CALL_RE.finditer(text))
-    if len(calls) != 1:
-        issues.append(
-            _issue(
-                "execution_contract_call_count",
-                f"expected exactly one runtime declaration, found {len(calls)}",
-                ea_id=ea_id,
-                path=source,
-            )
-        )
-    else:
-        call = calls[0].groupdict()
-        expected_tf_token = f"PERIOD_{strategy_tf}"
+    calls = [match.groupdict() for match in EXECUTION_CALL_RE.finditer(text)]
+    expected_tf_token = f"PERIOD_{strategy_tf}"
+    expected_mode = MODE_TOKENS.get(mode)
+    expected_call = {
+        "timeframe": expected_tf_token,
+        "mode": expected_mode,
+        "declaration": declaration,
+    }
+    matching_calls = [
+        call
+        for call in calls
+        if call["timeframe"] == expected_call["timeframe"]
+        and call["mode"] == expected_call["mode"]
+        and call["declaration"] == expected_call["declaration"]
+    ]
+    if len(calls) == 1:
+        call = calls[0]
         if call["timeframe"] != expected_tf_token:
             issues.append(
                 _issue(
@@ -705,7 +709,6 @@ def lint_contract(
                     path=source,
                 )
             )
-        expected_mode = MODE_TOKENS.get(mode)
         if expected_mode and call["mode"] != expected_mode:
             issues.append(
                 _issue(
@@ -724,6 +727,17 @@ def lint_contract(
                     path=source,
                 )
             )
+    elif len(matching_calls) != 1:
+        issues.append(
+            _issue(
+                "execution_contract_call_count",
+                "expected exactly one runtime declaration matching this sleeve "
+                f"({expected_tf_token}, {expected_mode}, {declaration!r}); "
+                f"found {len(matching_calls)} among {len(calls)} declaration(s)",
+                ea_id=ea_id,
+                path=source,
+            )
+        )
 
     gate_pattern = re.compile(
         rf"QM_IsNewBar\s*\(\s*_Symbol\s*,\s*PERIOD_{re.escape(gate_tf)}\s*\)"
@@ -848,6 +862,59 @@ def lint_registry(
                 seen_exact.add(exact)
                 exact_eas.add(identity_ea)
         issues.extend(lint_contract(contract, repo_root=repo_root, as_of=as_of))
+
+    # One source may deliberately expose multiple mutually-exclusive runtime
+    # modes.  Every literal declaration still needs a registered sleeve tuple;
+    # this prevents the per-sleeve matching allowance above from hiding an
+    # unregistered execution path.
+    source_contracts: dict[tuple[int, str], list[dict[str, Any]]] = {}
+    for contract in selected:
+        ea_id = contract.get("ea_id")
+        source_raw = contract.get("source")
+        if isinstance(ea_id, int) and isinstance(source_raw, str):
+            source_contracts.setdefault((ea_id, source_raw), []).append(contract)
+    for (ea_id, source_raw), siblings in source_contracts.items():
+        source = repo_root / Path(source_raw)
+        if not source.exists():
+            continue
+        text = source.read_text(encoding="utf-8-sig", errors="replace")
+        actual_calls = [
+            (
+                match.group("timeframe"),
+                match.group("mode"),
+                match.group("declaration"),
+            )
+            for match in EXECUTION_CALL_RE.finditer(text)
+        ]
+        expected_calls = {
+            (
+                f"PERIOD_{item.get('strategy_timeframe')}",
+                MODE_TOKENS.get(str(item.get("friday_close", {}).get("mode"))),
+                str(item.get("friday_close", {}).get("declaration", "")),
+            )
+            for item in siblings
+        }
+        for call in sorted(set(actual_calls) - expected_calls):
+            issues.append(
+                _issue(
+                    "runtime_declaration_unregistered",
+                    "runtime declaration has no registered sleeve contract: "
+                    f"{call[0]}, {call[1]}, {call[2]!r}",
+                    ea_id=ea_id,
+                    path=source,
+                )
+            )
+        for call in sorted(set(actual_calls)):
+            if actual_calls.count(call) > 1:
+                issues.append(
+                    _issue(
+                        "runtime_declaration_duplicate",
+                        "runtime declaration tuple appears more than once: "
+                        f"{call[0]}, {call[1]}, {call[2]!r}",
+                        ea_id=ea_id,
+                        path=source,
+                    )
+                )
     if ea_ids is not None:
         seen_eas = seen_legacy | exact_eas
         missing = ea_ids - seen_eas

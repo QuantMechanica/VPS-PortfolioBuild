@@ -310,6 +310,62 @@
       "friday_close": {"enabled": true, "hour_broker": 21, "mode": "FRAMEWORK_OVERRIDE", "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED", "qualification_status": "BLOCKED", "card_evidence": null},
       "calendar": {"policy": "NONE"},
       "promotion": {"status": "BLOCKED", "block_reasons": ["approved_card_g0_status_contradiction", "card_v2_policy_repair_not_approved", "completed_month_mom12_reconstruction_not_built", "friday_close_changes_monthly_source_exit_semantics", "policy_reentry_ablation_required", "master_module_disposition_required", "owner_no_weekend_session_buffer_unsealed", "mandatory_friday_close_after_news_filter_remediation_required", "session_aware_weekend_flattening_remediation_required", "structured_five_axis_cost_evidence_required", "continuous_segment_requalification_required", "target_binary_two_run_requalification_required", "q8_synchronized_intraday_mtm_required"]}
+    },
+    {
+      "ea_id": 20009,
+      "symbol": "NDX.DWX",
+      "timeframe": "M1",
+      "variant_id": "INDEX_PRIMARY",
+      "slug": "ict-liquidity-portfolio",
+      "card_ref": "framework/EAs/QM5_20009_ict-liquidity-portfolio/docs/strategy_contract.md",
+      "source": "framework/EAs/QM5_20009_ict-liquidity-portfolio/QM5_20009_ict-liquidity-portfolio.mq5",
+      "strategy_timeframe": "M1",
+      "bar_gate_timeframe": "M1",
+      "friday_close": {"enabled": true, "hour_broker": 23, "mode": "FRAMEWORK_OVERRIDE", "declaration": "PORTFOLIO_SAFETY_AFTER_CARD_DAILY_HARD_FLAT", "qualification_status": "BLOCKED", "card_evidence": null},
+      "calendar": {"policy": "NONE"},
+      "promotion": {"status": "BLOCKED", "block_reasons": ["research_contract_not_yet_qualified", "locked_2026_holdout_unread", "synchronized_ftmo_joint_replay_missing"]}
+    },
+    {
+      "ea_id": 20009,
+      "symbol": "GDAXI.DWX",
+      "timeframe": "M1",
+      "variant_id": "INDEX_TRANSPORT",
+      "slug": "ict-liquidity-portfolio",
+      "card_ref": "framework/EAs/QM5_20009_ict-liquidity-portfolio/docs/strategy_contract.md",
+      "source": "framework/EAs/QM5_20009_ict-liquidity-portfolio/QM5_20009_ict-liquidity-portfolio.mq5",
+      "strategy_timeframe": "M1",
+      "bar_gate_timeframe": "M1",
+      "friday_close": {"enabled": true, "hour_broker": 23, "mode": "FRAMEWORK_OVERRIDE", "declaration": "PORTFOLIO_SAFETY_AFTER_CARD_DAILY_HARD_FLAT", "qualification_status": "BLOCKED", "card_evidence": null},
+      "calendar": {"policy": "NONE"},
+      "promotion": {"status": "BLOCKED", "block_reasons": ["transport_only_not_selection_market", "research_contract_not_yet_qualified", "synchronized_ftmo_joint_replay_missing"]}
+    },
+    {
+      "ea_id": 20009,
+      "symbol": "EURUSD.DWX",
+      "timeframe": "M5",
+      "variant_id": "FX_PRIMARY_EURUSD",
+      "slug": "ict-liquidity-portfolio",
+      "card_ref": "framework/EAs/QM5_20009_ict-liquidity-portfolio/docs/strategy_contract.md",
+      "source": "framework/EAs/QM5_20009_ict-liquidity-portfolio/QM5_20009_ict-liquidity-portfolio.mq5",
+      "strategy_timeframe": "M5",
+      "bar_gate_timeframe": "M5",
+      "friday_close": {"enabled": true, "hour_broker": 23, "mode": "FRAMEWORK_OVERRIDE", "declaration": "PORTFOLIO_SAFETY_AFTER_CARD_DAILY_HARD_FLAT", "qualification_status": "BLOCKED", "card_evidence": null},
+      "calendar": {"policy": "NONE"},
+      "promotion": {"status": "BLOCKED", "block_reasons": ["engineering_hypothesis_not_official_ict_model", "research_contract_not_yet_qualified", "locked_2026_holdout_unread", "synchronized_ftmo_joint_replay_missing"]}
+    },
+    {
+      "ea_id": 20009,
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "M5",
+      "variant_id": "FX_PRIMARY_GBPUSD",
+      "slug": "ict-liquidity-portfolio",
+      "card_ref": "framework/EAs/QM5_20009_ict-liquidity-portfolio/docs/strategy_contract.md",
+      "source": "framework/EAs/QM5_20009_ict-liquidity-portfolio/QM5_20009_ict-liquidity-portfolio.mq5",
+      "strategy_timeframe": "M5",
+      "bar_gate_timeframe": "M5",
+      "friday_close": {"enabled": true, "hour_broker": 23, "mode": "FRAMEWORK_OVERRIDE", "declaration": "PORTFOLIO_SAFETY_AFTER_CARD_DAILY_HARD_FLAT", "qualification_status": "BLOCKED", "card_evidence": null},
+      "calendar": {"policy": "NONE"},
+      "promotion": {"status": "BLOCKED", "block_reasons": ["engineering_hypothesis_not_official_ict_model", "research_contract_not_yet_qualified", "locked_2026_holdout_unread", "synchronized_ftmo_joint_replay_missing"]}
     }
   ]
 }

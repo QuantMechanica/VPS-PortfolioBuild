@@ -54,14 +54,14 @@ def test_dxz23_registry_is_source_bound_and_structurally_clean() -> None:
         as_of=date(2026, 7, 15),
     )
     assert payload["schema_version"] == 2
-    assert len(contracts) == 23
-    assert len({item["ea_id"] for item in contracts}) == 20
+    assert len(contracts) == 27
+    assert len({item["ea_id"] for item in contracts}) == 21
     assert len(
         {
             (item["ea_id"], item.get("symbol"), item.get("timeframe"))
             for item in contracts
         }
-    ) == 23
+    ) == 27
     assert issues == []
 
 
@@ -406,6 +406,28 @@ def test_runtime_timeframe_drift_is_rejected(tmp_path: Path) -> None:
         for issue in lint.lint_contract(contract, repo_root=tmp_path, as_of=date(2026, 7, 15))
     }
     assert "runtime_timeframe_mismatch" in codes
+
+
+def test_20009_multimode_runtime_declarations_are_exactly_registered() -> None:
+    contracts = [item for item in _contracts() if item["ea_id"] == 20009]
+    assert {
+        (item["symbol"], item["timeframe"], item["variant_id"])
+        for item in contracts
+    } == {
+        ("NDX.DWX", "M1", "INDEX_PRIMARY"),
+        ("GDAXI.DWX", "M1", "INDEX_TRANSPORT"),
+        ("EURUSD.DWX", "M5", "FX_PRIMARY_EURUSD"),
+        ("GBPUSD.DWX", "M5", "FX_PRIMARY_GBPUSD"),
+    }
+    for contract in contracts:
+        codes = {
+            issue.code
+            for issue in lint.lint_contract(
+                contract, repo_root=ROOT, as_of=date(2026, 7, 19)
+            )
+        }
+        assert "execution_contract_call_count" not in codes
+        assert "runtime_bar_gate_missing" not in codes
 
 
 def test_finite_calendar_expires_fail_closed_in_linter() -> None:
