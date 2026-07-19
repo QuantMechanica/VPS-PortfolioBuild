@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-19T16:07:03.1614929Z",
-    "total":  3354,
+    "generated_at":  "2026-07-19T17:07:03.8621026Z",
+    "total":  3355,
     "items":  [
                   {
                       "slug":  "ath-breakout-atr-trail",
@@ -1208,6 +1208,12 @@
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-05-22T08:44:36.9041626Z"
+                  },
+                  {
+                      "slug":  "spx-intraday-mom_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-19T16:19:51.7047074Z"
                   },
                   {
                       "slug":  "tokyo-fix-5m_card",
