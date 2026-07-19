@@ -1,0 +1,59 @@
+{
+  "_authority": "OWNER 2026-06-01 worst-case-of {DXZ, FTMO}; evidence docs/ops/DXZ_COMMISSION_RESEARCH_2026-06-01.md + Q08_Q11_WORSTCASE_COMMISSION_SPEC_2026-06-01.md",
+  "model": "max(pct_rate_rt*notional_acct, flat_per_lot_rt*volume)",
+  "account_currency": "USD",
+  "classes": {
+    "forex": {
+      "pct_rate_rt": 0.00005,
+      "flat_per_lot_rt": 5.0
+    },
+    "index": {
+      "pct_rate_rt": 0.00005,
+      "flat_per_lot_rt": 5.5
+    },
+    "commodity": {
+      "pct_rate_rt": 0.00005,
+      "flat_per_lot_rt": 0.0
+    }
+  },
+  "symbol_class": {
+    "AUDCAD.DWX": "forex",
+    "AUDCHF.DWX": "forex",
+    "AUDJPY.DWX": "forex",
+    "AUDNZD.DWX": "forex",
+    "AUDUSD.DWX": "forex",
+    "CADCHF.DWX": "forex",
+    "CADJPY.DWX": "forex",
+    "CHFJPY.DWX": "forex",
+    "EURAUD.DWX": "forex",
+    "EURCAD.DWX": "forex",
+    "EURCHF.DWX": "forex",
+    "EURGBP.DWX": "forex",
+    "EURJPY.DWX": "forex",
+    "EURNZD.DWX": "forex",
+    "EURUSD.DWX": "forex",
+    "GBPAUD.DWX": "forex",
+    "GBPCAD.DWX": "forex",
+    "GBPCHF.DWX": "forex",
+    "GBPJPY.DWX": "forex",
+    "GBPNZD.DWX": "forex",
+    "GBPUSD.DWX": "forex",
+    "GDAXI.DWX": "index",
+    "NDX.DWX": "index",
+    "NZDCAD.DWX": "forex",
+    "NZDCHF.DWX": "forex",
+    "NZDJPY.DWX": "forex",
+    "NZDUSD.DWX": "forex",
+    "SP500.DWX": "index",
+    "UK100.DWX": "index",
+    "USDCAD.DWX": "forex",
+    "USDCHF.DWX": "forex",
+    "USDJPY.DWX": "forex",
+    "WS30.DWX": "index",
+    "XAGUSD.DWX": "commodity",
+    "XAUUSD.DWX": "commodity",
+    "XNGUSD.DWX": "commodity",
+    "XTIUSD.DWX": "commodity"
+  },
+  "default_class": "forex"
+}

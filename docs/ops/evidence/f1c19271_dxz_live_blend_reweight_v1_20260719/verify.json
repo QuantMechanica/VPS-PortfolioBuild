@@ -1,20 +1,28 @@
 {
   "artifacts": [
     {
+      "path": ".gitattributes",
+      "sha256": "3e5e82fc72e044ea9af807a2030b73dbb94800d2cd1775302063b2eee761ba1e"
+    },
+    {
       "path": "manifest_snapshot.json",
       "sha256": "52ba12ed2ca3196121c3478c94bce3c84d306608f3b778c6f93e3518e346a458"
     },
     {
+      "path": "invocation_config.json",
+      "sha256": "fc13818eef3d45cdcd8444fdc3888bf2b74fdf848137da20fc1a056889374e28"
+    },
+    {
       "path": "deal_export_contract.json",
-      "sha256": "3309469e7e94694ac0b13c01f1133af5592239ed2f5bf229fd243e788b5d5c64"
+      "sha256": "a1a7aa32cb570e7b64c5ce33096eddd8c95da24f88f2fac5eef60bdf50902c72"
     },
     {
       "path": "input_sha256.csv",
-      "sha256": "12867a2e4fe11235dcaa26d523f18968fe1af779584959f188973c72ecf39cd7"
+      "sha256": "476761672a7b53b25f863f47520a35dac4f1088690110444be09fcdfa005c2a7"
     },
     {
       "path": "live_deals_normalized.csv",
-      "sha256": "a178f0c2b24ff2ce59bbd080b19fd1dfcb51abc0d69e654afca5b375ac03cfe4"
+      "sha256": "6142227d4a52828d675eb2612b2c15cef0b66df5200a4036cde72fd709f800a0"
     },
     {
       "path": "live_daily_pnl.csv",
@@ -22,37 +30,171 @@
     },
     {
       "path": "sleeve_diagnostics.csv",
-      "sha256": "9418b6c57ff6f2675420e693035b5b1f1a7af45597fc5eda25448b07e68fd3db"
+      "sha256": "70b291c9965b699bbbb6a2109a3ad693cd2ea88970a8cfb17be8a963f81d54f7"
     },
     {
       "path": "oos_folds.csv",
-      "sha256": "ac02da55258bcfb5efabc13d8b003ed8ce14dc0185e7b522546b72850653e6a3"
+      "sha256": "bf8aa29bd8a51dad82dfb0e81709598dcfeb6cf827c0dca2db829bbe78a638f0"
     },
     {
       "path": "oos_validation.json",
-      "sha256": "85ebfb7aa8f6187c74c7bc92af78909093980c734c92190cecc7c53097aba2d5"
+      "sha256": "3e457c060a1bf04b99d69efebec9be283a5333ab4716cffdb94932ecbeb63117"
     },
     {
       "path": "owner_review_template.json",
-      "sha256": "47c090f179c809be40c43aff0ea117a049773a9a8d7ccac2a6eb2efe60b89671"
+      "sha256": "b3c5187d08eaa1b21df13431d89aa3a435ab1797559eea19baab60809c7dca6c"
     },
     {
       "path": "total_risk_review_template.md",
-      "sha256": "755a72f6e879e772de2ac20ee7921af4a330010ecef5b68d0fe917d5d64e2bee"
+      "sha256": "24f61d9f378dd1e3a48f5d8314548cafdd37fbde8047b891144eba33d4c308a5"
+    },
+    {
+      "path": "frozen_inputs/manifest_source.json",
+      "sha256": "5ce872cc4ff92fe849edcfbcb9d1fd8e4e75d0b0d9892cdc025f6590f008fb8a"
+    },
+    {
+      "path": "frozen_inputs/owner_decision.md",
+      "sha256": "41d202525796f67429d39f2676392e7139327321e6608debc7f905662619eeee"
+    },
+    {
+      "path": "frozen_inputs/staging_report.json",
+      "sha256": "e1529c38fc9d37965d3ace6fa4e2a97a8f75010a2bcc369b8c4a27373565c939"
+    },
+    {
+      "path": "frozen_inputs/magic_numbers.csv",
+      "sha256": "0fd00da3f1ee0e0fa4829c83e18ff90866cfb4b98222a227ca26f166189d93c6"
+    },
+    {
+      "path": "frozen_inputs/live_commission.json",
+      "sha256": "119f795cefce2f819f0c7aae3bddb87affbffa771f596df48d182cf89989e197"
+    },
+    {
+      "path": "frozen_inputs/dxz_live_blend_reweight.py",
+      "sha256": "ba5a3a1fb9f953fcf8ad2dbc17fe7d54841a8a6eeec297200c39a4bb0828af54"
+    },
+    {
+      "path": "frozen_inputs/commission.py",
+      "sha256": "e7c6de68330ebb0a13748dc57e351c2b847a577b0bfb0d8f8d95e5a8616cdf35"
+    },
+    {
+      "path": "frozen_inputs/portfolio_common.py",
+      "sha256": "905bc2a4a71fb94d9e6ffdd24426543014a3f713408f0284826c876ab6e8819d"
+    },
+    {
+      "path": "frozen_inputs/q08_trades/1556_XAUUSD_DWX.jsonl",
+      "sha256": "b7d5d73ce64d2a8f3be582cec38401e19606c4b1171815e3969fa2c68dbb3834"
+    },
+    {
+      "path": "frozen_inputs/q08_trades/1567_EURUSD_DWX.jsonl",
+      "sha256": "54247fd1142f9a504ae0cceba99aa7acb0e1e1a1fac656cc2896e6edc72e693a"
+    },
+    {
+      "path": "frozen_inputs/q08_trades/10403_XAUUSD_DWX.jsonl",
+      "sha256": "ee7346670371c1fe8b411b9037075d2526bb94b174eb6128fddb7d8b8b34b924"
+    },
+    {
+      "path": "frozen_inputs/q08_trades/10440_NDX_DWX.jsonl",
+      "sha256": "d64a14f881e2cb2ae8ab376fb95b1b5a3819d527d18dc5937b44d738d3bff722"
+    },
+    {
+      "path": "frozen_inputs/q08_trades/10513_XAUUSD_DWX.jsonl",
+      "sha256": "81d723c9b7f570d0c25ddbbd71d801724b1c8178f2eab3e12c7b7d7a6ad3f89e"
+    },
+    {
+      "path": "frozen_inputs/q08_trades/10706_GBPUSD_DWX.jsonl",
+      "sha256": "3649e35f89030017e5e5fc07517bed476244dd22ca2534766cb8e8c25364d9a7"
+    },
+    {
+      "path": "frozen_inputs/q08_trades/10911_GDAXI_DWX.jsonl",
+      "sha256": "155ed7ce43f26c8e9fa2295bf5de6eae205a9aff592413319a53f13714b36ed8"
+    },
+    {
+      "path": "frozen_inputs/q08_trades/10919_XTIUSD_DWX.jsonl",
+      "sha256": "b70c60f0e30be2008374c0815dbbfa5226f621f76b89f81909e65a05bf27aecb"
+    },
+    {
+      "path": "frozen_inputs/q08_trades/10939_GBPUSD_DWX.jsonl",
+      "sha256": "6e667ecf604331a7a1b0c0d793345b7c08c560e399f1b3a6bf3920b1d07f4d93"
+    },
+    {
+      "path": "frozen_inputs/q08_trades/11132_SP500_DWX.jsonl",
+      "sha256": "1b2bc25398062d04e8572297121dd2a40d613f9e84db62a852113a97c451bb43"
+    },
+    {
+      "path": "frozen_inputs/q08_trades/11165_AUDCAD_DWX.jsonl",
+      "sha256": "86f929e74fa101eacca7c92d77f3fed670ae5df8cea01c742621785816fd42a3"
+    },
+    {
+      "path": "frozen_inputs/q08_trades/11165_EURUSD_DWX.jsonl",
+      "sha256": "bdcf2c0934689dec50feb011ebb90a72ba6fd62cf62247c1c2e1d92760f6045d"
+    },
+    {
+      "path": "frozen_inputs/q08_trades/11421_AUDUSD_DWX.jsonl",
+      "sha256": "8edaa1013e1993d19d90f43a13f7a073e2fae0d5bf89f833ed3fc90fe7a1fcb8"
+    },
+    {
+      "path": "frozen_inputs/q08_trades/11421_EURUSD_DWX.jsonl",
+      "sha256": "7ad106530db79e93ac24a136a451c856a3660823f5d99c0c7130a20df90d3902"
+    },
+    {
+      "path": "frozen_inputs/q08_trades/11708_EURUSD_DWX.jsonl",
+      "sha256": "c0e69074fe8b4a6a94c91129715e9545014af2c1342ea5aa93ab1d5d9372998f"
+    },
+    {
+      "path": "frozen_inputs/q08_trades/12567_XAUUSD_DWX.jsonl",
+      "sha256": "e938a966f4c9a2a1b8653452cbc01f6d8138355909dfad70beb6bde3b5de17f2"
+    },
+    {
+      "path": "frozen_inputs/q08_trades/12567_XNGUSD_DWX.jsonl",
+      "sha256": "65fe45eb6468ae8830a2aa2bb13e0f7e55baf9f5e6f8535a9442aba53601b743"
+    },
+    {
+      "path": "frozen_inputs/q08_trades/12778_AUDUSD_DWX.jsonl",
+      "sha256": "2f956e85c885fa32de48a1bbafb9ae235fe8bea822bdc0d665dc3c5cfc73d642"
+    },
+    {
+      "path": "frozen_inputs/q08_trades/12969_USDJPY_DWX.jsonl",
+      "sha256": "8b8adfa4829218e614646a302311cc26ce63611de99ba51d788847e8ff1aa445"
+    },
+    {
+      "path": "frozen_inputs/q08_trades/12989_XAUUSD_DWX.jsonl",
+      "sha256": "5c736d370f64ff88f6129454ece2d086ad06403caeae3848a5bbc0df3c5d8ac2"
+    },
+    {
+      "path": "frozen_inputs/q08_trades/13117_EURGBP_DWX.jsonl",
+      "sha256": "6df9a10a9f46fbd3df7dace6bc5cd448b904bcb28cbccfe91dde9d38915ec327"
+    },
+    {
+      "path": "frozen_inputs/q08_trades/13128_NDX_DWX.jsonl",
+      "sha256": "76abad49ccdac838aeecea4bdeafc3f60ed3ef131e2c28885476c6c0a687e1b3"
+    },
+    {
+      "path": "frozen_inputs/q08_trades/13213_USDJPY_DWX.jsonl",
+      "sha256": "f9d0449b7f068506f8de94d2b6653f2bcea7b5f5842f78df937c5f5e8f8711b2"
+    },
+    {
+      "path": "frozen_inputs/q08_trades/13301_GDAXI_DWX.jsonl",
+      "sha256": "0b6a7530e65fd6632550b5eea726b6ef62ebdf5bcc5095d6f4d59bd3188ba454"
     }
   ],
-  "generated_at_utc": "2026-07-19T15:05:00Z",
+  "generated_at_utc": "2026-07-19T15:37:22Z",
+  "generator_commit": "be6cb400d619dd25354a8987308e30f0f6358402",
   "invariants": {
     "auto_apply": false,
+    "candidate_weights_withheld_on_hold": true,
     "composition_unchanged": true,
     "deployment_action": "NONE",
     "final_24_sleeves": true,
+    "live_evidence_present_for_at_least_one_sleeve": false,
     "oos_validation_pass": false,
+    "owner_decision_pinned": true,
     "owner_review_only": true,
+    "sealed_baseline_pinned": true,
     "sleeve_cap_respected": true,
     "total_risk_exact_6dp": true,
-    "writes_under_live_root": false
+    "writes_outside_live_roots": true
   },
   "schema_version": 1,
-  "status": "HOLD"
+  "status": "HOLD",
+  "task_id": "f1c19271-dbff-4694-a302-327605a59616"
 }

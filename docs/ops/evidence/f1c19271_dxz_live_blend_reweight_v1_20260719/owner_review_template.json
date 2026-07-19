@@ -1,20 +1,23 @@
 {
   "analysis_only": true,
   "analysis_weights_withheld": true,
+  "approval_status": "UNAPPROVED",
   "as_of": "2026-07-19",
   "attributed_closed_positions": 0,
   "auto_apply": false,
   "autotrading_action": "NONE",
+  "backtest_pnl_basis": "Q08 close rows adjusted by canonical commission model",
   "blend_window_sessions": 42,
   "book": "DXZ_FINAL_24",
   "composition_change_allowed": false,
   "deal_export_metadata": null,
   "deployment_action": "NONE",
-  "generated_at_utc": "2026-07-19T15:05:00Z",
+  "generated_at_utc": "2026-07-19T15:37:22Z",
+  "generator_commit": "be6cb400d619dd25354a8987308e30f0f6358402",
   "hold_reasons": [
     "LIVE_DEAL_EXPORT_REQUIRED",
     "LIVE_WINDOW_IMMATURE_0_OF_21_MINIMUM_SESSIONS",
-    "NO_SLEEVE_HAS_MINIMUM_LIVE_DEAL_EVIDENCE",
+    "NO_SLEEVE_HAS_MINIMUM_LIVE_EVIDENCE",
     "BLEND_RULE_OOS_FAILED"
   ],
   "input_sha256": [
@@ -46,7 +49,19 @@
       "kind": "tool_source",
       "path": "C:\\QM\\repo\\tools\\strategy_farm\\portfolio\\dxz_live_blend_reweight.py",
       "rows": "",
-      "sha256": "55835d5646bcb88755f11f9e0a7facd9d5f7636adbdd994a1d37b0d8e2359e25"
+      "sha256": "ba5a3a1fb9f953fcf8ad2dbc17fe7d54841a8a6eeec297200c39a4bb0828af54"
+    },
+    {
+      "kind": "python_dependency",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\portfolio\\commission.py",
+      "rows": "",
+      "sha256": "e7c6de68330ebb0a13748dc57e351c2b847a577b0bfb0d8f8d95e5a8616cdf35"
+    },
+    {
+      "kind": "python_dependency",
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\portfolio\\portfolio_common.py",
+      "rows": "",
+      "sha256": "905bc2a4a71fb94d9e6ffdd24426543014a3f713408f0284826c876ab6e8819d"
     },
     {
       "kind": "commission_registry",
@@ -223,10 +238,21 @@
       "sha256": "0b6a7530e65fd6632550b5eea726b6ef62ebdf5bcc5095d6f4d59bd3188ba454"
     }
   ],
+  "invocation_config": {
+    "blend_window_sessions": 42,
+    "minimum_closed_positions_per_sleeve": 2,
+    "minimum_proposal_sessions": 21,
+    "sleeve_cap_percent": 1.0,
+    "template_only": true,
+    "total_risk_percent": 9.75
+  },
   "live_book_realised_deal_metrics": {
+    "annualised_return_pct": 0.0,
     "annualised_vol_pct": 0.0,
+    "darwin_return_proxy_pct": 0.0,
     "flat_sessions": 0,
     "max_drawdown_pct": 0.0,
+    "monthly_var95_proxy_pct": 0.0,
     "negative_sessions": 0,
     "positive_sessions": 0,
     "sessions": 0,
@@ -235,25 +261,33 @@
   },
   "live_eligible_sleeves": 0,
   "live_fallback_to_backtest_sleeves": 24,
-  "live_start": "2026-07-19",
+  "live_pnl_basis": "completed position lifecycle net booked on final close day",
+  "live_start": "2026-07-20",
   "manual_owner_approval_required": true,
   "minimum_proposal_sessions": 21,
+  "not_for_deploy": true,
   "observed_live_sessions": 0,
   "oos_validation_verdict": "FAIL",
+  "pinned_baseline_fingerprint_sha256": "d40b26fe56d4ce1cd6082413a566a4c5b6f3ac2e8f1e3ce8b80ba13d2103e495",
   "proposed_weights": [],
   "return_forecasts_used": false,
   "schema_version": 1,
   "sealed_backtest_current_weight_metrics": {
+    "annualised_return_pct": 8.4780493,
     "annualised_vol_pct": 3.62319796,
+    "darwin_return_proxy_pct": 39.60766295,
     "flat_sessions": 119,
     "max_drawdown_pct": 2.58749017,
+    "monthly_var95_proxy_pct": 1.39132977,
     "negative_sessions": 956,
     "positive_sessions": 1072,
     "sessions": 2147,
     "total_net": 72231.63434717,
     "worst_day_pct": -0.85730608
   },
+  "session_calendar": "UTC weekdays; complete UTC days only",
   "sleeve_cap_percent": 1.0,
   "status": "HOLD",
+  "task_id": "f1c19271-dbff-4694-a302-327605a59616",
   "total_risk_percent": 9.75
 }

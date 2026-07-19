@@ -4,9 +4,41 @@
   "blend_fold_wins": 28,
   "blend_window_days": 42,
   "blended_log_rmse": 0.9643795035,
+  "book_risk": {
+    "baseline_mean_ann_vol_pct": 3.67071106,
+    "baseline_mean_maxdd_pct": 0.75003598,
+    "blended_max_fold_maxdd_pct": 2.08223526,
+    "blended_mean_ann_vol_pct": 3.61899684,
+    "blended_mean_maxdd_pct": 0.74069037,
+    "blended_worst_fold_day_pct": -0.95047009,
+    "ftmo_daily_dd_limit_pct": 5.0,
+    "ftmo_total_dd_limit_pct": 10.0,
+    "pass": true
+  },
+  "chronological_segments": [
+    {
+      "baseline_log_rmse": 0.8853023575,
+      "baseline_mean_darwin_proxy_pct": 50.56325854,
+      "blended_log_rmse": 0.9199417717,
+      "blended_mean_darwin_proxy_pct": 54.40475456,
+      "folds": 39,
+      "pass": false,
+      "segment": 1
+    },
+    {
+      "baseline_log_rmse": 0.9754174574,
+      "baseline_mean_darwin_proxy_pct": 100.64966975,
+      "blended_log_rmse": 1.0061117323,
+      "blended_mean_darwin_proxy_pct": 98.24005794,
+      "folds": 39,
+      "pass": false,
+      "segment": 2
+    }
+  ],
   "decisive_fold_win_rate": 0.358974359,
   "fold_count": 78,
   "forecast_loss": "RMSE of log(predicted sleeve daily vol / next-window realised vol)",
+  "forecast_pass": false,
   "method": "leakage_free_expanding_backtest_plus_pseudo_live_variance_blend",
   "observation_days": [
     10,
@@ -15,7 +47,7 @@
   ],
   "oos_horizon_days": 21,
   "pairs_scored": 1326,
-  "pass_rule": "blended_rmse<=baseline_rmse AND decisive_fold_win_rate>=0.5",
+  "pass_rule": "forecast RMSE/win-rate pass AND both chronological segments have no-worse RMSE plus no-worse held-out Darwin proxy AND held-out book mean vol/maxDD are no worse with <=5% worst day and <=10% maxDD",
   "relative_rmse": 1.034900149,
   "schema_version": 1,
   "step_days": 63,

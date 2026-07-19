@@ -1,0 +1,521 @@
+{
+ "book": "DXZ",
+ "status": "DRAFT",
+ "n_sleeves": 24,
+ "starting_capital": 100000.0,
+ "total_risk_pct": 9.75,
+ "weight_method": "capped_inverse_vol_cap1.0_total9.75",
+ "risk_application_contract": {
+  "RISK_PERCENT": "absolute_allocated_sleeve_risk",
+  "PORTFOLIO_WEIGHT": 1.0,
+  "effective_risk_formula": "RISK_PERCENT * PORTFOLIO_WEIGHT",
+  "relative_weights_are_analytics_only": true
+ },
+ "generated_by": "claude_sunday_final_on_sealed_bundle_20260719",
+ "stream_basis": {
+  "bundle": "D:\\QM\\reports\\portfolio\\dxz_final_20260719"
+ },
+ "kpis": {
+  "sharpe": 2.4091,
+  "max_drawdown_pct": 2.5875,
+  "total_net_of_cost_profit": 72231.66,
+  "n_days": 2028,
+  "n_sleeves": 24
+ },
+ "kpis_alternates": {
+  "final_ohne_XNG": {
+   "sharpe": 2.3767,
+   "max_drawdown_pct": 2.9209,
+   "total_net_of_cost_profit": 78957.81,
+   "n_days": 2027,
+   "n_sleeves": 23
+  },
+  "V1_nur_minus_10715": {
+   "sharpe": 2.4305,
+   "max_drawdown_pct": 3.268,
+   "total_net_of_cost_profit": 65550.35,
+   "n_days": 1716,
+   "n_sleeves": 22
+  }
+ },
+ "changes": {
+  "removed": [
+   {
+    "ea_id": 10715,
+    "symbol": "USDJPY.DWX",
+    "reason": "typed neighborhood breach: asian_end_hour -1 -> DD ratio 1.906"
+   },
+   {
+    "ea_id": 10692,
+    "symbol": "NDX.DWX",
+    "reason": "honest PBO 82.9% on Q03 cohort (35 splits)"
+   }
+  ],
+  "added": [
+   {
+    "ea_id": 13213,
+    "symbol": "USDJPY.DWX",
+    "reason": "Balke #2: manual typed neighborhood PASS (3 valid, 0 breaches), corr 0.145, baseline PF 1.18/1587tr, decay negative"
+   },
+   {
+    "ea_id": 1567,
+    "symbol": "EURUSD.DWX",
+    "reason": "full typed pipeline pass incl countdown +/-1 (weakest 1.445x in plateau); Q09 corr 0.257, standalone PF 1.60"
+   }
+  ],
+  "flags": [
+   "11421/AUDUSD marginal (twin clean)",
+   "11165/EURUSD marginal (sibling clean)",
+   "12567/XNGUSD decay-42d-review",
+   "13117 runs-p 0.0488 boundary"
+  ]
+ },
+ "note": "Sunday final: approved-24 minus 10715/10692 plus 13213/1567-EURUSD on the sealed dxz_final_20260719 bundle. DRAFT ONLY - OWNER written approval + chart session remain.",
+ "manual_approval_required": true,
+ "autotrading_action": "NONE",
+ "deployment_action": "STAGE_ONLY",
+ "new_candidates": [
+  {
+   "ea_id": 13213,
+   "symbol": "USDJPY.DWX"
+  },
+  {
+   "ea_id": 1567,
+   "symbol": "EURUSD.DWX"
+  }
+ ],
+ "sleeves": [
+  {
+   "ea_id": 10403,
+   "symbol": "XAUUSD.DWX",
+   "ea_label": "QM5_10403_et-turtle20x",
+   "magic_number": 104030002,
+   "weight": 0.220397,
+   "risk_percent": 0.220397,
+   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10403_et-turtle20x\\QM5_10403_et-turtle20x.ex5",
+   "backtest_set": "C:\\QM\\repo\\framework\\EAs\\QM5_10403_et-turtle20x\\sets\\QM5_10403_et-turtle20x_XAUUSD.DWX_D1_backtest.set",
+   "new_candidate": false,
+   "trades": 209,
+   "set_file_expectation": {
+    "ENV": "live",
+    "RISK_FIXED": 0.0,
+    "RISK_PERCENT": 0.220397,
+    "PORTFOLIO_WEIGHT": 1.0
+   }
+  },
+  {
+   "ea_id": 10440,
+   "symbol": "NDX.DWX",
+   "ea_label": "QM5_10440_mql5-ohlc-mtf",
+   "magic_number": 104400003,
+   "weight": 0.057749,
+   "risk_percent": 0.057749,
+   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10440_mql5-ohlc-mtf\\QM5_10440_mql5-ohlc-mtf.ex5",
+   "backtest_set": "C:\\QM\\repo\\framework\\EAs\\QM5_10440_mql5-ohlc-mtf\\sets\\QM5_10440_mql5-ohlc-mtf_NDX.DWX_H1_backtest.set",
+   "new_candidate": false,
+   "trades": 618,
+   "set_file_expectation": {
+    "ENV": "live",
+    "RISK_FIXED": 0.0,
+    "RISK_PERCENT": 0.057749,
+    "PORTFOLIO_WEIGHT": 1.0
+   }
+  },
+  {
+   "ea_id": 10513,
+   "symbol": "XAUUSD.DWX",
+   "ea_label": "QM5_10513_mql5-ichimoku",
+   "magic_number": 105130003,
+   "weight": 0.304951,
+   "risk_percent": 0.304951,
+   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10513_mql5-ichimoku\\QM5_10513_mql5-ichimoku.ex5",
+   "backtest_set": "C:\\QM\\repo\\framework\\EAs\\QM5_10513_mql5-ichimoku\\sets\\QM5_10513_mql5-ichimoku_XAUUSD.DWX_D1_backtest.set",
+   "new_candidate": false,
+   "trades": 76,
+   "set_file_expectation": {
+    "ENV": "live",
+    "RISK_FIXED": 0.0,
+    "RISK_PERCENT": 0.304951,
+    "PORTFOLIO_WEIGHT": 1.0
+   }
+  },
+  {
+   "ea_id": 10911,
+   "symbol": "GDAXI.DWX",
+   "ea_label": "QM5_10911_grimes-complex-pb",
+   "magic_number": 109110003,
+   "weight": 0.12756,
+   "risk_percent": 0.12756,
+   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10911_grimes-complex-pb\\QM5_10911_grimes-complex-pb.ex5",
+   "backtest_set": "C:\\QM\\repo\\framework\\EAs\\QM5_10911_grimes-complex-pb\\sets\\QM5_10911_grimes-complex-pb_GDAXI.DWX_H1_backtest.set",
+   "new_candidate": false,
+   "trades": 331,
+   "set_file_expectation": {
+    "ENV": "live",
+    "RISK_FIXED": 0.0,
+    "RISK_PERCENT": 0.12756,
+    "PORTFOLIO_WEIGHT": 1.0
+   }
+  },
+  {
+   "ea_id": 10919,
+   "symbol": "XTIUSD.DWX",
+   "ea_label": "QM5_10919_grimes-overshoot",
+   "magic_number": 109190001,
+   "weight": 0.918127,
+   "risk_percent": 0.918127,
+   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10919_grimes-overshoot\\QM5_10919_grimes-overshoot.ex5",
+   "backtest_set": "C:\\QM\\repo\\framework\\EAs\\QM5_10919_grimes-overshoot\\sets\\QM5_10919_grimes-overshoot_XTIUSD.DWX_H4_backtest.set",
+   "new_candidate": false,
+   "trades": 30,
+   "set_file_expectation": {
+    "ENV": "live",
+    "RISK_FIXED": 0.0,
+    "RISK_PERCENT": 0.918127,
+    "PORTFOLIO_WEIGHT": 1.0
+   }
+  },
+  {
+   "ea_id": 10939,
+   "symbol": "GBPUSD.DWX",
+   "ea_label": "QM5_10939_grimes-context-pb",
+   "magic_number": 109390001,
+   "weight": 0.188724,
+   "risk_percent": 0.188724,
+   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10939_grimes-context-pb\\QM5_10939_grimes-context-pb.ex5",
+   "backtest_set": "C:\\QM\\repo\\framework\\EAs\\QM5_10939_grimes-context-pb\\sets\\QM5_10939_grimes-context-pb_GBPUSD.DWX_H4_backtest.set",
+   "new_candidate": false,
+   "trades": 92,
+   "set_file_expectation": {
+    "ENV": "live",
+    "RISK_FIXED": 0.0,
+    "RISK_PERCENT": 0.188724,
+    "PORTFOLIO_WEIGHT": 1.0
+   }
+  },
+  {
+   "ea_id": 11132,
+   "symbol": "SP500.DWX",
+   "ea_label": "QM5_11132_tm-cum-rsi2",
+   "magic_number": 111320000,
+   "weight": 0.456203,
+   "risk_percent": 0.456203,
+   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11132_tm-cum-rsi2\\QM5_11132_tm-cum-rsi2.ex5",
+   "backtest_set": "C:\\QM\\repo\\framework\\EAs\\QM5_11132_tm-cum-rsi2\\sets\\QM5_11132_tm-cum-rsi2_SP500.DWX_D1_backtest.set",
+   "new_candidate": false,
+   "trades": 73,
+   "set_file_expectation": {
+    "ENV": "live",
+    "RISK_FIXED": 0.0,
+    "RISK_PERCENT": 0.456203,
+    "PORTFOLIO_WEIGHT": 1.0
+   }
+  },
+  {
+   "ea_id": 11165,
+   "symbol": "AUDCAD.DWX",
+   "ea_label": "QM5_11165_weiss-rsi-ma",
+   "magic_number": 111650002,
+   "weight": 0.522974,
+   "risk_percent": 0.522974,
+   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11165_weiss-rsi-ma\\QM5_11165_weiss-rsi-ma.ex5",
+   "backtest_set": "C:\\QM\\repo\\framework\\EAs\\QM5_11165_weiss-rsi-ma\\sets\\QM5_11165_weiss-rsi-ma_AUDCAD.DWX_H1_backtest.set",
+   "new_candidate": false,
+   "trades": 207,
+   "set_file_expectation": {
+    "ENV": "live",
+    "RISK_FIXED": 0.0,
+    "RISK_PERCENT": 0.522974,
+    "PORTFOLIO_WEIGHT": 1.0
+   }
+  },
+  {
+   "ea_id": 11165,
+   "symbol": "EURUSD.DWX",
+   "ea_label": "QM5_11165_weiss-rsi-ma",
+   "magic_number": 111650000,
+   "weight": 0.41273,
+   "risk_percent": 0.41273,
+   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11165_weiss-rsi-ma\\QM5_11165_weiss-rsi-ma.ex5",
+   "backtest_set": "C:\\QM\\repo\\framework\\EAs\\QM5_11165_weiss-rsi-ma\\sets\\QM5_11165_weiss-rsi-ma_EURUSD.DWX_H1_backtest.set",
+   "new_candidate": false,
+   "trades": 260,
+   "set_file_expectation": {
+    "ENV": "live",
+    "RISK_FIXED": 0.0,
+    "RISK_PERCENT": 0.41273,
+    "PORTFOLIO_WEIGHT": 1.0
+   }
+  },
+  {
+   "ea_id": 11421,
+   "symbol": "AUDUSD.DWX",
+   "ea_label": "QM5_11421_ohlc-daily-squeeze-reversal-d1",
+   "magic_number": 114210003,
+   "weight": 0.361431,
+   "risk_percent": 0.361431,
+   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\QM5_11421_ohlc-daily-squeeze-reversal-d1.ex5",
+   "backtest_set": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\sets\\QM5_11421_ohlc-daily-squeeze-reversal-d1_AUDUSD.DWX_D1_backtest.set",
+   "new_candidate": false,
+   "trades": 81,
+   "set_file_expectation": {
+    "ENV": "live",
+    "RISK_FIXED": 0.0,
+    "RISK_PERCENT": 0.361431,
+    "PORTFOLIO_WEIGHT": 1.0
+   }
+  },
+  {
+   "ea_id": 11421,
+   "symbol": "EURUSD.DWX",
+   "ea_label": "QM5_11421_ohlc-daily-squeeze-reversal-d1",
+   "magic_number": 114210000,
+   "weight": 0.336387,
+   "risk_percent": 0.336387,
+   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\QM5_11421_ohlc-daily-squeeze-reversal-d1.ex5",
+   "backtest_set": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\sets\\QM5_11421_ohlc-daily-squeeze-reversal-d1_EURUSD.DWX_D1_backtest.set",
+   "new_candidate": false,
+   "trades": 92,
+   "set_file_expectation": {
+    "ENV": "live",
+    "RISK_FIXED": 0.0,
+    "RISK_PERCENT": 0.336387,
+    "PORTFOLIO_WEIGHT": 1.0
+   }
+  },
+  {
+   "ea_id": 11708,
+   "symbol": "EURUSD.DWX",
+   "ea_label": "QM5_11708_anon-market-squeeze-d1",
+   "magic_number": 117080000,
+   "weight": 0.507971,
+   "risk_percent": 0.507971,
+   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11708_anon-market-squeeze-d1\\QM5_11708_anon-market-squeeze-d1.ex5",
+   "backtest_set": "C:\\QM\\repo\\framework\\EAs\\QM5_11708_anon-market-squeeze-d1\\sets\\QM5_11708_anon-market-squeeze-d1_EURUSD.DWX_D1_backtest.set",
+   "new_candidate": false,
+   "trades": 178,
+   "set_file_expectation": {
+    "ENV": "live",
+    "RISK_FIXED": 0.0,
+    "RISK_PERCENT": 0.507971,
+    "PORTFOLIO_WEIGHT": 1.0
+   }
+  },
+  {
+   "ea_id": 12567,
+   "symbol": "XAUUSD.DWX",
+   "ea_label": "QM5_12567_cum-rsi2-commodity",
+   "magic_number": 125670003,
+   "weight": 0.746532,
+   "risk_percent": 0.746532,
+   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12567_cum-rsi2-commodity\\QM5_12567_cum-rsi2-commodity.ex5",
+   "backtest_set": "C:\\QM\\repo\\framework\\EAs\\QM5_12567_cum-rsi2-commodity\\sets\\QM5_12567_cum-rsi2-commodity_XAUUSD.DWX_D1_backtest.set",
+   "new_candidate": false,
+   "trades": 73,
+   "set_file_expectation": {
+    "ENV": "live",
+    "RISK_FIXED": 0.0,
+    "RISK_PERCENT": 0.746532,
+    "PORTFOLIO_WEIGHT": 1.0
+   }
+  },
+  {
+   "ea_id": 12567,
+   "symbol": "XNGUSD.DWX",
+   "ea_label": "QM5_12567_cum-rsi2-commodity",
+   "magic_number": 125670002,
+   "weight": 0.979669,
+   "risk_percent": 0.979669,
+   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12567_cum-rsi2-commodity\\QM5_12567_cum-rsi2-commodity.ex5",
+   "backtest_set": "C:\\QM\\repo\\framework\\EAs\\QM5_12567_cum-rsi2-commodity\\sets\\QM5_12567_cum-rsi2-commodity_XNGUSD.DWX_D1_backtest.set",
+   "new_candidate": false,
+   "trades": 58,
+   "set_file_expectation": {
+    "ENV": "live",
+    "RISK_FIXED": 0.0,
+    "RISK_PERCENT": 0.979669,
+    "PORTFOLIO_WEIGHT": 1.0
+   }
+  },
+  {
+   "ea_id": 12778,
+   "symbol": "AUDUSD.DWX",
+   "ea_label": "QM5_12778_edgelab-audusd-eurjpy-cointegration",
+   "magic_number": 127780000,
+   "weight": 0.490483,
+   "risk_percent": 0.490483,
+   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\QM5_12778_edgelab-audusd-eurjpy-cointegration.ex5",
+   "backtest_set": "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\sets\\QM5_12778_edgelab-audusd-eurjpy-cointegration_QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1_D1_backtest.set",
+   "new_candidate": false,
+   "trades": 195,
+   "set_file_expectation": {
+    "ENV": "live",
+    "RISK_FIXED": 0.0,
+    "RISK_PERCENT": 0.490483,
+    "PORTFOLIO_WEIGHT": 1.0
+   }
+  },
+  {
+   "ea_id": 12969,
+   "symbol": "USDJPY.DWX",
+   "ea_label": "QM5_12969_usdjpy-gotobi-nakane-fix",
+   "magic_number": 129690000,
+   "weight": 0.510041,
+   "risk_percent": 0.510041,
+   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12969_usdjpy-gotobi-nakane-fix\\QM5_12969_usdjpy-gotobi-nakane-fix.ex5",
+   "backtest_set": "C:\\QM\\repo\\framework\\EAs\\QM5_12969_usdjpy-gotobi-nakane-fix\\sets\\QM5_12969_usdjpy-gotobi-nakane-fix_USDJPY.DWX_M30_backtest.set",
+   "new_candidate": false,
+   "trades": 331,
+   "set_file_expectation": {
+    "ENV": "live",
+    "RISK_FIXED": 0.0,
+    "RISK_PERCENT": 0.510041,
+    "PORTFOLIO_WEIGHT": 1.0
+   }
+  },
+  {
+   "ea_id": 12989,
+   "symbol": "XAUUSD.DWX",
+   "ea_label": "QM5_12989_grimes-nested-pb-v2",
+   "magic_number": 129890003,
+   "weight": 0.241974,
+   "risk_percent": 0.241974,
+   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12989_grimes-nested-pb-v2\\QM5_12989_grimes-nested-pb-v2.ex5",
+   "backtest_set": "C:\\QM\\repo\\framework\\EAs\\QM5_12989_grimes-nested-pb-v2\\sets\\QM5_12989_grimes-nested-pb-v2_XAUUSD.DWX_H4_backtest.set",
+   "new_candidate": false,
+   "trades": 51,
+   "set_file_expectation": {
+    "ENV": "live",
+    "RISK_FIXED": 0.0,
+    "RISK_PERCENT": 0.241974,
+    "PORTFOLIO_WEIGHT": 1.0
+   }
+  },
+  {
+   "ea_id": 13128,
+   "symbol": "NDX.DWX",
+   "ea_label": "QM5_13128_pre-fomc-drift-ndx",
+   "magic_number": 131280000,
+   "weight": 1.0,
+   "risk_percent": 1.0,
+   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13128_pre-fomc-drift-ndx\\QM5_13128_pre-fomc-drift-ndx.ex5",
+   "backtest_set": "C:\\QM\\repo\\framework\\EAs\\QM5_13128_pre-fomc-drift-ndx\\sets\\QM5_13128_pre-fomc-drift-ndx_NDX.DWX_H1_backtest.set",
+   "new_candidate": false,
+   "trades": 56,
+   "set_file_expectation": {
+    "ENV": "live",
+    "RISK_FIXED": 0.0,
+    "RISK_PERCENT": 1.0,
+    "PORTFOLIO_WEIGHT": 1.0
+   }
+  },
+  {
+   "ea_id": 1556,
+   "symbol": "XAUUSD.DWX",
+   "ea_label": "QM5_1556_aa-zak-mom12",
+   "magic_number": 15560004,
+   "weight": 0.601729,
+   "risk_percent": 0.601729,
+   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1556_aa-zak-mom12\\QM5_1556_aa-zak-mom12.ex5",
+   "backtest_set": "C:\\QM\\repo\\framework\\EAs\\QM5_1556_aa-zak-mom12\\sets\\QM5_1556_aa-zak-mom12_XAUUSD.DWX_D1_backtest.set",
+   "new_candidate": false,
+   "trades": 53,
+   "set_file_expectation": {
+    "ENV": "live",
+    "RISK_FIXED": 0.0,
+    "RISK_PERCENT": 0.601729,
+    "PORTFOLIO_WEIGHT": 1.0
+   }
+  },
+  {
+   "ea_id": 10706,
+   "symbol": "GBPUSD.DWX",
+   "ea_label": "QM5_10706_tv-mon-ls",
+   "magic_number": 107060001,
+   "weight": 0.05303,
+   "risk_percent": 0.05303,
+   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\QM5_10706_tv-mon-ls.ex5",
+   "backtest_set": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\sets\\QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_backtest.set",
+   "new_candidate": false,
+   "trades": 367,
+   "set_file_expectation": {
+    "ENV": "live",
+    "RISK_FIXED": 0.0,
+    "RISK_PERCENT": 0.05303,
+    "PORTFOLIO_WEIGHT": 1.0
+   }
+  },
+  {
+   "ea_id": 13117,
+   "symbol": "EURGBP.DWX",
+   "ea_label": "QM5_13117_eurgbp-audjpy",
+   "magic_number": 131170000,
+   "weight": 0.419924,
+   "risk_percent": 0.419924,
+   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13117_eurgbp-audjpy\\QM5_13117_eurgbp-audjpy.ex5",
+   "backtest_set": "C:\\QM\\repo\\framework\\EAs\\QM5_13117_eurgbp-audjpy\\sets\\QM5_13117_eurgbp-audjpy_QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1_D1_backtest.set",
+   "new_candidate": false,
+   "trades": 208,
+   "set_file_expectation": {
+    "ENV": "live",
+    "RISK_FIXED": 0.0,
+    "RISK_PERCENT": 0.419924,
+    "PORTFOLIO_WEIGHT": 1.0
+   }
+  },
+  {
+   "ea_id": 13301,
+   "symbol": "GDAXI.DWX",
+   "ea_label": "QM5_13301_balke-minute-range-breakout",
+   "magic_number": 133010010,
+   "weight": 0.069247,
+   "risk_percent": 0.069247,
+   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13301_balke-minute-range-breakout\\QM5_13301_balke-minute-range-breakout.ex5",
+   "backtest_set": "C:\\QM\\repo\\framework\\EAs\\QM5_13301_balke-minute-range-breakout\\sets\\QM5_13301_balke-minute-range-breakout_GDAXI.DWX_M5_backtest.set",
+   "new_candidate": false,
+   "trades": 742,
+   "set_file_expectation": {
+    "ENV": "live",
+    "RISK_FIXED": 0.0,
+    "RISK_PERCENT": 0.069247,
+    "PORTFOLIO_WEIGHT": 1.0
+   }
+  },
+  {
+   "ea_id": 13213,
+   "symbol": "USDJPY.DWX",
+   "ea_label": "QM5_13213_balke-gmt3-range-breakout",
+   "magic_number": 132130000,
+   "weight": 0.043115,
+   "risk_percent": 0.043115,
+   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13213_balke-gmt3-range-breakout\\QM5_13213_balke-gmt3-range-breakout.ex5",
+   "backtest_set": "C:\\QM\\repo\\framework\\EAs\\QM5_13213_balke-gmt3-range-breakout\\sets\\QM5_13213_balke-gmt3-range-breakout_USDJPY.DWX_H1_backtest.set",
+   "new_candidate": true,
+   "trades": 1587,
+   "set_file_expectation": {
+    "ENV": "live",
+    "RISK_FIXED": 0.0,
+    "RISK_PERCENT": 0.043115,
+    "PORTFOLIO_WEIGHT": 1.0
+   }
+  },
+  {
+   "ea_id": 1567,
+   "symbol": "EURUSD.DWX",
+   "ea_label": "QM5_1567_demark-td-reverse-sequential-h4",
+   "magic_number": 15670007,
+   "weight": 0.179051,
+   "risk_percent": 0.179051,
+   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1567_demark-td-reverse-sequential-h4\\QM5_1567_demark-td-reverse-sequential-h4.ex5",
+   "backtest_set": "C:\\QM\\repo\\framework\\EAs\\QM5_1567_demark-td-reverse-sequential-h4\\sets\\QM5_1567_demark-td-reverse-sequential-h4_EURUSD.DWX_H4_backtest.set",
+   "new_candidate": true,
+   "trades": 86,
+   "set_file_expectation": {
+    "ENV": "live",
+    "RISK_FIXED": 0.0,
+    "RISK_PERCENT": 0.179051,
+    "PORTFOLIO_WEIGHT": 1.0
+   }
+  }
+ ]
+}

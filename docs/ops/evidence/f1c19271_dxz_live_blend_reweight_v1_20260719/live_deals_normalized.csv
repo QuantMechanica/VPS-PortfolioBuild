@@ -1,1 +1,1 @@
-deal_id,position_id,time_utc,entry,deal_magic,logical_magic,symbol,profit,swap,commission,fee,net_actual,risk_percent_in_force,net_per_1pct_risk
+deal_id,position_id,time_utc,entry,deal_magic,logical_magic,symbol,volume,profit,swap,commission,fee,net_actual,risk_percent_in_force,net_per_1pct_risk,lifecycle_closed,lifecycle_net_actual_if_closed,lifecycle_net_per_1pct_risk_if_closed

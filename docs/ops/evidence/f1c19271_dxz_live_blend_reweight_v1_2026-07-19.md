@@ -1,8 +1,11 @@
 # Live-Blend-Reweighting v1 — deterministic HOLD evidence
 
-Date: 2026-07-19  
-Router task: `f1c19271-dbff-4694-a302-327605a59616`  
-Book: OWNER-deployed DXZ Sunday Final-24  
+Date: 2026-07-19
+
+Router task: `f1c19271-dbff-4694-a302-327605a59616`
+
+Book: OWNER-deployed DXZ Sunday Final-24
+
 Verdict: **HOLD — blend rule failed OOS; no live export; no weights proposed**
 
 ## Outcome
@@ -24,7 +27,9 @@ on the sealed Final-24 stream basis:
 
 The blend was 3.49% worse on the predeclared loss and won 35.90% of folds. The
 result is `FAIL`, so the generated OWNER template contains an empty
-`proposed_weights` array and `analysis_weights_withheld=true`. Parameters were
+`proposed_weights` array and `analysis_weights_withheld=true`. Candidate weights
+and deltas are also blanked in `sleeve_diagnostics.csv`; only the already
+deployed baseline weights remain visible in the frozen manifest. Parameters were
 not retuned after observing the failure.
 
 No authoritative T_Live deal-history export was present in the mounted stores.
@@ -35,14 +40,15 @@ therefore template-only with zero observed Final-24 sessions and these holds:
 
 - `LIVE_DEAL_EXPORT_REQUIRED`
 - `LIVE_WINDOW_IMMATURE_0_OF_21_MINIMUM_SESSIONS`
-- `NO_SLEEVE_HAS_MINIMUM_LIVE_DEAL_EVIDENCE`
+- `NO_SLEEVE_HAS_MINIMUM_LIVE_EVIDENCE`
 - `BLEND_RULE_OOS_FAILED`
 
 ## Implemented contract
 
 - Inputs are bound to the 24-sleeve manifest, final OWNER decision, deployed
   staging-report manifest SHA, active Magic registry, canonical commission
-  registry, and all 24 sealed stream hashes/trade counts.
+  registry, generator/dependency source hashes, and all 24 sealed stream
+  hashes/trade counts. The sealed baseline fingerprint is pinned in code.
 - Backtest PnL uses the same `portfolio_common.load_streams` net-of-cost path as
   the deployed book construction. All 24 manifest trade counts must match.
 - Live realised cashflow is `profit + swap + commission + fee`, attributed from
@@ -72,8 +78,8 @@ Canonical package:
   hashes and trade counts; this is the future live-run baseline pin.
 - `deal_export_contract.json` — required offline export and metadata contract.
 - `manifest_snapshot.json` — exact Final-24 input snapshot.
-- `sleeve_diagnostics.csv` — backtest/shadow diagnostics; weights are explicitly
-  not for use while HOLD.
+- `sleeve_diagnostics.csv` — backtest/live diagnostics; candidate weight and
+  delta columns are empty while HOLD.
 - `owner_review_template.json` and `total_risk_review_template.md` — empty,
   no-apply OWNER decision shells.
 - `verify.json` — artifact hashes and guardrail invariants.
@@ -86,25 +92,31 @@ python -m pytest tools/strategy_farm/tests/test_dxz_live_blend_reweight.py -q
 python -m py_compile tools/strategy_farm/portfolio/dxz_live_blend_reweight.py tools/strategy_farm/tests/test_dxz_live_blend_reweight.py
 ```
 
-Result: `14 passed`; bytecode compilation PASS.
+Result: `22 passed`; bytecode compilation PASS. Generator commit:
+`be6cb400d619dd25354a8987308e30f0f6358402`.
 
 Template-only reproduction:
 
 ```powershell
 python tools/strategy_farm/portfolio/dxz_live_blend_reweight.py `
+  --task-id f1c19271-dbff-4694-a302-327605a59616 `
+  --generator-commit be6cb400d619dd25354a8987308e30f0f6358402 `
   --manifest D:/QM/reports/portfolio/portfolio_manifest_sunday_final_24sleeve_DRAFT_20260719.json `
   --decision-record C:/QM/repo/decisions/2026-07-19_t_live_dxz_sunday_final_book.md `
   --staging-report C:/QM/deploy/DXZ_FINAL_2026-07-19/staging_report.json `
   --backtest-bundle D:/QM/reports/portfolio/dxz_final_20260719 `
   --magic-registry C:/QM/repo/framework/registry/magic_numbers.csv `
-  --live-start 2026-07-19 --as-of 2026-07-19 `
-  --generated-at-utc 2026-07-19T15:05:00Z `
+  --live-start 2026-07-20 --as-of 2026-07-19 `
+  --generated-at-utc 2026-07-19T15:37:22Z `
   --output-dir C:/QM/repo/docs/ops/evidence/f1c19271_dxz_live_blend_reweight_v1_20260719 `
   --template-only
 ```
 
-The output directory is immutable/non-empty on rerun by design; use a new dated
-directory for any later evidence cut.
+The generator source matched Git blob `b3f302aea6f945526ed9d45ac8f385ec54fd5321`
+before and after this run. `verify.json` records hashes for every artifact and
+frozen input, including the generator and its Python dependencies. The output
+directory is immutable/non-empty on rerun by design; use a new dated directory
+for any later evidence cut.
 
 ## Review boundary and next evidence cut
 

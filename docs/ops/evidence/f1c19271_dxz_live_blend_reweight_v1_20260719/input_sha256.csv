@@ -3,7 +3,9 @@ manifest,,D:\QM\reports\portfolio\portfolio_manifest_sunday_final_24sleeve_DRAFT
 decision_record,,C:\QM\repo\decisions\2026-07-19_t_live_dxz_sunday_final_book.md,41d202525796f67429d39f2676392e7139327321e6608debc7f905662619eeee,
 staging_report,,C:\QM\deploy\DXZ_FINAL_2026-07-19\staging_report.json,e1529c38fc9d37965d3ace6fa4e2a97a8f75010a2bcc369b8c4a27373565c939,
 magic_registry,,C:\QM\repo\framework\registry\magic_numbers.csv,0fd00da3f1ee0e0fa4829c83e18ff90866cfb4b98222a227ca26f166189d93c6,
-tool_source,,C:\QM\repo\tools\strategy_farm\portfolio\dxz_live_blend_reweight.py,55835d5646bcb88755f11f9e0a7facd9d5f7636adbdd994a1d37b0d8e2359e25,
+tool_source,,C:\QM\repo\tools\strategy_farm\portfolio\dxz_live_blend_reweight.py,ba5a3a1fb9f953fcf8ad2dbc17fe7d54841a8a6eeec297200c39a4bb0828af54,
+python_dependency,,C:\QM\repo\tools\strategy_farm\portfolio\commission.py,e7c6de68330ebb0a13748dc57e351c2b847a577b0bfb0d8f8d95e5a8616cdf35,
+python_dependency,,C:\QM\repo\tools\strategy_farm\portfolio\portfolio_common.py,905bc2a4a71fb94d9e6ffdd24426543014a3f713408f0284826c876ab6e8819d,
 commission_registry,,C:\QM\repo\framework\registry\live_commission.json,119f795cefce2f819f0c7aae3bddb87affbffa771f596df48d182cf89989e197,
 backtest_stream,15560004,D:\QM\reports\portfolio\dxz_final_20260719\QM\q08_trades\1556_XAUUSD_DWX.jsonl,b7d5d73ce64d2a8f3be582cec38401e19606c4b1171815e3969fa2c68dbb3834,53
 backtest_stream,15670007,D:\QM\reports\portfolio\dxz_final_20260719\QM\q08_trades\1567_EURUSD_DWX.jsonl,54247fd1142f9a504ae0cceba99aa7acb0e1e1a1fac656cc2896e6edc72e693a,86
