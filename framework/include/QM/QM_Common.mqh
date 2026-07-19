@@ -1045,9 +1045,17 @@ void QM_FrameworkShutdown()
    ArrayResize(g_qm_q08_mae_closed, 0);
    if(g_qm_fw_initialized)
      {
-      const uint deinit_ms = GetTickCount() - deinit_start_ms;
-      QM_LogEvent(deinit_ms > 1000 ? QM_WARN : QM_INFO, "DEINIT",
-                  StringFormat("{\"duration_ms\":%u}", deinit_ms));
+      // Adversarial review 2026-07-20: wall-clock duration is live-only
+      // telemetry — in the tester it would make the event log
+      // non-deterministic run-to-run, so the tester keeps the legacy "{}".
+      if(MQLInfoInteger(MQL_TESTER) != 0)
+         QM_LogEvent(QM_INFO, "DEINIT", "{}");
+      else
+        {
+         const uint deinit_ms = GetTickCount() - deinit_start_ms;
+         QM_LogEvent(deinit_ms > 1000 ? QM_WARN : QM_INFO, "DEINIT",
+                     StringFormat("{\"duration_ms\":%u}", deinit_ms));
+        }
      }
    ArrayResize(g_qm_fw_magic_contexts, 0);
    g_qm_fw_initialized = false;

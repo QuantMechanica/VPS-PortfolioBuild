@@ -90,6 +90,14 @@ bool QM_TM_ModifySuppressed(const ulong ticket, const double sl, const double tp
 
 void QM_TM_RememberFailedModify(const ulong ticket, const double sl, const double tp)
   {
+   // Adversarial review 2026-07-20: entries older than the retry window can
+   // never suppress again — sweep them here so the array stays bounded by
+   // "tickets that failed within the last window", not terminal lifetime.
+   const datetime now = TimeCurrent();
+   for(int i = ArraySize(g_qm_tm_failed_modifies) - 1; i >= 0; --i)
+      if((now - g_qm_tm_failed_modifies[i].last_attempt) >= QM_TM_MODIFY_RETRY_SECONDS)
+         QM_TM_ClearFailedModify(g_qm_tm_failed_modifies[i].ticket);
+
    int idx = QM_TM_FailedModifyIndex(ticket);
    if(idx < 0)
      {
@@ -131,7 +139,14 @@ bool QM_TM_SendSLTPModify(const ulong ticket,
    request.sl = (new_sl > 0.0) ? QM_TM_NormalizePrice(symbol, new_sl) : 0.0;
    request.tp = (new_tp > 0.0) ? QM_TM_NormalizePrice(symbol, new_tp) : 0.0;
 
-   if(QM_TM_ModifySuppressed(ticket, request.sl, request.tp))
+   // Adversarial review 2026-07-20: the modify-hygiene machinery is LIVE-ONLY.
+   // In the tester it would delay a fixed break-even target by up to the retry
+   // window and thereby shift trades against the historical RISK_FIXED
+   // evidence; the tester keeps pre-bundle behavior byte-identical (same
+   // containment as the Q08 deinit guard and the PERCENT cap in this bundle).
+   const bool live_hygiene = (MQLInfoInteger(MQL_TESTER) == 0);
+
+   if(live_hygiene && QM_TM_ModifySuppressed(ticket, request.sl, request.tp))
       return false;   // identical target already failed/skipped inside the retry window
 
    // audit: stops-level pre-check — a target inside the broker minimum
@@ -139,7 +154,7 @@ bool QM_TM_SendSLTPModify(const ulong ticket,
    // and log the skip once per target/window instead of once per tick.
    const long stops_level = SymbolInfoInteger(symbol, SYMBOL_TRADE_STOPS_LEVEL);
    const double point = SymbolInfoDouble(symbol, SYMBOL_POINT);
-   if(stops_level > 0 && point > 0.0)
+   if(live_hygiene && stops_level > 0 && point > 0.0)
      {
       const double min_dist = (double)stops_level * point;
       const bool is_buy = ((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY);
@@ -174,10 +189,13 @@ bool QM_TM_SendSLTPModify(const ulong ticket,
    MqlTradeResult result;
    string error_class = BROKER_OTHER;
    const bool ok = QM_TradeContextSend(request, result, error_class);
-   if(ok)
-      QM_TM_ClearFailedModify(ticket);
-   else
-      QM_TM_RememberFailedModify(ticket, request.sl, request.tp);
+   if(live_hygiene)
+     {
+      if(ok)
+         QM_TM_ClearFailedModify(ticket);
+      else
+         QM_TM_RememberFailedModify(ticket, request.sl, request.tp);
+     }
 
    const string payload = StringFormat(
       "{\"ticket\":%I64u,\"symbol\":\"%s\",\"new_sl\":%.8f,\"new_tp\":%.8f,\"reason\":\"%s\",\"ok\":%s,\"retcode\":%u,\"retcode_class\":\"%s\"}",
@@ -577,6 +595,16 @@ int QM_TM_HeldPeriods(const string symbol,
    if(t <= 0)
       t = TimeCurrent();
    if(t < open_time)
+      return -1;
+   // Adversarial review 2026-07-20: iBarShift(exact=false) does NOT return -1
+   // for a time BEFORE the series start — it clamps to the oldest bar, which
+   // would overstate the hold and fire a held-period exit early after a
+   // restart with short history. Reject the pre-series case explicitly.
+   const int bars = Bars(symbol, tf);
+   if(bars <= 0)
+      return -1;
+   const datetime series_start = iTime(symbol, tf, bars - 1);
+   if(series_start <= 0 || open_time < series_start)
       return -1;
    const int shift_open = iBarShift(symbol, tf, open_time, false);
    const int shift_now  = iBarShift(symbol, tf, t, false);
