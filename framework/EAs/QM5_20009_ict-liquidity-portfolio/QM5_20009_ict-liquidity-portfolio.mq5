@@ -946,6 +946,17 @@ void Strategy_ManageExposure()
      }
   }
 
+bool Strategy_RunMandatorySafety()
+  {
+   // Canonical V5 order: portfolio kill-switch first, then the framework
+   // Friday sweep, then strategy-specific pending cancellation/hard flats.
+   if(!QM_KillSwitchCheck())
+      return false;
+   const bool friday_close_handled = QM_FrameworkHandleFridayClose();
+   Strategy_ManageExposure();
+   return !friday_close_handled;
+  }
+
 double Strategy_NormalizeToTick(const double price, const int rounding_direction)
   {
    if(price <= 0.0)
@@ -971,33 +982,67 @@ bool Strategy_QuoteAllowsFreshLimit(const int direction,
                                     const double target)
   {
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   MqlTick quote;
+   ZeroMemory(quote);
+   if(!SymbolInfoTick(_Symbol, quote))
+      return false;
+   const double ask = quote.ask;
+   const double bid = quote.bid;
    if(point <= 0.0 || ask <= 0.0 || bid <= 0.0 || ask < bid ||
       entry <= 0.0 || stop <= 0.0 || target <= 0.0)
       return false;
 
    const int stops_level = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
-   const double current_spread = MathMax(0.0, ask - bid);
-   const double minimum_distance = MathMax(0.0, (double)stops_level * point) + current_spread;
+   const double minimum_distance = MathMax(0.0, (double)stops_level * point);
+   const double comparison_epsilon = point * 1e-7;
    if(direction > 0)
      {
       // Ask at/below the proximal edge means the earliest FVG was already
       // touched when it became eligible; this attempt gets no later rescue.
-      if(ask <= entry || ask - entry <= minimum_distance)
+      if(ask <= entry || ask - entry + comparison_epsilon < minimum_distance)
          return false;
       if(stop >= entry || target <= entry)
+         return false;
+      if(entry - stop + comparison_epsilon < minimum_distance ||
+         target - entry + comparison_epsilon < minimum_distance)
          return false;
      }
    else
      {
-      if(bid >= entry || entry - bid <= minimum_distance)
+      if(bid >= entry || entry - bid + comparison_epsilon < minimum_distance)
          return false;
       if(stop <= entry || target >= entry)
          return false;
+      if(stop - entry + comparison_epsilon < minimum_distance ||
+         entry - target + comparison_epsilon < minimum_distance)
+         return false;
      }
-   if(MathAbs(entry - stop) <= minimum_distance)
+   return true;
+  }
+
+bool Strategy_AssignPendingExpiration(const int expiration_seconds,
+                                      QM_EntryRequest &request)
+  {
+   if(expiration_seconds <= 0)
       return false;
+   long expiration_modes = 0;
+   if(!SymbolInfoInteger(_Symbol, SYMBOL_EXPIRATION_MODE, expiration_modes))
+      return false;
+   if((expiration_modes & (long)SYMBOL_EXPIRATION_SPECIFIED) != 0)
+     {
+      request.expiration_seconds = expiration_seconds;
+      return true;
+     }
+   if((expiration_modes & (long)SYMBOL_EXPIRATION_GTC) == 0)
+      return false;
+
+   // The one-second timer and per-tick safety path enforce the same session
+   // cancellation when the broker does not accept ORDER_TIME_SPECIFIED.
+   request.expiration_seconds = 0;
+   QM_LogEvent(QM_INFO,
+               "ICT_PENDING_EXPIRATION_GTC_FALLBACK",
+               StringFormat("{\"seconds_until_session_end\":%d}",
+                            expiration_seconds));
    return true;
   }
 
@@ -1038,13 +1083,14 @@ bool Strategy_BuildEntryRequest(const ICT_SequenceResult &signal,
    request.sl = Strategy_NormalizeToTick(signal.stop,
                                          (signal.direction > 0) ? -1 : 1);
    request.tp = Strategy_NormalizeToTick(signal.target, 0);
-   request.reason = (strategy_mode == ICT_MODE_INDEX_MSS_FVG)
-                    ? "ICTA_OR_MSS_FVG"
-                    : ((signal.session == ICT_SESSION_LONDON)
-                       ? "ICTB_LDN_MSS_FVG"
-                       : "ICTB_NY_MSS_FVG");
+   // Compact 30-character history identity: budget + both replay hashes.
+   request.reason = StringFormat("I09:%d:%08X:%08X",
+                                 signal.budget_key,
+                                 signal.frozen_level_hash,
+                                 signal.reference_hash);
    request.symbol_slot = qm_magic_slot_offset;
-   request.expiration_seconds = expiration_seconds;
+   if(!Strategy_AssignPendingExpiration(expiration_seconds, request))
+      return false;
 
    if(!Strategy_QuoteAllowsFreshLimit(signal.direction,
                                       request.price,

@@ -335,10 +335,12 @@ int ICT_LatestPrePenetrationPivot(const MqlRates &rates[],
    return -1;
   }
 
-bool ICT_ATR14At(const MqlRates &rates[],
-                 const int count,
-                 const int index,
-                 double &atr)
+// Frozen v2 volatility definition: arithmetic mean of the latest 14 causal
+// true ranges (SMA-TR14). This is intentionally not Wilder-smoothed ATR.
+bool ICT_SMA_TR14At(const MqlRates &rates[],
+                    const int count,
+                    const int index,
+                    double &atr)
   {
    atr = 0.0;
    if(index < 14 || index >= count)
@@ -598,14 +600,17 @@ bool ICT_BuildSequence(const MqlRates &rates[],
                                   session_end_minute,
                                   timeframe_seconds))
          break;
-      if(i < 2 || !ICT_ATR14At(rates, count, i, fvg_atr))
-         continue;
+       if(i < 2 || !ICT_SMA_TR14At(rates, count, i, fvg_atr))
+          continue;
 
-      const double gap = (best_direction > 0)
-                         ? rates[i].low - rates[i - 2].high
-                         : rates[i - 2].low - rates[i].high;
-      if(gap <= 0.0 || gap + tick_size * 0.25 < min_fvg_atr * fvg_atr)
-         continue;
+       const double gap = (best_direction > 0)
+                          ? rates[i].low - rates[i - 2].high
+                          : rates[i - 2].low - rates[i].high;
+       const double minimum_gap = min_fvg_atr * fvg_atr;
+       const double comparison_epsilon =
+          MathMax(1.0, MathAbs(minimum_gap)) * 1e-12;
+       if(gap <= 0.0 || gap + comparison_epsilon < minimum_gap)
+          continue;
 
       fvg_index = i;
       // Proximal means the edge first met by a retracement from displacement.

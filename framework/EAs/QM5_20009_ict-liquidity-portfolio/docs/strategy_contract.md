@@ -57,15 +57,23 @@ hypothesis; it must never be described as an official ICT weekly strategy.
 - Only the earliest directionally matching FVG after MSS is considered. The order
   is placed immediately at the proximal edge. If the FVG was already touched when
   it became eligible, the attempt is void; no later FVG may rescue it.
-- Stop padding is `max(2 * observed spread, sl_buffer_atr * ATR(14))` beyond the
-  swept extreme. A fixed target must lie beyond entry and meet `min_rr`.
+- In frozen v2, the volatility term is **SMA-TR(14)**: the arithmetic mean of
+  the latest 14 causal true ranges at the FVG bar, not Wilder-smoothed ATR.
+  Stop padding is `max(2 * observed spread, sl_buffer_atr * SMA-TR(14))` beyond
+  the swept extreme. A fixed target must lie beyond entry and meet `min_rr`.
 - No partial close, break-even, trailing stop, discretionary bias, SMT, OTE, order-
   block ranking, or news-reversal logic exists in v1.
 - Position management, hard time exits and pending-order cancellation execute
   before entry-only news, session and governor filters.
+- The entry-only news gate is frozen to temporal `PRE30_POST30`, compliance
+  `FTMO`, stale limit 336 hours, and minimum impact `high`; the framework's
+  placeholder `DXZ` compliance profile is not admissible for this build.
 - One position and one pending order per symbol/magic. Filled-trade and consumed-
-  attempt budgets are reconstructed from bounded bars plus account history; an EA
-  restart cannot create another attempt.
+  attempt budgets are reconstructed from bounded bars, historical orders/deals,
+  and a persistent live-terminal attempt marker containing both frozen hashes; an
+  EA restart cannot create another attempt. Same-budget hash drift and partial or
+  unreadable persistence fail closed. Tester markers are process-local so duplicate
+  tester runs cannot contaminate one another.
 
 ## 3. Sleeve A — `INDEX_MSS_FVG_AM`
 
@@ -134,8 +142,8 @@ search and never winner-picking.
 | pivot wing | `2 {1,3}` | `2 {1,3}` |
 | reclaim bars | `3 {1,5}` | `3 {1,5}` |
 | max bars after reclaim to MSS | `9 {6,12}` | `12 {6,18}` |
-| minimum FVG / ATR(14) | `0.05 {0,0.10}` | `0.05 {0,0.10}` |
-| stop buffer / ATR(14) | `0.10 {0.05,0.15}` | `0.10 {0.05,0.15}` |
+| minimum FVG / SMA-TR(14) | `0.05 {0,0.10}` | `0.05 {0,0.10}` |
+| stop buffer / SMA-TR(14) | `0.10 {0.05,0.15}` | `0.10 {0.05,0.15}` |
 | minimum R | `2.0 {1.5,2.5}` | `2.0 {1.5,2.5}` |
 
 Penetration is exactly one tick and is not optimized. Plateau pass requires the
