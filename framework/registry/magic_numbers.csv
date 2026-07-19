@@ -15065,3 +15065,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20007,intraday-config-engine,1,NDX.DWX,200070001,2026-07-19,Development,active
 20007,intraday-config-engine,2,SP500.DWX,200070002,2026-07-19,Development,active
 20007,intraday-config-engine,3,XAUUSD.DWX,200070003,2026-07-19,Development,active
+20009,ict-liquidity-portfolio,0,NDX.DWX,200090000,2026-07-19,Codex-OWNER-delegated,active
+20009,ict-liquidity-portfolio,1,GDAXI.DWX,200090001,2026-07-19,Codex-OWNER-delegated,active
+20009,ict-liquidity-portfolio,2,GBPUSD.DWX,200090002,2026-07-19,Codex-OWNER-delegated,active
+20009,ict-liquidity-portfolio,3,USDJPY.DWX,200090003,2026-07-19,Codex-OWNER-delegated,active
+20009,ict-liquidity-portfolio,4,XAUUSD.DWX,200090004,2026-07-19,Codex-OWNER-delegated,active
+20008,wti-month-ch3,0,XTIUSD.DWX,200080000,2026-07-19,Development,active
+20006,spx-intraday-mom,0,SP500.DWX,200060000,2026-07-19,claude,active
