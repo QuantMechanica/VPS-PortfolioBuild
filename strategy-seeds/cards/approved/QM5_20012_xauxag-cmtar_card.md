@@ -42,7 +42,10 @@ r1_track_record: TIER_B
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: QUEUED
+q02_work_item_id: 34f0fd25-452f-40ec-a739-94cd00b26db2
 review_focus: "Verify base-10 residual orientation, load-bearing delta-residual threshold, fixed 0.71970 notional hedge, monthly renewal, and no collision with symmetric gold/silver ratio or spread builds."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -268,14 +271,15 @@ authorized by this card.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-07-20 | initial asymmetric C-MTAR basket extraction | G0 | APPROVED |
+| v1.1 | 2026-07-20 | initial EA, logical basket, and adversarial safety review | Q01 | PASS |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-20 | APPROVED | this card and source packet |
-| Q01 Build Validation | TBD | TBD | TBD |
-| Q02 Baseline Screening | TBD | TBD | TBD |
+| Q01 Build Validation | 2026-07-20 | PASS | `D:/QM/reports/framework/21/build_check_20260719_232240.json` |
+| Q02 Baseline Screening | 2026-07-20 | QUEUED | work item `34f0fd25-452f-40ec-a739-94cd00b26db2` |
 
 ## Lessons Captured
 

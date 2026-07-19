@@ -108,6 +108,46 @@
     "portfolio_admission_touched": false,
     "portfolio_kpi_touched": false
   },
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_20012",
+    "enqueued": [
+      {
+        "work_item_id": "34f0fd25-452f-40ec-a739-94cd00b26db2",
+        "symbol": "QM5_20012_XAU_XAG_CMTAR_D1",
+        "timeframe": "D1",
+        "status": "pending",
+        "attempt_count": 0,
+        "claimed_by": null,
+        "setfile": "QM5_20012_xauxag-cmtar_QM5_20012_XAU_XAG_CMTAR_D1_D1_backtest.set",
+        "enqueued_at": "2026-07-19T23:25:24+00:00"
+      }
+    ],
+    "skipped": []
+  },
+  "q02": {
+    "phase": "Q02",
+    "work_item_id": "34f0fd25-452f-40ec-a739-94cd00b26db2",
+    "status_at_handoff": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "symbol": "QM5_20012_XAU_XAG_CMTAR_D1",
+    "host_symbol": "XAUUSD.DWX",
+    "timeframe": "D1",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_20012_xauxag-cmtar/sets/QM5_20012_xauxag-cmtar_QM5_20012_XAU_XAG_CMTAR_D1_D1_backtest.set",
+    "basket_symbols": [
+      "XAUUSD.DWX",
+      "XAGUSD.DWX"
+    ],
+    "from_date": "2018.07.02",
+    "to_date": "2024.12.31",
+    "risk_payload": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "enqueued_at_utc": "2026-07-19T23:25:24+00:00",
+    "note": "Auto-enqueued by farmctl record-build. No dispatch, tester, worker tick, terminal launch, smoke test, optimization or backtest was started."
+  },
   "open_questions": [
     "The fixed 1968-2016 LBMA relation and consistent M-TAR threshold may not transfer to Darwinex continuous CFDs after spread, financing and execution costs.",
     "Signed residual fades, the 0.010 buffer, monthly close/reopen carrier, joint notional sizing and ATR stops are disclosed QM trading translations rather than source performance claims.",
@@ -118,12 +158,16 @@
     "mq5": "C2EE7CF6EBAE7C06DD84A4F49FD4F3417477C51BD393632107E6F3B5B0BF7AB7",
     "ex5": "F4A884080185396DCB8F1D26A0F01A1FEDD382DCFA8024EC57F9DCE3C71FBE22",
     "spec": "3877CFEB41418CC9C006BA4E8BA9535E1D4316155C09DFF1B13FA44B30845B81",
-    "embedded_card": "C3A43973E4B0FA0427887BA11A38DE308C6F24394F3B255D2FD4D8FEBCBB9DBE",
+    "embedded_card_pre_enqueue": "C3A43973E4B0FA0427887BA11A38DE308C6F24394F3B255D2FD4D8FEBCBB9DBE",
+    "embedded_card": "AEF8177CA47C7DC78FDE003EAF311080874A8EEF4C4019D924F459ECB2E7E0CB",
     "basket_manifest": "5A94DE10E4E2B81A9E4145FA2C93C8F4A86FD9625B717F0EE647E65B7F6FC43C",
     "setfile": "58DACB0B49D74BF5C05058AD4227C6EFC4DB20675A7231121D2284B5CCE55217",
-    "canonical_card": "C3A43973E4B0FA0427887BA11A38DE308C6F24394F3B255D2FD4D8FEBCBB9DBE",
-    "approved_card": "C3A43973E4B0FA0427887BA11A38DE308C6F24394F3B255D2FD4D8FEBCBB9DBE",
+    "canonical_card_pre_enqueue": "C3A43973E4B0FA0427887BA11A38DE308C6F24394F3B255D2FD4D8FEBCBB9DBE",
+    "approved_card_pre_enqueue": "C3A43973E4B0FA0427887BA11A38DE308C6F24394F3B255D2FD4D8FEBCBB9DBE",
+    "canonical_card": "AEF8177CA47C7DC78FDE003EAF311080874A8EEF4C4019D924F459ECB2E7E0CB",
+    "approved_card": "AEF8177CA47C7DC78FDE003EAF311080874A8EEF4C4019D924F459ECB2E7E0CB",
     "source_packet": "E1C1D5C9CFCBAD6F0D3B1EC0BDD773582B72A39E7A0C64BD8CF1E5BDD792C922",
+    "enqueue_evidence": "E5D2C874D03BE4E2B440AEC56D2D4182BB9F9C83A1EDAB4E730CB2807F1D0BD0",
     "ea_registry": "484D76980E28A8198A282DF4466C68C30D5287838D6896044FBD08DE596691CE",
     "magic_registry": "D4BCE7820A554E3407549230AF8B4376C23AA2F6C98B7324318B36E3E2E80753",
     "resolver": "321FC59E0CAB93CFAE11FB93A5795371F8B4FEF920CD7E7BA788B85E53B6A2F6"
