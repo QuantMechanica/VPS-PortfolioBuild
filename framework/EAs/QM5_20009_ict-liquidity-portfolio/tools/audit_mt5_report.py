@@ -174,6 +174,13 @@ FIELD_ALIASES: dict[str, frozenset[str]] = {
     ),
 }
 
+# MT5 serializes input-group headings as ``Heading=`` in native reports.  Most
+# frozen QM5_20009 headings cannot be confused with a real MQL input because
+# they contain spaces or punctuation.  These two headings are valid MQL
+# identifiers, however, so their exact spellings are pinned explicitly rather
+# than treating every empty value as a heading.
+PINNED_IDENTIFIER_INPUT_GROUP_HEADINGS = frozenset({"Risk", "Stress"})
+
 DEALS_SECTION = _alias_set("Deals", "Geschäfte", "Geschaefte", "Abschlüsse", "Abschluesse")
 ORDERS_SECTION = _alias_set("Orders", "Aufträge", "Auftraege")
 
@@ -406,11 +413,14 @@ def _extract_inputs(rows: Sequence[Sequence[str]]) -> tuple[list[str], dict[str,
             continue
         key, raw_value = value.split("=", 1)
         key = key.strip()
+        raw_value = raw_value.strip()
+        if not raw_value and key in PINNED_IDENTIFIER_INPUT_GROUP_HEADINGS:
+            continue
         if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", key):
-            continue  # MT5 input group heading such as "Strategy=".
+            continue  # Not a syntactically possible MQL input identifier.
         if key in mapping:
             raise ReportFormatError(f"duplicate report input: {key}")
-        mapping[key] = raw_value.strip()
+        mapping[key] = raw_value
     for required in ("qm_ea_id", "InpQMSimCommissionPerLot"):
         if required not in mapping:
             raise IntegrityError(f"required report input is missing: {required}")

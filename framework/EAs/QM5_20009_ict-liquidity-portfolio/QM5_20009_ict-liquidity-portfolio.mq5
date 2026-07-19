@@ -6,7 +6,7 @@
 #include <QM/QM_FTMOGovernorClient.mqh>
 #include "ICT_LiquidityRules.mqh"
 
-// Frozen research build contract v3.  One attachment owns exactly one symbol,
+// Frozen research build contract v4.  One attachment owns exactly one symbol,
 // one sleeve and one registry magic.  All signal decisions use closed Bid bars.
 
 input group "QuantMechanica V5 Framework"
@@ -14,7 +14,7 @@ input int    qm_ea_id                     = 20009;
 input int    qm_magic_slot_offset         = 0;
 input uint   qm_rng_seed                  = 42;
 
-input group "Risk"
+input group "Risk controls"
 input double RISK_PERCENT                 = 0.0;
 input double RISK_FIXED                   = 1000.0;
 input double PORTFOLIO_WEIGHT             = 1.0;
@@ -30,7 +30,7 @@ input group "Friday Close"
 input bool   qm_friday_close_enabled       = true;
 input int    qm_friday_close_hour_broker   = 23;
 
-input group "Stress"
+input group "Stress controls"
 input double qm_stress_reject_probability  = 0.0;
 
 input group "Frozen sleeve"
@@ -73,6 +73,7 @@ double   g_strategy_governor_scale = 0.0;
 string   g_strategy_last_governor_block = "";
 datetime g_strategy_last_governor_log = 0;
 string   g_last_reconstruction_signature = "";
+string   g_strategy_last_fx_incomplete_signature = "";
 int      g_tester_attempt_state = ICT_ATTEMPT_NONE;
 int      g_tester_attempt_budget_key = 0;
 datetime g_tester_attempt_event_time = 0;
@@ -119,8 +120,7 @@ bool Strategy_ParametersValid()
    if(qm_ea_id != 20009 || PORTFOLIO_WEIGHT <= 0.0 ||
       !MathIsValidNumber(PORTFOLIO_WEIGHT))
       return false;
-   if(strategy_replay_bars_index < 1200 || strategy_replay_bars_index > 5000 ||
-      strategy_replay_bars_fx < 5000 || strategy_replay_bars_fx > 15000)
+   if(strategy_replay_bars_index != 2500 || strategy_replay_bars_fx != 10000)
       return false;
    if(!qm_friday_close_enabled || qm_friday_close_hour_broker != 23)
       return false;
@@ -947,8 +947,10 @@ ICT_SessionKind Strategy_EventSessionForBar(const MqlRates &bar)
 
 bool Strategy_RebuildFxSession(const int date_key,
                                const ICT_SessionKind session,
-                               ICT_SequenceResult &result)
+                               ICT_SequenceResult &result,
+                               string &failure_reason)
   {
+   failure_reason = "invalid_session";
    const bool london = session == ICT_SESSION_LONDON;
    if(!london && session != ICT_SESSION_NEW_YORK)
       return false;
@@ -964,10 +966,14 @@ bool Strategy_RebuildFxSession(const int date_key,
                                    reference_start,
                                    reference_end,
                                    false,
-                                   PeriodSeconds(PERIOD_M5),
-                                   reference_first,
-                                   reference_last))
+                                    PeriodSeconds(PERIOD_M5),
+                                    reference_first,
+                                    reference_last))
+     {
+      failure_reason = london ? "ASIAN_REFERENCE_WINDOW_INCOMPLETE"
+                              : "LONDON_REFERENCE_WINDOW_INCOMPLETE";
       return false;
+     }
 
    ICT_LevelRange reference;
    if(!ICT_CollectNYRangeBounded(g_strategy_closed_rates,
@@ -980,7 +986,11 @@ bool Strategy_RebuildFxSession(const int date_key,
                                  reference_bars,
                                  g_strategy_replay_tick_size,
                                  reference))
+     {
+      failure_reason = london ? "ASIAN_REFERENCE_INCOMPLETE"
+                              : "LONDON_REFERENCE_INCOMPLETE";
       return false;
+     }
 
    const int session_start = london ? 2 * 60 : 7 * 60;
    const int session_end = london ? 5 * 60 : 10 * 60;
@@ -990,10 +1000,13 @@ bool Strategy_RebuildFxSession(const int date_key,
                                    session_start,
                                    session_end,
                                    true,
-                                   PeriodSeconds(PERIOD_M5),
-                                   event_first,
-                                   event_last))
+                                    PeriodSeconds(PERIOD_M5),
+                                    event_first,
+                                    event_last))
+     {
+      failure_reason = "SESSION_WINDOW_INCOMPLETE";
       return false;
+     }
 
    int pivot_wing = 0;
    int reclaim_bars = 0;
@@ -1031,8 +1044,9 @@ bool Strategy_RebuildFxSession(const int date_key,
                      g_strategy_replay_point,
                      result,
                      event_first,
-                     event_last,
-                     Strategy_LogicalHistoryFirstIndex());
+                      event_last,
+                      Strategy_LogicalHistoryFirstIndex());
+   failure_reason = "ok";
    return true;
   }
 
@@ -1051,8 +1065,31 @@ bool Strategy_UpdateFxCache(const MqlRates &bar)
       return true;
 
    ICT_SequenceResult updated;
-   if(!Strategy_RebuildFxSession(date_key, current_session, updated))
-      return true; // An incomplete reference or session is a normal no-event state.
+   string rebuild_failure = "";
+   if(!Strategy_RebuildFxSession(date_key,
+                                 current_session,
+                                 updated,
+                                 rebuild_failure))
+     {
+      // Incomplete reference/session data is a normal no-event state, but it
+      // must be attributable. Log each date/session/reason combination once.
+      const string incomplete_signature = StringFormat("%d|%d|%s",
+                                                        date_key,
+                                                        (int)current_session,
+                                                        rebuild_failure);
+      if(incomplete_signature != g_strategy_last_fx_incomplete_signature)
+        {
+         g_strategy_last_fx_incomplete_signature = incomplete_signature;
+         QM_LogEvent(QM_INFO,
+                     "ICT_FX_SESSION_INCOMPLETE",
+                     StringFormat("{\"date_key\":%d,\"session\":%d,\"reason\":\"%s\"}",
+                                  date_key,
+                                  (int)current_session,
+                                  QM_LoggerEscapeJson(rebuild_failure)));
+        }
+      return true;
+     }
+   g_strategy_last_fx_incomplete_signature = "";
 
    if(g_strategy_cached_sequence.consumed)
      {
@@ -1809,50 +1846,62 @@ double Strategy_NormalizeToTick(const double price, const int rounding_direction
    return NormalizeDouble(normalized_units * tick_size, _Digits);
   }
 
-bool Strategy_QuoteAllowsFreshLimit(const int direction,
-                                    const double entry,
-                                    const double stop,
-                                    const double target)
+bool Strategy_QuoteAllowsFreshVirtualLimit(const int direction,
+                                           const double entry,
+                                           const double stop,
+                                           const double target,
+                                           string &failure_reason)
   {
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   failure_reason = "unknown";
    MqlTick quote;
    ZeroMemory(quote);
    if(!SymbolInfoTick(_Symbol, quote))
+     {
+      failure_reason = "quote_unavailable_at_eligibility";
       return false;
+     }
    const double ask = quote.ask;
    const double bid = quote.bid;
-   if(point <= 0.0 || ask <= 0.0 || bid <= 0.0 || ask < bid ||
+   if(ask <= 0.0 || bid <= 0.0 || ask < bid ||
       entry <= 0.0 || stop <= 0.0 || target <= 0.0)
+     {
+      failure_reason = "quote_or_price_invalid_at_eligibility";
       return false;
-
-   long stops_level = 0;
-   if(!SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL, stops_level) ||
-      stops_level < 0)
-      return false;
-   const double minimum_distance = (double)stops_level * point;
-   const double comparison_epsilon = point * 1e-7;
+     }
    if(direction > 0)
      {
       // Ask at/below the proximal edge means the earliest FVG was already
       // touched when it became eligible; this attempt gets no later rescue.
-      if(ask <= entry || ask - entry + comparison_epsilon < minimum_distance)
+      if(ask <= entry)
+        {
+         failure_reason = "edge_already_touched_at_eligibility";
          return false;
+        }
       if(stop >= entry || target <= entry)
+        {
+         failure_reason = "directional_geometry_invalid_at_eligibility";
          return false;
-      if(entry - stop + comparison_epsilon < minimum_distance ||
-         target - entry + comparison_epsilon < minimum_distance)
+        }
+     }
+   else if(direction < 0)
+     {
+      if(bid >= entry)
+        {
+         failure_reason = "edge_already_touched_at_eligibility";
          return false;
+        }
+      if(stop <= entry || target >= entry)
+        {
+         failure_reason = "directional_geometry_invalid_at_eligibility";
+         return false;
+        }
      }
    else
      {
-      if(bid >= entry || entry - bid + comparison_epsilon < minimum_distance)
-         return false;
-      if(stop <= entry || target >= entry)
-         return false;
-      if(stop - entry + comparison_epsilon < minimum_distance ||
-         entry - target + comparison_epsilon < minimum_distance)
-         return false;
+      failure_reason = "direction_invalid_at_eligibility";
+      return false;
      }
+   failure_reason = "ok";
    return true;
   }
 
@@ -1906,14 +1955,12 @@ bool Strategy_BuildEntryRequest(const ICT_SequenceResult &signal,
     request.symbol_slot = qm_magic_slot_offset;
    request.expiration_seconds = 0; // virtual intent; never sent as a pending.
 
-    if(!Strategy_QuoteAllowsFreshLimit(signal.direction,
-                                       request.price,
-                                       request.sl,
-                                       request.tp))
-     {
-      failure_reason = "initial_quote_or_broker_distance";
+    if(!Strategy_QuoteAllowsFreshVirtualLimit(signal.direction,
+                                              request.price,
+                                              request.sl,
+                                              request.tp,
+                                              failure_reason))
       return false;
-     }
 
    const double risk = MathAbs(request.price - request.sl);
    const double reward = (signal.direction > 0) ? request.tp - request.price
@@ -2110,11 +2157,18 @@ bool Strategy_BuildTriggeredMarketRequest(const MqlTick &quote,
                                           string &failure_reason)
   {
    failure_reason = "unknown";
+   if(quote.ask <= 0.0 || quote.bid <= 0.0 || quote.ask < quote.bid)
+     {
+      failure_reason = "trigger_quote_invalid";
+      return false;
+     }
    market_price = (g_strategy_virtual_limit_signal.direction > 0)
                   ? quote.ask : quote.bid;
+   const double broker_reference_price =
+      (g_strategy_virtual_limit_signal.direction > 0) ? quote.bid : quote.ask;
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    long stops_level = 0;
-   if(market_price <= 0.0 || point <= 0.0 ||
+   if(market_price <= 0.0 || broker_reference_price <= 0.0 || point <= 0.0 ||
       !SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL, stops_level) ||
       stops_level < 0)
      {
@@ -2128,21 +2182,35 @@ bool Strategy_BuildTriggeredMarketRequest(const MqlTick &quote,
    const double comparison_epsilon = point * 1e-7;
    double risk = 0.0;
    double reward = 0.0;
+   double stop_distance = 0.0;
+   double target_distance = 0.0;
    if(g_strategy_virtual_limit_signal.direction > 0)
      {
       risk = market_price - stop;
       reward = target - market_price;
+      // Buy positions close on Bid, so broker stop constraints are measured
+      // from Bid even though executable entry economics use Ask.
+      stop_distance = broker_reference_price - stop;
+      target_distance = target - broker_reference_price;
      }
    else
      {
       risk = stop - market_price;
       reward = market_price - target;
+      // Sell positions close on Ask, so broker stop constraints are measured
+      // from Ask even though executable entry economics use Bid.
+      stop_distance = stop - broker_reference_price;
+      target_distance = broker_reference_price - target;
      }
-   if(risk <= 0.0 || reward <= 0.0 ||
-      risk + comparison_epsilon < minimum_distance ||
-      reward + comparison_epsilon < minimum_distance)
+   if(risk <= 0.0 || reward <= 0.0)
      {
-      failure_reason = "trigger_beyond_stop_target_or_broker_distance";
+      failure_reason = "trigger_beyond_stop_or_target";
+      return false;
+     }
+   if(stop_distance + comparison_epsilon < minimum_distance ||
+      target_distance + comparison_epsilon < minimum_distance)
+     {
+      failure_reason = "trigger_broker_stop_distance";
       return false;
      }
 
@@ -2446,9 +2514,23 @@ void OnTick()
    // management section at the start of OnTick.
    const datetime broker_now = TimeCurrent();
    if(!Strategy_EntryNewsAllows(broker_now))
+     {
+      QM_LogEvent(QM_INFO,
+                  "ICT_EARLIEST_FVG_VOID",
+                  StringFormat("{\"budget_key\":%d,\"fvg_time\":%I64d,\"reason\":\"news_blackout_at_eligibility\"}",
+                               signal.budget_key,
+                               (long)signal.fvg_bar_time));
       return;
-    if(!Strategy_GovernorAllowsEntry())
-       return;
+     }
+   if(!Strategy_GovernorAllowsEntry())
+     {
+      QM_LogEvent(QM_INFO,
+                  "ICT_EARLIEST_FVG_VOID",
+                  StringFormat("{\"budget_key\":%d,\"fvg_time\":%I64d,\"reason\":\"governor_block_at_eligibility\"}",
+                               signal.budget_key,
+                               (long)signal.fvg_bar_time));
+      return;
+     }
    datetime immutable_deadline = 0;
    string deadline_failure = "";
    if(!Strategy_ComputeVirtualLimitDeadline(signal,

@@ -141,6 +141,38 @@ def test_contract_helper_separates_nonbinding_smoke_from_binding_dev() -> None:
     assert "requires exactly two runs" in invalid.stderr + invalid.stdout
 
 
+def test_report_set_match_preserves_empty_governors_and_rejects_extra_empty_input(
+    tmp_path: Path,
+) -> None:
+    expected = {
+        "qm_ea_id": "20009",
+        "InpQMSimCommissionPerLot": "0.0",
+        "strategy_governor_policy_id": "",
+        "strategy_challenge_instance_id": "",
+    }
+    actual = dict(expected)
+    expected_path = tmp_path / "expected.json"
+    actual_path = tmp_path / "actual.json"
+    expected_path.write_text(json.dumps(expected), encoding="utf-8")
+    actual_path.write_text(json.dumps(actual), encoding="utf-8")
+    command = _module_command(
+        "$a=Get-Content -Raw $arg1|ConvertFrom-Json -AsHashtable -DateKind String;"
+        "$e=Get-Content -Raw $arg2|ConvertFrom-Json -AsHashtable -DateKind String;"
+        "Assert-QmInputMapMatchesSet -Actual $a -Expected $e;'PASS'"
+    )
+
+    valid = _pwsh(command, str(SUPPORT), str(actual_path), str(expected_path), "unused")
+    assert valid.returncode == 0, valid.stdout + valid.stderr
+    assert "PASS" in valid.stdout
+
+    actual["unexpected_empty_input"] = ""
+    actual_path.write_text(json.dumps(actual), encoding="utf-8")
+    invalid = _pwsh(command, str(SUPPORT), str(actual_path), str(expected_path), "unused")
+
+    assert invalid.returncode != 0
+    assert "Report/set input count drift" in invalid.stderr + invalid.stdout
+
+
 def _mock_contract(report_dir: Path) -> tuple[dict[str, object], dict[str, object]]:
     reports: list[dict[str, object]] = []
     for ordinal in (1, 2):

@@ -8,6 +8,16 @@ bool g_qm_trade_block_not_enough_money = false;
 int  g_qm_trade_block_day_key = -1;
 datetime g_qm_trade_block_warn_ts = 0;
 
+// Entry strategies normally retain the framework's historical transient retry
+// behavior.  Event contracts that permit exactly one broker submission opt in
+// to SEND_ONCE explicitly and therefore cannot reach either retry branch (or
+// the PRICE_OFF sleep) below.
+enum QM_TradeSendPolicy
+  {
+   QM_TRADE_SEND_RETRY_TRANSIENT = 0,
+   QM_TRADE_SEND_ONCE            = 1
+  };
+
 // Entry-class requests open NEW exposure: deals without a position ticket, or
 // pending placements. Closes, SL/TP modifies, pending removals and close-by
 // requests must NEVER be latched — they need no margin, and blocking
@@ -77,7 +87,10 @@ bool QM_TradeContextAcceptedRetcode(const uint retcode)
            retcode == TRADE_RETCODE_PLACED);
 }
 
-bool QM_TradeContextSend(const MqlTradeRequest &request, MqlTradeResult &result, string &out_error_class)
+bool QM_TradeContextSend(const MqlTradeRequest &request,
+                         MqlTradeResult &result,
+                         string &out_error_class,
+                         const QM_TradeSendPolicy send_policy = QM_TRADE_SEND_RETRY_TRANSIENT)
 {
    ZeroMemory(result);
    out_error_class = BROKER_OTHER;
@@ -118,7 +131,8 @@ bool QM_TradeContextSend(const MqlTradeRequest &request, MqlTradeResult &result,
    bool sent = OrderSend(request, local_result);
    uint retcode = local_result.retcode;
 
-   if(!sent || !QM_TradeContextAcceptedRetcode(retcode))
+   if(send_policy == QM_TRADE_SEND_RETRY_TRANSIENT &&
+      (!sent || !QM_TradeContextAcceptedRetcode(retcode)))
    {
       if(retcode == TRADE_RETCODE_REQUOTE)
       {

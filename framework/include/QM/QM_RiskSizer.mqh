@@ -498,4 +498,180 @@ double QM_LotsForRisk(const string symbol,
    return lots;
   }
 
+// Entry-only exact margin rail.  The legacy QM_LotsForRisk overloads above are
+// intentionally left unchanged because many direct callers depend on their
+// historical sizing semantics.  QM_Entry has the actual side and resolved
+// execution price, so it uses this path to replace the notional/leverage
+// approximation with the broker/tester's symbol calculation mode.
+const double QM_RISK_SIZER_MARGIN_HEADROOM = 0.90;
+
+double QM_RiskSizerCapLotsByOrderMargin(const string symbol,
+                                        const ENUM_ORDER_TYPE order_type,
+                                        const double entry_price,
+                                        const double requested_lots,
+                                        const QM_SymbolRiskSnapshot &snapshot)
+  {
+   if(StringLen(symbol) <= 0 ||
+      (order_type != ORDER_TYPE_BUY && order_type != ORDER_TYPE_SELL) ||
+      entry_price <= 0.0 || requested_lots <= 0.0)
+      return 0.0;
+
+   double lots = QM_RiskSizerQuantizeLots(requested_lots,
+                                           snapshot.volume_min,
+                                           snapshot.volume_max,
+                                           snapshot.volume_step);
+   if(lots <= 0.0)
+      return 0.0;
+
+   const double free_margin = AccountInfoDouble(ACCOUNT_MARGIN_FREE);
+   if(free_margin <= 0.0)
+      return 0.0;
+   const double margin_budget = free_margin * QM_RISK_SIZER_MARGIN_HEADROOM;
+   if(margin_budget <= 0.0)
+      return 0.0;
+
+   double required_margin = 0.0;
+   ResetLastError();
+   if(!OrderCalcMargin(order_type, symbol, lots, entry_price, required_margin) ||
+      required_margin <= 0.0)
+      return 0.0;
+
+   const double margin_epsilon = MathMax(1e-8, margin_budget * 1e-10);
+   if(required_margin <= margin_budget + margin_epsilon)
+      return lots;
+
+   // The requested volume is unaffordable.  Search the discrete broker volume
+   // grid for the greatest affordable lot count.  Recomputing OrderCalcMargin
+   // at every probe avoids assuming linear margin across symbol calculation
+   // modes or broker tiers, while flooring to volume_step prevents overshoot.
+   const long minimum_steps = (long)MathCeil((snapshot.volume_min - 1e-12) /
+                                              snapshot.volume_step);
+   const long requested_steps = (long)MathFloor((lots + 1e-12) /
+                                                 snapshot.volume_step);
+   if(minimum_steps <= 0 || requested_steps < minimum_steps)
+      return 0.0;
+
+   long low = minimum_steps;
+   long high = requested_steps - 1; // requested_steps is already known to exceed the budget.
+   long affordable_steps = 0;
+   while(low <= high)
+     {
+      const long middle = low + (high - low) / 2;
+      const double probe_lots = NormalizeDouble((double)middle * snapshot.volume_step, 8);
+      double probe_margin = 0.0;
+      ResetLastError();
+      if(!OrderCalcMargin(order_type, symbol, probe_lots, entry_price, probe_margin) ||
+         probe_margin <= 0.0)
+         return 0.0;
+
+      if(probe_margin <= margin_budget + margin_epsilon)
+        {
+         affordable_steps = middle;
+         low = middle + 1;
+        }
+      else
+         high = middle - 1;
+     }
+
+   if(affordable_steps <= 0)
+      return 0.0;
+
+   lots = QM_RiskSizerQuantizeLots((double)affordable_steps * snapshot.volume_step,
+                                    snapshot.volume_min,
+                                    snapshot.volume_max,
+                                    snapshot.volume_step);
+   if(lots <= 0.0)
+      return 0.0;
+
+   // Final fail-closed proof on the exact quantized volume returned to Entry.
+   double final_margin = 0.0;
+   ResetLastError();
+   if(!OrderCalcMargin(order_type, symbol, lots, entry_price, final_margin) ||
+      final_margin <= 0.0 || final_margin > margin_budget + margin_epsilon)
+      return 0.0;
+
+   return lots;
+  }
+
+double QM_LotsForRiskAtEntryFromMoney(const string symbol,
+                                      const double sl_points,
+                                      const double risk_money,
+                                      const ENUM_ORDER_TYPE order_type,
+                                      const double entry_price)
+  {
+   QM_SymbolRiskSnapshot snapshot;
+   if(!QM_RiskSizerReadSymbolSnapshot(symbol, snapshot))
+      return 0.0;
+
+   const double requested_lots = QM_LotsForRiskFromSnapshot(snapshot, risk_money, sl_points);
+   if(requested_lots <= 0.0)
+      return 0.0;
+
+   return QM_RiskSizerCapLotsByOrderMargin(symbol,
+                                            order_type,
+                                            entry_price,
+                                            requested_lots,
+                                            snapshot);
+  }
+
+double QM_LotsForRiskAtEntry(const string symbol,
+                             const double sl_points,
+                             const ENUM_ORDER_TYPE order_type,
+                             const double entry_price)
+  {
+   const double equity = AccountInfoDouble(ACCOUNT_EQUITY);
+   const double risk_money = QM_RiskSizerRiskMoney(equity);
+   if(risk_money <= 0.0)
+      return 0.0;
+   return QM_LotsForRiskAtEntryFromMoney(symbol,
+                                          sl_points,
+                                          risk_money,
+                                          order_type,
+                                          entry_price);
+  }
+
+double QM_LotsForRiskAtEntry(const string symbol,
+                             const double sl_points,
+                             const ENUM_ORDER_TYPE order_type,
+                             const double entry_price,
+                             const double explicit_risk_percent)
+  {
+   const double equity = AccountInfoDouble(ACCOUNT_EQUITY);
+   const double risk_money = QM_RiskSizerRiskMoney(equity, explicit_risk_percent);
+   if(risk_money <= 0.0)
+      return 0.0;
+   return QM_LotsForRiskAtEntryFromMoney(symbol,
+                                          sl_points,
+                                          risk_money,
+                                          order_type,
+                                          entry_price);
+  }
+
+double QM_LotsForRiskAtEntry(const string symbol,
+                             const double sl_points,
+                             const ENUM_ORDER_TYPE order_type,
+                             const double entry_price,
+                             const QM_RiskMode explicit_mode,
+                             const double explicit_value)
+  {
+   if(explicit_mode == QM_RISK_MODE_PERCENT)
+      return QM_LotsForRiskAtEntry(symbol,
+                                    sl_points,
+                                    order_type,
+                                    entry_price,
+                                    explicit_value);
+   if(explicit_mode != QM_RISK_MODE_FIXED)
+      return 0.0;
+
+   const double equity = AccountInfoDouble(ACCOUNT_EQUITY);
+   const double risk_money = QM_RiskSizerRiskMoney(equity, explicit_mode, explicit_value);
+   if(risk_money <= 0.0)
+      return 0.0;
+   return QM_LotsForRiskAtEntryFromMoney(symbol,
+                                          sl_points,
+                                          risk_money,
+                                          order_type,
+                                          entry_price);
+  }
+
 #endif // QM_RISKSIZER_MQH

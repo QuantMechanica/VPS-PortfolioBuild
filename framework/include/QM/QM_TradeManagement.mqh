@@ -152,12 +152,14 @@ bool QM_TM_CloseByVolume(const ulong ticket,
 bool QM_TM_OpenPosition(const QM_EntryRequest &req,
                         ulong &out_ticket,
                         const int explicit_magic = 0,
-                        const double explicit_risk_percent = 0.0)
+                        const double explicit_risk_percent = 0.0,
+                        const QM_TradeSendPolicy send_policy = QM_TRADE_SEND_RETRY_TRANSIENT)
   {
    const QM_EntryResult result = QM_Entry(req,
                                           out_ticket,
                                           explicit_magic,
-                                          explicit_risk_percent);
+                                          explicit_risk_percent,
+                                          send_policy);
    const bool ok = (result == QM_ENTRY_OK);
    const string payload = StringFormat(
       "{\"symbol\":\"%s\",\"type\":\"%s\",\"ok\":%s,\"ticket\":%I64u,\"entry_result\":\"%s\"}",
@@ -178,13 +180,15 @@ bool QM_TM_OpenPosition(const QM_EntryRequest &req,
                         ulong &out_ticket,
                         const int explicit_magic,
                         const QM_RiskMode explicit_risk_mode,
-                        const double explicit_risk_value)
+                        const double explicit_risk_value,
+                        const QM_TradeSendPolicy send_policy = QM_TRADE_SEND_RETRY_TRANSIENT)
   {
    const QM_EntryResult result = QM_Entry(req,
                                           out_ticket,
                                           explicit_magic,
                                           explicit_risk_mode,
-                                          explicit_risk_value);
+                                          explicit_risk_value,
+                                          send_policy);
    const bool ok = (result == QM_ENTRY_OK);
    const string payload = StringFormat(
       "{\"symbol\":\"%s\",\"type\":\"%s\",\"ok\":%s,\"ticket\":%I64u,\"entry_result\":\"%s\"}",

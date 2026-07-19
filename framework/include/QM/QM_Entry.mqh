@@ -158,7 +158,8 @@ QM_EntryResult QM_EntryInternal(const QM_EntryRequest &req,
                                 const double explicit_risk_percent,
                                 const bool use_explicit_risk_mode,
                                 const QM_RiskMode explicit_risk_mode,
-                                const double explicit_risk_value)
+                                const double explicit_risk_value,
+                                const QM_TradeSendPolicy send_policy)
 {
    out_ticket = 0;
 
@@ -243,17 +244,32 @@ QM_EntryResult QM_EntryInternal(const QM_EntryRequest &req,
    }
 
    const double sl_points = QM_EntrySLPoints(entry_price, req.sl);
-   // Exactly zero means no override and deliberately calls the untouched
-   // legacy two-argument risk sizer (including fixed-money mode). Any nonzero
-   // explicit value takes the new path, where invalid negatives resolve to
-   // zero lots and reject instead of silently falling back to global risk.
+   const ENUM_ORDER_TYPE margin_order_type = QM_OrderTypeIsBuy(req.type)
+                                              ? ORDER_TYPE_BUY
+                                              : ORDER_TYPE_SELL;
+   // Exactly zero means no explicit risk override and preserves the configured
+   // global risk-money semantics.  Entry then applies its side/price-aware
+   // OrderCalcMargin rail; direct legacy QM_LotsForRisk callers remain on their
+   // historical path.  Invalid explicit values resolve to zero lots and reject.
    double lots = 0.0;
    if(use_explicit_risk_mode)
-      lots = QM_LotsForRisk(_Symbol, sl_points, explicit_risk_mode, explicit_risk_value);
+      lots = QM_LotsForRiskAtEntry(_Symbol,
+                                    sl_points,
+                                    margin_order_type,
+                                    entry_price,
+                                    explicit_risk_mode,
+                                    explicit_risk_value);
    else
       lots = (explicit_risk_percent == 0.0)
-             ? QM_LotsForRisk(_Symbol, sl_points)
-             : QM_LotsForRisk(_Symbol, sl_points, explicit_risk_percent);
+             ? QM_LotsForRiskAtEntry(_Symbol,
+                                      sl_points,
+                                      margin_order_type,
+                                      entry_price)
+             : QM_LotsForRiskAtEntry(_Symbol,
+                                      sl_points,
+                                      margin_order_type,
+                                      entry_price,
+                                      explicit_risk_percent);
    if(lots <= 0.0)
    {
       QM_EntryLogReject(req, QM_ENTRY_REJECTED_RISK, "lots_for_risk_zero");
@@ -282,7 +298,7 @@ QM_EntryResult QM_EntryInternal(const QM_EntryRequest &req,
 
    MqlTradeResult trade_res;
    string broker_error_class = "";
-   if(!QM_TradeContextSend(trade_req, trade_res, broker_error_class))
+   if(!QM_TradeContextSend(trade_req, trade_res, broker_error_class, send_policy))
    {
       QM_EntryLogReject(req, QM_ENTRY_REJECTED_BROKER, broker_error_class);
       return QM_ENTRY_REJECTED_BROKER;
@@ -312,7 +328,8 @@ QM_EntryResult QM_EntryInternal(const QM_EntryRequest &req,
 QM_EntryResult QM_Entry(const QM_EntryRequest &req,
                         ulong &out_ticket,
                         const int explicit_magic = 0,
-                        const double explicit_risk_percent = 0.0)
+                        const double explicit_risk_percent = 0.0,
+                        const QM_TradeSendPolicy send_policy = QM_TRADE_SEND_RETRY_TRANSIENT)
 {
    return QM_EntryInternal(req,
                            out_ticket,
@@ -320,7 +337,8 @@ QM_EntryResult QM_Entry(const QM_EntryRequest &req,
                            explicit_risk_percent,
                            false,
                            QM_RISK_MODE_UNSET,
-                           0.0);
+                           0.0,
+                           send_policy);
 }
 
 // Phase 2.5 explicit per-call mode/value overload. Even an invalid explicit
@@ -330,7 +348,8 @@ QM_EntryResult QM_Entry(const QM_EntryRequest &req,
                         ulong &out_ticket,
                         const int explicit_magic,
                         const QM_RiskMode explicit_risk_mode,
-                        const double explicit_risk_value)
+                        const double explicit_risk_value,
+                        const QM_TradeSendPolicy send_policy = QM_TRADE_SEND_RETRY_TRANSIENT)
 {
    return QM_EntryInternal(req,
                            out_ticket,
@@ -338,7 +357,8 @@ QM_EntryResult QM_Entry(const QM_EntryRequest &req,
                            0.0,
                            true,
                            explicit_risk_mode,
-                           explicit_risk_value);
+                           explicit_risk_value,
+                           send_policy);
 }
 
 #endif // QM_ENTRY_MQH

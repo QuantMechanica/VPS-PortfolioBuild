@@ -48,6 +48,43 @@ def test_english_utf8_report_reconciles_and_applies_deal_side_costs() -> None:
     assert re.fullmatch(r"[0-9a-f]{64}", receipt["report"]["sha256"])
 
 
+def test_pinned_group_headings_do_not_hide_empty_governor_inputs(
+    tmp_path: Path,
+) -> None:
+    text = (FIXTURES / "mt5_report_en.html").read_text(encoding="utf-8")
+    text = text.replace(
+        "<tr><td></td><td>Strategy=</td></tr>",
+        """<tr><td></td><td>Risk=</td></tr>
+<tr><td></td><td>Stress=</td></tr>
+<tr><td></td><td>strategy_governor_policy_id=</td></tr>
+<tr><td></td><td>strategy_challenge_instance_id=</td></tr>""",
+        1,
+    )
+    report = tmp_path / "group_headings.htm"
+    report.write_text(text, encoding="utf-8")
+
+    receipt = audit.audit_report(report)
+    inputs = receipt["header"]["inputs"]
+
+    assert receipt["header"]["parsed_input_count"] == 5
+    assert "Risk" not in inputs
+    assert "Stress" not in inputs
+    assert inputs["strategy_governor_policy_id"] == ""
+    assert inputs["strategy_challenge_instance_id"] == ""
+
+
+def test_unpinned_empty_identifier_remains_a_real_report_input(tmp_path: Path) -> None:
+    text = (FIXTURES / "mt5_report_en.html").read_text(encoding="utf-8")
+    text = text.replace("Strategy=", "unexpected_empty_input=", 1)
+    report = tmp_path / "unexpected_empty_input.htm"
+    report.write_text(text, encoding="utf-8")
+
+    receipt = audit.audit_report(report)
+
+    assert receipt["header"]["inputs"]["unexpected_empty_input"] == ""
+    assert receipt["header"]["parsed_input_count"] == 4
+
+
 def test_german_labels_decimal_commas_and_fx_base_conversion() -> None:
     receipt = audit.audit_report(FIXTURES / "mt5_report_de.html")
 

@@ -16,6 +16,19 @@ ROOT = Path(__file__).resolve().parents[1]
 EA = (ROOT / "QM5_20009_ict-liquidity-portfolio.mq5").read_text(encoding="utf-8")
 RULES = (ROOT / "ICT_LiquidityRules.mqh").read_text(encoding="utf-8")
 CONTRACT = (ROOT / "docs" / "strategy_contract.md").read_text(encoding="utf-8")
+FRAMEWORK_ROOT = ROOT.parents[1]
+TRADE_CONTEXT = (FRAMEWORK_ROOT / "include" / "QM" / "QM_TradeContext.mqh").read_text(
+    encoding="utf-8"
+)
+ENTRY = (FRAMEWORK_ROOT / "include" / "QM" / "QM_Entry.mqh").read_text(
+    encoding="utf-8"
+)
+TRADE_MANAGEMENT = (
+    FRAMEWORK_ROOT / "include" / "QM" / "QM_TradeManagement.mqh"
+).read_text(encoding="utf-8")
+RISK_SIZER = (FRAMEWORK_ROOT / "include" / "QM" / "QM_RiskSizer.mqh").read_text(
+    encoding="utf-8"
+)
 
 
 def function_body(source: str, name: str) -> str:
@@ -184,6 +197,18 @@ class FrozenContractTests(unittest.TestCase):
         for token in required:
             self.assertIn(token, EA)
 
+    def test_replay_depth_and_group_labels_are_frozen_and_report_safe(self) -> None:
+        parameters = function_body(EA, "Strategy_ParametersValid")
+        self.assertIn("strategy_replay_bars_index != 2500", parameters)
+        self.assertIn("strategy_replay_bars_fx != 10000", parameters)
+        group_labels = re.findall(r'input group "([^"]+)"', EA)
+        self.assertTrue(group_labels)
+        for label in group_labels:
+            self.assertIsNone(
+                re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", label),
+                f"MT5 report parser would confuse input group with input: {label}",
+            )
+
     def test_live_path_is_exact_governor_percent_risk_only(self) -> None:
         required = (
             "QM_FTMO_SelectPolicy",
@@ -341,28 +366,32 @@ class FrozenContractTests(unittest.TestCase):
         self.assertNotIn("tick_size * 0.25", RULES)
         self.assertIn("gap + comparison_epsilon < minimum_gap", RULES)
 
-    def test_pending_prices_are_aligned_to_trade_tick_grid(self) -> None:
+    def test_virtual_limit_prices_are_aligned_to_trade_tick_grid(self) -> None:
         self.assertIn("SYMBOL_TRADE_TICK_SIZE", EA)
         self.assertIn("Strategy_NormalizeToTick(signal.entry, 0)", EA)
         self.assertIn("(signal.direction > 0) ? -1 : 1", EA)
-        self.assertIn("Strategy_QuoteAllowsFreshLimit(signal.direction", EA)
+        self.assertIn("Strategy_QuoteAllowsFreshVirtualLimit(signal.direction", EA)
         build = function_body(EA, "Strategy_BuildEntryRequest")
         self.assertLess(build.index("Strategy_NormalizeToTick"), build.index("const double risk"))
-        self.assertLess(build.index("Strategy_QuoteAllowsFreshLimit"), build.index("const double risk"))
+        self.assertLess(
+            build.index("Strategy_QuoteAllowsFreshVirtualLimit"),
+            build.index("const double risk"),
+        )
 
-    def test_pending_geometry_uses_one_atomic_quote_and_all_broker_distances(self) -> None:
-        quote = function_body(EA, "Strategy_QuoteAllowsFreshLimit")
+    def test_virtual_arm_uses_atomic_quote_but_no_server_pending_distances(self) -> None:
+        quote = function_body(EA, "Strategy_QuoteAllowsFreshVirtualLimit")
         self.assertIn("SymbolInfoTick(_Symbol, quote)", quote)
         self.assertNotIn("SYMBOL_ASK", quote)
         self.assertNotIn("SYMBOL_BID", quote)
-        self.assertIn("SYMBOL_TRADE_STOPS_LEVEL", quote)
+        self.assertNotIn("SYMBOL_TRADE_STOPS_LEVEL", quote)
+        self.assertNotIn("minimum_distance", quote)
         required = (
-            "ask - entry + comparison_epsilon < minimum_distance",
-            "entry - bid + comparison_epsilon < minimum_distance",
-            "entry - stop + comparison_epsilon < minimum_distance",
-            "target - entry + comparison_epsilon < minimum_distance",
-            "stop - entry + comparison_epsilon < minimum_distance",
-            "entry - target + comparison_epsilon < minimum_distance",
+            "ask <= entry",
+            "bid >= entry",
+            "stop >= entry || target <= entry",
+            "stop <= entry || target >= entry",
+            'failure_reason = "edge_already_touched_at_eligibility"',
+            'failure_reason = "directional_geometry_invalid_at_eligibility"',
         )
         for token in required:
             self.assertIn(token, quote)
@@ -419,10 +448,33 @@ class FrozenContractTests(unittest.TestCase):
     def test_trigger_revalidates_current_quote_rr_and_broker_distance(self) -> None:
         trigger = function_body(EA, "Strategy_BuildTriggeredMarketRequest")
         self.assertIn("SYMBOL_TRADE_STOPS_LEVEL", trigger)
-        self.assertIn("risk + comparison_epsilon < minimum_distance", trigger)
-        self.assertIn("reward + comparison_epsilon < minimum_distance", trigger)
+        self.assertIn("? quote.ask : quote.bid", trigger)
+        self.assertIn("? quote.bid : quote.ask", trigger)
+        self.assertIn("stop_distance = broker_reference_price - stop", trigger)
+        self.assertIn("target_distance = target - broker_reference_price", trigger)
+        self.assertIn("stop_distance = stop - broker_reference_price", trigger)
+        self.assertIn("target_distance = broker_reference_price - target", trigger)
+        self.assertIn("stop_distance + comparison_epsilon < minimum_distance", trigger)
+        self.assertIn("target_distance + comparison_epsilon < minimum_distance", trigger)
         self.assertIn("reward / risk + 1e-12 < min_rr", trigger)
-        self.assertIn("trigger_beyond_stop_target_or_broker_distance", trigger)
+        self.assertIn("trigger_beyond_stop_or_target", trigger)
+        self.assertIn("trigger_broker_stop_distance", trigger)
+
+    def test_suppressed_eligible_events_have_granular_terminal_reasons(self) -> None:
+        build = function_body(EA, "Strategy_BuildEntryRequest")
+        tick = function_body(EA, "OnTick")
+        rebuild = function_body(EA, "Strategy_RebuildFxSession")
+        update = function_body(EA, "Strategy_UpdateFxCache")
+        self.assertIn("failure_reason", build)
+        self.assertIn("news_blackout_at_eligibility", tick)
+        self.assertIn("governor_block_at_eligibility", tick)
+        for reason in (
+            "ASIAN_REFERENCE_INCOMPLETE",
+            "LONDON_REFERENCE_INCOMPLETE",
+            "SESSION_WINDOW_INCOMPLETE",
+        ):
+            self.assertIn(reason, rebuild)
+        self.assertIn("ICT_FX_SESSION_INCOMPLETE", update)
 
 
 if __name__ == "__main__":
