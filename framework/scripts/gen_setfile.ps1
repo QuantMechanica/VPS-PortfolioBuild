@@ -269,7 +269,10 @@ function Get-EAInputDefaults {
             $name = $matches[1].Trim()
             $value = $matches[2].Trim()
             $result.all[$name] = $value
-            if ($group -eq 'Strategy') {
+            # Legacy/current EAs are not consistent about input groups.  The
+            # live-set invariant below already treats strategy_* as strategy
+            # parameters, so collect the same prefix even outside a group.
+            if ($group -eq 'Strategy' -or $name -like 'strategy_*') {
                 $result.strategy[$name] = $value
             }
         }
@@ -426,7 +429,17 @@ if ($cardPath) {
     }
 }
 else {
-    $lines += "; card_defaults_source=not_found"
+    # A missing card must not silently create a parameter-empty setfile.  The
+    # EA source is the authoritative fallback for explicit input defaults.
+    if ($eaInputDefaults.strategy.Count -gt 0) {
+        $lines += "; card_defaults_source=ea_input_defaults"
+        foreach ($k in $eaInputDefaults.strategy.Keys) {
+            $lines += "$k=$($eaInputDefaults.strategy[$k])"
+        }
+    }
+    else {
+        $lines += "; card_defaults_source=not_found"
+    }
 }
 
 if ($Env -eq 'live' -and -not ($lines | Where-Object { $_ -match '^strategy_[A-Za-z0-9_]+\s*=' })) {
