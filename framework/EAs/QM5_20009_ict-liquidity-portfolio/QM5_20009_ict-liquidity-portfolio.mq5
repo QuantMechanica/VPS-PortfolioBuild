@@ -609,29 +609,501 @@ bool Strategy_ReconstructFx(const MqlRates &rates[],
 
 bool Strategy_Reconstruct(ICT_SequenceResult &result)
   {
-   MqlRates rates[];
-   int count = 0;
-   if(!Strategy_LoadClosedRates(rates, count))
+   g_strategy_replay_cache_ready = false;
+   g_strategy_replay_budget_key = 0;
+   g_strategy_closed_rate_count = 0;
+   ArrayFree(g_strategy_closed_rates);
+   ICT_ResetRange(g_strategy_index_opening_range);
+   ICT_ResetRange(g_strategy_fx_previous_week);
+   ICT_ResetSequence(g_strategy_cached_sequence);
+
+   if(!Strategy_LoadClosedRates(g_strategy_closed_rates,
+                                g_strategy_closed_rate_count))
      {
       ICT_ResetSequence(result);
       result.outcome = "REPLAY_HISTORY_UNAVAILABLE";
       return false;
      }
 
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
-   if(tick_size <= 0.0)
-      tick_size = point;
-   if(point <= 0.0 || tick_size <= 0.0)
+   g_strategy_replay_point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   g_strategy_replay_tick_size = SymbolInfoDouble(_Symbol,
+                                                   SYMBOL_TRADE_TICK_SIZE);
+   if(g_strategy_replay_tick_size <= 0.0)
+      g_strategy_replay_tick_size = g_strategy_replay_point;
+   if(g_strategy_replay_point <= 0.0 || g_strategy_replay_tick_size <= 0.0)
      {
       ICT_ResetSequence(result);
       result.outcome = "SYMBOL_PRICE_UNIT_UNAVAILABLE";
       return false;
      }
 
+   bool reconstructed = false;
    if(strategy_mode == ICT_MODE_INDEX_MSS_FVG)
-      return Strategy_ReconstructIndex(rates, count, tick_size, point, result);
-   return Strategy_ReconstructFx(rates, count, tick_size, point, result);
+      reconstructed = Strategy_ReconstructIndex(g_strategy_closed_rates,
+                                                 g_strategy_closed_rate_count,
+                                                 g_strategy_replay_tick_size,
+                                                 g_strategy_replay_point,
+                                                 result);
+   else
+      reconstructed = Strategy_ReconstructFx(g_strategy_closed_rates,
+                                              g_strategy_closed_rate_count,
+                                              g_strategy_replay_tick_size,
+                                              g_strategy_replay_point,
+                                              result);
+   if(!reconstructed)
+      return false;
+
+   const datetime newest_time =
+      g_strategy_closed_rates[g_strategy_closed_rate_count - 1].time;
+   g_strategy_replay_budget_key = Strategy_BudgetKeyAtTime(newest_time);
+   if(g_strategy_replay_budget_key <= 0 ||
+      result.budget_key != g_strategy_replay_budget_key)
+     {
+      ICT_ResetSequence(result);
+      result.outcome = "REPLAY_BUDGET_MISMATCH";
+      return false;
+     }
+
+   if(strategy_mode == ICT_MODE_INDEX_MSS_FVG)
+      ICT_CollectNYRange(g_strategy_closed_rates,
+                         g_strategy_closed_rate_count,
+                         g_strategy_replay_budget_key,
+                         9 * 60 + 30,
+                         10 * 60,
+                         30,
+                         g_strategy_replay_tick_size,
+                         g_strategy_index_opening_range);
+   else
+     {
+      int distinct_dates = 0;
+      ICT_CollectPreviousTradingWeek(g_strategy_closed_rates,
+                                     g_strategy_closed_rate_count,
+                                     ICT_ShiftDateKey(g_strategy_replay_budget_key, -7),
+                                     g_strategy_replay_tick_size,
+                                     g_strategy_fx_previous_week,
+                                     distinct_dates);
+     }
+
+   Strategy_CopySequence(result, g_strategy_cached_sequence);
+   g_strategy_replay_cache_ready = true;
+   return true;
+  }
+
+int Strategy_ReplayRequestedBars()
+  {
+   return (strategy_mode == ICT_MODE_INDEX_MSS_FVG)
+          ? strategy_replay_bars_index
+          : strategy_replay_bars_fx;
+  }
+
+int Strategy_LogicalHistoryFirstIndex()
+  {
+   return MathMax(0,
+                  g_strategy_closed_rate_count - Strategy_ReplayRequestedBars());
+  }
+
+bool Strategy_FindNYWindowBounds(const int ny_date_key,
+                                 const int start_minute,
+                                 const int end_minute,
+                                 const bool event_window,
+                                 const int timeframe_seconds,
+                                 int &first_index,
+                                 int &last_index)
+  {
+   first_index = -1;
+   last_index = -1;
+   const int history_first = Strategy_LogicalHistoryFirstIndex();
+   for(int i = g_strategy_closed_rate_count - 1; i >= history_first; --i)
+     {
+      const int bar_date_key = ICT_NYDateKey(g_strategy_closed_rates[i].time);
+      if(bar_date_key > ny_date_key)
+         continue;
+      if(bar_date_key < ny_date_key)
+         break;
+
+      bool in_window = false;
+      if(event_window)
+         in_window = ICT_IsEventBarInSession(g_strategy_closed_rates[i],
+                                              ny_date_key,
+                                              start_minute,
+                                              end_minute,
+                                              timeframe_seconds);
+      else
+        {
+         const int minute = ICT_NYMinute(g_strategy_closed_rates[i].time);
+         in_window = minute >= start_minute && minute < end_minute;
+        }
+      if(!in_window)
+         continue;
+      if(last_index < 0)
+         last_index = i;
+      first_index = i;
+     }
+   return first_index >= 0 && last_index >= first_index;
+  }
+
+void Strategy_AccumulateIndexOpeningRange(const MqlRates &bar)
+  {
+   if(ICT_NYDateKey(bar.time) != g_strategy_replay_budget_key)
+      return;
+   const int minute = ICT_NYMinute(bar.time);
+   if(minute < 9 * 60 + 30 || minute >= 10 * 60)
+      return;
+
+   if(g_strategy_index_opening_range.bars == 0)
+     {
+      g_strategy_index_opening_range.high = bar.high;
+      g_strategy_index_opening_range.low = bar.low;
+     }
+   else
+     {
+      g_strategy_index_opening_range.high =
+         MathMax(g_strategy_index_opening_range.high, bar.high);
+      g_strategy_index_opening_range.low =
+         MathMin(g_strategy_index_opening_range.low, bar.low);
+     }
+   ++g_strategy_index_opening_range.bars;
+   g_strategy_index_opening_range.valid =
+      g_strategy_index_opening_range.bars == 30 &&
+      g_strategy_index_opening_range.high > g_strategy_index_opening_range.low;
+   g_strategy_index_opening_range.fingerprint =
+      g_strategy_index_opening_range.valid
+      ? ICT_RangeFingerprint(g_strategy_replay_budget_key,
+                             g_strategy_index_opening_range.bars,
+                             g_strategy_index_opening_range.low,
+                             g_strategy_index_opening_range.high,
+                             g_strategy_replay_tick_size)
+      : 0;
+  }
+
+void Strategy_SetIndexWaitingState(ICT_SequenceResult &result)
+  {
+   ICT_ResetSequence(result);
+   result.session = g_strategy_index_opening_range.valid
+                    ? ICT_SESSION_INDEX_AM
+                    : ICT_SESSION_NONE;
+   result.budget_key = g_strategy_replay_budget_key;
+   result.ny_date_key = g_strategy_replay_budget_key;
+   if(g_strategy_index_opening_range.valid)
+     {
+      result.session_end_minute = 11 * 60;
+      result.frozen_level_hash = g_strategy_index_opening_range.fingerprint;
+      result.reference_hash = g_strategy_index_opening_range.fingerprint;
+      result.outcome = "NO_EVENT";
+     }
+   else
+      result.outcome = "OPENING_RANGE_INCOMPLETE";
+  }
+
+bool Strategy_UpdateIndexCache(const MqlRates &bar)
+  {
+   Strategy_AccumulateIndexOpeningRange(bar);
+   if(!g_strategy_index_opening_range.valid)
+     {
+      Strategy_SetIndexWaitingState(g_strategy_cached_sequence);
+      return true;
+     }
+
+   const bool current_event = ICT_IsEventBarInSession(bar,
+                                                       g_strategy_replay_budget_key,
+                                                       10 * 60,
+                                                       11 * 60,
+                                                       PeriodSeconds(PERIOD_M1));
+   if(!current_event)
+     {
+      if(!g_strategy_cached_sequence.consumed)
+         Strategy_SetIndexWaitingState(g_strategy_cached_sequence);
+      return true;
+     }
+
+   int event_first = -1;
+   int event_last = -1;
+   if(!Strategy_FindNYWindowBounds(g_strategy_replay_budget_key,
+                                   10 * 60,
+                                   11 * 60,
+                                   true,
+                                   PeriodSeconds(PERIOD_M1),
+                                   event_first,
+                                   event_last))
+      return false;
+
+   int pivot_wing = 0;
+   int reclaim_bars = 0;
+   int max_bars_to_mss = 0;
+   double min_fvg_atr = 0.0;
+   double sl_buffer_atr = 0.0;
+   double min_rr = 0.0;
+   Strategy_ModeParameters(pivot_wing,
+                           reclaim_bars,
+                           max_bars_to_mss,
+                           min_fvg_atr,
+                           sl_buffer_atr,
+                           min_rr);
+
+   ICT_SequenceResult updated;
+   ICT_BuildSequence(g_strategy_closed_rates,
+                     g_strategy_closed_rate_count,
+                     g_strategy_replay_budget_key,
+                     g_strategy_replay_budget_key,
+                     ICT_SESSION_INDEX_AM,
+                     10 * 60,
+                     11 * 60,
+                     PeriodSeconds(PERIOD_M1),
+                     g_strategy_index_opening_range.low,
+                     g_strategy_index_opening_range.high,
+                     g_strategy_index_opening_range.high,
+                     g_strategy_index_opening_range.low,
+                     g_strategy_index_opening_range.fingerprint,
+                     g_strategy_index_opening_range.fingerprint,
+                     pivot_wing,
+                     reclaim_bars,
+                     max_bars_to_mss,
+                     min_fvg_atr,
+                     sl_buffer_atr,
+                     min_rr,
+                     g_strategy_replay_tick_size,
+                     g_strategy_replay_point,
+                     updated,
+                     event_first,
+                     event_last,
+                     Strategy_LogicalHistoryFirstIndex());
+   if(g_strategy_cached_sequence.consumed &&
+      (!updated.consumed ||
+       updated.event_bar_time != g_strategy_cached_sequence.event_bar_time ||
+       updated.frozen_level_hash != g_strategy_cached_sequence.frozen_level_hash ||
+       updated.reference_hash != g_strategy_cached_sequence.reference_hash))
+     {
+      QM_LogEvent(QM_ERROR,
+                  "ICT_INCREMENTAL_EVENT_DRIFT",
+                  "{\"mode\":0,\"reason\":\"consumed_event_changed\"}");
+      return false;
+     }
+   Strategy_CopySequence(updated, g_strategy_cached_sequence);
+   return true;
+  }
+
+ICT_SessionKind Strategy_EventSessionForBar(const MqlRates &bar)
+  {
+   const int date_key = ICT_NYDateKey(bar.time);
+   if(ICT_IsEventBarInSession(bar,
+                              date_key,
+                              2 * 60,
+                              5 * 60,
+                              PeriodSeconds(PERIOD_M5)))
+      return ICT_SESSION_LONDON;
+   if(ICT_IsEventBarInSession(bar,
+                              date_key,
+                              7 * 60,
+                              10 * 60,
+                              PeriodSeconds(PERIOD_M5)))
+      return ICT_SESSION_NEW_YORK;
+   return ICT_SESSION_NONE;
+  }
+
+bool Strategy_RebuildFxSession(const int date_key,
+                               const ICT_SessionKind session,
+                               ICT_SequenceResult &result)
+  {
+   const bool london = session == ICT_SESSION_LONDON;
+   if(!london && session != ICT_SESSION_NEW_YORK)
+      return false;
+
+   const int reference_date = london ? ICT_ShiftDateKey(date_key, -1)
+                                     : date_key;
+   const int reference_start = london ? 20 * 60 : 2 * 60;
+   const int reference_end = london ? 24 * 60 : 5 * 60;
+   const int reference_bars = london ? 48 : 36;
+   int reference_first = -1;
+   int reference_last = -1;
+   if(!Strategy_FindNYWindowBounds(reference_date,
+                                   reference_start,
+                                   reference_end,
+                                   false,
+                                   PeriodSeconds(PERIOD_M5),
+                                   reference_first,
+                                   reference_last))
+      return false;
+
+   ICT_LevelRange reference;
+   if(!ICT_CollectNYRangeBounded(g_strategy_closed_rates,
+                                 g_strategy_closed_rate_count,
+                                 reference_first,
+                                 reference_last,
+                                 reference_date,
+                                 reference_start,
+                                 reference_end,
+                                 reference_bars,
+                                 g_strategy_replay_tick_size,
+                                 reference))
+      return false;
+
+   const int session_start = london ? 2 * 60 : 7 * 60;
+   const int session_end = london ? 5 * 60 : 10 * 60;
+   int event_first = -1;
+   int event_last = -1;
+   if(!Strategy_FindNYWindowBounds(date_key,
+                                   session_start,
+                                   session_end,
+                                   true,
+                                   PeriodSeconds(PERIOD_M5),
+                                   event_first,
+                                   event_last))
+      return false;
+
+   int pivot_wing = 0;
+   int reclaim_bars = 0;
+   int max_bars_to_mss = 0;
+   double min_fvg_atr = 0.0;
+   double sl_buffer_atr = 0.0;
+   double min_rr = 0.0;
+   Strategy_ModeParameters(pivot_wing,
+                           reclaim_bars,
+                           max_bars_to_mss,
+                           min_fvg_atr,
+                           sl_buffer_atr,
+                           min_rr);
+   ICT_BuildSequence(g_strategy_closed_rates,
+                     g_strategy_closed_rate_count,
+                     date_key,
+                     g_strategy_replay_budget_key,
+                     session,
+                     session_start,
+                     session_end,
+                     PeriodSeconds(PERIOD_M5),
+                     g_strategy_fx_previous_week.low,
+                     g_strategy_fx_previous_week.high,
+                     reference.high,
+                     reference.low,
+                     g_strategy_fx_previous_week.fingerprint,
+                     reference.fingerprint,
+                     pivot_wing,
+                     reclaim_bars,
+                     max_bars_to_mss,
+                     min_fvg_atr,
+                     sl_buffer_atr,
+                     min_rr,
+                     g_strategy_replay_tick_size,
+                     g_strategy_replay_point,
+                     result,
+                     event_first,
+                     event_last,
+                     Strategy_LogicalHistoryFirstIndex());
+   return true;
+  }
+
+bool Strategy_UpdateFxCache(const MqlRates &bar)
+  {
+   if(!g_strategy_fx_previous_week.valid)
+      return true;
+   const int date_key = ICT_NYDateKey(bar.time);
+   const ICT_SessionKind current_session = Strategy_EventSessionForBar(bar);
+   if(current_session == ICT_SESSION_NONE)
+      return true;
+
+   if(g_strategy_cached_sequence.consumed &&
+      (g_strategy_cached_sequence.ny_date_key != date_key ||
+       g_strategy_cached_sequence.session != current_session))
+      return true;
+
+   ICT_SequenceResult updated;
+   if(!Strategy_RebuildFxSession(date_key, current_session, updated))
+      return true; // An incomplete reference or session is a normal no-event state.
+
+   if(g_strategy_cached_sequence.consumed)
+     {
+      if(!updated.consumed ||
+         updated.event_bar_time != g_strategy_cached_sequence.event_bar_time ||
+         updated.frozen_level_hash != g_strategy_cached_sequence.frozen_level_hash ||
+         updated.reference_hash != g_strategy_cached_sequence.reference_hash)
+        {
+         QM_LogEvent(QM_ERROR,
+                     "ICT_INCREMENTAL_EVENT_DRIFT",
+                     "{\"mode\":1,\"reason\":\"consumed_event_changed\"}");
+         return false;
+        }
+      Strategy_CopySequence(updated, g_strategy_cached_sequence);
+     }
+   else if(updated.consumed)
+      Strategy_CopySequence(updated, g_strategy_cached_sequence);
+   return true;
+  }
+
+bool Strategy_AppendAndAdvanceCache(const datetime closed_bar)
+  {
+   if(g_strategy_closed_rate_count <= 0)
+      return false;
+   const datetime cached_last_time =
+      g_strategy_closed_rates[g_strategy_closed_rate_count - 1].time;
+   const int cached_shift = iBarShift(_Symbol,
+                                      (ENUM_TIMEFRAMES)_Period,
+                                      cached_last_time,
+                                      true);
+   if(cached_shift < 2)
+      return false;
+   const int missing = cached_shift - 1;
+   MqlRates delta[];
+   ArraySetAsSeries(delta, false);
+   const int copied = CopyRates(_Symbol,
+                                (ENUM_TIMEFRAMES)_Period,
+                                1,
+                                missing,
+                                delta); // closed-bar delta only; never a full replay.
+   ArraySetAsSeries(delta, false);
+   if(copied != missing || delta[missing - 1].time != closed_bar ||
+      delta[0].time <= cached_last_time)
+      return false;
+
+   const int new_count = g_strategy_closed_rate_count + missing;
+   const int reserve = Strategy_ReplayRequestedBars() +
+                       ((strategy_mode == ICT_MODE_INDEX_MSS_FVG) ? 1600 : 2200);
+   if(ArrayResize(g_strategy_closed_rates, new_count, reserve) != new_count)
+      return false;
+
+   datetime previous_time = cached_last_time;
+   for(int i = 0; i < missing; ++i)
+     {
+      if(delta[i].time <= previous_time ||
+         Strategy_BudgetKeyAtTime(delta[i].time) != g_strategy_replay_budget_key)
+         return false;
+      g_strategy_closed_rates[g_strategy_closed_rate_count] = delta[i];
+      ++g_strategy_closed_rate_count;
+      previous_time = delta[i].time;
+      const bool advanced = (strategy_mode == ICT_MODE_INDEX_MSS_FVG)
+                            ? Strategy_UpdateIndexCache(delta[i])
+                            : Strategy_UpdateFxCache(delta[i]);
+      if(!advanced)
+         return false;
+     }
+   return true;
+  }
+
+bool Strategy_ReconstructCached(const datetime closed_bar,
+                                ICT_SequenceResult &result)
+  {
+   ICT_ResetSequence(result);
+   if(closed_bar <= 0 || !g_strategy_replay_cache_ready)
+     {
+      result.outcome = "REPLAY_CACHE_NOT_READY";
+      return false;
+     }
+
+   const int current_budget_key = Strategy_BudgetKeyAtTime(closed_bar);
+   if(current_budget_key != g_strategy_replay_budget_key)
+      return Strategy_Reconstruct(result); // one full replay at the budget edge.
+
+   if(!Strategy_AppendAndAdvanceCache(closed_bar))
+     {
+      g_strategy_replay_cache_ready = false; // fail closed; restart rebuilds it.
+      result.outcome = "REPLAY_CACHE_CONTINUITY_FAILED";
+      QM_LogEvent(QM_ERROR,
+                  "ICT_INCREMENTAL_CACHE_FAILED",
+                  StringFormat("{\"budget_key\":%d,\"closed_bar\":%I64d}",
+                               current_budget_key,
+                               (long)closed_bar));
+      return false;
+     }
+   Strategy_CopySequence(g_strategy_cached_sequence, result);
+   return true;
   }
 
 bool Strategy_IsOurPendingType(const ENUM_ORDER_TYPE type)
@@ -1394,12 +1866,20 @@ int OnInit()
       return INIT_FAILED;
      }
 
+   // Keep overdue cancels/flats alive across attachment or terminal restarts.
+   // A failed safety action is retried by the one-second timer after init.
+   Strategy_RunMandatorySafety();
+
    // Snapshot the already-closed bar on attachment.  Historical reconstruction
    // may advance an incomplete sequence, but can never submit its old FVG.
    g_last_closed_bar = iTime(_Symbol, (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed: one closed-bar bootstrap read.
    ICT_SequenceResult reconstructed;
    if(Strategy_Reconstruct(reconstructed))
+     {
       Strategy_LogReconstruction(reconstructed);
+      if(reconstructed.consumed)
+         Strategy_BindConsumedAttempt(reconstructed);
+     }
    else
       QM_LogEvent(QM_WARN, "ICT_RESTART_RECONSTRUCTION_NOT_READY", "{}");
 
@@ -1413,17 +1893,14 @@ int OnInit()
 void OnDeinit(const int reason)
   {
    QM_LogEvent(QM_INFO, "DEINIT", StringFormat("{\"reason\":%d}", reason));
+   ArrayFree(g_strategy_closed_rates);
    QM_FrameworkShutdown();
   }
 
 void OnTick()
   {
-   // Management is deliberately first: session cancels and daily hard flats
-   // cannot be suppressed by news, session, history or governor entry filters.
-   Strategy_ManageExposure();
-   if(QM_FrameworkHandleFridayClose())
-      return;
-   if(!QM_KillSwitchCheck())
+   // Kill-switch -> Friday sweep -> card cancels/flats, all before entry gates.
+   if(!Strategy_RunMandatorySafety())
       return;
 
    const bool mode_new_bar = (strategy_mode == ICT_MODE_INDEX_MSS_FVG)
@@ -1438,12 +1915,14 @@ void OnTick()
    QM_EquityStreamOnNewBar();
 
    ICT_SequenceResult signal;
-   if(!Strategy_Reconstruct(signal))
-      return; // fail closed when bounded bars are unavailable.
+   if(!Strategy_ReconstructCached(closed_bar, signal))
+      return; // fail closed when the bounded incremental cache is unavailable.
    Strategy_LogReconstruction(signal);
+   if(signal.consumed && !Strategy_BindConsumedAttempt(signal))
+      return; // only the persisted first reclaim may progress on later bars.
    if(!signal.signal_valid || signal.fvg_bar_time != closed_bar)
       return; // no historical or later-FVG rescue after a restart.
-   if(Strategy_HasPositionOrPending() || !Strategy_HistoryBudgetClear(signal.budget_key))
+   if(Strategy_HasPositionOrPending() || !Strategy_HistoryBudgetClear(signal))
       return;
 
    QM_EntryRequest request;
@@ -1465,20 +1944,28 @@ void OnTick()
    if(!Strategy_GovernorAllowsEntry())
       return;
 
+   double scaled_risk_percent = 0.0;
+   if(MQLInfoInteger(MQL_TESTER) == 0)
+     {
+      scaled_risk_percent = RISK_PERCENT * g_strategy_governor_scale;
+      if(scaled_risk_percent <= 0.0)
+         return;
+     }
+   // Persist SUBMITTED before entering the framework order path. Rejection,
+   // broker failure, expiry or later cancellation can never reopen this budget.
+   if(!Strategy_ClaimAttempt(signal))
+      return;
+
    ulong out_ticket = 0;
    bool opened = false;
    if(MQLInfoInteger(MQL_TESTER) != 0)
       opened = QM_TM_OpenPosition(request, out_ticket);
    else
-     {
-      const double scaled_risk_percent = RISK_PERCENT * g_strategy_governor_scale;
-      opened = scaled_risk_percent > 0.0 &&
-               QM_TM_OpenPosition(request,
+      opened = QM_TM_OpenPosition(request,
                                   out_ticket,
                                   0,
                                   QM_RISK_MODE_PERCENT,
                                   scaled_risk_percent);
-     }
    QM_LogEvent(opened ? QM_INFO : QM_WARN,
                "ICT_ENTRY_RESULT",
                StringFormat("{\"opened\":%s,\"ticket\":%I64u,\"budget_key\":%d,\"mode\":%d,\"session\":%d,\"fvg_time\":%I64d,\"governor_scale\":%.8f}",
