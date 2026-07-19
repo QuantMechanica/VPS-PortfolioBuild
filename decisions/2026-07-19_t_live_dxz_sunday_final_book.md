@@ -76,3 +76,20 @@ minus Removals; Neuzugänge als kanonische Full-History-Reruns 19.07., Trade-Cou
 Probation: 1556/10706/13128 (Bestand) + 13117/13301/13213/1567-EUR (Neuzugänge) +
 Flag-Reviews 11421-AUD/11165-EUR/XNG. Offene Nacharbeiten: 12474-6er-Proben (Nacht),
 1230/AUDJPY + 10123 (Pipeline läuft), T5-Terminal-Rebuild, Zykler/Multi-Row-Audit (Codex).
+
+---
+
+## FREIGABE + FILE-SIDE-DEPLOY (2026-07-19 nachmittags)
+
+**OWNER-Freigabe erteilt 19.07. (Chat: „Gut, dann gehen wir in Umsetzung!").**
+
+**Claude-Deploy-Protokoll (Schritt 3, `evidence/deploy_report.json`):**
+- 24/24 dxzfinal-Presets nach `T_Live\MQL5\Presets\`, SHA256 Staging→T_Live ✓
+- 2 neue Binaries deployed + SHA ✓: 13213 `321b1dca…`, 1567 `71c2f84b…`
+- 3 Bestands-Binaries SHA-re-verifiziert ✓ (13117, 13301, 11165-Hygiene vom 17.07.)
+- 24 überholte dxz24-Presets (nie chart-geladen) → `_archive_dxz24_superseded\`
+- Deployed-Verify 24/24: RISK_FIXED=0 ✓, Magic-Formel ✓, Summe 9.7499 ✓
+- AutoTrading UNANGETASTET ✓
+
+**Nächster Schritt:** OWNER-Chart-Session (`ANLEITUNG_DXZ_FINAL.md`): 3 raus, 4 neu,
+10919-Restore, 19 Reloads (2× 11165-Re-Attach). Danach Claude-Schlussverify.
