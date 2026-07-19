@@ -3659,7 +3659,7 @@ QM5_1403,harmonic-5-0-pattern-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Dev
 2134,brooks-major-trend-reversal-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Development,2026-06-23
 12783,edgelab-audusd-audjpy-cointegration,claude_cross_asset_discovery_2026-06-09,active,Development,2026-06-29
 12784,progo-xti,SRC03_S16_XTI,active,Development,2026-06-29
-12784,intraday-config-engine,intraday-config-engine,active,Research,2026-06-29
+12784,intraday-config-engine,intraday-config-engine,retired,Research,2026-06-29
 12785,timerangebreakout-orb,timerangebreakout-orb,active,Research,2026-06-29
 12786,edgelab-usdchf-eurgbp-cointegration,claude_cross_asset_discovery_2026-06-09,active,Development,2026-06-29
 12787,vol-contraction-breakout,vol-contraction-breakout,active,Research,2026-06-29
@@ -4056,4 +4056,4 @@ QM5_1491,ehlers-sinewave-leadsine-cross-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,
 20005,kurisko-quad-rotation-retest,KURISKO-QUADROT-2026,active,claude,2026-07-17
 4006,fx-session-flow,SRC09_S01,active,OWNER-delegated CEO+CTO FTMO allocation,2026-07-17
 4007,index-mac5-rev,SRC10_S01,active,OWNER-delegated CEO+CTO FTMO allocation,2026-07-17
-20007,rekey-hold-intraday-config-engine-20260719,intraday-config-engine,reserved,Development,2026-07-19
+20007,intraday-config-engine,intraday-config-engine,active,Development,2026-07-19

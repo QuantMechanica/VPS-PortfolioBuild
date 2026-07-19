@@ -14064,10 +14064,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1446,demark-td-open-range-h4,8,UK100.DWX,14460008,2026-06-30,Development,active
 1446,demark-td-open-range-h4,9,XAUUSD.DWX,14460009,2026-06-30,Development,active
 1446,demark-td-open-range-h4,10,XTIUSD.DWX,14460010,2026-06-30,Development,active
-12784,intraday-config-engine,1,GDAXI.DWX,127840001,2026-06-30,Development,active
-12784,intraday-config-engine,2,NDX.DWX,127840002,2026-06-30,Development,active
-12784,intraday-config-engine,3,SP500.DWX,127840003,2026-06-30,Development,active
-12784,intraday-config-engine,4,XAUUSD.DWX,127840004,2026-06-30,Development,active
+12784,intraday-config-engine,1,GDAXI.DWX,127840001,2026-06-30,Development,retired
+12784,intraday-config-engine,2,NDX.DWX,127840002,2026-06-30,Development,retired
+12784,intraday-config-engine,3,SP500.DWX,127840003,2026-06-30,Development,retired
+12784,intraday-config-engine,4,XAUUSD.DWX,127840004,2026-06-30,Development,retired
 1573,aa-sell-may,0,SP500.DWX,15730000,2026-06-30,Development,active
 1573,aa-sell-may,1,NDX.DWX,15730001,2026-06-30,Development,active
 1573,aa-sell-may,2,WS30.DWX,15730002,2026-06-30,Development,active
@@ -15061,3 +15061,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20005,kurisko-quad-rotation-retest,1,NDX.DWX,200050001,2026-07-17,Claude,active
 20005,kurisko-quad-rotation-retest,2,WS30.DWX,200050002,2026-07-17,Claude,active
 4007,index-mac5-rev,0,SP500.DWX,40070000,2026-07-17,OWNER-delegated Codex,active
+20007,intraday-config-engine,0,GDAXI.DWX,200070000,2026-07-19,Development,active
+20007,intraday-config-engine,1,NDX.DWX,200070001,2026-07-19,Development,active
+20007,intraday-config-engine,2,SP500.DWX,200070002,2026-07-19,Development,active
+20007,intraday-config-engine,3,XAUUSD.DWX,200070003,2026-07-19,Development,active
