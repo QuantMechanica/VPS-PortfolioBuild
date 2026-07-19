@@ -135,11 +135,19 @@ scalping: false
 ml_required: false
 ```
 
-Cost math: gold round-trip ~$0.4-6.7 at our sizing + ~20-30ct spread; literature
-Friday drift ~5-10 bps/Friday gives roughly 2-3x cost cushion — thin but positive,
-viable only on the cheap asset class. Net-of-cost check is the binding follow-up
-gate; post-publication decay (paper sample ends ~2014) is the main kill risk and
-exactly what full-history Q02 measures first.
+Cost math (venue_cost_model.json 2026-07-19, sourced): gold commission = 0.005%
+of notional round-trip (0.0025%/side, $0 floor) — identical on Darwinex Zero
+(tester Groups `Commodities\*` CommissionValue=0.0025 Mode=4; official
+help.darwinex.com/execution-costs) and FTMO (metals 0.0025%/side). At RISK_FIXED
+$1,000 with a 3xATR D1 stop (~0.03-0.06 lot, ~$13-24k notional) realised
+commission is ~$0.7-1.2 RT/trade. Spread is embedded in the .DWX real-tick
+history (backtests are spread-inclusive; only commission needs injection at the
+net gate). Literature Friday drift ~5-10 bps (~$6-24 gross at this sizing) vs
+~$1-2 commission = comfortable cushion; the same 50/yr density on FX would pay
+~$5-6.35/lot RT commission and be marginal. Swap irrelevant (flat over every
+weekend by design). Net-of-cost Q04 remains the binding gate; post-publication
+decay (primary sample ends ~2014) is the main kill risk — Q02 full history
+measures it first.
 
 ## 9. Framework Alignment
 
