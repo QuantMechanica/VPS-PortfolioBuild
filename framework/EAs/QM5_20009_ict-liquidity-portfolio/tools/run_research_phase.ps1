@@ -44,7 +44,7 @@ $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $eaRoot '..\..\..'))
 $supportPath = Join-Path $toolsRoot 'research_launcher_support.psm1'
 Import-Module -Name $supportPath -Force -ErrorAction Stop
 
-$protocolPath = Join-Path $eaRoot 'docs\research_protocol_v2.json'
+$protocolPath = Join-Path $eaRoot 'docs\research_protocol_v3.json'
 $generatorPath = Join-Path $toolsRoot 'generate_research_sets.py'
 $validatorPath = Join-Path $toolsRoot 'validate_research_run.py'
 $auditPath = Join-Path $toolsRoot 'audit_mt5_report.py'
@@ -287,7 +287,7 @@ try {
         status = 'PASS'
         created_utc = (Get-Date).ToUniversalTime().ToString('o')
         run_id = $runId
-        protocol_id = 'QM5_20009_RESEARCH_FREEZE_V2'
+        protocol_id = 'QM5_20009_RESEARCH_FREEZE_V3'
         request = $contract
         fixed_tester_contract = [ordered]@{
             model = 4

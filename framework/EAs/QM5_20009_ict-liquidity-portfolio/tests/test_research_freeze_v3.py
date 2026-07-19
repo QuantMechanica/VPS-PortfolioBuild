@@ -1,4 +1,4 @@
-"""Static/unit guards for the QM5_20009 Freeze-v2 research fence.
+"""Static/unit guards for the QM5_20009 Freeze-v3 research fence.
 
 These tests never launch MT5.  In particular, they must not generate the real
 bundle or hash the multi-gigabyte Model-4 tree during ordinary collection.
@@ -365,13 +365,13 @@ def test_missing_evidence_fails_before_generation() -> None:
 def test_final_compile_provisioning_and_slippage_evidence_hashes_are_pinned() -> None:
     artifacts = {row["id"]: row for row in protocol()["evidence_artifacts"]}
     assert artifacts["ea_binary"]["expected_sha256"] == (
-        "aa3c5eed93e9a7d37a935cde6c8801c82520ecb97fe9ce91547d13cbe0b54222"
+        "1aad2032e748db2586a3afad618d7f377ef4da728c4e5c204ce3e8d9346eadde"
     )
     assert artifacts["ea_binary_repo"]["expected_sha256"] == artifacts["ea_binary"][
         "expected_sha256"
     ]
     assert artifacts["compile_evidence"]["expected_sha256"] == (
-        "8ae13d89fc4f7f12984fd61d9556c970b1732565d9a76532ae790eaf658b3978"
+        "d8a236ea48e8c2b8e840bc2fc18c828ba3701b2303624750cd99d6d97c75cad8"
     )
     assert artifacts["provisioning_tick_hash_manifest"]["expected_sha256"] == (
         "65cb423348fbe1e5f04d99d9594bef80ed303ec52f6d8ad0d225fa86e4d1235c"

@@ -1,4 +1,4 @@
-"""Generate the deterministic Freeze-v2 center/OAAT bundle for QM5_20009.
+"""Generate the deterministic Freeze-v3 center/OAAT bundle for QM5_20009.
 
 The detached ``manifest.sha256`` is the only object that hashes ``manifest.json``.
 The manifest therefore never hashes itself.  Every set embeds a canonical
@@ -27,7 +27,7 @@ EA_SOURCE = EA_ROOT / "QM5_20009_ict-liquidity-portfolio.mq5"
 RULES_SOURCE = EA_ROOT / "ICT_LiquidityRules.mqh"
 CONTRACT = EA_ROOT / "docs" / "strategy_contract.md"
 SPEC = EA_ROOT / "SPEC.md"
-PROTOCOL = EA_ROOT / "docs" / "research_protocol_v2.json"
+PROTOCOL = EA_ROOT / "docs" / "research_protocol_v3.json"
 GENERATOR = Path(__file__).resolve()
 VALIDATOR = EA_ROOT / "tools" / "validate_research_run.py"
 AUDITOR = EA_ROOT / "tools" / "audit_mt5_report.py"
@@ -47,8 +47,8 @@ TARGET_MAGIC_ROWS = (
 )
 EXPECTED_MAGIC_EXCEPTION = {
     "path": MAGIC_RESOLVER_PATH,
-    "compiled_git_blob_sha1": "ef17e946f957a0601e3279f02f258a4062fb94a0",
-    "compiled_sha256": "9ca51af0bde4e0b0f775e95aca2af5e4aaaee0154641bac379b87bf7d649f9e3",
+    "compiled_git_blob_sha1": "5dd52ece69ffe2c86135a30f5044899b0c080e8e",
+    "compiled_sha256": "0c1dade22f9427d881f121f9b8a9dca1e5f38204d661a439b415aeba501157be",
     "policy": "EXACT_COMPILED_PREFIX_PLUS_COLLISION_FREE_FOREIGN_EA_APPEND_ONLY",
     "target_ea_id": 20009,
     "target_rows": [list(row) for row in TARGET_MAGIC_ROWS],
@@ -482,7 +482,7 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
     }
     if (
         unlock.get("enforcement") != "FAIL_CLOSED_DETACHED_VERDICT_RECORDS"
-        or unlock.get("verdict_root") != "D:/QM/reports/dev1/QM5_20009/freeze_v2/verdicts"
+        or unlock.get("verdict_root") != "D:/QM/reports/dev1/QM5_20009/freeze_v3/verdicts"
         or unlock.get("record_name_template") != "{phase_id}.verdict.json"
         or unlock.get("detached_sha256_suffix") != ".sha256"
         or unlock.get("nonbinding_phases") != ["DEV_SMOKE_2022"]
@@ -1048,7 +1048,7 @@ def render_set(
     evidence = {row["id"]: row for row in freeze_inputs["evidence_artifacts"]}
     lines = [
         ";==========================================================",
-        "; QM5_20009 deterministic Freeze-v2 research set",
+        "; QM5_20009 deterministic Freeze-v3 research set",
         f"; protocol_id: {freeze_inputs['protocol_id']}",
         f"; contract_freeze: {freeze_inputs['contract_freeze']}",
         f"; symbol: {symbol}",

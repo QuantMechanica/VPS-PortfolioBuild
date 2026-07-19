@@ -1,19 +1,19 @@
 ;==========================================================
-; QM5_20009 deterministic Freeze-v2 research set
-; protocol_id: QM5_20009_RESEARCH_FREEZE_V2
+; QM5_20009 deterministic Freeze-v3 research set
+; protocol_id: QM5_20009_RESEARCH_FREEZE_V3
 ; contract_freeze: 2026-07-19
 ; symbol: GDAXI.DWX
 ; timeframe: M1
 ; sleeve: index
 ; variant: mss_high
 ; changed_parameter: strategy_a_max_bars_to_mss
-; freeze_inputs_sha256: 569cc8b6548fffa305b148d6292fdbd6bf72ec8a9ed173acf1c7a6630acbca47
-; ea_sha256: bbe56946a56616e066f029c4e8bc1f6cc2eed4fbb2b3734409fe0ec33c7f20c0
+; freeze_inputs_sha256: 38d4031d5b6899cd46f052c4938505654dce101082b55a874bf0affbaca8854e
+; ea_sha256: e64c6a5fa8bb4c6ac6820ff8cc0c768ea2c1505a8c7ba336fe1e9cfefdd35940
 ; rules_sha256: 8bbe64c2b6f7c98576f687c5beb312dc673d7dd710dfdedf969204a093e2b1cb
-; contract_sha256: 37285774fc50584ac4e284d574e27f378b32107fae807509455b080799018052
-; protocol_sha256: 39b75674282c4782fef887255da2d69c78a33f54a675eae59e4e7a4c6bd576a8
-; generator_sha256: 5e4d562a454421f25b6c2aac4550dc53d8cba3dd208f389a3c80277d1627b222
-; ex5_sha256: aa3c5eed93e9a7d37a935cde6c8801c82520ecb97fe9ce91547d13cbe0b54222
+; contract_sha256: a2ea9b9d153479be91a4cea9ac04c3ef3130b675e325da9599a7eec14046cae2
+; protocol_sha256: c04053c149612f70aa3ba58132379f22aec7e1ff4e940ff4928019b8033d743a
+; generator_sha256: 954a5ba27cf165b7a16ac831b93af1a9050229a9e1791f2ff32fd0ac03a843e2
+; ex5_sha256: 1aad2032e748db2586a3afad618d7f377ef4da728c4e5c204ce3e8d9346eadde
 ;==========================================================
 qm_ea_id=20009
 qm_magic_slot_offset=1
