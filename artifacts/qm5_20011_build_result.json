@@ -1,0 +1,134 @@
+{
+  "task_id": "dfa80ef0-0aa0-4ab5-bb46-a95b59b32157",
+  "ea_id": "QM5_20011",
+  "ea_label": "QM5_20011_xng-thu-tue",
+  "slug": "xng-thu-tue",
+  "strategy_id": "MEEK-HOELSCHER-XNG-DOW-2023_S03",
+  "strategy": "Natural Gas long calendar carry from Thursday close through Tuesday close",
+  "source_links": [
+    "https://doi.org/10.1080/23322039.2023.2213876",
+    "https://www.econstor.eu/bitstream/10419/304091/1/10.1080_23322039.2023.2213876.pdf"
+  ],
+  "symbols": [
+    "XNGUSD.DWX"
+  ],
+  "host_symbol": "XNGUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_20011_xng-thu-tue",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_20011_xng-thu-tue/QM5_20011_xng-thu-tue.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_20011_xng-thu-tue/QM5_20011_xng-thu-tue.ex5",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_20011_xng-thu-tue/SPEC.md",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20011_xng-thu-tue.md",
+  "approved_card_path": "C:/QM/repo/strategy-seeds/cards/approved/QM5_20011_xng-thu-tue_card.md",
+  "canonical_card_path": "C:/QM/repo/strategy-seeds/cards/xng-thu-tue_card.md",
+  "source_packet_path": "C:/QM/repo/strategy-seeds/sources/MEEK-HOELSCHER-XNG-DOW-2023/source.md",
+  "runtime_build_result_path": "D:/QM/strategy_farm/artifacts/builds/dfa80ef0-0aa0-4ab5-bb46-a95b59b32157.json",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_20011_xng-thu-tue/sets/QM5_20011_xng-thu-tue_XNGUSD.DWX_D1_backtest.set"
+  ],
+  "magic_base": 200110000,
+  "registry_validation": {
+    "ea_id_row": "20011,xng-thu-tue,MEEK-HOELSCHER-XNG-DOW-2023_S03,active,Research+Development (OWNER commodity-sleeve mission),2026-07-19",
+    "magic_row": "20011,xng-thu-tue,0,XNGUSD.DWX,200110000,2026-07-19,Development,active",
+    "resolver_rows": 14945,
+    "magic_registry_sha256": "A96CC58344AF54AB86CC64953F8ECDE9D249C101AA905FEAE636242CCF052467",
+    "resolver_registry_sha_match": true,
+    "strict_regenerator_note": "QM5_20011 was retained; strict mode separately reported the pre-existing missing EA directories for registry IDs 1001, 1015 and 1016."
+  },
+  "commits": [
+    "05a362ccbb52a74fb845baeddc0afbb548f8bfe1",
+    "ad1280715c25e59e5cd0b5c490fd0aab565946c2",
+    "6fceabafda514045af977932fefff13d1427b5c7",
+    "1cf9bbcae0a98a7a46b57831bb8e7f78b8811764",
+    "96e2764ab6c3ba22386a6792015e644ab0981755",
+    "8c4c49a3e8912bb0d700dbc0cdb2c77aa79f9459",
+    "64fbdc39a110891cbf2ccf9167b33a3f6408eebf",
+    "20a822d70d0f85caecab15d953ab98757380934a"
+  ],
+  "build_commit": "64fbdc39a110891cbf2ccf9167b33a3f6408eebf",
+  "q02_handoff_commit": "20a822d70d0f85caecab15d953ab98757380934a",
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log": "C:/QM/repo/framework/build/compile/20260719_204002/QM5_20011_xng-thu-tue.compile.log",
+  "compile_log_sha256": "E160C8FC77866B4C37EEE26E241BE126740589E65383FB49980ADE17786F7FE1",
+  "compile_summary": "D:/QM/reports/compile/20260719_204002/summary.csv",
+  "build_check_passed": true,
+  "build_check_failures": 0,
+  "build_check_warnings": 0,
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260719_203930.json",
+  "build_check_report_sha256": "0886ED7D717A5CD083A930E9C8FD3689EF1BB88EAFE4F1FF651BE8D1C1743BD4",
+  "spec_validation": "PASS",
+  "guardrail_validation": "PASS",
+  "card_schema_validation": "PASS",
+  "g0_card_validation": "PASS",
+  "semantic_restart_review": "PASS_AFTER_REWORK",
+  "setfile_build_hash": "9fe85cdecb27d9bd81205ee6653b2f3b2699d9b6fe47cc5a4768301f4e7b8f85",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced-fleet CPU ceiling was already occupied; no tester, terminal dispatch, worker tick, optimization or backtest was launched.",
+  "blocked_reason": null,
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "reputable_primary_source": true,
+    "manual_backtest_cpu_used": false
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_20011",
+    "enqueued": [
+      {
+        "work_item_id": "aa33ca98-bc8a-4015-abc7-24f3f6e5b2ab",
+        "symbol": "XNGUSD.DWX",
+        "timeframe": "D1",
+        "status": "pending",
+        "attempt_count": 0,
+        "claimed_by": null,
+        "enqueued_at": "2026-07-19T20:37:42+00:00"
+      }
+    ],
+    "skipped": []
+  },
+  "q02": {
+    "phase": "Q02",
+    "work_item_id": "aa33ca98-bc8a-4015-abc7-24f3f6e5b2ab",
+    "status_at_handoff": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "symbol": "XNGUSD.DWX",
+    "timeframe": "D1",
+    "enqueued_at_utc": "2026-07-19T20:37:42+00:00",
+    "note": "Auto-enqueued by farmctl record-build; not dispatched by this mission."
+  },
+  "open_questions": [
+    "The peer-reviewed source studies Natural Gas futures; Q02 must falsify transfer to the Darwinex continuous CFD proxy.",
+    "The integrated package contains the Monday-long and Tuesday-long return windows sampled by pending sibling prototypes; expectancy, incremental exposure and realized correlation remain unproven.",
+    "The frozen ATR stop and five-minute first-tradable execution grace are deterministic V5 implementation overlays, not source performance claims."
+  ],
+  "file_hashes_sha256": {
+    "mq5": "E2D73538FB38E51B81167FDE3995895F4DBC49D2D1C800D121A496FB7D553464",
+    "ex5": "58F5B2ACEC76CE584E6F55B3E8A4441A81D9685F538CEF6C8075E4E9DA37D625",
+    "spec": "5F070FE600B917AE4EDEF6E58E15A68B4397D1643AB81E607957BC1009C1B1CB",
+    "embedded_card": "37BAF6C0C58D8D34866F11A036A1AF3BAD8AD9F9A13C5D7CE433D42693E7625B",
+    "setfile": "C5E88C5EC5FAF32B9812675985D900BF65EEF18798158CE48ACF9BD787A07C7A",
+    "canonical_card": "133F1981293C414834CC00BBD0646BB9CFD05012511054F31C7D45C94F2D682F",
+    "approved_card": "D8C53DE77822A00BB7CBA9066846AC56028475ED39EAAB58D8BE4CE0C375883F",
+    "source_packet": "240FC4AB175B367F0DA9D02B56C4E14EAA8B3C6BDBCCAB289EE272C54C7636F9",
+    "ea_registry": "8FC9DB5E3525A0B624FCA0507999F0597EA27EC6C0DA8787FDA7E6B05575B707",
+    "magic_registry": "A96CC58344AF54AB86CC64953F8ECDE9D249C101AA905FEAE636242CCF052467",
+    "resolver": "C2028D635069C592364511FD055AB093E1C73BBB62D1510FA581AB1CF6F4BB87"
+  }
+}
