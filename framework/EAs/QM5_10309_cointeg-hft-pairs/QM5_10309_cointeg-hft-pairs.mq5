@@ -1,8 +1,9 @@
 #property strict
-#property version   "5.0"
-#property description "QM5_10309 Cointegrated HFT Pairs Reversion"
+#property version   "5.1"
+#property description "QM5_10309 EURUSD/GBPUSD Cointegration Basket"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_BasketOrder.mqh>
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 10309;
@@ -43,11 +44,11 @@ input int    strategy_max_hold_bars        = 48;
 input double strategy_max_spread_cost_frac = 0.15;
 input double strategy_vol_stop_mult        = 3.5;
 
-string   g_allowed_symbols[6] = {"EURUSD.DWX", "GBPUSD.DWX", "AUDUSD.DWX", "NZDUSD.DWX", "SP500.DWX", "NDX.DWX"};
-string   g_symbol_a = "";
-string   g_symbol_b = "";
-int      g_slot_a = -1;
-int      g_slot_b = -1;
+string   g_allowed_symbols[2] = {"EURUSD.DWX", "GBPUSD.DWX"};
+string   g_symbol_a = "EURUSD.DWX";
+string   g_symbol_b = "GBPUSD.DWX";
+int      g_slot_a = 0;
+int      g_slot_b = 1;
 double   g_alpha = 0.0;
 double   g_beta = 1.0;
 double   g_residual_mean = 0.0;
@@ -57,6 +58,9 @@ double   g_current_adf_t = 0.0;
 double   g_exit_adf_t = 0.0;
 double   g_half_life = 0.0;
 bool     g_state_ready = false;
+bool     g_have_z_observation = false;
+bool     g_have_previous_z = false;
+double   g_previous_z = 0.0;
 datetime g_entry_bar_time = 0;
 
 int BarsPerTradingDay()
@@ -64,40 +68,12 @@ int BarsPerTradingDay()
    return 96;
   }
 
-int SlotForSymbol(const string symbol)
-  {
-   if(symbol == "EURUSD.DWX") return 0;
-   if(symbol == "GBPUSD.DWX") return 1;
-   if(symbol == "AUDUSD.DWX") return 2;
-   if(symbol == "NZDUSD.DWX") return 3;
-   if(symbol == "SP500.DWX")  return 4;
-   if(symbol == "NDX.DWX")    return 5;
-   return -1;
-  }
-
 bool ResolvePairForHost()
   {
-   if(_Symbol == "EURUSD.DWX" || _Symbol == "GBPUSD.DWX")
-     {
-      g_symbol_a = "EURUSD.DWX";
-      g_symbol_b = "GBPUSD.DWX";
-     }
-   else if(_Symbol == "AUDUSD.DWX" || _Symbol == "NZDUSD.DWX")
-     {
-      g_symbol_a = "AUDUSD.DWX";
-      g_symbol_b = "NZDUSD.DWX";
-     }
-   else if(_Symbol == "SP500.DWX" || _Symbol == "NDX.DWX")
-     {
-      g_symbol_a = "SP500.DWX";
-      g_symbol_b = "NDX.DWX";
-     }
-   else
-      return false;
-
-   g_slot_a = SlotForSymbol(g_symbol_a);
-   g_slot_b = SlotForSymbol(g_symbol_b);
-   return (g_slot_a >= 0 && g_slot_b >= 0);
+   // One logical work item represents one spread package.  GBPUSD is the
+   // tester host; EURUSD is the foreign companion provisioned by the basket
+   // manifest.  The other card candidates require their own logical sleeves.
+   return (_Symbol == g_symbol_b && g_slot_a == 0 && g_slot_b == 1);
   }
 
 double AdfCriticalFromP(const double p_value)
@@ -303,8 +279,21 @@ bool RefreshState()
       return false;
      }
 
-   g_current_z = (residuals[0] - g_residual_mean) / g_residual_sd;
-   g_state_ready = MathIsValidNumber(g_current_z);
+   const double next_z = (residuals[0] - g_residual_mean) / g_residual_sd;
+   if(!MathIsValidNumber(next_z))
+     {
+      g_state_ready = false;
+      return false;
+     }
+
+   if(g_have_z_observation)
+     {
+      g_previous_z = g_current_z;
+      g_have_previous_z = true;
+     }
+   g_current_z = next_z;
+   g_have_z_observation = true;
+   g_state_ready = true;
    return g_state_ready;
   }
 
@@ -333,6 +322,23 @@ bool HasPackagePosition()
          return true;
      }
    return false;
+  }
+
+int PackageLegCount()
+  {
+   if(!ResolvePairForHost())
+      return 0;
+
+   int count = 0;
+   for(int i = 0; i < PositionsTotal(); ++i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(IsPackagePosition())
+         ++count;
+     }
+   return count;
   }
 
 datetime OldestPackageOpenTime()
@@ -384,32 +390,113 @@ double RecentVolDistance(const string symbol)
    return avg_move * strategy_vol_stop_mult;
   }
 
+double LotsForLeg(const string symbol,
+                  const double stop_dist,
+                  const double risk_weight,
+                  const double risk_weight_sum)
+  {
+   const double point = SymbolInfoDouble(symbol, SYMBOL_POINT);
+   if(stop_dist <= 0.0 || point <= 0.0 || risk_weight <= 0.0 || risk_weight_sum <= 0.0)
+      return 0.0;
+
+   const double sl_points = stop_dist / point;
+   double lots = QM_LotsForRisk(symbol, sl_points) * risk_weight / risk_weight_sum;
+   const double min_lot = SymbolInfoDouble(symbol, SYMBOL_VOLUME_MIN);
+   const double max_lot = SymbolInfoDouble(symbol, SYMBOL_VOLUME_MAX);
+   const double step = SymbolInfoDouble(symbol, SYMBOL_VOLUME_STEP);
+   if(lots <= 0.0 || min_lot <= 0.0 || max_lot <= 0.0 || step <= 0.0)
+      return 0.0;
+
+   lots = MathFloor(lots / step) * step;
+   if(lots < min_lot)
+      return 0.0;
+   return MathMin(max_lot, NormalizeDouble(lots, 8));
+  }
+
 bool OpenLeg(const string symbol,
              const int slot,
              const QM_OrderType type,
+             const double risk_weight,
+             const double risk_weight_sum,
              const string reason)
   {
-   if(symbol != _Symbol)
+   if(slot < 0)
       return false;
 
-   const double entry = QM_OrderTypeIsBuy(type) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                                : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double entry = QM_OrderTypeIsBuy(type) ? SymbolInfoDouble(symbol, SYMBOL_ASK)
+                                                : SymbolInfoDouble(symbol, SYMBOL_BID);
    const double stop_dist = RecentVolDistance(symbol);
-   const double point = SymbolInfoDouble(symbol, SYMBOL_POINT);
-   if(entry <= 0.0 || stop_dist <= 0.0 || point <= 0.0)
+   if(entry <= 0.0 || stop_dist <= 0.0)
       return false;
 
-   QM_EntryRequest req;
+   const int digits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
+   const double stop_price = QM_OrderTypeIsBuy(type)
+                             ? NormalizeDouble(entry - stop_dist, digits)
+                             : NormalizeDouble(entry + stop_dist, digits);
+
+   // The GBPUSD logical host remains on the mandatory V5 Trade Manager
+   // surface.  Scale its shared risk context to its package weight, then
+   // restore the full context before routing the foreign EURUSD leg.
+   if(symbol == _Symbol)
+     {
+      if(slot != qm_magic_slot_offset)
+         return false;
+
+      QM_EntryRequest host_req;
+      host_req.type = type;
+      host_req.price = 0.0;
+      host_req.sl = stop_price;
+      host_req.tp = 0.0;
+      host_req.symbol_slot = slot;
+      host_req.expiration_seconds = 0;
+      host_req.reason = reason;
+
+      const QM_RiskMode prior_mode = g_qm_risk_mode;
+      const double prior_percent = g_qm_risk_percent;
+      const double prior_fixed = g_qm_risk_fixed;
+      const double prior_weight = g_qm_risk_portfolio_weight;
+      const double prior_cap = g_qm_risk_per_trade_cap_money;
+      const double host_weight = prior_weight * risk_weight / risk_weight_sum;
+      if(!QM_RiskSizerConfigure(prior_mode,
+                                prior_percent,
+                                prior_fixed,
+                                host_weight,
+                                prior_cap))
+         return false;
+
+      ulong ticket = 0;
+      const bool opened = QM_TM_OpenPosition(host_req, ticket);
+      const bool restored = QM_RiskSizerConfigure(prior_mode,
+                                                   prior_percent,
+                                                   prior_fixed,
+                                                   prior_weight,
+                                                   prior_cap);
+      if(!restored)
+        {
+         if(opened)
+            ClosePackage(QM_EXIT_STRATEGY);
+         return false;
+        }
+      return opened;
+     }
+
+   const double lots = LotsForLeg(symbol, stop_dist, risk_weight, risk_weight_sum);
+   if(lots <= 0.0)
+      return false;
+
+   QM_BasketOrderRequest req;
+   req.symbol = symbol;
    req.type = type;
    req.price = 0.0;
-   req.sl = QM_OrderTypeIsBuy(type) ? entry - stop_dist : entry + stop_dist;
+   req.sl = stop_price;
    req.tp = 0.0;
+   req.lots = lots;
    req.symbol_slot = slot;
    req.expiration_seconds = 0;
    req.reason = reason;
 
    ulong ticket = 0;
-   return QM_TM_OpenPosition(req, ticket);
+   return QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, req, ticket);
   }
 
 bool OpenPackage(const int direction)
@@ -417,19 +504,30 @@ bool OpenPackage(const int direction)
    if(MathAbs(g_beta) <= 0.0)
       return false;
 
+   const double weight_a = 1.0;
+   const double weight_b = MathAbs(g_beta);
+   const double weight_sum = weight_a + weight_b;
+   if(weight_sum <= 0.0)
+      return false;
+
    const QM_OrderType type_a = (direction > 0) ? QM_SELL : QM_BUY;
-   const QM_OrderType type_b = (direction > 0) ? QM_BUY : QM_SELL;
+   const QM_OrderType type_b = (direction * g_beta > 0.0) ? QM_BUY : QM_SELL;
    const string reason = (direction > 0) ? "COINTEG_SHORT_A_LONG_B" : "COINTEG_LONG_A_SHORT_B";
 
-   bool opened = false;
-   if(OpenLeg(g_symbol_a, g_slot_a, type_a, reason))
-      opened = true;
-   if(OpenLeg(g_symbol_b, g_slot_b, type_b, reason))
-      opened = true;
-
-   if(opened)
+   // Open the logical host first.  A partial package is never allowed to
+   // persist: failure of either leg rolls back every position in the pair.
+   const bool host_opened = OpenLeg(g_symbol_b, g_slot_b, type_b, weight_b, weight_sum, reason);
+   const bool foreign_opened = host_opened
+                               ? OpenLeg(g_symbol_a, g_slot_a, type_a, weight_a, weight_sum, reason)
+                               : false;
+   if(host_opened && foreign_opened)
+     {
       g_entry_bar_time = TimeCurrent();
-   return opened;
+      return true;
+     }
+
+   ClosePackage(QM_EXIT_STRATEGY);
+   return false;
   }
 
 // No Trade Filter (time, spread, news)
@@ -438,6 +536,8 @@ bool Strategy_NoTradeFilter()
    if(_Period != PERIOD_M15)
       return true;
    if(!ResolvePairForHost())
+      return true;
+   if(qm_magic_slot_offset != g_slot_b)
       return true;
    return false;
   }
@@ -453,7 +553,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!RefreshState())
+   if(!g_state_ready)
       return false;
    if(HasPackagePosition())
       return false;
@@ -476,6 +576,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Trade Management
 void Strategy_ManageOpenPosition()
   {
+   if(PackageLegCount() == 1)
+      ClosePackage(QM_EXIT_STRATEGY);
   }
 
 // Trade Close
@@ -486,7 +588,13 @@ bool Strategy_ExitSignal()
 
    if(g_state_ready)
      {
-      if(MathAbs(g_current_z) <= MathAbs(strategy_exit_z))
+      const bool entered_mean_region = (strategy_exit_z > 0.0 &&
+                                        MathAbs(g_current_z) <= MathAbs(strategy_exit_z));
+      const bool crossed_zero = (strategy_exit_z <= 0.0 &&
+                                 g_have_previous_z &&
+                                 ((g_previous_z > 0.0 && g_current_z <= 0.0) ||
+                                  (g_previous_z < 0.0 && g_current_z >= 0.0)));
+      if(entered_mean_region || crossed_zero)
         {
          ClosePackage(QM_EXIT_STRATEGY);
          return false;
@@ -541,6 +649,9 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
   {
+   for(int i = 0; i < ArraySize(g_allowed_symbols); ++i)
+      SymbolSelect(g_allowed_symbols[i], true);
+
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
                         RISK_PERCENT,
@@ -578,6 +689,25 @@ void OnTick()
       return;
 
    const datetime broker_now = TimeCurrent();
+   if(QM_FrameworkFridayCloseNow())
+      ClosePackage(QM_EXIT_FRIDAY_CLOSE);
+   if(QM_FrameworkHandleFridayClose())
+      return;
+
+   if(Strategy_NoTradeFilter())
+      return;
+
+   const bool new_bar = QM_IsNewBar();
+   if(new_bar)
+     {
+      QM_EquityStreamOnNewBar();
+      RefreshState();
+      Strategy_ManageOpenPosition();
+      Strategy_ExitSignal();
+     }
+
+   // News gates entries only.  Package management, catastrophic stops, and
+   // exits above remain active throughout blackout windows.
    if(Strategy_NewsFilterHook(broker_now))
       return;
    bool news_allows = true;
@@ -585,41 +715,11 @@ void OnTick()
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
    else
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
+   if(!news_allows || !new_bar)
       return;
-   if(QM_FrameworkHandleFridayClose())
-      return;
-
-   if(Strategy_NoTradeFilter())
-      return;
-
-   Strategy_ManageOpenPosition();
-
-   if(Strategy_ExitSignal())
-     {
-      const int magic = QM_FrameworkMagic();
-      for(int i = PositionsTotal() - 1; i >= 0; --i)
-        {
-         const ulong ticket = PositionGetTicket(i);
-         if(!PositionSelectByTicket(ticket))
-            continue;
-         if(PositionGetInteger(POSITION_MAGIC) != magic)
-            continue;
-         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
-        }
-     }
-
-   if(!QM_IsNewBar())
-      return;
-
-   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
-   if(Strategy_EntrySignal(req))
-     {
-      ulong out_ticket = 0;
-      QM_TM_OpenPosition(req, out_ticket);
-     }
+   Strategy_EntrySignal(req);
   }
 
 void OnTimer()

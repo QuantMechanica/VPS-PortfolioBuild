@@ -4,13 +4,13 @@
 **Slug:** `cointeg-hft-pairs`
 **Source:** `fd8c6a44-7c20-5e45-a7a8-c6a595ac47a9` (see `strategy-seeds/sources/fd8c6a44-7c20-5e45-a7a8-c6a595ac47a9/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-04
+**Last revised:** 2026-07-19
 
 ---
 
 ## 1. Strategy Logic
 
-The EA evaluates fixed candidate pairs on M15 bars using a 90-trading-day formation window of log closes. It estimates an OLS hedge ratio, computes the residual z-score over the recent residual window, and requires a cointegration threshold before entering. When the residual z-score is at or above +2.0 it shorts A and buys B exposure; when the z-score is at or below -2.0 it buys A and shorts B exposure. Positions close when the residual returns to the exit z-score, the stop z-score is reached, cointegration weakens, or the max hold window expires.
+The EA evaluates the approved EURUSD/GBPUSD candidate as one logical M15 basket using a 90-trading-day formation window of log closes. It estimates an OLS hedge ratio, computes the residual z-score over the recent residual window, and requires a cointegration threshold before entering. When the residual z-score is at or above +2.0 it shorts EURUSD and buys beta-weighted GBPUSD exposure; when the z-score is at or below -2.0 it buys EURUSD and shorts beta-weighted GBPUSD exposure. Both legs must open or the package is rolled back. Positions close when the residual crosses zero, the stop z-score is reached, cointegration weakens, or the max hold window expires.
 
 ---
 
@@ -37,16 +37,14 @@ The EA evaluates fixed candidate pairs on M15 bars using a 90-trading-day format
 ## 3. Symbol Universe
 
 **Designed for:**
-- `EURUSD.DWX` - Registered as pair A for the EURUSD/GBPUSD FX cointegration candidate.
-- `GBPUSD.DWX` - Registered as pair B for the EURUSD/GBPUSD FX cointegration candidate.
-- `AUDUSD.DWX` - Registered as pair A for the AUDUSD/NZDUSD FX cointegration candidate.
-- `NZDUSD.DWX` - Registered as pair B for the AUDUSD/NZDUSD FX cointegration candidate.
-- `SP500.DWX` - Registered as pair A for the SP500/NDX index cointegration candidate; backtest-only per DWX discipline.
-- `NDX.DWX` - Registered as pair B for the SP500/NDX index cointegration candidate.
+- `QM5_10309_EURUSD_GBPUSD_COINTEG_M15` - Logical package identity used by the farm.
+- `GBPUSD.DWX` - Tester host and registered package leg B (magic slot 1).
+- `EURUSD.DWX` - Foreign package leg A (magic slot 0).
 
 **Explicitly NOT for:**
-- `GDAXI.DWX` - Card candidate not registered because it is not in the current DWX matrix under that name.
-- `FRA40.DWX` - Card candidate not registered because it is not in the current DWX matrix under that name.
+- Physical single-symbol EURUSD or GBPUSD work items - they cannot evaluate the two-leg edge.
+- `AUDUSD.DWX`/`NZDUSD.DWX` and `SP500.DWX`/`NDX.DWX` - approved card candidates that require separate logical sleeve manifests and evidence; they are not loaded by this sleeve.
+- `GDAXI.DWX`/`FRA40.DWX` - the card candidate is unavailable under the current DWX matrix names.
 
 ---
 
@@ -56,7 +54,7 @@ The EA evaluates fixed candidate pairs on M15 bars using a 90-trading-day format
 |---|---|
 | Base timeframe | `M15` |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Bar gating | `QM_IsNewBar()` on the GBPUSD host; both histories are read only on a new bar. |
 
 ---
 
@@ -64,7 +62,7 @@ The EA evaluates fixed candidate pairs on M15 bars using a 90-trading-day format
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `12` |
+| Trades / year / logical package | `12` |
 | Typical hold time | Up to 48 M15 bars, about 12 trading hours. |
 | Expected drawdown profile | Bounded by fixed-risk package stops and residual stop exits. |
 | Regime preference | Mean-revert cointegration residual regime with stable pair relationship. |
@@ -87,7 +85,7 @@ This card was mechanised from:
 
 | Phase | Risk mode | Value |
 |---|---|---|
-| Backtest (Q02 - Q10) | RISK_FIXED | $1,000 per trade (HR4) |
+| Backtest (Q02 - Q10) | RISK_FIXED | $1,000 per package, split `1:abs(beta)` across both protective stops (HR4) |
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% - 0.5%) |
 
@@ -100,3 +98,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-04 | Initial build from card | b21575ed-a640-41d6-9601-9f2add21092f |
+| v2 | 2026-07-19 | Q03 infrastructure repair | Replaced invalid physical-symbol execution with a canonical GBP-host logical basket, true two-leg routing, weighted package risk, and partial-open rollback. |

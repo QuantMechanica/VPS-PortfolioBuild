@@ -2,25 +2,32 @@
 ; QM5 Set File
 ; ea_id:        10309
 ; ea_slug:      cointeg-hft-pairs
-; ea_version:   v5.0
-; set_version:  s20260703-001
-; symbol:       NDX.DWX
+; ea_version:   v5.1
+; set_version:  s20260719-001
+; symbol:       QM5_10309_EURUSD_GBPUSD_COINTEG_M15
+; host_symbol:  GBPUSD.DWX
 ; timeframe:    M15
 ; environment:  backtest
-; magic_slot:   5
+; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   b68cb3b79bf54605bef9e67c00e68175cf27aab65f31500c0cfbc945e598fbb5
+; build_hash:   4172dbf8ad1140b7dddd0be082b604b8a7540eacd0f8d07b2ea1674827d01fac
 ; author:       Development
-; date:         2026-07-03
+; date:         2026-07-19
 ;==========================================================
 qm_ea_id=10309
-qm_magic_slot_offset=5
+qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10309_cointeg-hft-pairs.md
+qm_news_temporal=3
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
 strategy_formation_days=90
 strategy_residual_days=20
 strategy_coint_exit_days=30

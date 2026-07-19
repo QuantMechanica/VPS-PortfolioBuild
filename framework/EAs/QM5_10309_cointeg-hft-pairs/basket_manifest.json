@@ -1,22 +1,14 @@
 {
-  "ea_id": "QM5_10309",
-  "ea_slug": "cointeg-hft-pairs",
-  "timeframe": "M15",
-  "symbols": [
-    "EURUSD.DWX",
+  "logical_symbol": "QM5_10309_EURUSD_GBPUSD_COINTEG_M15",
+  "host_symbol": "GBPUSD.DWX",
+  "host_timeframe": "M15",
+  "tester_currency": "USD",
+  "basket_symbols": [
     "GBPUSD.DWX",
-    "AUDUSD.DWX",
-    "NZDUSD.DWX",
-    "SP500.DWX",
-    "NDX.DWX"
-  ],
-  "pairs": [
-    ["EURUSD.DWX", "GBPUSD.DWX"],
-    ["AUDUSD.DWX", "NZDUSD.DWX"],
-    ["SP500.DWX", "NDX.DWX"]
+    "EURUSD.DWX"
   ],
   "notes": [
-    "Card R3 GER40/FRA40 pair was not registered because FRA40.DWX is not present in dwx_symbol_matrix.csv.",
-    "SP500.DWX is backtest-only per DWX symbol discipline."
+    "Logical EURUSD/GBPUSD market-neutral sleeve from the APPROVED QM5_10309 card. The package is evaluated as one work item; physical per-symbol runs are not valid evidence for this strategy.",
+    "GBPUSD.DWX is the M15 tester host (registered slot 1). EURUSD.DWX is provisioned as the foreign leg (registered slot 0); both legs share one RISK_FIXED package budget."
   ]
 }
