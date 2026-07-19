@@ -104,6 +104,11 @@ class FrozenContractTests(unittest.TestCase):
         self.assertIn("range.bars == expected_bars", RULES)
         self.assertIn("distinct_dates >= 3", RULES)
 
+    def test_preregistered_star_is_oaat_and_live_is_center_only(self) -> None:
+        self.assertIn("a_deviations > 1 || b_deviations != 0", EA)
+        self.assertIn("b_deviations > 1 || a_deviations != 0", EA)
+        self.assertIn("else if(a_deviations != 0 || b_deviations != 0)", EA)
+
     def test_sequence_is_strictly_ordered_and_first_fvg_only(self) -> None:
         body = function_body(RULES, "ICT_BuildSequence")
         reclaim = body.index("result.reclaim_bar_time")

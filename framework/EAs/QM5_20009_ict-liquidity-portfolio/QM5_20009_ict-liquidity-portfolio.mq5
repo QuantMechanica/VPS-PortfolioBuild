@@ -112,6 +112,36 @@ bool Strategy_ParametersValid()
       !Strategy_IsDoubleStarValue(strategy_b_min_rr, 1.5, 2.0, 2.5))
       return false;
 
+   const int a_deviations =
+      (strategy_a_pivot_wing != 2 ? 1 : 0) +
+      (strategy_a_reclaim_bars != 3 ? 1 : 0) +
+      (strategy_a_max_bars_to_mss != 9 ? 1 : 0) +
+      (MathAbs(strategy_a_min_fvg_atr - 0.05) > 1e-12 ? 1 : 0) +
+      (MathAbs(strategy_a_sl_buffer_atr - 0.10) > 1e-12 ? 1 : 0) +
+      (MathAbs(strategy_a_min_rr - 2.0) > 1e-12 ? 1 : 0);
+   const int b_deviations =
+      (strategy_b_pivot_wing != 2 ? 1 : 0) +
+      (strategy_b_reclaim_bars != 3 ? 1 : 0) +
+      (strategy_b_max_bars_to_mss != 12 ? 1 : 0) +
+      (MathAbs(strategy_b_min_fvg_atr - 0.05) > 1e-12 ? 1 : 0) +
+      (MathAbs(strategy_b_sl_buffer_atr - 0.10) > 1e-12 ? 1 : 0) +
+      (MathAbs(strategy_b_min_rr - 2.0) > 1e-12 ? 1 : 0);
+
+   // Tester permits only the preregistered center or one active-sleeve axis at
+   // a time.  Non-tester operation is center-only; no selected neighbor may
+   // silently become a deployment parameter.
+   if(MQLInfoInteger(MQL_TESTER) != 0)
+     {
+      if(strategy_mode == ICT_MODE_INDEX_MSS_FVG &&
+         (a_deviations > 1 || b_deviations != 0))
+         return false;
+      if(strategy_mode == ICT_MODE_FX_WEEKLY_SWEEP &&
+         (b_deviations > 1 || a_deviations != 0))
+         return false;
+     }
+   else if(a_deviations != 0 || b_deviations != 0)
+      return false;
+
    if(MQLInfoInteger(MQL_TESTER) != 0)
       return MathIsValidNumber(RISK_FIXED) && RISK_FIXED > 0.0 &&
              MathIsValidNumber(RISK_PERCENT) && RISK_PERCENT == 0.0;
