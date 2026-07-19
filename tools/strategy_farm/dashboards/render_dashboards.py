@@ -632,6 +632,129 @@ def throughput_last_7d(events: list[dict]) -> dict[str, list[int]]:
     }
 
 
+# ── Render-stamp badge (shared across every surface) ─────────────
+
+# Populated once per process in main(); every surface reads it so the
+# "RENDERED HH:MM:SS" badge is consistent across strategies.html, the
+# per-EA detail pages, and portfolio.html.
+RENDER_STAMP: dict[str, Any] = {"hms": "--:--:--", "epoch": 0, "iso": ""}
+
+
+def set_render_stamp() -> None:
+    now_local = dt.datetime.now()
+    RENDER_STAMP["hms"] = now_local.strftime("%H:%M:%S")
+    RENDER_STAMP["epoch"] = int(now_local.timestamp())
+    RENDER_STAMP["iso"] = dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat()
+
+
+RENDER_BADGE_CSS = """
+.render-badge{display:inline-flex;align-items:center;gap:7px;font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:5px 12px;border:1px solid var(--border-2);background:var(--surface-1);color:var(--text-3);white-space:nowrap}
+.render-badge .rb-dot{width:7px;height:7px;background:var(--signal);flex:0 0 auto}
+.render-badge .rb-lbl{color:var(--text-3)}
+.render-badge .rb-time{color:var(--text);font-weight:700}
+.render-badge .rb-sep{color:var(--text-4)}
+.render-badge .rb-age{color:var(--text-3);letter-spacing:0.06em}
+.render-badge.rb-warn{border-color:var(--warn)}
+.render-badge.rb-warn .rb-dot{background:var(--warn)}
+.render-badge.rb-warn .rb-age{color:var(--warn)}
+.render-badge.rb-stale{border-color:var(--fail)}
+.render-badge.rb-stale .rb-dot{background:var(--fail)}
+.render-badge.rb-stale .rb-age{color:var(--fail)}
+.render-badge-bar{position:fixed;top:12px;right:16px;z-index:60}
+@media(max-width:640px){.render-badge-bar{position:static;margin:10px 0 0}}
+"""
+
+RENDER_BADGE_JS = """<script>
+(function(){
+  document.querySelectorAll('.render-badge[data-epoch]').forEach(function(b){
+    var t=parseInt(b.getAttribute('data-epoch'),10)||0;
+    var age=b.querySelector('.rb-age');
+    function upd(){
+      var s=(Date.now()/1000)-t, h=s/3600, txt;
+      if(t<=0){txt='';}
+      else if(s<90){txt='just now';}
+      else if(s<3600){txt=Math.round(s/60)+'m ago';}
+      else{txt=Math.floor(h)+'h '+Math.round((h-Math.floor(h))*60)+'m ago';}
+      if(age){age.textContent=txt;}
+      b.classList.remove('rb-warn','rb-stale');
+      if(h>6){b.classList.add('rb-stale');}
+      else if(h>2){b.classList.add('rb-warn');}
+    }
+    upd();setInterval(upd,30000);
+  });
+})();
+</script>"""
+
+
+def render_badge_html() -> str:
+    """Static badge markup. Age text + colour are filled in by RENDER_BADGE_JS."""
+    hms = RENDER_STAMP.get("hms") or "--:--:--"
+    epoch = int(RENDER_STAMP.get("epoch") or 0)
+    return (
+        f'<span class="render-badge" data-epoch="{epoch}">'
+        f'<span class="rb-dot"></span><span class="rb-lbl">Rendered</span>'
+        f'<span class="rb-time">{e(hms)}</span>'
+        f'<span class="rb-sep">·</span><span class="rb-age"></span></span>'
+    )
+
+
+def inject_render_badge(page_html: str) -> str:
+    """Insert a fixed-position render badge + its JS into a full page string.
+
+    Used for the per-EA detail pages, which are produced by render_ea_detail()
+    as complete documents. strategies.html embeds the badge inline instead.
+    """
+    bar = f'<div class="render-badge-bar">{render_badge_html()}</div>{RENDER_BADGE_JS}'
+    if "<body>\n" in page_html:
+        return page_html.replace("<body>\n", "<body>\n" + bar + "\n", 1)
+    return page_html
+
+
+def _iso_from_mtime(path: Path) -> str:
+    """UTC ISO string for a file's mtime — used to seed the render watermark
+    from an already-rendered page when no state row exists yet."""
+    try:
+        return dt.datetime.fromtimestamp(path.stat().st_mtime, dt.UTC).replace(
+            microsecond=0).isoformat()
+    except OSError:
+        return ""
+
+
+def _format_upgrade_file(path: Path) -> bool:
+    """Cheaply bring an existing, content-current detail page up to the current
+    format (meta refresh + render badge) WITHOUT re-running the expensive
+    collect_ea_detail() pass. Idempotent; returns True if the file was touched.
+
+    Used during the one-time format migration so pages whose underlying data has
+    not changed still gain the badge without a full re-render.
+    """
+    try:
+        txt = path.read_text(encoding="utf-8")
+    except OSError:
+        return False
+    if "render-badge" in txt:
+        return False  # already current format
+    changed = False
+    if 'http-equiv="refresh"' not in txt:
+        txt = txt.replace(
+            '<meta charset="UTF-8">',
+            '<meta charset="UTF-8">\n<meta http-equiv="refresh" content="600">', 1)
+        changed = True
+    if "<style>" in txt and ".render-badge{" not in txt:
+        txt = txt.replace("<style>", "<style>\n" + RENDER_BADGE_CSS, 1)
+        changed = True
+    if "<body>\n" in txt:
+        bar = f'<div class="render-badge-bar">{render_badge_html()}</div>{RENDER_BADGE_JS}'
+        txt = txt.replace("<body>\n", "<body>\n" + bar + "\n", 1)
+        changed = True
+    if changed:
+        try:
+            path.write_text(txt, encoding="utf-8")
+        except OSError:
+            return False
+    return changed
+
+
 # ── HTML head ────────────────────────────────────────────────────
 
 
@@ -641,6 +764,7 @@ def html_head(title: str, extra_css: str = "") -> str:
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="refresh" content="600">
 <title>{e(title)} · QuantMechanica V5</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -649,6 +773,7 @@ def html_head(title: str, extra_css: str = "") -> str:
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <style>
+{RENDER_BADGE_CSS}
 {extra_css}
 </style>
 </head>
@@ -2147,398 +2272,642 @@ def collect_ea_lead_kpis(root: Path, ea_ids: list[str]) -> dict[str, dict[str, A
     return out
 
 
-def render_strategies(state: dict, root: Path) -> str:
-    eas = derive_ea_candidates(state["tasks"], root)
+# ── Strategy Archive v2 — lean operator surface ──────────────────
+#
+# strategies.html is rebuilt hourly from the pipeline DB. v2 (2026-07-19)
+# reshapes it into four operator sections: (a) LIVE BOOK, (b) FRONTIER,
+# (c) RECENT VERDICTS, (d) ARCHIVE INDEX. Everything is derived from a single
+# pass over work_items (collect_archive_v2) plus the T_Live preset filenames
+# and the sealed portfolio manifest — it never depends on the per-EA detail
+# pages being freshly rendered.
 
-    kpis = collect_ea_lead_kpis(root, [ea["ea_id"] for ea in eas])
+LIVE_PRESETS_DIR = Path(r"C:\QM\mt5\T_Live\MT5_Base\MQL5\Presets")  # read-only
+_BOOK_DATE = "2026-07-19"  # last DXZ book deploy — frontier "passes since" anchor
+_OPEN_STATUSES = ("active", "pending", "claimed")
+_FRONTIER_MIN = "Q07"
 
-    # archive coverage: which EAs have live work_items vs detail-page-only
-    wi_eas: set[str] = set()
-    _db = root / "state" / "farm_state.sqlite"
-    if _db.exists():
-        try:
-            with sqlite3.connect(_db) as _conn:
-                wi_eas = {r[0] for r in _conn.execute("SELECT DISTINCT ea_id FROM work_items")}
-        except sqlite3.Error:
-            wi_eas = set()
-    detail_eas = {ea["ea_id"] for ea in eas}
-    coverage_gap = sorted(wi_eas - detail_eas)
-    # Coverage gap is an internal QA signal — keep it off the external page
-    # (it reads as "the site is broken"); the cockpit coverage panel owns it.
-    cov_panel = ""
+_QBASE_RE = re.compile(r"^(Q\d{2})")
+_PRESET_RE = re.compile(r"^(\d+)_([A-Z0-9]+)_([A-Za-z0-9]+)_QM5_(\d+)_(.+)\.set$")
 
-    # per-EA lane classification — drives summary chips, presets, default sort
-    counts: Counter = Counter()
-    lane_meta: dict[str, dict] = {}
-    for ea in eas:
-        label, _sc = _ea_status(ea)
-        k = kpis.get(ea["ea_id"]) or {}
-        has_wi = ea["ea_id"] in wi_eas
-        card_state = ea.get("card_state")
-        lanes = {"all", "live" if has_wi else "archive"}
-        if card_state:
-            lanes.add("card")
-            lanes.add(f"card_{card_state}")
-            counts[f"card_{card_state}"] += 1
-        if not has_wi and card_state and ea.get("task_count", 0) == 0:
-            # Card-only row (no agent task, no work_items): rank below dead so
-            # the active funnel stays at the top by default.
-            lanes.add("card_only")
-            rank = 7
-            counts["card_only"] += 1
-        elif label == "DEAD":
-            lanes.add("dead"); rank = 6; counts["dead"] += 1
-        elif k.get("p8_pass"):
-            lanes |= {"survivor", "active"}; rank = 0
-            counts["p8"] += 1; counts["surv"] += 1
-        elif k.get("p4plus_pass"):
-            lanes |= {"survivor", "active"}; rank = 1
-            counts["surv"] += 1
-        elif label == "LIVE":
-            lanes.add("active"); rank = 0; counts["live"] += 1
-        elif has_wi and (k.get("n_pass") or 0) == 0:
-            lanes.add("triage"); rank = 4; counts["triage"] += 1
-        elif has_wi:
-            lanes.add("active"); rank = 3; counts["active"] += 1
-        else:
-            lanes.add("notstarted"); rank = 5; counts["notstarted"] += 1
-        lane_meta[ea["ea_id"]] = {"lanes": lanes, "rank": rank, "has_wi": has_wi}
 
-    # default order: Q11 / Q05+ survivors first, dead last; recency within rank
-    eas.sort(key=lambda x: x.get("last_updated") or "", reverse=True)
-    eas.sort(key=lambda x: lane_meta[x["ea_id"]]["rank"])
+def _phase_base(phase: Any) -> str:
+    """Collapse a stored phase key to its canonical base Qxx (never a raw P*).
 
-    # Split the unbuilt card reservoir out of the EA table (2026-06-11 redesign):
-    # 2000+ card-only rows with full 11-col markup drowned the page's purpose
-    # (EA inventory + fate) and pushed strategies.html past 4 MB. Cards get a
-    # compact collapsed section below; transparency is preserved, weight is not.
-    card_only_eas = [ea for ea in eas if "card_only" in lane_meta[ea["ea_id"]]["lanes"]]
-    main_eas = [ea for ea in eas if "card_only" not in lane_meta[ea["ea_id"]]["lanes"]]
+    'Q09_PORTFOLIO' -> 'Q09'; 'P2' -> 'Q02'; 'Q05' -> 'Q05'.
+    """
+    if not phase:
+        return ""
+    s = str(phase)
+    m = _QBASE_RE.match(s)
+    if m:
+        return m.group(1)
+    return PHASE_QID.get(s, s)  # legacy P-key → Qxx (PHASE_QID = LEGACY_P_TO_Q)
 
-    # Death-by-gate distribution: where do strategies actually die? This is the
-    # archive's core lesson (e.g. the Q04 walk-forward overfitting wall).
-    death_counter: Counter = Counter()
-    for ea in main_eas:
-        if ea.get("dead"):
-            death_counter[phase_label(ea.get("failed_at")) if ea.get("failed_at") else "unknown"] += 1
-    _phase_rank = {phase_label(p): i for i, p in enumerate(PHASE_ORDER)}
-    death_strip = ""
-    if death_counter:
-        cells = "".join(
-            f'<div class="death-cell"><div class="death-gate">{e(g)}</div><div class="death-n">{n}</div></div>'
-            for g, n in sorted(death_counter.items(), key=lambda kv: _phase_rank.get(kv[0], 99))
-        )
-        death_strip = (
-            '<div class="death-strip"><div class="death-strip-label">Death by gate '
-            f'<span class="death-total">({sum(death_counter.values())} dead EAs)</span></div>'
-            f'<div class="death-row">{cells}</div></div>'
-        )
 
-    eas = main_eas
-    if not eas:
-        body = '<div class="empty" style="max-width:1100px;margin:24px auto;text-align:center;color:var(--qm-text-muted);">No EAs registered yet.</div>'
-    else:
-        rows = []
-        for ea in eas:
-            label, status_cls = _ea_status(ea)
-            k = kpis.get(ea["ea_id"], {})
-            best_net = k.get("best_net")
-            best_net_html = "—"
-            best_sort = 0.0
-            if isinstance(best_net, (int, float)):
-                cls = "net-pos" if best_net > 0 else "net-neg"
-                best_net_html = f'<span class="{cls}">{fmt_dollar(best_net)}</span>'
-                best_sort = float(best_net)
-            best_meta = ""
-            if k.get("best_phase") and k.get("best_symbol"):
-                best_meta = f'<div style="font-size:9px;color:var(--qm-text-muted);margin-top:2px">{e(phase_label(k["best_phase"]))} · {e(k["best_symbol"])}</div>'
+def _verdict_family(v: str | None) -> str:
+    if not v:
+        return "other"
+    u = v.upper()
+    if u.startswith("PASS"):
+        return "pass"
+    if u == "INFRA_FAIL":
+        return "infra"
+    if u.startswith("FAIL"):
+        return "fail"
+    return "other"
 
-            trades_mean = k.get("trades_mean")
-            trades_html = f"{int(trades_mean)}" if isinstance(trades_mean, (int, float)) and trades_mean else "—"
-            dd_worst = k.get("dd_worst")
-            dd_html = fmt_dollar(dd_worst) if isinstance(dd_worst, (int, float)) else "—"
-            dd_sort = float(dd_worst) if isinstance(dd_worst, (int, float)) else 0.0
 
-            ts = (ea.get("last_updated") or "")[:19]
-            try:
-                ts_sort = dt.datetime.fromisoformat(ts.replace("Z", "+00:00")).timestamp()
-            except Exception:
-                ts_sort = 0.0
+_VCLS = {"pass": "v-pass", "fail": "v-fail", "infra": "v-infra", "other": "v-other"}
 
-            cur_phase_key = ea.get("current_phase", "—")
-            cur_phase = e(phase_label(cur_phase_key) if cur_phase_key != "—" else "—")
-            robust_label = "Q11" if k.get("p8_pass") else ("Q05+" if k.get("p4plus_pass") else (phase_label(k.get("highest_pass_phase") or "") or "—"))
-            robust_cls = "s-live" if k.get("p8_pass") else ("s-flow" if k.get("p4plus_pass") else "s-dead")
-            n_sym = k.get("n_symbols") or 0
-            sym_pass = f'{k.get("n_pass", 0)}/{k.get("n_fail", 0)+k.get("n_pass", 0)}' if k.get("n_pass") or k.get("n_fail") else "—"
 
-            lm = lane_meta[ea["ea_id"]]
-            row_cls = []
-            if ea.get("dead"):
-                row_cls.append("row-dead")  # data-attr only; no styling (OWNER call 2026-05-23)
-            card_state = ea.get("card_state")
-            is_card_only = "card_only" in lm["lanes"]
-            if is_card_only:
-                row_cls.append("row-card-only")
-            # lane-pill (live/archive) removed from cell HTML 2026-05-23 (OWNER call):
-            # "live" was misleading — no EAs are actually T_Live traded; word implied
-            # otherwise. Lane membership still carried via data-lanes for filtering.
-            fail_prof = ""
-            if ea.get("dead") and not is_card_only:
-                # Death-reason: failed_at is the most informative field on the EA dict
-                # (failure_reason / verdict_text are not populated upstream). Render the
-                # phase where it died as a small faint secondary line below the status pill.
-                fa = ea.get("failed_at")
-                reason_title = f"died at {phase_label(fa)}" if fa else "died (phase unknown)"
-                fail_prof = (
-                    f'<div class="fail-prof fp-reason" title="{e(reason_title)}">'
-                    f'died at {e(phase_label(fa)) if fa else "?"}</div>'
-                )
+def _build_slug_map(repo_root: Path) -> dict[str, str]:
+    """One directory scan: QM5_<id>_<slug> -> {'QM5_<id>': '<slug>'}."""
+    out: dict[str, str] = {}
+    d = repo_root / "framework" / "EAs"
+    try:
+        for entry in os.scandir(d):
+            if entry.is_dir() and entry.name.startswith("QM5_"):
+                parts = entry.name.split("_", 2)
+                if len(parts) >= 3:
+                    out[f"QM5_{parts[1]}"] = parts[2]
+                elif len(parts) == 2:
+                    out.setdefault(f"QM5_{parts[1]}", "")
+    except OSError:
+        pass
+    return out
 
-            # Card-only rows: replace the status pill with a card-state pill,
-            # drop the onclick (no detail page yet — clicking would 404), and
-            # show "—" in KPI columns. Survivors / live EAs keep the original
-            # status pill but may have a card-state secondary indicator.
-            if is_card_only:
-                card_pill_cls = {
-                    "approved": "s-flow",
-                    "review":   "s-prog",
-                    "draft":    "s-card",
-                    "rejected": "s-dead",
-                }.get(card_state, "s-card")
-                status_html = (
-                    f'<span class="status-chip {card_pill_cls}">card · {e(card_state)}</span>'
-                )
-                onclick_attr = ""
-            else:
-                status_html = f'<span class="status-chip {status_cls}">{label}</span>{fail_prof}'
-                onclick_attr = f' onclick="window.location=\'ea_{e(ea["ea_id"])}.html\'"'
-            # Carry card_state into data-* for the filter chip strip below
-            data_card_attr = f' data-card-state="{e(card_state)}"' if card_state else ""
 
-            rows.append(f"""<tr class="{' '.join(row_cls)}" data-status="{status_cls}" data-phase="{cur_phase}" data-lanes="{' '.join(sorted(lm['lanes']))}"{data_card_attr} data-search="{e((ea['ea_id'] + ' ' + (ea.get('slug') or '')).lower())}"{onclick_attr}>
-  <td class="td-ea"><code>{e(ea['ea_id'])}</code></td>
-  <td class="td-slug">{e(ea.get('slug') or '')}</td>
-  <td>{status_html}</td>
-  <td>{_progress_bar_html(ea)}</td>
-  <td>{cur_phase}</td>
-  <td><span class="status-chip {robust_cls}">{e(robust_label)}</span></td>
-  <td class="col-num" data-sort="{best_sort}">{best_net_html}{best_meta}</td>
-  <td class="col-num">{trades_html}</td>
-  <td class="col-num" data-sort="{dd_sort}">{dd_html}</td>
-  <td class="col-num">{n_sym} <span style="color:var(--qm-text-muted);font-size:10px">({sym_pass} pass)</span></td>
-  <td data-sort="{ts_sort}">{e(ts.replace('T', ' '))}</td>
-</tr>""")
+def _parse_live_presets(presets_dir: Path) -> list[dict[str, Any]]:
+    """Parse the T_Live NN_Symbol_TF_QM5_<id>_<slug>.set preset filenames.
 
-        body = f"""
-<div class="archive-table-wrap">
-<table class="archive-table" id="ea-table">
-  <thead>
-    <tr>
-      <th data-sort-col="ea" data-sort-type="text">EA</th>
-      <th data-sort-col="slug" data-sort-type="text">Slug</th>
-      <th data-sort-col="status" data-sort-type="text">Status</th>
-      <th>Progress · Q00→Q14</th>
-      <th data-sort-col="phase" data-sort-type="text">Current</th>
-      <th data-sort-col="robust" data-sort-type="text">Most advanced gate</th>
-      <th data-sort-col="net" data-sort-type="num" class="col-num">Best exploratory P&amp;L</th>
-      <th data-sort-col="trades" data-sort-type="num" class="col-num">Trades</th>
-      <th data-sort-col="dd" data-sort-type="num" class="col-num">Worst DD</th>
-      <th data-sort-col="sym" data-sort-type="num" class="col-num">Symbols</th>
-      <th data-sort-col="updated" data-sort-type="num">Updated</th>
-    </tr>
-  </thead>
-  <tbody>
-{''.join(rows)}
-  </tbody>
-</table>
-</div>
+    READ-ONLY listing of the live terminal preset folder — never mutates it.
+    """
+    out: list[dict[str, Any]] = []
+    try:
+        names = sorted(os.listdir(presets_dir))
+    except OSError:
+        return out
+    for fn in names:
+        m = _PRESET_RE.match(fn)
+        if not m:
+            continue
+        slot, sym, tf, eid, slug = m.groups()
+        out.append({"slot": slot, "symbol": sym, "tf": tf,
+                    "ea_id": int(eid), "slug": slug, "preset": fn})
+    out.sort(key=lambda r: r["slot"])
+    return out
+
+
+def _load_book_manifest(root: Path) -> tuple[dict[str, Any] | None, Path | None]:
+    """Newest sealed sunday-final portfolio manifest (weights/KPIs/composition)."""
+    pdir = root.parent / "reports" / "portfolio"
+    try:
+        cands = sorted(pdir.glob("portfolio_manifest_sunday_final_*sleeve*.json"))
+    except OSError:
+        cands = []
+    if not cands:
+        return None, None
+    p = cands[-1]
+    try:
+        return json.loads(p.read_text(encoding="utf-8")), p
+    except Exception:
+        return None, p
+
+
+def collect_archive_v2(root: Path, slug_map: dict[str, str]) -> dict[str, Any]:
+    """Single pass over work_items → everything strategies.html needs.
+
+    Returns per-EA aggregates, per-(ea,symbol) latest verdicts, 7-day verdict
+    counts by phase, top movers, and the qualification frontier.
+    """
+    now = dt.datetime.now(dt.UTC)
+    today = now.date()
+    win_start = (today - dt.timedelta(days=6)).isoformat()   # last 7 days (inclusive)
+    win_end = (today + dt.timedelta(days=1)).isoformat()      # excludes future sentinels
+    q07_idx = PHASE_ORDER.index(_FRONTIER_MIN)
+
+    out: dict[str, Any] = {
+        "ea": {}, "cell_latest": {}, "recent": {}, "movers": [],
+        "frontier_open": [], "frontier_passes": [],
+        "now_iso": now.replace(microsecond=0).isoformat(),
+        "win_start": win_start, "book_date": _BOOK_DATE,
+    }
+    db = root / "state" / "farm_state.sqlite"
+    if not db.exists():
+        return out
+
+    ea_agg: dict[str, dict] = {}
+    cell_latest: dict[tuple[str, str], dict] = {}
+    recent: dict[str, dict] = {}
+    mover_pass: dict[str, dict] = {}
+    open_map: dict[tuple, dict] = {}
+    pass_map: dict[tuple, dict] = {}
+
+    with sqlite3.connect(db) as conn:  # SELECT only — DB is read-only for this tool
+        cur = conn.execute(
+            "SELECT ea_id, phase, symbol, status, verdict, updated_at FROM work_items")
+        for ea_id, phase, symbol, status, verdict, updated_at in cur:
+            if not ea_id:
+                continue
+            upd = updated_at or ""
+            future = upd >= win_end
+            base = _phase_base(phase)
+            bidx = PHASE_ORDER.index(base) if base in PHASE_ORDER else -1
+            v = (verdict or "").upper()
+            st = (status or "").lower()
+            fam = _verdict_family(v)
+
+            a = ea_agg.get(ea_id)
+            if a is None:
+                a = ea_agg[ea_id] = {"last_upd": "", "last_verdict": None,
+                                     "hp_idx": -1, "hp": None, "adv_idx": -1,
+                                     "adv": None, "n": 0, "n_pass": 0}
+            a["n"] += 1
+            if fam == "pass":
+                a["n_pass"] += 1
+            if bidx > a["adv_idx"]:
+                a["adv_idx"], a["adv"] = bidx, base
+            if fam == "pass" and bidx > a["hp_idx"]:
+                a["hp_idx"], a["hp"] = bidx, base
+            if not future and upd > a["last_upd"]:
+                a["last_upd"], a["last_verdict"] = upd, (v or None)
+
+            if symbol and not future:
+                ck = (ea_id, symbol)
+                cl = cell_latest.get(ck)
+                if cl is None or upd > cl["upd"]:
+                    cell_latest[ck] = {"upd": upd, "verdict": (v or None),
+                                       "phase": base, "status": st}
+
+            if win_start <= upd < win_end and st in ("done", "failed"):
+                rb = recent.setdefault(base, {"pass": 0, "fail": 0, "infra": 0,
+                                              "other": 0, "total": 0})
+                rb[fam] += 1
+                rb["total"] += 1
+                if fam == "pass":
+                    mp = mover_pass.setdefault(ea_id, {"n": 0, "top_idx": -1, "top": None})
+                    mp["n"] += 1
+                    if bidx > mp["top_idx"]:
+                        mp["top_idx"], mp["top"] = bidx, base
+
+            if bidx >= q07_idx and st in _OPEN_STATUSES:
+                ok = (ea_id, symbol or "", base)
+                cur_o = open_map.get(ok)
+                if cur_o is None or upd > cur_o["upd"]:
+                    open_map[ok] = {"ea_id": ea_id, "symbol": symbol or "",
+                                    "phase": base, "status": st, "upd": upd}
+
+            if fam == "pass" and bidx >= q07_idx and (_BOOK_DATE <= upd < win_end):
+                pk = (ea_id, symbol or "", base)
+                cur_p = pass_map.get(pk)
+                if cur_p is None or upd > cur_p["upd"]:
+                    pass_map[pk] = {"ea_id": ea_id, "symbol": symbol or "",
+                                    "phase": base, "verdict": v, "upd": upd}
+
+    out["ea"] = ea_agg
+    out["cell_latest"] = cell_latest
+    out["recent"] = recent
+    out["movers"] = sorted(
+        ({"ea_id": k, "n": m["n"], "top": m["top"]} for k, m in mover_pass.items()),
+        key=lambda r: (-r["n"], r["ea_id"]))
+    out["frontier_open"] = sorted(
+        open_map.values(), key=lambda r: (-(PHASE_ORDER.index(r["phase"])
+                                            if r["phase"] in PHASE_ORDER else -1), r["upd"]),
+        reverse=False)
+    out["frontier_open"].sort(key=lambda r: r["upd"], reverse=True)
+    out["frontier_passes"] = sorted(pass_map.values(), key=lambda r: r["upd"], reverse=True)
+    return out
+
+
+def _idx_status(ea_id: str, a: dict, live_ids: set[str]) -> tuple[str, str, str]:
+    """(label, status-chip css, filter-class) for one archive-index row."""
+    if ea_id in live_ids:
+        return "LIVE", "s-live", "live"
+    hp = a.get("hp")
+    if hp and hp in PHASE_ORDER and PHASE_ORDER.index(hp) >= PHASE_ORDER.index(_FRONTIER_MIN):
+        return "SURVIVOR", "s-live", "survivor"
+    lv = (a.get("last_verdict") or "").upper()
+    if a.get("n_pass", 0) > 0 and lv.startswith("PASS"):
+        return "PASS", "s-flow", "pass"
+    if a.get("n_pass", 0) > 0:
+        return "IN VALIDATION", "s-flow", "validation"
+    if lv.startswith("FAIL") or lv == "INFRA_FAIL":
+        return "FAILED", "s-dead", "failed"
+    return "—", "s-card", "other"
+
+
+ARCHIVE_V2_CSS = """
+.arch2-top{max-width:1400px;margin:0 auto;padding:34px 36px 20px;display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;border-bottom:1px solid var(--border)}
+.arch2-top h1{font-size:clamp(24px,3.4vw,36px);font-weight:600;letter-spacing:-0.03em;line-height:1.05;margin:0 0 8px}
+.arch2-top h1 .em-text{color:var(--signal)}
+.arch2-sub{font-family:var(--font-mono);font-size:11.5px;color:var(--text-3);line-height:1.6;letter-spacing:0.03em;max-width:720px}
+.arch2-chips{display:flex;gap:10px;flex-wrap:wrap;max-width:1400px;margin:16px auto 0;padding:0 36px}
+.a2chip{padding:11px 16px;background:var(--surface-1);border:1px solid var(--border);min-width:96px;text-align:center}
+.a2chip-num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:21px;font-weight:500;line-height:1;letter-spacing:-0.02em;color:var(--text)}
+.a2chip-label{font-family:var(--font-mono);font-size:9px;font-weight:600;color:var(--text-3);margin-top:6px;text-transform:uppercase;letter-spacing:0.16em}
+.a2chip.c-live .a2chip-num{color:var(--signal)}
+.a2chip.c-surv .a2chip-num{color:var(--live)}
+.a2chip.c-fail .a2chip-num{color:var(--fail)}
+.arch2-sec{max-width:1400px;margin:34px auto 0;padding:0 36px}
+.sec-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:10px}
+.sec-kicker{font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:0.24em;text-transform:uppercase;color:var(--bg);background:var(--signal);padding:4px 10px}
+.sec-head h2{font-family:var(--font-mono);font-size:14px;font-weight:700;letter-spacing:0.02em;color:var(--text);margin:0}
+.sec-meta{margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--text-3);letter-spacing:0.04em}
+.sec-meta strong{color:var(--signal);font-weight:700}
+.jrnl-link{color:inherit;text-decoration:none;border-bottom:1px dashed var(--border-3)}
+.jrnl-link:hover{color:var(--signal);border-bottom-color:var(--signal)}
+.sec-note{font-family:var(--font-mono);font-size:10.5px;color:var(--text-4);line-height:1.55;letter-spacing:0.03em;margin:0 0 12px}
+.lb-slot{color:var(--text-4);font-variant-numeric:tabular-nums}
+.wbar{display:inline-block;width:52px;height:6px;background:var(--surface-2);border:1px solid var(--border);vertical-align:middle;margin-right:8px}
+.wbar-fill{display:block;height:100%;background:var(--signal)}
+.v-infra{color:var(--warn);font-weight:600}
+.v-other{color:var(--text-3)}
+.rv-grid{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.rv-cell{padding:10px 14px;background:var(--surface-1);border:1px solid var(--border);border-top:2px solid var(--signal);min-width:92px;text-align:center}
+.rv-phase{font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--text-2);letter-spacing:0.1em}
+.rv-nums{font-family:var(--font-mono);font-size:16px;font-weight:500;margin:5px 0 3px;font-variant-numeric:tabular-nums}
+.rv-nums .v-fail,.rv-nums .v-pass,.rv-nums .v-infra{font-weight:700}
+.rv-tot{font-family:var(--font-mono);font-size:9px;color:var(--text-4);text-transform:uppercase;letter-spacing:0.1em}
+.rv-legend{font-family:var(--font-mono);font-size:10px;color:var(--text-4);letter-spacing:0.04em;margin-bottom:10px}
+.movers{display:flex;gap:8px;flex-wrap:wrap}
+.mover{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;background:var(--surface-1);border:1px solid var(--border-2);font-family:var(--font-mono);font-size:11px;text-decoration:none;color:var(--text-2)}
+.mover:hover{border-color:var(--signal)}
+.mover code{color:var(--text);font-weight:600}
+.mover .mv-slug{color:var(--text-3)}
+.mover .mv-n{color:var(--signal);font-weight:700}
+.mover .mv-ph{color:var(--text-4)}
+.arch2-empty{font-family:var(--font-mono);font-size:11px;color:var(--text-4);padding:12px 0;letter-spacing:0.04em}
+.idx-controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.idx-controls input[type=search],.idx-controls select{background:var(--surface-2);border:1px solid var(--border-2);padding:8px 12px;font-size:12px;color:var(--text);font-family:var(--font-mono);outline:none;min-width:170px}
+.idx-controls input[type=search]:focus,.idx-controls select:focus{border-color:var(--signal)}
+.idx-controls .row-count{margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--text-3);letter-spacing:0.08em;text-transform:uppercase}
+.idx-controls .row-count strong{color:var(--signal);font-weight:700}
+.archive-table td.idx-link{color:var(--signal);text-align:center;font-weight:700}
+.arch2-foot{margin:44px auto 56px;max-width:1400px;padding:0 36px;font-family:var(--font-mono);font-size:11px;color:var(--text-3);text-align:center;line-height:1.7;letter-spacing:0.05em}
 """
 
-    # Compact collapsed listing for the unbuilt card reservoir (4 light columns,
-    # no progress bars) — keeps full transparency at ~1/10 of the row weight.
-    card_state_counts: Counter = Counter(ea.get("card_state") or "unknown" for ea in card_only_eas)
-    card_pill = {"approved": "s-flow", "review": "s-prog", "draft": "s-card", "rejected": "s-dead"}
-    card_rows_html = "".join(
-        f'<tr data-search="{e((ea["ea_id"] + " " + (ea.get("slug") or "")).lower())}">'
-        f'<td class="td-ea"><code>{e(ea["ea_id"])}</code></td>'
-        f'<td class="td-slug">{e(ea.get("slug") or "")}</td>'
-        f'<td><span class="status-chip {card_pill.get(ea.get("card_state"), "s-card")}">{e(ea.get("card_state") or "?")}</span></td>'
-        f'<td>{e((ea.get("last_updated") or "")[:10])}</td></tr>'
-        for ea in card_only_eas
-    )
-    card_counts_label = " · ".join(
-        f"{k}: {v}" for k, v in sorted(card_state_counts.items(), key=lambda kv: -kv[1])
-    ) or "none"
-    cards_html = f"""
-<details class="cards-reservoir">
-  <summary><strong>Card reservoir · not built yet</strong> — {len(card_only_eas)} strategy cards ({card_counts_label}). Build priority is deterministic (diversification + expected metrics); cards enter the EA table above once built.</summary>
-  <div class="controls" style="margin-top:10px">
-    <input type="search" id="card-search" placeholder="search card id or slug…">
-    <span class="row-count"><strong id="cc-visible">{len(card_only_eas)}</strong> of {len(card_only_eas)} cards</span>
+
+ARCHIVE_V2_JS = """<script>
+(function(){
+  var table=document.getElementById('idx-table');
+  if(!table)return;
+  var tbody=table.tBodies[0];
+  var rows=Array.prototype.slice.call(tbody.rows);
+  var fSearch=document.getElementById('idx-search');
+  var fStatus=document.getElementById('idx-status');
+  var rc=document.getElementById('idx-count');
+  function apply(){
+    var q=(fSearch.value||'').toLowerCase().trim();
+    var f=fStatus.value;
+    var vis=0;
+    rows.forEach(function(r){
+      var hide=false;
+      if(q && (r.getAttribute('data-search')||'').indexOf(q)<0)hide=true;
+      if(!hide && f){
+        if(f==='haspass'){if(r.getAttribute('data-haspass')!=='1')hide=true;}
+        else if(r.getAttribute('data-fclass')!==f)hide=true;
+      }
+      r.style.display=hide?'none':'';
+      if(!hide)vis++;
+    });
+    if(rc)rc.textContent=vis;
+  }
+  if(fSearch)fSearch.addEventListener('input',apply);
+  if(fStatus)fStatus.addEventListener('change',apply);
+  var sortCol=null,sortDir=1;
+  table.querySelectorAll('thead th[data-sc]').forEach(function(th){
+    th.addEventListener('click',function(){
+      var type=th.getAttribute('data-st')||'text';
+      var idx=th.cellIndex;
+      if(sortCol===idx)sortDir=-sortDir;else{sortCol=idx;sortDir=1;}
+      table.querySelectorAll('thead th').forEach(function(t){t.classList.remove('sort-asc','sort-desc');});
+      th.classList.add(sortDir===1?'sort-asc':'sort-desc');
+      var sorted=rows.slice().sort(function(a,b){
+        var ca=a.cells[idx],cb=b.cells[idx];
+        if(type==='num'){
+          var va=parseFloat(ca.getAttribute('data-sort')||'0')||0;
+          var vb=parseFloat(cb.getAttribute('data-sort')||'0')||0;
+          return (va-vb)*sortDir;
+        }
+        var sa=ca.textContent.trim().toLowerCase(),sb=cb.textContent.trim().toLowerCase();
+        return (sa<sb?-1:sa>sb?1:0)*sortDir;
+      });
+      sorted.forEach(function(r){tbody.appendChild(r);});
+    });
+  });
+})();
+</script>"""
+
+
+def render_strategies(state: dict, root: Path) -> str:
+    slug_map = _build_slug_map(REPO_ROOT)
+    data = collect_archive_v2(root, slug_map)
+    ea_agg = data["ea"]
+    cell_latest = data["cell_latest"]
+
+    # ── LIVE BOOK — 24 deployed sleeves ──────────────────────────
+    presets = _parse_live_presets(LIVE_PRESETS_DIR)
+    manifest, mani_path = _load_book_manifest(root)
+    wmap: dict[tuple, dict] = {}
+    kpis_book: dict[str, Any] = {}
+    if manifest:
+        for s in manifest.get("sleeves", []):
+            base = str(s.get("symbol", "")).replace(".DWX", "")
+            wmap[(s.get("ea_id"), base)] = s
+        kpis_book = manifest.get("kpis", {}) or {}
+
+    def _book_cell(ea_str: str, full_sym: str) -> dict | None:
+        """Latest verdict for a book sleeve: exact (ea, symbol) first, then fall
+        back to the EA's overall latest (basket EAs store a logical symbol, not
+        the display symbol, so an exact match legitimately misses)."""
+        cl = cell_latest.get((ea_str, full_sym))
+        if cl:
+            return cl
+        a = ea_agg.get(ea_str)
+        if a and a.get("last_verdict"):
+            return {"verdict": a["last_verdict"], "phase": a.get("adv") or a.get("hp") or "",
+                    "status": "", "ea_level": True}
+        return None
+
+    book_rows: list[dict] = []
+    live_ids: set[str] = set()
+    if presets:
+        for p in presets:
+            s = wmap.get((p["ea_id"], p["symbol"])) or {}
+            ea_str = f"QM5_{p['ea_id']}"
+            live_ids.add(ea_str)
+            full_sym = s.get("symbol") or (p["symbol"] + ".DWX")
+            book_rows.append({
+                "slot": p["slot"], "ea": ea_str,
+                "slug": p["slug"] or slug_map.get(ea_str, ""),
+                "symbol": p["symbol"], "tf": p["tf"],
+                "weight": s.get("weight"), "trades": s.get("trades"),
+                "cl": _book_cell(ea_str, full_sym),
+            })
+    elif manifest:  # fallback if T_Live presets unreadable
+        for s in manifest.get("sleeves", []):
+            base = str(s.get("symbol", "")).replace(".DWX", "")
+            ea_str = f"QM5_{s.get('ea_id')}"
+            live_ids.add(ea_str)
+            book_rows.append({
+                "slot": "", "ea": ea_str, "slug": slug_map.get(ea_str, ""),
+                "symbol": base, "tf": "", "weight": s.get("weight"),
+                "trades": s.get("trades"),
+                "cl": _book_cell(ea_str, s.get("symbol") or (base + ".DWX")),
+            })
+
+    maxw = max((r["weight"] or 0.0) for r in book_rows) if book_rows else 1.0
+    maxw = maxw or 1.0
+    lb_rows_html = ""
+    for r in book_rows:
+        cl = r["cl"]
+        ea_note = (' <span class="v-other" style="font-size:9px" title="EA-level latest '
+                   '(no per-symbol work item — basket/logical symbol)">ea</span>'
+                   ) if (cl and cl.get("ea_level")) else ''
+        if cl and cl.get("verdict"):
+            vf = _verdict_family(cl["verdict"])
+            phase_txt = f'{e(phase_label(cl["phase"]))} · ' if cl.get("phase") else ''
+            vhtml = (f'<span class="{_VCLS[vf]}">{phase_txt}'
+                     f'{e(qxx_text(cl["verdict"]))}</span>{ea_note}')
+        elif cl and cl.get("status") in _OPEN_STATUSES:
+            vhtml = (f'<span class="v-pending">{e(phase_label(cl["phase"]))} · '
+                     f'{e(cl["status"])}</span>')
+        else:
+            vhtml = '<span class="v-pending">— no work item —</span>'
+        wpct = (r["weight"] / maxw * 100) if r["weight"] else 0
+        lb_rows_html += (
+            f'<tr onclick="window.location=\'ea_{e(r["ea"])}.html\'">'
+            f'<td class="lb-slot">{e(r["slot"])}</td>'
+            f'<td class="td-ea"><code>{e(r["ea"])}</code></td>'
+            f'<td class="td-slug">{e(r["slug"])}</td>'
+            f'<td>{e(r["symbol"])}</td>'
+            f'<td>{e(r["tf"])}</td>'
+            f'<td class="col-num"><span class="wbar"><span class="wbar-fill" style="width:{wpct:.0f}%"></span></span>{fmt_num(r["weight"], 3)}</td>'
+            f'<td>{vhtml}</td>'
+            f'<td class="col-num">{r["trades"] if r["trades"] else "—"}</td>'
+            f'</tr>'
+        )
+    if not lb_rows_html:
+        lb_rows_html = '<tr><td colspan="8" class="arch2-empty">Live-book source unavailable.</td></tr>'
+
+    book_meta = ""
+    if kpis_book or manifest:
+        sharpe = kpis_book.get("sharpe")
+        dd = kpis_book.get("max_drawdown_pct")
+        risk = (manifest or {}).get("total_risk_pct")
+        net = kpis_book.get("total_net_of_cost_profit")
+        # DXZ equity value links to the (forthcoming) journal page per OWNER.
+        equity_html = (f'<a class="jrnl-link" href="dxz_journal.html">Net-of-cost '
+                       f'<strong>{fmt_dollar(net)}</strong></a> · ') if isinstance(net, (int, float)) else ''
+        book_meta = (f'{equity_html}Sharpe <strong>{fmt_num(sharpe, 3)}</strong> · MaxDD '
+                     f'<strong>{fmt_pct(dd)}</strong> · risk {fmt_num(risk, 2)} · '
+                     f'{len(book_rows)} sleeves (sealed basis)')
+
+    # ── FRONTIER — open Q07–Q10 + passes since the book ──────────
+    fo_html = ""
+    for r in data["frontier_open"]:
+        ea = r["ea_id"]
+        fo_html += (
+            f'<tr onclick="window.location=\'ea_{e(ea)}.html\'">'
+            f'<td class="td-ea"><code>{e(ea)}</code></td>'
+            f'<td class="td-slug">{e(slug_map.get(ea, ""))}</td>'
+            f'<td>{e(r["symbol"])}</td>'
+            f'<td>{e(phase_label(r["phase"]))}</td>'
+            f'<td><span class="v-pending">{e(r["status"])}</span></td>'
+            f'<td>{e((r["upd"] or "")[:19].replace("T", " "))}</td>'
+            f'</tr>'
+        )
+    if not fo_html:
+        fo_html = '<tr><td colspan="6" class="arch2-empty">No open Q07–Q10 work items.</td></tr>'
+
+    fp_html = ""
+    for r in data["frontier_passes"]:
+        ea = r["ea_id"]
+        fp_html += (
+            f'<tr onclick="window.location=\'ea_{e(ea)}.html\'">'
+            f'<td class="td-ea"><code>{e(ea)}</code></td>'
+            f'<td class="td-slug">{e(slug_map.get(ea, ""))}</td>'
+            f'<td>{e(r["symbol"])}</td>'
+            f'<td>{e(phase_label(r["phase"]))}</td>'
+            f'<td><span class="v-pass">{e(qxx_text(r["verdict"]))}</span></td>'
+            f'<td>{e((r["upd"] or "")[:19].replace("T", " "))}</td>'
+            f'</tr>'
+        )
+    if not fp_html:
+        fp_html = (f'<tr><td colspan="6" class="arch2-empty">No Q07+ passes since '
+                   f'{e(data["book_date"])}.</td></tr>')
+
+    # ── RECENT VERDICTS — last 7 days by phase + top movers ──────
+    recent = data["recent"]
+    rv_cells = ""
+    rv_tot = {"pass": 0, "fail": 0, "infra": 0, "total": 0}
+    for base in PHASE_ORDER:
+        rb = recent.get(base)
+        if not rb:
+            continue
+        rv_tot["pass"] += rb["pass"]
+        rv_tot["fail"] += rb["fail"]
+        rv_tot["infra"] += rb["infra"]
+        rv_tot["total"] += rb["total"]
+        rv_cells += (
+            f'<div class="rv-cell"><div class="rv-phase">{e(phase_label(base))}</div>'
+            f'<div class="rv-nums"><span class="v-pass">{rb["pass"]}</span>/'
+            f'<span class="v-fail">{rb["fail"]}</span>/'
+            f'<span class="v-infra">{rb["infra"]}</span></div>'
+            f'<div class="rv-tot">{rb["total"]} runs</div></div>'
+        )
+    if not rv_cells:
+        rv_cells = '<div class="arch2-empty">No graded work items in the last 7 days.</div>'
+
+    movers_html = ""
+    for m in data["movers"][:8]:
+        ea = m["ea_id"]
+        movers_html += (
+            f'<a class="mover" href="ea_{e(ea)}.html"><code>{e(ea)}</code>'
+            f'<span class="mv-slug">{e(slug_map.get(ea, ""))}</span>'
+            f'<span class="mv-n">+{m["n"]}</span>'
+            f'<span class="mv-ph">{e(phase_label(m["top"]))}</span></a>'
+        )
+    if not movers_html:
+        movers_html = '<div class="arch2-empty">No PASS verdicts in the last 7 days.</div>'
+
+    # ── ARCHIVE INDEX — every pipeline EA, one compact table ─────
+    n_total = len(ea_agg)
+    n_surv = n_fail = n_pass = 0
+    ea_sorted = sorted(ea_agg.items(), key=lambda kv: kv[1]["last_upd"], reverse=True)
+    idx_rows = ""
+    for ea_id, a in ea_sorted:
+        slug = slug_map.get(ea_id, "")
+        label, scls, fcls = _idx_status(ea_id, a, live_ids)
+        if fcls == "survivor":
+            n_surv += 1
+        elif fcls == "failed":
+            n_fail += 1
+        if a.get("n_pass", 0) > 0:
+            n_pass += 1
+        hp = a.get("hp")
+        best = phase_label(hp) if hp else "—"
+        lv = a.get("last_verdict") or ""
+        lvcls = _VCLS.get(_verdict_family(lv), "v-other")
+        lv_disp = qxx_text(lv) if lv else "—"
+        upd = a.get("last_upd") or ""
+        upd_disp = upd[:19].replace("T", " ") if upd else "—"
+        try:
+            ep = int(dt.datetime.fromisoformat(upd.replace("Z", "+00:00")).timestamp()) if upd else 0
+        except Exception:
+            ep = 0
+        haspass = "1" if a.get("n_pass", 0) > 0 else "0"
+        idx_rows += (
+            f'<tr data-fclass="{fcls}" data-haspass="{haspass}" '
+            f'data-search="{e((ea_id + " " + slug).lower())}" '
+            f'onclick="window.location=\'ea_{e(ea_id)}.html\'">'
+            f'<td class="td-ea"><code>{e(ea_id)}</code></td>'
+            f'<td class="td-slug">{e(slug)}</td>'
+            f'<td><span class="status-chip {scls}">{e(label)}</span></td>'
+            f'<td>{e(best)}</td>'
+            f'<td><span class="{lvcls}">{e(lv_disp)}</span></td>'
+            f'<td data-sort="{ep}">{e(upd_disp)}</td>'
+            f'<td class="idx-link">&rarr;</td>'
+            f'</tr>'
+        )
+
+    badge = render_badge_html()
+    css = ARCHIVE_CSS + ARCHIVE2_CSS + ARCHIVE_V2_CSS
+
+    content = f"""
+<div class="arch2-top">
+  <div>
+    <h1>Strategy <span class="em-text">Archive</span> · Operator</h1>
+    <div class="arch2-sub">Live book, qualification frontier, recent verdicts, and the full EA archive — regenerated hourly from the pipeline database. Every number is parsed from native MetaTrader 5 reports; failed strategies stay published.</div>
   </div>
-  <div class="archive-table-wrap">
-  <table class="archive-table" id="card-table">
-    <thead><tr><th>Card / EA ID</th><th>Slug</th><th>Card state</th><th>Updated</th></tr></thead>
-    <tbody>{card_rows_html}</tbody>
+  {badge}
+</div>
+
+<div class="arch2-chips">
+  <div class="a2chip c-live"><div class="a2chip-num">{len(book_rows)}</div><div class="a2chip-label">Live sleeves</div></div>
+  <div class="a2chip"><div class="a2chip-num">{n_total}</div><div class="a2chip-label">EAs in archive</div></div>
+  <div class="a2chip c-surv"><div class="a2chip-num">{n_surv}</div><div class="a2chip-label">Q07+ survivors</div></div>
+  <div class="a2chip"><div class="a2chip-num">{n_pass}</div><div class="a2chip-label">With a PASS</div></div>
+  <div class="a2chip c-fail"><div class="a2chip-num">{n_fail}</div><div class="a2chip-label">Failed</div></div>
+</div>
+
+<section class="arch2-sec">
+  <div class="sec-head"><span class="sec-kicker">Live Book</span><h2><a class="jrnl-link" href="dxz_journal.html">DXZ · deployed sleeves</a></h2><span class="sec-meta">{book_meta}</span></div>
+  <p class="sec-note">Composition + timeframe from the T_Live preset filenames (NN_Symbol_TF_EA); weights &amp; KPIs from the sealed sunday-final portfolio manifest. "Last verdict" is the most recent pipeline work item for that (EA, symbol).</p>
+  <div class="archive-table-wrap" style="padding:0">
+  <table class="archive-table">
+    <thead><tr><th>#</th><th>EA</th><th>Slug</th><th>Symbol</th><th>TF</th><th class="col-num">Weight</th><th>Last verdict</th><th class="col-num">Trades (bt)</th></tr></thead>
+    <tbody>{lb_rows_html}</tbody>
   </table>
   </div>
-</details>
-"""
+</section>
 
-    return html_head("Strategy Archive", ARCHIVE_CSS + ARCHIVE2_CSS) + f"""
-<div class="archive-hero">
-  <h1>Strategy <span class="em-text">Archive</span></h1>
-  <p class="archive-hero-sub">Every strategy we have ever tested — survivors AND failures. Mechanical rules only, no machine learning. Each candidate must survive a 15-gate evidence pipeline (walk-forward, Monte-Carlo, stress, realistic costs, portfolio fit) before we trade it. Click any row for the full per-gate × per-market evidence trail, parsed from native MT5 reports. Strategies that pass every gate will become available for download/licensing.</p>
-  <div class="archive-chips">
-    <div class="achip c-p8"><div class="achip-num">{counts.get("p8", 0)}</div><div class="achip-label">Q11 PASS</div></div>
-    <div class="achip c-surv"><div class="achip-num">{counts.get("surv", 0)}</div><div class="achip-label">Q05+ survivors</div></div>
-    <div class="achip"><div class="achip-num">{counts.get("active", 0)}</div><div class="achip-label">Active now</div></div>
-    <div class="achip"><div class="achip-num">{counts.get("triage", 0)}</div><div class="achip-label">No graded result yet</div></div>
-    <div class="achip"><div class="achip-num">{counts.get("notstarted", 0)}</div><div class="achip-label">Not started</div></div>
-    <div class="achip c-dead"><div class="achip-num">{counts.get("dead", 0)}</div><div class="achip-label">Dead</div></div>
-    <div class="achip c-card"><div class="achip-num">{counts.get("card_only", 0)}</div><div class="achip-label">Card · not built</div></div>
+<section class="arch2-sec">
+  <div class="sec-head"><span class="sec-kicker">Frontier</span><h2>Qualification frontier</h2><span class="sec-meta">Q07–Q10 open work &amp; passes since {e(data["book_date"])}</span></div>
+  <p class="sec-note">Open (non-terminal) high-gate work items still in flight.</p>
+  <div class="archive-table-wrap" style="padding:0">
+  <table class="archive-table">
+    <thead><tr><th>EA</th><th>Slug</th><th>Symbol</th><th>Phase</th><th>Status</th><th>Updated</th></tr></thead>
+    <tbody>{fo_html}</tbody>
+  </table>
   </div>
-  {death_strip}
-</div>
+  <p class="sec-note" style="margin-top:16px">Q07+ PASS verdicts recorded since the last book ({e(data["book_date"])}).</p>
+  <div class="archive-table-wrap" style="padding:0">
+  <table class="archive-table">
+    <thead><tr><th>EA</th><th>Slug</th><th>Symbol</th><th>Phase</th><th>Verdict</th><th>Updated</th></tr></thead>
+    <tbody>{fp_html}</tbody>
+  </table>
+  </div>
+</section>
 
-<div class="transparency-banner">
-  <strong>Transparency:</strong> this is the live pipeline state, not a marketing selection — failed strategies stay published. Survivors are sorted to the top; click any row for the strategy description, per-gate × per-market backtest evidence, and the original MT5 reports. The research backlog (strategy cards not yet built into EAs) is listed in its own collapsed section below.
-</div>
+<section class="arch2-sec">
+  <div class="sec-head"><span class="sec-kicker">Recent</span><h2>Verdicts · last 7 days</h2><span class="sec-meta"><span class="v-pass">{rv_tot["pass"]}</span> pass / <span class="v-fail">{rv_tot["fail"]}</span> fail / <span class="v-infra">{rv_tot["infra"]}</span> infra · {rv_tot["total"]} graded</span></div>
+  <div class="rv-legend">Each cell: <span class="v-pass">PASS</span> / <span class="v-fail">FAIL</span> / <span class="v-infra">INFRA</span> counts per gate (since {e(data["win_start"])}).</div>
+  <div class="rv-grid">{rv_cells}</div>
+  <p class="sec-note" style="margin-top:6px">Top movers — EAs with the most PASS verdicts this week (badge shows highest gate passed):</p>
+  <div class="movers">{movers_html}</div>
+</section>
 
-<div class="controls">
-  <span class="ctl-label">Filter</span>
-  <select id="f-status">
-    <option value="">All status</option>
-    <option value="s-live">Live</option>
-    <option value="s-flow">In validation</option>
-    <option value="s-dead">Failed</option>
-  </select>
-  <select id="f-phase">
-    <option value="">All phases</option>
-    {''.join(f'<option value="{phase_label(p)}">{phase_label(p)}</option>' for p in PHASE_ORDER)}
-  </select>
-  <input type="search" id="f-search" placeholder="search ea id or slug…">
-  <span class="row-count"><strong id="rc-visible">{len(eas)}</strong> of {len(eas)} EAs</span>
-</div>
+<section class="arch2-sec">
+  <div class="sec-head"><span class="sec-kicker">Archive</span><h2>Full EA index</h2><span class="sec-meta">{n_total} EAs · click any row for the full evidence trail</span></div>
+  <div class="idx-controls">
+    <input type="search" id="idx-search" placeholder="search ea id or slug…">
+    <select id="idx-status">
+      <option value="">All status</option>
+      <option value="live">Live book</option>
+      <option value="survivor">Q07+ survivors</option>
+      <option value="haspass">Has a PASS</option>
+      <option value="failed">Failed</option>
+    </select>
+    <span class="row-count"><strong id="idx-count">{n_total}</strong> of {n_total} EAs</span>
+  </div>
+  <div class="archive-table-wrap" style="padding:0">
+  <table class="archive-table" id="idx-table">
+    <thead><tr>
+      <th data-sc="ea" data-st="text">EA</th>
+      <th data-sc="slug" data-st="text">Slug</th>
+      <th data-sc="status" data-st="text">Status</th>
+      <th data-sc="best" data-st="text">Best gate</th>
+      <th data-sc="verdict" data-st="text">Last verdict</th>
+      <th data-sc="updated" data-st="num">Last activity</th>
+      <th></th>
+    </tr></thead>
+    <tbody>{idx_rows}</tbody>
+  </table>
+  </div>
+</section>
 
-<div class="presets">
-  <span class="preset-label">View</span>
-  <span class="preset active" data-preset="all">All</span>
-  <span class="preset" data-preset="active">Active now</span>
-  <span class="preset" data-preset="survivor">Q05+ survivors</span>
-  <span class="preset" data-preset="triage">No graded result</span>
-  <span class="preset" data-preset="dead">Failed</span>
-  <span class="preset" data-preset="live">Live pipeline only</span>
-  <span class="preset" data-preset="archive">Archive only</span>
-</div>
-<div class="gate-note">"Best exploratory P&amp;L" is the single best result across any gate (often an early discovery run) — it is NOT proof of an edge. "Most advanced gate" is the highest gate with a real PASS. Most strategies fail — that is the system working, and we publish them anyway.</div>
-{cov_panel}
-
-{body}
-
-{cards_html}
-
-<div class="archive-footer">
-  QuantMechanica V5 · regenerated continuously from the live pipeline database ·
+<div class="arch2-foot">
+  QuantMechanica V5 · Strategy Archive v2 · regenerated hourly from the live pipeline database ·
   every metric parsed from native MetaTrader 5 backtest reports — no hand-edited results.
 </div>
-
-<script>
-(function(){{
-  const table = document.getElementById('ea-table');
-  if (!table) return;
-  const tbody = table.tBodies[0];
-  const rows = Array.from(tbody.rows);
-  const filterStatus = document.getElementById('f-status');
-  const filterPhase  = document.getElementById('f-phase');
-  const searchBox    = document.getElementById('f-search');
-  const rcVisible    = document.getElementById('rc-visible');
-
-  let activePreset = 'all';
-  function applyFilters(){{
-    const s = filterStatus.value;
-    const p = filterPhase.value;
-    const q = (searchBox.value || '').toLowerCase().trim();
-    let visible = 0;
-    rows.forEach(r => {{
-      const rs = r.getAttribute('data-status') || '';
-      const rp = r.getAttribute('data-phase') || '';
-      const rq = r.getAttribute('data-search') || '';
-      const rl = (r.getAttribute('data-lanes') || '').split(' ');
-      const hide = (s && rs !== s) || (p && rp !== p) || (q && !rq.includes(q))
-                   || (activePreset !== 'all' && rl.indexOf(activePreset) < 0);
-      r.classList.toggle('row-hidden', hide);
-      if (!hide) visible++;
-    }});
-    rcVisible.textContent = visible;
-  }}
-
-  document.querySelectorAll('.preset').forEach(btn => {{
-    btn.addEventListener('click', () => {{
-      document.querySelectorAll('.preset').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      activePreset = btn.getAttribute('data-preset') || 'all';
-      applyFilters();
-    }});
-  }});
-
-  filterStatus.addEventListener('change', applyFilters);
-  filterPhase.addEventListener('change', applyFilters);
-  searchBox.addEventListener('input', applyFilters);
-
-  // sortable columns
-  let sortCol = null, sortDir = 1;
-  table.querySelectorAll('thead th[data-sort-col]').forEach(th => {{
-    th.addEventListener('click', () => {{
-      const type = th.getAttribute('data-sort-type');
-      const col = th.getAttribute('data-sort-col');
-      if (sortCol === col) sortDir = -sortDir;
-      else {{ sortCol = col; sortDir = 1; }}
-      table.querySelectorAll('thead th').forEach(t => t.classList.remove('sort-asc','sort-desc'));
-      th.classList.add(sortDir === 1 ? 'sort-asc' : 'sort-desc');
-      const cellIdx = th.cellIndex;  // real column index, incl. non-sortable cols
-      const sorted = rows.slice().sort((a, b) => {{
-        const ca = a.cells[cellIdx], cb = b.cells[cellIdx];
-        let va, vb;
-        if (type === 'num') {{
-          va = parseFloat(ca.getAttribute('data-sort') || ca.textContent.replace(/[$,]/g,'')) || 0;
-          vb = parseFloat(cb.getAttribute('data-sort') || cb.textContent.replace(/[$,]/g,'')) || 0;
-          return (va - vb) * sortDir;
-        }} else {{
-          va = ca.textContent.trim().toLowerCase();
-          vb = cb.textContent.trim().toLowerCase();
-          if (va < vb) return -1 * sortDir;
-          if (va > vb) return 1 * sortDir;
-          return 0;
-        }}
-      }});
-      sorted.forEach(r => tbody.appendChild(r));
-    }});
-  }});
-
-  // card reservoir search (independent of the EA table filters)
-  const cardSearch = document.getElementById('card-search');
-  const cardTable = document.getElementById('card-table');
-  const ccVisible = document.getElementById('cc-visible');
-  if (cardSearch && cardTable) {{
-    const cardRows = Array.from(cardTable.tBodies[0].rows);
-    cardSearch.addEventListener('input', () => {{
-      const q = (cardSearch.value || '').toLowerCase().trim();
-      let visible = 0;
-      cardRows.forEach(r => {{
-        const hide = q && !(r.getAttribute('data-search') || '').includes(q);
-        r.classList.toggle('row-hidden', hide);
-        if (!hide) visible++;
-      }});
-      if (ccVisible) ccVisible.textContent = visible;
-    }});
-  }}
-}})();
-</script>
+{ARCHIVE_V2_JS}
+{RENDER_BADGE_JS}
 </body>
 </html>
 """
+    return html_head("Strategy Archive", css) + content
+
 
 
 # ── EA Detail Page ───────────────────────────────────────────────
@@ -4269,7 +4638,11 @@ def render_portfolio(root: Path) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Render strategy_farm dashboards")
     parser.add_argument("--root", default=str(DEFAULT_ROOT))
+    parser.add_argument("--full", action="store_true",
+                        help="Re-render every EA detail page (ignore the incremental watermark).")
     args = parser.parse_args()
+
+    set_render_stamp()  # one RENDERED-badge timestamp for the whole run
 
     root = Path(args.root).resolve()
     dashboards_dir = root / "dashboards"
@@ -4305,44 +4678,131 @@ def main() -> int:
     portfolio_path = dashboards_dir / "portfolio.html"
     portfolio_path.write_text(render_portfolio(root), encoding="utf-8")
 
-    # Per-EA detail pages — skip TRUE card-only EAs (no work_items, no tasks,
-    # only a card on disk). EAs with work_items DO need detail pages even
-    # when they also have a card — the row in strategies.html is clickable
-    # because work_items exist. Pre-PT12 the skip condition was just
-    # (card_state AND task_count==0) which incorrectly suppressed pages for
-    # EAs like QM5_1099 (8 Q02 attempts, no agent_task) → broken links.
+    # Per-EA detail pages — INCREMENTAL (2026-07-19). Historically all ~2500
+    # pages were re-rendered every hour against a 300MB DB and blew the task
+    # time limit, so pages went stale for weeks. Now we only re-render an EA
+    # whose work_items MAX(updated_at) is newer than the last render watermark
+    # (persisted in state/dashboard_render_state.json). A schema bump or --full
+    # forces a full pass so a format change (e.g. the render badge) propagates.
+    #
+    # Skip TRUE card-only EAs (a card on disk, no work_items, no agent task) —
+    # they have no detail page. EAs with work_items always get one so the
+    # clickable archive-index rows never 404.
+    DASH_STATE_SCHEMA = "archive_v2"
     eas = derive_ea_candidates(state["tasks"], root)
-    wi_eas: set[str] = set()
     db_path = root / "state" / "farm_state.sqlite"
+    wi_eas: set[str] = set()
+    wi_watermark: dict[str, str] = {}
     if db_path.exists():
         try:
             with sqlite3.connect(db_path) as _conn:
-                wi_eas = {r[0] for r in _conn.execute("SELECT DISTINCT ea_id FROM work_items")}
+                for _eid, _mx in _conn.execute(
+                        "SELECT ea_id, MAX(updated_at) FROM work_items "
+                        "WHERE ea_id IS NOT NULL GROUP BY ea_id"):
+                    wi_eas.add(_eid)
+                    wi_watermark[_eid] = _mx or ""
         except sqlite3.Error:
             wi_eas = set()
-    detail_count = 0
+
+    state_path = root / "state" / "dashboard_render_state.json"
+    prev_state: dict[str, Any] = {}
+    try:
+        if state_path.exists():
+            prev_state = json.loads(state_path.read_text(encoding="utf-8"))
+    except Exception as exc:  # noqa: BLE001
+        print(f"WARN: could not read {state_path.name}: {exc!r}", file=sys.stderr)
+    prev_times: dict[str, str] = (prev_state.get("ea_render_times")
+                                  if isinstance(prev_state.get("ea_render_times"), dict) else {}) or {}
+    orig_schema = prev_state.get("schema")
+    migrating = orig_schema != DASH_STATE_SCHEMA  # one-time badge/meta format-migration epoch
+
+    global_wm = max([v for v in wi_watermark.values() if v] or [""])
+    counts = {"rendered": 0, "upgraded": 0, "skipped": 0, "failed": 0, "set": 0}
+    new_times: dict[str, str] = {}
     skipped_card_only = 0
+
+    def _persist(schema: Any) -> None:
+        try:
+            state_path.write_text(json.dumps({
+                "schema": schema,
+                "last_render_utc": RENDER_STAMP.get("iso"),
+                "last_mode": "full" if args.full else ("migration" if migrating else "incremental"),
+                "global_watermark": global_wm,
+                "detail_rendered": counts["rendered"],
+                "detail_upgraded": counts["upgraded"],
+                "detail_skipped": counts["skipped"],
+                "detail_set": counts["set"],
+                "ea_render_times": {**prev_times, **new_times},
+            }, indent=0, sort_keys=True), encoding="utf-8")
+        except Exception as exc:  # noqa: BLE001
+            print(f"WARN: could not write {state_path.name}: {exc!r}", file=sys.stderr)
+
     for ea in eas:
-        has_wi = ea["ea_id"] in wi_eas
-        if (ea.get("card_state")
-                and ea.get("task_count", 0) == 0
-                and not has_wi):
+        ea_id = ea["ea_id"]
+        has_wi = ea_id in wi_eas
+        if (ea.get("card_state") and ea.get("task_count", 0) == 0 and not has_wi):
             skipped_card_only += 1
             continue
-        try:
-            d = collect_ea_detail(ea["ea_id"], root)
-            out_path = dashboards_dir / f"ea_{ea['ea_id']}.html"
-            out_path.write_text(render_ea_detail(ea, d, state), encoding="utf-8")
-            detail_count += 1
-        except Exception as exc:
-            print(f"WARN: ea_{ea['ea_id']}.html failed: {exc!r}", file=sys.stderr)
+        counts["set"] += 1
+        out_path = dashboards_dir / f"ea_{ea_id}.html"
+        exists = out_path.exists()
+        # Per-EA source watermark: work_items MAX(updated_at) (task-only EAs use
+        # the merged last_updated). Seed the prior watermark from the page mtime on
+        # a fresh state file so we do not force-rebuild content already current on
+        # disk — only genuinely stale or format-outdated pages get work.
+        src_wm = wi_watermark.get(ea_id) or ea.get("last_updated") or ""
+        prev_wm = prev_times.get(ea_id)
+        if prev_wm is None and exists:
+            prev_wm = _iso_from_mtime(out_path)
+        changed = (bool(args.full) or prev_wm is None or not exists
+                   or (src_wm[:19] > (prev_wm or "")[:19]))
+        if changed:
+            try:
+                d = collect_ea_detail(ea_id, root)
+                page = render_ea_detail(ea, d, state)
+                out_path.write_text(inject_render_badge(page), encoding="utf-8")
+                counts["rendered"] += 1
+                new_times[ea_id] = src_wm
+            except Exception as exc:  # noqa: BLE001 — one bad EA must not kill the run
+                counts["failed"] += 1
+                print(f"WARN: ea_{ea_id}.html failed: {exc!r}", file=sys.stderr)
+                if prev_wm:
+                    new_times[ea_id] = prev_wm
+        elif migrating:
+            # Content current, but the page predates the badge/meta format — cheap
+            # in-place upgrade (no expensive detail rebuild).
+            if _format_upgrade_file(out_path):
+                counts["upgraded"] += 1
+            else:
+                counts["skipped"] += 1
+            new_times[ea_id] = src_wm
+        else:
+            counts["skipped"] += 1
+            new_times[ea_id] = prev_wm or src_wm
+        # Periodic checkpoint: a task-limit kill mid-migration must never wedge
+        # convergence. Schema stays pre-migration until the whole loop finishes.
+        if counts["set"] % 300 == 0:
+            _persist(orig_schema if migrating else DASH_STATE_SCHEMA)
+
+    # Final write flips schema to current → subsequent runs are pure incremental.
+    _persist(DASH_STATE_SCHEMA)
+    detail_rendered = counts["rendered"]
+    detail_upgraded = counts["upgraded"]
+    detail_skipped = counts["skipped"]
+    detail_failed = counts["failed"]
+    detail_set = counts["set"]
 
     summary = {
         "rendered_at": utc_now_iso(),
         "strategies_html": str(strategies_path),
         "portfolio_html": str(portfolio_path),
         "style_css": str(dst_css),
-        "ea_detail_pages": detail_count,
+        "render_mode": "full" if args.full else ("migration" if migrating else "incremental"),
+        "ea_detail_set": detail_set,
+        "ea_detail_rendered": detail_rendered,
+        "ea_detail_upgraded": detail_upgraded,
+        "ea_detail_skipped": detail_skipped,
+        "ea_detail_failed": detail_failed,
         "ea_count": len(eas),
         "source_count": len(state["sources"]),
         "task_count": len(state["tasks"]),
