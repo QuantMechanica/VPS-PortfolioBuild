@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-19T22:07:03.5964631Z",
-    "total":  3360,
+    "generated_at":  "2026-07-19T23:07:03.8995308Z",
+    "total":  3362,
     "items":  [
                   {
                       "slug":  "ath-breakout-atr-trail",
@@ -1532,6 +1532,12 @@
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-07-10T21:16:54.7722264Z"
+                  },
+                  {
+                      "slug":  "xauxag-cmtar_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-19T23:01:26.8396219Z"
                   },
                   {
                       "slug":  "xau-xag-qc_card",
@@ -17534,6 +17540,12 @@
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-07-19T20:40:50.3849682Z"
+                  },
+                  {
+                      "slug":  "QM5_20012_xauxag-cmtar",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-19T23:01:26.8396219Z"
                   },
                   {
                       "slug":  "QM5_2002_nnfx-qqe-trend",
