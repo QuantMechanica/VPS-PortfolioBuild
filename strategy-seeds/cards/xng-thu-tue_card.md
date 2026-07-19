@@ -261,7 +261,7 @@ T_Live manifest, portfolio gate, portfolio admission, or portfolio KPI code.
 |---|---|---|---|
 | G0 Research Intake | 2026-07-19 | APPROVED; R1-R4 PASS | `D:/QM/strategy_farm/artifacts/cards_approved/QM5_20011_xng-thu-tue.md` |
 | Q01 Build Validation | 2026-07-19 | PASS; compile/build-check/spec/guardrails clean | `framework/EAs/QM5_20011_xng-thu-tue/` |
-| Q02 Baseline Screening | 2026-07-19 | ENQUEUED; pending, attempt 0, unclaimed | work item `aa33ca98-bc8a-4015-abc7-24f3f6e5b2ab` |
+| Q02 Baseline Screening | 2026-07-19 | ENQUEUED; pending, attempt 0, unclaimed | `docs/ops/evidence/2026-07-19_qm5_20011_xng_thu_tue_q02_enqueue.md`; work item `aa33ca98-bc8a-4015-abc7-24f3f6e5b2ab` |
 
 ## 16. Lessons Captured
 
