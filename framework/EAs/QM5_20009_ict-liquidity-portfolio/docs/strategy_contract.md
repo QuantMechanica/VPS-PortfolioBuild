@@ -1,4 +1,4 @@
-# QM5_20009 ICT Liquidity Portfolio — frozen research contract v3
+# QM5_20009 ICT Liquidity Portfolio — frozen research contract v4
 
 **EA ID:** 20009  
 **Slug:** `ict-liquidity-portfolio`  
@@ -59,7 +59,7 @@ hypothesis; it must never be described as an official ICT weekly strategy.
   was already touched when eligible, the attempt is void; no later FVG may rescue
   it. On a later tick, Buy triggers only at `Ask <= edge` and Sell only at
   `Bid >= edge`; the EA then rechecks every gate and sends one market order.
-- In frozen v3, the volatility term is **SMA-TR(14)**: the arithmetic mean of
+- In frozen v4, the volatility term is **SMA-TR(14)**: the arithmetic mean of
   the latest 14 causal true ranges at the FVG bar, not Wilder-smoothed ATR.
   Stop padding is `max(2 * observed spread, sl_buffer_atr * SMA-TR(14))` beyond
   the swept extreme. A fixed target must lie beyond entry and meet `min_rr`.
@@ -87,6 +87,17 @@ hypothesis; it must never be described as an official ICT weekly strategy.
   and gate transitions cannot be disproved. Same-budget event/hash drift and
   partial or unreadable persistence fail closed. Tester markers are process-local
   so duplicate tester runs cannot contaminate one another.
+- Arm-time validation applies no server-pending stop-level or quote-to-entry
+  distance because no pending request exists. It checks one atomic quote, an
+  untouched edge and directional stop/target geometry only. At touch, executable
+  entry economics and RR use Ask for buys and Bid for sells; broker SL/TP distance
+  uses the closing side (Bid for buys, Ask for sells). The shared trade layer is
+  explicitly placed in `SEND_ONCE` mode for both tester and live paths, so Requote
+  and Price-Off cannot generate a second `OrderSend`.
+- Position volume is risk-sized at the freshly resolved executable price and then
+  capped to 90% of free margin with `OrderCalcMargin` for that exact market side.
+  Calculation failure returns zero lots; no notional/leverage estimate may rescue
+  the entry.
 
 ## 3. Sleeve A — `INDEX_MSS_FVG_AM`
 
@@ -166,6 +177,9 @@ center to pass the binding baseline, at least 9/13 variants net-profitable, and 
 each axis both neighbors retaining at least 70% of center trade count with net
 PF >= 1.0. The deployed value remains the preregistered center. A failed center
 cannot be rescued by a neighbor without a new contract/version/hash.
+
+Replay depth is not a research dimension and is locked exactly to 2,500 closed M1
+bars for Sleeve A and 10,000 closed M5 bars for Sleeve B.
 
 ## 6. Partitions, holdout and anti-overfit rules
 

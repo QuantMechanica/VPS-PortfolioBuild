@@ -2299,13 +2299,18 @@ void Strategy_ProcessVirtualLimit(const bool allow_trigger)
    ulong out_ticket = 0;
    bool opened = false;
    if(MQLInfoInteger(MQL_TESTER) != 0)
-      opened = QM_TM_OpenPosition(market_request, out_ticket);
+      opened = QM_TM_OpenPosition(market_request,
+                                  out_ticket,
+                                  0,
+                                  0.0,
+                                  QM_TRADE_SEND_ONCE);
    else
       opened = QM_TM_OpenPosition(market_request,
                                   out_ticket,
                                   0,
                                   QM_RISK_MODE_PERCENT,
-                                  scaled_risk_percent);
+                                  scaled_risk_percent,
+                                  QM_TRADE_SEND_ONCE);
    QM_LogEvent(opened ? QM_INFO : QM_WARN,
                "ICT_ENTRY_RESULT",
                StringFormat("{\"opened\":%s,\"ticket\":%I64u,\"budget_key\":%d,\"mode\":%d,\"session\":%d,\"fvg_time\":%I64d,\"intended_limit\":%.8f,\"trigger_quote\":%.8f,\"governor_scale\":%.8f}",

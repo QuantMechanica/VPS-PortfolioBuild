@@ -1,7 +1,7 @@
 # QM5_20009 ict-liquidity-portfolio — Strategy Spec
 
 **EA ID:** QM5_20009  
-**Status:** frozen research build contract v3
+**Status:** frozen research build contract v4
 **Full contract:** `docs/strategy_contract.md`
 
 The binary exposes two mutually exclusive sleeves. Every chart attachment has one
@@ -23,6 +23,12 @@ position management, virtual-intent cancellation, hard flats or framework Friday
 close. The EA never leaves a strategy pending order at the broker: an intent is
 voided at the first session/news/governor violation and becomes a market request
 only on a freshly revalidated Bid/Ask touch.
+
+Arm-time checks never apply server-pending distance rules. At touch, entry/RR uses
+Ask for buys and Bid for sells, while broker stop constraints use Bid for buys and
+Ask for sells. The intent is consumed before an explicit one-shot send; no Requote
+or Price-Off retry is permitted. Lots are capped with `OrderCalcMargin` for the
+actual market side and price.
 
 No performance is asserted here. Qualification requires the frozen DEV/OOS/2026-H1
 partitions, plateau, duplicate, cost/slippage, cross-market, correlation/drawdown,
