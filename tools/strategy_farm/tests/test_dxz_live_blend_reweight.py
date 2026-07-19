@@ -569,6 +569,10 @@ def test_output_guard_and_source_have_no_terminal_control_hooks(tmp_path: Path) 
     blend.validate_output_dir(Path(r"C:\QM\mt5\T_Live_backup\evidence"))
 
 
+def test_evidence_package_disables_git_eol_conversion() -> None:
+    assert blend.EVIDENCE_GITATTRIBUTES.splitlines() == ["* -text", "**/* -text"]
+
+
 def test_proposal_gate_allows_backtest_fallback_for_sparse_live_sleeves() -> None:
     eligible, reasons = blend.proposal_gate(
         deal_evidence_present=True,

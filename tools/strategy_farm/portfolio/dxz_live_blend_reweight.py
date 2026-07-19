@@ -84,6 +84,7 @@ COMMISSION_SOURCE = REPO_ROOT / "tools" / "strategy_farm" / "portfolio" / "commi
 PORTFOLIO_COMMON_SOURCE = (
     REPO_ROOT / "tools" / "strategy_farm" / "portfolio" / "portfolio_common.py"
 )
+EVIDENCE_GITATTRIBUTES = "* -text\n**/* -text\n"
 EPSILON = 1e-12
 
 
@@ -1778,6 +1779,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     }
 
     output_dir.mkdir(parents=True, exist_ok=True)
+    (output_dir / ".gitattributes").write_text(
+        EVIDENCE_GITATTRIBUTES, encoding="utf-8", newline="\n"
+    )
     snapshot_names: list[str] = []
     frozen_dir = output_dir / "frozen_inputs"
     frozen_stream_dir = frozen_dir / "q08_trades"
@@ -1943,7 +1947,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         newline="\n",
     )
     artifact_names = (
-        "manifest_snapshot.json", "invocation_config.json", "deal_export_contract.json",
+        ".gitattributes", "manifest_snapshot.json", "invocation_config.json", "deal_export_contract.json",
         "input_sha256.csv",
         "live_deals_normalized.csv",
         "live_daily_pnl.csv", "sleeve_diagnostics.csv", "oos_folds.csv",
