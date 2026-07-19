@@ -1,3 +1,45 @@
+---
+strategy_id: FTMO-V3-R3-INTRADAY-MOM-2026
+source_id: FTMO_V3_ROLE3_SOURCING_2026-07-19
+ea_id: QM5_20006
+slug: spx-intraday-mom
+type: strategy
+status: DRAFT
+source_citation: "Gao, Lei; Han, Yufeng; Li, Sophia Zhengzi; Zhou, Guofu. (2018). Market intraday momentum. Journal of Financial Economics 129(2), 394-414. DOI 10.1016/j.jfineco.2018.05.009. Net-of-cost replication: Zarattini/Aziz/Barbon (2024), SFI Research Paper N 24-97, SSRN 4824172. Theory: Bogousslavsky (2016), Journal of Finance 71(6), DOI 10.1111/jofi.12480."
+sources:
+  - "Gao/Han/Li/Zhou 2018 JFE (DOI 10.1016/j.jfineco.2018.05.009)"
+  - "Zarattini/Aziz/Barbon 2024 SFI 24-97 (SSRN 4824172)"
+  - "Bogousslavsky 2016 JF (DOI 10.1111/jofi.12480)"
+concepts:
+  - first-half-hour-predicts-last-half-hour
+  - intraday-momentum-with-overnight-gap
+  - infrequent-rebalancing-flow-concentration
+indicators:
+  - session-anchored-returns
+  - atr-14-m30
+target_symbols: [SP500.DWX]
+primary_target_symbols: [SP500.DWX]
+period: M30
+timeframes: [M30]
+expected_trade_frequency: "One decision per US cash session at 22:30 broker, magnitude-filtered, Fridays skipped. Declared 185 trades per year per symbol."
+expected_trades_per_year_per_symbol: 185
+risk_class: medium
+ml_required: false
+single_symbol_only: true
+priority_track: true
+created: 2026-07-19
+created_by: claude-board-advisor
+last_updated: 2026-07-19
+r1_track_record: PASS
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+g0_status: APPROVED
+g0_approval_reasoning: "R1 PASS: peer-reviewed JFE 2018 primary + SFI 2024 net-of-cost replication (Sharpe 1.33 net). R2 PASS: fully mechanical two-timestamp session rule, no discretion. R3 PASS: SP500.DWX M1 real-tick history 2017+ available. R4 PASS: no ML. FTMO V3 Role 3 (OWNER directive 2026-07-19)."
+expected_pf: 1.25
+expected_dd_pct: 8.0
+---
+
 # Strategy Card — SPX Market Intraday Momentum (last half-hour)
 
 > Authored 2026-07-19 by Claude (board-advisor) for FTMO Challenge Book V3, Role 3
@@ -11,10 +53,10 @@
 ## Card Header
 
 ```yaml
-strategy_id: SRC_FTMO_V3_R3_S01
-ea_id: TBD                                   # allocate at APPROVED (registry append + tail-recheck)
+strategy_id: FTMO-V3-R3-INTRADAY-MOM-2026
+ea_id: QM5_20006                             # allocated 2026-07-19 (200xx OWNER-directive series; 20006 free in ea_id_registry + magic_numbers + dirs)
 slug: spx-intraday-mom
-status: DRAFT                                # approve-card AFTER farmctl WIP lands (validator runs through it)
+status: APPROVED                             # g0 approved 2026-07-19 (see frontmatter g0_approval_reasoning)
 created: 2026-07-19
 created_by: Claude (board-advisor)
 last_updated: 2026-07-19
