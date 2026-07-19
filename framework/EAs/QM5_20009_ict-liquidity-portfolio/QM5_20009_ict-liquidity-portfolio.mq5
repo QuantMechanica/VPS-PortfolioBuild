@@ -154,6 +154,19 @@ bool Strategy_SymbolMagicAndTimeframeValid()
    return false;
   }
 
+int Strategy_ExpectedRegistryMagic()
+  {
+   if(_Symbol == "NDX.DWX" && qm_magic_slot_offset == 0)
+      return 200090000;
+   if(_Symbol == "GDAXI.DWX" && qm_magic_slot_offset == 1)
+      return 200090001;
+   if(_Symbol == "GBPUSD.DWX" && qm_magic_slot_offset == 2)
+      return 200090002;
+   if(_Symbol == "EURUSD.DWX" && qm_magic_slot_offset == 5)
+      return 200090005;
+   return -1;
+  }
+
 bool Strategy_NonTesterGovernorConfigValid()
   {
    if(MQLInfoInteger(MQL_TESTER) != 0)
@@ -844,6 +857,17 @@ int OnInit()
                         qm_news_temporal,
                         qm_news_compliance))
       return INIT_FAILED;
+
+   if(QM_FrameworkMagic() != Strategy_ExpectedRegistryMagic())
+     {
+      QM_LogEvent(QM_ERROR,
+                  "ICT_REGISTRY_MAGIC_MISMATCH",
+                  StringFormat("{\"expected\":%d,\"actual\":%d}",
+                               Strategy_ExpectedRegistryMagic(),
+                               QM_FrameworkMagic()));
+      QM_FrameworkShutdown();
+      return INIT_FAILED;
+     }
 
    bool contract_declared = false;
    if(strategy_mode == ICT_MODE_INDEX_MSS_FVG)

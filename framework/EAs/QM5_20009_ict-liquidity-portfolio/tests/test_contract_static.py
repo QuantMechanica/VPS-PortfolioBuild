@@ -64,6 +64,7 @@ class FrozenContractTests(unittest.TestCase):
             '"GDAXI.DWX" && qm_magic_slot_offset == 1',
             '"GBPUSD.DWX" && qm_magic_slot_offset == 2',
             '"EURUSD.DWX" && qm_magic_slot_offset == 5',
+            "return 200090005;",
             "QM_FrameworkDeclareExecutionContract(\n         PERIOD_M1,",
             "QM_FrameworkDeclareExecutionContract(\n         PERIOD_M5,",
         )
