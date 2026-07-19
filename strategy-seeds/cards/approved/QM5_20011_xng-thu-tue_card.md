@@ -56,7 +56,8 @@ proxy for Thursday close. Require the first tradable tick within a locked
 five-minute grace and prime later Friday attaches so they cannot enter.
 Persist the weekly attempt before news gating and submission. Require no
 same-magic position or entry deal, valid closed ATR(20), and spread not above
-2500 points.
+2500 points. Deal-history uncertainty consumes the decision before failing
+closed, so a restart cannot create a recovery entry.
 
 ## 5. Exit Rules
 

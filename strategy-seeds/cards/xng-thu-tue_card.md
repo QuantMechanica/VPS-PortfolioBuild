@@ -127,6 +127,8 @@ later portfolio evidence.
 - Persist the weekly attempt marker before news gating and order submission so
   a news block, restart or broker rejection cannot create a later package that
   week.
+- Treat deal-history selection failure as a consumed weekly decision before
+  failing closed, preventing restart-dependent recovery entries.
 - Require a valid closed-bar ATR and a nonnegative spread no greater than
   `strategy_max_spread_points`.
 - Set one frozen hard stop at `strategy_atr_sl_mult * ATR(strategy_atr_period)`

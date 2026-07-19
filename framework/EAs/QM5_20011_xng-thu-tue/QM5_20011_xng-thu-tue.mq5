@@ -156,7 +156,13 @@ bool Strategy_WeekAlreadyAttempted(const int week_key,
    const datetime history_start =
       decision_bar_time - (datetime)((long)4 * 86400);
    if(history_start <= 0 || !HistorySelect(history_start, TimeCurrent()))
+     {
+      // History uncertainty is itself a consumed weekly decision. Persist it
+      // before failing closed so a restart cannot turn transient history
+      // availability into a later opening-window entry.
+      Strategy_RecordAttemptState(week_key);
       return true;
+     }
 
    const int magic = QM_FrameworkMagic();
    for(int index = HistoryDealsTotal() - 1; index >= 0; --index)

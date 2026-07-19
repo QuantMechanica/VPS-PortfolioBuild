@@ -59,8 +59,9 @@ locked. Changing them creates another strategy rather than a parameter sweep.
 The EA uses the framework D1 bar reader and weekly calendar-period key; it has
 no W1 tester-bar dependency. A fresh attach more than five minutes after the
 Friday boundary primes the framework bar tracker and cannot create a late
-entry. The weekly attempt is persisted before news gating, so a news-blocked
-opening cannot be retried after restart.
+entry. The weekly attempt is persisted before news gating, and history
+uncertainty also consumes the decision, so neither a news block nor transient
+history failure can be retried after restart.
 
 ## 5. Expected Behaviour
 
