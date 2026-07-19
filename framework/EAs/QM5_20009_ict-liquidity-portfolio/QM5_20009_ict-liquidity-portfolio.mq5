@@ -84,6 +84,8 @@ int      g_strategy_replay_budget_key = 0;
 bool     g_strategy_replay_cache_ready = false;
 double   g_strategy_replay_point = 0.0;
 double   g_strategy_replay_tick_size = 0.0;
+int      g_strategy_replay_failure_count = 0;
+datetime g_strategy_replay_retry_not_before = 0;
 ICT_LevelRange g_strategy_index_opening_range;
 ICT_LevelRange g_strategy_fx_previous_week;
 ICT_SequenceResult g_strategy_cached_sequence;
@@ -607,10 +609,40 @@ bool Strategy_ReconstructFx(const MqlRates &rates[],
    return true;
   }
 
+void Strategy_ScheduleReplayRetry()
+  {
+   g_strategy_replay_failure_count =
+      MathMin(g_strategy_replay_failure_count + 1, 16);
+   int retry_bars = 1;
+   const int exponent = MathMin(g_strategy_replay_failure_count - 1, 6);
+   for(int i = 0; i < exponent; ++i)
+      retry_bars *= 2;
+   const int retry_cap = (strategy_mode == ICT_MODE_INDEX_MSS_FVG) ? 60 : 12;
+   retry_bars = MathMin(retry_bars, retry_cap);
+   const datetime anchor = (g_last_closed_bar > 0)
+                           ? g_last_closed_bar
+                           : iTime(_Symbol, (ENUM_TIMEFRAMES)_Period, 1);
+   g_strategy_replay_retry_not_before =
+      (anchor > 0) ? anchor + retry_bars * PeriodSeconds((ENUM_TIMEFRAMES)_Period)
+                   : 0;
+  }
+
+void Strategy_ResetReplayRetry()
+  {
+   g_strategy_replay_failure_count = 0;
+   g_strategy_replay_retry_not_before = 0;
+  }
+
 bool Strategy_Reconstruct(ICT_SequenceResult &result)
   {
+   const int previous_budget_key = g_strategy_replay_budget_key;
+   const int attempted_budget_key = (g_last_closed_bar > 0)
+                                    ? Strategy_BudgetKeyAtTime(g_last_closed_bar)
+                                    : 0;
+   if(attempted_budget_key != previous_budget_key)
+      Strategy_ResetReplayRetry();
    g_strategy_replay_cache_ready = false;
-   g_strategy_replay_budget_key = 0;
+   g_strategy_replay_budget_key = attempted_budget_key;
    g_strategy_closed_rate_count = 0;
    ArrayFree(g_strategy_closed_rates);
    ICT_ResetRange(g_strategy_index_opening_range);
@@ -622,6 +654,7 @@ bool Strategy_Reconstruct(ICT_SequenceResult &result)
      {
       ICT_ResetSequence(result);
       result.outcome = "REPLAY_HISTORY_UNAVAILABLE";
+      Strategy_ScheduleReplayRetry();
       return false;
      }
 
@@ -634,6 +667,7 @@ bool Strategy_Reconstruct(ICT_SequenceResult &result)
      {
       ICT_ResetSequence(result);
       result.outcome = "SYMBOL_PRICE_UNIT_UNAVAILABLE";
+      Strategy_ScheduleReplayRetry();
       return false;
      }
 
@@ -651,7 +685,10 @@ bool Strategy_Reconstruct(ICT_SequenceResult &result)
                                               g_strategy_replay_point,
                                               result);
    if(!reconstructed)
+     {
+      Strategy_ScheduleReplayRetry();
       return false;
+     }
 
    const datetime newest_time =
       g_strategy_closed_rates[g_strategy_closed_rate_count - 1].time;
@@ -661,6 +698,7 @@ bool Strategy_Reconstruct(ICT_SequenceResult &result)
      {
       ICT_ResetSequence(result);
       result.outcome = "REPLAY_BUDGET_MISMATCH";
+      Strategy_ScheduleReplayRetry();
       return false;
      }
 
@@ -686,6 +724,7 @@ bool Strategy_Reconstruct(ICT_SequenceResult &result)
 
    Strategy_CopySequence(result, g_strategy_cached_sequence);
    g_strategy_replay_cache_ready = true;
+   Strategy_ResetReplayRetry();
    return true;
   }
 
@@ -1081,19 +1120,37 @@ bool Strategy_ReconstructCached(const datetime closed_bar,
                                 ICT_SequenceResult &result)
   {
    ICT_ResetSequence(result);
-   if(closed_bar <= 0 || !g_strategy_replay_cache_ready)
+   if(closed_bar <= 0)
      {
       result.outcome = "REPLAY_CACHE_NOT_READY";
       return false;
      }
 
    const int current_budget_key = Strategy_BudgetKeyAtTime(closed_bar);
+   if(!g_strategy_replay_cache_ready)
+     {
+      if(current_budget_key != g_strategy_replay_budget_key)
+         return Strategy_Reconstruct(result); // retry only at a new budget edge.
+      if(g_strategy_replay_retry_not_before > 0 &&
+         closed_bar >= g_strategy_replay_retry_not_before)
+        {
+         QM_LogEvent(QM_WARN,
+                     "ICT_REPLAY_CACHE_RECOVERY",
+                     StringFormat("{\"budget_key\":%d,\"failure_count\":%d}",
+                                  current_budget_key,
+                                  g_strategy_replay_failure_count));
+         return Strategy_Reconstruct(result); // bounded closed-bar backoff recovery.
+        }
+      result.outcome = "REPLAY_CACHE_NOT_READY";
+      return false;
+     }
    if(current_budget_key != g_strategy_replay_budget_key)
       return Strategy_Reconstruct(result); // one full replay at the budget edge.
 
    if(!Strategy_AppendAndAdvanceCache(closed_bar))
      {
-      g_strategy_replay_cache_ready = false; // fail closed; restart rebuilds it.
+      g_strategy_replay_cache_ready = false; // fail closed until bounded recovery.
+      Strategy_ScheduleReplayRetry();
       result.outcome = "REPLAY_CACHE_CONTINUITY_FAILED";
       QM_LogEvent(QM_ERROR,
                   "ICT_INCREMENTAL_CACHE_FAILED",
@@ -1457,6 +1514,17 @@ bool Strategy_ClaimAttempt(const ICT_SequenceResult &signal)
    return true;
   }
 
+bool Strategy_HistoryReadFailed(const ICT_SequenceResult &signal,
+                                const string reason)
+  {
+   QM_LogEvent(QM_ERROR,
+               "ICT_HISTORY_RECONSTRUCTION_FAILED",
+               StringFormat("{\"budget_key\":%d,\"reason\":\"%s\"}",
+                            signal.budget_key,
+                            QM_LoggerEscapeJson(reason)));
+   return false;
+  }
+
 bool Strategy_HistoryBudgetClear(const ICT_SequenceResult &signal)
   {
    const int magic = QM_FrameworkMagic();
@@ -1466,22 +1534,17 @@ bool Strategy_HistoryBudgetClear(const ICT_SequenceResult &signal)
    const datetime now = TimeCurrent();
    const int lookback_days = (strategy_mode == ICT_MODE_INDEX_MSS_FVG) ? 4 : 24;
    if(!HistorySelect(now - lookback_days * 86400, now))
-     {
-      QM_LogEvent(QM_ERROR,
-                  "ICT_HISTORY_RECONSTRUCTION_FAILED",
-                  StringFormat("{\"budget_key\":%d}", signal.budget_key));
-      return false;
-     }
+      return Strategy_HistoryReadFailed(signal, "history_select_failed");
 
    const int order_total = HistoryOrdersTotal();
    if(order_total < 0)
-      return false;
+      return Strategy_HistoryReadFailed(signal, "history_orders_total_invalid");
    for(int i = 0; i < order_total; ++i)
      {
       ResetLastError();
       const ulong ticket = HistoryOrderGetTicket(i);
       if(ticket == 0)
-         return false;
+         return Strategy_HistoryReadFailed(signal, "history_order_ticket_unavailable");
       const string order_symbol = HistoryOrderGetString(ticket, ORDER_SYMBOL);
       const int order_magic = (int)HistoryOrderGetInteger(ticket, ORDER_MAGIC);
       const ENUM_ORDER_TYPE order_type =
@@ -1490,12 +1553,12 @@ bool Strategy_HistoryBudgetClear(const ICT_SequenceResult &signal)
          (datetime)HistoryOrderGetInteger(ticket, ORDER_TIME_SETUP);
       const string order_comment = HistoryOrderGetString(ticket, ORDER_COMMENT);
       if(GetLastError() != 0)
-         return false;
+         return Strategy_HistoryReadFailed(signal, "history_order_properties_unavailable");
       if(order_symbol != _Symbol || order_magic != magic ||
          !Strategy_IsOurPendingType(order_type))
          continue;
       if(setup_time <= 0)
-         return false;
+         return Strategy_HistoryReadFailed(signal, "history_order_setup_time_invalid");
       if(Strategy_BudgetKeyAtTime(setup_time) == signal.budget_key)
         {
          const string expected_comment = Strategy_AttemptHistoryComment(signal);
@@ -1514,13 +1577,13 @@ bool Strategy_HistoryBudgetClear(const ICT_SequenceResult &signal)
 
    const int deal_total = HistoryDealsTotal();
    if(deal_total < 0)
-      return false;
+      return Strategy_HistoryReadFailed(signal, "history_deals_total_invalid");
    for(int i = 0; i < deal_total; ++i)
      {
       ResetLastError();
       const ulong ticket = HistoryDealGetTicket(i);
       if(ticket == 0)
-         return false;
+         return Strategy_HistoryReadFailed(signal, "history_deal_ticket_unavailable");
       const string deal_symbol = HistoryDealGetString(ticket, DEAL_SYMBOL);
       const int deal_magic = (int)HistoryDealGetInteger(ticket, DEAL_MAGIC);
       const ENUM_DEAL_ENTRY entry =
@@ -1528,13 +1591,13 @@ bool Strategy_HistoryBudgetClear(const ICT_SequenceResult &signal)
       const datetime deal_time =
          (datetime)HistoryDealGetInteger(ticket, DEAL_TIME);
       if(GetLastError() != 0)
-         return false;
+         return Strategy_HistoryReadFailed(signal, "history_deal_properties_unavailable");
       if(deal_symbol != _Symbol || deal_magic != magic)
          continue;
       if(entry != DEAL_ENTRY_IN && entry != DEAL_ENTRY_INOUT)
          continue;
       if(deal_time <= 0)
-         return false;
+         return Strategy_HistoryReadFailed(signal, "history_deal_time_invalid");
       if(Strategy_BudgetKeyAtTime(deal_time) == signal.budget_key)
          return false;
      }
@@ -1646,8 +1709,11 @@ bool Strategy_QuoteAllowsFreshLimit(const int direction,
       entry <= 0.0 || stop <= 0.0 || target <= 0.0)
       return false;
 
-   const int stops_level = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
-   const double minimum_distance = MathMax(0.0, (double)stops_level * point);
+   long stops_level = 0;
+   if(!SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL, stops_level) ||
+      stops_level < 0)
+      return false;
+   const double minimum_distance = (double)stops_level * point;
    const double comparison_epsilon = point * 1e-7;
    if(direction > 0)
      {
