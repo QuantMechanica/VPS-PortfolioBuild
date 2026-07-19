@@ -8,9 +8,9 @@ Keeps: summary.json, report.htm, tester.ini, *.set, *.json, *.csv, *.md, *.py
 Deletes: *.log files inside D:/QM/reports/work_items/<id>/
 
 The same raw journals are also copied into top-level ``reports/pipeline*``
-surfaces.  Those directories are convenience inputs only; no pipeline decision
-reads their ``.log`` files.  Pipeline journals are pruned by file age while all
-summary/evidence formats remain untouched.
+surfaces.  Only logs with the MT5 journal layout ``raw/run_*/*.log`` are pruned
+there.  Operational logs elsewhere in those trees and all summary/evidence
+formats remain untouched.
 
 Only touches work_items with status in ('done', 'failed') that were last
 updated before today (active/pending work items are never touched).
@@ -35,6 +35,7 @@ DB_PATH = FARM_ROOT / "state" / "farm_state.sqlite"
 
 TERMINAL_STATES = ("done", "failed")
 PIPELINE_MIN_AGE_DAYS = 1
+PIPELINE_RETENTION_DAYS = 10
 
 
 def discover_pipeline_roots(reports_parent: Path = REPORTS_PARENT) -> list[Path]:
@@ -64,7 +65,7 @@ def prune_pipeline_logs(
     reports_parent: Path = REPORTS_PARENT,
     now: dt.datetime | None = None,
 ) -> dict[str, int]:
-    """Prune only aged ``.log`` files below top-level ``pipeline*`` roots."""
+    """Prune aged MT5 journals below top-level ``pipeline*`` roots."""
 
     if older_than_days < PIPELINE_MIN_AGE_DAYS:
         raise ValueError(
@@ -88,7 +89,12 @@ def prune_pipeline_logs(
     for root in roots:
         try:
             root_resolved = root.resolve(strict=True)
-            logs = root.rglob("*.log")
+            logs = (
+                path
+                for path in root.rglob("*.log")
+                if path.parent.name.lower().startswith("run_")
+                and path.parent.parent.name.lower() == "raw"
+            )
             for log_path in logs:
                 try:
                     resolved_log = log_path.resolve(strict=True)
@@ -136,7 +142,7 @@ def prune_pipeline_logs(
 def prune(
     dry_run: bool,
     older_than_days: int,
-    pipeline_older_than_days: int = PIPELINE_MIN_AGE_DAYS,
+    pipeline_older_than_days: int = PIPELINE_RETENTION_DAYS,
 ) -> None:
     if older_than_days < 0:
         raise ValueError("older_than_days must be non-negative")
@@ -212,8 +218,11 @@ def main() -> None:
     parser.add_argument(
         "--pipeline-older-than-days",
         type=int,
-        default=PIPELINE_MIN_AGE_DAYS,
-        help="Only prune pipeline* logs older than N days; minimum/default: 1.",
+        default=PIPELINE_RETENTION_DAYS,
+        help=(
+            "Only prune pipeline* raw tester journals older than N days; "
+            "minimum: 1, default: 10."
+        ),
     )
     args = parser.parse_args()
     prune(
