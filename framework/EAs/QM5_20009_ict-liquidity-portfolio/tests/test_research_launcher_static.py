@@ -42,9 +42,9 @@ def test_launcher_has_one_fixed_terminal_entrypoint_and_pre_post_fences() -> Non
     assert "terminal64.exe" not in text
     assert "metatester64.exe" not in text
     assert "Start-Process" not in text
-    assert "--receipt', $preReceiptTemporary" in text
+    assert "--receipt', $preReceiptPath" in text
     assert "--postflight-receipt', $preReceiptPath" in text
-    assert text.index("'--receipt', $preReceiptTemporary") < text.index(
+    assert text.index("'--receipt', $preReceiptPath") < text.index(
         "Invoke-QmCapturedProcess -FilePath $pwshPath"
     )
     assert text.index("Invoke-QmCapturedProcess -FilePath $pwshPath") < text.index(
@@ -111,6 +111,19 @@ def test_contract_helper_separates_nonbinding_smoke_from_binding_dev() -> None:
     assert contract["binding"] is False
     assert contract["infrastructure_only"] is True
     assert contract["runs"] == 1
+
+    smoke_two = _pwsh(
+        _module_command(
+            "Get-QmResearchContract -Phase DEV_SMOKE_2022 -Symbol NDX.DWX "
+            "-Timeframe M1 -Variant center -FromDate 2022-01-01 -ToDate 2022-12-31 -Runs 2"
+        ),
+        str(SUPPORT),
+        "unused",
+        "unused",
+        "unused",
+    )
+    assert smoke_two.returncode != 0
+    assert "requires exactly one" in smoke_two.stderr + smoke_two.stdout
 
     invalid = _pwsh(
         _module_command(
@@ -265,10 +278,24 @@ def test_mocked_cost_audit_rejects_duplicate_deal_sequence_drift(tmp_path: Path)
         "$c=Get-Content -Raw $arg2|ConvertFrom-Json -AsHashtable -DateKind String;"
         "$i=Get-Content -Raw $arg3|ConvertFrom-Json -AsHashtable -DateKind String;"
         f"$r=Get-Content -Raw '{reports_path}'|ConvertFrom-Json;"
-        "Assert-QmCostAudit -Audit $a -Contract $c -SetInputs $i -ExpectedReports $r"
+        "$o=Assert-QmCostAudit -Audit $a -Contract $c -SetInputs $i -ExpectedReports $r;"
+        "$o|ConvertTo-Json -Compress -Depth 10"
     )
     valid = _pwsh(command, str(SUPPORT), str(audit_path), str(contract_path), str(inputs_path))
     assert valid.returncode == 0, valid.stdout + valid.stderr
+    assert json.loads(valid.stdout)["pass_candidate"] is True
+
+    audit["reports"][0]["metrics"]["closed_positions"] = 0
+    audit["reports"][0]["same_day_swap_proof"]["status"] = "NOT_APPLICABLE_NO_CLOSED_POSITIONS"
+    audit_path.write_text(json.dumps(audit), encoding="utf-8")
+    valid_fail_evidence = _pwsh(
+        command, str(SUPPORT), str(audit_path), str(contract_path), str(inputs_path)
+    )
+    assert valid_fail_evidence.returncode == 0, valid_fail_evidence.stdout + valid_fail_evidence.stderr
+    observations = json.loads(valid_fail_evidence.stdout)
+    assert observations["pass_candidate"] is False
+    assert "ZERO_TRADES_OBSERVED" in observations["candidate_block_reasons"]
+    assert "SAME_DAY_ZERO_SWAP_PROOF_NOT_PASS" in observations["candidate_block_reasons"]
 
     audit["reports"][1]["identity"]["canonical_deal_sequence_sha256"] = "d" * 64
     audit_path.write_text(json.dumps(audit), encoding="utf-8")
@@ -289,4 +316,3 @@ def test_detached_receipt_hash_binds_atomic_json(tmp_path: Path) -> None:
     actual = hashlib.sha256(receipt.read_bytes()).hexdigest()
     assert binding["sha256"] == actual
     assert Path(f"{receipt}.sha256").read_text(encoding="utf-8").strip() == actual
-

@@ -101,8 +101,8 @@ function Get-QmResearchContract {
         throw "$Phase is CENTER_ONLY"
     }
     if ($binding -and $Runs -ne 2) { throw "Binding $Phase requires exactly two runs" }
-    if (-not $binding -and $Runs -notin @(1, 2)) {
-        throw "DEV_SMOKE_2022 permits one or two infrastructure runs"
+    if (-not $binding -and $Runs -ne 1) {
+        throw "DEV_SMOKE_2022 requires exactly one non-binding infrastructure run"
     }
     return [ordered]@{
         phase = $Phase
@@ -291,6 +291,8 @@ function Assert-QmCostAudit {
     $reports = @($Audit['reports'])
     if ($reports.Count -ne [int]$Contract.runs) { throw 'Cost audit report count drift' }
     $observedPaths = New-Object System.Collections.Generic.List[string]
+    $zeroTradeReports = New-Object System.Collections.Generic.List[string]
+    $sameDayStatuses = New-Object System.Collections.Generic.List[string]
     foreach ($report in $reports) {
         if ($report -isnot [System.Collections.IDictionary] -or [string]$report['status'] -cne 'PASS') {
             throw 'Per-report cost audit did not PASS'
@@ -319,19 +321,32 @@ function Assert-QmCostAudit {
             throw 'Native/simulated commission double-count guard failed'
         }
         Assert-QmInputMapMatchesSet -Actual $header['inputs'] -Expected $SetInputs
-        if ([bool]$Contract.binding -and [int]$metrics['closed_positions'] -le 0) {
-            throw 'Binding research cannot use a zero-trade report'
+        if ([int]$metrics['closed_positions'] -le 0) {
+            $zeroTradeReports.Add([string]$report['report']['path'])
         }
-        if ([bool]$Contract.requires_resolved_cost_axes -and
-            [string]$report['same_day_swap_proof']['status'] -cne 'PASS') {
-            throw 'OOS/HOLDOUT requires resolved same-day zero-swap proof'
-        }
+        $sameDayStatuses.Add([string]$report['same_day_swap_proof']['status'])
         $observedPaths.Add(([System.IO.Path]::GetFullPath([string]$report['report']['path'])).ToLowerInvariant())
     }
     $expectedPaths = @($ExpectedReports | ForEach-Object { ([System.IO.Path]::GetFullPath($_)).ToLowerInvariant() })
     if ([string]::Join('|', @($observedPaths | Sort-Object)) -cne
         [string]::Join('|', @($expectedPaths | Sort-Object))) {
         throw 'Cost audit report paths differ from runner raw artifacts'
+    }
+    $sameDayFailures = @($sameDayStatuses | Where-Object { $_ -cne 'PASS' })
+    $candidateReasons = New-Object System.Collections.Generic.List[string]
+    if (-not [bool]$Contract.binding) { $candidateReasons.Add('NONBINDING_INFRASTRUCTURE_ONLY') }
+    if ($zeroTradeReports.Count -gt 0) { $candidateReasons.Add('ZERO_TRADES_OBSERVED') }
+    if ($sameDayFailures.Count -gt 0) { $candidateReasons.Add('SAME_DAY_ZERO_SWAP_PROOF_NOT_PASS') }
+    return [ordered]@{
+        pass_candidate = (
+            [bool]$Contract.binding -and
+            $zeroTradeReports.Count -eq 0 -and
+            $sameDayFailures.Count -eq 0
+        )
+        candidate_block_reasons = @($candidateReasons)
+        zero_trade_report_paths = @($zeroTradeReports)
+        same_day_swap_statuses = @($sameDayStatuses)
+        adjudication_required = $true
     }
 }
 

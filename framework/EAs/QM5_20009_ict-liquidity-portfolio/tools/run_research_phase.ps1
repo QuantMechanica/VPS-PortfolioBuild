@@ -112,7 +112,7 @@ function Assert-QmToolchainUnchanged {
 $contract = Get-QmResearchContract -Phase $Phase -Symbol $Symbol -Timeframe $Timeframe `
     -Variant $Variant -FromDate $FromDate -ToDate $ToDate -Runs $Runs
 $safeSymbol = $Symbol.Replace('.', '_')
-$setName = 'QM5_20009_{0}_{1}_{2}_{3}.set' -f $safeSymbol, $Timeframe, $contract.kind, $Variant
+$setName = 'QM5_20009_{0}_{1}_{2}_{3}.set' -f $safeSymbol, $Timeframe, ([string]$contract['kind']), $Variant
 $setPath = Join-Path $eaRoot "sets\$setName"
 $setInputs = Read-QmSetInputs -Path $setPath
 
@@ -127,7 +127,6 @@ $runId = '{0}_{1}_{2}_{3}_{4}' -f (
 $receiptDirectory = Join-Path $receiptBase $runId
 New-Item -ItemType Directory -Path $receiptDirectory -ErrorAction Stop | Out-Null
 
-$preReceiptTemporary = Join-Path $receiptDirectory ('.validator_pre.{0}.tmp' -f [guid]::NewGuid().ToString('N'))
 $preReceiptPath = Join-Path $receiptDirectory 'validator_pre.json'
 $postReceiptPath = Join-Path $receiptDirectory 'validator_post.json'
 $runnerResultPath = Join-Path $receiptDirectory 'runner_result.json'
@@ -153,17 +152,6 @@ try {
         '--from', $FromDate,
         '--to', $ToDate
     )
-    $preProcess = Invoke-QmCapturedProcess -FilePath $pythonPath `
-        -Arguments @($validatorArguments + @('--receipt', $preReceiptTemporary)) -WorkingDirectory $repoRoot
-    $preOutput = ConvertFrom-QmProcessJson -ProcessResult $preProcess -Label 'research PRE validator'
-    if ([string]$preOutput['status'] -cne 'PASS' -or
-        -not (Test-Path -LiteralPath $preReceiptTemporary -PathType Leaf)) {
-        throw 'Research PRE validator did not produce a PASS receipt'
-    }
-    [System.IO.File]::Move($preReceiptTemporary, $preReceiptPath, $true)
-    $prePayload = Get-Content -LiteralPath $preReceiptPath -Raw -Encoding utf8 |
-        ConvertFrom-Json -AsHashtable -DateKind String -ErrorAction Stop
-
     $runnerArguments = @(
         '-NoLogo', '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass',
         '-File', $runDev1Path,
@@ -186,7 +174,17 @@ try {
         '-SmokeMode'
     )
 
-    # PRE is deliberately the last operation before the only authorized terminal path.
+    $preProcess = Invoke-QmCapturedProcess -FilePath $pythonPath `
+        -Arguments @($validatorArguments + @('--receipt', $preReceiptPath)) -WorkingDirectory $repoRoot
+    $preOutput = ConvertFrom-QmProcessJson -ProcessResult $preProcess -Label 'research PRE validator'
+    if ([string]$preOutput['status'] -cne 'PASS' -or
+        -not (Test-Path -LiteralPath $preReceiptPath -PathType Leaf)) {
+        throw 'Research PRE validator did not produce a PASS receipt'
+    }
+    $prePayload = $preOutput
+
+    # No mutable-evidence operation occurs between the successful PRE and the
+    # only authorized terminal path below.
     try {
         $runnerProcess = Invoke-QmCapturedProcess -FilePath $pwshPath `
             -Arguments $runnerArguments -WorkingDirectory $repoRoot
@@ -233,7 +231,7 @@ try {
     $summary = Get-Content -LiteralPath $summaryPath -Raw -Encoding utf8 |
         ConvertFrom-Json -AsHashtable -DateKind String -ErrorAction Stop
     $summaryEvidence = Assert-QmResearchSummary -Summary $summary -Contract $contract
-    $reportPaths = [string[]]@($summaryEvidence.reports)
+    $reportPaths = [string[]]@($summaryEvidence['reports'])
 
     $auditArguments = New-Object System.Collections.Generic.List[string]
     $auditArguments.Add($auditPath)
@@ -264,7 +262,7 @@ try {
     [System.IO.File]::Move($costAuditTemporary, $costAuditPath, $true)
     $costAudit = Get-Content -LiteralPath $costAuditPath -Raw -Encoding utf8 |
         ConvertFrom-Json -AsHashtable -DateKind String -ErrorAction Stop
-    Assert-QmCostAudit -Audit $costAudit -Contract $contract -SetInputs $setInputs `
+    $auditObservations = Assert-QmCostAudit -Audit $costAudit -Contract $contract -SetInputs $setInputs `
         -ExpectedReports $reportPaths
 
     $toolchainAfter = Get-QmToolchainBindings
@@ -301,6 +299,9 @@ try {
             separate_recorded_phase_verdict_is_required = $true
             verdict = 'NOT_ADJUDICATED'
             eligible_to_back_later_verdict = [bool]$contract.binding
+            pass_candidate = [bool]$auditObservations['pass_candidate']
+            candidate_block_reasons = $auditObservations['candidate_block_reasons']
+            observed_result_flags = $auditObservations
             infrastructure_only = [bool]$contract.infrastructure_only
             dev_smoke_may_never_satisfy_verdict_gate = [bool]$contract.infrastructure_only
         }
@@ -349,7 +350,7 @@ try {
     }
     throw
 } finally {
-    foreach ($temporary in @($preReceiptTemporary, $costAuditTemporary)) {
+    foreach ($temporary in @($costAuditTemporary)) {
         if (Test-Path -LiteralPath $temporary -PathType Leaf) {
             Remove-Item -LiteralPath $temporary -Force -ErrorAction SilentlyContinue
         }
