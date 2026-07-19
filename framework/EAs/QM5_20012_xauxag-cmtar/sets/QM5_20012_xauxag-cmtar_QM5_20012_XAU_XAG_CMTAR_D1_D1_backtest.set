@@ -1,0 +1,48 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        20012
+; ea_slug:      xauxag-cmtar
+; ea_version:   v5.0
+; set_version:  s20260720-001
+; symbol:       QM5_20012_XAU_XAG_CMTAR_D1
+; host_symbol:  XAUUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    RISK_FIXED
+; portfolio_weight: 1
+; build_hash:   807cf29d629074539773b00554cab058ee85ee72e7c02872de9ebd69c8b0541e
+; author:       Development
+; date:         2026-07-20
+;==========================================================
+qm_ea_id=20012
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; Q02 structural baseline: no external event dependency.
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_mode_legacy=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+; Monthly paired hold authorized by the approved card.
+qm_friday_close_enabled=0
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+; Source-fixed strategy constants.
+strategy_source_intercept=-0.99823
+strategy_source_beta=0.71970
+strategy_mtar_delta_threshold=0.021
+; Q02 baseline parameters.
+strategy_entry_abs_residual=0.010
+strategy_history_bars=120
+strategy_max_endpoint_gap_days=10
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=4.0
+strategy_max_hold_days=40
+strategy_xau_max_spread_pts=1500
+strategy_xag_max_spread_pts=500
+strategy_max_hedge_error_pct=20.0
+strategy_deviation_points=20

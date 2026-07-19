@@ -334,8 +334,8 @@ bool Strategy_LoadMonthEnds(const string symbol,
                                         decision_time, false); // perf-allowed: one strict monthly cutoff lookup.
    if(decision_shift < 0)
       return false;
-   const datetime anchor_time = iTime(symbol, PERIOD_D1,
-                                      decision_shift); // perf-allowed: validate strict cutoff.
+   const datetime anchor_time = iTime(symbol, PERIOD_D1, // perf-allowed: validate strict monthly cutoff.
+                                      decision_shift);
    if(anchor_time <= 0 || anchor_time > decision_time)
       return false;
    const int start_shift = decision_shift +
@@ -343,8 +343,8 @@ bool Strategy_LoadMonthEnds(const string symbol,
 
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
-   const int copied = CopyRates(symbol, PERIOD_D1, start_shift,
-                                strategy_history_bars, rates); // perf-allowed: bounded reconstruction once per month.
+   const int copied = CopyRates(symbol, PERIOD_D1, start_shift, // perf-allowed: bounded reconstruction once per month.
+                                strategy_history_bars, rates);
    if(copied <= 0)
       return false;
 

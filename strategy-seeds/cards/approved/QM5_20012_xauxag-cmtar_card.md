@@ -114,6 +114,8 @@ be removed or inverted in later tuning.
   closes; no MN1-series dependency.
 - Expected frequency: approximately 6-10 completed packages/year, capped at
   one attempt per broker month. Q02 must prove or kill the cadence.
+- Q02 synchronized multi-symbol window: `2018.07.02` through `2024.12.31`;
+  do not extend beyond the validated XAG endpoint or fall back to 2022.
 - Backtest risk mode: `RISK_FIXED=1000`, `RISK_PERCENT=0`,
   `PORTFOLIO_WEIGHT=1`.
 
@@ -123,8 +125,9 @@ be removed or inverted in later tuning.
 
 - Evaluate entries only on the first tradable `XAUUSD.DWX` D1 bar of a new
   broker month.
-- Reconstruct the last two distinct, synchronized XAU and XAG month-end closes
-  from completed D1 bars. Reject stale or mismatched endpoints.
+- Reconstruct the latest two consecutive, synchronized XAU and XAG month-end
+  closes from completed D1 bars. Reject stale, skipped-month, or mismatched
+  endpoints.
 - Calculate `e0` at the just-completed month end and `e1` at the preceding
   month end using the fixed formula above; calculate `delta_e=e0-e1`.
 - Require `delta_e < strategy_mtar_delta_threshold`, locked at `0.021`.
