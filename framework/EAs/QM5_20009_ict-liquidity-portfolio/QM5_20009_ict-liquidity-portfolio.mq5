@@ -89,6 +89,10 @@ datetime g_strategy_replay_retry_not_before = 0;
 ICT_LevelRange g_strategy_index_opening_range;
 ICT_LevelRange g_strategy_fx_previous_week;
 ICT_SequenceResult g_strategy_cached_sequence;
+bool               g_strategy_virtual_limit_active = false;
+datetime           g_strategy_virtual_limit_deadline = 0;
+ICT_SequenceResult g_strategy_virtual_limit_signal;
+QM_EntryRequest    g_strategy_virtual_limit_request;
 
 bool Strategy_IsIntegerStarValue(const int value,
                                  const int low,
@@ -1168,7 +1172,7 @@ bool Strategy_IsOurPendingType(const ENUM_ORDER_TYPE type)
    return type == ORDER_TYPE_BUY_LIMIT || type == ORDER_TYPE_SELL_LIMIT;
   }
 
-bool Strategy_HasPositionOrPending()
+bool Strategy_HasBrokerPositionOrPending()
   {
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
@@ -1193,7 +1197,13 @@ bool Strategy_HasPositionOrPending()
          Strategy_IsOurPendingType((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE)))
          return true;
      }
-   return false;
+    return false;
+  }
+
+bool Strategy_HasPositionOrPending()
+  {
+   return g_strategy_virtual_limit_active ||
+          Strategy_HasBrokerPositionOrPending();
   }
 
 int Strategy_BudgetKeyAtTime(const datetime event_time)
@@ -1464,14 +1474,68 @@ bool Strategy_BindConsumedAttempt(const ICT_SequenceResult &signal)
    return true;
   }
 
-bool Strategy_ClaimAttempt(const ICT_SequenceResult &signal)
+void Strategy_DeletePersistentKeyIfPresent(const string key)
+  {
+   if(GlobalVariableCheck(key))
+      GlobalVariableDel(key);
+  }
+
+void Strategy_DeleteVirtualIntentFields(const ICT_SequenceResult &signal)
+  {
+   if(MQLInfoInteger(MQL_TESTER) != 0)
+      return;
+   const string base = Strategy_AttemptKeyBase(signal);
+   if(base == "")
+      return;
+   Strategy_DeletePersistentKeyIfPresent(base + "_VD");
+   Strategy_DeletePersistentKeyIfPresent(base + "_VP");
+   Strategy_DeletePersistentKeyIfPresent(base + "_VW");
+   Strategy_DeletePersistentKeyIfPresent(base + "_VT");
+   Strategy_DeletePersistentKeyIfPresent(base + "_VX");
+   Strategy_DeletePersistentKeyIfPresent(base + "_VF");
+   GlobalVariablesFlush();
+  }
+
+bool Strategy_PersistVirtualIntentFields(const ICT_SequenceResult &signal,
+                                         const QM_EntryRequest &request,
+                                         const datetime deadline)
+  {
+   const string base = Strategy_AttemptKeyBase(signal);
+   if(base == "" || deadline <= TimeCurrent() ||
+      (signal.direction != 1 && signal.direction != -1) ||
+      request.price <= 0.0 || request.sl <= 0.0 || request.tp <= 0.0 ||
+      signal.fvg_bar_time <= 0)
+      return false;
+
+   // Intent fields are durable before the CONSUMED->SUBMITTED CAS. A crash
+   // before the CAS cannot arm an order; a crash after it can restore exactly
+   // this immutable intent without reconstructing a different opportunity.
+   if(GlobalVariableSet(base + "_VD", (double)signal.direction) == 0 ||
+      GlobalVariableSet(base + "_VP", request.price) == 0 ||
+      GlobalVariableSet(base + "_VW", request.sl) == 0 ||
+      GlobalVariableSet(base + "_VT", request.tp) == 0 ||
+      GlobalVariableSet(base + "_VX", (double)deadline) == 0 ||
+      GlobalVariableSet(base + "_VF", (double)signal.fvg_bar_time) == 0)
+     {
+      QM_LogEvent(QM_ERROR,
+                  "ICT_VIRTUAL_LIMIT_PERSIST_FAILED",
+                  StringFormat("{\"budget_key\":%d}", signal.budget_key));
+      return false;
+     }
+   GlobalVariablesFlush();
+   return true;
+  }
+
+bool Strategy_ClaimAttempt(const ICT_SequenceResult &signal,
+                           const QM_EntryRequest &request,
+                           const datetime deadline)
   {
    if(!Strategy_BindConsumedAttempt(signal))
       return false;
 
-   if(MQLInfoInteger(MQL_TESTER) != 0)
-     {
-      g_tester_attempt_state = ICT_ATTEMPT_SUBMITTED;
+    if(MQLInfoInteger(MQL_TESTER) != 0)
+      {
+       g_tester_attempt_state = ICT_ATTEMPT_SUBMITTED;
       return true;
      }
 
@@ -1487,7 +1551,7 @@ bool Strategy_ClaimAttempt(const ICT_SequenceResult &signal)
                                       stored_level_hash,
                                       stored_reference_hash) ||
       !exists || stored_state != ICT_ATTEMPT_CONSUMED ||
-      !Strategy_AttemptIdentityMatches(signal,
+       !Strategy_AttemptIdentityMatches(signal,
                                        stored_state,
                                        stored_event_time,
                                        stored_level_hash,
@@ -1495,7 +1559,10 @@ bool Strategy_ClaimAttempt(const ICT_SequenceResult &signal)
                                        "submit"))
       return false;
 
-   const string state_key = Strategy_AttemptKeyBase(signal) + "_S";
+   if(!Strategy_PersistVirtualIntentFields(signal, request, deadline))
+      return false;
+
+    const string state_key = Strategy_AttemptKeyBase(signal) + "_S";
    ResetLastError();
    if(!GlobalVariableSetOnCondition(state_key,
                                     (double)ICT_ATTEMPT_SUBMITTED,
