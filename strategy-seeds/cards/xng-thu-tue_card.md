@@ -3,11 +3,11 @@ strategy_id: MEEK-HOELSCHER-XNG-DOW-2023_S03
 source_id: MEEK-HOELSCHER-XNG-DOW-2023
 ea_id: QM5_20011
 slug: xng-thu-tue
-status: DRAFT
+status: APPROVED
 created: 2026-07-19
 created_by: Research
 last_updated: 2026-07-19
-g0_status: PENDING
+g0_status: APPROVED
 source_citation: "Meek, Andrew C. and Hoelscher, Seth A. (2023). Day-of-the-week effect: Petroleum and petroleum products. Cogent Economics & Finance 11(1), 2213876. DOI 10.1080/23322039.2023.2213876."
 source_citations:
   - type: paper
@@ -22,7 +22,7 @@ concepts:
   - "[[concepts/thursday-tuesday-calendar-carry]]"
 indicators:
   - "[[indicators/atr]]"
-strategy_type_flags: [session-close-seasonality, atr-hard-stop, time-stop, long-only]
+strategy_type_flags: [session-close-seasonality, atr-hard-stop, time-stop, long-only, low-frequency]
 markets: [commodities, energy, natural_gas]
 timeframes: [D1]
 primary_target_symbols: [XNGUSD.DWX]
@@ -39,11 +39,12 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q00
+pipeline_phase: Q01
 review_focus: "Falsify the source-explicit weekly Natural Gas calendar carry on the Darwinex CFD proxy; futures/CFD session mapping, weekend gaps, costs, expectancy, and realized correlation are unproven."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
 hard_rules_at_risk: [friday_close, risk_mode_dual, darwinex_native_data_only]
+g0_approval_reasoning: "R1 PASS peer-reviewed open source with exact Section 4 rule; R2 PASS fixed weekly Thursday-close to Tuesday-close lifecycle and ATR hard stop; R3 PASS XNGUSD.DWX D1 registered; R4 PASS deterministic native-data logic with no ML, banned indicators, grid or martingale; sibling return-window overlap disclosed."
 ---
 
 # XNG Thursday-Close to Tuesday-Close Calendar Carry
@@ -78,7 +79,8 @@ bar completes until the first tradable price after the Tuesday D1 bar
 completes. In Darwinex broker-day terms this maps to entry on the opening tick
 of the Friday D1 bar and exit on the opening tick of the Wednesday D1 bar.
 
-The verdict is `NO_EXACT_OR_MECHANIC_DUPLICATE`:
+The verdict is `NO_EXACT_MECHANIC_DUPLICATE` with
+`KNOWN_RETURN_WINDOW_OVERLAP`:
 
 - `QM5_12567_cum-rsi2-commodity` is a conditional RSI(2) pullback above
   SMA(200), exits on RSI recovery or five bars, and normally flattens Friday.
@@ -92,8 +94,13 @@ The verdict is `NO_EXACT_OR_MECHANIC_DUPLICATE`:
   cross-asset baskets use event, price-state or relative-value triggers absent
   from this fixed weekly hold.
 
-The source's combined Thursday-close/Tuesday-close lifecycle is one distinct
-strategy, not a parameter variant of the one-day weekday cards.
+The combined package necessarily contains the Monday D1 long return already
+sampled by pending `QM5_12806` and the Tuesday D1 long return already sampled
+by pending `QM5_12818`. Its incremental exposures are the Friday session,
+weekend gap and persistent multi-day lifecycle. The source's exact combined
+Thursday-close/Tuesday-close rule is therefore a distinct mechanic, but this
+card does not claim decorrelation from those pending siblings before Q02 and
+later portfolio evidence.
 
 ## Markets And Timeframes
 
@@ -197,7 +204,8 @@ locked. Changing any of them creates a new strategy rather than a sweep.
 - [x] Peer-reviewed full source with DOI and exact rule location.
 - [x] `XNGUSD.DWX` D1 data and magic slot 0 are registered/available.
 - [x] Expected frequency exceeds the five-trades/year Q02 floor.
-- [x] Exact and mechanic dedup searches are clean.
+- [x] Exact-mechanic dedup search is clean; partial return-window overlap with
+  pending `QM5_12806`/`QM5_12818` is disclosed.
 - [x] Friday-close exception is explicit and source-required.
 
 ## 12. Framework Alignment
@@ -239,17 +247,18 @@ T_Live manifest, portfolio gate, portfolio admission, or portfolio KPI code.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-19 | initial source-explicit XNG weekly calendar carry | Q00 | DRAFT |
+| v1 | 2026-07-19 | initial source-explicit XNG weekly calendar carry | Q01 | APPROVED |
 
 ## 15. Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
-| G0 Research Intake | 2026-07-19 | PENDING OWNER-directed R1-R4 approval | this card |
+| G0 Research Intake | 2026-07-19 | APPROVED; R1-R4 PASS | `D:/QM/strategy_farm/artifacts/cards_approved/QM5_20011_xng-thu-tue.md` |
 | Q01 Build Validation | - | pending | - |
 | Q02 Baseline Screening | - | pending enqueue | - |
 
 ## 16. Lessons Captured
 
 - 2026-07-19: Source-level dedup must distinguish the combined weekend carry
-  package from already-built single-weekday effects.
+  package from already-built single-weekday effects while disclosing the
+  package's Monday/Tuesday return-window overlap.

@@ -13,9 +13,13 @@ This source is used for deterministic natural-gas weekday cards. `QM5_12818_xng-
 `QM5_20011_xng-thu-tue` extracts the source's separate, explicit composite
 implementation from Section 4: one long package from Thursday close through
 Tuesday close. On Darwinex D1 bars those boundaries map to Friday open and
-Wednesday open. This is not a merge of the one-day cards: the weekend and
-Monday exposure are load-bearing, Friday close is disabled, and one
-restart-safe package is allowed per broker week.
+Wednesday open. This is the paper's source-explicit integrated hold rather
+than an inferred merge of the one-day cards: the weekend and persistent
+multi-day lifecycle are load-bearing, Friday close is disabled, and one
+restart-safe package is allowed per broker week. The package nevertheless
+contains the Monday return window sampled by pending `QM5_12806` and the
+Tuesday return window sampled by pending `QM5_12818`; this known overlap must
+be measured and must not be described as proven decorrelation.
 
 No source performance statistic is imported into QM. Q02 and later phases must validate the Darwinex CFD realization.
 

@@ -28,6 +28,7 @@ CONTRACT = EA_ROOT / "docs" / "strategy_contract.md"
 SPEC = EA_ROOT / "SPEC.md"
 PROTOCOL = EA_ROOT / "docs" / "research_protocol_v2.json"
 GENERATOR = Path(__file__).resolve()
+VALIDATOR = EA_ROOT / "tools" / "validate_research_run.py"
 FRAMEWORK_INCLUDE_ROOT = REPO_ROOT / "framework" / "include"
 
 MARKETS = (
@@ -137,8 +138,13 @@ def _resolve_include(owner: Path, raw_include: str) -> Path | None:
 
 
 @lru_cache(maxsize=1)
-def framework_include_closure() -> tuple[list[dict[str, object]], list[str]]:
-    """Return every repo framework include reached by the EA, plus externals."""
+def repo_include_closure() -> tuple[tuple[Path, ...], tuple[str, ...]]:
+    """Return every resolvable repo include reached by the EA, plus externals.
+
+    Local strategy includes are deliberately part of this closure.  Treating the
+    rules file as a separately hashed leaf would miss inputs (or further local
+    includes) introduced below it.
+    """
 
     visited: set[Path] = set()
     external: set[str] = set()
@@ -149,12 +155,8 @@ def framework_include_closure() -> tuple[list[dict[str, object]], list[str]]:
             if target is None:
                 external.add(raw_include.replace("\\", "/"))
                 continue
-            if not _is_within(target, FRAMEWORK_INCLUDE_ROOT):
-                # The local strategy include is hashed separately as RULES_SOURCE.
-                if target == RULES_SOURCE.resolve():
-                    scan(target)
-                else:
-                    external.add(raw_include.replace("\\", "/"))
+            if not _is_within(target, REPO_ROOT):
+                external.add(raw_include.replace("\\", "/"))
                 continue
             if target in visited:
                 continue
@@ -162,22 +164,50 @@ def framework_include_closure() -> tuple[list[dict[str, object]], list[str]]:
             scan(target)
 
     scan(EA_SOURCE)
+    return (
+        tuple(sorted(visited, key=lambda item: item.as_posix().lower())),
+        tuple(sorted(external)),
+    )
+
+
+@lru_cache(maxsize=1)
+def framework_include_closure() -> tuple[list[dict[str, object]], list[str]]:
+    """Return every transitive framework include reached by the EA."""
+
+    visited, external = repo_include_closure()
     rows = [
         {
             "path": path.relative_to(REPO_ROOT).as_posix(),
             "size": path.stat().st_size,
             "sha256": sha256_file(path),
         }
-        for path in sorted(visited, key=lambda item: item.as_posix().lower())
+        for path in visited
+        if _is_within(path, FRAMEWORK_INCLUDE_ROOT)
     ]
-    return rows, sorted(external)
+    return rows, list(external)
+
+
+@lru_cache(maxsize=1)
+def local_strategy_include_closure() -> list[dict[str, object]]:
+    """Return transitive repo includes outside the shared framework tree."""
+
+    visited, _external = repo_include_closure()
+    return [
+        {
+            "path": path.relative_to(REPO_ROOT).as_posix(),
+            "size": path.stat().st_size,
+            "sha256": sha256_file(path),
+        }
+        for path in visited
+        if not _is_within(path, FRAMEWORK_INCLUDE_ROOT)
+    ]
 
 
 @lru_cache(maxsize=1)
 def visible_input_names() -> list[str]:
-    includes, _external = framework_include_closure()
     sources = [EA_SOURCE]
-    sources.extend(REPO_ROOT / str(row["path"]) for row in includes)
+    includes, _external = repo_include_closure()
+    sources.extend(includes)
     names: list[str] = []
     for source in sources:
         names.extend(INPUT_RE.findall(_read_source(source)))
@@ -236,6 +266,7 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
     ids = [str(item.get("id")) for item in phases]
     required_ids = {
         "DEV",
+        "DEV_SMOKE_2022",
         "OOS_2023_H1",
         "OOS_2023_H2",
         "OOS_2024_H1",
@@ -251,6 +282,22 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
         if phase.get("id") == "DEV":
             if phase.get("allowed_variants") != "ALL_13":
                 raise FreezeError("DEV must allow the complete 13-point OAAT star")
+            continue
+        if phase.get("id") == "DEV_SMOKE_2022":
+            expected_smoke = {
+                "class": "DIAGNOSTIC_SMOKE",
+                "from": "2022-01-01",
+                "to": "2022-12-31",
+                "allowed_symbols": ["NDX.DWX", "GBPUSD.DWX"],
+                "allowed_variants": "CENTER_ONLY",
+                "duplicates": 1,
+                "minimum_trades": 0,
+                "requires_resolved_cost_axes": False,
+                "nonbinding": True,
+                "may_satisfy_phase_verdict_gate": False,
+            }
+            if any(phase.get(key) != value for key, value in expected_smoke.items()):
+                raise FreezeError("DEV_SMOKE_2022 diagnostic contract drifted")
             continue
         if phase.get("allowed_variants") != "CENTER_ONLY":
             raise FreezeError(f"later phase is not center-only: {phase.get('id')}")
@@ -268,6 +315,61 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
         "qm_chartui_corner": 0,
     }:
         raise FreezeError("tester framework input freeze drifted")
+    if tester.get("chartui_override_reason") != (
+        "DISABLED_IN_NONVISUAL_TESTER_FOR_PERFORMANCE; "
+        "NO_SIGNAL_OR_EXECUTION_SEMANTICS"
+    ):
+        raise FreezeError("tester chart UI override is not explicitly justified")
+
+    unlock = protocol.get("phase_unlock")
+    if not isinstance(unlock, Mapping):
+        raise FreezeError("phase unlock policy is missing")
+    expected_priors = {
+        "DEV": [],
+        "DEV_SMOKE_2022": [],
+        "OOS_2023_H1": ["DEV"],
+        "OOS_2023_H2": ["DEV", "OOS_2023_H1"],
+        "OOS_2024_H1": ["DEV", "OOS_2023_H1", "OOS_2023_H2"],
+        "OOS_2024_H2": ["DEV", "OOS_2023_H1", "OOS_2023_H2", "OOS_2024_H1"],
+        "OOS_2025_H1": [
+            "DEV", "OOS_2023_H1", "OOS_2023_H2", "OOS_2024_H1", "OOS_2024_H2"
+        ],
+        "OOS_2025_H2": [
+            "DEV", "OOS_2023_H1", "OOS_2023_H2", "OOS_2024_H1", "OOS_2024_H2",
+            "OOS_2025_H1",
+        ],
+        "RETRO_HOLDOUT_2026_H1": [
+            "DEV", "OOS_2023_H1", "OOS_2023_H2", "OOS_2024_H1", "OOS_2024_H2",
+            "OOS_2025_H1", "OOS_2025_H2",
+        ],
+        "PROSPECTIVE_OPERATIONAL": ["RETRO_HOLDOUT_2026_H1"],
+    }
+    if (
+        unlock.get("enforcement") != "FAIL_CLOSED_DETACHED_VERDICT_RECORDS"
+        or unlock.get("verdict_root") != "D:/QM/reports/dev1/QM5_20009/freeze_v2/verdicts"
+        or unlock.get("record_name_template") != "{phase_id}.verdict.json"
+        or unlock.get("detached_sha256_suffix") != ".sha256"
+        or unlock.get("nonbinding_phases") != ["DEV_SMOKE_2022"]
+        or unlock.get("required_prior_verdicts") != expected_priors
+        or unlock.get("accepted_verdict") != "PASS"
+        or unlock.get("record_schema_version") != 1
+    ):
+        raise FreezeError("phase unlock policy drifted or was weakened")
+    required_record_fields = {
+        "schema_version", "protocol_id", "phase_id", "binding", "verdict",
+        "freeze_inputs_sha256", "manifest_sha256", "evidence_sha256", "completed_utc",
+    }
+    if set(unlock.get("required_record_fields", [])) != required_record_fields:
+        raise FreezeError("phase verdict record schema is incomplete")
+
+    attestation = protocol.get("freeze_attestation")
+    if not isinstance(attestation, Mapping) or attestation != {
+        "method": "DETACHED_SHA256_OF_MANIFEST_AND_EXPLICIT_PATH_LEVEL_EVIDENCE",
+        "manifest_must_not_hash_itself": True,
+        "dynamic_git_head_dependency": False,
+        "phase_unlock_enforcement": "TECHNICALLY_ENFORCED_BY_VALIDATE_RESEARCH_RUN",
+    }:
+        raise FreezeError("freeze attestation is missing or overclaims enforcement")
 
     blockers = protocol.get("qualification_blocking_cost_axes")
     costs = protocol.get("costs")
@@ -304,6 +406,9 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
         "commission_groups_canonical",
         "commission_groups_dev1",
         "registry_execution_contract",
+        "runner_run_smoke",
+        "runner_run_dev1_smoke",
+        "runner_invoke_dev1_smoke_task",
     }
     missing = sorted(required_artifacts - set(artifact_ids))
     if missing:
@@ -488,6 +593,7 @@ def build_freeze_inputs(
     protocol = dict(protocol or load_protocol())
     validate_protocol(protocol)
     includes, external_includes = framework_include_closure()
+    local_includes = local_strategy_include_closure()
     evidence, artifact_paths = evidence_hashes(protocol, evidence_overrides)
     validate_compiled_include_closure(includes, artifact_paths)
     data_files = model4_data_files(protocol, artifact_paths)
@@ -498,6 +604,7 @@ def build_freeze_inputs(
         "spec_sha256": sha256_file(SPEC),
         "protocol_sha256": sha256_file(PROTOCOL),
         "generator_sha256": sha256_file(GENERATOR),
+        "validator_sha256": sha256_file(VALIDATOR),
     }
     return {
         "schema_version": 2,
@@ -506,6 +613,8 @@ def build_freeze_inputs(
         "source_hashes": source_hashes,
         "framework_includes": includes,
         "framework_include_tree_sha256": sha256_bytes(canonical_json_bytes(includes)),
+        "local_strategy_includes": local_includes,
+        "local_strategy_include_tree_sha256": sha256_bytes(canonical_json_bytes(local_includes)),
         "external_compiler_includes": external_includes,
         "evidence_artifacts": evidence,
         "model4_data_files": data_files,
