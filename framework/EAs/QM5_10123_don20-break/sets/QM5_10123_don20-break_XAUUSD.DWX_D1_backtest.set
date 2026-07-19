@@ -31,4 +31,9 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=ea_input_defaults (materialized 2026-07-19 push: setgen param-empty repair)
+strategy_donchian_period=20
+strategy_shorts_enabled=false
+strategy_atr_period=14
+strategy_atr_sl_mult=3.0
+strategy_use_previous_bar_channel=true
