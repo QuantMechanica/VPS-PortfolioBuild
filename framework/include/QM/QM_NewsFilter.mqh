@@ -392,6 +392,11 @@ bool QM_NewsLoadCsv(const string path, int &rows_added)
       return false;
 
    bool first_line = true;
+   int datetime_index = -1;
+   int date_index = -1;
+   int time_index = -1;
+   int currency_index = -1;
+   int impact_index = -1;
    while(!FileIsEnding(handle))
      {
       string line = FileReadString(handle);
@@ -405,27 +410,86 @@ bool QM_NewsLoadCsv(const string path, int &rows_added)
       if(first_line)
         {
          first_line = false;
-         string header0 = QM_NewsUpper(QM_NewsStripQuotes(fields[0]));
-         if(StringFind(header0, "DATE") >= 0 || StringFind(header0, "TIME") >= 0 || StringFind(header0, "UTC") >= 0)
+         bool header_detected = false;
+         const int header_fields = ArraySize(fields);
+         for(int header_index = 0; header_index < header_fields; header_index++)
+           {
+            const string header = QM_NewsUpper(QM_NewsStripQuotes(fields[header_index]));
+            if(header == "DATETIME_UTC" || header == "UTC_DATETIME")
+              {
+               datetime_index = header_index; // Always prefer UTC over local/EET.
+               header_detected = true;
+              }
+            else if(header == "DATETIME" && datetime_index < 0)
+              {
+               datetime_index = header_index;
+               header_detected = true;
+              }
+            else if(header == "DATE")
+              {
+               date_index = header_index;
+               header_detected = true;
+              }
+            else if(header == "TIME" || header == "TIME_UTC")
+              {
+               time_index = header_index;
+               header_detected = true;
+              }
+            else if(header == "CURRENCY")
+              {
+               currency_index = header_index;
+               header_detected = true;
+              }
+            else if(header == "IMPACT")
+              {
+               impact_index = header_index;
+               header_detected = true;
+              }
+           }
+
+         if(header_detected)
+           {
+            // Supported production layouts require a UTC datetime (preferred)
+            // or a legacy date/time pair plus explicit currency and impact.
+            if((datetime_index < 0 && date_index < 0) ||
+               currency_index < 0 || impact_index < 0)
+              {
+               FileClose(handle);
+               return false;
+              }
             continue;
+           }
+
+         // Backward-compatible headerless layout:
+         // date,time,currency,impact.
+         date_index = 0;
+         time_index = 1;
+         currency_index = 2;
+         impact_index = 3;
         }
 
       datetime event_utc = 0;
       bool parsed = false;
-      if(ArraySize(fields) >= 2)
-         parsed = QM_NewsParseDateTimeUTC(QM_NewsStripQuotes(fields[0]) + " " + QM_NewsStripQuotes(fields[1]), event_utc);
-      if(!parsed && ArraySize(fields) >= 1)
-         parsed = QM_NewsParseDateTimeUTC(fields[0], event_utc);
+      const int field_count = ArraySize(fields);
+      if(datetime_index >= 0 && datetime_index < field_count)
+         parsed = QM_NewsParseDateTimeUTC(fields[datetime_index], event_utc);
+      else if(date_index >= 0 && date_index < field_count)
+        {
+         string timestamp = QM_NewsStripQuotes(fields[date_index]);
+         if(time_index >= 0 && time_index < field_count)
+            timestamp += " " + QM_NewsStripQuotes(fields[time_index]);
+         parsed = QM_NewsParseDateTimeUTC(timestamp, event_utc);
+        }
       if(!parsed)
          continue;
 
       string currency = "";
-      if(ArraySize(fields) >= 3)
-         currency = fields[2];
+      if(currency_index >= 0 && currency_index < field_count)
+         currency = fields[currency_index];
 
       string impact = "";
-      if(ArraySize(fields) >= 4)
-         impact = fields[3];
+      if(impact_index >= 0 && impact_index < field_count)
+         impact = fields[impact_index];
 
       if(QM_NewsPushEvent(event_utc, currency, QM_NewsImpactUpper(impact)))
          rows_added++;
