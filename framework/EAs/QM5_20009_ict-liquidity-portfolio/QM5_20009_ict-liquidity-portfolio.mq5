@@ -61,13 +61,21 @@ input string strategy_governor_policy_id   = "";
 input string strategy_challenge_instance_id = "";
 input int    strategy_governor_heartbeat_max_age_seconds = 5;
 
+enum ICT_AttemptPersistenceState
+  {
+   ICT_ATTEMPT_NONE      = 0,
+   ICT_ATTEMPT_CONSUMED  = 1,
+   ICT_ATTEMPT_SUBMITTED = 2
+  };
+
 datetime g_last_closed_bar = 0;
 double   g_strategy_governor_scale = 0.0;
 string   g_strategy_last_governor_block = "";
 datetime g_strategy_last_governor_log = 0;
 string   g_last_reconstruction_signature = "";
-bool     g_tester_attempt_claimed = false;
+int      g_tester_attempt_state = ICT_ATTEMPT_NONE;
 int      g_tester_attempt_budget_key = 0;
+datetime g_tester_attempt_event_time = 0;
 uint     g_tester_attempt_level_hash = 0;
 uint     g_tester_attempt_reference_hash = 0;
 
