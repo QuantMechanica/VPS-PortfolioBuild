@@ -175,6 +175,7 @@ FIELD_ALIASES: dict[str, frozenset[str]] = {
 }
 
 DEALS_SECTION = _alias_set("Deals", "Geschäfte", "Geschaefte", "Abschlüsse", "Abschluesse")
+ORDERS_SECTION = _alias_set("Orders", "Aufträge", "Auftraege")
 
 DEAL_COLUMN_ALIASES: dict[str, frozenset[str]] = {
     "time": _alias_set("Time", "Zeit"),
@@ -273,6 +274,35 @@ def _rows(path: Path) -> list[list[str]]:
     if not parser.rows:
         raise ReportFormatError(f"no HTML table rows in {path}")
     return parser.rows
+
+
+def _settings_rows(rows: Sequence[Sequence[str]]) -> Sequence[Sequence[str]]:
+    """Return only rows before the unique Deals section.
+
+    Deal column names intentionally overlap settings labels (notably Symbol),
+    so header discovery must be scoped instead of taking the first plausible
+    value from the whole document.
+    """
+
+    deal_indices: list[int] = []
+    detail_indices: list[int] = []
+    for index, row in enumerate(rows):
+        nonempty = [cell for cell in row if _clean_text(cell)]
+        if len(nonempty) != 1:
+            continue
+        normalized = _norm(nonempty[0])
+        if normalized in DEALS_SECTION:
+            deal_indices.append(index)
+            detail_indices.append(index)
+        elif normalized in ORDERS_SECTION:
+            detail_indices.append(index)
+    if len(deal_indices) != 1:
+        raise ReportFormatError(
+            f"expected one Deals section, found {len(deal_indices)}"
+        )
+    # Native MT5 puts Orders before Deals.  Both tables contain a Symbol
+    # header, so settings lookup must stop at the first detail table.
+    return rows[: min(detail_indices)]
 
 
 def _field_value(rows: Sequence[Sequence[str]], name: str, *, required: bool = True) -> str | None:
@@ -707,27 +737,30 @@ def audit_report(
             f"raw report SHA-256 drift: {report_sha} != {expected_report_sha256.lower()}"
         )
     rows = _rows(path)
-    expert_raw = str(_field_value(rows, "expert"))
+    settings_rows = _settings_rows(rows)
+    expert_raw = str(_field_value(settings_rows, "expert"))
     expert = _canonical_expert(expert_raw)
     if expert != EXPECTED_EXPERT:
         raise IntegrityError(f"wrong Expert: {expert!r} != {EXPECTED_EXPERT!r}")
-    symbol = str(_field_value(rows, "symbol")).upper()
+    symbol = str(_field_value(settings_rows, "symbol")).upper()
     if symbol not in SUPPORTED_MARKETS:
         raise IntegrityError(f"unsupported QM5_20009 DEV1 Symbol: {symbol!r}")
     market = SUPPORTED_MARKETS[symbol]
-    period_raw = str(_field_value(rows, "period"))
+    period_raw = str(_field_value(settings_rows, "period"))
     timeframe, from_date, to_date = _parse_period(period_raw)
     if timeframe != market["timeframe"]:
         raise IntegrityError(
             f"timeframe mismatch for {symbol}: {timeframe} != {market['timeframe']}"
         )
-    currency = str(_field_value(rows, "currency")).upper()
+    currency = str(_field_value(settings_rows, "currency")).upper()
     if currency != "USD":
         raise IntegrityError(f"cost schedule is USD-only, report Currency is {currency!r}")
-    deposit = _parse_decimal(str(_field_value(rows, "deposit")), "Initial Deposit")
+    deposit = _parse_decimal(
+        str(_field_value(settings_rows, "deposit")), "Initial Deposit"
+    )
     if deposit <= ZERO:
         raise IntegrityError("Initial Deposit must be positive")
-    inputs_raw, inputs = _extract_inputs(rows)
+    inputs_raw, inputs = _extract_inputs(settings_rows)
     header: dict[str, Any] = {
         "expert": expert,
         "expert_raw": expert_raw,
@@ -741,11 +774,17 @@ def audit_report(
     }
     _validate_expected(header, inputs, expected)
 
-    report_net = _parse_decimal(str(_field_value(rows, "net_profit")), "Total Net Profit")
-    report_gross_profit_raw = _field_value(rows, "gross_profit", required=False)
-    report_gross_loss_raw = _field_value(rows, "gross_loss", required=False)
-    report_pf_raw = _field_value(rows, "profit_factor", required=False)
-    report_total_trades_raw = _field_value(rows, "total_trades", required=False)
+    report_net = _parse_decimal(
+        str(_field_value(settings_rows, "net_profit")), "Total Net Profit"
+    )
+    report_gross_profit_raw = _field_value(
+        settings_rows, "gross_profit", required=False
+    )
+    report_gross_loss_raw = _field_value(settings_rows, "gross_loss", required=False)
+    report_pf_raw = _field_value(settings_rows, "profit_factor", required=False)
+    report_total_trades_raw = _field_value(
+        settings_rows, "total_trades", required=False
+    )
     deals = _parse_deals(rows)
 
     if deals[0].kind != "balance" or deals[0].direction or deals[0].symbol:

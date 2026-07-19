@@ -208,7 +208,7 @@
       "qm_chartui_enabled": false,
       "qm_chartui_corner": 0
     },
-    "commission_injection": "TESTER_PROFILE_COMMISSION_PER_LOT; EA_SIM_COMMISSION_MUST_REMAIN_ZERO",
+    "commission_injection": "RAW_TESTER_COMMISSION_ZERO; RUNNER_COMMISSION_OVERRIDES_ZERO; EA_SIM_COMMISSION_ZERO; AUTHORITATIVE_EXTERNAL_DEAL_AUDIT",
     "chartui_override_reason": "DISABLED_IN_NONVISUAL_TESTER_FOR_PERFORMANCE; NO_SIGNAL_OR_EXECUTION_SEMANTICS",
     "duplicate_policy": "IDENTICAL_BINARY_INPUTS_DATA_ENVIRONMENT_AND_SEED"
   },
@@ -224,6 +224,24 @@
     "preflight_rehash_selected_phase_files": true,
     "postflight_rehash_selected_phase_files": true
   },
+  "compiled_source_snapshot_exceptions": [
+    {
+      "path": "framework/include/QM/QM_MagicResolver.mqh",
+      "compiled_git_blob_sha1": "ef17e946f957a0601e3279f02f258a4062fb94a0",
+      "compiled_sha256": "9ca51af0bde4e0b0f775e95aca2af5e4aaaee0154641bac379b87bf7d649f9e3",
+      "policy": "EXACT_COMPILED_PREFIX_PLUS_COLLISION_FREE_FOREIGN_EA_APPEND_ONLY",
+      "target_ea_id": 20009,
+      "target_rows": [
+        [20009, 0, "NDX.DWX", 200090000],
+        [20009, 1, "GDAXI.DWX", 200090001],
+        [20009, 2, "GBPUSD.DWX", 200090002],
+        [20009, 3, "USDJPY.DWX", 200090003],
+        [20009, 4, "XAUUSD.DWX", 200090004],
+        [20009, 5, "EURUSD.DWX", 200090005]
+      ],
+      "dynamic_git_head_dependency": false
+    }
+  ],
   "costs": {
     "spread": {
       "status": "RESOLVED",
@@ -233,34 +251,37 @@
     },
     "commission": {
       "status": "RESOLVED",
-      "gate_model": "MAX_DXZ_FTMO_WORST_CASE_PER_ROUND_TRIP_VOLUME",
+      "gate_model": "DEALWISE_MAX_DXZ_FTMO_PER_SIDE_VOLUME_USD",
+      "execution_model": "RAW_TESTER_ZERO_PLUS_AUTHORITATIVE_EXTERNAL_POSTPROCESSOR",
+      "raw_tester_commission_required": 0.0,
+      "runner_commission_per_lot_required": 0.0,
+      "runner_commission_per_side_native_required": 0.0,
+      "ea_sim_commission_required": 0.0,
+      "double_count_guard": "REJECT_ANY_NONZERO_NATIVE_REPORT_COMMISSION",
+      "rounding": "USD_CENT_HALF_UP_PER_DEAL_SIDE",
+      "authoritative_artifact_id": "report_cost_auditor",
       "symbols": {
         "NDX.DWX": {
-          "dxz_per_side": 2.75,
-          "currency": "USD",
-          "dxz_round_trip": 5.5,
-          "ftmo_round_trip_usd": 0.0
+          "method": "FIXED_USD_PER_SIDE_PER_LOT",
+          "per_side_usd": 2.75
         },
         "GDAXI.DWX": {
-          "dxz_per_side": 2.75,
-          "currency": "EUR",
-          "dxz_round_trip": 5.5,
-          "usd_conversion": "HISTORICAL_AT_DEAL_TIME",
-          "ftmo_round_trip_usd": 0.0
+          "method": "CONSERVATIVE_FIXED_USD_PER_SIDE_PER_LOT",
+          "per_side_usd": 3.5
         },
         "GBPUSD.DWX": {
-          "dxz_per_side": 2.5,
-          "currency": "GBP",
-          "dxz_round_trip": 5.0,
-          "usd_conversion": "HISTORICAL_AT_DEAL_TIME",
-          "ftmo_round_trip_usd": 5.0
+          "method": "MAX_NATIVE_CONVERTED_AND_USD_FLOOR_PER_SIDE_PER_LOT",
+          "native_per_side": 2.5,
+          "native_currency": "GBP",
+          "usd_floor_per_side": 2.5,
+          "conversion": "DEAL_PRICE_BASE_TO_USD"
         },
         "EURUSD.DWX": {
-          "dxz_per_side": 2.5,
-          "currency": "EUR",
-          "dxz_round_trip": 5.0,
-          "usd_conversion": "HISTORICAL_AT_DEAL_TIME",
-          "ftmo_round_trip_usd": 5.0
+          "method": "MAX_NATIVE_CONVERTED_AND_USD_FLOOR_PER_SIDE_PER_LOT",
+          "native_per_side": 2.5,
+          "native_currency": "EUR",
+          "usd_floor_per_side": 2.5,
+          "conversion": "DEAL_PRICE_BASE_TO_USD"
         }
       }
     },
@@ -426,6 +447,11 @@
     {
       "id": "runner_invoke_dev1_smoke_task",
       "path": "framework/scripts/invoke_dev1_smoke_task.ps1",
+      "validation": "NONEMPTY"
+    },
+    {
+      "id": "report_cost_auditor",
+      "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/audit_mt5_report.py",
       "validation": "NONEMPTY"
     },
     {

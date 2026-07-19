@@ -13,6 +13,7 @@ import csv
 import hashlib
 import json
 import re
+import subprocess
 from datetime import date
 from functools import lru_cache
 from pathlib import Path
@@ -30,6 +31,17 @@ PROTOCOL = EA_ROOT / "docs" / "research_protocol_v2.json"
 GENERATOR = Path(__file__).resolve()
 VALIDATOR = EA_ROOT / "tools" / "validate_research_run.py"
 FRAMEWORK_INCLUDE_ROOT = REPO_ROOT / "framework" / "include"
+
+MAGIC_RESOLVER_PATH = "framework/include/QM/QM_MagicResolver.mqh"
+MAGIC_RESOLVER_RELATIVE = "qm/qm_magicresolver.mqh"
+TARGET_MAGIC_ROWS = (
+    (20009, 0, "NDX.DWX", 200090000),
+    (20009, 1, "GDAXI.DWX", 200090001),
+    (20009, 2, "GBPUSD.DWX", 200090002),
+    (20009, 3, "USDJPY.DWX", 200090003),
+    (20009, 4, "XAUUSD.DWX", 200090004),
+    (20009, 5, "EURUSD.DWX", 200090005),
+)
 
 MARKETS = (
     ("NDX.DWX", "M1", 0, 0, "index"),
@@ -464,27 +476,41 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
         raise FreezeError("spread cost contract drifted")
     commission = costs.get("commission")
     expected_commission_symbols = {
-        "NDX.DWX": {
-            "dxz_per_side": 2.75, "currency": "USD", "dxz_round_trip": 5.5,
-            "ftmo_round_trip_usd": 0.0,
-        },
+        "NDX.DWX": {"method": "FIXED_USD_PER_SIDE_PER_LOT", "per_side_usd": 2.75},
         "GDAXI.DWX": {
-            "dxz_per_side": 2.75, "currency": "EUR", "dxz_round_trip": 5.5,
-            "usd_conversion": "HISTORICAL_AT_DEAL_TIME", "ftmo_round_trip_usd": 0.0,
+            "method": "CONSERVATIVE_FIXED_USD_PER_SIDE_PER_LOT",
+            "per_side_usd": 3.5,
         },
         "GBPUSD.DWX": {
-            "dxz_per_side": 2.5, "currency": "GBP", "dxz_round_trip": 5.0,
-            "usd_conversion": "HISTORICAL_AT_DEAL_TIME", "ftmo_round_trip_usd": 5.0,
+            "method": "MAX_NATIVE_CONVERTED_AND_USD_FLOOR_PER_SIDE_PER_LOT",
+            "native_per_side": 2.5,
+            "native_currency": "GBP",
+            "usd_floor_per_side": 2.5,
+            "conversion": "DEAL_PRICE_BASE_TO_USD",
         },
         "EURUSD.DWX": {
-            "dxz_per_side": 2.5, "currency": "EUR", "dxz_round_trip": 5.0,
-            "usd_conversion": "HISTORICAL_AT_DEAL_TIME", "ftmo_round_trip_usd": 5.0,
+            "method": "MAX_NATIVE_CONVERTED_AND_USD_FLOOR_PER_SIDE_PER_LOT",
+            "native_per_side": 2.5,
+            "native_currency": "EUR",
+            "usd_floor_per_side": 2.5,
+            "conversion": "DEAL_PRICE_BASE_TO_USD",
         },
     }
+    expected_commission_contract = {
+        "status": "RESOLVED",
+        "gate_model": "DEALWISE_MAX_DXZ_FTMO_PER_SIDE_VOLUME_USD",
+        "execution_model": "RAW_TESTER_ZERO_PLUS_AUTHORITATIVE_EXTERNAL_POSTPROCESSOR",
+        "raw_tester_commission_required": 0.0,
+        "runner_commission_per_lot_required": 0.0,
+        "runner_commission_per_side_native_required": 0.0,
+        "ea_sim_commission_required": 0.0,
+        "double_count_guard": "REJECT_ANY_NONZERO_NATIVE_REPORT_COMMISSION",
+        "rounding": "USD_CENT_HALF_UP_PER_DEAL_SIDE",
+        "authoritative_artifact_id": "report_cost_auditor",
+        "symbols": expected_commission_symbols,
+    }
     if not isinstance(commission, Mapping) or (
-        commission.get("status") != "RESOLVED"
-        or commission.get("gate_model") != "MAX_DXZ_FTMO_WORST_CASE_PER_ROUND_TRIP_VOLUME"
-        or commission.get("symbols") != expected_commission_symbols
+        commission != expected_commission_contract
     ):
         raise FreezeError("commission cost contract is incomplete or drifted")
     if costs["slippage"].get("required_resolution") != (
@@ -526,6 +552,7 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
         "runner_run_smoke",
         "runner_run_dev1_smoke",
         "runner_invoke_dev1_smoke_task",
+        "report_cost_auditor",
     }
     missing = sorted(required_artifacts - set(artifact_ids))
     if missing:
@@ -685,9 +712,154 @@ def model4_data_files(
     return rows
 
 
+def _git_blob_bytes(object_id: str) -> bytes:
+    """Read one fixed Git blob without consulting the moving working-tree HEAD."""
+
+    if not re.fullmatch(r"[0-9a-f]{40}", object_id):
+        raise FreezeError("compiled source snapshot Git blob id is invalid")
+    try:
+        completed = subprocess.run(
+            ["git", "cat-file", "blob", object_id],
+            cwd=REPO_ROOT,
+            check=False,
+            capture_output=True,
+        )
+    except OSError as exc:
+        raise FreezeError(f"cannot read compiled source snapshot Git blob: {exc}") from exc
+    if completed.returncode != 0:
+        detail = completed.stderr.decode("utf-8", errors="replace").strip()
+        raise FreezeError(f"compiled source snapshot Git blob unavailable: {detail}")
+    return completed.stdout
+
+
+def _magic_resolver_rows_and_skeleton(payload: bytes) -> tuple[
+    tuple[tuple[int, int, str, int], ...], str
+]:
+    """Parse generated registry rows and the invariant resolver implementation.
+
+    The registry generator legitimately appends mappings for unrelated EAs while
+    a research binary is frozen.  The compiled prefix and all executable resolver
+    code must remain exact; only a collision-free foreign-EA suffix is tolerated.
+    """
+
+    try:
+        text = payload.decode("utf-8-sig")
+    except UnicodeDecodeError as exc:
+        raise FreezeError("MagicResolver snapshot is not UTF-8 text") from exc
+    lines = text.splitlines()
+
+    def array_payload(name: str) -> str:
+        matches = [line for line in lines if f"{name}[" in line]
+        if len(matches) != 1 or "=" not in matches[0]:
+            raise FreezeError(f"MagicResolver array is missing or duplicated: {name}")
+        raw = matches[0].split("=", 1)[1].strip()
+        if not raw.startswith("{") or not raw.endswith("};"):
+            raise FreezeError(f"MagicResolver array syntax is invalid: {name}")
+        return raw[1:-2]
+
+    def int_array(name: str) -> list[int]:
+        try:
+            return [int(item.strip()) for item in array_payload(name).split(",")]
+        except ValueError as exc:
+            raise FreezeError(f"MagicResolver integer array is invalid: {name}") from exc
+
+    def string_array(name: str) -> list[str]:
+        try:
+            return next(csv.reader([array_payload(name)], skipinitialspace=True))
+        except (csv.Error, StopIteration) as exc:
+            raise FreezeError(f"MagicResolver string array is invalid: {name}") from exc
+
+    ea_ids = int_array("QM_MAGIC_REG_EA_ID")
+    slots = int_array("QM_MAGIC_REG_SLOT")
+    symbols = string_array("QM_MAGIC_REG_SYMBOL")
+    magics = int_array("QM_MAGIC_REG_MAGIC")
+    lengths = {len(ea_ids), len(slots), len(symbols), len(magics)}
+    if len(lengths) != 1 or not ea_ids:
+        raise FreezeError("MagicResolver generated arrays have inconsistent lengths")
+    rows = tuple(zip(ea_ids, slots, symbols, magics, strict=True))
+    if len({(row[0], row[1]) for row in rows}) != len(rows):
+        raise FreezeError("MagicResolver contains duplicate EA/slot rows")
+    if len({row[3] for row in rows}) != len(rows):
+        raise FreezeError("MagicResolver contains duplicate magic numbers")
+
+    dynamic_prefixes = (
+        "#define QM_MAGIC_REGISTRY_SHA256 ",
+        "#define QM_MAGIC_REGISTRY_ROWS ",
+        "static const int    QM_MAGIC_REG_EA_ID[",
+        "static const int    QM_MAGIC_REG_SLOT[",
+        "static const string QM_MAGIC_REG_SYMBOL[",
+        "static const int    QM_MAGIC_REG_MAGIC[",
+    )
+    skeleton = "\n".join(
+        "<GENERATED_REGISTRY_PAYLOAD>"
+        if line.startswith(dynamic_prefixes)
+        else line
+        for line in lines
+    )
+    return rows, skeleton
+
+
+def _compiled_magic_resolver_row(
+    include: Mapping[str, object],
+    manifest_row: Mapping[str, str],
+    exception: Mapping[str, Any],
+) -> dict[str, object]:
+    expected_exception = {
+        "path": MAGIC_RESOLVER_PATH,
+        "compiled_git_blob_sha1": "ef17e946f957a0601e3279f02f258a4062fb94a0",
+        "compiled_sha256": "9ca51af0bde4e0b0f775e95aca2af5e4aaaee0154641bac379b87bf7d649f9e3",
+        "policy": "EXACT_COMPILED_PREFIX_PLUS_COLLISION_FREE_FOREIGN_EA_APPEND_ONLY",
+        "target_ea_id": 20009,
+        "target_rows": [list(row) for row in TARGET_MAGIC_ROWS],
+        "dynamic_git_head_dependency": False,
+    }
+    if exception != expected_exception:
+        raise FreezeError("compiled MagicResolver snapshot exception drifted")
+
+    compiled = _git_blob_bytes(str(exception["compiled_git_blob_sha1"]))
+    compiled_hash = sha256_bytes(compiled)
+    source_hash = str(manifest_row.get("source_sha256", "")).lower()
+    destination_hash = str(manifest_row.get("destination_sha256", "")).lower()
+    if (
+        compiled_hash != str(exception["compiled_sha256"])
+        or source_hash != compiled_hash
+        or destination_hash != compiled_hash
+    ):
+        raise FreezeError("compiled MagicResolver blob/manifest identity mismatch")
+
+    active_path = REPO_ROOT / MAGIC_RESOLVER_PATH
+    active = active_path.read_bytes()
+    compiled_rows, compiled_skeleton = _magic_resolver_rows_and_skeleton(compiled)
+    active_rows, active_skeleton = _magic_resolver_rows_and_skeleton(active)
+    if active_skeleton != compiled_skeleton:
+        raise FreezeError("MagicResolver executable/static implementation changed after compile")
+    if len(active_rows) < len(compiled_rows) or active_rows[: len(compiled_rows)] != compiled_rows:
+        raise FreezeError("MagicResolver active registry is not an append-only compiled-prefix extension")
+    if tuple(row for row in compiled_rows if row[0] == 20009) != TARGET_MAGIC_ROWS:
+        raise FreezeError("compiled MagicResolver target EA mapping drifted")
+    if tuple(row for row in active_rows if row[0] == 20009) != TARGET_MAGIC_ROWS:
+        raise FreezeError("active MagicResolver target EA mapping drifted")
+    if any(row[0] == 20009 for row in active_rows[len(compiled_rows) :]):
+        raise FreezeError("MagicResolver append-only suffix mutates the target EA")
+
+    frozen = dict(include)
+    frozen.update(
+        {
+            "size": len(compiled),
+            "sha256": compiled_hash,
+            "source_identity": "FIXED_COMPILED_GIT_BLOB",
+            "compiled_git_blob_sha1": str(exception["compiled_git_blob_sha1"]),
+            "active_drift_policy": str(exception["policy"]),
+        }
+    )
+    return frozen
+
+
 def validate_compiled_include_closure(
-    includes: Iterable[Mapping[str, object]], artifact_paths: Mapping[str, Path]
-) -> None:
+    includes: Iterable[Mapping[str, object]],
+    artifact_paths: Mapping[str, Path],
+    protocol: Mapping[str, Any],
+) -> list[dict[str, object]]:
     manifest_path = artifact_paths["compile_include_sync_manifest"]
     with manifest_path.open("r", encoding="utf-8-sig", newline="") as handle:
         manifest_rows = list(csv.DictReader(handle))
@@ -695,6 +867,11 @@ def validate_compiled_include_closure(
         str(row.get("relative_path", "")).replace("\\", "/").lower(): row
         for row in manifest_rows
     }
+    exceptions = protocol.get("compiled_source_snapshot_exceptions")
+    if not isinstance(exceptions, list) or len(exceptions) != 1:
+        raise FreezeError("compiled source snapshot exception contract is missing")
+    exception = exceptions[0]
+    frozen_includes: list[dict[str, object]] = []
     for include in includes:
         repo_path = Path(str(include["path"]))
         try:
@@ -706,8 +883,15 @@ def validate_compiled_include_closure(
             raise FreezeError(f"compiled include manifest lacks active include: {relative}")
         source_hash = str(row.get("source_sha256", "")).lower()
         destination_hash = str(row.get("destination_sha256", "")).lower()
+        if relative == MAGIC_RESOLVER_RELATIVE:
+            frozen_includes.append(_compiled_magic_resolver_row(include, row, exception))
+            continue
         if source_hash != str(include["sha256"]) or destination_hash != source_hash:
             raise FreezeError(f"compiled include differs from active repo include: {relative}")
+        frozen_includes.append(dict(include))
+    if not any(str(row["path"]) == MAGIC_RESOLVER_PATH for row in frozen_includes):
+        raise FreezeError("compiled include closure does not contain MagicResolver")
+    return frozen_includes
 
 
 def build_freeze_inputs(
@@ -716,10 +900,10 @@ def build_freeze_inputs(
 ) -> dict[str, object]:
     protocol = dict(protocol or load_protocol())
     validate_protocol(protocol)
-    includes, external_includes = framework_include_closure()
+    active_includes, external_includes = framework_include_closure()
     local_includes = local_strategy_include_closure()
     evidence, artifact_paths = evidence_hashes(protocol, evidence_overrides)
-    validate_compiled_include_closure(includes, artifact_paths)
+    includes = validate_compiled_include_closure(active_includes, artifact_paths, protocol)
     data_files = model4_data_files(protocol, artifact_paths)
     source_hashes = {
         "ea_sha256": sha256_file(EA_SOURCE),
