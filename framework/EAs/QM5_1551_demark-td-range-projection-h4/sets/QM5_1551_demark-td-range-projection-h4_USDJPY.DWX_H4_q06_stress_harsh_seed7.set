@@ -1,0 +1,36 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1551
+; ea_slug:      demark-td-range-projection-h4
+; ea_version:   v5.0
+; set_version:  s20260719-stress-harsh
+; symbol:       USDJPY.DWX
+; timeframe:    H4
+; environment:  q06_stress_harsh
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-07-19
+;==========================================================
+qm_ea_id=1551
+qm_magic_slot_offset=2
+qm_rng_seed=7
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.1000
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1551_demark-td-range-projection-h4.md
+strategy_td_setup_bars=9
+strategy_td_compare_bars=4
+strategy_setup_window_bars=6
+strategy_d1_sma_period=50
+strategy_atr_period=14
+strategy_atr_sl_mult=1.8
+strategy_spread_atr_mult=0.35
+strategy_tp2_range_mult=2.5
+strategy_pt1_after_bars=6
+strategy_pt1_close_frac=0.75
+strategy_time_stop_bars=18
