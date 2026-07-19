@@ -233,14 +233,13 @@ class P2BaselineTests(unittest.TestCase):
         self.assertEqual(reason, "G1_NO_REAL_TICKS")
 
     def test_derive_verdict_pass_requires_g1_marker(self) -> None:
-        # 50 trades clears the trade floor (max(min_trades, Q02_TRADES_MIN=5)); pf/dd must be
-        # present and passing for a real PASS (the fixture previously omitted them and only
-        # ever failed — silently at the old 150 floor, then at the pf gate).
+        # DL-082 §4: 50 trades clears the trade floor but faces the evidence-
+        # conditional PF floor (floor(50) ~= 1.72) — fixture PF sits above it.
         summary = {
             "result": "PASS",
             "model4_log_marker_detected": True,
             "reason_classes": ["OK"],
-            "runs": [{"total_trades": 50, "profit_factor": 1.5, "drawdown": 5000.0}],
+            "runs": [{"total_trades": 50, "profit_factor": 1.80, "drawdown": 5000.0}],
             "report_dir": "/tmp/report",
         }
         verdict, reason, _ = p2_baseline.derive_verdict(summary, min_trades=20)
@@ -248,17 +247,41 @@ class P2BaselineTests(unittest.TestCase):
         self.assertEqual(reason, "")
 
     def test_derive_verdict_accepts_low_freq_trade_count(self) -> None:
-        # OWNER 2026-06-26: a low-freq edge passing >= 5 trades/yr clears Q02 (here min_trades
-        # is the rate-based 45 = 5/yr * 9y full history; 60 trades > 45 and the old flat 150
-        # floor would have wrongly failed it).
+        # OWNER 2026-06-26: a low-freq edge passing >= 5 trades/yr clears Q02.
+        # DL-082 §4: at N=60 the evidence floor is ~1.64 — fixture PF above it.
         summary = {
             "result": "PASS",
             "model4_log_marker_detected": True,
             "reason_classes": ["OK"],
-            "runs": [{"total_trades": 60, "profit_factor": 1.4, "drawdown": 8000.0}],
+            "runs": [{"total_trades": 60, "profit_factor": 1.70, "drawdown": 8000.0}],
             "report_dir": "/tmp/report",
         }
         verdict, reason, _ = p2_baseline.derive_verdict(summary, min_trades=45)
+        self.assertEqual(verdict, "PASS")
+        self.assertEqual(reason, "")
+
+    def test_derive_verdict_evidence_floor_dl082(self) -> None:
+        # DL-082 §4 contract, both directions of the constant-evidence curve:
+        # thin sample at the old headline FAILS; high-N small-edge PASSES down
+        # to the 1.10 cost-noise bottom.
+        thin = {
+            "result": "PASS",
+            "model4_log_marker_detected": True,
+            "reason_classes": ["OK"],
+            "runs": [{"total_trades": 50, "profit_factor": 1.30, "drawdown": 5000.0}],
+            "report_dir": "/tmp/report",
+        }
+        verdict, reason, _ = p2_baseline.derive_verdict(thin, min_trades=20)
+        self.assertEqual(verdict, "FAIL")
+        self.assertIn("pf_below_q02_floor", reason)
+        dense = {
+            "result": "PASS",
+            "model4_log_marker_detected": True,
+            "reason_classes": ["OK"],
+            "runs": [{"total_trades": 1000, "profit_factor": 1.15, "drawdown": 5000.0}],
+            "report_dir": "/tmp/report",
+        }
+        verdict, reason, _ = p2_baseline.derive_verdict(dense, min_trades=20)
         self.assertEqual(verdict, "PASS")
         self.assertEqual(reason, "")
 

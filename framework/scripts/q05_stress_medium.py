@@ -509,7 +509,17 @@ def run_stress_backtest(*, ea_id: int, ea_expert: str, symbol: str,
     elif pf <= PF_FLOOR:
         verdict, reason = "FAIL", f"pf_below_floor:pf={pf:.3f}:floor={PF_FLOOR}"
     elif dd_pct > DD_PCT_MAX:
-        verdict, reason = "FAIL", f"dd_above_ceiling:dd_pct={dd_pct:.2f}:max={DD_PCT_MAX}"
+        # DL-082 §4 (Spur 2, 2026-07-19): a DD-ceiling breach is no longer an
+        # auto-RETIRE. A weaker-but-diversifying edge can still be book-relevant,
+        # so the (EA, symbol) PARKS for marginal-contribution evaluation instead
+        # of dying here. The distinct verdict FAIL_DD_PORTFOLIO_REVIEW does NOT
+        # cascade to Q06 (it is not a PASS) but is preserved through farmctl's
+        # _derive_phase_runner_verdict pass-through so the park is visible to the
+        # portfolio lane. pf_below_floor / trades_below_floor stay hard FAILs.
+        # The reason keeps the `dd_above_ceiling` diagnostic token; the return
+        # dict carries the measured DD + ceiling for the later evaluator.
+        verdict = "FAIL_DD_PORTFOLIO_REVIEW"
+        reason = f"dd_above_ceiling:dd_pct={dd_pct:.2f}:max={DD_PCT_MAX}"
     else:
         verdict, reason = "PASS", f"pf={pf:.3f}:dd_pct={dd_pct:.2f}"
 
@@ -523,6 +533,7 @@ def run_stress_backtest(*, ea_id: int, ea_expert: str, symbol: str,
         "pf": pf,
         "dd_money": dd_money,
         "dd_pct": dd_pct,
+        "dd_ceiling_pct": DD_PCT_MAX,  # DL-082 §4: park evidence carries measured DD + ceiling
         "trades": trades,
         "exit_code": exit_code,
         "timed_out": timed_out,
@@ -589,7 +600,14 @@ def main() -> int:
     out_dir = ensure_dir(args.report_root / f"QM5_{ea_id}" / "Q05" / evidence_symbol.replace(".", "_"))
     write_json(out_dir / "aggregate.json", res)
     print(f"Q05 {args.ea} {evidence_symbol}: {res['verdict']}  pf={res['pf']}  dd_pct={res['dd_pct']}")
-    return 0 if res["verdict"] == "PASS" else (1 if res["verdict"] == "FAIL" else 3)
+    # FAIL_DD_PORTFOLIO_REVIEW is a strategy verdict (parked for the portfolio
+    # lane), never an infra INVALID — exit like a FAIL so callers keying on the
+    # process exit code do not retry it as a transient fault (DL-082 §4).
+    if res["verdict"] == "PASS":
+        return 0
+    if res["verdict"] in ("FAIL", "FAIL_DD_PORTFOLIO_REVIEW"):
+        return 1
+    return 3
 
 
 if __name__ == "__main__":

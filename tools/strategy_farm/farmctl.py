@@ -1836,7 +1836,8 @@ def _derive_phase_runner_verdict(summary: dict[str, Any], min_trades: int = 5, p
         ):
             return "FAIL", reason or "phase_runner_invalid_gate_result"
         return "INFRA_FAIL", reason or "phase_runner_invalid_report"
-    if verdict_upper in {"FAIL_SOFT", "FAIL_HARD", "PASS_PORTFOLIO", "FAIL_PORTFOLIO", "NEED_MORE_DATA"}:
+    if verdict_upper in {"FAIL_SOFT", "FAIL_HARD", "PASS_PORTFOLIO", "FAIL_PORTFOLIO",
+                         "FAIL_DD_PORTFOLIO_REVIEW", "NEED_MORE_DATA"}:  # DL-082 §4: Q05 DD parks
         return verdict_upper, reason or raw_verdict or "phase_runner_verdict"
     if verdict_upper in {"FAIL", "NO_PASS_BASELINE", "NO_ELIGIBLE_MODE", "MULTI_SEED_FAIL"}:
         return "FAIL", reason or raw_verdict or "phase_runner_fail"

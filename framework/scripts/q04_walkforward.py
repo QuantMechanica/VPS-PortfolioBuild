@@ -38,7 +38,15 @@ if __package__ in (None, ""):
 from framework.scripts._phase_utils import ensure_dir, run_with_launch_fault_retry, utc_now_iso, write_json
 
 GATE_NAME = "Q04"
-COMMISSION_PER_LOT_ROUND_TRIP = 7.00     # USD; locked by Vault Q04 spec
+# DL-082 §2 (OWNER-ratified 2026-07-19): the Q04 cost input is now the per-symbol,
+# per-venue truth in framework/registry/venue_cost_model.json, selectable via
+# --cost-variant / QM_Q04_COST_VARIANT (dxz worst-case default | ftmo | flat7). The
+# flat $7/lot below is retained ONLY as the `flat7` reproduction variant and as the
+# ultimate never-null hard fallback. This is an INPUT correction: fold thresholds and
+# all grading logic below are UNCHANGED.
+COMMISSION_PER_LOT_ROUND_TRIP = 7.00     # USD; legacy flat7 reproduction / hard fallback
+DEFAULT_COST_VARIANT = "dxz"
+COST_VARIANT_ENV = "QM_Q04_COST_VARIANT"
 PF_NET_FLOOR_PER_FOLD = 1.0
 # DL-071 (OWNER-ratified 2026-06-09): PASS_SOFT tier for net-positive-with-variance
 # edges (ORB / structural setups lose in some periods by design). Clean PASS still
@@ -314,7 +322,10 @@ _COMMISSION_MODEL = None
 
 
 def _commission_model():
-    """Lazy-load the shared CommissionModel (single source of truth = live_commission.json)."""
+    """Lazy-load the shared CommissionModel (live_commission.json class model).
+
+    Retained for reference / any downstream import; the DL-082 §2 grading path uses the
+    per-symbol VenueCostModel below."""
     global _COMMISSION_MODEL
     if _COMMISSION_MODEL is None:
         from tools.strategy_farm.portfolio import commission
@@ -322,22 +333,44 @@ def _commission_model():
     return _COMMISSION_MODEL
 
 
-def _ea_side_sim_commission_per_lot(symbol: str) -> float:
-    """Per-class flat commission for the EA-side InpQMSimCommissionPerLot injection.
+def _venue_model():
+    """Lazy-load the per-symbol VenueCostModel (venue_cost_model.json, DL-082 §2)."""
+    from framework.scripts.venue_costs import load_venue_model
+    return load_venue_model()
+
+
+def resolve_cost_variant(cli_value: str | None = None) -> str:
+    """Pick the Q04 cost variant: CLI flag > QM_Q04_COST_VARIANT env > dxz default.
+
+    dxz  = max(DXZ,FTMO) per-symbol worst-case (venue_cost_model.json) — gate default.
+    ftmo = FTMO side incl. $0 indices / $0 energy.
+    flat7 = legacy flat $7/lot round-trip (reproduction only)."""
+    import os
+    from framework.scripts.venue_costs import VALID_VARIANTS
+    value = (cli_value or os.environ.get(COST_VARIANT_ENV) or DEFAULT_COST_VARIANT)
+    value = str(value).strip().lower()
+    if value not in VALID_VARIANTS:
+        print(f"WARN q04: unknown --cost-variant {value!r}; using {DEFAULT_COST_VARIANT}",
+              file=sys.stderr)
+        return DEFAULT_COST_VARIANT
+    return value
+
+
+def _ea_side_sim_commission_per_lot(symbol: str, variant: str = DEFAULT_COST_VARIANT) -> float:
+    """Per-SYMBOL flat commission for the EA-side InpQMSimCommissionPerLot injection.
 
     The fold backtest self-accounts this flat per-lot rate; it is the value the
-    `flat_..._ea_side_fallback` verdict grades on when no per-trade stream exists (~45% of
-    recent FX folds). A blanket $7/lot charged FX ~40% more than reality and over-charged
-    every class. Use the realistic worst-case-{DXZ,FTMO} per-class flat rate from
-    live_commission.json instead (forex $5 / index $5.5 / commodity $0). The primary DL-073
-    grading path already uses the full max(0.5bps*notional, flat) model on the stream; this
-    only makes the FALLBACK consistent with it. OWNER-ratified 2026-06-26. Falls back to the
-    conservative flat constant if the registry / symbol class is unavailable."""
+    EA-side fallback verdict grades on when no per-trade stream exists (~45% of recent
+    FX folds). DL-082 §2 (2026-07-19) replaces the per-CLASS flat (which mis-priced
+    indices — WS30 charged $5.5 vs a real $0.70) with the per-SYMBOL venue figure for
+    the active variant: dxz worst-case, ftmo side, or flat7. The primary grading path
+    (pf_net_from_stream) applies the full %-notional model on the stream; this keeps
+    the FALLBACK consistent with it. A symbol missing/null in the model falls back to
+    the class-conservative value with a WARN (never a silent $0)."""
     try:
-        model = _commission_model()
-        cls = model.symbol_class.get(symbol, model.default_class)
-        return float(model.classes[cls]["flat_per_lot_rt"])
+        return float(_venue_model().per_lot_rt(symbol, variant))
     except Exception:
+        # venue model unavailable -> never-null hard fallback (legacy flat $7/lot).
         return float(COMMISSION_PER_LOT_ROUND_TRIP)
 
 
@@ -362,17 +395,20 @@ def _gross_before_commission(trade: dict) -> float:
 
 
 def pf_net_from_stream(ea_id: int, symbol: str, fold: dict,
+                       variant: str = DEFAULT_COST_VARIANT,
                        model=None) -> tuple[float | None, int, float | None, float | None, list[float]]:
-    """DL-073 grading source: PF-net under the realistic %-notional commission model,
+    """DL-073/DL-082 grading source: PF-net under the per-symbol venue commission model,
     computed post-hoc from the per-trade stream the fold backtest just emitted.
 
-    Returns (pf_net, n_trades, commission_total, gross_total, nets) where `nets` is the
-    list of realistic-net per-trade P&L inside the fold's OOS window (used by the DL-076
-    low-freq pooled verdict). Returns (None, 0, None, None, []) when no usable stream
-    exists (caller falls back to the EA's per-class-flat self-report).
+    `variant` selects the cost input (dxz worst-case default | ftmo | flat7); the
+    thresholds and windowing are unchanged. Returns (pf_net, n_trades, commission_total,
+    gross_total, nets) where `nets` is the list of realistic-net per-trade P&L inside the
+    fold's OOS window (used by the DL-076 low-freq pooled verdict). Returns
+    (None, 0, None, None, []) when no usable stream exists (caller falls back to the EA's
+    per-symbol-flat self-report).
     """
     from framework.scripts.q08_davey import common as q08common
-    model = model or _commission_model()
+    model = model or _venue_model()
     trades = q08common.load_trades_from_log(_q08_trade_stream_path(ea_id, symbol))
     if not trades:
         return None, 0, None, None, []
@@ -391,7 +427,7 @@ def pf_net_from_stream(ea_id: int, symbol: str, fold: dict,
         vol = float(t.get("volume") or 0.0)
         notional = t.get("notional")
         notional = float(notional) if notional not in (None, "") else None
-        cost = model.cost_round_trip(str(t.get("symbol") or symbol), vol, notional)
+        cost = model.cost_round_trip(str(t.get("symbol") or symbol), vol, notional, variant)
         gross = _gross_before_commission(t)
         nets.append(gross - cost)
         cost_total += cost
@@ -553,7 +589,8 @@ def _summary_from_log(log_path: Path) -> Path | None:
 
 def run_fold_via_smoke(*, ea_id: int, ea_expert: str, symbol: str,
                         setfile: Path, fold: dict, report_root: Path,
-                        terminal: str, period: str, timeout_sec: int = 1800) -> dict:
+                        terminal: str, period: str, timeout_sec: int = 1800,
+                        cost_variant: str = DEFAULT_COST_VARIANT) -> dict:
     """Invoke run_smoke.ps1 for a single OOS fold. Returns fold-result dict.
 
     Bridges to the existing MT5 tester harness — the runner doesn't
@@ -574,7 +611,7 @@ def run_fold_via_smoke(*, ea_id: int, ea_expert: str, symbol: str,
     fold_dir.mkdir(parents=True, exist_ok=True)
     fold_set = fold_dir / f"{Path(setfile).stem}_q04comm.set"
     base_text = Path(setfile).read_text(encoding="utf-8", errors="ignore") if Path(setfile).exists() else ""
-    sim_comm_per_lot = _ea_side_sim_commission_per_lot(symbol)
+    sim_comm_per_lot = _ea_side_sim_commission_per_lot(symbol, cost_variant)
     if "InpQMSimCommissionPerLot" not in base_text:
         base_text = base_text.rstrip("\r\n") + f"\r\nInpQMSimCommissionPerLot={sim_comm_per_lot}\r\n"
     fold_set.write_text(base_text, encoding="utf-8")
@@ -637,17 +674,18 @@ def run_fold_via_smoke(*, ea_id: int, ea_expert: str, symbol: str,
     invalid_reason = summary_invalid_reason(summary_path) if summary_path.exists() else None
     report_pf, report_trades = parse_pf_from_report_summary(summary_path) if summary_path.exists() else (None, 0)
 
-    # DL-073: grade from the realistic %-notional model applied post-hoc to the per-trade
-    # stream this fold just emitted (preferred). Fall back to the EA's self-report (now graded
-    # at the realistic per-class flat rate, not a blanket $7) only when the stream is
-    # unavailable (older EA / stream skipped).
-    pf_net, trades, comm_total, gross_total, oos_nets = pf_net_from_stream(ea_id, symbol, fold)
-    commission_basis = "worst_case_dxz_ftmo_notional"
+    # DL-082 §2: grade from the per-symbol venue model applied post-hoc to the per-trade
+    # stream this fold just emitted (preferred), under the active cost variant. Fall back to
+    # the EA's self-report (now graded at the per-SYMBOL venue flat rate) only when the
+    # stream is unavailable (older EA / stream skipped).
+    pf_net, trades, comm_total, gross_total, oos_nets = pf_net_from_stream(
+        ea_id, symbol, fold, cost_variant)
+    commission_basis = f"venue_{cost_variant}_stream"
     if pf_net is None:
         pf_net, trades, comm_total = read_pf_net_from_ea(ea_id, symbol)
         gross_total = None
-        oos_nets = []  # per-class flat fallback has no per-trade stream → no low-freq pooling
-        commission_basis = "flat_per_class_ea_side_fallback"
+        oos_nets = []  # per-symbol flat fallback has no per-trade stream → no low-freq pooling
+        commission_basis = f"venue_{cost_variant}_ea_side_flat"
 
     pf_net, trades, commission_basis, report_guard_reason = guard_pf_net_against_report_summary(
         pf_net=pf_net,
@@ -673,6 +711,8 @@ def run_fold_via_smoke(*, ea_id: int, ea_expert: str, symbol: str,
         "trades": trades,
         "sim_commission_total": comm_total,
         "gross_total": gross_total,
+        "cost_variant": cost_variant,
+        "commission_per_lot_used": sim_comm_per_lot,
         "commission_basis": commission_basis,
         "report_pf": report_pf,
         "report_trades": report_trades,
@@ -703,7 +743,11 @@ def main() -> int:
     ap.add_argument("--latest-full-year", type=int, default=2025,
                     help="Last closed calendar year (excludes folds past this)")
     ap.add_argument("--timeout-sec", type=int, default=1800)
+    ap.add_argument("--cost-variant", choices=("dxz", "ftmo", "flat7"), default=None,
+                    help=("Cost input (DL-082 §2): dxz worst-case [default] | ftmo | "
+                          f"flat7 legacy. If omitted, uses ${COST_VARIANT_ENV} env or dxz."))
     args = ap.parse_args()
+    cost_variant = resolve_cost_variant(args.cost_variant)
 
     ea_match = re.match(r"QM5_(\d+)_?", args.ea)
     if not ea_match:
@@ -722,8 +766,12 @@ def main() -> int:
 
     folds = folds_for_year(args.latest_full_year)
     label = evidence_symbol if evidence_symbol == runner_symbol else f"{evidence_symbol} via {runner_symbol}"
+    venue = _venue_model()
+    per_lot_used = venue.per_lot_rt(runner_symbol, cost_variant)
+    cost_source = venue.source_tag()
     print(f"Q04 {args.ea} {label} {period}  expert={ea_expert}  folds={[f['id'] for f in folds]}  "
-          f"comm=realistic %-notional worst-case{{DXZ,FTMO}} (DL-073; flat ${COMMISSION_PER_LOT_ROUND_TRIP}/lot fallback)")
+          f"cost-variant={cost_variant} ({cost_source}; {runner_symbol} "
+          f"${per_lot_used:.2f}/lot headline; DL-082 §2)")
 
     fold_results: list[dict] = []
     for fold in folds:
@@ -733,6 +781,7 @@ def main() -> int:
             setfile=args.setfile, fold=fold,
             report_root=args.report_root, terminal=args.terminal,
             period=period, timeout_sec=args.timeout_sec,
+            cost_variant=cost_variant,
         )
         pf_str = f"{res['pf_net']:.3f}" if res.get("pf_net") is not None else "n/a"
         print(f"    -> PF-net={pf_str}  trades={res['trades']}  status={res['status']}")
@@ -755,8 +804,8 @@ def main() -> int:
             reason = f"{reason} || lowfreq:{lowfreq_verdict}:{lowfreq_reason}"
 
     out_dir = ensure_dir(args.report_root / f"QM5_{ea_id}" / "Q04" / evidence_symbol)
-    # DL-073: report the basis actually used across folds (notional model unless a fold
-    # had to fall back to the flat-$7 self-report).
+    # DL-082 §2: report the basis actually used across folds (venue stream model unless a
+    # fold had to fall back to the per-symbol EA-side flat self-report).
     bases = sorted({f.get("commission_basis") for f in fold_results if f.get("commission_basis")})
     write_json(out_dir / "aggregate.json", {
         "phase": GATE_NAME,
@@ -764,7 +813,11 @@ def main() -> int:
         "ea": args.ea,
         "symbol": evidence_symbol,
         "runner_symbol": runner_symbol,
-        "commission_model": "worst_case_dxz_ftmo_notional (DL-073)",
+        # DL-082 §2 evidence provenance (per run):
+        "cost_variant": cost_variant,
+        "commission_per_lot_used": per_lot_used,
+        "source": cost_source,   # "venue_cost_model.json <generated ts>"
+        "commission_model": f"venue_cost_model.json[{cost_variant}] (DL-082 §2)",
         "commission_basis": bases,
         "commission_per_lot_round_trip_fallback": COMMISSION_PER_LOT_ROUND_TRIP,
         "verdict": verdict,
