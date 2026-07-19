@@ -126,8 +126,8 @@ be removed or inverted in later tuning.
 - Evaluate entries only on the first tradable `XAUUSD.DWX` D1 bar of a new
   broker month.
 - Reconstruct the latest two consecutive, synchronized XAU and XAG month-end
-  closes from completed D1 bars. Reject stale, skipped-month, or mismatched
-  endpoints.
+  closes from completed D1 bars. Require the exact same D1 endpoint timestamp
+  on both legs; reject stale, skipped-month, or mismatched endpoints.
 - Calculate `e0` at the just-completed month end and `e1` at the preceding
   month end using the fixed formula above; calculate `delta_e=e0-e1`.
 - Require `delta_e < strategy_mtar_delta_threshold`, locked at `0.021`.
@@ -137,7 +137,8 @@ be removed or inverted in later tuning.
   BUY XAG.
 - Target XAU:XAG dollar notionals of exactly `0.71970:1` before lot rounding.
   Compute both lots jointly so total ATR-stop risk does not exceed the one
-  framework risk budget; reject post-rounding hedge error above the cap.
+  framework risk budget; reject post-rounding or actual-filled hedge error
+  above the cap.
 - Record the monthly attempt before order submission. If either leg fails,
   close the other leg immediately and do not retry that month.
 
@@ -146,8 +147,8 @@ be removed or inverted in later tuning.
 - At the next broker-month boundary, close both legs before evaluating a new
   package. If the new signal remains eligible, it may open one freshly sized
   package for the new monthly observation.
-- Close both legs immediately if package composition or direction is invalid,
-  or if one leg is missing.
+- Close both legs immediately if package composition, direction, or actual
+  filled-volume hedge is invalid, or if one leg is missing.
 - Per-leg broker-side hard stop: frozen D1 ATR(`strategy_atr_period_d1`) times
   `strategy_atr_sl_mult` from entry.
 - Close any residual package after `strategy_max_hold_days=40` calendar days.
@@ -230,6 +231,9 @@ statistic is used as a gate or forecast.
   hedge-error rejection, symbol-history failure, transaction-cost collapse,
   unstable fixed-relation behavior, or correlation that fails the later
   portfolio-diversification requirement.
+- The tester counts two legs per package. Its automatic 35-trade Q02 floor is
+  not density proof: this card requires at least 35 completed paired packages
+  (approximately 70 leg trades) across the seven Q02 year labels.
 
 ## Strategy Allowability Check
 
@@ -250,7 +254,8 @@ statistic is used as a gate or forecast.
   metadata, monthly-attempt, news, and kill-switch guards.
 - trade_entry: source-gated signed residual fade with joint fixed-risk,
   elasticity-notional sizing and atomic package repair.
-- trade_management: orphan/composition repair and month-boundary renewal.
+- trade_management: orphan/composition/actual-hedge repair and retrying
+  month-boundary renewal.
 - trade_close: per-leg ATR stops and forty-day stale guard.
 
 `friday_close`, `risk_mode_dual`, `magic_schema`, and
@@ -268,7 +273,7 @@ authorized by this card.
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
-| G0 Research Intake | 2026-07-20 | IN_REVIEW | this card and source packet |
+| G0 Research Intake | 2026-07-20 | APPROVED | this card and source packet |
 | Q01 Build Validation | TBD | TBD | TBD |
 | Q02 Baseline Screening | TBD | TBD | TBD |
 

@@ -37,11 +37,11 @@ restart, broker rejection, or repaired partial package.
 | Parameter | Default | Authorized values | Meaning |
 |---|---:|---|---|
 | `strategy_source_intercept` | -0.99823 | locked | published silver-on-gold intercept |
-| `strategy_source_beta` | 0.71970 | locked | published long-run elasticity and notional hedge |
+| `strategy_source_beta` | 0.71970 | locked | published long-run elasticity; QM applies it to notionals |
 | `strategy_mtar_delta_threshold` | 0.021 | locked | published convergent momentum threshold |
 | `strategy_entry_abs_residual` | 0.010 | 0.000, 0.010, 0.020 | cost-aware absolute residual buffer |
 | `strategy_history_bars` | 120 | locked | bounded D1 month-end reconstruction buffer |
-| `strategy_max_endpoint_gap_days` | 10 | locked | endpoint freshness and cross-leg gap cap |
+| `strategy_max_endpoint_gap_days` | 10 | locked | latest completed endpoint age cap; leg timestamps must match exactly |
 | `strategy_atr_period_d1` | 20 | 14, 20, 30 | completed-D1 ATR period |
 | `strategy_atr_sl_mult` | 4.0 | 3.0, 4.0, 5.0 | per-leg frozen stop multiple |
 | `strategy_max_hold_days` | 40 | 35, 40 | stale package guard |
@@ -72,7 +72,8 @@ by the kill switch, and Q02 evaluates the package rather than either leg.
 | Maximum cadence | one consumed attempt per broker month |
 | Q02 window | 2018.07.02 through 2024.12.31 |
 
-Current open bars never enter the residual. Missing consecutive months,
+Current open bars never enter the residual. Both legs must share the exact D1
+endpoint timestamp in each joined month. Missing consecutive months,
 foreign-leg lag, or an endpoint older than ten days fails closed.
 
 ## 5. Expected Behaviour
@@ -89,6 +90,12 @@ The source contains no trading backtest. A public futures proxy only supports
 queue plausibility; synchronized Darwinex Q02 is the authority for density,
 costs, performance, and survival. Diversification is an objective, not a
 certification claim.
+
+The generic tester reports two leg trades per completed package. Its automatic
+Q02 floor of 35 report trades is therefore not the card's density verdict. The
+five-package/year kill rule requires at least 35 completed paired packages
+(approximately 70 completed leg trades) across the seven Q02 year labels, and
+must be checked from paired magic/reason/month evidence.
 
 ## 6. Source Citation
 
@@ -128,9 +135,9 @@ AutoTrading action, portfolio-gate change, or deploy manifest.
 - **Entry:** signed residual fade, opposite XAU/XAG orders, fixed elasticity
   notionals, combined fixed-risk sizing, rounded-hedge validation, frozen ATR
   stops, and partial-package rollback.
-- **Management:** every-tick orphan/composition repair, month renewal,
-  forty-day stale guard, persisted attempt recovery, and foreign-magic kill
-  switch ownership.
+- **Management:** every-tick orphan/composition/actual-hedge repair, retrying
+  month renewal, forty-day stale guard, persisted attempt recovery, and
+  foreign-magic kill-switch ownership.
 - **Close:** framework position close plus broker-side hard stops.
 
 ## Revision History

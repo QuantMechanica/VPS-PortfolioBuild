@@ -115,12 +115,7 @@ bool Strategy_IsHostChart()
 
 bool Strategy_IsMonthlyBoundary()
   {
-   const datetime current_bar = iTime(g_leg_xau, PERIOD_D1, 0); // perf-allowed: one D1 cadence probe per new bar.
-   const datetime previous_bar = iTime(g_leg_xau, PERIOD_D1, 1); // perf-allowed: one D1 cadence probe per new bar.
-   const int current_month = Strategy_MonthKey(current_bar);
-   const int previous_month = Strategy_MonthKey(previous_bar);
-   return (current_month > 0 && previous_month > 0 &&
-           current_month != previous_month);
+   return QM_IsNewCalendarPeriod(PERIOD_MN1, g_leg_xau);
   }
 
 bool Strategy_SpreadAllowed(const string symbol)
@@ -229,6 +224,48 @@ bool Strategy_PairCompositionValid()
    return (xau_count == 1 && xag_count == 1 && xau_type != xag_type &&
            (xau_type == POSITION_TYPE_BUY || xau_type == POSITION_TYPE_SELL) &&
            (xag_type == POSITION_TYPE_BUY || xag_type == POSITION_TYPE_SELL));
+  }
+
+bool Strategy_PairHedgeValid()
+  {
+   double xau_volume = 0.0;
+   double xag_volume = 0.0;
+   double xau_open = 0.0;
+   double xag_open = 0.0;
+   for(int index = PositionsTotal() - 1; index >= 0; --index)
+     {
+      const ulong ticket = PositionGetTicket(index);
+      if(ticket == 0 || !PositionSelectByTicket(ticket) ||
+         !Strategy_IsPairPosition())
+         continue;
+      const string symbol = PositionGetString(POSITION_SYMBOL);
+      if(symbol == g_leg_xau)
+        {
+         xau_volume = PositionGetDouble(POSITION_VOLUME);
+         xau_open = PositionGetDouble(POSITION_PRICE_OPEN);
+        }
+      else if(symbol == g_leg_xag)
+        {
+         xag_volume = PositionGetDouble(POSITION_VOLUME);
+         xag_open = PositionGetDouble(POSITION_PRICE_OPEN);
+        }
+     }
+   const double xau_contract =
+      SymbolInfoDouble(g_leg_xau, SYMBOL_TRADE_CONTRACT_SIZE);
+   const double xag_contract =
+      SymbolInfoDouble(g_leg_xag, SYMBOL_TRADE_CONTRACT_SIZE);
+   if(xau_volume <= 0.0 || xag_volume <= 0.0 ||
+      xau_open <= 0.0 || xag_open <= 0.0 ||
+      xau_contract <= 0.0 || xag_contract <= 0.0)
+      return false;
+   const double actual_beta =
+      xau_volume * xau_contract * xau_open /
+      (xag_volume * xag_contract * xag_open);
+   const double hedge_error_pct =
+      100.0 * MathAbs(actual_beta - strategy_source_beta) /
+      strategy_source_beta;
+   return (MathIsValidNumber(hedge_error_pct) &&
+           hedge_error_pct <= strategy_max_hedge_error_pct);
   }
 
 void Strategy_ClosePair(const QM_ExitReason reason)
@@ -418,11 +455,9 @@ bool Strategy_LoadMonthlyResiduals(const datetime decision_time,
    const long max_gap = (long)strategy_max_endpoint_gap_days * 86400;
    for(int pair_index = 0; pair_index < 2; ++pair_index)
      {
-      long cross_gap = (long)(paired_xau[pair_index].time -
-                              paired_xag[pair_index].time);
-      if(cross_gap < 0)
-         cross_gap = -cross_gap;
-      if(cross_gap > max_gap)
+      // The residual is a joint monthly observation, not a loose calendar
+      // join. A missing bar on either leg invalidates the source endpoint.
+      if(paired_xau[pair_index].time != paired_xag[pair_index].time)
          return false;
      }
    const long xau_age = (long)(decision_time - paired_xau[0].time);
@@ -463,7 +498,8 @@ bool Strategy_LoadSignal(const datetime decision_time)
    if(!MathIsValidNumber(delta_residual) ||
       !(delta_residual < strategy_mtar_delta_threshold))
       return false;
-   if(MathAbs(latest_residual) < strategy_entry_abs_residual)
+   if(MathAbs(latest_residual) <= 1.0e-12 ||
+      MathAbs(latest_residual) < strategy_entry_abs_residual)
       return false;
 
    g_signal_residual = latest_residual;
@@ -618,7 +654,8 @@ bool Strategy_OpenPair(const int pair_direction)
       return false;
    if(!Strategy_OpenLeg(g_leg_xau, xau_type, xau_lots, xau_stop, reason))
       return false;
-   if(Strategy_OpenLeg(g_leg_xag, xag_type, xag_lots, xag_stop, reason))
+   if(Strategy_OpenLeg(g_leg_xag, xag_type, xag_lots, xag_stop, reason) &&
+      Strategy_PairCompositionValid() && Strategy_PairHedgeValid())
      {
       g_pair_entry_time = TimeCurrent();
       return true;
@@ -694,7 +731,8 @@ void Strategy_ManageOpenPosition()
    const int open_legs = Strategy_OpenPairLegCount();
    if(open_legs <= 0)
       return;
-   if(open_legs != 2 || !Strategy_PairCompositionValid())
+   if(open_legs != 2 || !Strategy_PairCompositionValid() ||
+      !Strategy_PairHedgeValid())
      {
       Strategy_ClosePair(QM_EXIT_STRATEGY);
       return;
@@ -797,11 +835,6 @@ void OnTick()
      {
       QM_EquityStreamOnNewBar();
       g_month_boundary = Strategy_IsMonthlyBoundary();
-      if(g_month_boundary && !entry_blocked)
-        {
-         const datetime decision_time = iTime(g_leg_xau, PERIOD_D1, 0); // perf-allowed: monthly signal anchor.
-         Strategy_LoadSignal(decision_time);
-        }
      }
 
    // Composition, month-renewal and time-stop management precede every entry
@@ -811,6 +844,14 @@ void OnTick()
      {
       Strategy_ClosePair(QM_EXIT_STRATEGY);
       return;
+     }
+   // Close the prior source-period package before evaluating the replacement.
+   // A failed close leaves owned legs present and suppresses the new signal.
+   if(new_bar && g_month_boundary && !entry_blocked &&
+      Strategy_OpenPairLegCount() == 0)
+     {
+      const datetime decision_time = iTime(g_leg_xau, PERIOD_D1, 0); // perf-allowed: monthly signal anchor.
+      Strategy_LoadSignal(decision_time);
      }
    if(entry_blocked || !new_bar || !g_month_boundary ||
       Strategy_NewsFilterHook(broker_now))

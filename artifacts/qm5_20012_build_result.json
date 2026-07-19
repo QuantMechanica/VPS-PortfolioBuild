@@ -1,0 +1,131 @@
+{
+  "task_id": "2b40b0cd-ffe3-4306-8084-82cdb68ca2d4",
+  "ea_id": "QM5_20012",
+  "ea_label": "QM5_20012_xauxag-cmtar",
+  "slug": "xauxag-cmtar",
+  "strategy_id": "MIGHRI-XAUXAG-CMTAR-2018_S01",
+  "strategy": "Monthly fixed C-MTAR XAU/XAG convergence package",
+  "source_id": "MIGHRI-XAUXAG-CMTAR-2018",
+  "source_links": [
+    "https://www.econjournals.com/index.php/ijefi/article/view/6838",
+    "https://www.econjournals.com/index.php/ijefi/article/download/6838/pdf/17184"
+  ],
+  "symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "logical_symbol": "QM5_20012_XAU_XAG_CMTAR_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_20012_xauxag-cmtar",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_20012_xauxag-cmtar/QM5_20012_xauxag-cmtar.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_20012_xauxag-cmtar/QM5_20012_xauxag-cmtar.ex5",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_20012_xauxag-cmtar/SPEC.md",
+  "basket_manifest": "C:/QM/repo/framework/EAs/QM5_20012_xauxag-cmtar/basket_manifest.json",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20012_xauxag-cmtar.md",
+  "approved_card_path": "C:/QM/repo/strategy-seeds/cards/approved/QM5_20012_xauxag-cmtar_card.md",
+  "canonical_card_path": "C:/QM/repo/strategy-seeds/cards/xauxag-cmtar_card.md",
+  "source_packet_path": "C:/QM/repo/strategy-seeds/sources/MIGHRI-XAUXAG-CMTAR-2018/source.md",
+  "runtime_build_result_path": "D:/QM/strategy_farm/artifacts/builds/2b40b0cd-ffe3-4306-8084-82cdb68ca2d4.json",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_20012_xauxag-cmtar/sets/QM5_20012_xauxag-cmtar_QM5_20012_XAU_XAG_CMTAR_D1_D1_backtest.set"
+  ],
+  "magic_base": 200120000,
+  "magic": [
+    {
+      "slot": 0,
+      "symbol": "XAUUSD.DWX",
+      "magic": 200120000,
+      "registry_status": "active"
+    },
+    {
+      "slot": 1,
+      "symbol": "XAGUSD.DWX",
+      "magic": 200120001,
+      "registry_status": "active"
+    }
+  ],
+  "registry_validation": {
+    "ea_id_row": "20012,xauxag-cmtar,MIGHRI-XAUXAG-CMTAR-2018_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-20",
+    "resolver_contains_ea": true,
+    "resolver_rows_kept": 14949,
+    "magic_registry_sha256": "D4BCE7820A554E3407549230AF8B4376C23AA2F6C98B7324318B36E3E2E80753",
+    "resolver_file_sha256": "321FC59E0CAB93CFAE11FB93A5795371F8B4FEF920CD7E7BA788B85E53B6A2F6",
+    "resolver_registry_sha_match": true,
+    "note": "Strict regeneration retained QM5_20012; it separately reported the pre-existing missing EA directories for registry IDs 1001, 1015 and 1016."
+  },
+  "commits": [
+    "73eebf29fae4cbf236c6b219510c5d748a055874",
+    "c82b61a83",
+    "0fff06df5",
+    "8e76e6709",
+    "578d01730"
+  ],
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log": "C:/QM/repo/framework/build/compile/20260719_232240/QM5_20012_xauxag-cmtar.compile.log",
+  "compile_log_sha256": "D383582A1AD6EB7232150A3E32DA2E9DD9C3E77DDED5B7C2A4378374E0ADD47C",
+  "compile_summary": "D:/QM/reports/compile/20260719_232240/summary.csv",
+  "compile_summary_sha256": "72271BAB6E9FD71E88229A5041D1C2E2A9E96D0D78B4599471BA891CA0DB923B",
+  "build_check_passed": true,
+  "build_check_failures": 0,
+  "build_check_warnings": 0,
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260719_232240.json",
+  "build_check_report_sha256": "A9BF452F569133F17F2F308F89EC60E0073521D751903CDF10B956EFB4CB8EC8",
+  "spec_validation": "PASS",
+  "guardrail_validation": "PASS",
+  "symbol_scope_validation": "BASKET_OK",
+  "card_schema_validation": "PASS",
+  "g0_card_validation": "PASS_APPROVED_FRONTMATTER",
+  "dedup_validation": "CLEAN_AFTER_MANUAL_REVIEW",
+  "semantic_review": "PASS_AFTER_MONTH_RETRY_ENDPOINT_SYNC_AND_ACTUAL_HEDGE_REWORK",
+  "setfile_build_hash": "4aeb0be546486ac842bf7600133d3d8aa053c41eecb65b8e97944a236d1dc80f",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced-fleet CPU ceiling was occupied by nine terminal64 processes with active pipeline terminals T1, T3, T6, T7, T8 and T9 at 2026-07-19T23:17:22Z; no tester, terminal dispatch, worker tick, optimization or backtest was launched.",
+  "blocked_reason": null,
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "cointegration_beta_hedged_not_strict_dollar_neutral": true,
+    "risk_fixed_backtest_setfile": true,
+    "reputable_primary_source": true,
+    "cmtar_gate_load_bearing": true,
+    "manual_backtest_cpu_used": false
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false
+  },
+  "open_questions": [
+    "The fixed 1968-2016 LBMA relation and consistent M-TAR threshold may not transfer to Darwinex continuous CFDs after spread, financing and execution costs.",
+    "Signed residual fades, the 0.010 buffer, monthly close/reopen carrier, joint notional sizing and ATR stops are disclosed QM trading translations rather than source performance claims.",
+    "Generic Q02 Total Trades counts both legs. The automatic 35-trade floor cannot prove the card's five completed packages/year kill rule; package-paired evidence must separately require at least 35 completed packages (about 70 leg trades) over the seven Q02 year labels.",
+    "Opposite legs and the published elasticity do not establish realized decorrelation from the certified book; later portfolio gates alone may measure it."
+  ],
+  "file_hashes_sha256": {
+    "mq5": "C2EE7CF6EBAE7C06DD84A4F49FD4F3417477C51BD393632107E6F3B5B0BF7AB7",
+    "ex5": "F4A884080185396DCB8F1D26A0F01A1FEDD382DCFA8024EC57F9DCE3C71FBE22",
+    "spec": "3877CFEB41418CC9C006BA4E8BA9535E1D4316155C09DFF1B13FA44B30845B81",
+    "embedded_card": "C3A43973E4B0FA0427887BA11A38DE308C6F24394F3B255D2FD4D8FEBCBB9DBE",
+    "basket_manifest": "5A94DE10E4E2B81A9E4145FA2C93C8F4A86FD9625B717F0EE647E65B7F6FC43C",
+    "setfile": "58DACB0B49D74BF5C05058AD4227C6EFC4DB20675A7231121D2284B5CCE55217",
+    "canonical_card": "C3A43973E4B0FA0427887BA11A38DE308C6F24394F3B255D2FD4D8FEBCBB9DBE",
+    "approved_card": "C3A43973E4B0FA0427887BA11A38DE308C6F24394F3B255D2FD4D8FEBCBB9DBE",
+    "source_packet": "E1C1D5C9CFCBAD6F0D3B1EC0BDD773582B72A39E7A0C64BD8CF1E5BDD792C922",
+    "ea_registry": "484D76980E28A8198A282DF4466C68C30D5287838D6896044FBD08DE596691CE",
+    "magic_registry": "D4BCE7820A554E3407549230AF8B4376C23AA2F6C98B7324318B36E3E2E80753",
+    "resolver": "321FC59E0CAB93CFAE11FB93A5795371F8B4FEF920CD7E7BA788B85E53B6A2F6"
+  }
+}
