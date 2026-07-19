@@ -49,14 +49,14 @@ the Natural Gas weekly implementation in Section 4: long at Thursday close
 and close at Tuesday close. The paper studies futures; Darwinex CFD transfer
 is a falsification question for Q02.
 
-## Entry Rules
+## 4. Entry Rules
 
 On `XNGUSD.DWX` D1, BUY once per broker week at Friday D1 open, the executable
 proxy for Thursday close. Persist the weekly attempt before submission.
 Require no same-magic position or entry deal, valid closed ATR(20), and spread
 not above 2500 points.
 
-## Exit Rules
+## 5. Exit Rules
 
 Exit at the first tradable D1 opening after Tuesday close, normally Wednesday
 D1 open, or the next tradable bar if Wednesday is missing. A seven-calendar-
@@ -67,13 +67,13 @@ day stale guard also exits.
 Place a frozen server hard stop `3.5 * ATR(20)` below entry. This deterministic
 V5 risk overlay is source-silent. No TP, trail, break-even or partial close.
 
-## Filters
+## 6. Filters (No-Trade Module)
 
 Exact host `XNGUSD.DWX`, D1, slot 0. Entry/exit weekdays are locked. Invalid
 parameters, price, ATR, spread, history or persisted state fail closed. News
 may block only new risk; lifecycle exits remain active.
 
-## Trade Management Rules
+## 7. Trade Management Rules
 
 One long package and attempt per broker week. Friday close is disabled because
 weekend exposure is source-required. No ML, banned indicator, external runtime
