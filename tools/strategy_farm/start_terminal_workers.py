@@ -191,7 +191,12 @@ def main() -> int:
     for terminal in terminals:
         candidates = [pid for pid in discovered.get(terminal, []) if _pid_alive(pid)]
         existing_pid = existing.get(terminal, 0)
-        if existing_pid and _pid_alive(existing_pid) and existing_pid not in candidates:
+        # PID-reuse guard (incident class 2026-07-08): a PID from worker_pids.json
+        # counts only if the live commandline scan also returned it for THIS
+        # terminal. purge/watchdog kill workers without updating the JSON, so a
+        # bare-alive stale PID may be a reused, unrelated process — keeping it
+        # silently starves the slot; deduping it kills an innocent process.
+        if existing_pid and existing_pid in discovered.get(terminal, []) and _pid_alive(existing_pid) and existing_pid not in candidates:
             candidates.insert(0, existing_pid)
 
         if candidates:
