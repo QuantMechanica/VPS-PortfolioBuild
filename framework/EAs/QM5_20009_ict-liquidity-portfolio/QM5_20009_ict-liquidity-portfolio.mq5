@@ -948,6 +948,11 @@ void OnTick()
    if(!QM_KillSwitchCheck())
       return;
 
+   const bool mode_new_bar = (strategy_mode == ICT_MODE_INDEX_MSS_FVG)
+                             ? QM_IsNewBar(_Symbol, PERIOD_M1)
+                             : QM_IsNewBar(_Symbol, PERIOD_M5);
+   if(!mode_new_bar)
+      return;
    const datetime closed_bar = iTime(_Symbol, (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed: O(1) new-closed-bar gate.
    if(closed_bar <= 0 || closed_bar == g_last_closed_bar)
       return;
