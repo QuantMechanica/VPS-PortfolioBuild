@@ -99,3 +99,12 @@ Q02 uses only `RISK_FIXED=1000`, `RISK_PERCENT=0` and one XTI D1 backtest
 setfile. The rolled-futures/CFD basis, WTI gaps, false breakouts and unmeasured
 book correlation make the card high risk. No live or portfolio mutation is
 authorized.
+
+## Pipeline Status
+
+- Q01 PASS on 2026-07-19: strict compile 0 errors/0 warnings; build check 0
+  failures/0 warnings.
+- Q02 pending and unclaimed: work item
+  `5659ee85-5c28-492e-965e-ca95b28e3828` for `XTIUSD.DWX` D1.
+- Evidence:
+  `docs/ops/evidence/2026-07-19_qm5_20008_wti_month_ch3_q02_enqueue.md`.

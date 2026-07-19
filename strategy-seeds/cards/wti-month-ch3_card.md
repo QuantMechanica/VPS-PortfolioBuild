@@ -236,12 +236,12 @@ T_Live manifest, portfolio gate, portfolio admission or portfolio KPI code.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-19 | initial source-backed WTI monthly CH3 build | Q01 | G0 APPROVED; build pending |
+| v1 | 2026-07-19 | initial source-backed WTI monthly CH3 build | Q02 | Q01 PASS; Q02 pending |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-19 | APPROVED under OWNER commodity-sleeve mission | this card |
-| Q01 Build Validation | - | pending | - |
-| Q02 Baseline Screening | - | pending enqueue | - |
+| Q01 Build Validation | 2026-07-19 | PASS: compile 0/0; build check 0/0 | `artifacts/qm5_20008_build_result.json` |
+| Q02 Baseline Screening | 2026-07-19 | pending, unclaimed; work item `5659ee85-5c28-492e-965e-ca95b28e3828` | `docs/ops/evidence/2026-07-19_qm5_20008_wti_month_ch3_q02_enqueue.md` |

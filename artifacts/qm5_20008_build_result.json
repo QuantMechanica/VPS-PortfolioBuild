@@ -81,6 +81,32 @@
     "t_live_manifest_touched": false,
     "portfolio_gate_touched": false
   },
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_20008",
+    "enqueued": [
+      {
+        "work_item_id": "5659ee85-5c28-492e-965e-ca95b28e3828",
+        "symbol": "XTIUSD.DWX",
+        "timeframe": "D1",
+        "status": "pending",
+        "attempt_count": 0,
+        "claimed_by": null,
+        "enqueued_at": "2026-07-19T18:27:39+00:00"
+      }
+    ],
+    "skipped": []
+  },
+  "q02": {
+    "phase": "Q02",
+    "work_item_id": "5659ee85-5c28-492e-965e-ca95b28e3828",
+    "status_at_handoff": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "enqueued_at_utc": "2026-07-19T18:27:39+00:00",
+    "note": "Auto-enqueued by farmctl record-build; not dispatched by this mission."
+  },
   "open_questions": [
     "The peer-reviewed source studies commodity futures; Q02 must falsify transfer to the Darwinex continuous WTI CFD proxy.",
     "The local cadence precheck is not a performance backtest and establishes neither positive expectancy nor low realized book correlation."
