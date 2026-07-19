@@ -32,7 +32,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
+pipeline_phase: Q02
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
 hard_rules_at_risk: [friday_close, risk_mode_dual, darwinex_native_data_only]
@@ -100,3 +100,10 @@ are incremental; decorrelation remains unproven.
 
 One RISK_FIXED backtest setfile only. No live setfile, `T_Live`, AutoTrading,
 deploy/T_Live manifest, portfolio gate or portfolio-admission modification.
+
+## Pipeline Status
+
+Q01 passed on 2026-07-19 with zero compile errors/warnings and zero build-check
+failures/warnings. Q02 work item
+`aa33ca98-bc8a-4015-abc7-24f3f6e5b2ab` is pending, attempt 0 and unclaimed.
+Smoke was deferred at the paced-fleet CPU ceiling; no tester was launched.

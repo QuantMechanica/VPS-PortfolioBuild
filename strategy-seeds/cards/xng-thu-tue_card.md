@@ -39,7 +39,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
+pipeline_phase: Q02
 review_focus: "Falsify the source-explicit weekly Natural Gas calendar carry on the Darwinex CFD proxy; futures/CFD session mapping, weekend gaps, costs, expectancy, and realized correlation are unproven."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -253,15 +253,15 @@ T_Live manifest, portfolio gate, portfolio admission, or portfolio KPI code.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-19 | initial source-explicit XNG weekly calendar carry | Q01 | APPROVED |
+| v1 | 2026-07-19 | initial source-explicit XNG weekly calendar carry | Q02 | BUILT; ENQUEUED |
 
 ## 15. Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-19 | APPROVED; R1-R4 PASS | `D:/QM/strategy_farm/artifacts/cards_approved/QM5_20011_xng-thu-tue.md` |
-| Q01 Build Validation | - | pending | - |
-| Q02 Baseline Screening | - | pending enqueue | - |
+| Q01 Build Validation | 2026-07-19 | PASS; compile/build-check/spec/guardrails clean | `framework/EAs/QM5_20011_xng-thu-tue/` |
+| Q02 Baseline Screening | 2026-07-19 | ENQUEUED; pending, attempt 0, unclaimed | work item `aa33ca98-bc8a-4015-abc7-24f3f6e5b2ab` |
 
 ## 16. Lessons Captured
 
