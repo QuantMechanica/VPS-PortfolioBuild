@@ -69,9 +69,19 @@ def _load_health() -> dict:
     if not HEALTH_FILE.exists():
         return {}
     try:
-        return json.loads(HEALTH_FILE.read_text(encoding="utf-8"))
+        health = json.loads(HEALTH_FILE.read_text(encoding="utf-8"))
     except Exception:
         return {}
+    # Silent-failure meta-monitor (task #11, 2026-07-19): fold its alarm sidecar
+    # into the health dict so the existing fingerprint/one-mail-per-change logic
+    # covers the silent classes (task deaths, skip-streaks, lane stalls) too.
+    # A missing/stale sidecar injects its own staleness FAIL inside the merge.
+    try:
+        import silent_failure_monitor
+        health = silent_failure_monitor.merge_into_health(health)
+    except Exception:
+        pass
+    return health
 
 
 def _load_state() -> dict:
