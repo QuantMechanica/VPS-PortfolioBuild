@@ -239,7 +239,7 @@ def _card_pipeline_done(con, card_path: Path, state: str) -> bool:
     fm = _card_frontmatter(card_path)
     ea_id = fm.get("ea_id")
     if not ea_id:
-        m = re.match(r"(QM5_\d{4})_", card_path.name)
+        m = re.match(r"(QM5_\d{4,5})_", card_path.name)
         ea_id = m.group(1) if m else ""
     if not ea_id:
         return False
@@ -1077,7 +1077,7 @@ def chk_unbuilt_cards_count(con) -> dict:
     unbuilt = []
     not_build_ready = 0
     for card_md in sorted(cards_dir.glob("QM5_*.md")):
-        m = re.match(r"(QM5_\d{4})_(.+)\.md$", card_md.name)
+        m = re.match(r"(QM5_\d{4,5})_(.+)\.md$", card_md.name)
         if not m:
             continue
         ea_id, slug = m.group(1), m.group(2)

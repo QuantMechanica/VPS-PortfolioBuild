@@ -111,3 +111,18 @@ coordinate the recompile wave (admits recompile before next session).
 - Silent-failure meta-monitor (Gmail channel) — Claude specs, build possibly routed to you later.
 - FTMO V3: card `strategy-seeds/cards/spx-intraday-mom_card.md` approve + build,
   EURUSD.DWX history-sync repair (NDX playbook), Gotobi Q03 completion.
+
+## P2 addendum (from the 2026-07-19 late-evening initiative wave)
+
+11. **RETIRE-without-build (10 cards, evidenced):** R1-FAIL despite APPROVED:
+    QM5_12941/12942/1650/3005; TD-countdown off-EURUSD (mechanism killed in the
+    07-19 book decision): QM5_1648/12937/1622; below 5/yr floor: QM5_12921 (2/yr),
+    QM5_12702, QM5_12740. Move out of cards_approved or correct status.
+    Evidence: scratchpad backlogprio/ + D:/QM/reports/state/build_backlog_priority_v1.csv.
+12. **Extend strategy_priority.metrics_component** with cost-class
+    (venue_cost_model.json) + live-book-orthogonality terms so the backlog
+    ranking becomes self-sustaining (advisory CSV exists; wiring proposal in the
+    backlogprio report).
+13. Note: health.py unbuilt-card regex fixed by Claude (4->4-5 digit IDs; 61
+    cards were invisible incl. the Mulham litmus family). force_build set on
+    QM5_13209 + QM5_13212 (D: store).
