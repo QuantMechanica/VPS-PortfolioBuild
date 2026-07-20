@@ -1,0 +1,12 @@
+{
+  "logical_symbol": "QM5_20019_XAU_XAG_WKEND_H1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "H1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "q02_from_date": "2018.07.02",
+  "q02_to_date": "2024.12.31",
+  "basket_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+  "traded_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+  "notes": ["Logical market-neutral weekend package: BUY XAU and SELL XAG Friday 21:00 broker time, equal USD notionals, shared RISK_FIXED=1000 ATR-stop budget, first-Monday-H1 close. Q02 must evaluate combined net PnL only. No standalone result, live preset, portfolio admission or decorrelation claim is authorized."]
+}
