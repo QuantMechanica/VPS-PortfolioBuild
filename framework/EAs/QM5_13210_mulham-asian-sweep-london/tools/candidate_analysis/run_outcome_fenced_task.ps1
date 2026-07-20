@@ -206,16 +206,28 @@ if ($Operation -eq 'Start') {
     if ($task.State.ToString() -eq 'Running') {
         throw "Scheduled task '$TaskName' is already running."
     }
+    $beforeInfo = Get-ScheduledTaskInfo -TaskName $TaskName -TaskPath '\' -ErrorAction Stop
+    $beforeLastRunUtc = [DateTime]::MinValue
+    if ($beforeInfo.LastRunTime.Year -gt 2000) {
+        $beforeLastRunUtc = $beforeInfo.LastRunTime.ToUniversalTime()
+    }
     Start-ScheduledTask -TaskName $TaskName -TaskPath '\' -ErrorAction Stop
     $deadline = (Get-Date).ToUniversalTime().AddSeconds(10)
+    $newInvocationObserved = $false
     do {
         Start-Sleep -Milliseconds 100
         $task = Get-ScheduledTask -TaskName $TaskName -TaskPath '\' -ErrorAction Stop
         $info = Get-ScheduledTaskInfo -TaskName $TaskName -TaskPath '\' -ErrorAction Stop
+        $newInvocationObserved = (
+            $info.LastRunTime.Year -gt 2000 -and
+            $info.LastRunTime.ToUniversalTime() -gt $beforeLastRunUtc
+        )
     } while ($task.State.ToString() -ne 'Running' -and
-        $info.LastRunTime.Year -le 2000 -and
+        -not $newInvocationObserved -and
         (Get-Date).ToUniversalTime() -lt $deadline)
+    if ($task.State.ToString() -ne 'Running' -and -not $newInvocationObserved) {
+        throw "Scheduled task '$TaskName' did not acknowledge a new invocation."
+    }
 }
 
 Get-QmSafeTaskMetadata -Task $task -Identity $identity | ConvertTo-Json -Depth 3 -Compress
-
