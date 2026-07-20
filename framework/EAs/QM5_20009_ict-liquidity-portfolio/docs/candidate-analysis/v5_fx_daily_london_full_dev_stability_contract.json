@@ -1,0 +1,182 @@
+{
+  "schema_version": 1,
+  "analysis_id": "QM5_20009_V5_FX_DAILY_LONDON_FULL_DEV_STABILITY_001",
+  "status": "PREREGISTERED_CANDIDATE_ANALYSIS",
+  "scope": "Read-only full-DEV stability screen of the already frozen v5 FX daily-London center; not a new strategy, pipeline phase, OOS test, holdout, EA implementation, qualification, FTMO, or live evidence.",
+  "prior_outcome_knowledge": {
+    "known_before_preregistration": [
+      "The GBPUSD.DWX 2022 center tick run and its negative cost-adjusted audit were already inspected in the preceding task.",
+      "The parent task disclosed that a EURUSD.DWX 2022 tick result was strong, without supplying its metrics in this analysis task."
+    ],
+    "protected_claim": "No additional EURUSD CSV outcome and no 2017-2021 GBPUSD/EURUSD CSV outcome may be read before this contract is committed and hashed. Therefore this is a preregistered temporal-stability screen, not an outcome-blind test of 2022."
+  },
+  "frozen_sources": {
+    "sequence_auditor": {
+      "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/audit_frozen_sequence_csv.py",
+      "sha256": "dda7255c6dcad65a2c8fd9eaa739643661ee2c40c171c401092217157809835f"
+    },
+    "external_cost_auditor": {
+      "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/audit_mt5_report.py",
+      "sha256": "c9dc5106383073b50150f0edb091338181dc53470615839fb252f5bc96a46c03"
+    },
+    "dev_adjudicator": {
+      "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/adjudicate_dev.py",
+      "sha256": "9d3e9025c6c648afe0a393ee3b4356cd0f7ed05fa8e3728d473a70d52461d401"
+    },
+    "strategy_contract": {
+      "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/docs/strategy_contract.md",
+      "sha256": "98a500ae4ecb9ed3733199fee137d2c357e4c4b00d9907feb9aae39e783fc688"
+    },
+    "research_protocol_v5": {
+      "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/docs/research_protocol_v5.json",
+      "sha256": "b2b7c0861f23b8cf9400023aad66c3d7146a4f047049820f89d0fc8a65af8f54"
+    },
+    "center_sets": {
+      "GBPUSD.DWX": {
+        "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/sets/QM5_20009_GBPUSD_DWX_M5_fx_center.set",
+        "sha256": "5e8d41c79a9782e4ae67986436847a152f3908c91470e9b3da61634c9b4f40bd"
+      },
+      "EURUSD.DWX": {
+        "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/sets/QM5_20009_EURUSD_DWX_M5_fx_center.set",
+        "sha256": "53b3c2a1138fe97d8427b3f93fdb25e2920d39cb2f9e18aa81ee4d2fa6736d4f"
+      }
+    },
+    "freeze_inputs_sha256": "94b60407c1c7996bc7089ff020f4d12d04e8aa3ee1be322ef5eb51dfcb256581"
+  },
+  "data_fence": {
+    "symbols": [
+      "GBPUSD.DWX",
+      "EURUSD.DWX"
+    ],
+    "source_template": "D:/QM/mt5/T_Export/MQL5/Files/{symbol}_M5.csv",
+    "broker_bar_open_from_inclusive": "2017-10-01 00:00:00",
+    "broker_bar_open_to_exclusive": "2023-01-01 00:00:00",
+    "evaluated_ny_dates_from_inclusive": "2017-10-01",
+    "evaluated_ny_dates_to_inclusive": "2022-12-31",
+    "future_rule": "Stream ascending rows. Parse only the timestamp field first; at the first timestamp >= 2023-01-01 stop without parsing, hashing, or validating that row's OHLC/spread/volume fields. Never hash the whole file. Emit future_ohlc_parsed=false and the first excluded timestamp.",
+    "selected_slice_identity": "Hash canonical selected M5 rows only. Reject duplicate/non-monotone timestamps, off-grid M5 rows, invalid OHLC, or any selected row outside the declared broker interval.",
+    "time_mapping": "CSV epoch seconds are naive broker time; New York time is broker minus exactly seven hours under the frozen Darwinex convention.",
+    "timeframe": "M5 only; no resampling, interpolation, forward fill, or future bar access."
+  },
+  "mechanism": {
+    "mode": "daily-london",
+    "directions": "both, with neither side removable after outcomes",
+    "asia_reference": "For NY date D require exactly 48 closed M5 bars on D-1 in [20:00,24:00); freeze its high/low.",
+    "london_event_window": "[02:00,05:00) NY; every sweep, reclaim, MSS, FVG, and arm decision must use fully closed bars and finish before 05:00.",
+    "pivot_wing": 2,
+    "reclaim_bars": 3,
+    "max_bars_to_mss": 12,
+    "min_fvg_sma_tr14": 0.05,
+    "sl_buffer_sma_tr14": 0.1,
+    "min_rr": 2.0,
+    "replay_bars_fx": 10000,
+    "tick_size": 0.00001,
+    "point": 0.00001,
+    "fixed_target": "Opposite frozen Asian boundary only; invalid direction or RR consumes without substitution.",
+    "virtual_limit": "Earliest post-MSS FVG proximal edge only. Eligibility begins on the next M5 bar. If the edge is already touched at eligibility open, void it. Otherwise first later OHLC touch before the immutable session/news boundary fills at the edge proxy; no later FVG rescue.",
+    "hard_flat": "At the first M5 bar open at or after 16:00 NY on the entry NY date, before evaluating any SL/TP event in that bar.",
+    "daily_budget": "Maximum one consumed first reclaim/attempt and one fill per symbol/NY date."
+  },
+  "news": {
+    "source": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv",
+    "source_sha256": "8e898ca1c4aed5fbc4cbe43fc176e8d8595c2e6f5f05c2984c2468527d4f5b0d",
+    "timestamp": "datetime is UTC; convert through America/New_York civil time",
+    "impact": "is_high_impact == 1",
+    "relevant_currencies": {
+      "GBPUSD.DWX": [
+        "GBP",
+        "USD"
+      ],
+      "EURUSD.DWX": [
+        "EUR",
+        "USD"
+      ]
+    },
+    "blackout": "Inclusive [event-30m,event+30m]. Arm inside a blackout is void. The next blackout start after arm shortens the virtual-intent deadline. Expiry/news boundary wins over a bar touch that cannot be temporally ordered from OHLC. Missing/malformed/uncovered calendar fails the analysis."
+  },
+  "spread_scenarios": {
+    "point_size": 0.00001,
+    "scenarios_points": [
+      0,
+      4,
+      8
+    ],
+    "center_points": 4,
+    "roles": {
+      "0": "optimistic diagnostic",
+      "4": "predeclared center and primary merit scenario",
+      "8": "adverse spread sensitivity"
+    },
+    "no_selection": "Run the complete mechanism independently for all three scenarios. Never choose, average, splice, or retune from their outcomes. Merit is adjudicated at 4 points and additionally requires the declared 8-point robustness checks.",
+    "application": "Spread is constant within a scenario and participates exactly where frozen v5 uses it: Buy Ask geometry/touch, Sell closing Ask, observed-spread stop padding max(2*spread,0.10*SMA-TR14), target/SL touches, short hard-flat exit, lot sizing, and deal prices."
+  },
+  "ohlc_execution_proxy": {
+    "risk_fixed_usd": 1000.0,
+    "entry": "At first eligible touch, enter at the immutable proximal edge. This is conservative for a marketable touch versus granting price improvement.",
+    "ordering": [
+      "intent expiry or news boundary before an unordered same-bar entry",
+      "entry before any post-entry exit on the touch bar",
+      "SL before target whenever both occur in one M5 bar",
+      "16:00 NY hard-flat open before SL or target in that bar"
+    ],
+    "long_prices": "Touch uses Bid low + spread <= edge; entry=edge; stop/target/hard-flat exit on Bid.",
+    "short_prices": "Touch uses Bid high >= edge; entry=edge; stop/target/hard-flat exit on Ask=Bid+spread.",
+    "same_bar": "A touch bar spanning entry and SL realizes -1R even if target is also spanned. Every conflict is counted.",
+    "limitations": "M5 OHLC cannot reproduce real tick ordering, variable spread, slippage, market-order price improvement, or tick-exact news transitions; it is a conservative stability proxy."
+  },
+  "external_costs": {
+    "risk_sizing": "For USD-quote FX, lots = 1000 / (abs(entry-stop)*100000). No volume-step or margin cap is simulated.",
+    "schedule": "For every entry or exit deal side independently, cost USD = round_cent_half_up(max(2.50,2.50*deal_price)*deal_volume). This is exactly audit_mt5_report.py::_deal_external_cost for EURUSD/GBPUSD.",
+    "partial_exits": "None in frozen v5; one full-volume entry side and one full-volume exit side per fill.",
+    "adjusted_r": "gross_R - (entry_external_cost + exit_external_cost)/1000.",
+    "swap": "Zero by construction only when entry and hard exit share one NY date; any cross-date or unresolved trade fails integrity rather than assuming zero.",
+    "slippage": "Unmodelled and explicitly prevents qualification/OOS/FTMO claims."
+  },
+  "required_reporting": {
+    "identity": "Contract commit/hash, tool/test hashes, source hashes, news hash, per-symbol selected-row count/time bounds/slice hash, first excluded timestamp, and future_ohlc_parsed=false.",
+    "funnel": "For every spread scenario and symbol: budgets, Asia ready/incomplete, sessions, consumed/ambiguous, pivot, MSS, earliest FVG ready, news-arm void, fresh/eligibility void, touched/news-boundary expired, fills, and exit reasons.",
+    "performance": "Gross and externally adjusted fills/net R/PF/expectancy/win rate, commission USD, chronological adjusted-R drawdown, top-one/top-two winner share, and leave-best-out by scenario, symbol, full year, side, symbol-year and symbol-side.",
+    "annual_window": "2017 is partial and reported but excluded from full-year stability gates. Full years are exactly 2018-2022."
+  },
+  "dynamic_pf_floor": {
+    "source": "Current adjudicate_dev.py exact Q02 intent",
+    "formula": "For N>0: u=1.94/sqrt(N); d=u/sqrt(1+u^2); floor=max(1.10,(1+d)/(1-d)).",
+    "comparison": "center adjusted PF >= dynamic floor",
+    "additional_proxy_report": "Also report center adjusted PF >= 1.20, but do not substitute that weaker proxy when the dynamic floor is higher."
+  },
+  "merit_gate": {
+    "decision": "MERIT only if every center and robustness condition passes; otherwise NO_MERIT. No result authorizes EA changes or a later phase.",
+    "center_4_point_conditions": {
+      "integrity_pass": true,
+      "pooled_fills_min": 60,
+      "each_symbol_fills_min": 30,
+      "each_side_fills_min": 20,
+      "pooled_adjusted_net_r_strictly_positive": true,
+      "pooled_adjusted_pf_at_least_dynamic_floor": true,
+      "each_symbol_adjusted_net_r_strictly_positive": true,
+      "each_side_adjusted_net_r_strictly_positive": true,
+      "pooled_positive_full_years_min_of_5": 3,
+      "each_symbol_positive_full_years_min_of_5": 2,
+      "pooled_max_adjusted_drawdown_r_max": 25.0,
+      "each_symbol_max_adjusted_drawdown_r_max": 25.0,
+      "top_two_adjusted_winner_share_max": 0.5,
+      "leave_best_out_adjusted_net_r_strictly_positive": true
+    },
+    "spread_8_point_robustness": {
+      "pooled_adjusted_net_r_strictly_positive": true,
+      "pooled_adjusted_pf_min": 1.0,
+      "each_symbol_adjusted_net_r_strictly_positive": true
+    }
+  },
+  "eur_2022_temporal_representativeness": {
+    "decision": "REPRESENTATIVE only if every condition passes under the center 4-point scenario; otherwise NOT_REPRESENTATIVE.",
+    "conditions": {
+      "eur_2018_2021_aggregate_adjusted_net_r_strictly_positive": true,
+      "eur_2018_2021_aggregate_adjusted_pf_min": 1.2,
+      "eur_positive_prior_full_years_min_of_4": 2,
+      "eur_leave_2022_out_adjusted_net_r_strictly_positive": true,
+      "eur_2022_share_of_all_eur_adjusted_gross_profit_max": 0.5
+    },
+    "interpretation": "This compares the 2022 regime with prior full DEV years only. It is not an OOS or holdout claim because 2022 was already known."
+  }
+}
