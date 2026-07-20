@@ -1,5 +1,5 @@
 #property strict
-#property version   "5.0"
+#property version   "5.1"
 #property description "QM5_13210 Mulham Asian-range London-window wick sweep"
 
 #include <QM/QM_Common.mqh>
@@ -813,7 +813,7 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_13210_mulham-asian-sweep-london\",\"version\":\"5.0\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_13210_mulham-asian-sweep-london\",\"version\":\"5.1\"}");
    return INIT_SUCCEEDED;
   }
 

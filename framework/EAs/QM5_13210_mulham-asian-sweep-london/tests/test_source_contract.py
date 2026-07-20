@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 EA = (ROOT / "QM5_13210_mulham-asian-sweep-london.mq5").read_text(
     encoding="utf-8"
 )
+SETS = sorted((ROOT / "sets").glob("*.set"))
 
 
 def function_body(source: str, name: str) -> str:
@@ -118,6 +119,15 @@ class QM13210SourceContractTests(unittest.TestCase):
         self.assertIn("next_news_block < out_deadline", deadline)
         self.assertIn("QM13210_NewsAllowsEntryNow(broker_now)", manage)
         self.assertIn("asian_sweep_news_cancel", manage)
+
+    def test_both_backtest_sets_bind_the_news_axes_explicitly(self) -> None:
+        self.assertEqual(len(SETS), 2)
+        for set_path in SETS:
+            content = set_path.read_text(encoding="utf-8-sig")
+            self.assertIn("qm_news_temporal=3", content)
+            self.assertIn("qm_news_compliance=1", content)
+            self.assertIn("qm_news_min_impact=high", content)
+            self.assertIn("qm_news_mode_legacy=0", content)
 
     def test_day_is_consumed_only_after_checked_order_acceptance(self) -> None:
         entry = function_body(EA, "Strategy_EntrySignal")

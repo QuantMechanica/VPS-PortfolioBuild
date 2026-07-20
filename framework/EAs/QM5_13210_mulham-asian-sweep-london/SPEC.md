@@ -4,24 +4,32 @@
 **Slug:** `mulham-asian-sweep-london`
 **Source:** `YT-MULHAM-2026-07`
 **Author of this spec:** Codex
-**Last revised:** 2026-07-19
+**Last revised:** 2026-07-20
 
 ---
 
 ## 1. Strategy Logic
 
-The EA records the 03:00–07:00 broker-time Asian M5 range and proceeds only
-when the Asian net move is no more than half of that range and the range is at
-least 0.3 times H1 ATR(14). It re-anchors a one-way extension before 08:30,
+The EA records exactly 48 contiguous closed M5 bars from 03:00–07:00 broker
+time and proceeds only when the Asian net move is no more than half of that
+range and the range is at least 0.3 times H1 ATR(14). Any missing or displaced
+Asian bar fails the day closed. It re-anchors a one-way extension before 08:30,
 then looks from 08:30–10:00 for a wick through one range extreme whose candle
-body closes inside. A close through the last opposing two-left/two-right M5 swing plus a
-three-candle fair-value gap confirms the reversal; the EA places a limit at the
-gap midpoint and cancels it at 12:00.
+body closes inside. On a strictly subsequent closed bar, a close through the
+last opposing two-left/two-right M5 swing plus a three-candle fair-value gap
+confirms the reversal; the EA places a limit at the gap midpoint and cancels it
+no later than 12:00.
 
+The setup is invalidated if the opposite range side is swept, if the selected
+target has already traded, or if a cached limit's stop geometry becomes stale.
 The stop is beyond the sweep extreme by 0.1 M5 ATR. The default target is the
 opposite Asian body extreme; the declared variant uses a fixed three-times-risk
 target. Positions that remain open are closed at 20:00 broker time, and the
 framework also enforces Friday close and the central high-impact news blackout.
+State advances on every closed bar even during a blackout; only order submission
+is gated. A pending limit expires at the first authoritative future blackout
+boundary (or 12:00, whichever comes first) and is also removed fail-closed when
+a fresh per-tick news check blocks or loses calendar authority.
 
 ---
 
@@ -71,7 +79,7 @@ framework also enforces Friday close and the central high-impact news blackout.
 |---|---|
 | Base timeframe | `M5` |
 | Multi-timeframe refs | Closed `H1` ATR(14) for the Asian-range floor; the card lists M15 but supplies no executable M15 rule. |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)`; state advances once per closed M5 bar. |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)`; state advances once per closed M5 bar before the entry-news gate. |
 
 ---
 
@@ -113,7 +121,22 @@ M15 condition.
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+The backtest setfiles bind `RISK_FIXED=1000` and `RISK_PERCENT=0` explicitly.
+`QM_FrameworkInit` rejects mutually inconsistent risk inputs, while the pipeline
+— not the EA — owns validation of the declared setfile environment.
+
+---
+
+## 8. News API boundary
+
+`QM_NewsNextBlockStart` is the authoritative public API for the first
+symbol-affecting blackout boundary through the pending-order deadline. The
+approved source also states a narrower day veto for a high-impact **USD** event
+in the later New-York window. The public framework API does not expose a
+currency-and-session predicate for that rule; the EA therefore does not invent
+an internal calendar traversal or broaden it to a different UTC-day rule. That
+source-specific veto remains an explicit API blocker; the framework's approved
+high-impact blackout and the pending-fill protections above are enforced.
 
 ---
 
@@ -122,3 +145,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-19 | Initial build from card | Build task `3bba09a5-e8e6-4e56-99c0-dad71c678a4e` |
+| v2 | 2026-07-20 | Outcome-blind mechanical repair | News-independent state advancement; 48-bar continuity; subsequent-bar confirmation; target/opposite-sweep invalidation; checked order-state transition; authoritative pending-news deadline/cancellation. No backtest or Q02 outcome inspected. |

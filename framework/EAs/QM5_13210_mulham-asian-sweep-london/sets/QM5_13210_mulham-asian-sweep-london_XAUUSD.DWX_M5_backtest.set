@@ -2,23 +2,28 @@
 ; QM5 Set File
 ; ea_id:        13210
 ; ea_slug:      mulham-asian-sweep-london
-; ea_version:   v5.0
-; set_version:  s20260719-001
+; ea_version:   v5.1
+; set_version:  s20260720-002
 ; symbol:       XAUUSD.DWX
 ; timeframe:    M5
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   6062bba171fe35a6febff3463810578480185e4b655aa2d7cee5190cf5cefc4a
+; build_hash:   39a39453b4e7daae64332b77f93be8ef765d6c34b4f35dbb9a1c765a4a0c6023
 ; author:       Development
-; date:         2026-07-19
+; date:         2026-07-20
 ;==========================================================
 qm_ea_id=13210
 qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+qm_news_temporal=3
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_13210_mulham-asian-sweep-london.md
 strategy_asia_start_hour=3
