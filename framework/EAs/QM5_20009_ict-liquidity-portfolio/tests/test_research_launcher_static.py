@@ -102,8 +102,8 @@ def test_launcher_requires_native_report_audit_and_detached_atomic_receipt() -> 
 
 def test_launcher_retains_and_binds_snapshot_on_pass_or_rejection() -> None:
     launcher = LAUNCHER.read_text(encoding="utf-8-sig")
-    assert "runtime_snapshot_manifest = Get-QmFileBinding" in launcher
-    assert "runtime_snapshot_manifest_detached = Get-QmFileBinding" in launcher
+    assert "runtime_snapshot = $snapshotBinding" in launcher
+    assert "external_runtime = $prePayload['external_runtime']" in launcher
     assert "runtime_snapshot_retained = ($null -ne $snapshotBinding)" in launcher
     assert "runtime_snapshot = if ($null -ne $prePayload)" in launcher
     assert "Remove-Item -LiteralPath $snapshot" not in launcher
@@ -230,11 +230,15 @@ def _mock_contract(report_dir: Path) -> tuple[dict[str, object], dict[str, objec
         report = report_dir / "raw" / f"run_{ordinal:02d}" / "report.htm"
         report.parent.mkdir(parents=True)
         report.write_text("mock", encoding="utf-8")
+        (report.parent / "tester.ini").write_text("[Tester]\n", encoding="ascii")
+        tester_log = report.parent / "tester.log"
+        tester_log.write_text("log", encoding="utf-8")
         reports.append(
             {
                 "status": "OK",
                 "real_ticks_marker": True,
                 "report_canonical_path": str(report),
+                "tester_log_path": str(tester_log),
             }
         )
     contract: dict[str, object] = {
@@ -292,6 +296,8 @@ def test_mocked_summary_requires_model4_and_every_raw_report(tmp_path: Path) -> 
     valid = _pwsh(command, str(SUPPORT), str(summary_path), str(contract_path), "unused")
     assert valid.returncode == 0, valid.stdout + valid.stderr
     assert len(json.loads(valid.stdout)["reports"]) == 2
+    assert len(json.loads(valid.stdout)["tester_inis"]) == 2
+    assert len(json.loads(valid.stdout)["tester_logs"]) == 2
 
     summary["model4_log_marker_detected"] = False
     summary_path.write_text(json.dumps(summary), encoding="utf-8")

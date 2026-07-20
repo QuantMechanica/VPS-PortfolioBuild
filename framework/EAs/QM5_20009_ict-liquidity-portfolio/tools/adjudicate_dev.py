@@ -23,7 +23,7 @@ from collections import Counter, defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP, localcontext
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Mapping, Sequence
 
 import research_evidence_io as evidence_io
@@ -677,6 +677,71 @@ ARTIFACT_KEYS = {
     "tester_inis",
     "tester_logs",
 }
+RUNTIME_TOOLCHAIN_KEYS = {
+    "runtime_snapshot",
+    "external_runtime",
+    "postflight",
+    "final_snapshot_verification",
+}
+RUNTIME_SNAPSHOT_BINDING_KEYS = {
+    "root_path",
+    "repo_root",
+    "manifest_path",
+    "manifest_size_bytes",
+    "manifest_sha256",
+    "manifest_sidecar_path",
+    "manifest_sidecar_sha256",
+    "selected_set_repo_relative",
+    "role_bindings",
+}
+RUNTIME_SNAPSHOT_MANIFEST_KEYS = {
+    "schema_version",
+    "artifact_type",
+    "status",
+    "run_id",
+    "source_repo_root",
+    "snapshot_root",
+    "snapshot_repo_root",
+    "freeze_identity",
+    "request",
+    "files",
+    "closure_sha256",
+}
+RUNTIME_SNAPSHOT_FILE_KEYS = {
+    "role",
+    "repo_relative_path",
+    "source_path",
+    "snapshot_path",
+    "size_bytes",
+    "sha256",
+}
+RUNTIME_SNAPSHOT_ROLES = {
+    "launcher",
+    "launcher_support",
+    "validator",
+    "generator",
+    "report_auditor",
+    "protocol",
+    "sets_manifest",
+    "sets_manifest_detached",
+    "selected_set",
+    "ea_binary",
+    "runner_dev1_controller",
+    "runner_dev1_child",
+    "runner_smoke",
+    "runner_dispatch_resolver",
+    "tester_defaults",
+    "tester_groups_canonical",
+}
+EXTERNAL_RUNTIME_ROLES = {
+    "terminal_binary",
+    "metatester_binary",
+    "commission_groups_dev1",
+    "news_qmdev1_common_primary",
+    "news_qmdev1_common_secondary",
+    "python_executable",
+    "powershell7",
+}
 
 
 def _validate_pointer(policy: Policy, key: CellKey) -> tuple[dict[str, Any], evidence_io.FileBinding, evidence_io.FileBinding]:
@@ -711,11 +776,190 @@ def _validate_toolchain(raw: Any, context: str) -> tuple[dict[str, Any], str]:
     value = _mapping(raw, context)
     if not value:
         raise AdjudicationError(f"{context} cannot be empty")
+    if set(value) == RUNTIME_TOOLCHAIN_KEYS:
+        return _validate_runtime_toolchain(value, context)
     normalized: dict[str, Any] = {}
     for name in sorted(value):
         if not isinstance(name, str) or not name:
             raise AdjudicationError(f"{context} contains an invalid tool name")
         normalized[name] = _binding_dict(_binding_compat(value[name], context=f"{context}.{name}"))
+    return normalized, evidence_io.canonical_payload_sha256(normalized)
+
+
+def _canonical_relative_path(value: Any, context: str) -> str:
+    if not isinstance(value, str) or not value or "\\" in value:
+        raise AdjudicationError(f"{context} is not a canonical repository path")
+    path = PurePosixPath(value)
+    if (
+        path.is_absolute()
+        or path.as_posix() != value
+        or any(part in {"", ".", ".."} for part in path.parts)
+        or ":" in path.parts[0]
+    ):
+        raise AdjudicationError(f"{context} escapes/is not canonical")
+    return value
+
+
+def _validate_runtime_toolchain(
+    value: Mapping[str, Any], context: str
+) -> tuple[dict[str, Any], str]:
+    snapshot = _mapping(value["runtime_snapshot"], f"{context}.runtime_snapshot")
+    _exact_keys(snapshot, RUNTIME_SNAPSHOT_BINDING_KEYS, f"{context}.runtime_snapshot")
+    root = Path(str(snapshot["root_path"])).resolve(strict=False)
+    repo_root = Path(str(snapshot["repo_root"])).resolve(strict=False)
+    manifest_path = Path(str(snapshot["manifest_path"])).resolve(strict=False)
+    sidecar_path = Path(str(snapshot["manifest_sidecar_path"])).resolve(strict=False)
+    _expect(repo_root, root / "repo", f"{context}.runtime_snapshot.repo_root")
+    _expect(
+        manifest_path,
+        root / "runtime_manifest.json",
+        f"{context}.runtime_snapshot.manifest_path",
+    )
+    _expect(
+        sidecar_path,
+        Path(f"{manifest_path}.sha256"),
+        f"{context}.runtime_snapshot.manifest_sidecar_path",
+    )
+    manifest_binding = _binding_compat(
+        {
+            "path": str(manifest_path),
+            "size_bytes": snapshot["manifest_size_bytes"],
+            "sha256": snapshot["manifest_sha256"],
+        },
+        context=f"{context}.runtime_snapshot.manifest",
+        root=root,
+    )
+    sidecar_binding = evidence_io.verify_detached(manifest_path, sidecar_path)
+    _expect(
+        sidecar_binding.sha256,
+        evidence_io.require_sha256(
+            snapshot["manifest_sidecar_sha256"],
+            f"{context}.runtime_snapshot.manifest_sidecar_sha256",
+        ),
+        f"{context}.runtime_snapshot.manifest_sidecar_sha256",
+    )
+    manifest = _strict_canonical_json(manifest_path, f"{context}.runtime_snapshot.manifest")
+    _exact_keys(
+        manifest,
+        RUNTIME_SNAPSHOT_MANIFEST_KEYS,
+        f"{context}.runtime_snapshot.manifest",
+    )
+    _expect(manifest["schema_version"], 1, f"{context}.runtime_snapshot.schema_version")
+    _expect(
+        manifest["artifact_type"],
+        "QM5_20009_RESEARCH_RUNTIME_SNAPSHOT",
+        f"{context}.runtime_snapshot.artifact_type",
+    )
+    _expect(manifest["status"], "SEALED", f"{context}.runtime_snapshot.status")
+    _expect(
+        Path(str(manifest["snapshot_root"])).resolve(strict=False),
+        root,
+        f"{context}.runtime_snapshot.snapshot_root",
+    )
+    _expect(
+        Path(str(manifest["snapshot_repo_root"])).resolve(strict=False),
+        repo_root,
+        f"{context}.runtime_snapshot.snapshot_repo_root",
+    )
+    if not isinstance(manifest["run_id"], str) or not manifest["run_id"]:
+        raise AdjudicationError(f"{context}.runtime_snapshot.run_id is invalid")
+
+    role_bindings = _mapping(
+        snapshot["role_bindings"], f"{context}.runtime_snapshot.role_bindings"
+    )
+    _exact_keys(
+        role_bindings,
+        RUNTIME_SNAPSHOT_ROLES,
+        f"{context}.runtime_snapshot.role_bindings",
+    )
+    files = _list(manifest["files"], f"{context}.runtime_snapshot.files")
+    rows_by_role: dict[str, Mapping[str, Any]] = {}
+    normalized_roles: dict[str, Any] = {}
+    for index, raw_row in enumerate(files):
+        row = _mapping(raw_row, f"{context}.runtime_snapshot.files[{index}]")
+        _exact_keys(
+            row,
+            RUNTIME_SNAPSHOT_FILE_KEYS,
+            f"{context}.runtime_snapshot.files[{index}]",
+        )
+        role = row["role"]
+        if not isinstance(role, str) or role not in RUNTIME_SNAPSHOT_ROLES or role in rows_by_role:
+            raise AdjudicationError(f"{context}.runtime_snapshot has invalid/duplicate role")
+        relative = _canonical_relative_path(
+            row["repo_relative_path"], f"{context}.runtime_snapshot.{role}.relative"
+        )
+        expected_path = (repo_root / Path(*PurePosixPath(relative).parts)).resolve(
+            strict=False
+        )
+        _expect(
+            Path(str(row["snapshot_path"])).resolve(strict=False),
+            expected_path,
+            f"{context}.runtime_snapshot.{role}.snapshot_path",
+        )
+        bound = _binding_compat(
+            role_bindings[role],
+            context=f"{context}.runtime_snapshot.role_bindings.{role}",
+            root=repo_root,
+        )
+        _expect(bound.path, str(expected_path), f"{context}.runtime_snapshot.{role}.path")
+        _expect(bound.size_bytes, row["size_bytes"], f"{context}.runtime_snapshot.{role}.size")
+        _expect(bound.sha256, row["sha256"], f"{context}.runtime_snapshot.{role}.sha256")
+        rows_by_role[role] = row
+        normalized_roles[role] = {
+            "repo_relative_path": relative,
+            "size_bytes": bound.size_bytes,
+            "sha256": bound.sha256,
+        }
+    _exact_keys(rows_by_role, RUNTIME_SNAPSHOT_ROLES, f"{context}.runtime_snapshot.files")
+    if [str(row["role"]) for row in files] != sorted(RUNTIME_SNAPSHOT_ROLES):
+        raise AdjudicationError(f"{context}.runtime_snapshot file order is not canonical")
+    _expect(
+        manifest["closure_sha256"],
+        evidence_io.canonical_payload_sha256(files),
+        f"{context}.runtime_snapshot.closure_sha256",
+    )
+    _expect(
+        snapshot["selected_set_repo_relative"],
+        normalized_roles["selected_set"]["repo_relative_path"],
+        f"{context}.runtime_snapshot.selected_set_repo_relative",
+    )
+
+    external_rows = _list(value["external_runtime"], f"{context}.external_runtime")
+    external: dict[str, Any] = {}
+    for index, raw_row in enumerate(external_rows):
+        row = _mapping(raw_row, f"{context}.external_runtime[{index}]")
+        _exact_keys(
+            row,
+            {"role", "path", "size_bytes", "sha256"},
+            f"{context}.external_runtime[{index}]",
+        )
+        role = row["role"]
+        if not isinstance(role, str) or role not in EXTERNAL_RUNTIME_ROLES or role in external:
+            raise AdjudicationError(f"{context}.external_runtime has invalid/duplicate role")
+        binding = _binding_compat(
+            {key: row[key] for key in ("path", "size_bytes", "sha256")},
+            context=f"{context}.external_runtime.{role}",
+        )
+        external[role] = _binding_dict(binding)
+    _exact_keys(external, EXTERNAL_RUNTIME_ROLES, f"{context}.external_runtime")
+
+    postflight = _mapping(value["postflight"], f"{context}.postflight")
+    final = _mapping(
+        value["final_snapshot_verification"],
+        f"{context}.final_snapshot_verification",
+    )
+    _expect(final, postflight, f"{context}.final_snapshot_verification")
+    for field, expected in (
+        ("status", "PASS"),
+        ("artifact_type", "QM5_20009_RESEARCH_VALIDATOR_POST_RECEIPT"),
+        ("run_id", manifest["run_id"]),
+        ("runtime_snapshot_manifest_sha256", manifest_binding.sha256),
+    ):
+        _expect(postflight.get(field), expected, f"{context}.postflight.{field}")
+    normalized = {
+        "runtime_snapshot_roles": normalized_roles,
+        "external_runtime": external,
+    }
     return normalized, evidence_io.canonical_payload_sha256(normalized)
 
 

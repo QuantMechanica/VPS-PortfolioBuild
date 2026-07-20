@@ -245,6 +245,8 @@ function Assert-QmResearchSummary {
         throw "Runner summary run count drift: $($runRows.Count) != $($Contract.runs)"
     }
     $summaryPaths = New-Object System.Collections.Generic.List[string]
+    $testerIniPaths = New-Object System.Collections.Generic.List[string]
+    $testerLogPaths = New-Object System.Collections.Generic.List[string]
     foreach ($run in $runRows) {
         if ($run -isnot [System.Collections.IDictionary] -or [string]$run['status'] -cne 'OK') {
             throw 'All accepted raw research runs must have status OK'
@@ -257,7 +259,18 @@ function Assert-QmResearchSummary {
             -not (Test-Path -LiteralPath $report -PathType Leaf)) {
             throw "Runner summary report path is missing/outside report_dir: $report"
         }
+        $runDirectory = Split-Path -Parent $report
+        $testerIni = Join-Path $runDirectory 'tester.ini'
+        $testerLog = [System.IO.Path]::GetFullPath([string]$run['tester_log_path'])
+        foreach ($runtimeArtifact in @($testerIni, $testerLog)) {
+            if (-not (Test-QmPathWithin -Path $runtimeArtifact -Root $reportDir) -or
+                -not (Test-Path -LiteralPath $runtimeArtifact -PathType Leaf)) {
+                throw "Runner runtime artifact is missing/outside report_dir: $runtimeArtifact"
+            }
+        }
         $summaryPaths.Add($report.ToLowerInvariant())
+        $testerIniPaths.Add($testerIni)
+        $testerLogPaths.Add($testerLog)
     }
     $diskPaths = @($rawReports | ForEach-Object { $_.FullName.ToLowerInvariant() })
     if ([string]::Join('|', @($summaryPaths | Sort-Object)) -cne
@@ -267,6 +280,8 @@ function Assert-QmResearchSummary {
     return [ordered]@{
         report_dir = $reportDir
         reports = @($rawReports | ForEach-Object { $_.FullName })
+        tester_inis = @($testerIniPaths)
+        tester_logs = @($testerLogPaths)
     }
 }
 

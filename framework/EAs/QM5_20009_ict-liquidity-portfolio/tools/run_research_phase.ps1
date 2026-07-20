@@ -257,6 +257,8 @@ try {
         ConvertFrom-Json -AsHashtable -DateKind String -ErrorAction Stop
     $summaryEvidence = Assert-QmResearchSummary -Summary $summary -Contract $contract
     $reportPaths = [string[]]@($summaryEvidence['reports'])
+    $testerIniPaths = [string[]]@($summaryEvidence['tester_inis'])
+    $testerLogPaths = [string[]]@($summaryEvidence['tester_logs'])
 
     $auditArguments = New-Object System.Collections.Generic.List[string]
     $auditArguments.Add('-B')
@@ -310,17 +312,13 @@ try {
 
     $artifactBindings = [ordered]@{
         validator_pre = Get-QmFileBinding -Path $preReceiptPath
-        validator_pre_detached = Get-QmFileBinding -Path ($preReceiptPath + '.sha256')
         validator_post = Get-QmFileBinding -Path $postReceiptPath
-        validator_post_detached = Get-QmFileBinding -Path ($postReceiptPath + '.sha256')
-        validator_final_snapshot = Get-QmFileBinding -Path $finalSnapshotReceiptPath
-        validator_final_snapshot_detached = Get-QmFileBinding -Path ($finalSnapshotReceiptPath + '.sha256')
-        runtime_snapshot_manifest = Get-QmFileBinding -Path ([string]$snapshotBinding['manifest_path'])
-        runtime_snapshot_manifest_detached = Get-QmFileBinding -Path ([string]$snapshotBinding['manifest_sidecar_path'])
         runner_result = Get-QmFileBinding -Path $runnerResultPath
         runner_summary = Get-QmFileBinding -Path $summaryPath
         cost_audit = Get-QmFileBinding -Path $costAuditPath
         raw_reports = @($reportPaths | ForEach-Object { Get-QmFileBinding -Path $_ })
+        tester_inis = @($testerIniPaths | ForEach-Object { Get-QmFileBinding -Path $_ })
+        tester_logs = @($testerLogPaths | ForEach-Object { Get-QmFileBinding -Path $_ })
     }
     $receipt = [ordered]@{
         schema_version = 1
