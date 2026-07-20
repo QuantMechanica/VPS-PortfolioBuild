@@ -9,7 +9,7 @@ created: 2026-07-20
 created_by: Research
 last_updated: 2026-07-20
 g0_status: APPROVED
-g0_approval_reasoning: "OWNER commodity-sleeve mission: R1 tier-B complete peer-reviewed source; R2 fixed paired Monday directions, next-D1 exit, 1:1 notional hedge and deterministic joint risk/repair; R3 synchronized XTI/XNG D1 logical route; R4 calendar/ATR only with no ML or banned indicator; exact paired-mechanic dedup CLEAN."
+g0_approval_reasoning: "OWNER commodity-sleeve mission: R1 tier-B complete peer-reviewed source; R2 fixed paired Monday directions, next-D1 exit, 1:1 notional target and deterministic joint risk/repair; R3 synchronized XTI/XNG D1 logical route; R4 calendar/ATR only with no ML or banned indicator; no identical two-leg package, known exact component overlap."
 source_citation: "Hoelscher, S. A., Mbanga, C. and Nelson, W. A. (2017). TGIF? The Weekend Effect in Energy Commodities. Journal of Finance Issues 16(1), 47-68. DOI 10.58886/jfi.v16i1.2264."
 source_citations:
   - type: academic_paper
@@ -24,7 +24,7 @@ concepts:
   - "[[concepts/energy-weekend-effect]]"
 indicators:
   - "[[indicators/atr]]"
-strategy_type_flags: [calendar-seasonality, relative-value, market-neutral, atr-hard-stop, time-stop, low-frequency]
+strategy_type_flags: [calendar-seasonality, relative-value, approximately-dollar-neutral-basket, atr-hard-stop, time-stop, low-frequency]
 markets: [commodities, energy, crude_oil, natural_gas]
 timeframes: [D1]
 period: D1
@@ -48,7 +48,7 @@ q02_status: NOT_QUEUED
 review_focus: "Falsify the one-session long-XNG/short-XTI differential after CFD timing, 1:1 notional rounding, combined stop risk, costs and legging; standalone weekday overlap and unproven realized book correlation are explicit."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
-hard_rules_at_risk: [risk_mode_dual, magic_schema, one_position_per_magic_symbol, basket_atomicity, cfd_source_basis, portfolio_correlation]
+hard_rules_at_risk: [risk_mode_dual, magic_schema, one_position_per_magic_symbol, basket_atomicity, cfd_source_basis, source_return_window_translation, known_component_overlap, dollar_not_beta_neutral, portfolio_correlation]
 ---
 
 # XTI/XNG Monday Relative-Value Basket
@@ -94,9 +94,10 @@ Q02; the rule may not be rescued by moving entry to Friday.
 
 ## Exact non-duplicate decision
 
-Pre-allocation dedup returned `CLEAN` for slug `xti-xng-mon-rv`, strategy ID
-`TGIF-WTI-WEEKEND-2017_S03`, and the full paired mechanic. The verdict is
-`NO_EXACT_PAIRED_MECHANIC_DUPLICATE` with `KNOWN_SINGLE_LEG_OVERLAP`:
+The exact-package search found no identical two-leg candidate for slug
+`xti-xng-mon-rv`, strategy ID `TGIF-WTI-WEEKEND-2017_S03`, and the full
+paired mechanic. The semantic verdict is
+`NO_IDENTICAL_TWO_LEG_PACKAGE / KNOWN_EXACT_COMPONENT_OVERLAP`:
 
 - `QM5_12596_wti-mon-fade` independently shorts WTI on Monday and may hold a
   full unhedged WTI position; it has no Natural Gas leg or package invariant.
@@ -257,7 +258,8 @@ and portfolio admission are not authorized.
 - [x] R3: XTI/XNG D1 and a logical basket route are locally testable.
 - [x] R4: no ML, banned indicator, adaptive fit, grid or martingale.
 - [x] Expected package cadence exceeds the five-per-year Q02 floor.
-- [x] Exact paired-mechanic dedup is clean; standalone overlap is disclosed.
+- [x] No identical paired package exists; exact standalone component overlap
+  is disclosed and remains a material economic risk.
 - [x] One combined `RISK_FIXED` budget; no standalone test or live preset.
 
 ## 12. Framework Alignment
@@ -283,7 +285,7 @@ Q02 is enqueued without dispatch.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-20 | initial source-explicit cross-energy Monday package | G0 | APPROVED |
+| v1 | 2026-07-20 | initial source-backed, QM-translated cross-energy Monday package | G0 | APPROVED |
 
 ## 15. Pipeline Phase Status
 

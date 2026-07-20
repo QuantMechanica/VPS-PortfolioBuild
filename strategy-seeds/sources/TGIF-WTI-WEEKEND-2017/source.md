@@ -10,6 +10,8 @@ approved_by: OWNER commodity-sleeve mission
 approved_at: 2026-07-20
 uri: https://jfi-aof.org/index.php/jfi/article/view/2264
 open_full_text_url: https://jfi-aof.org/index.php/jfi/article/download/2264/1847
+strategy_ids:
+  - TGIF-WTI-WEEKEND-2017_S03
 cards_extracted:
   - wti-weekend-gap-fade
   - wti-weekend-gap-bounce
@@ -104,12 +106,14 @@ gap filter, selecting subperiods, or enabling either standalone leg.
 
 ## Non-duplicate boundary
 
-Repository dedup returned `CLEAN` for strategy
-`TGIF-WTI-WEEKEND-2017_S03` and slug `xti-xng-mon-rv`. Earlier
+The exact-package search found no identical two-leg strategy for
+`TGIF-WTI-WEEKEND-2017_S03` and slug `xti-xng-mon-rv`; the semantic verdict
+is `NO_IDENTICAL_TWO_LEG_PACKAGE / KNOWN_EXACT_COMPONENT_OVERLAP`. Earlier
 `QM5_12596` and `QM5_12806` contain the respective standalone Monday legs,
 but can hold either unhedged exposure independently. This extraction permits
 neither leg alone: it is one jointly sized, jointly repaired, dollar-notional
-neutral logical package. Existing XTI/XNG baskets use ratio, return-spread,
+targeted logical package. Dollar neutrality is not beta or volatility
+neutrality. Existing XTI/XNG baskets use ratio, return-spread,
 cross-momentum, carry, volatility, ranking or month-season rules rather than
 this fixed one-session cross-sectional calendar differential.
 
@@ -122,12 +126,3 @@ this fixed one-session cross-sectional calendar differential.
 - One position per registered leg magic and no intentional orphan package.
 - No standalone-symbol test, live preset, T_Live/AutoTrading action, deploy
   manifest, portfolio gate change, or portfolio-admission claim.
-
-## R-Rules
-
-- R1 reputable source: PASS. Single academic-paper source with public URL.
-- R2 mechanical: PASS. Fixed D1 Monday gap condition, ATR hard stop, gap-fill
-  target, and deterministic time exit.
-- R3 data available: PASS. XTIUSD.DWX exists in the DWX symbol matrix.
-- R4 no ML/banned logic: PASS. Deterministic single-position calendar/gap
-  sleeve.
