@@ -559,14 +559,29 @@ function Invoke-CleanupLeaseFence(
 ) {
     $existing = Get-ScheduledTask -TaskName $CleanupTaskName -TaskPath $taskPath -ErrorAction SilentlyContinue
     if ($null -ne $existing) {
-        Start-ScheduledTask -TaskName $CleanupTaskName -TaskPath $taskPath -ErrorAction Stop
+        if ($existing.TaskName -cne $CleanupTaskName -or $existing.TaskPath -cne $taskPath) {
+            throw 'SYSTEM compile cleanup lease task identity drifted before immediate start.'
+        }
+        if ($existing.State.ToString() -cne 'Running') {
+            Start-ScheduledTask -TaskName $CleanupTaskName -TaskPath $taskPath -ErrorAction Stop
+        }
     }
     $deadline = [DateTimeOffset]::UtcNow.AddMinutes(2)
     do {
         if (Test-Path -LiteralPath $DisarmPath -PathType Leaf) { break }
         if (Test-Path -LiteralPath $ResultPath -PathType Leaf) {
-            $interim = Get-Content -LiteralPath $ResultPath -Raw -ErrorAction Stop | ConvertFrom-Json -DateKind String -ErrorAction Stop
-            if ($interim.success -is [bool] -and -not [bool]$interim.success) {
+            $interimFields = @(
+                'schema_version', 'artifact_type', 'completed_utc', 'success', 'containment_verified', 'lease_disarmed',
+                'expected_sid', 'target_task_name', 'cleanup_task_name', 'manifest_valid', 'account_restored_disabled',
+                'owner_process_count', 'dev1_root_process_count', 'target_task_registered', 'cleanup_task_registered', 'failures'
+            )
+            $interimKinds = @{ schema_version = 'Integer'; artifact_type = 'String'; completed_utc = 'String'; expected_sid = 'String';
+                target_task_name = 'String'; cleanup_task_name = 'String'; owner_process_count = 'Integer'; dev1_root_process_count = 'Integer'; failures = 'Array' }
+            foreach ($field in @('success', 'containment_verified', 'lease_disarmed', 'manifest_valid', 'account_restored_disabled',
+                    'target_task_registered', 'cleanup_task_registered')) { $interimKinds[$field] = 'Boolean' }
+            $interim = Read-ExactJson -Path $ResultPath -ExpectedFields $interimFields `
+                -Label 'interim DEV1 compile cleanup result' -ExpectedKinds $interimKinds
+            if (-not [bool]$interim.success) {
                 throw 'SYSTEM compile cleanup lease reported failed containment.'
             }
         }
@@ -586,8 +601,13 @@ function Invoke-CleanupLeaseFence(
     }
 }
 
-function Resolve-Dev1ProfileInclude {
-    $terminalProfiles = Join-Path $env:APPDATA 'MetaQuotes\Terminal'
+function Test-SamePath([string]$Left, [string]$Right) {
+    if ([string]::IsNullOrWhiteSpace($Left) -or [string]::IsNullOrWhiteSpace($Right)) { return $false }
+    return ([IO.Path]::GetFullPath($Left)).Equals([IO.Path]::GetFullPath($Right), [StringComparison]::OrdinalIgnoreCase)
+}
+
+function Resolve-Dev1ProfileInclude([string]$ProfileRoot = $env:USERPROFILE) {
+    $terminalProfiles = Join-Path ([IO.Path]::GetFullPath($ProfileRoot)) 'AppData\Roaming\MetaQuotes\Terminal'
     $matches = @(Get-ChildItem -LiteralPath $terminalProfiles -Directory -ErrorAction Stop | Where-Object {
         $origin = Join-Path $_.FullName 'origin.txt'
         (Test-Path -LiteralPath $origin -PathType Leaf) -and
@@ -681,13 +701,14 @@ function Invoke-CompileChild {
         'expected_account', 'expected_sid', 'expected_profile', 'expected_common_path', 'expected_task_name', 'result_path',
         'controller_path', 'controller_sha256', 'compile_one_path', 'compile_one_sha256',
         'metaeditor_path', 'metaeditor_sha256', 'source_path', 'source_sha256',
-        'repo_include_path', 'repo_include_snapshot_sha256', 'pwsh_path', 'pwsh_sha256',
+        'repo_include_path', 'repo_include_snapshot_sha256', 'expected_include_targets', 'pwsh_path', 'pwsh_sha256',
         'lane_contract_sha256', 'machine_credential_sha256', 'machine_credential_helper_sha256',
         'rotation_receipt_sha256', 'cleanup_helper_sha256'
     )
     $requestKinds = @{}
     foreach ($field in $requestFields) { $requestKinds[$field] = 'String' }
     $requestKinds['schema_version'] = 'Integer'
+    $requestKinds['expected_include_targets'] = 'Array'
     $request = Read-ExactJson -Path $RequestPath -ExpectedFields $requestFields -Label 'DEV1 compile request' -ExpectedKinds $requestKinds
     if ([int]$request.schema_version -ne 1 -or [string]$request.artifact_type -cne 'QM5_20002_DEV1_V3_COMPILE_REQUEST' -or
         [string]$request.run_id -cnotmatch '^[0-9]{8}T[0-9]{6}Z_[0-9a-f]{32}$' -or
@@ -695,13 +716,22 @@ function Invoke-CompileChild {
         [string]$request.expected_task_name -cnotmatch '^QM_DEV1_COMPILE_[0-9a-f]{32}$') {
         throw 'Compile child request identity drifted.'
     }
+    $created = [DateTimeOffset]::MinValue
     $expires = [DateTimeOffset]::MinValue
+    if (-not [DateTimeOffset]::TryParseExact([string]$request.created_utc, 'o', [cultureinfo]::InvariantCulture,
+            [Globalization.DateTimeStyles]::RoundtripKind, [ref]$created) -or $created.Offset -ne [TimeSpan]::Zero) {
+        throw 'Compile child request creation time is malformed.'
+    }
     if (-not [DateTimeOffset]::TryParseExact([string]$request.expires_utc, 'o', [cultureinfo]::InvariantCulture,
             [Globalization.DateTimeStyles]::RoundtripKind, [ref]$expires) -or $expires.Offset -ne [TimeSpan]::Zero -or
-        $expires -le [DateTimeOffset]::UtcNow) { throw 'Compile child request is expired or malformed.' }
+        $expires -le [DateTimeOffset]::UtcNow -or $expires -le $created -or
+        ($expires - $created).TotalMinutes -gt 20 -or $created -gt [DateTimeOffset]::UtcNow.AddMinutes(5)) {
+        throw 'Compile child request is expired or malformed.'
+    }
     Clear-InheritedEnvironment -ExpectedProfile ([string]$request.expected_profile)
     $childRunRoot = [IO.Path]::GetFullPath([string]$request.run_root)
-    if (-not (Test-UnderRoot -Path $childRunRoot -Root $reportsRoot)) { throw 'Child RunRoot escaped reports root.' }
+    $expectedRunRoot = Join-Path $reportsRoot ([string]$request.run_id)
+    if (-not (Test-SamePath -Left $childRunRoot -Right $expectedRunRoot)) { throw 'Child RunRoot escaped its exact run identity.' }
     $controlRoot = Join-Path $childRunRoot 'control'
     $outputRoot = Join-Path $childRunRoot 'output'
     $stageRoot = Join-Path $outputRoot 'stage'
@@ -711,7 +741,34 @@ function Invoke-CompileChild {
     $childLog = Join-Path $outputRoot 'compile_child.log'
     $includeManifest = Join-Path $outputRoot 'include_sync_manifest.csv'
     $includeAudit = Join-Path $outputRoot 'include_path_audit.csv'
-    $started = (Get-Date).ToUniversalTime()
+    if (-not (Test-SamePath -Left $RequestPath -Right (Join-Path $controlRoot 'compile_request.json')) -or
+        -not (Test-SamePath -Left ([string]$request.result_path) -Right $resultPath) -or
+        -not (Test-SamePath -Left ([string]$request.source_path) -Right $stageMq5) -or
+        -not (Test-SamePath -Left ([string]$request.repo_include_path) -Right $repoInclude) -or
+        -not (Test-SamePath -Left ([string]$request.controller_path) -Right $controllerScript) -or
+        -not (Test-SamePath -Left ([string]$request.compile_one_path) -Right $compileOne) -or
+        -not (Test-SamePath -Left ([string]$request.metaeditor_path) -Right $metaEditor) -or
+        -not (Test-SamePath -Left ([string]$request.pwsh_path) -Right $pwsh) -or
+        -not (Test-SamePath -Left ([string]$request.expected_profile) -Right 'C:\Users\QMDev1') -or
+        -not (Test-SamePath -Left ([string]$request.expected_common_path) -Right 'C:\Users\QMDev1\AppData\Roaming\MetaQuotes\Terminal\Common') -or
+        [string]$request.expected_account -cne "$env:COMPUTERNAME\QMDev1" -or
+        [string]$request.expected_sid -cnotmatch '^S-1-[0-9-]+$') {
+        throw 'Compile child request fixed path/identity binding drifted.'
+    }
+    foreach ($hashField in @('controller_sha256', 'compile_one_sha256', 'metaeditor_sha256', 'source_sha256',
+            'repo_include_snapshot_sha256', 'pwsh_sha256', 'lane_contract_sha256', 'machine_credential_sha256',
+            'machine_credential_helper_sha256', 'rotation_receipt_sha256', 'cleanup_helper_sha256')) {
+        if ([string]$request.$hashField -cnotmatch '^[0-9a-f]{64}$') {
+            throw "Compile child request hash field drifted: $hashField"
+        }
+    }
+    $requestedTargets = @($request.expected_include_targets | ForEach-Object {
+            if ($_ -isnot [string]) { throw 'Compile child include-target entry is not a JSON string.' }
+            [IO.Path]::GetFullPath([string]$_)
+        } | Sort-Object -Unique)
+    if ($requestedTargets.Count -ne 2) { throw 'Compile child request must bind exactly two isolated include targets.' }
+
+    $started = [DateTimeOffset]::UtcNow
     $success = $false
     $failure = $null
     $errors = -1
@@ -722,22 +779,28 @@ function Invoke-CompileChild {
     $includeRows = 0
     $includedPaths = 0
     $outsidePaths = -1
+    $identitySid = $null
+    $identityAccount = $null
+    $profilePath = $null
+    $commonPath = $null
     try {
         foreach ($path in @($childRunRoot, $controlRoot, $outputRoot, $stageRoot, $stageMq5, $repoInclude, $compileOne, $metaEditor, $pwsh, $controllerScript)) {
             Assert-PhysicalPath -Path $path
         }
         $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
-        if ($identity.User.Value -cne [string]$request.expected_sid) { throw "Wrong child SID: $($identity.User.Value)" }
+        $identitySid = [string]$identity.User.Value
+        $identityAccount = [string]$identity.Name
+        $profilePath = [IO.Path]::GetFullPath($env:USERPROFILE)
+        if ($identitySid -cne [string]$request.expected_sid) { throw "Wrong child SID: $identitySid" }
         $expectedAccount = [string]$request.expected_account
-        if (-not $identity.Name.Equals($expectedAccount, [StringComparison]::OrdinalIgnoreCase)) {
-            throw "Wrong child account: $($identity.Name)"
+        if (-not $identityAccount.Equals($expectedAccount, [StringComparison]::OrdinalIgnoreCase)) {
+            throw "Wrong child account: $identityAccount"
         }
-        if (-not ([IO.Path]::GetFullPath($env:USERPROFILE)).Equals(
-                [IO.Path]::GetFullPath([string]$request.expected_profile), [StringComparison]::OrdinalIgnoreCase)) {
+        if (-not (Test-SamePath -Left $profilePath -Right ([string]$request.expected_profile))) {
             throw 'Wrong QMDev1 profile.'
         }
-        $actualCommon = [IO.Path]::GetFullPath((Join-Path $env:APPDATA 'MetaQuotes\Terminal\Common'))
-        if (-not $actualCommon.Equals([IO.Path]::GetFullPath([string]$request.expected_common_path), [StringComparison]::OrdinalIgnoreCase)) {
+        $commonPath = [IO.Path]::GetFullPath((Join-Path $env:APPDATA 'MetaQuotes\Terminal\Common'))
+        if (-not (Test-SamePath -Left $commonPath -Right ([string]$request.expected_common_path))) {
             throw 'Wrong QMDev1 Common path after environment reconstruction.'
         }
         if ((Get-Sha256 -Path $stageMq5) -cne [string]$request.source_sha256) {
@@ -755,10 +818,13 @@ function Invoke-CompileChild {
         }
         if (@(Get-Dev1Processes).Count -ne 0) { throw 'DEV1 was not idle in child preflight.' }
 
-        $profileInclude = Resolve-Dev1ProfileInclude
+        $profileInclude = Resolve-Dev1ProfileInclude -ProfileRoot $profilePath
         $portableInclude = Join-Path $devRoot 'MQL5\Include'
         foreach ($target in @($profileInclude, $portableInclude)) { Assert-PhysicalPath -Path $target }
         $expectedTargets = @([IO.Path]::GetFullPath($profileInclude), [IO.Path]::GetFullPath($portableInclude)) | Sort-Object -Unique
+        if (($expectedTargets -join '|') -cne ($requestedTargets -join '|')) {
+            throw 'Compile child isolated include-target request binding drifted.'
+        }
         $includeSnapshot = Get-RepoIncludeSnapshot
         if (Get-CanonicalObjectSha256 $includeSnapshot -cne [string]$request.repo_include_snapshot_sha256) {
             throw 'Compile child repository include snapshot drifted before compile.'
@@ -787,11 +853,12 @@ function Invoke-CompileChild {
         $metaExit = [int]$values['metaeditor_exit_code']
         if ($errors -ne 0 -or $warnings -ne 0) { throw "Strict compile failed: errors=$errors warnings=$warnings" }
         $compileLog = [IO.Path]::GetFullPath([string]$values['log'])
-        if (-not (Test-Path -LiteralPath $compileLog -PathType Leaf)) { throw 'compile_one log missing.' }
+        if (-not (Test-UnderRoot -Path $compileLog -Root $reportRoot) -or
+            -not (Test-Path -LiteralPath $compileLog -PathType Leaf)) { throw 'compile_one log escaped its report root or is missing.' }
         if (-not (Test-Path -LiteralPath $stageEx5 -PathType Leaf) -or (Get-Item $stageEx5).Length -le 0) {
             throw 'compile_one produced no non-empty staged EX5.'
         }
-        if ((Get-Item $stageEx5).LastWriteTimeUtc -lt $started.AddSeconds(-2)) { throw 'Staged EX5 predates compile.' }
+        if ((Get-Item $stageEx5).LastWriteTimeUtc -lt $started.UtcDateTime.AddSeconds(-2)) { throw 'Staged EX5 predates compile.' }
 
         $reportedTargets = @(([string]$values['include_sync_targets']).Split(';', [StringSplitOptions]::RemoveEmptyEntries) |
             ForEach-Object { [IO.Path]::GetFullPath($_) } | Sort-Object -Unique)
@@ -817,11 +884,8 @@ function Invoke-CompileChild {
         $failure = $_.Exception.Message
         try { Add-Content -LiteralPath $childLog -Value "failure=$failure" -Encoding utf8 } catch { }
     } finally {
-        foreach ($process in @(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object {
-            $_.ExecutablePath -and ([IO.Path]::GetFullPath([string]$_.ExecutablePath)).Equals(
-                ([IO.Path]::GetFullPath($metaEditor)), [StringComparison]::OrdinalIgnoreCase)
-        })) {
-            try { Stop-Process -Id ([int]$process.ProcessId) -Force -ErrorAction Stop } catch { }
+        if (-not (Test-Path -LiteralPath $childLog -PathType Leaf)) {
+            "failure=$failure" | Set-Content -LiteralPath $childLog -Encoding utf8
         }
         $result = [ordered]@{
             schema_version = 2
@@ -832,21 +896,38 @@ function Invoke-CompileChild {
             run_id = if ($null -ne $request) { [string]$request.run_id } else { $null }
             nonce = if ($null -ne $request) { [string]$request.nonce } else { $null }
             request_sha256 = $ExpectedRequestSha256
-            identity_sid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
-            common_path = if ($null -ne $request) { [string]$request.expected_common_path } else { $null }
+            identity_account = $identityAccount
+            identity_sid = $identitySid
+            profile_path = $profilePath
+            common_path = $commonPath
+            expected_task_name = if ($null -ne $request) { [string]$request.expected_task_name } else { $null }
+            controller_path = $controllerScript
+            controller_sha256 = if (Test-Path $controllerScript) { Get-Sha256 $controllerScript } else { $null }
+            compile_one_path = $compileOne
+            compile_one_sha256 = if (Test-Path $compileOne) { Get-Sha256 $compileOne } else { $null }
             metaeditor_path = $metaEditor
             metaeditor_sha256 = if (Test-Path $metaEditor) { Get-Sha256 $metaEditor } else { $null }
             metaeditor_exit_code = $metaExit
+            pwsh_path = $pwsh
+            pwsh_sha256 = if (Test-Path $pwsh) { Get-Sha256 $pwsh } else { $null }
+            repo_include_path = $repoInclude
+            repo_include_snapshot_sha256 = if (Test-Path $repoInclude) { Get-CanonicalObjectSha256 (Get-RepoIncludeSnapshot) } else { $null }
             errors = $errors
             warnings = $warnings
+            source_mq5_path = $stageMq5
             source_mq5_sha256 = if (Test-Path $stageMq5) { Get-Sha256 $stageMq5 } else { $null }
             ex5_path = $stageEx5
             ex5_size_bytes = if (Test-Path $stageEx5) { (Get-Item $stageEx5).Length } else { 0 }
             ex5_sha256 = if (Test-Path $stageEx5) { Get-Sha256 $stageEx5 } else { $null }
             compile_log_path = $compileLog
+            compile_log_sha256 = if ($null -ne $compileLog -and (Test-Path $compileLog)) { Get-Sha256 $compileLog } else { $null }
+            child_log_path = $childLog
+            child_log_sha256 = Get-Sha256 $childLog
             include_manifest_path = $includeManifest
             include_manifest_rows = $includeRows
+            include_manifest_sha256 = if (Test-Path $includeManifest) { Get-Sha256 $includeManifest } else { $null }
             include_path_audit_path = $includeAudit
+            include_path_audit_sha256 = if (Test-Path $includeAudit) { Get-Sha256 $includeAudit } else { $null }
             included_paths_count = $includedPaths
             outside_include_paths_count = $outsidePaths
             include_sync_targets = $includeTargets
@@ -856,7 +937,7 @@ function Invoke-CompileChild {
             rotation_receipt_sha256 = if ($null -ne $request) { [string]$request.rotation_receipt_sha256 } else { $null }
             cleanup_helper_sha256 = if ($null -ne $request) { [string]$request.cleanup_helper_sha256 } else { $null }
             started_utc = $started.ToString('o')
-            finished_utc = (Get-Date).ToUniversalTime().ToString('o')
+            finished_utc = [DateTimeOffset]::UtcNow.ToString('o')
         }
         Write-AtomicJson -Path $resultPath -Value $result
     }
