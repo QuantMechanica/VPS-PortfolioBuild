@@ -442,7 +442,7 @@ function Deploy-ExpertBinaryToTerminal {
     # runs at a later pipeline stage).
     #
     # ExpertPath format: "<subdir>\<EaLabel>" (e.g. "QM\QM5_1047_halloween-...").
-    # Repo source: C:\QM\repo\framework\EAs\<EaLabel>\<EaLabel>.ex5
+    # Repo source: <this script's resolved repo root>\framework\EAs\<EaLabel>\<EaLabel>.ex5
     # Destination: D:\QM\mt5\<Tn>\MQL5\Experts\<subdir>\<EaLabel>.ex5
     param(
         [Parameter(Mandatory = $true)]
@@ -462,7 +462,8 @@ function Deploy-ExpertBinaryToTerminal {
     $subdir  = $parts[0]
     $eaLabel = $parts[1]
 
-    $repoSource = Join-Path "C:\QM\repo\framework\EAs" (Join-Path $eaLabel "$eaLabel.ex5")
+    $localRepoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..\..")).Path
+    $repoSource = Join-Path (Join-Path $localRepoRoot "framework\EAs") (Join-Path $eaLabel "$eaLabel.ex5")
     if (-not (Test-Path -LiteralPath $repoSource -PathType Leaf)) {
         # No source .ex5 — let the tester surface the missing-binary error so the
         # smoke summary reasoner can classify it. Don't throw here; sometimes the
@@ -2262,9 +2263,11 @@ if ($effectiveTerminal -ieq "DEV1") {
     try {
         $pumpExe = (Get-Command pythonw.exe -ErrorAction SilentlyContinue).Source
         if (-not $pumpExe) { $pumpExe = (Get-Command python.exe).Source }
+        $pumpRepoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\..')).Path
+        $pumpScript = Join-Path $pumpRepoRoot 'tools\strategy_farm\run_pump_task.py'
         Start-Process -FilePath $pumpExe -ArgumentList @(
-            'tools/strategy_farm/run_pump_task.py'
-        ) -WorkingDirectory 'C:/QM/repo' -WindowStyle Hidden
+            $pumpScript
+        ) -WorkingDirectory $pumpRepoRoot -WindowStyle Hidden
         Write-Output "run_smoke.stage=post_run_pump_triggered"
     } catch {
         Write-Host "post-run pump trigger failed (non-fatal): $_"
