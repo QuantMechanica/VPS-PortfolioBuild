@@ -670,6 +670,44 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertEqual(statuses["cooldown-1"], "pending")
             self.assertEqual(statuses["ready-1"], "active")
 
+    def test_summary_missing_retry_avoids_failed_terminal_and_cools_down(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "missing-summary-1",
+                "EURUSD.DWX",
+                phase="Q02",
+                status="active",
+                claimed_by="T3",
+                payload={},
+            )
+
+            old_find = terminal_worker._find_work_item_summary_data
+            old_stop = terminal_worker._stop_terminal_slot_for_release
+            try:
+                terminal_worker._find_work_item_summary_data = lambda *_args, **_kwargs: None
+                terminal_worker._stop_terminal_slot_for_release = lambda *_args, **_kwargs: True
+                result = terminal_worker._finish_work_item(root, "missing-summary-1", 0)
+            finally:
+                terminal_worker._find_work_item_summary_data = old_find
+                terminal_worker._stop_terminal_slot_for_release = old_stop
+
+            self.assertEqual(result["status"], "pending")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT attempt_count, claimed_by, payload_json FROM work_items WHERE id=?",
+                    ("missing-summary-1",),
+                ).fetchone()
+            payload = json.loads(row[2])
+            self.assertEqual(row[0], 1)
+            self.assertIsNone(row[1])
+            self.assertEqual(payload["avoid_terminals"], ["T3"])
+            self.assertGreater(
+                datetime.fromisoformat(payload["launch_not_before_utc"]),
+                datetime.now(timezone.utc),
+            )
+
     def test_orphan_same_terminal_claim_adopts_live_child(self) -> None:
         with self._root() as tmp:
             root = Path(tmp) / "farm"

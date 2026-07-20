@@ -58,6 +58,11 @@ MULTISYMBOL_RAM_MIN_FREE_GB = 12.0
 # 2026-06-19: 250 work_items INFRA_FAIL in 14s).
 LAUNCH_FAULT_MIN_SECONDS = 10.0
 LAUNCH_FAULT_BACKOFF_SECONDS = 30.0
+# A report-missing run can be MT5 history error [32]: the just-used portable
+# terminal profile still owns a custom-symbol history file.  Immediate retries
+# on that same slot deterministically burn the row's retry budget.  Give the
+# profile time to release its handles and route the retry to another slot.
+SUMMARY_MISSING_RETRY_COOLDOWN_SECONDS = 30.0
 # Log-bomb guard. Some EAs spam the MT5 tester journal per-tick (framework
 # symbol_slot resolver logging on every tick), producing 50-60GB .log files that
 # burn D: at ~10GB/min — that is a BUG to kill. But a legit multi-position /
@@ -1240,6 +1245,15 @@ def _finish_work_item(root: Path, item_id: str, exit_code: int | None) -> dict[s
             attempt = int(item["attempt_count"] or 0) + 1
             payload["run_smoke_exit_code"] = exit_code
             payload["prior_failure"] = payload.get("prior_failure") or "summary_missing"
+            failed_terminal = str(item["claimed_by"] or "").strip().upper()
+            if failed_terminal:
+                avoid_terminals = _payload_avoid_terminals(payload)
+                avoid_terminals.add(failed_terminal)
+                payload["avoid_terminals"] = sorted(avoid_terminals)
+            payload["launch_not_before_utc"] = (
+                datetime.now(timezone.utc)
+                + timedelta(seconds=SUMMARY_MISSING_RETRY_COOLDOWN_SECONDS)
+            ).isoformat()
             terminal_stopped = _stop_terminal_slot_for_release(root, item["claimed_by"])
             if terminal_stopped is not None:
                 payload["terminal_stopped_on_release"] = terminal_stopped
