@@ -120,10 +120,7 @@ $runnerException = $null
 $postException = $null
 
 try {
-    $toolchainBefore = Get-QmToolchainBindings
-
     $validatorArguments = @(
-        $validatorPath,
         '--phase', $Phase,
         '--symbol', $Symbol,
         '--timeframe', $Timeframe,
@@ -131,9 +128,50 @@ try {
         '--from', $FromDate,
         '--to', $ToDate
     )
+
+    $preProcess = Invoke-QmCapturedProcess -FilePath $pythonPath `
+        -Arguments @(
+            @('-B', $validatorPath) + $validatorArguments + @(
+                '--run-id', $runId,
+                '--powershell-path', $pwshPath,
+                '--receipt', $preReceiptPath
+            )
+        ) -WorkingDirectory $repoRoot
+    $preOutput = ConvertFrom-QmProcessJson -ProcessResult $preProcess -Label 'research PRE validator'
+    if ([string]$preOutput['status'] -cne 'PASS' -or
+        -not (Test-Path -LiteralPath $preReceiptPath -PathType Leaf) -or
+        -not (Test-Path -LiteralPath ($preReceiptPath + '.sha256') -PathType Leaf)) {
+        throw 'Research PRE validator did not produce a PASS receipt'
+    }
+    $prePayload = $preOutput
+    $preReceiptSha256 = Get-QmSha256 -Path $preReceiptPath
+    $snapshotBinding = $prePayload['runtime_snapshot']
+    if ($snapshotBinding -isnot [System.Collections.IDictionary] -or
+        $snapshotBinding['role_bindings'] -isnot [System.Collections.IDictionary]) {
+        throw 'Research PRE validator omitted the immutable runtime snapshot binding'
+    }
+    $snapshotRoleBindings = $snapshotBinding['role_bindings']
+    $snapshotRepoRoot = [System.IO.Path]::GetFullPath([string]$snapshotBinding['repo_root'])
+    $snapshotValidatorPath = [string](Get-QmSnapshotRoleBinding -RoleBindings $snapshotRoleBindings -Role 'validator')['path']
+    $snapshotRunDev1Path = [string](Get-QmSnapshotRoleBinding -RoleBindings $snapshotRoleBindings -Role 'runner_dev1_controller')['path']
+    $snapshotRunSmokePath = [string](Get-QmSnapshotRoleBinding -RoleBindings $snapshotRoleBindings -Role 'runner_smoke')['path']
+    $snapshotChildPath = [string](Get-QmSnapshotRoleBinding -RoleBindings $snapshotRoleBindings -Role 'runner_dev1_child')['path']
+    $snapshotSetPath = [string](Get-QmSnapshotRoleBinding -RoleBindings $snapshotRoleBindings -Role 'selected_set')['path']
+    $snapshotEaBinaryPath = [string](Get-QmSnapshotRoleBinding -RoleBindings $snapshotRoleBindings -Role 'ea_binary')['path']
+    $snapshotAuditPath = [string](Get-QmSnapshotRoleBinding -RoleBindings $snapshotRoleBindings -Role 'report_auditor')['path']
+    foreach ($runtimePath in @(
+        $snapshotValidatorPath, $snapshotRunDev1Path, $snapshotRunSmokePath,
+        $snapshotChildPath, $snapshotSetPath, $snapshotEaBinaryPath, $snapshotAuditPath
+    )) {
+        if (-not (Test-QmPathWithin -Path $runtimePath -Root $snapshotRepoRoot) -or
+            -not (Test-Path -LiteralPath $runtimePath -PathType Leaf)) {
+            throw "Runtime snapshot role escaped/is missing from snapshot repo: $runtimePath"
+        }
+    }
+    $setInputs = Read-QmSetInputs -Path $snapshotSetPath
     $runnerArguments = @(
         '-NoLogo', '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass',
-        '-File', $runDev1Path,
+        '-File', $snapshotRunDev1Path,
         '-EAId', '20009',
         '-Symbol', $Symbol,
         '-Year', $FromDate.Substring(0, 4),
@@ -145,40 +183,47 @@ try {
         '-MinTrades', '0',
         '-Model', '4',
         '-TimeoutSeconds', ([string]$TimeoutSeconds),
-        '-SetFile', $setPath,
+        '-SetFile', $snapshotSetPath,
         '-CommissionPerLot', '0',
         '-CommissionPerSideNative', '0',
         '-TesterCurrencyOverride', 'USD',
         '-TesterDepositOverride', '100000',
         '-SmokeMode'
     )
+    $postValidatorArguments = @(
+        '-B', $snapshotValidatorPath,
+        '--phase', $Phase,
+        '--symbol', $Symbol,
+        '--timeframe', $Timeframe,
+        '--set-file', $snapshotSetPath,
+        '--from', $FromDate,
+        '--to', $ToDate,
+        '--run-id', $runId,
+        '--powershell-path', $pwshPath,
+        '--postflight-receipt', $preReceiptPath,
+        '--preflight-receipt-sha256', $preReceiptSha256
+    )
 
-    $preProcess = Invoke-QmCapturedProcess -FilePath $pythonPath `
-        -Arguments @($validatorArguments + @('--receipt', $preReceiptPath)) -WorkingDirectory $repoRoot
-    $preOutput = ConvertFrom-QmProcessJson -ProcessResult $preProcess -Label 'research PRE validator'
-    if ([string]$preOutput['status'] -cne 'PASS' -or
-        -not (Test-Path -LiteralPath $preReceiptPath -PathType Leaf)) {
-        throw 'Research PRE validator did not produce a PASS receipt'
-    }
-    $prePayload = $preOutput
-
-    # No mutable-evidence operation occurs between the successful PRE and the
-    # only authorized terminal path below.
+    # PRE validated the entire moving freeze, then sealed the only repository
+    # runtime closure authorized below. Workspace edits after this point are irrelevant.
     try {
         $runnerProcess = Invoke-QmCapturedProcess -FilePath $pwshPath `
-            -Arguments $runnerArguments -WorkingDirectory $repoRoot
+            -Arguments $runnerArguments -WorkingDirectory $snapshotRepoRoot
     } catch {
         $runnerException = $_
     } finally {
-        # POST runs even if the controller throws or returns non-zero. It rehashes
-        # selected HCC/TKC data and all frozen mutable news/Groups evidence.
+        # POST runs even if the controller throws or returns non-zero. It verifies
+        # the immutable snapshot plus PRE-bound selected data/external runtime only.
         try {
             $postProcess = Invoke-QmCapturedProcess -FilePath $pythonPath `
-                -Arguments @($validatorArguments + @('--postflight-receipt', $preReceiptPath)) `
-                -WorkingDirectory $repoRoot
+                -Arguments @($postValidatorArguments + @('--receipt', $postReceiptPath)) `
+                -WorkingDirectory $snapshotRepoRoot
             $postPayload = ConvertFrom-QmProcessJson -ProcessResult $postProcess -Label 'research POST validator'
-            if ([string]$postPayload['status'] -cne 'PASS') { throw 'Research POST validator did not PASS' }
-            Write-QmAtomicJson -Path $postReceiptPath -Payload $postPayload
+            if ([string]$postPayload['status'] -cne 'PASS' -or
+                -not (Test-Path -LiteralPath $postReceiptPath -PathType Leaf) -or
+                -not (Test-Path -LiteralPath ($postReceiptPath + '.sha256') -PathType Leaf)) {
+                throw 'Research POST validator did not produce a canonical PASS receipt'
+            }
         } catch {
             $postException = $_
         }
@@ -190,7 +235,8 @@ try {
     if ($runnerPayload['success'] -isnot [bool] -or -not [bool]$runnerPayload['success']) {
         throw 'DEV1 controller result is not success=true'
     }
-    $canonicalGroupsHash = [string]$toolchainBefore['tester_groups_canonical']['sha256']
+    $canonicalGroupsHash = [string](Get-QmSnapshotRoleBinding `
+        -RoleBindings $snapshotRoleBindings -Role 'tester_groups_canonical')['sha256']
     foreach ($field in @('tester_groups_post_child_sha256', 'tester_groups_restored_sha256')) {
         if ([string]$runnerPayload[$field] -ine $canonicalGroupsHash) {
             throw "DEV1 controller $field does not equal frozen canonical Groups hash"
@@ -213,7 +259,8 @@ try {
     $reportPaths = [string[]]@($summaryEvidence['reports'])
 
     $auditArguments = New-Object System.Collections.Generic.List[string]
-    $auditArguments.Add($auditPath)
+    $auditArguments.Add('-B')
+    $auditArguments.Add($snapshotAuditPath)
     $auditArguments.Add($reportPaths[0])
     foreach ($duplicate in @($reportPaths | Select-Object -Skip 1)) {
         $auditArguments.Add('--duplicate-report')
@@ -232,7 +279,7 @@ try {
         $auditArguments.Add([string]$pair[1])
     }
     $auditProcess = Invoke-QmCapturedProcess -FilePath $pythonPath `
-        -Arguments $auditArguments.ToArray() -WorkingDirectory $repoRoot
+        -Arguments $auditArguments.ToArray() -WorkingDirectory $snapshotRepoRoot
     $auditOutput = ConvertFrom-QmProcessJson -ProcessResult $auditProcess -Label 'native MT5 cost/report audit'
     if ([string]$auditOutput['status'] -cne 'PASS' -or
         -not (Test-Path -LiteralPath $costAuditTemporary -PathType Leaf)) {
@@ -244,12 +291,32 @@ try {
     $auditObservations = Assert-QmCostAudit -Audit $costAudit -Contract $contract -SetInputs $setInputs `
         -ExpectedReports $reportPaths
 
-    $toolchainAfter = Get-QmToolchainBindings
-    Assert-QmToolchainUnchanged -Before $toolchainBefore -After $toolchainAfter
+    # The report auditor is also snapshot-resident. Reverify the same PRE-bound
+    # closure after it completes so no late snapshot mutation can back a receipt.
+    $finalSnapshotProcess = Invoke-QmCapturedProcess -FilePath $pythonPath `
+        -Arguments @($postValidatorArguments + @('--receipt', $finalSnapshotReceiptPath)) `
+        -WorkingDirectory $snapshotRepoRoot
+    $finalSnapshotPayload = ConvertFrom-QmProcessJson `
+        -ProcessResult $finalSnapshotProcess -Label 'research final snapshot validator'
+    if ([string]$finalSnapshotPayload['status'] -cne 'PASS' -or
+        -not (Test-Path -LiteralPath $finalSnapshotReceiptPath -PathType Leaf) -or
+        -not (Test-Path -LiteralPath ($finalSnapshotReceiptPath + '.sha256') -PathType Leaf)) {
+        throw 'Final runtime snapshot verification did not produce a canonical PASS receipt'
+    }
+    if (($postPayload | ConvertTo-Json -Depth 100 -Compress) -cne
+        ($finalSnapshotPayload | ConvertTo-Json -Depth 100 -Compress)) {
+        throw 'Final runtime snapshot identity differs from immediate POST identity'
+    }
 
     $artifactBindings = [ordered]@{
         validator_pre = Get-QmFileBinding -Path $preReceiptPath
+        validator_pre_detached = Get-QmFileBinding -Path ($preReceiptPath + '.sha256')
         validator_post = Get-QmFileBinding -Path $postReceiptPath
+        validator_post_detached = Get-QmFileBinding -Path ($postReceiptPath + '.sha256')
+        validator_final_snapshot = Get-QmFileBinding -Path $finalSnapshotReceiptPath
+        validator_final_snapshot_detached = Get-QmFileBinding -Path ($finalSnapshotReceiptPath + '.sha256')
+        runtime_snapshot_manifest = Get-QmFileBinding -Path ([string]$snapshotBinding['manifest_path'])
+        runtime_snapshot_manifest_detached = Get-QmFileBinding -Path ([string]$snapshotBinding['manifest_sidecar_path'])
         runner_result = Get-QmFileBinding -Path $runnerResultPath
         runner_summary = Get-QmFileBinding -Path $summaryPath
         cost_audit = Get-QmFileBinding -Path $costAuditPath
@@ -269,11 +336,12 @@ try {
             currency = 'USD'
             commission_per_lot = 0
             commission_per_side_native = 0
-            terminal_entrypoint = $runDev1Path
+            terminal_entrypoint = $snapshotRunDev1Path
+            snapshot_working_directory = $snapshotRepoRoot
             direct_terminal_start_forbidden = $true
         }
         evidence_policy = [ordered]@{
-            only_accepted_chain = 'THIS_LAUNCHER_PRE_VALIDATOR_DEV1_RUNNER_POST_VALIDATOR_NATIVE_REPORT_AUDIT'
+            only_accepted_chain = 'THIS_LAUNCHER_PRE_SEALED_SNAPSHOT_DEV1_RUNNER_POST_VALIDATOR_SNAPSHOT_AUDITOR_FINAL_SNAPSHOT_VALIDATOR'
             direct_runner_output_is_not_verdict_evidence = $true
             separate_recorded_phase_verdict_is_required = $true
             verdict = 'NOT_ADJUDICATED'
@@ -298,7 +366,12 @@ try {
             run_fingerprint_sha256 = [string]$costAudit['run_fingerprint_sha256']
             duplicate_fingerprint_check = [string]$costAudit['duplicate_fingerprint_check']
         }
-        toolchain = $toolchainBefore
+        toolchain = [ordered]@{
+            runtime_snapshot = $snapshotBinding
+            external_runtime = $prePayload['external_runtime']
+            postflight = $postPayload
+            final_snapshot_verification = $finalSnapshotPayload
+        }
         artifacts = $artifactBindings
     }
     $finalBinding = Write-QmDetachedJsonReceipt -Path $finalReceiptPath -Payload $receipt
@@ -321,6 +394,8 @@ try {
         error = $_.Exception.Message
         pre_validator_completed = ($null -ne $prePayload)
         post_validator_completed = ($null -ne $postPayload)
+        runtime_snapshot = if ($null -ne $prePayload) { $prePayload['runtime_snapshot'] } else { $null }
+        runtime_snapshot_retained = ($null -ne $snapshotBinding)
     }
     try {
         [void](Write-QmDetachedJsonReceipt -Path (Join-Path $receiptDirectory 'research_rejection.json') -Payload $failure)
