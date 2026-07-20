@@ -31,7 +31,7 @@ from collections import Counter, defaultdict
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from pathlib import Path
-from typing import Any, Iterable, Sequence
+from typing import Any, Sequence
 
 
 SCHEMA_VERSION = 1
@@ -133,6 +133,7 @@ class AuditConfig:
 class Dataset:
     bars: list[Bar]
     by_ny_date: dict[date, list[int]]
+    by_trading_week: dict[date, list[int]]
     source: dict[str, Any]
 
 
@@ -233,6 +234,7 @@ def load_dataset(config: AuditConfig) -> Dataset:
     path = _literal_file(config.csv_path)
     bars: list[Bar] = []
     by_date: dict[date, list[int]] = defaultdict(list)
+    by_week: dict[date, list[int]] = defaultdict(list)
     rows_total = 0
     rows_after_end = 0
     previous_timestamp: int | None = None
@@ -306,12 +308,14 @@ def load_dataset(config: AuditConfig) -> Dataset:
                 )
             )
             by_date[ny_time.date()].append(index)
+            by_week[_trading_week_key(bars[index])].append(index)
 
     if not bars:
         raise AuditError("CSV contains no bars on or before the requested end date")
     return Dataset(
         bars=bars,
         by_ny_date=dict(by_date),
+        by_trading_week=dict(by_week),
         source={
             "csv_path": str(path),
             "csv_sha256": _sha256_file(path),
@@ -413,8 +417,8 @@ def _observed_trading_week_bar(bar: Bar) -> bool:
 def _collect_previous_week(dataset: Dataset, week_key: date) -> LevelRange | None:
     indices = [
         index
-        for index, bar in enumerate(dataset.bars)
-        if _trading_week_key(bar) == week_key and _observed_trading_week_bar(bar)
+        for index in dataset.by_trading_week.get(week_key, [])
+        if _observed_trading_week_bar(dataset.bars[index])
     ]
     distinct_dates = {dataset.bars[index].ny_date for index in indices}
     if not indices or len(distinct_dates) < 3:
@@ -1070,8 +1074,15 @@ def audit(config: AuditConfig) -> dict[str, Any]:
         raise AuditError(f"unsupported mode: {config.mode}")
     if config.from_ny_date > config.to_ny_date:
         raise AuditError("from date must not be after to date")
-    if config.tick_size <= 0.0 or config.point <= 0.0:
-        raise AuditError("tick size and point must be positive")
+    if not config.symbol.strip():
+        raise AuditError("symbol must not be blank")
+    if (
+        not math.isfinite(config.tick_size)
+        or not math.isfinite(config.point)
+        or config.tick_size <= 0.0
+        or config.point <= 0.0
+    ):
+        raise AuditError("tick size and point must be finite and positive")
     if config.default_spread_points is not None and config.default_spread_points < 0:
         raise AuditError("default spread points must be non-negative")
 
