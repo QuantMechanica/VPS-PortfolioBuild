@@ -293,6 +293,48 @@ function Assert-Contained([object]$AccountState, [string]$AllowedCleanupTaskName
     }
 }
 
+function Clear-InheritedEnvironment([string]$ExpectedProfile) {
+    # Never enumerate values or serialize the inherited environment. Rebuild a
+    # small fixed allowlist before resolving profile/include/tool locations.
+    $systemRoot = $env:SystemRoot
+    $profile = [IO.Path]::GetFullPath($ExpectedProfile)
+    $safe = [ordered]@{
+        SystemRoot = $systemRoot
+        windir = $systemRoot
+        SystemDrive = [IO.Path]::GetPathRoot($systemRoot).TrimEnd('\')
+        ComSpec = Join-Path $systemRoot 'System32\cmd.exe'
+        ProgramData = $env:ProgramData
+        ProgramFiles = $env:ProgramFiles
+        'ProgramFiles(x86)' = ${env:ProgramFiles(x86)}
+        ProgramW6432 = $env:ProgramW6432
+        CommonProgramFiles = $env:CommonProgramFiles
+        'CommonProgramFiles(x86)' = ${env:CommonProgramFiles(x86)}
+        CommonProgramW6432 = $env:CommonProgramW6432
+        COMPUTERNAME = $env:COMPUTERNAME
+        USERNAME = $env:USERNAME
+        USERDOMAIN = $env:USERDOMAIN
+        USERPROFILE = $profile
+        APPDATA = Join-Path $profile 'AppData\Roaming'
+        LOCALAPPDATA = Join-Path $profile 'AppData\Local'
+        TEMP = Join-Path $profile 'AppData\Local\Temp'
+        TMP = Join-Path $profile 'AppData\Local\Temp'
+        HOMEDRIVE = [IO.Path]::GetPathRoot($profile).TrimEnd('\')
+        HOMEPATH = $profile.Substring([IO.Path]::GetPathRoot($profile).Length - 1)
+        OS = 'Windows_NT'
+        PROCESSOR_ARCHITECTURE = $env:PROCESSOR_ARCHITECTURE
+        NUMBER_OF_PROCESSORS = $env:NUMBER_OF_PROCESSORS
+        PSModulePath = "$PSHOME\Modules;$env:ProgramFiles\PowerShell\Modules;$systemRoot\system32\WindowsPowerShell\v1.0\Modules"
+        Path = "$systemRoot\System32;$systemRoot;$systemRoot\System32\Wbem;$systemRoot\System32\WindowsPowerShell\v1.0;$([IO.Path]::GetDirectoryName($pwsh))"
+        PATHEXT = '.COM;.EXE;.BAT;.CMD'
+    }
+    foreach ($name in @([Environment]::GetEnvironmentVariables('Process').Keys)) {
+        Remove-Item -LiteralPath ("Env:\{0}" -f [string]$name) -ErrorAction SilentlyContinue
+    }
+    foreach ($entry in $safe.GetEnumerator()) {
+        if ($null -ne $entry.Value) { [Environment]::SetEnvironmentVariable([string]$entry.Key, [string]$entry.Value, 'Process') }
+    }
+}
+
 function Read-ExactJson([string]$Path, [string[]]$ExpectedFields, [string]$Label) {
     Assert-PhysicalPath -Path $Path
     $raw = [IO.File]::ReadAllText([IO.Path]::GetFullPath($Path), [Text.UTF8Encoding]::new($false, $true))
@@ -398,6 +440,94 @@ function Assert-V3RotationReceipt([object]$AccountState, [string]$CredentialSha2
     }
 }
 
+function Assert-CleanupTaskContract([string]$TaskName, [string]$Arguments, [string]$WorkingDirectory) {
+    $task = Get-ScheduledTask -TaskName $TaskName -TaskPath $taskPath -ErrorAction Stop
+    $principal = $task.Principal
+    $triggers = @($task.Triggers)
+    $actions = @($task.Actions)
+    if ($task.TaskName -cne $TaskName -or $task.TaskPath -cne $taskPath -or
+        [string]$principal.UserId -notin @('SYSTEM', 'NT AUTHORITY\SYSTEM', 'S-1-5-18') -or
+        $principal.LogonType.ToString() -cne 'ServiceAccount' -or $principal.RunLevel.ToString() -cne 'Highest' -or
+        $triggers.Count -ne 2 -or @($triggers | Where-Object { $_.CimClass.CimClassName -eq 'MSFT_TaskBootTrigger' }).Count -ne 1 -or
+        $actions.Count -ne 1 -or -not ([IO.Path]::GetFullPath([string]$actions[0].Execute)).Equals([IO.Path]::GetFullPath($pwsh), [StringComparison]::OrdinalIgnoreCase) -or
+        [string]$actions[0].Arguments -cne $Arguments -or
+        -not ([IO.Path]::GetFullPath([string]$actions[0].WorkingDirectory)).Equals([IO.Path]::GetFullPath($WorkingDirectory), [StringComparison]::OrdinalIgnoreCase) -or
+        $task.Settings.MultipleInstances.ToString() -cne 'IgnoreNew' -or -not $task.Settings.StartWhenAvailable -or
+        [string]$task.Settings.ExecutionTimeLimit -cne 'PT10M' -or [int]$task.Settings.RestartCount -ne 3 -or
+        [string]$task.Settings.RestartInterval -cne 'PT1M') {
+        throw 'SYSTEM cleanup lease Scheduled Task contract drifted.'
+    }
+}
+
+function Assert-CleanupEvidence(
+    [string]$ResultPath, [string]$DisarmPath, [string]$ExpectedSid,
+    [string]$TargetTaskName, [string]$CleanupTaskName
+) {
+    $result = Read-ExactJson -Path $ResultPath -ExpectedFields @(
+        'schema_version', 'artifact_type', 'completed_utc', 'success', 'containment_verified', 'lease_disarmed',
+        'expected_sid', 'target_task_name', 'cleanup_task_name', 'manifest_valid', 'account_restored_disabled',
+        'owner_process_count', 'dev1_root_process_count', 'target_task_registered', 'cleanup_task_registered', 'failures'
+    ) -Label 'DEV1 compile cleanup containment result'
+    $disarm = Read-ExactJson -Path $DisarmPath -ExpectedFields @(
+        'schema_version', 'artifact_type', 'completed_utc', 'success', 'containment_result_path', 'containment_verified',
+        'lease_disarmed', 'expected_sid', 'target_task_name', 'cleanup_task_name', 'account_restored_disabled',
+        'owner_process_count', 'dev1_root_process_count', 'target_task_registered', 'cleanup_task_registered', 'failures'
+    ) -Label 'DEV1 compile cleanup disarm result'
+    if ([int]$result.schema_version -ne 1 -or [string]$result.artifact_type -cne 'QM_DEV1_ACCOUNT_CLEANUP_RESULT' -or
+        -not [bool]$result.success -or -not [bool]$result.containment_verified -or [bool]$result.lease_disarmed -or
+        -not [bool]$result.manifest_valid -or -not [bool]$result.account_restored_disabled -or
+        [int]$result.owner_process_count -ne 0 -or [int]$result.dev1_root_process_count -ne 0 -or
+        [bool]$result.target_task_registered -or -not [bool]$result.cleanup_task_registered -or @($result.failures).Count -ne 0 -or
+        [string]$result.expected_sid -cne $ExpectedSid -or [string]$result.target_task_name -cne $TargetTaskName -or
+        [string]$result.cleanup_task_name -cne $CleanupTaskName) {
+        throw 'DEV1 compile cleanup containment evidence failed or drifted.'
+    }
+    if ([int]$disarm.schema_version -ne 1 -or [string]$disarm.artifact_type -cne 'QM_DEV1_ACCOUNT_CLEANUP_DISARM_RESULT' -or
+        -not [bool]$disarm.success -or -not [bool]$disarm.containment_verified -or -not [bool]$disarm.lease_disarmed -or
+        -not [bool]$disarm.account_restored_disabled -or [int]$disarm.owner_process_count -ne 0 -or
+        [int]$disarm.dev1_root_process_count -ne 0 -or [bool]$disarm.target_task_registered -or
+        [bool]$disarm.cleanup_task_registered -or @($disarm.failures).Count -ne 0 -or
+        [string]$disarm.expected_sid -cne $ExpectedSid -or [string]$disarm.target_task_name -cne $TargetTaskName -or
+        [string]$disarm.cleanup_task_name -cne $CleanupTaskName -or
+        -not ([IO.Path]::GetFullPath([string]$disarm.containment_result_path)).Equals([IO.Path]::GetFullPath($ResultPath), [StringComparison]::OrdinalIgnoreCase)) {
+        throw 'DEV1 compile cleanup disarm evidence failed or drifted.'
+    }
+    return [pscustomobject]@{ ResultSha256 = Get-Sha256 $ResultPath; DisarmSha256 = Get-Sha256 $DisarmPath }
+}
+
+function Invoke-CleanupLeaseFence(
+    [string]$CleanupTaskName, [string]$CleanupActionMutexName, [string]$ResultPath,
+    [string]$DisarmPath, [object]$AccountState, [string]$TargetTaskName
+) {
+    $existing = Get-ScheduledTask -TaskName $CleanupTaskName -TaskPath $taskPath -ErrorAction SilentlyContinue
+    if ($null -ne $existing) {
+        Start-ScheduledTask -TaskName $CleanupTaskName -TaskPath $taskPath -ErrorAction Stop
+    }
+    $deadline = [DateTimeOffset]::UtcNow.AddMinutes(2)
+    do {
+        if (Test-Path -LiteralPath $DisarmPath -PathType Leaf) { break }
+        if (Test-Path -LiteralPath $ResultPath -PathType Leaf) {
+            $interim = Get-Content -LiteralPath $ResultPath -Raw -ErrorAction Stop | ConvertFrom-Json -DateKind String -ErrorAction Stop
+            if ($interim.success -is [bool] -and -not [bool]$interim.success) {
+                throw 'SYSTEM compile cleanup lease reported failed containment.'
+            }
+        }
+        Start-Sleep -Milliseconds 500
+    } while ([DateTimeOffset]::UtcNow -lt $deadline)
+    if (-not (Test-Path -LiteralPath $DisarmPath -PathType Leaf)) {
+        throw 'SYSTEM compile cleanup lease did not durably disarm within two minutes.'
+    }
+    $fence = Enter-CleanupActionMutex -Name $CleanupActionMutexName
+    try {
+        $evidence = Assert-CleanupEvidence -ResultPath $ResultPath -DisarmPath $DisarmPath `
+            -ExpectedSid ([string]$AccountState.Sid) -TargetTaskName $TargetTaskName -CleanupTaskName $CleanupTaskName
+        Assert-Contained -AccountState $AccountState -AllowedCleanupTaskName '__NO_TASK_ALLOWED__'
+        return $evidence
+    } finally {
+        try { $fence.ReleaseMutex() } finally { $fence.Dispose() }
+    }
+}
+
 function Resolve-Dev1ProfileInclude {
     $terminalProfiles = Join-Path $env:APPDATA 'MetaQuotes\Terminal'
     $matches = @(Get-ChildItem -LiteralPath $terminalProfiles -Directory -ErrorAction Stop | Where-Object {
@@ -490,7 +620,7 @@ function Invoke-CompileChild {
     }
     $requestFields = @(
         'schema_version', 'artifact_type', 'run_id', 'nonce', 'created_utc', 'expires_utc', 'run_root',
-        'expected_account', 'expected_sid', 'expected_profile', 'expected_task_name', 'result_path',
+        'expected_account', 'expected_sid', 'expected_profile', 'expected_common_path', 'expected_task_name', 'result_path',
         'controller_path', 'controller_sha256', 'compile_one_path', 'compile_one_sha256',
         'metaeditor_path', 'metaeditor_sha256', 'source_path', 'source_sha256',
         'repo_include_path', 'repo_include_snapshot_sha256', 'pwsh_path', 'pwsh_sha256',
@@ -508,6 +638,7 @@ function Invoke-CompileChild {
     if (-not [DateTimeOffset]::TryParseExact([string]$request.expires_utc, 'o', [cultureinfo]::InvariantCulture,
             [Globalization.DateTimeStyles]::RoundtripKind, [ref]$expires) -or $expires.Offset -ne [TimeSpan]::Zero -or
         $expires -le [DateTimeOffset]::UtcNow) { throw 'Compile child request is expired or malformed.' }
+    Clear-InheritedEnvironment -ExpectedProfile ([string]$request.expected_profile)
     $childRunRoot = [IO.Path]::GetFullPath([string]$request.run_root)
     if (-not (Test-UnderRoot -Path $childRunRoot -Root $reportsRoot)) { throw 'Child RunRoot escaped reports root.' }
     $controlRoot = Join-Path $childRunRoot 'control'
@@ -544,6 +675,10 @@ function Invoke-CompileChild {
                 [IO.Path]::GetFullPath([string]$request.expected_profile), [StringComparison]::OrdinalIgnoreCase)) {
             throw 'Wrong QMDev1 profile.'
         }
+        $actualCommon = [IO.Path]::GetFullPath((Join-Path $env:APPDATA 'MetaQuotes\Terminal\Common'))
+        if (-not $actualCommon.Equals([IO.Path]::GetFullPath([string]$request.expected_common_path), [StringComparison]::OrdinalIgnoreCase)) {
+            throw 'Wrong QMDev1 Common path after environment reconstruction.'
+        }
         if ((Get-Sha256 -Path $stageMq5) -cne [string]$request.source_sha256) {
             throw 'Staged source SHA-256 drift.'
         }
@@ -558,12 +693,6 @@ function Invoke-CompileChild {
                 (Get-Sha256 ([string]$binding[0])) -cne [string]$binding[2]) { throw 'Compile child fixed-byte binding drifted.' }
         }
         if (@(Get-Dev1Processes).Count -ne 0) { throw 'DEV1 was not idle in child preflight.' }
-
-        foreach ($name in @([Environment]::GetEnvironmentVariables('Process').Keys)) {
-            if ([string]$name -match '(?i)(TOKEN|SECRET|PASSWORD|API[_-]?KEY|CREDENTIAL)') {
-                Remove-Item -LiteralPath ("Env:\{0}" -f [string]$name) -ErrorAction SilentlyContinue
-            }
-        }
 
         $profileInclude = Resolve-Dev1ProfileInclude
         $portableInclude = Join-Path $devRoot 'MQL5\Include'
@@ -643,6 +772,7 @@ function Invoke-CompileChild {
             nonce = if ($null -ne $request) { [string]$request.nonce } else { $null }
             request_sha256 = $ExpectedRequestSha256
             identity_sid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+            common_path = if ($null -ne $request) { [string]$request.expected_common_path } else { $null }
             metaeditor_path = $metaEditor
             metaeditor_sha256 = if (Test-Path $metaEditor) { Get-Sha256 $metaEditor } else { $null }
             metaeditor_exit_code = $metaExit
@@ -691,14 +821,15 @@ function Invoke-CompileController {
     if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
         throw 'Compile controller must be elevated.'
     }
-    foreach ($path in @($source, $contractPath, $repoInclude, $compileOne, $metaEditor, $pwsh, $credentialPath, $reportsRoot)) {
+    foreach ($path in @($source, $contractPath, $repoInclude, $compileOne, $metaEditor, $pwsh, $credentialPath,
+            $credentialHelperPath, $laneContractPath, $rotationReceiptPath, $cleanupHelperSourcePath,
+            $identityProbeChildPath, $testerGroupsCanonicalPath, $testerGroupsDev1Path, $reportsRoot)) {
         Assert-PhysicalPath -Path $path
     }
     Assert-PhysicalPath -Path $controllerScript
     $controllerScriptHash = Get-Sha256 $controllerScript
     $compileOneHash = Get-Sha256 $compileOne
     $metaEditorHash = Get-Sha256 $metaEditor
-    if (@(Get-EphemeralCompileTasks).Count -ne 0) { throw 'A prior QM20002 compile task still exists.' }
 
     if ((Get-Service MpsSvc).Status -ne 'Running') { throw 'Firewall service is not running.' }
     if (@(Get-NetFirewallProfile -PolicyStore ActiveStore | Where-Object { -not $_.Enabled }).Count -ne 0) {
@@ -726,19 +857,38 @@ function Invoke-CompileController {
     $mutexAcquired = $false
     $taskRegistered = $false
     $taskName = $taskPrefix + [guid]::NewGuid().ToString('N')
-    $preexistingBackup = $null
+    $cleanupTaskRegistered = $false
+    $cleanupTaskName = $cleanupTaskPrefix + [guid]::NewGuid().ToString('N')
+    $cleanupLeaseDisarmed = $false
+    $cleanupEvidence = $null
+    $accountState = $null
+    $accountEnabledByController = $false
+    $accountRestoredDisabled = $false
+    $cleanupErrors = New-Object System.Collections.Generic.List[string]
+    $primaryError = $null
     $delivered = $false
-    $complete = $false
+    $compileSucceeded = $false
     $plain = $null
     $credential = $null
+    $rotationProof = $null
     $runId = (Get-Date).ToUniversalTime().ToString('yyyyMMddTHHmmssZ_') + [guid]::NewGuid().ToString('N')
+    $nonce = [guid]::NewGuid().ToString('N')
     $controllerRunRoot = Join-Path $reportsRoot $runId
-    $stageRoot = Join-Path $controllerRunRoot 'stage'
+    $controlRoot = Join-Path $controllerRunRoot 'control'
+    $outputRoot = Join-Path $controllerRunRoot 'output'
+    $stageRoot = Join-Path $outputRoot 'stage'
     $stageMq5 = Join-Path $stageRoot 'QM5_20002_ict-icytea-core.mq5'
     $stageEx5 = [IO.Path]::ChangeExtension($stageMq5, '.ex5')
-    $sourceManifest = Join-Path $controllerRunRoot 'source_manifest.csv'
-    $resultPath = Join-Path $controllerRunRoot 'child_result.json'
-    $evidencePath = Join-Path $controllerRunRoot 'evidence.json'
+    $sourceManifest = Join-Path $controlRoot 'source_manifest.csv'
+    $requestPath = Join-Path $controlRoot 'compile_request.json'
+    $resultPath = Join-Path $outputRoot 'child_result.json'
+    $evidencePath = Join-Path $outputRoot 'evidence.json'
+    $cleanupHelperPath = Join-Path $controlRoot 'cleanup_dev1_account_lease.ps1'
+    $cleanupGroupsSourcePath = Join-Path $controlRoot 'Darwinex-Live_real.canonical.txt'
+    $cleanupLeasePath = Join-Path $controlRoot 'cleanup_lease.json'
+    $cleanupResultPath = Join-Path $controlRoot 'cleanup_lease.result.json'
+    $cleanupDisarmPath = Join-Path $controlRoot 'cleanup_lease.disarm.result.json'
+    $cleanupActionMutexName = $cleanupActionMutexPrefix + $nonce
     try {
         $mutexDeadline = (Get-Date).ToUniversalTime().AddMinutes(30)
         $nextWaitNotice = [datetime]::MinValue
@@ -752,11 +902,22 @@ function Invoke-CompileController {
         }
         if (-not $mutexAcquired) { throw 'Timed out waiting for the DEV1 smoke/compile mutex.' }
 
-        $settleDeadline = (Get-Date).ToUniversalTime().AddSeconds(30)
-        while (@(Get-Dev1Processes).Count -ne 0 -and (Get-Date).ToUniversalTime() -lt $settleDeadline) {
-            Start-Sleep -Milliseconds 250
+        if (@(Get-Dev1Tasks).Count -ne 0) {
+            throw 'DEV1 compile preflight found stale smoke/compile/cleanup/profile-init tasks.'
         }
-        if (@(Get-Dev1Processes).Count -ne 0) { throw 'DEV1 remained busy after acquiring its controller mutex.' }
+        $accountState = Get-Dev1AccountState
+        if (@(Get-Dev1IdentityProcesses -OwnerSid ([string]$accountState.Sid)).Count -ne 0 -or
+            @(Get-Dev1Processes).Count -ne 0) {
+            throw 'DEV1 remained busy after acquiring its controller mutex.'
+        }
+        $helperHash = Get-Sha256 $credentialHelperPath
+        if ($helperHash -cne $ExpectedHelperSha256) { throw 'DEV1 credential helper differs from expected bytes.' }
+        . $credentialHelperPath
+        Assert-QmDev1CredentialHelperBinding -HelperPath $credentialHelperPath -ExpectedSha256 $ExpectedHelperSha256 | Out-Null
+        $credentialHash = Get-Sha256 $credentialPath
+        if ($credentialHash -cne $ExpectedCredentialSha256) { throw 'DEV1 machine credential differs from expected bytes.' }
+        $rotationProof = Assert-V3RotationReceipt -AccountState $accountState `
+            -CredentialSha256 $ExpectedCredentialSha256 -HelperSha256 $ExpectedHelperSha256
 
         New-Item -ItemType Directory -Path $stageRoot -Force | Out-Null
         Assert-PhysicalPath -Path $controllerRunRoot
