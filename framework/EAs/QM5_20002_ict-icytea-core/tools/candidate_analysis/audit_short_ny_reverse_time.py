@@ -3136,6 +3136,8 @@ def _is_legacy_rev2_stdout_lifecycle_defect(state: Mapping[str, Any]) -> bool:
         and state.get("finished_utc") is not None
         and state.get("outcome_possible_since_utc") is not None
         and isinstance(state.get("cells"), list)
+        and len(state["cells"]) == 3
+        and all(isinstance(cell, Mapping) for cell in state["cells"])
         and state.get("error_type") == "AuditError"
         and state.get("error") == "runner stdout contains no JSON object"
     )

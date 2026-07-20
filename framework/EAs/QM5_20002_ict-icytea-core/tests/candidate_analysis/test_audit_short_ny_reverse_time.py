@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import subprocess
 import sys
 from datetime import datetime
 from decimal import Decimal
@@ -313,6 +314,22 @@ def _minimal_launcher_pre() -> dict:
     }
 
 
+def _minimal_running_state(tmp_path: Path) -> dict:
+    job_path = tmp_path / "launch_job.json"
+    job = {"authorization": {}, "scheduler": {}}
+    job_path.write_text(json.dumps(job), encoding="utf-8")
+    state = subject._initial_launch_state(
+        tmp_path / "pre_receipt.json",
+        "c" * 64,
+        subject.file_binding(job_path),
+        job,
+    )
+    state["status"] = "RUNNING"
+    state["worker_pid"] = 1234
+    state["started_utc"] = state["created_utc"]
+    return state
+
+
 def test_persisted_task_timeout_covers_all_cells_and_cleanup_margin() -> None:
     pre = _minimal_launcher_pre()
     assert subject.required_scheduled_task_timeout(pre, 64800) == 262800
@@ -338,14 +355,7 @@ def test_resume_fence_rejects_any_worker_entry_or_dev1_inventory_change(
     dev1_runs.mkdir()
     monkeypatch.setattr(subject, "DEV1_RUNS_ROOT", dev1_runs)
     state_path = tmp_path / "attempt" / "launch_state.json"
-    state = {
-        "launcher_revision": subject.LAUNCHER_REVISION,
-        "status": "RUNNING",
-        "finished_utc": None,
-        "cells": [],
-        "active_cell": None,
-        "outcome_possible_since_utc": None,
-    }
+    state = _minimal_running_state(tmp_path)
     job = {"dev1_runs_before_launch": subject._dev1_run_inventory()}
     subject._assert_resume_outcome_fence(state, job, state_path)
 
@@ -382,14 +392,7 @@ def test_resume_fence_rejects_every_outcome_or_legacy_surface(
     dev1_runs = tmp_path / "dev1-runs"
     dev1_runs.mkdir()
     monkeypatch.setattr(subject, "DEV1_RUNS_ROOT", dev1_runs)
-    state = {
-        "launcher_revision": subject.LAUNCHER_REVISION,
-        "status": "RUNNING",
-        "finished_utc": None,
-        "cells": [],
-        "active_cell": None,
-        "outcome_possible_since_utc": None,
-    }
+    state = _minimal_running_state(tmp_path)
     state.update(patch)
     job = {"dev1_runs_before_launch": subject._dev1_run_inventory()}
     with pytest.raises(subject.AuthorizationError, match=message):
@@ -460,6 +463,265 @@ def test_launch_uses_persisted_scheduler_and_resume_refuses_worker_artifact(
             resume=True,
         )
     assert calls == ["Identity", "Register", "Start"]
+
+
+def _arm_one_cell_worker(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> tuple[Path, Path]:
+    state_path = tmp_path / "attempt" / "launch_state.json"
+    job_path = state_path.with_name("launch_job.json")
+    pre_path = tmp_path / "pre_receipt.json"
+    auth_path = tmp_path / "authorization.json"
+    pre_path.write_text("{}", encoding="utf-8")
+    auth_path.write_text("{}", encoding="utf-8")
+    authorization = {
+        "binding": subject.file_binding(auth_path),
+        "payload": {"mt5_execution_authorized": True},
+    }
+    job = {
+        "state_path": str(state_path.resolve()),
+        "pre_receipt_path": str(pre_path.resolve()),
+        "pre_receipt_sha256": "d" * 64,
+        "authorization": authorization,
+        "scheduler": {"mode": "TEST"},
+        "controller_timeout_seconds": 60,
+    }
+    job_path.parent.mkdir(parents=True)
+    job_path.write_text(json.dumps(job), encoding="utf-8")
+    state = subject._initial_launch_state(
+        pre_path, "d" * 64, subject.file_binding(job_path), job
+    )
+    subject.atomic_json(state_path, state)
+    pre = {"plan": {"cells": [{"cell_id": "CELL_04", "runner_arguments": []}]}}
+    monkeypatch.setattr(subject, "assert_pre_receipt", lambda *_args: pre)
+    monkeypatch.setattr(subject, "_validate_launch_job", lambda *_args: None)
+    monkeypatch.setattr(subject, "validate_authorization", lambda *_args: authorization)
+    monkeypatch.setattr(subject, "_assert_resume_outcome_fence", lambda *_args: None)
+    monkeypatch.setattr(subject, "runner_command", lambda *_args: ["controller", "CELL_04"])
+    return job_path, state_path
+
+
+@pytest.mark.parametrize(
+    ("stdout", "stderr", "failure_class"),
+    [
+        (
+            "",
+            "Import-Clixml: run_dev1_smoke.ps1:531\n"
+            "Error occurred during a cryptographic operation.\n",
+            "RUNNER_CREDENTIAL_CLIXML_CRYPTOGRAPHIC_FAILURE_BEFORE_JSON",
+        ),
+        (
+            "PowerShell controller banner without a JSON object",
+            "controller failed",
+            "RUNNER_MALFORMED_STDOUT_NO_JSON",
+        ),
+    ],
+)
+def test_worker_closes_empty_or_malformed_stdout_with_bound_reject_attempt(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    stdout: str,
+    stderr: str,
+    failure_class: str,
+) -> None:
+    job_path, state_path = _arm_one_cell_worker(tmp_path, monkeypatch)
+    monkeypatch.setattr(
+        subject.subprocess,
+        "run",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            stdout=stdout, stderr=stderr, returncode=1
+        ),
+    )
+
+    assert subject._worker_run(job_path) == 2
+    state = subject.load_json(state_path)
+    subject._validate_launch_state_shape(state)
+    assert state["status"] == "REJECT"
+    assert state["worker_pid"] is None
+    assert state["active_cell"] is None
+    assert state["terminal"]["no_resume"] is True
+    assert state["terminal"]["controller_failure_class"] == failure_class
+    assert len(state["cells"]) == 1
+    cell = state["cells"][0]
+    assert cell["status"] == "REJECT"
+    attempt = cell["attempts"][0]
+    assert attempt["failure_stage"] == "RUNNER_STREAMS_BOUND"
+    assert attempt["runner_exit_code"] == 1
+    assert attempt["controller_failure_class"] == failure_class
+    subject.assert_binding(attempt["stdout"], "test stdout")
+    subject.assert_binding(attempt["stderr"], "test stderr")
+
+
+def test_worker_closes_exception_before_stream_bindings(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    job_path, state_path = _arm_one_cell_worker(tmp_path, monkeypatch)
+
+    def timeout(*_args, **_kwargs):
+        raise subprocess.TimeoutExpired(cmd="controller", timeout=60)
+
+    monkeypatch.setattr(subject.subprocess, "run", timeout)
+    assert subject._worker_run(job_path) == 2
+    state = subject.load_json(state_path)
+    subject._validate_launch_state_shape(state)
+    attempt = state["cells"][0]["attempts"][0]
+    assert attempt["failure_stage"] == "OUTCOME_FENCE_PERSISTED"
+    assert attempt["stdout"] is None
+    assert attempt["stderr"] is None
+    assert attempt["runner_exit_code"] is None
+    assert state["worker_pid"] is None and state["active_cell"] is None
+
+
+def test_worker_complete_state_is_exactly_closed_and_clears_worker_identity(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    job_path, state_path = _arm_one_cell_worker(tmp_path, monkeypatch)
+    run_id = "20260720T210000Z_" + "a" * 32
+    summary_path = tmp_path / "summary.json"
+    artifact_path = tmp_path / "opaque-artifact.bin"
+    summary_path.write_text("{}", encoding="utf-8")
+    artifact_path.write_bytes(b"opaque")
+    binding = subject.file_binding(artifact_path)
+    sealed = {
+        "summary": subject.file_binding(summary_path),
+        "run_artifacts": [
+            {
+                "run": run,
+                "report": binding,
+                "tester_log": binding,
+                "tester_ini": binding,
+            }
+            for run in ("run_01", "run_02")
+        ],
+    }
+    monkeypatch.setattr(
+        subject.subprocess,
+        "run",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            stdout=json.dumps({"success": True, "run_id": run_id}),
+            stderr="",
+            returncode=0,
+        ),
+    )
+    monkeypatch.setattr(subject, "_find_summary", lambda _run_id: summary_path)
+    monkeypatch.setattr(subject, "_seal_summary_artifacts", lambda _path: sealed)
+
+    assert subject._worker_run(job_path) == 0
+    state = subject.load_json(state_path)
+    subject._validate_launch_state_shape(state)
+    assert state["status"] == "COMPLETE"
+    assert state["worker_pid"] is None
+    assert state["active_cell"] is None
+    assert state["terminal"] is None
+    assert state["cells"][0]["attempts"][0]["status"] == "COMPLETE"
+
+
+def test_terminal_rejection_persistence_failure_does_not_publish_false_reject(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    job_path, state_path = _arm_one_cell_worker(tmp_path, monkeypatch)
+    monkeypatch.setattr(
+        subject.subprocess,
+        "run",
+        lambda *_args, **_kwargs: SimpleNamespace(stdout="", stderr="failed", returncode=1),
+    )
+    real_atomic_json = subject.atomic_json
+
+    def fail_reject(path, payload, *, replace=True):
+        if payload.get("status") == "REJECT":
+            raise OSError("simulated terminal persistence failure")
+        return real_atomic_json(path, payload, replace=replace)
+
+    monkeypatch.setattr(subject, "atomic_json", fail_reject)
+    assert subject._worker_run(job_path) == 2
+    persisted = subject.load_json(state_path)
+    assert persisted["status"] == "RUNNING"
+    assert persisted["active_cell"]["status"] == "OUTCOME_POSSIBLE_NO_RESUME"
+    status = subject.launch_status(state_path)
+    assert status["classification"] == "NONTERMINAL_OUTCOME_FENCE_OPEN_NO_RESUME"
+    assert status["post_allowed"] is False
+    assert status["resume_allowed"] is False
+
+
+def test_rejection_finalizer_never_overwrites_existing_complete_bytes(tmp_path: Path) -> None:
+    state_path = tmp_path / "launch_state.json"
+    state = _minimal_running_state(tmp_path)
+    state["status"] = "COMPLETE"
+    state_path.write_text(json.dumps(state, sort_keys=True), encoding="utf-8")
+    before = state_path.read_bytes()
+    assert not subject._finalize_worker_rejection(
+        state_path, subject.AuditError("late failure"), None
+    )
+    assert state_path.read_bytes() == before
+
+
+def test_legacy_stdout_reject_is_uniquely_classified_and_post_blocked(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    state = _minimal_running_state(tmp_path)
+    state["launcher_revision"] = 2
+    state["status"] = "REJECT"
+    state["worker_pid"] = 17764
+    state["active_cell"] = {
+        "cell_id": "B_SHORT_NY_H1_BIAS__GBPUSD_DWX__M1",
+        "command_sha256": "e" * 64,
+        "started_utc": state["created_utc"],
+        "status": "OUTCOME_POSSIBLE_NO_RESUME",
+    }
+    state["outcome_possible_since_utc"] = state["created_utc"]
+    state["finished_utc"] = state["created_utc"]
+    state["updated_utc"] = state["created_utc"]
+    state["cells"] = [{"cell_id": f"completed-{index}"} for index in range(3)]
+    state.pop("terminal")
+    state["error_type"] = "AuditError"
+    state["error"] = "runner stdout contains no JSON object"
+    state_path = tmp_path / "legacy_launch_state.json"
+    state_path.write_text(json.dumps(state), encoding="utf-8")
+    monkeypatch.setattr(
+        subject, "assert_pre_receipt", lambda *_args: pytest.fail("PRE must not be opened")
+    )
+    monkeypatch.setattr(
+        subject, "_load_report_core", lambda *_args: pytest.fail("reports must not be opened")
+    )
+
+    status = subject.launch_status(state_path)
+    assert status["classification"] == "LEGACY_REV2_RUNNER_STDOUT_REJECT_LIFECYCLE_UNCLOSED"
+    assert status["outcome_data_read"] is False
+    precheck = subject.post_precheck(tmp_path / "unused-pre.json", "f" * 64, state_path)
+    assert precheck["status"] == "REJECT"
+    assert precheck["post_allowed"] is False
+    with pytest.raises(subject.PostflightError, match="lifecycle classification"):
+        subject.postflight(tmp_path / "unused-pre.json", "f" * 64, state_path)
+
+
+@pytest.mark.parametrize("tamper", ["worker_bool", "exit_bool", "no_resume_int", "extra_field"])
+def test_status_rejects_bool_type_and_field_closure_tamper(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    tamper: str,
+) -> None:
+    job_path, state_path = _arm_one_cell_worker(tmp_path, monkeypatch)
+    monkeypatch.setattr(
+        subject.subprocess,
+        "run",
+        lambda *_args, **_kwargs: SimpleNamespace(stdout="", stderr="failed", returncode=1),
+    )
+    assert subject._worker_run(job_path) == 2
+    state = subject.load_json(state_path)
+    if tamper == "worker_bool":
+        state["worker_pid"] = False
+    elif tamper == "exit_bool":
+        state["cells"][0]["attempts"][0]["runner_exit_code"] = False
+    elif tamper == "no_resume_int":
+        state["cells"][0]["attempts"][0]["no_resume"] = 1
+    else:
+        state["unexpected"] = "field"
+    tampered = tmp_path / f"tampered-{tamper}.json"
+    tampered.write_text(json.dumps(state), encoding="utf-8")
+    status = subject.launch_status(tampered)
+    assert status["classification"] == "INVALID_TERMINAL_LAUNCH_STATE"
+    assert status["post_allowed"] is False
+    assert status["resume_allowed"] is False
 
 
 def test_worker_seals_exactly_two_native_artifact_sets(tmp_path: Path) -> None:
