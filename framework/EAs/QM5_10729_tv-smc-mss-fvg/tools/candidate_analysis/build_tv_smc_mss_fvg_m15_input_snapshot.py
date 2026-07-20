@@ -28,8 +28,13 @@ ANALYSIS_ID = "QM5_10729_TV_SMC_MSS_FVG_M15_TWO_SYMBOL_FULL_DEV_001"
 CONTRACT_COMMIT = "3886f15e756b622f0b9cc9f9e1890bce173d653d"
 REVIEW_COMMIT = "fc9b5428c6258b885f6f1c8f3a930529ed0dc8e6"
 NEWS_FILTER_CONTRACT_PATH = "framework/Include/QM/QM_NewsFilter.mqh"
+NEWS_FILTER_GIT_PATH = "framework/include/QM/QM_NewsFilter.mqh"
 NEWS_FILTER_COMMIT = "5b21b9b1d4851538ddf0f62ddaa2a70db82990c3"
 NEWS_FILTER_BLOB = "5b398bb428c3fe14200a779a4b393884aae0dae6"
+CURRENT_EXCEPTION_SIZES = {
+    "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10729_tv-smc-mss-fvg.md": 4161,
+    "D:/QM/data/news_calendar/news_calendar_2015_2025.csv": 4436657,
+}
 DEFAULT_SNAPSHOT_ROOT = Path(
     r"D:\QM\audit_snapshots\QM5_10729_TV_SMC_MSS_FVG_M15_TWO_SYMBOL_FULL_DEV_001"
     r"\release_0b221d1c_2d009fa4"
@@ -210,7 +215,7 @@ def build_snapshot(final_root: Path) -> dict[str, Any]:
             relative = binding_snapshot_name(index, raw_path)
             destination = temporary / PurePosixPath(relative)
             if raw_path == NEWS_FILTER_CONTRACT_PATH:
-                observed_blob = git_blob_at(NEWS_FILTER_COMMIT, raw_path)
+                observed_blob = git_blob_at(NEWS_FILTER_COMMIT, NEWS_FILTER_GIT_PATH)
                 if observed_blob != NEWS_FILTER_BLOB:
                     raise SnapshotError("released NewsFilter Git blob drift")
                 raw_git = git_bytes(NEWS_FILTER_BLOB)
@@ -226,7 +231,7 @@ def build_snapshot(final_root: Path) -> dict[str, Any]:
                     "bytes": len(materialized),
                     "provenance": "GIT_BLOB_EXACT",
                     "git_commit": NEWS_FILTER_COMMIT,
-                    "git_path": raw_path,
+                    "git_path": NEWS_FILTER_GIT_PATH,
                     "git_blob_sha1": NEWS_FILTER_BLOB,
                     "git_blob_sha256": sha256_bytes(raw_git),
                     "materialization": "NORMALIZE_LF_THEN_LF_TO_CRLF",
@@ -234,6 +239,8 @@ def build_snapshot(final_root: Path) -> dict[str, Any]:
             else:
                 source = resolve_source(raw_path)
                 size = copy_current_exact(source, destination, expected_sha)
+                if raw_path in CURRENT_EXCEPTION_SIZES and size != CURRENT_EXCEPTION_SIZES[raw_path]:
+                    raise SnapshotError(f"released current-exact byte length drift: {raw_path}")
                 entry = {
                     "contract_path": raw_path,
                     "snapshot_relpath": relative,

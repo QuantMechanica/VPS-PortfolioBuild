@@ -14,13 +14,14 @@ import csv
 import hashlib
 import json
 import os
+import stat
 import tempfile
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation, ROUND_HALF_EVEN, localcontext
 from fractions import Fraction
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Mapping, Sequence
 
 
@@ -32,12 +33,20 @@ CONTRACT_PATH = EVIDENCE_ROOT / "tv_smc_mss_fvg_m15_two_symbol_full_dev_contract
 REVIEW_PATH = EVIDENCE_ROOT / "tv_smc_mss_fvg_outcome_blind_review_receipt.json"
 EXPECTED_CONTRACT_SHA256 = "0b221d1c79dce4a4fef0aa635de957296511e1fc945523e8a4da556c13311d25"
 EXPECTED_REVIEW_SHA256 = "2d009fa440a125514d3d6109ae00d91be295c1b052d53e9e47b5ee9121358d99"
+EXPECTED_SNAPSHOT_MANIFEST_SHA256 = "66dc5e8ea9842a570686940b3c7df90d33164aaefa2bf48911c730d9ea70b5ca"
 CONTRACT_COMMIT = "3886f15e756b622f0b9cc9f9e1890bce173d653d"
 ANALYSIS_ID = "QM5_10729_TV_SMC_MSS_FVG_M15_TWO_SYMBOL_FULL_DEV_001"
 
 DEFAULT_OUTPUT = EVIDENCE_ROOT / "tv_smc_mss_fvg_m15_two_symbol_full_dev_result.json"
 DEFAULT_REPORT = EVIDENCE_ROOT / "tv_smc_mss_fvg_m15_two_symbol_full_dev_report.md"
-DEFAULT_NEWS_PATH = Path(r"D:\QM\data\news_calendar\news_calendar_2015_2025.csv")
+NEWS_FILTER_CONTRACT_PATH = "framework/Include/QM/QM_NewsFilter.mqh"
+NEWS_FILTER_GIT_PATH = "framework/include/QM/QM_NewsFilter.mqh"
+NEWS_FILTER_COMMIT = "5b21b9b1d4851538ddf0f62ddaa2a70db82990c3"
+NEWS_FILTER_BLOB = "5b398bb428c3fe14200a779a4b393884aae0dae6"
+CURRENT_EXCEPTION_SIZES = {
+    "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10729_tv-smc-mss-fvg.md": 4161,
+    "D:/QM/data/news_calendar/news_calendar_2015_2025.csv": 4436657,
+}
 
 EPOCH = datetime(1970, 1, 1)
 UTC_EPOCH = datetime(1970, 1, 1, tzinfo=timezone.utc)
@@ -1417,49 +1426,204 @@ def evaluate_gates(
     return gates, verdict
 
 
-def _resolve_binding_path(raw: str) -> Path:
-    candidate = Path(raw)
-    return candidate if candidate.is_absolute() else REPO_ROOT / candidate
+def _snapshot_path(root: Path, raw_relative: str) -> Path:
+    relative = PurePosixPath(raw_relative)
+    if relative.is_absolute() or ".." in relative.parts:
+        raise AuditError(f"unsafe snapshot relative path: {raw_relative}")
+    unresolved = root / relative
+    current = root
+    for part in relative.parts:
+        current = current / part
+        if current.is_symlink() or (
+            hasattr(current, "is_junction") and current.is_junction()
+        ):
+            raise AuditError(f"snapshot link/junction rejected: {current}")
+    candidate = unresolved.resolve()
+    try:
+        candidate.relative_to(root)
+    except ValueError as exc:
+        raise AuditError(f"snapshot path escapes root: {raw_relative}") from exc
+    return candidate
 
 
-def _mtime_100ns(path: Path) -> str:
-    nanoseconds = path.stat().st_mtime_ns
-    seconds, remainder = divmod(nanoseconds, 1_000_000_000)
-    current = datetime.fromtimestamp(seconds, timezone.utc)
-    return f"{current:%Y-%m-%dT%H:%M:%S}.{remainder // 100:07d}Z"
+def _is_read_only(path: Path) -> bool:
+    status = path.stat()
+    attributes = getattr(status, "st_file_attributes", 0)
+    readonly_attribute = getattr(stat, "FILE_ATTRIBUTE_READONLY", 1)
+    if os.name == "nt":
+        return bool(attributes & readonly_attribute)
+    return not bool(status.st_mode & stat.S_IWUSR)
 
 
-def verify_release() -> tuple[dict[str, Any], dict[str, str]]:
-    contract_sha = sha256_file(CONTRACT_PATH)
-    review_sha = sha256_file(REVIEW_PATH)
+def _verify_snapshot_file(
+    root: Path, entry: Mapping[str, Any], expected_sha: str
+) -> tuple[Path, dict[str, Any]]:
+    if entry.get("sha256") != expected_sha:
+        raise AuditError("snapshot manifest SHA does not match frozen binding")
+    path = _snapshot_path(root, str(entry["snapshot_relpath"]))
+    if not path.is_file():
+        raise AuditError(f"snapshot file missing: {path}")
+    if not _is_read_only(path):
+        raise AuditError(f"snapshot file is not read-only: {path}")
+    if path.stat().st_size != int(entry["bytes"]):
+        raise AuditError(f"snapshot byte-length drift: {path}")
+    observed = sha256_file(path)
+    if observed != expected_sha:
+        raise AuditError(f"snapshot hash drift: {path}: {observed} != {expected_sha}")
+    identity = {
+        "snapshot_path": str(path),
+        "sha256": observed,
+        "bytes": path.stat().st_size,
+        "provenance": entry["provenance"],
+    }
+    if entry["provenance"] == "GIT_BLOB_EXACT":
+        identity.update(
+            {
+                "git_commit": entry["git_commit"],
+                "git_path": entry["git_path"],
+                "git_blob_sha1": entry["git_blob_sha1"],
+                "materialization": entry["materialization"],
+            }
+        )
+    return path, identity
+
+
+def verify_release(
+    manifest_path: Path, expected_manifest_sha256: str
+) -> tuple[
+    dict[str, Any],
+    dict[str, dict[str, Any]],
+    dict[str, Any],
+    Path,
+    dict[str, Path],
+]:
+    if expected_manifest_sha256 != EXPECTED_SNAPSHOT_MANIFEST_SHA256:
+        raise AuditError("snapshot manifest is not the released exact manifest")
+    if len(expected_manifest_sha256) != 64 or any(
+        character not in "0123456789abcdef" for character in expected_manifest_sha256
+    ):
+        raise AuditError("snapshot manifest SHA256 must be 64 lowercase hex characters")
+    manifest_path = manifest_path.resolve()
+    snapshot_root = manifest_path.parent.resolve()
+    try:
+        manifest_path.relative_to(REPO_ROOT.resolve())
+    except ValueError:
+        pass
+    else:
+        raise AuditError("snapshot manifest must be outside the live worktree")
+    if not manifest_path.is_file() or manifest_path.name != "manifest.json":
+        raise AuditError(f"snapshot manifest missing: {manifest_path}")
+    if not _is_read_only(manifest_path):
+        raise AuditError("snapshot manifest is not read-only")
+    manifest_sha = sha256_file(manifest_path)
+    if manifest_sha != expected_manifest_sha256:
+        raise AuditError(f"snapshot manifest hash drift: {manifest_sha}")
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if manifest.get("schema_version") != 1 or manifest.get("analysis_id") != ANALYSIS_ID:
+        raise AuditError("snapshot manifest identity drift")
+    if manifest.get("runtime_policy") != (
+        "ALL_CONTROL_BINDING_NEWS_AND_MARKET_INPUTS_FROM_THIS_READ_ONLY_SNAPSHOT_ONLY"
+    ):
+        raise AuditError("snapshot runtime policy drift")
+
+    contract_entry = manifest["contract"]
+    review_entry = manifest["review_receipt"]
+    contract_path, _contract_identity = _verify_snapshot_file(
+        snapshot_root, contract_entry, EXPECTED_CONTRACT_SHA256
+    )
+    review_path, _review_identity = _verify_snapshot_file(
+        snapshot_root, review_entry, EXPECTED_REVIEW_SHA256
+    )
+    contract_sha = sha256_file(contract_path)
+    review_sha = sha256_file(review_path)
     if contract_sha != EXPECTED_CONTRACT_SHA256:
         raise AuditError(f"contract hash drift: {contract_sha}")
     if review_sha != EXPECTED_REVIEW_SHA256:
         raise AuditError(f"review hash drift: {review_sha}")
-    contract = json.loads(CONTRACT_PATH.read_text(encoding="utf-8"))
-    review = json.loads(REVIEW_PATH.read_text(encoding="utf-8"))
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    review = json.loads(review_path.read_text(encoding="utf-8"))
     if contract.get("analysis_id") != ANALYSIS_ID:
         raise AuditError("analysis_id drift")
     if review.get("review_status") != "PASS" or review.get("reviewed_contract_sha256") != contract_sha:
         raise AuditError("review receipt does not release this contract")
-    observed: dict[str, str] = {}
+
+    manifest_bindings = {
+        entry["contract_path"]: entry for entry in manifest["source_bindings"]
+    }
+    if set(manifest_bindings) != set(contract["source_bindings"]):
+        raise AuditError("snapshot binding key set differs from contract")
+    observed: dict[str, dict[str, Any]] = {}
+    snapshot_binding_paths: dict[str, Path] = {}
     for raw_path, expected in contract["source_bindings"].items():
-        path = _resolve_binding_path(raw_path)
-        if not path.is_file():
-            raise AuditError(f"bound source missing: {path}")
-        digest = sha256_file(path)
-        observed[str(path.resolve())] = digest
-        if digest != expected:
-            raise AuditError(f"bound source hash drift: {path}: {digest} != {expected}")
+        entry = manifest_bindings[raw_path]
+        provenance = entry.get("provenance")
+        required_provenance = (
+            "GIT_BLOB_EXACT" if raw_path == NEWS_FILTER_CONTRACT_PATH else "CURRENT_EXACT"
+        )
+        if provenance != required_provenance:
+            raise AuditError(f"snapshot provenance drift for {raw_path}: {provenance}")
+        if raw_path in CURRENT_EXCEPTION_SIZES and int(entry.get("bytes", -1)) != (
+            CURRENT_EXCEPTION_SIZES[raw_path]
+        ):
+            raise AuditError(f"released current-exact byte length drift: {raw_path}")
+        if raw_path == NEWS_FILTER_CONTRACT_PATH:
+            if (
+                entry.get("git_commit") != NEWS_FILTER_COMMIT
+                or entry.get("git_path") != NEWS_FILTER_GIT_PATH
+                or entry.get("git_blob_sha1") != NEWS_FILTER_BLOB
+                or entry.get("materialization") != "NORMALIZE_LF_THEN_LF_TO_CRLF"
+            ):
+                raise AuditError("NewsFilter Git recovery provenance drift")
+        path, identity = _verify_snapshot_file(snapshot_root, entry, expected)
+        snapshot_binding_paths[raw_path] = path
+        observed[raw_path] = identity
     if len(observed) != 15:
         raise AuditError(f"expected 15 source bindings, got {len(observed)}")
+
+    manifest_markets = {entry["symbol"]: entry for entry in manifest["market_files"]}
+    if set(manifest_markets) != set(contract["data_contract"]["files"]):
+        raise AuditError("snapshot market symbol set differs from contract")
+    market_paths: dict[str, Path] = {}
+    market_identities: dict[str, dict[str, Any]] = {}
     for symbol, spec in contract["data_contract"]["files"].items():
-        path = Path(spec["path"])
-        if path.stat().st_size != spec["file_length_bytes_at_freeze"]:
-            raise AuditError(f"data length drift: {symbol}")
-        if _mtime_100ns(path) != spec["file_last_write_utc_at_freeze"]:
-            raise AuditError(f"data last-write drift: {symbol}")
-    return contract, dict(sorted(observed.items()))
+        entry = manifest_markets[symbol]
+        if entry.get("provenance") != "CURRENT_FENCE_EXACT":
+            raise AuditError(f"snapshot market provenance drift: {symbol}")
+        if entry.get("contract_path") != spec["path"]:
+            raise AuditError(f"snapshot market contract path drift: {symbol}")
+        if int(entry.get("source_length_bytes_at_copy", -1)) != int(
+            spec["file_length_bytes_at_freeze"]
+        ):
+            raise AuditError(f"snapshot market frozen length drift: {symbol}")
+        if entry.get("source_last_write_utc_at_copy") != spec[
+            "file_last_write_utc_at_freeze"
+        ]:
+            raise AuditError(f"snapshot market frozen last-write drift: {symbol}")
+        path, identity = _verify_snapshot_file(snapshot_root, entry, entry["sha256"])
+        market_paths[symbol] = path
+        market_identities[symbol] = identity
+
+    news_contract_path = contract["news_contract"]["calendar_path"]
+    if news_contract_path not in snapshot_binding_paths:
+        raise AuditError("news calendar is absent from snapshot bindings")
+    snapshot_identity = {
+        "path": str(manifest_path),
+        "root": str(snapshot_root),
+        "sha256": manifest_sha,
+        "snapshot_id": manifest["snapshot_id"],
+        "runtime_policy": manifest["runtime_policy"],
+        "read_only": True,
+        "contract_path": str(contract_path),
+        "review_path": str(review_path),
+        "market_files": market_identities,
+    }
+    return (
+        contract,
+        dict(sorted(observed.items())),
+        snapshot_identity,
+        snapshot_binding_paths[news_contract_path],
+        market_paths,
+    )
 
 
 def build_reports(
@@ -1473,9 +1637,10 @@ def build_reports(
     return internal, payload, gates, verdict
 
 
-def run_analysis() -> dict[str, Any]:
-    contract, bindings = verify_release()
-    news_path = Path(contract["news_contract"]["calendar_path"])
+def run_analysis(manifest_path: Path, manifest_sha256: str) -> dict[str, Any]:
+    contract, bindings, snapshot_identity, news_path, market_paths = verify_release(
+        manifest_path, manifest_sha256
+    )
     news, news_identity = load_news(
         news_path, contract["news_contract"]["calendar_sha256"]
     )
@@ -1486,7 +1651,7 @@ def run_analysis() -> dict[str, Any]:
     for symbol in SYMBOLS:
         data_spec = contract["data_contract"]["files"][symbol]
         source_period = int(str(data_spec["source_period"]).removeprefix("M"))
-        market = parse_market(Path(data_spec["path"]), symbol, source_period)
+        market = parse_market(market_paths[symbol], symbol, source_period)
         markets[symbol] = market
         signals, funnel = generate_signals(symbol, market.bars)
         structural[symbol] = {
@@ -1507,18 +1672,20 @@ def run_analysis() -> dict[str, Any]:
         "analysis_id": ANALYSIS_ID,
         "artifact_type": "QM5_10729_M15_TWO_SYMBOL_OFFLINE_FULL_DEV_RESULT",
         "contract": {
-            "path": str(CONTRACT_PATH.resolve()),
+            "path": snapshot_identity["contract_path"],
             "commit": CONTRACT_COMMIT,
             "sha256": EXPECTED_CONTRACT_SHA256,
         },
         "review_receipt": {
-            "path": str(REVIEW_PATH.resolve()),
+            "path": snapshot_identity["review_path"],
             "sha256": EXPECTED_REVIEW_SHA256,
             "status": "PASS",
         },
+        "input_snapshot": snapshot_identity,
         "integrity": {
             "status": "PASS",
             "issues": [],
+            "no_live_worktree_inputs": True,
             "future_ohlc_parsed": False,
             "future_ohlc_parsed_by_symbol": {symbol: False for symbol in SYMBOLS},
             "source_bindings": bindings,
@@ -1670,6 +1837,9 @@ def render_report(payload: Mapping[str, Any]) -> bytes:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--snapshot-manifest", type=Path, required=True)
+    parser.add_argument("--snapshot-manifest-sha256", required=True)
+    parser.add_argument("--preflight-only", action="store_true")
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--report", type=Path, default=DEFAULT_REPORT)
     return parser
@@ -1678,7 +1848,28 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
-        payload = run_analysis()
+        if args.preflight_only:
+            contract, bindings, snapshot, _news_path, market_paths = verify_release(
+                args.snapshot_manifest, args.snapshot_manifest_sha256
+            )
+            print(
+                json.dumps(
+                    {
+                        "status": "PASS",
+                        "mode": "PREFLIGHT_ONLY_NO_OHLC_PARSE",
+                        "analysis_id": contract["analysis_id"],
+                        "contract_sha256": EXPECTED_CONTRACT_SHA256,
+                        "review_sha256": EXPECTED_REVIEW_SHA256,
+                        "snapshot_manifest_sha256": snapshot["sha256"],
+                        "source_bindings": len(bindings),
+                        "market_files": len(market_paths),
+                        "future_ohlc_parsed": False,
+                    },
+                    sort_keys=True,
+                )
+            )
+            return 0
+        payload = run_analysis(args.snapshot_manifest, args.snapshot_manifest_sha256)
         result_bytes = canonical_json(payload)
         write_atomic(args.output, result_bytes)
         if args.report:
