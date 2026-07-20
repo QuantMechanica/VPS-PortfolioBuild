@@ -15082,3 +15082,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20012,xauxag-cmtar,0,XAUUSD.DWX,200120000,2026-07-20,Development,active
 20012,xauxag-cmtar,1,XAGUSD.DWX,200120001,2026-07-20,Development,active
 20013,xng-2m-contr,0,XNGUSD.DWX,200130000,2026-07-20,Development,active
+20014,xng-month-ch3,0,XNGUSD.DWX,200140000,2026-07-20,Development,active
