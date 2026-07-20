@@ -320,7 +320,13 @@ function Test-QmCloneHashes {
     $csvPath = Join-Path $ExpectedProvisioningDirectory 'source_destination_sha256.csv'
     if (-not (Test-Path -LiteralPath $csvPath -PathType Leaf)) { throw "Hash CSV is missing: $csvPath" }
     $preFiles = @(Get-ChildItem -LiteralPath $ExpectedProvisioningDirectory -File -Force -ErrorAction Stop)
-    if ($preFiles.Count -ne 1 -or $preFiles[0].Name -cne 'source_destination_sha256.csv') {
+    $expectedEvidenceNames = if ($ResumeExactCompletedProfileTask.IsPresent) {
+        @('qmdev2_profile_gate_redacted.json', 'source_destination_sha256.csv')
+    } else {
+        @('source_destination_sha256.csv')
+    }
+    $actualEvidenceNames = @($preFiles | ForEach-Object { $_.Name } | Sort-Object)
+    if ([string]::Join('|', $actualEvidenceNames) -cne [string]::Join('|', @($expectedEvidenceNames | Sort-Object))) {
         throw 'Late-state provisioning directory contains unexpected evidence files.'
     }
     $rows = @(Import-Csv -LiteralPath $csvPath -ErrorAction Stop)
