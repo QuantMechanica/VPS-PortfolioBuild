@@ -34,8 +34,8 @@ CONTRACT_PATH = (
     / "candidate-analysis"
     / "tv_ifvg_sweep_two_arm_full_dev_contract.json"
 )
-CONTRACT_COMMIT = "92ab2205c9ba815360808014313ced634d56af7b"
-EXPECTED_CONTRACT_SHA256 = "172ff9133629ebbef1e50648f0e38e1b3eb39256732de854af99a9919efdd299"
+CONTRACT_COMMIT = "ab3b31c0126deee5882a8c3eba38a3bd96011912"
+EXPECTED_CONTRACT_SHA256 = "687daaf95e085f3eaf086a4eab7b67627671a66dcc9f3090b93a7df28e40c87d"
 SOURCE_EVIDENCE_PATH = (
     EA_ROOT / "docs" / "candidate-analysis" / "tv_ifvg_sweep_primary_source_evidence.json"
 )
@@ -88,6 +88,10 @@ BOUND_LOCAL: dict[Path, str] = {
     CONTRACT_PATH: EXPECTED_CONTRACT_SHA256,
     SOURCE_EVIDENCE_PATH: "5c872f816aeab895d612573e42c0f8857c1b41577e89f27f579b80f33ab083e3",
     SPREAD_EVIDENCE_PATH: "f350adafa5920d16166c61089b94cf652aa093530822164ecce1f8a49fb0333a",
+    EA_ROOT
+    / "docs"
+    / "candidate-analysis"
+    / "primary_source_pine_v1.pine": "49fb3755f0f5fffa074e92a5bf8282a6cdae7bad89f3ea95fc75ebe01bbe9cf8",
     EA_ROOT / "QM5_10253_tv-ifvg-sweep.mq5": "c43da3960bafad35ac4d3d7b66e3f434c58ff5b1add7b623b635daea73ee3488",
     EA_ROOT / "SPEC.md": "de9b90b95e11a6f9f9698dcfc0d7d18cdd91ce08d3d9e72a56fd32efe3d0ac5c",
     EA_ROOT / "docs" / "strategy_card.md": "5f55708e42df41b42f944e4c7caf86bbd8a6df17408c479cdac32ad45e540bd6",
@@ -171,6 +175,7 @@ class Trade:
     lots: float
     gross_usd: float
     gross_r: float
+    commission_cents: int
     commission_usd: float
     adjusted_usd: float
     adjusted_r: float
@@ -230,37 +235,84 @@ def dt_from_epoch(value: int) -> datetime:
     return EPOCH + timedelta(seconds=value)
 
 
-def parse_selected_market(path: Path, symbol: str) -> MarketSlice:
-    """Read timestamp first and never parse the first 2023 row's OHLC tail."""
+def _read_timestamp_prefix(handle: Any, row_number: int) -> bytes | None:
+    """Read only bytes through the first comma, without buffering beyond it."""
+    prefix = bytearray()
+    while True:
+        current = handle.read(1)
+        if not current:
+            if not prefix:
+                return None
+            raise AuditError(f"row {row_number}: truncated timestamp prefix")
+        if current == b",":
+            if not prefix:
+                raise AuditError(f"row {row_number}: empty timestamp")
+            return bytes(prefix)
+        if current in {b"\r", b"\n"}:
+            raise AuditError(f"row {row_number}: missing first delimiter")
+        prefix.extend(current)
+        if len(prefix) > 32:
+            raise AuditError(f"row {row_number}: timestamp prefix too long")
+
+
+def parse_selected_market(
+    path: Path,
+    symbol: str,
+    expected_availability: tuple[str, str] | None = None,
+) -> MarketSlice:
+    """Stop after the future timestamp prefix without reading its OHLC bytes."""
     if not path.is_file():
         raise AuditError(f"market file missing: {path}")
     bars: list[Bar] = []
     digest = hashlib.sha256()
     prior_timestamp: int | None = None
     first_excluded: str | None = None
-    with path.open("r", encoding="ascii", newline="") as handle:
-        header = handle.readline().strip("\r\n")
-        if header != "time,open,high,low,close,tickvol":
+    with path.open("rb", buffering=0) as handle:
+        header = handle.readline().rstrip(b"\r\n")
+        if header != b"time,open,high,low,close,tickvol":
             raise AuditError(f"unexpected market header in {path}: {header!r}")
-        for row_number, raw_line in enumerate(handle, start=2):
-            raw_timestamp, separator, _future_tail_not_parsed = raw_line.partition(",")
-            if not separator:
-                raise AuditError(f"row {row_number}: missing first delimiter")
+        row_number = 2
+        while True:
+            raw_timestamp_bytes = _read_timestamp_prefix(handle, row_number)
+            if raw_timestamp_bytes is None:
+                break
             try:
+                raw_timestamp = raw_timestamp_bytes.decode("ascii")
                 timestamp = int(raw_timestamp)
-            except ValueError as exc:
+            except (UnicodeDecodeError, ValueError) as exc:
                 raise AuditError(f"row {row_number}: invalid timestamp") from exc
             if prior_timestamp is not None and timestamp <= prior_timestamp:
                 raise AuditError(f"row {row_number}: timestamps not strictly increasing")
             prior_timestamp = timestamp
             if timestamp >= UPPER_EPOCH:
                 first_excluded = stamp(dt_from_epoch(timestamp))
+                if (
+                    expected_availability is not None
+                    and first_excluded != expected_availability[1]
+                ):
+                    raise AuditError(
+                        f"timestamp-only future boundary drift for {symbol}: "
+                        f"{first_excluded} != {expected_availability[1]}"
+                    )
                 break
+            selected_tail = handle.readline()
             if timestamp < LOWER_EPOCH:
+                row_number += 1
                 continue
+            if not bars and expected_availability is not None:
+                observed_first = stamp(dt_from_epoch(timestamp))
+                if observed_first != expected_availability[0]:
+                    raise AuditError(
+                        f"timestamp-only first-selected drift for {symbol}: "
+                        f"{observed_first} != {expected_availability[0]}"
+                    )
             if timestamp % BAR_SECONDS != 0:
                 raise AuditError(f"row {row_number}: selected timestamp is not M15 aligned")
-            parts = raw_line.strip("\r\n").split(",")
+            try:
+                tail_text = selected_tail.rstrip(b"\r\n").decode("ascii")
+            except UnicodeDecodeError as exc:
+                raise AuditError(f"row {row_number}: non-ASCII selected OHLC") from exc
+            parts = [raw_timestamp, *tail_text.split(",")]
             if len(parts) != 6:
                 raise AuditError(f"row {row_number}: malformed selected row")
             try:
@@ -292,6 +344,7 @@ def parse_selected_market(path: Path, symbol: str) -> MarketSlice:
                     "ascii"
                 )
             )
+            row_number += 1
     if not bars:
         raise AuditError(f"selected market slice empty: {path}")
     if first_excluded is None:
@@ -903,7 +956,8 @@ def execute_trade(
     commission = commission_side(symbol, volume_dec, Decimal(str(entry))) + commission_side(
         symbol, volume_dec, Decimal(str(exit_price))
     )
-    adjusted_usd = gross_usd - float(commission)
+    commission_cents = int(commission * 100)
+    adjusted_usd = gross_usd - commission_cents / 100.0
     return Trade(
         arm=signal.arm,
         scenario=scenario,
@@ -921,7 +975,8 @@ def execute_trade(
         lots=lots,
         gross_usd=gross_usd,
         gross_r=gross_usd / 1000.0,
-        commission_usd=float(commission),
+        commission_cents=commission_cents,
+        commission_usd=commission_cents / 100.0,
         adjusted_usd=adjusted_usd,
         adjusted_r=adjusted_usd / 1000.0,
         exit_reason=exit_reason,
@@ -1081,7 +1136,14 @@ def dynamic_pf_floor(count: int) -> float | None:
 def performance(trades: Sequence[Trade]) -> dict[str, Any]:
     ordered = sorted(
         trades,
-        key=lambda row: (row.exit_timestamp, row.symbol, row.entry_timestamp, row.structural_id),
+        key=lambda row: (
+            row.exit_timestamp,
+            0 if row.adjusted_r < 0.0 else 1,
+            row.adjusted_r,
+            row.symbol,
+            row.entry_timestamp,
+            row.structural_id,
+        ),
     )
     gross_profit = sum(max(row.gross_r, 0.0) for row in ordered)
     gross_loss = sum(min(row.gross_r, 0.0) for row in ordered)
@@ -1089,7 +1151,8 @@ def performance(trades: Sequence[Trade]) -> dict[str, Any]:
     adjusted_loss = sum(min(row.adjusted_r, 0.0) for row in ordered)
     gross_net = sum(row.gross_r for row in ordered)
     adjusted_net = sum(row.adjusted_r for row in ordered)
-    commission_usd = sum(row.commission_usd for row in ordered)
+    commission_cents = sum(row.commission_cents for row in ordered)
+    commission_usd = commission_cents / 100.0
     balance = 0.0
     peak = 0.0
     drawdown = 0.0
@@ -1115,6 +1178,7 @@ def performance(trades: Sequence[Trade]) -> dict[str, Any]:
         "gross_profit_r": gross_profit,
         "gross_loss_r": gross_loss,
         "gross_profit_factor": _pf(gross_profit, gross_loss),
+        "external_commission_cents": commission_cents,
         "external_commission_usd": commission_usd,
         "external_commission_r": commission_usd / 1000.0,
         "cost_burden_fraction_of_gross_positive_r": cost_burden,
@@ -1248,7 +1312,9 @@ def run_analysis(data_root: Path, news_path: Path) -> dict[str, Any]:
     bindings = verify_bindings()
     blackouts, news_identity = load_news(news_path)
     markets = {
-        symbol: parse_selected_market(data_root / spec["file"], symbol)
+        symbol: parse_selected_market(
+            data_root / spec["file"], symbol, EXPECTED_AVAILABILITY[symbol]
+        )
         for symbol, spec in sorted(SYMBOLS.items())
     }
     for symbol, market in markets.items():

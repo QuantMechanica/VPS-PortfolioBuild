@@ -50,7 +50,7 @@ def test_contract_hash_and_two_preregistered_arms_are_bound() -> None:
     contract = json.loads(audit.CONTRACT_PATH.read_text(encoding="utf-8"))
     assert contract["analysis_id"] == audit.ANALYSIS_ID
     assert audit.ARMS == ("A_CARD_CENTER", "B_SOURCE_FAITHFUL")
-    assert audit.CONTRACT_COMMIT == "92ab2205c9ba815360808014313ced634d56af7b"
+    assert audit.CONTRACT_COMMIT == "ab3b31c0126deee5882a8c3eba38a3bd96011912"
 
 
 def test_future_fence_neither_parses_nor_hashes_2023_ohlc(tmp_path: Path) -> None:
@@ -58,11 +58,13 @@ def test_future_fence_neither_parses_nor_hashes_2023_ohlc(tmp_path: Path) -> Non
     selected = epoch(datetime(2022, 12, 30, 23, 45))
     excluded = epoch(datetime(2023, 1, 3, 0, 0))
     selected_line = f"{selected},1800.0,1801.0,1799.0,1800.5,12"
-    path.write_text(
-        "time,open,high,low,close,tickvol\n"
-        f"{selected_line}\n"
-        f"{excluded},FUTURE,OHLC,MUST,NOT_PARSE,NOPE\n",
-        encoding="ascii",
+    path.write_bytes(
+        (
+            "time,open,high,low,close,tickvol\n"
+            f"{selected_line}\n"
+            f"{excluded},"
+        ).encode("ascii")
+        + b"FUTURE,OHLC,MUST,NOT_PARSE,\xff\xfe\n"
     )
     market = audit.parse_selected_market(path, "XAUUSD.DWX")
     assert len(market.bars) == 1
@@ -205,6 +207,8 @@ def test_same_bar_stop_precedes_target_and_adverse_stop_gap_uses_open() -> None:
     assert conflict.exit_reason == "SL"
     assert conflict.exit_price == 99.0
     assert conflict.same_bar_sl_tp_conflict is True
+    assert conflict.exit_timestamp == conflict.entry_timestamp + audit.BAR_SECONDS
+    assert conflict.commission_cents == round(conflict.commission_usd * 100)
 
     gap = audit.execute_trade(
         bars=[bar(0, open_=98.0, high=98.5, low=97.0, close=98.0)],
@@ -245,3 +249,46 @@ def test_canonical_json_and_familywise_floor_are_deterministic() -> None:
     expected_d = expected_u / ((1.0 + expected_u * expected_u) ** 0.5)
     assert audit.dynamic_pf_floor(120) == pytest.approx(max(1.20, (1 + expected_d) / (1 - expected_d)))
     assert audit.dynamic_pf_floor(0) is None
+
+
+def synthetic_trade(
+    structural_id: str, exit_timestamp: int, adjusted_r: float, symbol: str
+) -> audit.Trade:
+    return audit.Trade(
+        arm="A_CARD_CENTER",
+        scenario="CENTER",
+        symbol=symbol,
+        side="LONG",
+        structural_id=structural_id,
+        entry_time_broker="2020-01-01T00:00:00",
+        exit_time_broker=audit.stamp(audit.dt_from_epoch(exit_timestamp)),
+        entry_timestamp=exit_timestamp - audit.BAR_SECONDS,
+        exit_timestamp=exit_timestamp,
+        entry=100.0,
+        stop=99.0,
+        target=102.0,
+        exit_price=100.0 + adjusted_r,
+        lots=1.0,
+        gross_usd=adjusted_r * 1000.0,
+        gross_r=adjusted_r,
+        commission_cents=0,
+        commission_usd=0.0,
+        adjusted_usd=adjusted_r * 1000.0,
+        adjusted_r=adjusted_r,
+        exit_reason="SYNTHETIC",
+        same_bar_sl_tp_conflict=False,
+        entry_bar_exit=False,
+    )
+
+
+def test_simultaneous_pooled_exits_are_conservatively_loss_first() -> None:
+    first = epoch(datetime(2020, 1, 2, 10, 0))
+    simultaneous = first + audit.BAR_SECONDS
+    rows = [
+        synthetic_trade("prior_loss", first, -5.0, "NDX.DWX"),
+        synthetic_trade("same_time_win", simultaneous, 10.0, "NDX.DWX"),
+        synthetic_trade("same_time_loss", simultaneous, -3.0, "XAUUSD.DWX"),
+    ]
+    metric = audit.performance(rows)
+    assert metric["max_adjusted_closed_balance_drawdown_r"] == pytest.approx(8.0)
+    assert metric["external_commission_cents"] == 0
