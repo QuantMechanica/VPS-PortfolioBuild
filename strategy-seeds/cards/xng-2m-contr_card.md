@@ -206,13 +206,12 @@ to the certified book remains unproven until the later correlation gate.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-20 | initial source-backed XNG two-month contrarian build | Q01 | build in progress |
+| v1 | 2026-07-20 | initial source-backed XNG two-month contrarian build | Q02 | Q01 PASS; Q02 pending |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-20 | APPROVED under OWNER commodity-sleeve mission | this card |
-| Q01 Build Validation | 2026-07-20 | pending | pending build result |
-| Q02 Baseline Screening | 2026-07-20 | not yet enqueued | pending Q01 PASS |
-
+| Q01 Build Validation | 2026-07-20 | PASS: strict compile 0/0; build check 0 failures/0 warnings | `artifacts/qm5_20013_build_result.json` |
+| Q02 Baseline Screening | 2026-07-20 | pending, unclaimed; work item `5b880ae3-30d8-47ea-9708-dd21a699933d` | `docs/ops/evidence/2026-07-20_qm5_20013_xng_2m_contr_q02_enqueue.md` |

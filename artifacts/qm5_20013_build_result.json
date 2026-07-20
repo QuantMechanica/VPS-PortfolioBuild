@@ -84,6 +84,32 @@
     "t_live_manifest_touched": false,
     "portfolio_gate_touched": false
   },
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_20013",
+    "enqueued": [
+      {
+        "work_item_id": "5b880ae3-30d8-47ea-9708-dd21a699933d",
+        "symbol": "XNGUSD.DWX",
+        "timeframe": "D1",
+        "status": "pending",
+        "attempt_count": 0,
+        "claimed_by": null,
+        "enqueued_at": "2026-07-20T02:52:55+00:00"
+      }
+    ],
+    "skipped": []
+  },
+  "q02": {
+    "phase": "Q02",
+    "work_item_id": "5b880ae3-30d8-47ea-9708-dd21a699933d",
+    "status_at_handoff": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "symbol": "XNGUSD.DWX",
+    "timeframe": "D1",
+    "enqueued_at_utc": "2026-07-20T02:52:55+00:00",
+    "note": "Auto-enqueued by farmctl record-build; not dispatched by this mission."
+  },
   "open_questions": [
     "The peer-reviewed source studies Henry Hub spot and fixed-maturity futures series; Q02 must falsify transfer to the Darwinex continuous XNG CFD carrier.",
     "The source assumes zero costs and its two-month result may be sample-specific; neither positive expectancy nor low realized correlation to the certified book is established by Q01."
@@ -91,11 +117,11 @@
   "file_hashes_sha256": {
     "mq5": "20351EA5B1096822CB95E25A0B5141E1C74B4AFA0946C431E1AA5F0CB6648875",
     "ex5": "EDADBD373AA34F7F9EED90D5AA5F70722A000E1A353B2E14213AA2A17C512D4F",
-    "spec": "3BE0EF6B8D698B8137060096D285827763DC61C67CB09AC79A866F968D6AE837",
-    "embedded_card": "850D1E3E8C493D2199D2223204E677C114666B0B018E76F56C938F062BD0B4B2",
+    "spec": "D2C85D4C265E6047460AC3283A3BA1E5D07344F1ADD1B64678B7DD73C81ECD29",
+    "embedded_card": "B125FFDDEF110B6A7C9728018D68BBB0BA8D1E9C39256671BFF208D72A66EDCB",
     "setfile": "052B4ED83A0EC765788989EF623B61B98CEB9DAA0DC5694FB9E30DA40F8DB57B",
-    "canonical_card": "A0B876946BAB92B0A5E111EBC93CF46862F67D74B20E0BDE3863BE830C47AB55",
-    "approved_card": "7A422E319108358D78C9F09CDBD351B25635D9ABD72223CEF59EA78E936138C4",
+    "canonical_card": "0985D5646B890FF645E7E33F24F568D304DB844EF6D097CC1F2C4BDE293D085B",
+    "approved_card": "F0E17A7E6D51CF356E25CF917726E75A1A73E8119471A434E103524FB77BFCA0",
     "source_packet": "50022427D55B4D1869F9AFF428FEFFA9A91AA0D2B5142C26FB827917BD0DC3B6",
     "ea_registry": "3812522E33317FF140AFECCD77D9F1B0AC0AF7F6C5B5BA2BBF9C4EA9E3A7AE47",
     "magic_registry": "BCE471124A2CAB795E134722BB218FAA6EFDDA8CA03C0950F7A61C01F0178A42",

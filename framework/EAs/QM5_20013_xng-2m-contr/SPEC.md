@@ -89,5 +89,4 @@ portfolio admission or the portfolio gate.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-07-20 | Initial source-backed two-month XNG contrarian build | Q01 validation pending |
-
+| v1 | 2026-07-20 | Initial source-backed two-month XNG contrarian build | Q01 PASS; Q02 work item `5b880ae3-30d8-47ea-9708-dd21a699933d` pending |

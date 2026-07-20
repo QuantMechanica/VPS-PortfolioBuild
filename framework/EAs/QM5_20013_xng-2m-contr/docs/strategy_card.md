@@ -86,6 +86,7 @@ portfolio mutation is authorized.
 
 ## Pipeline Status
 
-- Q01 build validation pending.
-- Q02 not yet enqueued.
-
+- Q01 PASS on 2026-07-20: strict compile 0 errors/0 warnings; build check 0
+  failures/0 warnings.
+- Q02 pending and unclaimed: work item
+  `5b880ae3-30d8-47ea-9708-dd21a699933d` for `XNGUSD.DWX` D1.
