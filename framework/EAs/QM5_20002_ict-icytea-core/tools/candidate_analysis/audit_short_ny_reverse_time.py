@@ -1880,6 +1880,24 @@ def _validate_ini(values: Mapping[str, str], cell: Mapping[str, Any], run_name: 
         raise PostflightError(f"tester.ini drift {cell['cell_id']}/{run_name}: {drift}")
 
 
+def _expected_runner_summary(cell: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "result": "PASS",
+        "ea_id": 20002,
+        "ea_label": RUNNER_OUTPUT_EA_DIRS[0],
+        "expert": rf"QM\{EXPECTED_EXPERT}",
+        "symbol": cell["symbol"],
+        "terminal": "DEV1",
+        "model": 4,
+        "period": "M1",
+        "requested_runs": 2,
+        "deterministic": True,
+        "oninit_failure_detected": False,
+        "log_bomb_detected": False,
+        "model4_log_marker_detected": True,
+    }
+
+
 def audit_cell(
     pre: Mapping[str, Any],
     cell: Mapping[str, Any],
@@ -1903,21 +1921,7 @@ def audit_cell(
     if summary_path.resolve() != _find_summary(run_id):
         raise PostflightError(f"runner run_id/summary path drift: {cell['cell_id']}")
     summary = load_json(summary_path)
-    expected_summary = {
-        "result": "PASS",
-        "ea_id": 20002,
-        "ea_label": "QM5_20002_ict-icytea-core",
-        "expert": r"QM\QM5_20002_ict-icytea-core",
-        "symbol": cell["symbol"],
-        "terminal": "DEV1",
-        "model": 4,
-        "period": "M1",
-        "requested_runs": 2,
-        "deterministic": True,
-        "oninit_failure_detected": False,
-        "log_bomb_detected": False,
-        "model4_log_marker_detected": True,
-    }
+    expected_summary = _expected_runner_summary(cell)
     drift = {key: (wanted, summary.get(key)) for key, wanted in expected_summary.items() if summary.get(key) != wanted}
     if drift:
         raise PostflightError(f"runner summary drift {cell['cell_id']}: {drift}")

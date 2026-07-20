@@ -370,6 +370,12 @@ def test_find_summary_rejects_unbound_or_ambiguous_output(
         subject._find_summary(run_id)
 
 
+def test_expected_summary_separates_canonical_ea_label_from_expert_path() -> None:
+    expected = subject._expected_runner_summary({"symbol": "EURUSD.DWX"})
+    assert expected["ea_label"] == "QM5_20002"
+    assert expected["expert"] == r"QM\QM5_20002_ict-icytea-core"
+
+
 def test_pre_cli_fails_closed_before_any_launch_when_compile_missing(tmp_path: Path) -> None:
     receipt = tmp_path / "pre_reject.json"
     rc = subject.main(
