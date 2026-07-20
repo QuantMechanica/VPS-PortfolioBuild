@@ -129,7 +129,7 @@ class FrozenContractTests(unittest.TestCase):
         sequence = function_body(RULES, "ICT_BuildSequence")
 
         self.assertEqual(full_index.count("ICT_BuildSequence("), 1)
-        self.assertEqual(full_fx.count("ICT_BuildSequence("), 2)
+        self.assertEqual(full_fx.count("ICT_BuildSequence("), 1)
         self.assertEqual(cached_index.count("ICT_BuildSequence("), 1)
         self.assertEqual(cached_fx.count("ICT_BuildSequence("), 1)
         self.assertIn("count - Strategy_ReplayRequestedBars()", logical_window)
@@ -254,15 +254,25 @@ class FrozenContractTests(unittest.TestCase):
         required = (
             "9 * 60 + 30,\n                          10 * 60,\n                          30,",
             "10 * 60,\n                     11 * 60,",
-            "20 * 60,\n                            24 * 60,\n                            48,",
-            "2 * 60,\n                            5 * 60,\n                            36,",
-            "ICT_SESSION_LONDON,\n                           2 * 60,\n                           5 * 60,",
-            "ICT_SESSION_NEW_YORK,\n                           7 * 60,\n                           10 * 60,",
+            "20 * 60,\n                          24 * 60,\n                          48,",
+            "ICT_SESSION_LONDON,\n                     2 * 60,\n                     5 * 60,",
         )
         for token in required:
             self.assertIn(token, EA)
         self.assertIn("range.bars == expected_bars", RULES)
-        self.assertIn("distinct_dates >= 3", RULES)
+
+    def test_fx_budget_is_daily_london_asia_only(self) -> None:
+        budget = function_body(EA, "Strategy_BudgetKeyAtTime")
+        full_fx = function_body(EA, "Strategy_ReconstructFx")
+        session = function_body(EA, "Strategy_EventSessionForBar")
+        self.assertIn("return ICT_NYDateKey(event_time);", budget)
+        self.assertIn("ICT_MODE_FX_SESSION_SWEEP", EA + RULES)
+        self.assertNotIn("ICT_MODE_FX_WEEKLY_SWEEP", EA + RULES)
+        self.assertNotIn("ICT_TradingWeekKey", EA + RULES)
+        self.assertIn("asian_range.low", full_fx)
+        self.assertIn("asian_range.high", full_fx)
+        self.assertEqual(full_fx.count("ICT_SESSION_LONDON"), 1)
+        self.assertNotIn("ICT_SESSION_NEW_YORK", session)
 
     def test_preregistered_star_is_oaat_and_live_is_center_only(self) -> None:
         self.assertIn("a_deviations > 1 || b_deviations != 0", EA)
@@ -354,8 +364,8 @@ class FrozenContractTests(unittest.TestCase):
         self.assertIn("sl_buffer_atr * fvg_atr", RULES)
         self.assertIn("reward / risk + 1e-12 < min_rr", RULES)
         self.assertIn("opening_range.high,\n                     opening_range.low,", EA)
-        self.assertIn("asian.high,\n                           asian.low,", EA)
-        self.assertIn("london_reference.high,\n                           london_reference.low,", EA)
+        self.assertIn("asian_range.high,\n                     asian_range.low,", EA)
+        self.assertIn("reference.high,\n                     reference.low,", EA)
 
     def test_volatility_definition_and_fvg_threshold_are_explicit(self) -> None:
         atr = function_body(RULES, "ICT_SMA_TR14At")
@@ -473,7 +483,6 @@ class FrozenContractTests(unittest.TestCase):
         self.assertIn("governor_block_at_eligibility", tick)
         for reason in (
             "ASIAN_REFERENCE_INCOMPLETE",
-            "LONDON_REFERENCE_INCOMPLETE",
             "SESSION_WINDOW_INCOMPLETE",
         ):
             self.assertIn(reason, rebuild)

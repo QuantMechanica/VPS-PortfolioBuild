@@ -442,6 +442,8 @@ bool Strategy_ReconstructFx(const MqlRates &rates[],
                             const double point,
                             ICT_SequenceResult &result)
   {
+   // Contract v5 deliberately tests one unoptimized daily hypothesis: London
+   // raids the immediately preceding completed Asia range, then MSS/FVG retraces.
    ICT_ResetSequence(result);
    if(count <= 0)
       return false;

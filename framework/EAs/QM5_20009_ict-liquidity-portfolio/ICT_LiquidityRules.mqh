@@ -7,6 +7,7 @@
 enum ICT_StrategyMode
   {
    ICT_MODE_INDEX_MSS_FVG       = 0,
+   // v5 candidate: one NY-date budget, completed Asia range, London KZ only.
    ICT_MODE_FX_SESSION_SWEEP    = 1
   };
 

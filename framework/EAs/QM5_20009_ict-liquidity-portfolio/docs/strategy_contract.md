@@ -132,38 +132,39 @@ frozen opening range. Missing/incomplete range, same-bar MSS, no pre-sweep pivot
 ambiguous sweep, touched/absent FVG, invalid target/R, or expiry are explicit
 no-trade outcomes.
 
-## 4. Sleeve B — `FX_WEEKLY_SESSION_SWEEP`
+## 4. Sleeve B — `FX_LONDON_ASIA_SWEEP`
 
 **Locked development universe:** `EURUSD.DWX` and `GBPUSD.DWX`, M5, both
-directions. Both symbols and both London/NY cells are always reported; neither may
-be dropped after results are seen.
+directions. Both symbols are always reported and neither may be dropped after
+results are seen.
 
-1. Define the prior NY trading week as Sunday 17:00 inclusive through Friday 17:00
-   exclusive from observed bars, not broker D1. At the next Sunday 17:00 freeze
-   PWH/PWL. If it contains fewer than three distinct trading dates, skip the week.
-2. Eligible sessions are London `[02:00,05:00)` NY and New York `[07:00,10:00)` NY.
-   All sweep/reclaim/MSS/FVG/intent-arm events finish in the same active session.
-3. The completed reference range is Asian `[20:00,00:00)` before London and London
-   `[02:00,05:00)` before New York. Incomplete reference data invalidates a session.
-4. A long candidate begins only with a PWL penetration/reclaim; a short candidate
-   only with PWH. Then apply the shared later-MSS and earliest-FVG sequence.
-5. London long targets Asian high, London short Asian low; NY long targets London
-   high, NY short London low. Invalid direction or insufficient R means no trade;
-   never substitute a farther target.
-6. The first chronological PWH/PWL reclaim in an eligible session consumes that
-   symbol-week even if no later pivot, MSS, FVG, order, or fill occurs. A same-bar
-   double-side penetration consumes it as ambiguous with no trade.
-7. Virtual intents expire at session end or the next news-blackout start, whichever
-   is earlier. Maximum one consumed attempt and one fill per symbol/week. Filled
+1. For NY date `D`, freeze the preceding completed Asian range from
+   `[20:00,00:00)` on NY date `D-1`. It must contain exactly 48 closed M5 bars;
+   missing coverage invalidates the day.
+2. The only eligible setup window is London `[02:00,05:00)` NY. Every
+   sweep/reclaim/MSS/FVG/intent-arm event must finish within this same window.
+3. A long candidate penetrates Asian low by at least one tick and reclaims it; a
+   short candidate mirrors Asian high. Then apply the shared later-MSS and
+   earliest-post-MSS-FVG sequence.
+4. Long target is the frozen Asian high and short target the frozen Asian low.
+   Invalid direction or insufficient R means no trade; no weekly, daily or farther
+   liquidity pool may rescue it.
+5. The first chronological Asian-boundary reclaim consumes that symbol/day even if
+   no later pivot, MSS, FVG, order or fill occurs. A same-bar double-side
+   penetration consumes it as ambiguous with no trade.
+6. A virtual intent expires at 05:00 NY or the next news-blackout start, whichever
+   is earlier. Maximum one consumed attempt and one fill per symbol/NY day. Filled
    positions hard-flat at 16:00 NY on the same day.
 
-State machine: `WEEK_FROZEN -> FIRST_SWEEP -> RECLAIMED -> MSS -> VIRTUAL_LIMIT
--> TRIGGERED/FILLED/DONE`. State is keyed by NY trading-week start + symbol + mode and records
-PWH/PWL and reference-range hashes for deterministic restart replay.
+State machine: `ASIA_FROZEN -> FIRST_SWEEP -> RECLAIMED -> MSS -> VIRTUAL_LIMIT
+-> TRIGGERED/FILLED/DONE`. State is keyed by NY date + symbol + mode and records
+the Asian-range hash for deterministic restart replay.
 
-Sleeve B is a low-frequency diversifier candidate, not an asserted independent
-factor. Until synchronized return evidence proves otherwise, both sleeves count as
-the same ICT-reversal family for portfolio risk caps.
+This candidate is preregistered because the workbook and approved
+`QM5_12539_ict-london-kz-cable-sweep` card independently identify the London raid
+of Asian liquidity followed by MSS/FVG. Neither source establishes profitability.
+Sleeve B remains a candidate diversifier; until synchronized returns prove
+otherwise, both sleeves share the same ICT-reversal family risk cap.
 
 ## 5. Preregistered parameter neighbourhood
 
