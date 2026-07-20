@@ -342,7 +342,7 @@ double Strategy_MedianDailySpreadPoints(const string symbol)
    int spreads[];
    ArrayResize(spreads, strategy_spread_days);
    const int copied = CopySpread(symbol, PERIOD_D1, 1,
-                                 strategy_spread_days, spreads);
+                                 strategy_spread_days, spreads); // perf-allowed: first-trading-day preflight only.
    if(copied <= 0)
       return 0.0;
 
