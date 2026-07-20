@@ -335,7 +335,7 @@ function Clear-InheritedEnvironment([string]$ExpectedProfile) {
     }
 }
 
-function Read-ExactJson([string]$Path, [string[]]$ExpectedFields, [string]$Label) {
+function Read-ExactJson([string]$Path, [string[]]$ExpectedFields, [string]$Label, [hashtable]$ExpectedKinds = @{}) {
     Assert-PhysicalPath -Path $Path
     $raw = [IO.File]::ReadAllText([IO.Path]::GetFullPath($Path), [Text.UTF8Encoding]::new($false, $true))
     $document = [Text.Json.JsonDocument]::Parse($raw)
@@ -346,6 +346,21 @@ function Read-ExactJson([string]$Path, [string[]]$ExpectedFields, [string]$Label
         $seen = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::Ordinal)
         foreach ($property in $document.RootElement.EnumerateObject()) {
             if (-not $seen.Add($property.Name)) { throw "$Label contains a duplicate JSON property." }
+            if ($ExpectedKinds.ContainsKey($property.Name)) {
+                $expectedKind = [string]$ExpectedKinds[$property.Name]
+                $actualKind = $property.Value.ValueKind
+                $integerValue = [long]0
+                $matches = switch ($expectedKind) {
+                    'String' { $actualKind -eq [Text.Json.JsonValueKind]::String }
+                    'Boolean' { $actualKind -in @([Text.Json.JsonValueKind]::True, [Text.Json.JsonValueKind]::False) }
+                    'Integer' { $actualKind -eq [Text.Json.JsonValueKind]::Number -and $property.Value.TryGetInt64([ref]$integerValue) }
+                    'Array' { $actualKind -eq [Text.Json.JsonValueKind]::Array }
+                    'Object' { $actualKind -eq [Text.Json.JsonValueKind]::Object }
+                    'StringOrNull' { $actualKind -in @([Text.Json.JsonValueKind]::String, [Text.Json.JsonValueKind]::Null) }
+                    default { throw "$Label declared an unknown expected JSON kind: $expectedKind" }
+                }
+                if (-not $matches) { throw "$Label property '$($property.Name)' has the wrong JSON ValueKind." }
+            }
         }
         if ([string]::Join('|', @($seen | Sort-Object)) -cne [string]::Join('|', @($ExpectedFields | Sort-Object))) {
             throw "$Label field closure drifted."
@@ -356,7 +371,11 @@ function Read-ExactJson([string]$Path, [string[]]$ExpectedFields, [string]$Label
 
 function Assert-V3RotationReceipt([object]$AccountState, [string]$CredentialSha256, [string]$HelperSha256) {
     $laneFields = @('schema_version', 'contract_id', 'lane', 'source_lane', 'identity', 'paths', 'coordination', 'firewall', 'program_sha256', 'allowed_symbols', 'copy_contract', 'agent_port_contract')
-    $lane = Read-ExactJson -Path $laneContractPath -ExpectedFields $laneFields -Label 'DEV1 lane contract'
+    $lane = Read-ExactJson -Path $laneContractPath -ExpectedFields $laneFields -Label 'DEV1 lane contract' -ExpectedKinds @{
+        schema_version = 'Integer'; contract_id = 'String'; lane = 'String'; source_lane = 'String'; identity = 'Object';
+        paths = 'Object'; coordination = 'Object'; firewall = 'Array'; program_sha256 = 'Object'; allowed_symbols = 'Array';
+        copy_contract = 'Object'; agent_port_contract = 'Object'
+    }
     $account = "$env:COMPUTERNAME\QMDev1"
     if ([int]$lane.schema_version -ne 3 -or [string]$lane.contract_id -cne $contractId -or
         [string]$lane.lane -cne 'DEV1' -or [string]$lane.source_lane -cne 'DEV1' -or
@@ -376,7 +395,13 @@ function Assert-V3RotationReceipt([object]$AccountState, [string]$CredentialSha2
         'owner_process_count', 'dev1_root_process_count'
     )
     Assert-QmDev1CredentialExactAcl -Path $rotationReceiptPath
-    $receipt = Read-ExactJson -Path $rotationReceiptPath -ExpectedFields $receiptFields -Label 'DEV1 rotation receipt'
+    $receiptKinds = @{}
+    foreach ($field in $receiptFields) { $receiptKinds[$field] = 'String' }
+    $receiptKinds['schema_version'] = 'Integer'
+    foreach ($field in @('target_disabled_at_rest', 'target_password_required_at_rest', 'machine_credential_matches_proved_password',
+            'published_after_identity_proof', 'legacy_credential_preserved', 'cleanup_lease_disarmed')) { $receiptKinds[$field] = 'Boolean' }
+    foreach ($field in @('owner_process_count', 'dev1_root_process_count')) { $receiptKinds[$field] = 'Integer' }
+    $receipt = Read-ExactJson -Path $rotationReceiptPath -ExpectedFields $receiptFields -Label 'DEV1 rotation receipt' -ExpectedKinds $receiptKinds
     if ([int]$receipt.schema_version -ne 1 -or [string]$receipt.artifact_type -cne 'QM_DEV1_MACHINE_CREDENTIAL_ROTATION_RECEIPT' -or
         [string]$receipt.status -cne 'PASS' -or [string]$receipt.contract_id -cne $contractId -or
         [string]$receipt.target_account -cne $account -or [string]$receipt.target_sid -cne [string]$AccountState.Sid -or
@@ -413,9 +438,13 @@ function Assert-V3RotationReceipt([object]$AccountState, [string]$CredentialSha2
         [IO.Path]::GetFileName($resultPath) -cne 'identity_probe_result.json') {
         throw 'DEV1 rotation identity result escaped its canonical root/layout.'
     }
-    $identityResult = Read-ExactJson -Path $resultPath -ExpectedFields @(
+    $identityResultFields = @(
         'schema_version', 'artifact_type', 'status', 'completed_utc', 'nonce', 'account', 'sid', 'profile', 'limited_non_admin', 'request_sha256'
-    ) -Label 'DEV1 identity result'
+    )
+    $identityKinds = @{}
+    foreach ($field in $identityResultFields) { $identityKinds[$field] = 'String' }
+    $identityKinds['schema_version'] = 'Integer'; $identityKinds['limited_non_admin'] = 'Boolean'
+    $identityResult = Read-ExactJson -Path $resultPath -ExpectedFields $identityResultFields -Label 'DEV1 identity result' -ExpectedKinds $identityKinds
     if ([int]$identityResult.schema_version -ne 1 -or [string]$identityResult.artifact_type -cne 'QM_DEV1_IDENTITY_PROBE_RESULT' -or
         [string]$identityResult.status -cne 'PASS' -or [string]$identityResult.account -cne $account -or
         [string]$identityResult.sid -cne [string]$AccountState.Sid -or -not [bool]$identityResult.limited_non_admin -or
@@ -440,22 +469,38 @@ function Assert-V3RotationReceipt([object]$AccountState, [string]$CredentialSha2
     }
 }
 
-function Assert-CleanupTaskContract([string]$TaskName, [string]$Arguments, [string]$WorkingDirectory) {
+function Assert-CleanupTaskContract(
+    [string]$TaskName, [string]$Arguments, [string]$ExpectedHelperPath,
+    [string]$WorkingDirectory, [DateTimeOffset]$ExpectedExpiryUtc
+) {
     $task = Get-ScheduledTask -TaskName $TaskName -TaskPath $taskPath -ErrorAction Stop
     $principal = $task.Principal
     $triggers = @($task.Triggers)
     $actions = @($task.Actions)
+    $principalSid = ([Security.Principal.NTAccount][string]$principal.UserId).Translate([Security.Principal.SecurityIdentifier]).Value
+    $triggerKinds = @($triggers | ForEach-Object { $_.CimClass.CimClassName } | Sort-Object)
+    $timeTrigger = @($triggers | Where-Object { $_.CimClass.CimClassName -eq 'MSFT_TaskTimeTrigger' })[0]
+    $bootTrigger = @($triggers | Where-Object { $_.CimClass.CimClassName -eq 'MSFT_TaskBootTrigger' })[0]
+    $actualExpiry = [DateTimeOffset]::Parse([string]$timeTrigger.StartBoundary).ToUniversalTime()
+    $expiryDelta = [Math]::Abs(($actualExpiry - $ExpectedExpiryUtc.ToUniversalTime()).TotalSeconds)
     if ($task.TaskName -cne $TaskName -or $task.TaskPath -cne $taskPath -or
-        [string]$principal.UserId -notin @('SYSTEM', 'NT AUTHORITY\SYSTEM', 'S-1-5-18') -or
+        $principalSid -cne 'S-1-5-18' -or
         $principal.LogonType.ToString() -cne 'ServiceAccount' -or $principal.RunLevel.ToString() -cne 'Highest' -or
-        $triggers.Count -ne 2 -or @($triggers | Where-Object { $_.CimClass.CimClassName -eq 'MSFT_TaskBootTrigger' }).Count -ne 1 -or
+        [string]::Join('|', $triggerKinds) -cne 'MSFT_TaskBootTrigger|MSFT_TaskTimeTrigger' -or
+        -not $timeTrigger.Enabled -or -not $bootTrigger.Enabled -or
+        [string]$timeTrigger.Repetition.Interval -cne 'PT5M' -or
+        -not [string]::IsNullOrWhiteSpace([string]$timeTrigger.Repetition.Duration) -or $expiryDelta -gt 2 -or
         $actions.Count -ne 1 -or -not ([IO.Path]::GetFullPath([string]$actions[0].Execute)).Equals([IO.Path]::GetFullPath($pwsh), [StringComparison]::OrdinalIgnoreCase) -or
         [string]$actions[0].Arguments -cne $Arguments -or
         -not ([IO.Path]::GetFullPath([string]$actions[0].WorkingDirectory)).Equals([IO.Path]::GetFullPath($WorkingDirectory), [StringComparison]::OrdinalIgnoreCase) -or
-        $task.Settings.MultipleInstances.ToString() -cne 'IgnoreNew' -or -not $task.Settings.StartWhenAvailable -or
+        $task.State.ToString() -cne 'Ready' -or $task.Settings.MultipleInstances.ToString() -cne 'IgnoreNew' -or
+        -not $task.Settings.StartWhenAvailable -or -not $task.Settings.AllowHardTerminate -or
         [string]$task.Settings.ExecutionTimeLimit -cne 'PT10M' -or [int]$task.Settings.RestartCount -ne 3 -or
         [string]$task.Settings.RestartInterval -cne 'PT1M') {
         throw 'SYSTEM cleanup lease Scheduled Task contract drifted.'
+    }
+    if ((Get-Sha256 $ExpectedHelperPath) -cne (Get-Sha256 $cleanupHelperSourcePath)) {
+        throw 'SYSTEM cleanup lease helper copy drifted.'
     }
 }
 
@@ -463,16 +508,29 @@ function Assert-CleanupEvidence(
     [string]$ResultPath, [string]$DisarmPath, [string]$ExpectedSid,
     [string]$TargetTaskName, [string]$CleanupTaskName
 ) {
-    $result = Read-ExactJson -Path $ResultPath -ExpectedFields @(
+    $resultFields = @(
         'schema_version', 'artifact_type', 'completed_utc', 'success', 'containment_verified', 'lease_disarmed',
         'expected_sid', 'target_task_name', 'cleanup_task_name', 'manifest_valid', 'account_restored_disabled',
         'owner_process_count', 'dev1_root_process_count', 'target_task_registered', 'cleanup_task_registered', 'failures'
-    ) -Label 'DEV1 compile cleanup containment result'
-    $disarm = Read-ExactJson -Path $DisarmPath -ExpectedFields @(
+    )
+    $resultKinds = @{ schema_version = 'Integer'; artifact_type = 'String'; completed_utc = 'String'; expected_sid = 'String';
+        target_task_name = 'String'; cleanup_task_name = 'String'; owner_process_count = 'Integer'; dev1_root_process_count = 'Integer'; failures = 'Array' }
+    foreach ($field in @('success', 'containment_verified', 'lease_disarmed', 'manifest_valid', 'account_restored_disabled',
+            'target_task_registered', 'cleanup_task_registered')) { $resultKinds[$field] = 'Boolean' }
+    $result = Read-ExactJson -Path $ResultPath -ExpectedFields $resultFields `
+        -Label 'DEV1 compile cleanup containment result' -ExpectedKinds $resultKinds
+    $disarmFields = @(
         'schema_version', 'artifact_type', 'completed_utc', 'success', 'containment_result_path', 'containment_verified',
         'lease_disarmed', 'expected_sid', 'target_task_name', 'cleanup_task_name', 'account_restored_disabled',
         'owner_process_count', 'dev1_root_process_count', 'target_task_registered', 'cleanup_task_registered', 'failures'
-    ) -Label 'DEV1 compile cleanup disarm result'
+    )
+    $disarmKinds = @{ schema_version = 'Integer'; artifact_type = 'String'; completed_utc = 'String'; containment_result_path = 'String';
+        expected_sid = 'String'; target_task_name = 'String'; cleanup_task_name = 'String'; owner_process_count = 'Integer';
+        dev1_root_process_count = 'Integer'; failures = 'Array' }
+    foreach ($field in @('success', 'containment_verified', 'lease_disarmed', 'account_restored_disabled',
+            'target_task_registered', 'cleanup_task_registered')) { $disarmKinds[$field] = 'Boolean' }
+    $disarm = Read-ExactJson -Path $DisarmPath -ExpectedFields $disarmFields `
+        -Label 'DEV1 compile cleanup disarm result' -ExpectedKinds $disarmKinds
     if ([int]$result.schema_version -ne 1 -or [string]$result.artifact_type -cne 'QM_DEV1_ACCOUNT_CLEANUP_RESULT' -or
         -not [bool]$result.success -or -not [bool]$result.containment_verified -or [bool]$result.lease_disarmed -or
         -not [bool]$result.manifest_valid -or -not [bool]$result.account_restored_disabled -or
@@ -627,7 +685,10 @@ function Invoke-CompileChild {
         'lane_contract_sha256', 'machine_credential_sha256', 'machine_credential_helper_sha256',
         'rotation_receipt_sha256', 'cleanup_helper_sha256'
     )
-    $request = Read-ExactJson -Path $RequestPath -ExpectedFields $requestFields -Label 'DEV1 compile request'
+    $requestKinds = @{}
+    foreach ($field in $requestFields) { $requestKinds[$field] = 'String' }
+    $requestKinds['schema_version'] = 'Integer'
+    $request = Read-ExactJson -Path $RequestPath -ExpectedFields $requestFields -Label 'DEV1 compile request' -ExpectedKinds $requestKinds
     if ([int]$request.schema_version -ne 1 -or [string]$request.artifact_type -cne 'QM5_20002_DEV1_V3_COMPILE_REQUEST' -or
         [string]$request.run_id -cnotmatch '^[0-9]{8}T[0-9]{6}Z_[0-9a-f]{32}$' -or
         [string]$request.nonce -cnotmatch '^[0-9a-f]{32}$' -or
@@ -919,8 +980,15 @@ function Invoke-CompileController {
         $rotationProof = Assert-V3RotationReceipt -AccountState $accountState `
             -CredentialSha256 $ExpectedCredentialSha256 -HelperSha256 $ExpectedHelperSha256
 
-        New-Item -ItemType Directory -Path $stageRoot -Force | Out-Null
-        Assert-PhysicalPath -Path $controllerRunRoot
+        foreach ($directory in @($controllerRunRoot, $controlRoot, $outputRoot, $stageRoot)) {
+            New-Item -ItemType Directory -Path $directory -ErrorAction Stop | Out-Null
+        }
+        Set-RunDirectoryAcl -Path $controllerRunRoot -TargetSid ([string]$accountState.Sid) `
+            -TargetRights ([Security.AccessControl.FileSystemRights]::ReadAndExecute)
+        Set-RunDirectoryAcl -Path $controlRoot -TargetSid ([string]$accountState.Sid) `
+            -TargetRights ([Security.AccessControl.FileSystemRights]::ReadAndExecute)
+        Set-RunDirectoryAcl -Path $outputRoot -TargetSid ([string]$accountState.Sid) `
+            -TargetRights ([Security.AccessControl.FileSystemRights]::Modify)
         Copy-Item -LiteralPath $source -Destination $stageMq5 -Force
         if ((Get-Sha256 $stageMq5) -cne $sourceHash) { throw 'Staged source hash mismatch.' }
         @([pscustomobject]@{
@@ -933,37 +1001,117 @@ function Invoke-CompileController {
         $preexistingHash = $null
         if ($preexisting) {
             $preexistingHash = Get-Sha256 $repoEx5
-            $preexistingBackup = Join-Path $controllerRunRoot 'preexisting_repo_target.ex5'
-            Copy-Item -LiteralPath $repoEx5 -Destination $preexistingBackup -Force
-            Remove-Item -LiteralPath $repoEx5 -Force
         }
 
-        $user = Get-LocalUser QMDev1
-        if (-not $user.Enabled -or -not $user.PasswordRequired) { throw 'QMDev1 account gate failed.' }
-        $sid = $user.SID.Value
-        $account = "$env:COMPUTERNAME\QMDev1"
-        $credential = Import-Clixml -LiteralPath $credentialPath
-        if ($credential -isnot [Management.Automation.PSCredential]) { throw 'Invalid DEV1 credential type.' }
-        $credentialName = $credential.UserName
-        if ($credentialName.StartsWith('.\')) { $credentialName = "$env:COMPUTERNAME\$($credentialName.Substring(2))" }
-        if (([Security.Principal.NTAccount]$credentialName).Translate([Security.Principal.SecurityIdentifier]).Value -ne $sid) {
-            throw 'DEV1 credential SID mismatch.'
+        [IO.File]::Copy($cleanupHelperSourcePath, $cleanupHelperPath, $false)
+        [IO.File]::Copy($testerGroupsCanonicalPath, $cleanupGroupsSourcePath, $false)
+        $cleanupHelperHash = Get-Sha256 $cleanupHelperPath
+        $cleanupGroupsHash = Get-Sha256 $cleanupGroupsSourcePath
+        if ($cleanupHelperHash -cne (Get-Sha256 $cleanupHelperSourcePath) -or
+            $cleanupGroupsHash -cne (Get-Sha256 $testerGroupsCanonicalPath)) {
+            throw 'Protected compile cleanup inputs drifted during copy.'
         }
+        $cleanupExpires = [DateTimeOffset]::UtcNow.AddMinutes(15)
+        $cleanupLease = [ordered]@{
+            schema_version = 1
+            artifact_type = 'QM_DEV1_ACCOUNT_CLEANUP_LEASE'
+            run_id = $runId
+            nonce = $nonce
+            created_utc = [DateTimeOffset]::UtcNow.ToString('o')
+            expires_utc = $cleanupExpires.ToString('o')
+            run_directory = $controllerRunRoot
+            expected_sid = [string]$accountState.Sid
+            dev1_root = $devRoot
+            target_task_name = $taskName
+            cleanup_task_name = $cleanupTaskName
+            cleanup_action_mutex = $cleanupActionMutexName
+            helper_path = $cleanupHelperPath
+            helper_sha256 = $cleanupHelperHash
+            tester_groups_source_path = $cleanupGroupsSourcePath
+            tester_groups_target_path = $testerGroupsDev1Path
+            tester_groups_sha256 = $cleanupGroupsHash
+            result_path = $cleanupResultPath
+            disarm_result_path = $cleanupDisarmPath
+        }
+        Write-AtomicJson -Path $cleanupLeasePath -Value $cleanupLease
+        $cleanupArguments = '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "{0}" -LeasePath "{1}" -ExpectedSid "{2}" -TargetTaskName "{3}" -CleanupTaskName "{4}" -CleanupActionMutex "{5}" -ExpectedHelperSha256 "{6}"' -f `
+            $cleanupHelperPath, $cleanupLeasePath, [string]$accountState.Sid, $taskName, $cleanupTaskName, $cleanupActionMutexName, $cleanupHelperHash
+        $cleanupAction = New-ScheduledTaskAction -Execute $pwsh -Argument $cleanupArguments -WorkingDirectory $controllerRunRoot
+        $cleanupTriggers = @(
+            (New-ScheduledTaskTrigger -AtStartup),
+            (New-ScheduledTaskTrigger -Once -At $cleanupExpires.ToLocalTime() -RepetitionInterval (New-TimeSpan -Minutes 5))
+        )
+        $cleanupSettings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries `
+            -StartWhenAvailable -Hidden -ExecutionTimeLimit (New-TimeSpan -Minutes 10) -MultipleInstances IgnoreNew `
+            -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1)
+        $cleanupPrincipal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -LogonType ServiceAccount -RunLevel Highest
+        Register-ScheduledTask -TaskName $cleanupTaskName -TaskPath $taskPath -Action $cleanupAction -Trigger $cleanupTriggers `
+            -Settings $cleanupSettings -Principal $cleanupPrincipal -Description "Bounded DEV1 compile containment lease $runId" -ErrorAction Stop | Out-Null
+        $cleanupTaskRegistered = $true
+        Assert-CleanupTaskContract -TaskName $cleanupTaskName -Arguments $cleanupArguments `
+            -ExpectedHelperPath $cleanupHelperPath -WorkingDirectory $controllerRunRoot -ExpectedExpiryUtc $cleanupExpires
+
+        $includeSnapshot = Get-RepoIncludeSnapshot
+        $requestExpires = [DateTimeOffset]::UtcNow.AddMinutes(10)
+        $account = [string]$rotationProof.Account
+        $commonPath = 'C:\Users\QMDev1\AppData\Roaming\MetaQuotes\Terminal\Common'
+        $request = [ordered]@{
+            schema_version = 1
+            artifact_type = 'QM5_20002_DEV1_V3_COMPILE_REQUEST'
+            run_id = $runId
+            nonce = $nonce
+            created_utc = [DateTimeOffset]::UtcNow.ToString('o')
+            expires_utc = $requestExpires.ToString('o')
+            run_root = $controllerRunRoot
+            expected_account = $account
+            expected_sid = [string]$accountState.Sid
+            expected_profile = 'C:\Users\QMDev1'
+            expected_common_path = $commonPath
+            expected_task_name = $taskName
+            result_path = $resultPath
+            controller_path = $controllerScript
+            controller_sha256 = $controllerScriptHash
+            compile_one_path = $compileOne
+            compile_one_sha256 = $compileOneHash
+            metaeditor_path = $metaEditor
+            metaeditor_sha256 = $metaEditorHash
+            source_path = $stageMq5
+            source_sha256 = $sourceHash
+            repo_include_path = $repoInclude
+            repo_include_snapshot_sha256 = Get-CanonicalObjectSha256 $includeSnapshot
+            pwsh_path = $pwsh
+            pwsh_sha256 = Get-Sha256 $pwsh
+            lane_contract_sha256 = [string]$rotationProof.LaneSha256
+            machine_credential_sha256 = $ExpectedCredentialSha256
+            machine_credential_helper_sha256 = $ExpectedHelperSha256
+            rotation_receipt_sha256 = [string]$rotationProof.ReceiptSha256
+            cleanup_helper_sha256 = $cleanupHelperHash
+        }
+        Write-AtomicJson -Path $requestPath -Value $request
+        $requestSha256 = Get-Sha256 $requestPath
+
+        $credential = Get-QmDev1MachineCredential -CredentialPath $credentialPath `
+            -ExpectedCredentialSha256 $ExpectedCredentialSha256 -ExpectedAccount $account `
+            -ExpectedSid ([string]$accountState.Sid) -ContractId $contractId -Lane 'DEV1'
         $plain = $credential.GetNetworkCredential().Password
         if ([string]::IsNullOrEmpty($plain)) { throw 'DEV1 task password is empty.' }
+        Enable-Dev1Account -State $accountState
+        $accountEnabledByController = $true
 
-        $arguments = '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "{0}" -Child -RunRoot "{1}" -ExpectedSid "{2}" -ExpectedSourceSha256 "{3}"' -f
-            $controllerScript, $controllerRunRoot, $sid, $sourceHash
+        $arguments = '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "{0}" -Child -RequestPath "{1}" -ExpectedRequestSha256 "{2}"' -f `
+            $controllerScript, $requestPath, $requestSha256
         $action = New-ScheduledTaskAction -Execute $pwsh -Argument $arguments -WorkingDirectory $controllerRunRoot
-        $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -Hidden `
+        $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -Hidden `
             -ExecutionTimeLimit (New-TimeSpan -Minutes 5) -MultipleInstances IgnoreNew
-        Register-ScheduledTask -TaskName $taskName -TaskPath '\' -Action $action -Settings $settings `
+        Register-ScheduledTask -TaskName $taskName -TaskPath $taskPath -Action $action -Settings $settings `
             -User $account -Password $plain -RunLevel Limited -Description "Ephemeral isolated QM20002 Contract-v3 compile" | Out-Null
         $taskRegistered = $true
         $plain = $null
+        $credential.Password.Dispose()
         $credential = $null
-        $task = Get-ScheduledTask -TaskName $taskName -TaskPath '\'
-        if ($task.Principal.LogonType.ToString() -ne 'Password' -or
+        $task = Get-ScheduledTask -TaskName $taskName -TaskPath $taskPath
+        $taskPrincipalSid = ([Security.Principal.NTAccount][string]$task.Principal.UserId).Translate([Security.Principal.SecurityIdentifier]).Value
+        if ($taskPrincipalSid -cne [string]$accountState.Sid -or $task.Principal.LogonType.ToString() -ne 'Password' -or
             $task.Principal.RunLevel.ToString() -ne 'Limited' -or $null -ne $task.Triggers -or
             @($task.Actions).Count -ne 1 -or
             -not ([IO.Path]::GetFullPath([string]$task.Actions[0].Execute)).Equals(
@@ -974,7 +1122,7 @@ function Invoke-CompileController {
             throw 'Scheduled task isolation contract drift.'
         }
         if (@(Get-Dev1Processes).Count -ne 0) { throw 'DEV1 became busy before compile start.' }
-        Start-ScheduledTask -TaskName $taskName -TaskPath '\'
+        Start-ScheduledTask -TaskName $taskName -TaskPath $taskPath
 
         $deadline = (Get-Date).ToUniversalTime().AddMinutes(4)
         while ((Get-Date).ToUniversalTime() -lt $deadline -and -not (Test-Path -LiteralPath $resultPath)) {
