@@ -38,3 +38,17 @@ consumes nothing. Recorded here so it is not re-flagged as an open holdout each 
 Both are optimizations, not blockers. H-A improves throughput for the 26.07 dual-deploy
 candidates; it can land any time. The 26.07 recompile-wave factory-OFF window is the
 right slot for the deferred P1.9 resolver regen (12074/12247) — H-A is independent of it.
+
+## H-C — Level-Up Cohort-0 systemic fixes (added 2026-07-20, campaign doc: docs/research/LEVELUP_CAMPAIGN_2026-07-20.md)
+
+1. **Build-gate against skeleton EAs:** reject any built .mq5 whose strategy entry
+   hook is the auto-generated stub (`Strategy_EntrySignal` returning constant false /
+   "Auto-generated skeleton" marker). 295 of the RECYCLE-298 were such phantoms.
+   Gate location: build_check or record-build validation — a source-scan assertion.
+2. **Q02 verdict class `DRAFT_DEFECT`:** when an EA fires zero trades on EVERY
+   enqueued symbol at Q02, classify DRAFT_DEFECT (routes to re-draft queue) instead
+   of FAIL (which retires the idea). 85 real-logic EAs were mis-retired this way.
+3. **Card validator hardening:** approve-card requires `target_symbols` frontmatter
+   (1392/2992 approved cards lack it today) + literal TF token in body (existing rule,
+   enforce at validation not post-hoc).
+Tests for each; keep verdict taxonomy changes consistent with farmctl passthrough.
