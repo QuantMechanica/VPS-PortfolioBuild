@@ -91,6 +91,8 @@ input bool                UseSMT                 = false;                // spec
 #define ICT_KZ_LONDON_END           5
 #define ICT_KZ_NEWYORK_START        7
 #define ICT_KZ_NEWYORK_END          10
+#define ICT_CALENDAR_SCAN_BARS      5000
+#define ICT_STATE_VERSION           3
 
 // spec Ch3 S2/S3: one manipulation event being tracked per side while it waits for
 // its body-close structural break (MSS). Single-slot per side (Phase 1 simplification
@@ -103,6 +105,8 @@ struct ICT_Pending
    double swept_level;     // the liquidity pool price that got swept
    double target_swing;    // last relevant swing high/low that must break (spec Ch3 S3)
    int    bars_waited;
+   datetime sweep_time;      // original closed wick-through bar (causal MSS/FVG boundary)
+   datetime registered_time; // closed reclaim bar on which this pending state was created
   };
 
 // spec Ch3 S6: partial-then-breakeven state per open position (MT5 has no native
@@ -112,6 +116,7 @@ struct ICT_PosState
    ulong position_id;
    bool  partial_done;
    bool  be_done;
+   bool  entry_validated;
   };
 
 double   g_ict_sw_high_price[ICT_SWING_MAX];
@@ -210,40 +215,91 @@ void ICT_PushSwingLow(const double price, const datetime t)
    g_ict_sw_low_count = n;
   }
 
+bool ICT_SwingAtShift(const int center, const int lookback,
+                      double &out_high, double &out_low,
+                      datetime &out_time, bool &out_is_high, bool &out_is_low)
+  {
+   out_high = iHigh(_Symbol, ExecutionTF, center); // perf-allowed
+   out_low  = iLow(_Symbol, ExecutionTF, center);  // perf-allowed
+   out_time = iTime(_Symbol, ExecutionTF, center); // perf-allowed
+   out_is_high = true;
+   out_is_low = true;
+   if(lookback < 1 || center <= lookback || out_high <= 0.0 || out_low <= 0.0 || out_time <= 0)
+      return false;
+
+   for(int k = 1; k <= lookback; ++k)
+     {
+      const double h_near = iHigh(_Symbol, ExecutionTF, center - k); // perf-allowed
+      const double h_far  = iHigh(_Symbol, ExecutionTF, center + k); // perf-allowed
+      const double l_near = iLow(_Symbol, ExecutionTF, center - k);  // perf-allowed
+      const double l_far  = iLow(_Symbol, ExecutionTF, center + k);  // perf-allowed
+      if(h_near <= 0.0 || h_far <= 0.0 || !(out_high > h_near && out_high > h_far))
+         out_is_high = false;
+      if(l_near <= 0.0 || l_far <= 0.0 || !(out_low < l_near && out_low < l_far))
+         out_is_low = false;
+      if(!out_is_high && !out_is_low)
+         break;
+     }
+   return true;
+  }
+
 // spec Ch3 S1: "3-Kerzen-Fraktal" generalized to `lookback` bars each side. Evaluated
 // once per closed bar (Strategy_EntrySignal only runs under the framework's
 // QM_IsNewBar() gate), centred on the oldest bar for which both wings are closed.
 void ICT_UpdateSwings(const int lookback)
   {
-   if(lookback < 1)
-      return;
    const int center = lookback + 1;
-   const double h  = iHigh(_Symbol, ExecutionTF, center); // perf-allowed
-   const double l  = iLow(_Symbol, ExecutionTF, center); // perf-allowed
-   const datetime ct = iTime(_Symbol, ExecutionTF, center); // perf-allowed
-   if(h <= 0.0 || l <= 0.0 || ct <= 0)
+   double h = 0.0, l = 0.0;
+   datetime ct = 0;
+   bool is_high = false, is_low = false;
+   if(!ICT_SwingAtShift(center, lookback, h, l, ct, is_high, is_low))
       return;
-
-   bool is_high = true, is_low = true;
-   for(int k = 1; k <= lookback; ++k)
-     {
-      const double h_near = iHigh(_Symbol, ExecutionTF, center - k); // perf-allowed
-      const double h_far  = iHigh(_Symbol, ExecutionTF, center + k); // perf-allowed
-      if(h_near <= 0.0 || h_far <= 0.0 || !(h > h_near && h > h_far))
-         is_high = false;
-
-      const double l_near = iLow(_Symbol, ExecutionTF, center - k); // perf-allowed
-      const double l_far  = iLow(_Symbol, ExecutionTF, center + k); // perf-allowed
-      if(l_near <= 0.0 || l_far <= 0.0 || !(l < l_near && l < l_far))
-         is_low = false;
-
-      if(!is_high && !is_low)
-         break;
-     }
    if(is_high)
       ICT_PushSwingHigh(h, ct);
    if(is_low)
       ICT_PushSwingLow(l, ct);
+  }
+
+// Restart reconstruction: locate enough causally confirmed historical centres
+// for both bounded buffers, then replay them oldest-to-newest. Shift zero and
+// every not-yet-closed wing remain excluded.
+void ICT_RebuildSwings(const int lookback)
+  {
+   g_ict_sw_high_count = 0;
+   g_ict_sw_low_count = 0;
+   if(lookback < 1)
+      return;
+
+   const int min_center = lookback + 1;
+   const int max_center = Bars(_Symbol, ExecutionTF) - lookback - 1; // perf-allowed: init-only
+   if(max_center < min_center)
+      return;
+
+   int high_seen = 0, low_seen = 0, oldest_needed = min_center;
+   for(int center = min_center; center <= max_center; ++center)
+     {
+      double h = 0.0, l = 0.0;
+      datetime ct = 0;
+      bool is_high = false, is_low = false;
+      if(!ICT_SwingAtShift(center, lookback, h, l, ct, is_high, is_low))
+         break;
+      if(is_high) high_seen++;
+      if(is_low) low_seen++;
+      oldest_needed = center;
+      if(high_seen >= ICT_SWING_MAX && low_seen >= ICT_SWING_MAX)
+         break;
+     }
+
+   for(int center = oldest_needed; center >= min_center; --center)
+     {
+      double h = 0.0, l = 0.0;
+      datetime ct = 0;
+      bool is_high = false, is_low = false;
+      if(!ICT_SwingAtShift(center, lookback, h, l, ct, is_high, is_low))
+         continue;
+      if(is_high) ICT_PushSwingHigh(h, ct);
+      if(is_low) ICT_PushSwingLow(l, ct);
+     }
   }
 
 // -----------------------------------------------------------------------------

@@ -31,7 +31,8 @@
       "https://www.tradingview.com/pine-script-docs/concepts/time/",
       "https://www.tradingview.com/pine-script-docs/concepts/sessions/",
       "https://www.tradingview.com/pine-script-docs/v5/concepts/strategies/",
-      "https://www.tradingview.com/pine-script-docs/language/operators/"
+      "https://www.tradingview.com/pine-script-docs/language/operators/",
+      "https://www.tradingview.com/support/solutions/43000589195-pivot-points-high-low/"
     ]
   },
   "executable_mechanics_v1": {
@@ -49,7 +50,7 @@
       {"name": "LONDON_LABEL", "start": "07:00", "end": "10:00", "timezone": "America/New_York"},
       {"name": "NEW_YORK_LABEL", "start": "12:30", "end": "16:00", "timezone": "America/New_York"}
     ],
-    "pivot": "ta.pivothigh/ta.pivotlow with five left and five right bars; the latest non-na value replaces lastHigh/lastLow only when confirmed. TradingView's official Operators page states that ta.pivothigh(5,5) requires five lower highs on both sides; the frozen mirror for pivot lows requires five higher lows, so equality with a neighbor is not a pivot.",
+    "pivot": "ta.pivothigh/ta.pivotlow with five left and five right bars; the latest non-na value replaces lastHigh/lastLow only when confirmed. TradingView's official Operators page states that ta.pivothigh(5,5) requires five lower highs on both sides, and its Pivot Points High Low support page directly states lower highs/higher lows on either side. Equality with a neighbor is therefore not a pivot.",
     "long_signal_same_bar": "lastLow exists AND low < lastLow AND close > lastLow AND close > high[1] AND low > high[2] AND source session is active",
     "short_signal_same_bar": "lastHigh exists AND high > lastHigh AND close < lastHigh AND close < low[1] AND high < low[2] AND source session is active",
     "entry": "Market strategy.entry on the confirmed signal bar closing tick because process_orders_on_close=true.",

@@ -42,7 +42,7 @@
     "framework/EAs/QM5_10729_tv-smc-mss-fvg/QM5_10729_tv-smc-mss-fvg.mq5": "b25a0587d7b2efe427c034ff9df89aa0bb3e710af5244ae86f394db20fc05dd2",
     "framework/EAs/QM5_10729_tv-smc-mss-fvg/SPEC.md": "17b400250e3f01b56b5948acef0362ef49ddb8345d6618c6314f7406b6a8a299",
     "framework/EAs/QM5_10729_tv-smc-mss-fvg/docs/candidate-analysis/primary_source_pine_v1.pine": "7e49ecdd3f7d078773b7f29b500e40e12ba81984bbbaa1c9c508d69da1e599bb",
-    "framework/EAs/QM5_10729_tv-smc-mss-fvg/docs/candidate-analysis/tv_smc_mss_fvg_primary_source_evidence.json": "51e48d2e02407547fd7da61f26e56014d1c3bad13a71c5b894e9149f0f3524df",
+    "framework/EAs/QM5_10729_tv-smc-mss-fvg/docs/candidate-analysis/tv_smc_mss_fvg_primary_source_evidence.json": "f771f517dba4c74ccb1a389ae9a596f275f1a5f45b8f15b57a9e2682037769ee",
     "framework/EAs/QM5_10729_tv-smc-mss-fvg/docs/candidate-analysis/tv_smc_mss_fvg_publication_chart_context.json": "46b9b15e07dfce416b66df62a5af06651d73771f6c1263aeb4e81f7c40046f0c",
     "framework/EAs/QM5_10729_tv-smc-mss-fvg/docs/candidate-analysis/tv_smc_mss_fvg_spread_input_snapshot.json": "a173ecb79a0b676c8b518e8aea3cb9af26385dc13b0eb8339e43b9f5ef06ce33",
     "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/audit_mt5_report.py": "c9dc5106383073b50150f0edb091338181dc53470615839fb252f5bc96a46c03",
@@ -97,7 +97,8 @@
     },
     "file_drift_rule": "Before outcome access, require exact file length, last-write timestamp and timestamp-only availability above. Any mismatch aborts for a new outcome-blind freeze; do not parse OHLC under this contract.",
     "future_fence": "For each raw row, parse only the timestamp prefix before the first comma. Break immediately when timestamp >= 2023-01-01 broker-naive epoch. Never split, convert, hash or otherwise inspect that row's OHLC/volume tail. Report future_ohlc_parsed=false or reject.",
-    "selected_slice_hash": "After explicit outcome release only, SHA256 the canonical raw rows with 2018-01-01 <= timestamp < 2023-01-01. Never hash the whole market file. Persist the per-symbol slice hashes in every result.",
+    "selected_slice_hash": "After explicit outcome release only, exclude the header and every row outside 2018-01-01 <= timestamp < 2023-01-01. For each retained row in original file order, take its exact decoded UTF-8 text without original CR/LF, append one LF byte, and stream those bytes to SHA256; do not normalize numeric text. Never hash the whole market file. Persist this raw-slice hash per symbol.",
+    "canonical_m15_hash": "For every eligible direct/derived M15 row, emit one UTF-8 LF-terminated JSON line with keys in this exact order: time,open,high,low,close,tickvol. time/tickvol are base-10 integers. OHLC are quoted canonical Decimal strings: no exponent, remove insignificant trailing fractional zeros and a trailing decimal point, map signed zero to 0. Hash all lines in time order with SHA256 and report per symbol.",
     "analysis_start_state": "Parse and use no OHLC before 2018-01-01. At each symbol's first direct/derived in-window M15 bar initialize lastHigh=na, lastLow=na, flat, with no pending state. A first pivot can be confirmed only after eleven in-window available M15 bars. EURUSD Q4-2017 timestamp prefixes remain availability metadata only and never seed state or the selected-slice hash.",
     "validation": "Require strictly increasing unique timestamps, finite positive OHLC, low <= min(open,close) <= max(open,close) <= high, nonnegative volume and exact expected header. Reject rather than repair.",
     "eurusd_resampling": {
@@ -110,6 +111,8 @@
     "forced_flat_boundary_integrity": "If a position remains open for a scheduled session/Friday flat, the exact final M15 bar ending at that boundary must exist. If it does not, the entire run is DATA_INTEGRITY_FAIL with no merit verdict; do not retroactively suppress the earlier trade, substitute a stale/future price or invent swap.",
     "open_position_gap_integrity": "From an entry close through its exit or scheduled flat, require every next expected 15-minute bar for that symbol. The first missing scheduled slot while the position is open aborts the entire run as DATA_INTEGRITY_FAIL because SL/TP path is unknowable. Never use this later fact to suppress the earlier entry.",
     "missing_bar_rule": "Do not synthesize bars. An incomplete EURUSD derived bucket emits no M15 bar. While flat, pivot state advances on each available completed M15 chart bar; timestamp gaps do not reset state and do not trigger a future-completeness entry filter."
+    ,
+    "custom_symbol_registry_scope_limit": "The bound dwx_symbol_matrix.csv XAUUSD.DWX evidence line is FAIL_tail_mid_bars even though its canonical name is verified. This contract validates only the frozen offline CSV slice; it does not assert registry-clean PASS, MT5 custom-symbol completeness or live broker parity. Any workflow requiring those gates remains blocked pending separate symbol validation."
   },
   "clock_and_session_contract": {
     "frozen_publication_context_timezone": "America/New_York",
@@ -198,6 +201,7 @@
       "lot_rounding": "NONE_THEORETICAL_FIXED_1000R",
       "usd_value_per_price_unit_per_lot": {"EURUSD.DWX": 100000.0, "XAUUSD.DWX": 100.0}
     },
+    "broker_stops_level": "NONE in this offline DEV. Do not query, infer or later choose a historical/current minimum-stops threshold; only risk<=0 or target<=0 rejects. Passing cannot certify broker order acceptance.",
     "future_bar_exit_order": [
       "Gap tests are inclusive and precede range tests. Long: bid_open <= SL exits at bid_open; else bid_open >= TP exits at fixed TP. Short: ask_open >= SL exits at ask_open; else ask_open <= TP exits at fixed TP.",
       "If no gap exit, range tests are inclusive. Long predicates are bid_low <= SL and bid_high >= TP. Short predicates are ask_high >= SL and ask_low <= TP. When both direction-specific predicates are true, resolve SL first; otherwise fill the single reachable fixed level.",
@@ -232,6 +236,7 @@
     "source_priority": "EURUSD uses max(DXZ EUR2.50 converted at each deal price, FTMO USD2.50) per side from the bound auditor/venue registry. XAU uses the exact conservative 0.0025 percent notional per side from the tester Groups and venue registry."
   },
   "news_contract": {
+    "symbol_match_function": "Use the bound QM_NewsEventAffectsSymbol semantics exactly; do not substitute a later hand-maintained currency list.",
     "affected_event_currencies_by_symbol": {
       "EURUSD.DWX": ["EUR", "USD"],
       "XAUUSD.DWX": ["USD"]
@@ -286,10 +291,31 @@
     {
       "id": "D10_APPROVAL_HISTORY",
       "observation": "The card frontmatter is APPROVED while its prose Pipeline-Verlauf says PENDING. Frontmatter is treated as authoritative."
+    },
+    {
+      "id": "D11_MINIMUM_STOPS_LEVEL",
+      "observation": "The APPROVED card says to skip a signal that violates broker minimum stop distance, while Pine has no such filter and no historical stops-level series is bound. This offline DEV freezes no minimum-stops threshold and rejects only nonpositive risk/target. It cannot certify that every simulated order would be accepted by the broker."
+    },
+    {
+      "id": "D12_ENTRY_TIMING",
+      "observation": "The committed MQ5 evaluates the just-closed signal only on the next QM_IsNewBar tick and sends a market request then, which is next-bar tick/open execution. Pine process_orders_on_close=true and the APPROVED card enter on signal close; this contract follows that closing-tick source/card timing."
+    },
+    {
+      "id": "D13_XAU_REGISTRY_STATUS",
+      "observation": "The bound XAUUSD.DWX matrix evidence line is FAIL_tail_mid_bars despite canonical_name_verified=true. This offline CSV DEV is not custom-symbol validation, does not upgrade that status and cannot clear MT5/live parity gates."
     }
   ],
   "familywise_merit_gates": {
+    "screen_type": "DETERMINISTIC_CONJUNCTIVE_FAMILY_SCREEN",
+    "statistical_claim": "NONE. 'Family' means every preregistered cell and aggregate gate is conjunctively required, with no best-cell selection. No p-value, confidence interval or Bonferroni-adjusted inference is claimed.",
     "family_definition": "Four preregistered symbol-by-session cells: EURUSD/LONDON_LABEL, EURUSD/NEW_YORK_LABEL, XAUUSD/LONDON_LABEL and XAUUSD/NEW_YORK_LABEL. All are reported; none may be selected post hoc.",
+    "metric_conventions": {
+      "unqualified_scenario": "CENTER",
+      "fill": "One unique round trip that entered and exited under this contract. N is the number of completed round trips in the stated scenario and scope.",
+      "attribution": "Symbol, session and side are fixed by the entry signal. Broker day and year are fixed by exit timestamp. A trade belongs to exactly one symbol-session cell, one side and one exit year/day.",
+      "adjusted_r": "Trade gross USD less both integer-cent external deal commissions, divided by USD 1000.",
+      "strict_comparison": "Every > or < threshold is strict; >= and <= include equality. Missing/undefined denominators fail the affected gate."
+    },
     "center_minimum_fills": {
       "pooled": 120,
       "each_symbol": 40,
@@ -297,54 +323,70 @@
       "each_side": 30,
       "each_symbol_session_cell": 12
     },
-    "center_adjusted_net": "Strictly >0 pooled, for each symbol, each session, each side and each of the four symbol-session cells.",
-    "center_adjusted_expectancy_min_r": 0.05,
+    "center_adjusted_net": {
+      "definition": "Sum adjusted R in the stated scope.",
+      "threshold": ">0",
+      "required_scopes": ["pooled", "each symbol", "each session", "each side", "each of four symbol-session cells"]
+    },
+    "center_adjusted_expectancy": {
+      "definition": "Pooled sum adjusted R / pooled completed fills.",
+      "required_scope": "pooled only",
+      "minimum_r_inclusive": 0.05
+    },
     "center_adjusted_profit_factor": {
-      "definition": "sum positive adjusted R / abs(sum negative adjusted R); no losses means infinity; no wins fails.",
-      "pooled_dynamic_floor": "z=2.497705474412374 (two-sided alpha 0.05 Bonferroni across four preregistered cells); u=z/sqrt(N pooled center fills); d=u/sqrt(1+u^2); floor=max(1.20,(1+d)/(1-d))",
+      "definition": "Sum adjusted R for trades with adjusted R >0 divided by abs(sum adjusted R for trades with adjusted R <0) in the same scope. No adjusted winners fails; winners with no adjusted losers is +infinity.",
+      "pooled_min_inclusive": 1.2,
       "each_symbol_min": 1.2,
       "each_session_min": 1.1,
       "each_side_min": 1.0,
-      "each_symbol_session_cell_min": 1.0
+      "each_symbol_session_cell_min": 1.0,
+      "thresholds_inclusive": true
     },
     "positive_full_common_years": {
+      "scenario": "CENTER",
+      "positive_definition": "Sum adjusted R for exits in that broker calendar year and stated scope is strictly >0.",
       "years": [2019, 2020, 2021, 2022],
       "pooled_min_of_4": 3,
       "each_symbol_min_of_4": 2,
       "each_session_min_of_4": 2
     },
     "drawdown_and_daily_loss": {
+      "scenario": "CENTER",
+      "closed_balance_dd_definition": "Maximum peak-to-subsequent-trough decline of cumulative adjusted R ordered by contract portfolio_exit_order, starting at 0R.",
+      "closed_day_definition": "Sum adjusted R for all exits sharing a broker calendar date; worst is the minimum daily sum across dates with an exit.",
       "pooled_max_adjusted_closed_balance_dd_r": 10.0,
       "each_symbol_max_adjusted_closed_balance_dd_r": 10.0,
-      "pooled_max_conservative_bar_equity_dd_r": 10.0,
-      "pooled_worst_closed_exit_broker_day_min_r": -5.0,
-      "pooled_worst_conservative_equity_broker_day_min_r": -5.0
+      "pooled_worst_closed_exit_broker_day_min_r": -5.0
     },
     "concentration": {
-      "top_two_adjusted_winner_share_max": 0.5,
-      "leave_best_trade_out_adjusted_net_r": ">0",
-      "leave_best_year_out_adjusted_net_r": ">0"
+      "scenario_and_scope": "CENTER pooled only",
+      "top_two_adjusted_winner_share": "Sum of the two largest positive adjusted-R trades (or all if fewer than two) / sum of every positive adjusted-R trade; denominator <=0 fails; require <=0.50.",
+      "leave_best_trade_out": "Pooled adjusted net R minus the largest adjusted-R trade; require strictly >0.",
+      "leave_best_year_out": "For exit years 2018-2022, subtract the largest single-year pooled adjusted net R from full-analysis pooled adjusted net R; require strictly >0."
     },
-    "cost_burden_max_fraction_of_gross_positive_r": 0.25,
+    "cost_burden": {
+      "scenario_and_scope": "CENTER pooled only",
+      "definition": "Total external entry-plus-exit commission R / sum positive gross R. Gross denominator <=0 fails.",
+      "maximum_inclusive": 0.25
+    },
     "adverse_spread": {
-      "adjusted_pooled_net_r": ">0",
-      "adjusted_pooled_pf": ">=1.0",
-      "each_symbol_adjusted_net_r": ">0",
-      "each_session_adjusted_net_r": ">0",
-      "pooled_max_adjusted_closed_balance_dd_r": "<=10.0",
-      "pooled_max_conservative_bar_equity_dd_r": "<=10.0",
-      "pooled_worst_closed_exit_broker_day_r": ">=-5.0",
-      "pooled_worst_conservative_equity_broker_day_r": ">=-5.0"
+      "scenario": "ADVERSE only; use ADVERSE trade ledger because changed exits can change later signal eligibility.",
+      "adjusted_pooled_net_r": "strictly >0",
+      "adjusted_pooled_pf": ">=1.0 using the same PF definition",
+      "each_symbol_adjusted_net_r": "strictly >0 for both symbols",
+      "each_session_adjusted_net_r": "strictly >0 for both sessions",
+      "pooled_max_adjusted_closed_balance_dd_r": "<=10.0 using the same DD definition",
+      "pooled_worst_closed_exit_broker_day_r": ">=-5.0 using the same day definition"
     },
-    "candidate_verdict": "FAMILYWISE_MERIT only if every center and adverse gate passes. Otherwise NO_FAMILYWISE_MERIT. There is no partial symbol/session sleeve verdict.",
-    "portfolio_limit": "FAMILYWISE_MERIT makes this candidate eligible for a separate preregistered joint portfolio test with retained NDX Sleeve A; it does not itself prove FTMO suitability or authorize deployment."
+    "candidate_verdict": "CONJUNCTIVE_FAMILY_MERIT only if every CENTER and ADVERSE gate above passes. Otherwise NO_CONJUNCTIVE_FAMILY_MERIT. There is no partial symbol/session/side sleeve verdict and no statistical multiplicity claim.",
+    "portfolio_limit": "CONJUNCTIVE_FAMILY_MERIT makes this candidate eligible for a separate preregistered joint portfolio/tick-equity test with retained NDX Sleeve A; it does not itself prove FTMO suitability or authorize deployment."
   },
   "required_reporting": [
     "Integrity, file metadata, selected-slice hashes, raw/derived timestamp counts and future_ohlc_parsed globally and per symbol.",
     "Complete signal funnel per scenario, symbol, session and side, including every rejection counter.",
     "Trade ledger with deterministic IDs, signal/entry/exit times and prices, direction, session, stop, target, lots, gross USD/R, each integer-cent deal commission, adjusted USD/R and exit reason.",
     "Center and adverse performance pooled and by symbol, session, side, symbol-session cell, year and symbol-year.",
-    "Gross and adjusted net, PF, expectancy, win rate, closed-balance DD, conservative bar-equity DD, worst closed/equity broker day, cost burden and concurrency.",
+    "Gross and adjusted net, PF, expectancy, win rate, closed-balance DD, worst closed broker day, cost burden and concurrency.",
     "Top-two winner share, leave-best-trade-out, leave-best-year-out, same-bar conflicts and exit-reason counts.",
     "Every gate with exact observed value and pass/fail plus the single candidate verdict.",
     "Two independent full executions with byte-identical canonical JSON, each refusing any timestamp at or after 2023 before its OHLC tail is parsed."
