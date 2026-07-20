@@ -1419,6 +1419,11 @@ def test_authorization_is_owner_scoped_short_lived_and_pre_bound(tmp_path: Path)
     _write_json(path, payload)
     with pytest.raises(subject.AuthorizationError, match="drift"):
         subject.validate_authorization(path, "a" * 64, now=now)
+    payload["authorized_symbol"] = "NDX.DWX"
+    payload["reserved_counted_alternate_attempt_number"] = 3
+    _write_json(path, payload)
+    with pytest.raises(subject.AuthorizationError, match="drift"):
+        subject.validate_authorization(path, "a" * 64, now=now)
 
 
 def test_global_native_attempt_claim_is_atomic_and_pre_bound(
@@ -1468,6 +1473,17 @@ def test_global_native_attempt_claim_is_atomic_and_pre_bound(
     assert payload["prior_counted_alternate_attempts"] == 1
     assert payload["authorization_scope"] == subject.AUTHORIZATION_SCOPE
     assert payload["classification"] == "ATOMIC_GLOBAL_OUTCOME_BLIND_DPAPI_RETRY_CLAIM_003_COUNTED_ALTERNATE_002"
+    rejected_probe = dict(preclaim_probe)
+    rejected_probe["status"] = "INVALID"
+    with pytest.raises(subject.AuthorizationError, match="requires a bound PASS"):
+        subject._native_attempt_claim_basis(
+            pre_path,
+            pre_sha,
+            pre,
+            state_path,
+            authorization,
+            rejected_probe,
+        )
     with pytest.raises(subject.InvalidEvidence, match="refusing to replace evidence"):
         subject.claim_native_attempt(
             pre_path, pre_sha, pre, state_path, authorization, preclaim_probe

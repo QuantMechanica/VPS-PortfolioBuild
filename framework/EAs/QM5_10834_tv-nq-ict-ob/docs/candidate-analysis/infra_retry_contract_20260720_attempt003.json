@@ -98,7 +98,8 @@
     "parameter_tuning_forbidden": true,
     "terminal_hopping_after_dev2_forbidden": true,
     "prior_claim_and_fence_must_remain_immutable": true,
-    "same_worker_machine_credential_probe_required_before_claim": true
+    "same_worker_machine_credential_probe_required_before_claim": true,
+    "machine_credential_rotation_receipt_required_before_pre": true
   },
   "classification": "OUTCOME_BLIND_PRE_NATIVE_DPAPI_RETRY_CLAIM_SEQUENCE_003_ONLY"
 }

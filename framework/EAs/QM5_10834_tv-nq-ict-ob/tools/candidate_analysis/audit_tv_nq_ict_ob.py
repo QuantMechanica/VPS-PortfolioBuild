@@ -25,8 +25,11 @@ Evidence/infra defects are ``INVALID``.  A valid run that misses a merit gate is
 from __future__ import annotations
 
 import argparse
+import base64
+import binascii
 import csv
 import hashlib
+import ipaddress
 import importlib.util
 import json
 import math
@@ -98,6 +101,14 @@ CREDENTIAL_HELPER_PATH = (
 MACHINE_CREDENTIAL_PATH = Path(
     r"C:\ProgramData\QM\DEV2\credential.machine-dpapi.json"
 )
+MACHINE_CREDENTIAL_ROTATION_RECEIPT_PATH = Path(
+    r"C:\ProgramData\QM\DEV2\credential.machine-dpapi.rotation-receipt.json"
+)
+LEGACY_CREDENTIAL_PATH = Path(r"C:\ProgramData\QM\DEV2\credential.clixml")
+IDENTITY_PROBE_CHILD_PATH = (
+    REPO_ROOT / "framework" / "scripts" / "invoke_dev2_identity_probe.ps1"
+)
+DEV2_CREDENTIAL_ROTATION_ROOT = Path(r"D:\QM\reports\dev2\credential-rotation")
 RUN_SMOKE_PATH = REPO_ROOT / "framework" / "scripts" / "run_smoke.ps1"
 DEV2_LANE_CONTRACT_PATH = REPO_ROOT / "framework" / "registry" / "dev2_lane_contract.json"
 TESTER_GROUPS_CANONICAL_PATH = (
@@ -283,6 +294,7 @@ INFRA_RETRY_POLICY: dict[str, Any] = {
     "terminal_hopping_after_dev2_forbidden": True,
     "prior_claim_and_fence_must_remain_immutable": True,
     "same_worker_machine_credential_probe_required_before_claim": True,
+    "machine_credential_rotation_receipt_required_before_pre": True,
 }
 
 SYMBOL_POLICY: dict[str, str] = {
@@ -311,6 +323,7 @@ REQUIRED_BINDING_ROLES = frozenset(
         "dev2_machine_credential_probe",
         "dev2_machine_credential_helper",
         "dev2_machine_credential",
+        "dev2_machine_credential_rotation_receipt",
         "runner_smoke",
         "dev2_lane_contract",
         "tester_groups_canonical",
@@ -1969,7 +1982,11 @@ def execution_contract() -> dict[str, Any]:
         "native_attempt_claim_path": str(NATIVE_ATTEMPT_CLAIM_PATH.resolve()),
         "native_attempt_claim_mode": "ATOMIC_CREATE_ONCE_FOR_DPAPI_RETRY_CLAIM_SEQUENCE_003_AFTER_SAME_WORKER_PRECLAIM_PROBE",
         "same_worker_machine_credential_probe_required_before_claim": True,
+        "machine_credential_rotation_receipt_required_before_pre": True,
         "machine_credential_path": str(MACHINE_CREDENTIAL_PATH.resolve()),
+        "machine_credential_rotation_receipt_path": str(
+            MACHINE_CREDENTIAL_ROTATION_RECEIPT_PATH.resolve()
+        ),
         "native_launch_lock_path": str(NATIVE_LAUNCH_LOCK_PATH.resolve()),
         "native_launch_lock_mode": "GLOBAL_WINDOWS_BYTE_LOCK_AROUND_LAUNCH_AND_RESUME",
     }
@@ -2034,6 +2051,7 @@ def _expected_binding_paths(symbol: str) -> dict[str, Path]:
         "dev2_machine_credential_probe": CREDENTIAL_PROBE_PATH,
         "dev2_machine_credential_helper": CREDENTIAL_HELPER_PATH,
         "dev2_machine_credential": MACHINE_CREDENTIAL_PATH,
+        "dev2_machine_credential_rotation_receipt": MACHINE_CREDENTIAL_ROTATION_RECEIPT_PATH,
         "runner_smoke": RUN_SMOKE_PATH,
         "dev2_lane_contract": DEV2_LANE_CONTRACT_PATH,
         "tester_groups_canonical": TESTER_GROUPS_CANONICAL_PATH,
@@ -2063,6 +2081,290 @@ def _binding_map(symbol: str) -> dict[str, dict[str, Any]]:
     }
 
 
+def _assert_exact_binding_path(
+    binding: Mapping[str, Any], expected_path: Path, label: str
+) -> dict[str, Any]:
+    if set(binding) != {"path", "size", "sha256"}:
+        raise InvalidEvidence(f"{label} binding field closure drift")
+    if Path(str(binding.get("path", ""))).resolve() != expected_path.resolve():
+        raise InvalidEvidence(f"{label} binding path drift")
+    assert_binding(binding, label)
+    return dict(binding)
+
+
+def validate_machine_credential_rotation_receipt(
+    bindings: Mapping[str, Any], *, now: datetime | None = None
+) -> dict[str, Any]:
+    """Validate the one-time Password/Limited rotation proof without decrypting it."""
+    required_roles = {
+        "dev2_lane_contract",
+        "dev2_machine_credential",
+        "dev2_machine_credential_helper",
+        "dev2_machine_credential_rotation_receipt",
+    }
+    if not required_roles.issubset(bindings) or any(
+        not isinstance(bindings.get(role), Mapping) for role in required_roles
+    ):
+        raise InvalidEvidence("machine-credential rotation bindings are incomplete")
+
+    receipt_binding = _assert_exact_binding_path(
+        bindings["dev2_machine_credential_rotation_receipt"],
+        MACHINE_CREDENTIAL_ROTATION_RECEIPT_PATH,
+        "machine-credential rotation receipt",
+    )
+    credential_binding = _assert_exact_binding_path(
+        bindings["dev2_machine_credential"],
+        MACHINE_CREDENTIAL_PATH,
+        "machine credential",
+    )
+    helper_binding = _assert_exact_binding_path(
+        bindings["dev2_machine_credential_helper"],
+        CREDENTIAL_HELPER_PATH,
+        "machine-credential helper",
+    )
+    lane_binding = _assert_exact_binding_path(
+        bindings["dev2_lane_contract"],
+        DEV2_LANE_CONTRACT_PATH,
+        "DEV2 lane contract",
+    )
+
+    lane = load_json(Path(lane_binding["path"]))
+    identity = lane.get("identity")
+    if (
+        type(lane.get("schema_version")) is not int
+        or lane.get("schema_version") != 3
+        or lane.get("contract_id") != "QM_DEV2_ISOLATED_MT5_LANE_V3"
+        or lane.get("lane") != "DEV2"
+        or not isinstance(identity, Mapping)
+        or identity.get("local_user") != "QMDev2"
+        or Path(str(identity.get("profile", ""))).resolve()
+        != Path(r"C:\Users\QMDev2").resolve()
+        or Path(str(identity.get("credential", ""))).resolve()
+        != MACHINE_CREDENTIAL_PATH.resolve()
+        or identity.get("credential_format")
+        != "QM_DEV2_MACHINE_DPAPI_CREDENTIAL"
+        or identity.get("dpapi_scope") != "LocalMachine"
+        or identity.get("limited_non_admin") is not True
+    ):
+        raise InvalidEvidence("DEV2 lane machine-credential identity contract drift")
+
+    receipt_path = Path(receipt_binding["path"])
+    receipt = load_json(receipt_path)
+    expected_receipt_keys = {
+        "schema_version",
+        "artifact_type",
+        "status",
+        "completed_utc",
+        "contract_id",
+        "target_account",
+        "target_sid",
+        "target_disabled_at_rest",
+        "target_password_required_at_rest",
+        "machine_credential_path",
+        "machine_credential_sha256",
+        "machine_credential_generation_id",
+        "machine_credential_helper_path",
+        "machine_credential_helper_sha256",
+        "identity_probe_child_path",
+        "identity_probe_child_sha256",
+        "identity_probe_result_path",
+        "identity_probe_result_sha256",
+        "identity_probe_logon_type",
+        "identity_probe_run_level",
+        "machine_credential_matches_proved_password",
+        "published_after_identity_proof",
+        "legacy_credential_path",
+        "legacy_credential_preserved",
+        "cleanup_lease_disarmed",
+        "owner_process_count",
+        "dev2_root_process_count",
+    }
+    if set(receipt) != expected_receipt_keys:
+        raise InvalidEvidence("machine-credential rotation receipt field closure drift")
+    target_account = str(receipt.get("target_account", ""))
+    target_sid = str(receipt.get("target_sid", ""))
+    sid_pattern = r"S-1-5-21-[0-9]+-[0-9]+-[0-9]+-[0-9]+"
+    generation_id = str(receipt.get("machine_credential_generation_id", ""))
+    if (
+        type(receipt.get("schema_version")) is not int
+        or receipt.get("schema_version") != 1
+        or receipt.get("artifact_type")
+        != "QM_DEV2_MACHINE_CREDENTIAL_ROTATION_RECEIPT"
+        or receipt.get("status") != "PASS"
+        or receipt.get("contract_id") != lane["contract_id"]
+        or not re.fullmatch(r"[^\\]+\\QMDev2", target_account)
+        or not re.fullmatch(sid_pattern, target_sid)
+        or receipt.get("target_disabled_at_rest") is not True
+        or receipt.get("target_password_required_at_rest") is not True
+        or receipt.get("identity_probe_logon_type") != "Password"
+        or receipt.get("identity_probe_run_level") != "Limited"
+        or receipt.get("machine_credential_matches_proved_password") is not True
+        or receipt.get("published_after_identity_proof") is not True
+        or receipt.get("legacy_credential_preserved") is not True
+        or receipt.get("cleanup_lease_disarmed") is not True
+        or type(receipt.get("owner_process_count")) is not int
+        or receipt.get("owner_process_count") != 0
+        or type(receipt.get("dev2_root_process_count")) is not int
+        or receipt.get("dev2_root_process_count") != 0
+        or not re.fullmatch(r"[0-9a-f]{32}", generation_id)
+    ):
+        raise InvalidEvidence("machine-credential rotation receipt proof drift")
+    if (
+        Path(str(receipt.get("machine_credential_path", ""))).resolve()
+        != Path(credential_binding["path"]).resolve()
+        or str(receipt.get("machine_credential_sha256", "")).lower()
+        != credential_binding["sha256"]
+        or Path(str(receipt.get("machine_credential_helper_path", ""))).resolve()
+        != Path(helper_binding["path"]).resolve()
+        or str(receipt.get("machine_credential_helper_sha256", "")).lower()
+        != helper_binding["sha256"]
+        or Path(str(receipt.get("identity_probe_child_path", ""))).resolve()
+        != IDENTITY_PROBE_CHILD_PATH.resolve()
+        or Path(str(receipt.get("legacy_credential_path", ""))).resolve()
+        != LEGACY_CREDENTIAL_PATH.resolve()
+    ):
+        raise InvalidEvidence("machine-credential rotation receipt path/hash drift")
+
+    child_binding = file_binding(
+        IDENTITY_PROBE_CHILD_PATH,
+        str(receipt.get("identity_probe_child_sha256", "")),
+    )
+    legacy_binding = file_binding(LEGACY_CREDENTIAL_PATH)
+    identity_result_path = Path(str(receipt.get("identity_probe_result_path", ""))).resolve()
+    rotation_root = DEV2_CREDENTIAL_ROTATION_ROOT.resolve()
+    try:
+        result_relative = identity_result_path.relative_to(rotation_root)
+    except ValueError as exc:
+        raise InvalidEvidence("identity-probe result escaped credential-rotation root") from exc
+    if (
+        len(result_relative.parts) != 3
+        or not re.fullmatch(
+            r"[0-9]{8}T[0-9]{6}Z_[0-9a-f]{32}", result_relative.parts[0]
+        )
+        or result_relative.parts[1:] != ("output", "identity_probe_result.json")
+    ):
+        raise InvalidEvidence("identity-probe result path/layout drift")
+    identity_result_binding = file_binding(
+        identity_result_path,
+        str(receipt.get("identity_probe_result_sha256", "")),
+    )
+    identity_result = load_json(identity_result_path)
+    if set(identity_result) != {
+        "schema_version",
+        "artifact_type",
+        "status",
+        "completed_utc",
+        "nonce",
+        "account",
+        "sid",
+        "profile",
+        "limited_non_admin",
+        "request_sha256",
+    }:
+        raise InvalidEvidence("identity-probe result field closure drift")
+    if (
+        type(identity_result.get("schema_version")) is not int
+        or identity_result.get("schema_version") != 1
+        or identity_result.get("artifact_type") != "QM_DEV2_IDENTITY_PROBE_RESULT"
+        or identity_result.get("status") != "PASS"
+        or not re.fullmatch(r"[0-9a-f]{32}", str(identity_result.get("nonce", "")))
+        or identity_result.get("account") != target_account
+        or identity_result.get("sid") != target_sid
+        or Path(str(identity_result.get("profile", ""))).resolve()
+        != Path(str(identity["profile"])).resolve()
+        or identity_result.get("limited_non_admin") is not True
+        or not re.fullmatch(
+            r"[0-9a-f]{64}", str(identity_result.get("request_sha256", ""))
+        )
+    ):
+        raise InvalidEvidence("identity-probe result identity/proof drift")
+
+    credential = load_json(Path(credential_binding["path"]))
+    expected_credential_keys = {
+        "schema_version",
+        "artifact_type",
+        "contract_id",
+        "lane",
+        "account",
+        "target_sid",
+        "host_account_domain_sid",
+        "dpapi_scope",
+        "text_encoding",
+        "generation_id",
+        "created_utc",
+        "ciphertext_base64",
+    }
+    if set(credential) != expected_credential_keys:
+        raise InvalidEvidence("machine-credential envelope field closure drift")
+    expected_domain_sid = target_sid.rsplit("-", 1)[0]
+    if (
+        type(credential.get("schema_version")) is not int
+        or credential.get("schema_version") != 1
+        or credential.get("artifact_type") != "QM_DEV2_MACHINE_DPAPI_CREDENTIAL"
+        or credential.get("contract_id") != lane["contract_id"]
+        or credential.get("lane") != "DEV2"
+        or credential.get("account") != target_account
+        or credential.get("target_sid") != target_sid
+        or credential.get("host_account_domain_sid") != expected_domain_sid
+        or credential.get("dpapi_scope") != "LocalMachine"
+        or credential.get("text_encoding") != "UTF-8"
+        or credential.get("generation_id") != generation_id
+    ):
+        raise InvalidEvidence("machine-credential envelope identity/scope drift")
+    try:
+        ciphertext = base64.b64decode(
+            str(credential.get("ciphertext_base64", "")), validate=True
+        )
+    except (binascii.Error, ValueError) as exc:
+        raise InvalidEvidence("machine-credential ciphertext is not strict Base64") from exc
+    if not 32 <= len(ciphertext) <= 32768:
+        raise InvalidEvidence("machine-credential ciphertext size is outside contract")
+
+    current = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
+    credential_created = parse_utc(
+        str(credential.get("created_utc", "")), "machine credential created_utc"
+    )
+    identity_completed = parse_utc(
+        str(identity_result.get("completed_utc", "")), "identity probe completed_utc"
+    )
+    receipt_completed = parse_utc(
+        str(receipt.get("completed_utc", "")), "rotation receipt completed_utc"
+    )
+    if (
+        not credential_created <= identity_completed <= receipt_completed
+        or receipt_completed > current + timedelta(minutes=5)
+    ):
+        raise InvalidEvidence("machine-credential rotation chronology drift")
+
+    # Reassert every byte after semantic parsing to close replacement races.
+    for binding, label in (
+        (receipt_binding, "machine-credential rotation receipt"),
+        (credential_binding, "machine credential"),
+        (helper_binding, "machine-credential helper"),
+        (lane_binding, "DEV2 lane contract"),
+        (child_binding, "identity-probe child"),
+        (identity_result_binding, "identity-probe result"),
+        (legacy_binding, "legacy credential"),
+    ):
+        assert_binding(binding, label)
+    return {
+        "receipt": receipt_binding,
+        "receipt_payload_sha256": canonical_sha256(receipt),
+        "machine_credential": credential_binding,
+        "machine_credential_payload_sha256": canonical_sha256(credential),
+        "machine_credential_helper": helper_binding,
+        "identity_probe_child": child_binding,
+        "identity_probe_result": identity_result_binding,
+        "identity_probe_result_payload_sha256": canonical_sha256(identity_result),
+        "legacy_credential": legacy_binding,
+        "contract_id": lane["contract_id"],
+        "target_account": target_account,
+        "target_sid": target_sid,
+        "generation_id": generation_id,
+        "completed_utc": receipt["completed_utc"],
+    }
+
+
 def preflight(
     symbol: str,
     data_receipt_path: Path,
@@ -2075,6 +2377,7 @@ def preflight(
     if run_root.exists() and any(run_root.iterdir()):
         raise InvalidEvidence(f"run root is not empty: {run_root}")
     bindings = _binding_map(symbol)
+    machine_credential_rotation = validate_machine_credential_rotation_receipt(bindings)
     if bindings["tester_groups_dev2"]["sha256"] != bindings["tester_groups_canonical"]["sha256"]:
         raise InvalidEvidence("DEV2 tester groups are not canonical before PRE")
     card_text = CARD_PATH.read_text(encoding="utf-8-sig")
@@ -2136,6 +2439,7 @@ def preflight(
             "metatester_started": False,
         },
         "bindings": bindings,
+        "machine_credential_rotation": machine_credential_rotation,
         "include_closure": includes,
         "build_receipt": file_binding(build_receipt_path),
         "build_commit": build_receipt["build_commit"],
@@ -2195,6 +2499,9 @@ def assert_pre_receipt(path: Path, expected_sha256: str) -> dict[str, Any]:
         if not isinstance(item, Mapping):
             raise InvalidEvidence(f"PRE binding is not an object: {role}")
         assert_binding(item, f"PRE {role}")
+    expected_rotation = validate_machine_credential_rotation_receipt(bindings)
+    if pre.get("machine_credential_rotation") != expected_rotation:
+        raise InvalidEvidence("PRE machine-credential rotation proof drift")
     policy = pre["symbol_policy"]
     symbol = str(policy["authorized_symbol"])
     expected_paths = _expected_binding_paths(symbol)
@@ -3289,8 +3596,10 @@ def validate_dev2_controller_result(
     result: Mapping[str, Any], pre: Mapping[str, Any]
 ) -> str:
     if (
-        result.get("schema_version") != 2
+        type(result.get("schema_version")) is not int
+        or result.get("schema_version") != 2
         or result.get("success") is not True
+        or type(result.get("run_smoke_exit_code")) is not int
         or result.get("run_smoke_exit_code") != 0
     ):
         raise InvalidEvidence("DEV2 controller did not return a successful run_smoke result")
@@ -3330,7 +3639,153 @@ def validate_dev2_controller_result(
         or result.get("cleanup_lease_disarmed") is not True
     ):
         raise InvalidEvidence("DEV2 disabled-at-rest cleanup-lease lifecycle proof drift")
+    _validate_dev2_agent_port_proof(result, pre)
     return run_id
+
+
+def _validate_dev2_agent_port_proof(
+    result: Mapping[str, Any], pre: Mapping[str, Any]
+) -> None:
+    bindings = pre.get("bindings")
+    if not isinstance(bindings, Mapping) or not isinstance(
+        bindings.get("dev2_lane_contract"), Mapping
+    ):
+        raise InvalidEvidence("DEV2 controller proof lacks a bound lane contract")
+    lane_binding = bindings["dev2_lane_contract"]
+    assert_binding(lane_binding, "DEV2 controller lane contract")
+    lane = load_json(Path(str(lane_binding["path"])))
+    port_contract = lane.get("agent_port_contract")
+    programs = lane.get("program_sha256")
+    if (
+        not isinstance(port_contract, Mapping)
+        or not isinstance(programs, Mapping)
+        or port_contract.get("require_runtime_listener_proof") is not True
+        or port_contract.get("require_exact_dev2_metatester_path") is not True
+        or port_contract.get("require_no_concurrent_overlapping_endpoint_owner")
+        is not True
+        or port_contract.get("allow_released_baseline_endpoint_reuse") is not True
+        or type(port_contract.get("minimum_port")) is not int
+        or type(port_contract.get("maximum_port")) is not int
+    ):
+        raise InvalidEvidence("DEV2 lane agent-port contract drift")
+    minimum_port = int(port_contract["minimum_port"])
+    maximum_port = int(port_contract["maximum_port"])
+    if not 1 <= minimum_port <= maximum_port <= 65535:
+        raise InvalidEvidence("DEV2 lane agent-port range is malformed")
+
+    expected_path = (TERMINAL_ROOT / "metatester64.exe").resolve()
+    expected_hash = str(programs.get("metatester64.exe", "")).lower()
+    if not re.fullmatch(r"[0-9a-f]{64}", expected_hash):
+        raise InvalidEvidence("DEV2 lane metatester hash is malformed")
+    file_binding(expected_path, expected_hash)
+    program_hashes = result.get("program_sha256")
+    if not isinstance(program_hashes, Mapping) or {
+        str(key): str(value).lower() for key, value in program_hashes.items()
+    } != {str(key): str(value).lower() for key, value in programs.items()}:
+        raise InvalidEvidence("DEV2 controller program-hash proof drift")
+
+    proof = result.get("agent_port_proof")
+    expected_proof_keys = {
+        "status",
+        "preexisting_port_owner",
+        "concurrent_port_owner",
+        "exclusivity_semantics",
+        "released_baseline_endpoint_reuse_allowed",
+        "metatester_path",
+        "metatester_sha256",
+        "listeners",
+    }
+    if not isinstance(proof, Mapping) or set(proof) != expected_proof_keys:
+        raise InvalidEvidence("DEV2 agent-port proof field closure drift")
+    listeners = proof.get("listeners")
+    if (
+        proof.get("status") != "PASS"
+        or proof.get("preexisting_port_owner") is not False
+        or proof.get("concurrent_port_owner") is not False
+        or proof.get("exclusivity_semantics")
+        != "NO_CONCURRENT_OVERLAPPING_ENDPOINT_OWNER"
+        or proof.get("released_baseline_endpoint_reuse_allowed") is not True
+        or Path(str(proof.get("metatester_path", ""))).resolve() != expected_path
+        or str(proof.get("metatester_sha256", "")).lower() != expected_hash
+        or not isinstance(listeners, list)
+        or not listeners
+    ):
+        raise InvalidEvidence("DEV2 exact-path runtime-exclusive listener proof drift")
+
+    expected_listener_keys = {
+        "local_address",
+        "local_port",
+        "process_id",
+        "owner_sid",
+        "executable_path",
+        "creation_utc",
+        "first_observed_utc",
+        "preexisting_port_owner",
+        "concurrent_port_owner",
+        "exclusive_current_owner",
+        "current_overlapping_owner_count",
+        "baseline_endpoint_was_occupied",
+        "released_baseline_owner_count",
+    }
+    expected_owner_sid = str(result.get("identity_sid", ""))
+    if not re.fullmatch(r"S-[0-9]+(?:-[0-9]+)+", expected_owner_sid):
+        raise InvalidEvidence("DEV2 controller identity SID is malformed")
+    started = parse_utc(str(result.get("started_utc", "")), "DEV2 result started_utc")
+    finished = parse_utc(str(result.get("finished_utc", "")), "DEV2 result finished_utc")
+    if finished < started:
+        raise InvalidEvidence("DEV2 controller result chronology drift")
+    endpoint_keys: set[tuple[int, int, str]] = set()
+    for index, listener in enumerate(listeners):
+        if not isinstance(listener, Mapping) or set(listener) != expected_listener_keys:
+            raise InvalidEvidence(f"DEV2 listener[{index}] field closure drift")
+        local_address = str(listener.get("local_address", ""))
+        try:
+            ipaddress.ip_address(local_address.split("%", 1)[0])
+        except ValueError as exc:
+            raise InvalidEvidence(
+                f"DEV2 listener[{index}] local address is malformed"
+            ) from exc
+        local_port = listener.get("local_port")
+        process_id = listener.get("process_id")
+        current_count = listener.get("current_overlapping_owner_count")
+        released_count = listener.get("released_baseline_owner_count")
+        baseline_occupied = listener.get("baseline_endpoint_was_occupied")
+        if (
+            type(local_port) is not int
+            or not minimum_port <= local_port <= maximum_port
+            or type(process_id) is not int
+            or process_id <= 0
+            or listener.get("owner_sid") != expected_owner_sid
+            or Path(str(listener.get("executable_path", ""))).resolve()
+            != expected_path
+            or listener.get("preexisting_port_owner") is not False
+            or listener.get("concurrent_port_owner") is not False
+            or listener.get("exclusive_current_owner") is not True
+            or type(current_count) is not int
+            or current_count != 1
+            or type(baseline_occupied) is not bool
+            or type(released_count) is not int
+            or released_count < 0
+            or (baseline_occupied and released_count < 1)
+            or (not baseline_occupied and released_count != 0)
+        ):
+            raise InvalidEvidence(f"DEV2 listener[{index}] exclusivity proof drift")
+        creation = parse_utc(
+            str(listener.get("creation_utc", "")),
+            f"DEV2 listener[{index}] creation_utc",
+        )
+        observed = parse_utc(
+            str(listener.get("first_observed_utc", "")),
+            f"DEV2 listener[{index}] first_observed_utc",
+        )
+        if not started - timedelta(seconds=2) <= creation <= observed <= finished + timedelta(
+            seconds=5
+        ):
+            raise InvalidEvidence(f"DEV2 listener[{index}] chronology drift")
+        endpoint_key = (process_id, local_port, local_address.casefold())
+        if endpoint_key in endpoint_keys:
+            raise InvalidEvidence("DEV2 listener proof contains a duplicate endpoint")
+        endpoint_keys.add(endpoint_key)
 
 
 def _dev2_native_root(run_id: str) -> Path:
@@ -3479,6 +3934,33 @@ def _worker_run(job_path: Path) -> int:
         _persist_invalid_preclaim_state(state_path, state, probe_execution, exc)
         return 2
 
+    try:
+        bound_probe = state.get("preclaim_probe")
+        if not isinstance(bound_probe, Mapping):
+            raise InvalidEvidence("same-worker preclaim probe vanished before claim")
+        preclaim_probe = validate_bound_machine_credential_preclaim_probe(
+            bound_probe,
+            pre,
+            str(job["scheduler"]["principal_sid"]),
+            require_fresh=True,
+        )
+        if preclaim_probe != bound_probe:
+            raise InvalidEvidence("same-worker preclaim probe drifted before claim")
+        # No state mutation, cell activation, outcome fence, or native directory
+        # creation may intervene between the full byte/semantic probe check and
+        # the one-time claim.
+        state["attempt_claim"] = claim_native_attempt(
+            pre_path,
+            pre_sha,
+            pre,
+            state_path,
+            authorization_identity,
+            preclaim_probe,
+        )
+    except (OSError, subprocess.SubprocessError, AuditError, KeyError, TypeError, ValueError) as exc:
+        _persist_invalid_preclaim_state(state_path, state, probe_execution, exc)
+        return 2
+
     cell_by_id = {str(cell["cell_id"]): cell for cell in pre["plan"]["cells"]}
     try:
         for state_cell in state["cells"]:
@@ -3506,27 +3988,18 @@ def _worker_run(job_path: Path) -> int:
                 "summary": None,
                 "outcome_artifacts": [],
                 "native_root": None,
+                "native_result": None,
                 "runner_result": None,
             }
-            if state.get("attempt_claim") is None:
-                state["attempt_claim"] = claim_native_attempt(
-                    pre_path,
-                    pre_sha,
-                    pre,
-                    state_path,
-                    authorization_identity,
-                    preclaim_probe,
-                )
-            else:
-                validate_native_attempt_claim(
-                    state["attempt_claim"],
-                    pre_path,
-                    pre_sha,
-                    pre,
-                    state_path,
-                    authorization_identity,
-                    preclaim_probe,
-                )
+            validate_native_attempt_claim(
+                state["attempt_claim"],
+                pre_path,
+                pre_sha,
+                pre,
+                state_path,
+                authorization_identity,
+                preclaim_probe,
+            )
             state_cell["status"] = "RUNNING"
             state_cell["attempts"].append(attempt)
             state["active_cell"] = {
@@ -3568,6 +4041,7 @@ def _worker_run(job_path: Path) -> int:
             )
             run_id = validate_dev2_controller_result(runner_result, pre)
             native_root = _dev2_native_root(run_id)
+            native_result_path = native_root / "output" / "result.json"
             summary_path = _find_dev2_summary(run_id)
             outcome_files = [
                 path
@@ -3576,6 +4050,7 @@ def _worker_run(job_path: Path) -> int:
             ]
             attempt["runner_result"] = runner_result
             attempt["native_root"] = str(native_root)
+            attempt["native_result"] = file_binding(native_result_path)
             attempt["summary"] = file_binding(summary_path)
             attempt["outcome_artifacts"] = [
                 file_binding(path) for path in sorted(outcome_files)
