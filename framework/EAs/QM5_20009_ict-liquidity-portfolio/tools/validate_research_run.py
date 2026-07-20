@@ -674,6 +674,16 @@ def _read_canonical_detached(path: Path, context: str) -> tuple[dict[str, Any], 
     return payload, raw
 
 
+def _read_preflight_receipt(
+    path: Path, expected_sha256: str
+) -> tuple[dict[str, Any], bytes]:
+    expected = _require_sha256(expected_sha256, "PRE receipt sha256")
+    payload, raw = _read_canonical_detached(path, "PRE validator receipt")
+    if hashlib.sha256(raw).hexdigest() != expected:
+        raise FenceError("PRE validator receipt identity drift")
+    return payload, raw
+
+
 def _runtime_contract_files(
     protocol: Mapping[str, Any], selected_set_repo_relative: str
 ) -> list[dict[str, str]]:
@@ -1455,15 +1465,12 @@ def postflight(
     preflight_receipt_sha256: str,
     powershell_path: Path,
 ) -> dict[str, Any]:
-    expected_pre_sha = _require_sha256(
-        preflight_receipt_sha256, "PRE receipt sha256"
-    )
+    expected_pre_sha = _require_sha256(preflight_receipt_sha256, "PRE receipt sha256")
     pre_path = Path(os.path.abspath(preflight_receipt))
     if pre_path.parent.name != run_id:
         raise FenceError("PRE receipt directory is not bound to run_id")
-    pre, pre_raw = _read_canonical_detached(pre_path, "PRE validator receipt")
-    if hashlib.sha256(pre_raw).hexdigest() != expected_pre_sha:
-        raise FenceError("PRE validator receipt identity drift")
+    pre, pre_raw = _read_preflight_receipt(pre_path, expected_pre_sha)
+    del pre_raw
     _require_exact_keys(pre, PRE_RECEIPT_FIELDS, "PRE validator receipt")
     if (
         pre["schema_version"] != 1

@@ -218,3 +218,17 @@ def test_noncanonical_pre_receipt_is_rejected_even_with_rebound_sidecar(
     )
     with pytest.raises(fence.FenceError, match="not canonical JSON"):
         fence._read_canonical_detached(receipt, "PRE validator receipt")
+
+
+def test_post_pre_receipt_sha_stays_bound_to_launcher_memory(tmp_path: Path) -> None:
+    receipt = tmp_path / "validator_pre.json"
+    original = {"schema_version": 1, "status": "PASS", "value": "original"}
+    fence._write_receipt_atomic(receipt, original)
+    original_sha = hashlib.sha256(receipt.read_bytes()).hexdigest()
+
+    receipt.unlink()
+    Path(f"{receipt}.sha256").unlink()
+    rebound = {"schema_version": 1, "status": "PASS", "value": "rebound"}
+    fence._write_receipt_atomic(receipt, rebound)
+    with pytest.raises(fence.FenceError, match="PRE validator receipt identity drift"):
+        fence._read_preflight_receipt(receipt, original_sha)
