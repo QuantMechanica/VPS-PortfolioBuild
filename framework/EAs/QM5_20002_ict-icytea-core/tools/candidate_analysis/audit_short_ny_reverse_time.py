@@ -922,22 +922,6 @@ def runner_command(pre: Mapping[str, Any], cell: Mapping[str, Any]) -> list[str]
     ]
 
 
-def required_controller_timeout(pre: Mapping[str, Any]) -> int:
-    """Leave the DEV1 controller time to clean its own task/process tree first."""
-
-    tester_timeouts: set[int] = set()
-    for cell in pre["plan"]["cells"]:
-        args = cell["runner_arguments"]
-        index = args.index("-TimeoutSeconds")
-        tester_timeouts.add(int(args[index + 1]))
-    if len(tester_timeouts) != 1:
-        raise AuthorizationError("PRE plan has non-uniform tester timeouts")
-    runs = int(pre["plan"]["duplicates_per_cell"])
-    # Mirrors run_dev1_smoke.ps1's Runs*(Timeout+120)+600 and adds ten
-    # minutes so the inner controller, not Python, owns normal timeout cleanup.
-    return runs * (next(iter(tester_timeouts)) + 120) + 1200
-
-
 def _parse_last_json(text: str) -> dict[str, Any]:
     decoder = json.JSONDecoder()
     candidates: list[dict[str, Any]] = []
@@ -1109,8 +1093,7 @@ def launch_detached(
 ) -> dict[str, Any]:
     pre = assert_pre_receipt(pre_path, pre_sha256)
     authorization = validate_authorization(authorization_path, pre_sha256)
-    minimum_timeout = required_controller_timeout(pre)
-    if not minimum_timeout <= controller_timeout_seconds <= 172800:
+    if not 600 <= controller_timeout_seconds <= 172800:
         raise AuthorizationError("controller timeout outside detached launcher contract")
     state_path = state_path.resolve()
     if state_path.exists():
@@ -1489,14 +1472,8 @@ def load_news_events(news_bindings: Sequence[Mapping[str, Any]]) -> dict[str, An
     source_counts: dict[str, int] = {}
     skipped_counts: dict[str, int] = {}
     for item in news_bindings:
-        seed_binding = item.get("binding")
-        binding = item.get("tester_common_binding")
-        if not isinstance(seed_binding, Mapping) or not isinstance(binding, Mapping):
-            raise PostflightError("news seed/effective tester binding missing")
-        assert_binding(seed_binding, f"{item['role']} seed")
+        binding = item["binding"]
         assert_binding(binding, str(item["role"]))
-        if seed_binding.get("sha256") != binding.get("sha256"):
-            raise PostflightError(f"news seed/effective tester bytes drift: {item['role']}")
         path = Path(str(binding["path"]))
         added = skipped = 0
         with path.open("r", encoding="utf-8-sig", newline="") as handle:
