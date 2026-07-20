@@ -130,6 +130,7 @@ ICT_Pending g_ict_pending_long;
 ICT_Pending g_ict_pending_short;
 
 ICT_PosState g_ict_pos_state[];
+bool g_ict_enforcing_entry_window = false;
 
 // -----------------------------------------------------------------------------
 // Unit helpers
@@ -449,43 +450,92 @@ bool ICT_AsianRange(const ENUM_TIMEFRAMES tf, double &out_high, double &out_low)
    return (out_high > -DBL_MAX && out_low < DBL_MAX);
   }
 
-// spec Ch3 S1: previous calendar week (Mon-Fri) high/low, from broker-time D1 bars
-// (week-level boundaries are far less DST-sensitive than intraday killzones; this
-// mirrors the precedent in QM5_10095's weekly-open scan).
+int ICT_NYDateKey(const MqlDateTime &ny)
+  {
+   return ny.year * 1000 + ny.day_of_year;
+  }
+
+int ICT_NYWeekKey(const MqlDateTime &ny)
+  {
+   MqlDateTime monday = ny;
+   monday.hour = 0;
+   monday.min = 0;
+   monday.sec = 0;
+   const int days_since_monday = (ny.day_of_week == 0) ? 6 : (ny.day_of_week - 1);
+   const datetime monday_wall = StructToTime(monday) - (datetime)(days_since_monday * 86400);
+   MqlDateTime monday_out;
+   TimeToStruct(monday_wall, monday_out);
+   return ICT_NYDateKey(monday_out);
+  }
+
+// Source Ch3 S1 fixed daily levels use the most recent completed New York
+// weekday with data. Weekend fragments are skipped, so Monday's PDH/PDL comes
+// from Friday rather than broker D1 or a partial Sunday date.
+bool ICT_PrevDayRange(double &out_high, double &out_low)
+  {
+   out_high = -DBL_MAX;
+   out_low = DBL_MAX;
+   MqlDateTime ny_now;
+   ICT_BrokerTimeToNY(TimeCurrent(), ny_now);
+   const int current_key = ICT_NYDateKey(ny_now);
+   int selected_key = -1;
+
+   for(int s = 1; s <= ICT_CALENDAR_SCAN_BARS; ++s)
+     {
+      const datetime t = iTime(_Symbol, PERIOD_M15, s); // perf-allowed: bounded calendar aggregation
+      if(t <= 0)
+         break;
+      MqlDateTime ny;
+      ICT_BrokerTimeToNY(t, ny);
+      const int key = ICT_NYDateKey(ny);
+      if(key == current_key || ny.day_of_week == 0 || ny.day_of_week == 6)
+         continue;
+      if(selected_key < 0)
+         selected_key = key;
+      if(key != selected_key)
+         break;
+
+      const double h = iHigh(_Symbol, PERIOD_M15, s); // perf-allowed
+      const double l = iLow(_Symbol, PERIOD_M15, s);  // perf-allowed
+      if(h > 0.0 && h > out_high) out_high = h;
+      if(l > 0.0 && l < out_low) out_low = l;
+     }
+   return (selected_key >= 0 && out_high > -DBL_MAX && out_low < DBL_MAX);
+  }
+
+// Source Ch3 S1 previous-week levels are aggregated on an explicit New York
+// Monday-00:00 to next-Monday-00:00 calendar, including DST-aware conversion of
+// every closed M15 bar. Broker D1/week boundaries are never used.
 bool ICT_PrevWeekRange(double &out_high, double &out_low)
   {
    out_high = -DBL_MAX;
    out_low  = DBL_MAX;
-   const datetime t0 = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed
-   if(t0 <= 0)
-      return false;
-   MqlDateTime d0;
-   TimeToStruct(t0, d0);
-   const int dow = d0.day_of_week; // 0=Sun..6=Sat
-   const int days_since_monday = (dow == 0) ? 6 : (dow - 1);
-   MqlDateTime monday_dt = d0;
-   monday_dt.hour = 0; monday_dt.min = 0; monday_dt.sec = 0;
-   const datetime this_monday = StructToTime(monday_dt) - (datetime)(days_since_monday * 86400);
-   const datetime prev_monday = this_monday - (datetime)(7 * 86400);
+   MqlDateTime ny_now;
+   ICT_BrokerTimeToNY(TimeCurrent(), ny_now);
+   const int current_week = ICT_NYWeekKey(ny_now);
+   int selected_week = -1;
 
-   bool found = false;
-   for(int s = 1; s <= 30; ++s)
+   for(int s = 1; s <= ICT_CALENDAR_SCAN_BARS; ++s)
      {
-      const datetime t = iTime(_Symbol, PERIOD_D1, s); // perf-allowed
+      const datetime t = iTime(_Symbol, PERIOD_M15, s); // perf-allowed: bounded calendar aggregation
       if(t <= 0)
          break;
-      if(t < prev_monday)
+      MqlDateTime ny;
+      ICT_BrokerTimeToNY(t, ny);
+      const int week = ICT_NYWeekKey(ny);
+      if(week == current_week)
+         continue;
+      if(selected_week < 0)
+         selected_week = week;
+      if(week != selected_week)
          break;
-      if(t < this_monday)
-        {
-         const double h = iHigh(_Symbol, PERIOD_D1, s); // perf-allowed
-         const double l = iLow(_Symbol, PERIOD_D1, s); // perf-allowed
-         if(h > 0.0 && h > out_high) out_high = h;
-         if(l > 0.0 && l < out_low)  out_low = l;
-         found = true;
-        }
+
+      const double h = iHigh(_Symbol, PERIOD_M15, s); // perf-allowed
+      const double l = iLow(_Symbol, PERIOD_M15, s);  // perf-allowed
+      if(h > 0.0 && h > out_high) out_high = h;
+      if(l > 0.0 && l < out_low) out_low = l;
      }
-   return found;
+   return (selected_week >= 0 && out_high > -DBL_MAX && out_low < DBL_MAX);
   }
 
 // spec Ch3 S1: SSL side (EQL clusters + PDL + Asian Low + Previous Week Low).
@@ -497,8 +547,8 @@ void ICT_BuildLowPools(double &out_levels[])
    ICT_ClusterEqual(g_ict_sw_low_price, g_ict_sw_low_count, tol, eq);
    ICT_AppendAll(out_levels, eq);
 
-   const double pdl = iLow(_Symbol, PERIOD_D1, 1); // perf-allowed
-   if(pdl > 0.0)
+   double pdh = 0.0, pdl = 0.0;
+   if(ICT_PrevDayRange(pdh, pdl) && pdl > 0.0)
       ICT_AppendOne(out_levels, pdl);
 
    double ah = 0.0, al = 0.0;
@@ -519,8 +569,8 @@ void ICT_BuildHighPools(double &out_levels[])
    ICT_ClusterEqual(g_ict_sw_high_price, g_ict_sw_high_count, tol, eq);
    ICT_AppendAll(out_levels, eq);
 
-   const double pdh = iHigh(_Symbol, PERIOD_D1, 1); // perf-allowed
-   if(pdh > 0.0)
+   double pdh = 0.0, pdl = 0.0;
+   if(ICT_PrevDayRange(pdh, pdl) && pdh > 0.0)
       ICT_AppendOne(out_levels, pdh);
 
    double ah = 0.0, al = 0.0;
@@ -564,68 +614,102 @@ bool ICT_NearestBelow(const double &pools[], const int n, const double reference
 // Liquidity sweep (manipulation) — spec Ch3 S2
 // -----------------------------------------------------------------------------
 
-// Fires exactly once, on the bar where the reclaim is confirmed: some bar in the
-// last `sweep_return_bars` made Low<level (the sweep), and THIS closed bar is the
-// first one to close back above level (immediate same-bar rejection is s=1).
-bool ICT_LowLevelJustSwept(const double level, const int sweep_return_bars, double &sweep_extreme)
+// Source-causal convention: accept either an immediate wick-through plus close
+// back across on the same closed bar, or the first later close back across within
+// N subsequently closed bars. The original wick time/extreme remain the event.
+bool ICT_LowLevelJustSwept(const double level, const int sweep_return_bars,
+                           double &sweep_extreme, datetime &sweep_time)
   {
+   sweep_extreme = 0.0;
+   sweep_time = 0;
    if(level <= 0.0 || sweep_return_bars < 1)
       return false;
    const double close1 = iClose(_Symbol, ExecutionTF, 1); // perf-allowed
-   const double close2 = iClose(_Symbol, ExecutionTF, 2); // perf-allowed
-   if(close1 <= 0.0 || close2 <= 0.0)
+   const double low1 = iLow(_Symbol, ExecutionTF, 1); // perf-allowed
+   const datetime time1 = iTime(_Symbol, ExecutionTF, 1); // perf-allowed
+   if(close1 <= 0.0 || low1 <= 0.0 || time1 <= 0)
       return false;
+   if(low1 < level && close1 > level)
+     {
+      sweep_extreme = low1;
+      sweep_time = time1;
+      return true;
+     }
    if(close1 <= level)
       return false; // not reclaimed on this bar
-   if(close2 > level)
-      return false; // already reclaimed earlier -> not a fresh event
 
    double lowest = DBL_MAX;
    bool swept = false;
-   for(int s = 1; s <= sweep_return_bars; ++s)
+   datetime oldest_sweep_time = 0;
+   for(int s = 2; s <= sweep_return_bars + 1; ++s)
      {
+      const double close_s = iClose(_Symbol, ExecutionTF, s); // perf-allowed
       const double lo = iLow(_Symbol, ExecutionTF, s); // perf-allowed
-      if(lo <= 0.0)
+      const datetime t = iTime(_Symbol, ExecutionTF, s); // perf-allowed
+      if(close_s <= 0.0 || lo <= 0.0 || t <= 0)
          break;
+      if(close_s > level)
+         break; // an earlier reclaim makes every older sweep stale
       if(lo < level)
+        {
          swept = true;
-      if(lo < lowest)
-         lowest = lo;
+         oldest_sweep_time = t;
+         if(lo < lowest)
+            lowest = lo;
+        }
      }
    if(!swept)
       return false;
    sweep_extreme = lowest;
+   sweep_time = oldest_sweep_time;
    return true;
   }
 
-bool ICT_HighLevelJustSwept(const double level, const int sweep_return_bars, double &sweep_extreme)
+bool ICT_HighLevelJustSwept(const double level, const int sweep_return_bars,
+                            double &sweep_extreme, datetime &sweep_time)
   {
+   sweep_extreme = 0.0;
+   sweep_time = 0;
    if(level <= 0.0 || sweep_return_bars < 1)
       return false;
    const double close1 = iClose(_Symbol, ExecutionTF, 1); // perf-allowed
-   const double close2 = iClose(_Symbol, ExecutionTF, 2); // perf-allowed
-   if(close1 <= 0.0 || close2 <= 0.0)
+   const double high1 = iHigh(_Symbol, ExecutionTF, 1); // perf-allowed
+   const datetime time1 = iTime(_Symbol, ExecutionTF, 1); // perf-allowed
+   if(close1 <= 0.0 || high1 <= 0.0 || time1 <= 0)
       return false;
+   if(high1 > level && close1 < level)
+     {
+      sweep_extreme = high1;
+      sweep_time = time1;
+      return true;
+     }
    if(close1 >= level)
-      return false;
-   if(close2 < level)
       return false;
 
    double highest = 0.0;
    bool swept = false;
-   for(int s = 1; s <= sweep_return_bars; ++s)
+   datetime oldest_sweep_time = 0;
+   for(int s = 2; s <= sweep_return_bars + 1; ++s)
      {
+      const double close_s = iClose(_Symbol, ExecutionTF, s); // perf-allowed
       const double hi = iHigh(_Symbol, ExecutionTF, s); // perf-allowed
-      if(hi <= 0.0)
+      const datetime t = iTime(_Symbol, ExecutionTF, s); // perf-allowed
+      if(close_s <= 0.0 || hi <= 0.0 || t <= 0)
+         break;
+      if(close_s < level)
          break;
       if(hi > level)
+        {
          swept = true;
-      if(hi > highest)
-         highest = hi;
+         oldest_sweep_time = t;
+         if(hi > highest)
+            highest = hi;
+        }
      }
    if(!swept)
       return false;
    sweep_extreme = highest;
+   sweep_time = oldest_sweep_time;
    return true;
   }
 
@@ -659,9 +743,13 @@ bool ICT_TryBuildLongEntry(const ICT_Pending &pending, QM_EntryRequest &req)
    if(UseHTFBias && ICT_HTFBias(HTF_Context_H1, HTFBiasLookback) < 0)
       return false;
 
-   // Impulse leg = sweep bar .. MSS bar (shift 1). bars_waited bars have elapsed since the
-   // sweep was registered; scan that span plus a small margin, capped (spec Ch3 S3/S4).
-   const int leg = MathMax(3, MathMin(pending.bars_waited + SwingLookback + 3, ICT_IMPULSE_MAX));
+   // Strict causal leg: closed bars after the original sweep up to and including
+   // this MSS bar. The sweep bar itself and every pre-sweep gap are excluded.
+   const datetime mss_time = iTime(_Symbol, ExecutionTF, 1); // perf-allowed
+   const int sweep_shift = iBarShift(_Symbol, ExecutionTF, pending.sweep_time, true); // perf-allowed
+   if(mss_time <= pending.sweep_time || sweep_shift <= 1)
+      return false;
+   const int leg = MathMin(sweep_shift - 1, ICT_IMPULSE_MAX);
 
    // spec Ch3 S4 dealing-range top = highest high across the impulse leg.
    double impulse_high = 0.0;
@@ -680,8 +768,12 @@ bool ICT_TryBuildLongEntry(const ICT_Pending &pending, QM_EntryRequest &req)
    // still in discount = the first gap price reaches on the retrace back down.
    bool any_fvg = false, have_fvg = false;
    double fvg_entry = 0.0, fvg_low_sel = 0.0, fvg_high_sel = 0.0;
-   for(int i = 1; i <= leg; ++i)
+   for(int i = 1; i + 2 <= leg; ++i)
      {
+      const datetime time_c = iTime(_Symbol, ExecutionTF, i); // perf-allowed
+      const datetime time_a = iTime(_Symbol, ExecutionTF, i + 2); // perf-allowed
+      if(time_a <= pending.sweep_time || time_c > mss_time)
+         continue;
       const double low_c  = iLow(_Symbol, ExecutionTF, i);     // perf-allowed  (C, newer)
       const double high_a = iHigh(_Symbol, ExecutionTF, i + 2); // perf-allowed  (A, older)
       if(low_c <= 0.0 || high_a <= 0.0 || low_c <= high_a)
@@ -795,7 +887,11 @@ bool ICT_TryBuildShortEntry(const ICT_Pending &pending, QM_EntryRequest &req)
    if(UseHTFBias && ICT_HTFBias(HTF_Context_H1, HTFBiasLookback) > 0)
       return false;
 
-   const int leg = MathMax(3, MathMin(pending.bars_waited + SwingLookback + 3, ICT_IMPULSE_MAX));
+   const datetime mss_time = iTime(_Symbol, ExecutionTF, 1); // perf-allowed
+   const int sweep_shift = iBarShift(_Symbol, ExecutionTF, pending.sweep_time, true); // perf-allowed
+   if(mss_time <= pending.sweep_time || sweep_shift <= 1)
+      return false;
+   const int leg = MathMin(sweep_shift - 1, ICT_IMPULSE_MAX);
 
    // dealing-range bottom = lowest low across the impulse leg.
    double impulse_low = DBL_MAX;
@@ -815,8 +911,12 @@ bool ICT_TryBuildShortEntry(const ICT_Pending &pending, QM_EntryRequest &req)
    // Keep the LOWEST qualifying candidate still in premium = first touched on the retrace up.
    bool any_fvg = false, have_fvg = false;
    double fvg_entry = 0.0, fvg_low_sel = 0.0, fvg_high_sel = 0.0;
-   for(int i = 1; i <= leg; ++i)
+   for(int i = 1; i + 2 <= leg; ++i)
      {
+      const datetime time_c = iTime(_Symbol, ExecutionTF, i); // perf-allowed
+      const datetime time_a = iTime(_Symbol, ExecutionTF, i + 2); // perf-allowed
+      if(time_a <= pending.sweep_time || time_c > mss_time)
+         continue;
       const double high_c = iHigh(_Symbol, ExecutionTF, i);    // perf-allowed  (C, newer)
       const double low_a  = iLow(_Symbol, ExecutionTF, i + 2); // perf-allowed  (A, older)
       if(high_c <= 0.0 || low_a <= 0.0 || high_c >= low_a)
@@ -916,22 +1016,197 @@ bool ICT_TryBuildShortEntry(const ICT_Pending &pending, QM_EntryRequest &req)
 // Per-side state machine: sweep -> pending -> MSS break -> entry construction
 // -----------------------------------------------------------------------------
 
+string ICT_PendingStatePrefix(const string side)
+  {
+   return StringFormat("ICT3.%d.%d.%s.", QM_FrameworkMagic(), qm_magic_slot_offset, side);
+  }
+
+void ICT_ZeroPending(ICT_Pending &pending)
+  {
+   pending.active = false;
+   pending.sweep_extreme = 0.0;
+   pending.swept_level = 0.0;
+   pending.target_swing = 0.0;
+   pending.bars_waited = 0;
+   pending.sweep_time = 0;
+   pending.registered_time = 0;
+  }
+
+void ICT_DeletePendingState(const string side)
+  {
+   const string prefix = ICT_PendingStatePrefix(side);
+   string fields[9] = {"ready", "ver", "active", "sx", "level", "target", "waited", "st", "rt"};
+   for(int i = 0; i < ArraySize(fields); ++i)
+      GlobalVariableDel(prefix + fields[i]);
+   GlobalVariablesFlush();
+  }
+
+bool ICT_WritePendingField(const string name, const double value)
+  {
+   return (GlobalVariableSet(name, value) > 0);
+  }
+
+// The ready marker is removed and flushed before fields change, then written
+// last. A crash can therefore yield either a complete v3 record or no restorable
+// record, never a mixture of generations.
+bool ICT_PersistPending(const ICT_Pending &pending, const string side)
+  {
+   if(!pending.active)
+     {
+      ICT_DeletePendingState(side);
+      return true;
+     }
+
+   const string prefix = ICT_PendingStatePrefix(side);
+   GlobalVariableDel(prefix + "ready");
+   GlobalVariablesFlush();
+   bool ok = true;
+   ok = ICT_WritePendingField(prefix + "ver", (double)ICT_STATE_VERSION) && ok;
+   ok = ICT_WritePendingField(prefix + "active", 1.0) && ok;
+   ok = ICT_WritePendingField(prefix + "sx", pending.sweep_extreme) && ok;
+   ok = ICT_WritePendingField(prefix + "level", pending.swept_level) && ok;
+   ok = ICT_WritePendingField(prefix + "target", pending.target_swing) && ok;
+   ok = ICT_WritePendingField(prefix + "waited", (double)pending.bars_waited) && ok;
+   ok = ICT_WritePendingField(prefix + "st", (double)pending.sweep_time) && ok;
+   ok = ICT_WritePendingField(prefix + "rt", (double)pending.registered_time) && ok;
+   GlobalVariablesFlush();
+   if(ok)
+     {
+      ok = ICT_WritePendingField(prefix + "ready", (double)ICT_STATE_VERSION);
+      GlobalVariablesFlush();
+     }
+   if(!ok)
+      QM_LogEvent(QM_ERROR, "PENDING_STATE_WRITE_FAILED", StringFormat("{\"side\":\"%s\"}", side));
+   return ok;
+  }
+
+void ICT_ClearPending(ICT_Pending &pending, const string side)
+  {
+   ICT_ZeroPending(pending);
+   ICT_DeletePendingState(side);
+  }
+
+bool ICT_RestorePending(ICT_Pending &pending, const string side)
+  {
+   ICT_ZeroPending(pending);
+   const string prefix = ICT_PendingStatePrefix(side);
+   string required[9] = {"ready", "ver", "active", "sx", "level", "target", "waited", "st", "rt"};
+   for(int i = 0; i < ArraySize(required); ++i)
+      if(!GlobalVariableCheck(prefix + required[i]))
+        {
+         ICT_DeletePendingState(side);
+         return false;
+        }
+
+   const double ready = GlobalVariableGet(prefix + "ready");
+   const double version = GlobalVariableGet(prefix + "ver");
+   const double active = GlobalVariableGet(prefix + "active");
+   const double sx = GlobalVariableGet(prefix + "sx");
+   const double level = GlobalVariableGet(prefix + "level");
+   const double target = GlobalVariableGet(prefix + "target");
+   const double waited = GlobalVariableGet(prefix + "waited");
+   const datetime sweep_time = (datetime)GlobalVariableGet(prefix + "st");
+   const datetime registered_time = (datetime)GlobalVariableGet(prefix + "rt");
+   const datetime last_closed = iTime(_Symbol, ExecutionTF, 1); // perf-allowed: init-only validation
+   const int sweep_shift = iBarShift(_Symbol, ExecutionTF, sweep_time, true); // perf-allowed
+   const int registered_shift = iBarShift(_Symbol, ExecutionTF, registered_time, true); // perf-allowed
+   const int age = registered_shift - 1;
+
+   bool valid = ((int)ready == ICT_STATE_VERSION && (int)version == ICT_STATE_VERSION && active == 1.0);
+   valid = valid && MathIsValidNumber(sx) && MathIsValidNumber(level) && MathIsValidNumber(target) && MathIsValidNumber(waited);
+   valid = valid && sx > 0.0 && level > 0.0 && target > 0.0 && waited >= 0.0;
+   valid = valid && sweep_time > 0 && registered_time > 0 && sweep_time <= registered_time;
+   valid = valid && last_closed > 0 && registered_time <= last_closed;
+   valid = valid && sweep_shift >= registered_shift && registered_shift >= 1;
+   valid = valid && age >= 0 && age <= ICT_MSS_PENDING_EXPIRY_BARS;
+   if(side == "L")
+      valid = valid && sx < level;
+   else
+      valid = valid && sx > level;
+   if(!valid)
+     {
+      ICT_DeletePendingState(side);
+      QM_LogEvent(QM_WARN, "PENDING_STATE_REJECTED", StringFormat("{\"side\":\"%s\"}", side));
+      return false;
+     }
+
+   pending.active = true;
+   pending.sweep_extreme = sx;
+   pending.swept_level = level;
+   pending.target_swing = target;
+   pending.bars_waited = age;
+   pending.sweep_time = sweep_time;
+   pending.registered_time = registered_time;
+   if(!ICT_PersistPending(pending, side))
+     {
+      ICT_ClearPending(pending, side);
+      return false;
+     }
+   QM_LogEvent(QM_INFO, "PENDING_STATE_RESTORED",
+               StringFormat("{\"side\":\"%s\",\"age_bars\":%d}", side, age));
+   return true;
+  }
+
+bool ICT_RefreshPendingAge(ICT_Pending &pending, const string side)
+  {
+   if(!pending.active)
+      return false;
+   const int registered_shift = iBarShift(_Symbol, ExecutionTF, pending.registered_time, true); // perf-allowed
+   const int sweep_shift = iBarShift(_Symbol, ExecutionTF, pending.sweep_time, true); // perf-allowed
+   if(registered_shift < 1 || sweep_shift < registered_shift)
+     {
+      ICT_ClearPending(pending, side);
+      return false;
+     }
+   pending.bars_waited = registered_shift - 1;
+   if(pending.bars_waited > ICT_MSS_PENDING_EXPIRY_BARS)
+     {
+      ICT_ClearPending(pending, side);
+      return false;
+     }
+   if(!ICT_PersistPending(pending, side))
+     {
+      ICT_ClearPending(pending, side);
+      return false;
+     }
+   return true;
+  }
+
+bool ICT_LastSwingHighBefore(const datetime event_time, double &out_price)
+  {
+   for(int i = 0; i < g_ict_sw_high_count; ++i)
+      if(g_ict_sw_high_time[i] < event_time)
+        {
+         out_price = g_ict_sw_high_price[i];
+         return true;
+        }
+   return false;
+  }
+
+bool ICT_LastSwingLowBefore(const datetime event_time, double &out_price)
+  {
+   for(int i = 0; i < g_ict_sw_low_count; ++i)
+      if(g_ict_sw_low_time[i] < event_time)
+        {
+         out_price = g_ict_sw_low_price[i];
+         return true;
+        }
+   return false;
+  }
+
 bool ICT_ProcessLong(QM_EntryRequest &req)
   {
    if(g_ict_pending_long.active)
-     {
-      g_ict_pending_long.bars_waited++;
-      if(g_ict_pending_long.bars_waited > ICT_MSS_PENDING_EXPIRY_BARS)
-         g_ict_pending_long.active = false;
-     }
+      ICT_RefreshPendingAge(g_ict_pending_long, "L");
 
    if(g_ict_pending_long.active)
      {
       const double close1 = iClose(_Symbol, ExecutionTF, 1); // perf-allowed
-      if(close1 > g_ict_pending_long.target_swing) // spec Ch3 S3: body-close break of the last relevant swing high
+      const datetime mss_time = iTime(_Symbol, ExecutionTF, 1); // perf-allowed
+      if(mss_time > g_ict_pending_long.sweep_time && close1 > g_ict_pending_long.target_swing)
         {
          const bool ok = ICT_TryBuildLongEntry(g_ict_pending_long, req);
-         g_ict_pending_long.active = false; // structure resolved either way (Phase 1 simplification)
+         ICT_ClearPending(g_ict_pending_long, "L"); // one-shot engineering assumption retained
          if(ok)
             return true;
         }
@@ -945,21 +1220,27 @@ bool ICT_ProcessLong(QM_EntryRequest &req)
       return false;
 
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   double best_extreme = 0.0, best_level = 0.0, best_dist = DBL_MAX;
+   double best_extreme = 0.0, best_level = 0.0, best_target = 0.0, best_dist = DBL_MAX;
+   datetime best_sweep_time = 0;
    bool found = false;
    for(int i = 0; i < n; ++i)
      {
       double extreme = 0.0;
-      if(ICT_LowLevelJustSwept(low_pools[i], SweepReturnBars, extreme))
+      datetime sweep_time = 0;
+      double target = 0.0;
+      if(ICT_LowLevelJustSwept(low_pools[i], SweepReturnBars, extreme, sweep_time) &&
+         ICT_LastSwingHighBefore(sweep_time, target))
         {
          const double dist = MathAbs(bid - low_pools[i]);
          if(dist < best_dist)
            {
             best_dist = dist;
-            best_level = low_pools[i];
-            best_extreme = extreme;
-            found = true;
-           }
+             best_level = low_pools[i];
+             best_extreme = extreme;
+             best_sweep_time = sweep_time;
+             best_target = target;
+             found = true;
+            }
         }
      }
    if(!found)
@@ -970,14 +1251,24 @@ bool ICT_ProcessLong(QM_EntryRequest &req)
    g_ict_pending_long.active = true;
    g_ict_pending_long.sweep_extreme = best_extreme;
    g_ict_pending_long.swept_level = best_level;
-   g_ict_pending_long.target_swing = g_ict_sw_high_price[0]; // spec Ch3 S3: last relevant swing high before the swept low
+   g_ict_pending_long.target_swing = best_target;
    g_ict_pending_long.bars_waited = 0;
+   g_ict_pending_long.sweep_time = best_sweep_time;
+   g_ict_pending_long.registered_time = iTime(_Symbol, ExecutionTF, 1); // perf-allowed
+   if(!ICT_PersistPending(g_ict_pending_long, "L"))
+     {
+      ICT_ClearPending(g_ict_pending_long, "L");
+      return false;
+     }
 
    const double close1b = iClose(_Symbol, ExecutionTF, 1); // perf-allowed
-   if(close1b > g_ict_pending_long.target_swing) // same-bar sweep+reclaim+MSS
+   // OHLC cannot order an immediate same-bar sweep and MSS. A later-reclaim bar
+   // may be the MSS because its recorded wick event is already in the past.
+   if(g_ict_pending_long.sweep_time < g_ict_pending_long.registered_time &&
+      close1b > g_ict_pending_long.target_swing)
      {
       const bool ok2 = ICT_TryBuildLongEntry(g_ict_pending_long, req);
-      g_ict_pending_long.active = false;
+      ICT_ClearPending(g_ict_pending_long, "L");
       if(ok2)
          return true;
      }
@@ -987,19 +1278,16 @@ bool ICT_ProcessLong(QM_EntryRequest &req)
 bool ICT_ProcessShort(QM_EntryRequest &req)
   {
    if(g_ict_pending_short.active)
-     {
-      g_ict_pending_short.bars_waited++;
-      if(g_ict_pending_short.bars_waited > ICT_MSS_PENDING_EXPIRY_BARS)
-         g_ict_pending_short.active = false;
-     }
+      ICT_RefreshPendingAge(g_ict_pending_short, "S");
 
    if(g_ict_pending_short.active)
      {
       const double close1 = iClose(_Symbol, ExecutionTF, 1); // perf-allowed
-      if(close1 < g_ict_pending_short.target_swing)
+      const datetime mss_time = iTime(_Symbol, ExecutionTF, 1); // perf-allowed
+      if(mss_time > g_ict_pending_short.sweep_time && close1 < g_ict_pending_short.target_swing)
         {
          const bool ok = ICT_TryBuildShortEntry(g_ict_pending_short, req);
-         g_ict_pending_short.active = false;
+         ICT_ClearPending(g_ict_pending_short, "S");
          if(ok)
             return true;
         }
@@ -1013,21 +1301,27 @@ bool ICT_ProcessShort(QM_EntryRequest &req)
       return false;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   double best_extreme = 0.0, best_level = 0.0, best_dist = DBL_MAX;
+   double best_extreme = 0.0, best_level = 0.0, best_target = 0.0, best_dist = DBL_MAX;
+   datetime best_sweep_time = 0;
    bool found = false;
    for(int i = 0; i < n; ++i)
      {
       double extreme = 0.0;
-      if(ICT_HighLevelJustSwept(high_pools[i], SweepReturnBars, extreme))
+      datetime sweep_time = 0;
+      double target = 0.0;
+      if(ICT_HighLevelJustSwept(high_pools[i], SweepReturnBars, extreme, sweep_time) &&
+         ICT_LastSwingLowBefore(sweep_time, target))
         {
          const double dist = MathAbs(ask - high_pools[i]);
          if(dist < best_dist)
            {
             best_dist = dist;
-            best_level = high_pools[i];
-            best_extreme = extreme;
-            found = true;
-           }
+             best_level = high_pools[i];
+             best_extreme = extreme;
+             best_sweep_time = sweep_time;
+             best_target = target;
+             found = true;
+            }
         }
      }
    if(!found)
@@ -1038,14 +1332,22 @@ bool ICT_ProcessShort(QM_EntryRequest &req)
    g_ict_pending_short.active = true;
    g_ict_pending_short.sweep_extreme = best_extreme;
    g_ict_pending_short.swept_level = best_level;
-   g_ict_pending_short.target_swing = g_ict_sw_low_price[0];
+   g_ict_pending_short.target_swing = best_target;
    g_ict_pending_short.bars_waited = 0;
+   g_ict_pending_short.sweep_time = best_sweep_time;
+   g_ict_pending_short.registered_time = iTime(_Symbol, ExecutionTF, 1); // perf-allowed
+   if(!ICT_PersistPending(g_ict_pending_short, "S"))
+     {
+      ICT_ClearPending(g_ict_pending_short, "S");
+      return false;
+     }
 
    const double close1b = iClose(_Symbol, ExecutionTF, 1); // perf-allowed
-   if(close1b < g_ict_pending_short.target_swing)
+   if(g_ict_pending_short.sweep_time < g_ict_pending_short.registered_time &&
+      close1b < g_ict_pending_short.target_swing)
      {
       const bool ok2 = ICT_TryBuildShortEntry(g_ict_pending_short, req);
-      g_ict_pending_short.active = false;
+      ICT_ClearPending(g_ict_pending_short, "S");
       if(ok2)
          return true;
      }
@@ -1139,7 +1441,74 @@ int ICT_PosStateUpsert(const ulong position_id)
    g_ict_pos_state[n].position_id = position_id;
    g_ict_pos_state[n].partial_done = false;
    g_ict_pos_state[n].be_done = false;
+   g_ict_pos_state[n].entry_validated = false;
    return n;
+  }
+
+bool ICT_PositionClosingHistory(const ulong position_id, bool &out_had_close)
+  {
+   out_had_close = false;
+   if(position_id == 0 || !HistorySelectByPosition(position_id))
+      return false;
+   const int total = HistoryDealsTotal();
+   for(int i = 0; i < total; ++i)
+     {
+      const ulong deal = HistoryDealGetTicket(i);
+      if(deal == 0)
+         continue;
+      const ENUM_DEAL_ENTRY entry = (ENUM_DEAL_ENTRY)HistoryDealGetInteger(deal, DEAL_ENTRY);
+      if(entry == DEAL_ENTRY_OUT || entry == DEAL_ENTRY_OUT_BY || entry == DEAL_ENTRY_INOUT)
+        {
+         out_had_close = true;
+         return true;
+        }
+     }
+   return true;
+  }
+
+// Rebuild partial/BE truth from broker state. Unknown deal history suppresses
+// both actions fail-closed rather than risking a duplicate partial after restart.
+void ICT_RebuildPositionStates()
+  {
+   ArrayResize(g_ict_pos_state, 0);
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return;
+   for(int p = PositionsTotal() - 1; p >= 0; --p)
+     {
+      const ulong ticket = PositionGetTicket(p);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol ||
+         (int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const ulong position_id = (ulong)PositionGetInteger(POSITION_IDENTIFIER);
+      const int idx = ICT_PosStateUpsert(position_id);
+      bool had_close = false;
+      const bool history_ok = ICT_PositionClosingHistory(position_id, had_close);
+      if(!PositionSelectByTicket(ticket))
+         continue; // HistorySelectByPosition changes history selection, not position selection; reselect defensively.
+      if(!history_ok)
+        {
+         g_ict_pos_state[idx].partial_done = true;
+         g_ict_pos_state[idx].be_done = true;
+         QM_LogEvent(QM_ERROR, "POS_STATE_HISTORY_UNAVAILABLE",
+                     StringFormat("{\"position_id\":%I64u}", position_id));
+         continue;
+        }
+
+      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+      const double sl = PositionGetDouble(POSITION_SL);
+      const double tol = SymbolInfoDouble(_Symbol, SYMBOL_POINT) * 0.5;
+      const bool be_from_broker = (ptype == POSITION_TYPE_BUY)
+         ? (sl > 0.0 && sl >= open_price - tol)
+         : (sl > 0.0 && sl <= open_price + tol);
+      g_ict_pos_state[idx].partial_done = had_close;
+      g_ict_pos_state[idx].be_done = be_from_broker;
+      g_ict_pos_state[idx].entry_validated = false;
+     }
   }
 
 void ICT_PosStatePrune()
@@ -1165,6 +1534,93 @@ void ICT_PosStatePrune()
          ArrayResize(g_ict_pos_state, last);
         }
      }
+  }
+
+bool ICT_FreshNewsAllowsAt(const datetime broker_time)
+  {
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF ||
+      qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      return QM_NewsAllowsTrade2Fresh(_Symbol, broker_time,
+                                      qm_news_temporal, qm_news_compliance);
+   return QM_NewsAllowsTrade(_Symbol, broker_time, qm_news_mode_legacy);
+  }
+
+bool ICT_EntryAllowedAt(const datetime broker_time,
+                        bool &out_outside_kz, bool &out_news_blocked)
+  {
+   const bool in_london = KZ_London_on &&
+      ICT_InKillzone(broker_time, ICT_KZ_LONDON_START, ICT_KZ_LONDON_END, TZ_Offset_NYtoBroker);
+   const bool in_ny = KZ_NewYork_on &&
+      ICT_InKillzone(broker_time, ICT_KZ_NEWYORK_START, ICT_KZ_NEWYORK_END, TZ_Offset_NYtoBroker);
+   out_outside_kz = (!in_london && !in_ny);
+   out_news_blocked = false;
+   if(out_outside_kz)
+      return false;
+   out_news_blocked = !ICT_FreshNewsAllowsAt(broker_time);
+   return !out_news_blocked;
+  }
+
+// GTC limits must not survive their authorization window. Position time is
+// independently revalidated so a fill racing order removal is closed and every
+// later tick retries until broker truth is clean.
+void ICT_EnforceEntryWindow(const datetime broker_now)
+  {
+   if(g_ict_enforcing_entry_window)
+      return;
+   g_ict_enforcing_entry_window = true;
+   const int magic = QM_FrameworkMagic();
+   if(magic > 0)
+     {
+      bool checked_now = false, now_allowed = false;
+      bool now_outside = false, now_news = false;
+      for(int i = OrdersTotal() - 1; i >= 0; --i)
+        {
+         const ulong ticket = OrderGetTicket(i);
+         if(ticket == 0 || !OrderSelect(ticket))
+            continue;
+         if(OrderGetString(ORDER_SYMBOL) != _Symbol ||
+            (int)OrderGetInteger(ORDER_MAGIC) != magic)
+            continue;
+         const ENUM_ORDER_TYPE order_type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
+         if(order_type != ORDER_TYPE_BUY_LIMIT && order_type != ORDER_TYPE_SELL_LIMIT)
+            continue;
+         if(!checked_now)
+           {
+            now_allowed = ICT_EntryAllowedAt(broker_now, now_outside, now_news);
+            checked_now = true;
+           }
+         if(!now_allowed)
+           {
+            const string reason = now_news ? "ict_news_blackout" :
+               (now_outside ? "ict_killzone_closed" : "ict_entry_blocked");
+            QM_TM_RemovePendingOrder(ticket, reason);
+           }
+        }
+
+      for(int p = PositionsTotal() - 1; p >= 0; --p)
+        {
+         const ulong ticket = PositionGetTicket(p);
+         if(ticket == 0 || !PositionSelectByTicket(ticket))
+            continue;
+         if(PositionGetString(POSITION_SYMBOL) != _Symbol ||
+            (int)PositionGetInteger(POSITION_MAGIC) != magic)
+            continue;
+         const ulong position_id = (ulong)PositionGetInteger(POSITION_IDENTIFIER);
+         const int idx = ICT_PosStateUpsert(position_id);
+         if(g_ict_pos_state[idx].entry_validated)
+            continue;
+
+         const datetime fill_time = (datetime)PositionGetInteger(POSITION_TIME);
+         bool outside = false, news_blocked = false;
+         if(ICT_EntryAllowedAt(fill_time, outside, news_blocked))
+           {
+            g_ict_pos_state[idx].entry_validated = true;
+            continue;
+           }
+         QM_TM_ClosePosition(ticket, news_blocked ? QM_EXIT_NEWS_EXIT : QM_EXIT_TIME_STOP);
+        }
+     }
+   g_ict_enforcing_entry_window = false;
   }
 
 // -----------------------------------------------------------------------------
@@ -1275,6 +1731,8 @@ void Strategy_ManageOpenPosition()
 
       const ulong position_id = (ulong)PositionGetInteger(POSITION_IDENTIFIER);
       const int idx = ICT_PosStateUpsert(position_id);
+      if(!g_ict_pos_state[idx].entry_validated)
+         continue; // invalid/racing fills are retried by ICT_EnforceEntryWindow, not managed as strategy positions
 
       const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       const bool is_buy = (ptype == POSITION_TYPE_BUY);
@@ -1373,9 +1831,10 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
-   g_ict_pending_long.active = false;
-   g_ict_pending_short.active = false;
-   ArrayResize(g_ict_pos_state, 0);
+   ICT_RebuildSwings(SwingLookback);
+   ICT_RestorePending(g_ict_pending_long, "L");
+   ICT_RestorePending(g_ict_pending_short, "S");
+   ICT_RebuildPositionStates();
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_20002_ict-icytea-core\"}");
    return INIT_SUCCEEDED;
@@ -1383,6 +1842,8 @@ int OnInit()
 
 void OnDeinit(const int reason)
   {
+   ICT_PersistPending(g_ict_pending_long, "L");
+   ICT_PersistPending(g_ict_pending_short, "S");
    QM_LogEvent(QM_INFO, "DEINIT", StringFormat("{\"reason\":%d}", reason));
    QM_FrameworkShutdown();
   }
@@ -1393,20 +1854,8 @@ void OnTick()
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
+   ICT_EnforceEntryWindow(broker_now);
    if(QM_FrameworkHandleFridayClose())
-      return;
-
-   if(Strategy_NoTradeFilter())
       return;
 
    Strategy_ManageOpenPosition();
@@ -1424,6 +1873,15 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
+
+   // News and custom no-trade logic block new entries only. Position management,
+   // Friday flattening and day-end flattening have already run on this tick.
+   if(Strategy_NoTradeFilter())
+      return;
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   if(!ICT_FreshNewsAllowsAt(broker_now))
+      return;
 
    if(!QM_IsNewBar())
       return;
@@ -1448,6 +1906,7 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
                         const MqlTradeResult &result)
   {
    QM_FrameworkOnTradeTransaction(trans, request, result);
+   ICT_EnforceEntryWindow(TimeCurrent());
   }
 
 double OnTester()
