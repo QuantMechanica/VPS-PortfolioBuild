@@ -117,6 +117,8 @@ def test_runtime_snapshot_contract_is_complete_and_cannot_be_weakened() -> None:
         "runner_dev1_child",
         "runner_smoke",
         "runner_dispatch_resolver",
+        "runner_dispatch_pipeline",
+        "runner_dispatch_gates",
         "tester_defaults",
         "tester_groups_canonical",
     }

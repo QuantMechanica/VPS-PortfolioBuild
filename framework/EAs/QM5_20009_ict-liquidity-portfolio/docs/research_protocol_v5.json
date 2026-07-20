@@ -282,6 +282,8 @@
       {"role": "runner_dev1_child", "path": "framework/scripts/invoke_dev1_smoke_task.ps1"},
       {"role": "runner_smoke", "path": "framework/scripts/run_smoke.ps1"},
       {"role": "runner_dispatch_resolver", "path": "framework/scripts/resolve_backtest_target.py"},
+      {"role": "runner_dispatch_pipeline", "path": "framework/scripts/pipeline_dispatcher.py"},
+      {"role": "runner_dispatch_gates", "path": "framework/scripts/dl054_gates.py"},
       {"role": "tester_defaults", "path": "framework/registry/tester_defaults.json"},
       {"role": "tester_groups_canonical", "path": "framework/registry/tester_groups/Darwinex-Live_real.canonical.txt"}
     ],
@@ -502,6 +504,16 @@
       "path": "framework/scripts/resolve_backtest_target.py",
       "validation": "NONEMPTY",
       "expected_sha256": "a1a6d0e0b40176c31cc330b5ee9b6f9c2ebeb36e599c8acb607da608debc9990"
+    },
+    {
+      "id": "runner_pipeline_dispatcher",
+      "path": "framework/scripts/pipeline_dispatcher.py",
+      "validation": "NONEMPTY"
+    },
+    {
+      "id": "runner_dl054_gates",
+      "path": "framework/scripts/dl054_gates.py",
+      "validation": "NONEMPTY"
     },
     {
       "id": "runner_run_dev1_smoke",

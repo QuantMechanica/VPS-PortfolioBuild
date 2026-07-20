@@ -730,6 +730,8 @@ RUNTIME_SNAPSHOT_ROLES = {
     "runner_dev1_child",
     "runner_smoke",
     "runner_dispatch_resolver",
+    "runner_dispatch_pipeline",
+    "runner_dispatch_gates",
     "tester_defaults",
     "tester_groups_canonical",
 }
@@ -741,6 +743,37 @@ EXTERNAL_RUNTIME_ROLES = {
     "news_qmdev1_common_secondary",
     "python_executable",
     "powershell7",
+}
+VALIDATOR_REQUEST_KEYS = {"phase", "symbol", "timeframe", "variant", "from", "to"}
+VALIDATOR_PRE_KEYS = {
+    "schema_version",
+    "artifact_type",
+    "status",
+    "run_id",
+    "request",
+    "freeze_inputs_sha256",
+    "manifest_sha256",
+    "set_sha256",
+    "selected_data",
+    "selected_data_sha256",
+    "phase_unlock_records",
+    "external_runtime",
+    "runtime_snapshot",
+}
+VALIDATOR_POST_KEYS = {
+    "schema_version",
+    "artifact_type",
+    "status",
+    "run_id",
+    "request",
+    "preflight_receipt_sha256",
+    "freeze_inputs_sha256",
+    "manifest_sha256",
+    "set_sha256",
+    "selected_data_sha256",
+    "phase_unlock_records",
+    "runtime_snapshot_manifest_sha256",
+    "external_runtime_sha256",
 }
 
 
@@ -772,12 +805,25 @@ def _validate_pointer(policy: Policy, key: CellKey) -> tuple[dict[str, Any], evi
     return pointer, pointer_binding, sidecar_binding
 
 
-def _validate_toolchain(raw: Any, context: str) -> tuple[dict[str, Any], str]:
+def _validate_toolchain(
+    raw: Any,
+    context: str,
+    *,
+    expected_run_id: str | None = None,
+    expected_snapshot_root: Path | None = None,
+) -> tuple[dict[str, Any], str]:
     value = _mapping(raw, context)
     if not value:
         raise AdjudicationError(f"{context} cannot be empty")
     if set(value) == RUNTIME_TOOLCHAIN_KEYS:
-        return _validate_runtime_toolchain(value, context)
+        if expected_run_id is None or expected_snapshot_root is None:
+            raise AdjudicationError(f"{context} lacks receipt-bound snapshot identity")
+        return _validate_runtime_toolchain(
+            value,
+            context,
+            expected_run_id=expected_run_id,
+            expected_snapshot_root=expected_snapshot_root,
+        )
     normalized: dict[str, Any] = {}
     for name in sorted(value):
         if not isinstance(name, str) or not name:
@@ -801,14 +847,26 @@ def _canonical_relative_path(value: Any, context: str) -> str:
 
 
 def _validate_runtime_toolchain(
-    value: Mapping[str, Any], context: str
+    value: Mapping[str, Any],
+    context: str,
+    *,
+    expected_run_id: str,
+    expected_snapshot_root: Path,
 ) -> tuple[dict[str, Any], str]:
     snapshot = _mapping(value["runtime_snapshot"], f"{context}.runtime_snapshot")
     _exact_keys(snapshot, RUNTIME_SNAPSHOT_BINDING_KEYS, f"{context}.runtime_snapshot")
+    for name in ("root_path", "repo_root", "manifest_path", "manifest_sidecar_path"):
+        if not isinstance(snapshot[name], str) or not snapshot[name] or not Path(snapshot[name]).is_absolute():
+            raise AdjudicationError(f"{context}.runtime_snapshot.{name} must be absolute")
     root = Path(str(snapshot["root_path"])).resolve(strict=False)
     repo_root = Path(str(snapshot["repo_root"])).resolve(strict=False)
     manifest_path = Path(str(snapshot["manifest_path"])).resolve(strict=False)
     sidecar_path = Path(str(snapshot["manifest_sidecar_path"])).resolve(strict=False)
+    _expect(
+        root,
+        expected_snapshot_root.resolve(strict=False),
+        f"{context}.runtime_snapshot.root_path",
+    )
     _expect(repo_root, root / "repo", f"{context}.runtime_snapshot.repo_root")
     _expect(
         manifest_path,
@@ -861,8 +919,25 @@ def _validate_runtime_toolchain(
         repo_root,
         f"{context}.runtime_snapshot.snapshot_repo_root",
     )
-    if not isinstance(manifest["run_id"], str) or not manifest["run_id"]:
-        raise AdjudicationError(f"{context}.runtime_snapshot.run_id is invalid")
+    _expect(manifest["run_id"], expected_run_id, f"{context}.runtime_snapshot.run_id")
+    freeze_identity = _mapping(
+        manifest["freeze_identity"], f"{context}.runtime_snapshot.freeze_identity"
+    )
+    _exact_keys(
+        freeze_identity,
+        {"freeze_inputs_sha256", "manifest_sha256"},
+        f"{context}.runtime_snapshot.freeze_identity",
+    )
+    for name in ("freeze_inputs_sha256", "manifest_sha256"):
+        evidence_io.require_sha256(
+            freeze_identity[name], f"{context}.runtime_snapshot.freeze_identity.{name}"
+        )
+    request = _mapping(manifest["request"], f"{context}.runtime_snapshot.request")
+    _exact_keys(request, VALIDATOR_REQUEST_KEYS, f"{context}.runtime_snapshot.request")
+    source_root_raw = manifest["source_repo_root"]
+    if not isinstance(source_root_raw, str) or not source_root_raw or not Path(source_root_raw).is_absolute():
+        raise AdjudicationError(f"{context}.runtime_snapshot.source_repo_root must be absolute")
+    source_root = Path(os.path.abspath(source_root_raw))
 
     role_bindings = _mapping(
         snapshot["role_bindings"], f"{context}.runtime_snapshot.role_bindings"
@@ -890,6 +965,14 @@ def _validate_runtime_toolchain(
         )
         expected_path = (repo_root / Path(*PurePosixPath(relative).parts)).resolve(
             strict=False
+        )
+        expected_source = Path(
+            os.path.abspath(source_root.joinpath(*PurePosixPath(relative).parts))
+        )
+        _expect(
+            os.path.normcase(os.path.abspath(str(row["source_path"]))),
+            os.path.normcase(str(expected_source)),
+            f"{context}.runtime_snapshot.{role}.source_path",
         )
         _expect(
             Path(str(row["snapshot_path"])).resolve(strict=False),
@@ -942,6 +1025,8 @@ def _validate_runtime_toolchain(
         )
         external[role] = _binding_dict(binding)
     _exact_keys(external, EXTERNAL_RUNTIME_ROLES, f"{context}.external_runtime")
+    if [str(row["role"]) for row in external_rows] != sorted(EXTERNAL_RUNTIME_ROLES):
+        raise AdjudicationError(f"{context}.external_runtime order is not canonical")
 
     postflight = _mapping(value["postflight"], f"{context}.postflight")
     final = _mapping(
@@ -949,15 +1034,33 @@ def _validate_runtime_toolchain(
         f"{context}.final_snapshot_verification",
     )
     _expect(final, postflight, f"{context}.final_snapshot_verification")
+    _exact_keys(postflight, VALIDATOR_POST_KEYS, f"{context}.postflight")
     for field, expected in (
+        ("schema_version", 1),
         ("status", "PASS"),
         ("artifact_type", "QM5_20009_RESEARCH_VALIDATOR_POST_RECEIPT"),
         ("run_id", manifest["run_id"]),
+        ("request", request),
+        ("freeze_inputs_sha256", freeze_identity["freeze_inputs_sha256"]),
+        ("manifest_sha256", freeze_identity["manifest_sha256"]),
+        ("set_sha256", normalized_roles["selected_set"]["sha256"]),
         ("runtime_snapshot_manifest_sha256", manifest_binding.sha256),
+        ("external_runtime_sha256", evidence_io.canonical_payload_sha256(external_rows)),
     ):
         _expect(postflight.get(field), expected, f"{context}.postflight.{field}")
+    for name in ("preflight_receipt_sha256", "selected_data_sha256"):
+        evidence_io.require_sha256(postflight[name], f"{context}.postflight.{name}")
+    if not isinstance(postflight["phase_unlock_records"], list):
+        raise AdjudicationError(f"{context}.postflight.phase_unlock_records must be an array")
     normalized = {
-        "runtime_snapshot_roles": normalized_roles,
+        # The selected set is deliberately cell-specific.  It is validated above
+        # and again against the PRE/final receipt, but cannot participate in the
+        # 52-cell common-toolchain identity.
+        "runtime_snapshot_roles": {
+            role: normalized_roles[role]
+            for role in sorted(normalized_roles)
+            if role != "selected_set"
+        },
         "external_runtime": external,
     }
     return normalized, evidence_io.canonical_payload_sha256(normalized)

@@ -228,10 +228,6 @@ def _parse_created_utc(value: Any, context: str) -> datetime:
     return parsed
 
 
-def _same_path(left: Path, right: Path) -> bool:
-    return os.path.normcase(str(left)) == os.path.normcase(str(right))
-
-
 def _resolved_inside(path: Path, root: Path, context: str) -> Path:
     try:
         resolved = path.resolve(strict=True)
@@ -1575,6 +1571,8 @@ def postflight(
     evidence_rows = _require_mapping(
         frozen_manifest.get("freeze_inputs"), "freeze inputs"
     ).get("evidence_artifacts")
+    if not isinstance(evidence_rows, list):
+        raise FenceError("snapshot freeze evidence artifact closure is malformed")
     binary_expected = [
         row
         for row in evidence_rows

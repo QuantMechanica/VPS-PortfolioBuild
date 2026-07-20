@@ -152,6 +152,24 @@ try {
     }
     $snapshotRoleBindings = $snapshotBinding['role_bindings']
     $snapshotRepoRoot = [System.IO.Path]::GetFullPath([string]$snapshotBinding['repo_root'])
+    $requiredSnapshotRoles = @(
+        'launcher', 'launcher_support', 'validator', 'generator', 'report_auditor',
+        'protocol', 'sets_manifest', 'sets_manifest_detached', 'selected_set', 'ea_binary',
+        'runner_dev1_controller', 'runner_dev1_child', 'runner_smoke',
+        'runner_dispatch_resolver', 'runner_dispatch_pipeline', 'runner_dispatch_gates',
+        'tester_defaults', 'tester_groups_canonical'
+    )
+    if ($snapshotRoleBindings.Count -ne $requiredSnapshotRoles.Count) {
+        throw 'Runtime snapshot role closure count drifted'
+    }
+    foreach ($runtimeRole in $requiredSnapshotRoles) {
+        $runtimeBinding = Get-QmSnapshotRoleBinding -RoleBindings $snapshotRoleBindings -Role $runtimeRole
+        $runtimePath = [string]$runtimeBinding['path']
+        if (-not (Test-QmPathWithin -Path $runtimePath -Root $snapshotRepoRoot) -or
+            -not (Test-Path -LiteralPath $runtimePath -PathType Leaf)) {
+            throw "Runtime snapshot role escaped/is missing from snapshot repo: $runtimeRole=$runtimePath"
+        }
+    }
     $snapshotValidatorPath = [string](Get-QmSnapshotRoleBinding -RoleBindings $snapshotRoleBindings -Role 'validator')['path']
     $snapshotRunDev1Path = [string](Get-QmSnapshotRoleBinding -RoleBindings $snapshotRoleBindings -Role 'runner_dev1_controller')['path']
     $snapshotRunSmokePath = [string](Get-QmSnapshotRoleBinding -RoleBindings $snapshotRoleBindings -Role 'runner_smoke')['path']
@@ -159,15 +177,6 @@ try {
     $snapshotSetPath = [string](Get-QmSnapshotRoleBinding -RoleBindings $snapshotRoleBindings -Role 'selected_set')['path']
     $snapshotEaBinaryPath = [string](Get-QmSnapshotRoleBinding -RoleBindings $snapshotRoleBindings -Role 'ea_binary')['path']
     $snapshotAuditPath = [string](Get-QmSnapshotRoleBinding -RoleBindings $snapshotRoleBindings -Role 'report_auditor')['path']
-    foreach ($runtimePath in @(
-        $snapshotValidatorPath, $snapshotRunDev1Path, $snapshotRunSmokePath,
-        $snapshotChildPath, $snapshotSetPath, $snapshotEaBinaryPath, $snapshotAuditPath
-    )) {
-        if (-not (Test-QmPathWithin -Path $runtimePath -Root $snapshotRepoRoot) -or
-            -not (Test-Path -LiteralPath $runtimePath -PathType Leaf)) {
-            throw "Runtime snapshot role escaped/is missing from snapshot repo: $runtimePath"
-        }
-    }
     $setInputs = Read-QmSetInputs -Path $snapshotSetPath
     $runnerArguments = @(
         '-NoLogo', '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass',
