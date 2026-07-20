@@ -15087,3 +15087,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20016,xti-xng-mon-rv,0,XTIUSD.DWX,200160000,2026-07-20,Development,active
 20016,xti-xng-mon-rv,1,XNGUSD.DWX,200160001,2026-07-20,Development,active
 20017,xng-dom15-long,0,XNGUSD.DWX,200170000,2026-07-20,Development,active
+20018,xng-wed-short,0,XNGUSD.DWX,200180000,2026-07-20,Development,active
