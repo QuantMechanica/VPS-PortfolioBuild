@@ -955,6 +955,40 @@ def _find_summary(run_id: str) -> Path:
     return summaries[0].resolve()
 
 
+def _seal_summary_artifacts(summary_path: Path) -> dict[str, Any]:
+    """Hash every native run input/output while the detached worker owns the cell."""
+
+    summary_path = summary_path.resolve()
+    summary_binding = file_binding(summary_path)
+    summary = load_json(summary_path)
+    report_dir = Path(str(summary.get("report_dir", ""))).resolve()
+    if report_dir != summary_path.parent or not report_dir.is_dir():
+        raise AuditError("runner summary/report directory identity drift")
+    runs = summary.get("runs")
+    if not isinstance(runs, list) or [row.get("run") for row in runs] != ["run_01", "run_02"]:
+        raise AuditError("runner did not produce exactly the two preregistered duplicates")
+    artifacts: list[dict[str, Any]] = []
+    for run in runs:
+        run_name = str(run["run"])
+        if run.get("status") != "OK" or run.get("exit_code") != 0:
+            raise AuditError(f"cannot seal non-OK runner duplicate: {run_name}")
+        report_path = Path(str(run.get("report_canonical_path", ""))).resolve()
+        log_path = Path(str(run.get("tester_log_path", ""))).resolve()
+        ini_path = report_path.parent / "tester.ini"
+        for label, path in (("report", report_path), ("tester_log", log_path), ("tester_ini", ini_path)):
+            if not _path_within(path, report_dir):
+                raise AuditError(f"{run_name} {label} escaped runner report directory: {path}")
+        artifacts.append(
+            {
+                "run": run_name,
+                "report": file_binding(report_path),
+                "tester_log": file_binding(log_path),
+                "tester_ini": file_binding(ini_path),
+            }
+        )
+    return {"summary": summary_binding, "run_artifacts": artifacts}
+
+
 def _worker_run(job_path: Path) -> int:
     job_binding = file_binding(job_path)
     job = load_json(job_path)
@@ -979,6 +1013,16 @@ def _worker_run(job_path: Path) -> int:
         pre = assert_pre_receipt(pre_path, pre_sha)
         auth_path = Path(str(job["authorization"]["binding"]["path"]))
         validate_authorization(auth_path, pre_sha)
+        if (
+            job.get("artifact_type") != "QM5_20002_SHORT_NY_LAUNCH_JOB"
+            or job.get("analysis_id") != ANALYSIS_ID
+            or Path(str(job.get("pre_receipt_path", ""))).resolve() != pre_path
+            or str(job.get("pre_receipt_sha256", "")).lower() != pre_sha.lower()
+            or job.get("plan_sha256") != pre["plan"]["plan_sha256"]
+            or job.get("tool") != pre["tool"]
+            or Path(str(job.get("state_path", ""))).resolve() != state_path
+        ):
+            raise AuditError("detached launch job identity/plan/tool drift")
         work_root = state_path.parent / "worker"
         work_root.mkdir(parents=True, exist_ok=True)
         for cell in pre["plan"]["cells"]:
@@ -1011,6 +1055,7 @@ def _worker_run(job_path: Path) -> int:
             if not re.fullmatch(r"[0-9]{8}T[0-9]{6}Z_[0-9a-f]{32}", run_id):
                 raise AuditError(f"runner returned malformed run_id: {run_id!r}")
             summary_path = _find_summary(run_id)
+            sealed = _seal_summary_artifacts(summary_path)
             cell_result = {
                 "cell_id": cell["cell_id"],
                 "started_utc": started,
@@ -1020,7 +1065,8 @@ def _worker_run(job_path: Path) -> int:
                 "runner_result": runner_result,
                 "stdout": file_binding(stdout_path),
                 "stderr": file_binding(stderr_path),
-                "summary": file_binding(summary_path),
+                "summary": sealed["summary"],
+                "run_artifacts": sealed["run_artifacts"],
             }
             state["cells"].append(cell_result)
             atomic_json(state_path, state)
