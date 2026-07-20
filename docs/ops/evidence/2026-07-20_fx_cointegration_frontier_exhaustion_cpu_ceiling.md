@@ -107,6 +107,25 @@ are already built and have downstream terminal verdicts, with the last survivor
 new pair build, or downstream continuation to insert while the fleet is above
 the ceiling. This follow-up made no queue or runtime mutation.
 
+### Current fleet checkpoint — 2026-07-20T12:30:59Z
+
+The branch mission rechecked the live farm before selecting any fallback FX
+work. Capacity had eased from nine active rows to eight, but remained above the
+unchanged backpressure limit of seven:
+
+| Phase | Active |
+|---|---:|
+| Q02 | 3 |
+| Q04 | 3 |
+| Q05 | 1 |
+| Q08 | 1 |
+
+The active rows were already claimed across T2, T3, T4, T6, T7, T8, T9, and
+T10. Under the explicit CPU-ceiling stop condition, no new card, EA, registry
+row, work item, priority change, dispatch tick, compile, or MT5 tester run was
+started. The two anchor verdicts and strict-frontier de-duplication above remain
+the controlling decision, so a Q02 replay would still duplicate completed work.
+
 ## Evidence And Safety
 
 - Scan: `docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md`.
