@@ -89,6 +89,15 @@ RUNNER_CHILD_PATH = REPO_ROOT / "framework" / "scripts" / "invoke_dev2_smoke_tas
 DEV2_CLEANUP_HELPER_PATH = (
     REPO_ROOT / "framework" / "scripts" / "cleanup_dev2_account_lease.ps1"
 )
+CREDENTIAL_PROBE_PATH = (
+    REPO_ROOT / "framework" / "scripts" / "probe_dev2_machine_credential.ps1"
+)
+CREDENTIAL_HELPER_PATH = (
+    REPO_ROOT / "framework" / "scripts" / "dev2_machine_credential.ps1"
+)
+MACHINE_CREDENTIAL_PATH = Path(
+    r"C:\ProgramData\QM\DEV2\credential.machine-dpapi.json"
+)
 RUN_SMOKE_PATH = REPO_ROOT / "framework" / "scripts" / "run_smoke.ps1"
 DEV2_LANE_CONTRACT_PATH = REPO_ROOT / "framework" / "registry" / "dev2_lane_contract.json"
 TESTER_GROUPS_CANONICAL_PATH = (
@@ -98,8 +107,14 @@ TESTER_GROUPS_CANONICAL_PATH = (
     / "tester_groups"
     / "Darwinex-Live_real.canonical.txt"
 )
-INFRA_RETRY_CONTRACT_PATH = (
+PRIOR_INFRA_RETRY_CONTRACT_PATH = (
     EA_ROOT / "docs" / "candidate-analysis" / "infra_retry_contract_20260720.json"
+)
+INFRA_RETRY_CONTRACT_PATH = (
+    EA_ROOT
+    / "docs"
+    / "candidate-analysis"
+    / "infra_retry_contract_20260720_attempt003.json"
 )
 REPORT_CORE_PATH = (
     REPO_ROOT
@@ -121,18 +136,22 @@ TESTER_GROUPS_DEV2_PATH = (
 DEV2_RUNS_ROOT = Path(r"D:\QM\reports\dev2\runs")
 POWERSHELL_PATH = Path(r"C:\Program Files\PowerShell\7\pwsh.exe")
 ALLOWED_RUN_ROOT = Path(r"D:\QM\reports\candidate_analysis\QM5_10834")
-CURRENT_NATIVE_ATTEMPT_NUMBER = 2
-MAXIMUM_ALTERNATE_ATTEMPTS = 2
-PRIOR_ALTERNATE_ATTEMPTS = 1
+CURRENT_CLAIM_SEQUENCE = 3
+RESERVED_COUNTED_ALTERNATE_ATTEMPT_NUMBER = 2
+PRIOR_CLAIM_SEQUENCES = 2
+MAXIMUM_COUNTED_ALTERNATE_ATTEMPTS = 2
+PRIOR_COUNTED_ALTERNATE_ATTEMPTS = 1
+ALTERNATE_ATTEMPT_COUNTING_BOUNDARY = "EXACT_DEV2_METATESTER_PROCESS_STARTED"
 AUTHORIZATION_SCOPE = (
-    "QM5_10834_INFRA_PORT_RETRY_002_NDX_4_CELLS_X_2_ACCEPTED_DUPLICATES_"
+    "QM5_10834_DPAPI_RETRY_CLAIM_003_COUNTED_ALTERNATE_002_"
+    "NDX_4_CELLS_X_2_ACCEPTED_DUPLICATES_"
     "MAX_4_NATIVE_STARTS_PER_CELL_POSTFLIGHT_MAX_2_ACCEPTABLE_INFRA_WARMUPS_MODEL4"
 )
 PRIOR_NATIVE_ATTEMPT_CLAIM_PATH = (
     ALLOWED_RUN_ROOT / "claims" / f"{ANALYSIS_ID}_DEV2_NATIVE_ATTEMPT_001.json"
 )
 NATIVE_ATTEMPT_CLAIM_PATH = (
-    ALLOWED_RUN_ROOT / "claims" / f"{ANALYSIS_ID}_DEV2_NATIVE_ATTEMPT_002.json"
+    ALLOWED_RUN_ROOT / "claims" / f"{ANALYSIS_ID}_DEV2_NATIVE_ATTEMPT_003.json"
 )
 NATIVE_LAUNCH_LOCK_PATH = (
     ALLOWED_RUN_ROOT / "claims" / f"{ANALYSIS_ID}_NATIVE_LAUNCH.lock"
@@ -152,7 +171,7 @@ RUN_ATTEMPT_OVERHEAD_SECONDS = 600
 CELL_CONTROLLER_TIMEOUT_SECONDS = (
     MAX_ATTEMPTS_PER_CELL * (RUN_TIMEOUT_SECONDS + RUN_ATTEMPT_OVERHEAD_SECONDS)
 ) + 1800
-LAUNCHER_REVISION = 5
+LAUNCHER_REVISION = 6
 SCHEDULED_TASK_PREFIX = "QM_QM10834_AUDIT_"
 MAX_SCHEDULED_TASK_SECONDS = 777600
 NY_ENTRY_START = time(9, 45)
@@ -191,11 +210,62 @@ PRIOR_NATIVE_ATTEMPT_CONTROLLER_STDERR_PATH = (
 )
 PRIOR_NATIVE_ATTEMPT_CONTROLLER_STDERR_SHA256 = "7079149cc4c16408a0783ad21ba7b4cada5a0e71a58064412047f509832313e6"
 
+PRIOR_DPAPI_ATTEMPT_RUN_ROOT = Path(
+    r"D:\QM\reports\candidate_analysis\QM5_10834\runs\NDX_ICT_OB_FULL_DEV2_NATIVE_ATTEMPT_002"
+)
+PRIOR_DPAPI_ATTEMPT_PRE_SHA256 = "3c029ba0f435af4d1ebfc800a8518eb4652a970bc0d8ff6ab25326567b61a0f1"
+PRIOR_DPAPI_ATTEMPT_STATE_SHA256 = "9347db8fa180ca456d2676a18f3e87bf90ba83938169e742aff69fdad5334183"
+PRIOR_DPAPI_ATTEMPT_JOB_SHA256 = "1b87e63ab47570dda353d83642863cfebf07b94b793804ea2c61a68777f9be17"
+PRIOR_DPAPI_ATTEMPT_CLAIM_PATH = (
+    ALLOWED_RUN_ROOT / "claims" / f"{ANALYSIS_ID}_DEV2_NATIVE_ATTEMPT_002.json"
+)
+PRIOR_DPAPI_ATTEMPT_CLAIM_SHA256 = "0b359f03dc640a5f501efa4194fe87f36834f01914eeb893e96b069e6ab32274"
+PRIOR_DPAPI_ATTEMPT_CONTROLLER_STDOUT_PATH = (
+    PRIOR_DPAPI_ATTEMPT_RUN_ROOT / "native" / "DEV" / "controller.stdout.log"
+)
+PRIOR_DPAPI_ATTEMPT_CONTROLLER_STDOUT_SHA256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+PRIOR_DPAPI_ATTEMPT_CONTROLLER_STDERR_PATH = (
+    PRIOR_DPAPI_ATTEMPT_RUN_ROOT / "native" / "DEV" / "controller.stderr.log"
+)
+PRIOR_DPAPI_ATTEMPT_CONTROLLER_STDERR_SHA256 = "484c9be7ac7d727358b0250f611c7fe0b87cd7cdb5f0d8824ba3178d83fe205e"
+PRIOR_INFRA_RETRY_CONTRACT_SHA256 = "fdc8071812d03653923d4e0d46dbd1b9349d0ae90f70b254180fcff378dbc523"
+PRIOR_DPAPI_RUNNER_BINDING = {
+    "path": str(RUNNER_PATH.resolve()),
+    "size": 65112,
+    "sha256": "1bf55d7be124845de650eb1fdaecdb828c2d6962547cff543126d307021a7931",
+}
+
+INFRA_RETRY_002_POLICY: dict[str, Any] = {
+    "execution_lane": EXECUTION_TERMINAL,
+    "current_attempt_number": 2,
+    "maximum_alternate_attempts": 2,
+    "prior_alternate_attempts": 1,
+    "authorization_scope": (
+        "QM5_10834_INFRA_PORT_RETRY_002_NDX_4_CELLS_X_2_ACCEPTED_DUPLICATES_"
+        "MAX_4_NATIVE_STARTS_PER_CELL_POSTFLIGHT_MAX_2_ACCEPTABLE_INFRA_WARMUPS_MODEL4"
+    ),
+    "same_ea_binary_required": True,
+    "same_set_required": True,
+    "same_symbol_required": True,
+    "same_dates_required": True,
+    "same_model4_required": True,
+    "same_duplicate_count_required": True,
+    "same_merit_gates_required": True,
+    "same_cost_schedule_required": True,
+    "parameter_tuning_forbidden": True,
+    "terminal_hopping_after_dev2_forbidden": True,
+    "prior_claim_and_fence_must_remain_immutable": True,
+}
+
 INFRA_RETRY_POLICY: dict[str, Any] = {
     "execution_lane": EXECUTION_TERMINAL,
-    "current_attempt_number": CURRENT_NATIVE_ATTEMPT_NUMBER,
-    "maximum_alternate_attempts": MAXIMUM_ALTERNATE_ATTEMPTS,
-    "prior_alternate_attempts": PRIOR_ALTERNATE_ATTEMPTS,
+    "claim_sequence": CURRENT_CLAIM_SEQUENCE,
+    "reserved_counted_alternate_attempt_number": RESERVED_COUNTED_ALTERNATE_ATTEMPT_NUMBER,
+    "prior_claim_sequences": PRIOR_CLAIM_SEQUENCES,
+    "maximum_counted_alternate_attempts": MAXIMUM_COUNTED_ALTERNATE_ATTEMPTS,
+    "prior_counted_alternate_attempts": PRIOR_COUNTED_ALTERNATE_ATTEMPTS,
+    "claim_creation_alone_does_not_count_as_alternate_attempt": True,
+    "alternate_attempt_counting_boundary": ALTERNATE_ATTEMPT_COUNTING_BOUNDARY,
     "authorization_scope": AUTHORIZATION_SCOPE,
     "same_ea_binary_required": True,
     "same_set_required": True,
@@ -208,6 +278,7 @@ INFRA_RETRY_POLICY: dict[str, Any] = {
     "parameter_tuning_forbidden": True,
     "terminal_hopping_after_dev2_forbidden": True,
     "prior_claim_and_fence_must_remain_immutable": True,
+    "same_worker_machine_credential_probe_required_before_claim": True,
 }
 
 SYMBOL_POLICY: dict[str, str] = {
@@ -233,6 +304,9 @@ REQUIRED_BINDING_ROLES = frozenset(
         "runner",
         "runner_child",
         "dev2_cleanup_helper",
+        "dev2_machine_credential_probe",
+        "dev2_machine_credential_helper",
+        "dev2_machine_credential",
         "runner_smoke",
         "dev2_lane_contract",
         "tester_groups_canonical",
@@ -1501,7 +1575,9 @@ def _validate_prior_native_port_attempt() -> None:
         assert_binding(binding, label)
 
 
-def validate_infra_retry_contract(path: Path = INFRA_RETRY_CONTRACT_PATH) -> dict[str, Any]:
+def _validate_infra_retry_002_contract(
+    path: Path = PRIOR_INFRA_RETRY_CONTRACT_PATH,
+) -> dict[str, Any]:
     payload = load_json(path)
     expected_keys = {
         "schema_version",
@@ -1570,7 +1646,7 @@ def validate_infra_retry_contract(path: Path = INFRA_RETRY_CONTRACT_PATH) -> dic
         raise InvalidEvidence("infra-retry controller-preflight classification drift")
     if payload.get("prior_native_attempt") != _prior_native_attempt_contract():
         raise InvalidEvidence("infra-retry prior native port-attempt classification drift")
-    if payload.get("retry") != INFRA_RETRY_POLICY:
+    if payload.get("retry") != INFRA_RETRY_002_POLICY:
         raise InvalidEvidence("infra-retry attempt-002 policy drift")
     file_binding(PRIOR_INFRA_RUN_ROOT / "pre_receipt.json", PRIOR_INFRA_PRE_SHA256)
     file_binding(PRIOR_INFRA_RUN_ROOT / "launch_state.json", PRIOR_INFRA_STATE_SHA256)
