@@ -1208,6 +1208,12 @@ def _path_within(path: Path, root: Path) -> bool:
         return False
 
 
+def _runner_duplicate_exit_ok(value: Any) -> bool:
+    """Canonical run_smoke records a natural terminal exit as JSON null."""
+
+    return value is None or (type(value) is int and value == 0)
+
+
 def _find_summary(run_id: str) -> Path:
     root = DEV1_RUNS_ROOT / run_id / "output" / "smoke"
     if not root.is_dir():
@@ -1244,7 +1250,7 @@ def _seal_summary_artifacts(summary_path: Path) -> dict[str, Any]:
     artifacts: list[dict[str, Any]] = []
     for run in runs:
         run_name = str(run["run"])
-        if run.get("status") != "OK" or run.get("exit_code") != 0:
+        if run.get("status") != "OK" or not _runner_duplicate_exit_ok(run.get("exit_code")):
             raise AuditError(f"cannot seal non-OK runner duplicate: {run_name}")
         report_path = Path(str(run.get("report_canonical_path", ""))).resolve()
         log_path = Path(str(run.get("tester_log_path", ""))).resolve()
@@ -1961,7 +1967,11 @@ def audit_cell(
     run_receipts: list[dict[str, Any]] = []
     for run in runs:
         run_name = str(run["run"])
-        if run.get("status") != "OK" or run.get("exit_code") != 0 or run.get("real_ticks_marker") is not True:
+        if (
+            run.get("status") != "OK"
+            or not _runner_duplicate_exit_ok(run.get("exit_code"))
+            or run.get("real_ticks_marker") is not True
+        ):
             raise PostflightError(f"runner duplicate is not OK/Model4: {cell['cell_id']}/{run_name}")
         report_path = Path(str(run.get("report_canonical_path", ""))).resolve()
         log_path = Path(str(run.get("tester_log_path", ""))).resolve()

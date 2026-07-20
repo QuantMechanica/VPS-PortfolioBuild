@@ -328,6 +328,16 @@ def test_worker_seals_exactly_two_native_artifact_sets(tmp_path: Path) -> None:
         subject._seal_summary_artifacts(summary)
 
 
+@pytest.mark.parametrize("exit_code", [None, 0])
+def test_runner_duplicate_accepts_canonical_natural_or_explicit_zero_exit(exit_code) -> None:
+    assert subject._runner_duplicate_exit_ok(exit_code)
+
+
+@pytest.mark.parametrize("exit_code", [False, True, -1, 1, "0"])
+def test_runner_duplicate_rejects_noninteger_or_nonzero_exit(exit_code) -> None:
+    assert not subject._runner_duplicate_exit_ok(exit_code)
+
+
 @pytest.mark.parametrize("ea_dir", ["QM5_20002", "QM5_20002_ict-icytea-core"])
 def test_find_summary_accepts_only_bound_runner_ea_directories(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, ea_dir: str
