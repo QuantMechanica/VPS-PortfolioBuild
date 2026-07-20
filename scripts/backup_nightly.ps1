@@ -27,7 +27,7 @@
           read-only source, no repo edits)
     Then rotation: keep the newest -RetentionDays dated (yyyyMMdd) folders directly under
     -DestRoot, delete older ones. Guarded four ways before any Remove-Item:
-      1. -DestRoot must literally contain the -RotationAnchor substring ("09 Backups" by
+      1. -DestRoot must literally contain the -RotationAnchor substring ("11 Backups" by
          default) -- a hard-coded sanity anchor independent of whatever -DestRoot resolves to.
       2. Candidate's resolved full path must start with -DestRoot's resolved full path.
       3. Candidate's parent directory must equal -DestRoot exactly (no recursing into
@@ -45,7 +45,7 @@
 
 .PARAMETER DestRoot
     Root backups folder. Each run creates <DestRoot>\<yyyyMMdd>\...
-    Defaults to the vault's "09 Backups" folder. Override for dry runs / tests.
+    Defaults to the vault's "11 Backups" folder. Override for dry runs / tests.
 .PARAMETER LogPath
     Transcript log file (append mode). Defaults to D:\QM\reports\state\backup_nightly.log.
     Override for dry runs so a test run never touches the real ops log.
@@ -54,14 +54,14 @@
 .PARAMETER RotationAnchor
     Literal substring -DestRoot must contain before rotation is allowed to run. Hard-coded
     sanity guard, independent of whatever value -DestRoot actually resolves to. Default
-    "09 Backups". Override only for tests where DestRoot points somewhere else safe.
+    "11 Backups". Override only for tests where DestRoot points somewhere else safe.
 #>
 [CmdletBinding()]
 param(
-    [string]$DestRoot       = "G:\My Drive\QuantMechanica - Company Reference\09 Backups",
+    [string]$DestRoot       = "G:\My Drive\QuantMechanica - Company Reference\11 Backups",
     [string]$LogPath        = "D:\QM\reports\state\backup_nightly.log",
     [int]   $RetentionDays  = 14,
-    [string]$RotationAnchor = "09 Backups",
+    [string]$RotationAnchor = "11 Backups",
     [string]$FarmStateDb    = "D:\QM\strategy_farm\state\farm_state.sqlite",
     [string]$TLiveBase      = "C:\QM\mt5\T_Live\MT5_Base",
     [string]$ReportsStateSrc= "D:\QM\reports\state",
