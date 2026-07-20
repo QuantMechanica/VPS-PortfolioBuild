@@ -98,6 +98,45 @@ def test_visible_input_closure_is_exact_and_framework_overrides_are_explicit() -
     )
 
 
+def test_runtime_snapshot_contract_is_complete_and_cannot_be_weakened() -> None:
+    payload = protocol()
+    snapshot = payload["runtime_snapshot"]
+    roles = {row["role"] for row in snapshot["repository_files"]}
+    assert roles == {
+        "launcher",
+        "launcher_support",
+        "validator",
+        "generator",
+        "report_auditor",
+        "protocol",
+        "sets_manifest",
+        "sets_manifest_detached",
+        "selected_set",
+        "ea_binary",
+        "runner_dev1_controller",
+        "runner_dev1_child",
+        "runner_smoke",
+        "runner_dispatch_resolver",
+        "tester_defaults",
+        "tester_groups_canonical",
+    }
+    assert snapshot["exclusive_per_run"] is True
+    assert snapshot["reject_path_escape_or_reparse"] is True
+    assert snapshot["postflight_uses_prebound_snapshot_only"] is True
+    assert snapshot["external_runtime_artifact_ids"] == [
+        "terminal_binary",
+        "metatester_binary",
+        "commission_groups_dev1",
+        "news_qmdev1_common_primary",
+        "news_qmdev1_common_secondary",
+    ]
+    freeze.validate_protocol(payload)
+    weakened = copy.deepcopy(payload)
+    weakened["runtime_snapshot"]["postflight_uses_prebound_snapshot_only"] = False
+    with pytest.raises(freeze.FreezeError, match="runtime snapshot contract drifted"):
+        freeze.validate_protocol(weakened)
+
+
 def test_local_rules_include_and_its_inputs_are_in_the_transitive_closure(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

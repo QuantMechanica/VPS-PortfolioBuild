@@ -48,19 +48,23 @@ def test_launcher_has_one_fixed_terminal_entrypoint_and_pre_post_fences() -> Non
     assert text.startswith("#requires -Version 7.0")
     assert "docs\\research_protocol_v5.json" in text
     assert "QM5_20009_RESEARCH_FREEZE_V5" in text
-    assert "framework\\scripts\\run_dev1_smoke.ps1" in text
+    assert "'runner_dev1_controller'" in text
+    assert "$snapshotRunDev1Path" in text
     assert "terminal64.exe" not in text
     assert "metatester64.exe" not in text
     assert "Start-Process" not in text
     assert "Get-Command python.exe -All" in text
     assert "$pythonCommands[0].Source" in text
     assert "--receipt', $preReceiptPath" in text
-    assert "--postflight-receipt', $preReceiptPath" in text
+    assert "'--postflight-receipt', $preReceiptPath" in text
+    assert "'--preflight-receipt-sha256', $preReceiptSha256" in text
+    assert "-WorkingDirectory $snapshotRepoRoot" in text
+    assert "-SetFile', $snapshotSetPath" in text
     assert text.index("'--receipt', $preReceiptPath") < text.index(
         "Invoke-QmCapturedProcess -FilePath $pwshPath"
     )
     assert text.index("Invoke-QmCapturedProcess -FilePath $pwshPath") < text.index(
-        "'--postflight-receipt', $preReceiptPath"
+        "$postProcess = Invoke-QmCapturedProcess"
     )
 
 
@@ -83,7 +87,8 @@ def test_launcher_fixes_tester_cost_and_account_contract() -> None:
 def test_launcher_requires_native_report_audit_and_detached_atomic_receipt() -> None:
     launcher = LAUNCHER.read_text(encoding="utf-8-sig")
     support = SUPPORT.read_text(encoding="utf-8-sig")
-    assert "audit_mt5_report.py" in launcher
+    assert "'report_auditor'" in launcher
+    assert "$snapshotAuditPath" in launcher
     assert "--duplicate-report" in launcher
     assert "Assert-QmCostAudit" in launcher
     assert "canonical_deal_sequence_sha256" in launcher
@@ -93,6 +98,25 @@ def test_launcher_requires_native_report_audit_and_detached_atomic_receipt() -> 
     assert "Flush($true)" in support
     assert "direct_runner_output_is_not_verdict_evidence = $true" in launcher
     assert "dev_smoke_may_never_satisfy_verdict_gate" in launcher
+
+
+def test_launcher_retains_and_binds_snapshot_on_pass_or_rejection() -> None:
+    launcher = LAUNCHER.read_text(encoding="utf-8-sig")
+    assert "runtime_snapshot_manifest = Get-QmFileBinding" in launcher
+    assert "runtime_snapshot_manifest_detached = Get-QmFileBinding" in launcher
+    assert "runtime_snapshot_retained = ($null -ne $snapshotBinding)" in launcher
+    assert "runtime_snapshot = if ($null -ne $prePayload)" in launcher
+    assert "Remove-Item -LiteralPath $snapshot" not in launcher
+    assert "validator_final_snapshot.json" in launcher
+
+
+def test_run_smoke_deploys_binary_from_its_own_resolved_repo_root() -> None:
+    run_smoke = (EA_ROOT.parents[1] / "scripts" / "run_smoke.ps1").read_text(
+        encoding="utf-8-sig"
+    )
+    assert 'Join-Path $PSScriptRoot "..\\.."' in run_smoke
+    assert 'Join-Path (Join-Path $localRepoRoot "framework\\EAs")' in run_smoke
+    assert 'Join-Path "C:\\QM\\repo\\framework\\EAs"' not in run_smoke
 
 
 def test_powershell_sources_parse_without_executing_launcher() -> None:
