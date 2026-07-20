@@ -65,6 +65,9 @@ REPORT_CORE_PATH = (
 RUNNER_PATH = REPO_ROOT / "framework" / "scripts" / "run_dev1_smoke.ps1"
 RUNNER_CHILD_PATH = REPO_ROOT / "framework" / "scripts" / "invoke_dev1_smoke_task.ps1"
 RUN_SMOKE_PATH = REPO_ROOT / "framework" / "scripts" / "run_smoke.ps1"
+SCHEDULED_TASK_HELPER_PATH = (
+    EA_ROOT / "tools" / "candidate_analysis" / "run_outcome_fenced_task.ps1"
+)
 GROUP_CANONICAL_PATH = (
     REPO_ROOT
     / "framework"
@@ -118,7 +121,13 @@ RUNTIME_ROLES = {
     "terminal_binary": TERMINAL_PATH,
     "metatester_binary": METATESTER_PATH,
     "powershell_binary": POWERSHELL_PATH,
+    "python_binary": Path(sys.executable).resolve(),
+    "scheduled_task_helper": SCHEDULED_TASK_HELPER_PATH,
 }
+
+LAUNCHER_REVISION = 2
+SCHEDULED_TASK_PREFIX = "QM_QM20002_AUDIT_"
+MAX_SCHEDULED_TASK_SECONDS = 777600
 
 
 class AuditError(RuntimeError):
