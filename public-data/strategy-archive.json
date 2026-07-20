@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-20T21:07:02.6036964Z",
-    "total":  3366,
+    "generated_at":  "2026-07-20T22:07:02.5002964Z",
+    "total":  3367,
     "items":  [
                   {
                       "slug":  "ath-breakout-atr-trail",
@@ -1364,6 +1364,12 @@
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-06-28T04:52:12.3868079Z"
+                  },
+                  {
+                      "slug":  "wti-h2m-short_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-20T21:48:38.9039056Z"
                   },
                   {
                       "slug":  "wti-halloween-winter_card",
