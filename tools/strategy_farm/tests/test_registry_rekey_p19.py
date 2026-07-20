@@ -15,9 +15,18 @@ ACTIVE_IDENTITIES = {
     "12074": "qp-stress-reversal-sp500",
     "1619": "aa-overnight-mom",
     "12247": "ehlers-adaptive-cg-h4",
+    "1158": "french-weekend-effect-idx",
+    "12075": "qp-january-barometer",
+    "1258": "hopwood-bermaui-rsi-h1",
+    "12076": "hopwood-dmi-cross-h1",
 }
 ALL_REKEY_IDS = frozenset({*ACTIVE_IDENTITIES, "12249", "1624", "1643"})
 TARGET_SLUGS = frozenset(ACTIVE_IDENTITIES.values())
+PRODUCTION_IDENTITIES = {
+    key: value
+    for key, value in ACTIVE_IDENTITIES.items()
+    if key not in {"12075", "12076"}
+}
 
 
 def _rows(path: Path) -> list[dict[str, str]]:
@@ -52,6 +61,8 @@ def test_p19_active_registry_owns_each_identity_once() -> None:
     }
     assert ("1157", "qp-stress-reversal-sp500") in retired
     assert ("12249", "aa-overnight-mom") in retired
+    assert ("1158", "qp-january-barometer") in retired
+    assert ("1258", "hopwood-dmi-cross-h1") in retired
 
     strategy_ids = {
         (row["ea_id"].removeprefix("QM5_"), _normalized_slug(row["slug"])): row[
@@ -75,6 +86,18 @@ def test_p19_active_registry_owns_each_identity_once() -> None:
     assert strategy_ids[("12247", "ehlers-adaptive-cg-h4")] == (
         "6e967762-b26d-59a3-b076-35c17f2e7c36"
     )
+    assert strategy_ids[("1158", "french-weekend-effect-idx")] == (
+        "afab7a6f-c3c8-51ae-a609-f376744beb8e"
+    )
+    assert strategy_ids[("12075", "qp-january-barometer")] == (
+        "7ede58dd-d184-5099-9d48-7a65de230853"
+    )
+    assert strategy_ids[("1258", "hopwood-bermaui-rsi-h1")] == (
+        "6e967762-b26d-59a3-b076-35c17f2e7c36"
+    )
+    assert strategy_ids[("12076", "hopwood-dmi-cross-h1")] == (
+        "6e967762-b26d-59a3-b076-35c17f2e7c36"
+    )
 
 
 def test_p19_registry_directory_filename_and_source_ids_agree() -> None:
@@ -89,7 +112,7 @@ def test_p19_registry_directory_filename_and_source_ids_agree() -> None:
         if _relevant(*identity):
             production[identity] = path
 
-    assert set(production) == set(ACTIVE_IDENTITIES.items())
+    assert set(production) == set(PRODUCTION_IDENTITIES.items())
     for (ea_id, slug), directory in production.items():
         source = directory / f"QM5_{ea_id}_{slug}.mq5"
         assert source.is_file()
@@ -127,3 +150,18 @@ def test_p19_duplicate_sources_are_archived_without_compiled_artifacts() -> None
     ).is_file()
     assert not list((EAS / "QM5_12074_qp-stress-reversal-sp500").glob("*.ex5"))
     assert not list((EAS / "QM5_12247_ehlers-adaptive-cg-h4").glob("*.ex5"))
+
+
+def test_p19_registry_only_rekeys_do_not_invent_source_directories() -> None:
+    assert not (EAS / "QM5_12075_qp-january-barometer").exists()
+    assert not (EAS / "QM5_12076_hopwood-dmi-cross-h1").exists()
+    assert (
+        EAS
+        / "QM5_1158_french-weekend-effect-idx"
+        / "QM5_1158_french-weekend-effect-idx.ex5"
+    ).is_file()
+    assert (
+        EAS
+        / "QM5_1258_hopwood-bermaui-rsi-h1"
+        / "QM5_1258_hopwood-bermaui-rsi-h1.ex5"
+    ).is_file()

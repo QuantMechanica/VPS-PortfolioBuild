@@ -773,6 +773,54 @@ def _find_approved_card_for_ea(root: Path, ea_id: str) -> Path | None:
     return matches[0] if matches else None
 
 
+def _card_requests_force_build(root: Path, ea_id: str) -> bool:
+    """Read the card's force_build flag without depending on priority scoring."""
+    card = _find_approved_card_for_ea(root, str(ea_id))
+    if card is None:
+        return False
+    try:
+        value = parse_card_frontmatter(card).get("force_build")
+    except (OSError, ValueError):
+        return False
+    return str(value or "").strip().lower() in {"1", "true", "yes"}
+
+
+def _scored_priority_track(ea_id: str) -> bool:
+    """Preserve the existing strategy-priority lane for every phase."""
+    try:
+        import strategy_priority as _sp
+        return bool(
+            _sp.compute_scores().get(str(ea_id), {}).get("priority_track", False)
+        )
+    except Exception:
+        return False
+
+
+def _q02_priority_track_required(
+    conn: sqlite3.Connection,
+    root: Path,
+    ea_id: str,
+    *,
+    freshly_built: bool = False,
+) -> bool:
+    """Return whether a newly-created Q02 row belongs on the priority track.
+
+    Fresh builds and an EA's first Q02 must not wait for strategy_priority to
+    observe DB/card state.  A literal card force_build remains authoritative
+    even if the scorer is unavailable.  The existing scored tier stays
+    additive for all other EAs.
+    """
+    if freshly_built or _card_requests_force_build(root, str(ea_id)):
+        return True
+    prior_q02 = conn.execute(
+        "SELECT 1 FROM work_items WHERE ea_id=? AND phase IN ('Q02', 'P2') LIMIT 1",
+        (str(ea_id),),
+    ).fetchone()
+    if prior_q02 is None:
+        return True
+    return _scored_priority_track(str(ea_id))
+
+
 # (mtime_ns, size)-keyed caches. ready_strategy_card_inventory validates every
 # approved card and each validation used to re-parse both registry CSVs and
 # re-glob the cards dir; at ~2900 cards x 14k magic rows that pushed one router
@@ -981,6 +1029,7 @@ STRATEGY_CARD_REQUIRED_FRONTMATTER = (
     "r3_data_available",
     "r4_ml_forbidden",
     "expected_trades_per_year_per_symbol",
+    "target_symbols",
 )
 
 # CR1 2026-05-23 — relaxed per OWNER call. The Strategy Card Framework
@@ -995,11 +1044,21 @@ STRATEGY_CARD_REQUIRED_FRONTMATTER = (
 # required by the Skill spec to make the card mechanically implementable.
 STRATEGY_CARD_REQUIRED_BODY_PATTERNS = {
     "market_universe": r"\b(universe|market|symbol|instrument|target_symbols)\b|\.DWX\b",
-    "timeframe": r"\b(timeframe|period|bar|m1|m5|m15|m30|h1|h4|d1|w1)\b",
+    "timeframe": r"\b(?:M1|M5|M15|M30|H1|H4|D1|W1|MN1)\b",
     "entry": r"\b(entry|enter|signal|trigger)\b",
     "exit": r"\b(exit|close|flatten|take profit|stop)\b",
     "risk": r"\b(risk|drawdown|position|sizing|stop)\b",
 }
+
+
+def _target_symbols_contract_present(value: Any) -> bool:
+    """Reject missing/null and syntactically empty target-symbol declarations."""
+    text = str(value or "").strip()
+    if not text or text.lower() in {"null", "none", "~", "{}"}:
+        return False
+    if text.startswith("[") and text.endswith("]"):
+        return bool(text[1:-1].strip().strip(","))
+    return True
 
 
 def strategy_card_schema_issues(card_path: Path, fm: dict[str, Any] | None = None) -> list[str]:
@@ -1007,13 +1066,38 @@ def strategy_card_schema_issues(card_path: Path, fm: dict[str, Any] | None = Non
     fm = fm or parse_card_frontmatter(card_path)
     issues: list[str] = []
     for key in STRATEGY_CARD_REQUIRED_FRONTMATTER:
-        if str(fm.get(key) or "").strip() == "":
+        value = str(fm.get(key) or "").strip()
+        if value == "" or (
+            key == "target_symbols"
+            and not _target_symbols_contract_present(fm.get(key))
+        ):
             issues.append(f"schema_missing_frontmatter:{key}")
 
     text = card_path.read_text(encoding="utf-8", errors="ignore")
+    _, body = _card_frontmatter_block(text)
     for key, pattern in STRATEGY_CARD_REQUIRED_BODY_PATTERNS.items():
-        if not re.search(pattern, text, re.IGNORECASE):
+        if not re.search(pattern, body, re.IGNORECASE):
             issues.append(f"schema_missing_body:{key}")
+    return issues
+
+
+def _approval_card_contract_issues(
+    card_path: Path,
+    fm: dict[str, Any] | None = None,
+) -> list[str]:
+    """Approval-time subset that must exist before any frontmatter mutation."""
+    fm = fm or parse_card_frontmatter(card_path)
+    issues: list[str] = []
+    if not _target_symbols_contract_present(fm.get("target_symbols")):
+        issues.append("schema_missing_frontmatter:target_symbols")
+    text = card_path.read_text(encoding="utf-8", errors="ignore")
+    _, body = _card_frontmatter_block(text)
+    if not re.search(
+        r"\b(?:M1|M5|M15|M30|H1|H4|D1|W1|MN1)\b",
+        body,
+        re.IGNORECASE,
+    ):
+        issues.append("schema_missing_body:timeframe_literal")
     return issues
 
 
@@ -1941,6 +2025,8 @@ def _derive_verdict_from_summary(summary: dict[str, Any], min_trades: int = 5, p
     if "phase" in summary and "runs" not in summary:
         return _derive_phase_runner_verdict(summary, min_trades=min_trades, phase=phase)
 
+    phase_key = str(phase or "").strip().upper()
+    exact_total_trades = _summary_exact_total_trades(summary)
     if summary.get("result") != "PASS":
         reasons = summary.get("reason_classes") or ["UNKNOWN"]
         infra_reasons = {
@@ -1955,7 +2041,11 @@ def _derive_verdict_from_summary(summary: dict[str, Any], min_trades: int = 5, p
             "TIMEOUT",
             "ACCOUNT_NOT_SPECIFIED",
         }
-        verdict = "INFRA_FAIL" if any(str(r).upper() in infra_reasons for r in reasons) else "FAIL"
+        if any(str(r).upper() in infra_reasons for r in reasons):
+            return "INFRA_FAIL", "run_smoke_fail:" + ";".join(str(r) for r in reasons)
+        if phase_key in {"Q02", "P2"} and exact_total_trades == 0:
+            return "ZERO_TRADES", "Q02_ZERO_TRADES"
+        verdict = "FAIL"
         return verdict, "run_smoke_fail:" + ";".join(str(r) for r in reasons)
     if not summary.get("model4_log_marker_detected"):
         return "INFRA_FAIL", "G1_NO_REAL_TICKS"
@@ -1963,7 +2053,8 @@ def _derive_verdict_from_summary(summary: dict[str, Any], min_trades: int = 5, p
     if not runs:
         return "INFRA_FAIL", "no_runs_in_summary"
     trades = [int(r.get("total_trades", 0) or 0) for r in runs]
-    phase_key = str(phase or "").strip()
+    if phase_key in {"Q02", "P2"} and exact_total_trades == 0:
+        return "ZERO_TRADES", "Q02_ZERO_TRADES"
     legacy_phase_key = _normalize_phase(phase_key)
     is_p5plus = (
         phase_key.upper() in {p.upper() for p in CASCADE_BACKTEST_PHASES}
@@ -1975,6 +2066,25 @@ def _derive_verdict_from_summary(summary: dict[str, Any], min_trades: int = 5, p
     if is_p5plus:
         return _derive_p5plus_metric_verdict(runs)
     return "PASS", ""
+
+
+def _summary_exact_total_trades(summary: dict[str, Any]) -> int | None:
+    """Return an evidence-backed total, never treating a missing metric as zero."""
+    runs = summary.get("runs")
+    if not isinstance(runs, list) or not runs:
+        return None
+    total = 0
+    for run in runs:
+        if not isinstance(run, dict) or "total_trades" not in run:
+            return None
+        raw = run.get("total_trades")
+        if raw is None or isinstance(raw, bool):
+            return None
+        try:
+            total += int(float(raw))
+        except (TypeError, ValueError):
+            return None
+    return total
 
 
 P2_UNPROFITABLE_SYMBOL_REASON = "P2_UNPROFITABLE_SYMBOL"
@@ -4345,6 +4455,142 @@ def _normalize_pending_work_item_verdicts(con: sqlite3.Connection) -> int:
     return changed
 
 
+def _q02_zero_trade_cohort_rows(
+    con: sqlite3.Connection,
+    completed_item: sqlite3.Row | dict[str, Any],
+) -> list[sqlite3.Row]:
+    """Resolve one Q02 enqueue cohort by parent task or post-build task id."""
+    phase = str(_work_item_value(completed_item, "phase", "") or "").upper()
+    if phase not in {"Q02", "P2"}:
+        return []
+    parent_task_id = _work_item_value(completed_item, "parent_task_id", None)
+    if parent_task_id:
+        return con.execute(
+            """
+            SELECT * FROM work_items
+            WHERE parent_task_id=? AND phase IN ('Q02', 'P2')
+            ORDER BY created_at, id
+            """,
+            (parent_task_id,),
+        ).fetchall()
+
+    try:
+        completed_payload = json.loads(
+            _work_item_value(completed_item, "payload_json", "{}") or "{}"
+        )
+    except (TypeError, json.JSONDecodeError):
+        completed_payload = {}
+    build_task_id = str(completed_payload.get("build_task_id") or "").strip()
+    if not build_task_id:
+        return []
+    ea_id = str(_work_item_value(completed_item, "ea_id", "") or "")
+    candidates = con.execute(
+        """
+        SELECT * FROM work_items
+        WHERE ea_id=? AND phase IN ('Q02', 'P2')
+        ORDER BY created_at, id
+        """,
+        (ea_id,),
+    ).fetchall()
+    cohort: list[sqlite3.Row] = []
+    for row in candidates:
+        try:
+            payload = json.loads(row["payload_json"] or "{}")
+        except (TypeError, json.JSONDecodeError):
+            continue
+        if str(payload.get("build_task_id") or "").strip() == build_task_id:
+            cohort.append(row)
+    return cohort
+
+
+def _promote_zero_trade_q02_cohort_to_draft_defect(
+    con: sqlite3.Connection,
+    completed_item: sqlite3.Row | dict[str, Any],
+) -> list[str]:
+    """Promote an exact, fully-finished all-zero Q02 cohort to DRAFT_DEFECT.
+
+    Cohort-level promotion prevents one zero-trade symbol from masking a real
+    strategy failure or infrastructure gap on another symbol.  The stored
+    route is deliberately re-draft, not strategy retirement.
+    """
+    cohort = _q02_zero_trade_cohort_rows(con, completed_item)
+    if not cohort:
+        return []
+    try:
+        completed_payload = json.loads(
+            _work_item_value(completed_item, "payload_json", "{}") or "{}"
+        )
+        expected_size = int(completed_payload.get("q02_cohort_size") or 0)
+    except (TypeError, ValueError, json.JSONDecodeError):
+        expected_size = 0
+    # Auto-enqueue stages a bounded subset and promotes deferred symbols later.
+    # Do not classify the early stage as DRAFT_DEFECT while part of the same
+    # build cohort is still absent from work_items.
+    if expected_size > 0 and len(cohort) < expected_size:
+        return []
+    if any(str(row["status"] or "") not in {"done", "failed"} for row in cohort):
+        return []
+    zero_verdicts = {"ZERO_TRADES", "DRAFT_DEFECT"}
+    if any(str(row["verdict"] or "").upper() not in zero_verdicts for row in cohort):
+        return []
+
+    now = utc_now()
+    promoted: list[str] = []
+    for row in cohort:
+        if str(row["verdict"] or "").upper() == "DRAFT_DEFECT":
+            continue
+        try:
+            payload = json.loads(row["payload_json"] or "{}")
+        except (TypeError, json.JSONDecodeError):
+            payload = {}
+        payload.update({
+            "verdict_reason": "Q02_ALL_ENQUEUED_SYMBOLS_ZERO_TRADES",
+            "verdict_taxonomy": "draft_defect",
+            "verdict_route": "RE_DRAFT",
+        })
+        con.execute(
+            """
+            UPDATE work_items
+            SET verdict='DRAFT_DEFECT', payload_json=?, updated_at=?
+            WHERE id=?
+            """,
+            (json.dumps(payload, sort_keys=True), now, row["id"]),
+        )
+        promoted.append(str(row["id"]))
+    return promoted
+
+
+def _aggregate_work_item_verdict(
+    phase: str,
+    work_items: list[sqlite3.Row] | list[dict[str, Any]],
+    surviving_symbols: list[str],
+) -> str:
+    """Shared farmctl/terminal-worker aggregate verdict taxonomy."""
+    if surviving_symbols:
+        return "PASS"
+    verdicts = [
+        str(_work_item_value(row, "verdict", "") or "").upper()
+        for row in work_items
+    ]
+    if (
+        str(phase or "").upper() in {"Q02", "P2"}
+        and verdicts
+        and all(verdict == "DRAFT_DEFECT" for verdict in verdicts)
+    ):
+        return "DRAFT_DEFECT"
+    strategy_fail_count = sum(
+        verdict in {"FAIL", "ZERO_TRADES", "DRAFT_DEFECT", "MIN_TRADES_NOT_MET"}
+        for verdict in verdicts
+    )
+    infra_fail_count = sum(
+        verdict in {"INFRA_FAIL", "INVALID", "WAITING_INPUT", "PENDING_RUNNER"}
+        for verdict in verdicts
+    )
+    if infra_fail_count > 0 and strategy_fail_count == 0:
+        return "INFRA_FAIL"
+    return "STRATEGY_FAIL"
+
+
 def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, Any]:
     """Per-(symbol, setfile) dispatcher. Replaces bundled p2_baseline fan-out.
 
@@ -4497,7 +4743,13 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                          json.dumps(updated_payload, sort_keys=True),
                          started_iso, item["id"]),
                     )
+                    promoted = _promote_zero_trade_q02_cohort_to_draft_defect(
+                        conn2, item
+                    )
                     conn2.commit()
+                if item["id"] in promoted:
+                    verdict = "DRAFT_DEFECT"
+                    reason = "Q02_ALL_ENQUEUED_SYMBOLS_ZERO_TRADES"
                 busy_terminals.discard(terminal)
                 actions.append({"action": "classified_item", "item_id": item["id"],
                                "ea_id": item["ea_id"], "symbol": item["symbol"],
@@ -4843,18 +5095,19 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 surviving, p2_profit_skipped = _filter_p2_profitable_symbols(conn, parent_id, pass_symbols)
             else:
                 surviving = pass_symbols
-            strategy_fail_count = sum(1 for w in wis if w["verdict"] in {"FAIL", "ZERO_TRADES", "MIN_TRADES_NOT_MET"})
-            infra_fail_count = sum(1 for w in wis if w["verdict"] in {"INFRA_FAIL", "INVALID", "WAITING_INPUT", "PENDING_RUNNER"})
-            verdict = "PASS" if surviving else ("INFRA_FAIL" if infra_fail_count > 0 and strategy_fail_count == 0 else "STRATEGY_FAIL")
+            verdict = _aggregate_work_item_verdict(phase, list(wis), surviving)
             classification = {
                 "verdict": verdict,
                 "surviving_symbols": surviving,
                 "counts_by_verdict": {
                     v: sum(1 for w in wis if w["verdict"] == v)
-                    for v in ("PASS", "FAIL", "INVALID", "INFRA_FAIL", "ZERO_TRADES", "MIN_TRADES_NOT_MET")
+                    for v in ("PASS", "FAIL", "INVALID", "INFRA_FAIL", "ZERO_TRADES", "DRAFT_DEFECT", "MIN_TRADES_NOT_MET")
                 },
                 "source": "work_items_aggregate",
             }
+            if verdict == "DRAFT_DEFECT":
+                classification["route"] = "RE_DRAFT"
+                classification["retire_strategy"] = False
             if p2_profit_skipped:
                 classification["p2_p3_profit_filter_skipped"] = p2_profit_skipped
             parent_payload = json.loads(parent_row["payload_json"]) if parent_row["payload_json"] else {}
@@ -10077,7 +10330,7 @@ def classify_p2(report_csv_path: Path) -> dict[str, Any]:
 
     Verdict logic per Pipeline Overview + HR7:
     - >=1 PASS symbol  -> PASS, advance EA (Portfolio-Kandidat = mindestens 1 Symbol durch).
-    - All FAIL with trade_count_below_min reason  -> ZERO_TRADES (HR7: setup, not strategy fail).
+    - Every enqueued symbol proven at exactly 0 trades -> DRAFT_DEFECT / re-draft.
     - >=50% INVALID  -> INFRA_FAIL (G1 / real-ticks / model4 setup problem).
     - Otherwise  -> STRATEGY_FAIL.
     """
@@ -10109,10 +10362,7 @@ def classify_p2(report_csv_path: Path) -> dict[str, Any]:
     surviving = [r["symbol"] for r in rows if r.get("verdict") == "PASS"]
     fails = [r for r in rows if r.get("verdict") == "FAIL"]
     invalids = [r for r in rows if r.get("verdict") == "INVALID"]
-    zero_trade_syms = [
-        r["symbol"] for r in fails
-        if "trade_count_below_min" in (r.get("invalidation_reason") or "")
-    ]
+    zero_trade_syms = [r["symbol"] for r in fails if _p2_report_row_is_exact_zero(r)]
     strategy_fail_syms = [r["symbol"] for r in fails if r["symbol"] not in zero_trade_syms]
 
     counts: dict[str, int] = {}
@@ -10131,11 +10381,13 @@ def classify_p2(report_csv_path: Path) -> dict[str, Any]:
 
     if surviving:
         return {**base, "verdict": "PASS"}
-    if zero_trade_syms and not strategy_fail_syms:
+    if len(zero_trade_syms) == len(rows):
         return {
             **base,
-            "verdict": "ZERO_TRADES",
-            "advice": "Per HR7 NO_REPORT != EA-Schwaeche. Investigate filters/window before declaring strategy fail.",
+            "verdict": "DRAFT_DEFECT",
+            "route": "RE_DRAFT",
+            "retire_strategy": False,
+            "advice": "All Q02 symbols produced exactly zero trades; return the implementation/card to re-draft.",
         }
     if invalids and len(invalids) >= 0.5 * len(rows):
         return {
@@ -10144,6 +10396,22 @@ def classify_p2(report_csv_path: Path) -> dict[str, Any]:
             "advice": "Majority INVALID — check G1 real-ticks marker, Model 4 setup, tester defaults.",
         }
     return {**base, "verdict": "STRATEGY_FAIL"}
+
+
+def _p2_report_row_is_exact_zero(row: dict[str, str]) -> bool:
+    """Require concrete summary evidence before calling a P2 row zero-trade."""
+    if row.get("verdict") != "FAIL":
+        return False
+    if "trade_count_below_min" not in (row.get("invalidation_reason") or ""):
+        return False
+    evidence = str(row.get("evidence") or "").strip()
+    if not evidence:
+        return False
+    try:
+        summary = json.loads(Path(evidence).read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError):
+        return False
+    return _summary_exact_total_trades(summary) == 0
 
 
 def classify_p3(report_csv_path: Path) -> dict[str, Any]:
@@ -10572,14 +10840,15 @@ def _create_backtest_work_items(conn: sqlite3.Connection, parent_task_id: str,
         setfiles = [(s, p) for s, p in setfiles if s in symbol_set]
     now = utc_now()
     period = _detect_ea_period(ea_id)
-    # Fast-track the backtest queue for high-priority EAs (top strategy_priority
-    # tier). The T1-T10 workers read payload_json["priority_track"] and pull these
-    # before non-flagged pending items. Guarded: scorer failure -> no flag.
-    try:
-        import strategy_priority as _sp
-        _priority_track = bool(_sp.compute_scores().get(str(ea_id), {}).get("priority_track", False))
-    except Exception:
-        _priority_track = False
+    # Fast-track scored EAs plus force-build / first-Q02 EAs.  The latter two
+    # must not wait for strategy_priority to observe the just-created identity.
+    # Compute once before inserting the fan-out so every symbol in the first
+    # Q02 cohort receives the same payload flag.
+    _priority_track = (
+        _q02_priority_track_required(conn, root, str(ea_id))
+        if is_q02
+        else _scored_priority_track(str(ea_id))
+    )
     history_registry = _dwx_symbol_history_registry() if is_q02 else {}
     for sym, setfile_path in setfiles:
         existing = conn.execute(
@@ -11947,6 +12216,15 @@ def approve_card(root: Path, card_path_str: str, reasoning: str,
     if not ea_id:
         return {"approved": False, "reason": "Card frontmatter missing ea_id"}
 
+    contract_issues = _approval_card_contract_issues(card_path, fm)
+    if contract_issues:
+        return {
+            "approved": False,
+            "reason": "card_contract_invalid",
+            "issues": contract_issues,
+            "card_path": str(card_path),
+        }
+
     coverage = _verify_card_body_coverage(card_path)
     if not coverage["ok"]:
         _update_flat_frontmatter_file(card_path, {
@@ -12287,6 +12565,63 @@ def _validate_ea_spec_md(build_result: dict[str, Any], root: Path) -> dict[str, 
             "exit_code": proc.returncode}
 
 
+_CONSTANT_FALSE_ENTRY_HOOK = re.compile(
+    r"\bbool\s+Strategy_EntrySignal\s*\([^)]*\)\s*\{\s*"
+    r"(?:(?://[^\r\n]*(?:\r?\n|$))|(?:/\*.*?\*/)|\s)*"
+    r"return\s*\(?\s*false\s*\)?\s*;"
+    r"(?:(?://[^\r\n]*(?:\r?\n|$))|(?:/\*.*?\*/)|\s)*\}",
+    re.IGNORECASE | re.DOTALL,
+)
+
+
+def _validate_ea_strategy_entry(build_result: dict[str, Any]) -> dict[str, Any]:
+    """Reject auto-generated entry stubs before a build can enqueue Q02."""
+    ea_dir_raw = str(build_result.get("ea_dir") or "").strip()
+    if not ea_dir_raw:
+        mq5_path_raw = str(build_result.get("mq5_path") or "").strip()
+        if mq5_path_raw:
+            mq5_path = Path(mq5_path_raw)
+            ea_dir_raw = str(mq5_path if mq5_path.is_dir() else mq5_path.parent)
+    if not ea_dir_raw:
+        ea_id = str(build_result.get("ea_id") or "").strip()
+        slug = str(build_result.get("slug") or "").strip()
+        if ea_id and slug:
+            ea_dir_raw = str(FRAMEWORK_EAS_DIR / f"{ea_id}_{slug}")
+    ea_dir = Path(ea_dir_raw) if ea_dir_raw else None
+    if ea_dir is None or not ea_dir.is_dir():
+        return {
+            "ok": False,
+            "failures": ["strategy_source_dir_unresolvable"],
+            "ea_dir": ea_dir_raw or None,
+        }
+    sources = sorted(ea_dir.glob("*.mq5"))
+    if not sources:
+        return {
+            "ok": False,
+            "failures": ["strategy_source_missing"],
+            "ea_dir": str(ea_dir),
+        }
+    failures: list[str] = []
+    checked: list[str] = []
+    for source in sources:
+        try:
+            text = source.read_text(encoding="utf-8-sig")
+        except OSError as exc:
+            failures.append(f"strategy_source_unreadable:{source.name}:{exc}")
+            continue
+        checked.append(str(source))
+        if "auto-generated skeleton" in text.lower():
+            failures.append(f"strategy_entry_skeleton_marker:{source.name}")
+        elif _CONSTANT_FALSE_ENTRY_HOOK.search(text):
+            failures.append(f"strategy_entry_constant_false:{source.name}")
+    return {
+        "ok": not failures,
+        "failures": failures,
+        "ea_dir": str(ea_dir),
+        "sources_checked": checked,
+    }
+
+
 def record_build_result(root: Path, task_id: str, result_file: str) -> dict[str, Any]:
     """Read Codex's build result JSON, transition the build_ea task."""
     init_db(root)
@@ -12298,6 +12633,7 @@ def record_build_result(root: Path, task_id: str, result_file: str) -> dict[str,
     except json.JSONDecodeError as exc:
         return {"recorded": False, "reason": f"Invalid JSON in {rp}: {exc}"}
 
+    result.setdefault("task_id", task_id)
     blocked = result.get("blocked_reason")
     smoke = result.get("smoke_result")
     smoke_framework_error_after_good_build = (
@@ -12364,6 +12700,20 @@ def record_build_result(root: Path, task_id: str, result_file: str) -> dict[str,
             payload_merge.setdefault(
                 "spec_blocked_summary",
                 "; ".join(spec_result.get("failures", [])[:3]),
+            )
+
+    if new_status == "done":
+        strategy_entry_result = _validate_ea_strategy_entry(result)
+        payload_merge["strategy_entry_validation"] = strategy_entry_result
+        if not strategy_entry_result.get("ok"):
+            new_status = "blocked"
+            blocked = "strategy_entry_stub"
+            fail_code = "strategy_entry_stub"
+            result["blocked_reason"] = blocked
+            result["fail_code"] = fail_code
+            payload_merge["fail_code"] = fail_code
+            payload_merge["strategy_entry_blocked_summary"] = "; ".join(
+                strategy_entry_result.get("failures", [])[:3]
             )
 
     # PT11 2026-05-24 — auto-enqueue Q02 work_items immediately after a clean
@@ -12446,7 +12796,15 @@ def _stage_q02_setfiles(parsed: list[tuple[Any, str, str]]) -> tuple[list, list]
     return stage1, deferred
 
 
-def _record_q02_deferral(ea_id: str, deferred: list, source: str) -> None:
+def _record_q02_deferral(
+    ea_id: str,
+    deferred: list,
+    source: str,
+    *,
+    priority_track: bool = False,
+    build_task_id: str | None = None,
+    cohort_size: int | None = None,
+) -> None:
     """Append deferred (setfile, symbol, tf) tuples to the sidecar state file."""
     try:
         state = (json.loads(Q02_DEFERRED_SYMBOLS_FILE.read_text(encoding="utf-8"))
@@ -12455,6 +12813,12 @@ def _record_q02_deferral(ea_id: str, deferred: list, source: str) -> None:
         state = {}
     entry = state.setdefault(ea_id, {"setfiles": [], "source": source,
                                      "deferred_at": utc_now()})
+    if priority_track:
+        entry["priority_track"] = True
+    if build_task_id:
+        entry["build_task_id"] = str(build_task_id)
+    if cohort_size is not None and cohort_size > 0:
+        entry["q02_cohort_size"] = int(cohort_size)
     known = {e["setfile"] for e in entry["setfiles"]}
     for item in deferred:
         setfile, symbol, tf = item[0], item[1], item[2]
@@ -12610,13 +12974,25 @@ def _auto_enqueue_q02_for_build(root: Path, build_result: dict[str, Any]) -> dic
     # OWNER gate-acceleration #2 (2026-06-10): diverse stage-1 wave, rest
     # deferred to the sidecar (promoted on any stage-1 PASS / spare capacity).
     stage1, deferred = _stage_q02_setfiles(parsed)
+    build_task_id = str(build_result.get("task_id") or "").strip() or None
+    cohort_size = len(parsed)
     if deferred:
-        _record_q02_deferral(ea_id, deferred, "auto_q02_for_build")
+        _record_q02_deferral(
+            ea_id,
+            deferred,
+            "auto_q02_for_build",
+            priority_track=True,
+            build_task_id=build_task_id,
+            cohort_size=cohort_size,
+        )
         for setfile_path, symbol, tf, _payload_extra in deferred:
             skipped.append({"setfile": setfile_path.name, "symbol": symbol,
                             "reason": "staged_deferred_symbol"})
 
     with connect(root) as conn:
+        priority_track = _q02_priority_track_required(
+            conn, root, str(ea_id), freshly_built=True
+        )
         for setfile_path, symbol, tf, payload_extra in stage1:
             # Idempotency: skip if pending/active Q02 already exists
             existing = conn.execute(
@@ -12636,9 +13012,12 @@ def _auto_enqueue_q02_for_build(root: Path, build_result: dict[str, Any]) -> dic
                 "host_timeframe": tf,
                 "enqueued_by": "record_build_result.auto_q02",
                 "enqueued_at_utc": now_iso,
-                "build_task_id": build_result.get("task_id"),
+                "build_task_id": build_task_id,
+                "q02_cohort_size": cohort_size,
             }
             payload.update(payload_extra)
+            if priority_track:
+                payload["priority_track"] = True
             conn.execute(
                 "INSERT INTO work_items (id, kind, phase, ea_id, symbol, setfile_path, "
                 "status, attempt_count, payload_json, created_at, updated_at) "

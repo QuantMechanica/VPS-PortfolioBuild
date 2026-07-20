@@ -1238,7 +1238,13 @@ def _finish_work_item(root: Path, item_id: str, exit_code: int | None) -> dict[s
                     """,
                     (verdict, str(summary_path), json.dumps(payload, sort_keys=True), now, item_id),
                 )
+                promoted = farmctl._promote_zero_trade_q02_cohort_to_draft_defect(
+                    conn, item
+                )
                 conn.commit()
+                if item_id in promoted:
+                    verdict = "DRAFT_DEFECT"
+                    reason = "Q02_ALL_ENQUEUED_SYMBOLS_ZERO_TRADES"
                 aggregate = _aggregate_finished_parent(root, item["parent_task_id"])
                 return {"finished": True, "status": "done", "verdict": verdict, "reason": reason, "aggregate": aggregate}
 
@@ -1326,26 +1332,19 @@ def _aggregate_finished_parent(root: Path, parent_task_id: str | None) -> dict[s
             surviving, p2_profit_skipped = farmctl._filter_p2_profitable_symbols(conn, parent_task_id, pass_symbols)
         else:
             surviving = pass_symbols
-        strategy_fail_count = sum(
-            1 for w in wis if w["verdict"] in {"FAIL", "ZERO_TRADES", "MIN_TRADES_NOT_MET"}
-        )
-        infra_fail_count = sum(
-            1 for w in wis if w["verdict"] in {"INFRA_FAIL", "INVALID", "WAITING_INPUT", "PENDING_RUNNER"}
-        )
-        verdict = (
-            "PASS"
-            if surviving
-            else ("INFRA_FAIL" if infra_fail_count > 0 and strategy_fail_count == 0 else "STRATEGY_FAIL")
-        )
+        verdict = farmctl._aggregate_work_item_verdict(phase, list(wis), surviving)
         classification: dict[str, Any] = {
             "verdict": verdict,
             "surviving_symbols": surviving,
             "counts_by_verdict": {
                 v: sum(1 for w in wis if w["verdict"] == v)
-                for v in ("PASS", "FAIL", "ZERO_TRADES", "MIN_TRADES_NOT_MET", "INVALID", "INFRA_FAIL")
+                for v in ("PASS", "FAIL", "ZERO_TRADES", "DRAFT_DEFECT", "MIN_TRADES_NOT_MET", "INVALID", "INFRA_FAIL")
             },
             "source": "terminal_worker_aggregate",
         }
+        if verdict == "DRAFT_DEFECT":
+            classification["route"] = "RE_DRAFT"
+            classification["retire_strategy"] = False
         if p2_profit_skipped:
             classification["p2_p3_profit_filter_skipped"] = p2_profit_skipped
         parent_payload = _json_loads(parent["payload_json"])

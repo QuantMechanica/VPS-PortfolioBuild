@@ -437,6 +437,12 @@ if deferred_state:
                        "enqueued_by": "sweep_enqueue.deferred_promotion",
                        "promotion_reason": "stage1_pass" if has_pass else "spare_capacity",
                        "enqueued_at_utc": NOW}
+            if entry.get("priority_track") is True:
+                payload["priority_track"] = True
+            if entry.get("build_task_id"):
+                payload["build_task_id"] = entry["build_task_id"]
+            if entry.get("q02_cohort_size"):
+                payload["q02_cohort_size"] = entry["q02_cohort_size"]
             if not insert_wi("Q02", ea_id, sf["symbol"], sf["setfile"], payload):
                 continue
             report["part3_deferred_promotion"]["promoted"].append(
