@@ -53,6 +53,11 @@ end-October to end-May for winter and end-May to end-October for summer. The
 mechanization locks that methods-section definition; it does not infer dates
 from the duplicated table heading.
 
+The abstract also says summer returns are higher while calling that a
+Halloween effect; this conflicts with the paper's own definition, WTI tables,
+discussion and conclusion, all of which identify the higher WTI winter leg.
+It is recorded as an editorial direction error rather than silently adopted.
+
 ## Mechanization boundary
 
 The paper measures one continuous November-May holding interval. The V5

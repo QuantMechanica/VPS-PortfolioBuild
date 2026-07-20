@@ -75,10 +75,11 @@ summer. Table 2 reports the West Texas winter average at `16.65%`, summer at
 `-5.3%`, and winter superiority in `23/32` years (`72%`). Table 3 reports
 `p=0.0096` for the t-test and `p=0.0031` for the preferred Wilcoxon test.
 
-The duplicated month captions above Table 2 conflict with the methods prose.
-This card locks the explicit algorithm and equations: long November through
-May, flat June through October. It does not short the summer leg and does not
-import the paper's historical returns as a Darwinex forecast.
+The duplicated month captions above Table 2 and the abstract's statement that
+summer returns are higher conflict with the methods, WTI rows, discussion and
+conclusion. This card locks the explicit algorithm and equations: long
+November through May, flat June through October. It does not short the summer
+leg and does not import the paper's historical returns as a Darwinex forecast.
 
 The paper evaluates one continuous seasonal holding interval. The V5 carrier
 closes and renews exposure at every month boundary inside November-May. That
@@ -132,8 +133,10 @@ decorrelation, so realized overlap remains a later kill test.
 - Require exact baseline parameters and spread no greater than 1500 points.
 - Read completed-bar D1 `ATR(20)` and open BUY with a frozen
   `4.0 * ATR(20)` broker hard stop; no take-profit.
-- Record the in-memory/month-history attempt boundary so a stop, rejected
-  order or restart cannot create an extra package in the same month.
+- Record a terminal-persistent month-attempt marker plus deal-history boundary
+  so a stop, rejected order or restart cannot create an extra package in the
+  same month; future marker state is cleared at initialization for deterministic
+  historical reruns.
 - News and framework kill-switch gates remain authoritative for new entries.
 
 ## Exit and management rules
