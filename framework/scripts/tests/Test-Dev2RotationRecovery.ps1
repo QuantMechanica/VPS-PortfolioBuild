@@ -46,6 +46,7 @@ $contractId = 'QM_DEV2_ISOLATED_MT5_LANE_V3'
 $lane = 'DEV2'
 $targetUserName = 'QMDev2'
 $cleanupActionMutexPrefix = 'Global\QM_DEV2_CLEANUP_ACTION_'
+Invoke-Expression (Get-QmRecoveryFunctionText -Name 'Resolve-QmRotationSid')
 Invoke-Expression (Get-QmRecoveryFunctionText -Name 'Get-QmRotationJournalFieldNames')
 Invoke-Expression (Get-QmRecoveryFunctionText -Name 'Assert-QmRotationJournalSchema')
 Invoke-Expression (Get-QmRecoveryFunctionText -Name 'Get-QmRotationRecoveryDisposition')
@@ -58,6 +59,9 @@ $hashA = 'a' * 64
 $hashB = 'b' * 64
 $hashC = 'c' * 64
 $sid = 'S-1-5-21-111-222-333-1006'
+if ((Resolve-QmRotationSid -AccountName $sid) -cne $sid) {
+    throw 'Rotation SID resolver does not accept raw ACL SID identity references.'
+}
 $rotationId = $now.ToString('yyyyMMddTHHmmssZ') + '_' + ('d' * 32)
 $nonce = 'e' * 32
 $journal = [ordered]@{

@@ -74,6 +74,9 @@ function Assert-QmRotationNoReparseComponents {
 
 function Resolve-QmRotationSid {
     param([Parameter(Mandatory = $true)][string]$AccountName)
+    if ($AccountName -match '^S-1-[0-9-]+$') {
+        return (New-Object System.Security.Principal.SecurityIdentifier($AccountName)).Value
+    }
     return (New-Object System.Security.Principal.NTAccount($AccountName)).Translate(
         [System.Security.Principal.SecurityIdentifier]
     ).Value
