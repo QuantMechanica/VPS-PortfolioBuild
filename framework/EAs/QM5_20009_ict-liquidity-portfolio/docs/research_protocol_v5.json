@@ -559,13 +559,13 @@
     },
     {
       "id": "registry_magic",
-      "path": "framework/registry/magic_numbers.csv",
-      "validation": "NONEMPTY"
+      "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/docs/registry_magic_20009.csv",
+      "validation": "MAGIC_REGISTRY_20009_EXACT"
     },
     {
       "id": "registry_ea_id",
-      "path": "framework/registry/ea_id_registry.csv",
-      "validation": "NONEMPTY"
+      "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/docs/registry_ea_id_20009.csv",
+      "validation": "EA_ID_REGISTRY_20009_EXACT"
     },
     {
       "id": "swap_baseline",

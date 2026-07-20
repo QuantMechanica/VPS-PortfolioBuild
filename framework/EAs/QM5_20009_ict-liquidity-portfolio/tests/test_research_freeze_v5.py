@@ -483,6 +483,68 @@ def test_missing_evidence_fails_before_generation() -> None:
         freeze.evidence_hashes(payload)
 
 
+def test_registry_evidence_is_scoped_to_ea_20009() -> None:
+    artifacts = {row["id"]: row for row in protocol()["evidence_artifacts"]}
+    assert artifacts["registry_ea_id"] == {
+        "id": "registry_ea_id",
+        "path": (
+            "framework/EAs/QM5_20009_ict-liquidity-portfolio/"
+            "docs/registry_ea_id_20009.csv"
+        ),
+        "validation": "EA_ID_REGISTRY_20009_EXACT",
+    }
+    assert artifacts["registry_magic"] == {
+        "id": "registry_magic",
+        "path": (
+            "framework/EAs/QM5_20009_ict-liquidity-portfolio/"
+            "docs/registry_magic_20009.csv"
+        ),
+        "validation": "MAGIC_REGISTRY_20009_EXACT",
+    }
+
+
+def test_ea_id_projection_ignores_foreign_append_but_rejects_target_drift(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    frozen = EA_ROOT / "docs" / "registry_ea_id_20009.csv"
+    live = tmp_path / "ea_id_registry.csv"
+    live.write_text(
+        frozen.read_text(encoding="utf-8")
+        + "29999,foreign-ea,FOREIGN,active,Development,2026-07-20\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(freeze, "EA_ID_REGISTRY", live)
+    freeze._validate_ea_id_registry_projection(frozen)
+    live.write_text(
+        frozen.read_text(encoding="utf-8").replace(
+            "Codex-OWNER-delegated", "Development"
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(freeze.FreezeError, match="differs for EA 20009"):
+        freeze._validate_ea_id_registry_projection(frozen)
+
+
+def test_magic_projection_ignores_foreign_append_but_rejects_collision(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    frozen = EA_ROOT / "docs" / "registry_magic_20009.csv"
+    live = tmp_path / "magic_numbers.csv"
+    live.write_text(
+        frozen.read_text(encoding="utf-8")
+        + "29999,foreign-ea,0,EURUSD.DWX,299990000,2026-07-20,Development,active\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(freeze, "MAGIC_NUMBER_REGISTRY", live)
+    freeze._validate_magic_registry_projection(frozen)
+    live.write_text(
+        frozen.read_text(encoding="utf-8").replace("200090005", "200090006"),
+        encoding="utf-8",
+    )
+    with pytest.raises(freeze.FreezeError, match="differs for EA 20009"):
+        freeze._validate_magic_registry_projection(frozen)
+
+
 def test_final_compile_provisioning_and_slippage_evidence_hashes_are_pinned() -> None:
     artifacts = {row["id"]: row for row in protocol()["evidence_artifacts"]}
     assert artifacts["ea_binary"]["expected_sha256"] == (

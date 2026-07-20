@@ -34,6 +34,8 @@ AUDITOR = EA_ROOT / "tools" / "audit_mt5_report.py"
 RESEARCH_LAUNCHER = EA_ROOT / "tools" / "run_research_phase.ps1"
 RESEARCH_LAUNCHER_SUPPORT = EA_ROOT / "tools" / "research_launcher_support.psm1"
 FRAMEWORK_INCLUDE_ROOT = REPO_ROOT / "framework" / "include"
+EA_ID_REGISTRY = REPO_ROOT / "framework" / "registry" / "ea_id_registry.csv"
+MAGIC_NUMBER_REGISTRY = REPO_ROOT / "framework" / "registry" / "magic_numbers.csv"
 
 MAGIC_RESOLVER_PATH = "framework/include/QM/QM_MagicResolver.mqh"
 MAGIC_RESOLVER_RELATIVE = "qm/qm_magicresolver.mqh"
@@ -44,6 +46,38 @@ TARGET_MAGIC_ROWS = (
     (20009, 3, "USDJPY.DWX", 200090003),
     (20009, 4, "XAUUSD.DWX", 200090004),
     (20009, 5, "EURUSD.DWX", 200090005),
+)
+EA_ID_REGISTRY_FIELDS = ("ea_id", "slug", "strategy_id", "status", "owner", "created_at")
+TARGET_EA_ID_REGISTRY_ROW = {
+    "ea_id": "20009",
+    "slug": "ict-liquidity-portfolio",
+    "strategy_id": "ICT-OFFICIAL-2022-2023-ICYTEA-2026",
+    "status": "active",
+    "owner": "Codex-OWNER-delegated",
+    "created_at": "2026-07-19",
+}
+MAGIC_REGISTRY_FIELDS = (
+    "ea_id",
+    "ea_slug",
+    "symbol_slot",
+    "symbol",
+    "magic",
+    "reserved_at",
+    "reserved_by",
+    "status",
+)
+TARGET_MAGIC_REGISTRY_ROWS = tuple(
+    {
+        "ea_id": str(ea_id),
+        "ea_slug": "ict-liquidity-portfolio",
+        "symbol_slot": str(slot),
+        "symbol": symbol,
+        "magic": str(magic),
+        "reserved_at": "2026-07-19",
+        "reserved_by": "Codex-OWNER-delegated",
+        "status": "active",
+    }
+    for ea_id, slot, symbol, magic in TARGET_MAGIC_ROWS
 )
 EXPECTED_MAGIC_EXCEPTION = {
     "path": MAGIC_RESOLVER_PATH,
@@ -763,6 +797,47 @@ def _manifest_path(path: Path, declared_path: str, overridden: bool) -> str:
     return path.resolve().as_posix()
 
 
+def _read_registry_rows(path: Path, fields: tuple[str, ...], context: str) -> list[dict[str, str]]:
+    try:
+        with path.open("r", encoding="utf-8-sig", newline="") as handle:
+            reader = csv.DictReader(handle)
+            if tuple(reader.fieldnames or ()) != fields:
+                raise FreezeError(f"{context} fields are not canonical: {path}")
+            rows = []
+            for raw in reader:
+                if None in raw or any(raw.get(field) is None for field in fields):
+                    raise FreezeError(f"{context} contains a malformed row: {path}")
+                rows.append({field: str(raw[field]) for field in fields})
+    except (OSError, UnicodeError, csv.Error) as exc:
+        raise FreezeError(f"cannot parse {context}: {path}") from exc
+    return rows
+
+
+def _validate_ea_id_registry_projection(path: Path) -> None:
+    expected = [TARGET_EA_ID_REGISTRY_ROW]
+    frozen = _read_registry_rows(path, EA_ID_REGISTRY_FIELDS, "EA-ID registry projection")
+    if frozen != expected:
+        raise FreezeError("EA-ID registry projection does not contain the exact EA 20009 allocation")
+    live = _read_registry_rows(EA_ID_REGISTRY, EA_ID_REGISTRY_FIELDS, "live EA-ID registry")
+    selected = [row for row in live if row["ea_id"] == "20009"]
+    if selected != expected:
+        raise FreezeError("live EA-ID registry differs for EA 20009")
+
+
+def _validate_magic_registry_projection(path: Path) -> None:
+    expected = list(TARGET_MAGIC_REGISTRY_ROWS)
+    frozen = _read_registry_rows(path, MAGIC_REGISTRY_FIELDS, "magic registry projection")
+    if frozen != expected:
+        raise FreezeError("magic registry projection does not contain the exact EA 20009 allocation")
+    live = _read_registry_rows(MAGIC_NUMBER_REGISTRY, MAGIC_REGISTRY_FIELDS, "live magic registry")
+    selected = sorted(
+        (row for row in live if row["ea_id"] == "20009"),
+        key=lambda row: int(row["symbol_slot"]),
+    )
+    if selected != expected:
+        raise FreezeError("live magic registry differs for EA 20009")
+
+
 def _validate_artifact_payload(artifact_id: str, validation: str, path: Path) -> None:
     if path.stat().st_size <= 0:
         raise FreezeError(f"mandatory evidence artifact empty: {artifact_id}: {path}")
@@ -792,6 +867,10 @@ def _validate_artifact_payload(artifact_id: str, validation: str, path: Path) ->
             raise FreezeError(f"compile evidence JSON invalid: {path}") from exc
         if payload.get("result") != "PASS" or payload.get("errors") != 0 or payload.get("warnings") != 0:
             raise FreezeError(f"compile evidence is not PASS/0/0: {path}")
+    elif validation == "EA_ID_REGISTRY_20009_EXACT":
+        _validate_ea_id_registry_projection(path)
+    elif validation == "MAGIC_REGISTRY_20009_EXACT":
+        _validate_magic_registry_projection(path)
     elif validation != "NONEMPTY":
         raise FreezeError(f"unknown evidence validation {validation!r} for {artifact_id}")
 
