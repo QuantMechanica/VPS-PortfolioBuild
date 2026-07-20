@@ -38,7 +38,13 @@ param(
     [int]$TesterDepositOverride = 0,
     [switch]$SmokeMode,
     [ValidateRange(0, 172800)]
-    [int]$ControllerTimeoutSeconds = 0
+    [int]$ControllerTimeoutSeconds = 0,
+    [Parameter(Mandatory = $true)]
+    [ValidatePattern('^[0-9a-f]{64}$')]
+    [string]$ExpectedCredentialSha256,
+    [Parameter(Mandatory = $true)]
+    [ValidatePattern('^[0-9a-f]{64}$')]
+    [string]$ExpectedHelperSha256
 )
 
 Set-StrictMode -Version Latest
@@ -46,7 +52,8 @@ $ErrorActionPreference = 'Stop'
 
 $script:Dev2Root = [System.IO.Path]::GetFullPath('D:\QM\mt5\DEV2')
 $script:Dev2ReportsRoot = [System.IO.Path]::GetFullPath('D:\QM\reports\dev2')
-$script:CredentialPath = 'C:\ProgramData\QM\DEV2\credential.clixml'
+$script:CredentialPath = 'C:\ProgramData\QM\DEV2\credential.machine-dpapi.json'
+$script:CredentialHelperPath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot 'dev2_machine_credential.ps1'))
 $script:Dev2UserName = 'QMDev2'
 $script:TaskPath = '\'
 $script:PwshPath = 'C:\Program Files\PowerShell\7\pwsh.exe'
@@ -54,6 +61,9 @@ $script:LaneContractPath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoo
 $script:ControllerMutexName = 'Global\QM_DEV2_SMOKE_CONTROLLER'
 $script:TaskNamePrefix = 'QM_DEV2_SMOKE_'
 $script:CleanupTaskNamePrefix = 'QM_DEV2_CLEANUP_'
+$script:ProfileTaskNamePrefix = 'QM_DEV2_PROFILE_INIT_'
+$script:CleanupActionMutexPrefix = 'Global\QM_DEV2_CLEANUP_ACTION_'
+$script:CleanupActionMutexWaitMilliseconds = 180000
 $script:CleanupHelperSourcePath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot 'cleanup_dev2_account_lease.ps1'))
 $script:CleanupLeaseGraceSeconds = 900
 $script:PerAttemptOverheadSeconds = 600
@@ -75,13 +85,22 @@ function Get-QmLaneContract {
     $contract = Get-Content -LiteralPath $script:LaneContractPath -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
     $expectedSymbols = @($script:AllowedSymbols | Sort-Object)
     $actualSymbols = @($contract.allowed_symbols | ForEach-Object { [string]$_ } | Sort-Object)
-    if ([int]$contract.schema_version -ne 2 -or [string]$contract.contract_id -cne 'QM_DEV2_ISOLATED_MT5_LANE_V2' -or
+    if ([int]$contract.schema_version -ne 3 -or [string]$contract.contract_id -cne 'QM_DEV2_ISOLATED_MT5_LANE_V3' -or
         [string]$contract.lane -cne 'DEV2' -or [string]$contract.source_lane -cne 'DEV1' -or
         [string]$contract.identity.local_user -cne $script:Dev2UserName -or
+        [string]$contract.identity.credential_format -cne 'QM_DEV2_MACHINE_DPAPI_CREDENTIAL' -or
+        [string]$contract.identity.dpapi_scope -cne 'LocalMachine' -or
+        -not [bool]$contract.identity.credential_acl.inheritance_protected -or
+        [string]$contract.identity.credential_acl.owner_sid -cne 'S-1-5-32-544' -or
+        [bool]$contract.identity.credential_acl.additional_readers -or
+        [string]::Join('|', @($contract.identity.credential_acl.exact_full_control_sids | ForEach-Object { [string]$_ } | Sort-Object)) -cne 'S-1-5-18|S-1-5-32-544' -or
+        -not (ConvertTo-QmFullPath -Path ([string]$contract.identity.credential)).Equals(
+            (ConvertTo-QmFullPath -Path $script:CredentialPath), [System.StringComparison]::OrdinalIgnoreCase) -or
         -not (ConvertTo-QmFullPath -Path ([string]$contract.paths.terminal_root)).Equals($script:Dev2Root, [System.StringComparison]::OrdinalIgnoreCase) -or
         -not (ConvertTo-QmFullPath -Path ([string]$contract.paths.report_root)).Equals($script:Dev2ReportsRoot, [System.StringComparison]::OrdinalIgnoreCase) -or
         [string]$contract.coordination.controller_mutex -cne $script:ControllerMutexName -or
         [string]$contract.coordination.task_prefix -cne $script:TaskNamePrefix -or
+        [string]$contract.coordination.profile_task_prefix -cne $script:ProfileTaskNamePrefix -or
         [string]::Join('|', $actualSymbols) -cne [string]::Join('|', $expectedSymbols)) {
         throw 'DEV2 lane contract drifted from the fixed controller isolation contract.'
     }
@@ -284,7 +303,8 @@ function Get-QmDev2IdentityContract {
     $allowedRootWriters = @($adminSid, $systemSid, $targetSid)
     Assert-QmHardenedAcl -Path $script:Dev2Root -AllowedWriterSids $allowedRootWriters -RequireProtected -RequiredModifySid $targetSid
     Assert-QmHardenedAcl -Path $script:Dev2ReportsRoot -AllowedWriterSids $allowedRootWriters -RequireProtected -RequiredModifySid $targetSid
-    Assert-QmHardenedAcl -Path $script:CredentialPath -AllowedWriterSids @($adminSid, $systemSid)
+    Assert-QmDev2CredentialExactAcl -Path ([System.IO.Path]::GetDirectoryName($script:CredentialPath)) -Directory
+    Assert-QmDev2CredentialExactAcl -Path $script:CredentialPath
 
     $profileKey = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\$targetSid"
     $profile = (Get-ItemProperty -LiteralPath $profileKey -Name ProfileImagePath -ErrorAction Stop).ProfileImagePath
@@ -380,10 +400,34 @@ function Restore-QmDev2ControllerAccountState {
 function Assert-QmNoDev2Tasks {
     $stale = @(Get-ScheduledTask -TaskPath $script:TaskPath -ErrorAction Stop | Where-Object {
         $_.TaskName.StartsWith($script:CleanupTaskNamePrefix, [System.StringComparison]::Ordinal) -or
-        $_.TaskName.StartsWith($script:TaskNamePrefix, [System.StringComparison]::Ordinal)
+        $_.TaskName.StartsWith($script:TaskNamePrefix, [System.StringComparison]::Ordinal) -or
+        $_.TaskName.StartsWith($script:ProfileTaskNamePrefix, [System.StringComparison]::Ordinal)
     })
     if ($stale.Count -ne 0) {
-        throw "DEV2 task preflight found $($stale.Count) stale smoke/cleanup task(s); refusing to enable the isolated account."
+        throw "DEV2 task preflight found $($stale.Count) stale smoke/cleanup/profile-init task(s); refusing to enable the isolated account."
+    }
+}
+
+function Assert-QmDev2ContainedBeforeCleanupLeaseDisarm {
+    param(
+        [Parameter(Mandatory = $true)]$AccountState,
+        [Parameter(Mandatory = $true)][string]$AllowedCleanupTaskName
+    )
+    $sid = New-Object System.Security.Principal.SecurityIdentifier([string]$AccountState.Sid)
+    $user = Get-LocalUser -SID $sid -ErrorAction Stop
+    $tasks = @(Get-ScheduledTask -TaskPath $script:TaskPath -ErrorAction Stop | Where-Object {
+        $_.TaskName.StartsWith($script:CleanupTaskNamePrefix, [System.StringComparison]::Ordinal) -or
+        $_.TaskName.StartsWith($script:TaskNamePrefix, [System.StringComparison]::Ordinal) -or
+        $_.TaskName.StartsWith($script:ProfileTaskNamePrefix, [System.StringComparison]::Ordinal)
+    })
+    $unexpectedTasks = @($tasks | Where-Object {
+        [string]$_.TaskName -cne $AllowedCleanupTaskName -or [string]$_.TaskPath -cne $script:TaskPath
+    })
+    if ($user.Name -cne $script:Dev2UserName -or $user.SID.Value -cne [string]$AccountState.Sid -or
+        $user.Enabled -or -not $user.PasswordRequired -or
+        @(Get-QmDev2IdentityProcesses -ExpectedOwnerSid ([string]$AccountState.Sid)).Count -ne 0 -or
+        @(Get-QmDev2Processes).Count -ne 0 -or $unexpectedTasks.Count -ne 0) {
+        throw 'DEV2 local containment is not disabled, process-free, and task-contained before cleanup-lease disarm.'
     }
 }
 
@@ -697,6 +741,79 @@ function Unregister-QmScheduledTaskExact {
     }
 }
 
+function Remove-QmScheduledTaskBounded {
+    param(
+        [Parameter(Mandatory = $true)][string]$TaskName,
+        [switch]$DisableBeforeStop,
+        [ValidateRange(10, 300000)][int]$TimeoutMilliseconds = 30000,
+        [ValidateRange(1, 5000)][int]$PollMilliseconds = 200
+    )
+    $task = Get-ScheduledTask -TaskName $TaskName -TaskPath $script:TaskPath -ErrorAction SilentlyContinue
+    if ($null -eq $task) { return }
+    if ($task.TaskName -cne $TaskName -or $task.TaskPath -cne $script:TaskPath) {
+        throw "Bounded DEV2 task drain observed identity drift: $TaskName"
+    }
+    if ($DisableBeforeStop.IsPresent) {
+        Disable-ScheduledTask -TaskName $TaskName -TaskPath $script:TaskPath -ErrorAction Stop | Out-Null
+        $task = Get-ScheduledTask -TaskName $TaskName -TaskPath $script:TaskPath -ErrorAction SilentlyContinue
+    }
+    if ($null -ne $task -and $task.State.ToString() -eq 'Running') {
+        Stop-ScheduledTask -TaskName $TaskName -TaskPath $script:TaskPath -ErrorAction Stop
+    }
+    $nonRunningDeadline = [DateTimeOffset]::UtcNow.AddMilliseconds($TimeoutMilliseconds)
+    do {
+        $task = Get-ScheduledTask -TaskName $TaskName -TaskPath $script:TaskPath -ErrorAction SilentlyContinue
+        if ($null -eq $task -or $task.State.ToString() -ne 'Running') { break }
+        Start-Sleep -Milliseconds $PollMilliseconds
+    } while ([DateTimeOffset]::UtcNow -lt $nonRunningDeadline)
+    if ($null -ne $task -and $task.State.ToString() -eq 'Running') {
+        throw "Bounded DEV2 task drain timed out waiting for non-running state: $TaskName"
+    }
+    if ($null -ne $task) {
+        Unregister-ScheduledTask -TaskName $TaskName -TaskPath $script:TaskPath -Confirm:$false -ErrorAction Stop
+    }
+    $absenceDeadline = [DateTimeOffset]::UtcNow.AddMilliseconds($TimeoutMilliseconds)
+    do {
+        $task = Get-ScheduledTask -TaskName $TaskName -TaskPath $script:TaskPath -ErrorAction SilentlyContinue
+        if ($null -eq $task) { break }
+        Start-Sleep -Milliseconds $PollMilliseconds
+    } while ([DateTimeOffset]::UtcNow -lt $absenceDeadline)
+    if ($null -ne $task) {
+        throw "Bounded DEV2 task drain timed out waiting for task absence: $TaskName"
+    }
+}
+
+function Enter-QmCleanupActionMutex {
+    param([Parameter(Mandatory = $true)][string]$Name)
+    if ($Name -cnotmatch '^Global\\QM_DEV2_CLEANUP_ACTION_[0-9a-f]{32}$') {
+        throw 'Cleanup action mutex name drifted from its per-run nonce binding.'
+    }
+    $actionMutex = New-Object System.Threading.Mutex($false, $Name)
+    try {
+        $acquired = $false
+        try {
+            $acquired = [bool]$actionMutex.WaitOne($script:CleanupActionMutexWaitMilliseconds)
+        } catch {
+            $cursor = $_.Exception
+            while ($null -ne $cursor) {
+                if ($cursor -is [System.Threading.AbandonedMutexException]) {
+                    $acquired = $true
+                    break
+                }
+                $cursor = $cursor.InnerException
+            }
+            if (-not $acquired) { throw }
+        }
+        if (-not $acquired) {
+            throw 'Timed out waiting for the per-run DEV2 cleanup action to finish.'
+        }
+        return $actionMutex
+    } catch {
+        $actionMutex.Dispose()
+        throw
+    }
+}
+
 function Write-QmRequestFile {
     param(
         [Parameter(Mandatory = $true)][hashtable]$Request,
@@ -754,6 +871,115 @@ function Assert-QmImmediateCleanupDisarmReceipt {
     }
 }
 
+function Read-QmExactImmediateCleanupEvidence {
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('QM_DEV2_ACCOUNT_CLEANUP_RESULT', 'QM_DEV2_ACCOUNT_CLEANUP_DISARM_RESULT')]
+        [string]$ArtifactType
+    )
+    Assert-QmNoReparseComponents -Path $Path
+    $expectedFields = if ($ArtifactType -ceq 'QM_DEV2_ACCOUNT_CLEANUP_RESULT') {
+        @(
+            'account_restored_disabled', 'artifact_type', 'cleanup_task_name', 'cleanup_task_registered',
+            'completed_utc', 'containment_verified', 'dev2_root_process_count', 'expected_sid', 'failures',
+            'lease_disarmed', 'manifest_valid', 'owner_process_count', 'schema_version', 'success',
+            'target_task_name', 'target_task_registered'
+        )
+    } else {
+        @(
+            'account_restored_disabled', 'artifact_type', 'cleanup_task_name', 'cleanup_task_registered',
+            'completed_utc', 'containment_result_path', 'containment_verified', 'dev2_root_process_count',
+            'expected_sid', 'failures', 'lease_disarmed', 'owner_process_count', 'schema_version', 'success',
+            'target_task_name', 'target_task_registered'
+        )
+    }
+    $raw = [System.IO.File]::ReadAllText((ConvertTo-QmFullPath -Path $Path))
+    $document = [System.Text.Json.JsonDocument]::Parse($raw)
+    try {
+        if ($document.RootElement.ValueKind -ne [System.Text.Json.JsonValueKind]::Object) {
+            throw 'Immediate cleanup evidence is not a JSON object.'
+        }
+        $actualFields = New-Object System.Collections.Generic.List[string]
+        $seen = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::Ordinal)
+        foreach ($property in $document.RootElement.EnumerateObject()) {
+            if (-not $seen.Add($property.Name)) { throw 'Immediate cleanup evidence has duplicate fields.' }
+            $actualFields.Add($property.Name)
+        }
+        $schema = $document.RootElement.GetProperty('schema_version')
+        $ownerCount = $document.RootElement.GetProperty('owner_process_count')
+        $rootCount = $document.RootElement.GetProperty('dev2_root_process_count')
+        $failures = $document.RootElement.GetProperty('failures')
+        $completed = $document.RootElement.GetProperty('completed_utc')
+        if ([string]::Join('|', @($actualFields.ToArray() | Sort-Object)) -cne
+                [string]::Join('|', @($expectedFields | Sort-Object)) -or
+            $schema.ValueKind -ne [System.Text.Json.JsonValueKind]::Number -or $schema.GetRawText() -cne '1' -or
+            $ownerCount.ValueKind -ne [System.Text.Json.JsonValueKind]::Number -or $ownerCount.GetRawText() -cne '0' -or
+            $rootCount.ValueKind -ne [System.Text.Json.JsonValueKind]::Number -or $rootCount.GetRawText() -cne '0' -or
+            $failures.ValueKind -ne [System.Text.Json.JsonValueKind]::Array -or $failures.GetArrayLength() -ne 0 -or
+            $completed.ValueKind -ne [System.Text.Json.JsonValueKind]::String) {
+            throw 'Immediate cleanup evidence fields or primitive JSON types drifted.'
+        }
+        $booleanFields = @(
+            'success', 'containment_verified', 'lease_disarmed', 'account_restored_disabled',
+            'target_task_registered', 'cleanup_task_registered'
+        )
+        if ($ArtifactType -ceq 'QM_DEV2_ACCOUNT_CLEANUP_RESULT') { $booleanFields += 'manifest_valid' }
+        foreach ($field in $booleanFields) {
+            $kind = $document.RootElement.GetProperty($field).ValueKind
+            if ($kind -notin @([System.Text.Json.JsonValueKind]::True, [System.Text.Json.JsonValueKind]::False)) {
+                throw "Immediate cleanup evidence field is not a JSON Boolean: $field"
+            }
+        }
+    } finally {
+        $document.Dispose()
+    }
+    $payload = $raw | ConvertFrom-Json -DateKind String -ErrorAction Stop
+    $completedUtc = [DateTimeOffset]::MinValue
+    if (-not [DateTimeOffset]::TryParseExact([string]$payload.completed_utc, 'o', [cultureinfo]::InvariantCulture,
+            [System.Globalization.DateTimeStyles]::RoundtripKind, [ref]$completedUtc) -or
+        $completedUtc.Offset -ne [TimeSpan]::Zero -or $completedUtc -gt [DateTimeOffset]::UtcNow.AddMinutes(5)) {
+        throw 'Immediate cleanup evidence completed_utc is invalid.'
+    }
+    return $payload
+}
+
+function Assert-QmCleanupEvidenceAfterActionFence {
+    param(
+        [Parameter(Mandatory = $true)][string]$ResultPath,
+        [Parameter(Mandatory = $true)][string]$DisarmPath,
+        [Parameter(Mandatory = $true)][string]$ExpectedSid,
+        [Parameter(Mandatory = $true)][string]$ExpectedTargetTaskName,
+        [Parameter(Mandatory = $true)][string]$ExpectedCleanupTaskName
+    )
+    $resultExists = Test-Path -LiteralPath $ResultPath -PathType Leaf
+    $disarmExists = Test-Path -LiteralPath $DisarmPath -PathType Leaf
+    if ($disarmExists -and -not $resultExists) {
+        throw 'Cleanup disarm evidence exists without its preceding containment result.'
+    }
+    if ($resultExists) {
+        $result = Read-QmExactImmediateCleanupEvidence -Path $ResultPath `
+            -ArtifactType 'QM_DEV2_ACCOUNT_CLEANUP_RESULT'
+        if ([string]$result.artifact_type -cne 'QM_DEV2_ACCOUNT_CLEANUP_RESULT' -or
+            [string]$result.expected_sid -cne $ExpectedSid -or
+            [string]$result.target_task_name -cne $ExpectedTargetTaskName -or
+            [string]$result.cleanup_task_name -cne $ExpectedCleanupTaskName -or
+            -not [bool]$result.success -or -not [bool]$result.containment_verified -or
+            [bool]$result.lease_disarmed -or -not [bool]$result.manifest_valid -or
+            -not [bool]$result.account_restored_disabled -or [bool]$result.target_task_registered -or
+            -not [bool]$result.cleanup_task_registered) {
+            throw 'Existing cleanup containment result is failed, malformed, or identity-drifted.'
+        }
+    }
+    if ($disarmExists) {
+        $disarm = Read-QmExactImmediateCleanupEvidence -Path $DisarmPath `
+            -ArtifactType 'QM_DEV2_ACCOUNT_CLEANUP_DISARM_RESULT'
+        Assert-QmImmediateCleanupDisarmReceipt -Receipt $disarm -ExpectedSid $ExpectedSid `
+            -ExpectedTargetTaskName $ExpectedTargetTaskName -ExpectedCleanupTaskName $ExpectedCleanupTaskName `
+            -ExpectedContainmentResultPath $ResultPath
+    }
+}
+
 $mutex = $null
 $mutexAcquired = $false
 $taskRegistered = $false
@@ -763,6 +989,8 @@ $cleanupTaskName = $null
 $cleanupLeaseDisarmed = $false
 $cleanupHelperSha256 = $null
 $cleanupLeasePath = $null
+$cleanupActionMutexName = $null
+$cleanupActionMutex = $null
 $credential = $null
 $identityContract = $null
 $plainPassword = $null
@@ -778,6 +1006,8 @@ $laneContractSha256 = $null
 $programSha256 = $null
 $runSmokeSha256 = $null
 $childSha256 = $null
+$machineCredentialSha256 = $null
+$machineCredentialHelperSha256 = $null
 $dev2AccountState = $null
 $dev2AccountEnabledByController = $false
 $dev2AccountRestoredDisabled = $false
@@ -809,8 +1039,18 @@ try {
         }
     }
 
-    foreach ($requiredRoot in @($script:Dev2ReportsRoot, $script:CredentialPath, $script:PwshPath, $script:CleanupHelperSourcePath, $script:TesterGroupsCanonicalPath)) {
+    foreach ($requiredRoot in @($script:Dev2ReportsRoot, $script:CredentialPath, $script:CredentialHelperPath, $script:PwshPath, $script:CleanupHelperSourcePath, $script:TesterGroupsCanonicalPath)) {
         Assert-QmNoReparseComponents -Path $requiredRoot
+    }
+    $machineCredentialHelperSha256 = (Get-FileHash -LiteralPath $script:CredentialHelperPath -Algorithm SHA256 -ErrorAction Stop).Hash.ToLowerInvariant()
+    if ($machineCredentialHelperSha256 -cne $ExpectedHelperSha256) {
+        throw 'DEV2 machine-credential helper SHA-256 differs from the expected controller binding.'
+    }
+    . $script:CredentialHelperPath
+    Assert-QmDev2CredentialHelperBinding -HelperPath $script:CredentialHelperPath -ExpectedSha256 $ExpectedHelperSha256 | Out-Null
+    $machineCredentialSha256 = (Get-FileHash -LiteralPath $script:CredentialPath -Algorithm SHA256 -ErrorAction Stop).Hash.ToLowerInvariant()
+    if ($machineCredentialSha256 -cne $ExpectedCredentialSha256) {
+        throw 'DEV2 machine credential SHA-256 differs from the expected controller binding.'
     }
     $repoRoot = ConvertTo-QmFullPath -Path (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
     $runSmokePath = Join-Path $PSScriptRoot 'run_smoke.ps1'
@@ -837,19 +1077,10 @@ try {
     Assert-QmNoDev2Processes -Stage 'controller preflight'
     Assert-QmNoDev2IdentityProcesses -ExpectedOwnerSid $identityContract.Sid -Stage 'controller preflight'
 
-    $credentialObject = Import-Clixml -LiteralPath $script:CredentialPath -ErrorAction Stop
-    if ($credentialObject -isnot [System.Management.Automation.PSCredential]) {
-        throw 'credential.clixml does not contain a PSCredential.'
-    }
-    $credentialSid = Resolve-QmAccountSid -AccountName $credentialObject.UserName
-    if ($credentialSid -ne $identityContract.Sid) {
-        throw 'credential.clixml is not bound to the local QMDev2 account.'
-    }
-    $credential = $credentialObject
-    $plainPassword = $credential.GetNetworkCredential().Password
-    if ([string]::IsNullOrEmpty($plainPassword)) {
-        throw 'The QMDev2 Scheduled Task credential has an empty password.'
-    }
+    $null = Read-QmDev2MachineCredentialEnvelope -CredentialPath $script:CredentialPath `
+        -ExpectedCredentialSha256 $ExpectedCredentialSha256 -ExpectedAccount $identityContract.Account `
+        -ExpectedSid $identityContract.Sid -ContractId ([string]$laneContract.contract_id) `
+        -Lane ([string]$laneContract.lane)
 
     $runId = '{0}_{1}' -f (Get-Date).ToUniversalTime().ToString('yyyyMMddTHHmmssZ'), [guid]::NewGuid().ToString('N')
     $runDirectory = Join-Path $script:Dev2ReportsRoot "runs\$runId"
@@ -869,6 +1100,7 @@ try {
     $resultPath = Join-Path $outputDirectory 'result.json'
     $logPath = Join-Path $outputDirectory 'run.log'
     $nonce = [guid]::NewGuid().ToString('N')
+    $cleanupActionMutexName = "$($script:CleanupActionMutexPrefix)$nonce"
     $taskName = "$($script:TaskNamePrefix)$([guid]::NewGuid().ToString('N'))"
     $maximumRunAttempts = [Math]::Min(10, ($Runs + 2))
     $minimumControllerTimeout = Get-QmMinimumDev2ControllerTimeoutSeconds `
@@ -920,6 +1152,10 @@ try {
         controller_mutex = $script:ControllerMutexName
         lane_contract_path = $script:LaneContractPath
         lane_contract_sha256 = $laneContractSha256
+        machine_credential_path = $script:CredentialPath
+        machine_credential_sha256 = $machineCredentialSha256
+        machine_credential_helper_path = $script:CredentialHelperPath
+        machine_credential_helper_sha256 = $machineCredentialHelperSha256
         child_path = $childPath
         child_sha256 = $childSha256
         run_smoke_path = $runSmokePath
@@ -963,6 +1199,7 @@ try {
         dev2_root = $script:Dev2Root
         target_task_name = $taskName
         cleanup_task_name = $cleanupTaskName
+        cleanup_action_mutex = $cleanupActionMutexName
         helper_path = $cleanupHelperPath
         helper_sha256 = $cleanupHelperSha256
         tester_groups_source_path = $cleanupGroupsSourcePath
@@ -974,8 +1211,8 @@ try {
     Write-QmRequestFile -Request $cleanupLease -Path $cleanupLeasePath
     Assert-QmNoReparseComponents -Path $cleanupLeasePath
 
-    $cleanupActionArguments = '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "{0}" -LeasePath "{1}" -ExpectedSid "{2}" -TargetTaskName "{3}" -CleanupTaskName "{4}" -ExpectedHelperSha256 "{5}"' -f `
-        $cleanupHelperPath, $cleanupLeasePath, $identityContract.Sid, $taskName, $cleanupTaskName, $cleanupHelperSha256
+    $cleanupActionArguments = '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "{0}" -LeasePath "{1}" -ExpectedSid "{2}" -TargetTaskName "{3}" -CleanupTaskName "{4}" -CleanupActionMutex "{5}" -ExpectedHelperSha256 "{6}"' -f `
+        $cleanupHelperPath, $cleanupLeasePath, $identityContract.Sid, $taskName, $cleanupTaskName, $cleanupActionMutexName, $cleanupHelperSha256
     $cleanupAction = New-ScheduledTaskAction -Execute $script:PwshPath -Argument $cleanupActionArguments -WorkingDirectory $runDirectory
     $cleanupTriggers = @(
         (New-ScheduledTaskTrigger -AtStartup),
@@ -992,6 +1229,14 @@ try {
     Assert-QmRegisteredCleanupTaskContract -TaskName $cleanupTaskName -ExpectedArguments $cleanupActionArguments `
         -ExpectedHelperPath $cleanupHelperPath -ExpectedWorkingDirectory $runDirectory -ExpectedExpiryUtc $cleanupExpiresUtc
 
+    $credential = Get-QmDev2MachineCredential -CredentialPath $script:CredentialPath `
+        -ExpectedCredentialSha256 $ExpectedCredentialSha256 -ExpectedAccount $identityContract.Account `
+        -ExpectedSid $identityContract.Sid -ContractId ([string]$laneContract.contract_id) `
+        -Lane ([string]$laneContract.lane)
+    $plainPassword = $credential.GetNetworkCredential().Password
+    if ([string]::IsNullOrEmpty($plainPassword)) {
+        throw 'The DEV2 machine credential decrypted an empty task password.'
+    }
     $dev2AccountEnabledByController = Enable-QmDev2ControllerAccountState -State $dev2AccountState
 
     $actionArguments = '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "{0}" -RunDirectory "{1}"' -f $childPath, $runDirectory
@@ -1003,6 +1248,7 @@ try {
         -Description "Ephemeral isolated DEV2 smoke $runId" -ErrorAction Stop | Out-Null
     $taskRegistered = $true
     $plainPassword = $null
+    $credential.Password.Dispose()
     $credential = $null
 
     Assert-QmRegisteredTaskContract -TaskName $taskName -ExpectedAccount $identityContract.Account `
@@ -1045,6 +1291,8 @@ try {
         [string]$result.expected_task_name -cne $taskName -or
         [string]$result.controller_mutex -cne $script:ControllerMutexName -or
         [string]$result.lane_contract_sha256 -cne $laneContractSha256 -or
+        [string]$result.machine_credential_sha256 -cne $machineCredentialSha256 -or
+        [string]$result.machine_credential_helper_sha256 -cne $machineCredentialHelperSha256 -or
         [string]$result.child_sha256 -cne $childSha256 -or
         [string]$result.run_smoke_sha256 -cne $runSmokeSha256) {
         throw 'DEV2 result identity/task/mutex/script hash binding mismatch.'
@@ -1106,15 +1354,17 @@ try {
     $primaryError = $_
 } finally {
     $plainPassword = $null
+    if ($null -ne $credential) {
+        try { $credential.Password.Dispose() } catch { }
+    }
     $credential = $null
     if (-not [string]::IsNullOrWhiteSpace($taskName)) {
-        try { Stop-QmScheduledTaskExact -TaskName $taskName } catch { $cleanupErrors.Add("task_stop: $($_.Exception.Message)") }
+        try {
+            Remove-QmScheduledTaskBounded -TaskName $taskName -DisableBeforeStop
+        } catch { $cleanupErrors.Add("task_drain: $($_.Exception.Message)") }
     }
     if ($null -ne $dev2AccountState) {
         try { Stop-QmDev2ProcessesExact -ExpectedOwnerSid ([string]$dev2AccountState.Sid) } catch { $cleanupErrors.Add("process_cleanup: $($_.Exception.Message)") }
-    }
-    if (-not [string]::IsNullOrWhiteSpace($taskName)) {
-        try { Unregister-QmScheduledTaskExact -TaskName $taskName } catch { $cleanupErrors.Add("task_unregister: $($_.Exception.Message)") }
     }
     if ($null -ne $identityContract) {
         try { $testerGroupsRestoredSha256 = Restore-QmDev2TesterGroupsCanonical } catch { $cleanupErrors.Add("tester_groups_restore: $($_.Exception.Message)") }
@@ -1124,10 +1374,20 @@ try {
             $dev2AccountRestoredDisabled = Restore-QmDev2ControllerAccountState -State $dev2AccountState
         } catch { $cleanupErrors.Add("account_restore: $($_.Exception.Message)") }
     }
+    if ($null -ne $dev2AccountState -and -not [string]::IsNullOrWhiteSpace($cleanupTaskName)) {
+        try {
+            Stop-QmDev2ProcessesExact -ExpectedOwnerSid ([string]$dev2AccountState.Sid)
+            Assert-QmDev2ContainedBeforeCleanupLeaseDisarm -AccountState $dev2AccountState `
+                -AllowedCleanupTaskName $cleanupTaskName
+        } catch { $cleanupErrors.Add("containment_reassert: $($_.Exception.Message)") }
+    }
     if ($cleanupTaskRegistered -and -not [string]::IsNullOrWhiteSpace($cleanupTaskName) -and $cleanupErrors.Count -eq 0) {
         try {
-            Stop-QmScheduledTaskExact -TaskName $cleanupTaskName
-            Unregister-QmScheduledTaskExact -TaskName $cleanupTaskName
+            Remove-QmScheduledTaskBounded -TaskName $cleanupTaskName -DisableBeforeStop
+            $cleanupActionMutex = Enter-QmCleanupActionMutex -Name $cleanupActionMutexName
+            Assert-QmCleanupEvidenceAfterActionFence -ResultPath $cleanupResultPath `
+                -DisarmPath $cleanupDisarmResultPath -ExpectedSid ([string]$dev2AccountState.Sid) `
+                -ExpectedTargetTaskName $taskName -ExpectedCleanupTaskName $cleanupTaskName
             $cleanupLeaseDisarmed = $true
         } catch {
             $cleanupErrors.Add("cleanup_lease_disarm: $($_.Exception.Message)")
@@ -1154,11 +1414,10 @@ try {
             if (-not (Test-Path -LiteralPath $cleanupDisarmResultPath -PathType Leaf)) {
                 throw 'Immediate SYSTEM cleanup lease did not produce a disarm result within two minutes; retry lease remains armed.'
             }
-            $immediateCleanup = Get-Content -LiteralPath $cleanupDisarmResultPath -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
-            Assert-QmImmediateCleanupDisarmReceipt -Receipt $immediateCleanup `
-                -ExpectedSid ([string]$dev2AccountState.Sid) `
-                -ExpectedTargetTaskName $taskName -ExpectedCleanupTaskName $cleanupTaskName `
-                -ExpectedContainmentResultPath $cleanupResultPath
+            $cleanupActionMutex = Enter-QmCleanupActionMutex -Name $cleanupActionMutexName
+            Assert-QmCleanupEvidenceAfterActionFence -ResultPath $cleanupResultPath `
+                -DisarmPath $cleanupDisarmResultPath -ExpectedSid ([string]$dev2AccountState.Sid) `
+                -ExpectedTargetTaskName $taskName -ExpectedCleanupTaskName $cleanupTaskName
             $postCleanupUser = Get-LocalUser -SID (New-Object System.Security.Principal.SecurityIdentifier([string]$dev2AccountState.Sid)) -ErrorAction Stop
             $postCleanupOwnerProcesses = @(Get-QmDev2IdentityProcesses -ExpectedOwnerSid ([string]$dev2AccountState.Sid))
             $postCleanupRootProcesses = @(Get-QmDev2Processes)
@@ -1171,6 +1430,16 @@ try {
             }
         } catch {
             $cleanupErrors.Add("cleanup_lease_immediate_start: $($_.Exception.Message)")
+        }
+    }
+    if ($null -ne $cleanupActionMutex) {
+        try {
+            $cleanupActionMutex.ReleaseMutex()
+        } catch {
+            $cleanupErrors.Add("cleanup_action_mutex_release: $($_.Exception.Message)")
+        } finally {
+            $cleanupActionMutex.Dispose()
+            $cleanupActionMutex = $null
         }
     }
     if ($cleanupErrors.Count -gt 0) {
@@ -1197,6 +1466,8 @@ $finalResult | Add-Member -NotePropertyName dev2_account_initially_enabled -Note
 $finalResult | Add-Member -NotePropertyName dev2_account_enabled_by_controller -NotePropertyValue ([bool]$dev2AccountEnabledByController) -Force
 $finalResult | Add-Member -NotePropertyName dev2_account_restored_disabled -NotePropertyValue ([bool]$dev2AccountRestoredDisabled) -Force
 $finalResult | Add-Member -NotePropertyName cleanup_helper_sha256 -NotePropertyValue $cleanupHelperSha256 -Force
+$finalResult | Add-Member -NotePropertyName machine_credential_sha256 -NotePropertyValue $machineCredentialSha256 -Force
+$finalResult | Add-Member -NotePropertyName machine_credential_helper_sha256 -NotePropertyValue $machineCredentialHelperSha256 -Force
 $finalResult | Add-Member -NotePropertyName cleanup_lease_registered -NotePropertyValue ([bool]$cleanupTaskRegistered) -Force
 $finalResult | Add-Member -NotePropertyName cleanup_lease_disarmed -NotePropertyValue ([bool]$cleanupLeaseDisarmed) -Force
 

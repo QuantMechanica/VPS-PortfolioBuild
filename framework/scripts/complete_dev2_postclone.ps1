@@ -21,12 +21,13 @@ $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
 $contractPath = [System.IO.Path]::GetFullPath((Join-Path $repoRoot 'framework\registry\dev2_lane_contract.json'))
 $initializerPath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot 'initialize_dev2_profile.ps1'))
 $lsaRightsPath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot 'dev2_lsa_rights.ps1'))
+$credentialHelperPath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot 'dev2_machine_credential.ps1'))
 $pwshPath = 'C:\Program Files\PowerShell\7\pwsh.exe'
 $sourceRoot = [System.IO.Path]::GetFullPath('D:\QM\mt5\DEV1')
 $terminalRoot = [System.IO.Path]::GetFullPath('D:\QM\mt5\DEV2')
 $reportRoot = [System.IO.Path]::GetFullPath('D:\QM\reports\dev2')
 $provisioningRoot = [System.IO.Path]::GetFullPath('D:\QM\reports\dev2\provisioning')
-$credentialPath = [System.IO.Path]::GetFullPath('C:\ProgramData\QM\DEV2\credential.clixml')
+$credentialPath = [System.IO.Path]::GetFullPath('C:\ProgramData\QM\DEV2\credential.machine-dpapi.json')
 $expectedAccount = "$env:COMPUTERNAME\QMDev2"
 $controllerMutexName = 'Global\QM_DEV2_SMOKE_CONTROLLER'
 $provisionMutexName = 'Global\QM_DEV2_PROVISION'
@@ -620,12 +621,19 @@ if (-not (Test-QmPathWithin -Path $ExpectedProvisioningDirectory -Root $provisio
     [System.IO.Path]::GetFileName($ExpectedProvisioningDirectory) -notmatch '^[0-9]{8}T[0-9]{6}Z$') {
     throw 'ExpectedProvisioningDirectory escaped the fixed timestamped DEV2 provisioning root.'
 }
-foreach ($fixedPath in @($contractPath, $initializerPath, $lsaRightsPath, $sourceRoot, $terminalRoot, $reportRoot,
+foreach ($fixedPath in @($contractPath, $initializerPath, $lsaRightsPath, $credentialHelperPath, $sourceRoot, $terminalRoot, $reportRoot,
         $ExpectedProvisioningDirectory, $credentialPath, $pwshPath)) {
     Assert-QmNoReparseComponents -Path $fixedPath
 }
 $contract = Get-Content -LiteralPath $contractPath -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
-if ([int]$contract.schema_version -ne 2 -or [string]$contract.contract_id -cne 'QM_DEV2_ISOLATED_MT5_LANE_V2' -or
+if ([int]$contract.schema_version -ne 3 -or [string]$contract.contract_id -cne 'QM_DEV2_ISOLATED_MT5_LANE_V3' -or
+    [string]$contract.identity.credential_format -cne 'QM_DEV2_MACHINE_DPAPI_CREDENTIAL' -or
+    [string]$contract.identity.dpapi_scope -cne 'LocalMachine' -or
+    -not (ConvertTo-QmFullPath -Path ([string]$contract.identity.credential)).Equals($credentialPath, [System.StringComparison]::OrdinalIgnoreCase) -or
+    -not [bool]$contract.identity.credential_acl.inheritance_protected -or
+    [string]$contract.identity.credential_acl.owner_sid -cne 'S-1-5-32-544' -or
+    [bool]$contract.identity.credential_acl.additional_readers -or
+    [string]::Join('|', @($contract.identity.credential_acl.exact_full_control_sids | ForEach-Object { [string]$_ } | Sort-Object)) -cne 'S-1-5-18|S-1-5-32-544' -or
     [string]$contract.coordination.controller_mutex -cne $controllerMutexName -or
     [string]$contract.coordination.provision_mutex -cne $provisionMutexName -or
     [string]$contract.coordination.source_quiescence_mutex -cne $sourceMutexName -or
@@ -639,6 +647,7 @@ if ([int]$contract.schema_version -ne 2 -or [string]$contract.contract_id -cne '
     throw 'DEV2 lane contract drifted before exact post-clone completion.'
 }
 . $lsaRightsPath
+. $credentialHelperPath
 
 if (-not $Apply) {
     $user = Get-LocalUser -Name 'QMDev2' -ErrorAction SilentlyContinue
@@ -686,15 +695,14 @@ try {
     Assert-QmPhysicalTree -Root $terminalRoot
     Assert-QmAcl -Path $terminalRoot -AllowedWriterSids @($adminSid, $systemSid, $ExpectedSid) -RequireProtected -RequiredModifySid $ExpectedSid
     Assert-QmAcl -Path $reportRoot -AllowedWriterSids @($adminSid, $systemSid, $ExpectedSid) -RequireProtected -RequiredModifySid $ExpectedSid
-    Assert-QmAcl -Path $credentialPath -AllowedWriterSids @($adminSid, $systemSid) -RequireProtected
+    Assert-QmDev2CredentialExactAcl -Path ([System.IO.Path]::GetDirectoryName($credentialPath)) -Directory
+    Assert-QmDev2CredentialExactAcl -Path $credentialPath
     $firewall = @(Assert-QmFirewall)
     $priorFailure = @(Get-QmPriorFailureEvidence)
-    $credential = Import-Clixml -LiteralPath $credentialPath -ErrorAction Stop
-    if ($credential -isnot [System.Management.Automation.PSCredential] -or
-        (Resolve-QmAccountSid -AccountName $credential.UserName) -cne $ExpectedSid -or
-        [string]::IsNullOrEmpty($credential.GetNetworkCredential().Password)) {
-        throw 'DEV2 DPAPI credential is not bound to the exact expected identity.'
-    }
+    $credentialSha256 = (Get-FileHash -LiteralPath $credentialPath -Algorithm SHA256 -ErrorAction Stop).Hash.ToLowerInvariant()
+    $credential = Get-QmDev2MachineCredential -CredentialPath $credentialPath `
+        -ExpectedCredentialSha256 $credentialSha256 -ExpectedAccount $expectedAccount -ExpectedSid $ExpectedSid `
+        -ContractId ([string]$contract.contract_id) -Lane ([string]$contract.lane)
     $clone = Test-QmCloneHashes -Contract $contract
     Assert-QmSourceQuiescent
 
@@ -724,6 +732,7 @@ try {
         }
         $profileTask = Invoke-QmProfileTask -Credential $credential
     }
+    if ($null -ne $credential) { $credential.Password.Dispose() }
     $credential = $null
     Assert-QmNoDenyBatchPolicy
     Disable-LocalUser -Name 'QMDev2' -ErrorAction Stop
@@ -781,6 +790,10 @@ try {
             common_path = $profileTask.common_path
             credential_path = $credentialPath
             credential_sha256 = (Get-FileHash -LiteralPath $credentialPath -Algorithm SHA256).Hash.ToLowerInvariant()
+            credential_format = [string]$contract.identity.credential_format
+            dpapi_scope = [string]$contract.identity.dpapi_scope
+            credential_helper_path = $credentialHelperPath
+            credential_helper_sha256 = (Get-FileHash -LiteralPath $credentialHelperPath -Algorithm SHA256).Hash.ToLowerInvariant()
         }
         coordination = $contract.coordination
         source_quiescence = [ordered]@{
@@ -851,6 +864,9 @@ try {
             smoke_status = 'PENDING'
         } | ConvertTo-Json -Depth 5 -Compress)
 } finally {
+    if ($null -ne $credential) {
+        try { $credential.Password.Dispose() } catch { }
+    }
     $credential = $null
     if (-not $completed) {
         $user = Get-LocalUser -Name 'QMDev2' -ErrorAction SilentlyContinue

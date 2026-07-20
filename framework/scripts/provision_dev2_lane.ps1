@@ -13,12 +13,13 @@ $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
 $contractPath = Join-Path $repoRoot 'framework\registry\dev2_lane_contract.json'
 $profileInitializerPath = Join-Path $PSScriptRoot 'initialize_dev2_profile.ps1'
 $lsaRightsPath = Join-Path $PSScriptRoot 'dev2_lsa_rights.ps1'
+$credentialHelperPath = Join-Path $PSScriptRoot 'dev2_machine_credential.ps1'
 $pwshPath = 'C:\Program Files\PowerShell\7\pwsh.exe'
 $fixedSourceRoot = [System.IO.Path]::GetFullPath('D:\QM\mt5\DEV1')
 $fixedTerminalRoot = [System.IO.Path]::GetFullPath('D:\QM\mt5\DEV2')
 $fixedReportRoot = [System.IO.Path]::GetFullPath('D:\QM\reports\dev2')
 $fixedProvisioningRoot = [System.IO.Path]::GetFullPath('D:\QM\reports\dev2\provisioning')
-$fixedCredentialPath = [System.IO.Path]::GetFullPath('C:\ProgramData\QM\DEV2\credential.clixml')
+$fixedCredentialPath = [System.IO.Path]::GetFullPath('C:\ProgramData\QM\DEV2\credential.machine-dpapi.json')
 
 function ConvertTo-QmFullPath {
     param([Parameter(Mandatory = $true)][string]$Path)
@@ -485,7 +486,11 @@ if (-not (Test-Path -LiteralPath $profileInitializerPath -PathType Leaf)) {
 if (-not (Test-Path -LiteralPath $lsaRightsPath -PathType Leaf)) {
     throw "DEV2 LSA-rights helper is missing: $lsaRightsPath"
 }
+if (-not (Test-Path -LiteralPath $credentialHelperPath -PathType Leaf)) {
+    throw "DEV2 machine-credential helper is missing: $credentialHelperPath"
+}
 . $lsaRightsPath
+. $credentialHelperPath
 $contract = Get-Content -LiteralPath $contractPath -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
 $sourceRoot = ConvertTo-QmFullPath -Path ([string]$contract.paths.source_terminal_root)
 $terminalRoot = ConvertTo-QmFullPath -Path ([string]$contract.paths.terminal_root)
@@ -519,9 +524,15 @@ foreach ($entry in @($contract.firewall)) {
         $firewallMapValid = $false
     }
 }
-if ([int]$contract.schema_version -ne 2 -or [string]$contract.contract_id -cne 'QM_DEV2_ISOLATED_MT5_LANE_V2' -or
+if ([int]$contract.schema_version -ne 3 -or [string]$contract.contract_id -cne 'QM_DEV2_ISOLATED_MT5_LANE_V3' -or
     [string]$contract.lane -cne 'DEV2' -or [string]$contract.source_lane -cne 'DEV1' -or
     $dev2User -cne 'QMDev2' -or [string]$contract.identity.profile -cne 'C:/Users/QMDev2' -or
+    [string]$contract.identity.credential_format -cne 'QM_DEV2_MACHINE_DPAPI_CREDENTIAL' -or
+    [string]$contract.identity.dpapi_scope -cne 'LocalMachine' -or
+    -not [bool]$contract.identity.credential_acl.inheritance_protected -or
+    [string]$contract.identity.credential_acl.owner_sid -cne 'S-1-5-32-544' -or
+    [bool]$contract.identity.credential_acl.additional_readers -or
+    [string]::Join('|', @($contract.identity.credential_acl.exact_full_control_sids | ForEach-Object { [string]$_ } | Sort-Object)) -cne 'S-1-5-18|S-1-5-32-544' -or
     -not $sourceRoot.Equals($fixedSourceRoot, [System.StringComparison]::OrdinalIgnoreCase) -or
     -not $terminalRoot.Equals($fixedTerminalRoot, [System.StringComparison]::OrdinalIgnoreCase) -or
     -not $reportRoot.Equals($fixedReportRoot, [System.StringComparison]::OrdinalIgnoreCase) -or
@@ -596,6 +607,7 @@ $stageRoot = $null
 $dev2Sid = $null
 $provisionCompleted = $false
 $batchLogonRight = $null
+$machineCredential = $null
 try {
     $provisionMutex = New-Object System.Threading.Mutex($false, [string]$contract.coordination.provision_mutex)
     $sourceMutex = New-Object System.Threading.Mutex($false, [string]$contract.coordination.source_quiescence_mutex)
@@ -650,15 +662,13 @@ try {
         throw 'QMDev2 unexpectedly belongs to BUILTIN\Administrators.'
     }
 
-    $credentialDirectory = [System.IO.Path]::GetDirectoryName($credentialPath)
-    [void][System.IO.Directory]::CreateDirectory($credentialDirectory)
-    Set-QmRestrictedAcl -Path $credentialDirectory -TargetSid $dev2Sid -FileOnly
-    $credential = New-Object System.Management.Automation.PSCredential($dev2Account, $securePassword)
-    $credential | Export-Clixml -LiteralPath $credentialPath -Depth 3 -ErrorAction Stop
-    Set-QmRestrictedAcl -Path $credentialPath -TargetSid $dev2Sid -FileOnly
+    $machineCredential = New-QmDev2MachineCredentialArtifact -CredentialPath $credentialPath `
+        -Password $passwordText -ExpectedAccount $dev2Account -ExpectedSid $dev2Sid `
+        -ContractId ([string]$contract.contract_id) -Lane ([string]$contract.lane)
     $adminSid = 'S-1-5-32-544'
     $systemSid = 'S-1-5-18'
-    Assert-QmAclContract -Path $credentialPath -AllowedWriterSids @($adminSid, $systemSid)
+    Assert-QmDev2CredentialExactAcl -Path ([System.IO.Path]::GetDirectoryName($credentialPath)) -Directory
+    Assert-QmDev2CredentialExactAcl -Path $credentialPath
 
     [void][System.IO.Directory]::CreateDirectory($reportRoot)
     Set-QmRestrictedAcl -Path $reportRoot -TargetSid $dev2Sid
@@ -779,6 +789,11 @@ try {
             limited_non_admin = $true
             credential_path = $credentialPath
             credential_sha256 = $credentialHash
+            credential_format = [string]$contract.identity.credential_format
+            dpapi_scope = [string]$contract.identity.dpapi_scope
+            credential_generation_id = $machineCredential.GenerationId
+            credential_helper_path = $credentialHelperPath
+            credential_helper_sha256 = (Get-FileHash -LiteralPath $credentialHelperPath -Algorithm SHA256).Hash.ToLowerInvariant()
             profile_receipt_path = $profileTaskReceipt.path
             profile_receipt_sha256 = $profileTaskReceipt.sha256
             common_path = $profileTaskReceipt.common_path

@@ -11,6 +11,8 @@ $script:Dev2Root = [System.IO.Path]::GetFullPath('D:\QM\mt5\DEV2')
 $script:ReportsRoot = [System.IO.Path]::GetFullPath('D:\QM\reports\dev2')
 $script:PwshPath = 'C:\Program Files\PowerShell\7\pwsh.exe'
 $script:LaneContractPath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\registry\dev2_lane_contract.json'))
+$script:CredentialPath = [System.IO.Path]::GetFullPath('C:\ProgramData\QM\DEV2\credential.machine-dpapi.json')
+$script:CredentialHelperPath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot 'dev2_machine_credential.ps1'))
 $script:ControllerMutexName = 'Global\QM_DEV2_SMOKE_CONTROLLER'
 $script:TaskNamePrefix = 'QM_DEV2_SMOKE_'
 $script:PerAttemptOverheadSeconds = 600
@@ -99,9 +101,16 @@ function Assert-QmLaneContract {
     param([Parameter(Mandatory = $true)][System.Collections.IDictionary]$Contract)
     $expectedSymbols = @($script:AllowedSymbols | Sort-Object)
     $actualSymbols = @($Contract.allowed_symbols | ForEach-Object { [string]$_ } | Sort-Object)
-    if ([int]$Contract.schema_version -ne 2 -or [string]$Contract.contract_id -cne 'QM_DEV2_ISOLATED_MT5_LANE_V2' -or
+    if ([int]$Contract.schema_version -ne 3 -or [string]$Contract.contract_id -cne 'QM_DEV2_ISOLATED_MT5_LANE_V3' -or
         [string]$Contract.lane -cne 'DEV2' -or [string]$Contract.source_lane -cne 'DEV1' -or
         [string]$Contract.identity.local_user -cne 'QMDev2' -or
+        [string]$Contract.identity.credential_format -cne 'QM_DEV2_MACHINE_DPAPI_CREDENTIAL' -or
+        [string]$Contract.identity.dpapi_scope -cne 'LocalMachine' -or
+        -not [bool]$Contract.identity.credential_acl.inheritance_protected -or
+        [string]$Contract.identity.credential_acl.owner_sid -cne 'S-1-5-32-544' -or
+        [bool]$Contract.identity.credential_acl.additional_readers -or
+        [string]::Join('|', @($Contract.identity.credential_acl.exact_full_control_sids | ForEach-Object { [string]$_ } | Sort-Object)) -cne 'S-1-5-18|S-1-5-32-544' -or
+        -not (ConvertTo-QmFullPath -Path ([string]$Contract.identity.credential)).Equals($script:CredentialPath, [System.StringComparison]::OrdinalIgnoreCase) -or
         -not (ConvertTo-QmFullPath -Path ([string]$Contract.paths.terminal_root)).Equals($script:Dev2Root, [System.StringComparison]::OrdinalIgnoreCase) -or
         -not (ConvertTo-QmFullPath -Path ([string]$Contract.paths.report_root)).Equals($script:ReportsRoot, [System.StringComparison]::OrdinalIgnoreCase) -or
         [string]$Contract.coordination.controller_mutex -cne $script:ControllerMutexName -or
@@ -318,7 +327,9 @@ function Assert-QmRequestSchema {
         'schema_version', 'run_id', 'nonce', 'created_utc', 'expires_utc', 'expected_account',
         'expected_sid', 'expected_profile', 'expected_common_path', 'dev2_root', 'reports_root',
         'smoke_report_root', 'expected_task_name', 'controller_mutex', 'lane_contract_path',
-        'lane_contract_sha256', 'child_path', 'child_sha256', 'run_smoke_path', 'run_smoke_sha256',
+        'lane_contract_sha256', 'machine_credential_path', 'machine_credential_sha256',
+        'machine_credential_helper_path', 'machine_credential_helper_sha256',
+        'child_path', 'child_sha256', 'run_smoke_path', 'run_smoke_sha256',
         'program_sha256', 'smoke_parameters', 'maximum_run_attempts',
         'per_attempt_overhead_seconds', 'controller_finalization_margin_seconds',
         'controller_timeout_seconds'
@@ -342,10 +353,15 @@ function Assert-QmRequestSchema {
         -not ([string]$Request.expected_task_name).StartsWith($script:TaskNamePrefix, [System.StringComparison]::Ordinal) -or
         [string]$Request.controller_mutex -cne $script:ControllerMutexName -or
         -not (ConvertTo-QmFullPath -Path ([string]$Request.lane_contract_path)).Equals($script:LaneContractPath, [System.StringComparison]::OrdinalIgnoreCase) -or
+        -not (ConvertTo-QmFullPath -Path ([string]$Request.machine_credential_path)).Equals($script:CredentialPath, [System.StringComparison]::OrdinalIgnoreCase) -or
+        -not (ConvertTo-QmFullPath -Path ([string]$Request.machine_credential_helper_path)).Equals($script:CredentialHelperPath, [System.StringComparison]::OrdinalIgnoreCase) -or
         -not (ConvertTo-QmFullPath -Path ([string]$Request.child_path)).Equals((ConvertTo-QmFullPath -Path $PSCommandPath), [System.StringComparison]::OrdinalIgnoreCase)) {
         throw 'DEV2 request changed its task, mutex, contract, or child-script identity.'
     }
-    foreach ($hashName in @('lane_contract_sha256', 'child_sha256', 'run_smoke_sha256')) {
+    foreach ($hashName in @(
+            'lane_contract_sha256', 'machine_credential_sha256',
+            'machine_credential_helper_sha256', 'child_sha256', 'run_smoke_sha256'
+        )) {
         if ([string]$Request[$hashName] -notmatch '^[0-9a-f]{64}$') {
             throw "DEV2 request contains invalid $hashName."
         }
@@ -434,6 +450,8 @@ $logPath = $null
 $laneContractSha256 = $null
 $childSha256 = $null
 $runSmokeSha256 = $null
+$machineCredentialSha256 = $null
+$machineCredentialHelperSha256 = $null
 $verifiedProgramSha256 = [ordered]@{}
 $agentPortProof = [ordered]@{
     status = 'NOT_RUN'
@@ -465,6 +483,8 @@ try {
     Assert-QmRequestSchema -Request $request -ExpectedRunDirectory $RunDirectory
     $runId = [string]$request.run_id
     $nonce = [string]$request.nonce
+    $machineCredentialSha256 = [string]$request.machine_credential_sha256
+    $machineCredentialHelperSha256 = [string]$request.machine_credential_helper_sha256
 
     foreach ($boundPath in @([string]$request.lane_contract_path, [string]$request.child_path, [string]$request.run_smoke_path)) {
         Assert-QmNoReparseComponents -Path $boundPath
@@ -618,6 +638,8 @@ try {
             expected_task_name = [string]$request.expected_task_name
             controller_mutex = [string]$request.controller_mutex
             lane_contract_sha256 = $laneContractSha256
+            machine_credential_sha256 = $machineCredentialSha256
+            machine_credential_helper_sha256 = $machineCredentialHelperSha256
             child_sha256 = $childSha256
             run_smoke_sha256 = $runSmokeSha256
             program_sha256 = $verifiedProgramSha256

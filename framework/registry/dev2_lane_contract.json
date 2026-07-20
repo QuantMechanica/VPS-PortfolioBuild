@@ -1,12 +1,24 @@
 {
-  "schema_version": 2,
-  "contract_id": "QM_DEV2_ISOLATED_MT5_LANE_V2",
+  "schema_version": 3,
+  "contract_id": "QM_DEV2_ISOLATED_MT5_LANE_V3",
   "lane": "DEV2",
   "source_lane": "DEV1",
   "identity": {
     "local_user": "QMDev2",
     "profile": "C:/Users/QMDev2",
-    "credential": "C:/ProgramData/QM/DEV2/credential.clixml",
+    "credential": "C:/ProgramData/QM/DEV2/credential.machine-dpapi.json",
+    "credential_format": "QM_DEV2_MACHINE_DPAPI_CREDENTIAL",
+    "dpapi_scope": "LocalMachine",
+    "credential_acl": {
+      "inheritance_protected": true,
+      "owner_sid": "S-1-5-32-544",
+      "exact_full_control_sids": [
+        "S-1-5-18",
+        "S-1-5-32-544"
+      ],
+      "additional_readers": false
+    },
+    "legacy_credential": "C:/ProgramData/QM/DEV2/credential.clixml",
     "limited_non_admin": true
   },
   "paths": {

@@ -14,6 +14,10 @@ $paths = [ordered]@{
     child = Join-Path $repoRoot 'framework\scripts\invoke_dev2_smoke_task.ps1'
     lsa = Join-Path $repoRoot 'framework\scripts\dev2_lsa_rights.ps1'
     complete = Join-Path $repoRoot 'framework\scripts\complete_dev2_postclone.ps1'
+    credential_helper = Join-Path $repoRoot 'framework\scripts\dev2_machine_credential.ps1'
+    credential_probe = Join-Path $repoRoot 'framework\scripts\probe_dev2_machine_credential.ps1'
+    credential_rotate = Join-Path $repoRoot 'framework\scripts\rotate_dev2_machine_credential.ps1'
+    identity_probe = Join-Path $repoRoot 'framework\scripts\invoke_dev2_identity_probe.ps1'
     core = Join-Path $repoRoot 'framework\scripts\run_smoke.ps1'
 }
 
@@ -36,17 +40,28 @@ $cleanupAst = Get-QmParsedScript -Path $paths.cleanup
 $childAst = Get-QmParsedScript -Path $paths.child
 $lsaAst = Get-QmParsedScript -Path $paths.lsa
 $completeAst = Get-QmParsedScript -Path $paths.complete
+$credentialHelperAst = Get-QmParsedScript -Path $paths.credential_helper
+$credentialProbeAst = Get-QmParsedScript -Path $paths.credential_probe
+$credentialRotateAst = Get-QmParsedScript -Path $paths.credential_rotate
+$identityProbeAst = Get-QmParsedScript -Path $paths.identity_probe
 $null = Get-QmParsedScript -Path $paths.core
 
 $contract = Get-Content -LiteralPath $paths.contract -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
-if ([int]$contract.schema_version -ne 2 -or [string]$contract.contract_id -cne 'QM_DEV2_ISOLATED_MT5_LANE_V2' -or
+if ([int]$contract.schema_version -ne 3 -or [string]$contract.contract_id -cne 'QM_DEV2_ISOLATED_MT5_LANE_V3' -or
     [string]$contract.identity.local_user -cne 'QMDev2' -or
+    [string]$contract.identity.credential -cne 'C:/ProgramData/QM/DEV2/credential.machine-dpapi.json' -or
+    [string]$contract.identity.credential_format -cne 'QM_DEV2_MACHINE_DPAPI_CREDENTIAL' -or
+    [string]$contract.identity.dpapi_scope -cne 'LocalMachine' -or
+    [string]$contract.identity.credential_acl.owner_sid -cne 'S-1-5-32-544' -or
+    [bool]$contract.identity.credential_acl.additional_readers -or
+    [string]::Join('|', @($contract.identity.credential_acl.exact_full_control_sids | Sort-Object)) -cne 'S-1-5-18|S-1-5-32-544' -or
     [string]$contract.paths.source_terminal_root -cne 'D:/QM/mt5/DEV1' -or
     [string]$contract.paths.terminal_root -cne 'D:/QM/mt5/DEV2' -or
     [string]$contract.paths.report_root -cne 'D:/QM/reports/dev2' -or
     [string]$contract.coordination.controller_mutex -cne 'Global\QM_DEV2_SMOKE_CONTROLLER' -or
     [string]$contract.coordination.source_quiescence_mutex -cne 'Global\QM_DEV1_SMOKE_CONTROLLER' -or
-    [string]$contract.coordination.task_prefix -cne 'QM_DEV2_SMOKE_') {
+    [string]$contract.coordination.task_prefix -cne 'QM_DEV2_SMOKE_' -or
+    [string]$contract.coordination.profile_task_prefix -cne 'QM_DEV2_PROFILE_INIT_') {
     throw 'DEV2 lane identity/path/coordination contract drifted.'
 }
 if ([bool]$contract.agent_port_contract.source_agents_dat_copied -or
@@ -68,13 +83,18 @@ $cleanupText = Get-Content -LiteralPath $paths.cleanup -Raw -ErrorAction Stop
 $childText = Get-Content -LiteralPath $paths.child -Raw -ErrorAction Stop
 $lsaText = Get-Content -LiteralPath $paths.lsa -Raw -ErrorAction Stop
 $completeText = Get-Content -LiteralPath $paths.complete -Raw -ErrorAction Stop
+$credentialHelperText = Get-Content -LiteralPath $paths.credential_helper -Raw -ErrorAction Stop
+$credentialProbeText = Get-Content -LiteralPath $paths.credential_probe -Raw -ErrorAction Stop
+$credentialRotateText = Get-Content -LiteralPath $paths.credential_rotate -Raw -ErrorAction Stop
+$identityProbeText = Get-Content -LiteralPath $paths.identity_probe -Raw -ErrorAction Stop
 $coreText = Get-Content -LiteralPath $paths.core -Raw -ErrorAction Stop
 foreach ($marker in @(
     'Global\QM_DEV1_SMOKE_CONTROLLER', 'Assert-QmSourceQuiescent', '.DEV2.stage.',
     'Config\agents.dat', 'verify_all_copied_files_sha256', 'old_dev1_manifest_hash_claimed = $false',
     'mutex_held_for_copy = $sourceAcquired', "smoke_status = 'PENDING'",
     'ResumeExactPartialUser', 'ExpectedPartialUserSid', 'Assert-QmExactPartialUserState',
-    'Set-QmPasswordRequired', 'Disable-LocalUser', 'Enable-LocalUser'
+    'Set-QmPasswordRequired', 'Disable-LocalUser', 'Enable-LocalUser',
+    'New-QmDev2MachineCredentialArtifact', 'credential.machine-dpapi.json'
 )) {
     if (-not $provisionText.Contains($marker, [System.StringComparison]::Ordinal)) {
         throw "Provisioner safety marker is missing: $marker"
@@ -95,7 +115,9 @@ foreach ($marker in @(
     'Enable-QmDev2ControllerAccountState',
     'Restore-QmDev2ControllerAccountState', 'dev2_account_initially_enabled',
     'dev2_account_enabled_by_controller', 'dev2_account_restored_disabled',
-    'QM_DEV2_CLEANUP_', 'cleanup_lease_registered', 'cleanup_lease_disarmed',
+    'QM_DEV2_CLEANUP_', 'QM_DEV2_PROFILE_INIT_', 'Global\QM_DEV2_CLEANUP_ACTION_',
+    'cleanup_action_mutex', '-CleanupActionMutex', 'Enter-QmCleanupActionMutex',
+    'cleanup_lease_registered', 'cleanup_lease_disarmed',
     'cleanup_helper_sha256', 'New-ScheduledTaskTrigger -AtStartup',
     '-RepetitionInterval (New-TimeSpan -Minutes 5)', '-RestartCount 3',
     'ExpectedExpiryUtc', 'AllowHardTerminate', 'Get-QmDev2IdentityProcesses',
@@ -108,7 +130,14 @@ foreach ($marker in @(
     "Join-Path `$controlDirectory 'cleanup_lease.result.json'",
     "Join-Path `$controlDirectory 'cleanup_lease.disarm.result.json'",
     'Assert-QmImmediateCleanupDisarmReceipt',
-    'independent host containment postchecks'
+    'Remove-QmScheduledTaskBounded -TaskName $taskName -DisableBeforeStop',
+    'Remove-QmScheduledTaskBounded -TaskName $cleanupTaskName -DisableBeforeStop',
+    'Assert-QmDev2ContainedBeforeCleanupLeaseDisarm',
+    'Read-QmExactImmediateCleanupEvidence', 'Assert-QmCleanupEvidenceAfterActionFence',
+    'independent host containment postchecks',
+    'ExpectedCredentialSha256', 'ExpectedHelperSha256',
+    'machine_credential_sha256', 'machine_credential_helper_sha256',
+    'Get-QmDev2MachineCredential', 'Read-QmDev2MachineCredentialEnvelope'
 )) {
     if (-not $controllerText.Contains($marker, [System.StringComparison]::Ordinal)) {
         throw "DEV2 controller binding marker is missing: $marker"
@@ -155,9 +184,46 @@ if ($controllerText.Contains('[Math]::Min(172800', [System.StringComparison]::Or
     $childText.Contains('[Math]::Min(172800', [System.StringComparison]::Ordinal)) {
     throw 'DEV2 controller/child may not silently cap an underbudgeted attempt timeout.'
 }
-foreach ($forbidden in @('credential.clixml', 'Import-Clixml', 'farmctl', 'pipeline_dispatcher', 'run_pump_task.py', 'CommandLine')) {
+foreach ($forbidden in @('credential.clixml', 'Import-Clixml', 'ProtectedData', 'Get-QmDev2MachineCredential', 'farmctl', 'pipeline_dispatcher', 'run_pump_task.py', 'CommandLine')) {
     if ($childText.Contains($forbidden, [System.StringComparison]::OrdinalIgnoreCase)) {
         throw "DEV2 limited child contains forbidden token: $forbidden"
+    }
+}
+if ($controllerText.Contains('Import-Clixml', [System.StringComparison]::OrdinalIgnoreCase) -or
+    $provisionText.Contains('Export-Clixml', [System.StringComparison]::OrdinalIgnoreCase) -or
+    $completeText.Contains('Import-Clixml', [System.StringComparison]::OrdinalIgnoreCase)) {
+    throw 'Runtime/provision/completion still relies on CurrentUser-DPAPI CLIXML.'
+}
+foreach ($marker in @(
+        'DataProtectionScope]::LocalMachine', 'QM_DEV2_MACHINE_DPAPI_ENTROPY_V1',
+        'host_account_domain_sid', 'Assert-QmDev2CredentialExactAcl',
+        '$rules.Count -ne 2', 'S-1-5-32-544', 'S-1-5-18'
+    )) {
+    if (-not $credentialHelperText.Contains($marker, [System.StringComparison]::Ordinal)) {
+        throw "Machine-credential helper safety marker is missing: $marker"
+    }
+}
+foreach ($marker in @(
+        'QM_DEV2_MACHINE_CREDENTIAL_PRECLAIM_PROBE', 'worker_principal_sid',
+        'native_counting_boundary_crossed = $false', 'dev2_run_directory_created = $false',
+        'metatester_started = $false', 'ExpectedCredentialSha256', 'ExpectedHelperSha256'
+    )) {
+    if (-not $credentialProbeText.Contains($marker, [System.StringComparison]::Ordinal)) {
+        throw "Machine-credential preclaim-probe marker is missing: $marker"
+    }
+}
+foreach ($marker in @(
+        'Import-Clixml -LiteralPath $legacyCredentialPath', 'PASSWORD_ROLLED_BACK_TO_LEGACY',
+        'CREDENTIAL_PUBLISHED_AFTER_IDENTITY_PROOF', 'Assert-QmRotationCleanupTaskContract',
+        'QM_DEV2_MACHINE_CREDENTIAL_ROTATION_RECEIPT', 'legacy_credential_preserved'
+    )) {
+    if (-not $credentialRotateText.Contains($marker, [System.StringComparison]::Ordinal)) {
+        throw "Machine-credential rotation safety marker is missing: $marker"
+    }
+}
+foreach ($forbidden in @('credential.clixml', 'Import-Clixml', 'ProtectedData', 'terminal64.exe', 'metatester64.exe', 'run_smoke.ps1')) {
+    if ($identityProbeText.Contains($forbidden, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Limited identity-only probe contains forbidden token: $forbidden"
     }
 }
 $cleanupForbidden = @('credential.clixml', 'Import-Clixml', 'farmctl', 'pipeline_dispatcher', 'run_pump_task.py', 'CommandLine', 'Enable-LocalUser')
@@ -218,7 +284,7 @@ if ($cleanupDisableCommands.Count -ne 1) {
 if (@($cleanupDisableCommands[0].CommandElements | ForEach-Object { $_.Extent.Text }) -notcontains '-SID') {
     throw 'DEV2 cleanup helper must disable only the captured immutable SID.'
 }
-$processAsts = @($controllerAst, $cleanupAst, $childAst)
+$processAsts = @($controllerAst, $cleanupAst, $childAst, $credentialProbeAst, $credentialRotateAst)
 foreach ($processAst in $processAsts) {
     $processQueries = @($processAst.FindAll({
         param($node)
