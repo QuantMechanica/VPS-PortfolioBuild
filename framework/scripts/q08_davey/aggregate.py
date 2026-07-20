@@ -1178,12 +1178,22 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
             baseline_setfile: Path | None = None,
             neighborhood_max_params: int | None = None) -> dict:
     log_path = Path(log_path)
+    # EQUITY_SNAPSHOT account values are tagged with the physical chart symbol,
+    # which differs from the logical work-item symbol for basket EAs. Resolve
+    # that emitter identity before reading any per-EA tester-agent log.
+    _repo_root_q8 = Path(__file__).resolve().parents[3]
+    _baseline_sf_q8 = baseline_setfile or _guess_baseline_setfile(_repo_root_q8, ea_id, symbol)
+    equity_symbol = (
+        _host_symbol_from_setfile(Path(_baseline_sf_q8), symbol)
+        if _baseline_sf_q8 is not None
+        else symbol
+    )
     trades = common.load_trades_from_log(log_path)
-    equity_stream = common.load_equity_stream(log_path)
+    equity_stream = common.load_equity_stream(log_path, symbol=equity_symbol)
     if not equity_stream:
-        structured_log = _latest_structured_qm_log(ea_id, symbol, terminal)
+        structured_log = _latest_structured_qm_log(ea_id, equity_symbol, terminal)
         if structured_log is not None:
-            equity_stream = common.load_equity_stream(structured_log)
+            equity_stream = common.load_equity_stream(structured_log, symbol=equity_symbol)
     # Tester writes the EA log to the agent sandbox, so the farmctl --log path is empty.
     # The recompiled EA also dumps a TRADE_CLOSED stream to Common\Files; read that, and
     # run a clean baseline backtest first if it's not there yet.
@@ -1194,12 +1204,8 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
         # Basket EAs: resolve host-symbol log path. The EA's _Symbol is the physical chart
         # symbol (e.g. GBPJPY.DWX), NOT the logical composite symbol used as the work-item
         # key, so TRADE_CLOSED lands in a per-host path, not the logical-symbol path.
-        _repo_root_q8 = Path(__file__).resolve().parents[3]
-        _baseline_sf_q8 = baseline_setfile or _guess_baseline_setfile(_repo_root_q8, ea_id, symbol)
-        if _baseline_sf_q8 is not None:
-            _h_sym = _host_symbol_from_setfile(Path(_baseline_sf_q8), symbol)
-            if _h_sym and _h_sym != symbol:
-                host_log = _common_q08_trade_log(ea_id, _h_sym)
+        if equity_symbol != symbol:
+            host_log = _common_q08_trade_log(ea_id, equity_symbol)
         # Always run a FRESH full-history baseline so Q08 evaluates a clean run, not a
         # stale per-fold log left by an earlier phase (which would undercount trades and
         # wrongly fail a higher-frequency strategy). Clear the stale log first.
@@ -1225,17 +1231,23 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
             if retry_summary is not None:
                 baseline_run.update(_baseline_report_metadata(retry_summary))
         trades = common.load_trades_from_log(common_log)
-        equity_stream = common.load_equity_stream(common_log) or equity_stream
+        equity_stream = common.load_equity_stream(
+            common_log, symbol=equity_symbol
+        ) or equity_stream
         # Basket EA host-symbol fallback: if the logical-symbol path is still empty after
         # the baseline, the EA used _Symbol (physical chart symbol) as its TRADE_CLOSED key.
         if not trades and host_log is not None:
             trades = common.load_trades_from_log(host_log)
-            equity_stream = common.load_equity_stream(host_log) or equity_stream
+            equity_stream = common.load_equity_stream(
+                host_log, symbol=equity_symbol
+            ) or equity_stream
             if trades and baseline_run is not None:
                 baseline_run["host_sym_log_fallback"] = str(host_log)
-        structured_log = _latest_structured_qm_log(ea_id, symbol, terminal)
+        structured_log = _latest_structured_qm_log(ea_id, equity_symbol, terminal)
         if structured_log is not None:
-            equity_stream = common.load_equity_stream(structured_log) or equity_stream
+            equity_stream = common.load_equity_stream(
+                structured_log, symbol=equity_symbol
+            ) or equity_stream
             if baseline_run is not None:
                 baseline_run["structured_log_path"] = str(structured_log)
         if not trades and baseline_run and baseline_run.get("baseline_report_path"):
