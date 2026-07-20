@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-20T07:07:03.7046075Z",
-    "total":  3357,
+    "generated_at":  "2026-07-20T08:07:03.5090332Z",
+    "total":  3358,
     "items":  [
                   {
                       "slug":  "ath-breakout-atr-trail",
@@ -1363,7 +1363,7 @@
                       "slug":  "wti-halloween-winter_card",
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-20T07:04:18.0439135Z"
+                      "last_updated_utc":  "2026-07-20T07:19:54.5658877Z"
                   },
                   {
                       "slug":  "wti-juldec-short_card",
@@ -17522,6 +17522,12 @@
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-07-20T04:41:12.5561171Z"
+                  },
+                  {
+                      "slug":  "QM5_20015_wti-halloween-winter",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-20T07:19:54.5678922Z"
                   },
                   {
                       "slug":  "QM5_2002_nnfx-qqe-trend",

@@ -4,13 +4,18 @@
 **Slug:** `tv-nq-ict-ob`
 **Source:** `d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7` (see `strategy-seeds/sources/d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-06
+**Last revised:** 2026-07-20
 
 ---
 
 ## 1. Strategy Logic
 
-The EA trades a New York morning liquidity sweep and order-block mitigation setup on closed bars. It first requires a daily EMA(20) directional bias, then a sweep of the previous-day high or low during 09:45-10:15 New York time, followed by a close through the last 5-bar fractal swing level. After that market-structure shift, it uses the last opposite candle as the order block and enters when price mitigates that zone. Exits are the order-block stop, a fixed 2.0R target, or a forced flat after the New York morning window ends.
+The EA trades a New York morning liquidity sweep and order-block mitigation setup on closed bars. It first requires a daily EMA(20) directional bias, then a sweep of the previous-day high or low during the half-open `[09:45, 10:15)` New York window, followed on a strictly later bar by a fresh close-cross through the last 5-bar fractal swing level. The first MSS freezes the last opposite candle as the order block. Mitigation is eligible only on another strictly later closed bar. Exits are the order-block stop, a fixed 2.0R target, or a forced flat at 10:15 New York even during a news blackout.
+
+The distinct-bar FSM (`WAIT_SWEEP -> WAIT_MSS -> WAIT_MITIGATION`) is an
+outcome-blind causal tightening of the public OHLC script: it prevents an
+unknowable within-bar ordering from being treated as sweep, break and retrace
+simultaneously.
 
 ---
 
@@ -25,7 +30,8 @@ The EA trades a New York morning liquidity sweep and order-block mitigation setu
 | `strategy_fractal_width` | 5 | 3-7 | Fractal swing width used for market-structure shift. |
 | `strategy_fractal_lookback` | 60 | 10-200 | Maximum closed bars searched for the most recent fractal swing. |
 | `strategy_ob_lookback` | 20 | 3-100 | Maximum closed bars searched for the last opposite candle before MSS. |
-| `strategy_ob_refinement` | `OB_DEFENSIVE_BODY` | enum | Order-block zone refinement; default uses the candle body. |
+| `strategy_ob_refinement` | `OB_DEFENSIVE_ATR55` | enum | Public Pine v1 refinement: full wick range when source-candle range is <=0.5 ATR(55); otherwise low-to-close for bullish OBs and close-to-high for bearish OBs. Aggressive/full modes use the full wick range. |
+| `strategy_ob_refine_atr_period` | 55 | 55 | ATR period bound to the public Pine v1 order-block refinement. Not a tuning axis. |
 | `strategy_atr_period` | 14 | 2-100 | ATR period for stop-distance safety checks. |
 | `strategy_min_stop_atr` | 0.25 | 0.05-2.0 | Minimum allowed stop distance as ATR multiple. |
 | `strategy_max_stop_atr` | 2.0 | 0.5-10.0 | Maximum allowed stop distance as ATR multiple. |
@@ -78,6 +84,8 @@ This card was mechanised from:
 **Source ID:** `d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7`
 **Source type:** TradingView open-source strategy script
 **Pointer:** TradingView `NQ 9:45-10:15 ICT Strategy - Complete`, author `uzair2join`, https://www.tradingview.com/script/8NHRB35j-NQ-9-45-10-15-ICT-Strategy-Complete/
+**Public Pine endpoint:** `https://pine-facade.tradingview.com/pine-facade/get/PUB%3Baa5cd40f93284855a7ac93cec5a26bd3/1`
+**Public Pine v1 source SHA-256:** `015bb5d550a8687f506646de6c33ddfe8b29c3ed5e4ec96f3c66364edfb7f0b5`
 **R1–R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_10834_tv-nq-ict-ob.md`
 
 ---
@@ -90,7 +98,10 @@ This card was mechanised from:
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+`QM_FrameworkInit` enforces that exactly one of fixed-risk and percentage-risk
+is positive. Environment-to-mode policy is bound by the generated setfile and
+build/pipeline contract; the framework does not currently infer an environment
+inside the EA.
 
 ---
 
@@ -99,3 +110,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-06 | Initial build from card | e05d0d9b-643a-4634-a7d9-a69e370d965b |
+| v2 | 2026-07-20 | Outcome-blind fidelity repair | Strict event FSM, closed-bar session binding, ATR55 source refinement, fail-closed data bias, post-confirmed daily trade flag, restart restoration, and news-safe force-flat. |

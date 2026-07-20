@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   2249d7d2efe577fdba2d3ebe4312619a24ac38e193d653e7f1c49e7630efc0e1
+; build_hash:   7f3ab20a3bff1daa20c48eb03ffce32949a6dac50af3171b73d0c047d2843792
 ; author:       Development
 ; date:         2026-07-20
 ;==========================================================
@@ -28,7 +28,8 @@ strategy_bias_mode=BIAS_CURRENT_PRICE
 strategy_fractal_width=5
 strategy_fractal_lookback=60
 strategy_ob_lookback=20
-strategy_ob_refinement=OB_DEFENSIVE_BODY
+strategy_ob_refinement=OB_DEFENSIVE_ATR55
+strategy_ob_refine_atr_period=55
 strategy_atr_period=14
 strategy_min_stop_atr=0.25
 strategy_max_stop_atr=2.0
