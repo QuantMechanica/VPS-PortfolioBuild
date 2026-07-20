@@ -45,11 +45,19 @@ def load_trades_from_log(log_path: Path, magic: int | None = None) -> list[dict]
     return trades
 
 
-def load_equity_stream(log_path: Path) -> list[dict]:
-    """Extract EQUITY_SNAPSHOT events from an EA JSON-lines log."""
+def load_equity_stream(log_path: Path, *, symbol: str | None = None) -> list[dict]:
+    """Extract one snapshot per emitter symbol/day from an EA JSON-lines log.
+
+    Historical ``EQUITY_SNAPSHOT`` rows predate the explicit ``scope`` field,
+    but their equity and P&L values already came from ``ACCOUNT_EQUITY``.  They
+    are therefore normalized to account scope.  Tester-agent log filenames are
+    per EA rather than per symbol, so callers evaluating one symbol must pass
+    ``symbol`` to avoid consuming rows appended by another run of the same EA.
+    """
     if not log_path.exists():
         return []
-    snaps: list[dict] = []
+    snaps_by_emitter_day: dict[tuple[str, int], dict] = {}
+    undated_snaps: list[dict] = []
     with log_path.open(encoding="utf-8", errors="ignore") as fh:
         for line in fh:
             line = line.strip()
@@ -67,8 +75,41 @@ def load_equity_stream(log_path: Path) -> list[dict]:
                     payload = json.loads(payload)
                 except json.JSONDecodeError:
                     continue
-            snaps.append(payload)
-    return snaps
+            if not isinstance(payload, dict):
+                continue
+
+            normalized = dict(payload)
+            if not isinstance(normalized.get("scope"), str) or not normalized["scope"]:
+                normalized["scope"] = "account"
+
+            payload_symbol = normalized.get("symbol")
+            row_symbol = row.get("symbol")
+            emitter_symbol = (
+                payload_symbol if isinstance(payload_symbol, str) and payload_symbol
+                else row_symbol if isinstance(row_symbol, str) and row_symbol
+                else ""
+            )
+            if symbol is not None and emitter_symbol != symbol:
+                continue
+            if emitter_symbol and not normalized.get("symbol"):
+                normalized["symbol"] = emitter_symbol
+
+            try:
+                day_key = int(normalized.get("day_key"))
+            except (TypeError, ValueError):
+                undated_snaps.append(normalized)
+                continue
+
+            if not emitter_symbol:
+                undated_snaps.append(normalized)
+                continue
+
+            dedupe_key = (emitter_symbol, day_key)
+            # Delete before replacement so result ordering follows the final
+            # append occurrence as well as its value (last-write semantics).
+            snaps_by_emitter_day.pop(dedupe_key, None)
+            snaps_by_emitter_day[dedupe_key] = normalized
+    return [*snaps_by_emitter_day.values(), *undated_snaps]
 
 
 def _float_report(value) -> float | None:

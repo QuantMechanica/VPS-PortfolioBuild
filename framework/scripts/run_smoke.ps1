@@ -1004,6 +1004,286 @@ function Publish-TesterReportCandidate {
     return $null
 }
 
+function Get-FilePrefixSha256 {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path,
+        [Parameter(Mandatory = $true)]
+        [ValidateRange(0, [long]::MaxValue)]
+        [long]$Length
+    )
+
+    $stream = [System.IO.File]::Open(
+        $Path,
+        [System.IO.FileMode]::Open,
+        [System.IO.FileAccess]::Read,
+        [System.IO.FileShare]::ReadWrite
+    )
+    try {
+        if ($stream.Length -lt $Length) {
+            throw "File is shorter than the requested hash prefix: path='$Path' length=$($stream.Length) prefix=$Length"
+        }
+
+        $sha256 = [System.Security.Cryptography.SHA256]::Create()
+        try {
+            $buffer = New-Object byte[] 1048576
+            $remaining = $Length
+            while ($remaining -gt 0) {
+                $requested = [int][Math]::Min([long]$buffer.Length, $remaining)
+                $read = $stream.Read($buffer, 0, $requested)
+                if ($read -le 0) {
+                    throw "Unexpected EOF while hashing '$Path'."
+                }
+                [void]$sha256.TransformBlock($buffer, 0, $read, $null, 0)
+                $remaining -= $read
+            }
+            [void]$sha256.TransformFinalBlock([byte[]]::new(0), 0, 0)
+            return ([System.BitConverter]::ToString($sha256.Hash) -replace '-', '').ToLowerInvariant()
+        } finally {
+            $sha256.Dispose()
+        }
+    } finally {
+        $stream.Dispose()
+    }
+}
+
+function Get-QmLoggerFileState {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$TerminalRoot,
+        [Parameter(Mandatory = $true)]
+        [ValidateRange(1, [int]::MaxValue)]
+        [int]$EAIdValue
+    )
+
+    $state = @{}
+    $testerRoot = Join-Path $TerminalRoot "Tester"
+    if (-not (Test-Path -LiteralPath $testerRoot -PathType Container)) {
+        return ,$state
+    }
+
+    $filePattern = "QM5_{0:d4}_ea-{0:d4}.log" -f $EAIdValue
+    $agentDirs = @(Get-ChildItem -LiteralPath $testerRoot -Directory -Filter "Agent-*" -ErrorAction SilentlyContinue |
+        Sort-Object FullName)
+    foreach ($agentDir in $agentDirs) {
+        foreach ($relativeLoggerDir in @("MQL5\Logs\QM", "MQL5\Files\QM")) {
+            $loggerDir = Join-Path $agentDir.FullName $relativeLoggerDir
+            if (-not (Test-Path -LiteralPath $loggerDir -PathType Container)) {
+                continue
+            }
+            $loggerFiles = @(Get-ChildItem -LiteralPath $loggerDir -File -Filter $filePattern -ErrorAction SilentlyContinue |
+                Sort-Object FullName)
+            foreach ($loggerFile in $loggerFiles) {
+                $state[$loggerFile.FullName] = [pscustomobject]@{
+                    length = [long]$loggerFile.Length
+                    prefix_sha256 = Get-FilePrefixSha256 -Path $loggerFile.FullName -Length ([long]$loggerFile.Length)
+                    ends_with_lf = $(if ($loggerFile.Length -eq 0) {
+                        $true
+                    } else {
+                        $tail = New-Object byte[] 1
+                        $tailStream = [System.IO.File]::Open(
+                            $loggerFile.FullName,
+                            [System.IO.FileMode]::Open,
+                            [System.IO.FileAccess]::Read,
+                            [System.IO.FileShare]::ReadWrite
+                        )
+                        try {
+                            [void]$tailStream.Seek(-1, [System.IO.SeekOrigin]::End)
+                            [void]$tailStream.Read($tail, 0, 1)
+                        } finally {
+                            $tailStream.Dispose()
+                        }
+                        ($tail[0] -eq 0x0A)
+                    })
+                }
+            }
+        }
+    }
+
+    return ,$state
+}
+
+function Save-QmLoggerDelta {
+    param(
+        [Parameter(Mandatory = $true)]
+        [hashtable]$BeforeState,
+        [Parameter(Mandatory = $true)]
+        [string]$TerminalRoot,
+        [Parameter(Mandatory = $true)]
+        [ValidateRange(1, [int]::MaxValue)]
+        [int]$EAIdValue,
+        [Parameter(Mandatory = $true)]
+        [string]$DestinationPath
+    )
+
+    $afterState = Get-QmLoggerFileState -TerminalRoot $TerminalRoot -EAIdValue $EAIdValue
+    $grownFiles = New-Object System.Collections.Generic.List[object]
+
+    foreach ($beforePath in $BeforeState.Keys) {
+        if (-not $afterState.ContainsKey($beforePath)) {
+            Write-Warning "Structured logger capture skipped: a pre-run logger file disappeared: '$beforePath'."
+            return $null
+        }
+        if ([long]$afterState[$beforePath].length -lt [long]$BeforeState[$beforePath].length) {
+            Write-Warning "Structured logger capture skipped: a pre-run logger file was truncated: '$beforePath'."
+            return $null
+        }
+        if ([long]$afterState[$beforePath].length -eq [long]$BeforeState[$beforePath].length -and
+            [string]$afterState[$beforePath].prefix_sha256 -cne [string]$BeforeState[$beforePath].prefix_sha256) {
+            Write-Warning "Structured logger capture skipped: an unchanged-length logger file was rewritten: '$beforePath'."
+            return $null
+        }
+    }
+
+    foreach ($afterPath in @($afterState.Keys | Sort-Object)) {
+        $beforeLength = [long]0
+        $beforeHash = $null
+        $beforeEndsWithLf = $true
+        if ($BeforeState.ContainsKey($afterPath)) {
+            $beforeLength = [long]$BeforeState[$afterPath].length
+            $beforeHash = [string]$BeforeState[$afterPath].prefix_sha256
+            $beforeEndsWithLf = [bool]$BeforeState[$afterPath].ends_with_lf
+        }
+        $afterLength = [long]$afterState[$afterPath].length
+        if ($afterLength -le $beforeLength) {
+            continue
+        }
+        if (-not $beforeEndsWithLf) {
+            Write-Warning "Structured logger capture skipped: pre-run logger file did not end at a line boundary: '$afterPath'."
+            return $null
+        }
+        if ($beforeLength -gt 0) {
+            $afterPrefixHash = Get-FilePrefixSha256 -Path $afterPath -Length $beforeLength
+            if ($afterPrefixHash -cne $beforeHash) {
+                Write-Warning "Structured logger capture skipped: pre-run logger bytes changed: '$afterPath'."
+                return $null
+            }
+        }
+        $grownFiles.Add([pscustomobject]@{
+            path = $afterPath
+            start_offset = $beforeLength
+            end_offset_exclusive = $afterLength
+            snapshot_sha256 = [string]$afterState[$afterPath].prefix_sha256
+        })
+    }
+
+    if ($grownFiles.Count -ne 1) {
+        Write-Warning ("Structured logger capture skipped: expected exactly one growing logger file, found {0}." -f $grownFiles.Count)
+        return $null
+    }
+
+    $source = $grownFiles[0]
+    $deltaLength = [long]$source.end_offset_exclusive - [long]$source.start_offset
+    if ($deltaLength -le 0 -or $deltaLength -gt [int]::MaxValue) {
+        Write-Warning ("Structured logger capture skipped: invalid delta length {0}." -f $deltaLength)
+        return $null
+    }
+
+    $deltaBytes = New-Object byte[] ([int]$deltaLength)
+    $sourceStream = [System.IO.File]::Open(
+        $source.path,
+        [System.IO.FileMode]::Open,
+        [System.IO.FileAccess]::Read,
+        [System.IO.FileShare]::ReadWrite
+    )
+    try {
+        if ($sourceStream.Length -ne [long]$source.end_offset_exclusive) {
+            Write-Warning "Structured logger capture skipped: logger file changed after the post-run snapshot."
+            return $null
+        }
+        [void]$sourceStream.Seek([long]$source.start_offset, [System.IO.SeekOrigin]::Begin)
+        $totalRead = 0
+        while ($totalRead -lt $deltaBytes.Length) {
+            $read = $sourceStream.Read($deltaBytes, $totalRead, $deltaBytes.Length - $totalRead)
+            if ($read -le 0) {
+                Write-Warning "Structured logger capture skipped: unexpected EOF while reading the logger delta."
+                return $null
+            }
+            $totalRead += $read
+        }
+    } finally {
+        $sourceStream.Dispose()
+    }
+
+    $currentSnapshotHash = Get-FilePrefixSha256 -Path $source.path -Length ([long]$source.end_offset_exclusive)
+    $currentSourceLength = (Get-Item -LiteralPath $source.path -ErrorAction Stop).Length
+    if ($currentSourceLength -ne [long]$source.end_offset_exclusive -or
+        $currentSnapshotHash -cne [string]$source.snapshot_sha256) {
+        Write-Warning "Structured logger capture skipped: logger bytes changed during delta extraction."
+        return $null
+    }
+
+    if ($deltaBytes[$deltaBytes.Length - 1] -ne 0x0A) {
+        Write-Warning "Structured logger capture skipped: logger delta ended with a partial line."
+        return $null
+    }
+
+    try {
+        $utf8 = [System.Text.UTF8Encoding]::new($false, $true)
+        $deltaText = $utf8.GetString($deltaBytes)
+    } catch {
+        Write-Warning "Structured logger capture skipped: exact logger bytes are not valid UTF-8 JSONL."
+        return $null
+    }
+
+    $requiredFields = @("sv", "ts_utc", "ts_broker", "level", "ea_id", "slug", "symbol", "tf", "magic", "event", "payload")
+    $eventCount = 0
+    foreach ($line in @($deltaText -split "`n")) {
+        $candidate = $line.TrimEnd("`r")
+        if ([string]::IsNullOrWhiteSpace($candidate)) {
+            continue
+        }
+        try {
+            $row = $candidate | ConvertFrom-Json -ErrorAction Stop
+        } catch {
+            Write-Warning "Structured logger capture skipped: logger delta contains invalid JSON."
+            return $null
+        }
+        $fieldNames = @($row.PSObject.Properties.Name)
+        foreach ($requiredField in $requiredFields) {
+            if ($fieldNames -notcontains $requiredField) {
+                Write-Warning "Structured logger capture skipped: logger row is missing '$requiredField'."
+                return $null
+            }
+        }
+        try {
+            $rowSchemaVersion = [int]$row.sv
+            $rowEAId = [int]$row.ea_id
+        } catch {
+            Write-Warning "Structured logger capture skipped: logger schema version or EA id is not an integer."
+            return $null
+        }
+        if ($rowSchemaVersion -ne 1 -or $rowEAId -ne $EAIdValue -or
+            -not ($row.event -is [string]) -or [string]::IsNullOrWhiteSpace($row.event)) {
+            Write-Warning "Structured logger capture skipped: logger row has the wrong schema, EA id, or event."
+            return $null
+        }
+        $eventCount++
+    }
+    if ($eventCount -le 0) {
+        Write-Warning "Structured logger capture skipped: logger delta contained no event rows."
+        return $null
+    }
+
+    $destinationDir = Split-Path -Parent $DestinationPath
+    if (-not [string]::IsNullOrWhiteSpace($destinationDir)) {
+        New-Item -ItemType Directory -Path $destinationDir -Force | Out-Null
+    }
+    [System.IO.File]::WriteAllBytes($DestinationPath, $deltaBytes)
+    $sampleHash = Get-FilePrefixSha256 -Path $DestinationPath -Length ([long]$deltaBytes.Length)
+
+    return [pscustomobject]@{
+        path = [System.IO.Path]::GetFullPath($DestinationPath)
+        source_path = [string]$source.path
+        source_offset_start = [long]$source.start_offset
+        source_offset_end_exclusive = [long]$source.end_offset_exclusive
+        source_snapshot_sha256 = [string]$source.snapshot_sha256
+        size_bytes = [long]$deltaBytes.Length
+        sha256 = $sampleHash
+        event_count = $eventCount
+    }
+}
+
 function Get-LatestTesterLog {
     param(
         [Parameter(Mandatory = $true)]
@@ -1443,6 +1723,25 @@ function Get-MetaTesterProcessesForTerminalRoot {
     return @($matches)
 }
 
+function Wait-ForMetaTesterQuiescence {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$TerminalRoot,
+        [ValidateRange(1, 60)]
+        [int]$MaxWaitSeconds = 10
+    )
+
+    $deadline = (Get-Date).ToUniversalTime().AddSeconds($MaxWaitSeconds)
+    do {
+        if (@(Get-MetaTesterProcessesForTerminalRoot -TerminalRoot $TerminalRoot).Count -eq 0) {
+            return $true
+        }
+        Start-Sleep -Milliseconds 250
+    } while ((Get-Date).ToUniversalTime() -lt $deadline)
+
+    return (@(Get-MetaTesterProcessesForTerminalRoot -TerminalRoot $TerminalRoot).Count -eq 0)
+}
+
 function Wait-ForReportExport {
     param(
         [Parameter(Mandatory = $true)]
@@ -1733,6 +2032,7 @@ try {
     Write-Host ("run_smoke.commission_per_lot={0} native_per_side={1} terminal={2} symbol={3} injected_sha256={4}" -f $CommissionPerLot, $CommissionPerSideNative, $effectiveTerminal, $Symbol, $commissionGroupEvidence.installed_sha256)
 
 $runResults = @()
+$loggerSampleCaptures = New-Object System.Collections.Generic.List[object]
 $globalOnInitFailure = $false
 $globalRealTicksMarker = $true
 $globalTimeoutFailure = $false
@@ -1790,6 +2090,12 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
         Write-Host ("run_smoke.tester_currency_override={0} run={1}" -f $TesterCurrencyOverride.Trim().ToUpperInvariant(), $runName)
     }
     Write-Host ("run_smoke.stage=start_terminal terminal={0} run={1} ini='{2}'" -f $effectiveTerminal, $runName, $iniPath)
+    $loggerStateBefore = $null
+    if (-not $AllowRunningTerminal.IsPresent) {
+        $loggerStateBefore = Get-QmLoggerFileState -TerminalRoot $terminalRoot -EAIdValue $EAId
+    } else {
+        Write-Host ("run_smoke.logger_sample_skipped run={0} reason=allow_running_terminal" -f $runName)
+    }
     try {
         $runExec = Start-TesterRun -TerminalExe $terminalExe -IniPath $iniPath -TimeoutSec $TimeoutSeconds -ReportPath $sourceReportPath -TerminalName $effectiveTerminal
     } catch {
@@ -1845,6 +2151,29 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
             tester_log_path = $null
         }
         continue
+    }
+
+    # Capture only after every writer for this stopped tester agent is gone.
+    # Timeout and log-bomb branches continue above, so their partial prefixes
+    # can never become a schema sample. A naturally finishing/latching run may
+    # leave metatester alive briefly while it flushes; skip rather than publish
+    # if that bounded quiescence check cannot be proven.
+    if ($null -ne $loggerStateBefore) {
+        if (Wait-ForMetaTesterQuiescence -TerminalRoot $terminalRoot) {
+            $runLoggerSamplePath = Join-Path $runDir "logger_sample.jsonl"
+            $loggerCapture = Save-QmLoggerDelta `
+                -BeforeState $loggerStateBefore `
+                -TerminalRoot $terminalRoot `
+                -EAIdValue $EAId `
+                -DestinationPath $runLoggerSamplePath
+            if ($null -ne $loggerCapture) {
+                $loggerCapture | Add-Member -NotePropertyName run -NotePropertyValue $runName
+                $loggerSampleCaptures.Add($loggerCapture)
+                Write-Host ("run_smoke.logger_sample_captured run={0} path='{1}' events={2} bytes={3} sha256={4}" -f $runName, $loggerCapture.path, $loggerCapture.event_count, $loggerCapture.size_bytes, $loggerCapture.sha256)
+            }
+        } else {
+            Write-Warning ("Structured logger capture skipped: metatester writer still active for terminal '{0}'." -f $effectiveTerminal)
+        }
     }
 
     # MT5 report writes can lag significantly under terminal contention; allow a longer settle window
@@ -2168,6 +2497,38 @@ if (@($reasonClasses).Count -eq 0) {
     $reasonClasses.Add("OK")
 }
 
+$loggerSamplePath = $null
+$loggerSampleEvidence = $null
+if ($loggerSampleCaptures.Count -gt 0) {
+    $selectedLoggerCapture = $loggerSampleCaptures[$loggerSampleCaptures.Count - 1]
+    $candidateLoggerSamplePath = Join-Path $reportDir "logger_sample.jsonl"
+    try {
+        $selectedBytes = [System.IO.File]::ReadAllBytes($selectedLoggerCapture.path)
+        [System.IO.File]::WriteAllBytes($candidateLoggerSamplePath, $selectedBytes)
+        $publishedHash = Get-FilePrefixSha256 -Path $candidateLoggerSamplePath -Length ([long]$selectedBytes.Length)
+        if ($publishedHash -cne $selectedLoggerCapture.sha256) {
+            throw "published logger sample hash mismatch"
+        }
+        $loggerSamplePath = [System.IO.Path]::GetFullPath($candidateLoggerSamplePath)
+        $loggerSampleEvidence = [ordered]@{
+            run = $selectedLoggerCapture.run
+            path = $loggerSamplePath
+            source_path = $selectedLoggerCapture.source_path
+            source_offset_start = $selectedLoggerCapture.source_offset_start
+            source_offset_end_exclusive = $selectedLoggerCapture.source_offset_end_exclusive
+            source_snapshot_sha256 = $selectedLoggerCapture.source_snapshot_sha256
+            size_bytes = $selectedLoggerCapture.size_bytes
+            sha256 = $selectedLoggerCapture.sha256
+            event_count = $selectedLoggerCapture.event_count
+            exact_byte_copy = $true
+        }
+    } catch {
+        Write-Warning ("Structured logger sample publish skipped: {0}" -f $_.Exception.Message)
+        $loggerSamplePath = $null
+        $loggerSampleEvidence = $null
+    }
+}
+
 $summary = [ordered]@{
     timestamp_utc = (Get-Date).ToUniversalTime().ToString("o")
     run_tag = $runTag
@@ -2192,6 +2553,8 @@ $summary = [ordered]@{
     model4_log_marker_detected = $globalRealTicksMarker
     report_dir = $reportDir
     report_export_mode = "relative_with_absolute_fallback"
+    logger_sample_path = $loggerSamplePath
+    logger_sample = $loggerSampleEvidence
     commission_group = [ordered]@{
         commission_per_lot = $CommissionPerLot
         commission_per_side_native = $CommissionPerSideNative
@@ -2229,6 +2592,7 @@ $evidenceLines = @(
     "- summary_json: $summaryPath",
     "- report_dir: $reportDir",
     "- report_export_mode: relative_with_absolute_fallback",
+    "- logger_sample_jsonl: $loggerSamplePath",
     "",
     "## Report Chain Evidence"
 )
@@ -2250,6 +2614,9 @@ Write-Output "run_smoke.reason_classes=$([string]::Join(';', $summary.reason_cla
 Write-Output "run_smoke.summary=$summaryPath"
 Write-Output "run_smoke.report_dir=$reportDir"
 Write-Output "run_smoke.evidence=$evidencePath"
+if (-not [string]::IsNullOrWhiteSpace($loggerSamplePath)) {
+    Write-Output "run_smoke.logger_sample=$loggerSamplePath"
+}
 
     Invoke-DispatchCompletion -OriginalTargetTerminal $Terminal -EAIdValue $EAId -SymbolName $Symbol -PeriodName $Period -YearValue $Year -SetFilePath $SetFile -DispatchPhaseValue $DispatchPhase -DispatchVersionValue $DispatchVersion -DispatchSubGateHashValue $DispatchSubGateHash
 

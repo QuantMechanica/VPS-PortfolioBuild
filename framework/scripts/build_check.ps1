@@ -12,7 +12,8 @@ param(
     [switch]$SkipLoggerSchema,
     [switch]$SkipForbiddenScan,
     [switch]$SkipInputGroupCheck,
-    [switch]$SkipPerfStaticCheck
+    [switch]$SkipPerfStaticCheck,
+    [switch]$SkipMaeHookCheck
 )
 
 Set-StrictMode -Version Latest
@@ -22,6 +23,14 @@ $script:GateFailures = New-Object System.Collections.Generic.List[string]
 $script:GateWarnings = New-Object System.Collections.Generic.List[string]
 $script:TimestampUtc = (Get-Date).ToUniversalTime().ToString("o")
 $script:RunTag = (Get-Date).ToUniversalTime().ToString("yyyyMMdd_HHmmss")
+$script:EventVocabularyLoaded = $false
+$script:EventVocabularyPath = $null
+$script:QmEventNames = @{}
+$script:Q08EventNames = @{}
+$script:QmRequiredFields = @()
+$script:Q08RequiredFields = @()
+$script:QmSchemaVersion = 0
+$script:Q08SchemaVersion = 0
 
 function Add-Failure {
     param([Parameter(Mandatory = $true)][string]$Message)
@@ -416,6 +425,104 @@ function ConvertFrom-JsonSafe {
     }
 }
 
+function Initialize-EventVocabulary {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ResolvedRepoRoot
+    )
+
+    $vocabularyPath = Join-Path $ResolvedRepoRoot "framework\registry\event_vocabulary.json"
+    $script:EventVocabularyPath = $vocabularyPath
+    if (-not (Test-Path -LiteralPath $vocabularyPath)) {
+        Add-Failure "BUILD_CHECK_EVENT_VOCABULARY_MISSING: $vocabularyPath."
+        return
+    }
+
+    try {
+        $registry = Get-Content -Raw -LiteralPath $vocabularyPath | ConvertFrom-Json -ErrorAction Stop
+    } catch {
+        Add-Failure "BUILD_CHECK_EVENT_VOCABULARY_INVALID: $vocabularyPath is not valid JSON."
+        return
+    }
+
+    $rootProperties = @($registry.PSObject.Properties.Name)
+    if ($rootProperties -notcontains "schema_version" -or
+        $rootProperties -notcontains "streams" -or
+        $null -eq $registry.streams) {
+        Add-Failure "BUILD_CHECK_EVENT_VOCABULARY_SCHEMA_INVALID: $vocabularyPath is missing schema_version or streams."
+        return
+    }
+
+    $registrySchema = 0
+    if (-not [int]::TryParse([string]$registry.schema_version, [ref]$registrySchema) -or
+        $registrySchema -ne 1) {
+        Add-Failure "BUILD_CHECK_EVENT_VOCABULARY_VERSION_UNSUPPORTED: $vocabularyPath schema_version=$($registry.schema_version); expected 1."
+        return
+    }
+
+    $streamProperties = @($registry.streams.PSObject.Properties.Name)
+    if ($streamProperties -notcontains "qm_events" -or
+        $streamProperties -notcontains "q08_trades") {
+        Add-Failure "BUILD_CHECK_EVENT_VOCABULARY_SCHEMA_INVALID: $vocabularyPath must define qm_events and q08_trades streams."
+        return
+    }
+
+    $qmStream = $registry.streams.qm_events
+    $q08Stream = $registry.streams.q08_trades
+    foreach ($streamSpec in @(
+        @{ Name = "qm_events"; Value = $qmStream },
+        @{ Name = "q08_trades"; Value = $q08Stream }
+    )) {
+        $properties = @($streamSpec.Value.PSObject.Properties.Name)
+        if ($properties -notcontains "schema_version" -or
+            $properties -notcontains "event_names" -or
+            $properties -notcontains "required_fields") {
+            Add-Failure "BUILD_CHECK_EVENT_VOCABULARY_SCHEMA_INVALID: $vocabularyPath stream '$($streamSpec.Name)' is incomplete."
+            return
+        }
+    }
+
+    $qmVersion = 0
+    $q08Version = 0
+    if (-not [int]::TryParse([string]$qmStream.schema_version, [ref]$qmVersion) -or
+        $qmVersion -ne 1 -or
+        -not [int]::TryParse([string]$q08Stream.schema_version, [ref]$q08Version) -or
+        $q08Version -ne 1) {
+        Add-Failure "BUILD_CHECK_EVENT_VOCABULARY_VERSION_UNSUPPORTED: both registered streams must use schema_version=1."
+        return
+    }
+
+    $qmNames = @{}
+    foreach ($eventName in @($qmStream.event_names)) {
+        $name = [string]$eventName
+        if (-not [string]::IsNullOrWhiteSpace($name)) {
+            $qmNames[$name] = $true
+        }
+    }
+    $q08Names = @{}
+    foreach ($eventName in @($q08Stream.event_names)) {
+        $name = [string]$eventName
+        if (-not [string]::IsNullOrWhiteSpace($name)) {
+            $q08Names[$name] = $true
+        }
+    }
+    $qmFields = @($qmStream.required_fields | ForEach-Object { [string]$_ })
+    $q08Fields = @($q08Stream.required_fields | ForEach-Object { [string]$_ })
+    if ($qmNames.Count -eq 0 -or $q08Names.Count -eq 0 -or
+        $qmFields.Count -eq 0 -or $q08Fields.Count -eq 0) {
+        Add-Failure "BUILD_CHECK_EVENT_VOCABULARY_SCHEMA_INVALID: registered streams must have non-empty event_names and required_fields."
+        return
+    }
+
+    $script:QmEventNames = $qmNames
+    $script:Q08EventNames = $q08Names
+    $script:QmRequiredFields = $qmFields
+    $script:Q08RequiredFields = $q08Fields
+    $script:QmSchemaVersion = $qmVersion
+    $script:Q08SchemaVersion = $q08Version
+    $script:EventVocabularyLoaded = $true
+}
+
 function Validate-LoggerRecord {
     param(
         [Parameter(Mandatory = $true)]
@@ -426,21 +533,46 @@ function Validate-LoggerRecord {
         [int]$LineNumber
     )
 
-    $requiredFields = @("ts_utc", "ts_broker", "level", "ea_id", "slug", "symbol", "tf", "magic", "event", "payload")
+    if (-not $script:EventVocabularyLoaded) {
+        return
+    }
+
+    $recordProperties = @($Record.PSObject.Properties.Name)
+    $eventName = if ($recordProperties -contains "event") { [string]$Record.event } else { "" }
+    # TRADE_CLOSED is deliberately emitted in a compact Common\Files stream.
+    # Dispatch that second schema only when the row has no QM_LogEvent envelope.
+    $isQ08Record = ($recordProperties -notcontains "sv") -and
+                   ($recordProperties -notcontains "ts_utc") -and
+                   $script:Q08EventNames.ContainsKey($eventName)
+    $requiredFields = if ($isQ08Record) {
+        $script:Q08RequiredFields
+    } else {
+        $script:QmRequiredFields
+    }
+    $streamName = if ($isQ08Record) { "q08_trades" } else { "qm_events" }
+
     foreach ($field in $requiredFields) {
-        if (-not ($Record.PSObject.Properties.Name -contains $field)) {
-            Add-Failure "BUILD_CHECK_LOGGER_SCHEMA_MISSING_FIELD: $PathForError line $LineNumber missing '$field'."
+        if ($recordProperties -notcontains $field) {
+            Add-Failure "BUILD_CHECK_LOGGER_SCHEMA_MISSING_FIELD: $PathForError line $LineNumber stream=$streamName missing '$field'."
         }
     }
 
-    if ($Record.PSObject.Properties.Name -contains "level") {
+    if (-not $isQ08Record -and $recordProperties -contains "sv") {
+        $svIsNumeric = ($Record.sv -is [System.ValueType]) -and -not ($Record.sv -is [bool])
+        $svValue = if ($svIsNumeric) { [double]$Record.sv } else { 0.0 }
+        if (-not $svIsNumeric -or $svValue -ne [double]$script:QmSchemaVersion) {
+            Add-Failure "BUILD_CHECK_LOGGER_SCHEMA_VERSION_INVALID: $PathForError line $LineNumber sv=$($Record.sv); expected $script:QmSchemaVersion."
+        }
+    }
+
+    if (-not $isQ08Record -and $recordProperties -contains "level") {
         $allowedLevels = @("TRACE", "INFO", "WARN", "ERROR", "FATAL")
         if ($allowedLevels -notcontains [string]$Record.level) {
             Add-Failure "BUILD_CHECK_LOGGER_SCHEMA_LEVEL_INVALID: $PathForError line $LineNumber level=$($Record.level)."
         }
     }
 
-    if ($Record.PSObject.Properties.Name -contains "ts_utc") {
+    if (-not $isQ08Record -and $recordProperties -contains "ts_utc") {
         $ignored = [System.DateTimeOffset]::MinValue
         $tsUtc = $Record.ts_utc
         $tsUtcValid = $false
@@ -460,9 +592,69 @@ function Validate-LoggerRecord {
         }
     }
 
-    if ($Record.PSObject.Properties.Name -contains "payload") {
+    if (-not $isQ08Record -and $recordProperties -contains "payload") {
         if ($null -eq $Record.payload) {
             Add-Failure "BUILD_CHECK_LOGGER_SCHEMA_PAYLOAD_NULL: $PathForError line $LineNumber."
+        }
+    }
+
+    if ($recordProperties -contains "event" -and -not [string]::IsNullOrWhiteSpace($eventName)) {
+        $registered = if ($isQ08Record) {
+            $script:Q08EventNames.ContainsKey($eventName)
+        } else {
+            $script:QmEventNames.ContainsKey($eventName)
+        }
+        if (-not $registered) {
+            Add-Warning "BUILD_CHECK_EVENT_VOCABULARY_UNKNOWN: $PathForError line $LineNumber stream=$streamName event='$eventName'."
+        }
+    }
+}
+
+function Invoke-EAEventVocabularyStaticCheck {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ResolvedRepoRoot
+    )
+
+    if (-not $script:EventVocabularyLoaded) {
+        return
+    }
+
+    $eaRoot = Join-Path $ResolvedRepoRoot "framework\EAs"
+    if (-not (Test-Path -LiteralPath $eaRoot)) {
+        return
+    }
+    if ($EALabel) {
+        $eaFiles = @(Get-ChildItem -LiteralPath (Join-Path $eaRoot $EALabel) -File -Filter *.mq5 -ErrorAction SilentlyContinue)
+    } else {
+        $eaFiles = @(Get-ChildItem -LiteralPath $eaRoot -Recurse -File -Filter *.mq5 -ErrorAction SilentlyContinue |
+            Where-Object { $_.FullName -notmatch '(?i)[\\/]_obsolete_' })
+    }
+
+    $logEventPattern = '(?s)\bQM_LogEvent\s*\(\s*[^,]+,\s*"(?<event>[A-Za-z0-9_.:-]+)"'
+    $logFatalPattern = '(?s)\bQM_LogFatal\s*\(\s*"(?<event>[A-Za-z0-9_.:-]+)"'
+    foreach ($file in $eaFiles) {
+        $content = Get-Content -Raw -LiteralPath $file.FullName -ErrorAction SilentlyContinue
+        if (-not $content) {
+            continue
+        }
+        # Advisory and intentionally limited to provable literals. The
+        # deterministic generator records const/ternary calls and unresolved
+        # expressions for review in event_vocabulary.json.
+        $scanText = [regex]::Replace($content, '(?s)/\*.*?\*/', ' ')
+        $scanText = [regex]::Replace($scanText, '(?m)//.*$', ' ')
+        $seen = @{}
+        foreach ($pattern in @($logEventPattern, $logFatalPattern)) {
+            foreach ($match in [regex]::Matches($scanText, $pattern)) {
+                $literalEvent = [string]$match.Groups['event'].Value
+                if ($seen.ContainsKey($literalEvent)) {
+                    continue
+                }
+                $seen[$literalEvent] = $true
+                if (-not $script:QmEventNames.ContainsKey($literalEvent)) {
+                    Add-Warning "EA_EVENT_VOCABULARY_UNKNOWN: $($file.Name) emits unregistered QM event '$literalEvent'."
+                }
+            }
         }
     }
 }
@@ -474,6 +666,8 @@ function Invoke-LoggerSchemaValidation {
         [string]$SamplePath
     )
 
+    Initialize-EventVocabulary -ResolvedRepoRoot $ResolvedRepoRoot
+
     $effectivePath = $null
     $lines = @()
 
@@ -483,11 +677,11 @@ function Invoke-LoggerSchemaValidation {
             return
         }
         $effectivePath = (Resolve-Path -LiteralPath $SamplePath).Path
-        $lines = Get-Content -LiteralPath $effectivePath
+        $lines = @(Get-Content -LiteralPath $effectivePath)
     } elseif ($EALabel) {
         $effectivePath = "<embedded-sample>"
         $lines = @(
-            '{"ts_utc":"2026-04-26T14:23:01.234Z","ts_broker":"2026-04-26T16:23:01","level":"INFO","ea_id":1044,"slug":"vpmacd-us-indices","symbol":"WS30.DWX","tf":"H1","magic":10440001,"event":"ENTRY","payload":{"side":"BUY","lot":0.12}}'
+            '{"sv":1,"ts_utc":"2026-04-26T14:23:01.234Z","ts_broker":"2026-04-26T16:23:01","level":"INFO","ea_id":1044,"slug":"vpmacd-us-indices","symbol":"WS30.DWX","tf":"H1","magic":10440001,"event":"SMOKE_INIT_OK","payload":{"detail":"embedded_schema_fallback"}}'
         )
     } else {
         $candidate = Get-ChildItem -LiteralPath $ResolvedRepoRoot -Recurse -File -Filter "*.jsonl" |
@@ -496,11 +690,11 @@ function Invoke-LoggerSchemaValidation {
 
         if ($candidate) {
             $effectivePath = $candidate.FullName
-            $lines = Get-Content -LiteralPath $effectivePath
+            $lines = @(Get-Content -LiteralPath $effectivePath)
         } else {
             $effectivePath = "<embedded-sample>"
             $lines = @(
-                '{"ts_utc":"2026-04-26T14:23:01.234Z","ts_broker":"2026-04-26T16:23:01","level":"INFO","ea_id":1001,"slug":"build-check-sample","symbol":"EURUSD.DWX","tf":"H1","magic":10010000,"event":"ENTRY","payload":{"side":"BUY","lot":0.12}}'
+                '{"sv":1,"ts_utc":"2026-04-26T14:23:01.234Z","ts_broker":"2026-04-26T16:23:01","level":"INFO","ea_id":1001,"slug":"build-check-sample","symbol":"EURUSD.DWX","tf":"H1","magic":10010000,"event":"SMOKE_INIT_OK","payload":{"detail":"embedded_schema_fallback"}}'
             )
             Add-Warning "BUILD_CHECK_LOGGER_SAMPLE_FALLBACK: no .jsonl sample found; validating embedded schema sample."
         }
@@ -522,6 +716,8 @@ function Invoke-LoggerSchemaValidation {
             Validate-LoggerRecord -Record $record -PathForError $effectivePath -LineNumber ($i + 1)
         }
     }
+
+    Invoke-EAEventVocabularyStaticCheck -ResolvedRepoRoot $ResolvedRepoRoot
 }
 
 function Invoke-ForbiddenScan {
@@ -675,6 +871,44 @@ function Invoke-RiskSizerStaticCheck {
 
         if ($usesFrameworkCommon -and -not $callsFrameworkInit -and -not $callsRiskSizerConfigure) {
             Add-Failure "EA_RISK_SIZER_UNCONFIGURED: $($file.Name) includes QM_Common but does not call QM_FrameworkInit(...) or QM_RiskSizerConfigure(...). RISK_MODE=UNSET can silently produce zero-lot trades."
+        }
+    }
+}
+
+function Invoke-MaeHookStaticCheck {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ResolvedRepoRoot
+    )
+
+    $eaRoot = Join-Path $ResolvedRepoRoot "framework\EAs"
+    if (-not (Test-Path -LiteralPath $eaRoot)) {
+        return
+    }
+
+    if ($EALabel) {
+        $targetRoot = Join-Path $eaRoot $EALabel
+        $eaFiles = @(Get-ChildItem -LiteralPath $targetRoot -File -Filter *.mq5 -ErrorAction SilentlyContinue)
+    } else {
+        $eaFiles = @(Get-ChildItem -LiteralPath $eaRoot -Recurse -File -Filter *.mq5 -ErrorAction SilentlyContinue |
+            Where-Object {
+                if ($_.FullName -match '(?i)[\\/]_obsolete_') { return $false }
+                $relative = [System.IO.Path]::GetRelativePath($eaRoot, $_.FullName)
+                $segments = @($relative -split '[\\/]')
+                -not ($segments | Where-Object { $_ -match '^(?i:_?tests?|unit|smoke)$' })
+            })
+    }
+
+    foreach ($file in $eaFiles) {
+        $content = Get-Content -Raw -LiteralPath $file.FullName -ErrorAction SilentlyContinue
+        if (-not $content -or $content -notmatch '(?m)^\s*void\s+OnTick\s*\(') {
+            continue
+        }
+
+        $hasDirectHook = $content -match '(?m)^\s*QM_FrameworkTrackOpenPositionMae\s*\(\s*\)\s*;'
+        $hasKillSwitchFallback = $content -match '\bQM_KillSwitchCheck\s*\('
+        if (-not $hasDirectHook -and -not $hasKillSwitchFallback) {
+            Add-Warning "EA_Q08_MAE_HOOK_MISSING: $($file.Name) defines OnTick() but calls neither QM_FrameworkTrackOpenPositionMae() nor QM_KillSwitchCheck(). Q08 mae_acct will fall back to realized-floor MAE."
         }
     }
 }
@@ -854,6 +1088,9 @@ if (-not $SkipForbiddenScan.IsPresent) {
 if (-not $SkipInputGroupCheck.IsPresent) {
     Invoke-InputGroupCheck -ResolvedRepoRoot $resolvedRepoRoot
     Invoke-RiskSizerStaticCheck -ResolvedRepoRoot $resolvedRepoRoot
+}
+if (-not $SkipMaeHookCheck.IsPresent) {
+    Invoke-MaeHookStaticCheck -ResolvedRepoRoot $resolvedRepoRoot
 }
 if (-not $SkipPerfStaticCheck.IsPresent) {
     Invoke-PerfStaticCheck -ResolvedRepoRoot $resolvedRepoRoot

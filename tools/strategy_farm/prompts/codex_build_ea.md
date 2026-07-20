@@ -171,6 +171,7 @@ Use these framework helpers — DO NOT reimplement them:
 | SL/TP modify, BE, trailing        | `QM_TM_MoveSL/MoveTP/MoveToBreakEven/TrailATR/TrailStep`           |
 | Stop distance from ATR/structure  | `QM_StopATR / QM_StopStructure / QM_StopVolatility / QM_StopFixedPips` |
 | Lot sizing from SL points         | `QM_LotsForRisk(symbol, sl_points)`                                |
+| Q08 open-position MAE sampling    | `QM_FrameworkTrackOpenPositionMae()` (first statement in `OnTick`) |
 | News gate                         | `QM_NewsAllowsTrade(symbol, broker_time, qm_news_mode)`            |
 | Kill-switch / Friday-close        | `QM_KillSwitchCheck` / `QM_FrameworkHandleFridayClose`             |
 
@@ -179,10 +180,11 @@ gate must sit BELOW `Strategy_ManageOpenPosition` / exit handling and gate ONLY 
 entry path. Position management, stop enforcement, and time/equity exits must keep
 running through news windows — a news gate above management silently suspends risk
 management exactly when spreads spike (worst for EAs whose positions carry no
-server-side SL). Canonical order: kill-switch → Friday-close → NoTradeFilter →
-ManageOpenPosition → ExitSignal → **news gate** → IsNewBar → EntrySignal (see
-QM5_12821 OnTick after commit dc418a720 for the reference implementation). The
-fail-closed news-calendar init in OnInit is unchanged and still mandatory.
+server-side SL). Canonical order: **MAE sampling (before any early return)** →
+kill-switch → Friday-close → NoTradeFilter → ManageOpenPosition → ExitSignal →
+**news gate** → IsNewBar → EntrySignal (see the canonical skeleton; the
+kill-switch retains a compatibility MAE hook for older EAs). The fail-closed
+news-calendar init in OnInit is unchanged and still mandatory.
 
 ### Optional Signal Mixins (`QM_Signals.mqh`)
 
@@ -406,6 +408,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae(); // first: no guard may skip Q08 evidence
    if(!QM_FrameworkInit_OK) return;
    // ... framework guards ...
    if(QM_IsNewBar())            // FIRST: advance closed-bar state
@@ -537,7 +540,24 @@ build_result JSON is more valuable than masking it with a hopeful rewrite.
     Must report `PASS`. If FAIL, fix the listed sections before
     continuing.
 
-6. Run `pwsh -File C:\QM\repo\framework\scripts\build_check.ps1 -EALabel {{ea_id}}_{{slug}}`.
+6. Resolve the latest real smoke logger sample, then run `build_check.ps1`.
+   If no valid sample exists yet, omit `-LoggerSamplePath`; `build_check` keeps
+   its embedded-sample fallback.
+   ```powershell
+   $loggerSamplePath = (& python C:\QM\repo\framework\scripts\resolve_logger_sample.py `
+     --report-root D:\QM\reports\smoke | Select-Object -First 1)
+   if ($LASTEXITCODE -ne 0) {
+     throw "resolve_logger_sample.py failed with exit code $LASTEXITCODE"
+   }
+   $buildCheckArgs = @(
+     "-File", "C:\QM\repo\framework\scripts\build_check.ps1",
+     "-EALabel", "{{ea_id}}_{{slug}}"
+   )
+   if (-not [string]::IsNullOrWhiteSpace([string]$loggerSamplePath)) {
+     $buildCheckArgs += @("-LoggerSamplePath", [string]$loggerSamplePath)
+   }
+   & pwsh @buildCheckArgs
+   ```
    Must pass.
 
 7. Run `pwsh -File C:\QM\repo\framework\scripts\compile_one.ps1 -EALabel {{ea_id}}_{{slug}}`.

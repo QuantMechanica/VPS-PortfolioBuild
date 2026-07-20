@@ -328,8 +328,11 @@ string QM_NewsIndexCurrencies(const string normalized_symbol)
       return "EUR";
    if(normalized_symbol == "UK100" || normalized_symbol == "FTSE100")
       return "GBP";
-   if(normalized_symbol == "JP225" || normalized_symbol == "NIK225")
+   if(normalized_symbol == "JP225" || normalized_symbol == "JPN225" ||
+      normalized_symbol == "NIK225")
       return "JPY";
+   if(normalized_symbol == "AUS200" || normalized_symbol == "AU200")
+      return "AUD";
    return "";
   }
 
@@ -367,6 +370,100 @@ bool QM_NewsEventAffectsSymbol(const string event_currency, const string symbol)
    if(StringFind(currency, quote) >= 0)
       return true;
    return false;
+  }
+
+bool QM_NewsIsStrictEventCurrency(const string candidate)
+  {
+   const string code = QM_NewsUpper(QM_NewsTrim(candidate));
+   // Currencies present in the tester seed or supported broker universe. This
+   // deliberately excludes commodity/index base tokens such as XAU, XTI and
+   // NAS so an unmapped long CFD symbol cannot manufacture a false currency
+   // set and fail initialization.
+   const string known =
+      "|USD|EUR|GBP|JPY|AUD|NZD|CAD|CHF|CNY|CNH|HKD|SGD|SEK|NOK|DKK|PLN|CZK|HUF|TRY|ZAR|MXN|BRL|INR|KRW|";
+   return (StringLen(code) == 3 && StringFind(known, "|" + code + "|") >= 0);
+  }
+
+int QM_NewsStrictSymbolCurrencies(const string symbol,
+                                  string &currency_a,
+                                  string &currency_b)
+  {
+   currency_a = "";
+   currency_b = "";
+
+   const string normalized = QM_NewsNormalizeSymbol(symbol);
+   const string mapped = QM_NewsIndexCurrencies(normalized);
+   if(StringLen(mapped) > 0)
+     {
+      currency_a = mapped;
+      return 1;
+     }
+
+   if(StringLen(normalized) < 6)
+      return 0;
+
+   const string base = StringSubstr(normalized, 0, 3);
+   const string quote = StringSubstr(normalized, 3, 3);
+   int count = 0;
+   if(QM_NewsIsStrictEventCurrency(base))
+     {
+      currency_a = base;
+      count = 1;
+     }
+   if(QM_NewsIsStrictEventCurrency(quote) && quote != currency_a)
+     {
+      if(count == 0)
+         currency_a = quote;
+      else
+         currency_b = quote;
+      count++;
+     }
+   return count;
+  }
+
+bool QM_NewsTesterCalendarSelfTest(const string symbol)
+  {
+   string currency_a = "";
+   string currency_b = "";
+   const int currency_count =
+      QM_NewsStrictSymbolCurrencies(symbol, currency_a, currency_b);
+   const bool applicable = (currency_count > 0);
+   int matches = 0;
+
+   if(applicable)
+     {
+      for(int i = 0; i < ArraySize(g_qm_news_events); i++)
+        {
+         const string event_currency =
+            QM_NewsUpper(QM_NewsStripQuotes(g_qm_news_events[i].currency));
+         // Exact tokens only. Blank/ALL rows and the permissive live matcher
+         // are intentionally excluded: either would turn a broken currency
+         // column into a false-positive tester self-test.
+         if(event_currency == currency_a ||
+            (StringLen(currency_b) > 0 && event_currency == currency_b))
+            matches++;
+        }
+     }
+
+   string currencies = currency_a;
+   if(StringLen(currency_b) > 0)
+      currencies += "," + currency_b;
+   const string payload = StringFormat(
+      "{\"symbol\":\"%s\",\"currencies\":\"%s\",\"matches\":%d,\"rows\":%d,\"applicable\":%s}",
+      QM_LoggerEscapeJson(symbol),
+      QM_LoggerEscapeJson(currencies),
+      matches,
+      g_qm_news_rows_loaded,
+      applicable ? "true" : "false");
+
+   if(applicable && matches == 0)
+     {
+      QM_LogEvent(QM_ERROR, "NEWS_TESTER_CALENDAR_SELFTEST", payload);
+      return false;
+     }
+
+   QM_LogEvent(QM_INFO, "NEWS_TESTER_CALENDAR_SELFTEST", payload);
+   return true;
   }
 
 bool QM_NewsPushEvent(const datetime event_utc, const string currency, const string impact_upper)
@@ -623,6 +720,14 @@ bool QM_NewsInit(const string base_dir = "D:\\QM\\data\\news_calendar",
                   "{\"detail\":\"calendar_zero_rows_parsed\",\"live_source\":\"native_mt5_calendar\"}");
       return true;
      }
+
+   // P1.5: parsing datetimes is not sufficient evidence that the Currency
+   // column still aligns with the schema. In tester mode, require at least one
+   // exact event-currency match for every symbol with a known currency set.
+   // QM_FrameworkInit propagates false to INIT_FAILED for active news axes.
+   if(MQLInfoInteger(MQL_TESTER) != 0 &&
+      !QM_NewsTesterCalendarSelfTest(_Symbol))
+      return false;
 
    string primary_hash = "";
    string secondary_hash = "";
