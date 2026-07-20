@@ -31,15 +31,29 @@ Top-level fields (all required unless marked optional):
 | `spec_md_path`        | string or null    | Absolute path to written `SPEC.md`, or null if not written. |
 | `build_check_passed`  | bool              | Did `framework/scripts/build_check.ps1` pass?            |
 | `compile_succeeded`   | bool              | Did MetaEditor compile produce a `.ex5`?                 |
-| `smoke_result`        | string            | One of: `"passed"`, `"zero_trades"`, `"compile_failed"`, `"build_check_failed"`, `"framework_error"`. |
+| `smoke_result`        | string            | One of: `"passed"`, `"zero_trades"`, `"compile_failed"`, `"build_check_failed"`, `"framework_error"`, `"deferred_p2_smoke"`. |
 | `smoke_report_path`   | string or null    | Where the smoke summary.json lives if smoke ran.         |
 | `blocked_reason`      | string (optional) | Present + non-empty = build is blocked; reason text.     |
 | `open_questions`      | list[string] (optional) | Unresolved decisions Codex deferred to reviewer.   |
 
+`smoke_result: "deferred_p2_smoke"` (added 2026-07-20 — sanctioned per
+2026-07-19 review-inconsistency resolution): build_check and compile both
+PASSED, but the tester fleet was at/over its terminal-capacity ceiling
+(`resolve_backtest_target.py` returned `status=no_capacity` for `-Terminal
+any`, or the caller's own pre-dispatch process scan judged the fleet
+saturated) so no smoke tester run was attempted this wake. `blocked_reason`
+must state the capacity evidence (process counts / resolver status).
+codex_review / claude_review treat this as an **info-level finding, not a
+REJECT** — approve the build and let a later wake with free capacity run
+smoke, or route straight to Q02 dispatch per the card's own guidance if the
+card explicitly authorizes deferred dispatch (see card § Implementation And
+Safety Boundary).
+
 Pass criteria for §E mechanical review:
 - `build_check_passed == true`
 - `compile_succeeded == true`
-- `blocked_reason` absent OR empty string
+- `blocked_reason` absent OR empty string, OR `smoke_result ==
+  "deferred_p2_smoke"` (info-level, does not fail §E)
 - Both `mq5_path` and `ex5_path` reference files that exist on disk
 
 There is **no top-level `status` field** in this schema. Codex review §E
