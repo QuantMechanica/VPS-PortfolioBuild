@@ -1,8 +1,10 @@
 """Morning briefing — the ONE daily 06:00 mail OWNER reads first thing.
 
 Redesigned 2026-07-19 (OWNER directive, Task #19): content AND design reworked.
-This script IS the morning mail now — it renders a compact, scannable
-STEEL/EMERALD HTML digest and sends exactly ONE mail via the proven Gmail
+Restyled 2026-07-20 (OWNER-DL Direction C "Unified Neutral"): paper-light
+palette, steel-blue accent, true red/green P&L — inline CSS kept (mail
+clients need it). This script IS the morning mail now — it renders a compact,
+scannable paper-light HTML digest and sends exactly ONE mail via the proven Gmail
 send path (re-used from gmail_alarm.py: same SMTP host, creds in
 .private/secrets/, recipient). It also keeps the Drive-vault archive so OWNER
 has a scrollable off-VPS history.
@@ -53,12 +55,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import render_cockpit as rc          # noqa: E402
 import gmail_alarm as ga             # noqa: E402
 
-# ── Brand tokens (STEEL / EMERALD — slate-950 bg, emerald + orange accents,
-#    sharp edges, no glow) ────────────────────────────────────────────────
+# ── Brand tokens (PAPER / INK Direction C — paper-light bg, steel-blue
+#    accent, green/red = status + P&L only, sharp edges, no glow) ─────────
 P = ga.PALETTE
 FONT = ga.FONT_STACK
 MONO = ga.MONO_STACK
-EMERALD = P["emerald"]
+ACCENT = P["accent"]     # brand blue — headers/eyebrows, never status
+EMERALD = P["emerald"]   # status-good / profit green (legacy name kept)
 ORANGE = P["warn"]
 FAIL = P["fail"]
 CYAN = P["live"]
@@ -586,10 +589,10 @@ def render_html(data: dict) -> str:
 
     # ── Header + shell ──────────────────────────────────────────────────
     header = (
-        f'<tr><td style="padding:22px 26px 16px;border-bottom:2px solid {EMERALD};">'
+        f'<tr><td style="padding:22px 26px 16px;border-bottom:2px solid {ACCENT};">'
         f'<table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>'
         f'<td valign="top">'
-        f'<div style="font-size:10px;letter-spacing:2px;color:{EMERALD};'
+        f'<div style="font-size:10px;letter-spacing:2px;color:{ACCENT};'
         f'text-transform:uppercase;font-weight:700;">QuantMechanica · Strategy Farm</div>'
         f'<div style="font-size:23px;color:{P["text"]};font-weight:700;margin-top:4px;'
         f'letter-spacing:0.5px;">QM MORGENBRIEFING <span style="color:{ORANGE};">{e(date_h)}</span></div>'

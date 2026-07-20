@@ -32,23 +32,27 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from pathlib import Path
 
-# Brand palette — mirrors render_cockpit.py + daily_status_mail.py
+# Brand palette — mirrors render_cockpit.py (Direction C "Unified Neutral",
+# OWNER-DL 2026-07-20: paper-light bg, white card, ONE steel-blue accent,
+# TRUE red/green P&L; key names kept for backwards compatibility —
+# "emerald" now holds the status/profit GREEN, "accent" is the brand blue).
 PALETTE = {
-    "bg":           "#020617",
-    "surface_0":    "#060b18",
-    "surface_1":    "#0f172a",
-    "surface_2":    "#1e293b",
-    "border":       "rgba(148,163,184,0.18)",
-    "text":         "#f8fafc",
-    "text_dim":     "#cbd5e1",
-    "text_muted":   "#94a3b8",
-    "text_subtle":  "#64748b",
-    "emerald":      "#10b981",
-    "emerald_dark": "#059669",
-    "warn":         "#f59e0b",
-    "fail":         "#ef4444",
-    "info":         "#3b82f6",
-    "live":         "#06b6d4",
+    "bg":           "#f6f5f2",
+    "surface_0":    "#efece3",
+    "surface_1":    "#ffffff",
+    "surface_2":    "#f1efe8",
+    "border":       "#e2ded4",
+    "text":         "#1c1a16",
+    "text_dim":     "#45403a",
+    "text_muted":   "#726b60",
+    "text_subtle":  "#9a938a",
+    "emerald":      "#1a8f4c",
+    "emerald_dark": "#14713c",
+    "warn":         "#b8720a",
+    "fail":         "#d13438",
+    "info":         "#2954d4",
+    "live":         "#0e7490",
+    "accent":       "#2954d4",
 }
 FONT_STACK = "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif"
 MONO_STACK = "'Source Code Pro', ui-monospace, 'SF Mono', Menlo, monospace"
@@ -227,7 +231,7 @@ def _build_mail_body(health: dict) -> tuple[str, str, str]:
   <tr><td style="padding:22px 26px 18px;border-bottom:1px solid {P['border']};">
     <table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
       <td>
-        <div style="font-size:10px;letter-spacing:2px;color:{P['emerald']};text-transform:uppercase;font-weight:700;">QuantMechanica · Strategy Farm</div>
+        <div style="font-size:10px;letter-spacing:2px;color:{P['accent']};text-transform:uppercase;font-weight:700;">QuantMechanica · Strategy Farm</div>
         <div style="font-size:22px;color:{P['text']};font-weight:600;margin-top:4px;">Pipeline Health Alert</div>
       </td>
       <td align="right" valign="top">
@@ -356,7 +360,7 @@ def main() -> int:
             f'style="max-width:640px;background:{P["surface_1"]};border-radius:12px;'
             f'border:1px solid {P["border"]};">'
             f'<tr><td style="padding:28px 28px;text-align:center;">'
-            f'<div style="font-size:10px;letter-spacing:2px;color:{P["emerald"]};'
+            f'<div style="font-size:10px;letter-spacing:2px;color:{P["accent"]};'
             f'text-transform:uppercase;font-weight:700;">QuantMechanica · Strategy Farm</div>'
             f'<div style="font-size:36px;color:{P["emerald"]};font-weight:700;'
             f'margin-top:14px;letter-spacing:1px;">ALL GREEN</div>'
