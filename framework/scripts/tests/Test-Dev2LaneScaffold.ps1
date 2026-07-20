@@ -62,7 +62,9 @@ $coreText = Get-Content -LiteralPath $paths.core -Raw -ErrorAction Stop
 foreach ($marker in @(
     'Global\QM_DEV1_SMOKE_CONTROLLER', 'Assert-QmSourceQuiescent', '.DEV2.stage.',
     'Config\agents.dat', 'verify_all_copied_files_sha256', 'old_dev1_manifest_hash_claimed = $false',
-    'mutex_held_for_copy = $sourceAcquired', "smoke_status = 'PENDING'"
+    'mutex_held_for_copy = $sourceAcquired', "smoke_status = 'PENDING'",
+    'ResumeExactPartialUser', 'ExpectedPartialUserSid', 'Assert-QmExactPartialUserState',
+    'Set-QmPasswordRequired', 'Disable-LocalUser', 'Enable-LocalUser'
 )) {
     if (-not $provisionText.Contains($marker, [System.StringComparison]::Ordinal)) {
         throw "Provisioner safety marker is missing: $marker"

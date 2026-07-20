@@ -1,6 +1,9 @@
 [CmdletBinding()]
 param(
-    [switch]$Apply
+    [switch]$Apply,
+    [switch]$ResumeExactPartialUser,
+    [ValidatePattern('^S-1-5-21-[0-9]+-[0-9]+-[0-9]+-[0-9]+$')]
+    [string]$ExpectedPartialUserSid
 )
 
 Set-StrictMode -Version Latest
@@ -66,6 +69,67 @@ function Resolve-QmAccountSid {
     param([Parameter(Mandatory = $true)][string]$AccountName)
     $account = New-Object System.Security.Principal.NTAccount($AccountName)
     return $account.Translate([System.Security.Principal.SecurityIdentifier]).Value
+}
+
+function Set-QmPasswordRequired {
+    param([Parameter(Mandatory = $true)][string]$UserName)
+    $userEntry = [ADSI]("WinNT://{0}/{1},user" -f $env:COMPUTERNAME, $UserName)
+    $passwordNotRequiredFlag = 0x20
+    $flags = [int]$userEntry.Properties['UserFlags'].Value
+    $userEntry.Properties['UserFlags'].Value = ($flags -band (-bnot $passwordNotRequiredFlag))
+    $userEntry.CommitChanges()
+    $user = Get-LocalUser -Name $UserName -ErrorAction Stop
+    if (-not $user.PasswordRequired) {
+        throw "Failed to enforce PasswordRequired=True for $UserName."
+    }
+}
+
+function Assert-QmExactPartialUserState {
+    param(
+        [Parameter(Mandatory = $true)][string]$UserName,
+        [Parameter(Mandatory = $true)][string]$ExpectedSid,
+        [Parameter(Mandatory = $true)][string]$TerminalRoot,
+        [Parameter(Mandatory = $true)][string]$ReportRoot,
+        [Parameter(Mandatory = $true)][string]$CredentialPath,
+        [Parameter(Mandatory = $true)][object[]]$FirewallContract
+    )
+    $user = Get-LocalUser -Name $UserName -ErrorAction Stop
+    if ($user.SID.Value -cne $ExpectedSid -or $user.Name -cne 'QMDev2' -or $user.Enabled -or
+        $user.PasswordRequired -or $user.UserMayChangePassword -or $null -ne $user.LastLogon -or
+        $user.Description -cne 'Isolated offline MT5 research lane DEV2') {
+        throw 'QMDev2 exact partial-user identity state drifted; refusing resume.'
+    }
+    $memberships = @(
+        Get-LocalGroup -ErrorAction Stop | ForEach-Object {
+            Get-LocalGroupMember -Group $_ -ErrorAction SilentlyContinue
+        } | Where-Object { $null -ne $_.SID -and $_.SID.Value -eq $ExpectedSid }
+    )
+    if ($memberships.Count -ne 0) {
+        throw 'QMDev2 partial user unexpectedly has group membership; refusing resume.'
+    }
+    $profileKey = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\$ExpectedSid"
+    foreach ($unexpectedPath in @(
+            $TerminalRoot, $ReportRoot, $CredentialPath, ([System.IO.Path]::GetDirectoryName($CredentialPath)),
+            'C:\Users\QMDev2', $profileKey
+        )) {
+        if (Test-Path -LiteralPath $unexpectedPath) {
+            throw "QMDev2 partial-state artifact unexpectedly exists: $unexpectedPath"
+        }
+    }
+    if (@(Get-ScheduledTask -ErrorAction Stop | Where-Object { $_.TaskName -like 'QM_DEV2_*' }).Count -ne 0) {
+        throw 'QMDev2 partial state contains a DEV2 task; refusing resume.'
+    }
+    foreach ($entry in $FirewallContract) {
+        if (@(Get-NetFirewallRule -DisplayName ([string]$entry.display_name) -ErrorAction SilentlyContinue).Count -ne 0) {
+            throw "QMDev2 partial state contains firewall rule '$($entry.display_name)'; refusing resume."
+        }
+    }
+    $stagePaths = @(Get-ChildItem -LiteralPath ([System.IO.Path]::GetDirectoryName($TerminalRoot)) `
+            -Directory -Filter '.DEV2.stage.*' -ErrorAction Stop)
+    if ($stagePaths.Count -ne 0) {
+        throw 'QMDev2 partial state contains a DEV2 staging directory; refusing resume.'
+    }
+    return $user
 }
 
 function Set-QmRestrictedAcl {
@@ -481,6 +545,12 @@ if ([int]$contract.schema_version -ne 1 -or [string]$contract.contract_id -cne '
     -not [bool]$contract.agent_port_contract.require_no_preexisting_port_owner) {
     throw 'DEV2 lane contract drifted from the fixed, additive provisioning boundary.'
 }
+if ($ResumeExactPartialUser.IsPresent -and [string]::IsNullOrWhiteSpace($ExpectedPartialUserSid)) {
+    throw '-ResumeExactPartialUser requires -ExpectedPartialUserSid.'
+}
+if (-not $ResumeExactPartialUser.IsPresent -and -not [string]::IsNullOrWhiteSpace($ExpectedPartialUserSid)) {
+    throw '-ExpectedPartialUserSid is valid only with -ResumeExactPartialUser.'
+}
 
 if (-not $Apply) {
     $plan = [ordered]@{
@@ -493,6 +563,8 @@ if (-not $Apply) {
         target_root = $terminalRoot
         target_exists = (Test-Path -LiteralPath $terminalRoot)
         target_user_exists = ($null -ne (Get-LocalUser -Name $dev2User -ErrorAction SilentlyContinue))
+        resume_exact_partial_user = $ResumeExactPartialUser.IsPresent
+        expected_partial_user_sid = $ExpectedPartialUserSid
         credential_exists = (Test-Path -LiteralPath $credentialPath)
         report_root = $reportRoot
         controller_mutex = [string]$contract.coordination.controller_mutex
@@ -515,6 +587,8 @@ $securePassword = $null
 $profileTaskReceipt = $null
 $finalReceiptPath = $null
 $stageRoot = $null
+$dev2Sid = $null
+$provisionCompleted = $false
 try {
     $provisionMutex = New-Object System.Threading.Mutex($false, [string]$contract.coordination.provision_mutex)
     $sourceMutex = New-Object System.Threading.Mutex($false, [string]$contract.coordination.source_quiescence_mutex)
@@ -527,7 +601,15 @@ try {
     if (-not (Test-Path -LiteralPath $sourceRoot -PathType Container)) { throw "DEV1 source is missing: $sourceRoot" }
     Assert-QmNoReparseTree -Root $sourceRoot
     if (Test-Path -LiteralPath $terminalRoot) { throw "DEV2 target unexpectedly exists: $terminalRoot" }
-    if ($null -ne (Get-LocalUser -Name $dev2User -ErrorAction SilentlyContinue)) { throw "DEV2 user unexpectedly exists: $dev2User" }
+    $existingUser = Get-LocalUser -Name $dev2User -ErrorAction SilentlyContinue
+    if ($null -ne $existingUser) {
+        if (-not $ResumeExactPartialUser.IsPresent) { throw "DEV2 user unexpectedly exists: $dev2User" }
+        $user = Assert-QmExactPartialUserState -UserName $dev2User -ExpectedSid $ExpectedPartialUserSid `
+            -TerminalRoot $terminalRoot -ReportRoot $reportRoot -CredentialPath $credentialPath `
+            -FirewallContract @($contract.firewall)
+    } elseif ($ResumeExactPartialUser.IsPresent) {
+        throw 'Exact partial-user resume was requested, but QMDev2 does not exist.'
+    }
     if (Test-Path -LiteralPath $credentialPath) { throw "DEV2 credential unexpectedly exists: $credentialPath" }
     if (@(Get-ScheduledTask -ErrorAction Stop | Where-Object { $_.TaskName -like 'QM_DEV2_*' }).Count -gt 0) {
         throw 'A DEV2 scheduled task unexpectedly exists.'
@@ -541,10 +623,21 @@ try {
 
     $passwordText = New-QmRandomPassword
     $securePassword = ConvertTo-SecureString -String $passwordText -AsPlainText -Force
-    $user = New-LocalUser -Name $dev2User -Password $securePassword -Description 'Isolated offline MT5 research lane DEV2' `
-        -AccountNeverExpires -PasswordNeverExpires -UserMayNotChangePassword -ErrorAction Stop
-    if (-not $user.Enabled -or -not $user.PasswordRequired) { throw 'New QMDev2 identity is not enabled/password-required.' }
+    if ($null -ne $existingUser) {
+        Set-LocalUser -Name $dev2User -Password $securePassword -AccountNeverExpires `
+            -PasswordNeverExpires $true -UserMayChangePassword $false -ErrorAction Stop
+    } else {
+        $user = New-LocalUser -Name $dev2User -Password $securePassword -Description 'Isolated offline MT5 research lane DEV2' `
+            -AccountNeverExpires -PasswordNeverExpires -UserMayNotChangePassword -ErrorAction Stop
+        Disable-LocalUser -Name $dev2User -ErrorAction Stop
+    }
+    Set-QmPasswordRequired -UserName $dev2User
+    $user = Get-LocalUser -Name $dev2User -ErrorAction Stop
+    if ($user.Enabled -or -not $user.PasswordRequired) { throw 'QMDev2 must remain disabled and password-required during provisioning.' }
     $dev2Sid = $user.SID.Value
+    if ($ResumeExactPartialUser.IsPresent -and $dev2Sid -cne $ExpectedPartialUserSid) {
+        throw 'QMDev2 SID changed during exact partial-user resume.'
+    }
     $administrators = Get-LocalGroup -SID (New-Object System.Security.Principal.SecurityIdentifier('S-1-5-32-544'))
     if (@(Get-LocalGroupMember -Group $administrators -ErrorAction Stop | Where-Object { $_.SID.Value -eq $dev2Sid }).Count -gt 0) {
         throw 'QMDev2 unexpectedly belongs to BUILTIN\Administrators.'
@@ -630,6 +723,11 @@ try {
     Assert-QmNoReparseTree -Root $terminalRoot
 
     $firewallRows = @(Install-QmFirewallRules -Rules @($contract.firewall) -TerminalRoot $terminalRoot)
+    Enable-LocalUser -Name $dev2User -ErrorAction Stop
+    $enabledUser = Get-LocalUser -Name $dev2User -ErrorAction Stop
+    if ($enabledUser.SID.Value -cne $dev2Sid -or -not $enabledUser.Enabled -or -not $enabledUser.PasswordRequired) {
+        throw 'QMDev2 final enable/password contract verification failed.'
+    }
     $profileTaskReceipt = Initialize-QmDev2Profile -Account $dev2Account -Password $passwordText `
         -ProvisioningDirectory $provisioningDirectory -TaskPrefix ([string]$contract.coordination.profile_task_prefix)
     foreach ($evidencePath in @($hashCsv, [string]$profileTaskReceipt.path)) {
@@ -716,6 +814,7 @@ try {
     )
     Set-QmRestrictedAcl -Path $finalReceiptPath -TargetSid $dev2Sid -FileOnly
     Assert-QmAclContract -Path $finalReceiptPath -AllowedWriterSids @($adminSid, $systemSid)
+    $provisionCompleted = $true
     Write-Output ([ordered]@{
             status = 'PASS'
             receipt = $finalReceiptPath
@@ -730,6 +829,14 @@ try {
     $passwordText = $null
     if ($null -ne $securePassword) {
         try { $securePassword.Dispose() } catch { }
+    }
+    if (-not $provisionCompleted -and -not [string]::IsNullOrWhiteSpace([string]$dev2Sid)) {
+        try {
+            $failedUser = Get-LocalUser -Name $dev2User -ErrorAction Stop
+            if ($failedUser.SID.Value -eq $dev2Sid) { Disable-LocalUser -Name $dev2User -ErrorAction Stop }
+        } catch {
+            Write-Warning "Failed to disable exact QMDev2 identity after provisioning failure: $($_.Exception.Message)"
+        }
     }
     if ($sourceAcquired -and $null -ne $sourceMutex) { try { $sourceMutex.ReleaseMutex() } catch { } }
     if ($provisionAcquired -and $null -ne $provisionMutex) { try { $provisionMutex.ReleaseMutex() } catch { } }
