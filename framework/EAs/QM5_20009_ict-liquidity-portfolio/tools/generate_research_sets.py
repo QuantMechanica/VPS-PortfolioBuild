@@ -538,11 +538,33 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
     ):
         raise FreezeError("phase unlock policy drifted or was weakened")
     required_record_fields = {
-        "schema_version", "protocol_id", "phase_id", "binding", "verdict",
-        "freeze_inputs_sha256", "manifest_sha256", "evidence_sha256", "completed_utc",
+        "schema_version", "artifact_type", "status", "verdict", "created_utc",
+        "protocol_id", "phase_id", "freeze_identity", "inventory_binding",
+        "evidence_binding", "publication_contract",
     }
     if set(unlock.get("required_record_fields", [])) != required_record_fields:
         raise FreezeError("phase verdict record schema is incomplete")
+    expected_record_schemas = {
+        "DEV": {
+            "verdict_artifact_type": "QM5_20009_FREEZE_V5_DEV_VERDICT",
+            "inventory_artifact_type": "QM5_20009_FREEZE_V5_DEV_RECEIPT_INVENTORY",
+            "inventory_status": "COMPLETE",
+            "inventory_name": "DEV.receipt_inventory.json",
+            "evidence_artifact_type": "QM5_20009_FREEZE_V5_DEV_ADJUDICATION_EVIDENCE",
+            "evidence_status": "PASS",
+            "evidence_name": "DEV.evidence.json",
+        }
+    }
+    if unlock.get("supported_record_schemas") != expected_record_schemas:
+        raise FreezeError("phase verdict nested artifact schemas drifted")
+    expected_publication_contract = {
+        "exclusive_create_no_overwrite": True,
+        "sidecar_before_authoritative_json": True,
+        "input_graph_reloaded_immediately_before_publish": True,
+        "verdict_json_is_final_commit_marker": True,
+    }
+    if unlock.get("required_publication_contract") != expected_publication_contract:
+        raise FreezeError("phase verdict publication contract drifted or was weakened")
 
     attestation = protocol.get("freeze_attestation")
     if not isinstance(attestation, Mapping) or attestation != {

@@ -533,6 +533,23 @@
     "detached_sha256_suffix": ".sha256",
     "record_schema_version": 1,
     "accepted_verdict": "PASS",
+    "supported_record_schemas": {
+      "DEV": {
+        "verdict_artifact_type": "QM5_20009_FREEZE_V5_DEV_VERDICT",
+        "inventory_artifact_type": "QM5_20009_FREEZE_V5_DEV_RECEIPT_INVENTORY",
+        "inventory_status": "COMPLETE",
+        "inventory_name": "DEV.receipt_inventory.json",
+        "evidence_artifact_type": "QM5_20009_FREEZE_V5_DEV_ADJUDICATION_EVIDENCE",
+        "evidence_status": "PASS",
+        "evidence_name": "DEV.evidence.json"
+      }
+    },
+    "required_publication_contract": {
+      "exclusive_create_no_overwrite": true,
+      "sidecar_before_authoritative_json": true,
+      "input_graph_reloaded_immediately_before_publish": true,
+      "verdict_json_is_final_commit_marker": true
+    },
     "nonbinding_phases": ["DEV_SMOKE_2022"],
     "required_prior_verdicts": {
       "DEV": [],
@@ -548,14 +565,16 @@
     },
     "required_record_fields": [
       "schema_version",
+      "artifact_type",
+      "status",
+      "verdict",
+      "created_utc",
       "protocol_id",
       "phase_id",
-      "binding",
-      "verdict",
-      "freeze_inputs_sha256",
-      "manifest_sha256",
-      "evidence_sha256",
-      "completed_utc"
+      "freeze_identity",
+      "inventory_binding",
+      "evidence_binding",
+      "publication_contract"
     ]
   },
   "freeze_attestation": {

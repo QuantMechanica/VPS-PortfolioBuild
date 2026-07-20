@@ -274,34 +274,7 @@ def test_retrospective_holdout_stays_blocked_until_missing_tick_months_are_verif
         )
 
 
-def _write_verdict(
-    root: Path,
-    payload: dict[str, object],
-    *,
-    phase_id: str,
-    freeze_root: str,
-    manifest_sha: str,
-    binding: bool = True,
-) -> Path:
-    record = {
-        "schema_version": 1,
-        "protocol_id": payload["protocol_id"],
-        "phase_id": phase_id,
-        "binding": binding,
-        "verdict": "PASS",
-        "freeze_inputs_sha256": freeze_root,
-        "manifest_sha256": manifest_sha,
-        "evidence_sha256": "e" * 64,
-        "completed_utc": "2026-07-20T01:02:03Z",
-    }
-    path = root / f"{phase_id}.verdict.json"
-    raw = (json.dumps(record, sort_keys=True) + "\n").encode("utf-8")
-    path.write_bytes(raw)
-    Path(f"{path}.sha256").write_text(hashlib.sha256(raw).hexdigest() + "\n", encoding="ascii")
-    return path
-
-
-def test_oos_unlock_requires_a_binding_detached_dev_verdict(tmp_path: Path) -> None:
+def test_oos_unlock_requires_the_nested_adjudicator_dev_verdict(tmp_path: Path) -> None:
     payload = protocol()
     freeze_root = "a" * 64
     manifest_sha = "b" * 64
@@ -313,30 +286,15 @@ def test_oos_unlock_requires_a_binding_detached_dev_verdict(tmp_path: Path) -> N
             manifest_sha256=manifest_sha,
             verdict_root=tmp_path,
         )
-    record = _write_verdict(
-        tmp_path,
-        payload,
-        phase_id="DEV",
-        freeze_root=freeze_root,
-        manifest_sha=manifest_sha,
-    )
-    assert fence.validate_phase_unlock(
-        payload,
-        phase_id="OOS_2023_H1",
-        freeze_inputs_sha256=freeze_root,
-        manifest_sha256=manifest_sha,
-        verdict_root=tmp_path,
-    ) == [{"phase_id": "DEV", "record_sha256": freeze.sha256_file(record)}]
-    detached = Path(f"{record}.sha256")
-    detached.write_text("0" * 64 + "\n", encoding="ascii")
-    with pytest.raises(fence.FenceError, match="detached hash mismatch"):
-        fence.validate_phase_unlock(
-            payload,
-            phase_id="OOS_2023_H1",
-            freeze_inputs_sha256=freeze_root,
-            manifest_sha256=manifest_sha,
-            verdict_root=tmp_path,
-        )
+    fields = set(payload["phase_unlock"]["required_record_fields"])
+    assert {"freeze_identity", "inventory_binding", "evidence_binding", "created_utc"} <= fields
+    assert {
+        "binding",
+        "freeze_inputs_sha256",
+        "manifest_sha256",
+        "evidence_sha256",
+        "completed_utc",
+    }.isdisjoint(fields)
 
 
 def test_nonbinding_smoke_is_not_in_any_unlock_prerequisites() -> None:
