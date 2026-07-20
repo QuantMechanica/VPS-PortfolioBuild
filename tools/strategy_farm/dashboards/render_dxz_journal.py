@@ -18,23 +18,31 @@ Data sources (every number below is evidence-backed; see paths):
     per-EA JSON event logs' TM_OPEN / ENTRY_ACCEPTED / TM_CLOSE /
     TM_REMOVE_PENDING / ENTRY_REJECTED events, via the same log iterator
     (portfolio_live_forward_from_logs._iter_log_events — the shared loader).
+  * Realized per-trade $ PnL — the broker deal history exported read-only by
+    the AccountMonitor EA (framework/monitor/QM_AccountMonitor.mq5) to
+    C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\journal\\
+    live_deals_normalized.csv (incremental re-export ~60s after new deals;
+    first export deliberately contains the FULL account history since
+    April 2026, i.e. pre-book blend trades before the Final-24 go-live).
+    net_actual = profit + swap + commission + fee per deal; a closed trade's
+    realized net = sum(net_actual) over ALL of its deals grouped by
+    position_id, so entry commission is included. This CLOSES the former
+    per-trade-$ honesty gap.
 
-HONESTY GAP (do not paper over — Hard Rule: evidence over claims, no
-invented numbers): per-trade realized $ PnL is NOT available from the event
-stream. TM_CLOSE only fires on EA-initiated exits; server-side SL/TP fills
-close a position with NO TM_CLOSE event (see the docstring in
-portfolio_live_forward_from_logs.py). The broker deal-history export
-contract exists (D:\\QM\\reports\\portfolio\\dxz_live_blend_v1_template_*\\
-live_deals_normalized.csv + deal_export_contract.json) but is currently an
-EMPTY template (header row only, terminal_api_used_by_this_tool=false) — no
-one has populated it yet. So this page reports real, evidence-backed
-numbers only:
-  - book-level daily win/loss ($ real, from EQUITY_SNAPSHOT deltas)
-  - trade ACTIVITY counts per symbol/sleeve (opens/closes/rejects — real,
-    from lifecycle events)
-  - NOT a per-symbol/per-sleeve $ win-loss breakdown or win-rate — that
-    would require fabricating numbers with no evidence trail. The gap is
-    labelled inline rather than hidden.
+HONESTY RULES (Hard Rule: evidence over claims, no invented numbers):
+  * The EVENT STREAM still cannot price trades: TM_CLOSE only fires on
+    EA-initiated exits; server-side SL/TP fills close a position with NO
+    TM_CLOSE event (see the docstring in portfolio_live_forward_from_logs.py).
+    The trade-activity tables therefore remain COUNTS-only — realized $
+    lives exclusively in the "Realized P&L (broker deal history)" section,
+    sourced from the AccountMonitor deal CSV above.
+  * If the deal CSV is missing, unreadable, or header-only, the Realized P&L
+    section degrades to a labelled data gap — numbers are never fabricated.
+  * type=BALANCE rows (deposits/adjustments) are excluded from trade stats;
+    positions whose deals all carry magic 0 (manual/unknown) are bucketed as
+    "unattributed", never guessed onto a sleeve.
+  * Final-24 book window (>= BOOK_LIVE_SINCE) and pre-book blend history are
+    shown as separate, labelled tables — never mixed into one number.
 
 Usage:
     python tools/strategy_farm/dashboards/render_dxz_journal.py
@@ -43,6 +51,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import csv
 import datetime as dt
 import json
 import sys
@@ -67,6 +76,20 @@ DEFAULT_MANIFEST = Path(
 )
 ACCOUNT_ID = "4000090541"
 BOOK_LIVE_SINCE = "2026-07-19"  # Final-24 (24th sleeve) go-live date — OWNER-ratified
+BOOK_LIVE_CUTOFF_UTC = BOOK_LIVE_SINCE + "T00:00:00Z"  # lexicographic-comparable with time_utc
+
+# Broker deal history export (READ-ONLY source; written by the AccountMonitor
+# EA, framework/monitor/QM_AccountMonitor.mq5 — this renderer never writes
+# anything under C:/QM/mt5/T_Live).
+DEFAULT_DEALS_CSV = Path(
+    r"C:\QM\mt5\T_Live\MT5_Base\MQL5\Files\QM\journal\live_deals_normalized.csv"
+)
+# Header-check subset: columns this renderer actually consumes.
+_DEALS_REQUIRED_COLS = {
+    "deal_id", "position_id", "time_utc", "entry", "deal_magic",
+    "logical_magic", "symbol", "net_actual", "magic", "type",
+}
+_CLOSING_ENTRIES = {"OUT", "OUT_BY", "INOUT"}
 
 _OPEN_EVENTS = {"TM_OPEN", "ENTRY_ACCEPTED"}
 _CLOSE_EVENTS = {"TM_CLOSE", "TM_REMOVE_PENDING"}
@@ -177,6 +200,149 @@ def collect_activity(log_dir: Path) -> tuple[dict[str, dict], dict[int, dict], l
     return per_symbol, per_ea, recent
 
 
+# ── broker deal history (AccountMonitor export) ──────────────────
+
+
+def _to_int(raw: Any) -> int | None:
+    try:
+        return int(str(raw).strip())
+    except (TypeError, ValueError):
+        return None
+
+
+def _to_float(raw: Any) -> float | None:
+    try:
+        return float(str(raw).strip())
+    except (TypeError, ValueError):
+        return None
+
+
+def load_deals(path: Path) -> dict[str, Any]:
+    """Parse the AccountMonitor broker deal-history export.
+
+    Returns {"ok", "reason", "deals", "mtime_utc", "last_deal_utc"}.
+    ok=False (with a human-readable reason) on missing / unreadable /
+    header-mismatched / header-only files — the caller then renders the
+    labelled honesty-gap text instead of numbers. Never fabricates.
+    """
+    result: dict[str, Any] = {
+        "ok": False, "reason": None, "deals": [],
+        "mtime_utc": None, "last_deal_utc": None,
+    }
+    try:
+        stat = path.stat()
+    except OSError:
+        result["reason"] = f"deal export not found ({path})"
+        return result
+    result["mtime_utc"] = dt.datetime.fromtimestamp(
+        stat.st_mtime, tz=dt.timezone.utc
+    ).strftime("%Y-%m-%dT%H:%M:%SZ")
+    deals: list[dict[str, Any]] = []
+    try:
+        with path.open("r", encoding="utf-8-sig", newline="") as fh:
+            reader = csv.DictReader(fh)
+            missing = _DEALS_REQUIRED_COLS - set(reader.fieldnames or [])
+            if missing:
+                result["reason"] = (
+                    "deal export header mismatch — missing column(s): "
+                    + ", ".join(sorted(missing))
+                )
+                return result
+            for row in reader:
+                # magic resolution: prefer logical_magic when non-empty,
+                # else deal_magic, else the raw magic column.
+                magic = None
+                for col in ("logical_magic", "deal_magic", "magic"):
+                    val = _to_int(row.get(col))
+                    if val:  # non-empty AND non-zero
+                        magic = val
+                        break
+                deals.append({
+                    "deal_id": _to_int(row.get("deal_id")),
+                    "position_id": _to_int(row.get("position_id")) or 0,
+                    "time_utc": str(row.get("time_utc") or "").strip(),
+                    "entry": str(row.get("entry") or "").strip().upper(),
+                    "symbol": str(row.get("symbol") or "").strip().upper(),
+                    "net_actual": _to_float(row.get("net_actual")) or 0.0,
+                    "magic": magic,  # None => magic 0 / unattributed
+                    "type": str(row.get("type") or "").strip().upper(),
+                    "comment": str(row.get("comment") or "").strip(),
+                })
+    except (OSError, UnicodeDecodeError, csv.Error) as exc:
+        result["reason"] = f"deal export unreadable ({exc.__class__.__name__}: {exc})"
+        return result
+    if not deals:
+        result["reason"] = "deal export contains only the header row — no deals exported yet"
+        return result
+    result["ok"] = True
+    result["deals"] = deals
+    result["last_deal_utc"] = max((d["time_utc"] for d in deals if d["time_utc"]), default=None)
+    return result
+
+
+def build_closed_trades(deals: list[dict[str, Any]]) -> tuple[list[dict], list[dict], list[dict]]:
+    """Group non-BALANCE deals by position_id into realized trades.
+
+    Returns (closed_trades, open_positions, cash_rows):
+      * closed_trades — positions with >=1 OUT/OUT_BY/INOUT deal; realized
+        net = sum(net_actual) over ALL the position's deals (entry commission
+        included). Sleeve attribution = first non-zero magic across the
+        position's deals in time order (server-side closes often carry
+        magic 0; the IN deal recovers the sleeve). All-zero => unattributed.
+      * open_positions — positions with only IN deals (no realized PnL yet).
+      * cash_rows — non-BALANCE rows without a position (position_id 0, e.g.
+        DIVIDEND adjustments) — excluded from trade stats, surfaced as a note.
+    """
+    positions: dict[int, list[dict]] = {}
+    cash_rows: list[dict] = []
+    for d in deals:
+        if d["type"] == "BALANCE":
+            continue  # deposits / balance adjustments — never trade stats
+        if d["position_id"] <= 0:
+            cash_rows.append(d)
+            continue
+        positions.setdefault(d["position_id"], []).append(d)
+
+    closed: list[dict] = []
+    open_pos: list[dict] = []
+    for pid, rows in positions.items():
+        rows.sort(key=lambda r: (r["time_utc"], r["deal_id"] or 0))
+        symbol = next((r["symbol"] for r in rows if r["symbol"]), "")
+        magic = next((r["magic"] for r in rows if r["magic"]), None)
+        ea_id = magic // 10000 if magic else None
+        closing = [r for r in rows if r["entry"] in _CLOSING_ENTRIES]
+        rec = {
+            "position_id": pid, "symbol": symbol, "magic": magic, "ea_id": ea_id,
+            "n_deals": len(rows), "open_ts": rows[0]["time_utc"],
+            "net": round(sum(r["net_actual"] for r in rows), 2),
+        }
+        if closing:
+            rec["close_ts"] = max(r["time_utc"] for r in closing)
+            closed.append(rec)
+        else:
+            open_pos.append(rec)
+    closed.sort(key=lambda t: t["close_ts"])
+    open_pos.sort(key=lambda t: t["open_ts"])
+    return closed, open_pos, cash_rows
+
+
+def trade_stats(trades: list[dict]) -> dict[str, Any]:
+    """Win/loss aggregate over closed trades — every figure from CSV sums only."""
+    wins = [t["net"] for t in trades if t["net"] > 0]
+    losses = [t["net"] for t in trades if t["net"] < 0]
+    n = len(trades)
+    nets = [t["net"] for t in trades]
+    return {
+        "closed": n, "wins": len(wins), "losses": len(losses),
+        "win_rate": (len(wins) / n * 100.0) if n else None,
+        "net": sum(nets) if nets else None,
+        "avg_win": (sum(wins) / len(wins)) if wins else None,
+        "avg_loss": (sum(losses) / len(losses)) if losses else None,
+        "best": max(nets) if nets else None,
+        "worst": min(nets) if nets else None,
+    }
+
+
 # ── rendering helpers ────────────────────────────────────────────
 
 
@@ -220,7 +386,100 @@ def _fmt_direction(raw: str | None) -> str:
     return txt.replace("_", " ")
 
 
-def render_content(root: Path, log_dir: Path, manifest_path: Path) -> tuple[str, dict[str, Any]]:
+def _pnl_cell(v: Any) -> str:
+    if not isinstance(v, (int, float)):
+        return '<td class="col-num">—</td>'
+    cls = "v-pass" if v > 0 else ("v-fail" if v < 0 else "")
+    inner = f'<span class="{cls}">{fmt_dollar(v)}</span>' if cls else fmt_dollar(v)
+    return f'<td class="col-num">{inner}</td>'
+
+
+def _stats_cells(s: dict[str, Any]) -> str:
+    return (
+        f'<td class="col-num">{s["closed"]}</td>'
+        f'<td class="col-num">{s["wins"]}</td>'
+        f'<td class="col-num">{s["losses"]}</td>'
+        f'<td class="col-num">{fmt_pct(s["win_rate"], 1)}</td>'
+        f'{_pnl_cell(s["net"])}'
+        f'{_pnl_cell(s["avg_win"])}'
+        f'{_pnl_cell(s["avg_loss"])}'
+        f'{_pnl_cell(s["best"])}'
+        f'{_pnl_cell(s["worst"])}'
+    )
+
+
+_PNL_STAT_HEADERS = (
+    '<th class="col-num">Closed</th><th class="col-num">Wins</th>'
+    '<th class="col-num">Losses</th><th class="col-num">Win rate</th>'
+    '<th class="col-num">Net $</th><th class="col-num">Avg win $</th>'
+    '<th class="col-num">Avg loss $</th><th class="col-num">Best $</th>'
+    '<th class="col-num">Worst $</th>'
+)
+
+
+def symbol_pnl_table(trades: list[dict]) -> str:
+    groups: dict[str, list[dict]] = {}
+    for t in trades:
+        groups.setdefault(t["symbol"] or "(no symbol)", []).append(t)
+    rows_html = ""
+    for sym in sorted(groups):
+        rows_html += (
+            f'<tr><td><code>{e(sym)}</code></td>{_stats_cells(trade_stats(groups[sym]))}</tr>'
+        )
+    if not rows_html:
+        rows_html = '<tr><td colspan="10" class="arch2-empty">No closed trades in this window.</td></tr>'
+    elif len(groups) > 1:
+        rows_html += f'<tr class="pnl-total"><td>ALL</td>{_stats_cells(trade_stats(trades))}</tr>'
+    return (
+        '<div class="archive-table-wrap" style="padding:0"><table class="archive-table">'
+        f'<thead><tr><th>Symbol</th>{_PNL_STAT_HEADERS}</tr></thead>'
+        f'<tbody>{rows_html}</tbody></table></div>'
+    )
+
+
+def sleeve_pnl_table(trades: list[dict], roster: dict[int, dict[str, Any]]) -> str:
+    groups: dict[Any, list[dict]] = {}
+    for t in trades:
+        groups.setdefault(t["ea_id"], []).append(t)
+    attributed = sorted(k for k in groups if k is not None)
+    rows_html = ""
+    for ea_id in attributed:
+        g = groups[ea_id]
+        r = roster.get(ea_id)
+        slug = (r or {}).get("slug") or "(not in sealed manifest)"
+        symbols = sorted({t["symbol"] for t in g if t["symbol"]})
+        rows_html += (
+            f'<tr onclick="window.location=\'ea_QM5_{e(ea_id)}.html\'">'
+            f'<td class="td-ea"><code>QM5_{e(ea_id)}</code></td>'
+            f'<td class="td-slug">{e(slug)}</td>'
+            f'<td>{e(", ".join(symbols) or "—")}</td>'
+            f'{_stats_cells(trade_stats(g))}</tr>'
+        )
+    if None in groups:
+        g = groups[None]
+        symbols = sorted({t["symbol"] for t in g if t["symbol"]})
+        rows_html += (
+            '<tr><td class="td-ea"><code>unattributed</code></td>'
+            '<td class="td-slug">magic 0 on all deals — manual/unknown, not guessed</td>'
+            f'<td>{e(", ".join(symbols) or "—")}</td>'
+            f'{_stats_cells(trade_stats(g))}</tr>'
+        )
+    if not rows_html:
+        rows_html = '<tr><td colspan="12" class="arch2-empty">No closed trades in this window.</td></tr>'
+    elif len(groups) > 1:
+        rows_html += (
+            f'<tr class="pnl-total"><td class="td-ea">ALL</td><td class="td-slug"></td><td>—</td>'
+            f'{_stats_cells(trade_stats(trades))}</tr>'
+        )
+    return (
+        '<div class="archive-table-wrap" style="padding:0"><table class="archive-table">'
+        f'<thead><tr><th>EA</th><th>Slug</th><th>Symbol(s)</th>{_PNL_STAT_HEADERS}</tr></thead>'
+        f'<tbody>{rows_html}</tbody></table></div>'
+    )
+
+
+def render_content(root: Path, log_dir: Path, manifest_path: Path,
+                   deals_csv: Path = DEFAULT_DEALS_CSV) -> tuple[str, dict[str, Any]]:
     manifest = load_manifest(manifest_path)
     roster = build_roster(manifest)
     starting_capital = float(manifest.get("starting_capital") or 100_000.0)
@@ -258,6 +517,80 @@ def render_content(root: Path, log_dir: Path, manifest_path: Path) -> tuple[str,
     best_day_date = bar_dates[bar_pnl.index(best_day)] if bar_pnl and best_day is not None else None
 
     per_symbol, per_ea, recent = collect_activity(log_dir)
+
+    # ── Realized P&L from the AccountMonitor broker deal export ──
+    deals_info = load_deals(deals_csv)
+    deals_ok = bool(deals_info["ok"])
+    if deals_ok:
+        closed_trades, open_positions, cash_rows = build_closed_trades(deals_info["deals"])
+        book_trades = [t for t in closed_trades if t["close_ts"] >= BOOK_LIVE_CUTOFF_UTC]
+        pre_trades = [t for t in closed_trades if t["close_ts"] < BOOK_LIVE_CUTOFF_UTC]
+        freshness = (
+            f'last deal {e(_fmt_ts(deals_info["last_deal_utc"]))} UTC &middot; '
+            f'CSV mtime {e(_fmt_ts(deals_info["mtime_utc"]))} UTC'
+        )
+        open_note = ""
+        if open_positions:
+            open_syms = ", ".join(sorted({p["symbol"] for p in open_positions if p["symbol"]}))
+            open_note = (
+                f' <strong>{len(open_positions)} open position'
+                f'{"s" if len(open_positions) != 1 else ""}</strong> (IN deals only, '
+                f'no realized P&amp;L yet: {e(open_syms) or "—"}) counted separately '
+                f'and excluded from win/loss.'
+            )
+        cash_note = ""
+        if cash_rows:
+            cash_total = sum(r["net_actual"] for r in cash_rows)
+            cash_kinds = ", ".join(sorted({r["type"] for r in cash_rows}))
+            cash_note = (
+                f' {len(cash_rows)} non-position cash row'
+                f'{"s" if len(cash_rows) != 1 else ""} ({e(cash_kinds)}) totalling '
+                f'{fmt_dollar(cash_total)} excluded from trade stats (account-level '
+                f'cash flow, not a trade).'
+            )
+        realized_section = f'''
+<section class="arch2-sec">
+  <div class="sec-head"><span class="sec-kicker">Realized</span><h2>Realized P&amp;L (broker deal history)</h2>
+    <span class="sec-meta">{freshness}</span></div>
+  <p class="sec-note">Source: broker deal history exported read-only by the AccountMonitor EA (framework/monitor/QM_AccountMonitor.mq5) to <code>{e(str(deals_csv))}</code> — the former per-trade-$ honesty gap is closed. A closed trade = all deals of one position_id with &ge;1 OUT/OUT_BY/INOUT deal; realized net = &Sigma; net_actual (profit+swap+commission+fee) over ALL its deals, so entry commission is included. Trades are assigned to a window by CLOSE time; BALANCE rows are excluded.{open_note}{cash_note}</p>
+
+  <h3 class="pnl-subhead">Final-24 book — trades closed since {e(BOOK_LIVE_SINCE)} <span class="pnl-subhead-meta">{len(book_trades)} closed trade{"s" if len(book_trades) != 1 else ""}</span></h3>
+  <h4 class="pnl-tablehead">By symbol</h4>
+  {symbol_pnl_table(book_trades)}
+  <h4 class="pnl-tablehead">By strategy (sleeve) &middot; click a row for the EA's evidence trail</h4>
+  {sleeve_pnl_table(book_trades, roster)}
+
+  <h3 class="pnl-subhead">Pre-book blend history — trades closed before {e(BOOK_LIVE_SINCE)} (account live since April 2026) <span class="pnl-subhead-meta">{len(pre_trades)} closed trade{"s" if len(pre_trades) != 1 else ""}</span></h3>
+  <p class="sec-note">Same account, earlier blend of sleeves BEFORE the Final-24 book was confirmed — kept separate so book performance is never mixed with pre-book history.</p>
+  <h4 class="pnl-tablehead">By symbol</h4>
+  {symbol_pnl_table(pre_trades)}
+  <h4 class="pnl-tablehead">By strategy (sleeve)</h4>
+  {sleeve_pnl_table(pre_trades, roster)}
+</section>
+'''
+        activity_gap_note = (
+            'Realized $ per trade now lives in the <strong>Realized P&amp;L (broker deal '
+            'history)</strong> section above, from the AccountMonitor deal export. The tables '
+            'below remain ACTIVITY counts from the live event logs: TM_CLOSE only fires on '
+            'EA-initiated exits, so server-side SL/TP fills are under-counted in the '
+            '"Closes" column — do not read it as a trade count.'
+        )
+    else:
+        realized_section = f'''
+<section class="arch2-sec">
+  <div class="sec-head"><span class="sec-kicker">Realized</span><h2>Realized P&amp;L (broker deal history)</h2>
+    <span class="sec-meta">{('CSV mtime ' + e(_fmt_ts(deals_info["mtime_utc"])) + ' UTC') if deals_info["mtime_utc"] else "no export found"}</span></div>
+  <p class="sec-note"><strong>Honest data gap:</strong> the AccountMonitor deal export is not usable right now — {e(deals_info["reason"] or "unknown reason")}. Expected at <code>{e(str(deals_csv))}</code> (written by framework/monitor/QM_AccountMonitor.mq5). Until it is readable this page shows no per-trade $ numbers — fabricating them would violate the evidence-over-claims rule.</p>
+</section>
+'''
+        activity_gap_note = (
+            '<strong>Honest data gap:</strong> per-symbol realized $ PnL is not available right '
+            f'now — the AccountMonitor deal export is unusable ({e(deals_info["reason"] or "unknown reason")}). '
+            'Server-side SL/TP fills close silently (no TM_CLOSE event), so until the export is '
+            'readable this table shows trade ACTIVITY counts (opens/closes/rejects from the live '
+            'event logs), not win/loss dollars — fabricating a $ split would violate the '
+            'evidence-over-claims rule.'
+        )
 
     # union of manifest roster + any ea_id seen live but not in the (possibly
     # stale DRAFT) manifest snapshot — never silently drop real activity.
@@ -388,10 +721,12 @@ def render_content(root: Path, log_dir: Path, manifest_path: Path) -> tuple[str,
   {daily_chart}
 </section>
 
+{realized_section}
+
 <section class="arch2-sec">
   <div class="sec-head"><span class="sec-kicker">Distribution</span><h2>Trade activity by symbol</h2>
     <span class="sec-meta">{len(all_symbols)} symbols traded across the book</span></div>
-  <p class="sec-note"><strong>Honest data gap:</strong> per-symbol realized $ PnL is not attributable yet — server-side SL/TP fills close silently (no TM_CLOSE event), and the broker deal-history export (dxz_live_blend_v1_template.../live_deals_normalized.csv) is currently an empty template with zero populated deals. Until that export is populated this table shows trade ACTIVITY counts (opens/closes/rejects from the live event logs), not win/loss dollars — fabricating a $ split would violate the evidence-over-claims rule.</p>
+  <p class="sec-note">{activity_gap_note}</p>
   <div class="archive-table-wrap" style="padding:0">
   <table class="archive-table">
     <thead><tr><th>Symbol</th><th class="col-num">Sleeves</th><th class="col-num">Risk %</th><th class="col-num">Opens</th><th class="col-num">Closes</th><th class="col-num">Rejects</th><th>Last activity (UTC)</th></tr></thead>
@@ -415,7 +750,7 @@ def render_content(root: Path, log_dir: Path, manifest_path: Path) -> tuple[str,
 <section class="arch2-sec">
   <div class="sec-head"><span class="sec-kicker">Recent</span><h2>Recent trade-lifecycle events</h2>
     <span class="sec-meta">last {min(50, len(recent))} of {len(recent)} events</span></div>
-  <p class="sec-note">Opens/closes/rejects from the live per-EA logs, newest first. No $ PnL column — see the data-gap note above.</p>
+  <p class="sec-note">Opens/closes/rejects from the live per-EA logs, newest first. No $ PnL column here — event-stream only; realized $ lives in the Realized P&amp;L section (broker deal history).</p>
   <div class="archive-table-wrap" style="padding:0">
   <table class="archive-table">
     <thead><tr><th>Time (UTC)</th><th>Symbol</th><th>Sleeve</th><th>Direction</th><th>Event</th><th>Reason</th></tr></thead>
@@ -426,7 +761,7 @@ def render_content(root: Path, log_dir: Path, manifest_path: Path) -> tuple[str,
 
 <div class="arch2-foot">
   QuantMechanica V5 &middot; DXZ Trading Journal &middot; regenerated hourly &middot;
-  equity from T_Live EQUITY_SNAPSHOT logs, roster from the sealed book manifest, activity counts from T_Live lifecycle events — read-only, no invented numbers.
+  equity from T_Live EQUITY_SNAPSHOT logs, roster from the sealed book manifest, activity counts from T_Live lifecycle events, realized $ from the AccountMonitor broker deal export — read-only, no invented numbers.
   <br><a class="jrnl-link" href="strategies.html">&larr; back to Strategy Archive</a>
 </div>
 """
@@ -445,13 +780,18 @@ EXTRA_CSS = """
 .risk-tag{font-family:var(--font-mono);font-size:9px;color:var(--warn);border:1px solid var(--warn);padding:1px 5px;letter-spacing:0.06em;text-transform:uppercase}
 .daily-bars-wrap{background:var(--surface-1);border:1px solid var(--border);padding:12px}
 .daily-bars{display:block}
+.pnl-subhead{font-size:15px;font-weight:600;letter-spacing:-0.01em;margin:22px 0 4px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.pnl-subhead-meta{font-family:var(--font-mono);font-size:11px;font-weight:400;color:var(--text-3);letter-spacing:0.04em}
+.pnl-tablehead{font-family:var(--font-mono);font-size:10.5px;font-weight:500;color:var(--text-3);text-transform:uppercase;letter-spacing:0.08em;margin:12px 0 6px}
+.pnl-total td{border-top:1px solid var(--border);font-weight:600}
 .arch2-foot{max-width:1400px;margin:40px auto 48px;padding:0 36px;font-family:var(--font-mono);font-size:11px;color:var(--text-3);text-align:center;line-height:1.8;letter-spacing:0.06em}
 """
 
 
 def render_dxz_journal(root: Path, log_dir: Path = DEFAULT_TLIVE_LOG_DIR,
-                        manifest_path: Path = DEFAULT_MANIFEST) -> str:
-    content, _stats = render_content(root, log_dir, manifest_path)
+                        manifest_path: Path = DEFAULT_MANIFEST,
+                        deals_csv: Path = DEFAULT_DEALS_CSV) -> str:
+    content, _stats = render_content(root, log_dir, manifest_path, deals_csv)
     css = ARCHIVE_CSS + ARCHIVE2_CSS + ARCHIVE_V2_CSS + EA_DETAIL_CSS + EXTRA_CSS
     bar = f'<div class="render-badge-bar">{render_badge_html()}</div>{RENDER_BADGE_JS}'
     return html_head("DXZ Trading Journal", css) + bar + content + "</body>\n</html>\n"
@@ -462,6 +802,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--root", default=str(DEFAULT_ROOT))
     parser.add_argument("--log-dir", default=str(DEFAULT_TLIVE_LOG_DIR))
     parser.add_argument("--manifest", default=str(DEFAULT_MANIFEST))
+    parser.add_argument("--deals-csv", default=str(DEFAULT_DEALS_CSV),
+                        help="AccountMonitor broker deal-history export (read-only)")
     parser.add_argument("--out", default=None)
     args = parser.parse_args(argv)
 
@@ -469,7 +811,8 @@ def main(argv: list[str] | None = None) -> int:
     root = Path(args.root).resolve()
     out = Path(args.out) if args.out else root / "dashboards" / "dxz_journal.html"
     out.parent.mkdir(parents=True, exist_ok=True)
-    html_txt = render_dxz_journal(root, Path(args.log_dir), Path(args.manifest))
+    html_txt = render_dxz_journal(root, Path(args.log_dir), Path(args.manifest),
+                                  Path(args.deals_csv))
     out.write_text(html_txt, encoding="utf-8")
     print(f"wrote {out}")
     return 0
