@@ -2284,6 +2284,49 @@ def validate_machine_credential_rotation_receipt(
     ):
         raise InvalidEvidence("identity-probe result identity/proof drift")
 
+    identity_request_path = (
+        rotation_root
+        / result_relative.parts[0]
+        / "control"
+        / "identity_probe_request.json"
+    ).resolve()
+    identity_request_binding = file_binding(
+        identity_request_path,
+        str(identity_result.get("request_sha256", "")),
+    )
+    identity_request = load_json(identity_request_path)
+    if set(identity_request) != {
+        "schema_version",
+        "artifact_type",
+        "nonce",
+        "created_utc",
+        "expires_utc",
+        "expected_account",
+        "expected_sid",
+        "expected_profile",
+        "expected_task_name",
+        "result_path",
+    }:
+        raise InvalidEvidence("identity-probe request field closure drift")
+    if (
+        type(identity_request.get("schema_version")) is not int
+        or identity_request.get("schema_version") != 1
+        or identity_request.get("artifact_type")
+        != "QM_DEV2_IDENTITY_PROBE_REQUEST"
+        or identity_request.get("nonce") != identity_result["nonce"]
+        or identity_request.get("expected_account") != target_account
+        or identity_request.get("expected_sid") != target_sid
+        or Path(str(identity_request.get("expected_profile", ""))).resolve()
+        != Path(str(identity["profile"])).resolve()
+        or not re.fullmatch(
+            r"QM_DEV2_SMOKE_[0-9a-f]{32}",
+            str(identity_request.get("expected_task_name", "")),
+        )
+        or Path(str(identity_request.get("result_path", ""))).resolve()
+        != identity_result_path
+    ):
+        raise InvalidEvidence("identity-probe request identity/proof drift")
+
     credential = load_json(Path(credential_binding["path"]))
     expected_credential_keys = {
         "schema_version",
@@ -2332,11 +2375,26 @@ def validate_machine_credential_rotation_receipt(
     identity_completed = parse_utc(
         str(identity_result.get("completed_utc", "")), "identity probe completed_utc"
     )
+    identity_request_created = parse_utc(
+        str(identity_request.get("created_utc", "")),
+        "identity probe request created_utc",
+    )
+    identity_request_expires = parse_utc(
+        str(identity_request.get("expires_utc", "")),
+        "identity probe request expires_utc",
+    )
     receipt_completed = parse_utc(
         str(receipt.get("completed_utc", "")), "rotation receipt completed_utc"
     )
     if (
-        not credential_created <= identity_completed <= receipt_completed
+        not credential_created
+        <= identity_request_created
+        <= identity_completed
+        <= receipt_completed
+        or not identity_completed <= identity_request_expires
+        or identity_request_expires <= identity_request_created
+        or identity_request_expires
+        > identity_request_created + timedelta(minutes=15)
         or receipt_completed > current + timedelta(minutes=5)
     ):
         raise InvalidEvidence("machine-credential rotation chronology drift")
@@ -2348,6 +2406,7 @@ def validate_machine_credential_rotation_receipt(
         (helper_binding, "machine-credential helper"),
         (lane_binding, "DEV2 lane contract"),
         (child_binding, "identity-probe child"),
+        (identity_request_binding, "identity-probe request"),
         (identity_result_binding, "identity-probe result"),
         (legacy_binding, "legacy credential"),
     ):
@@ -2359,6 +2418,8 @@ def validate_machine_credential_rotation_receipt(
         "machine_credential_payload_sha256": canonical_sha256(credential),
         "machine_credential_helper": helper_binding,
         "identity_probe_child": child_binding,
+        "identity_probe_request": identity_request_binding,
+        "identity_probe_request_payload_sha256": canonical_sha256(identity_request),
         "identity_probe_result": identity_result_binding,
         "identity_probe_result_payload_sha256": canonical_sha256(identity_result),
         "legacy_credential": legacy_binding,

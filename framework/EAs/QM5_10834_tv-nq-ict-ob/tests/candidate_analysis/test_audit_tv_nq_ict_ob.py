@@ -332,6 +332,9 @@ def _rotation_receipt_fixture(
     lane_path = tmp_path / "repo" / "dev2_lane_contract.json"
     rotation_root = tmp_path / "credential-rotation"
     rotation_id = "20260720T120000Z_" + "a" * 32
+    identity_request_path = (
+        rotation_root / rotation_id / "control" / "identity_probe_request.json"
+    )
     identity_result_path = rotation_root / rotation_id / "output" / "identity_probe_result.json"
     for path, content in (
         (helper, b"helper"),
@@ -381,6 +384,19 @@ def _rotation_receipt_fixture(
         "ciphertext_base64": base64.b64encode(b"x" * 64).decode("ascii"),
     }
     _write_json(credential, credential_payload)
+    identity_request = {
+        "schema_version": 1,
+        "artifact_type": "QM_DEV2_IDENTITY_PROBE_REQUEST",
+        "nonce": "c" * 32,
+        "created_utc": (now - timedelta(minutes=2, seconds=30)).isoformat(),
+        "expires_utc": (now + timedelta(minutes=7, seconds=30)).isoformat(),
+        "expected_account": target_account,
+        "expected_sid": target_sid,
+        "expected_profile": r"C:\Users\QMDev2",
+        "expected_task_name": "QM_DEV2_SMOKE_" + "e" * 32,
+        "result_path": str(identity_result_path.resolve()),
+    }
+    _write_json(identity_request_path, identity_request)
     identity_result = {
         "schema_version": 1,
         "artifact_type": "QM_DEV2_IDENTITY_PROBE_RESULT",
@@ -391,7 +407,7 @@ def _rotation_receipt_fixture(
         "sid": target_sid,
         "profile": r"C:\Users\QMDev2",
         "limited_non_admin": True,
-        "request_sha256": "d" * 64,
+        "request_sha256": subject.sha256_file(identity_request_path),
     }
     _write_json(identity_result_path, identity_result)
     credential_binding = subject.file_binding(credential)
@@ -443,6 +459,13 @@ def test_machine_credential_rotation_receipt_is_bound_before_pre(
     assert validated["target_sid"] == receipt["target_sid"]
     assert validated["receipt"] == bindings["dev2_machine_credential_rotation_receipt"]
     assert validated["machine_credential"] == bindings["dev2_machine_credential"]
+    assert validated["identity_probe_request"]["path"] == str(
+        (
+            Path(receipt["identity_probe_result_path"]).parent.parent
+            / "control"
+            / "identity_probe_request.json"
+        ).resolve()
+    )
 
 
 def test_machine_credential_rotation_receipt_missing_fails_closed(
@@ -460,6 +483,43 @@ def test_machine_credential_rotation_receipt_byte_tamper_fails_closed(
     bindings, path, _receipt = _rotation_receipt_fixture(tmp_path, monkeypatch)
     path.write_bytes(path.read_bytes() + b" ")
     with pytest.raises(subject.InvalidEvidence, match="size drift|SHA-256 drift"):
+        subject.validate_machine_credential_rotation_receipt(bindings)
+
+
+def test_machine_credential_rotation_request_byte_tamper_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    bindings, _path, receipt = _rotation_receipt_fixture(tmp_path, monkeypatch)
+    request_path = (
+        Path(receipt["identity_probe_result_path"]).parent.parent
+        / "control"
+        / "identity_probe_request.json"
+    )
+    request_path.write_bytes(request_path.read_bytes() + b" ")
+    with pytest.raises(subject.InvalidEvidence, match="size drift|SHA-256 drift"):
+        subject.validate_machine_credential_rotation_receipt(bindings)
+
+
+def test_machine_credential_rotation_request_semantic_tamper_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    bindings, receipt_path, receipt = _rotation_receipt_fixture(tmp_path, monkeypatch)
+    result_path = Path(receipt["identity_probe_result_path"])
+    request_path = (
+        result_path.parent.parent / "control" / "identity_probe_request.json"
+    )
+    request = subject.load_json(request_path)
+    request["expected_sid"] = "S-1-5-21-111-222-333-1002"
+    _write_json(request_path, request)
+    result = subject.load_json(result_path)
+    result["request_sha256"] = subject.sha256_file(request_path)
+    _write_json(result_path, result)
+    receipt["identity_probe_result_sha256"] = subject.sha256_file(result_path)
+    _write_json(receipt_path, receipt)
+    bindings["dev2_machine_credential_rotation_receipt"] = subject.file_binding(
+        receipt_path
+    )
+    with pytest.raises(subject.InvalidEvidence, match="request identity/proof drift"):
         subject.validate_machine_credential_rotation_receipt(bindings)
 
 
