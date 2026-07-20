@@ -55,6 +55,11 @@ def _file_binding(path: Path) -> dict[str, Any]:
     return evidence_io.file_binding(path).as_dict()
 
 
+def _launcher_binding(path: Path) -> dict[str, Any]:
+    binding = evidence_io.file_binding(path)
+    return {"path": binding.path, "size": binding.size_bytes, "sha256": binding.sha256}
+
+
 def _raw_position(
     *,
     symbol: str,
@@ -161,10 +166,12 @@ def _make_bundle(
     *,
     position_transform: PositionTransform | None = None,
     duplicate_mutator: PayloadMutator | None = None,
+    attempt_audit_mutator: PayloadMutator | None = None,
     pointer_mutator: PayloadMutator | None = None,
     omit: set[str] | None = None,
     extra_pointer: bool = False,
     only_cells: set[str] | None = None,
+    retry_missing_report: bool = False,
 ) -> adjudicator.Policy:
     pointer_root = tmp_path / "pointers"
     receipt_root = tmp_path / "receipts"
@@ -190,14 +197,70 @@ def _make_bundle(
         if position_transform is not None:
             positions = position_transform(key, copy.deepcopy(positions))
 
+        report_dir = cell_root / "runner_output"
+        raw_root = report_dir / "raw"
         raw_reports: list[Path] = []
-        for run_index in range(2):
-            report_path = cell_root / f"raw_report_{run_index}.htm"
-            _write_bytes(
-                report_path,
-                f"native report bytes may differ for semantic duplicate {run_index}\n".encode(),
+        tester_inis: list[Path] = []
+        tester_logs: list[Path] = []
+        runner_rows: list[dict[str, Any]] = []
+        attempt_rows: list[dict[str, Any]] = []
+        accepted_run_ids: list[str] = []
+        attempt_statuses = ["OK", "FAIL", "OK"] if retry_missing_report else ["OK", "OK"]
+        for ordinal, status in enumerate(attempt_statuses, start=1):
+            run_id = f"run_{ordinal:02d}"
+            run_dir = raw_root / run_id
+            ini = run_dir / "tester.ini"
+            log = run_dir / "tester.log"
+            _write_bytes(ini, f"[Tester]\nrun={ordinal}\n".encode())
+            _write_bytes(log, f"real ticks run {ordinal}\n".encode())
+            report_path = run_dir / "report.htm"
+            report_binding: dict[str, Any] | None = None
+            if status == "OK":
+                _write_bytes(
+                    report_path,
+                    f"native report bytes may differ for semantic duplicate {ordinal}\n".encode(),
+                )
+                report_binding = _launcher_binding(report_path)
+                raw_reports.append(report_path)
+                tester_inis.append(ini)
+                tester_logs.append(log)
+                accepted_run_ids.append(run_id)
+                runner_rows.append(
+                    {
+                        "run": run_id,
+                        "status": "OK",
+                        "real_ticks_marker": True,
+                        "report_canonical_path": str(report_path.resolve()),
+                        "report_size_bytes": report_path.stat().st_size,
+                        "tester_log_path": str(log.resolve()),
+                        "native_max_equity_drawdown_usd": "1000.00",
+                    }
+                )
+            else:
+                runner_rows.append(
+                    {
+                        "run": run_id,
+                        "status": "FAIL",
+                        "failure": "REPORT_MISSING",
+                        "report_canonical_path": str(report_path.resolve(strict=False)),
+                        "report_size_bytes": 0,
+                        "tester_log_path": str(log.resolve()),
+                    }
+                )
+            attempt_rows.append(
+                {
+                    "ordinal": ordinal,
+                    "run": run_id,
+                    "status": status,
+                    "failure": None if status == "OK" else "REPORT_MISSING",
+                    "invalid_report_reasons": [],
+                    "selected_for_cost_audit": status == "OK",
+                    "report": report_binding,
+                    "tester_ini": _launcher_binding(ini),
+                    "tester_log": _launcher_binding(log),
+                    "explicit_absences": [] if status == "OK" else ["report"],
+                }
             )
-            raw_reports.append(report_path)
 
         deal_hash = hashlib.sha256(f"deal|{key.cell_id}".encode()).hexdigest()
         run_hash = hashlib.sha256(f"run|{key.cell_id}".encode()).hexdigest()
@@ -263,22 +326,45 @@ def _make_bundle(
             "period": key.market.timeframe,
             "model": 4,
             "requested_runs": 2,
+            "max_run_attempts": 4,
+            "attempted_runs": len(attempt_statuses),
+            "non_ok_attempts": len(attempt_statuses) - 2,
             "deterministic": True,
             "model4_log_marker_detected": True,
             "oninit_failure_detected": False,
             "log_bomb_detected": False,
-            "runs": [
-                {
-                    "status": "OK",
-                    "real_ticks_marker": True,
-                    "report_canonical_path": str(report_path.resolve()),
-                    "native_max_equity_drawdown_usd": "1000.00",
-                }
-                for report_path in raw_reports
-            ],
+            "report_dir": str(report_dir.resolve()),
+            "runs": runner_rows,
         }
         runner_summary_path = cell_root / "runner_summary.json"
         _write_json(runner_summary_path, runner_summary)
+
+        attempt_audit = {
+            "schema_version": 1,
+            "artifact_type": adjudicator.ATTEMPT_AUDIT_TYPE,
+            "status": "PASS",
+            "report_dir": str(report_dir.resolve()),
+            "raw_root": str(raw_root.resolve()),
+            "selection_policy": {
+                "rule": "SNAPSHOT_RUNNER_STATUS_OK_STRUCTURAL_ONLY",
+                "performance_fields_consulted": False,
+                "cost_deal_audit_uses_only_selected": True,
+            },
+            "count_algebra": {
+                "requested_runs": 2,
+                "max_run_attempts": 4,
+                "attempted_runs": len(attempt_statuses),
+                "non_ok_attempts": len(attempt_statuses) - 2,
+                "ok_runs": 2,
+            },
+            "accepted_run_ids": accepted_run_ids,
+            "attempts": attempt_rows,
+            "unbound_files": [],
+        }
+        if attempt_audit_mutator is not None:
+            attempt_audit_mutator(key, attempt_audit)
+        attempt_audit_path = cell_root / "attempt_audit.json"
+        _write_json(attempt_audit_path, attempt_audit)
 
         scalar_files: dict[str, Path] = {
             "validator_pre": cell_root / "validator_pre.json",
@@ -287,21 +373,12 @@ def _make_bundle(
         }
         for name, path in scalar_files.items():
             _write_json(path, {"artifact": name, "status": "PASS"})
-        tester_inis: list[Path] = []
-        tester_logs: list[Path] = []
-        for run_index in range(2):
-            ini = cell_root / f"tester_{run_index}.ini"
-            log = cell_root / f"tester_{run_index}.log"
-            _write_bytes(ini, f"[Tester]\nrun={run_index}\n".encode())
-            _write_bytes(log, f"real ticks run {run_index}\n".encode())
-            tester_inis.append(ini)
-            tester_logs.append(log)
-
         artifacts = {
             "validator_pre": _file_binding(scalar_files["validator_pre"]),
             "validator_post": _file_binding(scalar_files["validator_post"]),
             "runner_result": _file_binding(scalar_files["runner_result"]),
             "runner_summary": _file_binding(runner_summary_path),
+            "attempt_audit": _file_binding(attempt_audit_path),
             "cost_audit": _file_binding(cost_audit_path),
             "raw_reports": [_file_binding(path) for path in raw_reports],
             "tester_inis": [_file_binding(path) for path in tester_inis],
@@ -560,6 +637,7 @@ def test_distinct_run_artifacts_cannot_alias_one_file(tmp_path: Path) -> None:
         "validator_post": binding,
         "runner_result": binding,
         "runner_summary": binding,
+        "attempt_audit": binding,
         "cost_audit": binding,
         "raw_reports": [binding, binding],
         "tester_inis": [binding, binding],

@@ -1171,6 +1171,285 @@ def _validate_artifacts(
     return normalized, scalar_bindings
 
 
+def _same_resolved_path(first: Path | str, second: Path | str) -> bool:
+    return os.path.normcase(str(Path(first).resolve(strict=False))) == os.path.normcase(
+        str(Path(second).resolve(strict=False))
+    )
+
+
+def _attempt_integer(value: Any, context: str, *, minimum: int = 0) -> int:
+    if isinstance(value, bool) or not isinstance(value, int) or value < minimum:
+        raise AdjudicationError(f"{context} must be an integer >= {minimum}")
+    return value
+
+
+def _attempt_file_binding(
+    raw: Any, *, context: str, expected_parent: Path
+) -> evidence_io.FileBinding:
+    value = _mapping(raw, context)
+    _exact_keys(value, {"path", "size", "sha256"}, context)
+    path_raw = value["path"]
+    size_raw = value["size"]
+    if not isinstance(path_raw, str) or not path_raw:
+        raise AdjudicationError(f"{context}.path must be a non-empty string")
+    size = _attempt_integer(size_raw, f"{context}.size")
+    digest = evidence_io.require_sha256(value["sha256"], f"{context}.sha256")
+    source = Path(path_raw)
+    if source.is_symlink():
+        raise AdjudicationError(f"{context} must not be a symlink: {source}")
+    try:
+        resolved = source.resolve(strict=True)
+        stat = resolved.stat()
+    except OSError as exc:
+        raise AdjudicationError(f"{context} is missing: {source}: {exc}") from exc
+    if not resolved.is_file() or not _same_resolved_path(resolved.parent, expected_parent):
+        raise AdjudicationError(
+            f"{context} is not a regular file in its exact attempt directory: {resolved}"
+        )
+    observed = evidence_io.sha256_file(resolved)
+    if stat.st_size != size or observed != digest:
+        raise AdjudicationError(f"{context} size/hash binding drift: {resolved}")
+    return evidence_io.FileBinding(str(resolved), stat.st_size, observed)
+
+
+def _validate_attempt_audit(
+    path: Path,
+    *,
+    key: CellKey,
+    summary_path: Path,
+    reports: Sequence[evidence_io.FileBinding],
+    tester_inis: Sequence[evidence_io.FileBinding],
+    tester_logs: Sequence[evidence_io.FileBinding],
+) -> None:
+    context = f"attempt audit {key.cell_id}"
+    audit = _mapping(evidence_io.load_json_strict(path), context)
+    _exact_keys(audit, ATTEMPT_AUDIT_KEYS, context)
+    _expect(audit["schema_version"], SCHEMA_VERSION, f"{context}.schema_version")
+    _expect(audit["artifact_type"], ATTEMPT_AUDIT_TYPE, f"{context}.artifact_type")
+    _expect(audit["status"], "PASS", f"{context}.status")
+
+    summary = _mapping(evidence_io.load_json_strict(summary_path), f"runner summary {key.cell_id}")
+    report_dir_raw = audit["report_dir"]
+    raw_root_raw = audit["raw_root"]
+    if not isinstance(report_dir_raw, str) or not isinstance(raw_root_raw, str):
+        raise AdjudicationError(f"{context} report_dir/raw_root must be strings")
+    try:
+        report_dir = Path(report_dir_raw).resolve(strict=True)
+        raw_root = Path(raw_root_raw).resolve(strict=True)
+    except OSError as exc:
+        raise AdjudicationError(f"{context} report tree is missing: {exc}") from exc
+    if not report_dir.is_dir() or not raw_root.is_dir():
+        raise AdjudicationError(f"{context} report_dir/raw_root must be directories")
+    if not _same_resolved_path(raw_root, report_dir / "raw"):
+        raise AdjudicationError(f"{context}.raw_root is not report_dir/raw")
+    if not _same_resolved_path(summary.get("report_dir", ""), report_dir):
+        raise AdjudicationError(f"{context}.report_dir differs from runner summary")
+
+    selection = _mapping(audit["selection_policy"], f"{context}.selection_policy")
+    _exact_keys(selection, ATTEMPT_SELECTION_KEYS, f"{context}.selection_policy")
+    _expect(
+        selection["rule"],
+        "SNAPSHOT_RUNNER_STATUS_OK_STRUCTURAL_ONLY",
+        f"{context}.selection_policy.rule",
+    )
+    _expect(
+        selection["performance_fields_consulted"],
+        False,
+        f"{context}.selection_policy.performance_fields_consulted",
+    )
+    _expect(
+        selection["cost_deal_audit_uses_only_selected"],
+        True,
+        f"{context}.selection_policy.cost_deal_audit_uses_only_selected",
+    )
+
+    counts = _mapping(audit["count_algebra"], f"{context}.count_algebra")
+    _exact_keys(counts, ATTEMPT_COUNT_KEYS, f"{context}.count_algebra")
+    requested = _attempt_integer(counts["requested_runs"], f"{context}.requested_runs", minimum=1)
+    maximum = _attempt_integer(counts["max_run_attempts"], f"{context}.max_run_attempts", minimum=1)
+    attempted = _attempt_integer(counts["attempted_runs"], f"{context}.attempted_runs", minimum=1)
+    non_ok = _attempt_integer(counts["non_ok_attempts"], f"{context}.non_ok_attempts")
+    ok_count = _attempt_integer(counts["ok_runs"], f"{context}.ok_runs", minimum=1)
+    if requested != 2 or maximum != min(10, requested + 2):
+        raise AdjudicationError(f"{context} requested/max retry contract drift")
+    if attempted > maximum or attempted != requested + non_ok or ok_count != requested:
+        raise AdjudicationError(f"{context} requested/attempted/non-OK count algebra drift")
+    for field, expected in {
+        "requested_runs": requested,
+        "max_run_attempts": maximum,
+        "attempted_runs": attempted,
+        "non_ok_attempts": non_ok,
+    }.items():
+        if summary.get(field) != expected:
+            raise AdjudicationError(f"{context} differs from runner summary field {field}")
+
+    accepted_ids = _list(audit["accepted_run_ids"], f"{context}.accepted_run_ids")
+    if len(accepted_ids) != requested or any(not isinstance(item, str) for item in accepted_ids):
+        raise AdjudicationError(f"{context}.accepted_run_ids must identify exactly two attempts")
+    if _list(audit["unbound_files"], f"{context}.unbound_files") != []:
+        raise AdjudicationError(f"{context}.unbound_files must be empty")
+    attempts = _list(audit["attempts"], f"{context}.attempts")
+    summary_runs = _list(summary.get("runs"), f"runner summary {key.cell_id}.runs")
+    if len(attempts) != attempted or len(summary_runs) != attempted:
+        raise AdjudicationError(f"{context} attempt list count drift")
+
+    raw_children = list(raw_root.iterdir())
+    if any(not child.is_dir() for child in raw_children):
+        raise AdjudicationError(f"{context}.raw_root contains an unbound file")
+    expected_dirs = [f"run_{ordinal:02d}" for ordinal in range(1, attempted + 1)]
+    if sorted(child.name for child in raw_children) != expected_dirs:
+        raise AdjudicationError(f"{context}.raw_root attempt directories are not exact/ordinal")
+
+    allowed_invalid_failures = {
+        "ONINIT_FAILED",
+        "SETUP_DATA_MISSING",
+        "NO_HISTORY",
+        "NO_REAL_TICKS",
+        "REPORT_EMPTY",
+        "BARS_ZERO",
+        "REPORT_FORMAT_DRIFT",
+        "INVALID_REPORT",
+    }
+    allowed_fail_failures = {"LOG_BOMB", "TIMEOUT", "REPORT_MISSING", "REPORT_EMPTY"}
+    reason_re = re.compile(
+        r"^(?:REPORT_EMPTY|EMPTY_EXPERT|EMPTY_SYMBOL|M0_1970_PERIOD|BARS_ZERO|"
+        r"ONINIT_FAILED|SETUP_DATA_MISSING|NO_HISTORY_LOG|HISTORY_CONTEXT_INVALID|"
+        r"NO_REAL_TICKS_MARKER_FAST_FINISH|REPORT_METRIC_(?:MISSING|UNPARSEABLE):[A-Za-z0-9_]+)$"
+    )
+    selected_reports: list[evidence_io.FileBinding] = []
+    selected_inis: list[evidence_io.FileBinding] = []
+    selected_logs: list[evidence_io.FileBinding] = []
+    observed_ids: list[str] = []
+    observed_non_ok = 0
+
+    for index, (raw_attempt, raw_summary) in enumerate(zip(attempts, summary_runs, strict=True)):
+        row_context = f"{context}.attempts[{index}]"
+        attempt_row = _mapping(raw_attempt, row_context)
+        summary_row = _mapping(raw_summary, f"runner summary {key.cell_id}.runs[{index}]")
+        _exact_keys(attempt_row, ATTEMPT_ROW_KEYS, row_context)
+        ordinal = index + 1
+        run_id = f"run_{ordinal:02d}"
+        _expect(attempt_row["ordinal"], ordinal, f"{row_context}.ordinal")
+        _expect(attempt_row["run"], run_id, f"{row_context}.run")
+        _expect(summary_row.get("run"), run_id, f"runner summary {key.cell_id}.runs[{index}].run")
+        run_dir = (raw_root / run_id).resolve(strict=True)
+        if run_dir.is_symlink() or not run_dir.is_dir():
+            raise AdjudicationError(f"{row_context} directory is not a regular directory")
+
+        status = attempt_row["status"]
+        if status not in {"OK", "INVALID", "FAIL"}:
+            raise AdjudicationError(f"{row_context}.status is unknown")
+        _expect(summary_row.get("status"), status, f"runner summary {key.cell_id}.runs[{index}].status")
+        selected = attempt_row["selected_for_cost_audit"]
+        if not isinstance(selected, bool) or selected != (status == "OK"):
+            raise AdjudicationError(f"{row_context} selected flag is not exactly status==OK")
+        failure = attempt_row["failure"]
+        reasons = _list(attempt_row["invalid_report_reasons"], f"{row_context}.invalid_report_reasons")
+        if any(not isinstance(reason, str) or not reason_re.fullmatch(reason) for reason in reasons):
+            raise AdjudicationError(f"{row_context} has an unrecognized structural invalid reason")
+        if status == "OK":
+            if failure is not None or reasons:
+                raise AdjudicationError(f"{row_context} accepted attempt carries failure metadata")
+            _expect(summary_row.get("real_ticks_marker"), True, f"runner summary {key.cell_id}.runs[{index}].real_ticks_marker")
+        else:
+            observed_non_ok += 1
+            if not isinstance(failure, str) or not failure:
+                raise AdjudicationError(f"{row_context} non-OK attempt lacks failure")
+            if status == "INVALID" and (failure not in allowed_invalid_failures or not reasons):
+                raise AdjudicationError(f"{row_context} INVALID classification is not structural")
+            if status == "FAIL" and failure not in allowed_fail_failures:
+                raise AdjudicationError(f"{row_context} FAIL classification is unknown")
+        if summary_row.get("failure") != failure:
+            raise AdjudicationError(f"{row_context}.failure differs from runner summary")
+        summary_reasons = summary_row.get("invalid_report_reasons", [])
+        if summary_reasons is None:
+            summary_reasons = []
+        if summary_reasons != reasons:
+            raise AdjudicationError(f"{row_context}.invalid_report_reasons differ from runner summary")
+
+        report_raw = attempt_row["report"]
+        report_binding = None
+        if report_raw is not None:
+            report_binding = _attempt_file_binding(
+                report_raw, context=f"{row_context}.report", expected_parent=run_dir
+            )
+            if Path(report_binding.path).name.lower() != "report.htm":
+                raise AdjudicationError(f"{row_context}.report has a non-canonical filename")
+        ini_binding = _attempt_file_binding(
+            attempt_row["tester_ini"], context=f"{row_context}.tester_ini", expected_parent=run_dir
+        )
+        if Path(ini_binding.path).name.lower() != "tester.ini" or ini_binding.size_bytes <= 0:
+            raise AdjudicationError(f"{row_context}.tester_ini is not canonical/non-empty")
+        log_raw = attempt_row["tester_log"]
+        log_binding = None
+        if log_raw is not None:
+            log_binding = _attempt_file_binding(
+                log_raw, context=f"{row_context}.tester_log", expected_parent=run_dir
+            )
+            if log_binding.size_bytes <= 0:
+                raise AdjudicationError(f"{row_context}.tester_log is empty")
+
+        absences = _list(attempt_row["explicit_absences"], f"{row_context}.explicit_absences")
+        expected_absences = []
+        if report_binding is None:
+            expected_absences.append("report")
+        if log_binding is None:
+            expected_absences.append("tester_log")
+        if absences != expected_absences:
+            raise AdjudicationError(f"{row_context}.explicit_absences do not match null bindings")
+        if selected and (report_binding is None or report_binding.size_bytes <= 0 or log_binding is None):
+            raise AdjudicationError(f"{row_context} accepted attempt lacks complete artifacts")
+        if status == "INVALID" and report_binding is None:
+            raise AdjudicationError(f"{row_context} INVALID attempt lacks its report artifact")
+        if status == "FAIL" and failure in {"REPORT_MISSING", "LOG_BOMB", "TIMEOUT"} and report_binding is not None:
+            raise AdjudicationError(f"{row_context} failure contradicts present report")
+        if status == "FAIL" and failure == "REPORT_EMPTY" and report_binding is not None and report_binding.size_bytes != 0:
+            raise AdjudicationError(f"{row_context} REPORT_EMPTY artifact is non-empty")
+
+        expected_report_path = run_dir / "report.htm"
+        if not _same_resolved_path(summary_row.get("report_canonical_path", ""), expected_report_path):
+            raise AdjudicationError(f"{row_context} canonical report path drift")
+        expected_size = 0 if report_binding is None else report_binding.size_bytes
+        if summary_row.get("report_size_bytes") != expected_size:
+            raise AdjudicationError(f"{row_context} report size differs from runner summary")
+        summary_log = summary_row.get("tester_log_path")
+        if log_binding is None:
+            if summary_log not in {None, ""}:
+                raise AdjudicationError(f"{row_context} tester-log absence differs from summary")
+        elif not _same_resolved_path(summary_log or "", log_binding.path):
+            raise AdjudicationError(f"{row_context} tester-log path differs from summary")
+
+        bound_files = {Path(ini_binding.path).resolve()}
+        if report_binding is not None:
+            bound_files.add(Path(report_binding.path).resolve())
+        if log_binding is not None:
+            bound_files.add(Path(log_binding.path).resolve())
+        actual_files: set[Path] = set()
+        for child in run_dir.iterdir():
+            if child.is_symlink() or not child.is_file():
+                raise AdjudicationError(f"{row_context} contains an unbound/non-file artifact: {child}")
+            actual_files.add(child.resolve(strict=True))
+        if actual_files != bound_files:
+            raise AdjudicationError(f"{row_context} contains missing or unbound artifacts")
+
+        if selected:
+            observed_ids.append(run_id)
+            assert report_binding is not None and log_binding is not None
+            selected_reports.append(report_binding)
+            selected_inis.append(ini_binding)
+            selected_logs.append(log_binding)
+
+    if observed_non_ok != non_ok or observed_ids != accepted_ids:
+        raise AdjudicationError(f"{context} accepted/non-OK attempt identity drift")
+    for label, observed, expected in (
+        ("reports", selected_reports, list(reports)),
+        ("tester_inis", selected_inis, list(tester_inis)),
+        ("tester_logs", selected_logs, list(tester_logs)),
+    ):
+        if observed != expected:
+            raise AdjudicationError(f"{context} selected {label} differ from launcher artifacts")
+
+
 def _validate_nested_validator_receipts(
     *,
     receipt: Mapping[str, Any],
@@ -1302,6 +1581,9 @@ def _validate_runner_summary(
         "period",
         "model",
         "requested_runs",
+        "max_run_attempts",
+        "attempted_runs",
+        "non_ok_attempts",
         "deterministic",
         "model4_log_marker_detected",
         "oninit_failure_detected",
@@ -1314,6 +1596,7 @@ def _validate_runner_summary(
     _expect(summary["period"], key.market.timeframe, f"runner summary {key.cell_id}.period")
     _expect(summary["model"], 4, f"runner summary {key.cell_id}.model")
     _expect(summary["requested_runs"], 2, f"runner summary {key.cell_id}.requested_runs")
+    _expect(summary["max_run_attempts"], 4, f"runner summary {key.cell_id}.max_run_attempts")
     _expect(summary["deterministic"], True, f"runner summary {key.cell_id}.deterministic")
     _expect(
         summary["model4_log_marker_detected"],
@@ -1323,24 +1606,40 @@ def _validate_runner_summary(
     _expect(summary["oninit_failure_detected"], False, f"runner summary {key.cell_id}.oninit_failure_detected")
     _expect(summary["log_bomb_detected"], False, f"runner summary {key.cell_id}.log_bomb_detected")
     runs = _list(summary["runs"], f"runner summary {key.cell_id}.runs")
-    if len(runs) != 2:
-        raise AdjudicationError(f"runner summary {key.cell_id} must contain exactly two runs")
-    drawdowns: list[Decimal] = []
+    attempted = _attempt_integer(
+        summary["attempted_runs"], f"runner summary {key.cell_id}.attempted_runs", minimum=1
+    )
+    non_ok = _attempt_integer(
+        summary["non_ok_attempts"], f"runner summary {key.cell_id}.non_ok_attempts"
+    )
+    if len(runs) != attempted or attempted != 2 + non_ok or attempted > 4:
+        raise AdjudicationError(f"runner summary {key.cell_id} retry count algebra drift")
+    accepted_runs: list[Mapping[str, Any]] = []
     for index, raw_run in enumerate(runs):
         run = _mapping(raw_run, f"runner summary {key.cell_id}.runs[{index}]")
+        _expect(run.get("run"), f"run_{index + 1:02d}", f"runner summary {key.cell_id}.runs[{index}].run")
+        status = run.get("status")
+        if status == "OK":
+            accepted_runs.append(run)
+        elif status not in {"INVALID", "FAIL"}:
+            raise AdjudicationError(f"runner summary {key.cell_id}.runs[{index}].status is unknown")
+    if len(accepted_runs) != 2:
+        raise AdjudicationError(f"runner summary {key.cell_id} must contain exactly two OK runs")
+    drawdowns: list[Decimal] = []
+    for index, run in enumerate(accepted_runs):
         _required_keys(
             run,
             {"status", "real_ticks_marker", "report_canonical_path", "native_max_equity_drawdown_usd"},
-            f"runner summary {key.cell_id}.runs[{index}]",
+            f"runner summary {key.cell_id}.accepted_runs[{index}]",
         )
-        _expect(run["status"], "OK", f"runner summary {key.cell_id}.runs[{index}].status")
-        _expect(run["real_ticks_marker"], True, f"runner summary {key.cell_id}.runs[{index}].real_ticks_marker")
+        _expect(run["status"], "OK", f"runner summary {key.cell_id}.accepted_runs[{index}].status")
+        _expect(run["real_ticks_marker"], True, f"runner summary {key.cell_id}.accepted_runs[{index}].real_ticks_marker")
         if Path(str(run["report_canonical_path"])).resolve(strict=False) != Path(reports[index].path):
-            raise AdjudicationError(f"runner summary {key.cell_id} raw report path drift at run {index}")
+            raise AdjudicationError(f"runner summary {key.cell_id} accepted report path drift at run {index}")
         drawdowns.append(
             money(
                 run["native_max_equity_drawdown_usd"],
-                f"runner summary {key.cell_id}.runs[{index}].native_max_equity_drawdown_usd",
+                f"runner summary {key.cell_id}.accepted_runs[{index}].native_max_equity_drawdown_usd",
             )
         )
     if drawdowns[0] < ZERO or drawdowns[0] != drawdowns[1]:
@@ -1609,8 +1908,18 @@ def load_cell_evidence(policy: Policy, key: CellKey) -> CellEvidence:
         artifact_bindings=artifact_bindings,
     )
     report_bindings = [artifact_bindings["raw_reports[0]"], artifact_bindings["raw_reports[1]"]]
+    ini_bindings = [artifact_bindings["tester_inis[0]"], artifact_bindings["tester_inis[1]"]]
+    log_bindings = [artifact_bindings["tester_logs[0]"], artifact_bindings["tester_logs[1]"]]
     native_drawdown = _validate_runner_summary(
         Path(artifact_bindings["runner_summary"].path), key=key, reports=report_bindings
+    )
+    _validate_attempt_audit(
+        Path(artifact_bindings["attempt_audit"].path),
+        key=key,
+        summary_path=Path(artifact_bindings["runner_summary"].path),
+        reports=report_bindings,
+        tester_inis=ini_bindings,
+        tester_logs=log_bindings,
     )
     positions, metrics, deal_hash, run_hash = _validate_cost_audit(
         Path(artifact_bindings["cost_audit"].path),
