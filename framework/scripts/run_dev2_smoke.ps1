@@ -75,7 +75,7 @@ function Get-QmLaneContract {
     $contract = Get-Content -LiteralPath $script:LaneContractPath -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
     $expectedSymbols = @($script:AllowedSymbols | Sort-Object)
     $actualSymbols = @($contract.allowed_symbols | ForEach-Object { [string]$_ } | Sort-Object)
-    if ([int]$contract.schema_version -ne 1 -or [string]$contract.contract_id -cne 'QM_DEV2_ISOLATED_MT5_LANE_V1' -or
+    if ([int]$contract.schema_version -ne 2 -or [string]$contract.contract_id -cne 'QM_DEV2_ISOLATED_MT5_LANE_V2' -or
         [string]$contract.lane -cne 'DEV2' -or [string]$contract.source_lane -cne 'DEV1' -or
         [string]$contract.identity.local_user -cne $script:Dev2UserName -or
         -not (ConvertTo-QmFullPath -Path ([string]$contract.paths.terminal_root)).Equals($script:Dev2Root, [System.StringComparison]::OrdinalIgnoreCase) -or
@@ -87,7 +87,9 @@ function Get-QmLaneContract {
     }
     $port = $contract.agent_port_contract
     if ([bool]$port.source_agents_dat_copied -or -not [bool]$port.require_runtime_listener_proof -or
-        -not [bool]$port.require_exact_dev2_metatester_path -or -not [bool]$port.require_no_preexisting_port_owner -or
+        -not [bool]$port.require_exact_dev2_metatester_path -or
+        -not [bool]$port.require_no_concurrent_overlapping_endpoint_owner -or
+        -not [bool]$port.allow_released_baseline_endpoint_reuse -or
         [int]$port.minimum_port -lt 1 -or [int]$port.maximum_port -gt 65535 -or
         [int]$port.minimum_port -gt [int]$port.maximum_port) {
         throw 'DEV2 lane contract has an unsafe agent-port policy.'
@@ -1066,18 +1068,25 @@ try {
     $agentProof = $result.agent_port_proof
     $proofRows = @($agentProof.listeners)
     if ([string]$agentProof.status -cne 'PASS' -or $proofRows.Count -lt 1 -or
-        [bool]$agentProof.preexisting_port_owner -or
+        [bool]$agentProof.preexisting_port_owner -or [bool]$agentProof.concurrent_port_owner -or
+        [string]$agentProof.exclusivity_semantics -cne 'NO_CONCURRENT_OVERLAPPING_ENDPOINT_OWNER' -or
+        -not [bool]$agentProof.released_baseline_endpoint_reuse_allowed -or
         -not (ConvertTo-QmFullPath -Path ([string]$agentProof.metatester_path)).Equals(
             (ConvertTo-QmFullPath -Path (Join-Path $script:Dev2Root 'metatester64.exe')),
             [System.StringComparison]::OrdinalIgnoreCase) -or
         [string]$agentProof.metatester_sha256 -cne [string]$programSha256['metatester64.exe']) {
-        throw 'DEV2 result lacks a valid exact-path, previously-unowned metatester listener proof.'
+        throw 'DEV2 result lacks a valid exact-path, runtime-exclusive metatester listener proof.'
     }
     foreach ($listener in $proofRows) {
         if ([int]$listener.local_port -lt [int]$laneContract.agent_port_contract.minimum_port -or
             [int]$listener.local_port -gt [int]$laneContract.agent_port_contract.maximum_port -or
             [int]$listener.process_id -le 0 -or [string]$listener.owner_sid -cne $identityContract.Sid -or
-            [bool]$listener.preexisting_port_owner -or
+            [bool]$listener.preexisting_port_owner -or [bool]$listener.concurrent_port_owner -or
+            -not [bool]$listener.exclusive_current_owner -or
+            [int]$listener.current_overlapping_owner_count -ne 1 -or
+            $listener.baseline_endpoint_was_occupied -isnot [bool] -or
+            [int]$listener.released_baseline_owner_count -lt 0 -or
+            ([bool]$listener.baseline_endpoint_was_occupied -and [int]$listener.released_baseline_owner_count -lt 1) -or
             -not (ConvertTo-QmFullPath -Path ([string]$listener.executable_path)).Equals(
                 (ConvertTo-QmFullPath -Path (Join-Path $script:Dev2Root 'metatester64.exe')),
                 [System.StringComparison]::OrdinalIgnoreCase)) {

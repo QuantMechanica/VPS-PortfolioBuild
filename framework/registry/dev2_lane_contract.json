@@ -1,6 +1,6 @@
 {
-  "schema_version": 1,
-  "contract_id": "QM_DEV2_ISOLATED_MT5_LANE_V1",
+  "schema_version": 2,
+  "contract_id": "QM_DEV2_ISOLATED_MT5_LANE_V2",
   "lane": "DEV2",
   "source_lane": "DEV1",
   "identity": {
@@ -88,12 +88,13 @@
     }
   },
   "agent_port_contract": {
-    "allocation": "FRESH_AGENTS_DAT_AND_OS_EXCLUSIVE_DYNAMIC_LOCAL_PORT",
+    "allocation": "FRESH_AGENTS_DAT_AND_OS_EXCLUSIVE_RUNTIME_ENDPOINT",
     "source_agents_dat_copied": false,
     "minimum_port": 3000,
     "maximum_port": 65535,
     "require_runtime_listener_proof": true,
     "require_exact_dev2_metatester_path": true,
-    "require_no_preexisting_port_owner": true
+    "require_no_concurrent_overlapping_endpoint_owner": true,
+    "allow_released_baseline_endpoint_reuse": true
   }
 }

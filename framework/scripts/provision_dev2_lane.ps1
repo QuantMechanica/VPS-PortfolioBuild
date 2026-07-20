@@ -519,7 +519,7 @@ foreach ($entry in @($contract.firewall)) {
         $firewallMapValid = $false
     }
 }
-if ([int]$contract.schema_version -ne 1 -or [string]$contract.contract_id -cne 'QM_DEV2_ISOLATED_MT5_LANE_V1' -or
+if ([int]$contract.schema_version -ne 2 -or [string]$contract.contract_id -cne 'QM_DEV2_ISOLATED_MT5_LANE_V2' -or
     [string]$contract.lane -cne 'DEV2' -or [string]$contract.source_lane -cne 'DEV1' -or
     $dev2User -cne 'QMDev2' -or [string]$contract.identity.profile -cne 'C:/Users/QMDev2' -or
     -not $sourceRoot.Equals($fixedSourceRoot, [System.StringComparison]::OrdinalIgnoreCase) -or
@@ -547,7 +547,8 @@ if ([int]$contract.schema_version -ne 1 -or [string]$contract.contract_id -cne '
     [bool]$contract.agent_port_contract.source_agents_dat_copied -or
     -not [bool]$contract.agent_port_contract.require_runtime_listener_proof -or
     -not [bool]$contract.agent_port_contract.require_exact_dev2_metatester_path -or
-    -not [bool]$contract.agent_port_contract.require_no_preexisting_port_owner) {
+    -not [bool]$contract.agent_port_contract.require_no_concurrent_overlapping_endpoint_owner -or
+    -not [bool]$contract.agent_port_contract.allow_released_baseline_endpoint_reuse) {
     throw 'DEV2 lane contract drifted from the fixed, additive provisioning boundary.'
 }
 if ($ResumeExactPartialUser.IsPresent -and [string]::IsNullOrWhiteSpace($ExpectedPartialUserSid)) {

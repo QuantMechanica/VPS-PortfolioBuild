@@ -39,7 +39,7 @@ $completeAst = Get-QmParsedScript -Path $paths.complete
 $null = Get-QmParsedScript -Path $paths.core
 
 $contract = Get-Content -LiteralPath $paths.contract -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
-if ([int]$contract.schema_version -ne 1 -or [string]$contract.contract_id -cne 'QM_DEV2_ISOLATED_MT5_LANE_V1' -or
+if ([int]$contract.schema_version -ne 2 -or [string]$contract.contract_id -cne 'QM_DEV2_ISOLATED_MT5_LANE_V2' -or
     [string]$contract.identity.local_user -cne 'QMDev2' -or
     [string]$contract.paths.source_terminal_root -cne 'D:/QM/mt5/DEV1' -or
     [string]$contract.paths.terminal_root -cne 'D:/QM/mt5/DEV2' -or
@@ -52,7 +52,8 @@ if ([int]$contract.schema_version -ne 1 -or [string]$contract.contract_id -cne '
 if ([bool]$contract.agent_port_contract.source_agents_dat_copied -or
     -not [bool]$contract.agent_port_contract.require_runtime_listener_proof -or
     -not [bool]$contract.agent_port_contract.require_exact_dev2_metatester_path -or
-    -not [bool]$contract.agent_port_contract.require_no_preexisting_port_owner) {
+    -not [bool]$contract.agent_port_contract.require_no_concurrent_overlapping_endpoint_owner -or
+    -not [bool]$contract.agent_port_contract.allow_released_baseline_endpoint_reuse) {
     throw 'DEV2 agent-port contract is not fail-closed.'
 }
 $exception = $contract.copy_contract.documented_exception
@@ -90,7 +91,7 @@ if ($null -eq $applyParameter) { throw 'Provisioner lacks explicit -Apply opt-in
 foreach ($marker in @(
     "schema_version = 2", 'lane_contract_sha256', 'child_sha256', 'program_sha256',
     'Global\QM_DEV2_SMOKE_CONTROLLER', 'QM_DEV2_SMOKE_', 'agent_port_proof',
-    'previously-unowned metatester listener proof', 'Get-QmDev2ControllerAccountState',
+    'runtime-exclusive metatester listener proof', 'Get-QmDev2ControllerAccountState',
     'Enable-QmDev2ControllerAccountState',
     'Restore-QmDev2ControllerAccountState', 'dev2_account_initially_enabled',
     'dev2_account_enabled_by_controller', 'dev2_account_restored_disabled',
@@ -114,6 +115,14 @@ foreach ($marker in @(
     }
 }
 foreach ($marker in @(
+    'require_runtime_listener_proof', 'require_exact_dev2_metatester_path',
+    'require_no_concurrent_overlapping_endpoint_owner', 'allow_released_baseline_endpoint_reuse'
+)) {
+    if (-not $completeText.Contains($marker, [System.StringComparison]::Ordinal)) {
+        throw "DEV2 post-clone completion port-contract marker is missing: $marker"
+    }
+}
+foreach ($marker in @(
     'QM_DEV2_ACCOUNT_CLEANUP_LEASE', 'QM_DEV2_ACCOUNT_CLEANUP_RESULT',
     'QM_DEV2_ACCOUNT_CLEANUP_DISARM_RESULT', 'Stop-QmTargetTaskExact',
     'Stop-QmDev2ProcessesExact', 'Get-QmDev2IdentityProcesses',
@@ -127,8 +136,10 @@ foreach ($marker in @(
 }
 foreach ($marker in @(
     '[int]$Request.schema_version -ne 2', 'Get-QmListenerBaseline', 'Update-QmDev2AgentListenerProof',
+    'Test-QmListenerAddressesOverlap', 'NO_CONCURRENT_OVERLAPPING_ENDPOINT_OWNER',
     "Name = 'metatester64.exe'", 'Get-NetTCPConnection -State Listen',
-    'Exact-path DEV2 metatester', 'preexisting_port_owner = $false', '$runner.Kill($true)',
+    'Exact-path DEV2 metatester', 'preexisting_port_owner = $false',
+    'concurrent_port_owner = $false', 'released_baseline_owner_count', '$runner.Kill($true)',
     'maximum_run_attempts', 'controller_timeout_seconds', '$expectedMaximumAttempts',
     '$minimumControllerTimeout', 'per_attempt_overhead_seconds',
     'controller_finalization_margin_seconds',

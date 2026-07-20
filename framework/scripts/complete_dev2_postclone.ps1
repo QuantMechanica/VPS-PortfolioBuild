@@ -625,14 +625,17 @@ foreach ($fixedPath in @($contractPath, $initializerPath, $lsaRightsPath, $sourc
     Assert-QmNoReparseComponents -Path $fixedPath
 }
 $contract = Get-Content -LiteralPath $contractPath -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
-if ([int]$contract.schema_version -ne 1 -or [string]$contract.contract_id -cne 'QM_DEV2_ISOLATED_MT5_LANE_V1' -or
+if ([int]$contract.schema_version -ne 2 -or [string]$contract.contract_id -cne 'QM_DEV2_ISOLATED_MT5_LANE_V2' -or
     [string]$contract.coordination.controller_mutex -cne $controllerMutexName -or
     [string]$contract.coordination.provision_mutex -cne $provisionMutexName -or
     [string]$contract.coordination.source_quiescence_mutex -cne $sourceMutexName -or
     [string]$contract.coordination.task_prefix -cne 'QM_DEV2_SMOKE_' -or
     [string]$contract.coordination.profile_task_prefix -cne 'QM_DEV2_PROFILE_INIT_' -or
     [bool]$contract.agent_port_contract.source_agents_dat_copied -or
-    -not [bool]$contract.agent_port_contract.require_runtime_listener_proof) {
+    -not [bool]$contract.agent_port_contract.require_runtime_listener_proof -or
+    -not [bool]$contract.agent_port_contract.require_exact_dev2_metatester_path -or
+    -not [bool]$contract.agent_port_contract.require_no_concurrent_overlapping_endpoint_owner -or
+    -not [bool]$contract.agent_port_contract.allow_released_baseline_endpoint_reuse) {
     throw 'DEV2 lane contract drifted before exact post-clone completion.'
 }
 . $lsaRightsPath

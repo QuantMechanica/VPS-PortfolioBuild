@@ -50,6 +50,103 @@ if ((Get-QmMinimumDev2ControllerTimeoutSeconds -MaximumRunAttempts 10 -RunTimeou
     throw 'An underbudgeted ten-attempt maximum was not above the controller hard limit.'
 }
 
+& {
+    $script:Dev2Root = 'D:\QM\mt5\DEV2'
+    $script:MockOwnerSid = 'S-1-5-21-1-2-3-1006'
+    $script:MockProcesses = @(
+        [pscustomobject]@{
+            ProcessId = 9001
+            ExecutablePath = 'D:\QM\mt5\DEV2\metatester64.exe'
+            CreationDate = [DateTimeOffset]::UtcNow
+        }
+    )
+    $script:MockListeners = @()
+
+    function ConvertTo-QmFullPath {
+        param([Parameter(Mandatory = $true)][string]$Path)
+        return [System.IO.Path]::GetFullPath($Path)
+    }
+    function Get-QmProcessOwnerSid {
+        param([Parameter(Mandatory = $true)][object]$ProcessRecord)
+        return $script:MockOwnerSid
+    }
+    function Get-CimInstance {
+        param(
+            [string]$ClassName,
+            [string]$Filter,
+            [string[]]$Property,
+            [object]$ErrorAction
+        )
+        return @($script:MockProcesses)
+    }
+    function Get-NetTCPConnection {
+        param(
+            [string]$State,
+            [int]$OwningProcess,
+            [int]$LocalPort,
+            [object]$ErrorAction
+        )
+        $rows = @($script:MockListeners)
+        if ($PSBoundParameters.ContainsKey('OwningProcess')) {
+            $rows = @($rows | Where-Object { [int]$_.OwningProcess -eq $OwningProcess })
+        }
+        if ($PSBoundParameters.ContainsKey('LocalPort')) {
+            $rows = @($rows | Where-Object { [int]$_.LocalPort -eq $LocalPort })
+        }
+        return $rows
+    }
+
+    Invoke-Expression (Get-QmFunctionTextFromAst -Ast $childAst -Name 'Test-QmListenerAddressesOverlap')
+    Invoke-Expression (Get-QmFunctionTextFromAst -Ast $childAst -Name 'Update-QmDev2AgentListenerProof')
+    $portContract = [ordered]@{ minimum_port = 3000; maximum_port = 65535 }
+    $baseline = @{
+        '3004' = @([pscustomobject]@{ local_address = '127.0.0.1'; owning_process = 17436 })
+    }
+
+    $script:MockListeners = @(
+        [pscustomobject]@{ LocalAddress = '127.0.0.1'; LocalPort = 3004; OwningProcess = 9001 }
+    )
+    $seen = @{}
+    Update-QmDev2AgentListenerProof -Baseline $baseline -Seen $seen `
+        -ExpectedOwnerSid $script:MockOwnerSid -EarliestCreationUtc ([DateTimeOffset]::UtcNow.AddSeconds(-1)) `
+        -PortContract $portContract
+    if ($seen.Count -ne 1) { throw 'Released baseline endpoint was not accepted exactly once.' }
+    $proof = @($seen.Values)[0]
+    if (-not [bool]$proof.baseline_endpoint_was_occupied -or
+        [int]$proof.released_baseline_owner_count -ne 1 -or
+        [int]$proof.current_overlapping_owner_count -ne 1 -or
+        -not [bool]$proof.exclusive_current_owner -or
+        [bool]$proof.concurrent_port_owner) {
+        throw 'Released baseline endpoint proof fields drifted.'
+    }
+
+    foreach ($conflictingAddress in @('127.0.0.1', '::ffff:127.0.0.1', '0.0.0.0', '::')) {
+        $script:MockListeners = @(
+            [pscustomobject]@{ LocalAddress = '127.0.0.1'; LocalPort = 3004; OwningProcess = 9001 },
+            [pscustomobject]@{ LocalAddress = $conflictingAddress; LocalPort = 3004; OwningProcess = 17436 }
+        )
+        $rejected = $false
+        try {
+            Update-QmDev2AgentListenerProof -Baseline $baseline -Seen @{} `
+                -ExpectedOwnerSid $script:MockOwnerSid -EarliestCreationUtc ([DateTimeOffset]::UtcNow.AddSeconds(-1)) `
+                -PortContract $portContract
+        } catch {
+            $rejected = $true
+        }
+        if (-not $rejected) { throw "Concurrent overlapping endpoint was accepted: $conflictingAddress" }
+    }
+
+    $script:MockListeners = @(
+        [pscustomobject]@{ LocalAddress = '127.0.0.1'; LocalPort = 3004; OwningProcess = 9001 },
+        [pscustomobject]@{ LocalAddress = '192.0.2.10'; LocalPort = 3004; OwningProcess = 17436 }
+    )
+    $seen = @{}
+    Update-QmDev2AgentListenerProof -Baseline $baseline -Seen $seen `
+        -ExpectedOwnerSid $script:MockOwnerSid -EarliestCreationUtc ([DateTimeOffset]::UtcNow.AddSeconds(-1)) `
+        -PortContract $portContract
+    if ($seen.Count -ne 1) { throw 'Non-overlapping address on the same port was rejected.' }
+}
+
 Remove-Item -LiteralPath Function:\Get-QmMinimumDev2ControllerTimeoutSeconds -ErrorAction Stop
 Invoke-Expression (Get-QmFunctionTextFromAst -Ast $childAst -Name 'Get-QmMinimumDev2ControllerTimeoutSeconds')
 $childMinimum = Get-QmMinimumDev2ControllerTimeoutSeconds `

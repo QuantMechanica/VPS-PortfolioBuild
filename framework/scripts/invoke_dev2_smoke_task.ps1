@@ -99,7 +99,7 @@ function Assert-QmLaneContract {
     param([Parameter(Mandatory = $true)][System.Collections.IDictionary]$Contract)
     $expectedSymbols = @($script:AllowedSymbols | Sort-Object)
     $actualSymbols = @($Contract.allowed_symbols | ForEach-Object { [string]$_ } | Sort-Object)
-    if ([int]$Contract.schema_version -ne 1 -or [string]$Contract.contract_id -cne 'QM_DEV2_ISOLATED_MT5_LANE_V1' -or
+    if ([int]$Contract.schema_version -ne 2 -or [string]$Contract.contract_id -cne 'QM_DEV2_ISOLATED_MT5_LANE_V2' -or
         [string]$Contract.lane -cne 'DEV2' -or [string]$Contract.source_lane -cne 'DEV1' -or
         [string]$Contract.identity.local_user -cne 'QMDev2' -or
         -not (ConvertTo-QmFullPath -Path ([string]$Contract.paths.terminal_root)).Equals($script:Dev2Root, [System.StringComparison]::OrdinalIgnoreCase) -or
@@ -111,7 +111,9 @@ function Assert-QmLaneContract {
     }
     $port = $Contract.agent_port_contract
     if ([bool]$port.source_agents_dat_copied -or -not [bool]$port.require_runtime_listener_proof -or
-        -not [bool]$port.require_exact_dev2_metatester_path -or -not [bool]$port.require_no_preexisting_port_owner -or
+        -not [bool]$port.require_exact_dev2_metatester_path -or
+        -not [bool]$port.require_no_concurrent_overlapping_endpoint_owner -or
+        -not [bool]$port.allow_released_baseline_endpoint_reuse -or
         [int]$port.minimum_port -lt 1 -or [int]$port.maximum_port -gt 65535 -or
         [int]$port.minimum_port -gt [int]$port.maximum_port) {
         throw 'DEV2 lane contract has an unsafe agent-port policy.'
@@ -155,11 +157,35 @@ function Get-QmListenerBaseline {
     foreach ($listener in @(Get-NetTCPConnection -State Listen -ErrorAction Stop)) {
         $portKey = ([int]$listener.LocalPort).ToString([System.Globalization.CultureInfo]::InvariantCulture)
         if (-not $baseline.ContainsKey($portKey)) {
-            $baseline[$portKey] = New-Object System.Collections.Generic.HashSet[int]
+            $baseline[$portKey] = New-Object System.Collections.Generic.List[object]
         }
-        [void]$baseline[$portKey].Add([int]$listener.OwningProcess)
+        $baseline[$portKey].Add([pscustomobject]@{
+            local_address = [string]$listener.LocalAddress
+            owning_process = [int]$listener.OwningProcess
+        })
     }
     return $baseline
+}
+
+function Test-QmListenerAddressesOverlap {
+    param(
+        [Parameter(Mandatory = $true)][string]$Left,
+        [Parameter(Mandatory = $true)][string]$Right
+    )
+    try {
+        $leftAddress = [System.Net.IPAddress]::Parse($Left)
+        $rightAddress = [System.Net.IPAddress]::Parse($Right)
+    } catch {
+        throw 'Listener proof contains an invalid local IP address.'
+    }
+    if ($leftAddress.IsIPv4MappedToIPv6) { $leftAddress = $leftAddress.MapToIPv4() }
+    if ($rightAddress.IsIPv4MappedToIPv6) { $rightAddress = $rightAddress.MapToIPv4() }
+    if ($leftAddress.Equals($rightAddress)) { return $true }
+    if ($leftAddress.Equals([System.Net.IPAddress]::Any) -or
+        $leftAddress.Equals([System.Net.IPAddress]::IPv6Any) -or
+        $rightAddress.Equals([System.Net.IPAddress]::Any) -or
+        $rightAddress.Equals([System.Net.IPAddress]::IPv6Any)) { return $true }
+    return $false
 }
 
 function Update-QmDev2AgentListenerProof {
@@ -189,17 +215,35 @@ function Update-QmDev2AgentListenerProof {
                 throw "DEV2 metatester listener port is outside contract: $port"
             }
             $portKey = $port.ToString([System.Globalization.CultureInfo]::InvariantCulture)
-            if ($Baseline.ContainsKey($portKey)) {
-                $oldOwners = [string]::Join(',', @($Baseline[$portKey] | Sort-Object))
-                throw "DEV2 metatester selected pre-existing listener port $port (owners=$oldOwners)."
-            }
-            $currentOwners = @(
-                Get-NetTCPConnection -State Listen -LocalPort $port -ErrorAction Stop |
-                    ForEach-Object { [int]$_.OwningProcess } | Sort-Object -Unique
+            $baselineOverlaps = @(
+                if ($Baseline.ContainsKey($portKey)) {
+                    $Baseline[$portKey] | Where-Object {
+                        Test-QmListenerAddressesOverlap -Left ([string]$_.local_address) -Right ([string]$listener.LocalAddress)
+                    }
+                }
             )
-            if (@($currentOwners | Where-Object { $_ -ne [int]$process.ProcessId }).Count -gt 0) {
-                throw "DEV2 metatester port $port has another current listener owner."
+            $currentOverlaps = @(
+                Get-NetTCPConnection -State Listen -LocalPort $port -ErrorAction Stop |
+                    Where-Object {
+                        Test-QmListenerAddressesOverlap -Left ([string]$_.LocalAddress) -Right ([string]$listener.LocalAddress)
+                    }
+            )
+            $currentOwners = @(
+                $currentOverlaps | ForEach-Object { [int]$_.OwningProcess } | Sort-Object -Unique
+            )
+            $otherOwners = @($currentOwners | Where-Object { $_ -ne [int]$process.ProcessId })
+            if ($otherOwners.Count -gt 0) {
+                throw "DEV2 metatester endpoint $($listener.LocalAddress):$port has another current listener owner."
             }
+            if ($currentOwners.Count -ne 1 -or $currentOwners[0] -ne [int]$process.ProcessId) {
+                throw "DEV2 metatester endpoint $($listener.LocalAddress):$port lacks exact single-owner proof."
+            }
+            $releasedBaselineOwners = @(
+                $baselineOverlaps |
+                    ForEach-Object { [int]$_.owning_process } |
+                    Where-Object { $_ -notin $currentOwners } |
+                    Sort-Object -Unique
+            )
             $key = '{0}|{1}|{2}' -f [int]$process.ProcessId, $port, [string]$listener.LocalAddress
             $Seen[$key] = [ordered]@{
                 local_address = [string]$listener.LocalAddress
@@ -210,6 +254,11 @@ function Update-QmDev2AgentListenerProof {
                 creation_utc = $creationUtc.ToString('o')
                 first_observed_utc = (Get-Date).ToUniversalTime().ToString('o')
                 preexisting_port_owner = $false
+                concurrent_port_owner = $false
+                exclusive_current_owner = $true
+                current_overlapping_owner_count = $currentOwners.Count
+                baseline_endpoint_was_occupied = ($baselineOverlaps.Count -gt 0)
+                released_baseline_owner_count = $releasedBaselineOwners.Count
             }
         }
     }
@@ -389,6 +438,9 @@ $verifiedProgramSha256 = [ordered]@{}
 $agentPortProof = [ordered]@{
     status = 'NOT_RUN'
     preexisting_port_owner = $false
+    concurrent_port_owner = $false
+    exclusivity_semantics = 'NO_CONCURRENT_OVERLAPPING_ENDPOINT_OWNER'
+    released_baseline_endpoint_reuse_allowed = $true
     metatester_path = (ConvertTo-QmFullPath -Path (Join-Path $script:Dev2Root 'metatester64.exe'))
     metatester_sha256 = $null
     listeners = @()
