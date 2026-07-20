@@ -139,7 +139,10 @@ if ($lsaText.Contains('LsaRemoveAccountRights', [System.StringComparison]::Ordin
 foreach ($marker in @('ExpectedFailedTaskName', '2147943785', 'ERROR_LOGON_TYPE_NOT_GRANTED',
         'Grant-QmDev2BatchLogonRight', "added[0] -cne 'SeBatchLogonRight'", 'LastTaskResult',
         '$eventIds -contains 100', '$eventIds -contains 102', 'mt5_smoke_started = $false',
-        "runtime_listener_proof_status = 'PENDING_FIRST_AUTHORIZED_SMOKE'")) {
+        "runtime_listener_proof_status = 'PENDING_FIRST_AUTHORIZED_SMOKE'",
+        'ResumeExactCompletedProfileTask', 'ExpectedSuccessfulTaskName', 'Get-QmCompletedProfileTaskEvidence',
+        'TASK_SCHEDULER_EVENT_201_RESULT_0_AND_EVENT_102_SUCCESS', 'Get-QmTaskCimTimeProof',
+        'RAW_CLOCK_IS_UTC', 'ready_but_disarmed = $true')) {
     if (-not $completeText.Contains($marker, [System.StringComparison]::Ordinal)) {
         throw "DEV2 post-clone completion marker is missing: $marker"
     }
@@ -157,6 +160,22 @@ if ($completeRegisters.Count -ne 1) { throw 'Post-clone completion must register
 $registerParts = @($completeRegisters[0].CommandElements | ForEach-Object { $_.Extent.Text })
 if ($registerParts -contains '-Force' -or $registerParts -contains '-Trigger') {
     throw 'Post-clone completion task may not overwrite or add a trigger.'
+}
+$timeFunction = $completeAst.Find({
+    param($node)
+    $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -eq 'Get-QmTaskCimTimeProof'
+}, $true)
+if ($null -eq $timeFunction) { throw 'Get-QmTaskCimTimeProof was not found.' }
+Invoke-Expression $timeFunction.Extent.Text
+$reference = [DateTimeOffset]::Parse('2026-07-20T01:20:33Z')
+$misTaggedUtcClock = [DateTime]::SpecifyKind([DateTime]::new(2026, 7, 20, 1, 20, 31), [DateTimeKind]::Local)
+$misTaggedProof = Get-QmTaskCimTimeProof -CimDateTime $misTaggedUtcClock -ReferenceUtc $reference -ToleranceSeconds 5
+$correctLocalClock = [DateTime]::SpecifyKind($reference.AddSeconds(-2).LocalDateTime, [DateTimeKind]::Local)
+$correctLocalProof = Get-QmTaskCimTimeProof -CimDateTime $correctLocalClock -ReferenceUtc $reference -ToleranceSeconds 5
+foreach ($proof in @($misTaggedProof, $correctLocalProof)) {
+    if ([string]$proof.status -cne 'PASS' -or [double]$proof.delta_seconds -gt 5) {
+        throw 'Task CIM timezone normalization regression failed.'
+    }
 }
 foreach ($marker in @('DEV2 requires the isolated', 'DEV2 ReportRoot must stay under', 'post_run_pump_skipped (DEV2 isolation)')) {
     if (-not $coreText.Contains($marker, [System.StringComparison]::Ordinal)) {

@@ -8,7 +8,10 @@ param(
     [string]$ExpectedProvisioningDirectory,
     [Parameter(Mandatory = $true)]
     [ValidatePattern('^QM_DEV2_PROFILE_INIT_[0-9a-f]{32}$')]
-    [string]$ExpectedFailedTaskName
+    [string]$ExpectedFailedTaskName,
+    [switch]$ResumeExactCompletedProfileTask,
+    [ValidatePattern('^QM_DEV2_PROFILE_INIT_[0-9a-f]{32}$')]
+    [string]$ExpectedSuccessfulTaskName
 )
 
 Set-StrictMode -Version Latest
@@ -170,8 +173,14 @@ function Assert-QmExactLateState {
             Where-Object { $null -ne $_.SID -and $_.SID.Value -eq $ExpectedSid }
     )
     if ($memberships.Count -ne 0) { throw 'QMDev2 must retain group-less DEV1 parity.' }
-    if ((Test-Path -LiteralPath 'C:\Users\QMDev2') -or
-        (Test-Path -LiteralPath "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\$ExpectedSid")) {
+    $profilePathExists = Test-Path -LiteralPath 'C:\Users\QMDev2'
+    $profileKeyExists = Test-Path -LiteralPath "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\$ExpectedSid"
+    $profileReceiptExists = Test-Path -LiteralPath (Join-Path $ExpectedProvisioningDirectory 'qmdev2_profile_gate_redacted.json')
+    if ($ResumeExactCompletedProfileTask.IsPresent) {
+        if (-not $profilePathExists -or -not $profileKeyExists -or -not $profileReceiptExists) {
+            throw 'Exact completed-profile resume requires profile, registry mapping, and atomic profile receipt.'
+        }
+    } elseif ($profilePathExists -or $profileKeyExists -or $profileReceiptExists) {
         throw 'QMDev2 profile unexpectedly exists before exact completion.'
     }
     if (@(Get-ScheduledTask -ErrorAction Stop | Where-Object { $_.TaskName -like 'QM_DEV2_*' }).Count -ne 0) {
@@ -219,6 +228,54 @@ function Get-QmEventData {
     $values = @{}
     foreach ($entry in @($xml.Event.EventData.Data)) { $values[[string]$entry.Name] = [string]$entry.'#text' }
     return $values
+}
+
+function Get-QmTaskCimTimeProof {
+    param(
+        [Parameter(Mandatory = $true)][DateTime]$CimDateTime,
+        [Parameter(Mandatory = $true)][DateTimeOffset]$ReferenceUtc,
+        [ValidateRange(1, 300)][int]$ToleranceSeconds = 10
+    )
+    # MSFT_ScheduledTask can surface LastRunTime either as a normal local clock
+    # or as an already-UTC clock tagged DateTimeKind.Local. Test both explicit
+    # interpretations against the task's authoritative UTC Scheduler event.
+    $reference = $ReferenceUtc.ToUniversalTime()
+    $kindConverted = [DateTimeOffset]$CimDateTime.ToUniversalTime()
+    $rawUtcDateTime = [DateTime]::SpecifyKind($CimDateTime, [DateTimeKind]::Utc)
+    $rawClockAsUtc = [DateTimeOffset]$rawUtcDateTime
+    $candidates = @(
+        [pscustomobject]@{
+            interpretation = 'KIND_TO_UTC'
+            utc = $kindConverted
+            delta_seconds = [Math]::Abs(($kindConverted - $reference).TotalSeconds)
+        },
+        [pscustomobject]@{
+            interpretation = 'RAW_CLOCK_IS_UTC'
+            utc = $rawClockAsUtc
+            delta_seconds = [Math]::Abs(($rawClockAsUtc - $reference).TotalSeconds)
+        }
+    )
+    $valid = @($candidates | Where-Object { $_.delta_seconds -le $ToleranceSeconds } | Sort-Object delta_seconds)
+    if ($valid.Count -lt 1) {
+        throw "Task CIM LastRunTime cannot be reconciled with Scheduler UTC event. raw=$($CimDateTime.ToString('o')) kind=$($CimDateTime.Kind) reference=$($reference.ToString('o'))"
+    }
+    $selected = $valid[0]
+    return [pscustomobject]@{
+        status = 'PASS'
+        cim_raw = $CimDateTime.ToString('o')
+        cim_kind = $CimDateTime.Kind.ToString()
+        reference_event_utc = $reference.ToString('o')
+        selected_interpretation = $selected.interpretation
+        selected_utc = $selected.utc.ToString('o')
+        delta_seconds = [double]$selected.delta_seconds
+        candidates = @($candidates | ForEach-Object {
+                [ordered]@{
+                    interpretation = $_.interpretation
+                    utc = $_.utc.ToString('o')
+                    delta_seconds = [double]$_.delta_seconds
+                }
+            })
+    }
 }
 
 function Get-QmPriorFailureEvidence {
@@ -376,14 +433,13 @@ function Invoke-QmProfileTask {
             $task = Get-ScheduledTask -TaskName $taskName -TaskPath '\' -ErrorAction Stop
             $info = Get-ScheduledTaskInfo -TaskName $taskName -TaskPath '\' -ErrorAction Stop
             if ($task.State.ToString() -eq 'Running') { $observedRunning = $true }
-            $ranNow = $info.LastRunTime.Year -gt 2000 -and $info.LastRunTime.ToUniversalTime() -ge $startedUtc.AddSeconds(-2)
-            if ($ranNow -and $task.State.ToString() -ne 'Running' -and [int64]$info.LastTaskResult -ne 267011) { break }
+            if ((Test-Path -LiteralPath $receiptPath -PathType Leaf) -and
+                $task.State.ToString() -ne 'Running' -and [int64]$info.LastTaskResult -ne 267011) { break }
             Start-Sleep -Milliseconds 100
         } while ((Get-Date).ToUniversalTime() -lt $deadline)
         $task = Get-ScheduledTask -TaskName $taskName -TaskPath '\' -ErrorAction Stop
         $info = Get-ScheduledTaskInfo -TaskName $taskName -TaskPath '\' -ErrorAction Stop
-        if ($task.State.ToString() -eq 'Running' -or [int64]$info.LastTaskResult -ne 0 -or
-            $info.LastRunTime.ToUniversalTime() -lt $startedUtc.AddSeconds(-2)) {
+        if ($task.State.ToString() -eq 'Running' -or [int64]$info.LastTaskResult -ne 0) {
             throw "DEV2 profile task did not complete successfully; state=$($task.State) result=$($info.LastTaskResult)"
         }
         if (-not (Test-Path -LiteralPath $receiptPath -PathType Leaf)) { throw 'DEV2 profile task completed without its atomic receipt.' }
@@ -394,21 +450,34 @@ function Invoke-QmProfileTask {
                         LogName = 'Microsoft-Windows-TaskScheduler/Operational'; StartTime = $startedUtc.AddSeconds(-2)
                     } -ErrorAction Stop)) {
                 $data = Get-QmEventData -Event $event
-                $eventTask = if ($data.ContainsKey('TaskName')) { $data.TaskName } elseif ($data.ContainsKey('TaskName')) { $data.TaskName } else { $null }
+                $eventTask = if ($data.ContainsKey('TaskName')) { $data.TaskName } else { $null }
                 if ([string]$eventTask -cne "\$taskName") { continue }
                 $eventRows.Add([ordered]@{
                         event_id = [int]$event.Id
                         record_id = [int64]$event.RecordId
                         time_utc = $event.TimeCreated.ToUniversalTime().ToString('o')
+                        instance_id = if ($data.ContainsKey('InstanceId')) { [string]$data.InstanceId } elseif ($data.ContainsKey('TaskInstanceId')) { [string]$data.TaskInstanceId } else { $null }
+                        result_code = if ($data.ContainsKey('ResultCode')) { [string]$data.ResultCode } else { $null }
+                        action_name = if ($data.ContainsKey('ActionName')) { [string]$data.ActionName } else { $null }
                     })
             }
             $eventIds = @($eventRows | ForEach-Object { [int]$_.event_id } | Sort-Object -Unique)
-            if ($eventIds -contains 100 -and $eventIds -contains 102) { break }
+            if ($eventIds -contains 100 -and $eventIds -contains 102 -and $eventIds -contains 200 -and $eventIds -contains 201) { break }
             Start-Sleep -Milliseconds 250
         } while ((Get-Date).ToUniversalTime() -lt $eventDeadline)
-        if ($eventIds -notcontains 100 -or $eventIds -notcontains 102) {
+        if ($eventIds -notcontains 100 -or $eventIds -notcontains 102 -or $eventIds -notcontains 200 -or $eventIds -notcontains 201) {
             throw "DEV2 profile task lacks Task Scheduler start/completion events; ids=$([string]::Join(',', $eventIds))"
         }
+        $instances = @($eventRows | ForEach-Object { [string]$_.instance_id } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Sort-Object -Unique)
+        $actionSuccess = @($eventRows | Where-Object { $_.event_id -eq 201 }) | Select-Object -Last 1
+        if ($instances.Count -ne 1 -or [string]$actionSuccess.result_code -cne '0' -or
+            -not (ConvertTo-QmFullPath -Path ([string]$actionSuccess.action_name)).Equals(
+                (ConvertTo-QmFullPath -Path $pwshPath), [System.StringComparison]::OrdinalIgnoreCase)) {
+            throw 'DEV2 profile task events lack a single instance and fixed-action ResultCode=0 proof.'
+        }
+        $startedEvent = @($eventRows | Where-Object { $_.event_id -eq 100 } | Sort-Object time_utc) | Select-Object -First 1
+        $cimTimeProof = Get-QmTaskCimTimeProof -CimDateTime $info.LastRunTime `
+            -ReferenceUtc ([DateTimeOffset]::Parse([string]$startedEvent.time_utc))
         $receipt = Get-Content -LiteralPath $receiptPath -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
         if ([string]$receipt.status -cne 'PASS' -or [string]$receipt.nonce -cne $nonce -or
             [string]$receipt.sid -cne $ExpectedSid -or
@@ -427,8 +496,10 @@ function Invoke-QmProfileTask {
         return [pscustomobject]@{
             task_name = $taskName
             observed_running_state = $observedRunning
+            running_state_proof = if ($observedRunning) { 'CIM_RUNNING_STATE_AND_SCHEDULER_EVENT_100' } else { 'TASK_SCHEDULER_EVENT_100' }
             last_task_result = [int64]$info.LastTaskResult
-            last_run_utc = $info.LastRunTime.ToUniversalTime().ToString('o')
+            last_run_utc = $cimTimeProof.selected_utc
+            last_run_cim_time_proof = $cimTimeProof
             scheduler_events = $eventRows.ToArray()
             receipt_path = $receiptPath
             receipt_sha256 = (Get-FileHash -LiteralPath $receiptPath -Algorithm SHA256).Hash.ToLowerInvariant()
@@ -455,7 +526,90 @@ function Invoke-QmProfileTask {
     }
 }
 
+function Get-QmCompletedProfileTaskEvidence {
+    param([Parameter(Mandatory = $true)][string]$TaskName)
+    $qualified = "\$TaskName"
+    $eventRows = New-Object System.Collections.Generic.List[object]
+    foreach ($event in @(Get-WinEvent -FilterHashtable @{
+                LogName = 'Microsoft-Windows-TaskScheduler/Operational'; Id = 100, 102, 200, 201
+            } -ErrorAction Stop)) {
+        $data = Get-QmEventData -Event $event
+        if (-not $data.ContainsKey('TaskName') -or [string]$data.TaskName -cne $qualified) { continue }
+        $instanceId = if ($data.ContainsKey('InstanceId')) {
+            [string]$data.InstanceId
+        } elseif ($data.ContainsKey('TaskInstanceId')) {
+            [string]$data.TaskInstanceId
+        } else { $null }
+        $eventRows.Add([ordered]@{
+                event_id = [int]$event.Id
+                record_id = [int64]$event.RecordId
+                time_utc = $event.TimeCreated.ToUniversalTime().ToString('o')
+                instance_id = $instanceId
+                result_code = if ($data.ContainsKey('ResultCode')) { [string]$data.ResultCode } else { $null }
+                action_name = if ($data.ContainsKey('ActionName')) { [string]$data.ActionName } else { $null }
+            })
+    }
+    $ids = @($eventRows | ForEach-Object { [int]$_.event_id } | Sort-Object -Unique)
+    foreach ($requiredId in @(100, 102, 200, 201)) {
+        if ($ids -notcontains $requiredId) { throw "Successful DEV2 task evidence lacks Scheduler event $requiredId." }
+    }
+    $instances = @($eventRows | ForEach-Object { [string]$_.instance_id } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Sort-Object -Unique)
+    if ($instances.Count -ne 1) { throw 'Successful DEV2 task Scheduler events do not bind to exactly one instance.' }
+    $actionSuccess = @($eventRows | Where-Object { $_.event_id -eq 201 }) | Select-Object -Last 1
+    if ([string]$actionSuccess.result_code -cne '0' -or
+        -not (ConvertTo-QmFullPath -Path ([string]$actionSuccess.action_name)).Equals(
+            (ConvertTo-QmFullPath -Path $pwshPath), [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw 'Successful DEV2 action event lacks ResultCode=0 or the fixed PowerShell executable.'
+    }
+    $startedEvent = @($eventRows | Where-Object { $_.event_id -eq 100 } | Sort-Object time_utc) | Select-Object -First 1
+    $completedEvent = @($eventRows | Where-Object { $_.event_id -eq 102 } | Sort-Object time_utc) | Select-Object -Last 1
+    $startedUtc = [DateTimeOffset]::Parse([string]$startedEvent.time_utc).ToUniversalTime()
+    $completedUtc = [DateTimeOffset]::Parse([string]$completedEvent.time_utc).ToUniversalTime()
+    if ($completedUtc -lt $startedUtc -or ($completedUtc - $startedUtc).TotalMinutes -gt 5) {
+        throw 'Successful DEV2 task event chronology is invalid.'
+    }
+    $receiptPath = Join-Path $ExpectedProvisioningDirectory 'qmdev2_profile_gate_redacted.json'
+    $receipt = Get-Content -LiteralPath $receiptPath -Raw -ErrorAction Stop | ConvertFrom-Json -DateKind String -ErrorAction Stop
+    $receiptUtc = [DateTimeOffset]::Parse([string]$receipt.completed_utc).ToUniversalTime()
+    if ([string]$receipt.status -cne 'PASS' -or [string]$receipt.nonce -notmatch '^[0-9a-f]{32}$' -or
+        [string]$receipt.sid -cne $ExpectedSid -or
+        -not ([string]$receipt.account).Equals($expectedAccount, [System.StringComparison]::OrdinalIgnoreCase) -or
+        -not (ConvertTo-QmFullPath -Path ([string]$receipt.profile)).Equals('C:\Users\QMDev2', [System.StringComparison]::OrdinalIgnoreCase) -or
+        $receiptUtc -lt $startedUtc.AddSeconds(-2) -or $receiptUtc -gt $completedUtc.AddSeconds(2) -or
+        @($receipt.calendars).Count -ne 2) {
+        throw 'Completed DEV2 profile receipt is not bound to the successful Scheduler event interval.'
+    }
+    foreach ($calendar in @($receipt.calendars)) {
+        $sourceHash = (Get-FileHash -LiteralPath ([string]$calendar.source_path) -Algorithm SHA256).Hash.ToLowerInvariant()
+        $destinationHash = (Get-FileHash -LiteralPath ([string]$calendar.destination_path) -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($sourceHash -cne $destinationHash -or $destinationHash -cne ([string]$calendar.sha256).ToLowerInvariant()) {
+            throw "Completed DEV2 calendar hash verification failed: $($calendar.name)"
+        }
+    }
+    return [pscustomobject]@{
+        task_name = $TaskName
+        observed_running_state = $false
+        running_state_proof = 'TASK_SCHEDULER_EVENT_100'
+        last_task_result = 0
+        result_proof = 'TASK_SCHEDULER_EVENT_201_RESULT_0_AND_EVENT_102_SUCCESS'
+        last_run_utc = $startedUtc.ToString('o')
+        scheduler_events = $eventRows.ToArray()
+        receipt_path = $receiptPath
+        receipt_sha256 = (Get-FileHash -LiteralPath $receiptPath -Algorithm SHA256).Hash.ToLowerInvariant()
+        profile = [string]$receipt.profile
+        common_path = [string]$receipt.common_path
+        calendars = @($receipt.calendars)
+        task_was_unregistered = $true
+    }
+}
+
 $ExpectedProvisioningDirectory = ConvertTo-QmFullPath -Path $ExpectedProvisioningDirectory
+if ($ResumeExactCompletedProfileTask.IsPresent -and [string]::IsNullOrWhiteSpace($ExpectedSuccessfulTaskName)) {
+    throw '-ResumeExactCompletedProfileTask requires -ExpectedSuccessfulTaskName.'
+}
+if (-not $ResumeExactCompletedProfileTask.IsPresent -and -not [string]::IsNullOrWhiteSpace($ExpectedSuccessfulTaskName)) {
+    throw '-ExpectedSuccessfulTaskName is valid only with -ResumeExactCompletedProfileTask.'
+}
 if (-not (Test-QmPathWithin -Path $ExpectedProvisioningDirectory -Root $provisioningRoot) -or
     [System.IO.Path]::GetFileName($ExpectedProvisioningDirectory) -notmatch '^[0-9]{8}T[0-9]{6}Z$') {
     throw 'ExpectedProvisioningDirectory escaped the fixed timestamped DEV2 provisioning root.'
@@ -490,6 +644,8 @@ if (-not $Apply) {
             terminal_exists = Test-Path -LiteralPath $terminalRoot
             credential_exists = Test-Path -LiteralPath $credentialPath
             profile_exists = Test-Path -LiteralPath 'C:\Users\QMDev2'
+            resume_exact_completed_profile_task = $ResumeExactCompletedProfileTask.IsPresent
+            expected_successful_task_name = $ExpectedSuccessfulTaskName
             agents_dat_exists = Test-Path -LiteralPath (Join-Path $terminalRoot 'Config\agents.dat')
             dev2_task_count = @(Get-ScheduledTask -ErrorAction Stop | Where-Object { $_.TaskName -like 'QM_DEV2_*' }).Count
             dev2_process_count = @(Get-QmProcessesWithinRoot -Root $terminalRoot).Count
@@ -534,21 +690,38 @@ try {
     Assert-QmSourceQuiescent
 
     $rightsBefore = @(Get-QmDev2AccountRights -Sid $ExpectedSid)
-    if ($rightsBefore.Count -ne 0) { throw "QMDev2 unexpectedly has direct account rights: $([string]::Join(',', $rightsBefore))" }
     Assert-QmNoDenyBatchPolicy
-    $rightGrant = Grant-QmDev2BatchLogonRight -Sid $ExpectedSid
-    if (@($rightGrant.added).Count -ne 1 -or [string]$rightGrant.added[0] -cne 'SeBatchLogonRight') {
-        throw 'The exact LSA operation did not add only SeBatchLogonRight.'
+    if ($ResumeExactCompletedProfileTask.IsPresent) {
+        if ([string]::Join('|', $rightsBefore) -cne 'SeBatchLogonRight') {
+            throw "Completed-profile resume requires exactly SeBatchLogonRight; actual=$([string]::Join(',', $rightsBefore))"
+        }
+        $rightGrant = [pscustomobject]@{
+            before = @()
+            after = @('SeBatchLogonRight')
+            added = @('SeBatchLogonRight')
+            evidence_source = 'EXACT_PRIOR_COMPLETION_ATTEMPT_PLUS_CURRENT_LSA_ENUMERATION'
+        }
+        $profileTask = Get-QmCompletedProfileTaskEvidence -TaskName $ExpectedSuccessfulTaskName
+    } else {
+        if ($rightsBefore.Count -ne 0) { throw "QMDev2 unexpectedly has direct account rights: $([string]::Join(',', $rightsBefore))" }
+        $rightGrant = Grant-QmDev2BatchLogonRight -Sid $ExpectedSid
+        if (@($rightGrant.added).Count -ne 1 -or [string]$rightGrant.added[0] -cne 'SeBatchLogonRight') {
+            throw 'The exact LSA operation did not add only SeBatchLogonRight.'
+        }
+        Enable-LocalUser -Name 'QMDev2' -ErrorAction Stop
+        $enabled = Get-LocalUser -Name 'QMDev2' -ErrorAction Stop
+        if ($enabled.SID.Value -cne $ExpectedSid -or -not $enabled.Enabled -or -not $enabled.PasswordRequired) {
+            throw 'QMDev2 enable contract failed after the minimal right grant.'
+        }
+        $profileTask = Invoke-QmProfileTask -Credential $credential
     }
-    Assert-QmNoDenyBatchPolicy
-
-    Enable-LocalUser -Name 'QMDev2' -ErrorAction Stop
-    $enabled = Get-LocalUser -Name 'QMDev2' -ErrorAction Stop
-    if ($enabled.SID.Value -cne $ExpectedSid -or -not $enabled.Enabled -or -not $enabled.PasswordRequired) {
-        throw 'QMDev2 enable contract failed after the minimal right grant.'
-    }
-    $profileTask = Invoke-QmProfileTask -Credential $credential
     $credential = $null
+    Assert-QmNoDenyBatchPolicy
+    Disable-LocalUser -Name 'QMDev2' -ErrorAction Stop
+    $disarmedUser = Get-LocalUser -Name 'QMDev2' -ErrorAction Stop
+    if ($disarmedUser.SID.Value -cne $ExpectedSid -or $disarmedUser.Enabled -or -not $disarmedUser.PasswordRequired) {
+        throw 'QMDev2 final disabled readiness contract failed.'
+    }
 
     $hashCsvAfterTask = (Get-FileHash -LiteralPath $clone.csv_path -Algorithm SHA256).Hash.ToLowerInvariant()
     if ($hashCsvAfterTask -cne $clone.csv_sha256) { throw 'Clone hash evidence changed during profile initialization.' }
@@ -590,7 +763,8 @@ try {
         identity = [ordered]@{
             account = $expectedAccount
             sid = $ExpectedSid
-            enabled = $true
+            enabled = $false
+            ready_but_disarmed = $true
             password_required = $true
             limited_non_admin = $true
             group_memberships = @()
@@ -641,6 +815,8 @@ try {
             mt5_smoke_started = $false
             dev2_process_count = 0
             dev2_listener_count = 0
+            identity_enabled = $false
+            identity_disarmed_until_authorized_smoke = $true
             source_agents_dat_copied = $false
             agents_dat_exists = $false
             runtime_listener_proof_status = 'PENDING_FIRST_AUTHORIZED_SMOKE'
