@@ -10,6 +10,14 @@ $ErrorActionPreference = 'Stop'
 $script:Dev1Root = [System.IO.Path]::GetFullPath('D:\QM\mt5\DEV1')
 $script:ReportsRoot = [System.IO.Path]::GetFullPath('D:\QM\reports\dev1')
 $script:PwshPath = 'C:\Program Files\PowerShell\7\pwsh.exe'
+$script:LaneContractPath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\registry\dev1_lane_contract.json'))
+$script:CredentialPath = [System.IO.Path]::GetFullPath('C:\ProgramData\QM\DEV1\credential.machine-dpapi.json')
+$script:CredentialHelperPath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot 'dev1_machine_credential.ps1'))
+$script:ControllerMutexName = 'Global\QM_DEV1_SMOKE_CONTROLLER'
+$script:TaskNamePrefix = 'QM_DEV1_SMOKE_'
+$script:CompileTaskNamePrefix = 'QM_DEV1_COMPILE_'
+$script:PerAttemptOverheadSeconds = 600
+$script:ControllerFinalizationMarginSeconds = 600
 $script:AllowedSymbols = @('NDX.DWX', 'GDAXI.DWX', 'EURUSD.DWX', 'GBPUSD.DWX', 'USDJPY.DWX', 'XAUUSD.DWX')
 $script:AllowedParameterOrder = @(
     'EAId', 'EALabel', 'Symbol', 'Year', 'FromDate', 'ToDate', 'Expert', 'Period', 'Runs',
@@ -22,6 +30,15 @@ function ConvertTo-QmFullPath {
     param([Parameter(Mandatory = $true)][string]$Path)
     if ($Path.IndexOfAny([char[]]"`r`n`0") -ge 0) { throw 'Path contains CR, LF, or NUL.' }
     return [System.IO.Path]::GetFullPath($Path)
+}
+
+function Get-QmMinimumDev1ControllerTimeoutSeconds {
+    param(
+        [Parameter(Mandatory = $true)][ValidateRange(1, 10)][int]$MaximumRunAttempts,
+        [Parameter(Mandatory = $true)][ValidateRange(60, 28800)][int]$RunTimeoutSeconds
+    )
+    return ($MaximumRunAttempts * ($RunTimeoutSeconds + $script:PerAttemptOverheadSeconds)) +
+        $script:ControllerFinalizationMarginSeconds
 }
 
 function Test-QmPathWithin {
@@ -59,13 +76,202 @@ function Resolve-QmAccountSid {
 
 function Assert-QmNoDev1Processes {
     $running = @(
-        Get-CimInstance -ClassName Win32_Process -ErrorAction Stop | Where-Object {
+        Get-CimInstance -ClassName Win32_Process -Property ProcessId,ExecutablePath,CreationDate -ErrorAction Stop | Where-Object {
             -not [string]::IsNullOrWhiteSpace([string]$_.ExecutablePath) -and
             (Test-QmPathWithin -Path ([string]$_.ExecutablePath) -Root $script:Dev1Root)
         }
     )
     if ($running.Count -gt 0) {
         throw "DEV1 is not idle inside the task preflight; exact-path process count=$($running.Count)."
+    }
+}
+
+function Get-QmProcessOwnerSid {
+    param([Parameter(Mandatory = $true)][object]$ProcessRecord)
+    try {
+        $owner = Invoke-CimMethod -InputObject $ProcessRecord -MethodName GetOwnerSid -ErrorAction Stop
+        if ([int]$owner.ReturnValue -eq 0 -and -not [string]::IsNullOrWhiteSpace([string]$owner.Sid)) {
+            return [string]$owner.Sid
+        }
+    } catch {
+    }
+    return $null
+}
+
+function Assert-QmLaneContract {
+    param([Parameter(Mandatory = $true)][System.Collections.IDictionary]$Contract)
+    $expectedSymbols = @($script:AllowedSymbols | Sort-Object)
+    $actualSymbols = @($Contract.allowed_symbols | ForEach-Object { [string]$_ } | Sort-Object)
+    if ([int]$Contract.schema_version -ne 3 -or [string]$Contract.contract_id -cne 'QM_DEV1_ISOLATED_MT5_LANE_V3' -or
+        [string]$Contract.lane -cne 'DEV1' -or [string]$Contract.source_lane -cne 'DEV1' -or
+        [string]$Contract.identity.local_user -cne 'QMDev1' -or
+        [string]$Contract.identity.credential_format -cne 'QM_DEV1_MACHINE_DPAPI_CREDENTIAL' -or
+        [string]$Contract.identity.dpapi_scope -cne 'LocalMachine' -or
+        -not [bool]$Contract.identity.credential_acl.inheritance_protected -or
+        [string]$Contract.identity.credential_acl.owner_sid -cne 'S-1-5-32-544' -or
+        [bool]$Contract.identity.credential_acl.additional_readers -or
+        [string]::Join('|', @($Contract.identity.credential_acl.exact_full_control_sids | ForEach-Object { [string]$_ } | Sort-Object)) -cne 'S-1-5-18|S-1-5-32-544' -or
+        -not (ConvertTo-QmFullPath -Path ([string]$Contract.identity.credential)).Equals($script:CredentialPath, [System.StringComparison]::OrdinalIgnoreCase) -or
+        -not (ConvertTo-QmFullPath -Path ([string]$Contract.paths.terminal_root)).Equals($script:Dev1Root, [System.StringComparison]::OrdinalIgnoreCase) -or
+        -not (ConvertTo-QmFullPath -Path ([string]$Contract.paths.report_root)).Equals($script:ReportsRoot, [System.StringComparison]::OrdinalIgnoreCase) -or
+        [string]$Contract.coordination.controller_mutex -cne $script:ControllerMutexName -or
+        [string]$Contract.coordination.task_prefix -cne $script:TaskNamePrefix -or
+        [string]$Contract.coordination.compile_task_prefix -cne $script:CompileTaskNamePrefix -or
+        [string]::Join('|', $actualSymbols) -cne [string]::Join('|', $expectedSymbols)) {
+        throw 'DEV1 lane contract drifted from the fixed child isolation contract.'
+    }
+    $port = $Contract.agent_port_contract
+    if ([bool]$port.source_agents_dat_copied -or -not [bool]$port.require_runtime_listener_proof -or
+        -not [bool]$port.require_exact_dev1_metatester_path -or
+        -not [bool]$port.require_no_concurrent_overlapping_endpoint_owner -or
+        -not [bool]$port.allow_released_baseline_endpoint_reuse -or
+        [int]$port.minimum_port -lt 1 -or [int]$port.maximum_port -gt 65535 -or
+        [int]$port.minimum_port -gt [int]$port.maximum_port) {
+        throw 'DEV1 lane contract has an unsafe agent-port policy.'
+    }
+}
+
+function Get-QmVerifiedProgramHashes {
+    param(
+        [Parameter(Mandatory = $true)][System.Collections.IDictionary]$ExpectedHashes,
+        [Parameter(Mandatory = $true)][System.Collections.IDictionary]$Contract
+    )
+    $expectedNames = @('MetaEditor64.exe', 'metatester64.exe', 'terminal64.exe')
+    $requestNames = @($ExpectedHashes.Keys | ForEach-Object { [string]$_ } | Sort-Object)
+    $contractHashes = [System.Collections.IDictionary]$Contract.program_sha256
+    $contractNames = @($contractHashes.Keys | ForEach-Object { [string]$_ } | Sort-Object)
+    $sortedExpectedNames = @($expectedNames | Sort-Object)
+    if ([string]::Join('|', $requestNames) -cne [string]::Join('|', $sortedExpectedNames) -or
+        [string]::Join('|', $contractNames) -cne [string]::Join('|', $sortedExpectedNames)) {
+        throw 'DEV1 request/contract program hash set is not exact.'
+    }
+    $actualHashes = [ordered]@{}
+    foreach ($name in $expectedNames) {
+        $requested = ([string]$ExpectedHashes[$name]).ToLowerInvariant()
+        $contracted = ([string]$contractHashes[$name]).ToLowerInvariant()
+        if ($requested -notmatch '^[0-9a-f]{64}$' -or $requested -cne $contracted) {
+            throw "DEV1 request/contract program hash mismatch for $name."
+        }
+        $programPath = ConvertTo-QmFullPath -Path (Join-Path $script:Dev1Root $name)
+        Assert-QmNoReparseComponents -Path $programPath
+        $actual = (Get-FileHash -LiteralPath $programPath -Algorithm SHA256 -ErrorAction Stop).Hash.ToLowerInvariant()
+        if ($actual -cne $requested) {
+            throw "DEV1 program hash mismatch for $name; expected=$requested actual=$actual"
+        }
+        $actualHashes[$name] = $actual
+    }
+    return $actualHashes
+}
+
+function Get-QmListenerBaseline {
+    $baseline = @{}
+    foreach ($listener in @(Get-NetTCPConnection -State Listen -ErrorAction Stop)) {
+        $portKey = ([int]$listener.LocalPort).ToString([System.Globalization.CultureInfo]::InvariantCulture)
+        if (-not $baseline.ContainsKey($portKey)) {
+            $baseline[$portKey] = New-Object System.Collections.Generic.List[object]
+        }
+        $baseline[$portKey].Add([pscustomobject]@{
+            local_address = [string]$listener.LocalAddress
+            owning_process = [int]$listener.OwningProcess
+        })
+    }
+    return $baseline
+}
+
+function Test-QmListenerAddressesOverlap {
+    param(
+        [Parameter(Mandatory = $true)][string]$Left,
+        [Parameter(Mandatory = $true)][string]$Right
+    )
+    try {
+        $leftAddress = [System.Net.IPAddress]::Parse($Left)
+        $rightAddress = [System.Net.IPAddress]::Parse($Right)
+    } catch {
+        throw 'Listener proof contains an invalid local IP address.'
+    }
+    if ($leftAddress.IsIPv4MappedToIPv6) { $leftAddress = $leftAddress.MapToIPv4() }
+    if ($rightAddress.IsIPv4MappedToIPv6) { $rightAddress = $rightAddress.MapToIPv4() }
+    if ($leftAddress.Equals($rightAddress)) { return $true }
+    if ($leftAddress.Equals([System.Net.IPAddress]::Any) -or
+        $leftAddress.Equals([System.Net.IPAddress]::IPv6Any) -or
+        $rightAddress.Equals([System.Net.IPAddress]::Any) -or
+        $rightAddress.Equals([System.Net.IPAddress]::IPv6Any)) { return $true }
+    return $false
+}
+
+function Update-QmDev1AgentListenerProof {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Baseline,
+        [Parameter(Mandatory = $true)][hashtable]$Seen,
+        [Parameter(Mandatory = $true)][string]$ExpectedOwnerSid,
+        [Parameter(Mandatory = $true)][DateTimeOffset]$EarliestCreationUtc,
+        [Parameter(Mandatory = $true)][System.Collections.IDictionary]$PortContract
+    )
+    $expectedPath = ConvertTo-QmFullPath -Path (Join-Path $script:Dev1Root 'metatester64.exe')
+    foreach ($process in @(Get-CimInstance -ClassName Win32_Process -Filter "Name = 'metatester64.exe'" -Property ProcessId,ExecutablePath,CreationDate -ErrorAction Stop)) {
+        if ([string]::IsNullOrWhiteSpace([string]$process.ExecutablePath)) { continue }
+        $actualPath = ConvertTo-QmFullPath -Path ([string]$process.ExecutablePath)
+        if (-not $actualPath.Equals($expectedPath, [System.StringComparison]::OrdinalIgnoreCase)) { continue }
+        $ownerSid = Get-QmProcessOwnerSid -ProcessRecord $process
+        if ($ownerSid -cne $ExpectedOwnerSid) {
+            throw "Exact-path DEV1 metatester has wrong or unreadable owner SID (pid=$($process.ProcessId))."
+        }
+        $creationUtc = ([DateTimeOffset]$process.CreationDate).ToUniversalTime()
+        if ($creationUtc -lt $EarliestCreationUtc.AddSeconds(-2)) {
+            throw "Exact-path DEV1 metatester predates this child runner (pid=$($process.ProcessId))."
+        }
+        foreach ($listener in @(Get-NetTCPConnection -State Listen -OwningProcess ([int]$process.ProcessId) -ErrorAction SilentlyContinue)) {
+            $port = [int]$listener.LocalPort
+            if ($port -lt [int]$PortContract.minimum_port -or $port -gt [int]$PortContract.maximum_port) {
+                throw "DEV1 metatester listener port is outside contract: $port"
+            }
+            $portKey = $port.ToString([System.Globalization.CultureInfo]::InvariantCulture)
+            $baselineOverlaps = @(
+                if ($Baseline.ContainsKey($portKey)) {
+                    $Baseline[$portKey] | Where-Object {
+                        Test-QmListenerAddressesOverlap -Left ([string]$_.local_address) -Right ([string]$listener.LocalAddress)
+                    }
+                }
+            )
+            $currentOverlaps = @(
+                Get-NetTCPConnection -State Listen -LocalPort $port -ErrorAction Stop |
+                    Where-Object {
+                        Test-QmListenerAddressesOverlap -Left ([string]$_.LocalAddress) -Right ([string]$listener.LocalAddress)
+                    }
+            )
+            $currentOwners = @(
+                $currentOverlaps | ForEach-Object { [int]$_.OwningProcess } | Sort-Object -Unique
+            )
+            $otherOwners = @($currentOwners | Where-Object { $_ -ne [int]$process.ProcessId })
+            if ($otherOwners.Count -gt 0) {
+                throw "DEV1 metatester endpoint $($listener.LocalAddress):$port has another current listener owner."
+            }
+            if ($currentOwners.Count -ne 1 -or $currentOwners[0] -ne [int]$process.ProcessId) {
+                throw "DEV1 metatester endpoint $($listener.LocalAddress):$port lacks exact single-owner proof."
+            }
+            $releasedBaselineOwners = @(
+                $baselineOverlaps |
+                    ForEach-Object { [int]$_.owning_process } |
+                    Where-Object { $_ -notin $currentOwners } |
+                    Sort-Object -Unique
+            )
+            $key = '{0}|{1}|{2}' -f [int]$process.ProcessId, $port, [string]$listener.LocalAddress
+            $Seen[$key] = [ordered]@{
+                local_address = [string]$listener.LocalAddress
+                local_port = $port
+                process_id = [int]$process.ProcessId
+                owner_sid = $ownerSid
+                executable_path = $actualPath
+                creation_utc = $creationUtc.ToString('o')
+                first_observed_utc = (Get-Date).ToUniversalTime().ToString('o')
+                preexisting_port_owner = $false
+                concurrent_port_owner = $false
+                exclusive_current_owner = $true
+                current_overlapping_owner_count = $currentOwners.Count
+                baseline_endpoint_was_occupied = ($baselineOverlaps.Count -gt 0)
+                released_baseline_owner_count = $releasedBaselineOwners.Count
+            }
+        }
     }
 }
 
@@ -122,11 +328,17 @@ function Assert-QmRequestSchema {
     $required = @(
         'schema_version', 'run_id', 'nonce', 'created_utc', 'expires_utc', 'expected_account',
         'expected_sid', 'expected_profile', 'expected_common_path', 'dev1_root', 'reports_root',
-        'smoke_report_root', 'run_smoke_path', 'run_smoke_sha256', 'smoke_parameters'
+        'smoke_report_root', 'expected_task_name', 'controller_mutex', 'lane_contract_path',
+        'lane_contract_sha256', 'machine_credential_path', 'machine_credential_sha256',
+        'machine_credential_helper_path', 'machine_credential_helper_sha256',
+        'child_path', 'child_sha256', 'run_smoke_path', 'run_smoke_sha256',
+        'program_sha256', 'smoke_parameters', 'maximum_run_attempts',
+        'per_attempt_overhead_seconds', 'controller_finalization_margin_seconds',
+        'controller_timeout_seconds'
     )
     $extra = @($Request.Keys | Where-Object { $_ -notin $required })
     $missing = @($required | Where-Object { -not $Request.ContainsKey($_) })
-    if ($extra.Count -gt 0 -or $missing.Count -gt 0 -or [int]$Request.schema_version -ne 1) {
+    if ($extra.Count -gt 0 -or $missing.Count -gt 0 -or [int]$Request.schema_version -ne 2) {
         throw "Invalid DEV1 request schema. Missing=$([string]::Join(',', $missing)); extra=$([string]::Join(',', $extra))"
     }
     if ([string]$Request.run_id -notmatch '^[0-9]{8}T[0-9]{6}Z_[0-9a-f]{32}$' -or
@@ -138,6 +350,26 @@ function Assert-QmRequestSchema {
     if (-not (ConvertTo-QmFullPath -Path ([string]$Request.dev1_root)).Equals($script:Dev1Root, [System.StringComparison]::OrdinalIgnoreCase) -or
         -not (ConvertTo-QmFullPath -Path ([string]$Request.reports_root)).Equals($script:ReportsRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
         throw 'DEV1 request changed a fixed isolation root.'
+    }
+    if ([string]$Request.expected_task_name -notmatch '^QM_DEV1_SMOKE_[0-9a-f]{32}$' -or
+        -not ([string]$Request.expected_task_name).StartsWith($script:TaskNamePrefix, [System.StringComparison]::Ordinal) -or
+        [string]$Request.controller_mutex -cne $script:ControllerMutexName -or
+        -not (ConvertTo-QmFullPath -Path ([string]$Request.lane_contract_path)).Equals($script:LaneContractPath, [System.StringComparison]::OrdinalIgnoreCase) -or
+        -not (ConvertTo-QmFullPath -Path ([string]$Request.machine_credential_path)).Equals($script:CredentialPath, [System.StringComparison]::OrdinalIgnoreCase) -or
+        -not (ConvertTo-QmFullPath -Path ([string]$Request.machine_credential_helper_path)).Equals($script:CredentialHelperPath, [System.StringComparison]::OrdinalIgnoreCase) -or
+        -not (ConvertTo-QmFullPath -Path ([string]$Request.child_path)).Equals((ConvertTo-QmFullPath -Path $PSCommandPath), [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw 'DEV1 request changed its task, mutex, contract, or child-script identity.'
+    }
+    foreach ($hashName in @(
+            'lane_contract_sha256', 'machine_credential_sha256',
+            'machine_credential_helper_sha256', 'child_sha256', 'run_smoke_sha256'
+        )) {
+        if ([string]$Request[$hashName] -notmatch '^[0-9a-f]{64}$') {
+            throw "DEV1 request contains invalid $hashName."
+        }
+    }
+    if ($Request.program_sha256 -isnot [System.Collections.IDictionary]) {
+        throw 'DEV1 request program_sha256 must be an object.'
     }
     if (-not (Test-QmPathWithin -Path ([string]$Request.smoke_report_root) -Root $ExpectedRunDirectory)) {
         throw 'Smoke ReportRoot escaped the nonce-bound run directory.'
@@ -162,6 +394,23 @@ function Assert-QmRequestSchema {
         [int]$parameters.Runs -lt 1 -or [int]$parameters.Runs -gt 10 -or
         [int]$parameters.Model -ne 4 -or [int]$parameters.TimeoutSeconds -lt 60 -or [int]$parameters.TimeoutSeconds -gt 28800) {
         throw 'Numeric smoke parameter is outside its fixed range.'
+    }
+    $expectedMaximumAttempts = [Math]::Min(10, ([int]$parameters.Runs + 2))
+    $minimumControllerTimeout = Get-QmMinimumDev1ControllerTimeoutSeconds `
+        -MaximumRunAttempts $expectedMaximumAttempts -RunTimeoutSeconds ([int]$parameters.TimeoutSeconds)
+    if ($minimumControllerTimeout -gt 172800 -or
+        [int]$Request.maximum_run_attempts -ne $expectedMaximumAttempts -or
+        [int]$Request.per_attempt_overhead_seconds -ne $script:PerAttemptOverheadSeconds -or
+        [int]$Request.controller_finalization_margin_seconds -ne $script:ControllerFinalizationMarginSeconds -or
+        [int]$Request.controller_timeout_seconds -lt $minimumControllerTimeout -or
+        [int]$Request.controller_timeout_seconds -gt 172800) {
+        throw 'DEV1 request maximum-attempt/controller-timeout contract drifted.'
+    }
+    $created = [DateTimeOffset]::Parse([string]$Request.created_utc).ToUniversalTime()
+    $lifetimeSeconds = ($expires - $created).TotalSeconds
+    if ($lifetimeSeconds -lt ([int]$Request.controller_timeout_seconds + 590) -or
+        $lifetimeSeconds -gt ([int]$Request.controller_timeout_seconds + 610)) {
+        throw 'DEV1 request expiry does not cover the bounded controller timeout.'
     }
     foreach ($key in @($parameters.Keys)) {
         $value = $parameters[$key]
@@ -200,6 +449,22 @@ $actualCommonPath = $null
 $startedUtc = (Get-Date).ToUniversalTime()
 $resultPath = $null
 $logPath = $null
+$laneContractSha256 = $null
+$childSha256 = $null
+$runSmokeSha256 = $null
+$machineCredentialSha256 = $null
+$machineCredentialHelperSha256 = $null
+$verifiedProgramSha256 = [ordered]@{}
+$agentPortProof = [ordered]@{
+    status = 'NOT_RUN'
+    preexisting_port_owner = $false
+    concurrent_port_owner = $false
+    exclusivity_semantics = 'NO_CONCURRENT_OVERLAPPING_ENDPOINT_OWNER'
+    released_baseline_endpoint_reuse_allowed = $true
+    metatester_path = (ConvertTo-QmFullPath -Path (Join-Path $script:Dev1Root 'metatester64.exe'))
+    metatester_sha256 = $null
+    listeners = @()
+}
 
 try {
     $RunDirectory = ConvertTo-QmFullPath -Path $RunDirectory
@@ -220,6 +485,24 @@ try {
     Assert-QmRequestSchema -Request $request -ExpectedRunDirectory $RunDirectory
     $runId = [string]$request.run_id
     $nonce = [string]$request.nonce
+    $machineCredentialSha256 = [string]$request.machine_credential_sha256
+    $machineCredentialHelperSha256 = [string]$request.machine_credential_helper_sha256
+
+    foreach ($boundPath in @([string]$request.lane_contract_path, [string]$request.child_path, [string]$request.run_smoke_path)) {
+        Assert-QmNoReparseComponents -Path $boundPath
+    }
+    $laneContractSha256 = (Get-FileHash -LiteralPath ([string]$request.lane_contract_path) -Algorithm SHA256 -ErrorAction Stop).Hash.ToLowerInvariant()
+    $childSha256 = (Get-FileHash -LiteralPath ([string]$request.child_path) -Algorithm SHA256 -ErrorAction Stop).Hash.ToLowerInvariant()
+    $runSmokeSha256 = (Get-FileHash -LiteralPath ([string]$request.run_smoke_path) -Algorithm SHA256 -ErrorAction Stop).Hash.ToLowerInvariant()
+    if ($laneContractSha256 -cne [string]$request.lane_contract_sha256 -or
+        $childSha256 -cne [string]$request.child_sha256 -or
+        $runSmokeSha256 -cne [string]$request.run_smoke_sha256) {
+        throw 'DEV1 contract or runner script changed between controller and child execution.'
+    }
+    $laneContract = Get-Content -LiteralPath ([string]$request.lane_contract_path) -Raw -ErrorAction Stop |
+        ConvertFrom-Json -AsHashtable -DateKind String -ErrorAction Stop
+    Assert-QmLaneContract -Contract $laneContract
+    $verifiedProgramSha256 = Get-QmVerifiedProgramHashes -ExpectedHashes ([System.Collections.IDictionary]$request.program_sha256) -Contract $laneContract
 
     $currentIdentity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
     $currentSid = $currentIdentity.User.Value
@@ -246,7 +529,7 @@ try {
 
     $runSmokePath = ConvertTo-QmFullPath -Path ([string]$request.run_smoke_path)
     Assert-QmNoReparseComponents -Path $runSmokePath
-    $actualHash = (Get-FileHash -LiteralPath $runSmokePath -Algorithm SHA256).Hash
+    $actualHash = (Get-FileHash -LiteralPath $runSmokePath -Algorithm SHA256).Hash.ToLowerInvariant()
     if ($actualHash -cne [string]$request.run_smoke_sha256) {
         throw 'run_smoke.ps1 changed between controller and child execution.'
     }
@@ -284,22 +567,53 @@ try {
     [void]$startInfo.ArgumentList.Add('-ReportRoot')
     [void]$startInfo.ArgumentList.Add((ConvertTo-QmFullPath -Path ([string]$request.smoke_report_root)))
 
+    [hashtable]$listenerBaseline = Get-QmListenerBaseline
+    $observedListeners = @{}
+    $runnerStartedUtc = [DateTimeOffset]::UtcNow
     $runner = New-Object System.Diagnostics.Process
     $runner.StartInfo = $startInfo
     try {
         if (-not $runner.Start()) { throw 'Failed to start isolated run_smoke child process.' }
         $stdoutTask = $runner.StandardOutput.ReadToEndAsync()
         $stderrTask = $runner.StandardError.ReadToEndAsync()
-        $runner.WaitForExit()
+        while (-not $runner.WaitForExit(250)) {
+            Update-QmDev1AgentListenerProof -Baseline $listenerBaseline -Seen $observedListeners `
+                -ExpectedOwnerSid $currentSid -EarliestCreationUtc $runnerStartedUtc `
+                -PortContract ([System.Collections.IDictionary]$laneContract.agent_port_contract)
+        }
+        Update-QmDev1AgentListenerProof -Baseline $listenerBaseline -Seen $observedListeners `
+            -ExpectedOwnerSid $currentSid -EarliestCreationUtc $runnerStartedUtc `
+            -PortContract ([System.Collections.IDictionary]$laneContract.agent_port_contract)
         $stdout = $stdoutTask.GetAwaiter().GetResult()
         $stderr = $stderrTask.GetAwaiter().GetResult()
         [System.IO.File]::AppendAllText($logPath, "--- run_smoke stdout ---`r`n$stdout`r`n--- run_smoke stderr ---`r`n$stderr`r`n")
         $runSmokeExitCode = $runner.ExitCode
     } finally {
+        try {
+            if (-not $runner.HasExited) {
+                $runner.Kill($true)
+                [void]$runner.WaitForExit(10000)
+            }
+        } catch {
+        }
         $runner.Dispose()
     }
 
     Assert-QmNoDev1Processes
+    if ($observedListeners.Count -lt 1) {
+        $agentPortProof.status = 'FAIL'
+        $errorCode = 'DEV1_AGENT_PORT_PROOF_MISSING'
+        throw 'No exact-path DEV1 metatester listener was observed during the smoke run.'
+    }
+    $postRunProgramHashes = Get-QmVerifiedProgramHashes -ExpectedHashes ([System.Collections.IDictionary]$request.program_sha256) -Contract $laneContract
+    foreach ($name in @($verifiedProgramSha256.Keys)) {
+        if ([string]$postRunProgramHashes[$name] -cne [string]$verifiedProgramSha256[$name]) {
+            throw "DEV1 program changed during smoke execution: $name"
+        }
+    }
+    $agentPortProof.status = 'PASS'
+    $agentPortProof.metatester_sha256 = [string]$verifiedProgramSha256['metatester64.exe']
+    $agentPortProof.listeners = @($observedListeners.Values | Sort-Object local_port, process_id, local_address)
     if ($runSmokeExitCode -ne 0) {
         $errorCode = 'RUN_SMOKE_FAILED'
         throw "run_smoke.ps1 exited with code $runSmokeExitCode."
@@ -314,7 +628,7 @@ try {
 } finally {
     if ($null -ne $resultPath -and $null -ne $runId -and $null -ne $nonce) {
         $result = [ordered]@{
-            schema_version = 1
+            schema_version = 2
             run_id = $runId
             nonce = $nonce
             success = $success
@@ -323,6 +637,15 @@ try {
             run_smoke_exit_code = $runSmokeExitCode
             identity_sid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
             common_path = $actualCommonPath
+            expected_task_name = [string]$request.expected_task_name
+            controller_mutex = [string]$request.controller_mutex
+            lane_contract_sha256 = $laneContractSha256
+            machine_credential_sha256 = $machineCredentialSha256
+            machine_credential_helper_sha256 = $machineCredentialHelperSha256
+            child_sha256 = $childSha256
+            run_smoke_sha256 = $runSmokeSha256
+            program_sha256 = $verifiedProgramSha256
+            agent_port_proof = $agentPortProof
             started_utc = $startedUtc.ToString('o')
             finished_utc = (Get-Date).ToUniversalTime().ToString('o')
             log_path = $logPath

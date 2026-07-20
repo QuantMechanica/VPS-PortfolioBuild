@@ -60,7 +60,10 @@ if ([string]::Join('|', $actualSymbols) -cne [string]::Join('|', $expectedSymbol
 }
 
 foreach ($textContract in @(
-    @{ Text = $controllerText; Marker = 'C:\ProgramData\QM\DEV1\credential.clixml' },
+    @{ Text = $controllerText; Marker = 'C:\ProgramData\QM\DEV1\credential.machine-dpapi.json' },
+    @{ Text = $controllerText; Marker = 'dev1_machine_credential.ps1' },
+    @{ Text = $controllerText; Marker = 'cleanup_dev1_account_lease.ps1' },
+    @{ Text = $controllerText; Marker = 'dev1_lane_contract.json' },
     @{ Text = $controllerText; Marker = 'Register-ScheduledTask' },
     @{ Text = $controllerText; Marker = 'Unregister-ScheduledTask' },
     @{ Text = $controllerText; Marker = 'MultipleInstances IgnoreNew' },
@@ -129,8 +132,12 @@ $registerCommands = @($controllerAst.FindAll({
     param($node)
     $node -is [System.Management.Automation.Language.CommandAst] -and $node.GetCommandName() -eq 'Register-ScheduledTask'
 }, $true))
-if ($registerCommands.Count -ne 1) { throw 'Expected exactly one Register-ScheduledTask call.' }
-$registerElements = @($registerCommands[0].CommandElements | ForEach-Object { $_.Extent.Text })
+if ($registerCommands.Count -ne 2) { throw 'Expected one SYSTEM cleanup task and one Limited Password target task.' }
+$targetRegisterCommands = @($registerCommands | Where-Object {
+    $_.Extent.Text.Contains('Register-ScheduledTask -TaskName $taskName', [System.StringComparison]::Ordinal)
+})
+if ($targetRegisterCommands.Count -ne 1) { throw 'Expected exactly one nonce-bound DEV1 target task registration.' }
+$registerElements = @($targetRegisterCommands[0].CommandElements | ForEach-Object { $_.Extent.Text })
 if ($registerElements -contains '-Force' -or $registerElements -contains '-Trigger') {
     throw 'Ephemeral DEV1 task registration must not overwrite a task or add a trigger.'
 }
@@ -209,23 +216,47 @@ foreach ($outside in @('D:\QM\mt5\DEV10\terminal64.exe', 'D:\QM\mt5\T1\terminal6
 # Request validation rechecks the allowlist and rejects injection/control fields.
 Remove-Item Function:\ConvertTo-QmFullPath -ErrorAction SilentlyContinue
 Remove-Item Function:\Test-QmPathWithin -ErrorAction SilentlyContinue
-foreach ($functionName in @('ConvertTo-QmFullPath', 'Test-QmPathWithin', 'Assert-QmRequestSchema')) {
+foreach ($functionName in @(
+        'ConvertTo-QmFullPath', 'Test-QmPathWithin',
+        'Get-QmMinimumDev1ControllerTimeoutSeconds'
+    )) {
     Import-AstFunction -Ast $childAst -Name $functionName
 }
+$requestSchemaAst = $childAst.Find({
+    param($node)
+    $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+        $node.Name -eq 'Assert-QmRequestSchema'
+}, $true)
+if ($null -eq $requestSchemaAst) { throw 'Assert-QmRequestSchema function was not found.' }
+$requestSchemaDefinition = $requestSchemaAst.Extent.Text `
+    -replace '^function\s+Assert-QmRequestSchema', 'function script:Assert-QmRequestSchema'
+$requestSchemaDefinition = $requestSchemaDefinition.Replace(
+    '$PSCommandPath', "'$($childPath.Replace("'", "''"))'"
+)
+Invoke-Expression $requestSchemaDefinition
 $script:ReportsRoot = 'D:\QM\reports\dev1'
 $script:Dev1Root = 'D:\QM\mt5\DEV1'
+$script:LaneContractPath = Join-Path $repoRoot 'framework\registry\dev1_lane_contract.json'
+$script:CredentialPath = 'C:\ProgramData\QM\DEV1\credential.machine-dpapi.json'
+$script:CredentialHelperPath = Join-Path $repoRoot 'framework\scripts\dev1_machine_credential.ps1'
+$script:ControllerMutexName = 'Global\QM_DEV1_SMOKE_CONTROLLER'
+$script:TaskNamePrefix = 'QM_DEV1_SMOKE_'
+$script:PerAttemptOverheadSeconds = 600
+$script:ControllerFinalizationMarginSeconds = 600
 $script:AllowedSymbols = @('NDX.DWX', 'GDAXI.DWX', 'EURUSD.DWX', 'GBPUSD.DWX', 'USDJPY.DWX', 'XAUUSD.DWX')
 $script:AllowedParameterOrder = @(
     'EAId', 'EALabel', 'Symbol', 'Year', 'FromDate', 'ToDate', 'Expert', 'Period', 'Runs',
     'MinTrades', 'Model', 'TimeoutSeconds', 'SetFile', 'AllowMissingRealTicksLogMarker',
     'CommissionPerLot', 'CommissionPerSideNative', 'TesterCurrencyOverride', 'TesterDepositOverride', 'SmokeMode'
 )
+$requestCreated = [DateTimeOffset]::UtcNow
+$requestControllerTimeout = 10200
 $validRequest = @{
-    schema_version = 1
+    schema_version = 2
     run_id = '20260719T200000Z_0123456789abcdef0123456789abcdef'
     nonce = 'abcdefabcdefabcdefabcdefabcdefab'
-    created_utc = [DateTimeOffset]::UtcNow.ToString('o')
-    expires_utc = [DateTimeOffset]::UtcNow.AddHours(1).ToString('o')
+    created_utc = $requestCreated.ToString('o')
+    expires_utc = $requestCreated.AddSeconds($requestControllerTimeout + 600).ToString('o')
     expected_account = 'MACHINE\QMDev1'
     expected_sid = 'S-1-5-21-1-2-3-1005'
     expected_profile = 'C:\Users\QMDev1'
@@ -233,8 +264,27 @@ $validRequest = @{
     dev1_root = 'D:\QM\mt5\DEV1'
     reports_root = 'D:\QM\reports\dev1'
     smoke_report_root = 'D:\QM\reports\dev1\runs\test\output\smoke'
+    expected_task_name = 'QM_DEV1_SMOKE_' + ('1' * 32)
+    controller_mutex = $script:ControllerMutexName
+    lane_contract_path = $script:LaneContractPath
+    lane_contract_sha256 = ('a' * 64)
+    machine_credential_path = $script:CredentialPath
+    machine_credential_sha256 = ('b' * 64)
+    machine_credential_helper_path = $script:CredentialHelperPath
+    machine_credential_helper_sha256 = ('c' * 64)
+    child_path = $childPath
+    child_sha256 = ('d' * 64)
     run_smoke_path = 'C:\QM\repo\framework\scripts\run_smoke.ps1'
-    run_smoke_sha256 = ('A' * 64)
+    run_smoke_sha256 = ('e' * 64)
+    program_sha256 = @{
+        'terminal64.exe' = ('f' * 64)
+        'metatester64.exe' = ('1' * 64)
+        'MetaEditor64.exe' = ('2' * 64)
+    }
+    maximum_run_attempts = 4
+    per_attempt_overhead_seconds = 600
+    controller_finalization_margin_seconds = 600
+    controller_timeout_seconds = $requestControllerTimeout
     smoke_parameters = @{
         EAId = 1001; Symbol = 'USDJPY.DWX'; Year = 2024; Expert = 'QM\QM5_1001_framework_smoke'
         Period = 'H1'; Runs = 2; MinTrades = 0; Model = 4; TimeoutSeconds = 1800; SmokeMode = $true
@@ -273,7 +323,7 @@ try {
 # exact DEV1 root and owned by the nonce-bound QMDev1 SID. Adjacent/null paths are
 # ignored; a wrong-owner DEV1 process is left alive and makes cleanup fail closed.
 foreach ($functionName in @('ConvertTo-QmFullPath', 'Test-QmPathWithin', 'Get-QmProcessOwnerSid',
-    'Get-QmDev1Processes', 'Stop-QmDev1ProcessesExact')) {
+    'Get-QmDev1Processes', 'Get-QmDev1IdentityProcesses', 'Stop-QmDev1ProcessesExact')) {
     Import-AstFunction -Ast $controllerAst -Name $functionName
 }
 $script:Dev1Root = 'D:\QM\mt5\DEV1'
@@ -286,7 +336,7 @@ $script:mockProcesses = @(
     [pscustomobject]@{ ProcessId = 104; ExecutablePath = $null; CreationDate = 'D'; OwnerSid = $script:expectedOwnerSid }
 )
 function Get-CimInstance {
-    param([string]$ClassName, [string]$Filter, [object]$ErrorAction)
+    param([string]$ClassName, [string]$Filter, [string[]]$Property, [object]$ErrorAction)
     if (-not [string]::IsNullOrWhiteSpace($Filter) -and $Filter -match 'ProcessId\s*=\s*(?<pid>[0-9]+)') {
         return @($script:mockProcesses | Where-Object { $_.ProcessId -eq [int]$Matches.pid })
     }
@@ -304,7 +354,7 @@ function Stop-Process {
 function Start-Sleep { param([int]$Seconds) }
 
 Stop-QmDev1ProcessesExact -ExpectedOwnerSid $script:expectedOwnerSid
-if ([string]::Join('|', $script:stoppedPids) -cne '101') {
+if ([string]::Join('|', $script:stoppedPids) -cne '101|102|103|104') {
     throw "Timeout cleanup targeted unexpected PIDs: $([string]::Join(',', $script:stoppedPids))"
 }
 

@@ -1,0 +1,113 @@
+{
+  "schema_version": 3,
+  "contract_id": "QM_DEV1_ISOLATED_MT5_LANE_V3",
+  "lane": "DEV1",
+  "source_lane": "DEV1",
+  "identity": {
+    "local_user": "QMDev1",
+    "profile": "C:/Users/QMDev1",
+    "credential": "C:/ProgramData/QM/DEV1/credential.machine-dpapi.json",
+    "credential_format": "QM_DEV1_MACHINE_DPAPI_CREDENTIAL",
+    "dpapi_scope": "LocalMachine",
+    "credential_acl": {
+      "inheritance_protected": true,
+      "owner_sid": "S-1-5-32-544",
+      "exact_full_control_sids": [
+        "S-1-5-18",
+        "S-1-5-32-544"
+      ],
+      "additional_readers": false
+    },
+    "legacy_credential": "C:/ProgramData/QM/DEV1/credential.clixml",
+    "limited_non_admin": true
+  },
+  "paths": {
+    "source_terminal_root": "D:/QM/mt5/DEV1",
+    "terminal_root": "D:/QM/mt5/DEV1",
+    "report_root": "D:/QM/reports/dev1",
+    "provisioning_root": "D:/QM/reports/dev1/provisioning"
+  },
+  "coordination": {
+    "controller_mutex": "Global\\QM_DEV1_SMOKE_CONTROLLER",
+    "provision_mutex": "Global\\QM_DEV1_PROVISION",
+    "source_quiescence_mutex": "Global\\QM_DEV1_SMOKE_CONTROLLER",
+    "task_prefix": "QM_DEV1_SMOKE_",
+    "compile_task_prefix": "QM_DEV1_COMPILE_",
+    "profile_task_prefix": "QM_DEV1_PROFILE_INIT_"
+  },
+  "firewall": [
+    {
+      "display_name": "QM_DEV1_BLOCK_TERMINAL_OUT",
+      "relative_program": "terminal64.exe"
+    },
+    {
+      "display_name": "QM_DEV1_BLOCK_METATESTER_OUT",
+      "relative_program": "metatester64.exe"
+    },
+    {
+      "display_name": "QM_DEV1_BLOCK_METAEDITOR_OUT",
+      "relative_program": "MetaEditor64.exe"
+    }
+  ],
+  "program_sha256": {
+    "terminal64.exe": "abd32f97efea4d3ddaaf694230c13eacef228e71d5115da7202033aa226c6946",
+    "metatester64.exe": "d1e991d84243ec913db8c82505ab69eab48babcb2fa6826ab3871b3360abb646",
+    "MetaEditor64.exe": "2c0c8e9e5c1239e30e8a908d9205cdb01b9cdfcf876752e43bd7a755cce58ad3"
+  },
+  "allowed_symbols": [
+    "NDX.DWX",
+    "GDAXI.DWX",
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "XAUUSD.DWX"
+  ],
+  "copy_contract": {
+    "excluded_directories": [
+      "Tester",
+      "logs",
+      "MQL5/Logs"
+    ],
+    "excluded_files": [
+      "Config/agents.dat",
+      "Config/dnsperf.dat"
+    ],
+    "excluded_root_patterns": [
+      "*.gif",
+      "*.htm",
+      "*.html",
+      "*.log",
+      "*.png"
+    ],
+    "physical_copy_required": true,
+    "verify_all_copied_files_sha256": true,
+    "verify_hcc_years": [
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "verify_all_custom_tkc": true,
+    "documented_exception": {
+      "relative_path": "Bases/Custom/history/GBPUSD.DWX/2026.hcc",
+      "copy_current_bytes": true,
+      "claim_old_dev1_manifest_hash": false,
+      "reason": "DEV1 startup mutated this file after the old provisioning manifest; it is outside the runnable v5 freeze closure."
+    }
+  },
+  "agent_port_contract": {
+    "allocation": "FRESH_AGENTS_DAT_AND_OS_EXCLUSIVE_RUNTIME_ENDPOINT",
+    "source_agents_dat_copied": false,
+    "minimum_port": 3000,
+    "maximum_port": 65535,
+    "require_runtime_listener_proof": true,
+    "require_exact_dev1_metatester_path": true,
+    "require_no_concurrent_overlapping_endpoint_owner": true,
+    "allow_released_baseline_endpoint_reuse": true
+  }
+}
