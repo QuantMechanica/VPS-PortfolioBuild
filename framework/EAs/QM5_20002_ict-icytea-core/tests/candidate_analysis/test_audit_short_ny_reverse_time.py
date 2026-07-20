@@ -141,6 +141,174 @@ def test_four_cell_plan_is_exact_and_model4() -> None:
         assert args[args.index("-ControllerTimeoutSeconds") + 1] == "118200"
 
 
+def _rotation_receipt_fixture(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> tuple[dict, Path, dict]:
+    lane_path = tmp_path / "repo" / "dev1_lane_contract.json"
+    credential_path = tmp_path / "programdata" / "credential.machine-dpapi.json"
+    receipt_path = tmp_path / "programdata" / "credential.machine-dpapi.rotation-receipt.json"
+    helper_path = tmp_path / "repo" / "dev1_machine_credential.ps1"
+    child_path = tmp_path / "repo" / "invoke_dev1_identity_probe.ps1"
+    legacy_path = tmp_path / "programdata" / "credential.clixml"
+    rotation_root = tmp_path / "reports" / "credential-rotation"
+    rotation_id = "20260721T010000Z_" + "a" * 32
+    request_path = rotation_root / rotation_id / "control" / "identity_probe_request.json"
+    result_path = rotation_root / rotation_id / "output" / "identity_probe_result.json"
+    for path, payload in (
+        (helper_path, b"credential helper"),
+        (child_path, b"identity child"),
+        (legacy_path, b"preserved legacy"),
+    ):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(payload)
+
+    target_sid = "S-1-5-21-100-200-300-1005"
+    target_account = "TESTHOST\\QMDev1"
+    generation_id = "b" * 32
+    current = datetime.now(timezone.utc)
+    credential = {
+        "schema_version": 1,
+        "artifact_type": "QM_DEV1_MACHINE_DPAPI_CREDENTIAL",
+        "contract_id": "QM_DEV1_ISOLATED_MT5_LANE_V3",
+        "lane": "DEV1",
+        "account": target_account,
+        "target_sid": target_sid,
+        "host_account_domain_sid": "S-1-5-21-100-200-300",
+        "dpapi_scope": "LocalMachine",
+        "text_encoding": "UTF-8",
+        "generation_id": generation_id,
+        "created_utc": (current - timedelta(minutes=4)).isoformat(),
+        "ciphertext_base64": "YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=",
+    }
+    credential_path.parent.mkdir(parents=True, exist_ok=True)
+    credential_path.write_text(json.dumps(credential), encoding="utf-8")
+    request = {
+        "schema_version": 1,
+        "artifact_type": "QM_DEV1_IDENTITY_PROBE_REQUEST",
+        "nonce": "c" * 32,
+        "created_utc": (current - timedelta(minutes=3)).isoformat(),
+        "expires_utc": (current + timedelta(minutes=7)).isoformat(),
+        "expected_account": target_account,
+        "expected_sid": target_sid,
+        "expected_profile": r"C:\Users\QMDev1",
+        "expected_task_name": "QM_DEV1_SMOKE_" + "d" * 32,
+        "result_path": str(result_path.resolve()),
+    }
+    request_path.parent.mkdir(parents=True, exist_ok=True)
+    request_path.write_text(json.dumps(request), encoding="utf-8")
+    result = {
+        "schema_version": 1,
+        "artifact_type": "QM_DEV1_IDENTITY_PROBE_RESULT",
+        "status": "PASS",
+        "completed_utc": (current - timedelta(minutes=2)).isoformat(),
+        "nonce": request["nonce"],
+        "account": target_account,
+        "sid": target_sid,
+        "profile": r"C:\Users\QMDev1",
+        "limited_non_admin": True,
+        "request_sha256": subject.sha256_file(request_path),
+    }
+    result_path.parent.mkdir(parents=True, exist_ok=True)
+    result_path.write_text(json.dumps(result), encoding="utf-8")
+    lane = {
+        "schema_version": 3,
+        "contract_id": "QM_DEV1_ISOLATED_MT5_LANE_V3",
+        "lane": "DEV1",
+        "identity": {
+            "local_user": "QMDev1",
+            "profile": r"C:\Users\QMDev1",
+            "credential": str(credential_path.resolve()),
+            "legacy_credential": str(legacy_path.resolve()),
+            "credential_format": "QM_DEV1_MACHINE_DPAPI_CREDENTIAL",
+            "dpapi_scope": "LocalMachine",
+            "limited_non_admin": True,
+        },
+    }
+    lane_path.parent.mkdir(parents=True, exist_ok=True)
+    lane_path.write_text(json.dumps(lane), encoding="utf-8")
+    receipt = {
+        "schema_version": 1,
+        "artifact_type": "QM_DEV1_MACHINE_CREDENTIAL_ROTATION_RECEIPT",
+        "status": "PASS",
+        "completed_utc": (current - timedelta(minutes=1)).isoformat(),
+        "contract_id": lane["contract_id"],
+        "target_account": target_account,
+        "target_sid": target_sid,
+        "target_disabled_at_rest": True,
+        "target_password_required_at_rest": True,
+        "machine_credential_path": str(credential_path.resolve()),
+        "machine_credential_sha256": subject.sha256_file(credential_path),
+        "machine_credential_generation_id": generation_id,
+        "machine_credential_helper_path": str(helper_path.resolve()),
+        "machine_credential_helper_sha256": subject.sha256_file(helper_path),
+        "identity_probe_child_path": str(child_path.resolve()),
+        "identity_probe_child_sha256": subject.sha256_file(child_path),
+        "identity_probe_result_path": str(result_path.resolve()),
+        "identity_probe_result_sha256": subject.sha256_file(result_path),
+        "identity_probe_logon_type": "Password",
+        "identity_probe_run_level": "Limited",
+        "machine_credential_matches_proved_password": True,
+        "published_after_identity_proof": True,
+        "legacy_credential_path": str(legacy_path.resolve()),
+        "legacy_credential_preserved": True,
+        "cleanup_lease_disarmed": True,
+        "owner_process_count": 0,
+        "dev1_root_process_count": 0,
+    }
+    receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
+    monkeypatch.setattr(subject, "DEV1_LANE_CONTRACT_PATH", lane_path)
+    monkeypatch.setattr(subject, "MACHINE_CREDENTIAL_PATH", credential_path)
+    monkeypatch.setattr(subject, "MACHINE_CREDENTIAL_ROTATION_RECEIPT_PATH", receipt_path)
+    monkeypatch.setattr(subject, "CREDENTIAL_HELPER_PATH", helper_path)
+    monkeypatch.setattr(subject, "IDENTITY_PROBE_CHILD_PATH", child_path)
+    monkeypatch.setattr(subject, "LEGACY_CREDENTIAL_PATH", legacy_path)
+    monkeypatch.setattr(subject, "DEV1_CREDENTIAL_ROTATION_ROOT", rotation_root)
+    runtime = {
+        "dev1_lane_contract": subject.file_binding(lane_path),
+        "dev1_machine_credential": subject.file_binding(credential_path),
+        "dev1_machine_credential_helper": subject.file_binding(helper_path),
+        "dev1_identity_probe_child": subject.file_binding(child_path),
+        "dev1_machine_credential_rotation_receipt": subject.file_binding(receipt_path),
+    }
+    return runtime, receipt_path, receipt
+
+
+def test_rotation_receipt_semantically_binds_v3_credential_and_identity_proof(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    runtime, _path, receipt = _rotation_receipt_fixture(tmp_path, monkeypatch)
+    validated = subject.validate_machine_credential_rotation_receipt(runtime)
+    assert validated["generation_id"] == receipt["machine_credential_generation_id"]
+    assert validated["target_sid"] == receipt["target_sid"]
+    assert validated["receipt"] == runtime["dev1_machine_credential_rotation_receipt"]
+
+
+def test_rotation_receipt_rejects_uppercase_hash_and_duplicate_property(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    runtime, path, receipt = _rotation_receipt_fixture(tmp_path, monkeypatch)
+    receipt["machine_credential_sha256"] = receipt["machine_credential_sha256"].upper()
+    path.write_text(json.dumps(receipt), encoding="utf-8")
+    runtime["dev1_machine_credential_rotation_receipt"] = subject.file_binding(path)
+    with pytest.raises(subject.AuditError, match="canonical lowercase"):
+        subject.validate_machine_credential_rotation_receipt(runtime)
+
+    raw = json.dumps(receipt | {"machine_credential_sha256": receipt["machine_credential_sha256"].lower()})
+    path.write_text(raw[:-1] + ',"status":"PASS"}', encoding="utf-8")
+    runtime["dev1_machine_credential_rotation_receipt"] = subject.file_binding(path)
+    with pytest.raises(subject.AuditError, match="duplicate JSON property"):
+        subject.validate_machine_credential_rotation_receipt(runtime)
+
+
+def test_rotation_receipt_rejects_legacy_only_runtime(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    runtime, _path, _receipt = _rotation_receipt_fixture(tmp_path, monkeypatch)
+    runtime.pop("dev1_machine_credential")
+    with pytest.raises(subject.AuditError, match="bindings are incomplete"):
+        subject.validate_machine_credential_rotation_receipt(runtime)
+
+
 def test_expected_model4_data_fence_stops_at_202112() -> None:
     paths = subject._expected_data_paths()
     ticks = [path for path in paths if "\\ticks\\" in path]
@@ -318,6 +486,210 @@ def test_detached_timeout_leaves_inner_controller_cleanup_margin() -> None:
         }
     }
     assert subject.required_controller_timeout(pre) == 120000
+
+
+@pytest.mark.parametrize(
+    ("tester_timeout", "inner_timeout", "outer_timeout"),
+    [(60, 3240, 5040), (28800, 118200, 120000)],
+)
+def test_v3_timeout_boundaries_are_exact(
+    tester_timeout: int, inner_timeout: int, outer_timeout: int
+) -> None:
+    pre = {
+        "plan": {
+            "duplicates_per_cell": 2,
+            "cells": [
+                {
+                    "runner_arguments": [
+                        "-TimeoutSeconds",
+                        str(tester_timeout),
+                        "-ControllerTimeoutSeconds",
+                        str(inner_timeout),
+                    ]
+                }
+            ],
+        }
+    }
+    assert subject.required_controller_timeout(pre) == outer_timeout
+
+
+def test_v3_timeout_rejects_duplicate_or_stale_inner_argument() -> None:
+    duplicate = {
+        "plan": {
+            "duplicates_per_cell": 2,
+            "cells": [
+                {
+                    "runner_arguments": [
+                        "-TimeoutSeconds", "28800", "-ControllerTimeoutSeconds", "118200",
+                        "-ControllerTimeoutSeconds", "118200",
+                    ]
+                }
+            ],
+        }
+    }
+    with pytest.raises(subject.AuthorizationError, match="malformed"):
+        subject.required_controller_timeout(duplicate)
+    duplicate["plan"]["cells"][0]["runner_arguments"] = [
+        "-TimeoutSeconds", "28800", "-ControllerTimeoutSeconds", "118199"
+    ]
+    with pytest.raises(subject.AuthorizationError, match="differs from V3 minimum"):
+        subject.required_controller_timeout(duplicate)
+
+
+def _controller_result_fixture(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> tuple[dict, dict]:
+    sid = "S-1-5-21-100-200-300-1005"
+    now = datetime.now(timezone.utc)
+    lane_path = tmp_path / "dev1_lane_contract.json"
+    metatester = tmp_path / "DEV1" / "metatester64.exe"
+    metatester.parent.mkdir(parents=True)
+    metatester.write_bytes(b"metatester")
+    metatester_sha = subject.sha256_file(metatester)
+    lane = {
+        "coordination": {"controller_mutex": r"Global\QM_DEV1_SMOKE_CONTROLLER"},
+        "program_sha256": {"metatester64.exe": metatester_sha},
+        "agent_port_contract": {
+            "minimum_port": 3000,
+            "maximum_port": 65535,
+            "require_runtime_listener_proof": True,
+            "require_exact_dev1_metatester_path": True,
+            "require_no_concurrent_overlapping_endpoint_owner": True,
+            "allow_released_baseline_endpoint_reuse": True,
+        },
+    }
+    lane_path.write_text(json.dumps(lane), encoding="utf-8")
+    bindings: dict[str, dict] = {"dev1_lane_contract": subject.file_binding(lane_path)}
+    for role in (
+        "dev1_machine_credential",
+        "dev1_machine_credential_helper",
+        "runner_child",
+        "runner_smoke",
+        "dev1_cleanup_helper",
+        "tester_groups_canonical",
+    ):
+        path = tmp_path / f"{role}.bin"
+        path.write_bytes(role.encode("ascii"))
+        bindings[role] = subject.file_binding(path)
+    groups_dev1 = tmp_path / "DEV1" / "Groups" / "Darwinex-Live_real.txt"
+    groups_dev1.parent.mkdir(parents=True)
+    groups_dev1.write_bytes(Path(bindings["tester_groups_canonical"]["path"]).read_bytes())
+    common_files = tmp_path / "QMDev1" / "Common" / "Files"
+    common_files.mkdir(parents=True)
+    run_root = tmp_path / "runs"
+    run_id = "20260721T010000Z_" + "e" * 32
+    monkeypatch.setattr(subject, "METATESTER_PATH", metatester)
+    monkeypatch.setattr(subject, "GROUP_CANONICAL_PATH", Path(bindings["tester_groups_canonical"]["path"]))
+    monkeypatch.setattr(subject, "GROUP_DEV1_PATH", groups_dev1)
+    monkeypatch.setattr(subject, "DEV1_COMMON_FILES_ROOT", common_files)
+    monkeypatch.setattr(subject, "DEV1_RUNS_ROOT", run_root)
+    started = now - timedelta(minutes=1)
+    finished = now
+    listener = {
+        "local_address": "127.0.0.1",
+        "local_port": 3001,
+        "process_id": 4321,
+        "owner_sid": sid,
+        "executable_path": str(metatester.resolve()),
+        "creation_utc": started.isoformat(),
+        "first_observed_utc": (started + timedelta(seconds=1)).isoformat(),
+        "preexisting_port_owner": False,
+        "concurrent_port_owner": False,
+        "exclusive_current_owner": True,
+        "current_overlapping_owner_count": 1,
+        "baseline_endpoint_was_occupied": False,
+        "released_baseline_owner_count": 0,
+    }
+    result = {
+        "schema_version": 2,
+        "run_id": run_id,
+        "nonce": "f" * 32,
+        "success": True,
+        "error_code": None,
+        "error_message": None,
+        "run_smoke_exit_code": 0,
+        "identity_sid": sid,
+        "common_path": str(common_files.parent.resolve()),
+        "expected_task_name": "QM_DEV1_SMOKE_" + "1" * 32,
+        "controller_mutex": lane["coordination"]["controller_mutex"],
+        "lane_contract_sha256": bindings["dev1_lane_contract"]["sha256"],
+        "machine_credential_sha256": bindings["dev1_machine_credential"]["sha256"],
+        "machine_credential_helper_sha256": bindings["dev1_machine_credential_helper"]["sha256"],
+        "child_sha256": bindings["runner_child"]["sha256"],
+        "run_smoke_sha256": bindings["runner_smoke"]["sha256"],
+        "program_sha256": lane["program_sha256"],
+        "agent_port_proof": {
+            "status": "PASS",
+            "preexisting_port_owner": False,
+            "concurrent_port_owner": False,
+            "exclusivity_semantics": "NO_CONCURRENT_OVERLAPPING_ENDPOINT_OWNER",
+            "released_baseline_endpoint_reuse_allowed": True,
+            "metatester_path": str(metatester.resolve()),
+            "metatester_sha256": metatester_sha,
+            "listeners": [listener],
+        },
+        "started_utc": started.isoformat(),
+        "finished_utc": finished.isoformat(),
+        "log_path": str((run_root / run_id / "output" / "run.log").resolve()),
+        "tester_groups_post_child_sha256": bindings["tester_groups_canonical"]["sha256"],
+        "tester_groups_restored_sha256": bindings["tester_groups_canonical"]["sha256"],
+        "tester_groups_canonical_path": str(Path(bindings["tester_groups_canonical"]["path"]).resolve()),
+        "tester_groups_dev1_path": str(groups_dev1.resolve()),
+        "dev1_account_initially_enabled": False,
+        "dev1_account_enabled_by_controller": True,
+        "dev1_account_restored_disabled": True,
+        "cleanup_helper_sha256": bindings["dev1_cleanup_helper"]["sha256"],
+        "cleanup_lease_registered": True,
+        "cleanup_lease_disarmed": True,
+    }
+    pre = {"runtime": bindings, "machine_credential_rotation": {"target_sid": sid}}
+    return result, pre
+
+
+def test_controller_result_exactly_binds_v3_runtime_and_cleanup(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    result, pre = _controller_result_fixture(tmp_path, monkeypatch)
+    assert subject.validate_dev1_controller_result(result, pre) == result["run_id"]
+
+
+@pytest.mark.parametrize(
+    ("field", "mutation", "message"),
+    [
+        ("machine_credential_sha256", lambda value: value.upper(), "runtime binding drift"),
+        ("cleanup_helper_sha256", lambda _value: "0" * 64, "runtime binding drift"),
+        ("dev1_account_restored_disabled", lambda _value: False, "lifecycle proof drift"),
+        ("tester_groups_restored_sha256", lambda _value: "0" * 64, "restore binding drift"),
+    ],
+)
+def test_controller_result_rejects_v3_runtime_or_lifecycle_drift(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    field: str,
+    mutation,
+    message: str,
+) -> None:
+    result, pre = _controller_result_fixture(tmp_path, monkeypatch)
+    result[field] = mutation(result[field])
+    with pytest.raises(subject.AuditError, match=message):
+        subject.validate_dev1_controller_result(result, pre)
+
+
+def test_controller_result_rejects_missing_extra_and_duplicate_json_fields(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    result, pre = _controller_result_fixture(tmp_path, monkeypatch)
+    missing = dict(result)
+    missing.pop("cleanup_lease_disarmed")
+    with pytest.raises(subject.AuditError, match="field closure drift"):
+        subject.validate_dev1_controller_result(missing, pre)
+    extra = dict(result, legacy_credential_sha256="0" * 64)
+    with pytest.raises(subject.AuditError, match="field closure drift"):
+        subject.validate_dev1_controller_result(extra, pre)
+    raw = json.dumps(result)
+    duplicate = raw[:-1] + ',"success":true}'
+    with pytest.raises(subject.PostflightError, match="exactly one complete JSON"):
+        subject._parse_single_json_envelope(duplicate, "DEV1 controller stdout")
 
 
 def _minimal_launcher_pre() -> dict:
