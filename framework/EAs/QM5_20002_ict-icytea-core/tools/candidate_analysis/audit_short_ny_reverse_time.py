@@ -340,6 +340,311 @@ def assert_binding(binding: Mapping[str, Any], label: str) -> None:
         raise AuditError(f"{label} SHA drift: {observed} != {expected_sha}")
 
 
+def _require_exact_fields(
+    value: Any,
+    expected: frozenset[str],
+    label: str,
+    exc_type: type[AuditError] = AuditError,
+) -> Mapping[str, Any]:
+    if not isinstance(value, Mapping):
+        raise exc_type(f"{label} must be an object")
+    observed = set(value)
+    if observed != expected:
+        missing = sorted(expected - observed)
+        extra = sorted(observed - expected)
+        raise exc_type(f"{label} field closure drift: missing={missing}, extra={extra}")
+    return value
+
+
+def _validate_binding_shape(
+    value: Any, label: str, exc_type: type[AuditError] = AuditError
+) -> Mapping[str, Any]:
+    binding = _require_exact_fields(value, BINDING_FIELDS, label, exc_type)
+    if (
+        type(binding["path"]) is not str
+        or not binding["path"]
+        or type(binding["size"]) is not int
+        or binding["size"] < 0
+        or type(binding["sha256"]) is not str
+        or re.fullmatch(r"[0-9a-f]{64}", binding["sha256"]) is None
+    ):
+        raise exc_type(f"{label} has malformed typed binding fields")
+    return binding
+
+
+def _validate_optional_binding_shape(
+    value: Any, label: str, exc_type: type[AuditError] = AuditError
+) -> None:
+    if value is not None:
+        _validate_binding_shape(value, label, exc_type)
+
+
+def _validate_attempt_shape(
+    value: Any, label: str, exc_type: type[AuditError] = AuditError
+) -> Mapping[str, Any]:
+    attempt = _require_exact_fields(value, ATTEMPT_FIELDS, label, exc_type)
+    if type(attempt["attempt_number"]) is not int or attempt["attempt_number"] != 1:
+        raise exc_type(f"{label} attempt_number must be the exact integer 1")
+    if attempt["status"] not in {"COMPLETE", "REJECT"}:
+        raise exc_type(f"{label} has invalid status")
+    if type(attempt["started_utc"]) is not str or type(attempt["finished_utc"]) is not str:
+        raise exc_type(f"{label} timestamps must be strings")
+    parse_utc(attempt["started_utc"], f"{label} started_utc")
+    parse_utc(attempt["finished_utc"], f"{label} finished_utc")
+    if (
+        type(attempt["command_sha256"]) is not str
+        or re.fullmatch(r"[0-9a-f]{64}", attempt["command_sha256"]) is None
+    ):
+        raise exc_type(f"{label} command_sha256 is malformed")
+    if type(attempt["outcome_fence_crossed"]) is not bool or attempt["outcome_fence_crossed"] is not True:
+        raise exc_type(f"{label} outcome_fence_crossed must be true")
+    if type(attempt["no_resume"]) is not bool or attempt["no_resume"] is not True:
+        raise exc_type(f"{label} no_resume must be true")
+    exit_code = attempt["runner_exit_code"]
+    if exit_code is not None and type(exit_code) is not int:
+        raise exc_type(f"{label} runner_exit_code must be an integer or null")
+    if attempt["runner_result"] is not None and not isinstance(attempt["runner_result"], Mapping):
+        raise exc_type(f"{label} runner_result must be an object or null")
+    for field in ("stdout", "stderr", "summary"):
+        _validate_optional_binding_shape(attempt[field], f"{label} {field}", exc_type)
+    artifacts = attempt["run_artifacts"]
+    if not isinstance(artifacts, list):
+        raise exc_type(f"{label} run_artifacts must be a list")
+    for index, artifact_value in enumerate(artifacts):
+        artifact = _require_exact_fields(
+            artifact_value, RUN_ARTIFACT_FIELDS, f"{label} run_artifacts[{index}]", exc_type
+        )
+        if artifact["run"] not in {"run_01", "run_02"}:
+            raise exc_type(f"{label} run artifact identity is malformed")
+        for field in ("report", "tester_log", "tester_ini"):
+            _validate_binding_shape(
+                artifact[field], f"{label} {artifact['run']} {field}", exc_type
+            )
+    run_names = [artifact["run"] for artifact in artifacts]
+    if run_names not in ([], ["run_01", "run_02"]):
+        raise exc_type(f"{label} run artifact closure is incomplete or out of order")
+
+    if attempt["status"] == "COMPLETE":
+        if (
+            type(exit_code) is not int
+            or exit_code != 0
+            or not isinstance(attempt["runner_result"], Mapping)
+            or attempt["runner_result"].get("success") is not True
+            or any(attempt[field] is None for field in ("stdout", "stderr", "summary"))
+            or run_names != ["run_01", "run_02"]
+            or any(
+                attempt[field] is not None
+                for field in ("failure_stage", "controller_failure_class", "error_type", "error")
+            )
+        ):
+            raise exc_type(f"{label} COMPLETE evidence is not exactly closed")
+    else:
+        if (
+            type(attempt["failure_stage"]) is not str
+            or attempt["failure_stage"] not in FAILURE_STAGES
+            or type(attempt["error_type"]) is not str
+            or not attempt["error_type"]
+            or type(attempt["error"]) is not str
+            or not attempt["error"]
+            or (
+                attempt["controller_failure_class"] is not None
+                and attempt["controller_failure_class"] not in CONTROLLER_FAILURE_CLASSES
+            )
+        ):
+            raise exc_type(f"{label} REJECT evidence is malformed")
+        if attempt["failure_stage"] == "RUNNER_STREAMS_PARTIALLY_BOUND" and not any(
+            attempt[field] is not None for field in ("stdout", "stderr")
+        ):
+            raise exc_type(f"{label} partial stream stage has no bound stream")
+        if attempt["failure_stage"] in {
+            "RUNNER_STREAMS_BOUND",
+            "RUNNER_RESULT_PARSED",
+            "SUMMARY_BOUND",
+            "RUN_ARTIFACTS_BOUND",
+            "CELL_STATE_PERSIST",
+        } and any(attempt[field] is None for field in ("stdout", "stderr")):
+            raise exc_type(f"{label} stream bindings are incomplete for its failure stage")
+    return attempt
+
+
+def _validate_cell_record_shape(
+    value: Any, label: str, exc_type: type[AuditError] = AuditError
+) -> Mapping[str, Any]:
+    cell = _require_exact_fields(value, CELL_RECORD_FIELDS, label, exc_type)
+    if type(cell["cell_id"]) is not str or not cell["cell_id"]:
+        raise exc_type(f"{label} cell_id is malformed")
+    if cell["status"] not in {"COMPLETE", "REJECT"}:
+        raise exc_type(f"{label} status is malformed")
+    attempts = cell["attempts"]
+    if not isinstance(attempts, list) or len(attempts) != 1:
+        raise exc_type(f"{label} must contain exactly one outcome-fenced attempt")
+    attempt = _validate_attempt_shape(attempts[0], f"{label} attempt", exc_type)
+    if attempt["status"] != cell["status"]:
+        raise exc_type(f"{label} cell/attempt status drift")
+    return cell
+
+
+def _validate_terminal_error_shape(
+    value: Any, label: str, exc_type: type[AuditError] = AuditError
+) -> Mapping[str, Any]:
+    terminal = _require_exact_fields(value, TERMINAL_ERROR_FIELDS, label, exc_type)
+    if (
+        terminal["status"] != "REJECT"
+        or type(terminal["error_type"]) is not str
+        or not terminal["error_type"]
+        or type(terminal["error"]) is not str
+        or not terminal["error"]
+        or type(terminal["failure_stage"]) is not str
+        or terminal["failure_stage"] not in FAILURE_STAGES
+        or (
+            terminal["affected_cell_id"] is not None
+            and (type(terminal["affected_cell_id"]) is not str or not terminal["affected_cell_id"])
+        )
+        or type(terminal["outcome_fence_crossed"]) is not bool
+        or type(terminal["no_resume"]) is not bool
+        or terminal["no_resume"] is not True
+        or (
+            terminal["controller_failure_class"] is not None
+            and terminal["controller_failure_class"] not in CONTROLLER_FAILURE_CLASSES
+        )
+    ):
+        raise exc_type(f"{label} is malformed")
+    return terminal
+
+
+def _validate_launch_state_shape(
+    value: Any, exc_type: type[AuditError] = AuditError
+) -> Mapping[str, Any]:
+    state = _require_exact_fields(value, LAUNCH_STATE_FIELDS, "launch state", exc_type)
+    if (
+        type(state["schema_version"]) is not int
+        or state["schema_version"] != SCHEMA_VERSION
+        or type(state["launcher_revision"]) is not int
+        or state["launcher_revision"] != LAUNCHER_REVISION
+        or state["artifact_type"] != "QM5_20002_SHORT_NY_LAUNCH_STATE"
+        or state["analysis_id"] != ANALYSIS_ID
+    ):
+        raise exc_type("launch state schema/identity drift")
+    if state["status"] not in {"PENDING", "PENDING_RESUME", "RUNNING", "COMPLETE", "REJECT"}:
+        raise exc_type("launch state status is malformed")
+    for field in ("created_utc", "updated_utc"):
+        if type(state[field]) is not str:
+            raise exc_type(f"launch state {field} must be a string")
+        parse_utc(state[field], f"launch state {field}")
+    for field in ("started_utc", "finished_utc", "outcome_possible_since_utc"):
+        if state[field] is not None:
+            if type(state[field]) is not str:
+                raise exc_type(f"launch state {field} must be a string or null")
+            parse_utc(state[field], f"launch state {field}")
+    if state["worker_pid"] is not None and (
+        type(state["worker_pid"]) is not int or state["worker_pid"] <= 0
+    ):
+        raise exc_type("launch state worker_pid must be a positive integer or null")
+    _validate_binding_shape(state["job"], "launch state job", exc_type)
+    if (
+        type(state["pre_receipt_path"]) is not str
+        or not state["pre_receipt_path"]
+        or type(state["pre_receipt_sha256"]) is not str
+        or re.fullmatch(r"[0-9a-f]{64}", state["pre_receipt_sha256"]) is None
+        or not isinstance(state["authorization"], Mapping)
+        or not isinstance(state["scheduler"], Mapping)
+        or type(state["resume_count"]) is not int
+        or state["resume_count"] < 0
+    ):
+        raise exc_type("launch state immutable identity/types are malformed")
+    active = state["active_cell"]
+    if active is not None:
+        active = _require_exact_fields(active, ACTIVE_CELL_FIELDS, "active cell", exc_type)
+        if (
+            type(active["cell_id"]) is not str
+            or not active["cell_id"]
+            or type(active["attempt_number"]) is not int
+            or active["attempt_number"] != 1
+            or type(active["command_sha256"]) is not str
+            or re.fullmatch(r"[0-9a-f]{64}", active["command_sha256"]) is None
+            or type(active["started_utc"]) is not str
+            or active["status"] != "OUTCOME_POSSIBLE_NO_RESUME"
+        ):
+            raise exc_type("active cell is malformed")
+        parse_utc(active["started_utc"], "active cell started_utc")
+    cells = state["cells"]
+    if not isinstance(cells, list):
+        raise exc_type("launch state cells must be a list")
+    for index, cell in enumerate(cells):
+        _validate_cell_record_shape(cell, f"launch state cells[{index}]", exc_type)
+    cell_ids = [cell["cell_id"] for cell in cells]
+    if len(cell_ids) != len(set(cell_ids)):
+        raise exc_type("launch state cell IDs are not unique")
+    rejected = [cell for cell in cells if cell["status"] == "REJECT"]
+    if len(rejected) > 1 or (rejected and cells[-1] is not rejected[0]):
+        raise exc_type("launch state rejected cell must be unique and last")
+
+    status = state["status"]
+    if status in {"PENDING", "PENDING_RESUME"}:
+        if (
+            state["worker_pid"] is not None
+            or state["finished_utc"] is not None
+            or state["active_cell"] is not None
+            or state["outcome_possible_since_utc"] is not None
+            or cells != []
+            or state["terminal"] is not None
+        ):
+            raise exc_type("pre-outcome launch state is not exactly open")
+    elif status == "RUNNING":
+        if (
+            state["worker_pid"] is None
+            or state["started_utc"] is None
+            or state["finished_utc"] is not None
+            or state["terminal"] is not None
+            or rejected
+        ):
+            raise exc_type("RUNNING launch state is not exactly open")
+        if (active is not None or cells) and state["outcome_possible_since_utc"] is None:
+            raise exc_type("RUNNING launch state omitted its outcome fence")
+    elif status == "COMPLETE":
+        if (
+            state["worker_pid"] is not None
+            or state["active_cell"] is not None
+            or state["started_utc"] is None
+            or state["finished_utc"] is None
+            or state["outcome_possible_since_utc"] is None
+            or state["terminal"] is not None
+            or not cells
+            or any(cell["status"] != "COMPLETE" for cell in cells)
+        ):
+            raise exc_type("COMPLETE launch state is not exactly closed")
+    else:
+        terminal = _validate_terminal_error_shape(
+            state["terminal"], "launch state terminal", exc_type
+        )
+        if (
+            state["worker_pid"] is not None
+            or state["active_cell"] is not None
+            or state["finished_utc"] is None
+        ):
+            raise exc_type("REJECT launch state is not exactly closed")
+        affected = terminal["affected_cell_id"]
+        if affected is not None:
+            if not rejected or rejected[0]["cell_id"] != affected:
+                raise exc_type("terminal rejection/cell evidence drift")
+            attempt = rejected[0]["attempts"][0]
+            for field in (
+                "error_type",
+                "error",
+                "failure_stage",
+                "controller_failure_class",
+                "outcome_fence_crossed",
+                "no_resume",
+            ):
+                if terminal[field] != attempt[field]:
+                    raise exc_type(f"terminal rejection/attempt {field} drift")
+        elif rejected:
+            raise exc_type("rejected cell exists without terminal affected_cell_id")
+        if terminal["outcome_fence_crossed"] != (state["outcome_possible_since_utc"] is not None):
+            raise exc_type("terminal outcome-fence closure drift")
+    return state
+
+
 def _git(*args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         ["git", *args],
@@ -1548,9 +1853,13 @@ def _assert_resume_outcome_fence(
 
     if state.get("launcher_revision") != LAUNCHER_REVISION:
         raise AuthorizationError("legacy launch state is not resumable")
+    try:
+        _validate_launch_state_shape(state)
+    except AuditError as exc:
+        raise AuthorizationError(f"launch state schema is not resumable: {exc}") from exc
     if state.get("status") not in {"PENDING", "PENDING_RESUME", "RUNNING"}:
         raise AuthorizationError("launch state status is not pre-outcome resumable")
-    if state.get("finished_utc") or state.get("error") or state.get("error_type"):
+    if state.get("finished_utc") or state.get("terminal") is not None:
         raise AuthorizationError("finished/rejected launch state is not resumable")
     cells = state.get("cells")
     if cells != []:
@@ -1591,12 +1900,216 @@ def _initial_launch_state(
         "active_cell": None,
         "outcome_possible_since_utc": None,
         "cells": [],
+        "terminal": None,
     }
+
+
+def _classify_controller_failure(stdout: str, stderr: str) -> str | None:
+    """Classify controller bootstrap failures without opening outcome artifacts."""
+
+    if stdout.strip():
+        try:
+            _parse_last_json(stdout)
+        except AuditError:
+            return "RUNNER_MALFORMED_STDOUT_NO_JSON"
+        return None
+    folded = stderr.casefold()
+    if "import-clixml" in folded and "cryptographic operation" in folded:
+        return "RUNNER_CREDENTIAL_CLIXML_CRYPTOGRAPHIC_FAILURE_BEFORE_JSON"
+    return "RUNNER_EMPTY_STDOUT_NO_JSON"
+
+
+def _new_attempt_context(
+    started_utc: str,
+    command_sha256: str,
+    stdout_path: Path,
+    stderr_path: Path,
+) -> dict[str, Any]:
+    return {
+        "attempt_number": 1,
+        "started_utc": started_utc,
+        "command_sha256": command_sha256,
+        "runner_exit_code": None,
+        "runner_result": None,
+        "stdout": None,
+        "stderr": None,
+        "summary": None,
+        "run_artifacts": [],
+        "failure_stage": "OUTCOME_FENCE_PERSISTED",
+        "stdout_path": stdout_path.resolve(),
+        "stderr_path": stderr_path.resolve(),
+        "stdout_text": "",
+        "stderr_text": "",
+    }
+
+
+def _complete_cell_record(cell_id: str, context: Mapping[str, Any]) -> dict[str, Any]:
+    attempt = {
+        "attempt_number": 1,
+        "status": "COMPLETE",
+        "started_utc": context["started_utc"],
+        "finished_utc": utc_now(),
+        "command_sha256": context["command_sha256"],
+        "outcome_fence_crossed": True,
+        "no_resume": True,
+        "runner_exit_code": context["runner_exit_code"],
+        "runner_result": copy.deepcopy(context["runner_result"]),
+        "stdout": copy.deepcopy(context["stdout"]),
+        "stderr": copy.deepcopy(context["stderr"]),
+        "summary": copy.deepcopy(context["summary"]),
+        "run_artifacts": copy.deepcopy(context["run_artifacts"]),
+        "failure_stage": None,
+        "controller_failure_class": None,
+        "error_type": None,
+        "error": None,
+    }
+    _validate_attempt_shape(attempt, f"completed {cell_id} attempt")
+    return {"cell_id": cell_id, "status": "COMPLETE", "attempts": [attempt]}
+
+
+def _bind_existing_stream(path: Any) -> dict[str, Any] | None:
+    if not isinstance(path, Path) or not path.is_file():
+        return None
+    return file_binding(path)
+
+
+def _rejected_cell_record(
+    cell_id: str,
+    context: Mapping[str, Any],
+    exc: Exception,
+    finished_utc: str,
+) -> dict[str, Any]:
+    stdout_binding = _bind_existing_stream(context.get("stdout_path"))
+    stderr_binding = _bind_existing_stream(context.get("stderr_path"))
+    stage = str(context.get("failure_stage") or "OUTCOME_FENCE_PERSISTED")
+    bound_count = sum(binding is not None for binding in (stdout_binding, stderr_binding))
+    if bound_count == 2 and stage in {
+        "OUTCOME_FENCE_PERSISTED",
+        "RUNNER_RETURNED",
+        "RUNNER_STREAMS_PARTIALLY_BOUND",
+    }:
+        stage = "RUNNER_STREAMS_BOUND"
+    elif bound_count == 1 and stage in {"OUTCOME_FENCE_PERSISTED", "RUNNER_RETURNED"}:
+        stage = "RUNNER_STREAMS_PARTIALLY_BOUND"
+    if stage not in FAILURE_STAGES:
+        stage = "OUTCOME_FENCE_PERSISTED"
+    stdout_text = context.get("stdout_text")
+    stderr_text = context.get("stderr_text")
+    controller_class = (
+        _classify_controller_failure(stdout_text, stderr_text)
+        if isinstance(stdout_text, str) and isinstance(stderr_text, str)
+        and isinstance(exc, AuditError)
+        and str(exc) == "runner stdout contains no JSON object"
+        else None
+    )
+    exit_code = context.get("runner_exit_code")
+    if exit_code is not None and type(exit_code) is not int:
+        exit_code = None
+    runner_result = context.get("runner_result")
+    if not isinstance(runner_result, Mapping):
+        runner_result = None
+    summary = context.get("summary")
+    if summary is not None:
+        _validate_binding_shape(summary, f"rejected {cell_id} summary")
+    artifacts = context.get("run_artifacts")
+    if not isinstance(artifacts, list):
+        artifacts = []
+    attempt = {
+        "attempt_number": 1,
+        "status": "REJECT",
+        "started_utc": str(context["started_utc"]),
+        "finished_utc": finished_utc,
+        "command_sha256": str(context["command_sha256"]),
+        "outcome_fence_crossed": True,
+        "no_resume": True,
+        "runner_exit_code": exit_code,
+        "runner_result": copy.deepcopy(runner_result),
+        "stdout": stdout_binding,
+        "stderr": stderr_binding,
+        "summary": copy.deepcopy(summary),
+        "run_artifacts": copy.deepcopy(artifacts),
+        "failure_stage": stage,
+        "controller_failure_class": controller_class,
+        "error_type": type(exc).__name__,
+        "error": str(exc) or repr(exc),
+    }
+    _validate_attempt_shape(attempt, f"rejected {cell_id} attempt")
+    return {"cell_id": cell_id, "status": "REJECT", "attempts": [attempt]}
+
+
+def _finalize_worker_rejection(
+    state_path: Path,
+    exc: Exception,
+    context: Mapping[str, Any] | None,
+) -> bool:
+    """Atomically close a revision-3 worker failure without replacing COMPLETE evidence."""
+
+    persisted = load_json(state_path)
+    if persisted.get("status") == "COMPLETE":
+        return False
+    if persisted.get("launcher_revision") != LAUNCHER_REVISION:
+        raise AuditError("refusing to rewrite a legacy launch state during rejection closure")
+    closed = {field: copy.deepcopy(persisted.get(field)) for field in LAUNCH_STATE_FIELDS}
+    finished = utc_now()
+    active = persisted.get("active_cell")
+    if context is None and isinstance(active, Mapping):
+        cell_root = state_path.resolve().parent / "worker" / str(active.get("cell_id", ""))
+        context = _new_attempt_context(
+            str(active.get("started_utc", finished)),
+            str(active.get("command_sha256", "")),
+            cell_root / "runner.stdout.txt",
+            cell_root / "runner.stderr.txt",
+        )
+    affected_cell_id: str | None = None
+    if context is not None and isinstance(active, Mapping):
+        cell_id = str(active.get("cell_id", ""))
+        if cell_id and all(
+            not isinstance(row, Mapping) or row.get("cell_id") != cell_id
+            for row in closed.get("cells", [])
+        ):
+            closed["cells"].append(_rejected_cell_record(cell_id, context, exc, finished))
+            affected_cell_id = cell_id
+    outcome_crossed = closed.get("outcome_possible_since_utc") is not None
+    stage = (
+        str(context.get("failure_stage"))
+        if context is not None and context.get("failure_stage") in FAILURE_STAGES
+        else "WORKER_VALIDATION"
+    )
+    controller_class = None
+    if affected_cell_id is not None:
+        rejected_attempt = closed["cells"][-1]["attempts"][0]
+        stage = rejected_attempt["failure_stage"]
+        controller_class = rejected_attempt["controller_failure_class"]
+    closed["status"] = "REJECT"
+    closed["worker_pid"] = None
+    closed["active_cell"] = None
+    closed["finished_utc"] = finished
+    closed["updated_utc"] = finished
+    closed["terminal"] = {
+        "status": "REJECT",
+        "error_type": type(exc).__name__,
+        "error": str(exc) or repr(exc),
+        "failure_stage": stage,
+        "affected_cell_id": affected_cell_id,
+        "outcome_fence_crossed": outcome_crossed,
+        "no_resume": True,
+        "controller_failure_class": controller_class,
+    }
+    _validate_launch_state_shape(closed)
+    atomic_json(state_path, closed)
+    return True
+
+
+def _attempt_for_post(cell: Mapping[str, Any]) -> dict[str, Any]:
+    attempt = dict(cell["attempts"][0])
+    attempt["cell_id"] = cell["cell_id"]
+    return attempt
 
 
 def _worker_run(job_path: Path) -> int:
     state: dict[str, Any] | None = None
     state_path: Path | None = None
+    failure_context: Mapping[str, Any] | None = {"failure_stage": "WORKER_VALIDATION"}
     try:
         job_path = job_path.resolve()
         job_binding = file_binding(job_path)
@@ -1607,6 +2120,7 @@ def _worker_run(job_path: Path) -> int:
         state = load_json(state_path)
         if state.get("status") not in {"PENDING", "PENDING_RESUME"}:
             raise AuditError("scheduled worker was not armed by the launcher")
+        _validate_launch_state_shape(state)
         pre = assert_pre_receipt(pre_path, pre_sha)
         _validate_launch_job(job, pre, pre_path, pre_sha, state_path)
         auth_path = Path(str(job["authorization"]["binding"]["path"]))
@@ -1626,6 +2140,8 @@ def _worker_run(job_path: Path) -> int:
         state["worker_pid"] = os.getpid()
         state["started_utc"] = state.get("started_utc") or now
         state["updated_utc"] = now
+        failure_context = {"failure_stage": "RUNNING_STATE_PERSIST"}
+        _validate_launch_state_shape(state)
         atomic_json(state_path, state)
 
         work_root = state_path.parent / "worker"
@@ -1635,20 +2151,31 @@ def _worker_run(job_path: Path) -> int:
             assert_pre_receipt(pre_path, pre_sha)
             command = runner_command(pre, cell)
             started = utc_now()
+            command_sha = canonical_sha256(command)
+            cell_root = work_root / str(cell["cell_id"])
+            stdout_path = cell_root / "runner.stdout.txt"
+            stderr_path = cell_root / "runner.stderr.txt"
+            attempt_context = _new_attempt_context(
+                started, command_sha, stdout_path, stderr_path
+            )
+            attempt_context["failure_stage"] = "RUNNING_STATE_PERSIST"
+            failure_context = attempt_context
             state["active_cell"] = {
                 "cell_id": cell["cell_id"],
-                "command_sha256": canonical_sha256(command),
+                "attempt_number": 1,
+                "command_sha256": command_sha,
                 "started_utc": started,
                 "status": "OUTCOME_POSSIBLE_NO_RESUME",
             }
-            state["outcome_possible_since_utc"] = started
+            state["outcome_possible_since_utc"] = (
+                state.get("outcome_possible_since_utc") or started
+            )
             state["updated_utc"] = started
+            _validate_launch_state_shape(state)
             atomic_json(state_path, state)
 
-            cell_root = work_root / str(cell["cell_id"])
+            attempt_context["failure_stage"] = "OUTCOME_FENCE_PERSISTED"
             cell_root.mkdir(parents=True, exist_ok=True)
-            stdout_path = cell_root / "runner.stdout.txt"
-            stderr_path = cell_root / "runner.stderr.txt"
             completed = subprocess.run(
                 command,
                 cwd=REPO_ROOT,
@@ -1659,9 +2186,19 @@ def _worker_run(job_path: Path) -> int:
                 timeout=int(job["controller_timeout_seconds"]),
                 check=False,
             )
+            attempt_context["runner_exit_code"] = completed.returncode
+            attempt_context["stdout_text"] = completed.stdout
+            attempt_context["stderr_text"] = completed.stderr
+            attempt_context["failure_stage"] = "RUNNER_RETURNED"
             stdout_path.write_text(completed.stdout, encoding="utf-8")
+            attempt_context["stdout"] = file_binding(stdout_path)
+            attempt_context["failure_stage"] = "RUNNER_STREAMS_PARTIALLY_BOUND"
             stderr_path.write_text(completed.stderr, encoding="utf-8")
+            attempt_context["stderr"] = file_binding(stderr_path)
+            attempt_context["failure_stage"] = "RUNNER_STREAMS_BOUND"
             runner_result = _parse_last_json(completed.stdout)
+            attempt_context["runner_result"] = runner_result
+            attempt_context["failure_stage"] = "RUNNER_RESULT_PARSED"
             if completed.returncode != 0 or runner_result.get("success") is not True:
                 raise AuditError(
                     f"runner rejected {cell['cell_id']} with exit {completed.returncode}"
@@ -1670,38 +2207,39 @@ def _worker_run(job_path: Path) -> int:
             if not re.fullmatch(r"[0-9]{8}T[0-9]{6}Z_[0-9a-f]{32}", run_id):
                 raise AuditError(f"runner returned malformed run_id: {run_id!r}")
             summary_path = _find_summary(run_id)
+            attempt_context["summary"] = file_binding(summary_path)
+            attempt_context["failure_stage"] = "SUMMARY_BOUND"
             sealed = _seal_summary_artifacts(summary_path)
-            cell_result = {
-                "cell_id": cell["cell_id"],
-                "started_utc": started,
-                "finished_utc": utc_now(),
-                "command_sha256": canonical_sha256(command),
-                "runner_exit_code": completed.returncode,
-                "runner_result": runner_result,
-                "stdout": file_binding(stdout_path),
-                "stderr": file_binding(stderr_path),
-                "summary": sealed["summary"],
-                "run_artifacts": sealed["run_artifacts"],
-            }
+            attempt_context["summary"] = sealed["summary"]
+            attempt_context["run_artifacts"] = sealed["run_artifacts"]
+            attempt_context["failure_stage"] = "RUN_ARTIFACTS_BOUND"
+            cell_result = _complete_cell_record(str(cell["cell_id"]), attempt_context)
             state["cells"].append(cell_result)
             state["active_cell"] = None
             state["updated_utc"] = utc_now()
+            attempt_context["failure_stage"] = "CELL_STATE_PERSIST"
+            _validate_launch_state_shape(state)
             atomic_json(state_path, state)
+            failure_context = {"failure_stage": "WORKER_VALIDATION"}
         assert_pre_receipt(pre_path, pre_sha)
         state["status"] = "COMPLETE"
+        state["worker_pid"] = None
         state["active_cell"] = None
         state["finished_utc"] = utc_now()
         state["updated_utc"] = state["finished_utc"]
+        failure_context = {"failure_stage": "FINAL_STATE_PERSIST"}
+        _validate_launch_state_shape(state)
         atomic_json(state_path, state)
         return 0
     except Exception as exc:
-        if state is not None and state_path is not None and state.get("status") != "COMPLETE":
-            state["status"] = "REJECT"
-            state["finished_utc"] = utc_now()
-            state["updated_utc"] = state["finished_utc"]
-            state["error_type"] = type(exc).__name__
-            state["error"] = str(exc)
-            atomic_json(state_path, state)
+        if state is not None and state_path is not None:
+            try:
+                _finalize_worker_rejection(state_path, exc, failure_context)
+            except Exception as persistence_exc:
+                print(
+                    f"terminal rejection persistence failed: {type(persistence_exc).__name__}",
+                    file=sys.stderr,
+                )
         return 2
 
 
