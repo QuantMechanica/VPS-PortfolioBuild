@@ -167,6 +167,7 @@ def _make_bundle(
     position_transform: PositionTransform | None = None,
     duplicate_mutator: PayloadMutator | None = None,
     attempt_audit_mutator: PayloadMutator | None = None,
+    runner_summary_mutator: PayloadMutator | None = None,
     pointer_mutator: PayloadMutator | None = None,
     omit: set[str] | None = None,
     extra_pointer: bool = False,
@@ -336,6 +337,8 @@ def _make_bundle(
             "report_dir": str(report_dir.resolve()),
             "runs": runner_rows,
         }
+        if runner_summary_mutator is not None:
+            runner_summary_mutator(key, runner_summary)
         runner_summary_path = cell_root / "runner_summary.json"
         _write_json(runner_summary_path, runner_summary)
 
@@ -626,6 +629,105 @@ def test_semantic_duplicate_drift_rejects_even_with_valid_file_bindings(tmp_path
     )
     with pytest.raises(adjudicator.AdjudicationError, match="semantic duplicate payload drift"):
         adjudicator.load_cell_evidence(policy, adjudicator.expected_cells()[0])
+
+
+def test_retry_attempt_audit_accepts_ok_missing_report_ok_without_cherry_pick(
+    tmp_path: Path,
+) -> None:
+    key = adjudicator.expected_cells()[0]
+    policy = _make_bundle(
+        tmp_path,
+        only_cells={key.cell_id},
+        retry_missing_report=True,
+    )
+    evidence = adjudicator.load_cell_evidence(policy, key)
+    assert len(evidence.positions) > 0
+    audit_path = (
+        policy.receipt_root
+        / key.safe_symbol
+        / key.market.timeframe
+        / key.variant
+        / "attempt_audit.json"
+    )
+    audit = evidence_io.load_json_strict(audit_path)
+    assert audit["accepted_run_ids"] == ["run_01", "run_03"]
+    assert audit["attempts"][1]["failure"] == "REPORT_MISSING"
+    assert audit["attempts"][1]["report"] is None
+    assert audit["attempts"][1]["tester_ini"] is not None
+    assert audit["attempts"][1]["tester_log"] is not None
+    assert audit["attempts"][1]["explicit_absences"] == ["report"]
+
+
+def test_retry_attempt_audit_rejects_missing_row_and_unbound_file(tmp_path: Path) -> None:
+    key = adjudicator.expected_cells()[0]
+
+    def drop_failed_attempt(_: adjudicator.CellKey, audit: dict[str, Any]) -> None:
+        audit["attempts"].pop(1)
+
+    policy = _make_bundle(
+        tmp_path / "missing-row",
+        only_cells={key.cell_id},
+        retry_missing_report=True,
+        attempt_audit_mutator=drop_failed_attempt,
+    )
+    with pytest.raises(adjudicator.AdjudicationError, match="attempt list count drift"):
+        adjudicator.load_cell_evidence(policy, key)
+
+    policy = _make_bundle(
+        tmp_path / "unbound",
+        only_cells={key.cell_id},
+        retry_missing_report=True,
+    )
+    unexpected = (
+        policy.receipt_root
+        / key.safe_symbol
+        / key.market.timeframe
+        / key.variant
+        / "runner_output"
+        / "raw"
+        / "run_02"
+        / "late.bin"
+    )
+    unexpected.write_bytes(b"not in the initial attempt audit")
+    with pytest.raises(adjudicator.AdjudicationError, match="unbound artifacts"):
+        adjudicator.load_cell_evidence(policy, key)
+
+
+def test_retry_attempt_audit_rejects_late_report_and_unselected_ok(tmp_path: Path) -> None:
+    key = adjudicator.expected_cells()[0]
+    policy = _make_bundle(
+        tmp_path / "late-report",
+        only_cells={key.cell_id},
+        retry_missing_report=True,
+    )
+    late_report = (
+        policy.receipt_root
+        / key.safe_symbol
+        / key.market.timeframe
+        / key.variant
+        / "runner_output"
+        / "raw"
+        / "run_02"
+        / "report.htm"
+    )
+    late_report.write_bytes(b"appeared after explicit absence was sealed")
+    with pytest.raises(adjudicator.AdjudicationError, match="contradicts present report|unbound artifacts"):
+        adjudicator.load_cell_evidence(policy, key)
+
+    def append_unselected_ok(_: adjudicator.CellKey, summary: dict[str, Any]) -> None:
+        extra = copy.deepcopy(summary["runs"][1])
+        extra["run"] = "run_03"
+        summary["runs"].append(extra)
+        summary["attempted_runs"] = 3
+        summary["non_ok_attempts"] = 1
+
+    policy = _make_bundle(
+        tmp_path / "third-ok",
+        only_cells={key.cell_id},
+        runner_summary_mutator=append_unselected_ok,
+    )
+    with pytest.raises(adjudicator.AdjudicationError, match="exactly two OK runs"):
+        adjudicator.load_cell_evidence(policy, key)
 
 
 def test_distinct_run_artifacts_cannot_alias_one_file(tmp_path: Path) -> None:
