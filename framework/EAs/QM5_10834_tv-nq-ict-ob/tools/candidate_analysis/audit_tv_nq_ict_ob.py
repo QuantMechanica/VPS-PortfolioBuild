@@ -142,6 +142,11 @@ PRIOR_INFRA_RUN_ROOT = Path(
 )
 PRIOR_INFRA_PRE_SHA256 = "78d7d2d3fe45665d79a794adc60a4a4e57e747584236f24622b8ed2cbbeb1172"
 PRIOR_INFRA_STATE_SHA256 = "7bfbfc9da034fc930870817b138d92f8339c1b336fff2c0f852899b3fd58ef95"
+CONTROLLER_PREFLIGHT_RUN_ROOT = Path(
+    r"D:\QM\reports\candidate_analysis\QM5_10834\runs\NDX_ICT_OB_FULL_DEV2_INFRA_RETRY_001"
+)
+CONTROLLER_PREFLIGHT_PRE_SHA256 = "377cc789829c5fd5ad8107d977e29d8d7bc987f774c4414769999e44b8a8ee64"
+CONTROLLER_PREFLIGHT_STATE_SHA256 = "6711df22476d20c40b6ef109729bed20ddcaf106597e4a53c767bb7dd2464011"
 
 INFRA_RETRY_POLICY: dict[str, Any] = {
     "execution_lane": EXECUTION_TERMINAL,
@@ -1188,6 +1193,7 @@ def validate_infra_retry_contract(path: Path = INFRA_RETRY_CONTRACT_PATH) -> dic
         "created_utc",
         "candidate",
         "prior_attempt",
+        "controller_preflight",
         "retry",
         "classification",
     }
@@ -1229,10 +1235,33 @@ def validate_infra_retry_contract(path: Path = INFRA_RETRY_CONTRACT_PATH) -> dic
     }
     if payload.get("prior_attempt") != expected_prior:
         raise InvalidEvidence("infra-retry prior-attempt classification drift")
+    expected_controller_preflight = {
+        "run_root": str(CONTROLLER_PREFLIGHT_RUN_ROOT),
+        "pre_receipt_sha256": CONTROLLER_PREFLIGHT_PRE_SHA256,
+        "launch_state_sha256": CONTROLLER_PREFLIGHT_STATE_SHA256,
+        "terminal_status": "INVALID_TERMINAL",
+        "cause": "QMDEV2_ACCOUNT_DISABLED_AT_REST",
+        "dev2_process_started": False,
+        "dev2_run_directory_created": False,
+        "native_report_created": False,
+        "strategy_outcomes_read": False,
+        "counts_toward_alternate_attempts": False,
+        "remediation": "CONTROLLER_TEMPORARY_ENABLE_UNDER_MUTEX_AND_RESTORE_DISABLED_IN_FINALLY",
+    }
+    if payload.get("controller_preflight") != expected_controller_preflight:
+        raise InvalidEvidence("infra-retry controller-preflight classification drift")
     if payload.get("retry") != INFRA_RETRY_POLICY:
         raise InvalidEvidence("infra-retry one-shot policy drift")
     file_binding(PRIOR_INFRA_RUN_ROOT / "pre_receipt.json", PRIOR_INFRA_PRE_SHA256)
     file_binding(PRIOR_INFRA_RUN_ROOT / "launch_state.json", PRIOR_INFRA_STATE_SHA256)
+    file_binding(
+        CONTROLLER_PREFLIGHT_RUN_ROOT / "pre_receipt.json",
+        CONTROLLER_PREFLIGHT_PRE_SHA256,
+    )
+    file_binding(
+        CONTROLLER_PREFLIGHT_RUN_ROOT / "launch_state.json",
+        CONTROLLER_PREFLIGHT_STATE_SHA256,
+    )
     return payload
 
 
@@ -2115,6 +2144,11 @@ def validate_dev2_controller_result(
     }
     if group_hashes != {expected_group_hash}:
         raise InvalidEvidence("DEV2 tester-groups restore proof drift")
+    if (
+        result.get("dev2_account_initially_enabled") is not False
+        or result.get("dev2_account_restored_disabled") is not True
+    ):
+        raise InvalidEvidence("DEV2 disabled-at-rest account lifecycle proof drift")
     return run_id
 
 

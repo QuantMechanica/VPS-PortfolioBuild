@@ -530,6 +530,17 @@ def test_infra_retry_contract_is_one_shot_dev2_and_binds_prior_invalid(
     monkeypatch.setattr(subject, "PRIOR_INFRA_RUN_ROOT", prior_root)
     monkeypatch.setattr(subject, "PRIOR_INFRA_PRE_SHA256", pre_sha)
     monkeypatch.setattr(subject, "PRIOR_INFRA_STATE_SHA256", state_sha)
+    controller_root = tmp_path / "controller_preflight"
+    controller_root.mkdir()
+    controller_pre = controller_root / "pre_receipt.json"
+    controller_state = controller_root / "launch_state.json"
+    controller_pre.write_bytes(b"controller-pre")
+    controller_state.write_bytes(b"controller-state")
+    controller_pre_sha = subject.sha256_file(controller_pre)
+    controller_state_sha = subject.sha256_file(controller_state)
+    monkeypatch.setattr(subject, "CONTROLLER_PREFLIGHT_RUN_ROOT", controller_root)
+    monkeypatch.setattr(subject, "CONTROLLER_PREFLIGHT_PRE_SHA256", controller_pre_sha)
+    monkeypatch.setattr(subject, "CONTROLLER_PREFLIGHT_STATE_SHA256", controller_state_sha)
 
     payload = {
         "schema_version": 1,
@@ -557,6 +568,19 @@ def test_infra_retry_contract_is_one_shot_dev2_and_binds_prior_invalid(
             "completed_cells": 0,
             "strategy_outcomes_read": False,
             "strategy_merit_adjudicated": False,
+        },
+        "controller_preflight": {
+            "run_root": str(controller_root),
+            "pre_receipt_sha256": controller_pre_sha,
+            "launch_state_sha256": controller_state_sha,
+            "terminal_status": "INVALID_TERMINAL",
+            "cause": "QMDEV2_ACCOUNT_DISABLED_AT_REST",
+            "dev2_process_started": False,
+            "dev2_run_directory_created": False,
+            "native_report_created": False,
+            "strategy_outcomes_read": False,
+            "counts_toward_alternate_attempts": False,
+            "remediation": "CONTROLLER_TEMPORARY_ENABLE_UNDER_MUTEX_AND_RESTORE_DISABLED_IN_FINALLY",
         },
         "retry": subject.INFRA_RETRY_POLICY,
         "classification": "OUTCOME_BLIND_INFRASTRUCTURE_RETRY_ONLY",
@@ -594,6 +618,8 @@ def test_dev2_controller_result_binds_lane_scripts_and_tester_groups() -> None:
         "run_smoke_sha256": smoke_sha,
         "tester_groups_post_child_sha256": groups_sha,
         "tester_groups_restored_sha256": groups_sha,
+        "dev2_account_initially_enabled": False,
+        "dev2_account_restored_disabled": True,
     }
     assert subject.validate_dev2_controller_result(result, pre) == run_id
     result["child_sha256"] = "f" * 64
