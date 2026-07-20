@@ -1,0 +1,60 @@
+{
+  "task_id": "fc2b0463-99da-46fa-a2a7-18b95beaaf41",
+  "ea_id": "QM5_11889",
+  "ea_label": "QM5_11889_lien-xtreme-fade-double-bb-adx",
+  "mission": "priority_2_diverse_fx_q02_infra_recovery",
+  "result": "PIPELINE",
+  "summary": "Corrected ea_id=9999 OnInit failures, rebuilt the EA, and reopened only the NZDUSD/USDCHF Q02 rows in place.",
+  "source_card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11889_lien-xtreme-fade-double-bb-adx.md",
+  "claim_key": "manual:codex:agents/board-advisor:QM5_11889:q02-infra-recovery",
+  "claimed_by": "codex:agents/board-advisor",
+  "claimed_at": "2026-07-20T05:08:55+00:00",
+  "claim_backup": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_qm5_11889_claim_20260720T050855Z.sqlite",
+  "requeue_backup": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_qm5_11889_fx_q02_requeue_20260720T051516Z.sqlite",
+  "root_cause": "The MQ5 defaulted qm_ea_id to 9999 and all seven backtest setfiles omitted qm_ea_id, causing EA_MAGIC_NOT_REGISTERED and OnInit code 1 on slots 4 and 6.",
+  "repair": {
+    "mq5_identity": "qm_ea_id=11889",
+    "setfiles_regenerated": 7,
+    "risk_mode": "RISK_FIXED=1000; RISK_PERCENT=0",
+    "strategy_logic_changed": false,
+    "mq5_sha256": "0e8cb0f8a7c4d3cbd31f0b4767fb470fd56ad4b4df8b3d445e9ffb28c1796e5f",
+    "ex5_sha256": "d5288a31ab2f0825e8d0b25d4c0ea3624b19147e5f63ebef4935e1dd5eb1fbce",
+    "package_commits": [
+      "74b9556f70d669265d684ea1caeadc0ae9ce1032",
+      "8cf3926bb5d66e530f53f2ddffefe5e985500cb9"
+    ]
+  },
+  "validation": {
+    "spec": "PASS",
+    "build_guardrails": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "build_check": "PASS: 0 failures, 0 warnings",
+    "strict_compile": "PASS: 0 errors, 0 warnings",
+    "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260720_051333.json",
+    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260720_051401\\QM5_11889_lien-xtreme-fade-double-bb-adx.compile.log",
+    "smoke": "deferred_cpu_ceiling",
+    "active_backtest_jobs_observed": 7
+  },
+  "q02_work_items": [
+    {
+      "id": "294e270a-4f3e-434c-8dea-f8d752867ec4",
+      "symbol": "NZDUSD.DWX",
+      "status_at_handoff": "pending",
+      "attempt_count": 0,
+      "claimed_by": null,
+      "archived_report_root": "D:\\QM\\reports\\work_items\\294e270a-4f3e-434c-8dea-f8d752867ec4.requeued_20260720T051516Z"
+    },
+    {
+      "id": "d09baa2f-81cd-4e6a-b0ba-607ea11e3e61",
+      "symbol": "USDCHF.DWX",
+      "status_at_handoff": "pending",
+      "attempt_count": 0,
+      "claimed_by": null,
+      "archived_report_root": "D:\\QM\\reports\\work_items\\d09baa2f-81cd-4e6a-b0ba-607ea11e3e61.requeued_20260720T051516Z"
+    }
+  ],
+  "duplicate_rows_inserted": false,
+  "dispatch_invoked": false,
+  "evidence_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-07-20_qm5_11889_fx_q02_oninit_repair_requeue.md",
+  "safety": "No T_Live, AutoTrading, portfolio gate, deploy manifest, or live setfile touched."
+}
