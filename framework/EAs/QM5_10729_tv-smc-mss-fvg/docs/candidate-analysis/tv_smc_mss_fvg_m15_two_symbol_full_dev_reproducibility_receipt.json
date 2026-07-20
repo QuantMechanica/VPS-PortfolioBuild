@@ -1,59 +1,79 @@
 {
   "analysis_id": "QM5_10729_TV_SMC_MSS_FVG_M15_TWO_SYMBOL_FULL_DEV_001",
-  "artifact_type": "QM5_10729_FULL_DEV_REPRODUCIBILITY_RECEIPT",
+  "artifact_type": "QM5_10729_FULL_DEV_FENCED_V2_REPRODUCIBILITY_RECEIPT",
   "contract_sha256": "0b221d1c79dce4a4fef0aa635de957296511e1fc945523e8a4da556c13311d25",
   "review_receipt_sha256": "2d009fa440a125514d3d6109ae00d91be295c1b052d53e9e47b5ee9121358d99",
   "snapshot": {
-    "external_manifest_path": "D:/QM/audit_snapshots/QM5_10729_TV_SMC_MSS_FVG_M15_TWO_SYMBOL_FULL_DEV_001/release_0b221d1c_2d009fa4/manifest.json",
+    "external_manifest_path": "D:/QM/audit_snapshots/QM5_10729_TV_SMC_MSS_FVG_M15_TWO_SYMBOL_FULL_DEV_001/release_0b221d1c_2d009fa4_fenced_v2/manifest.json",
     "repository_manifest_copy": "framework/EAs/QM5_10729_tv-smc-mss-fvg/docs/candidate-analysis/tv_smc_mss_fvg_m15_two_symbol_input_snapshot_manifest.json",
-    "manifest_sha256": "66dc5e8ea9842a570686940b3c7df90d33164aaefa2bf48911c730d9ea70b5ca",
+    "manifest_sha256": "2a3b4e79c005b368fc67886ed9e3eb260b3d71f27abc5db2ed1b78d98353101e",
+    "schema_version": 2,
+    "market_projection": "HEADER_PLUS_PRESTART_TIMESTAMP_ONLY_PLUS_EXACT_IN_WINDOW_ROWS_PLUS_FIRST_EXCLUDED_TIMESTAMP_PREFIX_ONLY",
     "source_bindings": 15,
     "current_exact_bindings": 14,
     "git_blob_exact_bindings": 1,
     "market_files": 2,
     "read_only": true,
-    "runtime_inputs_from_snapshot_only": true
+    "runtime_inputs_from_snapshot_only": true,
+    "future_ohlc_tail_read_or_hashed": false
   },
   "auditor": {
     "path": "framework/EAs/QM5_10729_tv-smc-mss-fvg/tools/candidate_analysis/audit_tv_smc_mss_fvg_m15_full_dev.py",
-    "sha256": "bacd4de25f7aed7e3b1c36bd5eb729ee2ea82ef88b9f9559fa976ddb97287b83"
+    "sha256": "936f1dc7568261bfd6a751d3e9d8063836cf76aaa0187e702de5aa6a9ef9b3b1"
+  },
+  "snapshot_builder": {
+    "path": "framework/EAs/QM5_10729_tv-smc-mss-fvg/tools/candidate_analysis/build_tv_smc_mss_fvg_m15_input_snapshot.py",
+    "sha256": "5964c86b1f7649f4a7abd1f43def84c7cf77f3dab9e46ef346bbae6bdb0d3b39"
   },
   "preflight": {
     "status": "PASS",
     "mode": "PREFLIGHT_ONLY_NO_OHLC_PARSE",
     "contract_hash_unchanged": true,
     "review_hash_unchanged": true,
-    "future_ohlc_parsed": false
+    "future_ohlc_parsed": false,
+    "future_ohlc_tail_read_or_hashed": false,
+    "adversarial_guarded_reader_test": "PASS"
   },
   "runs": [
     {
       "run": 1,
-      "result_path": "D:/QM/audit_runs/QM5_10729_TV_SMC_MSS_FVG_M15_TWO_SYMBOL_FULL_DEV_001/run1/result.json",
-      "result_sha256": "a6022464b04e99e87ece8db015e539a2fe36b258292cfd38c069f11420e26aa9",
-      "result_bytes": 317326,
-      "report_path": "D:/QM/audit_runs/QM5_10729_TV_SMC_MSS_FVG_M15_TWO_SYMBOL_FULL_DEV_001/run1/report.md",
-      "report_sha256": "49f7f2fd5a5e9302ef934934064e537c2dae7fcd99d31d251c308ce6e6d09e17",
-      "report_bytes": 5805
+      "result_path": "D:/QM/audit_runs/QM5_10729_TV_SMC_MSS_FVG_M15_TWO_SYMBOL_FULL_DEV_001/fenced_v2_final_run1/result.json",
+      "result_sha256": "a26073a6b8b6fbcecffa98295ff665303d9fb01e04b7ebdb56f5c1eb70334b41",
+      "result_bytes": 318690,
+      "report_path": "D:/QM/audit_runs/QM5_10729_TV_SMC_MSS_FVG_M15_TWO_SYMBOL_FULL_DEV_001/fenced_v2_final_run1/report.md",
+      "report_sha256": "35e391a50872b47c3b408963a38c062ed6803caec45d069ff016384217ff5fc5",
+      "report_bytes": 6027
     },
     {
       "run": 2,
-      "result_path": "D:/QM/audit_runs/QM5_10729_TV_SMC_MSS_FVG_M15_TWO_SYMBOL_FULL_DEV_001/run2/result.json",
-      "result_sha256": "a6022464b04e99e87ece8db015e539a2fe36b258292cfd38c069f11420e26aa9",
-      "result_bytes": 317326,
-      "report_path": "D:/QM/audit_runs/QM5_10729_TV_SMC_MSS_FVG_M15_TWO_SYMBOL_FULL_DEV_001/run2/report.md",
-      "report_sha256": "49f7f2fd5a5e9302ef934934064e537c2dae7fcd99d31d251c308ce6e6d09e17",
-      "report_bytes": 5805
+      "result_path": "D:/QM/audit_runs/QM5_10729_TV_SMC_MSS_FVG_M15_TWO_SYMBOL_FULL_DEV_001/fenced_v2_final_run2/result.json",
+      "result_sha256": "a26073a6b8b6fbcecffa98295ff665303d9fb01e04b7ebdb56f5c1eb70334b41",
+      "result_bytes": 318690,
+      "report_path": "D:/QM/audit_runs/QM5_10729_TV_SMC_MSS_FVG_M15_TWO_SYMBOL_FULL_DEV_001/fenced_v2_final_run2/report.md",
+      "report_sha256": "35e391a50872b47c3b408963a38c062ed6803caec45d069ff016384217ff5fc5",
+      "report_bytes": 6027
     }
   ],
   "duplicate_run_result_byte_equal": true,
   "duplicate_run_report_byte_equal": true,
   "canonical_result": {
     "path": "framework/EAs/QM5_10729_tv-smc-mss-fvg/docs/candidate-analysis/tv_smc_mss_fvg_m15_two_symbol_full_dev_result.json",
-    "sha256": "a6022464b04e99e87ece8db015e539a2fe36b258292cfd38c069f11420e26aa9"
+    "sha256": "a26073a6b8b6fbcecffa98295ff665303d9fb01e04b7ebdb56f5c1eb70334b41"
   },
   "canonical_report": {
     "path": "framework/EAs/QM5_10729_tv-smc-mss-fvg/docs/candidate-analysis/tv_smc_mss_fvg_m15_two_symbol_full_dev_report.md",
-    "sha256": "49f7f2fd5a5e9302ef934934064e537c2dae7fcd99d31d251c308ce6e6d09e17"
+    "sha256": "35e391a50872b47c3b408963a38c062ed6803caec45d069ff016384217ff5fc5"
+  },
+  "supersession": {
+    "status": "FENCED_V2_SUPERSEDES_CONTRACT_INVALID_EVIDENCE",
+    "invalid_reason": "CONTRACT_INVALID_FUTURE_TAIL_HASHED",
+    "invalid_snapshot_manifest_sha256": "66dc5e8ea9842a570686940b3c7df90d33164aaefa2bf48911c730d9ea70b5ca",
+    "invalid_evidence_commits": [
+      "b119e97e7271a7fcf1089a3b7024da3ccd0210fe",
+      "52c5031bab44e2cda860136bf6c8edbba7c8719c"
+    ],
+    "metrics_equal_to_invalid_runs": true,
+    "post_2022_pristine_oos_status": "CONTAMINATED_NEVER_CLAIM_PRISTINE"
   },
   "center_trades": 149,
   "adverse_trades": 149,
@@ -62,5 +82,6 @@
   "disposition": "STOP",
   "tuning_authorized": false,
   "future_ohlc_parsed": false,
-  "post_result_actions": "NO_TUNING_NO_OPTIMIZATION_NO_SUBSET_SELECTION_NO_OOS_ACCESS_NO_PRODUCTION_CHANGE"
+  "valid_run_future_ohlc_tail_read_or_hashed": false,
+  "post_result_actions": "STOP_NO_TUNING_NO_OPTIMIZATION_NO_SUBSET_SELECTION_NO_PRODUCTION_CHANGE"
 }

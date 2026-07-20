@@ -3,6 +3,9 @@
 - Verdict: **NO_CONJUNCTIVE_FAMILY_MERIT**
 - Contract SHA256: `0b221d1c79dce4a4fef0aa635de957296511e1fc945523e8a4da556c13311d25`
 - Review SHA256: `2d009fa440a125514d3d6109ae00d91be295c1b052d53e9e47b5ee9121358d99`
+- Fenced snapshot SHA256: `2a3b4e79c005b368fc67886ed9e3eb260b3d71f27abc5db2ed1b78d98353101e`
+- Supersession: `CONTRACT_INVALID_FUTURE_TAIL_HASHED` -> fenced v2
+- Post-2022 pristine OOS: `CONTAMINATED_NEVER_CLAIM_PRISTINE`
 - Result integrity: `PASS`; future OHLC parsed: `false`
 - Failed gates: `38`
 
