@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-20T06:07:04.1988086Z",
-    "total":  3366,
+    "generated_at":  "2026-07-20T07:07:03.7046075Z",
+    "total":  3357,
     "items":  [
                   {
                       "slug":  "ath-breakout-atr-trail",
@@ -1358,6 +1358,12 @@
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-06-28T04:52:12.3868079Z"
+                  },
+                  {
+                      "slug":  "wti-halloween-winter_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-20T07:04:18.0439135Z"
                   },
                   {
                       "slug":  "wti-juldec-short_card",
@@ -14164,12 +14170,6 @@
                       "last_updated_utc":  "2026-06-20T07:13:00.4631209Z"
                   },
                   {
-                      "slug":  "QM5_12702_xngusd-winter-withdrawal-long_card",
-                      "source":  "strategy_farm/artifacts/cards_approved",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-06-28T14:40:08.1623328Z"
-                  },
-                  {
                       "slug":  "QM5_12703_xngusd-spring-shoulder-short",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
@@ -14312,12 +14312,6 @@
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-06-12T04:27:32.8271303Z"
-                  },
-                  {
-                      "slug":  "QM5_12740_eia-wti-postdrive_card",
-                      "source":  "strategy_farm/artifacts/cards_approved",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-06-28T09:36:56.3581388Z"
                   },
                   {
                       "slug":  "QM5_12741_nnfx-fx-basket-pooled",
@@ -14968,12 +14962,6 @@
                       "last_updated_utc":  "2026-07-02T15:31:07.5363625Z"
                   },
                   {
-                      "slug":  "QM5_12921_qp-january-barometer-card",
-                      "source":  "strategy_farm/artifacts/cards_approved",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-07-02T15:31:07.5423783Z"
-                  },
-                  {
                       "slug":  "QM5_12922_ariel-first-half-month-idx",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
@@ -15064,12 +15052,6 @@
                       "last_updated_utc":  "2026-07-02T15:31:07.6276012Z"
                   },
                   {
-                      "slug":  "QM5_12937_demark-td-termination-count-alt-h4",
-                      "source":  "strategy_farm/artifacts/cards_approved",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-07-02T15:32:07.0675300Z"
-                  },
-                  {
                       "slug":  "QM5_12938_hopwood-bermaui-dss-h4",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
@@ -15086,18 +15068,6 @@
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-07-02T15:32:07.0695346Z"
-                  },
-                  {
-                      "slug":  "QM5_12941_hopwood-bermaui-macd-h4-card",
-                      "source":  "strategy_farm/artifacts/cards_approved",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-07-02T15:32:07.0705371Z"
-                  },
-                  {
-                      "slug":  "QM5_12942_ehlers-ebsw-cycle-composite-h4",
-                      "source":  "strategy_farm/artifacts/cards_approved",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-07-02T15:32:07.0715401Z"
                   },
                   {
                       "slug":  "QM5_12943_robopip-hlhb-trend-catcher-h1",
@@ -17224,12 +17194,6 @@
                       "last_updated_utc":  "2026-06-12T08:45:57.3244839Z"
                   },
                   {
-                      "slug":  "QM5_1622_demark-td-termination-count-alt-h4",
-                      "source":  "strategy_farm/artifacts/cards_approved",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-06-20T06:52:26.2057231Z"
-                  },
-                  {
                       "slug":  "QM5_1623_hopwood-bermaui-dss-h4",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
@@ -17320,19 +17284,7 @@
                       "last_updated_utc":  "2026-06-25T15:12:22.7288111Z"
                   },
                   {
-                      "slug":  "QM5_1648_demark-td-sequential-tdst-overlay-h4",
-                      "source":  "strategy_farm/artifacts/cards_approved",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-06-20T06:52:26.2057231Z"
-                  },
-                  {
                       "slug":  "QM5_1649_carney-cypher-pattern-h4",
-                      "source":  "strategy_farm/artifacts/cards_approved",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-06-20T06:52:26.2057231Z"
-                  },
-                  {
-                      "slug":  "QM5_1650_sperandeo-trader-vic-ii-pattern-h4",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-06-20T06:52:26.2057231Z"
@@ -17924,12 +17876,6 @@
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-06-12T12:43:03.5120340Z"
-                  },
-                  {
-                      "slug":  "QM5_3005_alpha-inst-magnet",
-                      "source":  "strategy_farm/artifacts/cards_approved",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-06-20T06:52:26.2368602Z"
                   },
                   {
                       "slug":  "QM5_4001_elite-multi-factor-scoring",

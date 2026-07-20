@@ -243,3 +243,13 @@ def test_empty_composite_cannot_pass_gates() -> None:
     gates, verdict = audit.evaluate_gates(empty_internal, empty_internal)
     assert verdict == "NO_CONJUNCTIVE_FAMILY_MERIT"
     assert not all(row["pass"] for row in gates)
+
+
+def test_snapshot_path_rejects_parent_escape(tmp_path: Path) -> None:
+    with pytest.raises(audit.AuditError, match="unsafe snapshot relative path"):
+        audit._snapshot_path(tmp_path.resolve(), "../live-input.csv")
+
+
+def test_snapshot_manifest_hash_is_release_pinned(tmp_path: Path) -> None:
+    with pytest.raises(audit.AuditError, match="not the released exact manifest"):
+        audit.verify_release(tmp_path / "manifest.json", "0" * 64)
