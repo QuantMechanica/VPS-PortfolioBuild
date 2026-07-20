@@ -167,12 +167,14 @@ bool QM13210_InputsValid()
       (cancel_time % 5) != 0 || (flatten_time % 5) != 0)
       return false;
 
-   return (strategy_atr_period >= 2 &&
-           strategy_asia_trend_max_frac > 0.0 &&
-           strategy_asia_range_min_atr > 0.0 &&
-           strategy_sl_buffer_atr > 0.0 &&
-           strategy_spread_max_atr_frac > 0.0 &&
-           strategy_fixed_rr > 0.0);
+   return (strategy_atr_period >= 2 && strategy_atr_period <= 100 &&
+           strategy_asia_trend_max_frac >= 0.10 && strategy_asia_trend_max_frac <= 1.0 &&
+           strategy_asia_range_min_atr >= 0.10 && strategy_asia_range_min_atr <= 2.0 &&
+           strategy_sl_buffer_atr >= 0.01 && strategy_sl_buffer_atr <= 1.0 &&
+           strategy_spread_max_atr_frac >= 0.01 && strategy_spread_max_atr_frac <= 0.50 &&
+           (strategy_tp_mode == QM13210_TP_OPPOSITE_BODY ||
+            strategy_tp_mode == QM13210_TP_FIXED_R) &&
+           strategy_fixed_rr >= 1.0 && strategy_fixed_rr <= 10.0);
   }
 
 void QM13210_ResetForDay(const int day_key)
@@ -312,7 +314,7 @@ bool QM13210_OppositeSweepInvalidates(const double high, const double low)
 bool QM13210_TargetAlreadyTouched(const double high, const double low)
   {
    double target = 0.0;
-   if(g_entry_ready && g_entry_tp > 0.0)
+   if(g_entry_tp > 0.0)
       target = g_entry_tp;
    else if(strategy_tp_mode == QM13210_TP_OPPOSITE_BODY)
       target = (g_sweep_direction > 0) ? g_asia_body_high : g_asia_body_low;
@@ -758,6 +760,27 @@ void Strategy_ManageOpenPosition()
    if(minute >= cancel_time)
      {
       QM13210_RemoveOwnedPendingOrders("asian_sweep_entry_cancel");
+      QM13210_MarkSetupDone();
+      return;
+     }
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0 || ask < bid)
+     {
+      QM13210_RemoveOwnedPendingOrders("asian_sweep_quote_invalid_cancel");
+      QM13210_MarkSetupDone();
+      return;
+     }
+   if((g_sweep_direction > 0 &&
+       (bid >= g_entry_tp || bid > g_sweep_high_ref)) ||
+      (g_sweep_direction < 0 &&
+       (bid <= g_entry_tp || bid < g_sweep_low_ref)))
+     {
+      // A target or opposite-side sweep makes the unfilled retracement limit
+      // stale. Cancel on the first observed tick, before a later retrace can
+      // fill an already-completed setup.
+      QM13210_RemoveOwnedPendingOrders("asian_sweep_stale_target_cancel");
       QM13210_MarkSetupDone();
       return;
      }
