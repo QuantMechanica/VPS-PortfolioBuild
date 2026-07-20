@@ -16,8 +16,8 @@ EA_ROOT = TOOL_PATH.parents[2]
 CONTRACT_PATH = EA_ROOT / "docs" / "candidate-analysis" / "short_ny_reverse_time_contract.json"
 OUTPUT_ROOT = EA_ROOT / "sets" / "candidate-analysis"
 MANIFEST_PATH = OUTPUT_ROOT / "short_ny_reverse_time_manifest.json"
-EXPECTED_CONTRACT_SHA256 = "8f6cc2dc53b00a99944862808aa7cb7e9d48cde22cb193ed3bdfcbb2fc62a4a9"
-CONTRACT_COMMIT = "bac2986b1941b25124fd4be38f97ea464d07c4a3"
+EXPECTED_CONTRACT_SHA256 = "6ee74c60a823fe87b03b40a2737ba67d113b2e52e7c09a05f42ba2084e17fefa"
+CONTRACT_COMMIT = "d902b04932c340dd1212b9420077d7cec6b0d80d"
 
 INPUT_ORDER = (
     "qm_chartui_enabled",
