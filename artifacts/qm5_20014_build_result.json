@@ -1,0 +1,127 @@
+{
+  "task_id": "35c924e1-3fa4-460c-8c39-1f83aabffa35",
+  "ea_id": "QM5_20014",
+  "ea_label": "QM5_20014_xng-month-ch3",
+  "slug": "xng-month-ch3",
+  "strategy_id": "SZAKMARY-XNG-MCH3-2010",
+  "strategy": "Natural Gas monthly three-month completed-close channel with one-month renewal",
+  "source_links": [
+    "https://doi.org/10.1016/j.jbankfin.2009.08.004",
+    "https://www.sciencedirect.com/science/article/pii/S037842660900199X",
+    "https://www.researchgate.net/profile/Andrew-Szakmary/publication/267715955_Price_Momentum_and_Trading_Volume_In_Commodity_Futures_Markets/links/556dae9d08aeccd7773d7aca/Price-Momentum-and-Trading-Volume-In-Commodity-Futures-Markets.pdf"
+  ],
+  "symbols": [
+    "XNGUSD.DWX"
+  ],
+  "host_symbol": "XNGUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_20014_xng-month-ch3",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_20014_xng-month-ch3/QM5_20014_xng-month-ch3.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_20014_xng-month-ch3/QM5_20014_xng-month-ch3.ex5",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_20014_xng-month-ch3/SPEC.md",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20014_xng-month-ch3.md",
+  "approved_card_path": "C:/QM/repo/strategy-seeds/cards/approved/QM5_20014_xng-month-ch3_card.md",
+  "canonical_card_path": "C:/QM/repo/strategy-seeds/cards/xng-month-ch3_card.md",
+  "source_packet_path": "C:/QM/repo/strategy-seeds/sources/SZAKMARY-XNG-MCH3-2010/source.md",
+  "runtime_build_result_path": "D:/QM/strategy_farm/artifacts/builds/35c924e1-3fa4-460c-8c39-1f83aabffa35.json",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_20014_xng-month-ch3/sets/QM5_20014_xng-month-ch3_XNGUSD.DWX_D1_backtest.set"
+  ],
+  "magic_base": 200140000,
+  "registry_validation": {
+    "ea_id_row": "20014,xng-month-ch3,SZAKMARY-XNG-MCH3-2010,active,Research+Development (OWNER commodity-sleeve mission),2026-07-20",
+    "magic_row": "20014,xng-month-ch3,0,XNGUSD.DWX,200140000,2026-07-20,Development,active",
+    "resolver_rows": 14951,
+    "magic_registry_sha256": "BC1E7CDD5A63155585F1A7B3CA5F177BFFDFDD200455BD30E845075491552CC5",
+    "resolver_registry_sha_match": true
+  },
+  "commits": [
+    "a0964570af1f25df0f89e18ea09bdcdd01976739",
+    "3c3edad346ea1d5db92e608c79872b48592a5503",
+    "bae5d56c968fb607dedc96e46d3ddb1fc86a07d0"
+  ],
+  "build_commit": "bae5d56c968fb607dedc96e46d3ddb1fc86a07d0",
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log": "C:/QM/repo/framework/build/compile/20260720_043703/QM5_20014_xng-month-ch3.compile.log",
+  "compile_log_sha256": "B62810A210F45F59812DD75A1AF948F6DD85CC3C90C5551E4FAF85258F88A6F8",
+  "compile_summary": "D:/QM/reports/compile/20260720_043703/summary.csv",
+  "build_check_passed": true,
+  "build_check_failures": 0,
+  "build_check_warnings": 0,
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260720_043703.json",
+  "build_check_report_sha256": "8EE10250090B016371C277606F10258F6F45FD32BD8902CA1DE2009F15784F7F",
+  "spec_validation": "PASS",
+  "guardrail_validation": "PASS",
+  "symbol_scope_validation": "SINGLE_SYMBOL_OK",
+  "card_schema_validation": "PASS",
+  "g0_card_validation": "PASS",
+  "setfile_build_hash": "ee65098fb58f66091f3e9ec50a5932d6e9ac13f96aed9d181e26435da5d4481a",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced-fleet scan found nine terminal64 and seven metatester64 processes active; no manual tester, dispatch tick, worker tick, optimization or backtest was started.",
+  "blocked_reason": null,
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "reputable_primary_source": true,
+    "manual_backtest_cpu_used": false
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_20014",
+    "enqueued": [
+      {
+        "work_item_id": "bf4b07c5-7e13-4cdf-8939-b8f99ab09fed",
+        "symbol": "XNGUSD.DWX",
+        "timeframe": "D1",
+        "status": "pending",
+        "attempt_count": 0,
+        "claimed_by": null,
+        "enqueued_at": "2026-07-20T04:40:09+00:00"
+      }
+    ],
+    "skipped": []
+  },
+  "q02": {
+    "phase": "Q02",
+    "work_item_id": "bf4b07c5-7e13-4cdf-8939-b8f99ab09fed",
+    "status_at_handoff": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "symbol": "XNGUSD.DWX",
+    "timeframe": "D1",
+    "enqueued_at_utc": "2026-07-20T04:40:09+00:00",
+    "note": "Auto-enqueued by farmctl record-build; not dispatched by this mission."
+  },
+  "open_questions": [
+    "The peer-reviewed source studies rolled commodity futures; Q02 must falsify transfer to the Darwinex continuous Natural Gas CFD proxy and the V5 ATR overlay.",
+    "Neither positive expectancy nor low realized correlation to the certified book is established by G0 or Q01."
+  ],
+  "file_hashes_sha256": {
+    "mq5": "4970F3529444C9AD54D69DC303CDD630062FE913BAEEF802E23C97A26D8A1438",
+    "ex5": "5ABCBF673527F61E0008CE5630E42BC11C22994935D32DFD6C857107977270A7",
+    "spec": "0DF096F6BD0EA9F21AFB9F0A3FA562B12C0CDB1E8600D0114CE6DD3C950244E4",
+    "embedded_card": "8BF2F37431E8E0242734535A560477C71E914540A996E88A58458FCE4F52788C",
+    "setfile": "83371E358FB390AE6C0F70142D1D5CB654B374ACABC2D21E07652A9C47B7F770",
+    "canonical_card": "8BF2F37431E8E0242734535A560477C71E914540A996E88A58458FCE4F52788C",
+    "approved_card": "8BF2F37431E8E0242734535A560477C71E914540A996E88A58458FCE4F52788C",
+    "source_packet": "49766F426A0C5D14DE32E7B81769DD8CDEA8EC9D12564F09718248172222C8C6",
+    "ea_registry": "9990D6BA92C234B27A877B7F859761DD6ECFC03441FEA30B9546ABD819B321B3",
+    "magic_registry": "BC1E7CDD5A63155585F1A7B3CA5F177BFFDFDD200455BD30E845075491552CC5",
+    "resolver": "C5C8DA28383030B87155CFA268B2F366755B487B77E1A9A4065BA17AE3650CA3"
+  }
+}

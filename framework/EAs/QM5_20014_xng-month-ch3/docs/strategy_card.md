@@ -239,12 +239,12 @@ T_Live manifest, portfolio admission or the portfolio gate.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-20 | initial source-backed XNG monthly CH3 build | Q02 | G0 approved; build/Q02 pending |
+| v1 | 2026-07-20 | initial source-backed XNG monthly CH3 build | Q02 | Q01 PASS; Q02 pending |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-20 | APPROVED under OWNER commodity-sleeve mission | this card |
-| Q01 Build Validation | 2026-07-20 | pending | `artifacts/qm5_20014_build_result.json` |
-| Q02 Baseline Screening | 2026-07-20 | pending enqueue | paced fleet; no manual dispatch |
+| Q01 Build Validation | 2026-07-20 | PASS: compile 0/0; build check 0/0 | `artifacts/qm5_20014_build_result.json` |
+| Q02 Baseline Screening | 2026-07-20 | pending, unclaimed; work item `bf4b07c5-7e13-4cdf-8939-b8f99ab09fed` | `docs/ops/evidence/2026-07-20_qm5_20014_xng_month_ch3_q02_enqueue.md` |
