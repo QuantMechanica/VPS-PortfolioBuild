@@ -132,6 +132,8 @@ class QM13210SourceContractTests(unittest.TestCase):
     def test_day_is_consumed_only_after_checked_order_acceptance(self) -> None:
         entry = function_body(EA, "Strategy_EntrySignal")
         on_tick = function_body(EA, "OnTick")
+        self.assertIn("bid >= g_entry_tp", entry)
+        self.assertIn("ask <= g_entry_tp", entry)
         self.assertNotIn("QM13210_ORDER_PLACED", entry)
         self.assertNotIn("g_entry_ready = false", entry)
         send = on_tick.index("QM_TM_OpenPosition(req, out_ticket)")

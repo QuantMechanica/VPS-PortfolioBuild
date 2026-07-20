@@ -702,8 +702,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
       return false;
-    if((g_sweep_direction > 0 && g_entry_price >= ask) ||
-       (g_sweep_direction < 0 && g_entry_price <= bid))
+   if((g_sweep_direction > 0 && bid >= g_entry_tp) ||
+      (g_sweep_direction < 0 && ask <= g_entry_tp))
+     {
+      QM13210_MarkSetupDone(); // target traded before the limit was submitted.
+      return false;
+     }
+   if((g_sweep_direction > 0 && g_entry_price >= ask) ||
+      (g_sweep_direction < 0 && g_entry_price <= bid))
       {
        QM13210_MarkSetupDone(); // midpoint already crossed; never chase at market.
        return false;
