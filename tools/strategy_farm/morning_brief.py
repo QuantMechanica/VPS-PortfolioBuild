@@ -774,19 +774,38 @@ def main() -> int:
         print(f"[dry-run] HTML {len(html_body)} bytes · NO mail sent · NO vault write")
         return 0
 
-    # Vault archive (timestamped HTML — scrollable off-VPS history).
+    # Mail first — the 06:00 delivery must never wait on the Drive mount.
+    result = send_mail(subject, text_body, html_body)
+    print(json.dumps({"subject": subject, **result}, indent=2))
+
+    # Vault archive (timestamped — scrollable off-VPS history). The per-user
+    # GoogleDriveFS mount can lag or drop in the non-interactive session
+    # (2026-07-20: the 04:45 backup and this 06:00 write hit the same outage
+    # window), and the scheduled task discards stdout — so wait for the mount
+    # and leave an on-disk trace either way instead of failing silently.
+    def _trace(msg: str) -> None:
+        line = f"{_utc_now().strftime('%Y-%m-%dT%H:%M:%SZ')} {msg}"
+        print(line)
+        try:
+            REPORTS_STATE.mkdir(parents=True, exist_ok=True)
+            with (REPORTS_STATE / "morning_brief.log").open("a", encoding="utf-8") as fh:
+                fh.write(line + "\n")
+        except Exception:
+            pass
+
+    deadline = time.monotonic() + 360.0
+    while not VAULT_DIR.parent.exists() and time.monotonic() < deadline:
+        time.sleep(20.0)
     try:
         VAULT_DIR.mkdir(parents=True, exist_ok=True)
         (VAULT_DIR / f"{data['date_iso']}_morning_brief.html").write_text(
             html_body, encoding="utf-8", newline="\n")
         (VAULT_DIR / f"{data['date_iso']}_morning_brief.md").write_text(
             text_body, encoding="utf-8", newline="\n")
-        print(f"vault archive written: {VAULT_DIR}")
+        _trace(f"vault archive written: {VAULT_DIR}")
     except Exception as exc:
-        print(f"vault write failed (non-fatal): {exc!r}")
+        _trace(f"VAULT_WRITE_FAILED (mail unaffected): {exc!r}")
 
-    result = send_mail(subject, text_body, html_body)
-    print(json.dumps({"subject": subject, **result}, indent=2))
     return 0 if result.get("sent") else 1
 
 
