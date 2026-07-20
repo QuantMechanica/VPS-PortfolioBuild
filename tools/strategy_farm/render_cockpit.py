@@ -1427,7 +1427,7 @@ def main() -> int:
 
     severity, msg = diagnose_bottleneck(procs, q, claude_workers, codex_workers)
 
-    # === HTML — STEEL / EMERALD ===
+    # === HTML — PAPER / INK (Direction C) ===
     now_utc_full = dt.datetime.now(dt.UTC).replace(tzinfo=None).strftime("%Y-%m-%d %H:%M:%SZ")
     now_local = dt.datetime.now().strftime("%H:%M:%S")
     # v7 freshness: embed the render epoch (ms) so a small client-side script can
@@ -2161,37 +2161,39 @@ def main() -> int:
     if not hb_warn_rows:
         hb_warn_rows.append(
             '<div class="hb-warn-row">'
-            '<span class="hb-warn-name" style="color:var(--signal)">NONE</span>'
+            '<span class="hb-warn-name" style="color:var(--pass)">NONE</span>'
             '<span class="hb-warn-detail">no health.json WARN checks</span>'
             '</div>'
         )
     hb_warns_html = "".join(hb_warn_rows)
 
-# ==== HTML assembly (STEEL/EMERALD brand · OWNER call 2026-05-23) ====
+# ==== HTML assembly (PAPER/INK Direction C · OWNER-DL 2026-07-20) ====
 
     # CSS lives outside the f-string to avoid brace-escaping.
     CSS = r"""
 :root {
-  --bg:            #020617;
-  --surface-1:     #060b18;
-  --surface-2:     #0f172a;
-  --surface-3:     #1e293b;
-  --text:          #f8fafc;
-  --text-2:        #cbd5e1;
-  --text-3:        #94a3b8;
-  --text-4:        #64748b;
-  --border:        rgba(148, 163, 184, 0.08);
-  --border-2:      rgba(148, 163, 184, 0.18);
-  --signal:        #10b981;
-  --signal-bright: #34d399;
-  --signal-dim:    #059669;
-  --pass:          #10b981;
-  --fail:          #ef4444;
-  --warn:          #f97316;
-  --info:          #cbd5e1;
-  --promising:     #f59e0b;
-  --dead:          #6b7280;
-  --live:          #06b6d4;
+  --bg:            #f6f5f2;
+  --surface-1:     #ffffff;
+  --surface-2:     #f1efe8;
+  --surface-3:     #e8e4d9;
+  --text:          #1c1a16;
+  --text-2:        #45403a;
+  --text-3:        #726b60;
+  --text-4:        #9a938a;
+  --border:        #e2ded4;
+  --border-2:      #cfc9bc;
+  --signal:        #2954d4;
+  --signal-bright: #1e42b8;
+  --signal-dim:    #5b7ade;
+  --pass:          #1a8f4c;
+  --fail:          #d13438;
+  --warn:          #b8720a;
+  --info:          #45403a;
+  --promising:     #8f6e06;
+  --dead:          #98918a;
+  --live:          #0e7490;
+  --profit:        #1a8f4c;
+  --loss:          #d13438;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; border-radius: 0 !important; }
 html, body {
@@ -2350,7 +2352,7 @@ body { padding: 32px; min-height: 100vh; }
 }
 .agent-limits .k { color: var(--text-3); font-size: 10px; letter-spacing: 0.12em; }
 .agent-limits .v { font-weight: 700; }
-.agent-limits .lim-ok { color: var(--signal); }
+.agent-limits .lim-ok { color: var(--pass); }
 .agent-limits .lim-warn { color: var(--warn); }
 .agent-limits .lim-crit { color: var(--fail); }
 .agent-limits .lim-reset { color: var(--text-3); font-size: 10px; }
@@ -2368,7 +2370,7 @@ body { padding: 32px; min-height: 100vh; }
   text-transform: uppercase; color: var(--text-3);
 }
 .watchdog-row .wval { color: var(--text-2); }
-.watchdog-row.wd-ok .wval { color: var(--signal); }
+.watchdog-row.wd-ok .wval { color: var(--pass); }
 .watchdog-row.wd-warn .wval { color: var(--warn); }
 .watchdog-row.wd-crit .wval { color: var(--fail); font-weight: 700; }
 .agent-fleet { padding: 16px 20px 18px; border-bottom: none; }
@@ -2557,7 +2559,7 @@ a.frontier-tile:hover { background: var(--surface-2); }
   font-size: 22px; font-weight: 500; color: var(--text); line-height: 1.05;
 }
 .frontier-tile .f-val.hot { color: var(--live); }
-.frontier-tile .f-val.ok { color: var(--signal); }
+.frontier-tile .f-val.ok { color: var(--pass); }
 .frontier-tile .f-val.warn { color: var(--warn); }
 .frontier-tile .f-val.alert { color: var(--fail); }
 .frontier-tile .f-sub {
@@ -2598,7 +2600,7 @@ a.frontier-tile:hover { background: var(--surface-2); }
 }
 .nbf-row:last-child { border-bottom: none; }
 .nbf-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
-.nbf-row.pass .nbf-tag { color: var(--signal); }
+.nbf-row.pass .nbf-tag { color: var(--pass); }
 .nbf-row.inflight .nbf-tag { color: var(--warn); }
 .nbf-ea { color: var(--text); font-weight: 600; }
 .nbf-sym { color: var(--text-2); }
@@ -2625,7 +2627,7 @@ a.frontier-tile:hover { background: var(--surface-2); }
   font-size: 10px; color: var(--text-4); margin-top: 6px;
   letter-spacing: 0.06em; text-transform: uppercase;
 }
-.hb-tile.hb-ok .hb-age   { color: var(--signal); }
+.hb-tile.hb-ok .hb-age   { color: var(--pass); }
 .hb-tile.hb-warn .hb-age { color: var(--warn); }
 .hb-tile.hb-crit .hb-age { color: var(--fail); }
 .hb-tile.hb-miss .hb-age { color: var(--text-4); }
