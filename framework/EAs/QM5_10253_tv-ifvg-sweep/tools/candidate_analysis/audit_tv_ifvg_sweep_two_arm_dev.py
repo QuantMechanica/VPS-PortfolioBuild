@@ -1324,6 +1324,7 @@ def run_analysis(data_root: Path, news_path: Path) -> dict[str, Any]:
             "issues": integrity_issues,
             "future_ohlc_parsed": any(future_flags.values()),
             "future_ohlc_parsed_by_symbol": future_flags,
+            "tool_sha256": sha256_file(TOOL_PATH),
             "source_bindings": bindings,
         },
         "market_slices": {
