@@ -1,8 +1,9 @@
 #property strict
-#property version   "5.0"
-#property description "QM5_1224 White-Okunev FX Cross-Sectional MA Momentum"
+#property version   "5.1"
+#property description "QM5_1224 White-Okunev FX Cross-Sectional MA Momentum Basket"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_BasketOrder.mqh>
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                    = 1224;
@@ -46,9 +47,8 @@ string g_symbols[7] =
    "USDCAD.DWX", "USDCHF.DWX", "USDJPY.DWX"
   };
 
-int g_last_entry_rebalance_key = 0;
-int g_last_exit_rebalance_key  = 0;
-int g_last_kill_rebalance_key  = 0;
+int g_last_rebalance_key      = 0;
+int g_last_kill_rebalance_key = 0;
 
 int Strategy_CurrentSymbolIndex()
   {
@@ -92,24 +92,54 @@ bool Strategy_IsRebalanceClosedBar()
    return (closed_dt.mon != current_dt.mon || closed_dt.year != current_dt.year);
   }
 
-bool Strategy_HasOpenPosition()
+int Strategy_SlotForSymbol(const string symbol)
   {
-   const int magic = QM_FrameworkMagic();
+   for(int i = 0; i < STRATEGY_UNIVERSE_SIZE; ++i)
+      if(g_symbols[i] == symbol)
+         return i;
+   return -1;
+  }
+
+int Strategy_PairDirection(const int slot, const int foreign_currency_direction)
+  {
+   if(slot < 0 || slot >= STRATEGY_UNIVERSE_SIZE || foreign_currency_direction == 0)
+      return 0;
+   return Strategy_IsUsdBaseSymbol(g_symbols[slot])
+          ? -foreign_currency_direction
+          : foreign_currency_direction;
+  }
+
+bool Strategy_HasOpenPosition(const int slot, const int direction = 0)
+  {
+   if(slot < 0 || slot >= STRATEGY_UNIVERSE_SIZE)
+      return false;
+
+   const int magic = QM_Magic(qm_ea_id, slot);
+   if(magic <= 0)
+      return false;
+
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
       if(ticket == 0 || !PositionSelectByTicket(ticket))
          continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+      if(PositionGetString(POSITION_SYMBOL) != g_symbols[slot])
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
+      if(direction != 0)
+        {
+         const long position_type = PositionGetInteger(POSITION_TYPE);
+         const int position_direction = (position_type == POSITION_TYPE_BUY) ? 1 : -1;
+         if(position_direction != direction)
+            continue;
+        }
       return true;
      }
    return false;
   }
 
-double Strategy_MedianDailySpreadPoints()
+double Strategy_MedianDailySpreadPoints(const string symbol)
   {
    const int n = strategy_spread_days;
    if(n <= 0 || n > 64)
@@ -119,7 +149,7 @@ double Strategy_MedianDailySpreadPoints()
    int count = 0;
    for(int shift = 1; shift <= n; ++shift)
      {
-      const long spread = iSpread(_Symbol, PERIOD_D1, shift);
+      const long spread = iSpread(symbol, PERIOD_D1, shift);
       if(spread <= 0)
          continue;
       values[count] = (double)spread;
@@ -143,13 +173,13 @@ double Strategy_MedianDailySpreadPoints()
    return 0.5 * (values[(count / 2) - 1] + values[count / 2]);
   }
 
-bool Strategy_SpreadAllowsEntry()
+bool Strategy_SpreadAllowsEntry(const string symbol)
   {
-   const double median_spread = Strategy_MedianDailySpreadPoints();
+   const double median_spread = Strategy_MedianDailySpreadPoints(symbol);
    if(median_spread <= 0.0 || strategy_spread_mult <= 0.0)
       return true;
 
-   const long current_spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+   const long current_spread = SymbolInfoInteger(symbol, SYMBOL_SPREAD);
    if(current_spread <= 0)
       return true;
    return ((double)current_spread <= median_spread * strategy_spread_mult);
@@ -160,19 +190,18 @@ double Strategy_SmaClose(const string symbol, const int period)
    if(period <= 0 || period > 512)
       return 0.0;
 
-   double sum = 0.0;
-   int count = 0;
-   for(int shift = 1; shift <= period; ++shift)
-     {
-      const double close = iClose(symbol, PERIOD_D1, shift);
-      if(close <= 0.0)
-         return 0.0;
-      sum += close;
-      ++count;
-     }
-
-   if(count != period)
+   double closes[];
+   ArrayResize(closes, period);
+   if(CopyClose(symbol, PERIOD_D1, 1, period, closes) != period)
       return 0.0;
+
+   double sum = 0.0;
+   for(int i = 0; i < period; ++i)
+     {
+      if(closes[i] <= 0.0)
+         return 0.0;
+      sum += closes[i];
+     }
    return sum / (double)period;
   }
 
@@ -199,11 +228,10 @@ bool Strategy_SymbolScore(const string symbol, double &out_score)
    return true;
   }
 
-int Strategy_RankDirectionForSymbol(const int exit_band)
+bool Strategy_RankDirections(int &entry_directions[], int &exit_directions[])
   {
-   const int current_index = Strategy_CurrentSymbolIndex();
-   if(current_index < 0)
-      return 0;
+   ArrayInitialize(entry_directions, 0);
+   ArrayInitialize(exit_directions, 0);
 
    double scores[7];
    int indexes[7];
@@ -219,7 +247,7 @@ int Strategy_RankDirectionForSymbol(const int exit_band)
      }
 
    if(count < 5)
-      return 0;
+      return false;
 
    for(int i = 0; i < count - 1; ++i)
       for(int j = i + 1; j < count; ++j)
@@ -233,18 +261,15 @@ int Strategy_RankDirectionForSymbol(const int exit_band)
             indexes[j] = tmp_index;
            }
 
-   const int band = MathMin(MathMax(exit_band, 1), count / 2);
-   int foreign_ccy_direction = 0;
+   const int band = MathMin(MathMax(strategy_exit_rank_band, 1), count / 2);
    for(int i = 0; i < band; ++i)
-      if(indexes[i] == current_index)
-         foreign_ccy_direction = -1;
+      exit_directions[indexes[i]] = Strategy_PairDirection(indexes[i], -1);
    for(int i = count - band; i < count; ++i)
-      if(indexes[i] == current_index)
-         foreign_ccy_direction = 1;
+      exit_directions[indexes[i]] = Strategy_PairDirection(indexes[i], 1);
 
-   if(foreign_ccy_direction == 0)
-      return 0;
-   return Strategy_IsUsdBaseSymbol(g_symbols[current_index]) ? -foreign_ccy_direction : foreign_ccy_direction;
+   entry_directions[indexes[0]] = Strategy_PairDirection(indexes[0], -1);
+   entry_directions[indexes[count - 1]] = Strategy_PairDirection(indexes[count - 1], 1);
+   return true;
   }
 
 double Strategy_OpenBasketProfit()
