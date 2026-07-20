@@ -42,7 +42,7 @@
     "framework/EAs/QM5_10729_tv-smc-mss-fvg/QM5_10729_tv-smc-mss-fvg.mq5": "b25a0587d7b2efe427c034ff9df89aa0bb3e710af5244ae86f394db20fc05dd2",
     "framework/EAs/QM5_10729_tv-smc-mss-fvg/SPEC.md": "17b400250e3f01b56b5948acef0362ef49ddb8345d6618c6314f7406b6a8a299",
     "framework/EAs/QM5_10729_tv-smc-mss-fvg/docs/candidate-analysis/primary_source_pine_v1.pine": "7e49ecdd3f7d078773b7f29b500e40e12ba81984bbbaa1c9c508d69da1e599bb",
-    "framework/EAs/QM5_10729_tv-smc-mss-fvg/docs/candidate-analysis/tv_smc_mss_fvg_primary_source_evidence.json": "d9b39b7892710e93c988e44596c24385858ada9db2345c559fd350b31d75660b",
+    "framework/EAs/QM5_10729_tv-smc-mss-fvg/docs/candidate-analysis/tv_smc_mss_fvg_primary_source_evidence.json": "99e0bd76d67a7da0dcef5889c687206ec0507001ec277aa922b537543ae14163",
     "framework/EAs/QM5_10729_tv-smc-mss-fvg/docs/candidate-analysis/tv_smc_mss_fvg_spread_input_snapshot.json": "a173ecb79a0b676c8b518e8aea3cb9af26385dc13b0eb8339e43b9f5ef06ce33",
     "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/audit_mt5_report.py": "c9dc5106383073b50150f0edb091338181dc53470615839fb252f5bc96a46c03",
     "framework/Include/QM/QM_DSTAware.mqh": "e5a78c1097ff3622f9066acc25fac41228f049853bca31b19c599e92dc61472f",
@@ -104,8 +104,9 @@
       "ohlcv": "open=first open; high=max three highs; low=min three lows; close=last close; tick_volume=sum three tick volumes.",
       "causality": "The derived M15 bar becomes available only at bucket_open+900 seconds."
     },
-    "session_day_integrity": "A symbol/session/day is eligible only if every expected M15 bar-open timestamp from the session start through end-minus-15-minutes exists. This is a timestamp-only data-quality rule. Ineligible sessions generate no signals and cannot open or carry a position.",
-    "missing_bar_rule": "Do not synthesize bars. Outside an eligible session, pivot state advances on each available completed M15 bar exactly as a chart would; gaps do not reset pivot state."
+    "causal_bar_eligibility": "Never inspect later timestamps to admit or suppress an earlier signal. Each currently completed direct or derived M15 bar is evaluated using only state and data available through its close.",
+    "forced_flat_boundary_integrity": "If a position remains open for a scheduled session/Friday flat, the exact final M15 bar ending at that boundary must exist. If it does not, the entire run is INTEGRITY_FAIL with no merit verdict; do not retroactively suppress the earlier trade, substitute a stale/future price or invent swap.",
+    "missing_bar_rule": "Do not synthesize bars. An incomplete EURUSD derived bucket emits no M15 bar. Pivot state advances on each available completed M15 bar exactly as a chart would; timestamp gaps do not reset state and do not trigger a future-completeness entry filter."
   },
   "clock_and_session_contract": {
     "source_timezone": "America/New_York",
@@ -148,14 +149,14 @@
       "current low < lastLow and current close > lastLow.",
       "current close > immediately prior M15 bar high.",
       "current low > high two M15 bars earlier.",
-      "current bar-open is inside an eligible source session and all execution/news gates pass."
+      "current bar-open is inside a source session and all execution/news gates pass."
     ],
     "short_same_bar": [
       "lastHigh is available after the current bar's pivot update.",
       "current high > lastHigh and current close < lastHigh.",
       "current close < immediately prior M15 bar low.",
       "current high < low two M15 bars earlier.",
-      "current bar-open is inside an eligible source session and all execution/news gates pass."
+      "current bar-open is inside a source session and all execution/news gates pass."
     ],
     "strictness": "All structural inequalities are strict, exactly as the Pine operators. No epsilon, point tolerance, displacement-size threshold, trend bias, order block, FVG retest, delayed FVG arm or parameterized lookback is added.",
     "signal_funnel_required": [
@@ -164,17 +165,17 @@
       "raw same-bar MSS by direction",
       "raw same-bar FVG by direction",
       "complete source signal by direction/session/symbol",
-      "rejected incomplete-session",
       "rejected final-session-bar",
       "rejected Friday cutoff",
       "rejected news overlap",
       "ignored while position open",
       "invalid risk",
-      "filled"
+      "filled",
+      "run-level integrity failure for a missing required flat-boundary bar"
     ]
   },
   "execution_overlay": {
-    "bridge_limit": "This is an exact port of Pine v1 entry primitives and ordering on the publication-chart M15 context. Fixed-risk sizing, bid/ask execution, USD news compliance, Friday close and card-required session-end flat are explicit V5 research overlays because Pine does not implement them.",
+    "bridge_limit": "This is an exact port of Pine v1 entry primitives and ordering on the publication-chart M15 context. Fixed-risk sizing, bid/ask execution, bound per-symbol currency news compliance, Friday close and card-required session-end flat are explicit V5 research overlays because Pine does not implement them.",
     "position_state": "At most one open position per symbol. No pending orders and no pyramiding. A signal while that symbol has a position is counted but ignored; it is neither queued nor used to reverse.",
     "cross_symbol_concurrency": "XAUUSD.DWX and EURUSD.DWX may each hold one position simultaneously, so maximum initial portfolio risk is 2R = USD 2000.",
     "spread_prices": "Input OHLC is bid. For a fixed scenario spread s, ask open/high/low/close equals bid open/high/low/close plus s.",
@@ -228,7 +229,11 @@
     "source_priority": "EURUSD uses max(DXZ EUR2.50 converted at each deal price, FTMO USD2.50) per side from the bound auditor/venue registry. XAU uses the exact conservative 0.0025 percent notional per side from the tester Groups and venue registry."
   },
   "news_contract": {
-    "affected_currency": "USD for EURUSD.DWX and XAUUSD.DWX",
+    "affected_event_currencies_by_symbol": {
+      "EURUSD.DWX": ["EUR", "USD"],
+      "XAUUSD.DWX": ["USD"]
+    },
+    "global_fail_closed_tokens": "An empty event currency or ALL affects both symbols, matching QM_NewsEventAffectsSymbol. For XAUUSD, a literal XAU token would also match the normalized base but is not expected in the bound macro calendar.",
     "calendar_path": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv",
     "calendar_sha256": "8e898ca1c4aed5fbc4cbe43fc176e8d8595c2e6f5f05c2984c2468527d4f5b0d",
     "minimum_impact": "high",
@@ -253,7 +258,7 @@
     },
     {
       "id": "D04_PIVOT_TIES",
-      "observation": "The committed EA accepts equal neighbor extrema. Official Pine documentation describes lower highs/higher lows on both sides; this contract requires strict uniqueness and records ties as no pivot."
+      "observation": "The committed EA accepts equal neighbor extrema. TradingView's official Operators page (https://www.tradingview.com/pine-script-docs/language/operators/) says ta.pivothigh(5,5) requires five lower highs on both sides; the mirrored pivot-low rule requires higher lows. This contract therefore requires strict uniqueness and records ties as no pivot."
     },
     {
       "id": "D05_SESSION_EXIT",
@@ -269,7 +274,7 @@
     },
     {
       "id": "D08_EUR_M15_TRANSPORT",
-      "observation": "No frozen EURUSD.DWX_M15 CSV exists at the export path. EURUSD M15 is deterministically aggregated from bound M5 rows; incomplete buckets and sessions are rejected without interpolation."
+      "observation": "No frozen EURUSD.DWX_M15 CSV exists at the export path. EURUSD M15 is deterministically aggregated from bound M5 rows; incomplete buckets emit no bar and are never interpolated. No later session-completeness lookahead suppresses an earlier signal; a missing required flat-boundary bar fails the run."
     },
     {
       "id": "D09_SPREAD_LIMIT",
