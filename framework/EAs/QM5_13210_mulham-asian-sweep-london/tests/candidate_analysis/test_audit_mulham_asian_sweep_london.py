@@ -413,6 +413,8 @@ def test_persisted_s4u_task_contract_and_timeout() -> None:
     assert "$beforeLastRunUtc" in helper
     assert "$newInvocationObserved" in helper
     assert "-gt $beforeLastRunUtc" in helper
+    assert "'Identity', 'Probe', 'Register', 'Inspect', 'Start'" in helper
+    assert "exists = $false" in helper
     pre = {"plan": {"cells": [{"cell_id": row.cell_id} for row in subject.WINDOWS]}}
     assert subject.cell_outer_timeout_seconds() == 59_400
     assert subject.required_scheduled_task_timeout(pre) == 241_200
@@ -512,6 +514,128 @@ def test_launch_persists_only_safe_scheduler_metadata(
     ]
     assert state["launches"][0].get("worker_pid") is None
     assert state["launches"][0]["reason"] == "TASK_NOT_RUNNING_AND_OUTCOME_FENCE_CLEAR"
+
+
+def test_explicit_resume_recovers_only_the_outcome_free_orphan_job_gap(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    run_root = tmp_path / "orphan-run"
+    pre_path = tmp_path / "pre.json"
+    authorization_path = tmp_path / "authorization.json"
+    state_path = run_root / "launch_state.json"
+    job_path = run_root / "launch_job.json"
+    pre_sha = "e" * 64
+    dummy_binding = {
+        "path": str(tmp_path / "bound.file"),
+        "size": 1,
+        "sha256": "f" * 64,
+    }
+    bindings = {
+        "tool": dict(dummy_binding),
+        "scheduled_task_helper": dict(dummy_binding),
+        "python": dict(dummy_binding),
+        "powershell": dict(dummy_binding),
+        "runner": dict(dummy_binding),
+        "set": dict(dummy_binding),
+    }
+    pre = {
+        "run_root": str(run_root.resolve()),
+        "bindings": bindings,
+        "plan": subject.build_plan("EURUSD.DWX", bindings["set"], run_root),
+    }
+    authorization = {
+        "binding": {
+            "path": str(authorization_path.resolve()),
+            "size": 1,
+            "sha256": "1" * 64,
+        },
+        "payload_sha256": "2" * 64,
+        "payload": {},
+    }
+    calls: list[str] = []
+
+    monkeypatch.setattr(subject, "assert_pre_receipt", lambda *_args: pre)
+    monkeypatch.setattr(subject, "validate_current_research_gate", lambda *_args: None)
+    monkeypatch.setattr(
+        subject, "validate_authorization", lambda *_args, **_kwargs: authorization
+    )
+
+    def fake_scheduler(
+        _pre: object, operation: str, _job: object | None = None
+    ) -> dict[str, object]:
+        calls.append(operation)
+        if operation == "Identity":
+            return {"principal_sid": "S-1-5-21-13210"}
+        if operation == "Probe":
+            return {"exists": False, "state": "Absent"}
+        return {"exists": True, "state": "Running" if operation == "Start" else "Ready"}
+
+    monkeypatch.setattr(subject, "_scheduler_call", fake_scheduler)
+    real_atomic_json = subject.atomic_json
+
+    def crash_between_job_and_state(
+        path: Path, payload: object, *, replace: bool
+    ) -> str:
+        if Path(path).resolve() == state_path.resolve():
+            raise OSError("simulated death between job and state")
+        return real_atomic_json(path, payload, replace=replace)
+
+    monkeypatch.setattr(subject, "atomic_json", crash_between_job_and_state)
+    with pytest.raises(OSError, match="between job and state"):
+        subject.launch_persistent_task(
+            pre_path,
+            pre_sha,
+            authorization_path,
+            state_path,
+            resume=False,
+        )
+    assert job_path.is_file()
+    assert not state_path.exists()
+    assert calls == ["Identity"]
+
+    monkeypatch.setattr(subject, "atomic_json", real_atomic_json)
+    with pytest.raises(subject.AuthorizationError, match="explicit --resume"):
+        subject.launch_persistent_task(
+            pre_path,
+            pre_sha,
+            authorization_path,
+            state_path,
+            resume=False,
+        )
+
+    unexpected = run_root / "unexpected.log"
+    unexpected.write_text("must fail closed", encoding="utf-8")
+    with pytest.raises(subject.AuthorizationError, match="otherwise empty run root"):
+        subject.launch_persistent_task(
+            pre_path,
+            pre_sha,
+            authorization_path,
+            state_path,
+            resume=True,
+        )
+    unexpected.unlink()
+
+    recovered = subject.launch_persistent_task(
+        pre_path,
+        pre_sha,
+        authorization_path,
+        state_path,
+        resume=True,
+    )
+    assert recovered["status"] == "RESUMED_PERSISTED_TASK"
+    assert calls == ["Identity", "Probe", "Register", "Inspect", "Start"]
+    state = subject.load_json(state_path)
+    assert state["orphan_job_recovery"]["status"] == (
+        "RECOVERED_PREOUTCOME_ATOMIC_WRITE_GAP"
+    )
+    assert state["orphan_job_recovery"]["task_absence_proved"] is True
+    assert [row["status"] for row in state["launches"]] == [
+        "ABANDONED_PRESTART",
+        "START_REQUESTED",
+    ]
+    assert state["launches"][0]["reason"] == (
+        "ORPHAN_JOB_RECOVERED_WITHOUT_STATE_TASK_OR_ARTIFACTS"
+    )
 
 
 def test_resume_rejects_completed_or_outcome_bearing_cells(tmp_path: Path) -> None:
