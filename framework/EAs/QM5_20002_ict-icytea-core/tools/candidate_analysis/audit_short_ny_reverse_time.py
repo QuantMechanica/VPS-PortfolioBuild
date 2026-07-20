@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import bisect
+import copy
 import csv
 import hashlib
 import importlib.util
@@ -126,9 +127,95 @@ RUNTIME_ROLES = {
     "scheduled_task_helper": SCHEDULED_TASK_HELPER_PATH,
 }
 
-LAUNCHER_REVISION = 2
+LAUNCHER_REVISION = 3
 SCHEDULED_TASK_PREFIX = "QM_QM20002_AUDIT_"
 MAX_SCHEDULED_TASK_SECONDS = 777600
+
+LAUNCH_STATE_FIELDS = frozenset(
+    {
+        "schema_version",
+        "launcher_revision",
+        "artifact_type",
+        "analysis_id",
+        "status",
+        "created_utc",
+        "updated_utc",
+        "started_utc",
+        "finished_utc",
+        "worker_pid",
+        "job",
+        "pre_receipt_path",
+        "pre_receipt_sha256",
+        "authorization",
+        "scheduler",
+        "resume_count",
+        "active_cell",
+        "outcome_possible_since_utc",
+        "cells",
+        "terminal",
+    }
+)
+ACTIVE_CELL_FIELDS = frozenset(
+    {"cell_id", "attempt_number", "command_sha256", "started_utc", "status"}
+)
+CELL_RECORD_FIELDS = frozenset({"cell_id", "status", "attempts"})
+ATTEMPT_FIELDS = frozenset(
+    {
+        "attempt_number",
+        "status",
+        "started_utc",
+        "finished_utc",
+        "command_sha256",
+        "outcome_fence_crossed",
+        "no_resume",
+        "runner_exit_code",
+        "runner_result",
+        "stdout",
+        "stderr",
+        "summary",
+        "run_artifacts",
+        "failure_stage",
+        "controller_failure_class",
+        "error_type",
+        "error",
+    }
+)
+TERMINAL_ERROR_FIELDS = frozenset(
+    {
+        "status",
+        "error_type",
+        "error",
+        "failure_stage",
+        "affected_cell_id",
+        "outcome_fence_crossed",
+        "no_resume",
+        "controller_failure_class",
+    }
+)
+BINDING_FIELDS = frozenset({"path", "size", "sha256"})
+RUN_ARTIFACT_FIELDS = frozenset({"run", "report", "tester_log", "tester_ini"})
+FAILURE_STAGES = frozenset(
+    {
+        "WORKER_VALIDATION",
+        "RUNNING_STATE_PERSIST",
+        "OUTCOME_FENCE_PERSISTED",
+        "RUNNER_RETURNED",
+        "RUNNER_STREAMS_PARTIALLY_BOUND",
+        "RUNNER_STREAMS_BOUND",
+        "RUNNER_RESULT_PARSED",
+        "SUMMARY_BOUND",
+        "RUN_ARTIFACTS_BOUND",
+        "CELL_STATE_PERSIST",
+        "FINAL_STATE_PERSIST",
+    }
+)
+CONTROLLER_FAILURE_CLASSES = frozenset(
+    {
+        "RUNNER_CREDENTIAL_CLIXML_CRYPTOGRAPHIC_FAILURE_BEFORE_JSON",
+        "RUNNER_EMPTY_STDOUT_NO_JSON",
+        "RUNNER_MALFORMED_STDOUT_NO_JSON",
+    }
+)
 
 
 class AuditError(RuntimeError):
