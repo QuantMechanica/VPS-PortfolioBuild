@@ -38,6 +38,17 @@ def test_contract_v3_binds_source_corrections_news_and_fill_invalid_gate() -> No
     ] is True
 
 
+@pytest.mark.parametrize("encoding", ["utf-8", "utf-8-sig", "utf-16", "utf-32"])
+def test_compile_log_decoder_accepts_metaeditor_bom_formats(encoding: str) -> None:
+    text = "Result: 0 errors, 0 warnings\r\n"
+    assert subject.decode_compile_log(text.encode(encoding)) == text
+
+
+def test_compile_log_decoder_rejects_unsupported_bytes() -> None:
+    with pytest.raises(subject.PreflightError, match="encoding unsupported"):
+        subject.decode_compile_log(b"\x80\x81\x82")
+
+
 def test_four_cell_plan_is_exact_and_model4() -> None:
     contract = subject.load_contract()
     cells, _ = subject.validate_sets(contract)

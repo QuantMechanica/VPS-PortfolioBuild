@@ -540,6 +540,19 @@ def _csv_rows(path: Path) -> tuple[list[dict[str, str]], list[str]]:
         return [dict(row) for row in reader], fields
 
 
+def decode_compile_log(raw: bytes) -> str:
+    if raw.startswith((b"\xff\xfe\x00\x00", b"\x00\x00\xfe\xff")):
+        encoding = "utf-32"
+    elif raw.startswith((b"\xff\xfe", b"\xfe\xff")):
+        encoding = "utf-16"
+    else:
+        encoding = "utf-8-sig"
+    try:
+        return raw.decode(encoding)
+    except UnicodeDecodeError as exc:
+        raise PreflightError(f"compile log encoding unsupported: {encoding}") from exc
+
+
 def validate_compile_evidence(path: Path, contract: Mapping[str, Any]) -> dict[str, Any]:
     evidence_binding = file_binding(path)
     evidence = load_json(path)
@@ -583,9 +596,7 @@ def validate_compile_evidence(path: Path, contract: Mapping[str, Any]) -> dict[s
         raise PreflightError("compile repo EX5 path drift")
     if artifacts["repo_ex5"]["sha256"] != artifacts["stage_ex5"]["sha256"]:
         raise PreflightError("staged/repository EX5 mismatch")
-    compile_log = Path(artifacts["compile_log"]["path"]).read_text(
-        encoding="utf-8-sig", errors="replace"
-    )
+    compile_log = decode_compile_log(Path(artifacts["compile_log"]["path"]).read_bytes())
     if not re.search(r"Result:\s*0 errors,\s*0 warnings", compile_log, re.IGNORECASE):
         raise PreflightError("compile log lacks exact 0 errors / 0 warnings result")
     source_rows, source_fields = _csv_rows(Path(artifacts["source_manifest"]["path"]))
