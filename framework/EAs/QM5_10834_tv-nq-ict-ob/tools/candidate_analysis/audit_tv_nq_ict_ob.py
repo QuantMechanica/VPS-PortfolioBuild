@@ -85,6 +85,13 @@ RUNNER_PATH = REPO_ROOT / "framework" / "scripts" / "run_dev2_smoke.ps1"
 RUNNER_CHILD_PATH = REPO_ROOT / "framework" / "scripts" / "invoke_dev2_smoke_task.ps1"
 RUN_SMOKE_PATH = REPO_ROOT / "framework" / "scripts" / "run_smoke.ps1"
 DEV2_LANE_CONTRACT_PATH = REPO_ROOT / "framework" / "registry" / "dev2_lane_contract.json"
+TESTER_GROUPS_CANONICAL_PATH = (
+    REPO_ROOT
+    / "framework"
+    / "registry"
+    / "tester_groups"
+    / "Darwinex-Live_real.canonical.txt"
+)
 INFRA_RETRY_CONTRACT_PATH = (
     EA_ROOT / "docs" / "candidate-analysis" / "infra_retry_contract_20260720.json"
 )
@@ -101,6 +108,10 @@ EXECUTION_TERMINAL = "DEV2"
 TERMINAL_ROOT = Path(r"D:\QM\mt5\DEV2")
 TERMINAL_INCLUDE_ROOT = TERMINAL_ROOT / "MQL5" / "Include"
 TERMINAL_DATA_ROOT = TERMINAL_ROOT / "Bases" / "Custom"
+TERMINAL_SYMBOL_DATABASE_PATH = TERMINAL_ROOT / "Bases" / "symbols.custom.dat"
+TESTER_GROUPS_DEV2_PATH = (
+    TERMINAL_ROOT / "MQL5" / "Profiles" / "Tester" / "Groups" / "Darwinex-Live_real.txt"
+)
 DEV2_RUNS_ROOT = Path(r"D:\QM\reports\dev2\runs")
 POWERSHELL_PATH = Path(r"C:\Program Files\PowerShell\7\pwsh.exe")
 ALLOWED_RUN_ROOT = Path(r"D:\QM\reports\candidate_analysis\QM5_10834")
@@ -172,6 +183,9 @@ REQUIRED_BINDING_ROLES = frozenset(
         "runner_child",
         "runner_smoke",
         "dev2_lane_contract",
+        "tester_groups_canonical",
+        "tester_groups_dev2",
+        "dev2_symbol_database",
         "infra_retry_contract",
         "report_parser",
         "powershell",
@@ -1227,6 +1241,7 @@ def execution_contract() -> dict[str, Any]:
         "terminal": EXECUTION_TERMINAL,
         "terminal_root": str(TERMINAL_ROOT.resolve()),
         "terminal_data_root": str(TERMINAL_DATA_ROOT.resolve()),
+        "terminal_symbol_database": str(TERMINAL_SYMBOL_DATABASE_PATH.resolve()),
         "native_runs_root": str(DEV2_RUNS_ROOT.resolve()),
         "controller": "ISOLATED_DEV2_SCHEDULED_TASK_LANE",
         "controller_mutex": "Global\\QM_DEV2_SMOKE_CONTROLLER",
@@ -1288,6 +1303,9 @@ def _expected_binding_paths(symbol: str) -> dict[str, Path]:
         "runner_child": RUNNER_CHILD_PATH,
         "runner_smoke": RUN_SMOKE_PATH,
         "dev2_lane_contract": DEV2_LANE_CONTRACT_PATH,
+        "tester_groups_canonical": TESTER_GROUPS_CANONICAL_PATH,
+        "tester_groups_dev2": TESTER_GROUPS_DEV2_PATH,
+        "dev2_symbol_database": TERMINAL_SYMBOL_DATABASE_PATH,
         "infra_retry_contract": INFRA_RETRY_CONTRACT_PATH,
         "report_parser": REPORT_CORE_PATH,
         "powershell": POWERSHELL_PATH,
@@ -1316,6 +1334,8 @@ def preflight(
     if run_root.exists() and any(run_root.iterdir()):
         raise InvalidEvidence(f"run root is not empty: {run_root}")
     bindings = _binding_map(symbol)
+    if bindings["tester_groups_dev2"]["sha256"] != bindings["tester_groups_canonical"]["sha256"]:
+        raise InvalidEvidence("DEV2 tester groups are not canonical before PRE")
     card_text = CARD_PATH.read_text(encoding="utf-8-sig")
     if "ea_id: QM5_10834" not in card_text or "g0_status: APPROVED" not in card_text:
         raise InvalidEvidence("approved Card identity/status drift")
@@ -2088,13 +2108,12 @@ def validate_dev2_controller_result(
     }
     if drift:
         raise InvalidEvidence(f"DEV2 controller runtime binding drift: {drift}")
+    expected_group_hash = bindings["tester_groups_canonical"]["sha256"]
     group_hashes = {
         str(result.get("tester_groups_post_child_sha256", "")).lower(),
         str(result.get("tester_groups_restored_sha256", "")).lower(),
     }
-    if len(group_hashes) != 1 or not next(iter(group_hashes), "") or not re.fullmatch(
-        r"[0-9a-f]{64}", next(iter(group_hashes), "")
-    ):
+    if group_hashes != {expected_group_hash}:
         raise InvalidEvidence("DEV2 tester-groups restore proof drift")
     return run_id
 
@@ -2208,6 +2227,8 @@ def _worker_run(job_path: Path) -> int:
                 "command_sha256": canonical_sha256(command),
                 "summary": None,
                 "outcome_artifacts": [],
+                "native_root": None,
+                "runner_result": None,
             }
             state_cell["status"] = "RUNNING"
             state_cell["attempts"].append(attempt)
@@ -2238,23 +2259,34 @@ def _worker_run(job_path: Path) -> int:
             attempt["exit_code"] = int(completed.returncode)
             attempt["stdout"] = file_binding(stdout_path)
             attempt["stderr"] = file_binding(stderr_path)
-            summaries = list(output_root.rglob("summary.json"))
-            outcome_files = [
-                path
-                for path in _outcome_artifact_paths(output_root)
-                if path.name.casefold() != "summary.json"
-            ]
-            if len(summaries) == 1:
-                attempt["summary"] = file_binding(summaries[0])
-            attempt["outcome_artifacts"] = [file_binding(path) for path in sorted(outcome_files)]
-            if completed.returncode != 0 or len(summaries) != 1:
+            if completed.returncode != 0:
                 state_cell["status"] = "INVALID_TERMINAL_OUTPUT"
                 state["status"] = "INVALID_TERMINAL"
                 state["worker_pid"] = None
                 state["updated_utc"] = utc_now()
                 atomic_json(state_path, state, replace=True)
                 return 2
-            attempt["sealed_artifacts"] = _opaque_artifacts(output_root)
+            runner_result = _parse_last_json(
+                stdout_path.read_text(encoding="utf-8-sig", errors="replace")
+            )
+            run_id = validate_dev2_controller_result(runner_result, pre)
+            native_root = _dev2_native_root(run_id)
+            summary_path = _find_dev2_summary(run_id)
+            outcome_files = [
+                path
+                for path in _outcome_artifact_paths(native_root)
+                if path.name.casefold() != "summary.json"
+            ]
+            attempt["runner_result"] = runner_result
+            attempt["native_root"] = str(native_root)
+            attempt["summary"] = file_binding(summary_path)
+            attempt["outcome_artifacts"] = [
+                file_binding(path) for path in sorted(outcome_files)
+            ]
+            attempt["sealed_artifacts"] = sorted(
+                _opaque_artifacts(output_root) + _opaque_artifacts(native_root),
+                key=lambda item: str(item["path"]).casefold(),
+            )
             state_cell["status"] = "COMPLETE"
             state["active_cell"] = None
             state["updated_utc"] = utc_now()
@@ -2270,13 +2302,18 @@ def _worker_run(job_path: Path) -> int:
         current = next((row for row in state.get("cells", []) if row.get("status") == "RUNNING"), None)
         if current is not None:
             attempt = current.get("attempts", [{}])[-1]
-            root = Path(str(cell_by_id[str(current["cell_id"])]["output_root"]))
-            summaries = list(root.rglob("summary.json")) if root.exists() else []
+            native_value = attempt.get("native_root") if isinstance(attempt, Mapping) else None
+            native_root = Path(str(native_value)).resolve() if native_value else None
+            summaries = (
+                list(native_root.rglob("summary.json"))
+                if native_root is not None and native_root.exists()
+                else []
+            )
             reports = [
                 path
-                for path in _outcome_artifact_paths(root)
+                for path in _outcome_artifact_paths(native_root)
                 if path.name.casefold() != "summary.json"
-            ]
+            ] if native_root is not None else []
             attempt["error_type"] = type(exc).__name__
             attempt["error"] = _safe_error_message(exc)
             attempt["summary"] = file_binding(summaries[0]) if len(summaries) == 1 else None
@@ -2692,7 +2729,7 @@ def validate_runner_summary(summary: Mapping[str, Any], cell: Mapping[str, Any])
         "ea_label": EA_LABEL,
         "expert": EXPERT_PATH,
         "symbol": cell["symbol"],
-        "terminal": "T1",
+        "terminal": EXECUTION_TERMINAL,
         "model": 4,
         "period": TIMEFRAME,
         "requested_runs": DUPLICATES,
@@ -2764,22 +2801,38 @@ def _audit_cell(
     summary_binding = attempt.get("summary")
     if not isinstance(summary_binding, Mapping):
         raise InvalidEvidence(f"cell summary binding missing: {cell['cell_id']}")
+    runner_result = attempt.get("runner_result")
+    if not isinstance(runner_result, Mapping):
+        raise InvalidEvidence(f"cell DEV2 controller result missing: {cell['cell_id']}")
+    run_id = validate_dev2_controller_result(runner_result, pre)
+    native_root = _dev2_native_root(run_id)
+    if Path(str(attempt.get("native_root", ""))).resolve() != native_root:
+        raise InvalidEvidence(f"cell DEV2 native-root binding drift: {cell['cell_id']}")
     assert_binding(summary_binding, f"{cell['cell_id']} summary")
     summary = load_json(Path(str(summary_binding["path"])))
     validate_runner_summary(summary, cell)
     sealed = _sealed_by_path(attempt)
     output_root = Path(str(cell["output_root"])).resolve()
     sealed_list = attempt.get("sealed_artifacts")
-    if sealed_list != _opaque_artifacts(output_root):
+    expected_sealed = sorted(
+        _opaque_artifacts(output_root) + _opaque_artifacts(native_root),
+        key=lambda item: str(item["path"]).casefold(),
+    )
+    if sealed_list != expected_sealed:
         raise InvalidEvidence(f"sealed/current native artifact closure drift: {cell['cell_id']}")
-    if any(not _is_within(path, output_root) for path in sealed):
-        raise InvalidEvidence(f"sealed artifact escaped cell output root: {cell['cell_id']}")
+    if any(
+        not _is_within(path, output_root) and not _is_within(path, native_root)
+        for path in sealed
+    ):
+        raise InvalidEvidence(f"sealed artifact escaped controller/native roots: {cell['cell_id']}")
     summary_path = Path(str(summary_binding["path"])).resolve()
+    if summary_path != _find_dev2_summary(run_id):
+        raise InvalidEvidence(f"cell DEV2 summary identity drift: {cell['cell_id']}")
     if summary_path not in sealed or dict(sealed[summary_path]) != dict(summary_binding):
         raise InvalidEvidence(f"cell summary was not exactly sealed: {cell['cell_id']}")
     expected_outcomes = [
         file_binding(path)
-        for path in _outcome_artifact_paths(output_root)
+        for path in _outcome_artifact_paths(native_root)
         if path.name.casefold() != "summary.json"
     ]
     if attempt.get("outcome_artifacts") != expected_outcomes:
@@ -3143,7 +3196,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
     freeze = sub.add_parser(
         "freeze-data",
-        help="Hash the exact T1 NDX.DWX 201807..202512 corpus without starting MT5",
+        help="Hash the exact isolated DEV2 NDX.DWX 201807..202512 corpus without starting MT5",
     )
     freeze.add_argument("--symbol", required=True)
     freeze.add_argument("--receipt", type=Path, required=True)

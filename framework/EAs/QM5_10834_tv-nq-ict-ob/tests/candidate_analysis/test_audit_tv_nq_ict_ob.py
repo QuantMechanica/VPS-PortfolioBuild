@@ -189,7 +189,7 @@ def _runner_summary(cell: dict[str, object]) -> dict[str, object]:
         "ea_label": "QM5_10834",
         "expert": r"QM\QM5_10834_tv-nq-ict-ob",
         "symbol": cell["symbol"],
-        "terminal": "T1",
+        "terminal": "DEV2",
         "model": 4,
         "period": "M5",
         "requested_runs": 2,
@@ -250,6 +250,13 @@ def test_hash_binding_role_closure_is_explicit() -> None:
         "rebuild_done",
         "rebuild_source",
         "runner",
+        "runner_child",
+        "runner_smoke",
+        "dev2_lane_contract",
+        "tester_groups_canonical",
+        "tester_groups_dev2",
+        "dev2_symbol_database",
+        "infra_retry_contract",
         "report_parser",
         "powershell",
         "python",
@@ -287,6 +294,8 @@ def test_backtest_data_receipt_is_exact_atomic_and_outcome_blind(
     payload = subject.freeze_backtest_data(
         "NDX.DWX", terminal_data_root=data_root, evidence_paths=evidence
     )
+    assert payload["schema_version"] == 2
+    assert payload["terminal"] == "DEV2"
     assert payload["coverage"] == {
         "from_date": "2018-07-02",
         "to_date": "2025-12-31",
@@ -490,12 +499,15 @@ def test_runner_command_freezes_model4_two_duplicates_zero_native_cost(
     pre = {
         "bindings": {
             "powershell": {"path": str(tmp_path / "pwsh.exe")},
-            "runner": {"path": str(tmp_path / "run_smoke.ps1")},
+            "runner": {"path": str(tmp_path / "run_dev2_smoke.ps1")},
         },
         "plan": {"plan_sha256": "b" * 64},
+        "execution_contract": subject.execution_contract(),
     }
     command = subject.runner_command(pre, cell)
-    assert command[command.index("-Terminal") + 1] == "T1"
+    assert "-Terminal" not in command
+    assert "-ReportRoot" not in command
+    assert Path(command[command.index("-File") + 1]).name == "run_dev2_smoke.ps1"
     assert command[command.index("-Model") + 1] == "4"
     assert command[command.index("-Runs") + 1] == "2"
     assert command[command.index("-MinTrades") + 1] == "0"
