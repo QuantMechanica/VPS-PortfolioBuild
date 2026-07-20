@@ -243,6 +243,10 @@ def test_frozen_plan_is_one_symbol_four_disjoint_cells_and_two_duplicates(
     assert plan["single_authorized_symbol"] == "NDX.DWX"
     assert plan["accepted_duplicate_run_count"] == 8
     assert plan["maximum_native_starts"] == 16
+    contract = subject.execution_contract()
+    assert contract["native_run_timeout_seconds"] == 28_800
+    assert contract["native_per_attempt_overhead_seconds"] == 600
+    assert contract["cell_outer_timeout_seconds"] == 119_400
     assert plan["technical_prescreen"]["authorized"] is False
     assert [row["cohort"] for row in plan["cells"]] == ["DEV", "OOS", "OOS", "OOS"]
     assert [(row["from_date"], row["to_date"]) for row in plan["cells"]] == [

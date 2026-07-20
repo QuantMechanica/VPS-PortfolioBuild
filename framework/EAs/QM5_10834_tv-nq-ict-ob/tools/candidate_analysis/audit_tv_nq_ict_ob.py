@@ -142,7 +142,7 @@ RUN_ATTEMPT_OVERHEAD_SECONDS = 600
 CELL_CONTROLLER_TIMEOUT_SECONDS = (
     MAX_ATTEMPTS_PER_CELL * (RUN_TIMEOUT_SECONDS + RUN_ATTEMPT_OVERHEAD_SECONDS)
 ) + 1800
-LAUNCHER_REVISION = 3
+LAUNCHER_REVISION = 4
 SCHEDULED_TASK_PREFIX = "QM_QM10834_AUDIT_"
 MAX_SCHEDULED_TASK_SECONDS = 777600
 NY_ENTRY_START = time(9, 45)
@@ -1328,6 +1328,9 @@ def execution_contract() -> dict[str, Any]:
         "maximum_postflight_acceptable_infrastructure_warmups_per_cell": MAX_POSTFLIGHT_INFRA_WARMUPS_PER_CELL,
         "maximum_attempts_per_cell": MAX_ATTEMPTS_PER_CELL,
         "maximum_native_starts": len(WINDOWS) * MAX_ATTEMPTS_PER_CELL,
+        "native_run_timeout_seconds": RUN_TIMEOUT_SECONDS,
+        "native_per_attempt_overhead_seconds": RUN_ATTEMPT_OVERHEAD_SECONDS,
+        "cell_outer_timeout_seconds": CELL_CONTROLLER_TIMEOUT_SECONDS,
         "native_start_budget_is_outcome_independent": True,
         "postflight_acceptable_infrastructure_warmup_verdicts": ["BARS_ZERO", "NO_HISTORY"],
         "postflight_rejects_every_nonprefix_or_nonzero_warmup": True,
