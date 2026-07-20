@@ -256,3 +256,47 @@ def test_qm5_12978_zscore_uses_strictly_prior_calibration_window() -> None:
     assert source.count("PERIOD_D1, 1, history_count") == 4
     assert source.count("for(int i = 1; i < history_count; ++i)") == 2
     assert "g_spread_z = (spreads[0] - g_spread_mean) / g_spread_sd;" in source
+
+
+def test_qm5_1224_is_one_atomic_fx7_cross_sectional_package() -> None:
+    ea_dir = REPO / "framework" / "EAs" / "QM5_1224_white-okunev-fx-xmom"
+    manifest = json.loads((ea_dir / "basket_manifest.json").read_text(encoding="utf-8-sig"))
+    source = (ea_dir / f"{ea_dir.name}.mq5").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+
+    expected_symbols = {
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "AUDUSD.DWX",
+        "NZDUSD.DWX",
+        "USDCAD.DWX",
+        "USDCHF.DWX",
+        "USDJPY.DWX",
+    }
+    logical = manifest["logical_symbol"]
+    logical_setfile = ea_dir / "sets" / f"{ea_dir.name}_{logical}_D1_backtest.set"
+    set_text = logical_setfile.read_text(encoding="utf-8-sig")
+    source_symbols = set(re.findall(r'"([A-Z]{6}\.DWX)"', source))
+
+    assert logical == "QM5_1224_FX7_XMOM_D1"
+    assert manifest["host_symbol"] == "EURUSD.DWX"
+    assert manifest["host_timeframe"] == "D1"
+    assert manifest["tester_currency"] == "USD"
+    assert set(manifest["basket_symbols"]) == expected_symbols
+    assert source_symbols == expected_symbols
+    assert logical_setfile.exists()
+    assert "; host_symbol:  EURUSD.DWX" in set_text
+    assert "RISK_FIXED=500" in set_text
+    assert "RISK_PERCENT=0" in set_text
+    assert "qm_friday_close_enabled=0" in set_text
+
+    assert "QM_BasketOpenPosition(qm_ea_id" in source
+    assert "QM_KillSwitchRegisterMagic((long)magic)" in source
+    assert "QM_SymbolGuardInit(g_symbols)" in source
+    assert "Strategy_PackageCompositionValid()" in source
+    assert "QM_FRIDAY_CLOSE_DISABLED" in source
+    assert "QM_CalendarPeriodKey(cadence, _Symbol, 0)" in source
+    assert "QM_CalendarPeriodKey(cadence, _Symbol, 1)" in source
+    assert "QM_IsNewCalendarPeriod" not in source
+    assert not re.search(r"\bi(?:Time|Close|Open|High|Low|Volume|Bars)\s*\(", source)
