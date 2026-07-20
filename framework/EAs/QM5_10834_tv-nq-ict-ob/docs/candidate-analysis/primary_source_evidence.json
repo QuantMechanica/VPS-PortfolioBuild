@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "captured_utc": "2026-07-20T00:00:00Z",
+  "source_id": "d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7",
+  "title": "NQ 9:45-10:15 ICT Strategy - Complete",
+  "author": "uzair2join",
+  "public_page": "https://www.tradingview.com/script/8NHRB35j-NQ-9-45-10-15-ICT-Strategy-Complete/",
+  "public_pine_endpoint": "https://pine-facade.tradingview.com/pine-facade/get/PUB%3Baa5cd40f93284855a7ac93cec5a26bd3/1",
+  "pine_version": "1.0",
+  "local_path": "framework/EAs/QM5_10834_tv-nq-ict-ob/docs/candidate-analysis/primary_source_pine_v1.pine",
+  "encoding": "UTF-8 without BOM",
+  "line_endings": "CRLF",
+  "sha256": "015bb5d550a8687f506646de6c33ddfe8b29c3ed5e4ec96f3c66364edfb7f0b5",
+  "use_boundary": "Source-fidelity evidence only; no profitability claim."
+}

@@ -2,7 +2,7 @@
 
 **EA ID:** QM5_10834
 **Slug:** `tv-nq-ict-ob`
-**Source:** `d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7` (see `strategy-seeds/sources/d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7/`)
+**Source:** `d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7` (sealed public Pine bytes: `docs/candidate-analysis/primary_source_pine_v1.pine`)
 **Author of this spec:** Codex
 **Last revised:** 2026-07-20
 
@@ -86,6 +86,7 @@ This card was mechanised from:
 **Pointer:** TradingView `NQ 9:45-10:15 ICT Strategy - Complete`, author `uzair2join`, https://www.tradingview.com/script/8NHRB35j-NQ-9-45-10-15-ICT-Strategy-Complete/
 **Public Pine endpoint:** `https://pine-facade.tradingview.com/pine-facade/get/PUB%3Baa5cd40f93284855a7ac93cec5a26bd3/1`
 **Public Pine v1 source SHA-256:** `015bb5d550a8687f506646de6c33ddfe8b29c3ed5e4ec96f3c66364edfb7f0b5`
+**Sealed local bytes:** `docs/candidate-analysis/primary_source_pine_v1.pine` (UTF-8 without BOM, original CRLF bytes)
 **R1–R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_10834_tv-nq-ict-ob.md`
 
 ---
