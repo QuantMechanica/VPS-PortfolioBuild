@@ -1914,6 +1914,79 @@ def _adjudicate_arm(
     }
 
 
+def _validate_launch_chain(
+    pre_path: Path,
+    pre_sha256: str,
+    state_path: Path,
+    state: Mapping[str, Any],
+    pre: Mapping[str, Any],
+) -> None:
+    """Bind COMPLETE state back through its immutable job, authorization, and plan."""
+
+    job_binding = state.get("job")
+    if not isinstance(job_binding, Mapping):
+        raise PostflightError("launch state omitted immutable job binding")
+    assert_binding(job_binding, "launch job")
+    job_path = Path(str(job_binding["path"])).resolve()
+    job = load_json(job_path)
+    expected_job_fields = {
+        "schema_version": SCHEMA_VERSION,
+        "artifact_type": "QM5_20002_SHORT_NY_LAUNCH_JOB",
+        "analysis_id": ANALYSIS_ID,
+        "pre_receipt_path": str(pre_path.resolve()),
+        "pre_receipt_sha256": pre_sha256.lower(),
+        "state_path": str(state_path.resolve()),
+        "plan_sha256": pre["plan"]["plan_sha256"],
+        "tool": pre["tool"],
+    }
+    drift = {key: (wanted, job.get(key)) for key, wanted in expected_job_fields.items() if job.get(key) != wanted}
+    if drift:
+        raise PostflightError(f"launch job identity/plan/tool drift: {drift}")
+    controller_timeout = int(job.get("controller_timeout_seconds", 0))
+    if not required_controller_timeout(pre) <= controller_timeout <= 172800:
+        raise PostflightError("launch job controller timeout drift")
+    authorization = job.get("authorization")
+    if not isinstance(authorization, Mapping) or state.get("authorization") != authorization:
+        raise PostflightError("launch state/job authorization drift")
+    auth_binding = authorization.get("binding")
+    if not isinstance(auth_binding, Mapping):
+        raise PostflightError("launch authorization binding missing")
+    expected_authorization = validate_authorization(Path(str(auth_binding["path"])), pre_sha256)
+    if authorization != expected_authorization:
+        raise PostflightError("launch authorization bytes/payload drift")
+    if (
+        Path(str(state.get("pre_receipt_path", ""))).resolve() != pre_path.resolve()
+        or str(state.get("pre_receipt_sha256", "")).lower() != pre_sha256.lower()
+        or not isinstance(state.get("worker_pid"), int)
+        or int(state["worker_pid"]) <= 0
+    ):
+        raise PostflightError("launch state PRE/worker identity drift")
+
+    job_created = parse_utc(str(job.get("created_utc", "")), "launch job created_utc")
+    state_started = parse_utc(str(state.get("started_utc", "")), "launch state started_utc")
+    state_finished = parse_utc(str(state.get("finished_utc", "")), "launch state finished_utc")
+    if not job_created <= state_started <= state_finished:
+        raise PostflightError("launch job/state chronology drift")
+    if state_finished > datetime.now(timezone.utc) + timedelta(minutes=5):
+        raise PostflightError("launch state finished_utc is implausibly in the future")
+    cells = state.get("cells")
+    expected_ids = [str(cell["cell_id"]) for cell in pre["plan"]["cells"]]
+    if not isinstance(cells, list) or [str(cell.get("cell_id")) for cell in cells] != expected_ids:
+        raise PostflightError("launch state cell order/closure drift")
+    cursor = state_started
+    for launch_cell, plan_cell in zip(cells, pre["plan"]["cells"]):
+        started = parse_utc(str(launch_cell.get("started_utc", "")), "cell started_utc")
+        finished = parse_utc(str(launch_cell.get("finished_utc", "")), "cell finished_utc")
+        if not cursor <= started <= finished <= state_finished:
+            raise PostflightError(f"launch cell chronology drift: {plan_cell['cell_id']}")
+        if (
+            launch_cell.get("runner_exit_code") != 0
+            or launch_cell.get("command_sha256") != canonical_sha256(runner_command(pre, plan_cell))
+        ):
+            raise PostflightError(f"launch cell command/exit drift: {plan_cell['cell_id']}")
+        cursor = finished
+
+
 def postflight(pre_path: Path, pre_sha256: str, state_path: Path) -> dict[str, Any]:
     pre = assert_pre_receipt(pre_path, pre_sha256)
     state_binding = file_binding(state_path)
@@ -1925,6 +1998,7 @@ def postflight(pre_path: Path, pre_sha256: str, state_path: Path) -> dict[str, A
         or state.get("pre_receipt_sha256") != pre_sha256.lower()
     ):
         raise PostflightError("launch state is not COMPLETE/bound to PRE")
+    _validate_launch_chain(pre_path, pre_sha256, state_path, state, pre)
     launch_cells = state.get("cells")
     if not isinstance(launch_cells, list) or len(launch_cells) != 4:
         raise PostflightError("launch state does not contain exactly four cells")
@@ -1997,7 +2071,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     launch.add_argument("--pre-sha256", required=True)
     launch.add_argument("--authorization", type=Path, required=True)
     launch.add_argument("--state", type=Path, required=True)
-    launch.add_argument("--controller-timeout-seconds", type=int, default=43200)
+    launch.add_argument("--controller-timeout-seconds", type=int, default=64800)
     post = sub.add_parser("post", help="Audit COMPLETE native evidence and merit gates")
     post.add_argument("--pre-receipt", type=Path, required=True)
     post.add_argument("--pre-sha256", required=True)
