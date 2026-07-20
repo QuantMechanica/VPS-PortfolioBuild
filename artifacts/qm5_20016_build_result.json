@@ -1,0 +1,143 @@
+{
+  "task_id": "45b03eb8-039c-4f1e-a6df-2b2a3a50ea8c",
+  "ea_id": "QM5_20016",
+  "ea_label": "QM5_20016_xti-xng-mon-rv",
+  "slug": "xti-xng-mon-rv",
+  "strategy_id": "TGIF-WTI-WEEKEND-2017_S03",
+  "strategy": "One-session XTI-short/XNG-long Monday relative-value package",
+  "source_id": "TGIF-WTI-WEEKEND-2017",
+  "source_links": [
+    "https://jfi-aof.org/index.php/jfi/article/view/2264",
+    "https://jfi-aof.org/index.php/jfi/article/download/2264/1847",
+    "https://doi.org/10.58886/jfi.v16i1.2264"
+  ],
+  "symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "logical_symbol": "QM5_20016_XTI_XNG_MON_RV_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_20016_xti-xng-mon-rv",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_20016_xti-xng-mon-rv/QM5_20016_xti-xng-mon-rv.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_20016_xti-xng-mon-rv/QM5_20016_xti-xng-mon-rv.ex5",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_20016_xti-xng-mon-rv/SPEC.md",
+  "basket_manifest": "C:/QM/repo/framework/EAs/QM5_20016_xti-xng-mon-rv/basket_manifest.json",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20016_xti-xng-mon-rv.md",
+  "approved_card_path": "C:/QM/repo/strategy-seeds/cards/approved/QM5_20016_xti-xng-mon-rv_card.md",
+  "canonical_card_path": "C:/QM/repo/strategy-seeds/cards/xti-xng-mon-rv_card.md",
+  "source_packet_path": "C:/QM/repo/strategy-seeds/sources/TGIF-WTI-WEEKEND-2017/source.md",
+  "runtime_build_result_path": "D:/QM/strategy_farm/artifacts/builds/45b03eb8-039c-4f1e-a6df-2b2a3a50ea8c.json",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_20016_xti-xng-mon-rv/sets/QM5_20016_xti-xng-mon-rv_QM5_20016_XTI_XNG_MON_RV_D1_D1_backtest.set"
+  ],
+  "magic_base": 200160000,
+  "magic": [
+    {
+      "slot": 0,
+      "symbol": "XTIUSD.DWX",
+      "magic": 200160000,
+      "registry_status": "active"
+    },
+    {
+      "slot": 1,
+      "symbol": "XNGUSD.DWX",
+      "magic": 200160001,
+      "registry_status": "active"
+    }
+  ],
+  "registry_validation": {
+    "ea_id_row": "20016,xti-xng-mon-rv,TGIF-WTI-WEEKEND-2017_S03,active,Research+Development (OWNER commodity-sleeve mission),2026-07-20",
+    "resolver_contains_ea": true,
+    "resolver_rows_kept": 14954,
+    "magic_registry_sha256": "44DEF697FF15B40CFC9C1D08CCCF0AB33A24B31F912E2D9582823EFD86E8D2D2",
+    "resolver_file_sha256": "1F43DFCEE22256023F34998E27E4AEB51110DCD14CA4EF0A79F32807C39CC584",
+    "resolver_registry_sha_match": true,
+    "note": "Strict regeneration retained both QM5_20016 rows. It separately reported the pre-existing missing EA directories for registry IDs 1001, 1015 and 1016."
+  },
+  "commits": [
+    "5e94d0f7606985a909ed49d233e680da5ef1607d",
+    "67caf10b714ae7826bb6d8bb13fd2f3a33e8584b",
+    "34929bd77d9643b68fee54a34ded10cffeddcad8",
+    "47a545f1c7f181110d73c7a11c0aa2cd2d0ee112",
+    "aaf79d3750aaf0495a184ac00a1f3d79233ed6e4",
+    "b123abf1309b6a985a454878020845d7a7d436a8",
+    "8f72538e7e45d76c3daf8fa16d84925931622e97",
+    "dab30bd380bcbebf55b438f1af179c2d86efcf43"
+  ],
+  "build_commit": "dab30bd380bcbebf55b438f1af179c2d86efcf43",
+  "compile_succeeded": true,
+  "compile_strict": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log": "C:/QM/repo/framework/build/compile/20260720_093435/QM5_20016_xti-xng-mon-rv.compile.log",
+  "compile_log_sha256": "A0DFF73899215C5E1101EB745684B096517B66B75E9023C61C34F580E5F00E00",
+  "compile_summary": "D:/QM/reports/compile/20260720_093435/summary.csv",
+  "compile_summary_sha256": "09B3E4618CB5B1B73F37CC0D19F219C1051818A3E3AAB4EFE826FAD574231F23",
+  "build_check_passed": true,
+  "build_check_strict": true,
+  "build_check_failures": 0,
+  "build_check_warnings": 0,
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260720_093126.json",
+  "build_check_report_sha256": "926A7183BDAA1B6F6BED175F2D2DF9922C79CB71E75E6643FF1964963FAD854D",
+  "spec_validation": "PASS",
+  "guardrail_validation": "PASS",
+  "symbol_scope_validation": "BASKET_OK",
+  "card_schema_validation": "PASS",
+  "g0_card_validation": "PASS_APPROVED_FRONTMATTER",
+  "dedup_validation": "NO_IDENTICAL_TWO_LEG_PACKAGE / KNOWN_EXACT_COMPONENT_OVERLAP",
+  "semantic_review": "PASS_WITH_DISCLOSED_COMPONENT_OVERLAP_AND_SOURCE_CARRIER_TRANSLATION",
+  "implementation_audit": "PASS_NO_CARD_BLOCKING_STATIC_DEFECT",
+  "setfile_build_hash": "1ba16b5a045f03c43f8c99efbe3a202c143fb245ceee1f11f7864485646ef276",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced-fleet scan at 2026-07-20T09:44:47Z found eight terminal64 processes, including five active pipeline terminals (T1, T2, T6, T7 and T8), plus six metatester64 processes; this exceeded the seven-terminal CPU ceiling. No tester, dispatch tick, worker tick, terminal launch, optimization or backtest was started by this mission.",
+  "blocked_reason": null,
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "approximately_dollar_neutral_not_beta_volatility_or_risk_neutral": true,
+    "risk_fixed_backtest_setfile": true,
+    "reputable_primary_source": true,
+    "known_exact_component_overlap_disclosed": true,
+    "source_return_window_translation_load_bearing": true,
+    "manual_backtest_cpu_used": false
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false
+  },
+  "open_questions": [
+    "The paper measures Friday-close-to-Monday-close EIA spot returns, while the executable carrier enters at Monday's first D1 tick and omits the weekend gap; Q02 must falsify this load-bearing translation on Darwinex CFDs.",
+    "The paper does not test the paired spread, 1:1 notional hedge, ATR stops or a trading strategy. Equal notionals are only approximately dollar neutral and do not establish beta, volatility or risk neutrality.",
+    "The exact two-leg package is new, but QM5_12596 already contains the Monday XTI-short component and QM5_12806 already contains the Monday XNG-long component; net expectancy and diversification must be evaluated independently.",
+    "Generic Q02 Total Trades counts legs. The five-completed-packages-per-year kill rule requires paired-package evidence rather than inference from the automatic trade floor.",
+    "Historical source correlation and opposing legs do not establish realized decorrelation from the certified book; later portfolio gates alone may measure it.",
+    "The shared Friday-close helper makes only one Friday close attempt per day. This is non-load-bearing because the normal package exits Tuesday and the stale guard exits Thursday."
+  ],
+  "file_hashes_sha256": {
+    "mq5": "EF3A5F0815F765ECF2866AA4A3A7DCE7D074940C5C173C68E44CCEC666059B6F",
+    "ex5": "D509D1C828B99B88A3E508B0F972632CEC8261032C9A57824AD32BE01BFD3649",
+    "spec": "7851E028E442519AB668A408ACB13607BF8AAE1E72A6A2CB0C75E01D8C1954BF",
+    "embedded_card_pre_enqueue": "FA0B20045BC1E54592FB58299AF6C15E31D24CB67E1ADB9955796988291FDEE4",
+    "basket_manifest": "E4BAC9C7C7B4A235844CC6D1B70867A6313D93E062261423EDE1F3A8264AFBFA",
+    "setfile": "9FB0E24F391D29A0B2825F46D58B33BA8BC0020BB86D2360A44C60CF400BA19C",
+    "canonical_card_pre_enqueue": "FA0B20045BC1E54592FB58299AF6C15E31D24CB67E1ADB9955796988291FDEE4",
+    "approved_card_pre_enqueue": "FA0B20045BC1E54592FB58299AF6C15E31D24CB67E1ADB9955796988291FDEE4",
+    "runtime_card_pre_enqueue": "CD94BF2D4D5AE2C9A0D7AAB1FAD2D6BDFE8D677BF200D92B74CC58F6BE09D6DD",
+    "source_packet": "57FEF668B76B3D8B22D99B0C3EC0D8E67748FC1632FB8A9F5AA02DCB62848639",
+    "ea_registry": "712E6D4F0EDE763AEA43C1F3B16FBE0F958EEF6C6BEBF5C4C9554215FAA45976",
+    "magic_registry": "44DEF697FF15B40CFC9C1D08CCCF0AB33A24B31F912E2D9582823EFD86E8D2D2",
+    "resolver": "1F43DFCEE22256023F34998E27E4AEB51110DCD14CA4EF0A79F32807C39CC584"
+  }
+}

@@ -6,6 +6,8 @@ the MT5 Strategy Tester.
 
 from __future__ import annotations
 
+import hashlib
+import json
 import re
 import unittest
 from pathlib import Path
@@ -14,6 +16,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 EA = (ROOT / "QM5_10834_tv-nq-ict-ob.mq5").read_text(encoding="utf-8")
 SETS = sorted((ROOT / "sets").glob("*.set"))
+SOURCE_EVIDENCE = ROOT / "docs" / "candidate-analysis" / "primary_source_evidence.json"
+PINE_SOURCE = ROOT / "docs" / "candidate-analysis" / "primary_source_pine_v1.pine"
+EXPECTED_PINE_SHA256 = (
+    "015bb5d550a8687f506646de6c33ddfe8b29c3ed5e4ec96f3c66364edfb7f0b5"
+)
 
 
 def function_body(source: str, name: str) -> str:
@@ -70,6 +77,17 @@ def function_body(source: str, name: str) -> str:
 
 
 class QM10834SourceContractTests(unittest.TestCase):
+    def test_public_pine_bytes_are_locally_sealed(self) -> None:
+        evidence = json.loads(SOURCE_EVIDENCE.read_text(encoding="utf-8"))
+        digest = hashlib.sha256(PINE_SOURCE.read_bytes()).hexdigest()
+        self.assertEqual(digest, EXPECTED_PINE_SHA256)
+        self.assertEqual(evidence["sha256"], EXPECTED_PINE_SHA256)
+        self.assertEqual(evidence["line_endings"], "CRLF")
+        self.assertIn(
+            "docs/candidate-analysis/primary_source_pine_v1.pine",
+            (ROOT / "SPEC.md").read_text(encoding="utf-8"),
+        )
+
     def test_session_uses_closed_bar_and_half_open_endpoint(self) -> None:
         window = function_body(EA, "InEntryWindowAt")
         entry = function_body(EA, "Strategy_EntrySignal")
