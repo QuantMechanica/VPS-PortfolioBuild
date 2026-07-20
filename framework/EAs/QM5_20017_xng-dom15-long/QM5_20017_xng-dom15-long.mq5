@@ -214,18 +214,6 @@ bool Strategy_ConsumeDay15Decision()
    if(month_key <= 0 || g_last_attempt_month_key == month_key)
       return false;
 
-   const datetime now = TimeCurrent();
-   const long grace_seconds =
-      (long)STRATEGY_ENTRY_GRACE_MINUTES * 60;
-   if(now < g_strategy_d1_bar_time ||
-      (long)(now - g_strategy_d1_bar_time) > grace_seconds)
-     {
-      // The date was observed, so a late/invalid clock observation consumes
-      // the month rather than manufacturing a delayed entry.
-      Strategy_RecordMonthAttempt(month_key);
-      return false;
-     }
-
    if(Strategy_MonthAlreadyEntered(month_key))
      {
       Strategy_RecordMonthAttempt(month_key);

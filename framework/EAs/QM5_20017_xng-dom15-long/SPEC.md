@@ -27,10 +27,13 @@ broker hour 21 preserves the one-session package when the 15th is a Friday.
 | strategy_max_hold_days | 1 | 1 | Calendar-day stale close guard |
 | strategy_max_spread_points | 2500 | 2500 | XNG entry spread cap |
 
-All strategy parameters and the BUY direction are locked for Q02. The
-five-minute opening grace is an execution-safety constant, not a tunable
-signal window. A different date, date range, direction, hold, stop, retry
-policy or price filter requires a new approved card.
+All strategy parameters and the BUY direction are locked for Q02. A
+five-minute execution-safety grace applies only when the EA initializes on an
+already-open day-15 bar; it prevents a restart from manufacturing a mid-bar
+entry. Once the EA is running, the first executable tick of a genuine new D1
+event remains eligible regardless of the bar timestamp offset. The grace is
+not a tunable signal window. A different date, date range, direction, hold,
+stop, retry policy or price filter requires a new approved card.
 
 ## 3. Symbol Universe
 
