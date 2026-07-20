@@ -1261,6 +1261,246 @@ def resolve_cost_schedule(path: Path, symbol: str) -> dict[str, Any]:
     }
 
 
+def _prior_native_attempt_contract() -> dict[str, Any]:
+    return {
+        "attempt_number": 1,
+        "classification": "OUTCOME_BLIND_DEV2_AGENT_PORT_BASELINE_CONFLICT",
+        "run_root": str(PRIOR_NATIVE_ATTEMPT_RUN_ROOT),
+        "pre_receipt_sha256": PRIOR_NATIVE_ATTEMPT_PRE_SHA256,
+        "launch_state_sha256": PRIOR_NATIVE_ATTEMPT_STATE_SHA256,
+        "native_attempt_claim_path": str(PRIOR_NATIVE_ATTEMPT_CLAIM_PATH),
+        "native_attempt_claim_sha256": PRIOR_NATIVE_ATTEMPT_CLAIM_SHA256,
+        "dev2_run_id": PRIOR_NATIVE_ATTEMPT_DEV2_RUN_ID,
+        "dev2_result_path": str(PRIOR_NATIVE_ATTEMPT_DEV2_RESULT_PATH),
+        "dev2_result_sha256": PRIOR_NATIVE_ATTEMPT_DEV2_RESULT_SHA256,
+        "controller_stderr_path": str(PRIOR_NATIVE_ATTEMPT_CONTROLLER_STDERR_PATH),
+        "controller_stderr_sha256": PRIOR_NATIVE_ATTEMPT_CONTROLLER_STDERR_SHA256,
+        "terminal_status": "INVALID_TERMINAL",
+        "cause": "DEV2_AGENT_PORT_BASELINE_CONFLICT",
+        "metatester_exact_path_started": True,
+        "conflicting_listener_port": 3004,
+        "run_smoke_exit_code": None,
+        "native_root_created": False,
+        "summary_created": False,
+        "outcome_artifact_count": 0,
+        "strategy_outcomes_read": False,
+        "strategy_merit_adjudicated": False,
+        "claim_and_fence_preserved": True,
+        "counts_toward_alternate_attempts": True,
+        "remediation": "OUTCOME_BLIND_INFRA_PORT_ISOLATION_REPAIR_ONLY",
+    }
+
+
+def _assert_no_native_outcome_files(root: Path, label: str) -> None:
+    if not root.is_dir():
+        raise InvalidEvidence(f"{label} root is missing")
+    forbidden = [
+        item
+        for item in root.rglob("*")
+        if item.is_file()
+        and (item.name.casefold() == "summary.json" or item.suffix.casefold() in {".htm", ".html"})
+    ]
+    if forbidden:
+        raise InvalidEvidence(f"{label} contains a native outcome artifact")
+
+
+def _validate_prior_native_port_attempt() -> None:
+    prior_pre_path = PRIOR_NATIVE_ATTEMPT_RUN_ROOT / "pre_receipt.json"
+    prior_state_path = PRIOR_NATIVE_ATTEMPT_RUN_ROOT / "launch_state.json"
+    prior_pre_binding = file_binding(prior_pre_path, PRIOR_NATIVE_ATTEMPT_PRE_SHA256)
+    prior_state_binding = file_binding(prior_state_path, PRIOR_NATIVE_ATTEMPT_STATE_SHA256)
+    prior_claim_binding = file_binding(
+        PRIOR_NATIVE_ATTEMPT_CLAIM_PATH, PRIOR_NATIVE_ATTEMPT_CLAIM_SHA256
+    )
+    prior_result_binding = file_binding(
+        PRIOR_NATIVE_ATTEMPT_DEV2_RESULT_PATH,
+        PRIOR_NATIVE_ATTEMPT_DEV2_RESULT_SHA256,
+    )
+    prior_stderr_binding = file_binding(
+        PRIOR_NATIVE_ATTEMPT_CONTROLLER_STDERR_PATH,
+        PRIOR_NATIVE_ATTEMPT_CONTROLLER_STDERR_SHA256,
+    )
+
+    prior_pre = load_json(prior_pre_path)
+    expected_pre_fence = {
+        "native_reports_opened": False,
+        "deal_rows_parsed": False,
+        "market_values_parsed": False,
+        "mt5_terminal_started": False,
+        "metatester_started": False,
+    }
+    if (
+        prior_pre.get("schema_version") != SCHEMA_VERSION
+        or prior_pre.get("artifact_type") != "QM5_10834_OUTCOME_FENCED_PRE_RECEIPT"
+        or prior_pre.get("status") != "PASS"
+        or prior_pre.get("analysis_id") != ANALYSIS_ID
+        or Path(str(prior_pre.get("run_root", ""))).resolve()
+        != PRIOR_NATIVE_ATTEMPT_RUN_ROOT.resolve()
+        or prior_pre.get("outcome_fence") != expected_pre_fence
+    ):
+        raise InvalidEvidence("prior DEV2 port-attempt PRE identity/outcome fence drift")
+    prior_bindings = prior_pre.get("bindings")
+    if not isinstance(prior_bindings, Mapping):
+        raise InvalidEvidence("prior DEV2 port-attempt PRE bindings are missing")
+    frozen_binding_paths = {
+        "ex5": EX5_PATH,
+        "set": EA_ROOT / "sets" / f"{EXPERT_NAME}_{RESEARCH_SYMBOL}_M5_backtest.set",
+        "cost": COST_PATH,
+    }
+    for role, expected_path in frozen_binding_paths.items():
+        binding = prior_bindings.get(role)
+        if not isinstance(binding, Mapping) or dict(binding) != file_binding(expected_path):
+            raise InvalidEvidence(f"prior DEV2 port-attempt frozen {role} binding drift")
+    if prior_pre.get("merit_contract") != MERIT_GATES:
+        raise InvalidEvidence("prior DEV2 port-attempt merit contract drift")
+    policy = prior_pre.get("symbol_policy")
+    plan = prior_pre.get("plan")
+    cells = plan.get("cells") if isinstance(plan, Mapping) else None
+    if (
+        not isinstance(policy, Mapping)
+        or policy.get("authorized_symbol") != RESEARCH_SYMBOL
+        or not isinstance(plan, Mapping)
+        or plan.get("single_authorized_symbol") != RESEARCH_SYMBOL
+        or plan.get("accepted_duplicate_run_count") != len(WINDOWS) * DUPLICATES
+        or plan.get("maximum_native_starts") != len(WINDOWS) * MAX_ATTEMPTS_PER_CELL
+        or not isinstance(cells, list)
+        or len(cells) != len(WINDOWS)
+    ):
+        raise InvalidEvidence("prior DEV2 port-attempt symbol/plan closure drift")
+    set_binding = prior_bindings["set"]
+    for cell, window in zip(cells, WINDOWS):
+        expected_cell = {
+            "cell_id": f"{RESEARCH_SYMBOL.replace('.', '_')}_{window.cell_id}",
+            "symbol": RESEARCH_SYMBOL,
+            "cohort": window.cohort,
+            "from_date": window.from_date.isoformat(),
+            "to_date": window.to_date.isoformat(),
+            "timeframe": TIMEFRAME,
+            "model": 4,
+            "duplicates": DUPLICATES,
+            "maximum_postflight_acceptable_infrastructure_warmups": MAX_POSTFLIGHT_INFRA_WARMUPS_PER_CELL,
+            "maximum_attempts": MAX_ATTEMPTS_PER_CELL,
+            "native_start_budget_is_outcome_independent": True,
+            "set": set_binding,
+            "output_root": str(
+                (PRIOR_NATIVE_ATTEMPT_RUN_ROOT / "native" / window.cell_id).resolve()
+            ),
+        }
+        if not isinstance(cell, Mapping) or dict(cell) != expected_cell:
+            raise InvalidEvidence("prior DEV2 port-attempt cell/window contract drift")
+
+    prior_claim = load_json(PRIOR_NATIVE_ATTEMPT_CLAIM_PATH)
+    if (
+        prior_claim.get("schema_version") != 1
+        or prior_claim.get("artifact_type") != "QM5_10834_DEV2_NATIVE_ATTEMPT_CLAIM"
+        or prior_claim.get("analysis_id") != ANALYSIS_ID
+        or prior_claim.get("attempt_number") != 1
+        or prior_claim.get("maximum_alternate_attempts") != 1
+        or prior_claim.get("classification") != "ATOMIC_GLOBAL_ONE_SHOT_NATIVE_EXECUTION_CLAIM"
+        or prior_claim.get("pre_receipt") != prior_pre_binding
+        or Path(str(prior_claim.get("run_root", ""))).resolve()
+        != PRIOR_NATIVE_ATTEMPT_RUN_ROOT.resolve()
+        or Path(str(prior_claim.get("launch_state_path", ""))).resolve()
+        != prior_state_path.resolve()
+        or prior_claim.get("plan_sha256") != plan.get("plan_sha256")
+        or prior_claim.get("ea_binary") != prior_bindings["ex5"]
+        or prior_claim.get("set") != prior_bindings["set"]
+    ):
+        raise InvalidEvidence("prior DEV2 native-attempt claim structural drift")
+
+    prior_state = load_json(prior_state_path)
+    state_cells = prior_state.get("cells")
+    if (
+        prior_state.get("schema_version") != SCHEMA_VERSION
+        or prior_state.get("launcher_revision") != 4
+        or prior_state.get("artifact_type") != "QM5_10834_NATIVE_LAUNCH_STATE"
+        or prior_state.get("analysis_id") != ANALYSIS_ID
+        or prior_state.get("status") != "INVALID_TERMINAL"
+        or prior_state.get("worker_pid") is not None
+        or prior_state.get("finished_utc") is not None
+        or prior_state.get("pre_receipt_path") != str(prior_pre_path.resolve())
+        or prior_state.get("pre_receipt_sha256") != PRIOR_NATIVE_ATTEMPT_PRE_SHA256
+        or prior_state.get("plan_sha256") != plan.get("plan_sha256")
+        or prior_state.get("attempt_claim") != prior_claim_binding
+        or not prior_state.get("outcome_possible_since_utc")
+        or not isinstance(prior_state.get("active_cell"), Mapping)
+        or prior_state["active_cell"].get("cell_id") != f"{RESEARCH_SYMBOL.replace('.', '_')}_{WINDOWS[0].cell_id}"
+        or prior_state["active_cell"].get("status") != "OUTCOME_POSSIBLE_NO_RESUME"
+        or not isinstance(state_cells, list)
+        or len(state_cells) != len(WINDOWS)
+    ):
+        raise InvalidEvidence("prior DEV2 native-attempt launch-state/fence drift")
+    first_cell = state_cells[0]
+    first_attempts = first_cell.get("attempts") if isinstance(first_cell, Mapping) else None
+    if (
+        not isinstance(first_cell, Mapping)
+        or first_cell.get("cell_id") != f"{RESEARCH_SYMBOL.replace('.', '_')}_{WINDOWS[0].cell_id}"
+        or first_cell.get("status") != "INVALID_TERMINAL_OUTPUT"
+        or not isinstance(first_attempts, list)
+        or len(first_attempts) != 1
+    ):
+        raise InvalidEvidence("prior DEV2 native-attempt first-cell closure drift")
+    first_attempt = first_attempts[0]
+    if (
+        not isinstance(first_attempt, Mapping)
+        or first_attempt.get("exit_code") != 1
+        or first_attempt.get("native_root") is not None
+        or first_attempt.get("summary") is not None
+        or first_attempt.get("runner_result") is not None
+        or first_attempt.get("outcome_artifacts") != []
+        or first_attempt.get("stdout", {}).get("size") != 0
+        or first_attempt.get("stderr") != prior_stderr_binding
+    ):
+        raise InvalidEvidence("prior DEV2 native-attempt outcome-blind failure closure drift")
+    for state_cell, window in zip(state_cells[1:], WINDOWS[1:]):
+        if (
+            not isinstance(state_cell, Mapping)
+            or state_cell.get("cell_id") != f"{RESEARCH_SYMBOL.replace('.', '_')}_{window.cell_id}"
+            or state_cell.get("status") != "PENDING"
+            or state_cell.get("attempts") != []
+        ):
+            raise InvalidEvidence("prior DEV2 native-attempt pending-cell closure drift")
+
+    prior_result = load_json(PRIOR_NATIVE_ATTEMPT_DEV2_RESULT_PATH)
+    proof = prior_result.get("agent_port_proof")
+    expected_metatester_path = (TERMINAL_ROOT / "metatester64.exe").resolve()
+    error_match = re.fullmatch(
+        r"DEV2 metatester selected pre-existing listener port ([0-9]+) \(owners=[0-9,]+\)\.",
+        str(prior_result.get("error_message", "")),
+    )
+    if (
+        prior_result.get("schema_version") != 2
+        or prior_result.get("run_id") != PRIOR_NATIVE_ATTEMPT_DEV2_RUN_ID
+        or prior_result.get("success") is not False
+        or prior_result.get("error_code") != "CHILD_PRECHECK_FAILED"
+        or prior_result.get("run_smoke_exit_code") is not None
+        or error_match is None
+        or int(error_match.group(1)) != 3004
+        or not isinstance(proof, Mapping)
+        or proof.get("status") != "NOT_RUN"
+        or proof.get("listeners") != []
+        or Path(str(proof.get("metatester_path", ""))).resolve() != expected_metatester_path
+    ):
+        raise InvalidEvidence("prior DEV2 result is not the exact outcome-blind port conflict")
+    stderr_text = PRIOR_NATIVE_ATTEMPT_CONTROLLER_STDERR_PATH.read_text(
+        encoding="utf-8-sig", errors="replace"
+    )
+    if (
+        "CHILD_PRECHECK_FAILED" not in stderr_text
+        or "run_dev2_smoke.ps1:1064" not in stderr_text
+        or str(PRIOR_NATIVE_ATTEMPT_DEV2_RUN_ROOT / "output" / "run.log") not in stderr_text
+    ):
+        raise InvalidEvidence("prior DEV2 controller stderr classification drift")
+    _assert_no_native_outcome_files(PRIOR_NATIVE_ATTEMPT_RUN_ROOT, "prior candidate attempt")
+    _assert_no_native_outcome_files(PRIOR_NATIVE_ATTEMPT_DEV2_RUN_ROOT, "prior DEV2 attempt")
+    # Keep the bindings live until the end of structural validation.
+    for binding, label in (
+        (prior_state_binding, "prior launch state"),
+        (prior_result_binding, "prior DEV2 result"),
+    ):
+        assert_binding(binding, label)
+
+
 def validate_infra_retry_contract(path: Path = INFRA_RETRY_CONTRACT_PATH) -> dict[str, Any]:
     payload = load_json(path)
     expected_keys = {
@@ -1271,16 +1511,17 @@ def validate_infra_retry_contract(path: Path = INFRA_RETRY_CONTRACT_PATH) -> dic
         "candidate",
         "prior_attempt",
         "controller_preflight",
+        "prior_native_attempt",
         "retry",
         "classification",
     }
     if set(payload) != expected_keys:
         raise InvalidEvidence("infra-retry contract field closure drift")
     if (
-        payload.get("schema_version") != 1
+        payload.get("schema_version") != 2
         or payload.get("artifact_type") != "QM5_10834_INFRA_RETRY_CONTRACT"
-        or payload.get("status") != "AUTHORIZED_ONCE"
-        or payload.get("classification") != "OUTCOME_BLIND_INFRASTRUCTURE_RETRY_ONLY"
+        or payload.get("status") != "AUTHORIZED_INFRA_PORT_RETRY_002_ONCE"
+        or payload.get("classification") != "OUTCOME_BLIND_INFRASTRUCTURE_PORT_RETRY_002_ONLY"
     ):
         raise InvalidEvidence("infra-retry contract identity/status drift")
     created = parse_utc(str(payload.get("created_utc", "")), "infra-retry created_utc")
@@ -1327,8 +1568,10 @@ def validate_infra_retry_contract(path: Path = INFRA_RETRY_CONTRACT_PATH) -> dic
     }
     if payload.get("controller_preflight") != expected_controller_preflight:
         raise InvalidEvidence("infra-retry controller-preflight classification drift")
+    if payload.get("prior_native_attempt") != _prior_native_attempt_contract():
+        raise InvalidEvidence("infra-retry prior native port-attempt classification drift")
     if payload.get("retry") != INFRA_RETRY_POLICY:
-        raise InvalidEvidence("infra-retry one-shot policy drift")
+        raise InvalidEvidence("infra-retry attempt-002 policy drift")
     file_binding(PRIOR_INFRA_RUN_ROOT / "pre_receipt.json", PRIOR_INFRA_PRE_SHA256)
     file_binding(PRIOR_INFRA_RUN_ROOT / "launch_state.json", PRIOR_INFRA_STATE_SHA256)
     file_binding(
@@ -1339,6 +1582,7 @@ def validate_infra_retry_contract(path: Path = INFRA_RETRY_CONTRACT_PATH) -> dic
         CONTROLLER_PREFLIGHT_RUN_ROOT / "launch_state.json",
         CONTROLLER_PREFLIGHT_STATE_SHA256,
     )
+    _validate_prior_native_port_attempt()
     return payload
 
 
