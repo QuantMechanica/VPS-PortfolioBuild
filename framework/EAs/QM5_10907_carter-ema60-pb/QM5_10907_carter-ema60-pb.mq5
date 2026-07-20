@@ -122,8 +122,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    MqlRates bar[1];
-   // perf-allowed: one closed-bar read inside the framework new-bar gate for the EMA60 touch.
-   if(CopyRates(_Symbol, tf, 1, 1, bar) != 1)
+   if(CopyRates(_Symbol, tf, 1, 1, bar) != 1) // perf-allowed: one closed-bar read inside the framework new-bar gate.
       return false;
    if(bar[0].high <= 0.0 || bar[0].low <= 0.0)
       return false;
