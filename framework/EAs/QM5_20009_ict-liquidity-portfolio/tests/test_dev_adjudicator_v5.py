@@ -725,6 +725,12 @@ def test_publication_is_exclusive_and_verdict_is_last_commit_marker(
     assert verdict.exists()
     verdict_payload = evidence_io.load_json_strict(verdict)
     assert verdict_payload["verdict"] == "PASS"
+    assert (
+        verdict_payload["publication_contract"][
+            "input_graph_reloaded_immediately_before_publish"
+        ]
+        is True
+    )
     assert verdict_payload["publication_contract"]["verdict_json_is_final_commit_marker"] is True
     evidence_io.verify_detached(verdict, Path(f"{verdict}.sha256"))
     with pytest.raises(evidence_io.EvidenceIOError, match="already exists"):
@@ -758,3 +764,9 @@ def test_publication_is_exclusive_and_verdict_is_last_commit_marker(
     finally:
         mutable_input.write_bytes(original)
     assert not (policy.output_root / "verdicts" / "DEV.verdict.json").exists()
+
+    with pytest.raises(evidence_io.EvidenceIOError, match="fail_after"):
+        evidence_io.publish_exclusive_bundle(
+            [evidence_io.ArtifactPayload(tmp_path / "invalid.bin", b"payload")],
+            fail_after=0,
+        )

@@ -1499,6 +1499,7 @@ def _publication_payloads(
         "publication_contract": {
             "exclusive_create_no_overwrite": True,
             "sidecar_before_authoritative_json": True,
+            "input_graph_reloaded_immediately_before_publish": True,
             "verdict_json_is_final_commit_marker": True,
         },
     }

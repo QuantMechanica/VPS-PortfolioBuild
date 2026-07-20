@@ -256,6 +256,14 @@ def publish_exclusive_bundle(
 
     if not artifacts:
         raise EvidenceIOError("exclusive bundle is empty")
+    if fail_after is not None and (
+        isinstance(fail_after, bool)
+        or not isinstance(fail_after, int)
+        or not 1 <= fail_after <= len(artifacts)
+    ):
+        raise EvidenceIOError(
+            "fail_after must identify a one-based artifact in the bundle"
+        )
     for index, item in enumerate(artifacts):
         if not isinstance(item.payload, bytes) or not item.payload:
             raise EvidenceIOError(
