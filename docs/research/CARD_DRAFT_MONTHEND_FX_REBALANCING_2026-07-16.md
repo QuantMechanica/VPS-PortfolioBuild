@@ -19,6 +19,11 @@ successor: CARD_DRAFT_TURN_OF_MONTH_INDEX_LONG_2026-07-16.md (correct-direction 
 > only if gross clears ~2× cost (INVESTIGATE item B4). The *index* turn-of-month flow (successor card) is
 > the far cleaner, ~10×-cushion expression of calendar inflows — build that instead. Kept for the lesson:
 > a plausible thesis with an inverted sign and a fix-blind timeframe is worse than no card.
+>
+> **Respec available (2026-07-20):** the SSRN deep mine produced a verified two-leg replacement —
+> Evans 2018 post-fix reversion (primary, price-only) + Melvin–Prins as the B4-gated leg, with
+> net-survivor pair selection, ≥16:03 entry and 16:15 exit corrections. See
+> `docs/research/SSRN_MINING_2026-07-20.md` rank 5 before any rebuild of this family.
 
 # Month/Quarter-End FX Hedge-Rebalancing Flow
 

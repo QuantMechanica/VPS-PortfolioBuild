@@ -79,6 +79,12 @@ Ranked by "does the amputated ingredient target the exact death mode":
    **33 dead-aligned skeletons (harmonics/Wyckoff/chart patterns) stay dead.**
 5. Covered-by-exclusion (do not re-propose): GARCH/implied-vol (data-thin on .DWX),
    order-flow/L2 (feed lacks depth), meta-labeling (ML ban).
+6. **SSRN standing source (OWNER 2026-07-20):** deep mine executed same day — 30 papers,
+   9 verified card candidates + published spec-feeds for the items 1-4 skeletons above
+   (MOP TSMOM constants, Fan COT speculative pressure, Menkhoff/AMP for G8 rotation).
+   Shortlist, verification deltas, and sequencing: `docs/research/SSRN_MINING_2026-07-20.md`.
+   Also settles item-4 scope: `aa-overnight-mom` is decay-confirmed by its own authors
+   (2021-2025 ≈ 0%) — condition it or shelve it, do not naively re-draft.
 
 ## Cadence
 
