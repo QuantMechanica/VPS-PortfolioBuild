@@ -193,6 +193,7 @@ def _runner_summary(cell: dict[str, object]) -> dict[str, object]:
         "model": 4,
         "period": "M5",
         "requested_runs": 2,
+        "max_run_attempts": 4,
         "attempted_runs": 2,
         "non_ok_attempts": 0,
         "deterministic": True,
@@ -251,6 +252,7 @@ def test_hash_binding_role_closure_is_explicit() -> None:
         "rebuild_source",
         "runner",
         "runner_child",
+        "dev2_cleanup_helper",
         "runner_smoke",
         "dev2_lane_contract",
         "tester_groups_canonical",
@@ -580,7 +582,7 @@ def test_infra_retry_contract_is_one_shot_dev2_and_binds_prior_invalid(
             "native_report_created": False,
             "strategy_outcomes_read": False,
             "counts_toward_alternate_attempts": False,
-            "remediation": "CONTROLLER_TEMPORARY_ENABLE_UNDER_MUTEX_AND_RESTORE_DISABLED_IN_FINALLY",
+            "remediation": "CONTROLLER_JIT_ENABLE_WITH_SYSTEM_TTL_CLEANUP_LEASE_AND_VERIFIED_DISARM",
         },
         "retry": subject.INFRA_RETRY_POLICY,
         "classification": "OUTCOME_BLIND_INFRASTRUCTURE_RETRY_ONLY",
@@ -600,26 +602,33 @@ def test_dev2_controller_result_binds_lane_scripts_and_tester_groups() -> None:
     child_sha = "2" * 64
     smoke_sha = "3" * 64
     groups_sha = "4" * 64
+    cleanup_sha = "5" * 64
     pre = {
         "bindings": {
             "dev2_lane_contract": {"sha256": lane_sha},
             "runner_child": {"sha256": child_sha},
             "runner_smoke": {"sha256": smoke_sha},
+            "dev2_cleanup_helper": {"sha256": cleanup_sha},
             "tester_groups_canonical": {"sha256": groups_sha},
         }
     }
     run_id = "20260720T170000Z_" + "a" * 32
     result = {
+        "schema_version": 2,
         "success": True,
         "run_smoke_exit_code": 0,
         "run_id": run_id,
         "lane_contract_sha256": lane_sha,
         "child_sha256": child_sha,
         "run_smoke_sha256": smoke_sha,
+        "cleanup_helper_sha256": cleanup_sha,
         "tester_groups_post_child_sha256": groups_sha,
         "tester_groups_restored_sha256": groups_sha,
         "dev2_account_initially_enabled": False,
+        "dev2_account_enabled_by_controller": True,
         "dev2_account_restored_disabled": True,
+        "cleanup_lease_registered": True,
+        "cleanup_lease_disarmed": True,
     }
     assert subject.validate_dev2_controller_result(result, pre) == run_id
     result["child_sha256"] = "f" * 64
@@ -643,7 +652,11 @@ def _controller_envelope() -> dict[str, object]:
         "tester_groups_post_child_sha256": "4" * 64,
         "tester_groups_restored_sha256": "4" * 64,
         "dev2_account_initially_enabled": False,
+        "dev2_account_enabled_by_controller": True,
         "dev2_account_restored_disabled": True,
+        "cleanup_helper_sha256": "5" * 64,
+        "cleanup_lease_registered": True,
+        "cleanup_lease_disarmed": True,
     }
 
 
@@ -804,6 +817,37 @@ def test_runner_summary_requires_exactly_two_model4_marked_duplicates() -> None:
         subject.validate_runner_summary(summary, cell)
 
 
+def test_runner_summary_accepts_only_bounded_pre_ok_infrastructure_warmups() -> None:
+    cell = {"symbol": "NDX.DWX"}
+    summary = _runner_summary(cell)
+    summary["runs"] = [
+        {
+            "run": "run_01",
+            "status": "INVALID",
+            "failure": "BARS_ZERO",
+            "invalid_report_reasons": ["BARS_ZERO"],
+        },
+        {"run": "run_02", "status": "OK", "real_ticks_marker": True},
+        {"run": "run_03", "status": "OK", "real_ticks_marker": True},
+    ]
+    summary["attempted_runs"] = 3
+    summary["non_ok_attempts"] = 1
+    accepted = subject.validate_runner_summary(summary, cell)
+    assert [row["run"] for row in accepted] == ["run_02", "run_03"]
+
+    summary["runs"][0]["failure"] = "ONINIT_FAILED"
+    with pytest.raises(subject.InvalidEvidence, match="non-infrastructure warm-up"):
+        subject.validate_runner_summary(summary, cell)
+
+    summary["runs"] = [
+        {"run": "run_01", "status": "OK", "real_ticks_marker": True},
+        {"run": "run_02", "status": "INVALID", "failure": "BARS_ZERO"},
+        {"run": "run_03", "status": "OK", "real_ticks_marker": True},
+    ]
+    with pytest.raises(subject.InvalidEvidence, match="non-infrastructure warm-up"):
+        subject.validate_runner_summary(summary, cell)
+
+
 def test_authorization_is_owner_scoped_short_lived_and_pre_bound(tmp_path: Path) -> None:
     now = datetime(2026, 7, 20, 12, 0, tzinfo=timezone.utc)
     payload = {
@@ -831,6 +875,46 @@ def test_authorization_is_owner_scoped_short_lived_and_pre_bound(tmp_path: Path)
         subject.validate_authorization(path, "a" * 64, now=now)
 
 
+def test_global_native_attempt_claim_is_atomic_and_pre_bound(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    claim_path = tmp_path / "claims" / "attempt.json"
+    monkeypatch.setattr(subject, "NATIVE_ATTEMPT_CLAIM_PATH", claim_path)
+    run_root = tmp_path / "run"
+    state_path = run_root / "launch_state.json"
+    pre_path = run_root / "pre_receipt.json"
+    _write_json(pre_path, {"receipt": "sealed"})
+    pre_sha = subject.sha256_file(pre_path)
+    bound_files: dict[str, dict[str, object]] = {}
+    for role in ("infra_retry_contract", "ex5", "set"):
+        path = tmp_path / f"{role}.bin"
+        path.write_bytes(role.encode("ascii"))
+        bound_files[role] = subject.file_binding(path)
+    authorization_path = tmp_path / "authorization.json"
+    _write_json(authorization_path, {"authorized": True})
+    authorization = {
+        "binding": subject.file_binding(authorization_path),
+        "payload_sha256": "9" * 64,
+    }
+    pre = {
+        "run_root": str(run_root),
+        "plan": {"plan_sha256": "8" * 64},
+        "bindings": bound_files,
+    }
+
+    claim = subject.claim_native_attempt(
+        pre_path, pre_sha, pre, state_path, authorization
+    )
+    payload = subject.validate_native_attempt_claim(
+        claim, pre_path, pre_sha, pre, state_path, authorization
+    )
+    assert payload["attempt_number"] == 1
+    with pytest.raises(subject.InvalidEvidence, match="refusing to replace evidence"):
+        subject.claim_native_attempt(pre_path, pre_sha, pre, state_path, authorization)
+    with pytest.raises(subject.AuthorizationError, match="already claimed"):
+        subject._assert_native_attempt_unclaimed("test")
+
+
 def _preoutcome_state(status: str = "PENDING") -> dict[str, object]:
     pending_cells = [
         {"cell_id": window.cell_id, "status": "PENDING", "attempts": []}
@@ -842,6 +926,7 @@ def _preoutcome_state(status: str = "PENDING") -> dict[str, object]:
         "worker_pid": None,
         "finished_utc": None,
         "active_cell": None,
+        "attempt_claim": None,
         "outcome_possible_since_utc": None,
         "cells": pending_cells,
     }
@@ -861,6 +946,7 @@ def test_resume_accepts_only_strict_preoutcome_state(status: str) -> None:
         ("error", "failure"),
         ("worker_error", {"type": "AuditError"}),
         ("active_cell", {"cell_id": "DEV"}),
+        ("attempt_claim", {"sha256": "a" * 64}),
         ("outcome_possible_since_utc", "2026-07-20T12:00:00+00:00"),
     ],
 )

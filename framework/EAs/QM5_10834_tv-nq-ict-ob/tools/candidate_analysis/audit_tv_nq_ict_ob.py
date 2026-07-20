@@ -83,6 +83,9 @@ SCHEDULED_TASK_HELPER_PATH = (
 PYTHON_PATH = Path(sys.executable).resolve()
 RUNNER_PATH = REPO_ROOT / "framework" / "scripts" / "run_dev2_smoke.ps1"
 RUNNER_CHILD_PATH = REPO_ROOT / "framework" / "scripts" / "invoke_dev2_smoke_task.ps1"
+DEV2_CLEANUP_HELPER_PATH = (
+    REPO_ROOT / "framework" / "scripts" / "cleanup_dev2_account_lease.ps1"
+)
 RUN_SMOKE_PATH = REPO_ROOT / "framework" / "scripts" / "run_smoke.ps1"
 DEV2_LANE_CONTRACT_PATH = REPO_ROOT / "framework" / "registry" / "dev2_lane_contract.json"
 TESTER_GROUPS_CANONICAL_PATH = (
@@ -115,6 +118,9 @@ TESTER_GROUPS_DEV2_PATH = (
 DEV2_RUNS_ROOT = Path(r"D:\QM\reports\dev2\runs")
 POWERSHELL_PATH = Path(r"C:\Program Files\PowerShell\7\pwsh.exe")
 ALLOWED_RUN_ROOT = Path(r"D:\QM\reports\candidate_analysis\QM5_10834")
+NATIVE_ATTEMPT_CLAIM_PATH = (
+    ALLOWED_RUN_ROOT / "claims" / f"{ANALYSIS_ID}_DEV2_NATIVE_ATTEMPT_001.json"
+)
 
 EXPECTED_PINE_SHA256 = "015bb5d550a8687f506646de6c33ddfe8b29c3ed5e4ec96f3c66364edfb7f0b5"
 MODEL4_MARKER = "generating based on real ticks"
@@ -186,6 +192,7 @@ REQUIRED_BINDING_ROLES = frozenset(
         "rebuild_source",
         "runner",
         "runner_child",
+        "dev2_cleanup_helper",
         "runner_smoke",
         "dev2_lane_contract",
         "tester_groups_canonical",
@@ -1246,7 +1253,7 @@ def validate_infra_retry_contract(path: Path = INFRA_RETRY_CONTRACT_PATH) -> dic
         "native_report_created": False,
         "strategy_outcomes_read": False,
         "counts_toward_alternate_attempts": False,
-        "remediation": "CONTROLLER_TEMPORARY_ENABLE_UNDER_MUTEX_AND_RESTORE_DISABLED_IN_FINALLY",
+        "remediation": "CONTROLLER_JIT_ENABLE_WITH_SYSTEM_TTL_CLEANUP_LEASE_AND_VERIFIED_DISARM",
     }
     if payload.get("controller_preflight") != expected_controller_preflight:
         raise InvalidEvidence("infra-retry controller-preflight classification drift")
@@ -1276,6 +1283,8 @@ def execution_contract() -> dict[str, Any]:
         "controller_mutex": "Global\\QM_DEV2_SMOKE_CONTROLLER",
         "factory_terminal_pool_used": False,
         "maximum_alternate_attempts": 1,
+        "native_attempt_claim_path": str(NATIVE_ATTEMPT_CLAIM_PATH.resolve()),
+        "native_attempt_claim_mode": "ATOMIC_CREATE_ONCE_BEFORE_FIRST_CONTROLLER_EXECUTION",
     }
 
 
@@ -1330,6 +1339,7 @@ def _expected_binding_paths(symbol: str) -> dict[str, Path]:
         "rebuild_source": NDX_REBUILD_SOURCE_PATH,
         "runner": RUNNER_PATH,
         "runner_child": RUNNER_CHILD_PATH,
+        "dev2_cleanup_helper": DEV2_CLEANUP_HELPER_PATH,
         "runner_smoke": RUN_SMOKE_PATH,
         "dev2_lane_contract": DEV2_LANE_CONTRACT_PATH,
         "tester_groups_canonical": TESTER_GROUPS_CANONICAL_PATH,
@@ -1360,6 +1370,7 @@ def preflight(
 ) -> dict[str, Any]:
     enforce_symbol_policy(symbol)
     run_root = _assert_run_root(run_root)
+    _assert_native_attempt_unclaimed("PRE")
     if run_root.exists() and any(run_root.iterdir()):
         raise InvalidEvidence(f"run root is not empty: {run_root}")
     bindings = _binding_map(symbol)
@@ -1691,6 +1702,83 @@ def validate_authorization(
     return {"binding": binding, "payload_sha256": canonical_sha256(payload), "payload": payload}
 
 
+def _assert_native_attempt_unclaimed(stage: str) -> None:
+    if NATIVE_ATTEMPT_CLAIM_PATH.exists():
+        raise AuthorizationError(
+            f"the one-shot DEV2 native attempt is already claimed at {stage}"
+        )
+
+
+def _native_attempt_claim_basis(
+    pre_path: Path,
+    pre_sha256: str,
+    pre: Mapping[str, Any],
+    state_path: Path,
+    authorization: Mapping[str, Any],
+) -> dict[str, Any]:
+    return {
+        "schema_version": 1,
+        "artifact_type": "QM5_10834_DEV2_NATIVE_ATTEMPT_CLAIM",
+        "analysis_id": ANALYSIS_ID,
+        "attempt_number": 1,
+        "maximum_alternate_attempts": 1,
+        "classification": "ATOMIC_GLOBAL_ONE_SHOT_NATIVE_EXECUTION_CLAIM",
+        "pre_receipt": file_binding(pre_path, pre_sha256),
+        "run_root": str(Path(str(pre["run_root"])).resolve()),
+        "launch_state_path": str(state_path.resolve()),
+        "plan_sha256": pre["plan"]["plan_sha256"],
+        "infra_retry_contract": dict(pre["bindings"]["infra_retry_contract"]),
+        "ea_binary": dict(pre["bindings"]["ex5"]),
+        "set": dict(pre["bindings"]["set"]),
+        "authorization": {
+            "binding": dict(authorization["binding"]),
+            "payload_sha256": authorization["payload_sha256"],
+        },
+    }
+
+
+def claim_native_attempt(
+    pre_path: Path,
+    pre_sha256: str,
+    pre: Mapping[str, Any],
+    state_path: Path,
+    authorization: Mapping[str, Any],
+) -> dict[str, Any]:
+    payload = {
+        **_native_attempt_claim_basis(
+            pre_path, pre_sha256, pre, state_path, authorization
+        ),
+        "created_utc": utc_now(),
+    }
+    atomic_json(NATIVE_ATTEMPT_CLAIM_PATH, payload, replace=False)
+    return file_binding(NATIVE_ATTEMPT_CLAIM_PATH)
+
+
+def validate_native_attempt_claim(
+    binding: Mapping[str, Any],
+    pre_path: Path,
+    pre_sha256: str,
+    pre: Mapping[str, Any],
+    state_path: Path,
+    authorization: Mapping[str, Any],
+) -> dict[str, Any]:
+    if Path(str(binding.get("path", ""))).resolve() != NATIVE_ATTEMPT_CLAIM_PATH.resolve():
+        raise InvalidEvidence("native-attempt claim path drift")
+    assert_binding(binding, "global native-attempt claim")
+    payload = load_json(NATIVE_ATTEMPT_CLAIM_PATH)
+    created = parse_utc(str(payload.get("created_utc", "")), "native-attempt claim created_utc")
+    if created > datetime.now(timezone.utc) + timedelta(minutes=5):
+        raise InvalidEvidence("native-attempt claim timestamp is in the future")
+    basis = dict(payload)
+    basis.pop("created_utc", None)
+    expected = _native_attempt_claim_basis(
+        pre_path, pre_sha256, pre, state_path, authorization
+    )
+    if basis != expected:
+        raise InvalidEvidence("native-attempt global one-shot claim drift")
+    return payload
+
+
 def initial_launch_state(
     pre_path: Path,
     pre_sha256: str,
@@ -1722,6 +1810,7 @@ def initial_launch_state(
         "worker_pid": None,
         "resume_count": 0,
         "active_cell": None,
+        "attempt_claim": None,
         "outcome_possible_since_utc": None,
         "launches": [],
         "outcome_fence": {
@@ -1753,6 +1842,7 @@ def resume_eligible(state: Mapping[str, Any]) -> bool:
         or state.get("error_type")
         or state.get("worker_error")
         or state.get("active_cell") is not None
+        or state.get("attempt_claim") is not None
         or state.get("outcome_possible_since_utc") is not None
     ):
         return False
@@ -1984,6 +2074,7 @@ def launch_detached(
         "binding": authorization["binding"],
         "payload_sha256": authorization["payload_sha256"],
     }
+    _assert_native_attempt_unclaimed("native launch")
     job_path = Path(str(pre["run_root"])).resolve() / "launch_job.json"
     if resume:
         if not state_path.is_file() or not job_path.is_file():
@@ -2145,7 +2236,11 @@ def _parse_dev2_controller_json(text: str) -> dict[str, Any]:
 def validate_dev2_controller_result(
     result: Mapping[str, Any], pre: Mapping[str, Any]
 ) -> str:
-    if result.get("success") is not True or result.get("run_smoke_exit_code") != 0:
+    if (
+        result.get("schema_version") != 2
+        or result.get("success") is not True
+        or result.get("run_smoke_exit_code") != 0
+    ):
         raise InvalidEvidence("DEV2 controller did not return a successful run_smoke result")
     run_id = str(result.get("run_id", ""))
     if not re.fullmatch(r"[0-9]{8}T[0-9]{6}Z_[0-9a-f]{32}", run_id):
@@ -2155,6 +2250,7 @@ def validate_dev2_controller_result(
         "lane_contract_sha256": bindings["dev2_lane_contract"]["sha256"],
         "child_sha256": bindings["runner_child"]["sha256"],
         "run_smoke_sha256": bindings["runner_smoke"]["sha256"],
+        "cleanup_helper_sha256": bindings["dev2_cleanup_helper"]["sha256"],
     }
     drift = {
         key: (expected, str(result.get(key, "")).lower())
@@ -2172,9 +2268,12 @@ def validate_dev2_controller_result(
         raise InvalidEvidence("DEV2 tester-groups restore proof drift")
     if (
         result.get("dev2_account_initially_enabled") is not False
+        or result.get("dev2_account_enabled_by_controller") is not True
         or result.get("dev2_account_restored_disabled") is not True
+        or result.get("cleanup_lease_registered") is not True
+        or result.get("cleanup_lease_disarmed") is not True
     ):
-        raise InvalidEvidence("DEV2 disabled-at-rest account lifecycle proof drift")
+        raise InvalidEvidence("DEV2 disabled-at-rest cleanup-lease lifecycle proof drift")
     return run_id
 
 
@@ -2305,6 +2404,25 @@ def _worker_run(job_path: Path) -> int:
             # This atomic checkpoint precedes subprocess.run.  Once present, no
             # launch/resume path may execute a native cell again.
             atomic_json(state_path, state, replace=True)
+            if state.get("attempt_claim") is None:
+                state["attempt_claim"] = claim_native_attempt(
+                    pre_path,
+                    pre_sha,
+                    pre,
+                    state_path,
+                    authorization_identity,
+                )
+                state["updated_utc"] = utc_now()
+                atomic_json(state_path, state, replace=True)
+            else:
+                validate_native_attempt_claim(
+                    state["attempt_claim"],
+                    pre_path,
+                    pre_sha,
+                    pre,
+                    state_path,
+                    authorization_identity,
+                )
             with stdout_path.open("wb") as stdout, stderr_path.open("wb") as stderr:
                 completed = subprocess.run(
                     command,
@@ -2782,7 +2900,9 @@ def validate_tester_ini(values: Mapping[str, str], cell: Mapping[str, Any]) -> N
         raise InvalidEvidence(f"tester.ini contract drift: {drift}")
 
 
-def validate_runner_summary(summary: Mapping[str, Any], cell: Mapping[str, Any]) -> None:
+def validate_runner_summary(
+    summary: Mapping[str, Any], cell: Mapping[str, Any]
+) -> list[Mapping[str, Any]]:
     expected = {
         "result": "PASS",
         "ea_id": EA_ID,
@@ -2793,8 +2913,7 @@ def validate_runner_summary(summary: Mapping[str, Any], cell: Mapping[str, Any])
         "model": 4,
         "period": TIMEFRAME,
         "requested_runs": DUPLICATES,
-        "attempted_runs": DUPLICATES,
-        "non_ok_attempts": 0,
+        "max_run_attempts": DUPLICATES + 2,
         "deterministic": True,
         "oninit_failure_detected": False,
         "log_bomb_detected": False,
@@ -2804,17 +2923,41 @@ def validate_runner_summary(summary: Mapping[str, Any], cell: Mapping[str, Any])
     if drift:
         raise InvalidEvidence(f"native runner summary drift: {drift}")
     runs = summary.get("runs")
+    if not isinstance(runs, list) or not DUPLICATES <= len(runs) <= DUPLICATES + 2:
+        raise InvalidEvidence("native runner attempt count escaped the bounded warm-up contract")
+    if any(not isinstance(row, Mapping) for row in runs):
+        raise InvalidEvidence("native runner run row malformed")
+    expected_names = [f"run_{index:02d}" for index in range(1, len(runs) + 1)]
+    if [row.get("run") for row in runs] != expected_names:
+        raise InvalidEvidence("native runner attempt naming/order drift")
+    attempted = summary.get("attempted_runs")
+    non_ok = summary.get("non_ok_attempts")
     if (
-        not isinstance(runs, list)
-        or len(runs) != DUPLICATES
-        or [row.get("run") for row in runs if isinstance(row, Mapping)] != ["run_01", "run_02"]
+        isinstance(attempted, bool)
+        or not isinstance(attempted, int)
+        or attempted != len(runs)
+        or isinstance(non_ok, bool)
+        or not isinstance(non_ok, int)
+        or non_ok != len(runs) - DUPLICATES
+        or not 0 <= non_ok <= 2
     ):
-        raise InvalidEvidence("native runner did not close exactly two named duplicates")
-    for row in runs:
+        raise InvalidEvidence("native runner warm-up attempt counters drift")
+    warmups = runs[:non_ok]
+    accepted = runs[non_ok:]
+    for row in warmups:
+        if row.get("status") != "INVALID" or row.get("failure") not in {
+            "BARS_ZERO",
+            "NO_HISTORY",
+        }:
+            raise InvalidEvidence("native runner contains a non-infrastructure warm-up")
+    if len(accepted) != DUPLICATES:
+        raise InvalidEvidence("native runner did not close exactly two accepted duplicates")
+    for row in accepted:
         if not isinstance(row, Mapping):
             raise InvalidEvidence("native runner run row malformed")
         if row.get("status") != "OK" or row.get("real_ticks_marker") is not True:
             raise InvalidEvidence("native runner duplicate is not OK with an exact Model-4 marker")
+    return accepted
 
 
 def require_duplicate_identity(audits: Sequence[NativeRunAudit]) -> None:
@@ -2870,7 +3013,7 @@ def _audit_cell(
         raise InvalidEvidence(f"cell DEV2 native-root binding drift: {cell['cell_id']}")
     assert_binding(summary_binding, f"{cell['cell_id']} summary")
     summary = load_json(Path(str(summary_binding["path"])))
-    validate_runner_summary(summary, cell)
+    accepted_runs = validate_runner_summary(summary, cell)
     sealed = _sealed_by_path(attempt)
     output_root = Path(str(cell["output_root"])).resolve()
     sealed_list = attempt.get("sealed_artifacts")
@@ -2899,7 +3042,7 @@ def _audit_cell(
         raise InvalidEvidence(f"opaque outcome-artifact closure drift: {cell['cell_id']}")
     audits: list[NativeRunAudit] = []
     run_receipts: list[dict[str, Any]] = []
-    for row in summary["runs"]:
+    for row in accepted_runs:
         report_path = Path(str(row.get("report_canonical_path", ""))).resolve()
         log_path = Path(str(row.get("tester_log_path", ""))).resolve()
         ini_path = report_path.parent / "tester.ini"
@@ -3147,6 +3290,17 @@ def _validate_launch_state(
     }
     if authorization != expected_authorization or state.get("authorization") != authorization:
         raise InvalidEvidence("launch authorization lifecycle drift")
+    attempt_claim = state.get("attempt_claim")
+    if not isinstance(attempt_claim, Mapping):
+        raise InvalidEvidence("launch state global native-attempt claim is missing")
+    validate_native_attempt_claim(
+        attempt_claim,
+        pre_path,
+        pre_sha256,
+        pre,
+        state_path,
+        expected_authorization,
+    )
     if state.get("scheduler") != job.get("scheduler"):
         raise InvalidEvidence("launch scheduler identity drift")
     launches = state.get("launches")

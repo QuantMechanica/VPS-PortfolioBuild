@@ -36,7 +36,7 @@
     "native_report_created": false,
     "strategy_outcomes_read": false,
     "counts_toward_alternate_attempts": false,
-    "remediation": "CONTROLLER_TEMPORARY_ENABLE_UNDER_MUTEX_AND_RESTORE_DISABLED_IN_FINALLY"
+    "remediation": "CONTROLLER_JIT_ENABLE_WITH_SYSTEM_TTL_CLEANUP_LEASE_AND_VERIFIED_DISARM"
   },
   "retry": {
     "execution_lane": "DEV2",
