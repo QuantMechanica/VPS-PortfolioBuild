@@ -3,7 +3,7 @@
 ; ea_id:        11889
 ; ea_slug:      lien-xtreme-fade-double-bb-adx
 ; ea_version:   v5.0
-; set_version:  s20260618-001
+; set_version:  s20260720-001
 ; symbol:       USDJPY.DWX
 ; timeframe:    M15
 ; environment:  backtest
@@ -12,23 +12,24 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-06-18
+; date:         2026-07-20
 ;==========================================================
+qm_ea_id=11889
 qm_magic_slot_offset=2
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11889_lien-xtreme-fade-double-bb-adx.md
+strategy_bb_period=20
+strategy_bb_outer_stddev=3.0
+strategy_bb_inner_stddev=2.0
+strategy_adx_period=14
+strategy_adx_max_for_range=25.0
+strategy_sl_pips=18
+strategy_rr_target_partial=1.0
+strategy_rr_target_full=2.0
+strategy_trade_window_utc_start_hhmm=600
+strategy_trade_window_utc_end_hhmm=2000
+strategy_partial_close_fraction=0.50
+strategy_fractal_shift=2
