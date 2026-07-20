@@ -68,6 +68,9 @@ METATESTER_PATH = Path(r"D:\QM\mt5\DEV1\metatester64.exe")
 POWERSHELL_PATH = Path(r"C:\Program Files\PowerShell\7\pwsh.exe")
 DATA_ROOT = Path(r"D:\QM\mt5\DEV1\Bases")
 DEV1_RUNS_ROOT = Path(r"D:\QM\reports\dev1\runs")
+DEV1_COMMON_FILES_ROOT = Path(
+    r"C:\Users\QMDev1\AppData\Roaming\MetaQuotes\Terminal\Common\Files"
+)
 
 ANALYSIS_ID = "QM5_20002_SHORT_NY_REVERSE_TIME_SCREEN_001"
 CONTRACT_COMMIT = "6fbdaa0817324375ad25163194fbb9e6d6f50f9b"
@@ -483,6 +486,8 @@ def validate_compile_evidence(path: Path, contract: Mapping[str, Any]) -> dict[s
     revision = parse_utc(str(contract["revision_2_created_utc"]), "contract revision_2_created_utc")
     if finished <= revision:
         raise PreflightError("compile is not fresh after contract revision 2")
+    if finished > datetime.now(timezone.utc) + timedelta(minutes=5):
+        raise PreflightError("compile finished_utc is implausibly in the future")
     git_head = str(evidence.get("git_head_after", ""))
     if not re.fullmatch(r"[0-9a-fA-F]{40}", git_head):
         raise PreflightError("compile evidence git_head_after is missing")
@@ -625,8 +630,24 @@ def validate_model4_data(contract: Mapping[str, Any], *, hash_actual: bool = Tru
 def validate_news_bindings(contract: Mapping[str, Any]) -> list[dict[str, Any]]:
     result: list[dict[str, Any]] = []
     for row in contract["data_bindings"]["news_calendars"]:
-        binding = file_binding(Path(str(row["path"])), str(row["sha256"]))
-        result.append({"role": str(row["role"]), "binding": binding})
+        seed_path = Path(str(row["path"]))
+        binding = file_binding(seed_path, str(row["sha256"]))
+        # MT5 build 5833+ rejects these absolute drive-letter FileOpen calls.
+        # QM_NewsFilter therefore consumes the basename from FILE_COMMON under
+        # the scheduled QMDev1 account.  Bind that effective input as well as
+        # the D:\ seed and require byte identity before any terminal launch.
+        tester_common_path = DEV1_COMMON_FILES_ROOT / seed_path.name
+        tester_common_binding = file_binding(tester_common_path, str(row["sha256"]))
+        if tester_common_binding["sha256"] != binding["sha256"]:
+            raise PreflightError(f"tester FILE_COMMON news mirror drift: {tester_common_path}")
+        result.append(
+            {
+                "role": str(row["role"]),
+                "binding": binding,
+                "tester_common_binding": tester_common_binding,
+                "effective_tester_read": "ABSOLUTE_OR_BYTE_IDENTICAL_FILE_COMMON_FALLBACK",
+            }
+        )
     return sorted(result, key=lambda item: item["role"])
 
 
