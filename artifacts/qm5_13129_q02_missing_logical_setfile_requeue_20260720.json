@@ -1,0 +1,107 @@
+{
+  "mission_unit": "priority_2_diverse_energy_market_neutral_q02_setfile_repair_requeue",
+  "timestamp_utc": "2026-07-20T01:01:49+00:00",
+  "agent": "codex-agents-board-advisor",
+  "branch": "agents/board-advisor",
+  "claim": {
+    "agent_task_id": "cc782678-a6d9-48ba-a464-6d10e14529c3",
+    "claimed_at_utc": "2026-07-20T00:58:56+00:00",
+    "claimed_by": "codex:agents/board-advisor",
+    "database_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_13129_q02_repair_claim_20260720T005856Z.sqlite",
+    "collision_guard": "No open QM5_13129 work item, active agent task, active farm task, or unexpired EA lease existed when the claim transaction committed."
+  },
+  "ea": {
+    "ea_id": "QM5_13129",
+    "label": "QM5_13129_energy-rsj",
+    "instrument_class": "energy_market_neutral_pair",
+    "logical_symbol": "QM5_13129_ENERGY_RSJ_D1",
+    "basket_symbols": [
+      "XTIUSD.DWX",
+      "XNGUSD.DWX"
+    ],
+    "host_symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "expected_frequency": "approximately 12 completed packages/year",
+    "edge": "monthly relative-signed-jump rank; buy lower-RSJ energy leg and short higher-RSJ leg",
+    "source": "Kiss and Ferreira Batista Martins (2025), Finance Research Letters 86, article 108656, DOI 10.1016/j.frl.2025.108656",
+    "g0_status": "APPROVED",
+    "risk_mode": "RISK_FIXED",
+    "ml_used": false
+  },
+  "prior_q02_infra": {
+    "work_item_id": "9d4fe6ed-97fc-41d0-9b81-3466cef8d53c",
+    "phase": "Q02",
+    "status": "failed",
+    "verdict": "INVALID",
+    "failure_reason": "setfile_missing",
+    "expected_setfile": "C:/QM/repo/framework/EAs/QM5_13129_energy-rsj/sets/QM5_13129_energy-rsj_QM5_13129_ENERGY_RSJ_D1_D1_backtest.set",
+    "evidence": "D:/QM/strategy_farm/reports/work_items/9d4fe6ed-97fc-41d0-9b81-3466cef8d53c/QM5_13129/Q02/preflight_failure.json",
+    "backtest_cpu_consumed": false
+  },
+  "root_cause": {
+    "original_build_commit": "9ea65cd77",
+    "factory_overwrite_commit": "b07ddfddc",
+    "diagnosis": "The approved basket build originally contained the logical-symbol setfile. A later generic factory auto-commit renamed that file to a standalone XTI setfile and added a standalone XNG setfile, while the basket Q02 work item correctly retained the logical-symbol path. Terminal-worker preflight therefore rejected the row before MT5 launch.",
+    "repair_scope": "Restore the one canonical logical-basket setfile and remove the two misleading standalone-leg setfiles."
+  },
+  "repair": {
+    "mq5_changed": false,
+    "mq5_sha256": "8F7A41CC4B8CDB86A5E88FB8CA52FDC3C9CEDB038E1FCCF73E11B41EE53813F0",
+    "compile": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "C:/QM/repo/framework/build/compile/20260720_010040/QM5_13129_energy-rsj.compile.log",
+      "summary": "D:/QM/reports/compile/20260720_010040/summary.csv",
+      "old_ex5_sha256": "01EA659DF03A894DBAF48BF098A76FF519F17FB2008F72EBB3341EE53C655435",
+      "new_ex5_sha256": "0CCF7B1DCFA74A06C3596D1686A40E58810DBC3E412C99BEF0BB2E06186A3CDD",
+      "new_ex5_bytes": 333684
+    },
+    "build_check": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260720_010015.json"
+    },
+    "skill_build_guard": "PASS",
+    "canonical_card_schema_lint": "PASS",
+    "spec_validation": "PASS",
+    "guardrail_validation": "PASS",
+    "magic_rows": [
+      131290000,
+      131290001
+    ],
+    "magic_resolver_note": "QM5_13129 mappings are present and regeneration produced no repository diff. Strict regeneration returned the pre-existing global warning for missing EA directories 1001, 1015, and 1016.",
+    "setfile": {
+      "path": "C:/QM/repo/framework/EAs/QM5_13129_energy-rsj/sets/QM5_13129_energy-rsj_QM5_13129_ENERGY_RSJ_D1_D1_backtest.set",
+      "sha256": "4C4B907799A744FF52592F53226E222AF3DF1BF9A0FF28FD4A2547E956C0B3D2",
+      "environment": "backtest",
+      "risk_mode": "FIXED",
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "terminal_worker_preflight_failure_after_repair": null
+    }
+  },
+  "requeue": {
+    "action": "reset_existing_q02_work_item_to_pending",
+    "work_item_id": "9d4fe6ed-97fc-41d0-9b81-3466cef8d53c",
+    "phase": "Q02",
+    "logical_symbol": "QM5_13129_ENERGY_RSJ_D1",
+    "status_after": "pending",
+    "verdict_after": null,
+    "attempt_count_after": 0,
+    "claimed_by_after": null,
+    "duplicate_row_inserted": false,
+    "dispatch_requested": false
+  },
+  "safety": {
+    "manual_backtest_started": false,
+    "smoke_started": false,
+    "smoke_result": "deferred_p2_smoke",
+    "smoke_skipped_reason": "Backtest CPU ceiling; this repair was preflight-only and no MT5 dispatch was authorized.",
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
