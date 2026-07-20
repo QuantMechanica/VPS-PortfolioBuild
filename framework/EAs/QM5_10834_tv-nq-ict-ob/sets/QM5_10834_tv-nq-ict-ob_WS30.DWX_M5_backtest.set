@@ -10,7 +10,7 @@
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   bf6b49e362e82418d13c6476d004a5f88a00751959ffeb0d684b8d4abc535c73
+; build_hash:   a2df2dcceda4d7e529d6cb48728ac056a1934d4496c08bbc5544074a91e134a3
 ; author:       Development
 ; date:         2026-07-20
 ;==========================================================
@@ -19,6 +19,15 @@ qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+qm_rng_seed=42
+qm_news_temporal=3
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10834_tv-nq-ict-ob.md
 strategy_entry_start_hhmm=945
