@@ -1682,7 +1682,7 @@ def _prior_dpapi_attempt_contract() -> dict[str, Any]:
         "controller_stderr_sha256": PRIOR_DPAPI_ATTEMPT_CONTROLLER_STDERR_SHA256,
         "controller_stderr_size": 515,
         "terminal_status": "INVALID_TERMINAL",
-        "cause": "MACHINE_CREDENTIAL_DPAPI_IMPORT_FAILED",
+        "cause": "S4U_CURRENT_USER_DPAPI_IMPORT_FAILED",
         "failure_boundary": "IMPORT_CLIXML_BEFORE_DEV2_RUN_ID_ALLOCATION",
         "native_counting_boundary": ALTERNATE_ATTEMPT_COUNTING_BOUNDARY,
         "native_counting_boundary_crossed": False,
@@ -2660,6 +2660,16 @@ def _native_attempt_claim_basis(
     authorization: Mapping[str, Any],
     preclaim_probe: Mapping[str, Any],
 ) -> dict[str, Any]:
+    if (
+        preclaim_probe.get("status") != "PASS"
+        or preclaim_probe.get("exit_code") != 0
+        or preclaim_probe.get("timed_out") is not False
+        or not isinstance(preclaim_probe.get("receipt"), Mapping)
+        or not re.fullmatch(
+            r"[0-9a-f]{64}", str(preclaim_probe.get("receipt_payload_sha256", ""))
+        )
+    ):
+        raise AuthorizationError("claim sequence 003 requires a bound PASS preclaim probe")
     return {
         "schema_version": 2,
         "artifact_type": "QM5_10834_DEV2_NATIVE_ATTEMPT_CLAIM",
@@ -3364,6 +3374,36 @@ def _claim_worker_bootstrap_state(
         return state
 
 
+def _persist_invalid_preclaim_state(
+    state_path: Path,
+    state: dict[str, Any],
+    probe_execution: Mapping[str, Any] | None,
+    exc: Exception,
+) -> dict[str, Any]:
+    if state.get("attempt_claim") is not None:
+        raise InvalidEvidence("preclaim failure cannot follow an attempt claim")
+    if state.get("active_cell") is not None or state.get("outcome_possible_since_utc") is not None:
+        raise InvalidEvidence("preclaim failure crossed the outcome fence")
+    cells = state.get("cells")
+    if not isinstance(cells, list) or any(
+        not isinstance(cell, Mapping)
+        or cell.get("status") != "PENDING"
+        or cell.get("attempts") != []
+        for cell in cells
+    ):
+        raise InvalidEvidence("preclaim failure observed a non-pending cell")
+    state["status"] = "INVALID_PREFLIGHT"
+    state["worker_pid"] = None
+    state["preclaim_probe"] = dict(probe_execution) if probe_execution is not None else None
+    state["worker_error"] = {
+        "type": type(exc).__name__,
+        "message": _safe_error_message(exc),
+    }
+    state["updated_utc"] = utc_now()
+    atomic_json(state_path, state, replace=True)
+    return state
+
+
 def _worker_run(job_path: Path) -> int:
     state: dict[str, Any] | None = None
     state_path: Path | None = None
@@ -3418,15 +3458,7 @@ def _worker_run(job_path: Path) -> int:
         state["updated_utc"] = utc_now()
         atomic_json(state_path, state, replace=True)
     except (OSError, subprocess.SubprocessError, AuditError, KeyError, TypeError, ValueError) as exc:
-        state["status"] = "INVALID_PREFLIGHT"
-        state["worker_pid"] = None
-        state["preclaim_probe"] = probe_execution
-        state["worker_error"] = {
-            "type": type(exc).__name__,
-            "message": _safe_error_message(exc),
-        }
-        state["updated_utc"] = utc_now()
-        atomic_json(state_path, state, replace=True)
+        _persist_invalid_preclaim_state(state_path, state, probe_execution, exc)
         return 2
 
     cell_by_id = {str(cell["cell_id"]): cell for cell in pre["plan"]["cells"]}

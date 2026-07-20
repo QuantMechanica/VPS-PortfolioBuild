@@ -244,12 +244,15 @@ def test_frozen_plan_is_one_symbol_four_disjoint_cells_and_two_duplicates(
     assert plan["accepted_duplicate_run_count"] == 8
     assert plan["maximum_native_starts"] == 16
     contract = subject.execution_contract()
-    assert contract["current_attempt_number"] == 2
-    assert contract["maximum_alternate_attempts"] == 2
-    assert contract["prior_alternate_attempts"] == 1
+    assert contract["claim_sequence"] == 3
+    assert contract["reserved_counted_alternate_attempt_number"] == 2
+    assert contract["prior_claim_sequences"] == 2
+    assert contract["maximum_counted_alternate_attempts"] == 2
+    assert contract["prior_counted_alternate_attempts"] == 1
+    assert contract["claim_creation_alone_does_not_count_as_alternate_attempt"] is True
     assert contract["authorization_scope"] == subject.AUTHORIZATION_SCOPE
-    assert Path(contract["native_attempt_claim_path"]).name.endswith("ATTEMPT_002.json")
-    assert subject.LAUNCHER_REVISION == 5
+    assert Path(contract["native_attempt_claim_path"]).name.endswith("ATTEMPT_003.json")
+    assert subject.LAUNCHER_REVISION == 6
     assert contract["native_run_timeout_seconds"] == 28_800
     assert contract["native_per_attempt_overhead_seconds"] == 600
     assert contract["cell_outer_timeout_seconds"] == 119_400
@@ -299,6 +302,9 @@ def test_hash_binding_role_closure_is_explicit() -> None:
         "runner",
         "runner_child",
         "dev2_cleanup_helper",
+        "dev2_machine_credential_probe",
+        "dev2_machine_credential_helper",
+        "dev2_machine_credential",
         "runner_smoke",
         "dev2_lane_contract",
         "tester_groups_canonical",
@@ -548,6 +554,14 @@ def test_runner_command_freezes_model4_two_duplicates_zero_native_cost(
         "bindings": {
             "powershell": {"path": str(tmp_path / "pwsh.exe")},
             "runner": {"path": str(tmp_path / "run_dev2_smoke.ps1")},
+            "dev2_machine_credential": {
+                "path": str(tmp_path / "credential.machine-dpapi.json"),
+                "sha256": "c" * 64,
+            },
+            "dev2_machine_credential_helper": {
+                "path": str(tmp_path / "dev2_machine_credential.ps1"),
+                "sha256": "d" * 64,
+            },
         },
         "plan": {"plan_sha256": "b" * 64},
         "execution_contract": subject.execution_contract(),
@@ -561,6 +575,8 @@ def test_runner_command_freezes_model4_two_duplicates_zero_native_cost(
     assert command[command.index("-MinTrades") + 1] == "0"
     assert command[command.index("-CommissionPerLot") + 1] == "0"
     assert command[command.index("-CommissionPerSideNative") + 1] == "0"
+    assert command[command.index("-ExpectedCredentialSha256") + 1] == "c" * 64
+    assert command[command.index("-ExpectedHelperSha256") + 1] == "d" * 64
     assert command[-1] == "-SmokeMode"
 
 
@@ -687,7 +703,7 @@ def _infra_retry_002_fixture(
     )
 
     prior_claim_payload = {
-        "schema_version": 1,
+        "schema_version": 2,
         "artifact_type": "QM5_10834_DEV2_NATIVE_ATTEMPT_CLAIM",
         "analysis_id": subject.ANALYSIS_ID,
         "attempt_number": 1,
@@ -808,7 +824,7 @@ def _infra_retry_002_fixture(
             "remediation": "CONTROLLER_JIT_ENABLE_WITH_SYSTEM_TTL_CLEANUP_LEASE_AND_VERIFIED_DISARM",
         },
         "prior_native_attempt": subject._prior_native_attempt_contract(),
-        "retry": dict(subject.INFRA_RETRY_POLICY),
+        "retry": dict(subject.INFRA_RETRY_002_POLICY),
         "classification": "OUTCOME_BLIND_INFRASTRUCTURE_PORT_RETRY_002_ONLY",
     }
     contract = tmp_path / "retry.json"
@@ -820,18 +836,18 @@ def test_infra_retry_contract_is_outcome_blind_attempt_002_and_binds_prior_port_
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     contract, payload, native_root, _ = _infra_retry_002_fixture(tmp_path, monkeypatch)
-    assert subject.validate_infra_retry_contract(contract) == payload
+    assert subject._validate_infra_retry_002_contract(contract) == payload
 
-    payload["retry"] = {**subject.INFRA_RETRY_POLICY, "maximum_alternate_attempts": 3}
+    payload["retry"] = {**subject.INFRA_RETRY_002_POLICY, "maximum_alternate_attempts": 3}
     _write_json(contract, payload)
     with pytest.raises(subject.InvalidEvidence, match="attempt-002 policy"):
-        subject.validate_infra_retry_contract(contract)
+        subject._validate_infra_retry_002_contract(contract)
 
-    payload["retry"] = dict(subject.INFRA_RETRY_POLICY)
+    payload["retry"] = dict(subject.INFRA_RETRY_002_POLICY)
     _write_json(contract, payload)
     (native_root / "native" / "DEV" / "report.htm").write_bytes(b"")
     with pytest.raises(subject.InvalidEvidence, match="native outcome artifact"):
-        subject.validate_infra_retry_contract(contract)
+        subject._validate_infra_retry_002_contract(contract)
 
 
 def test_dev2_controller_result_binds_lane_scripts_and_tester_groups() -> None:
@@ -840,12 +856,16 @@ def test_dev2_controller_result_binds_lane_scripts_and_tester_groups() -> None:
     smoke_sha = "3" * 64
     groups_sha = "4" * 64
     cleanup_sha = "5" * 64
+    credential_sha = "6" * 64
+    credential_helper_sha = "7" * 64
     pre = {
         "bindings": {
             "dev2_lane_contract": {"sha256": lane_sha},
             "runner_child": {"sha256": child_sha},
             "runner_smoke": {"sha256": smoke_sha},
             "dev2_cleanup_helper": {"sha256": cleanup_sha},
+            "dev2_machine_credential": {"sha256": credential_sha},
+            "dev2_machine_credential_helper": {"sha256": credential_helper_sha},
             "tester_groups_canonical": {"sha256": groups_sha},
         }
     }
@@ -859,6 +879,8 @@ def test_dev2_controller_result_binds_lane_scripts_and_tester_groups() -> None:
         "child_sha256": child_sha,
         "run_smoke_sha256": smoke_sha,
         "cleanup_helper_sha256": cleanup_sha,
+        "machine_credential_sha256": credential_sha,
+        "machine_credential_helper_sha256": credential_helper_sha,
         "tester_groups_post_child_sha256": groups_sha,
         "tester_groups_restored_sha256": groups_sha,
         "dev2_account_initially_enabled": False,
@@ -882,6 +904,8 @@ def _controller_envelope() -> dict[str, object]:
         "lane_contract_sha256": "1" * 64,
         "child_sha256": "2" * 64,
         "run_smoke_sha256": "3" * 64,
+        "machine_credential_sha256": "6" * 64,
+        "machine_credential_helper_sha256": "7" * 64,
         "agent_port_proof": {
             "status": "PASS",
             "listeners": [{"local_port": 3000, "process_id": 42}],
@@ -1232,15 +1256,20 @@ def test_runner_summary_rejects_hidden_non_infrastructure_reason() -> None:
 def test_authorization_is_owner_scoped_short_lived_and_pre_bound(tmp_path: Path) -> None:
     now = datetime(2026, 7, 20, 12, 0, tzinfo=timezone.utc)
     payload = {
-        "schema_version": 1,
+        "schema_version": 2,
         "artifact_type": "QM5_10834_NATIVE_OUTCOME_AUTHORIZATION",
         "status": "AUTHORIZED",
         "analysis_id": subject.ANALYSIS_ID,
         "pre_receipt_sha256": "a" * 64,
         "scope": subject.AUTHORIZATION_SCOPE,
-        "attempt_number": 2,
-        "maximum_alternate_attempts": 2,
-        "prior_alternate_attempts": 1,
+        "claim_sequence": 3,
+        "reserved_counted_alternate_attempt_number": 2,
+        "prior_claim_sequences": 2,
+        "maximum_counted_alternate_attempts": 2,
+        "prior_counted_alternate_attempts": 1,
+        "claim_creation_alone_does_not_count_as_alternate_attempt": True,
+        "alternate_attempt_counting_boundary": subject.ALTERNATE_ATTEMPT_COUNTING_BOUNDARY,
+        "same_worker_machine_credential_probe_required_before_claim": True,
         "authorized_by": "OWNER",
         "authorized_symbol": "NDX.DWX",
         "authorized_cells": [window.cell_id for window in subject.WINDOWS],
@@ -1288,6 +1317,13 @@ def test_global_native_attempt_claim_is_atomic_and_pre_bound(
         "binding": subject.file_binding(authorization_path),
         "payload_sha256": "9" * 64,
     }
+    preclaim_probe = {
+        "status": "PASS",
+        "exit_code": 0,
+        "timed_out": False,
+        "receipt": {"path": "probe.json", "size": 1, "sha256": "6" * 64},
+        "receipt_payload_sha256": "7" * 64,
+    }
     pre = {
         "run_root": str(run_root),
         "plan": {"plan_sha256": "8" * 64},
@@ -1295,18 +1331,22 @@ def test_global_native_attempt_claim_is_atomic_and_pre_bound(
     }
 
     claim = subject.claim_native_attempt(
-        pre_path, pre_sha, pre, state_path, authorization
+        pre_path, pre_sha, pre, state_path, authorization, preclaim_probe
     )
     payload = subject.validate_native_attempt_claim(
-        claim, pre_path, pre_sha, pre, state_path, authorization
+        claim, pre_path, pre_sha, pre, state_path, authorization, preclaim_probe
     )
-    assert payload["attempt_number"] == 2
-    assert payload["maximum_alternate_attempts"] == 2
-    assert payload["prior_alternate_attempts"] == 1
+    assert payload["claim_sequence"] == 3
+    assert payload["reserved_counted_alternate_attempt_number"] == 2
+    assert payload["prior_claim_sequences"] == 2
+    assert payload["maximum_counted_alternate_attempts"] == 2
+    assert payload["prior_counted_alternate_attempts"] == 1
     assert payload["authorization_scope"] == subject.AUTHORIZATION_SCOPE
-    assert payload["classification"] == "ATOMIC_GLOBAL_OUTCOME_BLIND_INFRA_PORT_RETRY_002_CLAIM"
+    assert payload["classification"] == "ATOMIC_GLOBAL_OUTCOME_BLIND_DPAPI_RETRY_CLAIM_003_COUNTED_ALTERNATE_002"
     with pytest.raises(subject.InvalidEvidence, match="refusing to replace evidence"):
-        subject.claim_native_attempt(pre_path, pre_sha, pre, state_path, authorization)
+        subject.claim_native_attempt(
+            pre_path, pre_sha, pre, state_path, authorization, preclaim_probe
+        )
     with pytest.raises(subject.AuthorizationError, match="already claimed"):
         subject._assert_native_attempt_unclaimed("test")
 
@@ -1332,6 +1372,13 @@ def test_global_native_attempt_claim_has_exactly_one_concurrent_winner(
         "binding": subject.file_binding(authorization_path),
         "payload_sha256": "9" * 64,
     }
+    preclaim_probe = {
+        "status": "PASS",
+        "exit_code": 0,
+        "timed_out": False,
+        "receipt": {"path": "probe.json", "size": 1, "sha256": "6" * 64},
+        "receipt_payload_sha256": "7" * 64,
+    }
     pre = {
         "run_root": str(run_root),
         "plan": {"plan_sha256": "8" * 64},
@@ -1343,7 +1390,12 @@ def test_global_native_attempt_claim_has_exactly_one_concurrent_winner(
         barrier.wait(timeout=5)
         try:
             subject.claim_native_attempt(
-                pre_path, pre_sha, pre, state_path, authorization
+                pre_path,
+                pre_sha,
+                pre,
+                state_path,
+                authorization,
+                preclaim_probe,
             )
             return "SUCCESS"
         except subject.InvalidEvidence:
@@ -1606,6 +1658,7 @@ def _preoutcome_state(status: str = "PENDING") -> dict[str, object]:
         "finished_utc": None,
         "active_cell": None,
         "attempt_claim": None,
+        "preclaim_probe": None,
         "outcome_possible_since_utc": None,
         "cells": pending_cells,
     }
@@ -1653,6 +1706,7 @@ def test_resume_accepts_only_strict_preoutcome_state(status: str) -> None:
         ("worker_error", {"type": "AuditError"}),
         ("active_cell", {"cell_id": "DEV"}),
         ("attempt_claim", {"sha256": "a" * 64}),
+        ("preclaim_probe", {"status": "PASS"}),
         ("outcome_possible_since_utc", "2026-07-20T12:00:00+00:00"),
     ],
 )
@@ -1670,6 +1724,7 @@ def test_resume_rejects_every_legacy_or_outcome_surface(field: str, value: objec
 
 def test_persisted_task_timeout_covers_all_cells_and_cleanup_margin(tmp_path: Path) -> None:
     pre = {
+        "run_root": str(tmp_path),
         "plan": {
             "cells": [
                 {"output_root": str(tmp_path / window.cell_id)}
@@ -1679,7 +1734,7 @@ def test_persisted_task_timeout_covers_all_cells_and_cleanup_margin(tmp_path: Pa
     }
     assert subject.RUN_ATTEMPT_OVERHEAD_SECONDS == 600
     assert subject.CELL_CONTROLLER_TIMEOUT_SECONDS == 119_400
-    assert subject.required_scheduled_task_timeout(pre) == 481_200
+    assert subject.required_scheduled_task_timeout(pre) == 481_320
 
 
 def test_persisted_launch_job_binds_s4u_helper_python_plan_and_state(
@@ -1713,7 +1768,7 @@ def test_persisted_launch_job_binds_s4u_helper_python_plan_and_state(
         "logon_type": "S4U",
         "run_level": "Highest",
         "multiple_instances": "IgnoreNew",
-        "execution_limit_seconds": 481_200,
+        "execution_limit_seconds": 481_320,
         "helper": helper,
         "python": python,
     }
