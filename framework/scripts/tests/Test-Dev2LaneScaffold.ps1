@@ -10,6 +10,7 @@ $paths = [ordered]@{
     provision = Join-Path $repoRoot 'framework\scripts\provision_dev2_lane.ps1'
     initialize = Join-Path $repoRoot 'framework\scripts\initialize_dev2_profile.ps1'
     controller = Join-Path $repoRoot 'framework\scripts\run_dev2_smoke.ps1'
+    cleanup = Join-Path $repoRoot 'framework\scripts\cleanup_dev2_account_lease.ps1'
     child = Join-Path $repoRoot 'framework\scripts\invoke_dev2_smoke_task.ps1'
     lsa = Join-Path $repoRoot 'framework\scripts\dev2_lsa_rights.ps1'
     complete = Join-Path $repoRoot 'framework\scripts\complete_dev2_postclone.ps1'
@@ -31,6 +32,7 @@ foreach ($path in $paths.Values) {
 $provisionAst = Get-QmParsedScript -Path $paths.provision
 $null = Get-QmParsedScript -Path $paths.initialize
 $controllerAst = Get-QmParsedScript -Path $paths.controller
+$cleanupAst = Get-QmParsedScript -Path $paths.cleanup
 $childAst = Get-QmParsedScript -Path $paths.child
 $lsaAst = Get-QmParsedScript -Path $paths.lsa
 $completeAst = Get-QmParsedScript -Path $paths.complete
@@ -61,6 +63,7 @@ if ([string]$exception.relative_path -cne 'Bases/Custom/history/GBPUSD.DWX/2026.
 
 $provisionText = Get-Content -LiteralPath $paths.provision -Raw -ErrorAction Stop
 $controllerText = Get-Content -LiteralPath $paths.controller -Raw -ErrorAction Stop
+$cleanupText = Get-Content -LiteralPath $paths.cleanup -Raw -ErrorAction Stop
 $childText = Get-Content -LiteralPath $paths.child -Raw -ErrorAction Stop
 $lsaText = Get-Content -LiteralPath $paths.lsa -Raw -ErrorAction Stop
 $completeText = Get-Content -LiteralPath $paths.complete -Raw -ErrorAction Stop
@@ -87,10 +90,29 @@ if ($null -eq $applyParameter) { throw 'Provisioner lacks explicit -Apply opt-in
 foreach ($marker in @(
     "schema_version = 2", 'lane_contract_sha256', 'child_sha256', 'program_sha256',
     'Global\QM_DEV2_SMOKE_CONTROLLER', 'QM_DEV2_SMOKE_', 'agent_port_proof',
-    'previously-unowned metatester listener proof'
+    'previously-unowned metatester listener proof', 'Get-QmDev2ControllerAccountState',
+    'Enable-QmDev2ControllerAccountState',
+    'Restore-QmDev2ControllerAccountState', 'dev2_account_initially_enabled',
+    'dev2_account_enabled_by_controller', 'dev2_account_restored_disabled',
+    'QM_DEV2_CLEANUP_', 'cleanup_lease_registered', 'cleanup_lease_disarmed',
+    'cleanup_helper_sha256', 'New-ScheduledTaskTrigger -AtStartup',
+    '-RepetitionInterval (New-TimeSpan -Minutes 5)', '-RestartCount 3',
+    'ExpectedExpiryUtc', 'AllowHardTerminate', 'Get-QmDev2IdentityProcesses',
+    'try { Stop-QmDev2ProcessesExact'
 )) {
     if (-not $controllerText.Contains($marker, [System.StringComparison]::Ordinal)) {
         throw "DEV2 controller binding marker is missing: $marker"
+    }
+}
+foreach ($marker in @(
+    'QM_DEV2_ACCOUNT_CLEANUP_LEASE', 'QM_DEV2_ACCOUNT_CLEANUP_RESULT',
+    'QM_DEV2_ACCOUNT_CLEANUP_DISARM_RESULT', 'Stop-QmTargetTaskExact',
+    'Stop-QmDev2ProcessesExact', 'Get-QmDev2IdentityProcesses',
+    'account_restored_disabled', 'containment_verified', 'lease_disarmed',
+    'tester_groups_sha256', 'Disable-LocalUser'
+)) {
+    if (-not $cleanupText.Contains($marker, [System.StringComparison]::Ordinal)) {
+        throw "DEV2 cleanup-lease safety marker is missing: $marker"
     }
 }
 foreach ($marker in @(
@@ -107,17 +129,98 @@ foreach ($forbidden in @('credential.clixml', 'Import-Clixml', 'farmctl', 'pipel
         throw "DEV2 limited child contains forbidden token: $forbidden"
     }
 }
+$cleanupForbidden = @('credential.clixml', 'Import-Clixml', 'farmctl', 'pipeline_dispatcher', 'run_pump_task.py', 'CommandLine', 'Enable-LocalUser')
+foreach ($forbidden in $cleanupForbidden) {
+    if ($cleanupText.Contains($forbidden, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "DEV2 cleanup helper contains forbidden token: $forbidden"
+    }
+}
 $stopCommands = @($controllerAst.FindAll({
     param($node)
     $node -is [System.Management.Automation.Language.CommandAst] -and $node.GetCommandName() -eq 'Stop-Process'
 }, $true))
-if ($stopCommands.Count -ne 1) { throw 'DEV2 controller must contain exactly one exact-path Stop-Process call.' }
+if ($stopCommands.Count -ne 1) { throw 'DEV2 controller must contain exactly one exact-identity Stop-Process call.' }
 $stopParent = $stopCommands[0].Parent
 while ($null -ne $stopParent -and $stopParent -isnot [System.Management.Automation.Language.FunctionDefinitionAst]) {
     $stopParent = $stopParent.Parent
 }
 if ($null -eq $stopParent -or $stopParent.Name -ne 'Stop-QmDev2ProcessesExact') {
     throw 'DEV2 Stop-Process escaped Stop-QmDev2ProcessesExact.'
+}
+$cleanupStopCommands = @($cleanupAst.FindAll({
+    param($node)
+    $node -is [System.Management.Automation.Language.CommandAst] -and $node.GetCommandName() -eq 'Stop-Process'
+}, $true))
+if ($cleanupStopCommands.Count -ne 1) { throw 'DEV2 cleanup helper must contain exactly one exact-identity Stop-Process call.' }
+$cleanupStopParent = $cleanupStopCommands[0].Parent
+while ($null -ne $cleanupStopParent -and $cleanupStopParent -isnot [System.Management.Automation.Language.FunctionDefinitionAst]) {
+    $cleanupStopParent = $cleanupStopParent.Parent
+}
+if ($null -eq $cleanupStopParent -or $cleanupStopParent.Name -ne 'Stop-QmDev2ProcessesExact') {
+    throw 'DEV2 cleanup-helper Stop-Process escaped Stop-QmDev2ProcessesExact.'
+}
+foreach ($accountContract in @(
+    @{ Command = 'Enable-LocalUser'; Count = 1 },
+    @{ Command = 'Disable-LocalUser'; Count = 2 }
+)) {
+    $accountCommand = [string]$accountContract.Command
+    $commands = @($controllerAst.FindAll({
+        param($node)
+        $node -is [System.Management.Automation.Language.CommandAst] -and $node.GetCommandName() -eq $accountCommand
+    }, $true))
+    if ($commands.Count -ne [int]$accountContract.Count) {
+        throw "DEV2 controller account lifecycle has an unexpected $accountCommand count."
+    }
+    foreach ($command in $commands) {
+        if (@($command.CommandElements | ForEach-Object { $_.Extent.Text }) -notcontains '-SID') {
+            throw "DEV2 controller $accountCommand must mutate only the captured immutable SID."
+        }
+    }
+}
+$cleanupDisableCommands = @($cleanupAst.FindAll({
+    param($node)
+    $node -is [System.Management.Automation.Language.CommandAst] -and $node.GetCommandName() -eq 'Disable-LocalUser'
+}, $true))
+if ($cleanupDisableCommands.Count -ne 1) {
+    throw 'DEV2 cleanup helper must contain exactly one Disable-LocalUser call.'
+}
+if (@($cleanupDisableCommands[0].CommandElements | ForEach-Object { $_.Extent.Text }) -notcontains '-SID') {
+    throw 'DEV2 cleanup helper must disable only the captured immutable SID.'
+}
+$processAsts = @($controllerAst, $cleanupAst, $childAst)
+foreach ($processAst in $processAsts) {
+    $processQueries = @($processAst.FindAll({
+        param($node)
+        $node -is [System.Management.Automation.Language.CommandAst] -and
+        $node.GetCommandName() -eq 'Get-CimInstance' -and
+        $node.Extent.Text.Contains('Win32_Process', [System.StringComparison]::Ordinal)
+    }, $true))
+    foreach ($query in $processQueries) {
+        if (-not $query.Extent.Text.Contains('-Property ProcessId,ExecutablePath,CreationDate', [System.StringComparison]::Ordinal)) {
+            throw 'Every DEV2 Win32_Process query must explicitly exclude unused sensitive properties.'
+        }
+    }
+}
+$controllerRegisters = @($controllerAst.FindAll({
+    param($node)
+    $node -is [System.Management.Automation.Language.CommandAst] -and $node.GetCommandName() -eq 'Register-ScheduledTask'
+}, $true))
+if ($controllerRegisters.Count -ne 2) {
+    throw 'DEV2 controller must register exactly one cleanup lease and one smoke task.'
+}
+$cleanupRegisterIndex = $controllerText.IndexOf('Register-ScheduledTask -TaskName $cleanupTaskName', [System.StringComparison]::Ordinal)
+$enableIndex = $controllerText.IndexOf('$dev2AccountEnabledByController = Enable-QmDev2ControllerAccountState', [System.StringComparison]::Ordinal)
+$smokeRegisterIndex = $controllerText.IndexOf('Register-ScheduledTask -TaskName $taskName', [System.StringComparison]::Ordinal)
+if ($cleanupRegisterIndex -lt 0 -or $enableIndex -le $cleanupRegisterIndex -or $smokeRegisterIndex -le $enableIndex) {
+    throw 'DEV2 controller must arm its SYSTEM cleanup lease before just-in-time account enable and smoke-task registration.'
+}
+if ($controllerText.Contains('Write-Warning', [System.StringComparison]::OrdinalIgnoreCase)) {
+    throw 'DEV2 controller may not mask containment/disarm failures as warnings.'
+}
+$containmentPersistIndex = $cleanupText.IndexOf('Write-QmAtomicResult -Path $resultPath -Payload $containmentPayload', [System.StringComparison]::Ordinal)
+$selfUnregisterIndex = $cleanupText.IndexOf('    Unregister-QmTaskExact -TaskName $CleanupTaskName', [System.StringComparison]::Ordinal)
+if ($containmentPersistIndex -lt 0 -or $selfUnregisterIndex -le $containmentPersistIndex) {
+    throw 'DEV2 cleanup helper must durably persist containment proof before self-unregistering its retry lease.'
 }
 if (@($childAst.FindAll({
     param($node)

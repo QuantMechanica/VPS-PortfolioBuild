@@ -62,7 +62,7 @@ function Resolve-QmAccountSid {
 
 function Assert-QmNoDev2Processes {
     $running = @(
-        Get-CimInstance -ClassName Win32_Process -ErrorAction Stop | Where-Object {
+        Get-CimInstance -ClassName Win32_Process -Property ProcessId,ExecutablePath,CreationDate -ErrorAction Stop | Where-Object {
             -not [string]::IsNullOrWhiteSpace([string]$_.ExecutablePath) -and
             (Test-QmPathWithin -Path ([string]$_.ExecutablePath) -Root $script:Dev2Root)
         }
@@ -160,7 +160,7 @@ function Update-QmDev2AgentListenerProof {
         [Parameter(Mandatory = $true)][System.Collections.IDictionary]$PortContract
     )
     $expectedPath = ConvertTo-QmFullPath -Path (Join-Path $script:Dev2Root 'metatester64.exe')
-    foreach ($process in @(Get-CimInstance -ClassName Win32_Process -Filter "Name = 'metatester64.exe'" -ErrorAction Stop)) {
+    foreach ($process in @(Get-CimInstance -ClassName Win32_Process -Filter "Name = 'metatester64.exe'" -Property ProcessId,ExecutablePath,CreationDate -ErrorAction Stop)) {
         if ([string]::IsNullOrWhiteSpace([string]$process.ExecutablePath)) { continue }
         $actualPath = ConvertTo-QmFullPath -Path ([string]$process.ExecutablePath)
         if (-not $actualPath.Equals($expectedPath, [System.StringComparison]::OrdinalIgnoreCase)) { continue }
