@@ -1,12 +1,15 @@
 {
   "schema_version": 2,
-  "contract_revision": 2,
+  "contract_revision": 3,
   "artifact_type": "QM5_20002_PREREGISTERED_REVERSE_TIME_CANDIDATE_CONTRACT",
   "analysis_id": "QM5_20002_SHORT_NY_REVERSE_TIME_SCREEN_001",
   "created_utc": "2026-07-20T01:55:00Z",
   "revision_2_created_utc": "2026-07-20T02:12:28Z",
   "revision_2_outcome_fence": "INFRASTRUCTURE_ONLY_BEFORE_ANY_2017_2021_REPORT_OR_MARKET_OUTCOME_WAS_READ",
   "revision_2_reason": "QM_NewsInit consumes two tester CSV files, while revision 1 bound only the primary file; revision 2 binds both inputs and makes pending-order fill-time compliance an explicit INVALID gate.",
+  "revision_3_created_utc": "2026-07-20T03:27:46Z",
+  "revision_3_outcome_fence": "SOURCE_CAUSAL_AND_SAFETY_CORRECTIONS_FROZEN_BEFORE_ANY_QM5_20002_MT5_RUN_REPORT_ANNOTATED_TRADE_OR_2017_2021_MARKET_OUTCOME_WAS_OPENED",
+  "revision_3_reason": "Primary-source and static review found a blocked immediate reclaim, pre-sweep FVG eligibility, broker-calendar liquidity levels, news-before-management ordering, stale GTC fill paths and volatile restart state. Revision 3 binds the outcome-blind source-corrected implementation without changing any screen input or merit gate.",
   "purpose": "Test the previously claimed short-only New-York ICT rescue on an earlier outcome window that was not used to select the direction/session filter.",
   "epistemic_status": {
     "candidate_origin": "POST_HOC_FILTER_FROM_2022_2025_EURUSD_M1_OUTCOMES",
@@ -31,12 +34,19 @@
   },
   "frozen_implementation": {
     "source_path": "framework/EAs/QM5_20002_ict-icytea-core/QM5_20002_ict-icytea-core.mq5",
-    "source_git_commit": "37bb9798b78b41392ea8379432cfe3e5875a74b5",
-    "source_sha256": "4951435e308d594de64f4a0ae9fe0e0785f00d7902487e7103990424da3c5d79",
+    "source_git_commit": "652e7f1fdafa8e34247344bee579fe9989ba0e4a",
+    "source_sha256": "3fd49f2cea7575e659f1b1cf9c24c752a4a8e11db5e0c17cae69629a6f207f83",
+    "primary_source_path": "D:/QM/strategy_farm/artifacts/sources/ict_icy_tea_source_20260716/MQL5_Strategie_Spezifikation_some_icy_tea.docx",
+    "primary_source_sha256": "8880629e924c7dee48e1d2cd0a5cd835020e057ee592b132b6fd0c7a438231af",
+    "source_correction_plan_path": "framework/EAs/QM5_20002_ict-icytea-core/docs/candidate-analysis/source_correction_v3_plan.md",
+    "source_correction_plan_git_commit": "4e94d4c6a84c9d7bc773344a2311a23cba927f46",
+    "source_correction_plan_sha256": "914e1b1c81c4352ee51e7ea1dc4f525739b4e16e1a866d86b759c8dafbbf8c9a",
     "strategy_card_path": "framework/EAs/QM5_20002_ict-icytea-core/docs/strategy_card.md",
     "strategy_card_sha256": "230e59ae40179333a3c7790cc56f371bede8edd2b8fa53913557b20d8cb8bded",
     "build_brief_path": "framework/EAs/QM5_20002_ict-icytea-core/docs/BUILD_BRIEF.md",
     "build_brief_sha256": "57c16befda21c6fb1cc8e44a24b715c92940faee70de9adc1b9351c46d9c92bb",
+    "strategy_card_status_at_revision_3": "intake",
+    "approval_claim": "NONE_RESEARCH_SOURCE_CORRECTION_ONLY",
     "fresh_compile_required": true,
     "compiled_binary_must_bind_source_manifest": true,
     "existing_binary_may_not_be_reused_without_fresh_compile_proof": true
@@ -176,6 +186,38 @@
     "news_blackout_minutes_after": 30,
     "violation_disposition": "INVALID",
     "rationale": "The EA places ORDER_TIME_SPECIFIED limit orders. A limit accepted inside the killzone and outside news can still fill after 10:00 NY or during a later news blackout, so placement-time gating alone cannot prove the candidate semantics."
+  },
+  "revision_3_causal_semantics": {
+    "immediate_sweep_reclaim": "JUST_CLOSED_BAR_WICKS_STRICTLY_THROUGH_LEVEL_AND_CLOSES_STRICTLY_BACK_ACROSS_PREVIOUS_CLOSE_IRRELEVANT",
+    "later_sweep_reclaim": "FIRST_SUBSEQUENT_CLOSE_BACK_ACROSS_WITHIN_SweepReturnBars_SUBSEQUENTLY_CLOSED_BARS_ALL_INTERVENING_CLOSES_REMAIN_ON_SWEPT_SIDE",
+    "recorded_sweep_identity": "ORIGINAL_WICK_BAR_TIME_AND_MANIPULATION_EXTREME",
+    "immediate_same_bar_mss": "FORBIDDEN_BECAUSE_OHLC_CANNOT_ESTABLISH_INTRABAR_SWEEP_BEFORE_MSS",
+    "later_reclaim_bar_mss": "ALLOWED_WHEN_THE_RECORDED_SWEEP_BAR_IS_STRICTLY_EARLIER",
+    "mss_reference": "MOST_RECENT_CONFIRMED_RELEVANT_SWING_STRICTLY_BEFORE_RECORDED_SWEEP",
+    "fvg_window": "ALL_THREE_FVG_CANDLES_STRICTLY_AFTER_RECORDED_SWEEP_AND_NO_LATER_THAN_MSS_BAR",
+    "pre_sweep_fvg_may_satisfy_displacement": false,
+    "sweep_to_mss_expiry_bars": 30,
+    "sweep_to_mss_expiry_status": "UNCHANGED_ENGINEERING_ASSUMPTION_PRIMARY_SOURCE_HAS_NO_NUMERICAL_VALUE",
+    "structural_send_rejection_semantics": "UNCHANGED_ONE_SHOT_ENGINEERING_ASSUMPTION"
+  },
+  "revision_3_calendar_and_runtime_safety": {
+    "daily_level_calendar": "MOST_RECENT_COMPLETED_NEW_YORK_WEEKDAY_WITH_CLOSED_M15_DATA_WEEKEND_FRAGMENTS_SKIPPED",
+    "weekly_level_calendar": "NEW_YORK_MONDAY_00_00_INCLUSIVE_TO_NEXT_MONDAY_00_00_EXCLUSIVE_FROM_CLOSED_M15_BARS",
+    "broker_d1_levels_forbidden": true,
+    "tick_order_before_entry_news_gate": [
+      "KILL_SWITCH",
+      "CANCEL_INVALID_PENDING_AND_CLOSE_RACING_INVALID_FILL",
+      "FRIDAY_CLOSE",
+      "PARTIAL_AND_BREAKEVEN_MANAGEMENT",
+      "NEW_YORK_DAY_END_EXIT",
+      "CUSTOM_AND_FRESH_TWO_AXIS_NEWS_ENTRY_GATE"
+    ],
+    "pending_order_policy": "REMOVE_OWN_LIMITS_OUTSIDE_ENABLED_KILLZONE_OR_DURING_FRESH_TWO_CALENDAR_BLACKOUT",
+    "fill_race_policy": "VALIDATE_POSITION_TIME_AND_RETRY_IMMEDIATE_CLOSE_UNTIL_INVALID_FILL_IS_GONE",
+    "restart_swings": "CAUSALLY_REPLAY_CONFIRMED_CLOSED_BAR_FRACTALS_TO_REBUILD_BOUNDED_BUFFERS",
+    "restart_pending": "TRANSACTIONAL_VERSIONED_TERMINAL_GLOBAL_RECORD_PER_MAGIC_SYMBOL_SIDE_REJECT_FUTURE_STALE_OR_INCOMPLETE",
+    "restart_partial": "RECONSTRUCT_FROM_CLOSING_DEAL_HISTORY_FAIL_CLOSED_IF_HISTORY_UNAVAILABLE",
+    "restart_breakeven": "RECONSTRUCT_FROM_CURRENT_BROKER_STOP_AND_RETRY_BE_IF_PARTIAL_EXISTS_BUT_BE_DOES_NOT"
   },
   "familywise_policy": {
     "hypothesis_count": 4,
