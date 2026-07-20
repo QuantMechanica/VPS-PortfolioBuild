@@ -155,6 +155,9 @@ LAUNCH_STATE_FIELDS = frozenset(
         "terminal",
     }
 )
+LEGACY_REV2_REJECT_FIELDS = frozenset(
+    (LAUNCH_STATE_FIELDS - {"terminal"}) | {"error_type", "error"}
+)
 ACTIVE_CELL_FIELDS = frozenset(
     {"cell_id", "attempt_number", "command_sha256", "started_utc", "status"}
 )
@@ -1853,10 +1856,6 @@ def _assert_resume_outcome_fence(
 
     if state.get("launcher_revision") != LAUNCHER_REVISION:
         raise AuthorizationError("legacy launch state is not resumable")
-    try:
-        _validate_launch_state_shape(state)
-    except AuditError as exc:
-        raise AuthorizationError(f"launch state schema is not resumable: {exc}") from exc
     if state.get("status") not in {"PENDING", "PENDING_RESUME", "RUNNING"}:
         raise AuthorizationError("launch state status is not pre-outcome resumable")
     if state.get("finished_utc") or state.get("terminal") is not None:
@@ -1866,6 +1865,10 @@ def _assert_resume_outcome_fence(
         raise AuthorizationError("sealed cell outcome exists; resume is forbidden")
     if state.get("active_cell") is not None or state.get("outcome_possible_since_utc") is not None:
         raise AuthorizationError("a cell launch crossed the outcome fence; resume is forbidden")
+    try:
+        _validate_launch_state_shape(state)
+    except AuditError as exc:
+        raise AuthorizationError(f"launch state schema is not resumable: {exc}") from exc
     work_root = state_path.resolve().parent / "worker"
     if work_root.exists() and next(work_root.iterdir(), None) is not None:
         raise AuthorizationError("worker artifact tree is non-empty; resume is forbidden")
@@ -2280,6 +2283,7 @@ def launch_detached(
         state["worker_pid"] = None
         state["resume_count"] = int(state.get("resume_count", 0)) + 1
         state["updated_utc"] = utc_now()
+        _validate_launch_state_shape(state)
         atomic_json(state_path, state)
         started = _scheduler_call(pre, "Start", job)
         observed = load_json(state_path)
@@ -2330,6 +2334,7 @@ def launch_detached(
     _validate_launch_job(job, pre, pre_path, pre_sha256, state_path)
     job_sha = atomic_json(job_path, job, replace=False)
     state = _initial_launch_state(pre_path, pre_sha256, file_binding(job_path), job)
+    _validate_launch_state_shape(state)
     atomic_json(state_path, state, replace=False)
     _scheduler_call(pre, "Register", job)
     started = _scheduler_call(pre, "Start", job)
@@ -3114,15 +3119,130 @@ def _adjudicate_arm(
     }
 
 
+def _is_legacy_rev2_stdout_lifecycle_defect(state: Mapping[str, Any]) -> bool:
+    active = state.get("active_cell")
+    return bool(
+        set(state) == LEGACY_REV2_REJECT_FIELDS
+        and state.get("schema_version") == SCHEMA_VERSION
+        and state.get("launcher_revision") == 2
+        and state.get("artifact_type") == "QM5_20002_SHORT_NY_LAUNCH_STATE"
+        and state.get("analysis_id") == ANALYSIS_ID
+        and state.get("status") == "REJECT"
+        and type(state.get("worker_pid")) is int
+        and state["worker_pid"] > 0
+        and isinstance(active, Mapping)
+        and set(active) == (ACTIVE_CELL_FIELDS - {"attempt_number"})
+        and active.get("status") == "OUTCOME_POSSIBLE_NO_RESUME"
+        and state.get("finished_utc") is not None
+        and state.get("outcome_possible_since_utc") is not None
+        and isinstance(state.get("cells"), list)
+        and state.get("error_type") == "AuditError"
+        and state.get("error") == "runner stdout contains no JSON object"
+    )
+
+
+def _inspect_launch_state_payload(
+    state_path: Path, state: Mapping[str, Any], state_binding: Mapping[str, Any]
+) -> dict[str, Any]:
+    base = {
+        "schema_version": SCHEMA_VERSION,
+        "artifact_type": "QM5_20002_SHORT_NY_LAUNCH_STATUS",
+        "analysis_id": ANALYSIS_ID,
+        "created_utc": utc_now(),
+        "launch_state": dict(state_binding),
+        "state_status": state.get("status"),
+        "post_allowed": False,
+        "resume_allowed": False,
+        "outcome_data_read": False,
+    }
+    if _is_legacy_rev2_stdout_lifecycle_defect(state):
+        return {
+            **base,
+            "status": "REJECT",
+            "classification": "LEGACY_REV2_RUNNER_STDOUT_REJECT_LIFECYCLE_UNCLOSED",
+            "evidence_closed": False,
+            "findings": [
+                "TERMINAL_WORKER_PID_NOT_CLEARED",
+                "TERMINAL_ACTIVE_CELL_NOT_CLEARED",
+                "REJECTED_CELL_ATTEMPT_EVIDENCE_MISSING",
+                "RUNNER_STDOUT_NO_JSON",
+            ],
+        }
+    try:
+        _validate_launch_state_shape(state)
+    except AuditError as exc:
+        status = state.get("status")
+        classification = (
+            "INVALID_TERMINAL_LAUNCH_STATE"
+            if status in {"COMPLETE", "REJECT"}
+            else "INVALID_OR_UNCLOSED_LAUNCH_STATE"
+        )
+        return {
+            **base,
+            "status": "REJECT",
+            "classification": classification,
+            "evidence_closed": False,
+            "findings": ["EXACT_SCHEMA_VALIDATION_FAILED"],
+            "validation_error": str(exc),
+        }
+    status = str(state["status"])
+    if status == "COMPLETE":
+        return {
+            **base,
+            "status": "PASS",
+            "classification": "TERMINAL_COMPLETE_STRUCTURALLY_CLOSED",
+            "evidence_closed": True,
+            "post_precheck_required": True,
+            "findings": [],
+        }
+    if status == "REJECT":
+        terminal = state["terminal"]
+        return {
+            **base,
+            "status": "REJECT",
+            "classification": "TERMINAL_REJECT_EVIDENCE_CLOSED",
+            "evidence_closed": True,
+            "controller_failure_class": terminal["controller_failure_class"],
+            "findings": ["TERMINAL_REJECT_NO_RESUME"],
+        }
+    outcome_crossed = state["outcome_possible_since_utc"] is not None
+    return {
+        **base,
+        "status": "REJECT" if outcome_crossed else "OPEN",
+        "classification": (
+            "NONTERMINAL_OUTCOME_FENCE_OPEN_NO_RESUME"
+            if outcome_crossed
+            else "PRE_OUTCOME_STATE"
+        ),
+        "evidence_closed": False,
+        "resume_allowed": not outcome_crossed,
+        "findings": ["OUTCOME_FENCE_REQUIRES_TERMINAL_CLOSURE"] if outcome_crossed else [],
+    }
+
+
+def launch_status(state_path: Path) -> dict[str, Any]:
+    """Inspect lifecycle metadata only; never open reports, trades, or metrics."""
+
+    state_path = state_path.resolve()
+    binding = file_binding(state_path)
+    return _inspect_launch_state_payload(state_path, load_json(state_path), binding)
+
+
 def _validate_launch_chain(
     pre_path: Path,
     pre_sha256: str,
     state_path: Path,
     state: Mapping[str, Any],
     pre: Mapping[str, Any],
-) -> None:
+) -> list[dict[str, Any]]:
     """Bind COMPLETE state back through its immutable job, authorization, and plan."""
 
+    try:
+        _validate_launch_state_shape(state, PostflightError)
+    except AuditError as exc:
+        raise PostflightError(str(exc)) from exc
+    if state["status"] != "COMPLETE":
+        raise PostflightError("launch state is not a closed COMPLETE state")
     job_binding = state.get("job")
     if not isinstance(job_binding, Mapping):
         raise PostflightError("launch state omitted immutable job binding")
@@ -3150,11 +3270,10 @@ def _validate_launch_chain(
     if (
         Path(str(state.get("pre_receipt_path", ""))).resolve() != pre_path.resolve()
         or str(state.get("pre_receipt_sha256", "")).lower() != pre_sha256.lower()
-        or not isinstance(state.get("worker_pid"), int)
-        or int(state["worker_pid"]) <= 0
+        or state.get("worker_pid") is not None
         or state.get("active_cell") is not None
     ):
-        raise PostflightError("launch state PRE/worker identity drift")
+        raise PostflightError("launch state PRE/terminal worker closure drift")
 
     job_created = parse_utc(str(job.get("created_utc", "")), "launch job created_utc")
     state_started = parse_utc(str(state.get("started_utc", "")), "launch state started_utc")
@@ -3178,32 +3297,45 @@ def _validate_launch_chain(
     ):
         raise PostflightError("launch state cell order/closure drift")
     cursor = state_started
-    for launch_cell, plan_cell in zip(cells, pre["plan"]["cells"]):
+    attempts: list[dict[str, Any]] = []
+    for cell_record, plan_cell in zip(cells, pre["plan"]["cells"]):
+        launch_cell = _attempt_for_post(cell_record)
+        attempts.append(launch_cell)
         started = parse_utc(str(launch_cell.get("started_utc", "")), "cell started_utc")
         finished = parse_utc(str(launch_cell.get("finished_utc", "")), "cell finished_utc")
         if not cursor <= started <= finished <= state_finished:
             raise PostflightError(f"launch cell chronology drift: {plan_cell['cell_id']}")
         if (
-            launch_cell.get("runner_exit_code") != 0
+            type(launch_cell.get("runner_exit_code")) is not int
+            or launch_cell.get("runner_exit_code") != 0
             or launch_cell.get("command_sha256") != canonical_sha256(runner_command(pre, plan_cell))
         ):
             raise PostflightError(f"launch cell command/exit drift: {plan_cell['cell_id']}")
         cursor = finished
+    if attempts and outcome_possible != parse_utc(
+        attempts[0]["started_utc"], "first cell started_utc"
+    ):
+        raise PostflightError("launch state first outcome-fence timestamp drift")
+    return attempts
 
 
-def postflight(pre_path: Path, pre_sha256: str, state_path: Path) -> dict[str, Any]:
-    pre = assert_pre_receipt(pre_path, pre_sha256)
+def _load_complete_launch_chain(
+    pre_path: Path, pre_sha256: str, state_path: Path
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], list[dict[str, Any]]]:
+    """Outcome-blind POST fence: state/job/PRE metadata only."""
+
+    state_path = state_path.resolve()
     state_binding = file_binding(state_path)
     state = load_json(state_path)
-    if (
-        state.get("artifact_type") != "QM5_20002_SHORT_NY_LAUNCH_STATE"
-        or state.get("analysis_id") != ANALYSIS_ID
-        or state.get("status") != "COMPLETE"
-        or state.get("pre_receipt_sha256") != pre_sha256.lower()
-    ):
-        raise PostflightError("launch state is not COMPLETE/bound to PRE")
-    _validate_launch_chain(pre_path, pre_sha256, state_path, state, pre)
-    launch_cells = state.get("cells")
+    inspection = _inspect_launch_state_payload(state_path, state, state_binding)
+    if inspection["classification"] != "TERMINAL_COMPLETE_STRUCTURALLY_CLOSED":
+        raise PostflightError(
+            f"POST blocked by lifecycle classification: {inspection['classification']}"
+        )
+    pre = assert_pre_receipt(pre_path, pre_sha256)
+    if state.get("pre_receipt_sha256") != pre_sha256.lower():
+        raise PostflightError("launch state is not bound to the supplied PRE")
+    launch_cells = _validate_launch_chain(pre_path, pre_sha256, state_path, state, pre)
     if (
         not isinstance(launch_cells, list)
         or len(launch_cells) != 4
@@ -3213,6 +3345,56 @@ def postflight(pre_path: Path, pre_sha256: str, state_path: Path) -> dict[str, A
     launch_by_id = {str(row.get("cell_id")): row for row in launch_cells}
     if len(launch_by_id) != 4:
         raise PostflightError("launch state cell IDs are not unique")
+    return pre, state, dict(state_binding), launch_cells
+
+
+def post_precheck(pre_path: Path, pre_sha256: str, state_path: Path) -> dict[str, Any]:
+    """Return a read-only, outcome-blind POST eligibility decision."""
+
+    try:
+        _pre, _state, state_binding, launch_cells = _load_complete_launch_chain(
+            pre_path, pre_sha256, state_path
+        )
+    except (AuditError, OSError, subprocess.SubprocessError, ValueError, KeyError, TypeError) as exc:
+        try:
+            status = launch_status(state_path)
+            classification = str(status["classification"])
+            state_binding = status["launch_state"]
+        except (AuditError, OSError, ValueError, KeyError, TypeError):
+            classification = "POST_PREFLIGHT_INVALID_OR_UNREADABLE_STATE"
+            state_binding = None
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "artifact_type": "QM5_20002_SHORT_NY_POST_PRECHECK",
+            "analysis_id": ANALYSIS_ID,
+            "created_utc": utc_now(),
+            "status": "REJECT",
+            "classification": classification,
+            "post_allowed": False,
+            "outcome_data_read": False,
+            "launch_state": state_binding,
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+        }
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "artifact_type": "QM5_20002_SHORT_NY_POST_PRECHECK",
+        "analysis_id": ANALYSIS_ID,
+        "created_utc": utc_now(),
+        "status": "PASS",
+        "classification": "POST_PREFLIGHT_PASS_COMPLETE_EVIDENCE",
+        "post_allowed": True,
+        "outcome_data_read": False,
+        "launch_state": state_binding,
+        "cell_count": len(launch_cells),
+    }
+
+
+def postflight(pre_path: Path, pre_sha256: str, state_path: Path) -> dict[str, Any]:
+    pre, state, state_binding, launch_cells = _load_complete_launch_chain(
+        pre_path, pre_sha256, state_path
+    )
+    launch_by_id = {str(row.get("cell_id")): row for row in launch_cells}
     core = _load_report_core(pre)
     news = load_news_events(pre["news_calendars"])
     cell_receipts: list[dict[str, Any]] = []
@@ -3292,6 +3474,16 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     post.add_argument("--pre-sha256", required=True)
     post.add_argument("--state", type=Path, required=True)
     post.add_argument("--receipt", type=Path, required=True)
+    status = sub.add_parser(
+        "status", help="Read-only lifecycle classification without outcome data"
+    )
+    status.add_argument("--state", type=Path, required=True)
+    post_pre = sub.add_parser(
+        "post-precheck", help="Read-only outcome-blind POST eligibility check"
+    )
+    post_pre.add_argument("--pre-receipt", type=Path, required=True)
+    post_pre.add_argument("--pre-sha256", required=True)
+    post_pre.add_argument("--state", type=Path, required=True)
     worker = sub.add_parser("_run-plan", help=argparse.SUPPRESS)
     worker.add_argument("--job", type=Path, required=True)
     return parser.parse_args(argv)
@@ -3315,7 +3507,11 @@ def main(argv: Sequence[str] | None = None) -> int:
                 args.controller_timeout_seconds,
                 resume=args.resume,
             )
-        else:
+        elif args.command == "status":
+            output = launch_status(args.state)
+        elif args.command == "post-precheck":
+            output = post_precheck(args.pre_receipt, args.pre_sha256, args.state)
+        elif args.command == "post":
             payload = postflight(args.pre_receipt, args.pre_sha256, args.state)
             receipt_sha = atomic_json(args.receipt, payload, replace=False)
             output = {
@@ -3324,8 +3520,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "sha256": receipt_sha,
                 "passing_arms": payload["passing_arms"],
             }
+        else:
+            raise AuditError(f"unsupported command: {args.command}")
         print(json.dumps(output, indent=2, sort_keys=True))
-        return 0
+        return 2 if args.command == "post-precheck" and output.get("status") == "REJECT" else 0
     except (AuditError, OSError, subprocess.SubprocessError, ValueError, KeyError, TypeError) as exc:
         phase = args.command.upper()
         payload = _rejection(phase, exc)
