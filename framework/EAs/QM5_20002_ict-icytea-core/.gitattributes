@@ -1,0 +1,5 @@
+QM5_20002_ict-icytea-core.mq5 -text
+docs/candidate-analysis/* -text
+sets/candidate-analysis/* -text
+tools/candidate_analysis/* -text
+tests/candidate_analysis/* -text
