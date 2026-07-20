@@ -25,6 +25,19 @@
     "strategy_outcomes_read": false,
     "strategy_merit_adjudicated": false
   },
+  "controller_preflight": {
+    "run_root": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\NDX_ICT_OB_FULL_DEV2_INFRA_RETRY_001",
+    "pre_receipt_sha256": "377cc789829c5fd5ad8107d977e29d8d7bc987f774c4414769999e44b8a8ee64",
+    "launch_state_sha256": "6711df22476d20c40b6ef109729bed20ddcaf106597e4a53c767bb7dd2464011",
+    "terminal_status": "INVALID_TERMINAL",
+    "cause": "QMDEV2_ACCOUNT_DISABLED_AT_REST",
+    "dev2_process_started": false,
+    "dev2_run_directory_created": false,
+    "native_report_created": false,
+    "strategy_outcomes_read": false,
+    "counts_toward_alternate_attempts": false,
+    "remediation": "CONTROLLER_TEMPORARY_ENABLE_UNDER_MUTEX_AND_RESTORE_DISABLED_IN_FINALLY"
+  },
   "retry": {
     "execution_lane": "DEV2",
     "maximum_alternate_attempts": 1,
