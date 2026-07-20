@@ -767,7 +767,7 @@ bool ICT_TryBuildLongEntry(const ICT_Pending &pending, QM_EntryRequest &req)
    // (Low(C) > High(A); zone [High(A), Low(C)]). Keep the highest qualifying candidate
    // still in discount = the first gap price reaches on the retrace back down.
    bool any_fvg = false, have_fvg = false;
-   double fvg_entry = 0.0, fvg_low_sel = 0.0, fvg_high_sel = 0.0;
+   double fvg_entry = 0.0;
    for(int i = 1; i + 2 <= leg; ++i)
      {
       const datetime time_c = iTime(_Symbol, ExecutionTF, i); // perf-allowed
@@ -788,12 +788,10 @@ bool ICT_TryBuildLongEntry(const ICT_Pending &pending, QM_EntryRequest &req)
       if(PremiumDiscountFilter && cand > discount_ceiling)
          continue; // spec Ch3 S4: longs only in discount
       if(!have_fvg || cand > fvg_entry) // highest qualifying = first touched on the retrace
-        {
-         have_fvg = true;
-         fvg_entry = cand;
-         fvg_low_sel = fl;
-         fvg_high_sel = fh;
-        }
+         {
+          have_fvg = true;
+          fvg_entry = cand;
+         }
      }
 
    // spec Ch3 S3: displacement = FVG-in-impulse (mandatory by default) AND/OR MSS-bar body>=k*ATR.
@@ -910,7 +908,7 @@ bool ICT_TryBuildShortEntry(const ICT_Pending &pending, QM_EntryRequest &req)
    // spec Ch4 Baustein FVG: bearish FVG = High(C) < Low(A); zone [High(C), Low(A)].
    // Keep the LOWEST qualifying candidate still in premium = first touched on the retrace up.
    bool any_fvg = false, have_fvg = false;
-   double fvg_entry = 0.0, fvg_low_sel = 0.0, fvg_high_sel = 0.0;
+   double fvg_entry = 0.0;
    for(int i = 1; i + 2 <= leg; ++i)
      {
       const datetime time_c = iTime(_Symbol, ExecutionTF, i); // perf-allowed
@@ -931,12 +929,10 @@ bool ICT_TryBuildShortEntry(const ICT_Pending &pending, QM_EntryRequest &req)
       if(PremiumDiscountFilter && cand < premium_floor)
          continue; // spec Ch3 S4: shorts only in premium
       if(!have_fvg || cand < fvg_entry) // lowest qualifying = first touched on the retrace up
-        {
-         have_fvg = true;
-         fvg_entry = cand;
-         fvg_low_sel = fl;
-         fvg_high_sel = fh;
-        }
+         {
+          have_fvg = true;
+          fvg_entry = cand;
+         }
      }
 
    const double body_c = MathAbs(iClose(_Symbol, ExecutionTF, 1) - iOpen(_Symbol, ExecutionTF, 1)); // perf-allowed
@@ -1018,7 +1014,8 @@ bool ICT_TryBuildShortEntry(const ICT_Pending &pending, QM_EntryRequest &req)
 
 string ICT_PendingStatePrefix(const string side)
   {
-   return StringFormat("ICT3.%d.%d.%s.", QM_FrameworkMagic(), qm_magic_slot_offset, side);
+   return StringFormat("ICT3.%d.%s.%d.%s.", QM_FrameworkMagic(), _Symbol,
+                       qm_magic_slot_offset, side);
   }
 
 void ICT_ZeroPending(ICT_Pending &pending)
