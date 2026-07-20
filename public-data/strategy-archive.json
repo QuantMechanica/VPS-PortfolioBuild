@@ -1,6 +1,6 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-19T23:07:03.8995308Z",
+    "generated_at":  "2026-07-20T00:07:03.1838104Z",
     "total":  3362,
     "items":  [
                   {
@@ -1537,7 +1537,7 @@
                       "slug":  "xauxag-cmtar_card",
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-19T23:01:26.8396219Z"
+                      "last_updated_utc":  "2026-07-19T23:26:07.7838254Z"
                   },
                   {
                       "slug":  "xau-xag-qc_card",
@@ -17545,7 +17545,7 @@
                       "slug":  "QM5_20012_xauxag-cmtar",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-19T23:01:26.8396219Z"
+                      "last_updated_utc":  "2026-07-19T23:41:16.3295833Z"
                   },
                   {
                       "slug":  "QM5_2002_nnfx-qqe-trend",
