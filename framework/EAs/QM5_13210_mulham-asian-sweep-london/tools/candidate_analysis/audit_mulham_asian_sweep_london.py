@@ -3,7 +3,7 @@
 
 The command has three deliberately separate trust domains:
 
-* ``pre`` reads only build, configuration, validation, data and runtime bytes.  It
+* ``pre`` reads only build, configuration, research-data and runtime bytes.  It
   freezes one authorised symbol and four disjoint windows without opening an MT5
   report or parsing a market outcome.
 * ``launch`` requires a short-lived, hash-bound authorisation receipt.  A
@@ -98,7 +98,28 @@ EXPECTED_RESEARCH_HASHES = {
     "research_extraction": "a95a08bb8e862b72f452c338b2414b2aa1468ca19bfa55b357b727c07bfb6075",
     "research_batch_receipt": "933cc8194da7ad83ef42d08862ab537fde7e010734b963421fdc464c57aab75d",
 }
+EXPECTED_BUILD_HASHES = {
+    "card": "c9138af20679962b694b253a07488a08085868bb65b81ee1887780cd0e01c11e",
+    "spec": "72ce962a40f08de114c872d162cd7f1a986c7afbeb856bb79af6395f333fa28c",
+    "mq5": "1e96e58f79ff3d1a3a8853c592cc1fd5bbff68eb3c0afdb2e66c3a3fe49f2274",
+    "ex5": "ffd5a47aa7e7f32759494d4f0e172d785da5d7ccdd5f3cfbfed64aeffbc2943c",
+    "set": "d3a7e28a486eed85d28cd0d6e060c62733507ee213e3983e1da5b88dab4de1f7",
+}
 EXPECTED_BUILD_COMMIT = "b86eafe5cd20a359a71614ea8fcaddbd88977f4e"
+EXPECTED_COMPILE_EVIDENCE = {
+    "compile_log": {
+        "path": Path(
+            r"C:\QM\repo\framework\build\compile\20260720_082006\QM5_13210_mulham-asian-sweep-london.compile.log"
+        ),
+        "size": 20562,
+        "sha256": "606b73f5771001ab2dabe6688dc96efd0c61563c11e310ac3624648542e90b7e",
+    },
+    "summary": {
+        "path": Path(r"D:\QM\reports\compile\20260720_082006\summary.csv"),
+        "size": 2393,
+        "sha256": "4234e06e6a535b0bde0be197cafc5bbed97ba5bf7b3fc765eb5e32440e837b8f",
+    },
+}
 MODEL4_MARKER = "generating based on real ticks"
 INITIAL_BALANCE = Decimal("100000")
 ZERO = Decimal("0")
@@ -508,8 +529,11 @@ def validate_data_manifest(
         coverage_to = date.fromisoformat(str(coverage["to_date"]))
     except (KeyError, ValueError) as exc:
         raise InvalidEvidence("data manifest coverage is malformed") from exc
-    if coverage_from > WINDOWS[0].from_date or coverage_to < WINDOWS[-1].to_date:
-        raise InvalidEvidence("data manifest does not cover every preregistered cell")
+    if (
+        coverage_from != WINDOWS[0].from_date
+        or coverage_to != WINDOWS[-1].to_date
+    ):
+        raise InvalidEvidence("data manifest coverage is not the exact preregistered range")
     files = manifest.get("files")
     if not isinstance(files, list) or not files:
         raise InvalidEvidence("data manifest files are missing")
@@ -553,6 +577,66 @@ def validate_data_manifest(
         "manifest": manifest_binding,
         "coverage": {"from_date": coverage_from, "to_date": coverage_to},
         "files": [dict(item) for item in files],
+    }
+
+
+def prepare_research_data_artifacts(
+    symbol: str,
+    data_manifest_path: Path,
+    research_data_receipt_path: Path,
+    *,
+    terminal_data_root: Path = TERMINAL_DATA_ROOT,
+) -> dict[str, Any]:
+    """Hash the exact preregistered research store without opening outcomes."""
+
+    enforce_symbol_policy(symbol)
+    history_root = terminal_data_root / "history" / symbol
+    ticks_root = terminal_data_root / "ticks" / symbol
+    paths = [history_root / f"{year}.hcc" for year in range(2018, 2026)]
+    paths.extend(ticks_root / f"{month}.tkc" for month in sorted(_required_tick_months()))
+    files = [file_binding(path) for path in paths]
+    manifest = {
+        "schema_version": 1,
+        "artifact_type": "QM_DWX_RESEARCH_DATA_MANIFEST",
+        "created_utc": utc_now(),
+        "symbol": symbol,
+        "research_store": "T1_CUSTOM_SYMBOL_STORE",
+        "purpose": "RESEARCH_BACKTEST_ONLY",
+        "coverage": {
+            "from_date": WINDOWS[0].from_date.isoformat(),
+            "to_date": WINDOWS[-1].to_date.isoformat(),
+        },
+        "files": files,
+    }
+    manifest_sha = atomic_json(data_manifest_path, manifest, replace=False)
+    receipt = {
+        "schema_version": 1,
+        "artifact_type": "QM_DWX_RESEARCH_STORE_READINESS_RECEIPT",
+        "created_utc": utc_now(),
+        "status": "PASS",
+        "symbol": symbol,
+        "research_store": "T1_CUSTOM_SYMBOL_STORE",
+        "purpose": "RESEARCH_BACKTEST_ONLY",
+        "namespace": ".DWX",
+        "scope": {
+            "hcc_years": "2018..2025",
+            "tkc_months": "201807..202512",
+            "model": 4,
+            "live_parity_required": False,
+            "deployment_routing_evaluated": False,
+        },
+        "data_manifest_sha256": manifest_sha,
+        "evidence": [file_binding(data_manifest_path, manifest_sha)],
+    }
+    receipt_sha = atomic_json(research_data_receipt_path, receipt, replace=False)
+    return {
+        "status": "PASS",
+        "data_manifest": str(data_manifest_path.resolve()),
+        "data_manifest_sha256": manifest_sha,
+        "research_data_receipt": str(research_data_receipt_path.resolve()),
+        "research_data_receipt_sha256": receipt_sha,
+        "file_count": len(files),
+        "outcome_files_opened": False,
     }
 
 
@@ -775,12 +859,37 @@ def validate_build_receipt(
     if not isinstance(compile_evidence, Mapping):
         drift["compile_evidence"] = ("two exact bindings", compile_evidence)
     else:
-        for role in ("compile_log", "summary"):
+        if set(compile_evidence) != set(EXPECTED_COMPILE_EVIDENCE):
+            drift["compile_evidence.roles"] = (
+                sorted(EXPECTED_COMPILE_EVIDENCE),
+                sorted(str(role) for role in compile_evidence),
+            )
+        for role, fixed in EXPECTED_COMPILE_EVIDENCE.items():
             item = compile_evidence.get(role)
             if not isinstance(item, Mapping):
                 drift[f"compile_evidence.{role}"] = ("file binding", item)
             else:
                 assert_binding(item, f"build {role}")
+                try:
+                    observed_identity = {
+                        "path": Path(str(item["path"])).resolve(),
+                        "size": int(item["size"]),
+                        "sha256": str(item["sha256"]).lower(),
+                    }
+                except (KeyError, TypeError, ValueError) as exc:
+                    raise InvalidEvidence(
+                        f"malformed compile-evidence binding: {role}"
+                    ) from exc
+                expected_identity = {
+                    "path": fixed["path"].resolve(),
+                    "size": fixed["size"],
+                    "sha256": fixed["sha256"],
+                }
+                if observed_identity != expected_identity:
+                    drift[f"compile_evidence.{role}.identity"] = (
+                        expected_identity,
+                        observed_identity,
+                    )
     if drift:
         raise InvalidEvidence(f"build receipt/hash binding drift: {drift}")
     return receipt
@@ -902,7 +1011,10 @@ def _expected_binding_paths(symbol: str) -> dict[str, Path]:
 def _binding_map(symbol: str) -> dict[str, dict[str, Any]]:
     paths = _expected_binding_paths(symbol)
     return {
-        role: file_binding(path, EXPECTED_RESEARCH_HASHES.get(role))
+        role: file_binding(
+            path,
+            EXPECTED_RESEARCH_HASHES.get(role) or EXPECTED_BUILD_HASHES.get(role),
+        )
         for role, path in paths.items()
     }
 
@@ -1465,7 +1577,7 @@ def resume_eligible(state: Mapping[str, Any]) -> bool:
     return True
 
 
-def launch_detached(
+def launch_persistent_task(
     pre_path: Path,
     pre_sha256: str,
     authorization_path: Path,
@@ -1634,19 +1746,6 @@ def _archive_interrupted_no_outcome(
     state_cell["status"] = "PENDING"
 
 
-def _registered_worker_state(state_path: Path, launch_token: str) -> dict[str, Any]:
-    token_sha256 = hashlib.sha256(launch_token.encode("ascii")).hexdigest()
-    deadline = time_module.monotonic() + WORKER_REGISTRATION_TIMEOUT_SECONDS
-    while time_module.monotonic() < deadline:
-        state = load_json(state_path)
-        if state.get("launch_token_sha256") != token_sha256:
-            raise AuthorizationError("worker launch token/state drift")
-        if state.get("worker_pid") == os.getpid() and state.get("status") == "RUNNING":
-            return state
-        time_module.sleep(0.05)
-    raise AuthorizationError("detached worker was not registered by its launcher")
-
-
 def _safe_error_message(exc: Exception) -> str:
     if isinstance(exc, subprocess.TimeoutExpired):
         return "native controller exceeded the fenced outer timeout"
@@ -1655,7 +1754,7 @@ def _safe_error_message(exc: Exception) -> str:
     return str(exc)
 
 
-def _worker_run(job_path: Path, launch_token: str) -> int:
+def _worker_run(job_path: Path) -> int:
     job_binding = file_binding(job_path)
     job = load_json(job_path)
     if (
@@ -1664,29 +1763,27 @@ def _worker_run(job_path: Path, launch_token: str) -> int:
     ):
         raise AuthorizationError("worker job identity drift")
     state_path = Path(str(job["state_path"])).resolve()
-    state = _registered_worker_state(state_path, launch_token)
+    state = load_json(state_path)
     launches = state.get("launches")
     if not isinstance(launches, list) or not launches or not isinstance(launches[-1], Mapping):
         exc = AuthorizationError("worker launch audit row is missing")
         state["status"] = "INVALID_WORKER_BOOTSTRAP"
         state["worker_pid"] = None
-        state["launch_token_sha256"] = None
         state["worker_error"] = {"type": type(exc).__name__, "message": str(exc)}
         state["updated_utc"] = utc_now()
         atomic_json(state_path, state, replace=True)
         return 2
     active_launch = launches[-1]
     if (
-        active_launch.get("worker_pid") != os.getpid()
-        or active_launch.get("launch_token_sha256")
-        != hashlib.sha256(launch_token.encode("ascii")).hexdigest()
-        or not isinstance(active_launch.get("authorization"), Mapping)
+        not isinstance(active_launch.get("authorization"), Mapping)
         or not isinstance(active_launch["authorization"].get("binding"), Mapping)
+        or active_launch.get("scheduler_contract_sha256")
+        != canonical_sha256(job.get("scheduler"))
+        or not isinstance(active_launch.get("resume"), bool)
     ):
-        exc = AuthorizationError("worker launch registration/audit drift")
+        exc = AuthorizationError("scheduled worker launch audit drift")
         state["status"] = "INVALID_WORKER_BOOTSTRAP"
         state["worker_pid"] = None
-        state["launch_token_sha256"] = None
         state["worker_error"] = {"type": type(exc).__name__, "message": str(exc)}
         state["updated_utc"] = utc_now()
         atomic_json(state_path, state, replace=True)
@@ -1695,27 +1792,42 @@ def _worker_run(job_path: Path, launch_token: str) -> int:
         pre_path = Path(str(job["pre_receipt_path"])).resolve()
         pre_sha = str(job["pre_receipt_sha256"]).lower()
         pre = assert_pre_receipt(pre_path, pre_sha)
+        _validate_launch_job(job, pre, pre_path, pre_sha, state_path)
         if state_path != Path(str(pre["run_root"])).resolve() / "launch_state.json":
             raise AuthorizationError("worker state path escaped the PRE run root")
+        if (
+            state.get("launcher_revision") != LAUNCHER_REVISION
+            or state.get("scheduler") != job.get("scheduler")
+            or state.get("status") not in {"PENDING_SCHEDULED", "PENDING_RESUME"}
+            or state.get("worker_pid") is not None
+        ):
+            raise AuthorizationError("scheduled worker state was not armed exactly once")
+        scheduler_state = _scheduler_call(pre, "Inspect", job)
+        if scheduler_state.get("state") != "Running":
+            raise AuthorizationError("scheduled worker is not owned by a running task")
         active_authorization = validate_authorization(
             Path(str(active_launch["authorization"]["binding"]["path"])),
             pre_sha,
-            now=parse_utc(
-                str(active_launch.get("registered_utc", "")), "registered_utc"
-            ),
         )
         if active_authorization["payload_sha256"] != active_launch["authorization"].get(
             "payload_sha256"
         ):
             raise AuthorizationError("worker active authorization payload drift")
-        validate_authorization(
-            Path(str(job["authorization"]["binding"]["path"])),
+        initial_authorization = validate_authorization(
+            Path(str(job["initial_authorization"]["binding"]["path"])),
             pre_sha,
             require_current=False,
         )
+        if initial_authorization["payload_sha256"] != job["initial_authorization"].get(
+            "payload_sha256"
+        ):
+            raise AuthorizationError("worker initial authorization payload drift")
         state_job = state.get("job")
-        if not isinstance(state_job, Mapping) or state_job.get("sha256") != job_binding["sha256"]:
+        if not isinstance(state_job, Mapping) or dict(state_job) != job_binding:
             raise AuthorizationError("worker state/job binding drift")
+        validate_current_research_gate(pre)
+        active_launch["registered_utc"] = utc_now()
+        active_launch["worker_pid"] = os.getpid()
         state["worker_pid"] = os.getpid()
         state["status"] = "RUNNING"
         state["updated_utc"] = utc_now()
@@ -1723,7 +1835,6 @@ def _worker_run(job_path: Path, launch_token: str) -> int:
     except (OSError, subprocess.SubprocessError, AuditError, KeyError, TypeError, ValueError) as exc:
         state["status"] = "INVALID_WORKER_BOOTSTRAP"
         state["worker_pid"] = None
-        state["launch_token_sha256"] = None
         state["worker_error"] = {
             "type": type(exc).__name__,
             "message": _safe_error_message(exc),
@@ -1796,7 +1907,6 @@ def _worker_run(job_path: Path, launch_token: str) -> int:
                     "INVALID_TERMINAL" if summaries or outcome_files else "INTERRUPTED_RESUMABLE"
                 )
                 state["worker_pid"] = None
-                state["launch_token_sha256"] = None
                 state["updated_utc"] = utc_now()
                 atomic_json(state_path, state, replace=True)
                 return 2
@@ -1806,7 +1916,6 @@ def _worker_run(job_path: Path, launch_token: str) -> int:
             atomic_json(state_path, state, replace=True)
         state["status"] = "COMPLETE"
         state["worker_pid"] = None
-        state["launch_token_sha256"] = None
         state["finished_utc"] = utc_now()
         state["updated_utc"] = utc_now()
         atomic_json(state_path, state, replace=True)
@@ -1840,7 +1949,6 @@ def _worker_run(job_path: Path, launch_token: str) -> int:
         else:
             state["status"] = "INVALID_TERMINAL"
         state["worker_pid"] = None
-        state["launch_token_sha256"] = None
         state["worker_error"] = {
             "type": type(exc).__name__,
             "message": _safe_error_message(exc),
@@ -1938,9 +2046,96 @@ def broker_to_new_york(broker_time: datetime) -> datetime:
     return broker_time - timedelta(hours=7)
 
 
+def _nth_sunday(year: int, month: int, ordinal: int) -> int:
+    first = date(year, month, 1)
+    first_sunday = 1 + ((6 - first.weekday()) % 7)
+    return first_sunday + (ordinal - 1) * 7
+
+
+def _is_us_dst_utc(value: datetime) -> bool:
+    start = datetime(value.year, 3, _nth_sunday(value.year, 3, 2), 7, 0)
+    end = datetime(value.year, 11, _nth_sunday(value.year, 11, 1), 6, 0)
+    return start <= value < end
+
+
+def broker_to_utc(broker_time: datetime) -> datetime:
+    candidate_standard = broker_time - timedelta(hours=2)
+    candidate_dst = broker_time - timedelta(hours=3)
+    if not _is_us_dst_utc(candidate_standard):
+        return candidate_standard
+    if _is_us_dst_utc(candidate_dst):
+        return candidate_dst
+    return candidate_standard
+
+
+def _parse_news_datetime(value: str, label: str) -> datetime:
+    normalized = value.strip().replace("T", " ").replace("Z", "")
+    normalized = normalized.replace(".", "-").replace("/", "-")
+    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M"):
+        try:
+            return datetime.strptime(normalized, fmt)
+        except ValueError:
+            continue
+    raise InvalidEvidence(f"invalid news UTC datetime in {label}: {value!r}")
+
+
+def load_bound_news_events(pre: Mapping[str, Any]) -> tuple[NewsEvent, ...]:
+    bindings = pre.get("bindings")
+    if not isinstance(bindings, Mapping):
+        raise InvalidEvidence("PRE bindings missing for news calendar")
+    specs = (
+        ("news_primary", "datetime", "currency", "impact"),
+        ("news_secondary", "DateTime_UTC", "Currency", "Impact"),
+    )
+    events: set[tuple[datetime, str, str]] = set()
+    for role, time_column, currency_column, impact_column in specs:
+        binding = bindings.get(role)
+        if not isinstance(binding, Mapping):
+            raise InvalidEvidence(f"PRE {role} binding missing")
+        assert_binding(binding, role)
+        path = Path(str(binding["path"])).resolve()
+        with path.open("r", encoding="utf-8-sig", newline="") as handle:
+            reader = csv.DictReader(handle)
+            required = {time_column, currency_column, impact_column}
+            if reader.fieldnames is None or not required.issubset(reader.fieldnames):
+                raise InvalidEvidence(f"news calendar header drift: {role}")
+            for row_number, row in enumerate(reader, start=2):
+                raw_time = str(row.get(time_column, "")).strip()
+                currency = str(row.get(currency_column, "")).strip().upper()
+                raw_impact = str(row.get(impact_column, "")).strip().upper()
+                if not raw_time or not currency or not raw_impact:
+                    continue
+                impact = (
+                    "HIGH"
+                    if "HIGH" in raw_impact or "RED" in raw_impact
+                    else "MEDIUM"
+                    if "MED" in raw_impact or "ORANGE" in raw_impact or "YELLOW" in raw_impact
+                    else "LOW"
+                    if "LOW" in raw_impact
+                    else "UNKNOWN"
+                )
+                if impact != "HIGH" or currency not in {"EUR", "USD"}:
+                    continue
+                events.add(
+                    (
+                        _parse_news_datetime(raw_time, f"{role}:{row_number}"),
+                        currency,
+                        impact,
+                    )
+                )
+    if not events:
+        raise InvalidEvidence("bound calendars contain no EUR/USD high-impact events")
+    return tuple(NewsEvent(*row) for row in sorted(events))
+
+
 def _reconstruct_trades(
-    deals: Sequence[Any], symbol: str, cost_rt_per_lot: Decimal
+    deals: Sequence[Any], symbol: str, cost_schedule: Mapping[str, Any]
 ) -> list[TradeRecord]:
+    pct_rate = _strict_decimal(cost_schedule.get("dxz_pct_notional_rt"), "DXZ pct rate")
+    flat_rate = _strict_decimal(cost_schedule.get("ftmo_rt_per_lot_usd"), "FTMO flat rate")
+    contract_size = _strict_decimal(
+        cost_schedule.get("contract_size_base_per_lot"), "contract size"
+    )
     trades: list[TradeRecord] = []
     open_lot: dict[str, Any] | None = None
     for deal in deals:
@@ -1957,10 +2152,14 @@ def _reconstruct_trades(
                 raise InvalidEvidence("overlapping/pyramided opening Deals are forbidden")
             if deal.kind not in {"buy", "sell"}:
                 raise InvalidEvidence(f"opening Deal has unsupported type: {deal.kind}")
+            if deal.price is None or deal.price <= ZERO:
+                raise InvalidEvidence(f"opening Deal has invalid price: {deal.deal}")
             open_lot = {
                 "deal": deal.deal,
                 "side": deal.kind,
                 "entry_time": deal.time,
+                "entry_price": deal.price,
+                "entry_comment": deal.comment,
                 "initial_volume": deal.volume,
                 "remaining": deal.volume,
                 "native_net": deal.raw_net,
@@ -1977,7 +2176,14 @@ def _reconstruct_trades(
         if open_lot["remaining"] == ZERO:
             entry_ny = broker_to_new_york(open_lot["entry_time"])
             exit_ny = broker_to_new_york(deal.time)
-            cost = _money(cost_rt_per_lot * open_lot["initial_volume"])
+            dxz_cost = (
+                pct_rate
+                * contract_size
+                * open_lot["entry_price"]
+                * open_lot["initial_volume"]
+            )
+            ftmo_cost = flat_rate * open_lot["initial_volume"]
+            cost = _money(max(dxz_cost, ftmo_cost))
             native_net = _money(open_lot["native_net"])
             trades.append(
                 TradeRecord(
@@ -1990,8 +2196,11 @@ def _reconstruct_trades(
                     exit_time_broker=deal.time,
                     entry_time_ny=entry_ny,
                     exit_time_ny=exit_ny,
+                    broker_day=open_lot["entry_time"].date().isoformat(),
                     new_york_day=entry_ny.date().isoformat(),
                     volume=open_lot["initial_volume"],
+                    entry_price=open_lot["entry_price"],
+                    entry_comment=open_lot["entry_comment"],
                     native_net_usd=native_net,
                     venue_cost_usd=cost,
                     adjusted_net_usd=_money(native_net - cost),
@@ -2003,33 +2212,56 @@ def _reconstruct_trades(
     return trades
 
 
-def validate_trade_semantics(trades: Sequence[TradeRecord]) -> dict[str, Any]:
+def validate_trade_semantics(
+    trades: Sequence[TradeRecord], news_events: Sequence[NewsEvent]
+) -> dict[str, Any]:
     per_day: dict[str, int] = defaultdict(int)
     for trade in trades:
-        entry_clock = trade.entry_time_ny.time()
-        exit_clock = trade.exit_time_ny.time()
-        if not (NY_ENTRY_START <= entry_clock < NY_ENTRY_END):
+        entry_clock = trade.entry_time_broker.time()
+        exit_clock = trade.exit_time_broker.time()
+        if not (BROKER_ENTRY_START <= entry_clock < BROKER_ENTRY_END):
             raise InvalidEvidence(
-                f"entry outside half-open NY session: {trade.entry_deal}/{entry_clock}"
+                f"pending fill outside half-open broker entry window: {trade.entry_deal}/{entry_clock}"
             )
-        if trade.entry_time_ny.date() != trade.exit_time_ny.date():
-            raise InvalidEvidence(f"position was not flat on its NY entry day: {trade.entry_deal}")
-        if exit_clock >= NY_FLAT_DEADLINE_EXCLUSIVE:
+        expected_comment = (
+            "asian_sweep_fvg_long" if trade.side == "buy" else "asian_sweep_fvg_short"
+        )
+        if trade.entry_comment != expected_comment:
+            raise InvalidEvidence(
+                f"entry is not an owned Asian-sweep pending fill: {trade.entry_deal}"
+            )
+        if trade.entry_time_broker.date() != trade.exit_time_broker.date():
+            raise InvalidEvidence(f"position was not flat on its broker entry day: {trade.entry_deal}")
+        if exit_clock >= BROKER_FLAT_DEADLINE_EXCLUSIVE:
             raise InvalidEvidence(
                 f"position not flat inside the one-M5-bar execution grace: {trade.entry_deal}/{exit_clock}"
             )
         if trade.exit_time_broker < trade.entry_time_broker:
             raise InvalidEvidence(f"negative holding time: {trade.entry_deal}")
-        per_day[trade.new_york_day] += 1
+        entry_utc = broker_to_utc(trade.entry_time_broker)
+        blocked = [
+            event
+            for event in news_events
+            if event.event_utc - timedelta(minutes=NEWS_BLACKOUT_MINUTES_BEFORE)
+            <= entry_utc
+            <= event.event_utc + timedelta(minutes=NEWS_BLACKOUT_MINUTES_AFTER)
+        ]
+        if blocked:
+            raise InvalidEvidence(
+                f"pending order filled inside a bound EUR/USD high-impact blackout: {trade.entry_deal}"
+            )
+        per_day[trade.broker_day] += 1
     offenders = {day: count for day, count in per_day.items() if count > 1}
     if offenders:
-        raise InvalidEvidence(f"more than one entry per New York day: {offenders}")
+        raise InvalidEvidence(f"more than one entry per broker day: {offenders}")
     return {
         "status": "PASS",
-        "one_entry_per_new_york_day": True,
-        "entries_inside_0945_1015_half_open": True,
-        "flat_same_new_york_day": True,
-        "flat_before_1020_execution_grace": True,
+        "one_entry_per_broker_day": True,
+        "owned_pending_fill_comment": True,
+        "entries_inside_0830_1200_broker_half_open": True,
+        "flat_same_broker_day": True,
+        "flat_before_2005_execution_grace": True,
+        "no_fill_inside_bound_eur_usd_high_impact_blackout": True,
         "trading_days": len(per_day),
     }
 
@@ -2119,9 +2351,9 @@ def audit_native_report(
     ledger_net = sum((deal.raw_net for deal in deals[1:]), ZERO)
     if _money(report_net) != _money(ledger_net):
         raise InvalidEvidence("Total Net Profit/deal-ledger drift")
-    rate = _strict_decimal(pre["cost_schedule"]["worst_rt_per_lot_usd"], "bound cost rate")
-    trades = _reconstruct_trades(deals[1:], symbol, rate)
-    validate_trade_semantics(trades)
+    news_events = load_bound_news_events(pre)
+    trades = _reconstruct_trades(deals[1:], symbol, pre["cost_schedule"])
+    validate_trade_semantics(trades, news_events)
     reported_trades_raw = core._field_value(settings, "total_trades", required=False)
     if reported_trades_raw is None:
         raise InvalidEvidence("native Total Trades is missing")
@@ -2147,6 +2379,7 @@ def audit_native_report(
     ledger = [
         {
             **asdict(trade),
+            "entry_price": _decimal_text(trade.entry_price),
             "native_net_usd": _money_text(trade.native_net_usd),
             "venue_cost_usd": _money_text(trade.venue_cost_usd),
             "adjusted_net_usd": _money_text(trade.adjusted_net_usd),
@@ -2178,7 +2411,9 @@ def audit_native_report(
             "simulated_commission_exactly_zero": True,
             "balance_recurrence": "PASS_CENT_EXACT",
             "total_net_reconciliation": "PASS_CENT_EXACT",
-            "session_and_flat_checks": validate_trade_semantics(trades),
+            "session_news_lifecycle_pending_fill_checks": validate_trade_semantics(
+                trades, news_events
+            ),
         },
         "cost_ledger": {
             "schedule": pre["cost_schedule"],
@@ -2261,6 +2496,26 @@ def validate_runner_summary(summary: Mapping[str, Any], cell: Mapping[str, Any])
     drift = {key: (wanted, summary.get(key)) for key, wanted in expected.items() if summary.get(key) != wanted}
     if drift:
         raise InvalidEvidence(f"native runner summary drift: {drift}")
+    commission = summary.get("commission_group")
+    if (
+        not isinstance(commission, Mapping)
+        or _strict_decimal(commission.get("commission_per_lot"), "runner commission") != ZERO
+        or _strict_decimal(
+            commission.get("commission_per_side_native"), "runner native commission"
+        )
+        != ZERO
+        or commission.get("restored_to_canonical") is not True
+    ):
+        raise InvalidEvidence("native runner commission injection/restoration drift")
+    news = summary.get("news_calendar")
+    if (
+        not isinstance(news, Mapping)
+        or news.get("status") != "OK"
+        or Path(str(news.get("primary_path", ""))).resolve() != NEWS_PRIMARY_PATH.resolve()
+        or Path(str(news.get("secondary_path", ""))).resolve() != NEWS_SECONDARY_PATH.resolve()
+        or list(news.get("missing_paths", [])) != []
+    ):
+        raise InvalidEvidence("native runner news-calendar diagnostics drift")
     runs = summary.get("runs")
     if (
         not isinstance(runs, list)
@@ -2550,6 +2805,7 @@ def _validate_launch_state(
     state = load_json(state_path)
     if (
         state.get("artifact_type") != "QM5_13210_NATIVE_LAUNCH_STATE"
+        or state.get("launcher_revision") != LAUNCHER_REVISION
         or state.get("analysis_id") != ANALYSIS_ID
         or state.get("status") != "COMPLETE"
         or state.get("worker_pid") is not None
@@ -2569,27 +2825,17 @@ def _validate_launch_state(
         raise InvalidEvidence("launch job binding missing")
     assert_binding(job_binding, "launch job")
     job = load_json(Path(str(job_binding["path"])))
-    if (
-        job.get("artifact_type") != "QM5_13210_NATIVE_LAUNCH_JOB"
-        or job.get("pre_receipt_sha256") != pre_sha256.lower()
-        or job.get("plan_sha256") != pre["plan"]["plan_sha256"]
-        or job.get("state_path") != str(state_path.resolve())
-        or job.get("tool") != pre["bindings"]["tool"]
-    ):
-        raise InvalidEvidence("launch job chain drift")
-    authorization = job.get("authorization")
+    _validate_launch_job(job, pre, pre_path, pre_sha256, state_path)
+    authorization = job.get("initial_authorization")
     if not isinstance(authorization, Mapping) or not isinstance(authorization.get("binding"), Mapping):
-        raise InvalidEvidence("launch authorization binding missing")
+        raise InvalidEvidence("launch initial authorization binding missing")
     validated_auth = validate_authorization(
         Path(str(authorization["binding"]["path"])), pre_sha256, require_current=False
     )
     if validated_auth["payload_sha256"] != authorization.get("payload_sha256"):
-        raise InvalidEvidence("launch authorization payload drift")
-    if (
-        state.get("authorization") != authorization
-        or state.get("launch_token_sha256") is not None
-    ):
-        raise InvalidEvidence("launch initial-authorization/token lifecycle drift")
+        raise InvalidEvidence("launch initial authorization payload drift")
+    if state.get("initial_authorization") != authorization or state.get("scheduler") != job.get("scheduler"):
+        raise InvalidEvidence("launch initial authorization/scheduler lifecycle drift")
     launches = state.get("launches")
     if not isinstance(launches, list) or not launches:
         raise InvalidEvidence("launch audit chain is missing")
@@ -2597,18 +2843,22 @@ def _validate_launch_state(
         if not isinstance(launch, Mapping):
             raise InvalidEvidence("launch audit row is malformed")
         launch_auth = launch.get("authorization")
-        token_hash = str(launch.get("launch_token_sha256", ""))
         worker_pid = launch.get("worker_pid")
         if (
             not isinstance(launch_auth, Mapping)
             or not isinstance(launch_auth.get("binding"), Mapping)
-            or not re.fullmatch(r"[0-9a-f]{64}", token_hash)
             or not isinstance(worker_pid, int)
             or isinstance(worker_pid, bool)
             or worker_pid <= 0
             or not isinstance(launch.get("resume"), bool)
+            or launch.get("scheduler_contract_sha256")
+            != canonical_sha256(job["scheduler"])
         ):
             raise InvalidEvidence(f"launch audit row {index} identity drift")
+        requested = parse_utc(str(launch.get("requested_utc", "")), "launch requested_utc")
+        registered = parse_utc(str(launch.get("registered_utc", "")), "launch registered_utc")
+        if registered < requested:
+            raise InvalidEvidence(f"launch audit row {index} chronology drift")
         observed_auth = validate_authorization(
             Path(str(launch_auth["binding"]["path"])),
             pre_sha256,
@@ -2680,14 +2930,21 @@ def invalid_receipt(phase: str, exc: Exception) -> dict[str, Any]:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
+    prepare = sub.add_parser(
+        "prepare-data",
+        help="Hash the exact EURUSD.DWX research store; never starts MT5",
+    )
+    prepare.add_argument("--symbol", required=True)
+    prepare.add_argument("--data-manifest", type=Path, required=True)
+    prepare.add_argument("--research-data-receipt", type=Path, required=True)
     pre = sub.add_parser("pre", help="Outcome-blind PRE validation and immutable receipt")
     pre.add_argument("--symbol", required=True)
-    pre.add_argument("--validation-receipt", type=Path, required=True)
+    pre.add_argument("--research-data-receipt", type=Path, required=True)
     pre.add_argument("--data-manifest", type=Path, required=True)
     pre.add_argument("--build-receipt", type=Path, required=True)
     pre.add_argument("--run-root", type=Path, required=True)
     pre.add_argument("--receipt", type=Path, required=True)
-    launch = sub.add_parser("launch", help="Start or explicitly resume the detached native worker")
+    launch = sub.add_parser("launch", help="Start or resume the persistent scheduled native worker")
     launch.add_argument("--pre-receipt", type=Path, required=True)
     launch.add_argument("--pre-sha256", required=True)
     launch.add_argument("--authorization", type=Path, required=True)
@@ -2700,19 +2957,16 @@ def build_parser() -> argparse.ArgumentParser:
     post.add_argument("--receipt", type=Path, required=True)
     status = sub.add_parser("status", help="Read launch state without starting anything")
     status.add_argument("--state", type=Path, required=True)
-    worker = sub.add_parser("_worker", help=argparse.SUPPRESS)
+    worker = sub.add_parser("_run-plan", help=argparse.SUPPRESS)
     worker.add_argument("--job", type=Path, required=True)
     return parser
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    if args.command == "_worker":
+    if args.command == "_run-plan":
         try:
-            launch_token = os.environ.get("QM13210_WORKER_LAUNCH_TOKEN", "")
-            if not re.fullmatch(r"[0-9a-f]{64}", launch_token):
-                raise AuthorizationError("worker launch token is missing or malformed")
-            return _worker_run(args.job, launch_token)
+            return _worker_run(args.job)
         except (AuditError, OSError, subprocess.SubprocessError, ValueError, KeyError, TypeError) as exc:
             print(json.dumps(invalid_receipt("WORKER", exc), sort_keys=True), file=sys.stderr)
             return 2
@@ -2732,10 +2986,17 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(json.dumps(invalid_receipt("STATUS", exc), sort_keys=True), file=sys.stderr)
             return 2
     try:
-        if args.command == "pre":
+        if args.command == "prepare-data":
+            output = prepare_research_data_artifacts(
+                args.symbol,
+                args.data_manifest,
+                args.research_data_receipt,
+            )
+            code = 0
+        elif args.command == "pre":
             payload = preflight(
                 args.symbol,
-                args.validation_receipt,
+                args.research_data_receipt,
                 args.data_manifest,
                 args.build_receipt,
                 args.run_root,
@@ -2744,7 +3005,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             output = {"status": "PASS", "receipt": str(args.receipt.resolve()), "sha256": digest}
             code = 0
         elif args.command == "launch":
-            output = launch_detached(
+            output = launch_persistent_task(
                 args.pre_receipt,
                 args.pre_sha256,
                 args.authorization,

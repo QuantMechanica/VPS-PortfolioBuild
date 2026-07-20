@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-20T15:07:02.7097731Z",
-    "total":  3364,
+    "generated_at":  "2026-07-20T16:07:02.5595713Z",
+    "total":  3365,
     "items":  [
                   {
                       "slug":  "ath-breakout-atr-trail",
@@ -1552,6 +1552,12 @@
                       "last_updated_utc":  "2026-07-12T19:08:11.6962763Z"
                   },
                   {
+                      "slug":  "xauxag-wkend_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-20T16:04:08.2708254Z"
+                  },
+                  {
                       "slug":  "xbr-1w-mom-vol_card",
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
@@ -1891,7 +1897,7 @@
                       "slug":  "xng-wed-short_card",
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-20T15:06:32.5406320Z"
+                      "last_updated_utc":  "2026-07-20T15:07:45.5927139Z"
                   },
                   {
                       "slug":  "xng-weekend-gap_card",

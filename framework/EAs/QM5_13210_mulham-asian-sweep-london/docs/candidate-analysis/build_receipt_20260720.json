@@ -1,0 +1,32 @@
+{
+  "artifact_type": "QM5_13210_BUILD_RECEIPT",
+  "schema_version": 1,
+  "created_utc": "2026-07-20T08:20:24.9623614Z",
+  "ea_id": "QM5_13210",
+  "build_commit": "b86eafe5cd20a359a71614ea8fcaddbd88977f4e",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "source_sha256": "1e96e58f79ff3d1a3a8853c592cc1fd5bbff68eb3c0afdb2e66c3a3fe49f2274",
+  "ex5_sha256": "ffd5a47aa7e7f32759494d4f0e172d785da5d7ccdd5f3cfbfed64aeffbc2943c",
+  "spec_sha256": "72ce962a40f08de114c872d162cd7f1a986c7afbeb856bb79af6395f333fa28c",
+  "card_sha256": "c9138af20679962b694b253a07488a08085868bb65b81ee1887780cd0e01c11e",
+  "setfile_sha256": {
+    "EURUSD.DWX": "d3a7e28a486eed85d28cd0d6e060c62733507ee213e3983e1da5b88dab4de1f7",
+    "XAUUSD.DWX": "23970e75ad7c41e682455ddb255473c9e527c2f3a404dbfd74fa8ac9fd363ac6"
+  },
+  "compile_evidence": {
+    "compile_log": {
+      "path": "C:/QM/repo/framework/build/compile/20260720_082006/QM5_13210_mulham-asian-sweep-london.compile.log",
+      "size": 20562,
+      "sha256": "606b73f5771001ab2dabe6688dc96efd0c61563c11e310ac3624648542e90b7e"
+    },
+    "summary": {
+      "path": "D:/QM/reports/compile/20260720_082006/summary.csv",
+      "size": 2393,
+      "sha256": "4234e06e6a535b0bde0be197cafc5bbed97ba5bf7b3fc765eb5e32440e837b8f"
+    }
+  },
+  "scope": "BUILD_ONLY_NO_BACKTEST_NO_MERIT_CLAIM"
+}
