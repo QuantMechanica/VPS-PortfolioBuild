@@ -25,6 +25,7 @@ $expectedContractCommit = 'd902b04932c340dd1212b9420077d7cec6b0d80d'
 $expectedContractSha256 = '6ee74c60a823fe87b03b40a2737ba67d113b2e52e7c09a05f42ba2084e17fefa'
 $expectedSourceCommit = '3f1039f0eeb56ee882b5c3451eed3ee71567d6bc'
 $frozenSourceSha256 = '3fd49f2cea7575e659f1b1cf9c24c752a4a8e11db5e0c17cae69629a6f207f83'
+$researchStatus = 'CARD_INTAKE_NOT_APPROVED'
 $taskPrefix = 'QM_DEV1_COMPILE_QM20002_'
 
 function Test-UnderRoot([string]$Path, [string]$Root) {
@@ -458,7 +459,7 @@ function Invoke-CompileController {
         $includeAudit = [IO.Path]::GetFullPath([string]$result.include_path_audit_path)
         $evidence = [ordered]@{
             result = 'PASS'
-            research_status = 'CARD_INTAKE_NOT_APPROVED'
+            research_status = $researchStatus
             run_id = $runId
             run_root = $controllerRunRoot
             task_user = $account
