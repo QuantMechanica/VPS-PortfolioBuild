@@ -981,7 +981,11 @@ def _seal_summary_artifacts(summary_path: Path) -> dict[str, Any]:
     if report_dir != summary_path.parent or not report_dir.is_dir():
         raise AuditError("runner summary/report directory identity drift")
     runs = summary.get("runs")
-    if not isinstance(runs, list) or [row.get("run") for row in runs] != ["run_01", "run_02"]:
+    if (
+        not isinstance(runs, list)
+        or any(not isinstance(row, Mapping) for row in runs)
+        or [row.get("run") for row in runs] != ["run_01", "run_02"]
+    ):
         raise AuditError("runner did not produce exactly the two preregistered duplicates")
     artifacts: list[dict[str, Any]] = []
     for run in runs:
@@ -1030,6 +1034,8 @@ def _worker_run(job_path: Path) -> int:
         auth_path = Path(str(job["authorization"]["binding"]["path"]))
         validate_authorization(auth_path, pre_sha)
         if (
+            job.get("schema_version") != SCHEMA_VERSION
+            or
             job.get("artifact_type") != "QM5_20002_SHORT_NY_LAUNCH_JOB"
             or job.get("analysis_id") != ANALYSIS_ID
             or Path(str(job.get("pre_receipt_path", ""))).resolve() != pre_path
@@ -1039,6 +1045,8 @@ def _worker_run(job_path: Path) -> int:
             or Path(str(job.get("state_path", ""))).resolve() != state_path
         ):
             raise AuditError("detached launch job identity/plan/tool drift")
+        if not required_controller_timeout(pre) <= int(job.get("controller_timeout_seconds", 0)) <= 172800:
+            raise AuditError("detached launch job controller timeout drift")
         work_root = state_path.parent / "worker"
         work_root.mkdir(parents=True, exist_ok=True)
         for cell in pre["plan"]["cells"]:
@@ -1681,10 +1689,18 @@ def audit_cell(
     ):
         raise PostflightError(f"native commission/group restore evidence drift: {cell['cell_id']}")
     runs = summary.get("runs")
-    if not isinstance(runs, list) or [row.get("run") for row in runs] != ["run_01", "run_02"]:
+    if (
+        not isinstance(runs, list)
+        or any(not isinstance(row, Mapping) for row in runs)
+        or [row.get("run") for row in runs] != ["run_01", "run_02"]
+    ):
         raise PostflightError(f"duplicate run closure drift: {cell['cell_id']}")
     artifacts = launch_cell.get("run_artifacts")
-    if not isinstance(artifacts, list) or [row.get("run") for row in artifacts] != ["run_01", "run_02"]:
+    if (
+        not isinstance(artifacts, list)
+        or any(not isinstance(row, Mapping) for row in artifacts)
+        or [row.get("run") for row in artifacts] != ["run_01", "run_02"]
+    ):
         raise PostflightError(f"sealed duplicate artifact closure drift: {cell['cell_id']}")
     artifact_by_run = {str(row["run"]): row for row in artifacts}
     native_audits: list[NativeAudit] = []
@@ -1971,7 +1987,11 @@ def _validate_launch_chain(
         raise PostflightError("launch state finished_utc is implausibly in the future")
     cells = state.get("cells")
     expected_ids = [str(cell["cell_id"]) for cell in pre["plan"]["cells"]]
-    if not isinstance(cells, list) or [str(cell.get("cell_id")) for cell in cells] != expected_ids:
+    if (
+        not isinstance(cells, list)
+        or any(not isinstance(cell, Mapping) for cell in cells)
+        or [str(cell.get("cell_id")) for cell in cells] != expected_ids
+    ):
         raise PostflightError("launch state cell order/closure drift")
     cursor = state_started
     for launch_cell, plan_cell in zip(cells, pre["plan"]["cells"]):
@@ -2000,7 +2020,11 @@ def postflight(pre_path: Path, pre_sha256: str, state_path: Path) -> dict[str, A
         raise PostflightError("launch state is not COMPLETE/bound to PRE")
     _validate_launch_chain(pre_path, pre_sha256, state_path, state, pre)
     launch_cells = state.get("cells")
-    if not isinstance(launch_cells, list) or len(launch_cells) != 4:
+    if (
+        not isinstance(launch_cells, list)
+        or len(launch_cells) != 4
+        or any(not isinstance(row, Mapping) for row in launch_cells)
+    ):
         raise PostflightError("launch state does not contain exactly four cells")
     launch_by_id = {str(row.get("cell_id")): row for row in launch_cells}
     if len(launch_by_id) != 4:
