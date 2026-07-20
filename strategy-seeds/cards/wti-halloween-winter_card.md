@@ -41,9 +41,10 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
-q01_status: PENDING
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: QUEUED
+q02_work_item_id: 2c022cc5-f7d7-480b-8d87-4d6aa8f475ff
 review_focus: "Falsify the source-defined WTI November-May direction after monthly fixed-risk renewal, financing, gaps and CFD basis; realized book correlation is unproven."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -231,12 +232,12 @@ portfolio admission or the portfolio gate.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-20 | initial source-backed WTI winter-season build | Q01 | pending |
+| v1 | 2026-07-20 | initial source-backed WTI winter-season build | Q02 | Q01 PASS; Q02 pending |
 
 ## Pipeline phase status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-20 | APPROVED under OWNER commodity-sleeve mission | this card |
-| Q01 Build Validation | 2026-07-20 | pending | compile/build evidence pending |
-| Q02 Baseline Screening | 2026-07-20 | not enqueued | build record pending |
+| Q01 Build Validation | 2026-07-20 | PASS: compile 0/0; build check 0/0 | `artifacts/qm5_20015_build_result.json` |
+| Q02 Baseline Screening | 2026-07-20 | pending, unclaimed | work item `2c022cc5-f7d7-480b-8d87-4d6aa8f475ff`; enqueue evidence below |

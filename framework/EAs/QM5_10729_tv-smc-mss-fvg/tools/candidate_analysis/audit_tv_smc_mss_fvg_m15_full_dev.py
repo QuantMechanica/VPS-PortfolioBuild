@@ -33,7 +33,7 @@ CONTRACT_PATH = EVIDENCE_ROOT / "tv_smc_mss_fvg_m15_two_symbol_full_dev_contract
 REVIEW_PATH = EVIDENCE_ROOT / "tv_smc_mss_fvg_outcome_blind_review_receipt.json"
 EXPECTED_CONTRACT_SHA256 = "0b221d1c79dce4a4fef0aa635de957296511e1fc945523e8a4da556c13311d25"
 EXPECTED_REVIEW_SHA256 = "2d009fa440a125514d3d6109ae00d91be295c1b052d53e9e47b5ee9121358d99"
-EXPECTED_SNAPSHOT_MANIFEST_SHA256 = "66dc5e8ea9842a570686940b3c7df90d33164aaefa2bf48911c730d9ea70b5ca"
+EXPECTED_SNAPSHOT_MANIFEST_SHA256 = "2a3b4e79c005b368fc67886ed9e3eb260b3d71f27abc5db2ed1b78d98353101e"
 CONTRACT_COMMIT = "3886f15e756b622f0b9cc9f9e1890bce173d653d"
 ANALYSIS_ID = "QM5_10729_TV_SMC_MSS_FVG_M15_TWO_SYMBOL_FULL_DEV_001"
 
@@ -47,6 +47,11 @@ CURRENT_EXCEPTION_SIZES = {
     "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10729_tv-smc-mss-fvg.md": 4161,
     "D:/QM/data/news_calendar/news_calendar_2015_2025.csv": 4436657,
 }
+EXPECTED_SNAPSHOT_ID = "release_0b221d1c_2d009fa4_mixed_exact_fenced_v2"
+MARKET_PROJECTION = (
+    "HEADER_PLUS_PRESTART_TIMESTAMP_ONLY_PLUS_EXACT_IN_WINDOW_ROWS_PLUS_"
+    "FIRST_EXCLUDED_TIMESTAMP_PREFIX_ONLY"
+)
 
 EPOCH = datetime(1970, 1, 1)
 UTC_EPOCH = datetime(1970, 1, 1, tzinfo=timezone.utc)
@@ -1519,8 +1524,10 @@ def verify_release(
     if manifest_sha != expected_manifest_sha256:
         raise AuditError(f"snapshot manifest hash drift: {manifest_sha}")
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    if manifest.get("schema_version") != 1 or manifest.get("analysis_id") != ANALYSIS_ID:
+    if manifest.get("schema_version") != 2 or manifest.get("analysis_id") != ANALYSIS_ID:
         raise AuditError("snapshot manifest identity drift")
+    if manifest.get("snapshot_id") != EXPECTED_SNAPSHOT_ID:
+        raise AuditError("snapshot ID drift")
     if manifest.get("runtime_policy") != (
         "ALL_CONTROL_BINDING_NEWS_AND_MARKET_INPUTS_FROM_THIS_READ_ONLY_SNAPSHOT_ONLY"
     ):
@@ -1587,8 +1594,12 @@ def verify_release(
     market_identities: dict[str, dict[str, Any]] = {}
     for symbol, spec in contract["data_contract"]["files"].items():
         entry = manifest_markets[symbol]
-        if entry.get("provenance") != "CURRENT_FENCE_EXACT":
+        if entry.get("provenance") != "CURRENT_FENCED_EXACT":
             raise AuditError(f"snapshot market provenance drift: {symbol}")
+        if entry.get("projection") != MARKET_PROJECTION:
+            raise AuditError(f"snapshot market projection drift: {symbol}")
+        if entry.get("future_ohlc_tail_read") is not False:
+            raise AuditError(f"snapshot future-tail boundary failed: {symbol}")
         if entry.get("contract_path") != spec["path"]:
             raise AuditError(f"snapshot market contract path drift: {symbol}")
         if int(entry.get("source_length_bytes_at_copy", -1)) != int(
@@ -1599,7 +1610,34 @@ def verify_release(
             "file_last_write_utc_at_freeze"
         ]:
             raise AuditError(f"snapshot market frozen last-write drift: {symbol}")
+        availability = spec["timestamp_only_scan_before_2023"]
+        if symbol == "EURUSD.DWX":
+            expected_rows = availability["selected_rows_all_available"]
+            expected_in_window = availability["selected_rows_on_or_after_analysis_start"]
+        else:
+            expected_rows = availability["selected_rows"]
+            expected_in_window = availability["selected_rows"]
+        if int(entry.get("rows_before_fence", -1)) != int(expected_rows):
+            raise AuditError(f"snapshot market availability count drift: {symbol}")
+        if int(entry.get("exact_in_window_rows", -1)) != int(expected_in_window):
+            raise AuditError(f"snapshot market in-window count drift: {symbol}")
+        if entry.get("first_excluded_timestamp") != availability[
+            "first_timestamp_at_or_after_2023"
+        ]:
+            raise AuditError(f"snapshot market first-excluded drift: {symbol}")
         path, identity = _verify_snapshot_file(snapshot_root, entry, entry["sha256"])
+        identity.update(
+            {
+                "projection": entry["projection"],
+                "rows_before_fence": entry["rows_before_fence"],
+                "prestart_timestamp_only_rows": entry[
+                    "prestart_timestamp_only_rows"
+                ],
+                "exact_in_window_rows": entry["exact_in_window_rows"],
+                "first_excluded_timestamp": entry["first_excluded_timestamp"],
+                "future_ohlc_tail_read": False,
+            }
+        )
         market_paths[symbol] = path
         market_identities[symbol] = identity
 
@@ -1686,6 +1724,7 @@ def run_analysis(manifest_path: Path, manifest_sha256: str) -> dict[str, Any]:
             "status": "PASS",
             "issues": [],
             "no_live_worktree_inputs": True,
+            "post_2022_pristine_oos_status": "CONTAMINATED_BY_SUPERSEDED_FULL_FILE_HASHING_NEVER_CLAIM_PRISTINE",
             "future_ohlc_parsed": False,
             "future_ohlc_parsed_by_symbol": {symbol: False for symbol in SYMBOLS},
             "source_bindings": bindings,

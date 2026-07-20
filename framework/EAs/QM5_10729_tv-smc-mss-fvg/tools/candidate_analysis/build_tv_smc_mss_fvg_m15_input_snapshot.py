@@ -11,7 +11,7 @@ import shutil
 import stat
 import subprocess
 import tempfile
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path, PurePosixPath
 from typing import Any, Mapping
 
@@ -37,7 +37,14 @@ CURRENT_EXCEPTION_SIZES = {
 }
 DEFAULT_SNAPSHOT_ROOT = Path(
     r"D:\QM\audit_snapshots\QM5_10729_TV_SMC_MSS_FVG_M15_TWO_SYMBOL_FULL_DEV_001"
-    r"\release_0b221d1c_2d009fa4"
+    r"\release_0b221d1c_2d009fa4_fenced_v2"
+)
+EPOCH = datetime(1970, 1, 1)
+START_EPOCH = int((datetime(2018, 1, 1) - EPOCH).total_seconds())
+END_EPOCH = int((datetime(2023, 1, 1) - EPOCH).total_seconds())
+MARKET_PROJECTION = (
+    "HEADER_PLUS_PRESTART_TIMESTAMP_ONLY_PLUS_EXACT_IN_WINDOW_ROWS_PLUS_"
+    "FIRST_EXCLUDED_TIMESTAMP_PREFIX_ONLY"
 )
 
 
@@ -74,6 +81,96 @@ def mtime_100ns(path: Path) -> str:
     seconds, remainder = divmod(nanoseconds, 1_000_000_000)
     current = datetime.fromtimestamp(seconds, timezone.utc)
     return f"{current:%Y-%m-%dT%H:%M:%S}.{remainder // 100:07d}Z"
+
+
+def stamp_epoch(value: int) -> str:
+    return (EPOCH + timedelta(seconds=value)).isoformat(timespec="seconds")
+
+
+def _read_timestamp_prefix(handle: Any, row_number: int) -> bytes | None:
+    prefix = bytearray()
+    while True:
+        current = handle.read(1)
+        if not current:
+            if not prefix:
+                return None
+            raise SnapshotError(f"row {row_number}: truncated timestamp prefix")
+        if current == b",":
+            if not prefix:
+                raise SnapshotError(f"row {row_number}: empty timestamp")
+            return bytes(prefix)
+        if current in {b"\r", b"\n"}:
+            raise SnapshotError(f"row {row_number}: missing comma after timestamp")
+        prefix.extend(current)
+        if len(prefix) > 32:
+            raise SnapshotError(f"row {row_number}: timestamp prefix too long")
+
+
+def _copy_fenced_market_stream(reader: Any, writer: Any) -> dict[str, Any]:
+    header = reader.readline()
+    if header.rstrip(b"\r\n") != b"time,open,high,low,close,tickvol":
+        raise SnapshotError("market header drift")
+    writer.write(header)
+    row_number = 2
+    prior_timestamp: int | None = None
+    rows_before_fence = 0
+    prestart_rows = 0
+    in_window_rows = 0
+    first_excluded: int | None = None
+    while True:
+        prefix = _read_timestamp_prefix(reader, row_number)
+        if prefix is None:
+            break
+        try:
+            timestamp = int(prefix.decode("ascii"))
+        except (UnicodeDecodeError, ValueError) as exc:
+            raise SnapshotError(f"row {row_number}: invalid timestamp") from exc
+        if prior_timestamp is not None and timestamp <= prior_timestamp:
+            raise SnapshotError(f"row {row_number}: timestamps not increasing")
+        prior_timestamp = timestamp
+        if timestamp >= END_EPOCH:
+            first_excluded = timestamp
+            writer.write(prefix + b",\n")
+            break  # The source OHLC tail remains unread and cannot enter any digest.
+        rows_before_fence += 1
+        tail = reader.readline()
+        if not tail:
+            raise SnapshotError(f"row {row_number}: missing row tail")
+        if timestamp < START_EPOCH:
+            prestart_rows += 1
+            writer.write(prefix + b",\n")
+        else:
+            in_window_rows += 1
+            writer.write(prefix + b"," + tail)
+        row_number += 1
+    if first_excluded is None:
+        raise SnapshotError("cannot prove market future fence")
+    return {
+        "rows_before_fence": rows_before_fence,
+        "prestart_timestamp_only_rows": prestart_rows,
+        "exact_in_window_rows": in_window_rows,
+        "first_excluded_timestamp": stamp_epoch(first_excluded),
+        "future_ohlc_tail_read": False,
+    }
+
+
+def copy_fenced_market(source: Path, destination: Path) -> dict[str, Any]:
+    before = source.stat()
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    with source.open("rb", buffering=0) as reader, destination.open("xb") as writer:
+        identity = _copy_fenced_market_stream(reader, writer)
+        writer.flush()
+        os.fsync(writer.fileno())
+    after = source.stat()
+    if (before.st_size, before.st_mtime_ns) != (after.st_size, after.st_mtime_ns):
+        raise SnapshotError(f"market source changed during fenced copy: {source}")
+    identity.update(
+        {
+            "bytes": destination.stat().st_size,
+            "sha256": sha256_file(destination),
+        }
+    )
+    return identity
 
 
 def git_bytes(object_spec: str) -> bytes:
@@ -262,30 +359,51 @@ def build_snapshot(final_root: Path) -> dict[str, Any]:
                 raise SnapshotError(f"market last-write drift: {symbol}")
             relative = f"market/{source.name}"
             destination = temporary / PurePosixPath(relative)
-            source_sha = sha256_file(source)
-            size = copy_current_exact(source, destination, source_sha)
+            fenced = copy_fenced_market(source, destination)
             if source.stat().st_size != spec["file_length_bytes_at_freeze"]:
                 raise SnapshotError(f"market changed after copy: {symbol}")
             if mtime_100ns(source) != spec["file_last_write_utc_at_freeze"]:
                 raise SnapshotError(f"market timestamp changed after copy: {symbol}")
+            availability = spec["timestamp_only_scan_before_2023"]
+            if symbol == "EURUSD.DWX":
+                expected_all = availability["selected_rows_all_available"]
+                expected_in_window = availability["selected_rows_on_or_after_analysis_start"]
+            else:
+                expected_all = availability["selected_rows"]
+                expected_in_window = availability["selected_rows"]
+            expected_excluded = availability["first_timestamp_at_or_after_2023"]
+            if fenced["rows_before_fence"] != expected_all:
+                raise SnapshotError(f"market availability row drift: {symbol}")
+            if fenced["exact_in_window_rows"] != expected_in_window:
+                raise SnapshotError(f"market in-window row drift: {symbol}")
+            if fenced["first_excluded_timestamp"] != expected_excluded:
+                raise SnapshotError(f"market boundary timestamp drift: {symbol}")
             market_files.append(
                 {
                     "symbol": symbol,
                     "contract_path": spec["path"],
                     "snapshot_relpath": relative,
-                    "sha256": source_sha,
-                    "bytes": size,
-                    "provenance": "CURRENT_FENCE_EXACT",
+                    "sha256": fenced["sha256"],
+                    "bytes": fenced["bytes"],
+                    "provenance": "CURRENT_FENCED_EXACT",
+                    "projection": MARKET_PROJECTION,
                     "source_path": str(source.resolve()),
-                    "source_length_bytes_at_copy": size,
+                    "source_length_bytes_at_copy": source.stat().st_size,
                     "source_last_write_utc_at_copy": mtime_100ns(source),
+                    "rows_before_fence": fenced["rows_before_fence"],
+                    "prestart_timestamp_only_rows": fenced[
+                        "prestart_timestamp_only_rows"
+                    ],
+                    "exact_in_window_rows": fenced["exact_in_window_rows"],
+                    "first_excluded_timestamp": fenced["first_excluded_timestamp"],
+                    "future_ohlc_tail_read": False,
                 }
             )
 
         manifest = {
-            "schema_version": 1,
+            "schema_version": 2,
             "analysis_id": ANALYSIS_ID,
-            "snapshot_id": "release_0b221d1c_2d009fa4_mixed_exact_v1",
+            "snapshot_id": "release_0b221d1c_2d009fa4_mixed_exact_fenced_v2",
             "runtime_policy": "ALL_CONTROL_BINDING_NEWS_AND_MARKET_INPUTS_FROM_THIS_READ_ONLY_SNAPSHOT_ONLY",
             "contract": contract_entry,
             "review_receipt": review_entry,

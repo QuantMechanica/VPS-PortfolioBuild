@@ -1,0 +1,131 @@
+{
+  "task_id": "5f18eea1-3d7e-4787-ba31-b823373c7569",
+  "ea_id": "QM5_20015",
+  "ea_label": "QM5_20015_wti-halloween-winter",
+  "slug": "wti-halloween-winter",
+  "strategy_id": "BURAKOV-WTI-HALLOWEEN-2018_S01",
+  "strategy": "WTI November-May long winter-season sleeve with monthly fixed-risk renewal",
+  "source_links": [
+    "https://www.econjournals.com/index.php/ijeep/article/view/6092",
+    "https://www.econjournals.com/index.php/ijeep/article/download/6092/3608/15549"
+  ],
+  "symbols": [
+    "XTIUSD.DWX"
+  ],
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_20015_wti-halloween-winter",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_20015_wti-halloween-winter/QM5_20015_wti-halloween-winter.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_20015_wti-halloween-winter/QM5_20015_wti-halloween-winter.ex5",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_20015_wti-halloween-winter/SPEC.md",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20015_wti-halloween-winter.md",
+  "approved_card_path": "C:/QM/repo/strategy-seeds/cards/approved/QM5_20015_wti-halloween-winter_card.md",
+  "canonical_card_path": "C:/QM/repo/strategy-seeds/cards/wti-halloween-winter_card.md",
+  "source_packet_path": "C:/QM/repo/strategy-seeds/sources/BURAKOV-WTI-HALLOWEEN-2018/source.md",
+  "runtime_build_result_path": "D:/QM/strategy_farm/artifacts/builds/5f18eea1-3d7e-4787-ba31-b823373c7569.json",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_20015_wti-halloween-winter/sets/QM5_20015_wti-halloween-winter_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "magic_base": 200150000,
+  "registry_validation": {
+    "ea_id_row": "20015,wti-halloween-winter,BURAKOV-WTI-HALLOWEEN-2018_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-20",
+    "magic_row": "20015,wti-halloween-winter,0,XTIUSD.DWX,200150000,2026-07-20,Development,active",
+    "resolver_rows": 14952,
+    "magic_registry_sha256": "9BB9BE4D7175218E88DC91E279B3D8266F98768AE1E9CCA4409A95FD511A53D0",
+    "resolver_registry_sha_match": true
+  },
+  "commits": [
+    "5d64c492814c4d0a9447d04ea5eca771e58c07cb",
+    "26a39ca4cebd4f650310c4a974f5cb7234ddf660",
+    "4887a4e9751b5586f037f7c36d4c024eb1e8401f",
+    "865e64cec636e8ca0b0f2a5f72d7273ad72e848e",
+    "6bee982d874492876bd8181f4726a56efff98a62",
+    "1e7916d81726f5eae444e54f6b314d23b75803ba",
+    "01d52e9e9ebdf483989759d3eafedfe419a0c0a9",
+    "4089387a954a91f7c20f69fb9311ea5d4d947cb3"
+  ],
+  "build_commit": "4089387a954a91f7c20f69fb9311ea5d4d947cb3",
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log": "C:/QM/repo/framework/build/compile/20260720_071405/QM5_20015_wti-halloween-winter.compile.log",
+  "compile_log_sha256": "C8B888148660482546B33FD9F00806652609AE13011BE23D334297105044147A",
+  "compile_summary": "D:/QM/reports/compile/20260720_071405/summary.csv",
+  "build_check_passed": true,
+  "build_check_failures": 0,
+  "build_check_warnings": 0,
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260720_071439.json",
+  "build_check_report_sha256": "F320ECDFB7CD54FF3736F7E9C243AE7283B1416D4F11987357382204CC361592",
+  "spec_validation": "PASS",
+  "guardrail_validation": "PASS",
+  "symbol_scope_validation": "SINGLE_SYMBOL_OK",
+  "card_schema_validation": "PASS",
+  "g0_card_validation": "PASS",
+  "setfile_build_hash": "1e338a6fbec61807fccf08c3728fcb64d0fee5ec52da8dfb18a723d925d8bb6d",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced-fleet scan showed six active pipeline terminals and six metatester64 processes; no manual tester, dispatch tick, worker tick, optimization or backtest was started.",
+  "blocked_reason": null,
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "reputable_primary_source": true,
+    "manual_backtest_cpu_used": false
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_20015",
+    "enqueued": [
+      {
+        "work_item_id": "2c022cc5-f7d7-480b-8d87-4d6aa8f475ff",
+        "symbol": "XTIUSD.DWX",
+        "timeframe": "D1",
+        "status": "pending",
+        "attempt_count": 0,
+        "claimed_by": null,
+        "enqueued_at": "2026-07-20T07:18:41+00:00"
+      }
+    ],
+    "skipped": []
+  },
+  "q02": {
+    "phase": "Q02",
+    "work_item_id": "2c022cc5-f7d7-480b-8d87-4d6aa8f475ff",
+    "status_at_handoff": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "enqueued_at_utc": "2026-07-20T07:18:41+00:00",
+    "note": "Auto-enqueued by farmctl record-build; not dispatched by this mission."
+  },
+  "open_questions": [
+    "The paper studies an IMF West Texas monthly price series; Q02 must falsify transfer to the Darwinex continuous CFD, monthly risk renewal and ATR overlay.",
+    "Neither positive expectancy nor low realized correlation to the certified book is established by G0 or Q01."
+  ],
+  "file_hashes_sha256": {
+    "mq5": "CFA6ED60B604A06D8262194B474D41C1B04326FB37AE0909A7ABF4B6FA1FDA04",
+    "ex5": "CCF72804E35DFD75BF0683EF0AE9101EB1F501B59B5F0CA2CD933FDBB5A95AEE",
+    "spec": "981CE70F4A4E7FB290C3EF1FCDC0BC2BFB9ACA1A7FBBA0769FF304B8916704CB",
+    "embedded_card": "AAE630868D56DEF755241FC10DED638391DD2D6BE3A47CBFE30A42887EB9E823",
+    "setfile": "86A677E47427E3506B80B3A6F42AC7FF64B1BCD5B0C1368B8EB59BEC95829151",
+    "canonical_card": "383E4ED0722405B7F21B0A10D83A59AED924A15266D76F94A9BAE8E0B816AFA9",
+    "approved_card": "383E4ED0722405B7F21B0A10D83A59AED924A15266D76F94A9BAE8E0B816AFA9",
+    "source_packet": "F0BF98CF59F5B85FBC035F3C520197D5933571C94A6E95D6C80A889B3B9F522D",
+    "ea_registry": "691BCC83EE36C2B322E942CEE98CFF4A8679CDDBC8F5DA47D5BEBE47F036FC65",
+    "magic_registry": "9BB9BE4D7175218E88DC91E279B3D8266F98768AE1E9CCA4409A95FD511A53D0",
+    "resolver": "5E6D12B1F7342240C4F827B76D86A44C105ECA071261094532048D572AB2B605"
+  }
+}

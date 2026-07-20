@@ -29,14 +29,35 @@ def test_frozen_family_has_four_complete_sets_and_manifest() -> None:
     assert len(outputs) == 5
     set_outputs = {path: raw for path, raw in outputs.items() if path.suffix == ".set"}
     assert len(set_outputs) == 4
-    assert all(raw.count(b"\n") == 59 for raw in set_outputs.values())
+    assert all(raw.count(b"\n") == 63 for raw in set_outputs.values())
+    assert all(
+        f"; compile_binding_sha256={subject.EXPECTED_COMPILE_BINDING_SHA256}\n".encode()
+        in raw
+        for raw in set_outputs.values()
+    )
+    assert all(
+        f"; compile_evidence_sha256={subject.EXPECTED_COMPILE_EVIDENCE_SHA256}\n".encode()
+        in raw
+        for raw in set_outputs.values()
+    )
+    assert all(
+        f"; compiled_ex5_sha256={subject.EXPECTED_COMPILED_EX5_SHA256}\n".encode()
+        in raw
+        for raw in set_outputs.values()
+    )
     assert all(b"TradeLongs=false\n" in raw for raw in set_outputs.values())
     assert all(b"TradeShorts=true\n" in raw for raw in set_outputs.values())
     assert all(b"KZ_London_on=false\n" in raw for raw in set_outputs.values())
     assert all(b"KZ_NewYork_on=true\n" in raw for raw in set_outputs.values())
 
     manifest = json.loads(outputs[subject.MANIFEST_PATH].decode("ascii"))
+    assert manifest["schema_version"] == 2
     assert manifest["contract_sha256"] == subject.EXPECTED_CONTRACT_SHA256
+    assert manifest["compile_binding_commit"] == subject.COMPILE_BINDING_COMMIT
+    assert manifest["compile_binding_sha256"] == subject.EXPECTED_COMPILE_BINDING_SHA256
+    assert manifest["compile_evidence_sha256"] == subject.EXPECTED_COMPILE_EVIDENCE_SHA256
+    assert manifest["compiled_ex5_git_commit"] == subject.COMPILED_EX5_COMMIT
+    assert manifest["compiled_ex5_sha256"] == subject.EXPECTED_COMPILED_EX5_SHA256
     assert [(row["arm"], row["symbol"]) for row in manifest["sets"]] == [
         ("A_SHORT_NY_NO_HTF", "EURUSD.DWX"),
         ("A_SHORT_NY_NO_HTF", "GBPUSD.DWX"),

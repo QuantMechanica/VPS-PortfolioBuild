@@ -41,6 +41,9 @@ TOOL_PATH = Path(__file__).resolve()
 EA_ROOT = TOOL_PATH.parents[2]
 REPO_ROOT = EA_ROOT.parents[2]
 CONTRACT_PATH = EA_ROOT / "docs" / "candidate-analysis" / "short_ny_reverse_time_contract.json"
+COMPILE_BINDING_PATH = (
+    EA_ROOT / "docs" / "candidate-analysis" / "short_ny_reverse_time_compile_binding.json"
+)
 SET_MANIFEST_PATH = EA_ROOT / "sets" / "candidate-analysis" / "short_ny_reverse_time_manifest.json"
 SOURCE_PATH = EA_ROOT / "QM5_20002_ict-icytea-core.mq5"
 SOURCE_CORRECTION_PLAN_PATH = (
@@ -84,6 +87,11 @@ CONTRACT_COMMIT = "d902b04932c340dd1212b9420077d7cec6b0d80d"
 EXPECTED_CONTRACT_SHA256 = "6ee74c60a823fe87b03b40a2737ba67d113b2e52e7c09a05f42ba2084e17fefa"
 EXPECTED_SOURCE_SHA256 = "3fd49f2cea7575e659f1b1cf9c24c752a4a8e11db5e0c17cae69629a6f207f83"
 EXPECTED_SOURCE_COMMIT = "3f1039f0eeb56ee882b5c3451eed3ee71567d6bc"
+COMPILE_BINDING_COMMIT = "d2aedce42af670b18b2518d5c25e468f11fcfd8c"
+EXPECTED_COMPILE_BINDING_SHA256 = "2c6ed058f0152f90565830fb5d5a194d21830798ce1827b8ddb8e3c8ec050f32"
+EXPECTED_COMPILE_EVIDENCE_SHA256 = "8c342e34ca9a23ffe01b0db02ae18e7c3b00e7bfc4b4090ec68b955bd2663064"
+EXPECTED_COMPILED_EX5_SHA256 = "71d1715d1b403ed85e7261ec058b17e88c43ca5f61bb5be5fb81ebde87207a11"
+COMPILED_EX5_COMMIT = "2d4e400849bd222aba3294aae6520edcbe478e87"
 EXPECTED_SOURCE_CORRECTION_PLAN_SHA256 = "914e1b1c81c4352ee51e7ea1dc4f525739b4e16e1a866d86b759c8dafbbf8c9a"
 EXPECTED_SOURCE_CORRECTION_PLAN_COMMIT = "4e94d4c6a84c9d7bc773344a2311a23cba927f46"
 EXPECTED_PRIMARY_SOURCE_SHA256 = "8880629e924c7dee48e1d2cd0a5cd835020e057ee592b132b6fd0c7a438231af"
@@ -386,6 +394,119 @@ def load_contract() -> dict[str, Any]:
     return contract
 
 
+def _repo_bound_path(value: Any) -> Path:
+    path = Path(str(value))
+    return path.resolve() if path.is_absolute() else (REPO_ROOT / path).resolve()
+
+
+def validate_compile_binding(evidence_path: Path) -> dict[str, Any]:
+    raw = COMPILE_BINDING_PATH.read_bytes()
+    observed = hashlib.sha256(raw).hexdigest()
+    if observed != EXPECTED_COMPILE_BINDING_SHA256:
+        raise PreflightError(f"compile binding SHA drift: {observed}")
+    assert_committed_bytes(
+        COMPILE_BINDING_COMMIT, COMPILE_BINDING_PATH, raw, "compile binding"
+    )
+    binding = json.loads(raw.decode("utf-8"))
+    contract = binding.get("contract", {})
+    source = binding.get("source", {})
+    compiled = binding.get("compiled_binary", {})
+    compile_run = binding.get("compile", {})
+    toolchain = binding.get("toolchain", {})
+    closure = binding.get("closure_artifacts", {})
+    cleanup = binding.get("cleanup", {})
+    outcome_fence = binding.get("outcome_fence", {})
+    if (
+        binding.get("schema_version") != 1
+        or binding.get("artifact_type") != "QM5_20002_SHORT_NY_COMPILE_BINDING"
+        or binding.get("analysis_id") != ANALYSIS_ID
+        or binding.get("research_status") != "CARD_INTAKE_NOT_APPROVED"
+        or binding.get("approval_claim") != "NONE_RESEARCH_CANDIDATE_ONLY"
+        or binding.get("release_state") != "RESEARCH_CANDIDATE_CARD_INTAKE_NOT_APPROVED"
+        or binding.get("next_permitted_stage") != "OUTCOME_BLIND_PRE_ONLY"
+        or contract.get("git_commit") != CONTRACT_COMMIT
+        or contract.get("sha256") != EXPECTED_CONTRACT_SHA256
+        or source.get("git_commit") != EXPECTED_SOURCE_COMMIT
+        or source.get("sha256") != EXPECTED_SOURCE_SHA256
+        or compiled.get("git_commit") != COMPILED_EX5_COMMIT
+        or compiled.get("sha256") != EXPECTED_COMPILED_EX5_SHA256
+        or compile_run.get("evidence_sha256") != EXPECTED_COMPILE_EVIDENCE_SHA256
+        or compile_run.get("result") != "PASS"
+        or compile_run.get("errors") != 0
+        or compile_run.get("warnings") != 0
+        or cleanup.get("active_dev1_processes_after") != 0
+        or cleanup.get("ephemeral_compile_tasks_after") != 0
+        or outcome_fence.get("mt5_terminal_started") is not False
+        or outcome_fence.get("metatester_started") is not False
+        or outcome_fence.get("native_reports_opened") is not False
+        or outcome_fence.get("market_values_parsed") is not False
+    ):
+        raise PreflightError("compile binding identity/status/outcome fence drift")
+    if _repo_bound_path(contract.get("path")) != CONTRACT_PATH.resolve():
+        raise PreflightError("compile binding contract path drift")
+    if _repo_bound_path(source.get("path")) != SOURCE_PATH.resolve():
+        raise PreflightError("compile binding source path drift")
+    if _repo_bound_path(compiled.get("path")) != EX5_PATH.resolve():
+        raise PreflightError("compile binding EX5 path drift")
+
+    compiled_binary = file_binding(EX5_PATH, EXPECTED_COMPILED_EX5_SHA256)
+    if compiled_binary["size"] != int(compiled.get("bytes", -1)):
+        raise PreflightError("compile binding EX5 size drift")
+    assert_committed_bytes(
+        COMPILED_EX5_COMMIT, EX5_PATH, EX5_PATH.read_bytes(), "compiled EX5"
+    )
+
+    expected_evidence_path = Path(str(compile_run.get("evidence_path", ""))).resolve()
+    if evidence_path.resolve() != expected_evidence_path:
+        raise PreflightError("compile evidence path does not match frozen compile binding")
+    evidence = file_binding(evidence_path, EXPECTED_COMPILE_EVIDENCE_SHA256)
+
+    closure_bindings: dict[str, Any] = {}
+    for role in ("compile_log", "source_manifest", "include_sync_manifest", "include_path_audit"):
+        closure_bindings[role] = file_binding(
+            Path(str(closure.get(f"{role}_path", ""))),
+            str(closure.get(f"{role}_sha256", "")),
+        )
+    if (
+        int(closure.get("include_sync_rows", -1)) != 92
+        or int(closure.get("included_paths", -1)) <= 0
+        or int(closure.get("forbidden_include_paths", -1)) != 0
+    ):
+        raise PreflightError("compile binding include closure drift")
+
+    metaeditor = file_binding(
+        Path(str(toolchain.get("metaeditor_path", ""))),
+        str(toolchain.get("metaeditor_sha256", "")),
+    )
+    compile_one_path = _repo_bound_path(toolchain.get("compile_one_path"))
+    controller_path = _repo_bound_path(toolchain.get("compile_controller_path"))
+    compile_one = file_binding(compile_one_path, str(toolchain.get("compile_one_sha256", "")))
+    controller = file_binding(
+        controller_path, str(toolchain.get("compile_controller_sha256", ""))
+    )
+    controller_commit = str(toolchain.get("compile_controller_git_commit", ""))
+    if not re.fullmatch(r"[0-9a-f]{40}", controller_commit):
+        raise PreflightError("compile controller commit missing")
+    assert_committed_bytes(
+        controller_commit, controller_path, controller_path.read_bytes(), "compile controller"
+    )
+    return {
+        "document": {
+            "commit": COMPILE_BINDING_COMMIT,
+            "binding": file_binding(COMPILE_BINDING_PATH, EXPECTED_COMPILE_BINDING_SHA256),
+        },
+        "payload": binding,
+        "evidence": evidence,
+        "compiled_binary": compiled_binary,
+        "closure_artifacts": closure_bindings,
+        "toolchain": {
+            "metaeditor": metaeditor,
+            "compile_one": compile_one,
+            "compile_controller": controller,
+        },
+    }
+
+
 def parse_set(path: Path) -> tuple[dict[str, str], dict[str, str]]:
     try:
         lines = path.read_text(encoding="ascii").splitlines()
@@ -425,11 +546,18 @@ def validate_sets(contract: Mapping[str, Any]) -> tuple[list[dict[str, Any]], di
     manifest_binding = file_binding(SET_MANIFEST_PATH)
     manifest = load_json(SET_MANIFEST_PATH)
     if (
-        manifest.get("analysis_id") != ANALYSIS_ID
+        manifest.get("schema_version") != 2
+        or manifest.get("artifact_type") != "QM5_20002_SHORT_NY_SET_MANIFEST"
+        or manifest.get("analysis_id") != ANALYSIS_ID
         or manifest.get("contract_commit") != CONTRACT_COMMIT
         or manifest.get("contract_sha256") != EXPECTED_CONTRACT_SHA256
+        or manifest.get("compile_binding_commit") != COMPILE_BINDING_COMMIT
+        or manifest.get("compile_binding_sha256") != EXPECTED_COMPILE_BINDING_SHA256
+        or manifest.get("compile_evidence_sha256") != EXPECTED_COMPILE_EVIDENCE_SHA256
+        or manifest.get("compiled_ex5_git_commit") != COMPILED_EX5_COMMIT
+        or manifest.get("compiled_ex5_sha256") != EXPECTED_COMPILED_EX5_SHA256
     ):
-        raise PreflightError("set manifest contract identity drift")
+        raise PreflightError("set manifest contract/compile identity drift")
     rows = manifest.get("sets")
     if not isinstance(rows, list) or len(rows) != 4:
         raise PreflightError("set manifest must contain exactly four cells")
@@ -468,6 +596,10 @@ def validate_sets(contract: Mapping[str, Any]) -> tuple[list[dict[str, Any]], di
             metadata.get("analysis_id") != ANALYSIS_ID
             or metadata.get("contract_commit") != CONTRACT_COMMIT
             or metadata.get("contract_sha256") != EXPECTED_CONTRACT_SHA256
+            or metadata.get("compile_binding_commit") != COMPILE_BINDING_COMMIT
+            or metadata.get("compile_binding_sha256") != EXPECTED_COMPILE_BINDING_SHA256
+            or metadata.get("compile_evidence_sha256") != EXPECTED_COMPILE_EVIDENCE_SHA256
+            or metadata.get("compiled_ex5_sha256") != EXPECTED_COMPILED_EX5_SHA256
             or metadata.get("arm") != arm
             or metadata.get("symbol") != symbol
             or metadata.get("window") != "2017-10-01..2021-12-31"
@@ -554,9 +686,21 @@ def decode_compile_log(raw: bytes) -> str:
 
 
 def validate_compile_evidence(path: Path, contract: Mapping[str, Any]) -> dict[str, Any]:
-    evidence_binding = file_binding(path)
+    frozen_compile = validate_compile_binding(path)
+    evidence_binding = frozen_compile["evidence"]
     evidence = load_json(path)
-    if evidence.get("result") != "PASS" or evidence.get("errors") != 0 or evidence.get("warnings") != 0:
+    bound_payload = frozen_compile["payload"]
+    bound_run = bound_payload["compile"]
+    if (
+        evidence.get("result") != "PASS"
+        or evidence.get("errors") != 0
+        or evidence.get("warnings") != 0
+        or evidence.get("research_status") != "CARD_INTAKE_NOT_APPROVED"
+        or evidence.get("contract_commit") != CONTRACT_COMMIT
+        or evidence.get("contract_sha256") != EXPECTED_CONTRACT_SHA256
+        or evidence.get("source_git_commit") != EXPECTED_SOURCE_COMMIT
+        or evidence.get("run_id") != bound_run["run_id"]
+    ):
         raise PreflightError("fresh compile evidence is not PASS/0/0")
     if str(evidence.get("source_sha256", "")).lower() != EXPECTED_SOURCE_SHA256:
         raise PreflightError("compile source SHA does not bind frozen MQ5")
@@ -564,6 +708,8 @@ def validate_compile_evidence(path: Path, contract: Mapping[str, Any]) -> dict[s
     if source_evidence_path != SOURCE_PATH.resolve():
         raise PreflightError("compile source path does not bind repository MQ5")
     finished = parse_utc(str(evidence.get("finished_utc", "")), "compile finished_utc")
+    if finished != parse_utc(str(bound_run.get("finished_utc", "")), "bound compile finished_utc"):
+        raise PreflightError("compile finished_utc does not match frozen compile binding")
     revision = parse_utc(str(contract["revision_3_created_utc"]), "contract revision_3_created_utc")
     if finished <= revision:
         raise PreflightError("compile is not fresh after contract revision 3")
@@ -596,6 +742,11 @@ def validate_compile_evidence(path: Path, contract: Mapping[str, Any]) -> dict[s
         raise PreflightError("compile repo EX5 path drift")
     if artifacts["repo_ex5"]["sha256"] != artifacts["stage_ex5"]["sha256"]:
         raise PreflightError("staged/repository EX5 mismatch")
+    if artifacts["repo_ex5"] != frozen_compile["compiled_binary"]:
+        raise PreflightError("compile evidence EX5 does not match frozen compile binding")
+    for role in ("compile_log", "source_manifest", "include_sync_manifest", "include_path_audit"):
+        if artifacts[role] != frozen_compile["closure_artifacts"][role]:
+            raise PreflightError(f"compile evidence {role} does not match frozen compile binding")
     compile_log = decode_compile_log(Path(artifacts["compile_log"]["path"]).read_bytes())
     if not re.search(r"Result:\s*0 errors,\s*0 warnings", compile_log, re.IGNORECASE):
         raise PreflightError("compile log lacks exact 0 errors / 0 warnings result")
@@ -631,7 +782,22 @@ def validate_compile_evidence(path: Path, contract: Mapping[str, Any]) -> dict[s
     metaeditor = file_binding(
         Path(str(evidence.get("metaeditor_path", ""))), str(evidence.get("metaeditor_sha256", ""))
     )
+    compile_one = file_binding(
+        Path(str(evidence.get("compile_one_path", ""))),
+        str(evidence.get("compile_one_sha256", "")),
+    )
+    compile_controller = file_binding(
+        Path(str(evidence.get("compile_controller_path", ""))),
+        str(evidence.get("compile_controller_sha256", "")),
+    )
+    if (
+        metaeditor != frozen_compile["toolchain"]["metaeditor"]
+        or compile_one != frozen_compile["toolchain"]["compile_one"]
+        or compile_controller != frozen_compile["toolchain"]["compile_controller"]
+    ):
+        raise PreflightError("compile evidence toolchain does not match frozen compile binding")
     return {
+        "compile_binding": frozen_compile["document"],
         "evidence": evidence_binding,
         "finished_utc": finished.isoformat(),
         "git_head_after": git_head.lower(),
@@ -791,8 +957,8 @@ def build_plan(cells: Sequence[Mapping[str, Any]], timeout_seconds: int) -> dict
 def preflight(compile_evidence: Path, timeout_seconds: int = 28800) -> dict[str, Any]:
     contract = load_contract()
     sources = validate_source_closure(contract)
-    cells, set_manifest = validate_sets(contract)
     compile_binding = validate_compile_evidence(compile_evidence, contract)
+    cells, set_manifest = validate_sets(contract)
     data = validate_model4_data(contract)
     news = validate_news_bindings(contract)
     runtime = validate_runtime()
@@ -865,9 +1031,6 @@ def _validate_pre_semantics(receipt: Mapping[str, Any]) -> None:
     expected_sources = validate_source_closure(contract)
     if receipt.get("sources") != expected_sources:
         raise AuditError("PRE frozen source/card/brief closure drift")
-    expected_cells, expected_set_manifest = validate_sets(contract)
-    if receipt.get("set_manifest") != expected_set_manifest:
-        raise AuditError("PRE set manifest closure drift")
 
     compile_receipt = receipt.get("compile")
     if not isinstance(compile_receipt, Mapping):
@@ -878,6 +1041,9 @@ def _validate_pre_semantics(receipt: Mapping[str, Any]) -> None:
     expected_compile = validate_compile_evidence(Path(str(evidence["path"])), contract)
     if compile_receipt != expected_compile:
         raise AuditError("PRE fresh compile closure drift")
+    expected_cells, expected_set_manifest = validate_sets(contract)
+    if receipt.get("set_manifest") != expected_set_manifest:
+        raise AuditError("PRE set manifest closure drift")
 
     stored_data = receipt.get("model4_data")
     if not isinstance(stored_data, Mapping):
