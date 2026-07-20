@@ -1,8 +1,12 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
+  "contract_revision": 2,
   "artifact_type": "QM5_20002_PREREGISTERED_REVERSE_TIME_CANDIDATE_CONTRACT",
   "analysis_id": "QM5_20002_SHORT_NY_REVERSE_TIME_SCREEN_001",
   "created_utc": "2026-07-20T01:55:00Z",
+  "revision_2_created_utc": "2026-07-20T02:12:28Z",
+  "revision_2_outcome_fence": "INFRASTRUCTURE_ONLY_BEFORE_ANY_2017_2021_REPORT_OR_MARKET_OUTCOME_WAS_READ",
+  "revision_2_reason": "QM_NewsInit consumes two tester CSV files, while revision 1 bound only the primary file; revision 2 binds both inputs and makes pending-order fill-time compliance an explicit INVALID gate.",
   "purpose": "Test the previously claimed short-only New-York ICT rescue on an earlier outcome window that was not used to select the direction/session filter.",
   "epistemic_status": {
     "candidate_origin": "POST_HOC_FILTER_FROM_2022_2025_EURUSD_M1_OUTCOMES",
@@ -146,9 +150,32 @@
   "data_bindings": {
     "provisioning_manifest": "D:/QM/reports/dev1/provisioning/20260719/source_destination_sha256.csv",
     "provisioning_manifest_sha256": "65cb423348fbe1e5f04d99d9594bef80ed303ec52f6d8ad0d225fa86e4d1235c",
-    "news_calendar": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv",
-    "news_calendar_sha256": "8e898ca1c4aed5fbc4cbe43fc176e8d8595c2e6f5f05c2984c2468527d4f5b0d",
+    "news_calendars": [
+      {
+        "role": "PRIMARY_QM_NEWS_CALENDAR",
+        "path": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv",
+        "sha256": "8e898ca1c4aed5fbc4cbe43fc176e8d8595c2e6f5f05c2984c2468527d4f5b0d"
+      },
+      {
+        "role": "SECONDARY_QM_NEWS_CALENDAR_REQUIRED_BY_QM_NewsInit",
+        "path": "D:/QM/data/news_calendar/forex_factory_calendar_clean.csv",
+        "sha256": "3cf4b7d881b62105b70e34cb8400caa6c393b85743cce8046085c680ae05f3d1"
+      }
+    ],
+    "tester_news_semantics": "UNION_OF_BOTH_QM_NewsInit_CSV_INPUTS",
     "future_bar_parse_forbidden_after": "2021-12-31T23:59:59"
+  },
+  "execution_integrity_gates": {
+    "opening_fill_new_york_window": "07:00:00_INCLUSIVE_TO_10:00:00_EXCLUSIVE",
+    "opening_fill_must_be_outside_news_blackout_union": true,
+    "news_blackout_union_inputs": [
+      "PRIMARY_QM_NEWS_CALENDAR",
+      "SECONDARY_QM_NEWS_CALENDAR_REQUIRED_BY_QM_NewsInit"
+    ],
+    "news_blackout_minutes_before": 30,
+    "news_blackout_minutes_after": 30,
+    "violation_disposition": "INVALID",
+    "rationale": "The EA places ORDER_TIME_SPECIFIED limit orders. A limit accepted inside the killzone and outside news can still fill after 10:00 NY or during a later news blackout, so placement-time gating alone cannot prove the candidate semantics."
   },
   "familywise_policy": {
     "hypothesis_count": 4,
