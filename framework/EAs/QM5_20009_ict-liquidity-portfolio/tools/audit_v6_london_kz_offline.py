@@ -536,11 +536,17 @@ def complete_trade(
             exit_time = bars[flat_index].dt
             exit_reason = "HARD_FLAT_AFTER_TP1" if partial else "HARD_FLAT"
         else:
-            prior_indices = [idx for epoch, idx in by_epoch.items() if fill_bar.epoch <= epoch < flat_epoch]
-            if not prior_indices:
+            prior_index: int | None = None
+            probe = flat_epoch - M15_SECONDS
+            while probe >= fill_bar.epoch:
+                prior_index = by_epoch.get(probe)
+                if prior_index is not None:
+                    break
+                probe -= M15_SECONDS
+            if prior_index is None:
                 integrity.append(f"{symbol} {day_key}: no price for 17:00 forced flat")
                 return None
-            prior = bars[max(prior_indices)]
+            prior = bars[prior_index]
             flat_price = prior.close
             exit_time = datetime.combine(day_key, time(17, 0))
             exit_reason = "DATA_FORCED_FLAT_AFTER_TP1" if partial else "DATA_FORCED_FLAT"
@@ -626,8 +632,10 @@ def evaluate_symbol(
         asia_low = min(bar.low for bar in asia_bars)
         anchor_index = date_map[time(8, 45)]
         anchor = bars[anchor_index].close
-        prior_indices = [index for index in range(anchor_index + 1) if bars[index].close_dt <= datetime.combine(day_key, time(9, 0))]
-        centers = prior_indices[-96:]
+        # anchor is the 08:45 bar and closes exactly at the 09:00 freeze.  The
+        # sorted series therefore makes the preceding window a bounded slice;
+        # rescanning the entire history per day would be quadratic.
+        centers = range(max(0, anchor_index - 95), anchor_index + 1)
         pool_freeze = datetime.combine(day_key, time(9, 0))
         pivot_lows = [
             bars[index].low
