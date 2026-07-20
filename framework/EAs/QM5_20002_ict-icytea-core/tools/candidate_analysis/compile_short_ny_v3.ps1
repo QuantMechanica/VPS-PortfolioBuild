@@ -418,7 +418,8 @@ function Invoke-CompileController {
         $credential = $null
         $task = Get-ScheduledTask -TaskName $taskName -TaskPath '\'
         if ($task.Principal.LogonType.ToString() -ne 'Password' -or
-            $task.Principal.RunLevel.ToString() -ne 'Limited' -or @($task.Triggers).Count -ne 0 -or
+            $task.Principal.RunLevel.ToString() -ne 'Limited' -or $null -ne $task.Triggers -or
+            @($task.Actions).Count -ne 1 -or
             -not ([IO.Path]::GetFullPath([string]$task.Actions[0].Execute)).Equals(
                 ([IO.Path]::GetFullPath($pwsh)), [StringComparison]::OrdinalIgnoreCase) -or
             [string]$task.Actions[0].Arguments -cne $arguments -or
