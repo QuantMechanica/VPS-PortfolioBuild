@@ -580,6 +580,107 @@ def test_runner_command_freezes_model4_two_duplicates_zero_native_cost(
     assert command[-1] == "-SmokeMode"
 
 
+def _probe_pre(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> tuple[dict[str, object], str]:
+    monkeypatch.setattr(subject, "ALLOWED_RUN_ROOT", tmp_path)
+    run_root = tmp_path / "run"
+    run_root.mkdir()
+    paths = {
+        "powershell": tmp_path / "pwsh.exe",
+        "dev2_machine_credential_probe": tmp_path / "probe_dev2_machine_credential.ps1",
+        "dev2_machine_credential_helper": tmp_path / "dev2_machine_credential.ps1",
+        "dev2_machine_credential": tmp_path / "credential.machine-dpapi.json",
+    }
+    for role, path in paths.items():
+        path.write_bytes(role.encode("ascii"))
+    pre: dict[str, object] = {
+        "run_root": str(run_root),
+        "bindings": {role: subject.file_binding(path) for role, path in paths.items()},
+        "execution_contract": subject.execution_contract(),
+    }
+    worker_sid = "S-1-5-21-100-200-300-500"
+    return pre, worker_sid
+
+
+def test_same_worker_machine_credential_probe_is_exactly_bound_before_claim(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    pre, worker_sid = _probe_pre(tmp_path, monkeypatch)
+
+    def fake_run(command: list[str], **_kwargs: object) -> SimpleNamespace:
+        receipt_path = Path(command[command.index("-ReceiptPath") + 1])
+        _write_json(
+            receipt_path,
+            {
+                "schema_version": 1,
+                "artifact_type": "QM_DEV2_MACHINE_CREDENTIAL_PRECLAIM_PROBE",
+                "status": "PASS",
+                "created_utc": datetime.now(timezone.utc).isoformat(),
+                "worker_principal_sid": worker_sid,
+                "expected_account": "QMDev2",
+                "credential_account_sid": "S-1-5-21-100-200-300-1001",
+                "credential_path": pre["bindings"]["dev2_machine_credential"]["path"],
+                "credential_sha256": pre["bindings"]["dev2_machine_credential"]["sha256"],
+                "helper_path": pre["bindings"]["dev2_machine_credential_helper"]["path"],
+                "helper_sha256": pre["bindings"]["dev2_machine_credential_helper"]["sha256"],
+                "native_counting_boundary_crossed": False,
+                "dev2_run_directory_created": False,
+                "metatester_started": False,
+            },
+        )
+        assert command[command.index("-ExpectedCredentialSha256") + 1] == pre["bindings"][
+            "dev2_machine_credential"
+        ]["sha256"]
+        assert command[command.index("-ExpectedHelperSha256") + 1] == pre["bindings"][
+            "dev2_machine_credential_helper"
+        ]["sha256"]
+        return SimpleNamespace(returncode=0)
+
+    monkeypatch.setattr(subject.subprocess, "run", fake_run)
+    execution = subject._execute_machine_credential_preclaim_probe(pre)
+    validated = subject.validate_machine_credential_preclaim_probe(
+        execution, pre, worker_sid
+    )
+    assert validated["status"] == "PASS"
+    assert validated["receipt_payload_sha256"]
+    assert subject.validate_bound_machine_credential_preclaim_probe(
+        validated, pre, worker_sid
+    ) == validated
+
+    receipt_path = Path(validated["receipt"]["path"])
+    receipt = subject.load_json(receipt_path)
+    receipt["native_counting_boundary_crossed"] = True
+    _write_json(receipt_path, receipt)
+    tampered = dict(execution)
+    tampered["receipt"] = subject.file_binding(receipt_path)
+    with pytest.raises(subject.InvalidEvidence, match="identity/binding drift"):
+        subject.validate_machine_credential_preclaim_probe(tampered, pre, worker_sid)
+
+
+def test_preclaim_failure_state_never_claims_or_crosses_outcome_fence(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    claim_path = tmp_path / "claims" / "attempt003.json"
+    monkeypatch.setattr(subject, "NATIVE_ATTEMPT_CLAIM_PATH", claim_path)
+    state_path = tmp_path / "launch_state.json"
+    state = _preoutcome_state("RUNNING")
+    state["worker_pid"] = 123
+    persisted = subject._persist_invalid_preclaim_state(
+        state_path,
+        state,
+        {"status": "COMPLETED_UNVALIDATED", "exit_code": 1},
+        subject.InvalidEvidence("credential probe failed"),
+    )
+    assert persisted["status"] == "INVALID_PREFLIGHT"
+    assert persisted["worker_pid"] is None
+    assert persisted["attempt_claim"] is None
+    assert persisted["active_cell"] is None
+    assert persisted["outcome_possible_since_utc"] is None
+    assert all(cell["status"] == "PENDING" and cell["attempts"] == [] for cell in persisted["cells"])
+    assert not claim_path.exists()
+
+
 def _infra_retry_002_fixture(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> tuple[Path, dict[str, object], Path, Path]:
@@ -703,7 +804,7 @@ def _infra_retry_002_fixture(
     )
 
     prior_claim_payload = {
-        "schema_version": 2,
+        "schema_version": 1,
         "artifact_type": "QM5_10834_DEV2_NATIVE_ATTEMPT_CLAIM",
         "analysis_id": subject.ANALYSIS_ID,
         "attempt_number": 1,
@@ -848,6 +949,29 @@ def test_infra_retry_contract_is_outcome_blind_attempt_002_and_binds_prior_port_
     (native_root / "native" / "DEV" / "report.htm").write_bytes(b"")
     with pytest.raises(subject.InvalidEvidence, match="native outcome artifact"):
         subject._validate_infra_retry_002_contract(contract)
+
+
+def test_retry_003_contract_separates_claim_sequence_from_counted_attempt(
+    tmp_path: Path,
+) -> None:
+    payload = subject.validate_infra_retry_contract()
+    retry = payload["retry"]
+    assert retry["claim_sequence"] == 3
+    assert retry["reserved_counted_alternate_attempt_number"] == 2
+    assert retry["prior_claim_sequences"] == 2
+    assert retry["prior_counted_alternate_attempts"] == 1
+    prior = payload["prior_uncounted_claim_sequence_002"]
+    assert prior["cause"] == "S4U_CURRENT_USER_DPAPI_IMPORT_FAILED"
+    assert prior["counts_toward_claim_sequence"] is True
+    assert prior["counts_toward_counted_alternate_attempts"] is False
+    assert prior["native_counting_boundary_crossed"] is False
+
+    tampered = json.loads(json.dumps(payload))
+    tampered["retry"]["reserved_counted_alternate_attempt_number"] = 3
+    path = tmp_path / "retry003.json"
+    _write_json(path, tampered)
+    with pytest.raises(subject.InvalidEvidence, match="claim/count policy"):
+        subject.validate_infra_retry_contract(path)
 
 
 def test_dev2_controller_result_binds_lane_scripts_and_tester_groups() -> None:
@@ -1810,12 +1934,16 @@ def test_persisted_helper_is_s4u_triggerless_and_never_overwrites_task() -> None
     assert "fresh_start_ack" in helper
 
 
-def test_resume_fence_rejects_any_native_worker_artifact(tmp_path: Path) -> None:
+def test_resume_fence_rejects_any_native_worker_artifact(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(subject, "ALLOWED_RUN_ROOT", tmp_path.parent)
     state_path = tmp_path / "launch_state.json"
     job_path = tmp_path / "launch_job.json"
     _write_json(job_path, {"immutable": True})
     output_roots = [tmp_path / "native" / window.cell_id for window in subject.WINDOWS]
     pre = {
+        "run_root": str(tmp_path),
         "plan": {
             "cells": [
                 {"cell_id": window.cell_id, "output_root": str(output_root)}
@@ -1849,14 +1977,59 @@ def test_resume_fence_rejects_any_native_worker_artifact(tmp_path: Path) -> None
     with pytest.raises(subject.AuthorizationError, match="artifact tree is non-empty"):
         subject._assert_resume_outcome_fence(state, job, pre, state_path)
 
+def test_resume_fence_rejects_preclaim_probe_artifacts(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(subject, "ALLOWED_RUN_ROOT", tmp_path.parent)
+    state_path = tmp_path / "launch_state.json"
+    job_path = tmp_path / "launch_job.json"
+    _write_json(job_path, {"immutable": True})
+    pre = {
+        "run_root": str(tmp_path),
+        "plan": {
+            "cells": [
+                {"cell_id": window.cell_id, "output_root": str(tmp_path / "native" / window.cell_id)}
+                for window in subject.WINDOWS
+            ]
+        },
+    }
+    authorization = {"binding": {"path": "auth"}, "payload_sha256": "a" * 64}
+    scheduler = {"task_name": "QM_QM10834_AUDIT_" + "a" * 24}
+    job = {
+        "authorization": authorization,
+        "scheduler": scheduler,
+        "pre_receipt_path": "pre.json",
+        "pre_receipt_sha256": "b" * 64,
+        "plan_sha256": "c" * 64,
+    }
+    state = _preoutcome_state()
+    state.update(
+        {
+            "job": subject.file_binding(job_path),
+            "authorization": authorization,
+            "scheduler": scheduler,
+            "pre_receipt_path": "pre.json",
+            "pre_receipt_sha256": "b" * 64,
+            "plan_sha256": "c" * 64,
+        }
+    )
+    probe_paths = subject._machine_credential_probe_paths(pre)
+    probe_paths["control_root"].mkdir(parents=True)
+    probe_paths["stderr"].write_bytes(b"preclaim started")
+    with pytest.raises(subject.AuthorizationError, match="preclaim probe artifacts"):
+        subject._assert_resume_outcome_fence(state, job, pre, state_path)
+
 
 def test_worker_persists_outcome_fence_before_native_subprocess() -> None:
     source = TOOL.read_text(encoding="utf-8-sig")
     worker_start = source.index("def _worker_run(")
+    probe = source.index("_execute_machine_credential_preclaim_probe(pre)", worker_start)
+    claim = source.index('state["attempt_claim"] = claim_native_attempt(', probe)
+    active = source.index('state["active_cell"]', claim)
     marker = source.index('state["outcome_possible_since_utc"]', worker_start)
     checkpoint = source.index("atomic_json(state_path, state, replace=True)", marker)
     native_start = source.index("completed = subprocess.run(", checkpoint)
-    assert worker_start < marker < checkpoint < native_start
+    assert worker_start < probe < claim < active < marker < checkpoint < native_start
     assert "DETACHED_PROCESS" not in source
     assert "def _spawn_worker" not in source
 
