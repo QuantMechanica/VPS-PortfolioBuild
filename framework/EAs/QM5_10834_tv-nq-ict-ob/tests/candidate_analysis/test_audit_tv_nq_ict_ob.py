@@ -814,6 +814,14 @@ def test_same_worker_machine_credential_probe_is_exactly_bound_before_claim(
     assert subject.validate_bound_machine_credential_preclaim_probe(
         validated, pre, worker_sid
     ) == validated
+    with pytest.raises(subject.InvalidEvidence, match="not fresh"):
+        subject.validate_bound_machine_credential_preclaim_probe(
+            validated,
+            pre,
+            worker_sid,
+            now=datetime.now(timezone.utc) + timedelta(minutes=6),
+            require_fresh=True,
+        )
 
     receipt_path = Path(validated["receipt"]["path"])
     receipt = subject.load_json(receipt_path)
@@ -1116,6 +1124,63 @@ def test_infra_retry_contract_is_outcome_blind_attempt_002_and_binds_prior_port_
     (native_root / "native" / "DEV" / "report.htm").write_bytes(b"")
     with pytest.raises(subject.InvalidEvidence, match="native outcome artifact"):
         subject._validate_infra_retry_002_contract(contract)
+
+
+@pytest.mark.parametrize("role", ["pre", "claim", "stderr"])
+def test_attempt_001_end_reassert_rejects_late_byte_tamper(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    role: str,
+) -> None:
+    _contract, _payload, _native_root, _dev2_root = _infra_retry_002_fixture(
+        tmp_path, monkeypatch
+    )
+    targets = {
+        "pre": subject.PRIOR_NATIVE_ATTEMPT_RUN_ROOT / "pre_receipt.json",
+        "claim": subject.PRIOR_NATIVE_ATTEMPT_CLAIM_PATH,
+        "stderr": subject.PRIOR_NATIVE_ATTEMPT_CONTROLLER_STDERR_PATH,
+    }
+    tampered = False
+
+    def tamper_after_semantic_validation(_root: Path, _label: str) -> None:
+        nonlocal tampered
+        if not tampered:
+            target = targets[role]
+            target.write_bytes(target.read_bytes() + b"late-tamper")
+            tampered = True
+
+    monkeypatch.setattr(
+        subject, "_assert_no_native_outcome_files", tamper_after_semantic_validation
+    )
+    with pytest.raises(subject.InvalidEvidence, match="drift"):
+        subject._validate_prior_native_port_attempt()
+
+
+@pytest.mark.parametrize(
+    "label",
+    [
+        "prior DPAPI PRE receipt",
+        "prior DPAPI launch state",
+        "prior DPAPI launch job",
+        "prior DPAPI claim",
+        "prior DPAPI controller stdout",
+        "prior DPAPI controller stderr",
+        "prior retry-002 contract",
+    ],
+)
+def test_attempt_002_end_reassert_propagates_late_binding_tamper(
+    monkeypatch: pytest.MonkeyPatch, label: str
+) -> None:
+    original = subject.assert_binding
+
+    def reject_selected(binding: dict[str, object], observed_label: str) -> None:
+        if observed_label == label:
+            raise subject.InvalidEvidence(f"simulated late SHA-256 drift: {label}")
+        original(binding, observed_label)
+
+    monkeypatch.setattr(subject, "assert_binding", reject_selected)
+    with pytest.raises(subject.InvalidEvidence, match="simulated late SHA-256 drift"):
+        subject._validate_prior_dpapi_attempt()
 
 
 def test_retry_003_contract_separates_claim_sequence_from_counted_attempt(
@@ -2178,6 +2243,186 @@ def _preoutcome_state(status: str = "PENDING") -> dict[str, object]:
     }
 
 
+def _complete_launch_state_fixture(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> tuple[Path, dict[str, object], dict[str, object]]:
+    run_root = tmp_path / "run"
+    run_root.mkdir()
+    state_path = run_root / "launch_state.json"
+    job_path = run_root / "launch_job.json"
+    authorization_path = run_root / "authorization.json"
+    _write_json(authorization_path, {"authorized": True})
+    authorization = {
+        "binding": subject.file_binding(authorization_path),
+        "payload_sha256": "a" * 64,
+    }
+    scheduler = {"principal_sid": "S-1-5-18", "task_name": "task"}
+    job = {"scheduler": scheduler, "authorization": authorization}
+    _write_json(job_path, job)
+    command_sha = subject.canonical_sha256(["bound-command"])
+    cell = {
+        "cell_id": "NDX_DWX_DEV",
+        "symbol": "NDX.DWX",
+        "output_root": str((run_root / "native" / "DEV").resolve()),
+    }
+    pre = {
+        "run_root": str(run_root.resolve()),
+        "plan": {"plan_sha256": "b" * 64, "cells": [cell]},
+    }
+    probe = {"status": "PASS", "receipt_payload_sha256": "c" * 64}
+    now = datetime.now(timezone.utc)
+    state = {
+        "schema_version": subject.SCHEMA_VERSION,
+        "launcher_revision": subject.LAUNCHER_REVISION,
+        "artifact_type": "QM5_10834_NATIVE_LAUNCH_STATE",
+        "analysis_id": subject.ANALYSIS_ID,
+        "status": "COMPLETE",
+        "created_utc": (now - timedelta(minutes=5)).isoformat(),
+        "updated_utc": now.isoformat(),
+        "started_utc": (now - timedelta(minutes=4)).isoformat(),
+        "finished_utc": (now - timedelta(minutes=1)).isoformat(),
+        "pre_receipt_path": str((run_root / "pre_receipt.json").resolve()),
+        "pre_receipt_sha256": "d" * 64,
+        "plan_sha256": "b" * 64,
+        "job": subject.file_binding(job_path),
+        "authorization": authorization,
+        "scheduler": scheduler,
+        "worker_pid": None,
+        "resume_count": 0,
+        "active_cell": None,
+        "attempt_claim": {"path": "claim.json", "size": 1, "sha256": "e" * 64},
+        "preclaim_probe": probe,
+        "outcome_possible_since_utc": (now - timedelta(minutes=3)).isoformat(),
+        "launches": [
+            {
+                "worker_pid": 123,
+                "started_utc": (now - timedelta(minutes=4)).isoformat(),
+                "resume": False,
+                "authorization": authorization,
+                "scheduler": scheduler,
+            }
+        ],
+        "outcome_fence": {
+            "worker_parses_market_values": False,
+            "worker_parses_native_reports": False,
+            "worker_seals_opaque_artifacts_only": True,
+        },
+        "cells": [
+            {
+                "cell_id": cell["cell_id"],
+                "status": "COMPLETE",
+                "command_sha256": command_sha,
+                "attempts": [
+                    {
+                        "started_utc": (now - timedelta(minutes=3)).isoformat(),
+                        "finished_utc": (now - timedelta(minutes=2)).isoformat(),
+                        "command_sha256": command_sha,
+                        "exit_code": 0,
+                        "stdout": {},
+                        "stderr": {},
+                        "summary": {},
+                        "outcome_artifacts": [],
+                        "native_root": str((tmp_path / "runs" / "id").resolve()),
+                        "native_result": {},
+                        "runner_result": {},
+                        "sealed_artifacts": [],
+                    }
+                ],
+            }
+        ],
+    }
+    _write_json(state_path, state)
+    monkeypatch.setattr(subject, "runner_command", lambda *_args: ["bound-command"])
+    monkeypatch.setattr(subject, "_validate_launch_job", lambda *_args: None)
+    monkeypatch.setattr(
+        subject,
+        "validate_authorization",
+        lambda *_args, **_kwargs: {
+            "binding": authorization["binding"],
+            "payload_sha256": authorization["payload_sha256"],
+        },
+    )
+    monkeypatch.setattr(
+        subject,
+        "validate_bound_machine_credential_preclaim_probe",
+        lambda evidence, *_args, **_kwargs: dict(evidence),
+    )
+    monkeypatch.setattr(subject, "validate_native_attempt_claim", lambda *_args: {})
+    return state_path, pre, state
+
+
+def test_complete_launch_state_has_exact_schema_and_path_identity(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    state_path, pre, state = _complete_launch_state_fixture(tmp_path, monkeypatch)
+    assert subject._validate_launch_state(
+        Path(state["pre_receipt_path"]), state["pre_receipt_sha256"], state_path, pre
+    ) == state
+
+
+@pytest.mark.parametrize(
+    ("tamper", "message"),
+    [
+        ("extra_top", "top-level field closure"),
+        ("schema_bool", "COMPLETE and exactly PRE-bound"),
+        ("resume_count", "resume_count"),
+        ("extra_cell", r"cell\[0\] field"),
+        ("bool_exit", "attempt field/type"),
+    ],
+)
+def test_complete_launch_state_rejects_field_and_type_tamper(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    tamper: str,
+    message: str,
+) -> None:
+    state_path, pre, state = _complete_launch_state_fixture(tmp_path, monkeypatch)
+    if tamper == "extra_top":
+        state["unexpected"] = True
+    elif tamper == "schema_bool":
+        state["schema_version"] = True
+    elif tamper == "resume_count":
+        state["resume_count"] = 1
+    elif tamper == "extra_cell":
+        state["cells"][0]["unexpected"] = True
+    elif tamper == "bool_exit":
+        state["cells"][0]["attempts"][0]["exit_code"] = False
+    _write_json(state_path, state)
+    with pytest.raises(subject.InvalidEvidence, match=message):
+        subject._validate_launch_state(
+            Path(state["pre_receipt_path"]),
+            state["pre_receipt_sha256"],
+            state_path,
+            pre,
+        )
+
+
+def test_complete_launch_state_rejects_copied_state_or_job(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    state_path, pre, state = _complete_launch_state_fixture(tmp_path, monkeypatch)
+    copied_state = tmp_path / "copied" / "launch_state.json"
+    _write_json(copied_state, state)
+    with pytest.raises(subject.InvalidEvidence, match="run-root identity"):
+        subject._validate_launch_state(
+            Path(state["pre_receipt_path"]),
+            state["pre_receipt_sha256"],
+            copied_state,
+            pre,
+        )
+    copied_job = state_path.with_name("copied_launch_job.json")
+    _write_json(copied_job, {"scheduler": {}, "authorization": {}})
+    state["job"] = subject.file_binding(copied_job)
+    _write_json(state_path, state)
+    with pytest.raises(subject.InvalidEvidence, match="job binding path"):
+        subject._validate_launch_state(
+            Path(state["pre_receipt_path"]),
+            state["pre_receipt_sha256"],
+            state_path,
+            pre,
+        )
+
+
 def test_worker_bootstrap_claim_is_locked_and_second_worker_cannot_overwrite_running(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -2414,12 +2659,31 @@ def test_worker_persists_outcome_fence_before_native_subprocess() -> None:
     source = TOOL.read_text(encoding="utf-8-sig")
     worker_start = source.index("def _worker_run(")
     probe = source.index("_execute_machine_credential_preclaim_probe(pre)", worker_start)
-    claim = source.index('state["attempt_claim"] = claim_native_attempt(', probe)
+    preparation = source.index("Exhaust every known read-only/static failure", probe)
+    fresh_probe = source.index(
+        "validate_bound_machine_credential_preclaim_probe(", preparation
+    )
+    claim = source.index('state["attempt_claim"] = claim_native_attempt(', fresh_probe)
+    claim_checkpoint = source.index(
+        "atomic_json(state_path, state, replace=True)", claim
+    )
     active = source.index('state["active_cell"]', claim)
     marker = source.index('state["outcome_possible_since_utc"]', worker_start)
     checkpoint = source.index("atomic_json(state_path, state, replace=True)", marker)
     native_start = source.index("completed = subprocess.run(", checkpoint)
-    assert worker_start < probe < claim < active < marker < checkpoint < native_start
+    assert (
+        worker_start
+        < probe
+        < preparation
+        < fresh_probe
+        < claim
+        < claim_checkpoint
+        < active
+        < marker
+        < checkpoint
+        < native_start
+    )
+    assert "mkdir(" not in source[fresh_probe:claim]
     assert "DETACHED_PROCESS" not in source
     assert "def _spawn_worker" not in source
 
