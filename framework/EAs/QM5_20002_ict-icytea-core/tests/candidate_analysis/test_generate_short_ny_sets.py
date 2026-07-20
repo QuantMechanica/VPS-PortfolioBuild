@@ -17,6 +17,14 @@ subject = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(subject)
 
 
+def test_compile_binding_is_exact_and_remains_research_only() -> None:
+    binding = subject.load_compile_binding()
+    assert binding["research_status"] == "CARD_INTAKE_NOT_APPROVED"
+    assert binding["release_state"] == "RESEARCH_CANDIDATE_CARD_INTAKE_NOT_APPROVED"
+    assert binding["compile"]["evidence_sha256"] == subject.EXPECTED_COMPILE_EVIDENCE_SHA256
+    assert binding["compiled_binary"]["sha256"] == subject.EXPECTED_COMPILED_EX5_SHA256
+
+
 def test_frozen_family_has_four_complete_sets_and_manifest() -> None:
     contract = subject.load_contract()
     assert contract["schema_version"] == 2

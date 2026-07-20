@@ -2,6 +2,10 @@
 ; analysis_id=QM5_20002_SHORT_NY_REVERSE_TIME_SCREEN_001
 ; contract_commit=d902b04932c340dd1212b9420077d7cec6b0d80d
 ; contract_sha256=6ee74c60a823fe87b03b40a2737ba67d113b2e52e7c09a05f42ba2084e17fefa
+; compile_binding_commit=d2aedce42af670b18b2518d5c25e468f11fcfd8c
+; compile_binding_sha256=2c6ed058f0152f90565830fb5d5a194d21830798ce1827b8ddb8e3c8ec050f32
+; compile_evidence_sha256=8c342e34ca9a23ffe01b0db02ae18e7c3b00e7bfc4b4090ec68b955bd2663064
+; compiled_ex5_sha256=71d1715d1b403ed85e7261ec058b17e88c43ca5f61bb5be5fb81ebde87207a11
 ; arm=B_SHORT_NY_H1_BIAS
 ; symbol=GBPUSD.DWX
 ; window=2017-10-01..2021-12-31

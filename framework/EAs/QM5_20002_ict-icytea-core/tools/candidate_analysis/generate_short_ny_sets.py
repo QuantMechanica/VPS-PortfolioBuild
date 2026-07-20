@@ -113,6 +113,7 @@ def load_contract() -> dict[str, Any]:
 
 
 def load_compile_binding() -> dict[str, Any]:
+    """Load the one frozen research compile identity shared by every generated cell."""
     raw = COMPILE_BINDING_PATH.read_bytes()
     actual = sha256_bytes(raw)
     if actual != EXPECTED_COMPILE_BINDING_SHA256:

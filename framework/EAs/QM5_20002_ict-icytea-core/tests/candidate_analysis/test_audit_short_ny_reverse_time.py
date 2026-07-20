@@ -49,6 +49,61 @@ def test_compile_log_decoder_rejects_unsupported_bytes() -> None:
         subject.decode_compile_log(b"\x80\x81\x82")
 
 
+def test_compile_binding_closes_exact_evidence_binary_and_toolchain() -> None:
+    payload = json.loads(subject.COMPILE_BINDING_PATH.read_text(encoding="utf-8"))
+    closure = subject.validate_compile_binding(Path(payload["compile"]["evidence_path"]))
+    assert closure["document"]["commit"] == subject.COMPILE_BINDING_COMMIT
+    assert closure["document"]["binding"]["sha256"] == subject.EXPECTED_COMPILE_BINDING_SHA256
+    assert closure["evidence"]["sha256"] == subject.EXPECTED_COMPILE_EVIDENCE_SHA256
+    assert closure["compiled_binary"]["sha256"] == subject.EXPECTED_COMPILED_EX5_SHA256
+
+
+@pytest.mark.parametrize("mutation", ["missing", "drift"])
+def test_preflight_rejects_manifest_compile_binding_omission_or_drift(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, mutation: str
+) -> None:
+    manifest = json.loads(subject.SET_MANIFEST_PATH.read_text(encoding="utf-8"))
+    if mutation == "missing":
+        manifest.pop("compile_binding_sha256", None)
+    else:
+        manifest["compile_binding_sha256"] = "0" * 64
+    adversarial = tmp_path / "manifest.json"
+    adversarial.write_text(json.dumps(manifest), encoding="utf-8")
+    monkeypatch.setattr(subject, "SET_MANIFEST_PATH", adversarial)
+    monkeypatch.setattr(subject, "validate_source_closure", lambda _contract: {})
+    monkeypatch.setattr(subject, "validate_compile_evidence", lambda *_args: {})
+    with pytest.raises(subject.PreflightError, match="set manifest contract/compile identity drift"):
+        subject.preflight(tmp_path / "unused-evidence.json")
+
+
+def test_set_metadata_cannot_claim_a_different_compiled_binary(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    contract = subject.load_contract()
+    original_root = subject.EA_ROOT
+    manifest = json.loads(subject.SET_MANIFEST_PATH.read_text(encoding="utf-8"))
+    for row in manifest["sets"]:
+        relative = Path(row["path"])
+        target = tmp_path / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes((original_root / relative).read_bytes())
+    first = manifest["sets"][0]
+    first_path = tmp_path / first["path"]
+    tampered = first_path.read_bytes().replace(
+        subject.EXPECTED_COMPILED_EX5_SHA256.encode("ascii"), b"0" * 64, 1
+    )
+    first_path.write_bytes(tampered)
+    first["size"] = len(tampered)
+    first["sha256"] = subject.sha256_file(first_path)
+    manifest_path = tmp_path / "sets" / "candidate-analysis" / "manifest.json"
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    monkeypatch.setattr(subject, "EA_ROOT", tmp_path)
+    monkeypatch.setattr(subject, "SET_MANIFEST_PATH", manifest_path)
+    with pytest.raises(subject.PreflightError, match="set metadata drift"):
+        subject.validate_sets(contract)
+
+
 def test_four_cell_plan_is_exact_and_model4() -> None:
     contract = subject.load_contract()
     cells, _ = subject.validate_sets(contract)

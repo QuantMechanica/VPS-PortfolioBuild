@@ -400,6 +400,7 @@ def _repo_bound_path(value: Any) -> Path:
 
 
 def validate_compile_binding(evidence_path: Path) -> dict[str, Any]:
+    """Close the frozen research binary, evidence, toolchain, and include provenance."""
     raw = COMPILE_BINDING_PATH.read_bytes()
     observed = hashlib.sha256(raw).hexdigest()
     if observed != EXPECTED_COMPILE_BINDING_SHA256:
