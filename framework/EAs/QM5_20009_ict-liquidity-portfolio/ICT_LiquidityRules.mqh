@@ -129,51 +129,6 @@ int ICT_ShiftDateKey(const int date_key, const int days)
    return ICT_DateKeyFromNY(shifted);
   }
 
-datetime ICT_NYDateFloor(const datetime ny_time)
-  {
-   MqlDateTime value;
-   ZeroMemory(value);
-   TimeToStruct(ny_time, value);
-   value.hour = 0;
-   value.min = 0;
-   value.sec = 0;
-   return StructToTime(value);
-  }
-
-// The key is the local-NY calendar date of Sunday starting the trading week.
-int ICT_TradingWeekKeyNY(const datetime ny_time)
-  {
-   MqlDateTime value;
-   ZeroMemory(value);
-   TimeToStruct(ny_time, value);
-   const int minute = value.hour * 60 + value.min;
-   int days_back = value.day_of_week;
-   if(value.day_of_week == 0 && minute < 17 * 60)
-      days_back = 7;
-   const datetime sunday = ICT_NYDateFloor(ny_time) - days_back * 86400;
-   return ICT_DateKeyFromNY(sunday);
-  }
-
-int ICT_TradingWeekKey(const datetime broker_time)
-  {
-   return ICT_TradingWeekKeyNY(ICT_BrokerToNewYork(broker_time));
-  }
-
-bool ICT_IsObservedTradingWeekBar(const datetime broker_time)
-  {
-   MqlDateTime value;
-   ZeroMemory(value);
-   TimeToStruct(ICT_BrokerToNewYork(broker_time), value);
-   const int minute = value.hour * 60 + value.min;
-   if(value.day_of_week == 0)
-      return minute >= 17 * 60;
-   if(value.day_of_week >= 1 && value.day_of_week <= 4)
-      return true;
-   if(value.day_of_week == 5)
-      return minute < 17 * 60;
-   return false;
-  }
-
 uint ICT_HashMix(const uint current, const uint value)
   {
    return (current ^ value) * 16777619;
@@ -261,58 +216,6 @@ bool ICT_CollectNYRange(const MqlRates &rates[],
                                     expected_bars,
                                     tick_size,
                                     range);
-  }
-
-bool ICT_CollectPreviousTradingWeek(const MqlRates &rates[],
-                                    const int count,
-                                    const int week_key,
-                                    const double tick_size,
-                                    ICT_LevelRange &range,
-                                    int &distinct_dates)
-  {
-   ICT_ResetRange(range);
-   distinct_dates = 0;
-   int dates[7];
-   ArrayInitialize(dates, 0);
-
-   for(int i = 0; i < count; ++i)
-     {
-      if(!ICT_IsObservedTradingWeekBar(rates[i].time) ||
-         ICT_TradingWeekKey(rates[i].time) != week_key)
-         continue;
-
-      if(range.bars == 0)
-        {
-         range.high = rates[i].high;
-         range.low = rates[i].low;
-        }
-      else
-        {
-         range.high = MathMax(range.high, rates[i].high);
-         range.low = MathMin(range.low, rates[i].low);
-        }
-      ++range.bars;
-
-      const int date_key = ICT_NYDateKey(rates[i].time);
-      bool seen = false;
-      for(int d = 0; d < distinct_dates; ++d)
-         if(dates[d] == date_key)
-           {
-            seen = true;
-            break;
-           }
-      if(!seen && distinct_dates < 7)
-         dates[distinct_dates++] = date_key;
-     }
-
-   range.valid = (range.bars > 0 && distinct_dates >= 3 && range.high > range.low);
-   if(range.valid)
-      range.fingerprint = ICT_RangeFingerprint(week_key,
-                                               range.bars,
-                                               range.low,
-                                               range.high,
-                                               tick_size);
-   return range.valid;
   }
 
 bool ICT_StrictPivotHigh(const MqlRates &rates[],

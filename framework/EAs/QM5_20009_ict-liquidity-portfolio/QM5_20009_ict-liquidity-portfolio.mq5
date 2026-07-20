@@ -436,19 +436,6 @@ void Strategy_CopySequence(const ICT_SequenceResult &source,
    destination.outcome = source.outcome;
   }
 
-bool Strategy_AddChronologicalDate(const int date_key,
-                                   int &dates[],
-                                   int &date_count)
-  {
-   for(int i = 0; i < date_count; ++i)
-      if(dates[i] == date_key)
-         return true;
-   if(date_count >= ArraySize(dates))
-      return false;
-   dates[date_count++] = date_key;
-   return true;
-  }
-
 bool Strategy_ReconstructFx(const MqlRates &rates[],
                             const int count,
                             const double tick_size,
@@ -459,19 +446,21 @@ bool Strategy_ReconstructFx(const MqlRates &rates[],
    if(count <= 0)
       return false;
 
-   const int current_week_key = ICT_TradingWeekKey(rates[count - 1].time);
-   const int previous_week_key = ICT_ShiftDateKey(current_week_key, -7);
-   ICT_LevelRange previous_week;
-   int distinct_dates = 0;
-   if(!ICT_CollectPreviousTradingWeek(rates,
-                                      count,
-                                      previous_week_key,
-                                      tick_size,
-                                      previous_week,
-                                      distinct_dates))
+   const int date_key = ICT_NYDateKey(rates[count - 1].time);
+   const int reference_date = ICT_ShiftDateKey(date_key, -1);
+   ICT_LevelRange asian_range;
+   if(!ICT_CollectNYRange(rates,
+                          count,
+                          reference_date,
+                          20 * 60,
+                          24 * 60,
+                          48,
+                          tick_size,
+                          asian_range))
      {
-      result.budget_key = current_week_key;
-      result.outcome = "PREVIOUS_WEEK_INCOMPLETE";
+      result.budget_key = date_key;
+      result.ny_date_key = date_key;
+      result.outcome = "ASIAN_REFERENCE_INCOMPLETE";
       return true;
      }
 
@@ -488,130 +477,32 @@ bool Strategy_ReconstructFx(const MqlRates &rates[],
                            sl_buffer_atr,
                            min_rr);
 
-   int session_dates[8];
-   ArrayInitialize(session_dates, 0);
-   int session_date_count = 0;
-   for(int i = 0; i < count; ++i)
-     {
-      if(ICT_TradingWeekKey(rates[i].time) != current_week_key)
-         continue;
-      MqlDateTime ny;
-      ZeroMemory(ny);
-      TimeToStruct(ICT_BrokerToNewYork(rates[i].time), ny);
-      if(ny.day_of_week < 1 || ny.day_of_week > 5)
-         continue;
-      Strategy_AddChronologicalDate(ICT_NYDateKey(rates[i].time),
-                                    session_dates,
-                                    session_date_count);
-     }
-
-   bool found_consumed = false;
-   ICT_SequenceResult earliest;
-   ICT_ResetSequence(earliest);
-   for(int d = 0; d < session_date_count; ++d)
-     {
-      const int date_key = session_dates[d];
-
-      ICT_LevelRange asian;
-      const int previous_date = ICT_ShiftDateKey(date_key, -1);
-      if(ICT_CollectNYRange(rates,
-                            count,
-                            previous_date,
-                            20 * 60,
-                            24 * 60,
-                            48,
-                            tick_size,
-                            asian))
-        {
-         ICT_SequenceResult london;
-         ICT_BuildSequence(rates,
-                           count,
-                           date_key,
-                           current_week_key,
-                           ICT_SESSION_LONDON,
-                           2 * 60,
-                           5 * 60,
-                           PeriodSeconds(PERIOD_M5),
-                           previous_week.low,
-                           previous_week.high,
-                           asian.high,
-                           asian.low,
-                           previous_week.fingerprint,
-                           asian.fingerprint,
-                           pivot_wing,
-                           reclaim_bars,
-                           max_bars_to_mss,
-                           min_fvg_atr,
-                           sl_buffer_atr,
-                           min_rr,
-                           tick_size,
-                           point,
-                           london,
-                           0,
-                           count - 1,
-                           0);
-         if(london.consumed &&
-            (!found_consumed || london.event_bar_time < earliest.event_bar_time))
-           {
-            Strategy_CopySequence(london, earliest);
-            found_consumed = true;
-           }
-        }
-
-      ICT_LevelRange london_reference;
-      if(ICT_CollectNYRange(rates,
-                            count,
-                            date_key,
-                            2 * 60,
-                            5 * 60,
-                            36,
-                            tick_size,
-                            london_reference))
-        {
-         ICT_SequenceResult new_york;
-         ICT_BuildSequence(rates,
-                           count,
-                           date_key,
-                           current_week_key,
-                           ICT_SESSION_NEW_YORK,
-                           7 * 60,
-                           10 * 60,
-                           PeriodSeconds(PERIOD_M5),
-                           previous_week.low,
-                           previous_week.high,
-                           london_reference.high,
-                           london_reference.low,
-                           previous_week.fingerprint,
-                           london_reference.fingerprint,
-                           pivot_wing,
-                           reclaim_bars,
-                           max_bars_to_mss,
-                           min_fvg_atr,
-                           sl_buffer_atr,
-                           min_rr,
-                           tick_size,
-                           point,
-                           new_york,
-                           0,
-                           count - 1,
-                           0);
-         if(new_york.consumed &&
-            (!found_consumed || new_york.event_bar_time < earliest.event_bar_time))
-           {
-            Strategy_CopySequence(new_york, earliest);
-            found_consumed = true;
-           }
-        }
-     }
-
-   if(found_consumed)
-      Strategy_CopySequence(earliest, result);
-   else
-     {
-      result.budget_key = current_week_key;
-      result.frozen_level_hash = previous_week.fingerprint;
-      result.outcome = "NO_ELIGIBLE_WEEKLY_RECLAIM";
-     }
+   ICT_BuildSequence(rates,
+                     count,
+                     date_key,
+                     date_key,
+                     ICT_SESSION_LONDON,
+                     2 * 60,
+                     5 * 60,
+                     PeriodSeconds(PERIOD_M5),
+                     asian_range.low,
+                     asian_range.high,
+                     asian_range.high,
+                     asian_range.low,
+                     asian_range.fingerprint,
+                     asian_range.fingerprint,
+                     pivot_wing,
+                     reclaim_bars,
+                     max_bars_to_mss,
+                     min_fvg_atr,
+                     sl_buffer_atr,
+                     min_rr,
+                     tick_size,
+                     point,
+                     result,
+                     0,
+                     count - 1,
+                     0);
    return true;
   }
 
@@ -652,7 +543,7 @@ bool Strategy_Reconstruct(ICT_SequenceResult &result)
    g_strategy_closed_rate_count = 0;
    ArrayFree(g_strategy_closed_rates);
    ICT_ResetRange(g_strategy_index_opening_range);
-   ICT_ResetRange(g_strategy_fx_previous_week);
+   ICT_ResetRange(g_strategy_fx_asian_range);
    ICT_ResetSequence(g_strategy_cached_sequence);
 
    if(!Strategy_LoadClosedRates(g_strategy_closed_rates,
@@ -719,13 +610,14 @@ bool Strategy_Reconstruct(ICT_SequenceResult &result)
                          g_strategy_index_opening_range);
    else
      {
-      int distinct_dates = 0;
-      ICT_CollectPreviousTradingWeek(g_strategy_closed_rates,
-                                     g_strategy_closed_rate_count,
-                                     ICT_ShiftDateKey(g_strategy_replay_budget_key, -7),
-                                     g_strategy_replay_tick_size,
-                                     g_strategy_fx_previous_week,
-                                     distinct_dates);
+      ICT_CollectNYRange(g_strategy_closed_rates,
+                         g_strategy_closed_rate_count,
+                         ICT_ShiftDateKey(g_strategy_replay_budget_key, -1),
+                         20 * 60,
+                         24 * 60,
+                         48,
+                         g_strategy_replay_tick_size,
+                         g_strategy_fx_asian_range);
      }
 
    Strategy_CopySequence(result, g_strategy_cached_sequence);
@@ -936,12 +828,6 @@ ICT_SessionKind Strategy_EventSessionForBar(const MqlRates &bar)
                               5 * 60,
                               PeriodSeconds(PERIOD_M5)))
       return ICT_SESSION_LONDON;
-   if(ICT_IsEventBarInSession(bar,
-                              date_key,
-                              7 * 60,
-                              10 * 60,
-                              PeriodSeconds(PERIOD_M5)))
-      return ICT_SESSION_NEW_YORK;
    return ICT_SESSION_NONE;
   }
 
@@ -951,15 +837,14 @@ bool Strategy_RebuildFxSession(const int date_key,
                                string &failure_reason)
   {
    failure_reason = "invalid_session";
-   const bool london = session == ICT_SESSION_LONDON;
-   if(!london && session != ICT_SESSION_NEW_YORK)
+   if(session != ICT_SESSION_LONDON ||
+      date_key != g_strategy_replay_budget_key)
       return false;
 
-   const int reference_date = london ? ICT_ShiftDateKey(date_key, -1)
-                                     : date_key;
-   const int reference_start = london ? 20 * 60 : 2 * 60;
-   const int reference_end = london ? 24 * 60 : 5 * 60;
-   const int reference_bars = london ? 48 : 36;
+   const int reference_date = ICT_ShiftDateKey(date_key, -1);
+   const int reference_start = 20 * 60;
+   const int reference_end = 24 * 60;
+   const int reference_bars = 48;
    int reference_first = -1;
    int reference_last = -1;
    if(!Strategy_FindNYWindowBounds(reference_date,
@@ -970,8 +855,7 @@ bool Strategy_RebuildFxSession(const int date_key,
                                     reference_first,
                                     reference_last))
      {
-      failure_reason = london ? "ASIAN_REFERENCE_WINDOW_INCOMPLETE"
-                              : "LONDON_REFERENCE_WINDOW_INCOMPLETE";
+      failure_reason = "ASIAN_REFERENCE_WINDOW_INCOMPLETE";
       return false;
      }
 
@@ -987,13 +871,12 @@ bool Strategy_RebuildFxSession(const int date_key,
                                  g_strategy_replay_tick_size,
                                  reference))
      {
-      failure_reason = london ? "ASIAN_REFERENCE_INCOMPLETE"
-                              : "LONDON_REFERENCE_INCOMPLETE";
+      failure_reason = "ASIAN_REFERENCE_INCOMPLETE";
       return false;
      }
 
-   const int session_start = london ? 2 * 60 : 7 * 60;
-   const int session_end = london ? 5 * 60 : 10 * 60;
+   const int session_start = 2 * 60;
+   const int session_end = 5 * 60;
    int event_first = -1;
    int event_last = -1;
    if(!Strategy_FindNYWindowBounds(date_key,
@@ -1028,11 +911,11 @@ bool Strategy_RebuildFxSession(const int date_key,
                      session_start,
                      session_end,
                      PeriodSeconds(PERIOD_M5),
-                     g_strategy_fx_previous_week.low,
-                     g_strategy_fx_previous_week.high,
+                     reference.low,
+                     reference.high,
                      reference.high,
                      reference.low,
-                     g_strategy_fx_previous_week.fingerprint,
+                     reference.fingerprint,
                      reference.fingerprint,
                      pivot_wing,
                      reclaim_bars,
@@ -1052,7 +935,7 @@ bool Strategy_RebuildFxSession(const int date_key,
 
 bool Strategy_UpdateFxCache(const MqlRates &bar)
   {
-   if(!g_strategy_fx_previous_week.valid)
+   if(!g_strategy_fx_asian_range.valid)
       return true;
    const int date_key = ICT_NYDateKey(bar.time);
    const ICT_SessionKind current_session = Strategy_EventSessionForBar(bar);
@@ -1247,9 +1130,7 @@ bool Strategy_HasPositionOrPending()
 
 int Strategy_BudgetKeyAtTime(const datetime event_time)
   {
-   return (strategy_mode == ICT_MODE_INDEX_MSS_FVG)
-          ? ICT_NYDateKey(event_time)
-          : ICT_TradingWeekKey(event_time);
+   return ICT_NYDateKey(event_time);
   }
 
 uint Strategy_StringFingerprint(const string value)
@@ -1686,7 +1567,7 @@ bool Strategy_HistoryBudgetClear(const ICT_SequenceResult &signal)
       !Strategy_BindConsumedAttempt(signal))
       return false;
    const datetime now = TimeCurrent();
-   const int lookback_days = (strategy_mode == ICT_MODE_INDEX_MSS_FVG) ? 4 : 24;
+   const int lookback_days = 4;
    if(!HistorySelect(now - lookback_days * 86400, now))
       return Strategy_HistoryReadFailed(signal, "history_select_failed");
 

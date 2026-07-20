@@ -1,8 +1,8 @@
-# QM5_20009 ICT Liquidity Portfolio — frozen research contract v4
+# QM5_20009 ICT Liquidity Portfolio — frozen research contract v5
 
 **EA ID:** 20009  
 **Slug:** `ict-liquidity-portfolio`  
-**Contract freeze:** 2026-07-19  
+**Contract freeze:** 2026-07-20  
 **Authorization:** OWNER-delegated for research, build and testing in the 2026-07-19
 Codex session. This is not authorization for a paid challenge or live deployment.
 
@@ -33,6 +33,12 @@ Primary online sources:
   https://www.mql5.com/en/docs/dateandtime/timegmt and
   https://www.mql5.com/en/docs/dateandtime/timetradeserver
 
+The workbook contains 493 EURUSD and 156 GBPUSD labelled trades. Within the 271
+EUR/GBP rows labelled `London Session`, 226 mention MSS, 255 mention FVG, and 53
+explicitly describe an Asian-range raid/sweep. These are catalogue frequencies,
+not performance observations. They support testing a daily London/Asia hypothesis
+without supplying its outcome.
+
 The source-supported common sequence is:
 
 > external/session liquidity sweep -> reclaim -> a later closed-bar market-
@@ -40,8 +46,10 @@ The source-supported common sequence is:
 > proximal edge -> stop beyond the swept extreme -> fixed opposing liquidity.
 
 Sleeve A has direct primary-source support for the sequence and 10:00-11:00 New
-York window. Sleeve B's previous-week/session construction is an engineering
-hypothesis; it must never be described as an official ICT weekly strategy.
+York window. Contract v4's previous-week Sleeve B was a preregistered engineering
+hypothesis. Its first 2022 GBPUSD diagnostic produced one losing trade after
+external costs, so it is rejected rather than tuned. Contract v5 replaces it with
+one new source-supported hypothesis before any 2023+ result is read.
 
 ## 2. Shared deterministic execution rules
 
@@ -59,7 +67,7 @@ hypothesis; it must never be described as an official ICT weekly strategy.
   was already touched when eligible, the attempt is void; no later FVG may rescue
   it. On a later tick, Buy triggers only at `Ask <= edge` and Sell only at
   `Bid >= edge`; the EA then rechecks every gate and sends one market order.
-- In frozen v4, the volatility term is **SMA-TR(14)**: the arithmetic mean of
+- In frozen v5, the volatility term is **SMA-TR(14)**: the arithmetic mean of
   the latest 14 causal true ranges at the FVG bar, not Wilder-smoothed ATR.
   Stop padding is `max(2 * observed spread, sl_buffer_atr * SMA-TR(14))` beyond
   the swept extreme. A fixed target must lie beyond entry and meet `min_rr`.
