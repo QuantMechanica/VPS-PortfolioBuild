@@ -757,6 +757,110 @@ def _iter_bindings(value: Any, prefix: str = "receipt") -> Iterable[tuple[str, M
             yield from _iter_bindings(child, f"{prefix}[{index}]")
 
 
+def _validate_pre_semantics(receipt: Mapping[str, Any]) -> None:
+    """Rebuild every outcome-blind PRE surface instead of trusting self-described JSON."""
+
+    expected_fence = {
+        "market_values_parsed": False,
+        "native_reports_opened": False,
+        "mt5_started": False,
+        "data_access": "OPAQUE_SHA256_ONLY",
+    }
+    if receipt.get("schema_version") != SCHEMA_VERSION or receipt.get("outcome_fence") != expected_fence:
+        raise AuditError("PRE schema/outcome fence drift")
+    created = parse_utc(str(receipt.get("created_utc", "")), "PRE created_utc")
+    if created > datetime.now(timezone.utc) + timedelta(minutes=5):
+        raise AuditError("PRE created_utc is implausibly in the future")
+
+    contract = load_contract()
+    expected_contract = {
+        "commit": CONTRACT_COMMIT,
+        "binding": file_binding(CONTRACT_PATH, EXPECTED_CONTRACT_SHA256),
+    }
+    if receipt.get("contract") != expected_contract:
+        raise AuditError("PRE contract binding drift")
+    expected_tool = file_binding(TOOL_PATH)
+    if receipt.get("tool") != expected_tool:
+        raise AuditError("PRE tool binding does not identify the executing auditor")
+
+    expected_sources = validate_source_closure(contract)
+    if receipt.get("sources") != expected_sources:
+        raise AuditError("PRE frozen source/card/brief closure drift")
+    expected_cells, expected_set_manifest = validate_sets(contract)
+    if receipt.get("set_manifest") != expected_set_manifest:
+        raise AuditError("PRE set manifest closure drift")
+
+    compile_receipt = receipt.get("compile")
+    if not isinstance(compile_receipt, Mapping):
+        raise AuditError("PRE compile receipt missing")
+    evidence = compile_receipt.get("evidence")
+    if not isinstance(evidence, Mapping) or not evidence.get("path"):
+        raise AuditError("PRE compile evidence binding missing")
+    expected_compile = validate_compile_evidence(Path(str(evidence["path"])), contract)
+    if compile_receipt != expected_compile:
+        raise AuditError("PRE fresh compile closure drift")
+
+    stored_data = receipt.get("model4_data")
+    if not isinstance(stored_data, Mapping):
+        raise AuditError("PRE Model-4 data closure missing")
+    expected_data = validate_model4_data(contract, hash_actual=False)
+    scalar_keys = {
+        "provisioning_manifest",
+        "destination_root",
+        "selected_file_count",
+        "opaque_hash_only_no_market_values_parsed",
+        "future_months_after_202112_selected",
+    }
+    for key in scalar_keys:
+        if stored_data.get(key) != expected_data.get(key):
+            raise AuditError(f"PRE Model-4 data field drift: {key}")
+    selected = stored_data.get("selected_files")
+    expected_selected = expected_data["selected_files"]
+    if not isinstance(selected, list) or len(selected) != len(expected_selected):
+        raise AuditError("PRE Model-4 selected-file closure drift")
+    for observed, expected in zip(selected, expected_selected):
+        if not isinstance(observed, Mapping):
+            raise AuditError("PRE Model-4 selected-file row malformed")
+        for key in ("relative_path", "bytes", "sha256", "destination_path"):
+            if observed.get(key) != expected.get(key):
+                raise AuditError(f"PRE Model-4 selected-file drift: {expected['relative_path']}/{key}")
+        actual = observed.get("actual_binding")
+        expected_actual = {
+            "path": expected["destination_path"],
+            "size": expected["bytes"],
+            "sha256": expected["sha256"],
+        }
+        if actual != expected_actual:
+            raise AuditError(f"PRE Model-4 actual binding drift: {expected['relative_path']}")
+    if stored_data.get("selected_tree_sha256") != canonical_sha256(selected):
+        raise AuditError("PRE Model-4 selected-tree SHA drift")
+
+    expected_news = validate_news_bindings(contract)
+    if receipt.get("news_calendars") != expected_news:
+        raise AuditError("PRE seed/effective news input closure drift")
+    expected_runtime = validate_runtime()
+    if receipt.get("runtime") != expected_runtime:
+        raise AuditError("PRE runtime closure drift")
+
+    plan = receipt.get("plan")
+    if not isinstance(plan, Mapping) or not isinstance(plan.get("cells"), list):
+        raise AuditError("PRE plan missing/malformed")
+    timeouts: set[int] = set()
+    for cell in plan["cells"]:
+        args = cell.get("runner_arguments") if isinstance(cell, Mapping) else None
+        if not isinstance(args, list) or args.count("-TimeoutSeconds") != 1:
+            raise AuditError("PRE runner timeout surface malformed")
+        index = args.index("-TimeoutSeconds")
+        if index + 1 >= len(args):
+            raise AuditError("PRE runner timeout value missing")
+        timeouts.add(int(args[index + 1]))
+    if len(timeouts) != 1:
+        raise AuditError("PRE runner timeouts are not uniform")
+    expected_plan = build_plan(expected_cells, next(iter(timeouts)))
+    if plan != expected_plan:
+        raise AuditError("PRE exact four-cell/two-duplicate plan drift")
+
+
 def assert_pre_receipt(path: Path, expected_sha256: str) -> dict[str, Any]:
     binding = file_binding(path, expected_sha256)
     receipt = load_json(path)
@@ -772,6 +876,7 @@ def assert_pre_receipt(path: Path, expected_sha256: str) -> dict[str, Any]:
         {key: value for key, value in receipt["plan"].items() if key != "plan_sha256"}
     ):
         raise AuditError("PRE plan canonical SHA drift")
+    _validate_pre_semantics(receipt)
     for label, item in _iter_bindings(receipt):
         assert_binding(item, label)
     receipt["_receipt_binding"] = binding
