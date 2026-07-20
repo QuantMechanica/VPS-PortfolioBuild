@@ -98,9 +98,9 @@
     "file_drift_rule": "Before outcome access, require exact file length, last-write timestamp and timestamp-only availability above. Any mismatch aborts for a new outcome-blind freeze; do not parse OHLC under this contract.",
     "future_fence": "For each raw row, parse only the timestamp prefix before the first comma. Break immediately when timestamp >= 2023-01-01 broker-naive epoch. Never split, convert, hash or otherwise inspect that row's OHLC/volume tail. Report future_ohlc_parsed=false or reject.",
     "selected_slice_hash": "After explicit outcome release only, exclude the header and every row outside 2018-01-01 <= timestamp < 2023-01-01. For each retained row in original file order, take its exact decoded UTF-8 text without original CR/LF, append one LF byte, and stream those bytes to SHA256; do not normalize numeric text. Never hash the whole market file. Persist this raw-slice hash per symbol.",
-    "canonical_m15_hash": "For every eligible direct/derived M15 row, emit one UTF-8 LF-terminated JSON line with keys in this exact order: time,open,high,low,close,tickvol. time/tickvol are base-10 integers. OHLC are quoted canonical Decimal strings: no exponent, remove insignificant trailing fractional zeros and a trailing decimal point, map signed zero to 0. Hash all lines in time order with SHA256 and report per symbol.",
+    "canonical_m15_hash": "For every validated in-window direct/derived M15 row, emit one UTF-8 LF-terminated JSON line with keys in this exact order: time,open,high,low,close,tickvol. time/tickvol are base-10 integers. OHLC are quoted canonical Decimal strings: no exponent, remove insignificant trailing fractional zeros and a trailing decimal point, map signed zero to 0. Hash all lines in time order with SHA256 and report per symbol.",
     "analysis_start_state": "Parse and use no OHLC before 2018-01-01. At each symbol's first direct/derived in-window M15 bar initialize lastHigh=na, lastLow=na, flat, with no pending state. A first pivot can be confirmed only after eleven in-window available M15 bars. EURUSD Q4-2017 timestamp prefixes remain availability metadata only and never seed state or the selected-slice hash.",
-    "validation": "Require strictly increasing unique timestamps, finite positive OHLC, low <= min(open,close) <= max(open,close) <= high, nonnegative volume and exact expected header. Reject rather than repair.",
+    "validation": "Require strictly increasing unique integer timestamps; XAU direct timestamps must satisfy epoch%900==0 and EUR raw timestamps epoch%300==0. Require finite positive OHLC, low <= min(open,close) <= max(open,close) <= high, nonnegative integer tickvol and exact expected header. Reject off-grid or otherwise malformed rows rather than repair.",
     "eurusd_resampling": {
       "bucket_open": "floor(broker-naive epoch / 900) * 900",
       "required_source_rows": "Exactly one M5 row at bucket+0, bucket+300 and bucket+600 seconds. Any duplicate or missing slot makes the M15 bucket ineligible; do not interpolate.",
@@ -110,9 +110,14 @@
     "causal_bar_eligibility": "Never inspect later timestamps to admit or suppress an earlier signal. Each currently completed direct or derived M15 bar is evaluated using only state and data available through its close.",
     "forced_flat_boundary_integrity": "If a position remains open for a scheduled session/Friday flat, the exact final M15 bar ending at that boundary must exist. If it does not, the entire run is DATA_INTEGRITY_FAIL with no merit verdict; do not retroactively suppress the earlier trade, substitute a stale/future price or invent swap.",
     "open_position_gap_integrity": "From an entry close through its exit or scheduled flat, require every next expected 15-minute bar for that symbol. The first missing scheduled slot while the position is open aborts the entire run as DATA_INTEGRITY_FAIL because SL/TP path is unknowable. Never use this later fact to suppress the earlier entry.",
-    "missing_bar_rule": "Do not synthesize bars. An incomplete EURUSD derived bucket emits no M15 bar. While flat, pivot state advances on each available completed M15 chart bar; timestamp gaps do not reset state and do not trigger a future-completeness entry filter."
-    ,
+    "missing_bar_rule": "Do not synthesize bars. An incomplete EURUSD derived bucket emits no M15 bar. While flat, pivot state advances on each available completed M15 chart bar; timestamp gaps do not reset state and do not trigger a future-completeness entry filter.",
     "custom_symbol_registry_scope_limit": "The bound dwx_symbol_matrix.csv XAUUSD.DWX evidence line is FAIL_tail_mid_bars even though its canonical name is verified. This contract validates only the frozen offline CSV slice; it does not assert registry-clean PASS, MT5 custom-symbol completeness or live broker parity. Any workflow requiring those gates remains blocked pending separate symbol validation."
+  },
+  "numeric_contract": {
+    "arithmetic": "Parse every input decimal and every fixed constant as an exact base-10 rational. Use reduced arbitrary-precision rational arithmetic for prices, spread-adjusted levels, risk distance, theoretical lots, gross USD/R, adjusted USD/R, sums, expectancy, PF, concentration, drawdown and every gate comparison. Binary floating point is forbidden.",
+    "commission_exception": "Compute each deal-side commission as an exact rational USD amount, then and only then quantize independently to integer cents using round-half-up. Sum integer cents. No other intermediate or metric is rounded before a decision.",
+    "ratio_comparisons": "Compare rational metrics to rational thresholds by exact cross multiplication with positive denominators. Strict/inclusive operators remain exactly as written.",
+    "canonical_result_encoding": "Persist every decision-bearing noninteger rational as a reduced string num/den with a positive denominator. PF with at least one adjusted winner and zero adjusted losers is the exact string INF, which passes any finite PF minimum; a scope with no adjusted winner uses UNDEFINED and fails. Optional human display decimals use exactly 12 places and ROUND_HALF_EVEN, are labeled display_only, and never feed a gate. Canonical JSON uses sorted keys, UTF-8, LF and no insignificant whitespace."
   },
   "clock_and_session_contract": {
     "frozen_publication_context_timezone": "America/New_York",
@@ -177,7 +182,7 @@
       "ignored while position open",
       "invalid risk",
       "filled",
-      "run-level integrity failure for a missing required flat-boundary bar"
+      "run-level DATA_INTEGRITY_FAIL for any missing expected M15 slot while a position is open, including its flat-boundary bar"
     ]
   },
   "execution_overlay": {
@@ -282,7 +287,7 @@
     },
     {
       "id": "D08_EUR_M15_TRANSPORT",
-      "observation": "No frozen EURUSD.DWX_M15 CSV exists at the export path. EURUSD M15 is deterministically aggregated from bound M5 rows; incomplete buckets emit no bar and are never interpolated. No later session-completeness lookahead suppresses an earlier signal; a missing required flat-boundary bar fails the run."
+      "observation": "No frozen EURUSD.DWX_M15 CSV exists at the export path. EURUSD M15 is deterministically aggregated from bound M5 rows; incomplete buckets emit no bar and are never interpolated. No later session-completeness lookahead suppresses an earlier signal; any missing expected bar while a position is open, including the flat-boundary bar, fails the run."
     },
     {
       "id": "D09_SPREAD_LIMIT",
