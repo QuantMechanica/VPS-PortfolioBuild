@@ -13194,6 +13194,26 @@ def build_parser() -> argparse.ArgumentParser:
         help="Routing lane",
     )
     add_src.add_argument("--priority", type=int, default=70, help="Lower = earlier")
+
+    # ea-metrics — daily-driver query over the EA×symbol×gate archive table.
+    # Reuses ea_metrics.add_query_args so the flag surface stays in one place.
+    em = sub.add_parser(
+        "ea-metrics",
+        help="Query the EA×symbol×gate metrics archive (PF/trades/net/DD/verdict). "
+             "e.g. farmctl ea-metrics --symbol XAUUSD --gate Q08 --verdict PASS --latest",
+    )
+    try:
+        import sys as _sys
+        _sys.path.insert(0, str(Path(__file__).resolve().parent))
+        import ea_metrics as _em  # noqa: WPS433
+        _em.add_query_args(em)
+    except Exception:  # pragma: no cover — parser still builds if import lags
+        em.add_argument("--ea"); em.add_argument("--symbol")
+        em.add_argument("--gate", "--phase", dest="phase"); em.add_argument("--verdict")
+        em.add_argument("--format", default="table")
+    em.add_argument("--no-build", action="store_true",
+                    help="skip the incremental freshness build before querying")
+
     return parser
 
 
@@ -13305,6 +13325,18 @@ def main(argv: list[str] | None = None) -> int:
         print_json(render_claude_review_prompt(root, args.build_task_id, args.out))
     elif args.command == "record-review":
         print_json(record_review_result(root, args.task_id, args.result_file))
+    elif args.command == "ea-metrics":
+        import sys as _sys
+        _sys.path.insert(0, str(Path(__file__).resolve().parent))
+        import ea_metrics as _em
+        _con = sqlite3.connect(str(_em.FARM_DB))
+        if not getattr(args, "no_build", False):
+            try:
+                _em.build(_con, full=False, ea=_em._norm_ea(getattr(args, "ea", None)))
+            except Exception:
+                pass  # a build hiccup must never block a read
+        _em.run_query(args, _con)
+        _con.close()
     elif args.command == "mt5-slots":
         print_json(get_mt5_status(root))
     elif args.command == "reconcile-mt5":

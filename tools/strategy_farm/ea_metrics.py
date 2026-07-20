@@ -422,8 +422,176 @@ def build(con: sqlite3.Connection, *, full: bool = False, ea: str | None = None)
             "by_source": by_source}
 
 
+# --------------------------------------------------------------------------- #
+# Query — the daily-driver interface over the archive table.                   #
+# Exposed both as `ea_metrics.py query ...` and `farmctl ea-metrics ...`.       #
+# --------------------------------------------------------------------------- #
+
+# The Qxx phase order (for --latest tie-breaks and default ordering).
+_PHASE_ORDER = ["P2", "Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08",
+                "Q09", "Q09_PORTFOLIO", "Q10", "Q11"]
+
+_ORDER_COLS = {
+    "pf": "profit_factor", "net": "net_profit", "trades": "trades",
+    "dd": "drawdown_pct", "sharpe": "sharpe", "ea": "ea_id",
+    "phase": "phase", "symbol": "symbol", "extracted": "extracted_at",
+}
+
+
+def _norm_ea(ea: str | None) -> str | None:
+    """Accept a bare id (20004) or a full label (QM5_20004)."""
+    if not ea:
+        return None
+    ea = ea.strip()
+    return ea if ea.upper().startswith("QM5_") else f"QM5_{ea}"
+
+
+def query(con: sqlite3.Connection, *, ea=None, symbol=None, phase=None, verdict=None,
+          min_pf=None, min_trades=None, max_dd=None, source=None,
+          exclude_ablation=False, latest=False, order="phase", desc=False,
+          limit=50) -> list[dict]:
+    """Filtered SELECT over ea_metrics. All filters AND together; None = ignore.
+    `latest` keeps only the newest row per (ea_id, symbol, phase) by extracted_at
+    so re-runs of the same gate don't duplicate. Returns list[dict]."""
+    ensure_schema(con)
+    con.row_factory = sqlite3.Row
+    where: list[str] = []
+    params: list[Any] = []
+    ea = _norm_ea(ea)
+    if ea:
+        where.append("ea_id = ?"); params.append(ea)
+    if symbol:
+        where.append("UPPER(symbol) LIKE ?"); params.append(f"%{symbol.upper()}%")
+    if phase:
+        # accept comma list; exact match on the stored phase token
+        phs = [p.strip().upper() for p in phase.split(",") if p.strip()]
+        where.append("(" + " OR ".join(["UPPER(phase)=?"] * len(phs)) + ")")
+        params.extend(phs)
+    if verdict:
+        vs = [v.strip().upper() for v in verdict.split(",") if v.strip()]
+        # substring per token (so PASS matches PASS_PORTFOLIO / PASS_LOWFREQ)
+        where.append("(" + " OR ".join(["UPPER(COALESCE(verdict,'')) LIKE ?"] * len(vs)) + ")")
+        params.extend([f"%{v}%" for v in vs])
+    if min_pf is not None:
+        where.append("profit_factor IS NOT NULL AND profit_factor >= ?"); params.append(min_pf)
+    if min_trades is not None:
+        where.append("trades IS NOT NULL AND trades >= ?"); params.append(min_trades)
+    if max_dd is not None:
+        where.append("drawdown_pct IS NOT NULL AND drawdown_pct <= ?"); params.append(max_dd)
+    if source:
+        where.append("source LIKE ?"); params.append(f"%{source}%")
+    if exclude_ablation:
+        where.append("COALESCE(is_ablation,0) = 0")
+
+    order_col = _ORDER_COLS.get(order, "phase")
+    direction = "DESC" if desc else "ASC"
+    # NULLs last regardless of direction (a null PF should never top the list).
+    order_sql = f"({order_col} IS NULL), {order_col} {direction}, ea_id, symbol"
+
+    sql = "SELECT * FROM ea_metrics"
+    if where:
+        sql += " WHERE " + " AND ".join(where)
+    rows = [dict(r) for r in con.execute(sql, params).fetchall()]
+
+    if latest:
+        seen: dict[tuple, dict] = {}
+        for r in rows:
+            key = (r["ea_id"], r["symbol"], r["phase"])
+            prev = seen.get(key)
+            if prev is None or (r.get("extracted_at") or "") >= (prev.get("extracted_at") or ""):
+                seen[key] = r
+        rows = list(seen.values())
+
+    def _sort_key(r):
+        v = r.get(order_col)
+        return (v is None, v if v is not None else "")
+    rows.sort(key=_sort_key, reverse=desc)
+    if limit and limit > 0:
+        rows = rows[:limit]
+    return rows
+
+
+_TABLE_COLS = ["ea_id", "phase", "symbol", "verdict", "profit_factor",
+               "trades", "net_profit", "drawdown_pct", "sharpe", "source"]
+_TABLE_HDR = {"ea_id": "EA", "phase": "GATE", "symbol": "SYMBOL", "verdict": "VERDICT",
+              "profit_factor": "PF", "trades": "TR", "net_profit": "NET",
+              "drawdown_pct": "DD%", "sharpe": "SHARPE", "source": "SOURCE"}
+
+
+def _fmt_cell(col: str, v: Any) -> str:
+    if v is None:
+        return "-"
+    if col in ("profit_factor", "sharpe"):
+        return f"{v:.2f}"
+    if col in ("net_profit",):
+        return f"{v:,.0f}"
+    if col in ("drawdown_pct",):
+        return f"{v:.1f}"
+    if col == "symbol":
+        return str(v).replace(".DWX", "")
+    if col == "ea_id":
+        return str(v).replace("QM5_", "")
+    return str(v)
+
+
+def render(rows: list[dict], fmt: str = "table") -> str:
+    if fmt == "json":
+        return json.dumps(rows, indent=2, ensure_ascii=False, default=str)
+    if fmt in ("csv", "tsv"):
+        sep = "," if fmt == "csv" else "\t"
+        out = [sep.join(_TABLE_COLS)]
+        for r in rows:
+            out.append(sep.join("" if r.get(c) is None else str(r.get(c)) for c in _TABLE_COLS))
+        return "\n".join(out)
+    # table
+    if not rows:
+        return "(no matching rows)"
+    cells = [[_fmt_cell(c, r.get(c)) for c in _TABLE_COLS] for r in rows]
+    widths = [max(len(_TABLE_HDR[c]), *(len(row[i]) for row in cells))
+              for i, c in enumerate(_TABLE_COLS)]
+    def _line(vals):
+        return "  ".join(v.ljust(widths[i]) for i, v in enumerate(vals))
+    head = _line([_TABLE_HDR[c] for c in _TABLE_COLS])
+    body = "\n".join(_line(row) for row in cells)
+    return f"{head}\n{'-' * len(head)}\n{body}\n({len(rows)} rows)"
+
+
+def add_query_args(p: argparse.ArgumentParser) -> None:
+    """Shared arg surface so farmctl can reuse the exact same flags."""
+    p.add_argument("--ea", help="EA id (bare 20004 or QM5_20004)")
+    p.add_argument("--symbol", help="symbol substring, e.g. XAUUSD (.DWX optional)")
+    p.add_argument("--gate", "--phase", dest="phase", help="gate token(s), comma list, e.g. Q08 or Q08,Q10")
+    p.add_argument("--verdict", help="verdict substring(s), comma list, e.g. PASS or FAIL,RECYCLE")
+    p.add_argument("--min-pf", type=float, help="profit_factor >=")
+    p.add_argument("--min-trades", type=int, help="trades >=")
+    p.add_argument("--max-dd", type=float, help="drawdown_pct <=")
+    p.add_argument("--source", help="extractor source substring, e.g. q08_subgates")
+    p.add_argument("--exclude-ablation", action="store_true", help="drop ablation rows")
+    p.add_argument("--latest", action="store_true",
+                   help="one newest row per (ea,symbol,gate) — dedupes re-runs")
+    p.add_argument("--order", default="phase",
+                   choices=list(_ORDER_COLS.keys()), help="sort column (default phase)")
+    p.add_argument("--desc", action="store_true", help="descending sort")
+    p.add_argument("--limit", type=int, default=50, help="max rows (default 50, 0=all)")
+    p.add_argument("--format", default="table", choices=["table", "json", "csv", "tsv"])
+    p.add_argument("--count", action="store_true", help="print only the match count")
+
+
+def run_query(args, con: sqlite3.Connection) -> int:
+    rows = query(con, ea=args.ea, symbol=args.symbol, phase=args.phase,
+                 verdict=args.verdict, min_pf=args.min_pf, min_trades=args.min_trades,
+                 max_dd=args.max_dd, source=args.source,
+                 exclude_ablation=args.exclude_ablation, latest=args.latest,
+                 order=args.order, desc=args.desc, limit=args.limit)
+    if getattr(args, "count", False):
+        print(len(rows))
+    else:
+        print(render(rows, args.format))
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(description="Build the ea_metrics archive table.")
+    ap = argparse.ArgumentParser(description="Build and query the ea_metrics archive table.")
     sub = ap.add_subparsers(dest="cmd", required=True)
     b = sub.add_parser("build")
     b.add_argument("--full", action="store_true", help="full rebuild (ignore mtime gate)")
@@ -432,6 +600,11 @@ def main(argv: list[str] | None = None) -> int:
     s = sub.add_parser("show")
     s.add_argument("--ea", required=True)
     s.add_argument("--db", default=str(FARM_DB))
+    q = sub.add_parser("query", help="filtered EA×symbol×gate query (table/json/csv)")
+    add_query_args(q)
+    q.add_argument("--build-first", action="store_true",
+                   help="run an incremental build before querying (freshness on demand)")
+    q.add_argument("--db", default=str(FARM_DB))
     args = ap.parse_args(argv)
 
     con = sqlite3.connect(args.db)
@@ -445,10 +618,17 @@ def main(argv: list[str] | None = None) -> int:
         rows = con.execute(
             "SELECT phase, symbol, verdict, net_profit, profit_factor, trades, "
             "drawdown_pct, sharpe, source FROM ea_metrics WHERE ea_id=? "
-            "ORDER BY phase, symbol", (args.ea,)).fetchall()
+            "ORDER BY phase, symbol", (_norm_ea(args.ea),)).fetchall()
         for r in rows:
             print(dict(r))
         return 0
+    if args.cmd == "query":
+        if getattr(args, "build_first", False):
+            try:
+                build(con, full=False, ea=_norm_ea(args.ea))
+            except Exception:
+                pass  # a build hiccup must never block a read
+        return run_query(args, con)
     return 1
 
 
