@@ -4678,6 +4678,15 @@ def main() -> int:
     portfolio_path = dashboards_dir / "portfolio.html"
     portfolio_path.write_text(render_portfolio(root), encoding="utf-8")
 
+    # DXZ Trading Journal — OWNER-directed live-book analytics (2026-07-20).
+    # Read-only against T_Live logs; must never block the rest of the render.
+    try:
+        from tools.strategy_farm.dashboards import render_dxz_journal as _dxz
+        dxz_path = dashboards_dir / "dxz_journal.html"
+        dxz_path.write_text(_dxz.render_dxz_journal(root), encoding="utf-8")
+    except Exception as _exc:  # noqa: BLE001 — never block the render
+        print(f"WARN: dxz_journal render skipped: {_exc!r}", file=sys.stderr)
+
     # Per-EA detail pages — INCREMENTAL (2026-07-19). Historically all ~2500
     # pages were re-rendered every hour against a 300MB DB and blew the task
     # time limit, so pages went stale for weeks. Now we only re-render an EA

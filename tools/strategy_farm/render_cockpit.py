@@ -1570,11 +1570,11 @@ def main() -> int:
 
     money_html = f'''
   <div class="frontier">
-    <div class="frontier-tile">
+    <a class="frontier-tile" href="dxz_journal.html" title="Open the DXZ Trading Journal">
       <div class="f-lbl">DXZ Live Book // Darwinex Zero</div>
       <div class="f-val {dxz_cls}">{e(dxz_val)}</div>
       <div class="f-sub">{e(dxz_sub)}</div>
-    </div>
+    </a>
     <div class="frontier-tile">
       <div class="f-lbl">FTMO Trial // 100K</div>
       <div class="f-val {ftmo_cls}">{e(ftmo_val)}</div>
@@ -2544,6 +2544,8 @@ body { padding: 32px; min-height: 100vh; }
   background: var(--border); border: 1px solid var(--border);
 }
 .frontier-tile { background: var(--surface-1); padding: 16px 20px; }
+a.frontier-tile { display: block; text-decoration: none; color: inherit; }
+a.frontier-tile:hover { background: var(--surface-2); }
 .frontier-tile .f-lbl {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 10px; font-weight: 600; letter-spacing: 0.22em;
