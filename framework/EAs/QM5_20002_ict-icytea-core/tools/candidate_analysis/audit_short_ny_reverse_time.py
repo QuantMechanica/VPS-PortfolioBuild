@@ -493,7 +493,11 @@ def validate_source_closure(contract: Mapping[str, Any]) -> dict[str, Any]:
     if (
         frozen.get("source_git_commit") != EXPECTED_SOURCE_COMMIT
         or frozen.get("source_sha256") != EXPECTED_SOURCE_SHA256
+        or frozen.get("primary_source_path")
+        != "D:/QM/strategy_farm/artifacts/sources/ict_icy_tea_source_20260716/MQL5_Strategie_Spezifikation_some_icy_tea.docx"
         or frozen.get("primary_source_sha256") != EXPECTED_PRIMARY_SOURCE_SHA256
+        or frozen.get("source_correction_plan_path")
+        != "framework/EAs/QM5_20002_ict-icytea-core/docs/candidate-analysis/source_correction_v3_plan.md"
         or frozen.get("source_correction_plan_git_commit")
         != EXPECTED_SOURCE_CORRECTION_PLAN_COMMIT
         or frozen.get("source_correction_plan_sha256")
