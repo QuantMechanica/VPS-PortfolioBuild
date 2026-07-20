@@ -99,6 +99,9 @@ def test_launcher_requires_native_report_audit_and_detached_atomic_receipt() -> 
     assert "$snapshotAuditPath" in launcher
     assert "--duplicate-report" in launcher
     assert "Assert-QmCostAudit" in launcher
+    assert "attempt_audit.json" in launcher
+    assert "Assert-QmAttemptAuditUnchanged" in launcher
+    assert "performance_fields_consulted = $false" in support
     assert "canonical_deal_sequence_sha256" in launcher
     assert "Write-QmDetachedJsonReceipt" in launcher
     assert "research_run_receipt.json" in launcher
