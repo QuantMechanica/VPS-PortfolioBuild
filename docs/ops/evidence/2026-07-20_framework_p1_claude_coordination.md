@@ -106,3 +106,21 @@ survivors serially → **SHA manifest** → standard T_Live procedure):
 
 Per task payload: confirm before 2026-07-24 EOD Europe/Berlin, ahead of the
 2026-07-26 serial recompile wave. This response lands 2026-07-20, within window.
+
+## Addendum — H2 EquityStream include edit (agent_task `67572d82-9463-404d-81ac-aafadc48350b`)
+
+**Requested:** confirm no concurrent Claude edit/ownership conflict for
+`framework/include/QM/QM_EquityStream.mqh` before Codex adds account scope +
+non-tester GlobalVariable day/month baseline persistence (keyed by
+account+ea_id, `EQUITY_STREAM_STATE_RESTORED` logging, no sizing/live-state
+change).
+
+Checked: `git status --porcelain` on `QM_EquityStream.mqh` in the canonical
+checkout is clean; `agent_tasks` scan (IN_PROGRESS/TODO/BACKLOG) for
+`QM_EquityStream` references returns only this addendum task.
+
+**Verdict: ACK, no conflict.** Path is clear for Codex to edit. H2 plan matches
+the original handoff (schema-additive `"scope":"account"`, GlobalVariable
+persistence mirroring the KillSwitch `KS_STATE_RESTORED` pattern) — proceed.
+H2 was already scoped in the handoff as "can land any time," independent of
+the 26.07 include-freeze wave that H1/H3/H4 ride.
