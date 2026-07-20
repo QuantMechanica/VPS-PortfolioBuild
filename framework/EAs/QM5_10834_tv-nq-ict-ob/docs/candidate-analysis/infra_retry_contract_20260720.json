@@ -1,8 +1,8 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "artifact_type": "QM5_10834_INFRA_RETRY_CONTRACT",
-  "status": "AUTHORIZED_ONCE",
-  "created_utc": "2026-07-20T16:46:01.5239831Z",
+  "status": "AUTHORIZED_INFRA_PORT_RETRY_002_ONCE",
+  "created_utc": "2026-07-20T19:07:34.3638260Z",
   "candidate": {
     "ea_id": "QM5_10834",
     "analysis_id": "QM5_10834_TV_NQ_ICT_OB_NATIVE_001",
@@ -38,10 +38,39 @@
     "counts_toward_alternate_attempts": false,
     "remediation": "CONTROLLER_JIT_ENABLE_WITH_SYSTEM_TTL_CLEANUP_LEASE_AND_VERIFIED_DISARM"
   },
+  "prior_native_attempt": {
+    "attempt_number": 1,
+    "classification": "OUTCOME_BLIND_DEV2_AGENT_PORT_BASELINE_CONFLICT",
+    "run_root": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\NDX_ICT_OB_FULL_DEV2_NATIVE_ATTEMPT_001",
+    "pre_receipt_sha256": "c107cade6064a641f1055712723b053e7583038212b47683263593a188a562d6",
+    "launch_state_sha256": "d33c214e1cec7f373f17542cdb4942c8cef6378e6b01f15091743959f6a80235",
+    "native_attempt_claim_path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\claims\\QM5_10834_TV_NQ_ICT_OB_NATIVE_001_DEV2_NATIVE_ATTEMPT_001.json",
+    "native_attempt_claim_sha256": "2c82b6fd3bfb311500fa4b44af3cd47a6564dfc8563797fbbcb35b8e7848b0fc",
+    "dev2_run_id": "20260720T185245Z_dbe5955f706048be92ec916523b2e2f7",
+    "dev2_result_path": "D:\\QM\\reports\\dev2\\runs\\20260720T185245Z_dbe5955f706048be92ec916523b2e2f7\\output\\result.json",
+    "dev2_result_sha256": "fb8c1cd0b1497cd09317fb07a67477e4028b1adb44b68dec01e4fb9dd337364d",
+    "controller_stderr_path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\NDX_ICT_OB_FULL_DEV2_NATIVE_ATTEMPT_001\\native\\DEV\\controller.stderr.log",
+    "controller_stderr_sha256": "7079149cc4c16408a0783ad21ba7b4cada5a0e71a58064412047f509832313e6",
+    "terminal_status": "INVALID_TERMINAL",
+    "cause": "DEV2_AGENT_PORT_BASELINE_CONFLICT",
+    "metatester_exact_path_started": true,
+    "conflicting_listener_port": 3004,
+    "run_smoke_exit_code": null,
+    "native_root_created": false,
+    "summary_created": false,
+    "outcome_artifact_count": 0,
+    "strategy_outcomes_read": false,
+    "strategy_merit_adjudicated": false,
+    "claim_and_fence_preserved": true,
+    "counts_toward_alternate_attempts": true,
+    "remediation": "OUTCOME_BLIND_INFRA_PORT_ISOLATION_REPAIR_ONLY"
+  },
   "retry": {
     "execution_lane": "DEV2",
-    "maximum_alternate_attempts": 1,
-    "prior_alternate_attempts": 0,
+    "current_attempt_number": 2,
+    "maximum_alternate_attempts": 2,
+    "prior_alternate_attempts": 1,
+    "authorization_scope": "QM5_10834_INFRA_PORT_RETRY_002_NDX_4_CELLS_X_2_ACCEPTED_DUPLICATES_MAX_4_NATIVE_STARTS_PER_CELL_POSTFLIGHT_MAX_2_ACCEPTABLE_INFRA_WARMUPS_MODEL4",
     "same_ea_binary_required": true,
     "same_set_required": true,
     "same_symbol_required": true,
@@ -51,7 +80,8 @@
     "same_merit_gates_required": true,
     "same_cost_schedule_required": true,
     "parameter_tuning_forbidden": true,
-    "terminal_hopping_after_dev2_forbidden": true
+    "terminal_hopping_after_dev2_forbidden": true,
+    "prior_claim_and_fence_must_remain_immutable": true
   },
-  "classification": "OUTCOME_BLIND_INFRASTRUCTURE_RETRY_ONLY"
+  "classification": "OUTCOME_BLIND_INFRASTRUCTURE_PORT_RETRY_002_ONLY"
 }

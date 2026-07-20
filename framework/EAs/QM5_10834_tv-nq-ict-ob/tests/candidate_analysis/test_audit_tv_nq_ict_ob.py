@@ -244,6 +244,12 @@ def test_frozen_plan_is_one_symbol_four_disjoint_cells_and_two_duplicates(
     assert plan["accepted_duplicate_run_count"] == 8
     assert plan["maximum_native_starts"] == 16
     contract = subject.execution_contract()
+    assert contract["current_attempt_number"] == 2
+    assert contract["maximum_alternate_attempts"] == 2
+    assert contract["prior_alternate_attempts"] == 1
+    assert contract["authorization_scope"] == subject.AUTHORIZATION_SCOPE
+    assert Path(contract["native_attempt_claim_path"]).name.endswith("ATTEMPT_002.json")
+    assert subject.LAUNCHER_REVISION == 5
     assert contract["native_run_timeout_seconds"] == 28_800
     assert contract["native_per_attempt_overhead_seconds"] == 600
     assert contract["cell_outer_timeout_seconds"] == 119_400
@@ -558,9 +564,9 @@ def test_runner_command_freezes_model4_two_duplicates_zero_native_cost(
     assert command[-1] == "-SmokeMode"
 
 
-def test_infra_retry_contract_is_one_shot_dev2_and_binds_prior_invalid(
+def _infra_retry_002_fixture(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+) -> tuple[Path, dict[str, object], Path, Path]:
     prior_root = tmp_path / "prior"
     prior_root.mkdir()
     prior_pre = prior_root / "pre_receipt.json"
@@ -584,10 +590,187 @@ def test_infra_retry_contract_is_one_shot_dev2_and_binds_prior_invalid(
     monkeypatch.setattr(subject, "CONTROLLER_PREFLIGHT_PRE_SHA256", controller_pre_sha)
     monkeypatch.setattr(subject, "CONTROLLER_PREFLIGHT_STATE_SHA256", controller_state_sha)
 
-    payload = {
+    ea_root = tmp_path / "ea"
+    set_path = ea_root / "sets" / f"{subject.EXPERT_NAME}_{subject.RESEARCH_SYMBOL}_M5_backtest.set"
+    set_path.parent.mkdir(parents=True)
+    set_path.write_bytes(b"frozen-set")
+    ex5_path = ea_root / "experts" / "candidate.ex5"
+    ex5_path.parent.mkdir(parents=True)
+    ex5_path.write_bytes(b"frozen-ex5")
+    cost_path = ea_root / "cost.json"
+    cost_path.write_bytes(b"frozen-cost")
+    monkeypatch.setattr(subject, "EA_ROOT", ea_root)
+    monkeypatch.setattr(subject, "EX5_PATH", ex5_path)
+    monkeypatch.setattr(subject, "COST_PATH", cost_path)
+
+    native_root = tmp_path / "prior_native_attempt"
+    prior_pre = native_root / "pre_receipt.json"
+    prior_state = native_root / "launch_state.json"
+    prior_claim = tmp_path / "claims" / "attempt_001.json"
+    dev2_run_id = "20260720T185245Z_dbe5955f706048be92ec916523b2e2f7"
+    dev2_root = tmp_path / "dev2" / dev2_run_id
+    dev2_result = dev2_root / "output" / "result.json"
+    controller_stderr = native_root / "native" / "DEV" / "controller.stderr.log"
+    monkeypatch.setattr(subject, "PRIOR_NATIVE_ATTEMPT_RUN_ROOT", native_root)
+    monkeypatch.setattr(subject, "PRIOR_NATIVE_ATTEMPT_CLAIM_PATH", prior_claim)
+    monkeypatch.setattr(subject, "PRIOR_NATIVE_ATTEMPT_DEV2_RUN_ID", dev2_run_id)
+    monkeypatch.setattr(subject, "PRIOR_NATIVE_ATTEMPT_DEV2_RUN_ROOT", dev2_root)
+    monkeypatch.setattr(subject, "PRIOR_NATIVE_ATTEMPT_DEV2_RESULT_PATH", dev2_result)
+    monkeypatch.setattr(
+        subject, "PRIOR_NATIVE_ATTEMPT_CONTROLLER_STDERR_PATH", controller_stderr
+    )
+
+    frozen_bindings = {
+        "ex5": subject.file_binding(ex5_path),
+        "set": subject.file_binding(set_path),
+        "cost": subject.file_binding(cost_path),
+    }
+    plan_sha = "7" * 64
+    cells = [
+        {
+            "cell_id": f"{subject.RESEARCH_SYMBOL.replace('.', '_')}_{window.cell_id}",
+            "symbol": subject.RESEARCH_SYMBOL,
+            "cohort": window.cohort,
+            "from_date": window.from_date.isoformat(),
+            "to_date": window.to_date.isoformat(),
+            "timeframe": subject.TIMEFRAME,
+            "model": 4,
+            "duplicates": subject.DUPLICATES,
+            "maximum_postflight_acceptable_infrastructure_warmups": subject.MAX_POSTFLIGHT_INFRA_WARMUPS_PER_CELL,
+            "maximum_attempts": subject.MAX_ATTEMPTS_PER_CELL,
+            "native_start_budget_is_outcome_independent": True,
+            "set": frozen_bindings["set"],
+            "output_root": str((native_root / "native" / window.cell_id).resolve()),
+        }
+        for window in subject.WINDOWS
+    ]
+    prior_pre_payload = {
+        "schema_version": subject.SCHEMA_VERSION,
+        "artifact_type": "QM5_10834_OUTCOME_FENCED_PRE_RECEIPT",
+        "status": "PASS",
+        "analysis_id": subject.ANALYSIS_ID,
+        "run_root": str(native_root.resolve()),
+        "outcome_fence": {
+            "native_reports_opened": False,
+            "deal_rows_parsed": False,
+            "market_values_parsed": False,
+            "mt5_terminal_started": False,
+            "metatester_started": False,
+        },
+        "bindings": frozen_bindings,
+        "merit_contract": subject.MERIT_GATES,
+        "symbol_policy": {"authorized_symbol": subject.RESEARCH_SYMBOL},
+        "plan": {
+            "plan_sha256": plan_sha,
+            "single_authorized_symbol": subject.RESEARCH_SYMBOL,
+            "accepted_duplicate_run_count": len(subject.WINDOWS) * subject.DUPLICATES,
+            "maximum_native_starts": len(subject.WINDOWS) * subject.MAX_ATTEMPTS_PER_CELL,
+            "cells": cells,
+        },
+    }
+    _write_json(prior_pre, prior_pre_payload)
+    prior_pre_sha = subject.sha256_file(prior_pre)
+    monkeypatch.setattr(subject, "PRIOR_NATIVE_ATTEMPT_PRE_SHA256", prior_pre_sha)
+
+    controller_stderr.parent.mkdir(parents=True, exist_ok=True)
+    controller_stderr.write_text(
+        "CHILD_PRECHECK_FAILED\n"
+        "run_dev2_smoke.ps1:1064\n"
+        f"{dev2_root / 'output' / 'run.log'}\n",
+        encoding="utf-8",
+    )
+    controller_stderr_sha = subject.sha256_file(controller_stderr)
+    monkeypatch.setattr(
+        subject,
+        "PRIOR_NATIVE_ATTEMPT_CONTROLLER_STDERR_SHA256",
+        controller_stderr_sha,
+    )
+
+    prior_claim_payload = {
         "schema_version": 1,
+        "artifact_type": "QM5_10834_DEV2_NATIVE_ATTEMPT_CLAIM",
+        "analysis_id": subject.ANALYSIS_ID,
+        "attempt_number": 1,
+        "maximum_alternate_attempts": 1,
+        "classification": "ATOMIC_GLOBAL_ONE_SHOT_NATIVE_EXECUTION_CLAIM",
+        "pre_receipt": subject.file_binding(prior_pre),
+        "run_root": str(native_root.resolve()),
+        "launch_state_path": str(prior_state.resolve()),
+        "plan_sha256": plan_sha,
+        "ea_binary": frozen_bindings["ex5"],
+        "set": frozen_bindings["set"],
+    }
+    _write_json(prior_claim, prior_claim_payload)
+    prior_claim_sha = subject.sha256_file(prior_claim)
+    monkeypatch.setattr(subject, "PRIOR_NATIVE_ATTEMPT_CLAIM_SHA256", prior_claim_sha)
+
+    stdout_path = native_root / "native" / "DEV" / "controller.stdout.log"
+    stdout_path.write_bytes(b"")
+    state_cells: list[dict[str, object]] = [
+        {
+            "cell_id": cells[0]["cell_id"],
+            "status": "INVALID_TERMINAL_OUTPUT",
+            "attempts": [
+                {
+                    "exit_code": 1,
+                    "native_root": None,
+                    "summary": None,
+                    "runner_result": None,
+                    "outcome_artifacts": [],
+                    "stdout": subject.file_binding(stdout_path),
+                    "stderr": subject.file_binding(controller_stderr),
+                }
+            ],
+        },
+        *[
+            {"cell_id": cell["cell_id"], "status": "PENDING", "attempts": []}
+            for cell in cells[1:]
+        ],
+    ]
+    prior_state_payload = {
+        "schema_version": subject.SCHEMA_VERSION,
+        "launcher_revision": 4,
+        "artifact_type": "QM5_10834_NATIVE_LAUNCH_STATE",
+        "analysis_id": subject.ANALYSIS_ID,
+        "status": "INVALID_TERMINAL",
+        "worker_pid": None,
+        "finished_utc": None,
+        "pre_receipt_path": str(prior_pre.resolve()),
+        "pre_receipt_sha256": prior_pre_sha,
+        "plan_sha256": plan_sha,
+        "attempt_claim": subject.file_binding(prior_claim),
+        "outcome_possible_since_utc": "2026-07-20T18:52:45Z",
+        "active_cell": {
+            "cell_id": cells[0]["cell_id"],
+            "status": "OUTCOME_POSSIBLE_NO_RESUME",
+        },
+        "cells": state_cells,
+    }
+    _write_json(prior_state, prior_state_payload)
+    prior_state_sha = subject.sha256_file(prior_state)
+    monkeypatch.setattr(subject, "PRIOR_NATIVE_ATTEMPT_STATE_SHA256", prior_state_sha)
+
+    result_payload = {
+        "schema_version": 2,
+        "run_id": dev2_run_id,
+        "success": False,
+        "error_code": "CHILD_PRECHECK_FAILED",
+        "error_message": "DEV2 metatester selected pre-existing listener port 3004 (owners=1234).",
+        "run_smoke_exit_code": None,
+        "agent_port_proof": {
+            "status": "NOT_RUN",
+            "listeners": [],
+            "metatester_path": str((subject.TERMINAL_ROOT / "metatester64.exe").resolve()),
+        },
+    }
+    _write_json(dev2_result, result_payload)
+    result_sha = subject.sha256_file(dev2_result)
+    monkeypatch.setattr(subject, "PRIOR_NATIVE_ATTEMPT_DEV2_RESULT_SHA256", result_sha)
+
+    payload = {
+        "schema_version": 2,
         "artifact_type": "QM5_10834_INFRA_RETRY_CONTRACT",
-        "status": "AUTHORIZED_ONCE",
+        "status": "AUTHORIZED_INFRA_PORT_RETRY_002_ONCE",
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "candidate": {
             "ea_id": "QM5_10834",
@@ -624,16 +807,30 @@ def test_infra_retry_contract_is_one_shot_dev2_and_binds_prior_invalid(
             "counts_toward_alternate_attempts": False,
             "remediation": "CONTROLLER_JIT_ENABLE_WITH_SYSTEM_TTL_CLEANUP_LEASE_AND_VERIFIED_DISARM",
         },
-        "retry": subject.INFRA_RETRY_POLICY,
-        "classification": "OUTCOME_BLIND_INFRASTRUCTURE_RETRY_ONLY",
+        "prior_native_attempt": subject._prior_native_attempt_contract(),
+        "retry": dict(subject.INFRA_RETRY_POLICY),
+        "classification": "OUTCOME_BLIND_INFRASTRUCTURE_PORT_RETRY_002_ONLY",
     }
     contract = tmp_path / "retry.json"
     _write_json(contract, payload)
+    return contract, payload, native_root, dev2_root
+
+
+def test_infra_retry_contract_is_outcome_blind_attempt_002_and_binds_prior_port_conflict(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    contract, payload, native_root, _ = _infra_retry_002_fixture(tmp_path, monkeypatch)
     assert subject.validate_infra_retry_contract(contract) == payload
 
-    payload["retry"] = {**subject.INFRA_RETRY_POLICY, "maximum_alternate_attempts": 2}
+    payload["retry"] = {**subject.INFRA_RETRY_POLICY, "maximum_alternate_attempts": 3}
     _write_json(contract, payload)
-    with pytest.raises(subject.InvalidEvidence, match="one-shot policy"):
+    with pytest.raises(subject.InvalidEvidence, match="attempt-002 policy"):
+        subject.validate_infra_retry_contract(contract)
+
+    payload["retry"] = dict(subject.INFRA_RETRY_POLICY)
+    _write_json(contract, payload)
+    (native_root / "native" / "DEV" / "report.htm").write_bytes(b"")
+    with pytest.raises(subject.InvalidEvidence, match="native outcome artifact"):
         subject.validate_infra_retry_contract(contract)
 
 
@@ -1040,7 +1237,10 @@ def test_authorization_is_owner_scoped_short_lived_and_pre_bound(tmp_path: Path)
         "status": "AUTHORIZED",
         "analysis_id": subject.ANALYSIS_ID,
         "pre_receipt_sha256": "a" * 64,
-        "scope": "QM5_10834_NDX_4_CELLS_X_2_ACCEPTED_DUPLICATES_MAX_4_NATIVE_STARTS_POSTFLIGHT_MAX_2_ACCEPTABLE_INFRA_WARMUPS_MODEL4",
+        "scope": subject.AUTHORIZATION_SCOPE,
+        "attempt_number": 2,
+        "maximum_alternate_attempts": 2,
+        "prior_alternate_attempts": 1,
         "authorized_by": "OWNER",
         "authorized_symbol": "NDX.DWX",
         "authorized_cells": [window.cell_id for window in subject.WINDOWS],
@@ -1100,7 +1300,11 @@ def test_global_native_attempt_claim_is_atomic_and_pre_bound(
     payload = subject.validate_native_attempt_claim(
         claim, pre_path, pre_sha, pre, state_path, authorization
     )
-    assert payload["attempt_number"] == 1
+    assert payload["attempt_number"] == 2
+    assert payload["maximum_alternate_attempts"] == 2
+    assert payload["prior_alternate_attempts"] == 1
+    assert payload["authorization_scope"] == subject.AUTHORIZATION_SCOPE
+    assert payload["classification"] == "ATOMIC_GLOBAL_OUTCOME_BLIND_INFRA_PORT_RETRY_002_CLAIM"
     with pytest.raises(subject.InvalidEvidence, match="refusing to replace evidence"):
         subject.claim_native_attempt(pre_path, pre_sha, pre, state_path, authorization)
     with pytest.raises(subject.AuthorizationError, match="already claimed"):

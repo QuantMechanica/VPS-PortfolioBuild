@@ -1596,7 +1596,10 @@ def execution_contract() -> dict[str, Any]:
         "controller": "ISOLATED_DEV2_SCHEDULED_TASK_LANE",
         "controller_mutex": "Global\\QM_DEV2_SMOKE_CONTROLLER",
         "factory_terminal_pool_used": False,
-        "maximum_alternate_attempts": 1,
+        "current_attempt_number": CURRENT_NATIVE_ATTEMPT_NUMBER,
+        "maximum_alternate_attempts": MAXIMUM_ALTERNATE_ATTEMPTS,
+        "prior_alternate_attempts": PRIOR_ALTERNATE_ATTEMPTS,
+        "authorization_scope": AUTHORIZATION_SCOPE,
         "accepted_duplicates_per_cell": DUPLICATES,
         "maximum_postflight_acceptable_infrastructure_warmups_per_cell": MAX_POSTFLIGHT_INFRA_WARMUPS_PER_CELL,
         "maximum_attempts_per_cell": MAX_ATTEMPTS_PER_CELL,
@@ -1608,7 +1611,7 @@ def execution_contract() -> dict[str, Any]:
         "postflight_acceptable_infrastructure_warmup_verdicts": ["BARS_ZERO", "NO_HISTORY"],
         "postflight_rejects_every_nonprefix_or_nonzero_warmup": True,
         "native_attempt_claim_path": str(NATIVE_ATTEMPT_CLAIM_PATH.resolve()),
-        "native_attempt_claim_mode": "ATOMIC_CREATE_ONCE_BEFORE_FIRST_CONTROLLER_EXECUTION",
+        "native_attempt_claim_mode": "ATOMIC_CREATE_ONCE_FOR_INFRA_PORT_RETRY_002_BEFORE_FIRST_CONTROLLER_EXECUTION",
         "native_launch_lock_path": str(NATIVE_LAUNCH_LOCK_PATH.resolve()),
         "native_launch_lock_mode": "GLOBAL_WINDOWS_BYTE_LOCK_AROUND_LAUNCH_AND_RESUME",
     }
@@ -1838,7 +1841,7 @@ def assert_pre_receipt(path: Path, expected_sha256: str) -> dict[str, Any]:
         raise InvalidEvidence("PRE isolated DEV2 execution contract drift")
     current_retry = validate_infra_retry_contract()
     if pre.get("infra_retry") != current_retry:
-        raise InvalidEvidence("PRE one-shot infra-retry contract drift")
+        raise InvalidEvidence("PRE attempt-002 infra-retry contract drift")
     if bindings["infra_retry_contract"] != file_binding(INFRA_RETRY_CONTRACT_PATH):
         raise InvalidEvidence("PRE infra-retry byte binding drift")
     includes = pre.get("include_closure")
@@ -2011,7 +2014,10 @@ def validate_authorization(
         "status": "AUTHORIZED",
         "analysis_id": ANALYSIS_ID,
         "pre_receipt_sha256": pre_sha256.lower(),
-        "scope": "QM5_10834_NDX_4_CELLS_X_2_ACCEPTED_DUPLICATES_MAX_4_NATIVE_STARTS_POSTFLIGHT_MAX_2_ACCEPTABLE_INFRA_WARMUPS_MODEL4",
+        "scope": AUTHORIZATION_SCOPE,
+        "attempt_number": CURRENT_NATIVE_ATTEMPT_NUMBER,
+        "maximum_alternate_attempts": MAXIMUM_ALTERNATE_ATTEMPTS,
+        "prior_alternate_attempts": PRIOR_ALTERNATE_ATTEMPTS,
         "authorized_by": "OWNER",
         "authorized_symbol": RESEARCH_SYMBOL,
         "authorized_cells": [window.cell_id for window in WINDOWS],
@@ -2027,6 +2033,8 @@ def validate_authorization(
         "model": 4,
         "authorize_native_outcomes": True,
     }
+    if set(payload) != {*expected, "created_utc", "expires_utc"}:
+        raise AuthorizationError("native authorization field closure drift")
     drift = {key: (wanted, payload.get(key)) for key, wanted in expected.items() if payload.get(key) != wanted}
     if drift:
         raise AuthorizationError(f"native authorization drift: {drift}")
@@ -2043,7 +2051,7 @@ def validate_authorization(
 def _assert_native_attempt_unclaimed(stage: str) -> None:
     if NATIVE_ATTEMPT_CLAIM_PATH.exists():
         raise AuthorizationError(
-            f"the one-shot DEV2 native attempt is already claimed at {stage}"
+            f"the DEV2 infra-port retry attempt 002 is already claimed at {stage}"
         )
 
 
@@ -2058,15 +2066,17 @@ def _native_attempt_claim_basis(
         "schema_version": 1,
         "artifact_type": "QM5_10834_DEV2_NATIVE_ATTEMPT_CLAIM",
         "analysis_id": ANALYSIS_ID,
-        "attempt_number": 1,
-        "maximum_alternate_attempts": 1,
+        "attempt_number": CURRENT_NATIVE_ATTEMPT_NUMBER,
+        "maximum_alternate_attempts": MAXIMUM_ALTERNATE_ATTEMPTS,
+        "prior_alternate_attempts": PRIOR_ALTERNATE_ATTEMPTS,
+        "authorization_scope": AUTHORIZATION_SCOPE,
         "accepted_duplicates_per_cell": DUPLICATES,
         "maximum_postflight_acceptable_infrastructure_warmups_per_cell": MAX_POSTFLIGHT_INFRA_WARMUPS_PER_CELL,
         "maximum_attempts_per_cell": MAX_ATTEMPTS_PER_CELL,
         "maximum_native_starts": len(WINDOWS) * MAX_ATTEMPTS_PER_CELL,
         "native_start_budget_is_outcome_independent": True,
         "postflight_rejects_every_nonprefix_or_nonzero_warmup": True,
-        "classification": "ATOMIC_GLOBAL_ONE_SHOT_NATIVE_EXECUTION_CLAIM",
+        "classification": "ATOMIC_GLOBAL_OUTCOME_BLIND_INFRA_PORT_RETRY_002_CLAIM",
         "pre_receipt": file_binding(pre_path, pre_sha256),
         "run_root": str(Path(str(pre["run_root"])).resolve()),
         "launch_state_path": str(state_path.resolve()),
@@ -2119,7 +2129,7 @@ def validate_native_attempt_claim(
         pre_path, pre_sha256, pre, state_path, authorization
     )
     if basis != expected:
-        raise InvalidEvidence("native-attempt global one-shot claim drift")
+        raise InvalidEvidence("native-attempt global retry-002 claim drift")
     return payload
 
 
