@@ -291,6 +291,177 @@ def test_detached_timeout_leaves_inner_controller_cleanup_margin() -> None:
     assert subject.required_controller_timeout(pre) == 59040
 
 
+def _minimal_launcher_pre() -> dict:
+    return {
+        "tool": subject.file_binding(subject.TOOL_PATH),
+        "runtime": {
+            "scheduled_task_helper": subject.file_binding(
+                subject.SCHEDULED_TASK_HELPER_PATH
+            ),
+            "python_binary": subject.file_binding(Path(sys.executable)),
+            "powershell_binary": {"path": str(subject.POWERSHELL_PATH)},
+        },
+        "plan": {
+            "cell_count": 4,
+            "duplicates_per_cell": 2,
+            "plan_sha256": "a" * 64,
+            "cells": [
+                {"runner_arguments": ["-TimeoutSeconds", "28800"]}
+                for _ in range(4)
+            ],
+        },
+    }
+
+
+def test_persisted_task_timeout_covers_all_cells_and_cleanup_margin() -> None:
+    pre = _minimal_launcher_pre()
+    assert subject.required_scheduled_task_timeout(pre, 64800) == 262800
+
+
+def test_persisted_helper_is_s4u_triggerless_and_never_overwrites_task() -> None:
+    helper = subject.SCHEDULED_TASK_HELPER_PATH.read_text(encoding="utf-8")
+    tool = subject.TOOL_PATH.read_text(encoding="utf-8")
+    assert "-LogonType S4U" in helper
+    assert "-RunLevel Highest" in helper
+    assert "-MultipleInstances IgnoreNew" in helper
+    assert "New-ScheduledTaskTrigger" not in helper
+    assert "Register-ScheduledTask" in helper
+    assert " -Force" not in helper
+    assert "DETACHED_PROCESS" not in tool
+    assert "CREATE_NEW_PROCESS_GROUP" not in tool
+
+
+def test_resume_fence_rejects_any_worker_entry_or_dev1_inventory_change(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    dev1_runs = tmp_path / "dev1-runs"
+    dev1_runs.mkdir()
+    monkeypatch.setattr(subject, "DEV1_RUNS_ROOT", dev1_runs)
+    state_path = tmp_path / "attempt" / "launch_state.json"
+    state = {
+        "launcher_revision": subject.LAUNCHER_REVISION,
+        "status": "RUNNING",
+        "finished_utc": None,
+        "cells": [],
+        "active_cell": None,
+        "outcome_possible_since_utc": None,
+    }
+    job = {"dev1_runs_before_launch": subject._dev1_run_inventory()}
+    subject._assert_resume_outcome_fence(state, job, state_path)
+
+    worker_entry = state_path.parent / "worker" / "cell-started"
+    worker_entry.mkdir(parents=True)
+    with pytest.raises(subject.AuthorizationError, match="worker artifact tree"):
+        subject._assert_resume_outcome_fence(state, job, state_path)
+    worker_entry.rmdir()
+    worker_entry.parent.rmdir()
+
+    (dev1_runs / "new-controller-run").mkdir()
+    with pytest.raises(subject.AuthorizationError, match="DEV1 run inventory changed"):
+        subject._assert_resume_outcome_fence(state, job, state_path)
+
+
+@pytest.mark.parametrize(
+    ("patch", "message"),
+    [
+        ({"cells": [{"cell_id": "sealed"}]}, "sealed cell outcome"),
+        (
+            {"active_cell": {"cell_id": "started"}},
+            "crossed the outcome fence",
+        ),
+        ({"outcome_possible_since_utc": "2026-07-20T09:00:00Z"}, "crossed"),
+        ({"launcher_revision": 1}, "legacy launch state"),
+    ],
+)
+def test_resume_fence_rejects_every_outcome_or_legacy_surface(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    patch: dict,
+    message: str,
+) -> None:
+    dev1_runs = tmp_path / "dev1-runs"
+    dev1_runs.mkdir()
+    monkeypatch.setattr(subject, "DEV1_RUNS_ROOT", dev1_runs)
+    state = {
+        "launcher_revision": subject.LAUNCHER_REVISION,
+        "status": "RUNNING",
+        "finished_utc": None,
+        "cells": [],
+        "active_cell": None,
+        "outcome_possible_since_utc": None,
+    }
+    state.update(patch)
+    job = {"dev1_runs_before_launch": subject._dev1_run_inventory()}
+    with pytest.raises(subject.AuthorizationError, match=message):
+        subject._assert_resume_outcome_fence(
+            state, job, tmp_path / "attempt" / "launch_state.json"
+        )
+
+
+def test_launch_uses_persisted_scheduler_and_resume_refuses_worker_artifact(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    dev1_runs = tmp_path / "dev1-runs"
+    dev1_runs.mkdir()
+    monkeypatch.setattr(subject, "DEV1_RUNS_ROOT", dev1_runs)
+    pre = _minimal_launcher_pre()
+    authorization = {
+        "binding": {"path": str(tmp_path / "authorization.json"), "size": 1, "sha256": "b" * 64},
+        "payload": {"authorized": True},
+    }
+    monkeypatch.setattr(subject, "assert_pre_receipt", lambda *_: pre)
+    monkeypatch.setattr(subject, "validate_authorization", lambda *_: authorization)
+    calls: list[str] = []
+
+    def fake_scheduler(_pre, operation, job=None):
+        calls.append(operation)
+        if operation == "Identity":
+            return {
+                "operation": "Identity",
+                "principal_sid": "S-1-5-21-500",
+                "logon_type": "S4U",
+                "run_level": "Highest",
+            }
+        scheduler = job["scheduler"]
+        return {
+            "operation": operation,
+            "task_name": scheduler["task_name"],
+            "principal_sid": scheduler["principal_sid"],
+            "logon_type": "S4U",
+            "run_level": "Highest",
+            "multiple_instances": "IgnoreNew",
+            "execution_limit_seconds": scheduler["execution_limit_seconds"],
+            "state": "Ready" if operation != "Start" else "Running",
+        }
+
+    monkeypatch.setattr(subject, "_scheduler_call", fake_scheduler)
+    state_path = tmp_path / "attempt" / "launch_state.json"
+    launched = subject.launch_detached(
+        tmp_path / "pre_receipt.json",
+        "c" * 64,
+        tmp_path / "authorization.json",
+        state_path,
+        64800,
+    )
+    assert launched["status"] == "LAUNCHED_PERSISTED_TASK"
+    assert calls == ["Identity", "Register", "Start"]
+    job = subject.load_json(state_path.with_name("launch_job.json"))
+    assert job["scheduler"]["mode"] == "WINDOWS_TASK_SCHEDULER_S4U_ON_DEMAND"
+    assert job["scheduler"]["execution_limit_seconds"] == 262800
+
+    (state_path.parent / "worker" / "cell-started").mkdir(parents=True)
+    with pytest.raises(subject.AuthorizationError, match="worker artifact tree"):
+        subject.launch_detached(
+            tmp_path / "pre_receipt.json",
+            "c" * 64,
+            tmp_path / "authorization.json",
+            state_path,
+            64800,
+            resume=True,
+        )
+    assert calls == ["Identity", "Register", "Start"]
+
+
 def test_worker_seals_exactly_two_native_artifact_sets(tmp_path: Path) -> None:
     report_dir = tmp_path / "report"
     runs = []
