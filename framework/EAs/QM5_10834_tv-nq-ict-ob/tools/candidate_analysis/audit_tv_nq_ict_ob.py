@@ -129,8 +129,12 @@ ZERO = Decimal("0")
 CENT = Decimal("0.01")
 TIMEFRAME = "M5"
 DUPLICATES = 2
+MAX_INFRA_WARMUPS_PER_CELL = 2
+MAX_ATTEMPTS_PER_CELL = DUPLICATES + MAX_INFRA_WARMUPS_PER_CELL
 RUN_TIMEOUT_SECONDS = 28800
-CELL_CONTROLLER_TIMEOUT_SECONDS = (RUN_TIMEOUT_SECONDS * DUPLICATES) + 1800
+CELL_CONTROLLER_TIMEOUT_SECONDS = (
+    MAX_ATTEMPTS_PER_CELL * (RUN_TIMEOUT_SECONDS + 120)
+) + 1800
 LAUNCHER_REVISION = 3
 SCHEDULED_TASK_PREFIX = "QM_QM10834_AUDIT_"
 MAX_SCHEDULED_TASK_SECONDS = 777600
@@ -1283,6 +1287,11 @@ def execution_contract() -> dict[str, Any]:
         "controller_mutex": "Global\\QM_DEV2_SMOKE_CONTROLLER",
         "factory_terminal_pool_used": False,
         "maximum_alternate_attempts": 1,
+        "accepted_duplicates_per_cell": DUPLICATES,
+        "maximum_infrastructure_warmups_per_cell": MAX_INFRA_WARMUPS_PER_CELL,
+        "maximum_attempts_per_cell": MAX_ATTEMPTS_PER_CELL,
+        "maximum_native_starts": len(WINDOWS) * MAX_ATTEMPTS_PER_CELL,
+        "allowed_infrastructure_warmup_verdicts": ["BARS_ZERO", "NO_HISTORY"],
         "native_attempt_claim_path": str(NATIVE_ATTEMPT_CLAIM_PATH.resolve()),
         "native_attempt_claim_mode": "ATOMIC_CREATE_ONCE_BEFORE_FIRST_CONTROLLER_EXECUTION",
     }
@@ -1303,6 +1312,8 @@ def build_plan(symbol: str, set_binding: Mapping[str, Any], run_root: Path) -> d
                 "timeframe": TIMEFRAME,
                 "model": 4,
                 "duplicates": DUPLICATES,
+                "maximum_infrastructure_warmups": MAX_INFRA_WARMUPS_PER_CELL,
+                "maximum_attempts": MAX_ATTEMPTS_PER_CELL,
                 "set": dict(set_binding),
                 "output_root": str((run_root / "native" / window.cell_id).resolve()),
             }
@@ -1310,7 +1321,8 @@ def build_plan(symbol: str, set_binding: Mapping[str, Any], run_root: Path) -> d
     plan_basis = {
         "single_authorized_symbol": symbol,
         "cells": cells,
-        "native_run_count": len(cells) * DUPLICATES,
+        "accepted_duplicate_run_count": len(cells) * DUPLICATES,
+        "maximum_native_starts": len(cells) * MAX_ATTEMPTS_PER_CELL,
         "technical_prescreen": {
             "authorized": False,
             "merit_eligible": False,
@@ -1681,11 +1693,17 @@ def validate_authorization(
         "status": "AUTHORIZED",
         "analysis_id": ANALYSIS_ID,
         "pre_receipt_sha256": pre_sha256.lower(),
-        "scope": "QM5_10834_NDX_4_CELLS_X_2_DUPLICATES_MODEL4",
+        "scope": "QM5_10834_NDX_4_CELLS_X_2_ACCEPTED_DUPLICATES_MAX_2_INFRA_WARMUPS_MODEL4",
         "authorized_by": "OWNER",
         "authorized_symbol": RESEARCH_SYMBOL,
         "authorized_cells": [window.cell_id for window in WINDOWS],
         "duplicates_per_cell": DUPLICATES,
+        "maximum_infrastructure_warmups_per_cell": MAX_INFRA_WARMUPS_PER_CELL,
+        "maximum_attempts_per_cell": MAX_ATTEMPTS_PER_CELL,
+        "maximum_native_starts": len(WINDOWS) * MAX_ATTEMPTS_PER_CELL,
+        "allowed_infrastructure_warmup_verdicts": ["BARS_ZERO", "NO_HISTORY"],
+        "warmups_must_precede_accepted_duplicates": True,
+        "warmups_must_be_zero_trade_zero_result": True,
         "model": 4,
         "authorize_native_outcomes": True,
     }
@@ -1722,6 +1740,10 @@ def _native_attempt_claim_basis(
         "analysis_id": ANALYSIS_ID,
         "attempt_number": 1,
         "maximum_alternate_attempts": 1,
+        "accepted_duplicates_per_cell": DUPLICATES,
+        "maximum_infrastructure_warmups_per_cell": MAX_INFRA_WARMUPS_PER_CELL,
+        "maximum_attempts_per_cell": MAX_ATTEMPTS_PER_CELL,
+        "maximum_native_starts": len(WINDOWS) * MAX_ATTEMPTS_PER_CELL,
         "classification": "ATOMIC_GLOBAL_ONE_SHOT_NATIVE_EXECUTION_CLAIM",
         "pre_receipt": file_binding(pre_path, pre_sha256),
         "run_root": str(Path(str(pre["run_root"])).resolve()),
