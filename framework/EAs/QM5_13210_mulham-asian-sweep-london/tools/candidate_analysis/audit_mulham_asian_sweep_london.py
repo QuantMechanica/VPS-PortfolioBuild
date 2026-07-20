@@ -1597,7 +1597,11 @@ def _assert_resume_artifact_fence(
     state: Mapping[str, Any], pre: Mapping[str, Any]
 ) -> None:
     state_cells = state.get("cells")
-    plan_cells = pre.get("plan", {}).get("cells") if isinstance(pre.get("plan"), Mapping) else None
+    plan_cells = (
+        pre.get("plan", {}).get("cells")
+        if isinstance(pre.get("plan"), Mapping)
+        else None
+    )
     if not isinstance(state_cells, list) or not isinstance(plan_cells, list):
         raise AuthorizationError("resume cell closure is malformed")
     if any(not isinstance(row, Mapping) for row in plan_cells):
@@ -1731,12 +1735,12 @@ def launch_persistent_task(
         raise AuthorizationError("launch audit list is malformed")
     requested = utc_now()
     launch_request = {
-            "status": "START_REQUESTED",
-            "requested_utc": requested,
-            "resume": resume,
-            "authorization": auth_ref,
-            "scheduler_contract_sha256": canonical_sha256(job["scheduler"]),
-        }
+        "status": "START_REQUESTED",
+        "requested_utc": requested,
+        "resume": resume,
+        "authorization": auth_ref,
+        "scheduler_contract_sha256": canonical_sha256(job["scheduler"]),
+    }
     if resume:
         launches.append(launch_request)
     elif (
