@@ -52,6 +52,13 @@ MARKET_PROJECTION = (
     "HEADER_PLUS_PRESTART_TIMESTAMP_ONLY_PLUS_EXACT_IN_WINDOW_ROWS_PLUS_"
     "FIRST_EXCLUDED_TIMESTAMP_PREFIX_ONLY"
 )
+INVALID_FULL_HASH_MANIFEST_SHA256 = (
+    "66dc5e8ea9842a570686940b3c7df90d33164aaefa2bf48911c730d9ea70b5ca"
+)
+INVALID_EVIDENCE_COMMITS = (
+    "b119e97e7271a7fcf1089a3b7024da3ccd0210fe",
+    "52c5031bab44e2cda860136bf6c8edbba7c8719c",
+)
 
 EPOCH = datetime(1970, 1, 1)
 UTC_EPOCH = datetime(1970, 1, 1, tzinfo=timezone.utc)
@@ -1719,6 +1726,13 @@ def run_analysis(manifest_path: Path, manifest_sha256: str) -> dict[str, Any]:
             "sha256": EXPECTED_REVIEW_SHA256,
             "status": "PASS",
         },
+        "supersession": {
+            "status": "FENCED_V2_SUPERSEDES_CONTRACT_INVALID_EVIDENCE",
+            "invalid_reason": "CONTRACT_INVALID_FUTURE_TAIL_HASHED",
+            "invalid_snapshot_manifest_sha256": INVALID_FULL_HASH_MANIFEST_SHA256,
+            "invalid_evidence_commits": list(INVALID_EVIDENCE_COMMITS),
+            "post_2022_pristine_oos_status": "CONTAMINATED_NEVER_CLAIM_PRISTINE",
+        },
         "input_snapshot": snapshot_identity,
         "integrity": {
             "status": "PASS",
@@ -1818,6 +1832,9 @@ def render_report(payload: Mapping[str, Any]) -> bytes:
         f"- Verdict: **{payload['verdict']}**",
         f"- Contract SHA256: `{payload['contract']['sha256']}`",
         f"- Review SHA256: `{payload['review_receipt']['sha256']}`",
+        f"- Fenced snapshot SHA256: `{payload['input_snapshot']['sha256']}`",
+        f"- Supersession: `{payload['supersession']['invalid_reason']}` -> fenced v2",
+        f"- Post-2022 pristine OOS: `{payload['supersession']['post_2022_pristine_oos_status']}`",
         f"- Result integrity: `{payload['integrity']['status']}`; future OHLC parsed: `{str(payload['integrity']['future_ohlc_parsed']).lower()}`",
         f"- Failed gates: `{len(payload['failed_gates'])}`",
         "",
