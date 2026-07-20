@@ -288,16 +288,27 @@ foreach ($t in Get-ScheduledTask -TaskName 'QM_*') {
         NextRun    = if ($i.NextRunTime) { $i.NextRunTime.ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ') } else { $null }
     }
 }
-$procs = @(Get-CimInstance Win32_Process)
-$workers = @($procs | Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
-# CIM, not Get-Process: from the SYSTEM task context Get-Process does NOT
-# enumerate other users' processes here (verified 2026-07-20), Win32_Process does
-# — it is the same proven path the worker count uses. Interactive-session proxy:
-# explorer.exe only exists inside a logged-on desktop session.
-$gdrive = @($procs | Where-Object { $_.Name -eq 'GoogleDriveFS.exe' }).Count
-$sessions = @($procs | Where-Object { $_.Name -eq 'explorer.exe' }).Count
-[pscustomobject]@{ tasks = $tasks; worker_count = $workers; gdrive_count = $gdrive; active_sessions = $sessions } | ConvertTo-Json -Depth 4 -Compress
+$workers = @(Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
+[pscustomobject]@{ tasks = $tasks; worker_count = $workers } | ConvertTo-Json -Depth 4 -Compress
 """
+
+
+def _tasklist_count(image: str) -> int | None:
+    """Count processes named `image` via native tasklist — enumerates ALL
+    sessions reliably. Chosen after 2026-07-20 debugging: from THIS monitor's
+    exact spawn chain (SYSTEM task -> pythonw -> powershell) both Get-Process
+    and Get-CimInstance returned 0 for another user's GoogleDriveFS.exe, while
+    a directly-scheduled SYSTEM powershell saw it fine. tasklist is immune to
+    whatever scopes that chain. None = probe failure (caller emits WARN)."""
+    try:
+        out = subprocess.run(
+            ["tasklist", "/FI", f"IMAGENAME eq {image}", "/NH"],
+            capture_output=True, text=True, timeout=20,
+            creationflags=_creationflags_no_window(),
+        )
+        return (out.stdout or "").lower().count(image.lower())
+    except Exception:  # noqa: BLE001
+        return None
 
 
 def _windows_probe() -> dict:
@@ -707,20 +718,21 @@ def check_pump_blockade() -> list[dict]:
 # ─────────────────────────────────────────────────────────────────────────────
 def check_gdrive(probe: dict) -> list[dict]:
     """Process-based G:-mount proxy. SYSTEM cannot see the per-user G: drive,
-    so we watch the GoogleDriveFS process count instead. On zero, attempt the
-    ONE sanctioned heal (Start-ScheduledTask QM_GoogleDrive_AtLogon) when an
+    so we watch the GoogleDriveFS process count instead (via tasklist — see
+    _tasklist_count for why not Get-Process/CIM). On zero, attempt the ONE
+    sanctioned heal (Start-ScheduledTask QM_GoogleDrive_AtLogon) when an
     interactive session exists, then report WARN(healed)/FAIL(down)."""
-    ev = "powershell Get-Process GoogleDriveFS"
-    if probe.get("error"):
+    ev = "tasklist /FI \"IMAGENAME eq GoogleDriveFS.exe\""
+    count = _tasklist_count("GoogleDriveFS.exe")
+    if count is None:
         return [finding("gdrive_fs", WARN,
-                        f"could not probe GoogleDriveFS processes: {probe['error']}",
+                        "could not probe GoogleDriveFS processes (tasklist failed)",
                         evidence=ev)]
-    count = int(probe.get("gdrive_count") or 0)
     if count > 0:
         return [finding("gdrive_fs", OK, f"GoogleDriveFS alive ({count} proc)",
                         value=count, threshold=1, evidence=ev)]
 
-    sessions = int(probe.get("active_sessions") or 0)
+    sessions = _tasklist_count("explorer.exe") or 0
     detail = ("GoogleDriveFS NOT running — G: absent for every consumer "
               "(vault sync, nightly backup, morning-brief vault copy)")
     hint = f"Start-ScheduledTask {CONFIG['gdrive_heal_task']} (needs an active user session)"
