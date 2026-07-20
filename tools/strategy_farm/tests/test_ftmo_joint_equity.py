@@ -31,6 +31,27 @@ def test_floating_and_closed_losses_share_daily_floor() -> None:
     assert result["floor"] == 95_000.0
 
 
+def test_exact_daily_loss_floor_is_a_breach() -> None:
+    trace = [
+        row("2026-01-04T23:00:00Z", anchor=True),
+        row("2026-01-05T10:00:00Z", balance=97_000.0, equity=95_000.0, open_positions=1),
+    ]
+
+    result = joint.evaluate_path(trace)
+
+    assert result["status"] == "DAILY_BREACH"
+    assert result["floor"] == 95_000.0
+
+
+def test_exact_static_max_loss_floor_is_a_breach() -> None:
+    trace = [row("2026-01-04T23:00:00Z", equity=90_000.0, anchor=True)]
+
+    result = joint.evaluate_path(trace)
+
+    assert result["status"] == "MAX_BREACH"
+    assert result["floor"] == 90_000.0
+
+
 def test_static_max_loss_can_bind_without_daily_breach() -> None:
     trace = [
         row("2026-01-04T23:00:00Z", anchor=True),
@@ -79,6 +100,21 @@ def test_missing_midnight_anchor_fails_closed() -> None:
     }
 
 
+def test_missing_prague_calendar_day_fails_closed() -> None:
+    trace = [
+        row("2026-01-04T23:00:00Z", anchor=True),  # 2026-01-05 00:00 CET
+        row("2026-01-06T23:00:00Z", anchor=True),  # 2026-01-07 00:00 CET
+    ]
+
+    result = joint.evaluate_path(trace)
+
+    assert result == {
+        "status": "INVALID",
+        "reason": "day_anchor_gap:2026-01-05->2026-01-07",
+        "sample_index": 1,
+    }
+
+
 def test_prague_dst_midnight_anchors_are_recognized() -> None:
     trace = [
         row("2026-03-28T23:00:00Z", anchor=True),  # 00:00 CET
@@ -107,12 +143,19 @@ def test_two_phase_uses_fresh_starting_balance() -> None:
     assert result["phase2"]["balance"] == 105_000.0
 
 
-def sleeve_row(ts, balance_delta, equity_delta, opened=0, anchor=False):
+def sleeve_row(
+    ts,
+    balance_delta,
+    equity_delta,
+    opened=0,
+    anchor=False,
+    open_positions=0,
+):
     return {
         "ts_utc": ts,
         "balance_delta": balance_delta,
         "equity_delta": equity_delta,
-        "open_positions": 0,
+        "open_positions": open_positions,
         "opened_positions": opened,
         "day_anchor": anchor,
     }
@@ -137,3 +180,33 @@ def test_joint_combination_rejects_different_timestamp_grids() -> None:
     }
     with pytest.raises(joint.TraceValidationError, match="sleeve_grid_mismatch:b"):
         joint.combine_sleeve_traces(traces)
+
+
+def test_zero_scale_sleeve_contributes_no_position_or_opening_counts() -> None:
+    timestamp = "2026-01-04T23:00:00Z"
+    traces = {
+        "active": [sleeve_row(timestamp, 0, 0, anchor=True)],
+        "disabled": [
+            sleeve_row(
+                timestamp,
+                1_000,
+                -5_000,
+                opened=3,
+                anchor=True,
+                open_positions=2,
+            )
+        ],
+    }
+
+    combined = joint.combine_sleeve_traces(
+        traces,
+        scales={"active": 1.0, "disabled": 0.0},
+    )
+
+    assert combined[0]["balance"] == 100_000.0
+    assert combined[0]["equity"] == 100_000.0
+    assert combined[0]["open_positions"] == 0
+    assert combined[0]["opened_positions"] == 0
+    result = joint.evaluate_path(combined)
+    assert result["status"] == "NOT_REACHED"
+    assert result["trading_days"] == 0

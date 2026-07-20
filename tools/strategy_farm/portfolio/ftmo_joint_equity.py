@@ -137,6 +137,15 @@ def evaluate_path(
         timestamp: dt.datetime = row["ts_utc"]
         local_day = timestamp.astimezone(PRAGUE).date()
         if local_day != current_day:
+            if current_day is not None and local_day != current_day + dt.timedelta(days=1):
+                return {
+                    "status": "INVALID",
+                    "reason": (
+                        f"day_anchor_gap:{current_day.isoformat()}"
+                        f"->{local_day.isoformat()}"
+                    ),
+                    "sample_index": index,
+                }
             if not row["day_anchor"]:
                 return {
                     "status": "INVALID",
@@ -162,7 +171,7 @@ def evaluate_path(
             trading_days.add(local_day)
 
         assert daily_floor is not None
-        if row["equity"] < rules.maximum_loss_floor - EPSILON:
+        if row["equity"] <= rules.maximum_loss_floor:
             return {
                 "status": "MAX_BREACH",
                 "timestamp_utc": timestamp.isoformat(),
@@ -170,7 +179,7 @@ def evaluate_path(
                 "floor": rules.maximum_loss_floor,
                 "trading_days": len(trading_days),
             }
-        if row["equity"] < daily_floor - EPSILON:
+        if row["equity"] <= daily_floor:
             return {
                 "status": "DAILY_BREACH",
                 "timestamp_utc": timestamp.isoformat(),
@@ -253,8 +262,9 @@ def combine_sleeve_traces(
             row = rows[index]
             balance += row["balance_delta"] * scale
             equity += row["equity_delta"] * scale
-            open_positions += row["open_positions"]
-            opened_positions += row["opened_positions"]
+            if scale > 0.0:
+                open_positions += row["open_positions"]
+                opened_positions += row["opened_positions"]
             anchors.add(row["day_anchor"])
         if len(anchors) != 1:
             raise TraceValidationError(f"sleeve_anchor_mismatch:{timestamp.isoformat()}")
