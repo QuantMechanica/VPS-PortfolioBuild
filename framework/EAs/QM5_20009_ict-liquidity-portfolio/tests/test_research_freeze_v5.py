@@ -541,6 +541,13 @@ def test_ea_id_projection_ignores_foreign_append_but_rejects_target_drift(
     with pytest.raises(freeze.FreezeError, match="collides for EA 20009"):
         freeze._validate_ea_id_registry_projection(frozen)
     live.write_text(
+        frozen.read_text(encoding="utf-8")
+        + "29998, ict-liquidity-portfolio ,FOREIGN,active,Development,2026-07-20\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(freeze.FreezeError, match="collides for EA 20009"):
+        freeze._validate_ea_id_registry_projection(frozen)
+    live.write_text(
         frozen.read_text(encoding="utf-8").replace(
             "Codex-OWNER-delegated", "Development"
         ),
@@ -565,6 +572,13 @@ def test_magic_projection_ignores_foreign_append_but_rejects_collision(
     live.write_text(
         live.read_text(encoding="utf-8")
         + "29998,foreign-ea,0,GBPUSD.DWX,200090005,2026-07-20,Development,active\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(freeze.FreezeError, match="collides for EA 20009"):
+        freeze._validate_magic_registry_projection(frozen)
+    live.write_text(
+        frozen.read_text(encoding="utf-8")
+        + "29998,foreign-ea,0,GBPUSD.DWX, 200090005 ,2026-07-20,Development,active\n",
         encoding="utf-8",
     )
     with pytest.raises(freeze.FreezeError, match="collides for EA 20009"):

@@ -846,9 +846,10 @@ def _validate_ea_id_registry_projection(path: Path) -> None:
     selected = [
         row
         for row in live
-        if row["ea_id"] == "20009"
-        or row["slug"].casefold() == TARGET_EA_ID_REGISTRY_ROW["slug"].casefold()
-        or row["strategy_id"].casefold()
+        if row["ea_id"].strip() == "20009"
+        or row["slug"].strip().casefold()
+        == TARGET_EA_ID_REGISTRY_ROW["slug"].casefold()
+        or row["strategy_id"].strip().casefold()
         == TARGET_EA_ID_REGISTRY_ROW["strategy_id"].casefold()
     ]
     if selected != expected:
@@ -865,9 +866,9 @@ def _validate_magic_registry_projection(path: Path) -> None:
     selected = [
         row
         for row in live
-        if row["ea_id"] == "20009"
-        or row["ea_slug"].casefold() == "ict-liquidity-portfolio"
-        or row["magic"] in target_magics
+        if row["ea_id"].strip() == "20009"
+        or row["ea_slug"].strip().casefold() == "ict-liquidity-portfolio"
+        or row["magic"].strip() in target_magics
     ]
     try:
         selected.sort(key=lambda row: (int(row["ea_id"]), int(row["symbol_slot"])))
