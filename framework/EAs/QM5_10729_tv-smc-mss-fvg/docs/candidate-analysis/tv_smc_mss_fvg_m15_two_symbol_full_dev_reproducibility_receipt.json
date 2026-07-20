@@ -1,0 +1,64 @@
+{
+  "analysis_id": "QM5_10729_TV_SMC_MSS_FVG_M15_TWO_SYMBOL_FULL_DEV_001",
+  "artifact_type": "QM5_10729_FULL_DEV_REPRODUCIBILITY_RECEIPT",
+  "contract_sha256": "0b221d1c79dce4a4fef0aa635de957296511e1fc945523e8a4da556c13311d25",
+  "review_receipt_sha256": "2d009fa440a125514d3d6109ae00d91be295c1b052d53e9e47b5ee9121358d99",
+  "snapshot": {
+    "external_manifest_path": "D:/QM/audit_snapshots/QM5_10729_TV_SMC_MSS_FVG_M15_TWO_SYMBOL_FULL_DEV_001/release_0b221d1c_2d009fa4/manifest.json",
+    "repository_manifest_copy": "framework/EAs/QM5_10729_tv-smc-mss-fvg/docs/candidate-analysis/tv_smc_mss_fvg_m15_two_symbol_input_snapshot_manifest.json",
+    "manifest_sha256": "66dc5e8ea9842a570686940b3c7df90d33164aaefa2bf48911c730d9ea70b5ca",
+    "source_bindings": 15,
+    "current_exact_bindings": 14,
+    "git_blob_exact_bindings": 1,
+    "market_files": 2,
+    "read_only": true,
+    "runtime_inputs_from_snapshot_only": true
+  },
+  "auditor": {
+    "path": "framework/EAs/QM5_10729_tv-smc-mss-fvg/tools/candidate_analysis/audit_tv_smc_mss_fvg_m15_full_dev.py",
+    "sha256": "bacd4de25f7aed7e3b1c36bd5eb729ee2ea82ef88b9f9559fa976ddb97287b83"
+  },
+  "preflight": {
+    "status": "PASS",
+    "mode": "PREFLIGHT_ONLY_NO_OHLC_PARSE",
+    "contract_hash_unchanged": true,
+    "review_hash_unchanged": true,
+    "future_ohlc_parsed": false
+  },
+  "runs": [
+    {
+      "run": 1,
+      "result_path": "D:/QM/audit_runs/QM5_10729_TV_SMC_MSS_FVG_M15_TWO_SYMBOL_FULL_DEV_001/run1/result.json",
+      "result_sha256": "a6022464b04e99e87ece8db015e539a2fe36b258292cfd38c069f11420e26aa9",
+      "result_bytes": 317326,
+      "report_path": "D:/QM/audit_runs/QM5_10729_TV_SMC_MSS_FVG_M15_TWO_SYMBOL_FULL_DEV_001/run1/report.md",
+      "report_sha256": "49f7f2fd5a5e9302ef934934064e537c2dae7fcd99d31d251c308ce6e6d09e17",
+      "report_bytes": 5805
+    },
+    {
+      "run": 2,
+      "result_path": "D:/QM/audit_runs/QM5_10729_TV_SMC_MSS_FVG_M15_TWO_SYMBOL_FULL_DEV_001/run2/result.json",
+      "result_sha256": "a6022464b04e99e87ece8db015e539a2fe36b258292cfd38c069f11420e26aa9",
+      "result_bytes": 317326,
+      "report_path": "D:/QM/audit_runs/QM5_10729_TV_SMC_MSS_FVG_M15_TWO_SYMBOL_FULL_DEV_001/run2/report.md",
+      "report_sha256": "49f7f2fd5a5e9302ef934934064e537c2dae7fcd99d31d251c308ce6e6d09e17",
+      "report_bytes": 5805
+    }
+  ],
+  "duplicate_run_result_byte_equal": true,
+  "duplicate_run_report_byte_equal": true,
+  "canonical_result": {
+    "path": "framework/EAs/QM5_10729_tv-smc-mss-fvg/docs/candidate-analysis/tv_smc_mss_fvg_m15_two_symbol_full_dev_result.json",
+    "sha256": "a6022464b04e99e87ece8db015e539a2fe36b258292cfd38c069f11420e26aa9"
+  },
+  "canonical_report": {
+    "path": "framework/EAs/QM5_10729_tv-smc-mss-fvg/docs/candidate-analysis/tv_smc_mss_fvg_m15_two_symbol_full_dev_report.md",
+    "sha256": "49f7f2fd5a5e9302ef934934064e537c2dae7fcd99d31d251c308ce6e6d09e17"
+  },
+  "center_trades": 149,
+  "adverse_trades": 149,
+  "failed_gates": 38,
+  "verdict": "NO_CONJUNCTIVE_FAMILY_MERIT",
+  "future_ohlc_parsed": false,
+  "post_result_actions": "NO_TUNING_NO_OPTIMIZATION_NO_SUBSET_SELECTION_NO_OOS_ACCESS_NO_PRODUCTION_CHANGE"
+}
