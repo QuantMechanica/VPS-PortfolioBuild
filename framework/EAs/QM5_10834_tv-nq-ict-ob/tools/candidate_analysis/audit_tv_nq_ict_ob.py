@@ -30,17 +30,20 @@ import hashlib
 import importlib.util
 import json
 import math
+import msvcrt
 import os
 import re
 import subprocess
 import sys
 import tempfile
+import time as time_module
 from collections import defaultdict
+from contextlib import contextmanager
 from dataclasses import asdict, dataclass
 from datetime import date, datetime, time, timedelta, timezone
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP, getcontext
 from pathlib import Path
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any, Iterable, Iterator, Mapping, Sequence
 
 
 getcontext().prec = 34
@@ -120,6 +123,9 @@ POWERSHELL_PATH = Path(r"C:\Program Files\PowerShell\7\pwsh.exe")
 ALLOWED_RUN_ROOT = Path(r"D:\QM\reports\candidate_analysis\QM5_10834")
 NATIVE_ATTEMPT_CLAIM_PATH = (
     ALLOWED_RUN_ROOT / "claims" / f"{ANALYSIS_ID}_DEV2_NATIVE_ATTEMPT_001.json"
+)
+NATIVE_LAUNCH_LOCK_PATH = (
+    ALLOWED_RUN_ROOT / "claims" / f"{ANALYSIS_ID}_NATIVE_LAUNCH.lock"
 )
 
 EXPECTED_PINE_SHA256 = "015bb5d550a8687f506646de6c33ddfe8b29c3ed5e4ec96f3c66364edfb7f0b5"
@@ -394,6 +400,36 @@ def atomic_json(path: Path, payload: Mapping[str, Any], *, replace: bool) -> str
             pass
         raise
     return hashlib.sha256(encoded).hexdigest()
+
+
+@contextmanager
+def native_launch_lock(timeout_seconds: float = 30.0) -> Iterator[None]:
+    NATIVE_LAUNCH_LOCK_PATH.parent.mkdir(parents=True, exist_ok=True)
+    descriptor = os.open(NATIVE_LAUNCH_LOCK_PATH, os.O_CREAT | os.O_RDWR, 0o600)
+    locked = False
+    try:
+        if os.fstat(descriptor).st_size < 1:
+            os.ftruncate(descriptor, 1)
+            os.fsync(descriptor)
+        deadline = time_module.monotonic() + timeout_seconds
+        while True:
+            try:
+                os.lseek(descriptor, 0, os.SEEK_SET)
+                msvcrt.locking(descriptor, msvcrt.LK_NBLCK, 1)
+                locked = True
+                break
+            except OSError as exc:
+                if time_module.monotonic() >= deadline:
+                    raise AuthorizationError(
+                        "timed out acquiring the global native launch/resume lock"
+                    ) from exc
+                time_module.sleep(0.1)
+        yield
+    finally:
+        if locked:
+            os.lseek(descriptor, 0, os.SEEK_SET)
+            msvcrt.locking(descriptor, msvcrt.LK_UNLCK, 1)
+        os.close(descriptor)
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -2924,7 +2960,7 @@ def validate_tester_ini(values: Mapping[str, str], cell: Mapping[str, Any]) -> N
 
 def validate_runner_summary(
     summary: Mapping[str, Any], cell: Mapping[str, Any]
-) -> list[Mapping[str, Any]]:
+) -> tuple[list[Mapping[str, Any]], list[Mapping[str, Any]]]:
     expected = {
         "result": "PASS",
         "ea_id": EA_ID,
@@ -2935,7 +2971,7 @@ def validate_runner_summary(
         "model": 4,
         "period": TIMEFRAME,
         "requested_runs": DUPLICATES,
-        "max_run_attempts": DUPLICATES + 2,
+        "max_run_attempts": MAX_ATTEMPTS_PER_CELL,
         "deterministic": True,
         "oninit_failure_detected": False,
         "log_bomb_detected": False,
@@ -2945,7 +2981,7 @@ def validate_runner_summary(
     if drift:
         raise InvalidEvidence(f"native runner summary drift: {drift}")
     runs = summary.get("runs")
-    if not isinstance(runs, list) or not DUPLICATES <= len(runs) <= DUPLICATES + 2:
+    if not isinstance(runs, list) or not DUPLICATES <= len(runs) <= MAX_ATTEMPTS_PER_CELL:
         raise InvalidEvidence("native runner attempt count escaped the bounded warm-up contract")
     if any(not isinstance(row, Mapping) for row in runs):
         raise InvalidEvidence("native runner run row malformed")
@@ -2961,17 +2997,55 @@ def validate_runner_summary(
         or isinstance(non_ok, bool)
         or not isinstance(non_ok, int)
         or non_ok != len(runs) - DUPLICATES
-        or not 0 <= non_ok <= 2
+        or not 0 <= non_ok <= MAX_INFRA_WARMUPS_PER_CELL
     ):
         raise InvalidEvidence("native runner warm-up attempt counters drift")
     warmups = runs[:non_ok]
     accepted = runs[non_ok:]
-    for row in warmups:
-        if row.get("status") != "INVALID" or row.get("failure") not in {
+    allowed_reasons = {
+        "BARS_ZERO": {"BARS_ZERO", "M0_1970_PERIOD"},
+        "NO_HISTORY": {
+            "NO_HISTORY_LOG",
+            "HISTORY_CONTEXT_INVALID",
             "BARS_ZERO",
-            "NO_HISTORY",
-        }:
+            "M0_1970_PERIOD",
+        },
+    }
+    for row in warmups:
+        failure = str(row.get("failure", ""))
+        reasons = row.get("invalid_report_reasons")
+        if (
+            row.get("status") != "INVALID"
+            or failure not in allowed_reasons
+            or not isinstance(reasons, list)
+            or not reasons
+            or any(not isinstance(reason, str) for reason in reasons)
+            or len(reasons) != len(set(reasons))
+            or not set(reasons).issubset(allowed_reasons[failure])
+            or (failure == "BARS_ZERO" and "BARS_ZERO" not in reasons)
+            or (
+                failure == "NO_HISTORY"
+                and not {"NO_HISTORY_LOG", "HISTORY_CONTEXT_INVALID"}.intersection(reasons)
+            )
+        ):
             raise InvalidEvidence("native runner contains a non-infrastructure warm-up")
+        total_trades = row.get("total_trades")
+        if isinstance(total_trades, bool) or not isinstance(total_trades, int) or total_trades != 0:
+            raise InvalidEvidence("native runner warm-up is not zero-trade")
+        for field in ("profit_factor", "drawdown", "net_profit"):
+            if row.get(f"{field}_raw") is None or _strict_decimal(
+                row.get(field), f"warm-up {field}"
+            ) != ZERO:
+                raise InvalidEvidence("native runner warm-up is not zero-result")
+        if (
+            row.get("exit_code") != 0
+            or isinstance(row.get("report_size_bytes"), bool)
+            or not isinstance(row.get("report_size_bytes"), int)
+            or int(row["report_size_bytes"]) <= 0
+            or not str(row.get("report_canonical_path", ""))
+            or not str(row.get("tester_log_path", ""))
+        ):
+            raise InvalidEvidence("native runner warm-up lacks complete native artifact identity")
     if len(accepted) != DUPLICATES:
         raise InvalidEvidence("native runner did not close exactly two accepted duplicates")
     for row in accepted:
@@ -2979,7 +3053,7 @@ def validate_runner_summary(
             raise InvalidEvidence("native runner run row malformed")
         if row.get("status") != "OK" or row.get("real_ticks_marker") is not True:
             raise InvalidEvidence("native runner duplicate is not OK with an exact Model-4 marker")
-    return accepted
+    return warmups, accepted
 
 
 def require_duplicate_identity(audits: Sequence[NativeRunAudit]) -> None:
@@ -3005,6 +3079,40 @@ def _sealed_by_path(attempt: Mapping[str, Any]) -> dict[Path, Mapping[str, Any]]
             raise InvalidEvidence(f"duplicate sealed artifact path: {path}")
         result[path] = item
     return result
+
+
+def _bound_native_run_artifacts(
+    row: Mapping[str, Any],
+    sealed: Mapping[Path, Mapping[str, Any]],
+    cell: Mapping[str, Any],
+) -> tuple[Path, Path, Path]:
+    run_name = str(row.get("run", ""))
+    if not re.fullmatch(r"run_[0-9]{2}", run_name):
+        raise InvalidEvidence("native run name is malformed")
+    report_path = Path(str(row.get("report_canonical_path", ""))).resolve()
+    log_path = Path(str(row.get("tester_log_path", ""))).resolve()
+    run_directory = report_path.parent
+    ini_path = run_directory / "tester.ini"
+    if (
+        report_path.name.casefold() != "report.htm"
+        or run_directory.name != run_name
+        or run_directory.parent.name.casefold() != "raw"
+        or log_path.parent != run_directory
+    ):
+        raise InvalidEvidence(
+            f"native artifacts are not bound to their exact raw/{run_name} directory"
+        )
+    for label, path in (
+        ("report", report_path),
+        ("tester log", log_path),
+        ("tester.ini", ini_path),
+    ):
+        if path not in sealed:
+            raise InvalidEvidence(
+                f"{cell['cell_id']} {label} was not sealed by launcher: {path}"
+            )
+    validate_tester_ini(parse_tester_ini(ini_path), cell)
+    return report_path, log_path, ini_path
 
 
 def _audit_cell(
@@ -3035,7 +3143,7 @@ def _audit_cell(
         raise InvalidEvidence(f"cell DEV2 native-root binding drift: {cell['cell_id']}")
     assert_binding(summary_binding, f"{cell['cell_id']} summary")
     summary = load_json(Path(str(summary_binding["path"])))
-    accepted_runs = validate_runner_summary(summary, cell)
+    warmup_runs, accepted_runs = validate_runner_summary(summary, cell)
     sealed = _sealed_by_path(attempt)
     output_root = Path(str(cell["output_root"])).resolve()
     sealed_list = attempt.get("sealed_artifacts")
@@ -3062,16 +3170,37 @@ def _audit_cell(
     ]
     if attempt.get("outcome_artifacts") != expected_outcomes:
         raise InvalidEvidence(f"opaque outcome-artifact closure drift: {cell['cell_id']}")
+    seen_run_artifacts: set[Path] = set()
+    warmup_receipts: list[dict[str, Any]] = []
+    for row in warmup_runs:
+        report_path, log_path, ini_path = _bound_native_run_artifacts(row, sealed, cell)
+        paths = {report_path, log_path, ini_path}
+        if seen_run_artifacts.intersection(paths):
+            raise InvalidEvidence(f"native run artifact reuse: {cell['cell_id']}/{row['run']}")
+        seen_run_artifacts.update(paths)
+        warmup_receipts.append(
+            {
+                "run": row["run"],
+                "classification": "OUTCOME_BLIND_INFRASTRUCTURE_WARMUP",
+                "failure": row["failure"],
+                "invalid_report_reasons": row["invalid_report_reasons"],
+                "total_trades": 0,
+                "profit_factor": "0",
+                "drawdown": "0",
+                "net_profit": "0",
+                "tester_ini": sealed[ini_path],
+                "tester_log": sealed[log_path],
+                "native_report_opaque": sealed[report_path],
+            }
+        )
     audits: list[NativeRunAudit] = []
     run_receipts: list[dict[str, Any]] = []
     for row in accepted_runs:
-        report_path = Path(str(row.get("report_canonical_path", ""))).resolve()
-        log_path = Path(str(row.get("tester_log_path", ""))).resolve()
-        ini_path = report_path.parent / "tester.ini"
-        for label, path in (("report", report_path), ("tester log", log_path), ("tester.ini", ini_path)):
-            if path not in sealed:
-                raise InvalidEvidence(f"{cell['cell_id']} {label} was not sealed by launcher: {path}")
-        validate_tester_ini(parse_tester_ini(ini_path), cell)
+        report_path, log_path, ini_path = _bound_native_run_artifacts(row, sealed, cell)
+        paths = {report_path, log_path, ini_path}
+        if seen_run_artifacts.intersection(paths):
+            raise InvalidEvidence(f"native run artifact reuse: {cell['cell_id']}/{row['run']}")
+        seen_run_artifacts.update(paths)
         log_text = log_path.read_text(encoding="utf-8-sig", errors="replace")
         if MODEL4_MARKER not in log_text.casefold():
             raise InvalidEvidence(f"raw tester log lacks Model-4 marker: {cell['cell_id']}/{row['run']}")
@@ -3098,6 +3227,10 @@ def _audit_cell(
             "to_date": cell["to_date"],
             "duplicate_deal_sequence": "PASS_EXACT",
             "canonical_deal_sequence_sha256": audits[0].deals_sha256,
+            "attempted_runs": len(warmup_runs) + len(accepted_runs),
+            "accepted_duplicate_runs": len(accepted_runs),
+            "infrastructure_warmup_count": len(warmup_runs),
+            "infrastructure_warmups": warmup_receipts,
             "runs": run_receipts,
         },
         audits[0].trades,
@@ -3408,7 +3541,16 @@ def postflight(pre_path: Path, pre_sha256: str, state_path: Path) -> dict[str, A
         "pre_receipt": file_binding(pre_path, pre_sha256),
         "launch_state": state_binding,
         "authorized_symbol": pre["symbol_policy"]["authorized_symbol"],
-        "native_run_count": len(receipts) * DUPLICATES,
+        "accepted_duplicate_run_count": sum(
+            int(receipt["accepted_duplicate_runs"]) for receipt in receipts
+        ),
+        "infrastructure_warmup_count": sum(
+            int(receipt["infrastructure_warmup_count"]) for receipt in receipts
+        ),
+        "attempted_native_start_count": sum(
+            int(receipt["attempted_runs"]) for receipt in receipts
+        ),
+        "maximum_authorized_native_starts": len(receipts) * MAX_ATTEMPTS_PER_CELL,
         "cells": receipts,
         "merit": merit,
         "decision": "ADVANCE_CANDIDATE" if merit["status"] == "PASS" else "REJECT_ON_MERIT",
