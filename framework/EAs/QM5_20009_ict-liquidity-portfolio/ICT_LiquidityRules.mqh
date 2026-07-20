@@ -7,7 +7,7 @@
 enum ICT_StrategyMode
   {
    ICT_MODE_INDEX_MSS_FVG       = 0,
-   ICT_MODE_FX_WEEKLY_SWEEP     = 1
+   ICT_MODE_FX_SESSION_SWEEP    = 1
   };
 
 enum ICT_SessionKind

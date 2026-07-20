@@ -6,7 +6,7 @@
 #include <QM/QM_FTMOGovernorClient.mqh>
 #include "ICT_LiquidityRules.mqh"
 
-// Frozen research build contract v4.  One attachment owns exactly one symbol,
+// Frozen research build contract v5.  One attachment owns exactly one symbol,
 // one sleeve and one registry magic.  All signal decisions use closed Bid bars.
 
 input group "QuantMechanica V5 Framework"
@@ -88,7 +88,7 @@ double   g_strategy_replay_tick_size = 0.0;
 int      g_strategy_replay_failure_count = 0;
 datetime g_strategy_replay_retry_not_before = 0;
 ICT_LevelRange g_strategy_index_opening_range;
-ICT_LevelRange g_strategy_fx_previous_week;
+ICT_LevelRange g_strategy_fx_asian_range;
 ICT_SequenceResult g_strategy_cached_sequence;
 bool               g_strategy_virtual_limit_active = false;
 datetime           g_strategy_virtual_limit_deadline = 0;
@@ -172,7 +172,7 @@ bool Strategy_ParametersValid()
       if(strategy_mode == ICT_MODE_INDEX_MSS_FVG &&
          (a_deviations > 1 || b_deviations != 0))
          return false;
-      if(strategy_mode == ICT_MODE_FX_WEEKLY_SWEEP &&
+      if(strategy_mode == ICT_MODE_FX_SESSION_SWEEP &&
          (b_deviations > 1 || a_deviations != 0))
          return false;
      }
@@ -202,7 +202,7 @@ bool Strategy_SymbolMagicAndTimeframeValid()
       return false;
      }
 
-   if(strategy_mode == ICT_MODE_FX_WEEKLY_SWEEP)
+   if(strategy_mode == ICT_MODE_FX_SESSION_SWEEP)
      {
       if((ENUM_TIMEFRAMES)_Period != PERIOD_M5)
         {

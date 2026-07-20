@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 from collections import Counter, defaultdict
@@ -38,6 +39,7 @@ EVIDENCE_TYPE = "QM5_20009_FREEZE_V5_DEV_ADJUDICATION_EVIDENCE"
 VERDICT_TYPE = "QM5_20009_FREEZE_V5_DEV_VERDICT"
 LAUNCHER_RECEIPT_TYPE = "QM5_20009_FAIL_CLOSED_RESEARCH_LAUNCHER_RECEIPT"
 COST_AUDIT_TYPE = "QM5_20009_DEV1_MT5_REPORT_AUDIT_RECEIPT"
+COST_REPORT_TYPE = "QM5_20009_DEV1_MT5_REPORT_COST_AUDIT"
 
 VARIANTS: tuple[str, ...] = (
     "center",
@@ -684,6 +686,10 @@ def _validate_pointer(policy: Policy, key: CellKey) -> tuple[dict[str, Any], evi
         raise AdjudicationError(f"pointer escapes pointer root: {path}")
     pointer_binding = evidence_io.file_binding(path)
     sidecar_binding = evidence_io.verify_detached(path, sidecar_path)
+    if not evidence_io.is_within(pointer_binding.path, policy.pointer_root):
+        raise AdjudicationError(f"pointer resolves outside pointer root: {path}")
+    if not evidence_io.is_within(sidecar_binding.path, policy.pointer_root):
+        raise AdjudicationError(f"pointer sidecar resolves outside pointer root: {sidecar_path}")
     pointer = _strict_canonical_json(path, f"pointer {key.cell_id}")
     _exact_keys(pointer, POINTER_KEYS, f"pointer {key.cell_id}")
     _expect(pointer["schema_version"], SCHEMA_VERSION, f"pointer {key.cell_id}.schema_version")
@@ -735,6 +741,15 @@ def _validate_artifacts(
         normalized[name] = [_binding_dict(binding) for binding in bindings]
         for index, binding in enumerate(bindings):
             scalar_bindings[f"{name}[{index}]"] = binding
+    paths: dict[str, str] = {}
+    for name, binding in scalar_bindings.items():
+        normalized_path = os.path.normcase(str(Path(binding.path).resolve(strict=False)))
+        if normalized_path in paths:
+            raise AdjudicationError(
+                f"{context} aliases distinct artifacts {paths[normalized_path]} and {name}: "
+                f"{binding.path}"
+            )
+        paths[normalized_path] = name
     return normalized, scalar_bindings
 
 
@@ -816,6 +831,7 @@ def _validate_cost_audit(
         "reports",
     }
     _required_keys(audit, required, f"cost audit {key.cell_id}")
+    _expect(audit["schema_version"], SCHEMA_VERSION, f"cost audit {key.cell_id}.schema_version")
     _expect(audit["artifact_type"], COST_AUDIT_TYPE, f"cost audit {key.cell_id}.artifact_type")
     _expect(audit["status"], "PASS", f"cost audit {key.cell_id}.status")
     _expect(audit["duplicate_count"], 2, f"cost audit {key.cell_id}.duplicate_count")
@@ -845,8 +861,29 @@ def _validate_cost_audit(
         report = _mapping(raw_report, f"cost audit {key.cell_id}.reports[{index}]")
         _required_keys(
             report,
-            {"status", "report", "header", "identity", "closed_positions", "metrics", "same_day_swap_proof"},
+            {
+                "schema_version",
+                "artifact_type",
+                "status",
+                "report",
+                "header",
+                "identity",
+                "native_integrity",
+                "closed_positions",
+                "metrics",
+                "same_day_swap_proof",
+            },
             f"cost audit {key.cell_id}.reports[{index}]",
+        )
+        _expect(
+            report["schema_version"],
+            SCHEMA_VERSION,
+            f"cost audit {key.cell_id}.reports[{index}].schema_version",
+        )
+        _expect(
+            report["artifact_type"],
+            COST_REPORT_TYPE,
+            f"cost audit {key.cell_id}.reports[{index}].artifact_type",
         )
         _expect(report["status"], "PASS", f"cost audit {key.cell_id}.reports[{index}].status")
         report_binding = _mapping(report["report"], f"cost audit {key.cell_id}.reports[{index}].report")
@@ -868,6 +905,21 @@ def _validate_cost_audit(
         identity = _mapping(report["identity"], f"cost audit {key.cell_id}.reports[{index}].identity")
         _expect(identity.get("canonical_deal_sequence_sha256"), deal_hash, f"cost audit {key.cell_id}.reports[{index}].deal hash")
         _expect(identity.get("run_fingerprint_sha256"), run_hash, f"cost audit {key.cell_id}.reports[{index}].run hash")
+        native_integrity = _mapping(
+            report["native_integrity"],
+            f"cost audit {key.cell_id}.reports[{index}].native_integrity",
+        )
+        for name, expected in {
+            "commission_exactly_zero": True,
+            "simulated_commission_input_exactly_zero": True,
+            "ledger_balance_recurrence": "PASS_CENT_EXACT",
+            "total_net_reconciliation": "PASS_CENT_EXACT",
+        }.items():
+            _expect(
+                native_integrity.get(name),
+                expected,
+                f"cost audit {key.cell_id}.reports[{index}].native_integrity.{name}",
+            )
         raw_positions = _list(report["closed_positions"], f"cost audit {key.cell_id}.reports[{index}].closed_positions")
         positions = tuple(
             parse_position(
@@ -880,6 +932,23 @@ def _validate_cost_audit(
         sequences = [position.sequence for position in positions]
         if sequences != sorted(sequences) or len(sequences) != len(set(sequences)):
             raise AdjudicationError(f"cost audit {key.cell_id} position sequence is not strictly ordered")
+        from_date = datetime.strptime(key.market.from_date, "%Y-%m-%d").date()
+        to_date = datetime.strptime(key.market.to_date, "%Y-%m-%d").date()
+        if any(
+            not (from_date <= position.new_york_exit.date() <= to_date)
+            or any(
+                not (
+                    from_date
+                    <= (entry_time - timedelta(hours=7)).date()
+                    <= to_date
+                )
+                for entry_time in position.entry_times
+            )
+            for position in positions
+        ):
+            raise AdjudicationError(
+                f"cost audit {key.cell_id}.reports[{index}] contains positions outside the frozen window"
+            )
         _validate_metrics(report["metrics"], positions, f"cost audit {key.cell_id}.reports[{index}].metrics")
         proof = _mapping(report["same_day_swap_proof"], f"cost audit {key.cell_id}.reports[{index}].same_day_swap_proof")
         expected_proof = "PASS" if positions else "NOT_APPLICABLE_NO_CLOSED_POSITIONS"
@@ -1456,9 +1525,35 @@ def publish_dev(
 ) -> list[evidence_io.FileBinding]:
     """Publish inventory/evidence/verdict; the verdict JSON is always artifact six."""
 
+    if inventory.payload.get("created_utc") != created_utc:
+        raise AdjudicationError(
+            "publication timestamp differs from the receipt inventory timestamp"
+        )
+    if evaluation.payload.get("created_utc") != created_utc:
+        raise AdjudicationError(
+            "publication timestamp differs from the adjudication evidence timestamp"
+        )
+    # Re-read the complete immutable graph immediately before staging.  This both
+    # closes the load/evaluate/publish mutation window and prevents a caller from
+    # supplying a hand-constructed Inventory or Evaluation object.
+    current_inventory = build_inventory(policy, created_utc=created_utc)
+    if evidence_io.canonical_payload_sha256(
+        current_inventory.payload
+    ) != evidence_io.canonical_payload_sha256(inventory.payload):
+        raise AdjudicationError("receipt inventory changed before publication")
+    current_evaluation = evaluate_inventory(
+        current_inventory, created_utc=created_utc
+    )
+    if evidence_io.canonical_payload_sha256(
+        current_evaluation.payload
+    ) != evidence_io.canonical_payload_sha256(evaluation.payload):
+        raise AdjudicationError("adjudication result changed before publication")
     return evidence_io.publish_exclusive_bundle(
         _publication_payloads(
-            policy, inventory, evaluation, created_utc=created_utc
+            policy,
+            current_inventory,
+            current_evaluation,
+            created_utc=created_utc,
         ),
         fail_after=fail_after,
     )

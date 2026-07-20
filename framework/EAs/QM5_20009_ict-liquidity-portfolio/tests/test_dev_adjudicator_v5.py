@@ -4,6 +4,7 @@ import copy
 import hashlib
 import json
 import sys
+from dataclasses import replace
 from datetime import datetime, timedelta
 from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
@@ -163,6 +164,7 @@ def _make_bundle(
     pointer_mutator: PayloadMutator | None = None,
     omit: set[str] | None = None,
     extra_pointer: bool = False,
+    only_cells: set[str] | None = None,
 ) -> adjudicator.Policy:
     pointer_root = tmp_path / "pointers"
     receipt_root = tmp_path / "receipts"
@@ -173,7 +175,9 @@ def _make_bundle(
     omitted = omit or set()
 
     for key in adjudicator.expected_cells():
-        if key.cell_id in omitted:
+        if key.cell_id in omitted or (
+            only_cells is not None and key.cell_id not in only_cells
+        ):
             continue
         cell_root = (
             receipt_root
@@ -220,6 +224,12 @@ def _make_bundle(
                     "identity": {
                         "canonical_deal_sequence_sha256": deal_hash,
                         "run_fingerprint_sha256": run_hash,
+                    },
+                    "native_integrity": {
+                        "commission_exactly_zero": True,
+                        "simulated_commission_input_exactly_zero": True,
+                        "ledger_balance_recurrence": "PASS_CENT_EXACT",
+                        "total_net_reconciliation": "PASS_CENT_EXACT",
                     },
                     "closed_positions": copy.deepcopy(positions),
                     "metrics": _metrics(positions),
@@ -385,6 +395,55 @@ def _inventory_and_evaluation(
     return inventory, adjudicator.evaluate_inventory(inventory, created_utc=CREATED_UTC)
 
 
+@pytest.fixture(scope="module")
+def complete_bundle(
+    tmp_path_factory: pytest.TempPathFactory,
+) -> tuple[adjudicator.Policy, adjudicator.Inventory, adjudicator.Evaluation]:
+    policy = _make_bundle(tmp_path_factory.mktemp("adjudicator_complete"))
+    inventory, evaluation = _inventory_and_evaluation(policy)
+    return policy, inventory, evaluation
+
+
+def _inventory_with_positions(
+    inventory: adjudicator.Inventory,
+    replacements: dict[str, tuple[adjudicator.Position, ...]],
+) -> adjudicator.Inventory:
+    cells = dict(inventory.cells)
+    for cell_id, positions in replacements.items():
+        original = cells[cell_id]
+        cells[cell_id] = replace(
+            original,
+            positions=positions,
+            metrics=adjudicator.aggregate_positions(positions),
+            maximum_drawdown=max(
+                original.native_drawdown,
+                adjudicator.closed_balance_drawdown(positions),
+            ),
+        )
+    return adjudicator.Inventory(inventory.payload, cells)
+
+
+def _lightweight_pointer_matrix(
+    tmp_path: Path, *, omit: str | None = None, extra: bool = False
+) -> adjudicator.Policy:
+    pointer_root = tmp_path / "pointers"
+    for key in adjudicator.expected_cells():
+        if key.cell_id != omit:
+            _write_bytes(key.pointer_path(pointer_root), b"{}\n")
+    if extra:
+        _write_bytes(
+            pointer_root / "DEV" / "EXTRA" / "M1" / "center.pointer.json",
+            b"{}\n",
+        )
+    return adjudicator.Policy(
+        pointer_root=pointer_root,
+        receipt_root=tmp_path / "receipts",
+        output_root=tmp_path / "output",
+        freeze_inputs_sha256=FREEZE_SHA,
+        manifest_sha256=MANIFEST_SHA,
+    )
+
+
 def test_strict_json_and_canonical_hash_contract(tmp_path: Path) -> None:
     duplicate = tmp_path / "duplicate.json"
     duplicate.write_text('{"x":1,"x":2}', encoding="utf-8")
@@ -415,9 +474,12 @@ def test_decimal_profit_factor_floor_is_pinned_and_inclusive() -> None:
     assert not adjudicator._pf_at_least(below, adjudicator.profit_factor_floor(30))
 
 
-def test_complete_52_cell_inventory_passes_and_duplicates_count_once(tmp_path: Path) -> None:
-    policy = _make_bundle(tmp_path)
-    inventory, evaluation = _inventory_and_evaluation(policy)
+def test_complete_52_cell_inventory_passes_and_duplicates_count_once(
+    complete_bundle: tuple[
+        adjudicator.Policy, adjudicator.Inventory, adjudicator.Evaluation
+    ],
+) -> None:
+    _, inventory, evaluation = complete_bundle
     assert len(inventory.cells) == 52
     assert inventory.payload["matrix_contract"] == {
         "markets": [market.symbol for market in adjudicator.MARKETS],
@@ -440,10 +502,10 @@ def test_complete_52_cell_inventory_passes_and_duplicates_count_once(tmp_path: P
 @pytest.mark.parametrize("mode", ["missing", "extra"])
 def test_inventory_rejects_missing_or_extra_pointer(tmp_path: Path, mode: str) -> None:
     first = adjudicator.expected_cells()[0]
-    policy = _make_bundle(
+    policy = _lightweight_pointer_matrix(
         tmp_path,
-        omit={first.cell_id} if mode == "missing" else None,
-        extra_pointer=mode == "extra",
+        omit=first.cell_id if mode == "missing" else None,
+        extra=mode == "extra",
     )
     with pytest.raises(adjudicator.AdjudicationError, match="pointer matrix mismatch"):
         adjudicator.build_inventory(policy, created_utc=CREATED_UTC)
@@ -456,17 +518,21 @@ def test_pointer_schema_is_exact_and_receipt_graph_is_hash_bound(tmp_path: Path)
         if key.cell_id == first_id:
             pointer["unknown"] = "forbidden"
 
-    policy = _make_bundle(tmp_path / "schema", pointer_mutator=add_unknown)
-    with pytest.raises(adjudicator.AdjudicationError, match="key mismatch"):
-        adjudicator.build_inventory(policy, created_utc=CREATED_UTC)
-
-    policy = _make_bundle(tmp_path / "hash")
     key = adjudicator.expected_cells()[0]
+    policy = _make_bundle(
+        tmp_path / "schema",
+        pointer_mutator=add_unknown,
+        only_cells={key.cell_id},
+    )
+    with pytest.raises(evidence_io.EvidenceIOError, match="key mismatch"):
+        adjudicator.load_cell_evidence(policy, key)
+
+    policy = _make_bundle(tmp_path / "hash", only_cells={key.cell_id})
     pointer = evidence_io.load_json_strict(key.pointer_path(policy.pointer_root))
     receipt = Path(pointer["receipt"]["path"])
     receipt.write_bytes(receipt.read_bytes() + b" ")
     with pytest.raises(evidence_io.EvidenceIOError, match="binding drift"):
-        adjudicator.build_inventory(policy, created_utc=CREATED_UTC)
+        adjudicator.load_cell_evidence(policy, key)
 
 
 def test_semantic_duplicate_drift_rejects_even_with_valid_file_bindings(tmp_path: Path) -> None:
@@ -476,21 +542,49 @@ def test_semantic_duplicate_drift_rejects_even_with_valid_file_bindings(tmp_path
         if key.cell_id == target:
             audit["reports"][1]["same_day_swap_proof"]["duplicate_only_marker"] = True
 
-    policy = _make_bundle(tmp_path, duplicate_mutator=drift)
+    policy = _make_bundle(
+        tmp_path,
+        duplicate_mutator=drift,
+        only_cells={target},
+    )
     with pytest.raises(adjudicator.AdjudicationError, match="semantic duplicate payload drift"):
-        adjudicator.build_inventory(policy, created_utc=CREATED_UTC)
+        adjudicator.load_cell_evidence(policy, adjudicator.expected_cells()[0])
 
 
-def test_center_cannot_be_rescued_by_profitable_neighbours(tmp_path: Path) -> None:
-    def thin_center(
-        key: adjudicator.CellKey, positions: list[dict[str, Any]]
-    ) -> list[dict[str, Any]]:
-        if key.market.symbol == "NDX.DWX" and key.variant == "center":
-            return positions[:8]
-        return positions
+def test_distinct_run_artifacts_cannot_alias_one_file(tmp_path: Path) -> None:
+    shared = tmp_path / "receipts" / "shared.bin"
+    _write_bytes(shared, b"one file cannot prove several independent artifacts\n")
+    binding = _file_binding(shared)
+    artifacts = {
+        "validator_pre": binding,
+        "validator_post": binding,
+        "runner_result": binding,
+        "runner_summary": binding,
+        "cost_audit": binding,
+        "raw_reports": [binding, binding],
+        "tester_inis": [binding, binding],
+        "tester_logs": [binding, binding],
+    }
+    with pytest.raises(adjudicator.AdjudicationError, match="aliases distinct artifacts"):
+        adjudicator._validate_artifacts(
+            artifacts,
+            context="synthetic artifacts",
+            receipt_root=tmp_path / "receipts",
+        )
 
-    policy = _make_bundle(tmp_path, position_transform=thin_center)
-    _, evaluation = _inventory_and_evaluation(policy)
+
+def test_center_cannot_be_rescued_by_profitable_neighbours(
+    complete_bundle: tuple[
+        adjudicator.Policy, adjudicator.Inventory, adjudicator.Evaluation
+    ],
+) -> None:
+    _, inventory, _ = complete_bundle
+    center = adjudicator.CellKey(adjudicator.MARKET_BY_SYMBOL["NDX.DWX"], "center")
+    inventory = _inventory_with_positions(
+        inventory,
+        {center.cell_id: inventory.cells[center.cell_id].positions[:8]},
+    )
+    evaluation = adjudicator.evaluate_inventory(inventory, created_utc=CREATED_UTC)
     assert evaluation.status == "FAIL"
     gates = evaluation.payload["binding_gates"]
     assert gates["sleeve_a_center"]["status"] == "FAIL"
@@ -499,33 +593,46 @@ def test_center_cannot_be_rescued_by_profitable_neighbours(tmp_path: Path) -> No
     assert evaluation.payload["selected_configuration"]["neighbour_rescue_permitted"] is False
 
 
-def test_plateau_enforces_nine_profitable_and_exact_seventy_percent(tmp_path: Path) -> None:
+def test_plateau_enforces_nine_profitable_and_exact_seventy_percent(
+    complete_bundle: tuple[
+        adjudicator.Policy, adjudicator.Inventory, adjudicator.Evaluation
+    ],
+) -> None:
+    _, base_inventory, _ = complete_bundle
     losing_variants = set(adjudicator.NEIGHBOURS[:5])
-
-    def lose_five(
-        key: adjudicator.CellKey, positions: list[dict[str, Any]]
-    ) -> list[dict[str, Any]]:
-        if key.market.symbol == "NDX.DWX" and key.variant in losing_variants:
-            for row in positions:
-                row["raw_net_usd"] = "-90.00"
-                row["cost_adjusted_net_usd"] = "-100.00"
-        return positions
-
-    policy = _make_bundle(tmp_path / "profitability", position_transform=lose_five)
-    _, evaluation = _inventory_and_evaluation(policy)
+    losing_replacements: dict[str, tuple[adjudicator.Position, ...]] = {}
+    ndx = adjudicator.MARKET_BY_SYMBOL["NDX.DWX"]
+    for variant in losing_variants:
+        key = adjudicator.CellKey(ndx, variant)
+        transformed: list[adjudicator.Position] = []
+        for position in base_inventory.cells[key.cell_id].positions:
+            raw = position.canonical()
+            raw["raw_net_usd"] = "-90.00"
+            raw["cost_adjusted_net_usd"] = "-100.00"
+            transformed.append(
+                adjudicator.parse_position(
+                    raw,
+                    expected_symbol="NDX.DWX",
+                    context=f"synthetic losing {variant}",
+                )
+            )
+        losing_replacements[key.cell_id] = tuple(transformed)
+    inventory = _inventory_with_positions(base_inventory, losing_replacements)
+    evaluation = adjudicator.evaluate_inventory(inventory, created_utc=CREATED_UTC)
     plateau = evaluation.payload["binding_gates"]["sleeve_a_plateau"]
     assert plateau["profitable_variants"] == 8
     assert plateau["status"] == "FAIL"
 
-    def retention(
-        key: adjudicator.CellKey, positions: list[dict[str, Any]]
-    ) -> list[dict[str, Any]]:
-        if key.market.symbol == "NDX.DWX" and key.variant == "pivot_low":
-            return positions[:6]  # center=10, required neighbour count is >=7
-        return positions
-
-    policy = _make_bundle(tmp_path / "retention", position_transform=retention)
-    _, evaluation = _inventory_and_evaluation(policy)
+    pivot_low_key = adjudicator.CellKey(ndx, "pivot_low")
+    inventory = _inventory_with_positions(
+        base_inventory,
+        {
+            pivot_low_key.cell_id: base_inventory.cells[
+                pivot_low_key.cell_id
+            ].positions[:6]
+        },
+    )
+    evaluation = adjudicator.evaluate_inventory(inventory, created_utc=CREATED_UTC)
     plateau = evaluation.payload["binding_gates"]["sleeve_a_plateau"]
     pivot_low = next(row for row in plateau["neighbours"] if row["variant"] == "pivot_low")
     assert pivot_low["trade_retention_exact_check"] == "6*10 >= 10*7"
@@ -533,23 +640,31 @@ def test_plateau_enforces_nine_profitable_and_exact_seventy_percent(tmp_path: Pa
     assert plateau["status"] == "FAIL"
 
 
-def test_gdax_zero_or_losing_transport_never_changes_selection(tmp_path: Path) -> None:
-    def losing_gdax(
-        key: adjudicator.CellKey, positions: list[dict[str, Any]]
-    ) -> list[dict[str, Any]]:
-        if key.market.symbol != "GDAXI.DWX" or key.variant == "center":
-            return positions
-        return [
-            _raw_position(
+def test_gdax_zero_or_losing_transport_never_changes_selection(
+    complete_bundle: tuple[
+        adjudicator.Policy, adjudicator.Inventory, adjudicator.Evaluation
+    ],
+) -> None:
+    _, base_inventory, _ = complete_bundle
+    gdax = adjudicator.MARKET_BY_SYMBOL["GDAXI.DWX"]
+    replacements: dict[str, tuple[adjudicator.Position, ...]] = {}
+    for variant in adjudicator.NEIGHBOURS:
+        key = adjudicator.CellKey(gdax, variant)
+        raw = _raw_position(
                 symbol="GDAXI.DWX",
                 sequence=1,
                 broker_entry=datetime(2021, 6, 1, 9),
                 adjusted_net=Decimal("-100.00"),
             )
-        ]
-
-    policy = _make_bundle(tmp_path, position_transform=losing_gdax)
-    _, evaluation = _inventory_and_evaluation(policy)
+        replacements[key.cell_id] = (
+            adjudicator.parse_position(
+                raw,
+                expected_symbol="GDAXI.DWX",
+                context=f"synthetic transport {variant}",
+            ),
+        )
+    inventory = _inventory_with_positions(base_inventory, replacements)
+    evaluation = adjudicator.evaluate_inventory(inventory, created_utc=CREATED_UTC)
     assert evaluation.status == "PASS"
     transport = evaluation.payload["transport_diagnostic"]
     assert transport["never_affects_selection_or_plateau"] is True
@@ -594,9 +709,14 @@ def test_fx_session_boundaries_and_mixed_partial_entries_fail_closed() -> None:
             )
 
 
-def test_publication_is_exclusive_and_verdict_is_last_commit_marker(tmp_path: Path) -> None:
-    policy = _make_bundle(tmp_path / "success")
-    inventory, evaluation = _inventory_and_evaluation(policy)
+def test_publication_is_exclusive_and_verdict_is_last_commit_marker(
+    tmp_path: Path,
+    complete_bundle: tuple[
+        adjudicator.Policy, adjudicator.Inventory, adjudicator.Evaluation
+    ],
+) -> None:
+    base_policy, inventory, evaluation = complete_bundle
+    policy = replace(base_policy, output_root=tmp_path / "success")
     bindings = adjudicator.publish_dev(
         policy, inventory, evaluation, created_utc=CREATED_UTC
     )
@@ -612,8 +732,7 @@ def test_publication_is_exclusive_and_verdict_is_last_commit_marker(tmp_path: Pa
             policy, inventory, evaluation, created_utc=CREATED_UTC
         )
 
-    policy = _make_bundle(tmp_path / "crash")
-    inventory, evaluation = _inventory_and_evaluation(policy)
+    policy = replace(base_policy, output_root=tmp_path / "crash")
     with pytest.raises(evidence_io.EvidenceIOError, match="injected publication failure"):
         adjudicator.publish_dev(
             policy,
@@ -626,3 +745,16 @@ def test_publication_is_exclusive_and_verdict_is_last_commit_marker(tmp_path: Pa
     assert not verdict.exists()
     assert Path(f"{verdict}.sha256").exists()
 
+    first_cell = inventory.cells[adjudicator.expected_cells()[0].cell_id]
+    mutable_input = Path(first_cell.artifacts["validator_pre"]["path"])
+    original = mutable_input.read_bytes()
+    policy = replace(base_policy, output_root=tmp_path / "input_drift")
+    try:
+        mutable_input.write_bytes(original + b"drift")
+        with pytest.raises(evidence_io.EvidenceIOError, match="binding drift"):
+            adjudicator.publish_dev(
+                policy, inventory, evaluation, created_utc=CREATED_UTC
+            )
+    finally:
+        mutable_input.write_bytes(original)
+    assert not (policy.output_root / "verdicts" / "DEV.verdict.json").exists()

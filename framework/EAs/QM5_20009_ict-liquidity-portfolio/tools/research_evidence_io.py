@@ -256,6 +256,11 @@ def publish_exclusive_bundle(
 
     if not artifacts:
         raise EvidenceIOError("exclusive bundle is empty")
+    for index, item in enumerate(artifacts):
+        if not isinstance(item.payload, bytes) or not item.payload:
+            raise EvidenceIOError(
+                f"exclusive bundle artifact {index} must contain non-empty bytes"
+            )
     targets = [item.path.resolve(strict=False) for item in artifacts]
     if len({os.path.normcase(str(path)) for path in targets}) != len(targets):
         raise EvidenceIOError("exclusive bundle contains duplicate target paths")
@@ -263,7 +268,12 @@ def publish_exclusive_bundle(
     if existing:
         raise EvidenceIOError(f"immutable output already exists: {existing}")
 
-    common = Path(os.path.commonpath([str(path.parent) for path in targets]))
+    try:
+        common = Path(os.path.commonpath([str(path.parent) for path in targets]))
+    except ValueError as exc:
+        raise EvidenceIOError(
+            "exclusive bundle targets must be on one filesystem volume"
+        ) from exc
     common.mkdir(parents=True, exist_ok=True)
     stage = Path(tempfile.mkdtemp(prefix=".qm5_20009_publish_", dir=common))
     staged: list[tuple[Path, Path]] = []
@@ -291,7 +301,20 @@ def publish_exclusive_bundle(
                 raise
             staged.append((staged_path, target))
 
+        expected_published: list[tuple[Path, int, str]] = []
         for index, (source, target) in enumerate(staged, start=1):
+            # Recheck every earlier commit marker immediately before advancing.
+            # This catches concurrent mutation before the final verdict can be
+            # made authoritative.
+            for prior, expected_size, expected_sha in expected_published:
+                observed = file_binding(prior)
+                if (
+                    observed.size_bytes != expected_size
+                    or observed.sha256 != expected_sha
+                ):
+                    raise EvidenceIOError(
+                        f"published artifact changed during bundle commit: {prior}"
+                    )
             try:
                 os.link(source, target)
             except FileExistsError as exc:
@@ -299,11 +322,25 @@ def publish_exclusive_bundle(
             except OSError as exc:
                 raise EvidenceIOError(f"exclusive publish failed for {target}: {exc}") from exc
             published.append(target)
+            payload = artifacts[index - 1].payload
+            expected_published.append(
+                (target, len(payload), sha256_bytes(payload))
+            )
             _fsync_directory(target.parent)
             if fail_after is not None and index == fail_after:
                 raise EvidenceIOError(f"injected publication failure after artifact {index}")
 
-        return [file_binding(path) for path in published]
+        bindings = [file_binding(path) for path in published]
+        for binding, (_, expected_size, expected_sha) in zip(
+            bindings, expected_published, strict=True
+        ):
+            if (
+                binding.size_bytes != expected_size
+                or binding.sha256 != expected_sha
+            ):
+                raise EvidenceIOError(
+                    f"published artifact does not match staged bytes: {binding.path}"
+                )
+        return bindings
     finally:
         shutil.rmtree(stage, ignore_errors=True)
-
