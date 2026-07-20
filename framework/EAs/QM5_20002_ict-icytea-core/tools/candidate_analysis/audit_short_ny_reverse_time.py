@@ -18,6 +18,8 @@ SHA-256 identity check over the preregistered .hcc/.tkc files only.
 from __future__ import annotations
 
 import argparse
+import base64
+import binascii
 import bisect
 import copy
 import csv
@@ -67,7 +69,28 @@ REPORT_CORE_PATH = (
 )
 RUNNER_PATH = REPO_ROOT / "framework" / "scripts" / "run_dev1_smoke.ps1"
 RUNNER_CHILD_PATH = REPO_ROOT / "framework" / "scripts" / "invoke_dev1_smoke_task.ps1"
+DEV1_CLEANUP_HELPER_PATH = (
+    REPO_ROOT / "framework" / "scripts" / "cleanup_dev1_account_lease.ps1"
+)
+CREDENTIAL_PROBE_PATH = (
+    REPO_ROOT / "framework" / "scripts" / "probe_dev1_machine_credential.ps1"
+)
+CREDENTIAL_HELPER_PATH = (
+    REPO_ROOT / "framework" / "scripts" / "dev1_machine_credential.ps1"
+)
+IDENTITY_PROBE_CHILD_PATH = (
+    REPO_ROOT / "framework" / "scripts" / "invoke_dev1_identity_probe.ps1"
+)
 RUN_SMOKE_PATH = REPO_ROOT / "framework" / "scripts" / "run_smoke.ps1"
+DEV1_LANE_CONTRACT_PATH = REPO_ROOT / "framework" / "registry" / "dev1_lane_contract.json"
+MACHINE_CREDENTIAL_PATH = Path(
+    r"C:\ProgramData\QM\DEV1\credential.machine-dpapi.json"
+)
+MACHINE_CREDENTIAL_ROTATION_RECEIPT_PATH = Path(
+    r"C:\ProgramData\QM\DEV1\credential.machine-dpapi.rotation-receipt.json"
+)
+LEGACY_CREDENTIAL_PATH = Path(r"C:\ProgramData\QM\DEV1\credential.clixml")
+DEV1_CREDENTIAL_ROTATION_ROOT = Path(r"D:\QM\reports\dev1\credential-rotation")
 SCHEDULED_TASK_HELPER_PATH = (
     EA_ROOT / "tools" / "candidate_analysis" / "run_outcome_fenced_task.ps1"
 )
@@ -118,6 +141,13 @@ RUNTIME_ROLES = {
     "report_html_parser": REPORT_CORE_PATH,
     "runner_controller": RUNNER_PATH,
     "runner_child": RUNNER_CHILD_PATH,
+    "dev1_cleanup_helper": DEV1_CLEANUP_HELPER_PATH,
+    "dev1_machine_credential_probe": CREDENTIAL_PROBE_PATH,
+    "dev1_machine_credential_helper": CREDENTIAL_HELPER_PATH,
+    "dev1_identity_probe_child": IDENTITY_PROBE_CHILD_PATH,
+    "dev1_machine_credential": MACHINE_CREDENTIAL_PATH,
+    "dev1_machine_credential_rotation_receipt": MACHINE_CREDENTIAL_ROTATION_RECEIPT_PATH,
+    "dev1_lane_contract": DEV1_LANE_CONTRACT_PATH,
     "runner_smoke": RUN_SMOKE_PATH,
     "tester_groups_canonical": GROUP_CANONICAL_PATH,
     "tester_groups_dev1": GROUP_DEV1_PATH,
@@ -350,6 +380,33 @@ def load_json(path: Path) -> dict[str, Any]:
         raise AuditError(f"invalid JSON {path}: {exc}") from exc
     if not isinstance(payload, dict):
         raise AuditError(f"JSON root must be an object: {path}")
+    return payload
+
+
+def load_strict_json(path: Path, label: str) -> dict[str, Any]:
+    """Load one finite JSON object while rejecting duplicate property names."""
+
+    def reject_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        payload: dict[str, Any] = {}
+        for key, value in pairs:
+            if key in payload:
+                raise ValueError(f"duplicate JSON property: {key}")
+            payload[key] = value
+        return payload
+
+    def reject_constant(value: str) -> None:
+        raise ValueError(f"non-finite JSON constant: {value}")
+
+    try:
+        payload = json.loads(
+            path.read_text(encoding="utf-8-sig"),
+            object_pairs_hook=reject_duplicate_keys,
+            parse_constant=reject_constant,
+        )
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        raise AuditError(f"invalid exact {label} JSON {path}: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise AuditError(f"{label} JSON root must be an object: {path}")
     return payload
 
 
