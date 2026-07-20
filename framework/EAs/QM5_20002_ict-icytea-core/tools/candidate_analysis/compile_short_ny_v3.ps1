@@ -1,9 +1,18 @@
-[CmdletBinding()]
+[CmdletBinding(DefaultParameterSetName = 'Controller')]
 param(
+    [Parameter(Mandatory = $true, ParameterSetName = 'Child')]
     [switch]$Child,
-    [string]$RunRoot,
-    [string]$ExpectedSid,
-    [string]$ExpectedSourceSha256
+    [Parameter(Mandatory = $true, ParameterSetName = 'Child')]
+    [string]$RequestPath,
+    [Parameter(Mandatory = $true, ParameterSetName = 'Child')]
+    [ValidatePattern('^[0-9a-f]{64}$')]
+    [string]$ExpectedRequestSha256,
+    [Parameter(Mandatory = $true, ParameterSetName = 'Controller')]
+    [ValidatePattern('^[0-9a-f]{64}$')]
+    [string]$ExpectedCredentialSha256,
+    [Parameter(Mandatory = $true, ParameterSetName = 'Controller')]
+    [ValidatePattern('^[0-9a-f]{64}$')]
+    [string]$ExpectedHelperSha256
 )
 
 Set-StrictMode -Version Latest
@@ -18,7 +27,13 @@ $compileOne = Join-Path $repoRoot 'framework\scripts\compile_one.ps1'
 $devRoot = [IO.Path]::GetFullPath('D:\QM\mt5\DEV1')
 $metaEditor = Join-Path $devRoot 'MetaEditor64.exe'
 $pwsh = 'C:\Program Files\PowerShell\7\pwsh.exe'
-$credentialPath = 'C:\ProgramData\QM\DEV1\credential.clixml'
+$credentialPath = 'C:\ProgramData\QM\DEV1\credential.machine-dpapi.json'
+$credentialHelperPath = Join-Path $repoRoot 'framework\scripts\dev1_machine_credential.ps1'
+$laneContractPath = Join-Path $repoRoot 'framework\registry\dev1_lane_contract.json'
+$rotationReceiptPath = 'C:\ProgramData\QM\DEV1\credential.machine-dpapi.rotation-receipt.json'
+$cleanupHelperSourcePath = Join-Path $repoRoot 'framework\scripts\cleanup_dev1_account_lease.ps1'
+$testerGroupsCanonicalPath = Join-Path $repoRoot 'framework\registry\tester_groups\Darwinex-Live_real.canonical.txt'
+$testerGroupsDev1Path = Join-Path $devRoot 'MQL5\Profiles\Tester\Groups\Darwinex-Live_real.txt'
 $reportsRoot = [IO.Path]::GetFullPath('D:\QM\reports\dev1\build\compile')
 $controllerScript = [IO.Path]::GetFullPath($PSCommandPath)
 $expectedContractCommit = 'd902b04932c340dd1212b9420077d7cec6b0d80d'
@@ -26,7 +41,16 @@ $expectedContractSha256 = '6ee74c60a823fe87b03b40a2737ba67d113b2e52e7c09a05f42ba
 $expectedSourceCommit = '3f1039f0eeb56ee882b5c3451eed3ee71567d6bc'
 $frozenSourceSha256 = '3fd49f2cea7575e659f1b1cf9c24c752a4a8e11db5e0c17cae69629a6f207f83'
 $researchStatus = 'CARD_INTAKE_NOT_APPROVED'
-$taskPrefix = 'QM_DEV1_COMPILE_QM20002_'
+$taskPrefix = 'QM_DEV1_COMPILE_'
+$smokeTaskPrefix = 'QM_DEV1_SMOKE_'
+$cleanupTaskPrefix = 'QM_DEV1_CLEANUP_'
+$profileTaskPrefix = 'QM_DEV1_PROFILE_INIT_'
+$cleanupActionMutexPrefix = 'Global\QM_DEV1_CLEANUP_ACTION_'
+$cleanupActionMutexWaitMilliseconds = 180000
+$cleanupLeaseGraceSeconds = 900
+$taskPath = '\'
+$contractId = 'QM_DEV1_ISOLATED_MT5_LANE_V3'
+$rotationRoot = [IO.Path]::GetFullPath('D:\QM\reports\dev1\credential-rotation')
 
 function Test-UnderRoot([string]$Path, [string]$Root) {
     $fullPath = [IO.Path]::GetFullPath($Path)
