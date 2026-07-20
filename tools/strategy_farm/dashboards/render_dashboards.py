@@ -223,12 +223,12 @@ def equity_svg(deals: list[tuple[str, float]], width: int = 320, height: int = 6
                net_profit: float | None = None) -> str:
     """Render an inline SVG equity curve from balance progression.
 
-    Returns SVG with: balance polyline (emerald if net+, red if net-),
+    Returns SVG with: balance polyline (profit-green if net+, loss-red if net-),
     DD shading from rolling-max, baseline + endpoint marker. No axis labels
     in mini mode; pure visual.
     """
     if len(deals) < 2:
-        return f'<svg width="{width}" height="{height}" viewBox="0 0 {width} {height}"><text x="{width//2}" y="{height//2 + 4}" fill="#475569" font-size="10" text-anchor="middle" font-family="monospace">no equity data</text></svg>'
+        return f'<svg width="{width}" height="{height}" viewBox="0 0 {width} {height}"><text x="{width//2}" y="{height//2 + 4}" fill="#9a938a" font-size="10" text-anchor="middle" font-family="monospace">no equity data</text></svg>'
 
     balances = [d[1] for d in deals]
     bmin = min(balances)
@@ -256,9 +256,9 @@ def equity_svg(deals: list[tuple[str, float]], width: int = 320, height: int = 6
     # color by net result
     if net_profit is None:
         net_profit = balances[-1] - balances[0]
-    line_color = "#10b981" if net_profit >= 0 else "#ef4444"
-    fill_color = "rgba(16,185,129,0.10)" if net_profit >= 0 else "rgba(239,68,68,0.10)"
-    dd_color = "rgba(239,68,68,0.18)"
+    line_color = "#1a8f4c" if net_profit >= 0 else "#d13438"
+    fill_color = "rgba(26,143,76,0.10)" if net_profit >= 0 else "rgba(209,52,56,0.10)"
+    dd_color = "rgba(209,52,56,0.18)"
 
     # build path
     line_d = "M " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in points)
@@ -1631,17 +1631,19 @@ ARCHIVE_CSS = """
 .archive-table .td-slug{color:var(--text-3)}
 .archive-table .progress-bar{display:inline-flex;gap:2px;vertical-align:middle}
 .archive-table .progress-bar .pcell{width:11px;height:9px;background:var(--surface-2);border:1px solid var(--border)}
-.archive-table .progress-bar .pcell.p-done{background:var(--signal);border-color:var(--signal)}
+.archive-table .progress-bar .pcell.p-done{background:var(--pass);border-color:var(--pass)}
 .archive-table .progress-bar .pcell.p-current{background:var(--live);border-color:var(--live)}
 .archive-table .progress-bar .pcell.p-failed{background:var(--fail);border-color:var(--fail)}
-.archive-table .v-pass,.archive-table .net-pos{color:var(--signal);font-weight:600}
-.archive-table .v-fail,.archive-table .net-neg{color:var(--fail);font-weight:600}
+.archive-table .v-pass{color:var(--pass);font-weight:600}
+.archive-table .net-pos{color:var(--profit);font-weight:600}
+.archive-table .v-fail{color:var(--fail);font-weight:600}
+.archive-table .net-neg{color:var(--loss);font-weight:600}
 .archive-table .v-invalid{color:var(--promising)}
 .archive-table .v-pending{color:var(--text-3)}
 .archive-table .status-chip{font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;display:inline-block}
 .archive-table .status-chip.s-dead{color:var(--fail);background:transparent}
 .archive-table .status-chip.s-flow{color:var(--live);background:transparent}
-.archive-table .status-chip.s-live{color:var(--signal);background:transparent}
+.archive-table .status-chip.s-live{color:var(--live);background:transparent}
 .archive-table .status-chip.s-prog{color:var(--promising);background:transparent}
 .archive-table .status-chip.s-card{color:var(--text-3);background:transparent}
 .archive-table tr.row-card-only{cursor:default;opacity:0.85}
@@ -1663,7 +1665,7 @@ EA_DETAIL_CSS = """
 .detail-status{padding:5px 12px;font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;border:1px solid;background:transparent}
 .detail-status.s-dead{color:var(--fail);border-color:var(--fail)}
 .detail-status.s-flow{color:var(--live);border-color:var(--live)}
-.detail-status.s-live{color:var(--signal);border-color:var(--signal)}
+.detail-status.s-live{color:var(--live);border-color:var(--live)}
 
 .detail-meta{font-family:var(--font-mono);font-size:11px;color:var(--text-3);margin:14px 0 28px;display:flex;gap:20px;flex-wrap:wrap;letter-spacing:0.04em}
 .detail-meta span strong{color:var(--text);font-weight:600}
@@ -1683,8 +1685,8 @@ EA_DETAIL_CSS = """
 .kpi-tile{padding:14px 16px;background:var(--surface-1);border:1px solid var(--border)}
 .kpi-tile-label{font-family:var(--font-mono);font-size:9px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.2em;margin-bottom:8px}
 .kpi-tile-val{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:22px;font-weight:500;color:var(--text);letter-spacing:-0.02em;line-height:1.05}
-.kpi-tile-val.pos{color:var(--signal)}
-.kpi-tile-val.neg{color:var(--fail)}
+.kpi-tile-val.pos{color:var(--profit)}
+.kpi-tile-val.neg{color:var(--loss)}
 .kpi-tile-sub{font-family:var(--font-mono);font-size:10px;color:var(--text-4);margin-top:6px;letter-spacing:0.06em}
 
 .phase-section{margin-bottom:30px}
@@ -1705,12 +1707,12 @@ EA_DETAIL_CSS = """
 .wi-table td.col-num{text-align:right;font-variant-numeric:tabular-nums}
 .wi-table td.col-spark{padding:6px 12px}
 .wi-table td.col-spark svg{display:block}
-.wi-table .v-pass{color:var(--signal);font-weight:600}
+.wi-table .v-pass{color:var(--pass);font-weight:600}
 .wi-table .v-fail{color:var(--fail);font-weight:600}
 .wi-table .v-invalid{color:var(--promising);font-weight:600}
 .wi-table .v-pending{color:var(--text-3)}
-.wi-table .net-pos{color:var(--signal)}
-.wi-table .net-neg{color:var(--fail)}
+.wi-table .net-pos{color:var(--profit)}
+.wi-table .net-neg{color:var(--loss)}
 .wi-table .fail-reason{font-family:var(--font-mono);font-size:10px;color:var(--text-3);margin-top:3px;letter-spacing:0.04em}
 .wi-table .fail-reason.infra{color:var(--warn)}
 .wi-table .fail-reason.strategy{color:var(--fail)}
@@ -1763,7 +1765,7 @@ DETAIL2_CSS = """
 .availability{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:0 0 18px;padding:13px 18px;background:var(--surface-1);border:1px solid var(--border);border-left:3px solid var(--text-3)}
 .availability .av-label{font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;white-space:nowrap}
 .availability .av-body{font-family:var(--font-mono);font-size:11px;color:var(--text-3);line-height:1.6;letter-spacing:0.03em;flex:1;min-width:300px}
-.availability.av-live{border-left-color:var(--signal)} .availability.av-live .av-label{color:var(--signal)}
+.availability.av-live{border-left-color:var(--live)} .availability.av-live .av-label{color:var(--live)}
 .availability.av-cand{border-left-color:var(--live)} .availability.av-cand .av-label{color:var(--live)}
 .availability.av-flow{border-left-color:var(--warn)} .availability.av-flow .av-label{color:var(--warn)}
 .availability.av-failed{border-left-color:var(--fail)} .availability.av-failed .av-label{color:var(--fail)}
@@ -1774,12 +1776,12 @@ DETAIL2_CSS = """
 .dh-tile{padding:14px 16px;background:var(--surface-1);border:1px solid var(--border)}
 .dh-label{font-family:var(--font-mono);font-size:9px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.2em;margin-bottom:8px}
 .dh-val{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:18px;font-weight:500;color:var(--text);line-height:1.15;letter-spacing:-0.01em}
-.dh-val.good{color:var(--signal)}
+.dh-val.good{color:var(--pass)}
 .dh-val.bad{color:var(--fail)}
 .dh-val.flow{color:var(--live)}
 .decision-summary{padding:20px 22px;background:var(--surface-1);border:1px solid var(--border);margin-bottom:24px}
 .decision-summary.ds-bad{border-color:var(--fail);border-left-width:2px}
-.decision-summary.ds-good{border-color:var(--signal);border-left-width:2px}
+.decision-summary.ds-good{border-color:var(--pass);border-left-width:2px}
 .ds-verdict{font-size:15px;font-weight:600;color:var(--text);margin-bottom:14px;letter-spacing:-0.005em}
 .ds-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 28px}
 .ds-item-label{font-family:var(--font-mono);font-size:9px;font-weight:700;color:var(--signal);text-transform:uppercase;letter-spacing:0.2em;margin-bottom:5px}
@@ -1790,7 +1792,7 @@ DETAIL2_CSS = """
 .rescue-detail-table .rescue-tier.soft{color:var(--warn)}
 .rescue-detail-table .rescue-tier.hard{color:var(--fail)}
 .rescue-detail-table .rescue-tier.other{color:var(--text-3)}
-.rescue-detail-table .rescue-q09.pass{color:var(--signal)}
+.rescue-detail-table .rescue-q09.pass{color:var(--pass)}
 .rescue-detail-table .rescue-q09.wait{color:var(--promising)}
 .rescue-detail-table .rescue-q09.fail{color:var(--fail)}
 .rescue-detail-table .rescue-q09.other{color:var(--text-3)}
@@ -1842,12 +1844,12 @@ DETAIL2_CSS = """
 .att-table td{padding:4px 8px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--text-2)}
 .att-table td.col-num{text-align:right;font-variant-numeric:tabular-nums}
 .att-table tr:last-child td{border-bottom:none}
-.att-table .v-pass{color:var(--signal);font-weight:600}
+.att-table .v-pass{color:var(--pass);font-weight:600}
 .att-table .v-fail{color:var(--fail);font-weight:600}
 .att-table .v-invalid{color:var(--promising);font-weight:600}
 .att-table .v-completed{color:var(--text-2);font-weight:600}
 .att-table .att-reason{color:var(--text-3);font-size:9.5px;letter-spacing:0.02em}
-.att-table .att-promo{display:inline-block;margin-left:6px;padding:1px 6px;font-size:8px;font-weight:700;letter-spacing:0.14em;color:var(--bg);background:var(--signal);text-transform:uppercase}
+.att-table .att-promo{display:inline-block;margin-left:6px;padding:1px 6px;font-size:8px;font-weight:700;letter-spacing:0.14em;color:var(--surface-1);background:var(--pass);text-transform:uppercase}
 .wi-table .v-completed{color:var(--text-2);font-weight:600}
 .wi-table td.symcell{white-space:nowrap}
 .fold-block{margin-bottom:14px}
@@ -1859,9 +1861,9 @@ DETAIL2_CSS = """
 .fold-table td.col-num{text-align:right;font-variant-numeric:tabular-nums}
 .fold-table tr:last-child td{border-bottom:none}
 .fold-table .fold-id{font-weight:700;color:var(--text)}
-.fold-table .net-pos{color:var(--signal);font-weight:600}
-.fold-table .net-neg{color:var(--fail);font-weight:600}
-.fold-table .clean-yes{color:var(--signal)}
+.fold-table .net-pos{color:var(--profit);font-weight:600}
+.fold-table .net-neg{color:var(--loss);font-weight:600}
+.fold-table .clean-yes{color:var(--pass)}
 .fold-table .clean-no{color:var(--fail)}
 .fold-table .regime{font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-3)}
 """
@@ -2505,7 +2507,7 @@ ARCHIVE_V2_CSS = """
 .a2chip{padding:11px 16px;background:var(--surface-1);border:1px solid var(--border);min-width:96px;text-align:center}
 .a2chip-num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:21px;font-weight:500;line-height:1;letter-spacing:-0.02em;color:var(--text)}
 .a2chip-label{font-family:var(--font-mono);font-size:9px;font-weight:600;color:var(--text-3);margin-top:6px;text-transform:uppercase;letter-spacing:0.16em}
-.a2chip.c-live .a2chip-num{color:var(--signal)}
+.a2chip.c-live .a2chip-num{color:var(--live)}
 .a2chip.c-surv .a2chip-num{color:var(--live)}
 .a2chip.c-fail .a2chip-num{color:var(--fail)}
 .arch2-sec{max-width:1400px;margin:34px auto 0;padding:0 36px}
@@ -3320,12 +3322,12 @@ SWIMLANE_CSS = """
 .swimlane th.sym-h{text-align:left;width:128px;letter-spacing:0.1em}
 .swimlane td.sym{font-family:var(--font-mono);font-size:12px;color:var(--text);font-weight:600;white-space:nowrap;padding-right:10px}
 .sl-cell{height:30px;text-align:center;font-family:var(--font-mono);font-size:13px;font-weight:700;border:1px solid var(--border);line-height:30px;cursor:default}
-.sl-edge{background:rgba(16,185,129,0.16);color:var(--signal);border-color:rgba(16,185,129,0.42)}
-.sl-smoke{background:rgba(120,140,170,0.13);color:var(--text-2);border-color:var(--border-2)}
-.sl-loss{background:rgba(234,88,12,0.12);color:var(--warn);border-color:rgba(234,88,12,0.36)}
-.sl-fail{background:rgba(225,29,72,0.15);color:var(--fail);border-color:rgba(225,29,72,0.42)}
-.sl-infra{background:rgba(234,88,12,0.09);color:var(--warn);border-color:rgba(234,88,12,0.3)}
-.sl-regress{background:rgba(120,140,170,0.09);color:var(--text-3);border-style:dashed}
+.sl-edge{background:rgba(26,143,76,0.14);color:var(--pass);border-color:rgba(26,143,76,0.45)}
+.sl-smoke{background:rgba(114,107,96,0.12);color:var(--text-2);border-color:var(--border-2)}
+.sl-loss{background:rgba(184,114,10,0.12);color:var(--warn);border-color:rgba(184,114,10,0.40)}
+.sl-fail{background:rgba(209,52,56,0.12);color:var(--fail);border-color:rgba(209,52,56,0.45)}
+.sl-infra{background:rgba(184,114,10,0.08);color:var(--warn);border-color:rgba(184,114,10,0.32)}
+.sl-regress{background:rgba(114,107,96,0.08);color:var(--text-3);border-style:dashed}
 .sl-none{background:transparent;border-color:transparent}
 .sl-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;font-family:var(--font-mono);font-size:10px;color:var(--text-3);letter-spacing:0.04em}
 .sl-legend span{display:inline-flex;align-items:center;gap:6px}
@@ -3738,7 +3740,7 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
                         kind = "re-runs (1 setfile)"
                     else:
                         kind = f"runs ({n_sf} setfiles)"
-                    ever_chip = (f'<span style="color:var(--signal);margin-left:6px">'
+                    ever_chip = (f'<span style="color:var(--pass);margin-left:6px">'
                                  f'ever PASS {n_ever}/{n_att}</span>') if n_ever else ""
                     extras_chip = (f' + {" · ".join(extras)}' if extras else "")
                     toggle_label = f'{n_att} {kind}{extras_chip}{ever_chip}'
@@ -4226,14 +4228,14 @@ PORTFOLIO_CSS = """
 .portfolio-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .portfolio-link,.portfolio-badge{display:inline-flex;align-items:center;padding:6px 10px;border:1px solid var(--border-2);background:transparent;color:var(--text-3);font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;line-height:1.2}
 .portfolio-link:hover{border-color:var(--signal);color:var(--signal)}
-.portfolio-badge.good{border-color:var(--signal);color:var(--signal)}
+.portfolio-badge.good{border-color:var(--pass);color:var(--pass)}
 .portfolio-badge.warn{border-color:var(--warn);color:var(--warn)}
 .portfolio-status{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 20px}
 .portfolio-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:28px}
 .portfolio-kpi{padding:16px 18px;background:var(--surface-1);border:1px solid var(--border)}
 .portfolio-kpi-label{font-family:var(--font-mono);font-size:9px;font-weight:700;color:var(--text-3);letter-spacing:0.2em;text-transform:uppercase;margin-bottom:9px}
 .portfolio-kpi-val{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:26px;font-weight:500;color:var(--text);letter-spacing:-0.02em;line-height:1}
-.portfolio-kpi-val.good{color:var(--signal)}
+.portfolio-kpi-val.good{color:var(--pass)}
 .portfolio-kpi-val.warn{color:var(--warn)}
 .portfolio-section{margin-top:26px}
 .portfolio-section h2{font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:0.2em;text-transform:uppercase;margin:0 0 12px}
@@ -4246,9 +4248,9 @@ PORTFOLIO_CSS = """
 .heatmap-table th.row-head{text-align:left;position:sticky;left:0;z-index:2}
 .heatmap-table thead th{position:sticky;top:0;z-index:3}
 .heatmap-table td{font-variant-numeric:tabular-nums;color:var(--text)}
-.heatmap-table td.corr-good{background:color-mix(in srgb,var(--signal) 38%,var(--surface-1));color:var(--bg)}
+.heatmap-table td.corr-good{background:color-mix(in srgb,var(--pass) 32%,var(--surface-1));color:var(--text)}
 .heatmap-table td.corr-mid{background:var(--surface-2);color:var(--text-2)}
-.heatmap-table td.corr-warn{background:color-mix(in srgb,var(--warn) 58%,var(--surface-1));color:var(--bg)}
+.heatmap-table td.corr-warn{background:color-mix(in srgb,var(--warn) 42%,var(--surface-1));color:var(--text)}
 .heatmap-table td.corr-null{background:var(--surface-2);color:var(--text-4)}
 .heatmap-table td.corr-self{background:var(--bg);color:var(--text-4)}
 .portfolio-svg{width:100%;height:auto;background:var(--surface-1);border:1px solid var(--border)}
@@ -4258,7 +4260,7 @@ PORTFOLIO_CSS = """
 .portfolio-table th:last-child,.portfolio-table td:last-child{border-right:none}
 .portfolio-table tr:last-child td{border-bottom:none}
 .portfolio-table .num{text-align:right;font-variant-numeric:tabular-nums;color:var(--text)}
-.portfolio-table .good{color:var(--signal)}
+.portfolio-table .good{color:var(--pass)}
 .portfolio-table .warn{color:var(--warn)}
 .portfolio-grid-2{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;align-items:start}
 .portfolio-foot{margin-top:34px;font-family:var(--font-mono);font-size:10px;color:var(--text-4);letter-spacing:0.06em;text-align:center;line-height:1.6}
