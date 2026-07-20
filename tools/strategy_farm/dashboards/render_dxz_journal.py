@@ -358,13 +358,13 @@ def daily_bars_svg(bar_dates: list[str], bar_pnl: list[float], height: int = 170
     for i, (d, v) in enumerate(zip(bar_dates, bar_pnl)):
         x = gap + i * (bar_w + gap)
         h = max(1.5, abs(v) / max_abs * (half - 10))
-        color = "#10b981" if v >= 0 else "#ef4444"
+        color = "#1a8f4c" if v >= 0 else "#d13438"
         y = half - h if v >= 0 else half
         bars.append(
             f'<rect x="{x:.1f}" y="{y:.1f}" width="{bar_w}" height="{h:.1f}" fill="{color}">'
             f'<title>{e(d)}: {"+" if v >= 0 else ""}{v:,.2f}</title></rect>'
         )
-    axis = f'<line x1="0" y1="{half:.1f}" x2="{width}" y2="{half:.1f}" stroke="rgba(148,163,184,0.32)" stroke-width="1"/>'
+    axis = f'<line x1="0" y1="{half:.1f}" x2="{width}" y2="{half:.1f}" stroke="rgba(114,107,96,0.35)" stroke-width="1"/>'
     return (
         f'<div class="daily-bars-wrap"><svg viewBox="0 0 {width} {height}" width="100%" '
         f'height="{height}" preserveAspectRatio="none" class="daily-bars">{axis}{"".join(bars)}</svg></div>'
@@ -389,7 +389,9 @@ def _fmt_direction(raw: str | None) -> str:
 def _pnl_cell(v: Any) -> str:
     if not isinstance(v, (int, float)):
         return '<td class="col-num">—</td>'
-    cls = "v-pass" if v > 0 else ("v-fail" if v < 0 else "")
+    # P&L uses the dedicated profit/loss classes (Direction C), not
+    # PASS/FAIL status colors — same hues, decoupled semantics.
+    cls = "net-pos" if v > 0 else ("net-neg" if v < 0 else "")
     inner = f'<span class="{cls}">{fmt_dollar(v)}</span>' if cls else fmt_dollar(v)
     return f'<td class="col-num">{inner}</td>'
 
