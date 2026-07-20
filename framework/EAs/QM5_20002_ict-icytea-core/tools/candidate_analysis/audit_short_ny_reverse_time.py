@@ -30,6 +30,7 @@ import subprocess
 import sys
 import tempfile
 from collections import defaultdict
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP, getcontext
@@ -307,6 +308,39 @@ def atomic_json(path: Path, payload: Mapping[str, Any], *, replace: bool = True)
             pass
         raise
     return hashlib.sha256(encoded).hexdigest()
+
+
+@contextmanager
+def _terminal_state_lock(state_path: Path) -> Iterable[None]:
+    """Serialize cooperative terminal-state publishers without a stale lock file."""
+
+    state_path = state_path.resolve()
+    lock_path = state_path.with_name(f".{state_path.name}.terminal.lock")
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    with lock_path.open("a+b") as handle:
+        handle.seek(0, os.SEEK_END)
+        if handle.tell() == 0:
+            handle.write(b"\0")
+            handle.flush()
+            os.fsync(handle.fileno())
+        handle.seek(0)
+        if os.name == "nt":
+            import msvcrt
+
+            msvcrt.locking(handle.fileno(), msvcrt.LK_LOCK, 1)
+            try:
+                yield
+            finally:
+                handle.seek(0)
+                msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+        else:  # pragma: no cover - exercised by non-Windows developer hosts.
+            import fcntl
+
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+            try:
+                yield
+            finally:
+                fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -1605,6 +1639,37 @@ def _parse_last_json(text: str) -> dict[str, Any]:
     return candidates[-1]
 
 
+def _parse_single_json_envelope(text: str, label: str) -> dict[str, Any]:
+    """Accept one complete JSON object and reject banners, trailers, and duplicates."""
+
+    def reject_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        value: dict[str, Any] = {}
+        for key, item in pairs:
+            if key in value:
+                raise ValueError(f"duplicate JSON key: {key}")
+            value[key] = item
+        return value
+
+    def reject_constant(value: str) -> None:
+        raise ValueError(f"non-finite JSON constant: {value}")
+
+    try:
+        payload = json.loads(
+            text,
+            object_pairs_hook=reject_duplicate_keys,
+            parse_constant=reject_constant,
+        )
+    except (json.JSONDecodeError, ValueError) as exc:
+        raise PostflightError(
+            f"{label} must contain exactly one complete JSON object envelope"
+        ) from exc
+    if not isinstance(payload, dict):
+        raise PostflightError(
+            f"{label} must contain exactly one complete JSON object envelope"
+        )
+    return payload
+
+
 def _path_within(path: Path, root: Path) -> bool:
     try:
         path.resolve().relative_to(root.resolve())
@@ -2040,67 +2105,94 @@ def _rejected_cell_record(
     return {"cell_id": cell_id, "status": "REJECT", "attempts": [attempt]}
 
 
+def _finalize_worker_complete(
+    state_path: Path, expected_running_state: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Publish COMPLETE only when the locked state still equals the caller's view."""
+
+    with _terminal_state_lock(state_path):
+        persisted = load_json(state_path)
+        if canonical_bytes(persisted) != canonical_bytes(expected_running_state):
+            raise AuditError("terminal COMPLETE compare-and-swap state drift")
+        _validate_launch_state_shape(persisted)
+        if persisted["status"] != "RUNNING":
+            raise AuditError("terminal COMPLETE requires the exact RUNNING state")
+        closed = copy.deepcopy(persisted)
+        finished = utc_now()
+        closed["status"] = "COMPLETE"
+        closed["worker_pid"] = None
+        closed["active_cell"] = None
+        closed["finished_utc"] = finished
+        closed["updated_utc"] = finished
+        _validate_launch_state_shape(closed)
+        atomic_json(state_path, closed)
+        return closed
+
+
 def _finalize_worker_rejection(
     state_path: Path,
     exc: Exception,
     context: Mapping[str, Any] | None,
 ) -> bool:
-    """Atomically close a revision-3 worker failure without replacing COMPLETE evidence."""
+    """Close a worker failure under the same lock used by COMPLETE publishers."""
 
-    persisted = load_json(state_path)
-    if persisted.get("status") == "COMPLETE":
-        return False
-    if persisted.get("launcher_revision") != LAUNCHER_REVISION:
-        raise AuditError("refusing to rewrite a legacy launch state during rejection closure")
-    closed = {field: copy.deepcopy(persisted.get(field)) for field in LAUNCH_STATE_FIELDS}
-    finished = utc_now()
-    active = persisted.get("active_cell")
-    if context is None and isinstance(active, Mapping):
-        cell_root = state_path.resolve().parent / "worker" / str(active.get("cell_id", ""))
-        context = _new_attempt_context(
-            str(active.get("started_utc", finished)),
-            str(active.get("command_sha256", "")),
-            cell_root / "runner.stdout.txt",
-            cell_root / "runner.stderr.txt",
+    with _terminal_state_lock(state_path):
+        # This re-read is the compare-and-swap boundary.  A COMPLETE publisher
+        # that won the lock is immutable; a prior REJECT is likewise terminal.
+        persisted = load_json(state_path)
+        if persisted.get("status") in {"COMPLETE", "REJECT"}:
+            return False
+        if persisted.get("launcher_revision") != LAUNCHER_REVISION:
+            raise AuditError("refusing to rewrite a legacy launch state during rejection closure")
+        closed = {field: copy.deepcopy(persisted.get(field)) for field in LAUNCH_STATE_FIELDS}
+        finished = utc_now()
+        active = persisted.get("active_cell")
+        if context is None and isinstance(active, Mapping):
+            cell_root = state_path.resolve().parent / "worker" / str(active.get("cell_id", ""))
+            context = _new_attempt_context(
+                str(active.get("started_utc", finished)),
+                str(active.get("command_sha256", "")),
+                cell_root / "runner.stdout.txt",
+                cell_root / "runner.stderr.txt",
+            )
+        affected_cell_id: str | None = None
+        if context is not None and isinstance(active, Mapping):
+            cell_id = str(active.get("cell_id", ""))
+            if cell_id and all(
+                not isinstance(row, Mapping) or row.get("cell_id") != cell_id
+                for row in closed.get("cells", [])
+            ):
+                closed["cells"].append(_rejected_cell_record(cell_id, context, exc, finished))
+                affected_cell_id = cell_id
+        outcome_crossed = closed.get("outcome_possible_since_utc") is not None
+        stage = (
+            str(context.get("failure_stage"))
+            if context is not None and context.get("failure_stage") in FAILURE_STAGES
+            else "WORKER_VALIDATION"
         )
-    affected_cell_id: str | None = None
-    if context is not None and isinstance(active, Mapping):
-        cell_id = str(active.get("cell_id", ""))
-        if cell_id and all(
-            not isinstance(row, Mapping) or row.get("cell_id") != cell_id
-            for row in closed.get("cells", [])
-        ):
-            closed["cells"].append(_rejected_cell_record(cell_id, context, exc, finished))
-            affected_cell_id = cell_id
-    outcome_crossed = closed.get("outcome_possible_since_utc") is not None
-    stage = (
-        str(context.get("failure_stage"))
-        if context is not None and context.get("failure_stage") in FAILURE_STAGES
-        else "WORKER_VALIDATION"
-    )
-    controller_class = None
-    if affected_cell_id is not None:
-        rejected_attempt = closed["cells"][-1]["attempts"][0]
-        stage = rejected_attempt["failure_stage"]
-        controller_class = rejected_attempt["controller_failure_class"]
-    closed["status"] = "REJECT"
-    closed["worker_pid"] = None
-    closed["active_cell"] = None
-    closed["finished_utc"] = finished
-    closed["updated_utc"] = finished
-    closed["terminal"] = {
-        "status": "REJECT",
-        "error_type": type(exc).__name__,
-        "error": str(exc) or repr(exc),
-        "failure_stage": stage,
-        "affected_cell_id": affected_cell_id,
-        "outcome_fence_crossed": outcome_crossed,
-        "no_resume": True,
-        "controller_failure_class": controller_class,
-    }
-    _validate_launch_state_shape(closed)
-    atomic_json(state_path, closed)
-    return True
+        controller_class = None
+        if affected_cell_id is not None:
+            rejected_attempt = closed["cells"][-1]["attempts"][0]
+            stage = rejected_attempt["failure_stage"]
+            controller_class = rejected_attempt["controller_failure_class"]
+        closed["status"] = "REJECT"
+        closed["worker_pid"] = None
+        closed["active_cell"] = None
+        closed["finished_utc"] = finished
+        closed["updated_utc"] = finished
+        closed["terminal"] = {
+            "status": "REJECT",
+            "error_type": type(exc).__name__,
+            "error": str(exc) or repr(exc),
+            "failure_stage": stage,
+            "affected_cell_id": affected_cell_id,
+            "outcome_fence_crossed": outcome_crossed,
+            "no_resume": True,
+            "controller_failure_class": controller_class,
+        }
+        _validate_launch_state_shape(closed)
+        atomic_json(state_path, closed)
+        return True
 
 
 def _attempt_for_post(cell: Mapping[str, Any]) -> dict[str, Any]:
@@ -2225,14 +2317,8 @@ def _worker_run(job_path: Path) -> int:
             atomic_json(state_path, state)
             failure_context = {"failure_stage": "WORKER_VALIDATION"}
         assert_pre_receipt(pre_path, pre_sha)
-        state["status"] = "COMPLETE"
-        state["worker_pid"] = None
-        state["active_cell"] = None
-        state["finished_utc"] = utc_now()
-        state["updated_utc"] = state["finished_utc"]
         failure_context = {"failure_stage": "FINAL_STATE_PERSIST"}
-        _validate_launch_state_shape(state)
-        atomic_json(state_path, state)
+        state = _finalize_worker_complete(state_path, state)
         return 0
     except Exception as exc:
         if state is not None and state_path is not None:
@@ -3230,6 +3316,58 @@ def launch_status(state_path: Path) -> dict[str, Any]:
     return _inspect_launch_state_payload(state_path, load_json(state_path), binding)
 
 
+def _assert_complete_stream_binding(
+    binding: Mapping[str, Any], expected_path: Path, label: str
+) -> None:
+    validated = _validate_binding_shape(binding, label, PostflightError)
+    try:
+        observed_path = Path(str(validated["path"])).resolve()
+    except OSError as exc:
+        raise PostflightError(f"{label} path is not resolvable") from exc
+    if observed_path != expected_path.resolve():
+        raise PostflightError(
+            f"{label} path drift: {observed_path} != {expected_path.resolve()}"
+        )
+    try:
+        assert_binding(validated, label)
+    except (AuditError, OSError) as exc:
+        raise PostflightError(str(exc)) from exc
+
+
+def _validate_complete_runner_streams(
+    state_path: Path, launch_cell: Mapping[str, Any]
+) -> list[tuple[Mapping[str, Any], Path, str]]:
+    """Re-open exact COMPLETE streams and bind stdout JSON to state.runner_result."""
+
+    cell_id = str(launch_cell.get("cell_id", ""))
+    cell_root = state_path.resolve().parent / "worker" / cell_id
+    expected = {
+        "stdout": cell_root / "runner.stdout.txt",
+        "stderr": cell_root / "runner.stderr.txt",
+    }
+    checked: list[tuple[Mapping[str, Any], Path, str]] = []
+    for stream in ("stdout", "stderr"):
+        binding = launch_cell.get(stream)
+        label = f"{cell_id} runner {stream}"
+        if not isinstance(binding, Mapping):
+            raise PostflightError(f"{label} binding missing")
+        _assert_complete_stream_binding(binding, expected[stream], label)
+        checked.append((binding, expected[stream], label))
+    try:
+        stdout_text = expected["stdout"].read_bytes().decode("utf-8")
+    except (OSError, UnicodeDecodeError) as exc:
+        raise PostflightError(f"{cell_id} runner stdout is not strict UTF-8") from exc
+    stdout_result = _parse_single_json_envelope(
+        stdout_text, f"{cell_id} runner stdout"
+    )
+    state_result = launch_cell.get("runner_result")
+    if not isinstance(state_result, Mapping):
+        raise PostflightError(f"{cell_id} state runner_result is missing")
+    if canonical_bytes(stdout_result) != canonical_bytes(state_result):
+        raise PostflightError(f"{cell_id} stdout/state runner_result drift")
+    return checked
+
+
 def _validate_launch_chain(
     pre_path: Path,
     pre_sha256: str,
@@ -3300,6 +3438,7 @@ def _validate_launch_chain(
         raise PostflightError("launch state cell order/closure drift")
     cursor = state_started
     attempts: list[dict[str, Any]] = []
+    checked_streams: list[tuple[Mapping[str, Any], Path, str]] = []
     for cell_record, plan_cell in zip(cells, pre["plan"]["cells"]):
         launch_cell = _attempt_for_post(cell_record)
         attempts.append(launch_cell)
@@ -3313,11 +3452,17 @@ def _validate_launch_chain(
             or launch_cell.get("command_sha256") != canonical_sha256(runner_command(pre, plan_cell))
         ):
             raise PostflightError(f"launch cell command/exit drift: {plan_cell['cell_id']}")
+        checked_streams.extend(
+            _validate_complete_runner_streams(state_path, launch_cell)
+        )
         cursor = finished
     if attempts and outcome_possible != parse_utc(
         attempts[0]["started_utc"], "first cell started_utc"
     ):
         raise PostflightError("launch state first outcome-fence timestamp drift")
+    # Reassert after the full chain validation to close stream-byte TOCTOU.
+    for binding, expected_path, label in checked_streams:
+        _assert_complete_stream_binding(binding, expected_path, label)
     return attempts
 
 

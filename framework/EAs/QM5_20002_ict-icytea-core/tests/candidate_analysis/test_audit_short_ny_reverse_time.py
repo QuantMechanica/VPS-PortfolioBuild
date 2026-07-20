@@ -4,6 +4,7 @@ import importlib.util
 import json
 import subprocess
 import sys
+import threading
 from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
@@ -501,6 +502,94 @@ def _arm_one_cell_worker(
     return job_path, state_path
 
 
+def _write_complete_post_chain(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> tuple[Path, str, Path, dict]:
+    state_path = tmp_path / "attempt" / "launch_state.json"
+    job_path = state_path.with_name("launch_job.json")
+    pre_path = tmp_path / "pre_receipt.json"
+    auth_path = tmp_path / "authorization.json"
+    pre_path.parent.mkdir(parents=True, exist_ok=True)
+    state_path.parent.mkdir(parents=True, exist_ok=True)
+    pre_path.write_text("{}", encoding="utf-8")
+    auth_path.write_text("{}", encoding="utf-8")
+    authorization = {
+        "binding": subject.file_binding(auth_path),
+        "payload": {"mt5_execution_authorized": True},
+    }
+    scheduler = {"mode": "TEST"}
+    job = {
+        "created_utc": subject.utc_now(),
+        "authorization": authorization,
+        "scheduler": scheduler,
+    }
+    job_path.write_text(json.dumps(job), encoding="utf-8")
+    pre_sha = "d" * 64
+    cells = [{"cell_id": f"CELL_{index:02d}"} for index in range(1, 5)]
+    pre = {"plan": {"cells": cells}}
+    monkeypatch.setattr(subject, "assert_pre_receipt", lambda *_args: pre)
+    monkeypatch.setattr(subject, "_validate_launch_job", lambda *_args: None)
+    monkeypatch.setattr(subject, "validate_authorization", lambda *_args: authorization)
+    monkeypatch.setattr(
+        subject,
+        "runner_command",
+        lambda _pre, cell: ["controller", str(cell["cell_id"])],
+    )
+    monkeypatch.setattr(
+        subject,
+        "_load_report_core",
+        lambda *_args: pytest.fail("post-precheck must not open reports"),
+    )
+    state = subject._initial_launch_state(
+        pre_path, pre_sha, subject.file_binding(job_path), job
+    )
+    state["status"] = "COMPLETE"
+    state["started_utc"] = state["created_utc"]
+    state["worker_pid"] = None
+    opaque = tmp_path / "opaque.bin"
+    opaque.write_bytes(b"opaque")
+    opaque_binding = subject.file_binding(opaque)
+    first_started = None
+    for index, cell in enumerate(cells, start=1):
+        started = subject.utc_now()
+        first_started = first_started or started
+        cell_root = state_path.parent / "worker" / cell["cell_id"]
+        cell_root.mkdir(parents=True)
+        run_id = f"20260720T21{index:02d}00Z_" + f"{index:x}" * 32
+        runner_result = {"success": True, "run_id": run_id}
+        stdout_path = cell_root / "runner.stdout.txt"
+        stderr_path = cell_root / "runner.stderr.txt"
+        stdout_path.write_text(json.dumps(runner_result), encoding="utf-8")
+        stderr_path.write_text("", encoding="utf-8")
+        context = {
+            "started_utc": started,
+            "command_sha256": subject.canonical_sha256(
+                subject.runner_command(pre, cell)
+            ),
+            "runner_exit_code": 0,
+            "runner_result": runner_result,
+            "stdout": subject.file_binding(stdout_path),
+            "stderr": subject.file_binding(stderr_path),
+            "summary": opaque_binding,
+            "run_artifacts": [
+                {
+                    "run": run,
+                    "report": opaque_binding,
+                    "tester_log": opaque_binding,
+                    "tester_ini": opaque_binding,
+                }
+                for run in ("run_01", "run_02")
+            ],
+        }
+        state["cells"].append(subject._complete_cell_record(cell["cell_id"], context))
+    state["outcome_possible_since_utc"] = first_started
+    state["finished_utc"] = subject.utc_now()
+    state["updated_utc"] = state["finished_utc"]
+    subject._validate_launch_state_shape(state)
+    subject.atomic_json(state_path, state)
+    return pre_path, pre_sha, state_path, pre
+
+
 @pytest.mark.parametrize(
     ("stdout", "stderr", "failure_class"),
     [
@@ -616,6 +705,91 @@ def test_worker_complete_state_is_exactly_closed_and_clears_worker_identity(
     assert state["cells"][0]["attempts"][0]["status"] == "COMPLETE"
 
 
+def test_complete_post_precheck_accepts_exact_bound_runner_streams(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    pre_path, pre_sha, state_path, _pre = _write_complete_post_chain(
+        tmp_path, monkeypatch
+    )
+    result = subject.post_precheck(pre_path, pre_sha, state_path)
+    assert result["status"] == "PASS"
+    assert result["post_allowed"] is True
+    assert result["outcome_data_read"] is False
+
+
+def test_complete_post_precheck_rejects_runner_stdout_byte_tamper(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    pre_path, pre_sha, state_path, _pre = _write_complete_post_chain(
+        tmp_path, monkeypatch
+    )
+    stdout_path = state_path.parent / "worker" / "CELL_01" / "runner.stdout.txt"
+    tampered = bytearray(stdout_path.read_bytes())
+    tampered[0] = ord("[")
+    stdout_path.write_bytes(tampered)
+
+    result = subject.post_precheck(pre_path, pre_sha, state_path)
+    assert result["status"] == "REJECT"
+    assert result["post_allowed"] is False
+    assert result["outcome_data_read"] is False
+    assert "SHA drift" in result["error"]
+
+
+def test_complete_post_precheck_rejects_byte_identical_stream_path_copy(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    pre_path, pre_sha, state_path, _pre = _write_complete_post_chain(
+        tmp_path, monkeypatch
+    )
+    state = subject.load_json(state_path)
+    original = state_path.parent / "worker" / "CELL_01" / "runner.stdout.txt"
+    copied = tmp_path / "copied-runner.stdout.txt"
+    copied.write_bytes(original.read_bytes())
+    state["cells"][0]["attempts"][0]["stdout"] = subject.file_binding(copied)
+    subject.atomic_json(state_path, state)
+
+    result = subject.post_precheck(pre_path, pre_sha, state_path)
+    assert result["status"] == "REJECT"
+    assert result["post_allowed"] is False
+    assert "runner stdout path drift" in result["error"]
+
+
+def test_complete_post_precheck_rejects_state_runner_result_drift(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    pre_path, pre_sha, state_path, _pre = _write_complete_post_chain(
+        tmp_path, monkeypatch
+    )
+    state = subject.load_json(state_path)
+    state["cells"][0]["attempts"][0]["runner_result"]["substituted"] = True
+    subject.atomic_json(state_path, state)
+
+    result = subject.post_precheck(pre_path, pre_sha, state_path)
+    assert result["status"] == "REJECT"
+    assert result["post_allowed"] is False
+    assert "stdout/state runner_result drift" in result["error"]
+
+
+def test_complete_post_precheck_rejects_multiple_stdout_json_envelopes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    pre_path, pre_sha, state_path, _pre = _write_complete_post_chain(
+        tmp_path, monkeypatch
+    )
+    state = subject.load_json(state_path)
+    attempt = state["cells"][0]["attempts"][0]
+    stdout_path = state_path.parent / "worker" / "CELL_01" / "runner.stdout.txt"
+    envelope = json.dumps(attempt["runner_result"])
+    stdout_path.write_text(f"{envelope}\n{envelope}", encoding="utf-8")
+    attempt["stdout"] = subject.file_binding(stdout_path)
+    subject.atomic_json(state_path, state)
+
+    result = subject.post_precheck(pre_path, pre_sha, state_path)
+    assert result["status"] == "REJECT"
+    assert result["post_allowed"] is False
+    assert "exactly one complete JSON object envelope" in result["error"]
+
+
 def test_terminal_rejection_persistence_failure_does_not_publish_false_reject(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -653,6 +827,78 @@ def test_rejection_finalizer_never_overwrites_existing_complete_bytes(tmp_path: 
         state_path, subject.AuditError("late failure"), None
     )
     assert state_path.read_bytes() == before
+
+
+def test_terminal_state_lock_race_preserves_complete_bytes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _pre_path, _pre_sha, state_path, _pre = _write_complete_post_chain(
+        tmp_path, monkeypatch
+    )
+    running = subject.load_json(state_path)
+    running["status"] = "RUNNING"
+    running["worker_pid"] = 4321
+    running["finished_utc"] = None
+    running["updated_utc"] = subject.utc_now()
+    subject._validate_launch_state_shape(running)
+    subject.atomic_json(state_path, running)
+    expected_running = subject.load_json(state_path)
+
+    real_atomic_json = subject.atomic_json
+    complete_write_entered = threading.Event()
+    allow_complete_write = threading.Event()
+    rejection_started = threading.Event()
+    published_complete_bytes: list[bytes] = []
+    results: dict[str, object] = {}
+    errors: list[BaseException] = []
+
+    def gated_atomic_json(path, payload, *, replace=True):
+        if payload.get("status") == "COMPLETE":
+            complete_write_entered.set()
+            if not allow_complete_write.wait(5):
+                raise AssertionError("timed out coordinating terminal-state race")
+        result = real_atomic_json(path, payload, replace=replace)
+        if payload.get("status") == "COMPLETE":
+            published_complete_bytes.append(Path(path).read_bytes())
+        return result
+
+    monkeypatch.setattr(subject, "atomic_json", gated_atomic_json)
+
+    def publish_complete() -> None:
+        try:
+            results["complete"] = subject._finalize_worker_complete(
+                state_path, expected_running
+            )
+        except BaseException as exc:  # pragma: no cover - asserted below.
+            errors.append(exc)
+
+    def publish_reject() -> None:
+        rejection_started.set()
+        try:
+            results["reject"] = subject._finalize_worker_rejection(
+                state_path, subject.AuditError("concurrent late failure"), None
+            )
+        except BaseException as exc:  # pragma: no cover - asserted below.
+            errors.append(exc)
+
+    complete_thread = threading.Thread(target=publish_complete)
+    reject_thread = threading.Thread(target=publish_reject)
+    complete_thread.start()
+    assert complete_write_entered.wait(5)
+    reject_thread.start()
+    assert rejection_started.wait(5)
+    allow_complete_write.set()
+    complete_thread.join(10)
+    reject_thread.join(10)
+
+    assert not complete_thread.is_alive() and not reject_thread.is_alive()
+    assert errors == []
+    assert isinstance(results["complete"], dict)
+    assert results["complete"]["status"] == "COMPLETE"
+    assert results["reject"] is False
+    assert len(published_complete_bytes) == 1
+    assert state_path.read_bytes() == published_complete_bytes[0]
+    assert subject.load_json(state_path)["status"] == "COMPLETE"
 
 
 def test_legacy_stdout_reject_is_uniquely_classified_and_post_blocked(
