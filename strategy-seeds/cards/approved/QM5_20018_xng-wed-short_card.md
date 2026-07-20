@@ -9,7 +9,7 @@ created: 2026-07-20
 created_by: Research
 last_updated: 2026-07-20
 g0_status: APPROVED
-g0_approval_reasoning: "OWNER commodity-sleeve mission: R1 tier-B complete peer-reviewed source; R2 exact XNG Wednesday short/next-D1 flat rule with fixed V5 risk; R3 registered XNG D1 route; R4 calendar/ATR only, no ML or banned indicator; deterministic tool and content-level Wednesday mechanic audit CLEAN."
+g0_approval_reasoning: "OWNER commodity-sleeve mission: R1 tier-B complete peer-reviewed source; R2 exact XNG Wednesday short/next-D1 flat rule with fixed V5 risk; R3 registered XNG D1 route; R4 calendar/ATR only, no ML or banned indicator; deterministic tool and content-level mechanic dedup CLEAN."
 source_citation: "Borowski, K. (2016). Analysis of Selected Seasonality Effects in Markets of Future Contracts with the Following Underlying Instruments: Crude Oil, Brent Oil, Heating Oil, Gas Oil, Natural Gas, Feeder Cattle, Live Cattle, Lean Hogs and Lumber. Journal of Management and Financial Sciences, issue 26, 27-44."
 source_citations:
   - type: academic_paper
