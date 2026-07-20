@@ -143,6 +143,18 @@ repair exists to enqueue. Per the explicit CPU-ceiling stop condition, this
 checkpoint did not create or mutate a card, EA, registry row, work item,
 priority, dispatch, tester process, or compiled artifact.
 
+### Paced-fleet checkpoint — 2026-07-20T15:44:44Z
+
+The current headless fleet query again returned eight active backtests against
+the configured limit of seven. The phase mix is now four Q02, two Q04, and two
+Q07 work items, claimed across T2, T3, T4, T6, T7, T8, T9, and T10.
+
+No approved, reputable-screen FX cointegration pair remains unbuilt, and both
+preferred anchors retain downstream verdicts rather than Q02 infrastructure
+blocks. The CPU-ceiling rule therefore required an immediate stop: no card,
+EA, registry row, work item, priority, dispatch, compile, or MT5 tester run was
+created or changed.
+
 ## Evidence And Safety
 
 - Scan: `docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md`.
