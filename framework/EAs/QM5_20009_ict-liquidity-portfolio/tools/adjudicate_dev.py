@@ -38,6 +38,7 @@ INVENTORY_TYPE = "QM5_20009_FREEZE_V5_DEV_RECEIPT_INVENTORY"
 EVIDENCE_TYPE = "QM5_20009_FREEZE_V5_DEV_ADJUDICATION_EVIDENCE"
 VERDICT_TYPE = "QM5_20009_FREEZE_V5_DEV_VERDICT"
 LAUNCHER_RECEIPT_TYPE = "QM5_20009_FAIL_CLOSED_RESEARCH_LAUNCHER_RECEIPT"
+ATTEMPT_AUDIT_TYPE = "QM5_20009_RESEARCH_ATTEMPT_AUDIT"
 COST_AUDIT_TYPE = "QM5_20009_DEV1_MT5_REPORT_AUDIT_RECEIPT"
 COST_REPORT_TYPE = "QM5_20009_DEV1_MT5_REPORT_COST_AUDIT"
 
@@ -672,10 +673,47 @@ ARTIFACT_KEYS = {
     "validator_post",
     "runner_result",
     "runner_summary",
+    "attempt_audit",
     "cost_audit",
     "raw_reports",
     "tester_inis",
     "tester_logs",
+}
+ATTEMPT_AUDIT_KEYS = {
+    "schema_version",
+    "artifact_type",
+    "status",
+    "report_dir",
+    "raw_root",
+    "selection_policy",
+    "count_algebra",
+    "accepted_run_ids",
+    "attempts",
+    "unbound_files",
+}
+ATTEMPT_SELECTION_KEYS = {
+    "rule",
+    "performance_fields_consulted",
+    "cost_deal_audit_uses_only_selected",
+}
+ATTEMPT_COUNT_KEYS = {
+    "requested_runs",
+    "max_run_attempts",
+    "attempted_runs",
+    "non_ok_attempts",
+    "ok_runs",
+}
+ATTEMPT_ROW_KEYS = {
+    "ordinal",
+    "run",
+    "status",
+    "failure",
+    "invalid_report_reasons",
+    "selected_for_cost_audit",
+    "report",
+    "tester_ini",
+    "tester_log",
+    "explicit_absences",
 }
 RUNTIME_TOOLCHAIN_KEYS = {
     "runtime_snapshot",

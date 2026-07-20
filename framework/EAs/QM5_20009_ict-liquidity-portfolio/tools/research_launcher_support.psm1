@@ -458,7 +458,7 @@ function Assert-QmResearchSummary {
             report = $reportBinding
             tester_ini = $testerIniBinding
             tester_log = $testerLogBinding
-            explicit_absences = @($explicitAbsences)
+            explicit_absences = $explicitAbsences.ToArray()
         })
 
         if ($selected) {
@@ -495,15 +495,15 @@ function Assert-QmResearchSummary {
             non_ok_attempts = [int]$nonOkAttempts
             ok_runs = [int]$acceptedReports.Count
         }
-        accepted_run_ids = @($acceptedRunIds)
-        attempts = @($attemptRows)
+        accepted_run_ids = $acceptedRunIds.ToArray()
+        attempts = $attemptRows.ToArray()
         unbound_files = @()
     }
     return [ordered]@{
         report_dir = $reportDir
-        reports = @($acceptedReports)
-        tester_inis = @($acceptedTesterInis)
-        tester_logs = @($acceptedTesterLogs)
+        reports = $acceptedReports.ToArray()
+        tester_inis = $acceptedTesterInis.ToArray()
+        tester_logs = $acceptedTesterLogs.ToArray()
         attempt_audit = $attemptAudit
     }
 }

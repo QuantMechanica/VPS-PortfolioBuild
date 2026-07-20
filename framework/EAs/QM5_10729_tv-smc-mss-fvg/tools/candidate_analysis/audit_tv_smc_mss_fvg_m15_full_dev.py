@@ -18,7 +18,7 @@ import tempfile
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation, ROUND_HALF_EVEN, localcontext
 from fractions import Fraction
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
@@ -237,7 +237,7 @@ def decimal_text(value: Fraction) -> str:
     if denominator != 1:
         raise AuditError(f"non-terminating decimal requested: {value}")
     scale = max(twos, fives)
-    scaled = numerator * (2 ** (scale - fives)) * (5 ** (scale - twos))
+    scaled = numerator * (2 ** (scale - twos)) * (5 ** (scale - fives))
     sign = "-" if scaled < 0 else ""
     digits = str(abs(scaled))
     if scale == 0:
@@ -366,7 +366,9 @@ def _aggregate_m15(raw_bars: Sequence[Bar]) -> tuple[list[Bar], int]:
     return output, partial
 
 
-def parse_market(path: Path, symbol: str, source_period: int) -> MarketSlice:
+def parse_market(
+    path: Path, symbol: str, source_period: int, *, enforce_expected: bool = True
+) -> MarketSlice:
     if not path.is_file():
         raise AuditError(f"market file missing: {path}")
     raw_digest = hashlib.sha256()
@@ -448,7 +450,7 @@ def parse_market(path: Path, symbol: str, source_period: int) -> MarketSlice:
         "partial": spec["expected_partial_buckets"],
         "excluded": spec["expected_first_excluded"],
     }
-    if observed != expected:
+    if enforce_expected and observed != expected:
         raise DataIntegrityError(f"availability drift for {symbol}: {observed} != {expected}")
 
     return MarketSlice(
@@ -1104,3 +1106,609 @@ def trade_payload(trade: Trade) -> dict[str, Any]:
             "entry_bar_exit": False,
         }
     )
+
+
+def _pf_at_least(metric: Metric, threshold: Fraction) -> bool:
+    if metric.adjusted_pf == "INF":
+        return True
+    return isinstance(metric.adjusted_pf, Fraction) and metric.adjusted_pf >= threshold
+
+
+def gate_row(gate: str, observed: Any, rule: str, passed: bool) -> dict[str, Any]:
+    return {
+        "gate": gate,
+        "observed": encode_exact(observed),
+        "rule": rule,
+        "pass": bool(passed),
+    }
+
+
+def _group_metrics(
+    trades: Sequence[Trade], attribute: str, expected: Sequence[str]
+) -> tuple[dict[str, Metric], dict[str, dict[str, Any]]]:
+    groups: dict[str, list[Trade]] = {key: [] for key in expected}
+    for trade in trades:
+        if attribute == "symbol_session":
+            key = f"{trade.symbol}|{trade.session}"
+        elif attribute == "year":
+            key = str(epoch_to_datetime(trade.exit_timestamp).year)
+        elif attribute == "symbol_year":
+            key = f"{trade.symbol}|{epoch_to_datetime(trade.exit_timestamp).year}"
+        else:
+            key = str(getattr(trade, attribute))
+        groups.setdefault(key, []).append(trade)
+    internal = {key: compute_metric(groups[key]) for key in sorted(groups)}
+    payload = {key: metric_payload(metric) for key, metric in internal.items()}
+    return internal, payload
+
+
+def scenario_report(trades: Sequence[Trade]) -> tuple[dict[str, Any], dict[str, Any]]:
+    pooled = compute_metric(trades)
+    by_symbol_i, by_symbol = _group_metrics(trades, "symbol", SYMBOLS)
+    by_session_i, by_session = _group_metrics(trades, "session", SESSIONS)
+    by_side_i, by_side = _group_metrics(trades, "side", SIDES)
+    cells = tuple(f"{symbol}|{session}" for symbol in SYMBOLS for session in SESSIONS)
+    by_cell_i, by_cell = _group_metrics(trades, "symbol_session", cells)
+    year_keys = tuple(str(year) for year in ANALYSIS_YEARS)
+    by_year_i, by_year = _group_metrics(trades, "year", year_keys)
+    symbol_year_keys = tuple(
+        f"{symbol}|{year}" for symbol in SYMBOLS for year in ANALYSIS_YEARS
+    )
+    by_symbol_year_i, by_symbol_year = _group_metrics(
+        trades, "symbol_year", symbol_year_keys
+    )
+    payload = {
+        "pooled": metric_payload(pooled),
+        "by_symbol": by_symbol,
+        "by_session": by_session,
+        "by_side": by_side,
+        "by_symbol_session": by_cell,
+        "by_year": by_year,
+        "by_symbol_year": by_symbol_year,
+        "trades": [
+            trade_payload(trade)
+            for trade in sorted(
+                trades,
+                key=lambda item: (
+                    item.entry_timestamp,
+                    item.symbol,
+                    item.session,
+                    item.trade_id,
+                ),
+            )
+        ],
+    }
+    internal = {
+        "pooled": pooled,
+        "by_symbol": by_symbol_i,
+        "by_session": by_session_i,
+        "by_side": by_side_i,
+        "by_symbol_session": by_cell_i,
+        "by_year": by_year_i,
+        "by_symbol_year": by_symbol_year_i,
+    }
+    return internal, payload
+
+
+def evaluate_gates(
+    center: Mapping[str, Any], adverse: Mapping[str, Any]
+) -> tuple[list[dict[str, Any]], str]:
+    gates: list[dict[str, Any]] = []
+    pooled: Metric = center["pooled"]
+    adverse_pooled: Metric = adverse["pooled"]
+
+    gates.append(gate_row("CENTER_POOLED_FILLS", pooled.trades, ">=120", pooled.trades >= 120))
+    for symbol in SYMBOLS:
+        metric = center["by_symbol"][symbol]
+        gates.append(gate_row(f"CENTER_{symbol}_FILLS", metric.trades, ">=40", metric.trades >= 40))
+    for session in SESSIONS:
+        metric = center["by_session"][session]
+        gates.append(gate_row(f"CENTER_{session}_FILLS", metric.trades, ">=30", metric.trades >= 30))
+    for side in SIDES:
+        metric = center["by_side"][side]
+        gates.append(gate_row(f"CENTER_{side}_FILLS", metric.trades, ">=30", metric.trades >= 30))
+    for symbol in SYMBOLS:
+        for session in SESSIONS:
+            key = f"{symbol}|{session}"
+            metric = center["by_symbol_session"][key]
+            gates.append(gate_row(f"CENTER_{key}_FILLS", metric.trades, ">=12", metric.trades >= 12))
+
+    net_scopes: list[tuple[str, Metric]] = [("POOLED", pooled)]
+    net_scopes.extend((symbol, center["by_symbol"][symbol]) for symbol in SYMBOLS)
+    net_scopes.extend((session, center["by_session"][session]) for session in SESSIONS)
+    net_scopes.extend((side, center["by_side"][side]) for side in SIDES)
+    net_scopes.extend(
+        (f"{symbol}|{session}", center["by_symbol_session"][f"{symbol}|{session}"])
+        for symbol in SYMBOLS
+        for session in SESSIONS
+    )
+    for name, metric in net_scopes:
+        gates.append(
+            gate_row(
+                f"CENTER_{name}_ADJ_NET",
+                metric.adjusted_net_r,
+                ">0",
+                metric.adjusted_net_r > 0,
+            )
+        )
+
+    gates.append(
+        gate_row(
+            "CENTER_POOLED_EXPECTANCY",
+            pooled.adjusted_expectancy_r
+            if pooled.adjusted_expectancy_r is not None
+            else "UNDEFINED",
+            ">=1/20R",
+            pooled.adjusted_expectancy_r is not None
+            and pooled.adjusted_expectancy_r >= Fraction(1, 20),
+        )
+    )
+    pf_scopes: list[tuple[str, Metric, Fraction]] = [("POOLED", pooled, Fraction(6, 5))]
+    pf_scopes.extend((symbol, center["by_symbol"][symbol], Fraction(6, 5)) for symbol in SYMBOLS)
+    pf_scopes.extend((session, center["by_session"][session], Fraction(11, 10)) for session in SESSIONS)
+    pf_scopes.extend((side, center["by_side"][side], Fraction(1)) for side in SIDES)
+    pf_scopes.extend(
+        (
+            f"{symbol}|{session}",
+            center["by_symbol_session"][f"{symbol}|{session}"],
+            Fraction(1),
+        )
+        for symbol in SYMBOLS
+        for session in SESSIONS
+    )
+    for name, metric, threshold in pf_scopes:
+        gates.append(
+            gate_row(
+                f"CENTER_{name}_PF",
+                metric.adjusted_pf or "UNDEFINED",
+                f">={fraction_text(threshold)}",
+                _pf_at_least(metric, threshold),
+            )
+        )
+
+    gates.append(
+        gate_row(
+            "CENTER_POOLED_POSITIVE_YEARS",
+            pooled.positive_full_years,
+            ">=3 of 4",
+            pooled.positive_full_years >= 3,
+        )
+    )
+    for symbol in SYMBOLS:
+        metric = center["by_symbol"][symbol]
+        gates.append(
+            gate_row(
+                f"CENTER_{symbol}_POSITIVE_YEARS",
+                metric.positive_full_years,
+                ">=2 of 4",
+                metric.positive_full_years >= 2,
+            )
+        )
+    for session in SESSIONS:
+        metric = center["by_session"][session]
+        gates.append(
+            gate_row(
+                f"CENTER_{session}_POSITIVE_YEARS",
+                metric.positive_full_years,
+                ">=2 of 4",
+                metric.positive_full_years >= 2,
+            )
+        )
+
+    gates.append(
+        gate_row(
+            "CENTER_POOLED_DD",
+            pooled.max_closed_balance_dd_r,
+            "<=10R",
+            pooled.max_closed_balance_dd_r <= 10,
+        )
+    )
+    for symbol in SYMBOLS:
+        metric = center["by_symbol"][symbol]
+        gates.append(
+            gate_row(
+                f"CENTER_{symbol}_DD",
+                metric.max_closed_balance_dd_r,
+                "<=10R",
+                metric.max_closed_balance_dd_r <= 10,
+            )
+        )
+    gates.append(
+        gate_row(
+            "CENTER_WORST_CLOSED_DAY",
+            pooled.worst_closed_day_r,
+            ">=-5R",
+            pooled.worst_closed_day_r >= -5,
+        )
+    )
+    gates.append(
+        gate_row(
+            "CENTER_TOP2_SHARE",
+            pooled.top_two_winner_share
+            if pooled.top_two_winner_share is not None
+            else "UNDEFINED",
+            "<=1/2",
+            pooled.top_two_winner_share is not None
+            and pooled.top_two_winner_share <= Fraction(1, 2),
+        )
+    )
+    gates.append(
+        gate_row(
+            "CENTER_LEAVE_BEST_TRADE",
+            pooled.leave_best_trade_r,
+            ">0",
+            pooled.leave_best_trade_r > 0,
+        )
+    )
+    gates.append(
+        gate_row(
+            "CENTER_LEAVE_BEST_YEAR",
+            pooled.leave_best_year_r,
+            ">0",
+            pooled.leave_best_year_r > 0,
+        )
+    )
+    gates.append(
+        gate_row(
+            "CENTER_COST_BURDEN",
+            pooled.cost_burden if pooled.cost_burden is not None else "UNDEFINED",
+            "<=1/4",
+            pooled.cost_burden is not None and pooled.cost_burden <= Fraction(1, 4),
+        )
+    )
+
+    gates.append(
+        gate_row(
+            "ADVERSE_POOLED_ADJ_NET",
+            adverse_pooled.adjusted_net_r,
+            ">0",
+            adverse_pooled.adjusted_net_r > 0,
+        )
+    )
+    gates.append(
+        gate_row(
+            "ADVERSE_POOLED_PF",
+            adverse_pooled.adjusted_pf or "UNDEFINED",
+            ">=1",
+            _pf_at_least(adverse_pooled, Fraction(1)),
+        )
+    )
+    for symbol in SYMBOLS:
+        metric = adverse["by_symbol"][symbol]
+        gates.append(
+            gate_row(
+                f"ADVERSE_{symbol}_ADJ_NET",
+                metric.adjusted_net_r,
+                ">0",
+                metric.adjusted_net_r > 0,
+            )
+        )
+    for session in SESSIONS:
+        metric = adverse["by_session"][session]
+        gates.append(
+            gate_row(
+                f"ADVERSE_{session}_ADJ_NET",
+                metric.adjusted_net_r,
+                ">0",
+                metric.adjusted_net_r > 0,
+            )
+        )
+    gates.append(
+        gate_row(
+            "ADVERSE_POOLED_DD",
+            adverse_pooled.max_closed_balance_dd_r,
+            "<=10R",
+            adverse_pooled.max_closed_balance_dd_r <= 10,
+        )
+    )
+    gates.append(
+        gate_row(
+            "ADVERSE_WORST_CLOSED_DAY",
+            adverse_pooled.worst_closed_day_r,
+            ">=-5R",
+            adverse_pooled.worst_closed_day_r >= -5,
+        )
+    )
+    verdict = (
+        "CONJUNCTIVE_FAMILY_MERIT"
+        if all(row["pass"] for row in gates)
+        else "NO_CONJUNCTIVE_FAMILY_MERIT"
+    )
+    return gates, verdict
+
+
+def _resolve_binding_path(raw: str) -> Path:
+    candidate = Path(raw)
+    return candidate if candidate.is_absolute() else REPO_ROOT / candidate
+
+
+def _mtime_100ns(path: Path) -> str:
+    nanoseconds = path.stat().st_mtime_ns
+    seconds, remainder = divmod(nanoseconds, 1_000_000_000)
+    current = datetime.fromtimestamp(seconds, timezone.utc)
+    return f"{current:%Y-%m-%dT%H:%M:%S}.{remainder // 100:07d}Z"
+
+
+def verify_release() -> tuple[dict[str, Any], dict[str, str]]:
+    contract_sha = sha256_file(CONTRACT_PATH)
+    review_sha = sha256_file(REVIEW_PATH)
+    if contract_sha != EXPECTED_CONTRACT_SHA256:
+        raise AuditError(f"contract hash drift: {contract_sha}")
+    if review_sha != EXPECTED_REVIEW_SHA256:
+        raise AuditError(f"review hash drift: {review_sha}")
+    contract = json.loads(CONTRACT_PATH.read_text(encoding="utf-8"))
+    review = json.loads(REVIEW_PATH.read_text(encoding="utf-8"))
+    if contract.get("analysis_id") != ANALYSIS_ID:
+        raise AuditError("analysis_id drift")
+    if review.get("review_status") != "PASS" or review.get("reviewed_contract_sha256") != contract_sha:
+        raise AuditError("review receipt does not release this contract")
+    observed: dict[str, str] = {}
+    for raw_path, expected in contract["source_bindings"].items():
+        path = _resolve_binding_path(raw_path)
+        if not path.is_file():
+            raise AuditError(f"bound source missing: {path}")
+        digest = sha256_file(path)
+        observed[str(path.resolve())] = digest
+        if digest != expected:
+            raise AuditError(f"bound source hash drift: {path}: {digest} != {expected}")
+    if len(observed) != 15:
+        raise AuditError(f"expected 15 source bindings, got {len(observed)}")
+    for symbol, spec in contract["data_contract"]["files"].items():
+        path = Path(spec["path"])
+        if path.stat().st_size != spec["file_length_bytes_at_freeze"]:
+            raise AuditError(f"data length drift: {symbol}")
+        if _mtime_100ns(path) != spec["file_last_write_utc_at_freeze"]:
+            raise AuditError(f"data last-write drift: {symbol}")
+    return contract, dict(sorted(observed.items()))
+
+
+def build_reports(
+    trades_by_scenario: Mapping[str, Sequence[Trade]]
+) -> tuple[dict[str, Any], dict[str, Any], list[dict[str, Any]], str]:
+    internal: dict[str, Any] = {}
+    payload: dict[str, Any] = {}
+    for scenario in SCENARIOS:
+        internal[scenario], payload[scenario] = scenario_report(trades_by_scenario[scenario])
+    gates, verdict = evaluate_gates(internal["CENTER"], internal["ADVERSE"])
+    return internal, payload, gates, verdict
+
+
+def run_analysis() -> dict[str, Any]:
+    contract, bindings = verify_release()
+    news_path = Path(contract["news_contract"]["calendar_path"])
+    news, news_identity = load_news(
+        news_path, contract["news_contract"]["calendar_sha256"]
+    )
+    markets: dict[str, MarketSlice] = {}
+    structural: dict[str, Any] = {}
+    execution: dict[str, dict[str, Any]] = {scenario: {} for scenario in SCENARIOS}
+    trades_by_scenario: dict[str, list[Trade]] = {scenario: [] for scenario in SCENARIOS}
+    for symbol in SYMBOLS:
+        data_spec = contract["data_contract"]["files"][symbol]
+        source_period = int(str(data_spec["source_period"]).removeprefix("M"))
+        market = parse_market(Path(data_spec["path"]), symbol, source_period)
+        markets[symbol] = market
+        signals, funnel = generate_signals(symbol, market.bars)
+        structural[symbol] = {
+            "funnel": funnel,
+            "signals": len(signals),
+        }
+        for scenario in SCENARIOS:
+            trades, scenario_funnel = simulate_symbol_scenario(
+                market, signals, funnel, news, scenario
+            )
+            trades_by_scenario[scenario].extend(trades)
+            execution[scenario][symbol] = {
+                "funnel": scenario_funnel,
+                "trades": len(trades),
+            }
+    _internal, scenario_payload, gates, verdict = build_reports(trades_by_scenario)
+    return {
+        "analysis_id": ANALYSIS_ID,
+        "artifact_type": "QM5_10729_M15_TWO_SYMBOL_OFFLINE_FULL_DEV_RESULT",
+        "contract": {
+            "path": str(CONTRACT_PATH.resolve()),
+            "commit": CONTRACT_COMMIT,
+            "sha256": EXPECTED_CONTRACT_SHA256,
+        },
+        "review_receipt": {
+            "path": str(REVIEW_PATH.resolve()),
+            "sha256": EXPECTED_REVIEW_SHA256,
+            "status": "PASS",
+        },
+        "integrity": {
+            "status": "PASS",
+            "issues": [],
+            "future_ohlc_parsed": False,
+            "future_ohlc_parsed_by_symbol": {symbol: False for symbol in SYMBOLS},
+            "source_bindings": bindings,
+            "tool_sha256": sha256_file(TOOL_PATH),
+            "numeric_arithmetic": "exact reduced Fraction; commission-only HALF_UP cents",
+        },
+        "market_slices": {
+            symbol: vars(markets[symbol].identity) for symbol in SYMBOLS
+        },
+        "news": news_identity,
+        "fixed_inputs": {
+            "symbols": list(SYMBOLS),
+            "scenarios": list(SCENARIOS),
+            "timeframe": "M15",
+            "swing_length": 5,
+            "reward_risk": "2/1",
+            "risk_usd": 1000,
+            "sessions_broker_half_open": {
+                "LONDON_LABEL": "[14:00,17:00)",
+                "NEW_YORK_LABEL": "[19:30,23:00)",
+            },
+            "full_common_years": list(FULL_YEARS),
+            "selection": "NONE_COMPOSITE_INSEPARABLE",
+        },
+        "structural_funnels": structural,
+        "execution_funnels": execution,
+        "scenarios": scenario_payload,
+        "gates": gates,
+        "failed_gates": [row["gate"] for row in gates if not row["pass"]],
+        "verdict": verdict,
+        "selection": "NO_SYMBOL_SESSION_SIDE_OR_SCENARIO_SELECTION",
+        "post_fail_rule": "NO_TUNING_NO_OPTIMIZATION_NO_SUBSET_SELECTION",
+    }
+
+
+def canonical_json(payload: Mapping[str, Any]) -> bytes:
+    return (
+        json.dumps(payload, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+        + "\n"
+    ).encode("utf-8")
+
+
+def write_atomic(path: Path, data: bytes) -> None:
+    path = path.resolve()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, temporary = tempfile.mkstemp(
+        prefix=f".{path.name}.", suffix=".tmp", dir=path.parent
+    )
+    try:
+        with os.fdopen(descriptor, "wb") as handle:
+            handle.write(data)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, path)
+    except Exception:
+        try:
+            os.unlink(temporary)
+        except OSError:
+            pass
+        raise
+
+
+def _parse_exact(raw: Any) -> Fraction | None:
+    if not isinstance(raw, str) or raw in {"INF", "UNDEFINED"}:
+        return None
+    numerator, denominator = raw.split("/", 1)
+    return Fraction(int(numerator), int(denominator))
+
+
+def _display(raw: Any, places: int = 12) -> str:
+    if raw in {"INF", "UNDEFINED"}:
+        return str(raw)
+    value = _parse_exact(raw)
+    if value is None:
+        return str(raw)
+    precision = max(
+        50,
+        len(str(abs(value.numerator))) + len(str(value.denominator)) + places + 10,
+    )
+    with localcontext() as context:
+        context.prec = precision
+        rendered = Decimal(value.numerator) / Decimal(value.denominator)
+        quantum = Decimal(1).scaleb(-places)
+        return format(rendered.quantize(quantum, rounding=ROUND_HALF_EVEN), "f")
+
+
+def render_report(payload: Mapping[str, Any]) -> bytes:
+    lines = [
+        "# QM5_10729 M15 two-symbol full-DEV result",
+        "",
+        f"- Verdict: **{payload['verdict']}**",
+        f"- Contract SHA256: `{payload['contract']['sha256']}`",
+        f"- Review SHA256: `{payload['review_receipt']['sha256']}`",
+        f"- Result integrity: `{payload['integrity']['status']}`; future OHLC parsed: `{str(payload['integrity']['future_ohlc_parsed']).lower()}`",
+        f"- Failed gates: `{len(payload['failed_gates'])}`",
+        "",
+        "No tuning, symbol/session/side selection, future data, or production EA change was used.",
+        "All rendered decimals below are 12-place display-only values; gates use exact rational strings in JSON.",
+        "",
+        "## Pooled center/adverse",
+        "",
+        "| Scenario | Trades | Adj net R | PF | Expectancy R | DD R | Worst day R | Commission USD |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|",
+    ]
+    for scenario in SCENARIOS:
+        metric = payload["scenarios"][scenario]["pooled"]
+        lines.append(
+            f"| {scenario} | {metric['trades']} | {_display(metric['adjusted_net_r'])} | "
+            f"{_display(metric['adjusted_profit_factor'])} | {_display(metric['adjusted_expectancy_r'])} | "
+            f"{_display(metric['max_adjusted_closed_balance_drawdown_r'])} | "
+            f"{_display(metric['worst_closed_exit_broker_day_r'])} | {_display(metric['external_commission_usd'])} |"
+        )
+    for heading, key in (
+        ("By symbol", "by_symbol"),
+        ("By session", "by_session"),
+        ("By side", "by_side"),
+        ("By symbol/session", "by_symbol_session"),
+        ("By exit year", "by_year"),
+    ):
+        lines.extend(
+            [
+                "",
+                f"## {heading}",
+                "",
+                "| Scenario | Scope | Trades | Adj net R | PF | Expectancy R | Positive years |",
+                "|---|---|---:|---:|---:|---:|---:|",
+            ]
+        )
+        for scenario in SCENARIOS:
+            for scope, metric in payload["scenarios"][scenario][key].items():
+                lines.append(
+                    f"| {scenario} | {scope} | {metric['trades']} | {_display(metric['adjusted_net_r'])} | "
+                    f"{_display(metric['adjusted_profit_factor'])} | {_display(metric['adjusted_expectancy_r'])} | "
+                    f"{metric['positive_full_common_years']} |"
+                )
+    lines.extend(["", "## Gate failures", ""])
+    if payload["failed_gates"]:
+        lines.extend(f"- `{gate}`" for gate in payload["failed_gates"])
+    else:
+        lines.append("- None")
+    lines.extend(["", "## Data hashes", ""])
+    for symbol, identity in payload["market_slices"].items():
+        lines.append(
+            f"- {symbol}: raw `{identity['raw_slice_sha256']}`, M15 `{identity['canonical_m15_sha256']}`, "
+            f"rows `{identity['m15_rows']}`"
+        )
+    return ("\n".join(lines) + "\n").encode("utf-8")
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument("--report", type=Path, default=DEFAULT_REPORT)
+    return parser
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+    try:
+        payload = run_analysis()
+        result_bytes = canonical_json(payload)
+        write_atomic(args.output, result_bytes)
+        if args.report:
+            write_atomic(args.report, render_report(payload))
+        summary = {
+            "status": "PASS",
+            "output": str(args.output.resolve()),
+            "sha256": hashlib.sha256(result_bytes).hexdigest(),
+            "report": str(args.report.resolve()),
+            "verdict": payload["verdict"],
+            "failed_gates": len(payload["failed_gates"]),
+            "center_trades": payload["scenarios"]["CENTER"]["pooled"]["trades"],
+            "adverse_trades": payload["scenarios"]["ADVERSE"]["pooled"]["trades"],
+            "future_ohlc_parsed": payload["integrity"]["future_ohlc_parsed"],
+        }
+        print(json.dumps(summary, sort_keys=True))
+        return 0
+    except (AuditError, OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
+        print(
+            json.dumps(
+                {
+                    "status": "REJECT",
+                    "error_type": type(exc).__name__,
+                    "error": str(exc),
+                },
+                sort_keys=True,
+            )
+        )
+        return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

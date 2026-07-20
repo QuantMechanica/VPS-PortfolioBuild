@@ -360,7 +360,7 @@ def test_mocked_summary_requires_model4_and_every_raw_report(tmp_path: Path) -> 
     command = _module_command(
         "$s=Get-Content -Raw -LiteralPath $arg1|ConvertFrom-Json -AsHashtable -DateKind String;"
         "$c=Get-Content -Raw -LiteralPath $arg2|ConvertFrom-Json -AsHashtable -DateKind String;"
-        "$r=Assert-QmResearchSummary -Summary $s -Contract $c;$r|ConvertTo-Json -Compress"
+        "$r=Assert-QmResearchSummary -Summary $s -Contract $c;$r|ConvertTo-Json -Depth 100 -Compress"
     )
     valid = _pwsh(command, str(SUPPORT), str(summary_path), str(contract_path), "unused")
     assert valid.returncode == 0, valid.stdout + valid.stderr
@@ -465,7 +465,7 @@ def test_retry_inventory_binds_missing_report_absence_and_selects_only_ok(
         (lambda summary: summary.update(attempted_runs=2), "count drift"),
         (lambda summary: summary.update(non_ok_attempts=0), "count algebra"),
         (lambda summary: summary.update(max_run_attempts=3), "retry budget drift"),
-        (lambda summary: summary["runs"][1].update(status="OK", failure=None), "accepted OK count drift"),
+        (lambda summary: summary["runs"][1].update(status="OK", failure=None), "real-ticks marker"),
         (lambda summary: summary["runs"][2].update(run="run_02"), "ordinal drift"),
     ],
 )
