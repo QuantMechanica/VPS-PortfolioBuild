@@ -28,9 +28,11 @@ import json
 import math
 import os
 import re
+import secrets
 import subprocess
 import sys
 import tempfile
+import time as time_module
 from collections import defaultdict
 from dataclasses import asdict, dataclass
 from datetime import date, datetime, time, timedelta, timezone
@@ -91,11 +93,31 @@ NY_ENTRY_END = time(10, 15)
 # A close request is issued at 10:15.  One complete M5 bar is the hard maximum
 # execution grace; 10:20 itself is outside the permitted interval.
 NY_FLAT_DEADLINE_EXCLUSIVE = time(10, 20)
+WORKER_REGISTRATION_TIMEOUT_SECONDS = 30
+STALE_WORKER_START_SECONDS = 300
 
 SYMBOL_POLICY: dict[str, str] = {
     "WS30.DWX": "ELIGIBLE_ONLY_WITH_FRESH_PASS_VALIDATION",
     "NDX.DWX": "BLOCKED_SETUP_DATA_MISMATCH_NO_OUTCOME_AUTHORIZATION",
 }
+
+REQUIRED_BINDING_ROLES = frozenset(
+    {
+        "card",
+        "pine",
+        "spec",
+        "mq5",
+        "ex5",
+        "set",
+        "matrix",
+        "cost",
+        "live_commission",
+        "runner",
+        "report_parser",
+        "powershell",
+        "tool",
+    }
+)
 
 
 @dataclass(frozen=True)
@@ -394,11 +416,12 @@ def validate_validation_receipt(
     now: datetime | None = None,
 ) -> dict[str, Any]:
     receipt = load_json(path)
-    if receipt.get("artifact_type") not in {
-        "QM_CUSTOM_SYMBOL_VALIDATION_RECEIPT",
-        "QM_DWX_SYMBOL_VALIDATION_RECEIPT",
-    }:
-        raise InvalidEvidence("unsupported custom-symbol validation receipt type")
+    if (
+        receipt.get("schema_version") != 1
+        or receipt.get("artifact_type") != "QM_CUSTOM_SYMBOL_VALIDATION_RECEIPT"
+        or receipt.get("terminal") != "T1"
+    ):
+        raise InvalidEvidence("custom-symbol validation receipt schema/terminal drift")
     if receipt.get("symbol") != symbol or receipt.get("status") != "PASS":
         raise InvalidEvidence("custom-symbol validation is not an exact PASS for the symbol")
     if receipt.get("classification") not in {"PASS", "VALIDATED"}:
@@ -438,6 +461,7 @@ def validate_data_manifest(
     symbol: str,
     *,
     terminal_data_root: Path = TERMINAL_DATA_ROOT,
+    verify_file_bindings: bool = True,
 ) -> dict[str, Any]:
     manifest_binding = file_binding(path)
     manifest = load_json(path)
@@ -469,7 +493,8 @@ def validate_data_manifest(
     for index, item in enumerate(files):
         if not isinstance(item, Mapping):
             raise InvalidEvidence("data file binding is not an object")
-        assert_binding(item, f"data file[{index}]")
+        if verify_file_bindings:
+            assert_binding(item, f"data file[{index}]")
         item_path = Path(str(item["path"])).resolve()
         if item_path in seen_paths:
             raise InvalidEvidence(f"duplicate data-file binding: {item_path}")
@@ -698,6 +723,8 @@ def resolve_cost_schedule(path: Path, symbol: str) -> dict[str, str]:
     row = symbols.get(key)
     if not isinstance(row, Mapping):
         raise InvalidEvidence(f"cost model has no exact symbol row for {symbol}")
+    if row.get("dwx_symbol") != symbol or row.get("asset_class") != "index":
+        raise InvalidEvidence(f"cost model row is not the exact index contract for {symbol}")
     dxz = row.get("dxz")
     ftmo = row.get("ftmo")
     if not isinstance(dxz, Mapping) or not isinstance(ftmo, Mapping):
@@ -764,22 +791,30 @@ def build_plan(symbol: str, set_binding: Mapping[str, Any], run_root: Path) -> d
     return {**plan_basis, "plan_sha256": canonical_sha256(plan_basis)}
 
 
-def _binding_map(symbol: str) -> dict[str, dict[str, Any]]:
+def _expected_binding_paths(symbol: str) -> dict[str, Path]:
     set_path = EA_ROOT / "sets" / f"{EXPERT_NAME}_{symbol}_M5_backtest.set"
     return {
-        "card": file_binding(CARD_PATH),
-        "pine": file_binding(PINE_PATH, EXPECTED_PINE_SHA256),
-        "spec": file_binding(SPEC_PATH),
-        "mq5": file_binding(MQ5_PATH),
-        "ex5": file_binding(EX5_PATH),
-        "set": file_binding(set_path),
-        "matrix": file_binding(MATRIX_PATH),
-        "cost": file_binding(COST_PATH),
-        "live_commission": file_binding(LIVE_COMMISSION_PATH),
-        "runner": file_binding(RUNNER_PATH),
-        "report_parser": file_binding(REPORT_CORE_PATH),
-        "powershell": file_binding(POWERSHELL_PATH),
-        "tool": file_binding(TOOL_PATH),
+        "card": CARD_PATH,
+        "pine": PINE_PATH,
+        "spec": SPEC_PATH,
+        "mq5": MQ5_PATH,
+        "ex5": EX5_PATH,
+        "set": set_path,
+        "matrix": MATRIX_PATH,
+        "cost": COST_PATH,
+        "live_commission": LIVE_COMMISSION_PATH,
+        "runner": RUNNER_PATH,
+        "report_parser": REPORT_CORE_PATH,
+        "powershell": POWERSHELL_PATH,
+        "tool": TOOL_PATH,
+    }
+
+
+def _binding_map(symbol: str) -> dict[str, dict[str, Any]]:
+    paths = _expected_binding_paths(symbol)
+    return {
+        role: file_binding(path, EXPECTED_PINE_SHA256 if role == "pine" else None)
+        for role, path in paths.items()
     }
 
 
@@ -863,10 +898,11 @@ def _assert_plan(pre: Mapping[str, Any]) -> None:
         raise InvalidEvidence("PRE symbol policy missing")
     symbol = str(policy.get("authorized_symbol", ""))
     enforce_symbol_policy(symbol)
+    run_root = _assert_run_root(Path(str(pre.get("run_root", ""))))
     bindings = pre.get("bindings")
     if not isinstance(bindings, Mapping) or not isinstance(bindings.get("set"), Mapping):
         raise InvalidEvidence("PRE set binding missing")
-    expected = build_plan(symbol, bindings["set"], Path(str(pre.get("run_root", ""))))
+    expected = build_plan(symbol, bindings["set"], run_root)
     if pre.get("plan") != expected:
         raise InvalidEvidence("PRE plan/cell closure drift")
 
@@ -893,16 +929,22 @@ def assert_pre_receipt(path: Path, expected_sha256: str) -> dict[str, Any]:
     bindings = pre.get("bindings")
     if not isinstance(bindings, Mapping):
         raise InvalidEvidence("PRE bindings missing")
-    required_roles = {
-        "card", "pine", "spec", "mq5", "ex5", "set", "matrix", "cost",
-        "live_commission", "runner", "report_parser", "powershell", "tool",
-    }
-    if set(bindings) != required_roles:
+    if set(bindings) != REQUIRED_BINDING_ROLES:
         raise InvalidEvidence(f"PRE binding-role closure drift: {sorted(bindings)}")
     for role, item in bindings.items():
         if not isinstance(item, Mapping):
             raise InvalidEvidence(f"PRE binding is not an object: {role}")
         assert_binding(item, f"PRE {role}")
+    policy = pre["symbol_policy"]
+    symbol = str(policy["authorized_symbol"])
+    expected_paths = _expected_binding_paths(symbol)
+    path_drift = {
+        role: (str(expected_paths[role].resolve()), str(Path(str(item["path"])).resolve()))
+        for role, item in bindings.items()
+        if Path(str(item["path"])).resolve() != expected_paths[role].resolve()
+    }
+    if path_drift:
+        raise InvalidEvidence(f"PRE role/path identity drift: {path_drift}")
     if bindings["tool"]["sha256"] != sha256_file(TOOL_PATH):
         raise InvalidEvidence("executing tool differs from PRE-bound runner")
     includes = pre.get("include_closure")
@@ -912,6 +954,9 @@ def assert_pre_receipt(path: Path, expected_sha256: str) -> dict[str, Any]:
         if not isinstance(item, Mapping):
             raise InvalidEvidence("PRE include binding malformed")
         assert_binding(item, f"PRE include[{index}]")
+    expected_includes = include_closure(MQ5_PATH)
+    if includes != expected_includes:
+        raise InvalidEvidence("PRE recursive include closure drift")
     for role in ("build_receipt", "validation_receipt"):
         item = pre.get(role)
         if not isinstance(item, Mapping):
@@ -928,9 +973,82 @@ def assert_pre_receipt(path: Path, expected_sha256: str) -> dict[str, Any]:
         if not isinstance(item, Mapping):
             raise InvalidEvidence("PRE data binding malformed")
         assert_binding(item, f"PRE data[{index}]")
+    validated_data = validate_data_manifest(
+        Path(str(data["manifest"]["path"])),
+        symbol,
+        verify_file_bindings=False,
+    )
+    if data != _jsonable(validated_data):
+        raise InvalidEvidence("PRE/data-manifest semantic closure drift")
+    metadata, set_inputs = parse_set(Path(str(bindings["set"]["path"])))
+    _validate_set_contract(symbol, metadata, set_inputs)
+    expected_inputs = effective_input_contract(MQ5_PATH, includes, set_inputs)
+    if pre.get("effective_inputs") != expected_inputs:
+        raise InvalidEvidence("PRE effective input closure drift")
+    build = validate_build_receipt(
+        Path(str(pre["build_receipt"]["path"])), symbol, bindings
+    )
+    if pre.get("build_commit") != build["build_commit"]:
+        raise InvalidEvidence("PRE build-commit binding drift")
+    expected_cost = resolve_cost_schedule(Path(str(bindings["cost"]["path"])), symbol)
+    if pre.get("cost_schedule") != expected_cost:
+        raise InvalidEvidence("PRE worst-venue cost schedule drift")
+    matrix_row = _matrix_row(symbol, Path(str(bindings["matrix"]["path"])))
+    if policy.get("matrix_row") != matrix_row:
+        raise InvalidEvidence("PRE symbol-matrix PASS row drift")
+    created = parse_utc(str(pre.get("created_utc", "")), "PRE created_utc")
+    if created > datetime.now(timezone.utc) + timedelta(minutes=5):
+        raise InvalidEvidence("PRE creation time is implausibly in the future")
+    validation = validate_validation_receipt(
+        Path(str(pre["validation_receipt"]["path"])),
+        symbol,
+        str(data["manifest"]["sha256"]),
+        now=created,
+    )
+    validation_identity = {
+        "validated_utc": validation["validated_utc"],
+        "valid_until_utc": validation.get(
+            "valid_until_utc", validation.get("expires_utc")
+        ),
+    }
+    if pre.get("validation_identity") != validation_identity:
+        raise InvalidEvidence("PRE validation identity drift")
+    card_text = CARD_PATH.read_text(encoding="utf-8-sig")
+    if "ea_id: QM5_10834" not in card_text or "g0_status: APPROVED" not in card_text:
+        raise InvalidEvidence("PRE-bound Card is no longer approved/exact")
+    spec_text = SPEC_PATH.read_text(encoding="utf-8-sig")
+    if EXPECTED_PINE_SHA256 not in spec_text or "d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7" not in spec_text:
+        raise InvalidEvidence("PRE-bound SPEC/source identity drift")
     if binding["sha256"] != expected_sha256.lower():
         raise InvalidEvidence("PRE binding mismatch")
+    assert_binding(binding, "stable PRE receipt")
     return pre
+
+
+def validate_current_symbol_gate(pre: Mapping[str, Any]) -> None:
+    policy = pre.get("symbol_policy")
+    data = pre.get("data")
+    validation = pre.get("validation_receipt")
+    bindings = pre.get("bindings")
+    if (
+        not isinstance(policy, Mapping)
+        or not isinstance(data, Mapping)
+        or not isinstance(data.get("manifest"), Mapping)
+        or not isinstance(validation, Mapping)
+        or not isinstance(bindings, Mapping)
+        or not isinstance(bindings.get("matrix"), Mapping)
+    ):
+        raise InvalidEvidence("PRE cannot prove a current symbol-validation gate")
+    symbol = str(policy.get("authorized_symbol", ""))
+    enforce_symbol_policy(symbol)
+    validate_validation_receipt(
+        Path(str(validation["path"])),
+        symbol,
+        str(data["manifest"]["sha256"]),
+    )
+    current_row = _matrix_row(symbol, Path(str(bindings["matrix"]["path"])))
+    if current_row != policy.get("matrix_row"):
+        raise InvalidEvidence("current symbol-matrix PASS row differs from PRE")
 
 
 def _dot_date(value: str) -> str:
@@ -1006,9 +1124,13 @@ def validate_authorization(
     binding = file_binding(path)
     payload = load_json(path)
     expected = {
+        "schema_version": 1,
         "artifact_type": "QM5_10834_NATIVE_OUTCOME_AUTHORIZATION",
+        "status": "AUTHORIZED",
         "analysis_id": ANALYSIS_ID,
         "pre_receipt_sha256": pre_sha256.lower(),
+        "scope": "QM5_10834_WS30_4_CELLS_X_2_DUPLICATES_MODEL4",
+        "authorized_by": "OWNER",
         "authorized_symbol": "WS30.DWX",
         "authorized_cells": [window.cell_id for window in WINDOWS],
         "duplicates_per_cell": DUPLICATES,
@@ -1078,8 +1200,19 @@ def _pid_alive(pid: Any) -> bool:
         return False
 
 
-def resume_eligible(state: Mapping[str, Any]) -> bool:
-    if state.get("status") not in {"PENDING", "INTERRUPTED_RESUMABLE"}:
+def resume_eligible(
+    state: Mapping[str, Any], *, now: datetime | None = None
+) -> bool:
+    status = state.get("status")
+    if status == "STARTING_WORKER":
+        try:
+            updated = parse_utc(str(state.get("updated_utc", "")), "state updated_utc")
+        except AuditError:
+            return False
+        current = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
+        if current - updated < timedelta(seconds=STALE_WORKER_START_SECONDS):
+            return False
+    elif status not in {"PENDING", "INTERRUPTED_RESUMABLE"}:
         return False
     if _pid_alive(state.get("worker_pid")):
         return False
@@ -1106,11 +1239,18 @@ def resume_eligible(state: Mapping[str, Any]) -> bool:
     return True
 
 
-def _spawn_worker(job_path: Path, stdout_path: Path, stderr_path: Path) -> int:
+def _spawn_worker(
+    job_path: Path,
+    stdout_path: Path,
+    stderr_path: Path,
+    launch_token: str,
+) -> int:
     stdout_path.parent.mkdir(parents=True, exist_ok=True)
     creationflags = 0
     for name in ("CREATE_NEW_PROCESS_GROUP", "DETACHED_PROCESS", "CREATE_NO_WINDOW"):
         creationflags |= int(getattr(subprocess, name, 0))
+    child_environment = os.environ.copy()
+    child_environment["QM10834_WORKER_LAUNCH_TOKEN"] = launch_token
     with stdout_path.open("ab", buffering=0) as stdout, stderr_path.open("ab", buffering=0) as stderr:
         process = subprocess.Popen(
             [sys.executable, str(TOOL_PATH), "_worker", "--job", str(job_path.resolve())],
@@ -1120,6 +1260,7 @@ def _spawn_worker(job_path: Path, stdout_path: Path, stderr_path: Path) -> int:
             stderr=stderr,
             close_fds=True,
             creationflags=creationflags,
+            env=child_environment,
         )
     return int(process.pid)
 
@@ -1133,6 +1274,7 @@ def launch_detached(
     resume: bool,
 ) -> dict[str, Any]:
     pre = assert_pre_receipt(pre_path, pre_sha256)
+    validate_current_symbol_gate(pre)
     expected_state = Path(str(pre["run_root"])).resolve() / "launch_state.json"
     if state_path.resolve() != expected_state:
         raise AuthorizationError(f"state path must be {expected_state}")
@@ -1178,11 +1320,49 @@ def launch_detached(
             pre_path, pre_sha256, pre, file_binding(job_path), authorization
         )
         atomic_json(state_path, state, replace=False)
-    pid = _spawn_worker(job_path, worker_stdout, worker_stderr)
+    previous_status = str(state["status"])
+    launch_token = secrets.token_hex(32)
+    launch_token_sha256 = hashlib.sha256(launch_token.encode("ascii")).hexdigest()
+    state["status"] = "STARTING_WORKER"
+    state["worker_pid"] = None
+    state["launch_token_sha256"] = launch_token_sha256
+    state["updated_utc"] = utc_now()
+    atomic_json(state_path, state, replace=True)
+    try:
+        pid = _spawn_worker(job_path, worker_stdout, worker_stderr, launch_token)
+    except (OSError, subprocess.SubprocessError):
+        state = load_json(state_path)
+        if state.get("launch_token_sha256") == launch_token_sha256:
+            state["status"] = previous_status
+            state["worker_pid"] = None
+            state["launch_token_sha256"] = None
+            state["updated_utc"] = utc_now()
+            atomic_json(state_path, state, replace=True)
+        raise
     state = load_json(state_path)
+    if (
+        state.get("launch_token_sha256") != launch_token_sha256
+        or state.get("status") != "STARTING_WORKER"
+    ):
+        raise AuthorizationError("launch state changed during detached-worker registration")
     state["worker_pid"] = pid
     state["status"] = "RUNNING"
     state["updated_utc"] = utc_now()
+    launches = state.setdefault("launches", [])
+    if not isinstance(launches, list):
+        raise AuthorizationError("launch audit list is malformed")
+    launches.append(
+        {
+            "launch_token_sha256": launch_token_sha256,
+            "worker_pid": pid,
+            "registered_utc": state["updated_utc"],
+            "resume": resume,
+            "authorization": {
+                "binding": dict(authorization["binding"]),
+                "payload_sha256": authorization["payload_sha256"],
+            },
+        }
+    )
     atomic_json(state_path, state, replace=True)
     return {
         "status": "LAUNCHED_DETACHED" if not resume else "RESUMED_DETACHED",
@@ -1202,7 +1382,91 @@ def _opaque_artifacts(root: Path) -> list[dict[str, Any]]:
     ]
 
 
-def _worker_run(job_path: Path) -> int:
+def _outcome_artifact_paths(root: Path) -> list[Path]:
+    if not root.is_dir():
+        return []
+    return sorted(
+        (
+            path
+            for path in root.rglob("*")
+            if path.is_file()
+            and (path.name.casefold() == "summary.json" or path.suffix.casefold() in {".htm", ".html"})
+        ),
+        key=lambda item: str(item).casefold(),
+    )
+
+
+def _archive_interrupted_no_outcome(
+    pre: Mapping[str, Any],
+    cell: Mapping[str, Any],
+    state_cell: dict[str, Any],
+) -> None:
+    attempts = state_cell.get("attempts")
+    if not isinstance(attempts, list) or not attempts:
+        raise InvalidEvidence("interrupted cell has no controller-attempt evidence")
+    if any(
+        not isinstance(attempt, Mapping)
+        or attempt.get("summary")
+        or attempt.get("outcome_artifacts")
+        for attempt in attempts
+    ):
+        raise InvalidEvidence("interrupted cell carries outcome evidence and cannot resume")
+    output_root = Path(str(cell["output_root"])).resolve()
+    if _outcome_artifact_paths(output_root):
+        raise InvalidEvidence("outcome artifact appeared after interrupted-state checkpoint")
+    interruptions = state_cell.setdefault("interruptions", [])
+    if not isinstance(interruptions, list):
+        raise InvalidEvidence("interrupted-attempt audit list is malformed")
+    archived_root: Path | None = None
+    archived_artifacts: list[dict[str, Any]] = []
+    if output_root.exists():
+        run_root = Path(str(pre["run_root"])).resolve()
+        archived_root = (
+            run_root
+            / "interrupted_no_outcome"
+            / str(cell["cell_id"])
+            / f"attempt_{len(interruptions) + 1:02d}"
+        ).resolve()
+        if not _is_within(archived_root, run_root) or archived_root.exists():
+            raise InvalidEvidence("unsafe/colliding interrupted-attempt archive path")
+        archived_root.parent.mkdir(parents=True, exist_ok=True)
+        os.replace(output_root, archived_root)
+        archived_artifacts = _opaque_artifacts(archived_root)
+    interruptions.append(
+        {
+            "status": "INTERRUPTED_NO_OUTCOME_ARCHIVED",
+            "archived_utc": utc_now(),
+            "prior_attempts_sha256": canonical_sha256(attempts),
+            "archived_root": str(archived_root) if archived_root else None,
+            "artifacts": archived_artifacts,
+        }
+    )
+    state_cell["attempts"] = []
+    state_cell["status"] = "PENDING"
+
+
+def _registered_worker_state(state_path: Path, launch_token: str) -> dict[str, Any]:
+    token_sha256 = hashlib.sha256(launch_token.encode("ascii")).hexdigest()
+    deadline = time_module.monotonic() + WORKER_REGISTRATION_TIMEOUT_SECONDS
+    while time_module.monotonic() < deadline:
+        state = load_json(state_path)
+        if state.get("launch_token_sha256") != token_sha256:
+            raise AuthorizationError("worker launch token/state drift")
+        if state.get("worker_pid") == os.getpid() and state.get("status") == "RUNNING":
+            return state
+        time_module.sleep(0.05)
+    raise AuthorizationError("detached worker was not registered by its launcher")
+
+
+def _safe_error_message(exc: Exception) -> str:
+    if isinstance(exc, subprocess.TimeoutExpired):
+        return "native controller exceeded the fenced outer timeout"
+    if isinstance(exc, subprocess.CalledProcessError):
+        return f"native controller returned exit code {exc.returncode}"
+    return str(exc)
+
+
+def _worker_run(job_path: Path, launch_token: str) -> int:
     job_binding = file_binding(job_path)
     job = load_json(job_path)
     if (
@@ -1210,29 +1474,84 @@ def _worker_run(job_path: Path) -> int:
         or job.get("analysis_id") != ANALYSIS_ID
     ):
         raise AuthorizationError("worker job identity drift")
-    pre_path = Path(str(job["pre_receipt_path"])).resolve()
-    pre_sha = str(job["pre_receipt_sha256"]).lower()
-    pre = assert_pre_receipt(pre_path, pre_sha)
-    validate_authorization(
-        Path(str(job["authorization"]["binding"]["path"])),
-        pre_sha,
-        require_current=False,
-    )
     state_path = Path(str(job["state_path"])).resolve()
-    state = load_json(state_path)
-    if state.get("job", {}).get("sha256") != job_binding["sha256"]:
-        raise AuthorizationError("worker state/job binding drift")
-    state["worker_pid"] = os.getpid()
-    state["status"] = "RUNNING"
-    state["updated_utc"] = utc_now()
-    atomic_json(state_path, state, replace=True)
+    state = _registered_worker_state(state_path, launch_token)
+    launches = state.get("launches")
+    if not isinstance(launches, list) or not launches or not isinstance(launches[-1], Mapping):
+        exc = AuthorizationError("worker launch audit row is missing")
+        state["status"] = "INVALID_WORKER_BOOTSTRAP"
+        state["worker_pid"] = None
+        state["launch_token_sha256"] = None
+        state["worker_error"] = {"type": type(exc).__name__, "message": str(exc)}
+        state["updated_utc"] = utc_now()
+        atomic_json(state_path, state, replace=True)
+        return 2
+    active_launch = launches[-1]
+    if (
+        active_launch.get("worker_pid") != os.getpid()
+        or active_launch.get("launch_token_sha256")
+        != hashlib.sha256(launch_token.encode("ascii")).hexdigest()
+        or not isinstance(active_launch.get("authorization"), Mapping)
+        or not isinstance(active_launch["authorization"].get("binding"), Mapping)
+    ):
+        exc = AuthorizationError("worker launch registration/audit drift")
+        state["status"] = "INVALID_WORKER_BOOTSTRAP"
+        state["worker_pid"] = None
+        state["launch_token_sha256"] = None
+        state["worker_error"] = {"type": type(exc).__name__, "message": str(exc)}
+        state["updated_utc"] = utc_now()
+        atomic_json(state_path, state, replace=True)
+        return 2
+    try:
+        pre_path = Path(str(job["pre_receipt_path"])).resolve()
+        pre_sha = str(job["pre_receipt_sha256"]).lower()
+        pre = assert_pre_receipt(pre_path, pre_sha)
+        if state_path != Path(str(pre["run_root"])).resolve() / "launch_state.json":
+            raise AuthorizationError("worker state path escaped the PRE run root")
+        active_authorization = validate_authorization(
+            Path(str(active_launch["authorization"]["binding"]["path"])),
+            pre_sha,
+            now=parse_utc(
+                str(active_launch.get("registered_utc", "")), "registered_utc"
+            ),
+        )
+        if active_authorization["payload_sha256"] != active_launch["authorization"].get(
+            "payload_sha256"
+        ):
+            raise AuthorizationError("worker active authorization payload drift")
+        validate_authorization(
+            Path(str(job["authorization"]["binding"]["path"])),
+            pre_sha,
+            require_current=False,
+        )
+        state_job = state.get("job")
+        if not isinstance(state_job, Mapping) or state_job.get("sha256") != job_binding["sha256"]:
+            raise AuthorizationError("worker state/job binding drift")
+        state["worker_pid"] = os.getpid()
+        state["status"] = "RUNNING"
+        state["updated_utc"] = utc_now()
+        atomic_json(state_path, state, replace=True)
+    except (OSError, subprocess.SubprocessError, AuditError, KeyError, TypeError, ValueError) as exc:
+        state["status"] = "INVALID_WORKER_BOOTSTRAP"
+        state["worker_pid"] = None
+        state["launch_token_sha256"] = None
+        state["worker_error"] = {
+            "type": type(exc).__name__,
+            "message": _safe_error_message(exc),
+        }
+        state["updated_utc"] = utc_now()
+        atomic_json(state_path, state, replace=True)
+        return 2
     cell_by_id = {str(cell["cell_id"]): cell for cell in pre["plan"]["cells"]}
     try:
         for state_cell in state["cells"]:
             if state_cell["status"] == "COMPLETE":
                 continue
             if state_cell["status"] == "INTERRUPTED_NO_OUTCOME":
-                state_cell["status"] = "PENDING"
+                cell = cell_by_id[str(state_cell["cell_id"])]
+                _archive_interrupted_no_outcome(pre, cell, state_cell)
+                state["updated_utc"] = utc_now()
+                atomic_json(state_path, state, replace=True)
             if state_cell["status"] != "PENDING":
                 raise InvalidEvidence(f"worker encountered non-resumable cell: {state_cell}")
             cell = cell_by_id[str(state_cell["cell_id"])]
@@ -1270,7 +1589,11 @@ def _worker_run(job_path: Path) -> int:
             attempt["stdout"] = file_binding(stdout_path)
             attempt["stderr"] = file_binding(stderr_path)
             summaries = list(output_root.rglob("summary.json"))
-            outcome_files = [path for path in output_root.rglob("*") if path.is_file() and path.suffix.casefold() in {".htm", ".html"}]
+            outcome_files = [
+                path
+                for path in _outcome_artifact_paths(output_root)
+                if path.name.casefold() != "summary.json"
+            ]
             if len(summaries) == 1:
                 attempt["summary"] = file_binding(summaries[0])
             attempt["outcome_artifacts"] = [file_binding(path) for path in sorted(outcome_files)]
@@ -1283,6 +1606,8 @@ def _worker_run(job_path: Path) -> int:
                 state["status"] = (
                     "INVALID_TERMINAL" if summaries or outcome_files else "INTERRUPTED_RESUMABLE"
                 )
+                state["worker_pid"] = None
+                state["launch_token_sha256"] = None
                 state["updated_utc"] = utc_now()
                 atomic_json(state_path, state, replace=True)
                 return 2
@@ -1291,6 +1616,8 @@ def _worker_run(job_path: Path) -> int:
             state["updated_utc"] = utc_now()
             atomic_json(state_path, state, replace=True)
         state["status"] = "COMPLETE"
+        state["worker_pid"] = None
+        state["launch_token_sha256"] = None
         state["finished_utc"] = utc_now()
         state["updated_utc"] = utc_now()
         atomic_json(state_path, state, replace=True)
@@ -1301,16 +1628,34 @@ def _worker_run(job_path: Path) -> int:
             attempt = current.get("attempts", [{}])[-1]
             root = Path(str(cell_by_id[str(current["cell_id"])]["output_root"]))
             summaries = list(root.rglob("summary.json")) if root.exists() else []
-            reports = [path for path in root.rglob("*.htm")] if root.exists() else []
+            reports = [
+                path
+                for path in _outcome_artifact_paths(root)
+                if path.name.casefold() != "summary.json"
+            ]
             attempt["error_type"] = type(exc).__name__
-            attempt["error"] = str(exc)
+            attempt["error"] = _safe_error_message(exc)
             attempt["summary"] = file_binding(summaries[0]) if len(summaries) == 1 else None
             attempt["outcome_artifacts"] = [file_binding(path) for path in reports]
-            current["status"] = "INVALID_TERMINAL_OUTPUT" if summaries or reports else "INTERRUPTED_NO_OUTCOME"
-            state["status"] = "INVALID_TERMINAL" if summaries or reports else "INTERRUPTED_RESUMABLE"
+            timed_out = isinstance(exc, subprocess.TimeoutExpired)
+            current["status"] = (
+                "INVALID_TERMINAL_OUTPUT"
+                if timed_out or summaries or reports
+                else "INTERRUPTED_NO_OUTCOME"
+            )
+            state["status"] = (
+                "INVALID_TERMINAL"
+                if timed_out or summaries or reports
+                else "INTERRUPTED_RESUMABLE"
+            )
         else:
             state["status"] = "INVALID_TERMINAL"
-        state["worker_error"] = {"type": type(exc).__name__, "message": str(exc)}
+        state["worker_pid"] = None
+        state["launch_token_sha256"] = None
+        state["worker_error"] = {
+            "type": type(exc).__name__,
+            "message": _safe_error_message(exc),
+        }
         state["updated_utc"] = utc_now()
         atomic_json(state_path, state, replace=True)
         return 2
@@ -1329,8 +1674,29 @@ def _load_report_core(pre: Mapping[str, Any]) -> Any:
 
 
 def _report_inputs(core: Any, settings: Sequence[Sequence[str]]) -> tuple[list[str], dict[str, str]]:
-    raw = core._field_value(settings, "inputs")
-    values = raw if isinstance(raw, list) else [raw]
+    start: tuple[int, int] | None = None
+    for row_index, row in enumerate(settings):
+        for cell_index, cell in enumerate(row):
+            if core._norm(cell) in core.FIELD_ALIASES["inputs"]:
+                if start is not None:
+                    raise InvalidEvidence("multiple native report Inputs sections")
+                start = (row_index, cell_index)
+    if start is None:
+        raise InvalidEvidence("native report Inputs section is missing")
+    row_index, cell_index = start
+    values = [
+        core._clean_text(value)
+        for value in settings[row_index][cell_index + 1 :]
+        if core._clean_text(value)
+    ]
+    for row in settings[row_index + 1 :]:
+        if row and core._clean_text(row[0]):
+            break
+        values.extend(
+            core._clean_text(value) for value in row[1:] if core._clean_text(value)
+        )
+    if not values:
+        raise InvalidEvidence("native report Inputs section is empty")
     mapping: dict[str, str] = {}
     ordered: list[str] = []
     for value in values:
@@ -1768,6 +2134,22 @@ def _audit_cell(
     summary = load_json(Path(str(summary_binding["path"])))
     validate_runner_summary(summary, cell)
     sealed = _sealed_by_path(attempt)
+    output_root = Path(str(cell["output_root"])).resolve()
+    sealed_list = attempt.get("sealed_artifacts")
+    if sealed_list != _opaque_artifacts(output_root):
+        raise InvalidEvidence(f"sealed/current native artifact closure drift: {cell['cell_id']}")
+    if any(not _is_within(path, output_root) for path in sealed):
+        raise InvalidEvidence(f"sealed artifact escaped cell output root: {cell['cell_id']}")
+    summary_path = Path(str(summary_binding["path"])).resolve()
+    if summary_path not in sealed or dict(sealed[summary_path]) != dict(summary_binding):
+        raise InvalidEvidence(f"cell summary was not exactly sealed: {cell['cell_id']}")
+    expected_outcomes = [
+        file_binding(path)
+        for path in _outcome_artifact_paths(output_root)
+        if path.name.casefold() != "summary.json"
+    ]
+    if attempt.get("outcome_artifacts") != expected_outcomes:
+        raise InvalidEvidence(f"opaque outcome-artifact closure drift: {cell['cell_id']}")
     audits: list[NativeRunAudit] = []
     run_receipts: list[dict[str, Any]] = []
     for row in summary["runs"]:
@@ -1827,11 +2209,14 @@ def performance(trades: Sequence[TradeRecord]) -> dict[str, Any]:
         pf_state = "UNDEFINED"
     balance = peak = INITIAL_BALANCE
     max_dd = ZERO
+    max_dd_percent = ZERO
     for value in profits:
         balance += value
         peak = max(peak, balance)
-        max_dd = max(max_dd, peak - balance)
-    dd_percent = ZERO if peak <= ZERO else max_dd / peak * Decimal("100")
+        drawdown = peak - balance
+        max_dd = max(max_dd, drawdown)
+        if peak > ZERO:
+            max_dd_percent = max(max_dd_percent, drawdown / peak * Decimal("100"))
     return {
         "trades": len(ordered),
         "cost_adjusted_net_usd": _money_text(net),
@@ -1840,7 +2225,7 @@ def performance(trades: Sequence[TradeRecord]) -> dict[str, Any]:
         "cost_adjusted_profit_factor": _decimal_text(pf) if pf is not None else None,
         "profit_factor_state": pf_state,
         "maximum_close_drawdown_usd": _money_text(max_dd),
-        "maximum_close_drawdown_percent": _decimal_text(dd_percent),
+        "maximum_close_drawdown_percent": _decimal_text(max_dd_percent),
     }
 
 
@@ -1978,6 +2363,7 @@ def _validate_launch_state(
         state.get("artifact_type") != "QM5_10834_NATIVE_LAUNCH_STATE"
         or state.get("analysis_id") != ANALYSIS_ID
         or state.get("status") != "COMPLETE"
+        or state.get("worker_pid") is not None
         or state.get("pre_receipt_sha256") != pre_sha256.lower()
         or state.get("pre_receipt_path") != str(pre_path.resolve())
         or state.get("plan_sha256") != pre["plan"]["plan_sha256"]
@@ -2010,6 +2396,44 @@ def _validate_launch_state(
     )
     if validated_auth["payload_sha256"] != authorization.get("payload_sha256"):
         raise InvalidEvidence("launch authorization payload drift")
+    if (
+        state.get("authorization") != authorization
+        or state.get("launch_token_sha256") is not None
+    ):
+        raise InvalidEvidence("launch initial-authorization/token lifecycle drift")
+    launches = state.get("launches")
+    if not isinstance(launches, list) or not launches:
+        raise InvalidEvidence("launch audit chain is missing")
+    for index, launch in enumerate(launches):
+        if not isinstance(launch, Mapping):
+            raise InvalidEvidence("launch audit row is malformed")
+        launch_auth = launch.get("authorization")
+        token_hash = str(launch.get("launch_token_sha256", ""))
+        worker_pid = launch.get("worker_pid")
+        if (
+            not isinstance(launch_auth, Mapping)
+            or not isinstance(launch_auth.get("binding"), Mapping)
+            or not re.fullmatch(r"[0-9a-f]{64}", token_hash)
+            or not isinstance(worker_pid, int)
+            or isinstance(worker_pid, bool)
+            or worker_pid <= 0
+            or not isinstance(launch.get("resume"), bool)
+        ):
+            raise InvalidEvidence(f"launch audit row {index} identity drift")
+        observed_auth = validate_authorization(
+            Path(str(launch_auth["binding"]["path"])),
+            pre_sha256,
+            require_current=False,
+        )
+        if (
+            dict(observed_auth["binding"]) != dict(launch_auth["binding"])
+            or observed_auth["payload_sha256"] != launch_auth.get("payload_sha256")
+        ):
+            raise InvalidEvidence(f"launch audit row {index} authorization drift")
+    if launches[0]["authorization"] != authorization or launches[0]["resume"] is not False:
+        raise InvalidEvidence("first launch is not exactly initial-job authorized")
+    if any(launch["resume"] is not True for launch in launches[1:]):
+        raise InvalidEvidence("subsequent launch audit row is not an explicit resume")
     cells = state.get("cells")
     expected_ids = [cell["cell_id"] for cell in pre["plan"]["cells"]]
     if (
@@ -2023,6 +2447,7 @@ def _validate_launch_state(
 
 def postflight(pre_path: Path, pre_sha256: str, state_path: Path) -> dict[str, Any]:
     pre = assert_pre_receipt(pre_path, pre_sha256)
+    state_binding = file_binding(state_path)
     state = _validate_launch_state(pre_path, pre_sha256, state_path, pre)
     core = _load_report_core(pre)
     receipts: list[dict[str, Any]] = []
@@ -2033,6 +2458,7 @@ def postflight(pre_path: Path, pre_sha256: str, state_path: Path) -> dict[str, A
         window_id = str(cell["cell_id"]).removeprefix(f"{cell['symbol'].replace('.', '_')}_")
         merit_cells[window_id] = trades
     merit = evaluate_merit(merit_cells)
+    assert_binding(state_binding, "stable COMPLETE launch state")
     return {
         "schema_version": SCHEMA_VERSION,
         "artifact_type": "QM5_10834_OUTCOME_FENCED_POST_RECEIPT",
@@ -2041,7 +2467,7 @@ def postflight(pre_path: Path, pre_sha256: str, state_path: Path) -> dict[str, A
         "status": merit["status"],
         "integrity_status": "PASS",
         "pre_receipt": file_binding(pre_path, pre_sha256),
-        "launch_state": file_binding(state_path),
+        "launch_state": state_binding,
         "authorized_symbol": pre["symbol_policy"]["authorized_symbol"],
         "native_run_count": len(receipts) * DUPLICATES,
         "cells": receipts,
@@ -2058,7 +2484,7 @@ def invalid_receipt(phase: str, exc: Exception) -> dict[str, Any]:
         "created_utc": utc_now(),
         "status": "INVALID",
         "error_type": type(exc).__name__,
-        "error": str(exc),
+        "error": _safe_error_message(exc),
     }
 
 
@@ -2094,7 +2520,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if args.command == "_worker":
         try:
-            return _worker_run(args.job)
+            launch_token = os.environ.get("QM10834_WORKER_LAUNCH_TOKEN", "")
+            if not re.fullmatch(r"[0-9a-f]{64}", launch_token):
+                raise AuthorizationError("worker launch token is missing or malformed")
+            return _worker_run(args.job, launch_token)
         except (AuditError, OSError, subprocess.SubprocessError, ValueError, KeyError, TypeError) as exc:
             print(json.dumps(invalid_receipt("WORKER", exc), sort_keys=True), file=sys.stderr)
             return 2
