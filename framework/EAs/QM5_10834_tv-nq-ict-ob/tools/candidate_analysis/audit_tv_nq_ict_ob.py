@@ -168,6 +168,7 @@ MAX_POSTFLIGHT_INFRA_WARMUPS_PER_CELL = 2
 MAX_ATTEMPTS_PER_CELL = DUPLICATES + MAX_POSTFLIGHT_INFRA_WARMUPS_PER_CELL
 RUN_TIMEOUT_SECONDS = 28800
 RUN_ATTEMPT_OVERHEAD_SECONDS = 600
+CREDENTIAL_PROBE_TIMEOUT_SECONDS = 120
 CELL_CONTROLLER_TIMEOUT_SECONDS = (
     MAX_ATTEMPTS_PER_CELL * (RUN_TIMEOUT_SECONDS + RUN_ATTEMPT_OVERHEAD_SECONDS)
 ) + 1800
@@ -1662,6 +1663,277 @@ def _validate_infra_retry_002_contract(
     return payload
 
 
+def _prior_dpapi_attempt_contract() -> dict[str, Any]:
+    return {
+        "claim_sequence": 2,
+        "legacy_claim_attempt_number": 2,
+        "reserved_counted_alternate_attempt_number": 2,
+        "classification": "OUTCOME_BLIND_PRE_NATIVE_DPAPI_IMPORT_FAILURE",
+        "run_root": str(PRIOR_DPAPI_ATTEMPT_RUN_ROOT),
+        "pre_receipt_sha256": PRIOR_DPAPI_ATTEMPT_PRE_SHA256,
+        "launch_state_sha256": PRIOR_DPAPI_ATTEMPT_STATE_SHA256,
+        "launch_job_sha256": PRIOR_DPAPI_ATTEMPT_JOB_SHA256,
+        "native_attempt_claim_path": str(PRIOR_DPAPI_ATTEMPT_CLAIM_PATH),
+        "native_attempt_claim_sha256": PRIOR_DPAPI_ATTEMPT_CLAIM_SHA256,
+        "controller_stdout_path": str(PRIOR_DPAPI_ATTEMPT_CONTROLLER_STDOUT_PATH),
+        "controller_stdout_sha256": PRIOR_DPAPI_ATTEMPT_CONTROLLER_STDOUT_SHA256,
+        "controller_stdout_size": 0,
+        "controller_stderr_path": str(PRIOR_DPAPI_ATTEMPT_CONTROLLER_STDERR_PATH),
+        "controller_stderr_sha256": PRIOR_DPAPI_ATTEMPT_CONTROLLER_STDERR_SHA256,
+        "controller_stderr_size": 515,
+        "terminal_status": "INVALID_TERMINAL",
+        "cause": "MACHINE_CREDENTIAL_DPAPI_IMPORT_FAILED",
+        "failure_boundary": "IMPORT_CLIXML_BEFORE_DEV2_RUN_ID_ALLOCATION",
+        "native_counting_boundary": ALTERNATE_ATTEMPT_COUNTING_BOUNDARY,
+        "native_counting_boundary_crossed": False,
+        "state_conservative_outcome_fence_set": True,
+        "dev2_run_id": None,
+        "dev2_run_directory_created": False,
+        "native_root_created": False,
+        "summary_created": False,
+        "outcome_artifact_count": 0,
+        "strategy_outcomes_read": False,
+        "strategy_merit_adjudicated": False,
+        "claim_and_fence_preserved": True,
+        "counts_toward_claim_sequence": True,
+        "counts_toward_counted_alternate_attempts": False,
+        "remediation": "SAME_WORKER_MACHINE_DPAPI_PRECLaIM_PROBE_AND_BOUND_HELPER",
+    }
+
+
+def _validate_prior_dpapi_attempt() -> None:
+    prior_pre_path = PRIOR_DPAPI_ATTEMPT_RUN_ROOT / "pre_receipt.json"
+    prior_state_path = PRIOR_DPAPI_ATTEMPT_RUN_ROOT / "launch_state.json"
+    prior_job_path = PRIOR_DPAPI_ATTEMPT_RUN_ROOT / "launch_job.json"
+    prior_pre_binding = file_binding(prior_pre_path, PRIOR_DPAPI_ATTEMPT_PRE_SHA256)
+    prior_state_binding = file_binding(prior_state_path, PRIOR_DPAPI_ATTEMPT_STATE_SHA256)
+    prior_job_binding = file_binding(prior_job_path, PRIOR_DPAPI_ATTEMPT_JOB_SHA256)
+    prior_claim_binding = file_binding(
+        PRIOR_DPAPI_ATTEMPT_CLAIM_PATH, PRIOR_DPAPI_ATTEMPT_CLAIM_SHA256
+    )
+    prior_stdout_binding = file_binding(
+        PRIOR_DPAPI_ATTEMPT_CONTROLLER_STDOUT_PATH,
+        PRIOR_DPAPI_ATTEMPT_CONTROLLER_STDOUT_SHA256,
+    )
+    prior_stderr_binding = file_binding(
+        PRIOR_DPAPI_ATTEMPT_CONTROLLER_STDERR_PATH,
+        PRIOR_DPAPI_ATTEMPT_CONTROLLER_STDERR_SHA256,
+    )
+    legacy_contract_binding = file_binding(
+        PRIOR_INFRA_RETRY_CONTRACT_PATH, PRIOR_INFRA_RETRY_CONTRACT_SHA256
+    )
+
+    prior_pre = load_json(prior_pre_path)
+    expected_pre_fence = {
+        "native_reports_opened": False,
+        "deal_rows_parsed": False,
+        "market_values_parsed": False,
+        "mt5_terminal_started": False,
+        "metatester_started": False,
+    }
+    prior_bindings = prior_pre.get("bindings")
+    plan = prior_pre.get("plan")
+    cells = plan.get("cells") if isinstance(plan, Mapping) else None
+    if (
+        prior_pre.get("schema_version") != SCHEMA_VERSION
+        or prior_pre.get("artifact_type") != "QM5_10834_OUTCOME_FENCED_PRE_RECEIPT"
+        or prior_pre.get("status") != "PASS"
+        or prior_pre.get("analysis_id") != ANALYSIS_ID
+        or Path(str(prior_pre.get("run_root", ""))).resolve()
+        != PRIOR_DPAPI_ATTEMPT_RUN_ROOT.resolve()
+        or prior_pre.get("outcome_fence") != expected_pre_fence
+        or not isinstance(prior_bindings, Mapping)
+        or prior_bindings.get("runner") != PRIOR_DPAPI_RUNNER_BINDING
+        or prior_bindings.get("infra_retry_contract") != legacy_contract_binding
+        or prior_pre.get("merit_contract") != MERIT_GATES
+        or not isinstance(plan, Mapping)
+        or plan.get("single_authorized_symbol") != RESEARCH_SYMBOL
+        or plan.get("accepted_duplicate_run_count") != len(WINDOWS) * DUPLICATES
+        or plan.get("maximum_native_starts") != len(WINDOWS) * MAX_ATTEMPTS_PER_CELL
+        or not isinstance(cells, list)
+        or len(cells) != len(WINDOWS)
+    ):
+        raise InvalidEvidence("prior DPAPI attempt PRE identity/fence/binding drift")
+    for role, expected_path in {
+        "ex5": EX5_PATH,
+        "set": EA_ROOT / "sets" / f"{EXPERT_NAME}_{RESEARCH_SYMBOL}_M5_backtest.set",
+        "cost": COST_PATH,
+    }.items():
+        if prior_bindings.get(role) != file_binding(expected_path):
+            raise InvalidEvidence(f"prior DPAPI attempt frozen {role} binding drift")
+    for cell, window in zip(cells, WINDOWS):
+        if (
+            not isinstance(cell, Mapping)
+            or cell.get("cell_id")
+            != f"{RESEARCH_SYMBOL.replace('.', '_')}_{window.cell_id}"
+            or cell.get("symbol") != RESEARCH_SYMBOL
+            or cell.get("cohort") != window.cohort
+            or cell.get("from_date") != window.from_date.isoformat()
+            or cell.get("to_date") != window.to_date.isoformat()
+            or cell.get("timeframe") != TIMEFRAME
+            or cell.get("model") != 4
+            or cell.get("duplicates") != DUPLICATES
+            or cell.get("maximum_attempts") != MAX_ATTEMPTS_PER_CELL
+            or cell.get("native_start_budget_is_outcome_independent") is not True
+            or Path(str(cell.get("output_root", ""))).resolve()
+            != (PRIOR_DPAPI_ATTEMPT_RUN_ROOT / "native" / window.cell_id).resolve()
+        ):
+            raise InvalidEvidence("prior DPAPI attempt plan/cell closure drift")
+
+    prior_job = load_json(prior_job_path)
+    prior_claim = load_json(PRIOR_DPAPI_ATTEMPT_CLAIM_PATH)
+    if (
+        prior_claim.get("schema_version") != 1
+        or prior_claim.get("artifact_type") != "QM5_10834_DEV2_NATIVE_ATTEMPT_CLAIM"
+        or prior_claim.get("analysis_id") != ANALYSIS_ID
+        or prior_claim.get("attempt_number") != 2
+        or prior_claim.get("maximum_alternate_attempts") != 2
+        or prior_claim.get("prior_alternate_attempts") != 1
+        or prior_claim.get("classification")
+        != "ATOMIC_GLOBAL_OUTCOME_BLIND_INFRA_PORT_RETRY_002_CLAIM"
+        or prior_claim.get("authorization_scope")
+        != INFRA_RETRY_002_POLICY["authorization_scope"]
+        or prior_claim.get("pre_receipt") != prior_pre_binding
+        or Path(str(prior_claim.get("run_root", ""))).resolve()
+        != PRIOR_DPAPI_ATTEMPT_RUN_ROOT.resolve()
+        or Path(str(prior_claim.get("launch_state_path", ""))).resolve()
+        != prior_state_path.resolve()
+        or prior_claim.get("plan_sha256") != plan.get("plan_sha256")
+        or prior_claim.get("infra_retry_contract") != legacy_contract_binding
+        or prior_claim.get("ea_binary") != prior_bindings["ex5"]
+        or prior_claim.get("set") != prior_bindings["set"]
+        or prior_claim.get("authorization") != prior_job.get("authorization")
+    ):
+        raise InvalidEvidence("prior DPAPI claim-sequence-002 structural drift")
+
+    prior_state = load_json(prior_state_path)
+    state_cells = prior_state.get("cells")
+    if (
+        prior_state.get("schema_version") != SCHEMA_VERSION
+        or prior_state.get("launcher_revision") != 5
+        or prior_state.get("artifact_type") != "QM5_10834_NATIVE_LAUNCH_STATE"
+        or prior_state.get("analysis_id") != ANALYSIS_ID
+        or prior_state.get("status") != "INVALID_TERMINAL"
+        or prior_state.get("worker_pid") is not None
+        or prior_state.get("finished_utc") is not None
+        or prior_state.get("pre_receipt_path") != str(prior_pre_path.resolve())
+        or prior_state.get("pre_receipt_sha256") != PRIOR_DPAPI_ATTEMPT_PRE_SHA256
+        or prior_state.get("plan_sha256") != plan.get("plan_sha256")
+        or prior_state.get("attempt_claim") != prior_claim_binding
+        or prior_state.get("job") != prior_job_binding
+        or prior_state.get("authorization") != prior_job.get("authorization")
+        or not prior_state.get("outcome_possible_since_utc")
+        or not isinstance(prior_state.get("active_cell"), Mapping)
+        or prior_state["active_cell"].get("status") != "OUTCOME_POSSIBLE_NO_RESUME"
+        or not isinstance(state_cells, list)
+        or len(state_cells) != len(WINDOWS)
+    ):
+        raise InvalidEvidence("prior DPAPI launch-state/fence drift")
+    first_cell = state_cells[0]
+    first_attempts = first_cell.get("attempts") if isinstance(first_cell, Mapping) else None
+    if (
+        not isinstance(first_cell, Mapping)
+        or first_cell.get("status") != "INVALID_TERMINAL_OUTPUT"
+        or not isinstance(first_attempts, list)
+        or len(first_attempts) != 1
+    ):
+        raise InvalidEvidence("prior DPAPI first-cell closure drift")
+    first_attempt = first_attempts[0]
+    if (
+        not isinstance(first_attempt, Mapping)
+        or first_attempt.get("exit_code") != 1
+        or first_attempt.get("native_root") is not None
+        or first_attempt.get("summary") is not None
+        or first_attempt.get("runner_result") is not None
+        or first_attempt.get("outcome_artifacts") != []
+        or first_attempt.get("stdout") != prior_stdout_binding
+        or first_attempt.get("stderr") != prior_stderr_binding
+        or prior_stdout_binding.get("size") != 0
+    ):
+        raise InvalidEvidence("prior DPAPI outcome-blind failure closure drift")
+    for state_cell, window in zip(state_cells[1:], WINDOWS[1:]):
+        if (
+            not isinstance(state_cell, Mapping)
+            or state_cell.get("cell_id")
+            != f"{RESEARCH_SYMBOL.replace('.', '_')}_{window.cell_id}"
+            or state_cell.get("status") != "PENDING"
+            or state_cell.get("attempts") != []
+        ):
+            raise InvalidEvidence("prior DPAPI pending-cell closure drift")
+    stderr_text = PRIOR_DPAPI_ATTEMPT_CONTROLLER_STDERR_PATH.read_text(
+        encoding="utf-8-sig", errors="replace"
+    )
+    if not all(
+        marker.casefold() in stderr_text.casefold()
+        for marker in ("Import-Clixml", "cryptographic operation", "run_dev2_smoke.ps1:840")
+    ):
+        raise InvalidEvidence("prior DPAPI controller stderr classification drift")
+    _assert_no_native_outcome_files(PRIOR_DPAPI_ATTEMPT_RUN_ROOT, "prior DPAPI attempt")
+    for binding, label in (
+        (prior_state_binding, "prior DPAPI launch state"),
+        (prior_job_binding, "prior DPAPI launch job"),
+        (prior_claim_binding, "prior DPAPI claim"),
+        (prior_stdout_binding, "prior DPAPI controller stdout"),
+        (prior_stderr_binding, "prior DPAPI controller stderr"),
+    ):
+        assert_binding(binding, label)
+
+
+def validate_infra_retry_contract(
+    path: Path = INFRA_RETRY_CONTRACT_PATH,
+) -> dict[str, Any]:
+    payload = load_json(path)
+    expected_keys = {
+        "schema_version",
+        "artifact_type",
+        "status",
+        "created_utc",
+        "candidate",
+        "prior_retry_002_contract",
+        "prior_counted_attempt_001",
+        "prior_uncounted_claim_sequence_002",
+        "retry",
+        "classification",
+    }
+    if set(payload) != expected_keys:
+        raise InvalidEvidence("retry-003 contract field closure drift")
+    if (
+        payload.get("schema_version") != 3
+        or payload.get("artifact_type") != "QM5_10834_INFRA_RETRY_CONTRACT"
+        or payload.get("status")
+        != "AUTHORIZED_DPAPI_RETRY_CLAIM_SEQUENCE_003_COUNTED_ALTERNATE_002_ONCE"
+        or payload.get("classification")
+        != "OUTCOME_BLIND_PRE_NATIVE_DPAPI_RETRY_CLAIM_SEQUENCE_003_ONLY"
+    ):
+        raise InvalidEvidence("retry-003 contract identity/status drift")
+    created = parse_utc(str(payload.get("created_utc", "")), "retry-003 created_utc")
+    if created > datetime.now(timezone.utc) + timedelta(minutes=5):
+        raise InvalidEvidence("retry-003 contract creation time is implausibly in the future")
+    expected_candidate = {
+        "ea_id": "QM5_10834",
+        "analysis_id": ANALYSIS_ID,
+        "symbol": RESEARCH_SYMBOL,
+        "timeframe": TIMEFRAME,
+        "model": 4,
+    }
+    if payload.get("candidate") != expected_candidate:
+        raise InvalidEvidence("retry-003 candidate identity drift")
+    legacy_binding = file_binding(
+        PRIOR_INFRA_RETRY_CONTRACT_PATH, PRIOR_INFRA_RETRY_CONTRACT_SHA256
+    )
+    if payload.get("prior_retry_002_contract") != legacy_binding:
+        raise InvalidEvidence("retry-003 immutable retry-002 contract binding drift")
+    if payload.get("prior_counted_attempt_001") != _prior_native_attempt_contract():
+        raise InvalidEvidence("retry-003 counted attempt-001 classification drift")
+    if payload.get("prior_uncounted_claim_sequence_002") != _prior_dpapi_attempt_contract():
+        raise InvalidEvidence("retry-003 uncounted claim-sequence-002 classification drift")
+    if payload.get("retry") != INFRA_RETRY_POLICY:
+        raise InvalidEvidence("retry-003 claim/count policy drift")
+    _validate_infra_retry_002_contract(PRIOR_INFRA_RETRY_CONTRACT_PATH)
+    _validate_prior_dpapi_attempt()
+    return payload
+
+
 def execution_contract() -> dict[str, Any]:
     return {
         "terminal": EXECUTION_TERMINAL,
@@ -1672,9 +1944,13 @@ def execution_contract() -> dict[str, Any]:
         "controller": "ISOLATED_DEV2_SCHEDULED_TASK_LANE",
         "controller_mutex": "Global\\QM_DEV2_SMOKE_CONTROLLER",
         "factory_terminal_pool_used": False,
-        "current_attempt_number": CURRENT_NATIVE_ATTEMPT_NUMBER,
-        "maximum_alternate_attempts": MAXIMUM_ALTERNATE_ATTEMPTS,
-        "prior_alternate_attempts": PRIOR_ALTERNATE_ATTEMPTS,
+        "claim_sequence": CURRENT_CLAIM_SEQUENCE,
+        "reserved_counted_alternate_attempt_number": RESERVED_COUNTED_ALTERNATE_ATTEMPT_NUMBER,
+        "prior_claim_sequences": PRIOR_CLAIM_SEQUENCES,
+        "maximum_counted_alternate_attempts": MAXIMUM_COUNTED_ALTERNATE_ATTEMPTS,
+        "prior_counted_alternate_attempts": PRIOR_COUNTED_ALTERNATE_ATTEMPTS,
+        "claim_creation_alone_does_not_count_as_alternate_attempt": True,
+        "alternate_attempt_counting_boundary": ALTERNATE_ATTEMPT_COUNTING_BOUNDARY,
         "authorization_scope": AUTHORIZATION_SCOPE,
         "accepted_duplicates_per_cell": DUPLICATES,
         "maximum_postflight_acceptable_infrastructure_warmups_per_cell": MAX_POSTFLIGHT_INFRA_WARMUPS_PER_CELL,
@@ -1687,7 +1963,9 @@ def execution_contract() -> dict[str, Any]:
         "postflight_acceptable_infrastructure_warmup_verdicts": ["BARS_ZERO", "NO_HISTORY"],
         "postflight_rejects_every_nonprefix_or_nonzero_warmup": True,
         "native_attempt_claim_path": str(NATIVE_ATTEMPT_CLAIM_PATH.resolve()),
-        "native_attempt_claim_mode": "ATOMIC_CREATE_ONCE_FOR_INFRA_PORT_RETRY_002_BEFORE_FIRST_CONTROLLER_EXECUTION",
+        "native_attempt_claim_mode": "ATOMIC_CREATE_ONCE_FOR_DPAPI_RETRY_CLAIM_SEQUENCE_003_AFTER_SAME_WORKER_PRECLaIM_PROBE",
+        "same_worker_machine_credential_probe_required_before_claim": True,
+        "machine_credential_path": str(MACHINE_CREDENTIAL_PATH.resolve()),
         "native_launch_lock_path": str(NATIVE_LAUNCH_LOCK_PATH.resolve()),
         "native_launch_lock_mode": "GLOBAL_WINDOWS_BYTE_LOCK_AROUND_LAUNCH_AND_RESUME",
     }
@@ -1749,6 +2027,9 @@ def _expected_binding_paths(symbol: str) -> dict[str, Path]:
         "runner": RUNNER_PATH,
         "runner_child": RUNNER_CHILD_PATH,
         "dev2_cleanup_helper": DEV2_CLEANUP_HELPER_PATH,
+        "dev2_machine_credential_probe": CREDENTIAL_PROBE_PATH,
+        "dev2_machine_credential_helper": CREDENTIAL_HELPER_PATH,
+        "dev2_machine_credential": MACHINE_CREDENTIAL_PATH,
         "runner_smoke": RUN_SMOKE_PATH,
         "dev2_lane_contract": DEV2_LANE_CONTRACT_PATH,
         "tester_groups_canonical": TESTER_GROUPS_CANONICAL_PATH,
@@ -1917,7 +2198,7 @@ def assert_pre_receipt(path: Path, expected_sha256: str) -> dict[str, Any]:
         raise InvalidEvidence("PRE isolated DEV2 execution contract drift")
     current_retry = validate_infra_retry_contract()
     if pre.get("infra_retry") != current_retry:
-        raise InvalidEvidence("PRE attempt-002 infra-retry contract drift")
+        raise InvalidEvidence("PRE retry-003 infra-retry contract drift")
     if bindings["infra_retry_contract"] != file_binding(INFRA_RETRY_CONTRACT_PATH):
         raise InvalidEvidence("PRE infra-retry byte binding drift")
     includes = pre.get("include_closure")
@@ -2071,6 +2352,10 @@ def runner_command(pre: Mapping[str, Any], cell: Mapping[str, Any]) -> list[str]
         "USD",
         "-TesterDepositOverride",
         str(INITIAL_BALANCE),
+        "-ExpectedCredentialSha256",
+        str(bindings["dev2_machine_credential"]["sha256"]),
+        "-ExpectedHelperSha256",
+        str(bindings["dev2_machine_credential_helper"]["sha256"]),
         "-SmokeMode",
     ]
 
@@ -2085,15 +2370,20 @@ def validate_authorization(
     binding = file_binding(path)
     payload = load_json(path)
     expected = {
-        "schema_version": 1,
+        "schema_version": 2,
         "artifact_type": "QM5_10834_NATIVE_OUTCOME_AUTHORIZATION",
         "status": "AUTHORIZED",
         "analysis_id": ANALYSIS_ID,
         "pre_receipt_sha256": pre_sha256.lower(),
         "scope": AUTHORIZATION_SCOPE,
-        "attempt_number": CURRENT_NATIVE_ATTEMPT_NUMBER,
-        "maximum_alternate_attempts": MAXIMUM_ALTERNATE_ATTEMPTS,
-        "prior_alternate_attempts": PRIOR_ALTERNATE_ATTEMPTS,
+        "claim_sequence": CURRENT_CLAIM_SEQUENCE,
+        "reserved_counted_alternate_attempt_number": RESERVED_COUNTED_ALTERNATE_ATTEMPT_NUMBER,
+        "prior_claim_sequences": PRIOR_CLAIM_SEQUENCES,
+        "maximum_counted_alternate_attempts": MAXIMUM_COUNTED_ALTERNATE_ATTEMPTS,
+        "prior_counted_alternate_attempts": PRIOR_COUNTED_ALTERNATE_ATTEMPTS,
+        "claim_creation_alone_does_not_count_as_alternate_attempt": True,
+        "alternate_attempt_counting_boundary": ALTERNATE_ATTEMPT_COUNTING_BOUNDARY,
+        "same_worker_machine_credential_probe_required_before_claim": True,
         "authorized_by": "OWNER",
         "authorized_symbol": RESEARCH_SYMBOL,
         "authorized_cells": [window.cell_id for window in WINDOWS],
@@ -2127,7 +2417,7 @@ def validate_authorization(
 def _assert_native_attempt_unclaimed(stage: str) -> None:
     if NATIVE_ATTEMPT_CLAIM_PATH.exists():
         raise AuthorizationError(
-            f"the DEV2 infra-port retry attempt 002 is already claimed at {stage}"
+            f"DEV2 claim sequence 003 is already claimed at {stage}"
         )
 
 
@@ -2137,14 +2427,19 @@ def _native_attempt_claim_basis(
     pre: Mapping[str, Any],
     state_path: Path,
     authorization: Mapping[str, Any],
+    preclaim_probe: Mapping[str, Any],
 ) -> dict[str, Any]:
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "artifact_type": "QM5_10834_DEV2_NATIVE_ATTEMPT_CLAIM",
         "analysis_id": ANALYSIS_ID,
-        "attempt_number": CURRENT_NATIVE_ATTEMPT_NUMBER,
-        "maximum_alternate_attempts": MAXIMUM_ALTERNATE_ATTEMPTS,
-        "prior_alternate_attempts": PRIOR_ALTERNATE_ATTEMPTS,
+        "claim_sequence": CURRENT_CLAIM_SEQUENCE,
+        "reserved_counted_alternate_attempt_number": RESERVED_COUNTED_ALTERNATE_ATTEMPT_NUMBER,
+        "prior_claim_sequences": PRIOR_CLAIM_SEQUENCES,
+        "maximum_counted_alternate_attempts": MAXIMUM_COUNTED_ALTERNATE_ATTEMPTS,
+        "prior_counted_alternate_attempts": PRIOR_COUNTED_ALTERNATE_ATTEMPTS,
+        "claim_creation_alone_does_not_count_as_alternate_attempt": True,
+        "alternate_attempt_counting_boundary": ALTERNATE_ATTEMPT_COUNTING_BOUNDARY,
         "authorization_scope": AUTHORIZATION_SCOPE,
         "accepted_duplicates_per_cell": DUPLICATES,
         "maximum_postflight_acceptable_infrastructure_warmups_per_cell": MAX_POSTFLIGHT_INFRA_WARMUPS_PER_CELL,
@@ -2152,7 +2447,8 @@ def _native_attempt_claim_basis(
         "maximum_native_starts": len(WINDOWS) * MAX_ATTEMPTS_PER_CELL,
         "native_start_budget_is_outcome_independent": True,
         "postflight_rejects_every_nonprefix_or_nonzero_warmup": True,
-        "classification": "ATOMIC_GLOBAL_OUTCOME_BLIND_INFRA_PORT_RETRY_002_CLAIM",
+        "classification": "ATOMIC_GLOBAL_OUTCOME_BLIND_DPAPI_RETRY_CLAIM_003_COUNTED_ALTERNATE_002",
+        "same_worker_machine_credential_preclaim_probe": dict(preclaim_probe),
         "pre_receipt": file_binding(pre_path, pre_sha256),
         "run_root": str(Path(str(pre["run_root"])).resolve()),
         "launch_state_path": str(state_path.resolve()),
@@ -2173,10 +2469,11 @@ def claim_native_attempt(
     pre: Mapping[str, Any],
     state_path: Path,
     authorization: Mapping[str, Any],
+    preclaim_probe: Mapping[str, Any],
 ) -> dict[str, Any]:
     payload = {
         **_native_attempt_claim_basis(
-            pre_path, pre_sha256, pre, state_path, authorization
+            pre_path, pre_sha256, pre, state_path, authorization, preclaim_probe
         ),
         "created_utc": utc_now(),
     }
@@ -2191,6 +2488,7 @@ def validate_native_attempt_claim(
     pre: Mapping[str, Any],
     state_path: Path,
     authorization: Mapping[str, Any],
+    preclaim_probe: Mapping[str, Any],
 ) -> dict[str, Any]:
     if Path(str(binding.get("path", ""))).resolve() != NATIVE_ATTEMPT_CLAIM_PATH.resolve():
         raise InvalidEvidence("native-attempt claim path drift")
@@ -2202,10 +2500,10 @@ def validate_native_attempt_claim(
     basis = dict(payload)
     basis.pop("created_utc", None)
     expected = _native_attempt_claim_basis(
-        pre_path, pre_sha256, pre, state_path, authorization
+        pre_path, pre_sha256, pre, state_path, authorization, preclaim_probe
     )
     if basis != expected:
-        raise InvalidEvidence("native-attempt global retry-002 claim drift")
+        raise InvalidEvidence("native-attempt global claim-sequence-003 drift")
     return payload
 
 
