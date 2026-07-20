@@ -192,6 +192,7 @@ $preReceiptPath = Join-Path $receiptDirectory 'validator_pre.json'
 $postReceiptPath = Join-Path $receiptDirectory 'validator_post.json'
 $finalSnapshotReceiptPath = Join-Path $receiptDirectory 'validator_final_snapshot.json'
 $runnerResultPath = Join-Path $receiptDirectory 'runner_result.json'
+$attemptAuditPath = Join-Path $receiptDirectory 'attempt_audit.json'
 $costAuditTemporary = Join-Path $receiptDirectory ('.cost_audit.{0}.tmp' -f [guid]::NewGuid().ToString('N'))
 $costAuditPath = Join-Path $receiptDirectory 'cost_audit.json'
 $finalReceiptPath = Join-Path $receiptDirectory 'research_run_receipt.json'
@@ -204,6 +205,8 @@ $preReceiptSha256 = $null
 $runnerProcess = $null
 $runnerException = $null
 $postException = $null
+$attemptAuditPayload = $null
+$attemptAuditInitialBinding = $null
 
 try {
     $validatorArguments = @(
@@ -360,6 +363,9 @@ try {
     $reportPaths = [string[]]@($summaryEvidence['reports'])
     $testerIniPaths = [string[]]@($summaryEvidence['tester_inis'])
     $testerLogPaths = [string[]]@($summaryEvidence['tester_logs'])
+    $attemptAuditPayload = $summaryEvidence['attempt_audit']
+    Write-QmAtomicJson -Path $attemptAuditPath -Payload $attemptAuditPayload
+    $attemptAuditInitialBinding = Get-QmFileBinding -Path $attemptAuditPath
 
     $auditArguments = New-Object System.Collections.Generic.List[string]
     $auditArguments.Add('-B')
@@ -414,11 +420,28 @@ try {
         throw 'Final runtime snapshot identity differs from immediate POST identity'
     }
 
+    # The cost/deal audit receives all and only structurally accepted OK attempts.
+    # Re-enumerate and re-hash the complete attempt tree afterward so rejected
+    # retries cannot disappear, appear, or mutate outside the detached evidence.
+    Assert-QmAttemptAuditUnchanged -Expected $attemptAuditPayload -Summary $summary -Contract $contract
+    $persistedAttemptAudit = Get-Content -LiteralPath $attemptAuditPath -Raw -Encoding utf8 |
+        ConvertFrom-Json -AsHashtable -DateKind String -ErrorAction Stop
+    if (($persistedAttemptAudit | ConvertTo-Json -Depth 100 -Compress) -cne
+        ($attemptAuditPayload | ConvertTo-Json -Depth 100 -Compress)) {
+        throw 'Persisted attempt audit differs from the initially validated inventory'
+    }
+    $attemptAuditFinalBinding = Get-QmFileBinding -Path $attemptAuditPath
+    if ([int64]$attemptAuditFinalBinding.size -ne [int64]$attemptAuditInitialBinding.size -or
+        [string]$attemptAuditFinalBinding.sha256 -cne [string]$attemptAuditInitialBinding.sha256) {
+        throw 'Attempt audit receipt changed after initial publication'
+    }
+
     $artifactBindings = [ordered]@{
         validator_pre = Get-QmFileBinding -Path $preReceiptPath
         validator_post = Get-QmFileBinding -Path $postReceiptPath
         runner_result = Get-QmFileBinding -Path $runnerResultPath
         runner_summary = Get-QmFileBinding -Path $summaryPath
+        attempt_audit = $attemptAuditFinalBinding
         cost_audit = Get-QmFileBinding -Path $costAuditPath
         raw_reports = @($reportPaths | ForEach-Object { Get-QmFileBinding -Path $_ })
         tester_inis = @($testerIniPaths | ForEach-Object { Get-QmFileBinding -Path $_ })

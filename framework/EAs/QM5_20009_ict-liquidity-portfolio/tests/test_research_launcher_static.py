@@ -299,9 +299,11 @@ def _mock_contract(report_dir: Path) -> tuple[dict[str, object], dict[str, objec
         tester_log.write_text("log", encoding="utf-8")
         reports.append(
             {
+                "run": f"run_{ordinal:02d}",
                 "status": "OK",
                 "real_ticks_marker": True,
                 "report_canonical_path": str(report),
+                "report_size_bytes": report.stat().st_size,
                 "tester_log_path": str(tester_log),
             }
         )
@@ -327,6 +329,9 @@ def _mock_contract(report_dir: Path) -> tuple[dict[str, object], dict[str, objec
         "model": 4,
         "period": "M1",
         "requested_runs": 2,
+        "max_run_attempts": 4,
+        "attempted_runs": 2,
+        "non_ok_attempts": 0,
         "min_trades_required": 0,
         "deterministic": True,
         "model4_log_marker_detected": True,
@@ -362,12 +367,157 @@ def test_mocked_summary_requires_model4_and_every_raw_report(tmp_path: Path) -> 
     assert len(json.loads(valid.stdout)["reports"]) == 2
     assert len(json.loads(valid.stdout)["tester_inis"]) == 2
     assert len(json.loads(valid.stdout)["tester_logs"]) == 2
+    assert json.loads(valid.stdout)["attempt_audit"]["accepted_run_ids"] == [
+        "run_01",
+        "run_02",
+    ]
 
     summary["model4_log_marker_detected"] = False
     summary_path.write_text(json.dumps(summary), encoding="utf-8")
     invalid = _pwsh(command, str(SUPPORT), str(summary_path), str(contract_path), "unused")
     assert invalid.returncode != 0
     assert "model4_log_marker_detected=true" in _normalized_output(invalid)
+
+
+def _mock_missing_report_retry(report_dir: Path) -> tuple[dict[str, object], dict[str, object]]:
+    contract, summary = _mock_contract(report_dir)
+    raw = report_dir / "raw"
+    run_02 = raw / "run_02"
+    run_03 = raw / "run_03"
+    run_02_report = run_02 / "report.htm"
+    run_02_report.unlink()
+    run_03.mkdir()
+    run_03_report = run_03 / "report.htm"
+    run_03_report.write_text("mock retry success", encoding="utf-8")
+    (run_03 / "tester.ini").write_text("[Tester]\n", encoding="ascii")
+    run_03_log = run_03 / "tester.log"
+    run_03_log.write_text("log", encoding="utf-8")
+    summary["attempted_runs"] = 3
+    summary["non_ok_attempts"] = 1
+    summary["runs"] = [
+        summary["runs"][0],
+        {
+            "run": "run_02",
+            "status": "FAIL",
+            "failure": "REPORT_MISSING",
+            "report_canonical_path": str(run_02_report),
+            "report_size_bytes": 0,
+            "tester_log_path": str(run_02 / "tester.log"),
+        },
+        {
+            "run": "run_03",
+            "status": "OK",
+            "real_ticks_marker": True,
+            "report_canonical_path": str(run_03_report),
+            "report_size_bytes": run_03_report.stat().st_size,
+            "tester_log_path": str(run_03_log),
+        },
+    ]
+    return contract, summary
+
+
+def test_retry_inventory_binds_missing_report_absence_and_selects_only_ok(
+    tmp_path: Path,
+) -> None:
+    contract, summary = _mock_missing_report_retry(tmp_path / "report")
+    contract_path = tmp_path / "contract.json"
+    summary_path = tmp_path / "summary.json"
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+    summary_path.write_text(json.dumps(summary), encoding="utf-8")
+    command = _module_command(
+        "$s=Get-Content -Raw -LiteralPath $arg1|ConvertFrom-Json -AsHashtable -DateKind String;"
+        "$c=Get-Content -Raw -LiteralPath $arg2|ConvertFrom-Json -AsHashtable -DateKind String;"
+        "$r=Assert-QmResearchSummary -Summary $s -Contract $c;$r|ConvertTo-Json -Depth 100 -Compress"
+    )
+    valid = _pwsh(command, str(SUPPORT), str(summary_path), str(contract_path), "unused")
+    assert valid.returncode == 0, valid.stdout + valid.stderr
+    evidence = json.loads(valid.stdout)
+    assert [Path(path).parent.name for path in evidence["reports"]] == ["run_01", "run_03"]
+    audit = evidence["attempt_audit"]
+    assert audit["accepted_run_ids"] == ["run_01", "run_03"]
+    assert audit["count_algebra"] == {
+        "requested_runs": 2,
+        "max_run_attempts": 4,
+        "attempted_runs": 3,
+        "non_ok_attempts": 1,
+        "ok_runs": 2,
+    }
+    failed = audit["attempts"][1]
+    assert failed["failure"] == "REPORT_MISSING"
+    assert failed["report"] is None
+    assert failed["tester_ini"] is not None
+    assert failed["tester_log"] is not None
+    assert failed["explicit_absences"] == ["report"]
+    assert failed["selected_for_cost_audit"] is False
+
+    # Selection is structural-only: changing outcome fields cannot change it.
+    for index, row in enumerate(summary["runs"]):
+        row.update({"total_trades": 900 + index, "profit_factor": 99 - index, "net_profit": index})
+    summary_path.write_text(json.dumps(summary), encoding="utf-8")
+    repeated = _pwsh(command, str(SUPPORT), str(summary_path), str(contract_path), "unused")
+    assert repeated.returncode == 0, repeated.stdout + repeated.stderr
+    assert json.loads(repeated.stdout)["attempt_audit"] == audit
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    [
+        (lambda summary: summary.update(attempted_runs=2), "count drift"),
+        (lambda summary: summary.update(non_ok_attempts=0), "count algebra"),
+        (lambda summary: summary.update(max_run_attempts=3), "retry budget drift"),
+        (lambda summary: summary["runs"][1].update(status="OK", failure=None), "accepted OK count drift"),
+        (lambda summary: summary["runs"][2].update(run="run_02"), "ordinal drift"),
+    ],
+)
+def test_retry_summary_count_and_ordinal_drift_rejects(
+    tmp_path: Path, mutation, message: str
+) -> None:
+    contract, summary = _mock_missing_report_retry(tmp_path / "report")
+    mutation(summary)
+    contract_path = tmp_path / "contract.json"
+    summary_path = tmp_path / "summary.json"
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+    summary_path.write_text(json.dumps(summary), encoding="utf-8")
+    command = _module_command(
+        "$s=Get-Content -Raw -LiteralPath $arg1|ConvertFrom-Json -AsHashtable -DateKind String;"
+        "$c=Get-Content -Raw -LiteralPath $arg2|ConvertFrom-Json -AsHashtable -DateKind String;"
+        "Assert-QmResearchSummary -Summary $s -Contract $c"
+    )
+    rejected = _pwsh(command, str(SUPPORT), str(summary_path), str(contract_path), "unused")
+    assert rejected.returncode != 0
+    assert message.lower() in _normalized_output(rejected).lower()
+
+
+def test_retry_attempt_unknown_file_and_final_rehash_reject(tmp_path: Path) -> None:
+    contract, summary = _mock_missing_report_retry(tmp_path / "report")
+    contract_path = tmp_path / "contract.json"
+    summary_path = tmp_path / "summary.json"
+    contract_path.write_text(json.dumps(contract), encoding="utf-8")
+    summary_path.write_text(json.dumps(summary), encoding="utf-8")
+    get_command = _module_command(
+        "$s=Get-Content -Raw -LiteralPath $arg1|ConvertFrom-Json -AsHashtable -DateKind String;"
+        "$c=Get-Content -Raw -LiteralPath $arg2|ConvertFrom-Json -AsHashtable -DateKind String;"
+        "$r=Assert-QmResearchSummary -Summary $s -Contract $c;"
+        "$r.attempt_audit|ConvertTo-Json -Depth 100 -Compress"
+    )
+    initial = _pwsh(get_command, str(SUPPORT), str(summary_path), str(contract_path), "unused")
+    assert initial.returncode == 0, initial.stdout + initial.stderr
+    audit_path = tmp_path / "attempt.json"
+    audit_path.write_text(initial.stdout, encoding="utf-8")
+
+    unknown = tmp_path / "report" / "raw" / "run_02" / "unbound.bin"
+    unknown.write_bytes(b"unbound")
+    unchanged_command = _module_command(
+        "$s=Get-Content -Raw -LiteralPath $arg1|ConvertFrom-Json -AsHashtable -DateKind String;"
+        "$c=Get-Content -Raw -LiteralPath $arg2|ConvertFrom-Json -AsHashtable -DateKind String;"
+        "$a=Get-Content -Raw -LiteralPath $arg3|ConvertFrom-Json -AsHashtable -DateKind String;"
+        "Assert-QmAttemptAuditUnchanged -Expected $a -Summary $s -Contract $c"
+    )
+    rejected = _pwsh(
+        unchanged_command, str(SUPPORT), str(summary_path), str(contract_path), str(audit_path)
+    )
+    assert rejected.returncode != 0
+    assert "unbound artifacts" in _normalized_output(rejected).lower()
 
 
 def _mock_cost_audit(contract: dict[str, object], report_paths: list[str]) -> tuple[dict, dict]:

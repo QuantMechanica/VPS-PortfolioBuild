@@ -38,6 +38,47 @@ function Test-QmPathWithin {
     )
 }
 
+function Get-QmStrictIntegerField {
+    param(
+        [Parameter(Mandatory = $true)][System.Collections.IDictionary]$Map,
+        [Parameter(Mandatory = $true)][string]$Name,
+        [int64]$Minimum = 0
+    )
+    if (-not $Map.Contains($Name)) { throw "Missing integer field: $Name" }
+    $value = $Map[$Name]
+    $isInteger = (
+        $value -is [byte] -or $value -is [sbyte] -or
+        $value -is [int16] -or $value -is [uint16] -or
+        $value -is [int32] -or $value -is [uint32] -or
+        $value -is [int64] -or $value -is [uint64]
+    )
+    if (-not $isInteger) { throw "Integer field $Name is not an integer" }
+    try { $parsed = [int64]$value } catch { throw "Integer field $Name is out of range" }
+    if ($parsed -lt $Minimum) { throw "Integer field $Name is below $Minimum" }
+    return $parsed
+}
+
+function Test-QmSamePath {
+    param(
+        [Parameter(Mandatory = $true)][string]$First,
+        [Parameter(Mandatory = $true)][string]$Second
+    )
+    return [System.IO.Path]::GetFullPath($First).Equals(
+        [System.IO.Path]::GetFullPath($Second),
+        [System.StringComparison]::OrdinalIgnoreCase
+    )
+}
+
+function Get-QmAttemptArtifactBinding {
+    param([Parameter(Mandatory = $true)][string]$Path)
+    $item = Get-Item -LiteralPath $Path -Force -ErrorAction Stop
+    if ($item.PSIsContainer -or
+        [bool]($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint)) {
+        throw "Attempt artifact is not a regular file: $Path"
+    }
+    return Get-QmFileBinding -Path $item.FullName
+}
+
 function Get-QmResearchContract {
     param(
         [Parameter(Mandatory = $true)][string]$Phase,
@@ -228,60 +269,256 @@ function Assert-QmResearchSummary {
         throw 'Zero-commission Groups hashes are missing or differ from canonical'
     }
 
+    $requestedRuns = Get-QmStrictIntegerField -Map $Summary -Name 'requested_runs' -Minimum 1
+    $maxRunAttempts = Get-QmStrictIntegerField -Map $Summary -Name 'max_run_attempts' -Minimum 1
+    $attemptedRuns = Get-QmStrictIntegerField -Map $Summary -Name 'attempted_runs' -Minimum 1
+    $nonOkAttempts = Get-QmStrictIntegerField -Map $Summary -Name 'non_ok_attempts' -Minimum 0
+    $expectedMaximum = [Math]::Min(10, ([int]$requestedRuns + 2))
+    if ($maxRunAttempts -ne $expectedMaximum) {
+        throw "Runner retry budget drift: $maxRunAttempts != $expectedMaximum"
+    }
+    if ($attemptedRuns -gt $maxRunAttempts) {
+        throw "Runner attempt count exceeds retry budget: $attemptedRuns > $maxRunAttempts"
+    }
+
     $reportDir = [System.IO.Path]::GetFullPath([string]$Summary['report_dir'])
     if (-not (Test-Path -LiteralPath $reportDir -PathType Container)) {
         throw "Runner report directory is missing: $reportDir"
     }
-    $rawRoot = Join-Path $reportDir 'raw'
-    $rawReports = @(
-        Get-ChildItem -LiteralPath $rawRoot -Filter 'report.htm' -File -Recurse -ErrorAction Stop |
-            Sort-Object FullName
-    )
-    if ($rawReports.Count -ne [int]$Contract.runs) {
-        throw "Every binding/raw report must be audited; expected $($Contract.runs), found $($rawReports.Count)"
+    $rawRoot = [System.IO.Path]::GetFullPath((Join-Path $reportDir 'raw'))
+    if (-not (Test-Path -LiteralPath $rawRoot -PathType Container)) {
+        throw "Runner raw directory is missing: $rawRoot"
     }
     $runRows = @($Summary['runs'])
-    if ($runRows.Count -ne [int]$Contract.runs) {
-        throw "Runner summary run count drift: $($runRows.Count) != $($Contract.runs)"
+    if ($runRows.Count -ne $attemptedRuns) {
+        throw "Runner summary/attempted run count drift: $($runRows.Count) != $attemptedRuns"
     }
-    $summaryPaths = New-Object System.Collections.Generic.List[string]
-    $testerIniPaths = New-Object System.Collections.Generic.List[string]
-    $testerLogPaths = New-Object System.Collections.Generic.List[string]
-    foreach ($run in $runRows) {
-        if ($run -isnot [System.Collections.IDictionary] -or [string]$run['status'] -cne 'OK') {
-            throw 'All accepted raw research runs must have status OK'
+
+    $rawChildren = @(Get-ChildItem -LiteralPath $rawRoot -Force -ErrorAction Stop)
+    if (@($rawChildren | Where-Object { -not $_.PSIsContainer }).Count -ne 0) {
+        throw 'Runner raw root contains unbound files'
+    }
+    $runDirectories = @($rawChildren | Where-Object { $_.PSIsContainer } | Sort-Object Name)
+    if ($runDirectories.Count -ne $attemptedRuns) {
+        throw "Runner raw attempt directory count drift: $($runDirectories.Count) != $attemptedRuns"
+    }
+
+    $attemptRows = New-Object System.Collections.Generic.List[object]
+    $acceptedRunIds = New-Object System.Collections.Generic.List[string]
+    $acceptedReports = New-Object System.Collections.Generic.List[string]
+    $acceptedTesterInis = New-Object System.Collections.Generic.List[string]
+    $acceptedTesterLogs = New-Object System.Collections.Generic.List[string]
+    $observedNonOk = 0
+    $allowedInvalidFailures = @(
+        'ONINIT_FAILED', 'SETUP_DATA_MISSING', 'NO_HISTORY', 'NO_REAL_TICKS',
+        'REPORT_EMPTY', 'BARS_ZERO', 'REPORT_FORMAT_DRIFT', 'INVALID_REPORT'
+    )
+    $allowedFailFailures = @('LOG_BOMB', 'TIMEOUT', 'REPORT_MISSING', 'REPORT_EMPTY')
+    $allowedReasonPattern = '^(?:REPORT_EMPTY|EMPTY_EXPERT|EMPTY_SYMBOL|M0_1970_PERIOD|BARS_ZERO|ONINIT_FAILED|SETUP_DATA_MISSING|NO_HISTORY_LOG|HISTORY_CONTEXT_INVALID|NO_REAL_TICKS_MARKER_FAST_FINISH|REPORT_METRIC_(?:MISSING|UNPARSEABLE):[A-Za-z0-9_]+)$'
+
+    for ($index = 0; $index -lt $runRows.Count; $index++) {
+        $ordinal = $index + 1
+        $expectedRun = 'run_{0:d2}' -f $ordinal
+        $run = $runRows[$index]
+        if ($run -isnot [System.Collections.IDictionary]) {
+            throw "Runner summary attempt $expectedRun is malformed"
         }
-        if ($run['real_ticks_marker'] -isnot [bool] -or -not [bool]$run['real_ticks_marker']) {
-            throw 'Each accepted run requires the Model-4 real-ticks log marker'
+        if ([string]$run['run'] -cne $expectedRun) {
+            throw "Runner attempt ordinal drift: $($run['run']) != $expectedRun"
         }
-        $report = [System.IO.Path]::GetFullPath([string]$run['report_canonical_path'])
-        if (-not (Test-QmPathWithin -Path $report -Root $reportDir) -or
-            -not (Test-Path -LiteralPath $report -PathType Leaf)) {
-            throw "Runner summary report path is missing/outside report_dir: $report"
+        $runDirectory = [System.IO.Path]::GetFullPath((Join-Path $rawRoot $expectedRun))
+        $diskDirectory = $runDirectories[$index]
+        if ($diskDirectory.Name -cne $expectedRun -or
+            -not (Test-QmSamePath -First $diskDirectory.FullName -Second $runDirectory) -or
+            [bool]($diskDirectory.Attributes -band [System.IO.FileAttributes]::ReparsePoint)) {
+            throw "Runner raw attempt directory drift: $expectedRun"
         }
-        $runDirectory = Split-Path -Parent $report
-        $testerIni = Join-Path $runDirectory 'tester.ini'
-        $testerLog = [System.IO.Path]::GetFullPath([string]$run['tester_log_path'])
-        foreach ($runtimeArtifact in @($testerIni, $testerLog)) {
-            if (-not (Test-QmPathWithin -Path $runtimeArtifact -Root $reportDir) -or
-                -not (Test-Path -LiteralPath $runtimeArtifact -PathType Leaf)) {
-                throw "Runner runtime artifact is missing/outside report_dir: $runtimeArtifact"
+
+        $status = [string]$run['status']
+        if ($status -notin @('OK', 'INVALID', 'FAIL')) {
+            throw "Unknown runner attempt status for ${expectedRun}: $status"
+        }
+        $failure = $null
+        if ($run.Contains('failure') -and $null -ne $run['failure'] -and
+            -not [string]::IsNullOrWhiteSpace([string]$run['failure'])) {
+            $failure = [string]$run['failure']
+        }
+        $invalidReasons = @()
+        if ($run.Contains('invalid_report_reasons') -and $null -ne $run['invalid_report_reasons']) {
+            $invalidReasons = @($run['invalid_report_reasons'])
+        }
+        foreach ($reason in $invalidReasons) {
+            if ($reason -isnot [string] -or [string]$reason -cnotmatch $allowedReasonPattern) {
+                throw "Unrecognized structural invalid reason for ${expectedRun}: $reason"
             }
         }
-        $summaryPaths.Add($report.ToLowerInvariant())
-        $testerIniPaths.Add($testerIni)
-        $testerLogPaths.Add($testerLog)
+
+        $selected = $status -ceq 'OK'
+        if ($selected) {
+            if ($null -ne $failure -or $invalidReasons.Count -ne 0) {
+                throw "Accepted attempt $expectedRun carries failure metadata"
+            }
+            if ($run['real_ticks_marker'] -isnot [bool] -or -not [bool]$run['real_ticks_marker']) {
+                throw "Accepted attempt $expectedRun requires the Model-4 real-ticks marker"
+            }
+        } else {
+            $observedNonOk++
+            if ($null -eq $failure) { throw "Non-OK attempt $expectedRun lacks a failure reason" }
+            if ($status -ceq 'INVALID') {
+                if ($failure -notin $allowedInvalidFailures -or $invalidReasons.Count -eq 0) {
+                    throw "INVALID attempt $expectedRun lacks recognized structural reasons"
+                }
+            } elseif ($failure -notin $allowedFailFailures) {
+                throw "FAIL attempt $expectedRun has unrecognized failure: $failure"
+            }
+        }
+
+        $reportPath = [System.IO.Path]::GetFullPath([string]$run['report_canonical_path'])
+        $expectedReportPath = [System.IO.Path]::GetFullPath((Join-Path $runDirectory 'report.htm'))
+        if (-not (Test-QmSamePath -First $reportPath -Second $expectedReportPath)) {
+            throw "Runner report path is not canonical for ${expectedRun}: $reportPath"
+        }
+        $reportSize = Get-QmStrictIntegerField -Map $run -Name 'report_size_bytes' -Minimum 0
+        $reportBinding = $null
+        $reportExists = Test-Path -LiteralPath $expectedReportPath -PathType Leaf
+        if ($reportExists) {
+            $reportBinding = Get-QmAttemptArtifactBinding -Path $expectedReportPath
+            if ([int64]$reportBinding.size -ne $reportSize) {
+                throw "Runner report size drift for ${expectedRun}: $($reportBinding.size) != $reportSize"
+            }
+        } elseif ($reportSize -ne 0) {
+            throw "Runner report is absent with non-zero recorded size for $expectedRun"
+        }
+        if (($selected -or $status -ceq 'INVALID') -and $null -eq $reportBinding) {
+            throw "$status attempt $expectedRun lacks its canonical report artifact"
+        }
+        if ($selected -and [int64]$reportBinding.size -le 0) {
+            throw "Accepted attempt $expectedRun has an empty report artifact"
+        }
+        if ($status -ceq 'FAIL' -and $failure -in @('REPORT_MISSING', 'LOG_BOMB', 'TIMEOUT') -and
+            $null -ne $reportBinding) {
+            throw "$failure attempt $expectedRun unexpectedly has a canonical report"
+        }
+        if ($status -ceq 'FAIL' -and $failure -ceq 'REPORT_EMPTY' -and
+            $null -ne $reportBinding -and [int64]$reportBinding.size -ne 0) {
+            throw "REPORT_EMPTY attempt $expectedRun has a non-empty report"
+        }
+
+        $testerIniPath = [System.IO.Path]::GetFullPath((Join-Path $runDirectory 'tester.ini'))
+        if (-not (Test-Path -LiteralPath $testerIniPath -PathType Leaf)) {
+            throw "Runner attempt lacks tester.ini: $expectedRun"
+        }
+        $testerIniBinding = Get-QmAttemptArtifactBinding -Path $testerIniPath
+        if ([int64]$testerIniBinding.size -le 0) { throw "Runner tester.ini is empty: $expectedRun" }
+
+        $testerLogBinding = $null
+        if ($run.Contains('tester_log_path') -and $null -ne $run['tester_log_path'] -and
+            -not [string]::IsNullOrWhiteSpace([string]$run['tester_log_path'])) {
+            $testerLogPath = [System.IO.Path]::GetFullPath([string]$run['tester_log_path'])
+            if (-not (Test-QmSamePath -First (Split-Path -Parent $testerLogPath) -Second $runDirectory) -or
+                -not (Test-Path -LiteralPath $testerLogPath -PathType Leaf)) {
+                throw "Runner tester log is missing/outside its exact attempt directory: $testerLogPath"
+            }
+            $testerLogBinding = Get-QmAttemptArtifactBinding -Path $testerLogPath
+            if ([int64]$testerLogBinding.size -le 0) { throw "Runner tester log is empty: $expectedRun" }
+        }
+        if ($selected -and $null -eq $testerLogBinding) {
+            throw "Accepted attempt $expectedRun lacks its tester log artifact"
+        }
+
+        $expectedFiles = New-Object System.Collections.Generic.List[string]
+        $expectedFiles.Add($testerIniBinding.path.ToLowerInvariant())
+        if ($null -ne $reportBinding) { $expectedFiles.Add($reportBinding.path.ToLowerInvariant()) }
+        if ($null -ne $testerLogBinding) { $expectedFiles.Add($testerLogBinding.path.ToLowerInvariant()) }
+        $attemptChildren = @(Get-ChildItem -LiteralPath $runDirectory -Force -ErrorAction Stop)
+        if (@($attemptChildren | Where-Object { $_.PSIsContainer }).Count -ne 0) {
+            throw "Runner attempt directory contains nested directories: $expectedRun"
+        }
+        $actualFiles = @($attemptChildren | ForEach-Object {
+            if ([bool]($_.Attributes -band [System.IO.FileAttributes]::ReparsePoint)) {
+                throw "Runner attempt directory contains a reparse-point artifact: $($_.FullName)"
+            }
+            $_.FullName.ToLowerInvariant()
+        })
+        if ([string]::Join('|', @($actualFiles | Sort-Object)) -cne
+            [string]::Join('|', @($expectedFiles | Sort-Object))) {
+            throw "Runner attempt directory contains missing or unbound artifacts: $expectedRun"
+        }
+
+        $explicitAbsences = New-Object System.Collections.Generic.List[string]
+        if ($null -eq $reportBinding) { $explicitAbsences.Add('report') }
+        if ($null -eq $testerLogBinding) { $explicitAbsences.Add('tester_log') }
+        $attemptRows.Add([ordered]@{
+            ordinal = $ordinal
+            run = $expectedRun
+            status = $status
+            failure = $failure
+            invalid_report_reasons = @($invalidReasons)
+            selected_for_cost_audit = $selected
+            report = $reportBinding
+            tester_ini = $testerIniBinding
+            tester_log = $testerLogBinding
+            explicit_absences = @($explicitAbsences)
+        })
+
+        if ($selected) {
+            $acceptedRunIds.Add($expectedRun)
+            $acceptedReports.Add([string]$reportBinding.path)
+            $acceptedTesterInis.Add([string]$testerIniBinding.path)
+            $acceptedTesterLogs.Add([string]$testerLogBinding.path)
+        }
     }
-    $diskPaths = @($rawReports | ForEach-Object { $_.FullName.ToLowerInvariant() })
-    if ([string]::Join('|', @($summaryPaths | Sort-Object)) -cne
-        [string]::Join('|', @($diskPaths | Sort-Object))) {
-        throw 'Runner summary report list differs from raw report.htm files on disk'
+
+    if ($observedNonOk -ne $nonOkAttempts -or
+        $attemptedRuns -ne ($requestedRuns + $nonOkAttempts)) {
+        throw 'Runner requested/attempted/non-OK count algebra drift'
+    }
+    if ($acceptedReports.Count -ne $requestedRuns -or $requestedRuns -ne [int]$Contract.runs) {
+        throw "Runner accepted OK count drift: $($acceptedReports.Count) != $requestedRuns"
+    }
+
+    $attemptAudit = [ordered]@{
+        schema_version = 1
+        artifact_type = 'QM5_20009_RESEARCH_ATTEMPT_AUDIT'
+        status = 'PASS'
+        report_dir = $reportDir
+        raw_root = $rawRoot
+        selection_policy = [ordered]@{
+            rule = 'SNAPSHOT_RUNNER_STATUS_OK_STRUCTURAL_ONLY'
+            performance_fields_consulted = $false
+            cost_deal_audit_uses_only_selected = $true
+        }
+        count_algebra = [ordered]@{
+            requested_runs = [int]$requestedRuns
+            max_run_attempts = [int]$maxRunAttempts
+            attempted_runs = [int]$attemptedRuns
+            non_ok_attempts = [int]$nonOkAttempts
+            ok_runs = [int]$acceptedReports.Count
+        }
+        accepted_run_ids = @($acceptedRunIds)
+        attempts = @($attemptRows)
+        unbound_files = @()
     }
     return [ordered]@{
         report_dir = $reportDir
-        reports = @($rawReports | ForEach-Object { $_.FullName })
-        tester_inis = @($testerIniPaths)
-        tester_logs = @($testerLogPaths)
+        reports = @($acceptedReports)
+        tester_inis = @($acceptedTesterInis)
+        tester_logs = @($acceptedTesterLogs)
+        attempt_audit = $attemptAudit
+    }
+}
+
+function Assert-QmAttemptAuditUnchanged {
+    param(
+        [Parameter(Mandatory = $true)][System.Collections.IDictionary]$Expected,
+        [Parameter(Mandatory = $true)][System.Collections.IDictionary]$Summary,
+        [Parameter(Mandatory = $true)][System.Collections.IDictionary]$Contract
+    )
+    $current = (Assert-QmResearchSummary -Summary $Summary -Contract $Contract)['attempt_audit']
+    $expectedJson = $Expected | ConvertTo-Json -Depth 100 -Compress
+    $currentJson = $current | ConvertTo-Json -Depth 100 -Compress
+    if ($currentJson -cne $expectedJson) {
+        throw 'Runner attempt inventory changed after its initial audit'
     }
 }
 
@@ -450,6 +687,6 @@ function Write-QmDetachedJsonReceipt {
 Export-ModuleMember -Function @(
     'Get-QmSha256', 'Get-QmFileBinding', 'Test-QmPathWithin', 'Get-QmResearchContract',
     'Read-QmSetInputs', 'Assert-QmInputMapMatchesSet', 'Assert-QmResearchSummary',
-    'Assert-QmCostAudit', 'Invoke-QmCapturedProcess', 'Write-QmAtomicText',
+    'Assert-QmAttemptAuditUnchanged', 'Assert-QmCostAudit', 'Invoke-QmCapturedProcess', 'Write-QmAtomicText',
     'Write-QmAtomicJson', 'Write-QmDetachedJsonReceipt'
 )
