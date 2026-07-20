@@ -161,6 +161,10 @@ RUNTIME_ROLES = {
 LAUNCHER_REVISION = 3
 SCHEDULED_TASK_PREFIX = "QM_QM20002_AUDIT_"
 MAX_SCHEDULED_TASK_SECONDS = 777600
+RUNNER_MAXIMUM_ATTEMPTS_CAP = 10
+RUNNER_PER_ATTEMPT_OVERHEAD_SECONDS = 600
+RUNNER_FINALIZATION_MARGIN_SECONDS = 600
+OUTER_CONTROLLER_CLEANUP_MARGIN_SECONDS = 1800
 
 LAUNCH_STATE_FIELDS = frozenset(
     {
@@ -248,6 +252,41 @@ CONTROLLER_FAILURE_CLASSES = frozenset(
         "RUNNER_CREDENTIAL_CLIXML_CRYPTOGRAPHIC_FAILURE_BEFORE_JSON",
         "RUNNER_EMPTY_STDOUT_NO_JSON",
         "RUNNER_MALFORMED_STDOUT_NO_JSON",
+    }
+)
+DEV1_CONTROLLER_RESULT_FIELDS = frozenset(
+    {
+        "schema_version",
+        "run_id",
+        "nonce",
+        "success",
+        "error_code",
+        "error_message",
+        "run_smoke_exit_code",
+        "identity_sid",
+        "common_path",
+        "expected_task_name",
+        "controller_mutex",
+        "lane_contract_sha256",
+        "machine_credential_sha256",
+        "machine_credential_helper_sha256",
+        "child_sha256",
+        "run_smoke_sha256",
+        "program_sha256",
+        "agent_port_proof",
+        "started_utc",
+        "finished_utc",
+        "log_path",
+        "tester_groups_post_child_sha256",
+        "tester_groups_restored_sha256",
+        "tester_groups_canonical_path",
+        "tester_groups_dev1_path",
+        "dev1_account_initially_enabled",
+        "dev1_account_enabled_by_controller",
+        "dev1_account_restored_disabled",
+        "cleanup_helper_sha256",
+        "cleanup_lease_registered",
+        "cleanup_lease_disarmed",
     }
 )
 
@@ -1394,17 +1433,398 @@ def validate_news_bindings(contract: Mapping[str, Any]) -> list[dict[str, Any]]:
     return sorted(result, key=lambda item: item["role"])
 
 
+def _assert_exact_binding_path(
+    binding: Mapping[str, Any], expected_path: Path, label: str
+) -> dict[str, Any]:
+    if set(binding) != {"path", "size", "sha256"}:
+        raise AuditError(f"{label} binding field closure drift")
+    if Path(str(binding.get("path", ""))).resolve() != expected_path.resolve():
+        raise AuditError(f"{label} binding path drift")
+    expected_sha = binding.get("sha256")
+    if type(expected_sha) is not str or re.fullmatch(r"[0-9a-f]{64}", expected_sha) is None:
+        raise AuditError(f"{label} binding SHA-256 is not canonical lowercase")
+    assert_binding(binding, label)
+    return dict(binding)
+
+
+def validate_machine_credential_rotation_receipt(
+    runtime: Mapping[str, Any], *, now: datetime | None = None
+) -> dict[str, Any]:
+    """Validate the DEV1 V3 rotation proof without decrypting credential bytes."""
+
+    required_roles = {
+        "dev1_lane_contract",
+        "dev1_machine_credential",
+        "dev1_machine_credential_helper",
+        "dev1_identity_probe_child",
+        "dev1_machine_credential_rotation_receipt",
+    }
+    if not required_roles.issubset(runtime) or any(
+        not isinstance(runtime.get(role), Mapping) for role in required_roles
+    ):
+        raise AuditError("DEV1 machine-credential rotation bindings are incomplete")
+
+    receipt_binding = _assert_exact_binding_path(
+        runtime["dev1_machine_credential_rotation_receipt"],
+        MACHINE_CREDENTIAL_ROTATION_RECEIPT_PATH,
+        "DEV1 machine-credential rotation receipt",
+    )
+    credential_binding = _assert_exact_binding_path(
+        runtime["dev1_machine_credential"],
+        MACHINE_CREDENTIAL_PATH,
+        "DEV1 machine credential",
+    )
+    helper_binding = _assert_exact_binding_path(
+        runtime["dev1_machine_credential_helper"],
+        CREDENTIAL_HELPER_PATH,
+        "DEV1 machine-credential helper",
+    )
+    child_binding = _assert_exact_binding_path(
+        runtime["dev1_identity_probe_child"],
+        IDENTITY_PROBE_CHILD_PATH,
+        "DEV1 identity-probe child",
+    )
+    lane_binding = _assert_exact_binding_path(
+        runtime["dev1_lane_contract"],
+        DEV1_LANE_CONTRACT_PATH,
+        "DEV1 lane contract",
+    )
+
+    lane = load_strict_json(Path(lane_binding["path"]), "DEV1 lane contract")
+    identity = lane.get("identity")
+    if (
+        type(lane.get("schema_version")) is not int
+        or lane.get("schema_version") != 3
+        or lane.get("contract_id") != "QM_DEV1_ISOLATED_MT5_LANE_V3"
+        or lane.get("lane") != "DEV1"
+        or not isinstance(identity, Mapping)
+        or identity.get("local_user") != "QMDev1"
+        or Path(str(identity.get("profile", ""))).resolve()
+        != Path(r"C:\Users\QMDev1").resolve()
+        or Path(str(identity.get("credential", ""))).resolve()
+        != MACHINE_CREDENTIAL_PATH.resolve()
+        or Path(str(identity.get("legacy_credential", ""))).resolve()
+        != LEGACY_CREDENTIAL_PATH.resolve()
+        or identity.get("credential_format")
+        != "QM_DEV1_MACHINE_DPAPI_CREDENTIAL"
+        or identity.get("dpapi_scope") != "LocalMachine"
+        or identity.get("limited_non_admin") is not True
+    ):
+        raise AuditError("DEV1 lane machine-credential identity contract drift")
+
+    receipt_path = Path(receipt_binding["path"])
+    receipt = load_strict_json(receipt_path, "DEV1 machine-credential rotation receipt")
+    expected_receipt_keys = {
+        "schema_version",
+        "artifact_type",
+        "status",
+        "completed_utc",
+        "contract_id",
+        "target_account",
+        "target_sid",
+        "target_disabled_at_rest",
+        "target_password_required_at_rest",
+        "machine_credential_path",
+        "machine_credential_sha256",
+        "machine_credential_generation_id",
+        "machine_credential_helper_path",
+        "machine_credential_helper_sha256",
+        "identity_probe_child_path",
+        "identity_probe_child_sha256",
+        "identity_probe_result_path",
+        "identity_probe_result_sha256",
+        "identity_probe_logon_type",
+        "identity_probe_run_level",
+        "machine_credential_matches_proved_password",
+        "published_after_identity_proof",
+        "legacy_credential_path",
+        "legacy_credential_preserved",
+        "cleanup_lease_disarmed",
+        "owner_process_count",
+        "dev1_root_process_count",
+    }
+    if set(receipt) != expected_receipt_keys:
+        raise AuditError("DEV1 machine-credential rotation receipt field closure drift")
+    target_account = str(receipt.get("target_account", ""))
+    target_sid = str(receipt.get("target_sid", ""))
+    generation_id = str(receipt.get("machine_credential_generation_id", ""))
+    if (
+        type(receipt.get("schema_version")) is not int
+        or receipt.get("schema_version") != 1
+        or receipt.get("artifact_type")
+        != "QM_DEV1_MACHINE_CREDENTIAL_ROTATION_RECEIPT"
+        or receipt.get("status") != "PASS"
+        or receipt.get("contract_id") != lane["contract_id"]
+        or re.fullmatch(r"[^\\]+\\QMDev1", target_account) is None
+        or re.fullmatch(r"S-1-5-21-[0-9]+-[0-9]+-[0-9]+-[0-9]+", target_sid)
+        is None
+        or receipt.get("target_disabled_at_rest") is not True
+        or receipt.get("target_password_required_at_rest") is not True
+        or receipt.get("identity_probe_logon_type") != "Password"
+        or receipt.get("identity_probe_run_level") != "Limited"
+        or receipt.get("machine_credential_matches_proved_password") is not True
+        or receipt.get("published_after_identity_proof") is not True
+        or receipt.get("legacy_credential_preserved") is not True
+        or receipt.get("cleanup_lease_disarmed") is not True
+        or type(receipt.get("owner_process_count")) is not int
+        or receipt.get("owner_process_count") != 0
+        or type(receipt.get("dev1_root_process_count")) is not int
+        or receipt.get("dev1_root_process_count") != 0
+        or re.fullmatch(r"[0-9a-f]{32}", generation_id) is None
+    ):
+        raise AuditError("DEV1 machine-credential rotation receipt proof drift")
+    for field in (
+        "machine_credential_sha256",
+        "machine_credential_helper_sha256",
+        "identity_probe_child_sha256",
+        "identity_probe_result_sha256",
+    ):
+        if re.fullmatch(r"[0-9a-f]{64}", str(receipt.get(field, ""))) is None:
+            raise AuditError(f"DEV1 rotation receipt {field} is not canonical lowercase")
+    if (
+        Path(str(receipt.get("machine_credential_path", ""))).resolve()
+        != Path(credential_binding["path"]).resolve()
+        or receipt.get("machine_credential_sha256") != credential_binding["sha256"]
+        or Path(str(receipt.get("machine_credential_helper_path", ""))).resolve()
+        != Path(helper_binding["path"]).resolve()
+        or receipt.get("machine_credential_helper_sha256") != helper_binding["sha256"]
+        or Path(str(receipt.get("identity_probe_child_path", ""))).resolve()
+        != Path(child_binding["path"]).resolve()
+        or receipt.get("identity_probe_child_sha256") != child_binding["sha256"]
+        or Path(str(receipt.get("legacy_credential_path", ""))).resolve()
+        != LEGACY_CREDENTIAL_PATH.resolve()
+    ):
+        raise AuditError("DEV1 machine-credential rotation receipt path/hash drift")
+
+    legacy_binding = file_binding(LEGACY_CREDENTIAL_PATH)
+    identity_result_path = Path(str(receipt.get("identity_probe_result_path", ""))).resolve()
+    rotation_root = DEV1_CREDENTIAL_ROTATION_ROOT.resolve()
+    try:
+        result_relative = identity_result_path.relative_to(rotation_root)
+    except ValueError as exc:
+        raise AuditError("DEV1 identity-probe result escaped credential-rotation root") from exc
+    if (
+        len(result_relative.parts) != 3
+        or re.fullmatch(
+            r"[0-9]{8}T[0-9]{6}Z_[0-9a-f]{32}", result_relative.parts[0]
+        )
+        is None
+        or result_relative.parts[1:] != ("output", "identity_probe_result.json")
+    ):
+        raise AuditError("DEV1 identity-probe result path/layout drift")
+    identity_result_binding = file_binding(
+        identity_result_path, str(receipt["identity_probe_result_sha256"])
+    )
+    identity_result = load_strict_json(identity_result_path, "DEV1 identity-probe result")
+    if set(identity_result) != {
+        "schema_version",
+        "artifact_type",
+        "status",
+        "completed_utc",
+        "nonce",
+        "account",
+        "sid",
+        "profile",
+        "limited_non_admin",
+        "request_sha256",
+    }:
+        raise AuditError("DEV1 identity-probe result field closure drift")
+    if (
+        type(identity_result.get("schema_version")) is not int
+        or identity_result.get("schema_version") != 1
+        or identity_result.get("artifact_type") != "QM_DEV1_IDENTITY_PROBE_RESULT"
+        or identity_result.get("status") != "PASS"
+        or re.fullmatch(r"[0-9a-f]{32}", str(identity_result.get("nonce", "")))
+        is None
+        or identity_result.get("account") != target_account
+        or identity_result.get("sid") != target_sid
+        or Path(str(identity_result.get("profile", ""))).resolve()
+        != Path(str(identity["profile"])).resolve()
+        or identity_result.get("limited_non_admin") is not True
+        or re.fullmatch(r"[0-9a-f]{64}", str(identity_result.get("request_sha256", "")))
+        is None
+    ):
+        raise AuditError("DEV1 identity-probe result identity/proof drift")
+
+    identity_request_path = (
+        rotation_root
+        / result_relative.parts[0]
+        / "control"
+        / "identity_probe_request.json"
+    ).resolve()
+    identity_request_binding = file_binding(
+        identity_request_path, str(identity_result["request_sha256"])
+    )
+    identity_request = load_strict_json(identity_request_path, "DEV1 identity-probe request")
+    if set(identity_request) != {
+        "schema_version",
+        "artifact_type",
+        "nonce",
+        "created_utc",
+        "expires_utc",
+        "expected_account",
+        "expected_sid",
+        "expected_profile",
+        "expected_task_name",
+        "result_path",
+    }:
+        raise AuditError("DEV1 identity-probe request field closure drift")
+    if (
+        type(identity_request.get("schema_version")) is not int
+        or identity_request.get("schema_version") != 1
+        or identity_request.get("artifact_type") != "QM_DEV1_IDENTITY_PROBE_REQUEST"
+        or identity_request.get("nonce") != identity_result["nonce"]
+        or identity_request.get("expected_account") != target_account
+        or identity_request.get("expected_sid") != target_sid
+        or Path(str(identity_request.get("expected_profile", ""))).resolve()
+        != Path(str(identity["profile"])).resolve()
+        or re.fullmatch(
+            r"QM_DEV1_SMOKE_[0-9a-f]{32}",
+            str(identity_request.get("expected_task_name", "")),
+        )
+        is None
+        or Path(str(identity_request.get("result_path", ""))).resolve()
+        != identity_result_path
+    ):
+        raise AuditError("DEV1 identity-probe request identity/proof drift")
+
+    credential = load_strict_json(Path(credential_binding["path"]), "DEV1 machine credential")
+    if set(credential) != {
+        "schema_version",
+        "artifact_type",
+        "contract_id",
+        "lane",
+        "account",
+        "target_sid",
+        "host_account_domain_sid",
+        "dpapi_scope",
+        "text_encoding",
+        "generation_id",
+        "created_utc",
+        "ciphertext_base64",
+    }:
+        raise AuditError("DEV1 machine-credential envelope field closure drift")
+    expected_domain_sid = target_sid.rsplit("-", 1)[0]
+    if (
+        type(credential.get("schema_version")) is not int
+        or credential.get("schema_version") != 1
+        or credential.get("artifact_type") != "QM_DEV1_MACHINE_DPAPI_CREDENTIAL"
+        or credential.get("contract_id") != lane["contract_id"]
+        or credential.get("lane") != "DEV1"
+        or credential.get("account") != target_account
+        or credential.get("target_sid") != target_sid
+        or credential.get("host_account_domain_sid") != expected_domain_sid
+        or credential.get("dpapi_scope") != "LocalMachine"
+        or credential.get("text_encoding") != "UTF-8"
+        or credential.get("generation_id") != generation_id
+    ):
+        raise AuditError("DEV1 machine-credential envelope identity/scope drift")
+    ciphertext_text = str(credential.get("ciphertext_base64", ""))
+    try:
+        ciphertext = base64.b64decode(ciphertext_text, validate=True)
+    except (binascii.Error, ValueError) as exc:
+        raise AuditError("DEV1 machine-credential ciphertext is not strict Base64") from exc
+    if (
+        not 32 <= len(ciphertext) <= 32768
+        or base64.b64encode(ciphertext).decode("ascii") != ciphertext_text
+    ):
+        raise AuditError("DEV1 machine-credential ciphertext encoding/size drift")
+
+    current = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
+    credential_created = parse_utc(
+        str(credential.get("created_utc", "")), "DEV1 machine credential created_utc"
+    )
+    request_created = parse_utc(
+        str(identity_request.get("created_utc", "")), "DEV1 identity request created_utc"
+    )
+    request_expires = parse_utc(
+        str(identity_request.get("expires_utc", "")), "DEV1 identity request expires_utc"
+    )
+    identity_completed = parse_utc(
+        str(identity_result.get("completed_utc", "")), "DEV1 identity result completed_utc"
+    )
+    receipt_completed = parse_utc(
+        str(receipt.get("completed_utc", "")), "DEV1 rotation receipt completed_utc"
+    )
+    if (
+        not credential_created <= request_created <= identity_completed <= receipt_completed
+        or not identity_completed <= request_expires
+        or request_expires <= request_created
+        or request_expires > request_created + timedelta(minutes=15)
+        or receipt_completed > current + timedelta(minutes=5)
+    ):
+        raise AuditError("DEV1 machine-credential rotation chronology drift")
+
+    for binding, label in (
+        (receipt_binding, "DEV1 machine-credential rotation receipt"),
+        (credential_binding, "DEV1 machine credential"),
+        (helper_binding, "DEV1 machine-credential helper"),
+        (child_binding, "DEV1 identity-probe child"),
+        (lane_binding, "DEV1 lane contract"),
+        (identity_request_binding, "DEV1 identity-probe request"),
+        (identity_result_binding, "DEV1 identity-probe result"),
+        (legacy_binding, "DEV1 preserved legacy credential"),
+    ):
+        assert_binding(binding, label)
+    return {
+        "receipt": receipt_binding,
+        "receipt_payload_sha256": canonical_sha256(receipt),
+        "machine_credential": credential_binding,
+        "machine_credential_payload_sha256": canonical_sha256(credential),
+        "machine_credential_helper": helper_binding,
+        "identity_probe_child": child_binding,
+        "identity_probe_request": identity_request_binding,
+        "identity_probe_request_payload_sha256": canonical_sha256(identity_request),
+        "identity_probe_result": identity_result_binding,
+        "identity_probe_result_payload_sha256": canonical_sha256(identity_result),
+        "legacy_credential": legacy_binding,
+        "contract_id": lane["contract_id"],
+        "target_account": target_account,
+        "target_sid": target_sid,
+        "generation_id": generation_id,
+        "completed_utc": receipt["completed_utc"],
+    }
+
+
 def validate_runtime() -> dict[str, Any]:
     result = {role: file_binding(path) for role, path in RUNTIME_ROLES.items()}
     if result["tester_groups_canonical"]["sha256"] != result["tester_groups_dev1"]["sha256"]:
         raise PreflightError("DEV1 tester groups are not canonical before PRE")
+    # credential.clixml is retained only as forensic rotation ancestry.  It is
+    # deliberately not a runnable role or a fallback: a legacy-only host fails
+    # above because the canonical V3 envelope and receipt are mandatory files.
+    if "legacy_credential" in result or any(
+        Path(str(item["path"])).resolve() == LEGACY_CREDENTIAL_PATH.resolve()
+        for item in result.values()
+    ):
+        raise PreflightError("legacy DEV1 CLIXML entered the runnable runtime closure")
     return result
 
 
-def build_plan(cells: Sequence[Mapping[str, Any]], timeout_seconds: int) -> dict[str, Any]:
+def build_plan(
+    cells: Sequence[Mapping[str, Any]],
+    timeout_seconds: int,
+    runtime: Mapping[str, Any],
+) -> dict[str, Any]:
     if not 60 <= timeout_seconds <= 28800:
         raise PreflightError("timeout_seconds outside runner contract")
+    credential = runtime.get("dev1_machine_credential")
+    helper = runtime.get("dev1_machine_credential_helper")
+    if not isinstance(credential, Mapping) or not isinstance(helper, Mapping):
+        raise PreflightError("DEV1 V3 credential runtime bindings are missing")
+    credential_sha = str(credential.get("sha256", ""))
+    helper_sha = str(helper.get("sha256", ""))
+    if (
+        re.fullmatch(r"[0-9a-f]{64}", credential_sha) is None
+        or re.fullmatch(r"[0-9a-f]{64}", helper_sha) is None
+    ):
+        raise PreflightError("DEV1 V3 credential runtime SHA-256 is not canonical")
     plan_cells: list[dict[str, Any]] = []
+    maximum_attempts = min(RUNNER_MAXIMUM_ATTEMPTS_CAP, 2 + 2)
+    inner_controller_timeout = (
+        maximum_attempts * (timeout_seconds + RUNNER_PER_ATTEMPT_OVERHEAD_SECONDS)
+        + RUNNER_FINALIZATION_MARGIN_SECONDS
+    )
     for cell in cells:
         cell_id = f"{cell['arm']}__{cell['symbol'].replace('.', '_')}__M1"
         runner_arguments = [
@@ -1420,11 +1840,14 @@ def build_plan(cells: Sequence[Mapping[str, Any]], timeout_seconds: int) -> dict
             "-MinTrades", "0",
             "-Model", "4",
             "-TimeoutSeconds", str(timeout_seconds),
+            "-ControllerTimeoutSeconds", str(inner_controller_timeout),
             "-SetFile", str(cell["binding"]["path"]),
             "-CommissionPerLot", "0",
             "-CommissionPerSideNative", "0",
             "-TesterCurrencyOverride", "USD",
             "-TesterDepositOverride", "100000",
+            "-ExpectedCredentialSha256", credential_sha,
+            "-ExpectedHelperSha256", helper_sha,
             "-SmokeMode",
         ]
         plan_cells.append(
@@ -1460,7 +1883,8 @@ def preflight(compile_evidence: Path, timeout_seconds: int = 28800) -> dict[str,
     data = validate_model4_data(contract)
     news = validate_news_bindings(contract)
     runtime = validate_runtime()
-    plan = build_plan(cells, timeout_seconds)
+    machine_credential_rotation = validate_machine_credential_rotation_receipt(runtime)
+    plan = build_plan(cells, timeout_seconds, runtime)
     return {
         "schema_version": SCHEMA_VERSION,
         "artifact_type": "QM5_20002_SHORT_NY_PRE_RECEIPT",
@@ -1484,6 +1908,7 @@ def preflight(compile_evidence: Path, timeout_seconds: int = 28800) -> dict[str,
         "model4_data": data,
         "news_calendars": news,
         "runtime": runtime,
+        "machine_credential_rotation": machine_credential_rotation,
         "plan": plan,
     }
 
@@ -1584,6 +2009,9 @@ def _validate_pre_semantics(receipt: Mapping[str, Any]) -> None:
     expected_runtime = validate_runtime()
     if receipt.get("runtime") != expected_runtime:
         raise AuditError("PRE runtime closure drift")
+    expected_rotation = validate_machine_credential_rotation_receipt(expected_runtime)
+    if receipt.get("machine_credential_rotation") != expected_rotation:
+        raise AuditError("PRE DEV1 machine-credential rotation proof drift")
 
     plan = receipt.get("plan")
     if not isinstance(plan, Mapping) or not isinstance(plan.get("cells"), list):
@@ -1593,13 +2021,29 @@ def _validate_pre_semantics(receipt: Mapping[str, Any]) -> None:
         args = cell.get("runner_arguments") if isinstance(cell, Mapping) else None
         if not isinstance(args, list) or args.count("-TimeoutSeconds") != 1:
             raise AuditError("PRE runner timeout surface malformed")
+        if (
+            args.count("-ExpectedCredentialSha256") != 1
+            or args.count("-ExpectedHelperSha256") != 1
+        ):
+            raise AuditError("PRE DEV1 V3 credential argument surface malformed")
         index = args.index("-TimeoutSeconds")
         if index + 1 >= len(args):
             raise AuditError("PRE runner timeout value missing")
         timeouts.add(int(args[index + 1]))
+        credential_index = args.index("-ExpectedCredentialSha256")
+        helper_index = args.index("-ExpectedHelperSha256")
+        if (
+            credential_index + 1 >= len(args)
+            or args[credential_index + 1]
+            != expected_runtime["dev1_machine_credential"]["sha256"]
+            or helper_index + 1 >= len(args)
+            or args[helper_index + 1]
+            != expected_runtime["dev1_machine_credential_helper"]["sha256"]
+        ):
+            raise AuditError("PRE DEV1 V3 credential argument binding drift")
     if len(timeouts) != 1:
         raise AuditError("PRE runner timeouts are not uniform")
-    expected_plan = build_plan(expected_cells, next(iter(timeouts)))
+    expected_plan = build_plan(expected_cells, next(iter(timeouts)), expected_runtime)
     if plan != expected_plan:
         raise AuditError("PRE exact four-cell/two-duplicate plan drift")
 
@@ -1666,19 +2110,33 @@ def runner_command(pre: Mapping[str, Any], cell: Mapping[str, Any]) -> list[str]
 
 
 def required_controller_timeout(pre: Mapping[str, Any]) -> int:
-    """Leave the DEV1 controller time to clean its own task/process tree first."""
+    """Keep Python outside the full V3 retry and containment deadline."""
 
     tester_timeouts: set[int] = set()
+    controller_timeouts: set[int] = set()
     for cell in pre["plan"]["cells"]:
         args = cell["runner_arguments"]
-        index = args.index("-TimeoutSeconds")
-        tester_timeouts.add(int(args[index + 1]))
-    if len(tester_timeouts) != 1:
-        raise AuthorizationError("PRE plan has non-uniform tester timeouts")
+        if (
+            args.count("-TimeoutSeconds") != 1
+            or args.count("-ControllerTimeoutSeconds") != 1
+        ):
+            raise AuthorizationError("PRE plan has malformed DEV1 V3 timeout arguments")
+        tester_timeouts.add(int(args[args.index("-TimeoutSeconds") + 1]))
+        controller_timeouts.add(int(args[args.index("-ControllerTimeoutSeconds") + 1]))
+    if len(tester_timeouts) != 1 or len(controller_timeouts) != 1:
+        raise AuthorizationError("PRE plan has non-uniform DEV1 V3 timeouts")
     runs = int(pre["plan"]["duplicates_per_cell"])
-    # Mirrors run_dev1_smoke.ps1's Runs*(Timeout+120)+600 and adds ten
-    # minutes so the inner controller, not Python, owns normal timeout cleanup.
-    return runs * (next(iter(tester_timeouts)) + 120) + 1200
+    maximum_attempts = min(RUNNER_MAXIMUM_ATTEMPTS_CAP, runs + 2)
+    inner_minimum = (
+        maximum_attempts
+        * (next(iter(tester_timeouts)) + RUNNER_PER_ATTEMPT_OVERHEAD_SECONDS)
+        + RUNNER_FINALIZATION_MARGIN_SECONDS
+    )
+    if next(iter(controller_timeouts)) != inner_minimum:
+        raise AuthorizationError("PRE plan DEV1 controller timeout differs from V3 minimum")
+    # run_dev1_smoke owns its bounded task/process/account/cleanup-lease finally.
+    # The Python subprocess deadline stays beyond that entire inner deadline.
+    return inner_minimum + OUTER_CONTROLLER_CLEANUP_MARGIN_SECONDS
 
 
 def _parse_last_json(text: str) -> dict[str, Any]:
@@ -3667,7 +4125,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     launch.add_argument("--pre-sha256", required=True)
     launch.add_argument("--authorization", type=Path, required=True)
     launch.add_argument("--state", type=Path, required=True)
-    launch.add_argument("--controller-timeout-seconds", type=int, default=64800)
+    launch.add_argument("--controller-timeout-seconds", type=int, default=119400)
     launch.add_argument(
         "--resume",
         action="store_true",
