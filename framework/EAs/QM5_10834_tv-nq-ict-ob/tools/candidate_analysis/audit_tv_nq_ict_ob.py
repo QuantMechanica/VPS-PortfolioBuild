@@ -1790,7 +1790,7 @@ def required_scheduled_task_timeout(pre: Mapping[str, Any]) -> int:
     return seconds
 
 
-def _parse_last_json(text: str) -> dict[str, Any]:
+def _parse_scheduler_json(text: str) -> dict[str, Any]:
     decoder = json.JSONDecoder()
     candidates: list[dict[str, Any]] = []
     for match in re.finditer(r"\{", text):
@@ -1858,7 +1858,7 @@ def _scheduler_call(
         raise AuthorizationError(
             f"persisted scheduler {operation!r} failed with exit {completed.returncode}"
         )
-    payload = _parse_last_json(completed.stdout)
+    payload = _parse_scheduler_json(completed.stdout)
     if payload.get("operation") != operation:
         raise AuthorizationError("persisted scheduler returned an unexpected operation")
     if operation == "Identity":
@@ -2101,19 +2101,45 @@ def _safe_error_message(exc: Exception) -> str:
     return str(exc)
 
 
-def _parse_last_json(text: str) -> dict[str, Any]:
+def _parse_dev2_controller_json(text: str) -> dict[str, Any]:
     decoder = json.JSONDecoder()
+    required_keys = {
+        "schema_version",
+        "run_id",
+        "success",
+        "run_smoke_exit_code",
+        "lane_contract_sha256",
+        "child_sha256",
+        "run_smoke_sha256",
+        "agent_port_proof",
+        "tester_groups_post_child_sha256",
+        "tester_groups_restored_sha256",
+        "dev2_account_initially_enabled",
+        "dev2_account_restored_disabled",
+    }
     candidates: list[dict[str, Any]] = []
     for match in re.finditer(r"\{", text):
         try:
             value, _ = decoder.raw_decode(text[match.start() :])
         except json.JSONDecodeError:
             continue
-        if isinstance(value, dict):
+        if (
+            isinstance(value, dict)
+            and required_keys.issubset(value)
+            and value.get("schema_version") == 2
+            and type(value.get("success")) is bool
+            and re.fullmatch(
+                r"[0-9]{8}T[0-9]{6}Z_[0-9a-f]{32}", str(value.get("run_id", ""))
+            )
+            and isinstance(value.get("agent_port_proof"), Mapping)
+        ):
             candidates.append(value)
-    if not candidates:
-        raise InvalidEvidence("DEV2 controller stdout contains no JSON result")
-    return candidates[-1]
+    if len(candidates) != 1:
+        raise InvalidEvidence(
+            "DEV2 controller stdout must contain exactly one controller result "
+            f"envelope; found {len(candidates)}"
+        )
+    return candidates[0]
 
 
 def validate_dev2_controller_result(
@@ -2300,7 +2326,7 @@ def _worker_run(job_path: Path) -> int:
                 state["updated_utc"] = utc_now()
                 atomic_json(state_path, state, replace=True)
                 return 2
-            runner_result = _parse_last_json(
+            runner_result = _parse_dev2_controller_json(
                 stdout_path.read_text(encoding="utf-8-sig", errors="replace")
             )
             run_id = validate_dev2_controller_result(runner_result, pre)

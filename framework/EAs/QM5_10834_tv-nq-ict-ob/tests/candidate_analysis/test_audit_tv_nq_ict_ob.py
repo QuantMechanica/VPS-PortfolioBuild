@@ -627,6 +627,51 @@ def test_dev2_controller_result_binds_lane_scripts_and_tester_groups() -> None:
         subject.validate_dev2_controller_result(result, pre)
 
 
+def _controller_envelope() -> dict[str, object]:
+    return {
+        "schema_version": 2,
+        "success": True,
+        "run_smoke_exit_code": 0,
+        "run_id": "20260720T170000Z_" + "c" * 32,
+        "lane_contract_sha256": "1" * 64,
+        "child_sha256": "2" * 64,
+        "run_smoke_sha256": "3" * 64,
+        "agent_port_proof": {
+            "status": "PASS",
+            "listeners": [{"local_port": 3000, "process_id": 42}],
+        },
+        "tester_groups_post_child_sha256": "4" * 64,
+        "tester_groups_restored_sha256": "4" * 64,
+        "dev2_account_initially_enabled": False,
+        "dev2_account_restored_disabled": True,
+    }
+
+
+def test_dev2_controller_parser_selects_pretty_outer_envelope() -> None:
+    result = _controller_envelope()
+    stdout = "controller log before\n" + json.dumps(result, indent=2) + "\ncontroller log after\n"
+    assert subject._parse_dev2_controller_json(stdout) == result
+
+
+def test_dev2_controller_parser_rejects_ambiguous_outer_envelopes() -> None:
+    encoded = json.dumps(_controller_envelope(), indent=2)
+    with pytest.raises(subject.InvalidEvidence, match="exactly one.*found 2"):
+        subject._parse_dev2_controller_json(encoded + "\n" + encoded)
+
+
+def test_dev2_controller_parser_rejects_nested_proof_without_envelope() -> None:
+    nested = {"agent_port_proof": {"listeners": [{"local_port": 3000}]}}
+    with pytest.raises(subject.InvalidEvidence, match="exactly one.*found 0"):
+        subject._parse_dev2_controller_json(json.dumps(nested, indent=2))
+
+
+def test_scheduler_parser_keeps_scheduler_error_semantics() -> None:
+    payload = {"operation": "Identity", "principal_sid": "S-1-5-18"}
+    assert subject._parse_scheduler_json("log\n" + json.dumps(payload)) == payload
+    with pytest.raises(subject.AuthorizationError, match="no JSON object"):
+        subject._parse_scheduler_json("log only")
+
+
 def test_dev2_summary_identity_is_exact_and_unambiguous(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
