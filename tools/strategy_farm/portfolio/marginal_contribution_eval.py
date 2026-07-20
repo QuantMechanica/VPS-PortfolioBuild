@@ -86,9 +86,11 @@ from tools.strategy_farm.portfolio.portfolio_kpi import (
 
 # --------------------------------------------------------------------------- #
 # Config — documented, OWNER-tunable. The DL fixes the WEIGHTING convention
-# (cap 1.0 / total 9.75) but leaves the recommendation thresholds and the
-# ops-cost floor to calibration; they are placeholders and are echoed into every
-# decision-paper so a reviewer sees exactly which numbers drove the verdict.
+# (cap 1.0 / total 9.75). The recommendation thresholds and ops-cost floor were
+# CALIBRATED evidence-based 2026-07-20 on OWNER's order (DL-083; evidence in
+# artifacts/portfolio/marginal_contribution/threshold_calibration_20260720/)
+# and are echoed into every decision-paper so a reviewer sees exactly which
+# numbers drove the verdict.
 # --------------------------------------------------------------------------- #
 CONFIG = {
     "cap_pct": 1.0,                  # per-sleeve cap (existing convention)
@@ -96,15 +98,28 @@ CONFIG = {
     "starting_capital": 100_000.0,   # HR4 fixed-risk deposit (overridden by manifest)
     # Minimum-contribution / ops-worthiness: the candidate must add at least this
     # much ANNUALIZED net-of-cost return (in % of starting capital) AT its book
-    # weight to justify the operational cost of running a live sleeve. The DL
-    # gives no number ("minimum-contribution criterion (ops-worthiness)") — this
-    # default is a PLACEHOLDER pending OWNER calibration.
-    "ops_cost_floor_ann_pct": 0.15,
-    # Diversification bands on |correlation| vs the incumbent book (regime-split):
-    "regime_corr_admit_max": 0.35,   # below this in every regime => clearly diversifying
-    "regime_corr_reject_min": 0.70,  # at/above this across regimes => redundant
-    # Near-zero bands for the composite deltas (avoid recommending on noise):
-    "sharpe_delta_eps": 0.010,       # |ΔSharpe| below this = neutral
+    # weight to justify the operational cost of running a live sleeve.
+    # CALIBRATED 2026-07-20 (OWNER order, DL-083 / threshold_calibration_20260720):
+    # anchored at the sealed Final-24 book's own MINIMUM accepted per-sleeve
+    # contribution (0.063%/yr, 12778/AUDUSD). The prior 0.15 placeholder would
+    # have rejected 5 of 24 revealed-accepted incumbents. Slippage ledger
+    # (sub-1 bps/fill) confirms drag << floor.
+    "ops_cost_floor_ann_pct": 0.06,
+    # Diversification bands on |correlation| vs the incumbent book (regime-split).
+    # CALIBRATED 2026-07-20: admit ceiling = book's revealed member↔rest-book
+    # regime corr p95=0.143 / max=0.173 (crisis-adjusted pairwise-calm p90
+    # 0.08+0.068≈0.148); hard reject = Q09 empirical redundancy cliff
+    # (admit-rate→0 above 0.35 across 74 evals; max-ever-admitted corr 0.263).
+    # Priors were 0.35 (=2x book max) / 0.70 (never reached).
+    "regime_corr_admit_max": 0.15,   # below this in every regime => clearly diversifying
+    "regime_corr_reject_min": 0.40,  # at/above this across regimes => redundant
+    # Near-zero bands for the composite deltas (avoid recommending on noise).
+    # CALIBRATED 2026-07-20: block-bootstrap SE(ΔSharpe)≈0.060, so the prior
+    # 0.010 (~0.17 SE) sat deep inside noise. 0.020 demotes the one noise-driven
+    # ADMIT (10848/XAUUSD, ΔS +0.0165, bootstrap P(ΔS<=0)=45%). NB: 0.02 is
+    # still <1 SE — ΔSharpe must never be the SOLE admit driver (the
+    # diversify+DD+ops co-gates enforce that).
+    "sharpe_delta_eps": 0.020,       # |ΔSharpe| below this = neutral
     "maxdd_delta_eps_pct": 0.05,     # |ΔMaxDD %pts| below this = neutral
     "high_vol_quantile": 0.80,       # high-vol subset = top 20% of days by |book PnL|
 }
