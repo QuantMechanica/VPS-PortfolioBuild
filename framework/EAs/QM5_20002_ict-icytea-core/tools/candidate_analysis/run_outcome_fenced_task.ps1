@@ -24,7 +24,8 @@ function ConvertTo-QmFullPath {
         [Parameter(Mandatory = $true)][string]$Path,
         [Parameter(Mandatory = $true)][string]$Label
     )
-    if ([string]::IsNullOrWhiteSpace($Path) -or $Path.IndexOfAny([char[]]"`r`n`0`") -ge 0) {
+    $forbidden = [char[]]@([char]13, [char]10, [char]0, [char]34)
+    if ([string]::IsNullOrWhiteSpace($Path) -or $Path.IndexOfAny($forbidden) -ge 0) {
         throw "$Label is empty or contains a forbidden character."
     }
     return [System.IO.Path]::GetFullPath($Path)
@@ -32,7 +33,8 @@ function ConvertTo-QmFullPath {
 
 function Quote-QmTaskArgument {
     param([Parameter(Mandatory = $true)][string]$Value)
-    if ($Value.IndexOfAny([char[]]"`r`n`0`") -ge 0) {
+    $forbidden = [char[]]@([char]13, [char]10, [char]0, [char]34)
+    if ($Value.IndexOfAny($forbidden) -ge 0) {
         throw 'Task arguments may not contain CR, LF, NUL, or a quote.'
     }
     return '"' + $Value + '"'

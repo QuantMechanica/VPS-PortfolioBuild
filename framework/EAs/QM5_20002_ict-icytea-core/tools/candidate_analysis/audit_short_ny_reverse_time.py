@@ -3,9 +3,10 @@
 
 PRE is outcome-blind.  It seals the preregistered contract, source/build, all
 four set files, the exact DEV1 Model-4 data bytes, both news calendars, and the
-runtime used by the detached launcher.  LAUNCH requires a separate explicit
-authorization receipt and starts a detached, checkpointing worker; this keeps
-the four-cell/two-duplicate screen independent of an interactive Codex session.
+runtime used by the persistent launcher.  LAUNCH requires a separate explicit
+authorization receipt and starts a checkpointing worker through a triggerless
+Windows Scheduled Task; this keeps the four-cell/two-duplicate screen independent
+of an interactive Codex session and its Windows job object.
 POST accepts only a COMPLETE launch state and audits native reports, tester
 inputs, real-tick evidence, exact duplicate Deals, opening-fill semantics, and
 the frozen cost/slippage merit gates.
@@ -1278,55 +1279,289 @@ def _seal_summary_artifacts(summary_path: Path) -> dict[str, Any]:
     return {"summary": summary_binding, "run_artifacts": artifacts}
 
 
-def _worker_run(job_path: Path) -> int:
-    job_binding = file_binding(job_path)
-    job = load_json(job_path)
-    state_path = Path(str(job["state_path"])).resolve()
-    pre_path = Path(str(job["pre_receipt_path"])).resolve()
-    pre_sha = str(job["pre_receipt_sha256"])
-    state: dict[str, Any] = {
+def _dev1_run_inventory() -> dict[str, Any]:
+    """Fingerprint DEV1 run-directory names without opening any outcome file."""
+
+    if not DEV1_RUNS_ROOT.is_dir():
+        names: list[str] = []
+        exists = False
+    else:
+        names = sorted(
+            entry.name for entry in DEV1_RUNS_ROOT.iterdir() if entry.is_dir()
+        )
+        exists = True
+    return {
+        "root": str(DEV1_RUNS_ROOT.resolve()),
+        "exists": exists,
+        "directory_count": len(names),
+        "directory_names_sha256": canonical_sha256(names),
+    }
+
+
+def scheduled_task_name(pre_sha256: str, state_path: Path) -> str:
+    digest = canonical_sha256(
+        {
+            "analysis_id": ANALYSIS_ID,
+            "pre_receipt_sha256": pre_sha256.lower(),
+            "state_path": str(state_path.resolve()),
+        }
+    )
+    return f"{SCHEDULED_TASK_PREFIX}{digest[:24]}"
+
+
+def required_scheduled_task_timeout(
+    pre: Mapping[str, Any], controller_timeout_seconds: int
+) -> int:
+    cell_count = int(pre["plan"]["cell_count"])
+    seconds = cell_count * controller_timeout_seconds + 3600
+    if not 60 <= seconds <= MAX_SCHEDULED_TASK_SECONDS:
+        raise AuthorizationError("scheduled-task execution limit outside launcher contract")
+    return seconds
+
+
+def _scheduler_call(
+    pre: Mapping[str, Any],
+    operation: str,
+    job: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Invoke the bound scheduler helper and return only its safe metadata."""
+
+    helper = Path(str(pre["runtime"]["scheduled_task_helper"]["path"])).resolve()
+    powershell = str(pre["runtime"]["powershell_binary"]["path"])
+    command = [
+        powershell,
+        "-NoLogo",
+        "-NoProfile",
+        "-NonInteractive",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        str(helper),
+        "-Operation",
+        operation,
+    ]
+    scheduler: Mapping[str, Any] | None = None
+    if operation != "Identity":
+        if job is None or not isinstance(job.get("scheduler"), Mapping):
+            raise AuthorizationError("scheduled-task job contract is missing")
+        scheduler = job["scheduler"]
+        command.extend(
+            [
+                "-TaskName",
+                str(scheduler["task_name"]),
+                "-PythonExe",
+                str(pre["runtime"]["python_binary"]["path"]),
+                "-ToolPath",
+                str(TOOL_PATH),
+                "-JobPath",
+                str(Path(str(job["state_path"])).with_name("launch_job.json")),
+                "-RepoRoot",
+                str(REPO_ROOT),
+                "-ExecutionLimitSeconds",
+                str(scheduler["execution_limit_seconds"]),
+            ]
+        )
+    completed = subprocess.run(
+        command,
+        cwd=REPO_ROOT,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        capture_output=True,
+        timeout=30,
+        check=False,
+    )
+    if completed.returncode != 0:
+        raise AuthorizationError(
+            f"persisted scheduler {operation!r} failed with exit {completed.returncode}"
+        )
+    payload = _parse_last_json(completed.stdout)
+    if payload.get("operation") != operation:
+        raise AuthorizationError("persisted scheduler returned an unexpected operation")
+    if operation == "Identity":
+        if (
+            not str(payload.get("principal_sid", "")).startswith("S-1-")
+            or payload.get("logon_type") != "S4U"
+            or payload.get("run_level") != "Highest"
+        ):
+            raise AuthorizationError("persisted scheduler identity contract drift")
+    elif scheduler is not None:
+        if (
+            payload.get("task_name") != scheduler["task_name"]
+            or payload.get("principal_sid") != scheduler["principal_sid"]
+            or payload.get("logon_type") != "S4U"
+            or payload.get("run_level") != "Highest"
+            or payload.get("multiple_instances") != "IgnoreNew"
+            or int(payload.get("execution_limit_seconds", 0))
+            != int(scheduler["execution_limit_seconds"])
+        ):
+            raise AuthorizationError("persisted scheduler task metadata drift")
+    return payload
+
+
+def _validate_launch_job(
+    job: Mapping[str, Any],
+    pre: Mapping[str, Any],
+    pre_path: Path,
+    pre_sha256: str,
+    state_path: Path,
+) -> None:
+    controller_timeout = int(job.get("controller_timeout_seconds", 0))
+    scheduler = job.get("scheduler")
+    expected_scheduler = {
+        "mode": "WINDOWS_TASK_SCHEDULER_S4U_ON_DEMAND",
+        "task_name": scheduled_task_name(pre_sha256, state_path),
+        "task_path": "\\",
+        "principal_sid": str(scheduler.get("principal_sid", ""))
+        if isinstance(scheduler, Mapping)
+        else "",
+        "logon_type": "S4U",
+        "run_level": "Highest",
+        "multiple_instances": "IgnoreNew",
+        "execution_limit_seconds": required_scheduled_task_timeout(
+            pre, controller_timeout
+        ),
+        "helper": pre["runtime"]["scheduled_task_helper"],
+        "python": pre["runtime"]["python_binary"],
+    }
+    expected = {
         "schema_version": SCHEMA_VERSION,
+        "launcher_revision": LAUNCHER_REVISION,
+        "artifact_type": "QM5_20002_SHORT_NY_LAUNCH_JOB",
+        "analysis_id": ANALYSIS_ID,
+        "pre_receipt_path": str(pre_path.resolve()),
+        "pre_receipt_sha256": pre_sha256.lower(),
+        "state_path": str(state_path.resolve()),
+        "plan_sha256": pre["plan"]["plan_sha256"],
+        "tool": pre["tool"],
+        "scheduler": expected_scheduler,
+    }
+    drift = {key: (value, job.get(key)) for key, value in expected.items() if job.get(key) != value}
+    if drift:
+        raise AuthorizationError(f"persisted launch job identity/plan/tool drift: {sorted(drift)}")
+    if not expected_scheduler["principal_sid"].startswith("S-1-"):
+        raise AuthorizationError("persisted launch job principal SID is malformed")
+    if not required_controller_timeout(pre) <= controller_timeout <= 172800:
+        raise AuthorizationError("persisted launch job controller timeout drift")
+    baseline = job.get("dev1_runs_before_launch")
+    if (
+        not isinstance(baseline, Mapping)
+        or baseline.get("root") != str(DEV1_RUNS_ROOT.resolve())
+        or type(baseline.get("exists")) is not bool
+        or type(baseline.get("directory_count")) is not int
+        or not re.fullmatch(r"[0-9a-f]{64}", str(baseline.get("directory_names_sha256", "")))
+    ):
+        raise AuthorizationError("persisted launch job DEV1 inventory is malformed")
+
+
+def _assert_resume_outcome_fence(
+    state: Mapping[str, Any], job: Mapping[str, Any], state_path: Path
+) -> None:
+    """Allow a retry only when the prior worker could not have produced outcomes."""
+
+    if state.get("launcher_revision") != LAUNCHER_REVISION:
+        raise AuthorizationError("legacy launch state is not resumable")
+    if state.get("status") not in {"PENDING", "PENDING_RESUME", "RUNNING"}:
+        raise AuthorizationError("launch state status is not pre-outcome resumable")
+    if state.get("finished_utc") or state.get("error") or state.get("error_type"):
+        raise AuthorizationError("finished/rejected launch state is not resumable")
+    cells = state.get("cells")
+    if cells != []:
+        raise AuthorizationError("sealed cell outcome exists; resume is forbidden")
+    if state.get("active_cell") is not None or state.get("outcome_possible_since_utc") is not None:
+        raise AuthorizationError("a cell launch crossed the outcome fence; resume is forbidden")
+    work_root = state_path.resolve().parent / "worker"
+    if work_root.exists() and next(work_root.iterdir(), None) is not None:
+        raise AuthorizationError("worker artifact tree is non-empty; resume is forbidden")
+    if _dev1_run_inventory() != job.get("dev1_runs_before_launch"):
+        raise AuthorizationError("DEV1 run inventory changed; resume is forbidden")
+
+
+def _initial_launch_state(
+    pre_path: Path,
+    pre_sha256: str,
+    job_binding: Mapping[str, Any],
+    job: Mapping[str, Any],
+) -> dict[str, Any]:
+    now = utc_now()
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "launcher_revision": LAUNCHER_REVISION,
         "artifact_type": "QM5_20002_SHORT_NY_LAUNCH_STATE",
         "analysis_id": ANALYSIS_ID,
-        "status": "RUNNING",
-        "worker_pid": os.getpid(),
-        "started_utc": utc_now(),
-        "job": job_binding,
-        "pre_receipt_path": str(pre_path),
-        "pre_receipt_sha256": pre_sha,
+        "status": "PENDING",
+        "created_utc": now,
+        "updated_utc": now,
+        "started_utc": None,
+        "finished_utc": None,
+        "worker_pid": None,
+        "job": dict(job_binding),
+        "pre_receipt_path": str(pre_path.resolve()),
+        "pre_receipt_sha256": pre_sha256.lower(),
         "authorization": job["authorization"],
+        "scheduler": job["scheduler"],
+        "resume_count": 0,
+        "active_cell": None,
+        "outcome_possible_since_utc": None,
         "cells": [],
     }
-    atomic_json(state_path, state)
+
+
+def _worker_run(job_path: Path) -> int:
+    state: dict[str, Any] | None = None
+    state_path: Path | None = None
     try:
+        job_path = job_path.resolve()
+        job_binding = file_binding(job_path)
+        job = load_json(job_path)
+        state_path = Path(str(job["state_path"])).resolve()
+        pre_path = Path(str(job["pre_receipt_path"])).resolve()
+        pre_sha = str(job["pre_receipt_sha256"])
+        state = load_json(state_path)
+        if state.get("status") not in {"PENDING", "PENDING_RESUME"}:
+            raise AuditError("scheduled worker was not armed by the launcher")
         pre = assert_pre_receipt(pre_path, pre_sha)
+        _validate_launch_job(job, pre, pre_path, pre_sha, state_path)
         auth_path = Path(str(job["authorization"]["binding"]["path"]))
-        validate_authorization(auth_path, pre_sha)
+        if validate_authorization(auth_path, pre_sha) != job["authorization"]:
+            raise AuditError("persisted launch authorization drift")
         if (
-            job.get("schema_version") != SCHEMA_VERSION
-            or
-            job.get("artifact_type") != "QM5_20002_SHORT_NY_LAUNCH_JOB"
-            or job.get("analysis_id") != ANALYSIS_ID
-            or Path(str(job.get("pre_receipt_path", ""))).resolve() != pre_path
-            or str(job.get("pre_receipt_sha256", "")).lower() != pre_sha.lower()
-            or job.get("plan_sha256") != pre["plan"]["plan_sha256"]
-            or job.get("tool") != pre["tool"]
-            or Path(str(job.get("state_path", ""))).resolve() != state_path
+            state.get("job") != job_binding
+            or state.get("authorization") != job["authorization"]
+            or state.get("scheduler") != job["scheduler"]
+            or Path(str(state.get("pre_receipt_path", ""))).resolve() != pre_path
+            or str(state.get("pre_receipt_sha256", "")).lower() != pre_sha.lower()
         ):
-            raise AuditError("detached launch job identity/plan/tool drift")
-        if not required_controller_timeout(pre) <= int(job.get("controller_timeout_seconds", 0)) <= 172800:
-            raise AuditError("detached launch job controller timeout drift")
+            raise AuditError("persisted launch state/job binding drift")
+        _assert_resume_outcome_fence(state, job, state_path)
+        now = utc_now()
+        state["status"] = "RUNNING"
+        state["worker_pid"] = os.getpid()
+        state["started_utc"] = state.get("started_utc") or now
+        state["updated_utc"] = now
+        atomic_json(state_path, state)
+
         work_root = state_path.parent / "worker"
         work_root.mkdir(parents=True, exist_ok=True)
         for cell in pre["plan"]["cells"]:
             # Seal all moving inputs again immediately before every terminal cell.
             assert_pre_receipt(pre_path, pre_sha)
+            command = runner_command(pre, cell)
+            started = utc_now()
+            state["active_cell"] = {
+                "cell_id": cell["cell_id"],
+                "command_sha256": canonical_sha256(command),
+                "started_utc": started,
+                "status": "OUTCOME_POSSIBLE_NO_RESUME",
+            }
+            state["outcome_possible_since_utc"] = started
+            state["updated_utc"] = started
+            atomic_json(state_path, state)
+
             cell_root = work_root / str(cell["cell_id"])
             cell_root.mkdir(parents=True, exist_ok=True)
             stdout_path = cell_root / "runner.stdout.txt"
             stderr_path = cell_root / "runner.stderr.txt"
-            command = runner_command(pre, cell)
-            started = utc_now()
             completed = subprocess.run(
                 command,
                 cwd=REPO_ROOT,
@@ -1342,7 +1577,7 @@ def _worker_run(job_path: Path) -> int:
             runner_result = _parse_last_json(completed.stdout)
             if completed.returncode != 0 or runner_result.get("success") is not True:
                 raise AuditError(
-                    f"runner rejected {cell['cell_id']}: exit={completed.returncode}, result={runner_result}"
+                    f"runner rejected {cell['cell_id']} with exit {completed.returncode}"
                 )
             run_id = str(runner_result.get("run_id", ""))
             if not re.fullmatch(r"[0-9]{8}T[0-9]{6}Z_[0-9a-f]{32}", run_id):
@@ -1362,18 +1597,24 @@ def _worker_run(job_path: Path) -> int:
                 "run_artifacts": sealed["run_artifacts"],
             }
             state["cells"].append(cell_result)
+            state["active_cell"] = None
+            state["updated_utc"] = utc_now()
             atomic_json(state_path, state)
         assert_pre_receipt(pre_path, pre_sha)
         state["status"] = "COMPLETE"
+        state["active_cell"] = None
         state["finished_utc"] = utc_now()
+        state["updated_utc"] = state["finished_utc"]
         atomic_json(state_path, state)
         return 0
     except Exception as exc:
-        state["status"] = "REJECT"
-        state["finished_utc"] = utc_now()
-        state["error_type"] = type(exc).__name__
-        state["error"] = str(exc)
-        atomic_json(state_path, state)
+        if state is not None and state_path is not None and state.get("status") != "COMPLETE":
+            state["status"] = "REJECT"
+            state["finished_utc"] = utc_now()
+            state["updated_utc"] = state["finished_utc"]
+            state["error_type"] = type(exc).__name__
+            state["error"] = str(exc)
+            atomic_json(state_path, state)
         return 2
 
 
@@ -1383,20 +1624,60 @@ def launch_detached(
     authorization_path: Path,
     state_path: Path,
     controller_timeout_seconds: int,
+    *,
+    resume: bool = False,
 ) -> dict[str, Any]:
     pre = assert_pre_receipt(pre_path, pre_sha256)
     authorization = validate_authorization(authorization_path, pre_sha256)
     minimum_timeout = required_controller_timeout(pre)
     if not minimum_timeout <= controller_timeout_seconds <= 172800:
-        raise AuthorizationError("controller timeout outside detached launcher contract")
+        raise AuthorizationError("controller timeout outside persisted launcher contract")
+    task_limit = required_scheduled_task_timeout(pre, controller_timeout_seconds)
     state_path = state_path.resolve()
+    job_path = state_path.with_name("launch_job.json")
+
+    if resume:
+        if not state_path.is_file() or not job_path.is_file():
+            raise AuthorizationError("resume requires the existing state and immutable job")
+        job = load_json(job_path)
+        state = load_json(state_path)
+        _validate_launch_job(job, pre, pre_path, pre_sha256, state_path)
+        if job.get("authorization") != authorization:
+            raise AuthorizationError("resume authorization differs from the immutable launch job")
+        if state.get("job") != file_binding(job_path):
+            raise AuthorizationError("resume state/job byte binding drift")
+        _assert_resume_outcome_fence(state, job, state_path)
+        _scheduler_call(pre, "Register", job)
+        inspected = _scheduler_call(pre, "Inspect", job)
+        if inspected.get("state") == "Running":
+            raise AuthorizationError("persisted audit task is still running")
+        state["status"] = "PENDING_RESUME"
+        state["worker_pid"] = None
+        state["resume_count"] = int(state.get("resume_count", 0)) + 1
+        state["updated_utc"] = utc_now()
+        atomic_json(state_path, state)
+        started = _scheduler_call(pre, "Start", job)
+        observed = load_json(state_path)
+        return {
+            "status": "RESUMED_PERSISTED_TASK",
+            "task_name": job["scheduler"]["task_name"],
+            "scheduler_state": started.get("state"),
+            "worker_pid": observed.get("worker_pid"),
+            "job_path": str(job_path),
+            "job_sha256": sha256_file(job_path),
+            "state_path": str(state_path),
+            "plan_sha256": pre["plan"]["plan_sha256"],
+        }
+
     if state_path.exists():
         raise AuthorizationError(f"refusing to replace launch state: {state_path}")
-    job_path = state_path.with_name("launch_job.json")
     if job_path.exists():
         raise AuthorizationError(f"refusing to replace launch job: {job_path}")
+    identity = _scheduler_call(pre, "Identity")
+    task_name = scheduled_task_name(pre_sha256, state_path)
     job = {
         "schema_version": SCHEMA_VERSION,
+        "launcher_revision": LAUNCHER_REVISION,
         "artifact_type": "QM5_20002_SHORT_NY_LAUNCH_JOB",
         "analysis_id": ANALYSIS_ID,
         "created_utc": utc_now(),
@@ -1407,31 +1688,32 @@ def launch_detached(
         "controller_timeout_seconds": controller_timeout_seconds,
         "plan_sha256": pre["plan"]["plan_sha256"],
         "tool": pre["tool"],
+        "dev1_runs_before_launch": _dev1_run_inventory(),
+        "scheduler": {
+            "mode": "WINDOWS_TASK_SCHEDULER_S4U_ON_DEMAND",
+            "task_name": task_name,
+            "task_path": "\\",
+            "principal_sid": identity["principal_sid"],
+            "logon_type": "S4U",
+            "run_level": "Highest",
+            "multiple_instances": "IgnoreNew",
+            "execution_limit_seconds": task_limit,
+            "helper": pre["runtime"]["scheduled_task_helper"],
+            "python": pre["runtime"]["python_binary"],
+        },
     }
+    _validate_launch_job(job, pre, pre_path, pre_sha256, state_path)
     job_sha = atomic_json(job_path, job, replace=False)
-    command = [sys.executable, str(TOOL_PATH), "_run-plan", "--job", str(job_path)]
-    creationflags = 0
-    popen_kwargs: dict[str, Any] = {}
-    if os.name == "nt":
-        creationflags = (
-            getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
-            | getattr(subprocess, "DETACHED_PROCESS", 0)
-            | getattr(subprocess, "CREATE_NO_WINDOW", 0)
-        )
-    else:
-        popen_kwargs["start_new_session"] = True
-    process = subprocess.Popen(
-        command,
-        cwd=REPO_ROOT,
-        stdin=subprocess.DEVNULL,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        creationflags=creationflags,
-        **popen_kwargs,
-    )
+    state = _initial_launch_state(pre_path, pre_sha256, file_binding(job_path), job)
+    atomic_json(state_path, state, replace=False)
+    _scheduler_call(pre, "Register", job)
+    started = _scheduler_call(pre, "Start", job)
+    observed = load_json(state_path)
     return {
-        "status": "LAUNCHED_DETACHED",
-        "worker_pid": process.pid,
+        "status": "LAUNCHED_PERSISTED_TASK",
+        "task_name": task_name,
+        "scheduler_state": started.get("state"),
+        "worker_pid": observed.get("worker_pid"),
         "job_path": str(job_path),
         "job_sha256": job_sha,
         "state_path": str(state_path),
@@ -2222,24 +2504,17 @@ def _validate_launch_chain(
     assert_binding(job_binding, "launch job")
     job_path = Path(str(job_binding["path"])).resolve()
     job = load_json(job_path)
-    expected_job_fields = {
-        "schema_version": SCHEMA_VERSION,
-        "artifact_type": "QM5_20002_SHORT_NY_LAUNCH_JOB",
-        "analysis_id": ANALYSIS_ID,
-        "pre_receipt_path": str(pre_path.resolve()),
-        "pre_receipt_sha256": pre_sha256.lower(),
-        "state_path": str(state_path.resolve()),
-        "plan_sha256": pre["plan"]["plan_sha256"],
-        "tool": pre["tool"],
-    }
-    drift = {key: (wanted, job.get(key)) for key, wanted in expected_job_fields.items() if job.get(key) != wanted}
-    if drift:
-        raise PostflightError(f"launch job identity/plan/tool drift: {drift}")
-    controller_timeout = int(job.get("controller_timeout_seconds", 0))
-    if not required_controller_timeout(pre) <= controller_timeout <= 172800:
-        raise PostflightError("launch job controller timeout drift")
+    try:
+        _validate_launch_job(job, pre, pre_path, pre_sha256, state_path)
+    except AuthorizationError as exc:
+        raise PostflightError(str(exc)) from exc
     authorization = job.get("authorization")
-    if not isinstance(authorization, Mapping) or state.get("authorization") != authorization:
+    if (
+        not isinstance(authorization, Mapping)
+        or state.get("authorization") != authorization
+        or state.get("scheduler") != job.get("scheduler")
+        or state.get("launcher_revision") != LAUNCHER_REVISION
+    ):
         raise PostflightError("launch state/job authorization drift")
     auth_binding = authorization.get("binding")
     if not isinstance(auth_binding, Mapping):
@@ -2252,6 +2527,7 @@ def _validate_launch_chain(
         or str(state.get("pre_receipt_sha256", "")).lower() != pre_sha256.lower()
         or not isinstance(state.get("worker_pid"), int)
         or int(state["worker_pid"]) <= 0
+        or state.get("active_cell") is not None
     ):
         raise PostflightError("launch state PRE/worker identity drift")
 
@@ -2262,6 +2538,12 @@ def _validate_launch_chain(
         raise PostflightError("launch job/state chronology drift")
     if state_finished > datetime.now(timezone.utc) + timedelta(minutes=5):
         raise PostflightError("launch state finished_utc is implausibly in the future")
+    outcome_possible = parse_utc(
+        str(state.get("outcome_possible_since_utc", "")),
+        "launch state outcome_possible_since_utc",
+    )
+    if not state_started <= outcome_possible <= state_finished:
+        raise PostflightError("launch state outcome-fence chronology drift")
     cells = state.get("cells")
     expected_ids = [str(cell["cell_id"]) for cell in pre["plan"]["cells"]]
     if (
@@ -2367,12 +2649,19 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     pre.add_argument("--compile-evidence", type=Path, required=True)
     pre.add_argument("--receipt", type=Path, required=True)
     pre.add_argument("--timeout-seconds", type=int, default=28800)
-    launch = sub.add_parser("launch", help="Start the authorized detached four-cell worker")
+    launch = sub.add_parser(
+        "launch", help="Start the authorized persistent scheduled four-cell worker"
+    )
     launch.add_argument("--pre-receipt", type=Path, required=True)
     launch.add_argument("--pre-sha256", required=True)
     launch.add_argument("--authorization", type=Path, required=True)
     launch.add_argument("--state", type=Path, required=True)
     launch.add_argument("--controller-timeout-seconds", type=int, default=64800)
+    launch.add_argument(
+        "--resume",
+        action="store_true",
+        help="Retry only a proven pre-outcome launch using its immutable scheduled task",
+    )
     post = sub.add_parser("post", help="Audit COMPLETE native evidence and merit gates")
     post.add_argument("--pre-receipt", type=Path, required=True)
     post.add_argument("--pre-sha256", required=True)
@@ -2399,6 +2688,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 args.authorization,
                 args.state,
                 args.controller_timeout_seconds,
+                resume=args.resume,
             )
         else:
             payload = postflight(args.pre_receipt, args.pre_sha256, args.state)
