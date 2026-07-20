@@ -48,6 +48,7 @@ input int    strategy_max_hold_days         = 35;
 input int    strategy_max_spread_points     = 1500;
 
 int g_last_attempt_month_key = 0;
+string g_attempt_state_key = "";
 
 bool Strategy_IsWtiD1()
   {
@@ -150,6 +151,27 @@ bool Strategy_MonthAlreadyEntered(const int month_key)
    return false;
   }
 
+int Strategy_PersistedAttemptMonth()
+  {
+   if(g_attempt_state_key == "" ||
+      !GlobalVariableCheck(g_attempt_state_key))
+      return 0;
+   const double stored = GlobalVariableGet(g_attempt_state_key);
+   if(!MathIsValidNumber(stored) || stored < 190001.0 || stored > 299912.0)
+      return 0;
+   return (int)MathRound(stored);
+  }
+
+bool Strategy_RecordMonthAttempt(const int month_key)
+  {
+   if(month_key <= 0 || g_attempt_state_key == "")
+      return false;
+   if(GlobalVariableSet(g_attempt_state_key, (double)month_key) <= 0)
+      return false;
+   g_last_attempt_month_key = month_key;
+   return true;
+  }
+
 void Strategy_CloseExpiredPositions()
   {
    const int current_month_key =
@@ -220,9 +242,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const int month_number = month_key % 100;
    if(month_key <= 0 || !Strategy_IsWinterMonth(month_number))
       return false;
-   if(month_key == g_last_attempt_month_key)
+   if(month_key == g_last_attempt_month_key ||
+      month_key == Strategy_PersistedAttemptMonth())
       return false;
-   g_last_attempt_month_key = month_key;
+   if(!Strategy_RecordMonthAttempt(month_key))
+      return false;
 
    if(Strategy_HasOpenPosition() ||
       Strategy_MonthAlreadyEntered(month_key))
@@ -291,6 +315,9 @@ int OnInit()
                         qm_news_temporal,
                         qm_news_compliance))
       return INIT_FAILED;
+
+   g_attempt_state_key =
+      StringFormat("QM5_20015_MONTH_ATTEMPT_%d", QM_FrameworkMagic());
 
    QM_LogEvent(QM_INFO, "INIT_OK",
                "{\"card\":\"QM5_20015\",\"ea\":\"wti-halloween-winter\"}");

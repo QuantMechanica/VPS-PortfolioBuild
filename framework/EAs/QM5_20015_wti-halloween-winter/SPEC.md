@@ -87,4 +87,4 @@ manifests, portfolio admission or the portfolio gate.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-07-20 | Initial source-backed WTI winter-season build | Q01 build task pending |
+| v1 | 2026-07-20 | Initial source-backed WTI winter-season build | task `5f18eea1-3d7e-4787-ba31-b823373c7569` |
