@@ -3944,6 +3944,37 @@ def _worker_run(job_path: Path) -> int:
         _persist_invalid_preclaim_state(state_path, state, probe_execution, exc)
         return 2
 
+    cell_by_id = {str(cell["cell_id"]): cell for cell in pre["plan"]["cells"]}
+    try:
+        # Exhaust every known read-only/static failure before consuming the final
+        # claim.  No output directory is created in this preparation pass.
+        assert_pre_receipt(pre_path, pre_sha)
+        validate_current_research_data_gate(pre)
+        if file_binding(job_path) != job_binding:
+            raise InvalidEvidence("immutable launch job drift before native claim")
+        if len(state.get("cells", [])) != len(pre["plan"]["cells"]):
+            raise InvalidEvidence("worker cell closure drift before native claim")
+        for state_cell, cell in zip(state["cells"], pre["plan"]["cells"]):
+            if (
+                not isinstance(state_cell, Mapping)
+                or state_cell.get("cell_id") != cell["cell_id"]
+                or state_cell.get("status") != "PENDING"
+                or state_cell.get("attempts") != []
+                or state_cell.get("command_sha256")
+                != canonical_sha256(runner_command(pre, cell))
+            ):
+                raise InvalidEvidence("worker cell/command drift before native claim")
+            output_root = Path(str(cell["output_root"])).resolve()
+            if output_root.exists() and any(output_root.iterdir()):
+                raise InvalidEvidence(
+                    f"cell output root is not empty before native claim: {output_root}"
+                )
+    except (OSError, subprocess.SubprocessError, AuditError, KeyError, TypeError, ValueError) as exc:
+        _persist_invalid_preclaim_state(
+            state_path, state, state.get("preclaim_probe"), exc
+        )
+        return 2
+
     try:
         bound_probe = state.get("preclaim_probe")
         if not isinstance(bound_probe, Mapping):
@@ -3956,9 +3987,9 @@ def _worker_run(job_path: Path) -> int:
         )
         if preclaim_probe != bound_probe:
             raise InvalidEvidence("same-worker preclaim probe drifted before claim")
-        # No state mutation, cell activation, outcome fence, or native directory
-        # creation may intervene between the full byte/semantic probe check and
-        # the one-time claim.
+        # No state mutation, cell activation, outcome fence, native directory
+        # creation, or other check may intervene between this full validation
+        # and the atomic one-time claim.
         state["attempt_claim"] = claim_native_attempt(
             pre_path,
             pre_sha,
@@ -3968,10 +3999,18 @@ def _worker_run(job_path: Path) -> int:
             preclaim_probe,
         )
     except (OSError, subprocess.SubprocessError, AuditError, KeyError, TypeError, ValueError) as exc:
-        _persist_invalid_preclaim_state(state_path, state, probe_execution, exc)
+        _persist_invalid_preclaim_state(
+            state_path, state, state.get("preclaim_probe"), exc
+        )
+        return 2
+    state["updated_utc"] = utc_now()
+    try:
+        atomic_json(state_path, state, replace=True)
+    except OSError:
+        # The immutable global claim already exists.  Never attempt a native
+        # launch if its corresponding State binding could not be persisted.
         return 2
 
-    cell_by_id = {str(cell["cell_id"]): cell for cell in pre["plan"]["cells"]}
     try:
         for state_cell in state["cells"]:
             # Re-seal every moving PRE/data/runtime byte before each native cell.

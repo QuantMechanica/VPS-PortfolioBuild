@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import importlib.util
 import json
 import subprocess
@@ -318,6 +319,170 @@ def test_hash_binding_role_closure_is_explicit() -> None:
         "scheduled_task_helper",
         "tool",
     }
+
+
+def _rotation_receipt_fixture(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> tuple[dict[str, dict[str, object]], Path, dict[str, object]]:
+    credential = tmp_path / "ProgramData" / "credential.machine-dpapi.json"
+    receipt_path = tmp_path / "ProgramData" / "credential.rotation-receipt.json"
+    helper = tmp_path / "repo" / "dev2_machine_credential.ps1"
+    child = tmp_path / "repo" / "invoke_dev2_identity_probe.ps1"
+    legacy = tmp_path / "ProgramData" / "credential.clixml"
+    lane_path = tmp_path / "repo" / "dev2_lane_contract.json"
+    rotation_root = tmp_path / "credential-rotation"
+    rotation_id = "20260720T120000Z_" + "a" * 32
+    identity_result_path = rotation_root / rotation_id / "output" / "identity_probe_result.json"
+    for path, content in (
+        (helper, b"helper"),
+        (child, b"child"),
+        (legacy, b"legacy credential"),
+    ):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(content)
+    monkeypatch.setattr(subject, "MACHINE_CREDENTIAL_PATH", credential)
+    monkeypatch.setattr(subject, "MACHINE_CREDENTIAL_ROTATION_RECEIPT_PATH", receipt_path)
+    monkeypatch.setattr(subject, "CREDENTIAL_HELPER_PATH", helper)
+    monkeypatch.setattr(subject, "IDENTITY_PROBE_CHILD_PATH", child)
+    monkeypatch.setattr(subject, "LEGACY_CREDENTIAL_PATH", legacy)
+    monkeypatch.setattr(subject, "DEV2_LANE_CONTRACT_PATH", lane_path)
+    monkeypatch.setattr(subject, "DEV2_CREDENTIAL_ROTATION_ROOT", rotation_root)
+
+    now = datetime.now(timezone.utc)
+    target_account = r"TESTHOST\QMDev2"
+    target_sid = "S-1-5-21-111-222-333-1001"
+    generation_id = "b" * 32
+    lane = {
+        "schema_version": 3,
+        "contract_id": "QM_DEV2_ISOLATED_MT5_LANE_V3",
+        "lane": "DEV2",
+        "identity": {
+            "local_user": "QMDev2",
+            "profile": r"C:\Users\QMDev2",
+            "credential": str(credential.resolve()),
+            "credential_format": "QM_DEV2_MACHINE_DPAPI_CREDENTIAL",
+            "dpapi_scope": "LocalMachine",
+            "limited_non_admin": True,
+        },
+    }
+    _write_json(lane_path, lane)
+    credential_payload = {
+        "schema_version": 1,
+        "artifact_type": "QM_DEV2_MACHINE_DPAPI_CREDENTIAL",
+        "contract_id": lane["contract_id"],
+        "lane": "DEV2",
+        "account": target_account,
+        "target_sid": target_sid,
+        "host_account_domain_sid": "S-1-5-21-111-222-333",
+        "dpapi_scope": "LocalMachine",
+        "text_encoding": "UTF-8",
+        "generation_id": generation_id,
+        "created_utc": (now - timedelta(minutes=3)).isoformat(),
+        "ciphertext_base64": base64.b64encode(b"x" * 64).decode("ascii"),
+    }
+    _write_json(credential, credential_payload)
+    identity_result = {
+        "schema_version": 1,
+        "artifact_type": "QM_DEV2_IDENTITY_PROBE_RESULT",
+        "status": "PASS",
+        "completed_utc": (now - timedelta(minutes=2)).isoformat(),
+        "nonce": "c" * 32,
+        "account": target_account,
+        "sid": target_sid,
+        "profile": r"C:\Users\QMDev2",
+        "limited_non_admin": True,
+        "request_sha256": "d" * 64,
+    }
+    _write_json(identity_result_path, identity_result)
+    credential_binding = subject.file_binding(credential)
+    helper_binding = subject.file_binding(helper)
+    receipt = {
+        "schema_version": 1,
+        "artifact_type": "QM_DEV2_MACHINE_CREDENTIAL_ROTATION_RECEIPT",
+        "status": "PASS",
+        "completed_utc": (now - timedelta(minutes=1)).isoformat(),
+        "contract_id": lane["contract_id"],
+        "target_account": target_account,
+        "target_sid": target_sid,
+        "target_disabled_at_rest": True,
+        "target_password_required_at_rest": True,
+        "machine_credential_path": credential_binding["path"],
+        "machine_credential_sha256": credential_binding["sha256"],
+        "machine_credential_generation_id": generation_id,
+        "machine_credential_helper_path": helper_binding["path"],
+        "machine_credential_helper_sha256": helper_binding["sha256"],
+        "identity_probe_child_path": str(child.resolve()),
+        "identity_probe_child_sha256": subject.sha256_file(child),
+        "identity_probe_result_path": str(identity_result_path.resolve()),
+        "identity_probe_result_sha256": subject.sha256_file(identity_result_path),
+        "identity_probe_logon_type": "Password",
+        "identity_probe_run_level": "Limited",
+        "machine_credential_matches_proved_password": True,
+        "published_after_identity_proof": True,
+        "legacy_credential_path": str(legacy.resolve()),
+        "legacy_credential_preserved": True,
+        "cleanup_lease_disarmed": True,
+        "owner_process_count": 0,
+        "dev2_root_process_count": 0,
+    }
+    _write_json(receipt_path, receipt)
+    bindings = {
+        "dev2_lane_contract": subject.file_binding(lane_path),
+        "dev2_machine_credential": credential_binding,
+        "dev2_machine_credential_helper": helper_binding,
+        "dev2_machine_credential_rotation_receipt": subject.file_binding(receipt_path),
+    }
+    return bindings, receipt_path, receipt
+
+
+def test_machine_credential_rotation_receipt_is_bound_before_pre(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    bindings, _path, receipt = _rotation_receipt_fixture(tmp_path, monkeypatch)
+    validated = subject.validate_machine_credential_rotation_receipt(bindings)
+    assert validated["target_sid"] == receipt["target_sid"]
+    assert validated["receipt"] == bindings["dev2_machine_credential_rotation_receipt"]
+    assert validated["machine_credential"] == bindings["dev2_machine_credential"]
+
+
+def test_machine_credential_rotation_receipt_missing_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    bindings, path, _receipt = _rotation_receipt_fixture(tmp_path, monkeypatch)
+    path.unlink()
+    with pytest.raises(subject.InvalidEvidence, match="missing/size drift"):
+        subject.validate_machine_credential_rotation_receipt(bindings)
+
+
+def test_machine_credential_rotation_receipt_byte_tamper_fails_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    bindings, path, _receipt = _rotation_receipt_fixture(tmp_path, monkeypatch)
+    path.write_bytes(path.read_bytes() + b" ")
+    with pytest.raises(subject.InvalidEvidence, match="size drift|SHA-256 drift"):
+        subject.validate_machine_credential_rotation_receipt(bindings)
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("machine_credential_sha256", "f" * 64),
+        ("target_sid", "S-1-5-21-111-222-333-1002"),
+        ("machine_credential_matches_proved_password", False),
+    ],
+)
+def test_machine_credential_rotation_semantic_tamper_fails_closed(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    field: str,
+    value: object,
+) -> None:
+    bindings, path, receipt = _rotation_receipt_fixture(tmp_path, monkeypatch)
+    receipt[field] = value
+    _write_json(path, receipt)
+    bindings["dev2_machine_credential_rotation_receipt"] = subject.file_binding(path)
+    with pytest.raises(subject.InvalidEvidence, match="rotation receipt|envelope|identity-probe"):
+        subject.validate_machine_credential_rotation_receipt(bindings)
 
 
 def test_matrix_accepts_ndx_namespace_despite_live_parity_fail_note(tmp_path: Path) -> None:
@@ -1113,6 +1278,119 @@ def test_dev2_controller_agent_port_proof_fails_closed(
     cursor[path[-1]] = value  # type: ignore[index]
     with pytest.raises(subject.InvalidEvidence, match="listener|agent-port"):
         subject.validate_dev2_controller_result(result, pre)
+
+
+def _bound_controller_attempt_fixture(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> tuple[dict[str, object], dict[str, object], dict[str, object], Path]:
+    pre, result = _controller_validation_fixture(tmp_path / "controller", monkeypatch)
+    native_runs = tmp_path / "runs"
+    monkeypatch.setattr(subject, "DEV2_RUNS_ROOT", native_runs)
+    run_id = str(result["run_id"])
+    native_root = native_runs / run_id
+    native_result_path = native_root / "output" / "result.json"
+    result.update(
+        {
+            "nonce": "e" * 32,
+            "error_code": None,
+            "error_message": None,
+            "common_path": r"C:\Users\QMDev2\AppData\Roaming\MetaQuotes\Terminal\Common",
+            "expected_task_name": "QM_DEV2_SMOKE_" + "f" * 32,
+            "controller_mutex": r"Global\QM_DEV2_SMOKE_CONTROLLER",
+            "log_path": str((native_root / "output" / "run.log").resolve()),
+        }
+    )
+    native_keys = {
+        "schema_version",
+        "run_id",
+        "nonce",
+        "success",
+        "error_code",
+        "error_message",
+        "run_smoke_exit_code",
+        "identity_sid",
+        "common_path",
+        "expected_task_name",
+        "controller_mutex",
+        "lane_contract_sha256",
+        "machine_credential_sha256",
+        "machine_credential_helper_sha256",
+        "child_sha256",
+        "run_smoke_sha256",
+        "program_sha256",
+        "agent_port_proof",
+        "started_utc",
+        "finished_utc",
+        "log_path",
+    }
+    _write_json(native_result_path, {key: result[key] for key in native_keys})
+    output_root = tmp_path / "candidate" / "DEV"
+    output_root.mkdir(parents=True)
+    stdout = output_root / "controller.stdout.log"
+    stderr = output_root / "controller.stderr.log"
+    stdout.write_text(json.dumps(result, indent=2), encoding="utf-8")
+    stderr.write_bytes(b"")
+    cell = {"cell_id": "NDX_DWX_DEV", "output_root": str(output_root)}
+    attempt = {
+        "stdout": subject.file_binding(stdout),
+        "stderr": subject.file_binding(stderr),
+        "runner_result": json.loads(json.dumps(result)),
+        "native_root": str(native_root.resolve()),
+        "native_result": subject.file_binding(native_result_path),
+    }
+    return pre, cell, attempt, native_result_path
+
+
+def test_post_reparses_bound_controller_stdout_and_native_result(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    pre, cell, attempt, _native_result = _bound_controller_attempt_fixture(
+        tmp_path, monkeypatch
+    )
+    run_id, _root, parsed, _binding = subject._validate_bound_controller_attempt(
+        pre, cell, attempt
+    )
+    assert run_id == attempt["runner_result"]["run_id"]
+    assert parsed == attempt["runner_result"]
+
+
+@pytest.mark.parametrize("role", ["stdout", "stderr"])
+def test_post_rejects_controller_log_byte_tamper(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, role: str
+) -> None:
+    pre, cell, attempt, _native_result = _bound_controller_attempt_fixture(
+        tmp_path, monkeypatch
+    )
+    Path(attempt[role]["path"]).write_bytes(
+        Path(attempt[role]["path"]).read_bytes() + b"tamper"
+    )
+    with pytest.raises(subject.InvalidEvidence, match="size drift|SHA-256 drift"):
+        subject._validate_bound_controller_attempt(pre, cell, attempt)
+
+
+def test_post_rejects_state_runner_result_not_equal_to_bound_stdout(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    pre, cell, attempt, _native_result = _bound_controller_attempt_fixture(
+        tmp_path, monkeypatch
+    )
+    attempt["runner_result"]["cleanup_lease_disarmed"] = False
+    with pytest.raises(subject.InvalidEvidence, match="differs from launch state"):
+        subject._validate_bound_controller_attempt(pre, cell, attempt)
+
+
+def test_post_rejects_native_result_semantic_tamper_even_when_rebound(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    pre, cell, attempt, native_result_path = _bound_controller_attempt_fixture(
+        tmp_path, monkeypatch
+    )
+    native_result = subject.load_json(native_result_path)
+    native_result["child_sha256"] = "0" * 64
+    _write_json(native_result_path, native_result)
+    attempt["native_result"] = subject.file_binding(native_result_path)
+    with pytest.raises(subject.InvalidEvidence, match="differs semantically"):
+        subject._validate_bound_controller_attempt(pre, cell, attempt)
 
 
 def _controller_envelope() -> dict[str, object]:
