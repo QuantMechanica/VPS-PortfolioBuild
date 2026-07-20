@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import subprocess
 import sys
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
 from datetime import date, datetime, time, timedelta, timezone
 from decimal import Decimal
@@ -194,6 +197,9 @@ def _runner_summary(cell: dict[str, object]) -> dict[str, object]:
         "period": "M5",
         "requested_runs": 2,
         "max_run_attempts": 4,
+        "maximum_infrastructure_warmups": 2,
+        "warmup_policy": "PREFIX_ONLY_BEFORE_FIRST_OK",
+        "allowed_infrastructure_warmup_verdicts": ["BARS_ZERO", "NO_HISTORY"],
         "attempted_runs": 2,
         "non_ok_attempts": 0,
         "deterministic": True,
@@ -207,13 +213,39 @@ def _runner_summary(cell: dict[str, object]) -> dict[str, object]:
     }
 
 
+def _warmup_run(
+    name: str,
+    *,
+    failure: str = "BARS_ZERO",
+    reasons: list[str] | None = None,
+) -> dict[str, object]:
+    return {
+        "run": name,
+        "status": "INVALID",
+        "failure": failure,
+        "invalid_report_reasons": reasons or ["BARS_ZERO"],
+        "total_trades": 0,
+        "profit_factor": "0",
+        "profit_factor_raw": "0.00",
+        "drawdown": "0",
+        "drawdown_raw": "0.00",
+        "net_profit": "0",
+        "net_profit_raw": "0.00",
+        "exit_code": 0,
+        "report_size_bytes": 1,
+        "report_canonical_path": rf"D:\evidence\raw\{name}\report.htm",
+        "tester_log_path": rf"D:\evidence\raw\{name}\tester.log",
+    }
+
+
 def test_frozen_plan_is_one_symbol_four_disjoint_cells_and_two_duplicates(
     tmp_path: Path,
 ) -> None:
     set_binding = {"path": str(tmp_path / "candidate.set"), "size": 1, "sha256": "a" * 64}
     plan = subject.build_plan("NDX.DWX", set_binding, tmp_path / "run")
     assert plan["single_authorized_symbol"] == "NDX.DWX"
-    assert plan["native_run_count"] == 8
+    assert plan["accepted_duplicate_run_count"] == 8
+    assert plan["maximum_native_starts"] == 16
     assert plan["technical_prescreen"]["authorized"] is False
     assert [row["cohort"] for row in plan["cells"]] == ["DEV", "OOS", "OOS", "OOS"]
     assert [(row["from_date"], row["to_date"]) for row in plan["cells"]] == [
@@ -223,7 +255,13 @@ def test_frozen_plan_is_one_symbol_four_disjoint_cells_and_two_duplicates(
         ("2025-01-01", "2025-12-31"),
     ]
     assert all(row["symbol"] == "NDX.DWX" for row in plan["cells"])
-    assert all(row["model"] == 4 and row["duplicates"] == 2 for row in plan["cells"])
+    assert all(
+        row["model"] == 4
+        and row["duplicates"] == 2
+        and row["maximum_infrastructure_warmups"] == 2
+        and row["maximum_attempts"] == 4
+        for row in plan["cells"]
+    )
     subject.validate_window_contract()
 
 
@@ -685,6 +723,38 @@ def test_scheduler_parser_keeps_scheduler_error_semantics() -> None:
         subject._parse_scheduler_json("log only")
 
 
+def test_scheduler_start_requires_fresh_start_ack(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    scheduler = {
+        "task_name": "QM_QM10834_AUDIT_" + "a" * 24,
+        "principal_sid": "S-1-5-21-1",
+        "logon_type": "S4U",
+        "run_level": "Highest",
+        "multiple_instances": "IgnoreNew",
+        "execution_limit_seconds": 60,
+    }
+    pre = {
+        "bindings": {
+            "powershell": {"path": str(tmp_path / "pwsh.exe")},
+            "scheduled_task_helper": {"path": str(tmp_path / "helper.ps1")},
+            "python": {"path": str(tmp_path / "python.exe")},
+            "tool": {"path": str(tmp_path / "audit.py")},
+        }
+    }
+    job = {"state_path": str(tmp_path / "launch_state.json"), "scheduler": scheduler}
+    payload = {"operation": "Start", **scheduler, "state": "Ready"}
+
+    def completed() -> SimpleNamespace:
+        return SimpleNamespace(returncode=0, stdout=json.dumps(payload), stderr="")
+
+    monkeypatch.setattr(subject.subprocess, "run", lambda *_args, **_kwargs: completed())
+    with pytest.raises(subject.AuthorizationError, match="fresh task start"):
+        subject._scheduler_call(pre, "Start", job)
+    payload["fresh_start_ack"] = True
+    assert subject._scheduler_call(pre, "Start", job)["fresh_start_ack"] is True
+
+
 def test_dev2_summary_identity_is_exact_and_unambiguous(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -811,7 +881,9 @@ def test_merit_thresholds_are_versioned_and_absent_from_cli() -> None:
 def test_runner_summary_requires_exactly_two_model4_marked_duplicates() -> None:
     cell = {"symbol": "NDX.DWX"}
     summary = _runner_summary(cell)
-    subject.validate_runner_summary(summary, cell)
+    warmups, accepted = subject.validate_runner_summary(summary, cell)
+    assert warmups == []
+    assert [row["run"] for row in accepted] == ["run_01", "run_02"]
     summary["runs"][1]["real_ticks_marker"] = False
     with pytest.raises(subject.InvalidEvidence, match="Model-4 marker"):
         subject.validate_runner_summary(summary, cell)
@@ -826,16 +898,126 @@ def test_runner_summary_accepts_only_bounded_pre_ok_infrastructure_warmups() -> 
             "status": "INVALID",
             "failure": "BARS_ZERO",
             "invalid_report_reasons": ["BARS_ZERO"],
+            "total_trades": 0,
+            "profit_factor": "0",
+            "profit_factor_raw": "0.00",
+            "drawdown": "0",
+            "drawdown_raw": "0.00",
+            "net_profit": "0",
+            "net_profit_raw": "0.00",
+            "exit_code": 0,
+            "report_size_bytes": 1,
+            "report_canonical_path": r"D:\evidence\raw\run_01\report.htm",
+            "tester_log_path": r"D:\evidence\raw\run_01\tester.log",
         },
         {"run": "run_02", "status": "OK", "real_ticks_marker": True},
         {"run": "run_03", "status": "OK", "real_ticks_marker": True},
     ]
     summary["attempted_runs"] = 3
     summary["non_ok_attempts"] = 1
-    accepted = subject.validate_runner_summary(summary, cell)
+    warmups, accepted = subject.validate_runner_summary(summary, cell)
+    assert [row["run"] for row in warmups] == ["run_01"]
     assert [row["run"] for row in accepted] == ["run_02", "run_03"]
 
     summary["runs"][0]["failure"] = "ONINIT_FAILED"
+    with pytest.raises(subject.InvalidEvidence, match="non-infrastructure warm-up"):
+        subject.validate_runner_summary(summary, cell)
+
+
+def test_runner_summary_accepts_two_prefix_warmups_including_no_history() -> None:
+    cell = {"symbol": "NDX.DWX"}
+    summary = _runner_summary(cell)
+    summary["runs"] = [
+        _warmup_run("run_01"),
+        _warmup_run(
+            "run_02",
+            failure="NO_HISTORY",
+            reasons=["NO_HISTORY_LOG", "HISTORY_CONTEXT_INVALID", "BARS_ZERO"],
+        ),
+        {"run": "run_03", "status": "OK", "real_ticks_marker": True},
+        {"run": "run_04", "status": "OK", "real_ticks_marker": True},
+    ]
+    summary["attempted_runs"] = 4
+    summary["non_ok_attempts"] = 2
+    warmups, accepted = subject.validate_runner_summary(summary, cell)
+    assert [row["run"] for row in warmups] == ["run_01", "run_02"]
+    assert [row["run"] for row in accepted] == ["run_03", "run_04"]
+
+
+@pytest.mark.parametrize(("field", "value"), [("attempted_runs", True), ("non_ok_attempts", False)])
+def test_runner_summary_rejects_boolean_attempt_counters(field: str, value: bool) -> None:
+    cell = {"symbol": "NDX.DWX"}
+    summary = _runner_summary(cell)
+    summary[field] = value
+    with pytest.raises(subject.InvalidEvidence, match="attempt counters"):
+        subject.validate_runner_summary(summary, cell)
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("total_trades", 1, "zero-trade"),
+        ("net_profit", "0.01", "zero-result"),
+        ("exit_code", False, "artifact identity"),
+    ],
+)
+def test_runner_summary_rejects_warmups_with_outcome_or_invalid_exit_identity(
+    field: str, value: object, message: str
+) -> None:
+    cell = {"symbol": "NDX.DWX"}
+    summary = _runner_summary(cell)
+    warmup = {
+        "run": "run_01",
+        "status": "INVALID",
+        "failure": "BARS_ZERO",
+        "invalid_report_reasons": ["BARS_ZERO"],
+        "total_trades": 0,
+        "profit_factor": "0",
+        "profit_factor_raw": "0.00",
+        "drawdown": "0",
+        "drawdown_raw": "0.00",
+        "net_profit": "0",
+        "net_profit_raw": "0.00",
+        "exit_code": 0,
+        "report_size_bytes": 1,
+        "report_canonical_path": r"D:\evidence\raw\run_01\report.htm",
+        "tester_log_path": r"D:\evidence\raw\run_01\tester.log",
+    }
+    warmup[field] = value
+    summary["runs"] = [warmup, *summary["runs"]]
+    summary["runs"][1]["run"] = "run_02"
+    summary["runs"][2]["run"] = "run_03"
+    summary["attempted_runs"] = 3
+    summary["non_ok_attempts"] = 1
+    with pytest.raises(subject.InvalidEvidence, match=message):
+        subject.validate_runner_summary(summary, cell)
+
+
+def test_runner_summary_rejects_hidden_non_infrastructure_reason() -> None:
+    cell = {"symbol": "NDX.DWX"}
+    summary = _runner_summary(cell)
+    warmup = {
+        "run": "run_01",
+        "status": "INVALID",
+        "failure": "BARS_ZERO",
+        "invalid_report_reasons": ["BARS_ZERO", "ONINIT_FAILED"],
+        "total_trades": 0,
+        "profit_factor": "0",
+        "profit_factor_raw": "0.00",
+        "drawdown": "0",
+        "drawdown_raw": "0.00",
+        "net_profit": "0",
+        "net_profit_raw": "0.00",
+        "exit_code": 0,
+        "report_size_bytes": 1,
+        "report_canonical_path": r"D:\evidence\raw\run_01\report.htm",
+        "tester_log_path": r"D:\evidence\raw\run_01\tester.log",
+    }
+    summary["runs"] = [warmup, *summary["runs"]]
+    summary["runs"][1]["run"] = "run_02"
+    summary["runs"][2]["run"] = "run_03"
+    summary["attempted_runs"] = 3
+    summary["non_ok_attempts"] = 1
     with pytest.raises(subject.InvalidEvidence, match="non-infrastructure warm-up"):
         subject.validate_runner_summary(summary, cell)
 
@@ -856,11 +1038,17 @@ def test_authorization_is_owner_scoped_short_lived_and_pre_bound(tmp_path: Path)
         "status": "AUTHORIZED",
         "analysis_id": subject.ANALYSIS_ID,
         "pre_receipt_sha256": "a" * 64,
-        "scope": "QM5_10834_NDX_4_CELLS_X_2_DUPLICATES_MODEL4",
+        "scope": "QM5_10834_NDX_4_CELLS_X_2_ACCEPTED_DUPLICATES_MAX_2_INFRA_WARMUPS_MODEL4",
         "authorized_by": "OWNER",
         "authorized_symbol": "NDX.DWX",
         "authorized_cells": [window.cell_id for window in subject.WINDOWS],
         "duplicates_per_cell": 2,
+        "maximum_infrastructure_warmups_per_cell": 2,
+        "maximum_attempts_per_cell": 4,
+        "maximum_native_starts": 16,
+        "allowed_infrastructure_warmup_verdicts": ["BARS_ZERO", "NO_HISTORY"],
+        "warmups_must_precede_accepted_duplicates": True,
+        "warmups_must_be_zero_trade_zero_result": True,
         "model": 4,
         "authorize_native_outcomes": True,
         "created_utc": (now - timedelta(minutes=1)).isoformat(),
@@ -915,6 +1103,289 @@ def test_global_native_attempt_claim_is_atomic_and_pre_bound(
         subject._assert_native_attempt_unclaimed("test")
 
 
+def test_global_native_attempt_claim_has_exactly_one_concurrent_winner(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    claim_path = tmp_path / "claims" / "attempt.json"
+    monkeypatch.setattr(subject, "NATIVE_ATTEMPT_CLAIM_PATH", claim_path)
+    run_root = tmp_path / "run"
+    state_path = run_root / "launch_state.json"
+    pre_path = run_root / "pre_receipt.json"
+    _write_json(pre_path, {"receipt": "sealed"})
+    pre_sha = subject.sha256_file(pre_path)
+    bindings: dict[str, dict[str, object]] = {}
+    for role in ("infra_retry_contract", "ex5", "set"):
+        path = tmp_path / f"{role}.bin"
+        path.write_bytes(role.encode("ascii"))
+        bindings[role] = subject.file_binding(path)
+    authorization_path = tmp_path / "authorization.json"
+    _write_json(authorization_path, {"authorized": True})
+    authorization = {
+        "binding": subject.file_binding(authorization_path),
+        "payload_sha256": "9" * 64,
+    }
+    pre = {
+        "run_root": str(run_root),
+        "plan": {"plan_sha256": "8" * 64},
+        "bindings": bindings,
+    }
+    barrier = threading.Barrier(2)
+
+    def contend() -> str:
+        barrier.wait(timeout=5)
+        try:
+            subject.claim_native_attempt(
+                pre_path, pre_sha, pre, state_path, authorization
+            )
+            return "SUCCESS"
+        except subject.InvalidEvidence:
+            return "REJECTED"
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        results = [future.result(timeout=10) for future in (pool.submit(contend), pool.submit(contend))]
+    assert sorted(results) == ["REJECTED", "SUCCESS"]
+
+
+def test_native_launch_lock_contends_across_processes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    lock_path = tmp_path / "claims" / "native.lock"
+    monkeypatch.setattr(subject, "NATIVE_LAUNCH_LOCK_PATH", lock_path)
+    code = (
+        "import importlib.util,pathlib,sys;"
+        "spec=importlib.util.spec_from_file_location('lock_subject',sys.argv[1]);"
+        "mod=importlib.util.module_from_spec(spec);sys.modules[spec.name]=mod;spec.loader.exec_module(mod);"
+        "mod.NATIVE_LAUNCH_LOCK_PATH=pathlib.Path(sys.argv[2]);"
+        "ctx=mod.native_launch_lock(timeout_seconds=5);ctx.__enter__();"
+        "print('LOCKED',flush=True);sys.stdin.readline();ctx.__exit__(None,None,None)"
+    )
+    child = subprocess.Popen(
+        [sys.executable, "-c", code, str(TOOL), str(lock_path)],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    try:
+        assert child.stdout is not None
+        assert child.stdout.readline().strip() == "LOCKED"
+        with pytest.raises(subject.AuthorizationError, match="timed out acquiring"):
+            with subject.native_launch_lock(timeout_seconds=0.2):
+                pass
+    finally:
+        if child.stdin is not None:
+            child.stdin.write("release\n")
+            child.stdin.flush()
+        child.wait(timeout=10)
+    assert child.returncode == 0
+
+
+def test_launch_entrypoint_holds_global_lock(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    events: list[str] = []
+
+    class LockProbe:
+        def __enter__(self) -> None:
+            events.append("lock_enter")
+
+        def __exit__(self, *_args: object) -> None:
+            events.append("lock_exit")
+
+    def fake_launch(*_args: object, **_kwargs: object) -> dict[str, str]:
+        events.append("launch")
+        return {"status": "TEST"}
+
+    monkeypatch.setattr(subject, "native_launch_lock", lambda: LockProbe())
+    monkeypatch.setattr(subject, "_launch_detached_locked", fake_launch)
+    result = subject.launch_detached(
+        tmp_path / "pre.json",
+        "a" * 64,
+        tmp_path / "authorization.json",
+        tmp_path / "launch_state.json",
+        resume=True,
+    )
+    assert result == {"status": "TEST"}
+    assert events == ["lock_enter", "launch", "lock_exit"]
+
+
+@pytest.mark.parametrize("scheduler_state", ["Running", "Queued", "Unknown", "Disabled"])
+def test_resume_rejects_every_scheduler_state_except_exact_ready(
+    tmp_path: Path,
+    scheduler_state: str,
+) -> None:
+    with pytest.raises(subject.AuthorizationError, match="not exactly Ready"):
+        subject._refresh_resume_state_after_inspect(
+            {"state": scheduler_state},
+            tmp_path / "launch_state.json",
+            {},
+            {},
+            tmp_path / "pre.json",
+            "a" * 64,
+            {},
+        )
+
+
+def test_resume_rereads_inspect_mutation_and_never_replaces_crossed_state(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    run_root = tmp_path / "run"
+    state_path = run_root / "launch_state.json"
+    job_path = run_root / "launch_job.json"
+    pre_path = run_root / "pre_receipt.json"
+    authorization_identity = {
+        "binding": {"path": str(tmp_path / "authorization.json")},
+        "payload_sha256": "9" * 64,
+    }
+    job = {"authorization": authorization_identity, "scheduler": {"task_name": "task"}}
+    initial = {"status": "PENDING", "outcome_possible_since_utc": None}
+    crossed = {
+        "status": "RUNNING",
+        "outcome_possible_since_utc": "2026-07-20T12:00:00+00:00",
+    }
+    _write_json(job_path, job)
+    _write_json(state_path, initial)
+    _write_json(pre_path, {"sealed": True})
+    pre = {"run_root": str(run_root)}
+    starts: list[str] = []
+
+    monkeypatch.setattr(subject, "assert_pre_receipt", lambda *_args: pre)
+    monkeypatch.setattr(subject, "validate_current_research_data_gate", lambda *_args: None)
+    monkeypatch.setattr(
+        subject,
+        "validate_authorization",
+        lambda *_args: authorization_identity,
+    )
+    monkeypatch.setattr(subject, "_validate_launch_job", lambda *_args: None)
+    monkeypatch.setattr(subject, "_assert_native_attempt_unclaimed", lambda *_args: None)
+
+    def outcome_fence(state: dict[str, object], *_args: object) -> None:
+        if state.get("outcome_possible_since_utc") is not None:
+            raise subject.AuthorizationError("crossed outcome fence")
+
+    def scheduler_call(_pre: object, operation: str, _job: object) -> dict[str, object]:
+        if operation == "Inspect":
+            _write_json(state_path, crossed)
+            return {"state": "Ready"}
+        if operation == "Start":
+            starts.append(operation)
+        return {"state": "Ready"}
+
+    monkeypatch.setattr(subject, "_assert_resume_outcome_fence", outcome_fence)
+    monkeypatch.setattr(subject, "_scheduler_call", scheduler_call)
+    with pytest.raises(subject.AuthorizationError, match="crossed outcome fence"):
+        subject._launch_detached_locked(
+            pre_path,
+            "a" * 64,
+            tmp_path / "authorization.json",
+            state_path,
+            resume=True,
+        )
+    assert subject.load_json(state_path) == crossed
+    assert starts == []
+
+
+def test_resume_rechecks_global_claim_created_during_inspect(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    state_path = tmp_path / "run" / "launch_state.json"
+    job_path = state_path.with_name("launch_job.json")
+    pre_path = state_path.with_name("pre_receipt.json")
+    authorization = {
+        "binding": {"path": str(tmp_path / "authorization.json")},
+        "payload_sha256": "9" * 64,
+    }
+    job = {"authorization": authorization, "scheduler": {"task_name": "task"}}
+    state = {"status": "PENDING", "sentinel": "unchanged"}
+    _write_json(job_path, job)
+    _write_json(state_path, state)
+    _write_json(pre_path, {"sealed": True})
+    claim_path = tmp_path / "claims" / "attempt.json"
+    monkeypatch.setattr(subject, "NATIVE_ATTEMPT_CLAIM_PATH", claim_path)
+    monkeypatch.setattr(subject, "assert_pre_receipt", lambda *_args: {"run_root": str(state_path.parent)})
+    monkeypatch.setattr(subject, "validate_current_research_data_gate", lambda *_args: None)
+    monkeypatch.setattr(subject, "validate_authorization", lambda *_args: authorization)
+    monkeypatch.setattr(subject, "_validate_launch_job", lambda *_args: None)
+    monkeypatch.setattr(subject, "_assert_resume_outcome_fence", lambda *_args: None)
+
+    def scheduler_call(_pre: object, operation: str, _job: object) -> dict[str, object]:
+        if operation == "Inspect":
+            _write_json(claim_path, {"claimed": True})
+        return {"state": "Ready"}
+
+    monkeypatch.setattr(subject, "_scheduler_call", scheduler_call)
+    with pytest.raises(subject.AuthorizationError, match="already claimed"):
+        subject._launch_detached_locked(
+            pre_path,
+            "a" * 64,
+            tmp_path / "authorization.json",
+            state_path,
+            resume=True,
+        )
+    assert subject.load_json(state_path) == state
+
+
+def test_native_artifacts_are_bound_to_exact_cell_raw_run_directory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    output_root = tmp_path / "controller_cell"
+    expected_raw = tmp_path / "dev2_native" / "output" / "smoke" / "QM5_10834" / "tag" / "raw"
+    run_root = expected_raw / "run_01"
+    run_root.mkdir(parents=True)
+    report = run_root / "report.htm"
+    log = run_root / "tester.log"
+    ini = run_root / "tester.ini"
+    report.write_text("opaque", encoding="utf-8")
+    log.write_text("opaque", encoding="utf-8")
+    ini.write_text("[Tester]\n", encoding="utf-8")
+    sealed = {path.resolve(): subject.file_binding(path) for path in (report, log, ini)}
+    row = {
+        "run": "run_01",
+        "report_canonical_path": str(report),
+        "tester_log_path": str(log),
+        "report_size_bytes": report.stat().st_size,
+    }
+    cell = {"cell_id": "DEV", "output_root": str(output_root)}
+    monkeypatch.setattr(subject, "validate_tester_ini", lambda *_args: None)
+    assert subject._bound_native_run_artifacts(row, sealed, cell, expected_raw) == (
+        report.resolve(),
+        log.resolve(),
+        ini.resolve(),
+    )
+
+    escaped_root = tmp_path / "other" / "raw" / "run_01"
+    escaped_root.mkdir(parents=True)
+    escaped_report = escaped_root / "report.htm"
+    escaped_log = escaped_root / "tester.log"
+    escaped_ini = escaped_root / "tester.ini"
+    for path in (escaped_report, escaped_log, escaped_ini):
+        path.write_text("opaque", encoding="utf-8")
+    escaped_sealed = {
+        path.resolve(): subject.file_binding(path)
+        for path in (escaped_report, escaped_log, escaped_ini)
+    }
+    escaped_row = {
+        "run": "run_01",
+        "report_canonical_path": str(escaped_report),
+        "tester_log_path": str(escaped_log),
+        "report_size_bytes": escaped_report.stat().st_size,
+    }
+    with pytest.raises(subject.InvalidEvidence, match="exact raw/run_01 directory"):
+        subject._bound_native_run_artifacts(
+            escaped_row, escaped_sealed, cell, expected_raw
+        )
+
+    wrong_size = dict(row)
+    wrong_size["report_size_bytes"] = report.stat().st_size + 1
+    with pytest.raises(subject.InvalidEvidence, match="sealed binding"):
+        subject._bound_native_run_artifacts(wrong_size, sealed, cell, expected_raw)
+
+    reused_log = dict(row)
+    reused_log["tester_log_path"] = str(report)
+    with pytest.raises(subject.InvalidEvidence, match="exact raw/run_01 directory"):
+        subject._bound_native_run_artifacts(reused_log, sealed, cell, expected_raw)
+
+
 def _preoutcome_state(status: str = "PENDING") -> dict[str, object]:
     pending_cells = [
         {"cell_id": window.cell_id, "status": "PENDING", "attempts": []}
@@ -930,6 +1401,33 @@ def _preoutcome_state(status: str = "PENDING") -> dict[str, object]:
         "outcome_possible_since_utc": None,
         "cells": pending_cells,
     }
+
+
+def test_worker_bootstrap_claim_is_locked_and_second_worker_cannot_overwrite_running(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    state_path = tmp_path / "launch_state.json"
+    job_binding = {"path": str(tmp_path / "launch_job.json"), "size": 1, "sha256": "1" * 64}
+    authorization = {"binding": {"path": "authorization.json"}, "payload_sha256": "2" * 64}
+    job = {"authorization": authorization, "scheduler": {"task_name": "task"}}
+    state = _preoutcome_state()
+    state.update({"job": job_binding, "launches": []})
+    _write_json(state_path, state)
+    monkeypatch.setattr(subject, "NATIVE_LAUNCH_LOCK_PATH", tmp_path / "claims" / "native.lock")
+    monkeypatch.setattr(subject, "_assert_resume_outcome_fence", lambda *_args: None)
+
+    claimed = subject._claim_worker_bootstrap_state(
+        state_path, job_binding, job, {}, authorization
+    )
+    assert claimed["status"] == "RUNNING"
+    assert len(claimed["launches"]) == 1
+    with pytest.raises(subject.AuthorizationError, match="not armed"):
+        subject._claim_worker_bootstrap_state(
+            state_path, job_binding, job, {}, authorization
+        )
+    persisted = subject.load_json(state_path)
+    assert persisted["status"] == "RUNNING"
+    assert len(persisted["launches"]) == 1
 
 
 @pytest.mark.parametrize("status", ["PENDING", "PENDING_RESUME", "RUNNING"])
@@ -971,8 +1469,8 @@ def test_persisted_task_timeout_covers_all_cells_and_cleanup_margin(tmp_path: Pa
             ]
         }
     }
-    assert subject.CELL_CONTROLLER_TIMEOUT_SECONDS == 59_400
-    assert subject.required_scheduled_task_timeout(pre) == 241_200
+    assert subject.CELL_CONTROLLER_TIMEOUT_SECONDS == 117_480
+    assert subject.required_scheduled_task_timeout(pre) == 473_520
 
 
 def test_persisted_launch_job_binds_s4u_helper_python_plan_and_state(
@@ -1006,7 +1504,7 @@ def test_persisted_launch_job_binds_s4u_helper_python_plan_and_state(
         "logon_type": "S4U",
         "run_level": "Highest",
         "multiple_instances": "IgnoreNew",
-        "execution_limit_seconds": 241_200,
+        "execution_limit_seconds": 473_520,
         "helper": helper,
         "python": python,
     }
@@ -1042,6 +1540,10 @@ def test_persisted_helper_is_s4u_triggerless_and_never_overwrites_task() -> None
     assert "Register-ScheduledTask" in helper
     assert " -Force" not in helper
     assert "_run-plan --job" in helper
+    assert "$priorLastRunUtc" in helper
+    assert "$startRequestedUtc" in helper
+    assert "$freshStartAck" in helper
+    assert "fresh_start_ack" in helper
 
 
 def test_resume_fence_rejects_any_native_worker_artifact(tmp_path: Path) -> None:

@@ -202,19 +202,38 @@ if ($null -eq $task) {
 }
 Assert-QmTaskContract -Task $task -Contract $contract -Identity $identity
 
+$freshStartAck = $false
+$startRequestedUtc = $null
 if ($Operation -eq 'Start') {
     if ($task.State.ToString() -eq 'Running') {
         throw "Scheduled task '$TaskName' is already running."
     }
+    $priorInfo = Get-ScheduledTaskInfo -TaskName $TaskName -TaskPath '\' -ErrorAction Stop
+    $priorLastRunUtc = if ($priorInfo.LastRunTime.Year -gt 2000) {
+        $priorInfo.LastRunTime.ToUniversalTime()
+    } else {
+        [DateTime]::SpecifyKind([DateTime]::MinValue, [DateTimeKind]::Utc)
+    }
+    $startRequestedUtc = (Get-Date).ToUniversalTime()
     Start-ScheduledTask -TaskName $TaskName -TaskPath '\' -ErrorAction Stop
-    $deadline = (Get-Date).ToUniversalTime().AddSeconds(10)
+    $deadline = $startRequestedUtc.AddSeconds(10)
     do {
         Start-Sleep -Milliseconds 100
         $task = Get-ScheduledTask -TaskName $TaskName -TaskPath '\' -ErrorAction Stop
         $info = Get-ScheduledTaskInfo -TaskName $TaskName -TaskPath '\' -ErrorAction Stop
-    } while ($task.State.ToString() -ne 'Running' -and
-        $info.LastRunTime.Year -le 2000 -and
-        (Get-Date).ToUniversalTime() -lt $deadline)
+        $freshLastRun = $info.LastRunTime.Year -gt 2000 -and
+            $info.LastRunTime.ToUniversalTime() -gt $priorLastRunUtc -and
+            $info.LastRunTime.ToUniversalTime() -ge $startRequestedUtc.AddSeconds(-2)
+        $freshStartAck = $task.State.ToString() -eq 'Running' -or $freshLastRun
+    } while (-not $freshStartAck -and (Get-Date).ToUniversalTime() -lt $deadline)
+    if (-not $freshStartAck) {
+        throw "Scheduled task '$TaskName' did not acknowledge this fresh start request."
+    }
 }
 
-Get-QmSafeTaskMetadata -Task $task -Identity $identity | ConvertTo-Json -Depth 3 -Compress
+$metadata = Get-QmSafeTaskMetadata -Task $task -Identity $identity
+if ($Operation -eq 'Start') {
+    $metadata['fresh_start_ack'] = [bool]$freshStartAck
+    $metadata['start_requested_utc'] = $startRequestedUtc.ToString('o')
+}
+$metadata | ConvertTo-Json -Depth 3 -Compress

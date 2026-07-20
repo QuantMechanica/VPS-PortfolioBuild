@@ -1330,6 +1330,8 @@ def execution_contract() -> dict[str, Any]:
         "allowed_infrastructure_warmup_verdicts": ["BARS_ZERO", "NO_HISTORY"],
         "native_attempt_claim_path": str(NATIVE_ATTEMPT_CLAIM_PATH.resolve()),
         "native_attempt_claim_mode": "ATOMIC_CREATE_ONCE_BEFORE_FIRST_CONTROLLER_EXECUTION",
+        "native_launch_lock_path": str(NATIVE_LAUNCH_LOCK_PATH.resolve()),
+        "native_launch_lock_mode": "GLOBAL_WINDOWS_BYTE_LOCK_AROUND_LAUNCH_AND_RESUME",
     }
 
 
@@ -2027,6 +2029,8 @@ def _scheduler_call(
             != int(scheduler["execution_limit_seconds"])
         ):
             raise AuthorizationError("persisted scheduler task metadata drift")
+        if operation == "Start" and payload.get("fresh_start_ack") is not True:
+            raise AuthorizationError("persisted scheduler did not prove a fresh task start")
     return payload
 
 
@@ -2114,7 +2118,32 @@ def _assert_resume_outcome_fence(
             raise AuthorizationError("native worker artifact tree is non-empty; resume is forbidden")
 
 
-def launch_detached(
+def _refresh_resume_state_after_inspect(
+    inspected: Mapping[str, Any],
+    state_path: Path,
+    job: Mapping[str, Any],
+    pre: Mapping[str, Any],
+    pre_path: Path,
+    pre_sha256: str,
+    authorization_identity: Mapping[str, Any],
+) -> dict[str, Any]:
+    if inspected.get("state") != "Ready":
+        raise AuthorizationError(
+            f"persisted audit task is not exactly Ready: {inspected.get('state')!r}"
+        )
+    # Inspect may race a previous launcher invocation or the scheduled worker.
+    # Re-read all mutable state while the global launcher lock is still held,
+    # then repeat every pre-outcome/CAS guard immediately before replacement.
+    state = load_json(state_path)
+    _validate_launch_job(job, pre, pre_path, pre_sha256, state_path)
+    if job.get("authorization") != authorization_identity:
+        raise AuthorizationError("resume authorization differs from immutable launch job")
+    _assert_resume_outcome_fence(state, job, pre, state_path)
+    _assert_native_attempt_unclaimed("native resume CAS")
+    return state
+
+
+def _launch_detached_locked(
     pre_path: Path,
     pre_sha256: str,
     authorization_path: Path,
@@ -2145,8 +2174,15 @@ def launch_detached(
         _assert_resume_outcome_fence(state, job, pre, state_path)
         _scheduler_call(pre, "Register", job)
         inspected = _scheduler_call(pre, "Inspect", job)
-        if inspected.get("state") == "Running":
-            raise AuthorizationError("persisted audit task is still running")
+        state = _refresh_resume_state_after_inspect(
+            inspected,
+            state_path,
+            job,
+            pre,
+            pre_path,
+            pre_sha256,
+            authorization_identity,
+        )
         state["status"] = "PENDING_RESUME"
         state["worker_pid"] = None
         state["resume_count"] = int(state.get("resume_count", 0)) + 1
@@ -2216,6 +2252,24 @@ def launch_detached(
         "state": str(state_path.resolve()),
         "job": str(job_path.resolve()),
     }
+
+
+def launch_detached(
+    pre_path: Path,
+    pre_sha256: str,
+    authorization_path: Path,
+    state_path: Path,
+    *,
+    resume: bool,
+) -> dict[str, Any]:
+    with native_launch_lock():
+        return _launch_detached_locked(
+            pre_path,
+            pre_sha256,
+            authorization_path,
+            state_path,
+            resume=resume,
+        )
 
 
 def _opaque_artifacts(root: Path) -> list[dict[str, Any]]:
@@ -2358,6 +2412,42 @@ def _find_dev2_summary(run_id: str) -> Path:
     return summaries[0]
 
 
+def _claim_worker_bootstrap_state(
+    state_path: Path,
+    job_binding: Mapping[str, Any],
+    job: Mapping[str, Any],
+    pre: Mapping[str, Any],
+    authorization_identity: Mapping[str, Any],
+) -> dict[str, Any]:
+    with native_launch_lock():
+        state = load_json(state_path)
+        if state.get("status") not in {"PENDING", "PENDING_RESUME"}:
+            raise AuthorizationError("scheduled worker was not armed by the launcher")
+        _assert_resume_outcome_fence(state, job, pre, state_path)
+        if state.get("job") != job_binding:
+            raise AuthorizationError("worker state/job byte binding drift")
+        was_resume = state["status"] == "PENDING_RESUME"
+        now = utc_now()
+        state["worker_pid"] = os.getpid()
+        state["status"] = "RUNNING"
+        state["started_utc"] = state.get("started_utc") or now
+        state["updated_utc"] = now
+        launches = state.get("launches")
+        if not isinstance(launches, list):
+            raise AuthorizationError("worker launch audit list is malformed")
+        launches.append(
+            {
+                "worker_pid": os.getpid(),
+                "started_utc": now,
+                "resume": was_resume,
+                "authorization": dict(authorization_identity),
+                "scheduler": job["scheduler"],
+            }
+        )
+        atomic_json(state_path, state, replace=True)
+        return state
+
+
 def _worker_run(job_path: Path) -> int:
     state: dict[str, Any] | None = None
     state_path: Path | None = None
@@ -2382,31 +2472,13 @@ def _worker_run(job_path: Path) -> int:
         }
         if authorization_identity != job["authorization"]:
             raise AuthorizationError("persisted worker authorization drift")
-        state = load_json(state_path)
-        if state.get("status") not in {"PENDING", "PENDING_RESUME"}:
-            raise AuthorizationError("scheduled worker was not armed by the launcher")
-        _assert_resume_outcome_fence(state, job, pre, state_path)
-        if state.get("job") != job_binding:
-            raise AuthorizationError("worker state/job byte binding drift")
-        was_resume = state["status"] == "PENDING_RESUME"
-        now = utc_now()
-        state["worker_pid"] = os.getpid()
-        state["status"] = "RUNNING"
-        state["started_utc"] = state.get("started_utc") or now
-        state["updated_utc"] = now
-        launches = state.get("launches")
-        if not isinstance(launches, list):
-            raise AuthorizationError("worker launch audit list is malformed")
-        launches.append(
-            {
-                "worker_pid": os.getpid(),
-                "started_utc": now,
-                "resume": was_resume,
-                "authorization": authorization_identity,
-                "scheduler": job["scheduler"],
-            }
+        state = _claim_worker_bootstrap_state(
+            state_path,
+            job_binding,
+            job,
+            pre,
+            authorization_identity,
         )
-        atomic_json(state_path, state, replace=True)
     except (OSError, subprocess.SubprocessError, AuditError, KeyError, TypeError, ValueError) as exc:
         if state is not None and state_path is not None:
             state["status"] = "INVALID_WORKER_BOOTSTRAP"
@@ -2972,6 +3044,9 @@ def validate_runner_summary(
         "period": TIMEFRAME,
         "requested_runs": DUPLICATES,
         "max_run_attempts": MAX_ATTEMPTS_PER_CELL,
+        "maximum_infrastructure_warmups": MAX_INFRA_WARMUPS_PER_CELL,
+        "warmup_policy": "PREFIX_ONLY_BEFORE_FIRST_OK",
+        "allowed_infrastructure_warmup_verdicts": ["BARS_ZERO", "NO_HISTORY"],
         "deterministic": True,
         "oninit_failure_detected": False,
         "log_bomb_detected": False,
@@ -3037,8 +3112,11 @@ def validate_runner_summary(
                 row.get(field), f"warm-up {field}"
             ) != ZERO:
                 raise InvalidEvidence("native runner warm-up is not zero-result")
+        exit_code = row.get("exit_code")
         if (
-            row.get("exit_code") != 0
+            isinstance(exit_code, bool)
+            or not isinstance(exit_code, int)
+            or exit_code != 0
             or isinstance(row.get("report_size_bytes"), bool)
             or not isinstance(row.get("report_size_bytes"), int)
             or int(row["report_size_bytes"]) <= 0
@@ -3085,6 +3163,7 @@ def _bound_native_run_artifacts(
     row: Mapping[str, Any],
     sealed: Mapping[Path, Mapping[str, Any]],
     cell: Mapping[str, Any],
+    expected_raw_directory: Path,
 ) -> tuple[Path, Path, Path]:
     run_name = str(row.get("run", ""))
     if not re.fullmatch(r"run_[0-9]{2}", run_name):
@@ -3093,11 +3172,13 @@ def _bound_native_run_artifacts(
     log_path = Path(str(row.get("tester_log_path", ""))).resolve()
     run_directory = report_path.parent
     ini_path = run_directory / "tester.ini"
+    expected_raw_directory = expected_raw_directory.resolve()
     if (
         report_path.name.casefold() != "report.htm"
         or run_directory.name != run_name
-        or run_directory.parent.name.casefold() != "raw"
+        or run_directory.parent != expected_raw_directory
         or log_path.parent != run_directory
+        or len({report_path, log_path, ini_path}) != 3
     ):
         raise InvalidEvidence(
             f"native artifacts are not bound to their exact raw/{run_name} directory"
@@ -3111,6 +3192,16 @@ def _bound_native_run_artifacts(
             raise InvalidEvidence(
                 f"{cell['cell_id']} {label} was not sealed by launcher: {path}"
             )
+    report_size = row.get("report_size_bytes")
+    if (
+        isinstance(report_size, bool)
+        or not isinstance(report_size, int)
+        or report_size <= 0
+        or sealed[report_path].get("size") != report_size
+    ):
+        raise InvalidEvidence(
+            f"{cell['cell_id']} native report size differs from its sealed binding"
+        )
     validate_tester_ini(parse_tester_ini(ini_path), cell)
     return report_path, log_path, ini_path
 
@@ -3163,6 +3254,7 @@ def _audit_cell(
         raise InvalidEvidence(f"cell DEV2 summary identity drift: {cell['cell_id']}")
     if summary_path not in sealed or dict(sealed[summary_path]) != dict(summary_binding):
         raise InvalidEvidence(f"cell summary was not exactly sealed: {cell['cell_id']}")
+    expected_raw_directory = summary_path.parent / "raw"
     expected_outcomes = [
         file_binding(path)
         for path in _outcome_artifact_paths(native_root)
@@ -3173,7 +3265,9 @@ def _audit_cell(
     seen_run_artifacts: set[Path] = set()
     warmup_receipts: list[dict[str, Any]] = []
     for row in warmup_runs:
-        report_path, log_path, ini_path = _bound_native_run_artifacts(row, sealed, cell)
+        report_path, log_path, ini_path = _bound_native_run_artifacts(
+            row, sealed, cell, expected_raw_directory
+        )
         paths = {report_path, log_path, ini_path}
         if seen_run_artifacts.intersection(paths):
             raise InvalidEvidence(f"native run artifact reuse: {cell['cell_id']}/{row['run']}")
@@ -3196,7 +3290,9 @@ def _audit_cell(
     audits: list[NativeRunAudit] = []
     run_receipts: list[dict[str, Any]] = []
     for row in accepted_runs:
-        report_path, log_path, ini_path = _bound_native_run_artifacts(row, sealed, cell)
+        report_path, log_path, ini_path = _bound_native_run_artifacts(
+            row, sealed, cell, expected_raw_directory
+        )
         paths = {report_path, log_path, ini_path}
         if seen_run_artifacts.intersection(paths):
             raise InvalidEvidence(f"native run artifact reuse: {cell['cell_id']}/{row['run']}")
