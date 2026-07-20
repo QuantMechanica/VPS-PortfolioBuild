@@ -79,6 +79,11 @@ SYMBOLS: dict[str, dict[str, Any]] = {
     },
 }
 
+EXPECTED_AVAILABILITY = {
+    "NDX.DWX": ("2018-07-02T01:00:00", "2023-01-03T01:00:00"),
+    "XAUUSD.DWX": ("2018-01-02T01:00:00", "2023-01-03T01:00:00"),
+}
+
 BOUND_LOCAL: dict[Path, str] = {
     CONTRACT_PATH: EXPECTED_CONTRACT_SHA256,
     SOURCE_EVIDENCE_PATH: "5c872f816aeab895d612573e42c0f8857c1b41577e89f27f579b80f33ab083e3",
@@ -501,57 +506,60 @@ def generate_card_signals(
         prior_high = max(bar.high for bar in prior)
         long_sweep = bars[sweep].low < prior_low and bars[sweep].close > prior_low
         short_sweep = bars[sweep].high > prior_high and bars[sweep].close < prior_high
-        if not long_sweep and not short_sweep:
+        directions = [direction for direction, matched in ((1, long_sweep), (-1, short_sweep)) if matched]
+        if not directions:
             continue
-        funnel["sweeps"] += 1
-        direction = 1 if long_sweep else -1
-        disp_atr = atr[displacement]
-        if disp_atr is None:
-            funnel["atr_unavailable"] += 1
-            continue
-        directional_body = (
-            bars[displacement].close > bars[displacement].open
-            if direction > 0
-            else bars[displacement].close < bars[displacement].open
-        )
-        if not directional_body or abs(bars[displacement].close - bars[displacement].open) < disp_atr:
-            funnel["displacement_fail"] += 1
-            continue
-        funnel["displacement_pass"] += 1
-        gap = (
-            bars[completion].low > bars[sweep].high
-            if direction > 0
-            else bars[completion].high < bars[sweep].low
-        )
-        if not gap:
-            funnel["gap_fail"] += 1
-            continue
-        stop_atr = atr[completion]
-        if stop_atr is None:
-            funnel["atr_unavailable"] += 1
-            continue
-        funnel["gap_pass"] += 1
-        zone_bottom = bars[sweep].high if direction > 0 else bars[completion].high
-        zone_top = bars[completion].low if direction > 0 else bars[sweep].low
-        if not zone_bottom < zone_top:
-            funnel["invalid_zone"] += 1
-            continue
-        signals.append(
-            Signal(
-                arm="A_CARD_CENTER",
-                direction=direction,
-                completion_index=completion,
-                arm_index=completion + 1,
-                zone_bottom=zone_bottom,
-                zone_top=zone_top,
-                sweep_index=sweep,
-                sweep_extreme=bars[sweep].low if direction > 0 else bars[sweep].high,
-                stop_atr=stop_atr,
-                structural_id=f"A:{bars[sweep].timestamp}:{'L' if direction > 0 else 'S'}",
+        funnel["sweep_bars"] += 1
+        funnel["sweeps"] += len(directions)
+        funnel["dual_direction_sweep_bars"] += int(len(directions) == 2)
+        for direction in directions:
+            disp_atr = atr[displacement]
+            if disp_atr is None:
+                funnel["atr_unavailable"] += 1
+                continue
+            directional_body = (
+                bars[displacement].close > bars[displacement].open
+                if direction > 0
+                else bars[displacement].close < bars[displacement].open
             )
-        )
-        funnel["signals"] += 1
-        funnel["long_signals" if direction > 0 else "short_signals"] += 1
+            if not directional_body or abs(bars[displacement].close - bars[displacement].open) < disp_atr:
+                funnel["displacement_fail"] += 1
+                continue
+            funnel["displacement_pass"] += 1
+            gap = (
+                bars[completion].low > bars[sweep].high
+                if direction > 0
+                else bars[completion].high < bars[sweep].low
+            )
+            if not gap:
+                funnel["gap_fail"] += 1
+                continue
+            stop_atr = atr[completion]
+            if stop_atr is None:
+                funnel["atr_unavailable"] += 1
+                continue
+            funnel["gap_pass"] += 1
+            zone_bottom = bars[sweep].high if direction > 0 else bars[completion].high
+            zone_top = bars[completion].low if direction > 0 else bars[sweep].low
+            if not zone_bottom < zone_top:
+                funnel["invalid_zone"] += 1
+                continue
+            signals.append(
+                Signal(
+                    arm="A_CARD_CENTER",
+                    direction=direction,
+                    completion_index=completion,
+                    arm_index=completion + 1,
+                    zone_bottom=zone_bottom,
+                    zone_top=zone_top,
+                    sweep_index=sweep,
+                    sweep_extreme=bars[sweep].low if direction > 0 else bars[sweep].high,
+                    stop_atr=stop_atr,
+                    structural_id=f"A:{bars[sweep].timestamp}:{'L' if direction > 0 else 'S'}",
+                )
+            )
+            funnel["signals"] += 1
+            funnel["long_signals" if direction > 0 else "short_signals"] += 1
     return signals, funnel
 
 
@@ -1243,6 +1251,16 @@ def run_analysis(data_root: Path, news_path: Path) -> dict[str, Any]:
         symbol: parse_selected_market(data_root / spec["file"], symbol)
         for symbol, spec in sorted(SYMBOLS.items())
     }
+    for symbol, market in markets.items():
+        observed = (
+            market.identity.first_selected_broker_time,
+            market.identity.first_excluded_timestamp,
+        )
+        if observed != EXPECTED_AVAILABILITY[symbol]:
+            raise AuditError(
+                f"timestamp-only availability drift for {symbol}: "
+                f"{observed} != {EXPECTED_AVAILABILITY[symbol]}"
+            )
     structural: dict[str, dict[str, Any]] = {}
     all_trades: dict[str, dict[str, list[Trade]]] = {
         arm: {scenario: [] for scenario in SCENARIOS} for arm in ARMS

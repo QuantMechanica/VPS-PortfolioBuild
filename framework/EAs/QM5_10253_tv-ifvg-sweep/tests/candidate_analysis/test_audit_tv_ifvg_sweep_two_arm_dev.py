@@ -126,6 +126,17 @@ def test_card_center_requires_exact_sweep_displacement_gap_triplet() -> None:
     assert funnel["signals"] == 1
 
 
+def test_card_center_does_not_drop_short_when_sweep_bar_takes_both_sides() -> None:
+    bars = [bar(index, open_=100.0, high=101.0, low=99.0, close=100.0) for index in range(24)]
+    bars[20] = bar(20, open_=100.0, high=102.0, low=98.0, close=100.0)
+    bars[21] = bar(21, open_=99.8, high=100.0, low=97.5, close=98.0)
+    bars[22] = bar(22, open_=96.8, high=97.0, low=96.0, close=96.5)
+    signals, funnel = audit.generate_card_signals(bars, [1.0] * len(bars))
+    assert [signal.direction for signal in signals] == [-1]
+    assert funnel["dual_direction_sweep_bars"] == 1
+    assert funnel["sweeps"] == 2
+
+
 def source_fixture(*, invert: bool) -> list[audit.Bar]:
     bars = [bar(index) for index in range(16)]
     bars[5] = bar(5, open_=9.5, high=10.0, low=8.0, close=9.0)
