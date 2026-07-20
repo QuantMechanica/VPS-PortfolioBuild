@@ -74,8 +74,28 @@ $ErrorActionPreference = 'Continue'
 
 $scriptStart = Get-Date
 $stamp       = $scriptStart.ToString('yyyyMMdd')
-$destDay     = Join-Path $DestRoot $stamp
 $failures    = @()
+
+# 2026-07-20 fix (first scheduled run failed 04:45): the GoogleDriveFS G: mount
+# can be transiently absent in a fresh non-interactive qm-admin session (e.g.
+# after a console disconnect). Join-Path validates the drive qualifier against
+# live PSDrives, so a missing G: made $destDay null and cascaded null-binding
+# failures through every step. Wait for the drive before doing anything; the
+# 06:00 morning-brief task with the identical principal saw G: fine, so the
+# mount returns on its own -- we just have to outwait the gap.
+$driveQualifier = ($DestRoot -split ':')[0]
+$driveWaitLimit = (Get-Date).AddMinutes(15)
+while (-not (Test-Path "${driveQualifier}:\") -and (Get-Date) -lt $driveWaitLimit) {
+    Start-Sleep -Seconds 30
+}
+if (-not (Test-Path "${driveQualifier}:\")) {
+    # Distinct, greppable failure line; transcript may not be running yet.
+    $msg = "FATAL drive ${driveQualifier}: not available after 15min wait -- GoogleDriveFS mount absent in this session"
+    Write-Warning $msg
+    Add-Content -Path $LogPath -Value "$((Get-Date).ToString('u')) $msg"
+    exit 1
+}
+$destDay = Join-Path $DestRoot $stamp
 
 function Assert-UnderRoot {
     param([Parameter(Mandatory)][string]$Path, [Parameter(Mandatory)][string]$Root)
