@@ -1,22 +1,22 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_20020 WTI Calendar-Day-17 One-Session Fade"
+#property description "QM5_20021 WTI Second-Half-of-Month Short"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QM5_20020 - WTI Calendar-Day-17 One-Session Fade
+// QM5_20021 - WTI Second-Half-of-Month Short
 // -----------------------------------------------------------------------------
 // Borowski (2016) natural-gas day-of-month carrier:
-//   - SELL only at the opening of a broker D1 bar dated exactly the 17th
-//   - never shift an absent/non-trading 17th to a neighboring session
-//   - exit at the first following D1 bar, with a one-day stale guard
+//   - SELL only at the opening of a broker D1 bar dated exactly the 16th
+//   - never shift an absent/non-trading 16th to a neighboring session
+//   - exit at the first D1 bar of the next month, with a 16-day stale guard
 //   - consume the monthly attempt before news, spread or order checks
 //   - frozen completed-bar ATR hard stop; no TP or price-direction filter
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                     = 20020;
+input int    qm_ea_id                     = 20021;
 input int    qm_magic_slot_offset         = 0;
 input uint   qm_rng_seed                  = 42;
 
@@ -40,10 +40,10 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_entry_day           = 17;
+input int    strategy_entry_day           = 16;
 input int    strategy_atr_period           = 20;
 input double strategy_atr_sl_mult          = 2.75;
-input int    strategy_max_hold_days        = 1;
+input int    strategy_max_hold_days        = 16;
 input int    strategy_max_spread_points    = 2500;
 
 const int STRATEGY_ENTRY_GRACE_MINUTES = 5;
@@ -98,7 +98,7 @@ int Strategy_DayOfMonth(const datetime value)
 
 string Strategy_AttemptStateKey()
   {
-   return StringFormat("QM5_20020_WTI_DOM17_ATTEMPT_%d",
+   return StringFormat("QM5_20021_WTI_H2M_ATTEMPT_%d",
                        QM_FrameworkMagic());
   }
 
@@ -175,7 +175,7 @@ bool Strategy_MonthAlreadyEntered(const int month_key)
    return false;
   }
 
-bool Strategy_PrimeLateDay17Attach()
+bool Strategy_PrimeLateEntryAttach()
   {
    MqlRates current_bar;
    ZeroMemory(current_bar);
@@ -201,7 +201,7 @@ bool Strategy_PrimeLateDay17Attach()
    return Strategy_RecordMonthAttempt(month_key);
   }
 
-bool Strategy_ConsumeDay17Decision()
+bool Strategy_ConsumeEntryDecision()
   {
    g_entry_decision_ready = false;
    if(!g_strategy_new_d1_bar || g_strategy_d1_bar_time <= 0)
@@ -232,18 +232,18 @@ bool Strategy_NoTradeFilter()
   {
    if(!Strategy_IsWtiD1())
       return true;
-   if(qm_ea_id != 20020 || qm_magic_slot_offset != 0)
+   if(qm_ea_id != 20021 || qm_magic_slot_offset != 0)
       return true;
    if(!qm_friday_close_enabled ||
       qm_friday_close_hour_broker != 21)
       return true;
-   if(strategy_entry_day != 17)
+   if(strategy_entry_day != 16)
       return true;
    if(strategy_atr_period != 20)
       return true;
    if(strategy_atr_sl_mult != 2.75)
       return true;
-   if(strategy_max_hold_days != 1)
+   if(strategy_max_hold_days != 16)
       return true;
    if(strategy_max_spread_points != 2500)
       return true;
@@ -257,7 +257,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "WTI_DOM17_ONE_SESSION_SHORT";
+   req.reason = "WTI_H2M_SHORT";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
@@ -312,10 +312,11 @@ void Strategy_ManageOpenPosition()
          (datetime)PositionGetInteger(POSITION_TIME);
       bool should_close = (opened <= 0);
 
-      // Keep this condition true after the boundary tick so a rejected close
-      // is retried throughout the first following D1 bar.
+      // Keep this true throughout the first bar of the next broker month so a
+      // rejected close is retried without extending the calendar sleeve.
       if(!should_close &&
-         g_strategy_d1_bar_time > opened)
+         Strategy_MonthKeyForTime(g_strategy_d1_bar_time) !=
+         Strategy_MonthKeyForTime(opened))
          should_close = true;
 
       if(!should_close &&
@@ -361,15 +362,15 @@ int OnInit()
    if(!QM_FrameworkDeclareExecutionContract(
          PERIOD_D1,
          QM_FRIDAY_CLOSE_CARD_RULE,
-         "Approved WTI DOM17 card requires Friday 21 broker-time flattening"))
+         "Approved WTI H2M card requires Friday 21 broker-time flattening"))
       return INIT_FAILED;
 
    Strategy_LoadAttemptState(TimeCurrent());
-   if(!Strategy_PrimeLateDay17Attach())
+   if(!Strategy_PrimeLateEntryAttach())
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK",
-               "{\"card\":\"QM5_20020\",\"ea\":\"wti-dom17-short\"}");
+               "{\"card\":\"QM5_20021\",\"ea\":\"wti-h2m-short\"}");
    return INIT_SUCCEEDED;
   }
 
@@ -426,7 +427,7 @@ void OnTick()
       g_strategy_d1_bar_time <= 0)
       return;
 
-   if(!Strategy_ConsumeDay17Decision())
+   if(!Strategy_ConsumeEntryDecision())
       return;
 
    const datetime broker_now = TimeCurrent();

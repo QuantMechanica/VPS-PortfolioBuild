@@ -15091,3 +15091,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20019,xauxag-wkend,0,XAUUSD.DWX,200190000,2026-07-20,Development,active
 20019,xauxag-wkend,1,XAGUSD.DWX,200190001,2026-07-20,Development,active
 20020,wti-dom17-short,0,XTIUSD.DWX,200200000,2026-07-20,Development,active
+20021,wti-h2m-short,0,XTIUSD.DWX,200210000,2026-07-20,Development,active
