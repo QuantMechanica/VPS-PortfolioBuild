@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet('Identity', 'Register', 'Inspect', 'Start')]
+    [ValidateSet('Identity', 'Probe', 'Register', 'Inspect', 'Start')]
     [string]$Operation,
 
     [ValidatePattern('^QM_QM13210_AUDIT_[0-9a-f]{24}$')]
@@ -134,6 +134,7 @@ function Get-QmSafeTaskMetadata {
     }
     return [ordered]@{
         operation = $Operation
+        exists = $true
         task_name = $TaskName
         task_path = '\'
         state = $Task.State.ToString()
@@ -164,6 +165,24 @@ if ([string]::IsNullOrWhiteSpace($TaskName)) {
 }
 $contract = Get-QmTaskContract
 $task = Get-ScheduledTask -TaskName $TaskName -TaskPath '\' -ErrorAction SilentlyContinue
+
+if ($Operation -eq 'Probe' -and $null -eq $task) {
+    [ordered]@{
+        operation = 'Probe'
+        exists = $false
+        task_name = $TaskName
+        task_path = '\'
+        state = 'Absent'
+        principal_sid = $identity.Sid
+        logon_type = 'S4U'
+        run_level = 'Highest'
+        multiple_instances = 'IgnoreNew'
+        execution_limit_seconds = $ExecutionLimitSeconds
+        last_run_utc = $null
+        last_task_result = $null
+    } | ConvertTo-Json -Depth 3 -Compress
+    exit 0
+}
 
 if ($Operation -eq 'Register') {
     if ($null -eq $task) {
@@ -201,6 +220,11 @@ if ($null -eq $task) {
     throw "Scheduled task '$TaskName' does not exist."
 }
 Assert-QmTaskContract -Task $task -Contract $contract -Identity $identity
+
+if ($Operation -eq 'Probe') {
+    Get-QmSafeTaskMetadata -Task $task -Identity $identity | ConvertTo-Json -Depth 3 -Compress
+    exit 0
+}
 
 if ($Operation -eq 'Start') {
     if ($task.State.ToString() -eq 'Running') {

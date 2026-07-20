@@ -1459,6 +1459,11 @@ def _scheduler_call(
             != int(scheduler["execution_limit_seconds"])
         ):
             raise AuthorizationError("scheduled-task safe metadata drift")
+        if operation == "Probe":
+            if payload.get("exists") not in {True, False}:
+                raise AuthorizationError("scheduled-task probe existence flag is malformed")
+        elif payload.get("exists") is not True:
+            raise AuthorizationError("scheduled-task helper did not prove task existence")
     return payload
 
 
@@ -1640,7 +1645,11 @@ def _close_unregistered_launch_for_resume(state: dict[str, Any]) -> None:
             raise AuthorizationError("unregistered launch carries worker identity")
         if launch_status == "PREPARED":
             last["requested_utc"] = str(last.get("prepared_utc", ""))
-            reason = "TASK_NOT_RUNNING_BEFORE_START_REQUEST"
+            reason = (
+                "ORPHAN_JOB_RECOVERED_WITHOUT_STATE_TASK_OR_ARTIFACTS"
+                if last.get("orphan_job_recovered") is True
+                else "TASK_NOT_RUNNING_BEFORE_START_REQUEST"
+            )
         else:
             reason = "TASK_NOT_RUNNING_AND_OUTCOME_FENCE_CLEAR"
         last["status"] = "ABANDONED_PRESTART"
@@ -1657,6 +1666,70 @@ def _close_unregistered_launch_for_resume(state: dict[str, Any]) -> None:
             raise AuthorizationError("registered launch lacks worker evidence")
         return
     raise AuthorizationError("last launch audit row is not resumable")
+
+
+def _recover_orphan_launch_state(
+    pre: Mapping[str, Any],
+    pre_path: Path,
+    pre_sha256: str,
+    job_path: Path,
+    state_path: Path,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Recover only the outcome-impossible job/state atomic-write gap."""
+
+    if state_path.exists() or not job_path.is_file():
+        raise AuthorizationError("orphan-job recovery precondition drift")
+    job = load_json(job_path)
+    _validate_launch_job(job, pre, pre_path, pre_sha256, state_path)
+    initial = job.get("initial_authorization")
+    if not isinstance(initial, Mapping) or not isinstance(initial.get("binding"), Mapping):
+        raise AuthorizationError("orphan job initial authorization is missing")
+    validated_initial = validate_authorization(
+        Path(str(initial["binding"]["path"])),
+        pre_sha256,
+        require_current=False,
+    )
+    if (
+        dict(validated_initial["binding"]) != dict(initial["binding"])
+        or validated_initial["payload_sha256"] != initial.get("payload_sha256")
+    ):
+        raise AuthorizationError("orphan job initial authorization drift")
+
+    run_root = Path(str(pre["run_root"])).resolve()
+    inventory = sorted(
+        (path.resolve() for path in run_root.rglob("*")),
+        key=lambda path: str(path).casefold(),
+    )
+    if inventory != [job_path.resolve()]:
+        raise AuthorizationError(
+            "orphan job recovery requires an otherwise empty run root"
+        )
+    probe = _scheduler_call(pre, "Probe", job)
+    if probe.get("exists") is not False:
+        raise AuthorizationError("orphan job recovery requires the task to be absent")
+
+    state = initial_launch_state(
+        pre_path,
+        pre_sha256,
+        pre,
+        file_binding(job_path),
+        job,
+    )
+    state["orphan_job_recovery"] = {
+        "status": "RECOVERED_PREOUTCOME_ATOMIC_WRITE_GAP",
+        "recovered_utc": utc_now(),
+        "task_absence_proved": True,
+        "run_root_inventory": [file_binding(job_path)],
+    }
+    state["launches"][0]["orphan_job_recovered"] = True
+    atomic_json(state_path, state, replace=False)
+    _scheduler_call(pre, "Register", job)
+    inspected = _scheduler_call(pre, "Inspect", job)
+    if inspected.get("state") == "Running":
+        raise AuthorizationError("recovered scheduled task unexpectedly started")
+    _close_unregistered_launch_for_resume(state)
+    state["status"] = "PENDING_RESUME"
+    return state, job
 
 
 def launch_persistent_task(
@@ -1693,11 +1766,22 @@ def launch_persistent_task(
             raise AuthorizationError("persistent scheduled task is still running")
         _close_unregistered_launch_for_resume(state)
         state["status"] = "PENDING_RESUME"
+    elif job_path.exists():
+        if not resume:
+            raise AuthorizationError(
+                "orphan launch job detected; explicit --resume is required for "
+                "outcome-free recovery"
+            )
+        state, job = _recover_orphan_launch_state(
+            pre,
+            pre_path,
+            pre_sha256,
+            job_path,
+            state_path,
+        )
     else:
         if resume:
-            raise AuthorizationError("--resume requested without a launch state")
-        if job_path.exists():
-            raise AuthorizationError(f"orphan launch job exists: {job_path}")
+            raise AuthorizationError("--resume requested without a launch state or orphan job")
         identity = _scheduler_call(pre, "Identity")
         scheduler = {
             "mode": "WINDOWS_TASK_SCHEDULER_S4U_ON_DEMAND",
@@ -2971,6 +3055,7 @@ def _validate_launch_state(
                 or launch.get("registered_utc") is not None
                 or launch.get("reason")
                 not in {
+                    "ORPHAN_JOB_RECOVERED_WITHOUT_STATE_TASK_OR_ARTIFACTS",
                     "TASK_NOT_RUNNING_BEFORE_START_REQUEST",
                     "TASK_NOT_RUNNING_AND_OUTCOME_FENCE_CLEAR",
                 }
