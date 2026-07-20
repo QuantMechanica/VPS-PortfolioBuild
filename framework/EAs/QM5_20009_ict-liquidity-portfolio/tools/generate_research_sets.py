@@ -36,6 +36,12 @@ RESEARCH_LAUNCHER_SUPPORT = EA_ROOT / "tools" / "research_launcher_support.psm1"
 FRAMEWORK_INCLUDE_ROOT = REPO_ROOT / "framework" / "include"
 EA_ID_REGISTRY = REPO_ROOT / "framework" / "registry" / "ea_id_registry.csv"
 MAGIC_NUMBER_REGISTRY = REPO_ROOT / "framework" / "registry" / "magic_numbers.csv"
+EA_ID_PROJECTION_PATH = (
+    "framework/EAs/QM5_20009_ict-liquidity-portfolio/docs/registry_ea_id_20009.csv"
+)
+MAGIC_PROJECTION_PATH = (
+    "framework/EAs/QM5_20009_ict-liquidity-portfolio/docs/registry_magic_20009.csv"
+)
 
 MAGIC_RESOLVER_PATH = "framework/include/QM/QM_MagicResolver.mqh"
 MAGIC_RESOLVER_RELATIVE = "qm/qm_magicresolver.mqh"
@@ -771,6 +777,8 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
         "commission_groups_canonical",
         "commission_groups_dev1",
         "registry_execution_contract",
+        "registry_ea_id",
+        "registry_magic",
         "runner_run_smoke",
         "runner_resolve_backtest_target",
         "runner_pipeline_dispatcher",
@@ -784,6 +792,22 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
     missing = sorted(required_artifacts - set(artifact_ids))
     if missing:
         raise FreezeError(f"mandatory evidence artifacts missing: {','.join(missing)}")
+    artifacts_by_id = {str(item["id"]): item for item in artifacts}
+    expected_registry_artifacts = {
+        "registry_ea_id": {
+            "id": "registry_ea_id",
+            "path": EA_ID_PROJECTION_PATH,
+            "validation": "EA_ID_REGISTRY_20009_EXACT",
+        },
+        "registry_magic": {
+            "id": "registry_magic",
+            "path": MAGIC_PROJECTION_PATH,
+            "validation": "MAGIC_REGISTRY_20009_EXACT",
+        },
+    }
+    for artifact_id, expected in expected_registry_artifacts.items():
+        if artifacts_by_id.get(artifact_id) != expected:
+            raise FreezeError(f"registry evidence declaration drifted: {artifact_id}")
 
 
 def _artifact_path(raw_path: str) -> Path:
@@ -819,9 +843,16 @@ def _validate_ea_id_registry_projection(path: Path) -> None:
     if frozen != expected:
         raise FreezeError("EA-ID registry projection does not contain the exact EA 20009 allocation")
     live = _read_registry_rows(EA_ID_REGISTRY, EA_ID_REGISTRY_FIELDS, "live EA-ID registry")
-    selected = [row for row in live if row["ea_id"] == "20009"]
+    selected = [
+        row
+        for row in live
+        if row["ea_id"] == "20009"
+        or row["slug"].casefold() == TARGET_EA_ID_REGISTRY_ROW["slug"].casefold()
+        or row["strategy_id"].casefold()
+        == TARGET_EA_ID_REGISTRY_ROW["strategy_id"].casefold()
+    ]
     if selected != expected:
-        raise FreezeError("live EA-ID registry differs for EA 20009")
+        raise FreezeError("live EA-ID registry differs or collides for EA 20009")
 
 
 def _validate_magic_registry_projection(path: Path) -> None:
@@ -830,12 +861,20 @@ def _validate_magic_registry_projection(path: Path) -> None:
     if frozen != expected:
         raise FreezeError("magic registry projection does not contain the exact EA 20009 allocation")
     live = _read_registry_rows(MAGIC_NUMBER_REGISTRY, MAGIC_REGISTRY_FIELDS, "live magic registry")
-    selected = sorted(
-        (row for row in live if row["ea_id"] == "20009"),
-        key=lambda row: int(row["symbol_slot"]),
-    )
+    target_magics = {row["magic"] for row in expected}
+    selected = [
+        row
+        for row in live
+        if row["ea_id"] == "20009"
+        or row["ea_slug"].casefold() == "ict-liquidity-portfolio"
+        or row["magic"] in target_magics
+    ]
+    try:
+        selected.sort(key=lambda row: (int(row["ea_id"]), int(row["symbol_slot"])))
+    except ValueError as exc:
+        raise FreezeError("live magic registry contains a nonnumeric EA-ID or slot collision") from exc
     if selected != expected:
-        raise FreezeError("live magic registry differs for EA 20009")
+        raise FreezeError("live magic registry differs or collides for EA 20009")
 
 
 def _validate_artifact_payload(artifact_id: str, validation: str, path: Path) -> None:

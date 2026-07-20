@@ -503,6 +503,24 @@ def test_registry_evidence_is_scoped_to_ea_20009() -> None:
     }
 
 
+def test_registry_evidence_cannot_be_removed_or_weakened() -> None:
+    payload = protocol()
+    missing = copy.deepcopy(payload)
+    missing["evidence_artifacts"] = [
+        row for row in missing["evidence_artifacts"] if row["id"] != "registry_ea_id"
+    ]
+    with pytest.raises(freeze.FreezeError, match="mandatory evidence artifacts missing"):
+        freeze.validate_protocol(missing)
+    weakened = copy.deepcopy(payload)
+    row = next(
+        item for item in weakened["evidence_artifacts"] if item["id"] == "registry_magic"
+    )
+    row["path"] = "framework/registry/magic_numbers.csv"
+    row["validation"] = "NONEMPTY"
+    with pytest.raises(freeze.FreezeError, match="registry evidence declaration drifted"):
+        freeze.validate_protocol(weakened)
+
+
 def test_ea_id_projection_ignores_foreign_append_but_rejects_target_drift(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -516,12 +534,19 @@ def test_ea_id_projection_ignores_foreign_append_but_rejects_target_drift(
     monkeypatch.setattr(freeze, "EA_ID_REGISTRY", live)
     freeze._validate_ea_id_registry_projection(frozen)
     live.write_text(
+        live.read_text(encoding="utf-8")
+        + "29998,ict-liquidity-portfolio,FOREIGN,active,Development,2026-07-20\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(freeze.FreezeError, match="collides for EA 20009"):
+        freeze._validate_ea_id_registry_projection(frozen)
+    live.write_text(
         frozen.read_text(encoding="utf-8").replace(
             "Codex-OWNER-delegated", "Development"
         ),
         encoding="utf-8",
     )
-    with pytest.raises(freeze.FreezeError, match="differs for EA 20009"):
+    with pytest.raises(freeze.FreezeError, match="differs or collides for EA 20009"):
         freeze._validate_ea_id_registry_projection(frozen)
 
 
@@ -538,10 +563,17 @@ def test_magic_projection_ignores_foreign_append_but_rejects_collision(
     monkeypatch.setattr(freeze, "MAGIC_NUMBER_REGISTRY", live)
     freeze._validate_magic_registry_projection(frozen)
     live.write_text(
+        live.read_text(encoding="utf-8")
+        + "29998,foreign-ea,0,GBPUSD.DWX,200090005,2026-07-20,Development,active\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(freeze.FreezeError, match="collides for EA 20009"):
+        freeze._validate_magic_registry_projection(frozen)
+    live.write_text(
         frozen.read_text(encoding="utf-8").replace("200090005", "200090006"),
         encoding="utf-8",
     )
-    with pytest.raises(freeze.FreezeError, match="differs for EA 20009"):
+    with pytest.raises(freeze.FreezeError, match="differs or collides for EA 20009"):
         freeze._validate_magic_registry_projection(frozen)
 
 

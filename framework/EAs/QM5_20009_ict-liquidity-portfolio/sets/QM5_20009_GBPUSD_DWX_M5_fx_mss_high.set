@@ -7,12 +7,12 @@
 ; sleeve: fx
 ; variant: mss_high
 ; changed_parameter: strategy_b_max_bars_to_mss
-; freeze_inputs_sha256: da4b663ab0a4dbcb7c45d917c08b70869f942bc9aca94c7d31607f095d8b61d4
+; freeze_inputs_sha256: 0f38c5f8f5f0fdefc24f9904359332380d5e55f32bc1679beb90d7d9559d9a01
 ; ea_sha256: a94e24c3a486011662ea0fc82853569663b0a0b93c85f114d545a589d0812c04
 ; rules_sha256: 03970dc0b8576010d1614fe3774c7064fbeb983ece0f10d6510ba89a6f79ccbc
 ; contract_sha256: 98a500ae4ecb9ed3733199fee137d2c357e4c4b00d9907feb9aae39e783fc688
 ; protocol_sha256: 2ec3d3de1f49b7fde49f0b6433fa3c849bd2cf48b7ca857b72151f6e4df980a4
-; generator_sha256: 2a362d41de1a8eebb2bce4c138e4b1a5c6da402e4f51de5d6461e5d1b0b23b6b
+; generator_sha256: a333c5d82d0c57e63ffca07908b17ba67a29db4e49f594e8ba4b07294c738d7f
 ; ex5_sha256: 2b1d663fb032bd516a007dd5eee1973d9a53cb2f80d0d5cb875ed342a247fcb0
 ;==========================================================
 qm_ea_id=20009
