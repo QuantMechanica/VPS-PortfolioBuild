@@ -37,13 +37,18 @@ expected_pf: 1.02
 expected_dd_pct: 35.0
 risk_class: high
 ml_required: false
-r1_track_record: TIER_B
+r1_track_record: PASS
+r1_reasoning: "Exactly one source attribution (source_id BOROWSKI-COMM-DOW-2016) — a single peer-reviewed academic article with archive and author-copy links, satisfying R1's single-source-with-lineage test."
 r2_mechanical: PASS
+r2_reasoning: "Entry (broker Wednesday D1 bar, short), exit (next D1 bar or one-day stale guard), stop (frozen 2.75*ATR20) and no-retry state are fully specified with no discretionary step."
 r3_data_available: PASS
+r3_reasoning: "XNGUSD.DWX D1 is a registered, already-traded DWX instrument/timeframe (used by multiple sibling XNG cards), so the concept is directly testable without porting."
 r4_ml_forbidden: PASS
+r4_reasoning: "Rules use only broker calendar day-of-week and completed-bar ATR, with one position per magic and no ML, grid, martingale, or PnL-adaptive logic."
 pipeline_phase: Q02
-q01_status: READY
-q02_status: NOT_STARTED
+q01_status: PASS
+q02_status: QUEUED
+q02_work_item_id: ebacde4d-02c8-405c-94b9-e42db26e75d3
 review_focus: "Strictly falsify the XNG Wednesday one-session short after costs and futures/CFD calendar basis; test realized portfolio correlation only at its governed downstream gate."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -254,6 +259,7 @@ live allocation is defined, and the source mean is not used as a sizing input.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-07-20 | initial structural XNG Wednesday card | G0 | APPROVED |
+| v1-q02 | 2026-07-20 | strict build PASS; tester-capacity smoke deferred | Q02 | PENDING ebacde4d-02c8-405c-94b9-e42db26e75d3 |
 
 ## Safety boundary
 
