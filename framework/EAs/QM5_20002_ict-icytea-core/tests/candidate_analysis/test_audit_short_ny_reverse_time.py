@@ -328,6 +328,38 @@ def test_worker_seals_exactly_two_native_artifact_sets(tmp_path: Path) -> None:
         subject._seal_summary_artifacts(summary)
 
 
+@pytest.mark.parametrize("ea_dir", ["QM5_20002", "QM5_20002_ict-icytea-core"])
+def test_find_summary_accepts_only_bound_runner_ea_directories(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, ea_dir: str
+) -> None:
+    run_id = "20260720T072811Z_" + "a" * 32
+    summary = tmp_path / run_id / "output" / "smoke" / ea_dir / "stamp" / "summary.json"
+    summary.parent.mkdir(parents=True)
+    summary.write_text("{}", encoding="utf-8")
+    monkeypatch.setattr(subject, "DEV1_RUNS_ROOT", tmp_path)
+    assert subject._find_summary(run_id) == summary.resolve()
+
+
+def test_find_summary_rejects_unbound_or_ambiguous_output(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    run_id = "20260720T072811Z_" + "b" * 32
+    smoke = tmp_path / run_id / "output" / "smoke"
+    unbound = smoke / "QM5_99999" / "stamp" / "summary.json"
+    unbound.parent.mkdir(parents=True)
+    unbound.write_text("{}", encoding="utf-8")
+    monkeypatch.setattr(subject, "DEV1_RUNS_ROOT", tmp_path)
+    with pytest.raises(subject.AuditError, match="found 0"):
+        subject._find_summary(run_id)
+
+    for ea_dir in subject.RUNNER_OUTPUT_EA_DIRS:
+        summary = smoke / ea_dir / "stamp" / "summary.json"
+        summary.parent.mkdir(parents=True)
+        summary.write_text("{}", encoding="utf-8")
+    with pytest.raises(subject.AuditError, match="found 2"):
+        subject._find_summary(run_id)
+
+
 def test_pre_cli_fails_closed_before_any_launch_when_compile_missing(tmp_path: Path) -> None:
     receipt = tmp_path / "pre_reject.json"
     rc = subject.main(

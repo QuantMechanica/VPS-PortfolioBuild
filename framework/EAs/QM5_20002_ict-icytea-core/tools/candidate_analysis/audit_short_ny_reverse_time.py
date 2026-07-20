@@ -105,6 +105,7 @@ INITIAL_BALANCE = Decimal("100000")
 POINT_VALUE_USD_PER_LOT = Decimal("1.00")  # USD-quoted 5-digit FX: 0.00001*100000
 MODEL4_MARKER = "generating based on real ticks"
 EXPECTED_EXPERT = "QM5_20002_ict-icytea-core"
+RUNNER_OUTPUT_EA_DIRS = ("QM5_20002", EXPECTED_EXPERT)
 EXPECTED_MARKETS = {"EURUSD.DWX", "GBPUSD.DWX"}
 EXPECTED_ARMS = {"A_SHORT_NY_NO_HTF", "B_SHORT_NY_H1_BIAS"}
 RUNTIME_ROLES = {
@@ -1211,10 +1212,17 @@ def _find_summary(run_id: str) -> Path:
     root = DEV1_RUNS_ROOT / run_id / "output" / "smoke"
     if not root.is_dir():
         raise AuditError(f"runner smoke root missing: {root}")
-    summaries = list(root.glob("QM5_20002_ict-icytea-core/*/summary.json"))
+    # run_smoke stores evidence under the canonical EA-ID directory (QM5_20002),
+    # while older runner revisions used the full EA label.  Accept only those two
+    # explicit identities and still require a single, unambiguous summary.
+    summaries = sorted(
+        summary.resolve()
+        for ea_dir in RUNNER_OUTPUT_EA_DIRS
+        for summary in (root / ea_dir).glob("*/summary.json")
+    )
     if len(summaries) != 1:
         raise AuditError(f"expected one QM5_20002 summary under {root}, found {len(summaries)}")
-    return summaries[0].resolve()
+    return summaries[0]
 
 
 def _seal_summary_artifacts(summary_path: Path) -> dict[str, Any]:
