@@ -53,3 +53,25 @@ Do not change terminal configs mid-run.
 
 KS fix itself: commit 6f2393373 (RestoreState outcome enum, init preserves
 foreign-config state, regression test 8/8, strict include-graph compile 0/0).
+
+## 5. Codex bundle MERGED (dfdffa45b, review MERGE_OK) — post-merge watchlist
+
+Review verdict MERGE_OK (clean merge-tree, 90 tests re-run green in the
+worktree, backfill verified read-only in the live DB). Expected side effects —
+do NOT mistake for regressions:
+- **Card ready-count drops 2538 → 1479 (−1059)** on dashboards/status: the new
+  card-contract rules now also feed `strategy_card_schema_issues`. Counters
+  only — `build-ea` does no schema check, the approved unbuilt cards stay
+  buildable; no card was lost.
+- **DRAFT_DEFECT rows are absent from the ws0 digest** (`ws0_notifier.py`
+  whitelists PASS/FAIL/ZERO_TRADES) — extend the whitelist when convenient.
+- **`route=RE_DRAFT` is declarative** — nothing consumes it yet; the re-draft
+  queue consumer is open work.
+- **Dispatch asymmetry (pre-existing):** farmctl's own `dispatch_work_items`
+  Phase-2 claim query lacks `_priority_track_rank` (only tests call it today);
+  and priority rank sorts before phase rank — a mass build wave would jump
+  organic Q04+ work. Monitor; parity fix when touched next.
+- Codex worktree carries an uncommitted stale `QM_MagicResolver.mqh` regen
+  (superseded by our branch's newer resolver) — Codex should discard it.
+- New workers' code (gates/verdicts) goes live per worker respawn; the running
+  daemons still rank priority_track correctly (that dispatch path pre-existed).
