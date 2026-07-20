@@ -5,7 +5,7 @@ import json
 import subprocess
 import sys
 import threading
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from pathlib import Path
 from types import SimpleNamespace
@@ -24,6 +24,13 @@ assert SPEC is not None and SPEC.loader is not None
 subject = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = subject
 SPEC.loader.exec_module(subject)
+
+
+def _plan_runtime() -> dict:
+    return {
+        "dev1_machine_credential": {"sha256": "c" * 64},
+        "dev1_machine_credential_helper": {"sha256": "d" * 64},
+    }
 
 
 def test_contract_v3_binds_source_corrections_news_and_fill_invalid_gate() -> None:
@@ -58,6 +65,12 @@ def test_compile_binding_closes_exact_evidence_binary_and_toolchain() -> None:
     assert closure["document"]["binding"]["sha256"] == subject.EXPECTED_COMPILE_BINDING_SHA256
     assert closure["evidence"]["sha256"] == subject.EXPECTED_COMPILE_EVIDENCE_SHA256
     assert closure["compiled_binary"]["sha256"] == subject.EXPECTED_COMPILED_EX5_SHA256
+    historical = closure["toolchain"]["compile_controller_historical_blob"]
+    assert historical["git_commit"] == payload["toolchain"]["compile_controller_git_commit"]
+    assert historical["sha256"] == payload["toolchain"]["compile_controller_sha256"]
+    assert closure["toolchain"]["compile_controller_current_runtime"]["sha256"] == subject.sha256_file(
+        subject.COMPILE_CONTROLLER_PATH
+    )
 
 
 @pytest.mark.parametrize("mutation", ["missing", "drift"])
@@ -109,7 +122,8 @@ def test_set_metadata_cannot_claim_a_different_compiled_binary(
 def test_four_cell_plan_is_exact_and_model4() -> None:
     contract = subject.load_contract()
     cells, _ = subject.validate_sets(contract)
-    plan = subject.build_plan(cells, 28800)
+    runtime = _plan_runtime()
+    plan = subject.build_plan(cells, 28800, runtime)
     assert plan["cell_count"] == 4
     assert plan["total_native_runs"] == 8
     assert plan["model"] == 4
@@ -120,6 +134,11 @@ def test_four_cell_plan_is_exact_and_model4() -> None:
         assert args[args.index("-Runs") + 1] == "2"
         assert args[args.index("-CommissionPerLot") + 1] == "0"
         assert args[args.index("-CommissionPerSideNative") + 1] == "0"
+        assert args.count("-ExpectedCredentialSha256") == 1
+        assert args[args.index("-ExpectedCredentialSha256") + 1] == "c" * 64
+        assert args.count("-ExpectedHelperSha256") == 1
+        assert args[args.index("-ExpectedHelperSha256") + 1] == "d" * 64
+        assert args[args.index("-ControllerTimeoutSeconds") + 1] == "118200"
 
 
 def test_expected_model4_data_fence_stops_at_202112() -> None:
@@ -285,12 +304,20 @@ def test_detached_timeout_leaves_inner_controller_cleanup_margin() -> None:
         "plan": {
             "duplicates_per_cell": 2,
             "cells": [
-                {"runner_arguments": ["-TimeoutSeconds", "28800"]},
-                {"runner_arguments": ["-TimeoutSeconds", "28800"]},
+                {
+                    "runner_arguments": [
+                        "-TimeoutSeconds", "28800", "-ControllerTimeoutSeconds", "118200"
+                    ]
+                },
+                {
+                    "runner_arguments": [
+                        "-TimeoutSeconds", "28800", "-ControllerTimeoutSeconds", "118200"
+                    ]
+                },
             ],
         }
     }
-    assert subject.required_controller_timeout(pre) == 59040
+    assert subject.required_controller_timeout(pre) == 120000
 
 
 def _minimal_launcher_pre() -> dict:
@@ -308,7 +335,11 @@ def _minimal_launcher_pre() -> dict:
             "duplicates_per_cell": 2,
             "plan_sha256": "a" * 64,
             "cells": [
-                {"runner_arguments": ["-TimeoutSeconds", "28800"]}
+                {
+                    "runner_arguments": [
+                        "-TimeoutSeconds", "28800", "-ControllerTimeoutSeconds", "118200"
+                    ]
+                }
                 for _ in range(4)
             ],
         },
@@ -333,7 +364,7 @@ def _minimal_running_state(tmp_path: Path) -> dict:
 
 def test_persisted_task_timeout_covers_all_cells_and_cleanup_margin() -> None:
     pre = _minimal_launcher_pre()
-    assert subject.required_scheduled_task_timeout(pre, 64800) == 262800
+    assert subject.required_scheduled_task_timeout(pre, 120000) == 483600
 
 
 def test_persisted_helper_is_s4u_triggerless_and_never_overwrites_task() -> None:
@@ -445,13 +476,14 @@ def test_launch_uses_persisted_scheduler_and_resume_refuses_worker_artifact(
         "c" * 64,
         tmp_path / "authorization.json",
         state_path,
-        64800,
+        None,
     )
     assert launched["status"] == "LAUNCHED_PERSISTED_TASK"
     assert calls == ["Identity", "Register", "Start"]
     job = subject.load_json(state_path.with_name("launch_job.json"))
     assert job["scheduler"]["mode"] == "WINDOWS_TASK_SCHEDULER_S4U_ON_DEMAND"
-    assert job["scheduler"]["execution_limit_seconds"] == 262800
+    assert job["controller_timeout_seconds"] == 120000
+    assert job["scheduler"]["execution_limit_seconds"] == 483600
 
     (state_path.parent / "worker" / "cell-started").mkdir(parents=True)
     with pytest.raises(subject.AuthorizationError, match="worker artifact tree"):
@@ -460,7 +492,7 @@ def test_launch_uses_persisted_scheduler_and_resume_refuses_worker_artifact(
             "c" * 64,
             tmp_path / "authorization.json",
             state_path,
-            64800,
+            None,
             resume=True,
         )
     assert calls == ["Identity", "Register", "Start"]
@@ -499,6 +531,11 @@ def _arm_one_cell_worker(
     monkeypatch.setattr(subject, "validate_authorization", lambda *_args: authorization)
     monkeypatch.setattr(subject, "_assert_resume_outcome_fence", lambda *_args: None)
     monkeypatch.setattr(subject, "runner_command", lambda *_args: ["controller", "CELL_04"])
+    monkeypatch.setattr(
+        subject,
+        "validate_dev1_controller_result",
+        lambda result, _pre: str(result["run_id"]),
+    )
     return job_path, state_path
 
 
@@ -534,6 +571,11 @@ def _write_complete_post_chain(
         subject,
         "runner_command",
         lambda _pre, cell: ["controller", str(cell["cell_id"])],
+    )
+    monkeypatch.setattr(
+        subject,
+        "validate_dev1_controller_result",
+        lambda result, _pre: str(result["run_id"]),
     )
     monkeypatch.setattr(
         subject,

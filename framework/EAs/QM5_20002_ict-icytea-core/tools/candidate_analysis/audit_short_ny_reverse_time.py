@@ -95,6 +95,9 @@ DEV1_CREDENTIAL_ROTATION_ROOT = Path(r"D:\QM\reports\dev1\credential-rotation")
 SCHEDULED_TASK_HELPER_PATH = (
     EA_ROOT / "tools" / "candidate_analysis" / "run_outcome_fenced_task.ps1"
 )
+COMPILE_CONTROLLER_PATH = (
+    EA_ROOT / "tools" / "candidate_analysis" / "compile_short_ny_v3.ps1"
+)
 GROUP_CANONICAL_PATH = (
     REPO_ROOT
     / "framework"
@@ -157,6 +160,7 @@ RUNTIME_ROLES = {
     "powershell_binary": POWERSHELL_PATH,
     "python_binary": Path(sys.executable).resolve(),
     "scheduled_task_helper": SCHEDULED_TASK_HELPER_PATH,
+    "current_compile_controller": COMPILE_CONTROLLER_PATH,
 }
 
 LAUNCHER_REVISION = 3
@@ -853,6 +857,37 @@ def parse_decimal(value: str, label: str) -> Decimal:
     return result
 
 
+def committed_blob_binding(
+    commit: str, path: Path, expected_sha256: str, label: str
+) -> dict[str, Any]:
+    """Bind immutable historical tool bytes without conflating them with HEAD."""
+
+    if re.fullmatch(r"[0-9a-f]{40}", commit) is None:
+        raise PreflightError(f"{label} commit is malformed")
+    try:
+        relative = path.resolve().relative_to(REPO_ROOT.resolve()).as_posix()
+    except ValueError as exc:
+        raise PreflightError(f"{label} path escaped repository") from exc
+    completed = subprocess.run(
+        ["git", "-C", str(REPO_ROOT), "show", f"{commit}:{relative}"],
+        capture_output=True,
+        check=False,
+    )
+    if completed.returncode != 0:
+        raise PreflightError(f"cannot resolve frozen {label} Git blob")
+    observed = hashlib.sha256(completed.stdout).hexdigest()
+    if observed != expected_sha256:
+        raise PreflightError(
+            f"frozen {label} Git blob SHA drift: {observed} != {expected_sha256}"
+        )
+    return {
+        "repository_path": relative,
+        "git_commit": commit,
+        "size": len(completed.stdout),
+        "sha256": observed,
+    }
+
+
 def load_contract() -> dict[str, Any]:
     raw = CONTRACT_PATH.read_bytes()
     observed = hashlib.sha256(raw).hexdigest()
@@ -1018,15 +1053,21 @@ def validate_compile_binding(evidence_path: Path) -> dict[str, Any]:
     )
     compile_one_path = _repo_bound_path(toolchain.get("compile_one_path"))
     controller_path = _repo_bound_path(toolchain.get("compile_controller_path"))
+    if controller_path != COMPILE_CONTROLLER_PATH.resolve():
+        raise PreflightError("compile binding historical controller path drift")
     compile_one = file_binding(compile_one_path, str(toolchain.get("compile_one_sha256", "")))
-    controller = file_binding(
-        controller_path, str(toolchain.get("compile_controller_sha256", ""))
-    )
     controller_commit = str(toolchain.get("compile_controller_git_commit", ""))
-    if not re.fullmatch(r"[0-9a-f]{40}", controller_commit):
+    controller_sha = str(toolchain.get("compile_controller_sha256", ""))
+    if (
+        re.fullmatch(r"[0-9a-f]{40}", controller_commit) is None
+        or re.fullmatch(r"[0-9a-f]{64}", controller_sha) is None
+    ):
         raise PreflightError("compile controller commit missing")
-    assert_committed_bytes(
-        controller_commit, controller_path, controller_path.read_bytes(), "compile controller"
+    historical_controller = committed_blob_binding(
+        controller_commit,
+        controller_path,
+        controller_sha,
+        "compile controller",
     )
     return {
         "document": {
@@ -1040,7 +1081,8 @@ def validate_compile_binding(evidence_path: Path) -> dict[str, Any]:
         "toolchain": {
             "metaeditor": metaeditor,
             "compile_one": compile_one,
-            "compile_controller": controller,
+            "compile_controller_historical_blob": historical_controller,
+            "compile_controller_current_runtime": file_binding(COMPILE_CONTROLLER_PATH),
         },
     }
 
@@ -1324,14 +1366,18 @@ def validate_compile_evidence(path: Path, contract: Mapping[str, Any]) -> dict[s
         Path(str(evidence.get("compile_one_path", ""))),
         str(evidence.get("compile_one_sha256", "")),
     )
-    compile_controller = file_binding(
-        Path(str(evidence.get("compile_controller_path", ""))),
-        str(evidence.get("compile_controller_sha256", "")),
-    )
+    historical_controller = frozen_compile["toolchain"][
+        "compile_controller_historical_blob"
+    ]
+    evidence_controller_path = Path(
+        str(evidence.get("compile_controller_path", ""))
+    ).resolve()
+    evidence_controller_sha = str(evidence.get("compile_controller_sha256", ""))
     if (
         metaeditor != frozen_compile["toolchain"]["metaeditor"]
         or compile_one != frozen_compile["toolchain"]["compile_one"]
-        or compile_controller != frozen_compile["toolchain"]["compile_controller"]
+        or evidence_controller_path != COMPILE_CONTROLLER_PATH.resolve()
+        or evidence_controller_sha != historical_controller["sha256"]
     ):
         raise PreflightError("compile evidence toolchain does not match frozen compile binding")
     return {
@@ -2830,7 +2876,10 @@ def _rejected_cell_record(
         _classify_controller_failure(stdout_text, stderr_text)
         if isinstance(stdout_text, str) and isinstance(stderr_text, str)
         and isinstance(exc, AuditError)
-        and str(exc) == "runner stdout contains no JSON object"
+        and (
+            str(exc) == "runner stdout contains no JSON object"
+            or "must contain exactly one complete JSON object envelope" in str(exc)
+        )
         else None
     )
     exit_code = context.get("runner_exit_code")
