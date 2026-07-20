@@ -216,6 +216,8 @@
     "symbol_definition_relative_path": "symbols.custom.dat",
     "history_extension": ".hcc",
     "tick_extension": ".tkc",
+    "history_frozen_through_year": 2025,
+    "history_current_year_policy": "EXCLUDE_MUTABLE_2026_HCC_WHILE_ALL_2026_RESEARCH_IS_BLOCKED_OR_FORWARD_ONLY",
     "frozen_through_month": "202604",
     "exclude_months": ["202605", "202606", "202607"],
     "manifest_match_required": true,

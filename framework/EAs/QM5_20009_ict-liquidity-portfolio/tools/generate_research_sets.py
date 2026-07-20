@@ -463,6 +463,10 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
         "symbol_definition_relative_path": "symbols.custom.dat",
         "history_extension": ".hcc",
         "tick_extension": ".tkc",
+        "history_frozen_through_year": 2025,
+        "history_current_year_policy": (
+            "EXCLUDE_MUTABLE_2026_HCC_WHILE_ALL_2026_RESEARCH_IS_BLOCKED_OR_FORWARD_ONLY"
+        ),
         "frozen_through_month": "202604",
         "exclude_months": ["202605", "202606", "202607"],
         "manifest_match_required": True,
@@ -471,6 +475,25 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
     }
     if model4 != expected_model4:
         raise FreezeError("Model-4 provisioning/fence contract drifted")
+    history_frozen_through_year = int(model4["history_frozen_through_year"])
+    for phase in phases:
+        if phase.get("nonbinding") is True:
+            continue
+        if str(phase.get("data_availability", "")).startswith("BLOCKED_"):
+            continue
+        if phase.get("execution_kind") == "FORWARD_ONLY_NOT_RETROSPECTIVE_BACKTEST":
+            continue
+        if phase.get("id") == "DEV":
+            required_through_year = max(
+                date.fromisoformat(str(market["dev_to"])).year for market in markets
+            )
+        else:
+            required_through_year = date.fromisoformat(str(phase["to"])).year
+        if required_through_year > history_frozen_through_year:
+            raise FreezeError(
+                "runnable binding phase exceeds frozen Model-4 history coverage: "
+                f"{phase.get('id')}"
+            )
     if protocol.get("compiled_source_snapshot_exceptions") != [EXPECTED_MAGIC_EXCEPTION]:
         raise FreezeError("compiled source snapshot exception contract drifted")
 
@@ -812,7 +835,7 @@ def model4_data_files(
         for month in _month_range(str(market["dev_from"]), frozen_through):
             required.add(f"Custom/ticks/{symbol}/{month}.tkc")
         first_year = date.fromisoformat(str(market["dev_from"])).year
-        last_year = int(frozen_through[:4])
+        last_year = int(config["history_frozen_through_year"])
         for year in range(first_year, last_year + 1):
             required.add(f"Custom/history/{symbol}/{year}.hcc")
     missing = sorted(required - set(by_relative))

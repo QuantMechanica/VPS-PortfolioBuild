@@ -7,6 +7,7 @@ bundle or hash the multi-gigabyte Model-4 tree during ordinary collection.
 from __future__ import annotations
 
 import copy
+import csv
 import hashlib
 import json
 import sys
@@ -272,6 +273,81 @@ def test_retrospective_holdout_stays_blocked_until_missing_tick_months_are_verif
             from_date="2026-01-01",
             to_date="2026-06-30",
         )
+
+
+def test_mutable_2026_history_is_excluded_without_weakening_tick_or_phase_fences(
+    tmp_path: Path,
+) -> None:
+    payload = protocol()
+    model4 = payload["model4_data"]
+    assert model4["history_frozen_through_year"] == 2025
+    assert model4["frozen_through_month"] == "202604"
+    assert model4["history_current_year_policy"] == (
+        "EXCLUDE_MUTABLE_2026_HCC_WHILE_ALL_2026_RESEARCH_IS_BLOCKED_OR_FORWARD_ONLY"
+    )
+
+    destination = tmp_path / "Bases"
+    relative_paths = [
+        "symbols.custom.dat",
+        "Custom/history/NDX.DWX/2025.hcc",
+        *(f"Custom/ticks/NDX.DWX/2026{month:02d}.tkc" for month in range(1, 5)),
+        "Custom/ticks/NDX.DWX/202512.tkc",
+    ]
+    manifest_path = tmp_path / "provisioning.csv"
+    rows: list[dict[str, str]] = []
+    for index, relative in enumerate(relative_paths):
+        artifact = destination / relative
+        artifact.parent.mkdir(parents=True, exist_ok=True)
+        content = f"frozen-{index}".encode("ascii")
+        artifact.write_bytes(content)
+        rows.append(
+            {
+                "relative_path": relative,
+                "dest_length": str(len(content)),
+                "dest_sha256": hashlib.sha256(content).hexdigest(),
+            }
+        )
+    with manifest_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(
+            handle, fieldnames=["relative_path", "dest_length", "dest_sha256"]
+        )
+        writer.writeheader()
+        writer.writerows(rows)
+
+    scoped_protocol = {
+        "model4_data": {
+            **model4,
+            "destination_root": str(destination),
+            "provisioning_manifest_artifact_id": "provisioning",
+        },
+        "markets": [{"symbol": "NDX.DWX", "dev_from": "2025-12-01"}],
+    }
+    frozen_rows = freeze.model4_data_files(
+        scoped_protocol, {"provisioning": manifest_path}
+    )
+    frozen_relatives = {str(row["relative_path"]) for row in frozen_rows}
+    assert "Custom/history/NDX.DWX/2025.hcc" in frozen_relatives
+    assert "Custom/history/NDX.DWX/2026.hcc" not in frozen_relatives
+    assert "Custom/ticks/NDX.DWX/202604.tkc" in frozen_relatives
+
+    synthetic_manifest = {"freeze_inputs": {"model4_data_files": frozen_rows}}
+    with pytest.raises(fence.FenceError, match=r"2026\.hcc"):
+        fence._selected_data_rows(
+            scoped_protocol,
+            synthetic_manifest,
+            "NDX.DWX",
+            "2026-01-01",
+            "2026-04-30",
+        )
+
+
+def test_history_cutoff_cannot_precede_any_runnable_binding_phase() -> None:
+    payload = protocol()
+    freeze.validate_protocol(payload)
+    drifted = copy.deepcopy(payload)
+    drifted["model4_data"]["history_frozen_through_year"] = 2024
+    with pytest.raises(freeze.FreezeError, match="Model-4 provisioning/fence contract drifted"):
+        freeze.validate_protocol(drifted)
 
 
 def test_oos_unlock_requires_the_nested_adjudicator_dev_verdict(tmp_path: Path) -> None:
