@@ -128,7 +128,7 @@ INFRA_RETRY_CONTRACT_PATH = (
     / "infra_retry_contract_20260720_attempt003.json"
 )
 EXPECTED_INFRA_RETRY_CONTRACT_SHA256 = (
-    "813d562223c1ba6a7c180a9978a346c7c9137367aa5c8632223bb19b11407d42"
+    "63f2e1e354cc97adb3b576f7c4b10294a70f9a2537c24fef0768000832d96d10"
 )
 REPORT_CORE_PATH = (
     REPO_ROOT
@@ -1586,8 +1586,11 @@ def _validate_prior_native_port_attempt() -> None:
     _assert_no_native_outcome_files(PRIOR_NATIVE_ATTEMPT_DEV2_RUN_ROOT, "prior DEV2 attempt")
     # Keep the bindings live until the end of structural validation.
     for binding, label in (
+        (prior_pre_binding, "prior PRE receipt"),
         (prior_state_binding, "prior launch state"),
+        (prior_claim_binding, "prior native-attempt claim"),
         (prior_result_binding, "prior DEV2 result"),
+        (prior_stderr_binding, "prior controller stderr"),
     ):
         assert_binding(binding, label)
 
@@ -1886,11 +1889,13 @@ def _validate_prior_dpapi_attempt() -> None:
         raise InvalidEvidence("prior DPAPI controller stderr classification drift")
     _assert_no_native_outcome_files(PRIOR_DPAPI_ATTEMPT_RUN_ROOT, "prior DPAPI attempt")
     for binding, label in (
+        (prior_pre_binding, "prior DPAPI PRE receipt"),
         (prior_state_binding, "prior DPAPI launch state"),
         (prior_job_binding, "prior DPAPI launch job"),
         (prior_claim_binding, "prior DPAPI claim"),
         (prior_stdout_binding, "prior DPAPI controller stdout"),
         (prior_stderr_binding, "prior DPAPI controller stderr"),
+        (legacy_contract_binding, "prior retry-002 contract"),
     ):
         assert_binding(binding, label)
 
@@ -3728,8 +3733,13 @@ def _validate_dev2_agent_port_proof(
         "released_baseline_owner_count",
     }
     expected_owner_sid = str(result.get("identity_sid", ""))
-    if not re.fullmatch(r"S-[0-9]+(?:-[0-9]+)+", expected_owner_sid):
-        raise InvalidEvidence("DEV2 controller identity SID is malformed")
+    rotation = pre.get("machine_credential_rotation")
+    if (
+        not re.fullmatch(r"S-[0-9]+(?:-[0-9]+)+", expected_owner_sid)
+        or not isinstance(rotation, Mapping)
+        or expected_owner_sid != rotation.get("target_sid")
+    ):
+        raise InvalidEvidence("DEV2 controller identity SID/rotation proof drift")
     started = parse_utc(str(result.get("started_utc", "")), "DEV2 result started_utc")
     finished = parse_utc(str(result.get("finished_utc", "")), "DEV2 result finished_utc")
     if finished < started:
@@ -4667,6 +4677,98 @@ def _bound_native_run_artifacts(
     return report_path, log_path, ini_path
 
 
+def _validate_bound_controller_attempt(
+    pre: Mapping[str, Any],
+    cell: Mapping[str, Any],
+    attempt: Mapping[str, Any],
+) -> tuple[str, Path, dict[str, Any], dict[str, Any]]:
+    output_root = Path(str(cell["output_root"])).resolve()
+    stdout_binding = attempt.get("stdout")
+    stderr_binding = attempt.get("stderr")
+    if not isinstance(stdout_binding, Mapping) or not isinstance(stderr_binding, Mapping):
+        raise InvalidEvidence(f"controller log binding missing: {cell['cell_id']}")
+    stdout_binding = _assert_exact_binding_path(
+        stdout_binding,
+        output_root / "controller.stdout.log",
+        f"{cell['cell_id']} controller stdout",
+    )
+    stderr_binding = _assert_exact_binding_path(
+        stderr_binding,
+        output_root / "controller.stderr.log",
+        f"{cell['cell_id']} controller stderr",
+    )
+    if stderr_binding["size"] != 0:
+        raise InvalidEvidence(f"successful controller stderr is not empty: {cell['cell_id']}")
+    parsed_result = _parse_dev2_controller_json(
+        Path(stdout_binding["path"]).read_text(encoding="utf-8-sig", errors="replace")
+    )
+    state_result = attempt.get("runner_result")
+    if not isinstance(state_result, Mapping) or parsed_result != dict(state_result):
+        raise InvalidEvidence(
+            f"controller stdout/result differs from launch state: {cell['cell_id']}"
+        )
+    run_id = validate_dev2_controller_result(parsed_result, pre)
+    native_root = _dev2_native_root(run_id)
+    if Path(str(attempt.get("native_root", ""))).resolve() != native_root:
+        raise InvalidEvidence(f"cell DEV2 native-root binding drift: {cell['cell_id']}")
+
+    native_result_binding = attempt.get("native_result")
+    if not isinstance(native_result_binding, Mapping):
+        raise InvalidEvidence(f"native result binding missing: {cell['cell_id']}")
+    native_result_path = native_root / "output" / "result.json"
+    native_result_binding = _assert_exact_binding_path(
+        native_result_binding,
+        native_result_path,
+        f"{cell['cell_id']} native result",
+    )
+    native_result = load_json(native_result_path)
+    native_result_keys = {
+        "schema_version",
+        "run_id",
+        "nonce",
+        "success",
+        "error_code",
+        "error_message",
+        "run_smoke_exit_code",
+        "identity_sid",
+        "common_path",
+        "expected_task_name",
+        "controller_mutex",
+        "lane_contract_sha256",
+        "machine_credential_sha256",
+        "machine_credential_helper_sha256",
+        "child_sha256",
+        "run_smoke_sha256",
+        "program_sha256",
+        "agent_port_proof",
+        "started_utc",
+        "finished_utc",
+        "log_path",
+    }
+    if set(native_result) != native_result_keys:
+        raise InvalidEvidence(f"native result field closure drift: {cell['cell_id']}")
+    if any(key not in parsed_result for key in native_result_keys) or native_result != {
+        key: parsed_result[key] for key in native_result_keys
+    }:
+        raise InvalidEvidence(
+            f"native result differs semantically from controller stdout/state: {cell['cell_id']}"
+        )
+    if (
+        native_result.get("run_id") != run_id
+        or Path(str(native_result.get("log_path", ""))).resolve()
+        != native_root / "output" / "run.log"
+    ):
+        raise InvalidEvidence(f"native result run identity drift: {cell['cell_id']}")
+    # Close replacement races after parsing all three bound controller artifacts.
+    for binding, label in (
+        (stdout_binding, f"{cell['cell_id']} controller stdout"),
+        (stderr_binding, f"{cell['cell_id']} controller stderr"),
+        (native_result_binding, f"{cell['cell_id']} native result"),
+    ):
+        assert_binding(binding, label)
+    return run_id, native_root, parsed_result, native_result_binding
+
+
 def _audit_cell(
     pre: Mapping[str, Any],
     cell: Mapping[str, Any],
@@ -4686,13 +4788,9 @@ def _audit_cell(
     summary_binding = attempt.get("summary")
     if not isinstance(summary_binding, Mapping):
         raise InvalidEvidence(f"cell summary binding missing: {cell['cell_id']}")
-    runner_result = attempt.get("runner_result")
-    if not isinstance(runner_result, Mapping):
-        raise InvalidEvidence(f"cell DEV2 controller result missing: {cell['cell_id']}")
-    run_id = validate_dev2_controller_result(runner_result, pre)
-    native_root = _dev2_native_root(run_id)
-    if Path(str(attempt.get("native_root", ""))).resolve() != native_root:
-        raise InvalidEvidence(f"cell DEV2 native-root binding drift: {cell['cell_id']}")
+    run_id, native_root, _runner_result, native_result_binding = (
+        _validate_bound_controller_attempt(pre, cell, attempt)
+    )
     assert_binding(summary_binding, f"{cell['cell_id']} summary")
     summary = load_json(Path(str(summary_binding["path"])))
     warmup_runs, accepted_runs = validate_runner_summary(summary, cell)
@@ -4710,6 +4808,20 @@ def _audit_cell(
         for path in sealed
     ):
         raise InvalidEvidence(f"sealed artifact escaped controller/native roots: {cell['cell_id']}")
+    for role in ("stdout", "stderr"):
+        controller_binding = attempt[role]
+        controller_path = Path(str(controller_binding["path"])).resolve()
+        if controller_path not in sealed or dict(sealed[controller_path]) != dict(
+            controller_binding
+        ):
+            raise InvalidEvidence(
+                f"cell controller {role} was not exactly sealed: {cell['cell_id']}"
+            )
+    native_result_path = Path(str(native_result_binding["path"])).resolve()
+    if native_result_path not in sealed or dict(sealed[native_result_path]) != dict(
+        native_result_binding
+    ):
+        raise InvalidEvidence(f"cell native result was not exactly sealed: {cell['cell_id']}")
     summary_path = Path(str(summary_binding["path"])).resolve()
     if summary_path != _find_dev2_summary(run_id):
         raise InvalidEvidence(f"cell DEV2 summary identity drift: {cell['cell_id']}")
@@ -4960,9 +5072,45 @@ def _validate_launch_state(
     state_path: Path,
     pre: Mapping[str, Any],
 ) -> dict[str, Any]:
+    expected_state_path = (
+        Path(str(pre.get("run_root", ""))).resolve() / "launch_state.json"
+    )
+    if state_path.resolve() != expected_state_path:
+        raise InvalidEvidence("launch state path differs from the PRE run-root identity")
     state = load_json(state_path)
+    expected_state_keys = {
+        "schema_version",
+        "launcher_revision",
+        "artifact_type",
+        "analysis_id",
+        "status",
+        "created_utc",
+        "updated_utc",
+        "started_utc",
+        "finished_utc",
+        "pre_receipt_path",
+        "pre_receipt_sha256",
+        "plan_sha256",
+        "job",
+        "authorization",
+        "scheduler",
+        "worker_pid",
+        "resume_count",
+        "active_cell",
+        "attempt_claim",
+        "preclaim_probe",
+        "outcome_possible_since_utc",
+        "launches",
+        "outcome_fence",
+        "cells",
+    }
+    if set(state) != expected_state_keys:
+        raise InvalidEvidence("launch state top-level field closure drift")
     if (
-        state.get("artifact_type") != "QM5_10834_NATIVE_LAUNCH_STATE"
+        type(state.get("schema_version")) is not int
+        or state.get("schema_version") != SCHEMA_VERSION
+        or type(state.get("launcher_revision")) is not int
+        or state.get("artifact_type") != "QM5_10834_NATIVE_LAUNCH_STATE"
         or state.get("analysis_id") != ANALYSIS_ID
         or state.get("launcher_revision") != LAUNCHER_REVISION
         or state.get("status") != "COMPLETE"
@@ -4971,6 +5119,8 @@ def _validate_launch_state(
         or state.get("pre_receipt_sha256") != pre_sha256.lower()
         or state.get("pre_receipt_path") != str(pre_path.resolve())
         or state.get("plan_sha256") != pre["plan"]["plan_sha256"]
+        or type(state.get("resume_count")) is not int
+        or state.get("resume_count", -1) < 0
     ):
         raise InvalidEvidence("launch state is not COMPLETE and exactly PRE-bound")
     if state.get("outcome_fence") != {
@@ -4982,6 +5132,12 @@ def _validate_launch_state(
     job_binding = state.get("job")
     if not isinstance(job_binding, Mapping):
         raise InvalidEvidence("launch job binding missing")
+    if (
+        set(job_binding) != {"path", "size", "sha256"}
+        or Path(str(job_binding.get("path", ""))).resolve()
+        != state_path.with_name("launch_job.json").resolve()
+    ):
+        raise InvalidEvidence("launch job binding path/field closure drift")
     assert_binding(job_binding, "launch job")
     job = load_json(Path(str(job_binding["path"])))
     try:
@@ -5030,6 +5186,8 @@ def _validate_launch_state(
     launches = state.get("launches")
     if not isinstance(launches, list) or not launches:
         raise InvalidEvidence("launch audit chain is missing")
+    if state["resume_count"] != len(launches) - 1:
+        raise InvalidEvidence("launch resume_count/audit-chain drift")
     for index, launch in enumerate(launches):
         if not isinstance(launch, Mapping):
             raise InvalidEvidence("launch audit row is malformed")
@@ -5067,13 +5225,15 @@ def _validate_launch_state(
         raise InvalidEvidence("first launch is not exactly initial-job authorized")
     if any(launch["resume"] is not True for launch in launches[1:]):
         raise InvalidEvidence("subsequent launch audit row is not an explicit resume")
+    created = parse_utc(str(state.get("created_utc", "")), "launch state created_utc")
+    updated = parse_utc(str(state.get("updated_utc", "")), "launch state updated_utc")
     started = parse_utc(str(state.get("started_utc", "")), "launch state started_utc")
     finished = parse_utc(str(state.get("finished_utc", "")), "launch state finished_utc")
     outcome_possible = parse_utc(
         str(state.get("outcome_possible_since_utc", "")),
         "launch outcome_possible_since_utc",
     )
-    if not started <= outcome_possible <= finished:
+    if not created <= started <= outcome_possible <= finished <= updated:
         raise InvalidEvidence("launch state outcome-fence chronology drift")
     cells = state.get("cells")
     expected_ids = [cell["cell_id"] for cell in pre["plan"]["cells"]]
@@ -5083,6 +5243,57 @@ def _validate_launch_state(
         or [row.get("cell_id") for row in cells if isinstance(row, Mapping)] != expected_ids
     ):
         raise InvalidEvidence("launch state cell order/closure drift")
+    expected_cell_keys = {"cell_id", "status", "command_sha256", "attempts"}
+    expected_attempt_keys = {
+        "started_utc",
+        "finished_utc",
+        "command_sha256",
+        "exit_code",
+        "stdout",
+        "stderr",
+        "summary",
+        "outcome_artifacts",
+        "native_root",
+        "native_result",
+        "runner_result",
+        "sealed_artifacts",
+    }
+    for index, (cell, state_cell) in enumerate(zip(pre["plan"]["cells"], cells)):
+        if (
+            not isinstance(state_cell, Mapping)
+            or set(state_cell) != expected_cell_keys
+            or state_cell.get("status") != "COMPLETE"
+            or state_cell.get("command_sha256")
+            != canonical_sha256(runner_command(pre, cell))
+        ):
+            raise InvalidEvidence(f"launch state cell[{index}] field/command drift")
+        attempts = state_cell.get("attempts")
+        if not isinstance(attempts, list) or len(attempts) != 1:
+            raise InvalidEvidence(f"launch state cell[{index}] attempt closure drift")
+        attempt = attempts[0]
+        if (
+            not isinstance(attempt, Mapping)
+            or set(attempt) != expected_attempt_keys
+            or type(attempt.get("exit_code")) is not int
+            or attempt.get("exit_code") != 0
+            or attempt.get("command_sha256") != state_cell["command_sha256"]
+            or not isinstance(attempt.get("stdout"), Mapping)
+            or not isinstance(attempt.get("stderr"), Mapping)
+            or not isinstance(attempt.get("summary"), Mapping)
+            or not isinstance(attempt.get("native_result"), Mapping)
+            or not isinstance(attempt.get("runner_result"), Mapping)
+            or not isinstance(attempt.get("outcome_artifacts"), list)
+            or not isinstance(attempt.get("sealed_artifacts"), list)
+        ):
+            raise InvalidEvidence(f"launch state cell[{index}] attempt field/type drift")
+        attempt_started = parse_utc(
+            str(attempt.get("started_utc", "")), f"cell[{index}] attempt started_utc"
+        )
+        attempt_finished = parse_utc(
+            str(attempt.get("finished_utc", "")), f"cell[{index}] attempt finished_utc"
+        )
+        if not started <= attempt_started <= attempt_finished <= finished:
+            raise InvalidEvidence(f"launch state cell[{index}] attempt chronology drift")
     return state
 
 

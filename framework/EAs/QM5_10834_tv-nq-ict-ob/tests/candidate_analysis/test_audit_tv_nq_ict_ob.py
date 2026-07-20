@@ -305,6 +305,7 @@ def test_hash_binding_role_closure_is_explicit() -> None:
         "dev2_machine_credential_probe",
         "dev2_machine_credential_helper",
         "dev2_machine_credential",
+        "dev2_machine_credential_rotation_receipt",
         "runner_smoke",
         "dev2_lane_contract",
         "tester_groups_canonical",
@@ -975,8 +976,32 @@ def test_retry_003_contract_separates_claim_sequence_from_counted_attempt(
         subject.validate_infra_retry_contract(path)
 
 
-def test_dev2_controller_result_binds_lane_scripts_and_tester_groups() -> None:
-    lane_sha = "1" * 64
+def _controller_validation_fixture(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> tuple[dict[str, object], dict[str, object]]:
+    terminal_root = tmp_path / "DEV2"
+    metatester = terminal_root / "metatester64.exe"
+    metatester.parent.mkdir(parents=True)
+    metatester.write_bytes(b"bound metatester")
+    monkeypatch.setattr(subject, "TERMINAL_ROOT", terminal_root)
+    metatester_sha = subject.sha256_file(metatester)
+    lane_path = tmp_path / "dev2_lane_contract.json"
+    lane = {
+        "schema_version": 3,
+        "contract_id": "QM_DEV2_ISOLATED_MT5_LANE_V3",
+        "lane": "DEV2",
+        "program_sha256": {"metatester64.exe": metatester_sha},
+        "agent_port_contract": {
+            "minimum_port": 3000,
+            "maximum_port": 65535,
+            "require_runtime_listener_proof": True,
+            "require_exact_dev2_metatester_path": True,
+            "require_no_concurrent_overlapping_endpoint_owner": True,
+            "allow_released_baseline_endpoint_reuse": True,
+        },
+    }
+    _write_json(lane_path, lane)
+    lane_binding = subject.file_binding(lane_path)
     child_sha = "2" * 64
     smoke_sha = "3" * 64
     groups_sha = "4" * 64
@@ -985,22 +1010,25 @@ def test_dev2_controller_result_binds_lane_scripts_and_tester_groups() -> None:
     credential_helper_sha = "7" * 64
     pre = {
         "bindings": {
-            "dev2_lane_contract": {"sha256": lane_sha},
+            "dev2_lane_contract": lane_binding,
             "runner_child": {"sha256": child_sha},
             "runner_smoke": {"sha256": smoke_sha},
             "dev2_cleanup_helper": {"sha256": cleanup_sha},
             "dev2_machine_credential": {"sha256": credential_sha},
             "dev2_machine_credential_helper": {"sha256": credential_helper_sha},
             "tester_groups_canonical": {"sha256": groups_sha},
-        }
+        },
+        "machine_credential_rotation": {"target_sid": "S-1-5-21-1-2-3-1001"},
     }
     run_id = "20260720T170000Z_" + "a" * 32
+    started = "2026-07-20T17:00:00+00:00"
+    finished = "2026-07-20T17:01:00+00:00"
     result = {
         "schema_version": 2,
         "success": True,
         "run_smoke_exit_code": 0,
         "run_id": run_id,
-        "lane_contract_sha256": lane_sha,
+        "lane_contract_sha256": lane_binding["sha256"],
         "child_sha256": child_sha,
         "run_smoke_sha256": smoke_sha,
         "cleanup_helper_sha256": cleanup_sha,
@@ -1013,10 +1041,77 @@ def test_dev2_controller_result_binds_lane_scripts_and_tester_groups() -> None:
         "dev2_account_restored_disabled": True,
         "cleanup_lease_registered": True,
         "cleanup_lease_disarmed": True,
+        "identity_sid": "S-1-5-21-1-2-3-1001",
+        "started_utc": started,
+        "finished_utc": finished,
+        "program_sha256": lane["program_sha256"],
+        "agent_port_proof": {
+            "status": "PASS",
+            "preexisting_port_owner": False,
+            "concurrent_port_owner": False,
+            "exclusivity_semantics": "NO_CONCURRENT_OVERLAPPING_ENDPOINT_OWNER",
+            "released_baseline_endpoint_reuse_allowed": True,
+            "metatester_path": str(metatester.resolve()),
+            "metatester_sha256": metatester_sha,
+            "listeners": [
+                {
+                    "local_address": "127.0.0.1",
+                    "local_port": 3000,
+                    "process_id": 42,
+                    "owner_sid": "S-1-5-21-1-2-3-1001",
+                    "executable_path": str(metatester.resolve()),
+                    "creation_utc": started,
+                    "first_observed_utc": "2026-07-20T17:00:05+00:00",
+                    "preexisting_port_owner": False,
+                    "concurrent_port_owner": False,
+                    "exclusive_current_owner": True,
+                    "current_overlapping_owner_count": 1,
+                    "baseline_endpoint_was_occupied": False,
+                    "released_baseline_owner_count": 0,
+                }
+            ],
+        },
     }
+    return pre, result
+
+
+def test_dev2_controller_result_binds_lane_scripts_and_tester_groups(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    pre, result = _controller_validation_fixture(tmp_path, monkeypatch)
+    run_id = str(result["run_id"])
     assert subject.validate_dev2_controller_result(result, pre) == run_id
     result["child_sha256"] = "f" * 64
     with pytest.raises(subject.InvalidEvidence, match="runtime binding drift"):
+        subject.validate_dev2_controller_result(result, pre)
+
+
+@pytest.mark.parametrize(
+    ("path", "value"),
+    [
+        (("agent_port_proof", "status"), "FAIL"),
+        (("agent_port_proof", "preexisting_port_owner"), True),
+        (("agent_port_proof", "concurrent_port_owner"), True),
+        (("agent_port_proof", "released_baseline_endpoint_reuse_allowed"), False),
+        (("agent_port_proof", "listeners", 0, "local_port"), 2999),
+        (("agent_port_proof", "listeners", 0, "owner_sid"), "S-1-5-18"),
+        (("agent_port_proof", "listeners", 0, "exclusive_current_owner"), False),
+        (("agent_port_proof", "listeners", 0, "current_overlapping_owner_count"), 2),
+        (("agent_port_proof", "listeners", 0, "released_baseline_owner_count"), -1),
+    ],
+)
+def test_dev2_controller_agent_port_proof_fails_closed(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    path: tuple[object, ...],
+    value: object,
+) -> None:
+    pre, result = _controller_validation_fixture(tmp_path, monkeypatch)
+    cursor: object = result
+    for key in path[:-1]:
+        cursor = cursor[key]  # type: ignore[index]
+    cursor[path[-1]] = value  # type: ignore[index]
+    with pytest.raises(subject.InvalidEvidence, match="listener|agent-port"):
         subject.validate_dev2_controller_result(result, pre)
 
 
