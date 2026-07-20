@@ -7,14 +7,16 @@
     "pine_facade_url": "https://pine-facade.tradingview.com/pine-facade/get/PUB;c94173158a0d4ee6a16689d44d64606a/1",
     "script_id_part": "PUB;c94173158a0d4ee6a16689d44d64606a",
     "selected_pine_version": 1,
-    "available_updates": [],
     "script_access": "open_no_auth",
     "source_created_utc": "2026-05-14T21:43:05.062879Z",
     "source_title": "SMC ICT Backtest XAUUSD + MNQ",
     "source_author_handle": "shary890",
+    "full_facade_response_utf8_bytes": 2236,
+    "full_facade_response_utf8_sha256": "a84ea49a067987a50bcdd633b72f5fd3d5aa1f86fa95c39bdae77909d8a7bdce",
+    "facade_has_top_level_updates_field": false,
     "raw_source_utf8_bytes_without_terminal_lf": 1753,
     "raw_source_utf8_sha256": "a20de57eb835405dc3cb5b17284c745403e4aa9e569220be8022b9f7af28ab16",
-    "local_snapshot_normalization": "The verbatim 1753-byte facade response is stored with one terminal LF added; no other byte changed.",
+    "local_snapshot_normalization": "The verbatim decoded 1753-byte source field from the facade JSON is stored with one terminal LF added; no other byte changed.",
     "local_snapshot_sha256": "7e49ecdd3f7d078773b7f29b500e40e12ba81984bbbaa1c9c508d69da1e599bb"
   },
   "publication_chart_context": {
@@ -22,8 +24,9 @@
     "interval": "15",
     "timeframe_frozen_for_dev": "M15",
     "symbol_info_timezone": "America/New_York",
-    "evidence_location": "TradingView publication page embedded chart JSON",
-    "interpretation": "Pine time(timeframe.period, session) omits a timezone, so TradingView evaluates the literal session strings in the chart symbol exchange timezone. The frozen source-chart interpretation is therefore America/New_York, not Darwinex broker wall-clock.",
+    "evidence_location": "TradingView publication page embedded chart JSON, extracted and hash-bound in tv_smc_mss_fvg_publication_chart_context.json",
+    "context_artifact_sha256": "46b9b15e07dfce416b66df62a5af06651d73771f6c1263aeb4e81f7c40046f0c",
+    "interpretation": "Pine time(timeframe.period, session) omits a timezone, so TradingView evaluates the literal session strings in the active chart symbol exchange timezone. M15 and America/New_York are properties of this publication's BTCUSD chart snapshot, not constants encoded by Pine. This DEV freezes their transport to XAUUSD.DWX and EURUSD.DWX once, without testing alternate chart contexts.",
     "official_language_references": [
       "https://www.tradingview.com/pine-script-docs/concepts/time/",
       "https://www.tradingview.com/pine-script-docs/concepts/sessions/",
@@ -42,7 +45,7 @@
       "swing_length": 5,
       "reward_risk": 2.0
     },
-    "sessions_source_timezone_half_open": [
+    "publication_context_sessions_half_open": [
       {"name": "LONDON_LABEL", "start": "07:00", "end": "10:00", "timezone": "America/New_York"},
       {"name": "NEW_YORK_LABEL", "start": "12:30", "end": "16:00", "timezone": "America/New_York"}
     ],

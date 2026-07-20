@@ -7,7 +7,7 @@
     "g0_status": "APPROVED",
     "role": "Required non-index sleeve candidate to diversify retained QM5_20009 NDX Sleeve A",
     "family": "Same-bar confirmed-pivot liquidity raid plus displacement/MSS plus three-candle FVG",
-    "source_timeframe": "M15",
+    "frozen_publication_context_timeframe": "M15",
     "symbols": ["XAUUSD.DWX", "EURUSD.DWX"],
     "portfolio_unit": "One inseparable two-symbol, two-session candidate; no symbol, session or side may be selected or dropped after outcomes."
   },
@@ -16,13 +16,13 @@
     "primary_symbol_reason": "XAUUSD is named in the primary source title, is an approved-card target, and supplies a metal sleeve independent of the retained NDX index sleeve.",
     "transport_symbol_reason": "EURUSD is an approved-card target and tests whether the exact structural engine transports from metal to liquid FX without parameter changes.",
     "timeframe_reason": "M15 is the interval embedded in the primary publication chart. The Pine is chart-timeframe generic, while the later card's M5 declaration is not evidenced by the publication snapshot; source-chart M15 is frozen without testing alternatives.",
-    "session_diversification": "The source sessions are 07:00-10:00 and 12:30-16:00 America/New_York. They do not overlap retained NDX Sleeve A's 10:00-11:00 America/New_York entry window.",
+    "session_diversification": "In the frozen publication-chart context, the sessions are 07:00-10:00 and 12:30-16:00 America/New_York. They do not overlap retained NDX Sleeve A's 10:00-11:00 America/New_York entry window.",
     "no_parameter_search": "swingLen=5 and reward/risk=2.0 are the only tested values. No alternate timeframe, symbol subset, session subset, stop, target, spread or news mode is permitted in this DEV decision."
   },
   "outcome_protection": {
     "known_before_contract": [
       "APPROVED card, SPEC, committed EA and exact open-source Pine rules.",
-      "TradingView page metadata and publication-chart symbol, M15 interval and America/New_York timezone.",
+      "Hash-bound TradingView page response metadata and extracted publication-chart BTCUSD symbol, M15 interval and America/New_York timezone.",
       "Timestamp prefixes only for input availability and M5-to-M15 completeness; no selected OHLC field was parsed.",
       "Venue symbol metadata, one live 2026 bid/ask spread observation per symbol, exact commission sources, news calendar hash and DST implementation.",
       "No QM5_10729 trade list, report, strategy result or pre-2023 performance metric was inspected."
@@ -42,7 +42,8 @@
     "framework/EAs/QM5_10729_tv-smc-mss-fvg/QM5_10729_tv-smc-mss-fvg.mq5": "b25a0587d7b2efe427c034ff9df89aa0bb3e710af5244ae86f394db20fc05dd2",
     "framework/EAs/QM5_10729_tv-smc-mss-fvg/SPEC.md": "17b400250e3f01b56b5948acef0362ef49ddb8345d6618c6314f7406b6a8a299",
     "framework/EAs/QM5_10729_tv-smc-mss-fvg/docs/candidate-analysis/primary_source_pine_v1.pine": "7e49ecdd3f7d078773b7f29b500e40e12ba81984bbbaa1c9c508d69da1e599bb",
-    "framework/EAs/QM5_10729_tv-smc-mss-fvg/docs/candidate-analysis/tv_smc_mss_fvg_primary_source_evidence.json": "99e0bd76d67a7da0dcef5889c687206ec0507001ec277aa922b537543ae14163",
+    "framework/EAs/QM5_10729_tv-smc-mss-fvg/docs/candidate-analysis/tv_smc_mss_fvg_primary_source_evidence.json": "51e48d2e02407547fd7da61f26e56014d1c3bad13a71c5b894e9149f0f3524df",
+    "framework/EAs/QM5_10729_tv-smc-mss-fvg/docs/candidate-analysis/tv_smc_mss_fvg_publication_chart_context.json": "46b9b15e07dfce416b66df62a5af06651d73771f6c1263aeb4e81f7c40046f0c",
     "framework/EAs/QM5_10729_tv-smc-mss-fvg/docs/candidate-analysis/tv_smc_mss_fvg_spread_input_snapshot.json": "a173ecb79a0b676c8b518e8aea3cb9af26385dc13b0eb8339e43b9f5ef06ce33",
     "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/audit_mt5_report.py": "c9dc5106383073b50150f0edb091338181dc53470615839fb252f5bc96a46c03",
     "framework/Include/QM/QM_DSTAware.mqh": "e5a78c1097ff3622f9066acc25fac41228f049853bca31b19c599e92dc61472f",
@@ -97,6 +98,7 @@
     "file_drift_rule": "Before outcome access, require exact file length, last-write timestamp and timestamp-only availability above. Any mismatch aborts for a new outcome-blind freeze; do not parse OHLC under this contract.",
     "future_fence": "For each raw row, parse only the timestamp prefix before the first comma. Break immediately when timestamp >= 2023-01-01 broker-naive epoch. Never split, convert, hash or otherwise inspect that row's OHLC/volume tail. Report future_ohlc_parsed=false or reject.",
     "selected_slice_hash": "After explicit outcome release only, SHA256 the canonical raw rows with 2018-01-01 <= timestamp < 2023-01-01. Never hash the whole market file. Persist the per-symbol slice hashes in every result.",
+    "analysis_start_state": "Parse and use no OHLC before 2018-01-01. At each symbol's first direct/derived in-window M15 bar initialize lastHigh=na, lastLow=na, flat, with no pending state. A first pivot can be confirmed only after eleven in-window available M15 bars. EURUSD Q4-2017 timestamp prefixes remain availability metadata only and never seed state or the selected-slice hash.",
     "validation": "Require strictly increasing unique timestamps, finite positive OHLC, low <= min(open,close) <= max(open,close) <= high, nonnegative volume and exact expected header. Reject rather than repair.",
     "eurusd_resampling": {
       "bucket_open": "floor(broker-naive epoch / 900) * 900",
@@ -105,12 +107,13 @@
       "causality": "The derived M15 bar becomes available only at bucket_open+900 seconds."
     },
     "causal_bar_eligibility": "Never inspect later timestamps to admit or suppress an earlier signal. Each currently completed direct or derived M15 bar is evaluated using only state and data available through its close.",
-    "forced_flat_boundary_integrity": "If a position remains open for a scheduled session/Friday flat, the exact final M15 bar ending at that boundary must exist. If it does not, the entire run is INTEGRITY_FAIL with no merit verdict; do not retroactively suppress the earlier trade, substitute a stale/future price or invent swap.",
-    "missing_bar_rule": "Do not synthesize bars. An incomplete EURUSD derived bucket emits no M15 bar. Pivot state advances on each available completed M15 bar exactly as a chart would; timestamp gaps do not reset state and do not trigger a future-completeness entry filter."
+    "forced_flat_boundary_integrity": "If a position remains open for a scheduled session/Friday flat, the exact final M15 bar ending at that boundary must exist. If it does not, the entire run is DATA_INTEGRITY_FAIL with no merit verdict; do not retroactively suppress the earlier trade, substitute a stale/future price or invent swap.",
+    "open_position_gap_integrity": "From an entry close through its exit or scheduled flat, require every next expected 15-minute bar for that symbol. The first missing scheduled slot while the position is open aborts the entire run as DATA_INTEGRITY_FAIL because SL/TP path is unknowable. Never use this later fact to suppress the earlier entry.",
+    "missing_bar_rule": "Do not synthesize bars. An incomplete EURUSD derived bucket emits no M15 bar. While flat, pivot state advances on each available completed M15 chart bar; timestamp gaps do not reset state and do not trigger a future-completeness entry filter."
   },
   "clock_and_session_contract": {
-    "source_timezone": "America/New_York",
-    "source_timezone_basis": "Pine time(timeframe.period, session) supplies no timezone and therefore defaults to the publication chart symbol exchange timezone recorded in the source evidence.",
+    "frozen_publication_context_timezone": "America/New_York",
+    "context_timezone_basis": "Pine time(timeframe.period, session) supplies no timezone and therefore defaults to the active chart symbol exchange timezone. The hash-bound publication chart is FUSIONMARKETS:BTCUSD with America/New_York; this contract preregisters transport of that one context to both DWX targets and does not claim Pine hard-codes it.",
     "broker_dst": "QM_DSTAware US-DST convention: Darwinex broker is UTC+2 outside US DST and UTC+3 during US DST; November ambiguity prefers standard offset.",
     "constant_mapping_reason": "America/New_York is UTC-5 outside US DST and UTC-4 during US DST, so the bound broker clock is exactly New York plus seven hours in both regimes.",
     "sessions": [
@@ -175,7 +178,7 @@
     ]
   },
   "execution_overlay": {
-    "bridge_limit": "This is an exact port of Pine v1 entry primitives and ordering on the publication-chart M15 context. Fixed-risk sizing, bid/ask execution, bound per-symbol currency news compliance, Friday close and card-required session-end flat are explicit V5 research overlays because Pine does not implement them.",
+    "bridge_limit": "This is an exact publication-chart-context transport of Pine v1 entry primitives and statement ordering: the generic Pine is fixed once to the hash-bound BTCUSD M15/America-New_York publication context, then applied unchanged to both DWX targets. Fixed-risk sizing, bid/ask execution, bound per-symbol currency news compliance, Friday close and card-required session-end flat are explicit V5 research overlays because Pine does not implement them.",
     "position_state": "At most one open position per symbol. No pending orders and no pyramiding. A signal while that symbol has a position is counted but ignored; it is neither queued nor used to reverse.",
     "cross_symbol_concurrency": "XAUUSD.DWX and EURUSD.DWX may each hold one position simultaneously, so maximum initial portfolio risk is 2R = USD 2000.",
     "spread_prices": "Input OHLC is bid. For a fixed scenario spread s, ask open/high/low/close equals bid open/high/low/close plus s.",
@@ -196,8 +199,8 @@
       "usd_value_per_price_unit_per_lot": {"EURUSD.DWX": 100000.0, "XAUUSD.DWX": 100.0}
     },
     "future_bar_exit_order": [
-      "At bar open, a gap through SL exits at the adverse bid/ask open. A gap through TP exits at the fixed TP, with no favorable limit improvement.",
-      "Then test the full bid/ask range. If both SL and TP are reachable, resolve SL first. Otherwise fill the reachable fixed level.",
+      "Gap tests are inclusive and precede range tests. Long: bid_open <= SL exits at bid_open; else bid_open >= TP exits at fixed TP. Short: ask_open >= SL exits at ask_open; else ask_open <= TP exits at fixed TP.",
+      "If no gap exit, range tests are inclusive. Long predicates are bid_low <= SL and bid_high >= TP. Short predicates are ask_high >= SL and ask_low <= TP. When both direction-specific predicates are true, resolve SL first; otherwise fill the single reachable fixed level.",
       "If still open on a session's final M15 bar, process SL/TP first and then force-flat at that bar's closing bid for long or closing ask for short.",
       "On Friday the 20:45-21:00 broker bar is the final permitted holding bar: process SL/TP first, then force-flat at its closing bid/ask. The later source session remainder is entry-ineligible."
     ],
@@ -207,7 +210,7 @@
     "slippage": "Zero explicit slippage in center and adverse scenarios; spread and exact venue commission are the only execution-cost axes. This remains a DEV screen, not execution-parity certification.",
     "gross_pnl": "Long USD=(exit-entry)*contract_size*lots; short USD=(entry-exit)*contract_size*lots. gross_r=gross_usd/1000.",
     "portfolio_exit_order": "For pooled closed-balance drawdown, exits sharing a timestamp are processed loss-first, then win, with deterministic symbol/session/entry-time tie keys. Daily and yearly totals remain order-invariant.",
-    "conservative_equity_path": "Start from USD 100000. At every M15 close, deduct entry/exit commissions and mark each surviving long at bid close and short at ask close. Also calculate a within-bar adverse portfolio equity bound by summing each concurrently open trade's contract-valid worst value: gap/SL execution value when stopped, otherwise bid low for long or ask high for short. Treat those per-symbol adverse values as simultaneous even when true tick ordering is unknown. Entry bars contribute closing spread plus entry commission but no pre-entry range. Track drawdown from the running adjusted-equity high-water mark and each broker day's minimum versus its flat day-start balance."
+    "open_equity_scope_limit": "No floating-equity or intrabar FTMO loss gate is claimed in this candidate DEV screen. Such a gate requires a separately preregistered union-time, multi-sleeve tick/equity contract with retained NDX Sleeve A; it is mandatory before any FTMO-suitability conclusion."
   },
   "spread_contract": {
     "primary_scenario": "CENTER",
@@ -238,8 +241,8 @@
     "calendar_sha256": "8e898ca1c4aed5fbc4cbe43fc176e8d8595c2e6f5f05c2984c2468527d4f5b0d",
     "minimum_impact": "high",
     "temporal_mode": "PRE30_POST30",
-    "blackout": "Inclusive [event broker time - 30 minutes, event broker time + 30 minutes]. Reject an entry if any instant of the closed signal-bar interval [bar open, bar close] intersects any blackout.",
-    "event_conversion": "Use the exact bound QM_DSTAware US-DST broker conversion; November ambiguity prefers standard offset.",
+    "blackout": "Evaluate only the market-entry closing timestamp, matching QM_NewsInWindow: after QM_BrokerToUTC(entry broker time), reject when event_utc-30 minutes <= entry_utc <= event_utc+30 minutes, inclusive. Do not reject merely because an earlier part of the forming M15 bar overlapped the window.",
+    "event_conversion": "Use the exact bound QM_BrokerToUTC/QM_DSTAware US-DST conversion for the entry timestamp; November ambiguity prefers standard offset. Calendar event times remain UTC.",
     "open_position": "Do not force-close an existing position for news. Fixed SL/TP/session/Friday rules continue.",
     "state_during_blackout": "Pivot state and raw signal funnel continue to update; only new entry is blocked."
   },
@@ -250,7 +253,7 @@
     },
     {
       "id": "D02_SESSION_TIMEZONE",
-      "observation": "The card/SPEC/EA copy 07:00-10:00 and 12:30-16:00 as broker HHMM. Exact Pine defaults them to the chart exchange timezone, America/New_York; this contract maps them to broker 14:00-17:00 and 19:30-23:00."
+      "observation": "The card/SPEC/EA copy 07:00-10:00 and 12:30-16:00 as broker HHMM. Generic Pine defaults them to whichever chart symbol exchange timezone is active; the hash-bound publication snapshot is BTCUSD/America_New_York. This contract transports that one frozen context and maps it to broker 14:00-17:00 and 19:30-23:00; it does not claim a universal Pine timezone."
     },
     {
       "id": "D03_SAME_BAR_CHAIN",
