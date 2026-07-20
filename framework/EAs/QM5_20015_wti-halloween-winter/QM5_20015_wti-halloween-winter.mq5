@@ -151,15 +151,25 @@ bool Strategy_MonthAlreadyEntered(const int month_key)
    return false;
   }
 
-int Strategy_PersistedAttemptMonth()
+void Strategy_LoadAttemptState(const datetime reference_time)
   {
+   g_last_attempt_month_key = 0;
    if(g_attempt_state_key == "" ||
       !GlobalVariableCheck(g_attempt_state_key))
-      return 0;
+      return;
+   const int current_month_key =
+      Strategy_MonthKeyForTime(reference_time);
    const double stored = GlobalVariableGet(g_attempt_state_key);
-   if(!MathIsValidNumber(stored) || stored < 190001.0 || stored > 299912.0)
-      return 0;
-   return (int)MathRound(stored);
+   const int stored_month_key = (int)MathRound(stored);
+   if(current_month_key > 0 &&
+      MathIsValidNumber(stored) &&
+      stored_month_key >= 190001 &&
+      stored_month_key <= current_month_key)
+     {
+      g_last_attempt_month_key = stored_month_key;
+      return;
+     }
+   GlobalVariableDel(g_attempt_state_key);
   }
 
 bool Strategy_RecordMonthAttempt(const int month_key)
@@ -242,8 +252,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const int month_number = month_key % 100;
    if(month_key <= 0 || !Strategy_IsWinterMonth(month_number))
       return false;
-   if(month_key == g_last_attempt_month_key ||
-      month_key == Strategy_PersistedAttemptMonth())
+   if(month_key == g_last_attempt_month_key)
       return false;
    if(!Strategy_RecordMonthAttempt(month_key))
       return false;
@@ -318,6 +327,7 @@ int OnInit()
 
    g_attempt_state_key =
       StringFormat("QM5_20015_MONTH_ATTEMPT_%d", QM_FrameworkMagic());
+   Strategy_LoadAttemptState(TimeCurrent());
 
    QM_LogEvent(QM_INFO, "INIT_OK",
                "{\"card\":\"QM5_20015\",\"ea\":\"wti-halloween-winter\"}");
