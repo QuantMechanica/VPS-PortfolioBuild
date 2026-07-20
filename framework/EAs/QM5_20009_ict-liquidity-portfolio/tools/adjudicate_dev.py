@@ -735,6 +735,26 @@ RUNTIME_SNAPSHOT_ROLES = {
     "tester_defaults",
     "tester_groups_canonical",
 }
+RUNTIME_SNAPSHOT_PATHS: dict[str, str | None] = {
+    "launcher": "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/run_research_phase.ps1",
+    "launcher_support": "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/research_launcher_support.psm1",
+    "validator": "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/validate_research_run.py",
+    "generator": "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/generate_research_sets.py",
+    "report_auditor": "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/audit_mt5_report.py",
+    "protocol": "framework/EAs/QM5_20009_ict-liquidity-portfolio/docs/research_protocol_v5.json",
+    "sets_manifest": "framework/EAs/QM5_20009_ict-liquidity-portfolio/sets/manifest.json",
+    "sets_manifest_detached": "framework/EAs/QM5_20009_ict-liquidity-portfolio/sets/manifest.sha256",
+    "selected_set": None,
+    "ea_binary": "framework/EAs/QM5_20009_ict-liquidity-portfolio/QM5_20009_ict-liquidity-portfolio.ex5",
+    "runner_dev1_controller": "framework/scripts/run_dev1_smoke.ps1",
+    "runner_dev1_child": "framework/scripts/invoke_dev1_smoke_task.ps1",
+    "runner_smoke": "framework/scripts/run_smoke.ps1",
+    "runner_dispatch_resolver": "framework/scripts/resolve_backtest_target.py",
+    "runner_dispatch_pipeline": "framework/scripts/pipeline_dispatcher.py",
+    "runner_dispatch_gates": "framework/scripts/dl054_gates.py",
+    "tester_defaults": "framework/registry/tester_defaults.json",
+    "tester_groups_canonical": "framework/registry/tester_groups/Darwinex-Live_real.canonical.txt",
+}
 EXTERNAL_RUNTIME_ROLES = {
     "terminal_binary",
     "metatester_binary",
@@ -963,6 +983,19 @@ def _validate_runtime_toolchain(
         relative = _canonical_relative_path(
             row["repo_relative_path"], f"{context}.runtime_snapshot.{role}.relative"
         )
+        contracted_relative = RUNTIME_SNAPSHOT_PATHS[role]
+        if contracted_relative is not None:
+            _expect(
+                relative,
+                contracted_relative,
+                f"{context}.runtime_snapshot.{role}.relative",
+            )
+        elif PurePosixPath(relative).parent.as_posix() != (
+            "framework/EAs/QM5_20009_ict-liquidity-portfolio/sets"
+        ):
+            raise AdjudicationError(
+                f"{context}.runtime_snapshot.selected_set is outside the frozen set directory"
+            )
         expected_path = (repo_root / Path(*PurePosixPath(relative).parts)).resolve(
             strict=False
         )
@@ -1098,6 +1131,125 @@ def _validate_artifacts(
             )
         paths[normalized_path] = name
     return normalized, scalar_bindings
+
+
+def _validate_nested_validator_receipts(
+    *,
+    receipt: Mapping[str, Any],
+    key: CellKey,
+    artifact_bindings: Mapping[str, evidence_io.FileBinding],
+) -> None:
+    toolchain = _mapping(receipt["toolchain"], f"receipt {key.cell_id}.toolchain")
+    if set(toolchain) != RUNTIME_TOOLCHAIN_KEYS:
+        return
+
+    pre_binding = artifact_bindings["validator_pre"]
+    post_binding = artifact_bindings["validator_post"]
+    pre_path = Path(pre_binding.path)
+    post_path = Path(post_binding.path)
+    evidence_io.verify_detached(pre_path, Path(f"{pre_path}.sha256"))
+    evidence_io.verify_detached(post_path, Path(f"{post_path}.sha256"))
+    pre = _strict_canonical_json(pre_path, f"validator PRE {key.cell_id}")
+    post = _strict_canonical_json(post_path, f"validator POST {key.cell_id}")
+    _exact_keys(pre, VALIDATOR_PRE_KEYS, f"validator PRE {key.cell_id}")
+    _exact_keys(post, VALIDATOR_POST_KEYS, f"validator POST {key.cell_id}")
+
+    run_id = receipt["run_id"]
+    expected_validator_request = {
+        "phase": "DEV",
+        "symbol": key.market.symbol,
+        "timeframe": key.market.timeframe,
+        "variant": key.variant,
+        "from": key.market.from_date,
+        "to": key.market.to_date,
+    }
+    for payload, label, artifact_type in (
+        (pre, "PRE", "QM5_20009_RESEARCH_VALIDATOR_PRE_RECEIPT"),
+        (post, "POST", "QM5_20009_RESEARCH_VALIDATOR_POST_RECEIPT"),
+    ):
+        _expect(payload["schema_version"], 1, f"validator {label} {key.cell_id}.schema")
+        _expect(payload["artifact_type"], artifact_type, f"validator {label} {key.cell_id}.type")
+        _expect(payload["status"], "PASS", f"validator {label} {key.cell_id}.status")
+        _expect(payload["run_id"], run_id, f"validator {label} {key.cell_id}.run_id")
+        _expect(
+            payload["request"],
+            expected_validator_request,
+            f"validator {label} {key.cell_id}.request",
+        )
+
+    snapshot = _mapping(toolchain["runtime_snapshot"], f"receipt {key.cell_id}.runtime_snapshot")
+    external_runtime = _list(
+        toolchain["external_runtime"], f"receipt {key.cell_id}.external_runtime"
+    )
+    _expect(pre["runtime_snapshot"], snapshot, f"validator PRE {key.cell_id}.runtime_snapshot")
+    _expect(pre["external_runtime"], external_runtime, f"validator PRE {key.cell_id}.external_runtime")
+    _expect(post, toolchain["postflight"], f"validator POST {key.cell_id}.toolchain payload")
+    _expect(
+        post["preflight_receipt_sha256"],
+        pre_binding.sha256,
+        f"validator POST {key.cell_id}.preflight receipt binding",
+    )
+
+    freeze = _mapping(receipt["freeze_identity"], f"receipt {key.cell_id}.freeze_identity")
+    _exact_keys(
+        freeze,
+        {
+            "freeze_inputs_sha256",
+            "manifest_sha256",
+            "set_sha256",
+            "selected_data_sha256",
+            "phase_unlock_records",
+            "postflight_exact_match",
+        },
+        f"receipt {key.cell_id}.freeze_identity",
+    )
+    for name in (
+        "freeze_inputs_sha256",
+        "manifest_sha256",
+        "set_sha256",
+        "selected_data_sha256",
+    ):
+        expected_sha = evidence_io.require_sha256(
+            freeze[name], f"receipt {key.cell_id}.freeze_identity.{name}"
+        )
+        _expect(pre[name], expected_sha, f"validator PRE {key.cell_id}.{name}")
+        if name != "selected_data_sha256" or name in post:
+            _expect(post[name], expected_sha, f"validator POST {key.cell_id}.{name}")
+    if not isinstance(pre["selected_data"], list):
+        raise AdjudicationError(f"validator PRE {key.cell_id}.selected_data must be an array")
+    _expect(
+        evidence_io.canonical_payload_sha256(pre["selected_data"]),
+        pre["selected_data_sha256"],
+        f"validator PRE {key.cell_id}.selected_data_sha256",
+    )
+    _expect(
+        pre["phase_unlock_records"],
+        freeze["phase_unlock_records"],
+        f"validator PRE {key.cell_id}.phase_unlock_records",
+    )
+    _expect(
+        post["phase_unlock_records"],
+        freeze["phase_unlock_records"],
+        f"validator POST {key.cell_id}.phase_unlock_records",
+    )
+
+    roles = _mapping(snapshot["role_bindings"], f"receipt {key.cell_id}.runtime roles")
+    selected = _mapping(roles["selected_set"], f"receipt {key.cell_id}.selected set")
+    _expect(selected["sha256"], freeze["set_sha256"], f"receipt {key.cell_id}.selected set hash")
+    kind = "index" if key.market.symbol in {"NDX.DWX", "GDAXI.DWX"} else "fx"
+    expected_set_name = (
+        f"QM5_20009_{key.market.symbol.replace('.', '_')}_{key.market.timeframe}_"
+        f"{kind}_{key.variant}.set"
+    )
+    selected_relative = _canonical_relative_path(
+        snapshot["selected_set_repo_relative"],
+        f"receipt {key.cell_id}.selected_set_repo_relative",
+    )
+    _expect(
+        PurePosixPath(selected_relative).name,
+        expected_set_name,
+        f"receipt {key.cell_id}.selected set filename",
+    )
 
 
 def _validate_runner_summary(
@@ -1405,9 +1557,19 @@ def load_cell_evidence(policy: Policy, key: CellKey) -> CellEvidence:
     evidence_io.require_sha256(duplicate["canonical_deal_sequence_sha256"], f"receipt {key.cell_id}.deal hash")
     evidence_io.require_sha256(duplicate["run_fingerprint_sha256"], f"receipt {key.cell_id}.run hash")
 
-    toolchain, toolchain_hash = _validate_toolchain(receipt["toolchain"], f"receipt {key.cell_id}.toolchain")
+    toolchain, toolchain_hash = _validate_toolchain(
+        receipt["toolchain"],
+        f"receipt {key.cell_id}.toolchain",
+        expected_run_id=receipt["run_id"],
+        expected_snapshot_root=receipt_path.parent / "runtime_snapshot",
+    )
     artifacts, artifact_bindings = _validate_artifacts(
         receipt["artifacts"], context=f"receipt {key.cell_id}.artifacts", receipt_root=policy.receipt_root
+    )
+    _validate_nested_validator_receipts(
+        receipt=receipt,
+        key=key,
+        artifact_bindings=artifact_bindings,
     )
     report_bindings = [artifact_bindings["raw_reports[0]"], artifact_bindings["raw_reports[1]"]]
     native_drawdown = _validate_runner_summary(
