@@ -5,7 +5,7 @@
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA: QM5_1624
+// QuantMechanica V5 EA: QM5_1624 (archived duplicate; see P1.9 re-key evidence)
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"

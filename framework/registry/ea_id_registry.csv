@@ -145,7 +145,8 @@ ea_id,slug,strategy_id,status,owner,created_at
 1154,unger-dax-4h-high-breakout,eb97a148-0af9-5b9c-878c-25fb5dfa34f9,active,Research,2026-05-17
 1155,unger-nasdaq-atr-spike-short,eb97a148-0af9-5b9c-878c-25fb5dfa34f9,active,Research,2026-05-17
 1156,caldeira-cointegration-pairs-fx,afab7a6f-c3c8-51ae-a609-f376744beb8e,active,Research,2026-05-18
-1157,qp-stress-reversal-sp500,7ede58dd-d184-5099-9d48-7a65de230853,active,Research,2026-05-17
+1157,qp-stress-reversal-sp500,7ede58dd-d184-5099-9d48-7a65de230853,retired,Research,2026-05-17
+1157,plastun-crude-oil-autumn,afab7a6f-c3c8-51ae-a609-f376744beb8e,active,Development,2026-06-18
 1158,qp-january-barometer,7ede58dd-d184-5099-9d48-7a65de230853,active,Research,2026-05-17
 1159,qp-spy-overnight-ma20,7ede58dd-d184-5099-9d48-7a65de230853,active,Research,2026-05-17
 1160,qp-gold-christmas-drift,7ede58dd-d184-5099-9d48-7a65de230853,active,Research,2026-05-17
@@ -2957,7 +2958,7 @@ QM5_11693,strat-mom,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Development,2026
 12071,enhanced-fvg-smc-mech,gold-003,active,Research,2026-05-26
 12072,enhanced-zone-recovery-safe,gold-004,active,Research,2026-05-26
 12073,enhanced-crt-amd-breakout,gold-005,active,Research,2026-05-26
-12074,QM5_1157_qp-stress-reversal-sp500,7ede58dd-d184-5099-9d48-7a65de230853,active,DeepSeek,2026-05-26
+12074,qp-stress-reversal-sp500,7ede58dd-d184-5099-9d48-7a65de230853,active,DeepSeek,2026-05-26
 12075,QM5_1158_qp-january-barometer,7ede58dd-d184-5099-9d48-7a65de230853,active,DeepSeek,2026-05-26
 12076,QM5_1223_hopwood-dmi-cross-h1,6e967762-b26d-59a3-b076-35c17f2e7c36,active,DeepSeek,2026-05-26
 12077,QM5_1228_hopwood-stochastic-cross-h1,6e967762-b26d-59a3-b076-35c17f2e7c36,active,DeepSeek,2026-05-26
@@ -3130,9 +3131,9 @@ QM5_11693,strat-mom,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Development,2026
 12244,QM5_1595_sperandeo-2b-pivot-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,DeepSeek,2026-05-26
 12245,QM5_1622_demark-td-termination-count-alt-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,DeepSeek,2026-05-26
 12246,QM5_1623_hopwood-bermaui-dss-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,DeepSeek,2026-05-26
-12247,QM5_1624_ehlers-adaptive-cg-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,DeepSeek,2026-05-26
+12247,ehlers-adaptive-cg-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,DeepSeek,2026-05-26
 12248,QM5_1629_ehlers-cybernetic-cycle-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,DeepSeek,2026-05-26
-12249,QM5_1643_aa-overnight-mom,ede348b4-0fa7-5be1-baa8-09e9089b67b7,active,DeepSeek,2026-05-26
+12249,aa-overnight-mom,ede348b4-0fa7-5be1-baa8-09e9089b67b7,retired,DeepSeek,2026-05-26
 12250,QM5_1645_carney-cypher-pattern-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,DeepSeek,2026-05-26
 12251,QM5_1647_ehlers-ebsw-cycle-extraction-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,DeepSeek,2026-05-26
 12252,QM5_1647_hopwood-bermaui-macd-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,DeepSeek,2026-05-26

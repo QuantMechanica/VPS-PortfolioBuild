@@ -1,15 +1,15 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_1619 Unknown Strategy"
+#property description "QM5_12247 Unknown Strategy"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA: QM5_1619
+// QuantMechanica V5 EA: QM5_12247
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 1619;
+input int    qm_ea_id                   = 12247;
 input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
