@@ -144,12 +144,28 @@ CONFIG = {
     "hb_cockpit_warn_min": 15,
     "hb_cockpit_fail_min": 45,
 
-    # ── check 8 / merge: monitor self-staleness (evaluated by the consumer) ──
+    # ── check 8: GoogleDriveFS liveness (G: is a per-user mount; SYSTEM can
+    #    NEVER Test-Path G:\, so this check is strictly process-based) ─────────
+    # 2026-07-20 incident: GoogleDriveFS died after a console disconnect; G:
+    # vanished for every consumer (nightly backup FATAL, vault sync dead,
+    # morning-brief vault copy into the void) with zero alarms. The one
+    # sanctioned self-heal: Start-ScheduledTask QM_GoogleDrive_AtLogon
+    # (InteractiveToken; starts DriveFS in the logged-on qm-admin session) —
+    # exactly the manual recovery that fixed the incident. This is the
+    # monitor's ONLY mutating action; it is idempotent and touches no farm
+    # state. Heal only attempted when a user session is active.
+    "gdrive_heal_task": "QM_GoogleDrive_AtLogon",
+    "gdrive_heal_enabled": True,
+
+    # ── check 9 / merge: monitor self-staleness (evaluated by the consumer) ──
     "monitor_self_stale_warn_min": 25,   # merge_into_health injects WARN past this
     "monitor_self_stale_fail_min": 45,   # ...and FAIL past this (monitor task dead)
 
     # ── infra ───────────────────────────────────────────────────────────────
-    "powershell_timeout_sec": 25,
+    # 50s (was 25): the probe enumerates ~75 QM_* tasks + a full Win32_Process
+    # scan; under factory load the 05:00Z run blew 25s and degraded every
+    # probe-based check to WARN (2026-07-20). Target runtime stays <30s normal.
+    "powershell_timeout_sec": 50,
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -272,8 +288,15 @@ foreach ($t in Get-ScheduledTask -TaskName 'QM_*') {
         NextRun    = if ($i.NextRunTime) { $i.NextRunTime.ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ') } else { $null }
     }
 }
-$workers = @(Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
-[pscustomobject]@{ tasks = $tasks; worker_count = $workers } | ConvertTo-Json -Depth 4 -Compress
+$procs = @(Get-CimInstance Win32_Process)
+$workers = @($procs | Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
+# CIM, not Get-Process: from the SYSTEM task context Get-Process does NOT
+# enumerate other users' processes here (verified 2026-07-20), Win32_Process does
+# — it is the same proven path the worker count uses. Interactive-session proxy:
+# explorer.exe only exists inside a logged-on desktop session.
+$gdrive = @($procs | Where-Object { $_.Name -eq 'GoogleDriveFS.exe' }).Count
+$sessions = @($procs | Where-Object { $_.Name -eq 'explorer.exe' }).Count
+[pscustomobject]@{ tasks = $tasks; worker_count = $workers; gdrive_count = $gdrive; active_sessions = $sessions } | ConvertTo-Json -Depth 4 -Compress
 """
 
 
@@ -680,6 +703,48 @@ def check_pump_blockade() -> list[dict]:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+#  CHECK 8 — GoogleDriveFS liveness (+ sanctioned auto-heal)
+# ─────────────────────────────────────────────────────────────────────────────
+def check_gdrive(probe: dict) -> list[dict]:
+    """Process-based G:-mount proxy. SYSTEM cannot see the per-user G: drive,
+    so we watch the GoogleDriveFS process count instead. On zero, attempt the
+    ONE sanctioned heal (Start-ScheduledTask QM_GoogleDrive_AtLogon) when an
+    interactive session exists, then report WARN(healed)/FAIL(down)."""
+    ev = "powershell Get-Process GoogleDriveFS"
+    if probe.get("error"):
+        return [finding("gdrive_fs", WARN,
+                        f"could not probe GoogleDriveFS processes: {probe['error']}",
+                        evidence=ev)]
+    count = int(probe.get("gdrive_count") or 0)
+    if count > 0:
+        return [finding("gdrive_fs", OK, f"GoogleDriveFS alive ({count} proc)",
+                        value=count, threshold=1, evidence=ev)]
+
+    sessions = int(probe.get("active_sessions") or 0)
+    detail = ("GoogleDriveFS NOT running — G: absent for every consumer "
+              "(vault sync, nightly backup, morning-brief vault copy)")
+    hint = f"Start-ScheduledTask {CONFIG['gdrive_heal_task']} (needs an active user session)"
+    if not (CONFIG["gdrive_heal_enabled"] and sessions > 0):
+        return [finding("gdrive_fs", FAIL,
+                        detail + (f"; no active user session — heal impossible" if sessions == 0 else ""),
+                        value=0, threshold=1, hint=hint, evidence=ev)]
+    try:
+        subprocess.run(
+            ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command",
+             f"Start-ScheduledTask -TaskName '{CONFIG['gdrive_heal_task']}'"],
+            capture_output=True, text=True, timeout=CONFIG["powershell_timeout_sec"],
+            creationflags=_creationflags_no_window(),
+        )
+        return [finding("gdrive_fs", WARN,
+                        detail + f" — auto-heal triggered ({CONFIG['gdrive_heal_task']}); "
+                                 f"verify recovery next cycle",
+                        value=0, threshold=1, hint=hint, evidence=ev)]
+    except Exception as exc:  # noqa: BLE001
+        return [finding("gdrive_fs", FAIL, detail + f"; auto-heal failed: {exc}",
+                        value=0, threshold=1, hint=hint, evidence=ev)]
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 #  CHECK 7 — heartbeats
 # ─────────────────────────────────────────────────────────────────────────────
 def _heartbeat(name: str, path: Path, warn_min: float, fail_min: float,
@@ -971,6 +1036,7 @@ def main() -> int:
     findings += _run_check("worker_health", check_worker_health, probe)
     findings += _run_check("pump_blockade", check_pump_blockade)
     findings += _run_check("heartbeats", check_heartbeats)
+    findings += _run_check("gdrive_fs", check_gdrive, probe)
 
     if con is not None:
         try:
