@@ -7,7 +7,7 @@
 ; sleeve: fx
 ; variant: rr_low
 ; changed_parameter: strategy_b_min_rr
-; freeze_inputs_sha256: 5f7a7e821c054cfb619b31e08e0a884d3401b5f0963cbe5752d1fa3ea0ea956c
+; freeze_inputs_sha256: 94b60407c1c7996bc7089ff020f4d12d04e8aa3ee1be322ef5eb51dfcb256581
 ; ea_sha256: a94e24c3a486011662ea0fc82853569663b0a0b93c85f114d545a589d0812c04
 ; rules_sha256: 03970dc0b8576010d1614fe3774c7064fbeb983ece0f10d6510ba89a6f79ccbc
 ; contract_sha256: 98a500ae4ecb9ed3733199fee137d2c357e4c4b00d9907feb9aae39e783fc688
