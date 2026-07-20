@@ -30,11 +30,11 @@ if (-not $validateSet) {
 }
 
 $allowedTerminals = @($validateSet.PositionalArguments | ForEach-Object { [string]$_.SafeGetValue() })
-$expectedTerminals = @("any", "DEV1", "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10")
+$expectedTerminals = @("any", "DEV1", "DEV2", "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10")
 if ([string]::Join("|", $allowedTerminals) -cne [string]::Join("|", $expectedTerminals)) {
     throw "Unexpected Terminal ValidateSet: $([string]::Join(', ', $allowedTerminals))"
 }
-foreach ($forbidden in @("T_Live", "DEV2", "LOCAL", "T11")) {
+foreach ($forbidden in @("T_Live", "DEV3", "LOCAL", "T11")) {
     if ($allowedTerminals -contains $forbidden) {
         throw "Forbidden terminal '$forbidden' is present in Terminal ValidateSet."
     }
@@ -80,6 +80,7 @@ Invoke-Expression $resolveRootAst.Extent.Text
 
 $script:existingTerminalRoots = @(
     "D:\QM\mt5\DEV1",
+    "D:\QM\mt5\DEV2",
     "D:\QM\mt5\T1"
 )
 function Test-Path {
@@ -97,10 +98,13 @@ function Resolve-Path {
 if ((Resolve-TerminalRoot -TerminalName "DEV1") -cne "D:\QM\mt5\DEV1") {
     throw "Explicit DEV1 did not resolve to D:\QM\mt5\DEV1."
 }
+if ((Resolve-TerminalRoot -TerminalName "DEV2") -cne "D:\QM\mt5\DEV2") {
+    throw "Explicit DEV2 did not resolve to D:\QM\mt5\DEV2."
+}
 if ((Resolve-TerminalRoot -TerminalName "T1") -cne "D:\QM\mt5\T1") {
     throw "Factory terminal T1 no longer resolves normally."
 }
-foreach ($forbidden in @("T_Live", "DEV2", "LOCAL", "..\T_Live")) {
+foreach ($forbidden in @("T_Live", "DEV3", "LOCAL", "..\T_Live")) {
     try {
         $null = Resolve-TerminalRoot -TerminalName $forbidden
         throw "Forbidden terminal '$forbidden' was accepted by Resolve-TerminalRoot."
@@ -161,8 +165,8 @@ $expectedFactoryCandidates = @("T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "
 if ([string]::Join("|", $script:factoryCandidates) -cne [string]::Join("|", $expectedFactoryCandidates)) {
     throw "-Terminal any fallback candidates drifted: $([string]::Join(', ', $script:factoryCandidates))"
 }
-if ($script:factoryCandidates -contains "DEV1") {
-    throw "DEV1 leaked into the -Terminal any fallback candidate list."
+if ($script:factoryCandidates -contains "DEV1" -or $script:factoryCandidates -contains "DEV2") {
+    throw "An isolated development terminal leaked into the -Terminal any fallback candidate list."
 }
 
 $runSmokeText = [System.IO.File]::ReadAllText($scriptPath)

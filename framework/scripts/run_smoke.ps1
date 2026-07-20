@@ -9,7 +9,7 @@ param(
     [int]$Year,
     [string]$FromDate,
     [string]$ToDate,
-    [ValidateSet("any", "DEV1", "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10")]
+    [ValidateSet("any", "DEV1", "DEV2", "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10")]
     [string]$Terminal = "T1",
     [string]$Expert,
     [string]$Period = "H1",
@@ -63,6 +63,9 @@ $ErrorActionPreference = "Stop"
 if (($Terminal -ieq "DEV1") -and $AllowRunningTerminal.IsPresent) {
     throw "Refusing -Terminal DEV1 with -AllowRunningTerminal. DEV1 smoke runs require an idle terminal."
 }
+if (($Terminal -ieq "DEV2") -and $AllowRunningTerminal.IsPresent) {
+    throw "Refusing -Terminal DEV2 with -AllowRunningTerminal. DEV2 smoke runs require an idle terminal."
+}
 
 if ($Terminal -ieq "DEV1") {
     try {
@@ -74,6 +77,18 @@ if ($Terminal -ieq "DEV1") {
     }
     if ($currentSid -cne $dev1Sid) {
         throw "Refusing -Terminal DEV1 under Windows SID '$currentSid'. DEV1 requires the isolated '$env:COMPUTERNAME\QMDev1' identity (SID '$dev1Sid')."
+    }
+}
+if ($Terminal -ieq "DEV2") {
+    try {
+        $dev2Account = New-Object System.Security.Principal.NTAccount("$env:COMPUTERNAME\QMDev2")
+        $dev2Sid = $dev2Account.Translate([System.Security.Principal.SecurityIdentifier]).Value
+        $currentSid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+    } catch {
+        throw "Unable to verify the required DEV2 Windows identity '$env:COMPUTERNAME\QMDev2': $($_.Exception.Message)"
+    }
+    if ($currentSid -cne $dev2Sid) {
+        throw "Refusing -Terminal DEV2 under Windows SID '$currentSid'. DEV2 requires the isolated '$env:COMPUTERNAME\QMDev2' identity (SID '$dev2Sid')."
     }
 }
 
@@ -408,9 +423,9 @@ function Resolve-TerminalRoot {
 
     $root = Join-Path "D:\QM\mt5" $TerminalName
     $isFactoryTerminal = $TerminalName -match '^T([1-9]|10)$'
-    $isExplicitDevTerminal = $TerminalName -ieq 'DEV1'
+    $isExplicitDevTerminal = $TerminalName -match '^DEV[12]$'
     if (-not $isFactoryTerminal -and -not $isExplicitDevTerminal) {
-        throw "Refusing terminal '$TerminalName'. Allowed terminals are factory T1..T10 plus explicit development terminal DEV1; T_Live is off limits."
+        throw "Refusing terminal '$TerminalName'. Allowed terminals are factory T1..T10 plus explicit development terminals DEV1/DEV2; T_Live is off limits."
     }
     if (-not (Test-Path -LiteralPath $root -PathType Container)) {
         throw "Terminal root does not exist: $root"
@@ -848,7 +863,7 @@ function Set-TesterGroupsCommission {
         # Even a correctly dimensioned native block was ignored in an isolated
         # Build-5833 canary because the offline tester never activated the custom
         # groups file. Do not expose a value that the report silently drops.
-        throw 'UNAPPLIED_NATIVE_COMMISSION_OVERRIDE: DEV1 requires external deal-level cost reconciliation'
+        throw 'UNAPPLIED_NATIVE_COMMISSION_OVERRIDE: isolated DEV lanes require external deal-level cost reconciliation'
     }
     [System.IO.File]::WriteAllText($target, $text, [System.Text.Encoding]::Unicode)
     $canonicalHash = (Get-FileHash -LiteralPath $canonical -Algorithm SHA256).Hash.ToLowerInvariant()
@@ -1614,7 +1629,7 @@ $terminalRoot = Resolve-TerminalRoot -TerminalName $effectiveTerminal
 $terminalExe = Resolve-TerminalExecutable -TerminalRoot $terminalRoot
 Write-Host ("run_smoke.stage=resolved_terminal_exe terminal={0} exe='{1}'" -f $effectiveTerminal, $terminalExe)
 
-# Resolve every DEV1 isolation boundary before mutating terminal configuration,
+# Resolve every isolated development-lane boundary before mutating terminal configuration,
 # deploying an expert, or creating report directories.
 $resolvedReportRoot = [System.IO.Path]::GetFullPath($ReportRoot)
 if ($effectiveTerminal -ieq "DEV1") {
@@ -1623,6 +1638,14 @@ if ($effectiveTerminal -ieq "DEV1") {
     if (($resolvedReportRoot -ine $dev1ReportRoot) -and
         (-not $resolvedReportRoot.StartsWith($dev1Prefix, [System.StringComparison]::OrdinalIgnoreCase))) {
         throw "DEV1 ReportRoot must stay under 'D:\QM\reports\dev1'. Got: $resolvedReportRoot"
+    }
+}
+if ($effectiveTerminal -ieq "DEV2") {
+    $dev2ReportRoot = [System.IO.Path]::GetFullPath("D:\QM\reports\dev2")
+    $dev2Prefix = $dev2ReportRoot.TrimEnd('\') + '\'
+    if (($resolvedReportRoot -ine $dev2ReportRoot) -and
+        (-not $resolvedReportRoot.StartsWith($dev2Prefix, [System.StringComparison]::OrdinalIgnoreCase))) {
+        throw "DEV2 ReportRoot must stay under 'D:\QM\reports\dev2'. Got: $resolvedReportRoot"
     }
 }
 
@@ -1663,7 +1686,7 @@ $runTag = (Get-Date).ToUniversalTime().ToString("yyyyMMdd_HHmmss")
 $eaLabel = "QM5_{0}" -f $EAId
 $reportDir = Join-Path $resolvedReportRoot "$eaLabel\$runTag"
 $rawDir = Join-Path $reportDir "raw"
-$frameworkEvidenceDir = if ($effectiveTerminal -ieq "DEV1") {
+$frameworkEvidenceDir = if ($effectiveTerminal -ieq "DEV1" -or $effectiveTerminal -ieq "DEV2") {
     Join-Path $resolvedReportRoot "_framework_evidence\22"
 } else {
     "D:\QM\reports\framework\22"
@@ -2231,6 +2254,8 @@ Write-Output "run_smoke.evidence=$evidencePath"
 
 if ($effectiveTerminal -ieq "DEV1") {
     Write-Output "run_smoke.stage=post_run_pump_skipped (DEV1 isolation)"
+} elseif ($effectiveTerminal -ieq "DEV2") {
+    Write-Output "run_smoke.stage=post_run_pump_skipped (DEV2 isolation)"
 } elseif (Test-Path 'D:\QM\strategy_farm\state\FACTORY_OFF.flag') {
     Write-Output "run_smoke.stage=post_run_pump_skipped (FACTORY_OFF.flag)"
 } else {
