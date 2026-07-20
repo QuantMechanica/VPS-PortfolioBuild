@@ -126,6 +126,23 @@ row, work item, priority change, dispatch tick, compile, or MT5 tester run was
 started. The two anchor verdicts and strict-frontier de-duplication above remain
 the controlling decision, so a Q02 replay would still duplicate completed work.
 
+### Paced-fleet checkpoint — 2026-07-20T14:00:09Z
+
+A fresh read-only checkpoint found eight active backtests against the unchanged
+pause threshold of seven. The work mix has changed since the prior checkpoint,
+but capacity has not cleared:
+
+| Phase | Active |
+|---|---:|
+| Q02 | 4 |
+| Q04 | 4 |
+
+The active rows occupy T2, T3, T4, T6, T7, T8, T9, and T10. The scan frontier
+and anchor chains remain unchanged, so no legitimate new pair or anchor Q02
+repair exists to enqueue. Per the explicit CPU-ceiling stop condition, this
+checkpoint did not create or mutate a card, EA, registry row, work item,
+priority, dispatch, tester process, or compiled artifact.
+
 ## Evidence And Safety
 
 - Scan: `docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md`.
