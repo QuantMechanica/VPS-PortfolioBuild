@@ -277,6 +277,17 @@ def test_bound_artifact_size_or_hash_drift_is_rejected(tmp_path: Path) -> None:
         _validate(bundle)
 
 
+@pytest.mark.parametrize("artifact_key", ["verdict_path", "inventory_path", "evidence_path"])
+def test_every_detached_sidecar_is_mandatory_and_exact(
+    tmp_path: Path, artifact_key: str
+) -> None:
+    bundle = _build_bundle(tmp_path)
+    sidecar = Path(f"{bundle[artifact_key]}.sha256")
+    sidecar.write_text("0" * 64 + f"  {bundle[artifact_key].name}\n", encoding="ascii")
+    with pytest.raises(fence.FenceError, match="detached hash mismatch"):
+        _validate(bundle)
+
+
 def test_detached_sidecar_semantics_are_verified_even_when_its_hash_is_rebound(
     tmp_path: Path,
 ) -> None:
