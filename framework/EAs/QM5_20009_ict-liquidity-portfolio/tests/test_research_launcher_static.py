@@ -5,6 +5,7 @@ import json
 import re
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -136,6 +137,50 @@ def test_controller_child_and_smoke_have_no_moving_repo_literal() -> None:
         encoding="utf-8-sig"
     )
     assert "$startInfo.WorkingDirectory = ConvertTo-QmFullPath -Path (Join-Path $PSScriptRoot '..\\..')" in child
+
+
+def test_dispatch_resolver_imports_only_snapshot_relative_local_dependencies(
+    tmp_path: Path,
+) -> None:
+    snapshot_repo = tmp_path / "runtime_snapshot" / "repo"
+    relative_files = (
+        "framework/scripts/resolve_backtest_target.py",
+        "framework/scripts/pipeline_dispatcher.py",
+        "framework/scripts/dl054_gates.py",
+        "framework/registry/tester_defaults.json",
+    )
+    repo_root = EA_ROOT.parents[2]
+    for relative in relative_files:
+        destination = snapshot_repo / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(repo_root / relative, destination)
+
+    resolver = snapshot_repo / relative_files[0]
+    completed = subprocess.run(
+        [sys.executable, "-B", str(resolver), "--help"],
+        cwd=snapshot_repo,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+    gate_path = subprocess.run(
+        [
+            sys.executable,
+            "-B",
+            "-c",
+            (
+                "from framework.scripts.dl054_gates import TESTER_DEFAULTS_PATH;"
+                "print(TESTER_DEFAULTS_PATH.resolve())"
+            ),
+        ],
+        cwd=snapshot_repo,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert gate_path.returncode == 0, gate_path.stdout + gate_path.stderr
+    assert Path(gate_path.stdout.strip()) == (snapshot_repo / relative_files[3]).resolve()
 
 
 def test_powershell_sources_parse_without_executing_launcher() -> None:

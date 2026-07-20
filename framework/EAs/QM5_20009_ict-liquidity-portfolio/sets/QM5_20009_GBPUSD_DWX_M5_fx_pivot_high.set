@@ -7,12 +7,12 @@
 ; sleeve: fx
 ; variant: pivot_high
 ; changed_parameter: strategy_b_pivot_wing
-; freeze_inputs_sha256: 94b60407c1c7996bc7089ff020f4d12d04e8aa3ee1be322ef5eb51dfcb256581
+; freeze_inputs_sha256: dae1683094cf301bdf65d3e14b26163d1ffbe9d47de26eec040c52a2bed8f37e
 ; ea_sha256: a94e24c3a486011662ea0fc82853569663b0a0b93c85f114d545a589d0812c04
 ; rules_sha256: 03970dc0b8576010d1614fe3774c7064fbeb983ece0f10d6510ba89a6f79ccbc
 ; contract_sha256: 98a500ae4ecb9ed3733199fee137d2c357e4c4b00d9907feb9aae39e783fc688
-; protocol_sha256: 43e710a8586e036e21dc4d527f1490c1e79816c74165a62f6dc81915d17f8806
-; generator_sha256: aa8b8b2111d0de429d394f30b02a25924e07e42c0bf25323d9279925b6e5ade0
+; protocol_sha256: f30c524eddb48c57228cebab35a23ceb7a69a83051637ace648a1538234d47e0
+; generator_sha256: 6d68b97f7b87558c48aadc894a11e0263af620a849057d5946c5579995703163
 ; ex5_sha256: 2b1d663fb032bd516a007dd5eee1973d9a53cb2f80d0d5cb875ed342a247fcb0
 ;==========================================================
 qm_ea_id=20009
