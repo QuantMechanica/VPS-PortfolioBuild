@@ -231,8 +231,8 @@ try {
     $disarmResultPath = ConvertTo-QmFullPath -Path ([string]$lease.disarm_result_path)
     if (-not (Test-QmPathWithin -Path $groupsSourcePath -Root $controlDirectory) -or
         -not (ConvertTo-QmFullPath -Path ([string]$lease.tester_groups_target_path)).Equals($script:TesterGroupsDev2Path, [System.StringComparison]::OrdinalIgnoreCase) -or
-        -not $resultPath.Equals((Join-Path $runDirectory 'output\cleanup_lease.result.json'), [System.StringComparison]::OrdinalIgnoreCase) -or
-        -not $disarmResultPath.Equals((Join-Path $runDirectory 'output\cleanup_lease.disarm.result.json'), [System.StringComparison]::OrdinalIgnoreCase) -or
+        -not $resultPath.Equals((Join-Path $runDirectory 'control\cleanup_lease.result.json'), [System.StringComparison]::OrdinalIgnoreCase) -or
+        -not $disarmResultPath.Equals((Join-Path $runDirectory 'control\cleanup_lease.disarm.result.json'), [System.StringComparison]::OrdinalIgnoreCase) -or
         $groupsExpectedSha256 -notmatch '^[0-9a-f]{64}$') {
         throw 'Cleanup lease tester-groups/result contract drifted.'
     }
@@ -248,8 +248,8 @@ try {
     try {
         $candidateRun = ConvertTo-QmFullPath -Path (Split-Path -Parent (Split-Path -Parent $LeasePath))
         if (Test-QmPathWithin -Path $candidateRun -Root $script:Dev2ReportsRoot) {
-            $resultPath = Join-Path $candidateRun 'output\cleanup_lease.result.json'
-            $disarmResultPath = Join-Path $candidateRun 'output\cleanup_lease.disarm.result.json'
+            $resultPath = Join-Path $candidateRun 'control\cleanup_lease.result.json'
+            $disarmResultPath = Join-Path $candidateRun 'control\cleanup_lease.disarm.result.json'
         }
     } catch {
     }

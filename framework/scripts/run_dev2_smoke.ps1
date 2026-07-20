@@ -56,6 +56,8 @@ $script:TaskNamePrefix = 'QM_DEV2_SMOKE_'
 $script:CleanupTaskNamePrefix = 'QM_DEV2_CLEANUP_'
 $script:CleanupHelperSourcePath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot 'cleanup_dev2_account_lease.ps1'))
 $script:CleanupLeaseGraceSeconds = 900
+$script:PerAttemptOverheadSeconds = 600
+$script:ControllerFinalizationMarginSeconds = 600
 $script:TesterGroupsCanonicalPath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\registry\tester_groups\Darwinex-Live_real.canonical.txt'))
 $script:TesterGroupsDev2Path = [System.IO.Path]::GetFullPath('D:\QM\mt5\DEV2\MQL5\Profiles\Tester\Groups\Darwinex-Live_real.txt')
 $script:AllowedSymbols = @('NDX.DWX', 'GDAXI.DWX', 'EURUSD.DWX', 'GBPUSD.DWX', 'USDJPY.DWX', 'XAUUSD.DWX')
@@ -123,6 +125,15 @@ function ConvertTo-QmFullPath {
         throw 'Paths may not contain CR, LF, or NUL.'
     }
     return [System.IO.Path]::GetFullPath($Path)
+}
+
+function Get-QmMinimumDev2ControllerTimeoutSeconds {
+    param(
+        [Parameter(Mandatory = $true)][ValidateRange(1, 10)][int]$MaximumRunAttempts,
+        [Parameter(Mandatory = $true)][ValidateRange(60, 28800)][int]$RunTimeoutSeconds
+    )
+    return ($MaximumRunAttempts * ($RunTimeoutSeconds + $script:PerAttemptOverheadSeconds)) +
+        $script:ControllerFinalizationMarginSeconds
 }
 
 function Test-QmPathWithin {
@@ -709,6 +720,38 @@ function Restore-QmDev2TesterGroupsCanonical {
     return $restoredHash
 }
 
+function Assert-QmImmediateCleanupDisarmReceipt {
+    param(
+        [Parameter(Mandatory = $true)][object]$Receipt,
+        [Parameter(Mandatory = $true)][string]$ExpectedSid,
+        [Parameter(Mandatory = $true)][string]$ExpectedTargetTaskName,
+        [Parameter(Mandatory = $true)][string]$ExpectedCleanupTaskName,
+        [Parameter(Mandatory = $true)][string]$ExpectedContainmentResultPath
+    )
+    foreach ($field in @(
+        'success', 'containment_verified', 'lease_disarmed',
+        'account_restored_disabled', 'target_task_registered',
+        'cleanup_task_registered'
+    )) {
+        if ($null -eq $Receipt.PSObject.Properties[$field] -or
+            $Receipt.PSObject.Properties[$field].Value -isnot [bool]) {
+            throw "Immediate cleanup receipt field is not Boolean: $field"
+        }
+    }
+    if ([string]$Receipt.artifact_type -cne 'QM_DEV2_ACCOUNT_CLEANUP_DISARM_RESULT' -or
+        -not $Receipt.success -or -not $Receipt.containment_verified -or
+        -not $Receipt.lease_disarmed -or -not $Receipt.account_restored_disabled -or
+        [int]$Receipt.owner_process_count -ne 0 -or [int]$Receipt.dev2_root_process_count -ne 0 -or
+        $Receipt.target_task_registered -or $Receipt.cleanup_task_registered -or
+        [string]$Receipt.expected_sid -cne $ExpectedSid -or
+        [string]$Receipt.target_task_name -cne $ExpectedTargetTaskName -or
+        [string]$Receipt.cleanup_task_name -cne $ExpectedCleanupTaskName -or
+        -not (ConvertTo-QmFullPath -Path ([string]$Receipt.containment_result_path)).Equals(
+            (ConvertTo-QmFullPath -Path $ExpectedContainmentResultPath), [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw 'Immediate SYSTEM cleanup lease result failed its containment contract.'
+    }
+}
+
 $mutex = $null
 $mutexAcquired = $false
 $taskRegistered = $false
@@ -825,11 +868,16 @@ try {
     $logPath = Join-Path $outputDirectory 'run.log'
     $nonce = [guid]::NewGuid().ToString('N')
     $taskName = "$($script:TaskNamePrefix)$([guid]::NewGuid().ToString('N'))"
-    $effectiveControllerTimeout = if ($ControllerTimeoutSeconds -gt 0) {
-        $ControllerTimeoutSeconds
-    } else {
-        [Math]::Min(172800, ($Runs * ($TimeoutSeconds + 120)) + 600)
+    $maximumRunAttempts = [Math]::Min(10, ($Runs + 2))
+    $minimumControllerTimeout = Get-QmMinimumDev2ControllerTimeoutSeconds `
+        -MaximumRunAttempts $maximumRunAttempts -RunTimeoutSeconds $TimeoutSeconds
+    if ($minimumControllerTimeout -gt 172800) {
+        throw "The bounded $maximumRunAttempts-attempt controller requires $minimumControllerTimeout seconds, above the 172800-second hard limit."
     }
+    if ($ControllerTimeoutSeconds -gt 0 -and $ControllerTimeoutSeconds -lt $minimumControllerTimeout) {
+        throw "ControllerTimeoutSeconds=$ControllerTimeoutSeconds is below the bounded $maximumRunAttempts-attempt minimum $minimumControllerTimeout."
+    }
+    $effectiveControllerTimeout = if ($ControllerTimeoutSeconds -gt 0) { $ControllerTimeoutSeconds } else { $minimumControllerTimeout }
 
     $smokeParameters = [ordered]@{
         EAId = $EAId
@@ -876,6 +924,10 @@ try {
         run_smoke_sha256 = $runSmokeSha256
         program_sha256 = $programSha256
         smoke_parameters = $smokeParameters
+        maximum_run_attempts = $maximumRunAttempts
+        per_attempt_overhead_seconds = $script:PerAttemptOverheadSeconds
+        controller_finalization_margin_seconds = $script:ControllerFinalizationMarginSeconds
+        controller_timeout_seconds = $effectiveControllerTimeout
     }
     Write-QmRequestFile -Request $request -Path $requestPath
 
@@ -883,8 +935,8 @@ try {
     $cleanupHelperPath = Join-Path $controlDirectory 'cleanup_dev2_account_lease.ps1'
     $cleanupGroupsSourcePath = Join-Path $controlDirectory 'Darwinex-Live_real.canonical.txt'
     $cleanupLeasePath = Join-Path $controlDirectory 'cleanup_lease.json'
-    $cleanupResultPath = Join-Path $outputDirectory 'cleanup_lease.result.json'
-    $cleanupDisarmResultPath = Join-Path $outputDirectory 'cleanup_lease.disarm.result.json'
+    $cleanupResultPath = Join-Path $controlDirectory 'cleanup_lease.result.json'
+    $cleanupDisarmResultPath = Join-Path $controlDirectory 'cleanup_lease.disarm.result.json'
     [System.IO.File]::Copy($script:CleanupHelperSourcePath, $cleanupHelperPath, $false)
     [System.IO.File]::Copy($script:TesterGroupsCanonicalPath, $cleanupGroupsSourcePath, $false)
     foreach ($protectedCopy in @($cleanupHelperPath, $cleanupGroupsSourcePath)) {
@@ -1070,6 +1122,46 @@ try {
             $cleanupLeaseDisarmed = $true
         } catch {
             $cleanupErrors.Add("cleanup_lease_disarm: $($_.Exception.Message)")
+        }
+    }
+    if ($cleanupErrors.Count -gt 0 -and $cleanupTaskRegistered -and -not [string]::IsNullOrWhiteSpace($cleanupTaskName)) {
+        try {
+            # The long TTL/reboot triggers remain armed as a crash backstop, but
+            # a containment failure must invoke the SYSTEM repair immediately.
+            Start-ScheduledTask -TaskName $cleanupTaskName -TaskPath $script:TaskPath -ErrorAction Stop
+            $cleanupFallbackDeadline = (Get-Date).ToUniversalTime().AddMinutes(2)
+            do {
+                Start-Sleep -Milliseconds 500
+                if (Test-Path -LiteralPath $cleanupDisarmResultPath -PathType Leaf) {
+                    break
+                }
+                if (Test-Path -LiteralPath $cleanupResultPath -PathType Leaf) {
+                    $interimCleanup = Get-Content -LiteralPath $cleanupResultPath -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
+                    if ([bool]$interimCleanup.success -eq $false) {
+                        throw 'Immediate SYSTEM cleanup lease reported failed containment; retry lease remains armed.'
+                    }
+                }
+            } while ((Get-Date).ToUniversalTime() -lt $cleanupFallbackDeadline)
+            if (-not (Test-Path -LiteralPath $cleanupDisarmResultPath -PathType Leaf)) {
+                throw 'Immediate SYSTEM cleanup lease did not produce a disarm result within two minutes; retry lease remains armed.'
+            }
+            $immediateCleanup = Get-Content -LiteralPath $cleanupDisarmResultPath -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
+            Assert-QmImmediateCleanupDisarmReceipt -Receipt $immediateCleanup `
+                -ExpectedSid ([string]$dev2AccountState.Sid) `
+                -ExpectedTargetTaskName $taskName -ExpectedCleanupTaskName $cleanupTaskName `
+                -ExpectedContainmentResultPath $cleanupResultPath
+            $postCleanupUser = Get-LocalUser -SID (New-Object System.Security.Principal.SecurityIdentifier([string]$dev2AccountState.Sid)) -ErrorAction Stop
+            $postCleanupOwnerProcesses = @(Get-QmDev2IdentityProcesses -ExpectedOwnerSid ([string]$dev2AccountState.Sid))
+            $postCleanupRootProcesses = @(Get-QmDev2Processes)
+            $postCleanupTargetTask = Get-ScheduledTask -TaskName $taskName -TaskPath $script:TaskPath -ErrorAction SilentlyContinue
+            $postCleanupLeaseTask = Get-ScheduledTask -TaskName $cleanupTaskName -TaskPath $script:TaskPath -ErrorAction SilentlyContinue
+            if ($postCleanupUser.Name -cne $script:Dev2UserName -or $postCleanupUser.Enabled -or -not $postCleanupUser.PasswordRequired -or
+                $postCleanupOwnerProcesses.Count -ne 0 -or $postCleanupRootProcesses.Count -ne 0 -or
+                $null -ne $postCleanupTargetTask -or $null -ne $postCleanupLeaseTask) {
+                throw 'Immediate SYSTEM cleanup lease failed independent host containment postchecks.'
+            }
+        } catch {
+            $cleanupErrors.Add("cleanup_lease_immediate_start: $($_.Exception.Message)")
         }
     }
     if ($cleanupErrors.Count -gt 0) {

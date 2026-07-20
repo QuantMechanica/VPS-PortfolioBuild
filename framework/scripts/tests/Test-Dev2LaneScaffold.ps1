@@ -98,7 +98,16 @@ foreach ($marker in @(
     'cleanup_helper_sha256', 'New-ScheduledTaskTrigger -AtStartup',
     '-RepetitionInterval (New-TimeSpan -Minutes 5)', '-RestartCount 3',
     'ExpectedExpiryUtc', 'AllowHardTerminate', 'Get-QmDev2IdentityProcesses',
-    'try { Stop-QmDev2ProcessesExact'
+    'try { Stop-QmDev2ProcessesExact', '$maximumRunAttempts',
+    '$minimumControllerTimeout', 'maximum_run_attempts',
+    'controller_timeout_seconds', 'above the 172800-second hard limit',
+    'cleanup_lease_immediate_start', 'Get-QmMinimumDev2ControllerTimeoutSeconds',
+    '$script:PerAttemptOverheadSeconds = 600',
+    '$script:ControllerFinalizationMarginSeconds = 600',
+    "Join-Path `$controlDirectory 'cleanup_lease.result.json'",
+    "Join-Path `$controlDirectory 'cleanup_lease.disarm.result.json'",
+    'Assert-QmImmediateCleanupDisarmReceipt',
+    'independent host containment postchecks'
 )) {
     if (-not $controllerText.Contains($marker, [System.StringComparison]::Ordinal)) {
         throw "DEV2 controller binding marker is missing: $marker"
@@ -109,7 +118,8 @@ foreach ($marker in @(
     'QM_DEV2_ACCOUNT_CLEANUP_DISARM_RESULT', 'Stop-QmTargetTaskExact',
     'Stop-QmDev2ProcessesExact', 'Get-QmDev2IdentityProcesses',
     'account_restored_disabled', 'containment_verified', 'lease_disarmed',
-    'tester_groups_sha256', 'Disable-LocalUser'
+    'tester_groups_sha256', 'Disable-LocalUser',
+    "control\cleanup_lease.result.json", "control\cleanup_lease.disarm.result.json"
 )) {
     if (-not $cleanupText.Contains($marker, [System.StringComparison]::Ordinal)) {
         throw "DEV2 cleanup-lease safety marker is missing: $marker"
@@ -118,11 +128,21 @@ foreach ($marker in @(
 foreach ($marker in @(
     '[int]$Request.schema_version -ne 2', 'Get-QmListenerBaseline', 'Update-QmDev2AgentListenerProof',
     "Name = 'metatester64.exe'", 'Get-NetTCPConnection -State Listen',
-    'Exact-path DEV2 metatester', 'preexisting_port_owner = $false', '$runner.Kill($true)'
+    'Exact-path DEV2 metatester', 'preexisting_port_owner = $false', '$runner.Kill($true)',
+    'maximum_run_attempts', 'controller_timeout_seconds', '$expectedMaximumAttempts',
+    '$minimumControllerTimeout', 'per_attempt_overhead_seconds',
+    'controller_finalization_margin_seconds',
+    'Get-QmMinimumDev2ControllerTimeoutSeconds',
+    '$script:PerAttemptOverheadSeconds = 600',
+    '$script:ControllerFinalizationMarginSeconds = 600'
 )) {
     if (-not $childText.Contains($marker, [System.StringComparison]::Ordinal)) {
         throw "DEV2 child runtime-proof marker is missing: $marker"
     }
+}
+if ($controllerText.Contains('[Math]::Min(172800', [System.StringComparison]::Ordinal) -or
+    $childText.Contains('[Math]::Min(172800', [System.StringComparison]::Ordinal)) {
+    throw 'DEV2 controller/child may not silently cap an underbudgeted attempt timeout.'
 }
 foreach ($forbidden in @('credential.clixml', 'Import-Clixml', 'farmctl', 'pipeline_dispatcher', 'run_pump_task.py', 'CommandLine')) {
     if ($childText.Contains($forbidden, [System.StringComparison]::OrdinalIgnoreCase)) {
@@ -216,6 +236,13 @@ if ($cleanupRegisterIndex -lt 0 -or $enableIndex -le $cleanupRegisterIndex -or $
 }
 if ($controllerText.Contains('Write-Warning', [System.StringComparison]::OrdinalIgnoreCase)) {
     throw 'DEV2 controller may not mask containment/disarm failures as warnings.'
+}
+$cleanupFailureIndex = $controllerText.IndexOf('if ($cleanupErrors.Count -gt 0 -and $cleanupTaskRegistered', [System.StringComparison]::Ordinal)
+$immediateCleanupStartIndex = if ($cleanupFailureIndex -ge 0) {
+    $controllerText.IndexOf('Start-ScheduledTask -TaskName $cleanupTaskName', $cleanupFailureIndex, [System.StringComparison]::Ordinal)
+} else { -1 }
+if ($cleanupFailureIndex -lt 0 -or $immediateCleanupStartIndex -le $cleanupFailureIndex) {
+    throw 'DEV2 controller must immediately start its armed SYSTEM cleanup lease after any containment failure.'
 }
 $containmentPersistIndex = $cleanupText.IndexOf('Write-QmAtomicResult -Path $resultPath -Payload $containmentPayload', [System.StringComparison]::Ordinal)
 $selfUnregisterIndex = $cleanupText.IndexOf('    Unregister-QmTaskExact -TaskName $CleanupTaskName', [System.StringComparison]::Ordinal)

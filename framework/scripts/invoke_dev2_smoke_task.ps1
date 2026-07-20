@@ -13,6 +13,8 @@ $script:PwshPath = 'C:\Program Files\PowerShell\7\pwsh.exe'
 $script:LaneContractPath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\registry\dev2_lane_contract.json'))
 $script:ControllerMutexName = 'Global\QM_DEV2_SMOKE_CONTROLLER'
 $script:TaskNamePrefix = 'QM_DEV2_SMOKE_'
+$script:PerAttemptOverheadSeconds = 600
+$script:ControllerFinalizationMarginSeconds = 600
 $script:AllowedSymbols = @('NDX.DWX', 'GDAXI.DWX', 'EURUSD.DWX', 'GBPUSD.DWX', 'USDJPY.DWX', 'XAUUSD.DWX')
 $script:AllowedParameterOrder = @(
     'EAId', 'EALabel', 'Symbol', 'Year', 'FromDate', 'ToDate', 'Expert', 'Period', 'Runs',
@@ -25,6 +27,15 @@ function ConvertTo-QmFullPath {
     param([Parameter(Mandatory = $true)][string]$Path)
     if ($Path.IndexOfAny([char[]]"`r`n`0") -ge 0) { throw 'Path contains CR, LF, or NUL.' }
     return [System.IO.Path]::GetFullPath($Path)
+}
+
+function Get-QmMinimumDev2ControllerTimeoutSeconds {
+    param(
+        [Parameter(Mandatory = $true)][ValidateRange(1, 10)][int]$MaximumRunAttempts,
+        [Parameter(Mandatory = $true)][ValidateRange(60, 28800)][int]$RunTimeoutSeconds
+    )
+    return ($MaximumRunAttempts * ($RunTimeoutSeconds + $script:PerAttemptOverheadSeconds)) +
+        $script:ControllerFinalizationMarginSeconds
 }
 
 function Test-QmPathWithin {
@@ -259,7 +270,9 @@ function Assert-QmRequestSchema {
         'expected_sid', 'expected_profile', 'expected_common_path', 'dev2_root', 'reports_root',
         'smoke_report_root', 'expected_task_name', 'controller_mutex', 'lane_contract_path',
         'lane_contract_sha256', 'child_path', 'child_sha256', 'run_smoke_path', 'run_smoke_sha256',
-        'program_sha256', 'smoke_parameters'
+        'program_sha256', 'smoke_parameters', 'maximum_run_attempts',
+        'per_attempt_overhead_seconds', 'controller_finalization_margin_seconds',
+        'controller_timeout_seconds'
     )
     $extra = @($Request.Keys | Where-Object { $_ -notin $required })
     $missing = @($required | Where-Object { -not $Request.ContainsKey($_) })
@@ -314,6 +327,23 @@ function Assert-QmRequestSchema {
         [int]$parameters.Runs -lt 1 -or [int]$parameters.Runs -gt 10 -or
         [int]$parameters.Model -ne 4 -or [int]$parameters.TimeoutSeconds -lt 60 -or [int]$parameters.TimeoutSeconds -gt 28800) {
         throw 'Numeric smoke parameter is outside its fixed range.'
+    }
+    $expectedMaximumAttempts = [Math]::Min(10, ([int]$parameters.Runs + 2))
+    $minimumControllerTimeout = Get-QmMinimumDev2ControllerTimeoutSeconds `
+        -MaximumRunAttempts $expectedMaximumAttempts -RunTimeoutSeconds ([int]$parameters.TimeoutSeconds)
+    if ($minimumControllerTimeout -gt 172800 -or
+        [int]$Request.maximum_run_attempts -ne $expectedMaximumAttempts -or
+        [int]$Request.per_attempt_overhead_seconds -ne $script:PerAttemptOverheadSeconds -or
+        [int]$Request.controller_finalization_margin_seconds -ne $script:ControllerFinalizationMarginSeconds -or
+        [int]$Request.controller_timeout_seconds -lt $minimumControllerTimeout -or
+        [int]$Request.controller_timeout_seconds -gt 172800) {
+        throw 'DEV2 request maximum-attempt/controller-timeout contract drifted.'
+    }
+    $created = [DateTimeOffset]::Parse([string]$Request.created_utc).ToUniversalTime()
+    $lifetimeSeconds = ($expires - $created).TotalSeconds
+    if ($lifetimeSeconds -lt ([int]$Request.controller_timeout_seconds + 590) -or
+        $lifetimeSeconds -gt ([int]$Request.controller_timeout_seconds + 610)) {
+        throw 'DEV2 request expiry does not cover the bounded controller timeout.'
     }
     foreach ($key in @($parameters.Keys)) {
         $value = $parameters[$key]
