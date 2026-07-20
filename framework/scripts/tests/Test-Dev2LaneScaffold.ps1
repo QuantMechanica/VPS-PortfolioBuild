@@ -11,6 +11,8 @@ $paths = [ordered]@{
     initialize = Join-Path $repoRoot 'framework\scripts\initialize_dev2_profile.ps1'
     controller = Join-Path $repoRoot 'framework\scripts\run_dev2_smoke.ps1'
     child = Join-Path $repoRoot 'framework\scripts\invoke_dev2_smoke_task.ps1'
+    lsa = Join-Path $repoRoot 'framework\scripts\dev2_lsa_rights.ps1'
+    complete = Join-Path $repoRoot 'framework\scripts\complete_dev2_postclone.ps1'
     core = Join-Path $repoRoot 'framework\scripts\run_smoke.ps1'
 }
 
@@ -30,6 +32,8 @@ $provisionAst = Get-QmParsedScript -Path $paths.provision
 $null = Get-QmParsedScript -Path $paths.initialize
 $controllerAst = Get-QmParsedScript -Path $paths.controller
 $childAst = Get-QmParsedScript -Path $paths.child
+$lsaAst = Get-QmParsedScript -Path $paths.lsa
+$completeAst = Get-QmParsedScript -Path $paths.complete
 $null = Get-QmParsedScript -Path $paths.core
 
 $contract = Get-Content -LiteralPath $paths.contract -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
@@ -58,6 +62,8 @@ if ([string]$exception.relative_path -cne 'Bases/Custom/history/GBPUSD.DWX/2026.
 $provisionText = Get-Content -LiteralPath $paths.provision -Raw -ErrorAction Stop
 $controllerText = Get-Content -LiteralPath $paths.controller -Raw -ErrorAction Stop
 $childText = Get-Content -LiteralPath $paths.child -Raw -ErrorAction Stop
+$lsaText = Get-Content -LiteralPath $paths.lsa -Raw -ErrorAction Stop
+$completeText = Get-Content -LiteralPath $paths.complete -Raw -ErrorAction Stop
 $coreText = Get-Content -LiteralPath $paths.core -Raw -ErrorAction Stop
 foreach ($marker in @(
     'Global\QM_DEV1_SMOKE_CONTROLLER', 'Assert-QmSourceQuiescent', '.DEV2.stage.',
@@ -118,6 +124,39 @@ if (@($childAst.FindAll({
     $node -is [System.Management.Automation.Language.CommandAst] -and $node.GetCommandName() -eq 'Stop-Process'
 }, $true)).Count -ne 0) {
     throw 'DEV2 child must not use Stop-Process.'
+}
+foreach ($marker in @('LsaAddAccountRights', 'LsaEnumerateAccountRights', "[Qm.Dev2.LsaRights]::Add(`$Sid, 'SeBatchLogonRight')",
+        "added = @(`$after | Where-Object { `$_ -notin `$before })")) {
+    if (-not $lsaText.Contains($marker, [System.StringComparison]::Ordinal)) {
+        throw "DEV2 LSA helper marker is missing: $marker"
+    }
+}
+if ($lsaText.Contains('LsaRemoveAccountRights', [System.StringComparison]::Ordinal) -or
+    $lsaText.Contains('SeRemoteInteractiveLogonRight', [System.StringComparison]::Ordinal) -or
+    $lsaText.Contains('SeInteractiveLogonRight', [System.StringComparison]::Ordinal)) {
+    throw 'DEV2 LSA helper can alter a right outside the exact batch-logon grant.'
+}
+foreach ($marker in @('ExpectedFailedTaskName', '2147943785', 'ERROR_LOGON_TYPE_NOT_GRANTED',
+        'Grant-QmDev2BatchLogonRight', "added[0] -cne 'SeBatchLogonRight'", 'LastTaskResult',
+        '$eventIds -contains 100', '$eventIds -contains 102', 'mt5_smoke_started = $false',
+        "runtime_listener_proof_status = 'PENDING_FIRST_AUTHORIZED_SMOKE'")) {
+    if (-not $completeText.Contains($marker, [System.StringComparison]::Ordinal)) {
+        throw "DEV2 post-clone completion marker is missing: $marker"
+    }
+}
+foreach ($forbidden in @('Add-LocalGroupMember', 'Remove-LocalUser', 'Remove-NetFirewallRule', 'Remove-Item')) {
+    if ($completeText.Contains($forbidden, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "DEV2 post-clone completion contains forbidden mutation: $forbidden"
+    }
+}
+$completeRegisters = @($completeAst.FindAll({
+    param($node)
+    $node -is [System.Management.Automation.Language.CommandAst] -and $node.GetCommandName() -eq 'Register-ScheduledTask'
+}, $true))
+if ($completeRegisters.Count -ne 1) { throw 'Post-clone completion must register exactly one ephemeral profile task.' }
+$registerParts = @($completeRegisters[0].CommandElements | ForEach-Object { $_.Extent.Text })
+if ($registerParts -contains '-Force' -or $registerParts -contains '-Trigger') {
+    throw 'Post-clone completion task may not overwrite or add a trigger.'
 }
 foreach ($marker in @('DEV2 requires the isolated', 'DEV2 ReportRoot must stay under', 'post_run_pump_skipped (DEV2 isolation)')) {
     if (-not $coreText.Contains($marker, [System.StringComparison]::Ordinal)) {

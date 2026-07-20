@@ -12,6 +12,7 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
 $contractPath = Join-Path $repoRoot 'framework\registry\dev2_lane_contract.json'
 $profileInitializerPath = Join-Path $PSScriptRoot 'initialize_dev2_profile.ps1'
+$lsaRightsPath = Join-Path $PSScriptRoot 'dev2_lsa_rights.ps1'
 $pwshPath = 'C:\Program Files\PowerShell\7\pwsh.exe'
 $fixedSourceRoot = [System.IO.Path]::GetFullPath('D:\QM\mt5\DEV1')
 $fixedTerminalRoot = [System.IO.Path]::GetFullPath('D:\QM\mt5\DEV2')
@@ -481,6 +482,10 @@ if (-not (Test-Path -LiteralPath $contractPath -PathType Leaf)) {
 if (-not (Test-Path -LiteralPath $profileInitializerPath -PathType Leaf)) {
     throw "DEV2 profile initializer is missing: $profileInitializerPath"
 }
+if (-not (Test-Path -LiteralPath $lsaRightsPath -PathType Leaf)) {
+    throw "DEV2 LSA-rights helper is missing: $lsaRightsPath"
+}
+. $lsaRightsPath
 $contract = Get-Content -LiteralPath $contractPath -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
 $sourceRoot = ConvertTo-QmFullPath -Path ([string]$contract.paths.source_terminal_root)
 $terminalRoot = ConvertTo-QmFullPath -Path ([string]$contract.paths.terminal_root)
@@ -589,6 +594,7 @@ $finalReceiptPath = $null
 $stageRoot = $null
 $dev2Sid = $null
 $provisionCompleted = $false
+$batchLogonRight = $null
 try {
     $provisionMutex = New-Object System.Threading.Mutex($false, [string]$contract.coordination.provision_mutex)
     $sourceMutex = New-Object System.Threading.Mutex($false, [string]$contract.coordination.source_quiescence_mutex)
@@ -723,6 +729,7 @@ try {
     Assert-QmNoReparseTree -Root $terminalRoot
 
     $firewallRows = @(Install-QmFirewallRules -Rules @($contract.firewall) -TerminalRoot $terminalRoot)
+    $batchLogonRight = Grant-QmDev2BatchLogonRight -Sid $dev2Sid
     Enable-LocalUser -Name $dev2User -ErrorAction Stop
     $enabledUser = Get-LocalUser -Name $dev2User -ErrorAction Stop
     if ($enabledUser.SID.Value -cne $dev2Sid -or -not $enabledUser.Enabled -or -not $enabledUser.PasswordRequired) {
@@ -777,6 +784,7 @@ try {
             calendar_count = $profileTaskReceipt.calendar_count
         }
         coordination = $contract.coordination
+        batch_logon_right = $batchLogonRight
         agent_port_contract = $contract.agent_port_contract
         source_agents_dat_copied = $false
         firewall = $firewallRows
