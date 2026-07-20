@@ -29,6 +29,7 @@ $metaEditor = Join-Path $devRoot 'MetaEditor64.exe'
 $pwsh = 'C:\Program Files\PowerShell\7\pwsh.exe'
 $credentialPath = 'C:\ProgramData\QM\DEV1\credential.machine-dpapi.json'
 $credentialHelperPath = Join-Path $repoRoot 'framework\scripts\dev1_machine_credential.ps1'
+$identityProbeChildPath = Join-Path $repoRoot 'framework\scripts\invoke_dev1_identity_probe.ps1'
 $laneContractPath = Join-Path $repoRoot 'framework\registry\dev1_lane_contract.json'
 $rotationReceiptPath = 'C:\ProgramData\QM\DEV1\credential.machine-dpapi.rotation-receipt.json'
 $cleanupHelperSourcePath = Join-Path $repoRoot 'framework\scripts\cleanup_dev1_account_lease.ps1'
@@ -73,7 +74,7 @@ function Assert-PhysicalPath([string]$Path) {
 }
 
 function Get-Dev1Processes {
-    return @(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object {
+    return @(Get-CimInstance Win32_Process -Property ProcessId,ExecutablePath,CreationDate -ErrorAction Stop | Where-Object {
         $_.ExecutablePath -and (Test-UnderRoot -Path ([string]$_.ExecutablePath) -Root $devRoot)
     })
 }
@@ -84,14 +85,317 @@ function Get-EphemeralCompileTasks {
     })
 }
 
+function Get-Dev1Tasks {
+    return @(Get-ScheduledTask -TaskPath $taskPath -ErrorAction Stop | Where-Object {
+        $_.TaskName.StartsWith($taskPrefix, [StringComparison]::Ordinal) -or
+        $_.TaskName.StartsWith($smokeTaskPrefix, [StringComparison]::Ordinal) -or
+        $_.TaskName.StartsWith($cleanupTaskPrefix, [StringComparison]::Ordinal) -or
+        $_.TaskName.StartsWith($profileTaskPrefix, [StringComparison]::Ordinal)
+    })
+}
+
+function Get-ProcessOwnerSid([object]$ProcessRecord) {
+    try {
+        $owner = Invoke-CimMethod -InputObject $ProcessRecord -MethodName GetOwnerSid -ErrorAction Stop
+        if ($owner.ReturnValue -eq 0 -and -not [string]::IsNullOrWhiteSpace([string]$owner.Sid)) {
+            return [string]$owner.Sid
+        }
+    } catch { }
+    return $null
+}
+
+function Get-Dev1IdentityProcesses([string]$OwnerSid) {
+    $records = New-Object System.Collections.Generic.List[object]
+    foreach ($process in @(Get-CimInstance Win32_Process -Property ProcessId,ExecutablePath,CreationDate -ErrorAction Stop)) {
+        $observedSid = Get-ProcessOwnerSid -ProcessRecord $process
+        if ($observedSid -ceq $OwnerSid) {
+            $records.Add([pscustomobject]@{
+                ProcessId = [int]$process.ProcessId
+                ExecutablePath = if ([string]::IsNullOrWhiteSpace([string]$process.ExecutablePath)) { $null } else { [IO.Path]::GetFullPath([string]$process.ExecutablePath) }
+                CreationDate = $process.CreationDate
+                OwnerSid = $observedSid
+            })
+        }
+    }
+    return $records.ToArray()
+}
+
+function Stop-Dev1ProcessesExact([string]$OwnerSid) {
+    foreach ($candidate in @(Get-Dev1IdentityProcesses -OwnerSid $OwnerSid)) {
+        $fresh = @(Get-CimInstance Win32_Process -Filter "ProcessId = $($candidate.ProcessId)" `
+            -Property ProcessId,ExecutablePath,CreationDate -ErrorAction SilentlyContinue)
+        if ($fresh.Count -ne 1) { continue }
+        $sameCreation = [string]$fresh[0].CreationDate -ceq [string]$candidate.CreationDate
+        $freshOwner = Get-ProcessOwnerSid -ProcessRecord $fresh[0]
+        if ($sameCreation -and $freshOwner -ceq $OwnerSid) {
+            Stop-Process -Id ([int]$candidate.ProcessId) -Force -ErrorAction Stop
+        }
+    }
+    Start-Sleep -Seconds 2
+    $ownerProcesses = @(Get-Dev1IdentityProcesses -OwnerSid $OwnerSid)
+    $rootProcesses = @(Get-Dev1Processes)
+    if ($ownerProcesses.Count -ne 0 -or $rootProcesses.Count -ne 0) {
+        throw "DEV1 exact containment left processes (owner=$($ownerProcesses.Count), root=$($rootProcesses.Count))."
+    }
+}
+
+function Get-Dev1AccountState {
+    $user = Get-LocalUser -Name 'QMDev1' -ErrorAction Stop
+    if ($user.Name -cne 'QMDev1' -or $user.Enabled -or -not $user.PasswordRequired) {
+        throw 'QMDev1 must be exact, PasswordRequired=True, and disabled at compile-controller entry.'
+    }
+    $sid = [string]$user.SID.Value
+    $adminMembers = @(Get-LocalGroupMember -SID (New-Object Security.Principal.SecurityIdentifier('S-1-5-32-544')) -ErrorAction Stop)
+    if (@($adminMembers | Where-Object { [string]$_.SID.Value -ceq $sid }).Count -ne 0) {
+        throw 'QMDev1 must remain a non-admin identity.'
+    }
+    return [pscustomobject]@{ Sid = $sid; InitiallyEnabled = $false }
+}
+
+function Enable-Dev1Account([object]$State) {
+    $sid = New-Object Security.Principal.SecurityIdentifier([string]$State.Sid)
+    $before = Get-LocalUser -SID $sid -ErrorAction Stop
+    if ($before.Name -cne 'QMDev1' -or $before.Enabled -or -not $before.PasswordRequired) {
+        throw 'QMDev1 just-in-time enable precondition drifted.'
+    }
+    Enable-LocalUser -SID $sid -ErrorAction Stop
+    $after = Get-LocalUser -SID $sid -ErrorAction Stop
+    if ($after.Name -cne 'QMDev1' -or -not $after.Enabled -or -not $after.PasswordRequired) {
+        throw 'QMDev1 just-in-time enable failed.'
+    }
+}
+
+function Disable-Dev1Account([object]$State) {
+    $sid = New-Object Security.Principal.SecurityIdentifier([string]$State.Sid)
+    $user = Get-LocalUser -SID $sid -ErrorAction Stop
+    if ($user.Name -cne 'QMDev1' -or [string]$user.SID.Value -cne [string]$State.Sid) {
+        throw 'Refusing to disable QMDev1 after immutable identity drift.'
+    }
+    if ($user.Enabled) { Disable-LocalUser -SID $sid -ErrorAction Stop }
+    $after = Get-LocalUser -SID $sid -ErrorAction Stop
+    if ($after.Name -cne 'QMDev1' -or $after.Enabled -or -not $after.PasswordRequired) {
+        throw 'QMDev1 disabled-at-rest reassertion failed.'
+    }
+}
+
 function Get-Sha256([string]$Path) {
     return (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
+}
+
+function Get-CanonicalObjectSha256([object]$Value) {
+    $json = $Value | ConvertTo-Json -Depth 12 -Compress
+    $bytes = [Text.Encoding]::UTF8.GetBytes($json)
+    try { return [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($bytes)).ToLowerInvariant() }
+    finally { [Array]::Clear($bytes, 0, $bytes.Length) }
 }
 
 function Write-AtomicJson([string]$Path, [object]$Value) {
     $temp = "$Path.$([guid]::NewGuid().ToString('N')).tmp"
     $Value | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $temp -Encoding utf8
     Move-Item -LiteralPath $temp -Destination $Path -Force
+}
+
+function Set-RunDirectoryAcl([string]$Path, [string]$TargetSid, [Security.AccessControl.FileSystemRights]$TargetRights) {
+    $acl = Get-Acl -LiteralPath $Path -ErrorAction Stop
+    $acl.SetAccessRuleProtection($true, $false)
+    foreach ($rule in @($acl.Access)) { [void]$acl.RemoveAccessRuleAll($rule) }
+    $inheritance = [Security.AccessControl.InheritanceFlags]::ContainerInherit -bor [Security.AccessControl.InheritanceFlags]::ObjectInherit
+    foreach ($grant in @(
+        @('S-1-5-18', [Security.AccessControl.FileSystemRights]::FullControl),
+        @('S-1-5-32-544', [Security.AccessControl.FileSystemRights]::FullControl),
+        @($TargetSid, $TargetRights)
+    )) {
+        $identity = New-Object Security.Principal.SecurityIdentifier([string]$grant[0])
+        $access = New-Object Security.AccessControl.FileSystemAccessRule(
+            $identity, $grant[1], $inheritance, [Security.AccessControl.PropagationFlags]::None,
+            [Security.AccessControl.AccessControlType]::Allow
+        )
+        [void]$acl.AddAccessRule($access)
+    }
+    $acl.SetOwner((New-Object Security.Principal.SecurityIdentifier('S-1-5-32-544')))
+    Set-Acl -LiteralPath $Path -AclObject $acl -ErrorAction Stop
+}
+
+function Remove-ScheduledTaskBounded([string]$TaskName, [switch]$DisableBeforeStop) {
+    $task = Get-ScheduledTask -TaskName $TaskName -TaskPath $taskPath -ErrorAction SilentlyContinue
+    if ($null -eq $task) { return }
+    if ($task.TaskName -cne $TaskName -or $task.TaskPath -cne $taskPath) {
+        throw 'Bounded DEV1 compile-task drain observed identity drift.'
+    }
+    if ($DisableBeforeStop.IsPresent) {
+        Disable-ScheduledTask -TaskName $TaskName -TaskPath $taskPath -ErrorAction Stop | Out-Null
+        $task = Get-ScheduledTask -TaskName $TaskName -TaskPath $taskPath -ErrorAction SilentlyContinue
+    }
+    if ($null -ne $task -and $task.State.ToString() -eq 'Running') {
+        Stop-ScheduledTask -TaskName $TaskName -TaskPath $taskPath -ErrorAction Stop
+    }
+    $deadline = [DateTimeOffset]::UtcNow.AddSeconds(30)
+    do {
+        $task = Get-ScheduledTask -TaskName $TaskName -TaskPath $taskPath -ErrorAction SilentlyContinue
+        if ($null -eq $task -or $task.State.ToString() -ne 'Running') { break }
+        Start-Sleep -Milliseconds 200
+    } while ([DateTimeOffset]::UtcNow -lt $deadline)
+    if ($null -ne $task -and $task.State.ToString() -eq 'Running') {
+        throw "DEV1 compile task did not stop within its bounded drain: $TaskName"
+    }
+    if ($null -ne $task) {
+        Unregister-ScheduledTask -TaskName $TaskName -TaskPath $taskPath -Confirm:$false -ErrorAction Stop
+    }
+    $deadline = [DateTimeOffset]::UtcNow.AddSeconds(30)
+    do {
+        $task = Get-ScheduledTask -TaskName $TaskName -TaskPath $taskPath -ErrorAction SilentlyContinue
+        if ($null -eq $task) { break }
+        Start-Sleep -Milliseconds 200
+    } while ([DateTimeOffset]::UtcNow -lt $deadline)
+    if ($null -ne $task) { throw "DEV1 compile task remains registered: $TaskName" }
+}
+
+function Enter-CleanupActionMutex([string]$Name) {
+    if ($Name -cnotmatch '^Global\\QM_DEV1_CLEANUP_ACTION_[0-9a-f]{32}$') {
+        throw 'Compile cleanup action mutex name drifted.'
+    }
+    $handle = New-Object Threading.Mutex($false, $Name)
+    try {
+        $acquired = $false
+        try { $acquired = [bool]$handle.WaitOne($cleanupActionMutexWaitMilliseconds) } catch {
+            $cursor = $_.Exception
+            while ($null -ne $cursor) {
+                if ($cursor -is [Threading.AbandonedMutexException]) { $acquired = $true; break }
+                $cursor = $cursor.InnerException
+            }
+            if (-not $acquired) { throw }
+        }
+        if (-not $acquired) { throw 'Timed out waiting for DEV1 compile cleanup action fence.' }
+        return $handle
+    } catch {
+        $handle.Dispose()
+        throw
+    }
+}
+
+function Restore-TesterGroupsCanonical {
+    foreach ($path in @($testerGroupsCanonicalPath, $testerGroupsDev1Path)) { Assert-PhysicalPath -Path $path }
+    [IO.File]::Copy($testerGroupsCanonicalPath, $testerGroupsDev1Path, $true)
+    $canonical = Get-Sha256 $testerGroupsCanonicalPath
+    $restored = Get-Sha256 $testerGroupsDev1Path
+    if ($restored -cne $canonical) { throw 'DEV1 compile tester-groups restore hash mismatch.' }
+    return $restored
+}
+
+function Assert-Contained([object]$AccountState, [string]$AllowedCleanupTaskName) {
+    $sid = New-Object Security.Principal.SecurityIdentifier([string]$AccountState.Sid)
+    $user = Get-LocalUser -SID $sid -ErrorAction Stop
+    $unexpected = @(Get-Dev1Tasks | Where-Object { [string]$_.TaskName -cne $AllowedCleanupTaskName })
+    if ($user.Name -cne 'QMDev1' -or $user.Enabled -or -not $user.PasswordRequired -or
+        @(Get-Dev1IdentityProcesses -OwnerSid ([string]$AccountState.Sid)).Count -ne 0 -or
+        @(Get-Dev1Processes).Count -ne 0 -or $unexpected.Count -ne 0) {
+        throw 'DEV1 compile containment reassertion failed before cleanup-lease disarm.'
+    }
+}
+
+function Read-ExactJson([string]$Path, [string[]]$ExpectedFields, [string]$Label) {
+    Assert-PhysicalPath -Path $Path
+    $raw = [IO.File]::ReadAllText([IO.Path]::GetFullPath($Path), [Text.UTF8Encoding]::new($false, $true))
+    $document = [Text.Json.JsonDocument]::Parse($raw)
+    try {
+        if ($document.RootElement.ValueKind -ne [Text.Json.JsonValueKind]::Object) {
+            throw "$Label is not a JSON object."
+        }
+        $seen = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::Ordinal)
+        foreach ($property in $document.RootElement.EnumerateObject()) {
+            if (-not $seen.Add($property.Name)) { throw "$Label contains a duplicate JSON property." }
+        }
+        if ([string]::Join('|', @($seen | Sort-Object)) -cne [string]::Join('|', @($ExpectedFields | Sort-Object))) {
+            throw "$Label field closure drifted."
+        }
+    } finally { $document.Dispose() }
+    return $raw | ConvertFrom-Json -DateKind String -ErrorAction Stop
+}
+
+function Assert-V3RotationReceipt([object]$AccountState, [string]$CredentialSha256, [string]$HelperSha256) {
+    $laneFields = @('schema_version', 'contract_id', 'lane', 'source_lane', 'identity', 'paths', 'coordination', 'firewall', 'program_sha256', 'allowed_symbols', 'copy_contract', 'agent_port_contract')
+    $lane = Read-ExactJson -Path $laneContractPath -ExpectedFields $laneFields -Label 'DEV1 lane contract'
+    $account = "$env:COMPUTERNAME\QMDev1"
+    if ([int]$lane.schema_version -ne 3 -or [string]$lane.contract_id -cne $contractId -or
+        [string]$lane.lane -cne 'DEV1' -or [string]$lane.source_lane -cne 'DEV1' -or
+        [string]$lane.identity.local_user -cne 'QMDev1' -or
+        -not ([IO.Path]::GetFullPath([string]$lane.identity.credential)).Equals([IO.Path]::GetFullPath($credentialPath), [StringComparison]::OrdinalIgnoreCase) -or
+        [string]$lane.identity.credential_format -cne 'QM_DEV1_MACHINE_DPAPI_CREDENTIAL' -or
+        [string]$lane.identity.dpapi_scope -cne 'LocalMachine' -or -not [bool]$lane.identity.limited_non_admin) {
+        throw 'DEV1 V3 lane identity contract drifted.'
+    }
+    $receiptFields = @(
+        'schema_version', 'artifact_type', 'status', 'completed_utc', 'contract_id', 'target_account', 'target_sid',
+        'target_disabled_at_rest', 'target_password_required_at_rest', 'machine_credential_path', 'machine_credential_sha256',
+        'machine_credential_generation_id', 'machine_credential_helper_path', 'machine_credential_helper_sha256',
+        'identity_probe_child_path', 'identity_probe_child_sha256', 'identity_probe_result_path', 'identity_probe_result_sha256',
+        'identity_probe_logon_type', 'identity_probe_run_level', 'machine_credential_matches_proved_password',
+        'published_after_identity_proof', 'legacy_credential_path', 'legacy_credential_preserved', 'cleanup_lease_disarmed',
+        'owner_process_count', 'dev1_root_process_count'
+    )
+    Assert-QmDev1CredentialExactAcl -Path $rotationReceiptPath
+    $receipt = Read-ExactJson -Path $rotationReceiptPath -ExpectedFields $receiptFields -Label 'DEV1 rotation receipt'
+    if ([int]$receipt.schema_version -ne 1 -or [string]$receipt.artifact_type -cne 'QM_DEV1_MACHINE_CREDENTIAL_ROTATION_RECEIPT' -or
+        [string]$receipt.status -cne 'PASS' -or [string]$receipt.contract_id -cne $contractId -or
+        [string]$receipt.target_account -cne $account -or [string]$receipt.target_sid -cne [string]$AccountState.Sid -or
+        -not [bool]$receipt.target_disabled_at_rest -or -not [bool]$receipt.target_password_required_at_rest -or
+        [string]$receipt.identity_probe_logon_type -cne 'Password' -or [string]$receipt.identity_probe_run_level -cne 'Limited' -or
+        -not [bool]$receipt.machine_credential_matches_proved_password -or -not [bool]$receipt.published_after_identity_proof -or
+        -not [bool]$receipt.legacy_credential_preserved -or -not [bool]$receipt.cleanup_lease_disarmed -or
+        [int]$receipt.owner_process_count -ne 0 -or [int]$receipt.dev1_root_process_count -ne 0 -or
+        [string]$receipt.machine_credential_sha256 -cne $CredentialSha256 -or
+        [string]$receipt.machine_credential_helper_sha256 -cne $HelperSha256 -or
+        [string]$receipt.machine_credential_generation_id -cnotmatch '^[0-9a-f]{32}$') {
+        throw 'DEV1 canonical rotation receipt proof drifted.'
+    }
+    $pathChecks = @(
+        @([string]$receipt.machine_credential_path, $credentialPath),
+        @([string]$receipt.machine_credential_helper_path, $credentialHelperPath),
+        @([string]$receipt.identity_probe_child_path, $identityProbeChildPath)
+    )
+    foreach ($pair in $pathChecks) {
+        if (-not ([IO.Path]::GetFullPath($pair[0])).Equals([IO.Path]::GetFullPath($pair[1]), [StringComparison]::OrdinalIgnoreCase)) {
+            throw 'DEV1 canonical rotation receipt path drifted.'
+        }
+    }
+    foreach ($binding in @(
+        @($identityProbeChildPath, [string]$receipt.identity_probe_child_sha256),
+        @([string]$receipt.identity_probe_result_path, [string]$receipt.identity_probe_result_sha256)
+    )) {
+        if ([string]$binding[1] -cnotmatch '^[0-9a-f]{64}$' -or (Get-Sha256 $binding[0]) -cne [string]$binding[1]) {
+            throw 'DEV1 canonical rotation receipt dependency hash drifted.'
+        }
+    }
+    $resultPath = [IO.Path]::GetFullPath([string]$receipt.identity_probe_result_path)
+    if (-not (Test-UnderRoot -Path $resultPath -Root $rotationRoot) -or
+        [IO.Path]::GetFileName($resultPath) -cne 'identity_probe_result.json') {
+        throw 'DEV1 rotation identity result escaped its canonical root/layout.'
+    }
+    $identityResult = Read-ExactJson -Path $resultPath -ExpectedFields @(
+        'schema_version', 'artifact_type', 'status', 'completed_utc', 'nonce', 'account', 'sid', 'profile', 'limited_non_admin', 'request_sha256'
+    ) -Label 'DEV1 identity result'
+    if ([int]$identityResult.schema_version -ne 1 -or [string]$identityResult.artifact_type -cne 'QM_DEV1_IDENTITY_PROBE_RESULT' -or
+        [string]$identityResult.status -cne 'PASS' -or [string]$identityResult.account -cne $account -or
+        [string]$identityResult.sid -cne [string]$AccountState.Sid -or -not [bool]$identityResult.limited_non_admin -or
+        [string]$identityResult.request_sha256 -cnotmatch '^[0-9a-f]{64}$') {
+        throw 'DEV1 rotation identity result proof drifted.'
+    }
+    $envelope = Read-QmDev1MachineCredentialEnvelope -CredentialPath $credentialPath `
+        -ExpectedCredentialSha256 $CredentialSha256 -ExpectedAccount $account -ExpectedSid ([string]$AccountState.Sid) `
+        -ContractId $contractId -Lane 'DEV1'
+    if ([string]$envelope.GenerationId -cne [string]$receipt.machine_credential_generation_id) {
+        throw 'DEV1 machine credential generation differs from rotation proof.'
+    }
+    return [pscustomobject]@{
+        Lane = $lane
+        LaneSha256 = Get-Sha256 $laneContractPath
+        Receipt = $receipt
+        ReceiptSha256 = Get-Sha256 $rotationReceiptPath
+        IdentityChildSha256 = Get-Sha256 $identityProbeChildPath
+        IdentityResultSha256 = Get-Sha256 $resultPath
+        Account = $account
+        Sid = [string]$AccountState.Sid
+    }
 }
 
 function Resolve-Dev1ProfileInclude {
@@ -179,17 +483,42 @@ function Export-IncludePathAudit([string]$CompileLog, [string[]]$AllowedRoots, [
 }
 
 function Invoke-CompileChild {
-    if ([string]::IsNullOrWhiteSpace($RunRoot) -or [string]::IsNullOrWhiteSpace($ExpectedSid) -or
-        [string]::IsNullOrWhiteSpace($ExpectedSourceSha256)) { throw 'Child invocation omitted a binding.' }
-    $childRunRoot = [IO.Path]::GetFullPath($RunRoot)
+    $RequestPath = [IO.Path]::GetFullPath($RequestPath)
+    if (-not (Test-UnderRoot -Path $RequestPath -Root $reportsRoot) -or
+        (Get-Sha256 $RequestPath) -cne $ExpectedRequestSha256) {
+        throw 'Compile child request path/hash binding drifted.'
+    }
+    $requestFields = @(
+        'schema_version', 'artifact_type', 'run_id', 'nonce', 'created_utc', 'expires_utc', 'run_root',
+        'expected_account', 'expected_sid', 'expected_profile', 'expected_task_name', 'result_path',
+        'controller_path', 'controller_sha256', 'compile_one_path', 'compile_one_sha256',
+        'metaeditor_path', 'metaeditor_sha256', 'source_path', 'source_sha256',
+        'repo_include_path', 'repo_include_snapshot_sha256', 'pwsh_path', 'pwsh_sha256',
+        'lane_contract_sha256', 'machine_credential_sha256', 'machine_credential_helper_sha256',
+        'rotation_receipt_sha256', 'cleanup_helper_sha256'
+    )
+    $request = Read-ExactJson -Path $RequestPath -ExpectedFields $requestFields -Label 'DEV1 compile request'
+    if ([int]$request.schema_version -ne 1 -or [string]$request.artifact_type -cne 'QM5_20002_DEV1_V3_COMPILE_REQUEST' -or
+        [string]$request.run_id -cnotmatch '^[0-9]{8}T[0-9]{6}Z_[0-9a-f]{32}$' -or
+        [string]$request.nonce -cnotmatch '^[0-9a-f]{32}$' -or
+        [string]$request.expected_task_name -cnotmatch '^QM_DEV1_COMPILE_[0-9a-f]{32}$') {
+        throw 'Compile child request identity drifted.'
+    }
+    $expires = [DateTimeOffset]::MinValue
+    if (-not [DateTimeOffset]::TryParseExact([string]$request.expires_utc, 'o', [cultureinfo]::InvariantCulture,
+            [Globalization.DateTimeStyles]::RoundtripKind, [ref]$expires) -or $expires.Offset -ne [TimeSpan]::Zero -or
+        $expires -le [DateTimeOffset]::UtcNow) { throw 'Compile child request is expired or malformed.' }
+    $childRunRoot = [IO.Path]::GetFullPath([string]$request.run_root)
     if (-not (Test-UnderRoot -Path $childRunRoot -Root $reportsRoot)) { throw 'Child RunRoot escaped reports root.' }
-    $stageRoot = Join-Path $childRunRoot 'stage'
+    $controlRoot = Join-Path $childRunRoot 'control'
+    $outputRoot = Join-Path $childRunRoot 'output'
+    $stageRoot = Join-Path $outputRoot 'stage'
     $stageMq5 = Join-Path $stageRoot 'QM5_20002_ict-icytea-core.mq5'
     $stageEx5 = [IO.Path]::ChangeExtension($stageMq5, '.ex5')
-    $resultPath = Join-Path $childRunRoot 'child_result.json'
-    $childLog = Join-Path $childRunRoot 'compile_child.log'
-    $includeManifest = Join-Path $childRunRoot 'include_sync_manifest.csv'
-    $includeAudit = Join-Path $childRunRoot 'include_path_audit.csv'
+    $resultPath = Join-Path $outputRoot 'child_result.json'
+    $childLog = Join-Path $outputRoot 'compile_child.log'
+    $includeManifest = Join-Path $outputRoot 'include_sync_manifest.csv'
+    $includeAudit = Join-Path $outputRoot 'include_path_audit.csv'
     $started = (Get-Date).ToUniversalTime()
     $success = $false
     $failure = $null
@@ -202,20 +531,31 @@ function Invoke-CompileChild {
     $includedPaths = 0
     $outsidePaths = -1
     try {
-        foreach ($path in @($childRunRoot, $stageRoot, $stageMq5, $repoInclude, $compileOne, $metaEditor, $pwsh)) {
+        foreach ($path in @($childRunRoot, $controlRoot, $outputRoot, $stageRoot, $stageMq5, $repoInclude, $compileOne, $metaEditor, $pwsh, $controllerScript)) {
             Assert-PhysicalPath -Path $path
         }
         $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
-        if ($identity.User.Value -ne $ExpectedSid) { throw "Wrong child SID: $($identity.User.Value)" }
-        $expectedAccount = "$env:COMPUTERNAME\QMDev1"
+        if ($identity.User.Value -cne [string]$request.expected_sid) { throw "Wrong child SID: $($identity.User.Value)" }
+        $expectedAccount = [string]$request.expected_account
         if (-not $identity.Name.Equals($expectedAccount, [StringComparison]::OrdinalIgnoreCase)) {
             throw "Wrong child account: $($identity.Name)"
         }
-        if (-not ([IO.Path]::GetFullPath($env:USERPROFILE)).Equals('C:\Users\QMDev1', [StringComparison]::OrdinalIgnoreCase)) {
+        if (-not ([IO.Path]::GetFullPath($env:USERPROFILE)).Equals(
+                [IO.Path]::GetFullPath([string]$request.expected_profile), [StringComparison]::OrdinalIgnoreCase)) {
             throw 'Wrong QMDev1 profile.'
         }
-        if ((Get-Sha256 -Path $stageMq5) -cne $ExpectedSourceSha256.ToLowerInvariant()) {
+        if ((Get-Sha256 -Path $stageMq5) -cne [string]$request.source_sha256) {
             throw 'Staged source SHA-256 drift.'
+        }
+        foreach ($binding in @(
+            @($controllerScript, [string]$request.controller_path, [string]$request.controller_sha256),
+            @($compileOne, [string]$request.compile_one_path, [string]$request.compile_one_sha256),
+            @($metaEditor, [string]$request.metaeditor_path, [string]$request.metaeditor_sha256),
+            @($pwsh, [string]$request.pwsh_path, [string]$request.pwsh_sha256),
+            @($stageMq5, [string]$request.source_path, [string]$request.source_sha256)
+        )) {
+            if (-not ([IO.Path]::GetFullPath([string]$binding[0])).Equals([IO.Path]::GetFullPath([string]$binding[1]), [StringComparison]::OrdinalIgnoreCase) -or
+                (Get-Sha256 ([string]$binding[0])) -cne [string]$binding[2]) { throw 'Compile child fixed-byte binding drifted.' }
         }
         if (@(Get-Dev1Processes).Count -ne 0) { throw 'DEV1 was not idle in child preflight.' }
 
@@ -230,9 +570,12 @@ function Invoke-CompileChild {
         foreach ($target in @($profileInclude, $portableInclude)) { Assert-PhysicalPath -Path $target }
         $expectedTargets = @([IO.Path]::GetFullPath($profileInclude), [IO.Path]::GetFullPath($portableInclude)) | Sort-Object -Unique
         $includeSnapshot = Get-RepoIncludeSnapshot
+        if (Get-CanonicalObjectSha256 $includeSnapshot -cne [string]$request.repo_include_snapshot_sha256) {
+            throw 'Compile child repository include snapshot drifted before compile.'
+        }
 
-        $buildRoot = Join-Path $childRunRoot 'compile_one_build'
-        $reportRoot = Join-Path $childRunRoot 'compile_one_report'
+        $buildRoot = Join-Path $outputRoot 'compile_one_build'
+        $reportRoot = Join-Path $outputRoot 'compile_one_report'
         $output = @(& $pwsh -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $compileOne `
             -EAPath $stageMq5 -Strict -MetaEditorPath $metaEditor -BuildRoot $buildRoot -ReportRoot $reportRoot 2>&1)
         $compileExit = $LASTEXITCODE
@@ -270,6 +613,14 @@ function Invoke-CompileChild {
         $audit = Export-IncludePathAudit -CompileLog $compileLog -AllowedRoots $includeTargets -StageRoot $stageRoot -Path $includeAudit
         $includedPaths = [int]$audit.count
         $outsidePaths = [int]$audit.outside
+        if ((Get-Sha256 $RequestPath) -cne $ExpectedRequestSha256 -or
+            (Get-Sha256 $controllerScript) -cne [string]$request.controller_sha256 -or
+            (Get-Sha256 $compileOne) -cne [string]$request.compile_one_sha256 -or
+            (Get-Sha256 $metaEditor) -cne [string]$request.metaeditor_sha256 -or
+            (Get-Sha256 $stageMq5) -cne [string]$request.source_sha256 -or
+            (Get-CanonicalObjectSha256 (Get-RepoIncludeSnapshot)) -cne [string]$request.repo_include_snapshot_sha256) {
+            throw 'Compile child fixed bytes changed during compile.'
+        }
         if (@(Get-Dev1Processes).Count -ne 0) { throw 'DEV1 process remained after compile.' }
         $success = $true
     } catch {
@@ -283,9 +634,14 @@ function Invoke-CompileChild {
             try { Stop-Process -Id ([int]$process.ProcessId) -Force -ErrorAction Stop } catch { }
         }
         $result = [ordered]@{
+            schema_version = 2
+            artifact_type = 'QM5_20002_DEV1_V3_COMPILE_CHILD_RESULT'
             success = $success
             failure = $failure
             run_root = $childRunRoot
+            run_id = if ($null -ne $request) { [string]$request.run_id } else { $null }
+            nonce = if ($null -ne $request) { [string]$request.nonce } else { $null }
+            request_sha256 = $ExpectedRequestSha256
             identity_sid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
             metaeditor_path = $metaEditor
             metaeditor_sha256 = if (Test-Path $metaEditor) { Get-Sha256 $metaEditor } else { $null }
@@ -303,6 +659,11 @@ function Invoke-CompileChild {
             included_paths_count = $includedPaths
             outside_include_paths_count = $outsidePaths
             include_sync_targets = $includeTargets
+            lane_contract_sha256 = if ($null -ne $request) { [string]$request.lane_contract_sha256 } else { $null }
+            machine_credential_sha256 = if ($null -ne $request) { [string]$request.machine_credential_sha256 } else { $null }
+            machine_credential_helper_sha256 = if ($null -ne $request) { [string]$request.machine_credential_helper_sha256 } else { $null }
+            rotation_receipt_sha256 = if ($null -ne $request) { [string]$request.rotation_receipt_sha256 } else { $null }
+            cleanup_helper_sha256 = if ($null -ne $request) { [string]$request.cleanup_helper_sha256 } else { $null }
             started_utc = $started.ToString('o')
             finished_utc = (Get-Date).ToUniversalTime().ToString('o')
         }
