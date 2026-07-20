@@ -135,11 +135,12 @@ ZERO = Decimal("0")
 CENT = Decimal("0.01")
 TIMEFRAME = "M5"
 DUPLICATES = 2
-MAX_INFRA_WARMUPS_PER_CELL = 2
-MAX_ATTEMPTS_PER_CELL = DUPLICATES + MAX_INFRA_WARMUPS_PER_CELL
+MAX_POSTFLIGHT_INFRA_WARMUPS_PER_CELL = 2
+MAX_ATTEMPTS_PER_CELL = DUPLICATES + MAX_POSTFLIGHT_INFRA_WARMUPS_PER_CELL
 RUN_TIMEOUT_SECONDS = 28800
+RUN_ATTEMPT_OVERHEAD_SECONDS = 600
 CELL_CONTROLLER_TIMEOUT_SECONDS = (
-    MAX_ATTEMPTS_PER_CELL * (RUN_TIMEOUT_SECONDS + 120)
+    MAX_ATTEMPTS_PER_CELL * (RUN_TIMEOUT_SECONDS + RUN_ATTEMPT_OVERHEAD_SECONDS)
 ) + 1800
 LAUNCHER_REVISION = 3
 SCHEDULED_TASK_PREFIX = "QM_QM10834_AUDIT_"
@@ -1324,10 +1325,12 @@ def execution_contract() -> dict[str, Any]:
         "factory_terminal_pool_used": False,
         "maximum_alternate_attempts": 1,
         "accepted_duplicates_per_cell": DUPLICATES,
-        "maximum_infrastructure_warmups_per_cell": MAX_INFRA_WARMUPS_PER_CELL,
+        "maximum_postflight_acceptable_infrastructure_warmups_per_cell": MAX_POSTFLIGHT_INFRA_WARMUPS_PER_CELL,
         "maximum_attempts_per_cell": MAX_ATTEMPTS_PER_CELL,
         "maximum_native_starts": len(WINDOWS) * MAX_ATTEMPTS_PER_CELL,
-        "allowed_infrastructure_warmup_verdicts": ["BARS_ZERO", "NO_HISTORY"],
+        "native_start_budget_is_outcome_independent": True,
+        "postflight_acceptable_infrastructure_warmup_verdicts": ["BARS_ZERO", "NO_HISTORY"],
+        "postflight_rejects_every_nonprefix_or_nonzero_warmup": True,
         "native_attempt_claim_path": str(NATIVE_ATTEMPT_CLAIM_PATH.resolve()),
         "native_attempt_claim_mode": "ATOMIC_CREATE_ONCE_BEFORE_FIRST_CONTROLLER_EXECUTION",
         "native_launch_lock_path": str(NATIVE_LAUNCH_LOCK_PATH.resolve()),
@@ -1350,8 +1353,9 @@ def build_plan(symbol: str, set_binding: Mapping[str, Any], run_root: Path) -> d
                 "timeframe": TIMEFRAME,
                 "model": 4,
                 "duplicates": DUPLICATES,
-                "maximum_infrastructure_warmups": MAX_INFRA_WARMUPS_PER_CELL,
+                "maximum_postflight_acceptable_infrastructure_warmups": MAX_POSTFLIGHT_INFRA_WARMUPS_PER_CELL,
                 "maximum_attempts": MAX_ATTEMPTS_PER_CELL,
+                "native_start_budget_is_outcome_independent": True,
                 "set": dict(set_binding),
                 "output_root": str((run_root / "native" / window.cell_id).resolve()),
             }
@@ -1731,17 +1735,19 @@ def validate_authorization(
         "status": "AUTHORIZED",
         "analysis_id": ANALYSIS_ID,
         "pre_receipt_sha256": pre_sha256.lower(),
-        "scope": "QM5_10834_NDX_4_CELLS_X_2_ACCEPTED_DUPLICATES_MAX_2_INFRA_WARMUPS_MODEL4",
+        "scope": "QM5_10834_NDX_4_CELLS_X_2_ACCEPTED_DUPLICATES_MAX_4_NATIVE_STARTS_POSTFLIGHT_MAX_2_ACCEPTABLE_INFRA_WARMUPS_MODEL4",
         "authorized_by": "OWNER",
         "authorized_symbol": RESEARCH_SYMBOL,
         "authorized_cells": [window.cell_id for window in WINDOWS],
         "duplicates_per_cell": DUPLICATES,
-        "maximum_infrastructure_warmups_per_cell": MAX_INFRA_WARMUPS_PER_CELL,
+        "maximum_postflight_acceptable_infrastructure_warmups_per_cell": MAX_POSTFLIGHT_INFRA_WARMUPS_PER_CELL,
         "maximum_attempts_per_cell": MAX_ATTEMPTS_PER_CELL,
         "maximum_native_starts": len(WINDOWS) * MAX_ATTEMPTS_PER_CELL,
-        "allowed_infrastructure_warmup_verdicts": ["BARS_ZERO", "NO_HISTORY"],
-        "warmups_must_precede_accepted_duplicates": True,
-        "warmups_must_be_zero_trade_zero_result": True,
+        "native_start_budget_is_outcome_independent": True,
+        "postflight_acceptable_infrastructure_warmup_verdicts": ["BARS_ZERO", "NO_HISTORY"],
+        "postflight_warmups_must_precede_accepted_duplicates": True,
+        "postflight_warmups_must_be_zero_trade_zero_result": True,
+        "postflight_rejects_every_nonprefix_or_nonzero_warmup": True,
         "model": 4,
         "authorize_native_outcomes": True,
     }
@@ -1779,9 +1785,11 @@ def _native_attempt_claim_basis(
         "attempt_number": 1,
         "maximum_alternate_attempts": 1,
         "accepted_duplicates_per_cell": DUPLICATES,
-        "maximum_infrastructure_warmups_per_cell": MAX_INFRA_WARMUPS_PER_CELL,
+        "maximum_postflight_acceptable_infrastructure_warmups_per_cell": MAX_POSTFLIGHT_INFRA_WARMUPS_PER_CELL,
         "maximum_attempts_per_cell": MAX_ATTEMPTS_PER_CELL,
         "maximum_native_starts": len(WINDOWS) * MAX_ATTEMPTS_PER_CELL,
+        "native_start_budget_is_outcome_independent": True,
+        "postflight_rejects_every_nonprefix_or_nonzero_warmup": True,
         "classification": "ATOMIC_GLOBAL_ONE_SHOT_NATIVE_EXECUTION_CLAIM",
         "pre_receipt": file_binding(pre_path, pre_sha256),
         "run_root": str(Path(str(pre["run_root"])).resolve()),
@@ -3044,9 +3052,6 @@ def validate_runner_summary(
         "period": TIMEFRAME,
         "requested_runs": DUPLICATES,
         "max_run_attempts": MAX_ATTEMPTS_PER_CELL,
-        "maximum_infrastructure_warmups": MAX_INFRA_WARMUPS_PER_CELL,
-        "warmup_policy": "PREFIX_ONLY_BEFORE_FIRST_OK",
-        "allowed_infrastructure_warmup_verdicts": ["BARS_ZERO", "NO_HISTORY"],
         "deterministic": True,
         "oninit_failure_detected": False,
         "log_bomb_detected": False,
@@ -3072,7 +3077,7 @@ def validate_runner_summary(
         or isinstance(non_ok, bool)
         or not isinstance(non_ok, int)
         or non_ok != len(runs) - DUPLICATES
-        or not 0 <= non_ok <= MAX_INFRA_WARMUPS_PER_CELL
+        or not 0 <= non_ok <= MAX_POSTFLIGHT_INFRA_WARMUPS_PER_CELL
     ):
         raise InvalidEvidence("native runner warm-up attempt counters drift")
     warmups = runs[:non_ok]

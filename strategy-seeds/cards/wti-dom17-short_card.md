@@ -35,7 +35,8 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: PENDING_ENQUEUE
+q02_status: QUEUED
+q02_work_item_id: d0e922b9-a86c-4cc7-bf2b-d167c3838cfc
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 ---
 
@@ -118,3 +119,10 @@ days 8 and 26 as significant mean differences. No stronger inference is made.
 This mission-approved card authorizes one research/backtest build and Q02
 enqueue only. It does not authorize a live setfile, AutoTrading, T_Live,
 deployment manifests, portfolio admission or portfolio-gate changes.
+
+## Pipeline history
+
+| version | date | build / phase | verdict |
+|---|---|---|---|
+| v1 | 2026-07-20 | strict compile and build check | PASS |
+| v1-q02 | 2026-07-20 | Q02 work item `d0e922b9-a86c-4cc7-bf2b-d167c3838cfc` | PENDING |

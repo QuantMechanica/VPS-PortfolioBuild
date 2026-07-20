@@ -197,9 +197,6 @@ def _runner_summary(cell: dict[str, object]) -> dict[str, object]:
         "period": "M5",
         "requested_runs": 2,
         "max_run_attempts": 4,
-        "maximum_infrastructure_warmups": 2,
-        "warmup_policy": "PREFIX_ONLY_BEFORE_FIRST_OK",
-        "allowed_infrastructure_warmup_verdicts": ["BARS_ZERO", "NO_HISTORY"],
         "attempted_runs": 2,
         "non_ok_attempts": 0,
         "deterministic": True,
@@ -258,8 +255,9 @@ def test_frozen_plan_is_one_symbol_four_disjoint_cells_and_two_duplicates(
     assert all(
         row["model"] == 4
         and row["duplicates"] == 2
-        and row["maximum_infrastructure_warmups"] == 2
+        and row["maximum_postflight_acceptable_infrastructure_warmups"] == 2
         and row["maximum_attempts"] == 4
+        and row["native_start_budget_is_outcome_independent"] is True
         for row in plan["cells"]
     )
     subject.validate_window_contract()
@@ -1038,17 +1036,19 @@ def test_authorization_is_owner_scoped_short_lived_and_pre_bound(tmp_path: Path)
         "status": "AUTHORIZED",
         "analysis_id": subject.ANALYSIS_ID,
         "pre_receipt_sha256": "a" * 64,
-        "scope": "QM5_10834_NDX_4_CELLS_X_2_ACCEPTED_DUPLICATES_MAX_2_INFRA_WARMUPS_MODEL4",
+        "scope": "QM5_10834_NDX_4_CELLS_X_2_ACCEPTED_DUPLICATES_MAX_4_NATIVE_STARTS_POSTFLIGHT_MAX_2_ACCEPTABLE_INFRA_WARMUPS_MODEL4",
         "authorized_by": "OWNER",
         "authorized_symbol": "NDX.DWX",
         "authorized_cells": [window.cell_id for window in subject.WINDOWS],
         "duplicates_per_cell": 2,
-        "maximum_infrastructure_warmups_per_cell": 2,
+        "maximum_postflight_acceptable_infrastructure_warmups_per_cell": 2,
         "maximum_attempts_per_cell": 4,
         "maximum_native_starts": 16,
-        "allowed_infrastructure_warmup_verdicts": ["BARS_ZERO", "NO_HISTORY"],
-        "warmups_must_precede_accepted_duplicates": True,
-        "warmups_must_be_zero_trade_zero_result": True,
+        "native_start_budget_is_outcome_independent": True,
+        "postflight_acceptable_infrastructure_warmup_verdicts": ["BARS_ZERO", "NO_HISTORY"],
+        "postflight_warmups_must_precede_accepted_duplicates": True,
+        "postflight_warmups_must_be_zero_trade_zero_result": True,
+        "postflight_rejects_every_nonprefix_or_nonzero_warmup": True,
         "model": 4,
         "authorize_native_outcomes": True,
         "created_utc": (now - timedelta(minutes=1)).isoformat(),
@@ -1469,8 +1469,9 @@ def test_persisted_task_timeout_covers_all_cells_and_cleanup_margin(tmp_path: Pa
             ]
         }
     }
-    assert subject.CELL_CONTROLLER_TIMEOUT_SECONDS == 117_480
-    assert subject.required_scheduled_task_timeout(pre) == 473_520
+    assert subject.RUN_ATTEMPT_OVERHEAD_SECONDS == 600
+    assert subject.CELL_CONTROLLER_TIMEOUT_SECONDS == 119_400
+    assert subject.required_scheduled_task_timeout(pre) == 481_200
 
 
 def test_persisted_launch_job_binds_s4u_helper_python_plan_and_state(
@@ -1504,7 +1505,7 @@ def test_persisted_launch_job_binds_s4u_helper_python_plan_and_state(
         "logon_type": "S4U",
         "run_level": "Highest",
         "multiple_instances": "IgnoreNew",
-        "execution_limit_seconds": 473_520,
+        "execution_limit_seconds": 481_200,
         "helper": helper,
         "python": python,
     }
