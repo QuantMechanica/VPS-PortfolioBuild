@@ -52,3 +52,10 @@ right slot for the deferred P1.9 resolver regen (12074/12247) — H-A is indepen
    (1392/2992 approved cards lack it today) + literal TF token in body (existing rule,
    enforce at validation not post-hoc).
 Tests for each; keep verdict taxonomy changes consistent with farmctl passthrough.
+
+## H-D — new registry-only ea_id duplicates (added 2026-07-20 evening sweep)
+
+`farmctl health` flags fresh registry-only duplicate ACTIVE rows (P1.9 class, no dirs):
+`1158` (french-weekend-effect-idx vs qp-january-barometer) and `1258` (hopwood pair).
+Re-key with the proven P1.9 machinery + test_registry_rekey_p19 coverage; registry-only,
+so no dir renames expected — verify before touching.
