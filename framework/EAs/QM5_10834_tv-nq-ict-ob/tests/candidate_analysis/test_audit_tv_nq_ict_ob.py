@@ -252,6 +252,8 @@ def test_hash_binding_role_closure_is_explicit() -> None:
         "runner",
         "report_parser",
         "powershell",
+        "python",
+        "scheduled_task_helper",
         "tool",
     }
 
@@ -646,74 +648,182 @@ def test_authorization_is_owner_scoped_short_lived_and_pre_bound(tmp_path: Path)
         subject.validate_authorization(path, "a" * 64, now=now)
 
 
-def test_resume_only_accepts_no_outcome_interruption_and_stale_start() -> None:
+def _preoutcome_state(status: str = "PENDING") -> dict[str, object]:
     pending_cells = [
         {"cell_id": window.cell_id, "status": "PENDING", "attempts": []}
         for window in subject.WINDOWS
     ]
-    assert subject.resume_eligible(
-        {"status": "PENDING", "worker_pid": None, "cells": pending_cells}
-    )
-    interrupted = [dict(row) for row in pending_cells]
-    interrupted[0] = {
-        "cell_id": "DEV",
-        "status": "INTERRUPTED_NO_OUTCOME",
-        "attempts": [{"summary": None, "outcome_artifacts": []}],
-    }
-    state = {"status": "INTERRUPTED_RESUMABLE", "worker_pid": None, "cells": interrupted}
-    assert subject.resume_eligible(state)
-    interrupted[0]["attempts"][0]["summary"] = {"sha256": "a" * 64}
-    assert not subject.resume_eligible(state)
-
-    now = datetime(2026, 7, 20, 12, 0, tzinfo=timezone.utc)
-    stale = {
-        "status": "STARTING_WORKER",
+    return {
+        "launcher_revision": subject.LAUNCHER_REVISION,
+        "status": status,
         "worker_pid": None,
-        "updated_utc": (now - timedelta(minutes=6)).isoformat(),
+        "finished_utc": None,
+        "active_cell": None,
+        "outcome_possible_since_utc": None,
         "cells": pending_cells,
     }
-    assert subject.resume_eligible(stale, now=now)
-    stale["updated_utc"] = (now - timedelta(minutes=1)).isoformat()
-    assert not subject.resume_eligible(stale, now=now)
 
 
-def test_resume_archives_non_outcome_logs_and_resets_accepted_attempt_count(
+@pytest.mark.parametrize("status", ["PENDING", "PENDING_RESUME", "RUNNING"])
+def test_resume_accepts_only_strict_preoutcome_state(status: str) -> None:
+    assert subject.resume_eligible(_preoutcome_state(status))
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("launcher_revision", 1),
+        ("status", "COMPLETE"),
+        ("finished_utc", "2026-07-20T12:00:00+00:00"),
+        ("error", "failure"),
+        ("worker_error", {"type": "AuditError"}),
+        ("active_cell", {"cell_id": "DEV"}),
+        ("outcome_possible_since_utc", "2026-07-20T12:00:00+00:00"),
+    ],
+)
+def test_resume_rejects_every_legacy_or_outcome_surface(field: str, value: object) -> None:
+    state = _preoutcome_state()
+    state[field] = value
+    assert not subject.resume_eligible(state)
+    attempted = _preoutcome_state()
+    attempted["cells"][0]["attempts"] = [{"summary": None}]
+    assert not subject.resume_eligible(attempted)
+    complete = _preoutcome_state()
+    complete["cells"][0]["status"] = "COMPLETE"
+    assert not subject.resume_eligible(complete)
+
+
+def test_persisted_task_timeout_covers_all_cells_and_cleanup_margin(tmp_path: Path) -> None:
+    pre = {
+        "plan": {
+            "cells": [
+                {"output_root": str(tmp_path / window.cell_id)}
+                for window in subject.WINDOWS
+            ]
+        }
+    }
+    assert subject.CELL_CONTROLLER_TIMEOUT_SECONDS == 59_400
+    assert subject.required_scheduled_task_timeout(pre) == 241_200
+
+
+def test_persisted_launch_job_binds_s4u_helper_python_plan_and_state(
     tmp_path: Path,
 ) -> None:
-    run_root = tmp_path / "run"
-    output_root = run_root / "native" / "DEV"
-    output_root.mkdir(parents=True)
-    (output_root / "controller.stdout.log").write_text("non-outcome", encoding="utf-8")
-    cell = {"cell_id": "NDX_DWX_DEV", "output_root": str(output_root)}
-    state_cell = {
-        "cell_id": "NDX_DWX_DEV",
-        "status": "INTERRUPTED_NO_OUTCOME",
-        "attempts": [{"summary": None, "outcome_artifacts": [], "exit_code": 2}],
+    state_path = tmp_path / "launch_state.json"
+    pre_path = tmp_path / "pre.json"
+    pre_sha256 = "b" * 64
+    helper = {"path": "helper.ps1", "size": 1, "sha256": "1" * 64}
+    python = {"path": "python.exe", "size": 1, "sha256": "2" * 64}
+    tool = {"path": "audit.py", "size": 1, "sha256": "3" * 64}
+    pre = {
+        "plan": {
+            "plan_sha256": "c" * 64,
+            "cells": [
+                {"output_root": str(tmp_path / window.cell_id)}
+                for window in subject.WINDOWS
+            ],
+        },
+        "bindings": {
+            "scheduled_task_helper": helper,
+            "python": python,
+            "tool": tool,
+        },
     }
-    subject._archive_interrupted_no_outcome({"run_root": str(run_root)}, cell, state_cell)
-    assert state_cell["status"] == "PENDING"
-    assert state_cell["attempts"] == []
-    assert len(state_cell["interruptions"]) == 1
-    assert not output_root.exists()
-    archived = state_cell["interruptions"][0]
-    assert archived["artifacts"][0]["sha256"]
-
-
-def test_outcome_artifact_makes_interrupted_cell_non_resumable(tmp_path: Path) -> None:
-    output_root = tmp_path / "run" / "native" / "DEV"
-    output_root.mkdir(parents=True)
-    (output_root / "report.html").write_text("opaque outcome", encoding="utf-8")
-    state_cell = {
-        "status": "INTERRUPTED_NO_OUTCOME",
-        "attempts": [{"summary": None, "outcome_artifacts": []}],
+    scheduler = {
+        "mode": "WINDOWS_TASK_SCHEDULER_S4U_ON_DEMAND",
+        "task_name": subject.scheduled_task_name(pre_sha256, state_path),
+        "task_path": "\\",
+        "principal_sid": "S-1-5-21-123-456-789-500",
+        "logon_type": "S4U",
+        "run_level": "Highest",
+        "multiple_instances": "IgnoreNew",
+        "execution_limit_seconds": 241_200,
+        "helper": helper,
+        "python": python,
     }
-    with pytest.raises(subject.InvalidEvidence, match="outcome artifact appeared"):
-        subject._archive_interrupted_no_outcome(
-            {"run_root": str(tmp_path / "run")},
-            {"cell_id": "NDX_DWX_DEV", "output_root": str(output_root)},
-            state_cell,
-        )
+    job = {
+        "schema_version": subject.SCHEMA_VERSION,
+        "launcher_revision": subject.LAUNCHER_REVISION,
+        "artifact_type": "QM5_10834_NATIVE_LAUNCH_JOB",
+        "analysis_id": subject.ANALYSIS_ID,
+        "created_utc": datetime.now(timezone.utc).isoformat(),
+        "pre_receipt_path": str(pre_path.resolve()),
+        "pre_receipt_sha256": pre_sha256,
+        "state_path": str(state_path.resolve()),
+        "plan_sha256": "c" * 64,
+        "authorization": {
+            "binding": {"path": "authorization.json", "size": 1, "sha256": "4" * 64},
+            "payload_sha256": "5" * 64,
+        },
+        "tool": tool,
+        "scheduler": scheduler,
+    }
+    subject._validate_launch_job(job, pre, pre_path, pre_sha256, state_path)
+    scheduler["run_level"] = "Limited"
+    with pytest.raises(subject.AuthorizationError, match="identity/plan/tool drift"):
+        subject._validate_launch_job(job, pre, pre_path, pre_sha256, state_path)
 
+
+def test_persisted_helper_is_s4u_triggerless_and_never_overwrites_task() -> None:
+    helper = subject.SCHEDULED_TASK_HELPER_PATH.read_text(encoding="utf-8-sig")
+    assert "-LogonType S4U" in helper
+    assert "-RunLevel Highest" in helper
+    assert "-MultipleInstances IgnoreNew" in helper
+    assert "New-ScheduledTaskTrigger" not in helper
+    assert "Register-ScheduledTask" in helper
+    assert " -Force" not in helper
+    assert "_run-plan --job" in helper
+
+
+def test_resume_fence_rejects_any_native_worker_artifact(tmp_path: Path) -> None:
+    state_path = tmp_path / "launch_state.json"
+    job_path = tmp_path / "launch_job.json"
+    _write_json(job_path, {"immutable": True})
+    output_roots = [tmp_path / "native" / window.cell_id for window in subject.WINDOWS]
+    pre = {
+        "plan": {
+            "cells": [
+                {"cell_id": window.cell_id, "output_root": str(output_root)}
+                for window, output_root in zip(subject.WINDOWS, output_roots)
+            ]
+        }
+    }
+    authorization = {"binding": {"path": "auth"}, "payload_sha256": "a" * 64}
+    scheduler = {"task_name": "QM_QM10834_AUDIT_" + "a" * 24}
+    job = {
+        "authorization": authorization,
+        "scheduler": scheduler,
+        "pre_receipt_path": "pre.json",
+        "pre_receipt_sha256": "b" * 64,
+        "plan_sha256": "c" * 64,
+    }
+    state = _preoutcome_state()
+    state.update(
+        {
+            "job": subject.file_binding(job_path),
+            "authorization": authorization,
+            "scheduler": scheduler,
+            "pre_receipt_path": "pre.json",
+            "pre_receipt_sha256": "b" * 64,
+            "plan_sha256": "c" * 64,
+        }
+    )
+    subject._assert_resume_outcome_fence(state, job, pre, state_path)
+    output_roots[0].mkdir(parents=True)
+    (output_roots[0] / "controller.stdout.log").write_text("started", encoding="utf-8")
+    with pytest.raises(subject.AuthorizationError, match="artifact tree is non-empty"):
+        subject._assert_resume_outcome_fence(state, job, pre, state_path)
+
+
+def test_worker_persists_outcome_fence_before_native_subprocess() -> None:
+    source = TOOL.read_text(encoding="utf-8-sig")
+    worker_start = source.index("def _worker_run(")
+    marker = source.index('state["outcome_possible_since_utc"]', worker_start)
+    checkpoint = source.index("atomic_json(state_path, state, replace=True)", marker)
+    native_start = source.index("completed = subprocess.run(", checkpoint)
+    assert worker_start < marker < checkpoint < native_start
+    assert "DETACHED_PROCESS" not in source
+    assert "def _spawn_worker" not in source
 
 def test_invalid_receipt_is_distinct_from_valid_merit_fail() -> None:
     receipt = subject.invalid_receipt("POST", subject.InvalidEvidence("broken evidence"))

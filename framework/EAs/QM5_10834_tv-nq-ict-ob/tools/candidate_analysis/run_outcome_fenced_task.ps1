@@ -65,7 +65,7 @@ function Get-QmTaskContract {
         throw "RepoRoot is not a directory: $repo"
     }
     $arguments = (Quote-QmTaskArgument -Value $tool) +
-        ' _worker --job ' + (Quote-QmTaskArgument -Value $job)
+        ' _run-plan --job ' + (Quote-QmTaskArgument -Value $job)
     return [pscustomobject]@{
         PythonExe = $python
         ToolPath = $tool
