@@ -35,6 +35,10 @@ a fresh per-tick news check blocks or loses calendar authority.
 
 ## 2. Parameters
 
+All configured clock minutes must be M5-aligned, the windows must remain in
+the order shown below, and the Asian window must span exactly four hours (48
+bars). Invalid individual ranges or cross-window combinations fail at init.
+
 | Parameter | Default | Range | Meaning |
 |---|---:|---:|---|
 | `strategy_asia_start_hour` | 3 | 0–23 | Broker hour when Asian range recording begins. |
