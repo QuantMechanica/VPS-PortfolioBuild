@@ -227,7 +227,7 @@
     "framework/registry/live_commission.json": "119f795cefce2f819f0c7aae3bddb87affbffa771f596df48d182cf89989e197",
     "framework/registry/venue_cost_model.json": "7dfafe53749e5c45be0cb37568b6e3491c109f546fafaf799f6ea82efdb688d7",
     "pine_v1_source_utf8": "6f2d7e364d64037382b7cf18f04f8fb971f3534d4b838f73c118eab48e551ce8",
-    "tv_ifvg_sweep_primary_source_evidence.json": "TO_BE_BOUND_BY_CONTRACT_COMMIT",
-    "tv_ifvg_sweep_spread_input_snapshot.json": "TO_BE_BOUND_BY_CONTRACT_COMMIT"
+    "tv_ifvg_sweep_primary_source_evidence.json": "5c872f816aeab895d612573e42c0f8857c1b41577e89f27f579b80f33ab083e3",
+    "tv_ifvg_sweep_spread_input_snapshot.json": "f350adafa5920d16166c61089b94cf652aa093530822164ecce1f8a49fb0333a"
   }
 }
