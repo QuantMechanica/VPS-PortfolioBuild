@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-20T18:07:02.7794433Z",
-    "total":  3365,
+    "generated_at":  "2026-07-20T19:07:02.8242988Z",
+    "total":  3366,
     "items":  [
                   {
                       "slug":  "ath-breakout-atr-trail",
@@ -1346,6 +1346,12 @@
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-07-09T21:46:03.8544317Z"
+                  },
+                  {
+                      "slug":  "wti-dom17-short_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-20T18:36:22.4230828Z"
                   },
                   {
                       "slug":  "wti-feb-prem_card",

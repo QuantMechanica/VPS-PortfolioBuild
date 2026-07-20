@@ -1,0 +1,46 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        13151
+; ea_slug:      energy-volbeta
+; ea_version:   v5.0
+; set_version:  s20260720-stress-harsh
+; symbol:       QM5_13151_XTI_XNG_VBETA_D1
+; host_symbol:  XTIUSD.DWX
+; timeframe:    D1
+; environment:  q06_stress_harsh
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   771cf55f01477f0a82def4140ecbd559c01c904f2602d8ad5423b7ca0b58439b
+; author:       Development
+; date:         2026-07-20
+;==========================================================
+qm_ea_id=13151
+qm_magic_slot_offset=0
+qm_rng_seed=17
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; Q02 structural baseline: no external event dependency.
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_mode_legacy=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+; Source-aligned monthly paired holding period.
+qm_friday_close_enabled=0
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.1000
+; strategy-specific locked baseline
+strategy_lookback_d1=252
+strategy_rv_window_d1=20
+strategy_jump_exclusion_z=2.0
+strategy_min_smooth_days=200
+strategy_history_bars=360
+strategy_max_endpoint_gap_days=10
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=3.5
+strategy_max_hold_days=40
+strategy_xti_max_spread_pts=1500
+strategy_xng_max_spread_pts=3000
+strategy_deviation_points=20
