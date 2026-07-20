@@ -164,13 +164,21 @@ void QM_KillSwitchSaveState()
    FileClose(fh);
 }
 
-void QM_KillSwitchRestoreState()
+// Restore outcome (review 5f860f79 item 1): the caller must know WHY nothing
+// was applied. A valid same-magic state saved under a DIFFERENT anchor
+// configuration is NOT stale — it belongs to the documented post-init
+// QM_KillSwitchSetDayAnchor consumer and must never be overwritten by init.
+#define QM_KS_RESTORE_APPLIED          1
+#define QM_KS_RESTORE_NONE             0
+#define QM_KS_RESTORE_FOREIGN_CONFIG (-1)
+
+int QM_KillSwitchRestoreState()
 {
    if(MQLInfoInteger(MQL_TESTER) != 0 || StringLen(g_qm_ks_state_file) == 0)
-      return;
+      return QM_KS_RESTORE_NONE;
    int fh = FileOpen(g_qm_ks_state_file, FILE_READ | FILE_TXT | FILE_ANSI | FILE_SHARE_READ);
    if(fh == INVALID_HANDLE)
-      return; // first run on this terminal — nothing to restore
+      return QM_KS_RESTORE_NONE; // first run on this terminal — nothing to restore
 
    int saved_day_key = -1, saved_halted = 0, saved_halt_day_key = -1;
    int saved_anchor_offset = 0, saved_anchor_max_be = 0;
@@ -196,15 +204,34 @@ void QM_KillSwitchRestoreState()
    }
    FileClose(fh);
 
-   if(saved_magic != g_qm_ks_magic || saved_day_key != g_qm_ks_day_key || saved_anchor <= 0.0 ||
-      saved_anchor_offset != g_qm_ks_day_anchor_offset_hours ||
-      saved_anchor_max_be != (g_qm_ks_anchor_use_max_be ? 1 : 0))
+   if(saved_magic != g_qm_ks_magic || saved_anchor <= 0.0)
    {
       QM_LogEvent(QM_INFO, "KS_STATE_STALE_IGNORED",
                   StringFormat("{\"saved_day_key\":%d,\"current_day_key\":%d,\"saved_magic\":%I64d,\"saved_anchor_offset\":%d,\"saved_anchor_max_be\":%d}",
                                saved_day_key, g_qm_ks_day_key, saved_magic,
                                saved_anchor_offset, saved_anchor_max_be));
-      return;
+      return QM_KS_RESTORE_NONE;
+   }
+   // Review 5f860f79 item-1 fix: config mismatch is checked BEFORE the day-key
+   // comparison — day_key itself is computed under the anchor offset, so a
+   // foreign-config file cannot even be judged stale under our boundary. It is
+   // preserved for the setter, which re-restores after adopting the config.
+   if(saved_anchor_offset != g_qm_ks_day_anchor_offset_hours ||
+      saved_anchor_max_be != (g_qm_ks_anchor_use_max_be ? 1 : 0))
+   {
+      QM_LogEvent(QM_INFO, "KS_STATE_FOREIGN_CONFIG_PRESERVED",
+                  StringFormat("{\"saved_anchor_offset\":%d,\"current_anchor_offset\":%d,\"saved_anchor_max_be\":%d,\"current_anchor_max_be\":%d}",
+                               saved_anchor_offset, g_qm_ks_day_anchor_offset_hours,
+                               saved_anchor_max_be, g_qm_ks_anchor_use_max_be ? 1 : 0));
+      return QM_KS_RESTORE_FOREIGN_CONFIG;
+   }
+   if(saved_day_key != g_qm_ks_day_key)
+   {
+      QM_LogEvent(QM_INFO, "KS_STATE_STALE_IGNORED",
+                  StringFormat("{\"saved_day_key\":%d,\"current_day_key\":%d,\"saved_magic\":%I64d,\"saved_anchor_offset\":%d,\"saved_anchor_max_be\":%d}",
+                               saved_day_key, g_qm_ks_day_key, saved_magic,
+                               saved_anchor_offset, saved_anchor_max_be));
+      return QM_KS_RESTORE_NONE;
    }
 
    // Review 83be4dd3 M-3: only the fileless KS_DAILY_LOSS halt is restored
@@ -225,6 +252,7 @@ void QM_KillSwitchRestoreState()
    else
       QM_LogEvent(QM_INFO, "KS_STATE_RESTORED_ANCHOR",
                   StringFormat("{\"day_start_equity\":%.2f}", saved_anchor));
+   return QM_KS_RESTORE_APPLIED;
 }
 
 void QM_KillSwitchRefreshBrokerDay()
@@ -487,8 +515,13 @@ bool QM_KillSwitchInit(const int ea_id,
    // let a same-day persisted state override it, then persist the result.
    g_qm_ks_day_key = QM_KillSwitchCurrentDayKey();
    g_qm_ks_day_start_equity = QM_KillSwitchAnchorEquity();
-   QM_KillSwitchRestoreState();
-   QM_KillSwitchSaveState();
+   // Review 5f860f79 item-1 fix: init must NOT persist over a valid same-magic
+   // state saved under a different anchor configuration — that file belongs to
+   // the documented post-init QM_KillSwitchSetDayAnchor call, which re-restores
+   // it after adopting the configuration. Saving here truncated it with the
+   // default-config fresh anchor and lost the daily halt + depletion baseline.
+   if(QM_KillSwitchRestoreState() != QM_KS_RESTORE_FOREIGN_CONFIG)
+      QM_KillSwitchSaveState();
 
    QM_LogEvent(QM_INFO,
                "KILL_SWITCH_INIT",
