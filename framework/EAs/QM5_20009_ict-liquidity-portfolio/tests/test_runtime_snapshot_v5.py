@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import copy
 import hashlib
+import inspect
 import json
 import os
 import sys
@@ -95,6 +96,13 @@ def _verify(snapshot_root: Path, specs: list[dict[str, object]], binding: dict) 
     )
 
 
+def test_preflight_rechecks_full_freeze_data_and_external_runtime_after_copy() -> None:
+    source = inspect.getsource(fence.preflight)
+    assert source.count("freeze.check()") == 2
+    assert "rehash_selected_data(protocol, selected) != actual_data" in source
+    assert "_verify_external_runtime(" in source
+
+
 def test_workspace_mutation_after_pre_does_not_change_bound_execution(tmp_path: Path) -> None:
     source_root, snapshot_root, specs, binding = _snapshot_fixture(tmp_path)
     moving_runner = source_root / "framework/scripts/run_smoke.ps1"
@@ -144,6 +152,18 @@ def test_cross_run_snapshot_and_path_escape_are_rejected(tmp_path: Path) -> None
             freeze_identity=FREEZE_IDENTITY,
             request=REQUEST,
             expected_files=_expected_files(specs),
+        )
+
+    with pytest.raises(fence.FenceError, match="must not overlap"):
+        fence.create_runtime_snapshot(
+            source_repo_root=source_root,
+            snapshot_root=source_root / "receipt" / "runtime_snapshot",
+            run_id=RUN_ID,
+            artifact_type=ARTIFACT_TYPE,
+            freeze_identity=FREEZE_IDENTITY,
+            request=REQUEST,
+            selected_set_repo_relative="framework/EAs/QM5_20009/sets/selected.set",
+            file_specs=specs,
         )
 
     escaped_root = tmp_path / "escape_case"

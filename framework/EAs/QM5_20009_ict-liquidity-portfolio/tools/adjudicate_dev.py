@@ -1213,8 +1213,7 @@ def _validate_nested_validator_receipts(
             freeze[name], f"receipt {key.cell_id}.freeze_identity.{name}"
         )
         _expect(pre[name], expected_sha, f"validator PRE {key.cell_id}.{name}")
-        if name != "selected_data_sha256" or name in post:
-            _expect(post[name], expected_sha, f"validator POST {key.cell_id}.{name}")
+        _expect(post[name], expected_sha, f"validator POST {key.cell_id}.{name}")
     if not isinstance(pre["selected_data"], list):
         raise AdjudicationError(f"validator PRE {key.cell_id}.selected_data must be an array")
     _expect(

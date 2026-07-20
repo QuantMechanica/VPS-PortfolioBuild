@@ -804,6 +804,14 @@ def create_runtime_snapshot(
     root = Path(os.path.abspath(snapshot_root))
     if not root.is_absolute() or not source_root.is_absolute():
         raise FenceError("runtime snapshot/source roots must be absolute")
+    try:
+        common = Path(os.path.commonpath((source_root, root)))
+    except ValueError:
+        common = None
+    if common is not None and (
+        _same_path(common, source_root) or _same_path(common, root)
+    ):
+        raise FenceError("runtime snapshot and source repository roots must not overlap")
     _assert_no_reparse_components(source_root, "source repository root")
     _assert_no_reparse_components(root.parent, "runtime snapshot parent")
     try:

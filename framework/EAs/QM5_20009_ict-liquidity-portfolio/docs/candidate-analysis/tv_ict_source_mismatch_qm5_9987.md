@@ -48,7 +48,7 @@ It says:
 - defaults wait 2 bars, SL 15 pips, TP 30 pips;
 - one trade per sub-session and force-close at sub-session end plus two M15 bars.
 
-The committed [SPEC](../../../../QM5_9987_tv-ict-session-break-reentry-retest/SPEC.md) repeats that reversal behavior. The committed EA state enum contains `ST_ARMED_SHORT` after the high-side path and `ST_ARMED_LONG` after the low-side path, and its session exit is calculated from the selected sub-session end plus the configured buffer.
+The committed [SPEC](../../../QM5_9987_tv-ict-session-break-reentry-retest/SPEC.md) repeats that reversal behavior. The committed EA state enum contains `ST_ARMED_SHORT` after the high-side path and `ST_ARMED_LONG` after the low-side path, and its session exit is calculated from the selected sub-session end plus the configured buffer.
 
 ## Material mismatch matrix
 

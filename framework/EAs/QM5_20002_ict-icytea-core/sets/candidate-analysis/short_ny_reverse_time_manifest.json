@@ -1,0 +1,49 @@
+{
+  "analysis_id": "QM5_20002_SHORT_NY_REVERSE_TIME_SCREEN_001",
+  "artifact_type": "QM5_20002_SHORT_NY_SET_MANIFEST",
+  "contract_commit": "0119c8f73c0eca0a28537bbc7e82bd911517f3cc",
+  "contract_sha256": "5e75179523a36f876468e0d62de66962b2d5c3bf7016f3c7af773a8a19f95e74",
+  "schema_version": 1,
+  "sets": [
+    {
+      "arm": "A_SHORT_NY_NO_HTF",
+      "magic_slot": 0,
+      "path": "sets/candidate-analysis/QM5_20002_EURUSD_DWX_M1_short_ny_no_htf.set",
+      "sha256": "6f0ce9e97cd1aec5af6229af7a783600b5cdc8777d9dd743e1a2ed713a5a7abe",
+      "size": 1369,
+      "symbol": "EURUSD.DWX",
+      "timeframe": "M1",
+      "visible_input_count": 52
+    },
+    {
+      "arm": "A_SHORT_NY_NO_HTF",
+      "magic_slot": 1,
+      "path": "sets/candidate-analysis/QM5_20002_GBPUSD_DWX_M1_short_ny_no_htf.set",
+      "sha256": "a329dc0589f23b8648f9936e05eea14b49fa1e3f2ff5568a1c9a462e3331476a",
+      "size": 1369,
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "M1",
+      "visible_input_count": 52
+    },
+    {
+      "arm": "B_SHORT_NY_H1_BIAS",
+      "magic_slot": 0,
+      "path": "sets/candidate-analysis/QM5_20002_EURUSD_DWX_M1_short_ny_h1_bias.set",
+      "sha256": "377125269ec3a881c7a6fa7921f4475a7c7029ea2e5fbadcffd85e4df2dd1522",
+      "size": 1369,
+      "symbol": "EURUSD.DWX",
+      "timeframe": "M1",
+      "visible_input_count": 52
+    },
+    {
+      "arm": "B_SHORT_NY_H1_BIAS",
+      "magic_slot": 1,
+      "path": "sets/candidate-analysis/QM5_20002_GBPUSD_DWX_M1_short_ny_h1_bias.set",
+      "sha256": "5edfe01db43839cb31a5ce2feeb90b2611764dd18e3b0c90dde7345f9db0d473",
+      "size": 1369,
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "M1",
+      "visible_input_count": 52
+    }
+  ]
+}
