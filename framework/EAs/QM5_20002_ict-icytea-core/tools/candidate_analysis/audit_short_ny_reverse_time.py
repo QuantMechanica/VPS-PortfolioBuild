@@ -1596,8 +1596,21 @@ def audit_cell(
     core: Any,
     news: Mapping[str, Any],
 ) -> tuple[dict[str, Any], NativeAudit]:
+    if launch_cell.get("cell_id") != cell["cell_id"]:
+        raise PostflightError(f"launch cell identity drift: {cell['cell_id']}")
+    expected_command_sha = canonical_sha256(runner_command(pre, cell))
+    if launch_cell.get("command_sha256") != expected_command_sha:
+        raise PostflightError(f"bound runner command drift: {cell['cell_id']}")
+    runner_result = launch_cell.get("runner_result")
+    if not isinstance(runner_result, Mapping) or runner_result.get("success") is not True:
+        raise PostflightError(f"runner result is not successful: {cell['cell_id']}")
+    run_id = str(runner_result.get("run_id", ""))
+    if not re.fullmatch(r"[0-9]{8}T[0-9]{6}Z_[0-9a-f]{32}", run_id):
+        raise PostflightError(f"runner run_id malformed: {cell['cell_id']}")
     assert_binding(launch_cell["summary"], f"{cell['cell_id']} summary")
     summary_path = Path(str(launch_cell["summary"]["path"]))
+    if summary_path.resolve() != _find_summary(run_id):
+        raise PostflightError(f"runner run_id/summary path drift: {cell['cell_id']}")
     summary = load_json(summary_path)
     expected_summary = {
         "result": "PASS",
@@ -1617,6 +1630,22 @@ def audit_cell(
     drift = {key: (wanted, summary.get(key)) for key, wanted in expected_summary.items() if summary.get(key) != wanted}
     if drift:
         raise PostflightError(f"runner summary drift {cell['cell_id']}: {drift}")
+    news_diag = summary.get("news_calendar")
+    expected_seed_paths = {
+        Path(str(item["binding"]["path"])).resolve() for item in pre["news_calendars"]
+    }
+    observed_seed_paths: set[Path] = set()
+    if isinstance(news_diag, Mapping):
+        for key in ("primary_path", "secondary_path"):
+            if news_diag.get(key):
+                observed_seed_paths.add(Path(str(news_diag[key])).resolve())
+    if (
+        not isinstance(news_diag, Mapping)
+        or news_diag.get("status") != "OK"
+        or news_diag.get("missing_paths")
+        or observed_seed_paths != expected_seed_paths
+    ):
+        raise PostflightError(f"runner seed-news diagnostics drift: {cell['cell_id']}")
     commission = summary.get("commission_group", {})
     if (
         Decimal(str(commission.get("commission_per_lot", -1))) != ZERO
@@ -1631,6 +1660,10 @@ def audit_cell(
     runs = summary.get("runs")
     if not isinstance(runs, list) or [row.get("run") for row in runs] != ["run_01", "run_02"]:
         raise PostflightError(f"duplicate run closure drift: {cell['cell_id']}")
+    artifacts = launch_cell.get("run_artifacts")
+    if not isinstance(artifacts, list) or [row.get("run") for row in artifacts] != ["run_01", "run_02"]:
+        raise PostflightError(f"sealed duplicate artifact closure drift: {cell['cell_id']}")
+    artifact_by_run = {str(row["run"]): row for row in artifacts}
     native_audits: list[NativeAudit] = []
     run_receipts: list[dict[str, Any]] = []
     for run in runs:
@@ -1643,10 +1676,21 @@ def audit_cell(
         if not _path_within(report_path, report_dir) or not _path_within(log_path, report_dir):
             raise PostflightError(f"run artifact escaped report directory: {cell['cell_id']}/{run_name}")
         ini_path = report_path.parent / "tester.ini"
-        ini_binding = file_binding(ini_path)
+        sealed = artifact_by_run[run_name]
+        for label in ("report", "tester_log", "tester_ini"):
+            if not isinstance(sealed.get(label), Mapping):
+                raise PostflightError(f"sealed {label} binding missing: {cell['cell_id']}/{run_name}")
+            assert_binding(sealed[label], f"{cell['cell_id']}/{run_name}/{label}")
+        if (
+            Path(str(sealed["report"]["path"])).resolve() != report_path
+            or Path(str(sealed["tester_log"]["path"])).resolve() != log_path
+            or Path(str(sealed["tester_ini"]["path"])).resolve() != ini_path.resolve()
+        ):
+            raise PostflightError(f"summary/sealed artifact path drift: {cell['cell_id']}/{run_name}")
+        ini_binding = dict(sealed["tester_ini"])
         ini_values = _parse_ini(ini_path)
         _validate_ini(ini_values, cell, run_name)
-        log_binding = file_binding(log_path)
+        log_binding = dict(sealed["tester_log"])
         log_text = log_path.read_text(encoding="utf-8-sig", errors="replace")
         if MODEL4_MARKER not in log_text.casefold():
             raise PostflightError(f"raw tester log lacks Model-4 marker: {cell['cell_id']}/{run_name}")
