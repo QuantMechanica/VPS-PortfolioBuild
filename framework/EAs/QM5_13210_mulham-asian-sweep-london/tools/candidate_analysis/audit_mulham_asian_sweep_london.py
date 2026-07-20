@@ -1529,7 +1529,15 @@ def initial_launch_state(
         "initial_authorization": job["initial_authorization"],
         "scheduler": job["scheduler"],
         "worker_pid": None,
-        "launches": [],
+        "launches": [
+            {
+                "status": "PREPARED",
+                "prepared_utc": now,
+                "resume": False,
+                "authorization": job["initial_authorization"],
+                "scheduler_contract_sha256": canonical_sha256(job["scheduler"]),
+            }
+        ],
         "outcome_fence": {
             "worker_parses_market_values": False,
             "worker_parses_native_reports": False,
@@ -1571,8 +1579,8 @@ def resume_eligible(state: Mapping[str, Any]) -> bool:
             continue
         if cell.get("status") == "INTERRUPTED_NO_OUTCOME":
             if not attempts or any(
-                isinstance(attempt, Mapping)
-                and (
+                not isinstance(attempt, Mapping)
+                or (
                     attempt.get("summary")
                     or attempt.get("outcome_artifacts")
                     or attempt.get("sealed_artifacts")
@@ -1592,18 +1600,20 @@ def _assert_resume_artifact_fence(
     plan_cells = pre.get("plan", {}).get("cells") if isinstance(pre.get("plan"), Mapping) else None
     if not isinstance(state_cells, list) or not isinstance(plan_cells, list):
         raise AuthorizationError("resume cell closure is malformed")
-    by_id = {
-        str(row.get("cell_id")): row
-        for row in state_cells
-        if isinstance(row, Mapping)
-    }
-    if set(by_id) != {str(row.get("cell_id")) for row in plan_cells if isinstance(row, Mapping)}:
+    if any(not isinstance(row, Mapping) for row in plan_cells):
+        raise AuthorizationError("resume plan cell is malformed")
+    state_ids = [str(row.get("cell_id")) for row in state_cells]
+    plan_ids = [str(row.get("cell_id")) for row in plan_cells]
+    if state_ids != plan_ids or len(set(state_ids)) != len(state_ids):
         raise AuthorizationError("resume state/plan cell closure drift")
+    by_id = {str(row.get("cell_id")): row for row in state_cells}
     for cell in plan_cells:
-        if not isinstance(cell, Mapping):
-            raise AuthorizationError("resume plan cell is malformed")
         state_cell = by_id[str(cell.get("cell_id"))]
         output_root = Path(str(cell.get("output_root", ""))).resolve()
+        if output_root.exists() and not output_root.is_dir():
+            raise AuthorizationError(
+                f"resume cell output root is not a directory: {cell.get('cell_id')}"
+            )
         if state_cell.get("status") == "PENDING":
             if output_root.exists() and any(output_root.iterdir()):
                 raise AuthorizationError(
@@ -1621,15 +1631,25 @@ def _close_unregistered_launch_for_resume(state: dict[str, Any]) -> None:
         raise AuthorizationError("resume launch audit chain is missing")
     last = launches[-1]
     launch_status = last.get("status")
-    if launch_status == "START_REQUESTED":
+    if launch_status in {"PREPARED", "START_REQUESTED"}:
         if last.get("registered_utc") is not None or last.get("worker_pid") is not None:
             raise AuthorizationError("unregistered launch carries worker identity")
+        if launch_status == "PREPARED":
+            last["requested_utc"] = str(last.get("prepared_utc", ""))
+            reason = "TASK_NOT_RUNNING_BEFORE_START_REQUEST"
+        else:
+            reason = "TASK_NOT_RUNNING_AND_OUTCOME_FENCE_CLEAR"
         last["status"] = "ABANDONED_PRESTART"
         last["abandoned_utc"] = utc_now()
-        last["reason"] = "TASK_NOT_RUNNING_AND_OUTCOME_FENCE_CLEAR"
+        last["reason"] = reason
         return
     if launch_status == "WORKER_REGISTERED":
-        if not isinstance(last.get("worker_pid"), int) or not last.get("registered_utc"):
+        if (
+            not isinstance(last.get("worker_pid"), int)
+            or isinstance(last.get("worker_pid"), bool)
+            or last["worker_pid"] <= 0
+            or not last.get("registered_utc")
+        ):
             raise AuthorizationError("registered launch lacks worker evidence")
         return
     raise AuthorizationError("last launch audit row is not resumable")
@@ -1710,15 +1730,24 @@ def launch_persistent_task(
     if not isinstance(launches, list):
         raise AuthorizationError("launch audit list is malformed")
     requested = utc_now()
-    launches.append(
-        {
+    launch_request = {
             "status": "START_REQUESTED",
             "requested_utc": requested,
             "resume": resume,
             "authorization": auth_ref,
             "scheduler_contract_sha256": canonical_sha256(job["scheduler"]),
         }
-    )
+    if resume:
+        launches.append(launch_request)
+    elif (
+        len(launches) == 1
+        and isinstance(launches[0], dict)
+        and launches[0].get("status") == "PREPARED"
+        and launches[0].get("authorization") == auth_ref
+    ):
+        launches[0].update(launch_request)
+    else:
+        raise AuthorizationError("initial prepared launch audit row drift")
     state["worker_pid"] = None
     state["updated_utc"] = requested
     atomic_json(state_path, state, replace=True)
@@ -2936,7 +2965,11 @@ def _validate_launch_state(
             if (
                 worker_pid is not None
                 or launch.get("registered_utc") is not None
-                or launch.get("reason") != "TASK_NOT_RUNNING_AND_OUTCOME_FENCE_CLEAR"
+                or launch.get("reason")
+                not in {
+                    "TASK_NOT_RUNNING_BEFORE_START_REQUEST",
+                    "TASK_NOT_RUNNING_AND_OUTCOME_FENCE_CLEAR",
+                }
             ):
                 raise InvalidEvidence(f"launch audit row {index} abandonment drift")
             abandoned = parse_utc(

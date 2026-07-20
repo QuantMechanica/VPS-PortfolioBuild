@@ -410,6 +410,9 @@ def test_persisted_s4u_task_contract_and_timeout() -> None:
     assert "_run-plan --job" in helper
     assert "CommandLine" not in helper
     assert "Win32_Process" not in helper
+    assert "$beforeLastRunUtc" in helper
+    assert "$newInvocationObserved" in helper
+    assert "-gt $beforeLastRunUtc" in helper
     pre = {"plan": {"cells": [{"cell_id": row.cell_id} for row in subject.WINDOWS]}}
     assert subject.cell_outer_timeout_seconds() == 59_400
     assert subject.required_scheduled_task_timeout(pre) == 241_200
@@ -488,4 +491,53 @@ def test_launch_persists_only_safe_scheduler_metadata(
     assert state["status"] == "PENDING_SCHEDULED"
     assert state["scheduler"]["logon_type"] == "S4U"
     assert state["scheduler"]["multiple_instances"] == "IgnoreNew"
+    assert state["launches"][0]["status"] == "START_REQUESTED"
 
+    # Simulate the CLI/session disappearing after Start but before a worker can
+    # register.  Once the task is observed Ready and the outcome fence is clear,
+    # an explicit resume closes the orphan request instead of poisoning POST.
+    resumed = subject.launch_persistent_task(
+        pre_path,
+        pre_sha,
+        authorization_path,
+        state_path,
+        resume=True,
+    )
+    assert resumed["status"] == "RESUMED_PERSISTED_TASK"
+    assert calls == ["Identity", "Register", "Start", "Register", "Inspect", "Start"]
+    state = subject.load_json(state_path)
+    assert [row["status"] for row in state["launches"]] == [
+        "ABANDONED_PRESTART",
+        "START_REQUESTED",
+    ]
+    assert state["launches"][0].get("worker_pid") is None
+    assert state["launches"][0]["reason"] == "TASK_NOT_RUNNING_AND_OUTCOME_FENCE_CLEAR"
+
+
+def test_resume_rejects_completed_or_outcome_bearing_cells(tmp_path: Path) -> None:
+    pending = {
+        "status": "PENDING_SCHEDULED",
+        "worker_pid": None,
+        "finished_utc": None,
+        "cells": [
+            {"cell_id": row.cell_id, "status": "PENDING", "attempts": []}
+            for row in subject.WINDOWS
+        ],
+    }
+    assert subject.resume_eligible(pending)
+    completed = json.loads(json.dumps(pending))
+    completed["cells"][0]["status"] = "COMPLETE"
+    assert not subject.resume_eligible(completed)
+    interrupted = json.loads(json.dumps(pending))
+    interrupted["status"] = "INTERRUPTED_RESUMABLE"
+    interrupted["cells"][0].update(
+        {
+            "status": "INTERRUPTED_NO_OUTCOME",
+            "attempts": [{"summary": None, "outcome_artifacts": []}],
+        }
+    )
+    assert subject.resume_eligible(interrupted)
+    interrupted["cells"][0]["attempts"][0]["outcome_artifacts"] = [
+        {"path": str(tmp_path / "report.htm")}
+    ]
+    assert not subject.resume_eligible(interrupted)
