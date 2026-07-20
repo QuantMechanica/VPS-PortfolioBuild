@@ -10,6 +10,8 @@
   "revision_3_created_utc": "2026-07-20T03:27:46Z",
   "revision_3_outcome_fence": "SOURCE_CAUSAL_AND_SAFETY_CORRECTIONS_FROZEN_BEFORE_ANY_QM5_20002_MT5_RUN_REPORT_ANNOTATED_TRADE_OR_2017_2021_MARKET_OUTCOME_WAS_OPENED",
   "revision_3_reason": "Primary-source and static review found a blocked immediate reclaim, pre-sweep FVG eligibility, broker-calendar liquidity levels, news-before-management ordering, stale GTC fill paths and volatile restart state. Revision 3 binds the outcome-blind source-corrected implementation without changing any screen input or merit gate.",
+  "revision_3_byte_closure_created_utc": "2026-07-20T03:34:28Z",
+  "revision_3_byte_closure_reason": "A path-local -text policy and byte-only source recommit make the committed MQ5 and Windows working-tree/compile bytes identical; no executable token, input, gate or outcome changed.",
   "purpose": "Test the previously claimed short-only New-York ICT rescue on an earlier outcome window that was not used to select the direction/session filter.",
   "epistemic_status": {
     "candidate_origin": "POST_HOC_FILTER_FROM_2022_2025_EURUSD_M1_OUTCOMES",
@@ -34,7 +36,7 @@
   },
   "frozen_implementation": {
     "source_path": "framework/EAs/QM5_20002_ict-icytea-core/QM5_20002_ict-icytea-core.mq5",
-    "source_git_commit": "652e7f1fdafa8e34247344bee579fe9989ba0e4a",
+    "source_git_commit": "3f1039f0eeb56ee882b5c3451eed3ee71567d6bc",
     "source_sha256": "3fd49f2cea7575e659f1b1cf9c24c752a4a8e11db5e0c17cae69629a6f207f83",
     "primary_source_path": "D:/QM/strategy_farm/artifacts/sources/ict_icy_tea_source_20260716/MQL5_Strategie_Spezifikation_some_icy_tea.docx",
     "primary_source_sha256": "8880629e924c7dee48e1d2cd0a5cd835020e057ee592b132b6fd0c7a438231af",
