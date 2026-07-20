@@ -1436,6 +1436,24 @@ def preflight(
             selected_set_repo_relative=selected_relative,
             file_specs=specs,
         )
+        # Seal the PRE transaction against races while the closure is copied.
+        # POST is intentionally independent of the moving workspace, but PRE is
+        # not complete until every frozen input, selected data file and external
+        # runtime identity still equals the identities captured above.
+        if rehash_selected_data(protocol, selected) != actual_data:
+            raise FenceError("selected Model-4 data drifted while PRE snapshot was sealed")
+        _verify_external_runtime(
+            external_runtime,
+            protocol,
+            manifest,
+            powershell_path=powershell_path,
+        )
+        try:
+            final_issues = freeze.check()
+        except freeze.FreezeError as exc:
+            raise FenceError(f"freeze bundle drift while sealing PRE: {exc}") from exc
+        if final_issues:
+            raise FenceError(f"freeze bundle drift while sealing PRE: {final_issues[0]}")
         result.update(
             {
                 "artifact_type": "QM5_20009_RESEARCH_VALIDATOR_PRE_RECEIPT",

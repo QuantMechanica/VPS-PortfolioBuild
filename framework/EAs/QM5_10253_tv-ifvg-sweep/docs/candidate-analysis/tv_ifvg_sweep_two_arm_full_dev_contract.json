@@ -1,0 +1,233 @@
+{
+  "analysis_id": "QM5_10253_TV_IFVG_SWEEP_TWO_ARM_FULL_DEV_001",
+  "artifact_type": "OUTCOME_PROTECTED_OFFLINE_DEV_CONTRACT",
+  "card": {
+    "ea_id": "QM5_10253",
+    "g0_status": "APPROVED",
+    "slug": "tv-ifvg-sweep"
+  },
+  "data_contract": {
+    "analysis_end_broker_exclusive": "2023-01-01T00:00:00",
+    "analysis_start_broker": "2017-10-01T00:00:00_OR_FIRST_AVAILABLE_AFTER",
+    "expected_timestamp_only_availability": {
+      "NDX.DWX": {
+        "first_selected_broker_time": "2018-07-02T01:00:00",
+        "first_timestamp_at_or_after_2023": "2023-01-03T01:00:00"
+      },
+      "XAUUSD.DWX": {
+        "first_selected_broker_time": "2018-01-02T01:00:00",
+        "first_timestamp_at_or_after_2023": "2023-01-03T01:00:00"
+      }
+    },
+    "files": {
+      "NDX.DWX": "D:/QM/mt5/T_Export/MQL5/Files/NDX.DWX_M15.csv",
+      "XAUUSD.DWX": "D:/QM/mt5/T_Export/MQL5/Files/XAUUSD.DWX_M15.csv"
+    },
+    "full_common_years": [2019, 2020, 2021, 2022],
+    "future_fence": "For each raw CSV row, parse only the timestamp prefix before the first comma. Break immediately when timestamp >= 2023-01-01 broker-naive epoch. Never split, convert, hash, or otherwise inspect that row's OHLC/tick-volume tail. Report future_ohlc_parsed=false or reject.",
+    "input_time_basis": "Darwinex broker wall-clock encoded as timezone-naive Unix seconds",
+    "selected_slice_hash": "SHA256 over canonical selected pre-2023 rows only; never hash the whole market file",
+    "timeframe": "M15"
+  },
+  "deviations_and_ambiguities_frozen_before_outcomes": [
+    {
+      "id": "D01_SOURCE_SWEEP",
+      "observation": "Pine v1 uses confirmed 5-left/5-right pivots and its default includes wick sweeps plus breakout-and-retest sweeps. The approved card replaces this with a prior-20-bar close-back sweep."
+    },
+    {
+      "id": "D02_SOURCE_IFVG",
+      "observation": "Pine v1 requires an ordinary FVG to form and later invert through its opposite boundary. The approved card calls a newly formed ordinary three-bar gap an IFVG."
+    },
+    {
+      "id": "D03_SOURCE_MTF",
+      "observation": "Pine v1 calculates EMA13/21/34 only on the chart timeframe. H4 bias and H1 continuation appear in the page description/card, not in executable Pine MTF code."
+    },
+    {
+      "id": "D04_SOURCE_NOT_STRATEGY",
+      "observation": "The Pine publication is an indicator. It has no executable entry price, stop, target, position sizing, pending lifetime, time stop, Friday close, or news rules."
+    },
+    {
+      "id": "D05_EA_ADJACENCY",
+      "observation": "The committed EA accepts only the exact adjacent triplet sweep=s[2], displacement=s[1], gap=s[0]. It does not search for a later first post-sweep FVG. Arm A explicitly freezes this first-possible adjacent interpretation."
+    },
+    {
+      "id": "D06_EA_ATR_LOOK_FORWARD_WITHIN_TRIPLET",
+      "observation": "The EA compares the middle displacement body with ATR shift=1 on the later FVG-completion bar. Arm A uses ATR known at displacement close for displacement qualification and ATR known at FVG completion for the stop buffer."
+    },
+    {
+      "id": "D07_EA_SESSION_PENDING",
+      "observation": "The EA checks the volatility window only when arming; an eight-bar pending order can fill after the window. Both offline arms enforce the card phrase 'trade only during' by ending the setup at its originating window boundary."
+    },
+    {
+      "id": "D08_EA_NEWS_PENDING",
+      "observation": "The EA's early news return does not cancel an already-placed broker pending order, so that order can fill during a blackout. Both offline arms cancel eligibility at the first USD high-impact blackout start."
+    },
+    {
+      "id": "D09_EA_SET_FILES",
+      "observation": "The committed XAU/NDX .set files say card_defaults_source=not_found and omit the strategy inputs. The auditor binds the defaults in SPEC/EA directly, not those incomplete set files."
+    },
+    {
+      "id": "D10_APPROVAL_HISTORY",
+      "observation": "The canonical farm card has g0_status=APPROVED, while its prose Pipeline-Verlauf still says the 2026-05-19 draft was PENDING. The frontmatter status is treated as authoritative per the task."
+    },
+    {
+      "id": "D11_SPREAD_EVIDENCE_LIMIT",
+      "observation": "The venue registry explicitly marks spread parity OPEN. Fixed symbol-specific center/adverse scenarios are bound to a read-only live DXZ snapshot; they are robustness inputs, not a spread certification."
+    }
+  ],
+  "execution_overlay_shared_by_both_arms": {
+    "active_state": "At most one pending setup or open position per arm and symbol. Signals completing while that state is occupied are observed in the funnel but not queued.",
+    "atr": "M15 true range with prior observed close; Wilder RMA(14), SMA seed; unavailable before 14 true ranges.",
+    "ema": "Completed aligned broker-time H1/H4 buckets only, using the last observed M15 close in each nonempty bucket. EMA alpha=2/(period+1), seeded from first HTF close; require at least period completed HTF buckets before the EMA is eligible.",
+    "entry_market_or_limit": {
+      "long": "At the first post-completion M15 open: ask=open+spread. If zone_bottom <= ask <= zone_top, enter market at ask. If ask > zone_top, place buy limit at zone_top. If ask < zone_bottom, void as already traversed.",
+      "short": "At the first post-completion M15 open: bid=open. If zone_bottom <= bid <= zone_top, enter market at bid. If bid < zone_bottom, place sell limit at zone_bottom. If bid > zone_top, void as already traversed."
+    },
+    "entry_retest": "The first eligible touch consumes the setup. A later gap through the limit fills at the requested limit for conservative price improvement treatment, followed by gap-aware stop processing.",
+    "friday_flat": "Close positions at the first M15 open at or after Friday 21:00 broker time; no new Friday setup may survive that boundary.",
+    "higher_timeframe_filter_at_arm": {
+      "long": "last closed H4 EMA13 > EMA21 > EMA34 and last closed H1 close > EMA21 and EMA13 > EMA21",
+      "short": "last closed H4 EMA13 < EMA21 < EMA34 and last closed H1 close < EMA21 and EMA13 < EMA21"
+    },
+    "pending_deadline": "Minimum of eight M15 bars after arm, the originating volatility-window end, the next USD news blackout start, and Friday 21:00 broker. Only bars fully ending on or before the deadline are eligible.",
+    "risk": {
+      "fixed_risk_usd": 1000,
+      "lot_formula": "1000 / (abs(entry-stop) * usd_value_per_price_unit_per_lot)",
+      "lot_rounding": "NONE_THEORETICAL_FIXED_1000R",
+      "reward_risk": 2.0,
+      "stop_buffer_atr": 0.25,
+      "usd_value_per_price_unit_per_lot": {
+        "NDX.DWX": 10.0,
+        "XAUUSD.DWX": 100.0
+      }
+    },
+    "same_bar_order": "At an exact time/Friday boundary, flatten at bar open before intrabar ranges. Otherwise apply worse open-gap stop price first, then SL before TP whenever both are reachable. On the entry bar, assume all adverse range after entry; SL precedes TP.",
+    "sessions_broker_half_open": [
+      {"end": "11:00", "name": "LONDON", "start": "08:00"},
+      {"end": "16:00", "name": "NEW_YORK", "start": "13:00"}
+    ],
+    "spread_model": {
+      "NDX.DWX": {"adverse_points": 42, "center_points": 21, "point": 0.1},
+      "XAUUSD.DWX": {"adverse_points": 118, "center_points": 59, "point": 0.01},
+      "primary_scenario": "CENTER",
+      "selection_rule": "No scenario averaging or selection; center is primary and adverse is mandatory robustness."
+    },
+    "time_stop": "Flatten at the first M15 open whose timestamp is at least 32*15 minutes after the entry touch-bar open.",
+    "weekend": "No carry beyond Friday 21:00 broker."
+  },
+  "external_cost_contract": {
+    "application": "Each entry and exit deal side is rounded independently, half-up, to USD cents; native commission is assumed zero and external cost is subtracted exactly once.",
+    "NDX.DWX": "round_cent_half_up(2.75 USD * volume) per deal side",
+    "XAUUSD.DWX": "round_cent_half_up(deal_price * 100 oz * volume * 0.000025) per deal side",
+    "adjusted_r": "gross_r - (entry_side_commission_usd + exit_side_commission_usd)/1000",
+    "source_priority": "NDX matches audit_mt5_report.py. XAU is absent from that auditor and therefore uses the exact DXZ commodity 0.0025 percent per-side notional schedule in venue_cost_model.json and the tester Groups artifact."
+  },
+  "news_contract": {
+    "affected_currency": "USD for both XAUUSD.DWX and NDX.DWX",
+    "blackout": "Inclusive high-impact event_time +/- 30 minutes. Arm/market entry inside blackout is forbidden; pending eligibility ends before the next blackout start. Open positions are not force-closed for PRE30_POST30.",
+    "broker_utc_conversion": "Exact QM_DSTAware US-DST convention: broker UTC+2 outside US DST and UTC+3 during US DST; November ambiguity prefers standard offset.",
+    "calendar_path": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv",
+    "calendar_sha256": "8e898ca1c4aed5fbc4cbe43fc176e8d8595c2e6f5f05c2984c2468527d4f5b0d",
+    "minimum_impact": "high",
+    "temporal_mode": "PRE30_POST30"
+  },
+  "preregistered_arms": {
+    "A_CARD_CENTER": {
+      "description": "Approved-card mechanisation using the first possible adjacent closed-bar sweep/displacement/gap triplet.",
+      "long": [
+        "Sweep bar low is strictly below the minimum low of its immediately preceding 20 M15 bars and sweep close is strictly above that prior minimum.",
+        "The immediately next bar is bullish and abs(close-open) >= ATR14 known at that displacement bar close.",
+        "The immediately next bar completes low > sweep.high; zone=[sweep.high, completion.low].",
+        "At the next M15 open, H4/H1 long filters, session, news, and shared execution overlay apply."
+      ],
+      "short": [
+        "Sweep bar high is strictly above the maximum high of its immediately preceding 20 M15 bars and sweep close is strictly below that prior maximum.",
+        "The immediately next bar is bearish and abs(close-open) >= ATR14 known at that displacement bar close.",
+        "The immediately next bar completes high < sweep.low; zone=[completion.high, sweep.low].",
+        "At the next M15 open, H4/H1 short filters, session, news, and shared execution overlay apply."
+      ],
+      "stop_atr": "ATR14 known at FVG-completion close; long stop=sweep.low-0.25*ATR, short stop=sweep.high+0.25*ATR"
+    },
+    "B_SOURCE_FAITHFUL": {
+      "bridge_limit": "Pine v1 is an indicator, so exact Pine structural primitives are combined with the same card-derived H4/H1, trade window, retest, risk, exit, news, and cost overlay. This arm is source-faithful for sweep and FVG-to-IFVG mechanics, not an assertion that the source published a complete trading strategy.",
+      "fvg_context": "After a sweep context, bind the first direction-compatible ordinary FVG created strictly later: a bearish FVG for a future bullish IFVG/long, or bullish FVG for a future bearish IFVG/short. Ignore later FVGs for that context. The bound FVG must complete inversion no later than 300 bars after the sweep and before its own 1000-start-bar expiry.",
+      "fvg_creation": "Exact Pine v1 inequalities and strict gap_size > 0.6*Pine ATR14 on the creation bar.",
+      "ifvg_completion": "Bullish only when the bound bearish FVG later closes above its top; bearish only when the bound bullish FVG later closes below its bottom. The completed IFVG zone retains the original FVG bottom/top.",
+      "pivot_rule": "Unique strict pivot high/low with five lower highs/higher lows on both sides, emitted only after the fifth right bar closes, matching official ta.pivot* causal timing. Ties do not emit a pivot.",
+      "source_default_sweeps": "Reproduce Wicks + Outbreaks & Retest state transitions, strict comparisons, 2000-bar pivot expiry, and one wick plus at most one outbreak-retest event per pivot. Deduplicate same-bar same-direction sweep events for the trade bridge; retain the sweep bar extreme for stop placement.",
+      "state_selection": "One causal sweep context per direction. The first event when no same-direction context exists starts it; later same-direction sweeps are counted but ignored until completion/expiry. Completion signals while a pending/open trade exists are counted but not queued.",
+      "stop_atr": "ATR14 known at IFVG-completion close; long stop=sweep-event-bar.low-0.25*ATR, short stop=sweep-event-bar.high+0.25*ATR"
+    }
+  },
+  "outcome_protection": {
+    "known_before_contract": [
+      "No QM5_10253 strategy result, report, trade list, or pre-2023 performance metric was inspected for this screen.",
+      "Only card/spec/EA/source rules, timestamp prefixes for availability, news/cost inputs, and spread metadata were inspected.",
+      "The live spread snapshot contains a 2026 tick timestamp and ask-minus-bid difference only; no 2023+ M15 OHLC was read."
+    ],
+    "prohibited_until_contract_commit": [
+      "Parsing any selected M15 OHLC field",
+      "Running either arm on market outcomes",
+      "Reading existing QM5_10253 backtest/performance reports",
+      "Changing a rule, spread, gate, or arm after seeing outcomes"
+    ],
+    "post_fail_rule": "If an arm fails, report it without tuning, optimization, alternative parameter search, or OOS use."
+  },
+  "familywise_merit_gates": {
+    "adjusted_expectancy_min_r": 0.05,
+    "adjusted_net": "strictly positive pooled, for each symbol, and for each side in center",
+    "adjusted_pf": {
+      "each_side_min": 1.0,
+      "each_symbol_min": 1.2,
+      "pooled_dynamic_floor": "u=2.241402727604947/sqrt(N); d=u/sqrt(1+u^2); floor=max(1.20,(1+d)/(1-d))",
+      "reason": "Bonferroni two-arm familywise alpha allocation; no uncorrected arm selection."
+    },
+    "adverse_spread": "adjusted pooled net > 0, adjusted pooled PF >= 1.0, and adjusted net > 0 for each symbol",
+    "arm_verdict": "MERIT only if every listed center and adverse gate passes; otherwise NO_MERIT",
+    "concentration": {
+      "leave_best_trade_out_adjusted_net_r": ">0",
+      "leave_best_year_out_adjusted_net_r": ">0",
+      "top_two_adjusted_winner_share_max": 0.5
+    },
+    "cost_burden_max_fraction_of_gross_positive_r": 0.25,
+    "drawdown": {
+      "each_symbol_max_adjusted_closed_balance_dd_r": 10.0,
+      "pooled_max_adjusted_closed_balance_dd_r": 10.0,
+      "pooled_worst_closed_exit_broker_day_min_r": -5.0
+    },
+    "family_verdict": "FAMILYWISE_MERIT if at least one fully preregistered arm passes its Bonferroni-adjusted gates; report both arms and do not designate a preferred arm from these DEV outcomes.",
+    "minimum_center_fills": {
+      "each_side": 30,
+      "each_symbol": 40,
+      "pooled": 120
+    },
+    "positive_full_common_years": {
+      "each_symbol_min_of_4": 2,
+      "pooled_min_of_4": 3,
+      "years": [2019, 2020, 2021, 2022]
+    }
+  },
+  "required_reporting": [
+    "Integrity and future_ohlc_parsed globally and per symbol",
+    "Funnel per arm/scenario/symbol",
+    "Performance per arm/scenario and center by symbol/year/side/symbol-year",
+    "Gross and adjusted R/USD, exact external commission, PF, expectancy, win rate, DD, worst closed day",
+    "Top-two winner share, leave-best-trade-out, leave-best-year-out, same-bar conflicts, exit reasons",
+    "Every gate with observed value/pass-fail and arm/family verdict",
+    "Two independent complete executions with byte-identical canonical JSON"
+  ],
+  "source_bindings": {
+    "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10253_tv-ifvg-sweep.md": "5f55708e42df41b42f944e4c7caf86bbd8a6df17408c479cdac32ad45e540bd6",
+    "framework/EAs/QM5_10253_tv-ifvg-sweep/QM5_10253_tv-ifvg-sweep.mq5": "c43da3960bafad35ac4d3d7b66e3f434c58ff5b1add7b623b635daea73ee3488",
+    "framework/EAs/QM5_10253_tv-ifvg-sweep/SPEC.md": "de9b90b95e11a6f9f9698dcfc0d7d18cdd91ce08d3d9e72a56fd32efe3d0ac5c",
+    "framework/EAs/QM5_10253_tv-ifvg-sweep/docs/strategy_card.md": "5f55708e42df41b42f944e4c7caf86bbd8a6df17408c479cdac32ad45e540bd6",
+    "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/audit_mt5_report.py": "c9dc5106383073b50150f0edb091338181dc53470615839fb252f5bc96a46c03",
+    "framework/Include/QM/QM_DSTAware.mqh": "e5a78c1097ff3622f9066acc25fac41228f049853bca31b19c599e92dc61472f",
+    "framework/Include/QM/QM_NewsFilter.mqh": "14d6a0c57e35e4ddd15c89baf30466fb2ffb904ffa2183a91d24080510bff34e",
+    "framework/registry/live_commission.json": "119f795cefce2f819f0c7aae3bddb87affbffa771f596df48d182cf89989e197",
+    "framework/registry/venue_cost_model.json": "7dfafe53749e5c45be0cb37568b6e3491c109f546fafaf799f6ea82efdb688d7",
+    "pine_v1_source_utf8": "6f2d7e364d64037382b7cf18f04f8fb971f3534d4b838f73c118eab48e551ce8",
+    "tv_ifvg_sweep_primary_source_evidence.json": "TO_BE_BOUND_BY_CONTRACT_COMMIT",
+    "tv_ifvg_sweep_spread_input_snapshot.json": "TO_BE_BOUND_BY_CONTRACT_COMMIT"
+  }
+}

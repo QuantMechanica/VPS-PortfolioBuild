@@ -1,0 +1,265 @@
+{
+  "schema_version": 1,
+  "analysis_id": "QM5_20009_TV_ICT_PREV_SESSION_CONTINUATION_DEV_001",
+  "status": "PREREGISTERED_BLOCKED_SOURCE_AMBIGUITY",
+  "scope": "Read-only Offline-DEV audit of the source-center Previous-Session Break-Reentry-Retest continuation variant on EURUSD.DWX and GBPUSD.DWX M5. This is not an EA build, MT5 run, pipeline phase, OOS/holdout test, FTMO qualification, or live evidence.",
+  "outcome_firewall": {
+    "known_before_preregistration": [
+      "The approved QM5_9987 card, SPEC, and EA implement a materially different reversal/fakeout interpretation.",
+      "The current TradingView-indexed description defines a continuation interpretation and the center inputs listed below.",
+      "No outcome from this exact continuation variant on the declared EURUSD.DWX/GBPUSD.DWX 2017-10 through 2022 DEV panel has been read or computed."
+    ],
+    "pre_result_rule": "This contract, mismatch record, auditor, and synthetic tests must be committed before the auditor may open either market CSV or the news CSV for an outcome run.",
+    "blocked_run_rule": "While any source_semantics blocker is unresolved, preflight must terminate before opening market or news files; performance and merit remain null/NOT_ADJUDICATED.",
+    "no_tuning_after_fail": "A BLOCKED, FAIL, or NO_MERIT result authorizes no parameter, symbol, side, session, fill, EA, or gate change. Any later hypothesis requires a new analysis_id and a new pre-outcome commit."
+  },
+  "source_evidence": {
+    "canonical_url": "https://www.tradingview.com/script/7IFb4Zx7/",
+    "title": "ICT Session Breakout v3",
+    "direct_page_observed_2026_07_20": "publication_deleted",
+    "indexed_description_observed_2026_07_20": "TradingView category/search pages cached the May 17 publication description, including Previous-Session continuation direction and the input reference.",
+    "indexed_author": "EmptyCupTrades",
+    "indexed_publication_date": "2026-05-17",
+    "pine_filename_named_by_description": "ICT_Session_Breakout_Published.pine",
+    "pine_source_available": false,
+    "vps_search": {
+      "searched_roots": [
+        "C:/QM/repo",
+        "C:/QM/archive",
+        "C:/QM/scratch",
+        "C:/QM/staged",
+        "C:/QM/staging",
+        "C:/QM/tasks",
+        "C:/QM/tmp",
+        "C:/QM/worktrees",
+        "D:/QM/research_sources",
+        "D:/QM/scratch",
+        "D:/QM/strategy_farm",
+        "D:/QM/tmp",
+        "D:/QM/exports",
+        "C:/Users/Administrator/Downloads",
+        "C:/Users/Administrator/Documents",
+        "C:/Users/Administrator/AppData/Local"
+      ],
+      "needles": [
+        "*.pine",
+        "7IFb4Zx7",
+        "ICT_Session_Breakout",
+        "30591366-874b-5bee-b47c-da2fca20b728"
+      ],
+      "pine_hits": [],
+      "relevant_non_pine_hits": [
+        "D:/QM/strategy_farm/artifacts/source_notes/30591366-874b-5bee-b47c-da2fca20b728.md",
+        "D:/QM/strategy_farm/artifacts/cards_approved/QM5_9987_tv-ict-session-break-reentry-retest.md"
+      ]
+    },
+    "bound_local_evidence": {
+      "source_note": {
+        "path": "D:/QM/strategy_farm/artifacts/source_notes/30591366-874b-5bee-b47c-da2fca20b728.md",
+        "sha256": "c39a1dbe7b9df2a6c4ff2c760fe83201b6256f04cae6d424e9aa5a10414f6665"
+      },
+      "approved_card": {
+        "path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_9987_tv-ict-session-break-reentry-retest.md",
+        "sha256": "869c581c20f6d8516cd94c1633c4a02652ecf15a126a99c9bffb5f78e96e6e56"
+      },
+      "committed_spec": {
+        "path": "framework/EAs/QM5_9987_tv-ict-session-break-reentry-retest/SPEC.md",
+        "sha256": "234ce3b7952d67cbac08fd032cbfc620621c6f51c2dbca421c700c321f603bdd"
+      },
+      "committed_ea": {
+        "path": "framework/EAs/QM5_9987_tv-ict-session-break-reentry-retest/QM5_9987_tv-ict-session-break-reentry-retest.mq5",
+        "sha256": "15ae1ab6b862fd0d558c19f2e46285fc69201b283037583301053fef425c3631"
+      }
+    }
+  },
+  "source_semantics": {
+    "known_from_current_description": {
+      "range": "At the configured Europe/Rome new-session roll, the completed current-session high/low become the previous-session high/low.",
+      "break_short": "A closed M5 body opens above previous-session low and closes below previous-session low.",
+      "break_long": "A closed M5 body opens below previous-session high and closes above previous-session high.",
+      "direction": "Continuation: a high-side break ultimately seeks LONG; a low-side break ultimately seeks SHORT.",
+      "opposite_reset": "A new break resets the opposite-side setup.",
+      "reentry_retest": "Price returns inside to a yellow level, waits the minimum bars, then a wick retest triggers a market order.",
+      "risk": "SL and TP are distances from strategy.position_avg_price.",
+      "daily_controls": "Daily trade counter uses a New York calendar reset; day-end flat is optional.",
+      "pip_size": "syminfo.mintick * 10; for five-digit EURUSD/GBPUSD this contract freezes one pip as 0.00010."
+    },
+    "blocking_ambiguities": [
+      {
+        "id": "DAY_FLAT_EXACT_BOUNDARY_AND_ORDER",
+        "reason": "The description says optional flat at New York day end but does not define the exact timestamp, timezone transition implementation, bar on which close_all executes, or precedence versus same-bar SL/TP."
+      },
+      {
+        "id": "REENTRY_TOLERANCE_PREDICATE",
+        "reason": "The description names a 5-pip inside level and says tolerance is a band for reentry plus retest wick, but does not expose the exact high/low/close inequalities or inclusive endpoints."
+      },
+      {
+        "id": "RETEST_PREDICATE_AND_SAME_BAR_TRANSITIONS",
+        "reason": "The description does not prove whether reentry, minimum-bar maturation, and retest may transition on one bar or which event has precedence."
+      },
+      {
+        "id": "MIN_BARS_COUNTER_ORIGIN",
+        "reason": "The description does not prove whether the break bar, first post-break bar, or reentry bar is bar zero for min-bars-after-break."
+      },
+      {
+        "id": "OPPOSITE_BREAK_RESET_PRECEDENCE",
+        "reason": "The reset is described but its precedence against same-bar reentry/retest and an already-armed same-side setup is not visible."
+      },
+      {
+        "id": "PINE_ORDER_PROCESSING_MODE",
+        "reason": "Without Pine, strategy process_orders_on_close/calc_on_order_fills settings and therefore exact TradingView order timing cannot be verified. This contract's conservative next-bar proxy is explicit but cannot be claimed source-identical."
+      }
+    ],
+    "unblock_requirement": "Archive the exact Pine revision behind the publication, hash it, and map every blocker to executable lines. A description, screenshot, reconstructed clone, or a different EA is insufficient."
+  },
+  "frozen_center_if_source_unblocked": {
+    "symbols": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "timeframe": "M5",
+    "session_timezone": "Europe/Rome",
+    "new_session_roll": "06:00:00 Europe/Rome",
+    "reference": "Immediately preceding complete 06:00-to-06:00 Europe/Rome session high and low; no Asia/London/NY sub-session ranges.",
+    "break": "Body-cross predicates exactly as source_semantics.known_from_current_description; closed bars only.",
+    "reentry_level_pips_inside": 5,
+    "entry_tolerance_pips": 5,
+    "minimum_bars_after_break": 3,
+    "entry_direction": "CONTINUATION",
+    "signal_to_fill": "A qualifying retest is decided only after the M5 bar closes. The conservative offline market proxy fills once at the next M5 bar open: LONG at Ask=open+spread, SHORT at Bid=open. No close-bar fill or price improvement.",
+    "stop_loss_pips_from_actual_fill": 10,
+    "take_profit_pips_from_actual_fill": 20,
+    "max_trades_per_new_york_day": 1,
+    "pyramiding": 0,
+    "directions": [
+      "LONG",
+      "SHORT"
+    ],
+    "day_flat": {
+      "enabled": true,
+      "semantic_status": "AMBIGUOUS_BLOCKED_PENDING_PINE",
+      "provisional_description_only": "Close at New York day end; no timestamp or ordering is invented."
+    },
+    "variant_notes": [
+      "max_trades=1 and pyramiding=0 are the explicitly requested safety-restricted center even though the published inputs permit other values.",
+      "No parameter, symbol, side, year, or spread selection is permitted after outcomes."
+    ]
+  },
+  "time_and_data_mapping": {
+    "market_source_template": "D:/QM/mt5/T_Export/MQL5/Files/{symbol}_M5.csv",
+    "header": "time,open,high,low,close,tickvol",
+    "selected_broker_wall_from_inclusive": "2017-10-01 00:00:00",
+    "selected_broker_wall_to_exclusive": "2023-01-01 00:00:00",
+    "scored_period": "2017-10 through 2022, with 2017 partial and excluded from full-year stability counts; the first incomplete previous session is not traded.",
+    "broker_wall_to_utc": "Interpret the integer as a naive DarwinexZero broker wall clock. Test broker-3h as UTC and use it only when that instant is in America/New_York DST; otherwise use broker-2h. Then convert the UTC instant through IANA Europe/Rome or America/New_York as required.",
+    "rome_dst": "Europe/Rome conversion must use IANA historical civil-time rules. A fixed broker-minus-one-hour shortcut is forbidden because US and EU DST transition dates differ.",
+    "future_fence": "Stream ascending rows. Split only the timestamp field first. On the first timestamp >= naive broker 2023-01-01 00:00:00, record that timestamp and stop without parsing, validating, or hashing its OHLC/tickvol tail. Never hash the full file. Emit future_ohlc_parsed=false.",
+    "selected_slice_identity": "Hash canonical selected rows only. Reject duplicate/non-monotone timestamps, non-M5 timestamps, malformed selected rows, invalid OHLC, or negative tick volume.",
+    "no_resampling": "No interpolation, forward fill, synthetic bar, higher-timeframe lookahead, or future bar access."
+  },
+  "news": {
+    "source": "D:/QM/data/news_calendar/news_calendar_2015_2025.csv",
+    "source_sha256": "8e898ca1c4aed5fbc4cbe43fc176e8d8595c2e6f5f05c2984c2468527d4f5b0d",
+    "event_time": "datetime column is UTC; convert via IANA America/New_York only for reporting.",
+    "impact": "is_high_impact == 1",
+    "relevant_currencies": {
+      "EURUSD.DWX": [
+        "EUR",
+        "USD"
+      ],
+      "GBPUSD.DWX": [
+        "GBP",
+        "USD"
+      ]
+    },
+    "entry_blackout": "Inclusive [event-30m,event+30m]. A retest decision or its next-bar fill inside any relevant blackout consumes/voids that New York-day opportunity. Existing positions keep source SL/TP/day-flat management; no invented news close.",
+    "fail_closed": "Missing, hash-drifted, malformed, duplicate-conflicting, or interval-uncovered news input fails integrity."
+  },
+  "spread_scenarios": {
+    "point_size": 0.00001,
+    "pip_size": 0.00010,
+    "points": [
+      0,
+      4,
+      8
+    ],
+    "center_points": 4,
+    "roles": {
+      "0": "optimistic diagnostic only",
+      "4": "center and primary merit scenario",
+      "8": "adverse robustness scenario"
+    },
+    "signal_geometry": "All scenarios reuse identical Bid OHLC and identical source-state signals; spread may not change the prior range, break, reentry, maturity, or retest decision.",
+    "execution_geometry": "LONG enters at next-bar Ask=open+spread and exits against Bid OHLC/open. SHORT enters at next-bar Bid=open and exits against Ask=Bid+spread OHLC/open. SL/TP are measured from the actual simulated fill.",
+    "selection": "Run and report all scenarios. Never choose, average, splice, or retune from outcomes."
+  },
+  "conservative_execution": {
+    "fixed_risk_usd": 1000.0,
+    "entry": "Next M5 bar open after a closed qualifying retest; if no next in-fence bar exists, no fill.",
+    "stop_target": "10/20 pips from actual simulated fill, immutable after entry.",
+    "ordering": [
+      "New York day-flat open before any unordered SL/TP event in that M5 bar, once exact Pine semantics are available.",
+      "For each post-entry M5 bar, stop before target whenever both prices are spanned.",
+      "On the entry bar, market fill at open precedes conservative stop-before-target evaluation.",
+      "No fill and exit may use a bar before the signal bar is fully closed."
+    ],
+    "same_bar_conflict": "Always realize SL; count and report every conflict.",
+    "gap_rule": "Because bracket distances are set from actual next-open fill, entry gaps move both bracket levels; later adverse gaps exit at the bar open if already beyond SL, never at the stale stop price. Favorable target gaps exit at the target price, granting no favorable open improvement.",
+    "limitations": "M5 OHLC cannot recover tick order, variable spread, slippage, queueing, or Pine broker-emulator settings. This prevents pipeline, OOS, FTMO, and live claims."
+  },
+  "external_costs": {
+    "risk_sizing": "For USD-quote FX, volume_lots = 1000 / (0.00100 * 100000) = 10 lots before broker volume/margin constraints; no volume-step or margin cap is simulated.",
+    "commission": "For each entry and exit deal side independently: USD = round_cent_half_up(max(2.50, 2.50*deal_price) * volume_lots). This is the repository's exact EURUSD/GBPUSD external-cost schedule.",
+    "adjusted_r": "gross_R - (entry_commission_usd + exit_commission_usd)/1000.",
+    "swap": "Must be computed from an explicitly bound schedule if an exact source day-flat can cross a broker swap boundary. Until then day-flat ambiguity blocks the run; zero swap may not be assumed.",
+    "slippage": "Unmodelled and explicitly disqualifies qualification/live claims."
+  },
+  "required_reporting_if_unblocked": {
+    "identity": "Contract commit/hash, auditor/test/mismatch hashes, evidence and news hashes, per-symbol selected row count/time bounds/slice hash, first excluded timestamp, and future_ohlc_parsed=false.",
+    "funnel": "By spread and symbol: complete previous sessions, body crosses by side, opposite resets, reentries, maturity, retests, news voids, daily-cap voids, fills, same-bar conflicts, and exit reasons.",
+    "performance": "Gross and adjusted fills/net R/PF/expectancy/win rate, commission, chronological adjusted-R drawdown, top-one/top-two winner share, best-year and best-symbol profit share, leave-best-trade/year/symbol-out, by symbol, full year, side, symbol-year, symbol-side, and spread.",
+    "annual_window": "2017 partial is reported but excluded from full-year gates. Full years are exactly 2018, 2019, 2020, 2021, 2022."
+  },
+  "joint_merit_gate": {
+    "decision": "MERIT only if every center and spread-8 condition passes; otherwise NO_MERIT. A source blocker yields NOT_ADJUDICATED, never FAIL or MERIT.",
+    "center_4_point_conditions": {
+      "integrity_pass": true,
+      "pooled_fills_min": 120,
+      "each_symbol_fills_min": 50,
+      "each_side_fills_min": 40,
+      "each_full_year_pooled_fills_min": 10,
+      "pooled_adjusted_net_r_strictly_positive": true,
+      "pooled_adjusted_pf_min": 1.2,
+      "each_symbol_adjusted_net_r_strictly_positive": true,
+      "each_symbol_adjusted_pf_min": 1.05,
+      "each_side_adjusted_net_r_strictly_positive": true,
+      "each_side_adjusted_pf_min": 1.0,
+      "pooled_positive_full_years_min_of_5": 4,
+      "each_symbol_positive_full_years_min_of_5": 3,
+      "pooled_max_adjusted_drawdown_r_max": 15.0,
+      "each_symbol_max_adjusted_drawdown_r_max": 12.0,
+      "top_two_adjusted_winner_share_max": 0.2,
+      "best_symbol_adjusted_gross_profit_share_max": 0.65,
+      "best_full_year_adjusted_gross_profit_share_max": 0.4,
+      "leave_best_trade_out_adjusted_net_r_strictly_positive": true,
+      "leave_best_full_year_out_adjusted_net_r_strictly_positive": true,
+      "leave_best_symbol_out_adjusted_net_r_strictly_positive": true
+    },
+    "spread_8_point_conditions": {
+      "pooled_adjusted_net_r_strictly_positive": true,
+      "pooled_adjusted_pf_min": 1.05,
+      "each_symbol_adjusted_net_r_strictly_positive": true,
+      "each_side_adjusted_net_r_strictly_positive": true
+    },
+    "familywise_note": "This is one frozen variant with a conjunctive intersection gate across all predeclared symbol/year/side/spread cells; no best-cell selection is allowed. The gate is deliberately stricter but is not a statistical FWER guarantee. If inferential p-values are added later, every simultaneous cell/hypothesis must be preregistered and Holm-Bonferroni adjusted at family alpha 0.05; none are computed here."
+  },
+  "prohibitions": [
+    "NO_MT5_OR_DEV2_RUN",
+    "NO_EA_OR_SET_CHANGE",
+    "NO_PINE_RECONSTRUCTION_PRESENTED_AS_SOURCE",
+    "NO_MARKET_OR_NEWS_READ_WHILE_SOURCE_BLOCKED",
+    "NO_POST_RESULT_TUNING",
+    "NO_SYMBOL_SIDE_YEAR_OR_SPREAD_SELECTION",
+    "NO_OOS_HOLDOUT_PIPELINE_FTMO_OR_LIVE_CLAIM"
+  ]
+}

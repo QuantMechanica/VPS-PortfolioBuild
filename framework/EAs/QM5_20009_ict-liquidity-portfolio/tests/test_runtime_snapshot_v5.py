@@ -206,6 +206,20 @@ def test_reparse_source_is_rejected_when_supported(tmp_path: Path) -> None:
         )
 
 
+def test_reparse_inserted_into_sealed_snapshot_is_rejected_when_supported(
+    tmp_path: Path,
+) -> None:
+    source_root, snapshot_root, specs, binding = _snapshot_fixture(tmp_path)
+    snapshot_runner = Path(binding["role_bindings"]["runner_smoke"]["path"])
+    snapshot_runner.unlink()
+    try:
+        os.symlink(source_root / "framework/scripts/run_smoke.ps1", snapshot_runner)
+    except (OSError, NotImplementedError):
+        pytest.skip("symlink creation is unavailable for this Windows account")
+    with pytest.raises(fence.FenceError, match="symlink/reparse"):
+        _verify(snapshot_root, specs, binding)
+
+
 def test_noncanonical_pre_receipt_is_rejected_even_with_rebound_sidecar(
     tmp_path: Path,
 ) -> None:

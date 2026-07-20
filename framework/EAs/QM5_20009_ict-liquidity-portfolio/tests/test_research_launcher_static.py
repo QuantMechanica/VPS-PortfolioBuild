@@ -62,6 +62,9 @@ def test_launcher_has_one_fixed_terminal_entrypoint_and_pre_post_fences() -> Non
     assert "--receipt', $preReceiptPath" in text
     assert "'--postflight-receipt', $preReceiptPath" in text
     assert "'--preflight-receipt-sha256', $preReceiptSha256" in text
+    assert text.count("Assert-QmPreboundRuntimeClosure -Snapshot $snapshotBinding") == 3
+    assert "Get-QmSha256 -Path $PreReceiptPath" in text
+    assert "binding drifted after PRE" in text
     assert "-WorkingDirectory $snapshotRepoRoot" in text
     assert "-SetFile', $snapshotSetPath" in text
     assert text.index("'--receipt', $preReceiptPath") < text.index(

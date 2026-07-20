@@ -135,8 +135,12 @@ function Assert-QmPreboundRuntimeClosure {
         size_bytes = [int64]$Snapshot['manifest_size_bytes']
         sha256 = [string]$Snapshot['manifest_sha256']
     }
-    Assert-QmRuntimeFileBinding -Binding $manifestBinding -Label 'runtime snapshot manifest'
+    Assert-QmRuntimeFileBinding -Binding $manifestBinding -Label 'runtime snapshot manifest' `
+        -RequiredRoot ([string]$Snapshot['root_path'])
     $sidecarPath = [string]$Snapshot['manifest_sidecar_path']
+    if (-not (Test-QmPathWithin -Path $sidecarPath -Root ([string]$Snapshot['root_path']))) {
+        throw 'Runtime snapshot manifest sidecar escaped the snapshot root'
+    }
     if ((Get-QmSha256 -Path $sidecarPath) -cne [string]$Snapshot['manifest_sidecar_sha256']) {
         throw 'Runtime snapshot manifest sidecar drifted after PRE'
     }
@@ -152,7 +156,19 @@ function Assert-QmPreboundRuntimeClosure {
         $externalRoles[$role] = $true
         Assert-QmRuntimeFileBinding -Binding $raw -Label "external runtime $role"
     }
-    if ($externalRoles.Count -ne 7) { throw 'External runtime role closure count drifted' }
+    $requiredExternalRoles = @(
+        'terminal_binary', 'metatester_binary', 'commission_groups_dev1',
+        'news_qmdev1_common_primary', 'news_qmdev1_common_secondary',
+        'python_executable', 'powershell7'
+    )
+    if ($externalRoles.Count -ne $requiredExternalRoles.Count) {
+        throw 'External runtime role closure count drifted'
+    }
+    foreach ($role in $requiredExternalRoles) {
+        if (-not $externalRoles.ContainsKey($role)) {
+            throw "External runtime role closure is missing: $role"
+        }
+    }
 }
 
 $contract = Get-QmResearchContract -Phase $Phase -Symbol $Symbol -Timeframe $Timeframe `

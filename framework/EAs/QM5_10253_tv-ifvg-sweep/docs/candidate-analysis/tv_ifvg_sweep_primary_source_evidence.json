@@ -1,0 +1,66 @@
+{
+  "artifact_type": "QM5_10253_PRIMARY_SOURCE_EVIDENCE",
+  "card_snapshot_basis": {
+    "card_last_updated": "2026-05-19",
+    "selected_pine_version": 1,
+    "selection_reason": "Pine version 1 was created on 2026-05-18 and was the only published version available at the card's declared 2026-05-19 snapshot.",
+    "source_created_utc": "2026-05-18T23:15:58.032747Z",
+    "source_sha256_utf8": "6f2d7e364d64037382b7cf18f04f8fb971f3534d4b838f73c118eab48e551ce8"
+  },
+  "retrieval": {
+    "accessed_utc_date": "2026-07-20",
+    "page_url": "https://www.tradingview.com/script/x6Xam693-Multicator-Sweeps-IFVG-Zone-Alerts-by-Olu777/",
+    "pine_facade_url_template": "https://pine-facade.tradingview.com/pine-facade/get/PUB;a21dc97b663f4e29a8db41b4642a9f7c/{version}",
+    "script_access": "open_no_auth",
+    "script_id_part": "PUB;a21dc97b663f4e29a8db41b4642a9f7c",
+    "source_license_header": "Mozilla Public License 2.0",
+    "source_title_v1": "Multicator + Sweeps + IFVG + Zone Alerts"
+  },
+  "source_mechanics_v1": {
+    "ema_defaults": [13, 21, 34],
+    "ema_timeframe": "CURRENT_CHART_TIMEFRAME_ONLY",
+    "fvg": {
+      "atr_period": 14,
+      "bullish_creation": "low[0] > high[2] and gap_size > 0.6 * ATR14[0]",
+      "bearish_creation": "high[0] < low[2] and gap_size > 0.6 * ATR14[0]",
+      "expiry_bars_from_start_index": 1000,
+      "volatility_multiplier": 0.6
+    },
+    "ifvg": {
+      "bearish_completion": "a prior bullish FVG completes inversion when close < original_fvg.bottom",
+      "bullish_completion": "a prior bearish FVG completes inversion when close > original_fvg.top",
+      "mitigation": "bullish IFVG mitigates on close < bottom; bearish IFVG mitigates on close > top",
+      "meaning": "The source does not label a newly created ordinary three-bar gap as an IFVG; inversion of an already-created opposite FVG is mandatory."
+    },
+    "liquidity_sweeps": {
+      "default_mode": "Wicks + Outbreaks & Retest",
+      "pivot_confirmation": "ta.pivothigh(5,5) / ta.pivotlow(5,5), causally confirmed five bars after the pivot",
+      "pivot_expiry_bars": 2000,
+      "sweep_area_extension_bars": 300,
+      "sweep_length": 5,
+      "types_in_default_mode": [
+        "wick rejection through a confirmed pivot with close back across the pivot",
+        "close breakout through a confirmed pivot followed by a close-back retest"
+      ]
+    }
+  },
+  "source_page_description": {
+    "entry_workflow": "HTF trend -> liquidity sweep -> displacement -> IFVG formation -> retest -> trade entry",
+    "recommended_timeframes": "4H directional bias, 1H continuation, 15M execution",
+    "recommended_windows": "London Open and NY Open",
+    "strategy_status": "INDICATOR_ONLY_NO_ORDER_OR_EXIT_RULES"
+  },
+  "version_history_observed": [
+    {"created_utc": "2026-05-18T23:15:58.032747Z", "source_sha256_utf8": "6f2d7e364d64037382b7cf18f04f8fb971f3534d4b838f73c118eab48e551ce8", "version": 1},
+    {"created_utc": "2026-05-22T01:29:56.196748Z", "source_sha256_utf8": "4130aad92f4ce595d558da00f0e23abe781bfefa25bbf9f2f53f92d28fa8fa81", "version": 2},
+    {"created_utc": "2026-05-28T21:43:36.441758Z", "source_sha256_utf8": "eedca1d2188bebbd01bc74b65f266da47c3208543840e89725effa45a4139ffa", "version": 3},
+    {"created_utc": "2026-05-28T23:12:59.138011Z", "source_sha256_utf8": "7db62dcb1fbd863182b4d013b451ffab52f995b6eb315ea54e39e43382a1c284", "version": 4},
+    {"created_utc": "2026-06-01T00:00:40.741759Z", "source_sha256_utf8": "41bcea3f274174fcbbf5f257e0bf06885270444d0f49b26fc2ed0a5ecdbb7951", "version": 5},
+    {"created_utc": "2026-06-01T00:13:49.578562Z", "source_sha256_utf8": "2c1663cd3afbf60638f0e2ba0a3919b992abdc1f8880ee3f03d664430be8ee07", "version": 6},
+    {"created_utc": "2026-06-07T11:38:58.858416Z", "source_sha256_utf8": "c6fd08a36064ed1d0d263d9ace65668b30d396779ad11f5986da45ed9699be58", "version": 7},
+    {"created_utc": "2026-06-12T12:18:05.318515Z", "source_sha256_utf8": "1914679e7ac8a73e25b44771877bc8b9c4cc5481b3448c795b148474c8cf36cd", "version": 8},
+    {"created_utc": "2026-06-12T13:43:40.275148Z", "source_sha256_utf8": "e9a5f54d095a193341968b8e8aa9b2d98e11ac1de6aba456e40c83f724923a53", "version": 9},
+    {"created_utc": "2026-06-21T00:08:04.687781Z", "source_sha256_utf8": "f502d2651d477d921be155ed6e8ef03d2cb9660d2821275d6dace505247e0696", "version": 10},
+    {"created_utc": "2026-06-21T08:23:19.662147Z", "source_sha256_utf8": "31a4b880f93778aaaa56bb339b3e490928fa7d9b4853add19119874c59bbbfda", "version": 11}
+  ]
+}
