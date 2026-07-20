@@ -85,6 +85,28 @@ Because the fleet was already one work item above the configured ceiling, the
 mission stopped at the required boundary. No card, EA, registry row, work item,
 priority mutation, dispatch tick, or MT5 tester run was created.
 
+### Follow-up checkpoint — 2026-07-20T06:02:59Z
+
+A later read-only mission checkpoint found that capacity had tightened rather
+than cleared. The same `work-items --status active` query returned nine active
+rows against the unchanged limit of seven:
+
+| Phase | Active |
+|---|---:|
+| Q02 | 4 |
+| Q04 | 3 |
+| Q05 | 1 |
+| Q07 | 1 |
+
+The strict seven-row FX frontier and anchor verdicts were re-reconciled against
+the live farm at this checkpoint. `QM5_12532` still has a logical-basket Q02
+PASS followed by Q04 PASS and Q05 FAIL; `QM5_12533` still has a recovered
+logical-basket Q02 PASS followed by Q04 FAIL. The remaining five strict rows
+are already built and have downstream terminal verdicts, with the last survivor
+`QM5_13117` at Q08 `FAIL_HARD`. There is therefore no legitimate Q02 repair,
+new pair build, or downstream continuation to insert while the fleet is above
+the ceiling. This follow-up made no queue or runtime mutation.
+
 ## Evidence And Safety
 
 - Scan: `docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md`.
