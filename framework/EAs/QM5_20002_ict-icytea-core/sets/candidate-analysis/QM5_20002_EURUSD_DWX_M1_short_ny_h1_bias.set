@@ -1,7 +1,7 @@
 ; QM5_20002 preregistered short-NY reverse-time candidate
 ; analysis_id=QM5_20002_SHORT_NY_REVERSE_TIME_SCREEN_001
-; contract_commit=6fbdaa0817324375ad25163194fbb9e6d6f50f9b
-; contract_sha256=3186d8294e73c3777d5447738aaeb5e2839c8b7768faf41b788cba8722514164
+; contract_commit=0119c8f73c0eca0a28537bbc7e82bd911517f3cc
+; contract_sha256=5e75179523a36f876468e0d62de66962b2d5c3bf7016f3c7af773a8a19f95e74
 ; arm=B_SHORT_NY_H1_BIAS
 ; symbol=EURUSD.DWX
 ; window=2017-10-01..2021-12-31

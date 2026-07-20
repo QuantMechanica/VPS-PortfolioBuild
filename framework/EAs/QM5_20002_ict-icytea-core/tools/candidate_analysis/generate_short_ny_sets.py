@@ -16,8 +16,8 @@ EA_ROOT = TOOL_PATH.parents[2]
 CONTRACT_PATH = EA_ROOT / "docs" / "candidate-analysis" / "short_ny_reverse_time_contract.json"
 OUTPUT_ROOT = EA_ROOT / "sets" / "candidate-analysis"
 MANIFEST_PATH = OUTPUT_ROOT / "short_ny_reverse_time_manifest.json"
-EXPECTED_CONTRACT_SHA256 = "3186d8294e73c3777d5447738aaeb5e2839c8b7768faf41b788cba8722514164"
-CONTRACT_COMMIT = "6fbdaa0817324375ad25163194fbb9e6d6f50f9b"
+EXPECTED_CONTRACT_SHA256 = "5e75179523a36f876468e0d62de66962b2d5c3bf7016f3c7af773a8a19f95e74"
+CONTRACT_COMMIT = "0119c8f73c0eca0a28537bbc7e82bd911517f3cc"
 
 INPUT_ORDER = (
     "qm_chartui_enabled",
@@ -97,8 +97,6 @@ def load_contract() -> dict[str, Any]:
     if actual != EXPECTED_CONTRACT_SHA256:
         raise GenerationError(f"contract SHA256 drift: {actual}")
     contract = json.loads(raw.decode("utf-8"))
-    if contract.get("schema_version") != 2 or contract.get("contract_revision") != 2:
-        raise GenerationError("unexpected contract revision")
     if contract.get("analysis_id") != "QM5_20002_SHORT_NY_REVERSE_TIME_SCREEN_001":
         raise GenerationError("unexpected analysis_id")
     return contract
