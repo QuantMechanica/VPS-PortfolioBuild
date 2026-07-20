@@ -6,6 +6,7 @@ import sys
 from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -57,6 +58,59 @@ def test_expected_model4_data_fence_stops_at_202112() -> None:
     assert any(path.endswith("202112.tkc") for path in ticks)
 
 
+def test_news_binding_seals_effective_qmdev1_file_common(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    seed_root = tmp_path / "seed"
+    common_root = tmp_path / "common"
+    seed_root.mkdir()
+    common_root.mkdir()
+    seed = seed_root / "calendar.csv"
+    mirror = common_root / seed.name
+    seed.write_bytes(b"datetime,currency,impact\n2020.01.01 12:00,USD,High\n")
+    mirror.write_bytes(seed.read_bytes())
+    digest = subject.sha256_file(seed)
+    monkeypatch.setattr(subject, "DEV1_COMMON_FILES_ROOT", common_root)
+    result = subject.validate_news_bindings(
+        {
+            "data_bindings": {
+                "news_calendars": [
+                    {"role": "TEST", "path": str(seed), "sha256": digest}
+                ]
+            }
+        }
+    )
+    assert result[0]["binding"]["sha256"] == digest
+    assert result[0]["tester_common_binding"]["sha256"] == digest
+
+
+def test_news_binding_rejects_effective_mirror_drift(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    seed_root = tmp_path / "seed"
+    common_root = tmp_path / "common"
+    seed_root.mkdir()
+    common_root.mkdir()
+    seed = seed_root / "calendar.csv"
+    seed.write_bytes(b"seed")
+    (common_root / seed.name).write_bytes(b"drift")
+    monkeypatch.setattr(subject, "DEV1_COMMON_FILES_ROOT", common_root)
+    with pytest.raises(subject.AuditError, match="SHA-256 drift"):
+        subject.validate_news_bindings(
+            {
+                "data_bindings": {
+                    "news_calendars": [
+                        {
+                            "role": "TEST",
+                            "path": str(seed),
+                            "sha256": subject.sha256_file(seed),
+                        }
+                    ]
+                }
+            }
+        )
+
+
 def test_broker_new_york_conversion_matches_frozen_minus_seven_hours() -> None:
     for broker in (
         datetime(2019, 1, 15, 14, 0),
@@ -77,6 +131,33 @@ def test_news_blackout_is_inclusive_and_symbol_specific() -> None:
     assert subject.news_blackout(news, datetime(2020, 1, 2, 14, 0), "GBPUSD.DWX")
     assert not subject.news_blackout(news, datetime(2020, 1, 2, 14, 1), "EURUSD.DWX")
     assert not subject.news_blackout(news, datetime(2020, 1, 2, 15, 0), "EURUSD.DWX")
+
+
+def test_opening_fill_gate_rejects_outside_kz_and_bound_news() -> None:
+    outside = subject.NativeAudit(
+        receipt={},
+        deals=[SimpleNamespace(direction="in", time=datetime(2020, 1, 2, 13, 59), deal="1")],
+        fragments=[],
+        trades=[],
+    )
+    with pytest.raises(subject.PostflightError, match="OUTSIDE_NY_07_10"):
+        subject._validate_opening_fills(
+            outside, "EURUSD.DWX", {"events": [], "times": []}
+        )
+
+    news_time = datetime(2020, 1, 2, 12, 0)
+    inside_news = subject.NativeAudit(
+        receipt={},
+        deals=[SimpleNamespace(direction="in", time=datetime(2020, 1, 2, 14, 0), deal="2")],
+        fragments=[],
+        trades=[],
+    )
+    with pytest.raises(subject.PostflightError, match="INSIDE_BOUND_NEWS_BLACKOUT_UNION"):
+        subject._validate_opening_fills(
+            inside_news,
+            "EURUSD.DWX",
+            {"events": [(news_time, "USD", "HIGH")], "times": [news_time]},
+        )
 
 
 def test_input_equivalence_is_typed_but_not_permissive() -> None:
@@ -123,6 +204,56 @@ def test_authorization_rejects_wrong_pre_binding(tmp_path: Path) -> None:
     )
     with pytest.raises(subject.AuthorizationError, match="pre_receipt_sha256"):
         subject.validate_authorization(auth, "b" * 64)
+
+
+def test_detached_timeout_leaves_inner_controller_cleanup_margin() -> None:
+    pre = {
+        "plan": {
+            "duplicates_per_cell": 2,
+            "cells": [
+                {"runner_arguments": ["-TimeoutSeconds", "28800"]},
+                {"runner_arguments": ["-TimeoutSeconds", "28800"]},
+            ],
+        }
+    }
+    assert subject.required_controller_timeout(pre) == 59040
+
+
+def test_worker_seals_exactly_two_native_artifact_sets(tmp_path: Path) -> None:
+    report_dir = tmp_path / "report"
+    runs = []
+    for name in ("run_01", "run_02"):
+        run_dir = report_dir / "raw" / name
+        run_dir.mkdir(parents=True)
+        report = run_dir / "report.htm"
+        log = run_dir / "tester.log"
+        ini = run_dir / "tester.ini"
+        report.write_text("report", encoding="utf-8")
+        log.write_text("log", encoding="utf-8")
+        ini.write_text("[Tester]", encoding="utf-8")
+        runs.append(
+            {
+                "run": name,
+                "status": "OK",
+                "exit_code": 0,
+                "report_canonical_path": str(report),
+                "tester_log_path": str(log),
+            }
+        )
+    summary = report_dir / "summary.json"
+    summary.write_text(
+        json.dumps({"report_dir": str(report_dir), "runs": runs}), encoding="utf-8"
+    )
+    sealed = subject._seal_summary_artifacts(summary)
+    assert [row["run"] for row in sealed["run_artifacts"]] == ["run_01", "run_02"]
+    assert all(row["report"]["sha256"] for row in sealed["run_artifacts"])
+
+    runs.append(dict(runs[-1], run="run_03"))
+    summary.write_text(
+        json.dumps({"report_dir": str(report_dir), "runs": runs}), encoding="utf-8"
+    )
+    with pytest.raises(subject.AuditError, match="exactly the two"):
+        subject._seal_summary_artifacts(summary)
 
 
 def test_pre_cli_fails_closed_before_any_launch_when_compile_missing(tmp_path: Path) -> None:
