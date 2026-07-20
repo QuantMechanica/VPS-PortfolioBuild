@@ -46,6 +46,8 @@ def _module_command(body: str) -> str:
 def test_launcher_has_one_fixed_terminal_entrypoint_and_pre_post_fences() -> None:
     text = LAUNCHER.read_text(encoding="utf-8-sig")
     assert text.startswith("#requires -Version 7.0")
+    assert "docs\\research_protocol_v5.json" in text
+    assert "QM5_20009_RESEARCH_FREEZE_V5" in text
     assert "framework\\scripts\\run_dev1_smoke.ps1" in text
     assert "terminal64.exe" not in text
     assert "metatester64.exe" not in text
@@ -121,6 +123,23 @@ def test_contract_helper_separates_nonbinding_smoke_from_binding_dev() -> None:
     assert contract["binding"] is False
     assert contract["infrastructure_only"] is True
     assert contract["runs"] == 1
+
+    eur_smoke = _pwsh(
+        _module_command(
+            "$c=Get-QmResearchContract -Phase DEV_SMOKE_2022 -Symbol EURUSD.DWX "
+            "-Timeframe M5 -Variant center -FromDate 2022-01-01 -ToDate 2022-12-31 -Runs 1;"
+            "$c|ConvertTo-Json -Compress"
+        ),
+        str(SUPPORT),
+        "unused",
+        "unused",
+        "unused",
+    )
+    assert eur_smoke.returncode == 0, eur_smoke.stdout + eur_smoke.stderr
+    eur_contract = json.loads(eur_smoke.stdout)
+    assert eur_contract["binding"] is False
+    assert eur_contract["symbol"] == "EURUSD.DWX"
+    assert eur_contract["timeframe"] == "M5"
 
     smoke_two = _pwsh(
         _module_command(

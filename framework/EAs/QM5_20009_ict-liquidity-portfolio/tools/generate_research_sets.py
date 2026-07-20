@@ -1,4 +1,4 @@
-"""Generate the deterministic Freeze-v4 center/OAAT bundle for QM5_20009.
+"""Generate the deterministic Freeze-v5 center/OAAT bundle for QM5_20009.
 
 The detached ``manifest.sha256`` is the only object that hashes ``manifest.json``.
 The manifest therefore never hashes itself.  Every set embeds a canonical
@@ -27,7 +27,7 @@ EA_SOURCE = EA_ROOT / "QM5_20009_ict-liquidity-portfolio.mq5"
 RULES_SOURCE = EA_ROOT / "ICT_LiquidityRules.mqh"
 CONTRACT = EA_ROOT / "docs" / "strategy_contract.md"
 SPEC = EA_ROOT / "SPEC.md"
-PROTOCOL = EA_ROOT / "docs" / "research_protocol_v4.json"
+PROTOCOL = EA_ROOT / "docs" / "research_protocol_v5.json"
 GENERATOR = Path(__file__).resolve()
 VALIDATOR = EA_ROOT / "tools" / "validate_research_run.py"
 AUDITOR = EA_ROOT / "tools" / "audit_mt5_report.py"
@@ -47,8 +47,8 @@ TARGET_MAGIC_ROWS = (
 )
 EXPECTED_MAGIC_EXCEPTION = {
     "path": MAGIC_RESOLVER_PATH,
-    "compiled_git_blob_sha1": "38c08b206c163742de99d029c096ce97f0fb90de",
-    "compiled_sha256": "148f7d0d1b85ca87a57ebb86c4ab5fe845aa89f9b632cce9cb2615705094f247",
+    "compiled_git_blob_sha1": "248b9234099365df3a4ada58c739f8e13162a608",
+    "compiled_sha256": "321fc59e0cab93cfae11fb93a5795371f8b4fef920cd7e7ba788b85e53b6a2f6",
     "policy": "EXACT_COMPILED_PREFIX_PLUS_COLLISION_FREE_FOREIGN_EA_APPEND_ONLY",
     "target_ea_id": 20009,
     "target_rows": [list(row) for row in TARGET_MAGIC_ROWS],
@@ -260,6 +260,12 @@ def _parse_iso_date(value: object, label: str) -> date:
 def validate_protocol(protocol: Mapping[str, Any]) -> None:
     if protocol.get("schema_version") != 2 or protocol.get("ea_id") != 20009:
         raise FreezeError("research protocol schema/EA identity mismatch")
+    if (
+        protocol.get("protocol_id") != "QM5_20009_RESEARCH_FREEZE_V5"
+        or protocol.get("contract_version") != "v5"
+        or protocol.get("contract_freeze") != "2026-07-20"
+    ):
+        raise FreezeError("research protocol v5/contract identity mismatch")
     markets = protocol.get("markets")
     if not isinstance(markets, list):
         raise FreezeError("research protocol markets must be a list")
@@ -340,7 +346,7 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
                 "class": "DIAGNOSTIC_SMOKE",
                 "from": "2022-01-01",
                 "to": "2022-12-31",
-                "allowed_symbols": ["NDX.DWX", "GBPUSD.DWX"],
+                "allowed_symbols": ["NDX.DWX", "GBPUSD.DWX", "EURUSD.DWX"],
                 "allowed_variants": "CENTER_ONLY",
                 "duplicates": 1,
                 "minimum_trades": 0,
@@ -409,6 +415,46 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
         "EA_SIM_COMMISSION_ZERO; AUTHORITATIVE_EXTERNAL_DEAL_AUDIT"
     ):
         raise FreezeError("tester commission application contract drifted")
+
+    expected_oaat = {
+        "variant_count_per_market": 13,
+        "policy": "CENTER_PLUS_SIX_LOW_HIGH_ONE_AXIS_NEIGHBOURS",
+        "sleeve_a_center": [2, 3, 9, 0.05, 0.1, 2.0],
+        "sleeve_a_axes": {
+            "pivot": [1, 3],
+            "reclaim": [1, 5],
+            "mss": [6, 12],
+            "fvg": [0.0, 0.1],
+            "stop": [0.05, 0.15],
+            "rr": [1.5, 2.5],
+        },
+        "sleeve_b_center": [2, 3, 12, 0.05, 0.1, 2.0],
+        "sleeve_b_axes": {
+            "pivot": [1, 3],
+            "reclaim": [1, 5],
+            "mss": [6, 18],
+            "fvg": [0.0, 0.1],
+            "stop": [0.05, 0.15],
+            "rr": [1.5, 2.5],
+        },
+        "sleeve_a_binding_aggregation": "NDX_POOLED_BOTH_DIRECTIONS",
+        "sleeve_a_transport_rule": "GDAXI_ALWAYS_REPORTED_NEVER_USED_FOR_SELECTION",
+        "sleeve_b_binding_aggregation": "EURUSD_GBPUSD_POOLED_LONDON_LONG_SHORT",
+        "sleeve_b_budget_policy": (
+            "MAX_ONE_CONSUMED_ATTEMPT_AND_ONE_FILL_PER_SYMBOL_NY_DAY_SHARED_ACROSS_DIRECTIONS"
+        ),
+        "mandatory_report_cells": {
+            "A": ["NDX_LONG", "NDX_SHORT", "GDAXI_LONG", "GDAXI_SHORT"],
+            "B": [
+                "EURUSD_LONDON_LONG",
+                "EURUSD_LONDON_SHORT",
+                "GBPUSD_LONDON_LONG",
+                "GBPUSD_LONDON_SHORT",
+            ],
+        },
+    }
+    if protocol.get("oaat") != expected_oaat:
+        raise FreezeError("OAAT, aggregation, report-cell or daily-budget contract drifted")
 
     model4 = protocol.get("model4_data")
     expected_model4 = {
@@ -482,7 +528,7 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
     }
     if (
         unlock.get("enforcement") != "FAIL_CLOSED_DETACHED_VERDICT_RECORDS"
-        or unlock.get("verdict_root") != "D:/QM/reports/dev1/QM5_20009/freeze_v4/verdicts"
+        or unlock.get("verdict_root") != "D:/QM/reports/dev1/QM5_20009/freeze_v5/verdicts"
         or unlock.get("record_name_template") != "{phase_id}.verdict.json"
         or unlock.get("detached_sha256_suffix") != ".sha256"
         or unlock.get("nonbinding_phases") != ["DEV_SMOKE_2022"]
@@ -1048,7 +1094,7 @@ def render_set(
     evidence = {row["id"]: row for row in freeze_inputs["evidence_artifacts"]}
     lines = [
         ";==========================================================",
-        "; QM5_20009 deterministic Freeze-v4 research set",
+        "; QM5_20009 deterministic Freeze-v5 research set",
         f"; protocol_id: {freeze_inputs['protocol_id']}",
         f"; contract_freeze: {freeze_inputs['contract_freeze']}",
         f"; symbol: {symbol}",

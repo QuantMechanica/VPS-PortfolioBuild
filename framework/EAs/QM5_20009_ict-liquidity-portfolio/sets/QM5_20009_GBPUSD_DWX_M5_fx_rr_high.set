@@ -1,19 +1,19 @@
 ;==========================================================
-; QM5_20009 deterministic Freeze-v4 research set
-; protocol_id: QM5_20009_RESEARCH_FREEZE_V4
+; QM5_20009 deterministic Freeze-v5 research set
+; protocol_id: QM5_20009_RESEARCH_FREEZE_V5
 ; contract_freeze: 2026-07-20
 ; symbol: GBPUSD.DWX
 ; timeframe: M5
 ; sleeve: fx
 ; variant: rr_high
 ; changed_parameter: strategy_b_min_rr
-; freeze_inputs_sha256: 6bb061324dbafce94da7a26e7ff9c9a9288f39f67707a5b9e403a62c66ecdb38
-; ea_sha256: eb651fa13a7b19804815c4c65d39bb926906bc949bf9093d2e28520c1a1544a2
-; rules_sha256: 8bbe64c2b6f7c98576f687c5beb312dc673d7dd710dfdedf969204a093e2b1cb
-; contract_sha256: 5076797db39119b67ad98af07a9e262212ffad50d2ae166ad9556ed02e132cdc
-; protocol_sha256: 3fbc28c5c5cf95c7563794fafe5c9eba01e3e8df6c5b39a2f27296da1c31e5a2
-; generator_sha256: 94c4e6f0603fd6c0471c039fd50e304532883e84c225587ab708f400d39f5f55
-; ex5_sha256: ddbc31e8eb1ecfc383362a735004fe46baa895ef6589f63d7d0e33a88f3e2f0e
+; freeze_inputs_sha256: bc35c6a65e3597ac07e5645279fea1d6204a838d7a72716ba4c439fb4fdc2a75
+; ea_sha256: a94e24c3a486011662ea0fc82853569663b0a0b93c85f114d545a589d0812c04
+; rules_sha256: 03970dc0b8576010d1614fe3774c7064fbeb983ece0f10d6510ba89a6f79ccbc
+; contract_sha256: 98a500ae4ecb9ed3733199fee137d2c357e4c4b00d9907feb9aae39e783fc688
+; protocol_sha256: 275d4f4de34ae6620e89aae0a8901e17dd6a28ca6332ca703d0599801ac55eb9
+; generator_sha256: 89ae39ec22007bf5da2aa4b7c14ad8dee2e00517a2f3560149456a709c4e4914
+; ex5_sha256: 2b1d663fb032bd516a007dd5eee1973d9a53cb2f80d0d5cb875ed342a247fcb0
 ;==========================================================
 qm_ea_id=20009
 qm_magic_slot_offset=2

@@ -71,7 +71,7 @@
       "class": "DIAGNOSTIC_SMOKE",
       "from": "2022-01-01",
       "to": "2022-12-31",
-      "allowed_symbols": ["NDX.DWX", "GBPUSD.DWX"],
+      "allowed_symbols": ["NDX.DWX", "GBPUSD.DWX", "EURUSD.DWX"],
       "allowed_variants": "CENTER_ONLY",
       "duplicates": 1,
       "minimum_trades": 0,

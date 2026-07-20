@@ -76,8 +76,8 @@ function Get-QmResearchContract {
         $expectedTo = [string]$market.dev_to
     } elseif ($Phase -ceq 'DEV_SMOKE_2022') {
         $binding = $false
-        if ($Symbol -notin @('NDX.DWX', 'GBPUSD.DWX')) {
-            throw "DEV_SMOKE_2022 only permits NDX.DWX and GBPUSD.DWX"
+        if ($Symbol -notin @('NDX.DWX', 'GBPUSD.DWX', 'EURUSD.DWX')) {
+            throw "DEV_SMOKE_2022 only permits NDX.DWX, GBPUSD.DWX and EURUSD.DWX"
         }
         $expectedFrom = '2022-01-01'
         $expectedTo = '2022-12-31'

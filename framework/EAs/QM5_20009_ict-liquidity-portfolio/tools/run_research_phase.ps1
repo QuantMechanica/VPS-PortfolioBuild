@@ -44,7 +44,11 @@ $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $eaRoot '..\..\..'))
 $supportPath = Join-Path $toolsRoot 'research_launcher_support.psm1'
 Import-Module -Name $supportPath -Force -ErrorAction Stop
 
-$protocolPath = Join-Path $eaRoot 'docs\research_protocol_v4.json'
+$protocolPath = Join-Path $eaRoot 'docs\research_protocol_v5.json'
+# DEV_SMOKE_2022 has no prior-verdict dependency and remains independently runnable.
+# Binding OOS unlock stays fail-closed until the separately owned v5 adjudicator
+# verdict schema is integrated into validate_research_run.py; no legacy verdict
+# fields are synthesized by this launcher.
 $generatorPath = Join-Path $toolsRoot 'generate_research_sets.py'
 $validatorPath = Join-Path $toolsRoot 'validate_research_run.py'
 $auditPath = Join-Path $toolsRoot 'audit_mt5_report.py'
@@ -287,7 +291,7 @@ try {
         status = 'PASS'
         created_utc = (Get-Date).ToUniversalTime().ToString('o')
         run_id = $runId
-        protocol_id = 'QM5_20009_RESEARCH_FREEZE_V4'
+        protocol_id = 'QM5_20009_RESEARCH_FREEZE_V5'
         request = $contract
         fixed_tester_contract = [ordered]@{
             model = 4

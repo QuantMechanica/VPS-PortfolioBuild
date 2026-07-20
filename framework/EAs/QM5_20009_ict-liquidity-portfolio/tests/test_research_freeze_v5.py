@@ -1,4 +1,4 @@
-"""Static/unit guards for the QM5_20009 Freeze-v4 research fence.
+"""Static/unit guards for the QM5_20009 Freeze-v5 research fence.
 
 These tests never launch MT5.  In particular, they must not generate the real
 bundle or hash the multi-gigabyte Model-4 tree during ordinary collection.
@@ -67,6 +67,17 @@ def protocol() -> dict[str, object]:
     return json.loads(freeze.PROTOCOL.read_text(encoding="utf-8"))
 
 
+def test_v5_identity_and_v4_protocol_remains_an_immutable_audit_artifact() -> None:
+    payload = protocol()
+    assert freeze.PROTOCOL.name == "research_protocol_v5.json"
+    assert payload["protocol_id"] == "QM5_20009_RESEARCH_FREEZE_V5"
+    assert payload["contract_version"] == "v5"
+    v4 = EA_ROOT / "docs" / "research_protocol_v4.json"
+    assert freeze.sha256_file(v4) == (
+        "3fbc28c5c5cf95c7563794fafe5c9eba01e3e8df6c5b39a2f27296da1c31e5a2"
+    )
+
+
 def test_visible_input_closure_is_exact_and_framework_overrides_are_explicit() -> None:
     payload = protocol()
     assert set(freeze.visible_input_names()) == EXPECTED_INPUTS
@@ -128,13 +139,36 @@ def test_oaat_star_is_13_per_market_and_changes_only_one_axis() -> None:
     assert sum(len(freeze.variants(kind)) for *_rest, kind in freeze.MARKETS) == 52
 
 
+def test_sleeve_b_is_pooled_london_only_with_one_symbol_day_budget() -> None:
+    payload = protocol()
+    oaat = payload["oaat"]
+    assert oaat["sleeve_b_binding_aggregation"] == (
+        "EURUSD_GBPUSD_POOLED_LONDON_LONG_SHORT"
+    )
+    assert oaat["sleeve_b_budget_policy"] == (
+        "MAX_ONE_CONSUMED_ATTEMPT_AND_ONE_FILL_PER_SYMBOL_NY_DAY_SHARED_ACROSS_DIRECTIONS"
+    )
+    assert oaat["mandatory_report_cells"]["B"] == [
+        "EURUSD_LONDON_LONG",
+        "EURUSD_LONDON_SHORT",
+        "GBPUSD_LONDON_LONG",
+        "GBPUSD_LONDON_SHORT",
+    ]
+    assert all("_NY_" not in cell for cell in oaat["mandatory_report_cells"]["B"])
+    freeze.validate_protocol(payload)
+    drifted = copy.deepcopy(payload)
+    drifted["oaat"]["mandatory_report_cells"]["B"].append("EURUSD_NY_LONG")
+    with pytest.raises(freeze.FreezeError, match="daily-budget contract drifted"):
+        freeze.validate_protocol(drifted)
+
+
 def test_dev_smoke_is_separately_fenced_and_cannot_count_as_dev() -> None:
     payload = protocol()
     smoke = next(row for row in payload["phases"] if row["id"] == "DEV_SMOKE_2022")
     assert smoke["nonbinding"] is True
     assert smoke["may_satisfy_phase_verdict_gate"] is False
     assert smoke["minimum_trades"] == 0
-    assert smoke["allowed_symbols"] == ["NDX.DWX", "GBPUSD.DWX"]
+    assert smoke["allowed_symbols"] == ["NDX.DWX", "GBPUSD.DWX", "EURUSD.DWX"]
     fence.validate_request(
         payload,
         phase_id="DEV_SMOKE_2022",
@@ -154,6 +188,15 @@ def test_dev_smoke_is_separately_fenced_and_cannot_count_as_dev() -> None:
             from_date="2022-01-01",
             to_date="2022-12-31",
         )
+    fence.validate_request(
+        payload,
+        phase_id="DEV_SMOKE_2022",
+        symbol="EURUSD.DWX",
+        timeframe="M5",
+        variant="center",
+        from_date="2022-01-01",
+        to_date="2022-12-31",
+    )
     with pytest.raises(fence.FenceError, match="partition mismatch"):
         fence.validate_request(
             payload,
@@ -365,13 +408,13 @@ def test_missing_evidence_fails_before_generation() -> None:
 def test_final_compile_provisioning_and_slippage_evidence_hashes_are_pinned() -> None:
     artifacts = {row["id"]: row for row in protocol()["evidence_artifacts"]}
     assert artifacts["ea_binary"]["expected_sha256"] == (
-        "ddbc31e8eb1ecfc383362a735004fe46baa895ef6589f63d7d0e33a88f3e2f0e"
+        "2b1d663fb032bd516a007dd5eee1973d9a53cb2f80d0d5cb875ed342a247fcb0"
     )
     assert artifacts["ea_binary_repo"]["expected_sha256"] == artifacts["ea_binary"][
         "expected_sha256"
     ]
     assert artifacts["compile_evidence"]["expected_sha256"] == (
-        "a33ab5164e1c5d8ffecb1351925964b4d1ade198424eb19440cfda2eb8515738"
+        "c04d7ee5f5c6aad1e0a8df524b0c578393f5022ff6897221e8a43437ad293cb1"
     )
     assert artifacts["provisioning_tick_hash_manifest"]["expected_sha256"] == (
         "65cb423348fbe1e5f04d99d9594bef80ed303ec52f6d8ad0d225fa86e4d1235c"
