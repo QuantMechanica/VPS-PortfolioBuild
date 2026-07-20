@@ -43,13 +43,6 @@ REPO_ROOT = EA_ROOT.parents[2]
 CONTRACT_PATH = EA_ROOT / "docs" / "candidate-analysis" / "short_ny_reverse_time_contract.json"
 SET_MANIFEST_PATH = EA_ROOT / "sets" / "candidate-analysis" / "short_ny_reverse_time_manifest.json"
 SOURCE_PATH = EA_ROOT / "QM5_20002_ict-icytea-core.mq5"
-SOURCE_CORRECTION_PLAN_PATH = (
-    EA_ROOT / "docs" / "candidate-analysis" / "source_correction_v3_plan.md"
-)
-PRIMARY_SOURCE_PATH = Path(
-    r"D:\QM\strategy_farm\artifacts\sources\ict_icy_tea_source_20260716"
-    r"\MQL5_Strategie_Spezifikation_some_icy_tea.docx"
-)
 EX5_PATH = EA_ROOT / "QM5_20002_ict-icytea-core.ex5"
 REPORT_CORE_PATH = (
     REPO_ROOT
@@ -80,13 +73,10 @@ DEV1_COMMON_FILES_ROOT = Path(
 )
 
 ANALYSIS_ID = "QM5_20002_SHORT_NY_REVERSE_TIME_SCREEN_001"
-CONTRACT_COMMIT = "d902b04932c340dd1212b9420077d7cec6b0d80d"
-EXPECTED_CONTRACT_SHA256 = "6ee74c60a823fe87b03b40a2737ba67d113b2e52e7c09a05f42ba2084e17fefa"
-EXPECTED_SOURCE_SHA256 = "3fd49f2cea7575e659f1b1cf9c24c752a4a8e11db5e0c17cae69629a6f207f83"
-EXPECTED_SOURCE_COMMIT = "3f1039f0eeb56ee882b5c3451eed3ee71567d6bc"
-EXPECTED_SOURCE_CORRECTION_PLAN_SHA256 = "914e1b1c81c4352ee51e7ea1dc4f525739b4e16e1a866d86b759c8dafbbf8c9a"
-EXPECTED_SOURCE_CORRECTION_PLAN_COMMIT = "4e94d4c6a84c9d7bc773344a2311a23cba927f46"
-EXPECTED_PRIMARY_SOURCE_SHA256 = "8880629e924c7dee48e1d2cd0a5cd835020e057ee592b132b6fd0c7a438231af"
+CONTRACT_COMMIT = "6fbdaa0817324375ad25163194fbb9e6d6f50f9b"
+EXPECTED_CONTRACT_SHA256 = "3186d8294e73c3777d5447738aaeb5e2839c8b7768faf41b788cba8722514164"
+EXPECTED_SOURCE_SHA256 = "4951435e308d594de64f4a0ae9fe0e0785f00d7902487e7103990424da3c5d79"
+EXPECTED_SOURCE_COMMIT = "37bb9798b78b41392ea8379432cfe3e5875a74b5"
 EXPECTED_STRATEGY_CARD_SHA256 = "230e59ae40179333a3c7790cc56f371bede8edd2b8fa53913557b20d8cb8bded"
 EXPECTED_BUILD_BRIEF_SHA256 = "57c16befda21c6fb1cc8e44a24b715c92940faee70de9adc1b9351c46d9c92bb"
 
@@ -317,7 +307,7 @@ def load_contract() -> dict[str, Any]:
     contract = json.loads(raw.decode("utf-8"))
     if (
         contract.get("schema_version") != 2
-        or contract.get("contract_revision") != 3
+        or contract.get("contract_revision") != 2
         or contract.get("analysis_id") != ANALYSIS_ID
     ):
         raise PreflightError("unexpected contract schema/revision/analysis id")
@@ -338,37 +328,6 @@ def load_contract() -> dict[str, Any]:
         or fill_gate.get("violation_disposition") != "INVALID"
     ):
         raise PreflightError("contract opening-fill INVALID gates drifted")
-    causal = contract.get("revision_3_causal_semantics", {})
-    exact_causal = {
-        "immediate_sweep_reclaim": "JUST_CLOSED_BAR_WICKS_STRICTLY_THROUGH_LEVEL_AND_CLOSES_STRICTLY_BACK_ACROSS_PREVIOUS_CLOSE_IRRELEVANT",
-        "later_sweep_reclaim": "FIRST_SUBSEQUENT_CLOSE_BACK_ACROSS_WITHIN_SweepReturnBars_SUBSEQUENTLY_CLOSED_BARS_ALL_INTERVENING_CLOSES_REMAIN_ON_SWEPT_SIDE",
-        "immediate_same_bar_mss": "FORBIDDEN_BECAUSE_OHLC_CANNOT_ESTABLISH_INTRABAR_SWEEP_BEFORE_MSS",
-        "later_reclaim_bar_mss": "ALLOWED_WHEN_THE_RECORDED_SWEEP_BAR_IS_STRICTLY_EARLIER",
-        "fvg_window": "ALL_THREE_FVG_CANDLES_STRICTLY_AFTER_RECORDED_SWEEP_AND_NO_LATER_THAN_MSS_BAR",
-        "pre_sweep_fvg_may_satisfy_displacement": False,
-        "sweep_to_mss_expiry_bars": 30,
-    }
-    for key, expected in exact_causal.items():
-        if causal.get(key) != expected:
-            raise PreflightError(f"contract causal semantics drift: {key}")
-    runtime = contract.get("revision_3_calendar_and_runtime_safety", {})
-    if (
-        runtime.get("broker_d1_levels_forbidden") is not True
-        or runtime.get("pending_order_policy")
-        != "REMOVE_OWN_LIMITS_OUTSIDE_ENABLED_KILLZONE_OR_DURING_FRESH_TWO_CALENDAR_BLACKOUT"
-        or runtime.get("fill_race_policy")
-        != "VALIDATE_POSITION_TIME_AND_RETRY_IMMEDIATE_CLOSE_UNTIL_INVALID_FILL_IS_GONE"
-        or runtime.get("tick_order_before_entry_news_gate")
-        != [
-            "KILL_SWITCH",
-            "CANCEL_INVALID_PENDING_AND_CLOSE_RACING_INVALID_FILL",
-            "FRIDAY_CLOSE",
-            "PARTIAL_AND_BREAKEVEN_MANAGEMENT",
-            "NEW_YORK_DAY_END_EXIT",
-            "CUSTOM_AND_FRESH_TWO_AXIS_NEWS_ENTRY_GATE",
-        ]
-    ):
-        raise PreflightError("contract calendar/runtime safety semantics drift")
     tester = contract.get("tester", {})
     exact_tester = {
         "terminal": "DEV1",
@@ -493,17 +452,6 @@ def validate_source_closure(contract: Mapping[str, Any]) -> dict[str, Any]:
     if (
         frozen.get("source_git_commit") != EXPECTED_SOURCE_COMMIT
         or frozen.get("source_sha256") != EXPECTED_SOURCE_SHA256
-        or frozen.get("primary_source_path")
-        != "D:/QM/strategy_farm/artifacts/sources/ict_icy_tea_source_20260716/MQL5_Strategie_Spezifikation_some_icy_tea.docx"
-        or frozen.get("primary_source_sha256") != EXPECTED_PRIMARY_SOURCE_SHA256
-        or frozen.get("source_correction_plan_path")
-        != "framework/EAs/QM5_20002_ict-icytea-core/docs/candidate-analysis/source_correction_v3_plan.md"
-        or frozen.get("source_correction_plan_git_commit")
-        != EXPECTED_SOURCE_CORRECTION_PLAN_COMMIT
-        or frozen.get("source_correction_plan_sha256")
-        != EXPECTED_SOURCE_CORRECTION_PLAN_SHA256
-        or frozen.get("strategy_card_status_at_revision_3") != "intake"
-        or frozen.get("approval_claim") != "NONE_RESEARCH_SOURCE_CORRECTION_ONLY"
         or frozen.get("fresh_compile_required") is not True
         or frozen.get("compiled_binary_must_bind_source_manifest") is not True
     ):
@@ -514,23 +462,7 @@ def validate_source_closure(contract: Mapping[str, Any]) -> dict[str, Any]:
     brief_path = REPO_ROOT / str(frozen["build_brief_path"])
     card = file_binding(card_path, EXPECTED_STRATEGY_CARD_SHA256)
     brief = file_binding(brief_path, EXPECTED_BUILD_BRIEF_SHA256)
-    plan = file_binding(
-        SOURCE_CORRECTION_PLAN_PATH, EXPECTED_SOURCE_CORRECTION_PLAN_SHA256
-    )
-    assert_committed_bytes(
-        EXPECTED_SOURCE_CORRECTION_PLAN_COMMIT,
-        SOURCE_CORRECTION_PLAN_PATH,
-        SOURCE_CORRECTION_PLAN_PATH.read_bytes(),
-        "source correction plan",
-    )
-    primary_source = file_binding(PRIMARY_SOURCE_PATH, EXPECTED_PRIMARY_SOURCE_SHA256)
-    return {
-        "source": source,
-        "strategy_card": card,
-        "build_brief": brief,
-        "source_correction_plan": plan,
-        "primary_source": primary_source,
-    }
+    return {"source": source, "strategy_card": card, "build_brief": brief}
 
 
 def _csv_rows(path: Path) -> tuple[list[dict[str, str]], list[str]]:
@@ -551,9 +483,9 @@ def validate_compile_evidence(path: Path, contract: Mapping[str, Any]) -> dict[s
     if source_evidence_path != SOURCE_PATH.resolve():
         raise PreflightError("compile source path does not bind repository MQ5")
     finished = parse_utc(str(evidence.get("finished_utc", "")), "compile finished_utc")
-    revision = parse_utc(str(contract["revision_3_created_utc"]), "contract revision_3_created_utc")
+    revision = parse_utc(str(contract["revision_2_created_utc"]), "contract revision_2_created_utc")
     if finished <= revision:
-        raise PreflightError("compile is not fresh after contract revision 3")
+        raise PreflightError("compile is not fresh after contract revision 2")
     if finished > datetime.now(timezone.utc) + timedelta(minutes=5):
         raise PreflightError("compile finished_utc is implausibly in the future")
     git_head = str(evidence.get("git_head_after", ""))

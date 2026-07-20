@@ -20,7 +20,7 @@ SPEC.loader.exec_module(subject)
 def test_frozen_family_has_four_complete_sets_and_manifest() -> None:
     contract = subject.load_contract()
     assert contract["schema_version"] == 2
-    assert contract["contract_revision"] == 3
+    assert contract["contract_revision"] == 2
     assert [row["role"] for row in contract["data_bindings"]["news_calendars"]] == [
         "PRIMARY_QM_NEWS_CALENDAR",
         "SECONDARY_QM_NEWS_CALENDAR_REQUIRED_BY_QM_NewsInit",
