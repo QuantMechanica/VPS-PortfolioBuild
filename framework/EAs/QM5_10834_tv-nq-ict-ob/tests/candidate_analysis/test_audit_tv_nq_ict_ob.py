@@ -30,6 +30,105 @@ def _write_json(path: Path, payload: object) -> None:
     path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
 
+def _factory_evidence(tmp_path: Path) -> dict[str, Path]:
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    design = tmp_path / "V5_FRAMEWORK_DESIGN.md"
+    design.write_text(
+        "Symbols carry `.DWX` in research and backtest, stripped only at deploy packaging.\n",
+        encoding="utf-8",
+    )
+    rules = tmp_path / "2026-04-28_seven_backtest_rules.md"
+    rules.write_text(
+        "### Rule 1 — Test ONLY on `.DWX` symbols\n\n"
+        "Every backtest run uses the `.DWX`-suffixed custom symbols, never native broker symbols.\n",
+        encoding="utf-8",
+    )
+    aliases = tmp_path / "execution_symbol_aliases_v1.json"
+    _write_json(
+        aliases,
+        {
+            "schema_version": 1,
+            "artifact_type": "QM_EXECUTION_SYMBOL_ALIASES",
+            "status": "ACTIVE",
+            "venues": [
+                {
+                    "venue_id": "DXZ_LIVE",
+                    "symbols": [
+                        {"raw_symbol": "NDX", "logical_symbol": "NDX.DWX"}
+                    ],
+                },
+                {
+                    "venue_id": "FTMO_TRIAL",
+                    "symbols": [
+                        {"raw_symbol": "US100.cash", "logical_symbol": "NDX.DWX"}
+                    ],
+                },
+            ],
+        },
+    )
+    matrix = tmp_path / "dwx_symbol_matrix.csv"
+    matrix.write_text(
+        "symbol,asset_class,import_log_path,canonical_name_verified,evidence_line\n"
+        "NDX.DWX,indices,Custom/Indices/Index 3/NDX.DWX,true,"
+        "historical FAIL_tail_mid_bars live-parity evidence\n",
+        encoding="utf-8",
+    )
+    cost = tmp_path / "venue_cost_model.json"
+    _write_json(
+        cost,
+        {
+            "symbols": {
+                "NDX": {"asset_class": "index", "alias_of": "US100"},
+                "US100": {
+                    "asset_class": "index",
+                    "dwx_symbol": "NDX.DWX",
+                    "dxz": {
+                        "commission_rt_per_lot_usd": 5.5,
+                        "spread_source": "embedded in .DWX real-tick history",
+                    },
+                    "ftmo": {"commission_rt_per_lot_usd": 0.0},
+                    "worst_case_rt_per_lot_usd": 5.5,
+                },
+            }
+        },
+    )
+    done = tmp_path / "NDX_DUKASCOPY_REIMPORT.DONE"
+    done.write_text(
+        "status=OK\ntarget=NDX.DWX\nticks_added=563084925\nbars_updated=2744362\n",
+        encoding="utf-8",
+    )
+    source = tmp_path / "QM_NDX_Reimport_20260718.mq5"
+    source.write_text(
+        '#define TARGET "NDX.DWX"\nvoid Rebuild(){ CustomTicksAdd(); CustomRatesUpdate(); }\n',
+        encoding="utf-8",
+    )
+    return {
+        "v5_framework": design,
+        "backtest_rules": rules,
+        "aliases": aliases,
+        "matrix": matrix,
+        "cost": cost,
+        "rebuild_done": done,
+        "rebuild_source": source,
+    }
+
+
+def _t1_ndx_store(tmp_path: Path) -> Path:
+    data_root = tmp_path / "Custom"
+    history = data_root / "history" / "NDX.DWX"
+    ticks = data_root / "ticks" / "NDX.DWX"
+    history.mkdir(parents=True)
+    ticks.mkdir(parents=True)
+    for year in subject._required_history_years():
+        (history / f"{year}.hcc").write_bytes(f"hcc-{year}".encode("ascii"))
+    for month in subject._required_tick_months():
+        (ticks / f"{month}.tkc").write_bytes(f"tick-{month}".encode("ascii"))
+    # Physical files outside the frozen period are legitimate and must not enter
+    # the exact receipt closure.
+    (ticks / "202601.tkc").write_bytes(b"out-of-range")
+    return data_root
+
+
 def _synthetic_trade(
     day: date,
     sequence: int,
@@ -39,10 +138,10 @@ def _synthetic_trade(
 ) -> subject.TradeRecord:
     entry_ny = datetime.combine(day, time(9, 50))
     exit_ny = datetime.combine(day, time(10, 10))
-    venue_cost = Decimal("0.70")
+    venue_cost = Decimal("5.50")
     return subject.TradeRecord(
         sequence=sequence,
-        symbol="WS30.DWX",
+        symbol="NDX.DWX",
         side="buy",
         entry_deal=entry_deal or f"{day:%Y%m%d}{sequence:04d}",
         exit_deals=(f"x{day:%Y%m%d}{sequence:04d}",),
@@ -111,8 +210,8 @@ def test_frozen_plan_is_one_symbol_four_disjoint_cells_and_two_duplicates(
     tmp_path: Path,
 ) -> None:
     set_binding = {"path": str(tmp_path / "candidate.set"), "size": 1, "sha256": "a" * 64}
-    plan = subject.build_plan("WS30.DWX", set_binding, tmp_path / "run")
-    assert plan["single_authorized_symbol"] == "WS30.DWX"
+    plan = subject.build_plan("NDX.DWX", set_binding, tmp_path / "run")
+    assert plan["single_authorized_symbol"] == "NDX.DWX"
     assert plan["native_run_count"] == 8
     assert plan["technical_prescreen"]["authorized"] is False
     assert [row["cohort"] for row in plan["cells"]] == ["DEV", "OOS", "OOS", "OOS"]
@@ -122,15 +221,16 @@ def test_frozen_plan_is_one_symbol_four_disjoint_cells_and_two_duplicates(
         ("2024-01-01", "2024-12-31"),
         ("2025-01-01", "2025-12-31"),
     ]
-    assert all(row["symbol"] == "WS30.DWX" for row in plan["cells"])
+    assert all(row["symbol"] == "NDX.DWX" for row in plan["cells"])
     assert all(row["model"] == 4 and row["duplicates"] == 2 for row in plan["cells"])
     subject.validate_window_contract()
 
 
-@pytest.mark.parametrize("symbol", ["NDX.DWX", "GDAXI.DWX", "XAUUSD.DWX"])
-def test_symbol_policy_blocks_ndx_and_every_non_ws30_symbol(symbol: str) -> None:
+@pytest.mark.parametrize("symbol", ["WS30.DWX", "GDAXI.DWX", "XAUUSD.DWX", "NDX"])
+def test_symbol_policy_allows_only_factory_ndx_dwx(symbol: str) -> None:
     with pytest.raises(subject.InvalidEvidence):
         subject.enforce_symbol_policy(symbol)
+    subject.enforce_symbol_policy("NDX.DWX")
 
 
 def test_hash_binding_role_closure_is_explicit() -> None:
@@ -144,6 +244,11 @@ def test_hash_binding_role_closure_is_explicit() -> None:
         "matrix",
         "cost",
         "live_commission",
+        "v5_framework",
+        "backtest_rules",
+        "aliases",
+        "rebuild_done",
+        "rebuild_source",
         "runner",
         "report_parser",
         "powershell",
@@ -151,113 +256,137 @@ def test_hash_binding_role_closure_is_explicit() -> None:
     }
 
 
-def test_matrix_requires_explicit_pass_and_rejects_any_fail_evidence(tmp_path: Path) -> None:
-    matrix = tmp_path / "matrix.csv"
-    matrix.write_text(
-        "symbol,canonical_name_verified,evidence_line\n"
-        "WS30.DWX,true,2026-07-20 explicit PASS validation\n",
+def test_matrix_accepts_ndx_namespace_despite_live_parity_fail_note(tmp_path: Path) -> None:
+    evidence = _factory_evidence(tmp_path)
+    row = subject._matrix_row("NDX.DWX", evidence["matrix"])
+    assert row == {
+        "symbol": "NDX.DWX",
+        "asset_class": "indices",
+        "import_log_path": "Custom/Indices/Index 3/NDX.DWX",
+        "canonical_name_verified": "true",
+    }
+    assert "evidence_line" not in row
+
+    evidence["matrix"].write_text(
+        evidence["matrix"].read_text(encoding="utf-8").replace(
+            "Custom/Indices/Index 3/NDX.DWX", "Custom/Indices/Wrong/NDX.DWX"
+        ),
         encoding="utf-8",
     )
-    assert subject._matrix_row("WS30.DWX", matrix)["symbol"] == "WS30.DWX"
-    matrix.write_text(
-        "symbol,canonical_name_verified,evidence_line\n"
-        "WS30.DWX,true,previous FAIL now PASS\n",
-        encoding="utf-8",
-    )
-    with pytest.raises(subject.InvalidEvidence, match="FAIL evidence"):
-        subject._matrix_row("WS30.DWX", matrix)
+    with pytest.raises(subject.InvalidEvidence, match="import path drift"):
+        subject._matrix_row("NDX.DWX", evidence["matrix"])
 
 
-def test_fresh_validation_receipt_is_exactly_t1_pass_and_manifest_bound(
+def test_backtest_data_receipt_is_exact_atomic_and_outcome_blind(
     tmp_path: Path,
 ) -> None:
-    evidence = tmp_path / "validation-evidence.json"
-    evidence.write_text("{}", encoding="utf-8")
-    now = datetime(2026, 7, 20, 12, 0, tzinfo=timezone.utc)
-    payload = {
-        "schema_version": 1,
-        "artifact_type": "QM_CUSTOM_SYMBOL_VALIDATION_RECEIPT",
-        "terminal": "T1",
-        "symbol": "WS30.DWX",
-        "status": "PASS",
-        "classification": "VALIDATED",
-        "validated_utc": (now - timedelta(minutes=5)).isoformat(),
-        "valid_until_utc": (now + timedelta(days=30)).isoformat(),
-        "data_manifest_sha256": "a" * 64,
-        "evidence": [subject.file_binding(evidence)],
-    }
-    receipt = tmp_path / "validation.json"
-    _write_json(receipt, payload)
-    assert subject.validate_validation_receipt(
-        receipt, "WS30.DWX", "a" * 64, now=now
-    )["status"] == "PASS"
-
-    payload["valid_until_utc"] = (now - timedelta(seconds=1)).isoformat()
-    _write_json(receipt, payload)
-    with pytest.raises(subject.InvalidEvidence, match="not currently valid"):
-        subject.validate_validation_receipt(receipt, "WS30.DWX", "a" * 64, now=now)
-
-
-def test_data_manifest_requires_all_bound_hcc_years_and_tick_months(
-    tmp_path: Path,
-) -> None:
-    data_root = tmp_path / "Custom"
-    history = data_root / "history" / "WS30.DWX"
-    ticks = data_root / "ticks" / "WS30.DWX"
-    history.mkdir(parents=True)
-    ticks.mkdir(parents=True)
-    files: list[dict[str, object]] = []
-    for year in range(2018, 2026):
-        path = history / f"{year}.hcc"
-        path.write_bytes(f"hcc-{year}".encode("ascii"))
-        files.append(subject.file_binding(path))
-    for month in sorted(subject._required_tick_months()):
-        path = ticks / f"{month}.tkc"
-        path.write_bytes(f"tick-{month}".encode("ascii"))
-        files.append(subject.file_binding(path))
-    payload = {
-        "artifact_type": "QM_CUSTOM_SYMBOL_DATA_MANIFEST",
-        "schema_version": 1,
-        "symbol": "WS30.DWX",
-        "terminal": "T1",
-        "coverage": {"from_date": "2018-07-02", "to_date": "2025-12-31"},
-        "files": files,
-    }
-    manifest = tmp_path / "manifest.json"
-    _write_json(manifest, payload)
-    result = subject.validate_data_manifest(
-        manifest, "WS30.DWX", terminal_data_root=data_root
+    evidence = _factory_evidence(tmp_path / "factory")
+    data_root = _t1_ndx_store(tmp_path / "t1")
+    payload = subject.freeze_backtest_data(
+        "NDX.DWX", terminal_data_root=data_root, evidence_paths=evidence
     )
-    assert len(result["files"]) == 98
+    assert payload["coverage"] == {
+        "from_date": "2018-07-02",
+        "to_date": "2025-12-31",
+        "history_year_first": 2018,
+        "history_year_last": 2025,
+        "history_file_count": 8,
+        "tick_month_first": "201807",
+        "tick_month_last": "202512",
+        "tick_file_count": 90,
+    }
+    assert payload["totals"]["files"] == 98
+    assert all("202601.tkc" not in row["path"] for row in payload["files"])
+    assert payload["outcome_fence"]["strategy_outcomes_read"] is False
+    assert (
+        payload["namespace_contract"][
+            "live_ohlc_tail_parity_required_for_research_merit"
+        ]
+        is False
+    )
 
-    payload["files"] = [row for row in files if not str(row["path"]).endswith("202512.tkc")]
-    _write_json(manifest, payload)
-    with pytest.raises(subject.InvalidEvidence, match="missing TKC months"):
-        subject.validate_data_manifest(manifest, "WS30.DWX", terminal_data_root=data_root)
+    receipt = tmp_path / "receipt.json"
+    subject.atomic_json(receipt, payload, replace=False)
+    validated = subject.validate_backtest_data_receipt(
+        receipt,
+        "NDX.DWX",
+        terminal_data_root=data_root,
+        evidence_paths=evidence,
+    )
+    assert validated["receipt"]["sha256"]
+    assert set(validated["factory_evidence"]) == subject.DATA_FACTORY_EVIDENCE_ROLES
+    with pytest.raises(subject.InvalidEvidence, match="refusing to replace evidence"):
+        subject.atomic_json(receipt, payload, replace=False)
+
+    malicious = json.loads(json.dumps(payload))
+    extra_path = data_root / "ticks" / "NDX.DWX" / "202601.tkc"
+    malicious["files"].append(
+        {
+            "kind": "ticks",
+            "period": "202601",
+            **subject.stable_file_binding(extra_path),
+        }
+    )
+    extra_receipt = tmp_path / "extra.json"
+    _write_json(extra_receipt, malicious)
+    with pytest.raises(subject.InvalidEvidence, match="exactly 98 files"):
+        subject.validate_backtest_data_receipt(
+            extra_receipt,
+            "NDX.DWX",
+            terminal_data_root=data_root,
+            evidence_paths=evidence,
+        )
+
+    bound_tick = data_root / "ticks" / "NDX.DWX" / "202512.tkc"
+    bound_tick.write_bytes(b"tampered-bound-tick")
+    with pytest.raises(subject.InvalidEvidence, match="drift"):
+        subject.validate_backtest_data_receipt(
+            receipt,
+            "NDX.DWX",
+            terminal_data_root=data_root,
+            evidence_paths=evidence,
+        )
+    bound_tick.unlink()
+    with pytest.raises(subject.InvalidEvidence, match="required file missing"):
+        subject.freeze_backtest_data(
+            "NDX.DWX", terminal_data_root=data_root, evidence_paths=evidence
+        )
 
 
 def test_cost_schedule_uses_exact_worst_of_dxz_and_ftmo(tmp_path: Path) -> None:
-    path = tmp_path / "cost.json"
-    payload = {
-        "symbols": {
-            "WS30": {
-                "asset_class": "index",
-                "dwx_symbol": "WS30.DWX",
-                "dxz": {"commission_rt_per_lot_usd": 0.70},
-                "ftmo": {"commission_rt_per_lot_usd": 0.0},
-                "worst_case_rt_per_lot_usd": 0.70,
-            }
-        }
-    }
-    _write_json(path, payload)
-    schedule = subject.resolve_cost_schedule(path, "WS30.DWX")
-    assert schedule["dxz_rt_per_lot_usd"] == "0.7"
+    path = _factory_evidence(tmp_path)["cost"]
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    schedule = subject.resolve_cost_schedule(path, "NDX.DWX")
+    assert schedule["alias_chain"] == ["NDX", "US100"]
+    assert schedule["dxz_rt_per_lot_usd"] == "5.5"
     assert schedule["ftmo_rt_per_lot_usd"] == "0"
-    assert schedule["worst_rt_per_lot_usd"] == "0.7"
-    payload["symbols"]["WS30"]["worst_case_rt_per_lot_usd"] = 0.69
+    assert schedule["worst_rt_per_lot_usd"] == "5.5"
+    payload["symbols"]["US100"]["worst_case_rt_per_lot_usd"] = 5.49
     _write_json(path, payload)
     with pytest.raises(subject.InvalidEvidence, match="worst-case drift"):
-        subject.resolve_cost_schedule(path, "WS30.DWX")
+        subject.resolve_cost_schedule(path, "NDX.DWX")
+
+    payload["symbols"]["NDX"]["alias_of"] = "NDX"
+    _write_json(path, payload)
+    with pytest.raises(subject.InvalidEvidence, match="alias cycle"):
+        subject.resolve_cost_schedule(path, "NDX.DWX")
+
+
+def test_ndx_set_contract_requires_magic_slot_zero() -> None:
+    metadata = {"symbol": "NDX.DWX", "timeframe": "M5"}
+    inputs = {
+        "qm_ea_id": "10834",
+        "qm_magic_slot_offset": "0",
+        "RISK_FIXED": "1000",
+        "RISK_PERCENT": "0",
+        "strategy_entry_start_hhmm": "945",
+        "strategy_entry_end_hhmm": "1015",
+        "strategy_target_r": "2.0",
+    }
+    subject._validate_set_contract("NDX.DWX", metadata, inputs)
+    inputs["qm_magic_slot_offset"] = "1"
+    with pytest.raises(subject.InvalidEvidence, match="set input contract drift"):
+        subject._validate_set_contract("NDX.DWX", metadata, inputs)
 
 
 def test_effective_input_contract_closes_defaults_set_values_and_enums(
@@ -312,11 +441,11 @@ def test_stale_build_receipt_is_expected_fail_closed_not_merit_fail(tmp_path: Pa
             "ex5_sha256": hashes["ex5"],
             "spec_sha256": "f" * 64,
             "primary_source_sha256": hashes["pine"],
-            "setfile_sha256": {"WS30.DWX": hashes["set"]},
+            "setfile_sha256": {"NDX.DWX": hashes["set"]},
         },
     )
     with pytest.raises(subject.InvalidEvidence, match="spec_sha256"):
-        subject.validate_build_receipt(receipt, "WS30.DWX", bindings)
+        subject.validate_build_receipt(receipt, "NDX.DWX", bindings)
 
 
 def test_multiline_native_report_inputs_are_all_parsed() -> None:
@@ -336,7 +465,7 @@ def test_multiline_native_report_inputs_are_all_parsed() -> None:
         [
             ["Inputs:", "qm_ea_id=10834"],
             ["", "RISK_FIXED=1000", "strategy_bias_mode=0"],
-            ["Symbol:", "WS30.DWX"],
+            ["Symbol:", "NDX.DWX"],
         ],
     )
     assert ordered == [
@@ -355,7 +484,7 @@ def test_runner_command_freezes_model4_two_duplicates_zero_native_cost(
     tmp_path: Path,
 ) -> None:
     set_binding = {"path": str(tmp_path / "candidate.set"), "size": 1, "sha256": "a" * 64}
-    cell = subject.build_plan("WS30.DWX", set_binding, tmp_path / "run")["cells"][0]
+    cell = subject.build_plan("NDX.DWX", set_binding, tmp_path / "run")["cells"][0]
     pre = {
         "bindings": {
             "powershell": {"path": str(tmp_path / "pwsh.exe")},
@@ -376,7 +505,7 @@ def test_runner_command_freezes_model4_two_duplicates_zero_native_cost(
 def test_trade_reconstruction_applies_external_cost_once_and_checks_session() -> None:
     entry = SimpleNamespace(
         direction="in",
-        symbol="WS30.DWX",
+        symbol="NDX.DWX",
         volume=Decimal("2"),
         commission=Decimal("0"),
         swap=Decimal("0"),
@@ -387,7 +516,7 @@ def test_trade_reconstruction_applies_external_cost_once_and_checks_session() ->
     )
     close = SimpleNamespace(
         direction="out",
-        symbol="WS30.DWX",
+        symbol="NDX.DWX",
         volume=Decimal("2"),
         commission=Decimal("0"),
         swap=Decimal("0"),
@@ -396,10 +525,10 @@ def test_trade_reconstruction_applies_external_cost_once_and_checks_session() ->
         time=datetime(2025, 2, 3, 17, 10),
         raw_net=Decimal("100"),
     )
-    trades = subject._reconstruct_trades([entry, close], "WS30.DWX", Decimal("0.70"))
+    trades = subject._reconstruct_trades([entry, close], "NDX.DWX", Decimal("5.50"))
     assert len(trades) == 1
-    assert trades[0].venue_cost_usd == Decimal("1.40")
-    assert trades[0].adjusted_net_usd == Decimal("98.60")
+    assert trades[0].venue_cost_usd == Decimal("11.00")
+    assert trades[0].adjusted_net_usd == Decimal("89.00")
     assert subject.validate_trade_semantics(trades)["status"] == "PASS"
 
     outside = replace(
@@ -456,16 +585,33 @@ def test_merit_thresholds_are_versioned_and_absent_from_cli() -> None:
     assert subject.MERIT_GATES["each_oos_year"]["minimum_trades"] == 12
     assert subject.MERIT_GATES["oos_pooled"]["minimum_trades"] == 45
     assert subject.MERIT_GATES["leave_best_oos_year_out"]["minimum_cost_profit_factor"] == "1.05"
+    parser = subject.build_parser()
+    subparsers = next(action for action in parser._actions if getattr(action, "choices", None))
     options = {
         option
-        for action in subject.build_parser()._actions
+        for command in subparsers.choices.values()
+        for action in command._actions
         for option in getattr(action, "option_strings", [])
     }
     assert not any("threshold" in option or "minimum" in option or "drawdown" in option for option in options)
+    freeze_options = {
+        option
+        for action in subparsers.choices["freeze-data"]._actions
+        for option in action.option_strings
+    }
+    pre_options = {
+        option
+        for action in subparsers.choices["pre"]._actions
+        for option in action.option_strings
+    }
+    assert freeze_options == {"-h", "--help", "--symbol", "--receipt"}
+    assert "--data-receipt" in pre_options
+    assert "--validation-receipt" not in pre_options
+    assert "--data-manifest" not in pre_options
 
 
 def test_runner_summary_requires_exactly_two_model4_marked_duplicates() -> None:
-    cell = {"symbol": "WS30.DWX"}
+    cell = {"symbol": "NDX.DWX"}
     summary = _runner_summary(cell)
     subject.validate_runner_summary(summary, cell)
     summary["runs"][1]["real_ticks_marker"] = False
@@ -481,9 +627,9 @@ def test_authorization_is_owner_scoped_short_lived_and_pre_bound(tmp_path: Path)
         "status": "AUTHORIZED",
         "analysis_id": subject.ANALYSIS_ID,
         "pre_receipt_sha256": "a" * 64,
-        "scope": "QM5_10834_WS30_4_CELLS_X_2_DUPLICATES_MODEL4",
+        "scope": "QM5_10834_NDX_4_CELLS_X_2_DUPLICATES_MODEL4",
         "authorized_by": "OWNER",
-        "authorized_symbol": "WS30.DWX",
+        "authorized_symbol": "NDX.DWX",
         "authorized_cells": [window.cell_id for window in subject.WINDOWS],
         "duplicates_per_cell": 2,
         "model": 4,
@@ -494,7 +640,7 @@ def test_authorization_is_owner_scoped_short_lived_and_pre_bound(tmp_path: Path)
     path = tmp_path / "authorization.json"
     _write_json(path, payload)
     assert subject.validate_authorization(path, "a" * 64, now=now)["binding"]["sha256"]
-    payload["authorized_symbol"] = "NDX.DWX"
+    payload["authorized_symbol"] = "WS30.DWX"
     _write_json(path, payload)
     with pytest.raises(subject.AuthorizationError, match="drift"):
         subject.validate_authorization(path, "a" * 64, now=now)
@@ -538,9 +684,9 @@ def test_resume_archives_non_outcome_logs_and_resets_accepted_attempt_count(
     output_root = run_root / "native" / "DEV"
     output_root.mkdir(parents=True)
     (output_root / "controller.stdout.log").write_text("non-outcome", encoding="utf-8")
-    cell = {"cell_id": "WS30_DWX_DEV", "output_root": str(output_root)}
+    cell = {"cell_id": "NDX_DWX_DEV", "output_root": str(output_root)}
     state_cell = {
-        "cell_id": "WS30_DWX_DEV",
+        "cell_id": "NDX_DWX_DEV",
         "status": "INTERRUPTED_NO_OUTCOME",
         "attempts": [{"summary": None, "outcome_artifacts": [], "exit_code": 2}],
     }
@@ -564,7 +710,7 @@ def test_outcome_artifact_makes_interrupted_cell_non_resumable(tmp_path: Path) -
     with pytest.raises(subject.InvalidEvidence, match="outcome artifact appeared"):
         subject._archive_interrupted_no_outcome(
             {"run_root": str(tmp_path / "run")},
-            {"cell_id": "WS30_DWX_DEV", "output_root": str(output_root)},
+            {"cell_id": "NDX_DWX_DEV", "output_root": str(output_root)},
             state_cell,
         )
 

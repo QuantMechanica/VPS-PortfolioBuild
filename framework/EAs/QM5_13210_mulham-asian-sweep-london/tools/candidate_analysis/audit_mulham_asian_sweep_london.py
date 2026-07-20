@@ -1,18 +1,16 @@
 #!/usr/bin/env python3
-"""Outcome-fenced native candidate runner for QM5_10834.
+"""Outcome-fenced native candidate runner for QM5_13210.
 
 The command has three deliberately separate trust domains:
 
-* ``freeze-data`` hashes the exact T1 ``NDX.DWX`` research corpus and the Factory
-  namespace/rebuild authorities without opening an MT5 report or parsing a market
-  outcome.
-* ``pre`` reads only build, configuration, frozen data and runtime bytes.  It
+* ``pre`` reads only build, configuration, validation, data and runtime bytes.  It
   freezes one authorised symbol and four disjoint windows without opening an MT5
   report or parsing a market outcome.
-* ``launch`` requires a short-lived, hash-bound authorisation receipt.  Its
-  detached worker checkpoints after every cell and may resume only when an
-  interrupted cell left no outcome artefact.  The worker treats native output as
-  opaque bytes; it does not adjudicate performance.
+* ``launch`` requires a short-lived, hash-bound authorisation receipt.  A
+  triggerless S4U/Highest Windows Scheduled Task owns the outer worker so it
+  survives an interactive Codex session ending.  The worker checkpoints after
+  every cell and treats native output as opaque bytes; it does not adjudicate
+  performance.
 * ``post`` accepts only a COMPLETE launch state.  It verifies Model 4 twice per
   cell, exact Deal-sequence equality, session/lifecycle invariants, the bound
   worst-of-DXZ/FTMO cost ledger and the frozen merit contract.
@@ -31,11 +29,9 @@ import json
 import math
 import os
 import re
-import secrets
 import subprocess
 import sys
 import tempfile
-import time as time_module
 from collections import defaultdict
 from dataclasses import asdict, dataclass
 from datetime import date, datetime, time, timedelta, timezone
@@ -50,34 +46,32 @@ TOOL_PATH = Path(__file__).resolve()
 EA_ROOT = TOOL_PATH.parents[2]
 REPO_ROOT = EA_ROOT.parents[2]
 
-EA_ID = 10834
-EA_LABEL = "QM5_10834"
-EXPERT_NAME = "QM5_10834_tv-nq-ict-ob"
+EA_ID = 13210
+EA_LABEL = "QM5_13210"
+EXPERT_NAME = "QM5_13210_mulham-asian-sweep-london"
 EXPERT_PATH = rf"QM\{EXPERT_NAME}"
-ANALYSIS_ID = "QM5_10834_TV_NQ_ICT_OB_NATIVE_001"
+ANALYSIS_ID = "QM5_13210_MULHAM_ASIAN_SWEEP_LONDON_NATIVE_001"
 SCHEMA_VERSION = 1
-MERIT_CONTRACT_VERSION = "QM5_10834_MERIT_V1_20260720"
+MERIT_CONTRACT_VERSION = "QM5_13210_MERIT_V1_20260720"
 
 CARD_PATH = Path(
-    r"D:\QM\strategy_farm\artifacts\cards_approved\QM5_10834_tv-nq-ict-ob.md"
+    r"D:\QM\strategy_farm\artifacts\cards_approved\QM5_13210_mulham-asian-sweep-london.md"
 )
-PINE_PATH = EA_ROOT / "docs" / "candidate-analysis" / "primary_source_pine_v1.pine"
+RESEARCH_DOSSIER_PATH = (
+    REPO_ROOT / "docs" / "ops" / "evidence" / "mulham_channel_mechanization_dossier_2026-07-13.md"
+)
+RESEARCH_EXTRACTION_PATH = Path(
+    r"D:\QM\reports\research\mulham_trading_channel_2026-07-13\extractions\cluster2_asian_sweep.md"
+)
+RESEARCH_BATCH_RECEIPT_PATH = Path(
+    r"D:\QM\reports\research\mulham_trading_channel_2026-07-13\batch_status.json"
+)
 SPEC_PATH = EA_ROOT / "SPEC.md"
 MQ5_PATH = EA_ROOT / f"{EXPERT_NAME}.mq5"
 EX5_PATH = EA_ROOT / f"{EXPERT_NAME}.ex5"
 MATRIX_PATH = REPO_ROOT / "framework" / "registry" / "dwx_symbol_matrix.csv"
 COST_PATH = REPO_ROOT / "framework" / "registry" / "venue_cost_model.json"
 LIVE_COMMISSION_PATH = REPO_ROOT / "framework" / "registry" / "live_commission.json"
-V5_FRAMEWORK_PATH = REPO_ROOT / "framework" / "V5_FRAMEWORK_DESIGN.md"
-BACKTEST_RULES_PATH = Path(
-    r"C:\QM\worktrees\docs-km\decisions\2026-04-28_seven_backtest_rules.md"
-)
-ALIASES_PATH = REPO_ROOT / "framework" / "registry" / "execution_symbol_aliases_v1.json"
-NDX_REBUILD_ROOT = Path(
-    r"D:\QM\reports\setup\tick-data-timezone\NDX.DWX_20260720"
-)
-NDX_REBUILD_DONE_PATH = NDX_REBUILD_ROOT / "NDX_DUKASCOPY_REIMPORT.DONE"
-NDX_REBUILD_SOURCE_PATH = NDX_REBUILD_ROOT / "QM_NDX_Reimport_20260718.mq5"
 RUNNER_PATH = REPO_ROOT / "framework" / "scripts" / "run_smoke.ps1"
 REPORT_CORE_PATH = (
     REPO_ROOT
@@ -91,9 +85,20 @@ REPO_INCLUDE_ROOT = REPO_ROOT / "framework" / "Include"
 TERMINAL_INCLUDE_ROOT = Path(r"D:\QM\mt5\T1\MQL5\Include")
 TERMINAL_DATA_ROOT = Path(r"D:\QM\mt5\T1\Bases\Custom")
 POWERSHELL_PATH = Path(r"C:\Program Files\PowerShell\7\pwsh.exe")
-ALLOWED_RUN_ROOT = Path(r"D:\QM\reports\candidate_analysis\QM5_10834")
+PYTHON_PATH = Path(sys.executable).resolve()
+SCHEDULED_TASK_HELPER_PATH = (
+    EA_ROOT / "tools" / "candidate_analysis" / "run_outcome_fenced_task.ps1"
+)
+NEWS_PRIMARY_PATH = Path(r"D:\QM\data\news_calendar\news_calendar_2015_2025.csv")
+NEWS_SECONDARY_PATH = Path(r"D:\QM\data\news_calendar\forex_factory_calendar_clean.csv")
+ALLOWED_RUN_ROOT = Path(r"D:\QM\reports\candidate_analysis\QM5_13210")
 
-EXPECTED_PINE_SHA256 = "015bb5d550a8687f506646de6c33ddfe8b29c3ed5e4ec96f3c66364edfb7f0b5"
+EXPECTED_RESEARCH_HASHES = {
+    "research_dossier": "aba2e2764c21577a5dce9a96404702b406bd4c7f79509262d98175072aec302f",
+    "research_extraction": "a95a08bb8e862b72f452c338b2414b2aa1468ca19bfa55b357b727c07bfb6075",
+    "research_batch_receipt": "933cc8194da7ad83ef42d08862ab537fde7e010734b963421fdc464c57aab75d",
+}
+EXPECTED_BUILD_COMMIT = "b86eafe5cd20a359a71614ea8fcaddbd88977f4e"
 MODEL4_MARKER = "generating based on real ticks"
 INITIAL_BALANCE = Decimal("100000")
 ZERO = Decimal("0")
@@ -101,27 +106,25 @@ CENT = Decimal("0.01")
 TIMEFRAME = "M5"
 DUPLICATES = 2
 RUN_TIMEOUT_SECONDS = 28800
-NY_ENTRY_START = time(9, 45)
-NY_ENTRY_END = time(10, 15)
-# A close request is issued at 10:15.  One complete M5 bar is the hard maximum
-# execution grace; 10:20 itself is outside the permitted interval.
-NY_FLAT_DEADLINE_EXCLUSIVE = time(10, 20)
-WORKER_REGISTRATION_TIMEOUT_SECONDS = 30
-STALE_WORKER_START_SECONDS = 300
+BROKER_ENTRY_START = time(8, 30)
+BROKER_ENTRY_END = time(12, 0)
+# The EA requests its time flatten at 20:00 broker time.  One complete M5 bar
+# is the maximum execution grace; 20:05 itself is outside the valid interval.
+BROKER_FLAT_DEADLINE_EXCLUSIVE = time(20, 5)
+NEWS_BLACKOUT_MINUTES_BEFORE = 30
+NEWS_BLACKOUT_MINUTES_AFTER = 30
+SCHEDULED_TASK_PREFIX = "QM_QM13210_AUDIT_"
+LAUNCHER_REVISION = "QM13210_SCHEDULED_TASK_V1"
+MAX_SCHEDULED_TASK_SECONDS = 777600
 
-RESEARCH_SYMBOL = "NDX.DWX"
-DATA_RECEIPT_ARTIFACT_TYPE = "QM5_10834_BACKTEST_DATA_RECEIPT"
-DATA_COVERAGE_FROM = date(2018, 7, 2)
-DATA_COVERAGE_TO = date(2025, 12, 31)
-
-SYMBOL_POLICY: dict[str, str] = {
-    RESEARCH_SYMBOL: "FACTORY_DWX_RESEARCH_BACKTEST_SYMBOL",
-}
+SYMBOL_POLICY = "EURUSD.DWX_RESEARCH_BACKTEST_ONLY_NO_LIVE_PARITY_GATE"
 
 REQUIRED_BINDING_ROLES = frozenset(
     {
         "card",
-        "pine",
+        "research_dossier",
+        "research_extraction",
+        "research_batch_receipt",
         "spec",
         "mq5",
         "ex5",
@@ -129,14 +132,13 @@ REQUIRED_BINDING_ROLES = frozenset(
         "matrix",
         "cost",
         "live_commission",
-        "v5_framework",
-        "backtest_rules",
-        "aliases",
-        "rebuild_done",
-        "rebuild_source",
         "runner",
         "report_parser",
         "powershell",
+        "python",
+        "scheduled_task_helper",
+        "news_primary",
+        "news_secondary",
         "tool",
     }
 )
@@ -215,8 +217,11 @@ class TradeRecord:
     exit_time_broker: datetime
     entry_time_ny: datetime
     exit_time_ny: datetime
+    broker_day: str
     new_york_day: str
     volume: Decimal
+    entry_price: Decimal
+    entry_comment: str
     native_net_usd: Decimal
     venue_cost_usd: Decimal
     adjusted_net_usd: Decimal
@@ -228,6 +233,13 @@ class NativeRunAudit:
     deals_sha256: str
     fingerprint_sha256: str
     trades: list[TradeRecord]
+
+
+@dataclass(frozen=True)
+class NewsEvent:
+    event_utc: datetime
+    currency: str
+    impact: str
 
 
 def utc_now() -> str:
@@ -309,14 +321,7 @@ def atomic_json(path: Path, payload: Mapping[str, Any], *, replace: bool) -> str
             handle.write(encoded)
             handle.flush()
             os.fsync(handle.fileno())
-        if replace:
-            os.replace(temporary, path)
-        else:
-            try:
-                os.link(temporary, path)
-            except FileExistsError as exc:
-                raise InvalidEvidence(f"refusing to replace evidence: {path}") from exc
-            os.unlink(temporary)
+        os.replace(temporary, path)
     except Exception:
         try:
             os.unlink(temporary)
@@ -348,43 +353,6 @@ def file_binding(path: Path, expected_sha256: str | None = None) -> dict[str, An
     return {"path": str(path), "size": path.stat().st_size, "sha256": observed}
 
 
-def stable_file_binding(path: Path) -> dict[str, Any]:
-    """Hash a non-empty file while proving it did not change during the read."""
-    path = path.resolve()
-    if not path.is_file():
-        raise InvalidEvidence(f"required file missing: {path}")
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        before = os.fstat(handle.fileno())
-        if before.st_size <= 0:
-            raise InvalidEvidence(f"required file is empty: {path}")
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-        after = os.fstat(handle.fileno())
-    path_after = path.stat()
-    identity_before = (
-        before.st_dev,
-        before.st_ino,
-        before.st_size,
-        before.st_mtime_ns,
-    )
-    identity_after = (
-        after.st_dev,
-        after.st_ino,
-        after.st_size,
-        after.st_mtime_ns,
-    )
-    identity_path = (
-        path_after.st_dev,
-        path_after.st_ino,
-        path_after.st_size,
-        path_after.st_mtime_ns,
-    )
-    if identity_before != identity_after or identity_before != identity_path:
-        raise InvalidEvidence(f"file changed while hashing: {path}")
-    return {"path": str(path), "size": after.st_size, "sha256": digest.hexdigest()}
-
-
 def assert_binding(binding: Mapping[str, Any], label: str) -> None:
     try:
         path = Path(str(binding["path"])).resolve()
@@ -399,23 +367,6 @@ def assert_binding(binding: Mapping[str, Any], label: str) -> None:
     observed = sha256_file(path)
     if observed != expected:
         raise InvalidEvidence(f"SHA-256 drift: {label}: {observed} != {expected}")
-
-
-def assert_stable_binding(binding: Mapping[str, Any], label: str) -> None:
-    try:
-        expected_path = Path(str(binding["path"])).resolve()
-        expected_size = int(binding["size"])
-        expected_sha256 = str(binding["sha256"]).lower()
-    except (KeyError, TypeError, ValueError) as exc:
-        raise InvalidEvidence(f"malformed binding: {label}") from exc
-    if not re.fullmatch(r"[0-9a-f]{64}", expected_sha256) or expected_size <= 0:
-        raise InvalidEvidence(f"malformed non-empty binding: {label}")
-    observed = stable_file_binding(expected_path)
-    if (
-        observed["size"] != expected_size
-        or observed["sha256"] != expected_sha256
-    ):
-        raise InvalidEvidence(f"size/SHA-256 drift: {label}: {expected_path}")
 
 
 def _is_within(path: Path, root: Path) -> bool:
@@ -462,15 +413,14 @@ def validate_window_contract(windows: Sequence[Window] = WINDOWS) -> None:
 
 
 def enforce_symbol_policy(symbol: str) -> None:
-    if symbol != RESEARCH_SYMBOL:
+    if symbol != "EURUSD.DWX":
         raise InvalidEvidence(
-            f"symbol outside the frozen single-index policy: {symbol!r}; "
-            f"only Factory research symbol {RESEARCH_SYMBOL} is eligible"
+            f"symbol outside the frozen single-symbol research policy: {symbol!r}; "
+            "only EURUSD.DWX is authorized"
         )
 
 
 def _matrix_row(symbol: str, matrix_path: Path = MATRIX_PATH) -> dict[str, str]:
-    enforce_symbol_policy(symbol)
     try:
         with matrix_path.open("r", encoding="utf-8-sig", newline="") as handle:
             rows = [row for row in csv.DictReader(handle) if row.get("symbol") == symbol]
@@ -481,380 +431,129 @@ def _matrix_row(symbol: str, matrix_path: Path = MATRIX_PATH) -> dict[str, str]:
     row = {str(key): str(value or "") for key, value in rows[0].items()}
     if row.get("canonical_name_verified", "").casefold() != "true":
         raise InvalidEvidence(f"symbol matrix canonical-name gate is not true: {symbol}")
-    if row.get("asset_class", "").casefold() != "indices":
-        raise InvalidEvidence(f"symbol matrix asset class is not indices: {symbol}")
-    import_path = re.sub(r"/+", "/", row.get("import_log_path", "").replace("\\", "/"))
-    if import_path != "Custom/Indices/Index 3/NDX.DWX":
-        raise InvalidEvidence(f"symbol matrix import path drift: {import_path!r}")
-    # Live OHLC/tail/parity evidence is intentionally excluded from the research
-    # namespace contract.  The full matrix byte identity is hash-bound separately.
-    return {
-        "symbol": symbol,
-        "asset_class": "indices",
-        "import_log_path": import_path,
-        "canonical_name_verified": "true",
-    }
+    # This is only the canonical .DWX research/backtest namespace check.  Live
+    # suffixless routing and broker-parity onboarding are deployment gates and
+    # are deliberately not prerequisites for research outcomes.
+    return row
 
 
-def _required_tick_months() -> tuple[str, ...]:
-    result: list[str] = []
+def validate_research_readiness_receipt(
+    path: Path,
+    symbol: str,
+    data_manifest_sha256: str,
+) -> dict[str, Any]:
+    receipt = load_json(path)
+    if (
+        receipt.get("schema_version") != 1
+        or receipt.get("artifact_type") != "QM_DWX_RESEARCH_STORE_READINESS_RECEIPT"
+        or receipt.get("research_store") != "T1_CUSTOM_SYMBOL_STORE"
+        or receipt.get("purpose") != "RESEARCH_BACKTEST_ONLY"
+        or receipt.get("namespace") != ".DWX"
+    ):
+        raise InvalidEvidence("research-store readiness receipt identity drift")
+    if receipt.get("symbol") != symbol or receipt.get("status") != "PASS":
+        raise InvalidEvidence("research-store readiness is not an exact PASS")
+    if receipt.get("scope") != {
+        "hcc_years": "2018..2025",
+        "tkc_months": "201807..202512",
+        "model": 4,
+        "live_parity_required": False,
+        "deployment_routing_evaluated": False,
+    }:
+        raise InvalidEvidence("research-store readiness scope drift")
+    if str(receipt.get("data_manifest_sha256", "")).lower() != data_manifest_sha256:
+        raise InvalidEvidence("readiness receipt/data manifest identity drift")
+    evidence = receipt.get("evidence")
+    if not isinstance(evidence, list) or not evidence:
+        raise InvalidEvidence("research-store readiness receipt has no evidence")
+    for index, item in enumerate(evidence):
+        if not isinstance(item, Mapping):
+            raise InvalidEvidence("research readiness evidence is not an object")
+        assert_binding(item, f"research readiness evidence[{index}]")
+    return receipt
+
+
+def _required_tick_months() -> set[str]:
+    result: set[str] = set()
     cursor = date(2018, 7, 1)
     end = date(2025, 12, 1)
     while cursor <= end:
-        result.append(cursor.strftime("%Y%m"))
-        cursor = date(
-            cursor.year + (1 if cursor.month == 12 else 0),
-            1 if cursor.month == 12 else cursor.month + 1,
-            1,
-        )
-    return tuple(result)
-
-
-def _required_history_years() -> tuple[str, ...]:
-    return tuple(str(year) for year in range(2018, 2026))
-
-
-DATA_FACTORY_EVIDENCE_ROLES = frozenset(
-    {
-        "v5_framework",
-        "backtest_rules",
-        "aliases",
-        "matrix",
-        "cost",
-        "rebuild_done",
-        "rebuild_source",
-    }
-)
-
-
-def _factory_evidence_paths(
-    overrides: Mapping[str, Path] | None = None,
-) -> dict[str, Path]:
-    paths = {
-        "v5_framework": V5_FRAMEWORK_PATH,
-        "backtest_rules": BACKTEST_RULES_PATH,
-        "aliases": ALIASES_PATH,
-        "matrix": MATRIX_PATH,
-        "cost": COST_PATH,
-        "rebuild_done": NDX_REBUILD_DONE_PATH,
-        "rebuild_source": NDX_REBUILD_SOURCE_PATH,
-    }
-    if overrides is not None:
-        if set(overrides) != DATA_FACTORY_EVIDENCE_ROLES:
-            raise InvalidEvidence("Factory evidence-role closure drift")
-        paths = {role: Path(path) for role, path in overrides.items()}
-    return {role: path.resolve() for role, path in paths.items()}
-
-
-def _read_contract_text(path: Path, label: str) -> str:
-    try:
-        return path.read_text(encoding="utf-8-sig", errors="strict")
-    except (OSError, UnicodeError) as exc:
-        raise InvalidEvidence(f"cannot read {label}: {path}: {exc}") from exc
-
-
-def _validate_factory_contracts(
-    symbol: str,
-    evidence_paths: Mapping[str, Path],
-) -> dict[str, Any]:
-    enforce_symbol_policy(symbol)
-    if set(evidence_paths) != DATA_FACTORY_EVIDENCE_ROLES:
-        raise InvalidEvidence("Factory evidence-role closure drift")
-
-    design = _read_contract_text(evidence_paths["v5_framework"], "V5 framework")
-    if not re.search(
-        r"Symbols\s+carry\s+`\.DWX`\s+in\s+research\s+and\s+backtest,\s+"
-        r"stripped\s+only\s+at\s+deploy\s+packaging",
-        design,
-        re.I,
-    ):
-        raise InvalidEvidence("V5 .DWX research/deploy contract is missing")
-
-    rules = _read_contract_text(evidence_paths["backtest_rules"], "backtest Rule 1")
-    if (
-        "Rule 1 — Test ONLY on `.DWX` symbols" not in rules
-        or "Every backtest run uses the `.DWX`-suffixed custom symbols, never native broker symbols."
-        not in rules
-    ):
-        raise InvalidEvidence("binding .DWX-only backtest Rule 1 is missing")
-
-    aliases = load_json(evidence_paths["aliases"])
-    if (
-        aliases.get("schema_version") != 1
-        or aliases.get("artifact_type") != "QM_EXECUTION_SYMBOL_ALIASES"
-        or aliases.get("status") != "ACTIVE"
-    ):
-        raise InvalidEvidence("execution-symbol alias registry identity drift")
-    venues = aliases.get("venues")
-    if not isinstance(venues, list):
-        raise InvalidEvidence("execution-symbol alias venues are missing")
-    expected_aliases = {"DXZ_LIVE": "NDX", "FTMO_TRIAL": "US100.cash"}
-    observed_aliases: dict[str, str] = {}
-    for venue_id, expected_raw in expected_aliases.items():
-        venue_rows = [
-            venue
-            for venue in venues
-            if isinstance(venue, Mapping) and venue.get("venue_id") == venue_id
-        ]
-        if len(venue_rows) != 1 or not isinstance(venue_rows[0].get("symbols"), list):
-            raise InvalidEvidence(f"alias registry must contain exactly one {venue_id} venue")
-        symbol_rows = [
-            row
-            for row in venue_rows[0]["symbols"]
-            if isinstance(row, Mapping) and row.get("logical_symbol") == symbol
-        ]
-        if len(symbol_rows) != 1 or symbol_rows[0].get("raw_symbol") != expected_raw:
-            raise InvalidEvidence(f"{venue_id} alias drift for {symbol}")
-        observed_aliases[venue_id] = expected_raw
-
-    matrix_row = _matrix_row(symbol, evidence_paths["matrix"])
-    cost_schedule = resolve_cost_schedule(evidence_paths["cost"], symbol)
-
-    done_text = _read_contract_text(evidence_paths["rebuild_done"], "NDX rebuild DONE")
-    done: dict[str, str] = {}
-    for line in done_text.splitlines():
-        if "=" in line:
-            key, value = line.split("=", 1)
-            done[key.strip()] = value.strip()
-    required_done = {"status", "target", "ticks_added", "bars_updated"}
-    if not required_done.issubset(done):
-        raise InvalidEvidence("NDX rebuild DONE is incomplete")
-    try:
-        ticks_added = int(done["ticks_added"])
-        bars_updated = int(done["bars_updated"])
-    except ValueError as exc:
-        raise InvalidEvidence("NDX rebuild counts are malformed") from exc
-    if done["status"] != "OK" or done["target"] != symbol:
-        raise InvalidEvidence("NDX rebuild DONE identity/status drift")
-    if ticks_added <= 0 or bars_updated <= 0:
-        raise InvalidEvidence("NDX rebuild did not add positive ticks/bars")
-
-    source = _read_contract_text(evidence_paths["rebuild_source"], "NDX rebuild source")
-    if not re.search(r'#define\s+TARGET\s+"NDX\.DWX"', source):
-        raise InvalidEvidence("NDX rebuild source target drift")
-    if "CustomTicksAdd" not in source or "CustomRatesUpdate" not in source:
-        raise InvalidEvidence("NDX rebuild source lacks tick/bar rebuild operations")
-
-    return {
-        "namespace_contract": {
-            "research_backtest_symbol": symbol,
-            "dwx_required_in_research_backtest": True,
-            "suffix_stripped_only_at_deploy_packaging": True,
-            "live_aliases": observed_aliases,
-            "live_ohlc_tail_parity_required_for_research_merit": False,
-            "matrix_row": matrix_row,
-        },
-        "cost_schedule": cost_schedule,
-        "rebuild_contract": {
-            "status": "OK",
-            "target": symbol,
-            "ticks_added": ticks_added,
-            "bars_updated": bars_updated,
-            "uses_custom_ticks_add": True,
-            "uses_custom_rates_update": True,
-        },
-    }
-
-
-def _expected_data_files(
-    symbol: str,
-    terminal_data_root: Path,
-) -> list[tuple[str, str, Path]]:
-    enforce_symbol_policy(symbol)
-    root = terminal_data_root.resolve()
-    history_root = (root / "history" / symbol).resolve()
-    ticks_root = (root / "ticks" / symbol).resolve()
-    result = [
-        ("history", year, (history_root / f"{year}.hcc").resolve())
-        for year in _required_history_years()
-    ]
-    result.extend(
-        ("ticks", month, (ticks_root / f"{month}.tkc").resolve())
-        for month in _required_tick_months()
-    )
+        result.add(cursor.strftime("%Y%m"))
+        cursor = date(cursor.year + (1 if cursor.month == 12 else 0), 1 if cursor.month == 12 else cursor.month + 1, 1)
     return result
 
 
-def _data_coverage_contract() -> dict[str, Any]:
-    return {
-        "from_date": DATA_COVERAGE_FROM.isoformat(),
-        "to_date": DATA_COVERAGE_TO.isoformat(),
-        "history_year_first": 2018,
-        "history_year_last": 2025,
-        "history_file_count": len(_required_history_years()),
-        "tick_month_first": "201807",
-        "tick_month_last": "202512",
-        "tick_file_count": len(_required_tick_months()),
-    }
-
-
-def freeze_backtest_data(
-    symbol: str,
-    *,
-    terminal_data_root: Path = TERMINAL_DATA_ROOT,
-    evidence_paths: Mapping[str, Path] | None = None,
-) -> dict[str, Any]:
-    enforce_symbol_policy(symbol)
-    root = terminal_data_root.resolve()
-    factory_paths = _factory_evidence_paths(evidence_paths)
-    factory_evidence = {
-        role: stable_file_binding(path) for role, path in sorted(factory_paths.items())
-    }
-    contracts = _validate_factory_contracts(symbol, factory_paths)
-
-    files: list[dict[str, Any]] = []
-    history_bytes = 0
-    tick_bytes = 0
-    for kind, period, path in _expected_data_files(symbol, root):
-        item = {"kind": kind, "period": period, **stable_file_binding(path)}
-        files.append(item)
-        if kind == "history":
-            history_bytes += int(item["size"])
-        else:
-            tick_bytes += int(item["size"])
-    return {
-        "schema_version": 1,
-        "artifact_type": DATA_RECEIPT_ARTIFACT_TYPE,
-        "created_utc": utc_now(),
-        "terminal": "T1",
-        "symbol": symbol,
-        "coverage": _data_coverage_contract(),
-        "store_roots": {
-            "history": str((root / "history" / symbol).resolve()),
-            "ticks": str((root / "ticks" / symbol).resolve()),
-        },
-        "files": files,
-        "totals": {
-            "history_files": len(_required_history_years()),
-            "tick_files": len(_required_tick_months()),
-            "files": len(files),
-            "history_bytes": history_bytes,
-            "tick_bytes": tick_bytes,
-            "bytes": history_bytes + tick_bytes,
-        },
-        "factory_evidence": factory_evidence,
-        **contracts,
-        "outcome_fence": {
-            "strategy_outcomes_read": False,
-            "native_reports_opened": False,
-            "mt5_terminal_started": False,
-            "metatester_started": False,
-        },
-    }
-
-
-def validate_backtest_data_receipt(
+def validate_data_manifest(
     path: Path,
     symbol: str,
     *,
     terminal_data_root: Path = TERMINAL_DATA_ROOT,
-    evidence_paths: Mapping[str, Path] | None = None,
+    verify_file_bindings: bool = True,
 ) -> dict[str, Any]:
-    enforce_symbol_policy(symbol)
-    receipt_binding = stable_file_binding(path)
-    receipt = load_json(path)
-    expected_keys = {
-        "schema_version",
-        "artifact_type",
-        "created_utc",
-        "terminal",
-        "symbol",
-        "coverage",
-        "store_roots",
-        "files",
-        "totals",
-        "factory_evidence",
-        "namespace_contract",
-        "cost_schedule",
-        "rebuild_contract",
-        "outcome_fence",
-    }
-    if set(receipt) != expected_keys:
-        raise InvalidEvidence("backtest-data receipt field closure drift")
+    manifest_binding = file_binding(path)
+    manifest = load_json(path)
     if (
-        receipt.get("schema_version") != 1
-        or receipt.get("artifact_type") != DATA_RECEIPT_ARTIFACT_TYPE
-        or receipt.get("terminal") != "T1"
-        or receipt.get("symbol") != symbol
+        manifest.get("artifact_type") != "QM_DWX_RESEARCH_DATA_MANIFEST"
+        or manifest.get("schema_version") != 1
+        or manifest.get("symbol") != symbol
+        or manifest.get("research_store") != "T1_CUSTOM_SYMBOL_STORE"
+        or manifest.get("purpose") != "RESEARCH_BACKTEST_ONLY"
     ):
-        raise InvalidEvidence("backtest-data receipt identity drift")
-    created = parse_utc(str(receipt.get("created_utc", "")), "data receipt created_utc")
-    if created > datetime.now(timezone.utc) + timedelta(minutes=5):
-        raise InvalidEvidence("backtest-data receipt creation time is implausibly in the future")
-    if receipt.get("coverage") != _data_coverage_contract():
-        raise InvalidEvidence("backtest-data receipt coverage is not exactly 201807..202512")
-
-    root = terminal_data_root.resolve()
-    expected_roots = {
-        "history": str((root / "history" / symbol).resolve()),
-        "ticks": str((root / "ticks" / symbol).resolve()),
-    }
-    if receipt.get("store_roots") != expected_roots:
-        raise InvalidEvidence("backtest-data receipt T1 store-root drift")
-
-    expected_factory_paths = _factory_evidence_paths(evidence_paths)
-    factory_evidence = receipt.get("factory_evidence")
-    if not isinstance(factory_evidence, Mapping) or set(factory_evidence) != DATA_FACTORY_EVIDENCE_ROLES:
-        raise InvalidEvidence("backtest-data Factory evidence closure drift")
-    for role, expected_path in expected_factory_paths.items():
-        item = factory_evidence.get(role)
-        if not isinstance(item, Mapping) or set(item) != {"path", "size", "sha256"}:
-            raise InvalidEvidence(f"malformed Factory evidence binding: {role}")
-        if Path(str(item["path"])).resolve() != expected_path:
-            raise InvalidEvidence(f"Factory evidence path drift: {role}")
-        assert_stable_binding(item, f"Factory evidence {role}")
-    contracts = _validate_factory_contracts(symbol, expected_factory_paths)
-    for key, value in contracts.items():
-        if receipt.get(key) != value:
-            raise InvalidEvidence(f"backtest-data {key} semantic drift")
-
-    files = receipt.get("files")
-    expected_files = _expected_data_files(symbol, root)
-    if not isinstance(files, list) or len(files) != len(expected_files):
-        raise InvalidEvidence("backtest-data receipt must bind exactly 98 files")
-    history_bytes = 0
-    tick_bytes = 0
-    for index, ((kind, period, expected_path), item) in enumerate(
-        zip(expected_files, files)
-    ):
-        if not isinstance(item, Mapping) or set(item) != {
-            "kind",
-            "period",
-            "path",
-            "size",
-            "sha256",
-        }:
-            raise InvalidEvidence(f"malformed data binding[{index}]")
-        if (
-            item.get("kind") != kind
-            or item.get("period") != period
-            or Path(str(item.get("path", ""))).resolve() != expected_path
-        ):
-            raise InvalidEvidence(f"backtest-data exact file-set/order drift at index {index}")
-        assert_stable_binding(item, f"backtest data[{index}]")
-        if kind == "history":
-            history_bytes += int(item["size"])
+        raise InvalidEvidence("research data manifest identity drift")
+    coverage = manifest.get("coverage")
+    if not isinstance(coverage, Mapping):
+        raise InvalidEvidence("data manifest coverage is missing")
+    try:
+        coverage_from = date.fromisoformat(str(coverage["from_date"]))
+        coverage_to = date.fromisoformat(str(coverage["to_date"]))
+    except (KeyError, ValueError) as exc:
+        raise InvalidEvidence("data manifest coverage is malformed") from exc
+    if coverage_from > WINDOWS[0].from_date or coverage_to < WINDOWS[-1].to_date:
+        raise InvalidEvidence("data manifest does not cover every preregistered cell")
+    files = manifest.get("files")
+    if not isinstance(files, list) or not files:
+        raise InvalidEvidence("data manifest files are missing")
+    history_root = (terminal_data_root / "history" / symbol).resolve()
+    ticks_root = (terminal_data_root / "ticks" / symbol).resolve()
+    seen_paths: set[Path] = set()
+    hcc_years: set[str] = set()
+    tick_months: set[str] = set()
+    for index, item in enumerate(files):
+        if not isinstance(item, Mapping):
+            raise InvalidEvidence("data file binding is not an object")
+        if verify_file_bindings:
+            assert_binding(item, f"data file[{index}]")
+        item_path = Path(str(item["path"])).resolve()
+        if item_path in seen_paths:
+            raise InvalidEvidence(f"duplicate data-file binding: {item_path}")
+        seen_paths.add(item_path)
+        if _is_within(item_path, history_root) and item_path.suffix.casefold() == ".hcc":
+            if re.fullmatch(r"20\d{2}", item_path.stem):
+                hcc_years.add(item_path.stem)
+        elif _is_within(item_path, ticks_root) and item_path.suffix.casefold() == ".tkc":
+            if re.fullmatch(r"20\d{4}", item_path.stem):
+                tick_months.add(item_path.stem)
         else:
-            tick_bytes += int(item["size"])
-    expected_totals = {
-        "history_files": len(_required_history_years()),
-        "tick_files": len(_required_tick_months()),
-        "files": len(expected_files),
-        "history_bytes": history_bytes,
-        "tick_bytes": tick_bytes,
-        "bytes": history_bytes + tick_bytes,
+            raise InvalidEvidence(f"data binding escaped the exact T1 symbol stores: {item_path}")
+    required_years = {str(year) for year in range(2018, 2026)}
+    required_months = _required_tick_months()
+    if hcc_years != required_years:
+        raise InvalidEvidence(
+            f"HCC year closure drift: missing={sorted(required_years-hcc_years)}, "
+            f"extra={sorted(hcc_years-required_years)}"
+        )
+    if tick_months != required_months:
+        raise InvalidEvidence(
+            f"TKC month closure drift: missing={sorted(required_months-tick_months)}, "
+            f"extra={sorted(tick_months-required_months)}"
+        )
+    if len(files) != 98:
+        raise InvalidEvidence(f"research manifest must bind exactly 8 HCC + 90 TKC files, got {len(files)}")
+    return {
+        "manifest": manifest_binding,
+        "coverage": {"from_date": coverage_from, "to_date": coverage_to},
+        "files": [dict(item) for item in files],
     }
-    if receipt.get("totals") != expected_totals:
-        raise InvalidEvidence("backtest-data receipt size totals drift")
-    expected_fence = {
-        "strategy_outcomes_read": False,
-        "native_reports_opened": False,
-        "mt5_terminal_started": False,
-        "metatester_started": False,
-    }
-    if receipt.get("outcome_fence") != expected_fence:
-        raise InvalidEvidence("backtest-data receipt outcome fence drift")
-    return {"receipt": receipt_binding, **receipt}
 
 
 INCLUDE_RE = re.compile(r'^\s*#include\s*[<"]([^>"]+)[>"]', re.M)
@@ -1002,17 +701,39 @@ def effective_input_contract(
 
 def _validate_set_contract(symbol: str, metadata: Mapping[str, str], inputs: Mapping[str, str]) -> None:
     expected = {
-        "qm_ea_id": "10834",
+        "qm_ea_id": "13210",
         "qm_magic_slot_offset": "0",
         "RISK_FIXED": "1000",
         "RISK_PERCENT": "0",
-        "strategy_entry_start_hhmm": "945",
-        "strategy_entry_end_hhmm": "1015",
-        "strategy_target_r": "2.0",
+        "PORTFOLIO_WEIGHT": "1",
+        "qm_news_temporal": "3",
+        "qm_news_compliance": "1",
+        "qm_news_stale_max_hours": "336",
+        "qm_news_min_impact": "high",
+        "qm_news_mode_legacy": "0",
+        "strategy_asia_start_hour": "3",
+        "strategy_asia_start_minute": "0",
+        "strategy_asia_end_hour": "7",
+        "strategy_asia_end_minute": "0",
+        "strategy_sweep_start_hour": "8",
+        "strategy_sweep_start_minute": "30",
+        "strategy_sweep_end_hour": "10",
+        "strategy_sweep_end_minute": "0",
+        "strategy_entry_cancel_hour": "12",
+        "strategy_entry_cancel_minute": "0",
+        "strategy_flatten_hour": "20",
+        "strategy_flatten_minute": "0",
+        "strategy_atr_period": "14",
+        "strategy_asia_trend_max_frac": "0.50",
+        "strategy_asia_range_min_atr": "0.30",
+        "strategy_sl_buffer_atr": "0.10",
+        "strategy_spread_max_atr_frac": "0.10",
+        "strategy_tp_mode": "QM13210_TP_OPPOSITE_BODY",
+        "strategy_fixed_rr": "3.0",
     }
     drift = {key: (wanted, inputs.get(key)) for key, wanted in expected.items() if inputs.get(key) != wanted}
-    if symbol != RESEARCH_SYMBOL or metadata.get("symbol") != symbol or metadata.get("timeframe") != TIMEFRAME:
-        raise InvalidEvidence("set metadata violates the NDX.DWX/M5 single-symbol contract")
+    if symbol != "EURUSD.DWX" or metadata.get("symbol") != symbol or metadata.get("timeframe") != TIMEFRAME:
+        raise InvalidEvidence("set metadata violates the EURUSD/M5 single-symbol contract")
     if drift:
         raise InvalidEvidence(f"set input contract drift: {drift}")
 
@@ -1024,16 +745,20 @@ def validate_build_receipt(
 ) -> dict[str, Any]:
     receipt = load_json(path)
     if (
-        receipt.get("ea_id") != "QM5_10834"
+        receipt.get("artifact_type") != "QM5_13210_BUILD_RECEIPT"
+        or receipt.get("schema_version") != 1
+        or receipt.get("ea_id") != "QM5_13210"
         or receipt.get("build_check_passed") is not True
         or receipt.get("compile_succeeded") is not True
+        or receipt.get("compile_errors") != 0
+        or receipt.get("compile_warnings") != 0
     ):
-        raise InvalidEvidence("build receipt is not a successful QM5_10834 build")
+        raise InvalidEvidence("build receipt is not a successful QM5_13210 build")
     expected_hashes = {
         "source_sha256": bindings["mq5"]["sha256"],
         "ex5_sha256": bindings["ex5"]["sha256"],
         "spec_sha256": bindings["spec"]["sha256"],
-        "primary_source_sha256": bindings["pine"]["sha256"],
+        "card_sha256": bindings["card"]["sha256"],
     }
     drift = {
         key: (wanted, str(receipt.get(key, "")).lower())
@@ -1044,15 +769,26 @@ def validate_build_receipt(
     if not isinstance(set_hashes, Mapping) or str(set_hashes.get(symbol, "")).lower() != bindings["set"]["sha256"]:
         drift["setfile_sha256"] = (bindings["set"]["sha256"], set_hashes)
     commit = str(receipt.get("build_commit", ""))
-    if not re.fullmatch(r"[0-9a-f]{40}", commit):
-        drift["build_commit"] = ("40 lowercase hex", commit)
+    if commit != EXPECTED_BUILD_COMMIT:
+        drift["build_commit"] = (EXPECTED_BUILD_COMMIT, commit)
+    compile_evidence = receipt.get("compile_evidence")
+    if not isinstance(compile_evidence, Mapping):
+        drift["compile_evidence"] = ("two exact bindings", compile_evidence)
+    else:
+        for role in ("compile_log", "summary"):
+            item = compile_evidence.get(role)
+            if not isinstance(item, Mapping):
+                drift[f"compile_evidence.{role}"] = ("file binding", item)
+            else:
+                assert_binding(item, f"build {role}")
     if drift:
         raise InvalidEvidence(f"build receipt/hash binding drift: {drift}")
     return receipt
 
 
-def resolve_cost_schedule(path: Path, symbol: str) -> dict[str, Any]:
-    enforce_symbol_policy(symbol)
+def resolve_cost_schedule(
+    path: Path, symbol: str, live_commission_path: Path = LIVE_COMMISSION_PATH
+) -> dict[str, str]:
     payload = load_json(path)
     symbols = payload.get("symbols")
     if not isinstance(symbols, Mapping):
@@ -1061,65 +797,46 @@ def resolve_cost_schedule(path: Path, symbol: str) -> dict[str, Any]:
     row = symbols.get(key)
     if not isinstance(row, Mapping):
         raise InvalidEvidence(f"cost model has no exact symbol row for {symbol}")
-    alias_chain = [key]
-    visited = {key}
-    while row.get("alias_of") is not None:
-        target = str(row.get("alias_of", ""))
-        if not target or target in visited:
-            raise InvalidEvidence(f"cost model alias cycle/malformed target for {symbol}")
-        target_row = symbols.get(target)
-        if not isinstance(target_row, Mapping):
-            raise InvalidEvidence(f"cost model alias target is missing: {target}")
-        visited.add(target)
-        alias_chain.append(target)
-        key = target
-        row = target_row
-    if alias_chain != ["NDX", "US100"]:
-        raise InvalidEvidence(f"NDX cost alias chain drift: {alias_chain}")
-    if row.get("dwx_symbol") != symbol or row.get("asset_class") != "index":
-        raise InvalidEvidence(f"cost model row is not the exact index contract for {symbol}")
+    if row.get("dwx_symbol") != symbol or row.get("asset_class") != "forex":
+        raise InvalidEvidence(f"cost model row is not the exact forex contract for {symbol}")
     dxz = row.get("dxz")
     ftmo = row.get("ftmo")
     if not isinstance(dxz, Mapping) or not isinstance(ftmo, Mapping):
         raise InvalidEvidence(f"cost model lacks both venues for {symbol}")
 
-    def venue_rate(venue: Mapping[str, Any], label: str) -> Decimal:
-        for field in ("commission_rt_per_lot_usd", "commission_rt_per_lot_usd_indicative"):
-            if venue.get(field) is not None:
-                value = _strict_decimal(venue[field], f"{symbol}.{label}.{field}")
-                if value < ZERO:
-                    raise InvalidEvidence("negative venue cost")
-                return value
-        raise InvalidEvidence(f"unresolved per-lot venue cost: {symbol}/{label}")
-
-    dxz_rate = venue_rate(dxz, "dxz")
-    ftmo_rate = venue_rate(ftmo, "ftmo")
-    worst = _strict_decimal(row.get("worst_case_rt_per_lot_usd"), "worst_case_rt_per_lot_usd")
-    calculated = max(dxz_rate, ftmo_rate)
-    if _money(worst) != _money(calculated):
-        raise InvalidEvidence(
-            f"cost model worst-case drift for {symbol}: {worst} != max({dxz_rate},{ftmo_rate})"
-        )
+    dxz_base = _strict_decimal(dxz.get("commission_rt_base_ccy"), "dxz.commission_rt_base_ccy")
+    ftmo_flat = _strict_decimal(ftmo.get("commission_rt_per_lot_usd"), "ftmo.commission_rt_per_lot_usd")
+    indicative = _strict_decimal(
+        dxz.get("commission_rt_per_lot_usd_indicative"),
+        "dxz.commission_rt_per_lot_usd_indicative",
+    )
+    frozen_worst = _strict_decimal(row.get("worst_case_rt_per_lot_usd"), "worst_case_rt_per_lot_usd")
+    if dxz_base != Decimal("5") or ftmo_flat != Decimal("5") or indicative != frozen_worst:
+        raise InvalidEvidence("EURUSD venue cost registry drift")
+    live = load_json(live_commission_path)
+    classes = live.get("classes")
+    symbol_class = live.get("symbol_class")
     if (
-        _money(dxz_rate) != Decimal("5.50")
-        or _money(ftmo_rate) != Decimal("0.00")
-        or _money(worst) != Decimal("5.50")
+        live.get("model") != "max(pct_rate_rt*notional_acct, flat_per_lot_rt*volume)"
+        or not isinstance(classes, Mapping)
+        or not isinstance(symbol_class, Mapping)
+        or symbol_class.get(symbol) != "forex"
+        or not isinstance(classes.get("forex"), Mapping)
     ):
-        raise InvalidEvidence("NDX venue-cost contract must be DXZ 5.50 / FTMO 0 / worst 5.50")
-    spread_source = str(dxz.get("spread_source", ""))
-    spread_normalized = spread_source.casefold()
-    if not all(token in spread_normalized for token in ("embedded", ".dwx", "real-tick")):
-        raise InvalidEvidence("NDX spread must be embedded in .DWX real-tick history")
+        raise InvalidEvidence("live commission model/class closure drift")
+    pct_rate = _strict_decimal(classes["forex"].get("pct_rate_rt"), "forex.pct_rate_rt")
+    flat_rate = _strict_decimal(classes["forex"].get("flat_per_lot_rt"), "forex.flat_per_lot_rt")
+    if pct_rate != Decimal("0.00005") or flat_rate != ftmo_flat:
+        raise InvalidEvidence("live commission rates drift from frozen DXZ/FTMO contract")
     return {
         "symbol": symbol,
-        "cost_lookup_key": "NDX",
-        "cost_resolved_key": key,
-        "alias_chain": alias_chain,
         "currency": "USD",
-        "application": "ROUND_TRIP_PER_CLOSED_LOT_ROUNDED_TO_CENT",
-        "dxz_rt_per_lot_usd": _decimal_text(dxz_rate),
-        "ftmo_rt_per_lot_usd": _decimal_text(ftmo_rate),
-        "worst_rt_per_lot_usd": _decimal_text(calculated),
+        "application": "MAX_DXZ_PCT_NOTIONAL_OR_FTMO_FLAT_RT_PER_TRADE_ROUNDED_TO_CENT",
+        "dxz_pct_notional_rt": _decimal_text(pct_rate),
+        "dxz_rt_base_ccy_per_lot": _decimal_text(dxz_base),
+        "ftmo_rt_per_lot_usd": _decimal_text(ftmo_flat),
+        "contract_size_base_per_lot": "100000",
+        "registry_indicative_rt_per_lot_usd": _decimal_text(indicative),
         "spread": "EMBEDDED_IN_BOUND_REAL_TICKS",
         "swap": "REQUIRED_ZERO_BY_INTRADAY_FLAT_INVARIANT",
     }
@@ -1161,7 +878,9 @@ def _expected_binding_paths(symbol: str) -> dict[str, Path]:
     set_path = EA_ROOT / "sets" / f"{EXPERT_NAME}_{symbol}_M5_backtest.set"
     return {
         "card": CARD_PATH,
-        "pine": PINE_PATH,
+        "research_dossier": RESEARCH_DOSSIER_PATH,
+        "research_extraction": RESEARCH_EXTRACTION_PATH,
+        "research_batch_receipt": RESEARCH_BATCH_RECEIPT_PATH,
         "spec": SPEC_PATH,
         "mq5": MQ5_PATH,
         "ex5": EX5_PATH,
@@ -1169,14 +888,13 @@ def _expected_binding_paths(symbol: str) -> dict[str, Path]:
         "matrix": MATRIX_PATH,
         "cost": COST_PATH,
         "live_commission": LIVE_COMMISSION_PATH,
-        "v5_framework": V5_FRAMEWORK_PATH,
-        "backtest_rules": BACKTEST_RULES_PATH,
-        "aliases": ALIASES_PATH,
-        "rebuild_done": NDX_REBUILD_DONE_PATH,
-        "rebuild_source": NDX_REBUILD_SOURCE_PATH,
         "runner": RUNNER_PATH,
         "report_parser": REPORT_CORE_PATH,
         "powershell": POWERSHELL_PATH,
+        "python": PYTHON_PATH,
+        "scheduled_task_helper": SCHEDULED_TASK_HELPER_PATH,
+        "news_primary": NEWS_PRIMARY_PATH,
+        "news_secondary": NEWS_SECONDARY_PATH,
         "tool": TOOL_PATH,
     }
 
@@ -1184,14 +902,15 @@ def _expected_binding_paths(symbol: str) -> dict[str, Path]:
 def _binding_map(symbol: str) -> dict[str, dict[str, Any]]:
     paths = _expected_binding_paths(symbol)
     return {
-        role: file_binding(path, EXPECTED_PINE_SHA256 if role == "pine" else None)
+        role: file_binding(path, EXPECTED_RESEARCH_HASHES.get(role))
         for role, path in paths.items()
     }
 
 
 def preflight(
     symbol: str,
-    data_receipt_path: Path,
+    research_readiness_receipt_path: Path,
+    data_manifest_path: Path,
     build_receipt_path: Path,
     run_root: Path,
 ) -> dict[str, Any]:
@@ -1201,11 +920,11 @@ def preflight(
         raise InvalidEvidence(f"run root is not empty: {run_root}")
     bindings = _binding_map(symbol)
     card_text = CARD_PATH.read_text(encoding="utf-8-sig")
-    if "ea_id: QM5_10834" not in card_text or "g0_status: APPROVED" not in card_text:
+    if "ea_id: QM5_13210" not in card_text or "g0_status: APPROVED" not in card_text:
         raise InvalidEvidence("approved Card identity/status drift")
     spec_text = SPEC_PATH.read_text(encoding="utf-8-sig")
-    if EXPECTED_PINE_SHA256 not in spec_text or "d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7" not in spec_text:
-        raise InvalidEvidence("SPEC no longer binds the frozen Pine/source identity")
+    if "YT-MULHAM-2026-07" not in spec_text or "QM5_13210" not in spec_text:
+        raise InvalidEvidence("SPEC no longer binds the frozen Mulham source/card identity")
     includes = include_closure(MQ5_PATH)
     metadata, set_inputs = parse_set(Path(bindings["set"]["path"]))
     _validate_set_contract(symbol, metadata, set_inputs)
@@ -1213,26 +932,16 @@ def preflight(
     if effective_inputs.get("InpQMSimCommissionPerLot", {}).get("canonical") != "0":
         raise InvalidEvidence("EA-side simulated commission must be zero for external cost ledger")
     build_receipt = validate_build_receipt(build_receipt_path, symbol, bindings)
-    data = validate_backtest_data_receipt(data_receipt_path, symbol)
-    factory_binding_drift = {
-        role: (bindings[role], data["factory_evidence"].get(role))
-        for role in DATA_FACTORY_EVIDENCE_ROLES
-        if bindings[role] != data["factory_evidence"].get(role)
-    }
-    if factory_binding_drift:
-        raise InvalidEvidence(
-            f"PRE/data-receipt Factory binding drift: {factory_binding_drift}"
-        )
+    data = validate_data_manifest(data_manifest_path, symbol)
+    research_readiness = validate_research_readiness_receipt(
+        research_readiness_receipt_path, symbol, data["manifest"]["sha256"]
+    )
     matrix_row = _matrix_row(symbol)
-    cost_schedule = resolve_cost_schedule(COST_PATH, symbol)
-    if data["namespace_contract"].get("matrix_row") != matrix_row:
-        raise InvalidEvidence("data receipt/matrix research namespace drift")
-    if data["cost_schedule"] != cost_schedule:
-        raise InvalidEvidence("data receipt/current venue cost contract drift")
+    cost_schedule = resolve_cost_schedule(COST_PATH, symbol, LIVE_COMMISSION_PATH)
     plan = build_plan(symbol, bindings["set"], run_root)
     return {
         "schema_version": SCHEMA_VERSION,
-        "artifact_type": "QM5_10834_OUTCOME_FENCED_PRE_RECEIPT",
+        "artifact_type": "QM5_13210_OUTCOME_FENCED_PRE_RECEIPT",
         "status": "PASS",
         "created_utc": utc_now(),
         "analysis_id": ANALYSIS_ID,
@@ -1240,10 +949,10 @@ def preflight(
         "symbol_policy": {
             "authorized_symbols_exactly_one": True,
             "authorized_symbol": symbol,
-            "research_backtest_policy": SYMBOL_POLICY[symbol],
-            "dwx_suffix_removed_only_at_deploy_packaging": True,
-            "live_aliases": {"DXZ_LIVE": "NDX", "FTMO_TRIAL": "US100.cash"},
-            "live_ohlc_tail_parity_required_for_research_merit": False,
+            "policy": SYMBOL_POLICY,
+            "namespace": ".DWX_RESEARCH_BACKTEST",
+            "live_parity_required": False,
+            "deployment_routing_evaluated": False,
             "matrix_row": matrix_row,
         },
         "outcome_fence": {
@@ -1257,7 +966,12 @@ def preflight(
         "include_closure": includes,
         "build_receipt": file_binding(build_receipt_path),
         "build_commit": build_receipt["build_commit"],
-        "backtest_data_receipt": data["receipt"],
+        "research_readiness_receipt": file_binding(research_readiness_receipt_path),
+        "research_readiness_identity": {
+            "research_store": research_readiness["research_store"],
+            "purpose": research_readiness["purpose"],
+            "scope": research_readiness["scope"],
+        },
         "data": data,
         "effective_inputs": effective_inputs,
         "cost_schedule": cost_schedule,
@@ -1295,7 +1009,7 @@ def assert_pre_receipt(path: Path, expected_sha256: str) -> dict[str, Any]:
     }
     if (
         pre.get("schema_version") != SCHEMA_VERSION
-        or pre.get("artifact_type") != "QM5_10834_OUTCOME_FENCED_PRE_RECEIPT"
+        or pre.get("artifact_type") != "QM5_13210_OUTCOME_FENCED_PRE_RECEIPT"
         or pre.get("status") != "PASS"
         or pre.get("analysis_id") != ANALYSIS_ID
         or pre.get("outcome_fence") != expected_fence
@@ -1333,25 +1047,29 @@ def assert_pre_receipt(path: Path, expected_sha256: str) -> dict[str, Any]:
     expected_includes = include_closure(MQ5_PATH)
     if includes != expected_includes:
         raise InvalidEvidence("PRE recursive include closure drift")
-    for role in ("build_receipt", "backtest_data_receipt"):
+    for role in ("build_receipt", "research_readiness_receipt"):
         item = pre.get(role)
         if not isinstance(item, Mapping):
             raise InvalidEvidence(f"PRE {role} binding missing")
         assert_binding(item, f"PRE {role}")
     data = pre.get("data")
-    if not isinstance(data, Mapping) or not isinstance(data.get("receipt"), Mapping):
+    if not isinstance(data, Mapping) or not isinstance(data.get("manifest"), Mapping):
         raise InvalidEvidence("PRE data binding missing")
-    if pre["backtest_data_receipt"] != data["receipt"]:
-        raise InvalidEvidence("PRE backtest-data receipt binding drift")
-    validated_data = validate_backtest_data_receipt(
-        Path(str(data["receipt"]["path"])),
+    assert_binding(data["manifest"], "PRE data manifest")
+    files = data.get("files")
+    if not isinstance(files, list):
+        raise InvalidEvidence("PRE data file closure missing")
+    for index, item in enumerate(files):
+        if not isinstance(item, Mapping):
+            raise InvalidEvidence("PRE data binding malformed")
+        assert_binding(item, f"PRE data[{index}]")
+    validated_data = validate_data_manifest(
+        Path(str(data["manifest"]["path"])),
         symbol,
+        verify_file_bindings=False,
     )
     if data != _jsonable(validated_data):
-        raise InvalidEvidence("PRE/backtest-data semantic closure drift")
-    for role in DATA_FACTORY_EVIDENCE_ROLES:
-        if bindings[role] != data["factory_evidence"].get(role):
-            raise InvalidEvidence(f"PRE/data-receipt Factory binding drift: {role}")
+        raise InvalidEvidence("PRE/data-manifest semantic closure drift")
     metadata, set_inputs = parse_set(Path(str(bindings["set"]["path"])))
     _validate_set_contract(symbol, metadata, set_inputs)
     expected_inputs = effective_input_contract(MQ5_PATH, includes, set_inputs)
@@ -1362,29 +1080,36 @@ def assert_pre_receipt(path: Path, expected_sha256: str) -> dict[str, Any]:
     )
     if pre.get("build_commit") != build["build_commit"]:
         raise InvalidEvidence("PRE build-commit binding drift")
-    expected_cost = resolve_cost_schedule(Path(str(bindings["cost"]["path"])), symbol)
+    expected_cost = resolve_cost_schedule(
+        Path(str(bindings["cost"]["path"])),
+        symbol,
+        Path(str(bindings["live_commission"]["path"])),
+    )
     if pre.get("cost_schedule") != expected_cost:
         raise InvalidEvidence("PRE worst-venue cost schedule drift")
     matrix_row = _matrix_row(symbol, Path(str(bindings["matrix"]["path"])))
-    expected_policy = {
-        "authorized_symbols_exactly_one": True,
-        "authorized_symbol": symbol,
-        "research_backtest_policy": SYMBOL_POLICY[symbol],
-        "dwx_suffix_removed_only_at_deploy_packaging": True,
-        "live_aliases": {"DXZ_LIVE": "NDX", "FTMO_TRIAL": "US100.cash"},
-        "live_ohlc_tail_parity_required_for_research_merit": False,
-        "matrix_row": matrix_row,
-    }
-    if policy != expected_policy:
-        raise InvalidEvidence("PRE Factory research-symbol policy drift")
+    if policy.get("matrix_row") != matrix_row:
+        raise InvalidEvidence("PRE .DWX research symbol-matrix row drift")
     created = parse_utc(str(pre.get("created_utc", "")), "PRE created_utc")
     if created > datetime.now(timezone.utc) + timedelta(minutes=5):
         raise InvalidEvidence("PRE creation time is implausibly in the future")
+    readiness = validate_research_readiness_receipt(
+        Path(str(pre["research_readiness_receipt"]["path"])),
+        symbol,
+        str(data["manifest"]["sha256"]),
+    )
+    readiness_identity = {
+        "research_store": readiness["research_store"],
+        "purpose": readiness["purpose"],
+        "scope": readiness["scope"],
+    }
+    if pre.get("research_readiness_identity") != readiness_identity:
+        raise InvalidEvidence("PRE research-store readiness identity drift")
     card_text = CARD_PATH.read_text(encoding="utf-8-sig")
-    if "ea_id: QM5_10834" not in card_text or "g0_status: APPROVED" not in card_text:
+    if "ea_id: QM5_13210" not in card_text or "g0_status: APPROVED" not in card_text:
         raise InvalidEvidence("PRE-bound Card is no longer approved/exact")
     spec_text = SPEC_PATH.read_text(encoding="utf-8-sig")
-    if EXPECTED_PINE_SHA256 not in spec_text or "d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7" not in spec_text:
+    if "YT-MULHAM-2026-07" not in spec_text or "QM5_13210" not in spec_text:
         raise InvalidEvidence("PRE-bound SPEC/source identity drift")
     if binding["sha256"] != expected_sha256.lower():
         raise InvalidEvidence("PRE binding mismatch")
@@ -1392,35 +1117,30 @@ def assert_pre_receipt(path: Path, expected_sha256: str) -> dict[str, Any]:
     return pre
 
 
-def validate_current_research_data_gate(pre: Mapping[str, Any]) -> None:
+def validate_current_research_gate(pre: Mapping[str, Any]) -> None:
     policy = pre.get("symbol_policy")
     data = pre.get("data")
+    readiness = pre.get("research_readiness_receipt")
     bindings = pre.get("bindings")
     if (
         not isinstance(policy, Mapping)
         or not isinstance(data, Mapping)
-        or not isinstance(data.get("receipt"), Mapping)
+        or not isinstance(data.get("manifest"), Mapping)
+        or not isinstance(readiness, Mapping)
         or not isinstance(bindings, Mapping)
         or not isinstance(bindings.get("matrix"), Mapping)
     ):
-        raise InvalidEvidence("PRE cannot prove the current Factory research-data gate")
+        raise InvalidEvidence("PRE cannot prove the current research-store gate")
     symbol = str(policy.get("authorized_symbol", ""))
     enforce_symbol_policy(symbol)
-    current_data = validate_backtest_data_receipt(
-        Path(str(data["receipt"]["path"])),
+    validate_research_readiness_receipt(
+        Path(str(readiness["path"])),
         symbol,
+        str(data["manifest"]["sha256"]),
     )
-    if current_data != data:
-        raise InvalidEvidence("current backtest-data receipt/byte closure differs from PRE")
-    for role in DATA_FACTORY_EVIDENCE_ROLES:
-        if bindings.get(role) != data["factory_evidence"].get(role):
-            raise InvalidEvidence(f"current Factory binding differs from PRE: {role}")
     current_row = _matrix_row(symbol, Path(str(bindings["matrix"]["path"])))
     if current_row != policy.get("matrix_row"):
-        raise InvalidEvidence("current research namespace row differs from PRE")
-    current_cost = resolve_cost_schedule(Path(str(bindings["cost"]["path"])), symbol)
-    if current_cost != data.get("cost_schedule") or current_cost != pre.get("cost_schedule"):
-        raise InvalidEvidence("current venue-cost contract differs from PRE")
+        raise InvalidEvidence("current .DWX research symbol row differs from PRE")
 
 
 def _dot_date(value: str) -> str:
@@ -1497,13 +1217,13 @@ def validate_authorization(
     payload = load_json(path)
     expected = {
         "schema_version": 1,
-        "artifact_type": "QM5_10834_NATIVE_OUTCOME_AUTHORIZATION",
+        "artifact_type": "QM5_13210_NATIVE_OUTCOME_AUTHORIZATION",
         "status": "AUTHORIZED",
         "analysis_id": ANALYSIS_ID,
         "pre_receipt_sha256": pre_sha256.lower(),
-        "scope": "QM5_10834_NDX_4_CELLS_X_2_DUPLICATES_MODEL4",
+        "scope": "QM5_13210_EURUSD_4_CELLS_X_2_DUPLICATES_MODEL4",
         "authorized_by": "OWNER",
-        "authorized_symbol": RESEARCH_SYMBOL,
+        "authorized_symbol": "EURUSD.DWX",
         "authorized_cells": [window.cell_id for window in WINDOWS],
         "duplicates_per_cell": DUPLICATES,
         "model": 4,
@@ -1522,29 +1242,182 @@ def validate_authorization(
     return {"binding": binding, "payload_sha256": canonical_sha256(payload), "payload": payload}
 
 
+def _parse_last_json(text: str) -> dict[str, Any]:
+    for line in reversed(text.splitlines()):
+        try:
+            payload = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(payload, dict):
+            return payload
+    raise AuthorizationError("scheduled-task helper returned no JSON object")
+
+
+def scheduled_task_name(pre_sha256: str, state_path: Path) -> str:
+    digest = canonical_sha256(
+        {
+            "analysis_id": ANALYSIS_ID,
+            "pre_receipt_sha256": pre_sha256.lower(),
+            "state_path": str(state_path.resolve()),
+        }
+    )
+    return f"{SCHEDULED_TASK_PREFIX}{digest[:24]}"
+
+
+def cell_outer_timeout_seconds() -> int:
+    return (RUN_TIMEOUT_SECONDS * DUPLICATES) + 1800
+
+
+def required_scheduled_task_timeout(pre: Mapping[str, Any]) -> int:
+    seconds = len(pre["plan"]["cells"]) * cell_outer_timeout_seconds() + 3600
+    if not 60 <= seconds <= MAX_SCHEDULED_TASK_SECONDS:
+        raise AuthorizationError("scheduled-task execution limit outside contract")
+    return seconds
+
+
+def _scheduler_call(
+    pre: Mapping[str, Any], operation: str, job: Mapping[str, Any] | None = None
+) -> dict[str, Any]:
+    bindings = pre["bindings"]
+    command = [
+        str(Path(str(bindings["powershell"]["path"])).resolve()),
+        "-NoLogo",
+        "-NoProfile",
+        "-NonInteractive",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        str(Path(str(bindings["scheduled_task_helper"]["path"])).resolve()),
+        "-Operation",
+        operation,
+    ]
+    scheduler: Mapping[str, Any] | None = None
+    if operation != "Identity":
+        if job is None or not isinstance(job.get("scheduler"), Mapping):
+            raise AuthorizationError("scheduled-task job contract is missing")
+        scheduler = job["scheduler"]
+        command.extend(
+            [
+                "-TaskName",
+                str(scheduler["task_name"]),
+                "-PythonExe",
+                str(bindings["python"]["path"]),
+                "-ToolPath",
+                str(bindings["tool"]["path"]),
+                "-JobPath",
+                str(Path(str(job["state_path"])).with_name("launch_job.json")),
+                "-RepoRoot",
+                str(REPO_ROOT),
+                "-ExecutionLimitSeconds",
+                str(scheduler["execution_limit_seconds"]),
+            ]
+        )
+    completed = subprocess.run(
+        command,
+        cwd=REPO_ROOT,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        capture_output=True,
+        timeout=30,
+        check=False,
+    )
+    if completed.returncode != 0:
+        raise AuthorizationError(
+            f"scheduled-task helper {operation!r} failed with exit {completed.returncode}"
+        )
+    payload = _parse_last_json(completed.stdout)
+    if payload.get("operation") != operation:
+        raise AuthorizationError("scheduled-task helper operation drift")
+    if operation == "Identity":
+        if (
+            not str(payload.get("principal_sid", "")).startswith("S-1-")
+            or payload.get("logon_type") != "S4U"
+            or payload.get("run_level") != "Highest"
+        ):
+            raise AuthorizationError("scheduled-task identity contract drift")
+    elif scheduler is not None:
+        if (
+            payload.get("task_name") != scheduler["task_name"]
+            or payload.get("principal_sid") != scheduler["principal_sid"]
+            or payload.get("logon_type") != "S4U"
+            or payload.get("run_level") != "Highest"
+            or payload.get("multiple_instances") != "IgnoreNew"
+            or int(payload.get("execution_limit_seconds", 0))
+            != int(scheduler["execution_limit_seconds"])
+        ):
+            raise AuthorizationError("scheduled-task safe metadata drift")
+    return payload
+
+
+def _validate_launch_job(
+    job: Mapping[str, Any],
+    pre: Mapping[str, Any],
+    pre_path: Path,
+    pre_sha256: str,
+    state_path: Path,
+) -> None:
+    scheduler = job.get("scheduler")
+    if not isinstance(scheduler, Mapping):
+        raise AuthorizationError("launch job scheduler contract missing")
+    expected_scheduler = {
+        "mode": "WINDOWS_TASK_SCHEDULER_S4U_ON_DEMAND",
+        "task_name": scheduled_task_name(pre_sha256, state_path),
+        "task_path": "\\",
+        "principal_sid": str(scheduler.get("principal_sid", "")),
+        "logon_type": "S4U",
+        "run_level": "Highest",
+        "multiple_instances": "IgnoreNew",
+        "execution_limit_seconds": required_scheduled_task_timeout(pre),
+        "helper": pre["bindings"]["scheduled_task_helper"],
+        "python": pre["bindings"]["python"],
+    }
+    expected = {
+        "schema_version": SCHEMA_VERSION,
+        "launcher_revision": LAUNCHER_REVISION,
+        "artifact_type": "QM5_13210_NATIVE_LAUNCH_JOB",
+        "analysis_id": ANALYSIS_ID,
+        "pre_receipt_path": str(pre_path.resolve()),
+        "pre_receipt_sha256": pre_sha256.lower(),
+        "state_path": str(state_path.resolve()),
+        "plan_sha256": pre["plan"]["plan_sha256"],
+        "tool": pre["bindings"]["tool"],
+        "scheduler": expected_scheduler,
+    }
+    drift = {key: (wanted, job.get(key)) for key, wanted in expected.items() if job.get(key) != wanted}
+    if drift:
+        raise AuthorizationError(f"launch job identity drift: {sorted(drift)}")
+    if not expected_scheduler["principal_sid"].startswith("S-1-"):
+        raise AuthorizationError("launch job principal SID is malformed")
+    initial_auth = job.get("initial_authorization")
+    if not isinstance(initial_auth, Mapping) or not isinstance(initial_auth.get("binding"), Mapping):
+        raise AuthorizationError("launch job initial authorization missing")
+
+
 def initial_launch_state(
     pre_path: Path,
     pre_sha256: str,
     pre: Mapping[str, Any],
     job_binding: Mapping[str, Any],
-    authorization: Mapping[str, Any],
+    job: Mapping[str, Any],
 ) -> dict[str, Any]:
+    now = utc_now()
     return {
         "schema_version": SCHEMA_VERSION,
-        "artifact_type": "QM5_10834_NATIVE_LAUNCH_STATE",
+        "launcher_revision": LAUNCHER_REVISION,
+        "artifact_type": "QM5_13210_NATIVE_LAUNCH_STATE",
         "analysis_id": ANALYSIS_ID,
-        "status": "PENDING",
-        "created_utc": utc_now(),
-        "updated_utc": utc_now(),
+        "status": "PENDING_SCHEDULED",
+        "created_utc": now,
+        "updated_utc": now,
         "pre_receipt_path": str(pre_path.resolve()),
         "pre_receipt_sha256": pre_sha256.lower(),
         "plan_sha256": pre["plan"]["plan_sha256"],
         "job": dict(job_binding),
-        "authorization": {
-            "binding": dict(authorization["binding"]),
-            "payload_sha256": authorization["payload_sha256"],
-        },
+        "initial_authorization": job["initial_authorization"],
+        "scheduler": job["scheduler"],
         "worker_pid": None,
+        "launches": [],
         "outcome_fence": {
             "worker_parses_market_values": False,
             "worker_parses_native_reports": False,
@@ -1562,31 +1435,14 @@ def initial_launch_state(
     }
 
 
-def _pid_alive(pid: Any) -> bool:
-    if not isinstance(pid, int) or pid <= 0:
+def resume_eligible(state: Mapping[str, Any]) -> bool:
+    if state.get("status") not in {
+        "PENDING_SCHEDULED",
+        "PENDING_RESUME",
+        "INTERRUPTED_RESUMABLE",
+    }:
         return False
-    try:
-        os.kill(pid, 0)
-        return True
-    except OSError:
-        return False
-
-
-def resume_eligible(
-    state: Mapping[str, Any], *, now: datetime | None = None
-) -> bool:
-    status = state.get("status")
-    if status == "STARTING_WORKER":
-        try:
-            updated = parse_utc(str(state.get("updated_utc", "")), "state updated_utc")
-        except AuditError:
-            return False
-        current = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
-        if current - updated < timedelta(seconds=STALE_WORKER_START_SECONDS):
-            return False
-    elif status not in {"PENDING", "INTERRUPTED_RESUMABLE"}:
-        return False
-    if _pid_alive(state.get("worker_pid")):
+    if state.get("worker_pid") is not None:
         return False
     cells = state.get("cells")
     if not isinstance(cells, list):
@@ -1598,9 +1454,7 @@ def resume_eligible(
             continue
         if cell.get("status") == "INTERRUPTED_NO_OUTCOME":
             attempts = cell.get("attempts", [])
-            if not isinstance(attempts, list):
-                return False
-            if any(
+            if not isinstance(attempts, list) or any(
                 isinstance(attempt, Mapping)
                 and (attempt.get("summary") or attempt.get("outcome_artifacts"))
                 for attempt in attempts
@@ -1609,32 +1463,6 @@ def resume_eligible(
             continue
         return False
     return True
-
-
-def _spawn_worker(
-    job_path: Path,
-    stdout_path: Path,
-    stderr_path: Path,
-    launch_token: str,
-) -> int:
-    stdout_path.parent.mkdir(parents=True, exist_ok=True)
-    creationflags = 0
-    for name in ("CREATE_NEW_PROCESS_GROUP", "DETACHED_PROCESS", "CREATE_NO_WINDOW"):
-        creationflags |= int(getattr(subprocess, name, 0))
-    child_environment = os.environ.copy()
-    child_environment["QM10834_WORKER_LAUNCH_TOKEN"] = launch_token
-    with stdout_path.open("ab", buffering=0) as stdout, stderr_path.open("ab", buffering=0) as stderr:
-        process = subprocess.Popen(
-            [sys.executable, str(TOOL_PATH), "_worker", "--job", str(job_path.resolve())],
-            cwd=str(REPO_ROOT),
-            stdin=subprocess.DEVNULL,
-            stdout=stdout,
-            stderr=stderr,
-            close_fds=True,
-            creationflags=creationflags,
-            env=child_environment,
-        )
-    return int(process.pid)
 
 
 def launch_detached(
@@ -1646,99 +1474,88 @@ def launch_detached(
     resume: bool,
 ) -> dict[str, Any]:
     pre = assert_pre_receipt(pre_path, pre_sha256)
-    validate_current_research_data_gate(pre)
+    validate_current_research_gate(pre)
     expected_state = Path(str(pre["run_root"])).resolve() / "launch_state.json"
     if state_path.resolve() != expected_state:
         raise AuthorizationError(f"state path must be {expected_state}")
     authorization = validate_authorization(authorization_path, pre_sha256)
+    auth_ref = {
+        "binding": dict(authorization["binding"]),
+        "payload_sha256": authorization["payload_sha256"],
+    }
     job_path = Path(str(pre["run_root"])).resolve() / "launch_job.json"
-    worker_stdout = Path(str(pre["run_root"])).resolve() / "worker.stdout.log"
-    worker_stderr = Path(str(pre["run_root"])).resolve() / "worker.stderr.log"
     if state_path.exists():
-        if not resume:
-            raise AuthorizationError("launch state exists; explicit --resume is required")
+        if not resume or not job_path.is_file():
+            raise AuthorizationError("existing launch state requires explicit --resume and job")
         state = load_json(state_path)
-        if not resume_eligible(state):
-            raise AuthorizationError("launch state is not safely resumable")
-        assert_binding(state["job"], "resume job")
         job = load_json(job_path)
-        if (
-            job.get("pre_receipt_sha256") != pre_sha256.lower()
-            or job.get("plan_sha256") != pre["plan"]["plan_sha256"]
-        ):
-            raise AuthorizationError("resume job/PRE drift")
+        _validate_launch_job(job, pre, pre_path, pre_sha256, state_path)
+        if state.get("job") != file_binding(job_path) or not resume_eligible(state):
+            raise AuthorizationError("launch state is not exactly and safely resumable")
+        _scheduler_call(pre, "Register", job)
+        inspected = _scheduler_call(pre, "Inspect", job)
+        if inspected.get("state") == "Running":
+            raise AuthorizationError("persistent scheduled task is still running")
+        state["status"] = "PENDING_RESUME"
     else:
         if resume:
             raise AuthorizationError("--resume requested without a launch state")
         if job_path.exists():
             raise AuthorizationError(f"orphan launch job exists: {job_path}")
+        identity = _scheduler_call(pre, "Identity")
+        scheduler = {
+            "mode": "WINDOWS_TASK_SCHEDULER_S4U_ON_DEMAND",
+            "task_name": scheduled_task_name(pre_sha256, state_path),
+            "task_path": "\\",
+            "principal_sid": identity["principal_sid"],
+            "logon_type": "S4U",
+            "run_level": "Highest",
+            "multiple_instances": "IgnoreNew",
+            "execution_limit_seconds": required_scheduled_task_timeout(pre),
+            "helper": pre["bindings"]["scheduled_task_helper"],
+            "python": pre["bindings"]["python"],
+        }
         job = {
             "schema_version": SCHEMA_VERSION,
-            "artifact_type": "QM5_10834_NATIVE_LAUNCH_JOB",
+            "launcher_revision": LAUNCHER_REVISION,
+            "artifact_type": "QM5_13210_NATIVE_LAUNCH_JOB",
             "analysis_id": ANALYSIS_ID,
             "created_utc": utc_now(),
             "pre_receipt_path": str(pre_path.resolve()),
             "pre_receipt_sha256": pre_sha256.lower(),
             "state_path": str(state_path.resolve()),
             "plan_sha256": pre["plan"]["plan_sha256"],
-            "authorization": {
-                "binding": authorization["binding"],
-                "payload_sha256": authorization["payload_sha256"],
-            },
+            "initial_authorization": auth_ref,
             "tool": pre["bindings"]["tool"],
+            "scheduler": scheduler,
         }
+        _validate_launch_job(job, pre, pre_path, pre_sha256, state_path)
         atomic_json(job_path, job, replace=False)
-        state = initial_launch_state(
-            pre_path, pre_sha256, pre, file_binding(job_path), authorization
-        )
+        state = initial_launch_state(pre_path, pre_sha256, pre, file_binding(job_path), job)
         atomic_json(state_path, state, replace=False)
-    previous_status = str(state["status"])
-    launch_token = secrets.token_hex(32)
-    launch_token_sha256 = hashlib.sha256(launch_token.encode("ascii")).hexdigest()
-    state["status"] = "STARTING_WORKER"
-    state["worker_pid"] = None
-    state["launch_token_sha256"] = launch_token_sha256
-    state["updated_utc"] = utc_now()
-    atomic_json(state_path, state, replace=True)
-    try:
-        pid = _spawn_worker(job_path, worker_stdout, worker_stderr, launch_token)
-    except (OSError, subprocess.SubprocessError):
-        state = load_json(state_path)
-        if state.get("launch_token_sha256") == launch_token_sha256:
-            state["status"] = previous_status
-            state["worker_pid"] = None
-            state["launch_token_sha256"] = None
-            state["updated_utc"] = utc_now()
-            atomic_json(state_path, state, replace=True)
-        raise
-    state = load_json(state_path)
-    if (
-        state.get("launch_token_sha256") != launch_token_sha256
-        or state.get("status") != "STARTING_WORKER"
-    ):
-        raise AuthorizationError("launch state changed during detached-worker registration")
-    state["worker_pid"] = pid
-    state["status"] = "RUNNING"
-    state["updated_utc"] = utc_now()
+        _scheduler_call(pre, "Register", job)
     launches = state.setdefault("launches", [])
     if not isinstance(launches, list):
         raise AuthorizationError("launch audit list is malformed")
+    requested = utc_now()
     launches.append(
         {
-            "launch_token_sha256": launch_token_sha256,
-            "worker_pid": pid,
-            "registered_utc": state["updated_utc"],
+            "requested_utc": requested,
             "resume": resume,
-            "authorization": {
-                "binding": dict(authorization["binding"]),
-                "payload_sha256": authorization["payload_sha256"],
-            },
+            "authorization": auth_ref,
+            "scheduler_contract_sha256": canonical_sha256(job["scheduler"]),
         }
     )
+    state["worker_pid"] = None
+    state["updated_utc"] = requested
     atomic_json(state_path, state, replace=True)
+    started = _scheduler_call(pre, "Start", job)
+    observed = load_json(state_path)
     return {
-        "status": "LAUNCHED_DETACHED" if not resume else "RESUMED_DETACHED",
-        "worker_pid": pid,
+        "status": "LAUNCHED_PERSISTED_TASK" if not resume else "RESUMED_PERSISTED_TASK",
+        "task_name": job["scheduler"]["task_name"],
+        "scheduler_state": started.get("state"),
+        "worker_pid": observed.get("worker_pid"),
         "state": str(state_path.resolve()),
         "job": str(job_path.resolve()),
     }
@@ -1842,7 +1659,7 @@ def _worker_run(job_path: Path, launch_token: str) -> int:
     job_binding = file_binding(job_path)
     job = load_json(job_path)
     if (
-        job.get("artifact_type") != "QM5_10834_NATIVE_LAUNCH_JOB"
+        job.get("artifact_type") != "QM5_13210_NATIVE_LAUNCH_JOB"
         or job.get("analysis_id") != ANALYSIS_ID
     ):
         raise AuthorizationError("worker job identity drift")
@@ -2036,7 +1853,7 @@ def _worker_run(job_path: Path, launch_token: str) -> int:
 def _load_report_core(pre: Mapping[str, Any]) -> Any:
     binding = pre["bindings"]["report_parser"]
     assert_binding(binding, "report parser")
-    spec = importlib.util.spec_from_file_location("qm10834_bound_report_core", binding["path"])
+    spec = importlib.util.spec_from_file_location("qm13210_bound_report_core", binding["path"])
     if spec is None or spec.loader is None:
         raise InvalidEvidence("cannot load bound MT5 report parser")
     module = importlib.util.module_from_spec(spec)
@@ -2732,7 +2549,7 @@ def _validate_launch_state(
 ) -> dict[str, Any]:
     state = load_json(state_path)
     if (
-        state.get("artifact_type") != "QM5_10834_NATIVE_LAUNCH_STATE"
+        state.get("artifact_type") != "QM5_13210_NATIVE_LAUNCH_STATE"
         or state.get("analysis_id") != ANALYSIS_ID
         or state.get("status") != "COMPLETE"
         or state.get("worker_pid") is not None
@@ -2753,7 +2570,7 @@ def _validate_launch_state(
     assert_binding(job_binding, "launch job")
     job = load_json(Path(str(job_binding["path"])))
     if (
-        job.get("artifact_type") != "QM5_10834_NATIVE_LAUNCH_JOB"
+        job.get("artifact_type") != "QM5_13210_NATIVE_LAUNCH_JOB"
         or job.get("pre_receipt_sha256") != pre_sha256.lower()
         or job.get("plan_sha256") != pre["plan"]["plan_sha256"]
         or job.get("state_path") != str(state_path.resolve())
@@ -2833,7 +2650,7 @@ def postflight(pre_path: Path, pre_sha256: str, state_path: Path) -> dict[str, A
     assert_binding(state_binding, "stable COMPLETE launch state")
     return {
         "schema_version": SCHEMA_VERSION,
-        "artifact_type": "QM5_10834_OUTCOME_FENCED_POST_RECEIPT",
+        "artifact_type": "QM5_13210_OUTCOME_FENCED_POST_RECEIPT",
         "analysis_id": ANALYSIS_ID,
         "created_utc": utc_now(),
         "status": merit["status"],
@@ -2851,7 +2668,7 @@ def postflight(pre_path: Path, pre_sha256: str, state_path: Path) -> dict[str, A
 def invalid_receipt(phase: str, exc: Exception) -> dict[str, Any]:
     return {
         "schema_version": SCHEMA_VERSION,
-        "artifact_type": f"QM5_10834_{phase}_INVALID",
+        "artifact_type": f"QM5_13210_{phase}_INVALID",
         "analysis_id": ANALYSIS_ID,
         "created_utc": utc_now(),
         "status": "INVALID",
@@ -2863,15 +2680,10 @@ def invalid_receipt(phase: str, exc: Exception) -> dict[str, Any]:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
-    freeze = sub.add_parser(
-        "freeze-data",
-        help="Hash the exact T1 NDX.DWX 201807..202512 corpus without starting MT5",
-    )
-    freeze.add_argument("--symbol", required=True)
-    freeze.add_argument("--receipt", type=Path, required=True)
     pre = sub.add_parser("pre", help="Outcome-blind PRE validation and immutable receipt")
     pre.add_argument("--symbol", required=True)
-    pre.add_argument("--data-receipt", type=Path, required=True)
+    pre.add_argument("--validation-receipt", type=Path, required=True)
+    pre.add_argument("--data-manifest", type=Path, required=True)
     pre.add_argument("--build-receipt", type=Path, required=True)
     pre.add_argument("--run-root", type=Path, required=True)
     pre.add_argument("--receipt", type=Path, required=True)
@@ -2897,7 +2709,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if args.command == "_worker":
         try:
-            launch_token = os.environ.get("QM10834_WORKER_LAUNCH_TOKEN", "")
+            launch_token = os.environ.get("QM13210_WORKER_LAUNCH_TOKEN", "")
             if not re.fullmatch(r"[0-9a-f]{64}", launch_token):
                 raise AuthorizationError("worker launch token is missing or malformed")
             return _worker_run(args.job, launch_token)
@@ -2920,22 +2732,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(json.dumps(invalid_receipt("STATUS", exc), sort_keys=True), file=sys.stderr)
             return 2
     try:
-        if args.command == "freeze-data":
-            payload = freeze_backtest_data(args.symbol)
-            digest = atomic_json(args.receipt, payload, replace=False)
-            output = {
-                "status": "PASS",
-                "receipt": str(args.receipt.resolve()),
-                "sha256": digest,
-                "symbol": payload["symbol"],
-                "files": payload["totals"]["files"],
-                "bytes": payload["totals"]["bytes"],
-            }
-            code = 0
-        elif args.command == "pre":
+        if args.command == "pre":
             payload = preflight(
                 args.symbol,
-                args.data_receipt,
+                args.validation_receipt,
+                args.data_manifest,
                 args.build_receipt,
                 args.run_root,
             )
