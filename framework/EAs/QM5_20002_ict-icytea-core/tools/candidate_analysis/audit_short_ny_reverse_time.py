@@ -25,6 +25,7 @@ import copy
 import csv
 import hashlib
 import importlib.util
+import ipaddress
 import json
 import os
 import re
@@ -2185,6 +2186,253 @@ def _parse_single_json_envelope(text: str, label: str) -> dict[str, Any]:
     return payload
 
 
+def validate_dev1_controller_result(
+    result: Mapping[str, Any], pre: Mapping[str, Any]
+) -> str:
+    """Bind one successful V3 controller envelope to the PRE runtime bytes."""
+
+    if set(result) != DEV1_CONTROLLER_RESULT_FIELDS:
+        missing = sorted(DEV1_CONTROLLER_RESULT_FIELDS - set(result))
+        extra = sorted(set(result) - DEV1_CONTROLLER_RESULT_FIELDS)
+        raise AuditError(
+            f"DEV1 controller result field closure drift: missing={missing}, extra={extra}"
+        )
+    if (
+        type(result.get("schema_version")) is not int
+        or result.get("schema_version") != 2
+        or result.get("success") is not True
+        or result.get("error_code") is not None
+        or result.get("error_message") is not None
+        or type(result.get("run_smoke_exit_code")) is not int
+        or result.get("run_smoke_exit_code") != 0
+    ):
+        raise AuditError("DEV1 controller did not return an exact successful V3 result")
+    run_id = str(result.get("run_id", ""))
+    if re.fullmatch(r"[0-9]{8}T[0-9]{6}Z_[0-9a-f]{32}", run_id) is None:
+        raise AuditError("DEV1 controller returned a malformed run_id")
+    if re.fullmatch(r"[0-9a-f]{32}", str(result.get("nonce", ""))) is None:
+        raise AuditError("DEV1 controller returned a malformed nonce")
+
+    runtime = pre.get("runtime")
+    if not isinstance(runtime, Mapping):
+        raise AuditError("PRE runtime closure is missing from controller validation")
+    expected_hashes = {
+        "lane_contract_sha256": runtime["dev1_lane_contract"]["sha256"],
+        "machine_credential_sha256": runtime["dev1_machine_credential"]["sha256"],
+        "machine_credential_helper_sha256": runtime[
+            "dev1_machine_credential_helper"
+        ]["sha256"],
+        "child_sha256": runtime["runner_child"]["sha256"],
+        "run_smoke_sha256": runtime["runner_smoke"]["sha256"],
+        "cleanup_helper_sha256": runtime["dev1_cleanup_helper"]["sha256"],
+    }
+    for field, expected in expected_hashes.items():
+        actual = result.get(field)
+        if (
+            type(actual) is not str
+            or re.fullmatch(r"[0-9a-f]{64}", actual) is None
+            or actual != expected
+        ):
+            raise AuditError(f"DEV1 controller runtime binding drift: {field}")
+    expected_group_sha = runtime["tester_groups_canonical"]["sha256"]
+    for field in (
+        "tester_groups_post_child_sha256",
+        "tester_groups_restored_sha256",
+    ):
+        actual = result.get(field)
+        if (
+            type(actual) is not str
+            or re.fullmatch(r"[0-9a-f]{64}", actual) is None
+            or actual != expected_group_sha
+        ):
+            raise AuditError(f"DEV1 tester-groups restore binding drift: {field}")
+
+    lane_binding = runtime["dev1_lane_contract"]
+    assert_binding(lane_binding, "DEV1 controller lane contract")
+    lane = load_strict_json(Path(str(lane_binding["path"])), "DEV1 controller lane contract")
+    coordination = lane.get("coordination")
+    programs = lane.get("program_sha256")
+    actual_programs = result.get("program_sha256")
+    if (
+        not isinstance(coordination, Mapping)
+        or not isinstance(programs, Mapping)
+        or not isinstance(actual_programs, Mapping)
+        or set(actual_programs) != set(programs)
+        or any(
+            type(value) is not str or re.fullmatch(r"[0-9a-f]{64}", value) is None
+            for value in actual_programs.values()
+        )
+        or dict(actual_programs) != dict(programs)
+    ):
+        raise AuditError("DEV1 controller program/lane proof drift")
+    rotation = pre.get("machine_credential_rotation")
+    if not isinstance(rotation, Mapping):
+        raise AuditError("PRE DEV1 rotation proof missing from controller validation")
+    if (
+        result.get("identity_sid") != rotation.get("target_sid")
+        or Path(str(result.get("common_path", ""))).resolve()
+        != DEV1_COMMON_FILES_ROOT.parent.resolve()
+        or re.fullmatch(
+            r"QM_DEV1_SMOKE_[0-9a-f]{32}", str(result.get("expected_task_name", ""))
+        )
+        is None
+        or result.get("controller_mutex") != coordination.get("controller_mutex")
+        or Path(str(result.get("tester_groups_canonical_path", ""))).resolve()
+        != GROUP_CANONICAL_PATH.resolve()
+        or Path(str(result.get("tester_groups_dev1_path", ""))).resolve()
+        != GROUP_DEV1_PATH.resolve()
+        or result.get("dev1_account_initially_enabled") is not False
+        or result.get("dev1_account_enabled_by_controller") is not True
+        or result.get("dev1_account_restored_disabled") is not True
+        or result.get("cleanup_lease_registered") is not True
+        or result.get("cleanup_lease_disarmed") is not True
+    ):
+        raise AuditError("DEV1 disabled-at-rest controller lifecycle proof drift")
+    expected_log = DEV1_RUNS_ROOT / run_id / "output" / "run.log"
+    if Path(str(result.get("log_path", ""))).resolve() != expected_log.resolve():
+        raise AuditError("DEV1 controller log path escaped the bound run identity")
+    started = parse_utc(str(result.get("started_utc", "")), "DEV1 result started_utc")
+    finished = parse_utc(str(result.get("finished_utc", "")), "DEV1 result finished_utc")
+    if finished < started or finished > datetime.now(timezone.utc) + timedelta(minutes=5):
+        raise AuditError("DEV1 controller result chronology drift")
+    _validate_dev1_agent_port_proof(result, pre, lane, started, finished)
+    assert_binding(lane_binding, "DEV1 controller lane contract")
+    return run_id
+
+
+def _validate_dev1_agent_port_proof(
+    result: Mapping[str, Any],
+    pre: Mapping[str, Any],
+    lane: Mapping[str, Any],
+    started: datetime,
+    finished: datetime,
+) -> None:
+    port_contract = lane.get("agent_port_contract")
+    programs = lane.get("program_sha256")
+    if (
+        not isinstance(port_contract, Mapping)
+        or not isinstance(programs, Mapping)
+        or port_contract.get("require_runtime_listener_proof") is not True
+        or port_contract.get("require_exact_dev1_metatester_path") is not True
+        or port_contract.get("require_no_concurrent_overlapping_endpoint_owner")
+        is not True
+        or port_contract.get("allow_released_baseline_endpoint_reuse") is not True
+        or type(port_contract.get("minimum_port")) is not int
+        or type(port_contract.get("maximum_port")) is not int
+    ):
+        raise AuditError("DEV1 lane agent-port contract drift")
+    minimum_port = int(port_contract["minimum_port"])
+    maximum_port = int(port_contract["maximum_port"])
+    if not 1 <= minimum_port <= maximum_port <= 65535:
+        raise AuditError("DEV1 lane agent-port range is malformed")
+
+    expected_path = METATESTER_PATH.resolve()
+    expected_hash = programs.get("metatester64.exe")
+    if type(expected_hash) is not str or re.fullmatch(r"[0-9a-f]{64}", expected_hash) is None:
+        raise AuditError("DEV1 lane metatester hash is malformed")
+    file_binding(expected_path, expected_hash)
+    proof = result.get("agent_port_proof")
+    expected_proof_keys = {
+        "status",
+        "preexisting_port_owner",
+        "concurrent_port_owner",
+        "exclusivity_semantics",
+        "released_baseline_endpoint_reuse_allowed",
+        "metatester_path",
+        "metatester_sha256",
+        "listeners",
+    }
+    if not isinstance(proof, Mapping) or set(proof) != expected_proof_keys:
+        raise AuditError("DEV1 agent-port proof field closure drift")
+    listeners = proof.get("listeners")
+    if (
+        proof.get("status") != "PASS"
+        or proof.get("preexisting_port_owner") is not False
+        or proof.get("concurrent_port_owner") is not False
+        or proof.get("exclusivity_semantics")
+        != "NO_CONCURRENT_OVERLAPPING_ENDPOINT_OWNER"
+        or proof.get("released_baseline_endpoint_reuse_allowed") is not True
+        or Path(str(proof.get("metatester_path", ""))).resolve() != expected_path
+        or proof.get("metatester_sha256") != expected_hash
+        or not isinstance(listeners, list)
+        or not listeners
+    ):
+        raise AuditError("DEV1 exact-path runtime-exclusive listener proof drift")
+
+    expected_listener_keys = {
+        "local_address",
+        "local_port",
+        "process_id",
+        "owner_sid",
+        "executable_path",
+        "creation_utc",
+        "first_observed_utc",
+        "preexisting_port_owner",
+        "concurrent_port_owner",
+        "exclusive_current_owner",
+        "current_overlapping_owner_count",
+        "baseline_endpoint_was_occupied",
+        "released_baseline_owner_count",
+    }
+    expected_owner_sid = str(result.get("identity_sid", ""))
+    rotation = pre.get("machine_credential_rotation")
+    if (
+        re.fullmatch(r"S-[0-9]+(?:-[0-9]+)+", expected_owner_sid) is None
+        or not isinstance(rotation, Mapping)
+        or expected_owner_sid != rotation.get("target_sid")
+    ):
+        raise AuditError("DEV1 listener owner SID/rotation proof drift")
+    endpoint_keys: set[tuple[int, int, str]] = set()
+    for index, listener in enumerate(listeners):
+        if not isinstance(listener, Mapping) or set(listener) != expected_listener_keys:
+            raise AuditError(f"DEV1 listener[{index}] field closure drift")
+        local_address = str(listener.get("local_address", ""))
+        try:
+            ipaddress.ip_address(local_address.split("%", 1)[0])
+        except ValueError as exc:
+            raise AuditError(f"DEV1 listener[{index}] local address is malformed") from exc
+        local_port = listener.get("local_port")
+        process_id = listener.get("process_id")
+        current_count = listener.get("current_overlapping_owner_count")
+        released_count = listener.get("released_baseline_owner_count")
+        baseline_occupied = listener.get("baseline_endpoint_was_occupied")
+        if (
+            type(local_port) is not int
+            or not minimum_port <= local_port <= maximum_port
+            or type(process_id) is not int
+            or process_id <= 0
+            or listener.get("owner_sid") != expected_owner_sid
+            or Path(str(listener.get("executable_path", ""))).resolve() != expected_path
+            or listener.get("preexisting_port_owner") is not False
+            or listener.get("concurrent_port_owner") is not False
+            or listener.get("exclusive_current_owner") is not True
+            or type(current_count) is not int
+            or current_count != 1
+            or type(baseline_occupied) is not bool
+            or type(released_count) is not int
+            or released_count < 0
+            or (baseline_occupied and released_count < 1)
+            or (not baseline_occupied and released_count != 0)
+        ):
+            raise AuditError(f"DEV1 listener[{index}] exclusivity proof drift")
+        creation = parse_utc(
+            str(listener.get("creation_utc", "")),
+            f"DEV1 listener[{index}] creation_utc",
+        )
+        observed = parse_utc(
+            str(listener.get("first_observed_utc", "")),
+            f"DEV1 listener[{index}] first_observed_utc",
+        )
+        if not started - timedelta(seconds=2) <= creation <= observed <= finished + timedelta(
+            seconds=5
+        ):
+            raise AuditError(f"DEV1 listener[{index}] chronology drift")
+        endpoint_key = (process_id, local_port, local_address.casefold())
+        if endpoint_key in endpoint_keys:
+            raise AuditError("DEV1 listener proof contains a duplicate endpoint")
+        endpoint_keys.add(endpoint_key)
+
+
 def _path_within(path: Path, root: Path) -> bool:
     try:
         path.resolve().relative_to(root.resolve())
@@ -2806,16 +3054,16 @@ def _worker_run(job_path: Path) -> int:
             stderr_path.write_text(completed.stderr, encoding="utf-8")
             attempt_context["stderr"] = file_binding(stderr_path)
             attempt_context["failure_stage"] = "RUNNER_STREAMS_BOUND"
-            runner_result = _parse_last_json(completed.stdout)
+            runner_result = _parse_single_json_envelope(
+                completed.stdout, f"{cell['cell_id']} DEV1 controller stdout"
+            )
             attempt_context["runner_result"] = runner_result
             attempt_context["failure_stage"] = "RUNNER_RESULT_PARSED"
             if completed.returncode != 0 or runner_result.get("success") is not True:
                 raise AuditError(
                     f"runner rejected {cell['cell_id']} with exit {completed.returncode}"
                 )
-            run_id = str(runner_result.get("run_id", ""))
-            if not re.fullmatch(r"[0-9]{8}T[0-9]{6}Z_[0-9a-f]{32}", run_id):
-                raise AuditError(f"runner returned malformed run_id: {run_id!r}")
+            run_id = validate_dev1_controller_result(runner_result, pre)
             summary_path = _find_summary(run_id)
             attempt_context["summary"] = file_binding(summary_path)
             attempt_context["failure_stage"] = "SUMMARY_BOUND"
@@ -2852,13 +3100,15 @@ def launch_detached(
     pre_sha256: str,
     authorization_path: Path,
     state_path: Path,
-    controller_timeout_seconds: int,
+    controller_timeout_seconds: int | None,
     *,
     resume: bool = False,
 ) -> dict[str, Any]:
     pre = assert_pre_receipt(pre_path, pre_sha256)
     authorization = validate_authorization(authorization_path, pre_sha256)
     minimum_timeout = required_controller_timeout(pre)
+    if controller_timeout_seconds is None:
+        controller_timeout_seconds = minimum_timeout
     if not minimum_timeout <= controller_timeout_seconds <= 172800:
         raise AuthorizationError("controller timeout outside persisted launcher contract")
     task_limit = required_scheduled_task_timeout(pre, controller_timeout_seconds)
@@ -3435,9 +3685,10 @@ def audit_cell(
     runner_result = launch_cell.get("runner_result")
     if not isinstance(runner_result, Mapping) or runner_result.get("success") is not True:
         raise PostflightError(f"runner result is not successful: {cell['cell_id']}")
-    run_id = str(runner_result.get("run_id", ""))
-    if not re.fullmatch(r"[0-9]{8}T[0-9]{6}Z_[0-9a-f]{32}", run_id):
-        raise PostflightError(f"runner run_id malformed: {cell['cell_id']}")
+    try:
+        run_id = validate_dev1_controller_result(runner_result, pre)
+    except AuditError as exc:
+        raise PostflightError(str(exc)) from exc
     assert_binding(launch_cell["summary"], f"{cell['cell_id']} summary")
     summary_path = Path(str(launch_cell["summary"]["path"]))
     if summary_path.resolve() != _find_summary(run_id):
@@ -3850,7 +4101,7 @@ def _assert_complete_stream_binding(
 
 
 def _validate_complete_runner_streams(
-    state_path: Path, launch_cell: Mapping[str, Any]
+    state_path: Path, launch_cell: Mapping[str, Any], pre: Mapping[str, Any]
 ) -> list[tuple[Mapping[str, Any], Path, str]]:
     """Re-open exact COMPLETE streams and bind stdout JSON to state.runner_result."""
 
@@ -3880,6 +4131,10 @@ def _validate_complete_runner_streams(
         raise PostflightError(f"{cell_id} state runner_result is missing")
     if canonical_bytes(stdout_result) != canonical_bytes(state_result):
         raise PostflightError(f"{cell_id} stdout/state runner_result drift")
+    try:
+        validate_dev1_controller_result(stdout_result, pre)
+    except AuditError as exc:
+        raise PostflightError(str(exc)) from exc
     return checked
 
 
@@ -3968,7 +4223,7 @@ def _validate_launch_chain(
         ):
             raise PostflightError(f"launch cell command/exit drift: {plan_cell['cell_id']}")
         checked_streams.extend(
-            _validate_complete_runner_streams(state_path, launch_cell)
+            _validate_complete_runner_streams(state_path, launch_cell, pre)
         )
         cursor = finished
     if attempts and outcome_possible != parse_utc(
@@ -4125,7 +4380,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     launch.add_argument("--pre-sha256", required=True)
     launch.add_argument("--authorization", type=Path, required=True)
     launch.add_argument("--state", type=Path, required=True)
-    launch.add_argument("--controller-timeout-seconds", type=int, default=119400)
+    launch.add_argument("--controller-timeout-seconds", type=int)
     launch.add_argument(
         "--resume",
         action="store_true",
