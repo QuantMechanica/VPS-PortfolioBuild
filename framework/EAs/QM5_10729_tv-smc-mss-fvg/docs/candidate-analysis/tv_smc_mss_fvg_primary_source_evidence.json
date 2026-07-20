@@ -1,0 +1,95 @@
+{
+  "artifact_type": "QM5_10729_PRIMARY_SOURCE_EVIDENCE",
+  "outcome_blind": true,
+  "retrieval": {
+    "accessed_utc_date": "2026-07-20",
+    "page_url": "https://www.tradingview.com/script/QpR7OWpA-SMC-ICT-Backtest-XAUUSD-MNQ/",
+    "pine_facade_url": "https://pine-facade.tradingview.com/pine-facade/get/PUB;c94173158a0d4ee6a16689d44d64606a/1",
+    "script_id_part": "PUB;c94173158a0d4ee6a16689d44d64606a",
+    "selected_pine_version": 1,
+    "available_updates": [],
+    "script_access": "open_no_auth",
+    "source_created_utc": "2026-05-14T21:43:05.062879Z",
+    "source_title": "SMC ICT Backtest XAUUSD + MNQ",
+    "source_author_handle": "shary890",
+    "raw_source_utf8_bytes_without_terminal_lf": 1753,
+    "raw_source_utf8_sha256": "a20de57eb835405dc3cb5b17284c745403e4aa9e569220be8022b9f7af28ab16",
+    "local_snapshot_normalization": "The verbatim 1753-byte facade response is stored with one terminal LF added; no other byte changed.",
+    "local_snapshot_sha256": "7e49ecdd3f7d078773b7f29b500e40e12ba81984bbbaa1c9c508d69da1e599bb"
+  },
+  "publication_chart_context": {
+    "symbol": "FUSIONMARKETS:BTCUSD",
+    "interval": "15",
+    "timeframe_frozen_for_dev": "M15",
+    "symbol_info_timezone": "America/New_York",
+    "evidence_location": "TradingView publication page embedded chart JSON",
+    "interpretation": "Pine time(timeframe.period, session) omits a timezone, so TradingView evaluates the literal session strings in the chart symbol exchange timezone. The frozen source-chart interpretation is therefore America/New_York, not Darwinex broker wall-clock.",
+    "official_language_references": [
+      "https://www.tradingview.com/pine-script-docs/concepts/time/",
+      "https://www.tradingview.com/pine-script-docs/concepts/sessions/",
+      "https://www.tradingview.com/pine-script-docs/v5/concepts/strategies/"
+    ]
+  },
+  "executable_mechanics_v1": {
+    "strategy_properties": {
+      "initial_capital": 10000,
+      "commission_percent_per_order": 0.01,
+      "pyramiding": 0,
+      "process_orders_on_close": true
+    },
+    "parameters": {
+      "swing_length": 5,
+      "reward_risk": 2.0
+    },
+    "sessions_source_timezone_half_open": [
+      {"name": "LONDON_LABEL", "start": "07:00", "end": "10:00", "timezone": "America/New_York"},
+      {"name": "NEW_YORK_LABEL", "start": "12:30", "end": "16:00", "timezone": "America/New_York"}
+    ],
+    "pivot": "ta.pivothigh/ta.pivotlow with five left and five right bars; the latest non-na value replaces lastHigh/lastLow only when confirmed.",
+    "long_signal_same_bar": "lastLow exists AND low < lastLow AND close > lastLow AND close > high[1] AND low > high[2] AND source session is active",
+    "short_signal_same_bar": "lastHigh exists AND high > lastHigh AND close < lastHigh AND close < low[1] AND high < low[2] AND source session is active",
+    "entry": "Market strategy.entry on the confirmed signal bar closing tick because process_orders_on_close=true.",
+    "stop": "Signal-bar low for long; signal-bar high for short.",
+    "target": "Entry reference close plus/minus exactly 2.0 times signal close-to-stop distance.",
+    "explicit_session_flat": false,
+    "explicit_news_rule": false,
+    "explicit_friday_flat": false,
+    "explicit_swap_model": false
+  },
+  "outcome_blind_candidate_selection": {
+    "selected": "QM5_10729_tv-smc-mss-fvg",
+    "selection_basis": [
+      "APPROVED card with direct primary-source lineage.",
+      "Open-source executable Pine fixes every sweep, displacement/MSS, FVG, pivot, session, stop and target inequality.",
+      "XAUUSD is named by the source and supplies the required metal sleeve; EURUSD is an approved-card transport used to test cross-asset robustness.",
+      "Its two New-York-time windows do not overlap retained NDX Sleeve A's 10:00-11:00 America/New_York window."
+    ],
+    "already_adjudicated_or_reserved_not_reopened": [
+      "QM5_20009 Sleeve A NDX/GDAX retained low-sample",
+      "v5 Asia/London FX rejected",
+      "canonical M15 v6 FX NO_MERIT",
+      "QM5_10253 NO_FAMILYWISE_MERIT",
+      "QM5_9987 BLOCKED_SOURCE_AMBIGUITY",
+      "QM5_20002 short-NY reverse-time reserved",
+      "QM5_12571 Silver Bullet EUR",
+      "QM5_10867 NDX",
+      "QM5_10691 NDX",
+      "QM5_10677 GDAX",
+      "QM5_13033 XAU",
+      "QM5_1233 EUR Silver Bullet",
+      "QM5_12537 XAU OTE",
+      "QM5_12550 and QM5_12551 very-low-trade candidates",
+      "QM5_12536 one-year candidate"
+    ],
+    "alternatives_rejected_without_outcome_access": [
+      {"candidate": "QM5_13210", "reason": "Asian-sweep source leaves HTF orderflow, POI proximity, range classification, FVG choice and target selection discretionary and overlaps a rejected Asia/London family."},
+      {"candidate": "QM5_10694", "reason": "Silver Bullet page/card leaves a parameter menu and overlaps already-adjudicated Silver Bullet candidates."},
+      {"candidate": "QM5_10628", "reason": "Forum prose required substantial discretionary mechanisation and had no exact executable primary source."},
+      {"candidate": "QM5_10664", "reason": "Order-block and FVG identification remained underspecified."},
+      {"candidate": "QM5_10688 and QM5_10712", "reason": "Break/re-entry/retest family duplicated the source-ambiguity problem already adjudicated in QM5_9987."},
+      {"candidate": "QM5_10698", "reason": "Pivot rejection omitted an executable displacement-plus-FVG chain."},
+      {"candidate": "QM5_10655", "reason": "Simple sweep omitted an executable FVG condition."}
+    ]
+  },
+  "outcome_access_statement": "Selection used cards, source code/page metadata, implementation metadata, timestamp prefixes, venue metadata and cost/news rules only. No selected market OHLC field, trade list, report or performance metric was read."
+}
