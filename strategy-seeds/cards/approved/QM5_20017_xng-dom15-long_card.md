@@ -43,7 +43,8 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: PENDING
+q02_status: QUEUED
+q02_work_item_id: 1403b76c-3b38-4b22-81f7-81ced9d64380
 review_focus: "Strictly falsify the recurring XNG day-15 one-session premium after costs and futures/CFD basis; test realized portfolio correlation only at its governed downstream gate."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -230,6 +231,7 @@ window, short direction, hold duration or price filter requires a new card.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-07-20 | initial structural XNG DOM15 card | G0 | APPROVED |
+| v1-q02 | 2026-07-20 | strict build PASS; tester-capacity smoke deferred | Q02 | PENDING 1403b76c-3b38-4b22-81f7-81ced9d64380 |
 
 ## Safety boundary
 

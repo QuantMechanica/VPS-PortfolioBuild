@@ -1,0 +1,106 @@
+{
+  "task_id": "ebce7a4e-0194-4136-87cd-878ed302f4c2",
+  "ea_id": "QM5_20017",
+  "ea_label": "QM5_20017_xng-dom15-long",
+  "slug": "xng-dom15-long",
+  "strategy_id": "BOROWSKI-XNG-DOM15-2016_S01",
+  "strategy": "XNG exact calendar-day-15 long premium, flat at the next D1 bar",
+  "source_links": [
+    "https://econjournals.sgh.waw.pl/JMFS/Archives_2015_2016",
+    "https://www.researchgate.net/publication/303285422_ANALYSIS_OF_SELECTED_SEASONALITY_EF-_FECTS_IN_MARKETS_OF_FUTURE_CONTRACTS_WITH_THE_FOLLOWING_UNDERLYING_INSTRUMENTS_CRUDE_OIL_BRENT_OIL_HEATING_OIL_GAS_OIL_NATURAL_GAS_FEEDER_CATTLE_LIVE_CATTLE_LEAN_HOGS_AND_LUMBER"
+  ],
+  "symbols": [
+    "XNGUSD.DWX"
+  ],
+  "symbols_registered": [
+    "XNGUSD.DWX"
+  ],
+  "host_symbol": "XNGUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_20017_xng-dom15-long",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_20017_xng-dom15-long/QM5_20017_xng-dom15-long.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_20017_xng-dom15-long/QM5_20017_xng-dom15-long.ex5",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_20017_xng-dom15-long/SPEC.md",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20017_xng-dom15-long.md",
+  "approved_card_path": "C:/QM/repo/strategy-seeds/cards/approved/QM5_20017_xng-dom15-long_card.md",
+  "canonical_card_path": "C:/QM/repo/strategy-seeds/cards/xng-dom15-long_card.md",
+  "source_packet_path": "C:/QM/repo/strategy-seeds/sources/BOROWSKI-XNG-DOM15-2016/source.md",
+  "runtime_build_result_path": "D:/QM/strategy_farm/artifacts/builds/ebce7a4e-0194-4136-87cd-878ed302f4c2.json",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_20017_xng-dom15-long/sets/QM5_20017_xng-dom15-long_XNGUSD.DWX_D1_backtest.set"
+  ],
+  "magic_base": 200170000,
+  "registry_validation": {
+    "ea_id_row": "20017,xng-dom15-long,BOROWSKI-XNG-DOM15-2016_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-20",
+    "magic_row": "20017,xng-dom15-long,0,XNGUSD.DWX,200170000,2026-07-20,Development,active",
+    "resolver_rows": 14955,
+    "magic_registry_sha256": "098901A1C158E9E588266A7BDC64AD41980097EEA956ACD21BF95DEAF3F151DD",
+    "resolver_registry_sha_match": true
+  },
+  "commits": [
+    "ee60be0be476da79828df028958d032c408d0e42",
+    "9bf547485d142ee7173bf1fa24393916b41ad5ab",
+    "c674e139e0865a053e98ac5deea53a407c247787",
+    "ce1c32854221a7b6b5d7bf42eb046df3801d9d32",
+    "ec1af4ae5238e2ea1ef1dc6bedb527b6bc185fa2"
+  ],
+  "build_commit": "ec1af4ae5238e2ea1ef1dc6bedb527b6bc185fa2",
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log": "C:/QM/repo/framework/build/compile/20260720_132615/QM5_20017_xng-dom15-long.compile.log",
+  "compile_log_sha256": "6EC8254B524872E12398E7069BC4C280BC2277FC863D6DBFBCF53D1C1696FF41",
+  "compile_summary": "D:/QM/reports/compile/20260720_132615/summary.csv",
+  "build_check_passed": true,
+  "build_check_failures": 0,
+  "build_check_warnings": 0,
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260720_132643.json",
+  "build_check_report_sha256": "AD2391FDE2667DDDA7667BA7A07141404B421E93A84611F6F86C6DEBCB84C7CF",
+  "spec_validation": "PASS",
+  "guardrail_validation": "PASS",
+  "symbol_scope_validation": "SINGLE_SYMBOL_OK",
+  "card_schema_validation": "PASS",
+  "g0_card_validation": "PASS",
+  "setfile_build_hash": "9ada88cd4dd3da49ca5e02601b001e63e8e0f0b50a46108c2366d349a5162df6",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced-fleet capacity scan reached the backtest CPU ceiling earlier in this mission (eight terminal64 and six metatester64 processes); a final scan still showed six terminals and four metatesters. No tester, smoke, optimization, dispatch tick or backtest was started.",
+  "blocked_reason": null,
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "reputable_primary_source": true,
+    "manual_backtest_cpu_used": false
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "open_questions": [
+    "The paper studies NYMEX natural-gas futures; Q02 must falsify transfer to the Darwinex continuous CFD after spread, gaps, roll/basis and financing.",
+    "The reported p-value is unadjusted across a broad calendar-anomaly search, and post-2016 persistence is unproven.",
+    "Neither positive expectancy nor low realized correlation to the certified book is established by G0 or Q01."
+  ],
+  "file_hashes_sha256": {
+    "mq5": "87BE34509CF4C0DFAD4345551BEC72B9E440A22B74A0EDF1CE1DAC9F9BA1F1B3",
+    "ex5": "CA07FC577FE0C6BC9AE1AB1C3576183CB3D60EF7B0A811C47D4FD2B8D2B4673C",
+    "spec": "3E27317DFBEE22D0D9A682A563252794767DBDB6010FD1D769E36CACA2899938",
+    "embedded_card": "B40D30BA3B09F151C48220814A22BBE33BB46D3C8C1A295DEAB9E175E45E7C73",
+    "setfile": "3F0BCC16FE2C95C3C464E904DAA88C2DA6F8313323A3302558C442C997305A75",
+    "canonical_card": "1AD73571243B555CB15A03416A5C9ED24C8B97E90435FFA7F6FC8D8C0C025F37",
+    "approved_card": "1AD73571243B555CB15A03416A5C9ED24C8B97E90435FFA7F6FC8D8C0C025F37",
+    "source_packet": "E63D62BA168B2EF5A30238469262A8FA68522791A13937A3F73C448CA3FA8F76",
+    "ea_registry": "DB1B199EC7370D500DD9CB2B04BE5378782421AC4B3925DD84F868997F8F05DA",
+    "magic_registry": "098901A1C158E9E588266A7BDC64AD41980097EEA956ACD21BF95DEAF3F151DD",
+    "resolver": "FFC3606EC56A161EF432E1DBF98A581450B697C3AC770C9219C258576F08CDE3"
+  }
+}

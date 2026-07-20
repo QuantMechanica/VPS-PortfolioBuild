@@ -10,26 +10,17 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   9ada88cd4dd3da49ca5e02601b001e63e8e0f0b50a46108c2366d349a5162df6
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-07-20
 ;==========================================================
 qm_ea_id=20017
 qm_magic_slot_offset=0
-qm_rng_seed=42
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-qm_news_temporal=0
-qm_news_compliance=0
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_news_mode_legacy=0
-qm_friday_close_enabled=true
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0.0
-; strategy-specific parameters are locked by the approved card
-; card_defaults_source=strategy-seeds/cards/approved/QM5_20017_xng-dom15-long_card.md
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\xng-dom15-long_card.md
 strategy_entry_day=15
 strategy_atr_period=20
 strategy_atr_sl_mult=2.75
