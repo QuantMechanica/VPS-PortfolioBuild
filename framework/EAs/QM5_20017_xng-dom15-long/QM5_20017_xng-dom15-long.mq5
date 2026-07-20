@@ -309,8 +309,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
 void Strategy_ManageOpenPosition()
   {
-   QM_FrameworkTrackOpenPositionMae();
-
    const datetime now = TimeCurrent();
    const long hold_seconds =
       (long)MathMax(1, strategy_max_hold_days) * 86400;
@@ -396,6 +394,8 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
    if(QM_FrameworkHandleFridayClose())
