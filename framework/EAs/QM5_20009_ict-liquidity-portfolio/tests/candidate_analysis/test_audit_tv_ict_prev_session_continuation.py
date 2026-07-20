@@ -25,6 +25,7 @@ def broker_epoch(value: datetime) -> int:
 
 
 def test_contract_hash_and_exact_blocker_set() -> None:
+    assert audit.FINALIZATION_MARKER == "EXPLICIT_PATHSPEC_PRE_OUTCOME"
     assert hashlib.sha256(audit.CONTRACT_PATH.read_bytes()).hexdigest() == audit.EXPECTED_CONTRACT_SHA256
     contract = json.loads(audit.CONTRACT_PATH.read_text(encoding="utf-8"))
     audit.validate_contract(contract)
