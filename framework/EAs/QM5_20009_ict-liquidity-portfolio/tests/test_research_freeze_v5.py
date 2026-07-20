@@ -346,7 +346,10 @@ def test_history_cutoff_cannot_precede_any_runnable_binding_phase() -> None:
     freeze.validate_protocol(payload)
     drifted = copy.deepcopy(payload)
     drifted["model4_data"]["history_frozen_through_year"] = 2024
-    with pytest.raises(freeze.FreezeError, match="Model-4 provisioning/fence contract drifted"):
+    with pytest.raises(
+        freeze.FreezeError,
+        match="runnable binding phase exceeds frozen Model-4 history coverage",
+    ):
         freeze.validate_protocol(drifted)
 
 

@@ -473,9 +473,13 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
         "preflight_rehash_selected_phase_files": True,
         "postflight_rehash_selected_phase_files": True,
     }
-    if model4 != expected_model4:
+    if not isinstance(model4, Mapping) or set(model4) != set(expected_model4):
         raise FreezeError("Model-4 provisioning/fence contract drifted")
-    history_frozen_through_year = int(model4["history_frozen_through_year"])
+    history_frozen_through_year = model4["history_frozen_through_year"]
+    if isinstance(history_frozen_through_year, bool) or not isinstance(
+        history_frozen_through_year, int
+    ):
+        raise FreezeError("Model-4 history cutoff must be an integer year")
     for phase in phases:
         if phase.get("nonbinding") is True:
             continue
@@ -494,6 +498,8 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
                 "runnable binding phase exceeds frozen Model-4 history coverage: "
                 f"{phase.get('id')}"
             )
+    if model4 != expected_model4:
+        raise FreezeError("Model-4 provisioning/fence contract drifted")
     if protocol.get("compiled_source_snapshot_exceptions") != [EXPECTED_MAGIC_EXCEPTION]:
         raise FreezeError("compiled source snapshot exception contract drifted")
 

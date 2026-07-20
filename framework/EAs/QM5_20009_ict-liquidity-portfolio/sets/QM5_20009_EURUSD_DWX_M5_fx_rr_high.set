@@ -7,12 +7,12 @@
 ; sleeve: fx
 ; variant: rr_high
 ; changed_parameter: strategy_b_min_rr
-; freeze_inputs_sha256: bc35c6a65e3597ac07e5645279fea1d6204a838d7a72716ba4c439fb4fdc2a75
+; freeze_inputs_sha256: 5f7a7e821c054cfb619b31e08e0a884d3401b5f0963cbe5752d1fa3ea0ea956c
 ; ea_sha256: a94e24c3a486011662ea0fc82853569663b0a0b93c85f114d545a589d0812c04
 ; rules_sha256: 03970dc0b8576010d1614fe3774c7064fbeb983ece0f10d6510ba89a6f79ccbc
 ; contract_sha256: 98a500ae4ecb9ed3733199fee137d2c357e4c4b00d9907feb9aae39e783fc688
-; protocol_sha256: 275d4f4de34ae6620e89aae0a8901e17dd6a28ca6332ca703d0599801ac55eb9
-; generator_sha256: 89ae39ec22007bf5da2aa4b7c14ad8dee2e00517a2f3560149456a709c4e4914
+; protocol_sha256: 43e710a8586e036e21dc4d527f1490c1e79816c74165a62f6dc81915d17f8806
+; generator_sha256: aa8b8b2111d0de429d394f30b02a25924e07e42c0bf25323d9279925b6e5ade0
 ; ex5_sha256: 2b1d663fb032bd516a007dd5eee1973d9a53cb2f80d0d5cb875ed342a247fcb0
 ;==========================================================
 qm_ea_id=20009
