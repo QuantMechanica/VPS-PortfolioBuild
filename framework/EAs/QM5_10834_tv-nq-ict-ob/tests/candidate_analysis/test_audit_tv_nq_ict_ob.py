@@ -516,6 +516,106 @@ def test_runner_command_freezes_model4_two_duplicates_zero_native_cost(
     assert command[-1] == "-SmokeMode"
 
 
+def test_infra_retry_contract_is_one_shot_dev2_and_binds_prior_invalid(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    prior_root = tmp_path / "prior"
+    prior_root.mkdir()
+    prior_pre = prior_root / "pre_receipt.json"
+    prior_state = prior_root / "launch_state.json"
+    prior_pre.write_bytes(b"prior-pre")
+    prior_state.write_bytes(b"prior-state")
+    pre_sha = subject.sha256_file(prior_pre)
+    state_sha = subject.sha256_file(prior_state)
+    monkeypatch.setattr(subject, "PRIOR_INFRA_RUN_ROOT", prior_root)
+    monkeypatch.setattr(subject, "PRIOR_INFRA_PRE_SHA256", pre_sha)
+    monkeypatch.setattr(subject, "PRIOR_INFRA_STATE_SHA256", state_sha)
+
+    payload = {
+        "schema_version": 1,
+        "artifact_type": "QM5_10834_INFRA_RETRY_CONTRACT",
+        "status": "AUTHORIZED_ONCE",
+        "created_utc": datetime.now(timezone.utc).isoformat(),
+        "candidate": {
+            "ea_id": "QM5_10834",
+            "analysis_id": subject.ANALYSIS_ID,
+            "symbol": "NDX.DWX",
+            "timeframe": "M5",
+            "model": 4,
+        },
+        "prior_attempt": {
+            "terminal": "T1",
+            "run_root": str(prior_root),
+            "pre_receipt_sha256": pre_sha,
+            "launch_state_sha256": state_sha,
+            "terminal_status": "INVALID_TERMINAL",
+            "reason_classes": [
+                "BARS_ZERO",
+                "INCOMPLETE_RUNS",
+                "HISTORY_SYNCHRONIZATION_ERROR",
+            ],
+            "completed_cells": 0,
+            "strategy_outcomes_read": False,
+            "strategy_merit_adjudicated": False,
+        },
+        "retry": subject.INFRA_RETRY_POLICY,
+        "classification": "OUTCOME_BLIND_INFRASTRUCTURE_RETRY_ONLY",
+    }
+    contract = tmp_path / "retry.json"
+    _write_json(contract, payload)
+    assert subject.validate_infra_retry_contract(contract) == payload
+
+    payload["retry"] = {**subject.INFRA_RETRY_POLICY, "maximum_alternate_attempts": 2}
+    _write_json(contract, payload)
+    with pytest.raises(subject.InvalidEvidence, match="one-shot policy"):
+        subject.validate_infra_retry_contract(contract)
+
+
+def test_dev2_controller_result_binds_lane_scripts_and_tester_groups() -> None:
+    lane_sha = "1" * 64
+    child_sha = "2" * 64
+    smoke_sha = "3" * 64
+    groups_sha = "4" * 64
+    pre = {
+        "bindings": {
+            "dev2_lane_contract": {"sha256": lane_sha},
+            "runner_child": {"sha256": child_sha},
+            "runner_smoke": {"sha256": smoke_sha},
+            "tester_groups_canonical": {"sha256": groups_sha},
+        }
+    }
+    run_id = "20260720T170000Z_" + "a" * 32
+    result = {
+        "success": True,
+        "run_smoke_exit_code": 0,
+        "run_id": run_id,
+        "lane_contract_sha256": lane_sha,
+        "child_sha256": child_sha,
+        "run_smoke_sha256": smoke_sha,
+        "tester_groups_post_child_sha256": groups_sha,
+        "tester_groups_restored_sha256": groups_sha,
+    }
+    assert subject.validate_dev2_controller_result(result, pre) == run_id
+    result["child_sha256"] = "f" * 64
+    with pytest.raises(subject.InvalidEvidence, match="runtime binding drift"):
+        subject.validate_dev2_controller_result(result, pre)
+
+
+def test_dev2_summary_identity_is_exact_and_unambiguous(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    runs_root = tmp_path / "runs"
+    monkeypatch.setattr(subject, "DEV2_RUNS_ROOT", runs_root)
+    run_id = "20260720T170000Z_" + "b" * 32
+    summary = runs_root / run_id / "output" / "smoke" / "QM5_10834" / "tag" / "summary.json"
+    _write_json(summary, {"result": "PASS"})
+    assert subject._find_dev2_summary(run_id) == summary.resolve()
+    second = runs_root / run_id / "output" / "smoke" / subject.EXPERT_NAME / "tag2" / "summary.json"
+    _write_json(second, {"result": "PASS"})
+    with pytest.raises(subject.InvalidEvidence, match="found 2"):
+        subject._find_dev2_summary(run_id)
+
+
 def test_trade_reconstruction_applies_external_cost_once_and_checks_session() -> None:
     entry = SimpleNamespace(
         direction="in",
