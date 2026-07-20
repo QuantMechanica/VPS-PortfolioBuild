@@ -108,6 +108,8 @@ int      g_sweep_direction   = 0; // +1 long after low sweep; -1 short after hig
 double   g_sweep_extreme     = 0.0;
 double   g_structure_level   = 0.0;
 datetime g_sweep_bar_open    = 0;
+double   g_post_sweep_high   = 0.0;
+double   g_post_sweep_low    = 0.0;
 bool     g_entry_ready       = false;
 double   g_entry_price       = 0.0;
 double   g_entry_sl          = 0.0;
@@ -199,6 +201,8 @@ void QM13210_ResetForDay(const int day_key)
    g_sweep_extreme      = 0.0;
    g_structure_level    = 0.0;
    g_sweep_bar_open     = 0;
+   g_post_sweep_high    = 0.0;
+   g_post_sweep_low     = 0.0;
    g_entry_ready        = false;
    g_entry_price        = 0.0;
    g_entry_sl           = 0.0;
@@ -323,10 +327,16 @@ bool QM13210_TargetAlreadyTouched(const double high, const double low)
 
    if(target <= 0.0)
       return true;
+   const double observed_high = (g_post_sweep_high > 0.0)
+                                ? MathMax(high, g_post_sweep_high)
+                                : high;
+   const double observed_low = (g_post_sweep_low > 0.0)
+                               ? MathMin(low, g_post_sweep_low)
+                               : low;
    if(g_sweep_direction > 0)
-      return (high >= target);
+      return (observed_high >= target);
    if(g_sweep_direction < 0)
-      return (low <= target);
+      return (observed_low <= target);
    return true;
   }
 
@@ -546,6 +556,8 @@ void QM13210_AdvanceStateOnNewBar()
           g_sweep_extreme = h;
           g_structure_level = g_last_swing_low;
           g_sweep_bar_open = bar_open;
+          g_post_sweep_high = h;
+          g_post_sweep_low = l;
           if(QM13210_TargetAlreadyTouched(h, l))
             {
              QM13210_MarkSetupDone();
@@ -562,6 +574,8 @@ void QM13210_AdvanceStateOnNewBar()
           g_sweep_extreme = l;
           g_structure_level = g_last_swing_high;
           g_sweep_bar_open = bar_open;
+          g_post_sweep_high = h;
+          g_post_sweep_low = l;
           if(QM13210_TargetAlreadyTouched(h, l))
             {
              QM13210_MarkSetupDone();
@@ -577,6 +591,14 @@ void QM13210_AdvanceStateOnNewBar()
        QM13210_MarkSetupDone();
        return;
       }
+
+   if(g_phase == QM13210_WAIT_CONFIRM || g_phase == QM13210_ENTRY_READY)
+     {
+      if(g_post_sweep_high <= 0.0 || h > g_post_sweep_high)
+         g_post_sweep_high = h;
+      if(g_post_sweep_low <= 0.0 || l < g_post_sweep_low)
+         g_post_sweep_low = l;
+     }
 
    if(g_phase == QM13210_ENTRY_READY)
      {
@@ -705,7 +727,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(ask <= 0.0 || bid <= 0.0)
       return false;
    if((g_sweep_direction > 0 && bid >= g_entry_tp) ||
-      (g_sweep_direction < 0 && ask <= g_entry_tp))
+      (g_sweep_direction < 0 && bid <= g_entry_tp))
      {
       QM13210_MarkSetupDone(); // target traded before the limit was submitted.
       return false;
@@ -753,6 +775,17 @@ void Strategy_ManageOpenPosition()
   {
    if(!QM13210_HasOwnedPendingOrder())
       return;
+
+   // Pending orders survive an EA/terminal restart while this strategy state
+   // does not. Without reconstructable direction/geometry, keeping that order
+   // would bypass target/opposite-sweep invalidation, so cancel fail-closed.
+   if(g_sweep_direction == 0 || g_entry_tp <= 0.0 ||
+      g_sweep_high_ref <= 0.0 || g_sweep_low_ref <= 0.0)
+     {
+      QM13210_RemoveOwnedPendingOrders("asian_sweep_state_missing_cancel");
+      QM13210_MarkSetupDone();
+      return;
+     }
 
    const datetime broker_now = TimeCurrent();
    const int minute = QM13210_MinuteOfDay(broker_now);
