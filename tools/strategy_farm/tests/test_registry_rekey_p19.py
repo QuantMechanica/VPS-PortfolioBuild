@@ -28,6 +28,39 @@ PRODUCTION_IDENTITIES = {
     if key not in {"12075", "12076"}
 }
 
+REMAINING_REGISTRY_ONLY_REKEYS = {
+    ("1492", "as-raa-balanced"): (
+        "12625",
+        "connors-vix-spike-reversal-h4",
+        "2df06de7-6a3a-5b06-9e6d-446d1a01fab9",
+    ),
+    ("9197", "mql5-macd-obv-div"): (
+        "12098",
+        "mql5-bb-stoch-mtf",
+        "ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb",
+    ),
+    ("9198", "mql5-ha-ema-trend"): (
+        "12099",
+        "mql5-cci-zero",
+        "ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb",
+    ),
+    ("11277", "blade-m5-ema-zone-scalp-alt"): (
+        "12626",
+        "blade-m5-ema-zone-scalp",
+        "e78a9f1f-4e6a-563c-a080-915133d6ed28",
+    ),
+    ("11427", "connors-rsi2-sma200-pullback-d1-alt"): (
+        "12627",
+        "connors-rsi2-sma200-pullback-d1",
+        "4932e25a-fdfb-50cd-b5f5-18e55f3045c2",
+    ),
+    ("11857", "blade-macd-stoch-divergence-h1-alt"): (
+        "12628",
+        "blade-macd-stoch-divergence-h1",
+        "7f6f2831-ea66-58f6-a7ff-a8c89a44803d",
+    ),
+}
+
 
 def _rows(path: Path) -> list[dict[str, str]]:
     with path.open(encoding="utf-8-sig", newline="") as handle:
@@ -165,3 +198,65 @@ def test_p19_registry_only_rekeys_do_not_invent_source_directories() -> None:
         / "QM5_1258_hopwood-bermaui-rsi-h1"
         / "QM5_1258_hopwood-bermaui-rsi-h1.ex5"
     ).is_file()
+
+
+def test_p19_remaining_registry_only_duplicates_are_rekeyed() -> None:
+    rows = _rows(REGISTRY)
+    for (old_id, loser_slug), (
+        new_id,
+        winner_slug,
+        strategy_id,
+    ) in REMAINING_REGISTRY_ONLY_REKEYS.items():
+        old_active = {
+            _normalized_slug(row["slug"])
+            for row in rows
+            if row["ea_id"].removeprefix("QM5_") == old_id
+            and row["status"].lower() == "active"
+        }
+        assert old_active == {winner_slug}
+
+        retired_loser = [
+            row
+            for row in rows
+            if row["ea_id"].removeprefix("QM5_") == old_id
+            and _normalized_slug(row["slug"]) == loser_slug
+            and row["status"].lower() == "retired"
+        ]
+        assert len(retired_loser) == 1
+
+        new_active = [
+            row
+            for row in rows
+            if row["ea_id"].removeprefix("QM5_") == new_id
+            and row["status"].lower() == "active"
+        ]
+        assert len(new_active) == 1
+        assert _normalized_slug(new_active[0]["slug"]) == loser_slug
+        assert new_active[0]["strategy_id"] == strategy_id
+
+
+def test_p19_remaining_rekeys_are_registry_only_and_keep_built_owner() -> None:
+    magic_rows = _rows(MAGICS)
+    for (old_id, loser_slug), (
+        new_id,
+        winner_slug,
+        _strategy_id,
+    ) in REMAINING_REGISTRY_ONLY_REKEYS.items():
+        assert not list(EAS.glob(f"QM5_*_{loser_slug}"))
+        assert not [
+            row
+            for row in magic_rows
+            if row["ea_id"].removeprefix("QM5_") == new_id
+            or _normalized_slug(row["ea_slug"]) == loser_slug
+        ]
+
+        winner_dir = EAS / f"QM5_{old_id}_{winner_slug}"
+        assert (winner_dir / f"QM5_{old_id}_{winner_slug}.mq5").is_file()
+        assert (winner_dir / f"QM5_{old_id}_{winner_slug}.ex5").is_file()
+        active_magic_slugs = {
+            _normalized_slug(row["ea_slug"])
+            for row in magic_rows
+            if row["ea_id"].removeprefix("QM5_") == old_id
+            and row["status"].lower() == "active"
+        }
+        assert active_magic_slugs == {winner_slug}
