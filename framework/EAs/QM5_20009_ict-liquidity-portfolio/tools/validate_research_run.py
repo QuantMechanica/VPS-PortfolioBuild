@@ -12,9 +12,11 @@ import hashlib
 import json
 import os
 import re
+import stat
+import sys
 import tempfile
 from datetime import date, datetime
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any, Mapping
 
 import generate_research_sets as freeze
@@ -85,6 +87,56 @@ DEV_VARIANTS = [
     "rr_low",
     "rr_high",
 ]
+RUN_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{15,199}$")
+SNAPSHOT_FILE_FIELDS = {
+    "role",
+    "repo_relative_path",
+    "source_path",
+    "snapshot_path",
+    "size_bytes",
+    "sha256",
+}
+SNAPSHOT_MANIFEST_FIELDS = {
+    "schema_version",
+    "artifact_type",
+    "status",
+    "run_id",
+    "source_repo_root",
+    "snapshot_root",
+    "snapshot_repo_root",
+    "freeze_identity",
+    "request",
+    "files",
+    "closure_sha256",
+}
+SNAPSHOT_BINDING_FIELDS = {
+    "root_path",
+    "repo_root",
+    "manifest_path",
+    "manifest_size_bytes",
+    "manifest_sha256",
+    "manifest_sidecar_path",
+    "manifest_sidecar_sha256",
+    "selected_set_repo_relative",
+    "role_bindings",
+}
+SNAPSHOT_ROLE_BINDING_FIELDS = {"path", "size_bytes", "sha256"}
+EXTERNAL_RUNTIME_FIELDS = {"role", "path", "size_bytes", "sha256"}
+PRE_RECEIPT_FIELDS = {
+    "schema_version",
+    "artifact_type",
+    "status",
+    "run_id",
+    "request",
+    "freeze_inputs_sha256",
+    "manifest_sha256",
+    "set_sha256",
+    "selected_data",
+    "selected_data_sha256",
+    "phase_unlock_records",
+    "external_runtime",
+    "runtime_snapshot",
+}
 
 
 def _reject_duplicate_json_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -505,25 +557,548 @@ def _validate_nested_prior_verdict(
     )
 
 
-def _write_receipt_atomic(path: Path, payload: Mapping[str, Any]) -> None:
-    path = path.resolve()
-    path.parent.mkdir(parents=True, exist_ok=True)
-    encoded = (json.dumps(payload, indent=2, sort_keys=True) + "\n").encode("utf-8")
-    descriptor, temporary = tempfile.mkstemp(
-        prefix=f".{path.name}.", suffix=".tmp", dir=str(path.parent)
+def _same_path(first: Path, second: Path) -> bool:
+    return os.path.normcase(os.path.abspath(first)) == os.path.normcase(
+        os.path.abspath(second)
     )
+
+
+def _canonical_repo_relative(value: Any, context: str) -> str:
+    if not isinstance(value, str) or not value or "\\" in value:
+        raise FenceError(f"{context} must be a non-empty canonical POSIX path")
+    pure = PurePosixPath(value)
+    if (
+        pure.is_absolute()
+        or pure.as_posix() != value
+        or any(part in {"", ".", ".."} for part in pure.parts)
+        or ":" in pure.parts[0]
+    ):
+        raise FenceError(f"{context} is absolute, noncanonical or escapes its root")
+    return value
+
+
+def _inside_path(root: Path, relative: str, context: str) -> Path:
+    canonical = _canonical_repo_relative(relative, context)
+    root_full = Path(os.path.abspath(root))
+    candidate = Path(os.path.abspath(root_full.joinpath(*PurePosixPath(canonical).parts)))
     try:
+        inside = os.path.commonpath((os.path.normcase(root_full), os.path.normcase(candidate)))
+    except ValueError as exc:
+        raise FenceError(f"{context} crosses filesystem roots") from exc
+    if inside != os.path.normcase(root_full):
+        raise FenceError(f"{context} escapes its root")
+    return candidate
+
+
+def _assert_no_reparse_components(path: Path, context: str) -> None:
+    full = Path(os.path.abspath(path))
+    if not full.is_absolute():
+        raise FenceError(f"{context} must be absolute")
+    anchor = Path(full.anchor)
+    cursor = anchor
+    components = full.parts[1:] if full.anchor else full.parts
+    for component in components:
+        cursor /= component
+        try:
+            info = os.lstat(cursor)
+        except OSError as exc:
+            raise FenceError(f"{context} is missing: {cursor}") from exc
+        attributes = int(getattr(info, "st_file_attributes", 0))
+        reparse_flag = int(getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400))
+        if stat.S_ISLNK(info.st_mode) or attributes & reparse_flag:
+            raise FenceError(f"{context} contains a symlink/reparse component: {cursor}")
+
+
+def _regular_file_binding(path: Path, context: str) -> dict[str, Any]:
+    full = Path(os.path.abspath(path))
+    _assert_no_reparse_components(full, context)
+    try:
+        info = os.stat(full, follow_symlinks=False)
+    except OSError as exc:
+        raise FenceError(f"{context} is missing") from exc
+    if not stat.S_ISREG(info.st_mode):
+        raise FenceError(f"{context} is not a regular file")
+    return {
+        "path": str(full),
+        "size_bytes": info.st_size,
+        "sha256": freeze.sha256_file(full),
+    }
+
+
+def _exclusive_write(path: Path, payload: bytes, context: str) -> None:
+    full = Path(os.path.abspath(path))
+    if not full.parent.is_dir():
+        raise FenceError(f"{context} parent is missing")
+    _assert_no_reparse_components(full.parent, f"{context} parent")
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+    descriptor: int | None = None
+    try:
+        descriptor = os.open(full, flags, 0o600)
         with os.fdopen(descriptor, "wb") as handle:
-            handle.write(encoded)
+            descriptor = None
+            handle.write(payload)
             handle.flush()
             os.fsync(handle.fileno())
-        os.replace(temporary, path)
-    except Exception:
+    except FileExistsError as exc:
+        raise FenceError(f"{context} already exists; overwrite is forbidden") from exc
+    finally:
+        if descriptor is not None:
+            os.close(descriptor)
+
+
+def _write_canonical_detached(path: Path, payload: Mapping[str, Any], context: str) -> None:
+    full = Path(os.path.abspath(path))
+    raw = _canonical_json_bytes(payload)
+    digest = hashlib.sha256(raw).hexdigest()
+    sidecar = Path(f"{full}.sha256")
+    detached = f"{digest}  {full.name}\n".encode("ascii")
+    _exclusive_write(sidecar, detached, f"{context} detached sidecar")
+    _exclusive_write(full, raw, context)
+
+
+def _write_receipt_atomic(path: Path, payload: Mapping[str, Any]) -> None:
+    _write_canonical_detached(path, payload, "validator receipt")
+
+
+def _read_canonical_detached(path: Path, context: str) -> tuple[dict[str, Any], bytes]:
+    full = Path(os.path.abspath(path))
+    binding = _regular_file_binding(full, context)
+    del binding
+    raw = full.read_bytes()
+    payload = _strict_canonical_json(raw, context)
+    _read_exact_detached(
+        full,
+        Path(f"{full}.sha256"),
+        artifact_raw=raw,
+        context=context,
+    )
+    return payload, raw
+
+
+def _runtime_contract_files(
+    protocol: Mapping[str, Any], selected_set_repo_relative: str
+) -> list[dict[str, str]]:
+    contract = _require_mapping(protocol.get("runtime_snapshot"), "runtime_snapshot")
+    raw_files = contract.get("repository_files")
+    if not isinstance(raw_files, list) or not raw_files:
+        raise FenceError("runtime_snapshot.repository_files is missing")
+    selected = _canonical_repo_relative(
+        selected_set_repo_relative, "selected set repository path"
+    )
+    files: list[dict[str, str]] = []
+    roles: set[str] = set()
+    paths: set[str] = set()
+    for index, raw in enumerate(raw_files):
+        row = _require_mapping(raw, f"runtime_snapshot.repository_files[{index}]")
+        _require_exact_keys(row, {"role", "path"}, f"runtime snapshot file {index}")
+        role = row["role"]
+        template = row["path"]
+        if not isinstance(role, str) or re.fullmatch(r"[a-z][a-z0-9_]*", role) is None:
+            raise FenceError(f"runtime snapshot role is invalid: {role!r}")
+        if not isinstance(template, str):
+            raise FenceError(f"runtime snapshot path is invalid for role {role}")
+        relative = template.replace("{selected_set_repo_relative}", selected)
+        if "{" in relative or "}" in relative:
+            raise FenceError(f"runtime snapshot path has an unresolved token: {role}")
+        relative = _canonical_repo_relative(relative, f"runtime snapshot path {role}")
+        if role in roles or relative.casefold() in paths:
+            raise FenceError("runtime snapshot roles/paths must be unique")
+        roles.add(role)
+        paths.add(relative.casefold())
+        files.append({"role": role, "repo_relative_path": relative})
+    if "selected_set" not in roles or "ea_binary" not in roles:
+        raise FenceError("runtime snapshot omits selected set or EA binary")
+    return files
+
+
+def _runtime_expected_specs(
+    protocol: Mapping[str, Any],
+    manifest: Mapping[str, Any],
+    *,
+    set_file: Path,
+    manifest_bytes: bytes,
+) -> list[dict[str, Any]]:
+    try:
+        selected_relative = set_file.resolve(strict=True).relative_to(
+            freeze.REPO_ROOT.resolve(strict=True)
+        ).as_posix()
+    except (OSError, ValueError) as exc:
+        raise FenceError("selected set is outside the source repository") from exc
+    contract_files = _runtime_contract_files(protocol, selected_relative)
+    freeze_inputs = _require_mapping(manifest.get("freeze_inputs"), "freeze manifest inputs")
+    source_hashes = _require_mapping(freeze_inputs.get("source_hashes"), "source hashes")
+    evidence_rows = freeze_inputs.get("evidence_artifacts")
+    if not isinstance(evidence_rows, list):
+        raise FenceError("freeze manifest evidence_artifacts is malformed")
+    evidence_by_path = {
+        str(row.get("path", "")).replace("\\", "/"): row
+        for row in evidence_rows
+        if isinstance(row, Mapping)
+    }
+    source_hash_roles = {
+        "protocol": "protocol_sha256",
+        "generator": "generator_sha256",
+        "validator": "validator_sha256",
+    }
+    manifest_sha = hashlib.sha256(manifest_bytes).hexdigest()
+    manifest_sidecar = f"{manifest_sha}  manifest.json\n".encode("ascii")
+    selected_rows = [
+        row for row in manifest.get("sets", []) if row.get("file") == set_file.name
+    ]
+    if len(selected_rows) != 1:
+        raise FenceError("selected set is not unique in the freeze manifest")
+    specs: list[dict[str, Any]] = []
+    for row in contract_files:
+        role = row["role"]
+        relative = row["repo_relative_path"]
+        expected_size: int | None = None
+        if role == "sets_manifest":
+            expected_sha = manifest_sha
+            expected_size = len(manifest_bytes)
+        elif role == "sets_manifest_detached":
+            expected_sha = hashlib.sha256(manifest_sidecar).hexdigest()
+            expected_size = len(manifest_sidecar)
+        elif role == "selected_set":
+            expected_sha = str(selected_rows[0].get("set_sha256", ""))
+        elif role in source_hash_roles:
+            expected_sha = str(source_hashes.get(source_hash_roles[role], ""))
+        else:
+            evidence = evidence_by_path.get(relative)
+            if not isinstance(evidence, Mapping):
+                raise FenceError(f"runtime snapshot path is not freeze-bound: {relative}")
+            expected_sha = str(evidence.get("sha256", ""))
+            size_value = evidence.get("size")
+            if isinstance(size_value, bool) or not isinstance(size_value, int):
+                raise FenceError(f"runtime evidence size is invalid: {role}")
+            expected_size = size_value
+        expected_sha = _require_sha256(expected_sha, f"runtime expected hash {role}")
+        specs.append(
+            {
+                **row,
+                "expected_size_bytes": expected_size,
+                "expected_sha256": expected_sha,
+            }
+        )
+    return specs
+
+
+def create_runtime_snapshot(
+    *,
+    source_repo_root: Path,
+    snapshot_root: Path,
+    run_id: str,
+    artifact_type: str,
+    freeze_identity: Mapping[str, Any],
+    request: Mapping[str, Any],
+    selected_set_repo_relative: str,
+    file_specs: list[Mapping[str, Any]],
+) -> dict[str, Any]:
+    if RUN_ID_RE.fullmatch(run_id) is None:
+        raise FenceError("runtime snapshot run_id is malformed")
+    source_root = Path(os.path.abspath(source_repo_root))
+    root = Path(os.path.abspath(snapshot_root))
+    if not root.is_absolute() or not source_root.is_absolute():
+        raise FenceError("runtime snapshot/source roots must be absolute")
+    _assert_no_reparse_components(source_root, "source repository root")
+    _assert_no_reparse_components(root.parent, "runtime snapshot parent")
+    try:
+        root.mkdir()
+    except FileExistsError as exc:
+        raise FenceError("runtime snapshot already exists; cross-run reuse is forbidden") from exc
+    repo_root = root / "repo"
+    repo_root.mkdir()
+
+    manifest_rows: list[dict[str, Any]] = []
+    roles: set[str] = set()
+    for index, raw_spec in enumerate(file_specs):
+        spec = _require_mapping(raw_spec, f"runtime file spec {index}")
+        role = spec.get("role")
+        if not isinstance(role, str) or re.fullmatch(r"[a-z][a-z0-9_]*", role) is None:
+            raise FenceError(f"runtime file role is invalid: {role!r}")
+        if role in roles:
+            raise FenceError(f"duplicate runtime file role: {role}")
+        roles.add(role)
+        relative = _canonical_repo_relative(
+            spec.get("repo_relative_path"), f"runtime file {role}"
+        )
+        expected_sha = _require_sha256(
+            spec.get("expected_sha256"), f"runtime file {role} expected hash"
+        )
+        expected_size = spec.get("expected_size_bytes")
+        if expected_size is not None and (
+            isinstance(expected_size, bool)
+            or not isinstance(expected_size, int)
+            or expected_size <= 0
+        ):
+            raise FenceError(f"runtime file {role} expected size is invalid")
+        source = _inside_path(source_root, relative, f"runtime source {role}")
+        source_binding = _regular_file_binding(source, f"runtime source {role}")
+        if source_binding["sha256"] != expected_sha or (
+            expected_size is not None and source_binding["size_bytes"] != expected_size
+        ):
+            raise FenceError(f"runtime source drifted after PRE validation: {role}")
+        destination = _inside_path(repo_root, relative, f"runtime destination {role}")
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        _assert_no_reparse_components(destination.parent, f"runtime destination parent {role}")
+        digest = hashlib.sha256()
+        size = 0
         try:
-            os.unlink(temporary)
-        except OSError:
-            pass
-        raise
+            with source.open("rb") as source_handle, destination.open("xb") as destination_handle:
+                while True:
+                    chunk = source_handle.read(1024 * 1024)
+                    if not chunk:
+                        break
+                    destination_handle.write(chunk)
+                    digest.update(chunk)
+                    size += len(chunk)
+                destination_handle.flush()
+                os.fsync(destination_handle.fileno())
+        except FileExistsError as exc:
+            raise FenceError(f"runtime destination collision: {role}") from exc
+        if digest.hexdigest() != expected_sha or size != source_binding["size_bytes"]:
+            raise FenceError(f"runtime snapshot copy drifted: {role}")
+        copied = _regular_file_binding(destination, f"runtime snapshot file {role}")
+        if copied["sha256"] != expected_sha or copied["size_bytes"] != size:
+            raise FenceError(f"runtime snapshot verification failed after copy: {role}")
+        manifest_rows.append(
+            {
+                "role": role,
+                "repo_relative_path": relative,
+                "source_path": str(source),
+                "snapshot_path": str(destination),
+                "size_bytes": size,
+                "sha256": expected_sha,
+            }
+        )
+
+    manifest_rows.sort(key=lambda item: str(item["role"]))
+    manifest_payload = {
+        "schema_version": 1,
+        "artifact_type": artifact_type,
+        "status": "SEALED",
+        "run_id": run_id,
+        "source_repo_root": str(source_root),
+        "snapshot_root": str(root),
+        "snapshot_repo_root": str(repo_root),
+        "freeze_identity": dict(freeze_identity),
+        "request": dict(request),
+        "files": manifest_rows,
+        "closure_sha256": _canonical_payload_sha256(manifest_rows),
+    }
+    manifest_path = root / "runtime_manifest.json"
+    _write_canonical_detached(manifest_path, manifest_payload, "runtime snapshot manifest")
+    manifest_binding = _regular_file_binding(manifest_path, "runtime snapshot manifest")
+    sidecar_path = Path(f"{manifest_path}.sha256")
+    sidecar_binding = _regular_file_binding(sidecar_path, "runtime snapshot manifest sidecar")
+    role_bindings = {
+        str(row["role"]): {
+            "path": str(row["snapshot_path"]),
+            "size_bytes": int(row["size_bytes"]),
+            "sha256": str(row["sha256"]),
+        }
+        for row in manifest_rows
+    }
+    return {
+        "root_path": str(root),
+        "repo_root": str(repo_root),
+        "manifest_path": str(manifest_path),
+        "manifest_size_bytes": int(manifest_binding["size_bytes"]),
+        "manifest_sha256": str(manifest_binding["sha256"]),
+        "manifest_sidecar_path": str(sidecar_path),
+        "manifest_sidecar_sha256": str(sidecar_binding["sha256"]),
+        "selected_set_repo_relative": _canonical_repo_relative(
+            selected_set_repo_relative, "selected set repository path"
+        ),
+        "role_bindings": role_bindings,
+    }
+
+
+def verify_runtime_snapshot(
+    binding_raw: Any,
+    *,
+    expected_snapshot_root: Path,
+    run_id: str,
+    artifact_type: str,
+    freeze_identity: Mapping[str, Any],
+    request: Mapping[str, Any],
+    expected_files: list[Mapping[str, str]],
+) -> dict[str, Any]:
+    binding = _require_mapping(binding_raw, "runtime snapshot binding")
+    _require_exact_keys(binding, SNAPSHOT_BINDING_FIELDS, "runtime snapshot binding")
+    root = Path(str(binding["root_path"]))
+    repo_root = Path(str(binding["repo_root"]))
+    manifest_path = Path(str(binding["manifest_path"]))
+    sidecar_path = Path(str(binding["manifest_sidecar_path"]))
+    expected_root = Path(os.path.abspath(expected_snapshot_root))
+    if not all(path.is_absolute() for path in (root, repo_root, manifest_path, sidecar_path)):
+        raise FenceError("runtime snapshot binding paths must be absolute")
+    if not _same_path(root, expected_root):
+        raise FenceError("cross-run runtime snapshot root")
+    if not _same_path(repo_root, root / "repo"):
+        raise FenceError("runtime snapshot repository root drift")
+    if not _same_path(manifest_path, root / "runtime_manifest.json"):
+        raise FenceError("runtime snapshot manifest path drift")
+    if not _same_path(sidecar_path, Path(f"{manifest_path}.sha256")):
+        raise FenceError("runtime snapshot manifest sidecar path drift")
+    _assert_no_reparse_components(root, "runtime snapshot root")
+    manifest, manifest_raw = _read_canonical_detached(
+        manifest_path, "runtime snapshot manifest"
+    )
+    _require_exact_keys(manifest, SNAPSHOT_MANIFEST_FIELDS, "runtime snapshot manifest")
+    manifest_sha = hashlib.sha256(manifest_raw).hexdigest()
+    sidecar_sha = freeze.sha256_file(sidecar_path)
+    for field, actual, expected in (
+        ("manifest_size_bytes", len(manifest_raw), binding["manifest_size_bytes"]),
+        ("manifest_sha256", manifest_sha, binding["manifest_sha256"]),
+        ("manifest_sidecar_sha256", sidecar_sha, binding["manifest_sidecar_sha256"]),
+    ):
+        if actual != expected:
+            raise FenceError(f"runtime snapshot {field} binding drift")
+    if (
+        manifest["schema_version"] != 1
+        or manifest["artifact_type"] != artifact_type
+        or manifest["status"] != "SEALED"
+        or manifest["run_id"] != run_id
+        or manifest["freeze_identity"] != dict(freeze_identity)
+        or manifest["request"] != dict(request)
+    ):
+        raise FenceError("runtime snapshot identity/status contract drift")
+    if not _same_path(Path(str(manifest["snapshot_root"])), root) or not _same_path(
+        Path(str(manifest["snapshot_repo_root"])), repo_root
+    ):
+        raise FenceError("runtime snapshot manifest root drift")
+    source_root = Path(str(manifest["source_repo_root"]))
+    if not source_root.is_absolute():
+        raise FenceError("runtime snapshot source repository root is not absolute")
+
+    rows_raw = manifest["files"]
+    if not isinstance(rows_raw, list):
+        raise FenceError("runtime snapshot files must be a list")
+    expected_by_role = {
+        str(row["role"]): _canonical_repo_relative(
+            row["repo_relative_path"], f"expected runtime file {row['role']}"
+        )
+        for row in expected_files
+    }
+    if len(expected_by_role) != len(expected_files):
+        raise FenceError("expected runtime file roles are duplicated")
+    observed_bindings: dict[str, dict[str, Any]] = {}
+    normalized_rows: list[dict[str, Any]] = []
+    for index, raw in enumerate(rows_raw):
+        row = _require_mapping(raw, f"runtime snapshot file {index}")
+        _require_exact_keys(row, SNAPSHOT_FILE_FIELDS, f"runtime snapshot file {index}")
+        role = row["role"]
+        if not isinstance(role, str) or role not in expected_by_role or role in observed_bindings:
+            raise FenceError(f"unexpected/duplicate runtime snapshot role: {role!r}")
+        relative = _canonical_repo_relative(
+            row["repo_relative_path"], f"runtime snapshot file {role}"
+        )
+        if relative != expected_by_role[role]:
+            raise FenceError(f"runtime snapshot relative path drift: {role}")
+        expected_source = _inside_path(source_root, relative, f"runtime source path {role}")
+        expected_snapshot = _inside_path(repo_root, relative, f"runtime snapshot path {role}")
+        if not _same_path(Path(str(row["source_path"])), expected_source):
+            raise FenceError(f"runtime snapshot source path drift: {role}")
+        if not _same_path(Path(str(row["snapshot_path"])), expected_snapshot):
+            raise FenceError(f"runtime snapshot path drift: {role}")
+        size_value = row["size_bytes"]
+        if isinstance(size_value, bool) or not isinstance(size_value, int) or size_value <= 0:
+            raise FenceError(f"runtime snapshot size is invalid: {role}")
+        expected_sha = _require_sha256(row["sha256"], f"runtime snapshot hash {role}")
+        actual = _regular_file_binding(expected_snapshot, f"runtime snapshot file {role}")
+        if actual["size_bytes"] != size_value or actual["sha256"] != expected_sha:
+            raise FenceError(f"runtime snapshot file mutation: {role}")
+        observed_bindings[role] = {
+            "path": str(expected_snapshot),
+            "size_bytes": size_value,
+            "sha256": expected_sha,
+        }
+        normalized_rows.append(dict(row))
+    if set(observed_bindings) != set(expected_by_role):
+        raise FenceError("runtime snapshot file closure is incomplete")
+    normalized_rows.sort(key=lambda item: str(item["role"]))
+    if rows_raw != normalized_rows or manifest["closure_sha256"] != _canonical_payload_sha256(
+        normalized_rows
+    ):
+        raise FenceError("runtime snapshot file order/closure hash drift")
+    role_bindings = _require_mapping(binding["role_bindings"], "runtime role bindings")
+    if set(role_bindings) != set(observed_bindings):
+        raise FenceError("runtime snapshot role binding closure drift")
+    for role, expected_binding in observed_bindings.items():
+        raw_role = _require_mapping(role_bindings[role], f"runtime role binding {role}")
+        _require_exact_keys(
+            raw_role, SNAPSHOT_ROLE_BINDING_FIELDS, f"runtime role binding {role}"
+        )
+        if dict(raw_role) != expected_binding:
+            raise FenceError(f"runtime snapshot role binding drift: {role}")
+    selected_relative = _canonical_repo_relative(
+        binding["selected_set_repo_relative"], "selected set repository path"
+    )
+    if expected_by_role.get("selected_set") != selected_relative:
+        raise FenceError("runtime snapshot selected set binding drift")
+    return manifest
+
+
+def _external_runtime_rows(
+    protocol: Mapping[str, Any],
+    manifest: Mapping[str, Any],
+    *,
+    powershell_path: Path,
+) -> list[dict[str, Any]]:
+    contract = _require_mapping(protocol.get("runtime_snapshot"), "runtime_snapshot")
+    artifact_ids = contract.get("external_runtime_artifact_ids")
+    if not isinstance(artifact_ids, list) or not artifact_ids:
+        raise FenceError("external runtime artifact closure is missing")
+    evidence_rows = _require_mapping(manifest.get("freeze_inputs"), "freeze inputs").get(
+        "evidence_artifacts"
+    )
+    if not isinstance(evidence_rows, list):
+        raise FenceError("freeze evidence artifact closure is malformed")
+    evidence_by_id = {
+        str(row.get("id")): row for row in evidence_rows if isinstance(row, Mapping)
+    }
+    rows: list[dict[str, Any]] = []
+    for artifact_id in artifact_ids:
+        if not isinstance(artifact_id, str) or artifact_id not in evidence_by_id:
+            raise FenceError(f"external runtime artifact is not freeze-bound: {artifact_id}")
+        expected = evidence_by_id[artifact_id]
+        path = freeze._artifact_path(str(expected.get("path", "")))
+        actual = _regular_file_binding(path, f"external runtime {artifact_id}")
+        if actual["size_bytes"] != expected.get("size") or actual["sha256"] != expected.get(
+            "sha256"
+        ):
+            raise FenceError(f"external runtime drift: {artifact_id}")
+        rows.append({"role": artifact_id, **actual})
+    for role, path in (
+        ("python_executable", Path(sys.executable)),
+        ("powershell7", powershell_path),
+    ):
+        actual = _regular_file_binding(path, f"external runtime {role}")
+        rows.append({"role": role, **actual})
+    rows.sort(key=lambda item: str(item["role"]))
+    if len({str(row["role"]) for row in rows}) != len(rows):
+        raise FenceError("external runtime roles are duplicated")
+    return rows
+
+
+def _verify_external_runtime(
+    raw_rows: Any,
+    protocol: Mapping[str, Any],
+    manifest: Mapping[str, Any],
+    *,
+    powershell_path: Path,
+) -> list[dict[str, Any]]:
+    if not isinstance(raw_rows, list):
+        raise FenceError("PRE-bound external runtime must be a list")
+    for index, raw in enumerate(raw_rows):
+        row = _require_mapping(raw, f"external runtime row {index}")
+        _require_exact_keys(row, EXTERNAL_RUNTIME_FIELDS, f"external runtime row {index}")
+    actual = _external_runtime_rows(
+        protocol, manifest, powershell_path=powershell_path
+    )
+    if raw_rows != actual:
+        raise FenceError("PRE-bound external runtime identity drift")
+    return actual
 
 
 def _market(protocol: Mapping[str, Any], symbol: str) -> Mapping[str, Any]:
