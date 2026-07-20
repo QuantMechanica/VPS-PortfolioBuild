@@ -1697,7 +1697,7 @@ def _prior_dpapi_attempt_contract() -> dict[str, Any]:
         "claim_and_fence_preserved": True,
         "counts_toward_claim_sequence": True,
         "counts_toward_counted_alternate_attempts": False,
-        "remediation": "SAME_WORKER_MACHINE_DPAPI_PRECLaIM_PROBE_AND_BOUND_HELPER",
+        "remediation": "SAME_WORKER_MACHINE_DPAPI_PRECLAIM_PROBE_AND_BOUND_HELPER",
     }
 
 
@@ -1959,11 +1959,12 @@ def execution_contract() -> dict[str, Any]:
         "native_run_timeout_seconds": RUN_TIMEOUT_SECONDS,
         "native_per_attempt_overhead_seconds": RUN_ATTEMPT_OVERHEAD_SECONDS,
         "cell_outer_timeout_seconds": CELL_CONTROLLER_TIMEOUT_SECONDS,
+        "machine_credential_preclaim_probe_timeout_seconds": CREDENTIAL_PROBE_TIMEOUT_SECONDS,
         "native_start_budget_is_outcome_independent": True,
         "postflight_acceptable_infrastructure_warmup_verdicts": ["BARS_ZERO", "NO_HISTORY"],
         "postflight_rejects_every_nonprefix_or_nonzero_warmup": True,
         "native_attempt_claim_path": str(NATIVE_ATTEMPT_CLAIM_PATH.resolve()),
-        "native_attempt_claim_mode": "ATOMIC_CREATE_ONCE_FOR_DPAPI_RETRY_CLAIM_SEQUENCE_003_AFTER_SAME_WORKER_PRECLaIM_PROBE",
+        "native_attempt_claim_mode": "ATOMIC_CREATE_ONCE_FOR_DPAPI_RETRY_CLAIM_SEQUENCE_003_AFTER_SAME_WORKER_PRECLAIM_PROBE",
         "same_worker_machine_credential_probe_required_before_claim": True,
         "machine_credential_path": str(MACHINE_CREDENTIAL_PATH.resolve()),
         "native_launch_lock_path": str(NATIVE_LAUNCH_LOCK_PATH.resolve()),
@@ -2360,6 +2361,236 @@ def runner_command(pre: Mapping[str, Any], cell: Mapping[str, Any]) -> list[str]
     ]
 
 
+def _machine_credential_probe_paths(pre: Mapping[str, Any]) -> dict[str, Path]:
+    run_root = _assert_run_root(Path(str(pre["run_root"])))
+    control_root = (run_root / "control").resolve()
+    if not _is_within(control_root, run_root):
+        raise InvalidEvidence("machine-credential probe control root escaped PRE run root")
+    return {
+        "control_root": control_root,
+        "receipt": control_root / "dev2_machine_credential_probe.json",
+        "stdout": control_root / "dev2_machine_credential_probe.stdout.log",
+        "stderr": control_root / "dev2_machine_credential_probe.stderr.log",
+    }
+
+
+def machine_credential_probe_command(
+    pre: Mapping[str, Any], receipt_path: Path
+) -> list[str]:
+    bindings = pre["bindings"]
+    expected_receipt = _machine_credential_probe_paths(pre)["receipt"]
+    if receipt_path.resolve() != expected_receipt.resolve():
+        raise InvalidEvidence("machine-credential probe receipt path drift")
+    if pre.get("execution_contract") != execution_contract():
+        raise InvalidEvidence("credential probe requires the immutable DEV2 execution contract")
+    return [
+        str(Path(str(bindings["powershell"]["path"])).resolve()),
+        "-NoLogo",
+        "-NoProfile",
+        "-NonInteractive",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        str(Path(str(bindings["dev2_machine_credential_probe"]["path"])).resolve()),
+        "-CredentialPath",
+        str(Path(str(bindings["dev2_machine_credential"]["path"])).resolve()),
+        "-ExpectedCredentialSha256",
+        str(bindings["dev2_machine_credential"]["sha256"]),
+        "-HelperPath",
+        str(Path(str(bindings["dev2_machine_credential_helper"]["path"])).resolve()),
+        "-ExpectedHelperSha256",
+        str(bindings["dev2_machine_credential_helper"]["sha256"]),
+        "-ReceiptPath",
+        str(expected_receipt.resolve()),
+    ]
+
+
+def _execute_machine_credential_preclaim_probe(
+    pre: Mapping[str, Any],
+) -> dict[str, Any]:
+    paths = _machine_credential_probe_paths(pre)
+    paths["control_root"].mkdir(parents=True, exist_ok=True)
+    for role in ("receipt", "stdout", "stderr"):
+        if paths[role].exists():
+            raise InvalidEvidence(f"refusing stale machine-credential probe {role}")
+    command = machine_credential_probe_command(pre, paths["receipt"])
+    started = utc_now()
+    timed_out = False
+    return_code: int | None = None
+    with paths["stdout"].open("xb") as stdout, paths["stderr"].open("xb") as stderr:
+        try:
+            completed = subprocess.run(
+                command,
+                cwd=str(REPO_ROOT),
+                stdin=subprocess.DEVNULL,
+                stdout=stdout,
+                stderr=stderr,
+                check=False,
+                timeout=CREDENTIAL_PROBE_TIMEOUT_SECONDS,
+            )
+            return_code = int(completed.returncode)
+        except subprocess.TimeoutExpired:
+            timed_out = True
+    return {
+        "status": "COMPLETED_UNVALIDATED",
+        "started_utc": started,
+        "finished_utc": utc_now(),
+        "command_sha256": canonical_sha256(command),
+        "exit_code": return_code,
+        "timed_out": timed_out,
+        "stdout": file_binding(paths["stdout"]),
+        "stderr": file_binding(paths["stderr"]),
+        "receipt": file_binding(paths["receipt"]) if paths["receipt"].is_file() else None,
+    }
+
+
+def validate_machine_credential_preclaim_probe(
+    evidence: Mapping[str, Any],
+    pre: Mapping[str, Any],
+    expected_worker_sid: str,
+    *,
+    now: datetime | None = None,
+    require_fresh: bool = True,
+) -> dict[str, Any]:
+    paths = _machine_credential_probe_paths(pre)
+    expected_evidence_keys = {
+        "status",
+        "started_utc",
+        "finished_utc",
+        "command_sha256",
+        "exit_code",
+        "timed_out",
+        "stdout",
+        "stderr",
+        "receipt",
+    }
+    if set(evidence) != expected_evidence_keys:
+        raise InvalidEvidence("machine-credential probe execution field closure drift")
+    receipt_binding = evidence.get("receipt")
+    stdout_binding = evidence.get("stdout")
+    stderr_binding = evidence.get("stderr")
+    if (
+        evidence.get("status") != "COMPLETED_UNVALIDATED"
+        or evidence.get("exit_code") != 0
+        or evidence.get("timed_out") is not False
+        or evidence.get("command_sha256")
+        != canonical_sha256(machine_credential_probe_command(pre, paths["receipt"]))
+        or not isinstance(receipt_binding, Mapping)
+        or not isinstance(stdout_binding, Mapping)
+        or not isinstance(stderr_binding, Mapping)
+    ):
+        raise InvalidEvidence("same-worker machine-credential preclaim probe did not pass")
+    for binding, expected_path, label in (
+        (receipt_binding, paths["receipt"], "machine-credential probe receipt"),
+        (stdout_binding, paths["stdout"], "machine-credential probe stdout"),
+        (stderr_binding, paths["stderr"], "machine-credential probe stderr"),
+    ):
+        if Path(str(binding.get("path", ""))).resolve() != expected_path.resolve():
+            raise InvalidEvidence(f"{label} path drift")
+        assert_binding(binding, label)
+    if stdout_binding.get("size") != 0 or stderr_binding.get("size") != 0:
+        raise InvalidEvidence("successful machine-credential probe must be silent")
+
+    payload = load_json(paths["receipt"])
+    expected_receipt_keys = {
+        "schema_version",
+        "artifact_type",
+        "status",
+        "created_utc",
+        "worker_principal_sid",
+        "expected_account",
+        "credential_account_sid",
+        "credential_path",
+        "credential_sha256",
+        "helper_path",
+        "helper_sha256",
+        "native_counting_boundary_crossed",
+        "dev2_run_directory_created",
+        "metatester_started",
+    }
+    if set(payload) != expected_receipt_keys:
+        raise InvalidEvidence("machine-credential probe receipt field closure drift")
+    bindings = pre["bindings"]
+    sid_pattern = r"S-[0-9]+(?:-[0-9]+)+"
+    if (
+        type(payload.get("schema_version")) is not int
+        or payload.get("schema_version") != 1
+        or payload.get("artifact_type") != "QM_DEV2_MACHINE_CREDENTIAL_PRECLAIM_PROBE"
+        or payload.get("status") != "PASS"
+        or payload.get("worker_principal_sid") != expected_worker_sid
+        or not re.fullmatch(sid_pattern, str(payload.get("worker_principal_sid", "")))
+        or payload.get("expected_account") != "QMDev2"
+        or not re.fullmatch(sid_pattern, str(payload.get("credential_account_sid", "")))
+        or payload.get("credential_account_sid") == expected_worker_sid
+        or Path(str(payload.get("credential_path", ""))).resolve()
+        != Path(str(bindings["dev2_machine_credential"]["path"])).resolve()
+        or str(payload.get("credential_sha256", "")).lower()
+        != bindings["dev2_machine_credential"]["sha256"]
+        or Path(str(payload.get("helper_path", ""))).resolve()
+        != Path(str(bindings["dev2_machine_credential_helper"]["path"])).resolve()
+        or str(payload.get("helper_sha256", "")).lower()
+        != bindings["dev2_machine_credential_helper"]["sha256"]
+        or payload.get("native_counting_boundary_crossed") is not False
+        or payload.get("dev2_run_directory_created") is not False
+        or payload.get("metatester_started") is not False
+    ):
+        raise InvalidEvidence("machine-credential probe receipt identity/binding drift")
+    current = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
+    created = parse_utc(str(payload.get("created_utc", "")), "credential probe created_utc")
+    started = parse_utc(str(evidence.get("started_utc", "")), "credential probe started_utc")
+    finished = parse_utc(str(evidence.get("finished_utc", "")), "credential probe finished_utc")
+    if not (started - timedelta(minutes=1) <= created <= finished + timedelta(minutes=1)):
+        raise InvalidEvidence("machine-credential probe receipt timestamp escaped execution")
+    if finished > current + timedelta(minutes=5) or (
+        require_fresh and finished < current - timedelta(minutes=5)
+    ):
+        raise InvalidEvidence("machine-credential probe is not fresh")
+    return {
+        **dict(evidence),
+        "status": "PASS",
+        "receipt_payload_sha256": canonical_sha256(payload),
+    }
+
+
+def validate_bound_machine_credential_preclaim_probe(
+    evidence: Mapping[str, Any],
+    pre: Mapping[str, Any],
+    expected_worker_sid: str,
+    *,
+    now: datetime | None = None,
+    require_fresh: bool = True,
+) -> dict[str, Any]:
+    if set(evidence) != {
+        "status",
+        "started_utc",
+        "finished_utc",
+        "command_sha256",
+        "exit_code",
+        "timed_out",
+        "stdout",
+        "stderr",
+        "receipt",
+        "receipt_payload_sha256",
+    }:
+        raise InvalidEvidence("bound machine-credential preclaim probe field closure drift")
+    unvalidated = dict(evidence)
+    expected_payload_sha256 = str(unvalidated.pop("receipt_payload_sha256", ""))
+    unvalidated["status"] = "COMPLETED_UNVALIDATED"
+    validated = validate_machine_credential_preclaim_probe(
+        unvalidated,
+        pre,
+        expected_worker_sid,
+        now=now,
+        require_fresh=require_fresh,
+    )
+    if (
+        validated != dict(evidence)
+        or expected_payload_sha256 != validated["receipt_payload_sha256"]
+    ):
+        raise InvalidEvidence("bound machine-credential preclaim probe drift")
+    return validated
+
+
 def validate_authorization(
     path: Path,
     pre_sha256: str,
@@ -2539,6 +2770,7 @@ def initial_launch_state(
         "resume_count": 0,
         "active_cell": None,
         "attempt_claim": None,
+        "preclaim_probe": None,
         "outcome_possible_since_utc": None,
         "launches": [],
         "outcome_fence": {
@@ -2571,6 +2803,7 @@ def resume_eligible(state: Mapping[str, Any]) -> bool:
         or state.get("worker_error")
         or state.get("active_cell") is not None
         or state.get("attempt_claim") is not None
+        or state.get("preclaim_probe") is not None
         or state.get("outcome_possible_since_utc") is not None
     ):
         return False
@@ -2602,7 +2835,11 @@ def required_scheduled_task_timeout(pre: Mapping[str, Any]) -> int:
     cells = pre.get("plan", {}).get("cells") if isinstance(pre.get("plan"), Mapping) else None
     if not isinstance(cells, list) or len(cells) != len(WINDOWS):
         raise AuthorizationError("scheduled-task plan cell closure drift")
-    seconds = len(cells) * CELL_CONTROLLER_TIMEOUT_SECONDS + 3600
+    seconds = (
+        CREDENTIAL_PROBE_TIMEOUT_SECONDS
+        + len(cells) * CELL_CONTROLLER_TIMEOUT_SECONDS
+        + 3600
+    )
     if not 60 <= seconds <= MAX_SCHEDULED_TASK_SECONDS:
         raise AuthorizationError("scheduled-task execution limit outside launcher contract")
     return seconds
@@ -2784,6 +3021,11 @@ def _assert_resume_outcome_fence(
         output_root = Path(str(cell["output_root"])).resolve()
         if output_root.exists() and next(output_root.rglob("*"), None) is not None:
             raise AuthorizationError("native worker artifact tree is non-empty; resume is forbidden")
+    probe_paths = _machine_credential_probe_paths(pre)
+    if any(probe_paths[role].exists() for role in ("receipt", "stdout", "stderr")):
+        raise AuthorizationError(
+            "machine-credential preclaim probe artifacts exist; resume is forbidden"
+        )
 
 
 def _refresh_resume_state_after_inspect(
@@ -2982,6 +3224,8 @@ def _parse_dev2_controller_json(text: str) -> dict[str, Any]:
         "lane_contract_sha256",
         "child_sha256",
         "run_smoke_sha256",
+        "machine_credential_sha256",
+        "machine_credential_helper_sha256",
         "agent_port_proof",
         "tester_groups_post_child_sha256",
         "tester_groups_restored_sha256",
@@ -3031,6 +3275,10 @@ def validate_dev2_controller_result(
         "child_sha256": bindings["runner_child"]["sha256"],
         "run_smoke_sha256": bindings["runner_smoke"]["sha256"],
         "cleanup_helper_sha256": bindings["dev2_cleanup_helper"]["sha256"],
+        "machine_credential_sha256": bindings["dev2_machine_credential"]["sha256"],
+        "machine_credential_helper_sha256": bindings[
+            "dev2_machine_credential_helper"
+        ]["sha256"],
     }
     drift = {
         key: (expected, str(result.get(key, "")).lower())
@@ -3158,6 +3406,29 @@ def _worker_run(job_path: Path) -> int:
             state["updated_utc"] = utc_now()
             atomic_json(state_path, state, replace=True)
         return 2
+    probe_execution: dict[str, Any] | None = None
+    try:
+        probe_execution = _execute_machine_credential_preclaim_probe(pre)
+        preclaim_probe = validate_machine_credential_preclaim_probe(
+            probe_execution,
+            pre,
+            str(job["scheduler"]["principal_sid"]),
+        )
+        state["preclaim_probe"] = preclaim_probe
+        state["updated_utc"] = utc_now()
+        atomic_json(state_path, state, replace=True)
+    except (OSError, subprocess.SubprocessError, AuditError, KeyError, TypeError, ValueError) as exc:
+        state["status"] = "INVALID_PREFLIGHT"
+        state["worker_pid"] = None
+        state["preclaim_probe"] = probe_execution
+        state["worker_error"] = {
+            "type": type(exc).__name__,
+            "message": _safe_error_message(exc),
+        }
+        state["updated_utc"] = utc_now()
+        atomic_json(state_path, state, replace=True)
+        return 2
+
     cell_by_id = {str(cell["cell_id"]): cell for cell in pre["plan"]["cells"]}
     try:
         for state_cell in state["cells"]:
@@ -3187,6 +3458,25 @@ def _worker_run(job_path: Path) -> int:
                 "native_root": None,
                 "runner_result": None,
             }
+            if state.get("attempt_claim") is None:
+                state["attempt_claim"] = claim_native_attempt(
+                    pre_path,
+                    pre_sha,
+                    pre,
+                    state_path,
+                    authorization_identity,
+                    preclaim_probe,
+                )
+            else:
+                validate_native_attempt_claim(
+                    state["attempt_claim"],
+                    pre_path,
+                    pre_sha,
+                    pre,
+                    state_path,
+                    authorization_identity,
+                    preclaim_probe,
+                )
             state_cell["status"] = "RUNNING"
             state_cell["attempts"].append(attempt)
             state["active_cell"] = {
@@ -3202,25 +3492,6 @@ def _worker_run(job_path: Path) -> int:
             # This atomic checkpoint precedes subprocess.run.  Once present, no
             # launch/resume path may execute a native cell again.
             atomic_json(state_path, state, replace=True)
-            if state.get("attempt_claim") is None:
-                state["attempt_claim"] = claim_native_attempt(
-                    pre_path,
-                    pre_sha,
-                    pre,
-                    state_path,
-                    authorization_identity,
-                )
-                state["updated_utc"] = utc_now()
-                atomic_json(state_path, state, replace=True)
-            else:
-                validate_native_attempt_claim(
-                    state["attempt_claim"],
-                    pre_path,
-                    pre_sha,
-                    pre,
-                    state_path,
-                    authorization_identity,
-                )
             with stdout_path.open("wb") as stdout, stderr_path.open("wb") as stderr:
                 completed = subprocess.run(
                     command,
@@ -4206,6 +4477,17 @@ def _validate_launch_state(
     }
     if authorization != expected_authorization or state.get("authorization") != authorization:
         raise InvalidEvidence("launch authorization lifecycle drift")
+    preclaim_probe = state.get("preclaim_probe")
+    if not isinstance(preclaim_probe, Mapping):
+        raise InvalidEvidence("launch state same-worker preclaim probe is missing")
+    validated_probe = validate_bound_machine_credential_preclaim_probe(
+        preclaim_probe,
+        pre,
+        str(job["scheduler"]["principal_sid"]),
+        require_fresh=False,
+    )
+    if validated_probe != preclaim_probe:
+        raise InvalidEvidence("launch state same-worker preclaim probe drift")
     attempt_claim = state.get("attempt_claim")
     if not isinstance(attempt_claim, Mapping):
         raise InvalidEvidence("launch state global native-attempt claim is missing")
@@ -4216,6 +4498,7 @@ def _validate_launch_state(
         pre,
         state_path,
         expected_authorization,
+        preclaim_probe,
     )
     if state.get("scheduler") != job.get("scheduler"):
         raise InvalidEvidence("launch scheduler identity drift")
