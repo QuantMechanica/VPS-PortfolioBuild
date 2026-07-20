@@ -258,6 +258,41 @@
     "binding_duplicate_count": 2,
     "diagnostic_smoke_duplicate_count": 1
   },
+  "runtime_snapshot": {
+    "schema_version": 1,
+    "artifact_type": "QM5_20009_RESEARCH_RUNTIME_SNAPSHOT",
+    "manifest_name": "runtime_manifest.json",
+    "detached_sha256_suffix": ".sha256",
+    "repo_directory_name": "repo",
+    "exclusive_per_run": true,
+    "reject_path_escape_or_reparse": true,
+    "postflight_uses_prebound_snapshot_only": true,
+    "repository_files": [
+      {"role": "launcher", "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/run_research_phase.ps1"},
+      {"role": "launcher_support", "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/research_launcher_support.psm1"},
+      {"role": "validator", "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/validate_research_run.py"},
+      {"role": "generator", "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/generate_research_sets.py"},
+      {"role": "report_auditor", "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/audit_mt5_report.py"},
+      {"role": "protocol", "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/docs/research_protocol_v5.json"},
+      {"role": "sets_manifest", "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/sets/manifest.json"},
+      {"role": "sets_manifest_detached", "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/sets/manifest.sha256"},
+      {"role": "selected_set", "path": "{selected_set_repo_relative}"},
+      {"role": "ea_binary", "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/QM5_20009_ict-liquidity-portfolio.ex5"},
+      {"role": "runner_dev1_controller", "path": "framework/scripts/run_dev1_smoke.ps1"},
+      {"role": "runner_dev1_child", "path": "framework/scripts/invoke_dev1_smoke_task.ps1"},
+      {"role": "runner_smoke", "path": "framework/scripts/run_smoke.ps1"},
+      {"role": "runner_dispatch_resolver", "path": "framework/scripts/resolve_backtest_target.py"},
+      {"role": "tester_defaults", "path": "framework/registry/tester_defaults.json"},
+      {"role": "tester_groups_canonical", "path": "framework/registry/tester_groups/Darwinex-Live_real.canonical.txt"}
+    ],
+    "external_runtime_artifact_ids": [
+      "terminal_binary",
+      "metatester_binary",
+      "commission_groups_dev1",
+      "news_qmdev1_common_primary",
+      "news_qmdev1_common_secondary"
+    ]
+  },
   "costs": {
     "spread": {
       "status": "RESOLVED",
@@ -385,6 +420,13 @@
       "version": "5.0.0.5833"
     },
     {
+      "id": "metatester_binary",
+      "path": "D:/QM/mt5/DEV1/metatester64.exe",
+      "validation": "NONEMPTY",
+      "version": "5.0.0.5833",
+      "expected_sha256": "d1e991d84243ec913db8c82505ab69eab48babcb2fa6826ab3871b3360abb646"
+    },
+    {
       "id": "provisioning_tick_hash_manifest",
       "path": "D:/QM/reports/dev1/provisioning/20260719/source_destination_sha256.csv",
       "validation": "PROVISIONING_HASH_MANIFEST_ALL_MATCH",
@@ -454,6 +496,12 @@
       "id": "runner_run_smoke",
       "path": "framework/scripts/run_smoke.ps1",
       "validation": "NONEMPTY"
+    },
+    {
+      "id": "runner_resolve_backtest_target",
+      "path": "framework/scripts/resolve_backtest_target.py",
+      "validation": "NONEMPTY",
+      "expected_sha256": "a1a6d0e0b40176c31cc330b5ee9b6f9c2ebeb36e599c8acb607da608debc9990"
     },
     {
       "id": "runner_run_dev1_smoke",

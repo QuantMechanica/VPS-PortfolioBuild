@@ -529,6 +529,44 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
     if protocol.get("research_launcher") != expected_launcher:
         raise FreezeError("research launcher evidence contract drifted")
 
+    expected_runtime_snapshot = {
+        "schema_version": 1,
+        "artifact_type": "QM5_20009_RESEARCH_RUNTIME_SNAPSHOT",
+        "manifest_name": "runtime_manifest.json",
+        "detached_sha256_suffix": ".sha256",
+        "repo_directory_name": "repo",
+        "exclusive_per_run": True,
+        "reject_path_escape_or_reparse": True,
+        "postflight_uses_prebound_snapshot_only": True,
+        "repository_files": [
+            {"role": "launcher", "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/run_research_phase.ps1"},
+            {"role": "launcher_support", "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/research_launcher_support.psm1"},
+            {"role": "validator", "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/validate_research_run.py"},
+            {"role": "generator", "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/generate_research_sets.py"},
+            {"role": "report_auditor", "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/tools/audit_mt5_report.py"},
+            {"role": "protocol", "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/docs/research_protocol_v5.json"},
+            {"role": "sets_manifest", "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/sets/manifest.json"},
+            {"role": "sets_manifest_detached", "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/sets/manifest.sha256"},
+            {"role": "selected_set", "path": "{selected_set_repo_relative}"},
+            {"role": "ea_binary", "path": "framework/EAs/QM5_20009_ict-liquidity-portfolio/QM5_20009_ict-liquidity-portfolio.ex5"},
+            {"role": "runner_dev1_controller", "path": "framework/scripts/run_dev1_smoke.ps1"},
+            {"role": "runner_dev1_child", "path": "framework/scripts/invoke_dev1_smoke_task.ps1"},
+            {"role": "runner_smoke", "path": "framework/scripts/run_smoke.ps1"},
+            {"role": "runner_dispatch_resolver", "path": "framework/scripts/resolve_backtest_target.py"},
+            {"role": "tester_defaults", "path": "framework/registry/tester_defaults.json"},
+            {"role": "tester_groups_canonical", "path": "framework/registry/tester_groups/Darwinex-Live_real.canonical.txt"},
+        ],
+        "external_runtime_artifact_ids": [
+            "terminal_binary",
+            "metatester_binary",
+            "commission_groups_dev1",
+            "news_qmdev1_common_primary",
+            "news_qmdev1_common_secondary",
+        ],
+    }
+    if protocol.get("runtime_snapshot") != expected_runtime_snapshot:
+        raise FreezeError("immutable per-run runtime snapshot contract drifted")
+
     unlock = protocol.get("phase_unlock")
     if not isinstance(unlock, Mapping):
         raise FreezeError("phase unlock policy is missing")
@@ -681,6 +719,8 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
         "compile_evidence",
         "compiler_log",
         "compiler_binary",
+        "terminal_binary",
+        "metatester_binary",
         "compile_include_path_audit",
         "provisioning_tick_hash_manifest",
         "news_shared_primary",
@@ -696,6 +736,7 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
         "commission_groups_dev1",
         "registry_execution_contract",
         "runner_run_smoke",
+        "runner_resolve_backtest_target",
         "runner_run_dev1_smoke",
         "runner_invoke_dev1_smoke_task",
         "report_cost_auditor",
