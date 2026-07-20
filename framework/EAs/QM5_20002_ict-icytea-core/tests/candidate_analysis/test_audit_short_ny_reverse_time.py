@@ -24,12 +24,18 @@ sys.modules[SPEC.name] = subject
 SPEC.loader.exec_module(subject)
 
 
-def test_contract_v2_binds_both_news_inputs_and_fill_invalid_gate() -> None:
+def test_contract_v3_binds_source_corrections_news_and_fill_invalid_gate() -> None:
     contract = subject.load_contract()
     assert contract["schema_version"] == 2
-    assert contract["contract_revision"] == 2
+    assert contract["contract_revision"] == 3
     assert len(contract["data_bindings"]["news_calendars"]) == 2
     assert contract["execution_integrity_gates"]["violation_disposition"] == "INVALID"
+    assert contract["revision_3_causal_semantics"][
+        "pre_sweep_fvg_may_satisfy_displacement"
+    ] is False
+    assert contract["revision_3_calendar_and_runtime_safety"][
+        "broker_d1_levels_forbidden"
+    ] is True
 
 
 def test_four_cell_plan_is_exact_and_model4() -> None:

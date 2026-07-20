@@ -1,7 +1,7 @@
 ; QM5_20002 preregistered short-NY reverse-time candidate
 ; analysis_id=QM5_20002_SHORT_NY_REVERSE_TIME_SCREEN_001
-; contract_commit=6fbdaa0817324375ad25163194fbb9e6d6f50f9b
-; contract_sha256=3186d8294e73c3777d5447738aaeb5e2839c8b7768faf41b788cba8722514164
+; contract_commit=d902b04932c340dd1212b9420077d7cec6b0d80d
+; contract_sha256=6ee74c60a823fe87b03b40a2737ba67d113b2e52e7c09a05f42ba2084e17fefa
 ; arm=A_SHORT_NY_NO_HTF
 ; symbol=GBPUSD.DWX
 ; window=2017-10-01..2021-12-31
