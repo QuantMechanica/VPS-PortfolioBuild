@@ -45,6 +45,7 @@
     "repair_scope": "Restore the one canonical logical-basket setfile and remove the two misleading standalone-leg setfiles."
   },
   "repair": {
+    "factory_artifact_commit": "306129f1073e9cad1903a27a12525e7a2c7149f5",
     "mq5_changed": false,
     "mq5_sha256": "8F7A41CC4B8CDB86A5E88FB8CA52FDC3C9CEDB038E1FCCF73E11B41EE53813F0",
     "compile": {
