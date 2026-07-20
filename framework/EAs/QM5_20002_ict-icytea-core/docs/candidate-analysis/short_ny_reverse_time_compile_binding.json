@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "artifact_type": "QM5_20002_SHORT_NY_COMPILE_BINDING",
+  "analysis_id": "QM5_20002_SHORT_NY_REVERSE_TIME_SCREEN_001",
+  "research_status": "CARD_INTAKE_NOT_APPROVED",
+  "approval_claim": "NONE_RESEARCH_CANDIDATE_ONLY",
+  "release_state": "RESEARCH_CANDIDATE_CARD_INTAKE_NOT_APPROVED",
+  "next_permitted_stage": "OUTCOME_BLIND_PRE_ONLY",
+  "contract": {
+    "path": "framework/EAs/QM5_20002_ict-icytea-core/docs/candidate-analysis/short_ny_reverse_time_contract.json",
+    "git_commit": "d902b04932c340dd1212b9420077d7cec6b0d80d",
+    "sha256": "6ee74c60a823fe87b03b40a2737ba67d113b2e52e7c09a05f42ba2084e17fefa"
+  },
+  "source": {
+    "path": "framework/EAs/QM5_20002_ict-icytea-core/QM5_20002_ict-icytea-core.mq5",
+    "git_commit": "3f1039f0eeb56ee882b5c3451eed3ee71567d6bc",
+    "bytes": 76927,
+    "sha256": "3fd49f2cea7575e659f1b1cf9c24c752a4a8e11db5e0c17cae69629a6f207f83"
+  },
+  "compiled_binary": {
+    "path": "framework/EAs/QM5_20002_ict-icytea-core/QM5_20002_ict-icytea-core.ex5",
+    "git_commit": "2d4e400849bd222aba3294aae6520edcbe478e87",
+    "bytes": 386070,
+    "sha256": "71d1715d1b403ed85e7261ec058b17e88c43ca5f61bb5be5fb81ebde87207a11"
+  },
+  "compile": {
+    "run_id": "20260720T071048Z_57e3c75d3148462ca17152ff57d905d0",
+    "run_root": "D:/QM/reports/dev1/build/compile/20260720T071048Z_57e3c75d3148462ca17152ff57d905d0",
+    "evidence_path": "D:/QM/reports/dev1/build/compile/20260720T071048Z_57e3c75d3148462ca17152ff57d905d0/evidence.json",
+    "evidence_sha256": "8c342e34ca9a23ffe01b0db02ae18e7c3b00e7bfc4b4090ec68b955bd2663064",
+    "build_context_git_head": "fc9b722e2570ce1538619f7f1ba0e0aaff6300d3",
+    "finished_utc": "2026-07-20T07:11:09.5545756Z",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0
+  },
+  "toolchain": {
+    "metaeditor_path": "D:/QM/mt5/DEV1/MetaEditor64.exe",
+    "metaeditor_sha256": "2c0c8e9e5c1239e30e8a908d9205cdb01b9cdfcf876752e43bd7a755cce58ad3",
+    "compile_one_path": "framework/scripts/compile_one.ps1",
+    "compile_one_sha256": "744b9e383019ed185c6fb8a12aaf4dd6171ef03dd1e49c4828ca6e50b5b929b3",
+    "compile_controller_path": "framework/EAs/QM5_20002_ict-icytea-core/tools/candidate_analysis/compile_short_ny_v3.ps1",
+    "compile_controller_git_commit": "fc9b722e2570ce1538619f7f1ba0e0aaff6300d3",
+    "compile_controller_sha256": "2424ec69a239e765b96e187d52de9050218f51b5131766451345300252f99ac7"
+  },
+  "closure_artifacts": {
+    "compile_log_path": "D:/QM/reports/dev1/build/compile/20260720T071048Z_57e3c75d3148462ca17152ff57d905d0/compile_one_build/compile/20260720_071056/QM5_20002_ict-icytea-core.compile.log",
+    "compile_log_sha256": "837e026c39cb464070b4dda2bde35555ba85332ea19eeae283f3699516b3863a",
+    "source_manifest_path": "D:/QM/reports/dev1/build/compile/20260720T071048Z_57e3c75d3148462ca17152ff57d905d0/source_manifest.csv",
+    "source_manifest_sha256": "65aa8bee260e7260ba0705d2bd06c5734b9e35179394105d0a85026b9122cdb7",
+    "include_sync_manifest_path": "D:/QM/reports/dev1/build/compile/20260720T071048Z_57e3c75d3148462ca17152ff57d905d0/include_sync_manifest.csv",
+    "include_sync_manifest_sha256": "f4cb8d41abd5fa7a809200b65e5f809a19d40b1b14016d1fe66fdb71c561e975",
+    "include_sync_rows": 92,
+    "include_path_audit_path": "D:/QM/reports/dev1/build/compile/20260720T071048Z_57e3c75d3148462ca17152ff57d905d0/include_path_audit.csv",
+    "include_path_audit_sha256": "e06f48c5dece7c4f415d4b21480e9666ff0a1710227ed76061d0468a3994d072",
+    "included_paths": 32,
+    "forbidden_include_paths": 0
+  },
+  "cleanup": {
+    "active_dev1_processes_after": 0,
+    "ephemeral_compile_tasks_after": 0
+  },
+  "outcome_fence": {
+    "mt5_terminal_started": false,
+    "metatester_started": false,
+    "native_reports_opened": false,
+    "market_values_parsed": false,
+    "activity": "METAEDITOR_COMPILE_AND_OPAQUE_IDENTITY_VALIDATION_ONLY"
+  }
+}
