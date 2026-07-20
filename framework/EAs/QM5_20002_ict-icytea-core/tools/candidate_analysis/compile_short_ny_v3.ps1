@@ -313,7 +313,6 @@ function Invoke-CompileController {
     $controllerScriptHash = Get-Sha256 $controllerScript
     $compileOneHash = Get-Sha256 $compileOne
     $metaEditorHash = Get-Sha256 $metaEditor
-    if (@(Get-Dev1Processes).Count -ne 0) { throw 'DEV1 is not idle.' }
     if (@(Get-EphemeralCompileTasks).Count -ne 0) { throw 'A prior QM20002 compile task still exists.' }
 
     if ((Get-Service MpsSvc).Status -ne 'Running') { throw 'Firewall service is not running.' }
@@ -356,9 +355,23 @@ function Invoke-CompileController {
     $resultPath = Join-Path $controllerRunRoot 'child_result.json'
     $evidencePath = Join-Path $controllerRunRoot 'evidence.json'
     try {
-        try { $mutexAcquired = $mutex.WaitOne(0) } catch [Threading.AbandonedMutexException] { $mutexAcquired = $true }
-        if (-not $mutexAcquired) { throw 'DEV1 smoke/compile mutex is busy.' }
-        if (@(Get-Dev1Processes).Count -ne 0) { throw 'DEV1 became busy before staging.' }
+        $mutexDeadline = (Get-Date).ToUniversalTime().AddMinutes(30)
+        $nextWaitNotice = [datetime]::MinValue
+        while (-not $mutexAcquired -and (Get-Date).ToUniversalTime() -lt $mutexDeadline) {
+            try { $mutexAcquired = $mutex.WaitOne(2000) } catch [Threading.AbandonedMutexException] { $mutexAcquired = $true }
+            $now = (Get-Date).ToUniversalTime()
+            if (-not $mutexAcquired -and $now -ge $nextWaitNotice) {
+                Write-Output "compile_controller.waiting_for_dev1_mutex=$($now.ToString('o'))"
+                $nextWaitNotice = $now.AddSeconds(30)
+            }
+        }
+        if (-not $mutexAcquired) { throw 'Timed out waiting for the DEV1 smoke/compile mutex.' }
+
+        $settleDeadline = (Get-Date).ToUniversalTime().AddSeconds(30)
+        while (@(Get-Dev1Processes).Count -ne 0 -and (Get-Date).ToUniversalTime() -lt $settleDeadline) {
+            Start-Sleep -Milliseconds 250
+        }
+        if (@(Get-Dev1Processes).Count -ne 0) { throw 'DEV1 remained busy after acquiring its controller mutex.' }
 
         New-Item -ItemType Directory -Path $stageRoot -Force | Out-Null
         Assert-PhysicalPath -Path $controllerRunRoot

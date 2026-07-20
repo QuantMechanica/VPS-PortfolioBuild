@@ -34,6 +34,9 @@ def test_controller_is_fail_closed_and_transactional() -> None:
     for required in (
         "$controllerScript = [IO.Path]::GetFullPath($PSCommandPath)",
         "Global\\QM_DEV1_SMOKE_CONTROLLER",
+        "$mutex.WaitOne(2000)",
+        "Timed out waiting for the DEV1 smoke/compile mutex.",
+        "DEV1 remained busy after acquiring its controller mutex.",
         "if ($mutexAcquired)",
         "@($task.Triggers).Count -ne 0",
         "Compile controller changed during compile.",
