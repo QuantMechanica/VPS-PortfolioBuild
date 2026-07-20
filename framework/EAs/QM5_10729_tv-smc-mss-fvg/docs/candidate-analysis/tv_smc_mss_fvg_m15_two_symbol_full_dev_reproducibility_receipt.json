@@ -59,6 +59,8 @@
   "adverse_trades": 149,
   "failed_gates": 38,
   "verdict": "NO_CONJUNCTIVE_FAMILY_MERIT",
+  "disposition": "STOP",
+  "tuning_authorized": false,
   "future_ohlc_parsed": false,
   "post_result_actions": "NO_TUNING_NO_OPTIMIZATION_NO_SUBSET_SELECTION_NO_OOS_ACCESS_NO_PRODUCTION_CHANGE"
 }
