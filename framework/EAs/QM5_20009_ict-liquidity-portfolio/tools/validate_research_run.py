@@ -14,7 +14,6 @@ import os
 import re
 import stat
 import sys
-import tempfile
 from datetime import date, datetime
 from pathlib import Path, PurePosixPath
 from typing import Any, Mapping
@@ -1298,17 +1297,34 @@ def _selected_data_rows(
 def rehash_selected_data(
     protocol: Mapping[str, Any], rows: list[Mapping[str, Any]]
 ) -> list[dict[str, Any]]:
-    root = freeze._artifact_path(str(protocol["model4_data"]["destination_root"]))
+    root = Path(
+        os.path.abspath(
+            freeze._artifact_path(str(protocol["model4_data"]["destination_root"]))
+        )
+    )
+    _assert_no_reparse_components(root, "selected Model-4 data root")
     actual_rows: list[dict[str, Any]] = []
     for expected in rows:
-        relative = str(expected["relative_path"])
-        path = root / Path(relative)
-        if not path.is_file() or path.stat().st_size != int(expected["size"]):
+        if set(expected) != {"relative_path", "size", "sha256"}:
+            raise FenceError("selected Model-4 row schema drift")
+        relative = _canonical_repo_relative(
+            expected["relative_path"], "selected Model-4 relative path"
+        )
+        size = expected["size"]
+        if isinstance(size, bool) or not isinstance(size, int) or size <= 0:
+            raise FenceError("selected Model-4 size is invalid")
+        expected_sha = _require_sha256(
+            expected["sha256"], "selected Model-4 sha256"
+        )
+        path = _inside_path(root, relative, "selected Model-4 path")
+        actual = _regular_file_binding(path, "selected Model-4 file")
+        if actual["size_bytes"] != size:
             raise FenceError(f"selected Model-4 file missing/size drift: {path}")
-        digest = freeze.sha256_file(path)
-        if digest != expected["sha256"]:
+        if actual["sha256"] != expected_sha:
             raise FenceError(f"selected Model-4 file hash drift: {path}")
-        actual_rows.append({"relative_path": relative, "size": path.stat().st_size, "sha256": digest})
+        actual_rows.append(
+            {"relative_path": relative, "size": size, "sha256": expected_sha}
+        )
     return actual_rows
 
 
@@ -1320,6 +1336,9 @@ def preflight(
     set_file: Path,
     from_date: str,
     to_date: str,
+    run_id: str | None = None,
+    snapshot_root: Path | None = None,
+    powershell_path: Path | None = None,
 ) -> dict[str, Any]:
     try:
         issues = freeze.check()
@@ -1327,7 +1346,9 @@ def preflight(
         raise FenceError(str(exc)) from exc
     if issues:
         raise FenceError(f"freeze bundle drift: {issues[0]}")
-    if set_file.resolve().parent != freeze.SETS_ROOT.resolve():
+    set_file = set_file.resolve(strict=True)
+    _assert_no_reparse_components(set_file, "selected frozen set")
+    if set_file.parent != freeze.SETS_ROOT.resolve(strict=True):
         raise FenceError("set file must come from the frozen sets directory")
     metadata = parse_set_metadata(set_file)
     protocol = freeze.load_protocol()
@@ -1335,7 +1356,7 @@ def preflight(
         raise FenceError("CLI symbol/timeframe does not match frozen set header")
     manifest_path = freeze.SETS_ROOT / "manifest.json"
     manifest_bytes = manifest_path.read_bytes()
-    manifest = json.loads(manifest_bytes)
+    manifest = _strict_canonical_json(manifest_bytes, "freeze sets manifest")
     manifest_sha256 = hashlib.sha256(manifest_bytes).hexdigest()
     validate_request(
         protocol,
@@ -1360,21 +1381,218 @@ def preflight(
         raise FenceError("selected set is not uniquely hash-bound in manifest")
     selected = _selected_data_rows(protocol, manifest, symbol, from_date, to_date)
     actual_data = rehash_selected_data(protocol, selected)
-    return {
+    request = {
+        "phase": phase_id,
+        "symbol": symbol,
+        "timeframe": timeframe,
+        "variant": metadata["variant"],
+        "from": from_date,
+        "to": to_date,
+    }
+    result: dict[str, Any] = {
         "schema_version": 1,
-        "request": {
-            "phase": phase_id,
-            "symbol": symbol,
-            "timeframe": timeframe,
-            "variant": metadata["variant"],
-            "from": from_date,
-            "to": to_date,
-        },
+        "request": request,
         "freeze_inputs_sha256": manifest["freeze_inputs_sha256"],
         "manifest_sha256": manifest_sha256,
         "set_sha256": set_digest,
+        "selected_data": actual_data,
         "selected_data_sha256": freeze.sha256_bytes(freeze.canonical_json_bytes(actual_data)),
         "phase_unlock_records": unlock_records,
+    }
+    snapshot_arguments = (run_id, snapshot_root, powershell_path)
+    if any(item is not None for item in snapshot_arguments):
+        if any(item is None for item in snapshot_arguments):
+            raise FenceError("run_id, snapshot_root and powershell_path are an atomic PRE contract")
+        assert run_id is not None and snapshot_root is not None and powershell_path is not None
+        freeze_identity = {
+            "freeze_inputs_sha256": str(manifest["freeze_inputs_sha256"]),
+            "manifest_sha256": manifest_sha256,
+        }
+        external_runtime = _external_runtime_rows(
+            protocol, manifest, powershell_path=powershell_path
+        )
+        selected_relative = set_file.relative_to(
+            freeze.REPO_ROOT.resolve(strict=True)
+        ).as_posix()
+        specs = _runtime_expected_specs(
+            protocol, manifest, set_file=set_file, manifest_bytes=manifest_bytes
+        )
+        snapshot_contract = _require_mapping(
+            protocol.get("runtime_snapshot"), "runtime_snapshot"
+        )
+        snapshot_binding = create_runtime_snapshot(
+            source_repo_root=freeze.REPO_ROOT,
+            snapshot_root=snapshot_root,
+            run_id=run_id,
+            artifact_type=str(snapshot_contract["artifact_type"]),
+            freeze_identity=freeze_identity,
+            request=request,
+            selected_set_repo_relative=selected_relative,
+            file_specs=specs,
+        )
+        result.update(
+            {
+                "artifact_type": "QM5_20009_RESEARCH_VALIDATOR_PRE_RECEIPT",
+                "status": "PASS",
+                "run_id": run_id,
+                "external_runtime": external_runtime,
+                "runtime_snapshot": snapshot_binding,
+            }
+        )
+    return result
+
+
+def postflight(
+    *,
+    phase_id: str,
+    symbol: str,
+    timeframe: str,
+    set_file: Path,
+    from_date: str,
+    to_date: str,
+    run_id: str,
+    preflight_receipt: Path,
+    preflight_receipt_sha256: str,
+    powershell_path: Path,
+) -> dict[str, Any]:
+    expected_pre_sha = _require_sha256(
+        preflight_receipt_sha256, "PRE receipt sha256"
+    )
+    pre_path = Path(os.path.abspath(preflight_receipt))
+    if pre_path.parent.name != run_id:
+        raise FenceError("PRE receipt directory is not bound to run_id")
+    pre, pre_raw = _read_canonical_detached(pre_path, "PRE validator receipt")
+    if hashlib.sha256(pre_raw).hexdigest() != expected_pre_sha:
+        raise FenceError("PRE validator receipt identity drift")
+    _require_exact_keys(pre, PRE_RECEIPT_FIELDS, "PRE validator receipt")
+    if (
+        pre["schema_version"] != 1
+        or pre["artifact_type"] != "QM5_20009_RESEARCH_VALIDATOR_PRE_RECEIPT"
+        or pre["status"] != "PASS"
+        or pre["run_id"] != run_id
+    ):
+        raise FenceError("PRE validator receipt status/run identity drift")
+    request = {
+        "phase": phase_id,
+        "symbol": symbol,
+        "timeframe": timeframe,
+        "variant": pre["request"].get("variant")
+        if isinstance(pre.get("request"), Mapping)
+        else None,
+        "from": from_date,
+        "to": to_date,
+    }
+    if pre["request"] != request:
+        raise FenceError("POST request differs from PRE-bound request")
+    binding = _require_mapping(pre["runtime_snapshot"], "runtime snapshot binding")
+    expected_snapshot_root = pre_path.parent / "runtime_snapshot"
+    snapshot_repo = Path(str(binding.get("repo_root", "")))
+    if not _same_path(snapshot_repo, freeze.REPO_ROOT):
+        raise FenceError("POST validator was not invoked from the PRE-bound snapshot")
+    selected_relative = _canonical_repo_relative(
+        binding.get("selected_set_repo_relative"), "selected set repository path"
+    )
+    protocol = freeze.load_protocol()
+    snapshot_contract = _require_mapping(
+        protocol.get("runtime_snapshot"), "runtime_snapshot"
+    )
+    expected_files = _runtime_contract_files(protocol, selected_relative)
+    freeze_identity = {
+        "freeze_inputs_sha256": pre["freeze_inputs_sha256"],
+        "manifest_sha256": pre["manifest_sha256"],
+    }
+    snapshot_manifest = verify_runtime_snapshot(
+        binding,
+        expected_snapshot_root=expected_snapshot_root,
+        run_id=run_id,
+        artifact_type=str(snapshot_contract["artifact_type"]),
+        freeze_identity=freeze_identity,
+        request=request,
+        expected_files=expected_files,
+    )
+    del snapshot_manifest
+    role_bindings = _require_mapping(binding["role_bindings"], "runtime role bindings")
+    validator_role = _require_mapping(role_bindings["validator"], "validator role")
+    if not _same_path(Path(str(validator_role["path"])), Path(__file__)):
+        raise FenceError("executing validator is not the PRE-bound snapshot validator")
+    selected_role = _require_mapping(role_bindings["selected_set"], "selected set role")
+    if not _same_path(set_file, Path(str(selected_role["path"]))):
+        raise FenceError("POST set path is not the PRE-bound snapshot set")
+    if selected_role["sha256"] != pre["set_sha256"]:
+        raise FenceError("PRE-bound set identity differs from snapshot set")
+
+    manifest_role = _require_mapping(role_bindings["sets_manifest"], "sets manifest role")
+    detached_role = _require_mapping(
+        role_bindings["sets_manifest_detached"], "sets manifest detached role"
+    )
+    frozen_manifest_path = Path(str(manifest_role["path"]))
+    frozen_manifest_raw = frozen_manifest_path.read_bytes()
+    if hashlib.sha256(frozen_manifest_raw).hexdigest() != pre["manifest_sha256"]:
+        raise FenceError("snapshot sets manifest differs from PRE identity")
+    _read_exact_detached(
+        frozen_manifest_path,
+        Path(str(detached_role["path"])),
+        artifact_raw=frozen_manifest_raw,
+        context="snapshot sets manifest",
+    )
+    frozen_manifest = _strict_canonical_json(
+        frozen_manifest_raw, "snapshot sets manifest"
+    )
+    if frozen_manifest.get("freeze_inputs_sha256") != pre["freeze_inputs_sha256"]:
+        raise FenceError("snapshot freeze root differs from PRE identity")
+    validate_request(
+        protocol,
+        phase_id=phase_id,
+        symbol=symbol,
+        timeframe=timeframe,
+        variant=str(request["variant"]),
+        from_date=from_date,
+        to_date=to_date,
+    )
+    expected_selected = _selected_data_rows(
+        protocol, frozen_manifest, symbol, from_date, to_date
+    )
+    if pre["selected_data"] != expected_selected:
+        raise FenceError("PRE selected-data rows differ from snapshot manifest")
+    actual_selected = rehash_selected_data(protocol, expected_selected)
+    selected_sha = freeze.sha256_bytes(freeze.canonical_json_bytes(actual_selected))
+    if selected_sha != pre["selected_data_sha256"]:
+        raise FenceError("selected Model-4 data identity drift after PRE")
+    _verify_external_runtime(
+        pre["external_runtime"],
+        protocol,
+        frozen_manifest,
+        powershell_path=powershell_path,
+    )
+    binary_role = _require_mapping(role_bindings["ea_binary"], "EA binary role")
+    evidence_rows = _require_mapping(
+        frozen_manifest.get("freeze_inputs"), "freeze inputs"
+    ).get("evidence_artifacts")
+    binary_expected = [
+        row
+        for row in evidence_rows
+        if isinstance(row, Mapping) and row.get("id") == "ea_binary_repo"
+    ]
+    if len(binary_expected) != 1 or binary_role["sha256"] != binary_expected[0].get(
+        "sha256"
+    ):
+        raise FenceError("snapshot EA binary differs from frozen binary identity")
+    return {
+        "schema_version": 1,
+        "artifact_type": "QM5_20009_RESEARCH_VALIDATOR_POST_RECEIPT",
+        "status": "PASS",
+        "run_id": run_id,
+        "request": request,
+        "preflight_receipt_sha256": expected_pre_sha,
+        "freeze_inputs_sha256": pre["freeze_inputs_sha256"],
+        "manifest_sha256": pre["manifest_sha256"],
+        "set_sha256": pre["set_sha256"],
+        "selected_data_sha256": selected_sha,
+        "phase_unlock_records": pre["phase_unlock_records"],
+        "runtime_snapshot_manifest_sha256": binding["manifest_sha256"],
+        "external_runtime_sha256": _canonical_payload_sha256(
+            pre["external_runtime"]
+        ),
     }
 
 
@@ -1386,26 +1604,62 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--set-file", required=True, type=Path)
     parser.add_argument("--from", dest="from_date", required=True)
     parser.add_argument("--to", dest="to_date", required=True)
-    receipts = parser.add_mutually_exclusive_group()
-    receipts.add_argument("--receipt", type=Path)
-    receipts.add_argument("--postflight-receipt", type=Path)
+    parser.add_argument("--run-id")
+    parser.add_argument("--powershell-path", type=Path)
+    parser.add_argument("--receipt", type=Path)
+    parser.add_argument("--postflight-receipt", type=Path)
+    parser.add_argument("--preflight-receipt-sha256")
     args = parser.parse_args(argv)
     try:
-        result = preflight(
-            phase_id=args.phase,
-            symbol=args.symbol,
-            timeframe=args.timeframe,
-            set_file=args.set_file,
-            from_date=args.from_date,
-            to_date=args.to_date,
-        )
         if args.postflight_receipt:
-            previous = json.loads(args.postflight_receipt.read_text(encoding="utf-8"))
-            if previous != result:
-                raise FenceError("postflight evidence differs from preflight receipt")
-        elif args.receipt:
+            if not args.run_id or not args.powershell_path or not args.preflight_receipt_sha256:
+                raise FenceError(
+                    "POST requires run-id, PowerShell path and in-memory PRE receipt hash"
+                )
+            result = postflight(
+                phase_id=args.phase,
+                symbol=args.symbol,
+                timeframe=args.timeframe,
+                set_file=args.set_file,
+                from_date=args.from_date,
+                to_date=args.to_date,
+                run_id=args.run_id,
+                preflight_receipt=args.postflight_receipt,
+                preflight_receipt_sha256=args.preflight_receipt_sha256,
+                powershell_path=args.powershell_path,
+            )
+        else:
+            snapshot_root: Path | None = None
+            if args.receipt:
+                if not args.run_id or not args.powershell_path:
+                    raise FenceError("PRE receipt requires run-id and PowerShell path")
+                receipt_path = Path(os.path.abspath(args.receipt))
+                if receipt_path.parent.name != args.run_id:
+                    raise FenceError("PRE receipt directory is not bound to run_id")
+                snapshot_root = receipt_path.parent / "runtime_snapshot"
+            elif args.run_id or args.powershell_path or args.preflight_receipt_sha256:
+                raise FenceError("snapshot PRE arguments require an output receipt")
+            result = preflight(
+                phase_id=args.phase,
+                symbol=args.symbol,
+                timeframe=args.timeframe,
+                set_file=args.set_file,
+                from_date=args.from_date,
+                to_date=args.to_date,
+                run_id=args.run_id,
+                snapshot_root=snapshot_root,
+                powershell_path=args.powershell_path,
+            )
+        if args.receipt:
             _write_receipt_atomic(args.receipt, result)
-    except (FenceError, OSError, json.JSONDecodeError) as exc:
+    except (
+        FenceError,
+        OSError,
+        json.JSONDecodeError,
+        KeyError,
+        TypeError,
+        ValueError,
+    ) as exc:
         print(f"REJECT: {exc}")
         return 2
     print(json.dumps({"status": "PASS", **result}, sort_keys=True))

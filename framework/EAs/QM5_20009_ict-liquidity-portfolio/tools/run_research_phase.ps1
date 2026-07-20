@@ -49,16 +49,7 @@ $protocolPath = Join-Path $eaRoot 'docs\research_protocol_v5.json'
 # Binding OOS unlock stays fail-closed until the separately owned v5 adjudicator
 # verdict schema is integrated into validate_research_run.py; no legacy verdict
 # fields are synthesized by this launcher.
-$generatorPath = Join-Path $toolsRoot 'generate_research_sets.py'
 $validatorPath = Join-Path $toolsRoot 'validate_research_run.py'
-$auditPath = Join-Path $toolsRoot 'audit_mt5_report.py'
-$runDev1Path = Join-Path $repoRoot 'framework\scripts\run_dev1_smoke.ps1'
-$runSmokePath = Join-Path $repoRoot 'framework\scripts\run_smoke.ps1'
-$invokeDev1Path = Join-Path $repoRoot 'framework\scripts\invoke_dev1_smoke_task.ps1'
-$canonicalGroupsPath = Join-Path $repoRoot 'framework\registry\tester_groups\Darwinex-Live_real.canonical.txt'
-$eaBinaryPath = Join-Path $eaRoot 'QM5_20009_ict-liquidity-portfolio.ex5'
-$manifestPath = Join-Path $eaRoot 'sets\manifest.json'
-$manifestShaPath = Join-Path $eaRoot 'sets\manifest.sha256'
 $pythonCommands = @(Get-Command python.exe -All -CommandType Application -ErrorAction Stop)
 if ($pythonCommands.Count -lt 1) { throw 'No Python application is available for the fixed research tools.' }
 $pythonPath = [System.IO.Path]::GetFullPath([string]$pythonCommands[0].Source)
@@ -82,40 +73,16 @@ function ConvertFrom-QmProcessJson {
     }
 }
 
-function Get-QmToolchainBindings {
-    $paths = [ordered]@{
-        launcher = $launcherPath
-        launcher_support = $supportPath
-        protocol = $protocolPath
-        generator = $generatorPath
-        validator = $validatorPath
-        report_auditor = $auditPath
-        selected_set = $setPath
-        sets_manifest = $manifestPath
-        sets_manifest_detached_sha256 = $manifestShaPath
-        runner_dev1_controller = $runDev1Path
-        runner_smoke = $runSmokePath
-        runner_dev1_child = $invokeDev1Path
-        tester_groups_canonical = $canonicalGroupsPath
-        ea_binary = $eaBinaryPath
-        python = $pythonPath
-        powershell7 = $pwshPath
-    }
-    $bindings = [ordered]@{}
-    foreach ($entry in $paths.GetEnumerator()) {
-        $bindings[$entry.Key] = Get-QmFileBinding -Path ([string]$entry.Value)
-    }
-    return $bindings
-}
-
-function Assert-QmToolchainUnchanged {
+function Get-QmSnapshotRoleBinding {
     param(
-        [Parameter(Mandatory = $true)][System.Collections.IDictionary]$Before,
-        [Parameter(Mandatory = $true)][System.Collections.IDictionary]$After
+        [Parameter(Mandatory = $true)][System.Collections.IDictionary]$RoleBindings,
+        [Parameter(Mandatory = $true)][string]$Role
     )
-    $beforeJson = $Before | ConvertTo-Json -Depth 20 -Compress
-    $afterJson = $After | ConvertTo-Json -Depth 20 -Compress
-    if ($beforeJson -cne $afterJson) { throw 'Research tool/set/protocol/runner chain changed during execution' }
+    if (-not $RoleBindings.Contains($Role) -or
+        $RoleBindings[$Role] -isnot [System.Collections.IDictionary]) {
+        throw "Runtime snapshot is missing role binding: $Role"
+    }
+    return $RoleBindings[$Role]
 }
 
 $contract = Get-QmResearchContract -Phase $Phase -Symbol $Symbol -Timeframe $Timeframe `
@@ -123,7 +90,6 @@ $contract = Get-QmResearchContract -Phase $Phase -Symbol $Symbol -Timeframe $Tim
 $safeSymbol = $Symbol.Replace('.', '_')
 $setName = 'QM5_20009_{0}_{1}_{2}_{3}.set' -f $safeSymbol, $Timeframe, ([string]$contract['kind']), $Variant
 $setPath = Join-Path $eaRoot "sets\$setName"
-$setInputs = Read-QmSetInputs -Path $setPath
 
 $receiptBase = [System.IO.Path]::GetFullPath('D:\QM\reports\dev1\QM5_20009\research_launcher')
 $runId = '{0}_{1}_{2}_{3}_{4}' -f (
@@ -138,13 +104,17 @@ New-Item -ItemType Directory -Path $receiptDirectory -ErrorAction Stop | Out-Nul
 
 $preReceiptPath = Join-Path $receiptDirectory 'validator_pre.json'
 $postReceiptPath = Join-Path $receiptDirectory 'validator_post.json'
+$finalSnapshotReceiptPath = Join-Path $receiptDirectory 'validator_final_snapshot.json'
 $runnerResultPath = Join-Path $receiptDirectory 'runner_result.json'
 $costAuditTemporary = Join-Path $receiptDirectory ('.cost_audit.{0}.tmp' -f [guid]::NewGuid().ToString('N'))
 $costAuditPath = Join-Path $receiptDirectory 'cost_audit.json'
 $finalReceiptPath = Join-Path $receiptDirectory 'research_run_receipt.json'
-$toolchainBefore = $null
 $prePayload = $null
 $postPayload = $null
+$finalSnapshotPayload = $null
+$snapshotBinding = $null
+$snapshotRoleBindings = $null
+$preReceiptSha256 = $null
 $runnerProcess = $null
 $runnerException = $null
 $postException = $null
