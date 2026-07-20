@@ -11,8 +11,9 @@ requires separate follow-up adjudication.
 
 Claude coordination task
 `62b407a5-68fc-4d7a-b700-d10b201db36d` entered `REVIEW` at
-`2026-07-20T06:14:16Z` with verdict: the mapping is verified, has no pipeline
-exposure, and may proceed at the documented quiescent window. Its artifact is
+`2026-07-20T06:14:16Z` with verdict: the mapping is verified, has no active or
+in-flight pipeline exposure, and may proceed at the documented quiescent
+window. Its artifact is
 `C:/QM/repo/docs/ops/evidence/registry_p19_ea_id_rekey_ack_2026-07-20.md`;
 the authoritative task row is in
 `D:/QM/strategy_farm/state/farm_state.sqlite`.

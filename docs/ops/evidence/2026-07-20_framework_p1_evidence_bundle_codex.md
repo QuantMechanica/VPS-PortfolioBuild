@@ -98,7 +98,7 @@ Evidence and result:
 - The hermetic include compile manifest above covers `QM_EquityStream.mqh` via
   `QM_Common.mqh`: PASS, 0 errors / 0 warnings.
 - Combined focused Python suite (H1-H4, Q08, portfolio, P1.9, retirement,
-  priority and health): 113 passed.
+  priority and health): 115 passed.
 
 ## H5 — non-FX tick-value verification only
 
