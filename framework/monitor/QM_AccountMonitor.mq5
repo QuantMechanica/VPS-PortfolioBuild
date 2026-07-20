@@ -176,6 +176,14 @@ string FormatIsoUtc(const datetime t)
    return StringFormat("%04d-%02d-%02dT%02d:%02d:%02dZ", s.year, s.mon, s.day, s.hour, s.min, s.sec);
   }
 
+// panel-only short form: full ISO overflows the 250px dialog (labels don't clip)
+string FormatPanelUtc(const datetime t)
+  {
+   MqlDateTime s;
+   TimeToStruct(t, s);
+   return StringFormat("%02d.%02d %02d:%02d:%02dZ", s.day, s.mon, s.hour, s.min, s.sec);
+  }
+
 string FormatBroker(const datetime t)
   {
    MqlDateTime s;
@@ -557,7 +565,7 @@ void RefreshSnapshotAndPanel()
       g_panel.SetBalance(balance);
       g_panel.SetDaily(daily, daily_trades);
       g_panel.SetPositions(openpos);
-      g_panel.SetExport(g_last_export_utc > 0 ? FormatIsoUtc(g_last_export_utc) : "-");
+      g_panel.SetExport(g_last_export_utc > 0 ? FormatPanelUtc(g_last_export_utc) : "-");
       g_panel.SetStatus(g_status, g_last_write_ok);
      }
   }
