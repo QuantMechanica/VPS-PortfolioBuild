@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "artifact_type": "QM5_10834_INFRA_RETRY_CONTRACT",
+  "status": "AUTHORIZED_ONCE",
+  "created_utc": "2026-07-20T16:46:01.5239831Z",
+  "candidate": {
+    "ea_id": "QM5_10834",
+    "analysis_id": "QM5_10834_TV_NQ_ICT_OB_NATIVE_001",
+    "symbol": "NDX.DWX",
+    "timeframe": "M5",
+    "model": 4
+  },
+  "prior_attempt": {
+    "terminal": "T1",
+    "run_root": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\NDX_ICT_OB_FULL_DEV_001",
+    "pre_receipt_sha256": "78d7d2d3fe45665d79a794adc60a4a4e57e747584236f24622b8ed2cbbeb1172",
+    "launch_state_sha256": "7bfbfc9da034fc930870817b138d92f8339c1b336fff2c0f852899b3fd58ef95",
+    "terminal_status": "INVALID_TERMINAL",
+    "reason_classes": [
+      "BARS_ZERO",
+      "INCOMPLETE_RUNS",
+      "HISTORY_SYNCHRONIZATION_ERROR"
+    ],
+    "completed_cells": 0,
+    "strategy_outcomes_read": false,
+    "strategy_merit_adjudicated": false
+  },
+  "retry": {
+    "execution_lane": "DEV2",
+    "maximum_alternate_attempts": 1,
+    "prior_alternate_attempts": 0,
+    "same_ea_binary_required": true,
+    "same_set_required": true,
+    "same_symbol_required": true,
+    "same_dates_required": true,
+    "same_model4_required": true,
+    "same_duplicate_count_required": true,
+    "same_merit_gates_required": true,
+    "same_cost_schedule_required": true,
+    "parameter_tuning_forbidden": true,
+    "terminal_hopping_after_dev2_forbidden": true
+  },
+  "classification": "OUTCOME_BLIND_INFRASTRUCTURE_RETRY_ONLY"
+}

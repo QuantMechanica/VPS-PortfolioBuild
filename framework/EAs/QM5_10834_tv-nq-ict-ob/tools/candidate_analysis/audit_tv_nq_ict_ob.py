@@ -3,7 +3,7 @@
 
 The command has three deliberately separate trust domains:
 
-* ``freeze-data`` hashes the exact T1 ``NDX.DWX`` research corpus and the Factory
+* ``freeze-data`` hashes the exact isolated DEV2 ``NDX.DWX`` research corpus and the Factory
   namespace/rebuild authorities without opening an MT5 report or parsing a market
   outcome.
 * ``pre`` reads only build, configuration, frozen data and runtime bytes.  It
@@ -54,7 +54,7 @@ EA_LABEL = "QM5_10834"
 EXPERT_NAME = "QM5_10834_tv-nq-ict-ob"
 EXPERT_PATH = rf"QM\{EXPERT_NAME}"
 ANALYSIS_ID = "QM5_10834_TV_NQ_ICT_OB_NATIVE_001"
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 MERIT_CONTRACT_VERSION = "QM5_10834_MERIT_V1_20260720"
 
 CARD_PATH = Path(
@@ -81,7 +81,13 @@ SCHEDULED_TASK_HELPER_PATH = (
     EA_ROOT / "tools" / "candidate_analysis" / "run_outcome_fenced_task.ps1"
 )
 PYTHON_PATH = Path(sys.executable).resolve()
-RUNNER_PATH = REPO_ROOT / "framework" / "scripts" / "run_smoke.ps1"
+RUNNER_PATH = REPO_ROOT / "framework" / "scripts" / "run_dev2_smoke.ps1"
+RUNNER_CHILD_PATH = REPO_ROOT / "framework" / "scripts" / "invoke_dev2_smoke_task.ps1"
+RUN_SMOKE_PATH = REPO_ROOT / "framework" / "scripts" / "run_smoke.ps1"
+DEV2_LANE_CONTRACT_PATH = REPO_ROOT / "framework" / "registry" / "dev2_lane_contract.json"
+INFRA_RETRY_CONTRACT_PATH = (
+    EA_ROOT / "docs" / "candidate-analysis" / "infra_retry_contract_20260720.json"
+)
 REPORT_CORE_PATH = (
     REPO_ROOT
     / "framework"
@@ -91,8 +97,11 @@ REPORT_CORE_PATH = (
     / "audit_mt5_report.py"
 )
 REPO_INCLUDE_ROOT = REPO_ROOT / "framework" / "Include"
-TERMINAL_INCLUDE_ROOT = Path(r"D:\QM\mt5\T1\MQL5\Include")
-TERMINAL_DATA_ROOT = Path(r"D:\QM\mt5\T1\Bases\Custom")
+EXECUTION_TERMINAL = "DEV2"
+TERMINAL_ROOT = Path(r"D:\QM\mt5\DEV2")
+TERMINAL_INCLUDE_ROOT = TERMINAL_ROOT / "MQL5" / "Include"
+TERMINAL_DATA_ROOT = TERMINAL_ROOT / "Bases" / "Custom"
+DEV2_RUNS_ROOT = Path(r"D:\QM\reports\dev2\runs")
 POWERSHELL_PATH = Path(r"C:\Program Files\PowerShell\7\pwsh.exe")
 ALLOWED_RUN_ROOT = Path(r"D:\QM\reports\candidate_analysis\QM5_10834")
 
@@ -105,7 +114,7 @@ TIMEFRAME = "M5"
 DUPLICATES = 2
 RUN_TIMEOUT_SECONDS = 28800
 CELL_CONTROLLER_TIMEOUT_SECONDS = (RUN_TIMEOUT_SECONDS * DUPLICATES) + 1800
-LAUNCHER_REVISION = 2
+LAUNCHER_REVISION = 3
 SCHEDULED_TASK_PREFIX = "QM_QM10834_AUDIT_"
 MAX_SCHEDULED_TASK_SECONDS = 777600
 NY_ENTRY_START = time(9, 45)
@@ -117,6 +126,27 @@ RESEARCH_SYMBOL = "NDX.DWX"
 DATA_RECEIPT_ARTIFACT_TYPE = "QM5_10834_BACKTEST_DATA_RECEIPT"
 DATA_COVERAGE_FROM = date(2018, 7, 2)
 DATA_COVERAGE_TO = date(2025, 12, 31)
+PRIOR_INFRA_RUN_ROOT = Path(
+    r"D:\QM\reports\candidate_analysis\QM5_10834\runs\NDX_ICT_OB_FULL_DEV_001"
+)
+PRIOR_INFRA_PRE_SHA256 = "78d7d2d3fe45665d79a794adc60a4a4e57e747584236f24622b8ed2cbbeb1172"
+PRIOR_INFRA_STATE_SHA256 = "7bfbfc9da034fc930870817b138d92f8339c1b336fff2c0f852899b3fd58ef95"
+
+INFRA_RETRY_POLICY: dict[str, Any] = {
+    "execution_lane": EXECUTION_TERMINAL,
+    "maximum_alternate_attempts": 1,
+    "prior_alternate_attempts": 0,
+    "same_ea_binary_required": True,
+    "same_set_required": True,
+    "same_symbol_required": True,
+    "same_dates_required": True,
+    "same_model4_required": True,
+    "same_duplicate_count_required": True,
+    "same_merit_gates_required": True,
+    "same_cost_schedule_required": True,
+    "parameter_tuning_forbidden": True,
+    "terminal_hopping_after_dev2_forbidden": True,
+}
 
 SYMBOL_POLICY: dict[str, str] = {
     RESEARCH_SYMBOL: "FACTORY_DWX_RESEARCH_BACKTEST_SYMBOL",
@@ -139,6 +169,10 @@ REQUIRED_BINDING_ROLES = frozenset(
         "rebuild_done",
         "rebuild_source",
         "runner",
+        "runner_child",
+        "runner_smoke",
+        "dev2_lane_contract",
+        "infra_retry_contract",
         "report_parser",
         "powershell",
         "python",
@@ -719,10 +753,10 @@ def freeze_backtest_data(
         else:
             tick_bytes += int(item["size"])
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "artifact_type": DATA_RECEIPT_ARTIFACT_TYPE,
         "created_utc": utc_now(),
-        "terminal": "T1",
+        "terminal": EXECUTION_TERMINAL,
         "symbol": symbol,
         "coverage": _data_coverage_contract(),
         "store_roots": {
@@ -778,9 +812,9 @@ def validate_backtest_data_receipt(
     if set(receipt) != expected_keys:
         raise InvalidEvidence("backtest-data receipt field closure drift")
     if (
-        receipt.get("schema_version") != 1
+        receipt.get("schema_version") != 2
         or receipt.get("artifact_type") != DATA_RECEIPT_ARTIFACT_TYPE
-        or receipt.get("terminal") != "T1"
+        or receipt.get("terminal") != EXECUTION_TERMINAL
         or receipt.get("symbol") != symbol
     ):
         raise InvalidEvidence("backtest-data receipt identity drift")
@@ -796,7 +830,7 @@ def validate_backtest_data_receipt(
         "ticks": str((root / "ticks" / symbol).resolve()),
     }
     if receipt.get("store_roots") != expected_roots:
-        raise InvalidEvidence("backtest-data receipt T1 store-root drift")
+        raise InvalidEvidence("backtest-data receipt DEV2 store-root drift")
 
     expected_factory_paths = _factory_evidence_paths(evidence_paths)
     factory_evidence = receipt.get("factory_evidence")
@@ -1131,6 +1165,76 @@ def resolve_cost_schedule(path: Path, symbol: str) -> dict[str, Any]:
     }
 
 
+def validate_infra_retry_contract(path: Path = INFRA_RETRY_CONTRACT_PATH) -> dict[str, Any]:
+    payload = load_json(path)
+    expected_keys = {
+        "schema_version",
+        "artifact_type",
+        "status",
+        "created_utc",
+        "candidate",
+        "prior_attempt",
+        "retry",
+        "classification",
+    }
+    if set(payload) != expected_keys:
+        raise InvalidEvidence("infra-retry contract field closure drift")
+    if (
+        payload.get("schema_version") != 1
+        or payload.get("artifact_type") != "QM5_10834_INFRA_RETRY_CONTRACT"
+        or payload.get("status") != "AUTHORIZED_ONCE"
+        or payload.get("classification") != "OUTCOME_BLIND_INFRASTRUCTURE_RETRY_ONLY"
+    ):
+        raise InvalidEvidence("infra-retry contract identity/status drift")
+    created = parse_utc(str(payload.get("created_utc", "")), "infra-retry created_utc")
+    if created > datetime.now(timezone.utc) + timedelta(minutes=5):
+        raise InvalidEvidence("infra-retry contract creation time is implausibly in the future")
+    expected_candidate = {
+        "ea_id": "QM5_10834",
+        "analysis_id": ANALYSIS_ID,
+        "symbol": RESEARCH_SYMBOL,
+        "timeframe": TIMEFRAME,
+        "model": 4,
+    }
+    if payload.get("candidate") != expected_candidate:
+        raise InvalidEvidence("infra-retry candidate identity drift")
+    expected_prior = {
+        "terminal": "T1",
+        "run_root": str(PRIOR_INFRA_RUN_ROOT),
+        "pre_receipt_sha256": PRIOR_INFRA_PRE_SHA256,
+        "launch_state_sha256": PRIOR_INFRA_STATE_SHA256,
+        "terminal_status": "INVALID_TERMINAL",
+        "reason_classes": [
+            "BARS_ZERO",
+            "INCOMPLETE_RUNS",
+            "HISTORY_SYNCHRONIZATION_ERROR",
+        ],
+        "completed_cells": 0,
+        "strategy_outcomes_read": False,
+        "strategy_merit_adjudicated": False,
+    }
+    if payload.get("prior_attempt") != expected_prior:
+        raise InvalidEvidence("infra-retry prior-attempt classification drift")
+    if payload.get("retry") != INFRA_RETRY_POLICY:
+        raise InvalidEvidence("infra-retry one-shot policy drift")
+    file_binding(PRIOR_INFRA_RUN_ROOT / "pre_receipt.json", PRIOR_INFRA_PRE_SHA256)
+    file_binding(PRIOR_INFRA_RUN_ROOT / "launch_state.json", PRIOR_INFRA_STATE_SHA256)
+    return payload
+
+
+def execution_contract() -> dict[str, Any]:
+    return {
+        "terminal": EXECUTION_TERMINAL,
+        "terminal_root": str(TERMINAL_ROOT.resolve()),
+        "terminal_data_root": str(TERMINAL_DATA_ROOT.resolve()),
+        "native_runs_root": str(DEV2_RUNS_ROOT.resolve()),
+        "controller": "ISOLATED_DEV2_SCHEDULED_TASK_LANE",
+        "controller_mutex": "Global\\QM_DEV2_SMOKE_CONTROLLER",
+        "factory_terminal_pool_used": False,
+        "maximum_alternate_attempts": 1,
+    }
+
+
 def build_plan(symbol: str, set_binding: Mapping[str, Any], run_root: Path) -> dict[str, Any]:
     enforce_symbol_policy(symbol)
     validate_window_contract()
@@ -1181,6 +1285,10 @@ def _expected_binding_paths(symbol: str) -> dict[str, Path]:
         "rebuild_done": NDX_REBUILD_DONE_PATH,
         "rebuild_source": NDX_REBUILD_SOURCE_PATH,
         "runner": RUNNER_PATH,
+        "runner_child": RUNNER_CHILD_PATH,
+        "runner_smoke": RUN_SMOKE_PATH,
+        "dev2_lane_contract": DEV2_LANE_CONTRACT_PATH,
+        "infra_retry_contract": INFRA_RETRY_CONTRACT_PATH,
         "report_parser": REPORT_CORE_PATH,
         "powershell": POWERSHELL_PATH,
         "python": PYTHON_PATH,
@@ -1222,6 +1330,9 @@ def preflight(
         raise InvalidEvidence("EA-side simulated commission must be zero for external cost ledger")
     build_receipt = validate_build_receipt(build_receipt_path, symbol, bindings)
     data = validate_backtest_data_receipt(data_receipt_path, symbol)
+    infra_retry = validate_infra_retry_contract()
+    if bindings["infra_retry_contract"] != file_binding(INFRA_RETRY_CONTRACT_PATH):
+        raise InvalidEvidence("PRE infra-retry contract binding drift")
     factory_binding_drift = {
         role: (bindings[role], data["factory_evidence"].get(role))
         for role in DATA_FACTORY_EVIDENCE_ROLES
@@ -1267,6 +1378,8 @@ def preflight(
         "build_commit": build_receipt["build_commit"],
         "backtest_data_receipt": data["receipt"],
         "data": data,
+        "execution_contract": execution_contract(),
+        "infra_retry": infra_retry,
         "effective_inputs": effective_inputs,
         "cost_schedule": cost_schedule,
         "merit_contract": MERIT_GATES,
@@ -1331,6 +1444,13 @@ def assert_pre_receipt(path: Path, expected_sha256: str) -> dict[str, Any]:
         raise InvalidEvidence(f"PRE role/path identity drift: {path_drift}")
     if bindings["tool"]["sha256"] != sha256_file(TOOL_PATH):
         raise InvalidEvidence("executing tool differs from PRE-bound runner")
+    if pre.get("execution_contract") != execution_contract():
+        raise InvalidEvidence("PRE isolated DEV2 execution contract drift")
+    current_retry = validate_infra_retry_contract()
+    if pre.get("infra_retry") != current_retry:
+        raise InvalidEvidence("PRE one-shot infra-retry contract drift")
+    if bindings["infra_retry_contract"] != file_binding(INFRA_RETRY_CONTRACT_PATH):
+        raise InvalidEvidence("PRE infra-retry byte binding drift")
     includes = pre.get("include_closure")
     if not isinstance(includes, list) or not includes:
         raise InvalidEvidence("PRE include closure missing")
@@ -1437,6 +1557,8 @@ def _dot_date(value: str) -> str:
 
 def runner_command(pre: Mapping[str, Any], cell: Mapping[str, Any]) -> list[str]:
     bindings = pre["bindings"]
+    if pre.get("execution_contract") != execution_contract():
+        raise InvalidEvidence("runner command requires the immutable DEV2 execution contract")
     return [
         str(Path(str(bindings["powershell"]["path"])).resolve()),
         "-NoLogo",
@@ -1458,8 +1580,6 @@ def runner_command(pre: Mapping[str, Any], cell: Mapping[str, Any]) -> list[str]
         _dot_date(str(cell["from_date"])),
         "-ToDate",
         _dot_date(str(cell["to_date"])),
-        "-Terminal",
-        "T1",
         "-Expert",
         EXPERT_PATH,
         "-Period",
@@ -1474,14 +1594,6 @@ def runner_command(pre: Mapping[str, Any], cell: Mapping[str, Any]) -> list[str]
         str(RUN_TIMEOUT_SECONDS),
         "-SetFile",
         str(Path(str(cell["set"]["path"])).resolve()),
-        "-ReportRoot",
-        str(Path(str(cell["output_root"])).resolve()),
-        "-DispatchPhase",
-        "CANDIDATE_ANALYSIS",
-        "-DispatchVersion",
-        MERIT_CONTRACT_VERSION,
-        "-DispatchSubGateHash",
-        str(pre["plan"]["plan_sha256"]),
         "-CommissionPerLot",
         "0",
         "-CommissionPerSideNative",
@@ -1938,6 +2050,76 @@ def _safe_error_message(exc: Exception) -> str:
     if isinstance(exc, subprocess.CalledProcessError):
         return f"native controller returned exit code {exc.returncode}"
     return str(exc)
+
+
+def _parse_last_json(text: str) -> dict[str, Any]:
+    decoder = json.JSONDecoder()
+    candidates: list[dict[str, Any]] = []
+    for match in re.finditer(r"\{", text):
+        try:
+            value, _ = decoder.raw_decode(text[match.start() :])
+        except json.JSONDecodeError:
+            continue
+        if isinstance(value, dict):
+            candidates.append(value)
+    if not candidates:
+        raise InvalidEvidence("DEV2 controller stdout contains no JSON result")
+    return candidates[-1]
+
+
+def validate_dev2_controller_result(
+    result: Mapping[str, Any], pre: Mapping[str, Any]
+) -> str:
+    if result.get("success") is not True or result.get("run_smoke_exit_code") != 0:
+        raise InvalidEvidence("DEV2 controller did not return a successful run_smoke result")
+    run_id = str(result.get("run_id", ""))
+    if not re.fullmatch(r"[0-9]{8}T[0-9]{6}Z_[0-9a-f]{32}", run_id):
+        raise InvalidEvidence("DEV2 controller returned a malformed run_id")
+    bindings = pre["bindings"]
+    expected_hashes = {
+        "lane_contract_sha256": bindings["dev2_lane_contract"]["sha256"],
+        "child_sha256": bindings["runner_child"]["sha256"],
+        "run_smoke_sha256": bindings["runner_smoke"]["sha256"],
+    }
+    drift = {
+        key: (expected, str(result.get(key, "")).lower())
+        for key, expected in expected_hashes.items()
+        if str(result.get(key, "")).lower() != expected
+    }
+    if drift:
+        raise InvalidEvidence(f"DEV2 controller runtime binding drift: {drift}")
+    group_hashes = {
+        str(result.get("tester_groups_post_child_sha256", "")).lower(),
+        str(result.get("tester_groups_restored_sha256", "")).lower(),
+    }
+    if len(group_hashes) != 1 or not next(iter(group_hashes), "") or not re.fullmatch(
+        r"[0-9a-f]{64}", next(iter(group_hashes), "")
+    ):
+        raise InvalidEvidence("DEV2 tester-groups restore proof drift")
+    return run_id
+
+
+def _dev2_native_root(run_id: str) -> Path:
+    if not re.fullmatch(r"[0-9]{8}T[0-9]{6}Z_[0-9a-f]{32}", run_id):
+        raise InvalidEvidence("malformed DEV2 run_id")
+    root = (DEV2_RUNS_ROOT / run_id).resolve()
+    if not _is_within(root, DEV2_RUNS_ROOT):
+        raise InvalidEvidence("DEV2 native run root escaped its isolated lane")
+    return root
+
+
+def _find_dev2_summary(run_id: str) -> Path:
+    root = _dev2_native_root(run_id) / "output" / "smoke"
+    summaries = sorted(
+        summary.resolve()
+        for ea_dir in (f"QM5_{EA_ID}", EXPERT_NAME)
+        for summary in (root / ea_dir).glob("*/summary.json")
+    )
+    if len(summaries) != 1:
+        raise InvalidEvidence(
+            f"expected one QM5_10834 DEV2 summary for {run_id}, found {len(summaries)}"
+        )
+    return summaries[0]
 
 
 def _worker_run(job_path: Path) -> int:
