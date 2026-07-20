@@ -85,6 +85,76 @@ function Get-QmSnapshotRoleBinding {
     return $RoleBindings[$Role]
 }
 
+function Assert-QmRuntimeFileBinding {
+    param(
+        [Parameter(Mandatory = $true)][System.Collections.IDictionary]$Binding,
+        [Parameter(Mandatory = $true)][string]$Label,
+        [string]$RequiredRoot
+    )
+    foreach ($field in @('path', 'size_bytes', 'sha256')) {
+        if (-not $Binding.Contains($field)) { throw "$Label binding lacks $field" }
+    }
+    $expectedPath = [System.IO.Path]::GetFullPath([string]$Binding['path'])
+    if (-not [string]::IsNullOrWhiteSpace($RequiredRoot) -and
+        -not (Test-QmPathWithin -Path $expectedPath -Root $RequiredRoot)) {
+        throw "$Label binding escaped required root: $expectedPath"
+    }
+    $actual = Get-QmFileBinding -Path $expectedPath
+    if (-not ([string]$actual['path']).Equals($expectedPath, [System.StringComparison]::OrdinalIgnoreCase) -or
+        [int64]$actual['size'] -ne [int64]$Binding['size_bytes'] -or
+        [string]$actual['sha256'] -cne [string]$Binding['sha256']) {
+        throw "$Label binding drifted after PRE: $expectedPath"
+    }
+}
+
+function Assert-QmPreboundRuntimeClosure {
+    param(
+        [Parameter(Mandatory = $true)][System.Collections.IDictionary]$Snapshot,
+        [Parameter(Mandatory = $true)][System.Collections.IEnumerable]$ExternalRuntime,
+        [Parameter(Mandatory = $true)][string]$SnapshotRepoRoot,
+        [Parameter(Mandatory = $true)][string]$PreReceiptPath,
+        [Parameter(Mandatory = $true)][string]$PreReceiptSha256
+    )
+    if ((Get-QmSha256 -Path $PreReceiptPath) -cne $PreReceiptSha256) {
+        throw 'PRE receipt differs from the launcher in-memory identity'
+    }
+    $roles = $Snapshot['role_bindings']
+    if ($roles -isnot [System.Collections.IDictionary]) {
+        throw 'Runtime snapshot role binding closure is malformed'
+    }
+    foreach ($role in @($roles.Keys)) {
+        $binding = $roles[$role]
+        if ($binding -isnot [System.Collections.IDictionary]) {
+            throw "Runtime snapshot role binding is malformed: $role"
+        }
+        Assert-QmRuntimeFileBinding -Binding $binding -Label "runtime role $role" `
+            -RequiredRoot $SnapshotRepoRoot
+    }
+    $manifestBinding = [ordered]@{
+        path = [string]$Snapshot['manifest_path']
+        size_bytes = [int64]$Snapshot['manifest_size_bytes']
+        sha256 = [string]$Snapshot['manifest_sha256']
+    }
+    Assert-QmRuntimeFileBinding -Binding $manifestBinding -Label 'runtime snapshot manifest'
+    $sidecarPath = [string]$Snapshot['manifest_sidecar_path']
+    if ((Get-QmSha256 -Path $sidecarPath) -cne [string]$Snapshot['manifest_sidecar_sha256']) {
+        throw 'Runtime snapshot manifest sidecar drifted after PRE'
+    }
+    $externalRoles = @{}
+    foreach ($raw in @($ExternalRuntime)) {
+        if ($raw -isnot [System.Collections.IDictionary]) {
+            throw 'External runtime binding is malformed'
+        }
+        $role = [string]$raw['role']
+        if ([string]::IsNullOrWhiteSpace($role) -or $externalRoles.ContainsKey($role)) {
+            throw "External runtime role is empty/duplicated: $role"
+        }
+        $externalRoles[$role] = $true
+        Assert-QmRuntimeFileBinding -Binding $raw -Label "external runtime $role"
+    }
+    if ($externalRoles.Count -ne 7) { throw 'External runtime role closure count drifted' }
+}
+
 $contract = Get-QmResearchContract -Phase $Phase -Symbol $Symbol -Timeframe $Timeframe `
     -Variant $Variant -FromDate $FromDate -ToDate $ToDate -Runs $Runs
 $safeSymbol = $Symbol.Replace('.', '_')
@@ -170,6 +240,9 @@ try {
             throw "Runtime snapshot role escaped/is missing from snapshot repo: $runtimeRole=$runtimePath"
         }
     }
+    Assert-QmPreboundRuntimeClosure -Snapshot $snapshotBinding `
+        -ExternalRuntime $prePayload['external_runtime'] -SnapshotRepoRoot $snapshotRepoRoot `
+        -PreReceiptPath $preReceiptPath -PreReceiptSha256 $preReceiptSha256
     $snapshotValidatorPath = [string](Get-QmSnapshotRoleBinding -RoleBindings $snapshotRoleBindings -Role 'validator')['path']
     $snapshotRunDev1Path = [string](Get-QmSnapshotRoleBinding -RoleBindings $snapshotRoleBindings -Role 'runner_dev1_controller')['path']
     $snapshotRunSmokePath = [string](Get-QmSnapshotRoleBinding -RoleBindings $snapshotRoleBindings -Role 'runner_smoke')['path']
@@ -224,6 +297,9 @@ try {
         # POST runs even if the controller throws or returns non-zero. It verifies
         # the immutable snapshot plus PRE-bound selected data/external runtime only.
         try {
+            Assert-QmPreboundRuntimeClosure -Snapshot $snapshotBinding `
+                -ExternalRuntime $prePayload['external_runtime'] -SnapshotRepoRoot $snapshotRepoRoot `
+                -PreReceiptPath $preReceiptPath -PreReceiptSha256 $preReceiptSha256
             $postProcess = Invoke-QmCapturedProcess -FilePath $pythonPath `
                 -Arguments @($postValidatorArguments + @('--receipt', $postReceiptPath)) `
                 -WorkingDirectory $snapshotRepoRoot
@@ -304,6 +380,9 @@ try {
 
     # The report auditor is also snapshot-resident. Reverify the same PRE-bound
     # closure after it completes so no late snapshot mutation can back a receipt.
+    Assert-QmPreboundRuntimeClosure -Snapshot $snapshotBinding `
+        -ExternalRuntime $prePayload['external_runtime'] -SnapshotRepoRoot $snapshotRepoRoot `
+        -PreReceiptPath $preReceiptPath -PreReceiptSha256 $preReceiptSha256
     $finalSnapshotProcess = Invoke-QmCapturedProcess -FilePath $pythonPath `
         -Arguments @($postValidatorArguments + @('--receipt', $finalSnapshotReceiptPath)) `
         -WorkingDirectory $snapshotRepoRoot

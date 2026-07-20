@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import hashlib
+import shutil
 import sys
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -30,6 +32,17 @@ REQUEST = {
     "from": "2021-01-01",
     "to": "2022-12-31",
 }
+
+
+@pytest.fixture
+def short_root() -> Path:
+    # The exact production repository paths make a snapshot deep enough to hit
+    # legacy Win32 MAX_PATH when nested below pytest's verbose temp directory.
+    path = Path(tempfile.mkdtemp(prefix=".qmrt-", dir=EA_ROOT.parents[2]))
+    try:
+        yield path
+    finally:
+        shutil.rmtree(path)
 
 
 def _binding(path: Path) -> dict[str, object]:
@@ -99,7 +112,7 @@ def _toolchain(
         "freeze_inputs_sha256": FREEZE_IDENTITY["freeze_inputs_sha256"],
         "manifest_sha256": FREEZE_IDENTITY["manifest_sha256"],
         "set_sha256": snapshot["role_bindings"]["selected_set"]["sha256"],
-        "selected_data_sha256": "d" * 64,
+        "selected_data_sha256": adjudicator.evidence_io.canonical_payload_sha256([]),
         "phase_unlock_records": [],
         "runtime_snapshot_manifest_sha256": snapshot["manifest_sha256"],
         "external_runtime_sha256": adjudicator.evidence_io.canonical_payload_sha256(
@@ -117,7 +130,8 @@ def _toolchain(
     )
 
 
-def test_cell_specific_selected_set_does_not_drift_common_toolchain(tmp_path: Path) -> None:
+def test_cell_specific_selected_set_does_not_drift_common_toolchain(short_root: Path) -> None:
+    tmp_path = short_root
     external_root = tmp_path / "external"
     external_root.mkdir()
     external_rows: list[dict[str, object]] = []
@@ -161,7 +175,8 @@ def test_cell_specific_selected_set_does_not_drift_common_toolchain(tmp_path: Pa
     assert first_sha == second_sha
 
 
-def test_adjudicator_rejects_cross_run_snapshot_root(tmp_path: Path) -> None:
+def test_adjudicator_rejects_cross_run_snapshot_root(short_root: Path) -> None:
+    tmp_path = short_root
     external_root = tmp_path / "external"
     external_root.mkdir()
     external_rows: list[dict[str, object]] = []
@@ -184,4 +199,97 @@ def test_adjudicator_rejects_cross_run_snapshot_root(tmp_path: Path) -> None:
             "cross-run.toolchain",
             expected_run_id=run_id,
             expected_snapshot_root=snapshot_root.parent / "other_snapshot",
+        )
+
+
+def test_adjudicator_cross_checks_canonical_pre_and_post_receipts(short_root: Path) -> None:
+    external_root = short_root / "external"
+    external_root.mkdir()
+    external_rows: list[dict[str, object]] = []
+    for role in sorted(adjudicator.EXTERNAL_RUNTIME_ROLES):
+        path = external_root / f"{role}.bin"
+        path.write_bytes(f"external {role}\n".encode("ascii"))
+        external_rows.append({"role": role, **_binding(path)})
+    run_id = "20260720T120003Z_DEV_NDX_center_4444444444444444"
+    toolchain, snapshot_root = _toolchain(
+        short_root,
+        run_id=run_id,
+        selected_name="QM5_20009_NDX_DWX_M1_index_center.set",
+        selected_payload=b"center\n",
+        external_rows=external_rows,
+    )
+    snapshot = toolchain["runtime_snapshot"]
+    assert isinstance(snapshot, dict)
+    selected_sha = snapshot["role_bindings"]["selected_set"]["sha256"]
+    selected_data_sha = adjudicator.evidence_io.canonical_payload_sha256([])
+    pre = {
+        "schema_version": 1,
+        "artifact_type": "QM5_20009_RESEARCH_VALIDATOR_PRE_RECEIPT",
+        "status": "PASS",
+        "run_id": run_id,
+        "request": REQUEST,
+        "freeze_inputs_sha256": FREEZE_IDENTITY["freeze_inputs_sha256"],
+        "manifest_sha256": FREEZE_IDENTITY["manifest_sha256"],
+        "set_sha256": selected_sha,
+        "selected_data": [],
+        "selected_data_sha256": selected_data_sha,
+        "phase_unlock_records": [],
+        "external_runtime": external_rows,
+        "runtime_snapshot": snapshot,
+    }
+    receipt_root = snapshot_root.parent
+    pre_path = receipt_root / "validator_pre.json"
+    pre_raw = adjudicator.evidence_io.canonical_json_bytes(pre)
+    pre_path.write_bytes(pre_raw)
+    pre_sha = hashlib.sha256(pre_raw).hexdigest()
+    Path(f"{pre_path}.sha256").write_bytes(
+        adjudicator.evidence_io.detached_bytes(pre_sha, pre_path.name)
+    )
+
+    post = dict(toolchain["postflight"])
+    post["preflight_receipt_sha256"] = pre_sha
+    toolchain["postflight"] = post
+    toolchain["final_snapshot_verification"] = dict(post)
+    post_path = receipt_root / "validator_post.json"
+    post_raw = adjudicator.evidence_io.canonical_json_bytes(post)
+    post_path.write_bytes(post_raw)
+    post_sha = hashlib.sha256(post_raw).hexdigest()
+    Path(f"{post_path}.sha256").write_bytes(
+        adjudicator.evidence_io.detached_bytes(post_sha, post_path.name)
+    )
+    receipt = {
+        "run_id": run_id,
+        "toolchain": toolchain,
+        "freeze_identity": {
+            **FREEZE_IDENTITY,
+            "set_sha256": selected_sha,
+            "selected_data_sha256": selected_data_sha,
+            "phase_unlock_records": [],
+            "postflight_exact_match": True,
+        },
+    }
+    bindings = {
+        "validator_pre": adjudicator.evidence_io.file_binding(pre_path),
+        "validator_post": adjudicator.evidence_io.file_binding(post_path),
+    }
+    key = adjudicator.CellKey(adjudicator.MARKETS[0], "center")
+
+    adjudicator._validate_nested_validator_receipts(
+        receipt=receipt,
+        key=key,
+        artifact_bindings=bindings,
+    )
+
+    noncanonical = b'{"status":"PASS", "schema_version":1}\n'
+    pre_path.write_bytes(noncanonical)
+    rebound_sha = hashlib.sha256(noncanonical).hexdigest()
+    Path(f"{pre_path}.sha256").write_bytes(
+        adjudicator.evidence_io.detached_bytes(rebound_sha, pre_path.name)
+    )
+    bindings["validator_pre"] = adjudicator.evidence_io.file_binding(pre_path)
+    with pytest.raises(adjudicator.AdjudicationError, match="not canonical JSON"):
+        adjudicator._validate_nested_validator_receipts(
+            receipt=receipt,
+            key=key,
+            artifact_bindings=bindings,
         )

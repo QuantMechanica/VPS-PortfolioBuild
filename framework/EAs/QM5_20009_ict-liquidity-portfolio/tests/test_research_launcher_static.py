@@ -14,6 +14,7 @@ EA_ROOT = Path(__file__).resolve().parents[1]
 TOOLS = EA_ROOT / "tools"
 LAUNCHER = TOOLS / "run_research_phase.ps1"
 SUPPORT = TOOLS / "research_launcher_support.psm1"
+FRAMEWORK_SCRIPTS = EA_ROOT.parents[1] / "scripts"
 PWSh = shutil.which("pwsh")
 ANSI_ESCAPE = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
 
@@ -49,6 +50,9 @@ def test_launcher_has_one_fixed_terminal_entrypoint_and_pre_post_fences() -> Non
     assert "docs\\research_protocol_v5.json" in text
     assert "QM5_20009_RESEARCH_FREEZE_V5" in text
     assert "'runner_dev1_controller'" in text
+    assert "'runner_dispatch_pipeline'" in text
+    assert "'runner_dispatch_gates'" in text
+    assert "$snapshotRoleBindings.Count -ne $requiredSnapshotRoles.Count" in text
     assert "$snapshotRunDev1Path" in text
     assert "terminal64.exe" not in text
     assert "metatester64.exe" not in text
@@ -111,12 +115,24 @@ def test_launcher_retains_and_binds_snapshot_on_pass_or_rejection() -> None:
 
 
 def test_run_smoke_deploys_binary_from_its_own_resolved_repo_root() -> None:
-    run_smoke = (EA_ROOT.parents[1] / "scripts" / "run_smoke.ps1").read_text(
+    run_smoke = (FRAMEWORK_SCRIPTS / "run_smoke.ps1").read_text(
         encoding="utf-8-sig"
     )
     assert 'Join-Path $PSScriptRoot "..\\.."' in run_smoke
     assert 'Join-Path (Join-Path $localRepoRoot "framework\\EAs")' in run_smoke
     assert 'Join-Path "C:\\QM\\repo\\framework\\EAs"' not in run_smoke
+
+
+def test_controller_child_and_smoke_have_no_moving_repo_literal() -> None:
+    for name in ("run_dev1_smoke.ps1", "invoke_dev1_smoke_task.ps1", "run_smoke.ps1"):
+        text = (FRAMEWORK_SCRIPTS / name).read_text(encoding="utf-8-sig")
+        assert r"C:\QM\repo" not in text
+        assert "C:/QM/repo" not in text
+        assert "Join-Path $PSScriptRoot" in text
+    child = (FRAMEWORK_SCRIPTS / "invoke_dev1_smoke_task.ps1").read_text(
+        encoding="utf-8-sig"
+    )
+    assert "$startInfo.WorkingDirectory = ConvertTo-QmFullPath -Path (Join-Path $PSScriptRoot '..\\..')" in child
 
 
 def test_powershell_sources_parse_without_executing_launcher() -> None:
