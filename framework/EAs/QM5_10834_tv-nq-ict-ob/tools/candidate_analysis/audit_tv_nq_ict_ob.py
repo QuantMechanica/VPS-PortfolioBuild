@@ -116,6 +116,9 @@ INFRA_RETRY_CONTRACT_PATH = (
     / "candidate-analysis"
     / "infra_retry_contract_20260720_attempt003.json"
 )
+EXPECTED_INFRA_RETRY_CONTRACT_SHA256 = (
+    "813d562223c1ba6a7c180a9978a346c7c9137367aa5c8632223bb19b11407d42"
+)
 REPORT_CORE_PATH = (
     REPO_ROOT
     / "framework"
@@ -2048,7 +2051,14 @@ def _expected_binding_paths(symbol: str) -> dict[str, Path]:
 def _binding_map(symbol: str) -> dict[str, dict[str, Any]]:
     paths = _expected_binding_paths(symbol)
     return {
-        role: file_binding(path, EXPECTED_PINE_SHA256 if role == "pine" else None)
+        role: file_binding(
+            path,
+            EXPECTED_PINE_SHA256
+            if role == "pine"
+            else EXPECTED_INFRA_RETRY_CONTRACT_SHA256
+            if role == "infra_retry_contract"
+            else None,
+        )
         for role, path in paths.items()
     }
 
@@ -2082,7 +2092,9 @@ def preflight(
     build_receipt = validate_build_receipt(build_receipt_path, symbol, bindings)
     data = validate_backtest_data_receipt(data_receipt_path, symbol)
     infra_retry = validate_infra_retry_contract()
-    if bindings["infra_retry_contract"] != file_binding(INFRA_RETRY_CONTRACT_PATH):
+    if bindings["infra_retry_contract"] != file_binding(
+        INFRA_RETRY_CONTRACT_PATH, EXPECTED_INFRA_RETRY_CONTRACT_SHA256
+    ):
         raise InvalidEvidence("PRE infra-retry contract binding drift")
     factory_binding_drift = {
         role: (bindings[role], data["factory_evidence"].get(role))
@@ -2200,7 +2212,9 @@ def assert_pre_receipt(path: Path, expected_sha256: str) -> dict[str, Any]:
     current_retry = validate_infra_retry_contract()
     if pre.get("infra_retry") != current_retry:
         raise InvalidEvidence("PRE retry-003 infra-retry contract drift")
-    if bindings["infra_retry_contract"] != file_binding(INFRA_RETRY_CONTRACT_PATH):
+    if bindings["infra_retry_contract"] != file_binding(
+        INFRA_RETRY_CONTRACT_PATH, EXPECTED_INFRA_RETRY_CONTRACT_SHA256
+    ):
         raise InvalidEvidence("PRE infra-retry byte binding drift")
     includes = pre.get("include_closure")
     if not isinstance(includes, list) or not includes:
@@ -2488,8 +2502,12 @@ def validate_machine_credential_preclaim_probe(
         if Path(str(binding.get("path", ""))).resolve() != expected_path.resolve():
             raise InvalidEvidence(f"{label} path drift")
         assert_binding(binding, label)
-    if stdout_binding.get("size") != 0 or stderr_binding.get("size") != 0:
-        raise InvalidEvidence("successful machine-credential probe must be silent")
+    stdout_text = paths["stdout"].read_text(encoding="utf-8-sig", errors="replace").strip()
+    if (
+        stdout_text != "PASS QM_DEV2_MACHINE_CREDENTIAL_PRECLAIM_PROBE"
+        or stderr_binding.get("size") != 0
+    ):
+        raise InvalidEvidence("successful machine-credential probe marker/stderr drift")
 
     payload = load_json(paths["receipt"])
     expected_receipt_keys = {

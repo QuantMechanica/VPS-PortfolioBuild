@@ -610,6 +610,7 @@ def test_same_worker_machine_credential_probe_is_exactly_bound_before_claim(
 
     def fake_run(command: list[str], **_kwargs: object) -> SimpleNamespace:
         receipt_path = Path(command[command.index("-ReceiptPath") + 1])
+        _kwargs["stdout"].write(b"PASS QM_DEV2_MACHINE_CREDENTIAL_PRECLAIM_PROBE\n")
         _write_json(
             receipt_path,
             {
