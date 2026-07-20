@@ -73,6 +73,14 @@
     {
       "id": "D11_SPREAD_EVIDENCE_LIMIT",
       "observation": "The venue registry explicitly marks spread parity OPEN. Fixed symbol-specific center/adverse scenarios are bound to a read-only live DXZ snapshot; they are robustness inputs, not a spread certification."
+    },
+    {
+      "id": "D12_ARM_A_DUAL_SWEEP",
+      "observation": "A wide M15 bar can strictly sweep both sides of the prior-20 range. Arm A evaluates the long and short structural paths independently; it does not silently prioritize either direction. The single directional H4/H1 filter can admit at most its matching path."
+    },
+    {
+      "id": "D13_REPORTING_EVENT_TIME",
+      "observation": "Intrabar SL/TP timing is unknowable from M15 OHLC. Conservatively resolved SL/TP exits are stamped at that M15 bar's exclusive end; an exit from a 23:45 bar therefore belongs to the next broker day/year. Open-gap, time-stop, and Friday exits retain the bar-open timestamp."
     }
   ],
   "execution_overlay_shared_by_both_arms": {
@@ -84,6 +92,7 @@
       "short": "At the first post-completion M15 open: bid=open. If zone_bottom <= bid <= zone_top, enter market at bid. If bid < zone_bottom, place sell limit at zone_bottom. If bid > zone_top, void as already traversed."
     },
     "entry_retest": "The first eligible touch consumes the setup. A later gap through the limit fills at the requested limit for conservative price improvement treatment, followed by gap-aware stop processing.",
+    "intrabar_exit_reporting_time": "SL and TP exits resolved only from an M15 range are stamped at that bar's exclusive end. Day/year attribution uses that timestamp, including rollover after a 23:45 bar.",
     "friday_flat": "Close positions at the first M15 open at or after Friday 21:00 broker time; no new Friday setup may survive that boundary.",
     "higher_timeframe_filter_at_arm": {
       "long": "last closed H4 EMA13 > EMA21 > EMA34 and last closed H1 close > EMA21 and EMA13 > EMA21",
@@ -102,6 +111,7 @@
       }
     },
     "same_bar_order": "At an exact time/Friday boundary, flatten at bar open before intrabar ranges. Otherwise apply worse open-gap stop price first, then SL before TP whenever both are reachable. On the entry bar, assume all adverse range after entry; SL precedes TP.",
+    "simultaneous_portfolio_exit_order": "For closed-balance pooled drawdown only, exits with the same timestamp are processed loss-first and then win, with deterministic tie keys. This is conservative and removes alphabetical-symbol ordering dependence. Daily/yearly totals are order-invariant.",
     "sessions_broker_half_open": [
       {"end": "11:00", "name": "LONDON", "start": "08:00"},
       {"end": "16:00", "name": "NEW_YORK", "start": "13:00"}
@@ -116,6 +126,7 @@
     "weekend": "No carry beyond Friday 21:00 broker."
   },
   "external_cost_contract": {
+    "aggregation": "Persist each deal-pair commission as integer USD cents and sum integer cents before rendering USD/R; do not aggregate binary floating-point commission values.",
     "application": "Each entry and exit deal side is rounded independently, half-up, to USD cents; native commission is assumed zero and external cost is subtracted exactly once.",
     "NDX.DWX": "round_cent_half_up(2.75 USD * volume) per deal side",
     "XAUUSD.DWX": "round_cent_half_up(deal_price * 100 oz * volume * 0.000025) per deal side",
@@ -226,6 +237,7 @@
     "framework/Include/QM/QM_NewsFilter.mqh": "14d6a0c57e35e4ddd15c89baf30466fb2ffb904ffa2183a91d24080510bff34e",
     "framework/registry/live_commission.json": "119f795cefce2f819f0c7aae3bddb87affbffa771f596df48d182cf89989e197",
     "framework/registry/venue_cost_model.json": "7dfafe53749e5c45be0cb37568b6e3491c109f546fafaf799f6ea82efdb688d7",
+    "framework/EAs/QM5_10253_tv-ifvg-sweep/docs/candidate-analysis/primary_source_pine_v1.pine": "49fb3755f0f5fffa074e92a5bf8282a6cdae7bad89f3ea95fc75ebe01bbe9cf8",
     "pine_v1_source_utf8": "6f2d7e364d64037382b7cf18f04f8fb971f3534d4b838f73c118eab48e551ce8",
     "tv_ifvg_sweep_primary_source_evidence.json": "5c872f816aeab895d612573e42c0f8857c1b41577e89f27f579b80f33ab083e3",
     "tv_ifvg_sweep_spread_input_snapshot.json": "f350adafa5920d16166c61089b94cf652aa093530822164ecce1f8a49fb0333a"
