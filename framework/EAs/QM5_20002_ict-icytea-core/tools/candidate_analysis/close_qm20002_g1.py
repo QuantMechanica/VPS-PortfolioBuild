@@ -1120,6 +1120,7 @@ def _preliminary_closed_state(
     state: Mapping[str, Any],
     intent_sha256: str,
     intent: Mapping[str, Any],
+    preterminal_probe: Mapping[str, Any],
     preterminal_evidence: Mapping[str, Any],
     *,
     start_race_observed: bool,
@@ -1129,7 +1130,10 @@ def _preliminary_closed_state(
         or preterminal_evidence.get("never_run") is not True
     )
     if (
-        type(start_race_observed) is not bool
+        preterminal_probe.get("evidence") != preterminal_evidence
+        or preterminal_probe.get("operation") != "InspectReadyOrRunning"
+        or not isinstance(preterminal_probe.get("evidence"), Mapping)
+        or type(start_race_observed) is not bool
         or preterminal_evidence.get("state") not in {"Ready", "Running"}
         or observed_start_race != start_race_observed
         or (
@@ -1144,7 +1148,9 @@ def _preliminary_closed_state(
         f"closure_intent_sha256={intent_sha256};"
         f"ready_task_xml_sha256={intent['task']['ready_task_xml_sha256']};"
         f"task_contract_sha256={intent['task']['task_contract_sha256']};"
-        f"preterminal_evidence_sha256={canonical_sha256(preterminal_evidence)};"
+        f"preterminal_probe_payload_b64={canonical_b64(preterminal_probe)};"
+        f"preterminal_probe_sha256={canonical_sha256(preterminal_probe)};"
+        "quiesce_transition_probe_payload_b64=NONE;"
         "quiesce_transition_probe_sha256=NONE;"
         f"task_start_race_observed={'true' if start_race_observed else 'false'}"
     )
@@ -1182,7 +1188,9 @@ def _pending_state_with_quiesce_proof(
         f"closure_intent_sha256={intent_sha256};"
         f"ready_task_xml_sha256={proof['xml']};"
         f"task_contract_sha256={proof['contract']};"
-        f"preterminal_evidence_sha256={proof['preterminal']};"
+        f"preterminal_probe_payload_b64={proof['preterminal_payload']};"
+        f"preterminal_probe_sha256={proof['preterminal']};"
+        f"quiesce_transition_probe_payload_b64={canonical_b64(quiesce_probe)};"
         f"quiesce_transition_probe_sha256={canonical_sha256(quiesce_probe)};"
         f"task_start_race_observed={'true' if combined_race else 'false'}"
     )
@@ -1219,7 +1227,9 @@ def _final_closed_state(
     terminal_error = (
         f"{REASON_CODE};closure_phase=CLOSED;"
         f"closure_intent_sha256={intent_sha256};"
-        f"preterminal_evidence_sha256={pending_proof['preterminal']};"
+        f"preterminal_probe_payload_b64={pending_proof['preterminal_payload']};"
+        f"preterminal_probe_sha256={pending_proof['preterminal']};"
+        f"quiesce_transition_probe_payload_b64={pending_proof['quiesce_payload']};"
         f"quiesce_transition_probe_sha256={pending_proof['quiesce']};"
         f"quiesced_evidence_sha256={quiesced_sha};"
         f"disabled_task_xml_sha256={disabled_xml};"
@@ -1290,9 +1300,50 @@ def _validate_closed_state_historical_chain(
         raise ClosureError("closed state chronology drift")
     proof = _terminal_proof(state, intent_sha256)
     intent_task = intent.get("task")
+    preterminal_probe = decode_canonical_b64(
+        proof["preterminal_payload"], "terminal pre-terminal probe"
+    )
+    if canonical_sha256(preterminal_probe) != proof.get("preterminal"):
+        raise ClosureError("terminal pre-terminal payload/hash drift")
+    preterminal_evidence, preterminal_race = _validate_preterminal_probe(
+        preterminal_probe,
+        contract,
+        expected_helper_sha256=str(
+            chain["bindings"]["closure_task_helper"]["sha256"]
+        ),
+        expected_principal_sid=str(chain["job"]["scheduler"]["principal_sid"]),
+    )
+    quiesce_payload = proof.get("quiesce_payload")
+    quiesce_sha = proof.get("quiesce")
+    quiesce_race = False
+    if (quiesce_payload == "NONE") is not (quiesce_sha == "NONE"):
+        raise ClosureError("terminal quiesce payload/hash absence drift")
+    if quiesce_payload != "NONE":
+        quiesce_probe = decode_canonical_b64(
+            str(quiesce_payload), "terminal quiesce transition probe"
+        )
+        if canonical_sha256(quiesce_probe) != quiesce_sha:
+            raise ClosureError("terminal quiesce payload/hash drift")
+        quiesced_under_lock, quiesce_race = _validate_quiesce_probe(
+            quiesce_probe,
+            contract,
+            expected_helper_sha256=str(
+                chain["bindings"]["closure_task_helper"]["sha256"]
+            ),
+            expected_principal_sid=str(
+                chain["job"]["scheduler"]["principal_sid"]
+            ),
+        )
+        if quiesced_under_lock.get("task_contract_sha256") != proof.get("contract"):
+            raise ClosureError("terminal quiesce task contract drift")
     if (
         not isinstance(intent_task, Mapping)
         or proof.get("contract") != intent_task.get("task_contract_sha256")
+        or preterminal_evidence.get("task_contract_sha256")
+        != intent_task.get("task_contract_sha256")
+        or preterminal_evidence.get("task_xml_sha256")
+        != intent_task.get("ready_task_xml_sha256")
+        or ((preterminal_race or quiesce_race) and proof.get("start_race") != "true")
         or (
             proof.get("phase") == "QUIESCE_PENDING"
             and proof.get("xml") != intent_task.get("ready_task_xml_sha256")
@@ -1973,6 +2024,31 @@ def _validate_final_proof_against_anchor(
         raise ClosureError("quiescence anchor contract differs from intent")
 
 
+def _load_and_validate_final_anchor(
+    contract: ClosureContract,
+    proof: Mapping[str, str],
+    chain: Mapping[str, Any],
+    intent_binding: Mapping[str, Any],
+    intent: Mapping[str, Any],
+    auditor: ModuleType,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    anchor_binding = file_binding(contract.anchor_path, proof.get("anchor"))
+    if canonical_sha256(anchor_binding) != proof.get("anchor_binding"):
+        raise ClosureError("quiescence anchor binding differs from final state")
+    anchor = load_strict_json(contract.anchor_path, "quiescence anchor")
+    _validate_final_proof_against_anchor(
+        contract,
+        proof,
+        anchor_binding,
+        anchor,
+        chain,
+        intent_binding,
+        intent,
+        auditor,
+    )
+    return anchor, anchor_binding
+
+
 def _receipt_payload(
     contract: ClosureContract,
     chain: Mapping[str, Any],
@@ -2247,6 +2323,7 @@ def close_g1(
                     state,
                     intent_sha,
                     intent,
+                    preterminal_probe,
                     preterminal_evidence,
                     start_race_observed=preterminal_start_race,
                 )
@@ -2484,6 +2561,15 @@ def close_g1(
                 chain,
                 auditor,
                 require_final=True,
+            )
+            control_call(contract, "AssertFile", contract.anchor_path)
+            anchor, anchor_binding = _load_and_validate_final_anchor(
+                contract,
+                proof,
+                chain,
+                intent_binding,
+                intent,
+                auditor,
             )
 
     # The exact lock order is released before unregistering the disabled task.
