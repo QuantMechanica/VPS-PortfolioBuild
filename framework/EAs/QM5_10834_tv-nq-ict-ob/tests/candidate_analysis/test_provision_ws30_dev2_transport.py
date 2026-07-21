@@ -141,10 +141,7 @@ def test_happy_path_produces_exact_independent_ordered_98_file_ledger(
     assert receipt["source_file_set_sha256"] == receipt["target_file_set_sha256"]
     assert result["file_set_sha256"] == receipt["source_file_set_sha256"]
 
-    expected_periods = [
-        *(str(year) for year in range(2018, 2026)),
-        *subject.A.B._required_tick_months(),
-    ]
+    expected_periods = [*subject.HISTORY_PERIODS, *subject.TICK_PERIODS]
     assert [row["period"] for row in receipt["files"]] == expected_periods
     assert [row["kind"] for row in receipt["files"][:8]] == ["history"] * 8
     assert [row["kind"] for row in receipt["files"][8:]] == ["ticks"] * 90
@@ -351,6 +348,28 @@ def test_t6_component_is_rejected_even_if_other_fixed_contract_paths_match(
         subject._assert_fixed_contract()
 
     assert not tmp_path.exists() or not any(tmp_path.iterdir())
+
+
+def test_auditor_period_order_drift_is_rejected_independently(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source, target, _evidence = _sandbox(tmp_path, monkeypatch)
+
+    def drifted_expected_files(_symbol: str, root: Path):
+        rows = [
+            (kind, period, root / kind / "WS30.DWX" / f"{period}.{'hcc' if kind == 'history' else 'tkc'}")
+            for kind, period in subject.EXPECTED_FILE_ORDER
+        ]
+        first_kind, _first_period, first_path = rows[0]
+        rows[0] = (first_kind, "2017", first_path)
+        return rows
+
+    monkeypatch.setattr(subject.A, "_expected_data_files", drifted_expected_files)
+    with pytest.raises(subject.ProvisionError, match="file order drift"):
+        subject._assert_fixed_contract()
+
+    assert source.is_dir()
+    assert target.is_dir()
 
 
 @pytest.mark.parametrize(

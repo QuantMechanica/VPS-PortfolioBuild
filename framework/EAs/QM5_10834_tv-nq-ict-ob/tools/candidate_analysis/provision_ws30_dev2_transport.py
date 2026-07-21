@@ -19,7 +19,6 @@ import hashlib
 import importlib.util
 import json
 import os
-import re
 import stat
 import sys
 import uuid
@@ -51,6 +50,27 @@ EVIDENCE_ROOT = Path(
 MANIFEST_PATH = EVIDENCE_ROOT / "provision_manifest.json"
 RECEIPT_PATH = EVIDENCE_ROOT / "provision_receipt.json"
 COPY_CHUNK_BYTES = 4 * 1024 * 1024
+HISTORY_PERIODS = tuple(str(year) for year in range(2018, 2026))
+TICK_PERIODS = tuple(
+    f"{year}{month:02d}"
+    for year in range(2018, 2026)
+    for month in range(1, 13)
+    if (year, month) >= (2018, 7)
+)
+EXPECTED_FILE_ORDER = (
+    *(("history", period) for period in HISTORY_PERIODS),
+    *(("ticks", period) for period in TICK_PERIODS),
+)
+EXPECTED_COVERAGE = {
+    "from_date": "2018-07-02",
+    "to_date": "2025-12-31",
+    "history_year_first": 2018,
+    "history_year_last": 2025,
+    "history_file_count": 8,
+    "tick_month_first": "201807",
+    "tick_month_last": "202512",
+    "tick_file_count": 90,
+}
 OUTCOME_FENCE = {
     "mt5_terminal_started": False,
     "metatester_started": False,
@@ -406,7 +426,8 @@ def _normcase(path: Path | str) -> str:
     return os.path.normcase(str(_lexical_path(path)))
 
 
-def _assert_fixed_contract() -> tuple[list[tuple[str, str, Path]], list[tuple[str, str, Path]]]:
+def _assert_fixed_contract(
+) -> tuple[list[tuple[str, str, Path]], list[tuple[str, str, Path]]]:
     expected = {
         "symbol": (SYMBOL, A.RESEARCH_SYMBOL),
         "source root": (_normcase(SOURCE_DATA_ROOT), _normcase(A.PROVISION_SOURCE_DATA_ROOT)),
@@ -420,7 +441,11 @@ def _assert_fixed_contract() -> tuple[list[tuple[str, str, Path]], list[tuple[st
         raise ProvisionError(f"bound WS30 provision contract drift: {sorted(drift)}")
     if _normcase(SOURCE_DATA_ROOT) == _normcase(TARGET_DATA_ROOT):
         raise ProvisionError("WS30 source and target roots must be distinct")
-    if any(part.casefold() == "t6" for path in (SOURCE_DATA_ROOT, TARGET_DATA_ROOT, EVIDENCE_ROOT) for part in _lexical_path(path).parts):
+    if any(
+        part.casefold() == "t6"
+        for path in (SOURCE_DATA_ROOT, TARGET_DATA_ROOT, EVIDENCE_ROOT)
+        for part in _lexical_path(path).parts
+    ):
         raise ProvisionError("T6 is forbidden for WS30 historical provisioning")
     if MANIFEST_PATH.parent != EVIDENCE_ROOT or RECEIPT_PATH.parent != EVIDENCE_ROOT:
         raise ProvisionError("WS30 evidence paths escaped the fixed evidence root")
@@ -432,12 +457,12 @@ def _assert_fixed_contract() -> tuple[list[tuple[str, str, Path]], list[tuple[st
         raise ProvisionError(str(exc)) from exc
     if len(source_files) != 98 or len(target_files) != 98:
         raise ProvisionError("WS30 provision must contain exactly 98 expected files")
-    history = sum(1 for kind, _, _ in source_files if kind == "history")
-    ticks = sum(1 for kind, _, _ in source_files if kind == "ticks")
-    if history != 8 or ticks != 90:
-        raise ProvisionError("WS30 provision expected-file partition drift")
-    if [row[:2] for row in source_files] != [row[:2] for row in target_files]:
-        raise ProvisionError("WS30 source/target expected-file order drift")
+    source_order = tuple(row[:2] for row in source_files)
+    target_order = tuple(row[:2] for row in target_files)
+    if source_order != EXPECTED_FILE_ORDER or target_order != EXPECTED_FILE_ORDER:
+        raise ProvisionError("WS30 exact 2018/201807..202512 file order drift")
+    if A.B._data_coverage_contract() != EXPECTED_COVERAGE:
+        raise ProvisionError("WS30 exact historical coverage contract drift")
     return source_files, target_files
 
 
@@ -511,7 +536,7 @@ def _manifest(created_utc: str) -> dict[str, Any]:
         "source_data_root": str(_lexical_path(SOURCE_DATA_ROOT)),
         "target_terminal": "DEV2",
         "target_data_root": str(_lexical_path(TARGET_DATA_ROOT)),
-        "coverage": A.B._data_coverage_contract(),
+        "coverage": dict(EXPECTED_COVERAGE),
         "expected_history_files": 8,
         "expected_tick_files": 90,
         "expected_total_files": 98,
