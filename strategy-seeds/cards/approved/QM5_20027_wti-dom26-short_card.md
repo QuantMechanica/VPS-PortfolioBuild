@@ -33,7 +33,7 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
-q01_status: PENDING
+q01_status: BLOCKED_CPU_CEILING
 q02_status: NOT_QUEUED
 review_focus: "Falsify the source-significant WTI day-26 negative anomaly after costs and CFD/session basis; realized book correlation remains a downstream gate."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -83,3 +83,10 @@ explicit falsification risks.
 
 Backtest/Q02 only. No live setfile, T_Live access, AutoTrading, deploy manifest,
 portfolio admission, or portfolio-gate modification is authorized.
+
+## Pipeline history
+
+| version | date | phase | verdict |
+|---|---|---|---|
+| v1 | 2026-07-21 | build | strict compile PASS, 0 errors/0 warnings |
+| v1 | 2026-07-21 | Q01/Q02 | BLOCKED_CPU_CEILING; nine T-slots active, no manual smoke or Q02 enqueue |
