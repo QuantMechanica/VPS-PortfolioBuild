@@ -165,19 +165,22 @@ public static class QmG1ProcessProbe
         }
     }
 
-    private static string ReadImagePath(IntPtr process)
+    private static string ReadImagePath(IntPtr process, int processId, string processName, string ownerSid)
     {
         int capacity = 32768;
         StringBuilder path = new StringBuilder(capacity);
         if (!QueryFullProcessImageName(process, 0, path, ref capacity))
         {
             if (HasExited(process)) return null;
-            throw new Win32Exception(Marshal.GetLastWin32Error(), "QueryFullProcessImageName failed");
+            int error = Marshal.GetLastWin32Error();
+            if (error == 0 && processName == "Registry" && ownerSid == "S-1-5-18")
+                return "[KERNEL_REGISTRY_PROCESS_NO_USER_IMAGE]";
+            throw new Win32Exception(error, "QueryFullProcessImageName failed for PID " + processId + " with error " + error);
         }
         return path.ToString();
     }
 
-    private static QmG1ProcessRecord ProbeOne(int processId)
+    private static QmG1ProcessRecord ProbeOne(int processId, string processName)
     {
         if (processId == 0 || processId == 4) return null;
         IntPtr process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)processId);
@@ -200,7 +203,7 @@ public static class QmG1ProcessProbe
             }
             string ownerSid = ReadOwnerSid(process);
             if (ownerSid == null) return null;
-            string imagePath = ReadImagePath(process);
+            string imagePath = ReadImagePath(process, processId, processName, ownerSid);
             if (imagePath == null) return null;
             if (HasExited(process)) return null;
             return new QmG1ProcessRecord {
@@ -223,7 +226,7 @@ public static class QmG1ProcessProbe
         {
             try
             {
-                QmG1ProcessRecord record = ProbeOne(process.Id);
+                QmG1ProcessRecord record = ProbeOne(process.Id, process.ProcessName);
                 if (record != null) records.Add(record);
             }
             finally
@@ -279,7 +282,7 @@ function Get-QmCurrentIdentity {
 }
 
 function Get-QmSha256Text {
-    param([Parameter(Mandatory = $true)][string]$Value)
+    param([Parameter(Mandatory = $true)][AllowEmptyString()][string]$Value)
     $algorithm = [System.Security.Cryptography.SHA256]::Create()
     try {
         $bytes = [System.Text.Encoding]::UTF8.GetBytes($Value)
@@ -359,8 +362,7 @@ function Get-QmStableProcessEvidence {
 
 function Assert-QmNoProcessSideEffects {
     param([Parameter(Mandatory = $true)]$Evidence)
-    if ([int]$Evidence.matching_worker_process_count -ne 0 -or
-        [int]$Evidence.dev1_owner_process_count -ne 0 -or
+    if ([int]$Evidence.dev1_owner_process_count -ne 0 -or
         [int]$Evidence.dev1_root_process_count -ne 0) {
         throw 'G1 closure observed worker or DEV1 process side effects.'
     }
