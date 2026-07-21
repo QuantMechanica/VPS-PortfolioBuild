@@ -122,7 +122,40 @@ seeded variant done in a real OFF window with a raised/paused purge threshold, O
 tester_cache_purge's threshold during the cold-sync window. Deferred until disk is freed.
 Standing state: shared junction + the deployed storm-mitigation (self-heals storm victims).
 
-## Status / urgency — REVISED
+## ★★★ RE-APPLIED SUCCESSFULLY after cache clear — 2026-07-21 ~16:0x (FINAL)
+
+Root of the disk-pressure loop diagnosed: the 857 GB "used" D: was NOT real data —
+**~200 GB was accumulated MT5 Tester cache** (`T<n>\Tester\bases` + `Tester\Agent-*`,
+transient, MT5-regenerable). It piled up because `tester_cache_purge` only fires below
+80 GB free, and D: hovered at ~96 GB — just above the threshold — so it almost never ran
+(T8 alone had a 45 GB agent dir + 25 GB Tester\bases). The 80 GB threshold on a 1 TB disk
+is far too tight.
+
+Clean sequence (OWNER-approved): Factory_OFF → **cleared Tester caches** (matched
+tester_cache_purge's exact targets, factory quiesced: **reclaimed 197 GB, D: 96 → 294 GB
+free**) → `fleet_dejunction.ps1 -Apply` (all 9 isolated, verified) → Factory_ON.
+
+**Result — SUCCESS + STABLE:** storm eliminated (fleet error[32] ~16 with 5/8 terminals at
+0, vs 300-700 per terminal pre-fix); **flag stays gone — NO purge loop** (285 GB free, the
+cold-sync's ~9 GB-so-far won't approach the 80 GB threshold); 9/9 workers, backtests
+flowing (10 fresh logs); D: 285 GB free. The disk-pressure loop that forced the earlier
+rollback is gone because the headroom (285 GB) dwarfs both the purge threshold and the
+cold-sync duplication.
+
+**The shared-bases history-lock storm is now structurally fixed AND stable, factory-ON.**
+Rollback still available (fleet_dejunction.ps1 -Rollback, factory OFF). The two earlier
+outages (11:22, 14:40) were tester_cache_purge tripping <80 GB during the disk-tight window
++ its unreliable restart — both moot now with 285 GB headroom.
+
+## Follow-ups (non-blocking)
+- **tester_cache_purge restart-after-purge is unreliable** (it stranded the factory OFF
+  twice). Fix it OR ensure the factory watchdog reliably recovers a purge-stranded factory.
+- **Raise the purge LowWaterGB threshold** (80 → ~150-200 GB) so ~200 GB of cache never
+  piles up again on the 1 TB disk — BUT only after the restart bug is fixed (a higher
+  threshold = more frequent purges = more strand risk until the restart is robust).
+- T8\MQL5\Files = 12.7 GB (EA-written CSV/journal accumulation) — separate cleanup candidate.
+
+## Status / urgency — REVISED (superseded by the SUCCESS above)
 The no-seed fleet fix is validated factory-ON. The fleet rollout (restructure T2..T10:
 real bases + nested Custom junction + empty own Darwinex-Live, per-terminal reversible)
 can be done WITHOUT a Factory-OFF window — each terminal cold-syncs its conversion
