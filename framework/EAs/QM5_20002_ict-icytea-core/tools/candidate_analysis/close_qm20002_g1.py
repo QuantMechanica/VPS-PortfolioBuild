@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import copy
 import hashlib
 import importlib.util
@@ -61,7 +62,9 @@ TERMINAL_PENDING_ERROR = re.compile(
     r"closure_intent_sha256=(?P<intent>[0-9a-f]{64});"
     r"ready_task_xml_sha256=(?P<xml>[0-9a-f]{64});"
     r"task_contract_sha256=(?P<contract>[0-9a-f]{64});"
-    r"preterminal_evidence_sha256=(?P<preterminal>[0-9a-f]{64});"
+    r"preterminal_probe_payload_b64=(?P<preterminal_payload>[A-Za-z0-9_-]+={0,2});"
+    r"preterminal_probe_sha256=(?P<preterminal>[0-9a-f]{64});"
+    r"quiesce_transition_probe_payload_b64=(?P<quiesce_payload>NONE|[A-Za-z0-9_-]+={0,2});"
     r"quiesce_transition_probe_sha256=(?P<quiesce>NONE|[0-9a-f]{64});"
     r"task_start_race_observed=(?P<start_race>true|false)$"
 )
@@ -69,7 +72,9 @@ TERMINAL_CLOSED_ERROR = re.compile(
     rf"^{REASON_CODE};"
     r"closure_phase=CLOSED;"
     r"closure_intent_sha256=(?P<intent>[0-9a-f]{64});"
-    r"preterminal_evidence_sha256=(?P<preterminal>[0-9a-f]{64});"
+    r"preterminal_probe_payload_b64=(?P<preterminal_payload>[A-Za-z0-9_-]+={0,2});"
+    r"preterminal_probe_sha256=(?P<preterminal>[0-9a-f]{64});"
+    r"quiesce_transition_probe_payload_b64=(?P<quiesce_payload>NONE|[A-Za-z0-9_-]+={0,2});"
     r"quiesce_transition_probe_sha256=(?P<quiesce>NONE|[0-9a-f]{64});"
     r"quiesced_evidence_sha256=(?P<quiesced>[0-9a-f]{64});"
     r"disabled_task_xml_sha256=(?P<xml>[0-9a-f]{64});"
@@ -251,6 +256,28 @@ def canonical_bytes(value: Any) -> bytes:
 
 def canonical_sha256(value: Any) -> str:
     return hashlib.sha256(canonical_bytes(value)).hexdigest()
+
+
+def canonical_b64(value: Any) -> str:
+    return base64.urlsafe_b64encode(canonical_bytes(value)).decode("ascii")
+
+
+def decode_canonical_b64(value: str, label: str) -> dict[str, Any]:
+    if (
+        type(value) is not str
+        or re.fullmatch(r"[A-Za-z0-9_-]+={0,2}", value) is None
+    ):
+        raise ClosureError(f"{label} canonical payload token is malformed")
+    try:
+        decoded = base64.b64decode(value, altchars=b"-_", validate=True)
+        payload = json.loads(decoded.decode("utf-8"))
+    except (ValueError, UnicodeError, json.JSONDecodeError) as exc:
+        raise ClosureError(f"{label} canonical payload cannot be decoded") from exc
+    if not isinstance(payload, dict) or canonical_bytes(payload) != decoded:
+        raise ClosureError(f"{label} payload is not exact canonical JSON")
+    if canonical_b64(payload) != value:
+        raise ClosureError(f"{label} canonical payload token drift")
+    return payload
 
 
 def sha256_file(path: Path) -> str:
@@ -2371,11 +2398,51 @@ def close_g1(
                         current_proof["start_race"] == "true"
                         or awaited_start_race
                     )
+                    pending_state_binding = file_binding(contract.state_path)
+                    if contract.anchor_path.exists():
+                        control_call(contract, "AssertFile", contract.anchor_path)
+                        anchor = load_strict_json(
+                            contract.anchor_path, "quiescence anchor"
+                        )
+                        anchor_binding = file_binding(contract.anchor_path)
+                        _validate_quiescence_anchor(
+                            contract,
+                            anchor,
+                            chain,
+                            intent_binding,
+                            intent,
+                            auditor,
+                            expected_pending_state_binding=pending_state_binding,
+                            expected_quiesced_evidence=quiesced_evidence,
+                            expected_start_race=start_race_observed,
+                        )
+                    else:
+                        anchor = _quiescence_anchor_payload(
+                            contract,
+                            chain,
+                            intent_binding,
+                            intent,
+                            pending_state_binding,
+                            state,
+                            quiesced_evidence,
+                            start_race_observed,
+                            auditor,
+                        )
+                        _publish_json(
+                            contract,
+                            contract.anchor_path,
+                            anchor,
+                            replace=False,
+                            control_call=control_call,
+                        )
+                        anchor_binding = file_binding(contract.anchor_path)
+                        crash_hook("after_anchor")
                     before_sha = sha256_file(contract.state_path)
                     final_state = _final_closed_state(
                         state,
                         str(intent_binding["sha256"]),
                         quiesced_evidence,
+                        anchor_binding,
                         start_race_observed=start_race_observed,
                     )
                     auditor._validate_launch_state_shape(final_state)
