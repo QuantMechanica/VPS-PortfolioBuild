@@ -40,7 +40,7 @@ r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
 q02_status: QUEUED
-q02_work_item_id: 319e25f2-f50a-4c93-9d51-123100c5cb22
+q02_work_item_id: 7dc9eaa2-1942-4302-ae8d-2f5f2118a053
 review_focus: "Adds a scheduled energy-information weekday driver; falsify costs, session mapping, post-2021 decay and realized book correlation without changing the portfolio gate."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -132,7 +132,7 @@ futures/CFD basis, gaps and financing.
 | version | date | reason | phase | verdict |
 |---|---|---|---|---|
 | v1 | 2026-07-21 | initial source-backed WTI Wednesday build | G0 | APPROVED |
-| v1-q02 | 2026-07-21 | strict compile PASS and priority enqueue | Q02 | PENDING 319e25f2-f50a-4c93-9d51-123100c5cb22 |
+| v1-q02 | 2026-07-21 | strict compile PASS; numeric-ID preflight failed and canonical-ID retry priority-enqueued | Q02 | PENDING 7dc9eaa2-1942-4302-ae8d-2f5f2118a053 |
 
 ## Safety boundary
 
