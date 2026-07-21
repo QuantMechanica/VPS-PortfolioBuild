@@ -17,3 +17,10 @@ signs and one-session returns. R3 PASS: registered XTIUSD.DWX D1 with >5
 annual packages. R4 PASS: no ML, banned indicator, or external runtime feed.
 Exact search found whole-month WTI holds and weekday one-session cards, but no
 daily-reset February-long/October-short rotation.
+
+The source was read end-to-end for the second extraction. Table 1 reports WTI
+Monday mean -0.000943 and Friday mean 0.001731; Table 2 rejects equality for
+Monday-Friday at 5% (z=-2.3617). `GORSKA-KRAWIEC-WTI-CAL-2015_S02` mechanizes
+that tested contrast as one signed carrier: Monday short and Friday long, each
+reset at the next D1 boundary. Exact repository search found the two one-sided
+weekday EAs but no combined signed Monday-Friday carrier.

@@ -1,0 +1,26 @@
+; QM5 Set File
+; ea_id: 20029
+; ea_slug: wti-monfri-daily
+; ea_version: v5.0
+; set_version: s20260721-001
+; symbol: XTIUSD.DWX
+; timeframe: D1
+; environment: backtest
+; magic_slot: 0
+; risk_mode: RISK_FIXED
+; portfolio_weight: 1
+; build_hash: AUTO
+; author: Development
+; date: 2026-07-21
+qm_ea_id=20029
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+strategy_long_weekday=5
+strategy_short_weekday=1
+strategy_atr_period=20
+strategy_atr_sl_mult=2.75
+strategy_max_hold_days=1
+strategy_max_spread_points=2500
