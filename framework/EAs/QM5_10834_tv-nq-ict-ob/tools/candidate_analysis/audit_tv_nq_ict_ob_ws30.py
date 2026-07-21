@@ -140,7 +140,7 @@ def _configure_private_profile() -> None:
     B.CURRENT_CLAIM_SEQUENCE = 1
     B.RESERVED_COUNTED_ALTERNATE_ATTEMPT_NUMBER = 2
     B.PRIOR_CLAIM_SEQUENCES = 0
-    B.MAXIMUM_COUNTED_ALTERNATE_ATTEMPTS = 2
+    B.MAXIMUM_COUNTED_ALTERNATE_ATTEMPTS = 1
     B.PRIOR_COUNTED_ALTERNATE_ATTEMPTS = 0
     B.AUTHORIZATION_SCOPE = PRIMARY_AUTHORIZATION_SCOPE
     B.NATIVE_ATTEMPT_CLAIM_PATH = PRIMARY_CLAIM_PATH
@@ -366,14 +366,22 @@ def validate_transport_contract(path: Path = CONTRACT_PATH) -> dict[str, Any]:
         != ALTERNATE_CLAIM_PATH.resolve()
         or budget.get("primary_authorization_scope") != PRIMARY_AUTHORIZATION_SCOPE
         or budget.get("alternate_authorization_scope") != ALTERNATE_AUTHORIZATION_SCOPE
+        or budget.get("claim_creation_alone_does_not_count") is not True
         or budget.get("counting_boundary") != B.ALTERNATE_ATTEMPT_COUNTING_BOUNDARY
         or budget.get("primary_claim_atomic_create_once") is not True
         or budget.get("alternate_claim_atomic_create_once") is not True
+        or budget.get("terminal_hopping_forbidden") is not True
         or budget.get("parameter_or_gate_changes_between_attempts_forbidden") is not True
         or budget.get("alternate_requires_immutable_primary_invalid_infra_receipt") is not True
         or budget.get("alternate_requires_zero_native_report_files") is not True
         or budget.get("alternate_requires_strategy_outcomes_read_false") is not True
         or budget.get("alternate_requires_strategy_merit_adjudicated_false") is not True
+        or budget.get("alternate_allowed_cause_classes")
+        != [
+            "DEV2_CONTROLLER_FAILED_BEFORE_NATIVE_REPORT",
+            "DEV2_SCHEDULED_WORKER_FAILED_BEFORE_NATIVE_REPORT",
+            "DEV2_DATA_STORE_FAILED_BEFORE_NATIVE_REPORT",
+        ]
         or budget.get("retrospective_cause_exemptions_forbidden") is not True
         or budget.get("further_attempts_forbidden") is not True
     ):
@@ -885,7 +893,70 @@ B.postflight = postflight
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    return B.main(argv)
+    arguments = list(sys.argv[1:] if argv is None else argv)
+    args = B.build_parser().parse_args(arguments)
+    if args.command not in {"freeze-data", "pre"}:
+        return B.main(arguments)
+    try:
+        if args.command == "freeze-data":
+            if args.symbol != RESEARCH_SYMBOL:
+                raise B.InvalidEvidence(
+                    f"WS30 freeze symbol must be exactly {RESEARCH_SYMBOL}"
+                )
+            if args.receipt.resolve() != FUTURE_DATA_RECEIPT_PATH.resolve():
+                raise B.InvalidEvidence(
+                    f"WS30 freeze receipt must be exactly {FUTURE_DATA_RECEIPT_PATH.resolve()}"
+                )
+            payload = B.freeze_backtest_data(args.symbol)
+            digest = B.atomic_json(args.receipt, payload, replace=False)
+            output = {
+                "status": "PASS",
+                "receipt": str(args.receipt.resolve()),
+                "sha256": digest,
+                "symbol": payload["symbol"],
+                "files": payload["totals"]["files"],
+                "bytes": payload["totals"]["bytes"],
+            }
+        else:
+            expected_pre_receipt = PRIMARY_RUN_ROOT.resolve() / "pre_receipt.json"
+            if args.receipt.resolve() != expected_pre_receipt:
+                raise B.InvalidEvidence(
+                    f"WS30 PRE receipt must be exactly {expected_pre_receipt}"
+                )
+            payload = preflight(
+                args.symbol,
+                args.data_receipt,
+                args.build_receipt,
+                args.run_root,
+            )
+            digest = B.atomic_json(args.receipt, payload, replace=False)
+            output = {
+                "status": "PASS",
+                "receipt": str(args.receipt.resolve()),
+                "sha256": digest,
+            }
+        print(json.dumps(output, indent=2, sort_keys=True))
+        return 0
+    except (
+        B.AuditError,
+        OSError,
+        subprocess.SubprocessError,
+        ValueError,
+        KeyError,
+        TypeError,
+    ) as exc:
+        # Readiness failures are stderr-only.  In particular, never consume the
+        # canonical one-shot receipt path with an INVALID placeholder before the
+        # provision/alias prerequisites exist.
+        print(
+            json.dumps(
+                B.invalid_receipt(args.command.upper(), exc),
+                indent=2,
+                sort_keys=True,
+            ),
+            file=sys.stderr,
+        )
+        return 2
 
 
 if __name__ == "__main__":

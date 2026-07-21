@@ -352,6 +352,49 @@ def test_pre_rejects_nonpreregistered_data_receipt_without_calling_base_or_creat
     assert not run_root.exists()
 
 
+def test_freeze_cli_rejects_noncanonical_receipt_without_creating_it(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    receipt = tmp_path / "wrong.json"
+    code = subject.main(
+        [
+            "freeze-data",
+            "--symbol",
+            "WS30.DWX",
+            "--receipt",
+            str(receipt),
+        ]
+    )
+    captured = capsys.readouterr()
+    assert code == 2
+    assert not receipt.exists()
+    assert "freeze receipt must be exactly" in captured.err
+
+
+def test_freeze_readiness_failure_does_not_consume_canonical_receipt(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    receipt = tmp_path / "canonical.json"
+    monkeypatch.setattr(subject, "FUTURE_DATA_RECEIPT_PATH", receipt)
+    monkeypatch.setattr(subject, "PROVISION_RECEIPT_PATH", tmp_path / "missing-receipt.json")
+    monkeypatch.setattr(subject, "PROVISION_MANIFEST_PATH", tmp_path / "missing-manifest.json")
+    code = subject.main(
+        [
+            "freeze-data",
+            "--symbol",
+            "WS30.DWX",
+            "--receipt",
+            str(receipt),
+        ]
+    )
+    captured = capsys.readouterr()
+    assert code == 2
+    assert not receipt.exists()
+    assert '"status": "INVALID"' in captured.err
+
+
 def test_primary_and_reserved_alternate_identities_are_distinct_and_frozen() -> None:
     assert subject.PRIMARY_RUN_ROOT != subject.ALTERNATE_RUN_ROOT
     assert subject.PRIMARY_CLAIM_PATH != subject.ALTERNATE_CLAIM_PATH
@@ -360,6 +403,7 @@ def test_primary_and_reserved_alternate_identities_are_distinct_and_frozen() -> 
     assert subject.ALTERNATE_CLAIM_PATH.name.endswith("ATTEMPT_002.json")
     contract = subject.execution_contract()
     assert contract["current_attempt_type"] == "PRIMARY_ONE_SHOT"
+    assert contract["maximum_counted_alternate_attempts"] == 1
     assert contract["maximum_total_counted_attempts"] == 2
     assert contract["retrospective_infrastructure_exemptions_forbidden"] is True
     assert contract["attempt_budget_contract"] == subject.B.file_binding(
