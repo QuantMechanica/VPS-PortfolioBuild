@@ -163,7 +163,7 @@ RUNTIME_ROLES = {
     "current_compile_controller": COMPILE_CONTROLLER_PATH,
 }
 
-LAUNCHER_REVISION = 3
+LAUNCHER_REVISION = 4
 SCHEDULED_TASK_PREFIX = "QM_QM20002_AUDIT_"
 MAX_SCHEDULED_TASK_SECONDS = 777600
 RUNNER_MAXIMUM_ATTEMPTS_CAP = 10
@@ -193,6 +193,24 @@ LAUNCH_STATE_FIELDS = frozenset(
         "outcome_possible_since_utc",
         "cells",
         "terminal",
+    }
+)
+LAUNCH_JOB_FIELDS = frozenset(
+    {
+        "schema_version",
+        "launcher_revision",
+        "artifact_type",
+        "analysis_id",
+        "created_utc",
+        "pre_receipt_path",
+        "pre_receipt_sha256",
+        "authorization",
+        "state_path",
+        "controller_timeout_seconds",
+        "plan_sha256",
+        "tool",
+        "dev1_runs_before_launch",
+        "scheduler",
     }
 )
 LEGACY_REV2_REJECT_FIELDS = frozenset(
@@ -361,8 +379,6 @@ def _jsonable(value: Any) -> Any:
 def atomic_json(path: Path, payload: Mapping[str, Any], *, replace: bool = True) -> str:
     path = path.resolve()
     path.parent.mkdir(parents=True, exist_ok=True)
-    if path.exists() and not replace:
-        raise AuditError(f"refusing to replace existing evidence: {path}")
     encoded = (
         json.dumps(_jsonable(payload), indent=2, sort_keys=True, ensure_ascii=False) + "\n"
     ).encode("utf-8")
@@ -374,21 +390,37 @@ def atomic_json(path: Path, payload: Mapping[str, Any], *, replace: bool = True)
             handle.write(encoded)
             handle.flush()
             os.fsync(handle.fileno())
-        os.replace(temporary, path)
-    except Exception:
-        try:
+        if replace:
+            os.replace(temporary, path)
+            temporary = ""
+        else:
+            # A same-directory hard-link publishes the already complete, fsynced
+            # inode with create-if-absent semantics.  Unlike exists()+replace(),
+            # two writers cannot both win and immutable evidence is never visible
+            # partially or overwritten by the loser.
+            try:
+                os.link(temporary, path)
+            except FileExistsError as exc:
+                raise AuditError(f"refusing to replace existing evidence: {path}") from exc
             os.unlink(temporary)
-        except OSError:
-            pass
+            temporary = ""
+    except Exception:
+        if temporary:
+            try:
+                os.unlink(temporary)
+            except OSError:
+                pass
         raise
     return hashlib.sha256(encoded).hexdigest()
 
 
 @contextmanager
-def _terminal_state_lock(state_path: Path) -> Iterable[None]:
-    """Serialize cooperative terminal-state publishers without a stale lock file."""
+def _launch_state_lock(state_path: Path) -> Iterable[None]:
+    """Serialize every cooperative launch-state transition on one durable lock."""
 
     state_path = state_path.resolve()
+    # Keep the historical lock filename so already-running revision-3 terminal
+    # publishers and revision-4 transitions cannot use disjoint lock domains.
     lock_path = state_path.with_name(f".{state_path.name}.terminal.lock")
     lock_path.parent.mkdir(parents=True, exist_ok=True)
     with lock_path.open("a+b") as handle:
@@ -415,6 +447,11 @@ def _terminal_state_lock(state_path: Path) -> Iterable[None]:
                 yield
             finally:
                 fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+
+
+# Compatibility name for tests and any in-flight terminal publisher.  New code
+# deliberately routes every state transition through the same lock function.
+_terminal_state_lock = _launch_state_lock
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -2675,6 +2712,7 @@ def _validate_launch_job(
     pre_sha256: str,
     state_path: Path,
 ) -> None:
+    _require_exact_fields(job, LAUNCH_JOB_FIELDS, "launch job", AuthorizationError)
     controller_timeout = int(job.get("controller_timeout_seconds", 0))
     scheduler = job.get("scheduler")
     expected_scheduler = {
@@ -2708,6 +2746,17 @@ def _validate_launch_job(
     drift = {key: (value, job.get(key)) for key, value in expected.items() if job.get(key) != value}
     if drift:
         raise AuthorizationError(f"persisted launch job identity/plan/tool drift: {sorted(drift)}")
+    if (
+        type(job.get("created_utc")) is not str
+        or type(job.get("controller_timeout_seconds")) is not int
+        or type(job.get("pre_receipt_sha256")) is not str
+        or re.fullmatch(r"[0-9a-f]{64}", str(job.get("pre_receipt_sha256", ""))) is None
+        or not isinstance(job.get("authorization"), Mapping)
+        or not isinstance(job.get("tool"), Mapping)
+        or not isinstance(job.get("scheduler"), Mapping)
+    ):
+        raise AuthorizationError("persisted launch job exact field types drift")
+    parse_utc(str(job["created_utc"]), "launch job created_utc")
     if not expected_scheduler["principal_sid"].startswith("S-1-"):
         raise AuthorizationError("persisted launch job principal SID is malformed")
     if not required_controller_timeout(pre) <= controller_timeout <= 172800:
