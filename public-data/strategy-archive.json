@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-21T06:07:03.3114837Z",
-    "total":  3368,
+    "generated_at":  "2026-07-21T07:07:03.8201359Z",
+    "total":  3370,
     "items":  [
                   {
                       "slug":  "ath-breakout-atr-trail",
@@ -17594,6 +17594,18 @@
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-07-21T04:34:44.6881690Z"
+                  },
+                  {
+                      "slug":  "QM5_20026_tom-settlement-trough",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-21T06:34:47.4136233Z"
+                  },
+                  {
+                      "slug":  "QM5_20027_wti-dom26-short_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-21T06:57:14.5031996Z"
                   },
                   {
                       "slug":  "QM5_2003_nnfx-wave-sniper",

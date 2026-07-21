@@ -15095,3 +15095,13 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20021,wti-h2m-short,0,XTIUSD.DWX,200210000,2026-07-20,Development,active
 20025,wti-feboct-daily,0,XTIUSD.DWX,200250000,2026-07-21,Development,active
 20027,wti-dom26-short,0,XTIUSD.DWX,200270000,2026-07-21,Development,active
+20023,idx-macro-announce-day,0,SP500.DWX,200230000,2026-07-21,Development,active
+20023,idx-macro-announce-day,1,NDX.DWX,200230001,2026-07-21,Development,active
+20023,idx-macro-announce-day,2,WS30.DWX,200230002,2026-07-21,Development,active
+13209,mulham-pm-range-sweep,0,SP500.DWX,132090000,2026-07-21,Development,active
+13209,mulham-pm-range-sweep,1,NDX.DWX,132090001,2026-07-21,Development,active
+20026,tom-settlement-trough,0,GDAXI.DWX,200260000,2026-07-21,Development,active
+20026,tom-settlement-trough,1,NDX.DWX,200260001,2026-07-21,Development,active
+20026,tom-settlement-trough,2,SP500.DWX,200260002,2026-07-21,Development,active
+20026,tom-settlement-trough,3,WS30.DWX,200260003,2026-07-21,Development,active
+13212,mulham-us500-org,0,SP500.DWX,132120000,2026-07-21,Development,active
