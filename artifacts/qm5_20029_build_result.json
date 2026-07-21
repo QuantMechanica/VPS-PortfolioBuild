@@ -1,0 +1,41 @@
+{
+  "ea_id": "QM5_20029",
+  "ea_label": "QM5_20029_wti-monfri-daily",
+  "slug": "wti-monfri-daily",
+  "strategy_id": "GORSKA-KRAWIEC-WTI-CAL-2015_S02",
+  "strategy": "WTI Monday-short Friday-long signed D1 calendar rotation",
+  "symbols": ["XTIUSD.DWX"],
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log": "C:/QM/repo/framework/build/compile/20260721_163453/QM5_20029_wti-monfri-daily.compile.log",
+  "build_check_passed": true,
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260721_163522.json",
+  "spec_validation": "PASS",
+  "card_schema_validation": "PASS",
+  "q02_work_item": {
+    "id": "37ecc49c-ff2e-4ca4-bf9e-7a492661610e",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "status": "pending"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "manual_backtest_cpu_used": false,
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "file_hashes_sha256": {
+    "mq5": "5938E26E23964CBE946E42105F455549053B89B7610B12D7CBFB50786787D564",
+    "ex5": "CAEEC32E058C5DCEBF52E1C5653857BE258E9CE0768D478C307431E669510BED"
+  },
+  "known_registry_debt": "Strict resolver regeneration retained QM5_20029 but reported pre-existing missing EA directories for IDs 1001, 1015, and 1016."
+}

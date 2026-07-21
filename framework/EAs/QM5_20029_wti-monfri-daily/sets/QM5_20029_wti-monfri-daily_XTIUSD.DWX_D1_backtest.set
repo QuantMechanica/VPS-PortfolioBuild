@@ -1,4 +1,4 @@
-; QM5 Set File
+﻿; QM5 Set File
 ; ea_id: 20029
 ; ea_slug: wti-monfri-daily
 ; ea_version: v5.0
@@ -9,7 +9,7 @@
 ; magic_slot: 0
 ; risk_mode: RISK_FIXED
 ; portfolio_weight: 1
-; build_hash: AUTO
+; build_hash:   78afdebed52222b328c2d574cb97cc2e33d6ac88ad4262da2d4f94b7920ebaff
 ; author: Development
 ; date: 2026-07-21
 qm_ea_id=20029
