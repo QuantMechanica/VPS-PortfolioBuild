@@ -75,10 +75,15 @@ function Assert-QmRotationNoReparseComponents {
 
 function Resolve-QmRotationSid {
     param([Parameter(Mandatory = $true)][string]$AccountName)
-    if ($AccountName -match '^S-1-[0-9-]+$') {
-        return (New-Object System.Security.Principal.SecurityIdentifier($AccountName)).Value
+    $normalized = if ($AccountName.StartsWith('.\', [System.StringComparison]::Ordinal)) {
+        "$env:COMPUTERNAME\$($AccountName.Substring(2))"
+    } else {
+        $AccountName
     }
-    return (New-Object System.Security.Principal.NTAccount($AccountName)).Translate(
+    if ($normalized -match '^S-1-[0-9-]+$') {
+        return (New-Object System.Security.Principal.SecurityIdentifier($normalized)).Value
+    }
+    return (New-Object System.Security.Principal.NTAccount($normalized)).Translate(
         [System.Security.Principal.SecurityIdentifier]
     ).Value
 }

@@ -81,6 +81,10 @@ $sid = 'S-1-5-21-111-222-333-1006'
 if ((Resolve-QmRotationSid -AccountName $sid) -cne $sid) {
     throw 'Rotation SID resolver does not accept raw ACL SID identity references.'
 }
+$localDev1 = Get-LocalUser -Name 'QMDev1' -ErrorAction Stop
+if ((Resolve-QmRotationSid -AccountName '.\QMDev1') -cne $localDev1.SID.Value) {
+    throw 'Rotation SID resolver does not normalize the legacy local-account alias.'
+}
 $rotationId = $now.ToString('yyyyMMddTHHmmssZ') + '_' + ('d' * 32)
 $nonce = 'e' * 32
 $journal = [ordered]@{
