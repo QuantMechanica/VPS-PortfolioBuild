@@ -44,6 +44,8 @@ input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
+// Backtest: RISK_FIXED is active and RISK_PERCENT stays 0.0.
+// Full-live packaging: RISK_PERCENT=0.5 and RISK_FIXED=0.0.
 input double RISK_PERCENT               = 0.0;
 input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
