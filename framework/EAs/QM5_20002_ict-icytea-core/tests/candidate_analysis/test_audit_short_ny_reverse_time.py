@@ -873,7 +873,7 @@ def test_persisted_helper_is_s4u_triggerless_and_never_overwrites_task() -> None
     assert "scheduled-task helper byte binding drifted" in helper
     assert "$Task.TaskName -cne $TaskName" in helper
     assert "@($Task.Triggers).Count -ne 0" in helper
-    assert "-AllowHardTerminate" in helper
+    assert "-AllowHardTerminate" not in helper
     assert "cmdlet exposes no creation switch for AllowHardTerminate" in helper
     assert "            -AllowHardTerminate `" not in helper
     assert "-not [bool]$Task.Settings.StartWhenAvailable" in helper
@@ -886,6 +886,32 @@ def test_persisted_helper_is_s4u_triggerless_and_never_overwrites_task() -> None
     assert "actions_count = @($Task.Actions).Count" in helper
     assert "DETACHED_PROCESS" not in tool
     assert "CREATE_NEW_PROCESS_GROUP" not in tool
+
+
+def test_scheduler_call_input_requires_exact_persisted_job_except_fresh_probe(
+    tmp_path: Path,
+) -> None:
+    pre = _minimal_launcher_pre()
+    state_path = tmp_path / "scheduler-input" / "launch_state.json"
+    state_path.parent.mkdir(parents=True)
+    job_path = state_path.with_name("launch_job.json")
+    job = {
+        "state_path": str(state_path.resolve()),
+        "scheduler": {"task_name": "QM_QM5_20002_SHORT_NY_TEST"},
+    }
+
+    subject._assert_scheduler_job_input(pre, "Probe", job)
+    with pytest.raises(subject.AuthorizationError, match="missing protected test file"):
+        subject._assert_scheduler_job_input(pre, "Register", job)
+
+    job_path.write_text(json.dumps(job), encoding="utf-8")
+    subject._assert_scheduler_job_input(pre, "Register", job)
+    with pytest.raises(subject.AuthorizationError, match="bytes/payload drift"):
+        subject._assert_scheduler_job_input(
+            pre,
+            "Start",
+            {**job, "scheduler": {**job["scheduler"], "task_name": "TAMPERED"}},
+        )
 
 
 def test_probe_alone_allows_missing_exact_job_path() -> None:
@@ -1006,6 +1032,54 @@ def test_control_helper_closes_volume_ancestor_owner_and_token_group_surface() -
     assert helper.index("Assert-AncestorProtection") < helper.index(
         "if ($Operation -eq 'PrepareDirectory')"
     )
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("qmdev1_privilege_surface_verified", False),
+        ("privileged_group_sids_forbidden", subject.CONTROL_PRIVILEGED_GROUP_SIDS[:-1]),
+        ("privileges_forbidden", subject.CONTROL_FORBIDDEN_PRIVILEGES[:-1]),
+        ("privileges_forbidden", [*subject.CONTROL_FORBIDDEN_PRIVILEGES, "SeTestPrivilege"]),
+    ],
+)
+def test_control_helper_result_rejects_dangerous_token_proof_drift(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    field: str,
+    value: object,
+) -> None:
+    target = tmp_path / "absent-control-file.json"
+    helper_sha256 = subject.sha256_file(subject.CONTROL_PATH_HELPER_PATH)
+    payload = {
+        "schema_version": 1,
+        "status": "PASS",
+        "operation": "AssertAbsentFile",
+        "path": str(target.resolve()),
+        "control_root": str(subject.AUDIT_CONTROL_ROOT.resolve()),
+        "owner_sid": "S-1-5-32-544",
+        "full_control_sids": ["S-1-5-18", "S-1-5-32-544"],
+        "reparse_points_forbidden": True,
+        "local_fixed_ntfs_required": True,
+        "untrusted_ancestor_owner_forbidden": True,
+        "qmdev1_privilege_surface_verified": True,
+        "privileged_group_sids_forbidden": subject.CONTROL_PRIVILEGED_GROUP_SIDS,
+        "privileges_forbidden": subject.CONTROL_FORBIDDEN_PRIVILEGES,
+        "helper_sha256": helper_sha256,
+    }
+    payload[field] = value
+    monkeypatch.setattr(
+        subject.subprocess,
+        "run",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            returncode=0,
+            stdout=json.dumps(payload),
+            stderr="",
+        ),
+    )
+
+    with pytest.raises(subject.AuthorizationError, match="result contract drift"):
+        subject._control_acl_call("AssertAbsentFile", target, helper_sha256)
 
 
 def test_exact_control_layout_rejects_escape_without_creating_any_path(

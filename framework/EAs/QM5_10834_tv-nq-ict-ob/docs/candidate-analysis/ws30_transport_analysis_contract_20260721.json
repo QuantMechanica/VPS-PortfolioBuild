@@ -1,0 +1,181 @@
+{
+  "schema_version": 1,
+  "artifact_type": "QM5_10834_WS30_TRANSPORT_ANALYSIS_CONTRACT",
+  "status": "PREREGISTERED_UNTOUCHED_EVIDENCE",
+  "created_utc": "2026-07-21T02:30:00Z",
+  "candidate": {
+    "ea_id": "QM5_10834",
+    "analysis_id": "QM5_10834_TV_NQ_ICT_OB_WS30_TRANSPORT_001",
+    "strategy": "tv-nq-ict-ob",
+    "transport_from_symbol": "NDX.DWX",
+    "research_symbol": "WS30.DWX",
+    "timeframe": "M5",
+    "model": 4,
+    "duplicates_per_cell": 2,
+    "parameter_tuning_forbidden": true,
+    "same_strategy_parameters_as_ndx_required": true,
+    "same_merit_gates_as_ndx_required": true,
+    "ndx_analysis_may_not_be_retried_or_reset": true,
+    "ws30_evidence_must_not_reference_ndx_data_or_outcomes": true
+  },
+  "windows": [
+    {
+      "cell_id": "DEV",
+      "cohort": "DEV",
+      "from_date": "2018-07-02",
+      "to_date": "2022-12-31"
+    },
+    {
+      "cell_id": "OOS_2023",
+      "cohort": "OOS",
+      "from_date": "2023-01-01",
+      "to_date": "2023-12-31"
+    },
+    {
+      "cell_id": "OOS_2024",
+      "cohort": "OOS",
+      "from_date": "2024-01-01",
+      "to_date": "2024-12-31"
+    },
+    {
+      "cell_id": "OOS_2025",
+      "cohort": "OOS",
+      "from_date": "2025-01-01",
+      "to_date": "2025-12-31"
+    }
+  ],
+  "frozen_inputs": {
+    "build_receipt_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10834_tv-nq-ict-ob\\docs\\candidate-analysis\\build_receipt_20260720.json",
+    "build_receipt_sha256": "046845096bed048faa18fbf1852c0d0b748a6a3aca7f348eee1023ef25568ccd",
+    "set_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10834_tv-nq-ict-ob\\sets\\QM5_10834_tv-nq-ict-ob_WS30.DWX_M5_backtest.set",
+    "set_sha256": "0f6979d7024aa9f5098deac1f04010876a86cf0363f1fd25ab21eb3ed066e3d6",
+    "qm_ea_id": "10834",
+    "qm_magic_slot_offset": "1",
+    "RISK_FIXED": "1000",
+    "RISK_PERCENT": "0",
+    "strategy_entry_start_hhmm": "945",
+    "strategy_entry_end_hhmm": "1015",
+    "strategy_target_r": "2.0",
+    "InpQMSimCommissionPerLot": "0"
+  },
+  "merit_contract": {
+    "version": "QM5_10834_MERIT_V1_20260720",
+    "source": "audit_tv_nq_ict_ob.py:MERIT_GATES",
+    "byte_for_byte_semantic_equality_required": true,
+    "cli_overrides_forbidden": true
+  },
+  "cost_contract": {
+    "merit_center": {
+      "spread": "EMBEDDED_IN_BOUND_WS30_DWX_REAL_TICKS",
+      "dxz_commission_rt_per_lot_usd": "0.70",
+      "ftmo_index_commission_rt_per_lot_usd": "0.00",
+      "commission_used_for_merit_rt_per_lot_usd": "0.70",
+      "additional_slippage_points": "0"
+    },
+    "slippage_stress_axis_points": [
+      "0",
+      "1",
+      "3"
+    ],
+    "slippage_axis_source": "framework/calibrations/VPS_SLIPPAGE_LATENCY_CALIBRATION_V2.json:WS30.DWX",
+    "slippage_source_is_auto_stub": true,
+    "slippage_axis_is_supplemental_not_merit": true,
+    "registry_overcost_stress": {
+      "commission_rt_per_lot_usd": "5.50",
+      "mode": "ABSOLUTE_COMMISSION_RATE_NOT_ADDITIVE_TO_0_70",
+      "supplemental_not_merit": true
+    },
+    "silent_merit_center_substitution_forbidden": true
+  },
+  "research_and_live_symbols": {
+    "backtest_exact": "WS30.DWX",
+    "dwx_required_for_research_and_backtest": true,
+    "suffix_stripped_only_for_live_deploy": true,
+    "required_future_registry_rows": {
+      "DXZ_LIVE": "WS30",
+      "FTMO_TRIAL": "US30.cash"
+    },
+    "pre_fails_until_both_registry_rows_are_committed": true
+  },
+  "data_contract": {
+    "execution_terminal": "DEV2",
+    "terminal_data_root": "D:\\QM\\mt5\\DEV2\\Bases\\Custom",
+    "history_root": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\history\\WS30.DWX",
+    "ticks_root": "D:\\QM\\mt5\\DEV2\\Bases\\Custom\\ticks\\WS30.DWX",
+    "coverage_from": "2018-07-02",
+    "coverage_to": "2025-12-31",
+    "history_year_first": 2018,
+    "history_year_last": 2025,
+    "history_file_count": 8,
+    "tick_month_first": "201807",
+    "tick_month_last": "202512",
+    "tick_file_count": 90,
+    "total_file_count": 98,
+    "future_data_receipt_path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\data\\WS30_DWX_201807_202512_DEV2_backtest_data_receipt.json",
+    "future_provision_manifest_path": "D:\\QM\\reports\\setup\\tick-data-timezone\\WS30.DWX_DEV2_TRANSPORT_001\\provision_manifest.json",
+    "future_provision_receipt_path": "D:\\QM\\reports\\setup\\tick-data-timezone\\WS30.DWX_DEV2_TRANSPORT_001\\provision_receipt.json",
+    "source_terminal_preregistered": "T1",
+    "source_history_and_tick_stores_known_available": true,
+    "freeze_data_only_after_dev2_provision_pass": true,
+    "freeze_data_starts_no_mt5_process": true,
+    "pre_provisions_or_copies_no_data": true,
+    "pre_fails_if_future_receipt_or_any_bound_file_is_missing": true
+  },
+  "runtime_contract": {
+    "required_wmi_fix_commit": "13e82258f5e7d514b50ed4c04787d8aa2e30eb5a",
+    "required_wmi_fix_subject": "fix: tolerate metatester owner lookup exit races",
+    "required_commit_must_be_ancestor_of_pre_head": true,
+    "current_runtime_file_hashes_bound_dynamically_at_pre": true,
+    "bound_runtime_roles": [
+      "runner",
+      "runner_child",
+      "dev2_cleanup_helper",
+      "dev2_machine_credential_probe",
+      "dev2_machine_credential_helper",
+      "runner_smoke",
+      "dev2_lane_contract",
+      "scheduled_task_helper"
+    ]
+  },
+  "attempt_budget": {
+    "execution_lane": "DEV2",
+    "primary_attempt_number": 1,
+    "maximum_total_counted_attempts": 2,
+    "reserved_single_infrastructure_alternate_attempt_number": 2,
+    "primary_run_root": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\WS30_ICT_OB_TRANSPORT_NATIVE_ATTEMPT_001",
+    "alternate_run_root": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\WS30_ICT_OB_TRANSPORT_INFRA_ALTERNATE_002",
+    "primary_claim_path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\claims\\QM5_10834_TV_NQ_ICT_OB_WS30_TRANSPORT_001_DEV2_NATIVE_ATTEMPT_001.json",
+    "alternate_claim_path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\claims\\QM5_10834_TV_NQ_ICT_OB_WS30_TRANSPORT_001_DEV2_NATIVE_ATTEMPT_002.json",
+    "primary_authorization_scope": "QM5_10834_WS30_TRANSPORT_PRIMARY_001_4_CELLS_X_2_DUPLICATES_MODEL4_MAX_4_NATIVE_STARTS_PER_CELL",
+    "alternate_authorization_scope": "QM5_10834_WS30_TRANSPORT_INFRA_ALTERNATE_002_4_CELLS_X_2_DUPLICATES_MODEL4_MAX_4_NATIVE_STARTS_PER_CELL",
+    "claim_creation_alone_does_not_count": true,
+    "counting_boundary": "EXACT_DEV2_METATESTER_PROCESS_STARTED",
+    "primary_claim_atomic_create_once": true,
+    "alternate_claim_atomic_create_once": true,
+    "terminal_hopping_forbidden": true,
+    "parameter_or_gate_changes_between_attempts_forbidden": true,
+    "alternate_requires_immutable_primary_invalid_infra_receipt": true,
+    "alternate_requires_zero_native_report_files": true,
+    "alternate_requires_strategy_outcomes_read_false": true,
+    "alternate_requires_strategy_merit_adjudicated_false": true,
+    "alternate_allowed_cause_classes": [
+      "DEV2_CONTROLLER_FAILED_BEFORE_NATIVE_REPORT",
+      "DEV2_SCHEDULED_WORKER_FAILED_BEFORE_NATIVE_REPORT",
+      "DEV2_DATA_STORE_FAILED_BEFORE_NATIVE_REPORT"
+    ],
+    "retrospective_cause_exemptions_forbidden": true,
+    "further_attempts_forbidden": true
+  },
+  "outcome_fence": {
+    "pre_reads_native_reports": false,
+    "pre_reads_strategy_outcomes": false,
+    "freeze_data_reads_native_reports": false,
+    "worker_parses_native_reports": false,
+    "worker_seals_opaque_artifacts_only": true,
+    "post_requires_complete_launch_state": true,
+    "model4_required_twice_per_cell": true,
+    "duplicate_deal_sequence_must_match_exactly": true,
+    "active_run_reports_may_not_be_read_before_fenced_post": true
+  },
+  "classification": "NEW_SYMBOL_TRANSPORT_ON_UNTOUCHED_WS30_DWX_EVIDENCE_NOT_NDX_RETRY"
+}
