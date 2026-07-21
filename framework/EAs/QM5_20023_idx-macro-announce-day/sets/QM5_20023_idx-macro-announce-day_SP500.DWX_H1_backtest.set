@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   639a44f09ab19e3b76286a22da702628d03374f484d33e087125a647561fa5a9
 ; author:       Development
 ; date:         2026-07-21
 ;==========================================================
@@ -21,7 +21,7 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_20023_idx-macro-announce-day.md
-strategy_event_whitelist="NFP|CPI|PPI|FOMC"
+strategy_event_whitelist="NFP,CPI,PPI,FOMC"
 strategy_atr_period=20
 strategy_atr_sl_mult=2.75
 strategy_entry_bar="first_h1_of_event_day"
