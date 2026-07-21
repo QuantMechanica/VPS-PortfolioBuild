@@ -28,6 +28,16 @@ RUN_ID = "20260721T025051Z_24ed7b13baac4e9ea10a2cff755ae5f5"
 TASK_NAME = "QM_QM20002_AUDIT_d3fc294915f4ef4af1ed2795"
 REASON_CODE = "SCHEDULER_TRIGGER_NULL_COLLECTION_CONTRACT_DEFECT"
 FROZEN_COMMIT = "9f258f9fa2cc84746c34f76859888274ca60cf15"
+FROZEN_RUN_SMOKE_PATH = "framework/scripts/run_smoke.ps1"
+FROZEN_RUN_SMOKE_WORKTREE_SIZE = 115860
+FROZEN_RUN_SMOKE_WORKTREE_SHA256 = (
+    "634fd4a012135372b9c9e73b522978ba8cc54453051f1d7204443a124839575a"
+)
+FROZEN_RUN_SMOKE_COMMIT = "adf26cd8b1ea61a306c9949217aad139a9971ab9"
+FROZEN_RUN_SMOKE_RAW_BLOB_SIZE = 113224
+FROZEN_RUN_SMOKE_RAW_BLOB_SHA256 = (
+    "92c324dad414deae95f453d77d2c4d2aa12d27292caf590c972c9c168d181c84"
+)
 PROCESS_PROBE_METHOD = (
     "NATIVE_PROCESS_HANDLE_TOKEN_SID_AND_IMAGE_PATH_"
     "STABLE_DOUBLE_SNAPSHOT_NO_COMMAND_LINE"
@@ -539,14 +549,11 @@ def _assert_pre_repo_bindings_at_freeze(
     run_smoke_size = shared_runtime.get("frozen_run_smoke_size")
     run_smoke_sha256 = shared_runtime.get("frozen_run_smoke_sha256")
     if (
-        type(run_smoke_commit) is not str
-        or re.fullmatch(r"[0-9a-f]{40}", run_smoke_commit) is None
-        or type(run_smoke_size) is not int
-        or run_smoke_size < 0
-        or type(run_smoke_sha256) is not str
-        or HEX64.fullmatch(run_smoke_sha256) is None
+        run_smoke_commit != FROZEN_RUN_SMOKE_COMMIT
+        or run_smoke_size != FROZEN_RUN_SMOKE_WORKTREE_SIZE
+        or run_smoke_sha256 != FROZEN_RUN_SMOKE_WORKTREE_SHA256
     ):
-        raise ClosureError("runtime freeze run_smoke provenance is malformed")
+        raise ClosureError("runtime freeze exact run_smoke provenance drift")
     ancestry = subprocess.run(
         [
             "git",
@@ -567,10 +574,21 @@ def _assert_pre_repo_bindings_at_freeze(
     run_smoke = runtime.get("runner_smoke") if isinstance(runtime, Mapping) else None
     if (
         not isinstance(run_smoke, Mapping)
-        or run_smoke.get("size") != run_smoke_size
-        or run_smoke.get("sha256") != run_smoke_sha256
+        or Path(str(run_smoke.get("path", ""))).resolve()
+        != (contract.repo_root / FROZEN_RUN_SMOKE_PATH).resolve()
+        or run_smoke.get("size") != FROZEN_RUN_SMOKE_WORKTREE_SIZE
+        or run_smoke.get("sha256") != FROZEN_RUN_SMOKE_WORKTREE_SHA256
     ):
         raise ClosureError("historical PRE run_smoke binding differs from runtime freeze")
+    raw_run_smoke = _git_blob_at_commit(
+        contract, FROZEN_RUN_SMOKE_COMMIT, Path(FROZEN_RUN_SMOKE_PATH)
+    )
+    if (
+        len(raw_run_smoke) != FROZEN_RUN_SMOKE_RAW_BLOB_SIZE
+        or hashlib.sha256(raw_run_smoke).hexdigest()
+        != FROZEN_RUN_SMOKE_RAW_BLOB_SHA256
+    ):
+        raise ClosureError("frozen run_smoke normalized Git blob drift")
 
     repo_root = contract.repo_root.resolve()
     checked = 0
@@ -580,12 +598,12 @@ def _assert_pre_repo_bindings_at_freeze(
             relative = path.relative_to(repo_root)
         except ValueError:
             continue
-        commit = (
-            run_smoke_commit
-            if label == "historical PRE.runtime.runner_smoke"
-            else contract.freeze_commit
-        )
-        blob = _git_blob_at_commit(contract, commit, relative)
+        if label == "historical PRE.runtime.runner_smoke":
+            if relative.as_posix() != FROZEN_RUN_SMOKE_PATH:
+                raise ClosureError("historical PRE run_smoke repository path drift")
+            checked += 1
+            continue
+        blob = _git_blob_at_commit(contract, contract.freeze_commit, relative)
         if (
             len(blob) != binding.get("size")
             or hashlib.sha256(blob).hexdigest() != binding.get("sha256")
@@ -601,6 +619,8 @@ def _assert_pre_repo_bindings_at_freeze(
 def _git_assert_frozen_bytes(
     contract: ClosureContract, pre: Mapping[str, Any]
 ) -> None:
+    if contract.freeze_commit != FROZEN_COMMIT:
+        raise ClosureError("runtime freeze commit drift")
     try:
         relative = contract.freeze_path.resolve().relative_to(contract.repo_root.resolve())
     except ValueError as exc:
