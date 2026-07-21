@@ -155,6 +155,34 @@ blocks. The CPU-ceiling rule therefore required an immediate stop: no card,
 EA, registry row, work item, priority, dispatch, compile, or MT5 tester run was
 created or changed.
 
+### Headless fleet checkpoint — 2026-07-21T07:45Z
+
+The current mission re-ran the canonical read-only active-work query and found
+nine claimed backtests against the unchanged backpressure limit of seven:
+
+| Phase | Active |
+|---|---:|
+| Q02 | 5 |
+| Q04 | 2 |
+| Q05 | 1 |
+| Q07 | 1 |
+
+The rows occupy T1, T2, T3, T4, T6, T7, T8, T9, and T10. This is two active
+jobs above the ceiling, so no Q02 row, priority mutation, dispatch tick,
+compile, or MT5 process was started.
+
+The repository and farm reconciliation also reconfirmed that the apparent
+unbuilt `QM5_13119` directory in this checkout is not a new opportunity: git
+history and canonical evidence show that USDJPY/EURAUD already passed Q02 and
+Q03 before a genuine Q04 failure. All seven reputable-screen strict rows have
+therefore already been built and adjudicated, while `QM5_13117`, the last
+survivor, has a terminal Q08 `FAIL_HARD`. Rebuilding or re-enqueueing any of
+them would duplicate completed work rather than grow the certified book.
+
+This checkpoint made no strategy, registry, setfile, manifest, compiled
+artifact, farm database, live, portfolio-gate, KPI, or Q08-contribution
+change. Unrelated worktree changes were preserved.
+
 ## Evidence And Safety
 
 - Scan: `docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md`.
