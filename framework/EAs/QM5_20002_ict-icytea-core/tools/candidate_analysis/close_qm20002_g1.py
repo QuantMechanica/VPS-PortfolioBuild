@@ -34,13 +34,62 @@ PROCESS_PROBE_METHOD = (
 )
 
 HEX64 = re.compile(r"[0-9a-f]{64}")
-TERMINAL_ERROR = re.compile(
+TERMINAL_PENDING_ERROR = re.compile(
     rf"^{REASON_CODE};"
+    r"closure_phase=QUIESCE_PENDING;"
+    r"closure_intent_sha256=(?P<intent>[0-9a-f]{64});"
+    r"ready_task_xml_sha256=(?P<xml>[0-9a-f]{64});"
+    r"task_contract_sha256=(?P<contract>[0-9a-f]{64})$"
+)
+TERMINAL_CLOSED_ERROR = re.compile(
+    rf"^{REASON_CODE};"
+    r"closure_phase=CLOSED;"
     r"closure_intent_sha256=(?P<intent>[0-9a-f]{64});"
     r"quiesced_evidence_sha256=(?P<quiesced>[0-9a-f]{64});"
     r"disabled_task_xml_sha256=(?P<xml>[0-9a-f]{64});"
-    r"task_contract_sha256=(?P<contract>[0-9a-f]{64})$"
+    r"task_contract_sha256=(?P<contract>[0-9a-f]{64});"
+    r"task_start_race_observed=(?P<start_race>true|false)$"
 )
+
+HISTORICAL_BINDING_KEYS = {
+    "pre_receipt",
+    "authorization",
+    "authorization_consumption",
+    "launch_job",
+    "frozen_auditor",
+    "frozen_scheduler",
+    "frozen_control_helper",
+    "runtime_freeze",
+    "closure_utility",
+    "closure_task_helper",
+}
+TASK_EVIDENCE_KEYS = {
+    "state",
+    "enabled",
+    "last_run_utc",
+    "last_task_result",
+    "never_run",
+    "non_null_trigger_count",
+    "non_null_action_count",
+    "task_xml_sha256",
+    "task_contract_sha256",
+    "matching_worker_process_count",
+    "matching_worker_process_count_basis",
+    "dev1_owner_process_count",
+    "dev1_root_process_count",
+    "relevant_process_identity_sha256",
+    "stable_snapshot_count",
+    "process_probe_method",
+}
+PROCESS_EVIDENCE_KEYS = {
+    "matching_worker_process_count",
+    "matching_worker_process_count_basis",
+    "dev1_owner_process_count",
+    "dev1_root_process_count",
+    "relevant_process_identity_sha256",
+    "stable_snapshot_count",
+    "process_probe_method",
+}
 
 
 class ClosureError(RuntimeError):
@@ -439,14 +488,22 @@ def _assert_exact_fields(value: Mapping[str, Any], expected: set[str], label: st
         raise ClosureError(f"{label} exact fields drift")
 
 
-def _validate_process_evidence(evidence: Mapping[str, Any], label: str) -> None:
+def _validate_process_evidence(
+    evidence: Mapping[str, Any], label: str, *, exact_fields: bool = False
+) -> None:
+    if exact_fields:
+        _assert_exact_fields(evidence, PROCESS_EVIDENCE_KEYS, label)
     if (
-        evidence.get("matching_worker_process_count") != 0
+        type(evidence.get("matching_worker_process_count")) is not int
+        or evidence.get("matching_worker_process_count") != 0
         or not str(evidence.get("matching_worker_process_count_basis", "")).startswith(
             "INFERRED_FROM_"
         )
+        or type(evidence.get("dev1_owner_process_count")) is not int
         or evidence.get("dev1_owner_process_count") != 0
+        or type(evidence.get("dev1_root_process_count")) is not int
         or evidence.get("dev1_root_process_count") != 0
+        or type(evidence.get("stable_snapshot_count")) is not int
         or evidence.get("stable_snapshot_count") != 2
         or evidence.get("process_probe_method") != PROCESS_PROBE_METHOD
         or not isinstance(evidence.get("relevant_process_identity_sha256"), str)
@@ -456,44 +513,102 @@ def _validate_process_evidence(evidence: Mapping[str, Any], label: str) -> None:
 
 
 def _validate_task_evidence(
-    evidence: Mapping[str, Any], *, disabled: bool, label: str
+    evidence: Mapping[str, Any], *, disabled: bool, label: str, require_never_run: bool = True
 ) -> None:
+    _assert_exact_fields(evidence, TASK_EVIDENCE_KEYS, label)
     expected_state = "Disabled" if disabled else "Ready"
     if (
         evidence.get("state") != expected_state
         or evidence.get("enabled") is not (not disabled)
-        or evidence.get("never_run") is not True
-        or evidence.get("last_run_utc") is not None
-        or evidence.get("last_task_result") not in {0, 267011}
+        or type(evidence.get("never_run")) is not bool
+        or (require_never_run and evidence.get("never_run") is not True)
+        or (require_never_run and evidence.get("last_run_utc") is not None)
+        or (
+            not require_never_run
+            and evidence.get("last_run_utc") is not None
+            and type(evidence.get("last_run_utc")) is not str
+        )
+        or type(evidence.get("last_task_result")) is not int
+        or (
+            require_never_run
+            and evidence.get("last_task_result") not in {0, 267011}
+        )
         or evidence.get("non_null_trigger_count") != 0
         or evidence.get("non_null_action_count") != 1
         or HEX64.fullmatch(str(evidence.get("task_xml_sha256", ""))) is None
         or HEX64.fullmatch(str(evidence.get("task_contract_sha256", ""))) is None
     ):
         raise ClosureError(f"{label} scheduled-task evidence drift")
+    if evidence.get("last_run_utc") is not None:
+        try:
+            datetime.fromisoformat(str(evidence["last_run_utc"]).replace("Z", "+00:00"))
+        except ValueError as exc:
+            raise ClosureError(f"{label} last-run timestamp is malformed") from exc
     _validate_process_evidence(evidence, label)
 
 
 def _validate_task_probe(
-    probe: Mapping[str, Any], contract: ClosureContract, *, disabled: bool, label: str
+    probe: Mapping[str, Any],
+    contract: ClosureContract,
+    *,
+    disabled: bool,
+    label: str,
+    expected_helper_sha256: str,
+    expected_principal_sid: str,
+    require_never_run: bool = True,
 ) -> Mapping[str, Any]:
     expected_operation = "InspectQuiesced" if disabled else "InspectReady"
+    _assert_exact_fields(
+        probe,
+        {
+            "operation",
+            "helper_sha256",
+            "task_name",
+            "task_path",
+            "principal_sid",
+            "evidence",
+            "absent",
+        },
+        label,
+    )
     if (
         probe.get("operation") != expected_operation
+        or probe.get("helper_sha256") != expected_helper_sha256
         or probe.get("task_name") != contract.task_name
         or probe.get("task_path") != "\\"
+        or probe.get("principal_sid") != expected_principal_sid
         or probe.get("absent") is not False
         or not isinstance(probe.get("evidence"), Mapping)
     ):
         raise ClosureError(f"{label} task probe envelope drift")
     evidence = probe["evidence"]
-    _validate_task_evidence(evidence, disabled=disabled, label=label)
+    _validate_task_evidence(
+        evidence,
+        disabled=disabled,
+        label=label,
+        require_never_run=require_never_run,
+    )
     return evidence
 
 
-def _validate_absent_probe(probe: Mapping[str, Any], contract: ClosureContract) -> None:
+def _validate_absent_probe(
+    probe: Mapping[str, Any], contract: ClosureContract, *, expected_helper_sha256: str
+) -> None:
+    _assert_exact_fields(
+        probe,
+        {
+            "operation",
+            "helper_sha256",
+            "task_name",
+            "task_path",
+            "absent",
+            *PROCESS_EVIDENCE_KEYS,
+        },
+        "task absence proof",
+    )
     if (
         probe.get("operation") != "ProbeAbsent"
+        or probe.get("helper_sha256") != expected_helper_sha256
         or probe.get("task_name") != contract.task_name
         or probe.get("task_path") != "\\"
         or probe.get("absent") is not True
@@ -540,7 +655,23 @@ def _terminal_proof(state: Mapping[str, Any], intent_sha256: str) -> dict[str, s
     terminal = state.get("terminal")
     if not isinstance(terminal, Mapping):
         raise ClosureError("closed G1 state omitted terminal proof")
-    match = TERMINAL_ERROR.fullmatch(str(terminal.get("error", "")))
+    _assert_exact_fields(
+        terminal,
+        {
+            "status",
+            "error_type",
+            "error",
+            "failure_stage",
+            "affected_cell_id",
+            "outcome_fence_crossed",
+            "no_resume",
+            "controller_failure_class",
+        },
+        "G1 terminal proof",
+    )
+    pending_match = TERMINAL_PENDING_ERROR.fullmatch(str(terminal.get("error", "")))
+    closed_match = TERMINAL_CLOSED_ERROR.fullmatch(str(terminal.get("error", "")))
+    match = closed_match or pending_match
     if (
         state.get("status") != "REJECT"
         or state.get("worker_pid") is not None
@@ -558,23 +689,33 @@ def _terminal_proof(state: Mapping[str, Any], intent_sha256: str) -> dict[str, s
         or match.group("intent") != intent_sha256
     ):
         raise ClosureError("terminal G1 REJECT does not bind the exact pre-outcome intent")
-    return match.groupdict()
+    proof = match.groupdict()
+    proof["phase"] = "CLOSED" if closed_match is not None else "QUIESCE_PENDING"
+    return proof
 
 
-def _closed_state(
-    state: Mapping[str, Any],
-    intent_sha256: str,
-    quiesced_evidence: Mapping[str, Any],
+def _terminal_payload(error: str) -> dict[str, Any]:
+    return {
+        "status": "REJECT",
+        "error_type": "G1PreOutcomeClosure",
+        "error": error,
+        "failure_stage": "WORKER_VALIDATION",
+        "affected_cell_id": None,
+        "outcome_fence_crossed": False,
+        "no_resume": True,
+        "controller_failure_class": None,
+    }
+
+
+def _preliminary_closed_state(
+    state: Mapping[str, Any], intent_sha256: str, intent: Mapping[str, Any]
 ) -> dict[str, Any]:
-    task_contract = str(quiesced_evidence["task_contract_sha256"])
-    disabled_xml = str(quiesced_evidence["task_xml_sha256"])
-    quiesced_sha = canonical_sha256(quiesced_evidence)
     finished = utc_now()
     terminal_error = (
-        f"{REASON_CODE};closure_intent_sha256={intent_sha256};"
-        f"quiesced_evidence_sha256={quiesced_sha};"
-        f"disabled_task_xml_sha256={disabled_xml};"
-        f"task_contract_sha256={task_contract}"
+        f"{REASON_CODE};closure_phase=QUIESCE_PENDING;"
+        f"closure_intent_sha256={intent_sha256};"
+        f"ready_task_xml_sha256={intent['task']['ready_task_xml_sha256']};"
+        f"task_contract_sha256={intent['task']['task_contract_sha256']}"
     )
     closed = copy.deepcopy(dict(state))
     closed.update(
@@ -586,19 +727,90 @@ def _closed_state(
             "active_cell": None,
             "outcome_possible_since_utc": None,
             "cells": [],
-            "terminal": {
-                "status": "REJECT",
-                "error_type": "G1PreOutcomeClosure",
-                "error": terminal_error,
-                "failure_stage": "WORKER_VALIDATION",
-                "affected_cell_id": None,
-                "outcome_fence_crossed": False,
-                "no_resume": True,
-                "controller_failure_class": None,
-            },
+            "terminal": _terminal_payload(terminal_error),
         }
     )
     return closed
+
+
+def _final_closed_state(
+    state: Mapping[str, Any],
+    intent_sha256: str,
+    quiesced_evidence: Mapping[str, Any],
+    *,
+    start_race_observed: bool,
+) -> dict[str, Any]:
+    task_contract = str(quiesced_evidence["task_contract_sha256"])
+    disabled_xml = str(quiesced_evidence["task_xml_sha256"])
+    quiesced_sha = canonical_sha256(quiesced_evidence)
+    terminal_error = (
+        f"{REASON_CODE};closure_phase=CLOSED;"
+        f"closure_intent_sha256={intent_sha256};"
+        f"quiesced_evidence_sha256={quiesced_sha};"
+        f"disabled_task_xml_sha256={disabled_xml};"
+        f"task_contract_sha256={task_contract};"
+        f"task_start_race_observed={'true' if start_race_observed else 'false'}"
+    )
+    closed = copy.deepcopy(dict(state))
+    closed.update(
+        {
+            "status": "REJECT",
+            "updated_utc": utc_now(),
+            "worker_pid": None,
+            "active_cell": None,
+            "outcome_possible_since_utc": None,
+            "cells": [],
+            "terminal": _terminal_payload(terminal_error),
+        }
+    )
+    return closed
+
+
+def _validate_closed_state_historical_chain(
+    contract: ClosureContract,
+    state: Mapping[str, Any],
+    intent: Mapping[str, Any],
+    intent_sha256: str,
+    chain: Mapping[str, Any],
+    auditor: ModuleType,
+    *,
+    require_final: bool,
+) -> dict[str, str]:
+    auditor._validate_launch_state_shape(state)
+    original = intent.get("state_before_payload")
+    if not isinstance(original, Mapping):
+        raise ClosureError("closure intent omitted original state payload")
+    immutable_fields = set(original) - {"status", "updated_utc", "finished_utc", "terminal"}
+    if set(state) != set(original):
+        raise ClosureError("closed state exact fields drifted from original state")
+    for field in sorted(immutable_fields):
+        if state.get(field) != original.get(field):
+            raise ClosureError(f"closed state immutable field drift: {field}")
+    if (
+        state.get("job") != chain["bindings"]["launch_job"]
+        or state.get("authorization") != chain["authorization"]
+        or state.get("scheduler") != chain["job"]["scheduler"]
+        or state.get("pre_receipt_path") != str(contract.pre_path.resolve())
+        or state.get("pre_receipt_sha256") != contract.pre_sha256
+        or state.get("resume_count") != 0
+        or state.get("started_utc") is not None
+    ):
+        raise ClosureError("closed state historical launch chain drift")
+    original_updated = _parse_created_utc(
+        original.get("updated_utc"), "original state updated_utc"
+    )
+    closed_updated = _parse_created_utc(
+        state.get("updated_utc"), "closed state updated_utc"
+    )
+    closed_finished = _parse_created_utc(
+        state.get("finished_utc"), "closed state finished_utc"
+    )
+    if not original_updated <= closed_finished <= closed_updated:
+        raise ClosureError("closed state chronology drift")
+    proof = _terminal_proof(state, intent_sha256)
+    if require_final and proof["phase"] != "CLOSED":
+        raise ClosureError("G1 closure remains in QUIESCE_PENDING phase")
+    return proof
 
 
 def _historical_chain(
@@ -679,8 +891,15 @@ def _intent_payload(
     ready_probe: Mapping[str, Any],
     authorized_utc: str,
 ) -> dict[str, Any]:
+    helper_sha256 = str(chain["bindings"]["closure_task_helper"]["sha256"])
+    principal_sid = str(chain["job"]["scheduler"]["principal_sid"])
     ready_evidence = _validate_task_probe(
-        ready_probe, contract, disabled=False, label="ready intent"
+        ready_probe,
+        contract,
+        disabled=False,
+        label="ready intent",
+        expected_helper_sha256=helper_sha256,
+        expected_principal_sid=principal_sid,
     )
     return {
         "schema_version": SCHEMA_VERSION,
@@ -694,6 +913,7 @@ def _intent_payload(
         "runtime_freeze_commit": chain["runtime_freeze_commit"],
         "bindings": chain["bindings"],
         "state_before": dict(state_before_binding),
+        "state_before_payload": copy.deepcopy(dict(state_before)),
         "task": {
             "task_name": contract.task_name,
             "task_path": "\\",
@@ -704,17 +924,51 @@ def _intent_payload(
             "actual_trigger_count": 0,
             "never_run": True,
         },
-        "expected_transition": {
-            "state_status_before": "PENDING",
-            "state_resume_count_before": 0,
-            "state_status_after": "REJECT",
-            "outcome_fence_crossed": False,
-            "no_resume": True,
-            "worker_tree_expected_absent": True,
-            "task_transition": "READY_TO_DISABLED_TO_ABSENT",
-        },
+        "expected_transition": _expected_transition(),
         "outcome_data_read": False,
     }
+
+
+def _expected_transition() -> dict[str, Any]:
+    return {
+        "state_status_before": "PENDING",
+        "state_resume_count_before": 0,
+        "state_status_after": "REJECT",
+        "outcome_fence_crossed": False,
+        "no_resume": True,
+        "worker_tree_expected_absent": True,
+        "task_transition": "READY_TO_DISABLED_TO_ABSENT",
+        "terminal_reject_published_before_task_disable": True,
+    }
+
+
+def _parse_created_utc(value: Any, label: str) -> datetime:
+    if type(value) is not str or not value.endswith("+00:00"):
+        raise ClosureError(f"{label} must be an exact UTC +00:00 string")
+    try:
+        parsed = datetime.fromisoformat(value)
+    except ValueError as exc:
+        raise ClosureError(f"{label} is malformed") from exc
+    if parsed.tzinfo is None or parsed.utcoffset() != timedelta(0):
+        raise ClosureError(f"{label} is not UTC")
+    return parsed.astimezone(timezone.utc)
+
+
+def _validate_binding_object(
+    value: Any, expected: Mapping[str, Any], label: str
+) -> None:
+    if not isinstance(value, Mapping):
+        raise ClosureError(f"{label} is not a binding object")
+    _assert_exact_fields(value, {"path", "size", "sha256"}, label)
+    if (
+        type(value.get("path")) is not str
+        or type(value.get("size")) is not int
+        or value.get("size", -1) < 0
+        or type(value.get("sha256")) is not str
+        or HEX64.fullmatch(str(value.get("sha256", ""))) is None
+        or dict(value) != dict(expected)
+    ):
+        raise ClosureError(f"{label} exact value drift")
 
 
 def _validate_intent(
@@ -722,6 +976,7 @@ def _validate_intent(
     intent: Mapping[str, Any],
     chain: Mapping[str, Any],
     authorized_utc: str,
+    auditor: ModuleType,
 ) -> None:
     _assert_exact_fields(
         intent,
@@ -737,6 +992,7 @@ def _validate_intent(
             "runtime_freeze_commit",
             "bindings",
             "state_before",
+            "state_before_payload",
             "task",
             "expected_transition",
             "outcome_data_read",
@@ -757,15 +1013,49 @@ def _validate_intent(
         or intent.get("outcome_data_read") is not False
     ):
         raise ClosureError("existing closure intent identity/bindings drift")
-    parse_owner_utc(str(intent.get("authorized_utc", "")))
+    authorized = parse_owner_utc(str(intent.get("authorized_utc", "")))
+    created = _parse_created_utc(intent.get("created_utc"), "closure intent created_utc")
+    if created < authorized or created > datetime.now(timezone.utc) + timedelta(minutes=5):
+        raise ClosureError("closure intent chronology drift")
+    bindings = intent.get("bindings")
+    if not isinstance(bindings, Mapping):
+        raise ClosureError("closure intent bindings are not an object")
+    _assert_exact_fields(bindings, HISTORICAL_BINDING_KEYS, "closure intent bindings")
+    for key in sorted(HISTORICAL_BINDING_KEYS):
+        _validate_binding_object(
+            bindings.get(key), chain["bindings"][key], f"closure intent {key}"
+        )
     task = intent.get("task")
     if not isinstance(task, Mapping) or not isinstance(task.get("ready_probe"), Mapping):
         raise ClosureError("closure intent ready proof is absent")
+    _assert_exact_fields(
+        task,
+        {
+            "task_name",
+            "task_path",
+            "ready_probe",
+            "ready_probe_sha256",
+            "ready_task_xml_sha256",
+            "task_contract_sha256",
+            "actual_trigger_count",
+            "never_run",
+        },
+        "closure intent task",
+    )
+    helper_sha256 = str(chain["bindings"]["closure_task_helper"]["sha256"])
+    principal_sid = str(chain["job"]["scheduler"]["principal_sid"])
     evidence = _validate_task_probe(
-        task["ready_probe"], contract, disabled=False, label="persisted ready intent"
+        task["ready_probe"],
+        contract,
+        disabled=False,
+        label="persisted ready intent",
+        expected_helper_sha256=helper_sha256,
+        expected_principal_sid=principal_sid,
     )
     if (
-        task.get("ready_probe_sha256") != canonical_sha256(task["ready_probe"])
+        task.get("task_name") != contract.task_name
+        or task.get("task_path") != "\\"
+        or task.get("ready_probe_sha256") != canonical_sha256(task["ready_probe"])
         or task.get("ready_task_xml_sha256") != evidence["task_xml_sha256"]
         or task.get("task_contract_sha256") != evidence["task_contract_sha256"]
         or task.get("actual_trigger_count") != 0
@@ -773,12 +1063,28 @@ def _validate_intent(
     ):
         raise ClosureError("closure intent task proof binding drift")
     state_before = intent.get("state_before")
+    state_before_payload = intent.get("state_before_payload")
     if (
         not isinstance(state_before, Mapping)
+        or not isinstance(state_before_payload, Mapping)
         or state_before.get("path") != str(contract.state_path.resolve())
         or state_before.get("sha256") != contract.state_before_sha256
+        or type(state_before.get("size")) is not int
+        or state_before.get("size") != len(canonical_bytes(state_before_payload))
+        or hashlib.sha256(canonical_bytes(state_before_payload)).hexdigest()
+        != contract.state_before_sha256
     ):
         raise ClosureError("closure intent state-before binding drift")
+    _assert_exact_fields(state_before, {"path", "size", "sha256"}, "intent state_before")
+    auditor._validate_launch_state_shape(state_before_payload)
+    _assert_initial_state(
+        contract,
+        state_before_payload,
+        chain["bindings"]["launch_job"],
+        chain["authorization"],
+    )
+    if intent.get("expected_transition") != _expected_transition():
+        raise ClosureError("closure intent expected transition drift")
 
 
 def _receipt_payload(
