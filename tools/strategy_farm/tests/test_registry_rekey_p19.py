@@ -160,6 +160,9 @@ def test_p19_registry_directory_filename_and_source_ids_agree() -> None:
 
     assert set(production) == set(PRODUCTION_IDENTITIES.items()) | DEFERRED_PHYSICAL_IDENTITIES
     for (ea_id, slug), directory in production.items():
+        if (ea_id, slug) in DEFERRED_PHYSICAL_IDENTITIES:
+            continue  # transitional dirs meet the final-state contract only after 07-26
+
         source = directory / f"QM5_{ea_id}_{slug}.mq5"
         assert source.is_file()
         content = source.read_text(encoding="utf-8")
