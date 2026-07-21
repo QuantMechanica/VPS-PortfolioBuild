@@ -139,6 +139,11 @@ double             g_sweep_high       = 0.0;     // sweep bar high
 datetime           g_sweep_time       = 0;       // closed-bar time of the accepted sweep
 
 bool   g_pm_recording  = false;   // true while inside the PM window
+// Keep the last completed PM session across non-trading calendar days so the
+// card's "prior trading day" means Friday on Monday (and likewise across a
+// venue holiday). A calendar-day TTL would change that meaning; exact stale-
+// session rejection therefore belongs behind a venue trading-calendar source,
+// which this single-symbol EA does not have.
 bool   g_pm_ready      = false;   // true once a PM range has been finalized at least once
 bool   g_pm_valid      = false;   // false if the PM session was trending (card codification filter)
 double g_pm_open       = 0.0;
@@ -159,6 +164,48 @@ int ComputeBias()
    if(ema_fast < ema_slow)
       return -1;
    return 0;
+  }
+
+// Convert every calculated pending-order price to the symbol's executable
+// tick grid before geometry or RR is judged. Directional rounding is
+// deliberately conservative for the complete order: buy prices round down
+// (wider stop/lower target), sell prices round up (wider stop/lower reward).
+bool Strategy_QuantizeDirectionalPrice(const double raw_price,
+                                       const double tick_size,
+                                       const int direction,
+                                       double &quantized_price)
+  {
+   quantized_price = 0.0;
+   if(raw_price <= 0.0 || !MathIsValidNumber(raw_price) ||
+      tick_size <= 0.0 || !MathIsValidNumber(tick_size) ||
+      (direction != 1 && direction != -1))
+      return false;
+
+   const double tick_units = raw_price / tick_size;
+   if(!MathIsValidNumber(tick_units))
+      return false;
+
+   // Tiny tolerance preserves an already on-grid binary representation while
+   // retaining the requested directional floor/ceil for off-grid prices.
+   const double rounded_units = (direction > 0)
+                                ? MathFloor(tick_units + 1e-12)
+                                : MathCeil(tick_units - 1e-12);
+   const double candidate = NormalizeDouble(rounded_units * tick_size, _Digits);
+   if(candidate <= 0.0 || !MathIsValidNumber(candidate))
+      return false;
+
+   // Digits formatting is also applied by QM_Entry. Prove that it preserves
+   // both the tick grid and the conservative side before accepting the value.
+   const double candidate_units = candidate / tick_size;
+   const double side_tolerance  = tick_size * 1e-9;
+   if(!MathIsValidNumber(candidate_units) ||
+      MathAbs(candidate_units - MathRound(candidate_units)) > 1e-8 ||
+      (direction > 0 && candidate > raw_price + side_tolerance) ||
+      (direction < 0 && candidate < raw_price - side_tolerance))
+      return false;
+
+   quantized_price = candidate;
+   return true;
   }
 
 // -----------------------------------------------------------------------------
@@ -322,42 +369,73 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       g_setup_done_today = true; // consume the day's one FVG-confirmed setup, including RR/geometry skips
       g_setup_state       = STRATEGY_SETUP_IDLE;
 
-      const double entry_price = (fvg_upper + fvg_lower) / 2.0; // limit at 50% of the FVG
-      const double sl_buffer   = sl_buffer_atr_mult * atr_value;
+      const double raw_entry_price = (fvg_upper + fvg_lower) / 2.0; // limit at 50% of the FVG
+      const double sl_buffer       = sl_buffer_atr_mult * atr_value;
 
       QM_OrderType order_type;
-      double sl_price;
-      double tp_price;
+      double raw_sl_price;
 
       if(g_bias > 0)
         {
          order_type = QM_BUY_LIMIT;
-         sl_price   = g_sweep_low - sl_buffer;
-         tp_price   = (strategy_tp_mode == STRATEGY_TP_OPPOSITE_EXTREME)
-                      ? g_pm_high
-                      : QM_TakeRR(_Symbol, order_type, entry_price, sl_price, tp_rr_multiple);
+         raw_sl_price = g_sweep_low - sl_buffer;
         }
       else
         {
          order_type = QM_SELL_LIMIT;
-         sl_price   = g_sweep_high + sl_buffer;
-         tp_price   = (strategy_tp_mode == STRATEGY_TP_OPPOSITE_EXTREME)
-                      ? g_pm_low
-                      : QM_TakeRR(_Symbol, order_type, entry_price, sl_price, tp_rr_multiple);
+         raw_sl_price = g_sweep_high + sl_buffer;
         }
 
-      const double primary_target = (g_bias > 0) ? g_pm_high : g_pm_low;
+      // SYMBOL_TRADE_TICK_SIZE is the executable grid; point/digits are not a
+      // valid fallback for exchange-style index ticks. Missing metadata is a
+      // hard no-order condition.
+      const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
+      if(tick_size <= 0.0 || !MathIsValidNumber(tick_size))
+         return false;
+
+      double entry_price    = 0.0;
+      double sl_price       = 0.0;
+      double primary_target = 0.0;
+      const double raw_primary_target = (g_bias > 0) ? g_pm_high : g_pm_low;
+      if(!Strategy_QuantizeDirectionalPrice(raw_entry_price, tick_size, g_bias, entry_price) ||
+         !Strategy_QuantizeDirectionalPrice(raw_sl_price, tick_size, g_bias, sl_price) ||
+         !Strategy_QuantizeDirectionalPrice(raw_primary_target, tick_size, g_bias, primary_target))
+         return false;
+
+      double tp_price = primary_target;
+      if(strategy_tp_mode == STRATEGY_TP_FIXED_RR)
+        {
+         // Derive fixed-RR TP from the already quantized entry and stop, then
+         // quantize that calculated TP as well. All checks below therefore use
+         // the exact values that QM_Entry will transmit after digits formatting.
+         const double raw_fixed_tp = QM_TakeRR(_Symbol,
+                                               order_type,
+                                               entry_price,
+                                               sl_price,
+                                               tp_rr_multiple);
+         if(!Strategy_QuantizeDirectionalPrice(raw_fixed_tp, tick_size, g_bias, tp_price))
+            return false;
+        }
+
       const bool geometry_valid = (g_bias > 0)
-                                  ? (sl_price < entry_price && primary_target > entry_price)
-                                  : (sl_price > entry_price && primary_target < entry_price);
+                                  ? (sl_price < entry_price &&
+                                     primary_target > entry_price &&
+                                     tp_price > entry_price)
+                                  : (sl_price > entry_price &&
+                                     primary_target < entry_price &&
+                                     tp_price < entry_price);
       if(entry_price <= 0.0 || sl_price <= 0.0 || tp_price <= 0.0 || !geometry_valid)
          return false;
 
-      // RR floor is judged against the primary opposite-extreme target
-      // regardless of tp_mode (card step 6): skip if there is not enough room.
-      const double risk_dist   = MathAbs(entry_price - sl_price);
-      const double target_dist = MathAbs(primary_target - entry_price);
-      if(risk_dist <= 0.0 || target_dist < rr_floor * risk_dist)
+      // Card step 6 always applies the RR floor to the opposite PM extreme,
+      // including the fixed-RR Q03 variant. Also recompute it for the actual
+      // transmitted TP so every accepted request itself clears the same floor.
+      const double risk_dist               = MathAbs(entry_price - sl_price);
+      const double primary_target_dist     = MathAbs(primary_target - entry_price);
+      const double transmitted_target_dist = MathAbs(tp_price - entry_price);
+      if(risk_dist <= 0.0 ||
+         primary_target_dist < rr_floor * risk_dist ||
+         transmitted_target_dist < rr_floor * risk_dist)
          return false;
 
       MqlDateTime now_dt;
@@ -368,9 +446,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
 
       req.type               = order_type;
-      req.price              = QM_StopRulesNormalizePrice(_Symbol, entry_price);
-      req.sl                 = QM_StopRulesNormalizePrice(_Symbol, sl_price);
-      req.tp                 = QM_StopRulesNormalizePrice(_Symbol, tp_price);
+      req.price              = entry_price;
+      req.sl                 = sl_price;
+      req.tp                 = tp_price;
       req.reason             = (g_bias > 0) ? "MULHAM_PM_SWEEP_LONG" : "MULHAM_PM_SWEEP_SHORT";
       req.symbol_slot        = qm_magic_slot_offset;
       req.expiration_seconds = seconds_to_cancel;
@@ -384,8 +462,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(g_bias > 0)
      {
       // Bullish bias: only low-side sweeps (v-shape fakeout below PM low,
-      // closing back inside the PM range).
-      if(bar_low < g_pm_low && bar_close >= g_pm_low)
+      // closing back inside BOTH PM range bounds).
+      if(bar_low < g_pm_low &&
+         bar_close >= g_pm_low && bar_close <= g_pm_high)
         {
          g_sweep_low   = bar_low;
          g_sweep_high  = bar_high;
@@ -395,8 +474,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      }
    else
      {
-      // Bearish bias: only high-side sweeps.
-      if(bar_high > g_pm_high && bar_close <= g_pm_high)
+      // Bearish bias: only high-side sweeps closing inside BOTH bounds.
+      if(bar_high > g_pm_high &&
+         bar_close <= g_pm_high && bar_close >= g_pm_low)
         {
          g_sweep_low   = bar_low;
          g_sweep_high  = bar_high;
@@ -442,6 +522,11 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
   {
+   // Card body fixes the execution/entry timeframe at M5. Refuse attachment
+   // elsewhere so PERIOD_CURRENT reads cannot silently change the strategy.
+   if(_Period != PERIOD_M5)
+      return INIT_PARAMETERS_INCORRECT;
+
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
                         RISK_PERCENT,
