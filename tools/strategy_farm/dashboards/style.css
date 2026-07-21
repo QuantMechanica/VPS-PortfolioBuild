@@ -15,40 +15,51 @@
 
 /* ── Design Tokens ───────────────────────────────────────────── */
 :root{
-  /* Surface scale — warm paper, NOT clinic white */
-  --bg:#f6f5f2;
-  --surface-1:#ffffff;
-  --surface-2:#f1efe8;
-  --surface-3:#e8e4d9;
+  /* Surface scale — DARK slate · Dark-Mode of Design-System v2 (OWNER 2026-07-21) */
+  --bg:#0c0f16;
+  --surface-1:#151a23;
+  --surface-2:#1c2330;
+  --surface-3:#27303f;
 
-  /* Text scale — warm ink, not pure grey */
-  --text:#1c1a16;
-  --text-2:#45403a;
-  --text-3:#726b60;
-  --text-4:#9a938a;
+  /* Text scale — light on dark */
+  --text:#e8ebf0;
+  --text-2:#b6bdc8;
+  --text-3:#868e9c;
+  --text-4:#5b6472;
 
-  /* Borders — warm-gray hairlines */
-  --border:#e2ded4;
-  --border-2:#cfc9bc;
-  --border-3:#b3ab9c;
+  /* Borders — dark hairlines */
+  --border:#222a37;
+  --border-2:#313a49;
+  --border-3:#445063;
 
-  /* THE accent — steel blue (the ONE accent; emerald double-role abolished) */
-  --signal:#2954d4;
-  --signal-bright:#1e42b8;
-  --signal-dim:#5b7ade;
+  /* THE accent — steel blue (kept from v2; brightened for dark legibility) */
+  --signal:#5b82f0;
+  --signal-bright:#84a2ff;
+  --signal-dim:#3455a8;
 
-  /* Status colors — meaning unchanged, translated to light palette */
-  --pass:#1a8f4c;       /* green — done, good, OK */
-  --fail:#d13438;       /* red — broken, CRITICAL */
-  --warn:#b8720a;       /* amber — attention needed / MAINTENANCE */
-  --info:#45403a;       /* ink text-2 */
-  --promising:#8f6e06;  /* goldenrod — in-progress, looking good (distinct from warn) */
-  --dead:#98918a;       /* warm grey — retired */
-  --live:#0e7490;       /* teal — live trading */
+  /* Status colors — meaning unchanged, brightened for dark contrast */
+  --pass:#30be69;       /* green — done, good, OK */
+  --fail:#f05a5e;       /* red — broken, CRITICAL */
+  --warn:#e19a24;       /* amber — attention needed / MAINTENANCE */
+  --info:#b6bdc8;       /* light ink text-2 */
+  --promising:#d1ac31;  /* goldenrod — in-progress, looking good (distinct from warn) */
+  --dead:#6b7280;       /* grey — retired */
+  --live:#28b0cd;       /* teal — live trading */
 
   /* P&L semantics — TRUE red/green, decoupled from status (Direction C) */
-  --profit:#1a8f4c;     /* positive P&L */
-  --loss:#d13438;       /* negative P&L */
+  --profit:#30be69;     /* positive P&L */
+  --loss:#f05a5e;       /* negative P&L */
+
+  /* Charts stay on WHITE in dark mode (OWNER 2026-07-21) — scheme colors on white.
+     Saturated hues read better on a light panel than the brightened dark-mode variants. */
+  --chart-surface:#ffffff;
+  --chart-ink:#1c1a16;
+  --chart-ink-2:#45403a;
+  --chart-ink-3:#726b60;
+  --chart-grid:rgba(28,26,22,0.10);
+  --chart-profit:#1a8f4c;
+  --chart-loss:#d13438;
+  --chart-accent:#2954d4;
 
   /* ── Legacy aliases (so any class still using these works) ── */
   /* Surface */
@@ -167,6 +178,15 @@ input,textarea{font-family:inherit;font-size:inherit}
 .t-lg{font-size:var(--fs-lg)}
 .t-xl{font-size:var(--fs-xl)}
 .t-em{color:var(--signal)}
+
+/* ── Chart-on-white (dark theme keeps data charts on a light panel) ──
+   OWNER 2026-07-21: pages dark, the chart itself uses scheme colors on white. */
+.chart-white{background:var(--chart-surface);color:var(--chart-ink);border:1px solid var(--border-3)}
+.chart-white .cw-ink{color:var(--chart-ink)}
+.chart-white .cw-ink-2{color:var(--chart-ink-2)}
+.chart-white .cw-ink-3{color:var(--chart-ink-3)}
+.chart-pos{color:var(--chart-profit)}
+.chart-neg{color:var(--chart-loss)}
 .t-muted{color:var(--text-3)}
 .t-subtle{color:var(--text-4)}
 .t-dim{color:var(--text-2)}

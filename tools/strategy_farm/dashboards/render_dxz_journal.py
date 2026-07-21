@@ -416,8 +416,8 @@ def equity_growth_svg(points: list[tuple[str, float]], height: int = 240) -> str
     zero_y = _y(0.0)
     area_pts = f"{_x(0):.1f},{zero_y:.1f} " + line_pts + f" {_x(n - 1):.1f},{zero_y:.1f}"
     up = vals[-1] >= 0
-    stroke = "#25b567" if up else "#e0575b"
-    fill = "rgba(37,181,103,0.16)" if up else "rgba(224,87,91,0.16)"
+    stroke = "#1a8f4c" if up else "#d13438"
+    fill = "rgba(26,143,76,0.15)" if up else "rgba(209,52,56,0.15)"
     grid = "".join(
         f'<line x1="{pad_l}" y1="{_y(hi - span * f):.1f}" x2="{W - pad_r}" '
         f'y2="{_y(hi - span * f):.1f}" stroke="rgba(114,107,96,0.10)" stroke-width="1"/>'
@@ -482,9 +482,9 @@ def monthly_pnl_calendar_html(closed_trades: list[dict], year: int, month: int,
         style, body = "", ""
         if rec and rec[0] > 0:
             net = rec[1]
-            pcls = "net-pos" if net > 0 else ("net-neg" if net < 0 else "")
+            pcls = "chart-pos" if net > 0 else ("chart-neg" if net < 0 else "")
             if net != 0:
-                base = "37,181,103" if net > 0 else "224,87,91"
+                base = "26,143,76" if net > 0 else "209,52,56"
                 alpha = 0.12 + 0.42 * min(1.0, abs(net) / max_abs)
                 style = f' style="background:rgba({base},{alpha:.2f})"'
             sign = "+" if net > 0 else ("−" if net < 0 else "")
@@ -503,7 +503,7 @@ def monthly_pnl_calendar_html(closed_trades: list[dict], year: int, month: int,
                      for d in wk if d.month == month and d.year == year)
         wk_n = sum(1 for d in wk if d.month == month and d.year == year
                    and byday.get(d.isoformat(), [0])[0] > 0)
-        wcls = "net-pos" if wk_net > 0 else ("net-neg" if wk_net < 0 else "")
+        wcls = "chart-pos" if wk_net > 0 else ("chart-neg" if wk_net < 0 else "")
         wsign = "+" if wk_net > 0 else ("−" if wk_net < 0 else "")
         wk_cell = (
             f'<td class="cal-wk"><div class="cal-wk-pnl {wcls}">{wsign}{abs(wk_net):,.0f}</div>'
@@ -994,7 +994,7 @@ EXTRA_CSS = """
 .arch2-empty{color:var(--text-4);font-style:italic;padding:16px !important;text-align:center}
 .sec-meta{font-family:var(--font-mono);font-size:11px;color:var(--text-3);letter-spacing:0.04em;margin-left:auto}
 .risk-tag{font-family:var(--font-mono);font-size:9px;color:var(--warn);border:1px solid var(--warn);padding:1px 5px;letter-spacing:0.06em;text-transform:uppercase}
-.daily-bars-wrap{background:var(--surface-1);border:1px solid var(--border);padding:12px}
+.daily-bars-wrap{background:var(--chart-surface);border:1px solid var(--border-3);padding:12px}
 .daily-bars{display:block}
 .pnl-subhead{font-size:15px;font-weight:600;letter-spacing:-0.01em;margin:22px 0 4px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
 .pnl-subhead-meta{font-family:var(--font-mono);font-size:11px;font-weight:400;color:var(--text-3);letter-spacing:0.04em}
@@ -1010,9 +1010,9 @@ EXTRA_CSS = """
 .kpi-slash{color:var(--text-4)}
 .eq-sec .sec-note{margin-bottom:14px}
 .eq-chart{display:flex;gap:10px;align-items:stretch}
-.eq-yaxis{display:flex;flex-direction:column;justify-content:space-between;font-family:var(--font-mono);font-size:10px;text-align:right;min-width:58px;padding:2px 0}
+.eq-yaxis{display:flex;flex-direction:column;justify-content:space-between;font-family:var(--font-mono);font-size:10px;text-align:right;min-width:58px;padding:2px 0;color:var(--text-3)}
 .eq-plot{flex:1;min-width:0}
-.eq-wrap{background:var(--surface-1);border:1px solid var(--border);padding:10px 6px}
+.eq-wrap{background:var(--chart-surface);border:1px solid var(--border-3);padding:10px 6px}
 .eq-svg{display:block}
 .eq-xaxis{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:10px;color:var(--text-3);margin-top:5px;padding:0 4px}
 .daily-chart{display:flex;gap:8px;align-items:stretch}
@@ -1020,21 +1020,21 @@ EXTRA_CSS = """
 .daily-yaxis .daily-zero{color:var(--text-4)}
 .daily-plot{flex:1;min-width:0}
 .daily-xaxis{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:9.5px;color:var(--text-3);margin-top:5px;padding:0 2px}
-.cal-wrap{overflow-x:auto}
+.cal-wrap{overflow-x:auto;background:var(--chart-surface);border:1px solid var(--border-3);padding:12px}
 .cal{width:100%;border-collapse:separate;border-spacing:5px;table-layout:fixed;min-width:760px}
-.cal th{font-family:var(--font-mono);font-size:10px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:0.1em;padding:2px 6px;text-align:left}
-.cal th.cal-wk-h{color:var(--text-4)}
-.cal-day{vertical-align:top;height:78px;border:1px solid var(--border);background:var(--surface-1);padding:6px 8px}
+.cal th{font-family:var(--font-mono);font-size:10px;font-weight:600;color:var(--chart-ink-3);text-transform:uppercase;letter-spacing:0.1em;padding:2px 6px;text-align:left}
+.cal th.cal-wk-h{color:var(--chart-ink-3);opacity:0.65}
+.cal-day{vertical-align:top;height:78px;border:1px solid rgba(0,0,0,0.09);background:var(--chart-surface);padding:6px 8px}
 .cal-day.cal-out{background:transparent;border-color:transparent}
-.cal-day.cal-out .cal-date{opacity:0.35}
-.cal-day.cal-weekend{background:rgba(255,255,255,0.02)}
-.cal-day.cal-today{outline:2px solid var(--signal);outline-offset:-1px}
-.cal-date{font-family:var(--font-mono);font-size:11px;color:var(--text-3);font-weight:500}
+.cal-day.cal-out .cal-date{opacity:0.3}
+.cal-day.cal-weekend{background:rgba(0,0,0,0.025)}
+.cal-day.cal-today{outline:2px solid var(--chart-accent);outline-offset:-1px}
+.cal-date{font-family:var(--font-mono);font-size:11px;color:var(--chart-ink-3);font-weight:500}
 .cal-pnl{font-size:15px;font-weight:600;letter-spacing:-0.01em;margin-top:9px}
-.cal-n{font-family:var(--font-mono);font-size:9.5px;color:var(--text-3);margin-top:2px}
-.cal-wk{vertical-align:top;height:78px;background:var(--surface-2);border:1px solid var(--border);padding:6px 8px;text-align:right}
+.cal-n{font-family:var(--font-mono);font-size:9.5px;color:var(--chart-ink-3);margin-top:2px}
+.cal-wk{vertical-align:top;height:78px;background:rgba(0,0,0,0.045);border:1px solid rgba(0,0,0,0.09);padding:6px 8px;text-align:right}
 .cal-wk-pnl{font-family:var(--font-mono);font-size:12px;font-weight:600}
-.cal-wk-n{font-family:var(--font-mono);font-size:9px;color:var(--text-3);margin-top:5px}
+.cal-wk-n{font-family:var(--font-mono);font-size:9px;color:var(--chart-ink-3);margin-top:5px}
 """
 
 
