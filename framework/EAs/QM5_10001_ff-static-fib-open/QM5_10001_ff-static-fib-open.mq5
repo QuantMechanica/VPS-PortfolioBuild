@@ -342,19 +342,12 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
@@ -377,10 +370,24 @@ void OnTick()
         }
      }
 
+   // This system only evaluates entries on a closed M15 bar.  Keep calendar
+   // lookups below the new-bar gate so Model-4 ticks do not repeat the same
+   // entry-only news work thousands of times per bar.  Position management
+   // and exits above remain active throughout news windows.
    if(!QM_IsNewBar())
       return;
 
    QM_EquityStreamOnNewBar();
+
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
