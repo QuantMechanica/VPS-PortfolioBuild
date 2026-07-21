@@ -592,7 +592,7 @@ def validate_relocated_backtest_data_receipt(
 
     B.load_json = projected_loader
     try:
-        return _BASE_VALIDATE_BACKTEST_DATA_RECEIPT(
+        validated = _BASE_VALIDATE_BACKTEST_DATA_RECEIPT(
             path,
             symbol,
             terminal_data_root=terminal_data_root,
@@ -600,6 +600,19 @@ def validate_relocated_backtest_data_receipt(
         )
     finally:
         B.load_json = saved_loader
+    if validated.get("receipt") != receipt_binding:
+        raise B.InvalidEvidence(
+            "alternate frozen data receipt changed during relocated validation"
+        )
+    final_binding = B.file_binding(path, EXPECTED_DATA_RECEIPT_SHA256)
+    if (
+        final_binding != receipt_binding
+        or final_binding["size"] != EXPECTED_DATA_RECEIPT_SIZE
+    ):
+        raise B.InvalidEvidence(
+            "alternate frozen data receipt changed after relocated validation"
+        )
+    return validated
 
 
 def _binding_from_closure(row: Mapping[str, Any]) -> dict[str, Any]:

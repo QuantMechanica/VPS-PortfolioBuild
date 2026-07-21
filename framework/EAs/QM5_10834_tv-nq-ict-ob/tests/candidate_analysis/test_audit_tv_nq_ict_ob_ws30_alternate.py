@@ -147,6 +147,26 @@ def test_relocated_data_validator_binds_exact_attempt001_receipt() -> None:
     }
 
 
+def test_relocated_data_validator_rejects_receipt_toctou(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        subject,
+        "_BASE_VALIDATE_BACKTEST_DATA_RECEIPT",
+        lambda *_args, **_kwargs: {
+            "receipt": {
+                "path": str(subject.W.FUTURE_DATA_RECEIPT_PATH.resolve()),
+                "size": subject.EXPECTED_DATA_RECEIPT_SIZE,
+                "sha256": "1" * 64,
+            }
+        },
+    )
+    with pytest.raises(subject.B.InvalidEvidence, match="changed during"):
+        subject.validate_relocated_backtest_data_receipt(
+            subject.W.FUTURE_DATA_RECEIPT_PATH, "WS30.DWX"
+        )
+
+
 def test_data_receipt_validator_accepts_only_byte_identical_detached_projection(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
