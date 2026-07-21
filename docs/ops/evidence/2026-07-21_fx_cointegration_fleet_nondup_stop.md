@@ -50,3 +50,18 @@ Wait for existing FX work to clear terminal capacity, then select a genuinely
 non-terminal forex card from live farm state. Do not reopen the exhausted
 66-pair cointegration lineage without a new OWNER-approved source or scan
 contract.
+
+## Paced-fleet checkpoint — 2026-07-21 08:14 Europe/Berlin
+
+A fresh read-only farm query found nine active work items: seven Q02, one Q04,
+and one Q08. The configured paced-fleet launch gate remains `1`. The MT5 slot
+scan found factory tester processes running on T2, T3, T4, T8, T9, and T10;
+T_Live was observed read-only and was not touched.
+
+The source-qualified frontier and preferred-anchor verdicts remain unchanged:
+`QM5_12532` is past Q02 with a later Q05 failure, and `QM5_12533` is past Q02
+with a later Q04 failure. Replaying either Q02 would be duplicate work, while
+creating another scan-derived card would weaken the documented reputable-source
+screen. The explicit CPU-ceiling rule therefore required an immediate stop.
+No queue row, priority, strategy artifact, terminal process, portfolio gate, or
+live/deploy artifact was changed.
