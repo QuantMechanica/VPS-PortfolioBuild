@@ -74,6 +74,8 @@ TERMINAL_CLOSED_ERROR = re.compile(
     r"quiesced_evidence_sha256=(?P<quiesced>[0-9a-f]{64});"
     r"disabled_task_xml_sha256=(?P<xml>[0-9a-f]{64});"
     r"task_contract_sha256=(?P<contract>[0-9a-f]{64});"
+    r"quiescence_anchor_sha256=(?P<anchor>[0-9a-f]{64});"
+    r"quiescence_anchor_binding_sha256=(?P<anchor_binding>[0-9a-f]{64});"
     r"task_start_race_observed=(?P<start_race>true|false)$"
 )
 
@@ -1167,6 +1169,7 @@ def _final_closed_state(
     state: Mapping[str, Any],
     intent_sha256: str,
     quiesced_evidence: Mapping[str, Any],
+    anchor_binding: Mapping[str, Any],
     *,
     start_race_observed: bool,
 ) -> dict[str, Any]:
@@ -1182,6 +1185,7 @@ def _final_closed_state(
     pending_start_race = pending_proof.get("start_race") == "true"
     if pending_start_race and not start_race_observed:
         raise ClosureError("pre-terminal start race cannot be downgraded")
+    _validate_recorded_binding(anchor_binding, "quiescence anchor")
     task_contract = str(quiesced_evidence["task_contract_sha256"])
     disabled_xml = str(quiesced_evidence["task_xml_sha256"])
     quiesced_sha = canonical_sha256(quiesced_evidence)
@@ -1193,6 +1197,8 @@ def _final_closed_state(
         f"quiesced_evidence_sha256={quiesced_sha};"
         f"disabled_task_xml_sha256={disabled_xml};"
         f"task_contract_sha256={task_contract};"
+        f"quiescence_anchor_sha256={anchor_binding['sha256']};"
+        f"quiescence_anchor_binding_sha256={canonical_sha256(anchor_binding)};"
         f"task_start_race_observed={'true' if start_race_observed else 'false'}"
     )
     closed = copy.deepcopy(dict(state))
@@ -1256,6 +1262,16 @@ def _validate_closed_state_historical_chain(
     ):
         raise ClosureError("closed state chronology drift")
     proof = _terminal_proof(state, intent_sha256)
+    intent_task = intent.get("task")
+    if (
+        not isinstance(intent_task, Mapping)
+        or proof.get("contract") != intent_task.get("task_contract_sha256")
+        or (
+            proof.get("phase") == "QUIESCE_PENDING"
+            and proof.get("xml") != intent_task.get("ready_task_xml_sha256")
+        )
+    ):
+        raise ClosureError("terminal task contract/XML differs from closure intent")
     if require_final and proof["phase"] != "CLOSED":
         raise ClosureError("G1 closure remains in QUIESCE_PENDING phase")
     return proof
@@ -1705,12 +1721,238 @@ def _validate_intent(
         raise ClosureError("closure intent expected transition drift")
 
 
+def _quiescence_anchor_payload(
+    contract: ClosureContract,
+    chain: Mapping[str, Any],
+    intent_binding: Mapping[str, Any],
+    intent: Mapping[str, Any],
+    pending_state_binding: Mapping[str, Any],
+    pending_state: Mapping[str, Any],
+    quiesced_evidence: Mapping[str, Any],
+    start_race_observed: bool,
+    auditor: ModuleType,
+    *,
+    created_utc: str | None = None,
+) -> dict[str, Any]:
+    expected_pending_binding = {
+        "path": str(contract.state_path.resolve()),
+        "size": len(canonical_bytes(pending_state)),
+        "sha256": hashlib.sha256(canonical_bytes(pending_state)).hexdigest(),
+    }
+    if dict(pending_state_binding) != expected_pending_binding:
+        raise ClosureError("quiescence anchor pending-state binding drift")
+    pending_proof = _validate_closed_state_historical_chain(
+        contract,
+        pending_state,
+        intent,
+        str(intent_binding["sha256"]),
+        chain,
+        auditor,
+        require_final=False,
+    )
+    if pending_proof.get("phase") != "QUIESCE_PENDING":
+        raise ClosureError("quiescence anchor requires pending terminal state")
+    _validate_task_evidence(
+        quiesced_evidence,
+        disabled=True,
+        label="quiescence anchor evidence",
+        require_never_run=False,
+    )
+    evidence_race = quiesced_evidence.get("never_run") is not True
+    expected_race = pending_proof.get("start_race") == "true" or evidence_race
+    if (
+        type(start_race_observed) is not bool
+        or start_race_observed is not expected_race
+        or quiesced_evidence.get("task_contract_sha256")
+        != intent["task"]["task_contract_sha256"]
+    ):
+        raise ClosureError("quiescence anchor task/race disposition drift")
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "artifact_type": "QM5_20002_G1_QUIESCENCE_ANCHOR",
+        "analysis_id": contract.analysis_id,
+        "run_id": contract.run_id,
+        "status": "QUIESCED_PRE_UNREGISTER",
+        "reason_code": REASON_CODE,
+        "created_utc": created_utc or utc_now(),
+        "closure_intent": dict(intent_binding),
+        "pending_state": dict(pending_state_binding),
+        "pending_state_payload": copy.deepcopy(dict(pending_state)),
+        "task": {
+            "task_name": contract.task_name,
+            "task_path": "\\",
+            "principal_sid": str(chain["job"]["scheduler"]["principal_sid"]),
+            "helper_sha256": str(
+                chain["bindings"]["closure_task_helper"]["sha256"]
+            ),
+            "task_contract_sha256": str(
+                quiesced_evidence["task_contract_sha256"]
+            ),
+            "disabled_task_xml_sha256": str(
+                quiesced_evidence["task_xml_sha256"]
+            ),
+            "preterminal_probe_sha256": pending_proof["preterminal"],
+            "quiesce_transition_probe_sha256": pending_proof["quiesce"],
+            "quiesced_evidence": copy.deepcopy(dict(quiesced_evidence)),
+            "quiesced_evidence_sha256": canonical_sha256(quiesced_evidence),
+            "task_start_race_observed": start_race_observed,
+        },
+        "outcome_data_read": False,
+    }
+
+
+def _validate_quiescence_anchor(
+    contract: ClosureContract,
+    anchor: Mapping[str, Any],
+    chain: Mapping[str, Any],
+    intent_binding: Mapping[str, Any],
+    intent: Mapping[str, Any],
+    auditor: ModuleType,
+    *,
+    expected_pending_state_binding: Mapping[str, Any] | None = None,
+    expected_quiesced_evidence: Mapping[str, Any] | None = None,
+    expected_start_race: bool | None = None,
+) -> tuple[Mapping[str, Any], dict[str, str]]:
+    _assert_exact_fields(
+        anchor,
+        {
+            "schema_version",
+            "artifact_type",
+            "analysis_id",
+            "run_id",
+            "status",
+            "reason_code",
+            "created_utc",
+            "closure_intent",
+            "pending_state",
+            "pending_state_payload",
+            "task",
+            "outcome_data_read",
+        },
+        "quiescence anchor",
+    )
+    task = anchor.get("task")
+    pending_state = anchor.get("pending_state_payload")
+    pending_binding = anchor.get("pending_state")
+    if (
+        not isinstance(task, Mapping)
+        or not isinstance(pending_state, Mapping)
+        or not isinstance(pending_binding, Mapping)
+        or not isinstance(task.get("quiesced_evidence"), Mapping)
+        or type(task.get("task_start_race_observed")) is not bool
+    ):
+        raise ClosureError("quiescence anchor nested evidence is malformed")
+    _assert_exact_fields(
+        task,
+        {
+            "task_name",
+            "task_path",
+            "principal_sid",
+            "helper_sha256",
+            "task_contract_sha256",
+            "disabled_task_xml_sha256",
+            "preterminal_probe_sha256",
+            "quiesce_transition_probe_sha256",
+            "quiesced_evidence",
+            "quiesced_evidence_sha256",
+            "task_start_race_observed",
+        },
+        "quiescence anchor task",
+    )
+    created = _parse_created_utc(
+        anchor.get("created_utc"), "quiescence anchor created_utc"
+    )
+    pending_updated = _parse_created_utc(
+        pending_state.get("updated_utc"), "anchor pending-state updated_utc"
+    )
+    if (
+        created < pending_updated
+        or created > datetime.now(timezone.utc) + timedelta(minutes=5)
+    ):
+        raise ClosureError("quiescence anchor chronology drift")
+    expected = _quiescence_anchor_payload(
+        contract,
+        chain,
+        intent_binding,
+        intent,
+        pending_binding,
+        pending_state,
+        task["quiesced_evidence"],
+        bool(task["task_start_race_observed"]),
+        auditor,
+        created_utc=str(anchor["created_utc"]),
+    )
+    if canonical_bytes(anchor) != canonical_bytes(expected):
+        raise ClosureError("quiescence anchor recursive value drift")
+    if (
+        expected_pending_state_binding is not None
+        and dict(pending_binding) != dict(expected_pending_state_binding)
+    ):
+        raise ClosureError("quiescence anchor does not bind current pending state")
+    if (
+        expected_quiesced_evidence is not None
+        and dict(task["quiesced_evidence"])
+        != dict(expected_quiesced_evidence)
+    ):
+        raise ClosureError("quiescence anchor does not bind current task evidence")
+    if (
+        expected_start_race is not None
+        and task["task_start_race_observed"] is not expected_start_race
+    ):
+        raise ClosureError("quiescence anchor race differs from current proof")
+    pending_proof = _terminal_proof(
+        pending_state, str(intent_binding["sha256"])
+    )
+    return task["quiesced_evidence"], pending_proof
+
+
+def _validate_final_proof_against_anchor(
+    contract: ClosureContract,
+    proof: Mapping[str, str],
+    anchor_binding: Mapping[str, Any],
+    anchor: Mapping[str, Any],
+    chain: Mapping[str, Any],
+    intent_binding: Mapping[str, Any],
+    intent: Mapping[str, Any],
+    auditor: ModuleType,
+) -> None:
+    if (
+        proof.get("phase") != "CLOSED"
+        or proof.get("anchor") != anchor_binding.get("sha256")
+        or proof.get("anchor_binding") != canonical_sha256(anchor_binding)
+    ):
+        raise ClosureError("final state does not bind the quiescence anchor")
+    evidence, pending_proof = _validate_quiescence_anchor(
+        contract, anchor, chain, intent_binding, intent, auditor
+    )
+    task = anchor["task"]
+    expected = {
+        "contract": task["task_contract_sha256"],
+        "xml": task["disabled_task_xml_sha256"],
+        "preterminal": task["preterminal_probe_sha256"],
+        "quiesce": task["quiesce_transition_probe_sha256"],
+        "quiesced": task["quiesced_evidence_sha256"],
+        "start_race": (
+            "true" if task["task_start_race_observed"] else "false"
+        ),
+    }
+    if any(proof.get(key) != value for key, value in expected.items()):
+        raise ClosureError("final state task proof differs from quiescence anchor")
+    if (
+        pending_proof.get("contract") != intent["task"]["task_contract_sha256"]
+        or evidence.get("task_contract_sha256")
+        != intent["task"]["task_contract_sha256"]
+    ):
+        raise ClosureError("quiescence anchor contract differs from intent")
+
+
 def _receipt_payload(
     contract: ClosureContract,
     chain: Mapping[str, Any],
     intent_binding: Mapping[str, Any],
     intent: Mapping[str, Any],
     state_after_binding: Mapping[str, Any],
+    anchor_binding: Mapping[str, Any],
     terminal_proof: Mapping[str, str],
     absent_probe: Mapping[str, Any],
     *,
@@ -1738,6 +1980,7 @@ def _receipt_payload(
         },
         "historical_bindings": chain["bindings"],
         "runtime_freeze_commit": chain["runtime_freeze_commit"],
+        "quiescence_anchor": dict(anchor_binding),
         "launch_state": {
             "before": intent["state_before"],
             "after": dict(state_after_binding),
@@ -1785,6 +2028,7 @@ def _validate_receipt(
     intent_binding: Mapping[str, Any],
     intent: Mapping[str, Any],
     state_after_binding: Mapping[str, Any],
+    anchor_binding: Mapping[str, Any],
     terminal_proof: Mapping[str, str],
     fresh_absent_probe: Mapping[str, Any],
 ) -> None:
@@ -1801,6 +2045,7 @@ def _validate_receipt(
             "closure_intent",
             "historical_bindings",
             "runtime_freeze_commit",
+            "quiescence_anchor",
             "launch_state",
             "scheduled_task",
             "outcome_data_read",
@@ -1842,6 +2087,7 @@ def _validate_receipt(
         intent_binding,
         intent,
         state_after_binding,
+        anchor_binding,
         terminal_proof,
         fresh_absent_probe,
         created_utc=str(receipt["created_utc"]),
