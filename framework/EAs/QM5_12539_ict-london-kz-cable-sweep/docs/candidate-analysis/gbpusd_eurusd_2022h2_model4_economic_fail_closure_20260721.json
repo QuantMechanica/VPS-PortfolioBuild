@@ -1,0 +1,240 @@
+{
+  "schema_version": 1,
+  "artifact_type": "canonical_strategy_economic_closure",
+  "created_utc": "2026-07-21T13:17:21.0754364Z",
+  "ea_id": 12539,
+  "ea_label": "QM5_12539_ict-london-kz-cable-sweep",
+  "classification": "STRATEGY_ECONOMIC_FAIL",
+  "infrastructure_failure": false,
+  "build_binding": {
+    "git_commit": "a1a078c31ea16800d66ec39b37564f66964a73eb",
+    "artifacts": [
+      {
+        "role": "source",
+        "path": "framework/EAs/QM5_12539_ict-london-kz-cable-sweep/QM5_12539_ict-london-kz-cable-sweep.mq5",
+        "size_bytes": 36462,
+        "sha256": "f4ed132077832afd801ad051b65c36a753d002c8f639a807250190940a1060dc"
+      },
+      {
+        "role": "compiled_expert",
+        "path": "framework/EAs/QM5_12539_ict-london-kz-cable-sweep/QM5_12539_ict-london-kz-cable-sweep.ex5",
+        "size_bytes": 348394,
+        "sha256": "b2bfe7f2f77c46af7c1219454eb6f12dd8b47f2600ba81f747590eff321c94b4"
+      },
+      {
+        "role": "canonical_set",
+        "symbol": "GBPUSD.DWX",
+        "path": "framework/EAs/QM5_12539_ict-london-kz-cable-sweep/sets/QM5_12539_ict-london-kz-cable-sweep_GBPUSD.DWX_M15_backtest.set",
+        "size_bytes": 1055,
+        "sha256": "0eb5e3a906ccfd828d37ea09c337853bfa202a92871c4f974641091ad0ff7d8b"
+      },
+      {
+        "role": "canonical_set",
+        "symbol": "EURUSD.DWX",
+        "path": "framework/EAs/QM5_12539_ict-london-kz-cable-sweep/sets/QM5_12539_ict-london-kz-cable-sweep_EURUSD.DWX_M15_backtest.set",
+        "size_bytes": 1055,
+        "sha256": "7d4eebbf39889c0c5213bb5612083b5ef477a179a8713c4e6168c815085e6a8d"
+      }
+    ]
+  },
+  "canonical_evaluation": {
+    "terminal": "T1",
+    "period": "M15",
+    "model": 4,
+    "from_date": "2022-07-01",
+    "to_date": "2022-12-31",
+    "deposit": 100000,
+    "currency": "USD",
+    "leverage": 100,
+    "requested_duplicate_runs_per_symbol": 2,
+    "technical_smoke_min_trades": 1,
+    "predeclared_economic_gate": {
+      "all_rules_required": true,
+      "minimum_trades": 20,
+      "minimum_profit_factor": 1.2,
+      "minimum_net_profit_exclusive": 0.0
+    }
+  },
+  "evaluations": [
+    {
+      "symbol": "GBPUSD.DWX",
+      "run_tag": "20260721_131049",
+      "technical_smoke_result": "PASS",
+      "economic_classification": "STRATEGY_ECONOMIC_FAIL",
+      "deterministic": true,
+      "model4_log_marker_detected": true,
+      "oninit_failure_detected": false,
+      "non_ok_attempts": 0,
+      "commission_override_per_lot": 0.0,
+      "commission_schedule_mode": "CANONICAL_DARWINEX_GROUP_UNCHANGED",
+      "commission_group_sha256": "25314333af81faf48e2afe2db5d52beea640cc74ec33a85a46b7c43aadb921dd",
+      "summary_evidence": {
+        "path": "D:\\QM\\reports\\smoke\\QM5_12539\\20260721_131049\\summary.json",
+        "size_bytes": 3856,
+        "sha256": "674ddf5f56950ef24d086d63a822501d4ed99a07cfe4af49d8199a31e6d17230"
+      },
+      "technical_receipt_evidence": {
+        "path": "D:\\QM\\reports\\framework\\22\\20260721_131049_QM5_12539_T1_GBPUSD_DWX_run_smoke.md",
+        "size_bytes": 911,
+        "sha256": "d4ca9dc55c377034316b9048f92d71330bc00edb09cdd932540f658d066f02ef"
+      },
+      "runs": [
+        {
+          "run": "run_01",
+          "status": "OK",
+          "exit_code": 0,
+          "real_ticks_marker": true,
+          "oninit_failure": false,
+          "total_trades": 19,
+          "profit_factor": 0.45,
+          "net_profit": -6816.44,
+          "drawdown": 8380.02,
+          "tester_config": {
+            "path": "D:\\QM\\reports\\smoke\\QM5_12539\\20260721_131049\\raw\\run_01\\tester.ini",
+            "size_bytes": 478,
+            "sha256": "c232085a633184644d19905a16bad0881b21e4d8ae26a34a850f73802aa555fe"
+          },
+          "report": {
+            "path": "D:\\QM\\reports\\smoke\\QM5_12539\\20260721_131049\\raw\\run_01\\report.htm",
+            "size_bytes": 75704,
+            "sha256": "436753ed01bebbb969056b434569165579b4bb459eb0c2318d356446fb3f43dc"
+          }
+        },
+        {
+          "run": "run_02",
+          "status": "OK",
+          "exit_code": 0,
+          "real_ticks_marker": true,
+          "oninit_failure": false,
+          "total_trades": 19,
+          "profit_factor": 0.45,
+          "net_profit": -6816.44,
+          "drawdown": 8380.02,
+          "tester_config": {
+            "path": "D:\\QM\\reports\\smoke\\QM5_12539\\20260721_131049\\raw\\run_02\\tester.ini",
+            "size_bytes": 478,
+            "sha256": "2da6843b4968fe79748f637f47c0bf9aa6d6a6a6e691d7f46ece560c73020efc"
+          },
+          "report": {
+            "path": "D:\\QM\\reports\\smoke\\QM5_12539\\20260721_131049\\raw\\run_02\\report.htm",
+            "size_bytes": 75704,
+            "sha256": "bdbd016965135eaecc90bfb4013875e736a82077551170f183ced588a926550f"
+          }
+        }
+      ],
+      "predeclared_merit_comparison": {
+        "minimum_trades": {
+          "rule": ">= 20",
+          "observed_duplicate_values": [19, 19],
+          "passed": false
+        },
+        "profit_factor": {
+          "rule": ">= 1.20",
+          "observed_duplicate_values": [0.45, 0.45],
+          "passed": false
+        },
+        "net_profit": {
+          "rule": "> 0",
+          "observed_duplicate_values": [-6816.44, -6816.44],
+          "passed": false
+        },
+        "all_rules_passed": false
+      }
+    },
+    {
+      "symbol": "EURUSD.DWX",
+      "run_tag": "20260721_131302",
+      "technical_smoke_result": "PASS",
+      "economic_classification": "STRATEGY_ECONOMIC_FAIL",
+      "deterministic": true,
+      "model4_log_marker_detected": true,
+      "oninit_failure_detected": false,
+      "non_ok_attempts": 0,
+      "commission_override_per_lot": 0.0,
+      "commission_schedule_mode": "CANONICAL_DARWINEX_GROUP_UNCHANGED",
+      "commission_group_sha256": "25314333af81faf48e2afe2db5d52beea640cc74ec33a85a46b7c43aadb921dd",
+      "summary_evidence": {
+        "path": "D:\\QM\\reports\\smoke\\QM5_12539\\20260721_131302\\summary.json",
+        "size_bytes": 3227,
+        "sha256": "2fa4370596f5249b7d6b70f1e3f9d1713e2af7694002ef14adf3a4b0a50d9c3f"
+      },
+      "technical_receipt_evidence": {
+        "path": "D:\\QM\\reports\\framework\\22\\20260721_131302_QM5_12539_T1_EURUSD_DWX_run_smoke.md",
+        "size_bytes": 846,
+        "sha256": "389eedee1535bdf220fa53bcb84c76eb4229853d6ff5441e995862632bc17566"
+      },
+      "runs": [
+        {
+          "run": "run_01",
+          "status": "OK",
+          "exit_code": 0,
+          "real_ticks_marker": true,
+          "oninit_failure": false,
+          "total_trades": 17,
+          "profit_factor": 0.8,
+          "net_profit": -1239.37,
+          "drawdown": 5436.68,
+          "tester_config": {
+            "path": "D:\\QM\\reports\\smoke\\QM5_12539\\20260721_131302\\raw\\run_01\\tester.ini",
+            "size_bytes": 478,
+            "sha256": "132d86148297dffb05ef4bf2fa21389a5c32ca1f98a3aeeed6cf7e8e55e7e652"
+          },
+          "report": {
+            "path": "D:\\QM\\reports\\smoke\\QM5_12539\\20260721_131302\\raw\\run_01\\report.htm",
+            "size_bytes": 64868,
+            "sha256": "fac1cda4cae5438b43c5991cb7d656a3bd79344949a9623e87907bcbb32b02f0"
+          }
+        },
+        {
+          "run": "run_02",
+          "status": "OK",
+          "exit_code": 0,
+          "real_ticks_marker": true,
+          "oninit_failure": false,
+          "total_trades": 17,
+          "profit_factor": 0.8,
+          "net_profit": -1239.37,
+          "drawdown": 5436.68,
+          "tester_config": {
+            "path": "D:\\QM\\reports\\smoke\\QM5_12539\\20260721_131302\\raw\\run_02\\tester.ini",
+            "size_bytes": 478,
+            "sha256": "36d376ad4846f9e1abb1dd1f0e7ef0edcbfd40b40f5143ecb81135c3cd70256a"
+          },
+          "report": {
+            "path": "D:\\QM\\reports\\smoke\\QM5_12539\\20260721_131302\\raw\\run_02\\report.htm",
+            "size_bytes": 64868,
+            "sha256": "6aa4bfa954ef1a7e5b7e68564ec25c6b75a9bbcf1c7eb7041da0a98c866c06f1"
+          }
+        }
+      ],
+      "predeclared_merit_comparison": {
+        "minimum_trades": {
+          "rule": ">= 20",
+          "observed_duplicate_values": [17, 17],
+          "passed": false
+        },
+        "profit_factor": {
+          "rule": ">= 1.20",
+          "observed_duplicate_values": [0.8, 0.8],
+          "passed": false
+        },
+        "net_profit": {
+          "rule": "> 0",
+          "observed_duplicate_values": [-1239.37, -1239.37],
+          "passed": false
+        },
+        "all_rules_passed": false
+      }
+    }
+  ],
+  "closure": {
+    "technical_result_interpretation": "Both run_smoke evaluations PASS their executability and determinism gate; that technical PASS does not override the predeclared economic gate.",
+    "economic_evidence_available": true,
+    "both_symbols_failed_predeclared_merit_gate": true,
+    "failure_domain": "STRATEGY_ECONOMICS",
+    "same_canonical_window_retry_allowed": false,
+    "parameter_tuning_against_this_canonical_window_allowed": false,
+    "ftmo_promotion_allowed": false,
+    "final_disposition": "CLOSED_NO_PROMOTION"
+  }
+}
