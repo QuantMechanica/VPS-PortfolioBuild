@@ -3,3 +3,4 @@ infra/backups/weekly/*.sqlite filter=lfs diff=lfs merge=lfs -text
 
 # Public-source evidence must retain its original CRLF bytes and SHA-256.
 framework/EAs/QM5_10834_tv-nq-ict-ob/docs/candidate-analysis/primary_source_pine_v1.pine -text
+framework/EAs/QM5_20023_idx-macro-announce-day/data/*.csv -text
