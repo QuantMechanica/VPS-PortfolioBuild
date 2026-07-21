@@ -57,6 +57,7 @@ RESEARCH_SYMBOL = "NDX.DWX"
 TIMEFRAME = "M5"
 INITIAL_BALANCE = Decimal("100000")
 DUPLICATES = 2
+CELL_ID = "PRESCREEN_2022H2"
 MAX_INFRA_WARMUPS = 2
 MAX_ATTEMPTS = 4
 COMMISSION_RT_PER_LOT = Decimal("5.50")
@@ -235,21 +236,24 @@ def validate_factory_database_gate() -> dict[str, Any]:
         rows = {
             str(row["id"]): row
             for row in connection.execute(
-                "SELECT id,status,verdict,attempt_count,evidence_path,payload_json "
+                "SELECT id,status,verdict,attempt_count,evidence_path,claimed_by,payload_json "
                 "FROM work_items WHERE ea_id='QM5_13209'"
             )
         }
     finally:
         connection.close()
-    for item_id in (OLD_WORKITEM_ID, DUPLICATE_WORKITEM_ID, SP500_RESULT_WORKITEM_ID):
-        if item_id not in rows:
-            raise InvalidEvidence(f"required Factory workitem missing: {item_id}")
+    expected_ids = {OLD_WORKITEM_ID, DUPLICATE_WORKITEM_ID, SP500_RESULT_WORKITEM_ID}
+    if set(rows) != expected_ids:
+        raise InvalidEvidence("QM13209 Factory workitem identity set drift")
     old = rows[OLD_WORKITEM_ID]
     old_payload = json.loads(str(old["payload_json"] or "{}"))
     closure_binding = B.file_binding(OLD_CLOSURE_PATH)
     if (
-        (old["status"], old["verdict"], old["attempt_count"], old["evidence_path"])
-        != ("failed", "INFRA_FAIL", 1, None)
+        (
+            old["status"], old["verdict"], old["attempt_count"],
+            old["evidence_path"], old["claimed_by"],
+        )
+        != ("failed", "INFRA_FAIL", 1, None, None)
         or old_payload.get("final_failure") != "summary_missing"
         or old_payload.get("closure_artifact_path") != str(OLD_CLOSURE_PATH.resolve())
         or old_payload.get("closure_artifact_sha256") != closure_binding["sha256"]
@@ -259,16 +263,22 @@ def validate_factory_database_gate() -> dict[str, Any]:
     duplicate = rows[DUPLICATE_WORKITEM_ID]
     duplicate_payload = json.loads(str(duplicate["payload_json"] or "{}"))
     if (
-        (duplicate["status"], duplicate["verdict"], duplicate["attempt_count"], duplicate["evidence_path"])
-        != ("failed", "INVALID", 0, None)
+        (
+            duplicate["status"], duplicate["verdict"], duplicate["attempt_count"],
+            duplicate["evidence_path"], duplicate["claimed_by"],
+        )
+        != ("failed", "INVALID", 0, None, None)
         or duplicate_payload.get("duplicate_of") != SP500_RESULT_WORKITEM_ID
         or duplicate_payload.get("superseded_by") != SP500_RESULT_WORKITEM_ID
     ):
         raise InvalidEvidence("auto-enqueued SP500 duplicate end-state drift")
     result = rows[SP500_RESULT_WORKITEM_ID]
     if (
-        (result["status"], result["verdict"], result["evidence_path"])
-        != ("done", "FAIL", str(SP500_EVIDENCE_PATH))
+        (
+            result["status"], result["verdict"], result["attempt_count"],
+            result["evidence_path"], result["claimed_by"],
+        )
+        != ("done", "FAIL", 0, str(SP500_EVIDENCE_PATH), None)
     ):
         raise InvalidEvidence("existing SP500 strategy-result row drift")
     _exact_binding(SP500_EVIDENCE_PATH, EXPECTED_SP500_EVIDENCE, "SP500 evidence opaque binding")
@@ -341,7 +351,7 @@ def validate_analysis_contract() -> dict[str, Any]:
         or any(contract.get("scope", {}).get(key) is not False for key in (
             "resume_permitted", "relaunch_permitted", "retry_permitted"
         ))
-        or contract.get("cell", {}).get("cell_id") != "PRESCREEN_2022H2"
+        or contract.get("cell", {}).get("cell_id") != CELL_ID
         or contract.get("cell", {}).get("accepted_deterministic_duplicates") != 2
         or contract.get("cell", {}).get("maximum_native_starts") != 4
         or contract.get("merit_gates") != {
@@ -599,7 +609,7 @@ def build_plan(symbol: str, set_binding: Mapping[str, Any], run_root: Path) -> d
     enforce_symbol_policy(symbol)
     _assert_run_root(run_root)
     cell = {
-        "cell_id": "NDX_DWX_PRESCREEN_2022H2",
+        "cell_id": CELL_ID,
         "symbol": symbol,
         "cohort": "PRESCREEN",
         "from_date": "2022-07-01",
@@ -611,7 +621,7 @@ def build_plan(symbol: str, set_binding: Mapping[str, Any], run_root: Path) -> d
         "maximum_attempts": 4,
         "native_start_budget_is_outcome_independent": True,
         "set": dict(set_binding),
-        "output_root": str((run_root / "native" / "PRESCREEN_2022H2").resolve()),
+        "output_root": str((run_root / "native" / CELL_ID).resolve()),
     }
     basis = {
         "single_authorized_symbol": symbol,
@@ -751,7 +761,7 @@ def validate_authorization(
         "scope": AUTHORIZATION_SCOPE,
         "authorized_by": "OWNER",
         "authorized_symbol": RESEARCH_SYMBOL,
-        "authorized_cells": ["PRESCREEN_2022H2"],
+        "authorized_cells": [CELL_ID],
         "duplicates_per_cell": 2,
         "maximum_infrastructure_warmups_per_cell": 2,
         "maximum_native_starts": 4,
