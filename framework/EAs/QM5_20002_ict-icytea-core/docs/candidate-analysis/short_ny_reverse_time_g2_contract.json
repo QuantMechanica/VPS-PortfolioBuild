@@ -93,11 +93,11 @@
     }
   },
   "prohibitions": {
-    "modify_g1_frozen_bytes": false,
-    "run_pre_during_integration": false,
-    "launch_during_integration": false,
-    "read_native_reports_before_post": false,
-    "inspect_process_arguments": false,
-    "persist_secrets": false
+    "g1_frozen_bytes_modified": false,
+    "pre_run_during_integration": false,
+    "launch_run_during_integration": false,
+    "native_reports_read_before_post": false,
+    "process_arguments_inspected": false,
+    "secrets_persisted": false
   }
 }
