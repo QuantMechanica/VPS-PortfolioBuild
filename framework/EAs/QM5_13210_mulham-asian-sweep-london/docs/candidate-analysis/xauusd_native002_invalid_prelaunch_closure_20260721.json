@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "artifact_type": "QM5_13210_XAUUSD_INVALID_PRELAUNCH_INFRASTRUCTURE_CLOSURE",
+  "status": "INVALID_INFRASTRUCTURE_CLOSED_OUTCOME_BLIND",
+  "analysis_id": "QM5_13210_MULHAM_ASIAN_SWEEP_LONDON_XAUUSD_NATIVE_002",
+  "attempt_id": "ATTEMPT_001",
+  "classification": "RAW_WORKER_REGISTRY_BINDING_DRIFT_BEFORE_SCHEDULER_WITH_EMPTY_LIVE_PROJECTION",
+  "closed_utc": "2026-07-21T10:24:14.6145168Z",
+  "run_root": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_002\\ATTEMPT_001",
+  "control_bindings": {
+    "pre_receipt": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_002\\ATTEMPT_001\\pre_receipt.json",
+      "size": 61160,
+      "sha256": "c86987146e1b4d3884441291dc033beae5f6dceb77f94f013a6cebd80e8211c3"
+    },
+    "corrected_native_outcome_authorization": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_002\\ATTEMPT_001\\native_outcome_authorization.json",
+      "size": 694,
+      "sha256": "5f4d79086f640aac124031da5f3cfae5120c6ea8d84358f4e10c0d7443293dc5"
+    }
+  },
+  "run_root_inventory": [
+    {
+      "relative_path": "native_outcome_authorization.json",
+      "kind": "file",
+      "size": 694,
+      "sha256": "5f4d79086f640aac124031da5f3cfae5120c6ea8d84358f4e10c0d7443293dc5"
+    },
+    {
+      "relative_path": "pre_receipt.json",
+      "kind": "file",
+      "size": 61160,
+      "sha256": "c86987146e1b4d3884441291dc033beae5f6dceb77f94f013a6cebd80e8211c3"
+    }
+  ],
+  "launch_validation_failure": {
+    "stage": "LAUNCH_VALIDATION_PRE_SCHEDULER",
+    "scheduler_registration_requested": false,
+    "native_start_requested": false,
+    "worker_registry_path": "D:\\QM\\strategy_farm\\state\\worker_pids.json",
+    "pre_bound_raw_registry_binding": {
+      "path": "D:\\QM\\strategy_farm\\state\\worker_pids.json",
+      "size": 147,
+      "sha256": "7526d758cc646f524de73c3e973c2abe53fef296730ea4c8f58d953026c7e7da"
+    },
+    "current_raw_registry_binding_at_closure": {
+      "path": "D:\\QM\\strategy_farm\\state\\worker_pids.json",
+      "size": 144,
+      "sha256": "d027324f6e6e82bff75566f08acfb02684c2166ce75e4400539c329d134e05ea"
+    },
+    "raw_registry_binding_equal": false,
+    "pre_registered_live_factory_python_workers": [],
+    "current_registered_live_factory_python_workers": [],
+    "semantic_live_projection_equal": true,
+    "live_process_projection": "REGISTRY_PID_LIVENESS_PLUS_PYTHON_IMAGE_NAME_ONLY",
+    "raw_registry_bytes_are_strategy_evidence": false,
+    "strategy_merit_inference_permitted": false
+  },
+  "absence_proof": {
+    "launch_job": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_002\\ATTEMPT_001\\launch_job.json",
+      "exists": false
+    },
+    "launch_state": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_002\\ATTEMPT_001\\launch_state.json",
+      "exists": false
+    },
+    "native_directory": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_002\\ATTEMPT_001\\native",
+      "exists": false
+    },
+    "native_attempt_claim": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_002\\ATTEMPT_001\\native_attempt_claim.json",
+      "exists": false
+    },
+    "scheduled_task": {
+      "task_name": "QM_QM13210_XAU_AUDIT_2e3ba2fbe3b235b61eb8b962",
+      "count": 0,
+      "states": []
+    },
+    "worker_bootstrap_count": 0,
+    "native_controller_start_count": 0,
+    "native_summary_count": 0,
+    "native_outcome_artifact_count": 0
+  },
+  "outcome_fence": {
+    "controller_logs_exist": false,
+    "controller_logs_opened": false,
+    "native_reports_exist": false,
+    "native_reports_opened": false,
+    "native_outcomes_exist": false,
+    "native_outcomes_opened": false,
+    "live_process_command_lines_read": false,
+    "live_process_command_lines_emitted": false,
+    "closure_uses_control_files_inventory_and_semantic_live_projection_only": true
+  },
+  "recovery_contract": {
+    "native002_namespace_final": true,
+    "native002_resume_forbidden": true,
+    "native002_retry_or_attempt002_plus_forbidden": true,
+    "superseding_analysis_id": "QM5_13210_MULHAM_ASIAN_SWEEP_LONDON_XAUUSD_NATIVE_003",
+    "superseding_namespace": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_003",
+    "single_superseding_attempt": "ATTEMPT_001",
+    "superseding_resume_or_retry_forbidden": true,
+    "semantic_worker_projection_replaces_raw_registry_byte_binding": true,
+    "same_ea_ex5_set_data_parameters_windows_costs_and_gates_required": true,
+    "strategy_or_parameter_change_forbidden": true
+  }
+}

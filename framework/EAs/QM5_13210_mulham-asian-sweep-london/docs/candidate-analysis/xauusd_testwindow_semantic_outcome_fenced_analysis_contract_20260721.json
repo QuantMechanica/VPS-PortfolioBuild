@@ -1,0 +1,175 @@
+{
+  "analysis_id": "QM5_13210_MULHAM_ASIAN_SWEEP_LONDON_XAUUSD_NATIVE_003",
+  "artifact_type": "QM5_13210_XAUUSD_SEMANTIC_TESTWINDOW_SUPERSEDING_ANALYSIS_CONTRACT",
+  "candidate": {
+    "duplicates_per_cell": 2,
+    "ea_id": "QM5_13210",
+    "model": 4,
+    "parameter_tuning_forbidden": true,
+    "separate_from_eurusd_outcome_namespace": true,
+    "strategy": "mulham-asian-sweep-london",
+    "symbol": "XAUUSD.DWX",
+    "timeframe": "M5"
+  },
+  "finalization": {
+    "final_contract_must_bind_roles": [
+      "adapter",
+      "attempt001_closure",
+      "attempt002_closure",
+      "base_tool",
+      "build_receipt",
+      "card",
+      "ex5",
+      "factory_off",
+      "mq5",
+      "native002_prelaunch_closure",
+      "process_scope",
+      "scheduled_task_helper",
+      "set",
+      "spec",
+      "superseded_adapter",
+      "superseded_contract",
+      "superseded_testwindow_adapter",
+      "superseded_testwindow_contract",
+      "task_manifest",
+      "testwindow_off"
+    ],
+    "pre_and_launch_forbidden_until_status": "FINALIZED_OUTCOME_BLIND",
+    "required_command": "audit_mulham_asian_sweep_london_xau_testwindow_semantic.py finalize-contract --source-commit <40_HEX_BUILD_COMMIT>",
+    "requires_committed_clean_adapter_closure_and_draft": true,
+    "requires_pristine_superseding_namespace": true
+  },
+  "frozen_execution_identity": {
+    "cost_schedule_sha256": "3eecc9d18561ed9cb81d1cd89b31511c17cbf0f4f96d7ceaa545c793267d687a",
+    "duplicates_per_cell": 2,
+    "ea_ex5_set_data_parameters_windows_costs_and_gates_unchanged": true,
+    "input_bindings": {
+      "data_manifest": {
+        "path": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\data\\XAUUSD_DWX_201807_202512_T1_manifest.json",
+        "sha256": "f4c35f3acff8d8b6c5a0d337f181d418b1f546b660156942b18069bffae71f17",
+        "size": 19831
+      },
+      "research_readiness_receipt": {
+        "path": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\data\\XAUUSD_DWX_201807_202512_T1_receipt.json",
+        "sha256": "832abb2b191e85e61c6d6621dfb8971a79b2ad07fa6fdc609e75ebc89d2ee1de",
+        "size": 817
+      }
+    },
+    "merit_contract_sha256": "cedbffbc9c79622c623a92c2662ef2aa1da633e3ca143c12ae91fe533cc98041",
+    "model": 4,
+    "research_symbol": "XAUUSD.DWX",
+    "source_build_commit": "9e6c17e1e954aa6854afcc93dc72b64926316fd1",
+    "symbol_spec_sha256": "f70d94bfdb759752dca82d7577652b47c192327bfa1ab32dc28e7a49a3f88931",
+    "timeframe": "M5",
+    "xau_calibration_projection_sha256": "712234f2a5f3d144433bbd443e63b9df2dc7442d3800e2a630a4fed625d9b193"
+  },
+  "outcome_fence": {
+    "live_process_command_lines_emitted": false,
+    "live_process_command_lines_read": false,
+    "mt5_started_by_contract_or_finalization": false,
+    "native002_controller_logs_opened": false,
+    "native002_native_outcomes_opened": false,
+    "native002_native_reports_opened": false,
+    "superseding_deal_rows_parsed": false,
+    "superseding_native_reports_opened": false
+  },
+  "run_namespace": {
+    "attempt_id": "ATTEMPT_001",
+    "exact_control_paths": {
+      "authorization": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_003\\ATTEMPT_001\\native_outcome_authorization.json",
+      "job": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_003\\ATTEMPT_001\\launch_job.json",
+      "post": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_003\\ATTEMPT_001\\post_receipt.json",
+      "pre": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_003\\ATTEMPT_001\\pre_receipt.json",
+      "state": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_003\\ATTEMPT_001\\launch_state.json"
+    },
+    "family_root": "D:\\QM\\reports\\candidate_analysis\\QM5_13210",
+    "native_attempt_claim": {
+      "must_remain_absent": true,
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_003\\ATTEMPT_001\\native_attempt_claim.json"
+    },
+    "original_namespace": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_001",
+    "resume_forbidden": true,
+    "retry_or_attempt002_plus_forbidden": true,
+    "single_run_root": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_003\\ATTEMPT_001",
+    "superseded_namespace": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_002",
+    "superseded_namespace_final_at_attempt001_prelaunch": true,
+    "superseding_namespace": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_003"
+  },
+  "schema_version": 1,
+  "status": "DRAFT_PENDING_FINAL_FREEZE",
+  "supersession": {
+    "new_namespace_is_separate_analysis_not_retry": true,
+    "old_cause": "RAW_WORKER_REGISTRY_BINDING_DRIFT_BEFORE_SCHEDULER_WITH_EMPTY_LIVE_PROJECTION",
+    "old_job_state_native_claim_and_task_absent": true,
+    "old_namespace_attempt002_plus_forbidden": true,
+    "old_native_controller_start_count": 0,
+    "old_native_outcome_artifact_count": 0,
+    "old_native_summary_count": 0,
+    "old_status": "INVALID_INFRASTRUCTURE_CLOSED_OUTCOME_BLIND",
+    "parameter_tuning_forbidden": true,
+    "same_ea_ex5_set_data_parameters_windows_costs_and_merit_gates": true,
+    "single_new_attempt_only": true,
+    "superseded_analysis_id": "QM5_13210_MULHAM_ASIAN_SWEEP_LONDON_XAUUSD_NATIVE_002",
+    "superseding_analysis_id": "QM5_13210_MULHAM_ASIAN_SWEEP_LONDON_XAUUSD_NATIVE_003"
+  },
+  "testwindow_off_quiescence": {
+    "codex_parallel_binding_and_value_exact": "0",
+    "exact_t1_t10_terminal_and_metatester_count": 0,
+    "factory_flag_codex_tasks_processes_mutexes_and_semantic_workers_must_match_pre": true,
+    "factory_off_flag_binding_required": true,
+    "live_process_command_line_output_forbidden": true,
+    "live_process_command_line_reads_forbidden": true,
+    "managed_tasks_exactly_disabled": [
+      "QM_StrategyFarm_Pump_5min",
+      "QM_StrategyFarm_Tick_5min",
+      "QM_StrategyFarm_AgentRouter_5min",
+      "QM_StrategyFarm_CodexOrchestration_15min",
+      "QM_StrategyFarm_GeminiOrchestration_15min",
+      "QM_StrategyFarm_ClaudeOrchestration_15min",
+      "QM_StrategyFarm_FactoryWatchdog_15min",
+      "QM_StrategyFarm_FactoryON_AtLogon",
+      "QM_StrategyFarm_ReconcileOrphans_Hourly",
+      "QM_StrategyFarm_Repair_Hourly",
+      "QM_StrategyFarm_TerminalWorkers_AT_STARTUP"
+    ],
+    "registered_live_factory_python_worker_count": 0,
+    "required_at": [
+      "PRE",
+      "LAUNCH",
+      "WORKER_BOOTSTRAP",
+      "BEFORE_EACH_NATIVE_CELL",
+      "POST"
+    ],
+    "version": "QM13210_TESTWINDOW_OFF_QUIESCENCE_V2_SEMANTIC_WORKERS",
+    "worker_registry_exact_path": "D:\\QM\\strategy_farm\\state\\worker_pids.json",
+    "worker_registry_live_projection": "REGISTRY_PID_LIVENESS_PLUS_PYTHON_IMAGE_NAME_ONLY",
+    "worker_registry_raw_sha256_bound": false,
+    "worker_registry_raw_size_bound": false
+  },
+  "windows": [
+    {
+      "cell_id": "DEV",
+      "cohort": "DEV",
+      "from_date": "2018-07-02",
+      "to_date": "2022-12-31"
+    },
+    {
+      "cell_id": "OOS_2023",
+      "cohort": "OOS",
+      "from_date": "2023-01-01",
+      "to_date": "2023-12-31"
+    },
+    {
+      "cell_id": "OOS_2024",
+      "cohort": "OOS",
+      "from_date": "2024-01-01",
+      "to_date": "2024-12-31"
+    },
+    {
+      "cell_id": "OOS_2025",
+      "cohort": "OOS",
+      "from_date": "2025-01-01",
+      "to_date": "2025-12-31"
+    }
+  ]
+}
