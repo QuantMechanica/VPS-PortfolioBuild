@@ -48,14 +48,17 @@ MERIT_CONTRACT_VERSION = "QM5_13210_XAUUSD_MERIT_V1_20260721"
 SYMBOL_POLICY = "XAUUSD.DWX_RESEARCH_BACKTEST_ONLY_NO_LIVE_PARITY_GATE"
 RUN_FAMILY_ROOT = Path(r"D:\QM\reports\candidate_analysis\QM5_13210")
 RUN_NAMESPACE_ROOT = RUN_FAMILY_ROOT / "XAUUSD_MULHAM_NATIVE_001"
-ALLOWED_RUN_ROOT = RUN_NAMESPACE_ROOT / "ATTEMPT_001"
+ATTEMPT_001_RUN_ROOT = RUN_NAMESPACE_ROOT / "ATTEMPT_001"
+ATTEMPT_002_RUN_ROOT = RUN_NAMESPACE_ROOT / "ATTEMPT_002"
+ALLOWED_RUN_ROOT = ATTEMPT_002_RUN_ROOT
 LEGACY_RUN_ROOT = Path(
     r"D:\QM\reports\candidate_analysis\QM5_13210\XAUUSD_DWX"
 )
 SCHEDULED_TASK_PREFIX = "QM_QM13210_XAU_AUDIT_"
-LAUNCHER_REVISION = "QM13210_XAU_SCHEDULED_TASK_V1"
+LAUNCHER_REVISION = "QM13210_XAU_SCHEDULED_TASK_INFRA_ALTERNATE_V2"
 AUTHORIZATION_SCOPE = (
-    "QM5_13210_XAUUSD_4_CELLS_X_2_DUPLICATES_MODEL4_T1"
+    "QM5_13210_XAUUSD_ATTEMPT_002_INFRA_ALTERNATE_"
+    "4_CELLS_X_2_DUPLICATES_MODEL4_T1"
 )
 
 CONTRACT_PATH = (
@@ -67,6 +70,46 @@ CONTRACT_PATH = (
 BUILD_RECEIPT_PATH = (
     EA_ROOT / "docs" / "candidate-analysis" / "build_receipt_20260720.json"
 )
+ATTEMPT_001_CLOSURE_PATH = (
+    EA_ROOT
+    / "docs"
+    / "candidate-analysis"
+    / "xauusd_attempt001_invalid_infrastructure_closure_20260721.json"
+)
+ATTEMPT_001_PRE_RECEIPT_PATH = ATTEMPT_001_RUN_ROOT / "pre_receipt.json"
+ATTEMPT_001_AUTHORIZATION_PATH = (
+    ATTEMPT_001_RUN_ROOT / "native_outcome_authorization.json"
+)
+ATTEMPT_001_STATE_PATH = ATTEMPT_001_RUN_ROOT / "launch_state.json"
+ATTEMPT_001_JOB_PATH = ATTEMPT_001_RUN_ROOT / "launch_job.json"
+ATTEMPT_001_TASK_NAME = "QM_QM13210_XAU_AUDIT_08e91a0b4fef8e702efc569e"
+
+ATTEMPT_002_PRE_RECEIPT_PATH = ATTEMPT_002_RUN_ROOT / "pre_receipt.json"
+ATTEMPT_002_AUTHORIZATION_PATH = (
+    ATTEMPT_002_RUN_ROOT / "native_outcome_authorization.json"
+)
+ATTEMPT_002_STATE_PATH = ATTEMPT_002_RUN_ROOT / "launch_state.json"
+ATTEMPT_002_JOB_PATH = ATTEMPT_002_RUN_ROOT / "launch_job.json"
+ATTEMPT_002_POST_RECEIPT_PATH = ATTEMPT_002_RUN_ROOT / "post_receipt.json"
+
+ATTEMPT_002_RESEARCH_READINESS_PATH = Path(
+    r"D:\QM\reports\candidate_analysis\QM5_13210\data\XAUUSD_DWX_201807_202512_T1_receipt.json"
+)
+ATTEMPT_002_DATA_MANIFEST_PATH = Path(
+    r"D:\QM\reports\candidate_analysis\QM5_13210\data\XAUUSD_DWX_201807_202512_T1_manifest.json"
+)
+ATTEMPT_002_INPUT_BINDINGS: dict[str, dict[str, Any]] = {
+    "research_readiness_receipt": {
+        "path": str(ATTEMPT_002_RESEARCH_READINESS_PATH),
+        "size": 817,
+        "sha256": "832abb2b191e85e61c6d6621dfb8971a79b2ad07fa6fdc609e75ebc89d2ee1de",
+    },
+    "data_manifest": {
+        "path": str(ATTEMPT_002_DATA_MANIFEST_PATH),
+        "size": 19831,
+        "sha256": "f4c35f3acff8d8b6c5a0d337f181d418b1f546b660156942b18069bffae71f17",
+    },
+}
 
 XAU_CONTRACT_SIZE_OZ = Decimal("100")
 XAU_POINT_SIZE_QUOTE = Decimal("0.01")
@@ -103,7 +146,18 @@ XAU_CALIBRATION_PROJECTION: dict[str, Any] = {
 }
 
 FINAL_ARTIFACT_ROLES = frozenset(
-    {"adapter", "base_tool", "build_receipt", "card", "ex5", "mq5", "set", "spec"}
+    {
+        "adapter",
+        "attempt001_closure",
+        "base_tool",
+        "build_receipt",
+        "card",
+        "ex5",
+        "mq5",
+        "scheduled_task_helper",
+        "set",
+        "spec",
+    }
 )
 
 
