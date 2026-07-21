@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        20006
 ; ea_slug:      spx-intraday-mom
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   41830d38f44a3da4f6fff266f8969acf8a263ab815727288b56867208fa238b9
+; build_hash:   905ebf2cce0c68bf8ab0ef10e61f6d8c1ac1a4fd7d48d35a73c170ba884f704a
 ; author:       Development
 ; date:         2026-07-19
 ;==========================================================

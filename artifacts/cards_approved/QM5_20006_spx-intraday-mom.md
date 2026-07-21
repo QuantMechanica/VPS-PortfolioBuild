@@ -22,8 +22,8 @@ target_symbols: [SP500.DWX]
 primary_target_symbols: [SP500.DWX]
 period: M30
 timeframes: [M30]
-expected_trade_frequency: "One decision per US cash session at 22:30 broker, vol-conditioned + magnitude-filtered, Fridays skipped. Declared 120 trades per year per symbol (primary variant; the two filters overlap on high-vol days, so joint pass-rate ~ the tighter one)."
-expected_trades_per_year_per_symbol: 120
+expected_trade_frequency: "One decision per US cash session at 22:30 broker, vol-conditioned + magnitude-filtered, Fridays skipped. Declared 75 trades per year per symbol (primary variant, defaults; static replay on SP500.DWX M30 export: 34 entries 2022H2, 78 entries 2024)."
+expected_trades_per_year_per_symbol: 75
 risk_class: medium
 ml_required: false
 single_symbol_only: true
@@ -133,11 +133,19 @@ notes: |
 
 ```text
 - at 22:30 broker (last-half-hour open), compute r_fh = Close(17:00 broker) / PrevSessionClose(23:00 broker) - 1
-- if |r_fh| >= strategy_signal_vol_mult * median(|r_fh| over last strategy_vol_lookback sessions): signal is valid, else skip (magnitude filter -> ~12-18 trades/month)
+  (prev session close = close of the nearest OLDER 22:30-open M30 bar, i.e. the 23:00 session close; paired per session so half-days without a 22:30 bar cannot desynchronise the series)
+- PRIMARY VARIANT (vol conditioning, per Gao 2018 high-vol terciles + Baltussen 2021 mechanism):
+  require fh_range >= strategy_fh_vol_mult * median(fh_range over last strategy_vol_lookback sessions),
+  where fh_range = (High-Low)/Close of the 16:30-17:00 broker bar (first-half-hour realized-vol proxy).
+  strategy_fh_vol_mult = 0 disables (unconditional control variant — expected dead OOS post-2013, kept
+  only as sweep control, never to be tuned back to life). Range-vs-trailing-median is our pre-registered
+  structural adaptation of the paper's tercile split: self-referencing, no fitted absolute threshold
+  (Q08 neighborhood-safe).
+- if |r_fh| >= strategy_signal_vol_mult * median(|r_fh| over last strategy_vol_lookback sessions): signal is valid, else skip (magnitude filter)
 - if r_fh > 0: BUY at market; if r_fh < 0: SELL at market
 - catastrophe stop (non-alpha): strategy_stop_atr_mult * ATR(M30, 14) from entry
 - skip Fridays entirely (Friday-Close hard rule forces flat before the trade window)
-- skip if session data incomplete (missing 16:30-17:00 bar / prior close) or news blackout active
+- skip if session data incomplete (missing 16:30-17:00 bar today / no prior close anchor) or news blackout active
 ```
 
 ## 5. Exit Rules
@@ -176,6 +184,9 @@ notes: |
 - name: strategy_stop_atr_mult
   default: 2.0
   sweep_range: [1.5, 2.0, 3.0]
+- name: strategy_fh_vol_mult
+  default: 1.0
+  sweep_range: [0.0, 1.0, 1.25]   # 0.0 = unconditional control (expected dead); 1.0 = median split (primary)
 ```
 
 ## 9. Author Claims (as reported; page-exact quotes to be pinned at G0 review)
@@ -188,6 +199,15 @@ economically significant market-timing gains. (abstract-level claim)
 Zarattini/Aziz/Barbon (2024, SFI 24-97): intraday momentum on SPY 2007-2024 with
 realistic costs: ~19.6% annualized, net Sharpe 1.33 vs 0.45 buy-and-hold; Sharpe
 ~3.5 in VIX>40 regimes. (paper headline figures)
+Gao/Han/Li/Zhou (2018) vol conditioning: sorting days into first-half-hour
+realized-vol terciles, the high tercile earns 14.73%/yr (t=3.8) while the low
+tercile earns 0.54%/yr (statistically dead) — the economics live in the filter.
+Verified OOS caveat (SSRN mining 2026-07-20, rank 9): the unconditional sign rule
+is ~dead post-2013 (QuantConnect 2015-2020 replication Sharpe -0.63); its ~2.6bp/
+trade gross likely dies at Q02 net. Expected, not a failure of the primary variant.
+Baltussen/Da/Lammers/Martens (2021, SSRN 3760365): market intraday momentum is
+explained by hedging demand (leveraged/inverse ETFs, option market makers) —
+mechanically recurring close-of-day flow, the fuel for this strategy.
 ```
 
 ## 10. Initial Risk Profile
@@ -218,7 +238,7 @@ ml_required: false
 modules_used:
   no_trade:
     used: true
-    notes: "Friday skip, short-session skip, magnitude filter, news default"
+    notes: "Friday skip, short-session skip, first-half-hour realized-vol filter (primary), magnitude filter, news default"
   trade_entry:
     used: true
     notes: "22:30-broker signal from first-half-hour return incl. overnight gap"
@@ -258,13 +278,16 @@ data_requirements: standard
 
 | version | date | rebuild reason | P-stage reached | verdict |
 |---|---|---|---|---|
-| _v1 | TBD | initial build | TBD | TBD |
+| _v1 | 2026-07-19 | initial build | Q02 prescreen | FAIL 0 trades — DRAFT DEFECT, not an edge verdict: fixed 800-bar session scan vs SP500.DWX 46-bar/day ~23h CFD grid; 21-session history collector failed on 126/126 decision bars (needs ~1043 bars). Evidence: docs/ops/evidence/2026-07-21_qm20006_zero_trade_redraft.md |
+| _v2 | 2026-07-21 | zero-trade defect fix (density-derived scan depth + per-session prior-close pairing + same-day fh guard) + SSRN-verified primary variant: first-half-hour realized-vol conditioning (strategy_fh_vol_mult) | Q02 requeued | pending |
 
 ## 15. Pipeline Phase Status (current `_v<n>`)
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-19 | DRAFT (approve pending farmctl unblock) | this card |
+| Q02 Backtest (_v1) | 2026-07-20 | FAIL (draft defect, 0 trades — voided by _v2 redraft) | D:\QM\reports\work_items\1fe24586-9c9b-44ef-ab42-96697753fa98\QM5_20006\20260720_112250\summary.json |
+| Q02 Backtest (_v2) | 2026-07-21 | REQUEUED | docs/ops/evidence/2026-07-21_qm20006_zero_trade_redraft.md |
 
 ## 16. Lessons Captured
 
@@ -276,4 +299,16 @@ data_requirements: standard
   family + alpha lives in single-stock cross-section), overnight drift (authors'
   own 2026 follow-up shows decay to ~zero since 2021), pre-FOMC drift (8/year,
   fails density; flagged as possible separate rare-event sleeve).
+- 2026-07-21 (_v2 redraft): Q02 _v1 zero-trade was a DRAFT DEFECT (scan-depth
+  class), not an edge verdict — the 800-bar session scan assumed a cash-session
+  bar grid, but SP500.DWX carries 46 M30 bars/day (01:00-23:30 broker, ~23h CFD
+  session); 21 sessions need ~1043 bars, sweep max (lookback 30) ~1581. Lesson:
+  size session-anchor scans from the symbol's OBSERVED bar density, never from
+  the cash-session mental model.
+- 2026-07-21: SSRN deep-mine verification (docs/research/SSRN_MINING_2026-07-20.md
+  rank 9) bound into this card: unconditional variant expected dead OOS post-2013
+  (do not tune back to life); first-half-hour realized-vol conditioning added as
+  the primary variant (range-vs-trailing-median, pre-registered structural
+  adaptation of Gao's tercile split); mechanism reattributed to gamma-hedging
+  demand (Baltussen et al. 2021, SSRN 3760365).
 ```
