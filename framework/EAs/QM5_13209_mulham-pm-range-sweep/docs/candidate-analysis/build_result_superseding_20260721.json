@@ -1,0 +1,84 @@
+{
+  "task_id": "d54ae7b2-bed6-4c7d-85a2-5030944f3127",
+  "ea_id": "QM5_13209",
+  "ea_dir": "framework/EAs/QM5_13209_mulham-pm-range-sweep",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13209_mulham-pm-range-sweep\\QM5_13209_mulham-pm-range-sweep.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13209_mulham-pm-range-sweep\\QM5_13209_mulham-pm-range-sweep.ex5",
+  "magic_base": 132090000,
+  "symbols_registered": [
+    "SP500.DWX",
+    "NDX.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13209_mulham-pm-range-sweep\\sets\\QM5_13209_mulham-pm-range-sweep_SP500.DWX_M5_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13209_mulham-pm-range-sweep\\sets\\QM5_13209_mulham-pm-range-sweep_NDX.DWX_M5_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13209_mulham-pm-range-sweep\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "passed",
+  "smoke_report_path": "D:\\QM\\reports\\smoke\\QM5_13209\\20260721_112716\\summary.json",
+  "blocked_reason": null,
+  "open_questions": [
+    "Card-frontmatter US500.DWX is ported to the registered canonical research symbol SP500.DWX; live aliases remain deploy-packaging-only.",
+    "The card body fixes entry mechanics to M5. The EA now fails closed outside M5; legacy M15 setfiles are retained for provenance but excluded from this active build result.",
+    "The source leaves a standard causal three-closed-bar FVG around the post-sweep displacement bar, as documented in the original build result.",
+    "The card gives no numeric spread cap; the reviewed exposed default remains 50 pips and zero modeled spread is never rejected."
+  ],
+  "source_commit": "8d762f66321ef9a2aa3503ae8b464ea378e5a34f",
+  "supersedes": {
+    "path": "D:\\QM\\strategy_farm\\artifacts\\builds\\d54ae7b2-bed6-4c7d-85a2-5030944f3127.json",
+    "size": 2498,
+    "sha256": "7a65b432063ef997116bc8283247ef258873d55c9a8d65b944bd6370664ec5a1",
+    "reason": "The predecessor deferred its build smoke after no_capacity and predates the ICT reclaim/tick-grid fidelity repair."
+  },
+  "artifact_bindings": {
+    "mq5": {
+      "size": 28088,
+      "sha256": "2ce6bfaef7dc9f08158af935dded46c934147d1ba29055ddf66dc71d43f17f9e"
+    },
+    "ex5": {
+      "size": 344314,
+      "sha256": "72d24764971a975380cfa7448e53a64dfbe0946d3dab895c6b80686bb10846b1"
+    },
+    "spec": {
+      "size": 5966,
+      "sha256": "5cd0d1a66f2c9ed297ba51a1237169f0faeaef5db1d63dba82479b45d417ddb0"
+    },
+    "sp500_m5_set": {
+      "size": 1224,
+      "sha256": "04525a8eea240d06843da90507ccc48060d535d31c35b68ab2d1782c9371ec67"
+    },
+    "ndx_m5_set": {
+      "size": 1222,
+      "sha256": "54f6a194f8365eb11c6da8c4b782c88acb146c027980b7141ac875397b58d416"
+    }
+  },
+  "verification": {
+    "build_check": {
+      "path": "D:\\QM\\reports\\framework\\21\\build_check_20260721_112455.json",
+      "size": 168,
+      "sha256": "76dba4e3a15b52ff3089de47f1e49129cb9dbb5bd7fdc1d936dc3848544508e4",
+      "result": "PASS"
+    },
+    "compile": {
+      "path": "C:\\QM\\repo\\framework\\build\\compile\\20260721_112522\\QM5_13209_mulham-pm-range-sweep.compile.log",
+      "size": 20514,
+      "sha256": "e617198ac30ffeeb2d174edea7a292c80e30c3e563a0b90e06c8fb11f7de788e",
+      "errors": 0,
+      "warnings": 0
+    },
+    "smoke": {
+      "path": "D:\\QM\\reports\\smoke\\QM5_13209\\20260721_112716\\summary.json",
+      "size": 3842,
+      "sha256": "aad03a1f71ad7f5230136d421cc341f083c07ec2e3fba0b67b5d35df36f26cdf",
+      "result": "PASS",
+      "symbol": "SP500.DWX",
+      "period": "M5",
+      "model": 4,
+      "deterministic_runs": 2,
+      "trades_per_run": 2,
+      "minimum_trades": 1
+    }
+  }
+}
