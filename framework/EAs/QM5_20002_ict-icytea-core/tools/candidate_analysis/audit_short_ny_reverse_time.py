@@ -210,12 +210,42 @@ LAUNCH_JOB_FIELDS = frozenset(
         "pre_receipt_path",
         "pre_receipt_sha256",
         "authorization",
+        "authorization_consumption",
         "state_path",
         "controller_timeout_seconds",
         "plan_sha256",
         "tool",
         "dev1_runs_before_launch",
         "scheduler",
+    }
+)
+AUTHORIZATION_FIELDS = frozenset(
+    {
+        "schema_version",
+        "artifact_type",
+        "analysis_id",
+        "pre_receipt_sha256",
+        "scope",
+        "mt5_execution_authorized",
+        "authorized_by",
+        "authorized_utc",
+    }
+)
+AUTHORIZATION_CONSUMPTION_FIELDS = frozenset(
+    {
+        "schema_version",
+        "launcher_revision",
+        "artifact_type",
+        "analysis_id",
+        "status",
+        "created_utc",
+        "authorization",
+        "pre_receipt_path",
+        "pre_receipt_sha256",
+        "run_id",
+        "state_path",
+        "job_path",
+        "task_name",
     }
 )
 LEGACY_REV2_REJECT_FIELDS = frozenset(
@@ -428,20 +458,13 @@ def atomic_json(
 
 
 @contextmanager
-def _launch_state_lock(state_path: Path) -> Iterable[None]:
-    """Serialize every cooperative launch-state transition on one durable lock."""
+def _cooperative_file_lock(lock_path: Path) -> Iterable[None]:
+    """Lock one already-created, ACL-validated one-byte control file."""
 
-    state_path = state_path.resolve()
-    # Keep the historical lock filename so already-running revision-3 terminal
-    # publishers and revision-4 transitions cannot use disjoint lock domains.
-    lock_path = state_path.with_name(f".{state_path.name}.terminal.lock")
-    lock_path.parent.mkdir(parents=True, exist_ok=True)
-    with lock_path.open("a+b") as handle:
-        handle.seek(0, os.SEEK_END)
-        if handle.tell() == 0:
-            handle.write(b"\0")
-            handle.flush()
-            os.fsync(handle.fileno())
+    lock_path = lock_path.resolve()
+    if not lock_path.is_file() or lock_path.stat().st_size != 1:
+        raise AuthorizationError("control lock must be an existing one-byte file")
+    with lock_path.open("r+b") as handle:
         handle.seek(0)
         if os.name == "nt":
             import msvcrt
@@ -460,6 +483,27 @@ def _launch_state_lock(state_path: Path) -> Iterable[None]:
                 yield
             finally:
                 fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+
+
+@contextmanager
+def _launch_state_lock(state_path: Path) -> Iterable[None]:
+    """Serialize every cooperative launch-state transition on one durable lock."""
+
+    state_path = state_path.resolve()
+    # Keep the historical lock filename so already-running revision-3 terminal
+    # publishers and revision-4 transitions cannot use disjoint lock domains.
+    lock_path = state_path.with_name(f".{state_path.name}.terminal.lock")
+    with _cooperative_file_lock(lock_path):
+        yield
+
+
+@contextmanager
+def _authorization_global_lock() -> Iterable[None]:
+    """Serialize authorization consumption and all initial/resume launch effects."""
+
+    lock_path = AUDIT_CONTROL_ROOT.resolve() / "authorization" / ".launch.global.lock"
+    with _cooperative_file_lock(lock_path):
+        yield
 
 
 # Compatibility name for tests and any in-flight terminal publisher.  New code
@@ -514,6 +558,8 @@ def _audit_control_contract() -> dict[str, Any]:
         "reparse_points_forbidden": True,
         "pre_receipt": "pre/pre_receipt.json",
         "authorization": "authorization/authorization.json",
+        "authorization_consumption": "authorization/consumptions/<authorization_sha256>.json",
+        "authorization_global_lock": "authorization/.launch.global.lock",
         "run_layout": "runs/<yyyyMMddTHHmmssZ_32hex>/launch_state.json",
         "post_receipt_name": "post_receipt.json",
     }
@@ -535,6 +581,15 @@ def _assert_control_path_layout(
     elif role == "authorization":
         expected = root / "authorization" / "authorization.json"
         valid = path == expected
+    elif role == "authorization_consumption":
+        valid = (
+            len(parts) == 3
+            and parts[0] == "authorization"
+            and parts[1] == "consumptions"
+            and re.fullmatch(r"[0-9a-f]{64}\.json", parts[2]) is not None
+        )
+    elif role == "authorization_lock":
+        valid = path == root / "authorization" / ".launch.global.lock"
     elif role == "state":
         valid = (
             len(parts) == 3
@@ -556,6 +611,24 @@ def _assert_control_path_layout(
         )
     elif role == "post_receipt":
         valid = state_path is not None and path == state_path.resolve().with_name("post_receipt.json")
+    elif role == "state_lock":
+        valid = (
+            state_path is not None
+            and path
+            == state_path.resolve().with_name(
+                f".{state_path.resolve().name}.terminal.lock"
+            )
+        )
+    elif role == "worker_directory":
+        if state_path is None:
+            valid = False
+        else:
+            worker_root = state_path.resolve().parent / "worker"
+            try:
+                path.relative_to(worker_root)
+                valid = True
+            except ValueError:
+                valid = False
     elif role == "worker_artifact":
         if state_path is None:
             valid = False
@@ -688,9 +761,16 @@ def _atomic_control_json(
     return published_sha
 
 
-def _ensure_control_lock_file(state_path: Path, helper_sha256: str | None = None) -> Path:
-    lock_path = state_path.resolve().with_name(f".{state_path.name}.terminal.lock")
+def _ensure_named_control_lock_file(
+    lock_path: Path,
+    role: str,
+    helper_sha256: str | None = None,
+    state_path: Path | None = None,
+) -> Path:
+    lock_path = _assert_control_path_layout(lock_path, role, state_path)
+    _assert_control_directory(lock_path.parent, helper_sha256)
     if not lock_path.exists():
+        _assert_absent_control_file(lock_path, helper_sha256)
         descriptor, temporary = tempfile.mkstemp(
             prefix=f".{lock_path.name}.", suffix=".tmp", dir=str(lock_path.parent)
         )
@@ -710,7 +790,26 @@ def _ensure_control_lock_file(state_path: Path, helper_sha256: str | None = None
             except OSError:
                 pass
     _assert_control_file(lock_path, helper_sha256)
+    if lock_path.stat().st_size != 1:
+        raise AuthorizationError("QM20002 control lock is not exactly one byte")
     return lock_path
+
+
+def _ensure_control_lock_file(state_path: Path, helper_sha256: str | None = None) -> Path:
+    state_path = _assert_control_path_layout(state_path, "state")
+    return _ensure_named_control_lock_file(
+        state_path.with_name(f".{state_path.name}.terminal.lock"),
+        "state_lock",
+        helper_sha256,
+        state_path,
+    )
+
+
+def _ensure_authorization_global_lock(helper_sha256: str | None = None) -> Path:
+    lock_path = AUDIT_CONTROL_ROOT.resolve() / "authorization" / ".launch.global.lock"
+    return _ensure_named_control_lock_file(
+        lock_path, "authorization_lock", helper_sha256
+    )
 
 
 def file_binding(path: Path, expected_sha256: str | None = None) -> dict[str, Any]:
@@ -2381,29 +2480,233 @@ def assert_pre_receipt(path: Path, expected_sha256: str) -> dict[str, Any]:
     return receipt
 
 
-def validate_authorization(path: Path, pre_sha256: str) -> dict[str, Any]:
+def validate_authorization(
+    path: Path, pre_sha256: str, pre: Mapping[str, Any] | None = None
+) -> dict[str, Any]:
     path = _assert_control_path_layout(path, "authorization")
-    _assert_control_file(path)
+    helper_sha256 = (
+        str(pre["runtime"]["audit_control_path_helper"]["sha256"])
+        if pre is not None
+        else None
+    )
+    _assert_control_file(path, helper_sha256)
     binding = file_binding(path)
     payload = load_strict_json(path, "launch authorization")
-    required = {
-        "analysis_id": ANALYSIS_ID,
-        "pre_receipt_sha256": pre_sha256.lower(),
-        "scope": "QM5_20002_4_CELLS_X_2_DUPLICATES_MODEL4",
-        "mt5_execution_authorized": True,
-    }
-    for key, expected in required.items():
-        actual = payload.get(key)
-        if isinstance(expected, str):
-            actual = str(actual).lower() if key.endswith("sha256") else actual
-        if actual != expected:
-            raise AuthorizationError(f"authorization field drift: {key}")
-    if not str(payload.get("authorized_by", "")).strip():
-        raise AuthorizationError("authorization lacks authorized_by")
-    authorized = parse_utc(str(payload.get("authorized_utc", "")), "authorized_utc")
+    _require_exact_fields(
+        payload, AUTHORIZATION_FIELDS, "launch authorization", AuthorizationError
+    )
+    if (
+        type(payload["schema_version"]) is not int
+        or payload["schema_version"] != SCHEMA_VERSION
+        or type(payload["artifact_type"]) is not str
+        or payload["artifact_type"] != "QM5_20002_SHORT_NY_LAUNCH_AUTHORIZATION"
+        or type(payload["analysis_id"]) is not str
+        or payload["analysis_id"] != ANALYSIS_ID
+        or type(payload["pre_receipt_sha256"]) is not str
+        or payload["pre_receipt_sha256"] != pre_sha256.lower()
+        or re.fullmatch(r"[0-9a-f]{64}", payload["pre_receipt_sha256"]) is None
+        or type(payload["scope"]) is not str
+        or payload["scope"] != "QM5_20002_4_CELLS_X_2_DUPLICATES_MODEL4"
+        or type(payload["mt5_execution_authorized"]) is not bool
+        or payload["mt5_execution_authorized"] is not True
+        or type(payload["authorized_by"]) is not str
+        or not payload["authorized_by"].strip()
+        or payload["authorized_by"] != payload["authorized_by"].strip()
+        or any(character in payload["authorized_by"] for character in "\r\n\0")
+        or type(payload["authorized_utc"]) is not str
+        or not payload["authorized_utc"].endswith("Z")
+    ):
+        raise AuthorizationError("launch authorization exact identity/type contract drift")
+    authorized = parse_utc(payload["authorized_utc"], "authorized_utc")
     if authorized > datetime.now(timezone.utc) + timedelta(minutes=5):
         raise AuthorizationError("authorization timestamp is in the future")
+    if pre is not None:
+        if type(pre.get("created_utc")) is not str:
+            raise AuthorizationError("PRE receipt created_utc is not an exact string")
+        pre_created = parse_utc(str(pre["created_utc"]), "PRE created_utc")
+        if authorized < pre_created:
+            raise AuthorizationError("authorization predates its bound PRE receipt")
+    _assert_control_file(path, helper_sha256)
+    if file_binding(path) != binding:
+        raise AuthorizationError("launch authorization bytes changed during validation")
     return {"binding": binding, "payload": payload}
+
+
+def _authorization_consumption_path(
+    authorization: Mapping[str, Any],
+) -> Path:
+    binding = _require_exact_fields(
+        authorization, {"binding", "payload"}, "authorization envelope", AuthorizationError
+    )["binding"]
+    binding = _validate_binding_shape(
+        binding, "authorization binding", AuthorizationError
+    )
+    path = (
+        AUDIT_CONTROL_ROOT.resolve()
+        / "authorization"
+        / "consumptions"
+        / f"{binding['sha256']}.json"
+    )
+    return _assert_control_path_layout(path, "authorization_consumption")
+
+
+def _authorization_consumption_payload(
+    authorization: Mapping[str, Any],
+    pre_path: Path,
+    pre_sha256: str,
+    state_path: Path,
+    job_path: Path,
+    task_name: str,
+    *,
+    created_utc: str | None = None,
+) -> dict[str, Any]:
+    state_path = _assert_control_path_layout(state_path, "state")
+    job_path = _assert_control_path_layout(job_path, "job", state_path)
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "launcher_revision": LAUNCHER_REVISION,
+        "artifact_type": "QM5_20002_SHORT_NY_AUTHORIZATION_CONSUMPTION",
+        "analysis_id": ANALYSIS_ID,
+        "status": "CONSUMED",
+        "created_utc": created_utc or utc_now(),
+        "authorization": copy.deepcopy(dict(authorization)),
+        "pre_receipt_path": str(pre_path.resolve()),
+        "pre_receipt_sha256": pre_sha256.lower(),
+        "run_id": state_path.parent.name,
+        "state_path": str(state_path),
+        "job_path": str(job_path),
+        "task_name": task_name,
+    }
+
+
+def _validate_authorization_consumption_payload(
+    payload: Mapping[str, Any],
+    authorization: Mapping[str, Any],
+    pre_path: Path,
+    pre_sha256: str,
+    state_path: Path,
+    job_path: Path,
+    task_name: str,
+) -> None:
+    _require_exact_fields(
+        payload,
+        AUTHORIZATION_CONSUMPTION_FIELDS,
+        "authorization consumption",
+        AuthorizationError,
+    )
+    expected = _authorization_consumption_payload(
+        authorization,
+        pre_path,
+        pre_sha256,
+        state_path,
+        job_path,
+        task_name,
+        created_utc=str(payload.get("created_utc", "")),
+    )
+    if canonical_bytes(payload) != canonical_bytes(expected):
+        raise AuthorizationError(
+            "authorization was consumed by a different canonical launch"
+        )
+    if (
+        type(payload["schema_version"]) is not int
+        or type(payload["launcher_revision"]) is not int
+        or type(payload["created_utc"]) is not str
+        or type(payload["pre_receipt_sha256"]) is not str
+        or type(payload["run_id"]) is not str
+        or type(payload["state_path"]) is not str
+        or type(payload["job_path"]) is not str
+        or type(payload["task_name"]) is not str
+        or re.fullmatch(r"[0-9a-f]{64}", payload["pre_receipt_sha256"]) is None
+    ):
+        raise AuthorizationError("authorization consumption exact field types drift")
+    consumed = parse_utc(payload["created_utc"], "authorization consumption created_utc")
+    authorized = parse_utc(
+        str(authorization["payload"]["authorized_utc"]), "authorized_utc"
+    )
+    if consumed < authorized or consumed > datetime.now(timezone.utc) + timedelta(minutes=5):
+        raise AuthorizationError("authorization consumption chronology drift")
+
+
+def _consume_authorization(
+    authorization: Mapping[str, Any],
+    pre_path: Path,
+    pre_sha256: str,
+    state_path: Path,
+    job_path: Path,
+    task_name: str,
+    helper_sha256: str,
+) -> dict[str, Any]:
+    """Publish once, or recover only the exact launch previously selected."""
+
+    consumption_path = _authorization_consumption_path(authorization)
+    _assert_control_directory(consumption_path.parent, helper_sha256)
+    expected = _authorization_consumption_payload(
+        authorization, pre_path, pre_sha256, state_path, job_path, task_name
+    )
+    if consumption_path.exists():
+        _assert_control_file(consumption_path, helper_sha256)
+        payload = load_strict_json(consumption_path, "authorization consumption")
+    else:
+        _atomic_control_json(
+            consumption_path,
+            expected,
+            replace=False,
+            helper_sha256=helper_sha256,
+        )
+        payload = expected
+    _validate_authorization_consumption_payload(
+        payload,
+        authorization,
+        pre_path,
+        pre_sha256,
+        state_path,
+        job_path,
+        task_name,
+    )
+    binding = file_binding(consumption_path)
+    _assert_control_file(consumption_path, helper_sha256)
+    if file_binding(consumption_path) != binding:
+        raise AuthorizationError("authorization consumption bytes changed during validation")
+    return {"binding": binding, "payload": payload}
+
+
+def _assert_authorization_consumption(
+    envelope: Any,
+    authorization: Mapping[str, Any],
+    pre_path: Path,
+    pre_sha256: str,
+    state_path: Path,
+    job_path: Path,
+    task_name: str,
+    helper_sha256: str,
+) -> None:
+    envelope = _require_exact_fields(
+        envelope,
+        {"binding", "payload"},
+        "authorization consumption envelope",
+        AuthorizationError,
+    )
+    binding = _validate_binding_shape(
+        envelope["binding"], "authorization consumption binding", AuthorizationError
+    )
+    expected_path = _authorization_consumption_path(authorization)
+    if Path(str(binding["path"])).resolve() != expected_path:
+        raise AuthorizationError("authorization consumption binding path drift")
+    _assert_control_file(expected_path, helper_sha256)
+    assert_binding(binding, "authorization consumption")
+    persisted = load_strict_json(expected_path, "authorization consumption")
+    if canonical_bytes(persisted) != canonical_bytes(envelope["payload"]):
+        raise AuthorizationError("authorization consumption payload/bytes drift")
+    _validate_authorization_consumption_payload(
+        persisted,
+        authorization,
+        pre_path,
+        pre_sha256,
+        state_path,
+        job_path,
+        task_name,
+    )
+    assert_binding(binding, "authorization consumption post-validation reassertion")
 
 
 def runner_command(pre: Mapping[str, Any], cell: Mapping[str, Any]) -> list[str]:
@@ -2910,12 +3213,25 @@ def _scheduler_call(
         raise AuthorizationError(
             f"persisted scheduler {operation!r} failed with exit {completed.returncode}"
         )
-    payload = _parse_last_json(completed.stdout)
+    payload = _parse_single_json_envelope(
+        completed.stdout, f"persisted scheduler {operation}"
+    )
     if payload.get("operation") != operation:
         raise AuthorizationError("persisted scheduler returned an unexpected operation")
     if operation == "Identity":
         if (
-            not str(payload.get("principal_sid", "")).startswith("S-1-")
+            set(payload)
+            != {
+                "operation",
+                "principal_name",
+                "principal_sid",
+                "logon_type",
+                "run_level",
+            }
+            or type(payload.get("principal_name")) is not str
+            or not payload["principal_name"].strip()
+            or type(payload.get("principal_sid")) is not str
+            or not payload["principal_sid"].startswith("S-1-")
             or payload.get("logon_type") != "S4U"
             or payload.get("run_level") != "Highest"
         ):
@@ -2927,27 +3243,73 @@ def _scheduler_call(
         if not exists:
             if set(payload) != {"operation", "task_name", "exists"}:
                 raise AuthorizationError("absent scheduler Probe field closure drift")
-        elif (
-            payload.get("principal_sid") != scheduler["principal_sid"]
-            or payload.get("logon_type") != "S4U"
-            or payload.get("run_level") != "Highest"
-            or payload.get("multiple_instances") != "IgnoreNew"
-            or int(payload.get("execution_limit_seconds", 0))
-            != int(scheduler["execution_limit_seconds"])
-        ):
-            raise AuthorizationError("existing scheduler Probe task metadata drift")
+        elif scheduler is not None:
+            _validate_scheduler_task_metadata(payload, scheduler, include_exists=True)
     elif scheduler is not None:
-        if (
-            payload.get("task_name") != scheduler["task_name"]
-            or payload.get("principal_sid") != scheduler["principal_sid"]
-            or payload.get("logon_type") != "S4U"
-            or payload.get("run_level") != "Highest"
-            or payload.get("multiple_instances") != "IgnoreNew"
-            or int(payload.get("execution_limit_seconds", 0))
-            != int(scheduler["execution_limit_seconds"])
-        ):
-            raise AuthorizationError("persisted scheduler task metadata drift")
+        _validate_scheduler_task_metadata(payload, scheduler, include_exists=False)
     return payload
+
+
+def _validate_scheduler_task_metadata(
+    payload: Mapping[str, Any],
+    scheduler: Mapping[str, Any],
+    *,
+    include_exists: bool,
+) -> None:
+    fields = {
+        "operation",
+        "task_name",
+        "task_path",
+        "state",
+        "principal_sid",
+        "logon_type",
+        "run_level",
+        "triggers_count",
+        "actions_count",
+        "enabled",
+        "multiple_instances",
+        "start_when_available",
+        "allow_hard_terminate",
+        "hidden",
+        "execution_limit_seconds",
+        "last_run_utc",
+        "last_task_result",
+    }
+    if include_exists:
+        fields.add("exists")
+    last_run = payload.get("last_run_utc")
+    if (
+        set(payload) != fields
+        or (include_exists and payload.get("exists") is not True)
+        or payload.get("task_name") != scheduler["task_name"]
+        or payload.get("task_path") != "\\"
+        or type(payload.get("state")) is not str
+        or not payload["state"]
+        or payload.get("principal_sid") != scheduler["principal_sid"]
+        or payload.get("logon_type") != "S4U"
+        or payload.get("run_level") != "Highest"
+        or type(payload.get("triggers_count")) is not int
+        or payload.get("triggers_count") != 0
+        or type(payload.get("actions_count")) is not int
+        or payload.get("actions_count") != 1
+        or type(payload.get("enabled")) is not bool
+        or payload.get("enabled") is not True
+        or payload.get("multiple_instances") != "IgnoreNew"
+        or type(payload.get("start_when_available")) is not bool
+        or payload.get("start_when_available") is not True
+        or type(payload.get("allow_hard_terminate")) is not bool
+        or payload.get("allow_hard_terminate") is not True
+        or type(payload.get("hidden")) is not bool
+        or payload.get("hidden") is not True
+        or type(payload.get("execution_limit_seconds")) is not int
+        or payload.get("execution_limit_seconds")
+        != scheduler["execution_limit_seconds"]
+        or (last_run is not None and type(last_run) is not str)
+        or type(payload.get("last_task_result")) is not int
+    ):
+        raise AuthorizationError("persisted scheduler task metadata drift")
+    if last_run is not None:
+        parse_utc(last_run, "persisted scheduler last_run_utc")
 
 
 def _validate_launch_job(
@@ -2997,6 +3359,7 @@ def _validate_launch_job(
         or type(job.get("pre_receipt_sha256")) is not str
         or re.fullmatch(r"[0-9a-f]{64}", str(job.get("pre_receipt_sha256", ""))) is None
         or not isinstance(job.get("authorization"), Mapping)
+        or not isinstance(job.get("authorization_consumption"), Mapping)
         or not isinstance(job.get("tool"), Mapping)
         or not isinstance(job.get("scheduler"), Mapping)
     ):
@@ -3211,7 +3574,9 @@ def _rejected_cell_record(
     return {"cell_id": cell_id, "status": "REJECT", "attempts": [attempt]}
 
 
-def _load_launch_state_snapshot(state_path: Path) -> tuple[dict[str, Any], str]:
+def _load_launch_state_snapshot(
+    state_path: Path, *, validate: bool = True
+) -> tuple[dict[str, Any], str]:
     """Read one exact launch state and bind the precise bytes used for CAS."""
 
     state_path = state_path.resolve()
@@ -3220,7 +3585,8 @@ def _load_launch_state_snapshot(state_path: Path) -> tuple[dict[str, Any], str]:
     after = sha256_file(state_path)
     if before != after:
         raise AuditError("launch state bytes changed during locked snapshot")
-    _validate_launch_state_shape(state)
+    if validate:
+        _validate_launch_state_shape(state)
     return state, after
 
 
@@ -3235,7 +3601,7 @@ def _locked_launch_state_snapshot(
     lock_path = state_path.with_name(f".{state_path.name}.terminal.lock")
     _assert_control_file(lock_path, helper_sha256)
     with _launch_state_lock(state_path):
-        state, state_sha = _load_launch_state_snapshot(state_path)
+        state, state_sha = _load_launch_state_snapshot(state_path, validate=False)
         item = state_path.stat()
         binding = {
             "path": str(state_path),
@@ -3373,9 +3739,12 @@ def _finalize_worker_rejection(
     with _launch_state_lock(state_path):
         # This re-read is the compare-and-swap boundary.  A COMPLETE publisher
         # that won the lock is immutable; a prior REJECT is likewise terminal.
-        persisted, _persisted_sha = _load_launch_state_snapshot(state_path)
+        persisted, _persisted_sha = _load_launch_state_snapshot(
+            state_path, validate=False
+        )
         if persisted.get("status") in {"COMPLETE", "REJECT"}:
             return False
+        _validate_launch_state_shape(persisted)
         if expected_worker_pid is None or expected_resume_count is None:
             return False
         if (
@@ -3471,8 +3840,19 @@ def _worker_run(job_path: Path) -> int:
         _ensure_control_lock_file(state_path, control_helper_sha256)
         _validate_launch_job(job, pre, pre_path, pre_sha, state_path)
         auth_path = Path(str(job["authorization"]["binding"]["path"]))
-        if validate_authorization(auth_path, pre_sha) != job["authorization"]:
+        authorization = validate_authorization(auth_path, pre_sha, pre)
+        if authorization != job["authorization"]:
             raise AuditError("persisted launch authorization drift")
+        _assert_authorization_consumption(
+            job["authorization_consumption"],
+            authorization,
+            pre_path,
+            pre_sha,
+            state_path,
+            job_path,
+            str(job["scheduler"]["task_name"]),
+            control_helper_sha256,
+        )
         with _launch_state_lock(state_path):
             persisted, _persisted_sha = _load_launch_state_snapshot(state_path)
             if persisted.get("status") not in {"PENDING", "PENDING_RESUME"}:
@@ -3645,7 +4025,10 @@ def launch_detached(
     resume: bool = False,
 ) -> dict[str, Any]:
     pre = assert_pre_receipt(pre_path, pre_sha256)
-    authorization = validate_authorization(authorization_path, pre_sha256)
+    control_helper_sha256 = str(
+        pre["runtime"]["audit_control_path_helper"]["sha256"]
+    )
+    authorization = validate_authorization(authorization_path, pre_sha256, pre)
     minimum_timeout = required_controller_timeout(pre)
     if controller_timeout_seconds is None:
         controller_timeout_seconds = minimum_timeout
@@ -3656,127 +4039,177 @@ def launch_detached(
     job_path = _assert_control_path_layout(
         state_path.with_name("launch_job.json"), "job", state_path
     )
-    control_helper_sha256 = str(
-        pre["runtime"]["audit_control_path_helper"]["sha256"]
+    task_name = scheduled_task_name(pre_sha256, state_path)
+    consumption_directory = (
+        AUDIT_CONTROL_ROOT.resolve() / "authorization" / "consumptions"
     )
-    if resume:
-        _assert_control_directory(state_path.parent, control_helper_sha256)
-        _assert_control_file(state_path, control_helper_sha256)
-        _assert_control_file(job_path, control_helper_sha256)
-    else:
-        _prepare_control_directory(state_path.parent, control_helper_sha256)
-    _ensure_control_lock_file(state_path, control_helper_sha256)
+    _prepare_control_directory(consumption_directory, control_helper_sha256)
+    _ensure_authorization_global_lock(control_helper_sha256)
     response_status: str
-    with _launch_state_lock(state_path):
+    with _authorization_global_lock():
+        authorization_consumption = _consume_authorization(
+            authorization,
+            pre_path,
+            pre_sha256,
+            state_path,
+            job_path,
+            task_name,
+            control_helper_sha256,
+        )
         if resume:
-            if not state_path.is_file() or not job_path.is_file():
-                raise AuthorizationError("resume requires the existing state and immutable job")
-            job = load_strict_json(job_path, "launch job")
-            state, state_sha = _load_launch_state_snapshot(state_path)
-            _validate_launch_job(job, pre, pre_path, pre_sha256, state_path)
-            if job.get("authorization") != authorization:
-                raise AuthorizationError("resume authorization differs from the immutable launch job")
-            if state.get("job") != file_binding(job_path):
-                raise AuthorizationError("resume state/job byte binding drift")
-            _assert_resume_outcome_fence(state, job, state_path)
-            _scheduler_call(pre, "Register", job)
-            inspected = _scheduler_call(pre, "Inspect", job)
-            if inspected.get("state") == "Running":
-                raise AuthorizationError("persisted audit task is still running")
-            rechecked, rechecked_sha = _load_launch_state_snapshot(state_path)
-            if rechecked_sha != state_sha or canonical_bytes(rechecked) != canonical_bytes(state):
-                raise AuthorizationError("resume state changed across scheduler inspection")
-            if state["status"] != "PENDING_RESUME":
-                pending = copy.deepcopy(state)
-                pending["status"] = "PENDING_RESUME"
-                pending["worker_pid"] = None
-                pending["resume_count"] = int(state["resume_count"]) + 1
-                pending["updated_utc"] = utc_now()
-                _validate_launch_state_shape(pending)
-                _atomic_control_json(
-                    state_path, pending, helper_sha256=control_helper_sha256
-                )
-            started = _scheduler_call(pre, "Start", job)
-            response_status = "RESUMED_PERSISTED_TASK"
-            task_name = str(job["scheduler"]["task_name"])
-            job_sha = sha256_file(job_path)
+            _assert_control_directory(state_path.parent, control_helper_sha256)
+            _assert_control_file(state_path, control_helper_sha256)
+            _assert_control_file(job_path, control_helper_sha256)
         else:
-            if state_path.exists():
-                raise AuthorizationError(f"refusing to replace launch state: {state_path}")
-            identity = _scheduler_call(pre, "Identity")
-            if job_path.exists():
-                # A crash after immutable job publication but before state creation
-                # is the sole recoverable PREPARED form.  Prove that no scheduler,
-                # worker, or DEV1 side effect occurred before synthesizing state.
-                _assert_control_file(job_path, control_helper_sha256)
-                job = load_strict_json(job_path, "prepared launch job")
+            # The authorization is irreversibly assigned before this run
+            # directory can be created.  A competing distinct run therefore
+            # leaves no state/job/lock side effects.
+            _prepare_control_directory(state_path.parent, control_helper_sha256)
+        _ensure_control_lock_file(state_path, control_helper_sha256)
+        with _launch_state_lock(state_path):
+            if resume:
+                if not state_path.is_file() or not job_path.is_file():
+                    raise AuthorizationError("resume requires the existing state and immutable job")
+                job = load_strict_json(job_path, "launch job")
+                state, state_sha = _load_launch_state_snapshot(state_path)
                 _validate_launch_job(job, pre, pre_path, pre_sha256, state_path)
                 if job.get("authorization") != authorization:
-                    raise AuthorizationError("prepared launch authorization drift")
-                if job["scheduler"].get("principal_sid") != identity.get("principal_sid"):
-                    raise AuthorizationError("prepared launch scheduler identity drift")
-                work_root = state_path.parent / "worker"
-                if work_root.exists() and next(work_root.iterdir(), None) is not None:
-                    raise AuthorizationError("prepared launch has worker side effects")
-                if _dev1_run_inventory() != job.get("dev1_runs_before_launch"):
-                    raise AuthorizationError("prepared launch has DEV1 side effects")
-                probe = _scheduler_call(pre, "Probe", job)
-                if probe.get("exists") is not False:
-                    raise AuthorizationError("prepared launch already has scheduler side effects")
+                    raise AuthorizationError("resume authorization differs from the immutable launch job")
+                if job.get("authorization_consumption") != authorization_consumption:
+                    raise AuthorizationError("resume authorization consumption differs from launch job")
+                _assert_authorization_consumption(
+                    job["authorization_consumption"],
+                    authorization,
+                    pre_path,
+                    pre_sha256,
+                    state_path,
+                    job_path,
+                    task_name,
+                    control_helper_sha256,
+                )
+                if state.get("job") != file_binding(job_path):
+                    raise AuthorizationError("resume state/job byte binding drift")
+                _assert_resume_outcome_fence(state, job, state_path)
+                _scheduler_call(pre, "Register", job)
+                inspected = _scheduler_call(pre, "Inspect", job)
+                if inspected.get("state") == "Running":
+                    raise AuthorizationError("persisted audit task is still running")
+                rechecked, rechecked_sha = _load_launch_state_snapshot(state_path)
+                if rechecked_sha != state_sha or canonical_bytes(rechecked) != canonical_bytes(state):
+                    raise AuthorizationError("resume state changed across scheduler inspection")
+                if state["status"] != "PENDING_RESUME":
+                    pending = copy.deepcopy(state)
+                    pending["status"] = "PENDING_RESUME"
+                    pending["worker_pid"] = None
+                    pending["resume_count"] = int(state["resume_count"]) + 1
+                    pending["updated_utc"] = utc_now()
+                    _validate_launch_state_shape(pending)
+                    _atomic_control_json(
+                        state_path, pending, helper_sha256=control_helper_sha256
+                    )
+                started = _scheduler_call(pre, "Start", job)
+                response_status = "RESUMED_PERSISTED_TASK"
                 job_sha = sha256_file(job_path)
             else:
-                task_name = scheduled_task_name(pre_sha256, state_path)
-                job = {
-                    "schema_version": SCHEMA_VERSION,
-                    "launcher_revision": LAUNCHER_REVISION,
-                    "artifact_type": "QM5_20002_SHORT_NY_LAUNCH_JOB",
-                    "analysis_id": ANALYSIS_ID,
-                    "created_utc": utc_now(),
-                    "pre_receipt_path": str(pre_path.resolve()),
-                    "pre_receipt_sha256": pre_sha256.lower(),
-                    "authorization": authorization,
-                    "state_path": str(state_path),
-                    "controller_timeout_seconds": controller_timeout_seconds,
-                    "plan_sha256": pre["plan"]["plan_sha256"],
-                    "tool": pre["tool"],
-                    "dev1_runs_before_launch": _dev1_run_inventory(),
-                    "scheduler": {
-                        "mode": "WINDOWS_TASK_SCHEDULER_S4U_ON_DEMAND",
-                        "task_name": task_name,
-                        "task_path": "\\",
-                        "principal_sid": identity["principal_sid"],
-                        "logon_type": "S4U",
-                        "run_level": "Highest",
-                        "multiple_instances": "IgnoreNew",
-                        "execution_limit_seconds": task_limit,
-                        "helper": pre["runtime"]["scheduled_task_helper"],
-                        "python": pre["runtime"]["python_binary"],
-                    },
-                }
-                _validate_launch_job(job, pre, pre_path, pre_sha256, state_path)
-                probe = _scheduler_call(pre, "Probe", job)
-                if probe.get("exists") is not False:
-                    raise AuthorizationError("new launch task name is already registered")
-                job_sha = _atomic_control_json(
-                    job_path,
-                    job,
+                if state_path.exists():
+                    raise AuthorizationError(f"refusing to replace launch state: {state_path}")
+                identity = _scheduler_call(pre, "Identity")
+                if job_path.exists():
+                    # A crash after immutable job publication but before state creation
+                    # is the sole recoverable PREPARED form.  Prove that no scheduler,
+                    # worker, or DEV1 side effect occurred before synthesizing state.
+                    _assert_control_file(job_path, control_helper_sha256)
+                    job = load_strict_json(job_path, "prepared launch job")
+                    _validate_launch_job(job, pre, pre_path, pre_sha256, state_path)
+                    if job.get("authorization") != authorization:
+                        raise AuthorizationError("prepared launch authorization drift")
+                    if job.get("authorization_consumption") != authorization_consumption:
+                        raise AuthorizationError("prepared launch authorization consumption drift")
+                    _assert_authorization_consumption(
+                        job["authorization_consumption"],
+                        authorization,
+                        pre_path,
+                        pre_sha256,
+                        state_path,
+                        job_path,
+                        task_name,
+                        control_helper_sha256,
+                    )
+                    if job["scheduler"].get("principal_sid") != identity.get("principal_sid"):
+                        raise AuthorizationError("prepared launch scheduler identity drift")
+                    work_root = state_path.parent / "worker"
+                    _assert_control_path_layout(work_root, "worker_directory", state_path)
+                    if work_root.exists() and next(work_root.iterdir(), None) is not None:
+                        raise AuthorizationError("prepared launch has worker side effects")
+                    if _dev1_run_inventory() != job.get("dev1_runs_before_launch"):
+                        raise AuthorizationError("prepared launch has DEV1 side effects")
+                    probe = _scheduler_call(pre, "Probe", job)
+                    if probe.get("exists") is not False:
+                        raise AuthorizationError("prepared launch already has scheduler side effects")
+                    job_sha = sha256_file(job_path)
+                else:
+                    job = {
+                        "schema_version": SCHEMA_VERSION,
+                        "launcher_revision": LAUNCHER_REVISION,
+                        "artifact_type": "QM5_20002_SHORT_NY_LAUNCH_JOB",
+                        "analysis_id": ANALYSIS_ID,
+                        "created_utc": utc_now(),
+                        "pre_receipt_path": str(pre_path.resolve()),
+                        "pre_receipt_sha256": pre_sha256.lower(),
+                        "authorization": authorization,
+                        "authorization_consumption": authorization_consumption,
+                        "state_path": str(state_path),
+                        "controller_timeout_seconds": controller_timeout_seconds,
+                        "plan_sha256": pre["plan"]["plan_sha256"],
+                        "tool": pre["tool"],
+                        "dev1_runs_before_launch": _dev1_run_inventory(),
+                        "scheduler": {
+                            "mode": "WINDOWS_TASK_SCHEDULER_S4U_ON_DEMAND",
+                            "task_name": task_name,
+                            "task_path": "\\",
+                            "principal_sid": identity["principal_sid"],
+                            "logon_type": "S4U",
+                            "run_level": "Highest",
+                            "multiple_instances": "IgnoreNew",
+                            "execution_limit_seconds": task_limit,
+                            "helper": pre["runtime"]["scheduled_task_helper"],
+                            "python": pre["runtime"]["python_binary"],
+                        },
+                    }
+                    _validate_launch_job(job, pre, pre_path, pre_sha256, state_path)
+                    _assert_authorization_consumption(
+                        job["authorization_consumption"],
+                        authorization,
+                        pre_path,
+                        pre_sha256,
+                        state_path,
+                        job_path,
+                        task_name,
+                        control_helper_sha256,
+                    )
+                    probe = _scheduler_call(pre, "Probe", job)
+                    if probe.get("exists") is not False:
+                        raise AuthorizationError("new launch task name is already registered")
+                    job_sha = _atomic_control_json(
+                        job_path,
+                        job,
+                        replace=False,
+                        helper_sha256=control_helper_sha256,
+                    )
+                state = _initial_launch_state(pre_path, pre_sha256, file_binding(job_path), job)
+                _validate_launch_state_shape(state)
+                _atomic_control_json(
+                    state_path,
+                    state,
                     replace=False,
                     helper_sha256=control_helper_sha256,
                 )
-            state = _initial_launch_state(pre_path, pre_sha256, file_binding(job_path), job)
-            _validate_launch_state_shape(state)
-            _atomic_control_json(
-                state_path,
-                state,
-                replace=False,
-                helper_sha256=control_helper_sha256,
-            )
-            _scheduler_call(pre, "Register", job)
-            started = _scheduler_call(pre, "Start", job)
-            response_status = "LAUNCHED_PERSISTED_TASK"
-            task_name = str(job["scheduler"]["task_name"])
-    _assert_control_file(state_path, control_helper_sha256)
-    observed = load_strict_json(state_path, "launch state")
+                _scheduler_call(pre, "Register", job)
+                started = _scheduler_call(pre, "Start", job)
+                response_status = "LAUNCHED_PERSISTED_TASK"
+    observed, _observed_binding = _locked_launch_state_snapshot(
+        state_path, control_helper_sha256
+    )
     return {
         "status": response_status,
         "task_name": task_name,
@@ -4702,11 +5135,14 @@ def _validate_complete_runner_streams(
         "stderr": cell_root / "runner.stderr.txt",
     }
     checked: list[tuple[Mapping[str, Any], Path, str]] = []
+    helper_sha256 = str(pre["runtime"]["audit_control_path_helper"]["sha256"])
     for stream in ("stdout", "stderr"):
         binding = launch_cell.get(stream)
         label = f"{cell_id} runner {stream}"
         if not isinstance(binding, Mapping):
             raise PostflightError(f"{label} binding missing")
+        _assert_control_path_layout(expected[stream], "worker_artifact", state_path)
+        _assert_control_file(expected[stream], helper_sha256)
         _assert_complete_stream_binding(binding, expected[stream], label)
         checked.append((binding, expected[stream], label))
     try:
@@ -4768,9 +5204,25 @@ def _validate_launch_chain(
     auth_binding = authorization.get("binding")
     if not isinstance(auth_binding, Mapping):
         raise PostflightError("launch authorization binding missing")
-    expected_authorization = validate_authorization(Path(str(auth_binding["path"])), pre_sha256)
+    expected_authorization = validate_authorization(
+        Path(str(auth_binding["path"])), pre_sha256, pre
+    )
     if authorization != expected_authorization:
         raise PostflightError("launch authorization bytes/payload drift")
+    consumption = job.get("authorization_consumption")
+    try:
+        _assert_authorization_consumption(
+            consumption,
+            expected_authorization,
+            pre_path,
+            pre_sha256,
+            state_path,
+            job_path,
+            str(job["scheduler"]["task_name"]),
+            helper_sha256,
+        )
+    except AuthorizationError as exc:
+        raise PostflightError(str(exc)) from exc
     if (
         Path(str(state.get("pre_receipt_path", ""))).resolve() != pre_path.resolve()
         or str(state.get("pre_receipt_sha256", "")).lower() != pre_sha256.lower()
@@ -4829,6 +5281,10 @@ def _validate_launch_chain(
         _assert_complete_stream_binding(binding, expected_path, label)
     assert_binding(job_binding, "launch job post-validation reassertion")
     assert_binding(auth_binding, "launch authorization post-validation reassertion")
+    assert_binding(
+        consumption["binding"],
+        "authorization consumption post-validation reassertion",
+    )
     return attempts
 
 
@@ -4837,15 +5293,23 @@ def _load_complete_launch_chain(
 ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], list[dict[str, Any]]]:
     """Outcome-blind POST fence: state/job/PRE metadata only."""
 
-    state_path = state_path.resolve()
-    state_binding = file_binding(state_path)
-    state = load_json(state_path)
+    state_path = _assert_control_path_layout(state_path, "state")
+    state, state_binding = _locked_launch_state_snapshot(state_path)
     inspection = _inspect_launch_state_payload(state_path, state, state_binding)
     if inspection["classification"] != "TERMINAL_COMPLETE_STRUCTURALLY_CLOSED":
         raise PostflightError(
             f"POST blocked by lifecycle classification: {inspection['classification']}"
         )
     pre = assert_pre_receipt(pre_path, pre_sha256)
+    helper_sha256 = str(pre["runtime"]["audit_control_path_helper"]["sha256"])
+    bound_state, bound_binding = _locked_launch_state_snapshot(
+        state_path, helper_sha256
+    )
+    if (
+        canonical_bytes(bound_state) != canonical_bytes(state)
+        or bound_binding != state_binding
+    ):
+        raise PostflightError("terminal launch state changed before bound PRE validation")
     if state.get("pre_receipt_sha256") != pre_sha256.lower():
         raise PostflightError("launch state is not bound to the supplied PRE")
     launch_cells = _validate_launch_chain(pre_path, pre_sha256, state_path, state, pre)
@@ -4858,6 +5322,8 @@ def _load_complete_launch_chain(
     launch_by_id = {str(row.get("cell_id")): row for row in launch_cells}
     if len(launch_by_id) != 4:
         raise PostflightError("launch state cell IDs are not unique")
+    assert_binding(state_binding, "terminal launch state post-chain reassertion")
+    _assert_control_file(state_path, helper_sha256)
     return pre, state, dict(state_binding), launch_cells
 
 
@@ -4927,6 +5393,9 @@ def postflight(pre_path: Path, pre_sha256: str, state_path: Path) -> dict[str, A
         for arm in sorted(EXPECTED_ARMS)
     ]
     passing = [row["arm"] for row in arms if row["status"] == "PASS"]
+    assert_binding(state_binding, "terminal launch state before POST publication")
+    _validate_launch_chain(pre_path, pre_sha256, state_path, state, pre)
+    assert_binding(state_binding, "terminal launch state final POST reassertion")
     return {
         "schema_version": SCHEMA_VERSION,
         "artifact_type": "QM5_20002_SHORT_NY_POST_RECEIPT",
@@ -5008,8 +5477,21 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _worker_run(args.job)
     try:
         if args.command == "pre":
+            args.receipt = _assert_control_path_layout(args.receipt, "pre_receipt")
+            _prepare_control_directory(args.receipt.parent)
             payload = preflight(args.compile_evidence, args.timeout_seconds)
-            receipt_sha = atomic_json(args.receipt, payload, replace=False)
+            helper_sha = str(payload["runtime"]["audit_control_path_helper"]["sha256"])
+            _prepare_control_directory(
+                AUDIT_CONTROL_ROOT / "authorization", helper_sha
+            )
+            _prepare_control_directory(
+                AUDIT_CONTROL_ROOT / "authorization" / "consumptions",
+                helper_sha,
+            )
+            _ensure_authorization_global_lock(helper_sha)
+            receipt_sha = _atomic_control_json(
+                args.receipt, payload, replace=False, helper_sha256=helper_sha
+            )
             output = {"status": "PASS", "receipt": str(args.receipt.resolve()), "sha256": receipt_sha}
         elif args.command == "launch":
             output = launch_detached(
@@ -5025,8 +5507,16 @@ def main(argv: Sequence[str] | None = None) -> int:
         elif args.command == "post-precheck":
             output = post_precheck(args.pre_receipt, args.pre_sha256, args.state)
         elif args.command == "post":
+            args.state = _assert_control_path_layout(args.state, "state")
+            args.receipt = _assert_control_path_layout(
+                args.receipt, "post_receipt", args.state
+            )
+            _assert_control_directory(args.receipt.parent)
             payload = postflight(args.pre_receipt, args.pre_sha256, args.state)
-            receipt_sha = atomic_json(args.receipt, payload, replace=False)
+            helper_sha = sha256_file(CONTROL_PATH_HELPER_PATH)
+            receipt_sha = _atomic_control_json(
+                args.receipt, payload, replace=False, helper_sha256=helper_sha
+            )
             output = {
                 "status": payload["status"],
                 "receipt": str(args.receipt.resolve()),
@@ -5043,7 +5533,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         receipt = getattr(args, "receipt", None)
         if receipt:
             try:
-                atomic_json(receipt, payload, replace=False)
+                state_arg = getattr(args, "state", None)
+                role = "post_receipt" if args.command == "post" else "pre_receipt"
+                receipt = _assert_control_path_layout(receipt, role, state_arg)
+                _atomic_control_json(receipt, payload, replace=False)
             except (AuditError, OSError):
                 pass
         print(json.dumps(payload, indent=2, sort_keys=True), file=sys.stderr)

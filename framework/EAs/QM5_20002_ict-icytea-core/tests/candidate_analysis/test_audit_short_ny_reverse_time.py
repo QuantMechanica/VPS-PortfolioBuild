@@ -25,6 +25,58 @@ subject = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = subject
 SPEC.loader.exec_module(subject)
 
+ORIGINAL_ASSERT_CONTROL_PATH_LAYOUT = subject._assert_control_path_layout
+
+
+@pytest.fixture(autouse=True)
+def _isolated_protected_control_root(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Model the protected root without changing ACLs on the developer host."""
+
+    control_root = tmp_path / "qm20002-control"
+    monkeypatch.setattr(subject, "AUDIT_CONTROL_ROOT", control_root)
+    monkeypatch.setattr(
+        subject, "_assert_control_path_layout", lambda path, *_args: Path(path).resolve()
+    )
+
+    def prepare(path: Path, *_args) -> None:
+        Path(path).mkdir(parents=True, exist_ok=True)
+
+    def assert_directory(path: Path, *_args) -> None:
+        if not Path(path).is_dir():
+            raise subject.AuthorizationError(f"missing protected test directory: {path}")
+
+    def assert_file(path: Path, *_args) -> None:
+        if not Path(path).is_file():
+            raise subject.AuthorizationError(f"missing protected test file: {path}")
+
+    def assert_absent(path: Path, *_args) -> None:
+        if Path(path).exists():
+            raise subject.AuthorizationError(f"protected test file already exists: {path}")
+
+    monkeypatch.setattr(subject, "_prepare_control_directory", prepare)
+    monkeypatch.setattr(subject, "_assert_control_directory", assert_directory)
+    monkeypatch.setattr(subject, "_assert_control_file", assert_file)
+    monkeypatch.setattr(subject, "_assert_absent_control_file", assert_absent)
+    monkeypatch.setattr(subject, "_seal_control_file", assert_file)
+
+
+def _test_authorization(path: Path, pre_sha256: str) -> dict:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "schema_version": subject.SCHEMA_VERSION,
+        "artifact_type": "QM5_20002_SHORT_NY_LAUNCH_AUTHORIZATION",
+        "analysis_id": subject.ANALYSIS_ID,
+        "pre_receipt_sha256": pre_sha256,
+        "scope": "QM5_20002_4_CELLS_X_2_DUPLICATES_MODEL4",
+        "mt5_execution_authorized": True,
+        "authorized_by": "OWNER",
+        "authorized_utc": subject.utc_now().replace("+00:00", "Z"),
+    }
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    return {"binding": subject.file_binding(path), "payload": payload}
+
 
 def _plan_runtime() -> dict:
     return {
@@ -453,6 +505,8 @@ def test_authorization_rejects_wrong_pre_binding(tmp_path: Path) -> None:
     auth.write_text(
         json.dumps(
             {
+                "schema_version": subject.SCHEMA_VERSION,
+                "artifact_type": "QM5_20002_SHORT_NY_LAUNCH_AUTHORIZATION",
                 "analysis_id": subject.ANALYSIS_ID,
                 "pre_receipt_sha256": "a" * 64,
                 "scope": "QM5_20002_4_CELLS_X_2_DUPLICATES_MODEL4",
@@ -463,7 +517,7 @@ def test_authorization_rejects_wrong_pre_binding(tmp_path: Path) -> None:
         ),
         encoding="utf-8",
     )
-    with pytest.raises(subject.AuthorizationError, match="pre_receipt_sha256"):
+    with pytest.raises(subject.AuthorizationError, match="identity/type contract"):
         subject.validate_authorization(auth, "b" * 64)
 
 
@@ -694,6 +748,7 @@ def test_controller_result_rejects_missing_extra_and_duplicate_json_fields(
 
 def _minimal_launcher_pre() -> dict:
     return {
+        "created_utc": "2026-07-20T00:00:00Z",
         "tool": subject.file_binding(subject.TOOL_PATH),
         "runtime": {
             "scheduled_task_helper": subject.file_binding(
@@ -701,6 +756,9 @@ def _minimal_launcher_pre() -> dict:
             ),
             "python_binary": subject.file_binding(Path(sys.executable)),
             "powershell_binary": {"path": str(subject.POWERSHELL_PATH)},
+            "audit_control_path_helper": subject.file_binding(
+                subject.CONTROL_PATH_HELPER_PATH
+            ),
         },
         "plan": {
             "cell_count": 4,
@@ -812,10 +870,7 @@ def test_launch_uses_persisted_scheduler_and_resume_refuses_worker_artifact(
     dev1_runs.mkdir()
     monkeypatch.setattr(subject, "DEV1_RUNS_ROOT", dev1_runs)
     pre = _minimal_launcher_pre()
-    authorization = {
-        "binding": {"path": str(tmp_path / "authorization.json"), "size": 1, "sha256": "b" * 64},
-        "payload": {"authorized": True},
-    }
+    authorization = _test_authorization(tmp_path / "authorization.json", "c" * 64)
     monkeypatch.setattr(subject, "assert_pre_receipt", lambda *_: pre)
     monkeypatch.setattr(subject, "validate_authorization", lambda *_: authorization)
     calls: list[str] = []
@@ -828,6 +883,12 @@ def test_launch_uses_persisted_scheduler_and_resume_refuses_worker_artifact(
                 "principal_sid": "S-1-5-21-500",
                 "logon_type": "S4U",
                 "run_level": "Highest",
+            }
+        if operation == "Probe":
+            return {
+                "operation": "Probe",
+                "task_name": job["scheduler"]["task_name"],
+                "exists": False,
             }
         scheduler = job["scheduler"]
         return {
@@ -851,7 +912,7 @@ def test_launch_uses_persisted_scheduler_and_resume_refuses_worker_artifact(
         None,
     )
     assert launched["status"] == "LAUNCHED_PERSISTED_TASK"
-    assert calls == ["Identity", "Register", "Start"]
+    assert calls == ["Identity", "Probe", "Register", "Start"]
     job = subject.load_json(state_path.with_name("launch_job.json"))
     assert job["scheduler"]["mode"] == "WINDOWS_TASK_SCHEDULER_S4U_ON_DEMAND"
     assert job["controller_timeout_seconds"] == 120000
@@ -867,7 +928,7 @@ def test_launch_uses_persisted_scheduler_and_resume_refuses_worker_artifact(
             None,
             resume=True,
         )
-    assert calls == ["Identity", "Register", "Start"]
+    assert calls == ["Identity", "Probe", "Register", "Start"]
 
 
 def _arm_one_cell_worker(
@@ -883,12 +944,19 @@ def _arm_one_cell_worker(
         "binding": subject.file_binding(auth_path),
         "payload": {"mt5_execution_authorized": True},
     }
+    consumption_path = tmp_path / "authorization-consumption.json"
+    consumption_path.write_text("{}", encoding="utf-8")
+    authorization_consumption = {
+        "binding": subject.file_binding(consumption_path),
+        "payload": {},
+    }
     job = {
         "state_path": str(state_path.resolve()),
         "pre_receipt_path": str(pre_path.resolve()),
         "pre_receipt_sha256": "d" * 64,
         "authorization": authorization,
-        "scheduler": {"mode": "TEST"},
+        "authorization_consumption": authorization_consumption,
+        "scheduler": {"mode": "TEST", "task_name": "TEST_TASK"},
         "controller_timeout_seconds": 60,
     }
     job_path.parent.mkdir(parents=True)
@@ -897,10 +965,19 @@ def _arm_one_cell_worker(
         pre_path, "d" * 64, subject.file_binding(job_path), job
     )
     subject.atomic_json(state_path, state)
-    pre = {"plan": {"cells": [{"cell_id": "CELL_04", "runner_arguments": []}]}}
+    subject._ensure_control_lock_file(state_path)
+    pre = {
+        "runtime": {
+            "audit_control_path_helper": subject.file_binding(
+                subject.CONTROL_PATH_HELPER_PATH
+            )
+        },
+        "plan": {"cells": [{"cell_id": "CELL_04", "runner_arguments": []}]},
+    }
     monkeypatch.setattr(subject, "assert_pre_receipt", lambda *_args: pre)
     monkeypatch.setattr(subject, "_validate_launch_job", lambda *_args: None)
     monkeypatch.setattr(subject, "validate_authorization", lambda *_args: authorization)
+    monkeypatch.setattr(subject, "_assert_authorization_consumption", lambda *_args: None)
     monkeypatch.setattr(subject, "_assert_resume_outcome_fence", lambda *_args: None)
     monkeypatch.setattr(subject, "runner_command", lambda *_args: ["controller", "CELL_04"])
     monkeypatch.setattr(
@@ -926,19 +1003,34 @@ def _write_complete_post_chain(
         "binding": subject.file_binding(auth_path),
         "payload": {"mt5_execution_authorized": True},
     }
-    scheduler = {"mode": "TEST"}
+    consumption_path = tmp_path / "post-authorization-consumption.json"
+    consumption_path.write_text("{}", encoding="utf-8")
+    authorization_consumption = {
+        "binding": subject.file_binding(consumption_path),
+        "payload": {},
+    }
+    scheduler = {"mode": "TEST", "task_name": "TEST_TASK"}
     job = {
         "created_utc": subject.utc_now(),
         "authorization": authorization,
+        "authorization_consumption": authorization_consumption,
         "scheduler": scheduler,
     }
     job_path.write_text(json.dumps(job), encoding="utf-8")
     pre_sha = "d" * 64
     cells = [{"cell_id": f"CELL_{index:02d}"} for index in range(1, 5)]
-    pre = {"plan": {"cells": cells}}
+    pre = {
+        "runtime": {
+            "audit_control_path_helper": subject.file_binding(
+                subject.CONTROL_PATH_HELPER_PATH
+            )
+        },
+        "plan": {"cells": cells},
+    }
     monkeypatch.setattr(subject, "assert_pre_receipt", lambda *_args: pre)
     monkeypatch.setattr(subject, "_validate_launch_job", lambda *_args: None)
     monkeypatch.setattr(subject, "validate_authorization", lambda *_args: authorization)
+    monkeypatch.setattr(subject, "_assert_authorization_consumption", lambda *_args: None)
     monkeypatch.setattr(
         subject,
         "runner_command",
@@ -1001,6 +1093,7 @@ def _write_complete_post_chain(
     state["updated_utc"] = state["finished_utc"]
     subject._validate_launch_state_shape(state)
     subject.atomic_json(state_path, state)
+    subject._ensure_control_lock_file(state_path)
     return pre_path, pre_sha, state_path, pre
 
 
@@ -1215,10 +1308,15 @@ def test_terminal_rejection_persistence_failure_does_not_publish_false_reject(
     )
     real_atomic_json = subject.atomic_json
 
-    def fail_reject(path, payload, *, replace=True):
+    def fail_reject(path, payload, *, replace=True, prepare_temporary=None):
         if payload.get("status") == "REJECT":
             raise OSError("simulated terminal persistence failure")
-        return real_atomic_json(path, payload, replace=replace)
+        return real_atomic_json(
+            path,
+            payload,
+            replace=replace,
+            prepare_temporary=prepare_temporary,
+        )
 
     monkeypatch.setattr(subject, "atomic_json", fail_reject)
     assert subject._worker_run(job_path) == 2
@@ -1236,6 +1334,7 @@ def test_rejection_finalizer_never_overwrites_existing_complete_bytes(tmp_path: 
     state = _minimal_running_state(tmp_path)
     state["status"] = "COMPLETE"
     state_path.write_text(json.dumps(state, sort_keys=True), encoding="utf-8")
+    subject._ensure_control_lock_file(state_path)
     before = state_path.read_bytes()
     assert not subject._finalize_worker_rejection(
         state_path, subject.AuditError("late failure"), None
@@ -1266,12 +1365,17 @@ def test_terminal_state_lock_race_preserves_complete_bytes(
     results: dict[str, object] = {}
     errors: list[BaseException] = []
 
-    def gated_atomic_json(path, payload, *, replace=True):
+    def gated_atomic_json(path, payload, *, replace=True, prepare_temporary=None):
         if payload.get("status") == "COMPLETE":
             complete_write_entered.set()
             if not allow_complete_write.wait(5):
                 raise AssertionError("timed out coordinating terminal-state race")
-        result = real_atomic_json(path, payload, replace=replace)
+        result = real_atomic_json(
+            path,
+            payload,
+            replace=replace,
+            prepare_temporary=prepare_temporary,
+        )
         if payload.get("status") == "COMPLETE":
             published_complete_bytes.append(Path(path).read_bytes())
         return result
@@ -1337,6 +1441,7 @@ def test_legacy_stdout_reject_is_uniquely_classified_and_post_blocked(
     state["error"] = "runner stdout contains no JSON object"
     state_path = tmp_path / "legacy_launch_state.json"
     state_path.write_text(json.dumps(state), encoding="utf-8")
+    subject._ensure_control_lock_file(state_path)
     monkeypatch.setattr(
         subject, "assert_pre_receipt", lambda *_args: pytest.fail("PRE must not be opened")
     )
@@ -1378,6 +1483,7 @@ def test_status_rejects_bool_type_and_field_closure_tamper(
         state["unexpected"] = "field"
     tampered = tmp_path / f"tampered-{tamper}.json"
     tampered.write_text(json.dumps(state), encoding="utf-8")
+    subject._ensure_control_lock_file(tampered)
     status = subject.launch_status(tampered)
     assert status["classification"] == "INVALID_TERMINAL_LAUNCH_STATE"
     assert status["post_allowed"] is False

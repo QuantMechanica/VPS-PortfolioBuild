@@ -24,6 +24,25 @@ if ($actualHelperSha256 -cne $ExpectedHelperSha256) {
     throw 'QM20002 control-path helper byte binding drifted.'
 }
 
+function Assert-LocalFixedNtfsVolume {
+    $volumeRoot = [IO.Path]::GetPathRoot($controlRoot)
+    $drive = [IO.DriveInfo]::new($volumeRoot)
+    if (-not $drive.IsReady -or
+        $drive.DriveType -ne [IO.DriveType]::Fixed -or
+        $drive.DriveFormat -cne 'NTFS') {
+        throw 'QM20002 control root requires a ready local fixed NTFS volume.'
+    }
+    $deviceId = $volumeRoot.TrimEnd('\')
+    $escapedDeviceId = $deviceId.Replace("'", "''")
+    $logical = @(Get-CimInstance -ClassName Win32_LogicalDisk -Filter "DeviceID='$escapedDeviceId'" -ErrorAction Stop)
+    if ($logical.Count -ne 1 -or
+        [int]$logical[0].DriveType -ne 3 -or
+        [string]$logical[0].FileSystem -cne 'NTFS' -or
+        -not [string]::IsNullOrWhiteSpace([string]$logical[0].ProviderName)) {
+        throw 'QM20002 control root volume is remote, redirected, or unsupported.'
+    }
+}
+
 function ConvertTo-ControlPath([string]$Candidate) {
     if ([string]::IsNullOrWhiteSpace($Candidate) -or $Candidate.IndexOfAny([char[]]"`r`n`0") -ge 0) {
         throw 'QM20002 control path is empty or contains CR/LF/NUL.'
@@ -173,6 +192,7 @@ function Assert-AncestorProtection {
     }
 }
 
+Assert-LocalFixedNtfsVolume
 $fullPath = ConvertTo-ControlPath $Path
 Assert-AncestorProtection
 if ($Operation -eq 'PrepareDirectory') {

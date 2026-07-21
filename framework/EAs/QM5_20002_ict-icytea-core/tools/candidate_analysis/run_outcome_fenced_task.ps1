@@ -52,14 +52,22 @@ function Get-QmCurrentIdentity {
 }
 
 function Get-QmTaskContract {
+    param([switch]$AllowMissingJob)
     $python = ConvertTo-QmFullPath -Path $PythonExe -Label 'PythonExe'
     $tool = ConvertTo-QmFullPath -Path $ToolPath -Label 'ToolPath'
     $job = ConvertTo-QmFullPath -Path $JobPath -Label 'JobPath'
     $repo = ConvertTo-QmFullPath -Path $RepoRoot -Label 'RepoRoot'
-    foreach ($leaf in @($python, $tool, $job)) {
+    foreach ($leaf in @($python, $tool)) {
         if (-not (Test-Path -LiteralPath $leaf -PathType Leaf)) {
             throw "Required task input is not a file: $leaf"
         }
+    }
+    if (Test-Path -LiteralPath $job) {
+        if (-not (Test-Path -LiteralPath $job -PathType Leaf)) {
+            throw "JobPath exists but is not a file: $job"
+        }
+    } elseif (-not $AllowMissingJob.IsPresent) {
+        throw "Required task input is not a file: $job"
     }
     if (-not (Test-Path -LiteralPath $repo -PathType Container)) {
         throw "RepoRoot is not a directory: $repo"
@@ -81,7 +89,7 @@ function Assert-QmTaskContract {
         [Parameter(Mandatory = $true)]$Contract,
         [Parameter(Mandatory = $true)]$Identity
     )
-    if ($Task.TaskPath -cne '\') {
+    if ($Task.TaskName -cne $TaskName -or $Task.TaskPath -cne '\') {
         throw "Scheduled task '$TaskName' escaped the root task path."
     }
     $principalSid = (New-Object System.Security.Principal.NTAccount($Task.Principal.UserId)).Translate(
@@ -92,7 +100,7 @@ function Assert-QmTaskContract {
         $Task.Principal.RunLevel.ToString() -cne 'Highest') {
         throw "Scheduled task '$TaskName' principal drifted from the qm-admin S4U/Highest contract."
     }
-    if ($null -ne $Task.Triggers) {
+    if (@($Task.Triggers).Count -ne 0) {
         throw "Scheduled task '$TaskName' must be triggerless and on-demand only."
     }
     if (@($Task.Actions).Count -ne 1) {
@@ -108,17 +116,20 @@ function Assert-QmTaskContract {
         )) {
         throw "Scheduled task '$TaskName' action drifted from the immutable worker contract."
     }
-    if ($Task.Settings.MultipleInstances.ToString() -cne 'IgnoreNew') {
-        throw "Scheduled task '$TaskName' must use MultipleInstances=IgnoreNew."
+    if ($Task.Settings.MultipleInstances.ToString() -cne 'IgnoreNew' -or
+        -not [bool]$Task.Settings.Enabled -or
+        -not [bool]$Task.Settings.StartWhenAvailable -or
+        -not [bool]$Task.Settings.AllowHardTerminate -or
+        -not [bool]$Task.Settings.Hidden -or
+        [bool]$Task.Settings.DisallowStartIfOnBatteries -or
+        [bool]$Task.Settings.StopIfGoingOnBatteries) {
+        throw "Scheduled task '$TaskName' settings drifted from the exact on-demand contract."
     }
     $actualLimit = [System.Xml.XmlConvert]::ToTimeSpan(
         [string]$Task.Settings.ExecutionTimeLimit
     ).TotalSeconds
     if ([int64]$actualLimit -ne [int64]$ExecutionLimitSeconds) {
         throw "Scheduled task '$TaskName' execution limit drifted."
-    }
-    if (-not [bool]$Task.Settings.Enabled) {
-        throw "Scheduled task '$TaskName' is disabled."
     }
 }
 
@@ -140,7 +151,13 @@ function Get-QmSafeTaskMetadata {
         principal_sid = $Identity.Sid
         logon_type = 'S4U'
         run_level = 'Highest'
+        triggers_count = @($Task.Triggers).Count
+        actions_count = @($Task.Actions).Count
+        enabled = [bool]$Task.Settings.Enabled
         multiple_instances = 'IgnoreNew'
+        start_when_available = [bool]$Task.Settings.StartWhenAvailable
+        allow_hard_terminate = [bool]$Task.Settings.AllowHardTerminate
+        hidden = [bool]$Task.Settings.Hidden
         execution_limit_seconds = $ExecutionLimitSeconds
         last_run_utc = $lastRunUtc
         last_task_result = $info.LastTaskResult
@@ -162,7 +179,7 @@ if ($Operation -eq 'Identity') {
 if ([string]::IsNullOrWhiteSpace($TaskName)) {
     throw 'TaskName is required for this operation.'
 }
-$contract = Get-QmTaskContract
+$contract = Get-QmTaskContract -AllowMissingJob:($Operation -eq 'Probe')
 $task = Get-ScheduledTask -TaskName $TaskName -TaskPath '\' -ErrorAction SilentlyContinue
 
 if ($Operation -eq 'Probe') {
@@ -191,6 +208,7 @@ if ($Operation -eq 'Register') {
             -AllowStartIfOnBatteries `
             -DontStopIfGoingOnBatteries `
             -StartWhenAvailable `
+            -AllowHardTerminate `
             -Hidden `
             -ExecutionTimeLimit (New-TimeSpan -Seconds $ExecutionLimitSeconds) `
             -MultipleInstances IgnoreNew
