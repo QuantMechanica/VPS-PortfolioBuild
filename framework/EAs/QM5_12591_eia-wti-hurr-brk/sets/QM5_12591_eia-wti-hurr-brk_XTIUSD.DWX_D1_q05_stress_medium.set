@@ -1,0 +1,35 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        12591
+; ea_slug:      eia-wti-hurr-brk
+; ea_version:   v5.0
+; set_version:  s20260721-stress-med
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  q05_stress_medium
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   2f40e631d0024f4abad465aede91bf1425f4fd2e5965ad8da2205933dfb03e14
+; author:       Development
+; date:         2026-07-21
+;==========================================================
+qm_ea_id=12591
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.0000
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\eia-wti-hurr-brk_card.md
+strategy_entry_channel=12
+strategy_exit_channel=6
+strategy_trend_period=50
+strategy_atr_period=20
+strategy_min_range_atr=0.80
+strategy_min_close_location=0.65
+strategy_atr_sl_mult=3.0
+strategy_max_hold_days=12
+strategy_start_month=6
+strategy_end_month=11
+strategy_max_spread_points=1000
