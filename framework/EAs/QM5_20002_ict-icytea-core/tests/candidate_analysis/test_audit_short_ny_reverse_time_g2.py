@@ -98,8 +98,42 @@ def test_immutable_byte_guard_rejects_size_or_digest_drift(tmp_path: Path) -> No
         )
 
 
-def test_cli_is_explicitly_fail_closed_during_skeleton_stage() -> None:
+def test_cli_requires_external_runtime_freeze_before_pre(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     auditor = load_auditor()
 
-    with pytest.raises(auditor.G2IntegrationError, match="fail-closed"):
-        auditor.main()
+    code = auditor.main(
+        [
+            "pre",
+            "--compile-evidence",
+            "unused.json",
+            "--receipt",
+            "unused-pre.json",
+        ]
+    )
+    captured = capsys.readouterr()
+    assert code == 2
+    assert "requires exactly one --runtime-freeze-sha256" in captured.err
+    assert '"outcome_data_read": false' in captured.err
+
+
+def test_runtime_errors_enter_base_fail_closed_lifecycle() -> None:
+    auditor = load_auditor()
+
+    assert issubclass(auditor.G2IntegrationError, auditor._BASE.AuditError)
+    assert auditor._BASE.preflight is auditor.preflight
+    assert auditor._BASE._validate_pre_semantics is auditor._validate_pre_semantics
+
+
+def test_runtime_freeze_option_is_pre_only(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    auditor = load_auditor()
+
+    code = auditor.main(
+        ["status", "--runtime-freeze-sha256", "0" * 64, "--state", "unused.json"]
+    )
+    captured = capsys.readouterr()
+    assert code == 2
+    assert "accepted only for PRE" in captured.err

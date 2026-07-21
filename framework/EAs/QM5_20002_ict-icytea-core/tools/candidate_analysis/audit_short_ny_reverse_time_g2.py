@@ -231,6 +231,32 @@ _g2_runtime_roles.update(
 _BASE.RUNTIME_ROLES = _g2_runtime_roles
 RUNTIME_ROLES = _g2_runtime_roles
 
+G2_ADAPTER_TEST_PATH = (
+    EA_ROOT / "tests" / "candidate_analysis" / "test_audit_short_ny_reverse_time_g2.py"
+)
+G2_HELPER_TEST_PATH = (
+    EA_ROOT / "tests" / "candidate_analysis" / "test_qm20002_g2_helpers.py"
+)
+RUN_SMOKE_TARGETED_TEST_PATH = (
+    REPO_ROOT / "framework" / "scripts" / "tests" / "Test-RunSmokeNoHistoryScope.ps1"
+)
+G2_FREEZE_FILE_PATHS = {
+    "g2_adapter": TOOL_PATH,
+    "g2_adapter_tests": G2_ADAPTER_TEST_PATH,
+    "g2_helper_tests": G2_HELPER_TEST_PATH,
+    "g2_contract": G2_CONTRACT_PATH,
+    "g2_scheduler_helper": G2_SCHEDULED_TASK_HELPER_PATH,
+    "g2_control_helper": G2_CONTROL_PATH_HELPER_PATH,
+    "g2_runner_provenance": G2_RUNNER_PROVENANCE_PATH,
+    "run_smoke_targeted_test": RUN_SMOKE_TARGETED_TEST_PATH,
+    "g1_base_auditor": BASE_AUDITOR_PATH,
+    "g1_closure_landed": G1_CLOSURE_LANDED_PATH,
+    "g1_closure_freeze": G1_CLOSURE_FREEZE_PATH,
+    "g1_closure_utility": G1_CLOSURE_UTILITY_PATH,
+    "g1_closure_task_helper": G1_CLOSURE_TASK_HELPER_PATH,
+}
+_ACTIVE_RUNTIME_FREEZE_SHA256: str | None = None
+
 
 def _require_exact_fields(
     value: Mapping[str, Any], expected: set[str], label: str
@@ -592,6 +618,212 @@ def validate_g1_closure_gate() -> dict[str, Any]:
         raise G2IntegrationError(f"G1 closure prerequisite failed: {exc}") from exc
 
 
+def _manifest_file_binding(
+    value: Any, expected_path: Path, label: str
+) -> dict[str, Any]:
+    if not isinstance(value, Mapping):
+        raise G2IntegrationError(f"{label} binding is not an object")
+    _require_exact_fields(value, {"path", "size", "sha256"}, label)
+    expected_relative = _repo_relative(expected_path)
+    if value.get("path") != expected_relative:
+        raise G2IntegrationError(f"{label} repository path drift")
+    observed = _exact_file_binding(
+        expected_path,
+        expected_size=value.get("size") if type(value.get("size")) is int else -1,
+        expected_sha256=str(value.get("sha256", "")),
+        label=label,
+    )
+    return {
+        "path": expected_relative,
+        "size": observed["size"],
+        "sha256": observed["sha256"],
+    }
+
+
+def validate_g2_runtime_freeze(
+    expected_sha256: str,
+    expected_runtime: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Validate the externally sealed G2 runtime closure and current bytes."""
+
+    if type(expected_sha256) is not str or HEX64.fullmatch(expected_sha256) is None:
+        raise G2IntegrationError("G2 runtime-freeze SHA-256 is not canonical")
+    freeze_binding = _BASE.file_binding(G2_RUNTIME_FREEZE_PATH, expected_sha256)
+    freeze = _load_strict_json(G2_RUNTIME_FREEZE_PATH, "G2 runtime freeze")
+    _require_exact_fields(
+        freeze,
+        {
+            "schema_version",
+            "artifact_type",
+            "created_utc",
+            "status",
+            "analysis_id",
+            "generation",
+            "files",
+            "runtime_roles",
+            "foreign_runner",
+            "policy",
+        },
+        "G2 runtime freeze",
+    )
+    if (
+        freeze.get("schema_version") != 1
+        or freeze.get("artifact_type") != "QM5_20002_SHORT_NY_G2_RUNTIME_FREEZE"
+        or freeze.get("status") != "FROZEN_READY_FOR_FRESH_G2_PRE"
+        or freeze.get("analysis_id") != _BASE.ANALYSIS_ID
+        or freeze.get("generation") != GENERATION
+    ):
+        raise G2IntegrationError("G2 runtime-freeze identity/status drift")
+    created = _BASE.parse_utc(str(freeze.get("created_utc", "")), "G2 freeze created_utc")
+    if created > datetime.now(timezone.utc) + timedelta(minutes=5):
+        raise G2IntegrationError("G2 runtime-freeze timestamp is implausibly future")
+
+    files = freeze.get("files")
+    if not isinstance(files, Mapping) or set(files) != set(G2_FREEZE_FILE_PATHS):
+        raise G2IntegrationError("G2 runtime-freeze file-role closure drift")
+    validated_files = {
+        role: _manifest_file_binding(files[role], path, f"G2 freeze file {role}")
+        for role, path in sorted(G2_FREEZE_FILE_PATHS.items())
+    }
+
+    observed_runtime = _BASE_VALIDATE_RUNTIME()
+    stored_runtime = freeze.get("runtime_roles")
+    if not isinstance(stored_runtime, Mapping) or dict(stored_runtime) != observed_runtime:
+        raise G2IntegrationError("G2 runtime-freeze live runtime-role drift")
+    if expected_runtime is not None and dict(expected_runtime) != observed_runtime:
+        raise G2IntegrationError("PRE runtime differs from G2 runtime freeze")
+
+    provenance = _load_strict_json(
+        G2_RUNNER_PROVENANCE_PATH, "G2 runner worktree provenance"
+    )
+    provenance_files = provenance.get("files")
+    if not isinstance(provenance_files, Mapping):
+        raise G2IntegrationError("G2 runner provenance file map is absent")
+    runner_record = provenance_files.get("runner")
+    targeted_record = provenance_files.get("targeted_test")
+    if not isinstance(runner_record, Mapping) or not isinstance(targeted_record, Mapping):
+        raise G2IntegrationError("G2 runner provenance records are malformed")
+    foreign_runner = freeze.get("foreign_runner")
+    expected_foreign_runner = {
+        "provenance": validated_files["g2_runner_provenance"],
+        "provenance_status": "STABLE_FOREIGN_WORKTREE_BYTES_NOT_COMMITTED",
+        "base_commit": provenance.get("base_commit"),
+        "runner": {
+            "path": str(runner_record.get("path", "")),
+            "size": runner_record.get("worktree_size"),
+            "sha256": runner_record.get("worktree_sha256"),
+            "base_blob_oid": runner_record.get("base_blob_oid"),
+            "worktree_raw_blob_oid": runner_record.get("worktree_raw_blob_oid"),
+            "worktree_filtered_blob_oid": runner_record.get("worktree_filtered_blob_oid"),
+        },
+        "targeted_test": {
+            "path": str(targeted_record.get("path", "")),
+            "size": targeted_record.get("worktree_size"),
+            "sha256": targeted_record.get("worktree_sha256"),
+            "base_blob_oid": targeted_record.get("base_blob_oid"),
+            "worktree_raw_blob_oid": targeted_record.get("worktree_raw_blob_oid"),
+            "worktree_filtered_blob_oid": targeted_record.get("worktree_filtered_blob_oid"),
+        },
+    }
+    if foreign_runner != expected_foreign_runner:
+        raise G2IntegrationError("G2 runtime-freeze runner provenance drift")
+    if (
+        validated_files["run_smoke_targeted_test"]["size"]
+        != targeted_record.get("worktree_size")
+        or validated_files["run_smoke_targeted_test"]["sha256"]
+        != targeted_record.get("worktree_sha256")
+        or observed_runtime["runner_smoke"]["size"]
+        != runner_record.get("worktree_size")
+        or observed_runtime["runner_smoke"]["sha256"]
+        != runner_record.get("worktree_sha256")
+    ):
+        raise G2IntegrationError("G2 runner current bytes differ from provenance")
+
+    expected_policy = {
+        "fresh_g2_pre_required": True,
+        "external_expected_freeze_sha256_required": True,
+        "g1_gate_before_and_after_pre_required": True,
+        "g1_gate_revalidated_by_launch_worker_and_post": True,
+        "strategy_contract_or_merit_gate_changes": False,
+        "native_reports_read_before_fenced_post": False,
+        "outcome_data_read": False,
+    }
+    if freeze.get("policy") != expected_policy:
+        raise G2IntegrationError("G2 runtime-freeze policy drift")
+    return {
+        "binding": freeze_binding,
+        "payload_sha256": _BASE.canonical_sha256(freeze),
+        "files_sha256": _BASE.canonical_sha256(validated_files),
+        "runtime_roles_sha256": _BASE.canonical_sha256(observed_runtime),
+        "runner_provenance_sha256": _BASE.canonical_sha256(expected_foreign_runner),
+    }
+
+
+def preflight(
+    compile_evidence: Path,
+    timeout_seconds: int = 28800,
+    *,
+    runtime_freeze_sha256: str | None = None,
+) -> dict[str, Any]:
+    freeze_sha = runtime_freeze_sha256 or _ACTIVE_RUNTIME_FREEZE_SHA256
+    if freeze_sha is None:
+        raise G2IntegrationError(
+            "G2 PRE requires an externally supplied runtime-freeze SHA-256"
+        )
+    gate_before = validate_g1_closure_gate()
+    freeze_before = validate_g2_runtime_freeze(freeze_sha)
+    payload = _BASE_PREFLIGHT(compile_evidence, timeout_seconds)
+    gate_after = validate_g1_closure_gate()
+    if gate_after != gate_before:
+        raise G2IntegrationError("G1 closure gate changed during G2 PRE")
+    freeze_after = validate_g2_runtime_freeze(freeze_sha, payload.get("runtime"))
+    if freeze_after != freeze_before:
+        raise G2IntegrationError("G2 runtime freeze changed during PRE")
+    payload.update(
+        {
+            "generation": GENERATION,
+            "g2_contract": _exact_file_binding(
+                G2_CONTRACT_PATH,
+                expected_size=G2_CONTRACT_SIZE,
+                expected_sha256=G2_CONTRACT_SHA256,
+                label="G2 integration contract",
+            ),
+            "g2_runtime_freeze": freeze_after,
+            "g1_closure_gate": gate_after,
+        }
+    )
+    return payload
+
+
+def _validate_pre_semantics(receipt: Mapping[str, Any]) -> None:
+    fresh_gate = validate_g1_closure_gate()
+    if receipt.get("g1_closure_gate") != fresh_gate:
+        raise G2IntegrationError("stored G2 PRE G1-closure gate differs from fresh proof")
+    if receipt.get("generation") != GENERATION:
+        raise G2IntegrationError("G2 PRE generation marker drift")
+    expected_contract = _exact_file_binding(
+        G2_CONTRACT_PATH,
+        expected_size=G2_CONTRACT_SIZE,
+        expected_sha256=G2_CONTRACT_SHA256,
+        label="G2 integration contract",
+    )
+    if receipt.get("g2_contract") != expected_contract:
+        raise G2IntegrationError("G2 PRE integration-contract binding drift")
+    stored_freeze = receipt.get("g2_runtime_freeze")
+    binding = stored_freeze.get("binding") if isinstance(stored_freeze, Mapping) else None
+    freeze_sha = binding.get("sha256") if isinstance(binding, Mapping) else None
+    fresh_freeze = validate_g2_runtime_freeze(
+        str(freeze_sha or ""), receipt.get("runtime")
+    )
+    if stored_freeze != fresh_freeze:
+        raise G2IntegrationError("stored G2 PRE runtime freeze differs from fresh proof")
+    _BASE_VALIDATE_PRE_SEMANTICS(receipt)
+
+
+_BASE.preflight = preflight
+_BASE._validate_pre_semantics = _validate_pre_semantics
+
+
 def integration_profile() -> dict[str, Any]:
     """Return the mutation-free adapter profile used by focused tests/review."""
 
@@ -630,11 +862,52 @@ def integration_profile() -> dict[str, Any]:
     }
 
 
-def main() -> int:
-    raise G2IntegrationError(
-        "G2 CLI is fail-closed until closure-gate and external runtime-freeze "
-        "validation are integrated"
-    )
+def _extract_pre_freeze_argument(argv: list[str]) -> tuple[list[str], str | None]:
+    option = "--runtime-freeze-sha256"
+    occurrences = [index for index, value in enumerate(argv) if value == option]
+    is_pre = bool(argv) and argv[0] == "pre"
+    if not is_pre:
+        if occurrences:
+            raise G2IntegrationError(f"{option} is accepted only for PRE")
+        return argv, None
+    if len(occurrences) != 1:
+        raise G2IntegrationError(f"G2 PRE requires exactly one {option}")
+    index = occurrences[0]
+    if index + 1 >= len(argv) or argv[index + 1].startswith("--"):
+        raise G2IntegrationError("G2 PRE runtime-freeze SHA-256 value is missing")
+    value = argv[index + 1].lower()
+    if HEX64.fullmatch(value) is None:
+        raise G2IntegrationError("G2 PRE runtime-freeze SHA-256 is malformed")
+    filtered = argv[:index] + argv[index + 2 :]
+    return filtered, value
+
+
+def main(argv: list[str] | None = None) -> int:
+    global _ACTIVE_RUNTIME_FREEZE_SHA256
+    arguments = list(sys.argv[1:] if argv is None else argv)
+    try:
+        filtered, freeze_sha = _extract_pre_freeze_argument(arguments)
+    except G2IntegrationError as exc:
+        print(
+            json.dumps(
+                {
+                    "status": "REJECT",
+                    "phase": "G2_ARGUMENT_VALIDATION",
+                    "error_type": type(exc).__name__,
+                    "error": str(exc),
+                    "outcome_data_read": False,
+                },
+                indent=2,
+                sort_keys=True,
+            ),
+            file=sys.stderr,
+        )
+        return 2
+    _ACTIVE_RUNTIME_FREEZE_SHA256 = freeze_sha
+    try:
+        return _BASE.main(filtered)
+    finally:
+        _ACTIVE_RUNTIME_FREEZE_SHA256 = None
 
 
 if __name__ == "__main__":
