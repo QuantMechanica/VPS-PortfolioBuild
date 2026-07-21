@@ -1,123 +1,66 @@
 ---
-source_id: BOROWSKI-COMM-DOW-2016
-title: Natural-gas Wednesday day-of-week return anomaly
-publisher: Journal of Management and Financial Sciences, SGH Warsaw School of Economics
-source_type: peer_reviewed_open_access_paper
+source_id: LI-WTI-DOW-2022
+title: The evolution of day-of-the-week and the implications in crude oil market
+publisher: Energy Economics
+source_type: peer_reviewed_academic_paper
 status: approved
 approved_by: OWNER commodity-sleeve mission
-approved_at: 2026-07-20
-primary_url: https://econjournals.sgh.waw.pl/JMFS/Archives_2015_2016
-open_full_text_url: https://www.researchgate.net/publication/303285422_ANALYSIS_OF_SELECTED_SEASONALITY_EF-_FECTS_IN_MARKETS_OF_FUTURE_CONTRACTS_WITH_THE_FOLLOWING_UNDERLYING_INSTRUMENTS_CRUDE_OIL_BRENT_OIL_HEATING_OIL_GAS_OIL_NATURAL_GAS_FEEDER_CATTLE_LIVE_CATTLE_LEAN_HOGS_AND_LUMBER
-strategy_ids:
-  - BOROWSKI-COMM-DOW-2016_S01
+approved_at: 2026-07-21
+primary_url: https://doi.org/10.1016/j.eneco.2022.105817
+catalog_url: https://www.econbiz.de/10013202138
+strategy_ids: [LI-WTI-DOW-2022_S01]
 ---
 
-# Borowski Natural-Gas Wednesday Source
+# Li et al. WTI Wednesday Source
 
 ## Source identity
 
-Krzysztof Borowski (2016), "Analysis of Selected Seasonality Effects in
-Markets of Future Contracts with the Following Underlying Instruments: Crude
-Oil, Brent Oil, Heating Oil, Gas Oil, Natural Gas, Feeder Cattle, Live Cattle,
-Lean Hogs and Lumber," *Journal of Management and Financial Sciences*, issue
-26, pages 27-44. The official SGH archive identifies the issue; the complete
-author-uploaded article is linked above. The full article, including methods,
-weekday tables, conclusions, limitations and references, was reviewed on
-2026-07-20.
+Wenhui Li, Qi Zhu, Fenghua Wen and Normaziah Mohd Nor (2022), "The
+evolution of day-of-the-week and the implications in crude oil market,"
+*Energy Economics* 106, article 105817. DOI:
+`10.1016/j.eneco.2022.105817`.
 
-The journal documents external double-blind review. This source is classified
-quality tier B: it is a named-author, peer-reviewed empirical paper with a
-complete public copy, but it is one broad calendar-anomaly study rather than a
-realizable trading track record.
+This is a quality-tier-A primary source: a named-author peer-reviewed paper in
+an established energy-economics journal, with DOI metadata and bibliographic
+identity independently indexed by EconBiz. The article studies WTI trading-day
+returns from 2007-05-14 through 2021-05-14.
 
-## Selected natural-gas finding
+## Selected finding
 
-The study uses NYMEX natural-gas futures observations from 1990-04-03 through
-2016-03-31. Its day-of-week test compares the daily-return population for each
-weekday with returns from all other weekdays. For natural gas:
-
-- Wednesday has a sample mean of `-0.2664%`;
-- Friday also has a negative mean, `-0.1274%`, while Monday, Tuesday and
-  Thursday have positive sample means; and
-- equality of the Wednesday mean and the other-weekday population is rejected
-  with reported `p=0.0136`.
-
-The abstract identifies day-of-week effects "on Wednesdays (heating oil,
-natural gas, live cattle, lean hogs and lumber)". This is an author claim and
-the values above are paper statistics, not expected Darwinex CFD returns or
-QM certification evidence.
-
-## Interpretation and limitations
-
-The source result is the return attributed to the Wednesday trading session.
-Opening at the first executable price of a broker D1 bar dated Wednesday and
-flattening at the first executable price of the following D1 bar is the
-closest deterministic MT5 proxy for the source's prior-close-to-Wednesday-
-close return. Broker D1 boundaries can differ from the NYMEX settlement
-boundary, so this mapping is itself a basis risk.
-
-Important weaknesses are predeclared:
-
-- the article searches multiple commodities and calendar partitions without
-  reporting a family-wise or false-discovery correction;
-- the weekday mean-comparison method assumes normal populations and selects
-  an equal/unequal-variance test through an F-test;
-- evidence ends in March 2016 and does not establish post-publication
-  persistence;
-- NYMEX futures returns are not the Darwinex `XNGUSD.DWX` continuous CFD; and
-- spread, financing, gaps, roll/basis construction, news filters and broker
-  calendar boundaries can consume or reverse the reported gross effect.
-
-For those reasons the finding authorizes only one locked Q02 falsification
-candidate. No neighboring weekday, direction flip, causal story or parameter
-sweep may be inferred after results are seen.
+The paper reports an abnormal positive Wednesday WTI return and links the
+weekday concentration to the scheduled crude-inventory information shock. It
+also reports that weekday efficiency evolves through time; the result is not
+presented as an immutable premium. The paper's open abstract and highlights
+are the evidentiary boundary used here. No coefficient unavailable from that
+boundary is invented or used for sizing.
 
 ## Mechanization boundary
 
-On a genuine new broker D1 bar dated Wednesday, consume one attempt and sell
-one `XNGUSD.DWX` package. Flatten it on the first following D1 bar. A
-completed-bar `ATR(20)` hard stop at `2.75 * ATR`, one-calendar-day stale
-guard, 2500-point entry-spread cap, fixed-risk sizing, framework news gate and
-restart-safe daily attempt marker are V5 risk/execution plumbing rather than
-source-authored alpha.
+The closest deterministic MT5 carrier is to buy `XTIUSD.DWX` on the first
+executable tick of a broker D1 bar dated Wednesday and flatten on the first
+following D1 bar. The paper does not prescribe ATR stops, spread limits, news
+handling, fixed-risk sizing or restart state; those are frozen V5 execution
+and risk controls.
 
-Expected cadence is about 45-52 completed packages per full year. Q02 must
-retire the card below the portfolio research floor of five completed
-trades/year/symbol.
+Broker D1 boundaries do not necessarily equal NYMEX settlement boundaries,
+and Darwinex's continuous CFD is not the source futures series. Q02 therefore
+tests a basis-sensitive implementation rather than claiming replication.
 
-## Reputable-source criteria
+## Limitations and kill boundary
 
-- R1: TIER_B. One named-author, peer-reviewed article is the sole evidence
-  lineage; official archive and complete author-uploaded text are preserved.
-- R2: PASS. Broker Wednesday, short direction, next-D1 flatten, one-attempt
-  state and all V5 risk additions are deterministic and frozen.
-- R3: PASS. `XNGUSD.DWX` D1 is registered and needs no external runtime feed.
-- R4: PASS. Calendar arithmetic and ATR risk only; no ML, banned indicator,
-  adaptive fit, grid, martingale, pyramiding or multiple same-magic positions.
+- The authors explicitly find time-varying market efficiency.
+- The 2007-2021 evidence may decay after publication.
+- Inventory holidays can move the release schedule, while this carrier uses
+  weekday only and consumes a blocked signal rather than shifting it.
+- Futures/CFD construction, broker-day mapping, spread, financing and gaps can
+  reverse the gross source result.
+- One cited empirical anomaly does not establish portfolio decorrelation.
 
-## Non-duplicate boundary
-
-The deterministic dedup tool returned CLEAN for the slug, strategy identity,
-author and `XNG Wednesday D1 short / next-D1 flat` mechanic. Repository-wide
-card/source/EA inspection found no unconditional Wednesday-entry XNG carrier.
-
-- `QM5_12567_cum-rsi2-commodity` is a price-conditioned SMA/cumulative-RSI2
-  pullback, not calendar timing.
-- `QM5_12818_xng-tue-prem` buys Tuesday; `QM5_12819_xng-thu-fade` sells
-  Thursday; `QM5_12806_xng-rev-weekend` trades Monday and Friday.
-- `QM5_20011_xng-thu-tue` exits at Wednesday open and therefore does not hold
-  the Wednesday return.
-- XNG storage EAs may admit Wednesday as an event window but require release
-  timing and price state; they are not an unconditional weekday carrier.
-- `QM5_20017_xng-dom15-long` uses another result from the same paper but an
-  exact numbered calendar day, monthly cadence, and long direction.
-
-Different logic from the certified RSI2 sleeve is established, but realized
-portfolio correlation is unproven and remains a governed downstream kill
-test. No portfolio-gate waiver is claimed.
+Only the locked Wednesday-long/next-D1-flat baseline is authorized. A weekday,
+direction, hold, news-release-time or parameter sweep needs a new card.
 
 ## Safety boundary
 
-This source authorizes one `RISK_FIXED` research/backtest carrier only. It does
-not authorize a live setfile, AutoTrading, T_Live, a deploy/T_Live manifest,
-portfolio admission, or any portfolio-gate change.
+This source authorizes a `RISK_FIXED` research/backtest build and Q02 enqueue
+only. It authorizes no live setfile, T_Live access, AutoTrading action,
+deployment manifest, portfolio admission or portfolio-gate change.

@@ -148,8 +148,13 @@ function Assert-AncestorProtection {
         [Security.AccessControl.FileSystemRights]::TakeOwnership
     $cursor = [IO.Path]::GetPathRoot($controlRoot)
     $parent = Split-Path -Parent $anchorRoot
+    $ancestors = New-Object System.Collections.Generic.List[string]
+    $ancestors.Add($cursor)
     foreach ($part in $parent.Substring($cursor.Length).Split('\', [StringSplitOptions]::RemoveEmptyEntries)) {
         $cursor = Join-Path $cursor $part
+        $ancestors.Add($cursor)
+    }
+    foreach ($cursor in $ancestors) {
         if (-not (Test-Path -LiteralPath $cursor -PathType Container)) {
             throw "Required QM20002 control ancestor is missing: $cursor"
         }

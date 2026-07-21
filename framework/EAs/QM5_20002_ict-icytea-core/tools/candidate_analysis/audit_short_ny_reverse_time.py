@@ -38,7 +38,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP, getcontext
 from pathlib import Path
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any, Callable, Iterable, Mapping, Sequence
 
 
 getcontext().prec = 34
@@ -381,7 +381,13 @@ def _jsonable(value: Any) -> Any:
     return value
 
 
-def atomic_json(path: Path, payload: Mapping[str, Any], *, replace: bool = True) -> str:
+def atomic_json(
+    path: Path,
+    payload: Mapping[str, Any],
+    *,
+    replace: bool = True,
+    prepare_temporary: Callable[[Path], None] | None = None,
+) -> str:
     path = path.resolve()
     path.parent.mkdir(parents=True, exist_ok=True)
     encoded = (
@@ -395,6 +401,8 @@ def atomic_json(path: Path, payload: Mapping[str, Any], *, replace: bool = True)
             handle.write(encoded)
             handle.flush()
             os.fsync(handle.fileno())
+        if prepare_temporary is not None:
+            prepare_temporary(Path(temporary))
         if replace:
             os.replace(temporary, path)
             temporary = ""
@@ -494,6 +502,215 @@ def load_strict_json(path: Path, label: str) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise AuditError(f"{label} JSON root must be an object: {path}")
     return payload
+
+
+def _audit_control_contract() -> dict[str, Any]:
+    return {
+        "schema_version": 1,
+        "root": str(AUDIT_CONTROL_ROOT.resolve()),
+        "acl": "SYSTEM_AND_ADMINISTRATORS_FULL_CONTROL_ONLY",
+        "owner_sid": "S-1-5-32-544",
+        "full_control_sids": ["S-1-5-18", "S-1-5-32-544"],
+        "reparse_points_forbidden": True,
+        "pre_receipt": "pre/pre_receipt.json",
+        "authorization": "authorization/authorization.json",
+        "run_layout": "runs/<yyyyMMddTHHmmssZ_32hex>/launch_state.json",
+        "post_receipt_name": "post_receipt.json",
+    }
+
+
+def _assert_control_path_layout(
+    path: Path, role: str, state_path: Path | None = None
+) -> Path:
+    path = path.resolve()
+    root = AUDIT_CONTROL_ROOT.resolve()
+    try:
+        relative = path.relative_to(root)
+    except ValueError as exc:
+        raise AuthorizationError(f"{role} escaped the fixed QM20002 control root") from exc
+    parts = relative.parts
+    if role == "pre_receipt":
+        expected = root / "pre" / "pre_receipt.json"
+        valid = path == expected
+    elif role == "authorization":
+        expected = root / "authorization" / "authorization.json"
+        valid = path == expected
+    elif role == "state":
+        valid = (
+            len(parts) == 3
+            and parts[0] == "runs"
+            and re.fullmatch(r"[0-9]{8}T[0-9]{6}Z_[0-9a-f]{32}", parts[1]) is not None
+            and parts[2] == "launch_state.json"
+        )
+    elif role == "job":
+        valid = (
+            path == state_path.resolve().with_name("launch_job.json")
+            if state_path is not None
+            else (
+                len(parts) == 3
+                and parts[0] == "runs"
+                and re.fullmatch(r"[0-9]{8}T[0-9]{6}Z_[0-9a-f]{32}", parts[1])
+                is not None
+                and parts[2] == "launch_job.json"
+            )
+        )
+    elif role == "post_receipt":
+        valid = state_path is not None and path == state_path.resolve().with_name("post_receipt.json")
+    elif role == "worker_artifact":
+        if state_path is None:
+            valid = False
+        else:
+            worker_root = state_path.resolve().parent / "worker"
+            try:
+                path.relative_to(worker_root)
+                valid = path != worker_root
+            except ValueError:
+                valid = False
+    else:
+        raise AuditError(f"unknown QM20002 control path role: {role}")
+    if not valid:
+        raise AuthorizationError(f"{role} path violates the exact QM20002 control layout")
+    return path
+
+
+def _control_acl_call(
+    operation: str, path: Path, expected_helper_sha256: str | None = None
+) -> dict[str, Any]:
+    helper = CONTROL_PATH_HELPER_PATH.resolve()
+    helper_sha = sha256_file(helper)
+    if expected_helper_sha256 is not None and helper_sha != expected_helper_sha256:
+        raise AuditError("QM20002 control-path helper runtime binding drift")
+    command = [
+        str(POWERSHELL_PATH),
+        "-NoLogo",
+        "-NoProfile",
+        "-NonInteractive",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        str(helper),
+        "-Operation",
+        operation,
+        "-Path",
+        str(path.resolve()),
+        "-ExpectedHelperSha256",
+        helper_sha,
+    ]
+    completed = subprocess.run(
+        command,
+        cwd=REPO_ROOT,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        capture_output=True,
+        timeout=60,
+        check=False,
+    )
+    if completed.returncode != 0:
+        raise AuthorizationError(
+            f"QM20002 control-path {operation} failed with exit {completed.returncode}"
+        )
+    result = _parse_single_json_envelope(
+        completed.stdout, f"QM20002 control-path {operation}"
+    )
+    expected_fields = {
+        "schema_version",
+        "status",
+        "operation",
+        "path",
+        "control_root",
+        "owner_sid",
+        "full_control_sids",
+        "reparse_points_forbidden",
+        "helper_sha256",
+    }
+    if (
+        set(result) != expected_fields
+        or type(result.get("schema_version")) is not int
+        or result.get("schema_version") != 1
+        or result.get("status") != "PASS"
+        or result.get("operation") != operation
+        or Path(str(result.get("path", ""))).resolve() != path.resolve()
+        or Path(str(result.get("control_root", ""))).resolve()
+        != AUDIT_CONTROL_ROOT.resolve()
+        or result.get("owner_sid") != "S-1-5-32-544"
+        or result.get("full_control_sids") != ["S-1-5-18", "S-1-5-32-544"]
+        or result.get("reparse_points_forbidden") is not True
+        or result.get("helper_sha256") != helper_sha
+        or sha256_file(helper) != helper_sha
+    ):
+        raise AuthorizationError("QM20002 control-path helper result contract drift")
+    return result
+
+
+def _prepare_control_directory(path: Path, helper_sha256: str | None = None) -> None:
+    _control_acl_call("PrepareDirectory", path, helper_sha256)
+
+
+def _assert_control_directory(path: Path, helper_sha256: str | None = None) -> None:
+    _control_acl_call("AssertDirectory", path, helper_sha256)
+
+
+def _assert_control_file(path: Path, helper_sha256: str | None = None) -> None:
+    _control_acl_call("AssertFile", path, helper_sha256)
+
+
+def _assert_absent_control_file(path: Path, helper_sha256: str | None = None) -> None:
+    _control_acl_call("AssertAbsentFile", path, helper_sha256)
+
+
+def _seal_control_file(path: Path, helper_sha256: str | None = None) -> None:
+    _control_acl_call("SealFile", path, helper_sha256)
+
+
+def _atomic_control_json(
+    path: Path,
+    payload: Mapping[str, Any],
+    *,
+    replace: bool = True,
+    helper_sha256: str | None = None,
+) -> str:
+    if replace:
+        _assert_control_file(path, helper_sha256)
+    else:
+        _assert_absent_control_file(path, helper_sha256)
+    published_sha = atomic_json(
+        path,
+        payload,
+        replace=replace,
+        prepare_temporary=lambda temporary: _seal_control_file(
+            temporary, helper_sha256
+        ),
+    )
+    _assert_control_file(path, helper_sha256)
+    if sha256_file(path) != published_sha:
+        raise AuditError("sealed QM20002 control JSON bytes drifted after publication")
+    return published_sha
+
+
+def _ensure_control_lock_file(state_path: Path, helper_sha256: str | None = None) -> Path:
+    lock_path = state_path.resolve().with_name(f".{state_path.name}.terminal.lock")
+    if not lock_path.exists():
+        descriptor, temporary = tempfile.mkstemp(
+            prefix=f".{lock_path.name}.", suffix=".tmp", dir=str(lock_path.parent)
+        )
+        try:
+            with os.fdopen(descriptor, "wb") as handle:
+                handle.write(b"\0")
+                handle.flush()
+                os.fsync(handle.fileno())
+            _seal_control_file(Path(temporary), helper_sha256)
+            try:
+                os.link(temporary, lock_path)
+            except FileExistsError:
+                pass
+        finally:
+            try:
+                os.unlink(temporary)
+            except OSError:
+                pass
+    _assert_control_file(lock_path, helper_sha256)
+    return lock_path
 
 
 def file_binding(path: Path, expected_sha256: str | None = None) -> dict[str, Any]:
@@ -1998,6 +2215,7 @@ def preflight(compile_evidence: Path, timeout_seconds: int = 28800) -> dict[str,
         "news_calendars": news,
         "runtime": runtime,
         "machine_credential_rotation": machine_credential_rotation,
+        "audit_control": _audit_control_contract(),
         "plan": plan,
     }
 
@@ -2023,6 +2241,8 @@ def _validate_pre_semantics(receipt: Mapping[str, Any]) -> None:
         "mt5_started": False,
         "data_access": "OPAQUE_SHA256_ONLY",
     }
+    if receipt.get("audit_control") != _audit_control_contract():
+        raise AuditError("PRE fixed QM20002 control-root contract drift")
     if receipt.get("schema_version") != SCHEMA_VERSION or receipt.get("outcome_fence") != expected_fence:
         raise AuditError("PRE schema/outcome fence drift")
     created = parse_utc(str(receipt.get("created_utc", "")), "PRE created_utc")
@@ -2138,8 +2358,10 @@ def _validate_pre_semantics(receipt: Mapping[str, Any]) -> None:
 
 
 def assert_pre_receipt(path: Path, expected_sha256: str) -> dict[str, Any]:
+    path = _assert_control_path_layout(path, "pre_receipt")
+    _assert_control_file(path)
     binding = file_binding(path, expected_sha256)
-    receipt = load_json(path)
+    receipt = load_strict_json(path, "PRE receipt")
     if (
         receipt.get("artifact_type") != "QM5_20002_SHORT_NY_PRE_RECEIPT"
         or receipt.get("status") != "PASS"
@@ -2160,8 +2382,10 @@ def assert_pre_receipt(path: Path, expected_sha256: str) -> dict[str, Any]:
 
 
 def validate_authorization(path: Path, pre_sha256: str) -> dict[str, Any]:
+    path = _assert_control_path_layout(path, "authorization")
+    _assert_control_file(path)
     binding = file_binding(path)
-    payload = load_json(path)
+    payload = load_strict_json(path, "launch authorization")
     required = {
         "analysis_id": ANALYSIS_ID,
         "pre_receipt_sha256": pre_sha256.lower(),
@@ -3000,6 +3224,28 @@ def _load_launch_state_snapshot(state_path: Path) -> tuple[dict[str, Any], str]:
     return state, after
 
 
+def _locked_launch_state_snapshot(
+    state_path: Path, helper_sha256: str | None = None
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Return payload and binding from the same locked, strict byte snapshot."""
+
+    state_path = _assert_control_path_layout(state_path, "state")
+    _assert_control_directory(state_path.parent, helper_sha256)
+    _assert_control_file(state_path, helper_sha256)
+    lock_path = state_path.with_name(f".{state_path.name}.terminal.lock")
+    _assert_control_file(lock_path, helper_sha256)
+    with _launch_state_lock(state_path):
+        state, state_sha = _load_launch_state_snapshot(state_path)
+        item = state_path.stat()
+        binding = {
+            "path": str(state_path),
+            "size": item.st_size,
+            "sha256": state_sha,
+        }
+        assert_binding(binding, "locked launch state snapshot")
+        return state, binding
+
+
 def _assert_worker_owner(
     state: Mapping[str, Any], worker_pid: int, resume_count: int
 ) -> None:
@@ -3018,6 +3264,7 @@ def _persist_owned_worker_transition(
     next_state: Mapping[str, Any],
     worker_pid: int,
     resume_count: int,
+    helper_sha256: str | None = None,
 ) -> tuple[dict[str, Any], str]:
     """CAS one RUNNING worker transition without crossing the runtime call."""
 
@@ -3067,7 +3314,9 @@ def _persist_owned_worker_transition(
                 != persisted["outcome_possible_since_utc"]
             ):
                 raise AuditError("worker cell-seal transition is not monotone")
-        published_sha = atomic_json(state_path, candidate)
+        published_sha = _atomic_control_json(
+            state_path, candidate, helper_sha256=helper_sha256
+        )
         return candidate, published_sha
 
 
@@ -3077,6 +3326,7 @@ def _finalize_worker_complete(
     expected_sha256: str | None = None,
     expected_worker_pid: int | None = None,
     expected_resume_count: int | None = None,
+    helper_sha256: str | None = None,
 ) -> dict[str, Any]:
     """Publish COMPLETE only when the locked state still equals the caller's view."""
 
@@ -3106,7 +3356,7 @@ def _finalize_worker_complete(
         closed["finished_utc"] = finished
         closed["updated_utc"] = finished
         _validate_launch_state_shape(closed)
-        atomic_json(state_path, closed)
+        _atomic_control_json(state_path, closed, helper_sha256=helper_sha256)
         return closed
 
 
@@ -3116,6 +3366,7 @@ def _finalize_worker_rejection(
     context: Mapping[str, Any] | None,
     expected_worker_pid: int | None = None,
     expected_resume_count: int | None = None,
+    helper_sha256: str | None = None,
 ) -> bool:
     """Close only a failure still owned by the exact worker generation."""
 
@@ -3182,7 +3433,7 @@ def _finalize_worker_rejection(
             "controller_failure_class": controller_class,
         }
         _validate_launch_state_shape(closed)
-        atomic_json(state_path, closed)
+        _atomic_control_json(state_path, closed, helper_sha256=helper_sha256)
         return True
 
 
@@ -3200,14 +3451,24 @@ def _worker_run(job_path: Path) -> int:
     owner_resume_count: int | None = None
     ownership_acquired = False
     failure_context: Mapping[str, Any] | None = {"failure_stage": "WORKER_VALIDATION"}
+    control_helper_sha256: str | None = None
     try:
-        job_path = job_path.resolve()
+        job_path = _assert_control_path_layout(job_path, "job")
+        _assert_control_file(job_path)
         job_binding = file_binding(job_path)
         job = load_strict_json(job_path, "launch job")
-        state_path = Path(str(job["state_path"])).resolve()
+        state_path = _assert_control_path_layout(Path(str(job["state_path"])), "state")
+        _assert_control_path_layout(job_path, "job", state_path)
         pre_path = Path(str(job["pre_receipt_path"])).resolve()
         pre_sha = str(job["pre_receipt_sha256"])
         pre = assert_pre_receipt(pre_path, pre_sha)
+        control_helper_sha256 = str(
+            pre["runtime"]["audit_control_path_helper"]["sha256"]
+        )
+        _assert_control_directory(state_path.parent, control_helper_sha256)
+        _assert_control_file(job_path, control_helper_sha256)
+        _assert_control_file(state_path, control_helper_sha256)
+        _ensure_control_lock_file(state_path, control_helper_sha256)
         _validate_launch_job(job, pre, pre_path, pre_sha, state_path)
         auth_path = Path(str(job["authorization"]["binding"]["path"]))
         if validate_authorization(auth_path, pre_sha) != job["authorization"]:
@@ -3233,13 +3494,15 @@ def _worker_run(job_path: Path) -> int:
             claimed["updated_utc"] = now
             failure_context = {"failure_stage": "RUNNING_STATE_PERSIST"}
             _validate_launch_state_shape(claimed)
-            state_sha256 = atomic_json(state_path, claimed)
+            state_sha256 = _atomic_control_json(
+                state_path, claimed, helper_sha256=control_helper_sha256
+            )
             state = claimed
             owner_resume_count = int(claimed["resume_count"])
             ownership_acquired = True
 
         work_root = state_path.parent / "worker"
-        work_root.mkdir(parents=True, exist_ok=True)
+        _prepare_control_directory(work_root, control_helper_sha256)
         for cell in pre["plan"]["cells"]:
             # Seal all moving inputs again immediately before every terminal cell.
             assert_pre_receipt(pre_path, pre_sha)
@@ -3249,6 +3512,9 @@ def _worker_run(job_path: Path) -> int:
             cell_root = work_root / str(cell["cell_id"])
             stdout_path = cell_root / "runner.stdout.txt"
             stderr_path = cell_root / "runner.stderr.txt"
+            _assert_control_path_layout(stdout_path, "worker_artifact", state_path)
+            _assert_control_path_layout(stderr_path, "worker_artifact", state_path)
+            _prepare_control_directory(cell_root, control_helper_sha256)
             attempt_context = _new_attempt_context(
                 started, command_sha, stdout_path, stderr_path
             )
@@ -3275,6 +3541,7 @@ def _worker_run(job_path: Path) -> int:
                 armed_state,
                 owner_pid,
                 owner_resume_count,
+                control_helper_sha256,
             )
 
             attempt_context["failure_stage"] = "OUTCOME_FENCE_PERSISTED"
@@ -3294,9 +3561,11 @@ def _worker_run(job_path: Path) -> int:
             attempt_context["stderr_text"] = completed.stderr
             attempt_context["failure_stage"] = "RUNNER_RETURNED"
             stdout_path.write_text(completed.stdout, encoding="utf-8")
+            _seal_control_file(stdout_path, control_helper_sha256)
             attempt_context["stdout"] = file_binding(stdout_path)
             attempt_context["failure_stage"] = "RUNNER_STREAMS_PARTIALLY_BOUND"
             stderr_path.write_text(completed.stderr, encoding="utf-8")
+            _seal_control_file(stderr_path, control_helper_sha256)
             attempt_context["stderr"] = file_binding(stderr_path)
             attempt_context["failure_stage"] = "RUNNER_STREAMS_BOUND"
             runner_result = _parse_single_json_envelope(
@@ -3331,6 +3600,7 @@ def _worker_run(job_path: Path) -> int:
                 sealed_state,
                 owner_pid,
                 owner_resume_count,
+                control_helper_sha256,
             )
             failure_context = {"failure_stage": "WORKER_VALIDATION"}
         assert_pre_receipt(pre_path, pre_sha)
@@ -3343,6 +3613,7 @@ def _worker_run(job_path: Path) -> int:
             state_sha256,
             owner_pid,
             owner_resume_count,
+            control_helper_sha256,
         )
         return 0
     except Exception as exc:
@@ -3354,6 +3625,7 @@ def _worker_run(job_path: Path) -> int:
                     failure_context,
                     owner_pid,
                     owner_resume_count,
+                    control_helper_sha256,
                 )
             except Exception as persistence_exc:
                 print(
@@ -3380,8 +3652,20 @@ def launch_detached(
     if not minimum_timeout <= controller_timeout_seconds <= 172800:
         raise AuthorizationError("controller timeout outside persisted launcher contract")
     task_limit = required_scheduled_task_timeout(pre, controller_timeout_seconds)
-    state_path = state_path.resolve()
-    job_path = state_path.with_name("launch_job.json")
+    state_path = _assert_control_path_layout(state_path, "state")
+    job_path = _assert_control_path_layout(
+        state_path.with_name("launch_job.json"), "job", state_path
+    )
+    control_helper_sha256 = str(
+        pre["runtime"]["audit_control_path_helper"]["sha256"]
+    )
+    if resume:
+        _assert_control_directory(state_path.parent, control_helper_sha256)
+        _assert_control_file(state_path, control_helper_sha256)
+        _assert_control_file(job_path, control_helper_sha256)
+    else:
+        _prepare_control_directory(state_path.parent, control_helper_sha256)
+    _ensure_control_lock_file(state_path, control_helper_sha256)
     response_status: str
     with _launch_state_lock(state_path):
         if resume:
@@ -3409,7 +3693,9 @@ def launch_detached(
                 pending["resume_count"] = int(state["resume_count"]) + 1
                 pending["updated_utc"] = utc_now()
                 _validate_launch_state_shape(pending)
-                atomic_json(state_path, pending)
+                _atomic_control_json(
+                    state_path, pending, helper_sha256=control_helper_sha256
+                )
             started = _scheduler_call(pre, "Start", job)
             response_status = "RESUMED_PERSISTED_TASK"
             task_name = str(job["scheduler"]["task_name"])
@@ -3422,6 +3708,7 @@ def launch_detached(
                 # A crash after immutable job publication but before state creation
                 # is the sole recoverable PREPARED form.  Prove that no scheduler,
                 # worker, or DEV1 side effect occurred before synthesizing state.
+                _assert_control_file(job_path, control_helper_sha256)
                 job = load_strict_json(job_path, "prepared launch job")
                 _validate_launch_job(job, pre, pre_path, pre_sha256, state_path)
                 if job.get("authorization") != authorization:
@@ -3470,14 +3757,25 @@ def launch_detached(
                 probe = _scheduler_call(pre, "Probe", job)
                 if probe.get("exists") is not False:
                     raise AuthorizationError("new launch task name is already registered")
-                job_sha = atomic_json(job_path, job, replace=False)
+                job_sha = _atomic_control_json(
+                    job_path,
+                    job,
+                    replace=False,
+                    helper_sha256=control_helper_sha256,
+                )
             state = _initial_launch_state(pre_path, pre_sha256, file_binding(job_path), job)
             _validate_launch_state_shape(state)
-            atomic_json(state_path, state, replace=False)
+            _atomic_control_json(
+                state_path,
+                state,
+                replace=False,
+                helper_sha256=control_helper_sha256,
+            )
             _scheduler_call(pre, "Register", job)
             started = _scheduler_call(pre, "Start", job)
             response_status = "LAUNCHED_PERSISTED_TASK"
             task_name = str(job["scheduler"]["task_name"])
+    _assert_control_file(state_path, control_helper_sha256)
     observed = load_strict_json(state_path, "launch state")
     return {
         "status": response_status,
@@ -4366,9 +4664,12 @@ def _inspect_launch_state_payload(
 def launch_status(state_path: Path) -> dict[str, Any]:
     """Inspect lifecycle metadata only; never open reports, trades, or metrics."""
 
-    state_path = state_path.resolve()
-    binding = file_binding(state_path)
-    return _inspect_launch_state_payload(state_path, load_json(state_path), binding)
+    state_path = _assert_control_path_layout(state_path, "state")
+    state, binding = _locked_launch_state_snapshot(state_path)
+    inspection = _inspect_launch_state_payload(state_path, state, binding)
+    if state.get("status") in {"COMPLETE", "REJECT"}:
+        assert_binding(binding, "terminal launch status snapshot")
+    return inspection
 
 
 def _assert_complete_stream_binding(
@@ -4446,8 +4747,12 @@ def _validate_launch_chain(
     if not isinstance(job_binding, Mapping):
         raise PostflightError("launch state omitted immutable job binding")
     assert_binding(job_binding, "launch job")
-    job_path = Path(str(job_binding["path"])).resolve()
-    job = load_json(job_path)
+    helper_sha256 = str(pre["runtime"]["audit_control_path_helper"]["sha256"])
+    job_path = _assert_control_path_layout(
+        Path(str(job_binding["path"])), "job", state_path
+    )
+    _assert_control_file(job_path, helper_sha256)
+    job = load_strict_json(job_path, "launch job")
     try:
         _validate_launch_job(job, pre, pre_path, pre_sha256, state_path)
     except AuthorizationError as exc:
@@ -4522,6 +4827,8 @@ def _validate_launch_chain(
     # Reassert after the full chain validation to close stream-byte TOCTOU.
     for binding, expected_path, label in checked_streams:
         _assert_complete_stream_binding(binding, expected_path, label)
+    assert_binding(job_binding, "launch job post-validation reassertion")
+    assert_binding(auth_binding, "launch authorization post-validation reassertion")
     return attempts
 
 

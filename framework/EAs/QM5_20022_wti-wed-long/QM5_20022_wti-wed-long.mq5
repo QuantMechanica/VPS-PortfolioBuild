@@ -7,7 +7,7 @@
 // =============================================================================
 // QM5_20022 - WTI Wednesday One-Session Long
 // -----------------------------------------------------------------------------
-// Borowski (2016) WTI crude-oil weekday carrier:
+// Li et al. (2022) WTI weekday carrier:
 //   - BUY only at the opening of a broker Wednesday D1 bar
 //   - exit at the first following D1 bar, with a one-day stale guard
 //   - consume the exact-day attempt before news, spread or order checks
@@ -297,7 +297,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                                 strategy_atr_sl_mult);
    req.sl = QM_StopRulesNormalizePrice(_Symbol, req.sl);
    if(req.sl <= 0.0 || !MathIsValidNumber(req.sl) ||
-      req.sl <= entry_price)
+      req.sl >= entry_price)
       return false;
 
    return true;
