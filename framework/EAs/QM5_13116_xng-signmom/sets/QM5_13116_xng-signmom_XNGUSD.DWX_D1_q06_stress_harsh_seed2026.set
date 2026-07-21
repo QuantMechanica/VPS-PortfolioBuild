@@ -1,0 +1,38 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        13116
+; ea_slug:      xng-signmom
+; ea_version:   v5.0
+; set_version:  s20260722-stress-harsh
+; symbol:       XNGUSD.DWX
+; timeframe:    D1
+; environment:  q06_stress_harsh
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   97e74cf736bd8cf7b2ef65d163e61678a0458b510ee4aba674147a9dbe04e2bc
+; author:       Development
+; date:         2026-07-22
+;==========================================================
+qm_ea_id=13116
+qm_magic_slot_offset=0
+qm_rng_seed=2026
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=3
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=false
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.1000
+strategy_lookback_months=12
+strategy_positive_threshold=0.40
+strategy_history_bars=500
+strategy_atr_period=20
+strategy_atr_sl_mult=3.5
+strategy_max_hold_days=35
+strategy_max_spread_points=3000
+
