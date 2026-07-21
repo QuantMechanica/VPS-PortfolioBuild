@@ -10801,6 +10801,7 @@ def _create_backtest_work_items(conn: sqlite3.Connection, parent_task_id: str,
     """
     phase = phase_qid(phase)
     is_q02 = phase == "Q02"
+    is_basket_fanout_phase = phase in {"Q02", "Q03"}
     if is_q02 and is_q02_requeue_excluded(ea_id):
         return [], [{
             "ea_id": ea_id,
@@ -10808,7 +10809,11 @@ def _create_backtest_work_items(conn: sqlite3.Connection, parent_task_id: str,
             "reason": "requeue_excluded_q02",
             "source": str(REQUEUE_EXCLUDED_EAS_FILE),
         }]
-    basket_manifest = _load_basket_manifest(ea_id) if is_q02 else None
+    # Q03 repeats the Q02 baseline for determinism. Basket EAs therefore need
+    # the same logical symbol and canonical basket setfile at both phases;
+    # treating Q03 as an ordinary single-symbol fanout rejects the logical
+    # symbol as non-DWX and strands repaired binaries after a valid Q02 PASS.
+    basket_manifest = _load_basket_manifest(ea_id) if is_basket_fanout_phase else None
     basket_setfile = _find_basket_setfile(ea_id, basket_manifest) if basket_manifest else None
     out: list[dict[str, Any]] = []
     skipped: list[dict[str, Any]] = []

@@ -12,7 +12,8 @@ The repaired GBPUSD/USDCAD cointegration basket was advanced from its
 
 - repaired Q02 work item: `06539d34-2fef-4ac0-b11c-779de3d87a83`
 - repaired Q02 parent task: `14abceb9-2d86-4621-a5b0-f6f839598498`
-- repaired Q03 task: `b0227e1b-d214-44c9-85c6-bebede1bfaef`
+- repaired Q03 task: `c9cea2bf-6b98-4c22-8191-f9f8f36072dc`
+- repaired Q03 work item: `e34e3d88-3c18-454f-80df-837735e38af1`
 - enqueue command: `python tools/strategy_farm/farmctl.py enqueue-backtest --review-task-id 14abceb9-2d86-4621-a5b0-f6f839598498 --phase Q03`
 
 The older Q03 PASS and Q04 FAIL belong to the pre-repair binary. They remain
@@ -41,7 +42,14 @@ neither was accessed or changed. No manual MT5 process was launched. No
 AutoTrading, live manifest, portfolio admission, portfolio KPI, or Q08
 contribution artifact was touched.
 
-The Q03 enqueue created the phase task without immediately creating a new
-work item. This is recorded explicitly so the paced dispatcher can perform
-the canonical de-duplication/promotion step; no manual duplicate work-item row
-was inserted.
+The first canonical enqueue attempt exposed a farm defect: Q03 loaded basket
+EAs as ordinary single-symbol EAs and rejected the logical symbol as
+`non_dwx_symbol`. Its diagnostic task
+`b0227e1b-d214-44c9-85c6-bebede1bfaef` is retained as
+`failed/no_work_items_created` evidence.
+
+`_create_backtest_work_items` now loads the basket manifest and canonical
+logical setfile for Q03 as well as Q02. A focused regression test proves that
+Q03 creates one logical-basket work item with the manifest payload. Repeating
+the guarded enqueue then created exactly one pending work item, listed above;
+no manual SQLite insert or MT5 dispatch was used.

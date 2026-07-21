@@ -10,6 +10,46 @@ from tools.strategy_farm import farmctl
 
 
 class ZeroTradePreventionTests(unittest.TestCase):
+    def test_q03_fanout_uses_logical_basket_setfile(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp) / "farm"
+            repo_root = Path(tmp) / "repo"
+            ea_dir = repo_root / "framework" / "EAs" / "QM5_999003_demo-basket"
+            sets_dir = ea_dir / "sets"
+            sets_dir.mkdir(parents=True)
+            logical_symbol = "QM5_999003_EURUSD_GBPUSD_COINTEGRATION_D1"
+            manifest = {
+                "logical_symbol": logical_symbol,
+                "host_symbol": "EURUSD.DWX",
+                "host_timeframe": "D1",
+                "tester_currency": "USD",
+                "tester_deposit": 100000,
+                "basket_symbols": ["EURUSD.DWX", "GBPUSD.DWX"],
+            }
+            (ea_dir / "basket_manifest.json").write_text(
+                json.dumps(manifest), encoding="utf-8"
+            )
+            setfile = sets_dir / f"QM5_999003_demo-basket_{logical_symbol}_D1_backtest.set"
+            setfile.write_text("; basket setfile\n", encoding="utf-8")
+            farmctl.init_db(root)
+
+            with farmctl.connect(root) as conn:
+                with mock.patch.object(farmctl, "REPO_ROOT", repo_root):
+                    created, skipped = farmctl._create_backtest_work_items(
+                        conn,
+                        parent_task_id="q03-parent",
+                        root=root,
+                        ea_id="QM5_999003",
+                        phase="Q03",
+                        surviving_symbols=[logical_symbol],
+                    )
+
+            self.assertEqual(skipped, [])
+            self.assertEqual(len(created), 1)
+            self.assertEqual(created[0]["symbol"], logical_symbol)
+            self.assertEqual(created[0]["setfile_path"], str(setfile.resolve()))
+            self.assertEqual(created[0]["payload"]["portfolio_scope"], "basket")
+
     def test_p2_fanout_respects_card_declared_universe(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
