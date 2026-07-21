@@ -34,6 +34,15 @@ read-only proof that the exact task was `Ready`, enabled, never run, and had
 zero non-null triggers. It also retains the complete original launch-state
 payload; its canonical bytes must reproduce the bound path, size, and SHA-256.
 
+The PRE is validated as the exact historical byte snapshot identified by its
+fixed SHA-256, including its closed schema, outcome fence, canonical four-cell
+plan, recorded binding shapes, and control-path ACL. The procedure deliberately
+does not rerun PRE against later versions of unused runner inputs: no runner is
+executed during closure, and a subsequent repository update must not rewrite a
+sealed historical launch decision. The G1 auditor, scheduled-task helper, and
+control-path helper used by this closure are nevertheless rehashed separately
+against their exact historical bindings at every durable boundary.
+
 ## Transition and lock order
 
 1. Verify all immutable bindings and both one-byte lock files.

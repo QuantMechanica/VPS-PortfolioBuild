@@ -10,7 +10,7 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
 from datetime import datetime, timezone
 from pathlib import Path
-from types import ModuleType
+from types import ModuleType, SimpleNamespace
 from typing import Any, Mapping
 
 import pytest
@@ -178,6 +178,16 @@ class FakeTaskRuntime:
 
 
 class FakeAuditor:
+    SCHEMA_VERSION = 2
+    ANALYSIS_ID = closure.ANALYSIS_ID
+    CONTRACT_COMMIT = "c" * 40
+    RUNTIME_ROLES = {
+        "audit_control_path_helper": object(),
+        "scheduled_task_helper": object(),
+        "python_binary": object(),
+    }
+    canonical_sha256 = staticmethod(auditor.canonical_sha256)
+
     def __init__(
         self,
         pre: Mapping[str, Any],
@@ -188,8 +198,18 @@ class FakeAuditor:
         self.authorization = copy.deepcopy(dict(authorization))
         self.inventory = copy.deepcopy(dict(inventory))
 
-    def assert_pre_receipt(self, _path: Path, _sha: str) -> dict[str, Any]:
-        return copy.deepcopy(self.pre)
+    def _assert_control_path_layout(
+        self, path: Path, _role: str
+    ) -> Path:
+        return path.resolve()
+
+    def _assert_control_file(
+        self, path: Path, _helper_sha256: str | None = None
+    ) -> None:
+        assert path.is_file()
+
+    def _audit_control_contract(self) -> dict[str, Any]:
+        return {"fixture": "CONTROL_PATH_IS_SEALED"}
 
     def validate_authorization(
         self, _path: Path, _sha: str, _pre: Mapping[str, Any]
@@ -230,6 +250,7 @@ def make_fixture(tmp_path: Path) -> tuple[
     control_path = repo / "control.ps1"
     helper_path = repo / "close.ps1"
     freeze_path = repo / "freeze.json"
+    contract_path = repo / "contract.md"
     python_path = repo / "python.exe"
     utility_copy_marker = repo / "unused.py"
     for path, content in (
@@ -238,6 +259,7 @@ def make_fixture(tmp_path: Path) -> tuple[
         (control_path, b"control"),
         (helper_path, b"closure-helper"),
         (freeze_path, b"freeze"),
+        (contract_path, b"contract"),
         (python_path, b"python"),
         (utility_copy_marker, b"unused"),
     ):
@@ -251,9 +273,42 @@ def make_fixture(tmp_path: Path) -> tuple[
     state_path = run / "launch_state.json"
     intent_path = run / "g1_pre_outcome_closure_intent.json"
     receipt_path = run / "g1_pre_outcome_closure_receipt.json"
+    plan_without_sha = {
+        "cell_count": 4,
+        "duplicates_per_cell": 2,
+        "total_native_runs": 8,
+        "execution": "SEQUENTIAL_SINGLE_DEV1_TERMINAL",
+        "model": 4,
+        "cells": [{"fixture_cell": index} for index in range(4)],
+    }
     pre = {
-        "runtime": {"audit_control_path_helper": bind(control_path)},
+        "schema_version": FakeAuditor.SCHEMA_VERSION,
+        "artifact_type": "QM5_20002_SHORT_NY_PRE_RECEIPT",
+        "status": "PASS",
+        "created_utc": "2026-07-21T00:00:00+00:00",
+        "analysis_id": closure.ANALYSIS_ID,
+        "outcome_fence": copy.deepcopy(closure.PRE_OUTCOME_FENCE),
+        "contract": {
+            "commit": FakeAuditor.CONTRACT_COMMIT,
+            "binding": bind(contract_path),
+        },
+        "tool": bind(auditor_path),
+        "sources": [],
+        "compile": {},
+        "set_manifest": {},
+        "model4_data": {},
+        "news_calendars": [],
+        "runtime": {
+            "audit_control_path_helper": bind(control_path),
+            "scheduled_task_helper": bind(scheduler_path),
+            "python_binary": bind(python_path),
+        },
         "machine_credential_rotation": {"target_sid": "S-1-5-21-2"},
+        "audit_control": {"fixture": "CONTROL_PATH_IS_SEALED"},
+        "plan": {
+            **plan_without_sha,
+            "plan_sha256": FakeAuditor.canonical_sha256(plan_without_sha),
+        },
     }
     pre_sha = write_json(pre_path, pre)
     auth_payload = {"authorized_by": "OWNER"}
@@ -376,9 +431,71 @@ def invoke_fixture(
         auditor=fake_auditor,
         task_call=task,
         control_call=no_control_side_effect,
-        git_assert=lambda _contract: None,
+        git_assert=lambda _contract, _pre: None,
         crash_hook=crash_hook,
     )
+
+
+def test_every_pre_repo_binding_is_checked_against_its_freeze_blob(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    contract, _fake_auditor, _task, _utility_sha, _helper_sha = make_fixture(
+        tmp_path
+    )
+    normal_path = contract.repo_root / "framework" / "normal.bin"
+    smoke_path = contract.repo_root / "framework" / "scripts" / "run_smoke.ps1"
+    outside_path = tmp_path / "outside.bin"
+    for path, payload in (
+        (normal_path, b"normal-at-freeze"),
+        (smoke_path, b"smoke-at-designated-ancestor"),
+        (outside_path, b"historically-sealed-outside-repo"),
+    ):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(payload)
+    run_smoke_commit = "e" * 40
+    freeze = {
+        "shared_runtime": {
+            "frozen_run_smoke_commit": run_smoke_commit,
+            "frozen_run_smoke_size": smoke_path.stat().st_size,
+            "frozen_run_smoke_sha256": closure.sha256_file(smoke_path),
+        }
+    }
+    pre = {
+        "runtime": {"runner_smoke": bind(smoke_path)},
+        "ordinary_repo_binding": bind(normal_path),
+        "outside_repo_binding": bind(outside_path),
+    }
+    observed: list[tuple[str, str]] = []
+
+    def fake_blob(
+        _contract: closure.ClosureContract, commit: str, relative: Path
+    ) -> bytes:
+        observed.append((commit, relative.as_posix()))
+        if relative.as_posix() == "framework/scripts/run_smoke.ps1":
+            return b"smoke-at-designated-ancestor"
+        if relative.as_posix() == "framework/normal.bin":
+            return b"normal-at-freeze"
+        raise AssertionError(relative)
+
+    monkeypatch.setattr(closure, "_git_blob_at_commit", fake_blob)
+    monkeypatch.setattr(
+        closure.subprocess,
+        "run",
+        lambda *_args, **_kwargs: SimpleNamespace(returncode=0),
+    )
+    closure._assert_pre_repo_bindings_at_freeze(contract, pre, freeze)
+    assert observed == [
+        (run_smoke_commit, "framework/scripts/run_smoke.ps1"),
+        (contract.freeze_commit, "framework/normal.bin"),
+    ]
+
+    drifted = copy.deepcopy(pre)
+    drifted["ordinary_repo_binding"]["sha256"] = "0" * 64
+    with pytest.raises(
+        closure.ClosureError,
+        match="repository binding differs from freeze blob",
+    ):
+        closure._assert_pre_repo_bindings_at_freeze(contract, drifted, freeze)
 
 
 def test_powershell_helper_has_no_forbidden_process_query_surface() -> None:

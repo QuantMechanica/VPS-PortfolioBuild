@@ -63,6 +63,40 @@ HISTORICAL_BINDING_KEYS = {
     "closure_utility",
     "closure_task_helper",
 }
+PRE_RECEIPT_KEYS = {
+    "schema_version",
+    "artifact_type",
+    "status",
+    "created_utc",
+    "analysis_id",
+    "outcome_fence",
+    "contract",
+    "tool",
+    "sources",
+    "compile",
+    "set_manifest",
+    "model4_data",
+    "news_calendars",
+    "runtime",
+    "machine_credential_rotation",
+    "audit_control",
+    "plan",
+}
+PRE_PLAN_KEYS = {
+    "cell_count",
+    "duplicates_per_cell",
+    "total_native_runs",
+    "execution",
+    "model",
+    "cells",
+    "plan_sha256",
+}
+PRE_OUTCOME_FENCE = {
+    "market_values_parsed": False,
+    "native_reports_opened": False,
+    "mt5_started": False,
+    "data_access": "OPAQUE_SHA256_ONLY",
+}
 TASK_EVIDENCE_KEYS = {
     "state",
     "enabled",
@@ -470,20 +504,118 @@ def _load_auditor(contract: ClosureContract) -> ModuleType:
     return module
 
 
-def _git_assert_frozen_bytes(contract: ClosureContract) -> None:
-    try:
-        relative = contract.freeze_path.resolve().relative_to(contract.repo_root.resolve())
-    except ValueError as exc:
-        raise ClosureError("runtime freeze path escaped the repository") from exc
+def _git_blob_at_commit(
+    contract: ClosureContract, commit: str, relative_path: Path
+) -> bytes:
+    if (
+        re.fullmatch(r"[0-9a-f]{40}", commit) is None
+        or relative_path.is_absolute()
+        or ".." in relative_path.parts
+    ):
+        raise ClosureError("historical Git blob request is malformed")
     completed = subprocess.run(
-        ["git", "show", f"{contract.freeze_commit}:{relative.as_posix()}"],
+        ["git", "show", f"{commit}:{relative_path.as_posix()}"],
         cwd=contract.repo_root,
         capture_output=True,
         timeout=30,
         check=False,
     )
-    if completed.returncode != 0 or completed.stdout != contract.freeze_path.read_bytes():
+    if completed.returncode != 0:
+        raise ClosureError(
+            f"historical Git blob is absent: {relative_path.as_posix()}"
+        )
+    return completed.stdout
+
+
+def _assert_pre_repo_bindings_at_freeze(
+    contract: ClosureContract,
+    pre: Mapping[str, Any],
+    freeze: Mapping[str, Any],
+) -> None:
+    shared_runtime = freeze.get("shared_runtime")
+    if not isinstance(shared_runtime, Mapping):
+        raise ClosureError("runtime freeze shared-runtime record is absent")
+    run_smoke_commit = shared_runtime.get("frozen_run_smoke_commit")
+    run_smoke_size = shared_runtime.get("frozen_run_smoke_size")
+    run_smoke_sha256 = shared_runtime.get("frozen_run_smoke_sha256")
+    if (
+        type(run_smoke_commit) is not str
+        or re.fullmatch(r"[0-9a-f]{40}", run_smoke_commit) is None
+        or type(run_smoke_size) is not int
+        or run_smoke_size < 0
+        or type(run_smoke_sha256) is not str
+        or HEX64.fullmatch(run_smoke_sha256) is None
+    ):
+        raise ClosureError("runtime freeze run_smoke provenance is malformed")
+    ancestry = subprocess.run(
+        [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            run_smoke_commit,
+            contract.freeze_commit,
+        ],
+        cwd=contract.repo_root,
+        capture_output=True,
+        timeout=30,
+        check=False,
+    )
+    if ancestry.returncode != 0:
+        raise ClosureError("frozen run_smoke commit is not in the freeze ancestry")
+
+    runtime = pre.get("runtime")
+    run_smoke = runtime.get("runner_smoke") if isinstance(runtime, Mapping) else None
+    if (
+        not isinstance(run_smoke, Mapping)
+        or run_smoke.get("size") != run_smoke_size
+        or run_smoke.get("sha256") != run_smoke_sha256
+    ):
+        raise ClosureError("historical PRE run_smoke binding differs from runtime freeze")
+
+    repo_root = contract.repo_root.resolve()
+    checked = 0
+    for label, binding in _iter_recorded_bindings(pre):
+        path = Path(str(binding.get("path", ""))).resolve()
+        try:
+            relative = path.relative_to(repo_root)
+        except ValueError:
+            continue
+        commit = (
+            run_smoke_commit
+            if label == "historical PRE.runtime.runner_smoke"
+            else contract.freeze_commit
+        )
+        blob = _git_blob_at_commit(contract, commit, relative)
+        if (
+            len(blob) != binding.get("size")
+            or hashlib.sha256(blob).hexdigest() != binding.get("sha256")
+        ):
+            raise ClosureError(
+                f"historical PRE repository binding differs from freeze blob: {label}"
+            )
+        checked += 1
+    if checked == 0:
+        raise ClosureError("historical PRE contains no freeze-bound repository files")
+
+
+def _git_assert_frozen_bytes(
+    contract: ClosureContract, pre: Mapping[str, Any]
+) -> None:
+    try:
+        relative = contract.freeze_path.resolve().relative_to(contract.repo_root.resolve())
+    except ValueError as exc:
+        raise ClosureError("runtime freeze path escaped the repository") from exc
+    if _git_blob_at_commit(contract, contract.freeze_commit, relative) != contract.freeze_path.read_bytes():
         raise ClosureError("runtime freeze bytes differ from the exact committed freeze")
+    freeze = load_strict_json(contract.freeze_path, "runtime freeze")
+    if (
+        freeze.get("schema_version") != 1
+        or freeze.get("artifact_type") != "QM5_20002_SHORT_NY_RUNTIME_FREEZE"
+        or freeze.get("analysis_id") != contract.analysis_id
+        or freeze.get("status") != "FROZEN_REVIEWED_READY_FOR_FRESH_PRE"
+    ):
+        raise ClosureError("runtime freeze identity/status drift")
+    _assert_pre_repo_bindings_at_freeze(contract, pre, freeze)
 
 
 def _assert_exact_fields(value: Mapping[str, Any], expected: set[str], label: str) -> None:
@@ -930,13 +1062,156 @@ def _validate_closed_state_historical_chain(
     return proof
 
 
+def _iter_recorded_bindings(
+    value: Any, prefix: str = "historical PRE"
+) -> Iterable[tuple[str, Mapping[str, Any]]]:
+    if isinstance(value, Mapping):
+        if {"path", "size", "sha256"}.issubset(value):
+            yield prefix, value
+            return
+        for key, child in value.items():
+            yield from _iter_recorded_bindings(child, f"{prefix}.{key}")
+    elif isinstance(value, list):
+        for index, child in enumerate(value):
+            yield from _iter_recorded_bindings(child, f"{prefix}[{index}]")
+
+
+def _validate_recorded_binding(value: Mapping[str, Any], label: str) -> None:
+    _assert_exact_fields(value, {"path", "size", "sha256"}, label)
+    path = value.get("path")
+    size = value.get("size")
+    sha256 = value.get("sha256")
+    if (
+        type(path) is not str
+        or not path
+        or not Path(path).is_absolute()
+        or type(size) is not int
+        or size < 0
+        or type(sha256) is not str
+        or HEX64.fullmatch(sha256) is None
+    ):
+        raise ClosureError(f"{label} recorded binding shape drift")
+
+
+def _assert_historical_pre_receipt(
+    contract: ClosureContract,
+    auditor: ModuleType,
+    expected_binding: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Validate the exact PRE as a sealed historical record, not a live PRE rerun.
+
+    G1 never launched.  Closing it must not execute or reopen runtime inputs, and
+    a later repository update to an unused runner must not rewrite history.  The
+    supplied PRE SHA is therefore the byte root of trust.  The closure-critical
+    auditor, scheduler, and control helper remain separately live-bound by the
+    historical chain.
+    """
+
+    try:
+        resolved = auditor._assert_control_path_layout(
+            contract.pre_path, "pre_receipt"
+        )
+        if Path(resolved).resolve() != contract.pre_path.resolve():
+            raise ClosureError("historical PRE control path was rewritten")
+        auditor._assert_control_file(
+            contract.pre_path, contract.control_helper_sha256
+        )
+    except ClosureError:
+        raise
+    except Exception as exc:
+        raise ClosureError("historical PRE control-path proof failed") from exc
+
+    if file_binding(contract.pre_path, contract.pre_sha256) != dict(expected_binding):
+        raise ClosureError("historical PRE exact binding drift")
+    pre = load_strict_json(contract.pre_path, "historical PRE receipt")
+    _assert_exact_fields(pre, PRE_RECEIPT_KEYS, "historical PRE receipt")
+
+    expected_schema = getattr(auditor, "SCHEMA_VERSION", None)
+    expected_analysis = getattr(auditor, "ANALYSIS_ID", None)
+    expected_contract_commit = getattr(auditor, "CONTRACT_COMMIT", None)
+    if (
+        type(expected_schema) is not int
+        or type(expected_analysis) is not str
+        or type(expected_contract_commit) is not str
+        or pre.get("schema_version") != expected_schema
+        or pre.get("artifact_type") != "QM5_20002_SHORT_NY_PRE_RECEIPT"
+        or pre.get("status") != "PASS"
+        or pre.get("analysis_id") != contract.analysis_id
+        or pre.get("analysis_id") != expected_analysis
+        or pre.get("outcome_fence") != PRE_OUTCOME_FENCE
+    ):
+        raise ClosureError("historical PRE identity/status/outcome fence drift")
+    created = _parse_created_utc(pre.get("created_utc"), "historical PRE created_utc")
+    if created > datetime.now(timezone.utc) + timedelta(minutes=5):
+        raise ClosureError("historical PRE created_utc is implausibly in the future")
+
+    contract_record = pre.get("contract")
+    if not isinstance(contract_record, Mapping):
+        raise ClosureError("historical PRE contract record is absent")
+    _assert_exact_fields(
+        contract_record, {"commit", "binding"}, "historical PRE contract"
+    )
+    if contract_record.get("commit") != expected_contract_commit:
+        raise ClosureError("historical PRE contract commit drift")
+
+    plan = pre.get("plan")
+    if not isinstance(plan, Mapping):
+        raise ClosureError("historical PRE plan is absent")
+    _assert_exact_fields(plan, PRE_PLAN_KEYS, "historical PRE plan")
+    plan_without_sha = {
+        key: value for key, value in plan.items() if key != "plan_sha256"
+    }
+    pre_canonical_sha256 = getattr(auditor, "canonical_sha256", None)
+    if (
+        type(plan.get("cell_count")) is not int
+        or plan.get("cell_count") != 4
+        or type(plan.get("duplicates_per_cell")) is not int
+        or plan.get("duplicates_per_cell") != 2
+        or type(plan.get("total_native_runs")) is not int
+        or plan.get("total_native_runs") != 8
+        or plan.get("execution") != "SEQUENTIAL_SINGLE_DEV1_TERMINAL"
+        or plan.get("model") != 4
+        or not isinstance(plan.get("cells"), list)
+        or len(plan["cells"]) != 4
+        or not callable(pre_canonical_sha256)
+        or plan.get("plan_sha256") != pre_canonical_sha256(plan_without_sha)
+    ):
+        raise ClosureError("historical PRE exact four-cell plan drift")
+
+    runtime = pre.get("runtime")
+    runtime_roles = getattr(auditor, "RUNTIME_ROLES", None)
+    if not isinstance(runtime, Mapping) or not isinstance(runtime_roles, Mapping):
+        raise ClosureError("historical PRE runtime role map is absent")
+    if set(runtime) != set(runtime_roles):
+        raise ClosureError("historical PRE runtime role closure drift")
+    for role, binding in runtime.items():
+        if not isinstance(binding, Mapping):
+            raise ClosureError(f"historical PRE runtime binding is malformed: {role}")
+        _validate_recorded_binding(binding, f"historical PRE runtime.{role}")
+
+    audit_control_builder = getattr(auditor, "_audit_control_contract", None)
+    if not callable(audit_control_builder) or pre.get("audit_control") != audit_control_builder():
+        raise ClosureError("historical PRE audit-control contract drift")
+    rotation = pre.get("machine_credential_rotation")
+    if (
+        not isinstance(rotation, Mapping)
+        or type(rotation.get("target_sid")) is not str
+        or not str(rotation["target_sid"]).startswith("S-1-")
+    ):
+        raise ClosureError("historical PRE DEV1 identity binding drift")
+
+    for label, binding in _iter_recorded_bindings(pre):
+        _validate_recorded_binding(binding, label)
+    return pre
+
+
 def _historical_chain(
     contract: ClosureContract,
     auditor: ModuleType,
     utility_sha256: str,
     task_helper_sha256: str,
     *,
-    git_assert: Callable[[ClosureContract], None],
+    git_assert: Callable[[ClosureContract, Mapping[str, Any]], None],
 ) -> dict[str, Any]:
     bindings = {
         "pre_receipt": file_binding(contract.pre_path, contract.pre_sha256),
@@ -958,8 +1233,10 @@ def _historical_chain(
             contract.task_helper_path, task_helper_sha256
         ),
     }
-    git_assert(contract)
-    pre = auditor.assert_pre_receipt(contract.pre_path, contract.pre_sha256)
+    pre = _assert_historical_pre_receipt(
+        contract, auditor, bindings["pre_receipt"]
+    )
+    git_assert(contract, pre)
     authorization = auditor.validate_authorization(
         contract.authorization_path, contract.pre_sha256, pre
     )
@@ -1363,7 +1640,9 @@ def close_g1(
     auditor: ModuleType | None = None,
     task_call: Callable[..., Mapping[str, Any]] = _task_call,
     control_call: Callable[[ClosureContract, str, Path], Mapping[str, Any]] = _control_call,
-    git_assert: Callable[[ClosureContract], None] = _git_assert_frozen_bytes,
+    git_assert: Callable[
+        [ClosureContract, Mapping[str, Any]], None
+    ] = _git_assert_frozen_bytes,
     crash_hook: Callable[[str], None] = lambda _point: None,
 ) -> dict[str, Any]:
     """Close G1 exactly once; safely resume at every durable crash boundary."""
