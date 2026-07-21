@@ -525,7 +525,7 @@ def _validate_task_evidence(
 ) -> None:
     _assert_exact_fields(evidence, TASK_EVIDENCE_KEYS, label)
     expected_state = "Disabled" if disabled else "Ready"
-    allowed_states = {expected_state, "Running"} if disabled and allow_running else {expected_state}
+    allowed_states = {expected_state, "Running"} if allow_running else {expected_state}
     if (
         evidence.get("state") not in allowed_states
         or evidence.get("enabled") is not (not disabled)
@@ -635,7 +635,11 @@ def _validate_quiesce_probe(
     ):
         raise ClosureError("quiesce probe envelope drift")
     _validate_task_evidence(
-        probe["before"], disabled=False, label="quiesce before", require_never_run=True
+        probe["before"],
+        disabled=False,
+        label="quiesce before",
+        require_never_run=False,
+        allow_running=True,
     )
     _validate_task_evidence(
         probe["after"],
@@ -645,7 +649,9 @@ def _validate_quiesce_probe(
         allow_running=True,
     )
     observed_race = (
-        probe["after"].get("state") == "Running"
+        probe["before"].get("state") == "Running"
+        or probe["before"].get("never_run") is not True
+        or probe["after"].get("state") == "Running"
         or probe["after"].get("never_run") is not True
     )
     if probe["start_race_observed"] is not observed_race:
@@ -1479,6 +1485,11 @@ def close_g1(
                     )
                     if ready_evidence["task_contract_sha256"] != task_contract_sha:
                         raise ClosureError("ready task contract drifted before disable")
+                except ClosureError:
+                    # The exact task may have entered Running after the
+                    # preliminary REJECT.  Quiesce still must disable it.
+                    pass
+                try:
                     quiesce = task_call(
                         contract,
                         job,

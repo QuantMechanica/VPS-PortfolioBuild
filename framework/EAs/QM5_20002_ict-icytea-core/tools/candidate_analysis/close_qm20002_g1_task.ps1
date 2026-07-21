@@ -608,13 +608,13 @@ if ($Operation -eq 'InspectReady') {
 if ($Operation -eq 'Quiesce') {
     $beforeTask = Get-QmExactTask
     $beforeDisabled = -not [bool]$beforeTask.Settings.Enabled
-    $before = Get-QmClosureEvidence -Task $beforeTask -Contract $contract -Identity $identity -RequireDisabled $beforeDisabled
+    $before = Get-QmClosureEvidence -Task $beforeTask -Contract $contract -Identity $identity -RequireDisabled $beforeDisabled -RequireNeverRun $false
     if ([string]::IsNullOrWhiteSpace($ExpectedTaskContractSha256) -or
         $before.task_contract_sha256 -cne $ExpectedTaskContractSha256) {
         throw 'G1 task contract drifted from the durable closure intent.'
     }
-    if (-not $beforeDisabled -and $before.state -cne 'Ready') {
-        throw "Enabled G1 scheduled task '$TaskName' is not exactly Ready before quiescence."
+    if (-not $beforeDisabled -and $before.state -notin @('Ready', 'Running')) {
+        throw "Enabled G1 scheduled task '$TaskName' is neither Ready nor a state-lock-blocked Running instance."
     }
     if (-not $beforeDisabled) {
         Disable-ScheduledTask -TaskName $TaskName -TaskPath '\' -ErrorAction Stop | Out-Null
@@ -633,7 +633,7 @@ if ($Operation -eq 'Quiesce') {
         principal_sid = $identity.Sid
         before = $before
         after = $after
-        start_race_observed = (-not [bool]$after.never_run) -or $after.state -ceq 'Running'
+        start_race_observed = (-not [bool]$before.never_run) -or $before.state -ceq 'Running' -or (-not [bool]$after.never_run) -or $after.state -ceq 'Running'
         absent = $false
     } | ConvertTo-Json -Depth 6 -Compress
     exit 0

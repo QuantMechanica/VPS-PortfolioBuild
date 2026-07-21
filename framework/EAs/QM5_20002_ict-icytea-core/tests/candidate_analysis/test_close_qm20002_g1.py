@@ -555,3 +555,148 @@ def test_owner_timestamp_parser_rejects_non_z_and_future() -> None:
     future = future.replace(year=future.year + 1).isoformat().replace("+00:00", "Z")
     with pytest.raises(closure.ClosureError):
         closure.parse_owner_utc(future)
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        "task_name",
+        "extra_top_level",
+        "nested_absent_count",
+        "nested_state_after",
+    ],
+)
+def test_mutated_receipt_is_never_accepted_as_already_closed(
+    tmp_path: Path, mutation: str
+) -> None:
+    contract, fake_auditor, task, utility_sha, helper_sha = make_fixture(tmp_path)
+    invoke_fixture(contract, fake_auditor, task, utility_sha, helper_sha)
+    receipt = json.loads(contract.receipt_path.read_text(encoding="utf-8"))
+    if mutation == "task_name":
+        receipt["scheduled_task"]["task_name"] = "QM_QM20002_AUDIT_" + "0" * 24
+    elif mutation == "extra_top_level":
+        receipt["unexpected"] = True
+    elif mutation == "nested_absent_count":
+        receipt["scheduled_task"]["absent_probe"]["dev1_owner_process_count"] = 1
+    else:
+        receipt["launch_state"]["after"]["sha256"] = "0" * 64
+    write_json(contract.receipt_path, receipt)
+    with pytest.raises(closure.ClosureError):
+        invoke_fixture(contract, fake_auditor, task, utility_sha, helper_sha)
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    ["task_name", "outcome_transition", "ready_helper", "extra_ready_evidence"],
+)
+def test_mutated_after_intent_is_rejected_before_task_or_state_mutation(
+    tmp_path: Path, mutation: str
+) -> None:
+    contract, fake_auditor, task, utility_sha, helper_sha = make_fixture(tmp_path)
+
+    class StopAfterIntent(RuntimeError):
+        pass
+
+    with pytest.raises(StopAfterIntent):
+        invoke_fixture(
+            contract,
+            fake_auditor,
+            task,
+            utility_sha,
+            helper_sha,
+            crash_hook=lambda point: (
+                (_ for _ in ()).throw(StopAfterIntent())
+                if point == "after_intent"
+                else None
+            ),
+        )
+    intent = json.loads(contract.intent_path.read_text(encoding="utf-8"))
+    if mutation == "task_name":
+        intent["task"]["task_name"] = "QM_QM20002_AUDIT_" + "0" * 24
+    elif mutation == "outcome_transition":
+        intent["expected_transition"]["outcome_fence_crossed"] = True
+    elif mutation == "ready_helper":
+        intent["task"]["ready_probe"]["helper_sha256"] = "0" * 64
+    else:
+        intent["task"]["ready_probe"]["evidence"]["unexpected"] = 1
+    write_json(contract.intent_path, intent)
+    with pytest.raises(closure.ClosureError):
+        invoke_fixture(contract, fake_auditor, task, utility_sha, helper_sha)
+    assert closure.sha256_file(contract.state_path) == contract.state_before_sha256
+    assert task.enabled is True
+
+
+def test_mutated_closed_state_scheduler_is_rejected_before_unregister_or_receipt(
+    tmp_path: Path,
+) -> None:
+    contract, fake_auditor, task, utility_sha, helper_sha = make_fixture(tmp_path)
+
+    class StopAfterState(RuntimeError):
+        pass
+
+    with pytest.raises(StopAfterState):
+        invoke_fixture(
+            contract,
+            fake_auditor,
+            task,
+            utility_sha,
+            helper_sha,
+            crash_hook=lambda point: (
+                (_ for _ in ()).throw(StopAfterState())
+                if point == "after_state"
+                else None
+            ),
+        )
+    state = json.loads(contract.state_path.read_text(encoding="utf-8"))
+    state["scheduler"] = {"arbitrary": "mutated"}
+    write_json(contract.state_path, state)
+    with pytest.raises(closure.ClosureError, match="immutable field drift"):
+        invoke_fixture(contract, fake_auditor, task, utility_sha, helper_sha)
+    assert task.exists is True
+    assert not contract.receipt_path.exists()
+
+
+def test_dev1_inventory_is_reasserted_during_recovery(tmp_path: Path) -> None:
+    contract, fake_auditor, task, utility_sha, helper_sha = make_fixture(tmp_path)
+
+    class StopAfterPreliminary(RuntimeError):
+        pass
+
+    with pytest.raises(StopAfterPreliminary):
+        invoke_fixture(
+            contract,
+            fake_auditor,
+            task,
+            utility_sha,
+            helper_sha,
+            crash_hook=lambda point: (
+                (_ for _ in ()).throw(StopAfterPreliminary())
+                if point == "after_preliminary_state"
+                else None
+            ),
+        )
+    fake_auditor.inventory["directory_count"] = 1
+    with pytest.raises(closure.ClosureError, match="DEV1 run inventory changed"):
+        invoke_fixture(contract, fake_auditor, task, utility_sha, helper_sha)
+    assert task.enabled is True
+    assert not contract.receipt_path.exists()
+
+
+def test_start_race_observes_durable_reject_before_disable_and_closes(
+    tmp_path: Path,
+) -> None:
+    contract, fake_auditor, task, utility_sha, helper_sha = make_fixture(tmp_path)
+    task.started_race = True
+    result = invoke_fixture(
+        contract, fake_auditor, task, utility_sha, helper_sha
+    )
+    assert result["status"] == "CLOSED"
+    state = json.loads(contract.state_path.read_text(encoding="utf-8"))
+    assert "closure_phase=CLOSED" in state["terminal"]["error"]
+    assert "task_start_race_observed=true" in state["terminal"]["error"]
+    receipt = json.loads(contract.receipt_path.read_text(encoding="utf-8"))
+    assert receipt["launch_state"]["task_start_race_observed"] is True
+    assert receipt["scheduled_task"]["quiesced_probe_binding"][
+        "task_start_race_observed"
+    ] is True
+    assert task.exists is False
