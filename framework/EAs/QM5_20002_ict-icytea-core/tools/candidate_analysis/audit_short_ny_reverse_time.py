@@ -146,7 +146,14 @@ CONTROL_ANCESTOR_RAW_GENERIC_RIGHTS_FORBIDDEN = ["GENERIC_ALL"]
 CONTROL_ANCESTOR_RAW_UNKNOWN_BITS_DISPOSITION = "REJECT"
 CONTROL_ANCESTOR_CREATOR_PLACEHOLDER_POLICY = "INHERIT_ONLY_KNOWN_MASK_ALLOWED"
 CONTROL_ANCESTOR_CREATOR_IDENTITY_PROOF_REQUIRED = True
-CONTROL_ANCESTOR_INHERITABLE_UNTRUSTED_WRITE_DISPOSITION = "REJECT"
+CONTROL_ANCESTOR_INHERITABLE_UNTRUSTED_WRITE_DISPOSITION = (
+    "REJECT_EXCEPT_EXACT_STOCK_BU_CREATE_ACES_WITH_ATOMIC_PROTECTED_CREATE"
+)
+CONTROL_ANCESTOR_STOCK_VOLUME_BOOTSTRAP_ACE_SHAPES = [
+    "BU:0x00000004:CI",
+    "BU:0x00000002:CI|IO",
+]
+CONTROL_ATOMIC_PROTECTED_DIRECTORY_CREATE_REQUIRED = True
 COMPILE_CONTROLLER_PATH = (
     EA_ROOT / "tools" / "candidate_analysis" / "compile_short_ny_v3.ps1"
 )
@@ -614,6 +621,8 @@ def _audit_control_contract() -> dict[str, Any]:
         "ancestor_creator_placeholder_policy": CONTROL_ANCESTOR_CREATOR_PLACEHOLDER_POLICY,
         "ancestor_creator_identity_proof_required": CONTROL_ANCESTOR_CREATOR_IDENTITY_PROOF_REQUIRED,
         "ancestor_inheritable_untrusted_write_disposition": CONTROL_ANCESTOR_INHERITABLE_UNTRUSTED_WRITE_DISPOSITION,
+        "ancestor_stock_volume_bootstrap_ace_shapes": CONTROL_ANCESTOR_STOCK_VOLUME_BOOTSTRAP_ACE_SHAPES,
+        "atomic_protected_directory_create_required": CONTROL_ATOMIC_PROTECTED_DIRECTORY_CREATE_REQUIRED,
         "qmdev1_privilege_surface_verified": True,
         "privileged_group_sids_forbidden": CONTROL_PRIVILEGED_GROUP_SIDS,
         "privileges_forbidden": CONTROL_FORBIDDEN_PRIVILEGES,
@@ -766,6 +775,8 @@ def _control_acl_call(
         "ancestor_creator_placeholder_policy",
         "ancestor_creator_identity_proof_required",
         "ancestor_inheritable_untrusted_write_disposition",
+        "ancestor_stock_volume_bootstrap_ace_shapes",
+        "atomic_protected_directory_create_required",
         "qmdev1_privilege_surface_verified",
         "privileged_group_sids_forbidden",
         "privileges_forbidden",
@@ -801,6 +812,10 @@ def _control_acl_call(
         is not CONTROL_ANCESTOR_CREATOR_IDENTITY_PROOF_REQUIRED
         or result.get("ancestor_inheritable_untrusted_write_disposition")
         != CONTROL_ANCESTOR_INHERITABLE_UNTRUSTED_WRITE_DISPOSITION
+        or result.get("ancestor_stock_volume_bootstrap_ace_shapes")
+        != CONTROL_ANCESTOR_STOCK_VOLUME_BOOTSTRAP_ACE_SHAPES
+        or result.get("atomic_protected_directory_create_required")
+        is not CONTROL_ATOMIC_PROTECTED_DIRECTORY_CREATE_REQUIRED
         or result.get("qmdev1_privilege_surface_verified") is not True
         or result.get("privileged_group_sids_forbidden")
         != CONTROL_PRIVILEGED_GROUP_SIDS

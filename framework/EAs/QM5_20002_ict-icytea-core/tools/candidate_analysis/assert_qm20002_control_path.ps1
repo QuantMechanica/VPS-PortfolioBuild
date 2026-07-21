@@ -66,7 +66,12 @@ $ancestorRawGenericRightsForbidden = @('GENERIC_ALL')
 $ancestorRawUnknownBitsDisposition = 'REJECT'
 $ancestorCreatorPlaceholderPolicy = 'INHERIT_ONLY_KNOWN_MASK_ALLOWED'
 $ancestorCreatorIdentityProofRequired = $true
-$ancestorInheritableUntrustedWriteDisposition = 'REJECT'
+$ancestorInheritableUntrustedWriteDisposition = 'REJECT_EXCEPT_EXACT_STOCK_BU_CREATE_ACES_WITH_ATOMIC_PROTECTED_CREATE'
+$ancestorStockVolumeBootstrapAceShapes = @(
+    'BU:0x00000004:CI',
+    'BU:0x00000002:CI|IO'
+)
+$atomicProtectedDirectoryCreateRequired = $true
 $actualHelperSha256 = (Get-FileHash -LiteralPath $PSCommandPath -Algorithm SHA256 -ErrorAction Stop).Hash.ToLowerInvariant()
 if ($actualHelperSha256 -cne $ExpectedHelperSha256) {
     throw 'QM20002 control-path helper byte binding drifted.'
@@ -121,7 +126,7 @@ function Assert-NoReparse([string]$Candidate, [switch]$AllowMissingLeaf) {
     }
 }
 
-function Set-ExactDirectoryAcl([string]$Directory) {
+function New-ExactDirectorySecurity {
     $acl = New-Object Security.AccessControl.DirectorySecurity
     $acl.SetAccessRuleProtection($true, $false)
     $acl.SetOwner($administratorsSid)
@@ -136,7 +141,15 @@ function Set-ExactDirectoryAcl([string]$Directory) {
         )
         [void]$acl.AddAccessRule($rule)
     }
-    Set-Acl -LiteralPath $Directory -AclObject $acl -ErrorAction Stop
+    return $acl
+}
+
+function New-ExactProtectedDirectoryAtomic([string]$Directory) {
+    $acl = New-ExactDirectorySecurity
+    [QmLsaRightsReader]::CreateDirectoryWithSecurity(
+        $Directory,
+        $acl.GetSecurityDescriptorBinaryForm()
+    )
 }
 
 function Set-ExactFileAcl([string]$File) {
@@ -199,9 +212,11 @@ function Ensure-ExactProtectedDirectory([string]$Directory) {
         Assert-ExactAcl -Candidate $Directory -Directory $true
         return
     }
-    New-Item -ItemType Directory -Path $Directory -ErrorAction Stop | Out-Null
+    # CreateDirectoryW receives the protected exact security descriptor in the
+    # same kernel operation that publishes the directory name.  ERROR_ALREADY_EXISTS
+    # is fatal, so a race winner is never repaired or adopted.
+    New-ExactProtectedDirectoryAtomic $Directory
     Assert-NoReparse $Directory
-    Set-ExactDirectoryAcl $Directory
     Assert-ExactAcl -Candidate $Directory -Directory $true
 }
 
@@ -288,6 +303,14 @@ public static class QmLsaRightsReader
     }
 
     [StructLayout(LayoutKind.Sequential)]
+    private struct SECURITY_ATTRIBUTES
+    {
+        public Int32 Length;
+        public IntPtr SecurityDescriptor;
+        [MarshalAs(UnmanagedType.Bool)] public bool InheritHandle;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
     private struct LSA_OBJECT_ATTRIBUTES
     {
         public UInt32 Length;
@@ -353,6 +376,11 @@ public static class QmLsaRightsReader
     [DllImport("netapi32.dll")]
     private static extern UInt32 NetApiBufferFree(IntPtr buffer);
 
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    private static extern bool CreateDirectoryW(
+        string path,
+        ref SECURITY_ATTRIBUTES securityAttributes);
+
     private static string GetTokenSid(
         IntPtr tokenHandle,
         TOKEN_INFORMATION_CLASS informationClass)
@@ -409,6 +437,32 @@ public static class QmLsaRightsReader
         finally
         {
             if (buffer != IntPtr.Zero) NetApiBufferFree(buffer);
+        }
+    }
+
+    public static void CreateDirectoryWithSecurity(
+        string path,
+        byte[] securityDescriptor)
+    {
+        if (String.IsNullOrWhiteSpace(path))
+            throw new ArgumentException("Directory path is empty.", "path");
+        if (securityDescriptor == null || securityDescriptor.Length == 0)
+            throw new ArgumentException(
+                "Security descriptor is empty.", "securityDescriptor");
+
+        GCHandle pinned = GCHandle.Alloc(securityDescriptor, GCHandleType.Pinned);
+        try
+        {
+            SECURITY_ATTRIBUTES attributes = new SECURITY_ATTRIBUTES();
+            attributes.Length = Marshal.SizeOf(typeof(SECURITY_ATTRIBUTES));
+            attributes.SecurityDescriptor = pinned.AddrOfPinnedObject();
+            attributes.InheritHandle = false;
+            if (!CreateDirectoryW(path, ref attributes))
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+        }
+        finally
+        {
+            pinned.Free();
         }
     }
 
@@ -513,6 +567,29 @@ function ConvertTo-QmUInt32AccessMask([int32]$AccessMask) {
     return [BitConverter]::ToUInt32([BitConverter]::GetBytes($AccessMask), 0)
 }
 
+function Test-QmStockVolumeBootstrapAce(
+    [Security.AccessControl.QualifiedAce]$Ace,
+    [string]$Sid,
+    [uint32]$AccessMask
+) {
+    if ($Sid -cne 'S-1-5-32-545' -or
+        $Ace -isnot [Security.AccessControl.CommonAce] -or
+        $Ace.IsCallback) {
+        return $false
+    }
+    $semanticFlags = [Security.AccessControl.AceFlags](
+        ([int]$Ace.AceFlags) -band
+        (-bnot [int][Security.AccessControl.AceFlags]::Inherited)
+    )
+    $containerInherit = [Security.AccessControl.AceFlags]::ContainerInherit
+    $containerInheritOnly = $containerInherit -bor
+        [Security.AccessControl.AceFlags]::InheritOnly
+    return (
+        ($AccessMask -eq [uint32]4 -and $semanticFlags -eq $containerInherit) -or
+        ($AccessMask -eq [uint32]2 -and $semanticFlags -eq $containerInheritOnly)
+    )
+}
+
 function Assert-QmAncestorRawDescriptor(
     [Security.AccessControl.RawSecurityDescriptor]$Descriptor,
     $UntrustedSids,
@@ -567,11 +644,16 @@ function Assert-QmAncestorRawDescriptor(
             }
             continue
         }
-        # An inheritable untrusted write/create ACE would apply to the newly
-        # created anchor before Set-ExactDirectoryAcl seals it.  Reject that
-        # transient race even though the same non-inheritable right on the
-        # ancestor cannot delete or rename an already protected child.
-        if ($propagates -and $hasWriteOrCreate) {
+        # The exact stock fixed-volume BUILTIN\Users create-directory ACEs are
+        # safe only because CreateDirectoryW atomically publishes the new
+        # controlled directory with its protected exact DACL.  No inherited
+        # ACE is ever visible on that directory.  Reject every other
+        # inheritable untrusted write/create shape.
+        $stockBootstrapAce = Test-QmStockVolumeBootstrapAce `
+            -Ace $ace `
+            -Sid $sid `
+            -AccessMask $rawMask
+        if ($propagates -and $hasWriteOrCreate -and -not $stockBootstrapAce) {
             throw "Untrusted inheritable write ACE races the QM20002 control-root seal through ancestor: $Candidate"
         }
         if ($disposition -cne 'SAFE') {
@@ -686,6 +768,8 @@ if ($Operation -eq 'PrepareDirectory') {
     ancestor_creator_placeholder_policy = $ancestorCreatorPlaceholderPolicy
     ancestor_creator_identity_proof_required = $ancestorCreatorIdentityProofRequired
     ancestor_inheritable_untrusted_write_disposition = $ancestorInheritableUntrustedWriteDisposition
+    ancestor_stock_volume_bootstrap_ace_shapes = @($ancestorStockVolumeBootstrapAceShapes)
+    atomic_protected_directory_create_required = $atomicProtectedDirectoryCreateRequired
     qmdev1_privilege_surface_verified = $true
     privileged_group_sids_forbidden = @($privilegedGroupSids)
     privileges_forbidden = @($dangerousPrivileges)

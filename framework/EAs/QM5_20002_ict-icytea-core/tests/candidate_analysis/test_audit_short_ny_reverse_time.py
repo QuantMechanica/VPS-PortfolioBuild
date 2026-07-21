@@ -1022,13 +1022,17 @@ def test_control_helper_closes_volume_ancestor_owner_and_token_group_surface() -
     ensure_block = helper.split("function Ensure-ExactProtectedDirectory", 1)[1].split(
         "function Get-UntrustedSids", 1
     )[0]
-    assert "New-Item -ItemType Directory -Path $Directory -ErrorAction Stop" in ensure_block
+    assert "New-Item -ItemType Directory" not in ensure_block
+    assert "Set-ExactDirectoryAcl" not in ensure_block
+    assert "New-ExactProtectedDirectoryAtomic $Directory" in ensure_block
+    assert "CreateDirectoryW" in helper
+    assert "CreateDirectoryWithSecurity" in helper
     assert ensure_block.index("Assert-ExactAcl -Candidate $Directory") < ensure_block.index(
         "return"
     )
-    assert ensure_block.index("New-Item -ItemType Directory") < ensure_block.index(
-        "Set-ExactDirectoryAcl $Directory"
-    ) < ensure_block.rindex("Assert-ExactAcl -Candidate $Directory")
+    assert ensure_block.index("New-ExactProtectedDirectoryAtomic $Directory") < (
+        ensure_block.rindex("Assert-ExactAcl -Candidate $Directory")
+    )
     assert "function Assert-QmDev1PrivilegeSurface" in helper
     assert "LsaEnumerateAccountRights" in helper
     assert "S-1-5-32-551" in helper  # Backup Operators
@@ -1100,10 +1104,14 @@ def test_control_helper_closes_volume_ancestor_owner_and_token_group_surface() -
         == "INHERIT_ONLY_KNOWN_MASK_ALLOWED"
     )
     assert subject.CONTROL_ANCESTOR_CREATOR_IDENTITY_PROOF_REQUIRED is True
-    assert (
-        subject.CONTROL_ANCESTOR_INHERITABLE_UNTRUSTED_WRITE_DISPOSITION
-        == "REJECT"
+    assert subject.CONTROL_ANCESTOR_INHERITABLE_UNTRUSTED_WRITE_DISPOSITION == (
+        "REJECT_EXCEPT_EXACT_STOCK_BU_CREATE_ACES_WITH_ATOMIC_PROTECTED_CREATE"
     )
+    assert subject.CONTROL_ANCESTOR_STOCK_VOLUME_BOOTSTRAP_ACE_SHAPES == [
+        "BU:0x00000004:CI",
+        "BU:0x00000002:CI|IO",
+    ]
+    assert subject.CONTROL_ATOMIC_PROTECTED_DIRECTORY_CREATE_REQUIRED is True
     assert "CurrentCreatorSids" in helper
     assert "TokenPrimaryGroup" in helper
     assert "LocalUserPrimaryGroupSid" in helper
@@ -1119,11 +1127,23 @@ def test_control_helper_closes_volume_ancestor_owner_and_token_group_surface() -
     )
 
 
-def test_control_acl_bootstrap_and_replace_policy_with_in_memory_acl_objects() -> None:
+def test_control_acl_bootstrap_and_replace_policy_with_in_memory_acl_objects(
+    tmp_path: Path,
+) -> None:
     helper_literal = str(subject.CONTROL_PATH_HELPER_PATH.resolve()).replace("'", "''")
+    atomic_path_literal = str((tmp_path / "atomic-protected").resolve()).replace("'", "''")
+    precreated_path_literal = str((tmp_path / "precreated-race").resolve()).replace("'", "''")
     script = r"""
 $ErrorActionPreference = 'Stop'
 $helperPath = '__HELPER_PATH__'
+$source = Get-Content -LiteralPath $helperPath -Raw
+$csharp = [regex]::Match(
+    $source,
+    "Add-Type -TypeDefinition @'\r?\n(?<code>.*?)\r?\n'@",
+    [Text.RegularExpressions.RegexOptions]::Singleline
+)
+if (-not $csharp.Success) { throw 'Embedded C# block missing.' }
+Add-Type -TypeDefinition $csharp.Groups['code'].Value -ErrorAction Stop
 $tokens = $null
 $errors = $null
 $ast = [Management.Automation.Language.Parser]::ParseFile(
@@ -1136,7 +1156,9 @@ foreach ($name in @(
     'Get-QmAncestorAccessMaskDisposition',
     'Test-QmAncestorReplaceAuthority',
     'ConvertTo-QmUInt32AccessMask',
+    'Test-QmStockVolumeBootstrapAce',
     'Assert-QmAncestorRawDescriptor',
+    'New-ExactDirectorySecurity',
     'Assert-ExactAclObject'
 )) {
     $functionAst = $ast.Find({
@@ -1214,6 +1236,30 @@ function Test-ExactDirectoryAcl([Security.AccessControl.DirectorySecurity]$Acl) 
         return $false
     }
 }
+$atomicPath = '__ATOMIC_PATH__'
+$precreatedPath = '__PRECREATED_PATH__'
+$exactSecurity = New-ExactDirectorySecurity
+[QmLsaRightsReader]::CreateDirectoryWithSecurity(
+    $atomicPath,
+    $exactSecurity.GetSecurityDescriptorBinaryForm()
+)
+$atomicProtectedCreatePasses = Test-ExactDirectoryAcl (Get-Acl -LiteralPath $atomicPath)
+[void][IO.Directory]::CreateDirectory($precreatedPath)
+$beforeRace = [Convert]::ToBase64String(
+    (Get-Acl -LiteralPath $precreatedPath).GetSecurityDescriptorBinaryForm()
+)
+$precreatedRaceRejected = $false
+try {
+    [QmLsaRightsReader]::CreateDirectoryWithSecurity(
+        $precreatedPath,
+        $exactSecurity.GetSecurityDescriptorBinaryForm()
+    )
+} catch [ComponentModel.Win32Exception] {
+    $precreatedRaceRejected = $_.Exception.NativeErrorCode -eq 183
+}
+$afterRace = [Convert]::ToBase64String(
+    (Get-Acl -LiteralPath $precreatedPath).GetSecurityDescriptorBinaryForm()
+)
 [ordered]@{
     standard_volume_users_create_only_bootstrap = Test-RawAncestorAccepted (
         'O:BAG:BAD:(A;;0x00000006;;;BU)'
@@ -1229,6 +1275,12 @@ function Test-ExactDirectoryAcl([Security.AccessControl.DirectorySecurity]$Acl) 
     )
     raw_generic_execute_users_allowed = Test-RawAncestorAccepted (
         'O:BAG:BAD:(A;;GX;;;BU)'
+    )
+    exact_stock_d_drive_create_aces_allowed = Test-RawAncestorAccepted (
+        'O:BAG:BAD:(A;CI;0x00000004;;;BU)(A;CIIO;0x00000002;;;BU)'
+    )
+    inherited_stock_d_drive_create_aces_allowed = Test-RawAncestorAccepted (
+        'O:BAG:BAD:(A;CIID;0x00000004;;;BU)(A;CIIOID;0x00000002;;;BU)'
     )
     ancestor_users_modify_rejected = -not (Test-RawAncestorAccepted (
         'O:BAG:BAD:(A;;0x000301bf;;;BU)'
@@ -1266,6 +1318,15 @@ function Test-ExactDirectoryAcl([Security.AccessControl.DirectorySecurity]$Acl) 
     inheritable_create_only_users_rejected = -not (Test-RawAncestorAccepted (
         'O:BAG:BAD:(A;OICI;0x00000006;;;BU)'
     ))
+    hostile_stock_mask_with_object_inherit_rejected = -not (Test-RawAncestorAccepted (
+        'O:BAG:BAD:(A;OICI;0x00000004;;;BU)'
+    ))
+    hostile_stock_mask_without_inherit_only_rejected = -not (Test-RawAncestorAccepted (
+        'O:BAG:BAD:(A;CI;0x00000002;;;BU)'
+    ))
+    hostile_stock_shape_for_authenticated_users_rejected = -not (Test-RawAncestorAccepted (
+        'O:BAG:BAD:(A;CI;0x00000004;;;AU)'
+    ))
     object_generic_all_users_rejected = -not (Test-RawAncestorAccepted (
         'O:BAG:BAD:(OA;;GA;00000000-0000-0000-0000-000000000001;;BU)'
     ))
@@ -1292,6 +1353,9 @@ function Test-ExactDirectoryAcl([Security.AccessControl.DirectorySecurity]$Acl) 
         'O:BAG:BAD:(A;;0x02000000;;;BU)'
     ))
     null_dacl_rejected = -not (Test-RawAncestorAccepted 'O:BAG:BA')
+    atomic_protected_directory_create_passes = $atomicProtectedCreatePasses
+    precreated_race_is_exclusively_rejected = $precreatedRaceRejected
+    precreated_race_acl_is_unchanged = $beforeRace -ceq $afterRace
     precreated_attacker_owned_anchor_rejected = -not (Test-ExactDirectoryAcl (
         New-TestDirectoryAcl -Owner $usersSid -Protected $true -AddUsersCreateOnly $false
     ))
@@ -1305,7 +1369,9 @@ function Test-ExactDirectoryAcl([Security.AccessControl.DirectorySecurity]$Acl) 
         New-TestDirectoryAcl -Owner $administratorsSid -Protected $true -AddUsersCreateOnly $false
     )
 } | ConvertTo-Json -Compress
-""".replace("__HELPER_PATH__", helper_literal)
+""".replace("__HELPER_PATH__", helper_literal).replace(
+        "__ATOMIC_PATH__", atomic_path_literal
+    ).replace("__PRECREATED_PATH__", precreated_path_literal)
     completed = subprocess.run(
         [
             str(subject.POWERSHELL_PATH),
@@ -1330,6 +1396,8 @@ function Test-ExactDirectoryAcl([Security.AccessControl.DirectorySecurity]$Acl) 
         "raw_generic_write_users_allowed": True,
         "raw_generic_read_users_allowed": True,
         "raw_generic_execute_users_allowed": True,
+        "exact_stock_d_drive_create_aces_allowed": True,
+        "inherited_stock_d_drive_create_aces_allowed": True,
         "ancestor_users_modify_rejected": True,
         "ancestor_batch_modify_rejected": True,
         "ancestor_delete_child_rejected": True,
@@ -1342,6 +1410,9 @@ function Test-ExactDirectoryAcl([Security.AccessControl.DirectorySecurity]$Acl) 
         "inherit_only_generic_read_users_allowed": True,
         "inherit_only_generic_execute_users_allowed": True,
         "inheritable_create_only_users_rejected": True,
+        "hostile_stock_mask_with_object_inherit_rejected": True,
+        "hostile_stock_mask_without_inherit_only_rejected": True,
+        "hostile_stock_shape_for_authenticated_users_rejected": True,
         "object_generic_all_users_rejected": True,
         "creator_owner_inherit_only_generic_all_allowed": True,
         "creator_group_inherit_only_generic_all_allowed": True,
@@ -1350,6 +1421,9 @@ function Test-ExactDirectoryAcl([Security.AccessControl.DirectorySecurity]$Acl) 
         "creator_group_untrusted_effective_group_rejected": True,
         "unknown_maximum_allowed_mask_rejected": True,
         "null_dacl_rejected": True,
+        "atomic_protected_directory_create_passes": True,
+        "precreated_race_is_exclusively_rejected": True,
+        "precreated_race_acl_is_unchanged": True,
         "precreated_attacker_owned_anchor_rejected": True,
         "precreated_attacker_writable_anchor_rejected": True,
         "attacker_precreation_race_before_exact_seal_rejected": True,
@@ -1369,6 +1443,8 @@ function Test-ExactDirectoryAcl([Security.AccessControl.DirectorySecurity]$Acl) 
         ("ancestor_creator_placeholder_policy", "ALLOW_ALL"),
         ("ancestor_creator_identity_proof_required", False),
         ("ancestor_inheritable_untrusted_write_disposition", "ALLOW"),
+        ("ancestor_stock_volume_bootstrap_ace_shapes", ["BU:0x00000004:CI"]),
+        ("atomic_protected_directory_create_required", False),
         ("privileged_group_sids_forbidden", subject.CONTROL_PRIVILEGED_GROUP_SIDS[:-1]),
         ("privileges_forbidden", subject.CONTROL_FORBIDDEN_PRIVILEGES[:-1]),
         ("privileges_forbidden", [*subject.CONTROL_FORBIDDEN_PRIVILEGES, "SeTestPrivilege"]),
@@ -1401,6 +1477,8 @@ def test_control_helper_result_rejects_dangerous_token_proof_drift(
         "ancestor_creator_placeholder_policy": subject.CONTROL_ANCESTOR_CREATOR_PLACEHOLDER_POLICY,
         "ancestor_creator_identity_proof_required": subject.CONTROL_ANCESTOR_CREATOR_IDENTITY_PROOF_REQUIRED,
         "ancestor_inheritable_untrusted_write_disposition": subject.CONTROL_ANCESTOR_INHERITABLE_UNTRUSTED_WRITE_DISPOSITION,
+        "ancestor_stock_volume_bootstrap_ace_shapes": subject.CONTROL_ANCESTOR_STOCK_VOLUME_BOOTSTRAP_ACE_SHAPES,
+        "atomic_protected_directory_create_required": subject.CONTROL_ATOMIC_PROTECTED_DIRECTORY_CREATE_REQUIRED,
         "qmdev1_privilege_surface_verified": True,
         "privileged_group_sids_forbidden": subject.CONTROL_PRIVILEGED_GROUP_SIDS,
         "privileges_forbidden": subject.CONTROL_FORBIDDEN_PRIVILEGES,
