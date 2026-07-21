@@ -95,6 +95,10 @@ DEV1_CREDENTIAL_ROTATION_ROOT = Path(r"D:\QM\reports\dev1\credential-rotation")
 SCHEDULED_TASK_HELPER_PATH = (
     EA_ROOT / "tools" / "candidate_analysis" / "run_outcome_fenced_task.ps1"
 )
+CONTROL_PATH_HELPER_PATH = (
+    EA_ROOT / "tools" / "candidate_analysis" / "assert_qm20002_control_path.ps1"
+)
+AUDIT_CONTROL_ROOT = Path(r"D:\QM\reports\qm20002\short_ny_reverse_time")
 COMPILE_CONTROLLER_PATH = (
     EA_ROOT / "tools" / "candidate_analysis" / "compile_short_ny_v3.ps1"
 )
@@ -160,6 +164,7 @@ RUNTIME_ROLES = {
     "powershell_binary": POWERSHELL_PATH,
     "python_binary": Path(sys.executable).resolve(),
     "scheduled_task_helper": SCHEDULED_TASK_HELPER_PATH,
+    "audit_control_path_helper": CONTROL_PATH_HELPER_PATH,
     "current_compile_controller": COMPILE_CONTROLLER_PATH,
 }
 
