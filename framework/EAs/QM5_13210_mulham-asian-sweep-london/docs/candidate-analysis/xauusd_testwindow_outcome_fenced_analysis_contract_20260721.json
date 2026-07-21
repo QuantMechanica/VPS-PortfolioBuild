@@ -1,1 +1,224 @@
-{"analysis_id":"QM5_13210_MULHAM_ASIAN_SWEEP_LONDON_XAUUSD_NATIVE_002","artifact_type":"QM5_13210_XAUUSD_TESTWINDOW_SUPERSEDING_ANALYSIS_CONTRACT","candidate":{"duplicates_per_cell":2,"ea_id":"QM5_13210","model":4,"parameter_tuning_forbidden":true,"separate_from_eurusd_outcome_namespace":true,"strategy":"mulham-asian-sweep-london","symbol":"XAUUSD.DWX","timeframe":"M5"},"finalization":{"final_contract_must_bind_roles":["adapter","attempt001_closure","attempt002_closure","base_tool","build_receipt","card","ex5","factory_off","mq5","process_scope","scheduled_task_helper","set","spec","superseded_adapter","superseded_contract","task_manifest","testwindow_off"],"pre_and_launch_forbidden_until_status":"FINALIZED_OUTCOME_BLIND","required_command":"audit_mulham_asian_sweep_london_xau_testwindow.py finalize-contract --source-commit <40_HEX_BUILD_COMMIT>","requires_committed_clean_adapter_closures_and_draft":true,"requires_pristine_superseding_namespace":true},"frozen_execution_identity":{"cost_schedule_sha256":"3eecc9d18561ed9cb81d1cd89b31511c17cbf0f4f96d7ceaa545c793267d687a","duplicates_per_cell":2,"ea_ex5_set_data_parameters_windows_costs_and_gates_unchanged":true,"input_bindings":{"data_manifest":{"path":"D:\\QM\\reports\\candidate_analysis\\QM5_13210\\data\\XAUUSD_DWX_201807_202512_T1_manifest.json","sha256":"f4c35f3acff8d8b6c5a0d337f181d418b1f546b660156942b18069bffae71f17","size":19831},"research_readiness_receipt":{"path":"D:\\QM\\reports\\candidate_analysis\\QM5_13210\\data\\XAUUSD_DWX_201807_202512_T1_receipt.json","sha256":"832abb2b191e85e61c6d6621dfb8971a79b2ad07fa6fdc609e75ebc89d2ee1de","size":817}},"merit_contract_sha256":"cedbffbc9c79622c623a92c2662ef2aa1da633e3ca143c12ae91fe533cc98041","model":4,"research_symbol":"XAUUSD.DWX","source_build_commit":"9e6c17e1e954aa6854afcc93dc72b64926316fd1","symbol_spec_sha256":"f70d94bfdb759752dca82d7577652b47c192327bfa1ab32dc28e7a49a3f88931","timeframe":"M5","xau_calibration_projection_sha256":"712234f2a5f3d144433bbd443e63b9df2dc7442d3800e2a630a4fed625d9b193"},"outcome_fence":{"attempt002_controller_logs_opened":false,"attempt002_native_outcomes_opened":false,"attempt002_native_reports_opened":false,"mt5_started_by_contract_or_finalization":false,"superseding_deal_rows_parsed":false,"superseding_native_reports_opened":false},"run_namespace":{"attempt_id":"ATTEMPT_001","exact_control_paths":{"authorization":"D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_002\\ATTEMPT_001\\native_outcome_authorization.json","job":"D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_002\\ATTEMPT_001\\launch_job.json","post":"D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_002\\ATTEMPT_001\\post_receipt.json","pre":"D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_002\\ATTEMPT_001\\pre_receipt.json","state":"D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_002\\ATTEMPT_001\\launch_state.json"},"family_root":"D:\\QM\\reports\\candidate_analysis\\QM5_13210","resume_forbidden":true,"retry_or_attempt002_plus_forbidden":true,"single_run_root":"D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_002\\ATTEMPT_001","superseded_namespace":"D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_001","superseded_namespace_final_at_attempt002":true,"superseding_namespace":"D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_002"},"schema_version":1,"status":"DRAFT_PENDING_FINAL_FREEZE","supersession":{"new_namespace_is_separate_analysis_not_attempt003":true,"old_attempt001_status":"INVALID_INFRASTRUCTURE_CLOSED_OUTCOME_BLIND","old_attempt002_cause":"T1_FACTORY_WORK_ITEM_OVERLAP_TESTWINDOW_NOT_QUIESCED_BEFORE_LAUNCH","old_attempt002_native_outcome_artifact_count":0,"old_attempt002_native_summary_count":0,"old_attempt002_status":"INVALID_INFRASTRUCTURE_CLOSED_OUTCOME_BLIND","old_namespace_attempt003_plus_forbidden":true,"parameter_tuning_forbidden":true,"same_ea_ex5_set_data_parameters_windows_costs_and_merit_gates":true,"single_new_attempt_only":true,"superseded_analysis_id":"QM5_13210_MULHAM_ASIAN_SWEEP_LONDON_XAUUSD_NATIVE_001","superseding_analysis_id":"QM5_13210_MULHAM_ASIAN_SWEEP_LONDON_XAUUSD_NATIVE_002"},"testwindow_off_quiescence":{"codex_parallel_exact":"0","exact_t1_t10_terminal_and_metatester_count":0,"factory_off_flag_required":true,"live_process_command_line_output_forbidden":true,"live_process_command_line_reads_forbidden":true,"managed_tasks_exactly_disabled":["QM_StrategyFarm_Pump_5min","QM_StrategyFarm_Tick_5min","QM_StrategyFarm_AgentRouter_5min","QM_StrategyFarm_CodexOrchestration_15min","QM_StrategyFarm_GeminiOrchestration_15min","QM_StrategyFarm_ClaudeOrchestration_15min","QM_StrategyFarm_FactoryWatchdog_15min","QM_StrategyFarm_FactoryON_AtLogon","QM_StrategyFarm_ReconcileOrphans_Hourly","QM_StrategyFarm_Repair_Hourly","QM_StrategyFarm_TerminalWorkers_AT_STARTUP"],"pre_invariant_must_remain_byte_identical":true,"registered_factory_python_worker_count":0,"required_at":["PRE","LAUNCH","WORKER_BOOTSTRAP","BEFORE_EACH_NATIVE_CELL","POST"],"version":"QM13210_TESTWINDOW_OFF_QUIESCENCE_V1"},"windows":[{"cell_id":"DEV","cohort":"DEV","from_date":"2018-07-02","to_date":"2022-12-31"},{"cell_id":"OOS_2023","cohort":"OOS","from_date":"2023-01-01","to_date":"2023-12-31"},{"cell_id":"OOS_2024","cohort":"OOS","from_date":"2024-01-01","to_date":"2024-12-31"},{"cell_id":"OOS_2025","cohort":"OOS","from_date":"2025-01-01","to_date":"2025-12-31"}]}
+{
+  "analysis_id": "QM5_13210_MULHAM_ASIAN_SWEEP_LONDON_XAUUSD_NATIVE_002",
+  "artifact_bindings": {
+    "adapter": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13210_mulham-asian-sweep-london\\tools\\candidate_analysis\\audit_mulham_asian_sweep_london_xau_testwindow.py",
+      "sha256": "d9fd2448a698f5af5357addf28dab4077a1c5a4e8a804c9ad9a010a7d5872caf",
+      "size": 67914
+    },
+    "attempt001_closure": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13210_mulham-asian-sweep-london\\docs\\candidate-analysis\\xauusd_attempt001_invalid_infrastructure_closure_20260721.json",
+      "sha256": "e9ddd7e03a71b2263bbe8c5e2e5b4915b31f962a151cfe09339f8c3d75c48bc3",
+      "size": 3410
+    },
+    "attempt002_closure": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13210_mulham-asian-sweep-london\\docs\\candidate-analysis\\xauusd_attempt002_invalid_infrastructure_closure_20260721.json",
+      "sha256": "e50df376a04570ddb3a07e2f53d7eb85b68f9c01c93a0e1c74c16e60ba26ebe7",
+      "size": 5581
+    },
+    "base_tool": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13210_mulham-asian-sweep-london\\tools\\candidate_analysis\\audit_mulham_asian_sweep_london.py",
+      "sha256": "ef7f31d140ae2c719adfb0b1fad72655ce5df263a9bcc5d417691294be47b684",
+      "size": 135863
+    },
+    "build_receipt": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13210_mulham-asian-sweep-london\\docs\\candidate-analysis\\build_receipt_20260720.json",
+      "sha256": "2c6cc45039d078b6f7d52f4c08c199a0b81797f0ee69d4835679e95d2704637e",
+      "size": 1367
+    },
+    "card": {
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13210_mulham-asian-sweep-london.md",
+      "sha256": "c9138af20679962b694b253a07488a08085868bb65b81ee1887780cd0e01c11e",
+      "size": 6664
+    },
+    "ex5": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13210_mulham-asian-sweep-london\\QM5_13210_mulham-asian-sweep-london.ex5",
+      "sha256": "377840ec44833eed5420a030519b77b37ebfd6b8e2a1161e7c3f57721fb0cccc",
+      "size": 358260
+    },
+    "factory_off": {
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\Factory_OFF.ps1",
+      "sha256": "a1497fac3ae910e14afd4512d27fd71b92c91e8ab7928fbc08fb34424b709622",
+      "size": 9559
+    },
+    "mq5": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13210_mulham-asian-sweep-london\\QM5_13210_mulham-asian-sweep-london.mq5",
+      "sha256": "366ad6715258615f1de7dcd0669fc68e5ce8ce8bb27a1d37fc53e19147beca71",
+      "size": 42350
+    },
+    "process_scope": {
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\factory_process_scope.ps1",
+      "sha256": "d68f67bb664369ebb99fd1935474965cf988a071fc09af075b558bf7894227c2",
+      "size": 8558
+    },
+    "scheduled_task_helper": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13210_mulham-asian-sweep-london\\tools\\candidate_analysis\\run_outcome_fenced_task.ps1",
+      "sha256": "1d7ad5f5091bdd7acad6b3443ec661977ac84f242d66f2991f4f3426031f2507",
+      "size": 9510
+    },
+    "set": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13210_mulham-asian-sweep-london\\sets\\QM5_13210_mulham-asian-sweep-london_XAUUSD.DWX_M5_backtest.set",
+      "sha256": "c0f3c09b71dc710ab81f4ea99f387577a659c20a8a24015b078b4ae8a12edcdd",
+      "size": 1513
+    },
+    "spec": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13210_mulham-asian-sweep-london\\SPEC.md",
+      "sha256": "2c7a93598501e527d2bcb93401fd6532af18cdf7d26c6aca7ea0ceca334ab9d2",
+      "size": 9654
+    },
+    "superseded_adapter": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13210_mulham-asian-sweep-london\\tools\\candidate_analysis\\audit_mulham_asian_sweep_london_xau.py",
+      "sha256": "5a5d76889e53704bda455e552f10f579f0d7fe452ae4f25f16960041ddef5f7d",
+      "size": 63792
+    },
+    "superseded_contract": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13210_mulham-asian-sweep-london\\docs\\candidate-analysis\\xauusd_outcome_fenced_analysis_contract_20260721.json",
+      "sha256": "f3038d906adbb1f231acf98e56fef5f3c894d1fdc8f4ec92e7f86fda1621d751",
+      "size": 11069
+    },
+    "task_manifest": {
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\qm_tasks.manifest.ps1",
+      "sha256": "cdcb2ae6b6680817652a1e0476135ba7575a9e983ff2b8df83fcf1dbb9931a47",
+      "size": 4361
+    },
+    "testwindow_off": {
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\TestWindow_OFF.ps1",
+      "sha256": "0b355a20e561b0d38291a873d0e829efea0792910669416c1eb9d4046dead081",
+      "size": 6005
+    }
+  },
+  "artifact_type": "QM5_13210_XAUUSD_TESTWINDOW_SUPERSEDING_ANALYSIS_CONTRACT",
+  "candidate": {
+    "duplicates_per_cell": 2,
+    "ea_id": "QM5_13210",
+    "model": 4,
+    "parameter_tuning_forbidden": true,
+    "separate_from_eurusd_outcome_namespace": true,
+    "strategy": "mulham-asian-sweep-london",
+    "symbol": "XAUUSD.DWX",
+    "timeframe": "M5"
+  },
+  "finalized_utc": "2026-07-21T10:15:19.612864+00:00",
+  "frozen_execution_identity": {
+    "cost_schedule_sha256": "3eecc9d18561ed9cb81d1cd89b31511c17cbf0f4f96d7ceaa545c793267d687a",
+    "duplicates_per_cell": 2,
+    "ea_ex5_set_data_parameters_windows_costs_and_gates_unchanged": true,
+    "input_bindings": {
+      "data_manifest": {
+        "path": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\data\\XAUUSD_DWX_201807_202512_T1_manifest.json",
+        "sha256": "f4c35f3acff8d8b6c5a0d337f181d418b1f546b660156942b18069bffae71f17",
+        "size": 19831
+      },
+      "research_readiness_receipt": {
+        "path": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\data\\XAUUSD_DWX_201807_202512_T1_receipt.json",
+        "sha256": "832abb2b191e85e61c6d6621dfb8971a79b2ad07fa6fdc609e75ebc89d2ee1de",
+        "size": 817
+      }
+    },
+    "merit_contract_sha256": "cedbffbc9c79622c623a92c2662ef2aa1da633e3ca143c12ae91fe533cc98041",
+    "model": 4,
+    "research_symbol": "XAUUSD.DWX",
+    "source_build_commit": "9e6c17e1e954aa6854afcc93dc72b64926316fd1",
+    "symbol_spec_sha256": "f70d94bfdb759752dca82d7577652b47c192327bfa1ab32dc28e7a49a3f88931",
+    "timeframe": "M5",
+    "xau_calibration_projection_sha256": "712234f2a5f3d144433bbd443e63b9df2dc7442d3800e2a630a4fed625d9b193"
+  },
+  "outcome_fence": {
+    "attempt002_controller_logs_opened": false,
+    "attempt002_native_outcomes_opened": false,
+    "attempt002_native_reports_opened": false,
+    "mt5_started_by_contract_or_finalization": false,
+    "superseding_deal_rows_parsed": false,
+    "superseding_native_reports_opened": false
+  },
+  "run_namespace": {
+    "attempt_id": "ATTEMPT_001",
+    "exact_control_paths": {
+      "authorization": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_002\\ATTEMPT_001\\native_outcome_authorization.json",
+      "job": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_002\\ATTEMPT_001\\launch_job.json",
+      "post": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_002\\ATTEMPT_001\\post_receipt.json",
+      "pre": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_002\\ATTEMPT_001\\pre_receipt.json",
+      "state": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_002\\ATTEMPT_001\\launch_state.json"
+    },
+    "family_root": "D:\\QM\\reports\\candidate_analysis\\QM5_13210",
+    "resume_forbidden": true,
+    "retry_or_attempt002_plus_forbidden": true,
+    "single_run_root": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_002\\ATTEMPT_001",
+    "superseded_namespace": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_001",
+    "superseded_namespace_final_at_attempt002": true,
+    "superseding_namespace": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_002"
+  },
+  "schema_version": 1,
+  "source_build_commit": "9e6c17e1e954aa6854afcc93dc72b64926316fd1",
+  "status": "FINALIZED_OUTCOME_BLIND",
+  "supersession": {
+    "new_namespace_is_separate_analysis_not_attempt003": true,
+    "old_attempt001_status": "INVALID_INFRASTRUCTURE_CLOSED_OUTCOME_BLIND",
+    "old_attempt002_cause": "T1_FACTORY_WORK_ITEM_OVERLAP_TESTWINDOW_NOT_QUIESCED_BEFORE_LAUNCH",
+    "old_attempt002_native_outcome_artifact_count": 0,
+    "old_attempt002_native_summary_count": 0,
+    "old_attempt002_status": "INVALID_INFRASTRUCTURE_CLOSED_OUTCOME_BLIND",
+    "old_namespace_attempt003_plus_forbidden": true,
+    "parameter_tuning_forbidden": true,
+    "same_ea_ex5_set_data_parameters_windows_costs_and_merit_gates": true,
+    "single_new_attempt_only": true,
+    "superseded_analysis_id": "QM5_13210_MULHAM_ASIAN_SWEEP_LONDON_XAUUSD_NATIVE_001",
+    "superseding_analysis_id": "QM5_13210_MULHAM_ASIAN_SWEEP_LONDON_XAUUSD_NATIVE_002"
+  },
+  "testwindow_off_quiescence": {
+    "codex_parallel_exact": "0",
+    "exact_t1_t10_terminal_and_metatester_count": 0,
+    "factory_off_flag_required": true,
+    "live_process_command_line_output_forbidden": true,
+    "live_process_command_line_reads_forbidden": true,
+    "managed_tasks_exactly_disabled": [
+      "QM_StrategyFarm_Pump_5min",
+      "QM_StrategyFarm_Tick_5min",
+      "QM_StrategyFarm_AgentRouter_5min",
+      "QM_StrategyFarm_CodexOrchestration_15min",
+      "QM_StrategyFarm_GeminiOrchestration_15min",
+      "QM_StrategyFarm_ClaudeOrchestration_15min",
+      "QM_StrategyFarm_FactoryWatchdog_15min",
+      "QM_StrategyFarm_FactoryON_AtLogon",
+      "QM_StrategyFarm_ReconcileOrphans_Hourly",
+      "QM_StrategyFarm_Repair_Hourly",
+      "QM_StrategyFarm_TerminalWorkers_AT_STARTUP"
+    ],
+    "pre_invariant_must_remain_byte_identical": true,
+    "registered_factory_python_worker_count": 0,
+    "required_at": [
+      "PRE",
+      "LAUNCH",
+      "WORKER_BOOTSTRAP",
+      "BEFORE_EACH_NATIVE_CELL",
+      "POST"
+    ],
+    "version": "QM13210_TESTWINDOW_OFF_QUIESCENCE_V1"
+  },
+  "windows": [
+    {
+      "cell_id": "DEV",
+      "cohort": "DEV",
+      "from_date": "2018-07-02",
+      "to_date": "2022-12-31"
+    },
+    {
+      "cell_id": "OOS_2023",
+      "cohort": "OOS",
+      "from_date": "2023-01-01",
+      "to_date": "2023-12-31"
+    },
+    {
+      "cell_id": "OOS_2024",
+      "cohort": "OOS",
+      "from_date": "2024-01-01",
+      "to_date": "2024-12-31"
+    },
+    {
+      "cell_id": "OOS_2025",
+      "cohort": "OOS",
+      "from_date": "2025-01-01",
+      "to_date": "2025-12-31"
+    }
+  ]
+}

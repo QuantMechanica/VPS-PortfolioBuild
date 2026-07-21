@@ -211,12 +211,15 @@ def test_closure_rejects_semantically_invalid_authorization(
         )
 
 
-def test_draft_freezes_same_strategy_build_data_windows_costs_and_gates() -> None:
-    draft = subject.validate_draft_contract()
-    frozen = draft["frozen_execution_identity"]
-    assert draft["analysis_id"].endswith("XAUUSD_NATIVE_002")
-    assert draft["candidate"] == subject.X._candidate_contract()
-    assert draft["windows"] == subject.X._window_contract()
+def test_finalized_contract_freezes_same_strategy_build_data_windows_costs_and_gates() -> None:
+    validated = subject.validate_analysis_contract()
+    contract = subject.B.load_json(subject.CONTRACT_PATH)
+    frozen = contract["frozen_execution_identity"]
+    assert contract["status"] == "FINALIZED_OUTCOME_BLIND"
+    assert validated["source_build_commit"] == frozen["source_build_commit"]
+    assert contract["analysis_id"].endswith("XAUUSD_NATIVE_002")
+    assert contract["candidate"] == subject.X._candidate_contract()
+    assert contract["windows"] == subject.X._window_contract()
     assert frozen["source_build_commit"] == "9e6c17e1e954aa6854afcc93dc72b64926316fd1"
     assert frozen["input_bindings"] == subject.X.ATTEMPT_002_INPUT_BINDINGS
     assert frozen["cost_schedule_sha256"] == subject.B.canonical_sha256(
@@ -226,7 +229,7 @@ def test_draft_freezes_same_strategy_build_data_windows_costs_and_gates() -> Non
         subject.X.MERIT_GATES
     )
     assert frozen["ea_ex5_set_data_parameters_windows_costs_and_gates_unchanged"] is True
-    assert draft["supersession"]["new_namespace_is_separate_analysis_not_attempt003"] is True
+    assert contract["supersession"]["new_namespace_is_separate_analysis_not_attempt003"] is True
 
 
 def test_plan_is_only_new_namespace_and_still_t1_model4_two_duplicates(
