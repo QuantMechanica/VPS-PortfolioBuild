@@ -2550,6 +2550,25 @@ def _authorization_consumption_path(
     return _assert_control_path_layout(path, "authorization_consumption")
 
 
+def _assert_authorization_binding(
+    authorization: Mapping[str, Any], helper_sha256: str
+) -> None:
+    envelope = _require_exact_fields(
+        authorization,
+        {"binding", "payload"},
+        "authorization envelope",
+        AuthorizationError,
+    )
+    binding = _validate_binding_shape(
+        envelope["binding"], "authorization binding", AuthorizationError
+    )
+    auth_path = _assert_control_path_layout(
+        Path(str(binding["path"])), "authorization"
+    )
+    _assert_control_file(auth_path, helper_sha256)
+    assert_binding(binding, "launch authorization")
+
+
 def _authorization_consumption_payload(
     authorization: Mapping[str, Any],
     pre_path: Path,
@@ -2560,6 +2579,7 @@ def _authorization_consumption_payload(
     *,
     created_utc: str | None = None,
 ) -> dict[str, Any]:
+    pre_path = _assert_control_path_layout(pre_path, "pre_receipt")
     state_path = _assert_control_path_layout(state_path, "state")
     job_path = _assert_control_path_layout(job_path, "job", state_path)
     return {
@@ -2611,6 +2631,7 @@ def _validate_authorization_consumption_payload(
         type(payload["schema_version"]) is not int
         or type(payload["launcher_revision"]) is not int
         or type(payload["created_utc"]) is not str
+        or not payload["created_utc"].endswith("+00:00")
         or type(payload["pre_receipt_sha256"]) is not str
         or type(payload["run_id"]) is not str
         or type(payload["state_path"]) is not str
@@ -2638,6 +2659,7 @@ def _consume_authorization(
 ) -> dict[str, Any]:
     """Publish once, or recover only the exact launch previously selected."""
 
+    _assert_authorization_binding(authorization, helper_sha256)
     consumption_path = _authorization_consumption_path(authorization)
     _assert_control_directory(consumption_path.parent, helper_sha256)
     expected = _authorization_consumption_payload(
@@ -2667,6 +2689,7 @@ def _consume_authorization(
     _assert_control_file(consumption_path, helper_sha256)
     if file_binding(consumption_path) != binding:
         raise AuthorizationError("authorization consumption bytes changed during validation")
+    _assert_authorization_binding(authorization, helper_sha256)
     return {"binding": binding, "payload": payload}
 
 
@@ -2680,6 +2703,7 @@ def _assert_authorization_consumption(
     task_name: str,
     helper_sha256: str,
 ) -> None:
+    _assert_authorization_binding(authorization, helper_sha256)
     envelope = _require_exact_fields(
         envelope,
         {"binding", "payload"},
@@ -2707,6 +2731,7 @@ def _assert_authorization_consumption(
         task_name,
     )
     assert_binding(binding, "authorization consumption post-validation reassertion")
+    _assert_authorization_binding(authorization, helper_sha256)
 
 
 def runner_command(pre: Mapping[str, Any], cell: Mapping[str, Any]) -> list[str]:
@@ -3360,11 +3385,24 @@ def _validate_launch_job(
         or re.fullmatch(r"[0-9a-f]{64}", str(job.get("pre_receipt_sha256", ""))) is None
         or not isinstance(job.get("authorization"), Mapping)
         or not isinstance(job.get("authorization_consumption"), Mapping)
+        or set(job["authorization_consumption"]) != {"binding", "payload"}
+        or not isinstance(job["authorization_consumption"].get("payload"), Mapping)
         or not isinstance(job.get("tool"), Mapping)
         or not isinstance(job.get("scheduler"), Mapping)
     ):
         raise AuthorizationError("persisted launch job exact field types drift")
+    _validate_binding_shape(
+        job["authorization_consumption"].get("binding"),
+        "authorization consumption binding",
+        AuthorizationError,
+    )
     parse_utc(str(job["created_utc"]), "launch job created_utc")
+    consumed_utc = parse_utc(
+        str(job["authorization_consumption"]["payload"].get("created_utc", "")),
+        "authorization consumption created_utc",
+    )
+    if consumed_utc > parse_utc(str(job["created_utc"]), "launch job created_utc"):
+        raise AuthorizationError("launch job predates authorization consumption")
     if not expected_scheduler["principal_sid"].startswith("S-1-"):
         raise AuthorizationError("persisted launch job principal SID is malformed")
     if not required_controller_timeout(pre) <= controller_timeout <= 172800:
@@ -4047,6 +4085,13 @@ def launch_detached(
     _ensure_authorization_global_lock(control_helper_sha256)
     response_status: str
     with _authorization_global_lock():
+        locked_authorization = validate_authorization(
+            authorization_path, pre_sha256, pre
+        )
+        if locked_authorization != authorization:
+            raise AuthorizationError(
+                "launch authorization changed before global consumption"
+            )
         authorization_consumption = _consume_authorization(
             authorization,
             pre_path,
@@ -4090,6 +4135,9 @@ def launch_detached(
                 if state.get("job") != file_binding(job_path):
                     raise AuthorizationError("resume state/job byte binding drift")
                 _assert_resume_outcome_fence(state, job, state_path)
+                _assert_authorization_binding(
+                    authorization, control_helper_sha256
+                )
                 _scheduler_call(pre, "Register", job)
                 inspected = _scheduler_call(pre, "Inspect", job)
                 if inspected.get("state") == "Running":
@@ -4107,6 +4155,9 @@ def launch_detached(
                     _atomic_control_json(
                         state_path, pending, helper_sha256=control_helper_sha256
                     )
+                _assert_authorization_binding(
+                    authorization, control_helper_sha256
+                )
                 started = _scheduler_call(pre, "Start", job)
                 response_status = "RESUMED_PERSISTED_TASK"
                 job_sha = sha256_file(job_path)
@@ -4204,7 +4255,13 @@ def launch_detached(
                     replace=False,
                     helper_sha256=control_helper_sha256,
                 )
+                _assert_authorization_binding(
+                    authorization, control_helper_sha256
+                )
                 _scheduler_call(pre, "Register", job)
+                _assert_authorization_binding(
+                    authorization, control_helper_sha256
+                )
                 started = _scheduler_call(pre, "Start", job)
                 response_status = "LAUNCHED_PERSISTED_TASK"
     observed, _observed_binding = _locked_launch_state_snapshot(
