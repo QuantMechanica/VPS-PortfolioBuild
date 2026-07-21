@@ -3377,84 +3377,105 @@ def launch_detached(
     task_limit = required_scheduled_task_timeout(pre, controller_timeout_seconds)
     state_path = state_path.resolve()
     job_path = state_path.with_name("launch_job.json")
-
-    if resume:
-        if not state_path.is_file() or not job_path.is_file():
-            raise AuthorizationError("resume requires the existing state and immutable job")
-        job = load_json(job_path)
-        state = load_json(state_path)
-        _validate_launch_job(job, pre, pre_path, pre_sha256, state_path)
-        if job.get("authorization") != authorization:
-            raise AuthorizationError("resume authorization differs from the immutable launch job")
-        if state.get("job") != file_binding(job_path):
-            raise AuthorizationError("resume state/job byte binding drift")
-        _assert_resume_outcome_fence(state, job, state_path)
-        _scheduler_call(pre, "Register", job)
-        inspected = _scheduler_call(pre, "Inspect", job)
-        if inspected.get("state") == "Running":
-            raise AuthorizationError("persisted audit task is still running")
-        state["status"] = "PENDING_RESUME"
-        state["worker_pid"] = None
-        state["resume_count"] = int(state.get("resume_count", 0)) + 1
-        state["updated_utc"] = utc_now()
-        _validate_launch_state_shape(state)
-        atomic_json(state_path, state)
-        started = _scheduler_call(pre, "Start", job)
-        observed = load_json(state_path)
-        return {
-            "status": "RESUMED_PERSISTED_TASK",
-            "task_name": job["scheduler"]["task_name"],
-            "scheduler_state": started.get("state"),
-            "worker_pid": observed.get("worker_pid"),
-            "job_path": str(job_path),
-            "job_sha256": sha256_file(job_path),
-            "state_path": str(state_path),
-            "plan_sha256": pre["plan"]["plan_sha256"],
-        }
-
-    if state_path.exists():
-        raise AuthorizationError(f"refusing to replace launch state: {state_path}")
-    if job_path.exists():
-        raise AuthorizationError(f"refusing to replace launch job: {job_path}")
-    identity = _scheduler_call(pre, "Identity")
-    task_name = scheduled_task_name(pre_sha256, state_path)
-    job = {
-        "schema_version": SCHEMA_VERSION,
-        "launcher_revision": LAUNCHER_REVISION,
-        "artifact_type": "QM5_20002_SHORT_NY_LAUNCH_JOB",
-        "analysis_id": ANALYSIS_ID,
-        "created_utc": utc_now(),
-        "pre_receipt_path": str(pre_path.resolve()),
-        "pre_receipt_sha256": pre_sha256.lower(),
-        "authorization": authorization,
-        "state_path": str(state_path),
-        "controller_timeout_seconds": controller_timeout_seconds,
-        "plan_sha256": pre["plan"]["plan_sha256"],
-        "tool": pre["tool"],
-        "dev1_runs_before_launch": _dev1_run_inventory(),
-        "scheduler": {
-            "mode": "WINDOWS_TASK_SCHEDULER_S4U_ON_DEMAND",
-            "task_name": task_name,
-            "task_path": "\\",
-            "principal_sid": identity["principal_sid"],
-            "logon_type": "S4U",
-            "run_level": "Highest",
-            "multiple_instances": "IgnoreNew",
-            "execution_limit_seconds": task_limit,
-            "helper": pre["runtime"]["scheduled_task_helper"],
-            "python": pre["runtime"]["python_binary"],
-        },
-    }
-    _validate_launch_job(job, pre, pre_path, pre_sha256, state_path)
-    job_sha = atomic_json(job_path, job, replace=False)
-    state = _initial_launch_state(pre_path, pre_sha256, file_binding(job_path), job)
-    _validate_launch_state_shape(state)
-    atomic_json(state_path, state, replace=False)
-    _scheduler_call(pre, "Register", job)
-    started = _scheduler_call(pre, "Start", job)
-    observed = load_json(state_path)
+    response_status: str
+    with _launch_state_lock(state_path):
+        if resume:
+            if not state_path.is_file() or not job_path.is_file():
+                raise AuthorizationError("resume requires the existing state and immutable job")
+            job = load_strict_json(job_path, "launch job")
+            state, state_sha = _load_launch_state_snapshot(state_path)
+            _validate_launch_job(job, pre, pre_path, pre_sha256, state_path)
+            if job.get("authorization") != authorization:
+                raise AuthorizationError("resume authorization differs from the immutable launch job")
+            if state.get("job") != file_binding(job_path):
+                raise AuthorizationError("resume state/job byte binding drift")
+            _assert_resume_outcome_fence(state, job, state_path)
+            _scheduler_call(pre, "Register", job)
+            inspected = _scheduler_call(pre, "Inspect", job)
+            if inspected.get("state") == "Running":
+                raise AuthorizationError("persisted audit task is still running")
+            rechecked, rechecked_sha = _load_launch_state_snapshot(state_path)
+            if rechecked_sha != state_sha or canonical_bytes(rechecked) != canonical_bytes(state):
+                raise AuthorizationError("resume state changed across scheduler inspection")
+            if state["status"] != "PENDING_RESUME":
+                pending = copy.deepcopy(state)
+                pending["status"] = "PENDING_RESUME"
+                pending["worker_pid"] = None
+                pending["resume_count"] = int(state["resume_count"]) + 1
+                pending["updated_utc"] = utc_now()
+                _validate_launch_state_shape(pending)
+                atomic_json(state_path, pending)
+            started = _scheduler_call(pre, "Start", job)
+            response_status = "RESUMED_PERSISTED_TASK"
+            task_name = str(job["scheduler"]["task_name"])
+            job_sha = sha256_file(job_path)
+        else:
+            if state_path.exists():
+                raise AuthorizationError(f"refusing to replace launch state: {state_path}")
+            identity = _scheduler_call(pre, "Identity")
+            if job_path.exists():
+                # A crash after immutable job publication but before state creation
+                # is the sole recoverable PREPARED form.  Prove that no scheduler,
+                # worker, or DEV1 side effect occurred before synthesizing state.
+                job = load_strict_json(job_path, "prepared launch job")
+                _validate_launch_job(job, pre, pre_path, pre_sha256, state_path)
+                if job.get("authorization") != authorization:
+                    raise AuthorizationError("prepared launch authorization drift")
+                if job["scheduler"].get("principal_sid") != identity.get("principal_sid"):
+                    raise AuthorizationError("prepared launch scheduler identity drift")
+                work_root = state_path.parent / "worker"
+                if work_root.exists() and next(work_root.iterdir(), None) is not None:
+                    raise AuthorizationError("prepared launch has worker side effects")
+                if _dev1_run_inventory() != job.get("dev1_runs_before_launch"):
+                    raise AuthorizationError("prepared launch has DEV1 side effects")
+                probe = _scheduler_call(pre, "Probe", job)
+                if probe.get("exists") is not False:
+                    raise AuthorizationError("prepared launch already has scheduler side effects")
+                job_sha = sha256_file(job_path)
+            else:
+                task_name = scheduled_task_name(pre_sha256, state_path)
+                job = {
+                    "schema_version": SCHEMA_VERSION,
+                    "launcher_revision": LAUNCHER_REVISION,
+                    "artifact_type": "QM5_20002_SHORT_NY_LAUNCH_JOB",
+                    "analysis_id": ANALYSIS_ID,
+                    "created_utc": utc_now(),
+                    "pre_receipt_path": str(pre_path.resolve()),
+                    "pre_receipt_sha256": pre_sha256.lower(),
+                    "authorization": authorization,
+                    "state_path": str(state_path),
+                    "controller_timeout_seconds": controller_timeout_seconds,
+                    "plan_sha256": pre["plan"]["plan_sha256"],
+                    "tool": pre["tool"],
+                    "dev1_runs_before_launch": _dev1_run_inventory(),
+                    "scheduler": {
+                        "mode": "WINDOWS_TASK_SCHEDULER_S4U_ON_DEMAND",
+                        "task_name": task_name,
+                        "task_path": "\\",
+                        "principal_sid": identity["principal_sid"],
+                        "logon_type": "S4U",
+                        "run_level": "Highest",
+                        "multiple_instances": "IgnoreNew",
+                        "execution_limit_seconds": task_limit,
+                        "helper": pre["runtime"]["scheduled_task_helper"],
+                        "python": pre["runtime"]["python_binary"],
+                    },
+                }
+                _validate_launch_job(job, pre, pre_path, pre_sha256, state_path)
+                probe = _scheduler_call(pre, "Probe", job)
+                if probe.get("exists") is not False:
+                    raise AuthorizationError("new launch task name is already registered")
+                job_sha = atomic_json(job_path, job, replace=False)
+            state = _initial_launch_state(pre_path, pre_sha256, file_binding(job_path), job)
+            _validate_launch_state_shape(state)
+            atomic_json(state_path, state, replace=False)
+            _scheduler_call(pre, "Register", job)
+            started = _scheduler_call(pre, "Start", job)
+            response_status = "LAUNCHED_PERSISTED_TASK"
+            task_name = str(job["scheduler"]["task_name"])
+    observed = load_strict_json(state_path, "launch state")
     return {
-        "status": "LAUNCHED_PERSISTED_TASK",
+        "status": response_status,
         "task_name": task_name,
         "scheduler_state": started.get("state"),
         "worker_pid": observed.get("worker_pid"),
