@@ -754,7 +754,7 @@ def _validate_process_evidence(
         or evidence.get("stable_snapshot_count") != 2
         or evidence.get("process_probe_method") != PROCESS_PROBE_METHOD
         or not isinstance(evidence.get("relevant_process_identity_sha256"), str)
-        or HEX64.fullmatch(str(evidence["relevant_process_identity_sha256"])) is None
+        or HEX64.fullmatch(evidence["relevant_process_identity_sha256"]) is None
     ):
         raise ClosureError(f"{label} process evidence is not exact and command-line-free")
 
@@ -1456,6 +1456,7 @@ def _assert_historical_pre_receipt(
         type(expected_schema) is not int
         or type(expected_analysis) is not str
         or type(expected_contract_commit) is not str
+        or type(pre.get("schema_version")) is not int
         or pre.get("schema_version") != expected_schema
         or pre.get("artifact_type") != "QM5_20002_SHORT_NY_PRE_RECEIPT"
         or pre.get("status") != "PASS"
@@ -1708,7 +1709,7 @@ def _validate_binding_object(
         or type(value.get("size")) is not int
         or value.get("size", -1) < 0
         or type(value.get("sha256")) is not str
-        or HEX64.fullmatch(str(value.get("sha256", ""))) is None
+        or HEX64.fullmatch(value.get("sha256", "")) is None
         or dict(value) != dict(expected)
     ):
         raise ClosureError(f"{label} exact value drift")

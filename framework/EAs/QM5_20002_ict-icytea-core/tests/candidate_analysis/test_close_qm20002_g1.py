@@ -997,7 +997,14 @@ def test_mutated_receipt_is_never_accepted_as_already_closed(
 
 @pytest.mark.parametrize(
     "mutation",
-    ["task_name", "outcome_transition", "ready_helper", "extra_ready_evidence"],
+    [
+        "task_name",
+        "outcome_transition",
+        "transition_resume_bool",
+        "schema_bool",
+        "ready_helper",
+        "extra_ready_evidence",
+    ],
 )
 def test_mutated_after_intent_is_rejected_before_task_or_state_mutation(
     tmp_path: Path, mutation: str
@@ -1025,6 +1032,10 @@ def test_mutated_after_intent_is_rejected_before_task_or_state_mutation(
         intent["task"]["task_name"] = "QM_QM20002_AUDIT_" + "0" * 24
     elif mutation == "outcome_transition":
         intent["expected_transition"]["outcome_fence_crossed"] = True
+    elif mutation == "transition_resume_bool":
+        intent["expected_transition"]["state_resume_count_before"] = False
+    elif mutation == "schema_bool":
+        intent["schema_version"] = True
     elif mutation == "ready_helper":
         intent["task"]["ready_probe"]["helper_sha256"] = "0" * 64
     else:
@@ -1412,11 +1423,16 @@ def test_receipt_recomputed_absence_wrapper_cannot_replace_fresh_probe(
 
 
 @pytest.mark.parametrize(
-    "terminal_field",
-    ["task_contract_sha256", "disabled_task_xml_sha256", "quiesced_evidence_sha256"],
+    "mutation",
+    [
+        "task_contract_sha256",
+        "disabled_task_xml_sha256",
+        "quiesced_evidence_sha256",
+        "resume_count_bool",
+    ],
 )
 def test_post_unregister_final_state_rewrite_is_rejected_by_intent_or_anchor(
-    tmp_path: Path, terminal_field: str
+    tmp_path: Path, mutation: str
 ) -> None:
     contract, fake_auditor, task, utility_sha, helper_sha = make_fixture(tmp_path)
 
@@ -1438,14 +1454,17 @@ def test_post_unregister_final_state_rewrite_is_rejected_by_intent_or_anchor(
         )
     assert task.exists is False
     state = json.loads(contract.state_path.read_text(encoding="utf-8"))
-    error, count = __import__("re").subn(
-        rf"({terminal_field}=)[^;]+",
-        rf"\g<1>{'f' * 64}",
-        state["terminal"]["error"],
-        count=1,
-    )
-    assert count == 1
-    state["terminal"]["error"] = error
+    if mutation == "resume_count_bool":
+        state["resume_count"] = False
+    else:
+        error, count = __import__("re").subn(
+            rf"({mutation}=)[^;]+",
+            rf"\g<1>{'f' * 64}",
+            state["terminal"]["error"],
+            count=1,
+        )
+        assert count == 1
+        state["terminal"]["error"] = error
     write_json(contract.state_path, state)
     with pytest.raises(closure.ClosureError):
         invoke_fixture(contract, fake_auditor, task, utility_sha, helper_sha)
@@ -1498,6 +1517,18 @@ def test_mutated_quiescence_anchor_is_rejected_before_unregister(
             "trigger_bool",
         ),
         (
+            "preterminal_probe_payload_b64",
+            "preterminal_probe_sha256",
+            "preterminal_payload",
+            "last_result_bool",
+        ),
+        (
+            "preterminal_probe_payload_b64",
+            "preterminal_probe_sha256",
+            "preterminal_payload",
+            "xml_hash_int",
+        ),
+        (
             "quiesce_transition_probe_payload_b64",
             "quiesce_transition_probe_sha256",
             "quiesce_payload",
@@ -1508,6 +1539,12 @@ def test_mutated_quiescence_anchor_is_rejected_before_unregister(
             "quiesce_transition_probe_sha256",
             "quiesce_payload",
             "action_bool",
+        ),
+        (
+            "quiesce_transition_probe_payload_b64",
+            "quiesce_transition_probe_sha256",
+            "quiesce_payload",
+            "after_xml",
         ),
     ],
 )
@@ -1548,8 +1585,14 @@ def test_rehashed_embedded_probe_semantic_mutation_is_rejected(
         probe["before"]["task_xml_sha256"] = "f" * 64
     elif mutation == "trigger_bool":
         probe["evidence"]["non_null_trigger_count"] = False
-    else:
+    elif mutation == "last_result_bool":
+        probe["evidence"]["last_task_result"] = True
+    elif mutation == "xml_hash_int":
+        probe["evidence"]["task_xml_sha256"] = int("1" * 64)
+    elif mutation == "action_bool":
         probe["after"]["non_null_action_count"] = True
+    else:
+        probe["after"]["task_xml_sha256"] = "f" * 64
     replacements = {
         payload_field: closure.canonical_b64(probe),
         sha_field: closure.canonical_sha256(probe),
