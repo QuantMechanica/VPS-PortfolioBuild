@@ -1,0 +1,37 @@
+{
+  "recorded_at": "2026-07-21T06:45:05+02:00",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 forex sleeves with market-neutral FX cointegration baskets",
+  "frontier": {
+    "scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "strict_survivor_count": 2,
+    "unbuilt_strict_survivor_count": 0,
+    "qm5_12532": {
+      "pair": ["AUDUSD.DWX", "NZDUSD.DWX"],
+      "latest_path": ["Q02_PASS", "Q04_PASS", "Q05_FAIL"]
+    },
+    "qm5_12533": {
+      "pair": ["EURJPY.DWX", "GBPJPY.DWX"],
+      "latest_path": ["Q02_PASS", "Q04_FAIL"]
+    },
+    "qm5_13029": {
+      "pair": ["GBPCAD.DWX", "GBPNZD.DWX"],
+      "latest_path": ["Q02_PASS", "Q03_PASS", "Q04_FAIL"]
+    }
+  },
+  "cpu_ceiling": {
+    "launch_gate_max": 1,
+    "snapshot_at": "2026-07-21T06:44:32+02:00",
+    "active_tester_terminals": ["T2", "T3", "T4", "T8", "T10"],
+    "active_tester_count": 5,
+    "ceiling_hit": true
+  },
+  "action": "STOP_WITHOUT_ENQUEUE",
+  "mutations": {
+    "farm_queue": false,
+    "mt5_processes": false,
+    "t_live": false,
+    "autotrading": false,
+    "portfolio_gate": false
+  }
+}
