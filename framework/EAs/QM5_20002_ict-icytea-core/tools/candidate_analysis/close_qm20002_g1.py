@@ -2267,6 +2267,11 @@ def close_g1(
             _assert_no_outcome_side_effects(contract)
             job_binding = chain["bindings"]["launch_job"]
             is_initial = state_binding["sha256"] == contract.state_before_sha256
+            if is_initial:
+                # Neither later-phase artifact may predate the first durable
+                # terminal transition, including recovery from after_intent.
+                control_call(contract, "AssertAbsentFile", contract.anchor_path)
+                control_call(contract, "AssertAbsentFile", contract.receipt_path)
 
             if contract.intent_path.exists():
                 control_call(contract, "AssertFile", contract.intent_path)
@@ -2367,6 +2372,89 @@ def close_g1(
                 auditor,
                 require_final=False,
             )
+            pending_anchor_present = False
+            if proof["phase"] == "QUIESCE_PENDING":
+                control_call(contract, "AssertAbsentFile", contract.receipt_path)
+                if contract.anchor_path.exists():
+                    control_call(contract, "AssertFile", contract.anchor_path)
+                    pending_anchor = load_strict_json(
+                        contract.anchor_path, "pending-phase quiescence anchor"
+                    )
+                    _validate_quiescence_anchor(
+                        contract,
+                        pending_anchor,
+                        chain,
+                        intent_binding,
+                        intent,
+                        auditor,
+                        expected_pending_state_binding=file_binding(
+                            contract.state_path
+                        ),
+                    )
+                    pending_anchor_present = True
+                else:
+                    control_call(
+                        contract, "AssertAbsentFile", contract.anchor_path
+                    )
+            else:
+                control_call(contract, "AssertFile", contract.anchor_path)
+                final_anchor, final_anchor_binding = (
+                    _load_and_validate_final_anchor(
+                        contract,
+                        proof,
+                        chain,
+                        intent_binding,
+                        intent,
+                        auditor,
+                    )
+                )
+                if contract.receipt_path.exists():
+                    control_call(contract, "AssertFile", contract.receipt_path)
+                    early_absent = task_call(
+                        contract,
+                        job,
+                        pre,
+                        helper_sha,
+                        "ProbeAbsent",
+                        allow_observed_start_race=(
+                            proof["start_race"] == "true"
+                        ),
+                    )
+                    _validate_absent_probe(
+                        early_absent,
+                        contract,
+                        expected_helper_sha256=helper_sha,
+                        expected_start_race=(proof["start_race"] == "true"),
+                    )
+                    receipt = load_strict_json(
+                        contract.receipt_path, "existing closure receipt"
+                    )
+                    state_after_binding = file_binding(contract.state_path)
+                    _validate_receipt(
+                        contract,
+                        receipt,
+                        chain,
+                        intent_binding,
+                        intent,
+                        state_after_binding,
+                        final_anchor_binding,
+                        proof,
+                        early_absent,
+                    )
+                    receipt_binding = file_binding(contract.receipt_path)
+                    return {
+                        "status": "ALREADY_CLOSED",
+                        "reason_code": REASON_CODE,
+                        "closure_intent": intent_binding,
+                        "quiescence_anchor": final_anchor_binding,
+                        "closure_receipt": receipt_binding,
+                        "launch_state": state_after_binding,
+                        "task_absent": True,
+                        "outcome_fence_crossed": False,
+                        "no_resume": True,
+                        "outcome_data_read": False,
+                    }
+                control_call(contract, "AssertAbsentFile", contract.receipt_path)
             if proof["phase"] == "QUIESCE_PENDING":
                 task_contract_sha = str(intent["task"]["task_contract_sha256"])
                 try:
@@ -2387,7 +2475,7 @@ def close_g1(
                     # The exact task may have entered Running after the
                     # preliminary REJECT.  Quiesce still must disable it.
                     pass
-                if proof["quiesce"] == "NONE":
+                if proof["quiesce"] == "NONE" and not pending_anchor_present:
                     try:
                         quiesce = task_call(
                             contract,
@@ -2762,6 +2850,7 @@ def close_g1(
         "status": status,
         "reason_code": REASON_CODE,
         "closure_intent": intent_binding,
+        "quiescence_anchor": anchor_binding,
         "closure_receipt": receipt_binding,
         "launch_state": state_after_binding,
         "task_absent": True,

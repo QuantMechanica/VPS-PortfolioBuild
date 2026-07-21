@@ -799,7 +799,7 @@ def test_final_state_rejects_quiesced_never_run_race_mismatch(
     }
     with pytest.raises(
         closure.ClosureError,
-        match="quiesced evidence/start-race disposition drift",
+        match="race disposition drift",
     ):
         closure._final_closed_state(
             state,
@@ -1225,3 +1225,416 @@ def test_non_preterminal_ready_probe_rejects_nonzero_dev1_inventory(
             expected_helper_sha256=helper_sha,
             expected_principal_sid="S-1-5-21-1",
         )
+
+
+def test_quiesce_only_start_race_is_durable_before_crash_and_recovery(
+    tmp_path: Path,
+) -> None:
+    contract, fake_auditor, task, utility_sha, helper_sha = make_fixture(tmp_path)
+    task.started_race = True
+
+    class StopAfterQuiesce(RuntimeError):
+        pass
+
+    with pytest.raises(StopAfterQuiesce):
+        invoke_fixture(
+            contract,
+            fake_auditor,
+            task,
+            utility_sha,
+            helper_sha,
+            crash_hook=lambda point: (
+                (_ for _ in ()).throw(StopAfterQuiesce())
+                if point == "after_quiesce"
+                else None
+            ),
+        )
+    pending = json.loads(contract.state_path.read_text(encoding="utf-8"))
+    proof = closure._terminal_proof(
+        pending, bind(contract.intent_path)["sha256"]
+    )
+    assert proof["phase"] == "QUIESCE_PENDING"
+    assert proof["start_race"] == "true"
+    assert proof["quiesce"] != "NONE"
+    quiesce_probe = closure.decode_canonical_b64(
+        proof["quiesce_payload"], "test quiesce transition"
+    )
+    assert quiesce_probe["operation"] == "Quiesce"
+    assert quiesce_probe["start_race_observed"] is True
+    assert closure.canonical_sha256(quiesce_probe) == proof["quiesce"]
+    assert not contract.anchor_path.exists()
+    assert not contract.receipt_path.exists()
+
+    result = invoke_fixture(
+        contract, fake_auditor, task, utility_sha, helper_sha
+    )
+    assert result["status"] == "CLOSED"
+    receipt = json.loads(contract.receipt_path.read_text(encoding="utf-8"))
+    assert receipt["launch_state"]["task_start_race_observed"] is True
+    assert receipt["scheduled_task"]["absent_probe"][
+        "matching_worker_process_count_basis"
+    ] == closure.ABSENT_START_RACE_BASIS
+
+
+def test_quiesce_race_cannot_be_forgotten_by_await_or_poison_anchor(
+    tmp_path: Path,
+) -> None:
+    contract, fake_auditor, task, utility_sha, helper_sha = make_fixture(tmp_path)
+    task.started_race = True
+    task.await_forgets_start_race = True
+    with pytest.raises(closure.ClosureError, match="race disposition drift"):
+        invoke_fixture(contract, fake_auditor, task, utility_sha, helper_sha)
+    pending = json.loads(contract.state_path.read_text(encoding="utf-8"))
+    proof = closure._terminal_proof(
+        pending, bind(contract.intent_path)["sha256"]
+    )
+    assert proof["phase"] == "QUIESCE_PENDING"
+    assert proof["start_race"] == "true"
+    assert proof["quiesce"] != "NONE"
+    assert task.exists is True
+    assert task.enabled is False
+    assert not contract.anchor_path.exists()
+    assert not contract.receipt_path.exists()
+
+
+def test_recovery_after_disable_side_effect_before_quiesce_proof_publication(
+    tmp_path: Path,
+) -> None:
+    contract, fake_auditor, task, utility_sha, helper_sha = make_fixture(tmp_path)
+    task.crash_after_quiesce_side_effect_once = True
+    with pytest.raises(RuntimeError, match="after Disable-ScheduledTask"):
+        invoke_fixture(contract, fake_auditor, task, utility_sha, helper_sha)
+    pending = json.loads(contract.state_path.read_text(encoding="utf-8"))
+    proof = closure._terminal_proof(
+        pending, bind(contract.intent_path)["sha256"]
+    )
+    assert proof["phase"] == "QUIESCE_PENDING"
+    assert proof["quiesce"] == "NONE"
+    assert task.enabled is False
+    assert task.exists is True
+
+    result = invoke_fixture(
+        contract, fake_auditor, task, utility_sha, helper_sha
+    )
+    assert result["status"] == "CLOSED"
+    anchor = json.loads(contract.anchor_path.read_text(encoding="utf-8"))
+    anchored_pending = anchor["pending_state_payload"]
+    anchored_proof = closure._terminal_proof(
+        anchored_pending, bind(contract.intent_path)["sha256"]
+    )
+    recovered_quiesce = closure.decode_canonical_b64(
+        anchored_proof["quiesce_payload"], "recovered quiesce transition"
+    )
+    assert recovered_quiesce["before"]["state"] == "Disabled"
+    assert recovered_quiesce["before"]["enabled"] is False
+    assert task.exists is False
+
+
+@pytest.mark.parametrize("expected_start_race", [False, True])
+def test_absence_probe_basis_is_exactly_race_aware(
+    tmp_path: Path, expected_start_race: bool
+) -> None:
+    contract, _fake_auditor, _task, _utility_sha, helper_sha = make_fixture(
+        tmp_path
+    )
+    probe = {
+        "operation": "ProbeAbsent",
+        "helper_sha256": helper_sha,
+        "task_name": contract.task_name,
+        "task_path": "\\",
+        "absent": True,
+        **process_fields(),
+    }
+    expected_basis = (
+        closure.ABSENT_START_RACE_BASIS
+        if expected_start_race
+        else closure.ABSENT_NEVER_RUN_BASIS
+    )
+    probe["matching_worker_process_count_basis"] = expected_basis
+    closure._validate_absent_probe(
+        probe,
+        contract,
+        expected_helper_sha256=helper_sha,
+        expected_start_race=expected_start_race,
+    )
+    probe["matching_worker_process_count_basis"] = (
+        closure.ABSENT_NEVER_RUN_BASIS
+        if expected_start_race
+        else closure.ABSENT_START_RACE_BASIS
+    )
+    with pytest.raises(closure.ClosureError, match="absence proof envelope drift"):
+        closure._validate_absent_probe(
+            probe,
+            contract,
+            expected_helper_sha256=helper_sha,
+            expected_start_race=expected_start_race,
+        )
+
+
+def test_receipt_recomputed_absence_wrapper_cannot_replace_fresh_probe(
+    tmp_path: Path,
+) -> None:
+    contract, fake_auditor, task, utility_sha, helper_sha = make_fixture(tmp_path)
+    invoke_fixture(contract, fake_auditor, task, utility_sha, helper_sha)
+    receipt = json.loads(contract.receipt_path.read_text(encoding="utf-8"))
+    absent = receipt["scheduled_task"]["absent_probe"]
+    absent["relevant_process_identity_sha256"] = "f" * 64
+    receipt["scheduled_task"]["absent_probe_sha256"] = closure.canonical_sha256(
+        absent
+    )
+    write_json(contract.receipt_path, receipt)
+    with pytest.raises(
+        closure.ClosureError, match="absence proof differs from fresh proof"
+    ):
+        invoke_fixture(contract, fake_auditor, task, utility_sha, helper_sha)
+
+
+@pytest.mark.parametrize(
+    "terminal_field",
+    ["task_contract_sha256", "disabled_task_xml_sha256", "quiesced_evidence_sha256"],
+)
+def test_post_unregister_final_state_rewrite_is_rejected_by_intent_or_anchor(
+    tmp_path: Path, terminal_field: str
+) -> None:
+    contract, fake_auditor, task, utility_sha, helper_sha = make_fixture(tmp_path)
+
+    class StopAfterUnregister(RuntimeError):
+        pass
+
+    with pytest.raises(StopAfterUnregister):
+        invoke_fixture(
+            contract,
+            fake_auditor,
+            task,
+            utility_sha,
+            helper_sha,
+            crash_hook=lambda point: (
+                (_ for _ in ()).throw(StopAfterUnregister())
+                if point == "after_unregister"
+                else None
+            ),
+        )
+    assert task.exists is False
+    state = json.loads(contract.state_path.read_text(encoding="utf-8"))
+    error, count = __import__("re").subn(
+        rf"({terminal_field}=)[^;]+",
+        rf"\g<1>{'f' * 64}",
+        state["terminal"]["error"],
+        count=1,
+    )
+    assert count == 1
+    state["terminal"]["error"] = error
+    write_json(contract.state_path, state)
+    with pytest.raises(closure.ClosureError):
+        invoke_fixture(contract, fake_auditor, task, utility_sha, helper_sha)
+    assert not contract.receipt_path.exists()
+
+
+def test_mutated_quiescence_anchor_is_rejected_before_unregister(
+    tmp_path: Path,
+) -> None:
+    contract, fake_auditor, task, utility_sha, helper_sha = make_fixture(tmp_path)
+
+    class StopAfterState(RuntimeError):
+        pass
+
+    with pytest.raises(StopAfterState):
+        invoke_fixture(
+            contract,
+            fake_auditor,
+            task,
+            utility_sha,
+            helper_sha,
+            crash_hook=lambda point: (
+                (_ for _ in ()).throw(StopAfterState())
+                if point == "after_state"
+                else None
+            ),
+        )
+    anchor = json.loads(contract.anchor_path.read_text(encoding="utf-8"))
+    anchor["task"]["disabled_task_xml_sha256"] = "f" * 64
+    write_json(contract.anchor_path, anchor)
+    with pytest.raises(closure.ClosureError):
+        invoke_fixture(contract, fake_auditor, task, utility_sha, helper_sha)
+    assert task.exists is True
+    assert not contract.receipt_path.exists()
+
+
+@pytest.mark.parametrize(
+    ("payload_field", "sha_field", "group_name"),
+    [
+        ("preterminal_probe_payload_b64", "preterminal_probe_sha256", "preterminal_payload"),
+        ("quiesce_transition_probe_payload_b64", "quiesce_transition_probe_sha256", "quiesce_payload"),
+    ],
+)
+def test_rehashed_embedded_probe_semantic_mutation_is_rejected(
+    tmp_path: Path, payload_field: str, sha_field: str, group_name: str
+) -> None:
+    contract, fake_auditor, task, utility_sha, helper_sha = make_fixture(tmp_path)
+
+    class StopAfterQuiesce(RuntimeError):
+        pass
+
+    with pytest.raises(StopAfterQuiesce):
+        invoke_fixture(
+            contract,
+            fake_auditor,
+            task,
+            utility_sha,
+            helper_sha,
+            crash_hook=lambda point: (
+                (_ for _ in ()).throw(StopAfterQuiesce())
+                if point == "after_quiesce"
+                else None
+            ),
+        )
+    state = json.loads(contract.state_path.read_text(encoding="utf-8"))
+    match = closure.TERMINAL_PENDING_ERROR.fullmatch(state["terminal"]["error"])
+    assert match is not None
+    probe = closure.decode_canonical_b64(
+        match.group(group_name), "probe selected for semantic mutation"
+    )
+    probe["task_name"] = "QM_QM20002_AUDIT_" + "0" * 24
+    replacements = {
+        payload_field: closure.canonical_b64(probe),
+        sha_field: closure.canonical_sha256(probe),
+    }
+    error = state["terminal"]["error"]
+    for field, value in replacements.items():
+        error, count = __import__("re").subn(
+            rf"({field}=)[^;]+", rf"\g<1>{value}", error, count=1
+        )
+        assert count == 1
+    state["terminal"]["error"] = error
+    write_json(contract.state_path, state)
+    with pytest.raises(closure.ClosureError):
+        invoke_fixture(contract, fake_auditor, task, utility_sha, helper_sha)
+    assert task.exists is True
+    assert not contract.anchor_path.exists()
+    assert not contract.receipt_path.exists()
+
+
+@pytest.mark.parametrize("artifact_attribute", ["anchor_path", "receipt_path"])
+@pytest.mark.parametrize("existing_intent", [False, True])
+def test_pending_initial_state_rejects_later_phase_artifacts_before_mutation(
+    tmp_path: Path, artifact_attribute: str, existing_intent: bool
+) -> None:
+    contract, fake_auditor, task, utility_sha, helper_sha = make_fixture(tmp_path)
+    if existing_intent:
+        class StopAfterIntent(RuntimeError):
+            pass
+
+        with pytest.raises(StopAfterIntent):
+            invoke_fixture(
+                contract,
+                fake_auditor,
+                task,
+                utility_sha,
+                helper_sha,
+                crash_hook=lambda point: (
+                    (_ for _ in ()).throw(StopAfterIntent())
+                    if point == "after_intent"
+                    else None
+                ),
+            )
+    state_before = contract.state_path.read_bytes()
+    operation_count = len(task.operations)
+    write_json(getattr(contract, artifact_attribute), {"stale": True})
+    with pytest.raises(closure.ClosureError):
+        invoke_fixture(contract, fake_auditor, task, utility_sha, helper_sha)
+    assert contract.state_path.read_bytes() == state_before
+    assert len(task.operations) == operation_count
+    assert task.exists is True
+    assert task.enabled is True
+
+
+@pytest.mark.parametrize("artifact_attribute", ["anchor_path", "receipt_path"])
+def test_quiesce_pending_rejects_stale_later_phase_artifact_before_disable(
+    tmp_path: Path, artifact_attribute: str
+) -> None:
+    contract, fake_auditor, task, utility_sha, helper_sha = make_fixture(tmp_path)
+
+    class StopAfterPreliminary(RuntimeError):
+        pass
+
+    with pytest.raises(StopAfterPreliminary):
+        invoke_fixture(
+            contract,
+            fake_auditor,
+            task,
+            utility_sha,
+            helper_sha,
+            crash_hook=lambda point: (
+                (_ for _ in ()).throw(StopAfterPreliminary())
+                if point == "after_preliminary_state"
+                else None
+            ),
+        )
+    state_before = contract.state_path.read_bytes()
+    operation_count = len(task.operations)
+    write_json(getattr(contract, artifact_attribute), {"stale": True})
+    with pytest.raises(closure.ClosureError):
+        invoke_fixture(contract, fake_auditor, task, utility_sha, helper_sha)
+    assert contract.state_path.read_bytes() == state_before
+    assert len(task.operations) == operation_count
+    assert task.exists is True
+    assert task.enabled is True
+    assert not contract.receipt_path.exists() or artifact_attribute == "receipt_path"
+
+
+def test_closed_state_rejects_preexisting_receipt_before_unregister(
+    tmp_path: Path,
+) -> None:
+    contract, fake_auditor, task, utility_sha, helper_sha = make_fixture(tmp_path)
+
+    class StopAfterState(RuntimeError):
+        pass
+
+    with pytest.raises(StopAfterState):
+        invoke_fixture(
+            contract,
+            fake_auditor,
+            task,
+            utility_sha,
+            helper_sha,
+            crash_hook=lambda point: (
+                (_ for _ in ()).throw(StopAfterState())
+                if point == "after_state"
+                else None
+            ),
+        )
+    state_before = contract.state_path.read_bytes()
+    write_json(contract.receipt_path, {"stale": True})
+    with pytest.raises(closure.ClosureError):
+        invoke_fixture(contract, fake_auditor, task, utility_sha, helper_sha)
+    assert contract.state_path.read_bytes() == state_before
+    assert task.exists is True
+    assert task.enabled is False
+    assert "Unregister" not in task.operations
+
+
+def test_closed_state_requires_bound_anchor_before_unregister(tmp_path: Path) -> None:
+    contract, fake_auditor, task, utility_sha, helper_sha = make_fixture(tmp_path)
+
+    class StopAfterState(RuntimeError):
+        pass
+
+    with pytest.raises(StopAfterState):
+        invoke_fixture(
+            contract,
+            fake_auditor,
+            task,
+            utility_sha,
+            helper_sha,
+            crash_hook=lambda point: (
+                (_ for _ in ()).throw(StopAfterState())
+                if point == "after_state"
+                else None
+            ),
+        )
+    contract.anchor_path.unlink()
+    with pytest.raises(closure.ClosureError):
+        invoke_fixture(contract, fake_auditor, task, utility_sha, helper_sha)
+    assert task.exists is True
+    assert task.enabled is False
+    assert "Unregister" not in task.operations
