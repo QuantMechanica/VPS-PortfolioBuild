@@ -506,6 +506,57 @@ def test_runtime_fix001_contract_separates_materialization_not_native_attempt() 
     )
 
 
+def test_alt002_invalid_terminal_closure_consumes_one_shot_without_metatester_inference() -> None:
+    closure = subject.validate_alternate_invalid_terminal_closure()
+    assert closure["status"] == (
+        "ALT002_INVALID_TERMINAL_CLOSED_OUTCOME_BLIND_NO_FURTHER_ATTEMPTS"
+    )
+    consumption = closure["alternate_attempt"]["attempt_consumption"]
+    assert consumption["one_shot_attempt_002_consumed"] is True
+    assert consumption["native_controller_subprocess_started_and_completed"] is True
+    assert consumption["counting_boundary"] == (
+        "EXACT_DEV2_METATESTER_PROCESS_STARTED"
+    )
+    assert consumption["counting_boundary_directly_observed_from_permitted_evidence"] is False
+    assert consumption["exact_dev2_metatester_child_start"] == (
+        "NOT_ESTABLISHED_OUTCOME_BLIND"
+    )
+    assert consumption["further_attempts_forbidden"] is True
+    assert closure["terminal_disposition"]["remaining_attempt_budget"] == 0
+    assert closure["outcome_fence"]["strategy_merit_adjudicated"] is False
+
+
+def test_alt002_terminal_closure_rejects_metatester_or_retry_overclaim(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    saved_loader = subject.B.load_json
+    closure_lexical = subject.W._lexical_path(
+        subject.ALTERNATE_TERMINAL_CLOSURE_PATH
+    )
+
+    def drifted_loader(path: Path):
+        payload = saved_loader(path)
+        if subject.W._lexical_path(path) == closure_lexical:
+            payload = copy.deepcopy(payload)
+            consumption = payload["alternate_attempt"]["attempt_consumption"]
+            consumption["exact_dev2_metatester_child_start"] = "STARTED"
+            payload["terminal_disposition"]["retry_permitted"] = True
+        return payload
+
+    monkeypatch.setattr(subject.B, "load_json", drifted_loader)
+    with pytest.raises(subject.B.InvalidEvidence, match="attempt-consumption drift"):
+        subject.validate_alternate_invalid_terminal_closure()
+
+
+def test_alt002_terminal_validator_is_outcome_blind_and_never_runs_post() -> None:
+    source = inspect.getsource(subject.validate_alternate_invalid_terminal_closure)
+    assert ".read_text(" not in source
+    assert ".read_bytes(" not in source
+    assert "postflight(" not in source
+    assert "launch_detached(" not in source
+    assert "subprocess.run(" not in source
+
+
 def test_invalid_runtime_closure_rejects_any_claim_that_attempt_was_consumed(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

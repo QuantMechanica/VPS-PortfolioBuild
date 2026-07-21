@@ -115,6 +115,15 @@ EXPECTED_INVALID_RUNTIME_CLOSURE_SHA256 = (
 EXPECTED_RUNTIME_FIX_CONTRACT_SHA256 = (
     "878cae427b5f24f8b82ae72d1b4959527b5425d8501d8631e442157bf2bb45b2"
 )
+ALTERNATE_TERMINAL_CLOSURE_PATH = (
+    EA_ROOT
+    / "docs"
+    / "candidate-analysis"
+    / "ws30_alt002_invalid_terminal_closure_20260721.json"
+)
+EXPECTED_ALTERNATE_TERMINAL_CLOSURE_SHA256 = (
+    "f358071693c49a5a39761bda06ce79c2b657994605763b26685c6c2b6d668b74"
+)
 EXPECTED_DATA_RECEIPT_SIZE = 29800
 EXPECTED_DATA_RECEIPT_SHA256 = (
     "bd398f53d31e7c91667069e6b2c5b6ec466bb2630fb0934436a3b8f75aedd401"
@@ -1548,6 +1557,412 @@ def validate_primary_invalid_infra_closure() -> dict[str, Any]:
     }:
         raise B.InvalidEvidence("primary outcome fence drift")
     B.assert_binding(closure_binding, "primary invalid-infra closure receipt")
+    return closure
+
+
+def validate_alternate_invalid_terminal_closure() -> dict[str, Any]:
+    """Revalidate terminal ALT002 controls without opening logs or outcomes.
+
+    The exact DEV2 MetaTester-child counting boundary is intentionally not
+    inferred.  The persisted controller completion and outcome checkpoint do,
+    however, consume the preregistered one-shot control attempt and prohibit
+    every resume, retry, or third attempt independently of that child-process
+    observation.
+    """
+
+    closure_binding = B.file_binding(
+        ALTERNATE_TERMINAL_CLOSURE_PATH,
+        EXPECTED_ALTERNATE_TERMINAL_CLOSURE_SHA256,
+    )
+    if closure_binding["size"] != 8456:
+        raise B.InvalidEvidence("ALT002 terminal closure size drift")
+    closure = B.load_json(ALTERNATE_TERMINAL_CLOSURE_PATH)
+    if set(closure) != {
+        "schema_version",
+        "artifact_type",
+        "status",
+        "created_utc",
+        "analysis_id",
+        "candidate",
+        "governing_evidence",
+        "alternate_attempt",
+        "scheduled_task_terminal_probe",
+        "directory_metadata_closure",
+        "outcome_fence",
+        "terminal_disposition",
+    } or (
+        closure.get("schema_version") != 1
+        or closure.get("artifact_type")
+        != "QM5_10834_WS30_ALT002_INVALID_TERMINAL_CLOSURE"
+        or closure.get("status")
+        != "ALT002_INVALID_TERMINAL_CLOSED_OUTCOME_BLIND_NO_FURTHER_ATTEMPTS"
+        or closure.get("analysis_id") != ANALYSIS_ID
+    ):
+        raise B.InvalidEvidence("ALT002 terminal closure identity drift")
+    W._strict_created_utc(closure.get("created_utc"), "ALT002 terminal closure created_utc")
+    if closure.get("candidate") != {
+        "ea_id": "QM5_10834",
+        "research_symbol": RESEARCH_SYMBOL,
+        "timeframe": "M5",
+        "model": 4,
+        "duplicates_per_cell": 2,
+    }:
+        raise B.InvalidEvidence("ALT002 terminal candidate drift")
+
+    governing = closure.get("governing_evidence")
+    if not isinstance(governing, Mapping) or set(governing) != {
+        "alternate_contract",
+        "runtime_fix001_contract",
+        "runtime_fix001_materialization_receipt",
+    }:
+        raise B.InvalidEvidence("ALT002 terminal governing-evidence drift")
+    expected_governing = {
+        "alternate_contract": B.file_binding(
+            ALTERNATE_CONTRACT_PATH, EXPECTED_ALTERNATE_CONTRACT_SHA256
+        ),
+        "runtime_fix001_contract": B.file_binding(
+            RUNTIME_FIX_CONTRACT_PATH, EXPECTED_RUNTIME_FIX_CONTRACT_SHA256
+        ),
+        "runtime_fix001_materialization_receipt": B.file_binding(
+            RUNTIME_RECEIPT_PATH,
+            "3406906256538b82eeb24ec9362a77de1131fcf20231d28b1f2f0e18511b96c5",
+        ),
+    }
+    if governing != expected_governing or expected_governing[
+        "runtime_fix001_materialization_receipt"
+    ]["size"] != 14594:
+        raise B.InvalidEvidence("ALT002 terminal governing binding drift")
+
+    attempt = closure.get("alternate_attempt")
+    if not isinstance(attempt, Mapping) or set(attempt) != {
+        "attempt_number",
+        "claim_sequence",
+        "maximum_total_attempts",
+        "run_root",
+        "pre_receipt",
+        "authorization",
+        "launch_job",
+        "launch_state",
+        "native_claim",
+        "launch_state_control_facts",
+        "attempt_consumption",
+    } or (
+        attempt.get("attempt_number") != 2
+        or attempt.get("claim_sequence") != 2
+        or attempt.get("maximum_total_attempts") != 2
+        or Path(str(attempt.get("run_root", ""))).resolve()
+        != ALTERNATE_RUN_ROOT.resolve()
+    ):
+        raise B.InvalidEvidence("ALT002 terminal attempt identity drift")
+
+    expected_attempt_bindings = {
+        "pre_receipt": {
+            "path": str(ALTERNATE_PRE_RECEIPT_PATH.resolve()),
+            "size": 85916,
+            "sha256": "8de339b04e86ecb29aed385743a0e906ea1c79d80963b33099e213d0ea773f44",
+        },
+        "authorization": {
+            "path": str(ALTERNATE_AUTHORIZATION_PATH.resolve()),
+            "size": 1579,
+            "sha256": "d4a06e7bf0666fe72de9896dbc78a31ab4bd18204af5683181de2bfb5f534427",
+        },
+        "launch_job": {
+            "path": str(ALTERNATE_JOB_PATH.resolve()),
+            "size": 2175,
+            "sha256": "dceef5413ef85337d34c94c6d9ec050b3d8353969de4ca12372b9f7794e2bb65",
+        },
+        "launch_state": {
+            "path": str(ALTERNATE_STATE_PATH.resolve()),
+            "size": 7478,
+            "sha256": "0d97e21287ae61af13e6c3de39a875bc67477846592ed543ac8d23a98f8ebbc9",
+        },
+        "native_claim": {
+            "path": str(ALTERNATE_CLAIM_PATH.resolve()),
+            "size": 12105,
+            "sha256": "ac3a6d6ec49d4e093dc78d38952eb5b9efbba01f7ff7793b69577c1b27e5eab4",
+        },
+    }
+    observed_attempt_bindings: dict[str, dict[str, Any]] = {}
+    for role, expected in expected_attempt_bindings.items():
+        row = attempt.get(role)
+        if not isinstance(row, Mapping) or dict(row) != expected:
+            raise B.InvalidEvidence(f"ALT002 terminal {role} binding drift")
+        observed_attempt_bindings[role] = _binding_from_closure(row)
+
+    facts = attempt.get("launch_state_control_facts")
+    expected_facts = {
+        "schema_version": 2,
+        "launcher_revision": 6,
+        "status": "INVALID_TERMINAL",
+        "worker_pid": None,
+        "resume_count": 0,
+        "finished_utc": None,
+        "outcome_possible_since_utc": "2026-07-21T10:38:14.517562+00:00",
+        "active_cell_id": "WS30_DWX_DEV",
+        "active_cell_status": "OUTCOME_POSSIBLE_NO_RESUME",
+        "first_cell_status": "INVALID_TERMINAL_OUTPUT",
+        "first_cell_attempt_count": 1,
+        "first_attempt_started_utc": "2026-07-21T10:38:14.517562+00:00",
+        "first_attempt_finished_utc": "2026-07-21T10:38:15.315201+00:00",
+        "first_attempt_exit_code": 1,
+        "first_attempt_runner_result": None,
+        "first_attempt_native_result": None,
+        "first_attempt_native_root": None,
+        "first_attempt_summary": None,
+        "first_attempt_outcome_artifacts": [],
+        "remaining_cell_statuses": ["PENDING", "PENDING", "PENDING"],
+        "remaining_cell_attempt_counts": [0, 0, 0],
+    }
+    if facts != expected_facts:
+        raise B.InvalidEvidence("ALT002 terminal launch-state fact drift")
+
+    consumption = attempt.get("attempt_consumption")
+    if consumption != {
+        "one_shot_attempt_002_consumed": True,
+        "authorization_bound": True,
+        "atomic_claim_created": True,
+        "native_controller_subprocess_started_and_completed": True,
+        "native_controller_exit_code": 1,
+        "outcome_possible_no_resume_checkpoint_crossed": True,
+        "terminal_state_persisted": True,
+        "claim_creation_alone_treated_as_counted_attempt": False,
+        "counting_boundary": "EXACT_DEV2_METATESTER_PROCESS_STARTED",
+        "counting_boundary_directly_observed_from_permitted_evidence": False,
+        "exact_dev2_metatester_child_start": "NOT_ESTABLISHED_OUTCOME_BLIND",
+        "one_shot_consumption_does_not_depend_on_inferring_metatester_child_start": True,
+        "resume_forbidden": True,
+        "retry_forbidden": True,
+        "further_attempts_forbidden": True,
+    }:
+        raise B.InvalidEvidence("ALT002 terminal attempt-consumption drift")
+
+    task_probe = closure.get("scheduled_task_terminal_probe")
+    if task_probe != {
+        "inspection_mode": (
+            "GET_SCHEDULED_TASK_AND_GET_SCHEDULED_TASK_INFO_NO_ACTION_OR_LOG_CONTENT_READ"
+        ),
+        "task_name": "QM_QM10834_AUDIT_74482231bd60c80a5518fc4a",
+        "task_path": "\\",
+        "state": "Ready",
+        "last_run_time_utc": "2026-07-21T10:37:37.0000000Z",
+        "last_task_result": 2,
+        "next_run_time": None,
+        "number_of_missed_runs": 0,
+        "terminal_worker_exit_corroborated": True,
+    }:
+        raise B.InvalidEvidence("ALT002 scheduled-task terminal probe drift")
+
+    metadata = closure.get("directory_metadata_closure")
+    expected_directories = ("control", "native", r"native\DEV")
+    expected_file_ledger = (
+        (
+            r"control\dev2_machine_credential_probe.json",
+            790,
+            "176107346d11da6c6119f8cd35566f93010c98779b0e82a60dbde8bd774fa544",
+        ),
+        (
+            r"control\dev2_machine_credential_probe.stderr.log",
+            0,
+            "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        ),
+        (
+            r"control\dev2_machine_credential_probe.stdout.log",
+            48,
+            "e28ad5859d8acd2dbe9e04c21db9d3fe507afaa2b19b52db6c7bfbc82340e856",
+        ),
+        (
+            "launch_job.json",
+            2175,
+            "dceef5413ef85337d34c94c6d9ec050b3d8353969de4ca12372b9f7794e2bb65",
+        ),
+        (
+            "launch_state.json",
+            7478,
+            "0d97e21287ae61af13e6c3de39a875bc67477846592ed543ac8d23a98f8ebbc9",
+        ),
+        (
+            "native_outcome_authorization.json",
+            1579,
+            "d4a06e7bf0666fe72de9896dbc78a31ab4bd18204af5683181de2bfb5f534427",
+        ),
+        (
+            r"native\DEV\controller.stderr.log",
+            312,
+            "854a59a927aa016d66e12a287cec83692db22ab08c215a655593ca626e839241",
+        ),
+        (
+            r"native\DEV\controller.stdout.log",
+            0,
+            "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        ),
+        (
+            "pre_receipt.json",
+            85916,
+            "8de339b04e86ecb29aed385743a0e906ea1c79d80963b33099e213d0ea773f44",
+        ),
+    )
+    expected_rows = [
+        {"relative_path": path, "size": size, "sha256": digest}
+        for path, size, digest in expected_file_ledger
+    ]
+    if not isinstance(metadata, Mapping) or (
+        metadata.get("inspection_mode")
+        != "PATH_TYPE_SIZE_SHA256_ONLY_NO_LOG_REPORT_OR_OUTCOME_CONTENT_READ"
+        or metadata.get("directories_exact") != list(expected_directories)
+        or metadata.get("files_exact") != expected_rows
+        or metadata.get("exact_file_closure") is not True
+        or metadata.get("native_report_file_count") != 0
+        or metadata.get("native_outcome_file_count") != 0
+        or metadata.get("controller_stdout_size") != 0
+        or metadata.get("controller_stderr_size") != 312
+        or metadata.get("controller_stdout_content_read") is not False
+        or metadata.get("controller_stderr_content_read") is not False
+        or metadata.get("controller_logs_are_opaque_hash_bindings_only") is not True
+    ):
+        raise B.InvalidEvidence("ALT002 terminal directory-metadata closure drift")
+
+    W._assert_no_reparse_components(ALTERNATE_RUN_ROOT, "ALT002 closed run root")
+    observed_directories = sorted(
+        str(path.relative_to(ALTERNATE_RUN_ROOT)).replace("/", "\\")
+        for path in ALTERNATE_RUN_ROOT.rglob("*")
+        if path.is_dir()
+    )
+    if observed_directories != sorted(expected_directories):
+        raise B.InvalidEvidence("ALT002 closed directory set drift")
+    observed_files = sorted(
+        str(path.relative_to(ALTERNATE_RUN_ROOT)).replace("/", "\\")
+        for path in ALTERNATE_RUN_ROOT.rglob("*")
+        if path.is_file()
+    )
+    if observed_files != sorted(row[0] for row in expected_file_ledger):
+        raise B.InvalidEvidence("ALT002 closed file set drift")
+    for relative, size, digest in expected_file_ledger:
+        binding = B.file_binding(ALTERNATE_RUN_ROOT / Path(relative), digest)
+        if binding["size"] != size:
+            raise B.InvalidEvidence(f"ALT002 closed file size drift: {relative}")
+
+    # launch_state.json is an allowed control envelope.  The stdout/stderr
+    # bindings are compared and rehashed, but their content is never opened.
+    state = B.load_json(ALTERNATE_STATE_PATH)
+    cells = state.get("cells")
+    first = cells[0] if isinstance(cells, list) and len(cells) == 4 else None
+    native_attempts = first.get("attempts") if isinstance(first, Mapping) else None
+    first_native = (
+        native_attempts[0]
+        if isinstance(native_attempts, list) and len(native_attempts) == 1
+        else None
+    )
+    active = state.get("active_cell")
+    launches = state.get("launches")
+    if not isinstance(first_native, Mapping) or not isinstance(active, Mapping) or (
+        state.get("analysis_id") != ANALYSIS_ID
+        or state.get("artifact_type") != "QM5_10834_NATIVE_LAUNCH_STATE"
+        or state.get("schema_version") != facts["schema_version"]
+        or state.get("launcher_revision") != facts["launcher_revision"]
+        or state.get("status") != facts["status"]
+        or state.get("worker_pid") is not None
+        or state.get("resume_count") != 0
+        or state.get("finished_utc") is not None
+        or state.get("outcome_possible_since_utc")
+        != facts["outcome_possible_since_utc"]
+        or state.get("pre_receipt_path") != expected_attempt_bindings["pre_receipt"]["path"]
+        or state.get("pre_receipt_sha256")
+        != expected_attempt_bindings["pre_receipt"]["sha256"]
+        or state.get("authorization", {}).get("binding")
+        != expected_attempt_bindings["authorization"]
+        or state.get("job") != expected_attempt_bindings["launch_job"]
+        or state.get("attempt_claim") != expected_attempt_bindings["native_claim"]
+        or state.get("outcome_fence")
+        != {
+            "worker_parses_market_values": False,
+            "worker_parses_native_reports": False,
+            "worker_seals_opaque_artifacts_only": True,
+        }
+        or active.get("cell_id") != facts["active_cell_id"]
+        or active.get("status") != facts["active_cell_status"]
+        or first.get("status") != facts["first_cell_status"]
+        or first_native.get("started_utc") != facts["first_attempt_started_utc"]
+        or first_native.get("finished_utc") != facts["first_attempt_finished_utc"]
+        or first_native.get("exit_code") != 1
+        or first_native.get("runner_result") is not None
+        or first_native.get("native_result") is not None
+        or first_native.get("native_root") is not None
+        or first_native.get("summary") is not None
+        or first_native.get("outcome_artifacts") != []
+        or first_native.get("stdout")
+        != {
+            "path": str((ALTERNATE_RUN_ROOT / r"native\DEV\controller.stdout.log").resolve()),
+            "size": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        }
+        or first_native.get("stderr")
+        != {
+            "path": str((ALTERNATE_RUN_ROOT / r"native\DEV\controller.stderr.log").resolve()),
+            "size": 312,
+            "sha256": "854a59a927aa016d66e12a287cec83692db22ab08c215a655593ca626e839241",
+        }
+        or [row.get("status") for row in cells[1:]] != ["PENDING"] * 3
+        or [len(row.get("attempts", [])) for row in cells[1:]] != [0, 0, 0]
+        or not isinstance(launches, list)
+        or len(launches) != 1
+        or launches[0].get("resume") is not False
+        or state.get("scheduler", {}).get("task_name") != task_probe["task_name"]
+        or state.get("scheduler", {}).get("task_path") != task_probe["task_path"]
+    ):
+        raise B.InvalidEvidence("ALT002 terminal launch-state control drift")
+
+    claim = B.load_json(ALTERNATE_CLAIM_PATH)
+    if (
+        claim.get("schema_version") != 2
+        or claim.get("artifact_type") != "QM5_10834_DEV2_NATIVE_ATTEMPT_CLAIM"
+        or claim.get("analysis_id") != ANALYSIS_ID
+        or claim.get("claim_sequence") != 2
+        or claim.get("reserved_counted_alternate_attempt_number") != 2
+        or claim.get("maximum_total_counted_attempts") != 2
+        or claim.get("claim_creation_alone_does_not_count_as_alternate_attempt")
+        is not True
+        or claim.get("alternate_attempt_counting_boundary")
+        != "EXACT_DEV2_METATESTER_PROCESS_STARTED"
+        or claim.get("classification")
+        != "ATOMIC_GLOBAL_OUTCOME_BLIND_WS30_INFRA_ALTERNATE_ATTEMPT_002"
+        or claim.get("resume_permitted") is not False
+        or claim.get("further_attempts_forbidden") is not True
+        or Path(str(claim.get("run_root", ""))).resolve() != ALTERNATE_RUN_ROOT.resolve()
+        or Path(str(claim.get("launch_state_path", ""))).resolve()
+        != ALTERNATE_STATE_PATH.resolve()
+    ):
+        raise B.InvalidEvidence("ALT002 terminal native-claim control drift")
+
+    if closure.get("outcome_fence") != {
+        "launch_state_control_json_opened": True,
+        "claim_and_job_control_json_opened": True,
+        "authorization_and_pre_controls_bound_by_path_size_sha256_only": True,
+        "scheduled_task_terminal_metadata_opened": True,
+        "native_report_content_opened": False,
+        "native_outcome_content_opened": False,
+        "controller_stdout_content_opened": False,
+        "controller_stderr_content_opened": False,
+        "strategy_outcomes_read": False,
+        "strategy_merit_adjudicated": False,
+        "post_executed": False,
+    } or closure.get("terminal_disposition") != {
+        "classification": "INVALID_TERMINAL_NO_STRATEGY_MERIT_ADJUDICATION",
+        "failure_cause": "UNADJUDICATED_OUTCOME_BLIND",
+        "post_permitted": False,
+        "resume_permitted": False,
+        "retry_permitted": False,
+        "attempt_003_permitted": False,
+        "terminal_hopping_permitted": False,
+        "remaining_attempt_budget": 0,
+        "all_alt002_controls_and_opaque_artifacts_must_remain_immutable": True,
+    }:
+        raise B.InvalidEvidence("ALT002 terminal outcome/finality fence drift")
+
+    for role, binding in observed_attempt_bindings.items():
+        B.assert_binding(binding, f"ALT002 terminal {role}")
+    for role, binding in expected_governing.items():
+        B.assert_binding(binding, f"ALT002 terminal governing {role}")
+    B.assert_binding(closure_binding, "ALT002 invalid-terminal closure")
     return closure
 
 

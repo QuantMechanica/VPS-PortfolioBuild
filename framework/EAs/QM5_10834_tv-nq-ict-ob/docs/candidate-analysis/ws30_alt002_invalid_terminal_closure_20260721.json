@@ -1,0 +1,208 @@
+{
+  "schema_version": 1,
+  "artifact_type": "QM5_10834_WS30_ALT002_INVALID_TERMINAL_CLOSURE",
+  "status": "ALT002_INVALID_TERMINAL_CLOSED_OUTCOME_BLIND_NO_FURTHER_ATTEMPTS",
+  "created_utc": "2026-07-21T10:42:46.3844161Z",
+  "analysis_id": "QM5_10834_TV_NQ_ICT_OB_WS30_TRANSPORT_001",
+  "candidate": {
+    "ea_id": "QM5_10834",
+    "research_symbol": "WS30.DWX",
+    "timeframe": "M5",
+    "model": 4,
+    "duplicates_per_cell": 2
+  },
+  "governing_evidence": {
+    "alternate_contract": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10834_tv-nq-ict-ob\\docs\\candidate-analysis\\ws30_transport_infra_alternate002_contract_20260721.json",
+      "size": 7777,
+      "sha256": "8414d4d52bf8e3c31d08fc27189ce259cc156695be108052af0ffa55ab22a284"
+    },
+    "runtime_fix001_contract": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10834_tv-nq-ict-ob\\docs\\candidate-analysis\\ws30_transport_infra_alternate002_runtime_fix001_contract_20260721.json",
+      "size": 5920,
+      "sha256": "878cae427b5f24f8b82ae72d1b4959527b5425d8501d8631e442157bf2bb45b2"
+    },
+    "runtime_fix001_materialization_receipt": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runtime\\WS30_ICT_OB_TRANSPORT_INFRA_ALTERNATE_002_runtime_fix001_receipt.json",
+      "size": 14594,
+      "sha256": "3406906256538b82eeb24ec9362a77de1131fcf20231d28b1f2f0e18511b96c5"
+    }
+  },
+  "alternate_attempt": {
+    "attempt_number": 2,
+    "claim_sequence": 2,
+    "maximum_total_attempts": 2,
+    "run_root": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\WS30_ICT_OB_TRANSPORT_INFRA_ALTERNATE_002",
+    "pre_receipt": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\WS30_ICT_OB_TRANSPORT_INFRA_ALTERNATE_002\\pre_receipt.json",
+      "size": 85916,
+      "sha256": "8de339b04e86ecb29aed385743a0e906ea1c79d80963b33099e213d0ea773f44"
+    },
+    "authorization": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\WS30_ICT_OB_TRANSPORT_INFRA_ALTERNATE_002\\native_outcome_authorization.json",
+      "size": 1579,
+      "sha256": "d4a06e7bf0666fe72de9896dbc78a31ab4bd18204af5683181de2bfb5f534427"
+    },
+    "launch_job": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\WS30_ICT_OB_TRANSPORT_INFRA_ALTERNATE_002\\launch_job.json",
+      "size": 2175,
+      "sha256": "dceef5413ef85337d34c94c6d9ec050b3d8353969de4ca12372b9f7794e2bb65"
+    },
+    "launch_state": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\WS30_ICT_OB_TRANSPORT_INFRA_ALTERNATE_002\\launch_state.json",
+      "size": 7478,
+      "sha256": "0d97e21287ae61af13e6c3de39a875bc67477846592ed543ac8d23a98f8ebbc9"
+    },
+    "native_claim": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\claims\\QM5_10834_TV_NQ_ICT_OB_WS30_TRANSPORT_001_DEV2_NATIVE_ATTEMPT_002.json",
+      "size": 12105,
+      "sha256": "ac3a6d6ec49d4e093dc78d38952eb5b9efbba01f7ff7793b69577c1b27e5eab4"
+    },
+    "launch_state_control_facts": {
+      "schema_version": 2,
+      "launcher_revision": 6,
+      "status": "INVALID_TERMINAL",
+      "worker_pid": null,
+      "resume_count": 0,
+      "finished_utc": null,
+      "outcome_possible_since_utc": "2026-07-21T10:38:14.517562+00:00",
+      "active_cell_id": "WS30_DWX_DEV",
+      "active_cell_status": "OUTCOME_POSSIBLE_NO_RESUME",
+      "first_cell_status": "INVALID_TERMINAL_OUTPUT",
+      "first_cell_attempt_count": 1,
+      "first_attempt_started_utc": "2026-07-21T10:38:14.517562+00:00",
+      "first_attempt_finished_utc": "2026-07-21T10:38:15.315201+00:00",
+      "first_attempt_exit_code": 1,
+      "first_attempt_runner_result": null,
+      "first_attempt_native_result": null,
+      "first_attempt_native_root": null,
+      "first_attempt_summary": null,
+      "first_attempt_outcome_artifacts": [],
+      "remaining_cell_statuses": [
+        "PENDING",
+        "PENDING",
+        "PENDING"
+      ],
+      "remaining_cell_attempt_counts": [
+        0,
+        0,
+        0
+      ]
+    },
+    "attempt_consumption": {
+      "one_shot_attempt_002_consumed": true,
+      "authorization_bound": true,
+      "atomic_claim_created": true,
+      "native_controller_subprocess_started_and_completed": true,
+      "native_controller_exit_code": 1,
+      "outcome_possible_no_resume_checkpoint_crossed": true,
+      "terminal_state_persisted": true,
+      "claim_creation_alone_treated_as_counted_attempt": false,
+      "counting_boundary": "EXACT_DEV2_METATESTER_PROCESS_STARTED",
+      "counting_boundary_directly_observed_from_permitted_evidence": false,
+      "exact_dev2_metatester_child_start": "NOT_ESTABLISHED_OUTCOME_BLIND",
+      "one_shot_consumption_does_not_depend_on_inferring_metatester_child_start": true,
+      "resume_forbidden": true,
+      "retry_forbidden": true,
+      "further_attempts_forbidden": true
+    }
+  },
+  "scheduled_task_terminal_probe": {
+    "inspection_mode": "GET_SCHEDULED_TASK_AND_GET_SCHEDULED_TASK_INFO_NO_ACTION_OR_LOG_CONTENT_READ",
+    "task_name": "QM_QM10834_AUDIT_74482231bd60c80a5518fc4a",
+    "task_path": "\\",
+    "state": "Ready",
+    "last_run_time_utc": "2026-07-21T10:37:37.0000000Z",
+    "last_task_result": 2,
+    "next_run_time": null,
+    "number_of_missed_runs": 0,
+    "terminal_worker_exit_corroborated": true
+  },
+  "directory_metadata_closure": {
+    "inspection_mode": "PATH_TYPE_SIZE_SHA256_ONLY_NO_LOG_REPORT_OR_OUTCOME_CONTENT_READ",
+    "directories_exact": [
+      "control",
+      "native",
+      "native\\DEV"
+    ],
+    "files_exact": [
+      {
+        "relative_path": "control\\dev2_machine_credential_probe.json",
+        "size": 790,
+        "sha256": "176107346d11da6c6119f8cd35566f93010c98779b0e82a60dbde8bd774fa544"
+      },
+      {
+        "relative_path": "control\\dev2_machine_credential_probe.stderr.log",
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "relative_path": "control\\dev2_machine_credential_probe.stdout.log",
+        "size": 48,
+        "sha256": "e28ad5859d8acd2dbe9e04c21db9d3fe507afaa2b19b52db6c7bfbc82340e856"
+      },
+      {
+        "relative_path": "launch_job.json",
+        "size": 2175,
+        "sha256": "dceef5413ef85337d34c94c6d9ec050b3d8353969de4ca12372b9f7794e2bb65"
+      },
+      {
+        "relative_path": "launch_state.json",
+        "size": 7478,
+        "sha256": "0d97e21287ae61af13e6c3de39a875bc67477846592ed543ac8d23a98f8ebbc9"
+      },
+      {
+        "relative_path": "native_outcome_authorization.json",
+        "size": 1579,
+        "sha256": "d4a06e7bf0666fe72de9896dbc78a31ab4bd18204af5683181de2bfb5f534427"
+      },
+      {
+        "relative_path": "native\\DEV\\controller.stderr.log",
+        "size": 312,
+        "sha256": "854a59a927aa016d66e12a287cec83692db22ab08c215a655593ca626e839241"
+      },
+      {
+        "relative_path": "native\\DEV\\controller.stdout.log",
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "relative_path": "pre_receipt.json",
+        "size": 85916,
+        "sha256": "8de339b04e86ecb29aed385743a0e906ea1c79d80963b33099e213d0ea773f44"
+      }
+    ],
+    "exact_file_closure": true,
+    "native_report_file_count": 0,
+    "native_outcome_file_count": 0,
+    "controller_stdout_size": 0,
+    "controller_stderr_size": 312,
+    "controller_stdout_content_read": false,
+    "controller_stderr_content_read": false,
+    "controller_logs_are_opaque_hash_bindings_only": true
+  },
+  "outcome_fence": {
+    "launch_state_control_json_opened": true,
+    "claim_and_job_control_json_opened": true,
+    "authorization_and_pre_controls_bound_by_path_size_sha256_only": true,
+    "scheduled_task_terminal_metadata_opened": true,
+    "native_report_content_opened": false,
+    "native_outcome_content_opened": false,
+    "controller_stdout_content_opened": false,
+    "controller_stderr_content_opened": false,
+    "strategy_outcomes_read": false,
+    "strategy_merit_adjudicated": false,
+    "post_executed": false
+  },
+  "terminal_disposition": {
+    "classification": "INVALID_TERMINAL_NO_STRATEGY_MERIT_ADJUDICATION",
+    "failure_cause": "UNADJUDICATED_OUTCOME_BLIND",
+    "post_permitted": false,
+    "resume_permitted": false,
+    "retry_permitted": false,
+    "attempt_003_permitted": false,
+    "terminal_hopping_permitted": false,
+    "remaining_attempt_budget": 0,
+    "all_alt002_controls_and_opaque_artifacts_must_remain_immutable": true
+  }
+}
