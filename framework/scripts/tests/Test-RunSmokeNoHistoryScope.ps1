@@ -21,6 +21,7 @@ $neededFunctions = @(
     "Test-TesterLogShowsOnInitFailure",
     "Test-TesterLogShowsSetupDataMissing",
     "Test-TesterLogHasNoHistoryForRun",
+    "Get-LatestTesterLog",
     "Get-ReportInvalidReasons",
     "Resolve-InvalidReportVerdict"
 )
@@ -37,6 +38,27 @@ foreach ($name in $neededFunctions) {
     }
 
     Invoke-Expression $functionAst.Extent.Text
+}
+
+$logRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("qm-run-smoke-log-discovery-" + [guid]::NewGuid())
+try {
+    $controllerDir = Join-Path $logRoot "Tester\logs"
+    $agentDir = Join-Path $logRoot "Tester\Agent-127.0.0.1-3000\logs"
+    New-Item -ItemType Directory -Path $controllerDir,$agentDir -Force | Out-Null
+    $controllerLog = Join-Path $controllerDir "controller.log"
+    $agentLog = Join-Path $agentDir "agent.log"
+    Set-Content -LiteralPath $controllerLog -Value "controller"
+    Set-Content -LiteralPath $agentLog -Value "EURUSD.DWX: no history data"
+    (Get-Item -LiteralPath $controllerLog).LastWriteTimeUtc = [datetime]::UtcNow.AddSeconds(-5)
+    (Get-Item -LiteralPath $agentLog).LastWriteTimeUtc = [datetime]::UtcNow
+    $latest = Get-LatestTesterLog -TerminalRoot $logRoot -SinceUtc ([datetime]::UtcNow.AddMinutes(-1))
+    if (-not $latest -or $latest.FullName -ne $agentLog) {
+        throw "Latest tester log discovery did not include the local Agent-* log tree."
+    }
+} finally {
+    if (Test-Path -LiteralPath $logRoot) {
+        Remove-Item -LiteralPath $logRoot -Recurse -Force
+    }
 }
 
 $foreignNoHistoryTail = @"

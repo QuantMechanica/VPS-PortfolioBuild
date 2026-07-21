@@ -1315,7 +1315,12 @@ function Get-LatestTesterLog {
         return $null
     }
 
-    $candidate = Get-ChildItem -LiteralPath $logsDir -File |
+    # Local tester agents write the decisive NO_HISTORY / OnInit diagnostics
+    # under Tester\Agent-*\logs, while Tester\logs normally contains only the
+    # controller transcript.  Searching only the controller directory turns a
+    # real, classifiable infra fault into REPORT_MISSING and makes the farm burn
+    # both retries without preserving the cause.
+    $candidate = Get-ChildItem -LiteralPath (Join-Path $TerminalRoot "Tester") -File -Recurse -Filter "*.log" |
         Where-Object { $_.LastWriteTimeUtc -ge $SinceUtc.AddMinutes(-2) } |
         Sort-Object LastWriteTimeUtc -Descending |
         Select-Object -First 1
