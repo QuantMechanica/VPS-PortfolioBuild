@@ -1268,6 +1268,153 @@ def test_concurrent_distinct_launches_consume_authorization_exactly_once(
     assert not loser.parent.exists()
 
 
+def test_job_only_crash_is_recoverable_without_duplicate_scheduler_effects(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    dev1_runs = tmp_path / "dev1-runs"
+    dev1_runs.mkdir()
+    monkeypatch.setattr(subject, "DEV1_RUNS_ROOT", dev1_runs)
+    pre = _minimal_launcher_pre()
+    pre_sha = "c" * 64
+    pre_path = tmp_path / "pre.json"
+    authorization_path = tmp_path / "authorization.json"
+    _test_authorization(authorization_path, pre_sha)
+    monkeypatch.setattr(subject, "assert_pre_receipt", lambda *_args: pre)
+    calls: list[str] = []
+
+    def fake_scheduler(_pre, operation, job=None):
+        calls.append(operation)
+        if operation == "Identity":
+            return {
+                "operation": "Identity",
+                "principal_sid": "S-1-5-21-500",
+                "logon_type": "S4U",
+                "run_level": "Highest",
+            }
+        if operation == "Probe":
+            return {
+                "operation": "Probe",
+                "task_name": job["scheduler"]["task_name"],
+                "exists": False,
+            }
+        return {
+            "operation": operation,
+            "task_name": job["scheduler"]["task_name"],
+            "state": "Running" if operation == "Start" else "Ready",
+        }
+
+    monkeypatch.setattr(subject, "_scheduler_call", fake_scheduler)
+    state_path = tmp_path / "crash-run" / "launch_state.json"
+    job_path = state_path.with_name("launch_job.json")
+    real_publish = subject._atomic_control_json
+    injected = False
+
+    def fail_first_state_publish(path, payload, **kwargs):
+        nonlocal injected
+        if Path(path).resolve() == state_path.resolve() and not injected:
+            injected = True
+            raise OSError("injected crash after immutable job publication")
+        return real_publish(path, payload, **kwargs)
+
+    monkeypatch.setattr(subject, "_atomic_control_json", fail_first_state_publish)
+    with pytest.raises(OSError, match="injected crash"):
+        subject.launch_detached(
+            pre_path, pre_sha, authorization_path, state_path, None
+        )
+    assert job_path.is_file() and not state_path.exists()
+    assert calls == ["Identity", "Probe"]
+
+    recovered = subject.launch_detached(
+        pre_path, pre_sha, authorization_path, state_path, None
+    )
+    assert recovered["status"] == "LAUNCHED_PERSISTED_TASK"
+    assert calls == [
+        "Identity",
+        "Probe",
+        "Identity",
+        "Probe",
+        "Register",
+        "Start",
+    ]
+
+
+def test_stale_resume_cannot_overwrite_newer_terminal_state(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    dev1_runs = tmp_path / "dev1-runs"
+    dev1_runs.mkdir()
+    monkeypatch.setattr(subject, "DEV1_RUNS_ROOT", dev1_runs)
+    pre = _minimal_launcher_pre()
+    pre_sha = "c" * 64
+    pre_path = tmp_path / "pre.json"
+    authorization_path = tmp_path / "authorization.json"
+    _test_authorization(authorization_path, pre_sha)
+    monkeypatch.setattr(subject, "assert_pre_receipt", lambda *_args: pre)
+    calls: list[str] = []
+
+    def fake_scheduler(_pre, operation, job=None):
+        calls.append(operation)
+        if operation == "Identity":
+            return {
+                "operation": "Identity",
+                "principal_sid": "S-1-5-21-500",
+                "logon_type": "S4U",
+                "run_level": "Highest",
+            }
+        if operation == "Probe":
+            return {
+                "operation": "Probe",
+                "task_name": job["scheduler"]["task_name"],
+                "exists": False,
+            }
+        return {
+            "operation": operation,
+            "task_name": job["scheduler"]["task_name"],
+            "state": "Running" if operation == "Start" else "Ready",
+        }
+
+    monkeypatch.setattr(subject, "_scheduler_call", fake_scheduler)
+    state_path = tmp_path / "terminal-run" / "launch_state.json"
+    subject.launch_detached(pre_path, pre_sha, authorization_path, state_path, None)
+    state = subject.load_strict_json(state_path, "launch state")
+    finished = subject.utc_now()
+    state.update(
+        {
+            "status": "REJECT",
+            "worker_pid": None,
+            "active_cell": None,
+            "finished_utc": finished,
+            "updated_utc": finished,
+            "terminal": {
+                "status": "REJECT",
+                "error_type": "AuditError",
+                "error": "newer terminal publisher won",
+                "failure_stage": "WORKER_VALIDATION",
+                "affected_cell_id": None,
+                "outcome_fence_crossed": False,
+                "no_resume": True,
+                "controller_failure_class": None,
+            },
+        }
+    )
+    subject._validate_launch_state_shape(state)
+    with subject._launch_state_lock(state_path):
+        subject._atomic_control_json(state_path, state)
+    terminal_bytes = state_path.read_bytes()
+
+    with pytest.raises(subject.AuthorizationError, match="not pre-outcome resumable"):
+        subject.launch_detached(
+            pre_path,
+            pre_sha,
+            authorization_path,
+            state_path,
+            None,
+            resume=True,
+        )
+    assert state_path.read_bytes() == terminal_bytes
+    assert calls == ["Identity", "Probe", "Register", "Start"]
+
+
 def _arm_one_cell_worker(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> tuple[Path, Path]:
@@ -1549,6 +1696,77 @@ def test_worker_complete_state_is_exactly_closed_and_clears_worker_identity(
     assert state["cells"][0]["attempts"][0]["status"] == "COMPLETE"
 
 
+def test_duplicate_workers_cannot_steal_or_reject_the_winning_generation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    job_path, state_path = _arm_one_cell_worker(tmp_path, monkeypatch)
+    run_id = "20260720T210000Z_" + "a" * 32
+    summary_path = tmp_path / "summary.json"
+    artifact_path = tmp_path / "opaque-artifact.bin"
+    summary_path.write_text("{}", encoding="utf-8")
+    artifact_path.write_bytes(b"opaque")
+    binding = subject.file_binding(artifact_path)
+    sealed = {
+        "summary": subject.file_binding(summary_path),
+        "run_artifacts": [
+            {
+                "run": run,
+                "report": binding,
+                "tester_log": binding,
+                "tester_ini": binding,
+            }
+            for run in ("run_01", "run_02")
+        ],
+    }
+    runner_entered = threading.Event()
+    release_runner = threading.Event()
+    losing_worker_done = threading.Event()
+    subprocess_calls = 0
+
+    def gated_runner(*_args, **_kwargs):
+        nonlocal subprocess_calls
+        subprocess_calls += 1
+        runner_entered.set()
+        if not release_runner.wait(5):
+            raise AssertionError("timed out coordinating duplicate workers")
+        return SimpleNamespace(
+            stdout=json.dumps({"success": True, "run_id": run_id}),
+            stderr="",
+            returncode=0,
+        )
+
+    monkeypatch.setattr(subject.subprocess, "run", gated_runner)
+    monkeypatch.setattr(subject, "_find_summary", lambda _run_id: summary_path)
+    monkeypatch.setattr(subject, "_seal_summary_artifacts", lambda _path: sealed)
+    barrier = threading.Barrier(3)
+    results: list[int] = []
+
+    def worker() -> None:
+        barrier.wait()
+        result = subject._worker_run(job_path)
+        results.append(result)
+        if result == 2:
+            losing_worker_done.set()
+
+    threads = [threading.Thread(target=worker) for _ in range(2)]
+    for thread in threads:
+        thread.start()
+    barrier.wait()
+    assert runner_entered.wait(5)
+    assert losing_worker_done.wait(5)
+    running_bytes = state_path.read_bytes()
+    assert subject.load_json(state_path)["status"] == "RUNNING"
+    release_runner.set()
+    for thread in threads:
+        thread.join(10)
+
+    assert all(not thread.is_alive() for thread in threads)
+    assert sorted(results) == [0, 2]
+    assert subprocess_calls == 1
+    assert subject.load_json(state_path)["status"] == "COMPLETE"
+    assert state_path.read_bytes() != running_bytes
+
+
 def test_complete_post_precheck_accepts_exact_bound_runner_streams(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -1754,6 +1972,72 @@ def test_terminal_state_lock_race_preserves_complete_bytes(
     assert len(published_complete_bytes) == 1
     assert state_path.read_bytes() == published_complete_bytes[0]
     assert subject.load_json(state_path)["status"] == "COMPLETE"
+
+
+def test_locked_status_snapshot_blocks_writer_and_returns_one_exact_generation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    state_path = tmp_path / "launch_state.json"
+    state = _minimal_running_state(tmp_path)
+    state_path.write_text(json.dumps(state, sort_keys=True), encoding="utf-8")
+    subject._ensure_control_lock_file(state_path)
+    original_bytes = state_path.read_bytes()
+    real_load = subject.load_strict_json
+    read_entered = threading.Event()
+    release_read = threading.Event()
+    writer_started = threading.Event()
+    writer_done = threading.Event()
+    snapshot_result: list[tuple[dict, dict]] = []
+    errors: list[BaseException] = []
+    gate_used = False
+
+    def gated_load(path, label):
+        nonlocal gate_used
+        if Path(path).resolve() == state_path.resolve() and not gate_used:
+            gate_used = True
+            read_entered.set()
+            if not release_read.wait(5):
+                raise AssertionError("timed out coordinating locked snapshot")
+        return real_load(path, label)
+
+    monkeypatch.setattr(subject, "load_strict_json", gated_load)
+
+    def snapshot() -> None:
+        try:
+            snapshot_result.append(subject._locked_launch_state_snapshot(state_path))
+        except BaseException as exc:  # pragma: no cover - asserted below.
+            errors.append(exc)
+
+    def writer() -> None:
+        writer_started.set()
+        try:
+            with subject._launch_state_lock(state_path):
+                updated = dict(state)
+                updated["updated_utc"] = subject.utc_now()
+                subject._atomic_control_json(state_path, updated)
+        except BaseException as exc:  # pragma: no cover - asserted below.
+            errors.append(exc)
+        finally:
+            writer_done.set()
+
+    snapshot_thread = threading.Thread(target=snapshot)
+    snapshot_thread.start()
+    assert read_entered.wait(5)
+    writer_thread = threading.Thread(target=writer)
+    writer_thread.start()
+    assert writer_started.wait(5)
+    assert not writer_done.wait(0.2)
+    release_read.set()
+    snapshot_thread.join(5)
+    writer_thread.join(5)
+
+    assert errors == []
+    assert len(snapshot_result) == 1
+    snap_state, snap_binding = snapshot_result[0]
+    assert snap_state == state
+    assert snap_binding["sha256"] == subject.hashlib.sha256(original_bytes).hexdigest()
+    assert writer_done.is_set()
+    assert state_path.read_bytes() != original_bytes
 
 
 def test_legacy_stdout_reject_is_uniquely_classified_and_post_blocked(
