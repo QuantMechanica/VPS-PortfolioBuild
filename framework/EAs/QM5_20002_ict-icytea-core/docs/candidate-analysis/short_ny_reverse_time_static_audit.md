@@ -97,15 +97,27 @@ ancestor replace rights held by `QMDev1` or any applicable token/group SID.
 CreateFiles/CreateDirectories alone are permitted on a standard fixed-volume
 ancestor because they cannot rename or delete an already protected child;
 DeleteChild, Delete, ChangePermissions and TakeOwnership remain forbidden, so
-Modify remains forbidden as well. A bootstrap precreation race does not get
-repaired or adopted: an existing attacker-owned, attacker-writable, unprotected
-or otherwise non-exact directory is rejected before any descendant or temporary
-file is created. Directories and files are sealed to SYSTEM and Administrators
-only before publication. A read-only LSA check also rejects privileged
-local-group membership and any direct or group-assigned Backup, Restore,
-TakeOwnership, Debug, Impersonate or other configured DACL-bypass/elevation
-privilege before the helper creates a directory, lock, temporary file or
-receipt.
+Modify remains forbidden as well. This decision is made from each raw DACL
+`AccessMask`, including inherited, callback and object ACEs, rather than from
+only the named `FileSystemRights` view. Raw `GENERIC_ALL` is replace authority
+and is rejected. `GENERIC_WRITE` is intentionally accepted because the defined
+file/directory mapping adds create/write data, extended attributes, attributes,
+READ_CONTROL and SYNCHRONIZE but not DeleteChild, Delete, WRITE_DAC or
+WRITE_OWNER; `GENERIC_READ` and `GENERIC_EXECUTE` are non-replacing too. Any
+unknown raw bit is ambiguous and rejected fail-closed. A normal inherit-only
+CREATOR OWNER/GROUP ACE is substituted with the privileged bootstrap creator;
+its known mask is accepted because an attacker-created race winner is never
+adopted. A non-inherit-only creator placeholder with replace authority, or any
+creator-placeholder ACE with unknown bits, is rejected.
+
+A bootstrap precreation race does not get repaired or adopted: an existing
+attacker-owned, attacker-writable, unprotected or otherwise non-exact directory
+is rejected before any descendant or temporary file is created. Directories and
+files are sealed to SYSTEM and Administrators only before publication. A
+read-only LSA check also rejects privileged local-group membership and any
+direct or group-assigned Backup, Restore, TakeOwnership, Debug, Impersonate or
+other configured DACL-bypass/elevation privilege before the helper creates a
+directory, lock, temporary file or receipt.
 The exact runtime layout is:
 
 - `pre\pre_receipt.json`
@@ -164,14 +176,16 @@ Tested now:
 - Generator determinism and exact four-cell set closure.
 - Auditor unit and adversarial gates, including effective news-copy drift,
   out-of-killzone/news opening fills, artifact closure and timeout margin.
-- Result: 98 auditor tests passed, including exclusive-publication,
+- Result: 102 auditor tests passed, including exclusive-publication,
   cross-run authorization, crash-recovery, duplicate-worker, stale-resume,
   locked-snapshot, strict-schema and protected-path adversarial cases. The
   protected-path cases execute the actual PowerShell rights classifier and
-  exact-ACL closure against in-memory ACL objects for standard create-only
-  bootstrap, Modify/DeleteChild rejection, malicious precreation/race rejection
-  and the exact protected-root pass case; deterministic Contract-v3 set check
-  passed.
+  exact-ACL closure against in-memory raw security descriptors and ACL objects.
+  They cover standard create-only bootstrap; raw GA/GW/GR/GX; named
+  Modify/DeleteChild/Delete/WRITE_DAC/WRITE_OWNER; inherited, inherit-only,
+  object, BATCH and CREATOR OWNER/GROUP ACE variants; unknown-bit rejection;
+  malicious precreation/race rejection; and the exact protected-root pass case.
+  The deterministic Contract-v3 set check passed.
 
 Not tested yet:
 

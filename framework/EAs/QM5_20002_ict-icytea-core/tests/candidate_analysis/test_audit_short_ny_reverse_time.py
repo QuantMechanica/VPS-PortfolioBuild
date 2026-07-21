@@ -1009,6 +1009,11 @@ def test_control_helper_closes_volume_ancestor_owner_and_token_group_surface() -
     assert "ChangePermissions" in helper
     assert "TakeOwnership" in helper
     assert "function Test-QmAncestorReplaceAuthority" in helper
+    assert "RawSecurityDescriptor" in helper
+    assert "$ace.AccessMask" in helper
+    assert "GENERIC_ALL" in helper
+    assert "GENERIC_WRITE maps to FILE_GENERIC_WRITE" in helper
+    assert "every unknown or" in helper
     assert "CreateFiles/CreateDirectories" in helper
     assert "cannot rename/delete an already protected child" in helper
     assert "function Ensure-ExactProtectedDirectory" in helper
@@ -1083,6 +1088,17 @@ def test_control_helper_closes_volume_ancestor_owner_and_token_group_surface() -
     ]
     assert persisted_create_only == expected_create_only
     assert persisted_replace == expected_replace
+    assert subject.CONTROL_ANCESTOR_RAW_GENERIC_RIGHTS_ALLOWED == [
+        "GENERIC_READ",
+        "GENERIC_WRITE",
+        "GENERIC_EXECUTE",
+    ]
+    assert subject.CONTROL_ANCESTOR_RAW_GENERIC_RIGHTS_FORBIDDEN == ["GENERIC_ALL"]
+    assert subject.CONTROL_ANCESTOR_RAW_UNKNOWN_BITS_DISPOSITION == "REJECT"
+    assert (
+        subject.CONTROL_ANCESTOR_CREATOR_PLACEHOLDER_POLICY
+        == "INHERIT_ONLY_KNOWN_MASK_ALLOWED"
+    )
     assert (
         "Assert-LocalFixedNtfsVolume\nAssert-QmDev1PrivilegeSurface\n"
         "$fullPath = ConvertTo-ControlPath" in helper.replace("\r\n", "\n")
@@ -1108,7 +1124,13 @@ $ast = [Management.Automation.Language.Parser]::ParseFile(
     [ref]$errors
 )
 if ($errors.Count -ne 0) { throw $errors[0].Message }
-foreach ($name in @('Test-QmAncestorReplaceAuthority', 'Assert-ExactAclObject')) {
+foreach ($name in @(
+    'Get-QmAncestorAccessMaskDisposition',
+    'Test-QmAncestorReplaceAuthority',
+    'ConvertTo-QmUInt32AccessMask',
+    'Assert-QmAncestorRawDescriptor',
+    'Assert-ExactAclObject'
+)) {
     $functionAst = $ast.Find({
         param($node)
         $node -is [Management.Automation.Language.FunctionDefinitionAst] -and
@@ -1117,15 +1139,25 @@ foreach ($name in @('Test-QmAncestorReplaceAuthority', 'Assert-ExactAclObject'))
     if ($null -eq $functionAst) { throw "Missing helper function: $name" }
     Invoke-Expression $functionAst.Extent.Text
 }
-$ancestorReplaceRightsForbidden = @(
-    'DeleteSubdirectoriesAndFiles',
-    'Delete',
-    'ChangePermissions',
-    'TakeOwnership'
-)
 $systemSid = [Security.Principal.SecurityIdentifier]::new('S-1-5-18')
 $administratorsSid = [Security.Principal.SecurityIdentifier]::new('S-1-5-32-544')
 $usersSid = [Security.Principal.SecurityIdentifier]::new('S-1-5-32-545')
+$untrusted = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+foreach ($sid in @('S-1-1-0', 'S-1-5-3', 'S-1-5-11', 'S-1-5-32-545')) {
+    [void]$untrusted.Add($sid)
+}
+function Test-RawAncestorAccepted([string]$Sddl) {
+    try {
+        $descriptor = [Security.AccessControl.RawSecurityDescriptor]::new($Sddl)
+        Assert-QmAncestorRawDescriptor `
+            -Descriptor $descriptor `
+            -UntrustedSids $untrusted `
+            -Candidate 'X:\ancestor'
+        return $true
+    } catch {
+        return $false
+    }
+}
 function New-TestDirectoryAcl(
     [Security.Principal.SecurityIdentifier]$Owner,
     [bool]$Protected,
@@ -1168,30 +1200,61 @@ function Test-ExactDirectoryAcl([Security.AccessControl.DirectorySecurity]$Acl) 
         return $false
     }
 }
-$createOnly = [Security.AccessControl.FileSystemRights]::CreateFiles -bor
-    [Security.AccessControl.FileSystemRights]::CreateDirectories
 [ordered]@{
-    standard_volume_users_create_only_bootstrap = -not (
-        Test-QmAncestorReplaceAuthority -Rights $createOnly
+    standard_volume_users_create_only_bootstrap = Test-RawAncestorAccepted (
+        'O:BAG:BAD:(A;;0x00000006;;;BU)'
     )
-    ancestor_users_modify_rejected = Test-QmAncestorReplaceAuthority -Rights (
-        [Security.AccessControl.FileSystemRights]::Modify
+    raw_generic_all_users_rejected = -not (Test-RawAncestorAccepted (
+        'O:BAG:BAD:(A;;GA;;;BU)'
+    ))
+    raw_generic_write_users_allowed = Test-RawAncestorAccepted (
+        'O:BAG:BAD:(A;;GW;;;BU)'
     )
-    ancestor_batch_modify_rejected = Test-QmAncestorReplaceAuthority -Rights (
-        [Security.AccessControl.FileSystemRights]::Modify
+    raw_generic_read_users_allowed = Test-RawAncestorAccepted (
+        'O:BAG:BAD:(A;;GR;;;BU)'
     )
-    ancestor_delete_child_rejected = Test-QmAncestorReplaceAuthority -Rights (
-        [Security.AccessControl.FileSystemRights]::DeleteSubdirectoriesAndFiles
+    raw_generic_execute_users_allowed = Test-RawAncestorAccepted (
+        'O:BAG:BAD:(A;;GX;;;BU)'
     )
-    ancestor_delete_rejected = Test-QmAncestorReplaceAuthority -Rights (
-        [Security.AccessControl.FileSystemRights]::Delete
+    ancestor_users_modify_rejected = -not (Test-RawAncestorAccepted (
+        'O:BAG:BAD:(A;;0x000301bf;;;BU)'
+    ))
+    ancestor_batch_modify_rejected = -not (Test-RawAncestorAccepted (
+        'O:BAG:BAD:(A;;0x000301bf;;;S-1-5-3)'
+    ))
+    ancestor_delete_child_rejected = -not (Test-RawAncestorAccepted (
+        'O:BAG:BAD:(A;;0x00000040;;;BU)'
+    ))
+    ancestor_delete_rejected = -not (Test-RawAncestorAccepted (
+        'O:BAG:BAD:(A;;0x00010000;;;BU)'
+    ))
+    ancestor_change_permissions_rejected = -not (Test-RawAncestorAccepted (
+        'O:BAG:BAD:(A;;0x00040000;;;BU)'
+    ))
+    ancestor_take_ownership_rejected = -not (Test-RawAncestorAccepted (
+        'O:BAG:BAD:(A;;0x00080000;;;BU)'
+    ))
+    inherited_generic_all_users_rejected = -not (Test-RawAncestorAccepted (
+        'O:BAG:BAD:(A;ID;GA;;;BU)'
+    ))
+    inherit_only_generic_all_users_rejected = -not (Test-RawAncestorAccepted (
+        'O:BAG:BAD:(A;OICIIO;GA;;;BU)'
+    ))
+    object_generic_all_users_rejected = -not (Test-RawAncestorAccepted (
+        'O:BAG:BAD:(OA;;GA;00000000-0000-0000-0000-000000000001;;BU)'
+    ))
+    creator_owner_inherit_only_generic_all_allowed = Test-RawAncestorAccepted (
+        'O:BAG:BAD:(A;OICIIO;GA;;;CO)'
     )
-    ancestor_change_permissions_rejected = Test-QmAncestorReplaceAuthority -Rights (
-        [Security.AccessControl.FileSystemRights]::ChangePermissions
+    creator_group_inherit_only_generic_all_allowed = Test-RawAncestorAccepted (
+        'O:BAG:BAD:(A;OICIIO;GA;;;CG)'
     )
-    ancestor_take_ownership_rejected = Test-QmAncestorReplaceAuthority -Rights (
-        [Security.AccessControl.FileSystemRights]::TakeOwnership
-    )
+    creator_owner_non_inherit_generic_all_rejected = -not (Test-RawAncestorAccepted (
+        'O:BAG:BAD:(A;;GA;;;CO)'
+    ))
+    unknown_maximum_allowed_mask_rejected = -not (Test-RawAncestorAccepted (
+        'O:BAG:BAD:(A;;0x02000000;;;BU)'
+    ))
     precreated_attacker_owned_anchor_rejected = -not (Test-ExactDirectoryAcl (
         New-TestDirectoryAcl -Owner $usersSid -Protected $true -AddUsersCreateOnly $false
     ))
@@ -1226,12 +1289,23 @@ $createOnly = [Security.AccessControl.FileSystemRights]::CreateFiles -bor
     assert completed.returncode == 0, completed.stderr
     assert json.loads(completed.stdout) == {
         "standard_volume_users_create_only_bootstrap": True,
+        "raw_generic_all_users_rejected": True,
+        "raw_generic_write_users_allowed": True,
+        "raw_generic_read_users_allowed": True,
+        "raw_generic_execute_users_allowed": True,
         "ancestor_users_modify_rejected": True,
         "ancestor_batch_modify_rejected": True,
         "ancestor_delete_child_rejected": True,
         "ancestor_delete_rejected": True,
         "ancestor_change_permissions_rejected": True,
         "ancestor_take_ownership_rejected": True,
+        "inherited_generic_all_users_rejected": True,
+        "inherit_only_generic_all_users_rejected": True,
+        "object_generic_all_users_rejected": True,
+        "creator_owner_inherit_only_generic_all_allowed": True,
+        "creator_group_inherit_only_generic_all_allowed": True,
+        "creator_owner_non_inherit_generic_all_rejected": True,
+        "unknown_maximum_allowed_mask_rejected": True,
         "precreated_attacker_owned_anchor_rejected": True,
         "precreated_attacker_writable_anchor_rejected": True,
         "attacker_precreation_race_before_exact_seal_rejected": True,
@@ -1245,6 +1319,10 @@ $createOnly = [Security.AccessControl.FileSystemRights]::CreateFiles -bor
         ("qmdev1_privilege_surface_verified", False),
         ("ancestor_create_only_rights_allowed", ["CreateFiles"]),
         ("ancestor_replace_rights_forbidden", ["Delete"]),
+        ("ancestor_raw_generic_rights_allowed", ["GENERIC_WRITE"]),
+        ("ancestor_raw_generic_rights_forbidden", []),
+        ("ancestor_raw_unknown_bits_disposition", "ALLOW"),
+        ("ancestor_creator_placeholder_policy", "ALLOW_ALL"),
         ("privileged_group_sids_forbidden", subject.CONTROL_PRIVILEGED_GROUP_SIDS[:-1]),
         ("privileges_forbidden", subject.CONTROL_FORBIDDEN_PRIVILEGES[:-1]),
         ("privileges_forbidden", [*subject.CONTROL_FORBIDDEN_PRIVILEGES, "SeTestPrivilege"]),
@@ -1271,6 +1349,10 @@ def test_control_helper_result_rejects_dangerous_token_proof_drift(
         "untrusted_ancestor_owner_forbidden": True,
         "ancestor_create_only_rights_allowed": subject.CONTROL_ANCESTOR_CREATE_ONLY_RIGHTS_ALLOWED,
         "ancestor_replace_rights_forbidden": subject.CONTROL_ANCESTOR_REPLACE_RIGHTS_FORBIDDEN,
+        "ancestor_raw_generic_rights_allowed": subject.CONTROL_ANCESTOR_RAW_GENERIC_RIGHTS_ALLOWED,
+        "ancestor_raw_generic_rights_forbidden": subject.CONTROL_ANCESTOR_RAW_GENERIC_RIGHTS_FORBIDDEN,
+        "ancestor_raw_unknown_bits_disposition": subject.CONTROL_ANCESTOR_RAW_UNKNOWN_BITS_DISPOSITION,
+        "ancestor_creator_placeholder_policy": subject.CONTROL_ANCESTOR_CREATOR_PLACEHOLDER_POLICY,
         "qmdev1_privilege_surface_verified": True,
         "privileged_group_sids_forbidden": subject.CONTROL_PRIVILEGED_GROUP_SIDS,
         "privileges_forbidden": subject.CONTROL_FORBIDDEN_PRIVILEGES,
