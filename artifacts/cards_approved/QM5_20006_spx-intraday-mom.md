@@ -10,6 +10,7 @@ sources:
   - "Gao/Han/Li/Zhou 2018 JFE (DOI 10.1016/j.jfineco.2018.05.009)"
   - "Zarattini/Aziz/Barbon 2024 SFI 24-97 (SSRN 4824172)"
   - "Bogousslavsky 2016 JF (DOI 10.1111/jofi.12480)"
+  - "Baltussen/Da/Lammers/Martens 2021 JFE (SSRN 3760365) — mechanism attribution"
 concepts:
   - first-half-hour-predicts-last-half-hour
   - intraday-momentum-with-overnight-gap
@@ -21,15 +22,15 @@ target_symbols: [SP500.DWX]
 primary_target_symbols: [SP500.DWX]
 period: M30
 timeframes: [M30]
-expected_trade_frequency: "One decision per US cash session at 22:30 broker, magnitude-filtered, Fridays skipped. Declared 185 trades per year per symbol."
-expected_trades_per_year_per_symbol: 185
+expected_trade_frequency: "One decision per US cash session at 22:30 broker, vol-conditioned + magnitude-filtered, Fridays skipped. Declared 120 trades per year per symbol (primary variant; the two filters overlap on high-vol days, so joint pass-rate ~ the tighter one)."
+expected_trades_per_year_per_symbol: 120
 risk_class: medium
 ml_required: false
 single_symbol_only: true
 priority_track: true
 created: 2026-07-19
 created_by: claude-board-advisor
-last_updated: 2026-07-19
+last_updated: 2026-07-21
 r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
@@ -67,6 +68,15 @@ target_symbols: [SP500.DWX]                  # research symbol; NDX.DWX = robust
 
 ## 1. Source
 
+Primary source: Gao, Han, Li & Zhou (2018), "Market intraday momentum", Journal of
+Financial Economics 129(2), 394-414, https://doi.org/10.1016/j.jfineco.2018.05.009.
+Net-of-cost replication: Zarattini, Aziz & Barbon (2024), Swiss Finance Institute
+Research Paper N 24-97, https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4824172.
+Mechanism attribution: Baltussen, Da, Lammers & Martens (2021), Journal of Financial
+Economics — gamma-hedging demand,
+https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3760365. Adversarially verified
+2026-07-20: `docs/research/SSRN_MINING_2026-07-20.md` (rank 9).
+
 ```yaml
 source_citations:
   - type: paper
@@ -90,10 +100,17 @@ source_citations:
 
 The S&P 500's first half-hour return (measured from the prior session close, so it
 includes the overnight gap) positively predicts the same day's last half-hour return.
-Documented drivers: late-informed investors trading toward the close and infrequent
-portfolio rebalancing concentrating correlated flow at the open and close
-(Bogousslavsky 2016). The effect strengthens on high-volatility days. We trade only
-the last half-hour in the direction of the first half-hour, flat overnight.
+Mechanism attribution (per the 2026-07-20 SSRN verification): the verified driver is
+gamma-hedging demand — leveraged/inverse-ETF rebalancing and option market-maker
+hedging concentrate mechanically same-direction flow into the close (Baltussen, Da,
+Lammers & Martens 2021, SSRN 3760365) — rather than Gao's original late-informed-
+investor / infrequent-rebalancing stories (Bogousslavsky 2016 retained as secondary
+theory). The effect is concentrated on high-volatility days: the UNCONDITIONAL sign
+rule is approximately dead OOS post-2013 (QuantConnect replication 2015-2020 Sharpe
+-0.63), while Gao's own first-half-hour realized-vol terciles carry the economics
+(high tercile 14.73%/yr, t=3.8; low tercile 0.54%, dead). We therefore trade only
+the last half-hour, in the direction of the first half-hour, vol-conditioned, flat
+overnight. Do NOT tune the unconditional variant back to life if it fails net.
 
 ## 3. Markets & Timeframes
 
