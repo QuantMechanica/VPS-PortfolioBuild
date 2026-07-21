@@ -1041,6 +1041,12 @@ def _final_closed_state(
     *,
     start_race_observed: bool,
 ) -> dict[str, Any]:
+    if (
+        type(start_race_observed) is not bool
+        or type(quiesced_evidence.get("never_run")) is not bool
+        or quiesced_evidence.get("never_run") is not (not start_race_observed)
+    ):
+        raise ClosureError("quiesced evidence/start-race disposition drift")
     task_contract = str(quiesced_evidence["task_contract_sha256"])
     disabled_xml = str(quiesced_evidence["task_xml_sha256"])
     quiesced_sha = canonical_sha256(quiesced_evidence)
@@ -1575,6 +1581,11 @@ def _receipt_payload(
 ) -> dict[str, Any]:
     if terminal_proof.get("phase") != "CLOSED":
         raise ClosureError("cannot receipt a QUIESCE_PENDING terminal state")
+    start_race_text = terminal_proof.get("start_race")
+    if start_race_text not in {"true", "false"}:
+        raise ClosureError("cannot receipt an invalid start-race disposition")
+    start_race_observed = start_race_text == "true"
+    quiesced_never_run = not start_race_observed
     return {
         "schema_version": SCHEMA_VERSION,
         "artifact_type": "QM5_20002_G1_PRE_OUTCOME_CLOSURE_RECEIPT",
@@ -1599,7 +1610,7 @@ def _receipt_payload(
             "outcome_fence_crossed": False,
                 "no_resume": True,
                 "terminal_error_binds_intent": True,
-                "task_start_race_observed": terminal_proof["start_race"] == "true",
+                "task_start_race_observed": start_race_observed,
         },
         "scheduled_task": {
             "task_name": contract.task_name,
@@ -1616,9 +1627,9 @@ def _receipt_payload(
                 "task_xml_sha256": terminal_proof["xml"],
                 "task_contract_sha256": terminal_proof["contract"],
                 "state": "Disabled",
-                "never_run": True,
+                "never_run": quiesced_never_run,
                 "retention": "CANONICAL_EVIDENCE_SHA256_BOUND_IN_TERMINAL_ERROR",
-                "task_start_race_observed": terminal_proof["start_race"] == "true",
+                "task_start_race_observed": start_race_observed,
             },
             "absent_probe": copy.deepcopy(dict(absent_probe)),
             "absent_probe_sha256": canonical_sha256(absent_probe),

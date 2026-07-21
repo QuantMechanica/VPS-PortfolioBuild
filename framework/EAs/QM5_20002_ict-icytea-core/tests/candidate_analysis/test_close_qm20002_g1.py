@@ -718,6 +718,29 @@ def test_closed_state_is_schema_valid_and_strictly_pre_outcome() -> None:
     assert closed["cells"] == []
 
 
+@pytest.mark.parametrize(
+    ("evidence_started", "start_race_observed"),
+    [(False, True), (True, False)],
+)
+def test_final_state_rejects_quiesced_never_run_race_mismatch(
+    evidence_started: bool, start_race_observed: bool
+) -> None:
+    state = {
+        "status": "REJECT",
+        "terminal": {"error": "QUIESCE_PENDING"},
+    }
+    with pytest.raises(
+        closure.ClosureError,
+        match="quiesced evidence/start-race disposition drift",
+    ):
+        closure._final_closed_state(
+            state,
+            "3" * 64,
+            task_evidence(disabled=True, started=evidence_started),
+            start_race_observed=start_race_observed,
+        )
+
+
 def test_create_new_publication_has_one_winner_under_race(tmp_path: Path) -> None:
     contract = replace(closure.default_contract(), run_root=tmp_path)
     target = tmp_path / "immutable.json"
@@ -791,6 +814,14 @@ def test_each_durable_crash_point_recovers_idempotently(
     assert state["status"] == "REJECT"
     assert state["terminal"]["outcome_fence_crossed"] is False
     assert state["terminal"]["no_resume"] is True
+    receipt = json.loads(contract.receipt_path.read_text(encoding="utf-8"))
+    assert receipt["launch_state"]["task_start_race_observed"] is False
+    assert receipt["scheduled_task"]["quiesced_probe_binding"][
+        "task_start_race_observed"
+    ] is False
+    assert receipt["scheduled_task"]["quiesced_probe_binding"][
+        "never_run"
+    ] is True
     receipt_before = contract.receipt_path.read_bytes()
     again = invoke_fixture(
         contract, fake_auditor, task, utility_sha, helper_sha
@@ -847,6 +878,7 @@ def test_owner_timestamp_parser_rejects_non_z_and_future() -> None:
         "extra_top_level",
         "nested_absent_count",
         "nested_state_after",
+        "quiesced_never_run",
     ],
 )
 def test_mutated_receipt_is_never_accepted_as_already_closed(
@@ -861,8 +893,10 @@ def test_mutated_receipt_is_never_accepted_as_already_closed(
         receipt["unexpected"] = True
     elif mutation == "nested_absent_count":
         receipt["scheduled_task"]["absent_probe"]["dev1_owner_process_count"] = 1
-    else:
+    elif mutation == "nested_state_after":
         receipt["launch_state"]["after"]["sha256"] = "0" * 64
+    else:
+        receipt["scheduled_task"]["quiesced_probe_binding"]["never_run"] = False
     write_json(contract.receipt_path, receipt)
     with pytest.raises(closure.ClosureError):
         invoke_fixture(contract, fake_auditor, task, utility_sha, helper_sha)
@@ -982,4 +1016,7 @@ def test_start_race_observes_durable_reject_before_disable_and_closes(
     assert receipt["scheduled_task"]["quiesced_probe_binding"][
         "task_start_race_observed"
     ] is True
+    assert receipt["scheduled_task"]["quiesced_probe_binding"][
+        "never_run"
+    ] is False
     assert task.exists is False

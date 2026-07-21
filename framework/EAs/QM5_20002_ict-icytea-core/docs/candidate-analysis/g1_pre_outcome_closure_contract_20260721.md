@@ -88,6 +88,13 @@ The receipt binds state before and after, the intent, all historical artifacts,
 ready/quiesced task and XML proofs, the final absence proof, and explicitly
 records `outcome_data_read=false`.
 
+The ready proof always records `never_run=true`. The quiesced proof records
+`never_run=true` only when `task_start_race_observed=false`; if the exact task
+started during the Ready-to-disable race, both the durable terminal disposition
+and receipt record `task_start_race_observed=true` and quiesced
+`never_run=false`. Any disagreement between the native quiesced evidence,
+terminal disposition, and receipt is rejected.
+
 ## Process proof
 
 The task helper does not request or emit process command lines and does not use
