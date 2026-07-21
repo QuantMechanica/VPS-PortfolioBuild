@@ -19,6 +19,14 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+# This helper is dedicated to the consumed QM13209 NDX ATTEMPT_001 namespace.
+# Keep read-only Identity/Inspect and cleanup-only Unregister available, but
+# permanently reject every operation that could recreate or execute the task.
+$terminallyClosedOperations = @('Register', 'Start', 'RunWorker')
+if ($Operation -in $terminallyClosedOperations) {
+    throw "QM13209 NDX ATTEMPT_001 is terminal-invalid; operation '$Operation' is permanently blocked."
+}
+
 function ConvertTo-QmFullPath {
     param([string]$Path, [string]$Label)
     $forbidden = [char[]]@([char]13, [char]10, [char]0, [char]34)

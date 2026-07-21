@@ -182,9 +182,88 @@ class NdxPrescreenContractTests(unittest.TestCase):
                 with self.assertRaises(A.InvalidEvidence):
                     A.validate_factory_database_gate()
 
-    def test_resume_and_wrong_paths_fail_before_any_launch(self) -> None:
-        with self.assertRaises(A.AuthorizationError):
-            A.launch_detached(A.PRE_RECEIPT_PATH, "0" * 64, A.AUTHORIZATION_PATH, A.STATE_PATH, resume=True)
+    def test_terminal_closure_is_exact_and_outcome_blind(self) -> None:
+        closure = A.validate_terminal_closure()
+        self.assertEqual(closure["binding"], A.EXPECTED_TERMINAL_CLOSURE)
+        self.assertEqual(closure["classification"], "DEV2_CUSTOM_HISTORY_TOPOLOGY_DRIFT")
+        payload = A.B.load_json(A.TERMINAL_CLOSURE_PATH)
+        failure = payload["infrastructure_failure"]
+        self.assertEqual(failure["unexpected_addition"], "WS30.DWX")
+        self.assertEqual(
+            failure["expected_custom_history_symbols"],
+            [
+                "EURUSD.DWX",
+                "GBPUSD.DWX",
+                "GDAXI.DWX",
+                "NDX.DWX",
+                "USDJPY.DWX",
+                "XAUUSD.DWX",
+            ],
+        )
+        self.assertEqual(failure["failure_stage"], "PRE_MT5_CUSTOM_HISTORY_TOPOLOGY_GATE")
+        self.assertFalse(failure["mt5_terminal_started"])
+        self.assertFalse(failure["metatester_started"])
+        self.assertFalse(failure["native_run_root_created"])
+        self.assertFalse(payload["outcome_fence"]["economic_report_present"])
+        self.assertFalse(payload["outcome_fence"]["economic_report_opened"])
+        self.assertFalse(payload["outcome_fence"]["strategy_merit_adjudicated"])
+        self.assertIsNone(payload["outcome_fence"]["merit_verdict"])
+        source = function_source("validate_terminal_closure")
+        for forbidden in (
+            ".read_text(",
+            "_parse_dev2_controller_json",
+            "_audit_cell",
+            "audit_native_report",
+            "parse_report",
+        ):
+            self.assertNotIn(forbidden, source)
+
+    def test_terminal_closure_hash_drift_fails_closed(self) -> None:
+        drifted = {**A.EXPECTED_TERMINAL_CLOSURE, "sha256": "0" * 64}
+        with mock.patch.object(A, "EXPECTED_TERMINAL_CLOSURE", drifted):
+            with self.assertRaises(A.InvalidEvidence):
+                A.validate_terminal_closure()
+
+    def test_terminal_closure_blocks_every_execution_or_retry_surface(self) -> None:
+        calls = (
+            ("PRE", lambda: A.preflight("NDX.DWX", Path("data"), Path("build"), A.RUN_ROOT)),
+            (
+                "LAUNCH",
+                lambda: A.launch_detached(
+                    A.PRE_RECEIPT_PATH,
+                    "0" * 64,
+                    A.AUTHORIZATION_PATH,
+                    A.STATE_PATH,
+                    resume=False,
+                ),
+            ),
+            (
+                "RESUME",
+                lambda: A.launch_detached(
+                    A.PRE_RECEIPT_PATH,
+                    "0" * 64,
+                    A.AUTHORIZATION_PATH,
+                    A.STATE_PATH,
+                    resume=True,
+                ),
+            ),
+            ("WORKER", lambda: A._worker_run(A.JOB_PATH)),
+            (
+                "POST",
+                lambda: A.postflight(A.PRE_RECEIPT_PATH, "0" * 64, A.STATE_PATH),
+            ),
+            ("RETRY", lambda: A._block_terminal_operation("RETRY")),
+            (
+                "ATTEMPT_002",
+                lambda: A._assert_run_root(A.RUN_NAMESPACE_ROOT / "ATTEMPT_002"),
+            ),
+        )
+        for operation, call in calls:
+            with self.subTest(operation=operation):
+                with self.assertRaisesRegex(A.AuthorizationError, operation):
+                    call()
+
+    def test_wrong_symbol_still_fails_contract_validation(self) -> None:
         with self.assertRaises(A.InvalidEvidence):
             A.build_plan("NDX", {}, A.RUN_ROOT)
 
@@ -309,6 +388,15 @@ class NdxPrescreenContractTests(unittest.TestCase):
         ):
             self.assertIn(required, helper)
 
+    def test_terminal_helper_blocks_register_start_and_worker_before_task_access(self) -> None:
+        helper = A.SCHEDULED_TASK_HELPER_PATH.read_text(encoding="utf-8")
+        guard = helper.index("$terminallyClosedOperations")
+        task_access = helper.index("$identity = Get-QmIdentity")
+        self.assertLess(guard, task_access)
+        for operation in ("Register", "Start", "RunWorker"):
+            self.assertIn(f"'{operation}'", helper[guard:task_access])
+        self.assertIn("permanently blocked", helper[guard:task_access])
+
     def test_partial_register_and_start_failures_unregister_without_relaunch(self) -> None:
         for failing_operation, expected_operations in (
             ("Register", ["Identity", "Register", "Unregister"]),
@@ -368,6 +456,8 @@ class NdxPrescreenContractTests(unittest.TestCase):
                     JOB_PATH=job_path,
                     CLAIM_PATH=claim_path,
                     LOCK_PATH=lock_path,
+                ), mock.patch.object(
+                    A, "_block_terminal_operation"
                 ), mock.patch.object(A.B, "native_launch_lock", return_value=nullcontext()), mock.patch.object(
                     A, "assert_pre_receipt", return_value=pre
                 ), mock.patch.object(

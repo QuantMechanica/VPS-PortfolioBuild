@@ -94,6 +94,9 @@ SCHEDULED_TASK_PREFIX = "QM_QM13209_NDX_AUDIT_"
 DOC_ROOT = EA_ROOT / "docs" / "candidate-analysis"
 CONTRACT_PATH = DOC_ROOT / "ndx_prescreen_outcome_fenced_analysis_contract_20260721.json"
 OLD_CLOSURE_PATH = DOC_ROOT / "ndx_factory_summary_missing_invalid_infrastructure_closure_20260721.json"
+TERMINAL_CLOSURE_PATH = (
+    DOC_ROOT / "ndx_attempt001_invalid_terminal_infrastructure_closure_20260721.json"
+)
 BUILD_RECEIPT_PATH = DOC_ROOT / "build_receipt_20260721.json"
 BUILD_RESULT_PATH = DOC_ROOT / "build_result_superseding_20260721.json"
 CANONICAL_BUILD_RESULT_PATH = Path(
@@ -154,6 +157,11 @@ EXPECTED_SP500_EVIDENCE = {
     "size": 3305,
     "sha256": "5f5c9cc543648e9504326044f3c00a384e2cc561e3de315e86c327d91b0eedbe",
 }
+EXPECTED_TERMINAL_CLOSURE = {
+    "path": str(TERMINAL_CLOSURE_PATH),
+    "size": 7068,
+    "sha256": "9de139536624a1e82fb1d80f38c6e774a080953fbd6de736277734f90135af40",
+}
 EXPECTED_INFRA_HASHES = {
     "runner": "d3d2bcbcd2d2d52bea4d0a50f501d86e35d48211b67066fad236d5c5d4efc485",
     "runner_child": "6602217a4c27636a9d4faa26086b6be5dfd3a4817b5fa8174640e5160922d6b1",
@@ -175,6 +183,9 @@ _BASE_RUNNER_COMMAND = B.runner_command
 JOB_ARTIFACT_TYPE = "QM5_13209_NDX_PRESCREEN_NATIVE_LAUNCH_JOB"
 STATE_ARTIFACT_TYPE = "QM5_13209_NDX_PRESCREEN_NATIVE_LAUNCH_STATE"
 POST_ARTIFACT_TYPE = "QM5_13209_NDX_PRESCREEN_OUTCOME_FENCED_POST_RECEIPT"
+TERMINALLY_FORBIDDEN_OPERATIONS = frozenset(
+    {"PRE", "LAUNCH", "RESUME", "WORKER", "POST", "RETRY", "ATTEMPT_002"}
+)
 
 
 def _exact_binding(path: Path, expected: Mapping[str, Any], label: str) -> dict[str, Any]:
@@ -184,6 +195,309 @@ def _exact_binding(path: Path, expected: Mapping[str, Any], label: str) -> dict[
     if binding["size"] != int(expected["size"]):
         raise InvalidEvidence(f"{label} size drift")
     return binding
+
+
+def validate_terminal_closure(
+    path: Path = TERMINAL_CLOSURE_PATH,
+) -> dict[str, Any]:
+    """Validate the immutable terminal state without opening outcome files."""
+
+    closure_binding = _exact_binding(
+        path, EXPECTED_TERMINAL_CLOSURE, "terminal NDX attempt closure"
+    )
+    payload = B.load_json(path)
+    expected_root_keys = {
+        "schema_version",
+        "artifact_type",
+        "status",
+        "analysis_id",
+        "attempt_id",
+        "closed_utc",
+        "candidate",
+        "run_namespace",
+        "control_bindings",
+        "terminal_state",
+        "infrastructure_failure",
+        "directory_metadata_closure",
+        "outcome_fence",
+        "terminal_disposition",
+    }
+    if set(payload) != expected_root_keys or any(
+        (
+            payload.get("schema_version") != 1,
+            payload.get("artifact_type")
+            != "QM5_13209_NDX_ATTEMPT001_INVALID_TERMINAL_INFRASTRUCTURE_CLOSURE",
+            payload.get("status")
+            != "INVALID_TERMINAL_INFRASTRUCTURE_CLOSED_NO_RETRY_NO_MERIT_VERDICT",
+            payload.get("analysis_id") != ANALYSIS_ID,
+            payload.get("attempt_id") != "ATTEMPT_001",
+        )
+    ):
+        raise InvalidEvidence("terminal NDX closure identity drift")
+    closed = B.parse_utc(str(payload.get("closed_utc", "")), "terminal closure closed_utc")
+    if closed > datetime.now(timezone.utc) + timedelta(minutes=5):
+        raise InvalidEvidence("terminal NDX closure is future-dated")
+
+    expected_candidate = {
+        "ea_id": EA_LABEL,
+        "research_symbol": RESEARCH_SYMBOL,
+        "timeframe": TIMEFRAME,
+        "model": 4,
+        "cell_id": CELL_ID,
+    }
+    expected_namespace = {
+        "namespace_root": str(RUN_NAMESPACE_ROOT.resolve()),
+        "run_root": str(RUN_ROOT.resolve()),
+        "attempt_directories_exact": ["ATTEMPT_001"],
+        "attempt002_present": False,
+    }
+    if payload.get("candidate") != expected_candidate or payload.get(
+        "run_namespace"
+    ) != expected_namespace:
+        raise InvalidEvidence("terminal NDX candidate/namespace closure drift")
+    if sorted(item.name for item in RUN_NAMESPACE_ROOT.iterdir()) != ["ATTEMPT_001"]:
+        raise InvalidEvidence("terminal NDX namespace was extended after ATTEMPT_001")
+
+    expected_controls = {
+        "pre_receipt": {
+            "path": str(PRE_RECEIPT_PATH.resolve()),
+            "size": 27490,
+            "sha256": "c25e8b950163c221d00319df33ef960a24823215139f67f4633f3e6b710dd3b4",
+        },
+        "authorization": {
+            "path": str(AUTHORIZATION_PATH.resolve()),
+            "size": 812,
+            "sha256": "1b0692d2a344ef5dfecddaaef2d4886b18cd38ab8a9cef5cffd25c158f74530c",
+        },
+        "launch_job": {
+            "path": str(JOB_PATH.resolve()),
+            "size": 2139,
+            "sha256": "9e5ceb1a2f9a5e323d63a09f4651a1077d33623ae5103bd3fc1ec286e9012e8d",
+        },
+        "launch_state": {
+            "path": str(STATE_PATH.resolve()),
+            "size": 7817,
+            "sha256": "73eb37d62eb3bbb7423cc38e90560bb87bb7884c863adf6c64f215a7b0ed1424",
+        },
+        "native_attempt_claim": {
+            "path": str(CLAIM_PATH.resolve()),
+            "size": 3592,
+            "sha256": "f8a1d68ad5cfbdb551b2a1247d543daa43339d932927e0d904e3a9b0e704a5fc",
+        },
+    }
+    controls = payload.get("control_bindings")
+    if controls != expected_controls:
+        raise InvalidEvidence("terminal NDX control-binding closure drift")
+    for role, binding in expected_controls.items():
+        B.assert_binding(binding, f"terminal NDX {role}")
+
+    metadata = payload.get("directory_metadata_closure")
+    if not isinstance(metadata, Mapping):
+        raise InvalidEvidence("terminal NDX directory metadata is missing")
+    actual_directories = sorted(
+        str(item.relative_to(RUN_ROOT))
+        for item in RUN_ROOT.rglob("*")
+        if item.is_dir()
+    )
+    if actual_directories != metadata.get("directories_exact"):
+        raise InvalidEvidence("terminal NDX directory closure drift")
+    actual_files = []
+    for item in sorted(RUN_ROOT.rglob("*"), key=lambda value: str(value).casefold()):
+        if not item.is_file():
+            continue
+        binding = B.file_binding(item)
+        actual_files.append(
+            {
+                "relative_path": str(item.relative_to(RUN_ROOT)),
+                "size": binding["size"],
+                "sha256": binding["sha256"],
+            }
+        )
+    expected_files = metadata.get("files_exact")
+    if not isinstance(expected_files, list):
+        raise InvalidEvidence("terminal NDX file ledger is missing")
+    expected_files = sorted(expected_files, key=lambda row: str(row["relative_path"]).casefold())
+    actual_files = sorted(actual_files, key=lambda row: row["relative_path"].casefold())
+    if actual_files != expected_files or any(
+        (
+            metadata.get("inspection_mode")
+            != "PATH_TYPE_SIZE_SHA256_ONLY_EXCEPT_POST_FENCED_INFRASTRUCTURE_STDERR_DIAGNOSTIC",
+            metadata.get("exact_file_closure") is not True,
+            metadata.get("controller_stdout_size") != 0,
+            metadata.get("controller_stderr_size") != 872,
+            metadata.get("native_result_file_count") != 0,
+            metadata.get("native_summary_file_count") != 0,
+            metadata.get("native_report_file_count") != 0,
+            metadata.get("post_receipt_present") is not False,
+        )
+    ):
+        raise InvalidEvidence("terminal NDX exact file closure drift")
+
+    state = B.load_json(STATE_PATH)
+    cells = state.get("cells")
+    if not isinstance(cells, list) or len(cells) != 1 or not isinstance(cells[0], Mapping):
+        raise InvalidEvidence("terminal NDX state cell closure drift")
+    cell = cells[0]
+    attempts = cell.get("attempts")
+    if not isinstance(attempts, list) or len(attempts) != 1 or not isinstance(
+        attempts[0], Mapping
+    ):
+        raise InvalidEvidence("terminal NDX attempt count drift")
+    attempt = attempts[0]
+    cleanup = state.get("scheduler_cleanup")
+    expected_cleanup = {
+        "status": "PASS",
+        "operation": "Unregister",
+        "state": "Absent",
+        "cleanup": "UNREGISTERED",
+        "task_name": "QM_QM13209_NDX_AUDIT_9ea9e19e84280aaf42c2a3b4",
+    }
+    expected_terminal_state = {
+        "status": "INVALID_TERMINAL",
+        "cell_status": "INVALID_TERMINAL_OUTPUT",
+        "controller_attempt_count": 1,
+        "controller_exit_code": 1,
+        "controller_started_utc": "2026-07-21T12:43:02.583261+00:00",
+        "controller_finished_utc": "2026-07-21T12:43:16.814502+00:00",
+        "outcome_possible_since_utc": "2026-07-21T12:43:02.583261+00:00",
+        "worker_pid": None,
+        "active_cell": None,
+        "runner_result": None,
+        "native_result": None,
+        "native_root": None,
+        "summary": None,
+        "outcome_artifacts": [],
+        "scheduler_cleanup": expected_cleanup,
+    }
+    if (
+        payload.get("terminal_state") != expected_terminal_state
+        or state.get("status") != "INVALID_TERMINAL"
+        or state.get("worker_pid") is not None
+        or state.get("active_cell") is not None
+        or cell.get("cell_id") != CELL_ID
+        or cell.get("status") != "INVALID_TERMINAL_OUTPUT"
+        or attempt.get("exit_code") != 1
+        or attempt.get("started_utc")
+        != expected_terminal_state["controller_started_utc"]
+        or attempt.get("finished_utc")
+        != expected_terminal_state["controller_finished_utc"]
+        or attempt.get("runner_result") is not None
+        or attempt.get("native_result") is not None
+        or attempt.get("native_root") is not None
+        or attempt.get("summary") is not None
+        or attempt.get("outcome_artifacts") != []
+        or state.get("outcome_possible_since_utc")
+        != expected_terminal_state["outcome_possible_since_utc"]
+        or not isinstance(cleanup, Mapping)
+        or {key: cleanup.get(key) for key in expected_cleanup} != expected_cleanup
+    ):
+        raise InvalidEvidence("terminal NDX state semantic closure drift")
+    stdout_binding = {
+        "path": str((RUN_ROOT / "native" / CELL_ID / "controller.stdout.log").resolve()),
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    }
+    stderr_binding = {
+        "path": str((RUN_ROOT / "native" / CELL_ID / "controller.stderr.log").resolve()),
+        "size": 872,
+        "sha256": "97f0ad0fb80bcc3c140a36ded78cdc71301422c15588a977531bc8d483e0844b",
+    }
+    if (
+        attempt.get("stdout") != stdout_binding
+        or attempt.get("stderr") != stderr_binding
+        or attempt.get("sealed_artifacts") != [stderr_binding, stdout_binding]
+        or attempt.get("controller_output_opened") is not False
+        or attempt.get("native_output_opened") is not False
+    ):
+        raise InvalidEvidence("terminal NDX opaque controller binding drift")
+    if state.get("outcome_fence") != {
+        "post_is_first_controller_and_native_outcome_reader": True,
+        "worker_opens_controller_stderr": False,
+        "worker_opens_controller_stdout": False,
+        "worker_opens_native_reports": False,
+        "worker_parses_market_values": False,
+        "worker_seals_paths_types_sizes_hashes_only": True,
+    }:
+        raise InvalidEvidence("terminal NDX worker outcome fence drift")
+
+    expected_failure = {
+        "classification": "DEV2_CUSTOM_HISTORY_TOPOLOGY_DRIFT",
+        "failure_stage": "PRE_MT5_CUSTOM_HISTORY_TOPOLOGY_GATE",
+        "mt5_terminal_started": False,
+        "metatester_started": False,
+        "native_run_root_created": False,
+        "source": "CONTROLLER_STDERR_DIAGNOSTIC_OPENED_ONLY_AFTER_POST_FENCE",
+        "expected_custom_history_symbols": [
+            "EURUSD.DWX",
+            "GBPUSD.DWX",
+            "GDAXI.DWX",
+            "NDX.DWX",
+            "USDJPY.DWX",
+            "XAUUSD.DWX",
+        ],
+        "unexpected_addition": "WS30.DWX",
+        "strategy_merit_cause": False,
+        "parameter_cause": False,
+    }
+    expected_fence = {
+        "worker_opened_controller_stdout": False,
+        "worker_opened_controller_stderr": False,
+        "worker_opened_native_reports": False,
+        "post_fence_crossed_before_infrastructure_diagnostic": True,
+        "controller_stderr_diagnostic_opened_after_post_fence": True,
+        "economic_report_present": False,
+        "economic_report_opened": False,
+        "native_result_opened": False,
+        "deal_rows_parsed": False,
+        "market_values_parsed": False,
+        "strategy_merit_adjudicated": False,
+        "merit_verdict": None,
+    }
+    expected_disposition = {
+        "one_shot_attempt001_consumed": True,
+        "pre_permitted": False,
+        "launch_permitted": False,
+        "resume_permitted": False,
+        "worker_permitted": False,
+        "post_permitted": False,
+        "retry_permitted": False,
+        "attempt002_permitted": False,
+        "terminal_hopping_permitted": False,
+        "remaining_attempt_budget": 0,
+        "attempt001_controls_and_artifacts_must_remain_immutable": True,
+    }
+    if (
+        payload.get("infrastructure_failure") != expected_failure
+        or payload.get("outcome_fence") != expected_fence
+        or payload.get("terminal_disposition") != expected_disposition
+    ):
+        raise InvalidEvidence("terminal NDX disposition/outcome-fence drift")
+    _probe_task_absence(expected_cleanup["task_name"])
+    authorization = B.load_json(AUTHORIZATION_PATH)
+    claim = B.load_json(CLAIM_PATH)
+    if (
+        authorization.get("resume_relaunch_retry_forbidden") is not True
+        or claim.get("resume_relaunch_retry_forbidden") is not True
+        or claim.get("run_root") != str(RUN_ROOT.resolve())
+    ):
+        raise InvalidEvidence("terminal NDX one-shot claim/authorization drift")
+    B.assert_binding(closure_binding, "stable terminal NDX closure")
+    return {
+        "binding": closure_binding,
+        "status": payload["status"],
+        "classification": expected_failure["classification"],
+    }
+
+
+def _block_terminal_operation(operation: str) -> None:
+    normalized = operation.upper()
+    if normalized not in TERMINALLY_FORBIDDEN_OPERATIONS:
+        raise ValueError(f"unknown terminal operation: {operation}")
+    closure = validate_terminal_closure()
+    raise AuthorizationError(
+        f"QM13209 NDX ATTEMPT_001 is terminal-invalid; {normalized} is permanently "
+        f"forbidden by {closure['binding']['sha256']}"
+    )
 
 
 def _assert_exact_control(path: Path, expected: Path, label: str) -> Path:
@@ -198,6 +512,8 @@ def enforce_symbol_policy(symbol: str) -> None:
 
 
 def _assert_run_root(path: Path) -> Path:
+    if path.resolve() == (RUN_NAMESPACE_ROOT / "ATTEMPT_002").resolve():
+        _block_terminal_operation("ATTEMPT_002")
     return _assert_exact_control(path, RUN_ROOT, "run root")
 
 
@@ -634,6 +950,7 @@ def build_plan(symbol: str, set_binding: Mapping[str, Any], run_root: Path) -> d
 
 
 def preflight(symbol: str, data_receipt_path: Path, build_receipt_path: Path, run_root: Path) -> dict[str, Any]:
+    _block_terminal_operation("PRE")
     enforce_symbol_policy(symbol)
     _assert_run_root(run_root)
     _assert_exact_control(data_receipt_path, DATA_RECEIPT_PATH, "data receipt")
@@ -990,6 +1307,7 @@ def launch_detached(
     *,
     resume: bool,
 ) -> dict[str, Any]:
+    _block_terminal_operation("RESUME" if resume else "LAUNCH")
     if resume:
         raise AuthorizationError("one-shot NDX prescreen never permits resume")
     for observed, expected, label in (
@@ -1113,6 +1431,7 @@ def _seal_controller_attempt(
 def _worker_run(job_path: Path) -> int:
     """Execute once and seal bytes without opening controller/native outputs."""
 
+    _block_terminal_operation("WORKER")
     state_path = STATE_PATH
     pre: Mapping[str, Any] | None = None
     job: Mapping[str, Any] | None = None
@@ -1552,6 +1871,7 @@ def _validate_complete_state(
 
 
 def postflight(pre_path: Path, pre_sha256: str, state_path: Path) -> dict[str, Any]:
+    _block_terminal_operation("POST")
     _assert_exact_control(pre_path, PRE_RECEIPT_PATH, "PRE receipt")
     _assert_exact_control(state_path, STATE_PATH, "launch state")
     pre = assert_pre_receipt(pre_path, pre_sha256)

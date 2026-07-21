@@ -1,0 +1,191 @@
+{
+  "schema_version": 1,
+  "artifact_type": "QM5_13209_NDX_ATTEMPT001_INVALID_TERMINAL_INFRASTRUCTURE_CLOSURE",
+  "status": "INVALID_TERMINAL_INFRASTRUCTURE_CLOSED_NO_RETRY_NO_MERIT_VERDICT",
+  "analysis_id": "QM5_13209_MULHAM_PM_RANGE_SWEEP_NDX_PRESCREEN_NATIVE_001",
+  "attempt_id": "ATTEMPT_001",
+  "closed_utc": "2026-07-21T12:46:30.7082011Z",
+  "candidate": {
+    "ea_id": "QM5_13209",
+    "research_symbol": "NDX.DWX",
+    "timeframe": "M5",
+    "model": 4,
+    "cell_id": "PRESCREEN_2022H2"
+  },
+  "run_namespace": {
+    "namespace_root": "D:\\QM\\reports\\candidate_analysis\\QM5_13209\\NDX_PM_RANGE_SWEEP_NATIVE_001",
+    "run_root": "D:\\QM\\reports\\candidate_analysis\\QM5_13209\\NDX_PM_RANGE_SWEEP_NATIVE_001\\ATTEMPT_001",
+    "attempt_directories_exact": [
+      "ATTEMPT_001"
+    ],
+    "attempt002_present": false
+  },
+  "control_bindings": {
+    "pre_receipt": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_13209\\NDX_PM_RANGE_SWEEP_NATIVE_001\\ATTEMPT_001\\pre_receipt.json",
+      "size": 27490,
+      "sha256": "c25e8b950163c221d00319df33ef960a24823215139f67f4633f3e6b710dd3b4"
+    },
+    "authorization": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_13209\\NDX_PM_RANGE_SWEEP_NATIVE_001\\ATTEMPT_001\\native_outcome_authorization.json",
+      "size": 812,
+      "sha256": "1b0692d2a344ef5dfecddaaef2d4886b18cd38ab8a9cef5cffd25c158f74530c"
+    },
+    "launch_job": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_13209\\NDX_PM_RANGE_SWEEP_NATIVE_001\\ATTEMPT_001\\launch_job.json",
+      "size": 2139,
+      "sha256": "9e5ceb1a2f9a5e323d63a09f4651a1077d33623ae5103bd3fc1ec286e9012e8d"
+    },
+    "launch_state": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_13209\\NDX_PM_RANGE_SWEEP_NATIVE_001\\ATTEMPT_001\\launch_state.json",
+      "size": 7817,
+      "sha256": "73eb37d62eb3bbb7423cc38e90560bb87bb7884c863adf6c64f215a7b0ed1424"
+    },
+    "native_attempt_claim": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_13209\\NDX_PM_RANGE_SWEEP_NATIVE_001\\ATTEMPT_001\\native_attempt_claim.json",
+      "size": 3592,
+      "sha256": "f8a1d68ad5cfbdb551b2a1247d543daa43339d932927e0d904e3a9b0e704a5fc"
+    }
+  },
+  "terminal_state": {
+    "status": "INVALID_TERMINAL",
+    "cell_status": "INVALID_TERMINAL_OUTPUT",
+    "controller_attempt_count": 1,
+    "controller_exit_code": 1,
+    "controller_started_utc": "2026-07-21T12:43:02.583261+00:00",
+    "controller_finished_utc": "2026-07-21T12:43:16.814502+00:00",
+    "outcome_possible_since_utc": "2026-07-21T12:43:02.583261+00:00",
+    "worker_pid": null,
+    "active_cell": null,
+    "runner_result": null,
+    "native_result": null,
+    "native_root": null,
+    "summary": null,
+    "outcome_artifacts": [],
+    "scheduler_cleanup": {
+      "status": "PASS",
+      "operation": "Unregister",
+      "state": "Absent",
+      "cleanup": "UNREGISTERED",
+      "task_name": "QM_QM13209_NDX_AUDIT_9ea9e19e84280aaf42c2a3b4"
+    }
+  },
+  "infrastructure_failure": {
+    "classification": "DEV2_CUSTOM_HISTORY_TOPOLOGY_DRIFT",
+    "failure_stage": "PRE_MT5_CUSTOM_HISTORY_TOPOLOGY_GATE",
+    "mt5_terminal_started": false,
+    "metatester_started": false,
+    "native_run_root_created": false,
+    "source": "CONTROLLER_STDERR_DIAGNOSTIC_OPENED_ONLY_AFTER_POST_FENCE",
+    "expected_custom_history_symbols": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "GDAXI.DWX",
+      "NDX.DWX",
+      "USDJPY.DWX",
+      "XAUUSD.DWX"
+    ],
+    "unexpected_addition": "WS30.DWX",
+    "strategy_merit_cause": false,
+    "parameter_cause": false
+  },
+  "directory_metadata_closure": {
+    "inspection_mode": "PATH_TYPE_SIZE_SHA256_ONLY_EXCEPT_POST_FENCED_INFRASTRUCTURE_STDERR_DIAGNOSTIC",
+    "directories_exact": [
+      "control",
+      "native",
+      "native\\PRESCREEN_2022H2"
+    ],
+    "files_exact": [
+      {
+        "relative_path": "control\\dev2_machine_credential_probe.json",
+        "size": 747,
+        "sha256": "23034f2e57ac0345c6bf45b6ca90300ec9c9c56081815c3c1bede5ad716df0de"
+      },
+      {
+        "relative_path": "control\\dev2_machine_credential_probe.stderr.log",
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "relative_path": "control\\dev2_machine_credential_probe.stdout.log",
+        "size": 48,
+        "sha256": "e28ad5859d8acd2dbe9e04c21db9d3fe507afaa2b19b52db6c7bfbc82340e856"
+      },
+      {
+        "relative_path": "launch_job.json",
+        "size": 2139,
+        "sha256": "9e5ceb1a2f9a5e323d63a09f4651a1077d33623ae5103bd3fc1ec286e9012e8d"
+      },
+      {
+        "relative_path": "launch_state.json",
+        "size": 7817,
+        "sha256": "73eb37d62eb3bbb7423cc38e90560bb87bb7884c863adf6c64f215a7b0ed1424"
+      },
+      {
+        "relative_path": "native_attempt_claim.json",
+        "size": 3592,
+        "sha256": "f8a1d68ad5cfbdb551b2a1247d543daa43339d932927e0d904e3a9b0e704a5fc"
+      },
+      {
+        "relative_path": "native_launch.lock",
+        "size": 1,
+        "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+      },
+      {
+        "relative_path": "native_outcome_authorization.json",
+        "size": 812,
+        "sha256": "1b0692d2a344ef5dfecddaaef2d4886b18cd38ab8a9cef5cffd25c158f74530c"
+      },
+      {
+        "relative_path": "native\\PRESCREEN_2022H2\\controller.stderr.log",
+        "size": 872,
+        "sha256": "97f0ad0fb80bcc3c140a36ded78cdc71301422c15588a977531bc8d483e0844b"
+      },
+      {
+        "relative_path": "native\\PRESCREEN_2022H2\\controller.stdout.log",
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "relative_path": "pre_receipt.json",
+        "size": 27490,
+        "sha256": "c25e8b950163c221d00319df33ef960a24823215139f67f4633f3e6b710dd3b4"
+      }
+    ],
+    "exact_file_closure": true,
+    "controller_stdout_size": 0,
+    "controller_stderr_size": 872,
+    "native_result_file_count": 0,
+    "native_summary_file_count": 0,
+    "native_report_file_count": 0,
+    "post_receipt_present": false
+  },
+  "outcome_fence": {
+    "worker_opened_controller_stdout": false,
+    "worker_opened_controller_stderr": false,
+    "worker_opened_native_reports": false,
+    "post_fence_crossed_before_infrastructure_diagnostic": true,
+    "controller_stderr_diagnostic_opened_after_post_fence": true,
+    "economic_report_present": false,
+    "economic_report_opened": false,
+    "native_result_opened": false,
+    "deal_rows_parsed": false,
+    "market_values_parsed": false,
+    "strategy_merit_adjudicated": false,
+    "merit_verdict": null
+  },
+  "terminal_disposition": {
+    "one_shot_attempt001_consumed": true,
+    "pre_permitted": false,
+    "launch_permitted": false,
+    "resume_permitted": false,
+    "worker_permitted": false,
+    "post_permitted": false,
+    "retry_permitted": false,
+    "attempt002_permitted": false,
+    "terminal_hopping_permitted": false,
+    "remaining_attempt_budget": 0,
+    "attempt001_controls_and_artifacts_must_remain_immutable": true
+  }
+}
