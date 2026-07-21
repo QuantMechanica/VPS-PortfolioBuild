@@ -157,6 +157,7 @@ _BASE_RESOLVE_COST_SCHEDULE = B.resolve_cost_schedule
 _BASE_RECONSTRUCT_TRADES = B._reconstruct_trades
 _BASE_EVALUATE_MERIT = B.evaluate_merit
 _BASE_LOAD_BOUND_NEWS_EVENTS = B.load_bound_news_events
+_BASE_VALIDATE_TRADE_SEMANTICS = B.validate_trade_semantics
 
 
 def _configure_private_profile() -> None:
@@ -640,6 +641,18 @@ def load_bound_news_events(pre: Mapping[str, Any]) -> tuple[Any, ...]:
     return events
 
 
+def validate_trade_semantics(
+    trades: Sequence[Any], news_events: Sequence[Any]
+) -> dict[str, Any]:
+    if any(event.currency != "USD" or event.impact != "HIGH" for event in news_events):
+        raise B.InvalidEvidence("XAU semantic audit accepts only bound USD high-impact events")
+    receipt = _BASE_VALIDATE_TRADE_SEMANTICS(trades, news_events)
+    if receipt.pop("no_fill_inside_bound_eur_usd_high_impact_blackout", None) is not True:
+        raise B.InvalidEvidence("base news-semantic receipt drift")
+    receipt["no_fill_inside_bound_usd_high_impact_blackout"] = True
+    return receipt
+
+
 def _contract_receipt() -> dict[str, Any]:
     return validate_analysis_contract(CONTRACT_PATH)
 
@@ -766,6 +779,7 @@ B.resolve_cost_schedule = resolve_cost_schedule
 B._reconstruct_trades = _reconstruct_trades
 B.evaluate_merit = evaluate_merit
 B.load_bound_news_events = load_bound_news_events
+B.validate_trade_semantics = validate_trade_semantics
 B.preflight = preflight
 B.assert_pre_receipt = assert_pre_receipt
 B.validate_authorization = validate_authorization
