@@ -2063,6 +2063,13 @@ def _receipt_payload(
 ) -> dict[str, Any]:
     if terminal_proof.get("phase") != "CLOSED":
         raise ClosureError("cannot receipt a QUIESCE_PENDING terminal state")
+    _validate_recorded_binding(anchor_binding, "receipt quiescence anchor")
+    if (
+        terminal_proof.get("anchor") != anchor_binding.get("sha256")
+        or terminal_proof.get("anchor_binding")
+        != canonical_sha256(anchor_binding)
+    ):
+        raise ClosureError("cannot receipt a state with a different quiescence anchor")
     start_race_text = terminal_proof.get("start_race")
     if start_race_text not in {"true", "false"}:
         raise ClosureError("cannot receipt an invalid start-race disposition")
@@ -2679,6 +2686,15 @@ def close_g1(
                 auditor,
                 require_final=True,
             )
+            control_call(contract, "AssertFile", contract.anchor_path)
+            anchor, anchor_binding = _load_and_validate_final_anchor(
+                contract,
+                proof,
+                chain,
+                intent_binding,
+                intent,
+                auditor,
+            )
             fresh_absent = task_call(
                 contract,
                 job,
@@ -2703,6 +2719,7 @@ def close_g1(
                     intent_binding,
                     intent,
                     state_after_binding,
+                    anchor_binding,
                     proof,
                     fresh_absent,
                 )
@@ -2715,6 +2732,7 @@ def close_g1(
                     intent_binding,
                     intent,
                     state_after_binding,
+                    anchor_binding,
                     proof,
                     fresh_absent,
                 )
