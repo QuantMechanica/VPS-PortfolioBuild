@@ -30,6 +30,14 @@ The EA waits for a completed H1 candle to run a stop hunt through the most recen
 | `strategy_pending_bars` | 10 | 1-100 | H1 bars before an unfilled limit order expires. |
 | `strategy_time_exit_bars` | 36 | 1-500 | Maximum H1 bars to hold an open position. |
 | `strategy_structure_lookback` | 80 | 20-500 | H1 bars scanned for recent swings and opposing liquidity. |
+| `strategy_max_spread_atr_fraction` | 0.20 | >0 | Execution-safety guard: block new orders when live spread exceeds this fraction of closed H1 ATR(14). The default deliberately matches the card's existing 0.20 ATR stop-buffer scale; it is not symbol/outcome calibrated. |
+
+**Spread-guard provenance:** the explicit entry guard is required by the
+QM5_10629 rework directive in
+`D:\QM\strategy_farm\artifacts\verdicts\review_028ddeae-f90a-4b8f-a766-0eede693b995.json`.
+That directive does not authorize a fixed symbol-point threshold.  The EA
+therefore uses a dimensionless ATR fraction tied to the approved stop-buffer
+default instead of inventing or outcome-tuning a USDJPY points value.
 
 > Note: framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
 > qm_news_mode, qm_rng_seed, qm_stress_reject_probability, qm_friday_close_*)
@@ -102,3 +110,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-13 | Initial build from card | 43c7efed-e638-4f73-a0de-6b00ab61ff2b |
+| v2 | 2026-07-21 | Source-fidelity repair | Enforce distinct closed-bar sweep/BOS/FVG/order stages, deterministic restart reconstruction, spread gate, and closed-bar opposite-BOS exit. |
