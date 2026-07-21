@@ -919,9 +919,10 @@ def _validate_quiesce_probe(
         or not isinstance(probe.get("after"), Mapping)
     ):
         raise ClosureError("quiesce probe envelope drift")
+    before_disabled = probe["before"].get("enabled") is False
     _validate_task_evidence(
         probe["before"],
-        disabled=False,
+        disabled=before_disabled,
         label="quiesce before",
         require_never_run=False,
         allow_running=True,
@@ -933,6 +934,16 @@ def _validate_quiesce_probe(
         require_never_run=False,
         allow_running=True,
     )
+    if (
+        probe["before"].get("task_contract_sha256")
+        != probe["after"].get("task_contract_sha256")
+        or (
+            before_disabled
+            and probe["before"].get("task_xml_sha256")
+            != probe["after"].get("task_xml_sha256")
+        )
+    ):
+        raise ClosureError("quiesce before/after task identity drift")
     observed_race = (
         probe["before"].get("state") == "Running"
         or probe["before"].get("never_run") is not True
@@ -1841,6 +1852,7 @@ def _quiescence_anchor_payload(
     if (
         type(start_race_observed) is not bool
         or start_race_observed is not expected_race
+        or evidence_race is not start_race_observed
         or quiesced_evidence.get("task_contract_sha256")
         != intent["task"]["task_contract_sha256"]
     ):

@@ -98,7 +98,9 @@ class FakeTaskRuntime:
         self.preterminal_dev1_owner_count = 0
         self.preterminal_dev1_root_count = 0
         self.await_forgets_start_race = False
+        self.crash_after_quiesce_side_effect_once = False
         self.last_preterminal_evidence: dict[str, Any] | None = None
+        self.last_preterminal_probe: dict[str, Any] | None = None
         self.operations: list[str] = []
 
     def __call__(
@@ -150,12 +152,14 @@ class FakeTaskRuntime:
                     "INFERRED_FROM_CALLER_HELD_STATE_LOCK_WITH_STABLE_COMMAND_LINE_FREE_DEV1_INVENTORY"
                 )
             self.last_preterminal_evidence = copy.deepcopy(evidence)
-            return {
+            probe = {
                 **common,
                 "principal_sid": "S-1-5-21-1",
                 "evidence": evidence,
                 "absent": False,
             }
+            self.last_preterminal_probe = copy.deepcopy(probe)
+            return probe
         if operation == "Quiesce":
             if not self.exists:
                 raise closure.ClosureError("absent")
@@ -166,6 +170,9 @@ class FakeTaskRuntime:
             assert "closure_phase=QUIESCE_PENDING" in persisted["terminal"]["error"]
             before = task_evidence(disabled=not self.enabled)
             self.enabled = False
+            if self.crash_after_quiesce_side_effect_once:
+                self.crash_after_quiesce_side_effect_once = False
+                raise RuntimeError("simulated crash after Disable-ScheduledTask")
             after = task_evidence(disabled=True, started=self.started_race)
             if self.started_race:
                 after["state"] = "Running"
@@ -745,6 +752,11 @@ def test_closed_state_is_schema_valid_and_strictly_pre_outcome() -> None:
         "terminal": None,
     }
     evidence = task_evidence(disabled=True)
+    ready_evidence = task_evidence(disabled=False)
+    preterminal_probe = {
+        "operation": "InspectReadyOrRunning",
+        "evidence": ready_evidence,
+    }
     intent = {
         "task": {
             "ready_task_xml_sha256": hashlib.sha256(b"ready").hexdigest(),
@@ -755,11 +767,16 @@ def test_closed_state_is_schema_valid_and_strictly_pre_outcome() -> None:
         state,
         "3" * 64,
         intent,
-        task_evidence(disabled=False),
+        preterminal_probe,
+        ready_evidence,
         start_race_observed=False,
     )
     closed = closure._final_closed_state(
-        preliminary, "3" * 64, evidence, start_race_observed=False
+        preliminary,
+        "3" * 64,
+        evidence,
+        {"path": r"C:\anchor.json", "size": 1, "sha256": "4" * 64},
+        start_race_observed=False,
     )
     auditor._validate_launch_state_shape(closed)
     proof = closure._terminal_proof(closed, "3" * 64)
@@ -788,6 +805,7 @@ def test_final_state_rejects_quiesced_never_run_race_mismatch(
             state,
             "3" * 64,
             task_evidence(disabled=True, started=evidence_started),
+            {"path": r"C:\anchor.json", "size": 1, "sha256": "4" * 64},
             start_race_observed=start_race_observed,
         )
 
@@ -825,6 +843,7 @@ def test_create_new_publication_has_one_winner_under_race(tmp_path: Path) -> Non
         "after_intent",
         "after_preliminary_state",
         "after_quiesce",
+        "after_anchor",
         "after_state",
         "after_unregister",
         "after_receipt",
@@ -866,6 +885,8 @@ def test_each_durable_crash_point_recovers_idempotently(
     assert state["terminal"]["outcome_fence_crossed"] is False
     assert state["terminal"]["no_resume"] is True
     receipt = json.loads(contract.receipt_path.read_text(encoding="utf-8"))
+    assert contract.anchor_path.is_file()
+    assert receipt["quiescence_anchor"] == bind(contract.anchor_path)
     assert receipt["launch_state"]["task_start_race_observed"] is False
     assert receipt["scheduled_task"]["quiesced_probe_binding"][
         "task_start_race_observed"
@@ -884,8 +905,10 @@ def test_each_durable_crash_point_recovers_idempotently(
 def test_default_contract_is_exactly_run_local_and_frozen() -> None:
     contract = closure.default_contract()
     assert contract.intent_path.parent == contract.run_root
+    assert contract.anchor_path.parent == contract.run_root
     assert contract.receipt_path.parent == contract.run_root
     assert contract.intent_path.name == "g1_pre_outcome_closure_intent.json"
+    assert contract.anchor_path.name == "g1_pre_outcome_quiescence_anchor.json"
     assert contract.receipt_path.name == "g1_pre_outcome_closure_receipt.json"
     assert contract.state_before_sha256 == (
         "7aa51ce458420431db4cac94e500d3da07b82261312ba334cb80a7b420433ce7"
@@ -1103,15 +1126,20 @@ def test_start_between_intent_and_preterminal_probe_is_rejected_before_disable(
     assert pending["status"] == "REJECT"
     assert "closure_phase=QUIESCE_PENDING" in pending["terminal"]["error"]
     assert "task_start_race_observed=true" in pending["terminal"]["error"]
-    assert "preterminal_evidence_sha256=" in pending["terminal"]["error"]
+    assert "preterminal_probe_payload_b64=" in pending["terminal"]["error"]
+    assert "preterminal_probe_sha256=" in pending["terminal"]["error"]
     assert task.last_preterminal_evidence is not None
+    assert task.last_preterminal_probe is not None
     pending_match = closure.TERMINAL_PENDING_ERROR.fullmatch(
         pending["terminal"]["error"]
     )
     assert pending_match is not None
     assert pending_match.group("preterminal") == closure.canonical_sha256(
-        task.last_preterminal_evidence
+        task.last_preterminal_probe
     )
+    assert closure.decode_canonical_b64(
+        pending_match.group("preterminal_payload"), "test pre-terminal probe"
+    ) == task.last_preterminal_probe
     if preterminal_state == "Running":
         assert task.last_preterminal_evidence["dev1_owner_process_count"] == 1
         assert task.last_preterminal_evidence["dev1_root_process_count"] == 1
