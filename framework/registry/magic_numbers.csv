@@ -15105,3 +15105,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20026,tom-settlement-trough,2,SP500.DWX,200260002,2026-07-21,Development,active
 20026,tom-settlement-trough,3,WS30.DWX,200260003,2026-07-21,Development,active
 13212,mulham-us500-org,0,SP500.DWX,132120000,2026-07-21,Development,active
+20028,wti-dom1-long,0,XTIUSD.DWX,200280000,2026-07-21,Development,active
