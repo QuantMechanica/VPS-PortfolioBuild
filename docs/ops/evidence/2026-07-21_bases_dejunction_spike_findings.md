@@ -94,9 +94,33 @@ on their OWN NDX/EURUSD during sync). **Fleet total 45** vs pre-fix **300-700 PE
 work_item logs). The residual is the expected transient cold-sync burst, settling to ~0 as
 the last terminals finish; the mitigation self-heals any report discard in that window.
 
-**The shared-bases history-lock storm — which burned ~2/3 of index gate attempts — is
-structurally fixed, factory-ON, no weekend/OFF-window seeding needed.** Rollback available
-(fleet_dejunction.ps1 -Rollback, factory OFF) if ever needed.
+The cross-terminal storm was ELIMINATED (proof above). BUT — see the rollback below.
+
+## ★ ROLLED BACK — no-seed causes a disk-pressure Factory_OFF loop (2026-07-21 ~15:2x)
+
+The no-seed fix has a fatal side effect at current disk headroom: each terminal
+re-downloads its conversion history from the server into its OWN store (9x partial
+duplication of what was one shared 22 GB store — up to ~80 GB distributed as terminals
+touch more symbols). During that cold-sync, D: free dropped below 80 GB, which TRIGGERS
+`tester_cache_purge.ps1` (LowWaterGB=80): it runs `Factory_OFF` -> purge -> restart, and
+the restart-after-purge left the factory OFF (flag present, 0 workers). Result: a
+Factory_OFF loop (two outages: 11:22 during the disk cleanup, 14:40 during the cold-sync;
+both were tester_cache_purge tripping <80 GB, NOT a mystery killer — that earlier
+"unidentified cause" is now identified).
+
+**Decision: rolled the fleet fix back** (`fleet_dejunction.ps1 -Rollback` — all 9 terminals
+restored to the shared junction, 6.5 GB duplicate reclaimed, D: back to 98 GB), then
+Factory_ON. A fix that puts the factory in an OFF loop is worse than the storm it cures
+(the storm is mitigation-covered — victims self-heal). The storm returns but does NOT kill
+throughput the way the OFF loop does.
+
+**The fix is PROVEN correct (0 storm, validated under load) but is NOT viable at current
+disk headroom.** To re-apply it needs EITHER: (a) enough free disk that the full ~80 GB
+distributed duplication sits above the 80 GB purge threshold (i.e. ~160-180 GB free — need
+to free ~60-80 GB more, carefully, from the 155 GB live-sleeve pipeline data), OR (b) a
+seeded variant done in a real OFF window with a raised/paused purge threshold, OR (c) lower
+tester_cache_purge's threshold during the cold-sync window. Deferred until disk is freed.
+Standing state: shared junction + the deployed storm-mitigation (self-heals storm victims).
 
 ## Status / urgency — REVISED
 The no-seed fleet fix is validated factory-ON. The fleet rollout (restructure T2..T10:
