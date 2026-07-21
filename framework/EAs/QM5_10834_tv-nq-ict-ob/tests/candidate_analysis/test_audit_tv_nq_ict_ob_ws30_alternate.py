@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import base64
 import copy
 import importlib.util
 import inspect
+import json
 import shutil
 import subprocess
 import sys
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -40,6 +43,355 @@ def _git_result(
     )
 
 
+def _write_json(path: Path, payload: object) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+
+
+def _relocated_rotation_receipt_fixture(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> tuple[dict[str, dict[str, object]], Path, dict[str, object], datetime]:
+    main_root = tmp_path / "main"
+    runtime_root = tmp_path / "runtime"
+    origin_helper = main_root / subject.CREDENTIAL_HELPER_RELATIVE_PATH
+    origin_child = main_root / subject.IDENTITY_PROBE_CHILD_RELATIVE_PATH
+    runtime_helper = runtime_root / subject.CREDENTIAL_HELPER_RELATIVE_PATH
+    runtime_child = runtime_root / subject.IDENTITY_PROBE_CHILD_RELATIVE_PATH
+    for path, content in (
+        (origin_helper, b"exact helper bytes\n"),
+        (runtime_helper, b"exact helper bytes\n"),
+        (origin_child, b"exact identity child bytes\n"),
+        (runtime_child, b"exact identity child bytes\n"),
+    ):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(content)
+
+    external_root = tmp_path / "external"
+    credential = external_root / "credential.machine-dpapi.json"
+    receipt_path = external_root / "credential.rotation-receipt.json"
+    legacy = external_root / "credential.clixml"
+    legacy.parent.mkdir(parents=True, exist_ok=True)
+    legacy.write_bytes(b"legacy credential")
+    lane_path = runtime_root / "framework" / "registry" / "dev2_lane_contract.json"
+    rotation_root = tmp_path / "credential-rotation"
+    rotation_id = "20260720T120000Z_" + "a" * 32
+    identity_request_path = (
+        rotation_root / rotation_id / "control" / "identity_probe_request.json"
+    )
+    identity_result_path = (
+        rotation_root / rotation_id / "output" / "identity_probe_result.json"
+    )
+
+    monkeypatch.setattr(subject, "MAIN_WORKTREE_ROOT", main_root)
+    monkeypatch.setattr(subject, "REPO_ROOT", runtime_root)
+    monkeypatch.setattr(subject.B, "MACHINE_CREDENTIAL_PATH", credential)
+    monkeypatch.setattr(
+        subject.B, "MACHINE_CREDENTIAL_ROTATION_RECEIPT_PATH", receipt_path
+    )
+    monkeypatch.setattr(subject.B, "CREDENTIAL_HELPER_PATH", runtime_helper)
+    monkeypatch.setattr(subject.B, "IDENTITY_PROBE_CHILD_PATH", runtime_child)
+    monkeypatch.setattr(subject.B, "LEGACY_CREDENTIAL_PATH", legacy)
+    monkeypatch.setattr(subject.B, "DEV2_LANE_CONTRACT_PATH", lane_path)
+    monkeypatch.setattr(subject.B, "DEV2_CREDENTIAL_ROTATION_ROOT", rotation_root)
+
+    now = datetime.now(timezone.utc)
+    target_account = r"TESTHOST\QMDev2"
+    target_sid = "S-1-5-21-111-222-333-1001"
+    generation_id = "b" * 32
+    lane = {
+        "schema_version": 3,
+        "contract_id": "QM_DEV2_ISOLATED_MT5_LANE_V3",
+        "lane": "DEV2",
+        "identity": {
+            "local_user": "QMDev2",
+            "profile": r"C:\Users\QMDev2",
+            "credential": str(credential.resolve()),
+            "credential_format": "QM_DEV2_MACHINE_DPAPI_CREDENTIAL",
+            "dpapi_scope": "LocalMachine",
+            "limited_non_admin": True,
+        },
+    }
+    _write_json(lane_path, lane)
+    credential_payload = {
+        "schema_version": 1,
+        "artifact_type": "QM_DEV2_MACHINE_DPAPI_CREDENTIAL",
+        "contract_id": lane["contract_id"],
+        "lane": "DEV2",
+        "account": target_account,
+        "target_sid": target_sid,
+        "host_account_domain_sid": "S-1-5-21-111-222-333",
+        "dpapi_scope": "LocalMachine",
+        "text_encoding": "UTF-8",
+        "generation_id": generation_id,
+        "created_utc": (now - timedelta(minutes=3)).isoformat(),
+        "ciphertext_base64": base64.b64encode(b"x" * 64).decode("ascii"),
+    }
+    _write_json(credential, credential_payload)
+    identity_request = {
+        "schema_version": 1,
+        "artifact_type": "QM_DEV2_IDENTITY_PROBE_REQUEST",
+        "nonce": "c" * 32,
+        "created_utc": (now - timedelta(minutes=2, seconds=30)).isoformat(),
+        "expires_utc": (now + timedelta(minutes=7, seconds=30)).isoformat(),
+        "expected_account": target_account,
+        "expected_sid": target_sid,
+        "expected_profile": r"C:\Users\QMDev2",
+        "expected_task_name": "QM_DEV2_SMOKE_" + "e" * 32,
+        "result_path": str(identity_result_path.resolve()),
+    }
+    _write_json(identity_request_path, identity_request)
+    identity_result = {
+        "schema_version": 1,
+        "artifact_type": "QM_DEV2_IDENTITY_PROBE_RESULT",
+        "status": "PASS",
+        "completed_utc": (now - timedelta(minutes=2)).isoformat(),
+        "nonce": "c" * 32,
+        "account": target_account,
+        "sid": target_sid,
+        "profile": r"C:\Users\QMDev2",
+        "limited_non_admin": True,
+        "request_sha256": subject.B.sha256_file(identity_request_path),
+    }
+    _write_json(identity_result_path, identity_result)
+
+    credential_binding = subject.B.file_binding(credential)
+    helper_binding = subject.B.file_binding(runtime_helper)
+    child_binding = subject.B.file_binding(runtime_child)
+    receipt = {
+        "schema_version": 1,
+        "artifact_type": "QM_DEV2_MACHINE_CREDENTIAL_ROTATION_RECEIPT",
+        "status": "PASS",
+        "completed_utc": (now - timedelta(minutes=1)).isoformat(),
+        "contract_id": lane["contract_id"],
+        "target_account": target_account,
+        "target_sid": target_sid,
+        "target_disabled_at_rest": True,
+        "target_password_required_at_rest": True,
+        "machine_credential_path": credential_binding["path"],
+        "machine_credential_sha256": credential_binding["sha256"],
+        "machine_credential_generation_id": generation_id,
+        "machine_credential_helper_path": str(origin_helper.resolve()),
+        "machine_credential_helper_sha256": helper_binding["sha256"],
+        "identity_probe_child_path": str(origin_child.resolve()),
+        "identity_probe_child_sha256": child_binding["sha256"],
+        "identity_probe_result_path": str(identity_result_path.resolve()),
+        "identity_probe_result_sha256": subject.B.sha256_file(identity_result_path),
+        "identity_probe_logon_type": "Password",
+        "identity_probe_run_level": "Limited",
+        "machine_credential_matches_proved_password": True,
+        "published_after_identity_proof": True,
+        "legacy_credential_path": str(legacy.resolve()),
+        "legacy_credential_preserved": True,
+        "cleanup_lease_disarmed": True,
+        "owner_process_count": 0,
+        "dev2_root_process_count": 0,
+    }
+    _write_json(receipt_path, receipt)
+    bindings = {
+        "dev2_lane_contract": subject.B.file_binding(lane_path),
+        "dev2_machine_credential": credential_binding,
+        "dev2_machine_credential_helper": helper_binding,
+        "dev2_identity_probe_child": child_binding,
+        "dev2_machine_credential_rotation_receipt": subject.B.file_binding(
+            receipt_path
+        ),
+    }
+    return bindings, receipt_path, receipt, now
+
+
+def test_rotation_receipt_projects_signed_origins_to_runtime_and_runs_full_validator(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    bindings, _receipt_path, receipt, now = _relocated_rotation_receipt_fixture(
+        tmp_path, monkeypatch
+    )
+    opened: list[Path] = []
+    saved_loader = subject.B.load_json
+    saved_file_binding = subject.B.file_binding
+    saved_sha256_file = subject.B.sha256_file
+
+    def reject_main(path: Path) -> None:
+        candidate = Path(path)
+        if subject._main_repo_relative(candidate) is not None:
+            raise AssertionError(f"main-worktree evidence was read: {candidate}")
+        opened.append(candidate)
+
+    def guarded_loader(path: Path):
+        reject_main(path)
+        return saved_loader(path)
+
+    def guarded_file_binding(path: Path, expected_sha256: str | None = None):
+        reject_main(path)
+        return saved_file_binding(path, expected_sha256)
+
+    def guarded_sha256_file(path: Path) -> str:
+        reject_main(path)
+        return saved_sha256_file(path)
+
+    monkeypatch.setattr(subject.B, "load_json", guarded_loader)
+    monkeypatch.setattr(subject.B, "file_binding", guarded_file_binding)
+    monkeypatch.setattr(subject.B, "sha256_file", guarded_sha256_file)
+    validated = subject.validate_relocated_machine_credential_rotation_receipt(
+        bindings, now=now
+    )
+
+    projected = copy.deepcopy(receipt)
+    projected["machine_credential_helper_path"] = bindings[
+        "dev2_machine_credential_helper"
+    ]["path"]
+    projected["identity_probe_child_path"] = bindings[
+        "dev2_identity_probe_child"
+    ]["path"]
+    assert validated["receipt_payload_sha256"] == subject.B.canonical_sha256(
+        receipt
+    )
+    assert validated["receipt_payload_sha256"] != subject.B.canonical_sha256(
+        projected
+    )
+    assert validated["machine_credential_helper"] == bindings[
+        "dev2_machine_credential_helper"
+    ]
+    assert validated["identity_probe_child"] == bindings[
+        "dev2_identity_probe_child"
+    ]
+    assert subject.B.load_json is guarded_loader
+    assert opened
+    assert all(subject._main_repo_relative(path) is None for path in opened)
+
+
+@pytest.mark.parametrize(
+    ("field", "mutation", "message"),
+    (
+        (
+            "machine_credential_helper_path",
+            "wrong_path",
+            "helper origin path is not canonical",
+        ),
+        (
+            "machine_credential_helper_sha256",
+            "wrong_hash",
+            "helper hash differs from runtime binding",
+        ),
+        (
+            "machine_credential_helper_path",
+            "normalized_alias",
+            "helper origin path is not canonical",
+        ),
+        (
+            "identity_probe_child_path",
+            "wrong_path",
+            "identity-child origin path is not canonical",
+        ),
+        (
+            "identity_probe_child_sha256",
+            "wrong_hash",
+            "identity-child hash differs from runtime binding",
+        ),
+        (
+            "identity_probe_child_path",
+            "normalized_alias",
+            "identity-child origin path is not canonical",
+        ),
+    ),
+)
+def test_rotation_receipt_rejects_wrong_signed_origin_or_runtime_hash(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    field: str,
+    mutation: str,
+    message: str,
+) -> None:
+    bindings, receipt_path, receipt, now = _relocated_rotation_receipt_fixture(
+        tmp_path, monkeypatch
+    )
+    if mutation == "wrong_path":
+        receipt[field] = str(
+            (tmp_path / "wrong-origin" / f"{field}.ps1").resolve()
+        )
+    elif mutation == "normalized_alias":
+        exact = Path(str(receipt[field]))
+        receipt[field] = str(exact.parent / ".." / exact.parent.name / exact.name)
+    else:
+        receipt[field] = "0" * 64
+    _write_json(receipt_path, receipt)
+    bindings["dev2_machine_credential_rotation_receipt"] = subject.B.file_binding(
+        receipt_path
+    )
+
+    def forbidden_base(*_args, **_kwargs):
+        raise AssertionError("base validator must not see invalid signed provenance")
+
+    monkeypatch.setattr(
+        subject,
+        "_BASE_VALIDATE_MACHINE_CREDENTIAL_ROTATION_RECEIPT",
+        forbidden_base,
+    )
+    with pytest.raises(subject.B.InvalidEvidence, match=message):
+        subject.validate_relocated_machine_credential_rotation_receipt(
+            bindings, now=now
+        )
+
+
+@pytest.mark.parametrize(
+    ("role", "relative_path", "message"),
+    (
+        (
+            "dev2_machine_credential_helper",
+            subject.CREDENTIAL_HELPER_RELATIVE_PATH,
+            "helper bound path is not the exact runtime path",
+        ),
+        (
+            "dev2_identity_probe_child",
+            subject.IDENTITY_PROBE_CHILD_RELATIVE_PATH,
+            "identity-probe child bound path is not the exact runtime path",
+        ),
+    ),
+)
+def test_rotation_receipt_rejects_main_origin_as_executable_binding(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    role: str,
+    relative_path: Path,
+    message: str,
+) -> None:
+    bindings, _receipt_path, _receipt, now = _relocated_rotation_receipt_fixture(
+        tmp_path, monkeypatch
+    )
+    bindings[role] = {
+        **bindings[role],
+        "path": str((subject.MAIN_WORKTREE_ROOT / relative_path).resolve()),
+    }
+    with pytest.raises(subject.B.InvalidEvidence, match=message):
+        subject.validate_relocated_machine_credential_rotation_receipt(
+            bindings, now=now
+        )
+
+
+def test_rotation_receipt_loader_hook_is_restored_when_base_validation_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    bindings, _receipt_path, _receipt, now = _relocated_rotation_receipt_fixture(
+        tmp_path, monkeypatch
+    )
+    saved_loader = subject.B.load_json
+
+    def fail_after_projection(*_args, **_kwargs):
+        raise subject.B.InvalidEvidence("later rotation proof drift")
+
+    monkeypatch.setattr(
+        subject,
+        "_BASE_VALIDATE_MACHINE_CREDENTIAL_ROTATION_RECEIPT",
+        fail_after_projection,
+    )
+    with pytest.raises(subject.B.InvalidEvidence, match="later rotation proof drift"):
+        subject.validate_relocated_machine_credential_rotation_receipt(
+            bindings, now=now
+        )
+    assert subject.B.load_json is saved_loader
+
+
 def test_alternate_contract_is_hash_bound_and_semantically_valid() -> None:
     contract = subject.validate_alternate_contract()
     assert contract["status"] == (
@@ -65,9 +417,9 @@ def test_alternate_contract_is_hash_bound_and_semantically_valid() -> None:
         "alternate_pre_and_worker_must_not_open_main_worktree_evidence_files"
     ] is True
     scoped = contract["immutable_runtime"]["main_worktree_scoped_path_policy"]
-    assert scoped["path_count"] == subject.MAIN_SCOPED_PATH_COUNT == 53
+    assert scoped["path_count"] == subject.HISTORICAL_MAIN_SCOPED_PATH_COUNT == 53
     assert scoped["relative_path_list_canonical_sha256"] == (
-        subject.MAIN_SCOPED_PATH_LIST_SHA256
+        subject.HISTORICAL_MAIN_SCOPED_PATH_LIST_SHA256
     )
     assert contract["immutable_runtime"][
         "unrelated_main_worktree_paths_may_be_dirty"
@@ -91,6 +443,117 @@ def test_alternate_contract_is_hash_bound_and_semantically_valid() -> None:
     assert contract["launch_gate"][
         "unrelated_main_worktree_dirt_does_not_block"
     ] is True
+
+
+def test_invalid_runtime_materialization_is_closed_before_pre_without_consuming_attempt() -> None:
+    closure = subject.validate_invalid_runtime_materialization_closure()
+    assert closure["status"] == (
+        "INVALID_RUNTIME_MATERIALIZATION_CLOSED_BEFORE_PRE_ATTEMPT_UNCONSUMED"
+    )
+    assert closure["native_attempt"] == {
+        "attempt_number": 2,
+        "claim_sequence": 2,
+        "run_root": str(subject.ALTERNATE_RUN_ROOT),
+        "claim_path": str(subject.ALTERNATE_CLAIM_PATH),
+        "pre_receipt_created": False,
+        "authorization_created": False,
+        "claim_created": False,
+        "launch_job_created": False,
+        "launch_state_created": False,
+        "native_process_started": False,
+        "attempt_consumed": False,
+    }
+    invalid = closure["invalid_materialization"]
+    assert invalid["runtime_worktree"] == str(subject.INVALID_RUNTIME_WORKTREE_ROOT)
+    assert invalid["runtime_receipt"] == {
+        "path": str(subject.INVALID_RUNTIME_RECEIPT_PATH),
+        "size": 13053,
+        "sha256": (
+            "5877c55922fae1a57e975709fef606662137e480ed251ec30ba4f6d5d1a5149c"
+        ),
+    }
+    assert closure["outcome_fence"]["native_reports_opened"] is False
+    assert closure["outcome_fence"]["controller_logs_opened"] is False
+    assert closure["outcome_fence"]["strategy_outcomes_read"] is False
+
+
+def test_runtime_fix001_contract_separates_materialization_not_native_attempt() -> None:
+    contract = subject.validate_runtime_fix_contract()
+    attempt = contract["native_attempt_identity"]
+    assert attempt["attempt_number"] == 2
+    assert attempt["claim_sequence"] == 2
+    assert attempt["run_root"] == str(subject.ALTERNATE_RUN_ROOT)
+    assert attempt["claim_path"] == str(subject.ALTERNATE_CLAIM_PATH)
+    assert attempt["attempt_consumed_before_fix"] is False
+    assert attempt["same_native_attempt_not_a_retry"] is True
+    runtime = contract["superseding_runtime_materialization"]
+    assert runtime["invalid_runtime_worktree"] == str(
+        subject.INVALID_RUNTIME_WORKTREE_ROOT
+    )
+    assert runtime["invalid_runtime_receipt"] == str(
+        subject.INVALID_RUNTIME_RECEIPT_PATH
+    )
+    assert runtime["runtime_worktree_root"] == str(subject.RUNTIME_WORKTREE_ROOT)
+    assert runtime["runtime_receipt_path"] == str(subject.RUNTIME_RECEIPT_PATH)
+    assert subject.RUNTIME_WORKTREE_ROOT != subject.INVALID_RUNTIME_WORKTREE_ROOT
+    assert subject.RUNTIME_RECEIPT_PATH != subject.INVALID_RUNTIME_RECEIPT_PATH
+    dependency = contract["dependency_closure"]
+    assert dependency["historical_materialization_path_count"] == 53
+    assert dependency["technical_diagnosis_path_count"] == 54
+    assert dependency["executable_fix001_path_count"] == 56
+    assert dependency["executable_fix001_path_list_canonical_sha256"] == (
+        subject.MAIN_SCOPED_PATH_LIST_SHA256
+    )
+
+
+def test_invalid_runtime_closure_rejects_any_claim_that_attempt_was_consumed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    saved_loader = subject.B.load_json
+    closure_lexical = subject.W._lexical_path(subject.INVALID_RUNTIME_CLOSURE_PATH)
+
+    def drifted_loader(path: Path):
+        payload = saved_loader(path)
+        if subject.W._lexical_path(path) == closure_lexical:
+            payload = copy.deepcopy(payload)
+            payload["native_attempt"]["attempt_consumed"] = True
+        return payload
+
+    monkeypatch.setattr(subject.B, "load_json", drifted_loader)
+    with pytest.raises(subject.B.InvalidEvidence, match="attempt-consumption drift"):
+        subject.validate_invalid_runtime_materialization_closure()
+
+
+def test_fix001_unconsumed_gate_is_limited_to_materialization_and_pre(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    run_root = tmp_path / "run"
+    claim = tmp_path / "claims" / "attempt002.json"
+    monkeypatch.setattr(subject, "ALTERNATE_RUN_ROOT", run_root)
+    monkeypatch.setattr(subject, "ALTERNATE_PRE_RECEIPT_PATH", run_root / "pre.json")
+    monkeypatch.setattr(
+        subject, "ALTERNATE_AUTHORIZATION_PATH", run_root / "authorization.json"
+    )
+    monkeypatch.setattr(subject, "ALTERNATE_CLAIM_PATH", claim)
+    monkeypatch.setattr(subject, "ALTERNATE_JOB_PATH", run_root / "job.json")
+    monkeypatch.setattr(subject, "ALTERNATE_STATE_PATH", run_root / "state.json")
+    monkeypatch.setattr(subject, "ALTERNATE_POST_RECEIPT_PATH", run_root / "post.json")
+    subject._assert_fix001_native_attempt_still_unconsumed("PRE")
+    run_root.mkdir(parents=True)
+    subject.ALTERNATE_PRE_RECEIPT_PATH.write_text("sealed PRE", encoding="utf-8")
+    with pytest.raises(subject.B.InvalidEvidence, match="PRE receipt exists"):
+        subject._assert_fix001_native_attempt_still_unconsumed("materialization")
+    assert "_assert_fix001_native_attempt_still_unconsumed" not in inspect.getsource(
+        subject.validate_invalid_runtime_materialization_closure
+    )
+
+
+def test_materializer_can_only_publish_fix001_receipt_and_never_old_receipt() -> None:
+    source = inspect.getsource(subject.materialize_runtime)
+    assert "B.atomic_json(RUNTIME_RECEIPT_PATH" in source
+    assert "B.atomic_json(INVALID_RUNTIME_RECEIPT_PATH" not in source
+    assert "str(RUNTIME_WORKTREE_ROOT)" in source
+    assert "str(INVALID_RUNTIME_WORKTREE_ROOT)" not in source
 
 
 def test_primary_contract_absolute_origin_paths_are_parser_only_and_restored(
@@ -283,13 +746,22 @@ def test_bound_repository_byte_overlay_preserves_mixed_eol_exactly(
 
 def test_runtime_dependency_closure_includes_all_pre_and_recursive_include_roles() -> None:
     relatives = subject._repository_binding_relative_paths()
-    assert len(relatives) == 53
+    assert len(relatives) == 56
     assert (
         "framework/EAs/QM5_10834_tv-nq-ict-ob/tools/candidate_analysis/"
         "audit_tv_nq_ict_ob_ws30_alternate.py"
     ) in relatives
     assert "framework/include/QM/QM_Common.mqh" in relatives
     assert "framework/calibrations/VPS_SLIPPAGE_LATENCY_CALIBRATION_V2.json" in relatives
+    assert "framework/scripts/invoke_dev2_identity_probe.ps1" in relatives
+    assert (
+        "framework/EAs/QM5_10834_tv-nq-ict-ob/docs/candidate-analysis/"
+        "ws30_alt002_runtime_materialization_invalid_closure_20260721.json"
+    ) in relatives
+    assert (
+        "framework/EAs/QM5_10834_tv-nq-ict-ob/docs/candidate-analysis/"
+        "ws30_transport_infra_alternate002_runtime_fix001_contract_20260721.json"
+    ) in relatives
 
 
 def test_materializer_overlays_exact_bound_bytes_before_sealing_ledger() -> None:
@@ -375,7 +847,7 @@ def test_alternate_has_separate_one_shot_namespace_and_claim_profile() -> None:
     assert contract["resume_permitted"] is False
     assert contract["further_attempts_forbidden"] is True
     assert contract["main_worktree_scoped_paths_clean_at_launch_required"] is True
-    assert contract["main_worktree_scoped_path_count"] == 53
+    assert contract["main_worktree_scoped_path_count"] == 56
     assert contract["unrelated_main_worktree_dirt_ignored"] is True
 
 
@@ -386,8 +858,11 @@ def test_alternate_runtime_binds_every_imported_and_execution_dependency() -> No
         "base_tool",
         "ws30_primary_adapter",
         "alternate_contract",
+        "runtime_fix_contract",
+        "invalid_runtime_materialization_closure",
         "primary_invalid_infra_closure",
         "alternate_runtime_materialization_receipt",
+        "dev2_identity_probe_child",
         "runner",
         "runner_child",
         "scheduled_task_helper",
@@ -655,11 +1130,15 @@ def test_main_scoped_clean_head_rejects_dirt_inside_exact_scope(
         )
 
 
-def test_main_scope_identity_is_exact_53_file_dependency_closure() -> None:
+def test_main_scope_identity_is_exact_56_file_dependency_closure() -> None:
     relatives = subject._main_scoped_relative_paths()
-    assert len(relatives) == subject.MAIN_SCOPED_PATH_COUNT == 53
+    assert len(relatives) == subject.MAIN_SCOPED_PATH_COUNT == 56
     assert subject.B.canonical_sha256(list(relatives)) == (
         subject.MAIN_SCOPED_PATH_LIST_SHA256
+    )
+    assert "framework/scripts/invoke_dev2_identity_probe.ps1" in relatives
+    assert subject.B.canonical_sha256(list(relatives)) == (
+        "b6f88751e1eb4345a48dc041d795c49fa2023da472abe59a115bcb7290ec31fd"
     )
     assert "framework/registry/event_vocabulary.json" not in relatives
 

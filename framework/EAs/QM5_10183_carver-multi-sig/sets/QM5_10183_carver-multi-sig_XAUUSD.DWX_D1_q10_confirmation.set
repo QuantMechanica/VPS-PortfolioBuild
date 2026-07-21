@@ -1,0 +1,45 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10183
+; ea_slug:      carver-multi-sig
+; ea_version:   v5.0
+; set_version:  s20260627-001
+; symbol:       XAUUSD.DWX
+; timeframe:    D1
+; environment:  q10_full_history_confirmation
+; magic_slot:   34
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   89645819a177ff2646c3b788b2c3c3f2e139566a44676ea7c592aec136886cf6
+; author:       Development
+; date:         2026-06-27
+;==========================================================
+qm_magic_slot_offset=34
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; core filter library params; filter-on/off variants must be pre-declared
+qm_filter_news_enabled=1
+qm_filter_news_mode=3
+qm_filter_regime_enabled=0
+qm_filter_regime_lookback_bars=100
+qm_filter_regime_bull_return_pct=2.0
+qm_filter_regime_bear_return_pct=2.0
+qm_filter_volatility_enabled=0
+qm_filter_volatility_atr_period=14
+qm_filter_volatility_lookback_bars=50
+qm_filter_volatility_compression_ratio=0.75
+qm_filter_volatility_expansion_ratio=1.25
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=framework/EAs/QM5_10183_carver-multi-sig/docs/strategy_card.md
+strategy_use_mac_family=true
+strategy_use_mbo_family=true
+strategy_shorts_enabled=true
+strategy_warmup_bars=340
+strategy_vol_days=252
+strategy_stop_vol_fraction=0.5
+strategy_mac_family_weight=0.5
+strategy_mbo_family_weight=0.5
+qm_news_temporal=QM_NEWS_TEMPORAL_PRE30_POST30
+qm_news_compliance=QM_NEWS_COMPLIANCE_DXZ
+qm_stress_reject_probability=0.0000

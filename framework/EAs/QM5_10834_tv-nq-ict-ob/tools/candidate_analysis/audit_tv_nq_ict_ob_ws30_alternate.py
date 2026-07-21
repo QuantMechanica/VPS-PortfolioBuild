@@ -50,10 +50,25 @@ MAIN_WORKTREE_ROOT = Path(r"C:\QM\repo")
 MAIN_EA_ROOT = (
     MAIN_WORKTREE_ROOT / "framework" / "EAs" / "QM5_10834_tv-nq-ict-ob"
 )
-RUNTIME_WORKTREE_ROOT = Path(r"C:\QM\runtime_worktrees\QM5_10834_WS30_ALT002")
-RUNTIME_RECEIPT_PATH = Path(
+CREDENTIAL_HELPER_RELATIVE_PATH = Path(
+    "framework/scripts/dev2_machine_credential.ps1"
+)
+IDENTITY_PROBE_CHILD_RELATIVE_PATH = Path(
+    "framework/scripts/invoke_dev2_identity_probe.ps1"
+)
+INVALID_RUNTIME_WORKTREE_ROOT = Path(
+    r"C:\QM\runtime_worktrees\QM5_10834_WS30_ALT002"
+)
+INVALID_RUNTIME_RECEIPT_PATH = Path(
     r"D:\QM\reports\candidate_analysis\QM5_10834\runtime"
     r"\WS30_ICT_OB_TRANSPORT_INFRA_ALTERNATE_002_runtime_receipt.json"
+)
+RUNTIME_WORKTREE_ROOT = Path(
+    r"C:\QM\runtime_worktrees\QM5_10834_WS30_ALT002_FIX001"
+)
+RUNTIME_RECEIPT_PATH = Path(
+    r"D:\QM\reports\candidate_analysis\QM5_10834\runtime"
+    r"\WS30_ICT_OB_TRANSPORT_INFRA_ALTERNATE_002_runtime_fix001_receipt.json"
 )
 ALTERNATE_RUN_ROOT = W.ALTERNATE_RUN_ROOT
 ALTERNATE_PRE_RECEIPT_PATH = ALTERNATE_RUN_ROOT / "pre_receipt.json"
@@ -82,6 +97,24 @@ ALTERNATE_CONTRACT_PATH = (
 EXPECTED_ALTERNATE_CONTRACT_SHA256 = (
     "8414d4d52bf8e3c31d08fc27189ce259cc156695be108052af0ffa55ab22a284"
 )
+INVALID_RUNTIME_CLOSURE_PATH = (
+    EA_ROOT
+    / "docs"
+    / "candidate-analysis"
+    / "ws30_alt002_runtime_materialization_invalid_closure_20260721.json"
+)
+RUNTIME_FIX_CONTRACT_PATH = (
+    EA_ROOT
+    / "docs"
+    / "candidate-analysis"
+    / "ws30_transport_infra_alternate002_runtime_fix001_contract_20260721.json"
+)
+EXPECTED_INVALID_RUNTIME_CLOSURE_SHA256 = (
+    "ba32fcfcdd8c5b30efdf8ca5db0816a50d4339950cd334cef2b608e70bbf5674"
+)
+EXPECTED_RUNTIME_FIX_CONTRACT_SHA256 = (
+    "878cae427b5f24f8b82ae72d1b4959527b5425d8501d8631e442157bf2bb45b2"
+)
 EXPECTED_DATA_RECEIPT_SIZE = 29800
 EXPECTED_DATA_RECEIPT_SHA256 = (
     "bd398f53d31e7c91667069e6b2c5b6ec466bb2630fb0934436a3b8f75aedd401"
@@ -97,9 +130,17 @@ EXPECTED_BASE_AUDITOR_SIZE = 239116
 EXPECTED_BASE_AUDITOR_SHA256 = (
     "58101fefced46392f26bd24aae0e7520d8ee591d97d1e50a759efd46b693f013"
 )
-MAIN_SCOPED_PATH_COUNT = 53
-MAIN_SCOPED_PATH_LIST_SHA256 = (
+HISTORICAL_MAIN_SCOPED_PATH_COUNT = 53
+HISTORICAL_MAIN_SCOPED_PATH_LIST_SHA256 = (
     "1bc5d9e2fe51aa27926bae55e6fb888b3cde1a43a1df08c22e0f78f2b6b8758a"
+)
+TECHNICAL_DIAGNOSIS_PATH_COUNT = 54
+TECHNICAL_DIAGNOSIS_PATH_LIST_SHA256 = (
+    "69a9ddbb82904c625a84ae1559d3f6182f1ff14e6820a21d1e019f76556117ed"
+)
+MAIN_SCOPED_PATH_COUNT = 56
+MAIN_SCOPED_PATH_LIST_SHA256 = (
+    "b6f88751e1eb4345a48dc041d795c49fa2023da472abe59a115bcb7290ec31fd"
 )
 
 EXPECTED_DATA_RECEIPT_REPO_BINDING_LOCATIONS = frozenset(
@@ -177,8 +218,11 @@ ALTERNATE_RUNTIME_BINDING_ROLES = tuple(
             "tool",
             "ws30_primary_adapter",
             "alternate_contract",
+            "runtime_fix_contract",
+            "invalid_runtime_materialization_closure",
             "primary_invalid_infra_closure",
             "alternate_runtime_materialization_receipt",
+            "dev2_identity_probe_child",
         )
     )
 )
@@ -190,7 +234,9 @@ _BASE_EXECUTION_CONTRACT = W._BASE_EXECUTION_CONTRACT
 _BASE_CLAIM_BASIS = W._BASE_CLAIM_BASIS
 _BASE_LAUNCH_DETACHED = B.launch_detached
 _BASE_VALIDATE_BACKTEST_DATA_RECEIPT = B.validate_backtest_data_receipt
-_ORIGINAL_LOAD_JSON = B.load_json
+_BASE_VALIDATE_MACHINE_CREDENTIAL_ROTATION_RECEIPT = (
+    B.validate_machine_credential_rotation_receipt
+)
 
 
 def _configure_alternate_profile() -> None:
@@ -209,8 +255,11 @@ def _configure_alternate_profile() -> None:
         | {
             "ws30_primary_adapter",
             "alternate_contract",
+            "runtime_fix_contract",
+            "invalid_runtime_materialization_closure",
             "primary_invalid_infra_closure",
             "alternate_runtime_materialization_receipt",
+            "dev2_identity_probe_child",
         }
     )
 
@@ -501,7 +550,7 @@ def validate_alternate_contract() -> dict[str, Any]:
         Path(str(runtime.get("source_main_worktree", ""))).resolve()
         != MAIN_WORKTREE_ROOT.resolve()
         or Path(str(runtime.get("runtime_worktree_root", ""))).resolve()
-        != RUNTIME_WORKTREE_ROOT.resolve()
+        != INVALID_RUNTIME_WORKTREE_ROOT.resolve()
         or runtime.get("runtime_tool_relative_path")
         != str(TOOL_PATH.relative_to(REPO_ROOT)).replace("\\", "/")
         or any(
@@ -537,8 +586,10 @@ def validate_alternate_contract() -> dict[str, Any]:
     scoped_policy = runtime.get("main_worktree_scoped_path_policy")
     if not isinstance(scoped_policy, Mapping) or scoped_policy != {
         "basis": "EXACT_RUNTIME_PRE_INCLUDE_AND_CONTRACT_ARTIFACT_DEPENDENCY_CLOSURE",
-        "path_count": MAIN_SCOPED_PATH_COUNT,
-        "relative_path_list_canonical_sha256": MAIN_SCOPED_PATH_LIST_SHA256,
+        "path_count": HISTORICAL_MAIN_SCOPED_PATH_COUNT,
+        "relative_path_list_canonical_sha256": (
+            HISTORICAL_MAIN_SCOPED_PATH_LIST_SHA256
+        ),
         "git_status_uses_literal_pathspecs_only": True,
         "source_to_runtime_exact_byte_identity_required": True,
     }:
@@ -569,6 +620,444 @@ def validate_alternate_contract() -> dict[str, Any]:
     ):
         raise B.InvalidEvidence("alternate scoped launch gate drift")
     B.assert_binding(binding, "alternate execution contract")
+    return payload
+
+
+def validate_invalid_runtime_materialization_closure() -> dict[str, Any]:
+    binding = B.file_binding(
+        INVALID_RUNTIME_CLOSURE_PATH, EXPECTED_INVALID_RUNTIME_CLOSURE_SHA256
+    )
+    if binding["size"] != 4477:
+        raise B.InvalidEvidence("invalid-runtime closure size drift")
+    payload = B.load_json(INVALID_RUNTIME_CLOSURE_PATH)
+    if set(payload) != {
+        "schema_version",
+        "artifact_type",
+        "status",
+        "created_utc",
+        "analysis_id",
+        "native_attempt",
+        "historical_contract",
+        "invalid_materialization",
+        "credential_rotation_evidence",
+        "outcome_fence",
+        "disposition",
+    } or (
+        payload.get("schema_version") != 1
+        or payload.get("artifact_type")
+        != "QM5_10834_WS30_ALT002_RUNTIME_MATERIALIZATION_INVALID_CLOSURE"
+        or payload.get("status")
+        != "INVALID_RUNTIME_MATERIALIZATION_CLOSED_BEFORE_PRE_ATTEMPT_UNCONSUMED"
+        or payload.get("analysis_id") != ANALYSIS_ID
+    ):
+        raise B.InvalidEvidence("invalid-runtime closure identity drift")
+    W._strict_created_utc(payload.get("created_utc"), "invalid-runtime closure created_utc")
+
+    if payload.get("native_attempt") != {
+        "attempt_number": 2,
+        "claim_sequence": 2,
+        "run_root": str(ALTERNATE_RUN_ROOT),
+        "claim_path": str(ALTERNATE_CLAIM_PATH),
+        "pre_receipt_created": False,
+        "authorization_created": False,
+        "claim_created": False,
+        "launch_job_created": False,
+        "launch_state_created": False,
+        "native_process_started": False,
+        "attempt_consumed": False,
+    }:
+        raise B.InvalidEvidence("invalid-runtime closure attempt-consumption drift")
+    expected_historical_contract = {
+        "path": (
+            "framework/EAs/QM5_10834_tv-nq-ict-ob/docs/candidate-analysis/"
+            "ws30_transport_infra_alternate002_contract_20260721.json"
+        ),
+        "size": 7777,
+        "sha256": EXPECTED_ALTERNATE_CONTRACT_SHA256,
+    }
+    if payload.get("historical_contract") != expected_historical_contract:
+        raise B.InvalidEvidence("invalid-runtime historical contract drift")
+
+    invalid_runtime_receipt = {
+        "path": str(INVALID_RUNTIME_RECEIPT_PATH),
+        "size": 13053,
+        "sha256": (
+            "5877c55922fae1a57e975709fef606662137e480ed251ec30ba4f6d5d1a5149c"
+        ),
+    }
+    invalid_materialization = payload.get("invalid_materialization")
+    if not isinstance(invalid_materialization, Mapping) or invalid_materialization != {
+        "runtime_worktree": str(INVALID_RUNTIME_WORKTREE_ROOT),
+        "runtime_receipt": invalid_runtime_receipt,
+        "runtime_head": "e39e54093e88fabdf5ee41d4f394715fe222269e",
+        "materialization_receipt_status": "PASS",
+        "materialization_created_utc": "2026-07-21T09:51:01.870458+00:00",
+        "repository_binding_path_count": HISTORICAL_MAIN_SCOPED_PATH_COUNT,
+        "repository_binding_path_list_canonical_sha256": (
+            HISTORICAL_MAIN_SCOPED_PATH_LIST_SHA256
+        ),
+        "classification": (
+            "MECHANICALLY_SEALED_BUT_PRE_UNEXECUTABLE_CREDENTIAL_RUNTIME_BINDING"
+        ),
+        "failure_stage": "PRE_MACHINE_CREDENTIAL_ROTATION_RECEIPT_VALIDATION",
+        "must_remain_immutable": True,
+        "must_never_be_resumed": True,
+    }:
+        raise B.InvalidEvidence("invalid-runtime materialization facts drift")
+
+    old_receipt_binding = B.file_binding(
+        INVALID_RUNTIME_RECEIPT_PATH, invalid_runtime_receipt["sha256"]
+    )
+    if old_receipt_binding != invalid_runtime_receipt:
+        raise B.InvalidEvidence("invalid runtime receipt binding drift")
+    old_receipt = B.load_json(INVALID_RUNTIME_RECEIPT_PATH)
+    if (
+        old_receipt.get("artifact_type")
+        != "QM5_10834_WS30_ALTERNATE_RUNTIME_MATERIALIZATION_RECEIPT"
+        or old_receipt.get("status") != "PASS"
+        or old_receipt.get("runtime_worktree") != str(INVALID_RUNTIME_WORKTREE_ROOT)
+        or old_receipt.get("runtime_head")
+        != "e39e54093e88fabdf5ee41d4f394715fe222269e"
+        or old_receipt.get("main_scoped_path_count")
+        != HISTORICAL_MAIN_SCOPED_PATH_COUNT
+        or old_receipt.get("main_scoped_path_list_canonical_sha256")
+        != HISTORICAL_MAIN_SCOPED_PATH_LIST_SHA256
+    ):
+        raise B.InvalidEvidence("invalid runtime receipt frozen facts drift")
+    historical_runtime_bindings = (
+        (
+            INVALID_RUNTIME_WORKTREE_ROOT
+            / "framework"
+            / "EAs"
+            / "QM5_10834_tv-nq-ict-ob"
+            / "docs"
+            / "candidate-analysis"
+            / "ws30_transport_infra_alternate002_contract_20260721.json",
+            7777,
+            EXPECTED_ALTERNATE_CONTRACT_SHA256,
+            "historical alternate contract",
+        ),
+        (
+            INVALID_RUNTIME_WORKTREE_ROOT / CREDENTIAL_HELPER_RELATIVE_PATH,
+            23740,
+            "bd3077f5ff671d80a377a820e35cd233cdf8ad1b25d376d579da4714c323ad2c",
+            "historical runtime credential helper",
+        ),
+        (
+            INVALID_RUNTIME_WORKTREE_ROOT / IDENTITY_PROBE_CHILD_RELATIVE_PATH,
+            10102,
+            "140c361e7f0f40d28ef8a6a8edf103133b3cb0fe30496fc9dad6a64dc59d69ad",
+            "historical runtime identity child",
+        ),
+    )
+    for historical_path, historical_size, historical_sha, label in (
+        historical_runtime_bindings
+    ):
+        historical_binding = B.file_binding(historical_path, historical_sha)
+        if historical_binding["size"] != historical_size:
+            raise B.InvalidEvidence(f"{label} size drift")
+    old_ledger = old_receipt.get("repository_binding_byte_identity_ledger")
+    if not isinstance(old_ledger, list) or len(old_ledger) != 53:
+        raise B.InvalidEvidence("invalid runtime 53-path ledger drift")
+    for index, row in enumerate(old_ledger):
+        if not isinstance(row, Mapping) or set(row) != {
+            "relative_path",
+            "size",
+            "sha256",
+        }:
+            raise B.InvalidEvidence(f"invalid runtime ledger row[{index}] drift")
+        relative = Path(str(row.get("relative_path", "")))
+        if relative.is_absolute() or any(
+            part in {"", ".", ".."} for part in relative.parts
+        ):
+            raise B.InvalidEvidence(f"invalid runtime ledger path[{index}] unsafe")
+        old_runtime_binding = B.file_binding(
+            INVALID_RUNTIME_WORKTREE_ROOT / relative,
+            str(row.get("sha256", "")),
+        )
+        if old_runtime_binding["size"] != int(row.get("size")):
+            raise B.InvalidEvidence(f"invalid runtime ledger size[{index}] drift")
+    old_rows = {
+        str(row.get("relative_path", "")): row
+        for row in old_ledger
+        if isinstance(row, Mapping)
+    }
+    if IDENTITY_PROBE_CHILD_RELATIVE_PATH.as_posix() in old_rows or old_rows.get(
+        CREDENTIAL_HELPER_RELATIVE_PATH.as_posix()
+    ) != {
+        "relative_path": CREDENTIAL_HELPER_RELATIVE_PATH.as_posix(),
+        "size": 23740,
+        "sha256": (
+            "bd3077f5ff671d80a377a820e35cd233cdf8ad1b25d376d579da4714c323ad2c"
+        ),
+    }:
+        raise B.InvalidEvidence("invalid runtime credential ledger diagnosis drift")
+
+    credential_evidence = payload.get("credential_rotation_evidence")
+    if not isinstance(credential_evidence, Mapping) or set(credential_evidence) != {
+        "signed_receipt",
+        "machine_credential_helper",
+        "identity_probe_child",
+    }:
+        raise B.InvalidEvidence("invalid-runtime credential evidence closure drift")
+    signed_receipt = {
+        "path": str(B.MACHINE_CREDENTIAL_ROTATION_RECEIPT_PATH),
+        "size": 1624,
+        "sha256": (
+            "019b7f01fdce4d83db9fc51b7583fb0b729a6c662a6fead61dde01ede3022244"
+        ),
+    }
+    if credential_evidence.get("signed_receipt") != signed_receipt:
+        raise B.InvalidEvidence("invalid-runtime signed receipt binding drift")
+    if B.file_binding(
+        B.MACHINE_CREDENTIAL_ROTATION_RECEIPT_PATH, signed_receipt["sha256"]
+    ) != signed_receipt:
+        raise B.InvalidEvidence("invalid-runtime current signed receipt drift")
+    signed_payload = B.load_json(B.MACHINE_CREDENTIAL_ROTATION_RECEIPT_PATH)
+    helper_sha = "bd3077f5ff671d80a377a820e35cd233cdf8ad1b25d376d579da4714c323ad2c"
+    child_sha = "fa14caeacfef311a30717e31e553d8c93b1eaa66a8495b63debfee5957f96f48"
+    if (
+        signed_payload.get("machine_credential_helper_path")
+        != str(MAIN_WORKTREE_ROOT / CREDENTIAL_HELPER_RELATIVE_PATH)
+        or signed_payload.get("machine_credential_helper_sha256") != helper_sha
+        or signed_payload.get("identity_probe_child_path")
+        != str(MAIN_WORKTREE_ROOT / IDENTITY_PROBE_CHILD_RELATIVE_PATH)
+        or signed_payload.get("identity_probe_child_sha256") != child_sha
+    ):
+        raise B.InvalidEvidence("invalid-runtime signed credential provenance drift")
+    if credential_evidence.get("machine_credential_helper") != {
+        "signed_origin_path": str(MAIN_WORKTREE_ROOT / CREDENTIAL_HELPER_RELATIVE_PATH),
+        "signed_sha256": helper_sha,
+        "main_origin_size": 23740,
+        "invalid_runtime_path": str(
+            INVALID_RUNTIME_WORKTREE_ROOT / CREDENTIAL_HELPER_RELATIVE_PATH
+        ),
+        "invalid_runtime_size": 23740,
+        "invalid_runtime_sha256": helper_sha,
+        "bytes_match_but_signed_path_is_origin_only": True,
+    }:
+        raise B.InvalidEvidence("invalid-runtime helper diagnosis drift")
+    if credential_evidence.get("identity_probe_child") != {
+        "signed_origin_path": str(MAIN_WORKTREE_ROOT / IDENTITY_PROBE_CHILD_RELATIVE_PATH),
+        "signed_sha256": child_sha,
+        "main_origin_size": 9886,
+        "invalid_runtime_path": str(
+            INVALID_RUNTIME_WORKTREE_ROOT / IDENTITY_PROBE_CHILD_RELATIVE_PATH
+        ),
+        "invalid_runtime_size": 10102,
+        "invalid_runtime_sha256": (
+            "140c361e7f0f40d28ef8a6a8edf103133b3cb0fe30496fc9dad6a64dc59d69ad"
+        ),
+        "missing_from_53_path_overlay_and_byte_ledger": True,
+        "runtime_bytes_do_not_match_signed_hash": True,
+    }:
+        raise B.InvalidEvidence("invalid-runtime identity-child diagnosis drift")
+
+    if payload.get("outcome_fence") != {
+        "pre_receipt_opened": False,
+        "native_reports_opened": False,
+        "controller_logs_opened": False,
+        "deal_rows_parsed": False,
+        "market_values_parsed": False,
+        "strategy_outcomes_read": False,
+        "strategy_merit_adjudicated": False,
+    }:
+        raise B.InvalidEvidence("invalid-runtime outcome fence drift")
+    disposition = payload.get("disposition")
+    if not isinstance(disposition, Mapping) or (
+        any(value is not True for key, value in disposition.items() if key != "superseding_contract_path")
+        or disposition.get("superseding_contract_path")
+        != (
+            "framework/EAs/QM5_10834_tv-nq-ict-ob/docs/candidate-analysis/"
+            "ws30_transport_infra_alternate002_runtime_fix001_contract_20260721.json"
+        )
+    ):
+        raise B.InvalidEvidence("invalid-runtime disposition drift")
+    B.assert_binding(signed_receipt, "signed machine-credential rotation receipt")
+    B.assert_binding(old_receipt_binding, "historical invalid runtime receipt")
+    B.assert_binding(binding, "invalid-runtime materialization closure")
+    return payload
+
+
+def _assert_fix001_native_attempt_still_unconsumed(stage: str) -> None:
+    """Reassert closure-time absence only before FIX001 materialization/PRE.
+
+    The same ALT002 namespace is intentionally retained.  Therefore PRE and
+    authorization files may legitimately exist later and must not invalidate
+    the historical closure during launch/worker validation.
+    """
+
+    for candidate, label in (
+        (ALTERNATE_PRE_RECEIPT_PATH, "PRE receipt"),
+        (ALTERNATE_AUTHORIZATION_PATH, "authorization"),
+        (ALTERNATE_CLAIM_PATH, "claim"),
+        (ALTERNATE_JOB_PATH, "launch job"),
+        (ALTERNATE_STATE_PATH, "launch state"),
+        (ALTERNATE_POST_RECEIPT_PATH, "POST receipt"),
+    ):
+        if candidate.exists():
+            raise B.InvalidEvidence(
+                f"FIX001 {stage} requires unconsumed ALT002; {label} exists"
+            )
+
+
+def validate_runtime_fix_contract() -> dict[str, Any]:
+    binding = B.file_binding(
+        RUNTIME_FIX_CONTRACT_PATH, EXPECTED_RUNTIME_FIX_CONTRACT_SHA256
+    )
+    if binding["size"] != 5920:
+        raise B.InvalidEvidence("runtime FIX001 contract size drift")
+    payload = B.load_json(RUNTIME_FIX_CONTRACT_PATH)
+    if set(payload) != {
+        "schema_version",
+        "artifact_type",
+        "status",
+        "created_utc",
+        "analysis_id",
+        "fix_id",
+        "historical_attempt_contract",
+        "invalid_materialization_closure",
+        "native_attempt_identity",
+        "superseding_runtime_materialization",
+        "dependency_closure",
+        "credential_receipt_origin_projection",
+        "frozen_native_evidence",
+        "outcome_fence",
+        "launch_gate",
+    } or (
+        payload.get("schema_version") != 1
+        or payload.get("artifact_type")
+        != "QM5_10834_WS30_ALT002_SUPERSEDING_RUNTIME_MATERIALIZATION_CONTRACT"
+        or payload.get("status")
+        != "IMPLEMENTED_NOT_MATERIALIZED_NOT_AUTHORIZED_NOT_LAUNCHED"
+        or payload.get("analysis_id") != ANALYSIS_ID
+        or payload.get("fix_id") != "WS30_ALT002_RUNTIME_FIX001"
+    ):
+        raise B.InvalidEvidence("runtime FIX001 contract identity drift")
+    W._strict_created_utc(payload.get("created_utc"), "runtime FIX001 created_utc")
+    if payload.get("historical_attempt_contract") != {
+        "path": (
+            "framework/EAs/QM5_10834_tv-nq-ict-ob/docs/candidate-analysis/"
+            "ws30_transport_infra_alternate002_contract_20260721.json"
+        ),
+        "size": 7777,
+        "sha256": EXPECTED_ALTERNATE_CONTRACT_SHA256,
+    } or payload.get("invalid_materialization_closure") != {
+        "path": (
+            "framework/EAs/QM5_10834_tv-nq-ict-ob/docs/candidate-analysis/"
+            "ws30_alt002_runtime_materialization_invalid_closure_20260721.json"
+        ),
+        "size": 4477,
+        "sha256": EXPECTED_INVALID_RUNTIME_CLOSURE_SHA256,
+        "required_status": (
+            "INVALID_RUNTIME_MATERIALIZATION_CLOSED_BEFORE_PRE_ATTEMPT_UNCONSUMED"
+        ),
+    }:
+        raise B.InvalidEvidence("runtime FIX001 predecessor binding drift")
+    if payload.get("native_attempt_identity") != {
+        "attempt_number": 2,
+        "claim_sequence": 2,
+        "maximum_total_attempts": 2,
+        "run_root": str(ALTERNATE_RUN_ROOT),
+        "claim_path": str(ALTERNATE_CLAIM_PATH),
+        "authorization_scope": ALTERNATE_AUTHORIZATION_SCOPE,
+        "pre_receipt_created_before_fix": False,
+        "authorization_created_before_fix": False,
+        "claim_created_before_fix": False,
+        "launch_created_before_fix": False,
+        "attempt_consumed_before_fix": False,
+        "same_native_attempt_not_a_retry": True,
+        "resume_forbidden": True,
+        "further_attempts_forbidden": True,
+    }:
+        raise B.InvalidEvidence("runtime FIX001 native-attempt identity drift")
+    if payload.get("superseding_runtime_materialization") != {
+        "scope": "RUNTIME_MATERIALIZATION_ONLY",
+        "invalid_runtime_worktree": str(INVALID_RUNTIME_WORKTREE_ROOT),
+        "invalid_runtime_receipt": str(INVALID_RUNTIME_RECEIPT_PATH),
+        "invalid_runtime_and_receipt_must_remain_immutable": True,
+        "runtime_worktree_root": str(RUNTIME_WORKTREE_ROOT),
+        "runtime_receipt_path": str(RUNTIME_RECEIPT_PATH),
+        "runtime_worktree_must_be_new": True,
+        "runtime_receipt_atomic_create_once": True,
+        "runtime_worktree_must_be_detached": True,
+        "runtime_worktree_must_be_normalized_clean": True,
+        "runtime_worktree_staged_diff_forbidden": True,
+        "runtime_worktree_untracked_files_forbidden": True,
+        "runtime_worktree_porcelain_status_is_not_cleanliness_authority": True,
+        "runtime_root_reparse_components_forbidden": True,
+        "all_bound_files_exact_byte_overlay_required": True,
+        "all_bound_files_source_runtime_byte_identity_required": True,
+        "worker_reasserts_runtime_provenance_before_each_native_cell": True,
+    }:
+        raise B.InvalidEvidence("runtime FIX001 materialization namespace drift")
+    if payload.get("dependency_closure") != {
+        "historical_materialization_path_count": HISTORICAL_MAIN_SCOPED_PATH_COUNT,
+        "historical_materialization_path_list_canonical_sha256": (
+            HISTORICAL_MAIN_SCOPED_PATH_LIST_SHA256
+        ),
+        "technical_diagnosis_path_count": TECHNICAL_DIAGNOSIS_PATH_COUNT,
+        "technical_diagnosis_path_list_canonical_sha256": (
+            TECHNICAL_DIAGNOSIS_PATH_LIST_SHA256
+        ),
+        "technical_diagnosis_adds_identity_probe_child": True,
+        "executable_fix001_path_count": MAIN_SCOPED_PATH_COUNT,
+        "executable_fix001_path_list_canonical_sha256": MAIN_SCOPED_PATH_LIST_SHA256,
+        "executable_fix001_also_adds_invalid_closure_and_fix_contract": True,
+        "all_56_paths_raw_byte_identical_and_clean_required": True,
+        "git_status_uses_literal_pathspecs_only": True,
+    }:
+        raise B.InvalidEvidence("runtime FIX001 dependency closure drift")
+    if payload.get("credential_receipt_origin_projection") != {
+        "signed_machine_credential_helper_path_must_equal": str(
+            MAIN_WORKTREE_ROOT / CREDENTIAL_HELPER_RELATIVE_PATH
+        ),
+        "signed_identity_probe_child_path_must_equal": str(
+            MAIN_WORKTREE_ROOT / IDENTITY_PROBE_CHILD_RELATIVE_PATH
+        ),
+        "signed_helper_hash_must_equal_bound_runtime_helper_hash": True,
+        "signed_identity_child_hash_must_equal_bound_runtime_child_hash": True,
+        "bound_helper_path_must_be_exact_fix001_runtime_relative_path": True,
+        "bound_identity_child_path_must_be_exact_fix001_runtime_relative_path": True,
+        "main_origin_files_must_not_be_opened_by_pre_or_worker": True,
+        "temporary_in_memory_projection_only": True,
+        "load_hook_must_be_restored_in_finally": True,
+        "reported_receipt_payload_hash_must_describe_raw_signed_payload": True,
+    }:
+        raise B.InvalidEvidence("runtime FIX001 credential projection policy drift")
+    if payload.get("frozen_native_evidence") != {
+        "research_symbol": RESEARCH_SYMBOL,
+        "timeframe": "M5",
+        "model": 4,
+        "duplicates_per_cell": 2,
+        "maximum_attempts_per_cell": 4,
+        "same_build_and_ea_binary": True,
+        "same_tick_data_receipt": True,
+        "same_set_and_strategy_parameters": True,
+        "same_dev_and_oos_windows": True,
+        "same_cost_schedule": True,
+        "same_merit_gates_and_auditor": True,
+        "parameter_tuning_forbidden": True,
+        "gate_relaxation_forbidden": True,
+    }:
+        raise B.InvalidEvidence("runtime FIX001 frozen native evidence drift")
+    if payload.get("outcome_fence") != {
+        "invalid_materialization_native_reports_opened": False,
+        "invalid_materialization_controller_logs_opened": False,
+        "strategy_outcomes_read": False,
+        "strategy_merit_adjudicated": False,
+        "fix001_pre_reads_no_native_reports_or_outcomes": True,
+        "post_requires_complete_state": True,
+    } or payload.get("launch_gate") != {
+        "this_contract_does_not_authorize_native_launch": True,
+        "fix001_materialization_receipt_required": True,
+        "fresh_owner_authorization_at_existing_alt002_path_required": True,
+        "successful_pre_at_existing_alt002_path_required": True,
+        "existing_alt002_claim_must_still_be_absent_before_launch": True,
+        "old_runtime_must_never_be_used_or_resumed": True,
+    }:
+        raise B.InvalidEvidence("runtime FIX001 outcome/launch fence drift")
+    B.assert_binding(binding, "runtime FIX001 materialization contract")
     return payload
 
 
@@ -748,6 +1237,168 @@ def validate_relocated_backtest_data_receipt(
     return validated
 
 
+def _lexically_equal(left: Path | str, right: Path | str) -> bool:
+    return os.path.normcase(str(W._lexical_path(left))) == os.path.normcase(
+        str(W._lexical_path(right))
+    )
+
+
+def _path_text_is_exact(left: Path | str, right: Path | str) -> bool:
+    """Compare absolute Windows path text without normalizing aliases."""
+
+    left_text = os.fspath(left)
+    right_text = os.fspath(right)
+    return (
+        Path(left_text).is_absolute()
+        and Path(right_text).is_absolute()
+        and os.path.normcase(left_text) == os.path.normcase(right_text)
+    )
+
+
+def _exact_runtime_binding(
+    bindings: Mapping[str, Any],
+    role: str,
+    relative_path: Path,
+    module_path: Path,
+    label: str,
+) -> dict[str, Any]:
+    item = bindings.get(role)
+    if not isinstance(item, Mapping) or set(item) != {"path", "size", "sha256"}:
+        raise B.InvalidEvidence(f"{label} runtime binding field closure drift")
+    expected_path = REPO_ROOT / relative_path
+    if not _path_text_is_exact(module_path, expected_path):
+        raise B.InvalidEvidence(f"{label} module runtime path drift")
+    if not _path_text_is_exact(str(item.get("path", "")), expected_path):
+        raise B.InvalidEvidence(f"{label} bound path is not the exact runtime path")
+    W._assert_no_reparse_components(expected_path, f"{label} runtime binding")
+    B.assert_binding(item, f"{label} runtime binding")
+    return dict(item)
+
+
+def validate_relocated_machine_credential_rotation_receipt(
+    bindings: Mapping[str, Any], *, now: datetime | None = None
+) -> dict[str, Any]:
+    """Validate signed main-origin provenance against runtime-only helper bytes.
+
+    The externally signed rotation receipt predates the detached worktree and
+    therefore records the canonical main-worktree paths for both PowerShell
+    helpers.  Those strings are provenance only: PRE and the worker must never
+    open either main-worktree file.  Their signed hashes must instead match the
+    two exact, ledger-covered runtime copies before the frozen base validator is
+    given a temporary in-memory path projection.
+    """
+
+    receipt_binding = bindings.get("dev2_machine_credential_rotation_receipt")
+    if not isinstance(receipt_binding, Mapping) or set(receipt_binding) != {
+        "path",
+        "size",
+        "sha256",
+    }:
+        raise B.InvalidEvidence(
+            "machine-credential rotation receipt binding field closure drift"
+        )
+    receipt_path = Path(str(receipt_binding.get("path", "")))
+    if not _path_text_is_exact(
+        receipt_path, B.MACHINE_CREDENTIAL_ROTATION_RECEIPT_PATH
+    ):
+        raise B.InvalidEvidence("machine-credential rotation receipt path drift")
+    B.assert_binding(receipt_binding, "machine-credential rotation receipt")
+
+    helper_binding = _exact_runtime_binding(
+        bindings,
+        "dev2_machine_credential_helper",
+        CREDENTIAL_HELPER_RELATIVE_PATH,
+        B.CREDENTIAL_HELPER_PATH,
+        "machine-credential helper",
+    )
+    child_binding = _exact_runtime_binding(
+        bindings,
+        "dev2_identity_probe_child",
+        IDENTITY_PROBE_CHILD_RELATIVE_PATH,
+        B.IDENTITY_PROBE_CHILD_PATH,
+        "identity-probe child",
+    )
+
+    saved_loader = B.load_json
+    raw_payload = saved_loader(receipt_path)
+    if not isinstance(raw_payload, Mapping):
+        raise B.InvalidEvidence("machine-credential rotation receipt is not an object")
+    raw_receipt = copy.deepcopy(dict(raw_payload))
+
+    origin_helper = MAIN_WORKTREE_ROOT / CREDENTIAL_HELPER_RELATIVE_PATH
+    origin_child = MAIN_WORKTREE_ROOT / IDENTITY_PROBE_CHILD_RELATIVE_PATH
+    if not _path_text_is_exact(
+        str(raw_receipt.get("machine_credential_helper_path", "")), origin_helper
+    ):
+        raise B.InvalidEvidence(
+            "machine-credential receipt helper origin path is not canonical"
+        )
+    if (
+        str(raw_receipt.get("machine_credential_helper_sha256", "")).lower()
+        != helper_binding["sha256"]
+    ):
+        raise B.InvalidEvidence(
+            "machine-credential receipt helper hash differs from runtime binding"
+        )
+    if not _path_text_is_exact(
+        str(raw_receipt.get("identity_probe_child_path", "")), origin_child
+    ):
+        raise B.InvalidEvidence(
+            "machine-credential receipt identity-child origin path is not canonical"
+        )
+    if (
+        str(raw_receipt.get("identity_probe_child_sha256", "")).lower()
+        != child_binding["sha256"]
+    ):
+        raise B.InvalidEvidence(
+            "machine-credential receipt identity-child hash differs from runtime binding"
+        )
+
+    projected_receipt = copy.deepcopy(raw_receipt)
+    projected_receipt["machine_credential_helper_path"] = helper_binding["path"]
+    projected_receipt["identity_probe_child_path"] = child_binding["path"]
+    receipt_lexical = W._lexical_path(receipt_path)
+
+    def projected_loader(candidate: Path) -> Any:
+        candidate_lexical = W._lexical_path(candidate)
+        if _lexically_equal(candidate_lexical, receipt_lexical):
+            return copy.deepcopy(projected_receipt)
+        if _main_repo_relative(candidate_lexical) is not None:
+            raise B.InvalidEvidence(
+                "machine-credential validation attempted to open main-worktree evidence"
+            )
+        return saved_loader(candidate)
+
+    B.load_json = projected_loader
+    try:
+        validated_raw = _BASE_VALIDATE_MACHINE_CREDENTIAL_ROTATION_RECEIPT(
+            bindings, now=now
+        )
+    finally:
+        B.load_json = saved_loader
+
+    if not isinstance(validated_raw, Mapping):
+        raise B.InvalidEvidence("machine-credential rotation validator result drift")
+    validated = dict(validated_raw)
+    if (
+        validated.get("receipt_payload_sha256")
+        != B.canonical_sha256(projected_receipt)
+        or validated.get("machine_credential_helper") != helper_binding
+        or validated.get("identity_probe_child") != child_binding
+    ):
+        raise B.InvalidEvidence(
+            "machine-credential projected runtime validation result drift"
+        )
+
+    # The receipt binding and payload digest always describe the signed raw
+    # bytes, not the temporary in-memory projection used by the base validator.
+    B.assert_binding(receipt_binding, "machine-credential rotation receipt")
+    B.assert_binding(helper_binding, "machine-credential helper runtime binding")
+    B.assert_binding(child_binding, "identity-probe child runtime binding")
+    validated["receipt_payload_sha256"] = B.canonical_sha256(raw_receipt)
+    return validated
+
+
 def _binding_from_closure(row: Mapping[str, Any]) -> dict[str, Any]:
     if set(row) != {"path", "size", "sha256"}:
         raise B.InvalidEvidence("primary closure binding field drift")
@@ -899,8 +1550,15 @@ def _expected_binding_paths(symbol: str) -> dict[str, Path]:
         {
             "ws30_primary_adapter": PRIMARY_ADAPTER_PATH,
             "alternate_contract": ALTERNATE_CONTRACT_PATH,
+            "runtime_fix_contract": RUNTIME_FIX_CONTRACT_PATH,
+            "invalid_runtime_materialization_closure": (
+                INVALID_RUNTIME_CLOSURE_PATH
+            ),
             "primary_invalid_infra_closure": PRIMARY_CLOSURE_PATH,
             "alternate_runtime_materialization_receipt": RUNTIME_RECEIPT_PATH,
+            "dev2_identity_probe_child": (
+                REPO_ROOT / IDENTITY_PROBE_CHILD_RELATIVE_PATH
+            ),
         }
     )
     return {
@@ -921,6 +1579,9 @@ def _assert_alternate_control_namespace() -> None:
         (ALTERNATE_CLAIM_PATH, "alternate claim path"),
         (W.NATIVE_LAUNCH_LOCK_PATH, "alternate launch lock path"),
         (W.FUTURE_DATA_RECEIPT_PATH, "WS30 data receipt path"),
+        (INVALID_RUNTIME_WORKTREE_ROOT, "invalid historical runtime root"),
+        (INVALID_RUNTIME_RECEIPT_PATH, "invalid historical runtime receipt"),
+        (RUNTIME_WORKTREE_ROOT, "FIX001 runtime root"),
         (RUNTIME_RECEIPT_PATH, "alternate runtime receipt path"),
     ):
         W._assert_no_reparse_components(path, label)
@@ -1058,6 +1719,10 @@ def _runtime_bootstrap_bindings(root: Path) -> dict[str, Any]:
         "tool": TOOL_PATH.relative_to(REPO_ROOT),
         "ws30_primary_adapter": PRIMARY_ADAPTER_PATH.relative_to(REPO_ROOT),
         "alternate_contract": ALTERNATE_CONTRACT_PATH.relative_to(REPO_ROOT),
+        "runtime_fix_contract": RUNTIME_FIX_CONTRACT_PATH.relative_to(REPO_ROOT),
+        "invalid_runtime_materialization_closure": (
+            INVALID_RUNTIME_CLOSURE_PATH.relative_to(REPO_ROOT)
+        ),
         "primary_invalid_infra_closure": PRIMARY_CLOSURE_PATH.relative_to(REPO_ROOT),
     }
     return {
@@ -1082,6 +1747,7 @@ def validate_runtime_materialization_receipt() -> dict[str, Any]:
     expected_keys = {
         "schema_version",
         "artifact_type",
+        "runtime_fix_id",
         "status",
         "created_utc",
         "source_main_worktree",
@@ -1101,7 +1767,8 @@ def validate_runtime_materialization_receipt() -> dict[str, Any]:
     if set(payload) != expected_keys or (
         payload.get("schema_version") != 1
         or payload.get("artifact_type")
-        != "QM5_10834_WS30_ALTERNATE_RUNTIME_MATERIALIZATION_RECEIPT"
+        != "QM5_10834_WS30_ALT002_FIX001_RUNTIME_MATERIALIZATION_RECEIPT"
+        or payload.get("runtime_fix_id") != "WS30_ALT002_RUNTIME_FIX001"
         or payload.get("status") != "PASS"
         or Path(str(payload.get("source_main_worktree", ""))).resolve()
         != MAIN_WORKTREE_ROOT.resolve()
@@ -1159,7 +1826,8 @@ def runtime_provenance(bindings: Mapping[str, Any]) -> dict[str, Any]:
         B.assert_binding(item, f"alternate runtime {role}")
         runtime_bindings[role] = dict(item)
     return {
-        "runtime_mode": "DETACHED_PUMP_PROOF_WORKTREE",
+        "runtime_mode": "DETACHED_PUMP_PROOF_WORKTREE_FIX001",
+        "runtime_fix_id": "WS30_ALT002_RUNTIME_FIX001",
         "runtime_root": str(REPO_ROOT.resolve()),
         "runtime_head": head,
         "runtime_cleanliness": _runtime_cleanliness_claim(),
@@ -1198,6 +1866,15 @@ def execution_contract() -> dict[str, Any]:
             "alternate_execution_contract": B.file_binding(
                 ALTERNATE_CONTRACT_PATH, EXPECTED_ALTERNATE_CONTRACT_SHA256
             ),
+            "runtime_fix001_contract": B.file_binding(
+                RUNTIME_FIX_CONTRACT_PATH, EXPECTED_RUNTIME_FIX_CONTRACT_SHA256
+            ),
+            "invalid_runtime_materialization_closure": B.file_binding(
+                INVALID_RUNTIME_CLOSURE_PATH,
+                EXPECTED_INVALID_RUNTIME_CLOSURE_SHA256,
+            ),
+            "runtime_fix001_supersedes_materialization_only": True,
+            "native_attempt_002_unconsumed_before_fix001": True,
             "immutable_runtime_required": True,
             "main_worktree_scoped_paths_clean_at_launch_required": True,
             "main_worktree_scoped_path_count": MAIN_SCOPED_PATH_COUNT,
@@ -1252,6 +1929,12 @@ def _native_attempt_claim_basis(
             "alternate_execution_contract": dict(
                 pre["bindings"]["alternate_contract"]
             ),
+            "runtime_fix001_contract": dict(
+                pre["bindings"]["runtime_fix_contract"]
+            ),
+            "invalid_runtime_materialization_closure": dict(
+                pre["bindings"]["invalid_runtime_materialization_closure"]
+            ),
             "immutable_runtime": dict(pre["runtime_provenance"]),
             "resume_permitted": False,
             "further_attempts_forbidden": True,
@@ -1285,7 +1968,10 @@ def preflight(
     assert_main_scoped_paths_clean("alternate PRE")
     _assert_runtime_location()
     _assert_alternate_control_namespace()
+    _assert_fix001_native_attempt_still_unconsumed("PRE")
     validate_alternate_contract()
+    validate_invalid_runtime_materialization_closure()
+    validate_runtime_fix_contract()
     validate_relocated_primary_transport_contract()
     validate_primary_invalid_infra_closure()
     runtime_receipt = validate_runtime_materialization_receipt()
@@ -1304,6 +1990,14 @@ def preflight(
             payload["bindings"]["primary_invalid_infra_closure"]
         ),
         "alternate_contract": dict(payload["bindings"]["alternate_contract"]),
+        "runtime_fix001_contract": dict(
+            payload["bindings"]["runtime_fix_contract"]
+        ),
+        "invalid_runtime_materialization_closure": dict(
+            payload["bindings"]["invalid_runtime_materialization_closure"]
+        ),
+        "supersedes_runtime_materialization_only": True,
+        "native_attempt_unconsumed_before_fix001": True,
         "runtime_materialization_receipt": dict(
             payload["bindings"]["alternate_runtime_materialization_receipt"]
         ),
@@ -1345,11 +2039,15 @@ def assert_pre_receipt(path: Path, expected_sha256: str) -> dict[str, Any]:
         or alt.get("primary_attempt_number") != 1
         or alt.get("same_strategy_parameters") is not True
         or alt.get("same_merit_gates") is not True
+        or alt.get("supersedes_runtime_materialization_only") is not True
+        or alt.get("native_attempt_unconsumed_before_fix001") is not True
         or alt.get("resume_permitted") is not False
         or alt.get("further_attempts_forbidden") is not True
     ):
         raise B.InvalidEvidence("alternate PRE attempt closure drift")
     validate_alternate_contract()
+    validate_invalid_runtime_materialization_closure()
+    validate_runtime_fix_contract()
     validate_primary_invalid_infra_closure()
     provenance = pre.get("runtime_provenance")
     bindings = pre.get("bindings")
@@ -1360,6 +2058,12 @@ def assert_pre_receipt(path: Path, expected_sha256: str) -> dict[str, Any]:
         raise B.InvalidEvidence("alternate PRE primary closure binding drift")
     if alt.get("alternate_contract") != bindings.get("alternate_contract"):
         raise B.InvalidEvidence("alternate PRE contract binding drift")
+    if alt.get("runtime_fix001_contract") != bindings.get("runtime_fix_contract"):
+        raise B.InvalidEvidence("alternate PRE runtime FIX001 contract binding drift")
+    if alt.get("invalid_runtime_materialization_closure") != bindings.get(
+        "invalid_runtime_materialization_closure"
+    ):
+        raise B.InvalidEvidence("alternate PRE invalid-runtime closure binding drift")
     if alt.get("runtime_materialization_receipt") != bindings.get(
         "alternate_runtime_materialization_receipt"
     ):
@@ -1452,6 +2156,10 @@ def materialize_runtime() -> dict[str, Any]:
         )
     source_head = assert_main_scoped_paths_clean("runtime materialization")
     relative_paths = _main_scoped_relative_paths()
+    _assert_fix001_native_attempt_still_unconsumed("materialization")
+    validate_alternate_contract()
+    validate_invalid_runtime_materialization_closure()
+    validate_runtime_fix_contract()
     for relative_text in relative_paths:
         probe = _git_at(
             MAIN_WORKTREE_ROOT,
@@ -1511,7 +2219,10 @@ def materialize_runtime() -> dict[str, Any]:
     bootstrap = _runtime_bootstrap_bindings(RUNTIME_WORKTREE_ROOT)
     payload = {
         "schema_version": 1,
-        "artifact_type": "QM5_10834_WS30_ALTERNATE_RUNTIME_MATERIALIZATION_RECEIPT",
+        "artifact_type": (
+            "QM5_10834_WS30_ALT002_FIX001_RUNTIME_MATERIALIZATION_RECEIPT"
+        ),
+        "runtime_fix_id": "WS30_ALT002_RUNTIME_FIX001",
         "status": "PASS",
         "created_utc": B.utc_now(),
         "source_main_worktree": str(MAIN_WORKTREE_ROOT.resolve()),
@@ -1553,6 +2264,9 @@ B._expected_binding_paths = _expected_binding_paths
 B._assert_run_root = _assert_alternate_run_root
 B.validate_infra_retry_contract = validate_relocated_primary_transport_contract
 B.validate_backtest_data_receipt = validate_relocated_backtest_data_receipt
+B.validate_machine_credential_rotation_receipt = (
+    validate_relocated_machine_credential_rotation_receipt
+)
 B.preflight = preflight
 B.assert_pre_receipt = assert_pre_receipt
 B.execution_contract = execution_contract
