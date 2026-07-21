@@ -90,12 +90,52 @@ function Get-QmProcessOwnerSid {
     param([Parameter(Mandatory = $true)][object]$ProcessRecord)
     try {
         $owner = Invoke-CimMethod -InputObject $ProcessRecord -MethodName GetOwnerSid -ErrorAction Stop
-        if ([int]$owner.ReturnValue -eq 0 -and -not [string]::IsNullOrWhiteSpace([string]$owner.Sid)) {
-            return [string]$owner.Sid
+    } catch [Microsoft.Management.Infrastructure.CimException] {
+        if ($_.Exception.NativeErrorCode -eq [Microsoft.Management.Infrastructure.NativeErrorCode]::NotFound) {
+            return $null
         }
-    } catch {
+        throw
     }
-    return $null
+    if ([int]$owner.ReturnValue -ne 0 -or [string]::IsNullOrWhiteSpace([string]$owner.Sid)) {
+        throw "Process owner SID lookup returned an unreadable result (pid=$($ProcessRecord.ProcessId))."
+    }
+    return [string]$owner.Sid
+}
+
+function Get-QmLiveProcessById {
+    param([Parameter(Mandatory = $true)][int]$ProcessId)
+    try {
+        $matches = @(
+            Get-CimInstance -ClassName Win32_Process -Filter "ProcessId = $ProcessId" `
+                -Property ProcessId,ExecutablePath,CreationDate -ErrorAction Stop
+        )
+    } catch [Microsoft.Management.Infrastructure.CimException] {
+        if ($_.Exception.NativeErrorCode -eq [Microsoft.Management.Infrastructure.NativeErrorCode]::NotFound) {
+            return $null
+        }
+        throw
+    }
+    if ($matches.Count -eq 0) { return $null }
+    if ($matches.Count -ne 1) {
+        throw "Exact PID lookup returned a non-unique process record (pid=$ProcessId)."
+    }
+    return $matches[0]
+}
+
+function Test-QmSameProcessGeneration {
+    param(
+        [Parameter(Mandatory = $true)][object]$Left,
+        [Parameter(Mandatory = $true)][object]$Right
+    )
+    if ([int]$Left.ProcessId -ne [int]$Right.ProcessId) { return $false }
+    $leftPath = ConvertTo-QmFullPath -Path ([string]$Left.ExecutablePath)
+    $rightPath = ConvertTo-QmFullPath -Path ([string]$Right.ExecutablePath)
+    $leftCreationUtc = ([DateTimeOffset]$Left.CreationDate).ToUniversalTime()
+    $rightCreationUtc = ([DateTimeOffset]$Right.CreationDate).ToUniversalTime()
+    return (
+        $leftPath.Equals($rightPath, [System.StringComparison]::OrdinalIgnoreCase) -and
+        $leftCreationUtc.UtcTicks -eq $rightCreationUtc.UtcTicks
+    )
 }
 
 function Assert-QmLaneContract {
@@ -212,15 +252,41 @@ function Update-QmDev1AgentListenerProof {
         if ([string]::IsNullOrWhiteSpace([string]$process.ExecutablePath)) { continue }
         $actualPath = ConvertTo-QmFullPath -Path ([string]$process.ExecutablePath)
         if (-not $actualPath.Equals($expectedPath, [System.StringComparison]::OrdinalIgnoreCase)) { continue }
-        $ownerSid = Get-QmProcessOwnerSid -ProcessRecord $process
-        if ($ownerSid -cne $ExpectedOwnerSid) {
-            throw "Exact-path DEV1 metatester has wrong or unreadable owner SID (pid=$($process.ProcessId))."
-        }
         $creationUtc = ([DateTimeOffset]$process.CreationDate).ToUniversalTime()
         if ($creationUtc -lt $EarliestCreationUtc.AddSeconds(-2)) {
             throw "Exact-path DEV1 metatester predates this child runner (pid=$($process.ProcessId))."
         }
-        foreach ($listener in @(Get-NetTCPConnection -State Listen -OwningProcess ([int]$process.ProcessId) -ErrorAction SilentlyContinue)) {
+        $liveProcess = Get-QmLiveProcessById -ProcessId ([int]$process.ProcessId)
+        if ($null -eq $liveProcess -or -not (Test-QmSameProcessGeneration -Left $process -Right $liveProcess)) {
+            continue
+        }
+        $ownerSid = Get-QmProcessOwnerSid -ProcessRecord $liveProcess
+        if ($null -eq $ownerSid) {
+            # Win32_Process disappeared between the generation recheck and GetOwnerSid.
+            continue
+        }
+        if ($ownerSid -cne $ExpectedOwnerSid) {
+            throw "Exact-path DEV1 metatester has wrong owner SID (pid=$($process.ProcessId))."
+        }
+        $confirmedProcess = Get-QmLiveProcessById -ProcessId ([int]$process.ProcessId)
+        if ($null -eq $confirmedProcess -or
+            -not (Test-QmSameProcessGeneration -Left $liveProcess -Right $confirmedProcess)) {
+            continue
+        }
+        $process = $confirmedProcess
+        # Take one coherent listener snapshot, then prove that the same process
+        # generation still brackets it before evaluating or publishing any row.
+        $listenerSnapshot = @(Get-NetTCPConnection -State Listen -ErrorAction Stop)
+        $processListeners = @(
+            $listenerSnapshot | Where-Object { [int]$_.OwningProcess -eq [int]$process.ProcessId }
+        )
+        $postListenerProcess = Get-QmLiveProcessById -ProcessId ([int]$process.ProcessId)
+        if ($null -eq $postListenerProcess -or
+            -not (Test-QmSameProcessGeneration -Left $confirmedProcess -Right $postListenerProcess)) {
+            continue
+        }
+        $process = $postListenerProcess
+        foreach ($listener in $processListeners) {
             $port = [int]$listener.LocalPort
             if ($port -lt [int]$PortContract.minimum_port -or $port -gt [int]$PortContract.maximum_port) {
                 throw "DEV1 metatester listener port is outside contract: $port"
@@ -234,9 +300,10 @@ function Update-QmDev1AgentListenerProof {
                 }
             )
             $currentOverlaps = @(
-                Get-NetTCPConnection -State Listen -LocalPort $port -ErrorAction Stop |
+                $listenerSnapshot |
                     Where-Object {
-                        Test-QmListenerAddressesOverlap -Left ([string]$_.LocalAddress) -Right ([string]$listener.LocalAddress)
+                        [int]$_.LocalPort -eq $port -and
+                        (Test-QmListenerAddressesOverlap -Left ([string]$_.LocalAddress) -Right ([string]$listener.LocalAddress))
                     }
             )
             $currentOwners = @(

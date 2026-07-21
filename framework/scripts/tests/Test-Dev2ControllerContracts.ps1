@@ -59,6 +59,70 @@ if ((Get-QmMinimumDev2ControllerTimeoutSeconds -MaximumRunAttempts 10 -RunTimeou
 }
 
 & {
+    $script:MockOwnerLookup = 'PASS'
+    function New-QmMockCimException {
+        param([Parameter(Mandatory = $true)][Microsoft.Management.Infrastructure.NativeErrorCode]$NativeErrorCode)
+        $exception = [Microsoft.Management.Infrastructure.CimException]::new('synthetic CIM failure')
+        $field = [Microsoft.Management.Infrastructure.CimException].GetField(
+            '<NativeErrorCode>k__BackingField',
+            [System.Reflection.BindingFlags]'Instance,NonPublic'
+        )
+        $field.SetValue($exception, $NativeErrorCode)
+        return $exception
+    }
+    function Invoke-CimMethod {
+        param(
+            [object]$InputObject,
+            [string]$MethodName,
+            [object]$ErrorAction
+        )
+        switch ($script:MockOwnerLookup) {
+            'NOT_FOUND' {
+                throw (New-QmMockCimException -NativeErrorCode NotFound)
+            }
+            'ACCESS_DENIED' {
+                throw (New-QmMockCimException -NativeErrorCode AccessDenied)
+            }
+            'UNREADABLE' {
+                return [pscustomobject]@{ ReturnValue = 2; Sid = $null }
+            }
+            default {
+                return [pscustomobject]@{ ReturnValue = 0; Sid = 'S-1-5-21-1-2-3-1006' }
+            }
+        }
+    }
+
+    Invoke-Expression (Get-QmFunctionTextFromAst -Ast $childAst -Name 'Get-QmProcessOwnerSid')
+    $process = [pscustomobject]@{ ProcessId = 9001 }
+    $script:MockOwnerLookup = 'NOT_FOUND'
+    if ($null -ne (Get-QmProcessOwnerSid -ProcessRecord $process)) {
+        throw 'Explicit CIM NotFound did not map to the exited-process sentinel.'
+    }
+    $script:MockOwnerLookup = 'ACCESS_DENIED'
+    $otherCimFailureRejected = $false
+    try {
+        Get-QmProcessOwnerSid -ProcessRecord $process | Out-Null
+    } catch [Microsoft.Management.Infrastructure.CimException] {
+        $otherCimFailureRejected = (
+            $_.Exception.NativeErrorCode -eq [Microsoft.Management.Infrastructure.NativeErrorCode]::AccessDenied
+        )
+    }
+    if (-not $otherCimFailureRejected) {
+        throw 'A non-NotFound CIM owner lookup failure was not propagated fail-closed.'
+    }
+    $script:MockOwnerLookup = 'UNREADABLE'
+    $unreadableRejected = $false
+    try {
+        Get-QmProcessOwnerSid -ProcessRecord $process | Out-Null
+    } catch {
+        $unreadableRejected = $_.Exception.Message -like '*unreadable result*'
+    }
+    if (-not $unreadableRejected) {
+        throw 'A live but unreadable owner result was not rejected fail-closed.'
+    }
+}
+
+& {
     $script:Dev2Root = 'D:\QM\mt5\DEV2'
     $script:MockOwnerSid = 'S-1-5-21-1-2-3-1006'
     $script:MockProcesses = @(
@@ -69,6 +133,12 @@ if ((Get-QmMinimumDev2ControllerTimeoutSeconds -MaximumRunAttempts 10 -RunTimeou
         }
     )
     $script:MockListeners = @()
+    $script:UseMockPidProcesses = $false
+    $script:MockPidProcesses = @()
+    $script:UseMockPidProcessSequence = $false
+    $script:MockPidProcessSequence = @()
+    $script:MockPidLookupCount = 0
+    $script:OwnerLookupCount = 0
 
     function ConvertTo-QmFullPath {
         param([Parameter(Mandatory = $true)][string]$Path)
@@ -76,6 +146,7 @@ if ((Get-QmMinimumDev2ControllerTimeoutSeconds -MaximumRunAttempts 10 -RunTimeou
     }
     function Get-QmProcessOwnerSid {
         param([Parameter(Mandatory = $true)][object]$ProcessRecord)
+        $script:OwnerLookupCount++
         return $script:MockOwnerSid
     }
     function Get-CimInstance {
@@ -85,6 +156,17 @@ if ((Get-QmMinimumDev2ControllerTimeoutSeconds -MaximumRunAttempts 10 -RunTimeou
             [string[]]$Property,
             [object]$ErrorAction
         )
+        if ($Filter -like 'ProcessId = *' -and $script:UseMockPidProcessSequence) {
+            $index = [Math]::Min(
+                $script:MockPidLookupCount,
+                $script:MockPidProcessSequence.Count - 1
+            )
+            $script:MockPidLookupCount++
+            return @($script:MockPidProcessSequence[$index])
+        }
+        if ($Filter -like 'ProcessId = *' -and $script:UseMockPidProcesses) {
+            return @($script:MockPidProcesses)
+        }
         return @($script:MockProcesses)
     }
     function Get-NetTCPConnection {
@@ -105,6 +187,8 @@ if ((Get-QmMinimumDev2ControllerTimeoutSeconds -MaximumRunAttempts 10 -RunTimeou
     }
 
     Invoke-Expression (Get-QmFunctionTextFromAst -Ast $childAst -Name 'Test-QmListenerAddressesOverlap')
+    Invoke-Expression (Get-QmFunctionTextFromAst -Ast $childAst -Name 'Get-QmLiveProcessById')
+    Invoke-Expression (Get-QmFunctionTextFromAst -Ast $childAst -Name 'Test-QmSameProcessGeneration')
     Invoke-Expression (Get-QmFunctionTextFromAst -Ast $childAst -Name 'Update-QmDev2AgentListenerProof')
     $portContract = [ordered]@{ minimum_port = 3000; maximum_port = 65535 }
     $baseline = @{
@@ -153,6 +237,72 @@ if ((Get-QmMinimumDev2ControllerTimeoutSeconds -MaximumRunAttempts 10 -RunTimeou
         -ExpectedOwnerSid $script:MockOwnerSid -EarliestCreationUtc ([DateTimeOffset]::UtcNow.AddSeconds(-1)) `
         -PortContract $portContract
     if ($seen.Count -ne 1) { throw 'Non-overlapping address on the same port was rejected.' }
+
+    $script:MockListeners = @()
+    $script:MockOwnerSid = $null
+    $seen = @{}
+    Update-QmDev2AgentListenerProof -Baseline $baseline -Seen $seen `
+        -ExpectedOwnerSid 'S-1-5-21-1-2-3-1006' -EarliestCreationUtc ([DateTimeOffset]::UtcNow.AddSeconds(-1)) `
+        -PortContract $portContract
+    if ($seen.Count -ne 0) {
+        throw 'An owner-lookup NotFound race created a listener proof.'
+    }
+
+    $script:MockOwnerSid = 'S-1-5-18'
+    $wrongOwnerRejected = $false
+    try {
+        Update-QmDev2AgentListenerProof -Baseline $baseline -Seen @{} `
+            -ExpectedOwnerSid 'S-1-5-21-1-2-3-1006' -EarliestCreationUtc ([DateTimeOffset]::UtcNow.AddSeconds(-1)) `
+            -PortContract $portContract
+    } catch {
+        $wrongOwnerRejected = $_.Exception.Message -like '*wrong owner SID*'
+    }
+    if (-not $wrongOwnerRejected) {
+        throw 'A stable exact-path process with a readable wrong SID was not rejected.'
+    }
+
+    $script:MockOwnerSid = 'S-1-5-21-1-2-3-1006'
+    $script:UseMockPidProcesses = $true
+    $script:MockPidProcesses = @(
+        [pscustomobject]@{
+            ProcessId = 9001
+            ExecutablePath = 'D:\QM\mt5\DEV2\metatester64.exe'
+            CreationDate = ([DateTimeOffset]$script:MockProcesses[0].CreationDate).AddSeconds(1)
+        }
+    )
+    $ownerLookupsBeforeDrift = $script:OwnerLookupCount
+    $seen = @{}
+    Update-QmDev2AgentListenerProof -Baseline $baseline -Seen $seen `
+        -ExpectedOwnerSid $script:MockOwnerSid -EarliestCreationUtc ([DateTimeOffset]::UtcNow.AddSeconds(-1)) `
+        -PortContract $portContract
+    if ($seen.Count -ne 0 -or $script:OwnerLookupCount -ne $ownerLookupsBeforeDrift) {
+        throw 'PID reuse/process-generation drift was not skipped before owner attribution.'
+    }
+
+    $script:UseMockPidProcesses = $false
+    $script:UseMockPidProcessSequence = $true
+    $script:MockPidLookupCount = 0
+    $postListenerGeneration = [pscustomobject]@{
+        ProcessId = 9001
+        ExecutablePath = 'D:\QM\mt5\DEV2\metatester64.exe'
+        CreationDate = ([DateTimeOffset]$script:MockProcesses[0].CreationDate).AddSeconds(2)
+    }
+    $script:MockPidProcessSequence = @(
+        $script:MockProcesses[0],
+        $script:MockProcesses[0],
+        $postListenerGeneration
+    )
+    $script:MockListeners = @(
+        [pscustomobject]@{ LocalAddress = '127.0.0.1'; LocalPort = 3004; OwningProcess = 9001 },
+        [pscustomobject]@{ LocalAddress = '127.0.0.1'; LocalPort = 3004; OwningProcess = 17436 }
+    )
+    $seen = @{}
+    Update-QmDev2AgentListenerProof -Baseline $baseline -Seen $seen `
+        -ExpectedOwnerSid $script:MockOwnerSid -EarliestCreationUtc ([DateTimeOffset]::UtcNow.AddSeconds(-1)) `
+        -PortContract $portContract
+    if ($seen.Count -ne 0 -or $script:MockPidLookupCount -ne 3) {
+        throw 'Post-listener PID generation drift was evaluated or published instead of skipped.'
+    }
 }
 
 Remove-Item -LiteralPath Function:\Get-QmMinimumDev2ControllerTimeoutSeconds -ErrorAction Stop
