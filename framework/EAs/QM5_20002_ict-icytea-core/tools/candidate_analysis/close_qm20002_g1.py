@@ -1347,6 +1347,16 @@ def _validate_closed_state_historical_chain(
         )
         if quiesced_under_lock.get("task_contract_sha256") != proof.get("contract"):
             raise ClosureError("terminal quiesce task contract drift")
+        if (
+            quiesce_probe["before"].get("enabled") is True
+            and quiesce_probe["before"].get("task_xml_sha256")
+            != (
+                intent_task.get("ready_task_xml_sha256")
+                if isinstance(intent_task, Mapping)
+                else None
+            )
+        ):
+            raise ClosureError("terminal quiesce ready XML differs from intent")
     if (
         not isinstance(intent_task, Mapping)
         or proof.get("contract") != intent_task.get("task_contract_sha256")
@@ -2132,7 +2142,10 @@ def _receipt_payload(
                 "task_contract_sha256": terminal_proof["contract"],
                 "state": "Disabled",
                 "never_run": quiesced_never_run,
-                "retention": "CANONICAL_EVIDENCE_SHA256_BOUND_IN_TERMINAL_ERROR",
+                "retention": (
+                    "FULL_CANONICAL_EVIDENCE_IN_QUIESCENCE_ANCHOR_"
+                    "AND_SHA256_IN_TERMINAL_ERROR"
+                ),
                 "task_start_race_observed": start_race_observed,
             },
             "absent_probe": copy.deepcopy(dict(absent_probe)),

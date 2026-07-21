@@ -93,7 +93,8 @@ class FakeTaskRuntime:
         self.contract = contract
         self.exists = True
         self.enabled = True
-        self.started_race = False
+        self.has_run_history = False
+        self.start_before_quiesce = False
         self.preterminal_race_state: str | None = None
         self.preterminal_dev1_owner_count = 0
         self.preterminal_dev1_root_count = 0
@@ -134,7 +135,7 @@ class FakeTaskRuntime:
                 )
                 assert persisted["status"] == "PENDING"
                 assert persisted["terminal"] is None
-                self.started_race = True
+                self.has_run_history = True
                 evidence = task_evidence(disabled=False, started=True)
                 evidence["state"] = self.preterminal_race_state
                 evidence["matching_worker_process_count_basis"] = (
@@ -168,13 +169,17 @@ class FakeTaskRuntime:
             )
             assert persisted["status"] == "REJECT"
             assert "closure_phase=QUIESCE_PENDING" in persisted["terminal"]["error"]
-            before = task_evidence(disabled=not self.enabled)
+            before = task_evidence(
+                disabled=not self.enabled, started=self.has_run_history
+            )
+            if self.start_before_quiesce:
+                self.has_run_history = True
             self.enabled = False
             if self.crash_after_quiesce_side_effect_once:
                 self.crash_after_quiesce_side_effect_once = False
                 raise RuntimeError("simulated crash after Disable-ScheduledTask")
-            after = task_evidence(disabled=True, started=self.started_race)
-            if self.started_race:
+            after = task_evidence(disabled=True, started=self.has_run_history)
+            if self.has_run_history:
                 after["state"] = "Running"
                 after["matching_worker_process_count_basis"] = (
                     "INFERRED_FROM_CALLER_HELD_STATE_LOCK_AND_DIRECT_ZERO_DEV1_OWNER_OR_ROOT"
@@ -185,7 +190,7 @@ class FakeTaskRuntime:
                 "principal_sid": "S-1-5-21-1",
                 "before": before,
                 "after": after,
-                "start_race_observed": self.started_race,
+                "start_race_observed": self.has_run_history,
                 "absent": False,
             }
         if operation == "InspectQuiesced":
@@ -195,7 +200,9 @@ class FakeTaskRuntime:
         if operation == "AwaitQuiesced":
             if not self.exists or self.enabled:
                 raise closure.ClosureError("not disabled")
-            await_started = self.started_race and not self.await_forgets_start_race
+            await_started = (
+                self.has_run_history and not self.await_forgets_start_race
+            )
             evidence = task_evidence(disabled=True, started=await_started)
             return {
                 **common,
@@ -233,7 +240,7 @@ def restart_task_runtime(previous: FakeTaskRuntime) -> FakeTaskRuntime:
     restarted = FakeTaskRuntime(previous.contract)
     restarted.exists = previous.exists
     restarted.enabled = previous.enabled
-    restarted.started_race = previous.started_race
+    restarted.has_run_history = previous.has_run_history
     return restarted
 
 
@@ -1089,10 +1096,9 @@ def test_start_race_observes_durable_reject_before_disable_and_closes(
     tmp_path: Path,
 ) -> None:
     contract, fake_auditor, task, utility_sha, helper_sha = make_fixture(tmp_path)
-    task.started_race = True
-    resumed_task = restart_task_runtime(task)
+    task.start_before_quiesce = True
     result = invoke_fixture(
-        contract, fake_auditor, resumed_task, utility_sha, helper_sha
+        contract, fake_auditor, task, utility_sha, helper_sha
     )
     assert result["status"] == "CLOSED"
     state = json.loads(contract.state_path.read_text(encoding="utf-8"))
@@ -1106,7 +1112,7 @@ def test_start_race_observes_durable_reject_before_disable_and_closes(
     assert receipt["scheduled_task"]["quiesced_probe_binding"][
         "never_run"
     ] is False
-    assert resumed_task.exists is False
+    assert task.exists is False
 
 
 @pytest.mark.parametrize("preterminal_state", ["Running", "Ready"])
@@ -1245,7 +1251,7 @@ def test_quiesce_only_start_race_is_durable_before_crash_and_recovery(
     tmp_path: Path,
 ) -> None:
     contract, fake_auditor, task, utility_sha, helper_sha = make_fixture(tmp_path)
-    task.started_race = True
+    task.start_before_quiesce = True
 
     class StopAfterQuiesce(RuntimeError):
         pass
@@ -1295,7 +1301,7 @@ def test_quiesce_race_cannot_be_forgotten_by_await_or_poison_anchor(
     tmp_path: Path,
 ) -> None:
     contract, fake_auditor, task, utility_sha, helper_sha = make_fixture(tmp_path)
-    task.started_race = True
+    task.start_before_quiesce = True
     task.await_forgets_start_race = True
     with pytest.raises(closure.ClosureError, match="race disposition drift"):
         invoke_fixture(contract, fake_auditor, task, utility_sha, helper_sha)
@@ -1477,14 +1483,28 @@ def test_mutated_quiescence_anchor_is_rejected_before_unregister(
 
 
 @pytest.mark.parametrize(
-    ("payload_field", "sha_field", "group_name"),
+    ("payload_field", "sha_field", "group_name", "mutation"),
     [
-        ("preterminal_probe_payload_b64", "preterminal_probe_sha256", "preterminal_payload"),
-        ("quiesce_transition_probe_payload_b64", "quiesce_transition_probe_sha256", "quiesce_payload"),
+        (
+            "preterminal_probe_payload_b64",
+            "preterminal_probe_sha256",
+            "preterminal_payload",
+            "task_name",
+        ),
+        (
+            "quiesce_transition_probe_payload_b64",
+            "quiesce_transition_probe_sha256",
+            "quiesce_payload",
+            "ready_xml",
+        ),
     ],
 )
 def test_rehashed_embedded_probe_semantic_mutation_is_rejected(
-    tmp_path: Path, payload_field: str, sha_field: str, group_name: str
+    tmp_path: Path,
+    payload_field: str,
+    sha_field: str,
+    group_name: str,
+    mutation: str,
 ) -> None:
     contract, fake_auditor, task, utility_sha, helper_sha = make_fixture(tmp_path)
 
@@ -1510,7 +1530,10 @@ def test_rehashed_embedded_probe_semantic_mutation_is_rejected(
     probe = closure.decode_canonical_b64(
         match.group(group_name), "probe selected for semantic mutation"
     )
-    probe["task_name"] = "QM_QM20002_AUDIT_" + "0" * 24
+    if mutation == "task_name":
+        probe["task_name"] = "QM_QM20002_AUDIT_" + "0" * 24
+    else:
+        probe["before"]["task_xml_sha256"] = "f" * 64
     replacements = {
         payload_field: closure.canonical_b64(probe),
         sha_field: closure.canonical_sha256(probe),
