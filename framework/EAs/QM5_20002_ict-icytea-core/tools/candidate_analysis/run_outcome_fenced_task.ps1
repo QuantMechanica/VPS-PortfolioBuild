@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet('Identity', 'Register', 'Inspect', 'Start')]
+    [ValidateSet('Identity', 'Probe', 'Register', 'Inspect', 'Start')]
     [string]$Operation,
 
     [ValidatePattern('^QM_QM20002_AUDIT_[0-9a-f]{24}$')]
@@ -164,6 +164,22 @@ if ([string]::IsNullOrWhiteSpace($TaskName)) {
 }
 $contract = Get-QmTaskContract
 $task = Get-ScheduledTask -TaskName $TaskName -TaskPath '\' -ErrorAction SilentlyContinue
+
+if ($Operation -eq 'Probe') {
+    if ($null -eq $task) {
+        [ordered]@{
+            operation = 'Probe'
+            task_name = $TaskName
+            exists = $false
+        } | ConvertTo-Json -Depth 3 -Compress
+    } else {
+        Assert-QmTaskContract -Task $task -Contract $contract -Identity $identity
+        $metadata = Get-QmSafeTaskMetadata -Task $task -Identity $identity
+        $metadata['exists'] = $true
+        $metadata | ConvertTo-Json -Depth 3 -Compress
+    }
+    exit 0
+}
 
 if ($Operation -eq 'Register') {
     if ($null -eq $task) {

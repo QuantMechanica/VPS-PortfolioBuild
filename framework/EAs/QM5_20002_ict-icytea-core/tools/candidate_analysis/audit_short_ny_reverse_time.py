@@ -2691,6 +2691,22 @@ def _scheduler_call(
             or payload.get("run_level") != "Highest"
         ):
             raise AuthorizationError("persisted scheduler identity contract drift")
+    elif operation == "Probe" and scheduler is not None:
+        exists = payload.get("exists")
+        if type(exists) is not bool or payload.get("task_name") != scheduler["task_name"]:
+            raise AuthorizationError("persisted scheduler Probe returned malformed identity")
+        if not exists:
+            if set(payload) != {"operation", "task_name", "exists"}:
+                raise AuthorizationError("absent scheduler Probe field closure drift")
+        elif (
+            payload.get("principal_sid") != scheduler["principal_sid"]
+            or payload.get("logon_type") != "S4U"
+            or payload.get("run_level") != "Highest"
+            or payload.get("multiple_instances") != "IgnoreNew"
+            or int(payload.get("execution_limit_seconds", 0))
+            != int(scheduler["execution_limit_seconds"])
+        ):
+            raise AuthorizationError("existing scheduler Probe task metadata drift")
     elif scheduler is not None:
         if (
             payload.get("task_name") != scheduler["task_name"]
@@ -2966,18 +2982,117 @@ def _rejected_cell_record(
     return {"cell_id": cell_id, "status": "REJECT", "attempts": [attempt]}
 
 
+def _load_launch_state_snapshot(state_path: Path) -> tuple[dict[str, Any], str]:
+    """Read one exact launch state and bind the precise bytes used for CAS."""
+
+    state_path = state_path.resolve()
+    before = sha256_file(state_path)
+    state = load_strict_json(state_path, "launch state")
+    after = sha256_file(state_path)
+    if before != after:
+        raise AuditError("launch state bytes changed during locked snapshot")
+    _validate_launch_state_shape(state)
+    return state, after
+
+
+def _assert_worker_owner(
+    state: Mapping[str, Any], worker_pid: int, resume_count: int
+) -> None:
+    if (
+        state.get("status") != "RUNNING"
+        or state.get("worker_pid") != worker_pid
+        or state.get("resume_count") != resume_count
+    ):
+        raise AuditError("worker owner/generation compare-and-swap drift")
+
+
+def _persist_owned_worker_transition(
+    state_path: Path,
+    expected_state: Mapping[str, Any],
+    expected_sha256: str,
+    next_state: Mapping[str, Any],
+    worker_pid: int,
+    resume_count: int,
+) -> tuple[dict[str, Any], str]:
+    """CAS one RUNNING worker transition without crossing the runtime call."""
+
+    with _launch_state_lock(state_path):
+        persisted, persisted_sha = _load_launch_state_snapshot(state_path)
+        if (
+            persisted_sha != expected_sha256
+            or canonical_bytes(persisted) != canonical_bytes(expected_state)
+        ):
+            raise AuditError("worker state byte compare-and-swap drift")
+        _assert_worker_owner(persisted, worker_pid, resume_count)
+        candidate = copy.deepcopy(dict(next_state))
+        _validate_launch_state_shape(candidate)
+        _assert_worker_owner(candidate, worker_pid, resume_count)
+        for field in (
+            "schema_version",
+            "launcher_revision",
+            "artifact_type",
+            "analysis_id",
+            "created_utc",
+            "started_utc",
+            "job",
+            "pre_receipt_path",
+            "pre_receipt_sha256",
+            "authorization",
+            "scheduler",
+            "resume_count",
+        ):
+            if candidate[field] != persisted[field]:
+                raise AuditError(f"worker transition changed immutable field: {field}")
+        old_cells = list(persisted["cells"])
+        new_cells = list(candidate["cells"])
+        if persisted["active_cell"] is None:
+            if (
+                candidate["active_cell"] is None
+                or new_cells != old_cells
+                or candidate["outcome_possible_since_utc"] is None
+            ):
+                raise AuditError("worker outcome-fence transition is not monotone")
+        else:
+            if (
+                candidate["active_cell"] is not None
+                or len(new_cells) != len(old_cells) + 1
+                or new_cells[:-1] != old_cells
+                or new_cells[-1].get("cell_id") != persisted["active_cell"].get("cell_id")
+                or candidate["outcome_possible_since_utc"]
+                != persisted["outcome_possible_since_utc"]
+            ):
+                raise AuditError("worker cell-seal transition is not monotone")
+        published_sha = atomic_json(state_path, candidate)
+        return candidate, published_sha
+
+
 def _finalize_worker_complete(
-    state_path: Path, expected_running_state: Mapping[str, Any]
+    state_path: Path,
+    expected_running_state: Mapping[str, Any],
+    expected_sha256: str | None = None,
+    expected_worker_pid: int | None = None,
+    expected_resume_count: int | None = None,
 ) -> dict[str, Any]:
     """Publish COMPLETE only when the locked state still equals the caller's view."""
 
-    with _terminal_state_lock(state_path):
-        persisted = load_json(state_path)
-        if canonical_bytes(persisted) != canonical_bytes(expected_running_state):
+    with _launch_state_lock(state_path):
+        persisted, persisted_sha = _load_launch_state_snapshot(state_path)
+        if (
+            (expected_sha256 is not None and persisted_sha != expected_sha256)
+            or canonical_bytes(persisted) != canonical_bytes(expected_running_state)
+        ):
             raise AuditError("terminal COMPLETE compare-and-swap state drift")
-        _validate_launch_state_shape(persisted)
-        if persisted["status"] != "RUNNING":
-            raise AuditError("terminal COMPLETE requires the exact RUNNING state")
+        owner_pid = (
+            int(expected_worker_pid)
+            if expected_worker_pid is not None
+            else int(expected_running_state.get("worker_pid", 0))
+        )
+        owner_generation = (
+            int(expected_resume_count)
+            if expected_resume_count is not None
+            else int(expected_running_state.get("resume_count", -1))
+        )
+        _assert_worker_owner(persisted, owner_pid, owner_generation)
         closed = copy.deepcopy(persisted)
         finished = utc_now()
         closed["status"] = "COMPLETE"
@@ -2994,14 +3109,24 @@ def _finalize_worker_rejection(
     state_path: Path,
     exc: Exception,
     context: Mapping[str, Any] | None,
+    expected_worker_pid: int | None = None,
+    expected_resume_count: int | None = None,
 ) -> bool:
-    """Close a worker failure under the same lock used by COMPLETE publishers."""
+    """Close only a failure still owned by the exact worker generation."""
 
-    with _terminal_state_lock(state_path):
+    with _launch_state_lock(state_path):
         # This re-read is the compare-and-swap boundary.  A COMPLETE publisher
         # that won the lock is immutable; a prior REJECT is likewise terminal.
-        persisted = load_json(state_path)
+        persisted, _persisted_sha = _load_launch_state_snapshot(state_path)
         if persisted.get("status") in {"COMPLETE", "REJECT"}:
+            return False
+        if expected_worker_pid is None or expected_resume_count is None:
+            return False
+        if (
+            persisted.get("status") != "RUNNING"
+            or persisted.get("worker_pid") != expected_worker_pid
+            or persisted.get("resume_count") != expected_resume_count
+        ):
             return False
         if persisted.get("launcher_revision") != LAUNCHER_REVISION:
             raise AuditError("refusing to rewrite a legacy launch state during rejection closure")
@@ -3065,40 +3190,48 @@ def _attempt_for_post(cell: Mapping[str, Any]) -> dict[str, Any]:
 def _worker_run(job_path: Path) -> int:
     state: dict[str, Any] | None = None
     state_path: Path | None = None
+    state_sha256: str | None = None
+    owner_pid = os.getpid()
+    owner_resume_count: int | None = None
+    ownership_acquired = False
     failure_context: Mapping[str, Any] | None = {"failure_stage": "WORKER_VALIDATION"}
     try:
         job_path = job_path.resolve()
         job_binding = file_binding(job_path)
-        job = load_json(job_path)
+        job = load_strict_json(job_path, "launch job")
         state_path = Path(str(job["state_path"])).resolve()
         pre_path = Path(str(job["pre_receipt_path"])).resolve()
         pre_sha = str(job["pre_receipt_sha256"])
-        state = load_json(state_path)
-        if state.get("status") not in {"PENDING", "PENDING_RESUME"}:
-            raise AuditError("scheduled worker was not armed by the launcher")
-        _validate_launch_state_shape(state)
         pre = assert_pre_receipt(pre_path, pre_sha)
         _validate_launch_job(job, pre, pre_path, pre_sha, state_path)
         auth_path = Path(str(job["authorization"]["binding"]["path"]))
         if validate_authorization(auth_path, pre_sha) != job["authorization"]:
             raise AuditError("persisted launch authorization drift")
-        if (
-            state.get("job") != job_binding
-            or state.get("authorization") != job["authorization"]
-            or state.get("scheduler") != job["scheduler"]
-            or Path(str(state.get("pre_receipt_path", ""))).resolve() != pre_path
-            or str(state.get("pre_receipt_sha256", "")).lower() != pre_sha.lower()
-        ):
-            raise AuditError("persisted launch state/job binding drift")
-        _assert_resume_outcome_fence(state, job, state_path)
-        now = utc_now()
-        state["status"] = "RUNNING"
-        state["worker_pid"] = os.getpid()
-        state["started_utc"] = state.get("started_utc") or now
-        state["updated_utc"] = now
-        failure_context = {"failure_stage": "RUNNING_STATE_PERSIST"}
-        _validate_launch_state_shape(state)
-        atomic_json(state_path, state)
+        with _launch_state_lock(state_path):
+            persisted, _persisted_sha = _load_launch_state_snapshot(state_path)
+            if persisted.get("status") not in {"PENDING", "PENDING_RESUME"}:
+                raise AuditError("scheduled worker was not armed by the launcher")
+            if (
+                persisted.get("job") != job_binding
+                or persisted.get("authorization") != job["authorization"]
+                or persisted.get("scheduler") != job["scheduler"]
+                or Path(str(persisted.get("pre_receipt_path", ""))).resolve() != pre_path
+                or str(persisted.get("pre_receipt_sha256", "")).lower() != pre_sha.lower()
+            ):
+                raise AuditError("persisted launch state/job binding drift")
+            _assert_resume_outcome_fence(persisted, job, state_path)
+            now = utc_now()
+            claimed = copy.deepcopy(persisted)
+            claimed["status"] = "RUNNING"
+            claimed["worker_pid"] = owner_pid
+            claimed["started_utc"] = claimed.get("started_utc") or now
+            claimed["updated_utc"] = now
+            failure_context = {"failure_stage": "RUNNING_STATE_PERSIST"}
+            _validate_launch_state_shape(claimed)
+            state_sha256 = atomic_json(state_path, claimed)
+            state = claimed
+            owner_resume_count = int(claimed["resume_count"])
+            ownership_acquired = True
 
         work_root = state_path.parent / "worker"
         work_root.mkdir(parents=True, exist_ok=True)
@@ -3116,19 +3249,28 @@ def _worker_run(job_path: Path) -> int:
             )
             attempt_context["failure_stage"] = "RUNNING_STATE_PERSIST"
             failure_context = attempt_context
-            state["active_cell"] = {
+            armed_state = copy.deepcopy(state)
+            armed_state["active_cell"] = {
                 "cell_id": cell["cell_id"],
                 "attempt_number": 1,
                 "command_sha256": command_sha,
                 "started_utc": started,
                 "status": "OUTCOME_POSSIBLE_NO_RESUME",
             }
-            state["outcome_possible_since_utc"] = (
-                state.get("outcome_possible_since_utc") or started
+            armed_state["outcome_possible_since_utc"] = (
+                armed_state.get("outcome_possible_since_utc") or started
             )
-            state["updated_utc"] = started
-            _validate_launch_state_shape(state)
-            atomic_json(state_path, state)
+            armed_state["updated_utc"] = started
+            if state_sha256 is None or owner_resume_count is None:
+                raise AuditError("worker lost its state CAS binding before outcome fence")
+            state, state_sha256 = _persist_owned_worker_transition(
+                state_path,
+                state,
+                state_sha256,
+                armed_state,
+                owner_pid,
+                owner_resume_count,
+            )
 
             attempt_context["failure_stage"] = "OUTCOME_FENCE_PERSISTED"
             cell_root.mkdir(parents=True, exist_ok=True)
@@ -3170,21 +3312,44 @@ def _worker_run(job_path: Path) -> int:
             attempt_context["run_artifacts"] = sealed["run_artifacts"]
             attempt_context["failure_stage"] = "RUN_ARTIFACTS_BOUND"
             cell_result = _complete_cell_record(str(cell["cell_id"]), attempt_context)
-            state["cells"].append(cell_result)
-            state["active_cell"] = None
-            state["updated_utc"] = utc_now()
+            sealed_state = copy.deepcopy(state)
+            sealed_state["cells"].append(cell_result)
+            sealed_state["active_cell"] = None
+            sealed_state["updated_utc"] = utc_now()
             attempt_context["failure_stage"] = "CELL_STATE_PERSIST"
-            _validate_launch_state_shape(state)
-            atomic_json(state_path, state)
+            if state_sha256 is None or owner_resume_count is None:
+                raise AuditError("worker lost its state CAS binding before cell seal")
+            state, state_sha256 = _persist_owned_worker_transition(
+                state_path,
+                state,
+                state_sha256,
+                sealed_state,
+                owner_pid,
+                owner_resume_count,
+            )
             failure_context = {"failure_stage": "WORKER_VALIDATION"}
         assert_pre_receipt(pre_path, pre_sha)
         failure_context = {"failure_stage": "FINAL_STATE_PERSIST"}
-        state = _finalize_worker_complete(state_path, state)
+        if state_sha256 is None or owner_resume_count is None:
+            raise AuditError("worker lost its state CAS binding before COMPLETE")
+        state = _finalize_worker_complete(
+            state_path,
+            state,
+            state_sha256,
+            owner_pid,
+            owner_resume_count,
+        )
         return 0
     except Exception as exc:
-        if state is not None and state_path is not None:
+        if ownership_acquired and state is not None and state_path is not None:
             try:
-                _finalize_worker_rejection(state_path, exc, failure_context)
+                _finalize_worker_rejection(
+                    state_path,
+                    exc,
+                    failure_context,
+                    owner_pid,
+                    owner_resume_count,
+                )
             except Exception as persistence_exc:
                 print(
                     f"terminal rejection persistence failed: {type(persistence_exc).__name__}",
