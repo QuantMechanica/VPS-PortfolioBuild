@@ -218,6 +218,12 @@ function Get-UntrustedSids {
         )) { [void]$sids.Add($sid) }
     $dev1 = Get-LocalUser -Name 'QMDev1' -ErrorAction Stop
     [void]$sids.Add([string]$dev1.SID.Value)
+    Initialize-QmLsaRightsReader
+    $dev1PrimaryGroupSid = [QmLsaRightsReader]::LocalUserPrimaryGroupSid('QMDev1')
+    if ([string]::IsNullOrWhiteSpace($dev1PrimaryGroupSid)) {
+        throw 'Unable to prove the QMDev1 primary-group SID.'
+    }
+    [void]$sids.Add($dev1PrimaryGroupSid)
     $changed = $true
     while ($changed) {
         $changed = $false
@@ -246,6 +252,40 @@ using System.Security.Principal;
 
 public static class QmLsaRightsReader
 {
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    private struct USER_INFO_4
+    {
+        [MarshalAs(UnmanagedType.LPWStr)] public string Name;
+        [MarshalAs(UnmanagedType.LPWStr)] public string Password;
+        public UInt32 PasswordAge;
+        public UInt32 Privilege;
+        [MarshalAs(UnmanagedType.LPWStr)] public string HomeDirectory;
+        [MarshalAs(UnmanagedType.LPWStr)] public string Comment;
+        public UInt32 Flags;
+        [MarshalAs(UnmanagedType.LPWStr)] public string ScriptPath;
+        public UInt32 AuthFlags;
+        [MarshalAs(UnmanagedType.LPWStr)] public string FullName;
+        [MarshalAs(UnmanagedType.LPWStr)] public string UserComment;
+        [MarshalAs(UnmanagedType.LPWStr)] public string Parameters;
+        [MarshalAs(UnmanagedType.LPWStr)] public string Workstations;
+        public UInt32 LastLogon;
+        public UInt32 LastLogoff;
+        public UInt32 AccountExpires;
+        public UInt32 MaxStorage;
+        public UInt32 UnitsPerWeek;
+        public IntPtr LogonHours;
+        public UInt32 BadPasswordCount;
+        public UInt32 NumberOfLogons;
+        [MarshalAs(UnmanagedType.LPWStr)] public string LogonServer;
+        public UInt32 CountryCode;
+        public UInt32 CodePage;
+        public IntPtr UserSid;
+        public UInt32 PrimaryGroupId;
+        [MarshalAs(UnmanagedType.LPWStr)] public string Profile;
+        [MarshalAs(UnmanagedType.LPWStr)] public string HomeDirectoryDrive;
+        public UInt32 PasswordExpired;
+    }
+
     [StructLayout(LayoutKind.Sequential)]
     private struct LSA_OBJECT_ATTRIBUTES
     {
@@ -302,6 +342,16 @@ public static class QmLsaRightsReader
         Int32 tokenInformationLength,
         out Int32 returnLength);
 
+    [DllImport("netapi32.dll", CharSet = CharSet.Unicode)]
+    private static extern UInt32 NetUserGetInfo(
+        string serverName,
+        string userName,
+        UInt32 level,
+        out IntPtr buffer);
+
+    [DllImport("netapi32.dll")]
+    private static extern UInt32 NetApiBufferFree(IntPtr buffer);
+
     private static string GetTokenSid(
         IntPtr tokenHandle,
         TOKEN_INFORMATION_CLASS informationClass)
@@ -336,6 +386,28 @@ public static class QmLsaRightsReader
                 GetTokenSid(identity.Token, TOKEN_INFORMATION_CLASS.TokenOwner),
                 GetTokenSid(identity.Token, TOKEN_INFORMATION_CLASS.TokenPrimaryGroup)
             };
+        }
+    }
+
+    public static string LocalUserPrimaryGroupSid(string userName)
+    {
+        IntPtr buffer = IntPtr.Zero;
+        UInt32 status = NetUserGetInfo(null, userName, 4, out buffer);
+        if (status != 0)
+            throw new Win32Exception((int)status);
+        try
+        {
+            USER_INFO_4 info = (USER_INFO_4)Marshal.PtrToStructure(
+                buffer, typeof(USER_INFO_4));
+            SecurityIdentifier userSid = new SecurityIdentifier(info.UserSid);
+            SecurityIdentifier accountDomainSid = userSid.AccountDomainSid;
+            if (accountDomainSid == null || info.PrimaryGroupId == 0)
+                throw new InvalidOperationException("Local user primary group is unavailable.");
+            return accountDomainSid.Value + "-" + info.PrimaryGroupId.ToString();
+        }
+        finally
+        {
+            if (buffer != IntPtr.Zero) NetApiBufferFree(buffer);
         }
     }
 

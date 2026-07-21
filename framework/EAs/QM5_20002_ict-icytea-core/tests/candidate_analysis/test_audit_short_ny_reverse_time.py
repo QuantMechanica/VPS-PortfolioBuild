@@ -1099,6 +1099,9 @@ def test_control_helper_closes_volume_ancestor_owner_and_token_group_surface() -
         subject.CONTROL_ANCESTOR_CREATOR_PLACEHOLDER_POLICY
         == "INHERIT_ONLY_KNOWN_MASK_ALLOWED"
     )
+    assert subject.CONTROL_ANCESTOR_CREATOR_IDENTITY_PROOF_REQUIRED is True
+    assert "CurrentCreatorSids" in helper
+    assert "TokenPrimaryGroup" in helper
     assert (
         "Assert-LocalFixedNtfsVolume\nAssert-QmDev1PrivilegeSurface\n"
         "$fullPath = ConvertTo-ControlPath" in helper.replace("\r\n", "\n")
@@ -1146,12 +1149,18 @@ $untrusted = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordina
 foreach ($sid in @('S-1-1-0', 'S-1-5-3', 'S-1-5-11', 'S-1-5-32-545')) {
     [void]$untrusted.Add($sid)
 }
-function Test-RawAncestorAccepted([string]$Sddl) {
+function Test-RawAncestorAccepted(
+    [string]$Sddl,
+    [string]$EffectiveCreatorOwnerSid = 'S-1-5-32-544',
+    [string]$EffectiveCreatorGroupSid = 'S-1-5-18'
+) {
     try {
         $descriptor = [Security.AccessControl.RawSecurityDescriptor]::new($Sddl)
         Assert-QmAncestorRawDescriptor `
             -Descriptor $descriptor `
             -UntrustedSids $untrusted `
+            -EffectiveCreatorOwnerSid $EffectiveCreatorOwnerSid `
+            -EffectiveCreatorGroupSid $EffectiveCreatorGroupSid `
             -Candidate 'X:\ancestor'
         return $true
     } catch {
@@ -1240,6 +1249,12 @@ function Test-ExactDirectoryAcl([Security.AccessControl.DirectorySecurity]$Acl) 
     inherit_only_generic_all_users_rejected = -not (Test-RawAncestorAccepted (
         'O:BAG:BAD:(A;OICIIO;GA;;;BU)'
     ))
+    inherit_only_generic_write_users_rejected = -not (Test-RawAncestorAccepted (
+        'O:BAG:BAD:(A;OICIIO;GW;;;BU)'
+    ))
+    inheritable_create_only_users_rejected = -not (Test-RawAncestorAccepted (
+        'O:BAG:BAD:(A;OICI;0x00000006;;;BU)'
+    ))
     object_generic_all_users_rejected = -not (Test-RawAncestorAccepted (
         'O:BAG:BAD:(OA;;GA;00000000-0000-0000-0000-000000000001;;BU)'
     ))
@@ -1252,6 +1267,16 @@ function Test-ExactDirectoryAcl([Security.AccessControl.DirectorySecurity]$Acl) 
     creator_owner_non_inherit_generic_all_rejected = -not (Test-RawAncestorAccepted (
         'O:BAG:BAD:(A;;GA;;;CO)'
     ))
+    creator_owner_untrusted_effective_owner_rejected = -not (Test-RawAncestorAccepted `
+        -Sddl 'O:BAG:BAD:(A;OICIIO;GA;;;CO)' `
+        -EffectiveCreatorOwnerSid 'S-1-5-32-545' `
+        -EffectiveCreatorGroupSid 'S-1-5-18'
+    )
+    creator_group_untrusted_effective_group_rejected = -not (Test-RawAncestorAccepted `
+        -Sddl 'O:BAG:BAD:(A;OICIIO;GA;;;CG)' `
+        -EffectiveCreatorOwnerSid 'S-1-5-32-544' `
+        -EffectiveCreatorGroupSid 'S-1-5-3'
+    )
     unknown_maximum_allowed_mask_rejected = -not (Test-RawAncestorAccepted (
         'O:BAG:BAD:(A;;0x02000000;;;BU)'
     ))
@@ -1301,10 +1326,14 @@ function Test-ExactDirectoryAcl([Security.AccessControl.DirectorySecurity]$Acl) 
         "ancestor_take_ownership_rejected": True,
         "inherited_generic_all_users_rejected": True,
         "inherit_only_generic_all_users_rejected": True,
+        "inherit_only_generic_write_users_rejected": True,
+        "inheritable_create_only_users_rejected": True,
         "object_generic_all_users_rejected": True,
         "creator_owner_inherit_only_generic_all_allowed": True,
         "creator_group_inherit_only_generic_all_allowed": True,
         "creator_owner_non_inherit_generic_all_rejected": True,
+        "creator_owner_untrusted_effective_owner_rejected": True,
+        "creator_group_untrusted_effective_group_rejected": True,
         "unknown_maximum_allowed_mask_rejected": True,
         "precreated_attacker_owned_anchor_rejected": True,
         "precreated_attacker_writable_anchor_rejected": True,
@@ -1323,6 +1352,7 @@ function Test-ExactDirectoryAcl([Security.AccessControl.DirectorySecurity]$Acl) 
         ("ancestor_raw_generic_rights_forbidden", []),
         ("ancestor_raw_unknown_bits_disposition", "ALLOW"),
         ("ancestor_creator_placeholder_policy", "ALLOW_ALL"),
+        ("ancestor_creator_identity_proof_required", False),
         ("privileged_group_sids_forbidden", subject.CONTROL_PRIVILEGED_GROUP_SIDS[:-1]),
         ("privileges_forbidden", subject.CONTROL_FORBIDDEN_PRIVILEGES[:-1]),
         ("privileges_forbidden", [*subject.CONTROL_FORBIDDEN_PRIVILEGES, "SeTestPrivilege"]),
@@ -1353,6 +1383,7 @@ def test_control_helper_result_rejects_dangerous_token_proof_drift(
         "ancestor_raw_generic_rights_forbidden": subject.CONTROL_ANCESTOR_RAW_GENERIC_RIGHTS_FORBIDDEN,
         "ancestor_raw_unknown_bits_disposition": subject.CONTROL_ANCESTOR_RAW_UNKNOWN_BITS_DISPOSITION,
         "ancestor_creator_placeholder_policy": subject.CONTROL_ANCESTOR_CREATOR_PLACEHOLDER_POLICY,
+        "ancestor_creator_identity_proof_required": subject.CONTROL_ANCESTOR_CREATOR_IDENTITY_PROOF_REQUIRED,
         "qmdev1_privilege_surface_verified": True,
         "privileged_group_sids_forbidden": subject.CONTROL_PRIVILEGED_GROUP_SIDS,
         "privileges_forbidden": subject.CONTROL_FORBIDDEN_PRIVILEGES,
