@@ -115,6 +115,7 @@ CONTROL_FORBIDDEN_PRIVILEGES = [
     "SeCreateSymbolicLinkPrivilege",
     "SeCreateTokenPrivilege",
     "SeDebugPrivilege",
+    "SeDelegateSessionUserImpersonatePrivilege",
     "SeImpersonatePrivilege",
     "SeLoadDriverPrivilege",
     "SeManageVolumePrivilege",

@@ -1014,13 +1014,34 @@ def test_control_helper_closes_volume_ancestor_owner_and_token_group_surface() -
     assert "function Assert-QmDev1PrivilegeSurface" in helper
     assert "LsaEnumerateAccountRights" in helper
     assert "S-1-5-32-551" in helper  # Backup Operators
-    for privilege in (
+    expected_privileges = (
+        "SeAssignPrimaryTokenPrivilege",
         "SeBackupPrivilege",
-        "SeRestorePrivilege",
-        "SeTakeOwnershipPrivilege",
+        "SeCreatePermanentPrivilege",
+        "SeCreateSymbolicLinkPrivilege",
+        "SeCreateTokenPrivilege",
         "SeDebugPrivilege",
+        "SeDelegateSessionUserImpersonatePrivilege",
         "SeImpersonatePrivilege",
-    ):
+        "SeLoadDriverPrivilege",
+        "SeManageVolumePrivilege",
+        "SeRelabelPrivilege",
+        "SeRestorePrivilege",
+        "SeSecurityPrivilege",
+        "SeSystemEnvironmentPrivilege",
+        "SeTakeOwnershipPrivilege",
+        "SeTcbPrivilege",
+        "SeTrustedCredManAccessPrivilege",
+    )
+    assert subject.CONTROL_FORBIDDEN_PRIVILEGES == list(expected_privileges)
+    privilege_block = helper.split("$dangerousPrivileges = @(", 1)[1].split(")", 1)[0]
+    persisted_privileges = [
+        line.strip().rstrip(",").strip("'")
+        for line in privilege_block.splitlines()
+        if line.strip().startswith("'Se")
+    ]
+    assert persisted_privileges == list(expected_privileges)
+    for privilege in expected_privileges:
         assert privilege in helper
     assert (
         "Assert-LocalFixedNtfsVolume\nAssert-QmDev1PrivilegeSurface\n"

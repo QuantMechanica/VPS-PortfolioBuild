@@ -35,6 +35,7 @@ $dangerousPrivileges = @(
     'SeCreateSymbolicLinkPrivilege',
     'SeCreateTokenPrivilege',
     'SeDebugPrivilege',
+    'SeDelegateSessionUserImpersonatePrivilege',
     'SeImpersonatePrivilege',
     'SeLoadDriverPrivilege',
     'SeManageVolumePrivilege',
