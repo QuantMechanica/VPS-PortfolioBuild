@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import subprocess
 import sys
 from datetime import date, datetime, timezone
@@ -435,7 +436,7 @@ def test_pre_rejects_nonpreregistered_data_receipt_without_calling_base_or_creat
 
     monkeypatch.setattr(subject, "_BASE_PREFLIGHT", forbidden)
     run_root = tmp_path / "run"
-    with pytest.raises(subject.B.InvalidEvidence, match="data receipt must be exactly"):
+    with pytest.raises(subject.B.InvalidEvidence, match="data receipt must be lexically exact"):
         subject.preflight(
             "WS30.DWX",
             tmp_path / "wrong-data-receipt.json",
@@ -462,7 +463,7 @@ def test_freeze_cli_rejects_noncanonical_receipt_without_creating_it(
     captured = capsys.readouterr()
     assert code == 2
     assert not receipt.exists()
-    assert "freeze receipt must be exactly" in captured.err
+    assert "freeze receipt must be lexically exact" in captured.err
 
 
 def test_freeze_readiness_failure_does_not_consume_canonical_receipt(
@@ -704,6 +705,14 @@ def test_reparse_primary_namespace_rejected_before_status_read(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     original = subject._path_is_reparse
+    original_lexists = subject.os.path.lexists
+
+    def fake_lexists(path: Path) -> bool:
+        if os.path.normcase(str(subject._lexical_path(path))) == os.path.normcase(
+            str(subject._lexical_path(subject.PRIMARY_RUN_ROOT))
+        ):
+            return True
+        return original_lexists(path)
 
     def fake_reparse(path: Path) -> bool:
         if os.path.normcase(str(subject._lexical_path(path))) == os.path.normcase(
@@ -719,6 +728,7 @@ def test_reparse_primary_namespace_rejected_before_status_read(
         called = True
         raise AssertionError("must reject before load")
 
+    monkeypatch.setattr(subject.os.path, "lexists", fake_lexists)
     monkeypatch.setattr(subject, "_path_is_reparse", fake_reparse)
     monkeypatch.setattr(subject.B, "load_json", forbidden_load)
     code = subject.main(["status", "--state", str(subject.PRIMARY_STATE_PATH)])

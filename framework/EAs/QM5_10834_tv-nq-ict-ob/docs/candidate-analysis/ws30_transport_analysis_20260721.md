@@ -65,7 +65,8 @@ Two prerequisites are deliberately absent:
    DEV2 store and no provision evidence exists at the preregistered paths.
 
 Neither command provisions data, edits a registry, launches MT5, creates a task,
-or starts a tester. Missing prerequisites return an `INVALID` evidence receipt.
+or starts a tester. Missing prerequisites return exit code `2` with an `INVALID`
+diagnostic on stderr; they deliberately do **not** create a freeze or PRE receipt.
 This is a readiness failure, not a strategy result and not an attempt.
 
 ## Offline DEV2 provision evidence required later
@@ -87,9 +88,13 @@ The manifest must be schema 1,
 
 The receipt must be schema 1,
 `QM5_10834_WS30_DEV2_PROVISION_RECEIPT`, status `PASS`, bind the exact manifest,
-report the same `8 + 90 = 98` closure, assert source/target SHA equality, and keep
-all outcome/MT5 fence flags false. The later provisioner is outside this change;
-it must not use this PRE command as a copier.
+and contain the exact ordered 98-row ledger. Every row binds the preregistered
+T1 source and DEV2 target path, size, and SHA-256 for its HCC year or TKC month.
+Freeze rehashes both copies, rechecks their file identities around both hash
+passes, and rejects reordered/substituted paths, byte drift, hardlink/same-file
+aliases, and any reparse component. The receipt must also keep all outcome/MT5
+fence flags false. The later provisioner is outside this change; it must not use
+this PRE command as a copier.
 
 After the provision is complete, freeze exactly the DEV2 corpus once:
 
@@ -127,9 +132,14 @@ C:\Python311\python.exe `
 PRE dynamically proves that commit
 `13e82258f5e7d514b50ed4c04787d8aa2e30eb5a` (`fix: tolerate metatester owner
 lookup exit races`) is an ancestor of PRE HEAD. It then binds the current bytes
-for the runner, WMI-fixed child, cleanup, credential helpers, smoke runner, lane
-contract, and scheduled-task helper. Later unrelated commits do not invalidate
-PRE by themselves; any bound runtime byte change does.
+for this base auditor itself, the runner, WMI-fixed child, cleanup, credential
+helpers, smoke runner, lane contract, and scheduled-task helper. Later unrelated
+commits do not invalidate PRE by themselves; any bound runtime byte change does.
+
+All freeze, PRE, launch, status, worker-job, and POST paths are confined to their
+exact preregistered WS30 lexical paths before any inherited auditor read. Existing
+path components must not be reparse points. A resolved alias into the WS30 tree,
+or into an NDX claim/state/report tree, is therefore rejected before it is opened.
 
 ## Primary attempt and the only possible infrastructure alternate
 
@@ -145,6 +155,8 @@ Primary identities:
 
 - Claim:
   `D:\QM\reports\candidate_analysis\QM5_10834\claims\QM5_10834_TV_NQ_ICT_OB_WS30_TRANSPORT_001_DEV2_NATIVE_ATTEMPT_001.json`
+- Authorization:
+  `D:\QM\reports\candidate_analysis\QM5_10834\runs\WS30_ICT_OB_TRANSPORT_NATIVE_ATTEMPT_001\native_outcome_authorization.json`
 - Scope:
   `QM5_10834_WS30_TRANSPORT_PRIMARY_001_4_CELLS_X_2_DUPLICATES_MODEL4_MAX_4_NATIVE_STARTS_PER_CELL`
 
@@ -154,6 +166,8 @@ Reserved alternate identities:
   `D:\QM\reports\candidate_analysis\QM5_10834\runs\WS30_ICT_OB_TRANSPORT_INFRA_ALTERNATE_002`
 - Claim:
   `D:\QM\reports\candidate_analysis\QM5_10834\claims\QM5_10834_TV_NQ_ICT_OB_WS30_TRANSPORT_001_DEV2_NATIVE_ATTEMPT_002.json`
+- Authorization:
+  `D:\QM\reports\candidate_analysis\QM5_10834\runs\WS30_ICT_OB_TRANSPORT_INFRA_ALTERNATE_002\native_outcome_authorization.json`
 - Scope:
   `QM5_10834_WS30_TRANSPORT_INFRA_ALTERNATE_002_4_CELLS_X_2_DUPLICATES_MODEL4_MAX_4_NATIVE_STARTS_PER_CELL`
 
