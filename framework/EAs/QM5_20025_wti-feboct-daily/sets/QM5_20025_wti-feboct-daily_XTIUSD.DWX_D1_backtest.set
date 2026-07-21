@@ -1,4 +1,4 @@
-; QM5 Set File
+﻿; QM5 Set File
 ; ea_id: 20025
 ; ea_slug: wti-feboct-daily
 ; ea_version: v5.0
@@ -9,7 +9,7 @@
 ; magic_slot: 0
 ; risk_mode: RISK_FIXED
 ; portfolio_weight: 1
-; build_hash: PENDING_COMPILE
+; build_hash:   fdea1583d3ce7623e63a3d74370c280866987e0c5ff2f40fd8eddb2e4efc523b
 ; author: Development
 ; date: 2026-07-21
 qm_ea_id=20025
