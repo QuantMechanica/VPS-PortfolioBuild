@@ -95,9 +95,17 @@
   },
   "immutable_runtime": {
     "source_main_worktree": "C:\\QM\\repo",
-    "main_worktree_must_be_clean_at_materialization": true,
-    "main_worktree_must_be_clean_at_pre": true,
-    "main_worktree_must_be_clean_at_launch": true,
+    "main_worktree_scoped_paths_must_be_clean_at_materialization": true,
+    "main_worktree_scoped_paths_must_be_clean_at_pre": true,
+    "main_worktree_scoped_paths_must_be_clean_at_launch": true,
+    "unrelated_main_worktree_paths_may_be_dirty": true,
+    "main_worktree_scoped_path_policy": {
+      "basis": "EXACT_RUNTIME_PRE_INCLUDE_AND_CONTRACT_ARTIFACT_DEPENDENCY_CLOSURE",
+      "path_count": 53,
+      "relative_path_list_canonical_sha256": "1bc5d9e2fe51aa27926bae55e6fb888b3cde1a43a1df08c22e0f78f2b6b8758a",
+      "git_status_uses_literal_pathspecs_only": true,
+      "source_to_runtime_exact_byte_identity_required": true
+    },
     "runtime_worktree_root": "C:\\QM\\runtime_worktrees\\QM5_10834_WS30_ALT002",
     "runtime_worktree_must_be_new": true,
     "runtime_worktree_must_be_detached": true,
@@ -128,7 +136,8 @@
     "runtime_materialization_receipt_required": true,
     "fresh_owner_authorization_at_reserved_path_required": true,
     "alternate_pre_receipt_required": true,
-    "main_and_runtime_worktrees_must_both_be_clean": true,
+    "scoped_main_paths_and_runtime_worktree_must_be_clean": true,
+    "unrelated_main_worktree_dirt_does_not_block": true,
     "primary_closure_must_revalidate_exactly": true,
     "launch_not_authorized_by_this_contract": true
   }

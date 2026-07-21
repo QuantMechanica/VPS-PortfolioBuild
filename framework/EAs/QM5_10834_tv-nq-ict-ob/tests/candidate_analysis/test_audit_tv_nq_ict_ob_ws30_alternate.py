@@ -64,6 +64,17 @@ def test_alternate_contract_is_hash_bound_and_semantically_valid() -> None:
     assert contract["immutable_runtime"][
         "alternate_pre_and_worker_must_not_open_main_worktree_evidence_files"
     ] is True
+    scoped = contract["immutable_runtime"]["main_worktree_scoped_path_policy"]
+    assert scoped["path_count"] == subject.MAIN_SCOPED_PATH_COUNT == 53
+    assert scoped["relative_path_list_canonical_sha256"] == (
+        subject.MAIN_SCOPED_PATH_LIST_SHA256
+    )
+    assert contract["immutable_runtime"][
+        "unrelated_main_worktree_paths_may_be_dirty"
+    ] is True
+    assert contract["launch_gate"][
+        "unrelated_main_worktree_dirt_does_not_block"
+    ] is True
 
 
 def test_primary_contract_absolute_origin_paths_are_parser_only_and_restored(
@@ -347,6 +358,9 @@ def test_alternate_has_separate_one_shot_namespace_and_claim_profile() -> None:
     assert contract["maximum_total_counted_attempts"] == 2
     assert contract["resume_permitted"] is False
     assert contract["further_attempts_forbidden"] is True
+    assert contract["main_worktree_scoped_paths_clean_at_launch_required"] is True
+    assert contract["main_worktree_scoped_path_count"] == 53
+    assert contract["unrelated_main_worktree_dirt_ignored"] is True
 
 
 def test_alternate_runtime_binds_every_imported_and_execution_dependency() -> None:
@@ -426,13 +440,88 @@ def test_runtime_clean_head_accepts_only_clean_detached_exact_root(
     assert subject._clean_head(root, "runtime", detached_required=True) == head
 
 
-def test_pre_fails_on_dirty_main_before_runtime_or_base_preflight(
+def test_main_scoped_clean_head_uses_only_literal_exact_pathspecs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = tmp_path / "main"
+    root.mkdir()
+    head = "c" * 40
+    expected_status_args = (
+        "status",
+        "--porcelain=v1",
+        "-z",
+        "--untracked-files=all",
+        "--",
+        ":(literal)a.txt",
+        ":(literal)dir/b.txt",
+    )
+
+    def fake_git(_root: Path, *args: str, check: bool = True):
+        if args == ("rev-parse", "--show-toplevel"):
+            return _git_result(0, str(root) + "\n")
+        if args == expected_status_args:
+            # An unrelated dirty path is deliberately absent from the literal
+            # query and therefore cannot block this scoped gate.
+            assert ":(literal)framework/registry/event_vocabulary.json" not in args
+            return _git_result(0)
+        if args == ("rev-parse", "HEAD^{commit}"):
+            return _git_result(0, head + "\n")
+        if args == ("symbolic-ref", "-q", "HEAD"):
+            return _git_result(0, "refs/heads/main\n")
+        raise AssertionError(args)
+
+    monkeypatch.setattr(subject, "_git_at", fake_git)
+    assert subject._scoped_clean_head(
+        root,
+        "main scope",
+        ("a.txt", "dir/b.txt"),
+        detached_required=False,
+    ) == head
+
+
+def test_main_scoped_clean_head_rejects_dirt_inside_exact_scope(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = tmp_path / "main"
+    root.mkdir()
+
+    def fake_git(_root: Path, *args: str, check: bool = True):
+        if args == ("rev-parse", "--show-toplevel"):
+            return _git_result(0, str(root) + "\n")
+        if args[:6] == (
+            "status",
+            "--porcelain=v1",
+            "-z",
+            "--untracked-files=all",
+            "--",
+            ":(literal)a.txt",
+        ):
+            return _git_result(0, " M a.txt\0")
+        raise AssertionError(args)
+
+    monkeypatch.setattr(subject, "_git_at", fake_git)
+    with pytest.raises(subject.B.InvalidEvidence, match="exact scoped path set"):
+        subject._scoped_clean_head(
+            root, "main scope", ("a.txt",), detached_required=False
+        )
+
+
+def test_main_scope_identity_is_exact_53_file_dependency_closure() -> None:
+    relatives = subject._main_scoped_relative_paths()
+    assert len(relatives) == subject.MAIN_SCOPED_PATH_COUNT == 53
+    assert subject.B.canonical_sha256(list(relatives)) == (
+        subject.MAIN_SCOPED_PATH_LIST_SHA256
+    )
+    assert "framework/registry/event_vocabulary.json" not in relatives
+
+
+def test_pre_fails_on_dirty_scoped_main_before_runtime_or_base_preflight(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     called = {"runtime": False, "base": False}
 
     def dirty(_stage: str):
-        raise subject.B.InvalidEvidence("main worktree at alternate PRE is dirty")
+        raise subject.B.InvalidEvidence("main scoped dependencies are dirty")
 
     def forbidden_runtime():
         called["runtime"] = True
@@ -442,7 +531,7 @@ def test_pre_fails_on_dirty_main_before_runtime_or_base_preflight(
         called["base"] = True
         raise AssertionError("base PRE must follow clean-main gate")
 
-    monkeypatch.setattr(subject, "assert_main_worktree_clean", dirty)
+    monkeypatch.setattr(subject, "assert_main_scoped_paths_clean", dirty)
     monkeypatch.setattr(subject, "_assert_runtime_location", forbidden_runtime)
     monkeypatch.setattr(subject, "_BASE_PREFLIGHT", forbidden_base)
     with pytest.raises(subject.B.InvalidEvidence, match="dirty"):
@@ -495,7 +584,7 @@ def test_pre_readiness_failure_does_not_consume_canonical_receipt(
     assert not run_root.exists()
 
 
-def test_materialization_refuses_dirty_main_before_git_worktree_add(
+def test_materialization_refuses_dirty_scoped_main_before_git_worktree_add(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(subject, "RUNTIME_WORKTREE_ROOT", tmp_path / "runtime")
@@ -507,7 +596,7 @@ def test_materialization_refuses_dirty_main_before_git_worktree_add(
     def forbidden_run(*_args, **_kwargs):
         raise AssertionError("git worktree add must not run")
 
-    monkeypatch.setattr(subject, "assert_main_worktree_clean", dirty)
+    monkeypatch.setattr(subject, "assert_main_scoped_paths_clean", dirty)
     monkeypatch.setattr(subject.subprocess, "run", forbidden_run)
     with pytest.raises(subject.B.InvalidEvidence, match="dirty"):
         subject.materialize_runtime()
@@ -520,7 +609,7 @@ def test_launch_resume_is_rejected_before_any_main_or_native_action(
 ) -> None:
     monkeypatch.setattr(
         subject,
-        "assert_main_worktree_clean",
+        "assert_main_scoped_paths_clean",
         lambda _stage: (_ for _ in ()).throw(AssertionError("must not inspect")),
     )
     monkeypatch.setattr(

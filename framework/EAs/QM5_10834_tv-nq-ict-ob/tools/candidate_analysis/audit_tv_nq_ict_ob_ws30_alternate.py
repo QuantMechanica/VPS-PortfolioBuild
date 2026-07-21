@@ -80,7 +80,7 @@ ALTERNATE_CONTRACT_PATH = (
     / "ws30_transport_infra_alternate002_contract_20260721.json"
 )
 EXPECTED_ALTERNATE_CONTRACT_SHA256 = (
-    "0b4c11f4e9846a495374b8db1fe78435b94c689a7bff028ace0fadd7b7f9c31a"
+    "c9378a2be5be377704a15b27d7ecfae29a7684529f11ac4515ea6e59f65b3148"
 )
 EXPECTED_DATA_RECEIPT_SIZE = 29800
 EXPECTED_DATA_RECEIPT_SHA256 = (
@@ -96,6 +96,10 @@ EXPECTED_PRIMARY_ADAPTER_SHA256 = (
 EXPECTED_BASE_AUDITOR_SIZE = 239116
 EXPECTED_BASE_AUDITOR_SHA256 = (
     "58101fefced46392f26bd24aae0e7520d8ee591d97d1e50a759efd46b693f013"
+)
+MAIN_SCOPED_PATH_COUNT = 53
+MAIN_SCOPED_PATH_LIST_SHA256 = (
+    "1bc5d9e2fe51aa27926bae55e6fb888b3cde1a43a1df08c22e0f78f2b6b8758a"
 )
 
 EXPECTED_DATA_RECEIPT_REPO_BINDING_LOCATIONS = frozenset(
@@ -254,9 +258,60 @@ def _clean_head(root: Path, label: str, *, detached_required: bool) -> str:
     return head
 
 
-def assert_main_worktree_clean(stage: str) -> str:
-    return _clean_head(
-        MAIN_WORKTREE_ROOT, f"main worktree at {stage}", detached_required=False
+def _scoped_clean_head(
+    root: Path,
+    label: str,
+    relative_paths: Sequence[str],
+    *,
+    detached_required: bool,
+) -> str:
+    root = W._assert_no_reparse_components(root, label)
+    if not root.is_dir():
+        raise B.InvalidEvidence(f"{label} does not exist: {root}")
+    top = Path(
+        _git_at(root, "rev-parse", "--show-toplevel").stdout.strip()
+    ).resolve()
+    if top != root.resolve():
+        raise B.InvalidEvidence(f"{label} top-level drift: {top}")
+    normalized: list[str] = []
+    for index, relative_text in enumerate(relative_paths):
+        relative = Path(str(relative_text))
+        if relative.is_absolute() or any(
+            part in {"", ".", ".."} for part in relative.parts
+        ):
+            raise B.InvalidEvidence(f"unsafe scoped path[{index}]: {relative_text}")
+        normalized.append(relative.as_posix())
+    if normalized != sorted(set(normalized), key=str.casefold) or not normalized:
+        raise B.InvalidEvidence("scoped path set must be non-empty, unique, and sorted")
+    literal_pathspecs = tuple(f":(literal){relative}" for relative in normalized)
+    status = _git_at(
+        root,
+        "status",
+        "--porcelain=v1",
+        "-z",
+        "--untracked-files=all",
+        "--",
+        *literal_pathspecs,
+    ).stdout
+    if status:
+        raise B.InvalidEvidence(f"{label} has dirt in the exact scoped path set")
+    head = _git_at(root, "rev-parse", "HEAD^{commit}").stdout.strip().lower()
+    if not re.fullmatch(r"[0-9a-f]{40}", head):
+        raise B.InvalidEvidence(f"{label} HEAD is malformed")
+    symbolic = _git_at(root, "symbolic-ref", "-q", "HEAD", check=False)
+    if detached_required and not (
+        symbolic.returncode == 1 and not symbolic.stdout.strip()
+    ):
+        raise B.InvalidEvidence(f"{label} must be detached")
+    return head
+
+
+def assert_main_scoped_paths_clean(stage: str) -> str:
+    return _scoped_clean_head(
+        MAIN_WORKTREE_ROOT,
+        f"main worktree scoped dependencies at {stage}",
+        _main_scoped_relative_paths(),
+        detached_required=False,
     )
 
 
@@ -413,9 +468,10 @@ def validate_alternate_contract() -> dict[str, Any]:
         or any(
             runtime.get(key) is not True
             for key in (
-                "main_worktree_must_be_clean_at_materialization",
-                "main_worktree_must_be_clean_at_pre",
-                "main_worktree_must_be_clean_at_launch",
+                "main_worktree_scoped_paths_must_be_clean_at_materialization",
+                "main_worktree_scoped_paths_must_be_clean_at_pre",
+                "main_worktree_scoped_paths_must_be_clean_at_launch",
+                "unrelated_main_worktree_paths_may_be_dirty",
                 "runtime_worktree_must_be_new",
                 "runtime_worktree_must_be_detached",
                 "runtime_worktree_must_be_clean",
@@ -435,6 +491,23 @@ def validate_alternate_contract() -> dict[str, Any]:
         )
     ):
         raise B.InvalidEvidence("alternate immutable-runtime contract drift")
+    scoped_policy = runtime.get("main_worktree_scoped_path_policy")
+    if not isinstance(scoped_policy, Mapping) or scoped_policy != {
+        "basis": "EXACT_RUNTIME_PRE_INCLUDE_AND_CONTRACT_ARTIFACT_DEPENDENCY_CLOSURE",
+        "path_count": MAIN_SCOPED_PATH_COUNT,
+        "relative_path_list_canonical_sha256": MAIN_SCOPED_PATH_LIST_SHA256,
+        "git_status_uses_literal_pathspecs_only": True,
+        "source_to_runtime_exact_byte_identity_required": True,
+    }:
+        raise B.InvalidEvidence("alternate main-worktree scoped-path policy drift")
+    launch_gate = payload.get("launch_gate")
+    if not isinstance(launch_gate, Mapping) or (
+        launch_gate.get("scoped_main_paths_and_runtime_worktree_must_be_clean")
+        is not True
+        or launch_gate.get("unrelated_main_worktree_dirt_does_not_block") is not True
+        or launch_gate.get("launch_not_authorized_by_this_contract") is not True
+    ):
+        raise B.InvalidEvidence("alternate scoped launch gate drift")
     B.assert_binding(binding, "alternate execution contract")
     return payload
 
@@ -819,6 +892,16 @@ def _repository_binding_relative_paths(root: Path = REPO_ROOT) -> tuple[str, ...
     return tuple(sorted(relative_paths, key=str.casefold))
 
 
+def _main_scoped_relative_paths() -> tuple[str, ...]:
+    relative_paths = _repository_binding_relative_paths(REPO_ROOT)
+    if (
+        len(relative_paths) != MAIN_SCOPED_PATH_COUNT
+        or B.canonical_sha256(list(relative_paths)) != MAIN_SCOPED_PATH_LIST_SHA256
+    ):
+        raise B.InvalidEvidence("main scoped dependency path-set identity drift")
+    return relative_paths
+
+
 def _build_repository_byte_identity_ledger(
     source_root: Path,
     runtime_root: Path,
@@ -936,7 +1019,10 @@ def validate_runtime_materialization_receipt() -> dict[str, Any]:
         "runtime_worktree",
         "runtime_head",
         "runtime_detached",
-        "main_clean_at_materialization",
+        "main_scoped_paths_clean_at_materialization",
+        "main_scoped_path_count",
+        "main_scoped_path_list_canonical_sha256",
+        "unrelated_main_worktree_dirt_ignored",
         "runtime_clean_at_materialization",
         "checkout_policy",
         "repository_binding_byte_identity_ledger",
@@ -952,7 +1038,11 @@ def validate_runtime_materialization_receipt() -> dict[str, Any]:
         or Path(str(payload.get("runtime_worktree", ""))).resolve()
         != RUNTIME_WORKTREE_ROOT.resolve()
         or payload.get("runtime_detached") is not True
-        or payload.get("main_clean_at_materialization") is not True
+        or payload.get("main_scoped_paths_clean_at_materialization") is not True
+        or payload.get("main_scoped_path_count") != MAIN_SCOPED_PATH_COUNT
+        or payload.get("main_scoped_path_list_canonical_sha256")
+        != MAIN_SCOPED_PATH_LIST_SHA256
+        or payload.get("unrelated_main_worktree_dirt_ignored") is not True
         or payload.get("runtime_clean_at_materialization") is not True
     ):
         raise B.InvalidEvidence("alternate runtime receipt identity drift")
@@ -1035,7 +1125,12 @@ def execution_contract() -> dict[str, Any]:
                 ALTERNATE_CONTRACT_PATH, EXPECTED_ALTERNATE_CONTRACT_SHA256
             ),
             "immutable_runtime_required": True,
-            "main_worktree_clean_at_launch_required": True,
+            "main_worktree_scoped_paths_clean_at_launch_required": True,
+            "main_worktree_scoped_path_count": MAIN_SCOPED_PATH_COUNT,
+            "main_worktree_scoped_path_list_canonical_sha256": (
+                MAIN_SCOPED_PATH_LIST_SHA256
+            ),
+            "unrelated_main_worktree_dirt_ignored": True,
         }
     )
     return contract
@@ -1113,7 +1208,7 @@ def preflight(
     build_receipt_path: Path,
     run_root: Path,
 ) -> dict[str, Any]:
-    assert_main_worktree_clean("alternate PRE")
+    assert_main_scoped_paths_clean("alternate PRE")
     _assert_runtime_location()
     _assert_alternate_control_namespace()
     validate_alternate_contract()
@@ -1208,7 +1303,7 @@ def launch_detached(
 ) -> dict[str, Any]:
     if resume:
         raise B.AuthorizationError("WS30 infrastructure alternate never permits resume")
-    assert_main_worktree_clean("alternate launch")
+    assert_main_scoped_paths_clean("alternate launch")
     _assert_runtime_location()
     validate_primary_invalid_infra_closure()
     return _BASE_LAUNCH_DETACHED(
@@ -1271,7 +1366,7 @@ def _assert_cli_path_confinement(args: Any) -> None:
 
 
 def materialize_runtime() -> dict[str, Any]:
-    """Create the fixed detached runtime from a clean, committed main worktree."""
+    """Create the runtime from a clean exact dependency scope in the main tree."""
 
     if RUNTIME_RECEIPT_PATH.exists():
         raise B.InvalidEvidence(
@@ -1281,8 +1376,8 @@ def materialize_runtime() -> dict[str, Any]:
         raise B.InvalidEvidence(
             f"runtime worktree target already exists: {RUNTIME_WORKTREE_ROOT}"
         )
-    source_head = assert_main_worktree_clean("runtime materialization")
-    relative_paths = _repository_binding_relative_paths(MAIN_WORKTREE_ROOT)
+    source_head = assert_main_scoped_paths_clean("runtime materialization")
+    relative_paths = _main_scoped_relative_paths()
     for relative_text in relative_paths:
         probe = _git_at(
             MAIN_WORKTREE_ROOT,
@@ -1350,7 +1445,10 @@ def materialize_runtime() -> dict[str, Any]:
         "runtime_worktree": str(RUNTIME_WORKTREE_ROOT.resolve()),
         "runtime_head": runtime_head,
         "runtime_detached": True,
-        "main_clean_at_materialization": True,
+        "main_scoped_paths_clean_at_materialization": True,
+        "main_scoped_path_count": MAIN_SCOPED_PATH_COUNT,
+        "main_scoped_path_list_canonical_sha256": MAIN_SCOPED_PATH_LIST_SHA256,
+        "unrelated_main_worktree_dirt_ignored": True,
         "runtime_clean_at_materialization": True,
         "checkout_policy": {
             "checkout": "GIT_WORKTREE_ADD_DETACHED_THEN_EXACT_BOUND_FILE_BYTE_OVERLAY",
