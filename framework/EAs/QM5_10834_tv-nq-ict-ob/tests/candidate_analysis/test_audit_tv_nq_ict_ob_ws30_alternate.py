@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import importlib.util
 import inspect
 import subprocess
@@ -75,6 +76,9 @@ def test_primary_contract_absolute_origin_paths_are_parser_only_and_restored(
     monkeypatch.setattr(subject.W, "EA_ROOT", runtime_ea)
     monkeypatch.setattr(subject.W, "BUILD_RECEIPT_PATH", runtime_build)
     monkeypatch.setattr(subject, "validate_alternate_contract", lambda: {})
+    monkeypatch.setattr(
+        subject, "validate_frozen_gate_and_auditor_identity", lambda: None
+    )
     bound_paths: list[Path] = []
 
     def fake_binding(path: Path, _expected: str | None = None):
@@ -104,6 +108,42 @@ def test_primary_contract_absolute_origin_paths_are_parser_only_and_restored(
     ]
     assert subject.W.EA_ROOT == runtime_ea
     assert subject.W.BUILD_RECEIPT_PATH == runtime_build
+
+
+def test_frozen_merit_and_auditor_identity_is_enforced(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    subject.validate_frozen_gate_and_auditor_identity()
+    changed = copy.deepcopy(subject.B.MERIT_GATES)
+    changed["development"]["minimum_trades"] += 1
+    monkeypatch.setattr(subject.B, "MERIT_GATES", changed)
+    with pytest.raises(subject.B.InvalidEvidence, match="merit contract drift"):
+        subject.validate_frozen_gate_and_auditor_identity()
+
+
+def test_actual_frozen_data_receipt_projects_only_six_approved_repo_bindings() -> None:
+    raw = subject.B.load_json(subject.W.FUTURE_DATA_RECEIPT_PATH)
+    projected = subject._project_data_receipt_repo_bindings(raw)
+    assert projected["artifact_type"] == raw["artifact_type"]
+    assert projected["factory_evidence"]["matrix"]["sha256"] == (
+        raw["factory_evidence"]["matrix"]["sha256"]
+    )
+    assert projected["cost_schedule"]["supplemental_stress"]["slippage"][
+        "source"
+    ]["sha256"] == raw["cost_schedule"]["supplemental_stress"]["slippage"][
+        "source"
+    ]["sha256"]
+
+
+def test_data_receipt_projection_rejects_unapproved_main_repo_path() -> None:
+    raw = subject.B.load_json(subject.W.FUTURE_DATA_RECEIPT_PATH)
+    raw["unexpected_binding"] = {
+        "path": str(subject.MAIN_WORKTREE_ROOT / "unexpected.txt"),
+        "size": 1,
+        "sha256": "0" * 64,
+    }
+    with pytest.raises(subject.B.InvalidEvidence, match="unapproved"):
+        subject._project_data_receipt_repo_bindings(raw)
 
 
 @pytest.mark.skipif(

@@ -1,173 +1,26 @@
 {
-  "analysis_id": "QM5_13210_MULHAM_ASIAN_SWEEP_LONDON_XAUUSD_NATIVE_001",
-  "artifact_bindings": {
-    "adapter": {
-      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13210_mulham-asian-sweep-london\\tools\\candidate_analysis\\audit_mulham_asian_sweep_london_xau.py",
-      "sha256": "abb723280971e270096d1164fe704f1f9acb02b8bf00b49eecd84fa8f3e646bd",
-      "size": 43348
-    },
-    "base_tool": {
-      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13210_mulham-asian-sweep-london\\tools\\candidate_analysis\\audit_mulham_asian_sweep_london.py",
-      "sha256": "ef7f31d140ae2c719adfb0b1fad72655ce5df263a9bcc5d417691294be47b684",
-      "size": 135863
-    },
-    "build_receipt": {
-      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13210_mulham-asian-sweep-london\\docs\\candidate-analysis\\build_receipt_20260720.json",
-      "sha256": "2c6cc45039d078b6f7d52f4c08c199a0b81797f0ee69d4835679e95d2704637e",
-      "size": 1367
-    },
-    "card": {
-      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13210_mulham-asian-sweep-london.md",
-      "sha256": "c9138af20679962b694b253a07488a08085868bb65b81ee1887780cd0e01c11e",
-      "size": 6664
-    },
-    "ex5": {
-      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13210_mulham-asian-sweep-london\\QM5_13210_mulham-asian-sweep-london.ex5",
-      "sha256": "377840ec44833eed5420a030519b77b37ebfd6b8e2a1161e7c3f57721fb0cccc",
-      "size": 358260
-    },
-    "mq5": {
-      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13210_mulham-asian-sweep-london\\QM5_13210_mulham-asian-sweep-london.mq5",
-      "sha256": "366ad6715258615f1de7dcd0669fc68e5ce8ce8bb27a1d37fc53e19147beca71",
-      "size": 42350
-    },
-    "set": {
-      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13210_mulham-asian-sweep-london\\sets\\QM5_13210_mulham-asian-sweep-london_XAUUSD.DWX_M5_backtest.set",
-      "sha256": "c0f3c09b71dc710ab81f4ea99f387577a659c20a8a24015b078b4ae8a12edcdd",
-      "size": 1513
-    },
-    "spec": {
-      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13210_mulham-asian-sweep-london\\SPEC.md",
-      "sha256": "2c7a93598501e527d2bcb93401fd6532af18cdf7d26c6aca7ea0ceca334ab9d2",
-      "size": 9654
-    }
-  },
+  "schema_version": 3,
   "artifact_type": "QM5_13210_XAUUSD_OUTCOME_BLIND_ANALYSIS_CONTRACT",
+  "status": "DRAFT_PENDING_ATTEMPT_002_FINAL_FREEZE",
+  "analysis_id": "QM5_13210_MULHAM_ASIAN_SWEEP_LONDON_XAUUSD_NATIVE_001",
   "candidate": {
-    "duplicates_per_cell": 2,
     "ea_id": "QM5_13210",
-    "model": 4,
-    "parameter_tuning_forbidden": true,
-    "separate_from_eurusd_outcome_namespace": true,
     "strategy": "mulham-asian-sweep-london",
     "symbol": "XAUUSD.DWX",
-    "timeframe": "M5"
+    "timeframe": "M5",
+    "model": 4,
+    "duplicates_per_cell": 2,
+    "parameter_tuning_forbidden": true,
+    "separate_from_eurusd_outcome_namespace": true
   },
-  "execution_cost_contract": {
-    "commission": {
-      "contract_size_oz_per_lot": "100",
-      "model": "MAX_DXZ_FTMO_0.005PCT_NOTIONAL_ROUND_TURN",
-      "per_trade_basis": "entry_price_x_100oz_x_volume_x_0.00005",
-      "rate_round_turn": "0.00005"
-    },
-    "slippage": {
-      "merit_center_application": "BLOCKING_ALL_BASE_GATES",
-      "merit_center_points_per_side": "1",
-      "p95_application": "BLOCKING_BREAKEVEN_SURVIVAL_GATES",
-      "p95_stress_points_per_side": "3",
-      "point_size_quote": "0.01",
-      "point_value_usd_per_lot_per_side": "1",
-      "source": "FACTORY_AUTO_STUB_PROXY_NOT_XAU_LIVE_FILL_MEASUREMENT"
-    },
-    "spread": "EMBEDDED_IN_BOUND_XAUUSD_DWX_REAL_TICKS",
-    "swap": "REQUIRED_ZERO_BY_INTRADAY_FLAT_INVARIANT"
-  },
-  "finalized_utc": "2026-07-21T08:50:03.359163+00:00",
   "lane_and_data": {
-    "deployment_routing_evaluated": false,
-    "live_parity_required": false,
-    "live_suffix_policy": "EXACT_ALIAS_XAUUSD_ONLY_NOT_EVALUATED_HERE",
-    "model4_real_ticks_required": true,
-    "namespace": ".DWX_RESEARCH_BACKTEST",
+    "terminal": "T1",
     "research_store": "T1_CUSTOM_SYMBOL_STORE",
-    "terminal": "T1"
-  },
-  "merit_contract": {
-    "dev": {
-      "maximum_close_drawdown_percent": "10.0",
-      "minimum_cost_profit_factor": "1.20",
-      "minimum_trades": 80,
-      "net_must_be_strictly_positive": true
-    },
-    "each_oos_year": {
-      "minimum_cost_profit_factor_strict": "1.00",
-      "minimum_trades": 12,
-      "net_must_be_strictly_positive": true
-    },
-    "execution_cost_axes": {
-      "commission": {
-        "contract_size_oz_per_lot": "100",
-        "model": "MAX_DXZ_FTMO_0.005PCT_NOTIONAL_ROUND_TURN",
-        "per_trade_basis": "entry_price_x_100oz_x_volume_x_0.00005",
-        "rate_round_turn": "0.00005"
-      },
-      "slippage": {
-        "merit_center_application": "BLOCKING_ALL_BASE_GATES",
-        "merit_center_points_per_side": "1",
-        "p95_application": "BLOCKING_BREAKEVEN_SURVIVAL_GATES",
-        "p95_stress_points_per_side": "3",
-        "point_size_quote": "0.01",
-        "point_value_usd_per_lot_per_side": "1",
-        "source": "FACTORY_AUTO_STUB_PROXY_NOT_XAU_LIVE_FILL_MEASUREMENT"
-      },
-      "spread": "EMBEDDED_IN_BOUND_XAUUSD_DWX_REAL_TICKS",
-      "swap": "REQUIRED_ZERO_BY_INTRADAY_FLAT_INVARIANT"
-    },
-    "leave_best_oos_year_out": {
-      "best_year_basis": "highest_cost_adjusted_net",
-      "minimum_cost_profit_factor": "1.05",
-      "net_must_be_strictly_positive": true
-    },
-    "maximum_new_york_day_loss_percent_of_100k": "3.0",
-    "maximum_single_year_share_of_positive_oos_gross_profit": "0.60",
-    "oos_pooled": {
-      "maximum_close_drawdown_percent": "10.0",
-      "minimum_cost_profit_factor": "1.20",
-      "minimum_trades": 45,
-      "net_must_be_strictly_positive": true
-    },
-    "p95_slippage_stress": {
-      "dev_net_must_be_strictly_positive": true,
-      "dev_profit_factor_strict": "1.00",
-      "each_oos_year_net_must_be_strictly_positive": true,
-      "each_oos_year_profit_factor_strict": "1.00",
-      "oos_pooled_net_must_be_strictly_positive": true,
-      "oos_pooled_profit_factor_strict": "1.00"
-    },
-    "top_five_percent_winners_removed": {
-      "minimum_cost_profit_factor": "1.00",
-      "removal_count": "ceil(0.05 * positive_winner_count)"
-    },
-    "version": "QM5_13210_XAUUSD_MERIT_V1_20260721"
-  },
-  "outcome_fence": {
-    "eurusd_native_outcomes_read_to_select_xau": false,
-    "metatester_started": false,
-    "mt5_terminal_started": false,
-    "xau_deal_rows_parsed": false,
-    "xau_native_reports_opened": false
-  },
-  "run_namespace": {
-    "attempt_id": "ATTEMPT_001",
-    "family_root": "D:\\QM\\reports\\candidate_analysis\\QM5_13210",
-    "legacy_root_forbidden": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_DWX",
-    "namespace_root": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_001",
-    "prior_xau_namespaces_forbidden": true,
-    "resume_forbidden": true,
-    "sibling_attempts_forbidden": true,
-    "single_run_root": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_001\\ATTEMPT_001"
-  },
-  "schema_version": 2,
-  "source_build_commit": "9e6c17e1e954aa6854afcc93dc72b64926316fd1",
-  "status": "FINALIZED_OUTCOME_BLIND",
-  "symbol_spec_contract": {
-    "contract_size_oz_per_lot": "100",
-    "enforcement": "EA_ONINIT_FAIL_CLOSED_AND_ANALYSIS_CONTRACT_BOUND",
-    "live_symbol_exact_alias": "XAUUSD",
-    "point_size_quote": "0.01",
-    "profit_currency": "USD",
-    "research_symbol": "XAUUSD.DWX",
-    "trade_calc_mode": "SYMBOL_CALC_MODE_CFD"
+    "namespace": ".DWX_RESEARCH_BACKTEST",
+    "live_suffix_policy": "EXACT_ALIAS_XAUUSD_ONLY_NOT_EVALUATED_HERE",
+    "live_parity_required": false,
+    "deployment_routing_evaluated": false,
+    "model4_real_ticks_required": true
   },
   "windows": [
     {
@@ -195,25 +48,185 @@
       "to_date": "2025-12-31"
     }
   ],
+  "run_namespace": {
+    "family_root": "D:\\QM\\reports\\candidate_analysis\\QM5_13210",
+    "namespace_root": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_001",
+    "primary_attempt001_root": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_001\\ATTEMPT_001",
+    "primary_attempt001_closure": "C:\\QM\\repo\\framework\\EAs\\QM5_13210_mulham-asian-sweep-london\\docs\\candidate-analysis\\xauusd_attempt001_invalid_infrastructure_closure_20260721.json",
+    "single_alternate_run_root": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_001\\ATTEMPT_002",
+    "legacy_root_forbidden": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_DWX",
+    "attempt_id": "ATTEMPT_002",
+    "attempt001_status_required": "INVALID_INFRASTRUCTURE_CLOSED_OUTCOME_BLIND",
+    "only_attempt_directories_allowed": [
+      "ATTEMPT_001",
+      "ATTEMPT_002"
+    ],
+    "attempt003_plus_forbidden": true,
+    "prior_xau_namespaces_forbidden": true,
+    "resume_forbidden": true,
+    "exact_control_paths": {
+      "pre": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_001\\ATTEMPT_002\\pre_receipt.json",
+      "authorization": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_001\\ATTEMPT_002\\native_outcome_authorization.json",
+      "state": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_001\\ATTEMPT_002\\launch_state.json",
+      "job": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_001\\ATTEMPT_002\\launch_job.json",
+      "post": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\XAUUSD_MULHAM_NATIVE_001\\ATTEMPT_002\\post_receipt.json"
+    }
+  },
+  "symbol_spec_contract": {
+    "research_symbol": "XAUUSD.DWX",
+    "live_symbol_exact_alias": "XAUUSD",
+    "trade_calc_mode": "SYMBOL_CALC_MODE_CFD",
+    "contract_size_oz_per_lot": "100",
+    "point_size_quote": "0.01",
+    "profit_currency": "USD",
+    "enforcement": "EA_ONINIT_FAIL_CLOSED_AND_ANALYSIS_CONTRACT_BOUND"
+  },
   "xau_calibration_projection": {
-    "auto_stub": true,
-    "classification": "FACTORY_AUTO_STUB_PROXY_NOT_XAU_LIVE_FILL_MEASUREMENT",
-    "latency_reference_ms": {
-      "avg": "50",
-      "p95": "120"
-    },
-    "live_fill_measurement_claimed": false,
     "schema_version": 1,
+    "symbol": "XAUUSD.DWX",
+    "classification": "FACTORY_AUTO_STUB_PROXY_NOT_XAU_LIVE_FILL_MEASUREMENT",
+    "source_lineage": "VPS_SLIPPAGE_LATENCY_CALIBRATION_V2_XAUUSD_DWX_ROW",
+    "auto_stub": true,
+    "stub_source": "farmctl_pump_p5_calibration_autostub",
     "slippage_points_per_side": {
       "merit_center": "1",
       "p95_stress": "3"
     },
-    "source_lineage": "VPS_SLIPPAGE_LATENCY_CALIBRATION_V2_XAUUSD_DWX_ROW",
     "spread_reference_points": {
       "median": "20",
       "p95": "60"
     },
-    "stub_source": "farmctl_pump_p5_calibration_autostub",
-    "symbol": "XAUUSD.DWX"
+    "latency_reference_ms": {
+      "avg": "50",
+      "p95": "120"
+    },
+    "live_fill_measurement_claimed": false
+  },
+  "execution_cost_contract": {
+    "spread": "EMBEDDED_IN_BOUND_XAUUSD_DWX_REAL_TICKS",
+    "commission": {
+      "model": "MAX_DXZ_FTMO_0.005PCT_NOTIONAL_ROUND_TURN",
+      "rate_round_turn": "0.00005",
+      "contract_size_oz_per_lot": "100",
+      "per_trade_basis": "entry_price_x_100oz_x_volume_x_0.00005"
+    },
+    "slippage": {
+      "point_size_quote": "0.01",
+      "point_value_usd_per_lot_per_side": "1",
+      "merit_center_points_per_side": "1",
+      "p95_stress_points_per_side": "3",
+      "source": "FACTORY_AUTO_STUB_PROXY_NOT_XAU_LIVE_FILL_MEASUREMENT",
+      "merit_center_application": "BLOCKING_ALL_BASE_GATES",
+      "p95_application": "BLOCKING_BREAKEVEN_SURVIVAL_GATES"
+    },
+    "swap": "REQUIRED_ZERO_BY_INTRADAY_FLAT_INVARIANT"
+  },
+  "merit_contract": {
+    "version": "QM5_13210_XAUUSD_MERIT_V1_20260721",
+    "dev": {
+      "minimum_trades": 80,
+      "minimum_cost_profit_factor": "1.20",
+      "net_must_be_strictly_positive": true,
+      "maximum_close_drawdown_percent": "10.0"
+    },
+    "each_oos_year": {
+      "minimum_trades": 12,
+      "minimum_cost_profit_factor_strict": "1.00",
+      "net_must_be_strictly_positive": true
+    },
+    "oos_pooled": {
+      "minimum_trades": 45,
+      "minimum_cost_profit_factor": "1.20",
+      "net_must_be_strictly_positive": true,
+      "maximum_close_drawdown_percent": "10.0"
+    },
+    "leave_best_oos_year_out": {
+      "minimum_cost_profit_factor": "1.05",
+      "net_must_be_strictly_positive": true,
+      "best_year_basis": "highest_cost_adjusted_net"
+    },
+    "maximum_single_year_share_of_positive_oos_gross_profit": "0.60",
+    "maximum_new_york_day_loss_percent_of_100k": "3.0",
+    "top_five_percent_winners_removed": {
+      "minimum_cost_profit_factor": "1.00",
+      "removal_count": "ceil(0.05 * positive_winner_count)"
+    },
+    "execution_cost_axes": {
+      "spread": "EMBEDDED_IN_BOUND_XAUUSD_DWX_REAL_TICKS",
+      "commission": {
+        "model": "MAX_DXZ_FTMO_0.005PCT_NOTIONAL_ROUND_TURN",
+        "rate_round_turn": "0.00005",
+        "contract_size_oz_per_lot": "100",
+        "per_trade_basis": "entry_price_x_100oz_x_volume_x_0.00005"
+      },
+      "slippage": {
+        "point_size_quote": "0.01",
+        "point_value_usd_per_lot_per_side": "1",
+        "merit_center_points_per_side": "1",
+        "p95_stress_points_per_side": "3",
+        "source": "FACTORY_AUTO_STUB_PROXY_NOT_XAU_LIVE_FILL_MEASUREMENT",
+        "merit_center_application": "BLOCKING_ALL_BASE_GATES",
+        "p95_application": "BLOCKING_BREAKEVEN_SURVIVAL_GATES"
+      },
+      "swap": "REQUIRED_ZERO_BY_INTRADAY_FLAT_INVARIANT"
+    },
+    "p95_slippage_stress": {
+      "dev_profit_factor_strict": "1.00",
+      "dev_net_must_be_strictly_positive": true,
+      "each_oos_year_profit_factor_strict": "1.00",
+      "each_oos_year_net_must_be_strictly_positive": true,
+      "oos_pooled_profit_factor_strict": "1.00",
+      "oos_pooled_net_must_be_strictly_positive": true
+    }
+  },
+  "outcome_fence": {
+    "eurusd_native_outcomes_read_to_select_xau": false,
+    "attempt001_native_outcomes_read": false,
+    "xau_native_reports_opened": false,
+    "xau_deal_rows_parsed": false,
+    "mt5_terminal_started": false,
+    "metatester_started": false
+  },
+  "infrastructure_alternate": {
+    "cause": "ATTEMPT_001_HELPER_TASK_NAME_VALIDATE_PATTERN_BUG",
+    "attempt001_pre_receipt_sha256": "b7e6b6852f72c76cf87733e7f43563b7f5b20c9a222102cdf2a85d739809f8c2",
+    "attempt001_native_start_count": 0,
+    "attempt002_is_only_authorized_alternate": true,
+    "same_build_data_parameters_windows_costs_and_gates": true,
+    "parameter_tuning_forbidden": true,
+    "attempt001_resume_forbidden": true,
+    "attempt003_plus_forbidden": true,
+    "frozen_input_bindings": {
+      "research_readiness_receipt": {
+        "path": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\data\\XAUUSD_DWX_201807_202512_T1_receipt.json",
+        "size": 817,
+        "sha256": "832abb2b191e85e61c6d6621dfb8971a79b2ad07fa6fdc609e75ebc89d2ee1de"
+      },
+      "data_manifest": {
+        "path": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\data\\XAUUSD_DWX_201807_202512_T1_manifest.json",
+        "size": 19831,
+        "sha256": "f4c35f3acff8d8b6c5a0d337f181d418b1f546b660156942b18069bffae71f17"
+      }
+    }
+  },
+  "finalization": {
+    "required_command": "audit_mulham_asian_sweep_london_xau.py finalize-contract --source-commit <40_HEX_BUILD_COMMIT>",
+    "requires_committed_clean_adapter": true,
+    "requires_committed_clean_source_artifacts": true,
+    "requires_immutable_attempt001_infrastructure_closure": true,
+    "requires_pristine_attempt002_namespace": true,
+    "final_contract_must_bind_roles": [
+      "adapter",
+      "attempt001_closure",
+      "base_tool",
+      "build_receipt",
+      "card",
+      "ex5",
+      "mq5",
+      "scheduled_task_helper",
+      "set",
+      "spec"
+    ],
+    "pre_and_launch_forbidden_until_status": "FINALIZED_OUTCOME_BLIND"
   }
 }

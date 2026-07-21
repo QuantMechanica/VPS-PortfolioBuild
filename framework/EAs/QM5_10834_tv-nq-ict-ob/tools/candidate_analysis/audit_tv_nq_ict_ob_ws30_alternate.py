@@ -16,6 +16,7 @@ import importlib.util
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
@@ -79,7 +80,7 @@ ALTERNATE_CONTRACT_PATH = (
     / "ws30_transport_infra_alternate002_contract_20260721.json"
 )
 EXPECTED_ALTERNATE_CONTRACT_SHA256 = (
-    "541420991285e87174122afea124760f77e5ed1ff8388d32edacd5b1339cc2ab"
+    "0b4c11f4e9846a495374b8db1fe78435b94c689a7bff028ace0fadd7b7f9c31a"
 )
 EXPECTED_DATA_RECEIPT_SIZE = 29800
 EXPECTED_DATA_RECEIPT_SHA256 = (
@@ -420,7 +421,8 @@ def validate_alternate_contract() -> dict[str, Any]:
                 "runtime_worktree_must_be_clean",
                 "runtime_worktree_must_not_equal_main_worktree",
                 "runtime_root_reparse_components_forbidden",
-                "lf_preserving_checkout_required",
+                "exact_bound_file_byte_overlay_required",
+                "post_overlay_git_clean_required",
                 "runtime_head_must_contain_contract_and_closure",
                 "primary_contract_absolute_repo_paths_are_evidence_origin_only",
                 "runtime_relocation_requires_byte_identical_repository_relative_files",
@@ -778,6 +780,123 @@ def _assert_alternate_control_namespace() -> None:
         W._assert_no_reparse_components(path, label)
 
 
+def _repository_binding_relative_paths(root: Path = REPO_ROOT) -> tuple[str, ...]:
+    root_lexical = W._lexical_path(root)
+    candidates = list(_expected_binding_paths(RESEARCH_SYMBOL).values())
+    candidates.append(
+        EA_ROOT / "docs" / "candidate-analysis" / "build_receipt_20260720.json"
+    )
+    includes = B.include_closure(B.MQ5_PATH)
+    for item in includes:
+        if not isinstance(item, Mapping):
+            raise B.InvalidEvidence("runtime include closure binding is malformed")
+        candidates.append(Path(str(item.get("path", ""))))
+    relative_paths: set[str] = set()
+    for candidate in candidates:
+        lexical = W._lexical_path(candidate)
+        try:
+            relative = lexical.relative_to(root_lexical)
+        except ValueError:
+            continue
+        if not relative.parts or any(part in {"", ".", ".."} for part in relative.parts):
+            raise B.InvalidEvidence(f"unsafe runtime repository binding: {candidate}")
+        relative_paths.add(relative.as_posix())
+    if not relative_paths:
+        raise B.InvalidEvidence("runtime repository binding closure is empty")
+    return tuple(sorted(relative_paths, key=str.casefold))
+
+
+def _build_repository_byte_identity_ledger(
+    source_root: Path,
+    runtime_root: Path,
+    relative_paths: Sequence[str],
+) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    if list(relative_paths) != sorted(set(relative_paths), key=str.casefold):
+        raise B.InvalidEvidence("repository binding relatives are not unique/sorted")
+    for relative_text in relative_paths:
+        relative = Path(relative_text)
+        if relative.is_absolute() or any(part in {"", ".", ".."} for part in relative.parts):
+            raise B.InvalidEvidence(f"unsafe repository binding relative path: {relative_text}")
+        source = W._assert_no_reparse_components(
+            source_root / relative, f"source repository binding {relative_text}"
+        )
+        runtime = W._assert_no_reparse_components(
+            runtime_root / relative, f"runtime repository binding {relative_text}"
+        )
+        source_binding = B.file_binding(source)
+        runtime_binding = B.file_binding(runtime, source_binding["sha256"])
+        if source_binding["size"] != runtime_binding["size"]:
+            raise B.InvalidEvidence(
+                f"source/runtime byte size differs after checkout: {relative_text}"
+            )
+        rows.append(
+            {
+                "relative_path": relative.as_posix(),
+                "size": source_binding["size"],
+                "sha256": source_binding["sha256"],
+            }
+        )
+    return rows
+
+
+def _overlay_exact_repository_binding_bytes(
+    source_root: Path,
+    runtime_root: Path,
+    relative_paths: Sequence[str],
+) -> None:
+    """Copy the clean source working bytes for every bound repo dependency.
+
+    The frozen evidence intentionally contains mixed LF/CRLF working bytes, so
+    no single Git checkout EOL setting can reproduce all hashes.  The detached
+    checkout supplies the tree topology; this exact, closed overlay supplies
+    only the preregistered runtime/PRE/include dependency bytes.
+    """
+
+    for relative_text in relative_paths:
+        relative = Path(relative_text)
+        if relative.is_absolute() or any(part in {"", ".", ".."} for part in relative.parts):
+            raise B.InvalidEvidence(f"unsafe overlay relative path: {relative_text}")
+        source = W._assert_no_reparse_components(
+            source_root / relative, f"source overlay file {relative_text}"
+        )
+        runtime = W._assert_no_reparse_components(
+            runtime_root / relative, f"runtime overlay file {relative_text}"
+        )
+        if not source.is_file() or not runtime.is_file():
+            raise B.InvalidEvidence(f"overlay file is missing: {relative_text}")
+        shutil.copyfile(source, runtime)
+
+
+def _validate_runtime_repository_binding_ledger(rows: Any) -> None:
+    if not isinstance(rows, list):
+        raise B.InvalidEvidence("runtime repository byte ledger is missing")
+    expected_relatives = list(_repository_binding_relative_paths(REPO_ROOT))
+    observed_relatives: list[str] = []
+    for index, row in enumerate(rows):
+        if not isinstance(row, Mapping) or set(row) != {
+            "relative_path",
+            "size",
+            "sha256",
+        }:
+            raise B.InvalidEvidence(f"runtime byte ledger row[{index}] malformed")
+        relative_text = str(row.get("relative_path", ""))
+        relative = Path(relative_text)
+        if relative.is_absolute() or any(part in {"", ".", ".."} for part in relative.parts):
+            raise B.InvalidEvidence(f"unsafe runtime byte ledger path[{index}]")
+        try:
+            size = int(row.get("size"))
+        except (TypeError, ValueError) as exc:
+            raise B.InvalidEvidence(f"runtime byte ledger size[{index}] malformed") from exc
+        digest = str(row.get("sha256", "")).lower()
+        binding = B.file_binding(REPO_ROOT / relative, digest)
+        if binding["size"] != size:
+            raise B.InvalidEvidence(f"runtime byte ledger size drift[{index}]")
+        observed_relatives.append(relative.as_posix())
+    if observed_relatives != expected_relatives:
+        raise B.InvalidEvidence("runtime repository binding-ledger closure drift")
+
+
 def _runtime_bootstrap_bindings(root: Path) -> dict[str, Any]:
     relative_paths = {
         "tool": TOOL_PATH.relative_to(REPO_ROOT),
@@ -806,6 +925,8 @@ def validate_runtime_materialization_receipt() -> dict[str, Any]:
         "runtime_detached",
         "main_clean_at_materialization",
         "runtime_clean_at_materialization",
+        "checkout_policy",
+        "repository_binding_byte_identity_ledger",
         "bootstrap_bindings",
     }
     if set(payload) != expected_keys or (
@@ -822,6 +943,14 @@ def validate_runtime_materialization_receipt() -> dict[str, Any]:
         or payload.get("runtime_clean_at_materialization") is not True
     ):
         raise B.InvalidEvidence("alternate runtime receipt identity drift")
+    if payload.get("checkout_policy") != {
+        "checkout": "GIT_WORKTREE_ADD_DETACHED_THEN_EXACT_BOUND_FILE_BYTE_OVERLAY",
+        "checkout_eol_policy_is_not_evidence": True,
+        "exact_overlay_from_clean_source_worktree": True,
+        "post_overlay_git_clean": True,
+        "post_checkout_byte_identity_required": True,
+    }:
+        raise B.InvalidEvidence("alternate runtime LF checkout policy drift")
     W._strict_created_utc(payload.get("created_utc"), "runtime materialization created_utc")
     runtime_head = _clean_head(
         RUNTIME_WORKTREE_ROOT, "alternate runtime worktree", detached_required=True
@@ -834,6 +963,9 @@ def validate_runtime_materialization_receipt() -> dict[str, Any]:
     expected_bootstrap = _runtime_bootstrap_bindings(RUNTIME_WORKTREE_ROOT)
     if payload.get("bootstrap_bindings") != expected_bootstrap:
         raise B.InvalidEvidence("alternate runtime bootstrap binding drift")
+    _validate_runtime_repository_binding_ledger(
+        payload.get("repository_binding_byte_identity_ledger")
+    )
     B.assert_binding(binding, "alternate runtime materialization receipt")
     return payload
 
@@ -1137,24 +1269,20 @@ def materialize_runtime() -> dict[str, Any]:
             f"runtime worktree target already exists: {RUNTIME_WORKTREE_ROOT}"
         )
     source_head = assert_main_worktree_clean("runtime materialization")
-    tracked = (
-        TOOL_PATH,
-        PRIMARY_ADAPTER_PATH,
-        ALTERNATE_CONTRACT_PATH,
-        PRIMARY_CLOSURE_PATH,
-    )
-    for path in tracked:
-        relative = path.relative_to(MAIN_WORKTREE_ROOT)
+    relative_paths = _repository_binding_relative_paths(MAIN_WORKTREE_ROOT)
+    for relative_text in relative_paths:
         probe = _git_at(
             MAIN_WORKTREE_ROOT,
             "ls-files",
             "--error-unmatch",
             "--",
-            str(relative).replace("\\", "/"),
+            relative_text,
             check=False,
         )
         if probe.returncode != 0:
-            raise B.InvalidEvidence(f"runtime bootstrap file is not tracked: {relative}")
+            raise B.InvalidEvidence(
+                f"runtime binding file is not tracked: {relative_text}"
+            )
     W._assert_no_reparse_components(
         RUNTIME_WORKTREE_ROOT.parent, "runtime worktree parent"
     ).mkdir(parents=True, exist_ok=True)
@@ -1176,11 +1304,28 @@ def materialize_runtime() -> dict[str, Any]:
     )
     if completed.returncode != 0:
         raise B.InvalidEvidence("git worktree add failed for alternate runtime")
-    runtime_head = _clean_head(
+    checkout_head = _clean_head(
         RUNTIME_WORKTREE_ROOT, "alternate runtime worktree", detached_required=True
     )
-    if runtime_head != source_head:
+    if checkout_head != source_head:
         raise B.InvalidEvidence("materialized runtime HEAD differs from source HEAD")
+    _overlay_exact_repository_binding_bytes(
+        MAIN_WORKTREE_ROOT,
+        RUNTIME_WORKTREE_ROOT,
+        relative_paths,
+    )
+    runtime_head = _clean_head(
+        RUNTIME_WORKTREE_ROOT,
+        "alternate runtime worktree after exact byte overlay",
+        detached_required=True,
+    )
+    if runtime_head != source_head:
+        raise B.InvalidEvidence("overlayed runtime HEAD differs from source HEAD")
+    repository_ledger = _build_repository_byte_identity_ledger(
+        MAIN_WORKTREE_ROOT,
+        RUNTIME_WORKTREE_ROOT,
+        relative_paths,
+    )
     bootstrap = _runtime_bootstrap_bindings(RUNTIME_WORKTREE_ROOT)
     payload = {
         "schema_version": 1,
@@ -1194,6 +1339,14 @@ def materialize_runtime() -> dict[str, Any]:
         "runtime_detached": True,
         "main_clean_at_materialization": True,
         "runtime_clean_at_materialization": True,
+        "checkout_policy": {
+            "checkout": "GIT_WORKTREE_ADD_DETACHED_THEN_EXACT_BOUND_FILE_BYTE_OVERLAY",
+            "checkout_eol_policy_is_not_evidence": True,
+            "exact_overlay_from_clean_source_worktree": True,
+            "post_overlay_git_clean": True,
+            "post_checkout_byte_identity_required": True,
+        },
+        "repository_binding_byte_identity_ledger": repository_ledger,
         "bootstrap_bindings": bootstrap,
     }
     digest = B.atomic_json(RUNTIME_RECEIPT_PATH, payload, replace=False)
