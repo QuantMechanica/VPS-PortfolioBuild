@@ -46,6 +46,13 @@ PROCESS_PROBE_METHOD = (
     "NATIVE_PROCESS_HANDLE_TOKEN_SID_AND_IMAGE_PATH_"
     "STABLE_DOUBLE_SNAPSHOT_NO_COMMAND_LINE"
 )
+ABSENT_NEVER_RUN_BASIS = (
+    "INFERRED_FROM_DURABLE_NEVER_RUN_CLOSURE_PROOF_REQUIRED_BY_CALLER"
+)
+ABSENT_START_RACE_BASIS = (
+    "INFERRED_FROM_DURABLE_TERMINAL_REJECT_WITH_OBSERVED_START_RACE_"
+    "AND_SUCCESSFUL_UNREGISTER"
+)
 
 HEX64 = re.compile(r"[0-9a-f]{64}")
 TERMINAL_PENDING_ERROR = re.compile(
@@ -55,6 +62,7 @@ TERMINAL_PENDING_ERROR = re.compile(
     r"ready_task_xml_sha256=(?P<xml>[0-9a-f]{64});"
     r"task_contract_sha256=(?P<contract>[0-9a-f]{64});"
     r"preterminal_evidence_sha256=(?P<preterminal>[0-9a-f]{64});"
+    r"quiesce_transition_probe_sha256=(?P<quiesce>NONE|[0-9a-f]{64});"
     r"task_start_race_observed=(?P<start_race>true|false)$"
 )
 TERMINAL_CLOSED_ERROR = re.compile(
@@ -62,6 +70,7 @@ TERMINAL_CLOSED_ERROR = re.compile(
     r"closure_phase=CLOSED;"
     r"closure_intent_sha256=(?P<intent>[0-9a-f]{64});"
     r"preterminal_evidence_sha256=(?P<preterminal>[0-9a-f]{64});"
+    r"quiesce_transition_probe_sha256=(?P<quiesce>NONE|[0-9a-f]{64});"
     r"quiesced_evidence_sha256=(?P<quiesced>[0-9a-f]{64});"
     r"disabled_task_xml_sha256=(?P<xml>[0-9a-f]{64});"
     r"task_contract_sha256=(?P<contract>[0-9a-f]{64});"
@@ -950,7 +959,11 @@ def _validate_await_quiesced_probe(
 
 
 def _validate_absent_probe(
-    probe: Mapping[str, Any], contract: ClosureContract, *, expected_helper_sha256: str
+    probe: Mapping[str, Any],
+    contract: ClosureContract,
+    *,
+    expected_helper_sha256: str,
+    expected_start_race: bool,
 ) -> None:
     _assert_exact_fields(
         probe,
@@ -970,6 +983,13 @@ def _validate_absent_probe(
         or probe.get("task_name") != contract.task_name
         or probe.get("task_path") != "\\"
         or probe.get("absent") is not True
+        or type(expected_start_race) is not bool
+        or probe.get("matching_worker_process_count_basis")
+        != (
+            ABSENT_START_RACE_BASIS
+            if expected_start_race
+            else ABSENT_NEVER_RUN_BASIS
+        )
     ):
         raise ClosureError("task absence proof envelope drift")
     _validate_process_evidence(probe, "task absence proof")
@@ -1094,6 +1114,7 @@ def _preliminary_closed_state(
         f"ready_task_xml_sha256={intent['task']['ready_task_xml_sha256']};"
         f"task_contract_sha256={intent['task']['task_contract_sha256']};"
         f"preterminal_evidence_sha256={canonical_sha256(preterminal_evidence)};"
+        "quiesce_transition_probe_sha256=NONE;"
         f"task_start_race_observed={'true' if start_race_observed else 'false'}"
     )
     closed = copy.deepcopy(dict(state))
@@ -1110,6 +1131,34 @@ def _preliminary_closed_state(
         }
     )
     return closed
+
+
+def _pending_state_with_quiesce_proof(
+    state: Mapping[str, Any],
+    intent_sha256: str,
+    quiesce_probe: Mapping[str, Any],
+    *,
+    start_race_observed: bool,
+) -> dict[str, Any]:
+    proof = _terminal_proof(state, intent_sha256)
+    if proof.get("phase") != "QUIESCE_PENDING" or proof.get("quiesce") != "NONE":
+        raise ClosureError("quiesce transition proof is not append-only")
+    if type(start_race_observed) is not bool:
+        raise ClosureError("quiesce transition race disposition is malformed")
+    combined_race = proof.get("start_race") == "true" or start_race_observed
+    terminal_error = (
+        f"{REASON_CODE};closure_phase=QUIESCE_PENDING;"
+        f"closure_intent_sha256={intent_sha256};"
+        f"ready_task_xml_sha256={proof['xml']};"
+        f"task_contract_sha256={proof['contract']};"
+        f"preterminal_evidence_sha256={proof['preterminal']};"
+        f"quiesce_transition_probe_sha256={canonical_sha256(quiesce_probe)};"
+        f"task_start_race_observed={'true' if combined_race else 'false'}"
+    )
+    updated = copy.deepcopy(dict(state))
+    updated["updated_utc"] = utc_now()
+    updated["terminal"] = _terminal_payload(terminal_error)
+    return updated
 
 
 def _final_closed_state(
@@ -1138,6 +1187,7 @@ def _final_closed_state(
         f"{REASON_CODE};closure_phase=CLOSED;"
         f"closure_intent_sha256={intent_sha256};"
         f"preterminal_evidence_sha256={pending_proof['preterminal']};"
+        f"quiesce_transition_probe_sha256={pending_proof['quiesce']};"
         f"quiesced_evidence_sha256={quiesced_sha};"
         f"disabled_task_xml_sha256={disabled_xml};"
         f"task_contract_sha256={task_contract};"
@@ -1709,6 +1759,7 @@ def _receipt_payload(
             },
             "quiesced_probe_binding": {
                 "preterminal_probe_sha256": terminal_proof["preterminal"],
+                "quiesce_transition_probe_sha256": terminal_proof["quiesce"],
                 "sha256": terminal_proof["quiesced"],
                 "task_xml_sha256": terminal_proof["xml"],
                 "task_contract_sha256": terminal_proof["contract"],
@@ -1952,28 +2003,64 @@ def close_g1(
                     # The exact task may have entered Running after the
                     # preliminary REJECT.  Quiesce still must disable it.
                     pass
-                try:
-                    quiesce = task_call(
-                        contract,
-                        job,
-                        pre,
-                        helper_sha,
-                        "Quiesce",
-                        expected_task_contract_sha256=task_contract_sha,
-                    )
-                    quiesced_under_lock, _race = _validate_quiesce_probe(
-                        quiesce,
-                        contract,
-                        expected_helper_sha256=helper_sha,
-                        expected_principal_sid=principal_sid,
-                    )
-                    if quiesced_under_lock["task_contract_sha256"] != task_contract_sha:
-                        raise ClosureError("disabled task contract drifted under lock")
-                except ClosureError:
-                    # Recovery may find the task already disabled, or a racing
-                    # exact instance may still be draining against REJECT.
-                    # AwaitQuiesced below is the mandatory conclusive proof.
-                    pass
+                if proof["quiesce"] == "NONE":
+                    try:
+                        quiesce = task_call(
+                            contract,
+                            job,
+                            pre,
+                            helper_sha,
+                            "Quiesce",
+                            expected_task_contract_sha256=task_contract_sha,
+                        )
+                    except ClosureError:
+                        # Recovery may find the task already disabled, or a
+                        # racing exact instance may still be draining.
+                        quiesce = None
+                    if quiesce is not None:
+                        quiesced_under_lock, quiesce_start_race = (
+                            _validate_quiesce_probe(
+                                quiesce,
+                                contract,
+                                expected_helper_sha256=helper_sha,
+                                expected_principal_sid=principal_sid,
+                            )
+                        )
+                        if (
+                            quiesced_under_lock["task_contract_sha256"]
+                            != task_contract_sha
+                        ):
+                            raise ClosureError(
+                                "disabled task contract drifted under lock"
+                            )
+                        before_sha = sha256_file(contract.state_path)
+                        state = _pending_state_with_quiesce_proof(
+                            state,
+                            intent_sha,
+                            quiesce,
+                            start_race_observed=quiesce_start_race,
+                        )
+                        auditor._validate_launch_state_shape(state)
+                        if sha256_file(contract.state_path) != before_sha:
+                            raise ClosureError(
+                                "launch-state quiesce-proof CAS lost"
+                            )
+                        _publish_json(
+                            contract,
+                            contract.state_path,
+                            state,
+                            replace=True,
+                            control_call=control_call,
+                        )
+                        proof = _validate_closed_state_historical_chain(
+                            contract,
+                            state,
+                            intent,
+                            intent_sha,
+                            chain,
+                            auditor,
+                            require_final=False,
+                        )
                 crash_hook("after_quiesce")
             _assert_dev1_inventory(chain, auditor)
 

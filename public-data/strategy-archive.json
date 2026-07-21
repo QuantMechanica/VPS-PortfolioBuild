@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-21T04:07:02.8191501Z",
-    "total":  3367,
+    "generated_at":  "2026-07-21T05:07:02.6291127Z",
+    "total":  3368,
     "items":  [
                   {
                       "slug":  "ath-breakout-atr-trail",
@@ -17509,7 +17509,7 @@
                       "slug":  "QM5_20006_spx-intraday-mom",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-19T18:00:35.9897802Z"
+                      "last_updated_utc":  "2026-07-21T04:42:53.1775954Z"
                   },
                   {
                       "slug":  "QM5_20007_intraday-config-engine",
@@ -17588,6 +17588,12 @@
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-06-12T11:43:56.1608847Z"
+                  },
+                  {
+                      "slug":  "QM5_20023_idx-macro-announce-day",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-21T04:34:44.6881690Z"
                   },
                   {
                       "slug":  "QM5_2003_nnfx-wave-sniper",
