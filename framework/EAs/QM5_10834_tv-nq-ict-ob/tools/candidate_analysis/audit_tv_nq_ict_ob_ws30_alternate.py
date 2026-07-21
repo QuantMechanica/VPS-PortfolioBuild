@@ -724,6 +724,7 @@ def validate_invalid_runtime_materialization_closure() -> dict[str, Any]:
         != HISTORICAL_MAIN_SCOPED_PATH_LIST_SHA256
     ):
         raise B.InvalidEvidence("invalid runtime receipt frozen facts drift")
+    observed_historical_runtime_bindings: list[tuple[dict[str, Any], str]] = []
     historical_runtime_bindings = (
         (
             INVALID_RUNTIME_WORKTREE_ROOT
@@ -756,6 +757,7 @@ def validate_invalid_runtime_materialization_closure() -> dict[str, Any]:
         historical_binding = B.file_binding(historical_path, historical_sha)
         if historical_binding["size"] != historical_size:
             raise B.InvalidEvidence(f"{label} size drift")
+        observed_historical_runtime_bindings.append((historical_binding, label))
     old_ledger = old_receipt.get("repository_binding_byte_identity_ledger")
     if not isinstance(old_ledger, list) or len(old_ledger) != 53:
         raise B.InvalidEvidence("invalid runtime 53-path ledger drift")
@@ -777,6 +779,9 @@ def validate_invalid_runtime_materialization_closure() -> dict[str, Any]:
         )
         if old_runtime_binding["size"] != int(row.get("size")):
             raise B.InvalidEvidence(f"invalid runtime ledger size[{index}] drift")
+        observed_historical_runtime_bindings.append(
+            (old_runtime_binding, f"historical runtime ledger[{index}]")
+        )
     old_rows = {
         str(row.get("relative_path", "")): row
         for row in old_ledger
@@ -875,6 +880,8 @@ def validate_invalid_runtime_materialization_closure() -> dict[str, Any]:
         raise B.InvalidEvidence("invalid-runtime disposition drift")
     B.assert_binding(signed_receipt, "signed machine-credential rotation receipt")
     B.assert_binding(old_receipt_binding, "historical invalid runtime receipt")
+    for historical_binding, historical_label in observed_historical_runtime_bindings:
+        B.assert_binding(historical_binding, historical_label)
     B.assert_binding(binding, "invalid-runtime materialization closure")
     return payload
 

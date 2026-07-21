@@ -524,6 +524,26 @@ def test_invalid_runtime_closure_rejects_any_claim_that_attempt_was_consumed(
         subject.validate_invalid_runtime_materialization_closure()
 
 
+def test_invalid_runtime_closure_reasserts_historical_files_after_validation(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    saved_assert_binding = subject.B.assert_binding
+    observed: list[str] = []
+
+    def replacement_race(binding, label: str):
+        observed.append(label)
+        if label == "historical runtime ledger[0]":
+            raise subject.B.InvalidEvidence("simulated historical replacement race")
+        return saved_assert_binding(binding, label)
+
+    monkeypatch.setattr(subject.B, "assert_binding", replacement_race)
+    with pytest.raises(subject.B.InvalidEvidence, match="historical replacement race"):
+        subject.validate_invalid_runtime_materialization_closure()
+    assert "signed machine-credential rotation receipt" in observed
+    assert "historical invalid runtime receipt" in observed
+    assert "historical runtime ledger[0]" in observed
+
+
 def test_fix001_unconsumed_gate_is_limited_to_materialization_and_pre(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
