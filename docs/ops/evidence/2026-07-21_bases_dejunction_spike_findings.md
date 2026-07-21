@@ -73,6 +73,31 @@ which self-healed on run_02 (exactly the class the deployed mitigation handles) 
 contention. **An isolated per-terminal Darwinex-Live eliminates the storm entirely,
 factory-ON, no seed copy, no OFF window.**
 
+## ★★ FLEET ROLLOUT EXECUTED + VALIDATED — 2026-07-21 (~14:2x)
+
+Executed the no-seed fleet fix on T2..T10 via the designed OFF/ON path:
+`Factory_OFF.ps1` (quiesce all workers/terminals, disable respawn-vector tasks) →
+`fleet_dejunction.ps1 -Apply` (restructure all 9: real bases + nested Custom junction
++ empty own Darwinex-Live) → `Factory_ON` via FactoryON_AtLogon task (workers restart
+in console session, cold-sync begins). Total downtime ~10 min (no seed copy). T1 stays
+the source store; T_Live never touched. Scripts + rollback:
+`D:\QM\reports\state\bases_dejunction_20260721\fleet_dejunction.ps1` (`-Apply`/`-Rollback`).
+(First script attempt had a PS5.1 parse error from a non-ASCII em-dash and did NOT run —
+no partial damage; rewritten ASCII-only + parse-checked before the real run.)
+
+**Result — cross-terminal storm ELIMINATED:** post-restart, isolated-store window,
+error[32] sharing-violations per terminal: T7 **0** (was 707 under load), T6/T3/T2/T10 0,
+residual only on terminals still completing their one-time cold-sync (T8 30 / T4 9 / T9 6,
+on their OWN NDX/EURUSD during sync). **Fleet total 45** vs pre-fix **300-700 PER terminal**
+(~99% reduction). Each terminal fills its OWN Darwinex-Live independently from the server
+(T7 133 files, T6 119, T3 101, ...) — confirming isolation. Dispatch healthy (12 fresh
+work_item logs). The residual is the expected transient cold-sync burst, settling to ~0 as
+the last terminals finish; the mitigation self-heals any report discard in that window.
+
+**The shared-bases history-lock storm — which burned ~2/3 of index gate attempts — is
+structurally fixed, factory-ON, no weekend/OFF-window seeding needed.** Rollback available
+(fleet_dejunction.ps1 -Rollback, factory OFF) if ever needed.
+
 ## Status / urgency — REVISED
 The no-seed fleet fix is validated factory-ON. The fleet rollout (restructure T2..T10:
 real bases + nested Custom junction + empty own Darwinex-Live, per-terminal reversible)
