@@ -875,6 +875,9 @@ def test_persisted_helper_is_s4u_triggerless_and_never_overwrites_task() -> None
     assert "-not [bool]$Task.Settings.StartWhenAvailable" in helper
     assert "-not [bool]$Task.Settings.AllowHardTerminate" in helper
     assert "-not [bool]$Task.Settings.Hidden" in helper
+    assert "-not [bool]$Task.Settings.AllowDemandStart" in helper
+    assert "[bool]$Task.Settings.RunOnlyIfNetworkAvailable" in helper
+    assert "[int]$Task.Settings.RestartCount -ne 0" in helper
     assert "triggers_count = @($Task.Triggers).Count" in helper
     assert "actions_count = @($Task.Actions).Count" in helper
     assert "DETACHED_PROCESS" not in tool
@@ -913,10 +916,15 @@ def test_scheduler_metadata_rejects_every_stale_task_settings_drift() -> None:
         "triggers_count": 0,
         "actions_count": 1,
         "enabled": True,
+        "allow_demand_start": True,
         "multiple_instances": "IgnoreNew",
         "start_when_available": True,
         "allow_hard_terminate": True,
         "hidden": True,
+        "run_only_if_idle": False,
+        "run_only_if_network_available": False,
+        "wake_to_run": False,
+        "restart_count": 0,
         "execution_limit_seconds": scheduler["execution_limit_seconds"],
         "last_run_utc": None,
         "last_task_result": 0,
@@ -928,10 +936,15 @@ def test_scheduler_metadata_rejects_every_stale_task_settings_drift() -> None:
         "triggers_count": 1,
         "actions_count": 2,
         "enabled": False,
+        "allow_demand_start": False,
         "multiple_instances": "Parallel",
         "start_when_available": False,
         "allow_hard_terminate": False,
         "hidden": False,
+        "run_only_if_idle": True,
+        "run_only_if_network_available": True,
+        "wake_to_run": True,
+        "restart_count": 1,
         "execution_limit_seconds": 60,
     }
     for field, value in mutations.items():

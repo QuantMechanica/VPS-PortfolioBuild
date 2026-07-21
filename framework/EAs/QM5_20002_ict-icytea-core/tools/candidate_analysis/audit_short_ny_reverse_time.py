@@ -3292,10 +3292,15 @@ def _validate_scheduler_task_metadata(
         "triggers_count",
         "actions_count",
         "enabled",
+        "allow_demand_start",
         "multiple_instances",
         "start_when_available",
         "allow_hard_terminate",
         "hidden",
+        "run_only_if_idle",
+        "run_only_if_network_available",
+        "wake_to_run",
+        "restart_count",
         "execution_limit_seconds",
         "last_run_utc",
         "last_task_result",
@@ -3319,6 +3324,8 @@ def _validate_scheduler_task_metadata(
         or payload.get("actions_count") != 1
         or type(payload.get("enabled")) is not bool
         or payload.get("enabled") is not True
+        or type(payload.get("allow_demand_start")) is not bool
+        or payload.get("allow_demand_start") is not True
         or payload.get("multiple_instances") != "IgnoreNew"
         or type(payload.get("start_when_available")) is not bool
         or payload.get("start_when_available") is not True
@@ -3326,6 +3333,14 @@ def _validate_scheduler_task_metadata(
         or payload.get("allow_hard_terminate") is not True
         or type(payload.get("hidden")) is not bool
         or payload.get("hidden") is not True
+        or type(payload.get("run_only_if_idle")) is not bool
+        or payload.get("run_only_if_idle") is not False
+        or type(payload.get("run_only_if_network_available")) is not bool
+        or payload.get("run_only_if_network_available") is not False
+        or type(payload.get("wake_to_run")) is not bool
+        or payload.get("wake_to_run") is not False
+        or type(payload.get("restart_count")) is not int
+        or payload.get("restart_count") != 0
         or type(payload.get("execution_limit_seconds")) is not int
         or payload.get("execution_limit_seconds")
         != scheduler["execution_limit_seconds"]
@@ -3419,7 +3434,10 @@ def _validate_launch_job(
 
 
 def _assert_resume_outcome_fence(
-    state: Mapping[str, Any], job: Mapping[str, Any], state_path: Path
+    state: Mapping[str, Any],
+    job: Mapping[str, Any],
+    state_path: Path,
+    helper_sha256: str | None = None,
 ) -> None:
     """Allow a retry only when the prior worker could not have produced outcomes."""
 
@@ -3439,8 +3457,11 @@ def _assert_resume_outcome_fence(
     except AuditError as exc:
         raise AuthorizationError(f"launch state schema is not resumable: {exc}") from exc
     work_root = state_path.resolve().parent / "worker"
-    if work_root.exists() and next(work_root.iterdir(), None) is not None:
-        raise AuthorizationError("worker artifact tree is non-empty; resume is forbidden")
+    _assert_control_path_layout(work_root, "worker_directory", state_path)
+    if work_root.exists():
+        _assert_control_directory(work_root, helper_sha256)
+        if next(work_root.iterdir(), None) is not None:
+            raise AuthorizationError("worker artifact tree is non-empty; resume is forbidden")
     if _dev1_run_inventory() != job.get("dev1_runs_before_launch"):
         raise AuthorizationError("DEV1 run inventory changed; resume is forbidden")
 
@@ -3903,7 +3924,9 @@ def _worker_run(job_path: Path) -> int:
                 or str(persisted.get("pre_receipt_sha256", "")).lower() != pre_sha.lower()
             ):
                 raise AuditError("persisted launch state/job binding drift")
-            _assert_resume_outcome_fence(persisted, job, state_path)
+            _assert_resume_outcome_fence(
+                persisted, job, state_path, control_helper_sha256
+            )
             now = utc_now()
             claimed = copy.deepcopy(persisted)
             claimed["status"] = "RUNNING"
@@ -3920,6 +3943,7 @@ def _worker_run(job_path: Path) -> int:
             ownership_acquired = True
 
         work_root = state_path.parent / "worker"
+        _assert_control_path_layout(work_root, "worker_directory", state_path)
         _prepare_control_directory(work_root, control_helper_sha256)
         for cell in pre["plan"]["cells"]:
             # Seal all moving inputs again immediately before every terminal cell.
@@ -3932,6 +3956,7 @@ def _worker_run(job_path: Path) -> int:
             stderr_path = cell_root / "runner.stderr.txt"
             _assert_control_path_layout(stdout_path, "worker_artifact", state_path)
             _assert_control_path_layout(stderr_path, "worker_artifact", state_path)
+            _assert_control_path_layout(cell_root, "worker_directory", state_path)
             _prepare_control_directory(cell_root, control_helper_sha256)
             attempt_context = _new_attempt_context(
                 started, command_sha, stdout_path, stderr_path
@@ -3963,7 +3988,6 @@ def _worker_run(job_path: Path) -> int:
             )
 
             attempt_context["failure_stage"] = "OUTCOME_FENCE_PERSISTED"
-            cell_root.mkdir(parents=True, exist_ok=True)
             completed = subprocess.run(
                 command,
                 cwd=REPO_ROOT,
@@ -4134,7 +4158,9 @@ def launch_detached(
                 )
                 if state.get("job") != file_binding(job_path):
                     raise AuthorizationError("resume state/job byte binding drift")
-                _assert_resume_outcome_fence(state, job, state_path)
+                _assert_resume_outcome_fence(
+                    state, job, state_path, control_helper_sha256
+                )
                 _assert_authorization_binding(
                     authorization, control_helper_sha256
                 )
@@ -4190,8 +4216,14 @@ def launch_detached(
                         raise AuthorizationError("prepared launch scheduler identity drift")
                     work_root = state_path.parent / "worker"
                     _assert_control_path_layout(work_root, "worker_directory", state_path)
-                    if work_root.exists() and next(work_root.iterdir(), None) is not None:
-                        raise AuthorizationError("prepared launch has worker side effects")
+                    if work_root.exists():
+                        _assert_control_directory(
+                            work_root, control_helper_sha256
+                        )
+                        if next(work_root.iterdir(), None) is not None:
+                            raise AuthorizationError(
+                                "prepared launch has worker side effects"
+                            )
                     if _dev1_run_inventory() != job.get("dev1_runs_before_launch"):
                         raise AuthorizationError("prepared launch has DEV1 side effects")
                     probe = _scheduler_call(pre, "Probe", job)

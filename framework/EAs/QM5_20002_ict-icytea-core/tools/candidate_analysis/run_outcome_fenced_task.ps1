@@ -80,6 +80,7 @@ function Get-QmTaskContract {
         JobPath = $job
         RepoRoot = $repo
         Arguments = $arguments
+        Description = "QM20002 outcome-fenced persistent audit controller for $([System.IO.Path]::GetFileName($job))."
     }
 }
 
@@ -91,6 +92,9 @@ function Assert-QmTaskContract {
     )
     if ($Task.TaskName -cne $TaskName -or $Task.TaskPath -cne '\') {
         throw "Scheduled task '$TaskName' escaped the root task path."
+    }
+    if ([string]$Task.Description -cne $Contract.Description) {
+        throw "Scheduled task '$TaskName' description drifted from the exact contract."
     }
     $principalSid = (New-Object System.Security.Principal.NTAccount($Task.Principal.UserId)).Translate(
         [System.Security.Principal.SecurityIdentifier]
@@ -118,11 +122,17 @@ function Assert-QmTaskContract {
     }
     if ($Task.Settings.MultipleInstances.ToString() -cne 'IgnoreNew' -or
         -not [bool]$Task.Settings.Enabled -or
+        -not [bool]$Task.Settings.AllowDemandStart -or
         -not [bool]$Task.Settings.StartWhenAvailable -or
         -not [bool]$Task.Settings.AllowHardTerminate -or
         -not [bool]$Task.Settings.Hidden -or
         [bool]$Task.Settings.DisallowStartIfOnBatteries -or
-        [bool]$Task.Settings.StopIfGoingOnBatteries) {
+        [bool]$Task.Settings.StopIfGoingOnBatteries -or
+        [bool]$Task.Settings.RunOnlyIfIdle -or
+        [bool]$Task.Settings.RunOnlyIfNetworkAvailable -or
+        [bool]$Task.Settings.WakeToRun -or
+        [int]$Task.Settings.RestartCount -ne 0 -or
+        -not [string]::IsNullOrEmpty([string]$Task.Settings.RestartInterval)) {
         throw "Scheduled task '$TaskName' settings drifted from the exact on-demand contract."
     }
     $actualLimit = [System.Xml.XmlConvert]::ToTimeSpan(
@@ -154,10 +164,15 @@ function Get-QmSafeTaskMetadata {
         triggers_count = @($Task.Triggers).Count
         actions_count = @($Task.Actions).Count
         enabled = [bool]$Task.Settings.Enabled
+        allow_demand_start = [bool]$Task.Settings.AllowDemandStart
         multiple_instances = 'IgnoreNew'
         start_when_available = [bool]$Task.Settings.StartWhenAvailable
         allow_hard_terminate = [bool]$Task.Settings.AllowHardTerminate
         hidden = [bool]$Task.Settings.Hidden
+        run_only_if_idle = [bool]$Task.Settings.RunOnlyIfIdle
+        run_only_if_network_available = [bool]$Task.Settings.RunOnlyIfNetworkAvailable
+        wake_to_run = [bool]$Task.Settings.WakeToRun
+        restart_count = [int]$Task.Settings.RestartCount
         execution_limit_seconds = $ExecutionLimitSeconds
         last_run_utc = $lastRunUtc
         last_task_result = $info.LastTaskResult
@@ -222,7 +237,7 @@ if ($Operation -eq 'Register') {
             -Action $action `
             -Settings $settings `
             -Principal $principal `
-            -Description "QM20002 outcome-fenced persistent audit controller for $([System.IO.Path]::GetFileName($contract.JobPath))." `
+            -Description $contract.Description `
             -ErrorAction Stop | Out-Null
         $task = Get-ScheduledTask -TaskName $TaskName -TaskPath '\' -ErrorAction Stop
     }

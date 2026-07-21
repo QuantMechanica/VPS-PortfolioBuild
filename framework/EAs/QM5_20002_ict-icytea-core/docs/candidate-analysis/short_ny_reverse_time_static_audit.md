@@ -74,8 +74,10 @@ The candidate-analysis auditor now fails closed on all of the following:
 - Both news seeds and both byte-identical effective `QMDev1\Common\Files` inputs.
 - Exact four-cell/two-duplicate Model-4 plan with zero native and simulated
   commission before the external cost ledger is applied.
-- Explicit authorization bound to the exact PRE SHA before the detached worker
-  can start.
+- An exact, strictly typed authorization bound to the PRE SHA, followed by one
+  exclusive authorization-consumption receipt bound to the canonical run,
+  state, job and Scheduled Task before the detached worker can start. A crash
+  may recover only that same launch; a second run cannot reuse the receipt.
 - Immediate hashing of every native report, tester log and `tester.ini` after
   each cell, plus a COMPLETE-state chain back to job, authorization, tool, PRE,
   plan and command.
@@ -87,6 +89,40 @@ The detached timeout is deliberately longer than the inner DEV1 controller's
 two-run timeout. This gives the controller time to remove its Scheduled Task,
 restore tester groups, and clean the exact process tree instead of allowing the
 outer Python process to terminate it first.
+
+All mutable orchestration evidence is confined to
+`D:\QM\reports\qm20002\short_ny_reverse_time`. The helper rejects reparse
+points, non-local/non-NTFS volumes, an untrusted ancestor owner, and dangerous
+ancestor rights held by `QMDev1` or any applicable token/group SID. Directories
+and files are sealed to SYSTEM and Administrators only before publication.
+The exact runtime layout is:
+
+- `pre\pre_receipt.json`
+- `authorization\authorization.json`
+- `authorization\consumptions\<authorization_sha256>.json`
+- `runs\<yyyyMMddTHHmmssZ_32hex>\launch_job.json`
+- `runs\<yyyyMMddTHHmmssZ_32hex>\launch_state.json`
+- `runs\<yyyyMMddTHHmmssZ_32hex>\post_receipt.json`
+
+The OWNER-created runtime authorization has exactly these fields (no extras,
+duplicate properties, numeric booleans, or alternate path are accepted):
+
+```json
+{
+  "schema_version": 2,
+  "artifact_type": "QM5_20002_SHORT_NY_LAUNCH_AUTHORIZATION",
+  "analysis_id": "QM5_20002_SHORT_NY_REVERSE_TIME_SCREEN_001",
+  "pre_receipt_sha256": "<exact lowercase PRE SHA-256>",
+  "scope": "QM5_20002_4_CELLS_X_2_DUPLICATES_MODEL4",
+  "mt5_execution_authorized": true,
+  "authorized_by": "<non-empty OWNER identity>",
+  "authorized_utc": "<UTC timestamp ending in Z, at or after PRE creation>"
+}
+```
+
+The older repository evidence file from 2026-07-20 documents historical
+authorization context but is not this schema-v2 protected runtime artifact and
+must not be copied into the control root as launch authorization.
 
 One conservative limitation remains: the current POST gate accepts only
 same-New-York-day lifecycles with zero swap. Although Contract v2 also permits an
@@ -102,7 +138,10 @@ Tested now:
 - Generator determinism and exact four-cell set closure.
 - Auditor unit and adversarial gates, including effective news-copy drift,
   out-of-killzone/news opening fills, artifact closure and timeout margin.
-- Result: 25 tests passed; deterministic Contract-v3 set check passed.
+- Result: 90 auditor tests passed, including exclusive-publication,
+  cross-run authorization, crash-recovery, duplicate-worker, stale-resume,
+  locked-snapshot, strict-schema and protected-path adversarial cases;
+  deterministic Contract-v3 set check passed.
 
 Not tested yet:
 
