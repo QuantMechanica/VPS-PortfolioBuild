@@ -57,6 +57,14 @@ $ancestorReplaceRightsForbidden = @(
     'ChangePermissions',
     'TakeOwnership'
 )
+$ancestorRawGenericRightsAllowed = @(
+    'GENERIC_READ',
+    'GENERIC_WRITE',
+    'GENERIC_EXECUTE'
+)
+$ancestorRawGenericRightsForbidden = @('GENERIC_ALL')
+$ancestorRawUnknownBitsDisposition = 'REJECT'
+$ancestorCreatorPlaceholderPolicy = 'INHERIT_ONLY_KNOWN_MASK_ALLOWED'
 $actualHelperSha256 = (Get-FileHash -LiteralPath $PSCommandPath -Algorithm SHA256 -ErrorAction Stop).Hash.ToLowerInvariant()
 if ($actualHelperSha256 -cne $ExpectedHelperSha256) {
     throw 'QM20002 control-path helper byte binding drifted.'
@@ -347,22 +355,78 @@ function Assert-QmDev1PrivilegeSurface {
     }
 }
 
-function Test-QmAncestorReplaceAuthority(
-    [Security.AccessControl.FileSystemRights]$Rights
-) {
+function Get-QmAncestorAccessMaskDisposition([uint32]$AccessMask) {
     # Directory CreateFiles/CreateDirectories are the aliases of
     # WriteData/AppendData.  They can win a bootstrap precreation race, but
     # cannot rename/delete an already protected child.  The create path treats
     # a race winner as untrusted and fails closed in Ensure-ExactProtectedDirectory.
-    $replaceAuthority = [Security.AccessControl.FileSystemRights]0
-    foreach ($rightName in $ancestorReplaceRightsForbidden) {
-        $parsedRight = [Enum]::Parse(
-            [Security.AccessControl.FileSystemRights],
-            $rightName
-        )
-        $replaceAuthority = $replaceAuthority -bor [Security.AccessControl.FileSystemRights]$parsedRight
+    # GENERIC_WRITE maps to FILE_GENERIC_WRITE: create/write data, EA and
+    # attributes plus READ_CONTROL/SYNCHRONIZE.  It contains no DELETE_CHILD,
+    # DELETE, WRITE_DAC or WRITE_OWNER and therefore cannot replace a protected
+    # child.  GENERIC_READ and GENERIC_EXECUTE are non-replacing as well.
+    # Raw GENERIC_ALL, the four named replace rights, and every unknown or
+    # ambiguous access-mask bit are rejected fail-closed.
+    $mask = [uint64]$AccessMask
+    $knownSafeMask = [Convert]::ToUInt64('e01201bf', 16)
+    $replaceMask = [Convert]::ToUInt64('100d0040', 16)
+    $allMask = [Convert]::ToUInt64('ffffffff', 16)
+    $unknownMask = $allMask -bxor ($knownSafeMask -bor $replaceMask)
+    if (($mask -band $unknownMask) -ne 0) {
+        return 'AMBIGUOUS'
     }
-    return (($Rights -band $replaceAuthority) -ne 0)
+    if (($mask -band $replaceMask) -ne 0) {
+        return 'REPLACE'
+    }
+    return 'SAFE'
+}
+
+function Test-QmAncestorReplaceAuthority([uint32]$AccessMask) {
+    return (Get-QmAncestorAccessMaskDisposition -AccessMask $AccessMask) -cne 'SAFE'
+}
+
+function ConvertTo-QmUInt32AccessMask([int32]$AccessMask) {
+    return [BitConverter]::ToUInt32([BitConverter]::GetBytes($AccessMask), 0)
+}
+
+function Assert-QmAncestorRawDescriptor(
+    [Security.AccessControl.RawSecurityDescriptor]$Descriptor,
+    $UntrustedSids,
+    [string]$Candidate
+) {
+    if ($null -eq $Descriptor.DiscretionaryAcl) {
+        throw "Null DACL grants replace authority on QM20002 control ancestor: $Candidate"
+    }
+    foreach ($ace in $Descriptor.DiscretionaryAcl) {
+        if ($ace -isnot [Security.AccessControl.QualifiedAce]) {
+            throw "Unsupported raw ACE in QM20002 control ancestor: $Candidate"
+        }
+        if ($ace.AceQualifier -ne [Security.AccessControl.AceQualifier]::AccessAllowed) {
+            continue
+        }
+        $sid = [string]$ace.SecurityIdentifier.Value
+        $creatorPlaceholder = $sid -in @('S-1-3-0', 'S-1-3-1')
+        if (-not $creatorPlaceholder -and -not $UntrustedSids.Contains($sid)) {
+            continue
+        }
+        $rawMask = ConvertTo-QmUInt32AccessMask -AccessMask $ace.AccessMask
+        $disposition = Get-QmAncestorAccessMaskDisposition -AccessMask $rawMask
+        if ($creatorPlaceholder) {
+            $inheritOnly = ($ace.AceFlags -band [Security.AccessControl.AceFlags]::InheritOnly) -ne 0
+            # A normal CI/OI/IO CREATOR OWNER/GROUP ACE is substituted with the
+            # privileged bootstrap creator on a new child.  An attacker-created
+            # race winner is never adopted: the exact owner/DACL closure rejects
+            # it.  Unknown masks and non-inherit-only replace authority remain
+            # fail-closed.
+            if ($disposition -ceq 'AMBIGUOUS' -or
+                (-not $inheritOnly -and $disposition -cne 'SAFE')) {
+                throw "Creator placeholder ACE can replace the QM20002 control root through ancestor: $Candidate"
+            }
+            continue
+        }
+        if ($disposition -cne 'SAFE') {
+            throw "QMDev1 or one of its groups can replace the QM20002 control root through ancestor: $Candidate"
+        }
+    }
 }
 
 function Assert-AncestorProtection {
@@ -390,13 +454,14 @@ function Assert-AncestorProtection {
         if ($untrusted.Contains($ownerSid)) {
             throw "QMDev1 or one of its token/groups owns QM20002 control ancestor: $cursor"
         }
-        foreach ($rule in @($acl.GetAccessRules($true, $true, [Security.Principal.SecurityIdentifier]))) {
-            if ($rule.AccessControlType -eq [Security.AccessControl.AccessControlType]::Allow -and
-                $untrusted.Contains([string]$rule.IdentityReference.Value) -and
-                (Test-QmAncestorReplaceAuthority -Rights $rule.FileSystemRights)) {
-                throw "QMDev1 or one of its groups can replace the QM20002 control root through ancestor: $cursor"
-            }
-        }
+        $rawDescriptor = [Security.AccessControl.RawSecurityDescriptor]::new(
+            $acl.GetSecurityDescriptorBinaryForm(),
+            0
+        )
+        Assert-QmAncestorRawDescriptor `
+            -Descriptor $rawDescriptor `
+            -UntrustedSids $untrusted `
+            -Candidate $cursor
     }
 }
 
@@ -456,6 +521,10 @@ if ($Operation -eq 'PrepareDirectory') {
     untrusted_ancestor_owner_forbidden = $true
     ancestor_create_only_rights_allowed = @($ancestorCreateOnlyRightsAllowed)
     ancestor_replace_rights_forbidden = @($ancestorReplaceRightsForbidden)
+    ancestor_raw_generic_rights_allowed = @($ancestorRawGenericRightsAllowed)
+    ancestor_raw_generic_rights_forbidden = @($ancestorRawGenericRightsForbidden)
+    ancestor_raw_unknown_bits_disposition = $ancestorRawUnknownBitsDisposition
+    ancestor_creator_placeholder_policy = $ancestorCreatorPlaceholderPolicy
     qmdev1_privilege_surface_verified = $true
     privileged_group_sids_forbidden = @($privilegedGroupSids)
     privileges_forbidden = @($dangerousPrivileges)

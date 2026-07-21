@@ -137,6 +137,14 @@ CONTROL_ANCESTOR_REPLACE_RIGHTS_FORBIDDEN = [
     "ChangePermissions",
     "TakeOwnership",
 ]
+CONTROL_ANCESTOR_RAW_GENERIC_RIGHTS_ALLOWED = [
+    "GENERIC_READ",
+    "GENERIC_WRITE",
+    "GENERIC_EXECUTE",
+]
+CONTROL_ANCESTOR_RAW_GENERIC_RIGHTS_FORBIDDEN = ["GENERIC_ALL"]
+CONTROL_ANCESTOR_RAW_UNKNOWN_BITS_DISPOSITION = "REJECT"
+CONTROL_ANCESTOR_CREATOR_PLACEHOLDER_POLICY = "INHERIT_ONLY_KNOWN_MASK_ALLOWED"
 COMPILE_CONTROLLER_PATH = (
     EA_ROOT / "tools" / "candidate_analysis" / "compile_short_ny_v3.ps1"
 )
@@ -598,6 +606,10 @@ def _audit_control_contract() -> dict[str, Any]:
         "untrusted_ancestor_owner_forbidden": True,
         "ancestor_create_only_rights_allowed": CONTROL_ANCESTOR_CREATE_ONLY_RIGHTS_ALLOWED,
         "ancestor_replace_rights_forbidden": CONTROL_ANCESTOR_REPLACE_RIGHTS_FORBIDDEN,
+        "ancestor_raw_generic_rights_allowed": CONTROL_ANCESTOR_RAW_GENERIC_RIGHTS_ALLOWED,
+        "ancestor_raw_generic_rights_forbidden": CONTROL_ANCESTOR_RAW_GENERIC_RIGHTS_FORBIDDEN,
+        "ancestor_raw_unknown_bits_disposition": CONTROL_ANCESTOR_RAW_UNKNOWN_BITS_DISPOSITION,
+        "ancestor_creator_placeholder_policy": CONTROL_ANCESTOR_CREATOR_PLACEHOLDER_POLICY,
         "qmdev1_privilege_surface_verified": True,
         "privileged_group_sids_forbidden": CONTROL_PRIVILEGED_GROUP_SIDS,
         "privileges_forbidden": CONTROL_FORBIDDEN_PRIVILEGES,
@@ -744,6 +756,10 @@ def _control_acl_call(
         "untrusted_ancestor_owner_forbidden",
         "ancestor_create_only_rights_allowed",
         "ancestor_replace_rights_forbidden",
+        "ancestor_raw_generic_rights_allowed",
+        "ancestor_raw_generic_rights_forbidden",
+        "ancestor_raw_unknown_bits_disposition",
+        "ancestor_creator_placeholder_policy",
         "qmdev1_privilege_surface_verified",
         "privileged_group_sids_forbidden",
         "privileges_forbidden",
@@ -767,6 +783,14 @@ def _control_acl_call(
         != CONTROL_ANCESTOR_CREATE_ONLY_RIGHTS_ALLOWED
         or result.get("ancestor_replace_rights_forbidden")
         != CONTROL_ANCESTOR_REPLACE_RIGHTS_FORBIDDEN
+        or result.get("ancestor_raw_generic_rights_allowed")
+        != CONTROL_ANCESTOR_RAW_GENERIC_RIGHTS_ALLOWED
+        or result.get("ancestor_raw_generic_rights_forbidden")
+        != CONTROL_ANCESTOR_RAW_GENERIC_RIGHTS_FORBIDDEN
+        or result.get("ancestor_raw_unknown_bits_disposition")
+        != CONTROL_ANCESTOR_RAW_UNKNOWN_BITS_DISPOSITION
+        or result.get("ancestor_creator_placeholder_policy")
+        != CONTROL_ANCESTOR_CREATOR_PLACEHOLDER_POLICY
         or result.get("qmdev1_privilege_surface_verified") is not True
         or result.get("privileged_group_sids_forbidden")
         != CONTROL_PRIVILEGED_GROUP_SIDS
