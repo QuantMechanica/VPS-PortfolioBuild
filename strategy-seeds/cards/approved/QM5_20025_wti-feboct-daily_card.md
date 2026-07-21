@@ -16,7 +16,7 @@ pipeline_phase: Q02
 ---
 # WTI February-October Daily Rotation
 
-## Concept
+## Hypothesis
 Trade the published WTI month contrast: long each February D1 session and
 short each October session, resetting risk at the next D1 boundary.
 
@@ -30,6 +30,11 @@ short each October session, resetting risk at the next D1 boundary.
 - ATR(20) stop 2.75, spread cap 2500 points.
 - RISK_FIXED=1000, RISK_PERCENT=0, weight 1. No sweep.
 - No TP, trailing, scale, grid, martingale, ML, or external feed.
+
+## Risk
+The primary risks are continuous-CFD basis, post-publication decay, broker
+month/session mapping, gaps, and repeated exposure within eligible months.
+Q02 must reject on governed cadence, PF, drawdown, or determinism criteria.
 
 ## Non-duplicate and framework alignment
 Existing WTI month cards hold month-scale packages; weekday cards use weekday

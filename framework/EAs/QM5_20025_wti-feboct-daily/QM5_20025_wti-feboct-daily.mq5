@@ -1,6 +1,3 @@
-Exit code: 0
-Wall time: 0.7 seconds
-Output:
 #property strict
 #property version   "5.0"
 #property description "QM5_20025 WTI February-October Daily Rotation"
@@ -187,7 +184,7 @@ bool Strategy_DayAlreadyEntered(const int day_key)
    return false;
   }
 
-bool Strategy_PrimeLatemonth-stateAttach()
+bool Strategy_PrimeLateMonthStateAttach()
   {
    MqlRates current_bar;
    ZeroMemory(current_bar);
@@ -214,7 +211,7 @@ bool Strategy_PrimeLatemonth-stateAttach()
    return Strategy_RecordDayAttempt(day_key);
   }
 
-bool Strategy_Consumemonth-stateDecision()
+bool Strategy_ConsumeMonthStateDecision()
   {
    g_entry_decision_ready = false;
    if(!g_strategy_new_d1_bar || g_strategy_d1_bar_time <= 0)
@@ -380,7 +377,7 @@ int OnInit()
       return INIT_FAILED;
 
    Strategy_LoadAttemptState(TimeCurrent());
-   if(!Strategy_PrimeLatemonth-stateAttach())
+   if(!Strategy_PrimeLateMonthStateAttach())
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK",
@@ -441,7 +438,7 @@ void OnTick()
       g_strategy_d1_bar_time <= 0)
       return;
 
-   if(!Strategy_Consumemonth-stateDecision())
+   if(!Strategy_ConsumeMonthStateDecision())
       return;
 
    const datetime broker_now = TimeCurrent();
@@ -487,5 +484,4 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-
 
