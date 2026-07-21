@@ -30,3 +30,20 @@ setfile. The diagnostic claim on the failed source row was then released.
 
 No local backtest was launched because the fleet queue owns Q02 execution. No
 portfolio gate, T_Live path, deploy manifest, or AutoTrading state was touched.
+
+## Paced-fleet follow-up (2026-07-21 14:32 UTC)
+
+The canonical replacement row remains the only pending `QM5_4006` Q02 item.
+After T8 returned the transient terminal signature `some error after pass
+finished`, the existing row was updated in place rather than duplicated:
+
+- `avoid_terminals`: `T2`, `T6`, `T8`
+- `transient_infra_attempts`: `1`
+- eligible warm-cache targets remain T1/T4
+- setfile remains the M15 backtest set with `RISK_FIXED=1000` and
+  `RISK_PERCENT=0`
+
+Farm health reported 9/9 enabled terminal workers active and 3,305 pending work
+items at the follow-up snapshot. In accordance with the paced-fleet CPU ceiling,
+no manual MT5 process or extra Q02 row was launched. The next action is owned by
+the existing pending row `41353941-8f90-4969-8cd7-d22f2c23e995`.
