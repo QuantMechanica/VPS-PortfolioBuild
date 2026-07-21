@@ -580,6 +580,11 @@ if ($Operation -eq 'ProbeAbsent') {
     }
     $processes = Get-QmStableProcessEvidence
     Assert-QmNoProcessSideEffects -Evidence $processes
+    $absenceBasis = if ([bool]$AllowObservedStartRace) {
+        'INFERRED_FROM_DURABLE_TERMINAL_REJECT_WITH_OBSERVED_START_RACE_AND_SUCCESSFUL_UNREGISTER'
+    } else {
+        'INFERRED_FROM_DURABLE_NEVER_RUN_CLOSURE_PROOF_REQUIRED_BY_CALLER'
+    }
     [ordered]@{
         operation = 'ProbeAbsent'
         helper_sha256 = $actualHelperSha256
@@ -587,7 +592,7 @@ if ($Operation -eq 'ProbeAbsent') {
         task_path = '\'
         absent = $true
         matching_worker_process_count = 0
-        matching_worker_process_count_basis = 'INFERRED_FROM_DURABLE_NEVER_RUN_CLOSURE_PROOF_REQUIRED_BY_CALLER'
+        matching_worker_process_count_basis = $absenceBasis
         dev1_owner_process_count = [int]$processes.dev1_owner_process_count
         dev1_root_process_count = [int]$processes.dev1_root_process_count
         relevant_process_identity_sha256 = [string]$processes.relevant_process_identity_sha256

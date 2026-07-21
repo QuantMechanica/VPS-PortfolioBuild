@@ -166,6 +166,7 @@ class ClosureContract:
     authorization_path: Path
     consumption_path: Path
     intent_path: Path
+    anchor_path: Path
     receipt_path: Path
     global_lock_path: Path
     state_lock_path: Path
@@ -212,6 +213,7 @@ def default_contract() -> ClosureContract:
             / "223d53e83a0d3b03f20af3b1b9c5730da365b414cad2f9f427f8b6e17ad46c6f.json"
         ),
         intent_path=run / "g1_pre_outcome_closure_intent.json",
+        anchor_path=run / "g1_pre_outcome_quiescence_anchor.json",
         receipt_path=run / "g1_pre_outcome_closure_receipt.json",
         global_lock_path=control / "authorization" / ".launch.global.lock",
         state_lock_path=run / ".launch_state.json.terminal.lock",
@@ -1784,6 +1786,7 @@ def _validate_receipt(
     intent: Mapping[str, Any],
     state_after_binding: Mapping[str, Any],
     terminal_proof: Mapping[str, str],
+    fresh_absent_probe: Mapping[str, Any],
 ) -> None:
     _assert_exact_fields(
         receipt,
@@ -1811,9 +1814,21 @@ def _validate_receipt(
     if not isinstance(absent, Mapping):
         raise ClosureError("closure receipt omitted task absence proof")
     helper_sha256 = str(chain["bindings"]["closure_task_helper"]["sha256"])
+    expected_start_race = terminal_proof.get("start_race") == "true"
     _validate_absent_probe(
-        absent, contract, expected_helper_sha256=helper_sha256
+        absent,
+        contract,
+        expected_helper_sha256=helper_sha256,
+        expected_start_race=expected_start_race,
     )
+    _validate_absent_probe(
+        fresh_absent_probe,
+        contract,
+        expected_helper_sha256=helper_sha256,
+        expected_start_race=expected_start_race,
+    )
+    if dict(absent) != dict(fresh_absent_probe):
+        raise ClosureError("closure receipt absence proof differs from fresh proof")
     created = _parse_created_utc(receipt.get("created_utc"), "closure receipt created_utc")
     state_updated = _parse_created_utc(
         load_strict_json(contract.state_path, "receipt-bound state").get("updated_utc"),
@@ -1828,7 +1843,7 @@ def _validate_receipt(
         intent,
         state_after_binding,
         terminal_proof,
-        absent,
+        fresh_absent_probe,
         created_utc=str(receipt["created_utc"]),
     )
     if canonical_bytes(receipt) != canonical_bytes(expected):
@@ -2197,22 +2212,52 @@ def close_g1(
         except ClosureError:
             # A concurrent identical recovery may have removed it first.  Only
             # an exact absence proof may convert that race into success.
-            raced_absent = task_call(contract, job, pre, helper_sha, "ProbeAbsent")
+            raced_absent = task_call(
+                contract,
+                job,
+                pre,
+                helper_sha,
+                "ProbeAbsent",
+                allow_observed_start_race=allow_start_race,
+            )
             _validate_absent_probe(
-                raced_absent, contract, expected_helper_sha256=helper_sha
+                raced_absent,
+                contract,
+                expected_helper_sha256=helper_sha,
+                expected_start_race=allow_start_race,
             )
     except ClosureError as inspect_error:
         try:
-            raced_absent = task_call(contract, job, pre, helper_sha, "ProbeAbsent")
+            raced_absent = task_call(
+                contract,
+                job,
+                pre,
+                helper_sha,
+                "ProbeAbsent",
+                allow_observed_start_race=allow_start_race,
+            )
             _validate_absent_probe(
-                raced_absent, contract, expected_helper_sha256=helper_sha
+                raced_absent,
+                contract,
+                expected_helper_sha256=helper_sha,
+                expected_start_race=allow_start_race,
             )
         except ClosureError:
             raise inspect_error
     crash_hook("after_unregister")
-    absent_probe = task_call(contract, job, pre, helper_sha, "ProbeAbsent")
+    absent_probe = task_call(
+        contract,
+        job,
+        pre,
+        helper_sha,
+        "ProbeAbsent",
+        allow_observed_start_race=allow_start_race,
+    )
     _validate_absent_probe(
-        absent_probe, contract, expected_helper_sha256=helper_sha
+        absent_probe,
+        contract,
+        expected_helper_sha256=helper_sha,
+        expected_start_race=allow_start_race,
     )
     _assert_dev1_inventory(chain, auditor)
 
@@ -2235,9 +2280,19 @@ def close_g1(
                 auditor,
                 require_final=True,
             )
-            fresh_absent = task_call(contract, job, pre, helper_sha, "ProbeAbsent")
+            fresh_absent = task_call(
+                contract,
+                job,
+                pre,
+                helper_sha,
+                "ProbeAbsent",
+                allow_observed_start_race=allow_start_race,
+            )
             _validate_absent_probe(
-                fresh_absent, contract, expected_helper_sha256=helper_sha
+                fresh_absent,
+                contract,
+                expected_helper_sha256=helper_sha,
+                expected_start_race=allow_start_race,
             )
             if contract.receipt_path.exists():
                 control_call(contract, "AssertFile", contract.receipt_path)
@@ -2250,6 +2305,7 @@ def close_g1(
                     intent,
                     state_after_binding,
                     proof,
+                    fresh_absent,
                 )
                 receipt_binding = file_binding(contract.receipt_path)
                 status = "ALREADY_CLOSED"
@@ -2261,7 +2317,7 @@ def close_g1(
                     intent,
                     state_after_binding,
                     proof,
-                    absent_probe,
+                    fresh_absent,
                 )
                 _publish_json(
                     contract,

@@ -212,7 +212,9 @@ class FakeTaskRuntime:
                 raise closure.ClosureError("still exists")
             absent = process_fields()
             absent["matching_worker_process_count_basis"] = (
-                "INFERRED_FROM_DURABLE_NEVER_RUN_CLOSURE_PROOF_REQUIRED_BY_CALLER"
+                closure.ABSENT_START_RACE_BASIS
+                if kwargs.get("allow_observed_start_race", False)
+                else closure.ABSENT_NEVER_RUN_BASIS
             )
             return {**common, "absent": True, **absent}
         raise AssertionError(operation)
@@ -313,6 +315,7 @@ def make_fixture(tmp_path: Path) -> tuple[
     job_path = run / "launch_job.json"
     state_path = run / "launch_state.json"
     intent_path = run / "g1_pre_outcome_closure_intent.json"
+    anchor_path = run / "g1_pre_outcome_quiescence_anchor.json"
     receipt_path = run / "g1_pre_outcome_closure_receipt.json"
     plan_without_sha = {
         "cell_count": 4,
@@ -409,6 +412,7 @@ def make_fixture(tmp_path: Path) -> tuple[
         authorization_path=authorization_path,
         consumption_path=consumption_path,
         intent_path=intent_path,
+        anchor_path=anchor_path,
         receipt_path=receipt_path,
         global_lock_path=global_lock,
         state_lock_path=state_lock,
