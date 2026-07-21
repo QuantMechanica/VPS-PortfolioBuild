@@ -186,6 +186,21 @@ _BASE = _load_exact_private_module(
     label="G2 private base auditor",
 )
 
+# Runtime validation errors must enter the frozen auditor's normal fail-closed
+# lifecycle (including worker-state publication), so replace the bootstrap
+# exception with an AuditError subtype after the exact base import succeeds.
+class G2IntegrationError(_BASE.AuditError):
+    """A G2 integration root or immutable byte guard failed."""
+
+
+_G1_CLOSURE = _load_exact_private_module(
+    G1_CLOSURE_UTILITY_PATH,
+    expected_size=G1_CLOSURE_UTILITY_SIZE,
+    expected_sha256=G1_CLOSURE_UTILITY_SHA256,
+    private_name="_qm20002_g1_closure_frozen_for_g2_gate",
+    label="frozen G1 closure utility",
+)
+
 _BASE_PREFLIGHT = _BASE.preflight
 _BASE_VALIDATE_RUNTIME = _BASE.validate_runtime
 _BASE_VALIDATE_PRE_SEMANTICS = _BASE._validate_pre_semantics
@@ -215,6 +230,366 @@ _g2_runtime_roles.update(
 )
 _BASE.RUNTIME_ROLES = _g2_runtime_roles
 RUNTIME_ROLES = _g2_runtime_roles
+
+
+def _require_exact_fields(
+    value: Mapping[str, Any], expected: set[str], label: str
+) -> None:
+    if set(value) != expected:
+        raise G2IntegrationError(f"{label} exact field closure drift")
+
+
+def _load_strict_json(path: Path, label: str) -> dict[str, Any]:
+    try:
+        text = path.read_text(encoding="utf-8")
+        value = json.loads(
+            text,
+            object_pairs_hook=lambda pairs: _strict_object(pairs, label),
+            parse_constant=lambda token: (_ for _ in ()).throw(
+                ValueError(f"non-finite JSON token: {token}")
+            ),
+        )
+    except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as exc:
+        raise G2IntegrationError(f"{label} is not strict JSON: {path}") from exc
+    if not isinstance(value, dict):
+        raise G2IntegrationError(f"{label} must be a JSON object")
+    return value
+
+
+def _strict_object(pairs: list[tuple[str, Any]], label: str) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate property in {label}: {key}")
+        result[key] = value
+    return result
+
+
+def _repo_relative(path: Path) -> str:
+    try:
+        return path.resolve().relative_to(REPO_ROOT.resolve()).as_posix()
+    except ValueError as exc:
+        raise G2IntegrationError(f"repository binding escaped root: {path}") from exc
+
+
+def _assert_committed_blob(
+    path: Path,
+    commit: str,
+    *,
+    expected_size: int,
+    expected_sha256: str,
+    label: str,
+) -> None:
+    if re.fullmatch(r"[0-9a-f]{40}", commit) is None:
+        raise G2IntegrationError(f"{label} commit is not an exact object id")
+    completed = subprocess.run(
+        ["git", "-C", str(REPO_ROOT), "show", f"{commit}:{_repo_relative(path)}"],
+        check=False,
+        capture_output=True,
+        timeout=30,
+    )
+    if completed.returncode != 0:
+        raise G2IntegrationError(f"{label} committed blob cannot be read")
+    observed = completed.stdout
+    if len(observed) != expected_size or hashlib.sha256(observed).hexdigest() != expected_sha256:
+        raise G2IntegrationError(f"{label} committed blob differs from its frozen binding")
+
+
+def _g1_historical_chain() -> tuple[Any, dict[str, Any]]:
+    """Rebuild the frozen G1 byte/auth/job chain without live DEV1 inventory."""
+
+    contract = _G1_CLOSURE.default_contract()
+    if (
+        contract.run_id != G1_RUN_ID
+        or contract.task_name != G1_TASK_NAME
+        or contract.analysis_id != _BASE.ANALYSIS_ID
+        or contract.auditor_path.resolve() != BASE_AUDITOR_PATH.resolve()
+        or contract.task_helper_path.resolve() != G1_CLOSURE_TASK_HELPER_PATH.resolve()
+    ):
+        raise G2IntegrationError("frozen G1 closure contract identity drift")
+    bindings = {
+        "pre_receipt": _G1_CLOSURE.file_binding(
+            contract.pre_path, contract.pre_sha256
+        ),
+        "authorization": _G1_CLOSURE.file_binding(
+            contract.authorization_path, contract.authorization_sha256
+        ),
+        "authorization_consumption": _G1_CLOSURE.file_binding(
+            contract.consumption_path, contract.consumption_sha256
+        ),
+        "launch_job": _G1_CLOSURE.file_binding(contract.job_path, contract.job_sha256),
+        "frozen_auditor": _G1_CLOSURE.file_binding(
+            contract.auditor_path, contract.auditor_sha256
+        ),
+        "frozen_scheduler": _G1_CLOSURE.file_binding(
+            contract.scheduler_path, contract.scheduler_sha256
+        ),
+        "frozen_control_helper": _G1_CLOSURE.file_binding(
+            contract.control_helper_path, contract.control_helper_sha256
+        ),
+        "runtime_freeze": _G1_CLOSURE.file_binding(
+            contract.freeze_path, contract.freeze_sha256
+        ),
+        "closure_utility": _G1_CLOSURE.file_binding(
+            G1_CLOSURE_UTILITY_PATH, G1_CLOSURE_UTILITY_SHA256
+        ),
+        "closure_task_helper": _G1_CLOSURE.file_binding(
+            G1_CLOSURE_TASK_HELPER_PATH, G1_CLOSURE_TASK_HELPER_SHA256
+        ),
+    }
+    pre = _G1_CLOSURE._assert_historical_pre_receipt(
+        contract, _G1_AUDITOR, bindings["pre_receipt"]
+    )
+    _G1_CLOSURE._git_assert_frozen_bytes(contract, pre)
+    authorization = _G1_AUDITOR.validate_authorization(
+        contract.authorization_path, contract.pre_sha256, pre
+    )
+    job = _G1_CLOSURE.load_strict_json(contract.job_path, "G1 launch job")
+    _G1_AUDITOR._validate_launch_job(
+        job, pre, contract.pre_path, contract.pre_sha256, contract.state_path
+    )
+    if job.get("authorization") != authorization:
+        raise G2IntegrationError("G1 launch-job authorization envelope drift")
+    _G1_AUDITOR._assert_authorization_consumption(
+        job.get("authorization_consumption"),
+        authorization,
+        contract.pre_path,
+        contract.pre_sha256,
+        contract.state_path,
+        contract.job_path,
+        contract.task_name,
+        contract.control_helper_sha256,
+    )
+    if (
+        job.get("authorization_consumption", {}).get("binding")
+        != bindings["authorization_consumption"]
+        or job.get("tool") != bindings["frozen_auditor"]
+        or job.get("scheduler", {}).get("helper") != bindings["frozen_scheduler"]
+        or pre.get("runtime", {}).get("audit_control_path_helper")
+        != bindings["frozen_control_helper"]
+    ):
+        raise G2IntegrationError("G1 historical launch chain drift")
+    chain = {
+        "bindings": bindings,
+        "pre": pre,
+        "authorization": authorization,
+        "job": job,
+        "runtime_freeze_commit": contract.freeze_commit,
+    }
+    _G1_CLOSURE._reassert_historical_bindings(chain)
+    return contract, chain
+
+
+def _validate_g1_landing_manifest(
+    landed: Mapping[str, Any],
+    contract: Any,
+    intent_binding: Mapping[str, Any],
+    anchor_binding: Mapping[str, Any],
+    state_binding: Mapping[str, Any],
+    receipt_binding: Mapping[str, Any],
+) -> None:
+    if (
+        landed.get("schema_version") != 1
+        or landed.get("artifact_type") != "QM5_20002_G1_PRE_OUTCOME_CLOSURE_LANDED"
+        or landed.get("analysis_id") != _BASE.ANALYSIS_ID
+        or landed.get("run_id") != G1_RUN_ID
+        or landed.get("status") != "TERMINAL_REJECT_EVIDENCE_CLOSED"
+        or landed.get("reason_code") != G1_REASON_CODE
+        or landed.get("closure_freeze")
+        != {
+            "path": _repo_relative(G1_CLOSURE_FREEZE_PATH),
+            "size": G1_CLOSURE_FREEZE_SIZE,
+            "sha256": G1_CLOSURE_FREEZE_SHA256,
+            "commit": G1_CLOSURE_FREEZE_COMMIT,
+        }
+        or landed.get("closure_intent") != intent_binding
+        or landed.get("quiescence_anchor") != anchor_binding
+        or landed.get("launch_state")
+        != {
+            **state_binding,
+            "state_status": "REJECT",
+            "resume_allowed": False,
+            "post_allowed": False,
+            "evidence_closed": True,
+        }
+        or landed.get("closure_receipt") != receipt_binding
+        or landed.get("verification")
+        != {
+            "first_invocation": "CLOSED",
+            "exact_replay": "ALREADY_CLOSED",
+            "status_classification": "TERMINAL_REJECT_EVIDENCE_CLOSED",
+            "scheduled_task_absent": True,
+            "worker_absent": True,
+            "post_receipt_absent": True,
+            "no_resume": True,
+            "outcome_fence_crossed": False,
+            "outcome_data_read": False,
+        }
+        or landed.get("g2_gate")
+        != {
+            "must_validate_all_bindings_recursively": True,
+            "must_reprobe_scheduled_task_absence": True,
+            "must_reject_any_g1_outcome_or_post_artifact": True,
+            "must_use_separate_control_root": str(G2_CONTROL_ROOT),
+        }
+    ):
+        raise G2IntegrationError("G1 closure landing manifest semantic drift")
+    if Path(str(intent_binding["path"])).resolve() != contract.intent_path.resolve():
+        raise G2IntegrationError("G1 closure landing intent path drift")
+
+
+def validate_g1_closure_gate() -> dict[str, Any]:
+    """Pure read-only proof that G1 is terminal, evidence-closed and absent."""
+
+    try:
+        landed_binding = _exact_file_binding(
+            G1_CLOSURE_LANDED_PATH,
+            expected_size=G1_CLOSURE_LANDED_SIZE,
+            expected_sha256=G1_CLOSURE_LANDED_SHA256,
+            label="G1 closure landing manifest",
+        )
+        _assert_committed_blob(
+            G1_CLOSURE_LANDED_PATH,
+            G1_CLOSURE_LANDED_COMMIT,
+            expected_size=G1_CLOSURE_LANDED_SIZE,
+            expected_sha256=G1_CLOSURE_LANDED_SHA256,
+            label="G1 closure landing manifest",
+        )
+        freeze_binding = _exact_file_binding(
+            G1_CLOSURE_FREEZE_PATH,
+            expected_size=G1_CLOSURE_FREEZE_SIZE,
+            expected_sha256=G1_CLOSURE_FREEZE_SHA256,
+            label="G1 closure freeze",
+        )
+        _assert_committed_blob(
+            G1_CLOSURE_FREEZE_PATH,
+            G1_CLOSURE_FREEZE_COMMIT,
+            expected_size=G1_CLOSURE_FREEZE_SIZE,
+            expected_sha256=G1_CLOSURE_FREEZE_SHA256,
+            label="G1 closure freeze",
+        )
+        freeze = _load_strict_json(G1_CLOSURE_FREEZE_PATH, "G1 closure freeze")
+        if (
+            freeze.get("artifact_type") != "QM5_20002_G1_PRE_OUTCOME_CLOSURE_FREEZE"
+            or freeze.get("analysis_id") != _BASE.ANALYSIS_ID
+            or freeze.get("run_id") != G1_RUN_ID
+            or freeze.get("reason_code") != G1_REASON_CODE
+            or freeze.get("owner_closure_authorized_utc") != G1_AUTHORIZED_UTC
+        ):
+            raise G2IntegrationError("G1 closure freeze identity drift")
+
+        contract, chain = _g1_historical_chain()
+        intent_binding = _G1_CLOSURE.file_binding(
+            contract.intent_path, G1_INTENT_SHA256
+        )
+        if intent_binding["size"] != G1_INTENT_SIZE:
+            raise G2IntegrationError("G1 closure intent size drift")
+        intent = _G1_CLOSURE.load_strict_json(contract.intent_path, "G1 closure intent")
+        _G1_CLOSURE._validate_intent(
+            contract, intent, chain, G1_AUTHORIZED_UTC, _G1_AUDITOR
+        )
+        state_binding = _G1_CLOSURE.file_binding(contract.state_path, G1_STATE_SHA256)
+        if state_binding["size"] != G1_STATE_SIZE:
+            raise G2IntegrationError("G1 terminal state size drift")
+        state = _G1_CLOSURE.load_strict_json(contract.state_path, "G1 terminal state")
+        _G1_CLOSURE._assert_no_outcome_side_effects(contract)
+        proof = _G1_CLOSURE._validate_closed_state_historical_chain(
+            contract,
+            state,
+            intent,
+            str(intent_binding["sha256"]),
+            chain,
+            _G1_AUDITOR,
+            require_final=True,
+        )
+        anchor, anchor_binding = _G1_CLOSURE._load_and_validate_final_anchor(
+            contract, proof, chain, intent_binding, intent, _G1_AUDITOR
+        )
+        del anchor
+        if (
+            anchor_binding["size"] != G1_ANCHOR_SIZE
+            or anchor_binding["sha256"] != G1_ANCHOR_SHA256
+        ):
+            raise G2IntegrationError("G1 quiescence anchor binding drift")
+        fresh_absent = _G1_CLOSURE._task_call(
+            contract,
+            chain["job"],
+            chain["pre"],
+            G1_CLOSURE_TASK_HELPER_SHA256,
+            "ProbeAbsent",
+            allow_observed_start_race=(proof["start_race"] == "true"),
+        )
+        _G1_CLOSURE._validate_absent_probe(
+            fresh_absent,
+            contract,
+            expected_helper_sha256=G1_CLOSURE_TASK_HELPER_SHA256,
+            expected_start_race=(proof["start_race"] == "true"),
+        )
+        receipt_binding = _G1_CLOSURE.file_binding(
+            contract.receipt_path, G1_RECEIPT_SHA256
+        )
+        if receipt_binding["size"] != G1_RECEIPT_SIZE:
+            raise G2IntegrationError("G1 closure receipt size drift")
+        receipt = _G1_CLOSURE.load_strict_json(
+            contract.receipt_path, "G1 closure receipt"
+        )
+        _G1_CLOSURE._validate_receipt(
+            contract,
+            receipt,
+            chain,
+            intent_binding,
+            intent,
+            state_binding,
+            anchor_binding,
+            proof,
+            fresh_absent,
+        )
+        _G1_CLOSURE._assert_no_outcome_side_effects(contract)
+        _G1_CLOSURE._reassert_historical_bindings(chain)
+        landed = _load_strict_json(
+            G1_CLOSURE_LANDED_PATH, "G1 closure landing manifest"
+        )
+        _validate_g1_landing_manifest(
+            landed,
+            contract,
+            intent_binding,
+            anchor_binding,
+            state_binding,
+            receipt_binding,
+        )
+        return {
+            "schema_version": 1,
+            "artifact_type": "QM5_20002_G1_CLOSURE_GATE",
+            "status": "PASS",
+            "analysis_id": _BASE.ANALYSIS_ID,
+            "run_id": G1_RUN_ID,
+            "reason_code": G1_REASON_CODE,
+            "closure_landed": {
+                **landed_binding,
+                "commit": G1_CLOSURE_LANDED_COMMIT,
+            },
+            "closure_freeze": {
+                **freeze_binding,
+                "commit": G1_CLOSURE_FREEZE_COMMIT,
+            },
+            "closure_intent": intent_binding,
+            "quiescence_anchor": anchor_binding,
+            "launch_state": state_binding,
+            "closure_receipt": receipt_binding,
+            "scheduled_task": {
+                "task_name": G1_TASK_NAME,
+                "absent": True,
+                "fresh_probe": fresh_absent,
+                "fresh_probe_sha256": _G1_CLOSURE.canonical_sha256(fresh_absent),
+            },
+            "no_resume": True,
+            "outcome_fence_crossed": False,
+            "outcome_data_read": False,
+        }
+    except G2IntegrationError:
+        raise
+    except Exception as exc:
+        raise G2IntegrationError(f"G1 closure prerequisite failed: {exc}") from exc
 
 
 def integration_profile() -> dict[str, Any]:
