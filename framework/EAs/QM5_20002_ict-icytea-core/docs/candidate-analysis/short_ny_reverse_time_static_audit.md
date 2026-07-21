@@ -124,6 +124,21 @@ The older repository evidence file from 2026-07-20 documents historical
 authorization context but is not this schema-v2 protected runtime artifact and
 must not be copied into the control root as launch authorization.
 
+After the OWNER writes the JSON at the exact authorization path, an
+Administrator must seal that file with the PRE-bound control helper before
+`launch` is attempted. Use the helper SHA recorded at
+`runtime.audit_control_path_helper.sha256` in the PRE receipt:
+
+```powershell
+pwsh -NoProfile -File .\tools\candidate_analysis\assert_qm20002_control_path.ps1 `
+  -Operation SealFile `
+  -Path D:\QM\reports\qm20002\short_ny_reverse_time\authorization\authorization.json `
+  -ExpectedHelperSha256 <exact-lowercase-helper-sha256-from-PRE>
+```
+
+The launch command will reject an unsealed file, a changed helper, or any
+authorization whose timestamp predates the PRE.
+
 One conservative limitation remains: the current POST gate accepts only
 same-New-York-day lifecycles with zero swap. Although Contract v2 also permits an
 independently exact non-zero swap-cost proof, POST will reject such a case until

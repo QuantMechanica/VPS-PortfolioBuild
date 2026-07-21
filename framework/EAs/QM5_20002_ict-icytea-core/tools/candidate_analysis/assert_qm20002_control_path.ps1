@@ -19,6 +19,33 @@ $anchorRoot = [IO.Path]::GetFullPath('D:\QM\reports\qm20002')
 $controlRoot = Join-Path $anchorRoot 'short_ny_reverse_time'
 $systemSid = New-Object Security.Principal.SecurityIdentifier('S-1-5-18')
 $administratorsSid = New-Object Security.Principal.SecurityIdentifier('S-1-5-32-544')
+$privilegedGroupSids = @(
+    'S-1-5-32-544', # Administrators
+    'S-1-5-32-548', # Account Operators
+    'S-1-5-32-549', # Server Operators
+    'S-1-5-32-550', # Print Operators
+    'S-1-5-32-551', # Backup Operators
+    'S-1-5-32-556', # Network Configuration Operators
+    'S-1-5-32-578'  # Hyper-V Administrators
+)
+$dangerousPrivileges = @(
+    'SeAssignPrimaryTokenPrivilege',
+    'SeBackupPrivilege',
+    'SeCreatePermanentPrivilege',
+    'SeCreateSymbolicLinkPrivilege',
+    'SeCreateTokenPrivilege',
+    'SeDebugPrivilege',
+    'SeImpersonatePrivilege',
+    'SeLoadDriverPrivilege',
+    'SeManageVolumePrivilege',
+    'SeRelabelPrivilege',
+    'SeRestorePrivilege',
+    'SeSecurityPrivilege',
+    'SeSystemEnvironmentPrivilege',
+    'SeTakeOwnershipPrivilege',
+    'SeTcbPrivilege',
+    'SeTrustedCredManAccessPrivilege'
+)
 $actualHelperSha256 = (Get-FileHash -LiteralPath $PSCommandPath -Algorithm SHA256 -ErrorAction Stop).Hash.ToLowerInvariant()
 if ($actualHelperSha256 -cne $ExpectedHelperSha256) {
     throw 'QM20002 control-path helper byte binding drifted.'
@@ -133,6 +160,23 @@ function Assert-ExactAcl([string]$Candidate, [bool]$Directory) {
     }
 }
 
+function Ensure-ExactProtectedDirectory([string]$Directory) {
+    if (Test-Path -LiteralPath $Directory) {
+        Assert-NoReparse $Directory
+        if (-not (Test-Path -LiteralPath $Directory -PathType Container)) {
+            throw "QM20002 protected directory path is not a directory: $Directory"
+        }
+        # Never repair an attacker-writable/owned pre-existing directory in
+        # place.  Reject before creating any descendant or temporary file.
+        Assert-ExactAcl -Candidate $Directory -Directory $true
+        return
+    }
+    New-Item -ItemType Directory -Path $Directory -ErrorAction Stop | Out-Null
+    Assert-NoReparse $Directory
+    Set-ExactDirectoryAcl $Directory
+    Assert-ExactAcl -Candidate $Directory -Directory $true
+}
+
 function Get-UntrustedSids {
     $sids = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::Ordinal)
     foreach ($sid in @(
@@ -162,6 +206,127 @@ function Get-UntrustedSids {
         }
     }
     return $sids
+}
+
+function Initialize-QmLsaRightsReader {
+    if ('QmLsaRightsReader' -as [type]) { return }
+    Add-Type -TypeDefinition @'
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Runtime.InteropServices;
+using System.Security.Principal;
+
+public static class QmLsaRightsReader
+{
+    [StructLayout(LayoutKind.Sequential)]
+    private struct LSA_OBJECT_ATTRIBUTES
+    {
+        public UInt32 Length;
+        public IntPtr RootDirectory;
+        public IntPtr ObjectName;
+        public UInt32 Attributes;
+        public IntPtr SecurityDescriptor;
+        public IntPtr SecurityQualityOfService;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct LSA_UNICODE_STRING
+    {
+        public UInt16 Length;
+        public UInt16 MaximumLength;
+        public IntPtr Buffer;
+    }
+
+    [DllImport("advapi32.dll", SetLastError = true)]
+    private static extern UInt32 LsaOpenPolicy(
+        IntPtr systemName,
+        ref LSA_OBJECT_ATTRIBUTES objectAttributes,
+        UInt32 desiredAccess,
+        out IntPtr policyHandle);
+
+    [DllImport("advapi32.dll")]
+    private static extern UInt32 LsaEnumerateAccountRights(
+        IntPtr policyHandle,
+        IntPtr accountSid,
+        out IntPtr userRights,
+        out UInt32 countOfRights);
+
+    [DllImport("advapi32.dll")]
+    private static extern UInt32 LsaFreeMemory(IntPtr buffer);
+
+    [DllImport("advapi32.dll")]
+    private static extern UInt32 LsaClose(IntPtr policyHandle);
+
+    [DllImport("advapi32.dll")]
+    private static extern UInt32 LsaNtStatusToWinError(UInt32 status);
+
+    public static string[] Enumerate(string sidText)
+    {
+        const UInt32 POLICY_LOOKUP_NAMES = 0x00000800;
+        const UInt32 STATUS_OBJECT_NAME_NOT_FOUND = 0xC0000034;
+        LSA_OBJECT_ATTRIBUTES attributes = new LSA_OBJECT_ATTRIBUTES();
+        attributes.Length = (UInt32)Marshal.SizeOf(typeof(LSA_OBJECT_ATTRIBUTES));
+        IntPtr policy;
+        UInt32 status = LsaOpenPolicy(IntPtr.Zero, ref attributes, POLICY_LOOKUP_NAMES, out policy);
+        if (status != 0)
+            throw new Win32Exception((int)LsaNtStatusToWinError(status));
+
+        IntPtr rights = IntPtr.Zero;
+        GCHandle pinned = new GCHandle();
+        try
+        {
+            SecurityIdentifier sid = new SecurityIdentifier(sidText);
+            byte[] bytes = new byte[sid.BinaryLength];
+            sid.GetBinaryForm(bytes, 0);
+            pinned = GCHandle.Alloc(bytes, GCHandleType.Pinned);
+            UInt32 count;
+            status = LsaEnumerateAccountRights(
+                policy, pinned.AddrOfPinnedObject(), out rights, out count);
+            if (status == STATUS_OBJECT_NAME_NOT_FOUND)
+                return new string[0];
+            if (status != 0)
+                throw new Win32Exception((int)LsaNtStatusToWinError(status));
+
+            List<string> values = new List<string>();
+            int itemSize = Marshal.SizeOf(typeof(LSA_UNICODE_STRING));
+            for (UInt32 index = 0; index < count; index++)
+            {
+                IntPtr item = new IntPtr(rights.ToInt64() + (long)index * itemSize);
+                LSA_UNICODE_STRING value = (LSA_UNICODE_STRING)Marshal.PtrToStructure(
+                    item, typeof(LSA_UNICODE_STRING));
+                values.Add(Marshal.PtrToStringUni(value.Buffer, value.Length / 2));
+            }
+            return values.ToArray();
+        }
+        finally
+        {
+            if (pinned.IsAllocated) pinned.Free();
+            if (rights != IntPtr.Zero) LsaFreeMemory(rights);
+            LsaClose(policy);
+        }
+    }
+}
+'@
+}
+
+function Assert-QmDev1PrivilegeSurface {
+    $untrusted = Get-UntrustedSids
+    foreach ($sid in $privilegedGroupSids) {
+        if ($untrusted.Contains($sid)) {
+            throw "QMDev1 belongs to forbidden privileged local group SID: $sid"
+        }
+    }
+    Initialize-QmLsaRightsReader
+    $forbidden = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+    foreach ($privilege in $dangerousPrivileges) { [void]$forbidden.Add($privilege) }
+    foreach ($sid in $untrusted) {
+        foreach ($right in @([QmLsaRightsReader]::Enumerate([string]$sid))) {
+            if ($forbidden.Contains([string]$right)) {
+                throw "QMDev1 token/group SID $sid has forbidden privilege: $right"
+            }
+        }
+    }
 }
 
 function Assert-AncestorProtection {
@@ -208,29 +373,17 @@ function Assert-AncestorProtection {
 }
 
 Assert-LocalFixedNtfsVolume
+Assert-QmDev1PrivilegeSurface
 $fullPath = ConvertTo-ControlPath $Path
 Assert-AncestorProtection
 if ($Operation -eq 'PrepareDirectory') {
     $relative = $fullPath.Substring($controlRoot.Length).TrimStart('\')
-    if (-not (Test-Path -LiteralPath $anchorRoot -PathType Container)) {
-        New-Item -ItemType Directory -Path $anchorRoot -ErrorAction Stop | Out-Null
-    }
-    Assert-NoReparse $anchorRoot
-    Set-ExactDirectoryAcl $anchorRoot
-    Assert-ExactAcl -Candidate $anchorRoot -Directory $true
+    Ensure-ExactProtectedDirectory $anchorRoot
     $cursor = $controlRoot
-    if (-not (Test-Path -LiteralPath $cursor -PathType Container)) {
-        New-Item -ItemType Directory -Path $cursor -ErrorAction Stop | Out-Null
-    }
-    Assert-NoReparse $cursor
-    Set-ExactDirectoryAcl $cursor
+    Ensure-ExactProtectedDirectory $cursor
     foreach ($part in $relative.Split('\', [StringSplitOptions]::RemoveEmptyEntries)) {
         $cursor = Join-Path $cursor $part
-        if (-not (Test-Path -LiteralPath $cursor -PathType Container)) {
-            New-Item -ItemType Directory -Path $cursor -ErrorAction Stop | Out-Null
-        }
-        Assert-NoReparse $cursor
-        Set-ExactDirectoryAcl $cursor
+        Ensure-ExactProtectedDirectory $cursor
     }
     Assert-ExactAcl -Candidate $fullPath -Directory $true
 } elseif ($Operation -eq 'AssertAbsentFile') {
@@ -271,5 +424,10 @@ if ($Operation -eq 'PrepareDirectory') {
     owner_sid = $administratorsSid.Value
     full_control_sids = @($systemSid.Value, $administratorsSid.Value)
     reparse_points_forbidden = $true
+    local_fixed_ntfs_required = $true
+    untrusted_ancestor_owner_forbidden = $true
+    qmdev1_privilege_surface_verified = $true
+    privileged_group_sids_forbidden = @($privilegedGroupSids)
+    privileges_forbidden = @($dangerousPrivileges)
     helper_sha256 = $actualHelperSha256
 } | ConvertTo-Json -Depth 4 -Compress

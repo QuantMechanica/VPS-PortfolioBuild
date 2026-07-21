@@ -976,6 +976,9 @@ def test_control_helper_closes_volume_ancestor_owner_and_token_group_surface() -
     assert "DeleteSubdirectoriesAndFiles" in helper
     assert "ChangePermissions" in helper
     assert "TakeOwnership" in helper
+    assert "function Ensure-ExactProtectedDirectory" in helper
+    assert "Never repair an attacker-writable/owned pre-existing directory" in helper
+    assert "Ensure-ExactProtectedDirectory $anchorRoot" in helper
     assert helper.index("Assert-LocalFixedNtfsVolume") < helper.index(
         "$fullPath = ConvertTo-ControlPath"
     )
