@@ -747,7 +747,12 @@ def validate_current_research_data_gate(pre: Mapping[str, Any]) -> None:
 
 
 def validate_authorization(
-    path: Path, pre_sha256: str, *, require_current: bool = True, now: datetime | None = None
+    path: Path,
+    pre_sha256: str,
+    *,
+    pre: Mapping[str, Any] | None = None,
+    require_current: bool = True,
+    now: datetime | None = None,
 ) -> dict[str, Any]:
     _assert_exact_control(path, AUTHORIZATION_PATH, "authorization")
     binding = B.file_binding(path)
@@ -771,6 +776,15 @@ def validate_authorization(
     }
     if set(payload) != {*expected, "created_utc", "expires_utc"} or any(payload.get(key) != value for key, value in expected.items()):
         raise AuthorizationError("one-shot native authorization drift")
+    if pre is not None:
+        cells = pre.get("plan", {}).get("cells", [])
+        plan_cell_ids = [
+            str(cell.get("cell_id", ""))
+            for cell in cells
+            if isinstance(cell, Mapping)
+        ]
+        if len(plan_cell_ids) != len(cells) or payload["authorized_cells"] != plan_cell_ids:
+            raise AuthorizationError("authorized cells do not exactly match PRE plan cells")
     created = B.parse_utc(str(payload["created_utc"]), "authorization created_utc")
     expires = B.parse_utc(str(payload["expires_utc"]), "authorization expires_utc")
     current = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
@@ -989,7 +1003,9 @@ def launch_detached(
             raise AuthorizationError("one-shot NDX prescreen is already consumed")
         pre = assert_pre_receipt(pre_path, pre_sha256)
         validate_current_research_data_gate(pre)
-        authorization = validate_authorization(authorization_path, pre_sha256)
+        authorization = validate_authorization(
+            authorization_path, pre_sha256, pre=pre
+        )
         authorization_identity = {
             "binding": authorization["binding"],
             "payload_sha256": authorization["payload_sha256"],
@@ -1111,7 +1127,9 @@ def _worker_run(job_path: Path) -> int:
         validate_current_research_data_gate(pre)
         _validate_launch_job(job, pre, pre_path, pre_sha256, state_path)
         authorization = validate_authorization(
-            Path(str(job["authorization"]["binding"]["path"])), pre_sha256
+            Path(str(job["authorization"]["binding"]["path"])),
+            pre_sha256,
+            pre=pre,
         )
         authorization_identity = {
             "binding": authorization["binding"],
@@ -1457,6 +1475,7 @@ def _validate_complete_state(
     authorization = validate_authorization(
         Path(str(job["authorization"]["binding"]["path"])),
         pre_sha256,
+        pre=pre,
         require_current=False,
     )
     authorization_identity = {

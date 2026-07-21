@@ -69,10 +69,13 @@ class NdxPrescreenContractTests(unittest.TestCase):
         self.assertEqual(A.ANALYSIS_ID, "QM5_13209_MULHAM_PM_RANGE_SWEEP_NDX_PRESCREEN_NATIVE_001")
         self.assertEqual(len(plan["cells"]), 1)
         cell = plan["cells"][0]
+        self.assertEqual(cell["cell_id"], A.CELL_ID)
         self.assertEqual(cell["from_date"], "2022-07-01")
         self.assertEqual(cell["to_date"], "2022-12-31")
         self.assertEqual((cell["timeframe"], cell["model"]), ("M5", 4))
         self.assertEqual((cell["duplicates"], cell["maximum_attempts"]), (2, 4))
+        authorization_source = function_source("validate_authorization")
+        self.assertIn("payload[\"authorized_cells\"] != plan_cell_ids", authorization_source)
         self.assertEqual(A.RUN_ROOT, Path(r"D:\QM\reports\candidate_analysis\QM5_13209\NDX_PM_RANGE_SWEEP_NATIVE_001\ATTEMPT_001"))
 
     def test_review_build_contract_and_outcome_blind_old_closure(self) -> None:
@@ -139,21 +142,21 @@ class NdxPrescreenContractTests(unittest.TestCase):
             closure_binding = A.B.file_binding(A.OLD_CLOSURE_PATH)
             rows = [
                 (
-                    A.OLD_WORKITEM_ID, "failed", "INFRA_FAIL", 1, None,
+                    A.OLD_WORKITEM_ID, "failed", "INFRA_FAIL", 1, None, None,
                     {"final_failure": "summary_missing", "closure_artifact_path": str(A.OLD_CLOSURE_PATH.resolve()), "closure_artifact_sha256": closure_binding["sha256"], "strategy_merit_adjudicated": False},
                 ),
                 (
-                    A.DUPLICATE_WORKITEM_ID, "failed", "INVALID", 0, None,
+                    A.DUPLICATE_WORKITEM_ID, "failed", "INVALID", 0, None, None,
                     {"duplicate_of": A.SP500_RESULT_WORKITEM_ID, "superseded_by": A.SP500_RESULT_WORKITEM_ID},
                 ),
-                (A.SP500_RESULT_WORKITEM_ID, "done", "FAIL", 0, str(sp500), {}),
+                (A.SP500_RESULT_WORKITEM_ID, "done", "FAIL", 0, str(sp500), None, {}),
             ]
             connection = sqlite3.connect(database)
             try:
-                connection.execute("CREATE TABLE work_items(id TEXT,ea_id TEXT,status TEXT,verdict TEXT,attempt_count INTEGER,evidence_path TEXT,payload_json TEXT)")
+                connection.execute("CREATE TABLE work_items(id TEXT,ea_id TEXT,status TEXT,verdict TEXT,attempt_count INTEGER,evidence_path TEXT,claimed_by TEXT,payload_json TEXT)")
                 connection.executemany(
-                    "INSERT INTO work_items VALUES(?,'QM5_13209',?,?,?,?,?)",
-                    [(item, status, verdict, attempts, evidence, json.dumps(payload)) for item, status, verdict, attempts, evidence, payload in rows],
+                    "INSERT INTO work_items VALUES(?,'QM5_13209',?,?,?,?,?,?)",
+                    [(item, status, verdict, attempts, evidence, claimed_by, json.dumps(payload)) for item, status, verdict, attempts, evidence, claimed_by, payload in rows],
                 )
                 connection.commit()
             finally:
@@ -163,6 +166,15 @@ class NdxPrescreenContractTests(unittest.TestCase):
                 self.assertEqual(A.validate_factory_database_gate()["status"], "PASS")
                 connection = sqlite3.connect(database)
                 try:
+                    connection.execute("UPDATE work_items SET claimed_by='stale-worker' WHERE id=?", (A.OLD_WORKITEM_ID,))
+                    connection.commit()
+                finally:
+                    connection.close()
+                with self.assertRaises(A.InvalidEvidence):
+                    A.validate_factory_database_gate()
+                connection = sqlite3.connect(database)
+                try:
+                    connection.execute("UPDATE work_items SET claimed_by=NULL WHERE id=?", (A.OLD_WORKITEM_ID,))
                     connection.execute("UPDATE work_items SET evidence_path='closure.json' WHERE id=?", (A.OLD_WORKITEM_ID,))
                     connection.commit()
                 finally:
