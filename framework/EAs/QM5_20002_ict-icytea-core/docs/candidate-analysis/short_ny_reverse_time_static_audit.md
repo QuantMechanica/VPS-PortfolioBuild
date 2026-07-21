@@ -106,9 +106,15 @@ READ_CONTROL and SYNCHRONIZE but not DeleteChild, Delete, WRITE_DAC or
 WRITE_OWNER; `GENERIC_READ` and `GENERIC_EXECUTE` are non-replacing too. Any
 unknown raw bit, null DACL or unsupported raw DACL ACE is ambiguous and rejected
 fail-closed. The create/write allowance applies only when the untrusted ACE
-cannot propagate to the new anchor: an inheritable or inherit-only Users/BATCH
-create/write ACE is rejected because it would grant transient rights before the
-exact ACL seal.
+cannot propagate to the new anchor, with one narrow stock-volume exception:
+BUILTIN\Users `0x00000004/CI` and `0x00000002/CI|IO` (optionally carrying only
+the inherited marker) are accepted. The helper creates every controlled
+directory with `CreateDirectoryW` and the protected SYSTEM/Administrators
+security descriptor in the same kernel operation; there is therefore no
+unprotected inherited-ACL interval. An already-created race path makes the
+exclusive create fail and is neither repaired nor adopted. Any other
+inheritable Users/BATCH write/create SID, mask, object/callback ACE or flag
+shape remains rejected.
 
 A normal inherit-only CREATOR OWNER/GROUP ACE is substituted with the bootstrap
 token's effective owner/primary-group SID. The helper reads both SIDs from its
@@ -185,7 +191,7 @@ Tested now:
 - Generator determinism and exact four-cell set closure.
 - Auditor unit and adversarial gates, including effective news-copy drift,
   out-of-killzone/news opening fills, artifact closure and timeout margin.
-- Result: 104 auditor tests passed, including exclusive-publication,
+- Result: 106 auditor tests passed, including exclusive-publication,
   cross-run authorization, crash-recovery, duplicate-worker, stale-resume,
   locked-snapshot, strict-schema and protected-path adversarial cases. The
   protected-path cases execute the actual PowerShell rights classifier and
@@ -194,8 +200,10 @@ Tested now:
   Modify/DeleteChild/Delete/WRITE_DAC/WRITE_OWNER; inherited and inherit-only
   GA/GW/create, object, BATCH and CREATOR OWNER/GROUP ACE variants; verified and
   untrusted effective creator SIDs; unknown-bit rejection; malicious
-  precreation/race and null-DACL rejection; and the exact protected-root pass case. The
-  deterministic Contract-v3 set check passed.
+  precreation/race and null-DACL rejection; the exact stock `D:\` descriptor
+  shapes and hostile near variants; exclusive atomic-create/unchanged-race ACL;
+  and the exact protected-root pass case. The deterministic Contract-v3 set
+  check passed.
 
 Not tested yet:
 
