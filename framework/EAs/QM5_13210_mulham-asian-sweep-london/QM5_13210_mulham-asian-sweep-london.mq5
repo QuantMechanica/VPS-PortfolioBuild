@@ -1,5 +1,5 @@
 #property strict
-#property version   "5.1"
+#property version   "5.2"
 #property description "QM5_13210 Mulham Asian-range London-window wick sweep"
 
 #include <QM/QM_Common.mqh>
@@ -85,6 +85,17 @@ enum QM13210_Phase
    QM13210_DONE
   };
 
+// Source-specific day veto.  DATA_ERROR is intentionally distinct from CLEAR
+// so unavailable or incomplete calendar data can never silently authorize an
+// order.  The card's fixed ET+7 mapping makes the NY 07:00-16:00 session the
+// broker-time half-open interval [14:00, 23:00).
+enum QM13210_USDNYNewsDayResult
+  {
+   QM13210_USD_NY_DAY_DATA_ERROR = -1,
+   QM13210_USD_NY_DAY_CLEAR      = 0,
+   QM13210_USD_NY_DAY_VETO       = 1
+  };
+
 const int QM13210_M5_SECONDS        = 5 * 60;
 const int QM13210_ASIA_REQUIRED_BARS = 48;
 
@@ -114,6 +125,11 @@ bool     g_entry_ready       = false;
 double   g_entry_price       = 0.0;
 double   g_entry_sl          = 0.0;
 double   g_entry_tp          = 0.0;
+
+datetime g_usd_ny_news_cache_day_start = 0;
+bool     g_usd_ny_news_cache_valid     = false;
+QM13210_USDNYNewsDayResult g_usd_ny_news_cache_result =
+   QM13210_USD_NY_DAY_DATA_ERROR;
 
 int QM13210_MinuteOfDay(const datetime broker_time)
   {
@@ -177,6 +193,29 @@ bool QM13210_InputsValid()
            (strategy_tp_mode == QM13210_TP_OPPOSITE_BODY ||
             strategy_tp_mode == QM13210_TP_FIXED_R) &&
            strategy_fixed_rr >= 1.0 && strategy_fixed_rr <= 10.0);
+  }
+
+bool QM13210_XAUSymbolSpecValid()
+  {
+   // Build artifacts know only canonical .DWX symbols. Deploy packaging owns
+   // any exact .DWX-to-raw transformation; the EA never strips or aliases.
+   if(_Symbol != "XAUUSD.DWX")
+      return true;
+
+   double contract_size = 0.0;
+   double point = 0.0;
+   long calc_mode = -1;
+   if(!SymbolInfoDouble(_Symbol, SYMBOL_TRADE_CONTRACT_SIZE, contract_size) ||
+      !SymbolInfoDouble(_Symbol, SYMBOL_POINT, point) ||
+      !SymbolInfoInteger(_Symbol, SYMBOL_TRADE_CALC_MODE, calc_mode))
+      return false;
+
+   const string profit_currency =
+      QM_NewsUpper(QM_NewsTrim(SymbolInfoString(_Symbol, SYMBOL_CURRENCY_PROFIT)));
+   return (MathAbs(contract_size - 100.0) <= 1e-8 &&
+           MathAbs(point - 0.01) <= 1e-10 &&
+           calc_mode == (long)SYMBOL_CALC_MODE_CFD &&
+           profit_currency == "USD");
   }
 
 void QM13210_ResetForDay(const int day_key)
@@ -340,6 +379,156 @@ bool QM13210_TargetAlreadyTouched(const double high, const double low)
    return true;
   }
 
+bool QM13210_USDNYBrokerWindow(const datetime broker_time,
+                               datetime &out_broker_from,
+                               datetime &out_broker_to)
+  {
+   out_broker_from = 0;
+   out_broker_to = 0;
+   if(broker_time <= 0)
+      return false;
+
+   MqlDateTime window_tm;
+   ZeroMemory(window_tm);
+   if(!TimeToStruct(broker_time, window_tm))
+      return false;
+   window_tm.hour = 14;
+   window_tm.min = 0;
+   window_tm.sec = 0;
+   out_broker_from = StructToTime(window_tm);
+   window_tm.hour = 23;
+   out_broker_to = StructToTime(window_tm);
+   return (out_broker_from > 0 && out_broker_to > out_broker_from);
+  }
+
+QM13210_USDNYNewsDayResult QM13210_USDNYNewsDayTester(
+   const datetime broker_from,
+   const datetime broker_to)
+  {
+   // FrameworkInit owns the two-file load, binding and sort.  Never reload or
+   // substitute a strategy-private file here: tester evidence must query that
+   // exact already-loaded union.
+   if(!g_qm_news_loaded || !g_qm_news_available ||
+      !g_qm_news_events_sorted || g_qm_news_rows_loaded <= 0 ||
+      StringLen(g_qm_news_hash) == 0)
+      return QM13210_USD_NY_DAY_DATA_ERROR;
+
+   const int event_count = ArraySize(g_qm_news_events);
+   const datetime utc_from = QM_BrokerToUTC(broker_from);
+   const datetime utc_to = QM_BrokerToUTC(broker_to);
+   if(event_count <= 0 || utc_from <= 0 || utc_to <= utc_from)
+      return QM13210_USD_NY_DAY_DATA_ERROR;
+
+   // CLEAR is authoritative only when the bound union covers the complete
+   // half-open NY-session horizon.  Boundary equality is sufficient because
+   // events at broker 23:00 are outside the card's session.
+   if(g_qm_news_events[0].event_utc > utc_from ||
+      g_qm_news_events[event_count - 1].event_utc < utc_to)
+      return QM13210_USD_NY_DAY_DATA_ERROR;
+
+   const int start_index = QM_NewsLowerBoundUtc(utc_from);
+   for(int index = start_index; index < event_count; ++index)
+     {
+      const QM_NewsEvent event = g_qm_news_events[index];
+      if(event.event_utc >= utc_to)
+         break;
+      const string currency = QM_NewsUpper(QM_NewsStripQuotes(event.currency));
+      if(currency == "USD" && event.impact_upper == "HIGH")
+         return QM13210_USD_NY_DAY_VETO;
+     }
+   return QM13210_USD_NY_DAY_CLEAR;
+  }
+
+QM13210_USDNYNewsDayResult QM13210_USDNYNewsDayLive(
+   const datetime broker_from,
+   const datetime broker_to)
+  {
+   // Native Calendar timestamps are trade-server/broker time.  The deterministic
+   // CSV union is a tester-only source and is deliberately absent from this path.
+   MqlCalendarValue values[];
+   ResetLastError();
+   const int count = CalendarValueHistory(values, broker_from, broker_to - 1);
+   if(count < 0)
+      return QM13210_USD_NY_DAY_DATA_ERROR;
+   if(count == 0)
+     {
+      // An empty interval is authoritative only after a separate native probe
+      // proves the terminal actually has calendar data.
+      if(!QM_NewsLiveCalendarHealthy())
+         return QM13210_USD_NY_DAY_DATA_ERROR;
+      return QM13210_USD_NY_DAY_CLEAR;
+     }
+
+   for(int index = 0; index < count; ++index)
+     {
+      if(values[index].time < broker_from || values[index].time >= broker_to)
+         continue;
+
+      MqlCalendarEvent calendar_event;
+      if(!CalendarEventById(values[index].event_id, calendar_event))
+         return QM13210_USD_NY_DAY_DATA_ERROR;
+      if(calendar_event.importance != CALENDAR_IMPORTANCE_HIGH)
+         continue;
+
+      MqlCalendarCountry calendar_country;
+      if(!CalendarCountryById(calendar_event.country_id, calendar_country))
+         return QM13210_USD_NY_DAY_DATA_ERROR;
+      if(QM_NewsUpper(QM_NewsTrim(calendar_country.currency)) == "USD")
+         return QM13210_USD_NY_DAY_VETO;
+     }
+   return QM13210_USD_NY_DAY_CLEAR;
+  }
+
+QM13210_USDNYNewsDayResult QM13210_USDNYNewsDayStatus(
+   const datetime broker_time)
+  {
+   datetime broker_from = 0;
+   datetime broker_to = 0;
+   if(!QM13210_USDNYBrokerWindow(broker_time, broker_from, broker_to))
+      return QM13210_USD_NY_DAY_DATA_ERROR;
+
+   const bool tester = (MQLInfoInteger(MQL_TESTER) != 0);
+   if(g_usd_ny_news_cache_valid &&
+      g_usd_ny_news_cache_day_start == broker_from)
+     {
+      // Tester input is immutable for the run. Live VETO is irreversible for
+      // that broker day. No other live result is ever cached.
+      if(tester || g_usd_ny_news_cache_result == QM13210_USD_NY_DAY_VETO)
+         return g_usd_ny_news_cache_result;
+     }
+
+   const QM13210_USDNYNewsDayResult result = tester
+      ? QM13210_USDNYNewsDayTester(broker_from, broker_to)
+      : QM13210_USDNYNewsDayLive(broker_from, broker_to);
+
+   // A live CLEAR must be fresh at every call: in particular immediately
+   // before OrderSend and on every tick while a server-side limit is pending.
+   // DATA_ERROR also stays uncached so recovery can be observed without ever
+   // authorizing a trade. Only immutable tester results and live VETO persist.
+   if(tester || result == QM13210_USD_NY_DAY_VETO)
+     {
+      g_usd_ny_news_cache_day_start = broker_from;
+      g_usd_ny_news_cache_result = result;
+      g_usd_ny_news_cache_valid = true;
+     }
+   else
+     {
+      g_usd_ny_news_cache_day_start = 0;
+      g_usd_ny_news_cache_result = QM13210_USD_NY_DAY_DATA_ERROR;
+      g_usd_ny_news_cache_valid = false;
+     }
+
+   if(result == QM13210_USD_NY_DAY_DATA_ERROR)
+      QM_NewsLogSetupMissing("qm13210_usd_ny_news_day_data_error");
+   return result;
+  }
+
+bool QM13210_USDNYNewsDayAllows(const datetime broker_time)
+  {
+   return (QM13210_USDNYNewsDayStatus(broker_time) ==
+           QM13210_USD_NY_DAY_CLEAR);
+  }
+
 bool QM13210_NewsAllowsEntryNow(const datetime broker_time)
   {
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF ||
@@ -466,6 +655,14 @@ void QM13210_AdvanceStateOnNewBar()
       QM13210_ResetForDay(day_key);
    if(day_key != g_session_day_key)
       return;
+
+   // The source veto owns the entire London setup, not merely the instant of
+   // submission.  VETO and DATA_ERROR both consume the day fail-closed.
+   if(!QM13210_USDNYNewsDayAllows(bar_open))
+     {
+      QM13210_MarkSetupDone();
+      return;
+     }
 
    QM13210_UpdateLastSwings();
 
@@ -689,6 +886,8 @@ bool Strategy_NoTradeFilter()
       return true;
    if(_Symbol != "EURUSD.DWX" && _Symbol != "XAUUSD.DWX")
       return true;
+   if(!QM13210_XAUSymbolSpecValid())
+      return true;
    return false;
   }
 
@@ -710,6 +909,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const datetime broker_now = TimeCurrent();
    if(QM13210_DayKey(broker_now) != g_session_day_key)
       return false;
+   if(!QM13210_USDNYNewsDayAllows(broker_now))
+     {
+      QM13210_MarkSetupDone();
+      return false;
+     }
    const int minute = QM13210_MinuteOfDay(broker_now);
     const int cancel_time = QM13210_ConfigMinute(strategy_entry_cancel_hour, strategy_entry_cancel_minute);
     if(minute >= cancel_time)
@@ -788,6 +992,12 @@ void Strategy_ManageOpenPosition()
      }
 
    const datetime broker_now = TimeCurrent();
+   if(!QM13210_USDNYNewsDayAllows(broker_now))
+     {
+      QM13210_RemoveOwnedPendingOrders("asian_sweep_usd_ny_news_day_cancel");
+      QM13210_MarkSetupDone();
+      return;
+     }
    const int minute = QM13210_MinuteOfDay(broker_now);
    const int cancel_time = QM13210_ConfigMinute(strategy_entry_cancel_hour, strategy_entry_cancel_minute);
    if(minute >= cancel_time)
@@ -839,10 +1049,9 @@ bool Strategy_ExitSignal()
 
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   // Reserved strategy-specific veto. The authoritative framework news query
-   // is invoked only on the entry/cancellation paths, never around state
-   // advancement.
-   return false;
+   // Source rule: no London setup/entry on a broker day with a HIGH-impact USD
+   // event in the fixed broker 14:00-23:00 New-York-session mapping.
+   return !QM13210_USDNYNewsDayAllows(broker_time);
   }
 
 // -----------------------------------------------------------------------------
@@ -855,6 +1064,12 @@ int OnInit()
      {
       Print("QM5_13210 invalid strategy inputs");
       return INIT_PARAMETERS_INCORRECT;
+     }
+   if((_Symbol != "EURUSD.DWX" && _Symbol != "XAUUSD.DWX") ||
+      !QM13210_XAUSymbolSpecValid())
+     {
+      Print("QM5_13210 runtime symbol route/spec contract invalid");
+      return INIT_FAILED;
      }
 
    if(!QM_FrameworkInit(qm_ea_id,
@@ -875,7 +1090,7 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_13210_mulham-asian-sweep-london\",\"version\":\"5.1\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_13210_mulham-asian-sweep-london\",\"version\":\"5.2\"}");
    return INIT_SUCCEEDED;
   }
 
@@ -915,8 +1130,9 @@ void OnTick()
    if(!QM_IsNewBar())
       return;
 
-   // Structural state always consumes each closed M5 bar, including bars in a
-   // news blackout. News gates only the later order-submission path.
+   // Ordinary framework blackout windows do not distort structural state. The
+   // source's USD/NY news-day rule is different: AdvanceState consumes that
+   // entire London setup day fail-closed before recording/confirmation.
    QM13210_AdvanceStateOnNewBar();
    QM_EquityStreamOnNewBar();
 

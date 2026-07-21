@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        13210
 ; ea_slug:      mulham-asian-sweep-london
@@ -10,7 +10,7 @@
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   d98b7af44bbf0ecf335841a353c8ea00e4b7661554d4879989e8e51d0f875181
+; build_hash:   fb7e49389f9cd5fe6fc300ed1fbdbcf44cc3d80b0d978e65c7d0800e89f5fb05
 ; author:       Development
 ; date:         2026-07-20
 ;==========================================================

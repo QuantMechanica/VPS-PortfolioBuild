@@ -133,6 +133,117 @@ class QM13210SourceContractTests(unittest.TestCase):
         self.assertIn("QM13210_NewsAllowsEntryNow(broker_now)", manage)
         self.assertIn("asian_sweep_news_cancel", manage)
 
+    def test_source_usd_ny_news_day_veto_is_exact_and_fail_closed(self) -> None:
+        window = function_body(EA, "QM13210_USDNYBrokerWindow")
+        tester = function_body(EA, "QM13210_USDNYNewsDayTester")
+        live = function_body(EA, "QM13210_USDNYNewsDayLive")
+        status = function_body(EA, "QM13210_USDNYNewsDayStatus")
+
+        self.assertIn("QM13210_USD_NY_DAY_DATA_ERROR = -1", EA)
+        self.assertIn("QM13210_USD_NY_DAY_CLEAR      = 0", EA)
+        self.assertIn("QM13210_USD_NY_DAY_VETO       = 1", EA)
+        self.assertIn("window_tm.hour = 14", window)
+        self.assertIn("window_tm.hour = 23", window)
+
+        # Tester path is the already loaded/sorted/hash-bound framework union.
+        self.assertIn("g_qm_news_loaded", tester)
+        self.assertIn("g_qm_news_available", tester)
+        self.assertIn("g_qm_news_events_sorted", tester)
+        self.assertIn("g_qm_news_rows_loaded", tester)
+        self.assertIn("g_qm_news_hash", tester)
+        self.assertNotIn("QM_NewsInit", tester)
+        self.assertNotIn("QM_NewsBuildUtcIndex", tester)
+        self.assertIn("g_qm_news_events[0].event_utc > utc_from", tester)
+        self.assertIn(
+            "g_qm_news_events[event_count - 1].event_utc < utc_to", tester
+        )
+        self.assertIn("QM_NewsLowerBoundUtc(utc_from)", tester)
+        self.assertIn("event.event_utc >= utc_to", tester)
+        self.assertIn('currency == "USD"', tester)
+        self.assertIn('event.impact_upper == "HIGH"', tester)
+
+        # Live path has no tester/CSV source and fails closed on incomplete API data.
+        self.assertIn("CalendarValueHistory", live)
+        self.assertIn("broker_to - 1", live)
+        self.assertIn("QM_NewsLiveCalendarHealthy", live)
+        self.assertIn("CalendarEventById", live)
+        self.assertIn("CalendarCountryById", live)
+        self.assertIn("CALENDAR_IMPORTANCE_HIGH", live)
+        self.assertIn('== "USD"', live)
+        self.assertNotIn("g_qm_news_events", live)
+        self.assertNotIn("QM_NewsInit", live)
+
+        # Cache is keyed by broker day, but only immutable tester results and a
+        # live VETO persist. Live CLEAR/DATA_ERROR must execute a native query again.
+        self.assertIn("MQLInfoInteger(MQL_TESTER)", status)
+        self.assertIn("g_usd_ny_news_cache_day_start == broker_from", status)
+        self.assertIn("tester ||", status)
+        self.assertIn("QM13210_USD_NY_DAY_VETO", status)
+        self.assertNotIn("ttl_seconds", status)
+        self.assertNotIn("g_usd_ny_news_cache_checked", EA)
+        self.assertIn(
+            "if(tester || result == QM13210_USD_NY_DAY_VETO)", status
+        )
+        self.assertIn("g_usd_ny_news_cache_valid = false", status)
+        self.assertIn("QM13210_USDNYNewsDayTester", status)
+        self.assertIn("QM13210_USDNYNewsDayLive", status)
+
+    def test_source_news_day_veto_precedes_setup_entry_and_pending_fill(self) -> None:
+        advance = function_body(EA, "QM13210_AdvanceStateOnNewBar")
+        entry = function_body(EA, "Strategy_EntrySignal")
+        manage = function_body(EA, "Strategy_ManageOpenPosition")
+        hook = function_body(EA, "Strategy_NewsFilterHook")
+        on_tick = function_body(EA, "OnTick")
+
+        self.assertLess(
+            advance.index("QM13210_USDNYNewsDayAllows(bar_open)"),
+            advance.index("QM13210_UpdateLastSwings();"),
+        )
+        self.assertLess(
+            entry.index("QM13210_USDNYNewsDayAllows(broker_now)"),
+            entry.index("QM13210_ComputeEntryDeadline"),
+        )
+        self.assertLess(
+            manage.index("QM13210_USDNYNewsDayAllows(broker_now)"),
+            manage.index("QM13210_NewsAllowsEntryNow(broker_now)"),
+        )
+        self.assertIn("asian_sweep_usd_ny_news_day_cancel", manage)
+        self.assertIn("!QM13210_USDNYNewsDayAllows(broker_time)", hook)
+        self.assertLess(
+            on_tick.index("Strategy_NewsFilterHook(broker_now)"),
+            on_tick.index("QM_TM_OpenPosition(req, out_ticket)"),
+        )
+        self.assertNotIn("QM_NewsDayHasEvent", EA)
+        self.assertNotIn("QM_NEWS_TEMPORAL_SKIP_DAY", EA)
+
+    def test_build_stays_dwx_only_and_xau_contract_is_fail_closed(self) -> None:
+        contract = function_body(EA, "QM13210_XAUSymbolSpecValid")
+        no_trade = function_body(EA, "Strategy_NoTradeFilter")
+        on_init = function_body(EA, "OnInit")
+
+        self.assertIn('_Symbol != "XAUUSD.DWX"', contract)
+        self.assertIn("SYMBOL_TRADE_CONTRACT_SIZE", contract)
+        self.assertIn("contract_size - 100.0", contract)
+        self.assertIn("SYMBOL_POINT", contract)
+        self.assertIn("point - 0.01", contract)
+        self.assertIn("SYMBOL_TRADE_CALC_MODE", contract)
+        self.assertIn("SYMBOL_CALC_MODE_CFD", contract)
+        self.assertIn("SYMBOL_CURRENCY_PROFIT", contract)
+        self.assertIn('profit_currency == "USD"', contract)
+
+        self.assertIn('_Symbol != "EURUSD.DWX" && _Symbol != "XAUUSD.DWX"', no_trade)
+        self.assertIn("!QM13210_XAUSymbolSpecValid()", no_trade)
+        self.assertLess(
+            on_init.index("QM13210_XAUSymbolSpecValid()"),
+            on_init.index("QM_FrameworkInit"),
+        )
+        self.assertNotIn('"EURUSD"', EA)
+        self.assertNotIn('"XAUUSD"', EA)
+        self.assertNotIn("ACCOUNT_LOGIN", EA)
+        self.assertNotIn("ACCOUNT_SERVER", EA)
+        self.assertNotIn("StringReplace", EA)
+        self.assertNotIn("StringSubstr", EA)
+
     def test_both_backtest_sets_bind_the_news_axes_explicitly(self) -> None:
         self.assertEqual(len(SETS), 2)
         for set_path in SETS:

@@ -4,7 +4,7 @@
 **Slug:** `mulham-asian-sweep-london`
 **Source:** `YT-MULHAM-2026-07`
 **Author of this spec:** Codex
-**Last revised:** 2026-07-20
+**Last revised:** 2026-07-21
 
 ---
 
@@ -30,6 +30,13 @@ State advances on every closed bar even during a blackout; only order submission
 is gated. A pending limit expires at the first authoritative future blackout
 boundary (or 12:00, whichever comes first) and is also removed fail-closed when
 a fresh per-tick news check blocks or loses calendar authority.
+
+Separately, the approved source vetoes the whole London setup on any broker day
+containing a HIGH-impact USD event during the codified New-York session. Under
+the card's fixed ET+7 mapping, 07:00 <= ET < 16:00 is queried as the half-open
+broker interval 14:00 <= time < 23:00. A vetoed day never records or advances a
+London setup, never submits an entry, and cancels any owned pending limit. An
+unavailable or incomplete calendar has the same fail-closed effect.
 
 ---
 
@@ -72,8 +79,20 @@ bars). Invalid individual ranges or cross-window combinations fail at init.
 
 **Explicitly NOT for:**
 
-- Non-`.DWX` symbols — they are outside the canonical Darwinex test universe.
+- Non-`.DWX` research/backtest symbols — they are outside the canonical
+  Darwinex test universe.
 - Symbols other than the two card targets — no source-backed portability claim was approved.
+
+Build-time routing is exact and `.DWX`-only: `EURUSD.DWX` uses slot 0 and
+`XAUUSD.DWX` uses slot 1. The EA never strips `.DWX`, embeds raw broker aliases,
+or performs fuzzy symbol matching. Exact logical-to-raw transformation belongs
+exclusively to the later deploy-packaging workflow.
+
+`XAUUSD.DWX` additionally fails initialization and all later no-trade checks
+unless the runtime custom symbol exposes contract size `100`, point `0.01`,
+calculation mode `SYMBOL_CALC_MODE_CFD`, and profit currency `USD`. Deploy
+packaging must preserve this logical contract when it later transforms the
+exact symbol string.
 
 ---
 
@@ -131,16 +150,25 @@ The backtest setfiles bind `RISK_FIXED=1000` and `RISK_PERCENT=0` explicitly.
 
 ---
 
-## 8. News API boundary
+## 8. News data boundary
 
-`QM_NewsNextBlockStart` is the authoritative public API for the first
+`QM_NewsNextBlockStart` remains the authoritative public API for the standard
 symbol-affecting blackout boundary through the pending-order deadline. The
-approved source also states a narrower day veto for a high-impact **USD** event
-in the later New-York window. The public framework API does not expose a
-currency-and-session predicate for that rule; the EA therefore does not invent
-an internal calendar traversal or broaden it to a different UTC-day rule. That
-source-specific veto remains an explicit API blocker; the framework's approved
-high-impact blackout and the pending-fill protections above are enforced.
+source-specific USD/NY day veto is deliberately narrower: exact currency
+`USD`, exact impact `HIGH`, and broker interval `[14:00, 23:00)` on the same
+broker day. It does not broaden into an all-day or all-currency skip.
+
+In the Strategy Tester, the veto queries the framework's already loaded,
+hash-bound, sorted union of `news_calendar_2015_2025.csv` and
+`forex_factory_calendar_clean.csv`. A clear result requires that union to cover
+both ends of the complete session horizon. It never reloads or substitutes a
+strategy-private calendar. Outside the tester, the veto reads only the native
+MQL5 Calendar API. Native query errors, missing event/country metadata, an empty
+query with an unhealthy calendar, and tester horizon gaps return a distinct
+data-error state and block the setup. Tester verdicts are cached for the broker
+day and live vetoes are cached for the day. Live clear and data-error results
+are never cached: the native interval is queried again immediately before every
+order send and on every tick while a server-side limit remains pending.
 
 ---
 
@@ -150,3 +178,4 @@ high-impact blackout and the pending-fill protections above are enforced.
 |---|---|---|---|
 | v1 | 2026-07-19 | Initial build from card | Build task `3bba09a5-e8e6-4e56-99c0-dad71c678a4e` |
 | v2 | 2026-07-20 | Outcome-blind mechanical repair | News-independent state advancement; 48-bar continuity; subsequent-bar confirmation; target/opposite-sweep invalidation; checked order-state transition; authoritative pending-news deadline/cancellation. No backtest or Q02 outcome inspected. |
+| v3 | 2026-07-21 | Complete approved source/news and XAU runtime contracts | Added deterministic tri-state HIGH-USD New-York-session day veto using broker `[14:00,23:00)`: bound-union tester path with full-horizon proof, native-only live path, no live-CLEAR cache, and fail-closed setup/entry/pending-order enforcement. Added `.DWX`-only XAU contract-size/point/calc-mode/profit-currency guard; raw aliasing remains deploy-packaging-only. |

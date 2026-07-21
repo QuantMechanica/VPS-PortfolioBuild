@@ -18,6 +18,8 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
+import re
+import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
@@ -44,7 +46,10 @@ ANALYSIS_ID = "QM5_13210_MULHAM_ASIAN_SWEEP_LONDON_XAUUSD_NATIVE_001"
 RESEARCH_SYMBOL = "XAUUSD.DWX"
 MERIT_CONTRACT_VERSION = "QM5_13210_XAUUSD_MERIT_V1_20260721"
 SYMBOL_POLICY = "XAUUSD.DWX_RESEARCH_BACKTEST_ONLY_NO_LIVE_PARITY_GATE"
-ALLOWED_RUN_ROOT = Path(
+RUN_FAMILY_ROOT = Path(r"D:\QM\reports\candidate_analysis\QM5_13210")
+RUN_NAMESPACE_ROOT = RUN_FAMILY_ROOT / "XAUUSD_MULHAM_NATIVE_001"
+ALLOWED_RUN_ROOT = RUN_NAMESPACE_ROOT / "ATTEMPT_001"
+LEGACY_RUN_ROOT = Path(
     r"D:\QM\reports\candidate_analysis\QM5_13210\XAUUSD_DWX"
 )
 SCHEDULED_TASK_PREFIX = "QM_QM13210_XAU_AUDIT_"
@@ -59,26 +64,8 @@ CONTRACT_PATH = (
     / "candidate-analysis"
     / "xauusd_outcome_fenced_analysis_contract_20260721.json"
 )
-# Filled only after the outcome-blind contract bytes exist.  This value is an
-# immutable preregistration boundary, not a runtime-generated receipt.
-EXPECTED_CONTRACT_SHA256 = (
-    "20963939b86c3150d236d5936d250495e7f7b8d9e3ebc69d20882f7aa3d7eb7c"
-)
 BUILD_RECEIPT_PATH = (
     EA_ROOT / "docs" / "candidate-analysis" / "build_receipt_20260720.json"
-)
-SLIPPAGE_CALIBRATION_PATH = (
-    REPO_ROOT / "framework" / "calibrations" / "VPS_SLIPPAGE_LATENCY_CALIBRATION_V2.json"
-)
-
-EXPECTED_BASE_TOOL_SHA256 = (
-    "dc56390ba11417db7349b369b07ae8c52aac4df48d17c94c18941dd90928c7a2"
-)
-EXPECTED_BUILD_RECEIPT_SHA256 = (
-    "a9fce2d992a04ec072a1957626d12c32640f415e32f96d236772c98e2fb7304c"
-)
-EXPECTED_XAU_SET_SHA256 = (
-    "23970e75ad7c41e682455ddb255473c9e527c2f3a404dbfd74fa8ac9fd363ac6"
 )
 
 XAU_CONTRACT_SIZE_OZ = Decimal("100")
@@ -88,6 +75,36 @@ XAU_COMMISSION_RATE_RT = Decimal("0.00005")
 XAU_REGISTRY_INDICATIVE_RT_PER_LOT_USD = Decimal("20.37")
 XAU_MERIT_SLIPPAGE_POINTS_PER_SIDE = Decimal("1")
 XAU_P95_SLIPPAGE_POINTS_PER_SIDE = Decimal("3")
+
+XAU_SYMBOL_SPEC_CONTRACT: dict[str, Any] = {
+    "research_symbol": RESEARCH_SYMBOL,
+    "live_symbol_exact_alias": "XAUUSD",
+    "trade_calc_mode": "SYMBOL_CALC_MODE_CFD",
+    "contract_size_oz_per_lot": "100",
+    "point_size_quote": "0.01",
+    "profit_currency": "USD",
+    "enforcement": "EA_ONINIT_FAIL_CLOSED_AND_ANALYSIS_CONTRACT_BOUND",
+}
+
+# This is the complete XAU-only projection used by the audit.  It is embedded
+# in the finalized analysis contract; PRE never re-reads or binds the global
+# calibration file that the Factory pump may legitimately update.
+XAU_CALIBRATION_PROJECTION: dict[str, Any] = {
+    "schema_version": 1,
+    "symbol": RESEARCH_SYMBOL,
+    "classification": "FACTORY_AUTO_STUB_PROXY_NOT_XAU_LIVE_FILL_MEASUREMENT",
+    "source_lineage": "VPS_SLIPPAGE_LATENCY_CALIBRATION_V2_XAUUSD_DWX_ROW",
+    "auto_stub": True,
+    "stub_source": "farmctl_pump_p5_calibration_autostub",
+    "slippage_points_per_side": {"merit_center": "1", "p95_stress": "3"},
+    "spread_reference_points": {"median": "20", "p95": "60"},
+    "latency_reference_ms": {"avg": "50", "p95": "120"},
+    "live_fill_measurement_claimed": False,
+}
+
+FINAL_ARTIFACT_ROLES = frozenset(
+    {"adapter", "base_tool", "build_receipt", "card", "ex5", "mq5", "set", "spec"}
+)
 
 
 MERIT_GATES: dict[str, Any] = {
@@ -160,6 +177,44 @@ _BASE_LOAD_BOUND_NEWS_EVENTS = B.load_bound_news_events
 _BASE_VALIDATE_TRADE_SEMANTICS = B.validate_trade_semantics
 
 
+def _assert_exact_run_root(path: Path) -> Path:
+    resolved = path.resolve()
+    expected = ALLOWED_RUN_ROOT.resolve()
+    if resolved != expected:
+        raise B.InvalidEvidence(
+            f"XAU run root must be the single frozen root {expected}: {resolved}"
+        )
+    return resolved
+
+
+def _assert_no_sibling_or_prior_namespace() -> None:
+    family = RUN_FAMILY_ROOT.resolve()
+    namespace = RUN_NAMESPACE_ROOT.resolve()
+    exact = ALLOWED_RUN_ROOT.resolve()
+    legacy = LEGACY_RUN_ROOT.resolve()
+    if legacy.exists():
+        raise B.InvalidEvidence(f"legacy/prior XAU run namespace exists: {legacy}")
+    if family.is_dir():
+        for child in family.iterdir():
+            if "xau" in child.name.casefold() and child.resolve() != namespace:
+                raise B.InvalidEvidence(
+                    f"sibling/prior XAU run namespace exists: {child.resolve()}"
+                )
+    if namespace.is_dir():
+        for child in namespace.iterdir():
+            if child.resolve() != exact:
+                raise B.InvalidEvidence(
+                    f"sibling/prior XAU attempt namespace exists: {child.resolve()}"
+                )
+
+
+def _assert_pristine_one_shot_namespace() -> None:
+    _assert_no_sibling_or_prior_namespace()
+    exact = ALLOWED_RUN_ROOT.resolve()
+    if exact.exists() and (not exact.is_dir() or any(exact.iterdir())):
+        raise B.InvalidEvidence(f"single frozen XAU run root is not pristine: {exact}")
+
+
 def _configure_private_profile() -> None:
     B.__doc__ = __doc__
     B.TOOL_PATH = TOOL_PATH
@@ -171,11 +226,11 @@ def _configure_private_profile() -> None:
     B.SCHEDULED_TASK_PREFIX = SCHEDULED_TASK_PREFIX
     B.LAUNCHER_REVISION = LAUNCHER_REVISION
     B.EXPECTED_BUILD_HASHES = dict(B.EXPECTED_BUILD_HASHES)
-    B.EXPECTED_BUILD_HASHES["set"] = EXPECTED_XAU_SET_SHA256
     B.REQUIRED_BINDING_ROLES = frozenset(
         set(B.REQUIRED_BINDING_ROLES)
-        | {"base_tool", "xau_contract", "slippage_calibration"}
+        | {"base_tool", "xau_contract"}
     )
+    B._assert_run_root = _assert_exact_run_root
 
 
 _configure_private_profile()
@@ -245,7 +300,6 @@ def _expected_binding_paths(symbol: str) -> dict[str, Path]:
     paths = _BASE_EXPECTED_BINDING_PATHS(symbol)
     paths["base_tool"] = BASE_TOOL_PATH
     paths["xau_contract"] = CONTRACT_PATH
-    paths["slippage_calibration"] = SLIPPAGE_CALIBRATION_PATH
     return paths
 
 
@@ -259,6 +313,7 @@ def _artifact_contract_paths() -> dict[str, Path]:
         / "sets"
         / f"{B.EXPERT_NAME}_{RESEARCH_SYMBOL}_M5_backtest.set",
         "build_receipt": BUILD_RECEIPT_PATH,
+        "adapter": TOOL_PATH,
         "base_tool": BASE_TOOL_PATH,
     }
 
@@ -284,56 +339,11 @@ def _validate_contract_artifact_bindings(
             "size": int(row["size"]),
             "sha256": str(row["sha256"]).lower(),
         }
-    expected_hashes = {
-        "card": B.EXPECTED_BUILD_HASHES["card"],
-        "spec": B.EXPECTED_BUILD_HASHES["spec"],
-        "mq5": B.EXPECTED_BUILD_HASHES["mq5"],
-        "ex5": B.EXPECTED_BUILD_HASHES["ex5"],
-        "set": EXPECTED_XAU_SET_SHA256,
-        "build_receipt": EXPECTED_BUILD_RECEIPT_SHA256,
-        "base_tool": EXPECTED_BASE_TOOL_SHA256,
-    }
-    drift = {
-        role: (wanted, result[role]["sha256"])
-        for role, wanted in expected_hashes.items()
-        if result[role]["sha256"] != wanted
-    }
-    if drift:
-        raise B.InvalidEvidence(f"XAU preregistered artifact hash drift: {drift}")
     return result
 
 
-def validate_analysis_contract(path: Path = CONTRACT_PATH) -> dict[str, Any]:
-    binding = B.file_binding(path, EXPECTED_CONTRACT_SHA256)
-    payload = B.load_json(path)
-    expected_fields = {
-        "schema_version",
-        "artifact_type",
-        "status",
-        "created_utc",
-        "analysis_id",
-        "candidate",
-        "lane_and_data",
-        "windows",
-        "artifact_bindings",
-        "execution_cost_contract",
-        "merit_contract",
-        "outcome_fence",
-    }
-    if set(payload) != expected_fields:
-        raise B.InvalidEvidence("XAU analysis-contract field closure drift")
-    if (
-        payload.get("schema_version") != 1
-        or payload.get("artifact_type")
-        != "QM5_13210_XAUUSD_OUTCOME_BLIND_ANALYSIS_CONTRACT"
-        or payload.get("status") != "PREREGISTERED_OUTCOME_BLIND"
-        or payload.get("analysis_id") != ANALYSIS_ID
-    ):
-        raise B.InvalidEvidence("XAU analysis-contract identity/status drift")
-    created = B.parse_utc(str(payload.get("created_utc", "")), "XAU contract created_utc")
-    if created > datetime.now(timezone.utc) + timedelta(minutes=5):
-        raise B.InvalidEvidence("XAU contract creation time is implausibly in the future")
-    if payload.get("candidate") != {
+def _candidate_contract() -> dict[str, Any]:
+    return {
         "ea_id": "QM5_13210",
         "strategy": "mulham-asian-sweep-london",
         "symbol": RESEARCH_SYMBOL,
@@ -342,19 +352,23 @@ def validate_analysis_contract(path: Path = CONTRACT_PATH) -> dict[str, Any]:
         "duplicates_per_cell": 2,
         "parameter_tuning_forbidden": True,
         "separate_from_eurusd_outcome_namespace": True,
-    }:
-        raise B.InvalidEvidence("XAU candidate identity drift")
-    if payload.get("lane_and_data") != {
+    }
+
+
+def _lane_contract() -> dict[str, Any]:
+    return {
         "terminal": "T1",
         "research_store": "T1_CUSTOM_SYMBOL_STORE",
         "namespace": ".DWX_RESEARCH_BACKTEST",
-        "live_suffix_policy": "NOT_EVALUATED_IN_CANDIDATE_ANALYSIS",
+        "live_suffix_policy": "EXACT_ALIAS_XAUUSD_ONLY_NOT_EVALUATED_HERE",
         "live_parity_required": False,
         "deployment_routing_evaluated": False,
         "model4_real_ticks_required": True,
-    }:
-        raise B.InvalidEvidence("XAU T1/data contract drift")
-    expected_windows = [
+    }
+
+
+def _window_contract() -> list[dict[str, Any]]:
+    return [
         {
             "cell_id": window.cell_id,
             "cohort": window.cohort,
@@ -363,25 +377,194 @@ def validate_analysis_contract(path: Path = CONTRACT_PATH) -> dict[str, Any]:
         }
         for window in B.WINDOWS
     ]
-    if payload.get("windows") != expected_windows:
-        raise B.InvalidEvidence("XAU DEV/OOS window drift")
-    artifacts = _validate_contract_artifact_bindings(payload.get("artifact_bindings"))
-    if payload.get("execution_cost_contract") != MERIT_GATES["execution_cost_axes"]:
-        raise B.InvalidEvidence("XAU execution-cost contract drift")
-    if payload.get("merit_contract") != MERIT_GATES:
-        raise B.InvalidEvidence("XAU merit contract drift")
-    if payload.get("outcome_fence") != {
+
+
+def _run_namespace_contract() -> dict[str, Any]:
+    return {
+        "family_root": str(RUN_FAMILY_ROOT.resolve()),
+        "namespace_root": str(RUN_NAMESPACE_ROOT.resolve()),
+        "single_run_root": str(ALLOWED_RUN_ROOT.resolve()),
+        "legacy_root_forbidden": str(LEGACY_RUN_ROOT.resolve()),
+        "attempt_id": "ATTEMPT_001",
+        "sibling_attempts_forbidden": True,
+        "prior_xau_namespaces_forbidden": True,
+        "resume_forbidden": True,
+    }
+
+
+def _outcome_fence_contract() -> dict[str, bool]:
+    return {
         "eurusd_native_outcomes_read_to_select_xau": False,
         "xau_native_reports_opened": False,
         "xau_deal_rows_parsed": False,
         "mt5_terminal_started": False,
         "metatester_started": False,
-    }:
-        raise B.InvalidEvidence("XAU preregistration outcome fence drift")
+    }
+
+
+def _draft_contract_payload() -> dict[str, Any]:
+    return {
+        "schema_version": 2,
+        "artifact_type": "QM5_13210_XAUUSD_OUTCOME_BLIND_ANALYSIS_CONTRACT",
+        "status": "DRAFT_PENDING_SOURCE_AND_ADAPTER_FREEZE",
+        "analysis_id": ANALYSIS_ID,
+        "candidate": _candidate_contract(),
+        "lane_and_data": _lane_contract(),
+        "windows": _window_contract(),
+        "run_namespace": _run_namespace_contract(),
+        "symbol_spec_contract": XAU_SYMBOL_SPEC_CONTRACT,
+        "xau_calibration_projection": XAU_CALIBRATION_PROJECTION,
+        "execution_cost_contract": MERIT_GATES["execution_cost_axes"],
+        "merit_contract": MERIT_GATES,
+        "outcome_fence": _outcome_fence_contract(),
+        "finalization": {
+            "required_command": (
+                "audit_mulham_asian_sweep_london_xau.py finalize-contract "
+                "--source-commit <40_HEX_BUILD_COMMIT>"
+            ),
+            "requires_committed_clean_adapter": True,
+            "requires_committed_clean_source_artifacts": True,
+            "requires_pristine_one_shot_namespace": True,
+            "final_contract_must_bind_roles": sorted(FINAL_ARTIFACT_ROLES),
+            "pre_and_launch_forbidden_until_status": "FINALIZED_OUTCOME_BLIND",
+        },
+    }
+
+
+def validate_draft_contract(path: Path = CONTRACT_PATH) -> dict[str, Any]:
+    payload = B.load_json(path)
+    if payload != _draft_contract_payload():
+        raise B.InvalidEvidence("XAU draft contract semantic closure drift")
+    return payload
+
+
+def _validate_bound_build_receipt(
+    artifacts: Mapping[str, Mapping[str, Any]], source_commit: str
+) -> dict[str, Any]:
+    receipt = B.load_json(Path(str(artifacts["build_receipt"]["path"])))
+    if (
+        receipt.get("artifact_type") != "QM5_13210_BUILD_RECEIPT"
+        or receipt.get("schema_version") != 1
+        or receipt.get("ea_id") != "QM5_13210"
+        or receipt.get("build_check_passed") is not True
+        or receipt.get("compile_succeeded") is not True
+        or receipt.get("compile_errors") != 0
+        or receipt.get("compile_warnings") != 0
+        or receipt.get("build_commit") != source_commit
+    ):
+        raise B.InvalidEvidence("XAU bound build receipt is not the exact clean source build")
+    expected = {
+        "source_sha256": artifacts["mq5"]["sha256"],
+        "ex5_sha256": artifacts["ex5"]["sha256"],
+        "spec_sha256": artifacts["spec"]["sha256"],
+        "card_sha256": artifacts["card"]["sha256"],
+    }
+    if any(str(receipt.get(key, "")).lower() != value for key, value in expected.items()):
+        raise B.InvalidEvidence("XAU build receipt artifact hashes drift from final contract")
+    set_hashes = receipt.get("setfile_sha256")
+    if (
+        not isinstance(set_hashes, Mapping)
+        or str(set_hashes.get(RESEARCH_SYMBOL, "")).lower()
+        != artifacts["set"]["sha256"]
+    ):
+        raise B.InvalidEvidence("XAU build receipt set hash drifts from final contract")
+    compile_evidence = receipt.get("compile_evidence")
+    if not isinstance(compile_evidence, Mapping) or not compile_evidence:
+        raise B.InvalidEvidence("XAU build receipt compile evidence is missing")
+    for role, row in compile_evidence.items():
+        if not isinstance(row, Mapping):
+            raise B.InvalidEvidence(f"XAU compile evidence malformed: {role}")
+        B.assert_binding(row, f"XAU finalized compile evidence {role}")
+    return receipt
+
+
+def _activate_finalized_contract(contract: Mapping[str, Any]) -> None:
+    artifacts = contract["artifact_bindings"]
+    receipt = _validate_bound_build_receipt(
+        artifacts, str(contract["source_build_commit"])
+    )
+    B.EXPECTED_BUILD_HASHES = {
+        role: str(artifacts[role]["sha256"])
+        for role in ("card", "spec", "mq5", "ex5", "set")
+    }
+    B.EXPECTED_BUILD_COMMIT = str(contract["source_build_commit"])
+    B.EXPECTED_COMPILE_EVIDENCE = {
+        role: {
+            "path": Path(str(row["path"])).resolve(),
+            "size": int(row["size"]),
+            "sha256": str(row["sha256"]).lower(),
+        }
+        for role, row in receipt["compile_evidence"].items()
+    }
+
+
+def validate_analysis_contract(path: Path = CONTRACT_PATH) -> dict[str, Any]:
+    binding = B.file_binding(path)
+    payload = B.load_json(path)
+    expected_fields = {
+        "schema_version",
+        "artifact_type",
+        "status",
+        "finalized_utc",
+        "analysis_id",
+        "source_build_commit",
+        "candidate",
+        "lane_and_data",
+        "windows",
+        "run_namespace",
+        "symbol_spec_contract",
+        "xau_calibration_projection",
+        "artifact_bindings",
+        "execution_cost_contract",
+        "merit_contract",
+        "outcome_fence",
+    }
+    if set(payload) != expected_fields:
+        raise B.InvalidEvidence("XAU analysis-contract field closure drift; finalize required")
+    if (
+        payload.get("schema_version") != 2
+        or payload.get("artifact_type")
+        != "QM5_13210_XAUUSD_OUTCOME_BLIND_ANALYSIS_CONTRACT"
+        or payload.get("status") != "FINALIZED_OUTCOME_BLIND"
+        or payload.get("analysis_id") != ANALYSIS_ID
+    ):
+        raise B.InvalidEvidence("XAU analysis contract is not finalized; PRE is forbidden")
+    finalized = B.parse_utc(
+        str(payload.get("finalized_utc", "")), "XAU contract finalized_utc"
+    )
+    if finalized > datetime.now(timezone.utc) + timedelta(minutes=5):
+        raise B.InvalidEvidence("XAU contract finalization time is implausibly in the future")
+    source_commit = str(payload.get("source_build_commit", ""))
+    if not re.fullmatch(r"[0-9a-f]{40}", source_commit):
+        raise B.InvalidEvidence("XAU source-build commit must be lowercase full SHA-1")
+    semantic_expected = {
+        "candidate": _candidate_contract(),
+        "lane_and_data": _lane_contract(),
+        "windows": _window_contract(),
+        "run_namespace": _run_namespace_contract(),
+        "symbol_spec_contract": XAU_SYMBOL_SPEC_CONTRACT,
+        "xau_calibration_projection": XAU_CALIBRATION_PROJECTION,
+        "execution_cost_contract": MERIT_GATES["execution_cost_axes"],
+        "merit_contract": MERIT_GATES,
+        "outcome_fence": _outcome_fence_contract(),
+    }
+    drift = {
+        key: (wanted, payload.get(key))
+        for key, wanted in semantic_expected.items()
+        if payload.get(key) != wanted
+    }
+    if drift:
+        raise B.InvalidEvidence(f"XAU finalized contract semantic drift: {sorted(drift)}")
+    artifacts = _validate_contract_artifact_bindings(payload.get("artifact_bindings"))
+    _validate_bound_build_receipt(artifacts, source_commit)
+    _activate_finalized_contract({**payload, "artifact_bindings": artifacts})
     return {
         "binding": binding,
         "payload_sha256": B.canonical_sha256(payload),
+        "source_build_commit": source_commit,
         "artifact_bindings": artifacts,
+        "symbol_spec_contract": payload["symbol_spec_contract"],
+        "xau_calibration_projection": payload["xau_calibration_projection"],
         "execution_cost_contract": payload["execution_cost_contract"],
         "merit_contract": payload["merit_contract"],
     }
@@ -481,9 +664,7 @@ def resolve_cost_schedule(
         != Decimal("0")
     ):
         raise B.InvalidEvidence("XAU live-commission commodity closure drift")
-    proxy = _load_slippage_proxy(
-        (slippage_calibration_path or SLIPPAGE_CALIBRATION_PATH).resolve()
-    )
+    proxy = _load_slippage_proxy(slippage_calibration_path)
     return {
         "symbol": RESEARCH_SYMBOL,
         "currency": "USD",
