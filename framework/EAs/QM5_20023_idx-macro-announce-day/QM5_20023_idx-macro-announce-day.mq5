@@ -53,7 +53,7 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input string strategy_event_whitelist   = "NFP|CPI|PPI|FOMC";
+input string strategy_event_whitelist   = "NFP,CPI,PPI,FOMC";
 input int    strategy_atr_period         = 20;
 input double strategy_atr_sl_mult        = 2.75;
 input string strategy_entry_bar          = "first_h1_of_event_day";
@@ -61,7 +61,11 @@ input string strategy_exit_bar           = "last_h1_of_event_day";
 input int    strategy_max_spread_points  = 2500;
 
 const string STRATEGY_CALENDAR_PATH =
-   "D:\\QM\\data\\news_calendar\\news_calendar_2015_2025.csv";
+   "QM5_20023_announcement_calendar_20150101_20250404.csv";
+const string STRATEGY_CALENDAR_SHA256 =
+   "411ae4af3dbe261e373705660e28b81e7c5dfc7398f38516e07effff71cd73af";
+const int STRATEGY_CALENDAR_EXPECTED_ROWS = 451;
+const int STRATEGY_CALENDAR_EXPECTED_EVENT_DAYS = 439;
 const int STRATEGY_LAST_H1_HOUR_BROKER = 23;
 
 int    g_strategy_event_day_keys[];
@@ -188,19 +192,25 @@ bool Strategy_LoadTesterCalendar()
 
    FileClose(handle);
    g_strategy_calendar_available =
-      (parsed_rows > 0 &&
+      (parsed_rows == STRATEGY_CALENDAR_EXPECTED_ROWS &&
        g_strategy_calendar_first_day_key > 0 &&
        g_strategy_calendar_last_day_key >= g_strategy_calendar_first_day_key &&
-       ArraySize(g_strategy_event_day_keys) > 0);
+       ArraySize(g_strategy_event_day_keys) == STRATEGY_CALENDAR_EXPECTED_EVENT_DAYS);
    if(!g_strategy_calendar_available)
      {
       QM_LogEvent(QM_ERROR, SETUP_DATA_MISSING,
-                  "{\"component\":\"announcement_calendar\",\"reason\":\"no_whitelisted_rows\"}");
+                  StringFormat("{\"component\":\"announcement_calendar\",\"reason\":\"calendar_contract_mismatch\",\"rows\":%d,\"expected_rows\":%d,\"event_days\":%d,\"expected_event_days\":%d}",
+                               parsed_rows,
+                               STRATEGY_CALENDAR_EXPECTED_ROWS,
+                               ArraySize(g_strategy_event_day_keys),
+                               STRATEGY_CALENDAR_EXPECTED_EVENT_DAYS));
       return false;
      }
 
    QM_LogEvent(QM_INFO, "ANNOUNCEMENT_CALENDAR_LOADED",
-               StringFormat("{\"rows\":%d,\"event_days\":%d,\"first_day\":%d,\"last_day\":%d}",
+               StringFormat("{\"file\":\"%s\",\"pinned_sha256\":\"%s\",\"rows\":%d,\"event_days\":%d,\"first_day\":%d,\"last_day\":%d}",
+                            calendar_base,
+                            STRATEGY_CALENDAR_SHA256,
                             parsed_rows,
                             ArraySize(g_strategy_event_day_keys),
                             g_strategy_calendar_first_day_key,
@@ -418,7 +428,7 @@ bool Strategy_NoTradeFilter()
       return true;
    if(!qm_friday_close_enabled || qm_friday_close_hour_broker != 21)
       return true;
-   if(strategy_event_whitelist != "NFP|CPI|PPI|FOMC" ||
+   if(strategy_event_whitelist != "NFP,CPI,PPI,FOMC" ||
       strategy_atr_period != 20 ||
       MathAbs(strategy_atr_sl_mult - 2.75) > 1.0e-12 ||
       strategy_entry_bar != "first_h1_of_event_day" ||

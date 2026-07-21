@@ -4,7 +4,7 @@
 **Slug:** `idx-macro-announce-day`
 **Source:** `SAVOR-WILSON-ANNDAY-2013`
 **Author of this spec:** Codex
-**Last revised:** 2026-07-21
+**Last revised:** 2026-07-21 (Wave-2 calendar rebuild)
 
 ---
 
@@ -23,7 +23,7 @@ guard, and permits only one attempted package per event day and symbol.
 
 | Parameter | Default | Range | Meaning |
 |---|---:|---|---|
-| `strategy_event_whitelist` | `NFP\|CPI\|PPI\|FOMC` | locked | Fixed ex-ante event families; the implementation uses the card's exact event-title set. |
+| `strategy_event_whitelist` | `NFP,CPI,PPI,FOMC` | locked | Fixed ex-ante event families; comma serialization preserves the complete value in MT5 tester presets. |
 | `strategy_atr_period` | `20` | locked | Completed D1 ATR period used for the initial hard stop. |
 | `strategy_atr_sl_mult` | `2.75` | locked | Multiplier applied to the completed D1 ATR value. |
 | `strategy_entry_bar` | `first_h1_of_event_day` | locked | Enter only after the event day's first H1 bar has completed. |
@@ -105,3 +105,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-21 | Initial build from card | `d5037fee-7ed7-4327-a314-1919b5a1b017` |
+| v2 | 2026-07-21 | Wave-2 diagnosis rebuild | Pipe-free locked whitelist plus strategy-scoped, source-proven announcement calendar. |

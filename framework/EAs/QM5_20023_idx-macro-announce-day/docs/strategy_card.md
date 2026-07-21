@@ -142,7 +142,8 @@ re-enter the same broker day.
 
 ## 8. Locked parameters and risk
 
-`strategy_event_whitelist=NFP|CPI|PPI|FOMC` (title match set, fixed ex ante),
+`strategy_event_whitelist=NFP,CPI,PPI,FOMC` (title match set, fixed ex ante;
+comma-delimited for lossless MT5 tester serialization),
 `strategy_atr_period=20`, `strategy_atr_sl_mult=2.75`,
 `strategy_entry_bar=first_h1_of_event_day`,
 `strategy_exit_bar=last_h1_of_event_day`, `strategy_max_spread_points=2500`.
