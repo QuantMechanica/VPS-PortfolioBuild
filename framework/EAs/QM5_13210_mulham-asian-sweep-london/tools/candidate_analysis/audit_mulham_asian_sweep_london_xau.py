@@ -220,6 +220,36 @@ MERIT_GATES: dict[str, Any] = {
     },
 }
 
+ATTEMPT_002_COST_SCHEDULE: dict[str, Any] = {
+    "symbol": RESEARCH_SYMBOL,
+    "currency": "USD",
+    "spread": "EMBEDDED_IN_BOUND_XAUUSD_DWX_REAL_TICKS",
+    "swap": "REQUIRED_ZERO_BY_INTRADAY_FLAT_INVARIANT",
+    "dxz_pct_notional_rt": "0.00005",
+    "ftmo_pct_notional_rt": "0.00005",
+    "ftmo_rt_per_lot_usd": "0",
+    "contract_size_base_per_lot": "100",
+    "contract_size_unit": "TROY_OUNCE",
+    "registry_indicative_rt_per_lot_usd_at_4074": "20.37",
+    "point_size_quote": "0.01",
+    "point_value_usd_per_lot_per_side": "1",
+    "merit_slippage_points_per_side": "1",
+    "p95_slippage_points_per_side": "3",
+    "slippage_proxy": {
+        "classification": "FACTORY_AUTO_STUB_PROXY_NOT_XAU_LIVE_FILL_MEASUREMENT",
+        "projection_sha256": (
+            "712234f2a5f3d144433bbd443e63b9df2dc7442d3800e2a630a4fed625d9b193"
+        ),
+        "points_axis_per_side": ["1", "3"],
+        "spread_reference_points": {"median": "20", "p95": "60"},
+        "latency_reference_ms": {"avg": "50", "p95": "120"},
+    },
+    "application": (
+        "XAU_0.005PCT_NOTIONAL_RT_PLUS_BLOCKING_PER_SIDE_SLIPPAGE_"
+        "ROUNDED_TO_CENT_PER_TRADE"
+    ),
+}
+
 
 _BASE_EXPECTED_BINDING_PATHS = B._expected_binding_paths
 _BASE_PREFLIGHT = B.preflight
@@ -229,6 +259,9 @@ _BASE_RECONSTRUCT_TRADES = B._reconstruct_trades
 _BASE_EVALUATE_MERIT = B.evaluate_merit
 _BASE_LOAD_BOUND_NEWS_EVENTS = B.load_bound_news_events
 _BASE_VALIDATE_TRADE_SEMANTICS = B.validate_trade_semantics
+_BASE_LAUNCH_PERSISTENT_TASK = B.launch_persistent_task
+_BASE_POSTFLIGHT = B.postflight
+_BASE_WORKER_RUN = B._worker_run
 
 
 def _assert_exact_run_root(path: Path) -> Path:
@@ -241,7 +274,258 @@ def _assert_exact_run_root(path: Path) -> Path:
     return resolved
 
 
+def _attempt001_control_paths() -> dict[str, Path]:
+    return {
+        "pre_receipt": ATTEMPT_001_PRE_RECEIPT_PATH,
+        "authorization": ATTEMPT_001_AUTHORIZATION_PATH,
+        "launch_job": ATTEMPT_001_JOB_PATH,
+        "launch_state": ATTEMPT_001_STATE_PATH,
+    }
+
+
+def _probe_attempt001_task_absence() -> dict[str, Any]:
+    command = [
+        str(B.POWERSHELL_PATH.resolve()),
+        "-NoLogo",
+        "-NoProfile",
+        "-NonInteractive",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        str(B.SCHEDULED_TASK_HELPER_PATH.resolve()),
+        "-Operation",
+        "Probe",
+        "-TaskName",
+        ATTEMPT_001_TASK_NAME,
+        "-PythonExe",
+        str(B.PYTHON_PATH.resolve()),
+        "-ToolPath",
+        str(TOOL_PATH.resolve()),
+        "-JobPath",
+        str(ATTEMPT_001_JOB_PATH.resolve()),
+        "-RepoRoot",
+        str(REPO_ROOT.resolve()),
+        "-ExecutionLimitSeconds",
+        "241200",
+    ]
+    completed = subprocess.run(
+        command,
+        cwd=REPO_ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        timeout=30,
+    )
+    if completed.returncode != 0:
+        raise B.InvalidEvidence(
+            "ATTEMPT_001 scheduled-task absence probe failed closed"
+        )
+    payload = B._parse_last_json(completed.stdout)
+    expected = {
+        "operation": "Probe",
+        "exists": False,
+        "task_name": ATTEMPT_001_TASK_NAME,
+        "task_path": "\\",
+        "state": "Absent",
+        "logon_type": "S4U",
+        "run_level": "Highest",
+        "multiple_instances": "IgnoreNew",
+        "execution_limit_seconds": 241200,
+        "last_run_utc": None,
+        "last_task_result": None,
+    }
+    drift = {
+        key: (wanted, payload.get(key))
+        for key, wanted in expected.items()
+        if payload.get(key) != wanted
+    }
+    if drift:
+        raise B.InvalidEvidence(
+            f"ATTEMPT_001 scheduled task is not proved absent: {sorted(drift)}"
+        )
+    return payload
+
+
+def _validate_attempt001_control_state(
+    controls: Mapping[str, Mapping[str, Any]],
+) -> None:
+    state = B.load_json(Path(str(controls["launch_state"]["path"])))
+    job = B.load_json(Path(str(controls["launch_job"]["path"])))
+    cell_ids = [f"XAUUSD_DWX_{window.cell_id}" for window in B.WINDOWS]
+    cells = state.get("cells")
+    if (
+        state.get("schema_version") != 1
+        or state.get("artifact_type") != "QM5_13210_NATIVE_LAUNCH_STATE"
+        or state.get("analysis_id") != ANALYSIS_ID
+        or state.get("status") != "PENDING_SCHEDULED"
+        or state.get("worker_pid") is not None
+        or not isinstance(cells, list)
+        or len(cells) != len(cell_ids)
+    ):
+        raise B.InvalidEvidence("ATTEMPT_001 control state is not pre-native")
+    for expected_id, row in zip(cell_ids, cells, strict=True):
+        if not isinstance(row, Mapping) or {
+            "cell_id": row.get("cell_id"),
+            "status": row.get("status"),
+            "attempts": row.get("attempts"),
+        } != {"cell_id": expected_id, "status": "PENDING", "attempts": []}:
+            raise B.InvalidEvidence("ATTEMPT_001 cell contains a native start")
+    launches = state.get("launches")
+    if (
+        not isinstance(launches, list)
+        or len(launches) != 1
+        or not isinstance(launches[0], Mapping)
+        or launches[0].get("status") != "PREPARED"
+        or launches[0].get("resume") is not False
+        or "requested_utc" in launches[0]
+    ):
+        raise B.InvalidEvidence("ATTEMPT_001 launch advanced beyond PREPARED")
+    if (
+        state.get("pre_receipt_sha256")
+        != "b7e6b6852f72c76cf87733e7f43563b7f5b20c9a222102cdf2a85d739809f8c2"
+        or state.get("job") != controls["launch_job"]
+        or job.get("pre_receipt_sha256") != state.get("pre_receipt_sha256")
+        or Path(str(job.get("state_path", ""))).resolve()
+        != ATTEMPT_001_STATE_PATH.resolve()
+        or job.get("scheduler", {}).get("task_name") != ATTEMPT_001_TASK_NAME
+        or job.get("scheduler", {}).get("helper")
+        != {
+            "path": str(B.SCHEDULED_TASK_HELPER_PATH.resolve()),
+            "size": 9479,
+            "sha256": "d81952ddc9d23b3d3d0e45de1a22bd2cf61336d4bb54b49babe03faf5a3b1443",
+        }
+    ):
+        raise B.InvalidEvidence("ATTEMPT_001 launch-job/control binding drift")
+
+
+def validate_attempt001_invalid_infrastructure_closure(
+    path: Path = ATTEMPT_001_CLOSURE_PATH,
+    *,
+    probe_task_absence: bool = True,
+) -> dict[str, Any]:
+    payload = B.load_json(path)
+    required_fields = {
+        "schema_version",
+        "artifact_type",
+        "status",
+        "analysis_id",
+        "attempt_id",
+        "classification",
+        "closed_utc",
+        "run_root",
+        "control_bindings",
+        "failure_evidence",
+        "scheduled_task_absence",
+        "native_start_proof",
+        "outcome_fence",
+        "recovery_contract",
+    }
+    if set(payload) != required_fields:
+        raise B.InvalidEvidence("ATTEMPT_001 closure field closure drift")
+    expected_semantics = {
+        "schema_version": 1,
+        "artifact_type": "QM5_13210_XAUUSD_ATTEMPT_INVALID_INFRASTRUCTURE_CLOSURE",
+        "status": "INVALID_INFRASTRUCTURE_CLOSED_OUTCOME_BLIND",
+        "analysis_id": ANALYSIS_ID,
+        "attempt_id": "ATTEMPT_001",
+        "classification": "SCHEDULER_HELPER_TASK_NAME_PATTERN_REJECTED_BEFORE_REGISTRATION",
+        "run_root": str(ATTEMPT_001_RUN_ROOT.resolve()),
+        "failure_evidence": {
+            "failed_operation": "Register",
+            "rejected_task_name": ATTEMPT_001_TASK_NAME,
+            "helper_validate_pattern_at_failure": "^QM_QM13210_AUDIT_[0-9a-f]{24}$",
+            "failed_helper_binding": {
+                "path": str(B.SCHEDULED_TASK_HELPER_PATH.resolve()),
+                "size": 9479,
+                "sha256": "d81952ddc9d23b3d3d0e45de1a22bd2cf61336d4bb54b49babe03faf5a3b1443",
+            },
+            "task_registration_reached": False,
+        },
+        "scheduled_task_absence": {
+            "observed_utc": "2026-07-21T08:55:59.5786415Z",
+            "task_name": ATTEMPT_001_TASK_NAME,
+            "task_path": "\\",
+            "exists": False,
+            "match_count": 0,
+            "live_reprobe_required_before_attempt002_pre": True,
+        },
+        "native_start_proof": {
+            "native_start_count": 0,
+            "worker_pid": None,
+            "cell_count": 4,
+            "all_cell_statuses": "PENDING",
+            "all_cell_attempt_lists_empty": True,
+            "launch_status": "PENDING_SCHEDULED",
+            "launch_audit_status": "PREPARED",
+            "run_root_inventory": [
+                "launch_job.json",
+                "launch_state.json",
+                "native_outcome_authorization.json",
+                "pre_receipt.json",
+            ],
+            "native_directory_present": False,
+            "native_reports_present": False,
+            "outcome_artifacts_present": False,
+        },
+        "outcome_fence": {
+            "native_reports_opened": False,
+            "native_outcomes_opened": False,
+            "controller_stdout_opened": False,
+            "controller_stderr_opened": False,
+            "closure_uses_control_files_and_filesystem_metadata_only": True,
+        },
+        "recovery_contract": {
+            "attempt001_resume_forbidden": True,
+            "attempt001_control_files_immutable": True,
+            "single_authorized_alternate": "ATTEMPT_002",
+            "attempt003_plus_forbidden": True,
+            "strategy_or_parameter_change_forbidden": True,
+        },
+    }
+    drift = {
+        key: (wanted, payload.get(key))
+        for key, wanted in expected_semantics.items()
+        if payload.get(key) != wanted
+    }
+    if drift:
+        raise B.InvalidEvidence(
+            f"ATTEMPT_001 closure semantic drift: {sorted(drift)}"
+        )
+    B.parse_utc(str(payload.get("closed_utc", "")), "ATTEMPT_001 closed_utc")
+    controls = payload.get("control_bindings")
+    expected_paths = _attempt001_control_paths()
+    if not isinstance(controls, Mapping) or set(controls) != set(expected_paths):
+        raise B.InvalidEvidence("ATTEMPT_001 control-binding closure drift")
+    for role, expected_path in expected_paths.items():
+        row = controls.get(role)
+        if (
+            not isinstance(row, Mapping)
+            or Path(str(row.get("path", ""))).resolve() != expected_path.resolve()
+        ):
+            raise B.InvalidEvidence(f"ATTEMPT_001 control path drift: {role}")
+        B.assert_binding(row, f"ATTEMPT_001 immutable {role}")
+    root = ATTEMPT_001_RUN_ROOT.resolve()
+    inventory = sorted(item.name for item in root.iterdir()) if root.is_dir() else []
+    if inventory != expected_semantics["native_start_proof"]["run_root_inventory"]:
+        raise B.InvalidEvidence("ATTEMPT_001 run-root inventory drift")
+    if any(not item.is_file() for item in root.iterdir()):
+        raise B.InvalidEvidence("ATTEMPT_001 contains a native/output directory")
+    _validate_attempt001_control_state(controls)
+    if probe_task_absence:
+        _probe_attempt001_task_absence()
+    return {
+        "binding": B.file_binding(path),
+        "status": payload["status"],
+        "control_bindings": {role: dict(row) for role, row in controls.items()},
+        "native_start_count": 0,
+        "task_absent": True,
+    }
+
+
 def _assert_no_sibling_or_prior_namespace() -> None:
+    validate_attempt001_invalid_infrastructure_closure()
     family = RUN_FAMILY_ROOT.resolve()
     namespace = RUN_NAMESPACE_ROOT.resolve()
     exact = ALLOWED_RUN_ROOT.resolve()
@@ -256,9 +540,9 @@ def _assert_no_sibling_or_prior_namespace() -> None:
                 )
     if namespace.is_dir():
         for child in namespace.iterdir():
-            if child.resolve() != exact:
+            if child.resolve() not in {ATTEMPT_001_RUN_ROOT.resolve(), exact}:
                 raise B.InvalidEvidence(
-                    f"sibling/prior XAU attempt namespace exists: {child.resolve()}"
+                    f"ATTEMPT_003+ or unregistered XAU attempt exists: {child.resolve()}"
                 )
 
 
@@ -266,7 +550,7 @@ def _assert_pristine_one_shot_namespace() -> None:
     _assert_no_sibling_or_prior_namespace()
     exact = ALLOWED_RUN_ROOT.resolve()
     if exact.exists() and (not exact.is_dir() or any(exact.iterdir())):
-        raise B.InvalidEvidence(f"single frozen XAU run root is not pristine: {exact}")
+        raise B.InvalidEvidence(f"ATTEMPT_002 alternate root is not pristine: {exact}")
 
 
 def _configure_private_profile() -> None:
@@ -282,7 +566,7 @@ def _configure_private_profile() -> None:
     B.EXPECTED_BUILD_HASHES = dict(B.EXPECTED_BUILD_HASHES)
     B.REQUIRED_BINDING_ROLES = frozenset(
         set(B.REQUIRED_BINDING_ROLES)
-        | {"base_tool", "xau_contract"}
+        | {"attempt001_closure", "base_tool", "xau_contract"}
     )
     B._assert_run_root = _assert_exact_run_root
 
@@ -353,6 +637,7 @@ def _expected_binding_paths(symbol: str) -> dict[str, Path]:
     enforce_symbol_policy(symbol)
     paths = _BASE_EXPECTED_BINDING_PATHS(symbol)
     paths["base_tool"] = BASE_TOOL_PATH
+    paths["attempt001_closure"] = ATTEMPT_001_CLOSURE_PATH
     paths["xau_contract"] = CONTRACT_PATH
     return paths
 
@@ -368,7 +653,9 @@ def _artifact_contract_paths() -> dict[str, Path]:
         / f"{B.EXPERT_NAME}_{RESEARCH_SYMBOL}_M5_backtest.set",
         "build_receipt": BUILD_RECEIPT_PATH,
         "adapter": TOOL_PATH,
+        "attempt001_closure": ATTEMPT_001_CLOSURE_PATH,
         "base_tool": BASE_TOOL_PATH,
+        "scheduled_task_helper": B.SCHEDULED_TASK_HELPER_PATH,
     }
 
 
@@ -437,18 +724,30 @@ def _run_namespace_contract() -> dict[str, Any]:
     return {
         "family_root": str(RUN_FAMILY_ROOT.resolve()),
         "namespace_root": str(RUN_NAMESPACE_ROOT.resolve()),
-        "single_run_root": str(ALLOWED_RUN_ROOT.resolve()),
+        "primary_attempt001_root": str(ATTEMPT_001_RUN_ROOT.resolve()),
+        "primary_attempt001_closure": str(ATTEMPT_001_CLOSURE_PATH.resolve()),
+        "single_alternate_run_root": str(ATTEMPT_002_RUN_ROOT.resolve()),
         "legacy_root_forbidden": str(LEGACY_RUN_ROOT.resolve()),
-        "attempt_id": "ATTEMPT_001",
-        "sibling_attempts_forbidden": True,
+        "attempt_id": "ATTEMPT_002",
+        "attempt001_status_required": "INVALID_INFRASTRUCTURE_CLOSED_OUTCOME_BLIND",
+        "only_attempt_directories_allowed": ["ATTEMPT_001", "ATTEMPT_002"],
+        "attempt003_plus_forbidden": True,
         "prior_xau_namespaces_forbidden": True,
         "resume_forbidden": True,
+        "exact_control_paths": {
+            "pre": str(ATTEMPT_002_PRE_RECEIPT_PATH.resolve()),
+            "authorization": str(ATTEMPT_002_AUTHORIZATION_PATH.resolve()),
+            "state": str(ATTEMPT_002_STATE_PATH.resolve()),
+            "job": str(ATTEMPT_002_JOB_PATH.resolve()),
+            "post": str(ATTEMPT_002_POST_RECEIPT_PATH.resolve()),
+        },
     }
 
 
 def _outcome_fence_contract() -> dict[str, bool]:
     return {
         "eurusd_native_outcomes_read_to_select_xau": False,
+        "attempt001_native_outcomes_read": False,
         "xau_native_reports_opened": False,
         "xau_deal_rows_parsed": False,
         "mt5_terminal_started": False,
@@ -458,9 +757,9 @@ def _outcome_fence_contract() -> dict[str, bool]:
 
 def _draft_contract_payload() -> dict[str, Any]:
     return {
-        "schema_version": 2,
+        "schema_version": 3,
         "artifact_type": "QM5_13210_XAUUSD_OUTCOME_BLIND_ANALYSIS_CONTRACT",
-        "status": "DRAFT_PENDING_SOURCE_AND_ADAPTER_FREEZE",
+        "status": "DRAFT_PENDING_ATTEMPT_002_FINAL_FREEZE",
         "analysis_id": ANALYSIS_ID,
         "candidate": _candidate_contract(),
         "lane_and_data": _lane_contract(),
@@ -471,6 +770,19 @@ def _draft_contract_payload() -> dict[str, Any]:
         "execution_cost_contract": MERIT_GATES["execution_cost_axes"],
         "merit_contract": MERIT_GATES,
         "outcome_fence": _outcome_fence_contract(),
+        "infrastructure_alternate": {
+            "cause": "ATTEMPT_001_HELPER_TASK_NAME_VALIDATE_PATTERN_BUG",
+            "attempt001_pre_receipt_sha256": (
+                "b7e6b6852f72c76cf87733e7f43563b7f5b20c9a222102cdf2a85d739809f8c2"
+            ),
+            "attempt001_native_start_count": 0,
+            "attempt002_is_only_authorized_alternate": True,
+            "same_build_data_parameters_windows_costs_and_gates": True,
+            "parameter_tuning_forbidden": True,
+            "attempt001_resume_forbidden": True,
+            "attempt003_plus_forbidden": True,
+            "frozen_input_bindings": ATTEMPT_002_INPUT_BINDINGS,
+        },
         "finalization": {
             "required_command": (
                 "audit_mulham_asian_sweep_london_xau.py finalize-contract "
@@ -478,7 +790,8 @@ def _draft_contract_payload() -> dict[str, Any]:
             ),
             "requires_committed_clean_adapter": True,
             "requires_committed_clean_source_artifacts": True,
-            "requires_pristine_one_shot_namespace": True,
+            "requires_immutable_attempt001_infrastructure_closure": True,
+            "requires_pristine_attempt002_namespace": True,
             "final_contract_must_bind_roles": sorted(FINAL_ARTIFACT_ROLES),
             "pre_and_launch_forbidden_until_status": "FINALIZED_OUTCOME_BLIND",
         },
@@ -572,11 +885,12 @@ def validate_analysis_contract(path: Path = CONTRACT_PATH) -> dict[str, Any]:
         "execution_cost_contract",
         "merit_contract",
         "outcome_fence",
+        "infrastructure_alternate",
     }
     if set(payload) != expected_fields:
         raise B.InvalidEvidence("XAU analysis-contract field closure drift; finalize required")
     if (
-        payload.get("schema_version") != 2
+        payload.get("schema_version") != 3
         or payload.get("artifact_type")
         != "QM5_13210_XAUUSD_OUTCOME_BLIND_ANALYSIS_CONTRACT"
         or payload.get("status") != "FINALIZED_OUTCOME_BLIND"
@@ -601,6 +915,9 @@ def validate_analysis_contract(path: Path = CONTRACT_PATH) -> dict[str, Any]:
         "execution_cost_contract": MERIT_GATES["execution_cost_axes"],
         "merit_contract": MERIT_GATES,
         "outcome_fence": _outcome_fence_contract(),
+        "infrastructure_alternate": _draft_contract_payload()[
+            "infrastructure_alternate"
+        ],
     }
     drift = {
         key: (wanted, payload.get(key))
@@ -610,6 +927,7 @@ def validate_analysis_contract(path: Path = CONTRACT_PATH) -> dict[str, Any]:
     if drift:
         raise B.InvalidEvidence(f"XAU finalized contract semantic drift: {sorted(drift)}")
     artifacts = _validate_contract_artifact_bindings(payload.get("artifact_bindings"))
+    validate_attempt001_invalid_infrastructure_closure()
     _validate_bound_build_receipt(artifacts, source_commit)
     _activate_finalized_contract({**payload, "artifact_bindings": artifacts})
     return {
@@ -621,6 +939,7 @@ def validate_analysis_contract(path: Path = CONTRACT_PATH) -> dict[str, Any]:
         "xau_calibration_projection": payload["xau_calibration_projection"],
         "execution_cost_contract": payload["execution_cost_contract"],
         "merit_contract": payload["merit_contract"],
+        "infrastructure_alternate": payload["infrastructure_alternate"],
     }
 
 
@@ -693,7 +1012,7 @@ def _finalized_contract_payload(
     artifact_bindings: Mapping[str, Mapping[str, Any]],
 ) -> dict[str, Any]:
     return {
-        "schema_version": 2,
+        "schema_version": 3,
         "artifact_type": "QM5_13210_XAUUSD_OUTCOME_BLIND_ANALYSIS_CONTRACT",
         "status": "FINALIZED_OUTCOME_BLIND",
         "finalized_utc": finalized_utc,
@@ -711,6 +1030,9 @@ def _finalized_contract_payload(
         "execution_cost_contract": MERIT_GATES["execution_cost_axes"],
         "merit_contract": MERIT_GATES,
         "outcome_fence": _outcome_fence_contract(),
+        "infrastructure_alternate": _draft_contract_payload()[
+            "infrastructure_alternate"
+        ],
     }
 
 
@@ -978,6 +1300,15 @@ def _contract_receipt() -> dict[str, Any]:
     return validate_analysis_contract(CONTRACT_PATH)
 
 
+def _assert_exact_control_path(path: Path, expected: Path, label: str) -> Path:
+    resolved = path.resolve()
+    if resolved != expected.resolve():
+        raise B.InvalidEvidence(
+            f"ATTEMPT_002 {label} must be {expected.resolve()}: {resolved}"
+        )
+    return resolved
+
+
 def preflight(
     symbol: str,
     research_readiness_receipt_path: Path,
@@ -986,8 +1317,20 @@ def preflight(
     run_root: Path,
 ) -> dict[str, Any]:
     enforce_symbol_policy(symbol)
+    closure = validate_attempt001_invalid_infrastructure_closure()
     _assert_pristine_one_shot_namespace()
     _assert_exact_run_root(run_root)
+    exact_inputs = {
+        "research_readiness_receipt": research_readiness_receipt_path,
+        "data_manifest": data_manifest_path,
+    }
+    for role, observed_path in exact_inputs.items():
+        expected = ATTEMPT_002_INPUT_BINDINGS[role]
+        if observed_path.resolve() != Path(str(expected["path"])).resolve():
+            raise B.InvalidEvidence(f"ATTEMPT_002 {role} path drift")
+        B.file_binding(observed_path, str(expected["sha256"]))
+        if observed_path.stat().st_size != int(expected["size"]):
+            raise B.InvalidEvidence(f"ATTEMPT_002 {role} size drift")
     if build_receipt_path.resolve() != BUILD_RECEIPT_PATH.resolve():
         raise B.InvalidEvidence("XAU PRE requires the exact bound build receipt path")
     contract = _contract_receipt()
@@ -999,20 +1342,56 @@ def preflight(
         build_receipt_path,
         run_root,
     )
-    if pre["bindings"]["tool"] != contract["artifact_bindings"]["adapter"]:
-        raise B.InvalidEvidence("PRE adapter binding differs from finalized XAU contract")
+    final_role_map = {
+        "tool": "adapter",
+        "scheduled_task_helper": "scheduled_task_helper",
+        "attempt001_closure": "attempt001_closure",
+    }
+    for pre_role, contract_role in final_role_map.items():
+        if pre["bindings"].get(pre_role) != contract["artifact_bindings"].get(
+            contract_role
+        ):
+            raise B.InvalidEvidence(
+                f"PRE {pre_role} binding differs from finalized XAU contract"
+            )
+    if pre.get("cost_schedule") != ATTEMPT_002_COST_SCHEDULE:
+        raise B.InvalidEvidence("ATTEMPT_002 cost schedule differs from ATTEMPT_001")
+    pre["attempt001_invalid_infrastructure_closure"] = closure
+    pre["attempt_id"] = "ATTEMPT_002"
+    pre["infrastructure_alternate"] = contract["infrastructure_alternate"]
     pre["xau_preregistration"] = contract
     return pre
 
 
 def assert_pre_receipt(path: Path, expected_sha256: str) -> dict[str, Any]:
+    _assert_exact_control_path(path, ATTEMPT_002_PRE_RECEIPT_PATH, "PRE receipt")
     expected = _contract_receipt()
     _assert_finalized_contract_committed()
     pre = _BASE_ASSERT_PRE_RECEIPT(path, expected_sha256)
-    if pre["bindings"]["tool"] != expected["artifact_bindings"]["adapter"]:
-        raise B.InvalidEvidence("PRE no longer binds the finalized XAU adapter bytes")
+    final_role_map = {
+        "tool": "adapter",
+        "scheduled_task_helper": "scheduled_task_helper",
+        "attempt001_closure": "attempt001_closure",
+    }
+    for pre_role, contract_role in final_role_map.items():
+        if pre["bindings"].get(pre_role) != expected["artifact_bindings"].get(
+            contract_role
+        ):
+            raise B.InvalidEvidence(
+                f"PRE no longer binds finalized {contract_role} bytes"
+            )
     if pre.get("xau_preregistration") != expected:
         raise B.InvalidEvidence("PRE XAU preregistration binding drift")
+    closure = validate_attempt001_invalid_infrastructure_closure()
+    if pre.get("attempt001_invalid_infrastructure_closure") != closure:
+        raise B.InvalidEvidence("PRE ATTEMPT_001 closure binding drift")
+    if (
+        pre.get("attempt_id") != "ATTEMPT_002"
+        or pre.get("infrastructure_alternate")
+        != expected["infrastructure_alternate"]
+        or pre.get("cost_schedule") != ATTEMPT_002_COST_SCHEDULE
+    ):
+        raise B.InvalidEvidence("PRE ATTEMPT_002 invariant drift")
     _assert_no_sibling_or_prior_namespace()
     return pre
 
@@ -1024,6 +1403,9 @@ def validate_authorization(
     require_current: bool = True,
     now: datetime | None = None,
 ) -> dict[str, Any]:
+    _assert_exact_control_path(
+        path, ATTEMPT_002_AUTHORIZATION_PATH, "native authorization"
+    )
     binding = B.file_binding(path)
     payload = B.load_json(path)
     expected = {
@@ -1063,6 +1445,50 @@ def validate_authorization(
         "payload_sha256": B.canonical_sha256(payload),
         "payload": payload,
     }
+
+
+def launch_persistent_task(
+    pre_path: Path,
+    pre_sha256: str,
+    authorization_path: Path,
+    state_path: Path,
+    *,
+    resume: bool,
+) -> dict[str, Any]:
+    if resume:
+        raise B.AuthorizationError("ATTEMPT_002 is one-shot; resume is forbidden")
+    _assert_exact_control_path(pre_path, ATTEMPT_002_PRE_RECEIPT_PATH, "PRE receipt")
+    _assert_exact_control_path(
+        authorization_path,
+        ATTEMPT_002_AUTHORIZATION_PATH,
+        "native authorization",
+    )
+    _assert_exact_control_path(state_path, ATTEMPT_002_STATE_PATH, "launch state")
+    validate_attempt001_invalid_infrastructure_closure()
+    return _BASE_LAUNCH_PERSISTENT_TASK(
+        pre_path,
+        pre_sha256,
+        authorization_path,
+        state_path,
+        resume=False,
+    )
+
+
+def postflight(
+    pre_path: Path,
+    pre_sha256: str,
+    state_path: Path,
+) -> dict[str, Any]:
+    _assert_exact_control_path(pre_path, ATTEMPT_002_PRE_RECEIPT_PATH, "PRE receipt")
+    _assert_exact_control_path(state_path, ATTEMPT_002_STATE_PATH, "launch state")
+    validate_attempt001_invalid_infrastructure_closure()
+    return _BASE_POSTFLIGHT(pre_path, pre_sha256, state_path)
+
+
+def _worker_run(job_path: Path) -> int:
+    _assert_exact_control_path(job_path, ATTEMPT_002_JOB_PATH, "launch job")
+    validate_attempt001_invalid_infrastructure_closure()
+    return _BASE_WORKER_RUN(job_path)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -1118,6 +1544,9 @@ B.validate_trade_semantics = validate_trade_semantics
 B.preflight = preflight
 B.assert_pre_receipt = assert_pre_receipt
 B.validate_authorization = validate_authorization
+B.launch_persistent_task = launch_persistent_task
+B.postflight = postflight
+B._worker_run = _worker_run
 B.build_parser = build_parser
 B._assert_run_root = _assert_exact_run_root
 
@@ -1146,8 +1575,8 @@ def runner_command(pre: Mapping[str, Any], cell: Mapping[str, Any]) -> list[str]
 
 def main(argv: Sequence[str] | None = None) -> int:
     arguments = list(argv) if argv is not None else sys.argv[1:]
+    args = build_parser().parse_args(arguments)
     if arguments and arguments[0] == "finalize-contract":
-        args = build_parser().parse_args(arguments)
         try:
             receipt = finalize_analysis_contract(args.source_commit)
             print(
@@ -1169,6 +1598,47 @@ def main(argv: Sequence[str] | None = None) -> int:
                 file=sys.stderr,
             )
             return 2
+    try:
+        if args.command == "pre":
+            _assert_exact_control_path(
+                args.receipt, ATTEMPT_002_PRE_RECEIPT_PATH, "PRE receipt"
+            )
+        elif args.command == "launch":
+            _assert_exact_control_path(
+                args.pre_receipt, ATTEMPT_002_PRE_RECEIPT_PATH, "PRE receipt"
+            )
+            _assert_exact_control_path(
+                args.authorization,
+                ATTEMPT_002_AUTHORIZATION_PATH,
+                "native authorization",
+            )
+            _assert_exact_control_path(
+                args.state, ATTEMPT_002_STATE_PATH, "launch state"
+            )
+        elif args.command == "post":
+            _assert_exact_control_path(
+                args.pre_receipt, ATTEMPT_002_PRE_RECEIPT_PATH, "PRE receipt"
+            )
+            _assert_exact_control_path(
+                args.state, ATTEMPT_002_STATE_PATH, "launch state"
+            )
+            _assert_exact_control_path(
+                args.receipt, ATTEMPT_002_POST_RECEIPT_PATH, "POST receipt"
+            )
+        elif args.command == "status":
+            _assert_exact_control_path(
+                args.state, ATTEMPT_002_STATE_PATH, "launch state"
+            )
+        elif args.command == "_run-plan":
+            _assert_exact_control_path(
+                args.job, ATTEMPT_002_JOB_PATH, "launch job"
+            )
+    except B.AuditError as exc:
+        print(
+            json.dumps(B.invalid_receipt(args.command.upper(), exc), sort_keys=True),
+            file=sys.stderr,
+        )
+        return 2
     return B.main(arguments)
 
 

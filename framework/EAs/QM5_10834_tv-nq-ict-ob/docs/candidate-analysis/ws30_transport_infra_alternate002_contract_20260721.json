@@ -64,9 +64,21 @@
     "same_ea_binary_required": true,
     "same_set_required": true,
     "same_tick_data_receipt_required": true,
+    "tick_data_receipt_binding": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\data\\WS30_DWX_201807_202512_DEV2_backtest_data_receipt.json",
+      "size": 29800,
+      "sha256": "bd398f53d31e7c91667069e6b2c5b6ec466bb2630fb0934436a3b8f75aedd401"
+    },
     "same_strategy_parameters_required": true,
     "same_cost_schedule_required": true,
     "same_merit_contract_required": true,
+    "frozen_gate_and_auditor_identity": {
+      "merit_contract_canonical_sha256": "b87795527d7d4b6bfdfc111e03513b74e06a4bb391f8fdab0dd0cd0a1437bf2e",
+      "primary_ws30_adapter_size": 51496,
+      "primary_ws30_adapter_sha256": "d9433850c15557575f6fccac2afa62c4ef09ecdd1007c806ca4f31fcb36c90fb",
+      "base_auditor_size": 239116,
+      "base_auditor_sha256": "58101fefced46392f26bd24aae0e7520d8ee591d97d1e50a759efd46b693f013"
+    },
     "parameter_tuning_forbidden": true,
     "gate_relaxation_forbidden": true
   },

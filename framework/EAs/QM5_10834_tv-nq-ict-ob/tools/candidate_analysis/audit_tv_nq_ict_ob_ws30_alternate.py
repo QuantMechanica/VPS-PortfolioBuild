@@ -79,7 +79,22 @@ ALTERNATE_CONTRACT_PATH = (
     / "ws30_transport_infra_alternate002_contract_20260721.json"
 )
 EXPECTED_ALTERNATE_CONTRACT_SHA256 = (
-    "3112b3bd23049dfb9f32b6abdc7362d7dd0c2497bbc5f2fa19b95236a7d72678"
+    "541420991285e87174122afea124760f77e5ed1ff8388d32edacd5b1339cc2ab"
+)
+EXPECTED_DATA_RECEIPT_SIZE = 29800
+EXPECTED_DATA_RECEIPT_SHA256 = (
+    "bd398f53d31e7c91667069e6b2c5b6ec466bb2630fb0934436a3b8f75aedd401"
+)
+EXPECTED_MERIT_CONTRACT_SHA256 = (
+    "b87795527d7d4b6bfdfc111e03513b74e06a4bb391f8fdab0dd0cd0a1437bf2e"
+)
+EXPECTED_PRIMARY_ADAPTER_SIZE = 51496
+EXPECTED_PRIMARY_ADAPTER_SHA256 = (
+    "d9433850c15557575f6fccac2afa62c4ef09ecdd1007c806ca4f31fcb36c90fb"
+)
+EXPECTED_BASE_AUDITOR_SIZE = 239116
+EXPECTED_BASE_AUDITOR_SHA256 = (
+    "58101fefced46392f26bd24aae0e7520d8ee591d97d1e50a759efd46b693f013"
 )
 
 EXPECTED_DATA_RECEIPT_REPO_BINDING_LOCATIONS = frozenset(
@@ -339,6 +354,22 @@ def validate_alternate_contract() -> dict[str, Any]:
         )
     ):
         raise B.InvalidEvidence("alternate identical-evidence contract drift")
+    tick_receipt = identical.get("tick_data_receipt_binding")
+    if not isinstance(tick_receipt, Mapping) or tick_receipt != {
+        "path": str(W.FUTURE_DATA_RECEIPT_PATH),
+        "size": EXPECTED_DATA_RECEIPT_SIZE,
+        "sha256": EXPECTED_DATA_RECEIPT_SHA256,
+    }:
+        raise B.InvalidEvidence("alternate frozen tick-data receipt binding drift")
+    frozen_gate = identical.get("frozen_gate_and_auditor_identity")
+    if not isinstance(frozen_gate, Mapping) or frozen_gate != {
+        "merit_contract_canonical_sha256": EXPECTED_MERIT_CONTRACT_SHA256,
+        "primary_ws30_adapter_size": EXPECTED_PRIMARY_ADAPTER_SIZE,
+        "primary_ws30_adapter_sha256": EXPECTED_PRIMARY_ADAPTER_SHA256,
+        "base_auditor_size": EXPECTED_BASE_AUDITOR_SIZE,
+        "base_auditor_sha256": EXPECTED_BASE_AUDITOR_SHA256,
+    }:
+        raise B.InvalidEvidence("alternate frozen merit/auditor identity drift")
     expected_windows = [
         {
             "cell_id": row.cell_id,
@@ -406,6 +437,17 @@ def validate_alternate_contract() -> dict[str, Any]:
     return payload
 
 
+def validate_frozen_gate_and_auditor_identity() -> None:
+    primary = B.file_binding(PRIMARY_ADAPTER_PATH, EXPECTED_PRIMARY_ADAPTER_SHA256)
+    base = B.file_binding(W.BASE_TOOL_PATH, EXPECTED_BASE_AUDITOR_SHA256)
+    if primary["size"] != EXPECTED_PRIMARY_ADAPTER_SIZE:
+        raise B.InvalidEvidence("frozen primary WS30 adapter size drift")
+    if base["size"] != EXPECTED_BASE_AUDITOR_SIZE:
+        raise B.InvalidEvidence("frozen base auditor size drift")
+    if B.canonical_sha256(B.MERIT_GATES) != EXPECTED_MERIT_CONTRACT_SHA256:
+        raise B.InvalidEvidence("frozen primary merit contract drift")
+
+
 def validate_relocated_primary_transport_contract() -> dict[str, Any]:
     """Validate the frozen primary contract without opening C:\\QM\\repo inputs.
 
@@ -418,6 +460,7 @@ def validate_relocated_primary_transport_contract() -> dict[str, Any]:
     """
 
     validate_alternate_contract()
+    validate_frozen_gate_and_auditor_identity()
     runtime_build = EA_ROOT / "docs" / "candidate-analysis" / "build_receipt_20260720.json"
     runtime_set = EA_ROOT / "sets" / f"{B.EXPERT_NAME}_{RESEARCH_SYMBOL}_M5_backtest.set"
     B.file_binding(runtime_build, W.EXPECTED_BUILD_RECEIPT_SHA256)
@@ -442,6 +485,9 @@ def validate_relocated_primary_transport_contract() -> dict[str, Any]:
 
 
 def _main_repo_relative(path: Path | str) -> Path | None:
+    candidate = Path(os.fspath(path))
+    if not candidate.is_absolute():
+        return None
     lexical = W._lexical_path(path)
     try:
         relative = lexical.relative_to(W._lexical_path(MAIN_WORKTREE_ROOT))
@@ -524,6 +570,12 @@ def validate_relocated_backtest_data_receipt(
 ) -> dict[str, Any]:
     if evidence_paths is not None:
         raise B.InvalidEvidence("alternate data-receipt evidence overrides are forbidden")
+    W._assert_lexical_exact(
+        path, W.FUTURE_DATA_RECEIPT_PATH, "alternate frozen data receipt"
+    )
+    receipt_binding = B.file_binding(path, EXPECTED_DATA_RECEIPT_SHA256)
+    if receipt_binding["size"] != EXPECTED_DATA_RECEIPT_SIZE:
+        raise B.InvalidEvidence("alternate frozen data receipt size drift")
     saved_loader = B.load_json
     raw = saved_loader(path)
     if not isinstance(raw, Mapping):
