@@ -425,8 +425,11 @@ def _assert_fixed_contract() -> tuple[list[tuple[str, str, Path]], list[tuple[st
     if MANIFEST_PATH.parent != EVIDENCE_ROOT or RECEIPT_PATH.parent != EVIDENCE_ROOT:
         raise ProvisionError("WS30 evidence paths escaped the fixed evidence root")
 
-    source_files = A._expected_data_files(SYMBOL, SOURCE_DATA_ROOT)
-    target_files = A._expected_data_files(SYMBOL, TARGET_DATA_ROOT)
+    try:
+        source_files = A._expected_data_files(SYMBOL, SOURCE_DATA_ROOT)
+        target_files = A._expected_data_files(SYMBOL, TARGET_DATA_ROOT)
+    except A.B.InvalidEvidence as exc:
+        raise ProvisionError(str(exc)) from exc
     if len(source_files) != 98 or len(target_files) != 98:
         raise ProvisionError("WS30 provision must contain exactly 98 expected files")
     history = sum(1 for kind, _, _ in source_files if kind == "history")
@@ -444,7 +447,6 @@ def _preflight(
 ) -> tuple[
     list[SourceSnapshot],
     dict[Path, DirectoryIdentity],
-    dict[Path, DirectoryIdentity],
     DirectoryIdentity,
 ]:
     source_root, _ = _directory_identity(SOURCE_DATA_ROOT, "WS30 T1 Custom root")
@@ -456,7 +458,6 @@ def _preflight(
         raise ProvisionError("cannot compare WS30 source/target root identity") from exc
 
     source_parents: dict[Path, DirectoryIdentity] = {}
-    target_parents: dict[Path, DirectoryIdentity] = {}
     for kind in ("history", "ticks"):
         source_parent, source_parent_identity = _directory_identity(
             source_root / kind / SYMBOL, f"WS30 T1 {kind} symbol directory"
@@ -497,7 +498,7 @@ def _preflight(
                 source_identity,
             )
         )
-    return snapshots, source_parents, target_parents, evidence_parent_identity
+    return snapshots, source_parents, evidence_parent_identity
 
 
 def _manifest(created_utc: str) -> dict[str, Any]:
@@ -524,7 +525,6 @@ def provision_historical_transport() -> dict[str, Any]:
     (
         snapshots,
         source_parent_identities,
-        _unused_target_parent_identities,
         evidence_parent_identity,
     ) = _preflight(source_files, target_files)
 
