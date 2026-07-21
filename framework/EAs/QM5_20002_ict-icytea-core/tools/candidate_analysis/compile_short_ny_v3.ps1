@@ -189,6 +189,45 @@ function Get-CanonicalObjectSha256([object]$Value) {
     finally { [Array]::Clear($bytes, 0, $bytes.Length) }
 }
 
+function Get-PhysicalTreeSnapshot([string]$Root) {
+    $fullRoot = [IO.Path]::GetFullPath($Root).TrimEnd('\')
+    Assert-PhysicalPath -Path $fullRoot
+    if (-not (Test-Path -LiteralPath $fullRoot -PathType Container)) {
+        throw "Physical-tree snapshot root is not a directory: $fullRoot"
+    }
+    $pending = New-Object 'System.Collections.Generic.Queue[string]'
+    $entries = New-Object 'System.Collections.Generic.List[object]'
+    $pending.Enqueue($fullRoot)
+    while ($pending.Count -gt 0) {
+        $directory = $pending.Dequeue()
+        foreach ($item in @(Get-ChildItem -LiteralPath $directory -Force -ErrorAction Stop | Sort-Object Name)) {
+            $fullPath = [IO.Path]::GetFullPath([string]$item.FullName)
+            if (-not (Test-UnderRoot -Path $fullPath -Root $fullRoot)) {
+                throw "Physical-tree entry escaped its root: $fullPath"
+            }
+            if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+                throw "Reparse point forbidden in target-writable artifact tree: $fullPath"
+            }
+            $relative = $fullPath.Substring($fullRoot.Length).TrimStart('\')
+            if ($item.PSIsContainer) {
+                $entries.Add([pscustomobject][ordered]@{
+                    relative_path = $relative
+                    kind = 'directory'
+                })
+                $pending.Enqueue($fullPath)
+            } else {
+                $entries.Add([pscustomobject][ordered]@{
+                    relative_path = $relative
+                    kind = 'file'
+                    bytes = [long]$item.Length
+                    sha256 = Get-Sha256 -Path $fullPath
+                })
+            }
+        }
+    }
+    return @($entries.ToArray() | Sort-Object relative_path, kind)
+}
+
 function Write-AtomicJson([string]$Path, [object]$Value) {
     $temp = "$Path.$([guid]::NewGuid().ToString('N')).tmp"
     $Value | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $temp -Encoding utf8
@@ -762,7 +801,9 @@ function Invoke-CompileChild {
             throw "Compile child request hash field drifted: $hashField"
         }
     }
-    $requestedTargets = @($request.expected_include_targets | ForEach-Object {
+    $requestedTargetValues = @($request.expected_include_targets)
+    if ($requestedTargetValues.Count -ne 2) { throw 'Compile child request must bind exactly two include-target entries.' }
+    $requestedTargets = @($requestedTargetValues | ForEach-Object {
             if ($_ -isnot [string]) { throw 'Compile child include-target entry is not a JSON string.' }
             [IO.Path]::GetFullPath([string]$_)
         } | Sort-Object -Unique)
@@ -1047,11 +1088,15 @@ function Read-ValidatedCompileChildResult(
     if ((Get-Item -LiteralPath $ExpectedStageEx5).Length -ne [long]$result.ex5_size_bytes) {
         throw 'Compile child result EX5 byte count drifted.'
     }
-    $actualTargets = @($result.include_sync_targets | ForEach-Object {
+    $actualTargetValues = @($result.include_sync_targets)
+    if ($actualTargetValues.Count -ne 2) { throw 'Compile child result must bind exactly two include-target entries.' }
+    $actualTargets = @($actualTargetValues | ForEach-Object {
             if ($_ -isnot [string]) { throw 'Compile child result include target is not a JSON string.' }
             [IO.Path]::GetFullPath([string]$_)
         } | Sort-Object -Unique)
-    $expectedTargets = @($Request.expected_include_targets | ForEach-Object { [IO.Path]::GetFullPath([string]$_) } | Sort-Object -Unique)
+    $expectedTargetValues = @($Request.expected_include_targets)
+    if ($expectedTargetValues.Count -ne 2) { throw 'Compile request include-target entry count drifted before result validation.' }
+    $expectedTargets = @($expectedTargetValues | ForEach-Object { [IO.Path]::GetFullPath([string]$_) } | Sort-Object -Unique)
     if ($actualTargets.Count -ne 2 -or ($actualTargets -join '|') -cne ($expectedTargets -join '|')) {
         throw 'Compile child result include-target closure drifted.'
     }
@@ -1134,7 +1179,6 @@ function Invoke-CompileController {
     $accountRestoredDisabled = $false
     $cleanupErrors = New-Object System.Collections.Generic.List[string]
     $primaryError = $null
-    $delivered = $false
     $compileSucceeded = $false
     $plain = $null
     $credential = $null
@@ -1149,6 +1193,9 @@ function Invoke-CompileController {
     $testerGroupsRestoredSha256 = $null
     $cleanupHelperHash = $null
     $cleanupGroupsHash = $null
+    $outputSnapshotPostDrain = @()
+    $outputSnapshotPostDrainSha256 = $null
+    $outputSnapshotPostFenceSha256 = $null
     $finalEvidence = $null
     $runId = (Get-Date).ToUniversalTime().ToString('yyyyMMddTHHmmssZ_') + [guid]::NewGuid().ToString('N')
     $nonce = [guid]::NewGuid().ToString('N')
@@ -1327,7 +1374,7 @@ function Invoke-CompileController {
         $arguments = '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "{0}" -Child -RequestPath "{1}" -ExpectedRequestSha256 "{2}"' -f `
             $controllerScript, $requestPath, $requestSha256
         $action = New-ScheduledTaskAction -Execute $pwsh -Argument $arguments -WorkingDirectory $controllerRunRoot
-        $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -Hidden `
+        $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -DisallowHardTerminate -Hidden `
             -ExecutionTimeLimit (New-TimeSpan -Minutes 5) -MultipleInstances IgnoreNew
         Register-ScheduledTask -TaskName $taskName -TaskPath $taskPath -Action $action -Settings $settings `
             -User $account -Password $plain -RunLevel Limited -Description "Ephemeral isolated QM20002 Contract-v3 compile" | Out-Null
@@ -1337,9 +1384,15 @@ function Invoke-CompileController {
         $credential = $null
         $task = Get-ScheduledTask -TaskName $taskName -TaskPath $taskPath -ErrorAction Stop
         $taskPrincipalSid = ([Security.Principal.NTAccount][string]$task.Principal.UserId).Translate([Security.Principal.SecurityIdentifier]).Value
-        if ($taskPrincipalSid -cne [string]$accountState.Sid -or $task.Principal.LogonType.ToString() -ne 'Password' -or
+        if ($task.TaskName -cne $taskName -or $task.TaskPath -cne $taskPath -or
+            $task.State.ToString() -cne 'Ready' -or
+            $taskPrincipalSid -cne [string]$accountState.Sid -or $task.Principal.LogonType.ToString() -cne 'Password' -or
             $task.Principal.RunLevel.ToString() -ne 'Limited' -or @($task.Triggers).Count -ne 0 -or
             @($task.Actions).Count -ne 1 -or
+            $task.Settings.MultipleInstances.ToString() -cne 'IgnoreNew' -or
+            [bool]$task.Settings.StartWhenAvailable -or
+            [bool]$task.Settings.AllowHardTerminate -or
+            [string]$task.Settings.ExecutionTimeLimit -cne 'PT5M' -or
             -not ([IO.Path]::GetFullPath([string]$task.Actions[0].Execute)).Equals(
                 ([IO.Path]::GetFullPath($pwsh)), [StringComparison]::OrdinalIgnoreCase) -or
             [string]$task.Actions[0].Arguments -cne $arguments -or
@@ -1397,6 +1450,13 @@ function Invoke-CompileController {
         }
         if ($null -ne $accountState) {
             try { Stop-Dev1ProcessesExact -OwnerSid ([string]$accountState.Sid) } catch { $cleanupErrors.Add("process_cleanup: $($_.Exception.Message)") }
+            if ($compileSucceeded) {
+                try {
+                    $outputSnapshotPostDrain = @(Get-PhysicalTreeSnapshot -Root $outputRoot)
+                    if ($outputSnapshotPostDrain.Count -le 0) { throw 'Target-writable output snapshot was empty after target drain.' }
+                    $outputSnapshotPostDrainSha256 = Get-CanonicalObjectSha256 $outputSnapshotPostDrain
+                } catch { $cleanupErrors.Add("target_writable_snapshot_post_drain: $($_.Exception.Message)") }
+            }
             try { $testerGroupsPostChildSha256 = Get-Sha256 $testerGroupsDev1Path } catch { $cleanupErrors.Add("tester_groups_post_child: $($_.Exception.Message)") }
             try { $testerGroupsRestoredSha256 = Restore-TesterGroupsCanonical } catch { $cleanupErrors.Add("tester_groups_restore: $($_.Exception.Message)") }
             try {
@@ -1444,6 +1504,10 @@ function Invoke-CompileController {
         throw 'DEV1 compile success/lifecycle closure was incomplete after the cleanup fence.'
       }
 
+      $compileLog = [IO.Path]::GetFullPath([string]$result.compile_log_path)
+      $childLog = [IO.Path]::GetFullPath([string]$result.child_log_path)
+      $includeManifest = [IO.Path]::GetFullPath([string]$result.include_manifest_path)
+      $includeAudit = [IO.Path]::GetFullPath([string]$result.include_path_audit_path)
       foreach ($binding in @(
               @($source, $sourceHash, 'repository source'),
               @($controllerScript, $controllerScriptHash, 'compile controller'),
@@ -1457,7 +1521,13 @@ function Invoke-CompileController {
               @($cleanupHelperSourcePath, $cleanupHelperHash, 'cleanup helper source'),
               @($cleanupHelperPath, $cleanupHelperHash, 'cleanup helper protected copy'),
               @($requestPath, $requestSha256, 'compile request'),
-              @($resultPath, $resultSha256, 'compile child result')
+              @($resultPath, $resultSha256, 'compile child result'),
+              @($stageMq5, [string]$result.source_mq5_sha256, 'staged source'),
+              @($stageEx5, [string]$result.ex5_sha256, 'staged EX5'),
+              @($compileLog, [string]$result.compile_log_sha256, 'compile log'),
+              @($childLog, [string]$result.child_log_sha256, 'compile child log'),
+              @($includeManifest, [string]$result.include_manifest_sha256, 'include manifest'),
+              @($includeAudit, [string]$result.include_path_audit_sha256, 'include path audit')
           )) {
           if ((Get-Sha256 ([string]$binding[0])) -cne [string]$binding[1]) {
               throw "Runtime bytes changed before EX5 publication: $($binding[2])"
@@ -1479,6 +1549,12 @@ function Invoke-CompileController {
       if ($activeAfter -ne 0 -or $ownerAfter -ne 0 -or $tasksAfter -ne 0) {
           throw "Post-fence containment drifted before publication: root=$activeAfter owner=$ownerAfter tasks=$tasksAfter"
       }
+      $outputSnapshotPostFence = @(Get-PhysicalTreeSnapshot -Root $outputRoot)
+      $outputSnapshotPostFenceSha256 = Get-CanonicalObjectSha256 $outputSnapshotPostFence
+      if ($outputSnapshotPostFence.Count -ne $outputSnapshotPostDrain.Count -or
+          $outputSnapshotPostFenceSha256 -cne $outputSnapshotPostDrainSha256) {
+          throw 'Target-writable output tree changed between target drain and the completed SYSTEM cleanup fence.'
+      }
 
       $tempTarget = Join-Path (Split-Path -Parent $repoEx5) ('.{0}.{1}.tmp' -f [IO.Path]::GetFileName($repoEx5), [guid]::NewGuid().ToString('N'))
       try {
@@ -1495,11 +1571,7 @@ function Invoke-CompileController {
       if ((Get-Sha256 $repoEx5) -cne $stageHash -or (Get-Item -LiteralPath $repoEx5).Length -ne [long]$result.ex5_size_bytes) {
           throw 'Repository EX5 atomic publication verification failed.'
       }
-      $delivered = $true
 
-      $compileLog = [IO.Path]::GetFullPath([string]$result.compile_log_path)
-      $includeManifest = [IO.Path]::GetFullPath([string]$result.include_manifest_path)
-      $includeAudit = [IO.Path]::GetFullPath([string]$result.include_path_audit_path)
       $evidence = [ordered]@{
           schema_version = 3
           result = 'PASS'
@@ -1544,6 +1616,9 @@ function Invoke-CompileController {
           source_manifest_path = $sourceManifest
           source_manifest_sha256 = Get-Sha256 $sourceManifest
           stage_ex5_path = $stageEx5
+          target_writable_artifact_count = $outputSnapshotPostFence.Count
+          target_writable_artifact_snapshot_post_drain_sha256 = $outputSnapshotPostDrainSha256
+          target_writable_artifact_snapshot_post_fence_sha256 = $outputSnapshotPostFenceSha256
           repo_ex5_path = $repoEx5
           ex5_size_bytes = (Get-Item $repoEx5).Length
           ex5_sha256 = $stageHash
