@@ -109,8 +109,14 @@ rank 6 is the feasible way to hold FX-rate-premium exposure meanwhile).
 
 ## Sequencing (Cohort-4 drip, ~2 cards/week alongside Cohort-2 rebuilds)
 
-1. **Rank 1 OpEx** — but gate on task #33 (own-data .DWX index-level probe) first; the
-   published effect is stock-level, the index-level strength is our open question.
+1. ~~**Rank 1 OpEx**~~ **CLOSED — DEAD (2026-07-21 own-data probe).** The gate fired:
+   index-level OpEx-week returns on our .DWX data are NEGATIVE on all four symbols
+   (gross −1 to −21bp/event, net −0.6 to −35bp; post-2021 no better; quad-witching
+   months worst). Do not draft. Evidence:
+   `docs/research/OPEX_WEEK_OWN_DATA_PROBE_2026-07-21.md` +
+   `D:\QM\reports\state\opex_probe_20260721\`. Side finding (documented, NOT a
+   salvage): the fourth-Friday week is the strongest week type post-2021 —
+   matches the prior WEEK_AFTER thread, opposite to the literature.
 2. **Rank 2 Etula TOM-variant** — settlement-derived offsets, after 20004's Q02 verdicts
    land (never touch 20004 mid-pipeline; sibling card, DL-083 vs 20004 at admission).
 3. **Ranks 3+4 spec-feeds** — fold into the already-scheduled Cohort-4 skeleton re-drafts
