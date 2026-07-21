@@ -291,8 +291,11 @@ def test_launch_is_one_shot_and_rechecks_pre_bound_quiescence(
     assert calls == ["probe"]
 
 
-def test_draft_contract_and_namespace_are_distinct_and_exact() -> None:
-    contract = subject.validate_draft_contract()
+def test_finalized_contract_and_namespace_are_distinct_and_exact() -> None:
+    validated = subject.validate_analysis_contract()
+    contract = subject.B.load_json(subject.CONTRACT_PATH)
+    assert contract["status"] == "FINALIZED_OUTCOME_BLIND"
+    assert validated["source_build_commit"] == contract["source_build_commit"]
     assert contract["analysis_id"].endswith("XAUUSD_NATIVE_003")
     assert subject.RUN_NAMESPACE_ROOT.name == "XAUUSD_MULHAM_NATIVE_003"
     assert subject.RUN_NAMESPACE_ROOT != subject.SUPERSEDED_NAMESPACE_ROOT
