@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "artifact_type": "QM5_20002_G2_RUN_SMOKE_WORKTREE_PROVENANCE",
+  "created_utc": "2026-07-21T06:22:51.4304027Z",
+  "status": "STABLE_FOREIGN_WORKTREE_BYTES_NOT_COMMITTED",
+  "base_commit": "adf26cd8b1ea61a306c9949217aad139a9971ab9",
+  "source_disposition": "PRESERVED_WITHOUT_EDIT_REVERT_OR_COMMIT",
+  "snapshots": {
+    "count": 2,
+    "identical": true,
+    "last_write_utc": "2026-07-21T04:17:47Z"
+  },
+  "files": {
+    "runner": {
+      "path": "framework/scripts/run_smoke.ps1",
+      "base_blob_oid": "7168554fe744cb7297f2a186b6850b4a67fa31e8",
+      "base_blob_size": 113224,
+      "worktree_size": 116270,
+      "worktree_sha256": "a064f47217859491a7d515ec0269d8d7c11a375a9add8e3f07e0fa9ac4c8dc8a",
+      "worktree_raw_blob_oid": "793bffee621e4d8cd93aa97a412141bedf5fbf8c",
+      "worktree_filtered_blob_oid": "3668d94de57ee9f6c5a47e5956d3d2e53378a7c2",
+      "last_write_utc": "2026-07-21T04:17:47.6232350Z",
+      "crlf_count": 2632,
+      "bare_lf_count": 43,
+      "bare_cr_count": 0
+    },
+    "targeted_test": {
+      "path": "framework/scripts/tests/Test-RunSmokeNoHistoryScope.ps1",
+      "base_blob_oid": "35b0f3c10a23c4966ed65cd6e59605e78133f5de",
+      "base_blob_size": 6054,
+      "worktree_size": 7201,
+      "worktree_sha256": "797a5000a17e962a8bca6cfa01a1834eb57cc1e5c9d87c5a465d6dbefdc029d4",
+      "worktree_raw_blob_oid": "8e3d5873cb4f5fe16ffac6ece80294e8ed2bba47",
+      "worktree_filtered_blob_oid": "8e3d5873cb4f5fe16ffac6ece80294e8ed2bba47",
+      "last_write_utc": "2026-07-21T04:17:47.6242372Z",
+      "crlf_count": 0,
+      "bare_lf_count": 165,
+      "bare_cr_count": 0
+    }
+  },
+  "normalized_delta": {
+    "runner": {
+      "function": "Get-LatestTesterLog",
+      "removed_pipeline_root": "$logsDir",
+      "added_pipeline_root": "Join-Path $TerminalRoot Tester",
+      "added_flags": [
+        "-File",
+        "-Recurse",
+        "-Filter *.log"
+      ],
+      "purpose": "Include local Tester/Agent-*/logs when classifying NO_HISTORY and OnInit diagnostics."
+    },
+    "targeted_test": {
+      "added_function_under_test": "Get-LatestTesterLog",
+      "fixture": "Temporary Tester/logs plus Tester/Agent-127.0.0.1-3000/logs tree",
+      "assertion": "The newer Agent-* log is selected over the controller log."
+    }
+  },
+  "verification": {
+    "all_test_run_smoke_scripts": "9_PASS",
+    "powershell_files_executed_noninteractive": true,
+    "production_terminal_or_host_mutation": false,
+    "runner_or_targeted_test_modified_by_qm20002": false
+  },
+  "g2_freeze_policy": {
+    "bind_exact_worktree_sizes_and_sha256": true,
+    "bind_base_commit_and_blob_oids": true,
+    "bind_this_provenance_artifact_by_git_commit": true,
+    "fail_if_either_foreign_worktree_file_changes": true,
+    "do_not_claim_the_foreign_files_are_git_clean": true
+  }
+}
