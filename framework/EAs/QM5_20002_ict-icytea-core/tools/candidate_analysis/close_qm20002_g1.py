@@ -786,7 +786,9 @@ def _validate_task_evidence(
             require_never_run
             and evidence.get("last_task_result") not in {0, 267011}
         )
+        or type(evidence.get("non_null_trigger_count")) is not int
         or evidence.get("non_null_trigger_count") != 0
+        or type(evidence.get("non_null_action_count")) is not int
         or evidence.get("non_null_action_count") != 1
         or HEX64.fullmatch(str(evidence.get("task_xml_sha256", ""))) is None
         or HEX64.fullmatch(str(evidence.get("task_contract_sha256", ""))) is None
@@ -1045,6 +1047,7 @@ def _assert_initial_state(
 ) -> None:
     if (
         state.get("status") != "PENDING"
+        or type(state.get("resume_count")) is not int
         or state.get("resume_count") != 0
         or state.get("worker_pid") is not None
         or state.get("started_utc") is not None
@@ -1291,6 +1294,7 @@ def _validate_closed_state_historical_chain(
         or state.get("scheduler") != chain["job"]["scheduler"]
         or state.get("pre_receipt_path") != str(contract.pre_path.resolve())
         or state.get("pre_receipt_sha256") != contract.pre_sha256
+        or type(state.get("resume_count")) is not int
         or state.get("resume_count") != 0
         or state.get("started_utc") is not None
     ):
@@ -1791,6 +1795,7 @@ def _validate_intent(
         or task.get("ready_probe_sha256") != canonical_sha256(task["ready_probe"])
         or task.get("ready_task_xml_sha256") != evidence["task_xml_sha256"]
         or task.get("task_contract_sha256") != evidence["task_contract_sha256"]
+        or type(task.get("actual_trigger_count")) is not int
         or task.get("actual_trigger_count") != 0
         or task.get("never_run") is not True
     ):
