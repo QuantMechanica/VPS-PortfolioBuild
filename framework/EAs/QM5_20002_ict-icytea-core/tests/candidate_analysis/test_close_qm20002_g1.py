@@ -447,21 +447,35 @@ def test_every_pre_repo_binding_is_checked_against_its_freeze_blob(
     outside_path = tmp_path / "outside.bin"
     for path, payload in (
         (normal_path, b"normal-at-freeze"),
-        (smoke_path, b"smoke-at-designated-ancestor"),
         (outside_path, b"historically-sealed-outside-repo"),
     ):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(payload)
-    run_smoke_commit = "e" * 40
+    raw_run_smoke = closure._git_blob_at_commit(
+        closure.default_contract(),
+        closure.FROZEN_RUN_SMOKE_COMMIT,
+        Path(closure.FROZEN_RUN_SMOKE_PATH),
+    )
+    filtered_run_smoke = closure._git_filtered_blob_at_commit(
+        closure.default_contract(),
+        closure.FROZEN_RUN_SMOKE_COMMIT,
+        Path(closure.FROZEN_RUN_SMOKE_PATH),
+    )
     freeze = {
         "shared_runtime": {
-            "frozen_run_smoke_commit": run_smoke_commit,
-            "frozen_run_smoke_size": smoke_path.stat().st_size,
-            "frozen_run_smoke_sha256": closure.sha256_file(smoke_path),
+            "frozen_run_smoke_commit": closure.FROZEN_RUN_SMOKE_COMMIT,
+            "frozen_run_smoke_size": closure.FROZEN_RUN_SMOKE_WORKTREE_SIZE,
+            "frozen_run_smoke_sha256": closure.FROZEN_RUN_SMOKE_WORKTREE_SHA256,
         }
     }
     pre = {
-        "runtime": {"runner_smoke": bind(smoke_path)},
+        "runtime": {
+            "runner_smoke": {
+                "path": str(smoke_path.resolve()),
+                "size": closure.FROZEN_RUN_SMOKE_WORKTREE_SIZE,
+                "sha256": closure.FROZEN_RUN_SMOKE_WORKTREE_SHA256,
+            }
+        },
         "ordinary_repo_binding": bind(normal_path),
         "outside_repo_binding": bind(outside_path),
     }
@@ -472,12 +486,17 @@ def test_every_pre_repo_binding_is_checked_against_its_freeze_blob(
     ) -> bytes:
         observed.append((commit, relative.as_posix()))
         if relative.as_posix() == "framework/scripts/run_smoke.ps1":
-            return b"smoke-at-designated-ancestor"
+            return raw_run_smoke
         if relative.as_posix() == "framework/normal.bin":
             return b"normal-at-freeze"
         raise AssertionError(relative)
 
     monkeypatch.setattr(closure, "_git_blob_at_commit", fake_blob)
+    monkeypatch.setattr(
+        closure,
+        "_git_filtered_blob_at_commit",
+        lambda *_args, **_kwargs: filtered_run_smoke,
+    )
     monkeypatch.setattr(
         closure.subprocess,
         "run",
@@ -485,7 +504,10 @@ def test_every_pre_repo_binding_is_checked_against_its_freeze_blob(
     )
     closure._assert_pre_repo_bindings_at_freeze(contract, pre, freeze)
     assert observed == [
-        (run_smoke_commit, "framework/scripts/run_smoke.ps1"),
+        (
+            closure.FROZEN_RUN_SMOKE_COMMIT,
+            "framework/scripts/run_smoke.ps1",
+        ),
         (contract.freeze_commit, "framework/normal.bin"),
     ]
 
@@ -496,6 +518,150 @@ def test_every_pre_repo_binding_is_checked_against_its_freeze_blob(
         match="repository binding differs from freeze blob",
     ):
         closure._assert_pre_repo_bindings_at_freeze(contract, drifted, freeze)
+
+
+@pytest.mark.parametrize(
+    ("target", "value", "message"),
+    [
+        ("pre_size", 1, "PRE run_smoke binding differs"),
+        ("pre_sha", "0" * 64, "PRE run_smoke binding differs"),
+        ("freeze_size", 1, "exact run_smoke provenance drift"),
+        ("freeze_sha", "0" * 64, "exact run_smoke provenance drift"),
+        ("freeze_commit", "e" * 40, "exact run_smoke provenance drift"),
+    ],
+)
+def test_run_smoke_exception_rejects_any_pre_or_freeze_manifest_drift(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    target: str,
+    value: Any,
+    message: str,
+) -> None:
+    contract, _fake_auditor, _task, _utility_sha, _helper_sha = make_fixture(
+        tmp_path
+    )
+    smoke_path = contract.repo_root / closure.FROZEN_RUN_SMOKE_PATH
+    pre = {
+        "runtime": {
+            "runner_smoke": {
+                "path": str(smoke_path.resolve()),
+                "size": closure.FROZEN_RUN_SMOKE_WORKTREE_SIZE,
+                "sha256": closure.FROZEN_RUN_SMOKE_WORKTREE_SHA256,
+            }
+        }
+    }
+    freeze = {
+        "shared_runtime": {
+            "frozen_run_smoke_commit": closure.FROZEN_RUN_SMOKE_COMMIT,
+            "frozen_run_smoke_size": closure.FROZEN_RUN_SMOKE_WORKTREE_SIZE,
+            "frozen_run_smoke_sha256": closure.FROZEN_RUN_SMOKE_WORKTREE_SHA256,
+        }
+    }
+    if target == "pre_size":
+        pre["runtime"]["runner_smoke"]["size"] = value
+    elif target == "pre_sha":
+        pre["runtime"]["runner_smoke"]["sha256"] = value
+    elif target == "freeze_size":
+        freeze["shared_runtime"]["frozen_run_smoke_size"] = value
+    elif target == "freeze_sha":
+        freeze["shared_runtime"]["frozen_run_smoke_sha256"] = value
+    else:
+        freeze["shared_runtime"]["frozen_run_smoke_commit"] = value
+    monkeypatch.setattr(
+        closure.subprocess,
+        "run",
+        lambda *_args, **_kwargs: SimpleNamespace(returncode=0),
+    )
+    with pytest.raises(closure.ClosureError, match=message):
+        closure._assert_pre_repo_bindings_at_freeze(contract, pre, freeze)
+
+
+def test_run_smoke_exception_rejects_normalized_raw_blob_drift(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    contract, _fake_auditor, _task, _utility_sha, _helper_sha = make_fixture(
+        tmp_path
+    )
+    smoke_path = contract.repo_root / closure.FROZEN_RUN_SMOKE_PATH
+    pre = {
+        "runtime": {
+            "runner_smoke": {
+                "path": str(smoke_path.resolve()),
+                "size": closure.FROZEN_RUN_SMOKE_WORKTREE_SIZE,
+                "sha256": closure.FROZEN_RUN_SMOKE_WORKTREE_SHA256,
+            }
+        }
+    }
+    freeze = {
+        "shared_runtime": {
+            "frozen_run_smoke_commit": closure.FROZEN_RUN_SMOKE_COMMIT,
+            "frozen_run_smoke_size": closure.FROZEN_RUN_SMOKE_WORKTREE_SIZE,
+            "frozen_run_smoke_sha256": closure.FROZEN_RUN_SMOKE_WORKTREE_SHA256,
+        }
+    }
+    monkeypatch.setattr(
+        closure.subprocess,
+        "run",
+        lambda *_args, **_kwargs: SimpleNamespace(returncode=0),
+    )
+    monkeypatch.setattr(
+        closure,
+        "_git_blob_at_commit",
+        lambda *_args, **_kwargs: b"wrong-normalized-blob",
+    )
+    with pytest.raises(
+        closure.ClosureError, match="normalized Git blob drift"
+    ):
+        closure._assert_pre_repo_bindings_at_freeze(contract, pre, freeze)
+
+
+def test_run_smoke_exception_rejects_filtered_blob_drift(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    contract, _fake_auditor, _task, _utility_sha, _helper_sha = make_fixture(
+        tmp_path
+    )
+    smoke_path = contract.repo_root / closure.FROZEN_RUN_SMOKE_PATH
+    pre = {
+        "runtime": {
+            "runner_smoke": {
+                "path": str(smoke_path.resolve()),
+                "size": closure.FROZEN_RUN_SMOKE_WORKTREE_SIZE,
+                "sha256": closure.FROZEN_RUN_SMOKE_WORKTREE_SHA256,
+            }
+        }
+    }
+    freeze = {
+        "shared_runtime": {
+            "frozen_run_smoke_commit": closure.FROZEN_RUN_SMOKE_COMMIT,
+            "frozen_run_smoke_size": closure.FROZEN_RUN_SMOKE_WORKTREE_SIZE,
+            "frozen_run_smoke_sha256": closure.FROZEN_RUN_SMOKE_WORKTREE_SHA256,
+        }
+    }
+    raw_run_smoke = closure._git_blob_at_commit(
+        closure.default_contract(),
+        closure.FROZEN_RUN_SMOKE_COMMIT,
+        Path(closure.FROZEN_RUN_SMOKE_PATH),
+    )
+    monkeypatch.setattr(
+        closure.subprocess,
+        "run",
+        lambda *_args, **_kwargs: SimpleNamespace(returncode=0),
+    )
+    monkeypatch.setattr(
+        closure,
+        "_git_blob_at_commit",
+        lambda *_args, **_kwargs: raw_run_smoke,
+    )
+    monkeypatch.setattr(
+        closure,
+        "_git_filtered_blob_at_commit",
+        lambda *_args, **_kwargs: b"wrong-filtered-blob",
+    )
+    with pytest.raises(
+        closure.ClosureError, match="filtered Git blob drift"
+    ):
+        closure._assert_pre_repo_bindings_at_freeze(contract, pre, freeze)
 
 
 def test_powershell_helper_has_no_forbidden_process_query_surface() -> None:

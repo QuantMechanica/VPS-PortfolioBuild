@@ -38,6 +38,10 @@ FROZEN_RUN_SMOKE_RAW_BLOB_SIZE = 113224
 FROZEN_RUN_SMOKE_RAW_BLOB_SHA256 = (
     "92c324dad414deae95f453d77d2c4d2aa12d27292caf590c972c9c168d181c84"
 )
+FROZEN_RUN_SMOKE_FILTERED_BLOB_SIZE = 115894
+FROZEN_RUN_SMOKE_FILTERED_BLOB_SHA256 = (
+    "665f392c5923e9f5002792b5984df01dce1437c3d2ba3e0cc6081e1fc45bbfe4"
+)
 PROCESS_PROBE_METHOD = (
     "NATIVE_PROCESS_HANDLE_TOKEN_SID_AND_IMAGE_PATH_"
     "STABLE_DOUBLE_SNAPSHOT_NO_COMMAND_LINE"
@@ -537,6 +541,29 @@ def _git_blob_at_commit(
     return completed.stdout
 
 
+def _git_filtered_blob_at_commit(
+    contract: ClosureContract, commit: str, relative_path: Path
+) -> bytes:
+    if (
+        re.fullmatch(r"[0-9a-f]{40}", commit) is None
+        or relative_path.is_absolute()
+        or ".." in relative_path.parts
+    ):
+        raise ClosureError("historical filtered Git blob request is malformed")
+    completed = subprocess.run(
+        ["git", "cat-file", "--filters", f"{commit}:{relative_path.as_posix()}"],
+        cwd=contract.repo_root,
+        capture_output=True,
+        timeout=30,
+        check=False,
+    )
+    if completed.returncode != 0:
+        raise ClosureError(
+            f"historical filtered Git blob is absent: {relative_path.as_posix()}"
+        )
+    return completed.stdout
+
+
 def _assert_pre_repo_bindings_at_freeze(
     contract: ClosureContract,
     pre: Mapping[str, Any],
@@ -589,6 +616,15 @@ def _assert_pre_repo_bindings_at_freeze(
         != FROZEN_RUN_SMOKE_RAW_BLOB_SHA256
     ):
         raise ClosureError("frozen run_smoke normalized Git blob drift")
+    filtered_run_smoke = _git_filtered_blob_at_commit(
+        contract, FROZEN_RUN_SMOKE_COMMIT, Path(FROZEN_RUN_SMOKE_PATH)
+    )
+    if (
+        len(filtered_run_smoke) != FROZEN_RUN_SMOKE_FILTERED_BLOB_SIZE
+        or hashlib.sha256(filtered_run_smoke).hexdigest()
+        != FROZEN_RUN_SMOKE_FILTERED_BLOB_SHA256
+    ):
+        raise ClosureError("frozen run_smoke filtered Git blob drift")
 
     repo_root = contract.repo_root.resolve()
     checked = 0

@@ -43,6 +43,21 @@ sealed historical launch decision. The G1 auditor, scheduled-task helper, and
 control-path helper used by this closure are nevertheless rehashed separately
 against their exact historical bindings at every durable boundary.
 
+Every PRE binding below `C:\QM\repo` is also checked against Git provenance.
+Twenty-seven bindings must equal the raw blob at freeze commit
+`9f258f9fa2cc84746c34f76859888274ca60cf15`. There is one deliberately narrow
+exception for `framework/scripts/run_smoke.ps1`: the reviewed freeze captured
+mixed-EOL worktree bytes (115860 bytes,
+`634fd4a012135372b9c9e73b522978ba8cc54453051f1d7204443a124839575a`), which
+Git normalization did not preserve byte-for-byte. That exception is accepted
+only when the exact committed freeze manifest repeats those values, names
+commit `adf26cd8b1ea61a306c9949217aad139a9971ab9`, that commit is an ancestor of
+the freeze commit, its raw blob is exactly 113224 bytes with SHA-256
+`92c324dad414deae95f453d77d2c4d2aa12d27292caf590c972c9c168d181c84`, and
+`git cat-file --filters` yields exactly 115894 bytes with SHA-256
+`665f392c5923e9f5002792b5984df01dce1437c3d2ba3e0cc6081e1fc45bbfe4`.
+No other path, commit, size, hash, or normalization exception is permitted.
+
 ## Transition and lock order
 
 1. Verify all immutable bindings and both one-byte lock files.
