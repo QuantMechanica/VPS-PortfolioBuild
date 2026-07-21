@@ -1100,8 +1100,13 @@ def test_control_helper_closes_volume_ancestor_owner_and_token_group_surface() -
         == "INHERIT_ONLY_KNOWN_MASK_ALLOWED"
     )
     assert subject.CONTROL_ANCESTOR_CREATOR_IDENTITY_PROOF_REQUIRED is True
+    assert (
+        subject.CONTROL_ANCESTOR_INHERITABLE_UNTRUSTED_WRITE_DISPOSITION
+        == "REJECT"
+    )
     assert "CurrentCreatorSids" in helper
     assert "TokenPrimaryGroup" in helper
+    assert "LocalUserPrimaryGroupSid" in helper
     assert (
         "Assert-LocalFixedNtfsVolume\nAssert-QmDev1PrivilegeSurface\n"
         "$fullPath = ConvertTo-ControlPath" in helper.replace("\r\n", "\n")
@@ -1252,6 +1257,12 @@ function Test-ExactDirectoryAcl([Security.AccessControl.DirectorySecurity]$Acl) 
     inherit_only_generic_write_users_rejected = -not (Test-RawAncestorAccepted (
         'O:BAG:BAD:(A;OICIIO;GW;;;BU)'
     ))
+    inherit_only_generic_read_users_allowed = Test-RawAncestorAccepted (
+        'O:BAG:BAD:(A;OICIIO;GR;;;BU)'
+    )
+    inherit_only_generic_execute_users_allowed = Test-RawAncestorAccepted (
+        'O:BAG:BAD:(A;OICIIO;GX;;;BU)'
+    )
     inheritable_create_only_users_rejected = -not (Test-RawAncestorAccepted (
         'O:BAG:BAD:(A;OICI;0x00000006;;;BU)'
     ))
@@ -1280,6 +1291,7 @@ function Test-ExactDirectoryAcl([Security.AccessControl.DirectorySecurity]$Acl) 
     unknown_maximum_allowed_mask_rejected = -not (Test-RawAncestorAccepted (
         'O:BAG:BAD:(A;;0x02000000;;;BU)'
     ))
+    null_dacl_rejected = -not (Test-RawAncestorAccepted 'O:BAG:BA')
     precreated_attacker_owned_anchor_rejected = -not (Test-ExactDirectoryAcl (
         New-TestDirectoryAcl -Owner $usersSid -Protected $true -AddUsersCreateOnly $false
     ))
@@ -1327,6 +1339,8 @@ function Test-ExactDirectoryAcl([Security.AccessControl.DirectorySecurity]$Acl) 
         "inherited_generic_all_users_rejected": True,
         "inherit_only_generic_all_users_rejected": True,
         "inherit_only_generic_write_users_rejected": True,
+        "inherit_only_generic_read_users_allowed": True,
+        "inherit_only_generic_execute_users_allowed": True,
         "inheritable_create_only_users_rejected": True,
         "object_generic_all_users_rejected": True,
         "creator_owner_inherit_only_generic_all_allowed": True,
@@ -1335,6 +1349,7 @@ function Test-ExactDirectoryAcl([Security.AccessControl.DirectorySecurity]$Acl) 
         "creator_owner_untrusted_effective_owner_rejected": True,
         "creator_group_untrusted_effective_group_rejected": True,
         "unknown_maximum_allowed_mask_rejected": True,
+        "null_dacl_rejected": True,
         "precreated_attacker_owned_anchor_rejected": True,
         "precreated_attacker_writable_anchor_rejected": True,
         "attacker_precreation_race_before_exact_seal_rejected": True,
@@ -1353,6 +1368,7 @@ function Test-ExactDirectoryAcl([Security.AccessControl.DirectorySecurity]$Acl) 
         ("ancestor_raw_unknown_bits_disposition", "ALLOW"),
         ("ancestor_creator_placeholder_policy", "ALLOW_ALL"),
         ("ancestor_creator_identity_proof_required", False),
+        ("ancestor_inheritable_untrusted_write_disposition", "ALLOW"),
         ("privileged_group_sids_forbidden", subject.CONTROL_PRIVILEGED_GROUP_SIDS[:-1]),
         ("privileges_forbidden", subject.CONTROL_FORBIDDEN_PRIVILEGES[:-1]),
         ("privileges_forbidden", [*subject.CONTROL_FORBIDDEN_PRIVILEGES, "SeTestPrivilege"]),
@@ -1384,6 +1400,7 @@ def test_control_helper_result_rejects_dangerous_token_proof_drift(
         "ancestor_raw_unknown_bits_disposition": subject.CONTROL_ANCESTOR_RAW_UNKNOWN_BITS_DISPOSITION,
         "ancestor_creator_placeholder_policy": subject.CONTROL_ANCESTOR_CREATOR_PLACEHOLDER_POLICY,
         "ancestor_creator_identity_proof_required": subject.CONTROL_ANCESTOR_CREATOR_IDENTITY_PROOF_REQUIRED,
+        "ancestor_inheritable_untrusted_write_disposition": subject.CONTROL_ANCESTOR_INHERITABLE_UNTRUSTED_WRITE_DISPOSITION,
         "qmdev1_privilege_surface_verified": True,
         "privileged_group_sids_forbidden": subject.CONTROL_PRIVILEGED_GROUP_SIDS,
         "privileges_forbidden": subject.CONTROL_FORBIDDEN_PRIVILEGES,

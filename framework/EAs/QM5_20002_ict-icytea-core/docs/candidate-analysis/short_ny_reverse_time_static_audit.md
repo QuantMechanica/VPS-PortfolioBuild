@@ -104,17 +104,19 @@ and is rejected. `GENERIC_WRITE` is intentionally accepted because the defined
 file/directory mapping adds create/write data, extended attributes, attributes,
 READ_CONTROL and SYNCHRONIZE but not DeleteChild, Delete, WRITE_DAC or
 WRITE_OWNER; `GENERIC_READ` and `GENERIC_EXECUTE` are non-replacing too. Any
-unknown raw bit is ambiguous and rejected fail-closed. The create/write
-allowance applies only when the untrusted ACE cannot propagate to the new
-anchor: an inheritable or inherit-only Users/BATCH create/write ACE is rejected
-because it would grant transient rights before the exact ACL seal.
+unknown raw bit, null DACL or unsupported raw DACL ACE is ambiguous and rejected
+fail-closed. The create/write allowance applies only when the untrusted ACE
+cannot propagate to the new anchor: an inheritable or inherit-only Users/BATCH
+create/write ACE is rejected because it would grant transient rights before the
+exact ACL seal.
 
 A normal inherit-only CREATOR OWNER/GROUP ACE is substituted with the bootstrap
 token's effective owner/primary-group SID. The helper reads both SIDs from its
-own token and accepts a known mask only when the corresponding effective SID is
-not in the QMDev1/untrusted closure; an attacker-created race winner is still
-never adopted. A non-inherit-only creator placeholder with replace authority,
-an unproven/untrusted effective creator for a write/replace mask, malformed
+own token, also resolves QMDev1's primary group into the untrusted closure, and
+accepts a known mask only when the corresponding effective SID is not in that
+closure; an attacker-created race winner is still never adopted. A
+non-inherit-only creator placeholder with replace authority, an
+unproven/untrusted effective creator for a write/replace mask, malformed
 inheritance, or any creator-placeholder ACE with unknown bits is rejected.
 
 A bootstrap precreation race does not get repaired or adopted: an existing
@@ -183,7 +185,7 @@ Tested now:
 - Generator determinism and exact four-cell set closure.
 - Auditor unit and adversarial gates, including effective news-copy drift,
   out-of-killzone/news opening fills, artifact closure and timeout margin.
-- Result: 103 auditor tests passed, including exclusive-publication,
+- Result: 104 auditor tests passed, including exclusive-publication,
   cross-run authorization, crash-recovery, duplicate-worker, stale-resume,
   locked-snapshot, strict-schema and protected-path adversarial cases. The
   protected-path cases execute the actual PowerShell rights classifier and
@@ -192,7 +194,7 @@ Tested now:
   Modify/DeleteChild/Delete/WRITE_DAC/WRITE_OWNER; inherited and inherit-only
   GA/GW/create, object, BATCH and CREATOR OWNER/GROUP ACE variants; verified and
   untrusted effective creator SIDs; unknown-bit rejection; malicious
-  precreation/race rejection; and the exact protected-root pass case. The
+  precreation/race and null-DACL rejection; and the exact protected-root pass case. The
   deterministic Contract-v3 set check passed.
 
 Not tested yet:

@@ -66,6 +66,7 @@ $ancestorRawGenericRightsForbidden = @('GENERIC_ALL')
 $ancestorRawUnknownBitsDisposition = 'REJECT'
 $ancestorCreatorPlaceholderPolicy = 'INHERIT_ONLY_KNOWN_MASK_ALLOWED'
 $ancestorCreatorIdentityProofRequired = $true
+$ancestorInheritableUntrustedWriteDisposition = 'REJECT'
 $actualHelperSha256 = (Get-FileHash -LiteralPath $PSCommandPath -Algorithm SHA256 -ErrorAction Stop).Hash.ToLowerInvariant()
 if ($actualHelperSha256 -cne $ExpectedHelperSha256) {
     throw 'QM20002 control-path helper byte binding drifted.'
@@ -684,6 +685,7 @@ if ($Operation -eq 'PrepareDirectory') {
     ancestor_raw_unknown_bits_disposition = $ancestorRawUnknownBitsDisposition
     ancestor_creator_placeholder_policy = $ancestorCreatorPlaceholderPolicy
     ancestor_creator_identity_proof_required = $ancestorCreatorIdentityProofRequired
+    ancestor_inheritable_untrusted_write_disposition = $ancestorInheritableUntrustedWriteDisposition
     qmdev1_privilege_surface_verified = $true
     privileged_group_sids_forbidden = @($privilegedGroupSids)
     privileges_forbidden = @($dangerousPrivileges)
