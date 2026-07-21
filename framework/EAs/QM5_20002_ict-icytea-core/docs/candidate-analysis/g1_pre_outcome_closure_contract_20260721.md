@@ -80,24 +80,42 @@ No other path, commit, size, hash, or normalization exception is permitted.
 5. Re-prove the exact scheduled task and compare-and-swap the original state
    to a schema-valid `QUIESCE_PENDING` terminal `REJECT` while both locks are
    still held. The pre-terminal probe accepts only exact `Ready` or `Running`
-   state with unchanged identity/XML/contract, zero triggers, and zero direct
-DEV1 side effects. Only `Ready` plus `never_run=true` is classified as no
+   state with unchanged identity/XML/contract and zero triggers. This one
+   pre-terminal probe may retain stable observed DEV1 owner/root inventory.
+   Only `Ready` plus `never_run=true` is classified as no
    race; `Running`, or `Ready` plus `never_run=false` after a very short start,
    is durably classified as a start race before either lock is released. The
-   terminal binds the canonical pre-terminal evidence and already has
+   terminal carries the complete canonical pre-terminal probe as URL-safe
+   Base64 JSON plus its SHA-256 and already has
    `outcome_fence_crossed=false` and `no_resume=true`.
 6. Disable the exact task under those locks. A concurrently started exact task
    blocks on the state lock and, after release, can only observe the already
-   durable terminal REJECT. Wait outside the locks until the task is disabled
-   and non-running, then reacquire the locks and finalize the terminal with the
-   canonical quiesced-evidence SHA, disabled XML SHA, task-contract SHA, and
-   explicit start-race disposition.
-7. Revalidate every immutable original state field plus Job/Auth/Scheduler/PRE,
-   release both locks, unregister only that exact disabled task, and prove it
-   is absent.
-8. Reacquire the same global-to-state lock order, reassert all historical
+   durable terminal REJECT. The complete successful Quiesce transition probe
+   is appended atomically to the pending terminal as canonical Base64 JSON plus
+   SHA-256 before the locks are released. A recovery that finds the task
+   already disabled can re-run this transition idempotently.
+7. Wait outside the locks until the task is disabled and non-running. Reacquire
+   both locks, publish or exactly validate the immutable quiescence anchor, then
+   finalize the terminal with the anchor binding, canonical quiesced-evidence
+   SHA, disabled XML SHA, task-contract SHA, and explicit race disposition.
+8. Revalidate every immutable original state field plus Job/Auth/Scheduler/PRE
+   and the anchor, release both locks, unregister only that exact disabled task,
+   and prove it absent with the inference basis selected by the durable race
+   disposition.
+9. Reacquire the same global-to-state lock order, reassert all historical
    bytes, the exact DEV1 pre-launch run inventory, intent/state, and
-   absence proof, then publish the immutable closure receipt.
+   anchor. Obtain a new native absence probe and publish the immutable closure
+   receipt. An existing receipt must contain exactly that fresh probe, not just
+   a self-consistent recomputed wrapper hash.
+
+Artifact ordering is checked before any later-phase mutation. Untouched
+`PENDING` permits neither anchor nor receipt, even when recovering a valid
+after-intent crash. `QUIESCE_PENDING` forbids a receipt and permits an anchor
+only when its complete pending-state/evidence payload validates exactly.
+`CLOSED` requires its bound anchor; a pre-existing receipt is accepted only
+when the task is already absent and the receipt recursively matches a fresh
+absence proof. A foreign early receipt therefore cannot cause task removal
+before it is detected.
 
 The receipt binds state before and after, the intent, all historical artifacts,
 ready/quiesced task and XML proofs, the final absence proof, and explicitly
@@ -130,11 +148,13 @@ while the caller holds the state lock: a racing task may already have created a
 DEV1 process. That probe records stable nonnegative owner/root counts, native
 identity hash, method, and double-snapshot proof without rejecting before the
 durable terminal state is published. The complete evidence is canonically
-hashed into `QUIESCE_PENDING`. Quiesce, AwaitQuiesced, final-state, absence, and
-receipt validation continue to require exact zero DEV1-owner/root counts.
-The pre-terminal evidence SHA is carried unchanged from `QUIESCE_PENDING` into
-the CLOSED terminal error and the receipt, so finalization cannot discard the
-race-time inventory or downgrade its start-race disposition.
+retained inside the full pre-terminal probe in `QUIESCE_PENDING`. Quiesce,
+AwaitQuiesced, final-state, absence, and receipt validation continue to require
+exact zero DEV1-owner/root counts. The full pre-terminal and successful Quiesce
+probe payloads and their SHA-256 values are carried unchanged from
+`QUIESCE_PENDING` into the CLOSED terminal error. The anchor and receipt bind
+those hashes, so finalization cannot discard the race-time inventory, forget a
+Quiesce-only race, or downgrade its race disposition.
 
 ## Crash recovery
 
@@ -144,15 +164,19 @@ Recovery is idempotent at every durable boundary:
 | --- | --- |
 | Intent published | Validate intent, then quiesce |
 | Preliminary REJECT published | Disable/drain the task; no instance can pass the state lock |
-| Task disabled, terminal pending | Re-prove quiescence and finalize REJECT proof |
-| Final REJECT state published | Read task/XML proof hashes from terminal error, unregister |
-| Task unregistered | Prove absence, publish receipt |
+| Task disabled before Quiesce proof publication | Re-run idempotent Quiesce and append its full probe |
+| Quiesce proof published, terminal pending | Decode/revalidate both full probes and await exact quiescence |
+| Quiescence anchor published | Validate its full pending-state/evidence payload, then finalize REJECT |
+| Final REJECT state published | Validate the bound anchor, then unregister |
+| Task unregistered | Revalidate state and anchor, obtain a fresh race-aware absence proof, publish receipt |
 | Receipt published | Validate bytes and return `ALREADY_CLOSED` |
 
+Recovery tests restart with a fresh runtime object containing only persistent
+scheduler properties; no prior probe payload or in-memory race flag is needed.
 Concurrent identical invocations serialize on the global/state locks. A race
 after lock release is accepted only if the loser can prove the exact task is
-already absent. Any byte, schema, ACL, task, state, process, or outcome-path
-drift fails closed.
+already absent. Any byte, schema, ACL, artifact phase, task, state, process, or
+outcome-path drift fails closed.
 
 ## Invocation freeze
 
