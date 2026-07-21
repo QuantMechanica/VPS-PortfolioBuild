@@ -127,6 +127,16 @@ CONTROL_FORBIDDEN_PRIVILEGES = [
     "SeTcbPrivilege",
     "SeTrustedCredManAccessPrivilege",
 ]
+CONTROL_ANCESTOR_CREATE_ONLY_RIGHTS_ALLOWED = [
+    "CreateFiles",
+    "CreateDirectories",
+]
+CONTROL_ANCESTOR_REPLACE_RIGHTS_FORBIDDEN = [
+    "DeleteSubdirectoriesAndFiles",
+    "Delete",
+    "ChangePermissions",
+    "TakeOwnership",
+]
 COMPILE_CONTROLLER_PATH = (
     EA_ROOT / "tools" / "candidate_analysis" / "compile_short_ny_v3.ps1"
 )
@@ -586,6 +596,8 @@ def _audit_control_contract() -> dict[str, Any]:
         "reparse_points_forbidden": True,
         "local_fixed_ntfs_required": True,
         "untrusted_ancestor_owner_forbidden": True,
+        "ancestor_create_only_rights_allowed": CONTROL_ANCESTOR_CREATE_ONLY_RIGHTS_ALLOWED,
+        "ancestor_replace_rights_forbidden": CONTROL_ANCESTOR_REPLACE_RIGHTS_FORBIDDEN,
         "qmdev1_privilege_surface_verified": True,
         "privileged_group_sids_forbidden": CONTROL_PRIVILEGED_GROUP_SIDS,
         "privileges_forbidden": CONTROL_FORBIDDEN_PRIVILEGES,
@@ -730,6 +742,8 @@ def _control_acl_call(
         "reparse_points_forbidden",
         "local_fixed_ntfs_required",
         "untrusted_ancestor_owner_forbidden",
+        "ancestor_create_only_rights_allowed",
+        "ancestor_replace_rights_forbidden",
         "qmdev1_privilege_surface_verified",
         "privileged_group_sids_forbidden",
         "privileges_forbidden",
@@ -749,6 +763,10 @@ def _control_acl_call(
         or result.get("reparse_points_forbidden") is not True
         or result.get("local_fixed_ntfs_required") is not True
         or result.get("untrusted_ancestor_owner_forbidden") is not True
+        or result.get("ancestor_create_only_rights_allowed")
+        != CONTROL_ANCESTOR_CREATE_ONLY_RIGHTS_ALLOWED
+        or result.get("ancestor_replace_rights_forbidden")
+        != CONTROL_ANCESTOR_REPLACE_RIGHTS_FORBIDDEN
         or result.get("qmdev1_privilege_surface_verified") is not True
         or result.get("privileged_group_sids_forbidden")
         != CONTROL_PRIVILEGED_GROUP_SIDS

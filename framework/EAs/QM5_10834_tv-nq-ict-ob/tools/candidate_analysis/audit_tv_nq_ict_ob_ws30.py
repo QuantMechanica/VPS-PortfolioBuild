@@ -51,7 +51,7 @@ CONTRACT_PATH = (
     / "ws30_transport_analysis_contract_20260721.json"
 )
 EXPECTED_CONTRACT_SHA256 = (
-    "06a6471f2a0bb25707b6790e62c5d7917ef21db682b7d90e671f931aaf0592fa"
+    "694d91e193f2dc151129683b42f7fdbf81f0d0965b1b6c78ebf2d9d18bafe253"
 )
 BUILD_RECEIPT_PATH = (
     EA_ROOT / "docs" / "candidate-analysis" / "build_receipt_20260720.json"
@@ -81,6 +81,14 @@ PRIMARY_AUTHORIZATION_SCOPE = (
 ALTERNATE_AUTHORIZATION_SCOPE = (
     "QM5_10834_WS30_TRANSPORT_INFRA_ALTERNATE_002_4_CELLS_X_2_DUPLICATES_"
     "MODEL4_MAX_4_NATIVE_STARTS_PER_CELL"
+)
+PRIMARY_PRE_RECEIPT_PATH = PRIMARY_RUN_ROOT / "pre_receipt.json"
+PRIMARY_AUTHORIZATION_PATH = PRIMARY_RUN_ROOT / "native_outcome_authorization.json"
+PRIMARY_STATE_PATH = PRIMARY_RUN_ROOT / "launch_state.json"
+PRIMARY_JOB_PATH = PRIMARY_RUN_ROOT / "launch_job.json"
+PRIMARY_POST_RECEIPT_PATH = PRIMARY_RUN_ROOT / "post_receipt.json"
+ALTERNATE_AUTHORIZATION_PATH = (
+    ALTERNATE_RUN_ROOT / "native_outcome_authorization.json"
 )
 PRIMARY_CLAIM_PATH = (
     B.ALLOWED_RUN_ROOT
@@ -373,6 +381,10 @@ def validate_transport_contract(path: Path = CONTRACT_PATH) -> dict[str, Any]:
         != PRIMARY_CLAIM_PATH.resolve()
         or Path(str(budget.get("alternate_claim_path", ""))).resolve()
         != ALTERNATE_CLAIM_PATH.resolve()
+        or Path(str(budget.get("primary_authorization_path", ""))).resolve()
+        != PRIMARY_AUTHORIZATION_PATH.resolve()
+        or Path(str(budget.get("alternate_authorization_path", ""))).resolve()
+        != ALTERNATE_AUTHORIZATION_PATH.resolve()
         or budget.get("primary_authorization_scope") != PRIMARY_AUTHORIZATION_SCOPE
         or budget.get("alternate_authorization_scope") != ALTERNATE_AUTHORIZATION_SCOPE
         or budget.get("claim_creation_alone_does_not_count") is not True
@@ -1001,21 +1013,86 @@ B._native_attempt_claim_basis = _native_attempt_claim_basis
 B.postflight = postflight
 
 
+def _assert_cli_path_confinement(args: Any) -> None:
+    if args.command == "freeze-data":
+        if args.symbol != RESEARCH_SYMBOL:
+            raise B.InvalidEvidence(
+                f"WS30 freeze symbol must be exactly {RESEARCH_SYMBOL}"
+            )
+        if args.receipt.resolve() != FUTURE_DATA_RECEIPT_PATH.resolve():
+            raise B.InvalidEvidence(
+                f"WS30 freeze receipt must be exactly {FUTURE_DATA_RECEIPT_PATH.resolve()}"
+            )
+        return
+    if args.command == "pre":
+        if args.receipt.resolve() != PRIMARY_PRE_RECEIPT_PATH.resolve():
+            raise B.InvalidEvidence(
+                f"WS30 PRE receipt must be exactly {PRIMARY_PRE_RECEIPT_PATH.resolve()}"
+            )
+        return
+    if args.command == "launch":
+        if args.pre_receipt.resolve() != PRIMARY_PRE_RECEIPT_PATH.resolve():
+            raise B.InvalidEvidence("WS30 launch PRE path escaped the primary run root")
+        if args.authorization.resolve() != PRIMARY_AUTHORIZATION_PATH.resolve():
+            raise B.InvalidEvidence(
+                "WS30 launch authorization path escaped the primary run root"
+            )
+        if args.state.resolve() != PRIMARY_STATE_PATH.resolve():
+            raise B.InvalidEvidence("WS30 launch state path escaped the primary run root")
+        return
+    if args.command == "post":
+        if args.pre_receipt.resolve() != PRIMARY_PRE_RECEIPT_PATH.resolve():
+            raise B.InvalidEvidence("WS30 POST PRE path escaped the primary run root")
+        if args.state.resolve() != PRIMARY_STATE_PATH.resolve():
+            raise B.InvalidEvidence("WS30 POST state path escaped the primary run root")
+        if args.receipt.resolve() != PRIMARY_POST_RECEIPT_PATH.resolve():
+            raise B.InvalidEvidence("WS30 POST receipt path escaped the primary run root")
+        return
+    if args.command == "status":
+        if args.state.resolve() != PRIMARY_STATE_PATH.resolve():
+            raise B.InvalidEvidence("WS30 status state path escaped the primary run root")
+        return
+    if args.command == "_run-plan" and args.job.resolve() != PRIMARY_JOB_PATH.resolve():
+        raise B.InvalidEvidence("WS30 worker job path escaped the primary run root")
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     arguments = list(sys.argv[1:] if argv is None else argv)
     args = B.build_parser().parse_args(arguments)
-    if args.command not in {"freeze-data", "pre"}:
-        return B.main(arguments)
     try:
+        # Constrain every caller-controlled path before the inherited auditor can
+        # open it.  This prevents a WS30 invocation from even inspecting an NDX
+        # PRE/state/job/report namespace.
+        _assert_cli_path_confinement(args)
+        if args.command == "status":
+            state = B.load_json(args.state)
+            if (
+                state.get("analysis_id") != ANALYSIS_ID
+                or state.get("artifact_type") != "QM5_10834_NATIVE_LAUNCH_STATE"
+            ):
+                raise B.InvalidEvidence("WS30 status state identity drift")
+            print(
+                json.dumps(
+                    {
+                        "status": state.get("status"),
+                        "worker_pid": state.get("worker_pid"),
+                        "cells": [
+                            {
+                                "cell_id": row.get("cell_id"),
+                                "status": row.get("status"),
+                            }
+                            for row in state.get("cells", [])
+                            if isinstance(row, Mapping)
+                        ],
+                    },
+                    indent=2,
+                    sort_keys=True,
+                )
+            )
+            return 0
+        if args.command not in {"freeze-data", "pre"}:
+            return B.main(arguments)
         if args.command == "freeze-data":
-            if args.symbol != RESEARCH_SYMBOL:
-                raise B.InvalidEvidence(
-                    f"WS30 freeze symbol must be exactly {RESEARCH_SYMBOL}"
-                )
-            if args.receipt.resolve() != FUTURE_DATA_RECEIPT_PATH.resolve():
-                raise B.InvalidEvidence(
-                    f"WS30 freeze receipt must be exactly {FUTURE_DATA_RECEIPT_PATH.resolve()}"
-                )
             payload = B.freeze_backtest_data(args.symbol)
             digest = B.atomic_json(args.receipt, payload, replace=False)
             output = {
@@ -1027,11 +1104,6 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "bytes": payload["totals"]["bytes"],
             }
         else:
-            expected_pre_receipt = PRIMARY_RUN_ROOT.resolve() / "pre_receipt.json"
-            if args.receipt.resolve() != expected_pre_receipt:
-                raise B.InvalidEvidence(
-                    f"WS30 PRE receipt must be exactly {expected_pre_receipt}"
-                )
             payload = preflight(
                 args.symbol,
                 args.data_receipt,

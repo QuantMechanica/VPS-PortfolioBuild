@@ -150,6 +150,8 @@
     "alternate_run_root": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\WS30_ICT_OB_TRANSPORT_INFRA_ALTERNATE_002",
     "primary_claim_path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\claims\\QM5_10834_TV_NQ_ICT_OB_WS30_TRANSPORT_001_DEV2_NATIVE_ATTEMPT_001.json",
     "alternate_claim_path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\claims\\QM5_10834_TV_NQ_ICT_OB_WS30_TRANSPORT_001_DEV2_NATIVE_ATTEMPT_002.json",
+    "primary_authorization_path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\WS30_ICT_OB_TRANSPORT_NATIVE_ATTEMPT_001\\native_outcome_authorization.json",
+    "alternate_authorization_path": "D:\\QM\\reports\\candidate_analysis\\QM5_10834\\runs\\WS30_ICT_OB_TRANSPORT_INFRA_ALTERNATE_002\\native_outcome_authorization.json",
     "primary_authorization_scope": "QM5_10834_WS30_TRANSPORT_PRIMARY_001_4_CELLS_X_2_DUPLICATES_MODEL4_MAX_4_NATIVE_STARTS_PER_CELL",
     "alternate_authorization_scope": "QM5_10834_WS30_TRANSPORT_INFRA_ALTERNATE_002_4_CELLS_X_2_DUPLICATES_MODEL4_MAX_4_NATIVE_STARTS_PER_CELL",
     "claim_creation_alone_does_not_count": true,

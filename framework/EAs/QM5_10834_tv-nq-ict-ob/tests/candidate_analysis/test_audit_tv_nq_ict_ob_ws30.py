@@ -34,22 +34,40 @@ def _write_json(path: Path, payload: object) -> None:
     path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
 
+def _create_ws30_store(data_root: Path, *, include_extra: bool = False) -> Path:
+    history = data_root / "history" / "WS30.DWX"
+    ticks = data_root / "ticks" / "WS30.DWX"
+    history.mkdir(parents=True, exist_ok=True)
+    ticks.mkdir(parents=True, exist_ok=True)
+    for year in subject.B._required_history_years():
+        (history / f"{year}.hcc").write_bytes(f"ws30-hcc-{year}".encode("ascii"))
+    for month in subject.B._required_tick_months():
+        (ticks / f"{month}.tkc").write_bytes(f"ws30-tick-{month}".encode("ascii"))
+    if include_extra:
+        (ticks / "202601.tkc").write_bytes(b"outside-frozen-period")
+    return data_root
+
+
 def _provision_evidence(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> tuple[Path, Path]:
     provision_root = tmp_path / "provision"
     manifest_path = provision_root / "provision_manifest.json"
     receipt_path = provision_root / "provision_receipt.json"
+    source_data_root = _create_ws30_store(tmp_path / "source-Custom")
+    target_data_root = _create_ws30_store(tmp_path / "target-Custom")
     monkeypatch.setattr(subject, "PROVISION_ROOT", provision_root)
     monkeypatch.setattr(subject, "PROVISION_MANIFEST_PATH", manifest_path)
     monkeypatch.setattr(subject, "PROVISION_RECEIPT_PATH", receipt_path)
+    monkeypatch.setattr(subject, "PROVISION_SOURCE_DATA_ROOT", source_data_root)
+    monkeypatch.setattr(subject, "PROVISION_TARGET_DATA_ROOT", target_data_root)
     manifest = {
         "schema_version": 1,
         "artifact_type": "QM5_10834_WS30_DEV2_PROVISION_MANIFEST",
         "created_utc": "2026-07-21T00:00:00Z",
         "symbol": "WS30.DWX",
         "source_terminal": "T1",
-        "source_data_root": r"D:\QM\mt5\T1\Bases\Custom",
+        "source_data_root": str(source_data_root.resolve()),
         "target_terminal": "DEV2",
-        "target_data_root": str(subject.B.TERMINAL_DATA_ROOT.resolve()),
+        "target_data_root": str(target_data_root.resolve()),
         "coverage": subject.B._data_coverage_contract(),
         "expected_history_files": 8,
         "expected_tick_files": 90,
@@ -63,6 +81,35 @@ def _provision_evidence(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> tupl
         },
     }
     _write_json(manifest_path, manifest)
+    file_rows = []
+    file_set_basis = []
+    source_files = subject.B._expected_data_files("WS30.DWX", source_data_root)
+    target_files = subject.B._expected_data_files("WS30.DWX", target_data_root)
+    for source, target in zip(source_files, target_files):
+        source_kind, source_period, source_path = source
+        target_kind, target_period, target_path = target
+        assert (source_kind, source_period) == (target_kind, target_period)
+        source_binding = subject.B.stable_file_binding(source_path)
+        target_binding = subject.B.stable_file_binding(target_path)
+        assert source_binding["size"] == target_binding["size"]
+        assert source_binding["sha256"] == target_binding["sha256"]
+        file_rows.append(
+            {
+                "kind": source_kind,
+                "period": source_period,
+                "source": source_binding,
+                "target": target_binding,
+            }
+        )
+        file_set_basis.append(
+            {
+                "kind": source_kind,
+                "period": source_period,
+                "size": source_binding["size"],
+                "sha256": source_binding["sha256"],
+            }
+        )
+    file_set_sha256 = subject.B.canonical_sha256(file_set_basis)
     receipt = {
         "schema_version": 1,
         "artifact_type": "QM5_10834_WS30_DEV2_PROVISION_RECEIPT",
@@ -72,10 +119,13 @@ def _provision_evidence(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> tupl
         "symbol": "WS30.DWX",
         "source_terminal": "T1",
         "target_terminal": "DEV2",
-        "target_data_root": str(subject.B.TERMINAL_DATA_ROOT.resolve()),
+        "target_data_root": str(target_data_root.resolve()),
         "history_files": 8,
         "tick_files": 90,
-        "files": 98,
+        "file_count": 98,
+        "files": file_rows,
+        "source_file_set_sha256": file_set_sha256,
+        "target_file_set_sha256": file_set_sha256,
         "source_target_sha256_equal": True,
         "outcome_fence": {
             "mt5_terminal_started": False,
@@ -177,20 +227,6 @@ def _factory_evidence(
     }
 
 
-def _ws30_store(tmp_path: Path) -> Path:
-    data_root = tmp_path / "Custom"
-    history = data_root / "history" / "WS30.DWX"
-    ticks = data_root / "ticks" / "WS30.DWX"
-    history.mkdir(parents=True)
-    ticks.mkdir(parents=True)
-    for year in subject.B._required_history_years():
-        (history / f"{year}.hcc").write_bytes(f"ws30-hcc-{year}".encode("ascii"))
-    for month in subject.B._required_tick_months():
-        (ticks / f"{month}.tkc").write_bytes(f"ws30-tick-{month}".encode("ascii"))
-    (ticks / "202601.tkc").write_bytes(b"outside-frozen-period")
-    return data_root
-
-
 def _git_result(returncode: int, stdout: str = "") -> subprocess.CompletedProcess[str]:
     return subprocess.CompletedProcess(["git"], returncode, stdout=stdout, stderr="")
 
@@ -272,7 +308,10 @@ def test_freeze_data_is_ws30_only_exact_98_file_closure(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     evidence = _factory_evidence(tmp_path / "evidence", monkeypatch)
-    data_root = _ws30_store(tmp_path)
+    data_root = subject.PROVISION_TARGET_DATA_ROOT
+    (data_root / "ticks" / "WS30.DWX" / "202601.tkc").write_bytes(
+        b"outside-frozen-period"
+    )
     payload = subject.B.freeze_backtest_data(
         "WS30.DWX", terminal_data_root=data_root, evidence_paths=evidence
     )
@@ -296,7 +335,7 @@ def test_freeze_receipt_round_trip_reasserts_all_ws30_bytes(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     evidence = _factory_evidence(tmp_path / "evidence", monkeypatch)
-    data_root = _ws30_store(tmp_path)
+    data_root = subject.PROVISION_TARGET_DATA_ROOT
     payload = subject.B.freeze_backtest_data(
         "WS30.DWX", terminal_data_root=data_root, evidence_paths=evidence
     )
@@ -318,7 +357,7 @@ def test_missing_provision_fails_cleanly_before_any_data_mutation(
     evidence = _factory_evidence(tmp_path / "evidence", monkeypatch)
     missing = tmp_path / "missing-provision.json"
     evidence["rebuild_done"] = missing
-    data_root = _ws30_store(tmp_path)
+    data_root = subject.PROVISION_TARGET_DATA_ROOT
     before = sorted(path.relative_to(data_root) for path in data_root.rglob("*"))
     with pytest.raises(subject.B.InvalidEvidence, match="required file missing"):
         subject.B.freeze_backtest_data(

@@ -1008,9 +1008,22 @@ def test_control_helper_closes_volume_ancestor_owner_and_token_group_surface() -
     assert "DeleteSubdirectoriesAndFiles" in helper
     assert "ChangePermissions" in helper
     assert "TakeOwnership" in helper
+    assert "function Test-QmAncestorReplaceAuthority" in helper
+    assert "CreateFiles/CreateDirectories" in helper
+    assert "cannot rename/delete an already protected child" in helper
     assert "function Ensure-ExactProtectedDirectory" in helper
     assert "Never repair an attacker-writable/owned pre-existing directory" in helper
     assert "Ensure-ExactProtectedDirectory $anchorRoot" in helper
+    ensure_block = helper.split("function Ensure-ExactProtectedDirectory", 1)[1].split(
+        "function Get-UntrustedSids", 1
+    )[0]
+    assert "New-Item -ItemType Directory -Path $Directory -ErrorAction Stop" in ensure_block
+    assert ensure_block.index("Assert-ExactAcl -Candidate $Directory") < ensure_block.index(
+        "return"
+    )
+    assert ensure_block.index("New-Item -ItemType Directory") < ensure_block.index(
+        "Set-ExactDirectoryAcl $Directory"
+    ) < ensure_block.rindex("Assert-ExactAcl -Candidate $Directory")
     assert "function Assert-QmDev1PrivilegeSurface" in helper
     assert "LsaEnumerateAccountRights" in helper
     assert "S-1-5-32-551" in helper  # Backup Operators
@@ -1043,6 +1056,33 @@ def test_control_helper_closes_volume_ancestor_owner_and_token_group_surface() -
     assert persisted_privileges == list(expected_privileges)
     for privilege in expected_privileges:
         assert privilege in helper
+    expected_create_only = ["CreateFiles", "CreateDirectories"]
+    expected_replace = [
+        "DeleteSubdirectoriesAndFiles",
+        "Delete",
+        "ChangePermissions",
+        "TakeOwnership",
+    ]
+    assert subject.CONTROL_ANCESTOR_CREATE_ONLY_RIGHTS_ALLOWED == expected_create_only
+    assert subject.CONTROL_ANCESTOR_REPLACE_RIGHTS_FORBIDDEN == expected_replace
+    create_block = helper.split("$ancestorCreateOnlyRightsAllowed = @(", 1)[1].split(
+        ")", 1
+    )[0]
+    replace_block = helper.split("$ancestorReplaceRightsForbidden = @(", 1)[1].split(
+        ")", 1
+    )[0]
+    persisted_create_only = [
+        line.strip().rstrip(",").strip("'")
+        for line in create_block.splitlines()
+        if line.strip().startswith("'")
+    ]
+    persisted_replace = [
+        line.strip().rstrip(",").strip("'")
+        for line in replace_block.splitlines()
+        if line.strip().startswith("'")
+    ]
+    assert persisted_create_only == expected_create_only
+    assert persisted_replace == expected_replace
     assert (
         "Assert-LocalFixedNtfsVolume\nAssert-QmDev1PrivilegeSurface\n"
         "$fullPath = ConvertTo-ControlPath" in helper.replace("\r\n", "\n")
@@ -1055,10 +1095,144 @@ def test_control_helper_closes_volume_ancestor_owner_and_token_group_surface() -
     )
 
 
+def test_control_acl_bootstrap_and_replace_policy_with_in_memory_acl_objects() -> None:
+    helper_literal = str(subject.CONTROL_PATH_HELPER_PATH.resolve()).replace("'", "''")
+    script = r"""
+$ErrorActionPreference = 'Stop'
+$helperPath = '__HELPER_PATH__'
+$tokens = $null
+$errors = $null
+$ast = [Management.Automation.Language.Parser]::ParseFile(
+    $helperPath,
+    [ref]$tokens,
+    [ref]$errors
+)
+if ($errors.Count -ne 0) { throw $errors[0].Message }
+foreach ($name in @('Test-QmAncestorReplaceAuthority', 'Assert-ExactAclObject')) {
+    $functionAst = $ast.Find({
+        param($node)
+        $node -is [Management.Automation.Language.FunctionDefinitionAst] -and
+            $node.Name -ceq $name
+    }, $true)
+    if ($null -eq $functionAst) { throw "Missing helper function: $name" }
+    Invoke-Expression $functionAst.Extent.Text
+}
+$ancestorReplaceRightsForbidden = @(
+    'DeleteSubdirectoriesAndFiles',
+    'Delete',
+    'ChangePermissions',
+    'TakeOwnership'
+)
+$systemSid = [Security.Principal.SecurityIdentifier]::new('S-1-5-18')
+$administratorsSid = [Security.Principal.SecurityIdentifier]::new('S-1-5-32-544')
+$usersSid = [Security.Principal.SecurityIdentifier]::new('S-1-5-32-545')
+function New-TestDirectoryAcl(
+    [Security.Principal.SecurityIdentifier]$Owner,
+    [bool]$Protected,
+    [bool]$AddUsersCreateOnly
+) {
+    $acl = [Security.AccessControl.DirectorySecurity]::new()
+    $acl.SetAccessRuleProtection($Protected, $false)
+    $acl.SetOwner($Owner)
+    $inheritance = [Security.AccessControl.InheritanceFlags]::ContainerInherit -bor
+        [Security.AccessControl.InheritanceFlags]::ObjectInherit
+    foreach ($sid in @($systemSid, $administratorsSid)) {
+        $rule = [Security.AccessControl.FileSystemAccessRule]::new(
+            $sid,
+            [Security.AccessControl.FileSystemRights]::FullControl,
+            $inheritance,
+            [Security.AccessControl.PropagationFlags]::None,
+            [Security.AccessControl.AccessControlType]::Allow
+        )
+        [void]$acl.AddAccessRule($rule)
+    }
+    if ($AddUsersCreateOnly) {
+        $createOnly = [Security.AccessControl.FileSystemRights]::CreateFiles -bor
+            [Security.AccessControl.FileSystemRights]::CreateDirectories
+        $rule = [Security.AccessControl.FileSystemAccessRule]::new(
+            $usersSid,
+            $createOnly,
+            $inheritance,
+            [Security.AccessControl.PropagationFlags]::None,
+            [Security.AccessControl.AccessControlType]::Allow
+        )
+        [void]$acl.AddAccessRule($rule)
+    }
+    return $acl
+}
+function Test-ExactDirectoryAcl([Security.AccessControl.DirectorySecurity]$Acl) {
+    try {
+        Assert-ExactAclObject -Acl $Acl -Directory $true
+        return $true
+    } catch {
+        return $false
+    }
+}
+$createOnly = [Security.AccessControl.FileSystemRights]::CreateFiles -bor
+    [Security.AccessControl.FileSystemRights]::CreateDirectories
+[ordered]@{
+    standard_volume_users_create_only_bootstrap = -not (
+        Test-QmAncestorReplaceAuthority -Rights $createOnly
+    )
+    ancestor_users_modify_rejected = Test-QmAncestorReplaceAuthority -Rights (
+        [Security.AccessControl.FileSystemRights]::Modify
+    )
+    ancestor_batch_modify_rejected = Test-QmAncestorReplaceAuthority -Rights (
+        [Security.AccessControl.FileSystemRights]::Modify
+    )
+    ancestor_delete_child_rejected = Test-QmAncestorReplaceAuthority -Rights (
+        [Security.AccessControl.FileSystemRights]::DeleteSubdirectoriesAndFiles
+    )
+    precreated_attacker_owned_anchor_rejected = -not (Test-ExactDirectoryAcl (
+        New-TestDirectoryAcl -Owner $usersSid -Protected $true -AddUsersCreateOnly $false
+    ))
+    precreated_attacker_writable_anchor_rejected = -not (Test-ExactDirectoryAcl (
+        New-TestDirectoryAcl -Owner $administratorsSid -Protected $true -AddUsersCreateOnly $true
+    ))
+    attacker_precreation_race_before_exact_seal_rejected = -not (Test-ExactDirectoryAcl (
+        New-TestDirectoryAcl -Owner $usersSid -Protected $false -AddUsersCreateOnly $true
+    ))
+    exact_protected_root_passes = Test-ExactDirectoryAcl (
+        New-TestDirectoryAcl -Owner $administratorsSid -Protected $true -AddUsersCreateOnly $false
+    )
+} | ConvertTo-Json -Compress
+""".replace("__HELPER_PATH__", helper_literal)
+    completed = subprocess.run(
+        [
+            str(subject.POWERSHELL_PATH),
+            "-NoLogo",
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            script,
+        ],
+        cwd=subject.REPO_ROOT,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        capture_output=True,
+        timeout=30,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert json.loads(completed.stdout) == {
+        "standard_volume_users_create_only_bootstrap": True,
+        "ancestor_users_modify_rejected": True,
+        "ancestor_batch_modify_rejected": True,
+        "ancestor_delete_child_rejected": True,
+        "precreated_attacker_owned_anchor_rejected": True,
+        "precreated_attacker_writable_anchor_rejected": True,
+        "attacker_precreation_race_before_exact_seal_rejected": True,
+        "exact_protected_root_passes": True,
+    }
+
+
 @pytest.mark.parametrize(
     ("field", "value"),
     [
         ("qmdev1_privilege_surface_verified", False),
+        ("ancestor_create_only_rights_allowed", ["CreateFiles"]),
+        ("ancestor_replace_rights_forbidden", ["Delete"]),
         ("privileged_group_sids_forbidden", subject.CONTROL_PRIVILEGED_GROUP_SIDS[:-1]),
         ("privileges_forbidden", subject.CONTROL_FORBIDDEN_PRIVILEGES[:-1]),
         ("privileges_forbidden", [*subject.CONTROL_FORBIDDEN_PRIVILEGES, "SeTestPrivilege"]),
@@ -1083,6 +1257,8 @@ def test_control_helper_result_rejects_dangerous_token_proof_drift(
         "reparse_points_forbidden": True,
         "local_fixed_ntfs_required": True,
         "untrusted_ancestor_owner_forbidden": True,
+        "ancestor_create_only_rights_allowed": subject.CONTROL_ANCESTOR_CREATE_ONLY_RIGHTS_ALLOWED,
+        "ancestor_replace_rights_forbidden": subject.CONTROL_ANCESTOR_REPLACE_RIGHTS_FORBIDDEN,
         "qmdev1_privilege_surface_verified": True,
         "privileged_group_sids_forbidden": subject.CONTROL_PRIVILEGED_GROUP_SIDS,
         "privileges_forbidden": subject.CONTROL_FORBIDDEN_PRIVILEGES,

@@ -47,6 +47,16 @@ $dangerousPrivileges = @(
     'SeTcbPrivilege',
     'SeTrustedCredManAccessPrivilege'
 )
+$ancestorCreateOnlyRightsAllowed = @(
+    'CreateFiles',
+    'CreateDirectories'
+)
+$ancestorReplaceRightsForbidden = @(
+    'DeleteSubdirectoriesAndFiles',
+    'Delete',
+    'ChangePermissions',
+    'TakeOwnership'
+)
 $actualHelperSha256 = (Get-FileHash -LiteralPath $PSCommandPath -Algorithm SHA256 -ErrorAction Stop).Hash.ToLowerInvariant()
 if ($actualHelperSha256 -cne $ExpectedHelperSha256) {
     throw 'QM20002 control-path helper byte binding drifted.'
@@ -158,7 +168,7 @@ function Assert-ExactAclObject(
             throw 'QM20002 control ACL contains an unexpected trustee or permission.'
         }
     }
-    if (-not $observed.SetEquals(@($systemSid.Value, $administratorsSid.Value))) {
+    if (-not $observed.SetEquals([string[]]@($systemSid.Value, $administratorsSid.Value))) {
         throw 'QM20002 control ACL omits SYSTEM or Administrators.'
     }
 }
@@ -344,10 +354,14 @@ function Test-QmAncestorReplaceAuthority(
     # WriteData/AppendData.  They can win a bootstrap precreation race, but
     # cannot rename/delete an already protected child.  The create path treats
     # a race winner as untrusted and fails closed in Ensure-ExactProtectedDirectory.
-    $replaceAuthority = [Security.AccessControl.FileSystemRights]::DeleteSubdirectoriesAndFiles -bor
-        [Security.AccessControl.FileSystemRights]::Delete -bor
-        [Security.AccessControl.FileSystemRights]::ChangePermissions -bor
-        [Security.AccessControl.FileSystemRights]::TakeOwnership
+    $replaceAuthority = [Security.AccessControl.FileSystemRights]0
+    foreach ($rightName in $ancestorReplaceRightsForbidden) {
+        $parsedRight = [Enum]::Parse(
+            [Security.AccessControl.FileSystemRights],
+            $rightName
+        )
+        $replaceAuthority = $replaceAuthority -bor [Security.AccessControl.FileSystemRights]$parsedRight
+    }
     return (($Rights -band $replaceAuthority) -ne 0)
 }
 
@@ -440,6 +454,8 @@ if ($Operation -eq 'PrepareDirectory') {
     reparse_points_forbidden = $true
     local_fixed_ntfs_required = $true
     untrusted_ancestor_owner_forbidden = $true
+    ancestor_create_only_rights_allowed = @($ancestorCreateOnlyRightsAllowed)
+    ancestor_replace_rights_forbidden = @($ancestorReplaceRightsForbidden)
     qmdev1_privilege_surface_verified = $true
     privileged_group_sids_forbidden = @($privilegedGroupSids)
     privileges_forbidden = @($dangerousPrivileges)
