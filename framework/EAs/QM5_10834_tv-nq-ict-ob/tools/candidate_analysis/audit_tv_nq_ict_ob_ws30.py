@@ -247,18 +247,36 @@ def _factory_evidence_paths(
         if set(overrides) != B.DATA_FACTORY_EVIDENCE_ROLES:
             raise B.InvalidEvidence("WS30 Factory evidence-role closure drift")
         paths = {role: Path(path) for role, path in overrides.items()}
-    return {role: path.resolve() for role, path in paths.items()}
+    return {
+        role: _assert_no_reparse_components(path, f"WS30 Factory evidence {role}")
+        for role, path in paths.items()
+    }
 
 
 def _expected_binding_paths(symbol: str) -> dict[str, Path]:
     paths = _BASE_EXPECTED_BINDING_PATHS(symbol)
     paths["base_tool"] = BASE_TOOL_PATH
     paths["slippage_calibration"] = SLIPPAGE_CALIBRATION_PATH
-    return paths
+    return {
+        role: _assert_no_reparse_components(path, f"WS30 PRE binding {role}")
+        for role, path in paths.items()
+    }
 
 
 def _assert_primary_run_root(path: Path) -> Path:
     return _assert_lexical_exact(path, PRIMARY_RUN_ROOT, "WS30 primary run root")
+
+
+def _assert_primary_control_namespace() -> None:
+    for path, label in (
+        (B.ALLOWED_RUN_ROOT, "WS30 analysis root"),
+        (B.ALLOWED_RUN_ROOT / "claims", "WS30 claim root"),
+        (PRIMARY_RUN_ROOT, "WS30 primary run root"),
+        (PRIMARY_CLAIM_PATH, "WS30 primary claim path"),
+        (NATIVE_LAUNCH_LOCK_PATH, "WS30 launch lock path"),
+        (FUTURE_DATA_RECEIPT_PATH, "WS30 data receipt path"),
+    ):
+        _assert_no_reparse_components(path, label)
 
 
 def _strict_created_utc(value: Any, label: str) -> datetime:
@@ -495,10 +513,18 @@ def validate_data_provision_contract(
 ) -> dict[str, Any]:
     if symbol != RESEARCH_SYMBOL:
         raise B.InvalidEvidence("WS30 provision symbol drift")
-    if receipt_path.resolve() != PROVISION_RECEIPT_PATH.resolve():
-        raise B.InvalidEvidence("WS30 provision receipt path drift")
-    if manifest_path.resolve() != PROVISION_MANIFEST_PATH.resolve():
-        raise B.InvalidEvidence("WS30 provision manifest path drift")
+    _assert_lexical_exact(
+        receipt_path, PROVISION_RECEIPT_PATH, "WS30 provision receipt path"
+    )
+    _assert_lexical_exact(
+        manifest_path, PROVISION_MANIFEST_PATH, "WS30 provision manifest path"
+    )
+    _assert_no_reparse_components(
+        PROVISION_SOURCE_DATA_ROOT, "WS30 provision source data root"
+    )
+    _assert_no_reparse_components(
+        PROVISION_TARGET_DATA_ROOT, "WS30 provision target data root"
+    )
     manifest_binding = B.stable_file_binding(manifest_path)
     manifest = B.load_json(manifest_path)
     expected_manifest_keys = {
@@ -528,11 +554,15 @@ def validate_data_provision_contract(
         or manifest.get("artifact_type") != "QM5_10834_WS30_DEV2_PROVISION_MANIFEST"
         or manifest.get("symbol") != RESEARCH_SYMBOL
         or manifest.get("source_terminal") != "T1"
-        or Path(str(manifest.get("source_data_root", ""))).resolve()
-        != PROVISION_SOURCE_DATA_ROOT.resolve()
+        or os.path.normcase(
+            str(_lexical_path(str(manifest.get("source_data_root", ""))))
+        )
+        != os.path.normcase(str(_lexical_path(PROVISION_SOURCE_DATA_ROOT)))
         or manifest.get("target_terminal") != "DEV2"
-        or Path(str(manifest.get("target_data_root", ""))).resolve()
-        != PROVISION_TARGET_DATA_ROOT.resolve()
+        or os.path.normcase(
+            str(_lexical_path(str(manifest.get("target_data_root", ""))))
+        )
+        != os.path.normcase(str(_lexical_path(PROVISION_TARGET_DATA_ROOT)))
         or manifest.get("coverage") != expected_coverage
         or manifest.get("expected_history_files") != 8
         or manifest.get("expected_tick_files") != 90
@@ -582,8 +612,10 @@ def validate_data_provision_contract(
         or receipt.get("symbol") != RESEARCH_SYMBOL
         or receipt.get("source_terminal") != "T1"
         or receipt.get("target_terminal") != "DEV2"
-        or Path(str(receipt.get("target_data_root", ""))).resolve()
-        != PROVISION_TARGET_DATA_ROOT.resolve()
+        or os.path.normcase(
+            str(_lexical_path(str(receipt.get("target_data_root", ""))))
+        )
+        != os.path.normcase(str(_lexical_path(PROVISION_TARGET_DATA_ROOT)))
         or receipt.get("history_files") != 8
         or receipt.get("tick_files") != 90
         or receipt.get("file_count") != 98
@@ -634,15 +666,35 @@ def validate_data_provision_contract(
             or set(source_binding) != {"path", "size", "sha256"}
             or not isinstance(target_binding, Mapping)
             or set(target_binding) != {"path", "size", "sha256"}
-            or Path(str(source_binding.get("path", ""))).resolve()
-            != source_path.resolve()
-            or Path(str(target_binding.get("path", ""))).resolve()
-            != target_path.resolve()
+            or os.path.normcase(
+                str(_lexical_path(str(source_binding.get("path", ""))))
+            )
+            != os.path.normcase(str(_lexical_path(source_path)))
+            or os.path.normcase(
+                str(_lexical_path(str(target_binding.get("path", ""))))
+            )
+            != os.path.normcase(str(_lexical_path(target_path)))
             or source_binding.get("size") != target_binding.get("size")
             or source_binding.get("sha256") != target_binding.get("sha256")
         ):
             raise B.InvalidEvidence(
                 f"WS30 provision source/target byte binding drift at index {index}"
+            )
+        source_lexical = _assert_no_reparse_components(
+            str(source_binding["path"]), f"WS30 provision source[{index}]"
+        )
+        target_lexical = _assert_no_reparse_components(
+            str(target_binding["path"]), f"WS30 provision target[{index}]"
+        )
+        try:
+            same_file = os.path.samefile(source_lexical, target_lexical)
+        except OSError as exc:
+            raise B.InvalidEvidence(
+                f"cannot compare WS30 provision source/target identity[{index}]"
+            ) from exc
+        if same_file:
+            raise B.InvalidEvidence(
+                f"WS30 provision source/target are the same file[{index}]"
             )
         for binding, label in (
             (source_binding, f"WS30 provision source[{index}]"),
@@ -660,6 +712,12 @@ def validate_data_provision_contract(
                 stat.st_mtime_ns,
             )
             all_bindings.append((binding, label))
+        source_identity = path_identities_before[source_lexical]
+        target_identity = path_identities_before[target_lexical]
+        if source_identity[:2] == target_identity[:2]:
+            raise B.InvalidEvidence(
+                f"WS30 provision source/target share filesystem identity[{index}]"
+            )
         file_set_basis.append(
             {
                 "kind": source_kind,
@@ -782,6 +840,9 @@ def runtime_provenance(bindings: Mapping[str, Any]) -> dict[str, Any]:
         item = bindings.get(role)
         if not isinstance(item, Mapping):
             raise B.InvalidEvidence(f"PRE runtime binding missing: {role}")
+        _assert_no_reparse_components(
+            str(item.get("path", "")), f"PRE runtime {role}"
+        )
         B.assert_binding(item, f"PRE runtime {role}")
         runtime_bindings[role] = dict(item)
     return {
@@ -852,15 +913,14 @@ def preflight(
     build_receipt_path: Path,
     run_root: Path,
 ) -> dict[str, Any]:
+    _assert_primary_control_namespace()
     validate_transport_contract()
-    if data_receipt_path.resolve() != FUTURE_DATA_RECEIPT_PATH.resolve():
-        raise B.InvalidEvidence(
-            f"WS30 PRE data receipt must be exactly {FUTURE_DATA_RECEIPT_PATH.resolve()}"
-        )
-    if build_receipt_path.resolve() != BUILD_RECEIPT_PATH.resolve():
-        raise B.InvalidEvidence(
-            f"WS30 PRE build receipt must be exactly {BUILD_RECEIPT_PATH.resolve()}"
-        )
+    _assert_lexical_exact(
+        data_receipt_path, FUTURE_DATA_RECEIPT_PATH, "WS30 PRE data receipt"
+    )
+    _assert_lexical_exact(
+        build_receipt_path, BUILD_RECEIPT_PATH, "WS30 PRE build receipt"
+    )
     B.file_binding(build_receipt_path, EXPECTED_BUILD_RECEIPT_SHA256)
     _assert_primary_run_root(run_root)
     payload = _BASE_PREFLIGHT(
@@ -882,16 +942,22 @@ def preflight(
 
 
 def assert_pre_receipt(path: Path, expected_sha256: str) -> dict[str, Any]:
+    _assert_primary_control_namespace()
+    _assert_lexical_exact(path, PRIMARY_PRE_RECEIPT_PATH, "WS30 PRE receipt")
     pre = _BASE_ASSERT_PRE_RECEIPT(path, expected_sha256)
-    if Path(str(pre.get("run_root", ""))).resolve() != PRIMARY_RUN_ROOT.resolve():
-        raise B.InvalidEvidence("WS30 PRE primary run-root identity drift")
-    if Path(str(pre.get("build_receipt", {}).get("path", ""))).resolve() != BUILD_RECEIPT_PATH.resolve():
-        raise B.InvalidEvidence("WS30 PRE build-receipt path drift")
-    if (
-        Path(str(pre.get("backtest_data_receipt", {}).get("path", ""))).resolve()
-        != FUTURE_DATA_RECEIPT_PATH.resolve()
-    ):
-        raise B.InvalidEvidence("WS30 PRE data-receipt path drift")
+    _assert_lexical_exact(
+        str(pre.get("run_root", "")), PRIMARY_RUN_ROOT, "WS30 PRE run root identity"
+    )
+    _assert_lexical_exact(
+        str(pre.get("build_receipt", {}).get("path", "")),
+        BUILD_RECEIPT_PATH,
+        "WS30 PRE build receipt identity",
+    )
+    _assert_lexical_exact(
+        str(pre.get("backtest_data_receipt", {}).get("path", "")),
+        FUTURE_DATA_RECEIPT_PATH,
+        "WS30 PRE data receipt identity",
+    )
     expected_distinctness = {
         "classification": "NEW_SYMBOL_TRANSPORT_NOT_NDX_RETRY",
         "research_symbol": RESEARCH_SYMBOL,
@@ -935,6 +1001,7 @@ def execution_contract() -> dict[str, Any]:
 
 
 def _assert_native_attempt_unclaimed(stage: str) -> None:
+    _assert_primary_control_namespace()
     if PRIMARY_CLAIM_PATH.exists():
         raise B.AuthorizationError(
             f"WS30 primary native attempt 001 is already claimed at {stage}"
@@ -1058,6 +1125,7 @@ def postflight(pre_path: Path, pre_sha256: str, state_path: Path) -> dict[str, A
 
 # Install hooks only in the private base namespace used by this adapter.
 B._factory_evidence_paths = _factory_evidence_paths
+B._expected_data_files = _expected_data_files
 B._expected_binding_paths = _expected_binding_paths
 B._assert_run_root = _assert_primary_run_root
 B.validate_infra_retry_contract = validate_infra_retry_contract
@@ -1077,41 +1145,40 @@ def _assert_cli_path_confinement(args: Any) -> None:
             raise B.InvalidEvidence(
                 f"WS30 freeze symbol must be exactly {RESEARCH_SYMBOL}"
             )
-        if args.receipt.resolve() != FUTURE_DATA_RECEIPT_PATH.resolve():
-            raise B.InvalidEvidence(
-                f"WS30 freeze receipt must be exactly {FUTURE_DATA_RECEIPT_PATH.resolve()}"
-            )
+        _assert_lexical_exact(
+            args.receipt, FUTURE_DATA_RECEIPT_PATH, "WS30 freeze receipt"
+        )
         return
     if args.command == "pre":
-        if args.receipt.resolve() != PRIMARY_PRE_RECEIPT_PATH.resolve():
-            raise B.InvalidEvidence(
-                f"WS30 PRE receipt must be exactly {PRIMARY_PRE_RECEIPT_PATH.resolve()}"
-            )
+        _assert_lexical_exact(
+            args.receipt, PRIMARY_PRE_RECEIPT_PATH, "WS30 PRE receipt"
+        )
         return
     if args.command == "launch":
-        if args.pre_receipt.resolve() != PRIMARY_PRE_RECEIPT_PATH.resolve():
-            raise B.InvalidEvidence("WS30 launch PRE path escaped the primary run root")
-        if args.authorization.resolve() != PRIMARY_AUTHORIZATION_PATH.resolve():
-            raise B.InvalidEvidence(
-                "WS30 launch authorization path escaped the primary run root"
-            )
-        if args.state.resolve() != PRIMARY_STATE_PATH.resolve():
-            raise B.InvalidEvidence("WS30 launch state path escaped the primary run root")
+        _assert_lexical_exact(
+            args.pre_receipt, PRIMARY_PRE_RECEIPT_PATH, "WS30 launch PRE path"
+        )
+        _assert_lexical_exact(
+            args.authorization,
+            PRIMARY_AUTHORIZATION_PATH,
+            "WS30 launch authorization path",
+        )
+        _assert_lexical_exact(args.state, PRIMARY_STATE_PATH, "WS30 launch state path")
         return
     if args.command == "post":
-        if args.pre_receipt.resolve() != PRIMARY_PRE_RECEIPT_PATH.resolve():
-            raise B.InvalidEvidence("WS30 POST PRE path escaped the primary run root")
-        if args.state.resolve() != PRIMARY_STATE_PATH.resolve():
-            raise B.InvalidEvidence("WS30 POST state path escaped the primary run root")
-        if args.receipt.resolve() != PRIMARY_POST_RECEIPT_PATH.resolve():
-            raise B.InvalidEvidence("WS30 POST receipt path escaped the primary run root")
+        _assert_lexical_exact(
+            args.pre_receipt, PRIMARY_PRE_RECEIPT_PATH, "WS30 POST PRE path"
+        )
+        _assert_lexical_exact(args.state, PRIMARY_STATE_PATH, "WS30 POST state path")
+        _assert_lexical_exact(
+            args.receipt, PRIMARY_POST_RECEIPT_PATH, "WS30 POST receipt path"
+        )
         return
     if args.command == "status":
-        if args.state.resolve() != PRIMARY_STATE_PATH.resolve():
-            raise B.InvalidEvidence("WS30 status state path escaped the primary run root")
+        _assert_lexical_exact(args.state, PRIMARY_STATE_PATH, "WS30 status state path")
         return
-    if args.command == "_run-plan" and args.job.resolve() != PRIMARY_JOB_PATH.resolve():
-        raise B.InvalidEvidence("WS30 worker job path escaped the primary run root")
+    if args.command == "_run-plan":
+        _assert_lexical_exact(args.job, PRIMARY_JOB_PATH, "WS30 worker job path")
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -1121,6 +1188,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         # Constrain every caller-controlled path before the inherited auditor can
         # open it.  This prevents a WS30 invocation from even inspecting an NDX
         # PRE/state/job/report namespace.
+        _assert_primary_control_namespace()
         _assert_cli_path_confinement(args)
         if args.command == "status":
             state = B.load_json(args.state)

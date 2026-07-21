@@ -1183,6 +1183,15 @@ $createOnly = [Security.AccessControl.FileSystemRights]::CreateFiles -bor
     ancestor_delete_child_rejected = Test-QmAncestorReplaceAuthority -Rights (
         [Security.AccessControl.FileSystemRights]::DeleteSubdirectoriesAndFiles
     )
+    ancestor_delete_rejected = Test-QmAncestorReplaceAuthority -Rights (
+        [Security.AccessControl.FileSystemRights]::Delete
+    )
+    ancestor_change_permissions_rejected = Test-QmAncestorReplaceAuthority -Rights (
+        [Security.AccessControl.FileSystemRights]::ChangePermissions
+    )
+    ancestor_take_ownership_rejected = Test-QmAncestorReplaceAuthority -Rights (
+        [Security.AccessControl.FileSystemRights]::TakeOwnership
+    )
     precreated_attacker_owned_anchor_rejected = -not (Test-ExactDirectoryAcl (
         New-TestDirectoryAcl -Owner $usersSid -Protected $true -AddUsersCreateOnly $false
     ))
@@ -1220,6 +1229,9 @@ $createOnly = [Security.AccessControl.FileSystemRights]::CreateFiles -bor
         "ancestor_users_modify_rejected": True,
         "ancestor_batch_modify_rejected": True,
         "ancestor_delete_child_rejected": True,
+        "ancestor_delete_rejected": True,
+        "ancestor_change_permissions_rejected": True,
+        "ancestor_take_ownership_rejected": True,
         "precreated_attacker_owned_anchor_rejected": True,
         "precreated_attacker_writable_anchor_rejected": True,
         "attacker_precreation_race_before_exact_seal_rejected": True,
@@ -1264,7 +1276,6 @@ def test_control_helper_result_rejects_dangerous_token_proof_drift(
         "privileges_forbidden": subject.CONTROL_FORBIDDEN_PRIVILEGES,
         "helper_sha256": helper_sha256,
     }
-    payload[field] = value
     monkeypatch.setattr(
         subject.subprocess,
         "run",
@@ -1275,6 +1286,10 @@ def test_control_helper_result_rejects_dangerous_token_proof_drift(
         ),
     )
 
+    assert subject._control_acl_call(
+        "AssertAbsentFile", target, helper_sha256
+    ) == payload
+    payload[field] = value
     with pytest.raises(subject.AuthorizationError, match="result contract drift"):
         subject._control_acl_call("AssertAbsentFile", target, helper_sha256)
 

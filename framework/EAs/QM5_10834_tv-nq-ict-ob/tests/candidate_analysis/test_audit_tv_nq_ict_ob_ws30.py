@@ -315,6 +315,23 @@ def test_provision_rehash_rejects_target_byte_flip_after_receipt(
         subject.B._validate_factory_contracts("WS30.DWX", evidence)
 
 
+def test_provision_rejects_source_target_hardlink_identity(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    evidence = _factory_evidence(tmp_path, monkeypatch)
+    receipt_path = evidence["rebuild_done"]
+    receipt = subject.B.load_json(receipt_path)
+    source = Path(receipt["files"][0]["source"]["path"])
+    target = Path(receipt["files"][0]["target"]["path"])
+    target.unlink()
+    target.hardlink_to(source)
+    target_binding = subject.B.stable_file_binding(target)
+    receipt["files"][0]["target"] = target_binding
+    _write_json(receipt_path, receipt)
+    with pytest.raises(subject.B.InvalidEvidence, match="same file|filesystem identity"):
+        subject.B._validate_factory_contracts("WS30.DWX", evidence)
+
+
 @pytest.mark.parametrize("mutation", ["reorder", "ndx_source_path", "ndx_target_path"])
 def test_provision_rejects_reordered_or_cross_symbol_ledger_paths(
     tmp_path: Path,
@@ -565,7 +582,7 @@ def test_assert_pre_rejects_base_auditor_hash_drift(
     monkeypatch.setattr(subject, "_BASE_ASSERT_PRE_RECEIPT", lambda *_args: fake_pre)
     Path(bindings["base_tool"]["path"]).write_bytes(b"changed base auditor")
     with pytest.raises(subject.B.InvalidEvidence, match="drift"):
-        subject.assert_pre_receipt(tmp_path / "pre.json", "0" * 64)
+        subject.assert_pre_receipt(subject.PRIMARY_PRE_RECEIPT_PATH, "0" * 64)
 
 
 def test_runtime_provenance_rejects_head_without_wmi_fix(
@@ -678,8 +695,56 @@ def test_ndx_like_control_paths_rejected_before_any_inherited_read_or_dispatch(
     captured = capsys.readouterr()
     assert code == 2
     assert called == {"load": False, "main": False}
-    assert "escaped the primary run root" in captured.err
+    assert "lexically exact" in captured.err
     assert not any(path.name == "post_receipt.json" for path in tmp_path.rglob("*"))
+
+
+def test_reparse_primary_namespace_rejected_before_status_read(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    original = subject._path_is_reparse
+
+    def fake_reparse(path: Path) -> bool:
+        if os.path.normcase(str(subject._lexical_path(path))) == os.path.normcase(
+            str(subject._lexical_path(subject.PRIMARY_RUN_ROOT))
+        ):
+            return True
+        return original(path)
+
+    called = False
+
+    def forbidden_load(*_args, **_kwargs):
+        nonlocal called
+        called = True
+        raise AssertionError("must reject before load")
+
+    monkeypatch.setattr(subject, "_path_is_reparse", fake_reparse)
+    monkeypatch.setattr(subject.B, "load_json", forbidden_load)
+    code = subject.main(["status", "--state", str(subject.PRIMARY_STATE_PATH)])
+    captured = capsys.readouterr()
+    assert code == 2
+    assert called is False
+    assert "reparse component" in captured.err
+
+
+def test_reparse_ws30_data_root_rejected_before_file_enumeration(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    data_root = tmp_path / "Custom"
+    data_root.mkdir()
+    original = subject._path_is_reparse
+
+    def fake_reparse(path: Path) -> bool:
+        if os.path.normcase(str(subject._lexical_path(path))) == os.path.normcase(
+            str(subject._lexical_path(data_root))
+        ):
+            return True
+        return original(path)
+
+    monkeypatch.setattr(subject, "_path_is_reparse", fake_reparse)
+    with pytest.raises(subject.B.InvalidEvidence, match="reparse component"):
+        subject._expected_data_files("WS30.DWX", data_root)
 
 
 def test_cli_has_no_parameter_merit_cost_or_attempt_override() -> None:
