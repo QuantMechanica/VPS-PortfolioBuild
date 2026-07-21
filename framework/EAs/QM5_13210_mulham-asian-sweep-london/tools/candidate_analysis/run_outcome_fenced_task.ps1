@@ -4,7 +4,7 @@ param(
     [ValidateSet('Identity', 'Probe', 'Register', 'Inspect', 'Start')]
     [string]$Operation,
 
-    [ValidatePattern('^(?:QM_QM13210_AUDIT_|QM_QM13210_XAU_AUDIT_)[0-9a-f]{24}$')]
+    [ValidatePattern('(?-i)^(?:QM_QM13210_AUDIT_|QM_QM13210_XAU_AUDIT_)[0-9a-f]{24}$')]
     [string]$TaskName,
 
     [string]$PythonExe,

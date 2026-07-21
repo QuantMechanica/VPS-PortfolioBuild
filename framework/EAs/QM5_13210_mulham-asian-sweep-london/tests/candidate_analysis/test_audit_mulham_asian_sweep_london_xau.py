@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import subprocess
 import sys
 from datetime import date, datetime, time, timedelta, timezone
 from decimal import Decimal
@@ -139,11 +140,19 @@ def _passing_cells() -> dict[str, list[subject.TradeRecord]]:
 
 def test_draft_contract_blocks_pre_until_explicit_source_and_adapter_freeze() -> None:
     draft = subject.validate_draft_contract()
-    assert draft["status"] == "DRAFT_PENDING_SOURCE_AND_ADAPTER_FREEZE"
+    assert draft["status"] == "DRAFT_PENDING_ATTEMPT_002_FINAL_FREEZE"
     assert draft["finalization"]["final_contract_must_bind_roles"] == sorted(
         subject.FINAL_ARTIFACT_ROLES
     )
     assert "adapter" in draft["finalization"]["final_contract_must_bind_roles"]
+    assert "scheduled_task_helper" in draft["finalization"][
+        "final_contract_must_bind_roles"
+    ]
+    assert "attempt001_closure" in draft["finalization"][
+        "final_contract_must_bind_roles"
+    ]
+    assert draft["run_namespace"]["attempt_id"] == "ATTEMPT_002"
+    assert draft["infrastructure_alternate"]["attempt003_plus_forbidden"] is True
     assert "artifact_bindings" not in draft
     with pytest.raises(subject.InvalidEvidence, match="finalize required"):
         subject.validate_analysis_contract()
@@ -372,7 +381,7 @@ def test_p95_axis_can_reject_a_center_pass(monkeypatch: pytest.MonkeyPatch) -> N
 
 
 def test_authorization_is_xau_only_and_separate_from_eurusd(
-    tmp_path: Path,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     now = datetime(2026, 7, 21, 8, 0, tzinfo=timezone.utc)
     payload = {
@@ -392,6 +401,7 @@ def test_authorization_is_xau_only_and_separate_from_eurusd(
         "expires_utc": "2026-07-21T19:55:00Z",
     }
     path = tmp_path / "authorization.json"
+    monkeypatch.setattr(subject, "ATTEMPT_002_AUTHORIZATION_PATH", path)
     _write_json(path, payload)
     subject.validate_authorization(path, "a" * 64, now=now)
     payload["authorized_symbol"] = "EURUSD.DWX"
@@ -447,11 +457,55 @@ def test_finalized_adapter_binding_rejects_byte_tamper(
 
 
 def test_pre_and_assert_bind_the_same_finalized_adapter_bytes(
-    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     adapter = subject.file_binding(TOOL)
-    frozen = {"artifact_bindings": {"adapter": adapter}, "binding": {"sha256": "a" * 64}}
-    base_pre = {"bindings": {"tool": adapter}}
+    helper = subject.file_binding(
+        EA_ROOT / "tools" / "candidate_analysis" / "run_outcome_fenced_task.ps1"
+    )
+    closure_binding = subject.file_binding(subject.ATTEMPT_001_CLOSURE_PATH)
+    closure = {
+        "binding": closure_binding,
+        "status": "INVALID_INFRASTRUCTURE_CLOSED_OUTCOME_BLIND",
+        "control_bindings": {},
+        "native_start_count": 0,
+        "task_absent": True,
+    }
+    infra = {"attempt002_is_only_authorized_alternate": True}
+    frozen = {
+        "artifact_bindings": {
+            "adapter": adapter,
+            "scheduled_task_helper": helper,
+            "attempt001_closure": closure_binding,
+        },
+        "binding": {"sha256": "a" * 64},
+        "infrastructure_alternate": infra,
+    }
+    base_pre = {
+        "bindings": {
+            "tool": adapter,
+            "scheduled_task_helper": helper,
+            "attempt001_closure": closure_binding,
+        },
+        "cost_schedule": subject.ATTEMPT_002_COST_SCHEDULE,
+    }
+    readiness = tmp_path / "readiness.json"
+    manifest = tmp_path / "manifest.json"
+    readiness.write_bytes(b"readiness")
+    manifest.write_bytes(b"manifest")
+    monkeypatch.setattr(
+        subject,
+        "ATTEMPT_002_INPUT_BINDINGS",
+        {
+            "research_readiness_receipt": subject.file_binding(readiness),
+            "data_manifest": subject.file_binding(manifest),
+        },
+    )
+    monkeypatch.setattr(
+        subject,
+        "validate_attempt001_invalid_infrastructure_closure",
+        lambda *args, **kwargs: closure,
+    )
     monkeypatch.setattr(subject, "_contract_receipt", lambda: frozen)
     monkeypatch.setattr(subject, "_assert_pristine_one_shot_namespace", lambda: None)
     monkeypatch.setattr(subject, "_assert_no_sibling_or_prior_namespace", lambda: None)
@@ -459,20 +513,24 @@ def test_pre_and_assert_bind_the_same_finalized_adapter_bytes(
     monkeypatch.setattr(subject, "_BASE_PREFLIGHT", lambda *_args: dict(base_pre))
     pre = subject.preflight(
         "XAUUSD.DWX",
-        Path("readiness.json"),
-        Path("manifest.json"),
+        readiness,
+        manifest,
         subject.BUILD_RECEIPT_PATH,
         subject.ALLOWED_RUN_ROOT,
     )
     assert pre["xau_preregistration"] == frozen
+    assert pre["attempt_id"] == "ATTEMPT_002"
+    assert pre["attempt001_invalid_infrastructure_closure"] == closure
+    pre_path = tmp_path / "pre.json"
+    monkeypatch.setattr(subject, "ATTEMPT_002_PRE_RECEIPT_PATH", pre_path)
     monkeypatch.setattr(subject, "_BASE_ASSERT_PRE_RECEIPT", lambda *_args: pre)
-    assert subject.assert_pre_receipt(Path("pre.json"), "b" * 64) == pre
+    assert subject.assert_pre_receipt(pre_path, "b" * 64) == pre
 
     drifted = json.loads(json.dumps(frozen))
-    drifted["artifact_bindings"]["adapter"]["sha256"] = "c" * 64
+    drifted["artifact_bindings"]["scheduled_task_helper"]["sha256"] = "c" * 64
     monkeypatch.setattr(subject, "_contract_receipt", lambda: drifted)
-    with pytest.raises(subject.InvalidEvidence, match="adapter bytes"):
-        subject.assert_pre_receipt(Path("pre.json"), "b" * 64)
+    with pytest.raises(subject.InvalidEvidence, match="scheduled_task_helper bytes"):
+        subject.assert_pre_receipt(pre_path, "b" * 64)
 
 
 def test_sibling_prior_and_legacy_xau_namespaces_fail_closed(
@@ -480,18 +538,26 @@ def test_sibling_prior_and_legacy_xau_namespaces_fail_closed(
 ) -> None:
     family = tmp_path / "QM5_13210"
     namespace = family / "XAUUSD_MULHAM_NATIVE_001"
-    exact = namespace / "ATTEMPT_001"
+    attempt001 = namespace / "ATTEMPT_001"
+    exact = namespace / "ATTEMPT_002"
     legacy = family / "XAUUSD_DWX"
     monkeypatch.setattr(subject, "RUN_FAMILY_ROOT", family)
     monkeypatch.setattr(subject, "RUN_NAMESPACE_ROOT", namespace)
+    monkeypatch.setattr(subject, "ATTEMPT_001_RUN_ROOT", attempt001)
     monkeypatch.setattr(subject, "ALLOWED_RUN_ROOT", exact)
     monkeypatch.setattr(subject, "LEGACY_RUN_ROOT", legacy)
+    monkeypatch.setattr(
+        subject,
+        "validate_attempt001_invalid_infrastructure_closure",
+        lambda *args, **kwargs: {"status": "INVALID_INFRASTRUCTURE_CLOSED_OUTCOME_BLIND"},
+    )
+    attempt001.mkdir(parents=True)
     exact.mkdir(parents=True)
     subject._assert_pristine_one_shot_namespace()
 
-    sibling = namespace / "ATTEMPT_000"
+    sibling = namespace / "ATTEMPT_003"
     sibling.mkdir()
-    with pytest.raises(subject.InvalidEvidence, match="sibling/prior XAU attempt"):
+    with pytest.raises(subject.InvalidEvidence, match=r"ATTEMPT_003\+"):
         subject._assert_pristine_one_shot_namespace()
     sibling.rmdir()
     legacy.mkdir()
@@ -525,7 +591,9 @@ def test_cli_has_no_cost_merit_or_terminal_override_surface() -> None:
         "--resume",
     }
     assert not (pre_options | launch_options) & forbidden
-    assert {"base_tool", "xau_contract"} <= subject.REQUIRED_BINDING_ROLES
+    assert {"attempt001_closure", "base_tool", "xau_contract"} <= (
+        subject.REQUIRED_BINDING_ROLES
+    )
     assert "slippage_calibration" not in subject.REQUIRED_BINDING_ROLES
     finalize_options = {
         option
@@ -533,3 +601,120 @@ def test_cli_has_no_cost_merit_or_terminal_override_surface() -> None:
         for option in action.option_strings
     }
     assert "--source-commit" in finalize_options
+
+
+@pytest.mark.parametrize(
+    "task_name",
+    [
+        "QM_QM13210_AUDIT_" + ("a" * 24),
+        "QM_QM13210_XAU_AUDIT_" + ("0" * 24),
+    ],
+)
+def test_scheduled_task_helper_accepts_exact_eur_and_xau_prefixes(
+    task_name: str,
+) -> None:
+    helper = EA_ROOT / "tools" / "candidate_analysis" / "run_outcome_fenced_task.ps1"
+    completed = subprocess.run(
+        [
+            str(subject.B.POWERSHELL_PATH),
+            "-NoLogo",
+            "-NoProfile",
+            "-NonInteractive",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
+            str(helper),
+            "-Operation",
+            "Identity",
+            "-TaskName",
+            task_name,
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    assert completed.returncode == 0, completed.stderr
+
+
+@pytest.mark.parametrize(
+    "task_name",
+    [
+        "QM_QM13210_AUDIT_" + ("A" * 24),
+        "QM_QM13210_XAU_AUDIT_" + ("a" * 23),
+        "QM_QM13210_XAU_AUDIT_" + ("a" * 25),
+        "QM_QM13210_XAUUSD_AUDIT_" + ("a" * 24),
+        "QM_QM13210_XAU_AUDIT_" + ("g" * 24),
+        "QM_QM13210_AUDIT_XAU_" + ("a" * 24),
+    ],
+)
+def test_scheduled_task_helper_rejects_near_prefixes(task_name: str) -> None:
+    helper = EA_ROOT / "tools" / "candidate_analysis" / "run_outcome_fenced_task.ps1"
+    completed = subprocess.run(
+        [
+            str(subject.B.POWERSHELL_PATH),
+            "-NoLogo",
+            "-NoProfile",
+            "-NonInteractive",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
+            str(helper),
+            "-Operation",
+            "Identity",
+            "-TaskName",
+            task_name,
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    assert completed.returncode != 0
+
+
+def test_attempt001_closure_binds_control_files_and_zero_native_starts(
+    tmp_path: Path,
+) -> None:
+    validated = subject.validate_attempt001_invalid_infrastructure_closure(
+        probe_task_absence=False
+    )
+    assert validated["native_start_count"] == 0
+    assert validated["task_absent"] is True
+    assert set(validated["control_bindings"]) == {
+        "pre_receipt",
+        "authorization",
+        "launch_job",
+        "launch_state",
+    }
+
+    payload = subject.load_json(subject.ATTEMPT_001_CLOSURE_PATH)
+    payload["native_start_proof"]["native_start_count"] = 1
+    tampered = tmp_path / "tampered_closure.json"
+    _write_json(tampered, payload)
+    with pytest.raises(subject.InvalidEvidence, match="closure semantic drift"):
+        subject.validate_attempt001_invalid_infrastructure_closure(
+            tampered, probe_task_absence=False
+        )
+
+
+def test_attempt002_is_the_only_execution_namespace_and_resume_is_forbidden(
+    tmp_path: Path,
+) -> None:
+    subject._assert_exact_run_root(subject.ATTEMPT_002_RUN_ROOT)
+    with pytest.raises(subject.InvalidEvidence, match="single frozen root"):
+        subject._assert_exact_run_root(subject.ATTEMPT_001_RUN_ROOT)
+    with pytest.raises(subject.InvalidEvidence, match="single frozen root"):
+        subject._assert_exact_run_root(subject.RUN_NAMESPACE_ROOT / "ATTEMPT_003")
+    with pytest.raises(subject.AuthorizationError, match="resume is forbidden"):
+        subject.launch_persistent_task(
+            subject.ATTEMPT_002_PRE_RECEIPT_PATH,
+            "a" * 64,
+            subject.ATTEMPT_002_AUTHORIZATION_PATH,
+            subject.ATTEMPT_002_STATE_PATH,
+            resume=True,
+        )
+    with pytest.raises(subject.InvalidEvidence, match="POST receipt"):
+        subject._assert_exact_control_path(
+            tmp_path / "post.json", subject.ATTEMPT_002_POST_RECEIPT_PATH, "POST receipt"
+        )
