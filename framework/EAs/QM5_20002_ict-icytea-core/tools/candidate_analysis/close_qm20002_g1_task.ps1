@@ -226,7 +226,19 @@ public static class QmG1ProcessProbe
         {
             try
             {
-                QmG1ProcessRecord record = ProbeOne(process.Id, process.ProcessName);
+                int processId;
+                string processName;
+                try
+                {
+                    processId = process.Id;
+                    processName = process.ProcessName;
+                }
+                catch (InvalidOperationException)
+                {
+                    // The process exited between enumeration and handle capture.
+                    continue;
+                }
+                QmG1ProcessRecord record = ProbeOne(processId, processName);
                 if (record != null) records.Add(record);
             }
             finally

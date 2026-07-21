@@ -313,9 +313,14 @@ def invoke_fixture(
     *,
     crash_hook=lambda _point: None,
 ) -> Mapping[str, Any]:
+    authorized_utc = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    if contract.intent_path.exists():
+        authorized_utc = json.loads(
+            contract.intent_path.read_text(encoding="utf-8")
+        )["authorized_utc"]
     return closure.close_g1(
         contract,
-        authorized_utc="2026-07-21T03:00:00Z",
+        authorized_utc=authorized_utc,
         expected_utility_sha256=utility_sha,
         expected_task_helper_sha256=helper_sha,
         auditor=fake_auditor,

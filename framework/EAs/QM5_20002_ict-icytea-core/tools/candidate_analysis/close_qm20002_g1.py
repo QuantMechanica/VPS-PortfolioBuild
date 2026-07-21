@@ -518,6 +518,12 @@ def _assert_initial_state(
         or state.get("pre_receipt_sha256") != contract.pre_sha256
     ):
         raise ClosureError("G1 state is not the exact untouched PENDING resume_count=0 state")
+    _assert_no_outcome_side_effects(contract)
+
+
+def _assert_no_outcome_side_effects(contract: ClosureContract) -> None:
+    """Prove absence by path metadata only; never enumerate or open outcome data."""
+
     if (contract.run_root / "worker").exists():
         raise ClosureError("G1 worker tree exists; outcome-blind closure is forbidden")
     if (contract.run_root / "post_receipt.json").exists():
@@ -908,6 +914,7 @@ def close_g1(
             state_binding = file_binding(contract.state_path)
             state = load_strict_json(contract.state_path, "launch state")
             auditor._validate_launch_state_shape(state)
+            _assert_no_outcome_side_effects(contract)
             job_binding = chain["bindings"]["launch_job"]
             is_initial = state_binding["sha256"] == contract.state_before_sha256
 
@@ -919,6 +926,10 @@ def close_g1(
             else:
                 if not is_initial:
                     raise ClosureError("closure intent is absent after launch-state mutation")
+                if parse_owner_utc(authorized_utc) < datetime.now(timezone.utc) - timedelta(
+                    minutes=15
+                ):
+                    raise ClosureError("new OWNER closure intent is older than 15 minutes")
                 _assert_initial_state(
                     contract, state, job_binding, chain["authorization"]
                 )
@@ -1065,6 +1076,7 @@ def close_g1(
             state_after_binding = file_binding(contract.state_path)
             state_after = load_strict_json(contract.state_path, "closed launch state")
             auditor._validate_launch_state_shape(state_after)
+            _assert_no_outcome_side_effects(contract)
             proof = _terminal_proof(state_after, str(intent_binding["sha256"]))
             fresh_absent = task_call(contract, job, pre, helper_sha, "ProbeAbsent")
             _validate_absent_probe(fresh_absent, contract)
