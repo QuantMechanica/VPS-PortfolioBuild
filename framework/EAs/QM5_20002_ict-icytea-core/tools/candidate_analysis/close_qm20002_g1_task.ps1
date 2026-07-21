@@ -344,7 +344,6 @@ function Get-QmStableProcessEvidence {
                 $_.ImagePath.StartsWith($dev1Root, [System.StringComparison]::OrdinalIgnoreCase)
             }).Count
             return [ordered]@{
-                matching_worker_process_count = 0
                 dev1_owner_process_count = $ownerCount
                 dev1_root_process_count = $rootCount
                 relevant_process_identity_sha256 = $signature
@@ -518,7 +517,8 @@ function Get-QmClosureEvidence {
         non_null_action_count = Get-QmNonNullItemCount -Items $Task.Actions
         task_xml_sha256 = Get-QmTaskXmlSha256
         task_contract_sha256 = Get-QmTaskContractSha256 -Task $Task -Contract $Contract -PrincipalSid $Identity.Sid
-        matching_worker_process_count = [int]$processes.matching_worker_process_count
+        matching_worker_process_count = 0
+        matching_worker_process_count_basis = 'INFERRED_FROM_EXACT_NEVER_RUN_TASK_HISTORY_AND_NON_RUNNING_TASK_STATE'
         dev1_owner_process_count = [int]$processes.dev1_owner_process_count
         dev1_root_process_count = [int]$processes.dev1_root_process_count
         relevant_process_identity_sha256 = [string]$processes.relevant_process_identity_sha256
@@ -552,7 +552,8 @@ if ($Operation -eq 'ProbeAbsent') {
         task_name = $TaskName
         task_path = '\'
         absent = $true
-        matching_worker_process_count = [int]$processes.matching_worker_process_count
+        matching_worker_process_count = 0
+        matching_worker_process_count_basis = 'INFERRED_FROM_DURABLE_NEVER_RUN_CLOSURE_PROOF_REQUIRED_BY_CALLER'
         dev1_owner_process_count = [int]$processes.dev1_owner_process_count
         dev1_root_process_count = [int]$processes.dev1_root_process_count
         relevant_process_identity_sha256 = [string]$processes.relevant_process_identity_sha256
@@ -656,7 +657,8 @@ Assert-QmNoProcessSideEffects -Evidence $processes
     before = $evidence
     expected_disabled_task_xml_sha256 = $ExpectedDisabledXmlSha256
     absent = $true
-    matching_worker_process_count = [int]$processes.matching_worker_process_count
+    matching_worker_process_count = 0
+    matching_worker_process_count_basis = 'INFERRED_FROM_EXACT_NEVER_RUN_TASK_HISTORY_AND_SUCCESSFUL_UNREGISTER'
     dev1_owner_process_count = [int]$processes.dev1_owner_process_count
     dev1_root_process_count = [int]$processes.dev1_root_process_count
     relevant_process_identity_sha256 = [string]$processes.relevant_process_identity_sha256
