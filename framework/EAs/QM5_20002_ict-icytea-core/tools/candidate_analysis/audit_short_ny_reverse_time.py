@@ -145,6 +145,7 @@ CONTROL_ANCESTOR_RAW_GENERIC_RIGHTS_ALLOWED = [
 CONTROL_ANCESTOR_RAW_GENERIC_RIGHTS_FORBIDDEN = ["GENERIC_ALL"]
 CONTROL_ANCESTOR_RAW_UNKNOWN_BITS_DISPOSITION = "REJECT"
 CONTROL_ANCESTOR_CREATOR_PLACEHOLDER_POLICY = "INHERIT_ONLY_KNOWN_MASK_ALLOWED"
+CONTROL_ANCESTOR_CREATOR_IDENTITY_PROOF_REQUIRED = True
 COMPILE_CONTROLLER_PATH = (
     EA_ROOT / "tools" / "candidate_analysis" / "compile_short_ny_v3.ps1"
 )
@@ -610,6 +611,7 @@ def _audit_control_contract() -> dict[str, Any]:
         "ancestor_raw_generic_rights_forbidden": CONTROL_ANCESTOR_RAW_GENERIC_RIGHTS_FORBIDDEN,
         "ancestor_raw_unknown_bits_disposition": CONTROL_ANCESTOR_RAW_UNKNOWN_BITS_DISPOSITION,
         "ancestor_creator_placeholder_policy": CONTROL_ANCESTOR_CREATOR_PLACEHOLDER_POLICY,
+        "ancestor_creator_identity_proof_required": CONTROL_ANCESTOR_CREATOR_IDENTITY_PROOF_REQUIRED,
         "qmdev1_privilege_surface_verified": True,
         "privileged_group_sids_forbidden": CONTROL_PRIVILEGED_GROUP_SIDS,
         "privileges_forbidden": CONTROL_FORBIDDEN_PRIVILEGES,
@@ -760,6 +762,7 @@ def _control_acl_call(
         "ancestor_raw_generic_rights_forbidden",
         "ancestor_raw_unknown_bits_disposition",
         "ancestor_creator_placeholder_policy",
+        "ancestor_creator_identity_proof_required",
         "qmdev1_privilege_surface_verified",
         "privileged_group_sids_forbidden",
         "privileges_forbidden",
@@ -791,6 +794,8 @@ def _control_acl_call(
         != CONTROL_ANCESTOR_RAW_UNKNOWN_BITS_DISPOSITION
         or result.get("ancestor_creator_placeholder_policy")
         != CONTROL_ANCESTOR_CREATOR_PLACEHOLDER_POLICY
+        or result.get("ancestor_creator_identity_proof_required")
+        is not CONTROL_ANCESTOR_CREATOR_IDENTITY_PROOF_REQUIRED
         or result.get("qmdev1_privilege_surface_verified") is not True
         or result.get("privileged_group_sids_forbidden")
         != CONTROL_PRIVILEGED_GROUP_SIDS

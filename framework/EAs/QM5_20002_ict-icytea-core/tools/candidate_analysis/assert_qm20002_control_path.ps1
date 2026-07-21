@@ -65,6 +65,7 @@ $ancestorRawGenericRightsAllowed = @(
 $ancestorRawGenericRightsForbidden = @('GENERIC_ALL')
 $ancestorRawUnknownBitsDisposition = 'REJECT'
 $ancestorCreatorPlaceholderPolicy = 'INHERIT_ONLY_KNOWN_MASK_ALLOWED'
+$ancestorCreatorIdentityProofRequired = $true
 $actualHelperSha256 = (Get-FileHash -LiteralPath $PSCommandPath -Algorithm SHA256 -ErrorAction Stop).Hash.ToLowerInvariant()
 if ($actualHelperSha256 -cne $ExpectedHelperSha256) {
     throw 'QM20002 control-path helper byte binding drifted.'
@@ -287,6 +288,57 @@ public static class QmLsaRightsReader
     [DllImport("advapi32.dll")]
     private static extern UInt32 LsaNtStatusToWinError(UInt32 status);
 
+    private enum TOKEN_INFORMATION_CLASS
+    {
+        TokenOwner = 4,
+        TokenPrimaryGroup = 5
+    }
+
+    [DllImport("advapi32.dll", SetLastError = true)]
+    private static extern bool GetTokenInformation(
+        IntPtr tokenHandle,
+        TOKEN_INFORMATION_CLASS tokenInformationClass,
+        IntPtr tokenInformation,
+        Int32 tokenInformationLength,
+        out Int32 returnLength);
+
+    private static string GetTokenSid(
+        IntPtr tokenHandle,
+        TOKEN_INFORMATION_CLASS informationClass)
+    {
+        Int32 length;
+        GetTokenInformation(tokenHandle, informationClass, IntPtr.Zero, 0, out length);
+        const Int32 ERROR_INSUFFICIENT_BUFFER = 122;
+        Int32 error = Marshal.GetLastWin32Error();
+        if (length <= 0 || error != ERROR_INSUFFICIENT_BUFFER)
+            throw new Win32Exception(error);
+
+        IntPtr buffer = Marshal.AllocHGlobal(length);
+        try
+        {
+            if (!GetTokenInformation(
+                    tokenHandle, informationClass, buffer, length, out length))
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+            IntPtr sid = Marshal.ReadIntPtr(buffer);
+            return new SecurityIdentifier(sid).Value;
+        }
+        finally
+        {
+            Marshal.FreeHGlobal(buffer);
+        }
+    }
+
+    public static string[] CurrentCreatorSids()
+    {
+        using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
+        {
+            return new string[] {
+                GetTokenSid(identity.Token, TOKEN_INFORMATION_CLASS.TokenOwner),
+                GetTokenSid(identity.Token, TOKEN_INFORMATION_CLASS.TokenPrimaryGroup)
+            };
+        }
+    }
+
     public static string[] Enumerate(string sidText)
     {
         const UInt32 POLICY_LOOKUP_NAMES = 0x00000800;
@@ -391,6 +443,8 @@ function ConvertTo-QmUInt32AccessMask([int32]$AccessMask) {
 function Assert-QmAncestorRawDescriptor(
     [Security.AccessControl.RawSecurityDescriptor]$Descriptor,
     $UntrustedSids,
+    [string]$EffectiveCreatorOwnerSid,
+    [string]$EffectiveCreatorGroupSid,
     [string]$Candidate
 ) {
     if ($null -eq $Descriptor.DiscretionaryAcl) {
@@ -410,18 +464,42 @@ function Assert-QmAncestorRawDescriptor(
         }
         $rawMask = ConvertTo-QmUInt32AccessMask -AccessMask $ace.AccessMask
         $disposition = Get-QmAncestorAccessMaskDisposition -AccessMask $rawMask
+        $propagates = ($ace.AceFlags -band (
+                [Security.AccessControl.AceFlags]::ContainerInherit -bor
+                [Security.AccessControl.AceFlags]::ObjectInherit
+            )) -ne 0
+        $inheritOnly = ($ace.AceFlags -band [Security.AccessControl.AceFlags]::InheritOnly) -ne 0
+        $writeOrCreateMask = [Convert]::ToUInt64('40000116', 16)
+        $hasWriteOrCreate = (([uint64]$rawMask -band $writeOrCreateMask) -ne 0)
         if ($creatorPlaceholder) {
-            $inheritOnly = ($ace.AceFlags -band [Security.AccessControl.AceFlags]::InheritOnly) -ne 0
+            $effectiveCreatorSid = if ($sid -ceq 'S-1-3-0') {
+                $EffectiveCreatorOwnerSid
+            } else {
+                $EffectiveCreatorGroupSid
+            }
+            $effectiveCreatorUntrusted = [string]::IsNullOrWhiteSpace($effectiveCreatorSid) -or
+                $UntrustedSids.Contains($effectiveCreatorSid)
             # A normal CI/OI/IO CREATOR OWNER/GROUP ACE is substituted with the
             # privileged bootstrap creator on a new child.  An attacker-created
             # race winner is never adopted: the exact owner/DACL closure rejects
-            # it.  Unknown masks and non-inherit-only replace authority remain
-            # fail-closed.
+            # it.  This exception requires a proven non-untrusted effective
+            # owner/primary-group SID.  Unknown masks, malformed inheritance,
+            # or non-inherit-only replace authority remain fail-closed.
             if ($disposition -ceq 'AMBIGUOUS' -or
+                ($inheritOnly -and -not $propagates) -or
+                (($disposition -cne 'SAFE' -or $hasWriteOrCreate) -and
+                    $effectiveCreatorUntrusted) -or
                 (-not $inheritOnly -and $disposition -cne 'SAFE')) {
                 throw "Creator placeholder ACE can replace the QM20002 control root through ancestor: $Candidate"
             }
             continue
+        }
+        # An inheritable untrusted write/create ACE would apply to the newly
+        # created anchor before Set-ExactDirectoryAcl seals it.  Reject that
+        # transient race even though the same non-inheritable right on the
+        # ancestor cannot delete or rename an already protected child.
+        if ($propagates -and $hasWriteOrCreate) {
+            throw "Untrusted inheritable write ACE races the QM20002 control-root seal through ancestor: $Candidate"
         }
         if ($disposition -cne 'SAFE') {
             throw "QMDev1 or one of its groups can replace the QM20002 control root through ancestor: $Candidate"
@@ -431,6 +509,12 @@ function Assert-QmAncestorRawDescriptor(
 
 function Assert-AncestorProtection {
     $untrusted = Get-UntrustedSids
+    $effectiveCreatorSids = @([QmLsaRightsReader]::CurrentCreatorSids())
+    if ($effectiveCreatorSids.Count -ne 2 -or
+        [string]::IsNullOrWhiteSpace([string]$effectiveCreatorSids[0]) -or
+        [string]::IsNullOrWhiteSpace([string]$effectiveCreatorSids[1])) {
+        throw 'Unable to prove QM20002 bootstrap creator owner/primary-group SIDs.'
+    }
     $cursor = [IO.Path]::GetPathRoot($controlRoot)
     $parent = Split-Path -Parent $anchorRoot
     $ancestors = New-Object System.Collections.Generic.List[string]
@@ -461,6 +545,8 @@ function Assert-AncestorProtection {
         Assert-QmAncestorRawDescriptor `
             -Descriptor $rawDescriptor `
             -UntrustedSids $untrusted `
+            -EffectiveCreatorOwnerSid ([string]$effectiveCreatorSids[0]) `
+            -EffectiveCreatorGroupSid ([string]$effectiveCreatorSids[1]) `
             -Candidate $cursor
     }
 }
@@ -525,6 +611,7 @@ if ($Operation -eq 'PrepareDirectory') {
     ancestor_raw_generic_rights_forbidden = @($ancestorRawGenericRightsForbidden)
     ancestor_raw_unknown_bits_disposition = $ancestorRawUnknownBitsDisposition
     ancestor_creator_placeholder_policy = $ancestorCreatorPlaceholderPolicy
+    ancestor_creator_identity_proof_required = $ancestorCreatorIdentityProofRequired
     qmdev1_privilege_surface_verified = $true
     privileged_group_sids_forbidden = @($privilegedGroupSids)
     privileges_forbidden = @($dangerousPrivileges)
