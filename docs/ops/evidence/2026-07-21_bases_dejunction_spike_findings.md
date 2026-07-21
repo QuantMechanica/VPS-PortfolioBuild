@@ -51,9 +51,35 @@ window (the source files are live-locked).
    T5, confirm it re-syncs EURUSD into T5's own store and completes with NO
    cross-terminal `error [32]`.
 
-## Status / urgency
-T5 rolled back to the clean junction (verified). The storm-mitigation holds the
-line in production (storm victims self-heal, no longer die), so this is a
-deliberate scheduled op, not an emergency. Recommended next step: validate path 2
-(the no-seed cold-cache variant) on T5 — if it holds, the whole fleet fix needs
-no OFF window; if not, path 1 in the 26.07 window. Weekend ToDo block C.
+## ★ CONTENTION PROOF — path 2 (no-seed) CONCLUSIVELY VALIDATED (2026-07-21 12:24-12:31)
+
+Ran the no-seed restructure on parked T5, then a GDAXI.DWX 2020 ad-hoc backtest
+**while the factory was actively storming** the shared store (T7=GDAXI, T8=EURUSD,
+T2=NDX, T4=SP500, T1=WS30 all running EUR/index Q02+ concurrently). Measured
+`error [32]` sharing-violations in the SAME window:
+
+| Terminal | store | error[32] (sharing-violation) |
+|---|---|---|
+| **T5** | **isolated (own Darwinex-Live)** | **0** |
+| T7 (GDAXI) | shared | 707 |
+| T4 (SP500) | shared | 542 |
+| T8 (EURUSD) | shared | 440 |
+| T2 (NDX) | shared | 318 |
+
+T5 latched a valid GDAXI report (PASS), re-synced 110 files into its OWN store from
+the server, and logged **zero** sharing-violations while the shared terminals took
+300-700 each. The single T5 `history-not-found` line was the run_01 cold-cache miss,
+which self-healed on run_02 (exactly the class the deployed mitigation handles) — NOT
+contention. **An isolated per-terminal Darwinex-Live eliminates the storm entirely,
+factory-ON, no seed copy, no OFF window.**
+
+## Status / urgency — REVISED
+The no-seed fleet fix is validated factory-ON. The fleet rollout (restructure T2..T10:
+real bases + nested Custom junction + empty own Darwinex-Live, per-terminal reversible)
+can be done WITHOUT a Factory-OFF window — each terminal cold-syncs its conversion
+history from the server into its isolated store on first use, self-healed by the
+mitigation. Caveat: a first-use cold-cache re-sync burst across the fleet (transient,
+mitigation-covered). The seeded path (needs OFF) is now unnecessary. T5 rolled back to
+clean junction (verified). Recommended: execute the no-seed fleet rollout as a
+deliberate op (one terminal at a time, verify, rollback-ready) — OWNER's call on timing;
+no OFF window required. Weekend ToDo block C to be updated.
