@@ -69,8 +69,13 @@ No other path, commit, size, hash, or normalization exception is permitted.
 4. Publish or validate the immutable OWNER intent.
 5. Re-prove the exact scheduled task and compare-and-swap the original state
    to a schema-valid `QUIESCE_PENDING` terminal `REJECT` while both locks are
-   still held. This terminal binds the intent and ready-task proof and already
-   has `outcome_fence_crossed=false` and `no_resume=true`.
+   still held. The pre-terminal probe accepts only exact `Ready` or `Running`
+   state with unchanged identity/XML/contract, zero triggers, and zero direct
+   DEV1 side effects. Only `Ready` plus `never_run=true` is classified as no
+   race; `Running`, or `Ready` plus `never_run=false` after a very short start,
+   is durably classified as a start race before either lock is released. The
+   terminal binds the canonical pre-terminal evidence and already has
+   `outcome_fence_crossed=false` and `no_resume=true`.
 6. Disable the exact task under those locks. A concurrently started exact task
    blocks on the state lock and, after release, can only observe the already
    durable terminal REJECT. Wait outside the locks until the task is disabled
@@ -109,6 +114,14 @@ Direct evidence is reported for DEV1-owner and DEV1-root image counts. The
 matching-worker count is clearly labeled as an inference from the task's exact
 never-run/non-running history plus those direct zero counts; it is not presented
 as a command-line match.
+
+One narrow exception applies to the pre-terminal `Ready`-or-`Running` probe
+while the caller holds the state lock: a racing task may already have created a
+DEV1 process. That probe records stable nonnegative owner/root counts, native
+identity hash, method, and double-snapshot proof without rejecting before the
+durable terminal state is published. The complete evidence is canonically
+hashed into `QUIESCE_PENDING`. Quiesce, AwaitQuiesced, final-state, absence, and
+receipt validation continue to require exact zero DEV1-owner/root counts.
 
 ## Crash recovery
 

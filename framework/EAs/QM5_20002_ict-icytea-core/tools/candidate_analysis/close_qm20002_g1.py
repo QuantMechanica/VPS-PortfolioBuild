@@ -682,7 +682,11 @@ def _assert_exact_fields(value: Mapping[str, Any], expected: set[str], label: st
 
 
 def _validate_process_evidence(
-    evidence: Mapping[str, Any], label: str, *, exact_fields: bool = False
+    evidence: Mapping[str, Any],
+    label: str,
+    *,
+    exact_fields: bool = False,
+    allow_observed_dev1_processes: bool = False,
 ) -> None:
     if exact_fields:
         _assert_exact_fields(evidence, PROCESS_EVIDENCE_KEYS, label)
@@ -693,9 +697,17 @@ def _validate_process_evidence(
             "INFERRED_FROM_"
         )
         or type(evidence.get("dev1_owner_process_count")) is not int
-        or evidence.get("dev1_owner_process_count") != 0
+        or evidence.get("dev1_owner_process_count", -1) < 0
+        or (
+            not allow_observed_dev1_processes
+            and evidence.get("dev1_owner_process_count") != 0
+        )
         or type(evidence.get("dev1_root_process_count")) is not int
-        or evidence.get("dev1_root_process_count") != 0
+        or evidence.get("dev1_root_process_count", -1) < 0
+        or (
+            not allow_observed_dev1_processes
+            and evidence.get("dev1_root_process_count") != 0
+        )
         or type(evidence.get("stable_snapshot_count")) is not int
         or evidence.get("stable_snapshot_count") != 2
         or evidence.get("process_probe_method") != PROCESS_PROBE_METHOD
@@ -712,6 +724,7 @@ def _validate_task_evidence(
     label: str,
     require_never_run: bool = True,
     allow_running: bool = False,
+    allow_observed_dev1_processes: bool = False,
 ) -> None:
     _assert_exact_fields(evidence, TASK_EVIDENCE_KEYS, label)
     expected_state = "Disabled" if disabled else "Ready"
@@ -743,7 +756,11 @@ def _validate_task_evidence(
             datetime.fromisoformat(str(evidence["last_run_utc"]).replace("Z", "+00:00"))
         except ValueError as exc:
             raise ClosureError(f"{label} last-run timestamp is malformed") from exc
-    _validate_process_evidence(evidence, label)
+    _validate_process_evidence(
+        evidence,
+        label,
+        allow_observed_dev1_processes=allow_observed_dev1_processes,
+    )
 
 
 def _validate_task_probe(
@@ -756,6 +773,7 @@ def _validate_task_probe(
     expected_principal_sid: str,
     require_never_run: bool = True,
     allow_running: bool = False,
+    allow_observed_dev1_processes: bool = False,
     expected_operation: str | None = None,
 ) -> Mapping[str, Any]:
     operation = expected_operation or (
@@ -791,6 +809,7 @@ def _validate_task_probe(
         label=label,
         require_never_run=require_never_run,
         allow_running=allow_running,
+        allow_observed_dev1_processes=allow_observed_dev1_processes,
     )
     return evidence
 
@@ -811,6 +830,7 @@ def _validate_preterminal_probe(
         expected_principal_sid=expected_principal_sid,
         require_never_run=False,
         allow_running=True,
+        allow_observed_dev1_processes=True,
         expected_operation="InspectReadyOrRunning",
     )
     state = evidence.get("state")

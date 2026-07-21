@@ -95,6 +95,8 @@ class FakeTaskRuntime:
         self.enabled = True
         self.started_race = False
         self.preterminal_race_state: str | None = None
+        self.preterminal_dev1_owner_count = 0
+        self.preterminal_dev1_root_count = 0
         self.operations: list[str] = []
 
     def __call__(
@@ -133,6 +135,17 @@ class FakeTaskRuntime:
                 evidence["state"] = self.preterminal_race_state
                 evidence["matching_worker_process_count_basis"] = (
                     "INFERRED_FROM_CALLER_HELD_STATE_LOCK_AND_DIRECT_ZERO_DEV1_OWNER_OR_ROOT"
+                )
+            evidence["dev1_owner_process_count"] = (
+                self.preterminal_dev1_owner_count
+            )
+            evidence["dev1_root_process_count"] = self.preterminal_dev1_root_count
+            if (
+                self.preterminal_dev1_owner_count > 0
+                or self.preterminal_dev1_root_count > 0
+            ):
+                evidence["matching_worker_process_count_basis"] = (
+                    "INFERRED_FROM_CALLER_HELD_STATE_LOCK_WITH_STABLE_COMMAND_LINE_FREE_DEV1_INVENTORY"
                 )
             return {
                 **common,
@@ -1050,3 +1063,87 @@ def test_start_race_observes_durable_reject_before_disable_and_closes(
         "never_run"
     ] is False
     assert task.exists is False
+
+
+@pytest.mark.parametrize("preterminal_state", ["Running", "Ready"])
+def test_start_between_intent_and_preterminal_probe_is_rejected_before_disable(
+    tmp_path: Path, preterminal_state: str
+) -> None:
+    contract, fake_auditor, task, utility_sha, helper_sha = make_fixture(tmp_path)
+    task.preterminal_race_state = preterminal_state
+    if preterminal_state == "Running":
+        task.preterminal_dev1_owner_count = 1
+        task.preterminal_dev1_root_count = 1
+
+    class StopAfterPreliminary(RuntimeError):
+        pass
+
+    with pytest.raises(StopAfterPreliminary):
+        invoke_fixture(
+            contract,
+            fake_auditor,
+            task,
+            utility_sha,
+            helper_sha,
+            crash_hook=lambda point: (
+                (_ for _ in ()).throw(StopAfterPreliminary())
+                if point == "after_preliminary_state"
+                else None
+            ),
+        )
+    pending = json.loads(contract.state_path.read_text(encoding="utf-8"))
+    assert pending["status"] == "REJECT"
+    assert "closure_phase=QUIESCE_PENDING" in pending["terminal"]["error"]
+    assert "task_start_race_observed=true" in pending["terminal"]["error"]
+    assert "preterminal_evidence_sha256=" in pending["terminal"]["error"]
+    assert task.enabled is True
+    assert task.operations[:2] == ["InspectReady", "InspectReadyOrRunning"]
+
+    result = invoke_fixture(
+        contract, fake_auditor, task, utility_sha, helper_sha
+    )
+    assert result["status"] == "CLOSED"
+    receipt = json.loads(contract.receipt_path.read_text(encoding="utf-8"))
+    assert receipt["launch_state"]["task_start_race_observed"] is True
+    assert receipt["scheduled_task"]["quiesced_probe_binding"][
+        "task_start_race_observed"
+    ] is True
+    assert receipt["scheduled_task"]["quiesced_probe_binding"][
+        "never_run"
+    ] is False
+    assert task.exists is False
+
+
+def test_non_preterminal_ready_probe_rejects_nonzero_dev1_inventory(
+    tmp_path: Path,
+) -> None:
+    contract, _fake_auditor, _task, _utility_sha, helper_sha = make_fixture(
+        tmp_path
+    )
+    evidence = task_evidence(disabled=False)
+    evidence["dev1_owner_process_count"] = 1
+    evidence["dev1_root_process_count"] = 1
+    evidence["matching_worker_process_count_basis"] = (
+        "INFERRED_FROM_STABLE_COMMAND_LINE_FREE_DEV1_INVENTORY"
+    )
+    probe = {
+        "operation": "InspectReady",
+        "helper_sha256": helper_sha,
+        "task_name": contract.task_name,
+        "task_path": "\\",
+        "principal_sid": "S-1-5-21-1",
+        "evidence": evidence,
+        "absent": False,
+    }
+    with pytest.raises(
+        closure.ClosureError,
+        match="process evidence is not exact and command-line-free",
+    ):
+        closure._validate_task_probe(
+            probe,
+            contract,
+            disabled=False,
+            label="ordinary ready probe",
+            expected_helper_sha256=helper_sha,
+            expected_principal_sid="S-1-5-21-1",
+        )

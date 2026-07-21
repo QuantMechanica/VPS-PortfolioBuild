@@ -515,7 +515,8 @@ function Get-QmClosureEvidence {
         [Parameter(Mandatory = $true)]$Contract,
         [Parameter(Mandatory = $true)]$Identity,
         [Parameter(Mandatory = $true)][bool]$RequireDisabled,
-        [bool]$RequireNeverRun = $true
+        [bool]$RequireNeverRun = $true,
+        [bool]$AllowObservedDev1Processes = $false
     )
     Assert-QmTaskContract -Task $Task -Contract $Contract -Identity $Identity -RequireDisabled $RequireDisabled
     $info = Get-QmTaskInfoEvidence
@@ -523,9 +524,17 @@ function Get-QmClosureEvidence {
         throw "Scheduled task '$TaskName' has run or has ambiguous run history."
     }
     $processes = Get-QmStableProcessEvidence
-    Assert-QmNoProcessSideEffects -Evidence $processes
+    if (-not $AllowObservedDev1Processes) {
+        Assert-QmNoProcessSideEffects -Evidence $processes
+    }
     $preterminalRaceProbe = $Operation -ceq 'InspectReadyOrRunning' -and -not [bool]$info.never_run
-    $workerInferenceBasis = if ($Task.State.ToString() -ceq 'Running' -or $preterminalRaceProbe) {
+    $preterminalInventoryObserved = $Operation -ceq 'InspectReadyOrRunning' -and (
+        [int]$processes.dev1_owner_process_count -gt 0 -or
+        [int]$processes.dev1_root_process_count -gt 0
+    )
+    $workerInferenceBasis = if ($preterminalInventoryObserved) {
+        'INFERRED_FROM_CALLER_HELD_STATE_LOCK_WITH_STABLE_COMMAND_LINE_FREE_DEV1_INVENTORY'
+    } elseif ($Task.State.ToString() -ceq 'Running' -or $preterminalRaceProbe) {
         'INFERRED_FROM_CALLER_HELD_STATE_LOCK_AND_DIRECT_ZERO_DEV1_OWNER_OR_ROOT'
     } elseif ([bool]$info.never_run) {
         'INFERRED_FROM_EXACT_NEVER_RUN_TASK_HISTORY_AND_NON_RUNNING_TASK_STATE'
@@ -591,7 +600,7 @@ if ($Operation -eq 'ProbeAbsent') {
 if ($Operation -in @('InspectReady', 'InspectReadyOrRunning')) {
     $readyTask = Get-QmExactTask
     $allowRunning = $Operation -ceq 'InspectReadyOrRunning'
-    $ready = Get-QmClosureEvidence -Task $readyTask -Contract $contract -Identity $identity -RequireDisabled $false -RequireNeverRun (-not $allowRunning)
+    $ready = Get-QmClosureEvidence -Task $readyTask -Contract $contract -Identity $identity -RequireDisabled $false -RequireNeverRun (-not $allowRunning) -AllowObservedDev1Processes $allowRunning
     if (-not $allowRunning -and $ready.state -cne 'Ready') {
         throw "Enabled G1 scheduled task '$TaskName' is not exactly Ready."
     }
