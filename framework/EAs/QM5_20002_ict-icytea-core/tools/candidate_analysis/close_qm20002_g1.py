@@ -889,6 +889,7 @@ def _validate_closed_state_historical_chain(
     *,
     require_final: bool,
 ) -> dict[str, str]:
+    _reassert_historical_bindings(chain)
     auditor._validate_launch_state_shape(state)
     original = intent.get("state_before_payload")
     if not isinstance(original, Mapping):
@@ -918,7 +919,10 @@ def _validate_closed_state_historical_chain(
     closed_finished = _parse_created_utc(
         state.get("finished_utc"), "closed state finished_utc"
     )
-    if not original_updated <= closed_finished <= closed_updated:
+    if (
+        not original_updated <= closed_finished <= closed_updated
+        or closed_updated > datetime.now(timezone.utc) + timedelta(minutes=5)
+    ):
         raise ClosureError("closed state chronology drift")
     proof = _terminal_proof(state, intent_sha256)
     if require_final and proof["phase"] != "CLOSED":
@@ -1005,6 +1009,20 @@ def _assert_dev1_inventory(chain: Mapping[str, Any], auditor: ModuleType) -> Non
     observed = auditor._dev1_run_inventory()
     if observed != expected:
         raise ClosureError("DEV1 run inventory changed from the exact pre-launch binding")
+
+
+def _reassert_historical_bindings(chain: Mapping[str, Any]) -> None:
+    bindings = chain.get("bindings")
+    if not isinstance(bindings, Mapping):
+        raise ClosureError("historical chain bindings are absent")
+    _assert_exact_fields(bindings, HISTORICAL_BINDING_KEYS, "historical chain bindings")
+    for key in sorted(HISTORICAL_BINDING_KEYS):
+        binding = bindings.get(key)
+        if not isinstance(binding, Mapping):
+            raise ClosureError(f"historical {key} binding is malformed")
+        observed = file_binding(Path(str(binding.get("path", ""))), str(binding.get("sha256", "")))
+        if observed != binding:
+            raise ClosureError(f"historical {key} bytes changed during closure")
 
 
 def _intent_payload(

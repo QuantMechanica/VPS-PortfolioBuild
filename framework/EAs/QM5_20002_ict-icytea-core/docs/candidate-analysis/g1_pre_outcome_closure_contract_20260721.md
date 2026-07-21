@@ -31,7 +31,8 @@ bytes, the frozen runtime files, commit
 the original state SHA-256
 `7aa51ce458420431db4cac94e500d3da07b82261312ba334cb80a7b420433ce7`, and a
 read-only proof that the exact task was `Ready`, enabled, never run, and had
-zero non-null triggers.
+zero non-null triggers. It also retains the complete original launch-state
+payload; its canonical bytes must reproduce the bound path, size, and SHA-256.
 
 ## Transition and lock order
 
@@ -42,15 +43,21 @@ zero non-null triggers.
    active cell, outcome timestamp, terminal, and empty cells. The `worker`
    tree and `post_receipt.json` must be absent; only path metadata is queried.
 4. Publish or validate the immutable OWNER intent.
-5. Re-prove the exact scheduled task, disable it under both locks, and prove
-   `Disabled`, never-run, zero-trigger quiescence.
-6. Compare-and-swap the exact original state to a state-schema-valid `REJECT`.
-   Its terminal has `outcome_fence_crossed=false`, `no_resume=true`, and an
-   error string binding the intent SHA, canonical quiesced-evidence SHA,
-   disabled task XML SHA, and task-contract SHA.
-7. Release both locks. Re-prove the disabled task, unregister only that exact
-   task, and prove it is absent.
-8. Reacquire the same global-to-state lock order, reassert the intent/state and
+5. Re-prove the exact scheduled task and compare-and-swap the original state
+   to a schema-valid `QUIESCE_PENDING` terminal `REJECT` while both locks are
+   still held. This terminal binds the intent and ready-task proof and already
+   has `outcome_fence_crossed=false` and `no_resume=true`.
+6. Disable the exact task under those locks. A concurrently started exact task
+   blocks on the state lock and, after release, can only observe the already
+   durable terminal REJECT. Wait outside the locks until the task is disabled
+   and non-running, then reacquire the locks and finalize the terminal with the
+   canonical quiesced-evidence SHA, disabled XML SHA, task-contract SHA, and
+   explicit start-race disposition.
+7. Revalidate every immutable original state field plus Job/Auth/Scheduler/PRE,
+   release both locks, unregister only that exact disabled task, and prove it
+   is absent.
+8. Reacquire the same global-to-state lock order, reassert all historical
+   bytes, the exact DEV1 pre-launch run inventory, intent/state, and
    absence proof, then publish the immutable closure receipt.
 
 The receipt binds state before and after, the intent, all historical artifacts,
@@ -79,8 +86,9 @@ Recovery is idempotent at every durable boundary:
 | Crash boundary | Recovery action |
 | --- | --- |
 | Intent published | Validate intent, then quiesce |
-| Task disabled, original state retained | Re-prove disabled task, publish REJECT CAS |
-| REJECT state published | Read task/XML proof hashes from terminal error, unregister |
+| Preliminary REJECT published | Disable/drain the task; no instance can pass the state lock |
+| Task disabled, terminal pending | Re-prove quiescence and finalize REJECT proof |
+| Final REJECT state published | Read task/XML proof hashes from terminal error, unregister |
 | Task unregistered | Prove absence, publish receipt |
 | Receipt published | Validate bytes and return `ALREADY_CLOSED` |
 
