@@ -15,11 +15,15 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_FTMO;
 input int    qm_news_stale_max_hours      = 336;
 input string qm_news_min_impact           = "high";
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
+// Transitional compatibility for the committed baseline setfiles.  -1 means
+// "use the canonical two-axis inputs above"; old sets explicitly provide 3.
+input bool   qm_filter_news_enabled       = true;
+input int    qm_filter_news_mode          = -1;
 
 input group "Friday Close"
 input bool   qm_friday_close_enabled    = true;
@@ -51,6 +55,7 @@ struct Strategy_SetupSnapshot
    bool     for_long;
    datetime sweep_stamp;
    datetime bos_stamp;
+   datetime ob_stamp;
    double   sweep_extreme;
    double   break_level;
    double   ob_low;
@@ -58,6 +63,14 @@ struct Strategy_SetupSnapshot
    double   opposing_liquidity;
    int      bos_shift;
   };
+
+QM_NewsTemporalMode       g_strategy_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+QM_NewsComplianceProfile  g_strategy_news_compliance = QM_NEWS_COMPLIANCE_FTMO;
+QM_NewsMode                g_strategy_news_legacy     = QM_NEWS_OFF;
+bool                       g_pending_remove_retry     = false;
+string                     g_pending_remove_reason    = "";
+bool                       g_position_close_retry     = false;
+string                     g_position_close_reason    = "";
 
 // perf-allowed: bespoke 3-left/3-right structure logic, called only from the
 // framework-gated Strategy_EntrySignal() path once per completed H1 bar.
@@ -73,12 +86,45 @@ void Strategy_ResetSetup(Strategy_SetupSnapshot &setup)
    setup.for_long = false;
    setup.sweep_stamp = 0;
    setup.bos_stamp = 0;
+   setup.ob_stamp = 0;
    setup.sweep_extreme = 0.0;
    setup.break_level = 0.0;
    setup.ob_low = 0.0;
    setup.ob_high = 0.0;
    setup.opposing_liquidity = 0.0;
    setup.bos_shift = 0;
+  }
+
+bool Strategy_ResolveNewsConfig()
+  {
+   g_strategy_news_legacy = QM_NEWS_OFF;
+   if(!qm_filter_news_enabled)
+     {
+      g_strategy_news_temporal = QM_NEWS_TEMPORAL_OFF;
+      g_strategy_news_compliance = QM_NEWS_COMPLIANCE_NONE;
+      return true;
+     }
+
+   if(qm_filter_news_mode >= 0)
+     {
+      if(qm_filter_news_mode > (int)QM_NEWS_NEWS_ONLY)
+         return false;
+      const QM_NewsMode compatibility_mode = (QM_NewsMode)qm_filter_news_mode;
+      g_strategy_news_temporal = QM_NewsLegacyTemporal(compatibility_mode);
+      g_strategy_news_compliance = QM_NewsLegacyCompliance(compatibility_mode);
+      return QM_NewsAxesAreValid(g_strategy_news_temporal,
+                                 g_strategy_news_compliance);
+     }
+
+   g_strategy_news_temporal = qm_news_temporal;
+   g_strategy_news_compliance = qm_news_compliance;
+   if(qm_news_mode_legacy != QM_NEWS_OFF)
+     {
+      g_strategy_news_temporal = QM_NewsLegacyTemporal(qm_news_mode_legacy);
+      g_strategy_news_compliance = QM_NewsLegacyCompliance(qm_news_mode_legacy);
+     }
+   return QM_NewsAxesAreValid(g_strategy_news_temporal,
+                              g_strategy_news_compliance);
   }
 
 bool Strategy_IsSwingHigh(const int shift, const int width)
@@ -178,10 +224,12 @@ double Strategy_NearestOpposingSwing(const bool for_long,
 bool Strategy_FindOrderBlockBeforeBOS(const bool for_long,
                              const int bos_shift,
                              double &ob_low,
-                             double &ob_high)
+                             double &ob_high,
+                             datetime &ob_stamp)
   {
    ob_low = 0.0;
    ob_high = 0.0;
+   ob_stamp = 0;
    const int max_scan_shift = bos_shift + MathMax(strategy_structure_lookback, 2);
    // Only candles older than the BOS bar are eligible.  The first matching
    // candle is the last opposite candle known when the BOS closed.
@@ -198,7 +246,8 @@ bool Strategy_FindOrderBlockBeforeBOS(const bool for_long,
 
       ob_low = BarLow(shift);
       ob_high = BarHigh(shift);
-      return (ob_low > 0.0 && ob_high > ob_low);
+      ob_stamp = BarStamp(shift);
+      return (ob_low > 0.0 && ob_high > ob_low && ob_stamp > 0);
      }
    return false;
   }
@@ -285,11 +334,27 @@ bool Strategy_HasOurWorkingOrder()
    return false;
   }
 
+long Strategy_ZoneFingerprint(const Strategy_SetupSnapshot &setup)
+  {
+   const double tick_size = Strategy_TickSize();
+   if(tick_size <= 0.0 || setup.ob_low <= 0.0 || setup.ob_high <= setup.ob_low)
+      return -1;
+   const long low_ticks = (long)MathRound(setup.ob_low / tick_size);
+   const long high_ticks = (long)MathRound(setup.ob_high / tick_size);
+   long fingerprint = (low_ticks * 1000003 + high_ticks * 9176) % 1000000007;
+   if(fingerprint < 0)
+      fingerprint = -fingerprint;
+   return fingerprint;
+  }
+
 string Strategy_SetupId(const Strategy_SetupSnapshot &setup)
   {
+   const long zone_fingerprint = Strategy_ZoneFingerprint(setup);
+   if(setup.ob_stamp <= 0 || zone_fingerprint < 0)
+      return "";
    if(setup.for_long)
-      return StringFormat("Q10629L_%I64d", (long)setup.bos_stamp);
-   return StringFormat("Q10629S_%I64d", (long)setup.bos_stamp);
+      return StringFormat("Q10629L_%I64d_%I64d", (long)setup.ob_stamp, zone_fingerprint);
+   return StringFormat("Q10629S_%I64d_%I64d", (long)setup.ob_stamp, zone_fingerprint);
   }
 
 bool Strategy_SetupPreviouslyUsed(const Strategy_SetupSnapshot &setup,
@@ -298,10 +363,12 @@ bool Strategy_SetupPreviouslyUsed(const Strategy_SetupSnapshot &setup,
    history_ready = false;
    const int magic = QM_FrameworkMagic();
    const datetime now = TimeCurrent();
-   if(magic <= 0 || now <= 0 || setup.bos_stamp <= 0)
+   if(magic <= 0 || now <= 0 || setup.ob_stamp <= 0)
       return false;
 
    const string setup_id = Strategy_SetupId(setup);
+   if(StringLen(setup_id) <= 0 || StringLen(setup_id) > 31)
+      return false;
    for(int i = OrdersTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = OrderGetTicket(i);
@@ -318,7 +385,7 @@ bool Strategy_SetupPreviouslyUsed(const Strategy_SetupSnapshot &setup,
         }
      }
 
-   datetime history_from = setup.bos_stamp - 86400;
+   datetime history_from = setup.ob_stamp - 86400;
    if(history_from < 0)
       history_from = 0;
    if(!HistorySelect(history_from, now))
@@ -377,6 +444,10 @@ bool Strategy_FreezeSetupForBOS(const bool for_long,
       return false;
    if(MathAbs(bos_close - bos_open) < strategy_bos_body_atr_mult * bos_atr)
       return false;
+   if(for_long && bos_close <= bos_open)
+      return false;
+   if(!for_long && bos_close >= bos_open)
+      return false;
 
    const bool fvg = for_long ? (bos_low > fvg_reference_high)
                              : (bos_high < fvg_reference_low);
@@ -418,7 +489,9 @@ bool Strategy_FreezeSetupForBOS(const bool for_long,
 
       double ob_low = 0.0;
       double ob_high = 0.0;
-      if(!Strategy_FindOrderBlockBeforeBOS(for_long, bos_shift, ob_low, ob_high))
+      datetime ob_stamp = 0;
+      if(!Strategy_FindOrderBlockBeforeBOS(for_long, bos_shift,
+                                           ob_low, ob_high, ob_stamp))
          continue;
       const double ob_height = ob_high - ob_low;
       if(ob_height <= 0.0 || ob_height > strategy_ob_max_atr_mult * bos_atr)
@@ -433,6 +506,7 @@ bool Strategy_FreezeSetupForBOS(const bool for_long,
       setup.for_long = for_long;
       setup.sweep_stamp = sweep_stamp;
       setup.bos_stamp = bos_stamp;
+      setup.ob_stamp = ob_stamp;
       setup.sweep_extreme = for_long ? sweep_low : sweep_high;
       setup.break_level = break_level;
       setup.ob_low = ob_low;
@@ -451,19 +525,17 @@ bool Strategy_FindLatestSetup(const bool for_long,
                               Strategy_SetupSnapshot &setup)
   {
    Strategy_ResetSetup(setup);
-   // shift=2 is the most recent possible BOS: shift=1 is deliberately
-   // reserved for the later, distinct order-placement decision bar.
-   const int last_bos_shift = MathMax(2, strategy_pending_bars + 1);
-   for(int bos_shift = 2; bos_shift <= last_bos_shift; ++bos_shift)
-      if(Strategy_FreezeSetupForBOS(for_long, bos_shift, setup))
-         return true;
-   return false;
+   // The BOS is the just-closed bar (shift 1); the limit decision happens on
+   // the strictly later current bar (shift 0).  A restart mid-bar may invoke
+   // the first-call new-bar edge, so Strategy_SetupStillPristine also inspects
+   // the fully reconstructed shift-0 high/low before any order is allowed.
+   return Strategy_FreezeSetupForBOS(for_long, 1, setup);
   }
 
 bool Strategy_SetupStillPristine(const Strategy_SetupSnapshot &setup,
                                  const double entry)
   {
-   if(!setup.valid || entry <= 0.0 || setup.bos_shift < 2)
+   if(!setup.valid || entry <= 0.0 || setup.bos_shift < 1)
       return false;
 
    // Every bar checked here closed after the BOS.  If midpoint mitigation or
@@ -483,6 +555,17 @@ bool Strategy_SetupStillPristine(const Strategy_SetupSnapshot &setup,
       if(!setup.for_long && (high >= entry || close > setup.ob_high))
          return false;
      }
+
+   const datetime current_stamp = BarStamp(0);
+   const double current_high = BarHigh(0);
+   const double current_low = BarLow(0);
+   if(current_stamp <= setup.bos_stamp || current_high <= 0.0 ||
+      current_low <= 0.0 || current_high < current_low)
+      return false;
+   if(setup.for_long && current_low <= entry)
+      return false;
+   if(!setup.for_long && current_high >= entry)
+      return false;
    return true;
   }
 
@@ -503,14 +586,15 @@ bool Strategy_BuildRetestOrder(const Strategy_SetupSnapshot &setup,
    if(!Strategy_SetupStillPristine(setup, entry))
       return false;
 
-   const int elapsed_wait_bars = MathMax(0, setup.bos_shift - 2);
-   const int remaining_bars = strategy_pending_bars - elapsed_wait_bars;
-   if(remaining_bars <= 0)
+   const string setup_id = Strategy_SetupId(setup);
+   if(StringLen(setup_id) <= 0 || StringLen(setup_id) > 31)
       return false;
 
    req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = remaining_bars * PeriodSeconds(PERIOD_H1);
-   req.reason = Strategy_SetupId(setup);
+   // GTC is deliberate.  Exactly strategy_pending_bars actually closed H1
+   // bars are enforced by Strategy_ManagePendingOrders, not wall-clock time.
+   req.expiration_seconds = 0;
+   req.reason = setup_id;
 
    if(setup.for_long)
      {
@@ -653,7 +737,9 @@ bool Strategy_TryClosedH1BarsSince(const datetime opened_at,
 
    // Copy the bars needed for the threshold as an availability proof.  An
    // incomplete series is fail-closed: no time-exit assertion is emitted.
-   const int verify_count = MathMin(open_shift, MathMax(1, strategy_time_exit_bars));
+   const int required_window = MathMax(MathMax(1, strategy_time_exit_bars),
+                                       MathMax(1, strategy_pending_bars));
+   const int verify_count = MathMin(open_shift, required_window);
    MqlRates closed_rates[];
    if(CopyRates(_Symbol, PERIOD_H1, 1, verify_count, closed_rates) != verify_count) // perf-allowed: max card hold window.
       return false;
@@ -661,6 +747,210 @@ bool Strategy_TryClosedH1BarsSince(const datetime opened_at,
       return false;
 
    closed_bars = open_shift;
+   return true;
+  }
+
+bool Strategy_IsFridayCutoff(const datetime broker_time)
+  {
+   if(!qm_friday_close_enabled || broker_time <= 0 ||
+      qm_friday_close_hour_broker < 0 || qm_friday_close_hour_broker > 23)
+      return false;
+   MqlDateTime broker_parts;
+   ZeroMemory(broker_parts);
+   TimeToStruct(broker_time, broker_parts);
+   return (broker_parts.day_of_week == 5 &&
+           broker_parts.hour >= qm_friday_close_hour_broker);
+  }
+
+bool Strategy_NewsAllowsOrders(const datetime broker_now)
+  {
+   if(g_strategy_news_temporal == QM_NEWS_TEMPORAL_OFF &&
+      g_strategy_news_compliance == QM_NEWS_COMPLIANCE_NONE)
+      return true;
+   if(broker_now <= 0 || Strategy_NewsFilterHook(broker_now))
+      return false;
+   if(!QM_NewsAllowsTrade2(_Symbol, broker_now,
+                           g_strategy_news_temporal,
+                           g_strategy_news_compliance))
+      return false;
+
+   // A pending order can fill before OnTick gets a chance to cancel it on the
+   // first blackout tick.  Query through the end of the current H1 bar and
+   // remove/block now when the first boundary lies in that interval.
+   const datetime current_h1_open = BarStamp(0);
+   const int h1_seconds = PeriodSeconds(PERIOD_H1);
+   if(current_h1_open <= 0 || h1_seconds <= 0)
+      return false;
+   const datetime broker_deadline = current_h1_open + h1_seconds;
+   if(broker_deadline < broker_now)
+      return false;
+
+   datetime next_block_start = 0;
+   const QM_NewsBlockStartResult boundary =
+      QM_NewsNextBlockStart(_Symbol,
+                            broker_now,
+                            broker_deadline,
+                            g_strategy_news_temporal,
+                            g_strategy_news_compliance,
+                            next_block_start);
+   if(boundary == QM_NEWS_BLOCKSTART_DATA_ERROR)
+      return false;
+   if(boundary == QM_NEWS_BLOCKSTART_FOUND)
+      return false;
+   return (boundary == QM_NEWS_BLOCKSTART_NONE && next_block_start == 0);
+  }
+
+bool Strategy_CloseOurPositions(const string reason)
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   bool requests_ok = true;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+        {
+         requests_ok = false;
+         continue;
+        }
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol ||
+         (int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      if(!QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY))
+         requests_ok = false;
+     }
+   return (requests_ok && !Strategy_HasOurPosition());
+  }
+
+bool Strategy_RetryPositionClose()
+  {
+   if(!g_position_close_retry)
+      return true;
+   if(!Strategy_HasOurPosition())
+     {
+      g_position_close_retry = false;
+      g_position_close_reason = "";
+      return true;
+     }
+   if(!Strategy_CloseOurPositions(g_position_close_reason))
+      return false;
+   g_position_close_retry = false;
+   g_position_close_reason = "";
+   return true;
+  }
+
+bool Strategy_RemoveOurWorkingOrders(const string reason)
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   bool requests_ok = true;
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+        {
+         requests_ok = false;
+         continue;
+        }
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol ||
+         (int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+      if(!QM_TM_RemovePendingOrder(ticket, reason))
+         requests_ok = false;
+     }
+   return (requests_ok && !Strategy_HasOurWorkingOrder());
+  }
+
+bool Strategy_PendingExpiryReason(string &reason)
+  {
+   reason = "";
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+     {
+      reason = "pending_magic_unavailable";
+      return true;
+     }
+
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+        {
+         reason = "pending_order_select_failed";
+         return true;
+        }
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol ||
+         (int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+
+      const datetime setup_time = (datetime)OrderGetInteger(ORDER_TIME_SETUP);
+      int closed_bars = 0;
+      if(!Strategy_TryClosedH1BarsSince(setup_time, closed_bars))
+        {
+         reason = "pending_age_data_missing";
+         return true;
+        }
+      if(closed_bars >= MathMax(1, strategy_pending_bars))
+        {
+         reason = "pending_closed_h1_expiry";
+         return true;
+        }
+     }
+   return false;
+  }
+
+bool Strategy_ManagePendingOrders(const bool new_bar,
+                                  const bool force_remove,
+                                  const string force_reason)
+  {
+   if(!Strategy_HasOurWorkingOrder())
+     {
+      if(g_pending_remove_retry && Strategy_HasOurPosition())
+        {
+         g_position_close_retry = true;
+         g_position_close_reason = "pending_cancel_fill_race";
+        }
+      g_pending_remove_retry = false;
+      g_pending_remove_reason = "";
+      return true;
+     }
+
+   string removal_reason = "";
+   bool must_remove = false;
+   if(g_pending_remove_retry)
+     {
+      must_remove = true;
+      removal_reason = g_pending_remove_reason;
+     }
+   else if(force_remove)
+     {
+      must_remove = true;
+      removal_reason = force_reason;
+     }
+   else if(new_bar)
+      must_remove = Strategy_PendingExpiryReason(removal_reason);
+
+   if(!must_remove)
+      return false;
+   if(StringLen(removal_reason) <= 0)
+      removal_reason = "pending_fail_closed_remove";
+
+   g_pending_remove_retry = true;
+   g_pending_remove_reason = removal_reason;
+   if(!Strategy_RemoveOurWorkingOrders(removal_reason))
+      return false;
+
+   if(Strategy_HasOurPosition())
+     {
+      g_position_close_retry = true;
+      g_position_close_reason = "pending_cancel_fill_race";
+     }
+   g_pending_remove_retry = false;
+   g_pending_remove_reason = "";
    return true;
   }
 
@@ -714,12 +1004,20 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
   {
+   g_pending_remove_retry = false;
+   g_pending_remove_reason = "";
+   g_position_close_retry = false;
+   g_position_close_reason = "";
+   if(!Strategy_ResolveNewsConfig() ||
+      qm_friday_close_hour_broker < 0 || qm_friday_close_hour_broker > 23)
+      return INIT_PARAMETERS_INCORRECT;
+
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode_legacy,
+                        g_strategy_news_legacy,
                         qm_friday_close_enabled,
                         qm_friday_close_hour_broker,
                         30,
@@ -728,8 +1026,8 @@ int OnInit()
                         qm_news_min_impact,
                         qm_rng_seed,
                         qm_stress_reject_probability,
-                        qm_news_temporal,
-                        qm_news_compliance))
+                        g_strategy_news_temporal,
+                        g_strategy_news_compliance))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_10629_et-ob-bos-imb\"}");
@@ -748,49 +1046,86 @@ void OnTick()
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(QM_FrameworkHandleFridayClose())
+   if(broker_now <= 0)
+      return;
+   const bool new_bar = QM_IsNewBar();
+   if(new_bar)
+      QM_EquityStreamOnNewBar();
+
+   // Framework Friday close is position-only and once-per-day.  The strategy
+   // adds pending-order cancellation and retries both failed paths every tick.
+   const bool framework_friday_handled = QM_FrameworkHandleFridayClose();
+   const bool friday_cutoff = Strategy_IsFridayCutoff(broker_now);
+   if(friday_cutoff)
+     {
+      Strategy_ManagePendingOrders(new_bar, true, "friday_cutoff_pending");
+      if(Strategy_HasOurPosition())
+        {
+         g_position_close_retry = true;
+         g_position_close_reason = "friday_cutoff_position";
+        }
+      Strategy_RetryPositionClose();
+      return;
+     }
+   if(framework_friday_handled)
+      return;
+
+   bool spread_allows_orders = true;
+   bool news_allows_orders = true;
+   const bool had_working_order = Strategy_HasOurWorkingOrder();
+   if(had_working_order || new_bar)
+     {
+      spread_allows_orders = Strategy_SpreadAllowed();
+      news_allows_orders = Strategy_NewsAllowsOrders(broker_now);
+     }
+
+   bool pending_blocks = false;
+   if(had_working_order)
+     {
+      const bool force_remove = (!spread_allows_orders || !news_allows_orders);
+      string removal_reason = "";
+      if(!news_allows_orders)
+         removal_reason = "pending_news_blackout_or_boundary";
+      else if(!spread_allows_orders)
+         removal_reason = "pending_spread_block";
+      pending_blocks = !Strategy_ManagePendingOrders(new_bar,
+                                                     force_remove,
+                                                     removal_reason);
+     }
+
+   if(g_position_close_retry)
+     {
+      Strategy_RetryPositionClose();
+      return;
+     }
+   if(pending_blocks || Strategy_HasOurWorkingOrder())
       return;
 
    Strategy_ManageOpenPosition();
 
-   // The card's opposite-BOS and 36-H1 exits are closed-bar decisions.  Keep
-   // Friday liquidation above this gate, but never inspect Bid/Ask intrabar for
-   // a structure exit.
-   if(!QM_IsNewBar())
-      return;
-
-   QM_EquityStreamOnNewBar();
-
-   if(Strategy_ExitSignal())
+   // Only a new-bar edge creates the close intent; subsequent ticks merely
+   // retry the same intent.  On restart, QM_IsNewBar's first-call edge safely
+   // reconstructs the decision from the still-closed shift-1 bar.
+   if(new_bar && Strategy_ExitSignal())
      {
-      const int magic = QM_FrameworkMagic();
-      for(int i = PositionsTotal() - 1; i >= 0; --i)
-        {
-         const ulong ticket = PositionGetTicket(i);
-         if(!PositionSelectByTicket(ticket))
-            continue;
-         if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-            continue;
-         if(PositionGetInteger(POSITION_MAGIC) != magic)
-            continue;
-         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
-        }
+      g_position_close_retry = true;
+      g_position_close_reason = "closed_h1_strategy_exit";
+     }
+   if(g_position_close_retry)
+     {
+      Strategy_RetryPositionClose();
       return;
      }
+
+   if(!new_bar)
+      return;
 
    if(Strategy_NoTradeFilter())
       return;
 
-   // News is an entry authorization only.  It must not suppress the closed-bar
-   // time/opposite-BOS exits above or the framework Friday close.
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
+   // News is entry/pending authorization only.  Current blackout, proactive
+   // next-boundary DATA_ERROR/FOUND, and stale calendar all fail closed.
+   if(!news_allows_orders)
       return;
 
    QM_EntryRequest req;

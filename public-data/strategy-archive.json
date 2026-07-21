@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-21T12:07:02.2566344Z",
-    "total":  3370,
+    "generated_at":  "2026-07-21T14:07:02.7704409Z",
+    "total":  3372,
     "items":  [
                   {
                       "slug":  "ath-breakout-atr-trail",
@@ -1352,6 +1352,12 @@
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-07-20T18:36:22.4230828Z"
+                  },
+                  {
+                      "slug":  "wti-dom1-long_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-21T12:55:38.9181692Z"
                   },
                   {
                       "slug":  "wti-feb-prem_card",
@@ -17606,6 +17612,12 @@
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-07-21T06:57:14.5031996Z"
+                  },
+                  {
+                      "slug":  "QM5_20028_wti-dom1-long_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-21T12:56:27.0397800Z"
                   },
                   {
                       "slug":  "QM5_2003_nnfx-wave-sniper",
