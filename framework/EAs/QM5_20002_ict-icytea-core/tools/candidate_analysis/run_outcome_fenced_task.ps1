@@ -13,11 +13,19 @@ param(
     [string]$RepoRoot,
 
     [ValidateRange(60, 777600)]
-    [int]$ExecutionLimitSeconds = 60
+    [int]$ExecutionLimitSeconds = 60,
+
+    [Parameter(Mandatory = $true)]
+    [ValidatePattern('^[0-9a-f]{64}$')]
+    [string]$ExpectedHelperSha256
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+$actualHelperSha256 = (Get-FileHash -LiteralPath $PSCommandPath -Algorithm SHA256 -ErrorAction Stop).Hash.ToLowerInvariant()
+if ($actualHelperSha256 -cne $ExpectedHelperSha256) {
+    throw 'QM20002 scheduled-task helper byte binding drifted.'
+}
 
 function ConvertTo-QmFullPath {
     param(
@@ -155,6 +163,7 @@ function Get-QmSafeTaskMetadata {
     }
     return [ordered]@{
         operation = $Operation
+        helper_sha256 = $actualHelperSha256
         task_name = $TaskName
         task_path = '\'
         state = $Task.State.ToString()
@@ -183,6 +192,7 @@ $identity = Get-QmCurrentIdentity
 if ($Operation -eq 'Identity') {
     [ordered]@{
         operation = 'Identity'
+        helper_sha256 = $actualHelperSha256
         principal_name = $identity.Name
         principal_sid = $identity.Sid
         logon_type = 'S4U'
@@ -201,6 +211,7 @@ if ($Operation -eq 'Probe') {
     if ($null -eq $task) {
         [ordered]@{
             operation = 'Probe'
+            helper_sha256 = $actualHelperSha256
             task_name = $TaskName
             exists = $false
         } | ConvertTo-Json -Depth 3 -Compress

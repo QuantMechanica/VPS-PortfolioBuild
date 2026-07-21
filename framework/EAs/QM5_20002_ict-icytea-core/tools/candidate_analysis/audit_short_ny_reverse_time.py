@@ -99,6 +99,33 @@ CONTROL_PATH_HELPER_PATH = (
     EA_ROOT / "tools" / "candidate_analysis" / "assert_qm20002_control_path.ps1"
 )
 AUDIT_CONTROL_ROOT = Path(r"D:\QM\reports\qm20002\short_ny_reverse_time")
+CONTROL_PRIVILEGED_GROUP_SIDS = [
+    "S-1-5-32-544",
+    "S-1-5-32-548",
+    "S-1-5-32-549",
+    "S-1-5-32-550",
+    "S-1-5-32-551",
+    "S-1-5-32-556",
+    "S-1-5-32-578",
+]
+CONTROL_FORBIDDEN_PRIVILEGES = [
+    "SeAssignPrimaryTokenPrivilege",
+    "SeBackupPrivilege",
+    "SeCreatePermanentPrivilege",
+    "SeCreateSymbolicLinkPrivilege",
+    "SeCreateTokenPrivilege",
+    "SeDebugPrivilege",
+    "SeImpersonatePrivilege",
+    "SeLoadDriverPrivilege",
+    "SeManageVolumePrivilege",
+    "SeRelabelPrivilege",
+    "SeRestorePrivilege",
+    "SeSecurityPrivilege",
+    "SeSystemEnvironmentPrivilege",
+    "SeTakeOwnershipPrivilege",
+    "SeTcbPrivilege",
+    "SeTrustedCredManAccessPrivilege",
+]
 COMPILE_CONTROLLER_PATH = (
     EA_ROOT / "tools" / "candidate_analysis" / "compile_short_ny_v3.ps1"
 )
@@ -556,6 +583,11 @@ def _audit_control_contract() -> dict[str, Any]:
         "owner_sid": "S-1-5-32-544",
         "full_control_sids": ["S-1-5-18", "S-1-5-32-544"],
         "reparse_points_forbidden": True,
+        "local_fixed_ntfs_required": True,
+        "untrusted_ancestor_owner_forbidden": True,
+        "qmdev1_privilege_surface_verified": True,
+        "privileged_group_sids_forbidden": CONTROL_PRIVILEGED_GROUP_SIDS,
+        "privileges_forbidden": CONTROL_FORBIDDEN_PRIVILEGES,
         "pre_receipt": "pre/pre_receipt.json",
         "authorization": "authorization/authorization.json",
         "authorization_consumption": "authorization/consumptions/<authorization_sha256>.json",
@@ -695,6 +727,11 @@ def _control_acl_call(
         "owner_sid",
         "full_control_sids",
         "reparse_points_forbidden",
+        "local_fixed_ntfs_required",
+        "untrusted_ancestor_owner_forbidden",
+        "qmdev1_privilege_surface_verified",
+        "privileged_group_sids_forbidden",
+        "privileges_forbidden",
         "helper_sha256",
     }
     if (
@@ -709,6 +746,12 @@ def _control_acl_call(
         or result.get("owner_sid") != "S-1-5-32-544"
         or result.get("full_control_sids") != ["S-1-5-18", "S-1-5-32-544"]
         or result.get("reparse_points_forbidden") is not True
+        or result.get("local_fixed_ntfs_required") is not True
+        or result.get("untrusted_ancestor_owner_forbidden") is not True
+        or result.get("qmdev1_privilege_surface_verified") is not True
+        or result.get("privileged_group_sids_forbidden")
+        != CONTROL_PRIVILEGED_GROUP_SIDS
+        or result.get("privileges_forbidden") != CONTROL_FORBIDDEN_PRIVILEGES
         or result.get("helper_sha256") != helper_sha
         or sha256_file(helper) != helper_sha
     ):

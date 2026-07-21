@@ -979,6 +979,21 @@ def test_control_helper_closes_volume_ancestor_owner_and_token_group_surface() -
     assert "function Ensure-ExactProtectedDirectory" in helper
     assert "Never repair an attacker-writable/owned pre-existing directory" in helper
     assert "Ensure-ExactProtectedDirectory $anchorRoot" in helper
+    assert "function Assert-QmDev1PrivilegeSurface" in helper
+    assert "LsaEnumerateAccountRights" in helper
+    assert "S-1-5-32-551" in helper  # Backup Operators
+    for privilege in (
+        "SeBackupPrivilege",
+        "SeRestorePrivilege",
+        "SeTakeOwnershipPrivilege",
+        "SeDebugPrivilege",
+        "SeImpersonatePrivilege",
+    ):
+        assert privilege in helper
+    assert (
+        "Assert-LocalFixedNtfsVolume\nAssert-QmDev1PrivilegeSurface\n"
+        "$fullPath = ConvertTo-ControlPath" in helper.replace("\r\n", "\n")
+    )
     assert helper.index("Assert-LocalFixedNtfsVolume") < helper.index(
         "$fullPath = ConvertTo-ControlPath"
     )

@@ -94,7 +94,11 @@ All mutable orchestration evidence is confined to
 `D:\QM\reports\qm20002\short_ny_reverse_time`. The helper rejects reparse
 points, non-local/non-NTFS volumes, an untrusted ancestor owner, and dangerous
 ancestor rights held by `QMDev1` or any applicable token/group SID. Directories
-and files are sealed to SYSTEM and Administrators only before publication.
+and files are sealed to SYSTEM and Administrators only before publication. A
+read-only LSA check also rejects privileged local-group membership and any
+direct or group-assigned Backup, Restore, TakeOwnership, Debug, Impersonate or
+other configured DACL-bypass/elevation privilege before the helper creates a
+directory, lock, temporary file or receipt.
 The exact runtime layout is:
 
 - `pre\pre_receipt.json`
