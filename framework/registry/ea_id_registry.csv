@@ -329,7 +329,7 @@ ea_id,slug,strategy_id,status,owner,created_at
 1487,as-kda-defensive,2df06de7-6a3a-5b06-9e6d-446d1a01fab9,active,Research,2026-05-19
 1488,as-ddm-pods,2df06de7-6a3a-5b06-9e6d-446d1a01fab9,active,Research,2026-05-19
 1489,as-permanent-tactical,2df06de7-6a3a-5b06-9e6d-446d1a01fab9,active,Research,2026-05-19
-1492,as-raa-balanced,2df06de7-6a3a-5b06-9e6d-446d1a01fab9,active,Research,2026-05-19
+1492,as-raa-balanced,2df06de7-6a3a-5b06-9e6d-446d1a01fab9,retired,Research,2026-05-19
 1493,hopwood-pattern-recognition-master-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Development,2026-07-07
 1494,dorsey-mass-index-reversal-bulge-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Research,2026-05-19
 1495,as-all-weather,2df06de7-6a3a-5b06-9e6d-446d1a01fab9,active,Research,2026-05-19
@@ -532,8 +532,8 @@ ea_id,slug,strategy_id,status,owner,created_at
 9204,mql5-mfi-trend,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Research,2026-05-19
 9195,mql5-signal-pulse,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Research,2026-05-19
 9196,mql5-macd-obv-zero,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Research,2026-05-19
-9197,mql5-macd-obv-div,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Research,2026-05-19
-9198,mql5-ha-ema-trend,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Research,2026-05-19
+9197,mql5-macd-obv-div,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,retired,Research,2026-05-19
+9198,mql5-ha-ema-trend,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,retired,Research,2026-05-19
 9199,mql5-liq-ma-sweep,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Research,2026-05-19
 9205,mql5-stoch-side,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Research,2026-05-19
 9206,mql5-wpr-ma,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,Research,2026-05-19
@@ -2155,7 +2155,7 @@ QM5_10386,et-lunch-brk,d6ae8bae-7b94-5209-9be7-fb72a1c3e3fe,active,Research,2026
 11274,iaf-rsi-ema,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
 11275,iaf-st-ema,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
 11276,iaf-donchian,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
-11277,blade-m5-ema-zone-scalp-alt,e78a9f1f-4e6a-563c-a080-915133d6ed28,active,Research,2026-05-23
+11277,blade-m5-ema-zone-scalp-alt,e78a9f1f-4e6a-563c-a080-915133d6ed28,retired,Research,2026-05-23
 11278,blade-4h-multi-ema-breakout,e78a9f1f-4e6a-563c-a080-915133d6ed28,active,Research,2026-05-23
 11279,blade-macd-stoch-divergence,e78a9f1f-4e6a-563c-a080-915133d6ed28,active,Research,2026-05-23
 11280,vegas-wave-ema144-169-fractal,e78a9f1f-4e6a-563c-a080-915133d6ed28,active,Research,2026-05-23
@@ -2305,7 +2305,7 @@ QM5_10386,et-lunch-brk,d6ae8bae-7b94-5209-9be7-fb72a1c3e3fe,active,Research,2026
 11424,williams-fakeout-day-stop-entry-d1,bb9e26af-ebd1-5a26-b1a8-cc4d78835f03,active,Research,2026-05-23
 11425,williams-smash-day-stop-entry-d1,bb9e26af-ebd1-5a26-b1a8-cc4d78835f03,active,Research,2026-05-23
 11426,williams-consecutive-down-closes-d1,bb9e26af-ebd1-5a26-b1a8-cc4d78835f03,active,Research,2026-05-23
-11427,connors-rsi2-sma200-pullback-d1-alt,4932e25a-fdfb-50cd-b5f5-18e55f3045c2,active,Research,2026-05-23
+11427,connors-rsi2-sma200-pullback-d1-alt,4932e25a-fdfb-50cd-b5f5-18e55f3045c2,retired,Research,2026-05-23
 11428,connors-double7s-sma200-d1-alt-a,4932e25a-fdfb-50cd-b5f5-18e55f3045c2,active,Research,2026-05-23
 11429,carter-london-open-box-breakout-m5,ec63ff86-b6dd-522b-ac8e-d90de82e2dee,active,Research,2026-05-23
 11430,carter-cci21-ema4080-zero-cross-m5,ec63ff86-b6dd-522b-ac8e-d90de82e2dee,active,Research,2026-05-23
@@ -2736,7 +2736,7 @@ QM5_11693,strat-mom,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Development,2026
 11854,xtreme-fade-bb-adx-m15,e8271b25-edfe-59fc-8609-f19c30aa857b,active,claude,2026-05-24
 11855,blade-m5-ema-zone-scalp-alt-b,7f6f2831-ea66-58f6-a7ff-a8c89a44803d,active,claude,2026-05-24
 11856,blade-4h-ema30-breakout-retrace,7f6f2831-ea66-58f6-a7ff-a8c89a44803d,active,claude,2026-05-24
-11857,blade-macd-stoch-divergence-h1-alt,7f6f2831-ea66-58f6-a7ff-a8c89a44803d,active,claude,2026-05-24
+11857,blade-macd-stoch-divergence-h1-alt,7f6f2831-ea66-58f6-a7ff-a8c89a44803d,retired,claude,2026-05-24
 11858,psar-ao-ac-triple-confluence,78d504fe-863c-59e6-945b-34b9e54b62e8,active,claude,2026-05-24
 11859,kobas-ema5-10-15-65-macd,1319514a-ba7e-5b62-b919-fc65b58efefe,active,claude,2026-05-24
 11860,macd-stoch-m1-scalp,005c4660-2425-5e61-a136-36f66b3ab782,active,claude,2026-05-24
@@ -2982,8 +2982,8 @@ QM5_11693,strat-mom,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Development,2026
 12095,QM5_1649_robopip-hlhb-trend-catcher-h1,6e967762-b26d-59a3-b076-35c17f2e7c36,active,DeepSeek,2026-05-26
 12096,QM5_1649_sperandeo-trend-fault-line-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,DeepSeek,2026-05-26
 12097,QM5_9166_tv-kn-ema-cross-atr-tp,c84ae47e-8ea0-56f1-8b25-4436b6dda5b5,active,DeepSeek,2026-05-26
-12098,QM5_9197_mql5-macd-obv-div,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,DeepSeek,2026-05-26
-12099,QM5_9198_mql5-ha-ema-trend,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,DeepSeek,2026-05-26
+12098,mql5-macd-obv-div,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,DeepSeek,2026-05-26
+12099,mql5-ha-ema-trend,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,DeepSeek,2026-05-26
 12100,QM5_9199_mql5-mfi-trend,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,DeepSeek,2026-05-26
 12101,QM5_9220_mql5-rvi-ma,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,DeepSeek,2026-05-26
 12102,QM5_9221_mql5-chaikin-zero,ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb,active,DeepSeek,2026-05-26
@@ -3583,6 +3583,10 @@ QM5_1403,harmonic-5-0-pattern-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Dev
 12622,comm-reversal-12m-contrarian-xauusd,05abad87-420d-5a51-8a9b-3c35ad795385,active,Research,2026-06-27
 12623,comm-mom-rev-interaction-xauusd,05abad87-420d-5a51-8a9b-3c35ad795385,active,Research,2026-06-27
 12624,edgelab-eurjpy-audjpy-cointegration,claude_cross_asset_discovery_2026-06-09,active,Development,2026-06-27
+12625,as-raa-balanced,2df06de7-6a3a-5b06-9e6d-446d1a01fab9,active,Research,2026-05-19
+12626,blade-m5-ema-zone-scalp-alt,e78a9f1f-4e6a-563c-a080-915133d6ed28,active,Research,2026-05-23
+12627,connors-rsi2-sma200-pullback-d1-alt,4932e25a-fdfb-50cd-b5f5-18e55f3045c2,active,Research,2026-05-23
+12628,blade-macd-stoch-divergence-h1-alt,7f6f2831-ea66-58f6-a7ff-a8c89a44803d,active,claude,2026-05-24
 12700,balke-range-breakout,BALKE-RANGE-BREAKOUT-USDJPY-2026,active,Development,2026-06-27
 12701,wti-oct-fade,GORSKA-WTI-CAL-2015,active,Development,2026-06-27
 12702,xngusd-winter-withdrawal-long,706222b7-2d60-5fdb-8dab-d722d3c96f92,active,Research,2026-06-27
