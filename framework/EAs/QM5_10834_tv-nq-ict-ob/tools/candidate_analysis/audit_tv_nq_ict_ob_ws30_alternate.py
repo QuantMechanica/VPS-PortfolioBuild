@@ -80,7 +80,7 @@ ALTERNATE_CONTRACT_PATH = (
     / "ws30_transport_infra_alternate002_contract_20260721.json"
 )
 EXPECTED_ALTERNATE_CONTRACT_SHA256 = (
-    "c9378a2be5be377704a15b27d7ecfae29a7684529f11ac4515ea6e59f65b3148"
+    "8414d4d52bf8e3c31d08fc27189ce259cc156695be108052af0ffa55ab22a284"
 )
 EXPECTED_DATA_RECEIPT_SIZE = 29800
 EXPECTED_DATA_RECEIPT_SHA256 = (
@@ -233,7 +233,16 @@ def _git_at(
     return completed
 
 
-def _clean_head(root: Path, label: str, *, detached_required: bool) -> str:
+def _normalized_clean_head(root: Path, label: str, *, detached_required: bool) -> str:
+    """Require semantic Git cleanliness without trusting stat-only porcelain dirt.
+
+    Exact raw bytes for the bound repository closure are checked separately by the
+    source/runtime byte-identity ledger.  This Git gate deliberately uses diff
+    exit codes because core.autocrlf can leave the index stat cache describing a
+    CRLF checkout after the exact LF overlay, causing porcelain to report `.M`
+    even though Git's normalized blob comparison is clean.
+    """
+
     root = W._assert_no_reparse_components(root, label)
     if not root.is_dir():
         raise B.InvalidEvidence(f"{label} does not exist: {root}")
@@ -242,14 +251,44 @@ def _clean_head(root: Path, label: str, *, detached_required: bool) -> str:
     ).resolve()
     if top != root.resolve():
         raise B.InvalidEvidence(f"{label} top-level drift: {top}")
-    status = _git_at(
-        root, "status", "--porcelain=v1", "--untracked-files=all"
-    ).stdout
-    if status:
-        raise B.InvalidEvidence(f"{label} is dirty")
     head = _git_at(root, "rev-parse", "HEAD^{commit}").stdout.strip().lower()
     if not re.fullmatch(r"[0-9a-f]{40}", head):
         raise B.InvalidEvidence(f"{label} HEAD is malformed")
+    staged = _git_at(
+        root,
+        "diff",
+        "--cached",
+        "--quiet",
+        "--no-ext-diff",
+        "--no-textconv",
+        "--exit-code",
+        "HEAD",
+        "--",
+        check=False,
+    )
+    if staged.returncode == 1:
+        raise B.InvalidEvidence(f"{label} has a staged diff")
+    if staged.returncode != 0:
+        raise B.InvalidEvidence(f"{label} staged-diff query failed")
+    normalized = _git_at(
+        root,
+        "diff",
+        "--quiet",
+        "--no-ext-diff",
+        "--no-textconv",
+        "--exit-code",
+        "--",
+        check=False,
+    )
+    if normalized.returncode == 1:
+        raise B.InvalidEvidence(f"{label} has a normalized worktree diff")
+    if normalized.returncode != 0:
+        raise B.InvalidEvidence(f"{label} normalized-diff query failed")
+    # Deliberately do not pass any exclude option: ignored caches/logs are
+    # untracked runtime mutations too and must fail the immutable-runtime gate.
+    untracked = _git_at(root, "ls-files", "--others", "-z").stdout
+    if untracked:
+        raise B.InvalidEvidence(f"{label} has untracked files")
     symbolic = _git_at(root, "symbolic-ref", "-q", "HEAD", check=False)
     if detached_required and not (
         symbolic.returncode == 1 and not symbolic.stdout.strip()
@@ -474,11 +513,15 @@ def validate_alternate_contract() -> dict[str, Any]:
                 "unrelated_main_worktree_paths_may_be_dirty",
                 "runtime_worktree_must_be_new",
                 "runtime_worktree_must_be_detached",
-                "runtime_worktree_must_be_clean",
+                "runtime_worktree_must_be_normalized_clean",
+                "runtime_worktree_staged_diff_forbidden",
+                "runtime_worktree_untracked_files_forbidden",
+                "runtime_worktree_porcelain_status_is_not_cleanliness_authority",
                 "runtime_worktree_must_not_equal_main_worktree",
                 "runtime_root_reparse_components_forbidden",
                 "exact_bound_file_byte_overlay_required",
-                "post_overlay_git_clean_required",
+                "post_overlay_normalized_git_clean_required",
+                "post_overlay_exact_raw_byte_ledger_required",
                 "runtime_head_must_contain_contract_and_closure",
                 "primary_contract_absolute_repo_paths_are_evidence_origin_only",
                 "runtime_relocation_requires_byte_identical_repository_relative_files",
@@ -500,9 +543,26 @@ def validate_alternate_contract() -> dict[str, Any]:
         "source_to_runtime_exact_byte_identity_required": True,
     }:
         raise B.InvalidEvidence("alternate main-worktree scoped-path policy drift")
+    runtime_cleanliness = runtime.get("runtime_worktree_cleanliness_policy")
+    if not isinstance(runtime_cleanliness, Mapping) or runtime_cleanliness != {
+        "staged_diff": "GIT_DIFF_CACHED_QUIET_EXIT_ZERO_REQUIRED",
+        "normalized_worktree_diff": "GIT_DIFF_QUIET_EXIT_ZERO_REQUIRED",
+        "untracked_files": (
+            "GIT_LS_FILES_OTHERS_INCLUDING_IGNORED_EMPTY_REQUIRED"
+        ),
+        "porcelain_status": (
+            "NON_AUTHORITATIVE_DUE_TO_AUTOCRLF_INDEX_STAT_FALSE_POSITIVES"
+        ),
+        "raw_bound_file_bytes": (
+            "EXACT_SOURCE_RUNTIME_SHA256_SIZE_LEDGER_REQUIRED"
+        ),
+    }:
+        raise B.InvalidEvidence("alternate runtime-cleanliness policy drift")
     launch_gate = payload.get("launch_gate")
     if not isinstance(launch_gate, Mapping) or (
-        launch_gate.get("scoped_main_paths_and_runtime_worktree_must_be_clean")
+        launch_gate.get(
+            "scoped_main_paths_and_normalized_clean_runtime_required"
+        )
         is not True
         or launch_gate.get("unrelated_main_worktree_dirt_does_not_block") is not True
         or launch_gate.get("launch_not_authorized_by_this_contract") is not True
@@ -1006,6 +1066,16 @@ def _runtime_bootstrap_bindings(root: Path) -> dict[str, Any]:
     }
 
 
+def _runtime_cleanliness_claim() -> dict[str, bool]:
+    return {
+        "staged_diff_absent": True,
+        "normalized_worktree_diff_absent": True,
+        "untracked_files_absent": True,
+        "porcelain_status_is_not_cleanliness_authority": True,
+        "raw_bound_file_byte_identity_ledger_verified": True,
+    }
+
+
 def validate_runtime_materialization_receipt() -> dict[str, Any]:
     binding = B.file_binding(RUNTIME_RECEIPT_PATH)
     payload = B.load_json(RUNTIME_RECEIPT_PATH)
@@ -1023,7 +1093,7 @@ def validate_runtime_materialization_receipt() -> dict[str, Any]:
         "main_scoped_path_count",
         "main_scoped_path_list_canonical_sha256",
         "unrelated_main_worktree_dirt_ignored",
-        "runtime_clean_at_materialization",
+        "runtime_cleanliness_at_materialization",
         "checkout_policy",
         "repository_binding_byte_identity_ledger",
         "bootstrap_bindings",
@@ -1043,19 +1113,21 @@ def validate_runtime_materialization_receipt() -> dict[str, Any]:
         or payload.get("main_scoped_path_list_canonical_sha256")
         != MAIN_SCOPED_PATH_LIST_SHA256
         or payload.get("unrelated_main_worktree_dirt_ignored") is not True
-        or payload.get("runtime_clean_at_materialization") is not True
+        or payload.get("runtime_cleanliness_at_materialization")
+        != _runtime_cleanliness_claim()
     ):
         raise B.InvalidEvidence("alternate runtime receipt identity drift")
     if payload.get("checkout_policy") != {
         "checkout": "GIT_WORKTREE_ADD_DETACHED_THEN_EXACT_BOUND_FILE_BYTE_OVERLAY",
         "checkout_eol_policy_is_not_evidence": True,
         "exact_overlay_from_clean_source_worktree": True,
-        "post_overlay_git_clean": True,
+        "post_overlay_normalized_git_clean": True,
+        "post_overlay_porcelain_status_is_not_evidence": True,
         "post_checkout_byte_identity_required": True,
     }:
         raise B.InvalidEvidence("alternate runtime LF checkout policy drift")
     W._strict_created_utc(payload.get("created_utc"), "runtime materialization created_utc")
-    runtime_head = _clean_head(
+    runtime_head = _normalized_clean_head(
         RUNTIME_WORKTREE_ROOT, "alternate runtime worktree", detached_required=True
     )
     if (
@@ -1076,7 +1148,9 @@ def validate_runtime_materialization_receipt() -> dict[str, Any]:
 def runtime_provenance(bindings: Mapping[str, Any]) -> dict[str, Any]:
     _assert_runtime_location()
     receipt = validate_runtime_materialization_receipt()
-    head = _clean_head(REPO_ROOT, "alternate runtime worktree", detached_required=True)
+    head = _normalized_clean_head(
+        REPO_ROOT, "alternate runtime worktree", detached_required=True
+    )
     runtime_bindings: dict[str, Any] = {}
     for role in ALTERNATE_RUNTIME_BINDING_ROLES:
         item = bindings.get(role)
@@ -1088,7 +1162,7 @@ def runtime_provenance(bindings: Mapping[str, Any]) -> dict[str, Any]:
         "runtime_mode": "DETACHED_PUMP_PROOF_WORKTREE",
         "runtime_root": str(REPO_ROOT.resolve()),
         "runtime_head": head,
-        "runtime_clean": True,
+        "runtime_cleanliness": _runtime_cleanliness_claim(),
         "runtime_detached": True,
         "materialization_receipt": B.file_binding(RUNTIME_RECEIPT_PATH),
         "materialization_payload_sha256": B.canonical_sha256(receipt),
@@ -1412,7 +1486,7 @@ def materialize_runtime() -> dict[str, Any]:
     )
     if completed.returncode != 0:
         raise B.InvalidEvidence("git worktree add failed for alternate runtime")
-    checkout_head = _clean_head(
+    checkout_head = _normalized_clean_head(
         RUNTIME_WORKTREE_ROOT, "alternate runtime worktree", detached_required=True
     )
     if checkout_head != source_head:
@@ -1422,7 +1496,7 @@ def materialize_runtime() -> dict[str, Any]:
         RUNTIME_WORKTREE_ROOT,
         relative_paths,
     )
-    runtime_head = _clean_head(
+    runtime_head = _normalized_clean_head(
         RUNTIME_WORKTREE_ROOT,
         "alternate runtime worktree after exact byte overlay",
         detached_required=True,
@@ -1449,12 +1523,13 @@ def materialize_runtime() -> dict[str, Any]:
         "main_scoped_path_count": MAIN_SCOPED_PATH_COUNT,
         "main_scoped_path_list_canonical_sha256": MAIN_SCOPED_PATH_LIST_SHA256,
         "unrelated_main_worktree_dirt_ignored": True,
-        "runtime_clean_at_materialization": True,
+        "runtime_cleanliness_at_materialization": _runtime_cleanliness_claim(),
         "checkout_policy": {
             "checkout": "GIT_WORKTREE_ADD_DETACHED_THEN_EXACT_BOUND_FILE_BYTE_OVERLAY",
             "checkout_eol_policy_is_not_evidence": True,
             "exact_overlay_from_clean_source_worktree": True,
-            "post_overlay_git_clean": True,
+            "post_overlay_normalized_git_clean": True,
+            "post_overlay_porcelain_status_is_not_evidence": True,
             "post_checkout_byte_identity_required": True,
         },
         "repository_binding_byte_identity_ledger": repository_ledger,

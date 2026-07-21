@@ -72,6 +72,22 @@ def test_alternate_contract_is_hash_bound_and_semantically_valid() -> None:
     assert contract["immutable_runtime"][
         "unrelated_main_worktree_paths_may_be_dirty"
     ] is True
+    runtime_cleanliness = contract["immutable_runtime"][
+        "runtime_worktree_cleanliness_policy"
+    ]
+    assert runtime_cleanliness == {
+        "staged_diff": "GIT_DIFF_CACHED_QUIET_EXIT_ZERO_REQUIRED",
+        "normalized_worktree_diff": "GIT_DIFF_QUIET_EXIT_ZERO_REQUIRED",
+        "untracked_files": (
+            "GIT_LS_FILES_OTHERS_INCLUDING_IGNORED_EMPTY_REQUIRED"
+        ),
+        "porcelain_status": (
+            "NON_AUTHORITATIVE_DUE_TO_AUTOCRLF_INDEX_STAT_FALSE_POSITIVES"
+        ),
+        "raw_bound_file_bytes": (
+            "EXACT_SOURCE_RUNTIME_SHA256_SIZE_LEDGER_REQUIRED"
+        ),
+    }
     assert contract["launch_gate"][
         "unrelated_main_worktree_dirt_does_not_block"
     ] is True
@@ -384,60 +400,193 @@ def test_alternate_runtime_binds_every_imported_and_execution_dependency() -> No
     )
 
 
-def test_runtime_clean_head_rejects_dirty_or_attached_worktree(
+def test_runtime_normalized_clean_head_rejects_staged_diff(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     root = tmp_path / "runtime"
     root.mkdir()
     head = "a" * 40
 
-    def dirty_git(_root: Path, *args: str, check: bool = True):
+    def fake_git(_root: Path, *args: str, check: bool = True):
         if args == ("rev-parse", "--show-toplevel"):
             return _git_result(0, str(root) + "\n")
-        if args == ("status", "--porcelain=v1", "--untracked-files=all"):
-            return _git_result(0, " M moving_runtime.py\n")
-        raise AssertionError(args)
-
-    monkeypatch.setattr(subject, "_git_at", dirty_git)
-    with pytest.raises(subject.B.InvalidEvidence, match="dirty"):
-        subject._clean_head(root, "runtime", detached_required=True)
-
-    def attached_git(_root: Path, *args: str, check: bool = True):
-        if args == ("rev-parse", "--show-toplevel"):
-            return _git_result(0, str(root) + "\n")
-        if args == ("status", "--porcelain=v1", "--untracked-files=all"):
-            return _git_result(0)
         if args == ("rev-parse", "HEAD^{commit}"):
             return _git_result(0, head + "\n")
-        if args == ("symbolic-ref", "-q", "HEAD"):
-            return _git_result(0, "refs/heads/main\n")
+        if args == (
+            "diff",
+            "--cached",
+            "--quiet",
+            "--no-ext-diff",
+            "--no-textconv",
+            "--exit-code",
+            "HEAD",
+            "--",
+        ):
+            return _git_result(1)
         raise AssertionError(args)
 
-    monkeypatch.setattr(subject, "_git_at", attached_git)
-    with pytest.raises(subject.B.InvalidEvidence, match="detached"):
-        subject._clean_head(root, "runtime", detached_required=True)
+    monkeypatch.setattr(subject, "_git_at", fake_git)
+    with pytest.raises(subject.B.InvalidEvidence, match="staged diff"):
+        subject._normalized_clean_head(root, "runtime", detached_required=True)
 
 
-def test_runtime_clean_head_accepts_only_clean_detached_exact_root(
+def test_runtime_normalized_clean_head_rejects_normalized_diff_untracked_or_attached(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     root = tmp_path / "runtime"
     root.mkdir()
     head = "b" * 40
 
-    def fake_git(_root: Path, *args: str, check: bool = True):
+    staged_args = (
+        "diff",
+        "--cached",
+        "--quiet",
+        "--no-ext-diff",
+        "--no-textconv",
+        "--exit-code",
+        "HEAD",
+        "--",
+    )
+    normalized_args = (
+        "diff",
+        "--quiet",
+        "--no-ext-diff",
+        "--no-textconv",
+        "--exit-code",
+        "--",
+    )
+    untracked_args = ("ls-files", "--others", "-z")
+
+    def common(args: tuple[str, ...]):
         if args == ("rev-parse", "--show-toplevel"):
             return _git_result(0, str(root) + "\n")
-        if args == ("status", "--porcelain=v1", "--untracked-files=all"):
-            return _git_result(0)
         if args == ("rev-parse", "HEAD^{commit}"):
             return _git_result(0, head + "\n")
-        if args == ("symbolic-ref", "-q", "HEAD"):
+        if args == staged_args:
+            return _git_result(0)
+        return None
+
+    def normalized_dirty(_root: Path, *args: str, check: bool = True):
+        result = common(args)
+        if result is not None:
+            return result
+        if args == normalized_args:
             return _git_result(1)
         raise AssertionError(args)
 
+    monkeypatch.setattr(subject, "_git_at", normalized_dirty)
+    with pytest.raises(subject.B.InvalidEvidence, match="normalized worktree diff"):
+        subject._normalized_clean_head(root, "runtime", detached_required=True)
+
+    def untracked_dirty(_root: Path, *args: str, check: bool = True):
+        result = common(args)
+        if result is not None:
+            return result
+        if args == normalized_args:
+            return _git_result(0)
+        if args == untracked_args:
+            return _git_result(0, "ignored-cache.pyc\0")
+        raise AssertionError(args)
+
+    monkeypatch.setattr(subject, "_git_at", untracked_dirty)
+    with pytest.raises(subject.B.InvalidEvidence, match="untracked files"):
+        subject._normalized_clean_head(root, "runtime", detached_required=True)
+
+    def attached_git(_root: Path, *args: str, check: bool = True):
+        result = common(args)
+        if result is not None:
+            return result
+        if args == normalized_args:
+            return _git_result(0)
+        if args == untracked_args:
+            return _git_result(0)
+        if args == ("symbolic-ref", "-q", "HEAD"):
+            return _git_result(0, "refs/heads/main\n")
+        raise AssertionError(args)
+
+    monkeypatch.setattr(subject, "_git_at", attached_git)
+    with pytest.raises(subject.B.InvalidEvidence, match="detached"):
+        subject._normalized_clean_head(root, "runtime", detached_required=True)
+
+
+def test_runtime_normalized_clean_head_accepts_diff_clean_even_if_porcelain_would_m(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = tmp_path / "runtime"
+    root.mkdir()
+    head = "c" * 40
+
+    def fake_git(_root: Path, *args: str, check: bool = True):
+        if args == ("rev-parse", "--show-toplevel"):
+            return _git_result(0, str(root) + "\n")
+        if args == ("rev-parse", "HEAD^{commit}"):
+            return _git_result(0, head + "\n")
+        if args in {
+            (
+                "diff",
+                "--cached",
+                "--quiet",
+                "--no-ext-diff",
+                "--no-textconv",
+                "--exit-code",
+                "HEAD",
+                "--",
+            ),
+            (
+                "diff",
+                "--quiet",
+                "--no-ext-diff",
+                "--no-textconv",
+                "--exit-code",
+                "--",
+            ),
+        }:
+            return _git_result(0)
+        if args == ("ls-files", "--others", "-z"):
+            return _git_result(0)
+        if args == ("symbolic-ref", "-q", "HEAD"):
+            return _git_result(1)
+        if args and args[0] == "status":
+            raise AssertionError("porcelain status must not be queried")
+        raise AssertionError(args)
+
     monkeypatch.setattr(subject, "_git_at", fake_git)
-    assert subject._clean_head(root, "runtime", detached_required=True) == head
+    assert subject._normalized_clean_head(root, "runtime", detached_required=True) == head
+
+
+def test_runtime_normalized_clean_head_rejects_gitignored_untracked_real_repo(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "runtime"
+    root.mkdir()
+
+    def git(*args: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            ["git", "-C", str(root), *args],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+
+    git("init", "--quiet")
+    git("config", "user.name", "QM test")
+    git("config", "user.email", "qm-test@example.invalid")
+    git("config", "commit.gpgsign", "false")
+    git("config", "core.hooksPath", ".git/disabled-hooks")
+    (root / ".gitignore").write_bytes(b"ignored-cache/\n")
+    (root / "tracked.txt").write_bytes(b"bound\n")
+    git("add", ".gitignore", "tracked.txt")
+    git("commit", "--quiet", "-m", "fixture")
+    git("checkout", "--quiet", "--detach", "HEAD")
+
+    subject._normalized_clean_head(root, "runtime", detached_required=True)
+    ignored = root / "ignored-cache"
+    ignored.mkdir()
+    (ignored / "worker.pyc").write_bytes(b"runtime mutation")
+
+    with pytest.raises(subject.B.InvalidEvidence, match="untracked files"):
+        subject._normalized_clean_head(root, "runtime", detached_required=True)
 
 
 def test_main_scoped_clean_head_uses_only_literal_exact_pathspecs(
