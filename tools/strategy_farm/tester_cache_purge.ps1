@@ -8,8 +8,9 @@
 #    D:\QM\mt5\T<n>\Tester\Agent-*   (per-agent working dirs; MT5 recreates)
 #  NEVER touches source tick data (T<n>\Bases top-level) or reports (D:\QM\reports).
 #
-#  Only acts when D: free < LowWaterGB (default 80) — most runs are no-ops.
-#  When it acts: stop factory -> clear caches -> restart factory. Because MT5
+#  Only acts when D: free < LowWaterGB (default 150) — most runs are no-ops.
+#  When it acts: stop factory -> clear caches -> restart factory via the
+#  FactoryON_AtLogon task (the reliable in-session recovery). Because MT5
 #  agents read these caches mid-run, the factory MUST be stopped first.
 #
 #  MUST run as the INTERACTIVE qm-admin user (NOT SYSTEM) so the restarted
@@ -19,7 +20,9 @@
 # =====================================================================
 [CmdletBinding()]
 param(
-    [int]$LowWaterGB = 80,
+    # 2026-07-21 raised 80->150: on a 1TB disk an 80GB floor let ~200GB of regenerable
+    # Tester cache accumulate (it purges only below the floor, and D: hovered just above 80).
+    [int]$LowWaterGB = 150,
     [string]$RepoRoot = "C:\QM\repo",
     [string]$FarmRoot = "D:\QM\strategy_farm",
     [switch]$DryRun
@@ -151,48 +154,24 @@ Start-Sleep -Seconds 2
 $after = FreeGB
 Log "idle caches cleared terminals=[$($purgedTerminals -join ',')]: D: ${free}GB -> ${after}GB (reclaimed $([math]::Round($after-$free,1))GB)"
 
-# 3. restart factory INTO the autologon console session (visible-mode) via the
-#    console-session launcher. This task runs as SYSTEM (SeTcb) so the launcher
-#    can CreateProcessAsUser into qm-admin's session even when RDP is DISCONNECTED.
-#    A plain `& $py ...` here would land workers in SYSTEM's session-0 (hazard).
-#    Workers were all killed above, so start_terminal_workers spawns a clean 10
-#    (its --dedupe CIM scan is irrelevant with nothing to dedupe).
-if ($pumpWasEnabled) {
-    Enable-ScheduledTask -TaskName 'QM_StrategyFarm_Pump_5min' -ErrorAction SilentlyContinue | Out-Null
+# 3. restart the factory via the PROVEN interactive recovery task. The OLD
+#    run_in_console_session / CreateProcessAsUser-as-SYSTEM launcher is UNRELIABLE:
+#    it yields worker daemons whose terminal64 children instant-exit 0xC0000142, so
+#    metatester64 stays 0 and the factory never actually recovers. The factory_watchdog
+#    was migrated OFF this exact mechanism on 2026-06-24 for that reason; tester_cache_purge
+#    kept it and consequently STRANDED the factory OFF after a purge on 2026-07-21.
+#    Delegate to the SAME task the watchdog uses: QM_StrategyFarm_FactoryON_AtLogon
+#    (RunAs qm-admin, Interactive, RunLevel Highest) -> Factory_ON.ps1 -NoPause in-session:
+#    removes any FACTORY_OFF.flag, enables Factory/AI + respawn tasks, kills stale
+#    daemons/terminals, spawns exactly one worker per enabled terminal IN-SESSION, runs
+#    farmctl repair, triggers the pump. Enable first (a prior Factory_OFF disables it).
+try {
+    Enable-ScheduledTask -TaskName 'QM_StrategyFarm_FactoryON_AtLogon' -ErrorAction SilentlyContinue | Out-Null
+    Start-ScheduledTask -TaskName 'QM_StrategyFarm_FactoryON_AtLogon' -ErrorAction Stop
+    Start-Sleep -Seconds 25
+    $daemons = @(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe' OR Name='python.exe'" -ErrorAction SilentlyContinue |
+                 Where-Object { $_.CommandLine -match 'terminal_worker\.py' })
+    Log "factory restarted via FactoryON_AtLogon: $($daemons.Count) worker daemon(s); D: free $(FreeGB)GB"
+} catch {
+    Log "factory RESTART FAILED (FactoryON_AtLogon): $($_.Exception.Message) - factory may be OFF, needs manual Factory_ON"
 }
-if ($tickWasEnabled) {
-    Enable-ScheduledTask -TaskName 'QM_StrategyFarm_Tick_5min' -ErrorAction SilentlyContinue | Out-Null
-}
-$launcher = Join-Path $RepoRoot 'tools\strategy_farm\run_in_console_session.ps1'
-$swArgs = '"' + (Join-Path $RepoRoot 'tools\strategy_farm\start_terminal_workers.py') + '" --repo-root "' + $RepoRoot + '" --farm-root "' + $FarmRoot + '" --dedupe'
-& powershell.exe -NoProfile -ExecutionPolicy Bypass -File $launcher -Exe $py -Arguments $swArgs -WorkDir $RepoRoot | Out-Null
-Start-Sleep -Seconds 12
-
-# G (2026-06-22): defend against the over-provision bug. start_terminal_workers' --dedupe
-# scans for existing workers via CIM, which can return nothing inside the
-# CreateProcessAsUser'd console-session context -> it spawns a full set ON TOP of any
-# survivors (observed 20 workers once). The verify-loop kill above makes survivors
-# unlikely, but trim defensively: keep exactly ONE daemon per ENABLED terminal and kill
-# any daemon on a disabled/unknown terminal. "Enabled" = installed (T<n>\terminal64.exe)
-# minus disabled_terminals.txt — same source of truth as _installed_terminals.
-$disabled = @()
-$disabledFile = Join-Path $FarmRoot 'state\disabled_terminals.txt'
-if (Test-Path $disabledFile) { $disabled = (Get-Content $disabledFile -ErrorAction SilentlyContinue | ForEach-Object { $_.Trim().ToUpper() } | Where-Object { $_ -match '^T(?:[1-9]|10)$' }) }
-$enabled = @(1..10 | ForEach-Object { "T$_" } | Where-Object { (Test-Path "D:\QM\mt5\$_\terminal64.exe") -and ($disabled -notcontains $_.ToUpper()) })
-$seen = @{}
-foreach ($p in @(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe' OR Name='python.exe'" -ErrorAction SilentlyContinue | Where-Object CommandLine -match 'terminal_worker\.py')) {
-    $tname = if ($p.CommandLine -match '--terminal\s+(T(?:[1-9]|10))\b') { $matches[1].ToUpper() } else { '?' }
-    if ($protectedLookup.ContainsKey($tname)) {
-        $seen[$tname] = $p.ProcessId
-        continue
-    }
-    $keep = ($enabled -contains $tname) -and (-not $seen.ContainsKey($tname))
-    if ($keep) { $seen[$tname] = $p.ProcessId } else { Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue }
-}
-Start-Sleep -Seconds 2
-$daemons = @(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe' OR Name='python.exe'" -ErrorAction SilentlyContinue | Where-Object CommandLine -match 'terminal_worker\.py')
-if ($pumpWasEnabled) {
-    Start-ScheduledTask -TaskName 'QM_StrategyFarm_Pump_5min' -ErrorAction SilentlyContinue
-}
-$pumpRestartDetail = if ($pumpWasEnabled) { 'pump triggered' } else { 'pump remained disabled' }
-Log "factory restarted: $($daemons.Count)/$($enabled.Count) workers (trimmed to one per enabled terminal; disabled=$($disabled -join ',')); $pumpRestartDetail; D: free $(FreeGB)GB"

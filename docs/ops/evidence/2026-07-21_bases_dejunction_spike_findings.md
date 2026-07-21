@@ -147,13 +147,21 @@ Rollback still available (fleet_dejunction.ps1 -Rollback, factory OFF). The two 
 outages (11:22, 14:40) were tester_cache_purge tripping <80 GB during the disk-tight window
 + its unreliable restart — both moot now with 285 GB headroom.
 
-## Follow-ups (non-blocking)
-- **tester_cache_purge restart-after-purge is unreliable** (it stranded the factory OFF
-  twice). Fix it OR ensure the factory watchdog reliably recovers a purge-stranded factory.
-- **Raise the purge LowWaterGB threshold** (80 → ~150-200 GB) so ~200 GB of cache never
-  piles up again on the 1 TB disk — BUT only after the restart bug is fixed (a higher
-  threshold = more frequent purges = more strand risk until the restart is robust).
-- T8\MQL5\Files = 12.7 GB (EA-written CSV/journal accumulation) — separate cleanup candidate.
+## Follow-ups — DONE (2026-07-21)
+- ✅ **tester_cache_purge restart made robust.** Root cause found: its step-3 restart used
+  the `run_in_console_session` / CreateProcessAsUser-as-SYSTEM launcher — the SAME mechanism
+  the factory_watchdog was migrated OFF on 2026-06-24 because it yields workers whose
+  terminal64 instant-exit 0xC0000142 (factory never actually recovers). tester_cache_purge
+  kept the bad path and stranded the factory after a purge. Fix: delegate the restart to
+  `QM_StrategyFarm_FactoryON_AtLogon` (the proven in-session recovery), matching the watchdog.
+  Parse-verified.
+- ✅ **Purge LowWaterGB raised 80 → 150** (now safe: the restart is robust, so more frequent
+  purges no longer risk stranding). Prevents ~200 GB of regenerable Tester cache from ever
+  piling up again on the 1 TB disk.
+- (open) T8\MQL5\Files = 12.7 GB (EA-written CSV/journal accumulation) — separate cleanup
+  candidate; the flag-setter of the two earlier outages was not definitively pinned
+  (Factory_OFF.ps1 signature; watchdog/tester_cache_purge don't write it), but the disk-driven
+  purge instability — the clear correlate — is now resolved by the cache clear + these two fixes.
 
 ## Status / urgency — REVISED (superseded by the SUCCESS above)
 The no-seed fleet fix is validated factory-ON. The fleet rollout (restructure T2..T10:
