@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "artifact_type": "QM5_20002_SHORT_NY_G2_AUDITOR_CONTRACT",
+  "status": "INTEGRATION_READY_REQUIRES_EXTERNAL_RUNTIME_FREEZE",
+  "analysis_id": "QM5_20002_SHORT_NY_REVERSE_TIME_SCREEN_001",
+  "generation": "G2",
+  "strategy": {
+    "base_contract": {
+      "path": "framework/EAs/QM5_20002_ict-icytea-core/docs/candidate-analysis/short_ny_reverse_time_contract.json",
+      "size": 12595,
+      "sha256": "6ee74c60a823fe87b03b40a2737ba67d113b2e52e7c09a05f42ba2084e17fefa",
+      "commit": "d902b04932c340dd1212b9420077d7cec6b0d80d"
+    },
+    "symbols": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "arms": [
+      "A_SHORT_NY_NO_HTF",
+      "B_SHORT_NY_H1_BIAS"
+    ],
+    "timeframe": "M1",
+    "from_date": "2017.10.01",
+    "to_date": "2021.12.31",
+    "model": 4,
+    "duplicates_per_cell": 2,
+    "cell_count": 4,
+    "inputs_and_merit_gates": "EXACTLY_IDENTICAL_TO_BOUND_BASE_CONTRACT_AND_SET_MANIFEST"
+  },
+  "isolation": {
+    "control_root": "D:\\QM\\reports\\qm20002\\short_ny_reverse_time_g2",
+    "scheduled_task_prefix": "QM_QM20002_G2_AUDIT_",
+    "scheduler_helper": {
+      "path": "framework/EAs/QM5_20002_ict-icytea-core/tools/candidate_analysis/run_outcome_fenced_task_g2.ps1",
+      "size": 11527,
+      "sha256": "13cd1335dba15a74a4253e1d6d1874ca69d80808812210b26510f6ff6f0fe0b1",
+      "last_content_commit": "1c8433ab260b50ad87b1fdf70b1271d4ab46319e"
+    },
+    "control_helper": {
+      "path": "framework/EAs/QM5_20002_ict-icytea-core/tools/candidate_analysis/assert_qm20002_control_path_g2.ps1",
+      "size": 32945,
+      "sha256": "94089ccda7420aaa1d56d959b8e8278453008514fd0be0569e32455618342330",
+      "last_content_commit": "7e8639cddbeb8250bc52c263149ebafbb6fdc45c"
+    }
+  },
+  "g1_closure_prerequisite": {
+    "landed_manifest": {
+      "path": "framework/EAs/QM5_20002_ict-icytea-core/docs/candidate-analysis/g1_pre_outcome_closure_landed_20260721.json",
+      "size": 2541,
+      "sha256": "832535837651271b35e52ee08df6ddf34115777c0d01e3db3a18f78adac1106c",
+      "commit": "4df65f5f633f807b39b3c5426cdf3397a12f8e3e"
+    },
+    "closure_freeze": {
+      "path": "framework/EAs/QM5_20002_ict-icytea-core/docs/candidate-analysis/g1_pre_outcome_closure_freeze_20260721.json",
+      "size": 7233,
+      "sha256": "84aa9a569d5e6a369ebf65fd6e40062070aa3b40cc4ff96e11d7d1b91586e453",
+      "commit": "dc6b25d6e9db156dbbcf6853f78081b7239eae2e"
+    },
+    "launch_state": {
+      "size": 7936,
+      "sha256": "71876c77e8a26f1371bc4cb2080ce8c92e6f7c2cdabe80ac45d4a39bbae7e212"
+    },
+    "closure_intent": {
+      "size": 8109,
+      "sha256": "791aa3a1798eaa7be51a18809ea5bfe6518d5d43fc2ad898ef712bde8acf3fab"
+    },
+    "quiescence_anchor": {
+      "size": 10504,
+      "sha256": "fbd1457974d276fe421265e43e9e583d2adf51e52a6060446e1ec348d4f70f84"
+    },
+    "closure_receipt": {
+      "size": 6739,
+      "sha256": "cb8c6470123ee86fd110bea0ee2c06439b47552ebf45be93489df1d2839cee6b"
+    },
+    "recursive_validation_required": true,
+    "fresh_task_absence_probe_required": true,
+    "g1_worker_and_post_must_remain_absent": true,
+    "outcome_fence_crossed_required": false,
+    "outcome_data_read_required": false,
+    "no_resume_required": true
+  },
+  "runtime_freeze_injection": {
+    "path": "framework/EAs/QM5_20002_ict-icytea-core/docs/candidate-analysis/short_ny_reverse_time_g2_runtime_freeze_20260721.json",
+    "expected_sha256_argument_required": true,
+    "pre_fails_closed_while_missing": true,
+    "pre_fails_closed_on_any_binding_drift": true,
+    "runner_live_hashing_without_the_expected_freeze": false,
+    "runner_provenance": {
+      "path": "framework/EAs/QM5_20002_ict-icytea-core/docs/candidate-analysis/g2_run_smoke_worktree_provenance_20260721.json",
+      "size": 2818,
+      "sha256": "4fb69e664f1ade9a48fb8c20a576c9a56309ce1b8a45032ab8f0415c5a96cf11",
+      "commit": "9a960035512778c419c8546b944aae30a588d02e"
+    }
+  },
+  "prohibitions": {
+    "modify_g1_frozen_bytes": false,
+    "run_pre_during_integration": false,
+    "launch_during_integration": false,
+    "read_native_reports_before_post": false,
+    "inspect_process_arguments": false,
+    "persist_secrets": false
+  }
+}
