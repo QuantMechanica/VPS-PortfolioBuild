@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QuantMechanica V5 EA skeleton template"
+#property description "QM5_13209 Mulham PM-Range NY-Morning Sweep Reversal"
 
 #include <QM/QM_Common.mqh>
 
@@ -126,14 +126,15 @@ input int    spread_cap_pips        = 50;
 enum StrategySetupState
   {
    STRATEGY_SETUP_IDLE  = 0,
-   STRATEGY_SETUP_SWEPT = 1   // sweep bar seen; next closed bar is the displacement candidate
+   STRATEGY_SETUP_SWEPT = 1   // sweep bar seen; wait for a post-sweep displacement + three-bar FVG
   };
 
 int                g_bias             = 0;      // +1 bullish (long/low-side sweep) / -1 bearish (short/high-side sweep) / 0 none
-bool               g_setup_done_today = false;   // one setup evaluation per day; linear state machine, no retry
+bool               g_setup_done_today = false;   // one FVG-confirmed setup evaluation per day
 StrategySetupState g_setup_state      = STRATEGY_SETUP_IDLE;
 double             g_sweep_low        = 0.0;     // sweep bar low
 double             g_sweep_high       = 0.0;     // sweep bar high
+datetime           g_sweep_time       = 0;       // closed-bar time of the accepted sweep
 
 bool   g_pm_recording  = false;   // true while inside the PM window
 bool   g_pm_ready      = false;   // true once a PM range has been finalized at least once
@@ -204,6 +205,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       g_setup_state      = STRATEGY_SETUP_IDLE;
       g_sweep_low        = 0.0;
       g_sweep_high       = 0.0;
+      g_sweep_time       = 0;
      }
 
    const double bar_open  = iOpen(_Symbol, _Period, 1);  // perf-allowed: PM-range/sweep structural logic, one closed bar per call.
@@ -258,48 +260,65 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(minute_of_day >= cancel_min)
       return false;
 
-   const double atr_value = QM_ATR(_Symbol, PERIOD_CURRENT, atr_period, 1);
-   if(atr_value <= 0.0)
-      return false;
-
-   // ---- WAIT_DISPLACEMENT: the bar following a detected sweep is the one-
-   //      and-only displacement candidate (linear state machine per card: no
-   //      re-scan for a fresh sweep if displacement fails). ----
+   // ---- WAIT_DISPLACEMENT: inspect the latest fully formed three-bar FVG.
+   //      Bars a/b/c are shifts 3/2/1; b is the post-sweep displacement bar
+   //      and c confirms the imbalance. This is the standard gapless-CFD-safe
+   //      FVG definition: bullish low[c] > high[a], bearish high[c] < low[a].
+   //      The state remains armed until a qualifying pattern forms or the
+   //      card's 19:00 cancellation boundary is reached. ----
    if(g_setup_state == STRATEGY_SETUP_SWEPT)
      {
-      const double bar_range = bar_high - bar_low;
+      const datetime displacement_time = iTime(_Symbol, _Period, 2); // perf-allowed: fixed three-bar FVG read behind QM_IsNewBar().
+      if(displacement_time <= g_sweep_time)
+         return false;
+
+      const double first_high = iHigh(_Symbol, _Period, 3);  // perf-allowed: standard three-bar FVG anchor.
+      const double first_low  = iLow(_Symbol, _Period, 3);   // perf-allowed: standard three-bar FVG anchor.
+      const double disp_high  = iHigh(_Symbol, _Period, 2);  // perf-allowed: post-sweep displacement range.
+      const double disp_low   = iLow(_Symbol, _Period, 2);   // perf-allowed: post-sweep displacement range.
+      const double disp_close = iClose(_Symbol, _Period, 2); // perf-allowed: close-through-sweep confirmation.
+      const double atr_value  = QM_ATR(_Symbol, PERIOD_CURRENT, atr_period, 2);
+      if(first_high <= 0.0 || first_low <= 0.0 || disp_high <= 0.0 ||
+         disp_low <= 0.0 || disp_close <= 0.0 || atr_value <= 0.0)
+         return false;
+
+      const double displacement_range = disp_high - disp_low;
       bool   displaced = false;
       double fvg_lower = 0.0;
       double fvg_upper = 0.0;
 
       if(g_bias > 0)
         {
-         // Long: displacement closes back above the sweep bar's high, leaving
-         // an M5 FVG between the sweep bar's high and the displacement bar's low.
-         if(bar_close > g_sweep_high && bar_range >= displacement_atr_mult * atr_value && bar_low > g_sweep_high)
+         // Long: b closes back through the sweep bar's high and c leaves a
+         // bullish FVG above a.
+         if(disp_close > g_sweep_high &&
+            displacement_range >= displacement_atr_mult * atr_value &&
+            bar_low > first_high)
            {
-            fvg_lower = g_sweep_high;
+            fvg_lower = first_high;
             fvg_upper = bar_low;
             displaced = true;
            }
         }
       else
         {
-         // Short: displacement closes back below the sweep bar's low, leaving
-         // an M5 FVG between the displacement bar's high and the sweep bar's low.
-         if(bar_close < g_sweep_low && bar_range >= displacement_atr_mult * atr_value && bar_high < g_sweep_low)
+         // Short: b closes back through the sweep bar's low and c leaves a
+         // bearish FVG below a.
+         if(disp_close < g_sweep_low &&
+            displacement_range >= displacement_atr_mult * atr_value &&
+            bar_high < first_low)
            {
             fvg_lower = bar_high;
-            fvg_upper = g_sweep_low;
+            fvg_upper = first_low;
             displaced = true;
            }
         }
 
-      g_setup_done_today = true; // one setup per day regardless of outcome
-      g_setup_state       = STRATEGY_SETUP_IDLE;
-
       if(!displaced)
          return false;
+
+      g_setup_done_today = true; // consume the day's one FVG-confirmed setup, including RR/geometry skips
+      g_setup_state       = STRATEGY_SETUP_IDLE;
 
       const double entry_price = (fvg_upper + fvg_lower) / 2.0; // limit at 50% of the FVG
       const double sl_buffer   = sl_buffer_atr_mult * atr_value;
@@ -325,13 +344,17 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                       : QM_TakeRR(_Symbol, order_type, entry_price, sl_price, tp_rr_multiple);
         }
 
-      if(entry_price <= 0.0 || sl_price <= 0.0 || tp_price <= 0.0)
+      const double primary_target = (g_bias > 0) ? g_pm_high : g_pm_low;
+      const bool geometry_valid = (g_bias > 0)
+                                  ? (sl_price < entry_price && primary_target > entry_price)
+                                  : (sl_price > entry_price && primary_target < entry_price);
+      if(entry_price <= 0.0 || sl_price <= 0.0 || tp_price <= 0.0 || !geometry_valid)
          return false;
 
       // RR floor is judged against the primary opposite-extreme target
       // regardless of tp_mode (card step 6): skip if there is not enough room.
       const double risk_dist   = MathAbs(entry_price - sl_price);
-      const double target_dist = (g_bias > 0) ? MathAbs(g_pm_high - entry_price) : MathAbs(entry_price - g_pm_low);
+      const double target_dist = MathAbs(primary_target - entry_price);
       if(risk_dist <= 0.0 || target_dist < rr_floor * risk_dist)
          return false;
 
@@ -364,6 +387,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
         {
          g_sweep_low   = bar_low;
          g_sweep_high  = bar_high;
+         g_sweep_time  = bar_time;
          g_setup_state = STRATEGY_SETUP_SWEPT;
         }
      }
@@ -374,6 +398,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
         {
          g_sweep_low   = bar_low;
          g_sweep_high  = bar_high;
+         g_sweep_time  = bar_time;
          g_setup_state = STRATEGY_SETUP_SWEPT;
         }
      }

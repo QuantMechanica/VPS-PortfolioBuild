@@ -16,17 +16,19 @@ EMA(18) bias is set: bullish bias only looks for low-side sweeps (long),
 bearish bias only looks for high-side sweeps (short). Within the 16:30-18:00
 broker morning window (9:30-11:00 ET), the EA watches for an M5 bar that
 trades beyond the bias-aligned PM extreme and closes back inside the PM range
-(v-shape fakeout sweep). The very next closed M5 bar is the one displacement
-candidate: it must close back through the sweep bar's opposite extreme with a
-range >= 1.5x ATR(14, M5), leaving an M5 gap (FVG) between the two bars. Entry
-is a limit order at 50% of that FVG, cancelled if unfilled by 19:00 broker.
+(v-shape fakeout sweep). After the sweep, the EA waits for a closed M5
+displacement bar that closes back through the sweep bar's opposite extreme
+with a range >= 1.5x ATR(14, M5). A standard three-bar FVG must form around
+that displacement bar: for a long, the newest bar's low is above the oldest
+bar's high; for a short, the newest bar's high is below the oldest bar's low.
+Entry is a limit order at 50% of that FVG, cancelled if unfilled by 19:00 broker.
 Stop loss sits beyond the sweep extreme by a 0.1xATR buffer; take profit is
 the opposite PM-range extreme (a fixed-2.5R variant is available via
 `strategy_tp_mode` for Q03 sweeps). The setup is skipped if the PM session
 was strongly trending (net move > 75% of its range), if reward-to-risk to the
-opposite extreme is below 1.5R, or if displacement fails to confirm — at most
-one setup is evaluated per symbol per day, with no re-scan for a fresh sweep
-if that single evaluation misses.
+opposite extreme is below 1.5R, or if displacement/FVG confirmation does not
+arrive before 19:00. At most one completed setup is placed per symbol per day;
+after the first accepted sweep the EA does not re-scan for another sweep.
 
 ---
 
