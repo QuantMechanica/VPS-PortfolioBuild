@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import importlib.util
 import inspect
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -115,7 +116,7 @@ def test_frozen_merit_and_auditor_identity_is_enforced(
 ) -> None:
     subject.validate_frozen_gate_and_auditor_identity()
     changed = copy.deepcopy(subject.B.MERIT_GATES)
-    changed["development"]["minimum_trades"] += 1
+    changed["dev"]["minimum_trades"] += 1
     monkeypatch.setattr(subject.B, "MERIT_GATES", changed)
     with pytest.raises(subject.B.InvalidEvidence, match="merit contract drift"):
         subject.validate_frozen_gate_and_auditor_identity()
@@ -135,6 +136,61 @@ def test_actual_frozen_data_receipt_projects_only_six_approved_repo_bindings() -
     ]["sha256"]
 
 
+def test_relocated_data_validator_binds_exact_attempt001_receipt() -> None:
+    validated = subject.validate_relocated_backtest_data_receipt(
+        subject.W.FUTURE_DATA_RECEIPT_PATH, "WS30.DWX"
+    )
+    assert validated["receipt"] == {
+        "path": str(subject.W.FUTURE_DATA_RECEIPT_PATH.resolve()),
+        "size": subject.EXPECTED_DATA_RECEIPT_SIZE,
+        "sha256": subject.EXPECTED_DATA_RECEIPT_SHA256,
+    }
+
+
+def test_data_receipt_validator_accepts_only_byte_identical_detached_projection(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    runtime = tmp_path / "runtime"
+    relative_paths = (
+        Path("framework/V5_FRAMEWORK_DESIGN.md"),
+        Path("framework/registry/execution_symbol_aliases_v1.json"),
+        Path("framework/registry/venue_cost_model.json"),
+        Path("framework/registry/dwx_symbol_matrix.csv"),
+        Path("framework/calibrations/VPS_SLIPPAGE_LATENCY_CALIBRATION_V2.json"),
+    )
+    for relative in relative_paths:
+        target = runtime / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(subject.MAIN_WORKTREE_ROOT / relative, target)
+    monkeypatch.setattr(subject, "REPO_ROOT", runtime)
+    monkeypatch.setattr(
+        subject.B, "V5_FRAMEWORK_PATH", runtime / relative_paths[0]
+    )
+    monkeypatch.setattr(subject.B, "ALIASES_PATH", runtime / relative_paths[1])
+    monkeypatch.setattr(subject.B, "COST_PATH", runtime / relative_paths[2])
+    monkeypatch.setattr(subject.B, "MATRIX_PATH", runtime / relative_paths[3])
+    monkeypatch.setattr(
+        subject.W, "SLIPPAGE_CALIBRATION_PATH", runtime / relative_paths[4]
+    )
+    validated = subject.validate_relocated_backtest_data_receipt(
+        subject.W.FUTURE_DATA_RECEIPT_PATH, "WS30.DWX"
+    )
+    assert Path(validated["factory_evidence"]["matrix"]["path"]) == (
+        runtime / relative_paths[3]
+    )
+    assert Path(
+        validated["cost_schedule"]["supplemental_stress"]["slippage"][
+            "source"
+        ]["path"]
+    ) == (runtime / relative_paths[4])
+
+    (runtime / relative_paths[3]).write_bytes(b"tampered")
+    with pytest.raises(subject.B.InvalidEvidence):
+        subject.validate_relocated_backtest_data_receipt(
+            subject.W.FUTURE_DATA_RECEIPT_PATH, "WS30.DWX"
+        )
+
+
 def test_data_receipt_projection_rejects_unapproved_main_repo_path() -> None:
     raw = subject.B.load_json(subject.W.FUTURE_DATA_RECEIPT_PATH)
     raw["unexpected_binding"] = {
@@ -144,6 +200,62 @@ def test_data_receipt_projection_rejects_unapproved_main_repo_path() -> None:
     }
     with pytest.raises(subject.B.InvalidEvidence, match="unapproved"):
         subject._project_data_receipt_repo_bindings(raw)
+
+
+def test_bound_repository_byte_overlay_preserves_mixed_eol_exactly(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source = tmp_path / "source"
+    runtime = tmp_path / "runtime"
+    source.mkdir()
+    runtime.mkdir()
+    (source / "a.txt").write_bytes(b"one\r\ntwo\r\n")
+    (source / "b.txt").write_bytes(b"three\nfour\n")
+    (runtime / "a.txt").write_bytes(b"one\ntwo\n")
+    (runtime / "b.txt").write_bytes(b"three\r\nfour\r\n")
+    relatives = ("a.txt", "b.txt")
+    subject._overlay_exact_repository_binding_bytes(source, runtime, relatives)
+    assert (runtime / "a.txt").read_bytes() == (source / "a.txt").read_bytes()
+    assert (runtime / "b.txt").read_bytes() == (source / "b.txt").read_bytes()
+    ledger = subject._build_repository_byte_identity_ledger(
+        source, runtime, relatives
+    )
+    assert [row["relative_path"] for row in ledger] == list(relatives)
+
+    monkeypatch.setattr(subject, "REPO_ROOT", runtime)
+    monkeypatch.setattr(
+        subject,
+        "_repository_binding_relative_paths",
+        lambda _root=runtime: relatives,
+    )
+    subject._validate_runtime_repository_binding_ledger(ledger)
+    (runtime / "a.txt").write_bytes(b"one\ntwo\n")
+    with pytest.raises(subject.B.InvalidEvidence):
+        subject._validate_runtime_repository_binding_ledger(ledger)
+
+
+def test_runtime_dependency_closure_includes_all_pre_and_recursive_include_roles() -> None:
+    relatives = subject._repository_binding_relative_paths()
+    assert len(relatives) == 53
+    assert (
+        "framework/EAs/QM5_10834_tv-nq-ict-ob/tools/candidate_analysis/"
+        "audit_tv_nq_ict_ob_ws30_alternate.py"
+    ) in relatives
+    assert "framework/include/QM/QM_Common.mqh" in relatives
+    assert "framework/calibrations/VPS_SLIPPAGE_LATENCY_CALIBRATION_V2.json" in relatives
+
+
+def test_materializer_overlays_exact_bound_bytes_before_sealing_ledger() -> None:
+    source = inspect.getsource(subject.materialize_runtime)
+    checkout = source.index('"worktree"')
+    overlay = source.index("_overlay_exact_repository_binding_bytes")
+    final_clean = source.index(
+        '"alternate runtime worktree after exact byte overlay"'
+    )
+    ledger = source.index("_build_repository_byte_identity_ledger")
+    receipt = source.index("B.atomic_json")
+    assert checkout < overlay < final_clean < ledger < receipt
+    assert "core.autocrlf=false" not in source
 
 
 @pytest.mark.skipif(
