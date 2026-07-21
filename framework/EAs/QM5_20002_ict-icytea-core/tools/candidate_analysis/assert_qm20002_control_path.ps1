@@ -135,7 +135,16 @@ function Assert-ExactAcl([string]$Candidate, [bool]$Directory) {
 
 function Get-UntrustedSids {
     $sids = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::Ordinal)
-    foreach ($sid in @('S-1-1-0', 'S-1-5-11', 'S-1-5-32-545')) { [void]$sids.Add($sid) }
+    foreach ($sid in @(
+            'S-1-1-0',       # Everyone
+            'S-1-2-0',       # Local
+            'S-1-5-3',       # Batch (Scheduled Task Password logon)
+            'S-1-5-4',       # Interactive
+            'S-1-5-11',      # Authenticated Users
+            'S-1-5-14',      # Remote Interactive Logon
+            'S-1-5-113',     # Local account
+            'S-1-5-32-545'   # Builtin Users
+        )) { [void]$sids.Add($sid) }
     $dev1 = Get-LocalUser -Name 'QMDev1' -ErrorAction Stop
     [void]$sids.Add([string]$dev1.SID.Value)
     $changed = $true
@@ -182,6 +191,12 @@ function Assert-AncestorProtection {
             throw "Reparse point forbidden in QM20002 control ancestor: $cursor"
         }
         $acl = Get-Acl -LiteralPath $cursor -ErrorAction Stop
+        $ownerSid = ([Security.Principal.NTAccount][string]$acl.Owner).Translate(
+            [Security.Principal.SecurityIdentifier]
+        ).Value
+        if ($untrusted.Contains($ownerSid)) {
+            throw "QMDev1 or one of its token/groups owns QM20002 control ancestor: $cursor"
+        }
         foreach ($rule in @($acl.GetAccessRules($true, $true, [Security.Principal.SecurityIdentifier]))) {
             if ($rule.AccessControlType -eq [Security.AccessControl.AccessControlType]::Allow -and
                 $untrusted.Contains([string]$rule.IdentityReference.Value) -and

@@ -521,6 +521,69 @@ def test_authorization_rejects_wrong_pre_binding(tmp_path: Path) -> None:
         subject.validate_authorization(auth, "b" * 64)
 
 
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    [
+        ({"unexpected": "field"}, "field closure drift"),
+        ({"mt5_execution_authorized": 1}, "identity/type contract"),
+        ({"authorized_by": 7}, "identity/type contract"),
+        ({"schema_version": True}, "identity/type contract"),
+    ],
+)
+def test_authorization_schema_is_exact_and_strictly_typed(
+    tmp_path: Path, mutation: dict, message: str
+) -> None:
+    auth_path = tmp_path / "authorization.json"
+    envelope = _test_authorization(auth_path, "a" * 64)
+    payload = dict(envelope["payload"])
+    payload.update(mutation)
+    auth_path.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(subject.AuthorizationError, match=message):
+        subject.validate_authorization(auth_path, "a" * 64)
+
+
+def test_authorization_rejects_duplicate_json_property(tmp_path: Path) -> None:
+    auth_path = tmp_path / "authorization.json"
+    envelope = _test_authorization(auth_path, "a" * 64)
+    raw = json.dumps(envelope["payload"])
+    auth_path.write_text(
+        raw[:-1] + ',"mt5_execution_authorized":true}', encoding="utf-8"
+    )
+    with pytest.raises(subject.AuditError, match="duplicate JSON property"):
+        subject.validate_authorization(auth_path, "a" * 64)
+
+
+def test_atomic_json_exclusive_publication_has_exactly_one_winner(
+    tmp_path: Path,
+) -> None:
+    destination = tmp_path / "immutable.json"
+    barrier = threading.Barrier(3)
+    winners: list[dict] = []
+    errors: list[BaseException] = []
+
+    def publish(writer: int) -> None:
+        payload = {"writer": writer}
+        barrier.wait()
+        try:
+            subject.atomic_json(destination, payload, replace=False)
+            winners.append(payload)
+        except BaseException as exc:  # pragma: no cover - asserted below.
+            errors.append(exc)
+
+    threads = [threading.Thread(target=publish, args=(index,)) for index in (1, 2)]
+    for thread in threads:
+        thread.start()
+    barrier.wait()
+    for thread in threads:
+        thread.join(5)
+
+    assert all(not thread.is_alive() for thread in threads)
+    assert len(winners) == 1
+    assert len(errors) == 1
+    assert isinstance(errors[0], subject.AuditError)
+    assert subject.load_strict_json(destination, "exclusive evidence") == winners[0]
+
+
 def test_detached_timeout_leaves_inner_controller_cleanup_margin() -> None:
     pre = {
         "plan": {
@@ -806,8 +869,147 @@ def test_persisted_helper_is_s4u_triggerless_and_never_overwrites_task() -> None
     assert "New-ScheduledTaskTrigger" not in helper
     assert "Register-ScheduledTask" in helper
     assert " -Force" not in helper
+    assert "$Task.TaskName -cne $TaskName" in helper
+    assert "@($Task.Triggers).Count -ne 0" in helper
+    assert "-AllowHardTerminate" in helper
+    assert "-not [bool]$Task.Settings.StartWhenAvailable" in helper
+    assert "-not [bool]$Task.Settings.AllowHardTerminate" in helper
+    assert "-not [bool]$Task.Settings.Hidden" in helper
+    assert "triggers_count = @($Task.Triggers).Count" in helper
+    assert "actions_count = @($Task.Actions).Count" in helper
     assert "DETACHED_PROCESS" not in tool
     assert "CREATE_NEW_PROCESS_GROUP" not in tool
+
+
+def test_probe_alone_allows_missing_exact_job_path() -> None:
+    helper = subject.SCHEDULED_TASK_HELPER_PATH.read_text(encoding="utf-8")
+    assert "param([switch]$AllowMissingJob)" in helper
+    assert "elseif (-not $AllowMissingJob.IsPresent)" in helper
+    assert (
+        "$contract = Get-QmTaskContract -AllowMissingJob:($Operation -eq 'Probe')"
+        in helper
+    )
+    assert "if ($Operation -eq 'Probe')" in helper
+    assert "exists = $false" in helper
+    # Register/Inspect/Start use the same contract call without any other
+    # missing-job exemption.
+    assert helper.count("AllowMissingJob:($Operation -eq 'Probe')") == 1
+
+
+def test_scheduler_metadata_rejects_every_stale_task_settings_drift() -> None:
+    scheduler = {
+        "task_name": "QM_QM20002_AUDIT_" + "a" * 24,
+        "principal_sid": "S-1-5-21-500",
+        "execution_limit_seconds": 483600,
+    }
+    exact = {
+        "operation": "Inspect",
+        "task_name": scheduler["task_name"],
+        "task_path": "\\",
+        "state": "Ready",
+        "principal_sid": scheduler["principal_sid"],
+        "logon_type": "S4U",
+        "run_level": "Highest",
+        "triggers_count": 0,
+        "actions_count": 1,
+        "enabled": True,
+        "multiple_instances": "IgnoreNew",
+        "start_when_available": True,
+        "allow_hard_terminate": True,
+        "hidden": True,
+        "execution_limit_seconds": scheduler["execution_limit_seconds"],
+        "last_run_utc": None,
+        "last_task_result": 0,
+    }
+    subject._validate_scheduler_task_metadata(exact, scheduler, include_exists=False)
+    mutations = {
+        "task_name": "QM_QM20002_AUDIT_" + "b" * 24,
+        "task_path": "\\Other\\",
+        "triggers_count": 1,
+        "actions_count": 2,
+        "enabled": False,
+        "multiple_instances": "Parallel",
+        "start_when_available": False,
+        "allow_hard_terminate": False,
+        "hidden": False,
+        "execution_limit_seconds": 60,
+    }
+    for field, value in mutations.items():
+        drifted = dict(exact)
+        drifted[field] = value
+        with pytest.raises(subject.AuthorizationError, match="metadata drift"):
+            subject._validate_scheduler_task_metadata(
+                drifted, scheduler, include_exists=False
+            )
+
+
+def test_control_helper_closes_volume_ancestor_owner_and_token_group_surface() -> None:
+    helper = subject.CONTROL_PATH_HELPER_PATH.read_text(encoding="utf-8")
+    assert "Assert-LocalFixedNtfsVolume" in helper
+    assert "$drive.DriveType -ne [IO.DriveType]::Fixed" in helper
+    assert "$drive.DriveFormat -cne 'NTFS'" in helper
+    assert "ProviderName" in helper
+    assert "$ancestors.Add($cursor)" in helper  # includes the drive root itself
+    assert "$untrusted.Contains($ownerSid)" in helper
+    assert "owns QM20002 control ancestor" in helper
+    for sid in (
+        "S-1-2-0",
+        "S-1-5-3",
+        "S-1-5-4",
+        "S-1-5-14",
+        "S-1-5-113",
+    ):
+        assert sid in helper
+    assert "DeleteSubdirectoriesAndFiles" in helper
+    assert "ChangePermissions" in helper
+    assert "TakeOwnership" in helper
+    assert helper.index("Assert-LocalFixedNtfsVolume") < helper.index(
+        "$fullPath = ConvertTo-ControlPath"
+    )
+    assert helper.index("Assert-AncestorProtection") < helper.index(
+        "if ($Operation -eq 'PrepareDirectory')"
+    )
+
+
+def test_exact_control_layout_rejects_escape_without_creating_any_path(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        subject, "_assert_control_path_layout", ORIGINAL_ASSERT_CONTROL_PATH_LAYOUT
+    )
+    escaped_state = tmp_path / "outside" / "launch_state.json"
+    pre = _minimal_launcher_pre()
+    monkeypatch.setattr(subject, "assert_pre_receipt", lambda *_args: pre)
+    monkeypatch.setattr(
+        subject,
+        "validate_authorization",
+        lambda *_args: _test_authorization(tmp_path / "authorization.json", "c" * 64),
+    )
+    with pytest.raises(subject.AuthorizationError, match="fixed QM20002 control root"):
+        subject.launch_detached(
+            tmp_path / "pre.json",
+            "c" * 64,
+            tmp_path / "authorization.json",
+            escaped_state,
+            None,
+        )
+    assert not escaped_state.parent.exists()
+    assert not list(tmp_path.glob("**/*.tmp"))
+    assert not list(tmp_path.glob("**/*.terminal.lock"))
+
+
+def test_exact_control_layout_accepts_only_canonical_run_identity(
+    tmp_path: Path,
+) -> None:
+    root = subject.AUDIT_CONTROL_ROOT.resolve()
+    run_id = "20260721T010203Z_" + "a" * 32
+    state = root / "runs" / run_id / "launch_state.json"
+    assert ORIGINAL_ASSERT_CONTROL_PATH_LAYOUT(state, "state") == state.resolve()
+    with pytest.raises(subject.AuthorizationError, match="exact QM20002 control layout"):
+        ORIGINAL_ASSERT_CONTROL_PATH_LAYOUT(
+            root / "runs" / "latest" / "launch_state.json", "state"
+        )
+    assert not root.exists()
 
 
 def test_resume_fence_rejects_any_worker_entry_or_dev1_inventory_change(
@@ -929,6 +1131,141 @@ def test_launch_uses_persisted_scheduler_and_resume_refuses_worker_artifact(
             resume=True,
         )
     assert calls == ["Identity", "Probe", "Register", "Start"]
+
+
+def test_consumption_crash_recovers_only_the_same_canonical_launch(
+    tmp_path: Path,
+) -> None:
+    pre_sha = "c" * 64
+    pre_path = tmp_path / "pre.json"
+    pre_path.write_text("{}", encoding="utf-8")
+    authorization = _test_authorization(tmp_path / "authorization.json", pre_sha)
+    helper_sha = subject.sha256_file(subject.CONTROL_PATH_HELPER_PATH)
+    subject._prepare_control_directory(
+        subject.AUDIT_CONTROL_ROOT / "authorization" / "consumptions",
+        helper_sha,
+    )
+    subject._ensure_authorization_global_lock(helper_sha)
+    state_a = tmp_path / "run-a" / "launch_state.json"
+    job_a = state_a.with_name("launch_job.json")
+    task_a = subject.scheduled_task_name(pre_sha, state_a)
+
+    with subject._authorization_global_lock():
+        consumed = subject._consume_authorization(
+            authorization,
+            pre_path,
+            pre_sha,
+            state_a,
+            job_a,
+            task_a,
+            helper_sha,
+        )
+    # Injected crash point: the durable consumption exists, but no selected-run
+    # artifact or scheduler input has been created yet.
+    assert not state_a.exists() and not job_a.exists()
+    with subject._authorization_global_lock():
+        recovered = subject._consume_authorization(
+            authorization,
+            pre_path,
+            pre_sha,
+            state_a,
+            job_a,
+            task_a,
+            helper_sha,
+        )
+    assert recovered == consumed
+
+    state_b = tmp_path / "run-b" / "launch_state.json"
+    with subject._authorization_global_lock():
+        with pytest.raises(subject.AuthorizationError, match="different canonical launch"):
+            subject._consume_authorization(
+                authorization,
+                pre_path,
+                pre_sha,
+                state_b,
+                state_b.with_name("launch_job.json"),
+                subject.scheduled_task_name(pre_sha, state_b),
+                helper_sha,
+            )
+    assert not state_b.parent.exists()
+
+
+def test_concurrent_distinct_launches_consume_authorization_exactly_once(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    dev1_runs = tmp_path / "dev1-runs"
+    dev1_runs.mkdir()
+    monkeypatch.setattr(subject, "DEV1_RUNS_ROOT", dev1_runs)
+    pre = _minimal_launcher_pre()
+    pre_sha = "c" * 64
+    pre_path = tmp_path / "pre.json"
+    authorization_path = tmp_path / "authorization.json"
+    _test_authorization(authorization_path, pre_sha)
+    monkeypatch.setattr(subject, "assert_pre_receipt", lambda *_args: pre)
+    scheduler_calls: list[str] = []
+
+    def fake_scheduler(_pre, operation, job=None):
+        scheduler_calls.append(operation)
+        if operation == "Identity":
+            return {
+                "operation": "Identity",
+                "principal_sid": "S-1-5-21-500",
+                "logon_type": "S4U",
+                "run_level": "Highest",
+            }
+        if operation == "Probe":
+            return {
+                "operation": "Probe",
+                "task_name": job["scheduler"]["task_name"],
+                "exists": False,
+            }
+        return {
+            "operation": operation,
+            "task_name": job["scheduler"]["task_name"],
+            "state": "Running" if operation == "Start" else "Ready",
+        }
+
+    monkeypatch.setattr(subject, "_scheduler_call", fake_scheduler)
+    states = [
+        tmp_path / "candidate-a" / "launch_state.json",
+        tmp_path / "candidate-b" / "launch_state.json",
+    ]
+    barrier = threading.Barrier(3)
+    results: list[dict] = []
+    errors: list[BaseException] = []
+
+    def launch(state_path: Path) -> None:
+        barrier.wait()
+        try:
+            results.append(
+                subject.launch_detached(
+                    pre_path,
+                    pre_sha,
+                    authorization_path,
+                    state_path,
+                    None,
+                )
+            )
+        except BaseException as exc:  # pragma: no cover - asserted below.
+            errors.append(exc)
+
+    threads = [threading.Thread(target=launch, args=(state,)) for state in states]
+    for thread in threads:
+        thread.start()
+    barrier.wait()
+    for thread in threads:
+        thread.join(10)
+
+    assert all(not thread.is_alive() for thread in threads)
+    assert len(results) == 1 and results[0]["status"] == "LAUNCHED_PERSISTED_TASK"
+    assert len(errors) == 1
+    assert isinstance(errors[0], subject.AuthorizationError)
+    assert "different canonical launch" in str(errors[0])
+    assert scheduler_calls == ["Identity", "Probe", "Register", "Start"]
+    winner = Path(results[0]["state_path"])
+    loser = states[1] if winner == states[0].resolve() else states[0]
+    assert winner.is_file()
+    assert not loser.parent.exists()
 
 
 def _arm_one_cell_worker(
