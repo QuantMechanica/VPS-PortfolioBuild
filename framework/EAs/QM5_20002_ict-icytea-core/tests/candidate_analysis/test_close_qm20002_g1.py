@@ -471,6 +471,17 @@ def test_default_contract_is_exactly_run_local_and_frozen() -> None:
     assert contract.freeze_commit == closure.FROZEN_COMMIT
 
 
+def test_production_auditor_loader_supports_dataclass_resolution() -> None:
+    contract = replace(
+        closure.default_contract(),
+        auditor_path=AUDITOR_PATH,
+        auditor_sha256=closure.sha256_file(AUDITOR_PATH),
+    )
+    loaded = closure._load_auditor(contract)
+    assert loaded.ANALYSIS_ID == closure.ANALYSIS_ID
+    assert sys.modules[loaded.__name__] is loaded
+
+
 def test_owner_timestamp_parser_rejects_non_z_and_future() -> None:
     with pytest.raises(closure.ClosureError):
         closure.parse_owner_utc("2026-07-21T03:00:00+00:00")

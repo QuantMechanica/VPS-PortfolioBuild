@@ -404,11 +404,17 @@ def _publish_json(
 
 def _load_auditor(contract: ClosureContract) -> ModuleType:
     file_binding(contract.auditor_path, contract.auditor_sha256)
-    spec = importlib.util.spec_from_file_location("qm20002_frozen_g1_auditor", contract.auditor_path)
+    module_name = "qm20002_frozen_g1_auditor"
+    spec = importlib.util.spec_from_file_location(module_name, contract.auditor_path)
     if spec is None or spec.loader is None:
         raise ClosureError("could not load the frozen G1 auditor")
     module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    sys.modules[module_name] = module
+    try:
+        spec.loader.exec_module(module)
+    except Exception:
+        sys.modules.pop(module_name, None)
+        raise
     return module
 
 
