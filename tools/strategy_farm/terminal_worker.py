@@ -63,6 +63,41 @@ LAUNCH_FAULT_BACKOFF_SECONDS = 30.0
 # on that same slot deterministically burn the row's retry budget.  Give the
 # profile time to release its handles and route the retry to another slot.
 SUMMARY_MISSING_RETRY_COOLDOWN_SECONDS = 30.0
+# Shared-bases history-lock STORM (2026-07-21 diagnosis,
+# docs/ops/evidence/2026-07-21_qm20004_infra_diagnosis.md). T2-T10 `bases` are NTFS
+# junctions to ONE T1 store that ALSO holds the raw Darwinex-Live history. Every
+# transient tester spawn logs into the live account and writes live quotes into that
+# one store, so concurrent spawns collide with sharing-violations. A FINISHED — often
+# profitable — pass whose deposit-currency conversion symbol (raw EURUSD for EUR-quoted
+# indices, or the test symbol itself) is locked at pass-end re-sync gets its report
+# DISCARDED ("history synchronization error [Not found]" / terminal "some error after
+# pass finished ... in 0:00:00.000") -> no summary latched -> summary_missing. Measured
+# storm: GDAXI 126 INFRA vs 58 PASS, NDX 68 vs 23 — 2/3 of index-symbol gate attempts
+# burned. The EA is innocent, so this signature auto-heals as a SEPARATE transient-retry
+# class that (a) steers off the sick terminal via avoid_terminals and (b) does NOT
+# consume the strategy MAX_WORK_ITEM_RETRIES budget. The STRUCTURAL cure (de-junction /
+# remap conversion to .DWX) needs a factory-OFF window and is deferred; this is the
+# factory-ON mitigation. Tokens are matched case-insensitively against the tail of the
+# terminal's own MT5 logs; they are specific to this class and never appear for a
+# genuine 0-trade / PF-fail run (which produces a real summary and never reaches here).
+HISTORY_LOCK_STORM_TOKENS = (
+    "history synchronization error",
+    "some error after pass finished",
+)
+# Hard cap on transient auto-heal retries before falling through to a real INFRA_FAIL
+# for manual attention (never loop forever). 6 is deliberately > the 3-terminal
+# MAX_WORK_ITEM_RETRIES: with per-retry terminal steering each attempt avoids the
+# previously-sick terminal, so 6 attempts can walk past the worst-case sick fraction of
+# the ~10-terminal fleet and still terminate deterministically. These retries are
+# counted on a SEPARATE payload key (transient_infra_attempts) and never touch
+# attempt_count, so a real strategy failure that later occurs still has its full budget.
+TRANSIENT_INFRA_RETRY_CAP = 6
+TRANSIENT_INFRA_BACKOFF_BASE_SECONDS = 45.0
+TRANSIENT_INFRA_BACKOFF_MAX_SECONDS = 600.0
+# Never read a whole MT5 log — a storm terminal can produce a multi-GB log-bomb
+# (T9 07-19: 1.6 GB). Scan only the tail of the most recently-written logs.
+HISTORY_LOCK_SCAN_TAIL_BYTES = 256 * 1024
+HISTORY_LOCK_SCAN_MAX_FILES = 6
 # Log-bomb guard. Some EAs spam the MT5 tester journal per-tick (framework
 # symbol_slot resolver logging on every tick), producing 50-60GB .log files that
 # burn D: at ~10GB/min — that is a BUG to kill. But a legit multi-position /
@@ -507,6 +542,127 @@ _STALE_RUNTIME_PAYLOAD_KEYS = (
 def _clear_stale_runtime_payload(payload: dict[str, Any]) -> None:
     for field in _STALE_RUNTIME_PAYLOAD_KEYS:
         payload.pop(field, None)
+
+
+def _accumulate_avoid_terminal(payload: dict[str, Any], failed_terminal: str | None) -> list[str]:
+    """Add a sick terminal to the item's avoid_terminals steering list.
+
+    Guards against the list eating the whole fleet: if the accumulated set would
+    exclude EVERY enabled factory terminal (which would make the item permanently
+    unclaimable), it is cleared instead — the item retries anywhere rather than
+    deadlocking. Fail-open on any enabled-terminal lookup error (keep the list).
+    """
+    avoid = _payload_avoid_terminals(payload)
+    name = str(failed_terminal or "").strip().upper()
+    if name and farmctl.is_factory_terminal_name(name):
+        avoid.add(name)
+    try:
+        enabled = {t.upper() for t in farmctl.active_mt5_terminals()}
+    except Exception:
+        enabled = set()
+    if enabled and enabled.issubset(avoid):
+        payload.pop("avoid_terminals", None)
+        payload["avoid_terminals_cleared_reason"] = "would_exclude_whole_fleet"
+        print(json.dumps({
+            "event": "avoid_terminals_cleared",
+            "reason": "would_exclude_whole_fleet",
+            "avoid": sorted(avoid),
+            "enabled": sorted(enabled),
+        }, sort_keys=True), flush=True)
+        return []
+    payload["avoid_terminals"] = sorted(avoid)
+    payload.pop("avoid_terminals_cleared_reason", None)
+    return payload["avoid_terminals"]
+
+
+def _transient_infra_backoff_seconds(prior_attempts: Any) -> float:
+    """Exponential backoff (capped) for shared-bases history-lock transient retries."""
+    try:
+        n = int(prior_attempts)
+    except (TypeError, ValueError):
+        n = 0
+    n = max(n, 0)
+    delay = TRANSIENT_INFRA_BACKOFF_BASE_SECONDS * (2 ** n)
+    return min(delay, TRANSIENT_INFRA_BACKOFF_MAX_SECONDS)
+
+
+def _read_tail_bytes(path: Path, max_bytes: int) -> bytes:
+    try:
+        size = path.stat().st_size
+        with open(path, "rb") as fh:
+            if size > max_bytes:
+                start = size - max_bytes
+                if start % 2:  # keep UTF-16-LE code units aligned
+                    start += 1
+                fh.seek(start)
+            return fh.read()
+    except OSError:
+        return b""
+
+
+def _decode_log_tail(raw: bytes) -> str:
+    if not raw:
+        return ""
+    # MT5 terminal/tester logs are UTF-16-LE (ASCII bytes interleaved with 0x00).
+    sample = raw[:512]
+    if sample.count(0) > len(sample) // 4:
+        return raw.decode("utf-16-le", errors="ignore")
+    return raw.decode("utf-8", errors="ignore")
+
+
+def _detect_history_lock_storm(
+    terminal: str | None,
+    mt5_root: Path | None = None,
+) -> dict[str, Any] | None:
+    """Return storm-signature evidence if the terminal's recent MT5 logs show the
+    shared-bases history-lock class, else None.
+
+    Scans only the TAIL of the most recently-written terminal / tester / agent logs
+    (bounded by HISTORY_LOCK_SCAN_TAIL_BYTES and HISTORY_LOCK_SCAN_MAX_FILES) so a
+    multi-GB storm log can never be read whole. Fail-open (returns None on any error).
+    """
+    name = str(terminal or "").strip().upper()
+    if not name:
+        return None
+    root = mt5_root or farmctl.MT5_ROOT
+    term_dir = root / name
+    try:
+        if not term_dir.is_dir():
+            return None
+    except OSError:
+        return None
+    candidates: list[Path] = []
+    search_dirs = [term_dir / "logs", term_dir / "Tester" / "logs"]
+    tester_dir = term_dir / "Tester"
+    try:
+        if tester_dir.is_dir():
+            search_dirs.extend(sorted(tester_dir.glob("Agent-*/logs")))
+    except OSError:
+        pass
+    for sub in search_dirs:
+        try:
+            if sub.is_dir():
+                candidates.extend(p for p in sub.glob("*.log") if p.is_file())
+        except OSError:
+            continue
+    if not candidates:
+        return None
+
+    def _mtime(p: Path) -> float:
+        try:
+            return p.stat().st_mtime
+        except OSError:
+            return 0.0
+
+    candidates.sort(key=_mtime, reverse=True)
+    for path in candidates[:HISTORY_LOCK_SCAN_MAX_FILES]:
+        text = _decode_log_tail(_read_tail_bytes(path, HISTORY_LOCK_SCAN_TAIL_BYTES)).lower()
+        if not text:
+            continue
+        for token in HISTORY_LOCK_STORM_TOKENS:
+            if token in text:
+                return {"terminal": name, "token": token, "log_path": str(path)}
+    return None
 
 
 def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
@@ -1248,21 +1404,91 @@ def _finish_work_item(root: Path, item_id: str, exit_code: int | None) -> dict[s
                 aggregate = _aggregate_finished_parent(root, item["parent_task_id"])
                 return {"finished": True, "status": "done", "verdict": verdict, "reason": reason, "aggregate": aggregate}
 
-            attempt = int(item["attempt_count"] or 0) + 1
             payload["run_smoke_exit_code"] = exit_code
-            payload["prior_failure"] = payload.get("prior_failure") or "summary_missing"
             failed_terminal = str(item["claimed_by"] or "").strip().upper()
+
+            # Shared-bases history-lock STORM auto-heal (see constants above). Only
+            # probe the LIVE factory's MT5 logs (root == DEFAULT_ROOT); on a temp/test
+            # root the probe is skipped so the ordinary summary_missing path is used.
+            # Fail-open: any detection error falls through to the normal path.
+            storm = None
+            try:
+                if root.resolve() == farmctl.DEFAULT_ROOT.resolve():
+                    storm = _detect_history_lock_storm(failed_terminal)
+            except Exception:
+                storm = None
+
+            terminal_stopped = _stop_terminal_slot_for_release(root, item["claimed_by"])
+            if terminal_stopped is not None:
+                payload["terminal_stopped_on_release"] = terminal_stopped
+
+            if storm:
+                # Transient INFRA class: SEPARATE counter, does NOT touch attempt_count.
+                transient_attempts = int(payload.get("transient_infra_attempts") or 0) + 1
+                payload["transient_infra_attempts"] = transient_attempts
+                payload["prior_failure"] = "shared_bases_history_lock_storm"
+                payload["transient_infra_signature"] = storm.get("token")
+                payload["transient_infra_evidence_path"] = storm.get("log_path")
+                _accumulate_avoid_terminal(payload, failed_terminal)
+                payload["launch_not_before_utc"] = (
+                    datetime.now(timezone.utc)
+                    + timedelta(seconds=_transient_infra_backoff_seconds(transient_attempts - 1))
+                ).isoformat()
+                # Staged recovery: strip stale runtime keys so the re-claim is clean;
+                # priority_track / requeue reason in the payload are left untouched.
+                _clear_stale_runtime_payload(payload)
+                if transient_attempts <= TRANSIENT_INFRA_RETRY_CAP:
+                    conn.execute(
+                        """
+                        UPDATE work_items
+                        SET status='pending', verdict=NULL, claimed_by=NULL,
+                            payload_json=?, updated_at=?
+                        WHERE id=?
+                        """,
+                        (json.dumps(payload, sort_keys=True), now, item_id),
+                    )
+                    conn.commit()
+                    return {
+                        "finished": True,
+                        "status": "pending",
+                        "verdict": None,
+                        "transient_infra": True,
+                        "transient_infra_attempts": transient_attempts,
+                        "avoid_terminals": payload.get("avoid_terminals", []),
+                        "attempt": int(item["attempt_count"] or 0),
+                        "aggregate": None,
+                    }
+                # Transient cap exhausted -> real INFRA_FAIL for manual attention.
+                payload["final_failure"] = "shared_bases_history_lock_transient_cap_exhausted"
+                conn.execute(
+                    """
+                    UPDATE work_items
+                    SET status='failed', verdict='INFRA_FAIL', claimed_by=NULL,
+                        payload_json=?, updated_at=?
+                    WHERE id=?
+                    """,
+                    (json.dumps(payload, sort_keys=True), now, item_id),
+                )
+                conn.commit()
+                aggregate = _aggregate_finished_parent(root, item["parent_task_id"])
+                return {
+                    "finished": True,
+                    "status": "failed",
+                    "verdict": "INFRA_FAIL",
+                    "transient_infra": True,
+                    "transient_infra_attempts": transient_attempts,
+                    "attempt": int(item["attempt_count"] or 0),
+                    "aggregate": aggregate,
+                }
+
+            attempt = int(item["attempt_count"] or 0) + 1
+            payload["prior_failure"] = payload.get("prior_failure") or "summary_missing"
             if failed_terminal:
-                avoid_terminals = _payload_avoid_terminals(payload)
-                avoid_terminals.add(failed_terminal)
-                payload["avoid_terminals"] = sorted(avoid_terminals)
+                _accumulate_avoid_terminal(payload, failed_terminal)
             payload["launch_not_before_utc"] = (
                 datetime.now(timezone.utc)
                 + timedelta(seconds=SUMMARY_MISSING_RETRY_COOLDOWN_SECONDS)
             ).isoformat()
-            terminal_stopped = _stop_terminal_slot_for_release(root, item["claimed_by"])
-            if terminal_stopped is not None:
-                payload["terminal_stopped_on_release"] = terminal_stopped
             if attempt < MAX_WORK_ITEM_RETRIES:
                 conn.execute(
                     """

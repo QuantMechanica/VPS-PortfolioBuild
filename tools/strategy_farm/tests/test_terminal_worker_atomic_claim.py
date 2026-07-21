@@ -1000,13 +1000,16 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
 
             stopped: list[str] = []
             old_default_root = terminal_worker.farmctl.DEFAULT_ROOT
+            old_mt5_root = terminal_worker.farmctl.MT5_ROOT
             old_stop_terminal_slot = terminal_worker.farmctl._stop_terminal_slot
             try:
                 terminal_worker.farmctl.DEFAULT_ROOT = root
+                terminal_worker.farmctl.MT5_ROOT = root  # no MT5 logs -> no storm probe
                 terminal_worker.farmctl._stop_terminal_slot = lambda terminal: stopped.append(terminal) or True
                 result = terminal_worker._finish_work_item(root, "wi-summary-missing", exit_code=0)
             finally:
                 terminal_worker.farmctl.DEFAULT_ROOT = old_default_root
+                terminal_worker.farmctl.MT5_ROOT = old_mt5_root
                 terminal_worker.farmctl._stop_terminal_slot = old_stop_terminal_slot
 
             self.assertEqual(result["status"], "pending")
@@ -1060,13 +1063,16 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
 
             stopped: list[str] = []
             old_default_root = terminal_worker.farmctl.DEFAULT_ROOT
+            old_mt5_root = terminal_worker.farmctl.MT5_ROOT
             old_stop_terminal_slot = terminal_worker.farmctl._stop_terminal_slot
             try:
                 terminal_worker.farmctl.DEFAULT_ROOT = root
+                terminal_worker.farmctl.MT5_ROOT = root  # no MT5 logs -> no storm probe
                 terminal_worker.farmctl._stop_terminal_slot = lambda terminal: stopped.append(terminal) or True
                 result = terminal_worker._finish_work_item(root, "wi-stale-summary", exit_code=0)
             finally:
                 terminal_worker.farmctl.DEFAULT_ROOT = old_default_root
+                terminal_worker.farmctl.MT5_ROOT = old_mt5_root
                 terminal_worker.farmctl._stop_terminal_slot = old_stop_terminal_slot
 
             self.assertEqual(result["status"], "pending")
