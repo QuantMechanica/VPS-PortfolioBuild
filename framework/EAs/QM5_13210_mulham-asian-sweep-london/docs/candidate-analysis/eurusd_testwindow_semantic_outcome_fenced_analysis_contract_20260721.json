@@ -1,0 +1,207 @@
+{
+  "analysis_id": "QM5_13210_MULHAM_ASIAN_SWEEP_LONDON_EURUSD_NATIVE_001",
+  "artifact_type": "QM5_13210_EURUSD_SEMANTIC_TESTWINDOW_ANALYSIS_CONTRACT",
+  "candidate": {
+    "cost_application": "UNCHANGED_BASE_MAX_DXZ_PCT_NOTIONAL_OR_FTMO_FLAT",
+    "duplicates_per_cell": 2,
+    "ea_id": "QM5_13210",
+    "live_symbol_alias_policy": "DEPLOY_PACKAGING_ONLY_EXACT_VENUE_ALIAS",
+    "magic": 132100000,
+    "magic_slot": 0,
+    "merit_contract_version": "QM5_13210_MERIT_V1_20260720",
+    "merit_gates": {
+      "dev": {
+        "maximum_close_drawdown_percent": "10.0",
+        "minimum_cost_profit_factor": "1.20",
+        "minimum_trades": 80,
+        "net_must_be_strictly_positive": true
+      },
+      "each_oos_year": {
+        "minimum_cost_profit_factor_strict": "1.00",
+        "minimum_trades": 12,
+        "net_must_be_strictly_positive": true
+      },
+      "leave_best_oos_year_out": {
+        "best_year_basis": "highest_cost_adjusted_net",
+        "minimum_cost_profit_factor": "1.05",
+        "net_must_be_strictly_positive": true
+      },
+      "maximum_new_york_day_loss_percent_of_100k": "3.0",
+      "maximum_single_year_share_of_positive_oos_gross_profit": "0.60",
+      "oos_pooled": {
+        "maximum_close_drawdown_percent": "10.0",
+        "minimum_cost_profit_factor": "1.20",
+        "minimum_trades": 45,
+        "net_must_be_strictly_positive": true
+      },
+      "top_five_percent_winners_removed": {
+        "minimum_cost_profit_factor": "1.00",
+        "removal_count": "ceil(0.05 * positive_winner_count)"
+      },
+      "version": "QM5_13210_MERIT_V1_20260720"
+    },
+    "model": 4,
+    "registry_worst_case_rt_per_lot_usd": "5.85",
+    "research_namespace": ".DWX",
+    "research_symbol": "EURUSD.DWX",
+    "set_sha256": "53832bf9410eab2c9fd230ffc0e02d663dc9168ef28439fe78883cd28db89c69",
+    "source_build_commit": "9e6c17e1e954aa6854afcc93dc72b64926316fd1",
+    "strategy": "Mulham Asian liquidity sweep, M5 MSS/displacement and FVG midpoint mitigation",
+    "timeframe": "M5"
+  },
+  "data": {
+    "both_artifacts_must_exist_and_validate_before_finalization_and_pre": true,
+    "coverage": {
+      "from_date": "2018-07-02",
+      "to_date": "2025-12-31"
+    },
+    "deployment_routing_evaluated": false,
+    "live_parity_required": false,
+    "manifest_path": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\data\\EURUSD_DWX_201807_202512_T1_manifest.json",
+    "model": 4,
+    "purpose": "RESEARCH_BACKTEST_ONLY",
+    "readiness_path": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\data\\EURUSD_DWX_201807_202512_T1_receipt.json",
+    "required_file_closure": {
+      "hcc_years": 8,
+      "tkc_months": 90
+    },
+    "research_store": "T1_CUSTOM_SYMBOL_STORE",
+    "symbol": "EURUSD.DWX"
+  },
+  "finalization": {
+    "final_contract_must_bind_roles": [
+      "adapter",
+      "base_tool",
+      "build_receipt",
+      "card",
+      "cost",
+      "ex5",
+      "factory_off",
+      "live_commission",
+      "matrix",
+      "mq5",
+      "news_primary",
+      "news_secondary",
+      "powershell",
+      "process_scope",
+      "python",
+      "report_parser",
+      "research_batch_receipt",
+      "research_data_manifest",
+      "research_dossier",
+      "research_extraction",
+      "research_readiness_receipt",
+      "runner",
+      "scheduled_task_helper",
+      "set",
+      "spec",
+      "task_manifest",
+      "testwindow_off",
+      "xau_native003_terminal_closure"
+    ],
+    "pre_and_launch_forbidden_until_status": "FINALIZED_OUTCOME_BLIND",
+    "required_command": "audit_mulham_asian_sweep_london_eur_testwindow_semantic.py finalize-contract --source-commit 9e6c17e1e954aa6854afcc93dc72b64926316fd1",
+    "requires_committed_clean_adapter_and_draft": true,
+    "requires_pristine_eur_namespace": true,
+    "requires_valid_exact_eur_manifest_and_readiness": true
+  },
+  "outcome_fence": {
+    "controller_logs_opened_before_post": false,
+    "deal_rows_parsed_before_post": false,
+    "live_process_command_lines_emitted": false,
+    "live_process_command_lines_read": false,
+    "mt5_started_by_prepare_pre_or_contract_finalization": false,
+    "native_outcomes_opened_before_post": false,
+    "native_reports_opened_before_post": false
+  },
+  "run_namespace": {
+    "attempt_id": "ATTEMPT_001",
+    "exact_control_paths": {
+      "authorization": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\EURUSD_MULHAM_NATIVE_001\\ATTEMPT_001\\native_outcome_authorization.json",
+      "job": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\EURUSD_MULHAM_NATIVE_001\\ATTEMPT_001\\launch_job.json",
+      "post": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\EURUSD_MULHAM_NATIVE_001\\ATTEMPT_001\\post_receipt.json",
+      "pre": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\EURUSD_MULHAM_NATIVE_001\\ATTEMPT_001\\pre_receipt.json",
+      "state": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\EURUSD_MULHAM_NATIVE_001\\ATTEMPT_001\\launch_state.json"
+    },
+    "family_root": "D:\\QM\\reports\\candidate_analysis\\QM5_13210",
+    "namespace": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\EURUSD_MULHAM_NATIVE_001",
+    "native_attempt_claim": {
+      "must_remain_absent": true,
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\EURUSD_MULHAM_NATIVE_001\\ATTEMPT_001\\native_attempt_claim.json"
+    },
+    "resume_forbidden": true,
+    "retry_or_attempt002_plus_forbidden": true,
+    "single_run_root": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\EURUSD_MULHAM_NATIVE_001\\ATTEMPT_001"
+  },
+  "schema_version": 1,
+  "status": "DRAFT_PENDING_FINAL_FREEZE",
+  "testwindow_off_quiescence": {
+    "codex_parallel_binding_and_value_exact": "0",
+    "exact_t1_t10_terminal_and_metatester_count": 0,
+    "factory_flag_codex_tasks_processes_mutexes_and_semantic_workers_must_match_pre": true,
+    "factory_off_flag_binding_required": true,
+    "live_process_command_line_output_forbidden": true,
+    "live_process_command_line_reads_forbidden": true,
+    "managed_tasks_exactly_disabled": [
+      "QM_StrategyFarm_Pump_5min",
+      "QM_StrategyFarm_Tick_5min",
+      "QM_StrategyFarm_AgentRouter_5min",
+      "QM_StrategyFarm_CodexOrchestration_15min",
+      "QM_StrategyFarm_GeminiOrchestration_15min",
+      "QM_StrategyFarm_ClaudeOrchestration_15min",
+      "QM_StrategyFarm_FactoryWatchdog_15min",
+      "QM_StrategyFarm_FactoryON_AtLogon",
+      "QM_StrategyFarm_ReconcileOrphans_Hourly",
+      "QM_StrategyFarm_Repair_Hourly",
+      "QM_StrategyFarm_TerminalWorkers_AT_STARTUP"
+    ],
+    "registered_live_factory_python_worker_count": 0,
+    "required_at": [
+      "PRE",
+      "LAUNCH",
+      "WORKER_BOOTSTRAP",
+      "BEFORE_EACH_NATIVE_CELL",
+      "POST"
+    ],
+    "version": "QM13210_TESTWINDOW_OFF_QUIESCENCE_V2_SEMANTIC_WORKERS",
+    "worker_registry_exact_path": "D:\\QM\\strategy_farm\\state\\worker_pids.json",
+    "worker_registry_live_projection": "REGISTRY_PID_LIVENESS_PLUS_PYTHON_IMAGE_NAME_ONLY",
+    "worker_registry_raw_sha256_bound": false,
+    "worker_registry_raw_size_bound": false
+  },
+  "windows": [
+    {
+      "cell_id": "DEV",
+      "cohort": "DEV",
+      "from_date": "2018-07-02",
+      "to_date": "2022-12-31"
+    },
+    {
+      "cell_id": "OOS_2023",
+      "cohort": "OOS",
+      "from_date": "2023-01-01",
+      "to_date": "2023-12-31"
+    },
+    {
+      "cell_id": "OOS_2024",
+      "cohort": "OOS",
+      "from_date": "2024-01-01",
+      "to_date": "2024-12-31"
+    },
+    {
+      "cell_id": "OOS_2025",
+      "cohort": "OOS",
+      "from_date": "2025-01-01",
+      "to_date": "2025-12-31"
+    }
+  ],
+  "xau_family_boundary": {
+    "closure_scope": "XAUUSD.DWX_XAUUSD_MULHAM_NATIVE_003_ONLY",
+    "eurusd_adapter_imports_or_delegates_to_xau_auditors": false,
+    "eurusd_analysis_is_a_distinct_unused_symbol_slot_family": true,
+    "terminal_closure_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13210_mulham-asian-sweep-london\\docs\\candidate-analysis\\xauusd_native003_invalid_terminal_closure_20260721.json",
+    "terminal_closure_sha256": "6ed181536f5d1e4ebdc5b1789021d3b8562d2bd3762330d9d0e101699b789cfe",
+    "terminal_closure_size": 4159,
+    "xau_family_is_terminal_and_must_never_resume_retry_or_relaunch": true
+  }
+}
