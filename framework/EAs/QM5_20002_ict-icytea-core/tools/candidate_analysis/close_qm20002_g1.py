@@ -53,7 +53,9 @@ TERMINAL_PENDING_ERROR = re.compile(
     r"closure_phase=QUIESCE_PENDING;"
     r"closure_intent_sha256=(?P<intent>[0-9a-f]{64});"
     r"ready_task_xml_sha256=(?P<xml>[0-9a-f]{64});"
-    r"task_contract_sha256=(?P<contract>[0-9a-f]{64})$"
+    r"task_contract_sha256=(?P<contract>[0-9a-f]{64});"
+    r"preterminal_evidence_sha256=(?P<preterminal>[0-9a-f]{64});"
+    r"task_start_race_observed=(?P<start_race>true|false)$"
 )
 TERMINAL_CLOSED_ERROR = re.compile(
     rf"^{REASON_CODE};"
