@@ -61,6 +61,7 @@ TERMINAL_CLOSED_ERROR = re.compile(
     rf"^{REASON_CODE};"
     r"closure_phase=CLOSED;"
     r"closure_intent_sha256=(?P<intent>[0-9a-f]{64});"
+    r"preterminal_evidence_sha256=(?P<preterminal>[0-9a-f]{64});"
     r"quiesced_evidence_sha256=(?P<quiesced>[0-9a-f]{64});"
     r"disabled_task_xml_sha256=(?P<xml>[0-9a-f]{64});"
     r"task_contract_sha256=(?P<contract>[0-9a-f]{64});"
@@ -1118,8 +1119,13 @@ def _final_closed_state(
     *,
     start_race_observed: bool,
 ) -> dict[str, Any]:
+    pending_proof = _terminal_proof(state, intent_sha256)
+    if pending_proof.get("phase") != "QUIESCE_PENDING":
+        raise ClosureError("final closure requires the durable preliminary REJECT")
+    pending_start_race = pending_proof.get("start_race") == "true"
     if (
         type(start_race_observed) is not bool
+        or (pending_start_race and not start_race_observed)
         or type(quiesced_evidence.get("never_run")) is not bool
         or quiesced_evidence.get("never_run") is not (not start_race_observed)
     ):
@@ -1130,6 +1136,7 @@ def _final_closed_state(
     terminal_error = (
         f"{REASON_CODE};closure_phase=CLOSED;"
         f"closure_intent_sha256={intent_sha256};"
+        f"preterminal_evidence_sha256={pending_proof['preterminal']};"
         f"quiesced_evidence_sha256={quiesced_sha};"
         f"disabled_task_xml_sha256={disabled_xml};"
         f"task_contract_sha256={task_contract};"
@@ -1700,6 +1707,7 @@ def _receipt_payload(
                 "never_run": True,
             },
             "quiesced_probe_binding": {
+                "preterminal_probe_sha256": terminal_proof["preterminal"],
                 "sha256": terminal_proof["quiesced"],
                 "task_xml_sha256": terminal_proof["xml"],
                 "task_contract_sha256": terminal_proof["contract"],
