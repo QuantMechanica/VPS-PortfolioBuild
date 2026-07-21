@@ -325,6 +325,8 @@ function Test-TesterLogHasNoHistoryForRun {
     $toPattern = [regex]::Escape($ExpectedToDate)
     $runNoHistoryPattern = "(?i)\b${symbolPattern}:\s+no history data from\s+$fromPattern\s+00:00\s+to\s+$toPattern\s+00:00\b"
     $stopPattern = "(?i)\bno history data,\s*stop testing\b"
+    $runStartPattern = "(?i)\b${symbolPattern},[^\r\n]*:\s+testing of Experts\\[^\r\n]+\s+from\s+$fromPattern\s+00:00\s+to\s+$toPattern\s+00:00\b"
+    $syncErrorPattern = "(?i)\b${symbolPattern}:\s+history synchronization error\b"
     $lines = $TesterLogTail -split "\r?\n"
 
     for ($idx = 0; $idx -lt $lines.Count; $idx++) {
@@ -334,6 +336,22 @@ function Test-TesterLogHasNoHistoryForRun {
         $lastContextLine = [Math]::Min($idx + 3, $lines.Count - 1)
         for ($contextIdx = $idx; $contextIdx -le $lastContextLine; $contextIdx++) {
             if ($lines[$contextIdx] -match $stopPattern) {
+                return $true
+            }
+        }
+    }
+
+    # MT5 build 5833 can abort before exporting even an empty report and emits
+    # only "<symbol>: history synchronization error". Scope this shorter form
+    # to the exact EA-run marker and requested date window so an unrelated
+    # failure appended to the shared tester log cannot poison the current run.
+    for ($idx = 0; $idx -lt $lines.Count; $idx++) {
+        if ($lines[$idx] -notmatch $runStartPattern) {
+            continue
+        }
+        $lastContextLine = [Math]::Min($idx + 5, $lines.Count - 1)
+        for ($contextIdx = $idx + 1; $contextIdx -le $lastContextLine; $contextIdx++) {
+            if ($lines[$contextIdx] -match $syncErrorPattern) {
                 return $true
             }
         }
@@ -2228,6 +2246,10 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
         if (Test-TesterLogShowsAccountNotSpecified -TesterLogTail $testerLogTail) {
             $failureHints.Add("ACCOUNT_NOT_SPECIFIED")
             $reasonClasses.Add("ACCOUNT_NOT_SPECIFIED")
+        }
+        if (Test-TesterLogHasNoHistoryForRun -TesterLogTail $testerLogTail -ExpectedSymbol $Symbol -ExpectedFromDate $fromDate -ExpectedToDate $toDate) {
+            $failureHints.Add("NO_HISTORY_LOG")
+            $reasonClasses.Add("NO_HISTORY_LOG")
         }
         $lingeringMeta = @(Get-MetaTesterProcessesForTerminalRoot -TerminalRoot $terminalRoot)
         if (@($lingeringMeta).Count -gt 0) {

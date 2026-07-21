@@ -125,4 +125,19 @@ if ((Resolve-InvalidReportVerdict -InvalidReasons $currentNoHistoryReasons) -ne 
     throw "Current-symbol no-history shell was not classified as NO_HISTORY."
 }
 
+$syncErrorTail = @"
+MN  0  18:45:16.844  Tester  EURUSD.DWX,M15 (Darwinex-Live): testing of Experts\QM\QM5_4006_fx-session-flow.ex5 from 2022.07.01 00:00 to 2022.12.31 00:00
+KR  0  18:45:16.855  Core 01 common synchronization completed
+JK  2  18:45:16.866  Core 01 EURUSD.DWX: history synchronization error
+"@
+if (-not (Test-TesterLogHasNoHistoryForRun -TesterLogTail $syncErrorTail -ExpectedSymbol "EURUSD.DWX" -ExpectedFromDate "2022.07.01" -ExpectedToDate "2022.12.31")) {
+    throw "Scoped history synchronization error was not classified as current-run NO_HISTORY."
+}
+if (Test-TesterLogHasNoHistoryForRun -TesterLogTail $syncErrorTail -ExpectedSymbol "GBPUSD.DWX" -ExpectedFromDate "2022.07.01" -ExpectedToDate "2022.12.31") {
+    throw "Foreign-symbol history synchronization error was incorrectly classified as current-run NO_HISTORY."
+}
+if (Test-TesterLogHasNoHistoryForRun -TesterLogTail $syncErrorTail -ExpectedSymbol "EURUSD.DWX" -ExpectedFromDate "2021.01.01" -ExpectedToDate "2021.12.31") {
+    throw "Wrong-window history synchronization error was incorrectly classified as current-run NO_HISTORY."
+}
+
 Write-Host "PASS Test-RunSmokeNoHistoryScope"
