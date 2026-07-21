@@ -230,11 +230,13 @@ if ($Operation -eq 'Register') {
             -Execute $contract.PythonExe `
             -Argument $contract.Arguments `
             -WorkingDirectory $contract.RepoRoot
+        # This host's cmdlet exposes no creation switch for AllowHardTerminate;
+        # Task Scheduler defaults it true and the post-registration assertion
+        # above rejects the task before Start if that exact value ever differs.
         $settings = New-ScheduledTaskSettingsSet `
             -AllowStartIfOnBatteries `
             -DontStopIfGoingOnBatteries `
             -StartWhenAvailable `
-            -AllowHardTerminate `
             -Hidden `
             -ExecutionTimeLimit (New-TimeSpan -Seconds $ExecutionLimitSeconds) `
             -MultipleInstances IgnoreNew

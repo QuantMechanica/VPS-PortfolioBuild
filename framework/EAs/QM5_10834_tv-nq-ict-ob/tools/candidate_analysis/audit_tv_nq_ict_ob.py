@@ -195,6 +195,18 @@ NY_ENTRY_END = time(10, 15)
 # execution grace; 10:20 itself is outside the permitted interval.
 NY_FLAT_DEADLINE_EXCLUSIVE = time(10, 20)
 RESEARCH_SYMBOL = "NDX.DWX"
+EXPECTED_LIVE_ALIASES: dict[str, str] = {
+    "DXZ_LIVE": "NDX",
+    "FTMO_TRIAL": "US100.cash",
+}
+EXPECTED_MATRIX_IMPORT_PATH = "Custom/Indices/Index 3/NDX.DWX"
+EXPECTED_MAGIC_SLOT_OFFSET = "0"
+EXPECTED_COST_ALIAS_CHAIN: tuple[str, ...] = ("NDX", "US100")
+EXPECTED_COST_LOOKUP_KEY = "NDX"
+EXPECTED_DXZ_RT_PER_LOT_USD = Decimal("5.50")
+EXPECTED_FTMO_RT_PER_LOT_USD = Decimal("0.00")
+EXPECTED_WORST_RT_PER_LOT_USD = Decimal("5.50")
+REBUILD_EVIDENCE_LABEL = "NDX"
 DATA_RECEIPT_ARTIFACT_TYPE = "QM5_10834_BACKTEST_DATA_RECEIPT"
 DATA_COVERAGE_FROM = date(2018, 7, 2)
 DATA_COVERAGE_TO = date(2025, 12, 31)
@@ -711,7 +723,7 @@ def _matrix_row(symbol: str, matrix_path: Path = MATRIX_PATH) -> dict[str, str]:
     if row.get("asset_class", "").casefold() != "indices":
         raise InvalidEvidence(f"symbol matrix asset class is not indices: {symbol}")
     import_path = re.sub(r"/+", "/", row.get("import_log_path", "").replace("\\", "/"))
-    if import_path != "Custom/Indices/Index 3/NDX.DWX":
+    if import_path != EXPECTED_MATRIX_IMPORT_PATH:
         raise InvalidEvidence(f"symbol matrix import path drift: {import_path!r}")
     # Live OHLC/tail/parity evidence is intentionally excluded from the research
     # namespace contract.  The full matrix byte identity is hash-bound separately.
@@ -780,6 +792,58 @@ def _read_contract_text(path: Path, label: str) -> str:
         raise InvalidEvidence(f"cannot read {label}: {path}: {exc}") from exc
 
 
+def validate_data_provision_contract(
+    symbol: str,
+    done_path: Path,
+    source_path: Path,
+) -> dict[str, Any]:
+    """Validate the symbol-specific operation that populated the isolated data store."""
+    done_text = _read_contract_text(
+        done_path, f"{REBUILD_EVIDENCE_LABEL} rebuild DONE"
+    )
+    done: dict[str, str] = {}
+    for line in done_text.splitlines():
+        if "=" in line:
+            key, value = line.split("=", 1)
+            done[key.strip()] = value.strip()
+    required_done = {"status", "target", "ticks_added", "bars_updated"}
+    if not required_done.issubset(done):
+        raise InvalidEvidence(f"{REBUILD_EVIDENCE_LABEL} rebuild DONE is incomplete")
+    try:
+        ticks_added = int(done["ticks_added"])
+        bars_updated = int(done["bars_updated"])
+    except ValueError as exc:
+        raise InvalidEvidence(
+            f"{REBUILD_EVIDENCE_LABEL} rebuild counts are malformed"
+        ) from exc
+    if done["status"] != "OK" or done["target"] != symbol:
+        raise InvalidEvidence(
+            f"{REBUILD_EVIDENCE_LABEL} rebuild DONE identity/status drift"
+        )
+    if ticks_added <= 0 or bars_updated <= 0:
+        raise InvalidEvidence(
+            f"{REBUILD_EVIDENCE_LABEL} rebuild did not add positive ticks/bars"
+        )
+
+    source = _read_contract_text(
+        source_path, f"{REBUILD_EVIDENCE_LABEL} rebuild source"
+    )
+    if not re.search(rf'#define\s+TARGET\s+"{re.escape(symbol)}"', source):
+        raise InvalidEvidence(f"{REBUILD_EVIDENCE_LABEL} rebuild source target drift")
+    if "CustomTicksAdd" not in source or "CustomRatesUpdate" not in source:
+        raise InvalidEvidence(
+            f"{REBUILD_EVIDENCE_LABEL} rebuild source lacks tick/bar rebuild operations"
+        )
+    return {
+        "status": "OK",
+        "target": symbol,
+        "ticks_added": ticks_added,
+        "bars_updated": bars_updated,
+        "uses_custom_ticks_add": True,
+        "uses_custom_rates_update": True,
+    }
+
+
 def _validate_factory_contracts(
     symbol: str,
     evidence_paths: Mapping[str, Path],
@@ -815,7 +879,7 @@ def _validate_factory_contracts(
     venues = aliases.get("venues")
     if not isinstance(venues, list):
         raise InvalidEvidence("execution-symbol alias venues are missing")
-    expected_aliases = {"DXZ_LIVE": "NDX", "FTMO_TRIAL": "US100.cash"}
+    expected_aliases = EXPECTED_LIVE_ALIASES
     observed_aliases: dict[str, str] = {}
     for venue_id, expected_raw in expected_aliases.items():
         venue_rows = [
@@ -837,30 +901,11 @@ def _validate_factory_contracts(
     matrix_row = _matrix_row(symbol, evidence_paths["matrix"])
     cost_schedule = resolve_cost_schedule(evidence_paths["cost"], symbol)
 
-    done_text = _read_contract_text(evidence_paths["rebuild_done"], "NDX rebuild DONE")
-    done: dict[str, str] = {}
-    for line in done_text.splitlines():
-        if "=" in line:
-            key, value = line.split("=", 1)
-            done[key.strip()] = value.strip()
-    required_done = {"status", "target", "ticks_added", "bars_updated"}
-    if not required_done.issubset(done):
-        raise InvalidEvidence("NDX rebuild DONE is incomplete")
-    try:
-        ticks_added = int(done["ticks_added"])
-        bars_updated = int(done["bars_updated"])
-    except ValueError as exc:
-        raise InvalidEvidence("NDX rebuild counts are malformed") from exc
-    if done["status"] != "OK" or done["target"] != symbol:
-        raise InvalidEvidence("NDX rebuild DONE identity/status drift")
-    if ticks_added <= 0 or bars_updated <= 0:
-        raise InvalidEvidence("NDX rebuild did not add positive ticks/bars")
-
-    source = _read_contract_text(evidence_paths["rebuild_source"], "NDX rebuild source")
-    if not re.search(r'#define\s+TARGET\s+"NDX\.DWX"', source):
-        raise InvalidEvidence("NDX rebuild source target drift")
-    if "CustomTicksAdd" not in source or "CustomRatesUpdate" not in source:
-        raise InvalidEvidence("NDX rebuild source lacks tick/bar rebuild operations")
+    provision_contract = validate_data_provision_contract(
+        symbol,
+        evidence_paths["rebuild_done"],
+        evidence_paths["rebuild_source"],
+    )
 
     return {
         "namespace_contract": {
@@ -872,14 +917,7 @@ def _validate_factory_contracts(
             "matrix_row": matrix_row,
         },
         "cost_schedule": cost_schedule,
-        "rebuild_contract": {
-            "status": "OK",
-            "target": symbol,
-            "ticks_added": ticks_added,
-            "bars_updated": bars_updated,
-            "uses_custom_ticks_add": True,
-            "uses_custom_rates_update": True,
-        },
+        "rebuild_contract": provision_contract,
     }
 
 
@@ -1230,7 +1268,7 @@ def effective_input_contract(
 def _validate_set_contract(symbol: str, metadata: Mapping[str, str], inputs: Mapping[str, str]) -> None:
     expected = {
         "qm_ea_id": "10834",
-        "qm_magic_slot_offset": "0",
+        "qm_magic_slot_offset": EXPECTED_MAGIC_SLOT_OFFSET,
         "RISK_FIXED": "1000",
         "RISK_PERCENT": "0",
         "strategy_entry_start_hhmm": "945",
@@ -1239,7 +1277,9 @@ def _validate_set_contract(symbol: str, metadata: Mapping[str, str], inputs: Map
     }
     drift = {key: (wanted, inputs.get(key)) for key, wanted in expected.items() if inputs.get(key) != wanted}
     if symbol != RESEARCH_SYMBOL or metadata.get("symbol") != symbol or metadata.get("timeframe") != TIMEFRAME:
-        raise InvalidEvidence("set metadata violates the NDX.DWX/M5 single-symbol contract")
+        raise InvalidEvidence(
+            f"set metadata violates the {RESEARCH_SYMBOL}/M5 single-symbol contract"
+        )
     if drift:
         raise InvalidEvidence(f"set input contract drift: {drift}")
 
@@ -1301,8 +1341,10 @@ def resolve_cost_schedule(path: Path, symbol: str) -> dict[str, Any]:
         alias_chain.append(target)
         key = target
         row = target_row
-    if alias_chain != ["NDX", "US100"]:
-        raise InvalidEvidence(f"NDX cost alias chain drift: {alias_chain}")
+    if tuple(alias_chain) != EXPECTED_COST_ALIAS_CHAIN:
+        raise InvalidEvidence(
+            f"{RESEARCH_SYMBOL} cost alias chain drift: {alias_chain}"
+        )
     if row.get("dwx_symbol") != symbol or row.get("asset_class") != "index":
         raise InvalidEvidence(f"cost model row is not the exact index contract for {symbol}")
     dxz = row.get("dxz")
@@ -1328,18 +1370,25 @@ def resolve_cost_schedule(path: Path, symbol: str) -> dict[str, Any]:
             f"cost model worst-case drift for {symbol}: {worst} != max({dxz_rate},{ftmo_rate})"
         )
     if (
-        _money(dxz_rate) != Decimal("5.50")
-        or _money(ftmo_rate) != Decimal("0.00")
-        or _money(worst) != Decimal("5.50")
+        _money(dxz_rate) != _money(EXPECTED_DXZ_RT_PER_LOT_USD)
+        or _money(ftmo_rate) != _money(EXPECTED_FTMO_RT_PER_LOT_USD)
+        or _money(worst) != _money(EXPECTED_WORST_RT_PER_LOT_USD)
     ):
-        raise InvalidEvidence("NDX venue-cost contract must be DXZ 5.50 / FTMO 0 / worst 5.50")
+        raise InvalidEvidence(
+            f"{RESEARCH_SYMBOL} venue-cost contract must be DXZ "
+            f"{_decimal_text(EXPECTED_DXZ_RT_PER_LOT_USD)} / FTMO "
+            f"{_decimal_text(EXPECTED_FTMO_RT_PER_LOT_USD)} / worst "
+            f"{_decimal_text(EXPECTED_WORST_RT_PER_LOT_USD)}"
+        )
     spread_source = str(dxz.get("spread_source", ""))
     spread_normalized = spread_source.casefold()
     if not all(token in spread_normalized for token in ("embedded", ".dwx", "real-tick")):
-        raise InvalidEvidence("NDX spread must be embedded in .DWX real-tick history")
+        raise InvalidEvidence(
+            f"{RESEARCH_SYMBOL} spread must be embedded in .DWX real-tick history"
+        )
     return {
         "symbol": symbol,
-        "cost_lookup_key": "NDX",
+        "cost_lookup_key": EXPECTED_COST_LOOKUP_KEY,
         "cost_resolved_key": key,
         "alias_chain": alias_chain,
         "currency": "USD",
@@ -2493,7 +2542,7 @@ def preflight(
             "authorized_symbol": symbol,
             "research_backtest_policy": SYMBOL_POLICY[symbol],
             "dwx_suffix_removed_only_at_deploy_packaging": True,
-            "live_aliases": {"DXZ_LIVE": "NDX", "FTMO_TRIAL": "US100.cash"},
+            "live_aliases": dict(EXPECTED_LIVE_ALIASES),
             "live_ohlc_tail_parity_required_for_research_merit": False,
             "matrix_row": matrix_row,
         },
@@ -2637,7 +2686,7 @@ def assert_pre_receipt(path: Path, expected_sha256: str) -> dict[str, Any]:
         "authorized_symbol": symbol,
         "research_backtest_policy": SYMBOL_POLICY[symbol],
         "dwx_suffix_removed_only_at_deploy_packaging": True,
-        "live_aliases": {"DXZ_LIVE": "NDX", "FTMO_TRIAL": "US100.cash"},
+        "live_aliases": dict(EXPECTED_LIVE_ALIASES),
         "live_ohlc_tail_parity_required_for_research_merit": False,
         "matrix_row": matrix_row,
     }
@@ -5454,7 +5503,10 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
     freeze = sub.add_parser(
         "freeze-data",
-        help="Hash the exact isolated DEV2 NDX.DWX 201807..202512 corpus without starting MT5",
+        help=(
+            f"Hash the exact isolated DEV2 {RESEARCH_SYMBOL} 201807..202512 corpus "
+            "without starting MT5"
+        ),
     )
     freeze.add_argument("--symbol", required=True)
     freeze.add_argument("--receipt", type=Path, required=True)

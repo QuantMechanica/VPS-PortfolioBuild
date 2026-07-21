@@ -874,6 +874,8 @@ def test_persisted_helper_is_s4u_triggerless_and_never_overwrites_task() -> None
     assert "$Task.TaskName -cne $TaskName" in helper
     assert "@($Task.Triggers).Count -ne 0" in helper
     assert "-AllowHardTerminate" in helper
+    assert "cmdlet exposes no creation switch for AllowHardTerminate" in helper
+    assert "            -AllowHardTerminate `" not in helper
     assert "-not [bool]$Task.Settings.StartWhenAvailable" in helper
     assert "-not [bool]$Task.Settings.AllowHardTerminate" in helper
     assert "-not [bool]$Task.Settings.Hidden" in helper

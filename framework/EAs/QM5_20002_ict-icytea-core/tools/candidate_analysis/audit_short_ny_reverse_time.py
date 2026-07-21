@@ -3225,6 +3225,26 @@ def required_scheduled_task_timeout(
     return seconds
 
 
+def _assert_scheduler_job_input(
+    pre: Mapping[str, Any], operation: str, job: Mapping[str, Any]
+) -> None:
+    state_path = _assert_control_path_layout(Path(str(job["state_path"])), "state")
+    job_path = _assert_control_path_layout(
+        state_path.with_name("launch_job.json"), "job", state_path
+    )
+    helper_sha256 = str(
+        pre["runtime"]["audit_control_path_helper"]["sha256"]
+    )
+    _assert_control_directory(job_path.parent, helper_sha256)
+    if operation == "Probe" and not job_path.exists():
+        _assert_absent_control_file(job_path, helper_sha256)
+        return
+    _assert_control_file(job_path, helper_sha256)
+    persisted = load_strict_json(job_path, "scheduler launch job")
+    if canonical_bytes(persisted) != canonical_bytes(job):
+        raise AuthorizationError("scheduler launch job bytes/payload drift")
+
+
 def _scheduler_call(
     pre: Mapping[str, Any],
     operation: str,
@@ -3262,6 +3282,7 @@ def _scheduler_call(
         if job is None or not isinstance(job.get("scheduler"), Mapping):
             raise AuthorizationError("scheduled-task job contract is missing")
         scheduler = job["scheduler"]
+        _assert_scheduler_job_input(pre, operation, job)
         command.extend(
             [
                 "-TaskName",
@@ -3290,6 +3311,8 @@ def _scheduler_call(
     )
     for binding, label in runtime_bindings:
         assert_binding(binding, f"{label} post-call reassertion")
+    if operation != "Identity" and job is not None:
+        _assert_scheduler_job_input(pre, operation, job)
     if completed.returncode != 0:
         raise AuthorizationError(
             f"persisted scheduler {operation!r} failed with exit {completed.returncode}"
