@@ -527,7 +527,8 @@ def validate_data_provision_contract(
     }
 
 
-def _load_slippage_stress_contract(path: Path = SLIPPAGE_CALIBRATION_PATH) -> dict[str, Any]:
+def _load_slippage_stress_contract(path: Path | None = None) -> dict[str, Any]:
+    path = (path or SLIPPAGE_CALIBRATION_PATH).resolve()
     payload = B.load_json(path)
     symbols = payload.get("symbols")
     row = symbols.get(RESEARCH_SYMBOL) if isinstance(symbols, Mapping) else None
