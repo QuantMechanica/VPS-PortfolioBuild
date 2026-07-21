@@ -278,7 +278,7 @@ def test_build_receipt_binds_exact_source_binary_spec_card_set_and_compile() -> 
     receipt = subject.validate_build_receipt(
         BUILD_RECEIPT, "EURUSD.DWX", bindings
     )
-    assert receipt["build_commit"] == "b86eafe5cd20a359a71614ea8fcaddbd88977f4e"
+    assert receipt["build_commit"] == "9e6c17e1e954aa6854afcc93dc72b64926316fd1"
     assert receipt["compile_errors"] == 0
     assert receipt["compile_warnings"] == 0
     assert receipt["source_sha256"] == bindings["mq5"]["sha256"]

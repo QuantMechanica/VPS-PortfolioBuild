@@ -570,38 +570,124 @@ def validate_analysis_contract(path: Path = CONTRACT_PATH) -> dict[str, Any]:
     }
 
 
-def _load_slippage_proxy(path: Path) -> dict[str, Any]:
-    payload = B.load_json(path)
-    symbols = payload.get("symbols")
-    row = symbols.get(RESEARCH_SYMBOL) if isinstance(symbols, Mapping) else None
-    slippage = row.get("slippage_points") if isinstance(row, Mapping) else None
-    spread = row.get("spread_points") if isinstance(row, Mapping) else None
-    latency = row.get("latency_ms") if isinstance(row, Mapping) else None
-    if (
-        payload.get("measurement_status") != "MEASURED"
-        or not isinstance(row, Mapping)
-        or row.get("auto_stub") is not True
-        or row.get("stub_source") != "farmctl_pump_p5_calibration_autostub"
-        or not isinstance(slippage, Mapping)
-        or not isinstance(spread, Mapping)
-        or not isinstance(latency, Mapping)
-        or B._strict_decimal(slippage.get("avg"), "XAU slippage avg")
-        != XAU_MERIT_SLIPPAGE_POINTS_PER_SIDE
-        or B._strict_decimal(slippage.get("p95"), "XAU slippage p95")
-        != XAU_P95_SLIPPAGE_POINTS_PER_SIDE
-        or B._strict_decimal(spread.get("median"), "XAU spread median")
-        != Decimal("20")
-        or B._strict_decimal(spread.get("p95"), "XAU spread p95")
-        != Decimal("60")
-        or B._strict_decimal(latency.get("avg"), "XAU latency avg")
-        != Decimal("50")
-        or B._strict_decimal(latency.get("p95"), "XAU latency p95")
-        != Decimal("120")
-    ):
-        raise B.InvalidEvidence("XAU Factory slippage-proxy contract drift")
+def _git_run(arguments: Sequence[str]) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["git", *arguments],
+        cwd=REPO_ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="strict",
+    )
+
+
+def _repo_relative(path: Path) -> str:
+    try:
+        return path.resolve().relative_to(REPO_ROOT.resolve()).as_posix()
+    except ValueError as exc:
+        raise B.InvalidEvidence(f"finalized artifact is outside repository: {path}") from exc
+
+
+def _assert_source_freeze_ready(source_commit: str) -> None:
+    if not re.fullmatch(r"[0-9a-f]{40}", source_commit):
+        raise B.InvalidEvidence("finalize requires a lowercase full 40-hex source commit")
+    resolved = _git_run(["rev-parse", "--verify", f"{source_commit}^{{commit}}"])
+    if resolved.returncode != 0 or resolved.stdout.strip().lower() != source_commit:
+        raise B.InvalidEvidence("finalize source commit does not resolve exactly")
+    ancestor = _git_run(["merge-base", "--is-ancestor", source_commit, "HEAD"])
+    if ancestor.returncode != 0:
+        raise B.InvalidEvidence("finalize source commit is not an ancestor of HEAD")
+
+    paths = _artifact_contract_paths()
+    repo_paths = [
+        _repo_relative(path)
+        for path in [*paths.values(), CONTRACT_PATH]
+        if path.resolve().is_relative_to(REPO_ROOT.resolve())
+    ]
+    status = _git_run(
+        ["status", "--porcelain=v1", "--untracked-files=all", "--", *repo_paths]
+    )
+    if status.returncode != 0 or status.stdout.strip():
+        raise B.InvalidEvidence(
+            "finalize requires committed clean source, receipt, adapter, base tool and draft"
+        )
+    for role in ("mq5", "ex5", "spec", "set"):
+        relative = _repo_relative(paths[role])
+        diff = _git_run(["diff", "--quiet", source_commit, "--", relative])
+        if diff.returncode != 0:
+            raise B.InvalidEvidence(
+                f"finalize artifact does not match source build commit: {role}"
+            )
+
+
+def _assert_finalized_contract_committed() -> None:
+    relative = _repo_relative(CONTRACT_PATH)
+    tracked = _git_run(["ls-files", "--error-unmatch", "--", relative])
+    status = _git_run(
+        ["status", "--porcelain=v1", "--untracked-files=all", "--", relative]
+    )
+    if tracked.returncode != 0 or status.returncode != 0 or status.stdout.strip():
+        raise B.InvalidEvidence(
+            "PRE requires the finalized XAU contract to be committed and clean"
+        )
+
+
+def _finalized_contract_payload(
+    source_commit: str,
+    finalized_utc: str,
+    artifact_bindings: Mapping[str, Mapping[str, Any]],
+) -> dict[str, Any]:
     return {
-        "binding": B.file_binding(path),
+        "schema_version": 2,
+        "artifact_type": "QM5_13210_XAUUSD_OUTCOME_BLIND_ANALYSIS_CONTRACT",
+        "status": "FINALIZED_OUTCOME_BLIND",
+        "finalized_utc": finalized_utc,
+        "analysis_id": ANALYSIS_ID,
+        "source_build_commit": source_commit,
+        "candidate": _candidate_contract(),
+        "lane_and_data": _lane_contract(),
+        "windows": _window_contract(),
+        "run_namespace": _run_namespace_contract(),
+        "symbol_spec_contract": XAU_SYMBOL_SPEC_CONTRACT,
+        "xau_calibration_projection": XAU_CALIBRATION_PROJECTION,
+        "artifact_bindings": {
+            role: dict(artifact_bindings[role]) for role in sorted(FINAL_ARTIFACT_ROLES)
+        },
+        "execution_cost_contract": MERIT_GATES["execution_cost_axes"],
+        "merit_contract": MERIT_GATES,
+        "outcome_fence": _outcome_fence_contract(),
+    }
+
+
+def finalize_analysis_contract(source_commit: str) -> dict[str, Any]:
+    validate_draft_contract(CONTRACT_PATH)
+    _assert_pristine_one_shot_namespace()
+    _assert_source_freeze_ready(source_commit)
+    artifacts = {
+        role: B.file_binding(path)
+        for role, path in _artifact_contract_paths().items()
+    }
+    _validate_bound_build_receipt(artifacts, source_commit)
+    payload = _finalized_contract_payload(source_commit, B.utc_now(), artifacts)
+    digest = B.atomic_json(CONTRACT_PATH, payload, replace=True)
+    validated = validate_analysis_contract(CONTRACT_PATH)
+    if validated["binding"]["sha256"] != digest:
+        raise B.InvalidEvidence("finalized XAU contract write/binding drift")
+    return validated
+
+
+def _load_slippage_proxy(projection: Mapping[str, Any] | None = None) -> dict[str, Any]:
+    payload = (
+        dict(projection)
+        if projection is not None
+        else dict(validate_analysis_contract()["xau_calibration_projection"])
+    )
+    if payload != XAU_CALIBRATION_PROJECTION:
+        raise B.InvalidEvidence("XAU-only calibration projection contract drift")
+    return {
         "classification": "FACTORY_AUTO_STUB_PROXY_NOT_XAU_LIVE_FILL_MEASUREMENT",
+        "projection_sha256": B.canonical_sha256(payload),
         "points_axis_per_side": ["1", "3"],
         "spread_reference_points": {"median": "20", "p95": "60"},
         "latency_reference_ms": {"avg": "50", "p95": "120"},
@@ -612,7 +698,7 @@ def resolve_cost_schedule(
     path: Path,
     symbol: str,
     live_commission_path: Path = B.LIVE_COMMISSION_PATH,
-    slippage_calibration_path: Path | None = None,
+    calibration_projection: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     enforce_symbol_policy(symbol)
     payload = B.load_json(path)
@@ -664,7 +750,7 @@ def resolve_cost_schedule(
         != Decimal("0")
     ):
         raise B.InvalidEvidence("XAU live-commission commodity closure drift")
-    proxy = _load_slippage_proxy(slippage_calibration_path)
+    proxy = _load_slippage_proxy(calibration_projection)
     return {
         "symbol": RESEARCH_SYMBOL,
         "currency": "USD",
@@ -846,9 +932,12 @@ def preflight(
     run_root: Path,
 ) -> dict[str, Any]:
     enforce_symbol_policy(symbol)
+    _assert_pristine_one_shot_namespace()
+    _assert_exact_run_root(run_root)
     if build_receipt_path.resolve() != BUILD_RECEIPT_PATH.resolve():
         raise B.InvalidEvidence("XAU PRE requires the exact bound build receipt path")
     contract = _contract_receipt()
+    _assert_finalized_contract_committed()
     pre = _BASE_PREFLIGHT(
         symbol,
         research_readiness_receipt_path,
@@ -856,15 +945,21 @@ def preflight(
         build_receipt_path,
         run_root,
     )
+    if pre["bindings"]["tool"] != contract["artifact_bindings"]["adapter"]:
+        raise B.InvalidEvidence("PRE adapter binding differs from finalized XAU contract")
     pre["xau_preregistration"] = contract
     return pre
 
 
 def assert_pre_receipt(path: Path, expected_sha256: str) -> dict[str, Any]:
-    pre = _BASE_ASSERT_PRE_RECEIPT(path, expected_sha256)
     expected = _contract_receipt()
+    _assert_finalized_contract_committed()
+    pre = _BASE_ASSERT_PRE_RECEIPT(path, expected_sha256)
+    if pre["bindings"]["tool"] != expected["artifact_bindings"]["adapter"]:
+        raise B.InvalidEvidence("PRE no longer binds the finalized XAU adapter bytes")
     if pre.get("xau_preregistration") != expected:
         raise B.InvalidEvidence("PRE XAU preregistration binding drift")
+    _assert_no_sibling_or_prior_namespace()
     return pre
 
 
@@ -919,6 +1014,11 @@ def validate_authorization(
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
+    finalize = sub.add_parser(
+        "finalize-contract",
+        help="Freeze committed source/adapter bytes before any PRE or native launch",
+    )
+    finalize.add_argument("--source-commit", required=True)
     prepare = sub.add_parser(
         "prepare-data",
         help="Hash the exact XAUUSD.DWX T1 research store; never starts MT5",
@@ -938,7 +1038,7 @@ def build_parser() -> argparse.ArgumentParser:
     launch.add_argument("--pre-sha256", required=True)
     launch.add_argument("--authorization", type=Path, required=True)
     launch.add_argument("--state", type=Path, required=True)
-    launch.add_argument("--resume", action="store_true")
+    launch.set_defaults(resume=False)
     post = sub.add_parser("post", help="Audit COMPLETE XAU evidence and frozen gates")
     post.add_argument("--pre-receipt", type=Path, required=True)
     post.add_argument("--pre-sha256", required=True)
@@ -965,6 +1065,7 @@ B.preflight = preflight
 B.assert_pre_receipt = assert_pre_receipt
 B.validate_authorization = validate_authorization
 B.build_parser = build_parser
+B._assert_run_root = _assert_exact_run_root
 
 AuditError = B.AuditError
 InvalidEvidence = B.InvalidEvidence
@@ -980,6 +1081,8 @@ REQUIRED_BINDING_ROLES = B.REQUIRED_BINDING_ROLES
 
 
 def build_plan(symbol: str, set_binding: Mapping[str, Any], run_root: Path) -> dict[str, Any]:
+    enforce_symbol_policy(symbol)
+    _assert_exact_run_root(run_root)
     return B.build_plan(symbol, set_binding, run_root)
 
 
@@ -988,7 +1091,31 @@ def runner_command(pre: Mapping[str, Any], cell: Mapping[str, Any]) -> list[str]
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    return B.main(argv)
+    arguments = list(argv) if argv is not None else sys.argv[1:]
+    if arguments and arguments[0] == "finalize-contract":
+        args = build_parser().parse_args(arguments)
+        try:
+            receipt = finalize_analysis_contract(args.source_commit)
+            print(
+                json.dumps(
+                    {
+                        "status": "FINALIZED_OUTCOME_BLIND",
+                        "contract": str(CONTRACT_PATH.resolve()),
+                        "sha256": receipt["binding"]["sha256"],
+                        "source_build_commit": receipt["source_build_commit"],
+                    },
+                    indent=2,
+                    sort_keys=True,
+                )
+            )
+            return 0
+        except (B.AuditError, OSError, ValueError, KeyError, TypeError) as exc:
+            print(
+                json.dumps(B.invalid_receipt("FINALIZE_CONTRACT", exc), sort_keys=True),
+                file=sys.stderr,
+            )
+            return 2
+    return B.main(arguments)
 
 
 def __getattr__(name: str) -> Any:

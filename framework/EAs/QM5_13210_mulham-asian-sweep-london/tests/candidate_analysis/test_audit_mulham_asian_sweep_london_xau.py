@@ -68,28 +68,15 @@ def _live_payload() -> dict[str, object]:
 
 
 def _slippage_payload() -> dict[str, object]:
-    return {
-        "measurement_status": "MEASURED",
-        "symbols": {
-            "XAUUSD.DWX": {
-                "auto_stub": True,
-                "stub_source": "farmctl_pump_p5_calibration_autostub",
-                "slippage_points": {"avg": 1.0, "p95": 3.0},
-                "spread_points": {"median": 20.0, "p95": 60.0},
-                "latency_ms": {"avg": 50.0, "p95": 120.0},
-            }
-        },
-    }
+    return json.loads(json.dumps(subject.XAU_CALIBRATION_PROJECTION))
 
 
-def _cost_files(tmp_path: Path) -> tuple[Path, Path, Path]:
+def _cost_files(tmp_path: Path) -> tuple[Path, Path]:
     venue = tmp_path / "venue.json"
     live = tmp_path / "live.json"
-    slippage = tmp_path / "slippage.json"
     _write_json(venue, _venue_payload())
     _write_json(live, _live_payload())
-    _write_json(slippage, _slippage_payload())
-    return venue, live, slippage
+    return venue, live
 
 
 def _trade(
@@ -150,23 +137,16 @@ def _passing_cells() -> dict[str, list[subject.TradeRecord]]:
     return cells
 
 
-def test_contract_is_frozen_outcome_blind_and_binds_existing_xau_build() -> None:
-    contract = subject.validate_analysis_contract()
-    assert contract["binding"]["sha256"] == subject.EXPECTED_CONTRACT_SHA256
-    assert contract["artifact_bindings"]["set"]["sha256"] == (
-        "23970e75ad7c41e682455ddb255473c9e527c2f3a404dbfd74fa8ac9fd363ac6"
+def test_draft_contract_blocks_pre_until_explicit_source_and_adapter_freeze() -> None:
+    draft = subject.validate_draft_contract()
+    assert draft["status"] == "DRAFT_PENDING_SOURCE_AND_ADAPTER_FREEZE"
+    assert draft["finalization"]["final_contract_must_bind_roles"] == sorted(
+        subject.FINAL_ARTIFACT_ROLES
     )
-    assert contract["artifact_bindings"]["ex5"]["sha256"] == (
-        "ffd5a47aa7e7f32759494d4f0e172d785da5d7ccdd5f3cfbfed64aeffbc2943c"
-    )
-    payload = subject.load_json(subject.CONTRACT_PATH)
-    assert payload["outcome_fence"] == {
-        "eurusd_native_outcomes_read_to_select_xau": False,
-        "metatester_started": False,
-        "mt5_terminal_started": False,
-        "xau_deal_rows_parsed": False,
-        "xau_native_reports_opened": False,
-    }
+    assert "adapter" in draft["finalization"]["final_contract_must_bind_roles"]
+    assert "artifact_bindings" not in draft
+    with pytest.raises(subject.InvalidEvidence, match="finalize required"):
+        subject.validate_analysis_contract()
 
 
 def test_private_profile_does_not_mutate_separately_loaded_eurusd_auditor() -> None:
@@ -190,7 +170,9 @@ def test_xau_plan_and_runner_are_exact_t1_model4_four_cells_two_duplicates(
         "size": 1,
         "sha256": "a" * 64,
     }
-    plan = subject.build_plan("XAUUSD.DWX", set_binding, tmp_path / "run")
+    plan = subject.build_plan(
+        "XAUUSD.DWX", set_binding, subject.ALLOWED_RUN_ROOT
+    )
     assert plan["single_authorized_symbol"] == "XAUUSD.DWX"
     assert plan["native_run_count"] == 8
     assert [cell["model"] for cell in plan["cells"]] == [4, 4, 4, 4]
@@ -220,6 +202,8 @@ def test_xau_plan_and_runner_are_exact_t1_model4_four_cells_two_duplicates(
         subject.build_plan("EURUSD.DWX", set_binding, tmp_path / "eur")
     with pytest.raises(subject.InvalidEvidence, match="only XAUUSD.DWX"):
         subject.build_plan("XAUUSD", set_binding, tmp_path / "suffixless")
+    with pytest.raises(subject.InvalidEvidence, match="single frozen root"):
+        subject.build_plan("XAUUSD.DWX", set_binding, tmp_path / "sibling")
 
 
 def test_xau_set_build_and_binding_paths_are_exact() -> None:
@@ -238,21 +222,33 @@ def test_xau_set_build_and_binding_paths_are_exact() -> None:
     assert paths["tool"] == TOOL
     assert paths["base_tool"] == BASE_TOOL
     assert paths["xau_contract"] == subject.CONTRACT_PATH
-    assert paths["slippage_calibration"] == subject.SLIPPAGE_CALIBRATION_PATH
+    assert "slippage_calibration" not in paths
     assert paths["set"].name.endswith("XAUUSD.DWX_M5_backtest.set")
-    bindings = subject._binding_map("XAUUSD.DWX")
-    receipt = subject.validate_build_receipt(
-        BUILD_RECEIPT, "XAUUSD.DWX", bindings
+    assert subject.file_binding(paths["tool"]) == subject.file_binding(TOOL)
+    assert subject.file_binding(paths["xau_contract"]) == subject.file_binding(
+        subject.CONTRACT_PATH
     )
-    assert receipt["setfile_sha256"]["XAUUSD.DWX"] == bindings["set"]["sha256"]
+
+
+def test_updated_build_receipt_is_ready_for_post_commit_freeze() -> None:
+    artifacts = {
+        role: subject.file_binding(path)
+        for role, path in subject._artifact_contract_paths().items()
+    }
+    receipt = subject._validate_bound_build_receipt(
+        artifacts, "9e6c17e1e954aa6854afcc93dc72b64926316fd1"
+    )
+    assert receipt["compile_errors"] == 0
+    assert receipt["compile_warnings"] == 0
+    assert receipt["setfile_sha256"]["XAUUSD.DWX"] == artifacts["set"]["sha256"]
 
 
 def test_xau_cost_is_notional_commodity_plus_blocking_center_slippage(
     tmp_path: Path,
 ) -> None:
-    venue, live, slippage = _cost_files(tmp_path)
+    venue, live = _cost_files(tmp_path)
     schedule = subject.resolve_cost_schedule(
-        venue, "XAUUSD.DWX", live, slippage
+        venue, "XAUUSD.DWX", live, _slippage_payload()
     )
     assert schedule["dxz_pct_notional_rt"] == "0.00005"
     assert schedule["ftmo_pct_notional_rt"] == "0.00005"
@@ -304,26 +300,25 @@ def test_xau_cost_is_notional_commodity_plus_blocking_center_slippage(
 
 
 def test_xau_cost_and_slippage_contracts_fail_closed(tmp_path: Path) -> None:
-    venue, live, slippage = _cost_files(tmp_path)
+    venue, live = _cost_files(tmp_path)
     bad_venue = _venue_payload()
     bad_venue["symbols"]["XAUUSD"]["asset_class"] = "forex"  # type: ignore[index]
     _write_json(venue, bad_venue)
     with pytest.raises(subject.InvalidEvidence, match="venue-cost registry"):
-        subject.resolve_cost_schedule(venue, "XAUUSD.DWX", live, slippage)
+        subject.resolve_cost_schedule(venue, "XAUUSD.DWX", live, _slippage_payload())
 
     _write_json(venue, _venue_payload())
     bad_live = _live_payload()
     bad_live["classes"]["commodity"]["flat_per_lot_rt"] = 5  # type: ignore[index]
     _write_json(live, bad_live)
     with pytest.raises(subject.InvalidEvidence, match="commodity closure"):
-        subject.resolve_cost_schedule(venue, "XAUUSD.DWX", live, slippage)
+        subject.resolve_cost_schedule(venue, "XAUUSD.DWX", live, _slippage_payload())
 
     _write_json(live, _live_payload())
     bad_slippage = _slippage_payload()
-    bad_slippage["symbols"]["XAUUSD.DWX"]["slippage_points"]["p95"] = 2  # type: ignore[index]
-    _write_json(slippage, bad_slippage)
-    with pytest.raises(subject.InvalidEvidence, match="slippage-proxy"):
-        subject.resolve_cost_schedule(venue, "XAUUSD.DWX", live, slippage)
+    bad_slippage["slippage_points_per_side"]["p95_stress"] = "2"  # type: ignore[index]
+    with pytest.raises(subject.InvalidEvidence, match="calibration projection"):
+        subject.resolve_cost_schedule(venue, "XAUUSD.DWX", live, bad_slippage)
 
 
 def test_xau_semantic_news_projection_is_usd_only() -> None:
@@ -405,14 +400,103 @@ def test_authorization_is_xau_only_and_separate_from_eurusd(
         subject.validate_authorization(path, "a" * 64, now=now)
 
 
-def test_contract_semantic_tamper_is_rejected(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_contract_semantic_and_symbolspec_tamper_are_rejected(tmp_path: Path) -> None:
     payload = subject.load_json(subject.CONTRACT_PATH)
     payload["execution_cost_contract"]["commission"]["rate_round_turn"] = "0"
     tampered = tmp_path / "contract.json"
     _write_json(tampered, payload)
-    monkeypatch.setattr(subject, "EXPECTED_CONTRACT_SHA256", subject.sha256_file(tampered))
-    with pytest.raises(subject.InvalidEvidence, match="execution-cost contract"):
-        subject.validate_analysis_contract(tampered)
+    with pytest.raises(subject.InvalidEvidence, match="draft contract semantic"):
+        subject.validate_draft_contract(tampered)
+
+    payload = subject.load_json(subject.CONTRACT_PATH)
+    payload["symbol_spec_contract"]["contract_size_oz_per_lot"] = "1"
+    _write_json(tampered, payload)
+    with pytest.raises(subject.InvalidEvidence, match="draft contract semantic"):
+        subject.validate_draft_contract(tampered)
+
+
+def test_final_payload_binds_adapter_and_stable_xau_only_projection() -> None:
+    bindings = {
+        role: {"path": f"C:/frozen/{role}", "size": 1, "sha256": role[0] * 64}
+        for role in subject.FINAL_ARTIFACT_ROLES
+    }
+    payload = subject._finalized_contract_payload(
+        "a" * 40, "2026-07-21T08:00:00Z", bindings
+    )
+    assert payload["artifact_bindings"]["adapter"] == bindings["adapter"]
+    assert set(payload["artifact_bindings"]) == subject.FINAL_ARTIFACT_ROLES
+    assert payload["xau_calibration_projection"] == (
+        subject.XAU_CALIBRATION_PROJECTION
+    )
+    assert "slippage_calibration" not in payload["artifact_bindings"]
+
+
+def test_finalized_adapter_binding_rejects_byte_tamper(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    paths = {role: tmp_path / role for role in subject.FINAL_ARTIFACT_ROLES}
+    for role, path in paths.items():
+        path.write_bytes(f"frozen-{role}".encode("ascii"))
+    bindings = {role: subject.file_binding(path) for role, path in paths.items()}
+    monkeypatch.setattr(subject, "_artifact_contract_paths", lambda: paths)
+    validated = subject._validate_contract_artifact_bindings(bindings)
+    assert validated["adapter"] == bindings["adapter"]
+    paths["adapter"].write_bytes(b"tampered-adapter")
+    with pytest.raises(subject.InvalidEvidence, match="drift"):
+        subject._validate_contract_artifact_bindings(bindings)
+
+
+def test_pre_and_assert_bind_the_same_finalized_adapter_bytes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    adapter = subject.file_binding(TOOL)
+    frozen = {"artifact_bindings": {"adapter": adapter}, "binding": {"sha256": "a" * 64}}
+    base_pre = {"bindings": {"tool": adapter}}
+    monkeypatch.setattr(subject, "_contract_receipt", lambda: frozen)
+    monkeypatch.setattr(subject, "_assert_pristine_one_shot_namespace", lambda: None)
+    monkeypatch.setattr(subject, "_assert_no_sibling_or_prior_namespace", lambda: None)
+    monkeypatch.setattr(subject, "_assert_finalized_contract_committed", lambda: None)
+    monkeypatch.setattr(subject, "_BASE_PREFLIGHT", lambda *_args: dict(base_pre))
+    pre = subject.preflight(
+        "XAUUSD.DWX",
+        Path("readiness.json"),
+        Path("manifest.json"),
+        subject.BUILD_RECEIPT_PATH,
+        subject.ALLOWED_RUN_ROOT,
+    )
+    assert pre["xau_preregistration"] == frozen
+    monkeypatch.setattr(subject, "_BASE_ASSERT_PRE_RECEIPT", lambda *_args: pre)
+    assert subject.assert_pre_receipt(Path("pre.json"), "b" * 64) == pre
+
+    drifted = json.loads(json.dumps(frozen))
+    drifted["artifact_bindings"]["adapter"]["sha256"] = "c" * 64
+    monkeypatch.setattr(subject, "_contract_receipt", lambda: drifted)
+    with pytest.raises(subject.InvalidEvidence, match="adapter bytes"):
+        subject.assert_pre_receipt(Path("pre.json"), "b" * 64)
+
+
+def test_sibling_prior_and_legacy_xau_namespaces_fail_closed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    family = tmp_path / "QM5_13210"
+    namespace = family / "XAUUSD_MULHAM_NATIVE_001"
+    exact = namespace / "ATTEMPT_001"
+    legacy = family / "XAUUSD_DWX"
+    monkeypatch.setattr(subject, "RUN_FAMILY_ROOT", family)
+    monkeypatch.setattr(subject, "RUN_NAMESPACE_ROOT", namespace)
+    monkeypatch.setattr(subject, "ALLOWED_RUN_ROOT", exact)
+    monkeypatch.setattr(subject, "LEGACY_RUN_ROOT", legacy)
+    exact.mkdir(parents=True)
+    subject._assert_pristine_one_shot_namespace()
+
+    sibling = namespace / "ATTEMPT_000"
+    sibling.mkdir()
+    with pytest.raises(subject.InvalidEvidence, match="sibling/prior XAU attempt"):
+        subject._assert_pristine_one_shot_namespace()
+    sibling.rmdir()
+    legacy.mkdir()
+    with pytest.raises(subject.InvalidEvidence, match="legacy/prior XAU"):
+        subject._assert_pristine_one_shot_namespace()
 
 
 def test_cli_has_no_cost_merit_or_terminal_override_surface() -> None:
@@ -438,8 +522,14 @@ def test_cli_has_no_cost_merit_or_terminal_override_surface() -> None:
         "--slippage",
         "--profit-factor",
         "--min-trades",
+        "--resume",
     }
     assert not (pre_options | launch_options) & forbidden
-    assert {"base_tool", "xau_contract", "slippage_calibration"} <= (
-        subject.REQUIRED_BINDING_ROLES
-    )
+    assert {"base_tool", "xau_contract"} <= subject.REQUIRED_BINDING_ROLES
+    assert "slippage_calibration" not in subject.REQUIRED_BINDING_ROLES
+    finalize_options = {
+        option
+        for action in subparsers.choices["finalize-contract"]._actions
+        for option in action.option_strings
+    }
+    assert "--source-commit" in finalize_options

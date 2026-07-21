@@ -100,24 +100,24 @@ EXPECTED_RESEARCH_HASHES = {
 }
 EXPECTED_BUILD_HASHES = {
     "card": "c9138af20679962b694b253a07488a08085868bb65b81ee1887780cd0e01c11e",
-    "spec": "72ce962a40f08de114c872d162cd7f1a986c7afbeb856bb79af6395f333fa28c",
-    "mq5": "1e96e58f79ff3d1a3a8853c592cc1fd5bbff68eb3c0afdb2e66c3a3fe49f2274",
-    "ex5": "ffd5a47aa7e7f32759494d4f0e172d785da5d7ccdd5f3cfbfed64aeffbc2943c",
-    "set": "d3a7e28a486eed85d28cd0d6e060c62733507ee213e3983e1da5b88dab4de1f7",
+    "spec": "2c7a93598501e527d2bcb93401fd6532af18cdf7d26c6aca7ea0ceca334ab9d2",
+    "mq5": "366ad6715258615f1de7dcd0669fc68e5ce8ce8bb27a1d37fc53e19147beca71",
+    "ex5": "377840ec44833eed5420a030519b77b37ebfd6b8e2a1161e7c3f57721fb0cccc",
+    "set": "53832bf9410eab2c9fd230ffc0e02d663dc9168ef28439fe78883cd28db89c69",
 }
-EXPECTED_BUILD_COMMIT = "b86eafe5cd20a359a71614ea8fcaddbd88977f4e"
+EXPECTED_BUILD_COMMIT = "9e6c17e1e954aa6854afcc93dc72b64926316fd1"
 EXPECTED_COMPILE_EVIDENCE = {
     "compile_log": {
         "path": Path(
-            r"C:\QM\repo\framework\build\compile\20260720_082006\QM5_13210_mulham-asian-sweep-london.compile.log"
+            r"C:\QM\repo\framework\build\compile\20260721_083541\QM5_13210_mulham-asian-sweep-london.compile.log"
         ),
         "size": 20562,
-        "sha256": "606b73f5771001ab2dabe6688dc96efd0c61563c11e310ac3624648542e90b7e",
+        "sha256": "e514a321141c3aeb98f06ef3df6a9905e42b43894700d74590fcf74247d6236b",
     },
     "summary": {
-        "path": Path(r"D:\QM\reports\compile\20260720_082006\summary.csv"),
-        "size": 2393,
-        "sha256": "4234e06e6a535b0bde0be197cafc5bbed97ba5bf7b3fc765eb5e32440e837b8f",
+        "path": Path(r"D:\QM\reports\compile\20260721_083541\summary.csv"),
+        "size": 2381,
+        "sha256": "80711e60b3f6d1b983315654027b01706f76b5820e12af42362a9006b5e7754c",
     },
 }
 MODEL4_MARKER = "generating based on real ticks"
