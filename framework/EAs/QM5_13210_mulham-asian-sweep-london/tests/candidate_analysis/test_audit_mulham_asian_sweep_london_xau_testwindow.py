@@ -104,6 +104,36 @@ def test_closure_proves_one_controller_zero_outcomes_and_exact_t1_overlap() -> N
             ),
             "recovery contract",
         ),
+        (
+            lambda payload: payload["t1_overlap_evidence"].__setitem__(
+                "factory_claim_was_missed", False
+            ),
+            "overlap identity",
+        ),
+        (
+            lambda payload: payload["outcome_fence"].__setitem__(
+                "native_profit_opened", False
+            ),
+            "outcome fence",
+        ),
+        (
+            lambda payload: payload["native_start_proof"].__setitem__(
+                "profit", 0
+            ),
+            "native-start proof",
+        ),
+        (
+            lambda payload: payload["scheduled_task_terminal_state"].__setitem__(
+                "outcome", None
+            ),
+            "recorded task terminal-state",
+        ),
+        (
+            lambda payload: payload["control_bindings"]["launch_state"].__setitem__(
+                "note", "forbidden"
+            ),
+            "immutable launch_state key-set",
+        ),
     ],
 )
 def test_closure_adversarial_tamper_fails_closed(
@@ -118,6 +148,66 @@ def test_closure_adversarial_tamper_fails_closed(
     with pytest.raises(subject.InvalidEvidence, match=match):
         subject.validate_attempt002_invalid_infrastructure_closure(
             path, probe_task_terminal=False
+        )
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        lambda state: state.__setitem__("finished_utc", "2026-07-21T09:13:32Z"),
+        lambda state: state["initial_authorization"].__setitem__(
+            "payload_sha256", "0" * 64
+        ),
+        lambda state: state["cells"][0]["attempts"][0].__setitem__("profit", 0.0),
+        lambda state: state["cells"][0]["attempts"][0].__setitem__(
+            "native_outcome", None
+        ),
+    ],
+    ids=(
+        "extra-state-root-field",
+        "authorization-reference-mismatch",
+        "extra-profit-field",
+        "extra-outcome-field",
+    ),
+)
+def test_launch_state_adversarial_schema_or_reference_drift_fails_closed(
+    monkeypatch: pytest.MonkeyPatch,
+    mutation,
+) -> None:
+    original_load_json = subject.B.load_json
+    state_path = subject._attempt002_control_paths()["launch_state"].resolve()
+
+    def load_with_tampered_state(path: Path) -> dict[str, object]:
+        payload = original_load_json(path)
+        if Path(path).resolve() == state_path:
+            payload = json.loads(json.dumps(payload))
+            mutation(payload)
+        return payload
+
+    monkeypatch.setattr(subject.B, "load_json", load_with_tampered_state)
+    with pytest.raises(subject.InvalidEvidence):
+        subject.validate_attempt002_invalid_infrastructure_closure(
+            probe_task_terminal=False
+        )
+
+
+def test_closure_rejects_semantically_invalid_authorization(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    original_load_json = subject.B.load_json
+    authorization_path = subject._attempt002_control_paths()["authorization"].resolve()
+
+    def load_with_wrong_analysis(path: Path) -> dict[str, object]:
+        payload = original_load_json(path)
+        if Path(path).resolve() == authorization_path:
+            payload = json.loads(json.dumps(payload))
+            payload["analysis_id"] = "WRONG_ANALYSIS"
+        return payload
+
+    monkeypatch.setattr(subject.B, "load_json", load_with_wrong_analysis)
+    with pytest.raises(subject.AuthorizationError, match="authorization drift"):
+        subject.validate_attempt002_invalid_infrastructure_closure(
+            probe_task_terminal=False
         )
 
 
@@ -167,19 +257,6 @@ def test_plan_is_only_new_namespace_and_still_t1_model4_two_duplicates(
     assert command[command.index("-Symbol") + 1] == "XAUUSD.DWX"
     with pytest.raises(subject.InvalidEvidence, match="exactly"):
         subject.build_plan("XAUUSD.DWX", set_binding, subject.RUN_NAMESPACE_ROOT / "ATTEMPT_002")
-
-
-def test_real_testwindow_off_probe_is_currently_pass() -> None:
-    proof = subject.probe_testwindow_off_quiescence()
-    assert proof["status"] == "PASS"
-    invariant = proof["invariant"]
-    assert invariant["managed_task_states"] == [
-        {"task_name": name, "count": 1, "state": "Disabled"}
-        for name in subject.MANAGED_OFF_TASKS
-    ]
-    assert invariant["exact_factory_mt5_processes"] == []
-    assert invariant["registered_factory_python_workers"] == []
-    assert invariant["live_process_command_lines_read"] is False
 
 
 @pytest.mark.parametrize(

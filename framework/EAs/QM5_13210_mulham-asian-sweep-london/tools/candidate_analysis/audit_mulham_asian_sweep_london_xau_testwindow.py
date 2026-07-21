@@ -245,6 +245,58 @@ def _relative_inventory(root: Path) -> list[str]:
     return sorted(rows)
 
 
+_BINDING_KEYS = frozenset({"path", "size", "sha256"})
+_REFERENCE_KEYS = frozenset({"binding", "payload_sha256"})
+
+
+def _require_exact_mapping(
+    value: Any,
+    keys: set[str] | frozenset[str],
+    label: str,
+) -> Mapping[str, Any]:
+    if not isinstance(value, Mapping) or set(value) != set(keys):
+        raise B.InvalidEvidence(f"{label} key-set drift")
+    return value
+
+
+def _require_sha256(value: Any, label: str) -> str:
+    if not isinstance(value, str) or re.fullmatch(r"[0-9a-f]{64}", value) is None:
+        raise B.InvalidEvidence(f"{label} is not an exact lowercase SHA-256")
+    return value
+
+
+def _validate_exact_binding(
+    value: Any,
+    expected_path: Path,
+    label: str,
+) -> Mapping[str, Any]:
+    binding = _require_exact_mapping(value, _BINDING_KEYS, label)
+    if (
+        not isinstance(binding.get("path"), str)
+        or Path(str(binding["path"])).resolve() != expected_path.resolve()
+        or type(binding.get("size")) is not int
+        or int(binding["size"]) < 0
+    ):
+        raise B.InvalidEvidence(f"{label} identity drift")
+    _require_sha256(binding.get("sha256"), f"{label} sha256")
+    B.assert_binding(binding, label)
+    return binding
+
+
+def _validate_authorization_reference(
+    value: Any,
+    expected_binding: Mapping[str, Any],
+    expected_payload_sha256: str,
+    label: str,
+) -> Mapping[str, Any]:
+    reference = _require_exact_mapping(value, _REFERENCE_KEYS, label)
+    binding = _require_exact_mapping(reference.get("binding"), _BINDING_KEYS, f"{label} binding")
+    _require_sha256(reference.get("payload_sha256"), f"{label} payload_sha256")
+    if binding != expected_binding or reference.get("payload_sha256") != expected_payload_sha256:
+        raise B.InvalidEvidence(f"{label} cross-reference drift")
+    return reference
+
+
 def validate_attempt002_invalid_infrastructure_closure(
     path: Path = ATTEMPT_002_CLOSURE_PATH,
     *,
@@ -281,16 +333,20 @@ def validate_attempt002_invalid_infrastructure_closure(
     }
     if any(payload.get(key) != value for key, value in expected_identity.items()):
         raise B.InvalidEvidence("ATTEMPT_002 closure identity drift")
-    B.parse_utc(str(payload.get("closed_utc", "")), "ATTEMPT_002 closed_utc")
+    closed_utc = B.parse_utc(str(payload.get("closed_utc", "")), "ATTEMPT_002 closed_utc")
+    if closed_utc > datetime.now(timezone.utc) + timedelta(minutes=5):
+        raise B.InvalidEvidence("ATTEMPT_002 closure time is implausibly in the future")
+
     controls = payload.get("control_bindings")
     paths = _attempt002_control_paths()
     if not isinstance(controls, Mapping) or set(controls) != set(paths):
         raise B.InvalidEvidence("ATTEMPT_002 control-binding closure drift")
     for role, expected_path in paths.items():
-        row = controls[role]
-        if not isinstance(row, Mapping) or Path(str(row.get("path", ""))).resolve() != expected_path.resolve():
-            raise B.InvalidEvidence(f"ATTEMPT_002 control path drift: {role}")
-        B.assert_binding(row, f"ATTEMPT_002 immutable {role}")
+        _validate_exact_binding(
+            controls[role],
+            expected_path,
+            f"ATTEMPT_002 immutable {role}",
+        )
 
     logs = payload.get("opaque_log_bindings")
     expected_logs = {
@@ -303,14 +359,297 @@ def validate_attempt002_invalid_infrastructure_closure(
     if not isinstance(logs, Mapping) or set(logs) != set(expected_logs):
         raise B.InvalidEvidence("ATTEMPT_002 opaque-log binding closure drift")
     for role, expected_path in expected_logs.items():
-        row = logs[role]
-        if not isinstance(row, Mapping) or Path(str(row.get("path", ""))).resolve() != expected_path.resolve():
-            raise B.InvalidEvidence(f"ATTEMPT_002 opaque log path drift: {role}")
-        B.assert_binding(row, f"ATTEMPT_002 opaque {role}")
+        _validate_exact_binding(
+            logs[role],
+            expected_path,
+            f"ATTEMPT_002 opaque {role}",
+        )
 
     state = B.load_json(paths["launch_state"])
-    cells = state.get("cells")
+    state_keys = {
+        "analysis_id",
+        "artifact_type",
+        "cells",
+        "created_utc",
+        "initial_authorization",
+        "job",
+        "launcher_revision",
+        "launches",
+        "outcome_fence",
+        "plan_sha256",
+        "pre_receipt_path",
+        "pre_receipt_sha256",
+        "scheduler",
+        "schema_version",
+        "status",
+        "updated_utc",
+        "worker_pid",
+    }
+    _require_exact_mapping(state, state_keys, "ATTEMPT_002 launch-state root")
+    expected_plan_sha256 = "75b2af5a646d2611a16064065961965face22c66e7ee113cae4353b0161d9ecd"
+    expected_state_identity = {
+        "schema_version": 1,
+        "artifact_type": "QM5_13210_NATIVE_LAUNCH_STATE",
+        "analysis_id": X.ANALYSIS_ID,
+        "launcher_revision": X.LAUNCHER_REVISION,
+        "status": "INTERRUPTED_RESUMABLE",
+        "worker_pid": None,
+        "pre_receipt_path": str(paths["pre_receipt"].resolve()),
+        "pre_receipt_sha256": controls["pre_receipt"]["sha256"],
+        "plan_sha256": expected_plan_sha256,
+    }
+    if any(state.get(key) != value for key, value in expected_state_identity.items()):
+        raise B.InvalidEvidence("ATTEMPT_002 launch-state terminal closure drift")
+    state_job_binding = _validate_exact_binding(
+        state.get("job"),
+        paths["launch_job"],
+        "ATTEMPT_002 launch-state job",
+    )
+    if state_job_binding != controls["launch_job"]:
+        raise B.InvalidEvidence("ATTEMPT_002 launch-state/job control binding drift")
+    state_outcome_fence = {
+        "worker_parses_market_values": False,
+        "worker_parses_native_reports": False,
+        "worker_seals_opaque_artifacts_only": True,
+    }
+    if state.get("outcome_fence") != state_outcome_fence:
+        raise B.InvalidEvidence("ATTEMPT_002 launch-state outcome-fence drift")
+
+    job = B.load_json(paths["launch_job"])
+    job_keys = {
+        "analysis_id",
+        "artifact_type",
+        "created_utc",
+        "initial_authorization",
+        "launcher_revision",
+        "plan_sha256",
+        "pre_receipt_path",
+        "pre_receipt_sha256",
+        "scheduler",
+        "schema_version",
+        "state_path",
+        "tool",
+    }
+    _require_exact_mapping(job, job_keys, "ATTEMPT_002 launch-job root")
+    expected_job_identity = {
+        "schema_version": 1,
+        "artifact_type": "QM5_13210_NATIVE_LAUNCH_JOB",
+        "analysis_id": X.ANALYSIS_ID,
+        "launcher_revision": X.LAUNCHER_REVISION,
+        "pre_receipt_path": str(paths["pre_receipt"].resolve()),
+        "pre_receipt_sha256": controls["pre_receipt"]["sha256"],
+        "state_path": str(paths["launch_state"].resolve()),
+        "plan_sha256": expected_plan_sha256,
+    }
+    if any(job.get(key) != value for key, value in expected_job_identity.items()):
+        raise B.InvalidEvidence("ATTEMPT_002 launch-job identity drift")
+    _validate_exact_binding(
+        job.get("tool"),
+        SUPERSEDED_TOOL_PATH,
+        "ATTEMPT_002 launch-job tool",
+    )
+
+    authorization_keys = {
+        "analysis_id",
+        "artifact_type",
+        "authorize_native_outcomes",
+        "authorized_by",
+        "authorized_cells",
+        "authorized_symbol",
+        "created_utc",
+        "duplicates_per_cell",
+        "expires_utc",
+        "model",
+        "pre_receipt_sha256",
+        "schema_version",
+        "scope",
+        "status",
+    }
+    authorization_payload = B.load_json(paths["authorization"])
+    _require_exact_mapping(
+        authorization_payload,
+        authorization_keys,
+        "ATTEMPT_002 native authorization",
+    )
+    validated_authorization = X.validate_authorization(
+        paths["authorization"],
+        controls["pre_receipt"]["sha256"],
+        require_current=False,
+    )
+    if validated_authorization.get("binding") != controls["authorization"]:
+        raise B.InvalidEvidence(
+            "ATTEMPT_002 authorization/control binding drift"
+        )
+    authorization_payload_sha256 = str(
+        validated_authorization.get("payload_sha256", "")
+    )
+    _require_sha256(
+        authorization_payload_sha256,
+        "ATTEMPT_002 authorization payload_sha256",
+    )
+    state_authorization = _validate_authorization_reference(
+        state.get("initial_authorization"),
+        controls["authorization"],
+        authorization_payload_sha256,
+        "ATTEMPT_002 launch-state initial authorization",
+    )
+    job_authorization = _validate_authorization_reference(
+        job.get("initial_authorization"),
+        controls["authorization"],
+        authorization_payload_sha256,
+        "ATTEMPT_002 launch-job initial authorization",
+    )
+    if state_authorization != job_authorization:
+        raise B.InvalidEvidence("ATTEMPT_002 initial-authorization reference drift")
+
+    scheduler_keys = {
+        "execution_limit_seconds",
+        "helper",
+        "logon_type",
+        "mode",
+        "multiple_instances",
+        "principal_sid",
+        "python",
+        "run_level",
+        "task_name",
+        "task_path",
+    }
+    scheduler = _require_exact_mapping(
+        state.get("scheduler"), scheduler_keys, "ATTEMPT_002 launch-state scheduler"
+    )
+    job_scheduler = _require_exact_mapping(
+        job.get("scheduler"), scheduler_keys, "ATTEMPT_002 launch-job scheduler"
+    )
+    if scheduler != job_scheduler:
+        raise B.InvalidEvidence("ATTEMPT_002 state/job scheduler cross-reference drift")
+    expected_scheduler_identity = {
+        "execution_limit_seconds": 241200,
+        "logon_type": "S4U",
+        "mode": "WINDOWS_TASK_SCHEDULER_S4U_ON_DEMAND",
+        "multiple_instances": "IgnoreNew",
+        "principal_sid": "S-1-5-21-1736347224-3968129211-1303436014-500",
+        "run_level": "Highest",
+        "task_name": SUPERSEDED_TASK_NAME,
+        "task_path": "\\",
+    }
+    if any(scheduler.get(key) != value for key, value in expected_scheduler_identity.items()):
+        raise B.InvalidEvidence("ATTEMPT_002 scheduler identity drift")
+    _validate_exact_binding(
+        scheduler.get("helper"),
+        B.SCHEDULED_TASK_HELPER_PATH,
+        "ATTEMPT_002 scheduler helper",
+    )
+    _validate_exact_binding(
+        scheduler.get("python"),
+        B.PYTHON_PATH,
+        "ATTEMPT_002 scheduler Python",
+    )
+
     launches = state.get("launches")
+    if not isinstance(launches, list) or len(launches) != 1:
+        raise B.InvalidEvidence("ATTEMPT_002 launch-state launch count drift")
+    launch_keys = {
+        "authorization",
+        "prepared_utc",
+        "registered_utc",
+        "requested_utc",
+        "resume",
+        "scheduler_contract_sha256",
+        "status",
+        "worker_pid",
+    }
+    launch = _require_exact_mapping(
+        launches[0], launch_keys, "ATTEMPT_002 launch-state launch"
+    )
+    launch_authorization = _validate_authorization_reference(
+        launch.get("authorization"),
+        controls["authorization"],
+        authorization_payload_sha256,
+        "ATTEMPT_002 active-launch authorization",
+    )
+    if launch_authorization != state_authorization:
+        raise B.InvalidEvidence("ATTEMPT_002 active-launch authorization reference drift")
+    expected_launch_identity = {
+        "resume": False,
+        "scheduler_contract_sha256": B.canonical_sha256(scheduler),
+        "status": "WORKER_REGISTERED",
+        "worker_pid": 14792,
+    }
+    if any(launch.get(key) != value for key, value in expected_launch_identity.items()):
+        raise B.InvalidEvidence("ATTEMPT_002 launch-state launch identity drift")
+
+    cells = state.get("cells")
+    if not isinstance(cells, list) or len(cells) != 4:
+        raise B.InvalidEvidence("ATTEMPT_002 launch-state cell count drift")
+    expected_cells = (
+        (
+            "XAUUSD_DWX_DEV",
+            "ba6e7b48d6d08a0f05f6279250e0f2576241f8756af4c7f32cd65323b28d927c",
+            "INTERRUPTED_NO_OUTCOME",
+        ),
+        (
+            "XAUUSD_DWX_OOS_2023",
+            "18223d37300d2aa05d6d6ef1fbec69b83077b8a8f98ce3259b66264495023960",
+            "PENDING",
+        ),
+        (
+            "XAUUSD_DWX_OOS_2024",
+            "da860dfba79e42df78f974e1d757e524395702f4e225fbce459f1eda0bf5fd9f",
+            "PENDING",
+        ),
+        (
+            "XAUUSD_DWX_OOS_2025",
+            "1243034a0b06a30247362db15457402e63b7cc7c5a0235b9fca40135e45cfd23",
+            "PENDING",
+        ),
+    )
+    cell_keys = {"attempts", "cell_id", "command_sha256", "status"}
+    for index, (expected_cell_id, expected_command_sha256, expected_status) in enumerate(
+        expected_cells
+    ):
+        cell = _require_exact_mapping(
+            cells[index], cell_keys, f"ATTEMPT_002 launch-state cell {index}"
+        )
+        if (
+            cell.get("cell_id") != expected_cell_id
+            or cell.get("command_sha256") != expected_command_sha256
+            or cell.get("status") != expected_status
+            or not isinstance(cell.get("attempts"), list)
+        ):
+            raise B.InvalidEvidence(f"ATTEMPT_002 launch-state cell {index} identity drift")
+
+    first = cells[0]
+    attempts = first["attempts"]
+    if len(attempts) != 1:
+        raise B.InvalidEvidence("ATTEMPT_002 first-cell attempt count drift")
+    attempt_keys = {
+        "command_sha256",
+        "exit_code",
+        "finished_utc",
+        "outcome_artifacts",
+        "started_utc",
+        "stderr",
+        "stdout",
+        "summary",
+    }
+    attempt = _require_exact_mapping(
+        attempts[0], attempt_keys, "ATTEMPT_002 first-cell native attempt"
+    )
+    if (
+        attempt.get("command_sha256") != first["command_sha256"]
+        or attempt.get("started_utc") != "2026-07-21T09:13:30.993067+00:00"
+        or attempt.get("finished_utc") != "2026-07-21T09:13:31.863899+00:00"
+        or attempt.get("exit_code") != 1
+        or attempt.get("summary") is not None
+        or attempt.get("outcome_artifacts") != []
+        or attempt.get("stdout") != logs["controller_stdout"]
+        or attempt.get("stderr") != logs["controller_stderr"]
+    ):
+        raise B.InvalidEvidence("ATTEMPT_002 controller outcome-free closure drift")
+    for index, cell in enumerate(cells[1:], start=1):
+        if cell["attempts"] != []:
+            raise B.InvalidEvidence(f"ATTEMPT_002 later cell {index} contains a native start")
+
     proof = payload.get("native_start_proof")
     expected_proof = {
         "native_controller_start_count": 1,
@@ -326,51 +665,42 @@ def validate_attempt002_invalid_infrastructure_closure(
         "remaining_cell_count": 3,
         "all_remaining_cells_pending_without_attempts": True,
     }
-    if not isinstance(proof, Mapping) or any(
+    proof_keys = set(expected_proof) | {"run_root_inventory"}
+    if not isinstance(proof, Mapping) or set(proof) != proof_keys or any(
         proof.get(key) != value for key, value in expected_proof.items()
     ):
         raise B.InvalidEvidence("ATTEMPT_002 native-start proof drift")
     if (
-        state.get("analysis_id") != X.ANALYSIS_ID
-        or state.get("status") != "INTERRUPTED_RESUMABLE"
-        or state.get("worker_pid") is not None
-        or not isinstance(cells, list)
-        or len(cells) != 4
-        or not isinstance(launches, list)
-        or len(launches) != 1
-        or launches[0].get("resume") is not False
-        or launches[0].get("status") != "WORKER_REGISTERED"
+        proof.get("worker_pid") != state.get("worker_pid")
+        or proof.get("launch_status") != state.get("status")
+        or proof.get("first_cell_id") != first.get("cell_id")
+        or proof.get("first_cell_status") != first.get("status")
+        or proof.get("controller_started_utc") != attempt.get("started_utc")
+        or proof.get("controller_finished_utc") != attempt.get("finished_utc")
+        or proof.get("controller_exit_code") != attempt.get("exit_code")
+        or proof.get("summary_binding") != attempt.get("summary")
+        or proof.get("outcome_artifacts") != attempt.get("outcome_artifacts")
+        or proof.get("remaining_cell_count") != len(cells[1:])
+        or proof.get("all_remaining_cells_pending_without_attempts")
+        is not all(cell["status"] == "PENDING" and cell["attempts"] == [] for cell in cells[1:])
     ):
-        raise B.InvalidEvidence("ATTEMPT_002 launch-state terminal closure drift")
-    first = cells[0]
-    attempts = first.get("attempts") if isinstance(first, Mapping) else None
-    if (
-        first.get("cell_id") != "XAUUSD_DWX_DEV"
-        or first.get("status") != "INTERRUPTED_NO_OUTCOME"
-        or not isinstance(attempts, list)
-        or len(attempts) != 1
-    ):
-        raise B.InvalidEvidence("ATTEMPT_002 first-cell control drift")
-    attempt = attempts[0]
-    if (
-        attempt.get("started_utc") != "2026-07-21T09:13:30.993067+00:00"
-        or attempt.get("finished_utc") != "2026-07-21T09:13:31.863899+00:00"
-        or attempt.get("exit_code") != 1
-        or attempt.get("summary") is not None
-        or attempt.get("outcome_artifacts") != []
-        or attempt.get("stdout") != logs["controller_stdout"]
-        or attempt.get("stderr") != logs["controller_stderr"]
-    ):
-        raise B.InvalidEvidence("ATTEMPT_002 controller outcome-free closure drift")
-    if any(
-        row.get("status") != "PENDING" or row.get("attempts") != []
-        for row in cells[1:]
-        if isinstance(row, Mapping)
-    ) or any(not isinstance(row, Mapping) for row in cells[1:]):
-        raise B.InvalidEvidence("ATTEMPT_002 later cell contains a native start")
+        raise B.InvalidEvidence("ATTEMPT_002 native-start proof/state cross-reference drift")
     inventory = _relative_inventory(SUPERSEDED_ATTEMPT_002_ROOT)
     if inventory != proof.get("run_root_inventory"):
         raise B.InvalidEvidence("ATTEMPT_002 run-root inventory drift")
+
+    native_attempts = [candidate for cell in cells for candidate in cell["attempts"]]
+    native_controller_start_count = len(native_attempts)
+    native_summary_count = sum(candidate["summary"] is not None for candidate in native_attempts)
+    native_outcome_artifact_count = sum(
+        len(candidate["outcome_artifacts"]) for candidate in native_attempts
+    )
+    if (
+        native_controller_start_count != proof.get("native_controller_start_count")
+        or native_summary_count != 0
+        or native_outcome_artifact_count != 0
+    ):
+        raise B.InvalidEvidence("ATTEMPT_002 native start/outcome count drift")
 
     overlap = payload.get("t1_overlap_evidence")
     expected_overlap = {
@@ -389,7 +719,13 @@ def validate_attempt002_invalid_infrastructure_closure(
         "xau_interval_fully_contained_in_t1_factory_occupancy_ledger": True,
         "strategy_merit_inference_permitted": False,
     }
-    if not isinstance(overlap, Mapping) or any(
+    overlap_keys = set(expected_overlap) | {
+        "factory_started_utc",
+        "factory_terminal_release_ledger_utc",
+        "xau_controller_started_utc",
+        "xau_controller_finished_utc",
+    }
+    if not isinstance(overlap, Mapping) or set(overlap) != overlap_keys or any(
         overlap.get(key) != value for key, value in expected_overlap.items()
     ):
         raise B.InvalidEvidence("ATTEMPT_002 T1 overlap identity drift")
@@ -399,40 +735,42 @@ def validate_attempt002_invalid_infrastructure_closure(
     xau_finish = B.parse_utc(str(overlap.get("xau_controller_finished_utc", "")), "XAU finish")
     if not (
         factory_start <= xau_start <= xau_finish <= factory_release
+        and overlap.get("xau_controller_started_utc") == proof.get("controller_started_utc")
+        and overlap.get("xau_controller_finished_utc") == proof.get("controller_finished_utc")
         and overlap.get("xau_interval_fully_contained_in_t1_factory_occupancy_ledger") is True
         and overlap.get("strategy_merit_inference_permitted") is False
     ):
         raise B.InvalidEvidence("ATTEMPT_002 exact T1 overlap chronology drift")
+
     fence = payload.get("outcome_fence")
-    if not isinstance(fence, Mapping) or any(
-        fence.get(key) is not False
-        for key in (
-            "native_reports_opened",
-            "native_outcomes_opened",
-            "controller_stdout_opened",
-            "controller_stderr_opened",
-            "overlapping_factory_work_item_log_opened",
-        )
-    ):
+    expected_fence = {
+        "native_reports_opened": False,
+        "native_outcomes_opened": False,
+        "controller_stdout_opened": False,
+        "controller_stderr_opened": False,
+        "overlapping_factory_work_item_log_opened": False,
+        "closure_uses_control_state_database_projection_and_opaque_hashes_only": True,
+    }
+    if fence != expected_fence:
         raise B.InvalidEvidence("ATTEMPT_002 outcome fence drift")
+
     recovery = payload.get("recovery_contract")
-    if not isinstance(recovery, Mapping) or any(
-        recovery.get(key) is not True
-        for key in (
-            "old_analysis_namespace_final",
-            "attempt002_resume_forbidden",
-            "attempt003_plus_in_old_namespace_forbidden",
-            "superseding_resume_or_retry_forbidden",
-            "testwindow_off_required_before_pre_launch_and_worker",
-            "same_build_data_parameters_windows_costs_and_gates_required",
-            "strategy_or_parameter_change_forbidden",
-        )
-    ) or (
-        recovery.get("superseding_analysis_id") != ANALYSIS_ID
-        or recovery.get("superseding_namespace") != str(RUN_NAMESPACE_ROOT.resolve())
-        or recovery.get("single_superseding_attempt") != "ATTEMPT_001"
-    ):
+    expected_recovery = {
+        "old_analysis_namespace_final": True,
+        "attempt002_resume_forbidden": True,
+        "attempt002_control_and_log_files_immutable": True,
+        "attempt003_plus_in_old_namespace_forbidden": True,
+        "superseding_analysis_id": ANALYSIS_ID,
+        "superseding_namespace": str(RUN_NAMESPACE_ROOT.resolve()),
+        "single_superseding_attempt": "ATTEMPT_001",
+        "superseding_resume_or_retry_forbidden": True,
+        "testwindow_off_required_before_pre_launch_and_worker": True,
+        "same_build_data_parameters_windows_costs_and_gates_required": True,
+        "strategy_or_parameter_change_forbidden": True,
+    }
+    if recovery != expected_recovery:
         raise B.InvalidEvidence("ATTEMPT_002 recovery contract drift")
+
     recorded_task = payload.get("scheduled_task_terminal_state")
     expected_recorded_task = {
         "task_name": SUPERSEDED_TASK_NAME,
@@ -446,23 +784,71 @@ def validate_attempt002_invalid_infrastructure_closure(
         "execution_limit_seconds": 241200,
         "resume_or_restart_forbidden": True,
     }
-    if not isinstance(recorded_task, Mapping) or any(
+    recorded_task_keys = set(expected_recorded_task) | {"observed_utc"}
+    if not isinstance(recorded_task, Mapping) or set(recorded_task) != recorded_task_keys or any(
         recorded_task.get(key) != value for key, value in expected_recorded_task.items()
     ):
         raise B.InvalidEvidence("ATTEMPT_002 recorded task terminal-state drift")
-    B.parse_utc(
+    task_observed_utc = B.parse_utc(
         str(recorded_task.get("observed_utc", "")),
         "ATTEMPT_002 task-terminal observed_utc",
     )
+
+    job_created_utc = B.parse_utc(str(job.get("created_utc", "")), "ATTEMPT_002 job created_utc")
+    state_created_utc = B.parse_utc(
+        str(state.get("created_utc", "")), "ATTEMPT_002 state created_utc"
+    )
+    state_updated_utc = B.parse_utc(
+        str(state.get("updated_utc", "")), "ATTEMPT_002 state updated_utc"
+    )
+    prepared_utc = B.parse_utc(str(launch.get("prepared_utc", "")), "ATTEMPT_002 prepared_utc")
+    requested_utc = B.parse_utc(str(launch.get("requested_utc", "")), "ATTEMPT_002 requested_utc")
+    registered_utc = B.parse_utc(
+        str(launch.get("registered_utc", "")), "ATTEMPT_002 registered_utc"
+    )
+    attempt_started_utc = B.parse_utc(
+        str(attempt.get("started_utc", "")), "ATTEMPT_002 attempt started_utc"
+    )
+    attempt_finished_utc = B.parse_utc(
+        str(attempt.get("finished_utc", "")), "ATTEMPT_002 attempt finished_utc"
+    )
+    authorization_created_utc = B.parse_utc(
+        str(authorization_payload.get("created_utc", "")),
+        "ATTEMPT_002 authorization created_utc",
+    )
+    authorization_expires_utc = B.parse_utc(
+        str(authorization_payload.get("expires_utc", "")),
+        "ATTEMPT_002 authorization expires_utc",
+    )
+    if not (
+        factory_start
+        <= authorization_created_utc
+        <= job_created_utc
+        <= state_created_utc
+        == prepared_utc
+        <= requested_utc
+        <= registered_utc
+        <= attempt_started_utc
+        == xau_start
+        <= attempt_finished_utc
+        == xau_finish
+        <= state_updated_utc
+        <= factory_release
+        <= closed_utc
+        == task_observed_utc
+        and attempt_started_utc <= authorization_expires_utc
+    ):
+        raise B.InvalidEvidence("ATTEMPT_002 control/closure chronology drift")
+
     task = _probe_superseded_task_terminal() if probe_task_terminal else None
     return {
         "binding": B.file_binding(path),
         "status": payload["status"],
         "control_bindings": {key: dict(value) for key, value in controls.items()},
         "opaque_log_bindings": {key: dict(value) for key, value in logs.items()},
-        "native_controller_start_count": 1,
-        "native_summary_count": 0,
-        "native_outcome_artifact_count": 0,
+        "native_controller_start_count": native_controller_start_count,
+        "native_summary_count": native_summary_count,
+        "native_outcome_artifact_count": native_outcome_artifact_count,
         "t1_overlap_evidence": dict(overlap),
         "task_terminal": task is None or task.get("state") in {"Ready", "Absent"},
     }
