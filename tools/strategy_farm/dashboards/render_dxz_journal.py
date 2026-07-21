@@ -51,6 +51,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import calendar as _cal
 import csv
 import datetime as dt
 import json
@@ -365,9 +366,167 @@ def daily_bars_svg(bar_dates: list[str], bar_pnl: list[float], height: int = 170
             f'<title>{e(d)}: {"+" if v >= 0 else ""}{v:,.2f}</title></rect>'
         )
     axis = f'<line x1="0" y1="{half:.1f}" x2="{width}" y2="{half:.1f}" stroke="rgba(114,107,96,0.35)" stroke-width="1"/>'
+    svg = (
+        f'<svg viewBox="0 0 {width} {height}" width="100%" height="{height}" '
+        f'preserveAspectRatio="none" class="daily-bars">{axis}{"".join(bars)}</svg>'
+    )
+    # Axis labels as positioned HTML: the SVG uses preserveAspectRatio="none"
+    # (bars stretch to full width), so in-SVG <text> would distort — label around it.
+    yaxis = (
+        '<div class="daily-yaxis">'
+        f'<span class="net-pos">+{max_abs:,.0f}</span>'
+        '<span class="daily-zero">$0</span>'
+        f'<span class="net-neg">−{max_abs:,.0f}</span></div>'
+    )
+    idxs = sorted({0, n // 2, n - 1})
+    xspans = "".join(f'<span>{e(str(bar_dates[i])[:10])}</span>' for i in idxs if 0 <= i < n)
+    xaxis = f'<div class="daily-xaxis">{xspans}</div>'
     return (
-        f'<div class="daily-bars-wrap"><svg viewBox="0 0 {width} {height}" width="100%" '
-        f'height="{height}" preserveAspectRatio="none" class="daily-bars">{axis}{"".join(bars)}</svg></div>'
+        f'<div class="daily-chart">{yaxis}'
+        f'<div class="daily-plot"><div class="daily-bars-wrap">{svg}</div>{xaxis}</div></div>'
+    )
+
+
+def equity_growth_svg(points: list[tuple[str, float]], height: int = 240) -> str:
+    """Cumulative realized-P&L growth curve (marketing headline chart).
+
+    points = [(date_iso, cumulative_net), ...] in chronological order. Uses real
+    close dates (never the day_key bucket), so it does not freeze over a weekend.
+    """
+    if len(points) < 2:
+        return '<p class="sec-note">Not enough closed trades yet for a growth curve.</p>'
+    vals = [v for _, v in points]
+    hi = max(vals + [0.0])
+    lo = min(vals + [0.0])
+    span = (hi - lo) or 1.0
+    n = len(points)
+    W, H = 1000, height
+    pad_l = pad_r = 6
+    pad_t, pad_b = 14, 14
+    plot_w = W - pad_l - pad_r
+    plot_h = H - pad_t - pad_b
+
+    def _x(i: int) -> float:
+        return pad_l + (i / (n - 1)) * plot_w
+
+    def _y(v: float) -> float:
+        return pad_t + (hi - v) / span * plot_h
+
+    line_pts = " ".join(f"{_x(i):.1f},{_y(v):.1f}" for i, (_, v) in enumerate(points))
+    zero_y = _y(0.0)
+    area_pts = f"{_x(0):.1f},{zero_y:.1f} " + line_pts + f" {_x(n - 1):.1f},{zero_y:.1f}"
+    up = vals[-1] >= 0
+    stroke = "#25b567" if up else "#e0575b"
+    fill = "rgba(37,181,103,0.16)" if up else "rgba(224,87,91,0.16)"
+    grid = "".join(
+        f'<line x1="{pad_l}" y1="{_y(hi - span * f):.1f}" x2="{W - pad_r}" '
+        f'y2="{_y(hi - span * f):.1f}" stroke="rgba(114,107,96,0.10)" stroke-width="1"/>'
+        for f in (0.25, 0.5, 0.75)
+    )
+    zero_line = (
+        f'<line x1="{pad_l}" y1="{zero_y:.1f}" x2="{W - pad_r}" y2="{zero_y:.1f}" '
+        f'stroke="rgba(114,107,96,0.35)" stroke-width="1" stroke-dasharray="4 3"/>'
+    )
+    last_x, last_y = _x(n - 1), _y(vals[-1])
+    dot = f'<circle cx="{last_x:.1f}" cy="{last_y:.1f}" r="3.5" fill="{stroke}"/>'
+    svg = (
+        f'<svg viewBox="0 0 {W} {H}" width="100%" height="{H}" preserveAspectRatio="none" class="eq-svg">'
+        f'{grid}<polygon points="{area_pts}" fill="{fill}"/>{zero_line}'
+        f'<polyline points="{line_pts}" fill="none" stroke="{stroke}" stroke-width="2.5" '
+        f'vector-effect="non-scaling-stroke" stroke-linejoin="round"/>{dot}</svg>'
+    )
+    yhi = ("+" if hi >= 0 else "−") + f"{abs(hi):,.0f}"
+    ylo = ("+" if lo >= 0 else "−") + f"{abs(lo):,.0f}"
+    yaxis = (
+        f'<div class="eq-yaxis"><span class="net-pos">{yhi}</span>'
+        f'<span class="daily-zero">$0</span><span class="net-neg">{ylo}</span></div>'
+    )
+    xaxis = f'<div class="eq-xaxis"><span>{e(points[0][0])}</span><span>{e(points[-1][0])}</span></div>'
+    return (
+        f'<div class="eq-chart">{yaxis}'
+        f'<div class="eq-plot"><div class="eq-wrap">{svg}</div>{xaxis}</div></div>'
+    )
+
+
+def monthly_pnl_calendar_html(closed_trades: list[dict], year: int, month: int,
+                              today_iso: str | None = None) -> str:
+    """Trading-journal style month grid: realized net P&L per calendar day
+    (broker deal history, bucketed by close date). Real dates — unlike the
+    equity day_key chart it never freezes over a weekend."""
+    byday: dict[str, list] = {}
+    for t in closed_trades:
+        d = (t.get("close_ts") or "")[:10]
+        if len(d) != 10:
+            continue
+        b = byday.setdefault(d, [0, 0.0])
+        b[0] += 1
+        b[1] += t["net"]
+    ym = f"{year:04d}-{month:02d}"
+    month_days = [(d, v) for d, v in byday.items() if d.startswith(ym)]
+    month_net = sum(v[1] for _, v in month_days)
+    n_green = sum(1 for _, v in month_days if v[1] > 0)
+    n_red = sum(1 for _, v in month_days if v[1] < 0)
+    n_flat = sum(1 for _, v in month_days if v[0] > 0 and v[1] == 0)
+    max_abs = max((abs(v[1]) for _, v in month_days), default=1.0) or 1.0
+
+    def _day_cell(dobj) -> str:
+        diso = dobj.isoformat()
+        if dobj.month != month or dobj.year != year:
+            return f'<td class="cal-day cal-out"><div class="cal-date">{dobj.day}</div></td>'
+        classes = ["cal-day"]
+        if dobj.weekday() >= 5:
+            classes.append("cal-weekend")
+        if today_iso is not None and diso == today_iso:
+            classes.append("cal-today")
+        rec = byday.get(diso)
+        style, body = "", ""
+        if rec and rec[0] > 0:
+            net = rec[1]
+            pcls = "net-pos" if net > 0 else ("net-neg" if net < 0 else "")
+            if net != 0:
+                base = "37,181,103" if net > 0 else "224,87,91"
+                alpha = 0.12 + 0.42 * min(1.0, abs(net) / max_abs)
+                style = f' style="background:rgba({base},{alpha:.2f})"'
+            sign = "+" if net > 0 else ("−" if net < 0 else "")
+            body = (
+                f'<div class="cal-pnl {pcls}">{sign}{abs(net):,.0f}</div>'
+                f'<div class="cal-n">{rec[0]} trade{"s" if rec[0] != 1 else ""}</div>'
+            )
+        else:
+            classes.append("cal-empty")
+        return (f'<td class="{" ".join(classes)}"{style}>'
+                f'<div class="cal-date">{dobj.day}</div>{body}</td>')
+
+    rows = ""
+    for wk in _cal.Calendar(firstweekday=0).monthdatescalendar(year, month):
+        wk_net = sum(byday.get(d.isoformat(), [0, 0.0])[1]
+                     for d in wk if d.month == month and d.year == year)
+        wk_n = sum(1 for d in wk if d.month == month and d.year == year
+                   and byday.get(d.isoformat(), [0])[0] > 0)
+        wcls = "net-pos" if wk_net > 0 else ("net-neg" if wk_net < 0 else "")
+        wsign = "+" if wk_net > 0 else ("−" if wk_net < 0 else "")
+        wk_cell = (
+            f'<td class="cal-wk"><div class="cal-wk-pnl {wcls}">{wsign}{abs(wk_net):,.0f}</div>'
+            f'<div class="cal-wk-n">{wk_n} day{"s" if wk_n != 1 else ""}</div></td>'
+        )
+        rows += f'<tr>{"".join(_day_cell(d) for d in wk)}{wk_cell}</tr>'
+
+    dow = "".join(f"<th>{d}</th>" for d in ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"))
+    ncls = "net-pos" if month_net > 0 else ("net-neg" if month_net < 0 else "")
+    msign = "+" if month_net > 0 else ("−" if month_net < 0 else "")
+    return (
+        '<section class="arch2-sec">'
+        '<div class="sec-head"><span class="sec-kicker">Calendar</span>'
+        f'<h2>Daily P&amp;L &middot; {_cal.month_name[month]} {year}</h2>'
+        f'<span class="sec-meta">month net <span class="{ncls}">{msign}{fmt_dollar(abs(month_net))}</span> '
+        f'&middot; <span class="v-pass">{n_green} green</span> / <span class="v-fail">{n_red} red</span>'
+        f'{f" / {n_flat} flat" if n_flat else ""}</span></div>'
+        '<p class="sec-note">Realized net P&amp;L per calendar day from the broker deal history '
+        '(each closed position bucketed by its close date, UTC). Green = net-up day, red = net-down; '
+        'cell shade scales with day magnitude; weekend days are dimmed. Real-date view — it does not '
+        'freeze over a weekend the way the equity day-bucket chart can.</p>'
+        f'<div class="cal-wrap"><table class="cal"><thead><tr>{dow}<th class="cal-wk-h">Week</th></tr></thead>'
+        f'<tbody>{rows}</tbody></table></div></section>'
     )
 
 
@@ -523,8 +682,10 @@ def render_content(root: Path, log_dir: Path, manifest_path: Path,
     # ── Realized P&L from the AccountMonitor broker deal export ──
     deals_info = load_deals(deals_csv)
     deals_ok = bool(deals_info["ok"])
+    closed_trades, open_positions, cash_rows = (
+        build_closed_trades(deals_info["deals"]) if deals_ok else ([], [], [])
+    )
     if deals_ok:
-        closed_trades, open_positions, cash_rows = build_closed_trades(deals_info["deals"])
         book_trades = [t for t in closed_trades if t["close_ts"] >= BOOK_LIVE_CUTOFF_UTC]
         pre_trades = [t for t in closed_trades if t["close_ts"] < BOOK_LIVE_CUTOFF_UTC]
         freshness = (
@@ -683,26 +844,69 @@ def render_content(root: Path, log_dir: Path, manifest_path: Path,
 
     daily_chart = daily_bars_svg(bar_dates, bar_pnl)
 
+    # ── Marketing headline: cumulative realized-P&L growth curve + fund KPIs ──
+    _closed_sorted = sorted(closed_trades, key=lambda t: t.get("close_ts") or "")
+    cum: list[tuple[str, float]] = []
+    _running = 0.0
+    for t in _closed_sorted:
+        _running += t["net"]
+        cts = (t.get("close_ts") or "")[:10]
+        if cts:
+            cum.append((cts, round(_running, 2)))
+    growth_chart = equity_growth_svg(cum) if cum else '<p class="sec-note">No realized closed trades yet.</p>'
+
+    realized_stats = trade_stats(closed_trades)
+    n_closed = realized_stats["closed"]
+    realized_net = realized_stats["net"] or 0.0
+    gross_win = sum(t["net"] for t in closed_trades if t["net"] > 0)
+    gross_loss = -sum(t["net"] for t in closed_trades if t["net"] < 0)
+    profit_factor = (gross_win / gross_loss) if gross_loss > 0 else None
+    peak, max_dd = None, 0.0
+    for _, v in cum:
+        peak = v if peak is None else max(peak, v)
+        max_dd = min(max_dd, v - peak)
+
+    now_utc = dt.datetime.now(dt.timezone.utc)
+    today_iso = now_utc.date().isoformat()
+    calendar_html = (monthly_pnl_calendar_html(closed_trades, now_utc.year, now_utc.month, today_iso)
+                     if closed_trades else "")
+
+    _fresh = []
+    if equity_ts:
+        _fresh.append(f'equity {e(_fmt_ts(equity_ts))}')
+    if deals_ok and deals_info.get("last_deal_utc"):
+        _fresh.append(f'last trade {e(_fmt_ts(deals_info["last_deal_utc"]))}')
+    freshness_line = (" &middot; ".join(_fresh) + " UTC") if _fresh else "—"
+
+    def _pn(v: Any) -> str:
+        return 'pos' if isinstance(v, (int, float)) and v >= 0 else 'neg'
+
     kpi_tiles = f'''
 <div class="kpi-grid">
-  <div class="kpi-tile"><div class="kpi-tile-label">Account</div>
-    <div class="kpi-tile-val">{e(ACCOUNT_ID)}</div>
-    <div class="kpi-tile-sub">DXZ Darwinex Zero &middot; Final-24 book</div></div>
-  <div class="kpi-tile"><div class="kpi-tile-label">Equity</div>
+  <div class="kpi-tile kpi-hero"><div class="kpi-tile-label">Equity</div>
     <div class="kpi-tile-val">{fmt_dollar(equity_now)}</div>
-    <div class="kpi-tile-sub">as of {e(_fmt_ts(equity_ts))} UTC (EQUITY_SNAPSHOT)</div></div>
+    <div class="kpi-tile-sub">account {e(ACCOUNT_ID)} &middot; as of {e(_fmt_ts(equity_ts))} UTC</div></div>
   <div class="kpi-tile"><div class="kpi-tile-label">Total Return</div>
-    <div class="kpi-tile-val {'pos' if isinstance(total_return_pct,(int,float)) and total_return_pct>=0 else 'neg'}">{fmt_pct(total_return_pct)}</div>
-    <div class="kpi-tile-sub">vs {fmt_dollar(starting_capital)} starting capital</div></div>
-  <div class="kpi-tile"><div class="kpi-tile-label">Equity-Log History Since</div>
-    <div class="kpi-tile-val">{e(dates[0]) if dates else "—"}</div>
-    <div class="kpi-tile-sub">{n_window_days} trading day{'s' if n_window_days != 1 else ''} of daily P&amp;L &middot; Final-24 (24 sleeves) confirmed {e(BOOK_LIVE_SINCE)}</div></div>
-  <div class="kpi-tile"><div class="kpi-tile-label">Worst Day</div>
-    <div class="kpi-tile-val neg">{fmt_dollar(worst_day)}</div>
-    <div class="kpi-tile-sub">{e(worst_day_date) if worst_day_date else "—"}</div></div>
-  <div class="kpi-tile"><div class="kpi-tile-label">Current Risk Sum</div>
+    <div class="kpi-tile-val {_pn(total_return_pct)}">{fmt_pct(total_return_pct)}</div>
+    <div class="kpi-tile-sub">vs {fmt_dollar(starting_capital)} start</div></div>
+  <div class="kpi-tile"><div class="kpi-tile-label">Realized P&amp;L</div>
+    <div class="kpi-tile-val {_pn(realized_net)}">{fmt_dollar(realized_net)}</div>
+    <div class="kpi-tile-sub">{n_closed} closed trade{'s' if n_closed != 1 else ''}</div></div>
+  <div class="kpi-tile"><div class="kpi-tile-label">Win Rate</div>
+    <div class="kpi-tile-val">{fmt_pct(realized_stats["win_rate"], 1)}</div>
+    <div class="kpi-tile-sub">{realized_stats["wins"]}W / {realized_stats["losses"]}L</div></div>
+  <div class="kpi-tile"><div class="kpi-tile-label">Profit Factor</div>
+    <div class="kpi-tile-val {'pos' if isinstance(profit_factor,(int,float)) and profit_factor>=1 else 'neg'}">{fmt_num(profit_factor, 2) if profit_factor is not None else "—"}</div>
+    <div class="kpi-tile-sub">gross win / gross loss</div></div>
+  <div class="kpi-tile"><div class="kpi-tile-label">Max Drawdown</div>
+    <div class="kpi-tile-val neg">{fmt_dollar(max_dd) if cum else "—"}</div>
+    <div class="kpi-tile-sub">peak-to-trough, realized curve</div></div>
+  <div class="kpi-tile"><div class="kpi-tile-label">Best / Worst Day</div>
+    <div class="kpi-tile-val kpi-bw"><span class="net-pos">{fmt_dollar(best_day)}</span> <span class="kpi-slash">/</span> <span class="net-neg">{fmt_dollar(worst_day)}</span></div>
+    <div class="kpi-tile-sub">{win_days}W / {loss_days}L days</div></div>
+  <div class="kpi-tile"><div class="kpi-tile-label">Risk Deployed</div>
     <div class="kpi-tile-val">{fmt_pct(total_risk_pct, 2)}</div>
-    <div class="kpi-tile-sub">&Sigma; RISK_PERCENT &middot; {n_manifest_sleeves} sleeves (sealed manifest, DRAFT)</div></div>
+    <div class="kpi-tile-sub">&Sigma; RISK_PERCENT &middot; {n_manifest_sleeves} sleeves</div></div>
 </div>
 '''
 
@@ -710,11 +914,21 @@ def render_content(root: Path, log_dir: Path, manifest_path: Path,
 <div class="arch2-top">
   <div>
     <h1>DXZ <span class="em-text">Trading Journal</span></h1>
-    <div class="arch2-sub">Darwinex Zero account {e(ACCOUNT_ID)} &middot; live Final-24 book, deployed {e(BOOK_LIVE_SINCE)}. Every number below is parsed from the T_Live per-EA event logs (EQUITY_SNAPSHOT / TM_OPEN / TM_CLOSE / ENTRY_ACCEPTED / ENTRY_REJECTED) read-only, or from the sealed book manifest. Regenerated hourly with the rest of the dashboard suite.</div>
+    <div class="arch2-sub">Darwinex Zero account {e(ACCOUNT_ID)} &middot; live Final-24 book, deployed {e(BOOK_LIVE_SINCE)}. Every figure is parsed read-only from the T_Live per-EA event logs and the AccountMonitor broker deal export — no number is invented.</div>
   </div>
+  <div class="arch2-fresh"><span class="arch2-fresh-lbl">Data as of</span><span class="arch2-fresh-val">{freshness_line}</span></div>
 </div>
 
 {kpi_tiles}
+
+<section class="arch2-sec eq-sec">
+  <div class="sec-head"><span class="sec-kicker">Track record</span><h2>Cumulative realized P&amp;L</h2>
+    <span class="sec-meta">{n_closed} closed trades &middot; {e(cum[0][0]) if cum else "—"} &rarr; {e(cum[-1][0]) if cum else "—"}</span></div>
+  <p class="sec-note">Running sum of realized net P&amp;L (profit + swap + commission + fee) per closed trade, in close-date order — the account's live growth curve. Account live since April 2026; Final-24 book confirmed {e(BOOK_LIVE_SINCE)}.</p>
+  {growth_chart}
+</section>
+
+{calendar_html}
 
 <section class="arch2-sec">
   <div class="sec-head"><span class="sec-kicker">Daily</span><h2>Win / Loss by day</h2>
@@ -787,6 +1001,40 @@ EXTRA_CSS = """
 .pnl-tablehead{font-family:var(--font-mono);font-size:10.5px;font-weight:500;color:var(--text-3);text-transform:uppercase;letter-spacing:0.08em;margin:12px 0 6px}
 .pnl-total td{border-top:1px solid var(--border);font-weight:600}
 .arch2-foot{max-width:1400px;margin:40px auto 48px;padding:0 36px;font-family:var(--font-mono);font-size:11px;color:var(--text-3);text-align:center;line-height:1.8;letter-spacing:0.06em}
+.arch2-fresh{font-family:var(--font-mono);font-size:11px;color:var(--text-3);text-align:right;line-height:1.5;border-left:2px solid var(--signal);padding:3px 0 3px 14px}
+.arch2-fresh-lbl{display:block;font-size:9px;text-transform:uppercase;letter-spacing:0.18em;color:var(--text-4)}
+.arch2-fresh-val{color:var(--text-2)}
+.kpi-hero{border-left:2px solid var(--signal)}
+.kpi-hero .kpi-tile-val{color:var(--signal)}
+.kpi-bw{font-size:16px}
+.kpi-slash{color:var(--text-4)}
+.eq-sec .sec-note{margin-bottom:14px}
+.eq-chart{display:flex;gap:10px;align-items:stretch}
+.eq-yaxis{display:flex;flex-direction:column;justify-content:space-between;font-family:var(--font-mono);font-size:10px;text-align:right;min-width:58px;padding:2px 0}
+.eq-plot{flex:1;min-width:0}
+.eq-wrap{background:var(--surface-1);border:1px solid var(--border);padding:10px 6px}
+.eq-svg{display:block}
+.eq-xaxis{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:10px;color:var(--text-3);margin-top:5px;padding:0 4px}
+.daily-chart{display:flex;gap:8px;align-items:stretch}
+.daily-yaxis{display:flex;flex-direction:column;justify-content:space-between;font-family:var(--font-mono);font-size:9.5px;text-align:right;min-width:54px;padding:2px 0}
+.daily-yaxis .daily-zero{color:var(--text-4)}
+.daily-plot{flex:1;min-width:0}
+.daily-xaxis{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:9.5px;color:var(--text-3);margin-top:5px;padding:0 2px}
+.cal-wrap{overflow-x:auto}
+.cal{width:100%;border-collapse:separate;border-spacing:5px;table-layout:fixed;min-width:760px}
+.cal th{font-family:var(--font-mono);font-size:10px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:0.1em;padding:2px 6px;text-align:left}
+.cal th.cal-wk-h{color:var(--text-4)}
+.cal-day{vertical-align:top;height:78px;border:1px solid var(--border);background:var(--surface-1);padding:6px 8px}
+.cal-day.cal-out{background:transparent;border-color:transparent}
+.cal-day.cal-out .cal-date{opacity:0.35}
+.cal-day.cal-weekend{background:rgba(255,255,255,0.02)}
+.cal-day.cal-today{outline:2px solid var(--signal);outline-offset:-1px}
+.cal-date{font-family:var(--font-mono);font-size:11px;color:var(--text-3);font-weight:500}
+.cal-pnl{font-size:15px;font-weight:600;letter-spacing:-0.01em;margin-top:9px}
+.cal-n{font-family:var(--font-mono);font-size:9.5px;color:var(--text-3);margin-top:2px}
+.cal-wk{vertical-align:top;height:78px;background:var(--surface-2);border:1px solid var(--border);padding:6px 8px;text-align:right}
+.cal-wk-pnl{font-family:var(--font-mono);font-size:12px;font-weight:600}
+.cal-wk-n{font-family:var(--font-mono);font-size:9px;color:var(--text-3);margin-top:5px}
 """
 
 
