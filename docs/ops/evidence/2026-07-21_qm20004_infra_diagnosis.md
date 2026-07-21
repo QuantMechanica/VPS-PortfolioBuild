@@ -83,6 +83,37 @@ The structural fix needs Factory OFF (quiet window). Options, cheapest first:
 
 Any option must be validated with the standard CSV/log evidence (broker vs custom symbol probe) before factory-wide rollout. Interim (no window needed): use `avoid_terminals` steering for priority items, and consider throttling concurrent EUR-quoted-index Q02s while the GDAXI/NDX backfill wave drains.
 
+OWNER preference (2026-07-21): the live login (link 2) is NOT a concern — do not
+touch it. Primary weekend fix = **link 3 (remap custom-symbol profit/margin
+conversion to `.DWX` pairs)**: surgical, zero extra disk, removes the fatal pass-end
+read from the contended raw store. **Link 1 (de-junction the raw store)** is the
+belt-and-suspenders option if the ~1.7 GB/symbol/terminal disk cost is acceptable —
+it eliminates every cross-terminal collision. Weekend ToDo block C.
+
+## Mitigation LANDED (factory-ON, no OFF window) — 2026-07-21
+
+`terminal_worker.py` commit `3d6fc09c9` (verified by a 3-lens adversarial workflow,
+0 blockers): the shared-bases storm signature (`summary_missing` with the tester
+having run but no valid report latched) is reclassified as a TRANSIENT infra class —
+auto-requeued via staged recovery with `avoid_terminals` accumulation (whole-fleet
+guard), on a SEPARATE `transient_infra_attempts` counter (cap 6, exponential backoff
+45→600s) that never consumes the strategy `MAX_WORK_ITEM_RETRIES` budget; exhaustion
+falls through to a real `INFRA_FAIL`. Genuine strategy verdicts (PASS/FAIL/ZERO_TRADES/
+RETIRE/DRAFT_DEFECT) all produce a summary and are classified BEFORE this branch — never
+masked (verified + test). 11 new tests. Storm-hit index items now self-heal instead of
+burning to INFRA_FAIL after 3 tries.
+
+**Deferred hardening (verified as CONCERN, non-blocking):** the detector reads the
+terminal's SHARED daily log tail with no per-run time correlation, so during a storm a
+stale token from a neighbor/earlier pass can sweep a GENUINE non-storm no-summary
+failure (ONINIT_FAILED / stale-.ex5 / real DATA_MISSING) into the transient class —
+delayed by ≤6 backoff cycles + mislabeled `final_failure`, but self-terminating and
+never verdict-masking. The clean fix (scope the token match to the run window) requires
+comparing MT5 log-line times (server-local GMT+1/+2) against the UTC `started_at_iso` —
+a timezone-careful correlation that must NOT be rushed into the dispatch path (a naive
+compare would wrongly reject valid storm tokens and regress the mitigation). Scheduled
+as a bounded follow-up, not forced under time pressure.
+
 ## Reconciliation of prior evidence
 
 - "T9 Core log EURUSD history synchronization error / ~205k error[32] lines" — confirmed, and identified as the terminal-side cause of the agent-side `[Not found]`.
