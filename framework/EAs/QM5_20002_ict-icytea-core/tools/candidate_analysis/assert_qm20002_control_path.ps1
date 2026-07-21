@@ -5,15 +5,24 @@ param(
     [string]$Operation,
 
     [Parameter(Mandatory = $true)]
-    [string]$Path
+    [string]$Path,
+
+    [Parameter(Mandatory = $true)]
+    [ValidatePattern('^[0-9a-f]{64}$')]
+    [string]$ExpectedHelperSha256
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$controlRoot = [IO.Path]::GetFullPath('D:\QM\reports\qm20002\short_ny_reverse_time')
+$anchorRoot = [IO.Path]::GetFullPath('D:\QM\reports\qm20002')
+$controlRoot = Join-Path $anchorRoot 'short_ny_reverse_time'
 $systemSid = New-Object Security.Principal.SecurityIdentifier('S-1-5-18')
 $administratorsSid = New-Object Security.Principal.SecurityIdentifier('S-1-5-32-544')
+$actualHelperSha256 = (Get-FileHash -LiteralPath $PSCommandPath -Algorithm SHA256 -ErrorAction Stop).Hash.ToLowerInvariant()
+if ($actualHelperSha256 -cne $ExpectedHelperSha256) {
+    throw 'QM20002 control-path helper byte binding drifted.'
+}
 
 function ConvertTo-ControlPath([string]$Candidate) {
     if ([string]::IsNullOrWhiteSpace($Candidate) -or $Candidate.IndexOfAny([char[]]"`r`n`0") -ge 0) {
@@ -105,9 +114,70 @@ function Assert-ExactAcl([string]$Candidate, [bool]$Directory) {
     }
 }
 
+function Get-UntrustedSids {
+    $sids = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::Ordinal)
+    foreach ($sid in @('S-1-1-0', 'S-1-5-11', 'S-1-5-32-545')) { [void]$sids.Add($sid) }
+    $dev1 = Get-LocalUser -Name 'QMDev1' -ErrorAction Stop
+    [void]$sids.Add([string]$dev1.SID.Value)
+    $changed = $true
+    while ($changed) {
+        $changed = $false
+        foreach ($group in @(Get-LocalGroup -ErrorAction Stop)) {
+            $groupSid = [string]$group.SID.Value
+            if ($sids.Contains($groupSid)) { continue }
+            foreach ($member in @(Get-LocalGroupMember -SID $group.SID -ErrorAction Stop)) {
+                if ($null -ne $member.SID -and $sids.Contains([string]$member.SID.Value)) {
+                    if ($sids.Add($groupSid)) { $changed = $true }
+                    break
+                }
+            }
+        }
+    }
+    return $sids
+}
+
+function Assert-AncestorProtection {
+    $untrusted = Get-UntrustedSids
+    $dangerous = [Security.AccessControl.FileSystemRights]::WriteData -bor
+        [Security.AccessControl.FileSystemRights]::AppendData -bor
+        [Security.AccessControl.FileSystemRights]::WriteExtendedAttributes -bor
+        [Security.AccessControl.FileSystemRights]::DeleteSubdirectoriesAndFiles -bor
+        [Security.AccessControl.FileSystemRights]::WriteAttributes -bor
+        [Security.AccessControl.FileSystemRights]::Delete -bor
+        [Security.AccessControl.FileSystemRights]::ChangePermissions -bor
+        [Security.AccessControl.FileSystemRights]::TakeOwnership
+    $cursor = [IO.Path]::GetPathRoot($controlRoot)
+    $parent = Split-Path -Parent $anchorRoot
+    foreach ($part in $parent.Substring($cursor.Length).Split('\', [StringSplitOptions]::RemoveEmptyEntries)) {
+        $cursor = Join-Path $cursor $part
+        if (-not (Test-Path -LiteralPath $cursor -PathType Container)) {
+            throw "Required QM20002 control ancestor is missing: $cursor"
+        }
+        $item = Get-Item -LiteralPath $cursor -Force -ErrorAction Stop
+        if (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+            throw "Reparse point forbidden in QM20002 control ancestor: $cursor"
+        }
+        $acl = Get-Acl -LiteralPath $cursor -ErrorAction Stop
+        foreach ($rule in @($acl.GetAccessRules($true, $true, [Security.Principal.SecurityIdentifier]))) {
+            if ($rule.AccessControlType -eq [Security.AccessControl.AccessControlType]::Allow -and
+                $untrusted.Contains([string]$rule.IdentityReference.Value) -and
+                (($rule.FileSystemRights -band $dangerous) -ne 0)) {
+                throw "QMDev1 or one of its groups can replace the QM20002 control root through ancestor: $cursor"
+            }
+        }
+    }
+}
+
 $fullPath = ConvertTo-ControlPath $Path
+Assert-AncestorProtection
 if ($Operation -eq 'PrepareDirectory') {
     $relative = $fullPath.Substring($controlRoot.Length).TrimStart('\')
+    if (-not (Test-Path -LiteralPath $anchorRoot -PathType Container)) {
+        New-Item -ItemType Directory -Path $anchorRoot -ErrorAction Stop | Out-Null
+    }
+    Assert-NoReparse $anchorRoot
+    Set-ExactDirectoryAcl $anchorRoot
+    Assert-ExactAcl -Candidate $anchorRoot -Directory $true
     $cursor = $controlRoot
     if (-not (Test-Path -LiteralPath $cursor -PathType Container)) {
         New-Item -ItemType Directory -Path $cursor -ErrorAction Stop | Out-Null
@@ -124,21 +194,29 @@ if ($Operation -eq 'PrepareDirectory') {
     }
     Assert-ExactAcl -Candidate $fullPath -Directory $true
 } elseif ($Operation -eq 'AssertAbsentFile') {
+    Assert-NoReparse $anchorRoot
+    Assert-ExactAcl -Candidate $anchorRoot -Directory $true
     Assert-NoReparse -Candidate $fullPath -AllowMissingLeaf
     if (Test-Path -LiteralPath $fullPath) { throw 'Expected absent QM20002 control file already exists.' }
     $parent = Split-Path -Parent $fullPath
     Assert-NoReparse $parent
     Assert-ExactAcl -Candidate $parent -Directory $true
 } elseif ($Operation -eq 'SealFile') {
+    Assert-NoReparse $anchorRoot
+    Assert-ExactAcl -Candidate $anchorRoot -Directory $true
     Assert-NoReparse $fullPath
     if (-not (Test-Path -LiteralPath $fullPath -PathType Leaf)) { throw 'QM20002 control file is missing.' }
     Set-ExactFileAcl $fullPath
     Assert-ExactAcl -Candidate $fullPath -Directory $false
 } elseif ($Operation -eq 'AssertFile') {
+    Assert-NoReparse $anchorRoot
+    Assert-ExactAcl -Candidate $anchorRoot -Directory $true
     Assert-NoReparse $fullPath
     if (-not (Test-Path -LiteralPath $fullPath -PathType Leaf)) { throw 'QM20002 control file is missing.' }
     Assert-ExactAcl -Candidate $fullPath -Directory $false
 } else {
+    Assert-NoReparse $anchorRoot
+    Assert-ExactAcl -Candidate $anchorRoot -Directory $true
     Assert-NoReparse $fullPath
     if (-not (Test-Path -LiteralPath $fullPath -PathType Container)) { throw 'QM20002 control directory is missing.' }
     Assert-ExactAcl -Candidate $fullPath -Directory $true
@@ -153,4 +231,5 @@ if ($Operation -eq 'PrepareDirectory') {
     owner_sid = $administratorsSid.Value
     full_control_sids = @($systemSid.Value, $administratorsSid.Value)
     reparse_points_forbidden = $true
+    helper_sha256 = $actualHelperSha256
 } | ConvertTo-Json -Depth 4 -Compress
