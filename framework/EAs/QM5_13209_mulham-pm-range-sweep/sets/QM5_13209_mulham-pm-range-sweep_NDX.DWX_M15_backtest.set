@@ -1,0 +1,43 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        13209
+; ea_slug:      mulham-pm-range-sweep
+; ea_version:   v5.0
+; set_version:  s20260721-001
+; symbol:       NDX.DWX
+; timeframe:    M15
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-07-21
+;==========================================================
+qm_ea_id=13209
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_13209_mulham-pm-range-sweep.md
+pm_start_hour=20
+pm_start_min=30
+pm_end_hour=23
+pm_end_min=0
+pm_trend_max_frac=0.75
+ema_fast_period=9
+ema_slow_period=18
+sweep_start_hour=16
+sweep_start_min=30
+sweep_end_hour=18
+sweep_end_min=0
+atr_period=14
+displacement_atr_mult=1.5
+sl_buffer_atr_mult=0.1
+rr_floor=1.5
+entry_cancel_hour=19
+flatten_hour=20
+strategy_tp_mode=STRATEGY_TP_OPPOSITE_EXTREME
+tp_rr_multiple=2.5
+spread_cap_pips=50
