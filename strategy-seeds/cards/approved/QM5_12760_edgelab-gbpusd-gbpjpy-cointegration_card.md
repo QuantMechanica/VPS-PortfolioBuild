@@ -26,8 +26,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q02
-last_updated: 2026-06-29
+pipeline_phase: Q02_QUEUED
+last_updated: 2026-07-21
 g0_approval_reasoning: "R1 PASS because the method comes from Chan cointegration pair-trading and pair selection comes from the OWNER-requested in-house 66-pair scan; R2 PASS deterministic fixed-pair z-score basket; R3 PASS GBPUSD.DWX and GBPJPY.DWX data exist in the exported scan universe; R4 PASS no ML/grid/martingale. Marked high-risk because DEV Sharpe was negative and OOS Sharpe was very low."
 expected_pf: 1.01
 expected_dd_pct: 30.0
