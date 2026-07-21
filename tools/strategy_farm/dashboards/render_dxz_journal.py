@@ -930,13 +930,6 @@ def render_content(root: Path, log_dir: Path, manifest_path: Path,
 
 {calendar_html}
 
-<section class="arch2-sec">
-  <div class="sec-head"><span class="sec-kicker">Daily</span><h2>Win / Loss by day</h2>
-    <span class="sec-meta"><span class="v-pass">{win_days} win</span> / <span class="v-fail">{loss_days} loss</span> / {flat_days} flat &middot; best {fmt_dollar(best_day)} ({e(best_day_date) if best_day_date else "—"})</span></div>
-  <p class="sec-note">Book-level daily P&amp;L = day-over-day change of account EQUITY_SNAPSHOT (account-level, deployed sum of all sleeves at flat RISK_PERCENT), aggregated across all {n_manifest_sleeves} per-EA T_Live logs. Green = up day, red = down day. {n_window_days} trading-day buckets shown, {e(dates[0]) if dates else "—"} &rarr; {e(dates[-1]) if dates else "—"}. Final-24 (24th sleeve) was confirmed live {e(BOOK_LIVE_SINCE)} — earlier days reflect the same account with fewer sleeves. <strong>Data-gap note:</strong> the bucket date is the EA's last-completed-D1-bar key (QM_CalendarPeriodKey), which pins over a weekend/holiday with no new daily bar — the true latest snapshot is {e(_fmt_ts(equity_ts))} UTC (see the Equity tile) even though its bucket is dated {e(dates[-1]) if dates else "—"}.</p>
-  {daily_chart}
-</section>
-
 {realized_section}
 
 <section class="arch2-sec">
