@@ -80,6 +80,9 @@ ABSENT_PROCESS_INFERENCE_BASES = frozenset(
 )
 
 HEX64 = re.compile(r"[0-9a-f]{64}")
+DOTNET_UTC_ROUNDTRIP = re.compile(
+    r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{7}Z"
+)
 TERMINAL_PENDING_ERROR = re.compile(
     rf"^{REASON_CODE};"
     r"closure_phase=QUIESCE_PENDING;"
@@ -810,6 +813,8 @@ def _validate_task_evidence(
             and type(evidence.get("last_run_utc")) is not str
         )
         or type(evidence.get("last_task_result")) is not int
+        or evidence.get("last_task_result") < -(2**63)
+        or evidence.get("last_task_result") > (2**63 - 1)
         or (
             require_never_run
             and evidence.get("last_task_result") not in {0, 267011}
@@ -825,10 +830,22 @@ def _validate_task_evidence(
     ):
         raise ClosureError(f"{label} scheduled-task evidence drift")
     if evidence.get("last_run_utc") is not None:
+        if DOTNET_UTC_ROUNDTRIP.fullmatch(evidence["last_run_utc"]) is None:
+            raise ClosureError(f"{label} last-run timestamp is not canonical UTC")
         try:
-            datetime.fromisoformat(str(evidence["last_run_utc"]).replace("Z", "+00:00"))
+            parsed_last_run = datetime.fromisoformat(
+                evidence["last_run_utc"].replace("Z", "+00:00")
+            )
         except ValueError as exc:
             raise ClosureError(f"{label} last-run timestamp is malformed") from exc
+        if parsed_last_run.utcoffset() != timedelta(0):
+            raise ClosureError(f"{label} last-run timestamp is not UTC")
+    derived_never_run = (
+        evidence.get("last_run_utc") is None
+        and evidence["last_task_result"] in {0, 267011}
+    )
+    if evidence["never_run"] is not derived_never_run:
+        raise ClosureError(f"{label} never-run history derivation drift")
     _validate_process_evidence(
         evidence,
         label,

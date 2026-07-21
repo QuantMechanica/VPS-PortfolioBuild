@@ -70,7 +70,7 @@ def task_evidence(*, disabled: bool, started: bool = False) -> dict[str, Any]:
     evidence = {
         "state": "Disabled" if disabled else "Ready",
         "enabled": not disabled,
-        "last_run_utc": "2026-07-21T03:00:01+00:00" if started else None,
+        "last_run_utc": "2026-07-21T03:00:01.0000000Z" if started else None,
         "last_task_result": 1 if started else 267011,
         "never_run": not started,
         "non_null_trigger_count": 0,
@@ -1404,6 +1404,58 @@ def test_absence_probe_basis_is_exactly_race_aware(
         )
 
 
+def test_settled_ready_and_await_probes_reject_allowed_basis_swaps(
+    tmp_path: Path,
+) -> None:
+    contract, _fake_auditor, _task, _utility_sha, helper_sha = make_fixture(
+        tmp_path
+    )
+    ready_evidence = task_evidence(disabled=False)
+    ready_evidence["matching_worker_process_count_basis"] = (
+        closure.TASK_TERMINAL_REJECT_BASIS
+    )
+    ready_probe = {
+        "operation": "InspectReady",
+        "helper_sha256": helper_sha,
+        "task_name": contract.task_name,
+        "task_path": "\\",
+        "principal_sid": "S-1-5-21-1",
+        "evidence": ready_evidence,
+        "absent": False,
+    }
+    with pytest.raises(closure.ClosureError, match="inference basis drift"):
+        closure._validate_task_probe(
+            ready_probe,
+            contract,
+            disabled=False,
+            label="settled Ready basis swap",
+            expected_helper_sha256=helper_sha,
+            expected_principal_sid="S-1-5-21-1",
+        )
+
+    await_evidence = task_evidence(disabled=True, started=True)
+    await_evidence["matching_worker_process_count_basis"] = (
+        closure.TASK_NEVER_RUN_BASIS
+    )
+    await_probe = {
+        "operation": "AwaitQuiesced",
+        "helper_sha256": helper_sha,
+        "task_name": contract.task_name,
+        "task_path": "\\",
+        "principal_sid": "S-1-5-21-1",
+        "evidence": await_evidence,
+        "start_race_observed": True,
+        "absent": False,
+    }
+    with pytest.raises(closure.ClosureError, match="inference basis drift"):
+        closure._validate_await_quiesced_probe(
+            await_probe,
+            contract,
+            expected_helper_sha256=helper_sha,
+            expected_principal_sid="S-1-5-21-1",
+        )
+
+
 def test_receipt_recomputed_absence_wrapper_cannot_replace_fresh_probe(
     tmp_path: Path,
 ) -> None:
@@ -1529,6 +1581,30 @@ def test_mutated_quiescence_anchor_is_rejected_before_unregister(
             "xml_hash_int",
         ),
         (
+            "preterminal_probe_payload_b64",
+            "preterminal_probe_sha256",
+            "preterminal_payload",
+            "fabricated_basis",
+        ),
+        (
+            "preterminal_probe_payload_b64",
+            "preterminal_probe_sha256",
+            "preterminal_payload",
+            "allowed_basis_swap",
+        ),
+        (
+            "preterminal_probe_payload_b64",
+            "preterminal_probe_sha256",
+            "preterminal_payload",
+            "naive_timestamp",
+        ),
+        (
+            "preterminal_probe_payload_b64",
+            "preterminal_probe_sha256",
+            "preterminal_payload",
+            "last_result_overflow",
+        ),
+        (
             "quiesce_transition_probe_payload_b64",
             "quiesce_transition_probe_sha256",
             "quiesce_payload",
@@ -1545,6 +1621,12 @@ def test_mutated_quiescence_anchor_is_rejected_before_unregister(
             "quiesce_transition_probe_sha256",
             "quiesce_payload",
             "after_xml",
+        ),
+        (
+            "quiesce_transition_probe_payload_b64",
+            "quiesce_transition_probe_sha256",
+            "quiesce_payload",
+            "quiesce_basis_swap",
         ),
     ],
 )
@@ -1589,8 +1671,24 @@ def test_rehashed_embedded_probe_semantic_mutation_is_rejected(
         probe["evidence"]["last_task_result"] = True
     elif mutation == "xml_hash_int":
         probe["evidence"]["task_xml_sha256"] = int("1" * 64)
+    elif mutation == "fabricated_basis":
+        probe["evidence"]["matching_worker_process_count_basis"] = (
+            "INFERRED_FROM_FABRICATED"
+        )
+    elif mutation == "allowed_basis_swap":
+        probe["evidence"]["matching_worker_process_count_basis"] = (
+            closure.TASK_TERMINAL_REJECT_BASIS
+        )
+    elif mutation == "naive_timestamp":
+        probe["evidence"]["last_run_utc"] = "2026-07-21T03:00:01.0000000"
+    elif mutation == "last_result_overflow":
+        probe["evidence"]["last_task_result"] = 2**63
     elif mutation == "action_bool":
         probe["after"]["non_null_action_count"] = True
+    elif mutation == "quiesce_basis_swap":
+        probe["after"]["matching_worker_process_count_basis"] = (
+            closure.TASK_TERMINAL_REJECT_BASIS
+        )
     else:
         probe["after"]["task_xml_sha256"] = "f" * 64
     replacements = {
