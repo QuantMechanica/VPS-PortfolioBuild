@@ -138,24 +138,19 @@ def _passing_cells() -> dict[str, list[subject.TradeRecord]]:
     return cells
 
 
-def test_draft_contract_blocks_pre_until_explicit_source_and_adapter_freeze() -> None:
-    draft = subject.validate_draft_contract()
-    assert draft["status"] == "DRAFT_PENDING_ATTEMPT_002_FINAL_FREEZE"
-    assert draft["finalization"]["final_contract_must_bind_roles"] == sorted(
-        subject.FINAL_ARTIFACT_ROLES
-    )
-    assert "adapter" in draft["finalization"]["final_contract_must_bind_roles"]
-    assert "scheduled_task_helper" in draft["finalization"][
-        "final_contract_must_bind_roles"
+def test_finalized_contract_binds_source_adapter_and_only_attempt002() -> None:
+    receipt = subject.validate_analysis_contract()
+    payload = subject.load_json(subject.CONTRACT_PATH)
+    assert payload["status"] == "FINALIZED_OUTCOME_BLIND"
+    assert set(payload["artifact_bindings"]) == subject.FINAL_ARTIFACT_ROLES
+    assert payload["artifact_bindings"]["adapter"] == receipt["artifact_bindings"][
+        "adapter"
     ]
-    assert "attempt001_closure" in draft["finalization"][
-        "final_contract_must_bind_roles"
-    ]
-    assert draft["run_namespace"]["attempt_id"] == "ATTEMPT_002"
-    assert draft["infrastructure_alternate"]["attempt003_plus_forbidden"] is True
-    assert "artifact_bindings" not in draft
-    with pytest.raises(subject.InvalidEvidence, match="finalize required"):
-        subject.validate_analysis_contract()
+    assert "scheduled_task_helper" in payload["artifact_bindings"]
+    assert "attempt001_closure" in payload["artifact_bindings"]
+    assert payload["run_namespace"]["attempt_id"] == "ATTEMPT_002"
+    assert payload["infrastructure_alternate"]["attempt003_plus_forbidden"] is True
+    assert "finalization" not in payload
 
 
 def test_private_profile_does_not_mutate_separately_loaded_eurusd_auditor() -> None:
