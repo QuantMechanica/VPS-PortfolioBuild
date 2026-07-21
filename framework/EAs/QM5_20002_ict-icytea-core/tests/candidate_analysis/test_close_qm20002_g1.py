@@ -1492,10 +1492,22 @@ def test_mutated_quiescence_anchor_is_rejected_before_unregister(
             "task_name",
         ),
         (
+            "preterminal_probe_payload_b64",
+            "preterminal_probe_sha256",
+            "preterminal_payload",
+            "trigger_bool",
+        ),
+        (
             "quiesce_transition_probe_payload_b64",
             "quiesce_transition_probe_sha256",
             "quiesce_payload",
             "ready_xml",
+        ),
+        (
+            "quiesce_transition_probe_payload_b64",
+            "quiesce_transition_probe_sha256",
+            "quiesce_payload",
+            "action_bool",
         ),
     ],
 )
@@ -1532,8 +1544,12 @@ def test_rehashed_embedded_probe_semantic_mutation_is_rejected(
     )
     if mutation == "task_name":
         probe["task_name"] = "QM_QM20002_AUDIT_" + "0" * 24
-    else:
+    elif mutation == "ready_xml":
         probe["before"]["task_xml_sha256"] = "f" * 64
+    elif mutation == "trigger_bool":
+        probe["evidence"]["non_null_trigger_count"] = False
+    else:
+        probe["after"]["non_null_action_count"] = True
     replacements = {
         payload_field: closure.canonical_b64(probe),
         sha_field: closure.canonical_sha256(probe),

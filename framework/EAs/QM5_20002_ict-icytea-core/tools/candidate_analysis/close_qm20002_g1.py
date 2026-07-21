@@ -708,7 +708,8 @@ def _git_assert_frozen_bytes(
         raise ClosureError("runtime freeze bytes differ from the exact committed freeze")
     freeze = load_strict_json(contract.freeze_path, "runtime freeze")
     if (
-        freeze.get("schema_version") != 1
+        type(freeze.get("schema_version")) is not int
+        or freeze.get("schema_version") != 1
         or freeze.get("artifact_type") != "QM5_20002_SHORT_NY_RUNTIME_FREEZE"
         or freeze.get("analysis_id") != contract.analysis_id
         or freeze.get("status") != "FROZEN_REVIEWED_READY_FOR_FRESH_PRE"
@@ -790,8 +791,10 @@ def _validate_task_evidence(
         or evidence.get("non_null_trigger_count") != 0
         or type(evidence.get("non_null_action_count")) is not int
         or evidence.get("non_null_action_count") != 1
-        or HEX64.fullmatch(str(evidence.get("task_xml_sha256", ""))) is None
-        or HEX64.fullmatch(str(evidence.get("task_contract_sha256", ""))) is None
+        or type(evidence.get("task_xml_sha256")) is not str
+        or HEX64.fullmatch(evidence.get("task_xml_sha256", "")) is None
+        or type(evidence.get("task_contract_sha256")) is not str
+        or HEX64.fullmatch(evidence.get("task_contract_sha256", "")) is None
     ):
         raise ClosureError(f"{label} scheduled-task evidence drift")
     if evidence.get("last_run_utc") is not None:
@@ -1286,7 +1289,9 @@ def _validate_closed_state_historical_chain(
     if set(state) != set(original):
         raise ClosureError("closed state exact fields drifted from original state")
     for field in sorted(immutable_fields):
-        if state.get(field) != original.get(field):
+        if canonical_bytes(state.get(field)) != canonical_bytes(
+            original.get(field)
+        ):
             raise ClosureError(f"closed state immutable field drift: {field}")
     if (
         state.get("job") != chain["bindings"]["launch_job"]
@@ -1488,6 +1493,7 @@ def _assert_historical_pre_receipt(
         or type(plan.get("total_native_runs")) is not int
         or plan.get("total_native_runs") != 8
         or plan.get("execution") != "SEQUENTIAL_SINGLE_DEV1_TERMINAL"
+        or type(plan.get("model")) is not int
         or plan.get("model") != 4
         or not isinstance(plan.get("cells"), list)
         or len(plan["cells"]) != 4
@@ -1602,7 +1608,7 @@ def _assert_dev1_inventory(chain: Mapping[str, Any], auditor: ModuleType) -> Non
     if not isinstance(expected, Mapping):
         raise ClosureError("launch job omitted the pre-launch DEV1 run inventory")
     observed = auditor._dev1_run_inventory()
-    if observed != expected:
+    if canonical_bytes(observed) != canonical_bytes(expected):
         raise ClosureError("DEV1 run inventory changed from the exact pre-launch binding")
 
 
@@ -1737,7 +1743,8 @@ def _validate_intent(
         "closure intent",
     )
     if (
-        intent.get("schema_version") != SCHEMA_VERSION
+        type(intent.get("schema_version")) is not int
+        or intent.get("schema_version") != SCHEMA_VERSION
         or intent.get("artifact_type")
         != "QM5_20002_G1_PRE_OUTCOME_CLOSURE_INTENT"
         or intent.get("analysis_id") != contract.analysis_id
@@ -1821,7 +1828,9 @@ def _validate_intent(
         chain["bindings"]["launch_job"],
         chain["authorization"],
     )
-    if intent.get("expected_transition") != _expected_transition():
+    if canonical_bytes(intent.get("expected_transition")) != canonical_bytes(
+        _expected_transition()
+    ):
         raise ClosureError("closure intent expected transition drift")
 
 
@@ -1843,7 +1852,12 @@ def _quiescence_anchor_payload(
         "size": len(canonical_bytes(pending_state)),
         "sha256": hashlib.sha256(canonical_bytes(pending_state)).hexdigest(),
     }
-    if dict(pending_state_binding) != expected_pending_binding:
+    _validate_recorded_binding(
+        pending_state_binding, "quiescence anchor pending state"
+    )
+    if canonical_bytes(pending_state_binding) != canonical_bytes(
+        expected_pending_binding
+    ):
         raise ClosureError("quiescence anchor pending-state binding drift")
     pending_proof = _validate_closed_state_historical_chain(
         contract,
@@ -1862,6 +1876,22 @@ def _quiescence_anchor_payload(
         label="quiescence anchor evidence",
         require_never_run=False,
     )
+    if pending_proof.get("quiesce_payload") != "NONE":
+        quiesce_probe = decode_canonical_b64(
+            pending_proof["quiesce_payload"],
+            "quiescence anchor transition probe",
+        )
+        transition_after = quiesce_probe.get("after")
+        if (
+            not isinstance(transition_after, Mapping)
+            or transition_after.get("task_contract_sha256")
+            != quiesced_evidence.get("task_contract_sha256")
+            or transition_after.get("task_xml_sha256")
+            != quiesced_evidence.get("task_xml_sha256")
+        ):
+            raise ClosureError(
+                "quiescence anchor evidence differs from Quiesce transition"
+            )
     evidence_race = quiesced_evidence.get("never_run") is not True
     expected_race = pending_proof.get("start_race") == "true" or evidence_race
     if (
@@ -1991,13 +2021,14 @@ def _validate_quiescence_anchor(
         raise ClosureError("quiescence anchor recursive value drift")
     if (
         expected_pending_state_binding is not None
-        and dict(pending_binding) != dict(expected_pending_state_binding)
+        and canonical_bytes(pending_binding)
+        != canonical_bytes(expected_pending_state_binding)
     ):
         raise ClosureError("quiescence anchor does not bind current pending state")
     if (
         expected_quiesced_evidence is not None
-        and dict(task["quiesced_evidence"])
-        != dict(expected_quiesced_evidence)
+        and canonical_bytes(task["quiesced_evidence"])
+        != canonical_bytes(expected_quiesced_evidence)
     ):
         raise ClosureError("quiescence anchor does not bind current task evidence")
     if (
