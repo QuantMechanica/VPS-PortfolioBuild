@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet('Identity', 'Register', 'Inspect', 'Start')]
+    [ValidateSet('Identity', 'Register', 'Inspect', 'Start', 'RunWorker', 'Unregister')]
     [string]$Operation,
 
     [ValidatePattern('^QM_QM13209_NDX_AUDIT_[0-9a-f]{24}$')]
@@ -50,10 +50,16 @@ function Get-QmContract {
     $tool = ConvertTo-QmFullPath $ToolPath 'ToolPath'
     $job = ConvertTo-QmFullPath $JobPath 'JobPath'
     $repo = ConvertTo-QmFullPath $RepoRoot 'RepoRoot'
-    foreach ($leaf in @($python, $tool, $job)) {
+    $powershell = ConvertTo-QmFullPath ([Environment]::ProcessPath) 'PowerShell host'
+    $helper = ConvertTo-QmFullPath $PSCommandPath 'scheduled-task helper'
+    foreach ($leaf in @($python, $tool, $powershell, $helper)) {
         if (-not (Test-Path -LiteralPath $leaf -PathType Leaf)) {
             throw "Required task input is not a file: $leaf"
         }
+    }
+    if ($Operation -notin @('RunWorker', 'Unregister') -and
+        -not (Test-Path -LiteralPath $job -PathType Leaf)) {
+        throw "Required task input is not a file: $job"
     }
     if (-not (Test-Path -LiteralPath $repo -PathType Container)) {
         throw "RepoRoot is not a directory: $repo"
@@ -63,7 +69,18 @@ function Get-QmContract {
         Tool=$tool
         Job=$job
         Repo=$repo
-        Arguments=(Quote-QmArgument $tool) + ' _run-plan --job ' + (Quote-QmArgument $job)
+        PowerShell=$powershell
+        Helper=$helper
+        Arguments=(
+            '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ' +
+            (Quote-QmArgument $helper) + ' -Operation RunWorker -TaskName ' +
+            (Quote-QmArgument $TaskName) + ' -PythonExe ' +
+            (Quote-QmArgument $python) + ' -ToolPath ' +
+            (Quote-QmArgument $tool) + ' -JobPath ' +
+            (Quote-QmArgument $job) + ' -RepoRoot ' +
+            (Quote-QmArgument $repo) + ' -ExecutionLimitSeconds ' +
+            [string]$ExecutionLimitSeconds
+        )
     }
 }
 
@@ -82,7 +99,7 @@ function Assert-QmTask {
     }
     $action = @($Task.Actions)[0]
     if (-not (ConvertTo-QmFullPath $action.Execute 'action executable').Equals(
-            $Contract.Python, [StringComparison]::OrdinalIgnoreCase) -or
+            $Contract.PowerShell, [StringComparison]::OrdinalIgnoreCase) -or
         [string]$action.Arguments -cne $Contract.Arguments -or
         -not (ConvertTo-QmFullPath $action.WorkingDirectory 'working directory').Equals(
             $Contract.Repo, [StringComparison]::OrdinalIgnoreCase)) {
@@ -94,6 +111,31 @@ function Assert-QmTask {
         -not [bool]$Task.Settings.Enabled) {
         throw "Scheduled task '$TaskName' settings drifted."
     }
+}
+
+function Remove-QmTaskRegistration {
+    param($Contract, $Identity)
+    $removed = $false
+    for ($attempt = 1; $attempt -le 3; $attempt++) {
+        try {
+            $registered = Get-ScheduledTask -TaskName $TaskName -TaskPath '\' -ErrorAction SilentlyContinue
+            if ($null -eq $registered) {
+                return $(if ($removed) {'UNREGISTERED'} else {'ALREADY_ABSENT'})
+            }
+            Assert-QmTask $registered $Contract $Identity
+            Unregister-ScheduledTask -TaskName $TaskName -TaskPath '\' -Confirm:$false -ErrorAction Stop
+            $removed = $true
+            $remaining = Get-ScheduledTask -TaskName $TaskName -TaskPath '\' -ErrorAction SilentlyContinue
+            if ($null -eq $remaining) {
+                return 'UNREGISTERED'
+            }
+            throw "Scheduled task '$TaskName' still exists after Unregister."
+        } catch {
+            if ($attempt -eq 3) {throw}
+            Start-Sleep -Milliseconds 200
+        }
+    }
+    throw "Scheduled task '$TaskName' cleanup exhausted unexpectedly."
 }
 
 function Get-QmMetadata {
@@ -127,9 +169,46 @@ if ([string]::IsNullOrWhiteSpace($TaskName)) {throw 'TaskName is required.'}
 $contract = Get-QmContract
 $task = Get-ScheduledTask -TaskName $TaskName -TaskPath '\' -ErrorAction SilentlyContinue
 
+if ($Operation -eq 'RunWorker') {
+    if ($null -eq $task) {throw "Scheduled task '$TaskName' does not exist at worker entry."}
+    Assert-QmTask $task $contract $identity
+    $workerExitCode = 2
+    try {
+        & $contract.Python $contract.Tool '_run-plan' '--job' $contract.Job
+        $workerExitCode = if ($null -eq $LASTEXITCODE) {2} else {[int]$LASTEXITCODE}
+    } catch {
+        $workerExitCode = 2
+    } finally {
+        # This wrapper owns cleanup independently of Python.  The worker also
+        # unregisters in its finally path; removal is deliberately idempotent.
+        Remove-QmTaskRegistration $contract $identity | Out-Null
+    }
+    exit $workerExitCode
+}
+
+if ($Operation -eq 'Unregister') {
+    $cleanup = Remove-QmTaskRegistration $contract $identity
+    [ordered]@{
+        operation='Unregister'
+        task_name=$TaskName
+        task_path='\'
+        state='Absent'
+        exists=$false
+        cleanup=$cleanup
+        principal_sid=$identity.Sid
+        logon_type='S4U'
+        run_level='Highest'
+        multiple_instances='IgnoreNew'
+        execution_limit_seconds=$ExecutionLimitSeconds
+        last_run_utc=$null
+        last_task_result=$null
+    } | ConvertTo-Json -Depth 3 -Compress
+    exit 0
+}
+
 if ($Operation -eq 'Register') {
     if ($null -eq $task) {
-        $action = New-ScheduledTaskAction -Execute $contract.Python -Argument $contract.Arguments -WorkingDirectory $contract.Repo
+        $action = New-ScheduledTaskAction -Execute $contract.PowerShell -Argument $contract.Arguments -WorkingDirectory $contract.Repo
         $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries `
             -StartWhenAvailable -Hidden -ExecutionTimeLimit (New-TimeSpan -Seconds $ExecutionLimitSeconds) `
             -MultipleInstances IgnoreNew

@@ -38,7 +38,6 @@ input int    strategy_pivot_h1_bars       = 24;
 input int    strategy_m15_pivot_lookback  = 96;
 input int    strategy_max_spread_points   = 35;
 
-int      g_entry_day_key   = -1;
 double   g_tp1_price       = 0.0;
 double   g_initial_volume  = 0.0;
 bool     g_partial_done    = false;
@@ -69,11 +68,66 @@ bool Strategy_InLondonKillzone(const datetime t)
    return (hhmm >= 900 && hhmm < 1200);
   }
 
-double Strategy_NormalizePrice(const double price)
+datetime Strategy_DayStart(const datetime t)
   {
-   if(price <= 0.0)
-      return 0.0;
-   return NormalizeDouble(price, (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS));
+   MqlDateTime dt;
+   TimeToStruct(t, dt);
+   dt.hour = 0;
+   dt.min = 0;
+   dt.sec = 0;
+   return StructToTime(dt);
+  }
+
+int Strategy_SecondsUntilLondonKillzoneEnd(const datetime t)
+  {
+   MqlDateTime dt;
+   TimeToStruct(t, dt);
+   dt.hour = 12;
+   dt.min = 0;
+   dt.sec = 0;
+   const datetime killzone_end = StructToTime(dt);
+   if(killzone_end <= t)
+      return 0;
+   return (int)(killzone_end - t);
+  }
+
+// Align every executable price to SYMBOL_TRADE_TICK_SIZE before geometry is
+// judged. For a buy, floor is conservative for the limit, stop and targets;
+// for a sell, ceil is the corresponding conservative direction.
+bool Strategy_QuantizeDirectionalPrice(const double raw_price,
+                                       const double tick_size,
+                                       const int direction,
+                                       double &quantized_price)
+  {
+   quantized_price = 0.0;
+   if(raw_price <= 0.0 || !MathIsValidNumber(raw_price) ||
+      tick_size <= 0.0 || !MathIsValidNumber(tick_size) ||
+      (direction != 1 && direction != -1))
+      return false;
+
+   const double tick_units = raw_price / tick_size;
+   if(!MathIsValidNumber(tick_units))
+      return false;
+
+   const double rounded_units = (direction > 0)
+                                ? MathFloor(tick_units + 1e-12)
+                                : MathCeil(tick_units - 1e-12);
+   const double candidate = NormalizeDouble(rounded_units * tick_size, _Digits);
+   if(candidate <= 0.0 || !MathIsValidNumber(candidate))
+      return false;
+
+   // QM_Entry formats to digits again. Prove that this value remains both on
+   // the executable grid and on the requested conservative side.
+   const double candidate_units = candidate / tick_size;
+   const double side_tolerance = tick_size * 1e-9;
+   if(!MathIsValidNumber(candidate_units) ||
+      MathAbs(candidate_units - MathRound(candidate_units)) > 1e-8 ||
+      (direction > 0 && candidate > raw_price + side_tolerance) ||
+      (direction < 0 && candidate < raw_price - side_tolerance))
+      return false;
+
+   quantized_price = candidate;
+   return true;
   }
 
 bool Strategy_LoadRates(const ENUM_TIMEFRAMES tf,
@@ -119,6 +173,62 @@ bool Strategy_HasPendingOrder()
       if(type == ORDER_TYPE_BUY_LIMIT || type == ORDER_TYPE_SELL_LIMIT)
          return true;
      }
+   return false;
+  }
+
+bool Strategy_IsEntryLimitType(const ENUM_ORDER_TYPE type)
+  {
+   return (type == ORDER_TYPE_BUY_LIMIT || type == ORDER_TYPE_SELL_LIMIT);
+  }
+
+// Restart-persistent one-entry-per-broker-day lock. Active exposure is read
+// from the live pools; accepted/finished limit orders and filled entries are
+// read from terminal history. A history-read failure blocks a new entry.
+bool Strategy_DailyEntryLocked(const datetime broker_now)
+  {
+   if(Strategy_HasOpenPosition() || Strategy_HasPendingOrder())
+      return true;
+
+   const int magic = QM_FrameworkMagic();
+   const datetime day_start = Strategy_DayStart(broker_now);
+   const int day_key = Strategy_DayKey(broker_now);
+   if(magic <= 0 || day_start <= 0 || !HistorySelect(day_start, broker_now))
+      return true;
+
+   for(int i = HistoryOrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = HistoryOrderGetTicket(i);
+      if(ticket == 0)
+         continue;
+      if(HistoryOrderGetString(ticket, ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)HistoryOrderGetInteger(ticket, ORDER_MAGIC) != magic)
+         continue;
+      const datetime setup_time = (datetime)HistoryOrderGetInteger(ticket, ORDER_TIME_SETUP);
+      if(Strategy_DayKey(setup_time) != day_key)
+         continue;
+      const ENUM_ORDER_TYPE type = (ENUM_ORDER_TYPE)HistoryOrderGetInteger(ticket, ORDER_TYPE);
+      if(Strategy_IsEntryLimitType(type))
+         return true;
+     }
+
+   for(int i = HistoryDealsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = HistoryDealGetTicket(i);
+      if(ticket == 0)
+         continue;
+      if(HistoryDealGetString(ticket, DEAL_SYMBOL) != _Symbol)
+         continue;
+      if((int)HistoryDealGetInteger(ticket, DEAL_MAGIC) != magic)
+         continue;
+      const datetime deal_time = (datetime)HistoryDealGetInteger(ticket, DEAL_TIME);
+      if(Strategy_DayKey(deal_time) != day_key)
+         continue;
+      const ENUM_DEAL_ENTRY entry = (ENUM_DEAL_ENTRY)HistoryDealGetInteger(ticket, DEAL_ENTRY);
+      if(entry == DEAL_ENTRY_IN || entry == DEAL_ENTRY_INOUT)
+         return true;
+     }
+
    return false;
   }
 
@@ -259,7 +369,7 @@ bool Strategy_FindBullishSetup(const MqlRates &m15[],
    if(pool_below <= 0.0)
       return false;
 
-   for(int s = 2; s <= strategy_mss_max_bars + 1 && s < ArraySize(m15); ++s)
+   for(int s = 2; s <= strategy_mss_max_bars && s < ArraySize(m15); ++s)
      {
       if(!Strategy_InLondonKillzone(m15[s].time))
          continue;
@@ -303,7 +413,7 @@ bool Strategy_FindBearishSetup(const MqlRates &m15[],
    if(pool_above >= DBL_MAX)
       return false;
 
-   for(int s = 2; s <= strategy_mss_max_bars + 1 && s < ArraySize(m15); ++s)
+   for(int s = 2; s <= strategy_mss_max_bars && s < ArraySize(m15); ++s)
      {
       if(!Strategy_InLondonKillzone(m15[s].time))
          continue;
@@ -338,7 +448,7 @@ bool Strategy_FindBearishSetup(const MqlRates &m15[],
 bool Strategy_NoTradeFilter()
   {
    if(Strategy_HasOpenPosition() || Strategy_HasPendingOrder())
-      return false;
+      return true;
    if(!Strategy_InLondonKillzone(TimeCurrent()))
       return true;
    if(!Strategy_SpreadOK())
@@ -371,7 +481,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const int day_key = Strategy_DayKey(m15[0].time);
-   if(g_entry_day_key == day_key)
+   const datetime broker_now = TimeCurrent();
+   if(Strategy_DayKey(broker_now) != day_key || Strategy_DailyEntryLocked(broker_now))
       return false;
 
    double pool_below, pool_above;
@@ -379,8 +490,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const double atr = QM_ATR(_Symbol, PERIOD_M15, strategy_atr_period, 1);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(atr <= 0.0 || point <= 0.0)
+   const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
+   if(atr <= 0.0 || !MathIsValidNumber(atr) ||
+      tick_size <= 0.0 || !MathIsValidNumber(tick_size))
       return false;
 
    int sweep_shift = -1;
@@ -398,44 +510,68 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(ask <= 0.0 || bid <= 0.0)
       return false;
 
-   entry = Strategy_NormalizePrice(entry);
+   const int direction = is_long ? 1 : -1;
+   double entry_price = 0.0;
+   if(!Strategy_QuantizeDirectionalPrice(entry, tick_size, direction, entry_price))
+      return false;
+   entry = entry_price;
    if(is_long && entry >= ask)
       return false;
    if(!is_long && entry <= bid)
       return false;
 
-   const double sl = is_long
-                     ? Strategy_NormalizePrice(sweep_extreme - atr * strategy_atr_buffer_mult)
-                     : Strategy_NormalizePrice(sweep_extreme + atr * strategy_atr_buffer_mult);
-   if(sl <= 0.0)
+   const double raw_sl = is_long
+                         ? (sweep_extreme - atr * strategy_atr_buffer_mult)
+                         : (sweep_extreme + atr * strategy_atr_buffer_mult);
+   double sl = 0.0;
+   if(!Strategy_QuantizeDirectionalPrice(raw_sl, tick_size, direction, sl))
       return false;
 
    const double risk = MathAbs(entry - sl);
-   if(risk <= 0.0 || risk > atr * strategy_max_risk_atr_mult)
+   const bool stop_geometry_valid = is_long ? (sl < entry) : (sl > entry);
+   if(!stop_geometry_valid || risk <= 0.0 || risk > atr * strategy_max_risk_atr_mult)
       return false;
 
-   const double rr2 = is_long ? (entry + 2.0 * risk) : (entry - 2.0 * risk);
-   const double rr3 = is_long ? (entry + 3.0 * risk) : (entry - 3.0 * risk);
-   double tp1 = rr2;
+   const double raw_rr2 = is_long ? (entry + 2.0 * risk) : (entry - 2.0 * risk);
+   const double raw_rr3 = is_long ? (entry + 3.0 * risk) : (entry - 3.0 * risk);
+   double raw_tp1 = raw_rr2;
    if(is_long && pool_above < DBL_MAX)
-      tp1 = MathMin(pool_above, rr2);
+      raw_tp1 = MathMin(pool_above, raw_rr2);
    if(!is_long && pool_below > 0.0)
-      tp1 = MathMax(pool_below, rr2);
-   if(is_long && tp1 <= entry)
-      tp1 = rr2;
-   if(!is_long && tp1 >= entry)
-      tp1 = rr2;
+      raw_tp1 = MathMax(pool_below, raw_rr2);
+   if(is_long && raw_tp1 <= entry)
+      raw_tp1 = raw_rr2;
+   if(!is_long && raw_tp1 >= entry)
+      raw_tp1 = raw_rr2;
+
+   double tp1 = 0.0;
+   double tp3 = 0.0;
+   if(!Strategy_QuantizeDirectionalPrice(raw_tp1, tick_size, direction, tp1) ||
+      !Strategy_QuantizeDirectionalPrice(raw_rr3, tick_size, direction, tp3))
+      return false;
+   const bool target_geometry_valid = is_long
+                                      ? (tp1 > entry && tp3 > entry)
+                                      : (tp1 < entry && tp3 < entry);
+   if(!target_geometry_valid)
+      return false;
+
+   const long requested_expiration = (long)strategy_order_valid_bars *
+                                     (long)PeriodSeconds(PERIOD_M15);
+   const int killzone_expiration = Strategy_SecondsUntilLondonKillzoneEnd(broker_now);
+   if(requested_expiration <= 0 || killzone_expiration <= 0)
+      return false;
 
    req.type = is_long ? QM_BUY_LIMIT : QM_SELL_LIMIT;
    req.price = entry;
    req.sl = sl;
-   req.tp = Strategy_NormalizePrice(rr3);
+   req.tp = tp3;
    req.reason = is_long ? "ICT_LONDON_KZ_SWEEP_FVG_LONG" : "ICT_LONDON_KZ_SWEEP_FVG_SHORT";
    req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = strategy_order_valid_bars * PeriodSeconds(PERIOD_M15);
+   req.expiration_seconds = (requested_expiration < (long)killzone_expiration)
+                            ? (int)requested_expiration
+                            : killzone_expiration;
 
-   g_entry_day_key = day_key;
-   g_tp1_price = Strategy_NormalizePrice(tp1);
+   g_tp1_price = tp1;
    g_initial_volume = 0.0;
    g_partial_done = false;
    return true;
@@ -541,25 +677,16 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
-   const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
-   if(Strategy_NoTradeFilter())
-      return;
-
+   // Management and hard exits are safety paths, not entry paths. They must
+   // continue through news blackouts and outside the London entry window.
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -580,6 +707,23 @@ void OnTick()
       return;
 
    QM_EquityStreamOnNewBar();
+
+   if(Strategy_NoTradeFilter())
+      return;
+
+   // News suppresses NEW orders only. QM_Entry repeats the same check at the
+   // send boundary, retaining fail-closed protection against an intra-call
+   // calendar-state change.
+   const datetime broker_now = TimeCurrent();
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))

@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import ast
 import importlib.util
 import json
 import sqlite3
 import sys
 import tempfile
 import unittest
+from contextlib import nullcontext
 from datetime import datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
@@ -24,6 +26,20 @@ assert SPEC is not None and SPEC.loader is not None
 A = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = A
 SPEC.loader.exec_module(A)
+
+
+def function_source(name: str) -> str:
+    source = TOOL.read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    node = next(
+        item
+        for item in tree.body
+        if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef))
+        and item.name == name
+    )
+    rendered = ast.get_source_segment(source, node)
+    assert rendered is not None
+    return rendered
 
 
 def trade(sequence: int, native: str, adjusted: str, *, day: int) -> object:
@@ -165,6 +181,228 @@ class NdxPrescreenContractTests(unittest.TestCase):
         self.assertNotIn("Win32_Process.CommandLine", text)
         self.assertNotIn("SELECT CommandLine", text)
         self.assertIn('"command_lines_read": False', text)
+
+    def test_worker_is_outcome_blind_and_main_never_delegates_to_base_worker(self) -> None:
+        worker = function_source("_worker_run")
+        for forbidden in (
+            "_BASE_WORKER_RUN",
+            "B._worker_run",
+            "_parse_dev2_controller_json",
+            "_audit_cell",
+            ".read_text(",
+            "runner_result =",
+        ):
+            self.assertNotIn(forbidden, worker)
+        worker_tree = ast.parse(worker)
+        load_json_args = {
+            ast.unparse(call.args[0])
+            for call in ast.walk(worker_tree)
+            if isinstance(call, ast.Call)
+            and isinstance(call.func, ast.Attribute)
+            and isinstance(call.func.value, ast.Name)
+            and call.func.value.id == "B"
+            and call.func.attr == "load_json"
+            and call.args
+        }
+        self.assertEqual(load_json_args, {"job_path", "state_path"})
+
+        post = function_source("postflight")
+        self.assertIn("stdout_path.read_text", post)
+        self.assertIn("B._parse_dev2_controller_json", post)
+        self.assertIn("B._audit_cell", post)
+        main = function_source("main")
+        self.assertIn("return _worker_run(args.job)", main)
+        self.assertNotIn("_BASE_WORKER_RUN", TOOL.read_text(encoding="utf-8"))
+
+    def test_opaque_sealer_hashes_files_without_text_or_json_reads(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            output_root = root / "controller"
+            native_root = root / "20260721T120000Z_0123456789abcdef0123456789abcdef"
+            summary = native_root / "output" / "smoke" / "QM5_13209" / "run" / "summary.json"
+            native_result = native_root / "output" / "result.json"
+            report = summary.parent / "raw" / "run_01" / "report.htm"
+            stdout = output_root / "controller.stdout.log"
+            stderr = output_root / "controller.stderr.log"
+            for path, payload in (
+                (summary, b'{"opaque":"summary"}'),
+                (native_result, b'{"opaque":"result"}'),
+                (report, b"<html>opaque</html>"),
+                (stdout, b'{"opaque":"controller"}'),
+                (stderr, b""),
+            ):
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(payload)
+            attempt: dict[str, object] = {}
+            with mock.patch.object(A.B, "_find_dev2_summary", return_value=summary), mock.patch.object(
+                Path,
+                "read_text",
+                side_effect=AssertionError("outcome content read before POST"),
+            ):
+                A._seal_controller_attempt(output_root, native_root, attempt)
+            self.assertEqual(attempt["runner_result"], None)
+            self.assertFalse(attempt["controller_output_opened"])
+            self.assertFalse(attempt["native_output_opened"])
+            self.assertEqual(attempt["native_result"], A.B.file_binding(native_result))
+            self.assertEqual(attempt["summary"], A.B.file_binding(summary))
+            sealed_paths = {row["path"] for row in attempt["sealed_artifacts"]}
+            self.assertEqual(
+                sealed_paths,
+                {str(path.resolve()) for path in (summary, native_result, report, stdout, stderr)},
+            )
+
+    def test_launch_state_and_receipt_artifact_types_are_qm13209_specific(self) -> None:
+        self.assertEqual(A.JOB_ARTIFACT_TYPE, "QM5_13209_NDX_PRESCREEN_NATIVE_LAUNCH_JOB")
+        self.assertEqual(A.STATE_ARTIFACT_TYPE, "QM5_13209_NDX_PRESCREEN_NATIVE_LAUNCH_STATE")
+        self.assertEqual(
+            A.POST_ARTIFACT_TYPE,
+            "QM5_13209_NDX_PRESCREEN_OUTCOME_FENCED_POST_RECEIPT",
+        )
+        source = TOOL.read_text(encoding="utf-8")
+        for inherited in (
+            "QM5_10834_NATIVE_LAUNCH_JOB",
+            "QM5_10834_NATIVE_LAUNCH_STATE",
+            "QM5_10834_OUTCOME_FENCED_POST_RECEIPT",
+        ):
+            self.assertNotIn(inherited, source)
+        invalid = A.invalid_receipt("POST", A.InvalidEvidence("test"))
+        self.assertEqual(
+            invalid["artifact_type"], "QM5_13209_NDX_PRESCREEN_POST_INVALID"
+        )
+
+    def test_scheduler_unregister_is_idempotent_and_helper_has_delete_path(self) -> None:
+        pre: dict[str, object] = {}
+        job = {"scheduler": {"task_name": "QM_QM13209_NDX_AUDIT_" + "a" * 24}}
+        responses = [
+            {"state": "Absent", "exists": False, "cleanup": "UNREGISTERED"},
+            {"state": "Absent", "exists": False, "cleanup": "ALREADY_ABSENT"},
+        ]
+        with mock.patch.object(A.B, "_scheduler_call", side_effect=responses) as call:
+            first = A._unregister_scheduler(pre, job)
+            second = A._unregister_scheduler(pre, job)
+        self.assertEqual((first["status"], first["cleanup"]), ("PASS", "UNREGISTERED"))
+        self.assertEqual((second["status"], second["cleanup"]), ("PASS", "ALREADY_ABSENT"))
+        self.assertEqual(
+            [entry.args[1] for entry in call.call_args_list],
+            ["Unregister", "Unregister"],
+        )
+        helper = A.SCHEDULED_TASK_HELPER_PATH.read_text(encoding="utf-8")
+        for required in (
+            "'Unregister'",
+            "'RunWorker'",
+            "Unregister-ScheduledTask",
+            "finally",
+            "UNREGISTERED",
+            "ALREADY_ABSENT",
+        ):
+            self.assertIn(required, helper)
+
+    def test_partial_register_and_start_failures_unregister_without_relaunch(self) -> None:
+        for failing_operation, expected_operations in (
+            ("Register", ["Identity", "Register", "Unregister"]),
+            ("Start", ["Identity", "Register", "Start", "Unregister"]),
+        ):
+            with self.subTest(failing_operation=failing_operation), tempfile.TemporaryDirectory() as temp:
+                root = Path(temp)
+                pre_path = root / "pre.json"
+                authorization_path = root / "authorization.json"
+                state_path = root / "state.json"
+                job_path = root / "launch_job.json"
+                claim_path = root / "claim.json"
+                lock_path = root / "lock"
+                pre = {
+                    "plan": {"plan_sha256": "1" * 64},
+                    "bindings": {
+                        "scheduled_task_helper": {"path": "helper"},
+                        "python": {"path": "python"},
+                        "tool": {"path": "tool"},
+                    },
+                }
+                authorization = {
+                    "binding": {"path": str(authorization_path), "size": 1, "sha256": "2" * 64},
+                    "payload_sha256": "3" * 64,
+                }
+                operations: list[str] = []
+                task_name = "QM_QM13209_NDX_AUDIT_" + "b" * 24
+
+                def scheduler_call(_pre: object, operation: str, _job: object = None) -> dict[str, object]:
+                    operations.append(operation)
+                    if operation == "Identity":
+                        return {"principal_sid": "S-1-5-21-1"}
+                    if operation == failing_operation:
+                        raise A.AuthorizationError(f"synthetic {operation} failure")
+                    if operation == "Unregister":
+                        return {
+                            "state": "Absent",
+                            "exists": False,
+                            "cleanup": "UNREGISTERED",
+                        }
+                    return {"state": "Ready"}
+
+                def pending_state(*_args: object, **_kwargs: object) -> dict[str, object]:
+                    return {
+                        "artifact_type": A.STATE_ARTIFACT_TYPE,
+                        "analysis_id": A.ANALYSIS_ID,
+                        "status": "PENDING",
+                        "worker_pid": None,
+                        "scheduler_cleanup": {"status": "PENDING"},
+                    }
+
+                with mock.patch.multiple(
+                    A,
+                    PRE_RECEIPT_PATH=pre_path,
+                    AUTHORIZATION_PATH=authorization_path,
+                    STATE_PATH=state_path,
+                    JOB_PATH=job_path,
+                    CLAIM_PATH=claim_path,
+                    LOCK_PATH=lock_path,
+                ), mock.patch.object(A.B, "native_launch_lock", return_value=nullcontext()), mock.patch.object(
+                    A, "assert_pre_receipt", return_value=pre
+                ), mock.patch.object(
+                    A, "validate_current_research_data_gate"
+                ), mock.patch.object(
+                    A, "validate_authorization", return_value=authorization
+                ), mock.patch.object(
+                    A, "_validate_launch_job"
+                ), mock.patch.object(
+                    A, "initial_launch_state", side_effect=pending_state
+                ), mock.patch.object(
+                    A.B, "scheduled_task_name", return_value=task_name
+                ), mock.patch.object(
+                    A.B, "required_scheduled_task_timeout", return_value=3600
+                ), mock.patch.object(
+                    A.B, "_scheduler_call", side_effect=scheduler_call
+                ):
+                    with self.assertRaises(A.AuthorizationError):
+                        A.launch_detached(
+                            pre_path,
+                            "4" * 64,
+                            authorization_path,
+                            state_path,
+                            resume=False,
+                        )
+                self.assertEqual(operations, expected_operations)
+                terminal = A.B.load_json(state_path)
+                self.assertEqual(terminal["status"], "INVALID_LAUNCH")
+                self.assertEqual(terminal["scheduler_cleanup"]["status"], "PASS")
+                self.assertEqual(terminal["scheduler_cleanup"]["state"], "Absent")
+
+    def test_cleanup_failure_invalidates_even_a_complete_worker_state(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            state_path = Path(temp) / "state.json"
+            A.B.atomic_json(
+                state_path,
+                {"status": "COMPLETE", "worker_pid": 123, "scheduler_cleanup": {}},
+                replace=False,
+            )
+            A._persist_scheduler_cleanup(
+                state_path,
+                {"status": "FAIL", "operation": "Unregister", "state": "UNKNOWN"},
+                launch_failure=False,
+            )
+            state = A.B.load_json(state_path)
+            self.assertEqual(state["status"], "INVALID_SCHEDULER_CLEANUP")
+            self.assertIsNone(state["worker_pid"])
 
 
 if __name__ == "__main__":

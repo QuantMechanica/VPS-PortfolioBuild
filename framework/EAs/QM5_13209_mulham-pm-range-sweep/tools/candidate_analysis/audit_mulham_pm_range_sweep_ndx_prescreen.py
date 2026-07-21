@@ -10,9 +10,11 @@ first phase allowed to parse reports or economic outcomes.
 from __future__ import annotations
 
 import argparse
+import copy
 import csv
 import importlib.util
 import json
+import os
 import re
 import sqlite3
 import subprocess
@@ -168,9 +170,10 @@ AuthorizationError = B.AuthorizationError
 TradeRecord = B.TradeRecord
 
 _BASE_RUNNER_COMMAND = B.runner_command
-_BASE_WORKER_RUN = B._worker_run
-_BASE_POSTFLIGHT = B.postflight
-_BASE_LAUNCH_DETACHED = B.launch_detached
+
+JOB_ARTIFACT_TYPE = "QM5_13209_NDX_PRESCREEN_NATIVE_LAUNCH_JOB"
+STATE_ARTIFACT_TYPE = "QM5_13209_NDX_PRESCREEN_NATIVE_LAUNCH_STATE"
+POST_ARTIFACT_TYPE = "QM5_13209_NDX_PRESCREEN_OUTCOME_FENCED_POST_RECEIPT"
 
 
 def _exact_binding(path: Path, expected: Mapping[str, Any], label: str) -> dict[str, Any]:
@@ -799,6 +802,162 @@ def _native_attempt_claim_basis(
     }
 
 
+def _validate_launch_job(
+    job: Mapping[str, Any],
+    pre: Mapping[str, Any],
+    pre_path: Path,
+    pre_sha256: str,
+    state_path: Path,
+) -> None:
+    scheduler = job.get("scheduler")
+    if not isinstance(scheduler, Mapping):
+        raise AuthorizationError("launch job scheduler is missing")
+    expected_scheduler = {
+        "mode": "WINDOWS_TASK_SCHEDULER_S4U_ON_DEMAND",
+        "task_name": B.scheduled_task_name(pre_sha256, state_path),
+        "task_path": "\\",
+        "principal_sid": str(scheduler.get("principal_sid", "")),
+        "logon_type": "S4U",
+        "run_level": "Highest",
+        "multiple_instances": "IgnoreNew",
+        "execution_limit_seconds": B.required_scheduled_task_timeout(pre),
+        "helper": pre["bindings"]["scheduled_task_helper"],
+        "python": pre["bindings"]["python"],
+    }
+    expected = {
+        "schema_version": 1,
+        "launcher_revision": 1320901,
+        "artifact_type": JOB_ARTIFACT_TYPE,
+        "analysis_id": ANALYSIS_ID,
+        "pre_receipt_path": str(pre_path.resolve()),
+        "pre_receipt_sha256": pre_sha256.lower(),
+        "state_path": str(state_path.resolve()),
+        "plan_sha256": pre["plan"]["plan_sha256"],
+        "tool": pre["bindings"]["tool"],
+        "scheduler": expected_scheduler,
+    }
+    if set(job) != {*expected, "created_utc", "authorization"} or any(
+        job.get(key) != value for key, value in expected.items()
+    ):
+        raise AuthorizationError("QM13209 launch job identity drift")
+    if not expected_scheduler["principal_sid"].startswith("S-1-"):
+        raise AuthorizationError("launch principal SID is malformed")
+    authorization = job.get("authorization")
+    if (
+        not isinstance(authorization, Mapping)
+        or set(authorization) != {"binding", "payload_sha256"}
+        or not isinstance(authorization.get("binding"), Mapping)
+        or not re.fullmatch(r"[0-9a-f]{64}", str(authorization.get("payload_sha256", "")))
+    ):
+        raise AuthorizationError("launch authorization identity is malformed")
+    created = B.parse_utc(str(job.get("created_utc", "")), "launch job created_utc")
+    if created > datetime.now(timezone.utc) + timedelta(minutes=5):
+        raise AuthorizationError("launch job is future-dated")
+
+
+def initial_launch_state(
+    pre_path: Path,
+    pre_sha256: str,
+    pre: Mapping[str, Any],
+    job_binding: Mapping[str, Any],
+    authorization: Mapping[str, Any],
+    scheduler: Mapping[str, Any],
+) -> dict[str, Any]:
+    now = B.utc_now()
+    return {
+        "schema_version": 1,
+        "launcher_revision": 1320901,
+        "artifact_type": STATE_ARTIFACT_TYPE,
+        "analysis_id": ANALYSIS_ID,
+        "status": "PENDING",
+        "created_utc": now,
+        "updated_utc": now,
+        "started_utc": None,
+        "finished_utc": None,
+        "pre_receipt_path": str(pre_path.resolve()),
+        "pre_receipt_sha256": pre_sha256.lower(),
+        "plan_sha256": pre["plan"]["plan_sha256"],
+        "job": dict(job_binding),
+        "authorization": {
+            "binding": dict(authorization["binding"]),
+            "payload_sha256": authorization["payload_sha256"],
+        },
+        "scheduler": dict(scheduler),
+        "scheduler_cleanup": {"status": "PENDING", "operation": "Unregister"},
+        "worker_pid": None,
+        "active_cell": None,
+        "attempt_claim": None,
+        "preclaim_probe": None,
+        "outcome_possible_since_utc": None,
+        "launches": [],
+        "outcome_fence": {
+            "worker_opens_controller_stdout": False,
+            "worker_opens_controller_stderr": False,
+            "worker_opens_native_reports": False,
+            "worker_parses_market_values": False,
+            "worker_seals_paths_types_sizes_hashes_only": True,
+            "post_is_first_controller_and_native_outcome_reader": True,
+        },
+        "cells": [
+            {
+                "cell_id": cell["cell_id"],
+                "status": "PENDING",
+                "command_sha256": B.canonical_sha256(runner_command(pre, cell)),
+                "attempts": [],
+            }
+            for cell in pre["plan"]["cells"]
+        ],
+    }
+
+
+def _unregister_scheduler(pre: Mapping[str, Any], job: Mapping[str, Any]) -> dict[str, Any]:
+    try:
+        result = B._scheduler_call(pre, "Unregister", job)
+        if (
+            result.get("state") != "Absent"
+            or result.get("exists") is not False
+            or result.get("cleanup") not in {"UNREGISTERED", "ALREADY_ABSENT"}
+        ):
+            raise InvalidEvidence("scheduler Unregister did not prove absence")
+        return {
+            "status": "PASS",
+            "operation": "Unregister",
+            "task_name": job["scheduler"]["task_name"],
+            "state": "Absent",
+            "cleanup": result["cleanup"],
+            "completed_utc": B.utc_now(),
+        }
+    except (B.AuditError, OSError, subprocess.SubprocessError, KeyError, TypeError, ValueError) as exc:
+        return {
+            "status": "FAIL",
+            "operation": "Unregister",
+            "task_name": str(job.get("scheduler", {}).get("task_name", "")),
+            "state": "UNKNOWN",
+            "error_type": type(exc).__name__,
+            "completed_utc": B.utc_now(),
+        }
+
+
+def _persist_scheduler_cleanup(
+    state_path: Path,
+    cleanup: Mapping[str, Any],
+    *,
+    launch_failure: bool,
+) -> None:
+    if not state_path.is_file():
+        return
+    state = B.load_json(state_path)
+    state["scheduler_cleanup"] = dict(cleanup)
+    state["worker_pid"] = None
+    if cleanup.get("status") != "PASS":
+        state["status"] = "INVALID_SCHEDULER_CLEANUP"
+    elif launch_failure and state.get("status") in {"PENDING", "RUNNING"}:
+        state["status"] = "INVALID_LAUNCH"
+        state["finished_utc"] = state.get("finished_utc") or B.utc_now()
+    state["updated_utc"] = B.utc_now()
+    B.atomic_json(state_path, state, replace=True)
+
+
 def launch_detached(
     pre_path: Path,
     pre_sha256: str,
@@ -815,10 +974,308 @@ def launch_detached(
         (state_path, STATE_PATH, "launch state"),
     ):
         _assert_exact_control(observed, expected, label)
-    if CLAIM_PATH.exists() or STATE_PATH.exists() or JOB_PATH.exists():
-        raise AuthorizationError("one-shot NDX prescreen is already consumed")
-    assert_dev2_quiescence()
-    return _BASE_LAUNCH_DETACHED(pre_path, pre_sha256, authorization_path, state_path, resume=False)
+    with B.native_launch_lock():
+        if CLAIM_PATH.exists() or STATE_PATH.exists() or JOB_PATH.exists():
+            raise AuthorizationError("one-shot NDX prescreen is already consumed")
+        pre = assert_pre_receipt(pre_path, pre_sha256)
+        validate_current_research_data_gate(pre)
+        authorization = validate_authorization(authorization_path, pre_sha256)
+        authorization_identity = {
+            "binding": authorization["binding"],
+            "payload_sha256": authorization["payload_sha256"],
+        }
+        identity = B._scheduler_call(pre, "Identity")
+        scheduler = {
+            "mode": "WINDOWS_TASK_SCHEDULER_S4U_ON_DEMAND",
+            "task_name": B.scheduled_task_name(pre_sha256, state_path),
+            "task_path": "\\",
+            "principal_sid": identity["principal_sid"],
+            "logon_type": "S4U",
+            "run_level": "Highest",
+            "multiple_instances": "IgnoreNew",
+            "execution_limit_seconds": B.required_scheduled_task_timeout(pre),
+            "helper": pre["bindings"]["scheduled_task_helper"],
+            "python": pre["bindings"]["python"],
+        }
+        job = {
+            "schema_version": 1,
+            "launcher_revision": 1320901,
+            "artifact_type": JOB_ARTIFACT_TYPE,
+            "analysis_id": ANALYSIS_ID,
+            "created_utc": B.utc_now(),
+            "pre_receipt_path": str(pre_path.resolve()),
+            "pre_receipt_sha256": pre_sha256.lower(),
+            "state_path": str(state_path.resolve()),
+            "plan_sha256": pre["plan"]["plan_sha256"],
+            "authorization": authorization_identity,
+            "tool": pre["bindings"]["tool"],
+            "scheduler": scheduler,
+        }
+        _validate_launch_job(job, pre, pre_path, pre_sha256, state_path)
+        B.atomic_json(JOB_PATH, job, replace=False)
+        state = initial_launch_state(
+            pre_path,
+            pre_sha256,
+            pre,
+            B.file_binding(JOB_PATH),
+            authorization,
+            scheduler,
+        )
+        B.atomic_json(state_path, state, replace=False)
+        try:
+            B._scheduler_call(pre, "Register", job)
+            started = B._scheduler_call(pre, "Start", job)
+        except (B.AuditError, OSError, subprocess.SubprocessError, KeyError, TypeError, ValueError) as exc:
+            cleanup = _unregister_scheduler(pre, job)
+            _persist_scheduler_cleanup(state_path, cleanup, launch_failure=True)
+            raise AuthorizationError("persistent one-shot task registration/start failed and cleanup was attempted") from exc
+        observed = B.load_json(state_path)
+        return {
+            "status": "LAUNCHED_PERSISTED_ONE_SHOT_TASK",
+            "task_name": scheduler["task_name"],
+            "scheduler_state": started.get("state"),
+            "worker_pid": observed.get("worker_pid"),
+            "state": str(state_path.resolve()),
+            "job": str(JOB_PATH.resolve()),
+        }
+
+
+def _dev2_run_directories() -> set[Path]:
+    root = B.DEV2_RUNS_ROOT.resolve()
+    if not root.is_dir():
+        raise InvalidEvidence("DEV2 runs root is missing")
+    return {item.resolve() for item in root.iterdir() if item.is_dir()}
+
+
+def _opaque_native_root(before: set[Path]) -> Path:
+    after = _dev2_run_directories()
+    created = sorted(after - before, key=lambda item: str(item).casefold())
+    if len(created) != 1 or not re.fullmatch(
+        r"[0-9]{8}T[0-9]{6}Z_[0-9a-f]{32}", created[0].name
+    ):
+        raise InvalidEvidence("controller did not create exactly one opaque DEV2 run root")
+    return created[0]
+
+
+def _seal_controller_attempt(
+    output_root: Path,
+    native_root: Path,
+    attempt: dict[str, Any],
+) -> None:
+    native_result_path = native_root / "output" / "result.json"
+    summary_path = B._find_dev2_summary(native_root.name)
+    if not native_result_path.is_file() or not summary_path.is_file():
+        raise InvalidEvidence("opaque controller artifact topology is incomplete")
+    outcome_files = [
+        path
+        for path in B._outcome_artifact_paths(native_root)
+        if path.name.casefold() != "summary.json"
+    ]
+    attempt["native_root"] = str(native_root)
+    attempt["native_result"] = B.file_binding(native_result_path)
+    attempt["summary"] = B.file_binding(summary_path)
+    attempt["outcome_artifacts"] = [B.file_binding(path) for path in outcome_files]
+    attempt["sealed_artifacts"] = sorted(
+        B._opaque_artifacts(output_root) + B._opaque_artifacts(native_root),
+        key=lambda item: str(item["path"]).casefold(),
+    )
+    attempt["runner_result"] = None
+    attempt["controller_output_opened"] = False
+    attempt["native_output_opened"] = False
+
+
+def _worker_run(job_path: Path) -> int:
+    """Execute once and seal bytes without opening controller/native outputs."""
+
+    state_path = STATE_PATH
+    pre: Mapping[str, Any] | None = None
+    job: Mapping[str, Any] | None = None
+    exit_code = 2
+    try:
+        _assert_exact_control(job_path, JOB_PATH, "launch job")
+        job_binding = B.file_binding(job_path)
+        job = B.load_json(job_path)
+        pre_path = Path(str(job["pre_receipt_path"])).resolve()
+        pre_sha256 = str(job["pre_receipt_sha256"]).lower()
+        pre = assert_pre_receipt(pre_path, pre_sha256)
+        validate_current_research_data_gate(pre)
+        _validate_launch_job(job, pre, pre_path, pre_sha256, state_path)
+        authorization = validate_authorization(
+            Path(str(job["authorization"]["binding"]["path"])), pre_sha256
+        )
+        authorization_identity = {
+            "binding": authorization["binding"],
+            "payload_sha256": authorization["payload_sha256"],
+        }
+        if authorization_identity != job["authorization"]:
+            raise AuthorizationError("worker authorization differs from launch job")
+        state = B.load_json(state_path)
+        if (
+            state.get("artifact_type") != STATE_ARTIFACT_TYPE
+            or state.get("analysis_id") != ANALYSIS_ID
+            or state.get("status") != "PENDING"
+            or state.get("job") != job_binding
+            or state.get("attempt_claim") is not None
+            or state.get("outcome_possible_since_utc") is not None
+        ):
+            raise AuthorizationError("worker state was not exactly armed once")
+        now = B.utc_now()
+        state["status"] = "RUNNING"
+        state["worker_pid"] = os.getpid()
+        state["started_utc"] = now
+        state["updated_utc"] = now
+        state["launches"].append(
+            {
+                "worker_pid": os.getpid(),
+                "started_utc": now,
+                "resume": False,
+                "authorization": authorization_identity,
+                "scheduler": job["scheduler"],
+            }
+        )
+        B.atomic_json(state_path, state, replace=True)
+
+        probe_execution = B._execute_machine_credential_preclaim_probe(pre)
+        preclaim_probe = B.validate_machine_credential_preclaim_probe(
+            probe_execution, pre, str(job["scheduler"]["principal_sid"])
+        )
+        state["preclaim_probe"] = preclaim_probe
+        state["updated_utc"] = B.utc_now()
+        B.atomic_json(state_path, state, replace=True)
+
+        assert_pre_receipt(pre_path, pre_sha256)
+        validate_current_research_data_gate(pre)
+        if B.file_binding(job_path) != job_binding:
+            raise InvalidEvidence("immutable launch job drift before native claim")
+        bound_probe = B.validate_bound_machine_credential_preclaim_probe(
+            preclaim_probe,
+            pre,
+            str(job["scheduler"]["principal_sid"]),
+            require_fresh=True,
+        )
+        state["attempt_claim"] = B.claim_native_attempt(
+            pre_path,
+            pre_sha256,
+            pre,
+            state_path,
+            authorization_identity,
+            bound_probe,
+        )
+        state["updated_utc"] = B.utc_now()
+        B.atomic_json(state_path, state, replace=True)
+
+        if len(state["cells"]) != 1 or len(pre["plan"]["cells"]) != 1:
+            raise InvalidEvidence("one-shot worker cell closure drift")
+        state_cell = state["cells"][0]
+        cell = pre["plan"]["cells"][0]
+        command = runner_command(pre, cell)
+        if (
+            state_cell.get("status") != "PENDING"
+            or state_cell.get("attempts") != []
+            or state_cell.get("command_sha256") != B.canonical_sha256(command)
+        ):
+            raise InvalidEvidence("one-shot worker command/state drift")
+        output_root = Path(str(cell["output_root"])).resolve()
+        if output_root.exists() and any(output_root.iterdir()):
+            raise InvalidEvidence("native cell output root is not empty")
+        output_root.mkdir(parents=True, exist_ok=True)
+        stdout_path = output_root / "controller.stdout.log"
+        stderr_path = output_root / "controller.stderr.log"
+        before = _dev2_run_directories()
+        started_utc = B.utc_now()
+        attempt: dict[str, Any] = {
+            "started_utc": started_utc,
+            "finished_utc": None,
+            "command_sha256": B.canonical_sha256(command),
+            "exit_code": None,
+            "stdout": None,
+            "stderr": None,
+            "summary": None,
+            "outcome_artifacts": [],
+            "native_root": None,
+            "native_result": None,
+            "runner_result": None,
+            "sealed_artifacts": [],
+            "controller_output_opened": False,
+            "native_output_opened": False,
+        }
+        state_cell["status"] = "RUNNING"
+        state_cell["attempts"].append(attempt)
+        state["active_cell"] = {
+            "cell_id": state_cell["cell_id"],
+            "started_utc": started_utc,
+            "status": "OUTCOME_POSSIBLE_NO_RESUME",
+        }
+        state["outcome_possible_since_utc"] = started_utc
+        state["updated_utc"] = started_utc
+        B.atomic_json(state_path, state, replace=True)
+        with stdout_path.open("wb") as stdout_handle, stderr_path.open("wb") as stderr_handle:
+            completed = subprocess.run(
+                command,
+                cwd=str(REPO_ROOT),
+                stdin=subprocess.DEVNULL,
+                stdout=stdout_handle,
+                stderr=stderr_handle,
+                check=False,
+                timeout=B.CELL_CONTROLLER_TIMEOUT_SECONDS,
+            )
+        attempt["finished_utc"] = B.utc_now()
+        attempt["exit_code"] = int(completed.returncode)
+        attempt["stdout"] = B.file_binding(stdout_path)
+        attempt["stderr"] = B.file_binding(stderr_path)
+        if completed.returncode != 0:
+            attempt["sealed_artifacts"] = sorted(
+                B._opaque_artifacts(output_root),
+                key=lambda item: str(item["path"]).casefold(),
+            )
+            state_cell["status"] = "INVALID_TERMINAL_OUTPUT"
+            state["status"] = "INVALID_TERMINAL"
+            state["finished_utc"] = B.utc_now()
+            state["active_cell"] = None
+            state["worker_pid"] = None
+            state["updated_utc"] = B.utc_now()
+            B.atomic_json(state_path, state, replace=True)
+            return 2
+        native_root = _opaque_native_root(before)
+        _seal_controller_attempt(output_root, native_root, attempt)
+        state_cell["status"] = "COMPLETE"
+        state["status"] = "COMPLETE"
+        state["active_cell"] = None
+        state["worker_pid"] = None
+        state["finished_utc"] = B.utc_now()
+        state["updated_utc"] = B.utc_now()
+        B.atomic_json(state_path, state, replace=True)
+        exit_code = 0
+    except (
+        B.AuditError,
+        OSError,
+        sqlite3.Error,
+        subprocess.SubprocessError,
+        KeyError,
+        TypeError,
+        ValueError,
+    ):
+        if state_path.is_file():
+            state = B.load_json(state_path)
+            if state.get("status") not in {"COMPLETE", "INVALID_TERMINAL"}:
+                state["status"] = "INVALID_WORKER_INFRASTRUCTURE"
+                state["worker_pid"] = None
+                state["active_cell"] = None
+                state["finished_utc"] = state.get("finished_utc") or B.utc_now()
+                state["worker_error"] = {
+                    "type": "OPAQUE_WORKER_INFRASTRUCTURE_FAILURE",
+                    "controller_or_native_content_read": False,
+                }
+                state["updated_utc"] = B.utc_now()
+                B.atomic_json(state_path, state, replace=True)
+        exit_code = 2
+    finally:
+        if pre is not None and job is not None:
+            cleanup = _unregister_scheduler(pre, job)
+            _persist_scheduler_cleanup(state_path, cleanup, launch_failure=False)
+            if cleanup.get("status") != "PASS":
+                exit_code = 2
+    return exit_code
 
 
 def runner_command(pre: Mapping[str, Any], cell: Mapping[str, Any]) -> list[str]:
@@ -901,13 +1358,236 @@ def evaluate_merit(cells: Mapping[str, Sequence[TradeRecord]]) -> dict[str, Any]
     }
 
 
+def _probe_task_absence(task_name: str) -> dict[str, Any]:
+    script = (
+        "$ErrorActionPreference='Stop';"
+        f"$n='{task_name}';"
+        "$t=@(Get-ScheduledTask -TaskName $n -TaskPath '\\' -ErrorAction SilentlyContinue);"
+        "[ordered]@{task_name=$n;count=$t.Count;states=@($t|ForEach-Object{$_.State.ToString()})}"
+        "|ConvertTo-Json -Depth 3 -Compress"
+    )
+    completed = subprocess.run(
+        [
+            str(B.POWERSHELL_PATH),
+            "-NoLogo",
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            script,
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        timeout=30,
+    )
+    if completed.returncode != 0:
+        raise InvalidEvidence("scheduled-task absence probe failed closed")
+    try:
+        result = json.loads(completed.stdout.strip())
+    except json.JSONDecodeError as exc:
+        raise InvalidEvidence("scheduled-task absence probe returned invalid JSON") from exc
+    expected = {"task_name": task_name, "count": 0, "states": []}
+    if result != expected:
+        raise InvalidEvidence("one-shot scheduled task still exists")
+    return result
+
+
+def _validate_complete_state(
+    pre_path: Path,
+    pre_sha256: str,
+    state_path: Path,
+    pre: Mapping[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+    state = B.load_json(state_path)
+    if (
+        state.get("schema_version") != 1
+        or state.get("launcher_revision") != 1320901
+        or state.get("artifact_type") != STATE_ARTIFACT_TYPE
+        or state.get("analysis_id") != ANALYSIS_ID
+        or state.get("status") != "COMPLETE"
+        or state.get("worker_pid") is not None
+        or state.get("active_cell") is not None
+        or state.get("pre_receipt_path") != str(pre_path.resolve())
+        or state.get("pre_receipt_sha256") != pre_sha256.lower()
+        or state.get("plan_sha256") != pre["plan"]["plan_sha256"]
+    ):
+        raise InvalidEvidence("QM13209 launch state is not exactly COMPLETE/PRE-bound")
+    expected_fence = {
+        "worker_opens_controller_stdout": False,
+        "worker_opens_controller_stderr": False,
+        "worker_opens_native_reports": False,
+        "worker_parses_market_values": False,
+        "worker_seals_paths_types_sizes_hashes_only": True,
+        "post_is_first_controller_and_native_outcome_reader": True,
+    }
+    if state.get("outcome_fence") != expected_fence:
+        raise InvalidEvidence("worker outcome fence drift")
+    cleanup = state.get("scheduler_cleanup")
+    if (
+        not isinstance(cleanup, Mapping)
+        or cleanup.get("status") != "PASS"
+        or cleanup.get("operation") != "Unregister"
+        or cleanup.get("state") != "Absent"
+        or cleanup.get("cleanup") not in {"UNREGISTERED", "ALREADY_ABSENT"}
+    ):
+        raise InvalidEvidence("scheduler cleanup is not a bound PASS")
+    job_binding = state.get("job")
+    if not isinstance(job_binding, Mapping):
+        raise InvalidEvidence("launch job binding missing")
+    B.assert_binding(job_binding, "QM13209 launch job")
+    if Path(str(job_binding.get("path", ""))).resolve() != JOB_PATH.resolve():
+        raise InvalidEvidence("launch job path drift")
+    job = B.load_json(JOB_PATH)
+    _validate_launch_job(job, pre, pre_path, pre_sha256, state_path)
+    if state.get("scheduler") != job.get("scheduler"):
+        raise InvalidEvidence("launch scheduler drift")
+    _probe_task_absence(str(job["scheduler"]["task_name"]))
+    authorization = validate_authorization(
+        Path(str(job["authorization"]["binding"]["path"])),
+        pre_sha256,
+        require_current=False,
+    )
+    authorization_identity = {
+        "binding": authorization["binding"],
+        "payload_sha256": authorization["payload_sha256"],
+    }
+    if authorization_identity != job["authorization"] or state.get("authorization") != authorization_identity:
+        raise InvalidEvidence("launch authorization lifecycle drift")
+    preclaim_probe = state.get("preclaim_probe")
+    if not isinstance(preclaim_probe, Mapping):
+        raise InvalidEvidence("same-worker preclaim proof missing")
+    B.validate_bound_machine_credential_preclaim_probe(
+        preclaim_probe,
+        pre,
+        str(job["scheduler"]["principal_sid"]),
+        require_fresh=False,
+    )
+    attempt_claim = state.get("attempt_claim")
+    if not isinstance(attempt_claim, Mapping):
+        raise InvalidEvidence("one-shot native claim missing")
+    B.validate_native_attempt_claim(
+        attempt_claim,
+        pre_path,
+        pre_sha256,
+        pre,
+        state_path,
+        authorization_identity,
+        preclaim_probe,
+    )
+    launches = state.get("launches")
+    if (
+        not isinstance(launches, list)
+        or len(launches) != 1
+        or not isinstance(launches[0], Mapping)
+        or launches[0].get("resume") is not False
+        or launches[0].get("authorization") != authorization_identity
+        or launches[0].get("scheduler") != job["scheduler"]
+    ):
+        raise InvalidEvidence("one-shot launch audit chain drift")
+    cells = state.get("cells")
+    if not isinstance(cells, list) or len(cells) != 1 or not isinstance(cells[0], Mapping):
+        raise InvalidEvidence("one-shot state cell closure drift")
+    state_cell = cells[0]
+    cell = pre["plan"]["cells"][0]
+    attempts = state_cell.get("attempts")
+    if (
+        state_cell.get("cell_id") != cell["cell_id"]
+        or state_cell.get("status") != "COMPLETE"
+        or state_cell.get("command_sha256") != B.canonical_sha256(runner_command(pre, cell))
+        or not isinstance(attempts, list)
+        or len(attempts) != 1
+        or not isinstance(attempts[0], Mapping)
+    ):
+        raise InvalidEvidence("COMPLETE cell/command closure drift")
+    attempt = attempts[0]
+    if (
+        attempt.get("exit_code") != 0
+        or attempt.get("runner_result") is not None
+        or attempt.get("controller_output_opened") is not False
+        or attempt.get("native_output_opened") is not False
+        or not isinstance(attempt.get("stdout"), Mapping)
+        or not isinstance(attempt.get("stderr"), Mapping)
+        or not isinstance(attempt.get("native_result"), Mapping)
+        or not isinstance(attempt.get("summary"), Mapping)
+        or not isinstance(attempt.get("outcome_artifacts"), list)
+        or not isinstance(attempt.get("sealed_artifacts"), list)
+    ):
+        raise InvalidEvidence("opaque worker attempt closure drift")
+    for role in ("stdout", "stderr", "native_result", "summary"):
+        B.assert_binding(attempt[role], f"opaque worker {role}")
+    for index, binding in enumerate(attempt["outcome_artifacts"]):
+        B.assert_binding(binding, f"opaque outcome[{index}]")
+    return state, job, dict(state_cell)
+
+
 def postflight(pre_path: Path, pre_sha256: str, state_path: Path) -> dict[str, Any]:
     _assert_exact_control(pre_path, PRE_RECEIPT_PATH, "PRE receipt")
     _assert_exact_control(state_path, STATE_PATH, "launch state")
-    payload = _BASE_POSTFLIGHT(pre_path, pre_sha256, state_path)
-    payload["artifact_type"] = "QM5_13209_NDX_PRESCREEN_OUTCOME_FENCED_POST_RECEIPT"
-    payload["decision"] = "ADVANCE_FAMILY_TO_FULL_VALIDATION" if payload["status"] == "PASS" else "STOP_FAMILY_ON_PRESCREEN_MERIT"
-    return payload
+    pre = assert_pre_receipt(pre_path, pre_sha256)
+    state_binding = B.file_binding(state_path)
+    state, _job, state_cell = _validate_complete_state(
+        pre_path, pre_sha256, state_path, pre
+    )
+
+    # This is intentionally the first controller-output read in the lifecycle.
+    attempt = state_cell["attempts"][0]
+    stdout_path = Path(str(attempt["stdout"]["path"])).resolve()
+    controller_result = B._parse_dev2_controller_json(
+        stdout_path.read_text(encoding="utf-8-sig", errors="replace")
+    )
+    B.validate_dev2_controller_result(controller_result, pre)
+    hydrated_cell = copy.deepcopy(state_cell)
+    hydrated_cell["attempts"][0]["runner_result"] = controller_result
+    core = B._load_report_core(pre)
+    cell_receipt, trades = B._audit_cell(
+        pre,
+        pre["plan"]["cells"][0],
+        hydrated_cell,
+        core,
+    )
+    merit = evaluate_merit({"PRESCREEN_2022H2": trades})
+    B.assert_binding(state_binding, "stable COMPLETE opaque launch state")
+    return {
+        "schema_version": 1,
+        "artifact_type": POST_ARTIFACT_TYPE,
+        "analysis_id": ANALYSIS_ID,
+        "created_utc": B.utc_now(),
+        "status": merit["status"],
+        "integrity_status": "PASS",
+        "pre_receipt": B.file_binding(pre_path, pre_sha256),
+        "launch_state": state_binding,
+        "scheduler_cleanup": state["scheduler_cleanup"],
+        "authorized_symbol": RESEARCH_SYMBOL,
+        "accepted_duplicate_run_count": cell_receipt["accepted_duplicate_runs"],
+        "infrastructure_warmup_count": cell_receipt["infrastructure_warmup_count"],
+        "attempted_native_start_count": cell_receipt["attempted_runs"],
+        "maximum_authorized_native_starts": 4,
+        "cells": [cell_receipt],
+        "merit": merit,
+        "decision": (
+            "ADVANCE_FAMILY_TO_FULL_VALIDATION"
+            if merit["status"] == "PASS"
+            else "STOP_FAMILY_ON_PRESCREEN_MERIT"
+        ),
+    }
+
+
+def invalid_receipt(phase: str, exc: Exception) -> dict[str, Any]:
+    return {
+        "schema_version": 1,
+        "artifact_type": f"QM5_13209_NDX_PRESCREEN_{phase}_INVALID",
+        "analysis_id": ANALYSIS_ID,
+        "created_utc": B.utc_now(),
+        "status": "INVALID",
+        "error_type": type(exc).__name__,
+        "error": (
+            "opaque native/controller failure; inspect only after an authorized POST"
+            if phase == "WORKER"
+            else str(exc)
+        ),
+    }
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -972,11 +1652,15 @@ def _configure_private_profile() -> None:
     B.validate_current_research_data_gate = validate_current_research_data_gate
     B.validate_authorization = validate_authorization
     B._native_attempt_claim_basis = _native_attempt_claim_basis
+    B._validate_launch_job = _validate_launch_job
+    B.initial_launch_state = initial_launch_state
     B.launch_detached = launch_detached
+    B._worker_run = _worker_run
     B.runner_command = runner_command
     B.validate_trade_semantics = validate_trade_semantics
     B.evaluate_merit = evaluate_merit
     B.postflight = postflight
+    B.invalid_receipt = invalid_receipt
     B.build_parser = build_parser
 
 
@@ -990,6 +1674,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.command == "status":
             _assert_exact_control(args.state, STATE_PATH, "launch state")
             state = B.load_json(args.state)
+            if (
+                state.get("artifact_type") != STATE_ARTIFACT_TYPE
+                or state.get("analysis_id") != ANALYSIS_ID
+            ):
+                raise InvalidEvidence("QM13209 launch state identity drift")
             print(json.dumps({
                 "status": state.get("status"),
                 "worker_pid": state.get("worker_pid"),
@@ -1001,7 +1690,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             return 0
         if args.command == "_run-plan":
             _assert_exact_control(args.job, JOB_PATH, "launch job")
-            return _BASE_WORKER_RUN(args.job)
+            return _worker_run(args.job)
         if args.command == "pre":
             _assert_exact_control(args.receipt, PRE_RECEIPT_PATH, "PRE receipt")
             payload = preflight(args.symbol, args.data_receipt, args.build_receipt, args.run_root)
@@ -1020,7 +1709,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(json.dumps(output, indent=2, sort_keys=True))
         return code
     except (B.AuditError, OSError, sqlite3.Error, subprocess.SubprocessError, ValueError, KeyError, TypeError) as exc:
-        print(json.dumps(B.invalid_receipt(args.command.upper(), exc), indent=2, sort_keys=True), file=sys.stderr)
+        print(json.dumps(invalid_receipt(args.command.upper(), exc), indent=2, sort_keys=True), file=sys.stderr)
         return 2
 
 
