@@ -12,7 +12,9 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import re
+import stat
 import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
@@ -167,6 +169,67 @@ def _configure_private_profile() -> None:
 _configure_private_profile()
 
 
+def _lexical_path(path: Path | str) -> Path:
+    return Path(os.path.abspath(os.path.normpath(os.fspath(path))))
+
+
+def _path_is_reparse(path: Path) -> bool:
+    try:
+        observed = os.lstat(path)
+    except OSError:
+        return False
+    attributes = int(getattr(observed, "st_file_attributes", 0))
+    reparse_flag = int(getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400))
+    return stat.S_ISLNK(observed.st_mode) or bool(attributes & reparse_flag)
+
+
+def _assert_no_reparse_components(path: Path | str, label: str) -> Path:
+    lexical = _lexical_path(path)
+    components = list(reversed((lexical, *lexical.parents)))
+    for component in components:
+        if os.path.lexists(component) and _path_is_reparse(component):
+            raise B.InvalidEvidence(f"{label} contains a reparse component: {component}")
+    return lexical
+
+
+def _assert_lexical_exact(candidate: Path | str, expected: Path | str, label: str) -> Path:
+    candidate_lexical = _lexical_path(candidate)
+    expected_lexical = _lexical_path(expected)
+    if os.path.normcase(str(candidate_lexical)) != os.path.normcase(
+        str(expected_lexical)
+    ):
+        raise B.InvalidEvidence(
+            f"{label} must be lexically exact: {candidate_lexical} != {expected_lexical}"
+        )
+    _assert_no_reparse_components(candidate_lexical, label)
+    return candidate_lexical
+
+
+def _expected_data_files(
+    symbol: str,
+    terminal_data_root: Path,
+) -> list[tuple[str, str, Path]]:
+    B.enforce_symbol_policy(symbol)
+    root = _assert_no_reparse_components(terminal_data_root, "WS30 terminal data root")
+    history_root = _assert_no_reparse_components(
+        root / "history" / symbol, "WS30 history root"
+    )
+    ticks_root = _assert_no_reparse_components(
+        root / "ticks" / symbol, "WS30 ticks root"
+    )
+    result = [
+        ("history", year, history_root / f"{year}.hcc")
+        for year in B._required_history_years()
+    ]
+    result.extend(
+        ("ticks", month, ticks_root / f"{month}.tkc")
+        for month in B._required_tick_months()
+    )
+    for kind, period, path in result:
+        _assert_no_reparse_components(path, f"WS30 {kind} file {period}")
+    return result
+
+
 def _factory_evidence_paths(
     overrides: Mapping[str, Path] | None = None,
 ) -> dict[str, Path]:
@@ -195,12 +258,7 @@ def _expected_binding_paths(symbol: str) -> dict[str, Path]:
 
 
 def _assert_primary_run_root(path: Path) -> Path:
-    resolved = path.resolve()
-    if resolved != PRIMARY_RUN_ROOT.resolve():
-        raise B.InvalidEvidence(
-            f"WS30 primary run root must be exactly {PRIMARY_RUN_ROOT.resolve()}: {resolved}"
-        )
-    return resolved
+    return _assert_lexical_exact(path, PRIMARY_RUN_ROOT, "WS30 primary run root")
 
 
 def _strict_created_utc(value: Any, label: str) -> datetime:

@@ -304,6 +304,44 @@ def test_factory_contract_accepts_ws30_alias_matrix_cost_and_provision(
     assert result["rebuild_contract"]["files"] == 98
 
 
+def test_provision_rehash_rejects_target_byte_flip_after_receipt(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    evidence = _factory_evidence(tmp_path, monkeypatch)
+    receipt = subject.B.load_json(evidence["rebuild_done"])
+    target = Path(receipt["files"][0]["target"]["path"])
+    target.write_bytes(target.read_bytes() + b"tamper")
+    with pytest.raises(subject.B.InvalidEvidence, match="drift"):
+        subject.B._validate_factory_contracts("WS30.DWX", evidence)
+
+
+@pytest.mark.parametrize("mutation", ["reorder", "ndx_source_path", "ndx_target_path"])
+def test_provision_rejects_reordered_or_cross_symbol_ledger_paths(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    mutation: str,
+) -> None:
+    evidence = _factory_evidence(tmp_path, monkeypatch)
+    receipt_path = evidence["rebuild_done"]
+    receipt = subject.B.load_json(receipt_path)
+    if mutation == "reorder":
+        receipt["files"][0], receipt["files"][1] = (
+            receipt["files"][1],
+            receipt["files"][0],
+        )
+    elif mutation == "ndx_source_path":
+        receipt["files"][0]["source"]["path"] = (
+            r"D:\QM\mt5\T1\Bases\Custom\history\NDX.DWX\2018.hcc"
+        )
+    else:
+        receipt["files"][0]["target"]["path"] = (
+            r"D:\QM\mt5\DEV2\Bases\Custom\history\NDX.DWX\2018.hcc"
+        )
+    _write_json(receipt_path, receipt)
+    with pytest.raises(subject.B.InvalidEvidence, match="drift"):
+        subject.B._validate_factory_contracts("WS30.DWX", evidence)
+
+
 def test_freeze_data_is_ws30_only_exact_98_file_closure(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -479,6 +517,57 @@ def test_runtime_provenance_binds_fix_commit_and_current_file_hashes(
     subject.validate_runtime_provenance(provenance, bindings)
 
 
+def test_base_auditor_is_a_required_pre_runtime_binding() -> None:
+    paths = subject._expected_binding_paths("WS30.DWX")
+    assert "base_tool" in subject.B.REQUIRED_BINDING_ROLES
+    assert "base_tool" in subject.RUNTIME_BINDING_ROLES
+    assert paths["base_tool"].resolve() == subject.BASE_TOOL_PATH.resolve()
+
+
+def test_assert_pre_rejects_base_auditor_hash_drift(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    bindings = {}
+    for role in subject.RUNTIME_BINDING_ROLES:
+        path = tmp_path / f"{role}.bin"
+        path.write_bytes(role.encode("ascii"))
+        bindings[role] = subject.B.file_binding(path)
+    head = "c" * 40
+
+    def fake_git(*args: str, check: bool = True):
+        if args[:3] == ("show", "-s", "--format=%s"):
+            return _git_result(0, subject.REQUIRED_WMI_FIX_SUBJECT + "\n")
+        if args == ("rev-parse", "HEAD^{commit}"):
+            return _git_result(0, head + "\n")
+        if args[:2] in {("merge-base", "--is-ancestor"), ("cat-file", "-e")}:
+            return _git_result(0)
+        raise AssertionError(args)
+
+    monkeypatch.setattr(subject, "_git", fake_git)
+    provenance = subject.runtime_provenance(bindings)
+    fake_pre = {
+        "run_root": str(subject.PRIMARY_RUN_ROOT.resolve()),
+        "build_receipt": {"path": str(subject.BUILD_RECEIPT_PATH.resolve())},
+        "backtest_data_receipt": {
+            "path": str(subject.FUTURE_DATA_RECEIPT_PATH.resolve())
+        },
+        "transport_distinctness": {
+            "classification": "NEW_SYMBOL_TRANSPORT_NOT_NDX_RETRY",
+            "research_symbol": "WS30.DWX",
+            "ndx_data_receipt_reused": False,
+            "ndx_native_report_read": False,
+            "ndx_strategy_outcome_read": False,
+            "parameters_tuned_for_ws30": False,
+        },
+        "runtime_provenance": provenance,
+        "bindings": bindings,
+    }
+    monkeypatch.setattr(subject, "_BASE_ASSERT_PRE_RECEIPT", lambda *_args: fake_pre)
+    Path(bindings["base_tool"]["path"]).write_bytes(b"changed base auditor")
+    with pytest.raises(subject.B.InvalidEvidence, match="drift"):
+        subject.assert_pre_receipt(tmp_path / "pre.json", "0" * 64)
+
+
 def test_runtime_provenance_rejects_head_without_wmi_fix(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -535,6 +624,62 @@ def test_adapter_contains_no_ndx_historical_attempt_validation_or_retry_paths() 
     assert "_validate_prior_native_port_attempt" not in source
     assert "_validate_prior_dpapi_attempt" not in source
     assert "NDX_ICT_OB_FULL_DEV2_NATIVE_ATTEMPT" not in source
+
+
+@pytest.mark.parametrize(
+    "arguments",
+    [
+        ["status", "--state", "{root}/NDX/launch_state.json"],
+        [
+            "launch",
+            "--pre-receipt",
+            "{root}/NDX/pre_receipt.json",
+            "--pre-sha256",
+            "0" * 64,
+            "--authorization",
+            "{root}/NDX/authorization.json",
+            "--state",
+            "{root}/NDX/launch_state.json",
+        ],
+        [
+            "post",
+            "--pre-receipt",
+            "{root}/NDX/pre_receipt.json",
+            "--pre-sha256",
+            "0" * 64,
+            "--state",
+            "{root}/NDX/launch_state.json",
+            "--receipt",
+            "{root}/NDX/post_receipt.json",
+        ],
+        ["_run-plan", "--job", "{root}/NDX/launch_job.json"],
+    ],
+)
+def test_ndx_like_control_paths_rejected_before_any_inherited_read_or_dispatch(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    arguments: list[str],
+) -> None:
+    rendered = [value.format(root=tmp_path) for value in arguments]
+    called = {"load": False, "main": False}
+
+    def forbidden_load(*_args, **_kwargs):
+        called["load"] = True
+        raise AssertionError("must reject before load")
+
+    def forbidden_main(*_args, **_kwargs):
+        called["main"] = True
+        raise AssertionError("must reject before inherited dispatch")
+
+    monkeypatch.setattr(subject.B, "load_json", forbidden_load)
+    monkeypatch.setattr(subject.B, "main", forbidden_main)
+    code = subject.main(rendered)
+    captured = capsys.readouterr()
+    assert code == 2
+    assert called == {"load": False, "main": False}
+    assert "escaped the primary run root" in captured.err
+    assert not any(path.name == "post_receipt.json" for path in tmp_path.rglob("*"))
 
 
 def test_cli_has_no_parameter_merit_cost_or_attempt_override() -> None:

@@ -93,12 +93,19 @@ outer Python process to terminate it first.
 All mutable orchestration evidence is confined to
 `D:\QM\reports\qm20002\short_ny_reverse_time`. The helper rejects reparse
 points, non-local/non-NTFS volumes, an untrusted ancestor owner, and dangerous
-ancestor rights held by `QMDev1` or any applicable token/group SID. Directories
-and files are sealed to SYSTEM and Administrators only before publication. A
-read-only LSA check also rejects privileged local-group membership and any
-direct or group-assigned Backup, Restore, TakeOwnership, Debug, Impersonate or
-other configured DACL-bypass/elevation privilege before the helper creates a
-directory, lock, temporary file or receipt.
+ancestor replace rights held by `QMDev1` or any applicable token/group SID.
+CreateFiles/CreateDirectories alone are permitted on a standard fixed-volume
+ancestor because they cannot rename or delete an already protected child;
+DeleteChild, Delete, ChangePermissions and TakeOwnership remain forbidden, so
+Modify remains forbidden as well. A bootstrap precreation race does not get
+repaired or adopted: an existing attacker-owned, attacker-writable, unprotected
+or otherwise non-exact directory is rejected before any descendant or temporary
+file is created. Directories and files are sealed to SYSTEM and Administrators
+only before publication. A read-only LSA check also rejects privileged
+local-group membership and any direct or group-assigned Backup, Restore,
+TakeOwnership, Debug, Impersonate or other configured DACL-bypass/elevation
+privilege before the helper creates a directory, lock, temporary file or
+receipt.
 The exact runtime layout is:
 
 - `pre\pre_receipt.json`
@@ -157,10 +164,14 @@ Tested now:
 - Generator determinism and exact four-cell set closure.
 - Auditor unit and adversarial gates, including effective news-copy drift,
   out-of-killzone/news opening fills, artifact closure and timeout margin.
-- Result: 90 auditor tests passed, including exclusive-publication,
+- Result: 98 auditor tests passed, including exclusive-publication,
   cross-run authorization, crash-recovery, duplicate-worker, stale-resume,
-  locked-snapshot, strict-schema and protected-path adversarial cases;
-  deterministic Contract-v3 set check passed.
+  locked-snapshot, strict-schema and protected-path adversarial cases. The
+  protected-path cases execute the actual PowerShell rights classifier and
+  exact-ACL closure against in-memory ACL objects for standard create-only
+  bootstrap, Modify/DeleteChild rejection, malicious precreation/race rejection
+  and the exact protected-root pass case; deterministic Contract-v3 set check
+  passed.
 
 Not tested yet:
 
