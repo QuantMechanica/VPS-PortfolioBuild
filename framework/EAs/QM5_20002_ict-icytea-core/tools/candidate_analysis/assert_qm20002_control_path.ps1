@@ -134,11 +134,13 @@ function Set-ExactFileAcl([string]$File) {
     Set-Acl -LiteralPath $File -AclObject $acl -ErrorAction Stop
 }
 
-function Assert-ExactAcl([string]$Candidate, [bool]$Directory) {
-    $acl = Get-Acl -LiteralPath $Candidate -ErrorAction Stop
-    $ownerSid = ([Security.Principal.NTAccount][string]$acl.Owner).Translate([Security.Principal.SecurityIdentifier]).Value
-    $rules = @($acl.GetAccessRules($true, $false, [Security.Principal.SecurityIdentifier]))
-    if (-not $acl.AreAccessRulesProtected -or $ownerSid -cne $administratorsSid.Value -or $rules.Count -ne 2) {
+function Assert-ExactAclObject(
+    [Security.AccessControl.FileSystemSecurity]$Acl,
+    [bool]$Directory
+) {
+    $ownerSid = $Acl.GetOwner([Security.Principal.SecurityIdentifier]).Value
+    $rules = @($Acl.GetAccessRules($true, $false, [Security.Principal.SecurityIdentifier]))
+    if (-not $Acl.AreAccessRulesProtected -or $ownerSid -cne $administratorsSid.Value -or $rules.Count -ne 2) {
         throw 'QM20002 control ACL owner/protection/rule closure drifted.'
     }
     $expectedInheritance = if ($Directory) {
@@ -159,6 +161,11 @@ function Assert-ExactAcl([string]$Candidate, [bool]$Directory) {
     if (-not $observed.SetEquals(@($systemSid.Value, $administratorsSid.Value))) {
         throw 'QM20002 control ACL omits SYSTEM or Administrators.'
     }
+}
+
+function Assert-ExactAcl([string]$Candidate, [bool]$Directory) {
+    $acl = Get-Acl -LiteralPath $Candidate -ErrorAction Stop
+    Assert-ExactAclObject -Acl $acl -Directory $Directory
 }
 
 function Ensure-ExactProtectedDirectory([string]$Directory) {
@@ -330,16 +337,22 @@ function Assert-QmDev1PrivilegeSurface {
     }
 }
 
-function Assert-AncestorProtection {
-    $untrusted = Get-UntrustedSids
-    $dangerous = [Security.AccessControl.FileSystemRights]::WriteData -bor
-        [Security.AccessControl.FileSystemRights]::AppendData -bor
-        [Security.AccessControl.FileSystemRights]::WriteExtendedAttributes -bor
-        [Security.AccessControl.FileSystemRights]::DeleteSubdirectoriesAndFiles -bor
-        [Security.AccessControl.FileSystemRights]::WriteAttributes -bor
+function Test-QmAncestorReplaceAuthority(
+    [Security.AccessControl.FileSystemRights]$Rights
+) {
+    # Directory CreateFiles/CreateDirectories are the aliases of
+    # WriteData/AppendData.  They can win a bootstrap precreation race, but
+    # cannot rename/delete an already protected child.  The create path treats
+    # a race winner as untrusted and fails closed in Ensure-ExactProtectedDirectory.
+    $replaceAuthority = [Security.AccessControl.FileSystemRights]::DeleteSubdirectoriesAndFiles -bor
         [Security.AccessControl.FileSystemRights]::Delete -bor
         [Security.AccessControl.FileSystemRights]::ChangePermissions -bor
         [Security.AccessControl.FileSystemRights]::TakeOwnership
+    return (($Rights -band $replaceAuthority) -ne 0)
+}
+
+function Assert-AncestorProtection {
+    $untrusted = Get-UntrustedSids
     $cursor = [IO.Path]::GetPathRoot($controlRoot)
     $parent = Split-Path -Parent $anchorRoot
     $ancestors = New-Object System.Collections.Generic.List[string]
@@ -366,7 +379,7 @@ function Assert-AncestorProtection {
         foreach ($rule in @($acl.GetAccessRules($true, $true, [Security.Principal.SecurityIdentifier]))) {
             if ($rule.AccessControlType -eq [Security.AccessControl.AccessControlType]::Allow -and
                 $untrusted.Contains([string]$rule.IdentityReference.Value) -and
-                (($rule.FileSystemRights -band $dangerous) -ne 0)) {
+                (Test-QmAncestorReplaceAuthority -Rights $rule.FileSystemRights)) {
                 throw "QMDev1 or one of its groups can replace the QM20002 control root through ancestor: $cursor"
             }
         }

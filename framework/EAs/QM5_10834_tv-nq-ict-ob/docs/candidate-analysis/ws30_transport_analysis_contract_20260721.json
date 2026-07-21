@@ -116,6 +116,9 @@
     "future_provision_receipt_path": "D:\\QM\\reports\\setup\\tick-data-timezone\\WS30.DWX_DEV2_TRANSPORT_001\\provision_receipt.json",
     "source_terminal_preregistered": "T1",
     "source_history_and_tick_stores_known_available": true,
+    "provision_receipt_requires_exact_ordered_98_file_ledger": true,
+    "each_provision_file_row_binds_source_and_target_path_size_sha256": true,
+    "source_and_target_bytes_reasserted_before_freeze": true,
     "freeze_data_only_after_dev2_provision_pass": true,
     "freeze_data_starts_no_mt5_process": true,
     "pre_provisions_or_copies_no_data": true,
@@ -127,6 +130,7 @@
     "required_commit_must_be_ancestor_of_pre_head": true,
     "current_runtime_file_hashes_bound_dynamically_at_pre": true,
     "bound_runtime_roles": [
+      "base_tool",
       "runner",
       "runner_child",
       "dev2_cleanup_helper",

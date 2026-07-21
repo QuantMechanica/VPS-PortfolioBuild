@@ -67,6 +67,8 @@ PROVISION_ROOT = Path(
 )
 PROVISION_MANIFEST_PATH = PROVISION_ROOT / "provision_manifest.json"
 PROVISION_RECEIPT_PATH = PROVISION_ROOT / "provision_receipt.json"
+PROVISION_SOURCE_DATA_ROOT = Path(r"D:\QM\mt5\T1\Bases\Custom")
+PROVISION_TARGET_DATA_ROOT = B.TERMINAL_DATA_ROOT
 SLIPPAGE_CALIBRATION_PATH = (
     REPO_ROOT / "framework" / "calibrations" / "VPS_SLIPPAGE_LATENCY_CALIBRATION_V2.json"
 )
@@ -95,6 +97,7 @@ NATIVE_LAUNCH_LOCK_PATH = (
 )
 EXPECTED_LIVE_ALIASES = {"DXZ_LIVE": "WS30", "FTMO_TRIAL": "US30.cash"}
 RUNTIME_BINDING_ROLES = (
+    "base_tool",
     "runner",
     "runner_child",
     "dev2_cleanup_helper",
@@ -149,7 +152,7 @@ def _configure_private_profile() -> None:
         set(B.DATA_FACTORY_EVIDENCE_ROLES) | {"slippage_calibration"}
     )
     B.REQUIRED_BINDING_ROLES = frozenset(
-        set(B.REQUIRED_BINDING_ROLES) | {"slippage_calibration"}
+        set(B.REQUIRED_BINDING_ROLES) | {"base_tool", "slippage_calibration"}
     )
 
 
@@ -178,6 +181,7 @@ def _factory_evidence_paths(
 
 def _expected_binding_paths(symbol: str) -> dict[str, Path]:
     paths = _BASE_EXPECTED_BINDING_PATHS(symbol)
+    paths["base_tool"] = BASE_TOOL_PATH
     paths["slippage_calibration"] = SLIPPAGE_CALIBRATION_PATH
     return paths
 
@@ -333,6 +337,11 @@ def validate_transport_contract(path: Path = CONTRACT_PATH) -> dict[str, Any]:
         or Path(str(data.get("future_provision_receipt_path", ""))).resolve()
         != PROVISION_RECEIPT_PATH.resolve()
         or data.get("source_terminal_preregistered") != "T1"
+        or data.get("provision_receipt_requires_exact_ordered_98_file_ledger")
+        is not True
+        or data.get("each_provision_file_row_binds_source_and_target_path_size_sha256")
+        is not True
+        or data.get("source_and_target_bytes_reasserted_before_freeze") is not True
         or data.get("freeze_data_only_after_dev2_provision_pass") is not True
         or data.get("freeze_data_starts_no_mt5_process") is not True
         or data.get("pre_provisions_or_copies_no_data") is not True
@@ -450,10 +459,10 @@ def validate_data_provision_contract(
         or manifest.get("symbol") != RESEARCH_SYMBOL
         or manifest.get("source_terminal") != "T1"
         or Path(str(manifest.get("source_data_root", ""))).resolve()
-        != Path(r"D:\QM\mt5\T1\Bases\Custom").resolve()
+        != PROVISION_SOURCE_DATA_ROOT.resolve()
         or manifest.get("target_terminal") != "DEV2"
         or Path(str(manifest.get("target_data_root", ""))).resolve()
-        != B.TERMINAL_DATA_ROOT.resolve()
+        != PROVISION_TARGET_DATA_ROOT.resolve()
         or manifest.get("coverage") != expected_coverage
         or manifest.get("expected_history_files") != 8
         or manifest.get("expected_tick_files") != 90
@@ -483,7 +492,10 @@ def validate_data_provision_contract(
         "target_data_root",
         "history_files",
         "tick_files",
+        "file_count",
         "files",
+        "source_file_set_sha256",
+        "target_file_set_sha256",
         "source_target_sha256_equal",
         "outcome_fence",
     }
@@ -501,10 +513,10 @@ def validate_data_provision_contract(
         or receipt.get("source_terminal") != "T1"
         or receipt.get("target_terminal") != "DEV2"
         or Path(str(receipt.get("target_data_root", ""))).resolve()
-        != B.TERMINAL_DATA_ROOT.resolve()
+        != PROVISION_TARGET_DATA_ROOT.resolve()
         or receipt.get("history_files") != 8
         or receipt.get("tick_files") != 90
-        or receipt.get("files") != 98
+        or receipt.get("file_count") != 98
         or receipt.get("source_target_sha256_equal") is not True
         or receipt.get("outcome_fence")
         != {
@@ -516,6 +528,99 @@ def validate_data_provision_contract(
         or completed < manifest_created
     ):
         raise B.InvalidEvidence("WS30 provision receipt semantic drift")
+
+    rows = receipt.get("files")
+    source_files = B._expected_data_files(
+        RESEARCH_SYMBOL, PROVISION_SOURCE_DATA_ROOT
+    )
+    target_files = B._expected_data_files(
+        RESEARCH_SYMBOL, PROVISION_TARGET_DATA_ROOT
+    )
+    if not isinstance(rows, list) or len(rows) != 98:
+        raise B.InvalidEvidence("WS30 provision receipt must bind exactly 98 files")
+    all_bindings: list[tuple[Mapping[str, Any], str]] = []
+    file_set_basis: list[dict[str, Any]] = []
+    path_identities_before: dict[Path, tuple[int, int, int, int]] = {}
+    for index, (row, source_expected, target_expected) in enumerate(
+        zip(rows, source_files, target_files)
+    ):
+        source_kind, source_period, source_path = source_expected
+        target_kind, target_period, target_path = target_expected
+        if source_kind != target_kind or source_period != target_period:
+            raise B.InvalidEvidence("WS30 source/target expected-file order drift")
+        if not isinstance(row, Mapping) or set(row) != {
+            "kind",
+            "period",
+            "source",
+            "target",
+        }:
+            raise B.InvalidEvidence(f"WS30 provision file[{index}] field closure drift")
+        source_binding = row.get("source")
+        target_binding = row.get("target")
+        if (
+            row.get("kind") != source_kind
+            or row.get("period") != source_period
+            or not isinstance(source_binding, Mapping)
+            or set(source_binding) != {"path", "size", "sha256"}
+            or not isinstance(target_binding, Mapping)
+            or set(target_binding) != {"path", "size", "sha256"}
+            or Path(str(source_binding.get("path", ""))).resolve()
+            != source_path.resolve()
+            or Path(str(target_binding.get("path", ""))).resolve()
+            != target_path.resolve()
+            or source_binding.get("size") != target_binding.get("size")
+            or source_binding.get("sha256") != target_binding.get("sha256")
+        ):
+            raise B.InvalidEvidence(
+                f"WS30 provision source/target byte binding drift at index {index}"
+            )
+        for binding, label in (
+            (source_binding, f"WS30 provision source[{index}]"),
+            (target_binding, f"WS30 provision target[{index}]"),
+        ):
+            path = Path(str(binding["path"])).resolve()
+            try:
+                stat = path.stat()
+            except OSError as exc:
+                raise B.InvalidEvidence(f"missing WS30 provision file: {path}") from exc
+            path_identities_before[path] = (
+                stat.st_dev,
+                stat.st_ino,
+                stat.st_size,
+                stat.st_mtime_ns,
+            )
+            all_bindings.append((binding, label))
+        file_set_basis.append(
+            {
+                "kind": source_kind,
+                "period": source_period,
+                "size": source_binding["size"],
+                "sha256": source_binding["sha256"],
+            }
+        )
+    expected_file_set_sha256 = B.canonical_sha256(file_set_basis)
+    if (
+        receipt.get("source_file_set_sha256") != expected_file_set_sha256
+        or receipt.get("target_file_set_sha256") != expected_file_set_sha256
+    ):
+        raise B.InvalidEvidence("WS30 provision aggregate file-set hash drift")
+    for binding, label in all_bindings:
+        B.assert_stable_binding(binding, label)
+    for path, identity_before in path_identities_before.items():
+        try:
+            stat = path.stat()
+        except OSError as exc:
+            raise B.InvalidEvidence(f"WS30 provision file disappeared: {path}") from exc
+        identity_after = (
+            stat.st_dev,
+            stat.st_ino,
+            stat.st_size,
+            stat.st_mtime_ns,
+        )
+        if identity_after != identity_before:
+            raise B.InvalidEvidence(
+                f"WS30 provision corpus changed during validation: {path}"
+            )
     B.assert_stable_binding(manifest_binding, "stable WS30 provision manifest")
     B.assert_stable_binding(receipt_binding, "stable WS30 provision receipt")
     return {
@@ -527,6 +632,8 @@ def validate_data_provision_contract(
         "history_files": 8,
         "tick_files": 90,
         "files": 98,
+        "source_file_set_sha256": expected_file_set_sha256,
+        "target_file_set_sha256": expected_file_set_sha256,
         "source_target_sha256_equal": True,
         "manifest": manifest_binding,
         "receipt": receipt_binding,
@@ -665,6 +772,8 @@ def validate_runtime_provenance(
     }
     if observed_bindings != expected_bindings:
         raise B.InvalidEvidence("PRE current-runtime hash binding drift")
+    for role, binding in expected_bindings.items():
+        B.assert_binding(binding, f"PRE current-runtime {role}")
 
 
 def preflight(
