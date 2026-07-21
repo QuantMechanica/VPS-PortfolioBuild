@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-21T16:07:02.6508399Z",
-    "total":  3372,
+    "generated_at":  "2026-07-21T18:07:03.6874444Z",
+    "total":  3373,
     "items":  [
                   {
                       "slug":  "ath-breakout-atr-trail",
@@ -1418,6 +1418,12 @@
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-06-27T03:24:04.6438094Z"
+                  },
+                  {
+                      "slug":  "wti-monfri-daily_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-21T16:33:58.8979662Z"
                   },
                   {
                       "slug":  "wti-month-ch3_card",
