@@ -66,13 +66,13 @@ def process_fields() -> dict[str, Any]:
     }
 
 
-def task_evidence(*, disabled: bool) -> dict[str, Any]:
-    return {
+def task_evidence(*, disabled: bool, started: bool = False) -> dict[str, Any]:
+    evidence = {
         "state": "Disabled" if disabled else "Ready",
         "enabled": not disabled,
-        "last_run_utc": None,
-        "last_task_result": 267011,
-        "never_run": True,
+        "last_run_utc": "2026-07-21T03:00:01+00:00" if started else None,
+        "last_task_result": 1 if started else 267011,
+        "never_run": not started,
         "non_null_trigger_count": 0,
         "non_null_action_count": 1,
         "task_xml_sha256": hashlib.sha256(
@@ -81,6 +81,11 @@ def task_evidence(*, disabled: bool) -> dict[str, Any]:
         "task_contract_sha256": hashlib.sha256(b"task-contract").hexdigest(),
         **process_fields(),
     }
+    if started:
+        evidence["matching_worker_process_count_basis"] = (
+            "INFERRED_FROM_DURABLE_TERMINAL_REJECT_AND_NON_RUNNING_TASK_STATE"
+        )
+    return evidence
 
 
 class FakeTaskRuntime:
@@ -88,6 +93,7 @@ class FakeTaskRuntime:
         self.contract = contract
         self.exists = True
         self.enabled = True
+        self.started_race = False
         self.operations: list[str] = []
 
     def __call__(
@@ -113,15 +119,43 @@ class FakeTaskRuntime:
         if operation == "Quiesce":
             if not self.exists:
                 raise closure.ClosureError("absent")
+            persisted = json.loads(
+                self.contract.state_path.read_text(encoding="utf-8")
+            )
+            assert persisted["status"] == "REJECT"
+            assert "closure_phase=QUIESCE_PENDING" in persisted["terminal"]["error"]
             before = task_evidence(disabled=not self.enabled)
             self.enabled = False
-            after = task_evidence(disabled=True)
+            after = task_evidence(disabled=True, started=self.started_race)
+            if self.started_race:
+                after["state"] = "Running"
+                after["matching_worker_process_count_basis"] = (
+                    "INFERRED_FROM_CALLER_HELD_STATE_LOCK_AND_DIRECT_ZERO_DEV1_OWNER_OR_ROOT"
+                )
             assert kwargs["expected_task_contract_sha256"] == after["task_contract_sha256"]
-            return {**common, "principal_sid": "S-1-5-21-1", "before": before, "after": after, "absent": False}
+            return {
+                **common,
+                "principal_sid": "S-1-5-21-1",
+                "before": before,
+                "after": after,
+                "start_race_observed": self.started_race,
+                "absent": False,
+            }
         if operation == "InspectQuiesced":
             if not self.exists or self.enabled:
                 raise closure.ClosureError("not quiesced")
             return {**common, "principal_sid": "S-1-5-21-1", "evidence": task_evidence(disabled=True), "absent": False}
+        if operation == "AwaitQuiesced":
+            if not self.exists or self.enabled:
+                raise closure.ClosureError("not disabled")
+            evidence = task_evidence(disabled=True, started=self.started_race)
+            return {
+                **common,
+                "principal_sid": "S-1-5-21-1",
+                "evidence": evidence,
+                "start_race_observed": self.started_race,
+                "absent": False,
+            }
         if operation == "Unregister":
             if not self.exists or self.enabled:
                 raise closure.ClosureError("cannot unregister")
@@ -144,9 +178,15 @@ class FakeTaskRuntime:
 
 
 class FakeAuditor:
-    def __init__(self, pre: Mapping[str, Any], authorization: Mapping[str, Any]) -> None:
+    def __init__(
+        self,
+        pre: Mapping[str, Any],
+        authorization: Mapping[str, Any],
+        inventory: Mapping[str, Any],
+    ) -> None:
         self.pre = copy.deepcopy(dict(pre))
         self.authorization = copy.deepcopy(dict(authorization))
+        self.inventory = copy.deepcopy(dict(inventory))
 
     def assert_pre_receipt(self, _path: Path, _sha: str) -> dict[str, Any]:
         return copy.deepcopy(self.pre)
@@ -167,6 +207,9 @@ class FakeAuditor:
         if state["status"] == "REJECT":
             assert state["terminal"]["outcome_fence_crossed"] is False
             assert state["terminal"]["no_resume"] is True
+
+    def _dev1_run_inventory(self) -> dict[str, Any]:
+        return copy.deepcopy(self.inventory)
 
 
 def make_fixture(tmp_path: Path) -> tuple[
@@ -219,6 +262,12 @@ def make_fixture(tmp_path: Path) -> tuple[
     consumption_payload = {"status": "CONSUMED"}
     write_json(consumption_path, consumption_payload)
     consumption = {"binding": bind(consumption_path), "payload": consumption_payload}
+    inventory = {
+        "root": str((tmp_path / "dev1_runs").resolve()),
+        "exists": True,
+        "directory_count": 0,
+        "directory_names_sha256": hashlib.sha256(b"").hexdigest(),
+    }
     job = {
         "authorization": authorization,
         "authorization_consumption": consumption,
@@ -229,6 +278,7 @@ def make_fixture(tmp_path: Path) -> tuple[
             "execution_limit_seconds": 60,
             "principal_sid": "S-1-5-21-1",
         },
+        "dev1_runs_before_launch": inventory,
     }
     job_sha = write_json(job_path, job)
     initial = {
@@ -283,7 +333,7 @@ def make_fixture(tmp_path: Path) -> tuple[
         freeze_sha256=closure.sha256_file(freeze_path),
         freeze_commit="f" * 40,
     )
-    fake_auditor = FakeAuditor(pre, authorization)
+    fake_auditor = FakeAuditor(pre, authorization, inventory)
     task = FakeTaskRuntime(contract)
     return (
         contract,
@@ -367,7 +417,16 @@ def test_closed_state_is_schema_valid_and_strictly_pre_outcome() -> None:
         "terminal": None,
     }
     evidence = task_evidence(disabled=True)
-    closed = closure._closed_state(state, "3" * 64, evidence)
+    intent = {
+        "task": {
+            "ready_task_xml_sha256": hashlib.sha256(b"ready").hexdigest(),
+            "task_contract_sha256": evidence["task_contract_sha256"],
+        }
+    }
+    preliminary = closure._preliminary_closed_state(state, "3" * 64, intent)
+    closed = closure._final_closed_state(
+        preliminary, "3" * 64, evidence, start_race_observed=False
+    )
     auditor._validate_launch_state_shape(closed)
     proof = closure._terminal_proof(closed, "3" * 64)
     assert proof["quiesced"] == closure.canonical_sha256(evidence)
@@ -405,7 +464,14 @@ def test_create_new_publication_has_one_winner_under_race(tmp_path: Path) -> Non
 
 @pytest.mark.parametrize(
     "crash_point",
-    ["after_intent", "after_quiesce", "after_state", "after_unregister", "after_receipt"],
+    [
+        "after_intent",
+        "after_preliminary_state",
+        "after_quiesce",
+        "after_state",
+        "after_unregister",
+        "after_receipt",
+    ],
 )
 def test_each_durable_crash_point_recovers_idempotently(
     tmp_path: Path, crash_point: str

@@ -1,0 +1,38 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        9502
+; ea_slug:      chande-cmo-vr-divergence-h4
+; ea_version:   v5.0
+; set_version:  s20260721-stress-harsh
+; symbol:       SP500.DWX
+; timeframe:    H4
+; environment:  q06_stress_harsh
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   202fe5585edf00cbe95217c5638382f9191799e3f537243f36403a360f6c9b92
+; author:       Development
+; date:         2026-07-21
+;==========================================================
+qm_ea_id=9502
+qm_magic_slot_offset=0
+qm_rng_seed=17
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.1000
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9502_chande-cmo-vr-divergence-h4.md
+strategy_cmo_period=14
+strategy_vr_fast_atr=7
+strategy_vr_slow_atr=28
+strategy_vr_min=1.30
+strategy_pivot_left_bars=5
+strategy_pivot_sep_min=6
+strategy_pivot_sep_max=30
+strategy_cmo_extreme_level=35.0
+strategy_atr_period=14
+strategy_sl_atr_mult=0.50
+strategy_time_stop_bars=20
+strategy_spread_atr_frac_max=0.20
+strategy_shorts_enabled=true

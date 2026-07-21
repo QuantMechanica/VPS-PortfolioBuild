@@ -1344,7 +1344,7 @@ def close_g1(
 ) -> dict[str, Any]:
     """Close G1 exactly once; safely resume at every durable crash boundary."""
 
-    parse_owner_utc(authorized_utc)
+    owner_authorized = parse_owner_utc(authorized_utc)
     if HEX64.fullmatch(expected_utility_sha256) is None or HEX64.fullmatch(
         expected_task_helper_sha256
     ) is None:
@@ -1361,12 +1361,16 @@ def close_g1(
     helper_sha = expected_task_helper_sha256
     job = chain["job"]
     pre = chain["pre"]
+    principal_sid = str(job["scheduler"]["principal_sid"])
     control_call(contract, "AssertFile", contract.global_lock_path)
     control_call(contract, "AssertFile", contract.state_lock_path)
 
-    quiesced_evidence: Mapping[str, Any] | None = None
+    # Phase 1: bind OWNER intent, then publish a terminal no-resume REJECT
+    # before disabling the task.  A racing task instance blocks on this same
+    # state lock and can only observe REJECT after release.
     with _file_lock(contract.global_lock_path):
         with _file_lock(contract.state_lock_path):
+            _assert_dev1_inventory(chain, auditor)
             state_binding = file_binding(contract.state_path)
             state = load_strict_json(contract.state_path, "launch state")
             auditor._validate_launch_state_shape(state)
@@ -1377,14 +1381,14 @@ def close_g1(
             if contract.intent_path.exists():
                 control_call(contract, "AssertFile", contract.intent_path)
                 intent = load_strict_json(contract.intent_path, "closure intent")
-                _validate_intent(contract, intent, chain, authorized_utc)
+                _validate_intent(
+                    contract, intent, chain, authorized_utc, auditor
+                )
                 intent_binding = file_binding(contract.intent_path)
             else:
                 if not is_initial:
                     raise ClosureError("closure intent is absent after launch-state mutation")
-                if parse_owner_utc(authorized_utc) < datetime.now(timezone.utc) - timedelta(
-                    minutes=15
-                ):
+                if owner_authorized < datetime.now(timezone.utc) - timedelta(minutes=15):
                     raise ClosureError("new OWNER closure intent is older than 15 minutes")
                 _assert_initial_state(
                     contract, state, job_binding, chain["authorization"]
@@ -1393,7 +1397,12 @@ def close_g1(
                     contract, job, pre, helper_sha, "InspectReady"
                 )
                 _validate_task_probe(
-                    ready_probe, contract, disabled=False, label="initial ready task"
+                    ready_probe,
+                    contract,
+                    disabled=False,
+                    label="initial ready task",
+                    expected_helper_sha256=helper_sha,
+                    expected_principal_sid=principal_sid,
                 )
                 intent = _intent_payload(
                     contract,
@@ -1419,53 +1428,20 @@ def close_g1(
                     contract, state, job_binding, chain["authorization"]
                 )
                 task_contract_sha = str(intent["task"]["task_contract_sha256"])
-                try:
-                    ready_now = task_call(
-                        contract, job, pre, helper_sha, "InspectReady"
-                    )
-                    ready_evidence = _validate_task_probe(
-                        ready_now, contract, disabled=False, label="pre-quiesce ready task"
-                    )
-                    if ready_evidence["task_contract_sha256"] != task_contract_sha:
-                        raise ClosureError("ready task contract drifted from closure intent")
-                    quiesce = task_call(
-                        contract,
-                        job,
-                        pre,
-                        helper_sha,
-                        "Quiesce",
-                        expected_task_contract_sha256=task_contract_sha,
-                    )
-                    if not isinstance(quiesce.get("after"), Mapping):
-                        raise ClosureError("Quiesce omitted disabled evidence")
-                    quiesced_evidence = quiesce["after"]
-                    _validate_task_evidence(
-                        quiesced_evidence,
-                        disabled=True,
-                        label="quiesced task",
-                    )
-                except ClosureError as ready_error:
-                    try:
-                        quiesced = task_call(
-                            contract,
-                            job,
-                            pre,
-                            helper_sha,
-                            "InspectQuiesced",
-                            expected_task_contract_sha256=task_contract_sha,
-                        )
-                    except ClosureError:
-                        raise ready_error
-                    quiesced_evidence = _validate_task_probe(
-                        quiesced,
-                        contract,
-                        disabled=True,
-                        label="recovered quiesced task",
-                    )
-                if quiesced_evidence["task_contract_sha256"] != task_contract_sha:
-                    raise ClosureError("quiesced task contract drifted from closure intent")
-                crash_hook("after_quiesce")
-                closed = _closed_state(state, intent_sha, quiesced_evidence)
+                ready_now = task_call(
+                    contract, job, pre, helper_sha, "InspectReady"
+                )
+                ready_evidence = _validate_task_probe(
+                    ready_now,
+                    contract,
+                    disabled=False,
+                    label="pre-terminal ready task",
+                    expected_helper_sha256=helper_sha,
+                    expected_principal_sid=principal_sid,
+                )
+                if ready_evidence["task_contract_sha256"] != task_contract_sha:
+                    raise ClosureError("ready task contract drifted from closure intent")
+                closed = _preliminary_closed_state(state, intent_sha, intent)
                 auditor._validate_launch_state_shape(closed)
                 if sha256_file(contract.state_path) != contract.state_before_sha256:
                     raise ClosureError("launch-state CAS lost before terminal publication")
@@ -1477,27 +1453,169 @@ def close_g1(
                     control_call=control_call,
                 )
                 state = closed
-                crash_hook("after_state")
-            proof = _terminal_proof(state, intent_sha)
-            auditor._validate_launch_state_shape(state)
+                crash_hook("after_preliminary_state")
+            proof = _validate_closed_state_historical_chain(
+                contract,
+                state,
+                intent,
+                intent_sha,
+                chain,
+                auditor,
+                require_final=False,
+            )
+            if proof["phase"] == "QUIESCE_PENDING":
+                task_contract_sha = str(intent["task"]["task_contract_sha256"])
+                try:
+                    ready_now = task_call(
+                        contract, job, pre, helper_sha, "InspectReady"
+                    )
+                    ready_evidence = _validate_task_probe(
+                        ready_now,
+                        contract,
+                        disabled=False,
+                        label="pre-disable ready task",
+                        expected_helper_sha256=helper_sha,
+                        expected_principal_sid=principal_sid,
+                    )
+                    if ready_evidence["task_contract_sha256"] != task_contract_sha:
+                        raise ClosureError("ready task contract drifted before disable")
+                    quiesce = task_call(
+                        contract,
+                        job,
+                        pre,
+                        helper_sha,
+                        "Quiesce",
+                        expected_task_contract_sha256=task_contract_sha,
+                    )
+                    quiesced_under_lock, _race = _validate_quiesce_probe(
+                        quiesce,
+                        contract,
+                        expected_helper_sha256=helper_sha,
+                        expected_principal_sid=principal_sid,
+                    )
+                    if quiesced_under_lock["task_contract_sha256"] != task_contract_sha:
+                        raise ClosureError("disabled task contract drifted under lock")
+                except ClosureError:
+                    # Recovery may find the task already disabled, or a racing
+                    # exact instance may still be draining against REJECT.
+                    # AwaitQuiesced below is the mandatory conclusive proof.
+                    pass
+                crash_hook("after_quiesce")
+            _assert_dev1_inventory(chain, auditor)
 
-    # The exact lock order has been released before removing the disabled task.
+    # Phase 2: after releasing both locks, wait for an exact disabled and
+    # non-running task.  If an exact task instance raced, it can now drain but
+    # cannot pass the already-durable terminal REJECT.
+    if proof["phase"] == "QUIESCE_PENDING":
+        awaited = task_call(
+            contract,
+            job,
+            pre,
+            helper_sha,
+            "AwaitQuiesced",
+            expected_task_contract_sha256=proof["contract"],
+            allow_observed_start_race=True,
+        )
+        quiesced_evidence, start_race_observed = _validate_await_quiesced_probe(
+            awaited,
+            contract,
+            expected_helper_sha256=helper_sha,
+            expected_principal_sid=principal_sid,
+        )
+        if quiesced_evidence["task_contract_sha256"] != proof["contract"]:
+            raise ClosureError("awaited task contract drifted from terminal REJECT")
+        _assert_dev1_inventory(chain, auditor)
+        with _file_lock(contract.global_lock_path):
+            with _file_lock(contract.state_lock_path):
+                _assert_dev1_inventory(chain, auditor)
+                control_call(contract, "AssertFile", contract.intent_path)
+                intent_binding = file_binding(contract.intent_path)
+                intent = load_strict_json(contract.intent_path, "closure intent")
+                _validate_intent(
+                    contract, intent, chain, authorized_utc, auditor
+                )
+                state = load_strict_json(contract.state_path, "quiesce-pending state")
+                current_proof = _validate_closed_state_historical_chain(
+                    contract,
+                    state,
+                    intent,
+                    str(intent_binding["sha256"]),
+                    chain,
+                    auditor,
+                    require_final=False,
+                )
+                if current_proof["phase"] == "QUIESCE_PENDING":
+                    before_sha = sha256_file(contract.state_path)
+                    final_state = _final_closed_state(
+                        state,
+                        str(intent_binding["sha256"]),
+                        quiesced_evidence,
+                        start_race_observed=start_race_observed,
+                    )
+                    auditor._validate_launch_state_shape(final_state)
+                    if sha256_file(contract.state_path) != before_sha:
+                        raise ClosureError("launch-state finalization CAS lost")
+                    _publish_json(
+                        contract,
+                        contract.state_path,
+                        final_state,
+                        replace=True,
+                        control_call=control_call,
+                    )
+                    state = final_state
+                    crash_hook("after_state")
+                proof = _validate_closed_state_historical_chain(
+                    contract,
+                    state,
+                    intent,
+                    str(intent_binding["sha256"]),
+                    chain,
+                    auditor,
+                    require_final=True,
+                )
+
+    # Revalidate every historical state binding immediately before task removal.
+    with _file_lock(contract.global_lock_path):
+        with _file_lock(contract.state_lock_path):
+            _assert_dev1_inventory(chain, auditor)
+            control_call(contract, "AssertFile", contract.intent_path)
+            intent_binding = file_binding(contract.intent_path)
+            intent = load_strict_json(contract.intent_path, "pre-unregister intent")
+            _validate_intent(contract, intent, chain, authorized_utc, auditor)
+            state = load_strict_json(contract.state_path, "pre-unregister state")
+            proof = _validate_closed_state_historical_chain(
+                contract,
+                state,
+                intent,
+                str(intent_binding["sha256"]),
+                chain,
+                auditor,
+                require_final=True,
+            )
+
+    # The exact lock order is released before unregistering the disabled task.
+    allow_start_race = proof["start_race"] == "true"
     try:
         quiesced = task_call(
             contract,
             job,
             pre,
             helper_sha,
-            "InspectQuiesced",
+            "AwaitQuiesced",
             expected_task_contract_sha256=proof["contract"],
+            allow_observed_start_race=allow_start_race,
         )
-        current_quiesced = _validate_task_probe(
-            quiesced, contract, disabled=True, label="pre-unregister quiesced task"
+        current_quiesced, current_start_race = _validate_await_quiesced_probe(
+            quiesced,
+            contract,
+            expected_helper_sha256=helper_sha,
+            expected_principal_sid=principal_sid,
         )
         if (
             canonical_sha256(current_quiesced) != proof["quiesced"]
             or current_quiesced["task_xml_sha256"] != proof["xml"]
             or current_quiesced["task_contract_sha256"] != proof["contract"]
+            or current_start_race is not allow_start_race
         ):
             raise ClosureError("disabled task drifted from terminal closure proof")
         try:
@@ -1509,33 +1627,53 @@ def close_g1(
                 "Unregister",
                 expected_task_contract_sha256=proof["contract"],
                 expected_disabled_xml_sha256=proof["xml"],
+                allow_observed_start_race=allow_start_race,
             )
         except ClosureError:
             # A concurrent identical recovery may have removed it first.  Only
             # an exact absence proof may convert that race into success.
-            task_call(contract, job, pre, helper_sha, "ProbeAbsent")
+            raced_absent = task_call(contract, job, pre, helper_sha, "ProbeAbsent")
+            _validate_absent_probe(
+                raced_absent, contract, expected_helper_sha256=helper_sha
+            )
     except ClosureError as inspect_error:
         try:
-            task_call(contract, job, pre, helper_sha, "ProbeAbsent")
+            raced_absent = task_call(contract, job, pre, helper_sha, "ProbeAbsent")
+            _validate_absent_probe(
+                raced_absent, contract, expected_helper_sha256=helper_sha
+            )
         except ClosureError:
             raise inspect_error
     crash_hook("after_unregister")
     absent_probe = task_call(contract, job, pre, helper_sha, "ProbeAbsent")
-    _validate_absent_probe(absent_probe, contract)
+    _validate_absent_probe(
+        absent_probe, contract, expected_helper_sha256=helper_sha
+    )
+    _assert_dev1_inventory(chain, auditor)
 
     with _file_lock(contract.global_lock_path):
         with _file_lock(contract.state_lock_path):
+            _assert_dev1_inventory(chain, auditor)
             control_call(contract, "AssertFile", contract.intent_path)
             intent_binding = file_binding(contract.intent_path)
             intent = load_strict_json(contract.intent_path, "closure intent")
-            _validate_intent(contract, intent, chain, authorized_utc)
+            _validate_intent(contract, intent, chain, authorized_utc, auditor)
             state_after_binding = file_binding(contract.state_path)
             state_after = load_strict_json(contract.state_path, "closed launch state")
-            auditor._validate_launch_state_shape(state_after)
             _assert_no_outcome_side_effects(contract)
-            proof = _terminal_proof(state_after, str(intent_binding["sha256"]))
+            proof = _validate_closed_state_historical_chain(
+                contract,
+                state_after,
+                intent,
+                str(intent_binding["sha256"]),
+                chain,
+                auditor,
+                require_final=True,
+            )
             fresh_absent = task_call(contract, job, pre, helper_sha, "ProbeAbsent")
-            _validate_absent_probe(fresh_absent, contract)
+            _validate_absent_probe(
+                fresh_absent, contract, expected_helper_sha256=helper_sha
+            )
             if contract.receipt_path.exists():
                 control_call(contract, "AssertFile", contract.receipt_path)
                 receipt = load_strict_json(contract.receipt_path, "closure receipt")
