@@ -1,0 +1,251 @@
+{
+  "analysis_id": "QM5_20002_SHORT_NY_REVERSE_TIME_SCREEN_001",
+  "artifact_type": "QM5_20002_SHORT_NY_G2_RUNTIME_FREEZE",
+  "created_utc": "2026-07-21T06:55:55.783658Z",
+  "files": {
+    "g1_base_auditor": {
+      "path": "framework/EAs/QM5_20002_ict-icytea-core/tools/candidate_analysis/audit_short_ny_reverse_time.py",
+      "sha256": "4f9068c710a34d7f0bd72ad0c93a856d966ca58943ca84fa48f4addc686b0a2f",
+      "size": 249680
+    },
+    "g1_closure_freeze": {
+      "path": "framework/EAs/QM5_20002_ict-icytea-core/docs/candidate-analysis/g1_pre_outcome_closure_freeze_20260721.json",
+      "sha256": "84aa9a569d5e6a369ebf65fd6e40062070aa3b40cc4ff96e11d7d1b91586e453",
+      "size": 7233
+    },
+    "g1_closure_landed": {
+      "path": "framework/EAs/QM5_20002_ict-icytea-core/docs/candidate-analysis/g1_pre_outcome_closure_landed_20260721.json",
+      "sha256": "832535837651271b35e52ee08df6ddf34115777c0d01e3db3a18f78adac1106c",
+      "size": 2541
+    },
+    "g1_closure_task_helper": {
+      "path": "framework/EAs/QM5_20002_ict-icytea-core/tools/candidate_analysis/close_qm20002_g1_task.ps1",
+      "sha256": "0f375586ab41745f66636e0faa995d8dc7d1075a648803e565af500a7ea536da",
+      "size": 30387
+    },
+    "g1_closure_utility": {
+      "path": "framework/EAs/QM5_20002_ict-icytea-core/tools/candidate_analysis/close_qm20002_g1.py",
+      "sha256": "60869a4584f2415b7f1200f6ccec403da78ef97894990b28527564fee222408b",
+      "size": 117730
+    },
+    "g2_adapter": {
+      "path": "framework/EAs/QM5_20002_ict-icytea-core/tools/candidate_analysis/audit_short_ny_reverse_time_g2.py",
+      "sha256": "aec61374803cb69c9a74b004e6d0d3a6cfb6e07ea2c40cf45f06bc7cb11a29cc",
+      "size": 35371
+    },
+    "g2_adapter_tests": {
+      "path": "framework/EAs/QM5_20002_ict-icytea-core/tests/candidate_analysis/test_audit_short_ny_reverse_time_g2.py",
+      "sha256": "8ef7748a286d6d143779f1940a958fc18adf3ebcd578f6ad8954fd122a560af6",
+      "size": 4710
+    },
+    "g2_contract": {
+      "path": "framework/EAs/QM5_20002_ict-icytea-core/docs/candidate-analysis/short_ny_reverse_time_g2_contract.json",
+      "sha256": "417521437a1354ccd2d610fa02dc6439e4295b3563a43175cf85dbce54e9ded9",
+      "size": 4182
+    },
+    "g2_control_helper": {
+      "path": "framework/EAs/QM5_20002_ict-icytea-core/tools/candidate_analysis/assert_qm20002_control_path_g2.ps1",
+      "sha256": "94089ccda7420aaa1d56d959b8e8278453008514fd0be0569e32455618342330",
+      "size": 32945
+    },
+    "g2_helper_tests": {
+      "path": "framework/EAs/QM5_20002_ict-icytea-core/tests/candidate_analysis/test_qm20002_g2_helpers.py",
+      "sha256": "9eddec41e69572d7431b6a76972f80c89a10ae038924d12b0f7a6d01cd0f3210",
+      "size": 12985
+    },
+    "g2_runner_provenance": {
+      "path": "framework/EAs/QM5_20002_ict-icytea-core/docs/candidate-analysis/g2_run_smoke_worktree_provenance_20260721.json",
+      "sha256": "4fb69e664f1ade9a48fb8c20a576c9a56309ce1b8a45032ab8f0415c5a96cf11",
+      "size": 2818
+    },
+    "g2_scheduler_helper": {
+      "path": "framework/EAs/QM5_20002_ict-icytea-core/tools/candidate_analysis/run_outcome_fenced_task_g2.ps1",
+      "sha256": "13cd1335dba15a74a4253e1d6d1874ca69d80808812210b26510f6ff6f0fe0b1",
+      "size": 11527
+    },
+    "run_smoke_targeted_test": {
+      "path": "framework/scripts/tests/Test-RunSmokeNoHistoryScope.ps1",
+      "sha256": "797a5000a17e962a8bca6cfa01a1834eb57cc1e5c9d87c5a465d6dbefdc029d4",
+      "size": 7201
+    }
+  },
+  "foreign_runner": {
+    "base_commit": "adf26cd8b1ea61a306c9949217aad139a9971ab9",
+    "provenance": {
+      "path": "framework/EAs/QM5_20002_ict-icytea-core/docs/candidate-analysis/g2_run_smoke_worktree_provenance_20260721.json",
+      "sha256": "4fb69e664f1ade9a48fb8c20a576c9a56309ce1b8a45032ab8f0415c5a96cf11",
+      "size": 2818
+    },
+    "provenance_status": "STABLE_FOREIGN_WORKTREE_BYTES_NOT_COMMITTED",
+    "runner": {
+      "base_blob_oid": "7168554fe744cb7297f2a186b6850b4a67fa31e8",
+      "path": "framework/scripts/run_smoke.ps1",
+      "sha256": "a064f47217859491a7d515ec0269d8d7c11a375a9add8e3f07e0fa9ac4c8dc8a",
+      "size": 116270,
+      "worktree_filtered_blob_oid": "3668d94de57ee9f6c5a47e5956d3d2e53378a7c2",
+      "worktree_raw_blob_oid": "793bffee621e4d8cd93aa97a412141bedf5fbf8c"
+    },
+    "targeted_test": {
+      "base_blob_oid": "35b0f3c10a23c4966ed65cd6e59605e78133f5de",
+      "path": "framework/scripts/tests/Test-RunSmokeNoHistoryScope.ps1",
+      "sha256": "797a5000a17e962a8bca6cfa01a1834eb57cc1e5c9d87c5a465d6dbefdc029d4",
+      "size": 7201,
+      "worktree_filtered_blob_oid": "8e3d5873cb4f5fe16ffac6ece80294e8ed2bba47",
+      "worktree_raw_blob_oid": "8e3d5873cb4f5fe16ffac6ece80294e8ed2bba47"
+    }
+  },
+  "generation": "G2",
+  "policy": {
+    "external_expected_freeze_sha256_required": true,
+    "fresh_g2_pre_required": true,
+    "g1_gate_before_and_after_pre_required": true,
+    "g1_gate_revalidated_by_launch_worker_and_post": true,
+    "native_reports_read_before_fenced_post": false,
+    "outcome_data_read": false,
+    "strategy_contract_or_merit_gate_changes": false
+  },
+  "runtime_roles": {
+    "audit_control_path_helper": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20002_ict-icytea-core\\tools\\candidate_analysis\\assert_qm20002_control_path_g2.ps1",
+      "sha256": "94089ccda7420aaa1d56d959b8e8278453008514fd0be0569e32455618342330",
+      "size": 32945
+    },
+    "current_compile_controller": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20002_ict-icytea-core\\tools\\candidate_analysis\\compile_short_ny_v3.ps1",
+      "sha256": "c63f636df7b7512314e664bf49fc9c1ecf0d688a14ef3e5cdf437342fee9b3d9",
+      "size": 101172
+    },
+    "dev1_cleanup_helper": {
+      "path": "C:\\QM\\repo\\framework\\scripts\\cleanup_dev1_account_lease.ps1",
+      "sha256": "54b24bab19e93d3b8b1cabdde2ed9840859dd8ee737956e814f683537cd047b5",
+      "size": 29745
+    },
+    "dev1_identity_probe_child": {
+      "path": "C:\\QM\\repo\\framework\\scripts\\invoke_dev1_identity_probe.ps1",
+      "sha256": "3a672ca47607df8fad4a0deaab70a70d23d51d65b13bce80e981ecf0c7e8d9de",
+      "size": 9886
+    },
+    "dev1_lane_contract": {
+      "path": "C:\\QM\\repo\\framework\\registry\\dev1_lane_contract.json",
+      "sha256": "2039651b844c9fd5e8315cdb91eb14115d0e26e4f13e277450f053362a9e4223",
+      "size": 3299
+    },
+    "dev1_machine_credential": {
+      "path": "C:\\ProgramData\\QM\\DEV1\\credential.machine-dpapi.json",
+      "sha256": "21838cd368c84a6280bacd0440cdb80edbdf626fbfe39376448711c89b91c9ce",
+      "size": 867
+    },
+    "dev1_machine_credential_helper": {
+      "path": "C:\\QM\\repo\\framework\\scripts\\dev1_machine_credential.ps1",
+      "sha256": "894b913fccf5468cf0c62801431b2e53f413f951e426e9e099b718069fa1bc25",
+      "size": 23740
+    },
+    "dev1_machine_credential_probe": {
+      "path": "C:\\QM\\repo\\framework\\scripts\\probe_dev1_machine_credential.ps1",
+      "sha256": "29680b3b974647a6598955324124c8bab58e8f95499e771b24c9cd84bca02f23",
+      "size": 7400
+    },
+    "dev1_machine_credential_rotation_receipt": {
+      "path": "C:\\ProgramData\\QM\\DEV1\\credential.machine-dpapi.rotation-receipt.json",
+      "sha256": "8e85f7164b11aca3f107f6d2f10306b7b38141391faf563941a0d5270b4bc581",
+      "size": 1624
+    },
+    "g1_closure_freeze_manifest": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20002_ict-icytea-core\\docs\\candidate-analysis\\g1_pre_outcome_closure_freeze_20260721.json",
+      "sha256": "84aa9a569d5e6a369ebf65fd6e40062070aa3b40cc4ff96e11d7d1b91586e453",
+      "size": 7233
+    },
+    "g1_closure_landed_manifest": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20002_ict-icytea-core\\docs\\candidate-analysis\\g1_pre_outcome_closure_landed_20260721.json",
+      "sha256": "832535837651271b35e52ee08df6ddf34115777c0d01e3db3a18f78adac1106c",
+      "size": 2541
+    },
+    "g1_closure_task_helper": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20002_ict-icytea-core\\tools\\candidate_analysis\\close_qm20002_g1_task.ps1",
+      "sha256": "0f375586ab41745f66636e0faa995d8dc7d1075a648803e565af500a7ea536da",
+      "size": 30387
+    },
+    "g1_closure_utility": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20002_ict-icytea-core\\tools\\candidate_analysis\\close_qm20002_g1.py",
+      "sha256": "60869a4584f2415b7f1200f6ccec403da78ef97894990b28527564fee222408b",
+      "size": 117730
+    },
+    "g2_adapter": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20002_ict-icytea-core\\tools\\candidate_analysis\\audit_short_ny_reverse_time_g2.py",
+      "sha256": "aec61374803cb69c9a74b004e6d0d3a6cfb6e07ea2c40cf45f06bc7cb11a29cc",
+      "size": 35371
+    },
+    "g2_integration_contract": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20002_ict-icytea-core\\docs\\candidate-analysis\\short_ny_reverse_time_g2_contract.json",
+      "sha256": "417521437a1354ccd2d610fa02dc6439e4295b3563a43175cf85dbce54e9ded9",
+      "size": 4182
+    },
+    "g2_private_base_auditor": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20002_ict-icytea-core\\tools\\candidate_analysis\\audit_short_ny_reverse_time.py",
+      "sha256": "4f9068c710a34d7f0bd72ad0c93a856d966ca58943ca84fa48f4addc686b0a2f",
+      "size": 249680
+    },
+    "g2_runner_worktree_provenance": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20002_ict-icytea-core\\docs\\candidate-analysis\\g2_run_smoke_worktree_provenance_20260721.json",
+      "sha256": "4fb69e664f1ade9a48fb8c20a576c9a56309ce1b8a45032ab8f0415c5a96cf11",
+      "size": 2818
+    },
+    "metatester_binary": {
+      "path": "D:\\QM\\mt5\\DEV1\\metatester64.exe",
+      "sha256": "d1e991d84243ec913db8c82505ab69eab48babcb2fa6826ab3871b3360abb646",
+      "size": 21256304
+    },
+    "powershell_binary": {
+      "path": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+      "sha256": "7851e9d67e141bcebc0cc37086579fde0b5f0a47297bd2d446eace5d4b8e75c1",
+      "size": 301600
+    },
+    "python_binary": {
+      "path": "C:\\Python311\\python.exe",
+      "sha256": "5f7b89a612c9b8af1d6456cdfcd1dbe5ca630849e79aebced9bee9a6694952ec",
+      "size": 103192
+    },
+    "report_html_parser": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20009_ict-liquidity-portfolio\\tools\\audit_mt5_report.py",
+      "sha256": "c9dc5106383073b50150f0edb091338181dc53470615839fb252f5bc96a46c03",
+      "size": 49240
+    },
+    "runner_child": {
+      "path": "C:\\QM\\repo\\framework\\scripts\\invoke_dev1_smoke_task.ps1",
+      "sha256": "b9c91f64e26f43c23282d501ecfb2a7b985c316fef5d392e8075911919d4d6e7",
+      "size": 39405
+    },
+    "runner_controller": {
+      "path": "C:\\QM\\repo\\framework\\scripts\\run_dev1_smoke.ps1",
+      "sha256": "806291b806bec5b57683fbd052a288423ee3f143642e14b9c07bdf9b71b94ab7",
+      "size": 81162
+    },
+    "runner_smoke": {
+      "path": "C:\\QM\\repo\\framework\\scripts\\run_smoke.ps1",
+      "sha256": "a064f47217859491a7d515ec0269d8d7c11a375a9add8e3f07e0fa9ac4c8dc8a",
+      "size": 116270
+    },
+    "scheduled_task_helper": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20002_ict-icytea-core\\tools\\candidate_analysis\\run_outcome_fenced_task_g2.ps1",
+      "sha256": "13cd1335dba15a74a4253e1d6d1874ca69d80808812210b26510f6ff6f0fe0b1",
+      "size": 11527
+    },
+    "terminal_binary": {
+      "path": "D:\\QM\\mt5\\DEV1\\terminal64.exe",
+      "sha256": "abd32f97efea4d3ddaaf694230c13eacef228e71d5115da7202033aa226c6946",
+      "size": 109817456
+    },
+    "tester_groups_canonical": {
+      "path": "C:\\QM\\repo\\framework\\registry\\tester_groups\\Darwinex-Live_real.canonical.txt",
+      "sha256": "25314333af81faf48e2afe2db5d52beea640cc74ec33a85a46b7c43aadb921dd",
+      "size": 26806
+    },
+    "tester_groups_dev1": {
+      "path": "D:\\QM\\mt5\\DEV1\\MQL5\\Profiles\\Tester\\Groups\\Darwinex-Live_real.txt",
+      "sha256": "25314333af81faf48e2afe2db5d52beea640cc74ec33a85a46b7c43aadb921dd",
+      "size": 26806
+    }
+  },
+  "schema_version": 1,
+  "status": "FROZEN_READY_FOR_FRESH_G2_PRE"
+}
