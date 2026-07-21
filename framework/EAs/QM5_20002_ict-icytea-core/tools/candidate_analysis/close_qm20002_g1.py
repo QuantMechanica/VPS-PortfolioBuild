@@ -54,6 +54,30 @@ ABSENT_START_RACE_BASIS = (
     "INFERRED_FROM_DURABLE_TERMINAL_REJECT_WITH_OBSERVED_START_RACE_"
     "AND_SUCCESSFUL_UNREGISTER"
 )
+TASK_NEVER_RUN_BASIS = (
+    "INFERRED_FROM_EXACT_NEVER_RUN_TASK_HISTORY_AND_NON_RUNNING_TASK_STATE"
+)
+TASK_TERMINAL_REJECT_BASIS = (
+    "INFERRED_FROM_DURABLE_TERMINAL_REJECT_AND_NON_RUNNING_TASK_STATE"
+)
+TASK_LOCK_DIRECT_ZERO_BASIS = (
+    "INFERRED_FROM_CALLER_HELD_STATE_LOCK_AND_DIRECT_ZERO_DEV1_OWNER_OR_ROOT"
+)
+TASK_LOCK_INVENTORY_BASIS = (
+    "INFERRED_FROM_CALLER_HELD_STATE_LOCK_WITH_STABLE_"
+    "COMMAND_LINE_FREE_DEV1_INVENTORY"
+)
+TASK_PROCESS_INFERENCE_BASES = frozenset(
+    {
+        TASK_NEVER_RUN_BASIS,
+        TASK_TERMINAL_REJECT_BASIS,
+        TASK_LOCK_DIRECT_ZERO_BASIS,
+        TASK_LOCK_INVENTORY_BASIS,
+    }
+)
+ABSENT_PROCESS_INFERENCE_BASES = frozenset(
+    {ABSENT_NEVER_RUN_BASIS, ABSENT_START_RACE_BASIS}
+)
 
 HEX64 = re.compile(r"[0-9a-f]{64}")
 TERMINAL_PENDING_ERROR = re.compile(
@@ -729,15 +753,17 @@ def _validate_process_evidence(
     *,
     exact_fields: bool = False,
     allow_observed_dev1_processes: bool = False,
+    allowed_bases: frozenset[str] = (
+        TASK_PROCESS_INFERENCE_BASES | ABSENT_PROCESS_INFERENCE_BASES
+    ),
 ) -> None:
     if exact_fields:
         _assert_exact_fields(evidence, PROCESS_EVIDENCE_KEYS, label)
     if (
         type(evidence.get("matching_worker_process_count")) is not int
         or evidence.get("matching_worker_process_count") != 0
-        or not str(evidence.get("matching_worker_process_count_basis", "")).startswith(
-            "INFERRED_FROM_"
-        )
+        or type(evidence.get("matching_worker_process_count_basis")) is not str
+        or evidence.get("matching_worker_process_count_basis") not in allowed_bases
         or type(evidence.get("dev1_owner_process_count")) is not int
         or evidence.get("dev1_owner_process_count", -1) < 0
         or (
@@ -767,6 +793,7 @@ def _validate_task_evidence(
     require_never_run: bool = True,
     allow_running: bool = False,
     allow_observed_dev1_processes: bool = False,
+    basis_context: str = "settled",
 ) -> None:
     _assert_exact_fields(evidence, TASK_EVIDENCE_KEYS, label)
     expected_state = "Disabled" if disabled else "Ready"
@@ -806,7 +833,35 @@ def _validate_task_evidence(
         evidence,
         label,
         allow_observed_dev1_processes=allow_observed_dev1_processes,
+        allowed_bases=TASK_PROCESS_INFERENCE_BASES,
     )
+    if basis_context == "preterminal":
+        if (
+            evidence["dev1_owner_process_count"] > 0
+            or evidence["dev1_root_process_count"] > 0
+        ):
+            expected_basis = TASK_LOCK_INVENTORY_BASIS
+        elif evidence["state"] == "Running" or evidence["never_run"] is False:
+            expected_basis = TASK_LOCK_DIRECT_ZERO_BASIS
+        else:
+            expected_basis = TASK_NEVER_RUN_BASIS
+    elif basis_context == "quiesce":
+        if evidence["state"] == "Running":
+            expected_basis = TASK_LOCK_DIRECT_ZERO_BASIS
+        elif evidence["never_run"] is False:
+            expected_basis = TASK_TERMINAL_REJECT_BASIS
+        else:
+            expected_basis = TASK_NEVER_RUN_BASIS
+    elif basis_context == "settled":
+        expected_basis = (
+            TASK_NEVER_RUN_BASIS
+            if evidence["never_run"] is True
+            else TASK_TERMINAL_REJECT_BASIS
+        )
+    else:
+        raise ClosureError(f"{label} process inference context is invalid")
+    if evidence["matching_worker_process_count_basis"] != expected_basis:
+        raise ClosureError(f"{label} process inference basis drift")
 
 
 def _validate_task_probe(
@@ -821,6 +876,7 @@ def _validate_task_probe(
     allow_running: bool = False,
     allow_observed_dev1_processes: bool = False,
     expected_operation: str | None = None,
+    basis_context: str = "settled",
 ) -> Mapping[str, Any]:
     operation = expected_operation or (
         "InspectQuiesced" if disabled else "InspectReady"
@@ -856,6 +912,7 @@ def _validate_task_probe(
         require_never_run=require_never_run,
         allow_running=allow_running,
         allow_observed_dev1_processes=allow_observed_dev1_processes,
+        basis_context=basis_context,
     )
     return evidence
 
@@ -878,6 +935,7 @@ def _validate_preterminal_probe(
         allow_running=True,
         allow_observed_dev1_processes=True,
         expected_operation="InspectReadyOrRunning",
+        basis_context="preterminal",
     )
     state = evidence.get("state")
     never_run = evidence.get("never_run")
@@ -931,6 +989,7 @@ def _validate_quiesce_probe(
         label="quiesce before",
         require_never_run=False,
         allow_running=True,
+        basis_context="quiesce",
     )
     _validate_task_evidence(
         probe["after"],
@@ -938,6 +997,7 @@ def _validate_quiesce_probe(
         label="quiesce after",
         require_never_run=False,
         allow_running=True,
+        basis_context="quiesce",
     )
     if (
         probe["before"].get("task_contract_sha256")
@@ -1039,7 +1099,11 @@ def _validate_absent_probe(
         )
     ):
         raise ClosureError("task absence proof envelope drift")
-    _validate_process_evidence(probe, "task absence proof")
+    _validate_process_evidence(
+        probe,
+        "task absence proof",
+        allowed_bases=ABSENT_PROCESS_INFERENCE_BASES,
+    )
 
 
 def _assert_initial_state(
