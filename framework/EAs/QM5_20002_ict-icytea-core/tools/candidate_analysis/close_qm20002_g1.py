@@ -1119,17 +1119,18 @@ def _final_closed_state(
     *,
     start_race_observed: bool,
 ) -> dict[str, Any]:
-    pending_proof = _terminal_proof(state, intent_sha256)
-    if pending_proof.get("phase") != "QUIESCE_PENDING":
-        raise ClosureError("final closure requires the durable preliminary REJECT")
-    pending_start_race = pending_proof.get("start_race") == "true"
     if (
         type(start_race_observed) is not bool
-        or (pending_start_race and not start_race_observed)
         or type(quiesced_evidence.get("never_run")) is not bool
         or quiesced_evidence.get("never_run") is not (not start_race_observed)
     ):
         raise ClosureError("quiesced evidence/start-race disposition drift")
+    pending_proof = _terminal_proof(state, intent_sha256)
+    if pending_proof.get("phase") != "QUIESCE_PENDING":
+        raise ClosureError("final closure requires the durable preliminary REJECT")
+    pending_start_race = pending_proof.get("start_race") == "true"
+    if pending_start_race and not start_race_observed:
+        raise ClosureError("pre-terminal start race cannot be downgraded")
     task_contract = str(quiesced_evidence["task_contract_sha256"])
     disabled_xml = str(quiesced_evidence["task_xml_sha256"])
     quiesced_sha = canonical_sha256(quiesced_evidence)

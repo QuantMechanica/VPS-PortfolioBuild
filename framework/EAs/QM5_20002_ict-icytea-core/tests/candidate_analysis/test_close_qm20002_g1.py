@@ -1118,6 +1118,12 @@ def test_start_between_intent_and_preterminal_probe_is_rejected_before_disable(
         contract, fake_auditor, task, utility_sha, helper_sha
     )
     assert result["status"] == "CLOSED"
+    final_state = json.loads(contract.state_path.read_text(encoding="utf-8"))
+    final_match = closure.TERMINAL_CLOSED_ERROR.fullmatch(
+        final_state["terminal"]["error"]
+    )
+    assert final_match is not None
+    assert final_match.group("preterminal") == pending_match.group("preterminal")
     receipt = json.loads(contract.receipt_path.read_text(encoding="utf-8"))
     assert receipt["launch_state"]["task_start_race_observed"] is True
     assert receipt["scheduled_task"]["quiesced_probe_binding"][
@@ -1126,6 +1132,9 @@ def test_start_between_intent_and_preterminal_probe_is_rejected_before_disable(
     assert receipt["scheduled_task"]["quiesced_probe_binding"][
         "never_run"
     ] is False
+    assert receipt["scheduled_task"]["quiesced_probe_binding"][
+        "preterminal_probe_sha256"
+    ] == pending_match.group("preterminal")
     assert task.exists is False
 
 

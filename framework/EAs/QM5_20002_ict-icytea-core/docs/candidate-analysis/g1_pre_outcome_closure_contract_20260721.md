@@ -71,7 +71,7 @@ No other path, commit, size, hash, or normalization exception is permitted.
    to a schema-valid `QUIESCE_PENDING` terminal `REJECT` while both locks are
    still held. The pre-terminal probe accepts only exact `Ready` or `Running`
    state with unchanged identity/XML/contract, zero triggers, and zero direct
-   DEV1 side effects. Only `Ready` plus `never_run=true` is classified as no
+DEV1 side effects. Only `Ready` plus `never_run=true` is classified as no
    race; `Running`, or `Ready` plus `never_run=false` after a very short start,
    is durably classified as a start race before either lock is released. The
    terminal binds the canonical pre-terminal evidence and already has
@@ -122,6 +122,9 @@ identity hash, method, and double-snapshot proof without rejecting before the
 durable terminal state is published. The complete evidence is canonically
 hashed into `QUIESCE_PENDING`. Quiesce, AwaitQuiesced, final-state, absence, and
 receipt validation continue to require exact zero DEV1-owner/root counts.
+The pre-terminal evidence SHA is carried unchanged from `QUIESCE_PENDING` into
+the CLOSED terminal error and the receipt, so finalization cannot discard the
+race-time inventory or downgrade its start-race disposition.
 
 ## Crash recovery
 
