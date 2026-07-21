@@ -42,3 +42,4 @@ strategy_max_hold_days=30
 strategy_xti_max_spread_pts=1000
 strategy_xag_max_spread_pts=200
 strategy_deviation_points=20
+
