@@ -126,10 +126,10 @@ function Assert-QmTaskContract {
     if ((Get-QmNonNullItemCount -Items $Task.Triggers) -ne 0) {
         throw "Scheduled task '$TaskName' must be triggerless and on-demand only."
     }
-    if (@($Task.Actions).Count -ne 1) {
+    if ((Get-QmNonNullItemCount -Items $Task.Actions) -ne 1) {
         throw "Scheduled task '$TaskName' must have exactly one action."
     }
-    $action = @($Task.Actions)[0]
+    $action = @($Task.Actions | Where-Object { $null -ne $_ })[0]
     if (-not (ConvertTo-QmFullPath -Path $action.Execute -Label 'task action executable').Equals(
             $Contract.PythonExe, [System.StringComparison]::OrdinalIgnoreCase
         ) -or
@@ -182,7 +182,7 @@ function Get-QmSafeTaskMetadata {
         logon_type = 'S4U'
         run_level = 'Highest'
         triggers_count = Get-QmNonNullItemCount -Items $Task.Triggers
-        actions_count = @($Task.Actions).Count
+        actions_count = Get-QmNonNullItemCount -Items $Task.Actions
         enabled = [bool]$Task.Settings.Enabled
         allow_demand_start = [bool]$Task.Settings.AllowDemandStart
         multiple_instances = 'IgnoreNew'

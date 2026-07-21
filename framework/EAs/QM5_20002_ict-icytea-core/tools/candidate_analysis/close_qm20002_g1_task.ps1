@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet('Identity', 'Quiesce', 'InspectQuiesced', 'Unregister', 'ProbeAbsent')]
+    [ValidateSet('Identity', 'InspectReady', 'Quiesce', 'InspectQuiesced', 'Unregister', 'ProbeAbsent')]
     [string]$Operation,
 
     [ValidatePattern('^QM_QM20002_AUDIT_[0-9a-f]{24}$')]
@@ -23,6 +23,9 @@ param(
 
     [ValidatePattern('^[0-9a-f]{64}$')]
     [string]$ExpectedDisabledXmlSha256,
+
+    [ValidatePattern('^[0-9a-f]{64}$')]
+    [string]$ExpectedTaskContractSha256,
 
     [Parameter(Mandatory = $true)]
     [ValidatePattern('^[0-9a-f]{64}$')]
@@ -204,6 +207,48 @@ function Get-QmTaskInfoEvidence {
     }
 }
 
+function Get-QmTaskContractSha256 {
+    param(
+        [Parameter(Mandatory = $true)]$Task,
+        [Parameter(Mandatory = $true)]$Contract,
+        [Parameter(Mandatory = $true)][string]$PrincipalSid
+    )
+    $action = @($Task.Actions | Where-Object { $null -ne $_ })[0]
+    $actualLimit = [int64]([System.Xml.XmlConvert]::ToTimeSpan(
+        [string]$Task.Settings.ExecutionTimeLimit
+    ).TotalSeconds)
+    $payload = [ordered]@{
+        task_name = [string]$Task.TaskName
+        task_path = [string]$Task.TaskPath
+        description = [string]$Task.Description
+        principal_sid = $PrincipalSid
+        logon_type = [string]$Task.Principal.LogonType.ToString()
+        run_level = [string]$Task.Principal.RunLevel.ToString()
+        non_null_trigger_count = Get-QmNonNullItemCount -Items $Task.Triggers
+        non_null_action_count = Get-QmNonNullItemCount -Items $Task.Actions
+        action_execute = ConvertTo-QmFullPath -Path $action.Execute -Label 'task action executable'
+        action_arguments = [string]$action.Arguments
+        action_working_directory = ConvertTo-QmFullPath -Path $action.WorkingDirectory -Label 'task working directory'
+        multiple_instances = [string]$Task.Settings.MultipleInstances.ToString()
+        allow_demand_start = [bool]$Task.Settings.AllowDemandStart
+        start_when_available = [bool]$Task.Settings.StartWhenAvailable
+        allow_hard_terminate = [bool]$Task.Settings.AllowHardTerminate
+        hidden = [bool]$Task.Settings.Hidden
+        disallow_start_if_on_batteries = [bool]$Task.Settings.DisallowStartIfOnBatteries
+        stop_if_going_on_batteries = [bool]$Task.Settings.StopIfGoingOnBatteries
+        run_only_if_idle = [bool]$Task.Settings.RunOnlyIfIdle
+        run_only_if_network_available = [bool]$Task.Settings.RunOnlyIfNetworkAvailable
+        wake_to_run = [bool]$Task.Settings.WakeToRun
+        restart_count = [int]$Task.Settings.RestartCount
+        restart_interval = [string]$Task.Settings.RestartInterval
+        execution_limit_seconds = $actualLimit
+        expected_python = $Contract.PythonExe
+        expected_arguments = $Contract.Arguments
+        expected_repo_root = $Contract.RepoRoot
+    }
+    return Get-QmSha256Text -Value ($payload | ConvertTo-Json -Depth 5 -Compress)
+}
+
 function Assert-QmTaskContract {
     param(
         [Parameter(Mandatory = $true)]$Task,
@@ -296,6 +341,7 @@ function Get-QmClosureEvidence {
         non_null_trigger_count = Get-QmNonNullItemCount -Items $Task.Triggers
         non_null_action_count = Get-QmNonNullItemCount -Items $Task.Actions
         task_xml_sha256 = Get-QmTaskXmlSha256
+        task_contract_sha256 = Get-QmTaskContractSha256 -Task $Task -Contract $Contract -PrincipalSid $Identity.Sid
         matching_worker_process_count = [int]$processes.matching_worker_process_count
         dev1_owner_process_count = [int]$processes.dev1_owner_process_count
         dev1_root_process_count = [int]$processes.dev1_root_process_count
@@ -334,10 +380,32 @@ if ($Operation -eq 'ProbeAbsent') {
     exit 0
 }
 
+if ($Operation -eq 'InspectReady') {
+    $readyTask = Get-QmExactTask
+    $ready = Get-QmClosureEvidence -Task $readyTask -Contract $contract -Identity $identity -RequireDisabled $false
+    if ($ready.state -cne 'Ready') {
+        throw "Enabled G1 scheduled task '$TaskName' is not exactly Ready."
+    }
+    [ordered]@{
+        operation = 'InspectReady'
+        helper_sha256 = $actualHelperSha256
+        task_name = $TaskName
+        task_path = '\'
+        principal_sid = $identity.Sid
+        evidence = $ready
+        absent = $false
+    } | ConvertTo-Json -Depth 6 -Compress
+    exit 0
+}
+
 if ($Operation -eq 'Quiesce') {
     $beforeTask = Get-QmExactTask
     $beforeDisabled = -not [bool]$beforeTask.Settings.Enabled
     $before = Get-QmClosureEvidence -Task $beforeTask -Contract $contract -Identity $identity -RequireDisabled $beforeDisabled
+    if ([string]::IsNullOrWhiteSpace($ExpectedTaskContractSha256) -or
+        $before.task_contract_sha256 -cne $ExpectedTaskContractSha256) {
+        throw "G1 task contract drifted from the durable closure intent."
+    }
     if (-not $beforeDisabled -and $before.state -cne 'Ready') {
         throw "Enabled G1 scheduled task '$TaskName' is not exactly Ready before quiescence."
     }
@@ -346,6 +414,9 @@ if ($Operation -eq 'Quiesce') {
     }
     $afterTask = Get-QmExactTask
     $after = Get-QmClosureEvidence -Task $afterTask -Contract $contract -Identity $identity -RequireDisabled $true
+    if ($after.task_contract_sha256 -cne $ExpectedTaskContractSha256) {
+        throw "G1 task contract drifted while it was being quiesced."
+    }
     if ($after.state -cne 'Disabled') {
         throw "G1 scheduled task '$TaskName' did not reach Disabled state."
     }
@@ -368,6 +439,11 @@ if ($evidence.state -cne 'Disabled') {
     throw "G1 scheduled task '$TaskName' is not exactly Disabled."
 }
 
+if (-not [string]::IsNullOrWhiteSpace($ExpectedTaskContractSha256) -and
+    $evidence.task_contract_sha256 -cne $ExpectedTaskContractSha256) {
+    throw "G1 quiesced task contract drifted from the durable closure intent."
+}
+
 if ($Operation -eq 'InspectQuiesced') {
     [ordered]@{
         operation = 'InspectQuiesced'
@@ -381,7 +457,8 @@ if ($Operation -eq 'InspectQuiesced') {
     exit 0
 }
 
-if ([string]::IsNullOrWhiteSpace($ExpectedDisabledXmlSha256) -or
+if ([string]::IsNullOrWhiteSpace($ExpectedTaskContractSha256) -or
+    [string]::IsNullOrWhiteSpace($ExpectedDisabledXmlSha256) -or
     $evidence.task_xml_sha256 -cne $ExpectedDisabledXmlSha256) {
     throw "G1 disabled task XML drifted before unregister."
 }
