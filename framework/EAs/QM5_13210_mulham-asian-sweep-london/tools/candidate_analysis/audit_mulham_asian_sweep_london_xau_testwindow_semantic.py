@@ -68,6 +68,17 @@ SUPERSEDED_CONTRACT_PATH = T.CONTRACT_PATH
 NATIVE002_CLOSURE_PATH = (
     DOC_ROOT / "xauusd_native002_invalid_prelaunch_closure_20260721.json"
 )
+NATIVE003_TERMINAL_CLOSURE_PATH = (
+    DOC_ROOT / "xauusd_native003_invalid_terminal_closure_20260721.json"
+)
+EXPECTED_NATIVE003_TERMINAL_CLOSURE_SHA256 = (
+    "6ed181536f5d1e4ebdc5b1789021d3b8562d2bd3762330d9d0e101699b789cfe"
+)
+EXPECTED_NATIVE003_TERMINAL_CLOSURE_SIZE = 4159
+NATIVE003_TASK_NAME = "QM_QM13210_XAU_AUDIT_38fba6991891c72ac46912d0"
+NATIVE003_TERMINAL_STATUS = (
+    "NATIVE003_INVALID_TERMINAL_CLOSED_OUTCOME_BLIND_NO_FURTHER_ATTEMPTS"
+)
 BUILD_RECEIPT_PATH = T.BUILD_RECEIPT_PATH
 PRE_RECEIPT_PATH = ATTEMPT_001_RUN_ROOT / "pre_receipt.json"
 AUTHORIZATION_PATH = ATTEMPT_001_RUN_ROOT / "native_outcome_authorization.json"
@@ -440,6 +451,219 @@ def validate_native002_invalid_prelaunch_closure(
     }
 
 
+def validate_native003_invalid_terminal_closure(
+    path: Path = NATIVE003_TERMINAL_CLOSURE_PATH,
+    *,
+    probe_task_absence: bool = True,
+) -> dict[str, Any]:
+    """Validate the final NATIVE_003 lifecycle closure without opening outcomes.
+
+    External PRE/state/job/POST controls are immutable opaque bindings only.
+    The optional claim is bound as exact absence.  No tester/controller log,
+    report, deal row, economic outcome, or control JSON content is opened here.
+    """
+
+    closure_binding = B.file_binding(
+        path, EXPECTED_NATIVE003_TERMINAL_CLOSURE_SHA256
+    )
+    if closure_binding["size"] != EXPECTED_NATIVE003_TERMINAL_CLOSURE_SIZE:
+        raise B.InvalidEvidence("NATIVE_003 terminal closure size drift")
+    payload = B.load_json(path)
+    _require_exact_mapping(
+        payload,
+        {
+            "schema_version",
+            "artifact_type",
+            "status",
+            "created_utc",
+            "analysis_id",
+            "candidate",
+            "governing_contract",
+            "attempt",
+            "scheduled_task_absence",
+            "terminal_trigger",
+            "lifecycle_facts",
+            "outcome_fence",
+            "terminal_disposition",
+        },
+        "NATIVE_003 terminal closure",
+    )
+    expected_identity = {
+        "schema_version": 1,
+        "artifact_type": "QM5_13210_XAUUSD_NATIVE003_INVALID_TERMINAL_CLOSURE",
+        "status": NATIVE003_TERMINAL_STATUS,
+        "analysis_id": ANALYSIS_ID,
+    }
+    if any(payload.get(key) != value for key, value in expected_identity.items()):
+        raise B.InvalidEvidence("NATIVE_003 terminal closure identity drift")
+    created = B.parse_utc(
+        str(payload.get("created_utc", "")), "NATIVE_003 terminal closure created_utc"
+    )
+    if created > datetime.now(timezone.utc) + timedelta(minutes=5):
+        raise B.InvalidEvidence("NATIVE_003 terminal closure is future-dated")
+    if payload.get("candidate") != {
+        "ea_id": "QM5_13210",
+        "research_symbol": RESEARCH_SYMBOL,
+        "timeframe": "M5",
+        "model": 4,
+        "duplicates_per_cell": 2,
+    }:
+        raise B.InvalidEvidence("NATIVE_003 terminal candidate drift")
+
+    governing = _validate_recorded_binding(
+        payload.get("governing_contract"),
+        CONTRACT_PATH,
+        "NATIVE_003 governing contract",
+        assert_current=True,
+    )
+    if governing != {
+        "path": str(CONTRACT_PATH.resolve()),
+        "size": 11984,
+        "sha256": "ba73a0631ae2c8f438c6a7506003178e959e7d78a1e26e1763a10995201e53e5",
+    }:
+        raise B.InvalidEvidence("NATIVE_003 governing contract binding drift")
+
+    attempt = _require_exact_mapping(
+        payload.get("attempt"),
+        {
+            "attempt_id",
+            "run_root",
+            "pre_receipt",
+            "launch_state",
+            "launch_job",
+            "native_attempt_claim",
+            "post_receipt",
+        },
+        "NATIVE_003 terminal attempt",
+    )
+    if (
+        attempt.get("attempt_id") != "ATTEMPT_001"
+        or Path(str(attempt.get("run_root", ""))).resolve()
+        != ATTEMPT_001_RUN_ROOT.resolve()
+    ):
+        raise B.InvalidEvidence("NATIVE_003 terminal attempt identity drift")
+    expected_bindings = {
+        "pre_receipt": {
+            "path": str(PRE_RECEIPT_PATH.resolve()),
+            "size": 61749,
+            "sha256": "43223cc742505d77374d331d65de9b1b89c4f11b3170059a1f3a19deed440a56",
+        },
+        "launch_state": {
+            "path": str(STATE_PATH.resolve()),
+            "size": 23872,
+            "sha256": "6bd59a0d11186648be5214310efdb4ca20025c989e058dfb064a27e0032c3848",
+        },
+        "launch_job": {
+            "path": str(JOB_PATH.resolve()),
+            "size": 2176,
+            "sha256": "e7ec738628884b7fef83d70080e66bf4f1e1f271c5229ce71734e51e2bad2e84",
+        },
+        "post_receipt": {
+            "path": str(POST_RECEIPT_PATH.resolve()),
+            "size": 329,
+            "sha256": "fcb1ce882bf52c55db70c4c721fa9332267ca0aabdaa05c3eb1d40219b24f0e6",
+        },
+    }
+    for role, expected in expected_bindings.items():
+        observed = _validate_recorded_binding(
+            attempt.get(role), expected_path=Path(expected["path"]),
+            label=f"NATIVE_003 terminal {role}", assert_current=True
+        )
+        if observed != expected:
+            raise B.InvalidEvidence(f"NATIVE_003 terminal {role} binding drift")
+    claim = _require_exact_mapping(
+        attempt.get("native_attempt_claim"),
+        {"path", "exists"},
+        "NATIVE_003 terminal claim absence",
+    )
+    if claim != {"path": str(CLAIM_PATH.resolve()), "exists": False}:
+        raise B.InvalidEvidence("NATIVE_003 terminal claim-absence binding drift")
+    if CLAIM_PATH.exists():
+        raise B.InvalidEvidence("NATIVE_003 optional claim appeared after closure")
+
+    task_absence = _require_exact_mapping(
+        payload.get("scheduled_task_absence"),
+        {"inspection_mode", "task_name", "count", "states"},
+        "NATIVE_003 terminal task absence",
+    )
+    expected_task_absence = {
+        "inspection_mode": (
+            "EXACT_GET_SCHEDULED_TASK_NAME_ONLY_NO_ACTION_OR_LOG_CONTENT_READ"
+        ),
+        "task_name": NATIVE003_TASK_NAME,
+        "count": 0,
+        "states": [],
+    }
+    if task_absence != expected_task_absence:
+        raise B.InvalidEvidence("NATIVE_003 terminal scheduled-task absence drift")
+    if probe_task_absence:
+        live_absence = _probe_exact_task_absence(NATIVE003_TASK_NAME)
+        if live_absence != {
+            "task_name": NATIVE003_TASK_NAME,
+            "count": 0,
+            "states": [],
+        }:
+            raise B.InvalidEvidence("NATIVE_003 scheduled task appeared after closure")
+
+    if payload.get("terminal_trigger") != {
+        "classification": "POST_INVALID_RAW_TESTER_LOG_MISSING_MODEL4_MARKER",
+        "cell_id": "XAUUSD_DWX_DEV",
+        "duplicate_id": "run_01",
+        "required_marker": "MODEL_4_EVERY_TICK_BASED_ON_REAL_TICKS",
+        "fact_source": "POST_RECEIPT_INVALID_METADATA_READ_BY_ROOT",
+        "post_invocation_completed": True,
+        "post_returned_invalid": True,
+        "raw_tester_log_content_opened_by_closure": False,
+    }:
+        raise B.InvalidEvidence("NATIVE_003 terminal trigger drift")
+    if payload.get("lifecycle_facts") != {
+        "scheduler_worker_completed": True,
+        "post_receipt_materialized": True,
+        "optional_native_attempt_claim_materialized": False,
+        "claim_absence_does_not_restore_attempt_budget": True,
+        "one_shot_attempt_consumed": True,
+        "remaining_attempt_budget": 0,
+    }:
+        raise B.InvalidEvidence("NATIVE_003 lifecycle-consumption drift")
+    if payload.get("outcome_fence") != {
+        "pre_receipt_content_opened": False,
+        "launch_state_content_opened": False,
+        "launch_job_content_opened": False,
+        "post_receipt_content_opened_by_closure_author": False,
+        "post_receipt_invalid_metadata_read_by_root": True,
+        "tester_or_controller_log_content_opened": False,
+        "native_report_content_opened": False,
+        "deal_rows_opened": False,
+        "economic_outcomes_opened": False,
+        "strategy_outcomes_read": False,
+        "strategy_merit_adjudicated": False,
+        "control_artifacts_bound_by_path_size_sha256_only": True,
+        "live_process_command_lines_read": False,
+        "live_process_command_lines_emitted": False,
+    }:
+        raise B.InvalidEvidence("NATIVE_003 outcome fence drift")
+    if payload.get("terminal_disposition") != {
+        "classification": "INVALID_TERMINAL_NO_STRATEGY_MERIT_ADJUDICATION",
+        "strategy_merit_verdict": "NONE",
+        "family_final": True,
+        "post_retry_permitted": False,
+        "resume_permitted": False,
+        "relaunch_permitted": False,
+        "attempt_002_permitted": False,
+        "further_xau_audit_attempt_in_family_permitted": False,
+        "all_bound_controls_must_remain_immutable": True,
+    }:
+        raise B.InvalidEvidence("NATIVE_003 terminal disposition drift")
+    return payload
+
+
+def _raise_native003_family_closed(operation: str) -> None:
+    validate_native003_invalid_terminal_closure()
+    raise B.AuthorizationError(
+        f"NATIVE_003 XAU family is terminal-invalid; {operation} is permanently forbidden"
+    )
+
+
 _QUIESCENCE_POWERSHELL = T._QUIESCENCE_POWERSHELL
 
 
@@ -727,7 +951,9 @@ def validate_draft_contract(path: Path = CONTRACT_PATH) -> dict[str, Any]:
     return payload
 
 
-def _validate_artifact_bindings(bindings: Any) -> dict[str, dict[str, Any]]:
+def _validate_artifact_bindings(
+    bindings: Any, *, allow_historical_executed_adapter: bool = False
+) -> dict[str, dict[str, Any]]:
     paths = _artifact_contract_paths()
     if not isinstance(bindings, Mapping) or set(bindings) != set(paths):
         raise B.InvalidEvidence("semantic TestWindow artifact-role closure drift")
@@ -738,7 +964,15 @@ def _validate_artifact_bindings(bindings: Any) -> dict[str, dict[str, Any]]:
             raise B.InvalidEvidence(f"malformed finalized artifact binding: {role}")
         if Path(str(row.get("path", ""))).resolve() != path.resolve():
             raise B.InvalidEvidence(f"finalized artifact path drift: {role}")
-        B.assert_binding(row, f"semantic TestWindow finalized {role}")
+        if role == "adapter" and allow_historical_executed_adapter:
+            if (
+                not isinstance(row.get("size"), int)
+                or int(row["size"]) < 0
+                or not re.fullmatch(r"[0-9a-f]{64}", str(row.get("sha256", "")))
+            ):
+                raise B.InvalidEvidence("historical executed adapter binding drift")
+        else:
+            B.assert_binding(row, f"semantic TestWindow finalized {role}")
         result[role] = dict(row)
     return result
 
@@ -762,6 +996,7 @@ def _final_payload(
 
 
 def validate_analysis_contract(path: Path = CONTRACT_PATH) -> dict[str, Any]:
+    terminal_closure = validate_native003_invalid_terminal_closure()
     binding = B.file_binding(path)
     payload = B.load_json(path)
     expected_fields = set(_draft_contract_payload()) - {"finalization"}
@@ -793,7 +1028,9 @@ def validate_analysis_contract(path: Path = CONTRACT_PATH) -> dict[str, Any]:
     }
     if drift:
         raise B.InvalidEvidence(f"semantic TestWindow finalized drift: {sorted(drift)}")
-    artifacts = _validate_artifact_bindings(payload.get("artifact_bindings"))
+    artifacts = _validate_artifact_bindings(
+        payload.get("artifact_bindings"), allow_historical_executed_adapter=True
+    )
     predecessor = T.validate_analysis_contract(SUPERSEDED_CONTRACT_PATH)
     if predecessor["binding"] != artifacts["superseded_testwindow_contract"]:
         raise B.InvalidEvidence("superseded TestWindow contract binding drift")
@@ -807,6 +1044,13 @@ def validate_analysis_contract(path: Path = CONTRACT_PATH) -> dict[str, Any]:
         "artifact_bindings": artifacts,
         "supersession": payload["supersession"],
         "testwindow_off_quiescence": payload["testwindow_off_quiescence"],
+        "terminal_closure": {
+            "binding": B.file_binding(
+                NATIVE003_TERMINAL_CLOSURE_PATH,
+                EXPECTED_NATIVE003_TERMINAL_CLOSURE_SHA256,
+            ),
+            "status": terminal_closure["status"],
+        },
     }
 
 
@@ -888,6 +1132,7 @@ def _assert_finalized_contract_committed() -> None:
 
 
 def finalize_analysis_contract(source_commit: str) -> dict[str, Any]:
+    _raise_native003_family_closed("contract finalization or replacement")
     validate_draft_contract()
     _assert_namespace_contract(pristine=True)
     _assert_source_freeze_ready(source_commit)
@@ -910,6 +1155,7 @@ def preflight(
     build_receipt_path: Path,
     run_root: Path,
 ) -> dict[str, Any]:
+    _raise_native003_family_closed("PRE or another audit attempt")
     enforce_symbol_policy(symbol)
     closure = validate_native002_invalid_prelaunch_closure()
     _assert_namespace_contract(pristine=True)
@@ -1044,6 +1290,7 @@ def launch_persistent_task(
     *,
     resume: bool,
 ) -> dict[str, Any]:
+    _raise_native003_family_closed("resume, relaunch, or another audit attempt")
     if resume:
         raise B.AuthorizationError("semantic analysis is one-shot; resume is forbidden")
     _assert_exact_control_path(pre_path, PRE_RECEIPT_PATH, "PRE receipt")
@@ -1071,6 +1318,7 @@ def runner_command(pre: Mapping[str, Any], cell: Mapping[str, Any]) -> list[str]
 
 
 def _worker_run(job_path: Path) -> int:
+    _raise_native003_family_closed("worker replay or relaunch")
     _assert_exact_control_path(job_path, JOB_PATH, "launch job")
     assert_testwindow_off_quiescence()
     validate_native002_invalid_prelaunch_closure()
@@ -1078,6 +1326,7 @@ def _worker_run(job_path: Path) -> int:
 
 
 def postflight(pre_path: Path, pre_sha256: str, state_path: Path) -> dict[str, Any]:
+    _raise_native003_family_closed("POST retry")
     _assert_exact_control_path(pre_path, PRE_RECEIPT_PATH, "PRE receipt")
     _assert_exact_control_path(state_path, STATE_PATH, "launch state")
     pre = assert_pre_receipt(pre_path, pre_sha256)

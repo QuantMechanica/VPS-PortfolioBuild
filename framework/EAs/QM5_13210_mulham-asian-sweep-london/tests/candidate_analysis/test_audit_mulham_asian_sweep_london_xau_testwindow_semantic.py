@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import copy
 import importlib.util
+import inspect
 import json
 import sys
 from pathlib import Path
@@ -93,6 +95,97 @@ def test_closure_inventory_namespace_task_and_claim_absence_are_exact() -> None:
     assert payload["recovery_contract"]["superseding_namespace"] == str(
         subject.RUN_NAMESPACE_ROOT.resolve()
     )
+
+
+def test_native003_terminal_closure_binds_controls_and_consumes_family() -> None:
+    closure = subject.validate_native003_invalid_terminal_closure(
+        probe_task_absence=False
+    )
+    assert closure["status"] == subject.NATIVE003_TERMINAL_STATUS
+    attempt = closure["attempt"]
+    assert attempt["pre_receipt"]["sha256"] == (
+        "43223cc742505d77374d331d65de9b1b89c4f11b3170059a1f3a19deed440a56"
+    )
+    assert attempt["launch_state"]["size"] == 23872
+    assert attempt["launch_job"]["size"] == 2176
+    assert attempt["post_receipt"]["size"] == 329
+    assert attempt["native_attempt_claim"] == {
+        "path": str(subject.CLAIM_PATH.resolve()),
+        "exists": False,
+    }
+    assert closure["scheduled_task_absence"]["task_name"] == (
+        subject.NATIVE003_TASK_NAME
+    )
+    assert closure["scheduled_task_absence"]["count"] == 0
+    assert closure["terminal_trigger"] == {
+        "classification": "POST_INVALID_RAW_TESTER_LOG_MISSING_MODEL4_MARKER",
+        "cell_id": "XAUUSD_DWX_DEV",
+        "duplicate_id": "run_01",
+        "required_marker": "MODEL_4_EVERY_TICK_BASED_ON_REAL_TICKS",
+        "fact_source": "POST_RECEIPT_INVALID_METADATA_READ_BY_ROOT",
+        "post_invocation_completed": True,
+        "post_returned_invalid": True,
+        "raw_tester_log_content_opened_by_closure": False,
+    }
+    assert closure["lifecycle_facts"]["one_shot_attempt_consumed"] is True
+    assert closure["lifecycle_facts"]["remaining_attempt_budget"] == 0
+    disposition = closure["terminal_disposition"]
+    assert disposition["strategy_merit_verdict"] == "NONE"
+    assert disposition["post_retry_permitted"] is False
+    assert disposition["resume_permitted"] is False
+    assert disposition["relaunch_permitted"] is False
+    assert disposition["attempt_002_permitted"] is False
+    assert disposition["further_xau_audit_attempt_in_family_permitted"] is False
+
+
+@pytest.mark.parametrize(
+    ("section", "field", "replacement"),
+    [
+        ("terminal_trigger", "duplicate_id", "run_02"),
+        ("lifecycle_facts", "remaining_attempt_budget", 1),
+        ("outcome_fence", "strategy_merit_adjudicated", True),
+        ("terminal_disposition", "relaunch_permitted", True),
+    ],
+)
+def test_native003_terminal_closure_tamper_fails_closed(
+    monkeypatch: pytest.MonkeyPatch,
+    section: str,
+    field: str,
+    replacement: object,
+) -> None:
+    saved_loader = subject.B.load_json
+
+    def drifted_loader(path: Path):
+        payload = saved_loader(path)
+        if Path(path).resolve() == subject.NATIVE003_TERMINAL_CLOSURE_PATH.resolve():
+            payload = copy.deepcopy(payload)
+            payload[section][field] = replacement
+        return payload
+
+    monkeypatch.setattr(subject.B, "load_json", drifted_loader)
+    with pytest.raises(subject.InvalidEvidence):
+        subject.validate_native003_invalid_terminal_closure(
+            probe_task_absence=False
+        )
+
+
+def test_native003_terminal_validator_does_not_open_external_content_or_run_post() -> None:
+    source = inspect.getsource(subject.validate_native003_invalid_terminal_closure)
+    assert ".read_text(" not in source
+    assert ".read_bytes(" not in source
+    assert "_BASE_POSTFLIGHT(" not in source
+    assert "launch_persistent_task(" not in source
+    assert "subprocess.run(" not in source
+    fence = subject.B.load_json(subject.NATIVE003_TERMINAL_CLOSURE_PATH)[
+        "outcome_fence"
+    ]
+    assert fence["post_receipt_content_opened_by_closure_author"] is False
+    assert fence["post_receipt_invalid_metadata_read_by_root"] is True
+    assert fence["tester_or_controller_log_content_opened"] is False
+    assert fence["native_report_content_opened"] is False
+    assert fence["deal_rows_opened"] is False
+    assert fence["economic_outcomes_opened"] is False
+    assert fence["strategy_merit_adjudicated"] is False
 
 
 @pytest.mark.parametrize(
@@ -226,69 +319,99 @@ def test_runner_rechecks_quiescence_before_every_cell(
     assert calls == ["probe"]
 
 
-def test_worker_bootstrap_probes_before_delegating(
+def test_terminal_closure_blocks_worker_before_delegating(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     calls: list[str] = []
     monkeypatch.setattr(
         subject,
-        "_assert_exact_control_path",
-        lambda *_args: calls.append("path") or subject.JOB_PATH,
-    )
-    monkeypatch.setattr(
-        subject,
-        "assert_testwindow_off_quiescence",
-        lambda *_args: calls.append("probe") or {"status": "PASS"},
-    )
-    monkeypatch.setattr(
-        subject,
-        "validate_native002_invalid_prelaunch_closure",
-        lambda *_args, **_kwargs: calls.append("closure") or {"status": "PASS"},
+        "validate_native003_invalid_terminal_closure",
+        lambda *_args, **_kwargs: calls.append("terminal_closure")
+        or {"status": subject.NATIVE003_TERMINAL_STATUS},
     )
     monkeypatch.setattr(
         subject, "_BASE_WORKER_RUN", lambda _job: calls.append("worker") or 0
     )
-    assert subject._worker_run(subject.JOB_PATH) == 0
-    assert calls == ["path", "probe", "closure", "worker"]
+    with pytest.raises(subject.AuthorizationError, match="worker replay"):
+        subject._worker_run(subject.JOB_PATH)
+    assert calls == ["terminal_closure"]
 
 
-def test_launch_is_one_shot_and_rechecks_pre_bound_quiescence(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+def test_terminal_closure_blocks_resume_and_relaunch_before_base_launcher(
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    with pytest.raises(subject.AuthorizationError, match="one-shot"):
-        subject.launch_persistent_task(
-            subject.PRE_RECEIPT_PATH,
-            "a" * 64,
-            subject.AUTHORIZATION_PATH,
-            subject.STATE_PATH,
-            resume=True,
-        )
     calls: list[str] = []
-    monkeypatch.setattr(subject, "CLAIM_PATH", tmp_path / "absent_claim.json")
     monkeypatch.setattr(
         subject,
-        "assert_pre_receipt",
-        lambda *_args: {"testwindow_off_quiescence": {"status": "PASS"}},
-    )
-    monkeypatch.setattr(
-        subject,
-        "assert_testwindow_off_quiescence",
-        lambda *_args: calls.append("probe") or {"status": "PASS"},
+        "validate_native003_invalid_terminal_closure",
+        lambda *_args, **_kwargs: calls.append("terminal_closure")
+        or {"status": subject.NATIVE003_TERMINAL_STATUS},
     )
     monkeypatch.setattr(
         subject,
         "_BASE_LAUNCH_PERSISTENT_TASK",
-        lambda *_args, **kwargs: {"resume": kwargs["resume"]},
+        lambda *_args, **_kwargs: calls.append("base_launch"),
     )
-    result = subject.launch_persistent_task(
-        subject.PRE_RECEIPT_PATH,
-        "a" * 64,
-        subject.AUTHORIZATION_PATH,
-        subject.STATE_PATH,
-        resume=False,
+    for resume in (False, True):
+        with pytest.raises(subject.AuthorizationError, match="permanently forbidden"):
+            subject.launch_persistent_task(
+                subject.PRE_RECEIPT_PATH,
+                "a" * 64,
+                subject.AUTHORIZATION_PATH,
+                subject.STATE_PATH,
+                resume=resume,
+            )
+    assert calls == ["terminal_closure", "terminal_closure"]
+
+
+def test_terminal_closure_blocks_post_retry_before_base_postflight(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[str] = []
+    monkeypatch.setattr(
+        subject,
+        "validate_native003_invalid_terminal_closure",
+        lambda *_args, **_kwargs: calls.append("terminal_closure")
+        or {"status": subject.NATIVE003_TERMINAL_STATUS},
     )
-    assert result == {"resume": False}
-    assert calls == ["probe"]
+    monkeypatch.setattr(
+        subject,
+        "_BASE_POSTFLIGHT",
+        lambda *_args, **_kwargs: calls.append("base_post"),
+    )
+    with pytest.raises(subject.AuthorizationError, match="POST retry"):
+        subject.postflight(
+            subject.PRE_RECEIPT_PATH,
+            "a" * 64,
+            subject.STATE_PATH,
+        )
+    assert calls == ["terminal_closure"]
+
+
+def test_terminal_closure_blocks_new_pre_before_base_preflight(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[str] = []
+    monkeypatch.setattr(
+        subject,
+        "validate_native003_invalid_terminal_closure",
+        lambda *_args, **_kwargs: calls.append("terminal_closure")
+        or {"status": subject.NATIVE003_TERMINAL_STATUS},
+    )
+    monkeypatch.setattr(
+        subject,
+        "_BASE_PREFLIGHT",
+        lambda *_args, **_kwargs: calls.append("base_pre"),
+    )
+    with pytest.raises(subject.AuthorizationError, match="another audit attempt"):
+        subject.preflight(
+            subject.RESEARCH_SYMBOL,
+            subject.RESEARCH_READINESS_PATH,
+            subject.DATA_MANIFEST_PATH,
+            subject.BUILD_RECEIPT_PATH,
+            subject.ATTEMPT_001_RUN_ROOT,
+        )
+    assert calls == ["terminal_closure"]
 
 
 def test_finalized_contract_and_namespace_are_distinct_and_exact() -> None:
@@ -296,6 +419,9 @@ def test_finalized_contract_and_namespace_are_distinct_and_exact() -> None:
     contract = subject.B.load_json(subject.CONTRACT_PATH)
     assert contract["status"] == "FINALIZED_OUTCOME_BLIND"
     assert validated["source_build_commit"] == contract["source_build_commit"]
+    assert validated["terminal_closure"]["status"] == (
+        subject.NATIVE003_TERMINAL_STATUS
+    )
     assert contract["analysis_id"].endswith("XAUUSD_NATIVE_003")
     assert subject.RUN_NAMESPACE_ROOT.name == "XAUUSD_MULHAM_NATIVE_003"
     assert subject.RUN_NAMESPACE_ROOT != subject.SUPERSEDED_NAMESPACE_ROOT
