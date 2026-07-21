@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "artifact_type": "QM5_20002_SHORT_NY_RUNTIME_FREEZE",
+  "created_utc": "2026-07-21T01:37:11.4893900Z",
+  "analysis_id": "QM5_20002_SHORT_NY_REVERSE_TIME_SCREEN_001",
+  "status": "FROZEN_REVIEWED_READY_FOR_FRESH_PRE",
+  "files": {
+    "auditor": {
+      "path": "framework/EAs/QM5_20002_ict-icytea-core/tools/candidate_analysis/audit_short_ny_reverse_time.py",
+      "size": 245984,
+      "sha256": "793c641f7ba882e542509cc98debddf524bc442bea17f317156100b0c28f3ed9",
+      "last_content_commit": "c4cceb47e7f2cc8fe4e4711d2c2bc1f2fb9638e7"
+    },
+    "scheduled_task_helper": {
+      "path": "framework/EAs/QM5_20002_ict-icytea-core/tools/candidate_analysis/run_outcome_fenced_task.ps1",
+      "size": 11213,
+      "sha256": "a11e058453f362785a9c7f2d94b4194dd61de3dcadbeb0184884628e4dfe3bf2",
+      "last_content_commit": "3b729f9fd649cf3ca658a1444acca5c039abb042"
+    },
+    "control_path_helper": {
+      "path": "framework/EAs/QM5_20002_ict-icytea-core/tools/candidate_analysis/assert_qm20002_control_path.ps1",
+      "size": 18578,
+      "sha256": "7f6c1ae8ee5fc52a2e84c6921fe781e87a256ff31dc43cbc5ca47bd4ecffbf5e",
+      "last_content_commit": "c4cceb47e7f2cc8fe4e4711d2c2bc1f2fb9638e7"
+    },
+    "auditor_tests": {
+      "path": "framework/EAs/QM5_20002_ict-icytea-core/tests/candidate_analysis/test_audit_short_ny_reverse_time.py",
+      "size": 93880,
+      "sha256": "ea94e4af1243d41b4f132f4e02eabbd093d109da20e00631fc8a37e4a3cf6f0e",
+      "last_content_commit": "c4cceb47e7f2cc8fe4e4711d2c2bc1f2fb9638e7"
+    },
+    "static_audit": {
+      "path": "framework/EAs/QM5_20002_ict-icytea-core/docs/candidate-analysis/short_ny_reverse_time_static_audit.md",
+      "size": 12728,
+      "sha256": "623c1dacb42a31a8df0685162d16e3755a3b3446fe79b7f989e28da61b66b68b",
+      "last_content_commit": "ff4a5ef2008d066b3d1eee60d0b890a79280834a"
+    },
+    "compiler": {
+      "path": "framework/EAs/QM5_20002_ict-icytea-core/tools/candidate_analysis/compile_short_ny_v3.ps1",
+      "size": 101172,
+      "sha256": "c63f636df7b7512314e664bf49fc9c1ecf0d688a14ef3e5cdf437342fee9b3d9",
+      "commit": "6456cc273"
+    },
+    "compiler_tests": {
+      "path": "framework/EAs/QM5_20002_ict-icytea-core/tests/candidate_analysis/test_compile_short_ny_v3.py",
+      "size": 17596,
+      "sha256": "084d1d3746f871503d30bcf11884f930c75ebd79ece56beebc8a9cf0fe4177ea",
+      "commit": "6456cc273"
+    }
+  },
+  "shared_runtime": {
+    "wmi_exit_race_fix_commit": "13e82258f",
+    "invoke_dev1_smoke_task_sha256": "b9c91f64e26f43c23282d501ecfb2a7b985c316fef5d392e8075911919d4d6e7",
+    "frozen_run_smoke_size": 114652,
+    "frozen_run_smoke_sha256": "0d56520dafc02d2f443353b42c97fd70fb3c5b086abd0e5d166331b1845155c7"
+  },
+  "verification": {
+    "auditor_tests": "95_PASS",
+    "compiler_tests": "19_PASS",
+    "powershell_ast": "PASS",
+    "python_compile": "PASS",
+    "diff_check": "PASS",
+    "double_hash_delay_milliseconds": 30014,
+    "double_hash_identical": true,
+    "independent_adversarial_review": "DEFINITIVE_PASS_NO_BLOCKER",
+    "host_or_mt5_mutation_during_freeze": false
+  },
+  "launch_policy": {
+    "fresh_pre_required": true,
+    "fresh_short_lived_owner_authorization_required": true,
+    "retry_003_reuse_forbidden": true,
+    "next_run_root": "D:\\QM\\audit_runs\\QM5_20002_SHORT_NY_REVERSE_TIME_SCREEN_001_RETRY_004",
+    "outcomes_may_not_be_read_before_terminal_complete_and_fenced_post": true
+  }
+}
