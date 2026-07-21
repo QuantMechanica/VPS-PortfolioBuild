@@ -71,7 +71,19 @@ def _install_fake_quiescence(
     return registry
 
 
-def test_finalized_contract_is_exact_and_eur_only() -> None:
+def test_finalized_contract_is_exact_and_eur_only(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        subject,
+        "_probe_eur_task_prefix_absence",
+        lambda: {
+            "task_name_prefix": subject.SCHEDULED_TASK_PREFIX,
+            "matching_task_count": 0,
+            "task_names": [],
+            "states": [],
+        },
+    )
     validated = subject.validate_analysis_contract()
     finalized = subject.B.load_json(subject.CONTRACT_PATH)
     candidate = finalized["candidate"]
@@ -86,6 +98,97 @@ def test_finalized_contract_is_exact_and_eur_only() -> None:
     assert candidate["magic_slot"] == 0
     assert candidate["magic"] == 132100000
     assert candidate["registry_worst_case_rt_per_lot_usd"] == "5.85"
+    assert validated["eur_native001_terminal_closure"]["status"] == (
+        subject.EUR_NATIVE001_TERMINAL_STATUS
+    )
+
+
+def test_invalid_prelaunch_closure_is_outcome_blind_and_family_final() -> None:
+    closure = subject.validate_eur_native001_invalid_prelaunch_closure(
+        probe_task_absence=False
+    )
+    assert closure["attempt"]["pre_receipt"] == {
+        "path": str(subject.PRE_RECEIPT_PATH.resolve()),
+        "size": 56811,
+        "sha256": "f5604ea9c95598af47fb4ce97f3021ed3a8397ffa0f7e6b28153ccb8f9963eb3",
+    }
+    assert closure["attempt"]["native_attempt_claim"]["exists"] is False
+    assert closure["attempt"]["post_receipt"]["exists"] is False
+    assert closure["attempt"]["native_root"] == {
+        "path": str((subject.ATTEMPT_001_RUN_ROOT / "native").resolve()),
+        "exists": False,
+        "entries": [],
+    }
+    assert closure["lifecycle_facts"]["native_controller_start_count"] == 0
+    assert closure["lifecycle_facts"]["remaining_attempt_budget"] == 0
+    assert closure["outcome_fence"]["strategy_outcomes_read"] is False
+    assert closure["outcome_fence"]["live_process_command_lines_read"] is False
+    assert closure["terminal_disposition"] == {
+        "classification": "INVALID_INFRASTRUCTURE_PRELAUNCH_NO_STRATEGY_MERIT_ADJUDICATION",
+        "strategy_merit_verdict": "NONE",
+        "family_final": True,
+        "post_permitted": False,
+        "post_retry_permitted": False,
+        "resume_permitted": False,
+        "relaunch_permitted": False,
+        "attempt_002_permitted": False,
+        "further_eurusd_audit_attempt_in_family_permitted": False,
+        "all_bound_controls_must_remain_immutable": True,
+    }
+
+
+def test_invalid_prelaunch_closure_tamper_fails_closed(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    payload = json.loads(
+        subject.EUR_NATIVE001_INVALID_PRELAUNCH_CLOSURE_PATH.read_text(encoding="utf-8")
+    )
+    payload["terminal_disposition"]["attempt_002_permitted"] = True
+    tampered = tmp_path / "eurusd_native001_invalid_prelaunch_closure_20260721.json"
+    tampered.write_text(json.dumps(payload), encoding="utf-8")
+    monkeypatch.setattr(subject, "EUR_NATIVE001_INVALID_PRELAUNCH_CLOSURE_PATH", tampered)
+    monkeypatch.setattr(
+        subject,
+        "EXPECTED_EUR_NATIVE001_INVALID_PRELAUNCH_CLOSURE_SHA256",
+        subject.B.sha256_file(tampered),
+    )
+    monkeypatch.setattr(
+        subject,
+        "EXPECTED_EUR_NATIVE001_INVALID_PRELAUNCH_CLOSURE_SIZE",
+        tampered.stat().st_size,
+    )
+    with pytest.raises(subject.InvalidEvidence, match="terminal disposition drift"):
+        subject.validate_eur_native001_invalid_prelaunch_closure(
+            tampered, probe_task_absence=False
+        )
+
+
+@pytest.mark.parametrize(
+    "operation",
+    ["finalize", "assert_pre", "worker", "post"],
+)
+def test_terminal_closure_blocks_all_remaining_continuation_entrypoints(
+    monkeypatch: pytest.MonkeyPatch, operation: str
+) -> None:
+    monkeypatch.setattr(
+        subject,
+        "validate_eur_native001_invalid_prelaunch_closure",
+        lambda: {"status": subject.EUR_NATIVE001_TERMINAL_STATUS},
+    )
+    calls = {
+        "finalize": lambda: subject.finalize_analysis_contract(
+            subject.B.EXPECTED_BUILD_COMMIT
+        ),
+        "assert_pre": lambda: subject.assert_pre_receipt(
+            subject.PRE_RECEIPT_PATH, "a" * 64
+        ),
+        "worker": lambda: subject._worker_run(subject.JOB_PATH),
+        "post": lambda: subject.postflight(
+            subject.PRE_RECEIPT_PATH, "a" * 64, subject.STATE_PATH
+        ),
+    }
+    with pytest.raises(subject.AuthorizationError, match="permanently forbidden"):
+        calls[operation]()
 
 
 def test_eur_adapter_never_imports_or_delegates_to_xau_auditors() -> None:
@@ -110,7 +213,7 @@ def test_missing_eur_manifest_and_readiness_fail_explicitly(
         subject._require_preregistered_eur_data_artifacts()
 
 
-def test_preflight_stops_at_missing_data_before_base_or_xau_boundary(
+def test_terminal_family_closure_blocks_pre_before_data_or_base(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     manifest = tmp_path / "EURUSD_DWX_201807_202512_T1_manifest.json"
@@ -124,10 +227,10 @@ def test_preflight_stops_at_missing_data_before_base_or_xau_boundary(
     )
     monkeypatch.setattr(
         subject,
-        "_assert_xau_family_boundary",
-        lambda: pytest.fail("XAU boundary need not be touched after explicit data failure"),
+        "validate_eur_native001_invalid_prelaunch_closure",
+        lambda: {"status": subject.EUR_NATIVE001_TERMINAL_STATUS},
     )
-    with pytest.raises(subject.InvalidEvidence, match="preregistered tick-data"):
+    with pytest.raises(subject.AuthorizationError, match="terminal-invalid"):
         subject.preflight(
             "EURUSD.DWX",
             readiness,
@@ -203,40 +306,51 @@ def test_quiescence_contract_rechecks_all_native_boundaries() -> None:
     assert "ExecutablePath" in subject._QUIESCENCE_POWERSHELL
 
 
-def test_runner_rechecks_quiescence_before_every_cell(
+def test_terminal_closure_blocks_runner_before_quiescence_or_base(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    calls: list[object] = []
     proof = {"status": "PASS", "invariant": {}, "invariant_sha256": "x"}
     monkeypatch.setattr(
         subject,
         "assert_testwindow_off_quiescence",
-        lambda expected=None: calls.append(expected) or {"status": "PASS"},
+        lambda expected=None: pytest.fail("closed EUR family must not recheck for launch"),
     )
     monkeypatch.setattr(
         subject,
         "_BASE_RUNNER_COMMAND",
-        lambda pre, cell: ["bound-runner", str(cell["cell_id"])],
+        lambda pre, cell: pytest.fail("closed EUR family must not delegate a cell"),
     )
-    assert subject.runner_command(
-        {"testwindow_off_quiescence": proof}, {"cell_id": "DEV"}
-    ) == ["bound-runner", "DEV"]
-    assert calls == [proof]
+    monkeypatch.setattr(
+        subject,
+        "validate_eur_native001_invalid_prelaunch_closure",
+        lambda: {"status": subject.EUR_NATIVE001_TERMINAL_STATUS},
+    )
+    with pytest.raises(subject.AuthorizationError, match="native cell continuation"):
+        subject.runner_command(
+            {"testwindow_off_quiescence": proof}, {"cell_id": "DEV"}
+        )
 
 
-def test_resume_is_rejected_before_base_launcher(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_terminal_family_is_rejected_before_base_launcher(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setattr(
         subject,
         "_BASE_LAUNCH_PERSISTENT_TASK",
-        lambda *args, **kwargs: pytest.fail("base launch must not receive resume"),
+        lambda *args, **kwargs: pytest.fail("base launch must not receive a closed family"),
     )
-    with pytest.raises(subject.AuthorizationError, match="resume is forbidden"):
+    monkeypatch.setattr(
+        subject,
+        "validate_eur_native001_invalid_prelaunch_closure",
+        lambda: {"status": subject.EUR_NATIVE001_TERMINAL_STATUS},
+    )
+    with pytest.raises(subject.AuthorizationError, match="terminal-invalid"):
         subject.launch_persistent_task(
             subject.PRE_RECEIPT_PATH,
             "a" * 64,
             subject.AUTHORIZATION_PATH,
             subject.STATE_PATH,
-            resume=True,
+            resume=False,
         )
 
 

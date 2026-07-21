@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "artifact_type": "QM5_13210_EURUSD_NATIVE001_INVALID_PRELAUNCH_CLOSURE",
+  "status": "NATIVE001_INVALID_PRELAUNCH_CLOSED_OUTCOME_BLIND_FAMILY_FINAL",
+  "created_utc": "2026-07-21T12:04:14.8324282Z",
+  "analysis_id": "QM5_13210_MULHAM_ASIAN_SWEEP_LONDON_EURUSD_NATIVE_001",
+  "candidate": {
+    "ea_id": "QM5_13210",
+    "research_symbol": "EURUSD.DWX",
+    "timeframe": "M5",
+    "model": 4,
+    "duplicates_per_cell": 2,
+    "magic_slot": 0,
+    "magic": 132100000
+  },
+  "governing_contract": {
+    "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13210_mulham-asian-sweep-london\\docs\\candidate-analysis\\eurusd_testwindow_semantic_outcome_fenced_analysis_contract_20260721.json",
+    "size": 13774,
+    "sha256": "1962f3b81fbc5e070597a731749a44bb59f44b64ff7bd56f7f4b825bda864a6c"
+  },
+  "attempt": {
+    "attempt_id": "ATTEMPT_001",
+    "run_root": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\EURUSD_MULHAM_NATIVE_001\\ATTEMPT_001",
+    "pre_receipt": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\EURUSD_MULHAM_NATIVE_001\\ATTEMPT_001\\pre_receipt.json",
+      "size": 56811,
+      "sha256": "f5604ea9c95598af47fb4ce97f3021ed3a8397ffa0f7e6b28153ccb8f9963eb3"
+    },
+    "authorization": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\EURUSD_MULHAM_NATIVE_001\\ATTEMPT_001\\native_outcome_authorization.json",
+      "size": 714,
+      "sha256": "51c8e4e63f8928cfded9d338136897f4a79b75b6a157e67fce6f9aa7ea5e6829"
+    },
+    "launch_job": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\EURUSD_MULHAM_NATIVE_001\\ATTEMPT_001\\launch_job.json",
+      "size": 2176,
+      "sha256": "9892bb23a875bada40ff2a3ca381116937897d833c72e5ebe76e596190a1a4c6"
+    },
+    "launch_state": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\EURUSD_MULHAM_NATIVE_001\\ATTEMPT_001\\launch_state.json",
+      "size": 3707,
+      "sha256": "a01cc40c27b0c64bcf80f5b223ac11075665c5ba8b0f63aabe072053e89a8c30"
+    },
+    "native_attempt_claim": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\EURUSD_MULHAM_NATIVE_001\\ATTEMPT_001\\native_attempt_claim.json",
+      "exists": false
+    },
+    "post_receipt": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\EURUSD_MULHAM_NATIVE_001\\ATTEMPT_001\\post_receipt.json",
+      "exists": false
+    },
+    "native_root": {
+      "path": "D:\\QM\\reports\\candidate_analysis\\QM5_13210\\EURUSD_MULHAM_NATIVE_001\\ATTEMPT_001\\native",
+      "exists": false,
+      "entries": []
+    }
+  },
+  "scheduled_task_absence": {
+    "inspection_mode": "TASK_NAME_PREFIX_AND_STATE_ONLY_NO_ACTION_OR_LOG_CONTENT_READ",
+    "task_name_prefix": "QM_QM13210_EUR_AUDIT_",
+    "matching_task_count": 0,
+    "task_names": [],
+    "states": []
+  },
+  "terminal_trigger": {
+    "phase": "LAUNCH",
+    "classification": "SCHEDULED_TASK_HELPER_REGISTER_FAILED_BEFORE_REGISTRATION",
+    "exception_type": "AuthorizationError",
+    "safe_error": "scheduled-task helper 'Register' failed with exit 1",
+    "scheduler_registration_completed": false,
+    "scheduled_task_materialized": false,
+    "worker_registered": false,
+    "native_controller_started": false,
+    "fact_source": "ROOT_SUPPLIED_SAFE_METADATA_PLUS_TASK_NAME_PREFIX_ABSENCE"
+  },
+  "supplied_safe_state_projection": {
+    "source": "ROOT_SUPPLIED_SAFE_METADATA",
+    "launch_state_status": "PENDING_SCHEDULED",
+    "worker_pid": null,
+    "cell_status_counts": {
+      "PENDING": 4
+    },
+    "state_or_job_content_opened_by_closure_author": false
+  },
+  "lifecycle_facts": {
+    "pre_receipt_materialized": true,
+    "authorization_materialized": true,
+    "launch_job_materialized": true,
+    "launch_state_materialized": true,
+    "scheduled_task_materialized": false,
+    "scheduler_worker_started": false,
+    "native_root_materialized": false,
+    "native_controller_start_count": 0,
+    "native_summary_count": 0,
+    "native_outcome_artifact_count": 0,
+    "optional_native_attempt_claim_materialized": false,
+    "post_receipt_materialized": false,
+    "claim_absence_does_not_restore_attempt_budget": true,
+    "one_shot_attempt_consumed": true,
+    "remaining_attempt_budget": 0
+  },
+  "outcome_fence": {
+    "pre_receipt_content_opened_by_closure_author": false,
+    "authorization_content_opened_by_closure_author": false,
+    "launch_job_content_opened_by_closure_author": false,
+    "launch_state_content_opened_by_closure_author": false,
+    "supplied_safe_state_projection_used": true,
+    "controller_or_scheduler_log_content_opened": false,
+    "native_report_content_opened": false,
+    "tester_log_content_opened": false,
+    "deal_rows_opened": false,
+    "economic_outcomes_opened": false,
+    "strategy_outcomes_read": false,
+    "strategy_merit_adjudicated": false,
+    "control_artifacts_bound_by_path_size_sha256_only": true,
+    "filesystem_and_task_absence_checked_by_name_type_only": true,
+    "live_process_command_lines_read": false,
+    "live_process_command_lines_emitted": false
+  },
+  "terminal_disposition": {
+    "classification": "INVALID_INFRASTRUCTURE_PRELAUNCH_NO_STRATEGY_MERIT_ADJUDICATION",
+    "strategy_merit_verdict": "NONE",
+    "family_final": true,
+    "post_permitted": false,
+    "post_retry_permitted": false,
+    "resume_permitted": false,
+    "relaunch_permitted": false,
+    "attempt_002_permitted": false,
+    "further_eurusd_audit_attempt_in_family_permitted": false,
+    "all_bound_controls_must_remain_immutable": true
+  }
+}

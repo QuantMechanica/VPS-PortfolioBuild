@@ -21,6 +21,7 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
+import re
 import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
@@ -82,6 +83,17 @@ EXPECTED_XAU_NATIVE003_TERMINAL_CLOSURE_SHA256 = (
     "6ed181536f5d1e4ebdc5b1789021d3b8562d2bd3762330d9d0e101699b789cfe"
 )
 EXPECTED_XAU_NATIVE003_TERMINAL_CLOSURE_SIZE = 4159
+
+EUR_NATIVE001_INVALID_PRELAUNCH_CLOSURE_PATH = (
+    DOC_ROOT / "eurusd_native001_invalid_prelaunch_closure_20260721.json"
+)
+EXPECTED_EUR_NATIVE001_INVALID_PRELAUNCH_CLOSURE_SHA256 = (
+    "bfee1882e9d84594fe7c6d68d68935112889570888c48dabf910cd89ac345e16"
+)
+EXPECTED_EUR_NATIVE001_INVALID_PRELAUNCH_CLOSURE_SIZE = 5478
+EUR_NATIVE001_TERMINAL_STATUS = (
+    "NATIVE001_INVALID_PRELAUNCH_CLOSED_OUTCOME_BLIND_FAMILY_FINAL"
+)
 
 FARM_STATE_ROOT = Path(r"D:\QM\strategy_farm\state")
 FACTORY_OFF_FLAG_PATH = FARM_STATE_ROOT / "FACTORY_OFF.flag"
@@ -162,6 +174,324 @@ def _assert_xau_family_boundary() -> dict[str, Any]:
     if binding["size"] != EXPECTED_XAU_NATIVE003_TERMINAL_CLOSURE_SIZE:
         raise B.InvalidEvidence("XAU NATIVE_003 terminal closure size drift")
     return binding
+
+
+def _require_exact_mapping(value: Any, keys: set[str], label: str) -> Mapping[str, Any]:
+    if not isinstance(value, Mapping) or set(value) != keys:
+        raise B.InvalidEvidence(f"{label} schema drift")
+    return value
+
+
+def _validate_recorded_binding(
+    value: Any, expected_path: Path, label: str, *, assert_current: bool
+) -> dict[str, Any]:
+    row = _require_exact_mapping(value, {"path", "size", "sha256"}, label)
+    if Path(str(row.get("path", ""))).resolve() != expected_path.resolve():
+        raise B.InvalidEvidence(f"{label} path drift")
+    if (
+        not isinstance(row.get("size"), int)
+        or int(row["size"]) < 0
+        or not re.fullmatch(r"[0-9a-f]{64}", str(row.get("sha256", "")))
+    ):
+        raise B.InvalidEvidence(f"{label} binding drift")
+    result = dict(row)
+    if assert_current:
+        B.assert_binding(result, label)
+    return result
+
+
+def _probe_eur_task_prefix_absence() -> dict[str, Any]:
+    script = (
+        "$ErrorActionPreference='Stop';"
+        f"$p='{SCHEDULED_TASK_PREFIX}';"
+        "$t=@(Get-ScheduledTask -TaskName ($p+'*') -ErrorAction SilentlyContinue);"
+        "[ordered]@{task_name_prefix=$p;matching_task_count=$t.Count;"
+        "task_names=@($t|ForEach-Object{[string]$_.TaskName});"
+        "states=@($t|ForEach-Object{[string]$_.State})}"
+        "|ConvertTo-Json -Depth 4 -Compress"
+    )
+    completed = subprocess.run(
+        [
+            str(B.POWERSHELL_PATH.resolve()),
+            "-NoLogo",
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            script,
+        ],
+        cwd=REPO_ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        timeout=30,
+    )
+    if completed.returncode != 0:
+        raise B.InvalidEvidence("EUR scheduled-task prefix absence probe failed closed")
+    try:
+        payload = json.loads(completed.stdout.strip())
+    except json.JSONDecodeError as exc:
+        raise B.InvalidEvidence("EUR task-prefix probe returned invalid JSON") from exc
+    expected = {
+        "task_name_prefix": SCHEDULED_TASK_PREFIX,
+        "matching_task_count": 0,
+        "task_names": [],
+        "states": [],
+    }
+    if payload != expected:
+        raise B.InvalidEvidence("EUR audit scheduled task exists or probe schema drifted")
+    return payload
+
+
+def validate_eur_native001_invalid_prelaunch_closure(
+    path: Path = EUR_NATIVE001_INVALID_PRELAUNCH_CLOSURE_PATH,
+    *,
+    probe_task_absence: bool = True,
+) -> dict[str, Any]:
+    """Validate terminal EUR lifecycle closure without opening control content."""
+
+    closure_binding = B.file_binding(
+        path, EXPECTED_EUR_NATIVE001_INVALID_PRELAUNCH_CLOSURE_SHA256
+    )
+    if closure_binding["size"] != EXPECTED_EUR_NATIVE001_INVALID_PRELAUNCH_CLOSURE_SIZE:
+        raise B.InvalidEvidence("EUR NATIVE_001 invalid-prelaunch closure size drift")
+    payload = B.load_json(path)
+    _require_exact_mapping(
+        payload,
+        {
+            "schema_version",
+            "artifact_type",
+            "status",
+            "created_utc",
+            "analysis_id",
+            "candidate",
+            "governing_contract",
+            "attempt",
+            "scheduled_task_absence",
+            "terminal_trigger",
+            "supplied_safe_state_projection",
+            "lifecycle_facts",
+            "outcome_fence",
+            "terminal_disposition",
+        },
+        "EUR NATIVE_001 invalid-prelaunch closure",
+    )
+    expected_identity = {
+        "schema_version": 1,
+        "artifact_type": "QM5_13210_EURUSD_NATIVE001_INVALID_PRELAUNCH_CLOSURE",
+        "status": EUR_NATIVE001_TERMINAL_STATUS,
+        "analysis_id": ANALYSIS_ID,
+    }
+    if any(payload.get(key) != value for key, value in expected_identity.items()):
+        raise B.InvalidEvidence("EUR NATIVE_001 closure identity drift")
+    created = B.parse_utc(
+        str(payload.get("created_utc", "")), "EUR NATIVE_001 closure created_utc"
+    )
+    if created > datetime.now(timezone.utc) + timedelta(minutes=5):
+        raise B.InvalidEvidence("EUR NATIVE_001 closure is future-dated")
+    if payload.get("candidate") != {
+        "ea_id": "QM5_13210",
+        "research_symbol": RESEARCH_SYMBOL,
+        "timeframe": "M5",
+        "model": 4,
+        "duplicates_per_cell": 2,
+        "magic_slot": 0,
+        "magic": 132100000,
+    }:
+        raise B.InvalidEvidence("EUR NATIVE_001 terminal candidate drift")
+
+    governing = _validate_recorded_binding(
+        payload.get("governing_contract"),
+        CONTRACT_PATH,
+        "EUR NATIVE_001 governing contract",
+        assert_current=True,
+    )
+    if governing != {
+        "path": str(CONTRACT_PATH.resolve()),
+        "size": 13774,
+        "sha256": "1962f3b81fbc5e070597a731749a44bb59f44b64ff7bd56f7f4b825bda864a6c",
+    }:
+        raise B.InvalidEvidence("EUR NATIVE_001 governing contract binding drift")
+
+    attempt = _require_exact_mapping(
+        payload.get("attempt"),
+        {
+            "attempt_id",
+            "run_root",
+            "pre_receipt",
+            "authorization",
+            "launch_job",
+            "launch_state",
+            "native_attempt_claim",
+            "post_receipt",
+            "native_root",
+        },
+        "EUR NATIVE_001 terminal attempt",
+    )
+    if (
+        attempt.get("attempt_id") != "ATTEMPT_001"
+        or Path(str(attempt.get("run_root", ""))).resolve()
+        != ATTEMPT_001_RUN_ROOT.resolve()
+    ):
+        raise B.InvalidEvidence("EUR NATIVE_001 terminal attempt identity drift")
+    expected_bindings = {
+        "pre_receipt": {
+            "path": str(PRE_RECEIPT_PATH.resolve()),
+            "size": 56811,
+            "sha256": "f5604ea9c95598af47fb4ce97f3021ed3a8397ffa0f7e6b28153ccb8f9963eb3",
+        },
+        "authorization": {
+            "path": str(AUTHORIZATION_PATH.resolve()),
+            "size": 714,
+            "sha256": "51c8e4e63f8928cfded9d338136897f4a79b75b6a157e67fce6f9aa7ea5e6829",
+        },
+        "launch_job": {
+            "path": str(JOB_PATH.resolve()),
+            "size": 2176,
+            "sha256": "9892bb23a875bada40ff2a3ca381116937897d833c72e5ebe76e596190a1a4c6",
+        },
+        "launch_state": {
+            "path": str(STATE_PATH.resolve()),
+            "size": 3707,
+            "sha256": "a01cc40c27b0c64bcf80f5b223ac11075665c5ba8b0f63aabe072053e89a8c30",
+        },
+    }
+    for role, expected in expected_bindings.items():
+        observed = _validate_recorded_binding(
+            attempt.get(role),
+            Path(expected["path"]),
+            f"EUR NATIVE_001 terminal {role}",
+            assert_current=True,
+        )
+        if observed != expected:
+            raise B.InvalidEvidence(f"EUR NATIVE_001 terminal {role} binding drift")
+
+    claim = _require_exact_mapping(
+        attempt.get("native_attempt_claim"),
+        {"path", "exists"},
+        "EUR NATIVE_001 claim absence",
+    )
+    if claim != {"path": str(CLAIM_PATH.resolve()), "exists": False} or CLAIM_PATH.exists():
+        raise B.InvalidEvidence("EUR NATIVE_001 optional claim appeared after closure")
+    post = _require_exact_mapping(
+        attempt.get("post_receipt"), {"path", "exists"}, "EUR NATIVE_001 POST absence"
+    )
+    if post != {"path": str(POST_RECEIPT_PATH.resolve()), "exists": False} or POST_RECEIPT_PATH.exists():
+        raise B.InvalidEvidence("EUR NATIVE_001 POST appeared after closure")
+    native_path = ATTEMPT_001_RUN_ROOT / "native"
+    native = _require_exact_mapping(
+        attempt.get("native_root"),
+        {"path", "exists", "entries"},
+        "EUR NATIVE_001 native-root absence",
+    )
+    if native != {
+        "path": str(native_path.resolve()),
+        "exists": False,
+        "entries": [],
+    } or native_path.exists():
+        raise B.InvalidEvidence("EUR NATIVE_001 native root appeared after closure")
+
+    task_absence = _require_exact_mapping(
+        payload.get("scheduled_task_absence"),
+        {
+            "inspection_mode",
+            "task_name_prefix",
+            "matching_task_count",
+            "task_names",
+            "states",
+        },
+        "EUR NATIVE_001 scheduled-task absence",
+    )
+    if task_absence != {
+        "inspection_mode": "TASK_NAME_PREFIX_AND_STATE_ONLY_NO_ACTION_OR_LOG_CONTENT_READ",
+        "task_name_prefix": SCHEDULED_TASK_PREFIX,
+        "matching_task_count": 0,
+        "task_names": [],
+        "states": [],
+    }:
+        raise B.InvalidEvidence("EUR NATIVE_001 scheduled-task absence drift")
+    if probe_task_absence:
+        _probe_eur_task_prefix_absence()
+
+    if payload.get("terminal_trigger") != {
+        "phase": "LAUNCH",
+        "classification": "SCHEDULED_TASK_HELPER_REGISTER_FAILED_BEFORE_REGISTRATION",
+        "exception_type": "AuthorizationError",
+        "safe_error": "scheduled-task helper 'Register' failed with exit 1",
+        "scheduler_registration_completed": False,
+        "scheduled_task_materialized": False,
+        "worker_registered": False,
+        "native_controller_started": False,
+        "fact_source": "ROOT_SUPPLIED_SAFE_METADATA_PLUS_TASK_NAME_PREFIX_ABSENCE",
+    }:
+        raise B.InvalidEvidence("EUR NATIVE_001 terminal trigger drift")
+    if payload.get("supplied_safe_state_projection") != {
+        "source": "ROOT_SUPPLIED_SAFE_METADATA",
+        "launch_state_status": "PENDING_SCHEDULED",
+        "worker_pid": None,
+        "cell_status_counts": {"PENDING": 4},
+        "state_or_job_content_opened_by_closure_author": False,
+    }:
+        raise B.InvalidEvidence("EUR NATIVE_001 supplied state projection drift")
+    if payload.get("lifecycle_facts") != {
+        "pre_receipt_materialized": True,
+        "authorization_materialized": True,
+        "launch_job_materialized": True,
+        "launch_state_materialized": True,
+        "scheduled_task_materialized": False,
+        "scheduler_worker_started": False,
+        "native_root_materialized": False,
+        "native_controller_start_count": 0,
+        "native_summary_count": 0,
+        "native_outcome_artifact_count": 0,
+        "optional_native_attempt_claim_materialized": False,
+        "post_receipt_materialized": False,
+        "claim_absence_does_not_restore_attempt_budget": True,
+        "one_shot_attempt_consumed": True,
+        "remaining_attempt_budget": 0,
+    }:
+        raise B.InvalidEvidence("EUR NATIVE_001 lifecycle-consumption drift")
+    if payload.get("outcome_fence") != {
+        "pre_receipt_content_opened_by_closure_author": False,
+        "authorization_content_opened_by_closure_author": False,
+        "launch_job_content_opened_by_closure_author": False,
+        "launch_state_content_opened_by_closure_author": False,
+        "supplied_safe_state_projection_used": True,
+        "controller_or_scheduler_log_content_opened": False,
+        "native_report_content_opened": False,
+        "tester_log_content_opened": False,
+        "deal_rows_opened": False,
+        "economic_outcomes_opened": False,
+        "strategy_outcomes_read": False,
+        "strategy_merit_adjudicated": False,
+        "control_artifacts_bound_by_path_size_sha256_only": True,
+        "filesystem_and_task_absence_checked_by_name_type_only": True,
+        "live_process_command_lines_read": False,
+        "live_process_command_lines_emitted": False,
+    }:
+        raise B.InvalidEvidence("EUR NATIVE_001 outcome fence drift")
+    if payload.get("terminal_disposition") != {
+        "classification": "INVALID_INFRASTRUCTURE_PRELAUNCH_NO_STRATEGY_MERIT_ADJUDICATION",
+        "strategy_merit_verdict": "NONE",
+        "family_final": True,
+        "post_permitted": False,
+        "post_retry_permitted": False,
+        "resume_permitted": False,
+        "relaunch_permitted": False,
+        "attempt_002_permitted": False,
+        "further_eurusd_audit_attempt_in_family_permitted": False,
+        "all_bound_controls_must_remain_immutable": True,
+    }:
+        raise B.InvalidEvidence("EUR NATIVE_001 terminal disposition drift")
+    return payload
+
+
+def _raise_eur_native001_family_closed(operation: str) -> None:
+    validate_eur_native001_invalid_prelaunch_closure()
+    raise B.AuthorizationError(
+        f"NATIVE_001 EUR family is terminal-invalid; {operation} is permanently forbidden"
+    )
 
 
 def enforce_symbol_policy(symbol: str) -> None:
@@ -605,7 +935,9 @@ def validate_draft_contract(path: Path = CONTRACT_PATH) -> dict[str, Any]:
     return payload
 
 
-def _validate_artifact_bindings(bindings: Any) -> dict[str, dict[str, Any]]:
+def _validate_artifact_bindings(
+    bindings: Any, *, allow_historical_executed_adapter: bool = False
+) -> dict[str, dict[str, Any]]:
     paths = _artifact_contract_paths()
     if not isinstance(bindings, Mapping) or set(bindings) != set(paths):
         raise B.InvalidEvidence("semantic TestWindow EUR artifact-role closure drift")
@@ -616,7 +948,15 @@ def _validate_artifact_bindings(bindings: Any) -> dict[str, dict[str, Any]]:
             raise B.InvalidEvidence(f"malformed finalized artifact binding: {role}")
         if Path(str(row.get("path", ""))).resolve() != path.resolve():
             raise B.InvalidEvidence(f"finalized artifact path drift: {role}")
-        B.assert_binding(row, f"semantic TestWindow EUR finalized {role}")
+        if role == "adapter" and allow_historical_executed_adapter:
+            if (
+                not isinstance(row.get("size"), int)
+                or int(row["size"]) < 0
+                or not re.fullmatch(r"[0-9a-f]{64}", str(row.get("sha256", "")))
+            ):
+                raise B.InvalidEvidence("historical executed EUR adapter binding drift")
+        else:
+            B.assert_binding(row, f"semantic TestWindow EUR finalized {role}")
         result[role] = dict(row)
     closure = result["xau_native003_terminal_closure"]
     if closure != _assert_xau_family_boundary():
@@ -666,6 +1006,7 @@ def _final_payload(
 
 
 def validate_analysis_contract(path: Path = CONTRACT_PATH) -> dict[str, Any]:
+    terminal_closure = validate_eur_native001_invalid_prelaunch_closure()
     binding = B.file_binding(path)
     payload = B.load_json(path)
     expected_fields = set(_draft_contract_payload()) - {"finalization"}
@@ -699,7 +1040,9 @@ def validate_analysis_contract(path: Path = CONTRACT_PATH) -> dict[str, Any]:
         raise B.InvalidEvidence(
             f"semantic TestWindow EUR finalized drift: {sorted(drift)}"
         )
-    artifacts = _validate_artifact_bindings(payload.get("artifact_bindings"))
+    artifacts = _validate_artifact_bindings(
+        payload.get("artifact_bindings"), allow_historical_executed_adapter=True
+    )
     _validate_frozen_eur_execution_identity(artifacts, source_commit)
     _require_preregistered_eur_data_artifacts()
     return {
@@ -709,6 +1052,13 @@ def validate_analysis_contract(path: Path = CONTRACT_PATH) -> dict[str, Any]:
         "artifact_bindings": artifacts,
         "testwindow_off_quiescence": payload["testwindow_off_quiescence"],
         "xau_family_boundary": payload["xau_family_boundary"],
+        "eur_native001_terminal_closure": {
+            "binding": B.file_binding(
+                EUR_NATIVE001_INVALID_PRELAUNCH_CLOSURE_PATH,
+                EXPECTED_EUR_NATIVE001_INVALID_PRELAUNCH_CLOSURE_SHA256,
+            ),
+            "status": terminal_closure["status"],
+        },
     }
 
 
@@ -766,6 +1116,7 @@ def _assert_finalized_contract_committed() -> None:
 
 
 def finalize_analysis_contract(source_commit: str) -> dict[str, Any]:
+    _raise_eur_native001_family_closed("contract finalization or replacement")
     validate_draft_contract()
     _assert_namespace_contract(pristine=True)
     _assert_source_freeze_ready(source_commit)
@@ -790,6 +1141,7 @@ def preflight(
     build_receipt_path: Path,
     run_root: Path,
 ) -> dict[str, Any]:
+    _raise_eur_native001_family_closed("PRE or another audit attempt")
     enforce_symbol_policy(symbol)
     _assert_exact_data_paths(data_manifest_path, research_readiness_receipt_path)
     _require_preregistered_eur_data_artifacts()
@@ -845,6 +1197,7 @@ def preflight(
 
 
 def assert_pre_receipt(path: Path, expected_sha256: str) -> dict[str, Any]:
+    _raise_eur_native001_family_closed("PRE reuse or continuation")
     _assert_exact_control_path(path, PRE_RECEIPT_PATH, "PRE receipt")
     contract = validate_analysis_contract()
     _assert_finalized_contract_committed()
@@ -918,6 +1271,7 @@ def launch_persistent_task(
     *,
     resume: bool,
 ) -> dict[str, Any]:
+    _raise_eur_native001_family_closed("resume, relaunch, or another audit attempt")
     if resume:
         raise B.AuthorizationError("EUR semantic analysis is one-shot; resume is forbidden")
     _assert_exact_control_path(pre_path, PRE_RECEIPT_PATH, "PRE receipt")
@@ -937,6 +1291,7 @@ def launch_persistent_task(
 
 
 def runner_command(pre: Mapping[str, Any], cell: Mapping[str, Any]) -> list[str]:
+    _raise_eur_native001_family_closed("native cell continuation")
     proof = pre.get("testwindow_off_quiescence")
     if not isinstance(proof, Mapping):
         raise B.InvalidEvidence("worker cell lacks PRE-bound semantic TestWindow proof")
@@ -945,6 +1300,7 @@ def runner_command(pre: Mapping[str, Any], cell: Mapping[str, Any]) -> list[str]
 
 
 def _worker_run(job_path: Path) -> int:
+    _raise_eur_native001_family_closed("worker replay or continuation")
     _assert_exact_control_path(job_path, JOB_PATH, "launch job")
     assert_testwindow_off_quiescence()
     _assert_xau_family_boundary()
@@ -952,6 +1308,7 @@ def _worker_run(job_path: Path) -> int:
 
 
 def postflight(pre_path: Path, pre_sha256: str, state_path: Path) -> dict[str, Any]:
+    _raise_eur_native001_family_closed("POST or POST retry")
     _assert_exact_control_path(pre_path, PRE_RECEIPT_PATH, "PRE receipt")
     _assert_exact_control_path(state_path, STATE_PATH, "launch state")
     pre = assert_pre_receipt(pre_path, pre_sha256)
