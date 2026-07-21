@@ -107,14 +107,17 @@ WRITE_OWNER; `GENERIC_READ` and `GENERIC_EXECUTE` are non-replacing too. Any
 unknown raw bit, null DACL or unsupported raw DACL ACE is ambiguous and rejected
 fail-closed. The create/write allowance applies only when the untrusted ACE
 cannot propagate to the new anchor, with one narrow stock-volume exception:
-BUILTIN\Users `0x00000004/CI` and `0x00000002/CI|IO` (optionally carrying only
-the inherited marker) are accepted. The helper creates every controlled
-directory with `CreateDirectoryW` and the protected SYSTEM/Administrators
-security descriptor in the same kernel operation; there is therefore no
-unprotected inherited-ACL interval. An already-created race path makes the
-exclusive create fail and is neither repaired nor adopted. Any other
-inheritable Users/BATCH write/create SID, mask, object/callback ACE or flag
-shape remains rejected.
+BUILTIN\Users `0x00000004/CI` (explicit or `CI|ID` inherited), the explicit-root
+`0x00000002/CI|IO`, and the Windows-inherited child form
+`0x00000002/CI|ID` are accepted. Windows clears `IO` and sets `ID` when that ACE
+is inherited by a child container; the matcher requires `ID` for the shortened
+`0x2/CI` form, so an explicit `0x2/CI`, retained `CI|IO|ID`, OI/NP variant,
+wrong SID, callback/object ACE or any other mask remains rejected. The helper
+creates every controlled directory with
+`CreateDirectoryW` and the protected SYSTEM/Administrators security descriptor
+in the same kernel operation; there is therefore no unprotected inherited-ACL
+interval. An already-created race path makes the exclusive create fail and is
+neither repaired nor adopted.
 
 A normal inherit-only CREATOR OWNER/GROUP ACE is substituted with the bootstrap
 token's effective owner/primary-group SID. The helper reads both SIDs from its

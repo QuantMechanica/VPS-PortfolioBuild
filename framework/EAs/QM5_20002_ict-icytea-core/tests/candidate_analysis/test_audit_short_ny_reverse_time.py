@@ -1109,7 +1109,9 @@ def test_control_helper_closes_volume_ancestor_owner_and_token_group_surface() -
     )
     assert subject.CONTROL_ANCESTOR_STOCK_VOLUME_BOOTSTRAP_ACE_SHAPES == [
         "BU:0x00000004:CI",
+        "BU:0x00000004:CI|ID",
         "BU:0x00000002:CI|IO",
+        "BU:0x00000002:CI|ID",
     ]
     assert subject.CONTROL_ATOMIC_PROTECTED_DIRECTORY_CREATE_REQUIRED is True
     assert "CurrentCreatorSids" in helper
@@ -1280,7 +1282,7 @@ $afterRace = [Convert]::ToBase64String(
         'O:BAG:BAD:(A;CI;0x00000004;;;BU)(A;CIIO;0x00000002;;;BU)'
     )
     inherited_stock_d_drive_create_aces_allowed = Test-RawAncestorAccepted (
-        'O:BAG:BAD:(A;CIID;0x00000004;;;BU)(A;CIIOID;0x00000002;;;BU)'
+        'O:BAG:BAD:(A;CIID;0x00000004;;;BU)(A;CIID;0x00000002;;;BU)'
     )
     ancestor_users_modify_rejected = -not (Test-RawAncestorAccepted (
         'O:BAG:BAD:(A;;0x000301bf;;;BU)'
@@ -1323,6 +1325,12 @@ $afterRace = [Convert]::ToBase64String(
     ))
     hostile_stock_mask_without_inherit_only_rejected = -not (Test-RawAncestorAccepted (
         'O:BAG:BAD:(A;CI;0x00000002;;;BU)'
+    ))
+    hostile_inherited_mask_retaining_inherit_only_rejected = -not (Test-RawAncestorAccepted (
+        'O:BAG:BAD:(A;CIIOID;0x00000002;;;BU)'
+    ))
+    hostile_stock_mask_with_no_propagate_rejected = -not (Test-RawAncestorAccepted (
+        'O:BAG:BAD:(A;CINPID;0x00000002;;;BU)'
     ))
     hostile_stock_shape_for_authenticated_users_rejected = -not (Test-RawAncestorAccepted (
         'O:BAG:BAD:(A;CI;0x00000004;;;AU)'
@@ -1412,6 +1420,8 @@ $afterRace = [Convert]::ToBase64String(
         "inheritable_create_only_users_rejected": True,
         "hostile_stock_mask_with_object_inherit_rejected": True,
         "hostile_stock_mask_without_inherit_only_rejected": True,
+        "hostile_inherited_mask_retaining_inherit_only_rejected": True,
+        "hostile_stock_mask_with_no_propagate_rejected": True,
         "hostile_stock_shape_for_authenticated_users_rejected": True,
         "object_generic_all_users_rejected": True,
         "creator_owner_inherit_only_generic_all_allowed": True,

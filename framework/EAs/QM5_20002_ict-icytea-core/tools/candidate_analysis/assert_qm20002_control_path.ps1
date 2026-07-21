@@ -69,7 +69,9 @@ $ancestorCreatorIdentityProofRequired = $true
 $ancestorInheritableUntrustedWriteDisposition = 'REJECT_EXCEPT_EXACT_STOCK_BU_CREATE_ACES_WITH_ATOMIC_PROTECTED_CREATE'
 $ancestorStockVolumeBootstrapAceShapes = @(
     'BU:0x00000004:CI',
-    'BU:0x00000002:CI|IO'
+    'BU:0x00000004:CI|ID',
+    'BU:0x00000002:CI|IO',
+    'BU:0x00000002:CI|ID'
 )
 $atomicProtectedDirectoryCreateRequired = $true
 $actualHelperSha256 = (Get-FileHash -LiteralPath $PSCommandPath -Algorithm SHA256 -ErrorAction Stop).Hash.ToLowerInvariant()
@@ -577,6 +579,7 @@ function Test-QmStockVolumeBootstrapAce(
         $Ace.IsCallback) {
         return $false
     }
+    $inherited = ($Ace.AceFlags -band [Security.AccessControl.AceFlags]::Inherited) -ne 0
     $semanticFlags = [Security.AccessControl.AceFlags](
         ([int]$Ace.AceFlags) -band
         (-bnot [int][Security.AccessControl.AceFlags]::Inherited)
@@ -586,7 +589,12 @@ function Test-QmStockVolumeBootstrapAce(
         [Security.AccessControl.AceFlags]::InheritOnly
     return (
         ($AccessMask -eq [uint32]4 -and $semanticFlags -eq $containerInherit) -or
-        ($AccessMask -eq [uint32]2 -and $semanticFlags -eq $containerInheritOnly)
+        ($AccessMask -eq [uint32]2 -and
+            -not $inherited -and
+            $semanticFlags -eq $containerInheritOnly) -or
+        ($AccessMask -eq [uint32]2 -and
+            $inherited -and
+            $semanticFlags -eq $containerInherit)
     )
 }
 
