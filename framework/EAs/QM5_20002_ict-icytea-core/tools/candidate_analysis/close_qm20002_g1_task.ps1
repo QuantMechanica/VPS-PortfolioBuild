@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet('Identity', 'InspectReady', 'Quiesce', 'InspectQuiesced', 'AwaitQuiesced', 'Unregister', 'ProbeAbsent')]
+    [ValidateSet('Identity', 'InspectReady', 'InspectReadyOrRunning', 'Quiesce', 'InspectQuiesced', 'AwaitQuiesced', 'Unregister', 'ProbeAbsent')]
     [string]$Operation,
 
     [ValidatePattern('^QM_QM20002_AUDIT_[0-9a-f]{24}$')]
@@ -524,7 +524,8 @@ function Get-QmClosureEvidence {
     }
     $processes = Get-QmStableProcessEvidence
     Assert-QmNoProcessSideEffects -Evidence $processes
-    $workerInferenceBasis = if ($Task.State.ToString() -ceq 'Running') {
+    $preterminalRaceProbe = $Operation -ceq 'InspectReadyOrRunning' -and -not [bool]$info.never_run
+    $workerInferenceBasis = if ($Task.State.ToString() -ceq 'Running' -or $preterminalRaceProbe) {
         'INFERRED_FROM_CALLER_HELD_STATE_LOCK_AND_DIRECT_ZERO_DEV1_OWNER_OR_ROOT'
     } elseif ([bool]$info.never_run) {
         'INFERRED_FROM_EXACT_NEVER_RUN_TASK_HISTORY_AND_NON_RUNNING_TASK_STATE'
@@ -587,14 +588,18 @@ if ($Operation -eq 'ProbeAbsent') {
     exit 0
 }
 
-if ($Operation -eq 'InspectReady') {
+if ($Operation -in @('InspectReady', 'InspectReadyOrRunning')) {
     $readyTask = Get-QmExactTask
-    $ready = Get-QmClosureEvidence -Task $readyTask -Contract $contract -Identity $identity -RequireDisabled $false
-    if ($ready.state -cne 'Ready') {
+    $allowRunning = $Operation -ceq 'InspectReadyOrRunning'
+    $ready = Get-QmClosureEvidence -Task $readyTask -Contract $contract -Identity $identity -RequireDisabled $false -RequireNeverRun (-not $allowRunning)
+    if (-not $allowRunning -and $ready.state -cne 'Ready') {
         throw "Enabled G1 scheduled task '$TaskName' is not exactly Ready."
     }
+    if ($allowRunning -and $ready.state -notin @('Ready', 'Running')) {
+        throw "Enabled G1 scheduled task '$TaskName' is neither Ready nor lock-blocked Running."
+    }
     [ordered]@{
-        operation = 'InspectReady'
+        operation = $Operation
         helper_sha256 = $actualHelperSha256
         task_name = $TaskName
         task_path = '\'

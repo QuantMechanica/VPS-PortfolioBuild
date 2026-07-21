@@ -755,8 +755,12 @@ def _validate_task_probe(
     expected_helper_sha256: str,
     expected_principal_sid: str,
     require_never_run: bool = True,
+    allow_running: bool = False,
+    expected_operation: str | None = None,
 ) -> Mapping[str, Any]:
-    expected_operation = "InspectQuiesced" if disabled else "InspectReady"
+    operation = expected_operation or (
+        "InspectQuiesced" if disabled else "InspectReady"
+    )
     _assert_exact_fields(
         probe,
         {
@@ -771,7 +775,7 @@ def _validate_task_probe(
         label,
     )
     if (
-        probe.get("operation") != expected_operation
+        probe.get("operation") != operation
         or probe.get("helper_sha256") != expected_helper_sha256
         or probe.get("task_name") != contract.task_name
         or probe.get("task_path") != "\\"
@@ -786,8 +790,38 @@ def _validate_task_probe(
         disabled=disabled,
         label=label,
         require_never_run=require_never_run,
+        allow_running=allow_running,
     )
     return evidence
+
+
+def _validate_preterminal_probe(
+    probe: Mapping[str, Any],
+    contract: ClosureContract,
+    *,
+    expected_helper_sha256: str,
+    expected_principal_sid: str,
+) -> tuple[Mapping[str, Any], bool]:
+    evidence = _validate_task_probe(
+        probe,
+        contract,
+        disabled=False,
+        label="pre-terminal Ready-or-Running task",
+        expected_helper_sha256=expected_helper_sha256,
+        expected_principal_sid=expected_principal_sid,
+        require_never_run=False,
+        allow_running=True,
+        expected_operation="InspectReadyOrRunning",
+    )
+    state = evidence.get("state")
+    never_run = evidence.get("never_run")
+    if state == "Ready" and never_run is True:
+        return evidence, False
+    if state in {"Ready", "Running"} and never_run is False:
+        return evidence, True
+    if state == "Running":
+        return evidence, True
+    raise ClosureError("pre-terminal task history disposition is inconsistent")
 
 
 def _validate_quiesce_probe(
@@ -1011,14 +1045,35 @@ def _terminal_payload(error: str) -> dict[str, Any]:
 
 
 def _preliminary_closed_state(
-    state: Mapping[str, Any], intent_sha256: str, intent: Mapping[str, Any]
+    state: Mapping[str, Any],
+    intent_sha256: str,
+    intent: Mapping[str, Any],
+    preterminal_evidence: Mapping[str, Any],
+    *,
+    start_race_observed: bool,
 ) -> dict[str, Any]:
+    observed_start_race = (
+        preterminal_evidence.get("state") == "Running"
+        or preterminal_evidence.get("never_run") is not True
+    )
+    if (
+        type(start_race_observed) is not bool
+        or preterminal_evidence.get("state") not in {"Ready", "Running"}
+        or observed_start_race != start_race_observed
+        or (
+            not start_race_observed
+            and preterminal_evidence.get("never_run") is not True
+        )
+    ):
+        raise ClosureError("pre-terminal evidence/start-race disposition drift")
     finished = utc_now()
     terminal_error = (
         f"{REASON_CODE};closure_phase=QUIESCE_PENDING;"
         f"closure_intent_sha256={intent_sha256};"
         f"ready_task_xml_sha256={intent['task']['ready_task_xml_sha256']};"
-        f"task_contract_sha256={intent['task']['task_contract_sha256']}"
+        f"task_contract_sha256={intent['task']['task_contract_sha256']};"
+        f"preterminal_evidence_sha256={canonical_sha256(preterminal_evidence)};"
+        f"task_start_race_observed={'true' if start_race_observed else 'false'}"
     )
     closed = copy.deepcopy(dict(state))
     closed.update(
@@ -1800,20 +1855,33 @@ def close_g1(
                     contract, state, job_binding, chain["authorization"]
                 )
                 task_contract_sha = str(intent["task"]["task_contract_sha256"])
-                ready_now = task_call(
-                    contract, job, pre, helper_sha, "InspectReady"
+                preterminal_probe = task_call(
+                    contract, job, pre, helper_sha, "InspectReadyOrRunning"
                 )
-                ready_evidence = _validate_task_probe(
-                    ready_now,
-                    contract,
-                    disabled=False,
-                    label="pre-terminal ready task",
-                    expected_helper_sha256=helper_sha,
-                    expected_principal_sid=principal_sid,
+                preterminal_evidence, preterminal_start_race = (
+                    _validate_preterminal_probe(
+                        preterminal_probe,
+                        contract,
+                        expected_helper_sha256=helper_sha,
+                        expected_principal_sid=principal_sid,
+                    )
                 )
-                if ready_evidence["task_contract_sha256"] != task_contract_sha:
-                    raise ClosureError("ready task contract drifted from closure intent")
-                closed = _preliminary_closed_state(state, intent_sha, intent)
+                if (
+                    preterminal_evidence["task_contract_sha256"]
+                    != task_contract_sha
+                    or preterminal_evidence["task_xml_sha256"]
+                    != intent["task"]["ready_task_xml_sha256"]
+                ):
+                    raise ClosureError(
+                        "pre-terminal task identity drifted from closure intent"
+                    )
+                closed = _preliminary_closed_state(
+                    state,
+                    intent_sha,
+                    intent,
+                    preterminal_evidence,
+                    start_race_observed=preterminal_start_race,
+                )
                 auditor._validate_launch_state_shape(closed)
                 if sha256_file(contract.state_path) != contract.state_before_sha256:
                     raise ClosureError("launch-state CAS lost before terminal publication")
@@ -1893,7 +1961,7 @@ def close_g1(
             expected_task_contract_sha256=proof["contract"],
             allow_observed_start_race=True,
         )
-        quiesced_evidence, start_race_observed = _validate_await_quiesced_probe(
+        quiesced_evidence, awaited_start_race = _validate_await_quiesced_probe(
             awaited,
             contract,
             expected_helper_sha256=helper_sha,
@@ -1922,6 +1990,10 @@ def close_g1(
                     require_final=False,
                 )
                 if current_proof["phase"] == "QUIESCE_PENDING":
+                    start_race_observed = (
+                        current_proof["start_race"] == "true"
+                        or awaited_start_race
+                    )
                     before_sha = sha256_file(contract.state_path)
                     final_state = _final_closed_state(
                         state,

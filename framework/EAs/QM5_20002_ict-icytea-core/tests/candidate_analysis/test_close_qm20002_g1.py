@@ -94,6 +94,7 @@ class FakeTaskRuntime:
         self.exists = True
         self.enabled = True
         self.started_race = False
+        self.preterminal_race_state: str | None = None
         self.operations: list[str] = []
 
     def __call__(
@@ -116,6 +117,29 @@ class FakeTaskRuntime:
             if not self.exists or not self.enabled:
                 raise closure.ClosureError("not ready")
             return {**common, "principal_sid": "S-1-5-21-1", "evidence": task_evidence(disabled=False), "absent": False}
+        if operation == "InspectReadyOrRunning":
+            if not self.exists or not self.enabled:
+                raise closure.ClosureError("not enabled")
+            evidence = task_evidence(disabled=False)
+            if self.preterminal_race_state is not None:
+                assert self.preterminal_race_state in {"Ready", "Running"}
+                persisted = json.loads(
+                    self.contract.state_path.read_text(encoding="utf-8")
+                )
+                assert persisted["status"] == "PENDING"
+                assert persisted["terminal"] is None
+                self.started_race = True
+                evidence = task_evidence(disabled=False, started=True)
+                evidence["state"] = self.preterminal_race_state
+                evidence["matching_worker_process_count_basis"] = (
+                    "INFERRED_FROM_CALLER_HELD_STATE_LOCK_AND_DIRECT_ZERO_DEV1_OWNER_OR_ROOT"
+                )
+            return {
+                **common,
+                "principal_sid": "S-1-5-21-1",
+                "evidence": evidence,
+                "absent": False,
+            }
         if operation == "Quiesce":
             if not self.exists:
                 raise closure.ClosureError("absent")
@@ -706,7 +730,13 @@ def test_closed_state_is_schema_valid_and_strictly_pre_outcome() -> None:
             "task_contract_sha256": evidence["task_contract_sha256"],
         }
     }
-    preliminary = closure._preliminary_closed_state(state, "3" * 64, intent)
+    preliminary = closure._preliminary_closed_state(
+        state,
+        "3" * 64,
+        intent,
+        task_evidence(disabled=False),
+        start_race_observed=False,
+    )
     closed = closure._final_closed_state(
         preliminary, "3" * 64, evidence, start_race_observed=False
     )
