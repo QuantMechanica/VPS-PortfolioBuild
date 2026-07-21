@@ -26,11 +26,19 @@
     "The card gives no numeric spread cap; the reviewed exposed default remains 50 pips and zero modeled spread is never rejected."
   ],
   "source_commit": "8d762f66321ef9a2aa3503ae8b464ea378e5a34f",
-  "supersedes": {
+  "canonical_factory_result": {
     "path": "D:\\QM\\strategy_farm\\artifacts\\builds\\d54ae7b2-bed6-4c7d-85a2-5030944f3127.json",
-    "size": 2498,
-    "sha256": "7a65b432063ef997116bc8283247ef258873d55c9a8d65b944bd6370664ec5a1",
-    "reason": "The predecessor deferred its build smoke after no_capacity and predates the ICT reclaim/tick-grid fidelity repair."
+    "size": 2278,
+    "sha256": "a6f60f690b5ec26293ea5e14f6e693d5a7d90ea5f4880d54f93997d881b27293"
+  },
+  "supersedes": {
+    "archived_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13209_mulham-pm-range-sweep\\docs\\candidate-analysis\\build_result_deferred_original_20260721.json",
+    "archived_size": 2465,
+    "archived_sha256": "7b352c0ce61fee4e852bc6c11d30de616a05b5cf8c287a3a4641c1c7847ff2f8",
+    "original_external_path": "D:\\QM\\strategy_farm\\artifacts\\builds\\d54ae7b2-bed6-4c7d-85a2-5030944f3127.json",
+    "original_external_size_before_supersession": 2498,
+    "original_external_sha256_before_supersession": "7a65b432063ef997116bc8283247ef258873d55c9a8d65b944bd6370664ec5a1",
+    "reason": "The predecessor deferred its build smoke after no_capacity and predates the ICT reclaim/tick-grid fidelity repair. The canonical external build-result path is replaced only after this normalized archive is committed."
   },
   "artifact_bindings": {
     "mq5": {
