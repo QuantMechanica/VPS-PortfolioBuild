@@ -1149,6 +1149,7 @@ function Invoke-CompileController {
     $testerGroupsRestoredSha256 = $null
     $cleanupHelperHash = $null
     $cleanupGroupsHash = $null
+    $finalEvidence = $null
     $runId = (Get-Date).ToUniversalTime().ToString('yyyyMMddTHHmmssZ_') + [guid]::NewGuid().ToString('N')
     $nonce = [guid]::NewGuid().ToString('N')
     $controllerRunRoot = Join-Path $reportsRoot $runId
@@ -1334,10 +1335,10 @@ function Invoke-CompileController {
         $plain = $null
         $credential.Password.Dispose()
         $credential = $null
-        $task = Get-ScheduledTask -TaskName $taskName -TaskPath $taskPath
+        $task = Get-ScheduledTask -TaskName $taskName -TaskPath $taskPath -ErrorAction Stop
         $taskPrincipalSid = ([Security.Principal.NTAccount][string]$task.Principal.UserId).Translate([Security.Principal.SecurityIdentifier]).Value
         if ($taskPrincipalSid -cne [string]$accountState.Sid -or $task.Principal.LogonType.ToString() -ne 'Password' -or
-            $task.Principal.RunLevel.ToString() -ne 'Limited' -or $null -ne $task.Triggers -or
+            $task.Principal.RunLevel.ToString() -ne 'Limited' -or @($task.Triggers).Count -ne 0 -or
             @($task.Actions).Count -ne 1 -or
             -not ([IO.Path]::GetFullPath([string]$task.Actions[0].Execute)).Equals(
                 ([IO.Path]::GetFullPath($pwsh)), [StringComparison]::OrdinalIgnoreCase) -or
@@ -1347,124 +1348,246 @@ function Invoke-CompileController {
             throw 'Scheduled task isolation contract drift.'
         }
         if (@(Get-Dev1Processes).Count -ne 0) { throw 'DEV1 became busy before compile start.' }
-        Start-ScheduledTask -TaskName $taskName -TaskPath $taskPath
-
-        $deadline = (Get-Date).ToUniversalTime().AddMinutes(4)
-        while ((Get-Date).ToUniversalTime() -lt $deadline -and -not (Test-Path -LiteralPath $resultPath)) {
-            Start-Sleep -Seconds 1
+        $startUtc = [DateTimeOffset]::UtcNow
+        Start-ScheduledTask -TaskName $taskName -TaskPath $taskPath -ErrorAction Stop
+        $deadline = $startUtc.AddMinutes(4)
+        $taskObservedRunning = $false
+        while ([DateTimeOffset]::UtcNow -lt $deadline) {
+            if (Test-Path -LiteralPath $resultPath -PathType Leaf) { break }
+            $task = Get-ScheduledTask -TaskName $taskName -TaskPath $taskPath -ErrorAction Stop
+            $taskInfo = Get-ScheduledTaskInfo -TaskName $taskName -TaskPath $taskPath -ErrorAction Stop
+            if ($task.State.ToString() -ceq 'Running') {
+                $taskObservedRunning = $true
+            } elseif ($taskObservedRunning -or
+                ($taskInfo.LastRunTime.Year -gt 2000 -and $taskInfo.LastRunTime.ToUniversalTime() -ge $startUtc.UtcDateTime.AddSeconds(-5))) {
+                Start-Sleep -Seconds 1
+                if (-not (Test-Path -LiteralPath $resultPath -PathType Leaf)) {
+                    throw "Compile task exited without its atomic result (LastTaskResult=$($taskInfo.LastTaskResult))."
+                }
+            }
+            Start-Sleep -Milliseconds 500
         }
-        if (-not (Test-Path -LiteralPath $resultPath)) { throw 'Isolated compile timed out.' }
-        $result = Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
-        if (-not $result.success -or [int]$result.errors -ne 0 -or [int]$result.warnings -ne 0) {
-            throw "Compile child failed: $($result.failure); errors=$($result.errors); warnings=$($result.warnings)"
-        }
-        if ([string]$result.source_mq5_sha256 -cne $sourceHash -or
-            -not (Test-Path -LiteralPath $stageEx5 -PathType Leaf) -or (Get-Item $stageEx5).Length -le 0) {
-            throw 'Compile child result does not bind the staged source/EX5.'
-        }
-        $stageHash = Get-Sha256 $stageEx5
-        if ($stageHash -cne [string]$result.ex5_sha256) { throw 'Child EX5 SHA-256 mismatch.' }
-        if ((Get-Sha256 $source) -cne $sourceHash) { throw 'Repository source changed during compile.' }
-        if ((Get-Sha256 $controllerScript) -cne $controllerScriptHash) { throw 'Compile controller changed during compile.' }
-        if ((Get-Sha256 $compileOne) -cne $compileOneHash) { throw 'compile_one changed during compile.' }
-        if ((Get-Sha256 $metaEditor) -cne $metaEditorHash) { throw 'MetaEditor changed during compile.' }
-
-        $waitExit = (Get-Date).ToUniversalTime().AddSeconds(30)
-        while ((Get-Date).ToUniversalTime() -lt $waitExit -and
-            (Get-ScheduledTask -TaskName $taskName -TaskPath '\').State -eq 'Running') { Start-Sleep -Milliseconds 250 }
-        if ((Get-ScheduledTask -TaskName $taskName -TaskPath '\').State -eq 'Running') { throw 'Compile task did not exit cleanly.' }
-        Unregister-ScheduledTask -TaskName $taskName -TaskPath '\' -Confirm:$false
-        $taskRegistered = $false
-        Start-Sleep -Milliseconds 500
-        $activeAfter = @(Get-Dev1Processes).Count
-        $tasksAfter = @(Get-EphemeralCompileTasks).Count
-        if ($activeAfter -ne 0 -or $tasksAfter -ne 0) { throw "Compile cleanup incomplete: processes=$activeAfter tasks=$tasksAfter" }
-
-        $tempTarget = "$repoEx5.$([guid]::NewGuid().ToString('N')).tmp"
-        Copy-Item -LiteralPath $stageEx5 -Destination $tempTarget -Force
-        if ((Get-Sha256 $tempTarget) -cne $stageHash) { Remove-Item $tempTarget -Force; throw 'EX5 delivery temp mismatch.' }
-        Move-Item -LiteralPath $tempTarget -Destination $repoEx5 -Force
-        if ((Get-Sha256 $repoEx5) -cne $stageHash) { throw 'Repository EX5 delivery mismatch.' }
-        $delivered = $true
-
-        $compileLog = [IO.Path]::GetFullPath([string]$result.compile_log_path)
-        $includeManifest = [IO.Path]::GetFullPath([string]$result.include_manifest_path)
-        $includeAudit = [IO.Path]::GetFullPath([string]$result.include_path_audit_path)
-        $evidence = [ordered]@{
-            result = 'PASS'
-            research_status = $researchStatus
-            run_id = $runId
-            run_root = $controllerRunRoot
-            task_user = $account
-            task_logon_type = 'Password'
-            task_run_level = 'Limited'
-            contract_commit = $expectedContractCommit
-            contract_sha256 = $expectedContractSha256
-            source_git_commit = $expectedSourceCommit
-            source_path = $source
-            source_bytes = (Get-Item $source).Length
-            source_sha256 = $sourceHash
-            metaeditor_path = $metaEditor
-            metaeditor_sha256 = $metaEditorHash
-            compile_one_path = $compileOne
-            compile_one_sha256 = $compileOneHash
-            compile_controller_path = $controllerScript
-            compile_controller_sha256 = $controllerScriptHash
-            compile_log_path = $compileLog
-            compile_log_sha256 = Get-Sha256 $compileLog
-            errors = [int]$result.errors
-            warnings = [int]$result.warnings
-            include_manifest_path = $includeManifest
-            include_manifest_rows = [int]$result.include_manifest_rows
-            include_sync_manifest_sha256 = Get-Sha256 $includeManifest
-            include_path_audit_path = $includeAudit
-            include_path_audit_sha256 = Get-Sha256 $includeAudit
-            included_paths_count = [int]$result.included_paths_count
-            outside_include_paths_count = [int]$result.outside_include_paths_count
-            source_manifest_sha256 = Get-Sha256 $sourceManifest
-            stage_ex5_path = $stageEx5
-            repo_ex5_path = $repoEx5
-            ex5_size_bytes = (Get-Item $repoEx5).Length
-            ex5_sha256 = $stageHash
-            preexisting_repo_ex5 = $preexisting
-            preexisting_repo_ex5_sha256 = $preexistingHash
-            active_dev1_processes_after = $activeAfter
-            ephemeral_tasks_after = $tasksAfter
-            git_head_after = $head
-            finished_utc = (Get-Date).ToUniversalTime().ToString('o')
-        }
-        Write-AtomicJson -Path $evidencePath -Value $evidence
-        $complete = $true
-        $evidence | ConvertTo-Json -Compress
-    } catch {
-        $_.Exception.Message | Set-Content -LiteralPath (Join-Path $controllerRunRoot 'controller_error.txt') -Encoding utf8 -ErrorAction SilentlyContinue
-        throw
-    } finally {
+        if (-not (Test-Path -LiteralPath $resultPath -PathType Leaf)) { throw 'Isolated compile timed out.' }
+        $result = Read-ValidatedCompileChildResult -Path $resultPath -Request $request `
+            -RequestSha256 $requestSha256 -AccountState $accountState -ExpectedAccount $account `
+            -ExpectedOutputRoot $outputRoot -ExpectedStageMq5 $stageMq5 -ExpectedStageEx5 $stageEx5 `
+            -ExpectedSourceSha256 $sourceHash -ExpectedControllerSha256 $controllerScriptHash `
+            -ExpectedCompileOneSha256 $compileOneHash -ExpectedMetaEditorSha256 $metaEditorHash -ExpectedPwshSha256 $pwshHash
+        $resultSha256 = Get-Sha256 $resultPath
+        $stageHash = [string]$result.ex5_sha256
+        $compileSucceeded = $true
+      } catch {
+        $primaryError = $_
+      } finally {
         $plain = $null
+        if ($null -ne $credential) {
+            try { $credential.Password.Dispose() } catch { $cleanupErrors.Add("credential_dispose: $($_.Exception.Message)") }
+        }
         $credential = $null
-        if ($taskRegistered) {
-            try { Stop-ScheduledTask -TaskName $taskName -TaskPath '\' -ErrorAction SilentlyContinue } catch { }
-            try { Unregister-ScheduledTask -TaskName $taskName -TaskPath '\' -Confirm:$false -ErrorAction Stop } catch { }
+        if (-not [string]::IsNullOrWhiteSpace($taskName)) {
+            try {
+                Remove-ScheduledTaskBounded -TaskName $taskName -DisableBeforeStop
+                $taskRegistered = $false
+            } catch { $cleanupErrors.Add("target_task_drain: $($_.Exception.Message)") }
         }
-        if ($mutexAcquired) {
-            foreach ($process in @(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object {
-                $_.ExecutablePath -and ([IO.Path]::GetFullPath([string]$_.ExecutablePath)).Equals(
-                    ([IO.Path]::GetFullPath($metaEditor)), [StringComparison]::OrdinalIgnoreCase)
-            })) {
-                try { Stop-Process -Id ([int]$process.ProcessId) -Force -ErrorAction Stop } catch { }
-            }
+        if ($compileSucceeded) {
+            try {
+                if ((Get-Sha256 $resultPath) -cne $resultSha256) { throw 'Compile child result changed during target-task drain.' }
+            } catch { $cleanupErrors.Add("child_result_post_drain: $($_.Exception.Message)") }
         }
-        if (-not $complete) {
-            if ($delivered -and (Test-Path -LiteralPath $repoEx5 -PathType Leaf)) {
-                try { Remove-Item -LiteralPath $repoEx5 -Force } catch { }
-            }
-            if ($preexistingBackup -and (Test-Path -LiteralPath $preexistingBackup -PathType Leaf)) {
-                try { Copy-Item -LiteralPath $preexistingBackup -Destination $repoEx5 -Force } catch { }
-            }
+        if ($null -ne $accountState) {
+            try { Stop-Dev1ProcessesExact -OwnerSid ([string]$accountState.Sid) } catch { $cleanupErrors.Add("process_cleanup: $($_.Exception.Message)") }
+            try { $testerGroupsPostChildSha256 = Get-Sha256 $testerGroupsDev1Path } catch { $cleanupErrors.Add("tester_groups_post_child: $($_.Exception.Message)") }
+            try { $testerGroupsRestoredSha256 = Restore-TesterGroupsCanonical } catch { $cleanupErrors.Add("tester_groups_restore: $($_.Exception.Message)") }
+            try {
+                Disable-Dev1Account -State $accountState
+                $accountRestoredDisabled = $true
+            } catch { $cleanupErrors.Add("account_disable: $($_.Exception.Message)") }
+            try {
+                Stop-Dev1ProcessesExact -OwnerSid ([string]$accountState.Sid)
+                $allowedCleanup = if ($cleanupTaskRegistered -and -not $cleanupLeaseDisarmed) { $cleanupTaskName } else { '__NO_TASK_ALLOWED__' }
+                Assert-Contained -AccountState $accountState -AllowedCleanupTaskName $allowedCleanup
+            } catch { $cleanupErrors.Add("containment_reassert: $($_.Exception.Message)") }
         }
-        if ($mutexAcquired) { try { $mutex.ReleaseMutex() } catch { } }
-        $mutex.Dispose()
+        if ($cleanupTaskRegistered -and $null -ne $accountState) {
+            try {
+                $cleanupEvidence = Invoke-CleanupLeaseFence -CleanupTaskName $cleanupTaskName `
+                    -CleanupActionMutexName $cleanupActionMutexName -ResultPath $cleanupResultPath `
+                    -DisarmPath $cleanupDisarmPath -AccountState $accountState -TargetTaskName $taskName
+                $cleanupLeaseDisarmed = $true
+            } catch { $cleanupErrors.Add("cleanup_lease_fence: $($_.Exception.Message)") }
+        }
+        if ($cleanupLeaseDisarmed -and $null -ne $accountState) {
+            try {
+                Assert-Contained -AccountState $accountState -AllowedCleanupTaskName '__NO_TASK_ALLOWED__'
+                $postCleanupGroups = Get-Sha256 $testerGroupsDev1Path
+                $canonicalGroups = Get-Sha256 $testerGroupsCanonicalPath
+                if ($postCleanupGroups -cne $canonicalGroups) { throw 'Post-fence tester-groups bytes differ from canonical.' }
+                $testerGroupsRestoredSha256 = $postCleanupGroups
+                $postCleanupUser = Get-LocalUser -SID (New-Object Security.Principal.SecurityIdentifier([string]$accountState.Sid)) -ErrorAction Stop
+                if ($postCleanupUser.Name -cne 'QMDev1' -or $postCleanupUser.Enabled -or -not $postCleanupUser.PasswordRequired) {
+                    throw 'Post-fence account disabled-at-rest proof drifted.'
+                }
+                $accountRestoredDisabled = $true
+            } catch { $cleanupErrors.Add("post_fence_containment: $($_.Exception.Message)") }
+        }
+      }
+
+      if ($null -ne $primaryError -or $cleanupErrors.Count -ne 0) {
+        $primaryMessage = if ($null -ne $primaryError) { $primaryError.Exception.Message } else { 'none' }
+        $cleanupMessage = if ($cleanupErrors.Count -gt 0) { [string]::Join(' | ', @($cleanupErrors)) } else { 'none' }
+        $combined = "DEV1 compile/controller containment failure. primary=$primaryMessage; cleanup=$cleanupMessage"
+        try { $combined | Set-Content -LiteralPath (Join-Path $controllerRunRoot 'controller_error.txt') -Encoding utf8 } catch { }
+        throw [InvalidOperationException]::new($combined)
+      }
+      if (-not $compileSucceeded -or -not $cleanupTaskRegistered -or -not $cleanupLeaseDisarmed -or -not $accountRestoredDisabled) {
+        throw 'DEV1 compile success/lifecycle closure was incomplete after the cleanup fence.'
+      }
+
+      foreach ($binding in @(
+              @($source, $sourceHash, 'repository source'),
+              @($controllerScript, $controllerScriptHash, 'compile controller'),
+              @($compileOne, $compileOneHash, 'compile_one'),
+              @($metaEditor, $metaEditorHash, 'MetaEditor'),
+              @($pwsh, $pwshHash, 'pwsh'),
+              @($credentialPath, $ExpectedCredentialSha256, 'machine credential'),
+              @($credentialHelperPath, $ExpectedHelperSha256, 'machine credential helper'),
+              @($laneContractPath, [string]$rotationProof.LaneSha256, 'lane contract'),
+              @($rotationReceiptPath, [string]$rotationProof.ReceiptSha256, 'rotation receipt'),
+              @($cleanupHelperSourcePath, $cleanupHelperHash, 'cleanup helper source'),
+              @($cleanupHelperPath, $cleanupHelperHash, 'cleanup helper protected copy'),
+              @($requestPath, $requestSha256, 'compile request'),
+              @($resultPath, $resultSha256, 'compile child result')
+          )) {
+          if ((Get-Sha256 ([string]$binding[0])) -cne [string]$binding[1]) {
+              throw "Runtime bytes changed before EX5 publication: $($binding[2])"
+          }
+      }
+      if ((Get-CanonicalObjectSha256 (Get-RepoIncludeSnapshot)) -cne [string]$request.repo_include_snapshot_sha256) {
+          throw 'Repository include snapshot changed before EX5 publication.'
+      }
+      if ($preexisting) {
+          if (-not (Test-Path -LiteralPath $repoEx5 -PathType Leaf) -or (Get-Sha256 $repoEx5) -cne $preexistingHash) {
+              throw 'Preexisting repository EX5 changed before fenced publication.'
+          }
+      } elseif (Test-Path -LiteralPath $repoEx5) {
+          throw 'Repository EX5 appeared before fenced publication.'
+      }
+      $activeAfter = @(Get-Dev1Processes).Count
+      $ownerAfter = @(Get-Dev1IdentityProcesses -OwnerSid ([string]$accountState.Sid)).Count
+      $tasksAfter = @(Get-Dev1Tasks).Count
+      if ($activeAfter -ne 0 -or $ownerAfter -ne 0 -or $tasksAfter -ne 0) {
+          throw "Post-fence containment drifted before publication: root=$activeAfter owner=$ownerAfter tasks=$tasksAfter"
+      }
+
+      $tempTarget = Join-Path (Split-Path -Parent $repoEx5) ('.{0}.{1}.tmp' -f [IO.Path]::GetFileName($repoEx5), [guid]::NewGuid().ToString('N'))
+      try {
+          [IO.File]::Copy($stageEx5, $tempTarget, $false)
+          if ((Get-Sha256 $tempTarget) -cne $stageHash) { throw 'EX5 delivery temp hash mismatch.' }
+          if ($preexisting) {
+              [IO.File]::Replace($tempTarget, $repoEx5, $null, $true)
+          } else {
+              [IO.File]::Move($tempTarget, $repoEx5)
+          }
+      } finally {
+          if (Test-Path -LiteralPath $tempTarget -PathType Leaf) { Remove-Item -LiteralPath $tempTarget -Force }
+      }
+      if ((Get-Sha256 $repoEx5) -cne $stageHash -or (Get-Item -LiteralPath $repoEx5).Length -ne [long]$result.ex5_size_bytes) {
+          throw 'Repository EX5 atomic publication verification failed.'
+      }
+      $delivered = $true
+
+      $compileLog = [IO.Path]::GetFullPath([string]$result.compile_log_path)
+      $includeManifest = [IO.Path]::GetFullPath([string]$result.include_manifest_path)
+      $includeAudit = [IO.Path]::GetFullPath([string]$result.include_path_audit_path)
+      $evidence = [ordered]@{
+          schema_version = 3
+          result = 'PASS'
+          research_status = $researchStatus
+          run_id = $runId
+          nonce = $nonce
+          run_root = $controllerRunRoot
+          task_user = $account
+          task_sid = [string]$accountState.Sid
+          task_name = $taskName
+          task_logon_type = 'Password'
+          task_run_level = 'Limited'
+          contract_commit = $expectedContractCommit
+          contract_sha256 = $expectedContractSha256
+          source_git_commit = $expectedSourceCommit
+          source_path = $source
+          source_bytes = (Get-Item $source).Length
+          source_sha256 = $sourceHash
+          metaeditor_path = $metaEditor
+          metaeditor_sha256 = $metaEditorHash
+          pwsh_path = $pwsh
+          pwsh_sha256 = $pwshHash
+          compile_one_path = $compileOne
+          compile_one_sha256 = $compileOneHash
+          compile_controller_path = $controllerScript
+          compile_controller_sha256 = $controllerScriptHash
+          compile_request_path = $requestPath
+          compile_request_sha256 = $requestSha256
+          compile_child_result_path = $resultPath
+          compile_child_result_sha256 = $resultSha256
+          compile_log_path = $compileLog
+          compile_log_sha256 = [string]$result.compile_log_sha256
+          errors = [int]$result.errors
+          warnings = [int]$result.warnings
+          include_manifest_path = $includeManifest
+          include_manifest_rows = [int]$result.include_manifest_rows
+          include_sync_manifest_sha256 = [string]$result.include_manifest_sha256
+          include_path_audit_path = $includeAudit
+          include_path_audit_sha256 = [string]$result.include_path_audit_sha256
+          included_paths_count = [int]$result.included_paths_count
+          outside_include_paths_count = [int]$result.outside_include_paths_count
+          source_manifest_path = $sourceManifest
+          source_manifest_sha256 = Get-Sha256 $sourceManifest
+          stage_ex5_path = $stageEx5
+          repo_ex5_path = $repoEx5
+          ex5_size_bytes = (Get-Item $repoEx5).Length
+          ex5_sha256 = $stageHash
+          publication_after_cleanup_fence = $true
+          publication_method = if ($preexisting) { 'System.IO.File.Replace' } else { 'System.IO.File.Move' }
+          preexisting_repo_ex5 = $preexisting
+          preexisting_repo_ex5_sha256 = $preexistingHash
+          lane_contract_path = $laneContractPath
+          lane_contract_sha256 = [string]$rotationProof.LaneSha256
+          machine_credential_path = $credentialPath
+          machine_credential_sha256 = $ExpectedCredentialSha256
+          machine_credential_helper_path = $credentialHelperPath
+          machine_credential_helper_sha256 = $ExpectedHelperSha256
+          rotation_receipt_path = $rotationReceiptPath
+          rotation_receipt_sha256 = [string]$rotationProof.ReceiptSha256
+          cleanup_helper_source_path = $cleanupHelperSourcePath
+          cleanup_helper_path = $cleanupHelperPath
+          cleanup_helper_sha256 = $cleanupHelperHash
+          cleanup_result_path = $cleanupResultPath
+          cleanup_result_sha256 = [string]$cleanupEvidence.ResultSha256
+          cleanup_disarm_path = $cleanupDisarmPath
+          cleanup_disarm_sha256 = [string]$cleanupEvidence.DisarmSha256
+          cleanup_lease_registered = $true
+          cleanup_lease_disarmed = $true
+          dev1_account_initially_enabled = [bool]$accountState.InitiallyEnabled
+          dev1_account_enabled_by_controller = [bool]$accountEnabledByController
+          dev1_account_restored_disabled = [bool]$accountRestoredDisabled
+          tester_groups_post_child_sha256 = $testerGroupsPostChildSha256
+          tester_groups_restored_sha256 = $testerGroupsRestoredSha256
+          tester_groups_canonical_path = $testerGroupsCanonicalPath
+          tester_groups_dev1_path = $testerGroupsDev1Path
+          active_dev1_processes_after = $activeAfter
+          owner_sid_processes_after = $ownerAfter
+          ephemeral_tasks_after = $tasksAfter
+          git_head_after = $head
+          finished_utc = [DateTimeOffset]::UtcNow.ToString('o')
+      }
+      Write-AtomicJson -Path $evidencePath -Value $evidence
+      $finalEvidence = $evidence
+    } finally {
+      if ($mutexAcquired) { try { $mutex.ReleaseMutex() } catch { } }
+      $mutex.Dispose()
     }
+    if ($null -ne $finalEvidence) { Write-Output ($finalEvidence | ConvertTo-Json -Depth 8 -Compress) }
 }
 
 if ($Child.IsPresent) {
