@@ -1,0 +1,173 @@
+{
+  "analysis_id": "QM5_13210_MULHAM_ASIAN_SWEEP_LONDON_XAUUSD_NATIVE_001",
+  "artifact_bindings": {
+    "base_tool": {
+      "path": "C:/QM/repo/framework/EAs/QM5_13210_mulham-asian-sweep-london/tools/candidate_analysis/audit_mulham_asian_sweep_london.py",
+      "sha256": "dc56390ba11417db7349b369b07ae8c52aac4df48d17c94c18941dd90928c7a2",
+      "size": 135863
+    },
+    "build_receipt": {
+      "path": "C:/QM/repo/framework/EAs/QM5_13210_mulham-asian-sweep-london/docs/candidate-analysis/build_receipt_20260720.json",
+      "sha256": "a9fce2d992a04ec072a1957626d12c32640f415e32f96d236772c98e2fb7304c",
+      "size": 1375
+    },
+    "card": {
+      "path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_13210_mulham-asian-sweep-london.md",
+      "sha256": "c9138af20679962b694b253a07488a08085868bb65b81ee1887780cd0e01c11e",
+      "size": 6664
+    },
+    "ex5": {
+      "path": "C:/QM/repo/framework/EAs/QM5_13210_mulham-asian-sweep-london/QM5_13210_mulham-asian-sweep-london.ex5",
+      "sha256": "ffd5a47aa7e7f32759494d4f0e172d785da5d7ccdd5f3cfbfed64aeffbc2943c",
+      "size": 353402
+    },
+    "mq5": {
+      "path": "C:/QM/repo/framework/EAs/QM5_13210_mulham-asian-sweep-london/QM5_13210_mulham-asian-sweep-london.mq5",
+      "sha256": "1e96e58f79ff3d1a3a8853c592cc1fd5bbff68eb3c0afdb2e66c3a3fe49f2274",
+      "size": 34380
+    },
+    "set": {
+      "path": "C:/QM/repo/framework/EAs/QM5_13210_mulham-asian-sweep-london/sets/QM5_13210_mulham-asian-sweep-london_XAUUSD.DWX_M5_backtest.set",
+      "sha256": "23970e75ad7c41e682455ddb255473c9e527c2f3a404dbfd74fa8ac9fd363ac6",
+      "size": 1510
+    },
+    "spec": {
+      "path": "C:/QM/repo/framework/EAs/QM5_13210_mulham-asian-sweep-london/SPEC.md",
+      "sha256": "72ce962a40f08de114c872d162cd7f1a986c7afbeb856bb79af6395f333fa28c",
+      "size": 7512
+    }
+  },
+  "artifact_type": "QM5_13210_XAUUSD_OUTCOME_BLIND_ANALYSIS_CONTRACT",
+  "candidate": {
+    "duplicates_per_cell": 2,
+    "ea_id": "QM5_13210",
+    "model": 4,
+    "parameter_tuning_forbidden": true,
+    "separate_from_eurusd_outcome_namespace": true,
+    "strategy": "mulham-asian-sweep-london",
+    "symbol": "XAUUSD.DWX",
+    "timeframe": "M5"
+  },
+  "created_utc": "2026-07-21T07:58:15Z",
+  "execution_cost_contract": {
+    "commission": {
+      "contract_size_oz_per_lot": "100",
+      "model": "MAX_DXZ_FTMO_0.005PCT_NOTIONAL_ROUND_TURN",
+      "per_trade_basis": "entry_price_x_100oz_x_volume_x_0.00005",
+      "rate_round_turn": "0.00005"
+    },
+    "slippage": {
+      "merit_center_application": "BLOCKING_ALL_BASE_GATES",
+      "merit_center_points_per_side": "1",
+      "p95_application": "BLOCKING_BREAKEVEN_SURVIVAL_GATES",
+      "p95_stress_points_per_side": "3",
+      "point_size_quote": "0.01",
+      "point_value_usd_per_lot_per_side": "1",
+      "source": "FACTORY_AUTO_STUB_PROXY_NOT_XAU_LIVE_FILL_MEASUREMENT"
+    },
+    "spread": "EMBEDDED_IN_BOUND_XAUUSD_DWX_REAL_TICKS",
+    "swap": "REQUIRED_ZERO_BY_INTRADAY_FLAT_INVARIANT"
+  },
+  "lane_and_data": {
+    "deployment_routing_evaluated": false,
+    "live_parity_required": false,
+    "live_suffix_policy": "NOT_EVALUATED_IN_CANDIDATE_ANALYSIS",
+    "model4_real_ticks_required": true,
+    "namespace": ".DWX_RESEARCH_BACKTEST",
+    "research_store": "T1_CUSTOM_SYMBOL_STORE",
+    "terminal": "T1"
+  },
+  "merit_contract": {
+    "dev": {
+      "maximum_close_drawdown_percent": "10.0",
+      "minimum_cost_profit_factor": "1.20",
+      "minimum_trades": 80,
+      "net_must_be_strictly_positive": true
+    },
+    "each_oos_year": {
+      "minimum_cost_profit_factor_strict": "1.00",
+      "minimum_trades": 12,
+      "net_must_be_strictly_positive": true
+    },
+    "execution_cost_axes": {
+      "commission": {
+        "contract_size_oz_per_lot": "100",
+        "model": "MAX_DXZ_FTMO_0.005PCT_NOTIONAL_ROUND_TURN",
+        "per_trade_basis": "entry_price_x_100oz_x_volume_x_0.00005",
+        "rate_round_turn": "0.00005"
+      },
+      "slippage": {
+        "merit_center_application": "BLOCKING_ALL_BASE_GATES",
+        "merit_center_points_per_side": "1",
+        "p95_application": "BLOCKING_BREAKEVEN_SURVIVAL_GATES",
+        "p95_stress_points_per_side": "3",
+        "point_size_quote": "0.01",
+        "point_value_usd_per_lot_per_side": "1",
+        "source": "FACTORY_AUTO_STUB_PROXY_NOT_XAU_LIVE_FILL_MEASUREMENT"
+      },
+      "spread": "EMBEDDED_IN_BOUND_XAUUSD_DWX_REAL_TICKS",
+      "swap": "REQUIRED_ZERO_BY_INTRADAY_FLAT_INVARIANT"
+    },
+    "leave_best_oos_year_out": {
+      "best_year_basis": "highest_cost_adjusted_net",
+      "minimum_cost_profit_factor": "1.05",
+      "net_must_be_strictly_positive": true
+    },
+    "maximum_new_york_day_loss_percent_of_100k": "3.0",
+    "maximum_single_year_share_of_positive_oos_gross_profit": "0.60",
+    "oos_pooled": {
+      "maximum_close_drawdown_percent": "10.0",
+      "minimum_cost_profit_factor": "1.20",
+      "minimum_trades": 45,
+      "net_must_be_strictly_positive": true
+    },
+    "p95_slippage_stress": {
+      "dev_net_must_be_strictly_positive": true,
+      "dev_profit_factor_strict": "1.00",
+      "each_oos_year_net_must_be_strictly_positive": true,
+      "each_oos_year_profit_factor_strict": "1.00",
+      "oos_pooled_net_must_be_strictly_positive": true,
+      "oos_pooled_profit_factor_strict": "1.00"
+    },
+    "top_five_percent_winners_removed": {
+      "minimum_cost_profit_factor": "1.00",
+      "removal_count": "ceil(0.05 * positive_winner_count)"
+    },
+    "version": "QM5_13210_XAUUSD_MERIT_V1_20260721"
+  },
+  "outcome_fence": {
+    "eurusd_native_outcomes_read_to_select_xau": false,
+    "metatester_started": false,
+    "mt5_terminal_started": false,
+    "xau_deal_rows_parsed": false,
+    "xau_native_reports_opened": false
+  },
+  "schema_version": 1,
+  "status": "PREREGISTERED_OUTCOME_BLIND",
+  "windows": [
+    {
+      "cell_id": "DEV",
+      "cohort": "DEV",
+      "from_date": "2018-07-02",
+      "to_date": "2022-12-31"
+    },
+    {
+      "cell_id": "OOS_2023",
+      "cohort": "OOS",
+      "from_date": "2023-01-01",
+      "to_date": "2023-12-31"
+    },
+    {
+      "cell_id": "OOS_2024",
+      "cohort": "OOS",
+      "from_date": "2024-01-01",
+      "to_date": "2024-12-31"
+    },
+    {
+      "cell_id": "OOS_2025",
+      "cohort": "OOS",
+      "from_date": "2025-01-01",
+      "to_date": "2025-12-31"
+    }
+  ]
+}
