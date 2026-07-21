@@ -3232,8 +3232,17 @@ def _scheduler_call(
 ) -> dict[str, Any]:
     """Invoke the bound scheduler helper and return only its safe metadata."""
 
-    helper = Path(str(pre["runtime"]["scheduled_task_helper"]["path"])).resolve()
+    helper_binding = pre["runtime"]["scheduled_task_helper"]
+    helper = Path(str(helper_binding["path"])).resolve()
     powershell = str(pre["runtime"]["powershell_binary"]["path"])
+    runtime_bindings = (
+        (helper_binding, "scheduled-task helper"),
+        (pre["runtime"]["powershell_binary"], "scheduler PowerShell"),
+        (pre["runtime"]["python_binary"], "scheduler Python"),
+        (pre["tool"], "scheduler audit tool"),
+    )
+    for binding, label in runtime_bindings:
+        assert_binding(binding, label)
     command = [
         powershell,
         "-NoLogo",
@@ -3245,6 +3254,8 @@ def _scheduler_call(
         str(helper),
         "-Operation",
         operation,
+        "-ExpectedHelperSha256",
+        str(helper_binding["sha256"]),
     ]
     scheduler: Mapping[str, Any] | None = None
     if operation != "Identity":
@@ -3277,6 +3288,8 @@ def _scheduler_call(
         timeout=30,
         check=False,
     )
+    for binding, label in runtime_bindings:
+        assert_binding(binding, f"{label} post-call reassertion")
     if completed.returncode != 0:
         raise AuthorizationError(
             f"persisted scheduler {operation!r} failed with exit {completed.returncode}"
@@ -3291,6 +3304,7 @@ def _scheduler_call(
             set(payload)
             != {
                 "operation",
+                "helper_sha256",
                 "principal_name",
                 "principal_sid",
                 "logon_type",
@@ -3300,6 +3314,7 @@ def _scheduler_call(
             or not payload["principal_name"].strip()
             or type(payload.get("principal_sid")) is not str
             or not payload["principal_sid"].startswith("S-1-")
+            or payload.get("helper_sha256") != helper_binding["sha256"]
             or payload.get("logon_type") != "S4U"
             or payload.get("run_level") != "Highest"
         ):
@@ -3309,7 +3324,12 @@ def _scheduler_call(
         if type(exists) is not bool or payload.get("task_name") != scheduler["task_name"]:
             raise AuthorizationError("persisted scheduler Probe returned malformed identity")
         if not exists:
-            if set(payload) != {"operation", "task_name", "exists"}:
+            if set(payload) != {
+                "operation",
+                "helper_sha256",
+                "task_name",
+                "exists",
+            } or payload.get("helper_sha256") != helper_binding["sha256"]:
                 raise AuthorizationError("absent scheduler Probe field closure drift")
         elif scheduler is not None:
             _validate_scheduler_task_metadata(payload, scheduler, include_exists=True)
@@ -3326,6 +3346,7 @@ def _validate_scheduler_task_metadata(
 ) -> None:
     fields = {
         "operation",
+        "helper_sha256",
         "task_name",
         "task_path",
         "state",
@@ -3354,6 +3375,7 @@ def _validate_scheduler_task_metadata(
     if (
         set(payload) != fields
         or (include_exists and payload.get("exists") is not True)
+        or payload.get("helper_sha256") != scheduler["helper"]["sha256"]
         or payload.get("task_name") != scheduler["task_name"]
         or payload.get("task_path") != "\\"
         or type(payload.get("state")) is not str

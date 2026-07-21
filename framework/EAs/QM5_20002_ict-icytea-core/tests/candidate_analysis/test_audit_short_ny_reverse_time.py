@@ -869,6 +869,8 @@ def test_persisted_helper_is_s4u_triggerless_and_never_overwrites_task() -> None
     assert "New-ScheduledTaskTrigger" not in helper
     assert "Register-ScheduledTask" in helper
     assert " -Force" not in helper
+    assert "ExpectedHelperSha256" in helper
+    assert "scheduled-task helper byte binding drifted" in helper
     assert "$Task.TaskName -cne $TaskName" in helper
     assert "@($Task.Triggers).Count -ne 0" in helper
     assert "-AllowHardTerminate" in helper
@@ -904,9 +906,11 @@ def test_scheduler_metadata_rejects_every_stale_task_settings_drift() -> None:
         "task_name": "QM_QM20002_AUDIT_" + "a" * 24,
         "principal_sid": "S-1-5-21-500",
         "execution_limit_seconds": 483600,
+        "helper": subject.file_binding(subject.SCHEDULED_TASK_HELPER_PATH),
     }
     exact = {
         "operation": "Inspect",
+        "helper_sha256": scheduler["helper"]["sha256"],
         "task_name": scheduler["task_name"],
         "task_path": "\\",
         "state": "Ready",
