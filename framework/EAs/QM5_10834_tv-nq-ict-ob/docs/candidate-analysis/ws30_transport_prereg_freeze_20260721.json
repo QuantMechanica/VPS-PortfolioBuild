@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "artifact_type": "QM5_10834_WS30_TRANSPORT_PREREG_FREEZE",
+  "created_utc": "2026-07-21T02:05:42.4211631Z",
+  "analysis_id": "QM5_10834_TV_NQ_ICT_OB_WS30_TRANSPORT_001",
+  "status": "PREREGISTERED_NOT_READY_FOR_PRE_OR_LAUNCH",
+  "candidate": {
+    "ea_id": "QM5_10834",
+    "research_symbol": "WS30.DWX",
+    "live_alias_policy": "EXACT_VENUE_REGISTRY_MAPPING_WITHOUT_DWX_SUFFIX",
+    "timeframe": "M5",
+    "model": 4,
+    "duplicates_per_cell": 2,
+    "strategy_parameter_tuning_after_results": "FORBIDDEN",
+    "primary_attempts": 1,
+    "preregistered_infrastructure_alternates": 1,
+    "maximum_counted_attempts": 2,
+    "retrospective_attempt_exemptions": "FORBIDDEN"
+  },
+  "windows": [
+    {"cell": "DEV", "from": "2018-07-02", "to": "2022-12-31"},
+    {"cell": "OOS_2023", "from": "2023-01-01", "to": "2023-12-31"},
+    {"cell": "OOS_2024", "from": "2024-01-01", "to": "2024-12-31"},
+    {"cell": "OOS_2025", "from": "2025-01-01", "to": "2025-12-31"}
+  ],
+  "files": {
+    "contract": {
+      "path": "framework/EAs/QM5_10834_tv-nq-ict-ob/docs/candidate-analysis/ws30_transport_analysis_contract_20260721.json",
+      "size": 8247,
+      "sha256": "694d91e193f2dc151129683b42f7fdbf81f0d0965b1b6c78ebf2d9d18bafe253",
+      "last_content_commit": "53a1c2164b9a2fd3d0de8ca339f0c83bc0b2907c"
+    },
+    "ws30_auditor": {
+      "path": "framework/EAs/QM5_10834_tv-nq-ict-ob/tools/candidate_analysis/audit_tv_nq_ict_ob_ws30.py",
+      "size": 51496,
+      "sha256": "d9433850c15557575f6fccac2afa62c4ef09ecdd1007c806ca4f31fcb36c90fb",
+      "last_content_commit": "4c5370b902c0adb2f0649400e2de507135076ccf"
+    },
+    "base_auditor": {
+      "path": "framework/EAs/QM5_10834_tv-nq-ict-ob/tools/candidate_analysis/audit_tv_nq_ict_ob.py",
+      "size": 239116,
+      "sha256": "58101fefced46392f26bd24aae0e7520d8ee591d97d1e50a759efd46b693f013",
+      "last_content_commit": "3b729f9fd649cf3ca658a1444acca5c039abb042"
+    },
+    "operations_document": {
+      "path": "framework/EAs/QM5_10834_tv-nq-ict-ob/docs/candidate-analysis/ws30_transport_analysis_20260721.md",
+      "size": 9717,
+      "sha256": "471d207206b4b2e3035e1a286dca9c7467cd8c179958c35e03f0a2e314c557cb",
+      "last_content_commit": "5db55d1ff4c1a46444f89c1e3e0c720df4843a9d"
+    },
+    "tests": {
+      "path": "framework/EAs/QM5_10834_tv-nq-ict-ob/tests/candidate_analysis/test_audit_tv_nq_ict_ob_ws30.py",
+      "size": 32382,
+      "sha256": "03f346765bcfa3b5cf5769287e5b8d199ecfb537ad0a74cbb05b77ff489966ed",
+      "last_content_commit": "5db55d1ff4c1a46444f89c1e3e0c720df4843a9d"
+    }
+  },
+  "cost_contract": {
+    "spread": "EMBEDDED_IN_BOUND_WS30_DWX_REAL_TICKS",
+    "dxzero_round_turn_per_lot_usd": "0.70",
+    "ftmo_index_round_turn_per_lot_usd": "0.00",
+    "center_round_turn_per_lot_usd": "0.70",
+    "slippage_points_per_side": [0, 1, 3],
+    "absolute_registry_overcost_stress_round_turn_per_lot_usd": "5.50",
+    "overcost_stress_affects_preregistered_merit_decision": false
+  },
+  "verification": {
+    "ws30_tests": "34_PASS",
+    "full_qm10834_tests": "152_PASS",
+    "python_compile": "PASS",
+    "diff_check": "PASS",
+    "independent_adversarial_review": "DEFINITIVE_PASS_NO_BLOCKER",
+    "outcomes_read": false,
+    "host_or_mt5_mutation": false
+  },
+  "readiness_gates": {
+    "execution_alias_registry_required": {
+      "DXZ_LIVE": {"logical_symbol": "WS30.DWX", "raw_symbol": "WS30"},
+      "FTMO_TRIAL": {"logical_symbol": "WS30.DWX", "raw_symbol": "US30.cash"}
+    },
+    "dev2_provision_receipt_required": true,
+    "exact_t1_to_dev2_data_files": 98,
+    "all_data_files_rehashed_before_pre": true,
+    "no_reparse_or_hardlink_aliasing": true,
+    "current_readiness": "FAIL_CLOSED_PENDING_ALIASES_AND_DEV2_PROVISION"
+  },
+  "ndx_predecessor": {
+    "analysis_id": "QM5_10834_TV_NQ_ICT_OB_NATIVE_001",
+    "disposition": "INFRA_INCONCLUSIVE_BUDGET_EXHAUSTED_NO_MERIT_ADJUDICATION",
+    "closure_path": "framework/EAs/QM5_10834_tv-nq-ict-ob/docs/candidate-analysis/native_attempt003_infra_closure_20260721.json",
+    "closure_sha256": "d5ddc514c0d342d8555f183729a7af8f93e38ea214c75265838233e428c0168b",
+    "same_ndx_evidence_reset_forbidden": true
+  }
+}
