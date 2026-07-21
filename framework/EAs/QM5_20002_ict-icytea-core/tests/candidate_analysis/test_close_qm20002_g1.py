@@ -97,6 +97,8 @@ class FakeTaskRuntime:
         self.preterminal_race_state: str | None = None
         self.preterminal_dev1_owner_count = 0
         self.preterminal_dev1_root_count = 0
+        self.await_forgets_start_race = False
+        self.last_preterminal_evidence: dict[str, Any] | None = None
         self.operations: list[str] = []
 
     def __call__(
@@ -147,6 +149,7 @@ class FakeTaskRuntime:
                 evidence["matching_worker_process_count_basis"] = (
                     "INFERRED_FROM_CALLER_HELD_STATE_LOCK_WITH_STABLE_COMMAND_LINE_FREE_DEV1_INVENTORY"
                 )
+            self.last_preterminal_evidence = copy.deepcopy(evidence)
             return {
                 **common,
                 "principal_sid": "S-1-5-21-1",
@@ -185,12 +188,13 @@ class FakeTaskRuntime:
         if operation == "AwaitQuiesced":
             if not self.exists or self.enabled:
                 raise closure.ClosureError("not disabled")
-            evidence = task_evidence(disabled=True, started=self.started_race)
+            await_started = self.started_race and not self.await_forgets_start_race
+            evidence = task_evidence(disabled=True, started=await_started)
             return {
                 **common,
                 "principal_sid": "S-1-5-21-1",
                 "evidence": evidence,
-                "start_race_observed": self.started_race,
+                "start_race_observed": await_started,
                 "absent": False,
             }
         if operation == "Unregister":
@@ -1096,6 +1100,17 @@ def test_start_between_intent_and_preterminal_probe_is_rejected_before_disable(
     assert "closure_phase=QUIESCE_PENDING" in pending["terminal"]["error"]
     assert "task_start_race_observed=true" in pending["terminal"]["error"]
     assert "preterminal_evidence_sha256=" in pending["terminal"]["error"]
+    assert task.last_preterminal_evidence is not None
+    pending_match = closure.TERMINAL_PENDING_ERROR.fullmatch(
+        pending["terminal"]["error"]
+    )
+    assert pending_match is not None
+    assert pending_match.group("preterminal") == closure.canonical_sha256(
+        task.last_preterminal_evidence
+    )
+    if preterminal_state == "Running":
+        assert task.last_preterminal_evidence["dev1_owner_process_count"] == 1
+        assert task.last_preterminal_evidence["dev1_root_process_count"] == 1
     assert task.enabled is True
     assert task.operations[:2] == ["InspectReady", "InspectReadyOrRunning"]
 
@@ -1112,6 +1127,28 @@ def test_start_between_intent_and_preterminal_probe_is_rejected_before_disable(
         "never_run"
     ] is False
     assert task.exists is False
+
+
+def test_preterminal_race_cannot_be_erased_by_later_never_run_evidence(
+    tmp_path: Path,
+) -> None:
+    contract, fake_auditor, task, utility_sha, helper_sha = make_fixture(tmp_path)
+    task.preterminal_race_state = "Running"
+    task.preterminal_dev1_owner_count = 1
+    task.preterminal_dev1_root_count = 1
+    task.await_forgets_start_race = True
+    with pytest.raises(
+        closure.ClosureError,
+        match="quiesced evidence/start-race disposition drift",
+    ):
+        invoke_fixture(contract, fake_auditor, task, utility_sha, helper_sha)
+    pending = json.loads(contract.state_path.read_text(encoding="utf-8"))
+    assert pending["status"] == "REJECT"
+    assert "closure_phase=QUIESCE_PENDING" in pending["terminal"]["error"]
+    assert "task_start_race_observed=true" in pending["terminal"]["error"]
+    assert task.enabled is False
+    assert task.exists is True
+    assert not contract.receipt_path.exists()
 
 
 def test_non_preterminal_ready_probe_rejects_nonzero_dev1_inventory(
