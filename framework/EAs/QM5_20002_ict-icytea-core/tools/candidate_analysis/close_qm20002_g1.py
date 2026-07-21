@@ -304,6 +304,7 @@ def _task_call(
     *,
     expected_task_contract_sha256: str | None = None,
     expected_disabled_xml_sha256: str | None = None,
+    allow_observed_start_race: bool = False,
 ) -> dict[str, Any]:
     scheduler = job["scheduler"]
     command = [
@@ -342,6 +343,8 @@ def _task_call(
         )
     if expected_disabled_xml_sha256 is not None:
         command.extend(["-ExpectedDisabledXmlSha256", expected_disabled_xml_sha256])
+    if allow_observed_start_race:
+        command.append("-AllowObservedStartRace")
     completed = subprocess.run(
         command,
         cwd=contract.repo_root,
@@ -513,12 +516,18 @@ def _validate_process_evidence(
 
 
 def _validate_task_evidence(
-    evidence: Mapping[str, Any], *, disabled: bool, label: str, require_never_run: bool = True
+    evidence: Mapping[str, Any],
+    *,
+    disabled: bool,
+    label: str,
+    require_never_run: bool = True,
+    allow_running: bool = False,
 ) -> None:
     _assert_exact_fields(evidence, TASK_EVIDENCE_KEYS, label)
     expected_state = "Disabled" if disabled else "Ready"
+    allowed_states = {expected_state, "Running"} if disabled and allow_running else {expected_state}
     if (
-        evidence.get("state") != expected_state
+        evidence.get("state") not in allowed_states
         or evidence.get("enabled") is not (not disabled)
         or type(evidence.get("never_run")) is not bool
         or (require_never_run and evidence.get("never_run") is not True)
@@ -589,6 +598,104 @@ def _validate_task_probe(
         require_never_run=require_never_run,
     )
     return evidence
+
+
+def _validate_quiesce_probe(
+    probe: Mapping[str, Any],
+    contract: ClosureContract,
+    *,
+    expected_helper_sha256: str,
+    expected_principal_sid: str,
+) -> tuple[Mapping[str, Any], bool]:
+    _assert_exact_fields(
+        probe,
+        {
+            "operation",
+            "helper_sha256",
+            "task_name",
+            "task_path",
+            "principal_sid",
+            "before",
+            "after",
+            "start_race_observed",
+            "absent",
+        },
+        "quiesce probe",
+    )
+    if (
+        probe.get("operation") != "Quiesce"
+        or probe.get("helper_sha256") != expected_helper_sha256
+        or probe.get("task_name") != contract.task_name
+        or probe.get("task_path") != "\\"
+        or probe.get("principal_sid") != expected_principal_sid
+        or probe.get("absent") is not False
+        or type(probe.get("start_race_observed")) is not bool
+        or not isinstance(probe.get("before"), Mapping)
+        or not isinstance(probe.get("after"), Mapping)
+    ):
+        raise ClosureError("quiesce probe envelope drift")
+    _validate_task_evidence(
+        probe["before"], disabled=False, label="quiesce before", require_never_run=True
+    )
+    _validate_task_evidence(
+        probe["after"],
+        disabled=True,
+        label="quiesce after",
+        require_never_run=False,
+        allow_running=True,
+    )
+    observed_race = (
+        probe["after"].get("state") == "Running"
+        or probe["after"].get("never_run") is not True
+    )
+    if probe["start_race_observed"] is not observed_race:
+        raise ClosureError("quiesce start-race classification drift")
+    return probe["after"], observed_race
+
+
+def _validate_await_quiesced_probe(
+    probe: Mapping[str, Any],
+    contract: ClosureContract,
+    *,
+    expected_helper_sha256: str,
+    expected_principal_sid: str,
+) -> tuple[Mapping[str, Any], bool]:
+    _assert_exact_fields(
+        probe,
+        {
+            "operation",
+            "helper_sha256",
+            "task_name",
+            "task_path",
+            "principal_sid",
+            "evidence",
+            "start_race_observed",
+            "absent",
+        },
+        "await-quiesced probe",
+    )
+    if (
+        probe.get("operation") != "AwaitQuiesced"
+        or probe.get("helper_sha256") != expected_helper_sha256
+        or probe.get("task_name") != contract.task_name
+        or probe.get("task_path") != "\\"
+        or probe.get("principal_sid") != expected_principal_sid
+        or probe.get("absent") is not False
+        or type(probe.get("start_race_observed")) is not bool
+        or not isinstance(probe.get("evidence"), Mapping)
+    ):
+        raise ClosureError("await-quiesced probe envelope drift")
+    evidence = probe["evidence"]
+    _validate_task_evidence(
+        evidence,
+        disabled=True,
+        label="await-quiesced evidence",
+        require_never_run=False,
+    )
+    observed_race = evidence.get("never_run") is not True
+    if probe["start_race_observed"] is not observed_race:
+        raise ClosureError("await-quiesced start-race classification drift")
+    return evidence, observed_race
 
 
 def _validate_absent_probe(
@@ -874,13 +981,24 @@ def _historical_chain(
         "frozen_control_helper"
     ]:
         raise ClosureError("PRE frozen control helper binding drift")
-    return {
+    chain = {
         "bindings": bindings,
         "pre": pre,
         "authorization": authorization,
         "job": job,
         "runtime_freeze_commit": contract.freeze_commit,
     }
+    _assert_dev1_inventory(chain, auditor)
+    return chain
+
+
+def _assert_dev1_inventory(chain: Mapping[str, Any], auditor: ModuleType) -> None:
+    expected = chain.get("job", {}).get("dev1_runs_before_launch")
+    if not isinstance(expected, Mapping):
+        raise ClosureError("launch job omitted the pre-launch DEV1 run inventory")
+    observed = auditor._dev1_run_inventory()
+    if observed != expected:
+        raise ClosureError("DEV1 run inventory changed from the exact pre-launch binding")
 
 
 def _intent_payload(
@@ -1095,7 +1213,11 @@ def _receipt_payload(
     state_after_binding: Mapping[str, Any],
     terminal_proof: Mapping[str, str],
     absent_probe: Mapping[str, Any],
+    *,
+    created_utc: str | None = None,
 ) -> dict[str, Any]:
+    if terminal_proof.get("phase") != "CLOSED":
+        raise ClosureError("cannot receipt a QUIESCE_PENDING terminal state")
     return {
         "schema_version": SCHEMA_VERSION,
         "artifact_type": "QM5_20002_G1_PRE_OUTCOME_CLOSURE_RECEIPT",
@@ -1103,7 +1225,7 @@ def _receipt_payload(
         "run_id": contract.run_id,
         "status": "REJECT_CLOSED_PRE_OUTCOME",
         "reason_code": REASON_CODE,
-        "created_utc": utc_now(),
+        "created_utc": created_utc or utc_now(),
         "closure_intent": {
             "binding": dict(intent_binding),
             "authorized_by": intent["authorized_by"],
@@ -1118,8 +1240,9 @@ def _receipt_payload(
             "resume_count_before": 0,
             "status_after": "REJECT",
             "outcome_fence_crossed": False,
-            "no_resume": True,
-            "terminal_error_binds_intent": True,
+                "no_resume": True,
+                "terminal_error_binds_intent": True,
+                "task_start_race_observed": terminal_proof["start_race"] == "true",
         },
         "scheduled_task": {
             "task_name": contract.task_name,
@@ -1138,6 +1261,7 @@ def _receipt_payload(
                 "state": "Disabled",
                 "never_run": True,
                 "retention": "CANONICAL_EVIDENCE_SHA256_BOUND_IN_TERMINAL_ERROR",
+                "task_start_race_observed": terminal_proof["start_race"] == "true",
             },
             "absent_probe": copy.deepcopy(dict(absent_probe)),
             "absent_probe_sha256": canonical_sha256(absent_probe),
@@ -1156,34 +1280,54 @@ def _validate_receipt(
     state_after_binding: Mapping[str, Any],
     terminal_proof: Mapping[str, str],
 ) -> None:
-    if (
-        receipt.get("schema_version") != SCHEMA_VERSION
-        or receipt.get("artifact_type")
-        != "QM5_20002_G1_PRE_OUTCOME_CLOSURE_RECEIPT"
-        or receipt.get("analysis_id") != contract.analysis_id
-        or receipt.get("run_id") != contract.run_id
-        or receipt.get("status") != "REJECT_CLOSED_PRE_OUTCOME"
-        or receipt.get("reason_code") != REASON_CODE
-        or receipt.get("historical_bindings") != chain["bindings"]
-        or receipt.get("runtime_freeze_commit") != contract.freeze_commit
-        or receipt.get("outcome_data_read") is not False
-        or receipt.get("closure_intent", {}).get("binding") != intent_binding
-        or receipt.get("launch_state", {}).get("before") != intent["state_before"]
-        or receipt.get("launch_state", {}).get("after") != state_after_binding
-        or receipt.get("launch_state", {}).get("outcome_fence_crossed") is not False
-        or receipt.get("launch_state", {}).get("no_resume") is not True
-        or receipt.get("scheduled_task", {}).get("quiesced_probe_binding", {}).get(
-            "sha256"
-        )
-        != terminal_proof["quiesced"]
-    ):
-        raise ClosureError("existing immutable closure receipt drift")
-    absent = receipt.get("scheduled_task", {}).get("absent_probe")
+    _assert_exact_fields(
+        receipt,
+        {
+            "schema_version",
+            "artifact_type",
+            "analysis_id",
+            "run_id",
+            "status",
+            "reason_code",
+            "created_utc",
+            "closure_intent",
+            "historical_bindings",
+            "runtime_freeze_commit",
+            "launch_state",
+            "scheduled_task",
+            "outcome_data_read",
+        },
+        "closure receipt",
+    )
+    scheduled_task = receipt.get("scheduled_task")
+    if not isinstance(scheduled_task, Mapping):
+        raise ClosureError("closure receipt scheduled_task is not an object")
+    absent = scheduled_task.get("absent_probe")
     if not isinstance(absent, Mapping):
         raise ClosureError("closure receipt omitted task absence proof")
-    _validate_absent_probe(absent, contract)
-    if receipt["scheduled_task"].get("absent_probe_sha256") != canonical_sha256(absent):
-        raise ClosureError("closure receipt task absence proof binding drift")
+    helper_sha256 = str(chain["bindings"]["closure_task_helper"]["sha256"])
+    _validate_absent_probe(
+        absent, contract, expected_helper_sha256=helper_sha256
+    )
+    created = _parse_created_utc(receipt.get("created_utc"), "closure receipt created_utc")
+    state_updated = _parse_created_utc(
+        load_strict_json(contract.state_path, "receipt-bound state").get("updated_utc"),
+        "receipt-bound state updated_utc",
+    )
+    if created < state_updated or created > datetime.now(timezone.utc) + timedelta(minutes=5):
+        raise ClosureError("closure receipt chronology drift")
+    expected = _receipt_payload(
+        contract,
+        chain,
+        intent_binding,
+        intent,
+        state_after_binding,
+        terminal_proof,
+        absent,
+        created_utc=str(receipt["created_utc"]),
+    )
+    if canonical_bytes(receipt) != canonical_bytes(expected):
+        raise ClosureError("existing immutable closure receipt recursive value drift")
 
 
 def close_g1(

@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet('Identity', 'InspectReady', 'Quiesce', 'InspectQuiesced', 'Unregister', 'ProbeAbsent')]
+    [ValidateSet('Identity', 'InspectReady', 'Quiesce', 'InspectQuiesced', 'AwaitQuiesced', 'Unregister', 'ProbeAbsent')]
     [string]$Operation,
 
     [ValidatePattern('^QM_QM20002_AUDIT_[0-9a-f]{24}$')]
@@ -26,6 +26,8 @@ param(
 
     [ValidatePattern('^[0-9a-f]{64}$')]
     [string]$ExpectedTaskContractSha256,
+
+    [switch]$AllowObservedStartRace,
 
     [Parameter(Mandatory = $true)]
     [ValidatePattern('^[0-9a-f]{64}$')]
@@ -512,15 +514,23 @@ function Get-QmClosureEvidence {
         [Parameter(Mandatory = $true)]$Task,
         [Parameter(Mandatory = $true)]$Contract,
         [Parameter(Mandatory = $true)]$Identity,
-        [Parameter(Mandatory = $true)][bool]$RequireDisabled
+        [Parameter(Mandatory = $true)][bool]$RequireDisabled,
+        [bool]$RequireNeverRun = $true
     )
     Assert-QmTaskContract -Task $Task -Contract $Contract -Identity $Identity -RequireDisabled $RequireDisabled
     $info = Get-QmTaskInfoEvidence
-    if (-not [bool]$info.never_run) {
+    if ($RequireNeverRun -and -not [bool]$info.never_run) {
         throw "Scheduled task '$TaskName' has run or has ambiguous run history."
     }
     $processes = Get-QmStableProcessEvidence
     Assert-QmNoProcessSideEffects -Evidence $processes
+    $workerInferenceBasis = if ($Task.State.ToString() -ceq 'Running') {
+        'INFERRED_FROM_CALLER_HELD_STATE_LOCK_AND_DIRECT_ZERO_DEV1_OWNER_OR_ROOT'
+    } elseif ([bool]$info.never_run) {
+        'INFERRED_FROM_EXACT_NEVER_RUN_TASK_HISTORY_AND_NON_RUNNING_TASK_STATE'
+    } else {
+        'INFERRED_FROM_DURABLE_TERMINAL_REJECT_AND_NON_RUNNING_TASK_STATE'
+    }
     return [ordered]@{
         state = $Task.State.ToString()
         enabled = [bool]$Task.Settings.Enabled
@@ -532,7 +542,7 @@ function Get-QmClosureEvidence {
         task_xml_sha256 = Get-QmTaskXmlSha256
         task_contract_sha256 = Get-QmTaskContractSha256 -Task $Task -Contract $Contract -PrincipalSid $Identity.Sid
         matching_worker_process_count = 0
-        matching_worker_process_count_basis = 'INFERRED_FROM_EXACT_NEVER_RUN_TASK_HISTORY_AND_NON_RUNNING_TASK_STATE'
+        matching_worker_process_count_basis = $workerInferenceBasis
         dev1_owner_process_count = [int]$processes.dev1_owner_process_count
         dev1_root_process_count = [int]$processes.dev1_root_process_count
         relevant_process_identity_sha256 = [string]$processes.relevant_process_identity_sha256
@@ -610,9 +620,10 @@ if ($Operation -eq 'Quiesce') {
         Disable-ScheduledTask -TaskName $TaskName -TaskPath '\' -ErrorAction Stop | Out-Null
     }
     $afterTask = Get-QmExactTask
-    $after = Get-QmClosureEvidence -Task $afterTask -Contract $contract -Identity $identity -RequireDisabled $true
-    if ($after.task_contract_sha256 -cne $ExpectedTaskContractSha256 -or $after.state -cne 'Disabled') {
-        throw 'G1 task contract/state drifted while it was being quiesced.'
+    $after = Get-QmClosureEvidence -Task $afterTask -Contract $contract -Identity $identity -RequireDisabled $true -RequireNeverRun $false
+    if ($after.task_contract_sha256 -cne $ExpectedTaskContractSha256 -or
+        $after.state -notin @('Disabled', 'Running')) {
+        throw 'G1 task contract/state drifted while it was being disabled.'
     }
     [ordered]@{
         operation = 'Quiesce'
@@ -622,15 +633,19 @@ if ($Operation -eq 'Quiesce') {
         principal_sid = $identity.Sid
         before = $before
         after = $after
+        start_race_observed = (-not [bool]$after.never_run) -or $after.state -ceq 'Running'
         absent = $false
     } | ConvertTo-Json -Depth 6 -Compress
     exit 0
 }
 
 $task = Get-QmExactTask
-$evidence = Get-QmClosureEvidence -Task $task -Contract $contract -Identity $identity -RequireDisabled $true
+$requireNeverRun = -not [bool]$AllowObservedStartRace
+$evidence = Get-QmClosureEvidence -Task $task -Contract $contract -Identity $identity -RequireDisabled $true -RequireNeverRun $requireNeverRun
 if ($evidence.state -cne 'Disabled') {
-    throw "G1 scheduled task '$TaskName' is not exactly Disabled."
+    if ($Operation -ne 'AwaitQuiesced') {
+        throw "G1 scheduled task '$TaskName' is not exactly Disabled."
+    }
 }
 if (-not [string]::IsNullOrWhiteSpace($ExpectedTaskContractSha256) -and
     $evidence.task_contract_sha256 -cne $ExpectedTaskContractSha256) {
@@ -645,6 +660,29 @@ if ($Operation -eq 'InspectQuiesced') {
         task_path = '\'
         principal_sid = $identity.Sid
         evidence = $evidence
+        absent = $false
+    } | ConvertTo-Json -Depth 6 -Compress
+    exit 0
+}
+
+if ($Operation -eq 'AwaitQuiesced') {
+    $deadline = [DateTime]::UtcNow.AddSeconds(30)
+    while ($evidence.state -cne 'Disabled') {
+        if ([DateTime]::UtcNow -ge $deadline) {
+            throw "G1 scheduled task '$TaskName' did not stop after terminal REJECT publication."
+        }
+        Start-Sleep -Milliseconds 100
+        $task = Get-QmExactTask
+        $evidence = Get-QmClosureEvidence -Task $task -Contract $contract -Identity $identity -RequireDisabled $true -RequireNeverRun $requireNeverRun
+    }
+    [ordered]@{
+        operation = 'AwaitQuiesced'
+        helper_sha256 = $actualHelperSha256
+        task_name = $TaskName
+        task_path = '\'
+        principal_sid = $identity.Sid
+        evidence = $evidence
+        start_race_observed = (-not [bool]$evidence.never_run)
         absent = $false
     } | ConvertTo-Json -Depth 6 -Compress
     exit 0
