@@ -40,6 +40,10 @@
           "logical_symbol": "SP500.DWX"
         },
         {
+          "raw_symbol": "WS30",
+          "logical_symbol": "WS30.DWX"
+        },
+        {
           "raw_symbol": "XAUUSD",
           "logical_symbol": "XAUUSD.DWX"
         }
@@ -61,6 +65,10 @@
         {
           "raw_symbol": "US100.cash",
           "logical_symbol": "NDX.DWX"
+        },
+        {
+          "raw_symbol": "US30.cash",
+          "logical_symbol": "WS30.DWX"
         },
         {
           "raw_symbol": "USDJPY",
