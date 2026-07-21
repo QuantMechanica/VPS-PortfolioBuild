@@ -71,10 +71,13 @@ def _install_fake_quiescence(
     return registry
 
 
-def test_draft_contract_is_exact_and_eur_only() -> None:
-    draft = subject.validate_draft_contract()
-    candidate = draft["candidate"]
-    assert draft["analysis_id"].endswith("EURUSD_NATIVE_001")
+def test_finalized_contract_is_exact_and_eur_only() -> None:
+    validated = subject.validate_analysis_contract()
+    finalized = subject.B.load_json(subject.CONTRACT_PATH)
+    candidate = finalized["candidate"]
+    assert finalized["status"] == "FINALIZED_OUTCOME_BLIND"
+    assert finalized["analysis_id"].endswith("EURUSD_NATIVE_001")
+    assert validated["source_build_commit"] == subject.B.EXPECTED_BUILD_COMMIT
     assert candidate["research_symbol"] == "EURUSD.DWX"
     assert candidate["research_namespace"] == ".DWX"
     assert candidate["live_symbol_alias_policy"] == "DEPLOY_PACKAGING_ONLY_EXACT_VENUE_ALIAS"
