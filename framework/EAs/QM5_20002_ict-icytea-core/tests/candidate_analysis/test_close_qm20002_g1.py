@@ -227,6 +227,16 @@ class FakeTaskRuntime:
         raise AssertionError(operation)
 
 
+def restart_task_runtime(previous: FakeTaskRuntime) -> FakeTaskRuntime:
+    """Simulate a new closure process from durable scheduler properties only."""
+
+    restarted = FakeTaskRuntime(previous.contract)
+    restarted.exists = previous.exists
+    restarted.enabled = previous.enabled
+    restarted.started_race = previous.started_race
+    return restarted
+
+
 class FakeAuditor:
     SCHEMA_VERSION = 2
     ANALYSIS_ID = closure.ANALYSIS_ID
@@ -874,12 +884,13 @@ def test_each_durable_crash_point_recovers_idempotently(
             helper_sha,
             crash_hook=hook,
         )
+    resumed_task = restart_task_runtime(task)
     result = invoke_fixture(
-        contract, fake_auditor, task, utility_sha, helper_sha
+        contract, fake_auditor, resumed_task, utility_sha, helper_sha
     )
     assert result["status"] in {"CLOSED", "ALREADY_CLOSED"}
     assert result["outcome_data_read"] is False
-    assert task.exists is False
+    assert resumed_task.exists is False
     state = json.loads(contract.state_path.read_text(encoding="utf-8"))
     assert state["status"] == "REJECT"
     assert state["terminal"]["outcome_fence_crossed"] is False
@@ -895,8 +906,9 @@ def test_each_durable_crash_point_recovers_idempotently(
         "never_run"
     ] is True
     receipt_before = contract.receipt_path.read_bytes()
+    replay_task = restart_task_runtime(resumed_task)
     again = invoke_fixture(
-        contract, fake_auditor, task, utility_sha, helper_sha
+        contract, fake_auditor, replay_task, utility_sha, helper_sha
     )
     assert again["status"] == "ALREADY_CLOSED"
     assert contract.receipt_path.read_bytes() == receipt_before
@@ -1078,8 +1090,9 @@ def test_start_race_observes_durable_reject_before_disable_and_closes(
 ) -> None:
     contract, fake_auditor, task, utility_sha, helper_sha = make_fixture(tmp_path)
     task.started_race = True
+    resumed_task = restart_task_runtime(task)
     result = invoke_fixture(
-        contract, fake_auditor, task, utility_sha, helper_sha
+        contract, fake_auditor, resumed_task, utility_sha, helper_sha
     )
     assert result["status"] == "CLOSED"
     state = json.loads(contract.state_path.read_text(encoding="utf-8"))
@@ -1093,7 +1106,7 @@ def test_start_race_observes_durable_reject_before_disable_and_closes(
     assert receipt["scheduled_task"]["quiesced_probe_binding"][
         "never_run"
     ] is False
-    assert task.exists is False
+    assert resumed_task.exists is False
 
 
 @pytest.mark.parametrize("preterminal_state", ["Running", "Ready"])
@@ -1146,8 +1159,9 @@ def test_start_between_intent_and_preterminal_probe_is_rejected_before_disable(
     assert task.enabled is True
     assert task.operations[:2] == ["InspectReady", "InspectReadyOrRunning"]
 
+    resumed_task = restart_task_runtime(task)
     result = invoke_fixture(
-        contract, fake_auditor, task, utility_sha, helper_sha
+        contract, fake_auditor, resumed_task, utility_sha, helper_sha
     )
     assert result["status"] == "CLOSED"
     final_state = json.loads(contract.state_path.read_text(encoding="utf-8"))
@@ -1167,7 +1181,7 @@ def test_start_between_intent_and_preterminal_probe_is_rejected_before_disable(
     assert receipt["scheduled_task"]["quiesced_probe_binding"][
         "preterminal_probe_sha256"
     ] == pending_match.group("preterminal")
-    assert task.exists is False
+    assert resumed_task.exists is False
 
 
 def test_preterminal_race_cannot_be_erased_by_later_never_run_evidence(
@@ -1180,7 +1194,7 @@ def test_preterminal_race_cannot_be_erased_by_later_never_run_evidence(
     task.await_forgets_start_race = True
     with pytest.raises(
         closure.ClosureError,
-        match="quiesced evidence/start-race disposition drift",
+        match="race disposition drift",
     ):
         invoke_fixture(contract, fake_auditor, task, utility_sha, helper_sha)
     pending = json.loads(contract.state_path.read_text(encoding="utf-8"))
@@ -1265,8 +1279,9 @@ def test_quiesce_only_start_race_is_durable_before_crash_and_recovery(
     assert not contract.anchor_path.exists()
     assert not contract.receipt_path.exists()
 
+    resumed_task = restart_task_runtime(task)
     result = invoke_fixture(
-        contract, fake_auditor, task, utility_sha, helper_sha
+        contract, fake_auditor, resumed_task, utility_sha, helper_sha
     )
     assert result["status"] == "CLOSED"
     receipt = json.loads(contract.receipt_path.read_text(encoding="utf-8"))
@@ -1313,8 +1328,9 @@ def test_recovery_after_disable_side_effect_before_quiesce_proof_publication(
     assert task.enabled is False
     assert task.exists is True
 
+    resumed_task = restart_task_runtime(task)
     result = invoke_fixture(
-        contract, fake_auditor, task, utility_sha, helper_sha
+        contract, fake_auditor, resumed_task, utility_sha, helper_sha
     )
     assert result["status"] == "CLOSED"
     anchor = json.loads(contract.anchor_path.read_text(encoding="utf-8"))
@@ -1327,7 +1343,7 @@ def test_recovery_after_disable_side_effect_before_quiesce_proof_publication(
     )
     assert recovered_quiesce["before"]["state"] == "Disabled"
     assert recovered_quiesce["before"]["enabled"] is False
-    assert task.exists is False
+    assert resumed_task.exists is False
 
 
 @pytest.mark.parametrize("expected_start_race", [False, True])

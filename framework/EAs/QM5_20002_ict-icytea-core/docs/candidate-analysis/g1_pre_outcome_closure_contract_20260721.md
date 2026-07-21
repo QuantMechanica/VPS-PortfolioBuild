@@ -19,9 +19,10 @@ authorization consumption, launch job, and runtime-freeze bytes are read-only.
 The only run artifacts created by this procedure are:
 
 - `D:\QM\reports\qm20002\short_ny_reverse_time\runs\20260721T025051Z_24ed7b13baac4e9ea10a2cff755ae5f5\g1_pre_outcome_closure_intent.json`
+- `D:\QM\reports\qm20002\short_ny_reverse_time\runs\20260721T025051Z_24ed7b13baac4e9ea10a2cff755ae5f5\g1_pre_outcome_quiescence_anchor.json`
 - `D:\QM\reports\qm20002\short_ny_reverse_time\runs\20260721T025051Z_24ed7b13baac4e9ea10a2cff755ae5f5\g1_pre_outcome_closure_receipt.json`
 
-Both are sealed by the frozen G1 control-path helper and published with
+All three are sealed by the frozen G1 control-path helper and published with
 create-if-absent hard-link semantics (`replace=False`). An existing artifact is
 accepted only when its strict schema and every immutable binding are identical.
 
@@ -33,6 +34,15 @@ the original state SHA-256
 read-only proof that the exact task was `Ready`, enabled, never run, and had
 zero non-null triggers. It also retains the complete original launch-state
 payload; its canonical bytes must reproduce the bound path, size, and SHA-256.
+
+The quiescence anchor is created after a fresh `AwaitQuiesced` proof but before
+the final state is published or the task is unregistered. It retains the full
+canonical `QUIESCE_PENDING` state payload and binding, the complete disabled
+task evidence, task contract/XML, helper/principal, both full-probe hashes, and
+the durable race disposition. The CLOSED terminal binds both the anchor file
+SHA-256 and the canonical SHA-256 of its path/size/hash binding. Thus recovery
+after task removal cannot manufacture a new final quiescence explanation from
+mutable terminal hash strings.
 
 The PRE is validated as the exact historical byte snapshot identified by its
 fixed SHA-256, including its closed schema, outcome fence, canonical four-cell
