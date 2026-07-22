@@ -266,16 +266,12 @@ bool Strategy_TradeGeometryAndVolumeAllow(const double entry_price,
                                           const double stop_price)
   {
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
-   const double tick_value = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_VALUE_LOSS);
    if(RISK_FIXED != 1000.0 || RISK_PERCENT != 0.0 ||
-      point <= 0.0 || tick_size <= 0.0 || tick_value <= 0.0 ||
-      entry_price <= 0.0 || stop_price <= 0.0)
+      point <= 0.0 || entry_price <= 0.0 || stop_price <= 0.0)
       return false;
 
    const double stop_distance = MathAbs(entry_price - stop_price);
-   const double risk_per_lot = (stop_distance / tick_size) * tick_value;
-   if(risk_per_lot <= 0.0)
+   if(stop_distance <= 0.0)
       return false;
 
    const double sl_points = stop_distance / point;
@@ -291,8 +287,7 @@ bool Strategy_TradeGeometryAndVolumeAllow(const double entry_price,
       lots < volume_min || lots > volume_max)
       return false;
    const double aligned = volume_min + MathRound((lots - volume_min) / volume_step) * volume_step;
-   return (MathAbs(aligned - lots) <= volume_step * 1.0e-6 &&
-           lots * risk_per_lot > 0.0);
+   return (MathAbs(aligned - lots) <= volume_step * 1.0e-6);
   }
 
 bool Strategy_InputsValid()
@@ -315,6 +310,17 @@ bool Strategy_WideSpread()
       return false;
    const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
    return (spread_points > strategy_max_spread_points);
+  }
+
+void Strategy_LogEntryRejected(const string detail,
+                               const datetime candidate_utc)
+  {
+   QM_LogEvent(QM_WARN,
+               "ENTRY_REJECTED",
+               StringFormat("{\"result\":\"STRATEGY_HOOK_REJECTED\",\"symbol\":\"%s\",\"reason\":\"LBMA_PM_BRK\",\"detail\":\"%s\",\"candidate_utc\":%I64d}",
+                            QM_LoggerEscapeJson(_Symbol),
+                            QM_LoggerEscapeJson(detail),
+                            (long)candidate_utc));
   }
 
 // -----------------------------------------------------------------------------
@@ -382,21 +388,33 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       !QM_ReadBar(_Symbol, strategy_signal_tf, confirmation1_shift, confirmation1) ||
       QM_BrokerToUTC(pre_bar.time) != pre_bar_utc ||
       QM_BrokerToUTC(confirmation1.time) != confirmation1_utc)
+     {
+      Strategy_LogEntryRejected("AUCTION_BARS_INVALID", current_utc);
       return false;
+     }
    if(second_entry &&
       (!QM_ReadBar(_Symbol, strategy_signal_tf, 1, confirmation2) ||
        QM_BrokerToUTC(confirmation2.time) != confirmation2_utc))
+     {
+      Strategy_LogEntryRejected("SECOND_CONFIRMATION_BAR_INVALID", current_utc);
       return false;
+     }
 
    const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
    if(tick_size <= 0.0 || pre_bar.high <= pre_bar.low)
+     {
+      Strategy_LogEntryRejected("AUCTION_PRICE_GEOMETRY_INVALID", current_utc);
       return false;
+     }
    const long pre_open_ticks = (long)MathRound(pre_bar.open / tick_size);
    const long pre_close_ticks = (long)MathRound(pre_bar.close / tick_size);
    const long pre_high_ticks = (long)MathRound(pre_bar.high / tick_size);
    const long pre_low_ticks = (long)MathRound(pre_bar.low / tick_size);
    if(pre_high_ticks <= pre_low_ticks || pre_close_ticks == pre_open_ticks)
+     {
+      Strategy_LogEntryRejected("PRE_AUCTION_DOJI_OR_ZERO_RANGE", current_utc);
       return false;
+     }
 
    const bool armed_long = (pre_close_ticks > pre_open_ticks);
    const double pre_high = Strategy_TickNormalizedPrice((double)pre_high_ticks * tick_size);
@@ -407,37 +425,69 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                                                            pre_high,
                                                            pre_low);
    if(first_entry && first_outcome != 1)
+     {
+      Strategy_LogEntryRejected("FIRST_CONFIRMATION_NOT_QUALIFIED", current_utc);
       return false;
+     }
    if(second_entry && first_outcome != 0)
+     {
+      Strategy_LogEntryRejected("FIRST_CONFIRMATION_RESOLVED_DATE", current_utc);
       return false;
+     }
    if(second_entry)
      {
       const double confirmation2_close = Strategy_TickNormalizedPrice(confirmation2.close);
       if(Strategy_ConfirmationOutcome(armed_long, confirmation2_close, pre_high, pre_low) != 1)
+        {
+         Strategy_LogEntryRejected("SECOND_CONFIRMATION_NOT_QUALIFIED", current_utc);
          return false;
+        }
      }
 
    if(Strategy_AttemptAlreadyMade(date_key, pre_bar_utc))
+     {
+      Strategy_LogEntryRejected("ATTEMPT_ALREADY_MADE", current_utc);
       return false;
+     }
    g_last_attempt_date_key = date_key;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0 || ask < bid)
+     {
+      Strategy_LogEntryRejected("MARKET_QUOTE_INVALID", current_utc);
       return false;
+     }
    const double entry_price = armed_long ? ask : bid;
    const double stop_price = armed_long ? pre_low : pre_high;
    if(stop_price <= 0.0 ||
       (armed_long && entry_price <= stop_price) ||
       (!armed_long && entry_price >= stop_price) ||
       !Strategy_TradeGeometryAndVolumeAllow(entry_price, stop_price))
+     {
+      Strategy_LogEntryRejected("TRADE_GEOMETRY_OR_VOLUME_REJECTED", current_utc);
       return false;
+     }
 
    req.type = armed_long ? QM_BUY : QM_SELL;
    req.sl = stop_price;
    req.reason = armed_long ? "LBMA_PM_BRK_LONG" : "LBMA_PM_BRK_SHORT";
    g_active_exit_broker = QM_UTCToBroker(exit_utc);
-   return (g_active_exit_broker > 0);
+   if(g_active_exit_broker <= 0)
+     {
+      Strategy_LogEntryRejected("EXIT_CLOCK_INVALID", current_utc);
+      return false;
+     }
+   QM_LogEvent(QM_INFO,
+               "ENTRY_SIGNAL_FIRE",
+               StringFormat("{\"symbol\":\"%s\",\"side\":\"%s\",\"candidate_utc\":%I64d,\"entry\":%.8f,\"stop\":%.8f,\"exit_broker\":%I64d}",
+                            QM_LoggerEscapeJson(_Symbol),
+                            armed_long ? "BUY" : "SELL",
+                            (long)current_utc,
+                            entry_price,
+                            stop_price,
+                            (long)g_active_exit_broker));
+   return true;
   }
 
 // Called every tick when an open position exists for this EA's magic.

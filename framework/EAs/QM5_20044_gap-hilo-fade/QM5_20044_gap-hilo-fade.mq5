@@ -108,6 +108,22 @@ datetime g_pending_entry_bar_utc = 0;
 double   g_pending_sl = 0.0;
 double   g_pending_tp = 0.0;
 
+void Strategy_LogEntryReject(const int date_key,
+                             const datetime entry_bar_utc,
+                             const string detail,
+                             const string diagnostics = "")
+  {
+   QM_LogEvent(QM_WARN,
+               "ENTRY_REJECTED",
+               StringFormat("{\"result\":\"STRATEGY_HOOK_REJECTED\",\"symbol\":\"%s\",\"reason\":\"GAP_HILO_FADE\",\"detail\":\"%s\",\"date_key\":%d,\"entry_bar_utc\":%I64d,\"broker_now\":%I64d%s}",
+                            QM_LoggerEscapeJson(_Symbol),
+                            QM_LoggerEscapeJson(detail),
+                            date_key,
+                            (long)entry_bar_utc,
+                            (long)TimeCurrent(),
+                            diagnostics));
+  }
+
 bool     g_m30_have_previous = false;
 double   g_m30_previous_close = 0.0;
 int      g_m30_tr_count = 0;
@@ -425,38 +441,74 @@ double Strategy_RecentLowAverage()
 
 bool Strategy_TradeGeometryAndVolumeAllow(const double entry_price,
                                           const double stop_price,
-                                          const double target_price)
+                                          const double target_price,
+                                          double &out_lots,
+                                          string &out_reject_detail)
   {
+   out_lots = 0.0;
+   out_reject_detail = "";
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
-   const double tick_value = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_VALUE_LOSS);
-   if(RISK_FIXED != 1000.0 || RISK_PERCENT != 0.0 ||
-      point <= 0.0 || tick_size <= 0.0 || tick_value <= 0.0 ||
-      entry_price <= 0.0 || stop_price <= 0.0 || target_price <= 0.0)
+   if(RISK_FIXED != 1000.0 || RISK_PERCENT != 0.0)
+     {
+      out_reject_detail = "risk_mode_invalid";
       return false;
+     }
+   if(point <= 0.0 || tick_size <= 0.0 ||
+      entry_price <= 0.0 || stop_price <= 0.0 || target_price <= 0.0)
+     {
+      out_reject_detail = "invalid_geometry_inputs";
+      return false;
+     }
 
    const double stop_distance = MathAbs(entry_price - stop_price);
    const double target_distance = MathAbs(entry_price - target_price);
-   const double risk_per_lot = (stop_distance / tick_size) * tick_value;
-   if(risk_per_lot <= 0.0 || target_distance <= 0.0)
+   if(stop_distance <= 0.0 || target_distance <= 0.0)
+     {
+      out_reject_detail = "non_positive_distance";
       return false;
+     }
 
    const double sl_points = stop_distance / point;
    const double tp_points = target_distance / point;
    const long stop_level = SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
    if(sl_points <= 0.0 || tp_points <= 0.0 ||
       sl_points < (double)stop_level || tp_points < (double)stop_level)
+     {
+      out_reject_detail = "broker_stop_level";
       return false;
+     }
 
-   const double lots = QM_LotsForRisk(_Symbol, sl_points);
+   const double lots = QM_LotsForRisk(_Symbol,
+                                      sl_points,
+                                      QM_RISK_MODE_FIXED,
+                                      RISK_FIXED);
+   out_lots = lots;
    const double volume_min = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN);
    const double volume_max = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MAX);
    const double volume_step = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_STEP);
-   if(lots <= 0.0 || volume_min <= 0.0 || volume_max <= 0.0 ||
-      volume_step <= 0.0 || lots < volume_min || lots > volume_max)
+   if(lots <= 0.0)
+     {
+      out_reject_detail = "risk_sizing_unavailable";
       return false;
+     }
+   if(volume_min <= 0.0 || volume_max <= 0.0 || volume_step <= 0.0)
+     {
+      out_reject_detail = "invalid_volume_metadata";
+      return false;
+     }
+   if(lots < volume_min || lots > volume_max)
+     {
+      out_reject_detail = "sized_volume_out_of_range";
+      return false;
+     }
    const double aligned_steps = (lots - volume_min) / volume_step;
-   return (MathAbs(aligned_steps - MathRound(aligned_steps)) <= 1.0e-6);
+   if(MathAbs(aligned_steps - MathRound(aligned_steps)) > 1.0e-6)
+     {
+      out_reject_detail = "sized_volume_step_misaligned";
+      return false;
+     }
+   return true;
   }
 
 void Strategy_ClearPending()
@@ -541,10 +593,24 @@ bool Strategy_PrepareCandidateEntry(const MqlRates &candidate,
    if(!SymbolInfoTick(_Symbol, current_tick) ||
       current_tick.ask <= 0.0 || current_tick.bid <= 0.0 ||
       current_tick.ask < current_tick.bid)
+     {
+      Strategy_LogEntryReject(g_attempt_date_key,
+                              entry_bar_utc,
+                              "invalid_quote",
+                              StringFormat(",\"bid\":%.8f,\"ask\":%.8f",
+                                           current_tick.bid,
+                                           current_tick.ask));
       return false;
+     }
    const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
    if(tick_size <= 0.0)
+     {
+      Strategy_LogEntryReject(g_attempt_date_key,
+                              entry_bar_utc,
+                              "invalid_tick_size",
+                              StringFormat(",\"tick_size\":%.8f", tick_size));
       return false;
+     }
 
    double entry = 0.0;
    double stop = 0.0;
@@ -555,7 +621,14 @@ bool Strategy_PrepareCandidateEntry(const MqlRates &candidate,
       stop = Strategy_TickNormalizedPrice(candidate.high +
                                           strategy_stop_atr_offset * g_m30_atr);
       if(entry >= stop || target >= entry || g_session_low <= target)
+        {
+         Strategy_LogEntryReject(g_attempt_date_key,
+                                 entry_bar_utc,
+                                 "short_fill_or_target_geometry_invalid",
+                                 StringFormat(",\"entry\":%.8f,\"stop\":%.8f,\"target\":%.8f,\"session_low\":%.8f",
+                                              entry, stop, target, g_session_low));
          return false;
+        }
      }
    else
      {
@@ -563,7 +636,14 @@ bool Strategy_PrepareCandidateEntry(const MqlRates &candidate,
       stop = Strategy_TickNormalizedPrice(candidate.low -
                                           strategy_stop_atr_offset * g_m30_atr);
       if(entry <= stop || target <= entry || g_session_high >= target)
+        {
+         Strategy_LogEntryReject(g_attempt_date_key,
+                                 entry_bar_utc,
+                                 "long_fill_or_target_geometry_invalid",
+                                 StringFormat(",\"entry\":%.8f,\"stop\":%.8f,\"target\":%.8f,\"session_high\":%.8f",
+                                              entry, stop, target, g_session_high));
          return false;
+        }
      }
 
    const double stop_distance = MathAbs(entry - stop);
@@ -572,9 +652,40 @@ bool Strategy_PrepareCandidateEntry(const MqlRates &candidate,
    if(stop_distance <= 0.0 ||
        stop_distance + epsilon < strategy_stop_atr_min * g_m30_atr ||
        stop_distance - epsilon > strategy_stop_atr_max * g_m30_atr ||
-       target_distance + epsilon < strategy_min_reward_r * stop_distance ||
-       !Strategy_TradeGeometryAndVolumeAllow(entry, stop, target))
+       target_distance + epsilon < strategy_min_reward_r * stop_distance)
+     {
+      Strategy_LogEntryReject(g_attempt_date_key,
+                              entry_bar_utc,
+                              "card_geometry_not_met",
+                              StringFormat(",\"entry\":%.8f,\"stop\":%.8f,\"target\":%.8f,\"atr\":%.8f,\"stop_atr\":%.8f,\"reward_r\":%.8f",
+                                           entry,
+                                           stop,
+                                           target,
+                                           g_m30_atr,
+                                           g_m30_atr > 0.0
+                                           ? stop_distance / g_m30_atr
+                                           : 0.0,
+                                           stop_distance > 0.0
+                                           ? target_distance / stop_distance
+                                           : 0.0));
       return false;
+     }
+
+   double lots = 0.0;
+   string geometry_reject = "";
+   if(!Strategy_TradeGeometryAndVolumeAllow(entry,
+                                            stop,
+                                            target,
+                                            lots,
+                                            geometry_reject))
+     {
+      Strategy_LogEntryReject(g_attempt_date_key,
+                              entry_bar_utc,
+                              geometry_reject,
+                              StringFormat(",\"entry\":%.8f,\"stop\":%.8f,\"target\":%.8f,\"lots\":%.8f",
+                                           entry, stop, target, lots));
+      return false;
+     }
 
    g_pending_signal = true;
    g_pending_side = g_armed_side;
@@ -727,10 +838,29 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   datetime open_time = 0;
-   if(!g_pending_signal || g_pending_entry_bar_utc <= 0 ||
-      Strategy_FindOurPosition(open_time) || Strategy_WideSpread())
+   if(!g_pending_signal || g_pending_entry_bar_utc <= 0)
       return false;
+
+   datetime open_time = 0;
+   if(Strategy_FindOurPosition(open_time))
+     {
+      Strategy_LogEntryReject(g_attempt_date_key,
+                              g_pending_entry_bar_utc,
+                              "position_already_open");
+      Strategy_ClearPending();
+      return false;
+     }
+   if(Strategy_WideSpread())
+     {
+      Strategy_LogEntryReject(g_attempt_date_key,
+                              g_pending_entry_bar_utc,
+                              "spread_limit_exceeded",
+                              StringFormat(",\"spread_points\":%I64d,\"max_spread_points\":%d",
+                                           SymbolInfoInteger(_Symbol, SYMBOL_SPREAD),
+                                           strategy_max_spread_points));
+      Strategy_ClearPending();
+      return false;
+     }
 
    req.type = (g_pending_side > 0) ? QM_BUY : QM_SELL;
    req.sl = g_pending_sl;
@@ -738,6 +868,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.reason = (g_pending_side > 0)
                 ? "GAP_HILO_FADE_LONG"
                 : "GAP_HILO_FADE_SHORT";
+   QM_LogEvent(QM_INFO,
+               "ENTRY_SIGNAL_FIRE",
+               StringFormat("{\"symbol\":\"%s\",\"side\":\"%s\",\"date_key\":%d,\"entry_bar_utc\":%I64d,\"sl\":%.8f,\"tp\":%.8f}",
+                            QM_LoggerEscapeJson(_Symbol),
+                            g_pending_side > 0 ? "BUY" : "SELL",
+                            g_attempt_date_key,
+                            (long)g_pending_entry_bar_utc,
+                            g_pending_sl,
+                            g_pending_tp));
    Strategy_ClearPending();
    return true;
   }
@@ -810,7 +949,13 @@ int OnInit()
                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
+   QM_LogEvent(QM_INFO,
+               "INIT_OK",
+               StringFormat("{\"routed\":%s,\"period\":%d,\"signal_tf\":%d,\"variant\":\"%s\"}",
+                            Strategy_IsRoutedSymbol(_Symbol) ? "true" : "false",
+                            (int)_Period,
+                            (int)strategy_signal_tf,
+                            QM_LoggerEscapeJson(strategy_variant_id)));
    return INIT_SUCCEEDED;
   }
 
@@ -879,7 +1024,16 @@ void OnTick()
    else
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
    if(!news_allows)
+     {
+      if(strategy_new_bar && g_pending_signal)
+        {
+         Strategy_LogEntryReject(g_attempt_date_key,
+                                 g_pending_entry_bar_utc,
+                                 "news_filter_block");
+         Strategy_ClearPending();
+        }
       return;
+     }
 
    if(!strategy_new_bar)
       return;
