@@ -21,7 +21,7 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=ea_input_defaults
-strategy_signal_tf=PERIOD_M30
+strategy_signal_tf=30
 strategy_us_open_hour_broker=16
 strategy_us_open_minute_broker=30
 strategy_us_entry_hour_broker=22

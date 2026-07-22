@@ -21,8 +21,8 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=ea_input_defaults
-strategy_variant_id="LONDON_BOX_027_BASELINE"
-strategy_timeframe=PERIOD_M15
+strategy_variant_id=LONDON_BOX_027_BASELINE
+strategy_timeframe=15
 strategy_box_start_hour_utc=3
 strategy_box_end_hour_utc=6
 strategy_extension_fraction=0.27

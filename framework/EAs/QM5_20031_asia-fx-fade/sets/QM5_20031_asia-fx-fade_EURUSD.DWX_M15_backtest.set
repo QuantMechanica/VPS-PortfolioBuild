@@ -21,6 +21,6 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=ea_input_defaults
-strategy_signal_tf=PERIOD_M15
+strategy_signal_tf=15
 strategy_range_fraction=0.75
 strategy_max_spread_points=0

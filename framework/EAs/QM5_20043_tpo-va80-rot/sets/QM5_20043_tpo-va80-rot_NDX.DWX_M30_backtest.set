@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   e49e706932d430c4ed6f1b4b976e81029cc1c49912a532dcb71a32e57964085a
+; build_hash:   91c9f9d5e8cf5a614ee81f5f02013cd6379cbab67d67ad8ddb4cc407c11f12c0
 ; author:       Development
 ; date:         2026-07-22
 ;==========================================================
@@ -21,8 +21,8 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=ea_input_defaults
-strategy_variant_id="TPO_VA80_ROT_BASELINE"
-strategy_signal_tf=PERIOD_M30
+strategy_variant_id=TPO_VA80_ROT_BASELINE
+strategy_signal_tf=30
 strategy_value_area_fraction=0.70
 strategy_min_reward_r=1.50
 strategy_cash_open_hour_new_york=9

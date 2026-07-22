@@ -21,8 +21,8 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=ea_input_defaults
-strategy_variant_id="LBMA_PM_BRK_BASELINE"
-strategy_signal_tf=PERIOD_M5
+strategy_variant_id=LBMA_PM_BRK_BASELINE
+strategy_signal_tf=5
 strategy_pre_bar_hour_london=14
 strategy_pre_bar_minute_london=55
 strategy_confirmation1_hour_london=15

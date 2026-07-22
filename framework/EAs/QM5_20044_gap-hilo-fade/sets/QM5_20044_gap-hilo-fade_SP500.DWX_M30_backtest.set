@@ -21,8 +21,8 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=ea_input_defaults
-strategy_variant_id="GAP_HILO_FADE_BASELINE"
-strategy_signal_tf=PERIOD_M30
+strategy_variant_id=GAP_HILO_FADE_BASELINE
+strategy_signal_tf=30
 strategy_d1_atr_period=20
 strategy_gap_atr_min=0.25
 strategy_gap_atr_max=1.25

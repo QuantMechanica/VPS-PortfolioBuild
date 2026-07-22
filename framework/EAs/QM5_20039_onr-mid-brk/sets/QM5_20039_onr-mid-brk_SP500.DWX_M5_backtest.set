@@ -21,8 +21,8 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=ea_input_defaults
-strategy_variant_id="ONR_MID_BRK_BASELINE"
-strategy_signal_tf=PERIOD_M5
+strategy_variant_id=ONR_MID_BRK_BASELINE
+strategy_signal_tf=5
 strategy_overnight_start_hour_new_york=18
 strategy_overnight_start_minute_new_york=0
 strategy_cash_open_hour_new_york=9

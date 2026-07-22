@@ -21,8 +21,8 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=ea_input_defaults
-strategy_variant_id="B3_RELVOL_BRK_BASELINE"
-strategy_signal_tf=PERIOD_M15
+strategy_variant_id=B3_RELVOL_BRK_BASELINE
+strategy_signal_tf=15
 strategy_force_level=70
 strategy_rearm_level=25
 strategy_volume_sma_period=20

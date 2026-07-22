@@ -21,8 +21,8 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=ea_input_defaults
-strategy_variant_id="VWAP2S_REVERT_BASELINE"
-strategy_signal_tf=PERIOD_M5
+strategy_variant_id=VWAP2S_REVERT_BASELINE
+strategy_signal_tf=5
 strategy_cash_open_hour_new_york=9
 strategy_cash_open_minute_new_york=30
 strategy_cash_close_hour_new_york=16

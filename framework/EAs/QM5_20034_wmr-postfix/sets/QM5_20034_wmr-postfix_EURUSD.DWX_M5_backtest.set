@@ -21,7 +21,7 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=ea_input_defaults
-strategy_signal_tf=PERIOD_M5
+strategy_signal_tf=5
 strategy_median_days=20
 strategy_displacement_mult=1.50
 strategy_p0_hour_london=15

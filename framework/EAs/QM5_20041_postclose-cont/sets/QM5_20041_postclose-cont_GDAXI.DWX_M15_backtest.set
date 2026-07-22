@@ -21,8 +21,8 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=ea_input_defaults
-strategy_variant_id="POSTCLOSE_CONT_BASELINE"
-strategy_signal_tf=PERIOD_M15
+strategy_variant_id=POSTCLOSE_CONT_BASELINE
+strategy_signal_tf=15
 strategy_atr_period=14
 strategy_atr_stop_mult=1.0
 strategy_hold_minutes=240

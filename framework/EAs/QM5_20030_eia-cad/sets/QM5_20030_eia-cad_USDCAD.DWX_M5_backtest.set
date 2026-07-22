@@ -21,11 +21,11 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=ea_input_defaults
-strategy_signal_tf=PERIOD_M5
+strategy_signal_tf=5
 strategy_atr_period=14
 strategy_impulse_atr_mult=0.60
 strategy_time_exit_minutes=30
 strategy_max_cost_r=0.10
-strategy_eia_ledger_file="QM5_20030_eia_schedule.csv"
-strategy_api_ledger_file="QM5_20030_api_schedule.csv"
-strategy_calendar_valid_through="2025.12.31"
+strategy_eia_ledger_file=QM5_20030_eia_schedule.csv
+strategy_api_ledger_file=QM5_20030_api_schedule.csv
+strategy_calendar_valid_through=2025.12.31
