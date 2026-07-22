@@ -3,9 +3,11 @@
 #property description "QM5_20037 LBMA PM gold-auction breakout"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_LbmaGoldPmCalendar.mqh>
 
 // Strategy Card: QM5_20037_lbma-pm-brk, G0 APPROVED 2026-07-22.
-// Auction eligibility comes from valid London-clock bars on UTC weekdays.
+// Auction eligibility comes only from the hash-bound official ICE IBA planned
+// PM schedule.  Price bars never substitute for auction-calendar membership.
 
 // =============================================================================
 // QuantMechanica V5 EA SKELETON
@@ -93,77 +95,9 @@ input int    strategy_max_spread_points = 0;
 
 int      g_last_attempt_date_key = 0;
 datetime g_active_exit_broker = 0;
-
-datetime Strategy_UtcDateTime(const int year,
-                              const int month,
-                              const int day,
-                              const int hour,
-                              const int minute)
-  {
-   MqlDateTime parts;
-   ZeroMemory(parts);
-   parts.year = year;
-   parts.mon = month;
-   parts.day = day;
-   parts.hour = hour;
-   parts.min = minute;
-   return StructToTime(parts);
-  }
-
-datetime Strategy_LastSundayUtc(const int year, const int month, const int hour)
-  {
-   const int next_year = (month == 12) ? year + 1 : year;
-   const int next_month = (month == 12) ? 1 : month + 1;
-   const datetime last_day = Strategy_UtcDateTime(next_year, next_month, 1, 0, 0) - 24 * 60 * 60;
-   MqlDateTime parts;
-   if(!TimeToStruct(last_day, parts))
-      return 0;
-   return last_day - parts.day_of_week * 24 * 60 * 60 + hour * 60 * 60;
-  }
-
-bool Strategy_IsUKDSTUtc(const datetime utc)
-  {
-   MqlDateTime parts;
-   if(utc <= 0 || !TimeToStruct(utc, parts))
-      return false;
-   const datetime starts = Strategy_LastSundayUtc(parts.year, 3, 1);
-   const datetime ends = Strategy_LastSundayUtc(parts.year, 10, 1);
-   return (starts > 0 && ends > starts && utc >= starts && utc < ends);
-  }
-
-datetime Strategy_LondonLocal(const datetime utc)
-  {
-   return utc + (Strategy_IsUKDSTUtc(utc) ? 60 * 60 : 0);
-  }
-
-int Strategy_DateKey(const datetime value)
-  {
-   MqlDateTime parts;
-   if(value <= 0 || !TimeToStruct(value, parts))
-      return 0;
-   return parts.year * 10000 + parts.mon * 100 + parts.day;
-  }
-
-datetime Strategy_LondonLocalToUtc(const int date_key,
-                                   const int hour,
-                                   const int minute)
-  {
-   const int year = date_key / 10000;
-   const int month = (date_key / 100) % 100;
-   const int day = date_key % 100;
-   datetime utc = Strategy_UtcDateTime(year, month, day, hour, minute);
-   if(Strategy_IsUKDSTUtc(utc))
-      utc -= 60 * 60;
-   return utc;
-  }
-
-bool Strategy_IsUtcWeekday(const datetime utc)
-  {
-   MqlDateTime parts;
-   if(utc <= 0 || !TimeToStruct(utc, parts))
-      return false;
-   return (parts.day_of_week >= 1 && parts.day_of_week <= 5);
-  }
+bool     g_lbma_calendar_ready = false;
+int      g_last_calendar_log_date_key = 0;
+string   g_last_calendar_log_detail = "";
 
 bool Strategy_ResolveAuctionTimes(const int date_key,
                                   datetime &pre_bar_utc,
@@ -171,18 +105,27 @@ bool Strategy_ResolveAuctionTimes(const int date_key,
                                   datetime &confirmation2_utc,
                                   datetime &exit_utc)
   {
-   pre_bar_utc = Strategy_LondonLocalToUtc(date_key,
-                                           strategy_pre_bar_hour_london,
-                                           strategy_pre_bar_minute_london);
-   confirmation1_utc = Strategy_LondonLocalToUtc(date_key,
-                                                  strategy_confirmation1_hour_london,
-                                                  strategy_confirmation1_minute_london);
-   confirmation2_utc = Strategy_LondonLocalToUtc(date_key,
-                                                  strategy_confirmation2_hour_london,
-                                                  strategy_confirmation2_minute_london);
-   exit_utc = Strategy_LondonLocalToUtc(date_key,
-                                        strategy_exit_hour_london,
-                                        strategy_exit_minute_london);
+   pre_bar_utc = 0;
+   confirmation1_utc = 0;
+   confirmation2_utc = 0;
+   exit_utc = 0;
+   if(!QM_LbmaGoldPmLondonLocalToUTC(date_key,
+                                     strategy_pre_bar_hour_london,
+                                     strategy_pre_bar_minute_london,
+                                     pre_bar_utc) ||
+      !QM_LbmaGoldPmLondonLocalToUTC(date_key,
+                                     strategy_confirmation1_hour_london,
+                                     strategy_confirmation1_minute_london,
+                                     confirmation1_utc) ||
+      !QM_LbmaGoldPmLondonLocalToUTC(date_key,
+                                     strategy_confirmation2_hour_london,
+                                     strategy_confirmation2_minute_london,
+                                     confirmation2_utc) ||
+      !QM_LbmaGoldPmLondonLocalToUTC(date_key,
+                                     strategy_exit_hour_london,
+                                     strategy_exit_minute_london,
+                                     exit_utc))
+      return false;
    return (pre_bar_utc > 0 &&
            confirmation1_utc - pre_bar_utc == 5 * 60 &&
            confirmation2_utc - confirmation1_utc == 5 * 60 &&
@@ -226,7 +169,7 @@ bool Strategy_AttemptAlreadyMade(const int date_key,
       if(entry_kind != DEAL_ENTRY_IN && entry_kind != DEAL_ENTRY_INOUT)
          continue;
       const datetime deal_utc = QM_BrokerToUTC((datetime)HistoryDealGetInteger(deal, DEAL_TIME));
-      if(Strategy_DateKey(Strategy_LondonLocal(deal_utc)) == date_key)
+      if(QM_LbmaGoldPmLondonDateKeyFromUTC(deal_utc) == date_key)
          return true;
      }
    return false;
@@ -323,6 +266,36 @@ void Strategy_LogEntryRejected(const string detail,
                             (long)candidate_utc));
   }
 
+void Strategy_LogCalendarStateOnce(const int date_key,
+                                   const string detail,
+                                   const QM_LbmaGoldPmScheduleStatus schedule_status,
+                                   const QM_LbmaGoldPmActualStatus actual_status,
+                                   const datetime candidate_utc,
+                                   const datetime auction_utc,
+                                   const bool eligible)
+  {
+   if(g_last_calendar_log_date_key == date_key &&
+      g_last_calendar_log_detail == detail)
+      return;
+   g_last_calendar_log_date_key = date_key;
+   g_last_calendar_log_detail = detail;
+   QM_LogEvent(eligible ? QM_INFO : QM_WARN,
+               eligible ? "AUCTION_DATE_ADMITTED" : "ENTRY_REJECTED",
+               StringFormat("{\"result\":\"%s\",\"symbol\":\"%s\",\"reason\":\"LBMA_PM_CALENDAR\",\"detail\":\"%s\",\"date_key\":%d,\"schedule_status\":\"%s\",\"actual_status_evidence\":\"%s\",\"candidate_utc\":%I64d,\"auction_utc\":%I64d,\"calendar_status\":\"%s\",\"runtime_sha256\":\"%s\",\"provenance_sha256\":\"%s\",\"manifest_sha256\":\"%s\"}",
+                            eligible ? "SCHEDULE_ELIGIBLE" : "STRATEGY_HOOK_REJECTED",
+                            QM_LoggerEscapeJson(_Symbol),
+                            QM_LoggerEscapeJson(detail),
+                            date_key,
+                            QM_LoggerEscapeJson(QM_LbmaGoldPmScheduleStatusName(schedule_status)),
+                            QM_LoggerEscapeJson(QM_LbmaGoldPmActualStatusName(actual_status)),
+                            (long)candidate_utc,
+                            (long)auction_utc,
+                            QM_LBMA_GOLD_PM_CALENDAR_STATUS,
+                            QM_LoggerEscapeJson(QM_LbmaGoldPmRuntimeActualSha256()),
+                            QM_LoggerEscapeJson(QM_LbmaGoldPmProvenanceActualSha256()),
+                            QM_LBMA_GOLD_PM_MANIFEST_SHA256));
+  }
+
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -336,6 +309,8 @@ bool Strategy_NoTradeFilter()
       return false;
    if(_Symbol != "XAUUSD.DWX" || _Period != strategy_signal_tf ||
       !Strategy_InputsValid())
+      return true;
+   if(!g_lbma_calendar_ready)
       return true;
    return Strategy_WideSpread();
   }
@@ -361,12 +336,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!QM_ReadBar(_Symbol, strategy_signal_tf, 0, current_bar))
       return false;
    const datetime current_utc = QM_BrokerToUTC(current_bar.time);
-   const int date_key = Strategy_DateKey(Strategy_LondonLocal(current_utc));
+   const int date_key = QM_LbmaGoldPmLondonDateKeyFromUTC(current_utc);
    datetime pre_bar_utc = 0;
    datetime confirmation1_utc = 0;
    datetime confirmation2_utc = 0;
    datetime exit_utc = 0;
-   if(!Strategy_IsUtcWeekday(current_utc) ||
+   if(date_key == 0 ||
       !Strategy_ResolveAuctionTimes(date_key,
                                     pre_bar_utc,
                                     confirmation1_utc,
@@ -378,6 +353,60 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const bool second_entry = (current_utc == confirmation2_utc + 5 * 60);
    if(!first_entry && !second_entry)
       return false;
+
+   const QM_LbmaGoldPmScheduleStatus schedule_status =
+      QM_LbmaGoldPmCalendarClassify(date_key);
+   const QM_LbmaGoldPmActualStatus actual_status =
+      QM_LbmaGoldPmActualStatusForDate(date_key);
+   datetime scheduled_auction_utc = 0;
+   if(schedule_status != QM_LBMA_GOLD_PM_SCHEDULED)
+     {
+      string detail = "SCHEDULE_PACKAGE_DATE_LOOKUP_INVALID";
+      if(schedule_status == QM_LBMA_GOLD_PM_OUT_OF_COVERAGE)
+         detail = "SCHEDULE_DATE_OUT_OF_VERIFIED_COVERAGE";
+      else if(schedule_status == QM_LBMA_GOLD_PM_NO_AUCTION_HOLIDAY)
+         detail = "OFFICIAL_PM_NO_AUCTION_HOLIDAY";
+      else if(schedule_status == QM_LBMA_GOLD_PM_NO_AUCTION_WEEKEND)
+         detail = "OFFICIAL_PM_NO_AUCTION_WEEKEND";
+      Strategy_LogCalendarStateOnce(date_key,
+                                    detail,
+                                    schedule_status,
+                                    actual_status,
+                                    current_utc,
+                                    0,
+                                    false);
+      return false;
+     }
+   if(!QM_LbmaGoldPmAuctionStartUTC(date_key, scheduled_auction_utc) ||
+      scheduled_auction_utc != confirmation1_utc)
+     {
+      Strategy_LogCalendarStateOnce(date_key,
+                                    "PINNED_AUCTION_CLOCK_MISMATCH",
+                                    schedule_status,
+                                    actual_status,
+                                    current_utc,
+                                    scheduled_auction_utc,
+                                    false);
+      return false;
+     }
+   if(actual_status == QM_LBMA_GOLD_PM_ACTUAL_CANCELLED_OR_NO_PUBLICATION)
+     {
+      Strategy_LogCalendarStateOnce(date_key,
+                                    "OFFICIAL_CANCELLATION_OR_NO_PUBLICATION",
+                                    schedule_status,
+                                    actual_status,
+                                    current_utc,
+                                    scheduled_auction_utc,
+                                    false);
+      return false;
+     }
+   Strategy_LogCalendarStateOnce(date_key,
+                                 "PROVENANCE_LOCKED_SCHEDULED_PM_AUCTION",
+                                 schedule_status,
+                                 actual_status,
+                                 current_utc,
+                                 scheduled_auction_utc,
+                                 true);
 
    MqlRates pre_bar;
    MqlRates confirmation1;
@@ -480,13 +509,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      }
    QM_LogEvent(QM_INFO,
                "ENTRY_SIGNAL_FIRE",
-               StringFormat("{\"symbol\":\"%s\",\"side\":\"%s\",\"candidate_utc\":%I64d,\"entry\":%.8f,\"stop\":%.8f,\"exit_broker\":%I64d}",
+               StringFormat("{\"symbol\":\"%s\",\"side\":\"%s\",\"candidate_utc\":%I64d,\"entry\":%.8f,\"stop\":%.8f,\"exit_broker\":%I64d,\"schedule_status\":\"SCHEDULED_PM_AUCTION\",\"actual_status_evidence\":\"%s\",\"runtime_sha256\":\"%s\"}",
                             QM_LoggerEscapeJson(_Symbol),
                             armed_long ? "BUY" : "SELL",
                             (long)current_utc,
                             entry_price,
                             stop_price,
-                            (long)g_active_exit_broker));
+                            (long)g_active_exit_broker,
+                            QM_LoggerEscapeJson(QM_LbmaGoldPmActualStatusName(actual_status)),
+                            QM_LoggerEscapeJson(QM_LbmaGoldPmRuntimeActualSha256())));
    return true;
   }
 
@@ -509,11 +540,13 @@ bool Strategy_ExitSignal()
    if(g_active_exit_broker <= 0)
      {
       const datetime open_utc = QM_BrokerToUTC(open_time);
-      const int date_key = Strategy_DateKey(Strategy_LondonLocal(open_utc));
-      const datetime exit_utc = Strategy_LondonLocalToUtc(date_key,
-                                                          strategy_exit_hour_london,
-                                                          strategy_exit_minute_london);
-      g_active_exit_broker = QM_UTCToBroker(exit_utc);
+      const int date_key = QM_LbmaGoldPmLondonDateKeyFromUTC(open_utc);
+      datetime exit_utc = 0;
+      if(QM_LbmaGoldPmLondonLocalToUTC(date_key,
+                                       strategy_exit_hour_london,
+                                       strategy_exit_minute_london,
+                                       exit_utc))
+         g_active_exit_broker = QM_UTCToBroker(exit_utc);
      }
    return (g_active_exit_broker > 0 && TimeCurrent() >= g_active_exit_broker);
   }
@@ -550,6 +583,34 @@ int OnInit()
                         qm_news_temporal,              // FW1 Axis A
                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
+
+   g_lbma_calendar_ready = QM_LbmaGoldPmCalendarLoad();
+   QM_LogEvent(g_lbma_calendar_ready ? QM_INFO : QM_WARN,
+               "LBMA_PM_CALENDAR_INIT",
+               StringFormat("{\"ready\":%s,\"calendar_status\":\"%s\",\"verified_start\":%d,\"verified_end\":%d,\"runtime_file\":\"%s\",\"runtime_expected_sha256\":\"%s\",\"runtime_actual_sha256\":\"%s\",\"provenance_actual_sha256\":\"%s\",\"sources_actual_sha256\":\"%s\",\"transitions_actual_sha256\":\"%s\",\"gaps_actual_sha256\":\"%s\",\"manifest_actual_sha256\":\"%s\",\"error\":\"%s\"}",
+                            g_lbma_calendar_ready ? "true" : "false",
+                            QM_LBMA_GOLD_PM_CALENDAR_STATUS,
+                            QM_LBMA_GOLD_PM_COVERAGE_START,
+                            QM_LBMA_GOLD_PM_COVERAGE_END,
+                            QM_LBMA_GOLD_PM_RUNTIME_FILE,
+                            QM_LBMA_GOLD_PM_RUNTIME_SHA256,
+                            QM_LoggerEscapeJson(QM_LbmaGoldPmRuntimeActualSha256()),
+                            QM_LoggerEscapeJson(QM_LbmaGoldPmProvenanceActualSha256()),
+                            QM_LoggerEscapeJson(QM_LbmaGoldPmSourcesActualSha256()),
+                            QM_LoggerEscapeJson(QM_LbmaGoldPmTransitionsActualSha256()),
+                            QM_LoggerEscapeJson(QM_LbmaGoldPmGapsActualSha256()),
+                            QM_LoggerEscapeJson(QM_LbmaGoldPmManifestActualSha256()),
+                            QM_LoggerEscapeJson(QM_LbmaGoldPmCalendarLastError())));
+   if(!g_lbma_calendar_ready)
+      QM_LogEvent(QM_WARN,
+                  "SETUP_DATA_MISSING",
+                  StringFormat("{\"component\":\"lbma_gold_pm_schedule_package\",\"entry_gate\":\"FAIL_CLOSED\",\"detail\":\"%s\"}",
+                               QM_LoggerEscapeJson(QM_LbmaGoldPmCalendarLastError())));
+   else
+      QM_LogEvent(QM_WARN,
+                  "CALENDAR_EVIDENCE_GAP",
+                  StringFormat("{\"component\":\"lbma_gold_pm_actual_occurrence\",\"detail\":\"%s\",\"technical_schedule_eligibility\":\"SCHEDULED_PM_AUCTION_ROWS_ADMITTED\",\"q02_promotion_status\":\"BLOCKED_PENDING_RECONCILIATION\"}",
+                               QM_LBMA_GOLD_PM_ACTUAL_STATUS_POLICY));
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;

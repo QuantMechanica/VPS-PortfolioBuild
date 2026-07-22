@@ -3,9 +3,12 @@
 #property description "QM5_20031 Asian-session FX range fade"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_LondonCalendars.mqh>
 
 // Strategy Card: QM5_20031_asia-fx-fade, G0 APPROVED 2026-07-22.
-// Session eligibility comes from valid broker-clock bars on UTC weekdays.
+// The public-holiday contract supplies London-date context only.  It never
+// asserts that EURUSD/GBPUSD is closed; route-specific abnormal hours still
+// require broker-session evidence.
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                     = 20031;
@@ -45,6 +48,10 @@ double   g_session_low = 0.0;
 int      g_session_bar_count = 0;
 int      g_session_last_minute = -1;
 bool     g_session_valid = false;
+int      g_session_london_date_key = 0;
+QM_LondonPublicDayType g_session_london_day_type =
+   QM_LONDON_PUBLIC_DAY_INVALID;
+bool     g_session_london_calendar_eligible = false;
 double   g_prior_range_sum = 0.0;
 int      g_prior_range_count = 0;
 int      g_last_attempt_key = 0;
@@ -134,6 +141,13 @@ bool IsUKDSTUtc(const datetime utc)
    return (utc >= starts && utc < ends);
   }
 
+datetime LondonLocal(const datetime utc)
+  {
+   if(utc <= 0)
+      return 0;
+   return utc + (IsUKDSTUtc(utc) ? 60 * 60 : 0);
+  }
+
 datetime FallbackLondonExitBroker(const int date_key)
   {
    const int year = date_key / 10000;
@@ -178,7 +192,8 @@ int MinuteOfDay(const datetime value)
 
 void FinalizePriorSession()
   {
-   if(!g_session_valid || g_session_bar_count != 28 ||
+   if(!g_session_valid || !g_session_london_calendar_eligible ||
+      g_session_bar_count != 28 ||
       g_session_last_minute != 6 * 60 + 45)
       return;
    const double completed_range = g_session_high - g_session_low;
@@ -197,6 +212,14 @@ void ResetSession(const int date_key)
    g_session_bar_count = 0;
    g_session_last_minute = -1;
    g_session_valid = IsUtcWeekdayForSession(date_key);
+   const datetime session_end_utc =
+      QM_BrokerToUTC(BrokerDateTime(date_key, 7, 0));
+   g_session_london_date_key = DateKey(LondonLocal(session_end_utc));
+   g_session_london_day_type =
+      QM_LondonPublicHolidayClassify(g_session_london_date_key);
+   g_session_london_calendar_eligible =
+      (g_session_london_day_type ==
+       QM_LONDON_PUBLIC_DAY_ORDINARY_WEEKDAY);
   }
 
 bool AdvanceSessionState()
@@ -333,7 +356,8 @@ bool Strategy_NoTradeFilter()
    datetime open_time = 0;
    if(FindOurPosition(open_time))
       return false;
-   if(!IsRoutedSymbol(_Symbol) || _Period != strategy_signal_tf)
+   if(!IsRoutedSymbol(_Symbol) || _Period != strategy_signal_tf ||
+      !QM_LondonPublicHolidayCalendarReady())
       return true;
    return Strategy_WideSpread();
   }
@@ -366,6 +390,30 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                              StringFormat(",\"bar_count\":%d,\"last_minute\":%d",
                                           g_session_bar_count,
                                           g_session_last_minute));
+      return false;
+     }
+   if(!g_session_london_calendar_eligible)
+     {
+      g_last_attempt_key = g_session_key;
+      const bool jurisdictional_holiday =
+         (g_session_london_day_type ==
+          QM_LONDON_PUBLIC_DAY_PUBLIC_OR_BANK_HOLIDAY);
+      const string calendar_detail = jurisdictional_holiday
+         ? "BROKER_SESSION_CALENDAR_UNRESOLVED_ON_LONDON_HOLIDAY"
+         : (g_session_london_day_type ==
+            QM_LONDON_PUBLIC_DAY_OUT_OF_COVERAGE)
+           ? "LONDON_HOLIDAY_CALENDAR_OUT_OF_COVERAGE"
+           : "LONDON_HOLIDAY_CALENDAR_INVALID";
+      LogStrategyEntryReject(calendar_detail,
+                             current_bar,
+                             StringFormat(",\"london_date_key\":%d,\"london_day_type\":\"%s\",\"jurisdictional_holiday_only\":%s,\"fx_closure_inferred\":false,\"broker_session_calendar_ready\":false,\"observed_bar_count\":%d",
+                                          g_session_london_date_key,
+                                          QM_LoggerEscapeJson(
+                                             QM_LondonPublicDayTypeName(
+                                                g_session_london_day_type)),
+                                          jurisdictional_holiday
+                                          ? "true" : "false",
+                                          g_session_bar_count));
       return false;
      }
    if(g_prior_range_count <= 0)
@@ -528,15 +576,30 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
+   const bool calendar_ready = QM_LondonPublicHolidayCalendarLoad();
+   QM_LogEvent(calendar_ready ? QM_INFO : QM_ERROR,
+               "LONDON_PUBLIC_HOLIDAY_CALENDAR_STATE",
+               StringFormat("{\"required\":true,\"ready\":%s,\"file\":\"%s\",\"coverage_start\":%d,\"coverage_end\":%d,\"manifest_sha256\":\"%s\",\"expected_sha256\":\"%s\",\"actual_sha256\":\"%s\",\"error\":\"%s\",\"jurisdictional_context_only\":true,\"fx_closure_inferred\":false,\"broker_session_calendar_ready\":false}",
+                            calendar_ready ? "true" : "false",
+                            QM_LONDON_PUBLIC_HOLIDAY_FILE,
+                            QM_LONDON_PUBLIC_HOLIDAY_COVERAGE_START,
+                            QM_LONDON_PUBLIC_HOLIDAY_COVERAGE_END,
+                            QM_LondonCalendarManifestActualSha256(),
+                            QM_LONDON_PUBLIC_HOLIDAY_SHA256,
+                            QM_LondonPublicHolidayCalendarActualSha256(),
+                            QM_LoggerEscapeJson(
+                               QM_LondonPublicHolidayCalendarLastError())));
+
    // Each canonical setfile is an independent single-symbol instance.  The
    // framework init above installs the host-symbol guard; requiring sibling
    // history here made a valid host cold-run depend on an unrelated FX pair.
    QM_LogEvent(QM_INFO,
                "INIT_OK",
-               StringFormat("{\"routed\":%s,\"period\":%d,\"signal_tf\":%d,\"range_fraction\":%.8f,\"max_spread_points\":%d,\"risk_fixed\":%.2f,\"risk_percent\":%.8f,\"host_only\":true}",
+               StringFormat("{\"routed\":%s,\"period\":%d,\"signal_tf\":%d,\"holiday_calendar_ready\":%s,\"broker_session_calendar_ready\":false,\"range_fraction\":%.8f,\"max_spread_points\":%d,\"risk_fixed\":%.2f,\"risk_percent\":%.8f,\"host_only\":true}",
                             IsRoutedSymbol(_Symbol) ? "true" : "false",
                             (int)_Period,
                             (int)strategy_signal_tf,
+                            calendar_ready ? "true" : "false",
                             strategy_range_fraction,
                             strategy_max_spread_points,
                             RISK_FIXED,

@@ -16,9 +16,17 @@ the prior 20 valid fixing days. When displacement is strictly greater than 1.5
 times that median and the completed 16:00–16:05 bar has not already reversed,
 the EA fades the move at 16:05. Frozen P0 is the target, one displacement from
 the actual entry is the hard stop, and any remainder is closed at 16:30 London.
-The endpoints are derived from the broker clock on UTC weekdays, and prior
-days enter the rolling sample only when their tick endpoints are valid; no
-external fixing calendar is used. Tester Groups applies venue commission.
+The endpoints are derived from the broker clock, and a date enters the rolling
+sample only when the manifest-bound WMR 16:00 London service contract says the
+fix is available and its tick endpoints are valid. The EA never substitutes an
+England/Wales holiday or LSE cash-session date for WMR availability. Tester
+Groups applies venue commission.
+
+The common loader verifies both
+`QM5_London_calendar_manifest.json` and the WMR runtime CSV by SHA-256 in MT5
+Common Files. Verified service coverage is only 2025-01-01 through 2025-12-31:
+ordinary weekdays are available unless listed, explicit `NO_1600_FIX` dates are
+skipped, and the available alteration statuses remain eligible.
 
 ---
 
@@ -103,9 +111,26 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 ---
 
+## 8. Calendar Contract and Validation Blocker
+
+- WMR 16:00 service coverage for 2018-01-01 through 2024-12-31 is not backed by
+  immutable official schedule bytes and is therefore `OUT_OF_COVERAGE`.
+- Those dates fail closed before endpoint sampling and cannot populate the
+  rolling 20-fix history. No UK public-holiday or LSE rule is used to fill the
+  gap.
+- The 2025 alteration schedule is usable as specified, including the
+  counterexample 2025-05-26 where a UK holiday still has a normal 16:00 fix.
+- Because the approved falsification contract requires positive conditional
+  reversal separately in both 2024 and 2025, the full card cannot yet be
+  validated. No strategy-success claim is supported until authoritative 2024
+  WMR coverage is acquired and the prescribed tests pass.
+
+---
+
 ## Revision History
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-22 | Initial build from card | `a9dce427-25fd-4673-8c64-bf01ddcd4cc0` |
 | v2 | 2026-07-22 | FTMO density fix | Replaced the unprovisioned fixing ledger and pre-trade cost gate with broker-clock weekday/tick eligibility and the optional native spread guard. |
+| v3 | 2026-07-22 | Verified WMR calendar integration | Bound fixing-day eligibility and rolling history to the official 2025 WMR service schedule; 2018-2024 is explicitly fail-closed and UK/LSE substitution is forbidden. |

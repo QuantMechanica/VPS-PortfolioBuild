@@ -3,9 +3,11 @@
 #property description "QM5_20034 WMR post-fix reversal fade"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_LondonCalendars.mqh>
 
 // Strategy Card: QM5_20034_wmr-postfix, G0 APPROVED 2026-07-22.
-// London fix endpoints are derived from the broker clock on UTC weekdays.
+// WMR fixing-day eligibility comes only from the verified WMR service
+// contract.  UK holidays and LSE cash sessions are not substitutes.
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                     = 20034;
@@ -312,13 +314,15 @@ bool InitializePriorHistory(const int current_london_date_key)
       datetime p1_cutoff_utc = 0;
       datetime entry_utc = 0;
       datetime exit_utc = 0;
-      if(!ResolveFixTimes(date_key,
-                          day_start_utc,
-                          p0_cutoff_utc,
-                          p1_cutoff_utc,
-                          entry_utc,
-                          exit_utc) ||
-         !IsUtcWeekday(entry_utc))
+       if(!ResolveFixTimes(date_key,
+                           day_start_utc,
+                           p0_cutoff_utc,
+                           p1_cutoff_utc,
+                           entry_utc,
+                           exit_utc) ||
+          !IsUtcWeekday(entry_utc) ||
+          !QM_LondonWmr1600IsAvailable(
+             QM_LondonWmr1600Classify(date_key)))
         {
          date_key = PreviousDateKey(date_key);
          continue;
@@ -485,7 +489,7 @@ bool Strategy_NoTradeFilter()
    if(FindOurPosition(open_time))
       return false;
    if(!IsRoutedSymbol(_Symbol) || _Period != strategy_signal_tf ||
-      !Strategy_InputsValid())
+      !Strategy_InputsValid() || !QM_LondonWmr1600CalendarReady())
       return true;
    return Strategy_WideSpread();
   }
@@ -515,17 +519,39 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    datetime p1_cutoff_utc = 0;
    datetime expected_entry_utc = 0;
    datetime exit_utc = 0;
-   if(!ResolveFixTimes(london_date_key,
+    if(!ResolveFixTimes(london_date_key,
                        day_start_utc,
                        p0_cutoff_utc,
                        p1_cutoff_utc,
                        expected_entry_utc,
                        exit_utc) ||
       entry_utc != expected_entry_utc ||
-      !IsUtcWeekday(entry_utc))
-      return false;
-   g_last_processed_entry_utc = entry_utc;
-   if(!InitializePriorHistory(london_date_key))
+       !IsUtcWeekday(entry_utc))
+       return false;
+    g_last_processed_entry_utc = entry_utc;
+
+    const QM_LondonWmr1600Status wmr_status =
+       QM_LondonWmr1600Classify(london_date_key);
+    if(!QM_LondonWmr1600IsAvailable(wmr_status))
+      {
+       const string calendar_detail =
+          (wmr_status == QM_LONDON_WMR_1600_NO_FIX)
+          ? "WMR_1600_SERVICE_UNAVAILABLE"
+          : (wmr_status == QM_LONDON_WMR_1600_OUT_OF_COVERAGE)
+            ? "WMR_SERVICE_CALENDAR_OUT_OF_COVERAGE"
+            : "WMR_SERVICE_CALENDAR_INVALID";
+       LogStrategyEntryReject(calendar_detail,
+                              london_date_key,
+                              entry_utc,
+                              StringFormat(",\"wmr_status\":\"%s\",\"coverage_start\":%d,\"coverage_end\":%d,\"holiday_or_lse_substitution\":false",
+                                           QM_LoggerEscapeJson(
+                                              QM_LondonWmr1600StatusName(
+                                                 wmr_status)),
+                                           QM_LONDON_WMR_1600_COVERAGE_START,
+                                           QM_LONDON_WMR_1600_COVERAGE_END));
+       return false;
+      }
+    if(!InitializePriorHistory(london_date_key))
      {
       LogStrategyEntryReject("PRIOR_MEDIAN_INCOMPLETE",
                              london_date_key,
@@ -721,7 +747,7 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
   {
-   if(!QM_FrameworkInit(qm_ea_id,
+    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
                         RISK_PERCENT,
                         RISK_FIXED,
@@ -736,20 +762,35 @@ int OnInit()
                         qm_rng_seed,
                         qm_stress_reject_probability,
                         qm_news_temporal,
-                        qm_news_compliance))
-      return INIT_FAILED;
+                         qm_news_compliance))
+       return INIT_FAILED;
+
+    const bool calendar_ready = QM_LondonWmr1600CalendarLoad();
+    QM_LogEvent(calendar_ready ? QM_INFO : QM_ERROR,
+                "LONDON_WMR_1600_CALENDAR_STATE",
+                StringFormat("{\"required\":true,\"ready\":%s,\"file\":\"%s\",\"coverage_start\":%d,\"coverage_end\":%d,\"manifest_sha256\":\"%s\",\"expected_sha256\":\"%s\",\"actual_sha256\":\"%s\",\"error\":\"%s\",\"holiday_or_lse_substitution\":false}",
+                             calendar_ready ? "true" : "false",
+                             QM_LONDON_WMR_1600_FILE,
+                             QM_LONDON_WMR_1600_COVERAGE_START,
+                             QM_LONDON_WMR_1600_COVERAGE_END,
+                             QM_LondonCalendarManifestActualSha256(),
+                             QM_LONDON_WMR_1600_SHA256,
+                             QM_LondonWmr1600CalendarActualSha256(),
+                             QM_LoggerEscapeJson(
+                                QM_LondonWmr1600CalendarLastError())));
 
    // Each canonical setfile is an independent single-symbol instance.  The
    // framework init above installs the host-symbol guard; requiring sibling
    // history here made a valid host cold-run depend on an unrelated FX pair.
    QM_LogEvent(QM_INFO,
                "INIT_OK",
-               StringFormat("{\"routed\":%s,\"period\":%d,\"signal_tf\":%d,\"inputs_valid\":%s,\"median_days\":%d,\"displacement_mult\":%.8f,\"p0_london\":\"%02d:%02d:%02d\",\"p1_london\":\"%02d:%02d:%02d\",\"entry_london\":\"%02d:%02d\",\"exit_london\":\"%02d:%02d\",\"max_spread_points\":%d,\"risk_fixed\":%.2f,\"risk_percent\":%.8f,\"host_only\":true}",
-                            IsRoutedSymbol(_Symbol) ? "true" : "false",
-                            (int)_Period,
-                            (int)strategy_signal_tf,
-                            Strategy_InputsValid() ? "true" : "false",
-                            strategy_median_days,
+                StringFormat("{\"routed\":%s,\"period\":%d,\"signal_tf\":%d,\"inputs_valid\":%s,\"wmr_calendar_ready\":%s,\"median_days\":%d,\"displacement_mult\":%.8f,\"p0_london\":\"%02d:%02d:%02d\",\"p1_london\":\"%02d:%02d:%02d\",\"entry_london\":\"%02d:%02d\",\"exit_london\":\"%02d:%02d\",\"max_spread_points\":%d,\"risk_fixed\":%.2f,\"risk_percent\":%.8f,\"host_only\":true}",
+                             IsRoutedSymbol(_Symbol) ? "true" : "false",
+                             (int)_Period,
+                             (int)strategy_signal_tf,
+                             Strategy_InputsValid() ? "true" : "false",
+                             calendar_ready ? "true" : "false",
+                             strategy_median_days,
                             strategy_displacement_mult,
                             strategy_p0_hour_london,
                             strategy_p0_minute_london,

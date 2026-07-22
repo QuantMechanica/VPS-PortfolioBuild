@@ -3,6 +3,7 @@
 #property description "QM5_20045 fixed-UTC London box breakout"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_LondonCalendars.mqh>
 
 // =============================================================================
 // QuantMechanica V5 framework inputs
@@ -754,8 +755,9 @@ bool Strategy_NoTradeFilter()
       Strategy_OurPendingCount() > 0)
       return false;
 
-   return (!Strategy_IsRoutedSymbol(_Symbol) ||
-           _Period != strategy_timeframe ||
+    return (!Strategy_IsRoutedSymbol(_Symbol) ||
+            !QM_LondonPublicHolidayCalendarReady() ||
+            _Period != strategy_timeframe ||
            strategy_variant_id != "LONDON_BOX_027_BASELINE" ||
            strategy_timeframe != PERIOD_M15 ||
            strategy_box_start_hour_utc != 3 ||
@@ -797,10 +799,31 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       Strategy_DateAlreadyUsed(date_key))
       return false;
 
-   // A symbol-date is consumed by its one 06:00 attempt, including every
-   // fail-closed outcome. Later bars cannot chase or retry.
-   g_consumed_date_key = date_key;
-   Strategy_PlaceOcoPair(date_key, box_high, box_low, box_size);
+    // A symbol-date is consumed by its one 06:00 attempt, including every
+    // fail-closed outcome. Later bars cannot chase or retry.
+    g_consumed_date_key = date_key;
+   const QM_LondonPublicDayType london_day_type =
+      QM_LondonPublicHolidayClassify(date_key);
+   if(london_day_type != QM_LONDON_PUBLIC_DAY_ORDINARY_WEEKDAY)
+     {
+      const bool jurisdictional_holiday =
+         (london_day_type ==
+          QM_LONDON_PUBLIC_DAY_PUBLIC_OR_BANK_HOLIDAY);
+      const string calendar_detail = jurisdictional_holiday
+         ? "BROKER_SESSION_CALENDAR_UNRESOLVED_ON_LONDON_HOLIDAY"
+         : (london_day_type == QM_LONDON_PUBLIC_DAY_OUT_OF_COVERAGE)
+           ? "LONDON_TRADING_DAY_CALENDAR_OUT_OF_COVERAGE"
+           : "LONDON_TRADING_DAY_CALENDAR_INVALID";
+      Strategy_LogEntryReject(
+         date_key,
+         calendar_detail,
+         StringFormat(",\"london_day_type\":\"%s\",\"jurisdictional_holiday_only\":%s,\"fx_closure_inferred\":false,\"lse_calendar_used\":false,\"broker_session_calendar_ready\":false,\"box_bars_complete\":true",
+                      QM_LoggerEscapeJson(
+                         QM_LondonPublicDayTypeName(london_day_type)),
+                      jurisdictional_holiday ? "true" : "false"));
+      return false;
+     }
+    Strategy_PlaceOcoPair(date_key, box_high, box_low, box_size);
    return false;
   }
 
@@ -952,13 +975,28 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
+   const bool calendar_ready = QM_LondonPublicHolidayCalendarLoad();
+   QM_LogEvent(calendar_ready ? QM_INFO : QM_ERROR,
+               "LONDON_PUBLIC_HOLIDAY_CALENDAR_STATE",
+               StringFormat("{\"required\":true,\"ready\":%s,\"file\":\"%s\",\"coverage_start\":%d,\"coverage_end\":%d,\"manifest_sha256\":\"%s\",\"expected_sha256\":\"%s\",\"actual_sha256\":\"%s\",\"error\":\"%s\",\"fixed_utc_box_unchanged\":true,\"jurisdictional_context_only\":true,\"fx_closure_inferred\":false,\"lse_calendar_used\":false,\"broker_session_calendar_ready\":false}",
+                            calendar_ready ? "true" : "false",
+                            QM_LONDON_PUBLIC_HOLIDAY_FILE,
+                            QM_LONDON_PUBLIC_HOLIDAY_COVERAGE_START,
+                            QM_LONDON_PUBLIC_HOLIDAY_COVERAGE_END,
+                            QM_LondonCalendarManifestActualSha256(),
+                            QM_LONDON_PUBLIC_HOLIDAY_SHA256,
+                            QM_LondonPublicHolidayCalendarActualSha256(),
+                            QM_LoggerEscapeJson(
+                               QM_LondonPublicHolidayCalendarLastError())));
+
    QM_LogEvent(QM_INFO,
                "INIT_OK",
-               StringFormat("{\"card\":\"QM5_20045\",\"routed\":%s,\"period\":%d,\"strategy_tf\":%d,\"variant\":\"%s\"}",
+               StringFormat("{\"card\":\"QM5_20045\",\"routed\":%s,\"period\":%d,\"strategy_tf\":%d,\"variant\":\"%s\",\"holiday_calendar_ready\":%s,\"broker_session_calendar_ready\":false}",
                             Strategy_IsRoutedSymbol(_Symbol) ? "true" : "false",
                             (int)_Period,
                             (int)strategy_timeframe,
-                            QM_LoggerEscapeJson(strategy_variant_id)));
+                            QM_LoggerEscapeJson(strategy_variant_id),
+                            calendar_ready ? "true" : "false"));
    return INIT_SUCCEEDED;
   }
 

@@ -17,8 +17,17 @@ next M15 open, targeting the signal-time range midpoint and using the opposite
 one-mean-range boundary as the hard stop. Only one attempt is permitted per day,
 and any remainder is closed at 08:00 London. Session eligibility is derived
 from the broker clock, requires all 28 valid M15 bars, and is limited to UTC
-weekdays; no external session ledger is used. Tester Groups applies venue
-commission to fills.
+weekdays. The manifest-bound England/Wales holiday file supplies London-date
+context. A listed holiday is not treated as an FX closure; because the required
+route-specific broker-session exception calendar is not yet provisioned, such a
+date is rejected as unresolved and excluded from the expanding range history.
+Tester Groups applies venue commission to fills.
+
+The common loader verifies both
+`QM5_London_calendar_manifest.json` and the jurisdictional runtime CSV by
+SHA-256 in MT5 Common Files before enabling new entries. Missing, mismatched, or
+out-of-coverage calendar data fails closed for entries while position exits
+remain active.
 
 ---
 
@@ -97,9 +106,26 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 ---
 
+## 8. Calendar Contract and Open Gap
+
+- Verified jurisdictional coverage is 2018-01-01 through 2025-12-31.
+- The jurisdictional file does not state whether `EURUSD.DWX` or `GBPUSD.DWX`
+  trades, closes, or has abnormal hours. The LSE cash calendar is not consumed.
+- On an ordinary covered weekday, exact observed broker bars remain the session
+  evidence. On a listed London holiday, the EA emits
+  `BROKER_SESSION_CALENDAR_UNRESOLVED_ON_LONDON_HOLIDAY` and consumes the date;
+  the log also records `fx_closure_inferred=false`.
+- The unresolved deliverable is a provenance-bound, date-aware Darwinex route
+  session/exception calendar. Until it exists, holiday candidates are
+  deliberately fail-closed. This is a setup limitation, not evidence that the
+  strategy is successful or unsuccessful.
+
+---
+
 ## Revision History
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-22 | Initial build from card | `c17160f6-0f9d-492a-a6ab-816094e912eb` |
 | v2 | 2026-07-22 | FTMO density fix | Replaced the unprovisioned session ledger and pre-trade cost gate with broker-clock weekday/bar eligibility and the optional native spread guard. |
+| v3 | 2026-07-22 | Verified London calendar integration | Added the manifest-bound public-holiday context gate; no FX closure is inferred, and listed holidays remain blocked only because the required broker-session exception decision is unresolved. |

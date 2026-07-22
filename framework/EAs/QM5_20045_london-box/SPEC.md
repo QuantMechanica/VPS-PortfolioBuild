@@ -15,12 +15,20 @@ exact twelve complete bars from 03:00 through 05:45 UTC. If that box is no
 wider than 40 logical pips and its UTC date is Monday through Friday, it places
 equal-volume buy-stop and sell-stop orders one minimum tick beyond 27%
 extensions of the box; the first fill cancels the opposite order. The UTC date
-comes from broker-clock conversion and requires all twelve valid M15 bars; no
-external trading-day ledger is used. The hard stop stays at the opposite box
+comes from broker-clock conversion and requires all twelve valid M15 bars. A
+manifest-bound England/Wales holiday lookup supplies jurisdictional date
+context without moving the fixed-UTC box. A listed holiday is not treated as an
+FX closure; it is rejected as unresolved because a route-specific broker-session
+exception calendar is not yet provisioned. The hard stop stays at the opposite box
 boundary, the target is one box from the actual fill, unfilled orders expire
 at 12:00 Europe/London, and any surviving position closes at 16:00
 Europe/London. Tester Groups applies venue commission to fills, while the EA
 uses the tester/live `SYMBOL_SPREAD` value for an optional spread-points guard.
+
+The common loader verifies both
+`QM5_London_calendar_manifest.json` and the jurisdictional runtime CSV by
+SHA-256 in MT5 Common Files before enabling a new OCO attempt. The LSE cash
+calendar is not consumed for either FX symbol.
 
 ---
 
@@ -105,6 +113,23 @@ ENV→mode validation is enforced by QM_FrameworkInit (EA_INPUT_RISK_MODE_MISMAT
 
 ---
 
+## 8. Calendar Contract and Open Gap
+
+- Verified jurisdictional coverage is 2018-01-01 through 2025-12-31. The box
+  remains exactly 03:00-06:00 UTC on every date; the calendar never shifts it.
+- A GOV.UK holiday does not establish that `GBPUSD.DWX` or `EURGBP.DWX` is
+  closed. On such a date the completed box is still audited, but order placement
+  is blocked with `BROKER_SESSION_CALENDAR_UNRESOLVED_ON_LONDON_HOLIDAY` and
+  `fx_closure_inferred=false`.
+- Ordinary covered weekdays require the exact twelve observed route bars plus
+  all existing execution/news gates. The LSE cash calendar is never used as an
+  FX trading-day proxy.
+- A provenance-bound Darwinex route session/exception calendar remains missing.
+  Consequently the card's trading-day dependency is only partially satisfied;
+  no validation or success claim follows from this implementation alone.
+
+---
+
 ## Revision History
 
 | Version | Date | Reason | Notes |
@@ -112,3 +137,4 @@ ENV→mode validation is enforced by QM_FrameworkInit (EA_INPUT_RISK_MODE_MISMAT
 | v1 | 2026-07-22 | Initial build from card | 52536807-e3b8-40ef-9e68-1b41e79623ba |
 | v2 | 2026-07-22 | FTMO density prototype | Replaced the unprovisioned trading-day ledger with broker-clock UTC weekday and valid-bar eligibility. |
 | v3 | 2026-07-22 | FTMO density prototype | Removed unprovisioned per-EA execution metadata and commission gates; tester Groups owns commission and an optional native spread guard remains. |
+| v4 | 2026-07-22 | Verified London calendar integration | Added manifest-bound jurisdictional date context without changing the UTC box or inferring FX closure; broker-session exceptions remain an explicit gap. |

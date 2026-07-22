@@ -688,9 +688,19 @@ string QM_LbmaGoldPmProvenanceActualSha256()
    return g_qm_lbma_gold_pm_provenance_actual_sha256;
   }
 
+string QM_LbmaGoldPmSourcesActualSha256()
+  {
+   return g_qm_lbma_gold_pm_sources_actual_sha256;
+  }
+
 string QM_LbmaGoldPmTransitionsActualSha256()
   {
    return g_qm_lbma_gold_pm_transitions_actual_sha256;
+  }
+
+string QM_LbmaGoldPmGapsActualSha256()
+  {
+   return g_qm_lbma_gold_pm_gaps_actual_sha256;
   }
 
 string QM_LbmaGoldPmManifestActualSha256()
