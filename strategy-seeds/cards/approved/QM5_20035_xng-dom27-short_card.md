@@ -8,6 +8,14 @@ created: 2026-07-22
 created_by: Research+Development
 last_updated: 2026-07-22
 strategy_type_flags: [calendar-seasonality, day-of-month, short-only, atr-hard-stop, time-stop, low-frequency]
+source_citations:
+  - type: academic_paper
+    citation: "Borowski, K. (2016), Analysis of Selected Seasonality Effects in Markets of Future Contracts, Journal of Management and Financial Sciences 26, 27-44."
+    location: "Section 4.3 natural-gas day-of-month table"
+    quality_tier: B
+    role: primary
+markets: [commodities, energy, natural_gas]
+primary_target_symbols: [XNGUSD.DWX]
 target_symbols: [XNGUSD.DWX]
 timeframes: [D1]
 ml_required: false
@@ -17,6 +25,13 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 expected_trades_per_year_per_symbol: 9
+expected_trade_frequency: "About 8-10 exact-date packages per year"
+expected_pf: 1.01
+expected_dd_pct: 40.0
+risk_class: high
+modules_used: [no_trade, trade_entry, trade_management, trade_close]
+target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
+hard_rules_at_risk: [friday_close, risk_mode_dual, low_frequency, cfd_source_basis, multiple_comparisons, portfolio_correlation]
 q01_status: PASS
 pipeline_phase: Q02
 q02_status: QUEUED
@@ -45,6 +60,12 @@ performance claim.
 
 ## Locked rules
 
+## Rules
+
+The following entry, exit, filter, and management rules are immutable for Q02.
+
+## 4. Entry Rules
+
 - On a genuine new `XNGUSD.DWX` D1 bar dated exactly the 27th, consume the
   broker-month attempt before gates and submit one SELL; never shift an absent
   27th and never retry within the month.
@@ -53,6 +74,27 @@ performance claim.
   cap, framework news gate, Friday close at broker hour 21, and no take-profit.
 - Backtest only: `RISK_FIXED=1000`, `RISK_PERCENT=0`, weight 1. No sweep.
 - No ML, banned indicator, external feed, grid, martingale, scale or pyramid.
+
+## 5. Exit Rules
+
+- Flatten at the first D1 boundary after entry, retrying the close on later
+  ticks if necessary; the one-calendar-day stale guard is the fallback.
+- Retain the framework Friday close and entry-time broker hard stop.
+
+## 6. Filters (No-Trade Module)
+
+- Require exact `XNGUSD.DWX`, D1, magic slot 0, day 27, and locked parameters.
+- Fail closed on invalid spread, ATR, price, stop arithmetic, or persisted state.
+
+## 7. Trade Management Rules
+
+- Manage only the registered symbol and magic, never move the frozen stop,
+  and evaluate time exits before any new-entry news gate.
+
+## Risk
+
+This is a high-risk sparse calendar hypothesis with futures/CFD basis, gaps,
+multiple-testing bias, post-publication decay, and low-sample uncertainty.
 
 Expected cadence is roughly 8-10 packages/year; Q02 must reject below five
 completed packages/year or for nondeterminism, shifted dates, duplicate
