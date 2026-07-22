@@ -1,0 +1,31 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20039
+; ea_slug:      onr-mid-brk
+; ea_version:   v5.0
+; set_version:  s20260722-001
+; symbol:       NDX.DWX
+; timeframe:    M5
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   7df1827083f73be3b24531dece2acbed02c8b4f85bdb1387471f9d5cf27e974b
+; author:       Development
+; date:         2026-07-22
+;==========================================================
+qm_ea_id=20039
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
+strategy_variant_id="ONR_MID_BRK_BASELINE"
+strategy_signal_tf=PERIOD_M5
+strategy_max_cost_r=0.10
+strategy_round_turn_commission_usd_per_lot=0.0
+strategy_session_ledger_file="QM5_20039_us_overnight_cash_calendar.csv"
+strategy_session_ledger_sha256=""
+strategy_calendar_valid_through="2025.12.31"
+strategy_tzdb_version=""
