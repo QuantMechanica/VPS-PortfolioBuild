@@ -31,7 +31,7 @@ expected_dd_pct: 40.0
 risk_class: high
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 hard_rules_at_risk: [friday_close, risk_mode_dual, low_frequency, cfd_source_basis, multiple_comparisons, portfolio_correlation]
-q01_status: PENDING
+q01_status: PASS
 pipeline_phase: Q02
 q02_status: PENDING
 review_focus: "Adds solo WTI calendar exposure to the XAU/SP500/NDX/XNG book; strictly falsify exact day 8 after costs and CFD/session basis, and measure correlation only at Q09."
@@ -91,5 +91,5 @@ portfolio-gate change is authorized.
 
 | version | date | phase | verdict |
 |---|---|---|---|
-| v1 | 2026-07-22 | Q01 | PENDING |
+| v1 | 2026-07-22 | Q01 | strict compile PASS, 0 errors/0 warnings |
 | v1 | 2026-07-22 | Q02 | PENDING |
