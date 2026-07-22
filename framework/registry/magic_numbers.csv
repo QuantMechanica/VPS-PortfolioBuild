@@ -15151,3 +15151,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20045,london-box,0,GBPUSD.DWX,200450000,2026-07-22,Development,active
 20045,london-box,1,EURGBP.DWX,200450001,2026-07-22,Development,active
 20047,wti-mon-loss-bnc,0,XTIUSD.DWX,200470000,2026-07-22,Development,active
+20048,wti-preholiday,0,XTIUSD.DWX,200480000,2026-07-22,Development,active
