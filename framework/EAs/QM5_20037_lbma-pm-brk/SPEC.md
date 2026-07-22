@@ -1,102 +1,75 @@
-<!--
-QuantMechanica V5 — EA Spec Document
-Required by Q01 Build & Spec gate (Vault: `03 Pipeline/Q01 Build & Spec.md`)
-Validator: `framework/scripts/validate_spec_doc.py`
+# QM5_20037_lbma-pm-brk — Strategy Spec
 
-Copy this file to:
-  framework/EAs/QM5_<NNNN>_<slug>/SPEC.md
-
-Replace every <ANGLE_BRACKETED_PLACEHOLDER>. Validator rejects placeholders.
-All seven sections below are MANDATORY for Q01 PASS.
--->
-
-# QM5_<NNNN>_<slug> — Strategy Spec
-
-**EA ID:** QM5_<NNNN>
-**Slug:** `<slug>`
-**Source:** `<source_id>` (see `strategy-seeds/sources/<source_id>/`)
+**EA ID:** QM5_20037
+**Slug:** `lbma-pm-brk`
+**Source:** CAMINSCHI-HEANEY-2014
 **Author of this spec:** Codex
-**Last revised:** <YYYY-MM-DD>
+**Last revised:** 2026-07-22
 
 ---
 
 ## 1. Strategy Logic
 
-Plain prose, no jargon. Describe the signal the EA trades. Include the formula
-or rule that decides entry and exit.
-
-> Example: "Long when 21-EMA(close) crosses above 55-EMA(close) on the close
-> of a D1 bar AND ADX(14) > 25. Exit when 21-EMA crosses below 55-EMA, or at
-> 2× ATR(14) trailing stop, or on Friday close."
-
-<DESCRIBE THE STRATEGY LOGIC HERE>
-
----
+On an officially scheduled LBMA PM auction date, the EA freezes the completed
+14:55–15:00 London M5 range and arms in the direction of that bar's body. It
+enters at 15:05 or 15:10 London only when the first eligible completed M5 close
+breaks the frozen range in the armed direction; an opposite close cancels the
+date. The opposite range edge is the immutable hard stop, there is no profit
+target or trade-management overlay, and any remaining position closes at the
+first tradable quote at or after 15:15 London.
 
 ## 2. Parameters
 
-Table of every input parameter, its default, range, and meaning.
-
 | Parameter | Default | Range | Meaning |
-|---|---|---|---|
-| `<param_1>` | <value> | <lo>-<hi> | <one-line description> |
-| `<param_2>` | <value> | <lo>-<hi> | <one-line description> |
-
-> Note: framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
-> qm_news_mode, qm_rng_seed, qm_stress_reject_probability, qm_friday_close_*)
-> are documented in `framework/V5_FRAMEWORK_DESIGN.md` — do NOT re-document
-> them here. Only list strategy-specific inputs.
-
----
+|---|---:|---|---|
+| `strategy_variant_id` | `LBMA_PM_BRK_BASELINE` | locked | Approved card variant identity. |
+| `strategy_signal_tf` | `PERIOD_M5` | locked | Signal and execution-bar timeframe. |
+| `strategy_max_cost_r` | 0.10 | locked | Maximum round-turn commission plus entry spread as a fraction of initial risk. |
+| `strategy_round_turn_commission_usd_per_lot` | 0.0 | governed value required | Runtime USD commission per lot; zero fails closed rather than inventing a cost. |
+| `strategy_auction_ledger_file` | `QM5_20037_lbma_pm_auction_calendar.csv` | immutable file | Common-Files official-auction ledger with UTC timestamps and provenance. |
+| `strategy_calendar_valid_through` | `2025.12.31` | locked | Required official-auction calendar coverage date. |
+| `strategy_tzdb_version` | empty | governed value required | Pinned IANA timezone database version; empty or ledger mismatch fails closed. |
 
 ## 3. Symbol Universe
 
-Which `.DWX` symbols this EA is designed for. Be explicit about both inclusions
-and exclusions.
-
 **Designed for:**
-- `<SYMBOL_1.DWX>` — <why this fits>
-- `<SYMBOL_2.DWX>` — <why this fits>
+
+- `XAUUSD.DWX` — the card's sole gold-auction price, signal, and order route.
 
 **Explicitly NOT for:**
-- `<SYMBOL.DWX>` — <why this does not fit>
 
----
+- All other `.DWX` symbols — the approved card forbids sibling order routes and
+  depends specifically on the LBMA PM gold auction.
 
 ## 4. Timeframe
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | `<M5 / M15 / H1 / H4 / D1>` |
-| Multi-timeframe refs | `<list any cross-TF reads>` or `none` |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
-
----
+| Base timeframe | `M5` |
+| Multi-timeframe refs | none |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` |
 
 ## 5. Expected Behaviour
 
-How this EA should behave in production. Calibrates downstream gate expectations.
-
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `<approx number>` |
-| Typical hold time | `<minutes / hours / days>` |
-| Expected drawdown profile | `<one line>` |
-| Regime preference | `<trend / mean-revert / volatility-expansion / breakout / news-driven>` |
-| Win rate target (qualitative) | `<low/medium/high>` |
-
----
+| Trades / year / symbol | approximately 200 before holidays, dojis, unconfirmed breaks, and cost rejections |
+| Typical hold time | 5–15 minutes, always flat at or after 15:15 London |
+| Expected drawdown profile | approximately 12% card prior, with losses clustered around failed auction breakouts |
+| Regime preference | benchmark-auction information concentration and short-horizon breakout |
+| Win rate target (qualitative) | not specified by the approved card |
 
 ## 6. Source Citation
 
 This card was mechanised from:
 
-**Source ID:** `<source_id>`
-**Source type:** `<paper / book / forum / video / OWNER / AI>`
-**Pointer:** `<URL or local path or strategy-seeds/sources/<source_id>/>`
-**R1–R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_<NNNN>_<slug>.md`
-
----
+**Source ID:** CAMINSCHI-HEANEY-2014
+**Source type:** academic paper
+**Pointer:** Caminschi and Heaney (2014), *Journal of Futures Markets* 34(11),
+DOI 10.1002/fut.21636; implementation card at
+`D:/QM/strategy_farm/artifacts/cards_approved/QM5_20037_lbma-pm-brk_card.md`.
+**R1–R4 verdict (Q00):** all PASS per
+`artifacts/cards_approved/QM5_20037_lbma-pm-brk.md`.
 
 ## 7. Risk Model
 
@@ -107,6 +80,8 @@ This card was mechanised from:
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
 
 ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+The approved baseline itself authorizes fixed-risk testing only; any live risk
+mode remains a later governed promotion decision.
 
 ---
 
@@ -114,7 +89,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | <YYYY-MM-DD> | Initial build from card | <build commit hash> |
-
-> When this EA cycles back to Q01 from a Q02 zero-trade event, add a row:
-> `| v2 | YYYY-MM-DD | Q02 all-symbol zero-trades; widened entry filter X | <commit> |`
+| v1 | 2026-07-22 | Initial build from card | e7bbe65a-a948-4127-a13a-5422895208fa |

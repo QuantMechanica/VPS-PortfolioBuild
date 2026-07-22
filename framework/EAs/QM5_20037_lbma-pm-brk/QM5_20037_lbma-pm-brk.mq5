@@ -484,8 +484,13 @@ bool Strategy_CostAndVolumeAllow(const double entry_price, const double stop_pri
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   // TODO: e.g. "only trade London session" or "skip if ADX<20"
-   return false;
+   datetime open_time = 0;
+   if(Strategy_FindOurPosition(open_time))
+      return false;
+   if(_Symbol != "XAUUSD.DWX" || _Period != strategy_signal_tf ||
+      strategy_signal_tf != PERIOD_M5)
+      return true;
+   return !Strategy_EnsureCalendarLoaded();
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
@@ -493,35 +498,128 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // TODO: build req.type / req.price / req.sl / req.tp / req.reason /
-   //       req.symbol_slot / req.expiration_seconds — set ALL fields (the
-   //       caller ZeroMemory's req; symbol_slot stays 0 for single-symbol
-   //       EAs). Lots are NOT part of QM_EntryRequest: sizing happens inside
-   //       QM_Entry via QM_LotsForRisk from req.sl.
-   return false;
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(!g_calendar_ready || _Symbol != "XAUUSD.DWX" ||
+      strategy_variant_id != "LBMA_PM_BRK_BASELINE" ||
+      strategy_signal_tf != PERIOD_M5 || _Period != strategy_signal_tf ||
+      strategy_max_cost_r != 0.10)
+      return false;
+
+   MqlRates current_bar;
+   if(!QM_ReadBar(_Symbol, strategy_signal_tf, 0, current_bar))
+      return false;
+   const datetime current_utc = QM_BrokerToUTC(current_bar.time);
+   const int date_key = Strategy_DateKey(Strategy_LondonLocal(current_utc));
+   const int calendar_index = Strategy_FindAuctionDate(date_key);
+   if(calendar_index < 0 || !g_auction_scheduled[calendar_index])
+      return false;
+
+   const bool first_entry = (current_utc == g_confirmation2_utc[calendar_index]);
+   const bool second_entry = (current_utc == g_confirmation2_utc[calendar_index] + 5 * 60);
+   if(!first_entry && !second_entry)
+      return false;
+
+   MqlRates pre_bar;
+   MqlRates confirmation1;
+   MqlRates confirmation2;
+   const int pre_shift = first_entry ? 2 : 3;
+   const int confirmation1_shift = first_entry ? 1 : 2;
+   if(!QM_ReadBar(_Symbol, strategy_signal_tf, pre_shift, pre_bar) ||
+      !QM_ReadBar(_Symbol, strategy_signal_tf, confirmation1_shift, confirmation1) ||
+      QM_BrokerToUTC(pre_bar.time) != g_pre_bar_utc[calendar_index] ||
+      QM_BrokerToUTC(confirmation1.time) != g_confirmation1_utc[calendar_index])
+      return false;
+   if(second_entry &&
+      (!QM_ReadBar(_Symbol, strategy_signal_tf, 1, confirmation2) ||
+       QM_BrokerToUTC(confirmation2.time) != g_confirmation2_utc[calendar_index]))
+      return false;
+
+   const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
+   if(tick_size <= 0.0 || pre_bar.high <= pre_bar.low)
+      return false;
+   const long pre_open_ticks = (long)MathRound(pre_bar.open / tick_size);
+   const long pre_close_ticks = (long)MathRound(pre_bar.close / tick_size);
+   const long pre_high_ticks = (long)MathRound(pre_bar.high / tick_size);
+   const long pre_low_ticks = (long)MathRound(pre_bar.low / tick_size);
+   if(pre_high_ticks <= pre_low_ticks || pre_close_ticks == pre_open_ticks)
+      return false;
+
+   const bool armed_long = (pre_close_ticks > pre_open_ticks);
+   const double pre_high = Strategy_TickNormalizedPrice((double)pre_high_ticks * tick_size);
+   const double pre_low = Strategy_TickNormalizedPrice((double)pre_low_ticks * tick_size);
+   const double confirmation1_close = Strategy_TickNormalizedPrice(confirmation1.close);
+   const int first_outcome = Strategy_ConfirmationOutcome(armed_long,
+                                                           confirmation1_close,
+                                                           pre_high,
+                                                           pre_low);
+   if(first_entry && first_outcome != 1)
+      return false;
+   if(second_entry && first_outcome != 0)
+      return false;
+   if(second_entry)
+     {
+      const double confirmation2_close = Strategy_TickNormalizedPrice(confirmation2.close);
+      if(Strategy_ConfirmationOutcome(armed_long, confirmation2_close, pre_high, pre_low) != 1)
+         return false;
+     }
+
+   if(Strategy_AttemptAlreadyMade(date_key, calendar_index))
+      return false;
+   g_last_attempt_date_key = date_key;
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0 || ask < bid)
+      return false;
+   const double entry_price = armed_long ? ask : bid;
+   const double stop_price = armed_long ? pre_low : pre_high;
+   if(stop_price <= 0.0 ||
+      (armed_long && entry_price <= stop_price) ||
+      (!armed_long && entry_price >= stop_price) ||
+      !Strategy_CostAndVolumeAllow(entry_price, stop_price))
+      return false;
+
+   req.type = armed_long ? QM_BUY : QM_SELL;
+   req.sl = stop_price;
+   req.reason = armed_long ? "LBMA_PM_BRK_LONG" : "LBMA_PM_BRK_SHORT";
+   g_active_exit_broker = QM_UTCToBroker(g_exit_utc[calendar_index]);
+   return (g_active_exit_broker > 0);
   }
 
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // TODO: e.g.
-   //   const int magic = QM_FrameworkMagic();
-   //   for(int i = PositionsTotal() - 1; i >= 0; --i) {
-   //       const ulong ticket = PositionGetTicket(i);
-   //       if(!PositionSelectByTicket(ticket)) continue;
-   //       if(PositionGetInteger(POSITION_MAGIC) != magic) continue;
-   //       QM_TM_MoveToBreakEven(ticket, /*trigger_pips=*/30, /*buffer=*/2);
-   //       QM_TM_TrailATR(ticket, /*atr_period=*/14, /*atr_mult=*/2.0);
-   //   }
+   datetime open_time = 0;
+   if(!Strategy_FindOurPosition(open_time))
+      g_active_exit_broker = 0;
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   // TODO: when to close manually (separate from SL/TP and trade management)
-   return false;
+   datetime open_time = 0;
+   if(!Strategy_FindOurPosition(open_time))
+      return false;
+   if(g_active_exit_broker <= 0)
+     {
+      const datetime open_utc = QM_BrokerToUTC(open_time);
+      const int date_key = Strategy_DateKey(Strategy_LondonLocal(open_utc));
+      const int calendar_index = g_calendar_ready ? Strategy_FindAuctionDate(date_key) : -1;
+      const datetime exit_utc = (calendar_index >= 0)
+                                ? g_exit_utc[calendar_index]
+                                : Strategy_LondonLocalToUtc(date_key, 15, 15);
+      g_active_exit_broker = QM_UTCToBroker(exit_utc);
+     }
+   return (g_active_exit_broker > 0 && TimeCurrent() >= g_active_exit_broker);
   }
 
 // Optional news-filter override. Return TRUE to suppress trading regardless
@@ -529,7 +627,8 @@ bool Strategy_ExitSignal()
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false; // defer to QM_NewsAllowsTrade(...)
+   // The card keeps the framework's default news pause; this hook adds none.
+   return false;
   }
 
 // -----------------------------------------------------------------------------
