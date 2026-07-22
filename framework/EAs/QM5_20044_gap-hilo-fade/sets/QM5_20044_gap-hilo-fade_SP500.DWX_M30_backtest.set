@@ -1,0 +1,42 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20044
+; ea_slug:      gap-hilo-fade
+; ea_version:   v5.0
+; set_version:  s20260722-001
+; symbol:       SP500.DWX
+; timeframe:    M30
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   0a405716e8b24fd125c24ffef599aac3aa125fcf487f7582820f7ec41cb48b7b
+; author:       Development
+; date:         2026-07-22
+;==========================================================
+qm_ea_id=20044
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
+strategy_variant_id="GAP_HILO_FADE_BASELINE"
+strategy_signal_tf=PERIOD_M30
+strategy_d1_atr_period=20
+strategy_gap_atr_min=0.25
+strategy_gap_atr_max=1.25
+strategy_hilo_period=10
+strategy_m30_atr_period=14
+strategy_extreme_atr_tolerance=0.10
+strategy_stop_atr_offset=0.25
+strategy_stop_atr_min=0.75
+strategy_stop_atr_max=1.50
+strategy_min_reward_r=1.25
+strategy_max_cost_r=0.10
+strategy_round_turn_commission_usd_per_lot=0.0
+strategy_cash_calendar_file="QM5_20044_us_cash_calendar.csv"
+strategy_cash_calendar_sha256=""
+strategy_calendar_valid_through="2025.12.31"
+strategy_tzdb_version=""
+strategy_expected_tick_feed_server=""
