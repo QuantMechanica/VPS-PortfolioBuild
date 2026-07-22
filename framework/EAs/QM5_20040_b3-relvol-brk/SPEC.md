@@ -16,7 +16,8 @@ relative broker tick count and clamps the result to a force score from -100 to
 aligned 5/20-bar close averages, then enters at that exact next M15 open during
 the approved US session. The frozen stop is one Wilder ATR(14), the target is
 1.5R, and any surviving trade exits after six completed holding bars or at
-15:55 New York time (earlier on an approved early close).
+15:55 New York time. Session eligibility comes from the broker clock on UTC
+weekdays; the framework news gate and Friday guard handle blackout protection.
 
 Tick volume is explicitly a broker tick-count proxy, not traded volume,
 aggression, order flow, book data, or tape evidence. The practitioner source
@@ -37,13 +38,10 @@ and its performance comments remain **UNVERIFIED**.
 | `strategy_atr_stop_mult` | 1.0 | locked | Initial hard-stop distance in ATR units. |
 | `strategy_reward_r` | 1.5 | locked | Frozen target in initial-risk units. |
 | `strategy_timeout_bars` | 6 | locked | Completed holding bars before time exit. |
-| `strategy_max_cost_r` | 0.10 | locked | Maximum commission plus entry spread relative to initial risk. |
-| `strategy_round_turn_commission_usd_per_lot` | 0.0 | governed value required | Per-symbol commission; zero fails closed. |
-| `strategy_cash_calendar_file` | `QM5_20040_us_cash_calendar.csv` | immutable file | Common-Files official US sessions and early closes. |
-| `strategy_cash_calendar_sha256` | empty | SHA-256 | Required exact calendar-file hash. |
-| `strategy_calendar_valid_through` | `2025.12.31` | locked | Required official calendar coverage. |
-| `strategy_tzdb_version` | empty | governed value required | Pinned America/New_York tzdb identity. |
-| `strategy_expected_tick_feed_server` | empty | governed value required | Frozen broker tick-feed server identity. |
+| `strategy_cash_open_hour_new_york` / `strategy_cash_open_minute_new_york` | 09:30 | locked | Fixed regular-session anchor converted through the broker clock. |
+| `strategy_cash_close_hour_new_york` / `strategy_cash_close_minute_new_york` | 16:00 | locked | Fixed regular-session close. |
+| `strategy_exit_hour_new_york` / `strategy_exit_minute_new_york` | 15:55 | locked | Intraday strategy exit. |
+| `strategy_max_spread_points` | 0 | non-negative | Optional native spread guard; zero disables it. |
 
 ## 3. Symbol Universe
 
@@ -108,3 +106,4 @@ later governed promotion decision.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-22 | Initial build from card | 4648f988-fd51-45e5-95db-e080e5108c03 |
+| v2 | 2026-07-22 | Density gate removal | Replaced the unprovisioned cash-calendar/feed/cost gates with fixed broker-clock session eligibility and tester-applied venue costs. |
