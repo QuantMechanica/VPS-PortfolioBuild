@@ -3,6 +3,7 @@
 #property description "QM5_20043 Prior-RTH TPO value-area rotation"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_USCashCalendar.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA SKELETON
@@ -85,8 +86,11 @@ input int    strategy_cash_close_minute_new_york = 0;
 // Tester Groups applies venue commission to fills; zero disables this optional
 // native spread guard, matching the proven QM5_12969 execution baseline.
 input int    strategy_max_spread_points = 0;
+input string strategy_cash_calendar_file = QM_US_CASH_CALENDAR_FILE;
+input string strategy_cash_calendar_sha256 = QM_US_CASH_CALENDAR_SHA256;
 
 int      g_attempt_date_key = 0;
+bool     g_cash_calendar_ready = false;
 bool     g_pending_signal = false;
 int      g_pending_side = 0;
 datetime g_pending_entry_bar_utc = 0;
@@ -153,26 +157,21 @@ int Strategy_ShiftDateKey(const int date_key, const int days)
    return Strategy_DateKey(StructToTime(parts) + days * 24 * 60 * 60);
   }
 
-bool Strategy_IsUtcWeekday(const datetime utc)
-  {
-   MqlDateTime parts;
-   if(utc <= 0 || !TimeToStruct(utc, parts))
-      return false;
-   return (parts.day_of_week >= 1 && parts.day_of_week <= 5);
-  }
-
 bool Strategy_ResolveCashSession(const int date_key,
                                  datetime &open_utc,
                                  datetime &close_utc)
   {
+   open_utc = 0;
+   close_utc = 0;
+   if(QM_USCashCalendarClassify(date_key) != QM_US_CASH_NORMAL)
+      return false;
    open_utc = Strategy_NewYorkLocalToUtc(date_key,
                                          strategy_cash_open_hour_new_york,
                                          strategy_cash_open_minute_new_york);
    close_utc = Strategy_NewYorkLocalToUtc(date_key,
                                           strategy_cash_close_hour_new_york,
                                           strategy_cash_close_minute_new_york);
-   return (open_utc > 0 && close_utc - open_utc == 390 * 60 &&
-           Strategy_IsUtcWeekday(open_utc));
+   return (open_utc > 0 && close_utc - open_utc == 390 * 60);
   }
 
 bool Strategy_IsRoutedSymbol(const string symbol)
@@ -367,18 +366,27 @@ bool Strategy_FindPriorValidProfile(const int session_date_key,
    for(int days_back = 1; days_back <= 10; ++days_back)
      {
       const int prior_date_key = Strategy_ShiftDateKey(session_date_key, -days_back);
+      const QM_USCashSessionType prior_session_type =
+         QM_USCashCalendarClassify(prior_date_key);
+      if(prior_session_type == QM_US_CASH_FULL_CLOSE ||
+         prior_session_type == QM_US_CASH_EARLY_CLOSE)
+         continue;
+      if(prior_session_type != QM_US_CASH_NORMAL)
+         return false;
       datetime prior_open_utc = 0;
       datetime prior_close_utc = 0;
       if(!Strategy_ResolveCashSession(prior_date_key,
                                       prior_open_utc,
                                       prior_close_utc))
-         continue;
-      if(Strategy_BuildPriorProfile(prior_open_utc,
-                                    prior_close_utc,
-                                    out_val,
-                                    out_vah,
-                                    out_poc))
-         return true;
+         return false;
+      // The Card requires the immediately preceding complete normal session.
+      // A data defect in that session fails closed; never substitute an older
+      // normal day merely because its 13 bars happen to be available.
+      return Strategy_BuildPriorProfile(prior_open_utc,
+                                        prior_close_utc,
+                                        out_val,
+                                        out_vah,
+                                        out_poc);
      }
    return false;
   }
@@ -472,6 +480,19 @@ void Strategy_ClearPending()
 bool Strategy_PrepareEntry(const int date_key,
                            const datetime current_bar_utc)
   {
+   const QM_USCashSessionType current_session_type =
+      QM_USCashCalendarClassify(date_key);
+   if(current_session_type != QM_US_CASH_NORMAL)
+     {
+      Strategy_LogEntryReject(date_key,
+                              current_bar_utc,
+                              "calendar_session_not_normal",
+                              StringFormat(",\"calendar_session_type\":\"%s\",\"calendar_ready\":%s",
+                                           QM_USCashSessionTypeName(current_session_type),
+                                           QM_USCashCalendarReady()
+                                           ? "true" : "false"));
+      return false;
+     }
    datetime cash_open_utc = 0;
    datetime cash_close_utc = 0;
    if(date_key <= 0 ||
@@ -699,6 +720,10 @@ bool Strategy_NoTradeFilter()
             strategy_cash_close_hour_new_york != 16 ||
             strategy_cash_close_minute_new_york != 0 ||
             strategy_max_spread_points < 0 ||
+            !g_cash_calendar_ready ||
+            strategy_cash_calendar_file != QM_US_CASH_CALENDAR_FILE ||
+            QM_USCashUpper(strategy_cash_calendar_sha256) !=
+               QM_US_CASH_CALENDAR_SHA256 ||
             RISK_FIXED != 1000.0 ||
             RISK_PERCENT != 0.0);
   }
@@ -829,6 +854,28 @@ int OnInit()
                         qm_news_temporal,              // FW1 Axis A
                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
+
+   g_cash_calendar_ready =
+      QM_USCashCalendarLoad(strategy_cash_calendar_file,
+                            strategy_cash_calendar_sha256);
+   if(!g_cash_calendar_ready)
+      QM_LogEvent(QM_ERROR,
+                  "SETUP_DATA_MISSING",
+                  StringFormat("{\"dependency\":\"NYSE_US_CASH_CALENDAR\",\"file\":\"%s\",\"expected_sha256\":\"%s\",\"actual_sha256\":\"%s\",\"detail\":\"%s\"}",
+                               QM_LoggerEscapeJson(strategy_cash_calendar_file),
+                               QM_LoggerEscapeJson(strategy_cash_calendar_sha256),
+                               QM_LoggerEscapeJson(QM_USCashCalendarActualSha256()),
+                               QM_LoggerEscapeJson(QM_USCashCalendarLastError())));
+   else
+      QM_LogEvent(QM_INFO,
+                  "CASH_CALENDAR_READY",
+                  StringFormat("{\"calendar_id\":\"NYSE_GROUP_US_CASH_EQUITIES\",\"file\":\"%s\",\"sha256\":\"%s\",\"manifest_sha256\":\"%s\",\"coverage_start\":%d,\"coverage_end\":%d,\"exception_rows\":%d}",
+                               QM_LoggerEscapeJson(strategy_cash_calendar_file),
+                               QM_LoggerEscapeJson(QM_USCashCalendarActualSha256()),
+                               QM_US_CASH_CALENDAR_MANIFEST_SHA256,
+                               QM_US_CASH_COVERAGE_START,
+                               QM_US_CASH_COVERAGE_END,
+                               QM_US_CASH_EXPECTED_ROWS));
 
    QM_LogEvent(QM_INFO,
                "INIT_OK",
