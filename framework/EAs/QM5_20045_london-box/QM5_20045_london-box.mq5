@@ -755,9 +755,9 @@ bool Strategy_NoTradeFilter()
       Strategy_OurPendingCount() > 0)
       return false;
 
-    return (!Strategy_IsRoutedSymbol(_Symbol) ||
-            !QM_LondonPublicHolidayCalendarReady() ||
-            _Period != strategy_timeframe ||
+   return (!Strategy_IsRoutedSymbol(_Symbol) ||
+           !QM_LondonPublicHolidayCalendarReady() ||
+           _Period != strategy_timeframe ||
            strategy_variant_id != "LONDON_BOX_027_BASELINE" ||
            strategy_timeframe != PERIOD_M15 ||
            strategy_box_start_hour_utc != 3 ||
@@ -799,9 +799,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       Strategy_DateAlreadyUsed(date_key))
       return false;
 
-    // A symbol-date is consumed by its one 06:00 attempt, including every
-    // fail-closed outcome. Later bars cannot chase or retry.
-    g_consumed_date_key = date_key;
+   // A symbol-date is consumed by its one 06:00 attempt, including every
+   // fail-closed outcome. Later bars cannot chase or retry.
+   g_consumed_date_key = date_key;
    const QM_LondonPublicDayType london_day_type =
       QM_LondonPublicHolidayClassify(date_key);
    if(london_day_type != QM_LONDON_PUBLIC_DAY_ORDINARY_WEEKDAY)
@@ -823,7 +823,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                       jurisdictional_holiday ? "true" : "false"));
       return false;
      }
-    Strategy_PlaceOcoPair(date_key, box_high, box_low, box_size);
+   Strategy_PlaceOcoPair(date_key, box_high, box_low, box_size);
    return false;
   }
 

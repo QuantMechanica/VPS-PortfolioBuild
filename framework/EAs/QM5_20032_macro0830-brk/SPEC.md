@@ -33,10 +33,14 @@ Runtime calendar:
 `QM5_20023_announcement_calendar_20150101_20250404.csv`, SHA-256
 `411ae4af3dbe261e373705660e28b81e7c5dfc7398f38516e07effff71cd73af`.
 The EA accepts 370 exact-time NFP/CPI/PPI rows (36/year through 2024 and 10
-through 2025-04-04) and excludes the FOMC rows present in that source. The
-remaining frozen families, the rest of 2025, and a provenance-locked German
-early-close calendar are explicit data gaps; no schedule or early-close date is
-inferred.
+through 2025-04-04) and excludes the FOMC rows present in that source. Xetra
+full closures and 14:00 Europe/Berlin early closes are now hash-bound by the
+shared official calendar. The remaining event families and the rest of 2025
+are explicit issuer-ledger gaps; no missing release is inferred.
+
+`basket_manifest.json` declares `GDAXI.DWX` and `SP500.DWX` as order routes
+and `EURUSD.DWX` as a conversion-only market-data dependency for the
+card-required EUR commission conversion. The EA never routes an EURUSD order.
 
 Framework-level risk, news, seed, stress, and Friday-close inputs are documented
 in `framework/V5_FRAMEWORK_DESIGN.md` and are not duplicated here.
