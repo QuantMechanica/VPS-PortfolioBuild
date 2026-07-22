@@ -51,6 +51,8 @@ input int    strategy_exit_minute_london  = 30;
 // native spread guard, matching the proven QM5_12969 execution baseline.
 input int    strategy_max_spread_points   = 0;
 
+const string strategy_variant_id = "WMR_POSTFIX_BASELINE";
+
 double   g_prior_displacements[];
 bool     g_history_initialized = false;
 datetime g_last_processed_entry_utc = 0;
@@ -765,6 +767,12 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
+   if(!QM_FrameworkDeclareExecutionContract(
+         PERIOD_M5,
+         QM_FRIDAY_CLOSE_CARD_RULE,
+         "CARD_V2_FRIDAY_21_SAFETY_FLATTEN"))
+      return INIT_FAILED;
+
    const bool calendar_ready = QM_LondonWmr1600CalendarLoad();
    QM_LogEvent(calendar_ready ? QM_INFO : QM_ERROR,
                "LONDON_WMR_1600_CALENDAR_STATE",
@@ -854,7 +862,7 @@ void OnTick()
    if(!news_allows)
       return;
 
-   if(!QM_IsNewBar())
+   if(!QM_IsNewBar(_Symbol, PERIOD_M5))
       return;
 
    QM_EquityStreamOnNewBar();

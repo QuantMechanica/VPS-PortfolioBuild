@@ -41,6 +41,8 @@ input double strategy_impulse_atr_mult    = 0.60;
 input int    strategy_time_exit_minutes   = 30;
 input double strategy_max_cost_r          = 0.10;
 
+const string strategy_variant_id = "EIA_CAD_BASELINE";
+
 const string STRATEGY_CALENDAR_PATH =
    "QM5_20030_eia_calendar_20180110_20251231.csv";
 const string STRATEGY_CALENDAR_SHA256 =
@@ -458,6 +460,12 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
+   if(!QM_FrameworkDeclareExecutionContract(
+         PERIOD_M5,
+         QM_FRIDAY_CLOSE_CARD_RULE,
+         "CARD_V2_FRIDAY_21_SAFETY_FLATTEN"))
+      return INIT_FAILED;
+
    string allowed_symbols[2] = {"USDCAD.DWX", "XTIUSD.DWX"};
    QM_SymbolGuardInit(allowed_symbols);
    QM_BasketWarmupHistory(allowed_symbols, strategy_signal_tf, 64);
@@ -524,7 +532,7 @@ void OnTick()
    if(!news_allows)
       return;
 
-   if(!QM_IsNewBar())
+   if(!QM_IsNewBar(_Symbol, PERIOD_M5))
       return;
 
    QM_EquityStreamOnNewBar();

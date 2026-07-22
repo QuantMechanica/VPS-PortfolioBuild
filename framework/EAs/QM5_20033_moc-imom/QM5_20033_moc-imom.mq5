@@ -55,6 +55,8 @@ input int    strategy_xetra_close_minute_broker = 30;
 input int    strategy_max_spread_points   = 0;
 input bool   strategy_debug_entry_hooks   = false;
 
+const string strategy_variant_id = "MOC_IMOM_BASELINE";
+
 datetime g_last_attempt_entry_broker = 0;
 datetime g_active_exit_broker = 0;
 bool     g_logged_no_trade_config_reject = false;
@@ -577,6 +579,12 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
+   if(!QM_FrameworkDeclareExecutionContract(
+         PERIOD_M30,
+         QM_FRIDAY_CLOSE_CARD_RULE,
+         "CARD_V2_FRIDAY_21_SAFETY_FLATTEN"))
+      return INIT_FAILED;
+
    const int route = RouteIndex(_Symbol);
    const bool us_calendar_required = (route >= 0 && route < 3);
    const bool us_calendar_ready =
@@ -690,7 +698,7 @@ void OnTick()
    if(!news_allows)
       return;
 
-   if(!QM_IsNewBar())
+   if(!QM_IsNewBar(_Symbol, PERIOD_M30))
       return;
 
    QM_EquityStreamOnNewBar();

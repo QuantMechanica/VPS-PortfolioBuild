@@ -41,6 +41,8 @@ input double strategy_range_fraction      = 0.75;
 // native spread guard, matching the proven QM5_12969 execution baseline.
 input int    strategy_max_spread_points   = 0;
 
+const string strategy_variant_id = "ASIA_FX_FADE_BASELINE";
+
 int      g_session_key = 0;
 double   g_session_open = 0.0;
 double   g_session_high = 0.0;
@@ -576,6 +578,12 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
+   if(!QM_FrameworkDeclareExecutionContract(
+         PERIOD_M15,
+         QM_FRIDAY_CLOSE_CARD_RULE,
+         "CARD_V2_FRIDAY_21_SAFETY_FLATTEN"))
+      return INIT_FAILED;
+
    const bool calendar_ready = QM_LondonPublicHolidayCalendarLoad();
    QM_LogEvent(calendar_ready ? QM_INFO : QM_ERROR,
                "LONDON_PUBLIC_HOLIDAY_CALENDAR_STATE",
@@ -653,7 +661,7 @@ void OnTick()
    if(!news_allows)
       return;
 
-   if(!QM_IsNewBar())
+   if(!QM_IsNewBar(_Symbol, PERIOD_M15))
       return;
 
    QM_EquityStreamOnNewBar();

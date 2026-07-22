@@ -837,6 +837,12 @@ int OnInit()
                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
+   if(!QM_FrameworkDeclareExecutionContract(
+         PERIOD_M15,
+         QM_FRIDAY_CLOSE_CARD_RULE,
+         "CARD_V2_FRIDAY_21_SAFETY_FLATTEN"))
+      return INIT_FAILED;
+
    const int expected_slot = (_Symbol == "GDAXI.DWX") ? 0 :
                              ((_Symbol == "UK100.DWX") ? 1 : -1);
    const bool xetra_calendar_required = (_Symbol == "GDAXI.DWX");
@@ -949,7 +955,7 @@ void OnTick()
 
    // Freeze the cash anchors and exactly one completed post-close observation
    // before the central news gate. A blocked intended entry is never delayed.
-   const bool strategy_new_bar = QM_IsNewBar();
+   const bool strategy_new_bar = QM_IsNewBar(_Symbol, PERIOD_M15);
    if(strategy_new_bar)
       Strategy_AdvanceStateOnNewBar();
 

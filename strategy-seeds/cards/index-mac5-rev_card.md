@@ -120,7 +120,7 @@ Frozen non-alpha safety overlay:
 ## 6. Filters (No-Trade module)
 
 - fail closed on fewer than six valid completed D1 closes, nonpositive closes, invalid quote, missing account-governor snapshot, unknown magic, or stale/mismatched policy fingerprint;
-- the OWNER-delegated CTO build contract fixes the entry-only abnormal-spread ceiling at exactly `100` `SP500.DWX` points (`1.00` index-price unit at two digits) before Q02. It is immutable, is not an optimization axis, applies only to the `SP500.DWX` research build, and grants no spread or route evidence for `US500.cash`; exits are never spread blocked;
+- the OWNER-approved build contract fixes the entry-only abnormal-spread ceiling at exactly `100` `SP500.DWX` points (`1.00` index-price unit at two digits) before Q02. It is immutable, is not an optimization axis, applies only to the `SP500.DWX` research build, and grants no spread or route evidence for `US500.cash`; exits are never spread blocked;
 - no news filter in source-replication baseline; Q08 may measure compliance modes but may not block required exits;
 - no external runtime data;
 - no grid, martingale, averaging, pyramiding, catch-up entry, or re-entry on the same D1 target.
@@ -243,7 +243,7 @@ modules_used:
 | v1 | 2026-07-17 | full-paper extraction; no ID or build | Research | DRAFT |
 | v2 | 2026-07-17 | resolved causal timing, sign-only delta target, fixed stop/risk, Swing-only route, and numeric cost gates | Pre-G0 review | DRAFT_REVIEW_PENDING |
 | v3 | 2026-07-17 | removed daily-flatten ambiguity; froze retained lot/stop lifecycle; aligned frequency and route gates | G0 review | APPROVED; EA ID 4007 allocated |
-| v4 | 2026-07-17 | OWNER-delegated CTO ratified the 100-point `SP500.DWX` entry-only abnormal-spread ceiling as immutable before Q02 and explicitly non-transferable to `US500.cash` | Build-contract ratification | APPROVED; code/set value unchanged; no Q02 |
+| v4 | 2026-07-17 | OWNER ratified the 100-point `SP500.DWX` entry-only abnormal-spread ceiling as immutable before Q02 and explicitly non-transferable to `US500.cash` | Build-contract ratification | APPROVED; code/set value unchanged; no Q02 |
 | v5 | 2026-07-17 | two valid deterministic Model-4 runs produced 0/0 trades; market orders at the broker-D1 boundary were rejected as market closed after the one-shot attempt flag had already been persisted | Q02 | `FAIL_ZERO_TRADES_BELOW_COHORT_NO_DISPATCH`; excluded from current book |
 
 Q02 evidence is bound in `framework/EAs/QM5_4007_index-mac5-rev/ZT_RootCause_QM5_4007_20260717.md`. Its summary SHA-256 is `D9005A82B18CFBE4F881EC95B3935A7DBD0FF37D04E62E668AD909BD094480A3`. Evidence from another reversal EA may not be transferred to this lineage.

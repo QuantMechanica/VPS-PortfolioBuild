@@ -7,7 +7,7 @@ status: APPROVED
 created: 2026-07-17
 created_by: Research
 last_updated: 2026-07-17
-approval_basis: "OWNER delegated the terminal technical release on 2026-07-17 with: 'mach weiter, gib du frei, wir brauchen ein komplettes Buch!'. Independent Quality-Business changes were resolved and the CEO/CTO build contract was frozen before implementation."
+approval_basis: "OWNER authorized the terminal technical release on 2026-07-17 with: 'mach weiter, gib du frei, wir brauchen ein komplettes Buch!'. Independent Quality-Business changes were resolved and the OWNER build contract was frozen before implementation."
 strategy_type_flags:
   - intraday-session-pattern
   - atr-hard-stop
@@ -106,7 +106,7 @@ Primary exits are clock-only:
 - News, entry-spread, holiday, and no-trade gates may never block a required exit.
 - Entry attempts are one-shot. Exit attempts are not: beginning at the scheduled boundary, retry a rejected or unconfirmed close no more than once per five seconds until the position is confirmed flat.
 - After 60 seconds without confirmed flat, latch a strategy-day kill state, block every new entry, emit an operator alert, and continue close retries. A retry counter may escalate telemetry but may never abandon an open position. The latch remains active through the affected London strategy date and while any position remains; only after confirmed flat and advance to a later valid London business date may it release automatically. Account-level kill switches remain independently latched under their own policy.
-- The generic Friday 21:00-broker guard would cut the Friday US leg before the source's 16:00-New-York exit. Research parity therefore requires a CTO-reviewed per-EA exception: disable that generic entry/flatten cutoff for this EA and use the independently converted Friday 16:00-New-York mandatory exit plus the retry/escalation rule above.
+- The generic Friday 21:00-broker guard would cut the Friday US leg before the source's 16:00-New-York exit. Research parity therefore requires an OWNER-approved per-EA exception, implemented by Development and validated by Quality-Tech: disable that generic entry/flatten cutoff for this EA and use the independently converted Friday 16:00-New-York mandatory exit plus the retry/escalation rule above.
 - Any position surviving its New-York civil date is flattened immediately on restart/tick before all other strategy actions.
 
 Protective stop:
@@ -114,7 +114,7 @@ Protective stop:
 - Source silent. The approved non-alpha catastrophic stop is 1.0 times prior closed D1 ATR(20), frozen at entry, so the V5 risk engine can size a bounded loss.
 - The sole Q03 axis is `strategy_stop_atr_mult = [0.50, 0.75, 1.00, 1.25, 1.50, 1.75, 2.00]`; all clock, direction, delay, spread, risk-weight, and holiday settings remain locked. The plateau median is selected before any holdout.
 - The diagnostic no-stop shadow must use the same virtual ATR stop for volume sizing; it is never deployment-eligible.
-- OWNER-delegated CEO/CTO and independent Quality-Business review ratified the implementation-only safety overlay, pre-holdout plateau rule, and family risk budget on 2026-07-17.
+- OWNER, after independent Quality-Business review, ratified the implementation-only safety overlay, pre-holdout plateau rule, and family risk budget on 2026-07-17.
 
 ## 6. Filters (No-Trade module)
 
@@ -209,15 +209,15 @@ Source risk statement: silent. Use V5 RISK_FIXED 1000 per leg for backtests, wit
 - [x] Mechanical concept and deterministic entry/exit clocks.
 - [x] No machine learning.
 - [x] No grid, martingale, averaging, or pyramiding.
-- [x] Friday-close exception and strategy-specific Friday exit ratified by OWNER-delegated CTO; transition fixtures are a P1/Q02 hard gate.
+- [x] Friday-close exception and strategy-specific Friday exit ratified by OWNER; Development implements it and Quality-Tech validates it. Transition fixtures are a P1/Q02 hard gate.
 - [x] Darwinex-native price and time data only.
 - [x] Primary source citation is reproducible to table and page.
 - [x] Near-duplicate audit completed against QM5_10012 and fx-early-asia-drift.
 - [x] EA-local UK civil-time helper pattern reviewed; 2017-2026 transition fixtures required in OnInit.
-- [x] Protective stop overlay, virtual-shadow sizing, and family daily-loss contract ratified by independent Quality-Business review plus OWNER-delegated CEO/CTO.
+- [x] Protective stop overlay, virtual-shadow sizing, and family daily-loss contract ratified by OWNER after independent Quality-Business review.
 - [x] Pre-P2 execution-cost contract frozen ex ante from native Model-4 ticks and the dated FTMO snapshot.
 - [x] SRC09 and sequential production EA ID 4006 confirmed in the local canonical registries; OWNER authorization is recorded in the repository.
-- [x] Card receives terminal APPROVED verdict under OWNER-delegated CEO/CTO after independent Quality-Business changes were resolved.
+- [x] Card receives terminal APPROVED verdict from OWNER after independent Quality-Business changes were resolved.
 
 ## 12. Framework alignment
 

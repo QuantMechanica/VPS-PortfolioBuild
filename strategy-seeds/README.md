@@ -2,6 +2,13 @@
 
 V5 starts from scratch on strategy bestand. This folder will hold V5 Strategy Cards as Research extracts them from approved sources.
 
+Legacy cards and source-extraction records can contain superseded role labels as
+historical provenance. Those labels are not approvals, assignments, or workflow
+dependencies. The active authority chain is defined by
+`processes/01-ea-lifecycle.md`: OWNER authorizes, Research extracts, Development
+builds, Quality-Tech verifies, and Pipeline-Operator records executable phase
+evidence.
+
 ## Folder Conventions
 
 - `cards/` — V5 Strategy Cards (one file per card, named by V5 ID + slug). Empty on day 1.

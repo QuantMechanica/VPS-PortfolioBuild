@@ -37,6 +37,8 @@ input ENUM_TIMEFRAMES strategy_signal_tf  = PERIOD_M5;
 input int    strategy_pre_release_bars    = 3;
 input double strategy_max_cost_r          = 0.10;
 
+const string strategy_variant_id = "MACRO0830_BREAKOUT_BASELINE";
+
 const string STRATEGY_CALENDAR_PATH =
    "QM5_20023_announcement_calendar_20150101_20250404.csv";
 const string STRATEGY_CALENDAR_SHA256 =
@@ -678,6 +680,12 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
+   if(!QM_FrameworkDeclareExecutionContract(
+         PERIOD_M5,
+         QM_FRIDAY_CLOSE_CARD_RULE,
+         "CARD_V2_FRIDAY_21_SAFETY_FLATTEN"))
+      return INIT_FAILED;
+
    // Only the two order routes belong in the symbol guard.  EURUSD is a
    // conditional conversion input for GDAXI commission estimates; forcing it
    // into every basket warmup made the independent SP500 route fail before
@@ -767,7 +775,7 @@ void OnTick()
    if(!news_allows)
       return;
 
-   if(!QM_IsNewBar())
+   if(!QM_IsNewBar(_Symbol, PERIOD_M5))
       return;
 
    QM_EquityStreamOnNewBar();

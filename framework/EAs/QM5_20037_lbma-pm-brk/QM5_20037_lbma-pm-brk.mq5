@@ -616,6 +616,12 @@ int OnInit()
                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
+   if(!QM_FrameworkDeclareExecutionContract(
+         PERIOD_M5,
+         QM_FRIDAY_CLOSE_CARD_RULE,
+         "CARD_V2_FRIDAY_21_SAFETY_FLATTEN"))
+      return INIT_FAILED;
+
    g_lbma_calendar_ready = QM_LbmaGoldPmCalendarLoad();
    QM_LogEvent(g_lbma_calendar_ready ? QM_INFO : QM_WARN,
                "LBMA_PM_CALENDAR_INIT",
@@ -710,7 +716,7 @@ void OnTick()
    if(!news_allows)
       return;
 
-   if(!QM_IsNewBar())
+   if(!QM_IsNewBar(_Symbol, PERIOD_M5))
       return;
 
    // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled

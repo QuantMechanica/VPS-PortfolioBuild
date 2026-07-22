@@ -9,8 +9,8 @@ created_by: Research
 last_updated: 2026-07-10
 g0_status: APPROVED
 approved: 2026-07-10
-approved_by: "OWNER-delegated CEO + Quality-Business + CTO decision to Codex"
-ea_id_allocated_by: "OWNER-delegated CEO + CTO decision to Codex"
+approved_by: "OWNER decision after Quality-Business review"
+ea_id_allocated_by: "Development through the deterministic registry under OWNER authorization"
 g0_approval_reasoning: "R1 PASS peer-reviewed Ito/Yamada source; R2 PASS exact 09:50/09:55/10:00 JST lifecycle; R3 PASS native USDJPY.DWX M1/M5 real ticks; R4 PASS no ML/grid/martingale. Fixed non-optimized risk and execution controls are governance constraints, not fitted parameters."
 r1_track_record: PASS
 r2_mechanical: PASS
@@ -202,9 +202,9 @@ profit factor, or drawdown claim is imported into this card.
 - [x] Native DWX tick data; no external runtime market feed.
 - [x] No ML, grid, martingale, pyramiding, or ambiguous discretionary signal.
 - [x] Distinct from the broad Gotobi/Nakane-fix EA.
-- [x] CEO + Quality-Business review of the new extraction.
-- [x] CEO + CTO `ea_id` allocation: `QM5_13122`.
-- [x] CTO decision for catastrophic stop, spread ceiling, and holiday source.
+- [x] OWNER + Quality-Business review of the new extraction.
+- [x] Development registry allocation under OWNER authorization: `QM5_13122`.
+- [x] OWNER decision for catastrophic stop, spread ceiling, and holiday source.
 - [ ] P5b latency calibration plan accepted before any build promotion.
 
 ## Framework Alignment

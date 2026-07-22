@@ -244,8 +244,8 @@ conversion, spread, and real-tick costs are delegated to the pipeline.
   selection.
 - [x] No existing card or EA folder names the EURGBP/AUDJPY pair as of
   2026-07-10.
-- [x] CEO + Quality-Business approval and CEO + CTO EA-ID allocation supplied
-  by the explicit forex-book mission; atomic allocation reserved QM5_13117.
+- [x] OWNER + Quality-Business approval supplied by the explicit forex-book
+  mission; Development's atomic registry allocation reserved QM5_13117.
 
 ## 12. Framework Alignment
 

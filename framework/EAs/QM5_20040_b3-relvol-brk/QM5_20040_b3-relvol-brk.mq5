@@ -741,6 +741,12 @@ int OnInit()
                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
+   if(!QM_FrameworkDeclareExecutionContract(
+         PERIOD_M15,
+         QM_FRIDAY_CLOSE_CARD_RULE,
+         "CARD_V2_FRIDAY_21_SAFETY_FLATTEN"))
+      return INIT_FAILED;
+
    const bool calendar_ready =
       QM_USCashCalendarLoad(QM_US_CASH_CALENDAR_RUNTIME_FILE,
                             QM_US_CASH_CALENDAR_RUNTIME_SHA256);
@@ -806,7 +812,7 @@ void OnTick()
 
    // Consume and cache the completed M15 signal before the central news gate.
    // If news blocks this exact next-open opportunity, it is never delayed.
-   const bool strategy_new_bar = QM_IsNewBar();
+   const bool strategy_new_bar = QM_IsNewBar(_Symbol, PERIOD_M15);
    if(strategy_new_bar)
       Strategy_AdvanceStateOnNewBar();
 
