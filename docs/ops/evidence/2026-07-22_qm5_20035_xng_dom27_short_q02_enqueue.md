@@ -27,12 +27,15 @@ Validation and queue evidence:
 - MQ5 SHA256: `433408DF86A608443092F2E7A172A6D916EBA85C0457AE9D01EFC0E040E8FC5C`.
 - EX5 SHA256: `39E26EDC4BA4CE2DFA8B811E78A17B3E6B33754A8C603CD8A262FB5348C81BDB`.
 - Build task: `06786283-a09c-4c38-88d2-3aca11b13c62`, done.
-- Q02 work item: `85e22900-57bc-425c-8452-d665fc262cd5`, pending,
-  unclaimed, attempt 0, `XNGUSD.DWX` D1.
+- Q02 work item: `85e22900-57bc-425c-8452-d665fc262cd5`, enqueued as
+  pending/unclaimed at attempt 0 for `XNGUSD.DWX` D1. A fleet worker later
+  transitioned it to `done / INFRA_FAIL`; evidence landed at
+  `D:/QM/reports/work_items/85e22900-57bc-425c-8452-d665fc262cd5/QM5_20035/20260722_114200/summary.json`.
 
 No smoke or backtest was launched because the preflight observed the CPU
 ceiling (9 `terminal64`, 6 `metatester64`). The build recorded
-`deferred_p2_smoke`; Q02 remains queued for fleet capacity.
+`deferred_p2_smoke`. The subsequent worker transition was automatic; this
+mission did not run a dispatch tick or launch a tester.
 
 No live setfile, T_Live/AutoTrading action, deploy manifest, portfolio
 manifest, portfolio admission, or portfolio-gate change was made.

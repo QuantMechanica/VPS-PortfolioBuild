@@ -34,7 +34,7 @@ target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOp
 hard_rules_at_risk: [friday_close, risk_mode_dual, low_frequency, cfd_source_basis, multiple_comparisons, portfolio_correlation]
 q01_status: PASS
 pipeline_phase: Q02
-q02_status: QUEUED
+q02_status: INFRA_FAIL
 q02_work_item_id: 85e22900-57bc-425c-8452-d665fc262cd5
 ---
 # XNG Calendar-Day-27 One-Session Fade
