@@ -49,11 +49,6 @@ input double strategy_target_cost_multiple = 4.0;
 input double strategy_round_turn_commission_account_per_lot = 0.0;
 input string strategy_commission_source_id = "";
 input string strategy_commission_source_sha256 = "";
-input string strategy_trading_calendar_file = "QM5_20045_trading_calendar.csv";
-input string strategy_trading_calendar_sha256 = "";
-input string strategy_trading_calendar_source_id = "";
-input string strategy_calendar_valid_through = "2025.12.31";
-input string strategy_tzdb_version        = "";
 input string strategy_expected_tick_feed_server = "";
 input string strategy_tick_history_sha256 = "";
 input string strategy_dataset_valid_through = "2025.12.31";
@@ -62,9 +57,8 @@ input string strategy_dataset_valid_through = "2025.12.31";
 // Deterministic strategy state
 // =============================================================================
 
-int    g_trading_dates[];
-bool   g_dependencies_attempted = false;
-bool   g_dependencies_ready = false;
+bool   g_execution_metadata_attempted = false;
+bool   g_execution_metadata_ready = false;
 
 int    g_consumed_date_key = 0;
 int    g_box_date_key = 0;
@@ -74,19 +68,13 @@ double g_box_size = 0.0;
 ulong  g_fill_checked_ticket = 0;
 
 // =============================================================================
-// Provenance, calendar, and clock helpers
+// Provenance and broker-clock helpers
 // =============================================================================
 
 string Strategy_Trimmed(string value)
   {
    StringTrimLeft(value);
    StringTrimRight(value);
-   return value;
-  }
-
-string Strategy_Upper(string value)
-  {
-   StringToUpper(value);
    return value;
   }
 
@@ -183,141 +171,23 @@ datetime Strategy_LondonHourToUtc(const int date_key, const int london_hour)
    return nominal - (Strategy_IsLondonDstUtc(nominal) ? 3600 : 0);
   }
 
-bool Strategy_CommonFileSha256(const string file_name, string &hash_hex)
-  {
-   hash_hex = "";
-   const int handle = FileOpen(file_name,
-                               FILE_READ | FILE_BIN | FILE_SHARE_READ | FILE_COMMON);
-   if(handle == INVALID_HANDLE)
-      return false;
-   const int size = (int)FileSize(handle);
-   if(size <= 0)
-     {
-      FileClose(handle);
-      return false;
-     }
-
-   uchar bytes[];
-   if(ArrayResize(bytes, size) != size ||
-      FileReadArray(handle, bytes, 0, size) != size)
-     {
-      FileClose(handle);
-      return false;
-     }
-   FileClose(handle);
-
-   uchar digest[];
-   uchar key[];
-   ArrayResize(key, 0);
-   const int digest_size = CryptEncode(CRYPT_HASH_SHA256, bytes, key, digest);
-   if(digest_size <= 0)
-      return false;
-   for(int i = 0; i < digest_size; ++i)
-      hash_hex += StringFormat("%02X", digest[i]);
-   return true;
-  }
-
-bool Strategy_AppendTradingDate(const int date_key)
+bool Strategy_IsUtcWeekday(const int date_key)
   {
    const datetime utc_start = Strategy_DateStartUtc(date_key);
    MqlDateTime parts;
-   if(utc_start <= 0 || !TimeToStruct(utc_start, parts) ||
-      parts.day_of_week == 0 || parts.day_of_week == 6)
+   if(utc_start <= 0 || !TimeToStruct(utc_start, parts))
       return false;
-   const int count = ArraySize(g_trading_dates);
-   if(count > 0 && date_key <= g_trading_dates[count - 1])
-      return false;
-   if(ArrayResize(g_trading_dates, count + 1) != count + 1)
-      return false;
-   g_trading_dates[count] = date_key;
-   return true;
+   return (parts.day_of_week >= 1 && parts.day_of_week <= 5);
   }
 
-bool Strategy_LoadTradingCalendar()
+bool Strategy_EnsureExecutionMetadata()
   {
-   ArrayResize(g_trading_dates, 0);
-   if(Strategy_ParseDateKey(strategy_calendar_valid_through) != 20251231 ||
-      StringLen(strategy_tzdb_version) == 0 ||
-      StringLen(strategy_trading_calendar_source_id) == 0 ||
-      !Strategy_IsSha256(strategy_trading_calendar_sha256))
-      return false;
-
-   string actual_hash = "";
-   if(!Strategy_CommonFileSha256(strategy_trading_calendar_file, actual_hash) ||
-      Strategy_Upper(actual_hash) != Strategy_Upper(strategy_trading_calendar_sha256))
-      return false;
-
-   const int handle = FileOpen(strategy_trading_calendar_file,
-                               FILE_READ | FILE_CSV | FILE_ANSI | FILE_COMMON,
-                               ',');
-   if(handle == INVALID_HANDLE)
-      return false;
-
-   int rows = 0;
-   bool valid = true;
-   while(!FileIsEnding(handle))
-     {
-      const string date_text = Strategy_Trimmed(FileReadString(handle));
-      const string valid_through_text = Strategy_Trimmed(FileReadString(handle));
-      const string source_identity = Strategy_Trimmed(FileReadString(handle));
-      string retrieved_date = Strategy_Trimmed(FileReadString(handle));
-      const string source_sha256 = Strategy_Trimmed(FileReadString(handle));
-      const string tzdb_version = Strategy_Trimmed(FileReadString(handle));
-
-      if(rows == 0 && date_text == "utc_date" &&
-         valid_through_text == "valid_through")
-         continue;
-      if(date_text == "" && valid_through_text == "" && source_identity == "")
-         continue;
-
-      StringReplace(retrieved_date, "-", ".");
-      const int date_key = Strategy_ParseDateKey(date_text);
-      if(date_key <= 0 ||
-         Strategy_ParseDateKey(valid_through_text) != 20251231 ||
-         source_identity != strategy_trading_calendar_source_id ||
-         StringToTime(retrieved_date + " 00:00") <= 0 ||
-         !Strategy_IsSha256(source_sha256) ||
-         tzdb_version != strategy_tzdb_version ||
-         !Strategy_AppendTradingDate(date_key))
-        {
-         valid = false;
-         break;
-        }
-      ++rows;
-     }
-   FileClose(handle);
-
-   if(!valid || rows <= 0)
-      return false;
-   const int first_year = g_trading_dates[0] / 10000;
-   const int last_year = g_trading_dates[rows - 1] / 10000;
-   return (first_year <= 2018 && last_year >= 2025);
-  }
-
-bool Strategy_IsTradingDate(const int date_key)
-  {
-   int low = 0;
-   int high = ArraySize(g_trading_dates);
-   while(low < high)
-     {
-      const int middle = low + (high - low) / 2;
-      if(g_trading_dates[middle] < date_key)
-         low = middle + 1;
-      else
-         high = middle;
-     }
-   return (low < ArraySize(g_trading_dates) &&
-           g_trading_dates[low] == date_key);
-  }
-
-bool Strategy_EnsureDependencies()
-  {
-   if(g_dependencies_attempted)
-      return g_dependencies_ready;
-   g_dependencies_attempted = true;
+   if(g_execution_metadata_attempted)
+      return g_execution_metadata_ready;
+   g_execution_metadata_attempted = true;
 
    const string actual_server = AccountInfoString(ACCOUNT_SERVER);
-   const bool metadata_ready =
+   g_execution_metadata_ready =
       (Strategy_ParseDateKey(strategy_dataset_valid_through) == 20251231 &&
        StringLen(strategy_expected_tick_feed_server) > 0 &&
        actual_server == strategy_expected_tick_feed_server &&
@@ -325,19 +195,14 @@ bool Strategy_EnsureDependencies()
        strategy_round_turn_commission_account_per_lot > 0.0 &&
        StringLen(strategy_commission_source_id) > 0 &&
        Strategy_IsSha256(strategy_commission_source_sha256));
-   const bool calendar_ready = Strategy_LoadTradingCalendar();
-   g_dependencies_ready = (metadata_ready && calendar_ready);
 
-   if(!g_dependencies_ready)
+   if(!g_execution_metadata_ready)
       QM_LogEvent(QM_ERROR,
                   "SETUP_DATA_MISSING",
-                  StringFormat("{\"calendar\":\"%s\",\"calendar_ready\":%s,\"expected_server\":\"%s\",\"actual_server\":\"%s\",\"tzdb\":\"%s\"}",
-                               strategy_trading_calendar_file,
-                               calendar_ready ? "true" : "false",
+                  StringFormat("{\"expected_server\":\"%s\",\"actual_server\":\"%s\"}",
                                strategy_expected_tick_feed_server,
-                               actual_server,
-                               strategy_tzdb_version));
-   return g_dependencies_ready;
+                               actual_server));
+   return g_execution_metadata_ready;
   }
 
 // =============================================================================
@@ -863,14 +728,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    double box_low = 0.0;
    double box_size = 0.0;
    if(!Strategy_BuildBox(date_key, box_high, box_low, box_size) ||
-      date_key <= 0 || Strategy_DateAlreadyUsed(date_key))
+      date_key <= 0 || !Strategy_IsUtcWeekday(date_key) ||
+      Strategy_DateAlreadyUsed(date_key))
       return false;
 
    // A symbol-date is consumed by its one 06:00 attempt, including every
    // fail-closed outcome. Later bars cannot chase or retry.
    g_consumed_date_key = date_key;
-   if(!Strategy_EnsureDependencies() ||
-      !Strategy_IsTradingDate(date_key))
+   if(!Strategy_EnsureExecutionMetadata())
       return false;
 
    Strategy_PlaceOcoPair(date_key, box_high, box_low, box_size);

@@ -12,11 +12,14 @@
 
 At the first M15 bar after 06:00 UTC, the EA freezes the high and low of the
 exact twelve complete bars from 03:00 through 05:45 UTC. If that box is no
-wider than 40 logical pips, it places equal-volume buy-stop and sell-stop
-orders one minimum tick beyond 27% extensions of the box; the first fill
-cancels the opposite order. The hard stop stays at the opposite box boundary,
-the target is one box from the actual fill, unfilled orders expire at 12:00
-Europe/London, and any surviving position closes at 16:00 Europe/London.
+wider than 40 logical pips and its UTC date is Monday through Friday, it places
+equal-volume buy-stop and sell-stop orders one minimum tick beyond 27%
+extensions of the box; the first fill cancels the opposite order. The UTC date
+comes from broker-clock conversion and requires all twelve valid M15 bars; no
+external trading-day ledger is used. The hard stop stays at the opposite box
+boundary, the target is one box from the actual fill, unfilled orders expire
+at 12:00 Europe/London, and any surviving position closes at 16:00
+Europe/London.
 
 ---
 
@@ -38,11 +41,6 @@ Europe/London, and any surviving position closes at 16:00 Europe/London.
 | strategy_round_turn_commission_account_per_lot | 0.0 | governed setfile value >0 | Round-turn account-currency commission per lot; zero fails closed |
 | strategy_commission_source_id | empty | governed non-empty ID | Commission provenance identity |
 | strategy_commission_source_sha256 | empty | 64 hex characters | Commission provenance digest |
-| strategy_trading_calendar_file | QM5_20045_trading_calendar.csv | governed Common Files name | Eligible fixed-UTC trading dates |
-| strategy_trading_calendar_sha256 | empty | 64 hex characters | Calendar-file digest |
-| strategy_trading_calendar_source_id | empty | governed non-empty ID | Calendar source identity |
-| strategy_calendar_valid_through | 2025.12.31 | frozen | Required calendar coverage |
-| strategy_tzdb_version | empty | governed non-empty version | Pinned Europe/London timezone database version |
 | strategy_expected_tick_feed_server | empty | governed server identity | Expected real-tick feed route |
 | strategy_tick_history_sha256 | empty | 64 hex characters | Per-symbol tick-history provenance digest |
 | strategy_dataset_valid_through | 2025.12.31 | frozen | Required dataset coverage |
@@ -118,3 +116,4 @@ ENV→mode validation is enforced by QM_FrameworkInit (EA_INPUT_RISK_MODE_MISMAT
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-22 | Initial build from card | 52536807-e3b8-40ef-9e68-1b41e79623ba |
+| v2 | 2026-07-22 | FTMO density prototype | Replaced the unprovisioned trading-day ledger with broker-clock UTC weekday and valid-bar eligibility. |

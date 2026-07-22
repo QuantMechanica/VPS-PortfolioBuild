@@ -10,7 +10,7 @@
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   564aae372a54c1dae61a9d7228c397716ae21260db346b34b707500468ec758e
+; build_hash:   528d881bb119a4f551de57d762a7b028296f97d91f852305864e02876ca1374d
 ; author:       Development
 ; date:         2026-07-22
 ;==========================================================
@@ -35,11 +35,6 @@ strategy_target_cost_multiple=4.0
 strategy_round_turn_commission_account_per_lot=0.0
 strategy_commission_source_id=""
 strategy_commission_source_sha256=""
-strategy_trading_calendar_file="QM5_20045_trading_calendar.csv"
-strategy_trading_calendar_sha256=""
-strategy_trading_calendar_source_id=""
-strategy_calendar_valid_through="2025.12.31"
-strategy_tzdb_version=""
 strategy_expected_tick_feed_server=""
 strategy_tick_history_sha256=""
 strategy_dataset_valid_through="2025.12.31"
