@@ -22,8 +22,11 @@ US cash-equity exception calendar for 2018-01-01 through 2025-12-31. Full
 closures and 13:00 ET early closes are ineligible, and dates outside calendar
 coverage fail closed. The prior profile uses the immediately preceding normal
 session; missing or misaligned bars on that session fail closed instead of
-falling back to an older normal day. Tester Groups applies venue commission to
-fills, while the EA retains an optional native spread-points guard.
+falling back to an older normal day. Each raw M30 low and high is quantized with
+`MathRound(price / SYMBOL_TRADE_TICK_SIZE)` onto the symbol's declared tick
+grid before TPO rows are built; sub-tick precision in the real-tick feed is not
+itself a missing-bar defect. Tester Groups applies venue commission to fills,
+while the EA retains an optional native spread-points guard.
 
 ---
 
@@ -110,3 +113,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | v1 | 2026-07-22 | Initial build from card | d30d49fe-b535-4b03-972f-030b78d36e7a |
 | v2 | 2026-07-22 | Density gate removal | Replaced the unprovisioned cash-calendar/feed/cost gates with fixed broker-clock session eligibility and tester-applied venue costs. |
 | v3 | 2026-07-22 | Governed cash-calendar repair | Bound session eligibility to the shared ICE/NYSE-provenance calendar, excluded full/early closures, enforced coverage fail-closed, and removed older-normal-day profile fallback. |
+| v4 | 2026-07-22 | Declared tick-grid quantization | Kept nearest-tick `MathRound` quantization while removing the invalid requirement that raw real-tick-derived M30 extrema already equal the declared tick grid exactly. All 13-bar, timestamp, OHLC, calendar, and prior-normal-session fail-closed gates remain unchanged. |

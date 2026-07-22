@@ -248,9 +248,7 @@ bool Strategy_BuildPriorProfile(const datetime cash_open_utc,
          return false;
       low_ticks[i] = (long)MathRound(rates[i].low / tick_size);
       high_ticks[i] = (long)MathRound(rates[i].high / tick_size);
-      if(low_ticks[i] > high_ticks[i] ||
-         MathAbs((double)low_ticks[i] * tick_size - rates[i].low) > tick_size * 1.0e-6 ||
-         MathAbs((double)high_ticks[i] * tick_size - rates[i].high) > tick_size * 1.0e-6)
+      if(low_ticks[i] > high_ticks[i])
          return false;
       if(low_ticks[i] < profile_low_tick)
          profile_low_tick = low_ticks[i];
