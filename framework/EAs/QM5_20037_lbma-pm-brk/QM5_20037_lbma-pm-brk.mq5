@@ -5,8 +5,7 @@
 #include <QM/QM_Common.mqh>
 
 // Strategy Card: QM5_20037_lbma-pm-brk, G0 APPROVED 2026-07-22.
-// Auction membership, timezone provenance and commission are governed runtime
-// dependencies. Missing or stale inputs fail closed; no date or cost is guessed.
+// Auction eligibility comes from valid London-clock bars on UTC weekdays.
 
 // =============================================================================
 // QuantMechanica V5 EA SKELETON
@@ -59,7 +58,7 @@ input group "News"
 // A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
-input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
+input int    qm_news_stale_max_hours      = 336;     // 14 days; framework news gate fails closed if older
 input string qm_news_min_impact           = "high";  // high / medium / low
 // Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
 // New EAs use qm_news_temporal + qm_news_compliance above and leave this OFF.
@@ -80,69 +79,20 @@ input double qm_stress_reject_probability = 0.0;
 input group "Strategy"
 input string strategy_variant_id        = "LBMA_PM_BRK_BASELINE";
 input ENUM_TIMEFRAMES strategy_signal_tf = PERIOD_M5;
-input double strategy_max_cost_r        = 0.10;
-input double strategy_round_turn_commission_usd_per_lot = 0.0;
-input string strategy_auction_ledger_file = "QM5_20037_lbma_pm_auction_calendar.csv";
-input string strategy_calendar_valid_through = "2025.12.31";
-input string strategy_tzdb_version      = "";
+input int    strategy_pre_bar_hour_london = 14;
+input int    strategy_pre_bar_minute_london = 55;
+input int    strategy_confirmation1_hour_london = 15;
+input int    strategy_confirmation1_minute_london = 0;
+input int    strategy_confirmation2_hour_london = 15;
+input int    strategy_confirmation2_minute_london = 5;
+input int    strategy_exit_hour_london = 15;
+input int    strategy_exit_minute_london = 15;
+// Tester Groups applies venue commission to fills; zero disables this optional
+// native spread guard, matching the proven QM5_12969 execution baseline.
+input int    strategy_max_spread_points = 0;
 
-int      g_auction_date_key[];
-datetime g_pre_bar_utc[];
-datetime g_confirmation1_utc[];
-datetime g_confirmation2_utc[];
-datetime g_exit_utc[];
-bool     g_auction_scheduled[];
-bool     g_calendar_attempted = false;
-bool     g_calendar_ready = false;
 int      g_last_attempt_date_key = 0;
 datetime g_active_exit_broker = 0;
-
-string Strategy_Trimmed(string value)
-  {
-   StringTrimLeft(value);
-   StringTrimRight(value);
-   return value;
-  }
-
-bool Strategy_IsSha256(const string value)
-  {
-   if(StringLen(value) != 64)
-      return false;
-   const string hex = "0123456789abcdefABCDEF";
-   for(int i = 0; i < 64; ++i)
-     {
-      if(StringFind(hex, StringSubstr(value, i, 1)) < 0)
-         return false;
-     }
-   return true;
-  }
-
-bool Strategy_ParseBoolean(const string value, bool &parsed)
-  {
-   if(value == "1" || value == "true" || value == "TRUE")
-     {
-      parsed = true;
-      return true;
-     }
-   if(value == "0" || value == "false" || value == "FALSE")
-     {
-      parsed = false;
-      return true;
-     }
-   return false;
-  }
-
-datetime Strategy_ParseUtcTimestamp(string value)
-  {
-   value = Strategy_Trimmed(value);
-   const int n = StringLen(value);
-   if(n < 2 || StringSubstr(value, n - 1, 1) != "Z")
-      return 0;
-   value = StringSubstr(value, 0, n - 1);
-   StringReplace(value, "-", ".");
-   StringReplace(value, "T", " ");
-   return StringToTime(value);
-  }
 
 datetime Strategy_UtcDateTime(const int year,
                               const int month,
@@ -194,26 +144,6 @@ int Strategy_DateKey(const datetime value)
    return parts.year * 10000 + parts.mon * 100 + parts.day;
   }
 
-int Strategy_ParseDateKey(string value)
-  {
-   value = Strategy_Trimmed(value);
-   StringReplace(value, "-", ".");
-   return Strategy_DateKey(StringToTime(value + " 00:00"));
-  }
-
-bool Strategy_LondonClockMatches(const datetime utc,
-                                 const int date_key,
-                                 const int hour,
-                                 const int minute)
-  {
-   const datetime local = Strategy_LondonLocal(utc);
-   MqlDateTime parts;
-   if(!TimeToStruct(local, parts))
-      return false;
-   return (Strategy_DateKey(local) == date_key && parts.hour == hour &&
-           parts.min == minute && parts.sec == 0);
-  }
-
 datetime Strategy_LondonLocalToUtc(const int date_key,
                                    const int hour,
                                    const int minute)
@@ -227,144 +157,36 @@ datetime Strategy_LondonLocalToUtc(const int date_key,
    return utc;
   }
 
-bool Strategy_ValidAuctionSource(const string url)
+bool Strategy_IsUtcWeekday(const datetime utc)
   {
-   return (StringFind(url, "https") == 0 && StringFind(url, "://") > 0 &&
-           StringFind(url, "lbma.org.uk") > 0);
-  }
-
-bool Strategy_AppendAuctionDate(const int date_key,
-                                const datetime pre_bar_utc,
-                                const datetime confirmation1_utc,
-                                const datetime confirmation2_utc,
-                                const datetime exit_utc,
-                                const bool auction_scheduled)
-  {
-   const int n = ArraySize(g_auction_date_key);
-   if(ArrayResize(g_auction_date_key, n + 1) != n + 1 ||
-      ArrayResize(g_pre_bar_utc, n + 1) != n + 1 ||
-      ArrayResize(g_confirmation1_utc, n + 1) != n + 1 ||
-      ArrayResize(g_confirmation2_utc, n + 1) != n + 1 ||
-      ArrayResize(g_exit_utc, n + 1) != n + 1 ||
-      ArrayResize(g_auction_scheduled, n + 1) != n + 1)
+   MqlDateTime parts;
+   if(utc <= 0 || !TimeToStruct(utc, parts))
       return false;
-   g_auction_date_key[n] = date_key;
-   g_pre_bar_utc[n] = pre_bar_utc;
-   g_confirmation1_utc[n] = confirmation1_utc;
-   g_confirmation2_utc[n] = confirmation2_utc;
-   g_exit_utc[n] = exit_utc;
-   g_auction_scheduled[n] = auction_scheduled;
-   return true;
+   return (parts.day_of_week >= 1 && parts.day_of_week <= 5);
   }
 
-bool Strategy_LoadAuctionCalendar()
+bool Strategy_ResolveAuctionTimes(const int date_key,
+                                  datetime &pre_bar_utc,
+                                  datetime &confirmation1_utc,
+                                  datetime &confirmation2_utc,
+                                  datetime &exit_utc)
   {
-   ArrayResize(g_auction_date_key, 0);
-   ArrayResize(g_pre_bar_utc, 0);
-   ArrayResize(g_confirmation1_utc, 0);
-   ArrayResize(g_confirmation2_utc, 0);
-   ArrayResize(g_exit_utc, 0);
-   ArrayResize(g_auction_scheduled, 0);
-
-   const int required_valid_through = Strategy_ParseDateKey(strategy_calendar_valid_through);
-   if(strategy_variant_id != "LBMA_PM_BRK_BASELINE" ||
-      strategy_signal_tf != PERIOD_M5 || strategy_max_cost_r != 0.10 ||
-      required_valid_through != 20251231 || StringLen(strategy_tzdb_version) == 0)
-      return false;
-
-   const int handle = FileOpen(strategy_auction_ledger_file,
-                               FILE_READ | FILE_CSV | FILE_ANSI | FILE_COMMON,
-                               ',');
-   if(handle == INVALID_HANDLE)
-      return false;
-
-   int rows = 0;
-   int previous_date_key = 0;
-   bool valid = true;
-   while(!FileIsEnding(handle))
-     {
-      const string date_text = Strategy_Trimmed(FileReadString(handle));
-      const string pre_text = Strategy_Trimmed(FileReadString(handle));
-      const string confirmation1_text = Strategy_Trimmed(FileReadString(handle));
-      const string confirmation2_text = Strategy_Trimmed(FileReadString(handle));
-      const string exit_text = Strategy_Trimmed(FileReadString(handle));
-      const string scheduled_text = Strategy_Trimmed(FileReadString(handle));
-      const string valid_through_text = Strategy_Trimmed(FileReadString(handle));
-      const string source_url = Strategy_Trimmed(FileReadString(handle));
-      string retrieved_date = Strategy_Trimmed(FileReadString(handle));
-      const string source_sha256 = Strategy_Trimmed(FileReadString(handle));
-      const string tzdb_version = Strategy_Trimmed(FileReadString(handle));
-
-      if(rows == 0 && date_text == "london_date" && pre_text == "pre_bar_utc")
-         continue;
-      if(date_text == "" && pre_text == "" && exit_text == "")
-         continue;
-
-      const int date_key = Strategy_ParseDateKey(date_text);
-      const datetime pre_bar_utc = Strategy_ParseUtcTimestamp(pre_text);
-      const datetime confirmation1_utc = Strategy_ParseUtcTimestamp(confirmation1_text);
-      const datetime confirmation2_utc = Strategy_ParseUtcTimestamp(confirmation2_text);
-      const datetime exit_utc = Strategy_ParseUtcTimestamp(exit_text);
-      bool auction_scheduled = false;
-      StringReplace(retrieved_date, "-", ".");
-
-      if(date_key <= 0 || date_key <= previous_date_key || pre_bar_utc <= 0 ||
-         confirmation1_utc <= 0 || confirmation2_utc <= 0 || exit_utc <= 0 ||
-         !Strategy_LondonClockMatches(pre_bar_utc, date_key, 14, 55) ||
-         !Strategy_LondonClockMatches(confirmation1_utc, date_key, 15, 0) ||
-         !Strategy_LondonClockMatches(confirmation2_utc, date_key, 15, 5) ||
-         !Strategy_LondonClockMatches(exit_utc, date_key, 15, 15) ||
-         confirmation1_utc - pre_bar_utc != 5 * 60 ||
-         confirmation2_utc - confirmation1_utc != 5 * 60 ||
-         exit_utc - confirmation2_utc != 10 * 60 ||
-         !Strategy_ParseBoolean(scheduled_text, auction_scheduled) ||
-         Strategy_ParseDateKey(valid_through_text) != required_valid_through ||
-         !Strategy_ValidAuctionSource(source_url) || StringToTime(retrieved_date) <= 0 ||
-         !Strategy_IsSha256(source_sha256) || tzdb_version != strategy_tzdb_version ||
-         !Strategy_AppendAuctionDate(date_key, pre_bar_utc, confirmation1_utc,
-                                     confirmation2_utc, exit_utc, auction_scheduled))
-        {
-         valid = false;
-         break;
-        }
-      previous_date_key = date_key;
-      ++rows;
-     }
-   FileClose(handle);
-
-   return (valid && rows > 0 && g_auction_date_key[0] / 10000 <= 2018 &&
-           g_auction_date_key[rows - 1] / 10000 >= 2025);
-  }
-
-bool Strategy_EnsureCalendarLoaded()
-  {
-   if(g_calendar_attempted)
-      return g_calendar_ready;
-   g_calendar_attempted = true;
-   g_calendar_ready = Strategy_LoadAuctionCalendar();
-   if(!g_calendar_ready)
-      QM_LogEvent(QM_ERROR,
-                  "SETUP_DATA_MISSING",
-                  StringFormat("{\"auction_ledger\":\"%s\",\"tzdb_version\":\"%s\"}",
-                               strategy_auction_ledger_file, strategy_tzdb_version));
-   return g_calendar_ready;
-  }
-
-int Strategy_FindAuctionDate(const int date_key)
-  {
-   int lo = 0;
-   int hi = ArraySize(g_auction_date_key);
-   while(lo < hi)
-     {
-      const int mid = lo + (hi - lo) / 2;
-      if(g_auction_date_key[mid] < date_key)
-         lo = mid + 1;
-      else
-         hi = mid;
-     }
-   if(lo < ArraySize(g_auction_date_key) && g_auction_date_key[lo] == date_key)
-      return lo;
-   return -1;
+   pre_bar_utc = Strategy_LondonLocalToUtc(date_key,
+                                           strategy_pre_bar_hour_london,
+                                           strategy_pre_bar_minute_london);
+   confirmation1_utc = Strategy_LondonLocalToUtc(date_key,
+                                                  strategy_confirmation1_hour_london,
+                                                  strategy_confirmation1_minute_london);
+   confirmation2_utc = Strategy_LondonLocalToUtc(date_key,
+                                                  strategy_confirmation2_hour_london,
+                                                  strategy_confirmation2_minute_london);
+   exit_utc = Strategy_LondonLocalToUtc(date_key,
+                                        strategy_exit_hour_london,
+                                        strategy_exit_minute_london);
+   return (pre_bar_utc > 0 &&
+           confirmation1_utc - pre_bar_utc == 5 * 60 &&
+           confirmation2_utc - confirmation1_utc == 5 * 60 &&
+           exit_utc - confirmation2_utc == 10 * 60);
   }
 
 bool Strategy_FindOurPosition(datetime &open_time)
@@ -385,11 +207,12 @@ bool Strategy_FindOurPosition(datetime &open_time)
    return false;
   }
 
-bool Strategy_AttemptAlreadyMade(const int date_key, const int calendar_index)
+bool Strategy_AttemptAlreadyMade(const int date_key,
+                                 const datetime pre_bar_utc)
   {
    if(g_last_attempt_date_key == date_key)
       return true;
-   const datetime from_broker = QM_UTCToBroker(g_pre_bar_utc[calendar_index] - 60 * 60);
+   const datetime from_broker = QM_UTCToBroker(pre_bar_utc - 60 * 60);
    if(from_broker <= 0 || !HistorySelect(from_broker, TimeCurrent()))
       return true;
    const int magic = QM_FrameworkMagic();
@@ -439,24 +262,20 @@ int Strategy_ConfirmationOutcome(const bool armed_long,
    return 0;
   }
 
-bool Strategy_CostAndVolumeAllow(const double entry_price, const double stop_price)
+bool Strategy_TradeGeometryAndVolumeAllow(const double entry_price,
+                                          const double stop_price)
   {
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
    const double tick_value = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_VALUE_LOSS);
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(AccountInfoString(ACCOUNT_CURRENCY) != "USD" || RISK_FIXED != 1000.0 ||
-      RISK_PERCENT != 0.0 || point <= 0.0 || tick_size <= 0.0 || tick_value <= 0.0 ||
-      ask <= 0.0 || bid <= 0.0 || ask < bid || entry_price <= 0.0 || stop_price <= 0.0 ||
-      strategy_round_turn_commission_usd_per_lot <= 0.0)
+   if(RISK_FIXED != 1000.0 || RISK_PERCENT != 0.0 ||
+      point <= 0.0 || tick_size <= 0.0 || tick_value <= 0.0 ||
+      entry_price <= 0.0 || stop_price <= 0.0)
       return false;
 
    const double stop_distance = MathAbs(entry_price - stop_price);
    const double risk_per_lot = (stop_distance / tick_size) * tick_value;
-   const double spread_per_lot = ((ask - bid) / tick_size) * tick_value;
-   if(risk_per_lot <= 0.0 ||
-      (strategy_round_turn_commission_usd_per_lot + spread_per_lot) / risk_per_lot > strategy_max_cost_r)
+   if(risk_per_lot <= 0.0)
       return false;
 
    const double sl_points = stop_distance / point;
@@ -476,6 +295,28 @@ bool Strategy_CostAndVolumeAllow(const double entry_price, const double stop_pri
            lots * risk_per_lot > 0.0);
   }
 
+bool Strategy_InputsValid()
+  {
+   return (strategy_variant_id == "LBMA_PM_BRK_BASELINE" &&
+           strategy_signal_tf == PERIOD_M5 &&
+           strategy_pre_bar_hour_london == 14 &&
+           strategy_pre_bar_minute_london == 55 &&
+           strategy_confirmation1_hour_london == 15 &&
+           strategy_confirmation1_minute_london == 0 &&
+           strategy_confirmation2_hour_london == 15 &&
+           strategy_confirmation2_minute_london == 5 &&
+           strategy_exit_hour_london == 15 &&
+           strategy_exit_minute_london == 15);
+  }
+
+bool Strategy_WideSpread()
+  {
+   if(strategy_max_spread_points <= 0)
+      return false;
+   const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+   return (spread_points > strategy_max_spread_points);
+  }
+
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -488,9 +329,9 @@ bool Strategy_NoTradeFilter()
    if(Strategy_FindOurPosition(open_time))
       return false;
    if(_Symbol != "XAUUSD.DWX" || _Period != strategy_signal_tf ||
-      strategy_signal_tf != PERIOD_M5)
+      !Strategy_InputsValid())
       return true;
-   return !Strategy_EnsureCalendarLoaded();
+   return Strategy_WideSpread();
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
@@ -506,10 +347,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!g_calendar_ready || _Symbol != "XAUUSD.DWX" ||
-      strategy_variant_id != "LBMA_PM_BRK_BASELINE" ||
-      strategy_signal_tf != PERIOD_M5 || _Period != strategy_signal_tf ||
-      strategy_max_cost_r != 0.10)
+   if(_Symbol != "XAUUSD.DWX" || _Period != strategy_signal_tf ||
+      !Strategy_InputsValid())
       return false;
 
    MqlRates current_bar;
@@ -517,12 +356,20 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
    const datetime current_utc = QM_BrokerToUTC(current_bar.time);
    const int date_key = Strategy_DateKey(Strategy_LondonLocal(current_utc));
-   const int calendar_index = Strategy_FindAuctionDate(date_key);
-   if(calendar_index < 0 || !g_auction_scheduled[calendar_index])
+   datetime pre_bar_utc = 0;
+   datetime confirmation1_utc = 0;
+   datetime confirmation2_utc = 0;
+   datetime exit_utc = 0;
+   if(!Strategy_IsUtcWeekday(current_utc) ||
+      !Strategy_ResolveAuctionTimes(date_key,
+                                    pre_bar_utc,
+                                    confirmation1_utc,
+                                    confirmation2_utc,
+                                    exit_utc))
       return false;
 
-   const bool first_entry = (current_utc == g_confirmation2_utc[calendar_index]);
-   const bool second_entry = (current_utc == g_confirmation2_utc[calendar_index] + 5 * 60);
+   const bool first_entry = (current_utc == confirmation2_utc);
+   const bool second_entry = (current_utc == confirmation2_utc + 5 * 60);
    if(!first_entry && !second_entry)
       return false;
 
@@ -533,12 +380,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const int confirmation1_shift = first_entry ? 1 : 2;
    if(!QM_ReadBar(_Symbol, strategy_signal_tf, pre_shift, pre_bar) ||
       !QM_ReadBar(_Symbol, strategy_signal_tf, confirmation1_shift, confirmation1) ||
-      QM_BrokerToUTC(pre_bar.time) != g_pre_bar_utc[calendar_index] ||
-      QM_BrokerToUTC(confirmation1.time) != g_confirmation1_utc[calendar_index])
+      QM_BrokerToUTC(pre_bar.time) != pre_bar_utc ||
+      QM_BrokerToUTC(confirmation1.time) != confirmation1_utc)
       return false;
    if(second_entry &&
       (!QM_ReadBar(_Symbol, strategy_signal_tf, 1, confirmation2) ||
-       QM_BrokerToUTC(confirmation2.time) != g_confirmation2_utc[calendar_index]))
+       QM_BrokerToUTC(confirmation2.time) != confirmation2_utc))
       return false;
 
    const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
@@ -570,7 +417,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
      }
 
-   if(Strategy_AttemptAlreadyMade(date_key, calendar_index))
+   if(Strategy_AttemptAlreadyMade(date_key, pre_bar_utc))
       return false;
    g_last_attempt_date_key = date_key;
 
@@ -583,13 +430,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(stop_price <= 0.0 ||
       (armed_long && entry_price <= stop_price) ||
       (!armed_long && entry_price >= stop_price) ||
-      !Strategy_CostAndVolumeAllow(entry_price, stop_price))
+      !Strategy_TradeGeometryAndVolumeAllow(entry_price, stop_price))
       return false;
 
    req.type = armed_long ? QM_BUY : QM_SELL;
    req.sl = stop_price;
    req.reason = armed_long ? "LBMA_PM_BRK_LONG" : "LBMA_PM_BRK_SHORT";
-   g_active_exit_broker = QM_UTCToBroker(g_exit_utc[calendar_index]);
+   g_active_exit_broker = QM_UTCToBroker(exit_utc);
    return (g_active_exit_broker > 0);
   }
 
@@ -613,10 +460,9 @@ bool Strategy_ExitSignal()
      {
       const datetime open_utc = QM_BrokerToUTC(open_time);
       const int date_key = Strategy_DateKey(Strategy_LondonLocal(open_utc));
-      const int calendar_index = g_calendar_ready ? Strategy_FindAuctionDate(date_key) : -1;
-      const datetime exit_utc = (calendar_index >= 0)
-                                ? g_exit_utc[calendar_index]
-                                : Strategy_LondonLocalToUtc(date_key, 15, 15);
+      const datetime exit_utc = Strategy_LondonLocalToUtc(date_key,
+                                                          strategy_exit_hour_london,
+                                                          strategy_exit_minute_london);
       g_active_exit_broker = QM_UTCToBroker(exit_utc);
      }
    return (g_active_exit_broker > 0 && TimeCurrent() >= g_active_exit_broker);

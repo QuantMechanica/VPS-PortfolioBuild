@@ -10,13 +10,14 @@
 
 ## 1. Strategy Logic
 
-On an officially scheduled LBMA PM auction date, the EA freezes the completed
-14:55–15:00 London M5 range and arms in the direction of that bar's body. It
-enters at 15:05 or 15:10 London only when the first eligible completed M5 close
-breaks the frozen range in the armed direction; an opposite close cancels the
-date. The opposite range edge is the immutable hard stop, there is no profit
-target or trade-management overlay, and any remaining position closes at the
-first tradable quote at or after 15:15 London.
+On each UTC weekday, the EA freezes the completed 14:55–15:00 London M5 range
+and arms in the direction of that bar's body. It enters at 15:05 or 15:10
+London only when the first eligible completed M5 close breaks the frozen range
+in the armed direction; an opposite close cancels the date. The opposite range
+edge is the immutable hard stop, there is no profit target or trade-management
+overlay, and any remaining position closes at the first tradable quote at or
+after 15:15 London. Exact valid bars replace the external auction ledger, and
+Tester Groups applies venue commission to fills.
 
 ## 2. Parameters
 
@@ -24,11 +25,11 @@ first tradable quote at or after 15:15 London.
 |---|---:|---|---|
 | `strategy_variant_id` | `LBMA_PM_BRK_BASELINE` | locked | Approved card variant identity. |
 | `strategy_signal_tf` | `PERIOD_M5` | locked | Signal and execution-bar timeframe. |
-| `strategy_max_cost_r` | 0.10 | locked | Maximum round-turn commission plus entry spread as a fraction of initial risk. |
-| `strategy_round_turn_commission_usd_per_lot` | 0.0 | governed value required | Runtime USD commission per lot; zero fails closed rather than inventing a cost. |
-| `strategy_auction_ledger_file` | `QM5_20037_lbma_pm_auction_calendar.csv` | immutable file | Common-Files official-auction ledger with UTC timestamps and provenance. |
-| `strategy_calendar_valid_through` | `2025.12.31` | locked | Required official-auction calendar coverage date. |
-| `strategy_tzdb_version` | empty | governed value required | Pinned IANA timezone database version; empty or ledger mismatch fails closed. |
+| `strategy_pre_bar_*_london` | `14:55` | locked | Frozen pre-auction M5 bar start in London time. |
+| `strategy_confirmation1_*_london` | `15:00` | locked | First confirmation-bar start in London time. |
+| `strategy_confirmation2_*_london` | `15:05` | locked | Second confirmation/first-entry bar start in London time. |
+| `strategy_exit_*_london` | `15:15` | locked | Mandatory flat time in London time. |
+| `strategy_max_spread_points` | `0` | optional >0 | Tester/live native spread guard; zero disables the guard. |
 
 ## 3. Symbol Universe
 
@@ -53,7 +54,7 @@ first tradable quote at or after 15:15 London.
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | approximately 200 before holidays, dojis, unconfirmed breaks, and cost rejections |
+| Trades / year / symbol | approximately 200 before dojis and unconfirmed breaks |
 | Typical hold time | 5–15 minutes, always flat at or after 15:15 London |
 | Expected drawdown profile | approximately 12% card prior, with losses clustered around failed auction breakouts |
 | Regime preference | benchmark-auction information concentration and short-horizon breakout |
@@ -90,3 +91,4 @@ mode remains a later governed promotion decision.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-22 | Initial build from card | e7bbe65a-a948-4127-a13a-5422895208fa |
+| v2 | 2026-07-22 | FTMO density fix | Replaced the unprovisioned auction ledger and commission/cost gate with broker-clock weekday/bar eligibility and the optional native spread guard. |

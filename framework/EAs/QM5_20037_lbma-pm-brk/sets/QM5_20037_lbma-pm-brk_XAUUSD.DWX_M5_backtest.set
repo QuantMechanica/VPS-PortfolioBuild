@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   adccb6e18ca7eeec314c254d074e24f39db1bdccef8c653d929e749a4f9526e7
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-07-22
 ;==========================================================
@@ -23,8 +23,12 @@ PORTFOLIO_WEIGHT=1
 ; card_defaults_source=ea_input_defaults
 strategy_variant_id="LBMA_PM_BRK_BASELINE"
 strategy_signal_tf=PERIOD_M5
-strategy_max_cost_r=0.10
-strategy_round_turn_commission_usd_per_lot=0.0
-strategy_auction_ledger_file="QM5_20037_lbma_pm_auction_calendar.csv"
-strategy_calendar_valid_through="2025.12.31"
-strategy_tzdb_version=""
+strategy_pre_bar_hour_london=14
+strategy_pre_bar_minute_london=55
+strategy_confirmation1_hour_london=15
+strategy_confirmation1_minute_london=0
+strategy_confirmation2_hour_london=15
+strategy_confirmation2_minute_london=5
+strategy_exit_hour_london=15
+strategy_exit_minute_london=15
+strategy_max_spread_points=0

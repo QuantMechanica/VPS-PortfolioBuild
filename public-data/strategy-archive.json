@@ -1,6 +1,6 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-22T15:07:03.4406748Z",
+    "generated_at":  "2026-07-22T16:07:03.0488036Z",
     "total":  3393,
     "items":  [
                   {
@@ -20293,7 +20293,7 @@
                       "slug":  "QM5_1137_fx-h4-filter-rule-breakout",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-22T14:06:45.3877852Z"
+                      "last_updated_utc":  "2026-07-22T15:41:42.4734590Z"
                   },
                   {
                       "slug":  "QM5_1138_gold-m30-open-range-fade-after-gap",
@@ -20329,7 +20329,7 @@
                       "slug":  "QM5_1153_fx-us-session-after-london-drift",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-22T14:06:45.9553193Z"
+                      "last_updated_utc":  "2026-07-22T15:41:44.1448138Z"
                   },
                   {
                       "slug":  "QM5_1154_index-hks-halfhour-lag-continuation",
