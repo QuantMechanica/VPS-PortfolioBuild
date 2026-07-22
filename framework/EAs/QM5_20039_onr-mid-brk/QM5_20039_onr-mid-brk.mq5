@@ -627,6 +627,164 @@ bool Strategy_UpdateQuoteState()
    return true;
   }
 
+bool Strategy_ProcessCashBar(const MqlRates &bar,
+                             const datetime bar_utc,
+                             const datetime next_open_utc,
+                             const bool allow_entry)
+  {
+   if(bar.close <= 0.0 || !MathIsValidNumber(bar.close))
+      return false;
+
+   g_breakout_through_utc = bar_utc;
+   if(g_cash_date_resolved || g_attempted || g_armed_side == 0)
+      return true;
+
+   bool armed_break = false;
+   bool opposite_break = false;
+   if(g_armed_side > 0)
+     {
+      armed_break = (bar.close > g_overnight_high);
+      opposite_break = (bar.close < g_overnight_low);
+     }
+   else
+     {
+      armed_break = (bar.close < g_overnight_low);
+      opposite_break = (bar.close > g_overnight_high);
+     }
+
+   // Only closes count: a wick through either boundary has no state effect.
+   // The first qualifying close resolves the cash date, so a news pause can
+   // suppress this next-open attempt but can never defer it to a later bar.
+   if(opposite_break)
+     {
+      g_cash_date_resolved = true;
+      return true;
+     }
+   if(!armed_break)
+      return true;
+
+   g_cash_date_resolved = true;
+   if(!allow_entry || g_quote_session_index < 0 ||
+      next_open_utc >= g_cash_close_utc[g_quote_session_index])
+      return true;
+   datetime open_time = 0;
+   if(Strategy_FindOurPosition(open_time))
+      return true;
+   g_pending_side = g_armed_side;
+   g_pending_entry_utc = next_open_utc;
+   return true;
+  }
+
+bool Strategy_RebuildCashBars(const int session_index,
+                              const datetime current_open_utc)
+  {
+   g_breakout_through_utc = 0;
+   g_pending_side = 0;
+   g_pending_entry_utc = 0;
+   const datetime start_broker = QM_UTCToBroker(g_cash_open_utc[session_index]);
+   const datetime stop_broker = QM_UTCToBroker(current_open_utc) - 1;
+   if(start_broker <= 0 || stop_broker < start_broker)
+      return false;
+
+   MqlRates rates[];
+   ArraySetAsSeries(rates, false);
+   const int copied = CopyRates(_Symbol, // perf-allowed: bounded one-time cash-session rebuild behind QM_IsNewBar.
+                                strategy_signal_tf,
+                                start_broker,
+                                stop_broker,
+                                rates);
+   if(copied <= 0 || copied > 78)
+      return false;
+
+   datetime previous_utc = 0;
+   int processed = 0;
+   for(int i = 0; i < copied; ++i)
+     {
+      const datetime bar_utc = QM_BrokerToUTC(rates[i].time);
+      if(bar_utc < g_cash_open_utc[session_index] ||
+         bar_utc >= g_cash_close_utc[session_index] || bar_utc >= current_open_utc)
+         continue;
+      if(previous_utc > 0 && bar_utc != previous_utc + 5 * 60)
+         return false;
+      const bool is_latest = (bar_utc + 5 * 60 == current_open_utc);
+      if(!Strategy_ProcessCashBar(rates[i], bar_utc, current_open_utc, is_latest))
+         return false;
+      previous_utc = bar_utc;
+      ++processed;
+     }
+   return (processed > 0 && g_breakout_through_utc + 5 * 60 == current_open_utc);
+  }
+
+bool Strategy_AdvanceBreakoutOnNewBar()
+  {
+   g_pending_side = 0;
+   g_pending_entry_utc = 0;
+   if(!g_calendar_ready || !Strategy_IsRoutedSymbol(_Symbol) ||
+      _Period != strategy_signal_tf || strategy_signal_tf != PERIOD_M5)
+      return false;
+
+   MqlRates current_bar;
+   MqlRates closed_bar;
+   if(!QM_ReadBar(_Symbol, strategy_signal_tf, 0, current_bar) ||
+      !QM_ReadBar(_Symbol, strategy_signal_tf, 1, closed_bar))
+      return false;
+   const datetime current_open_utc = QM_BrokerToUTC(current_bar.time);
+   const datetime closed_bar_utc = QM_BrokerToUTC(closed_bar.time);
+   const int cash_date_key = Strategy_DateKey(Strategy_NewYorkLocal(closed_bar_utc));
+   const int session_index = Strategy_FindSessionByDate(cash_date_key);
+   if(session_index < 0 || g_quote_session_index != session_index ||
+      !g_range_frozen || g_range_failed ||
+      closed_bar_utc < g_cash_open_utc[session_index] ||
+      closed_bar_utc >= g_cash_close_utc[session_index])
+      return false;
+
+   if(g_breakout_through_utc == 0 ||
+      g_breakout_through_utc + 5 * 60 != closed_bar_utc)
+      return Strategy_RebuildCashBars(session_index, current_open_utc);
+
+   return Strategy_ProcessCashBar(closed_bar,
+                                  closed_bar_utc,
+                                  current_open_utc,
+                                  current_open_utc < g_cash_close_utc[session_index]);
+  }
+
+bool Strategy_CostAndVolumeAllow(const double entry_price,
+                                 const double stop_price)
+  {
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
+   const double tick_value = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_VALUE_LOSS);
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(AccountInfoString(ACCOUNT_CURRENCY) != "USD" || RISK_FIXED != 1000.0 ||
+      RISK_PERCENT != 0.0 || point <= 0.0 || tick_size <= 0.0 || tick_value <= 0.0 ||
+      ask <= 0.0 || bid <= 0.0 || ask < bid || entry_price <= 0.0 || stop_price <= 0.0 ||
+      strategy_round_turn_commission_usd_per_lot <= 0.0)
+      return false;
+
+   const double stop_distance = MathAbs(entry_price - stop_price);
+   const double risk_per_lot = (stop_distance / tick_size) * tick_value;
+   const double spread_per_lot = ((ask - bid) / tick_size) * tick_value;
+   if(risk_per_lot <= 0.0 ||
+      (strategy_round_turn_commission_usd_per_lot + spread_per_lot) / risk_per_lot > strategy_max_cost_r)
+      return false;
+
+   const double sl_points = stop_distance / point;
+   const long stop_level = SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
+   if(sl_points <= 0.0 || sl_points < (double)stop_level)
+      return false;
+
+   const double lots = QM_LotsForRisk(_Symbol, sl_points);
+   const double volume_min = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN);
+   const double volume_max = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MAX);
+   const double volume_step = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_STEP);
+   if(lots <= 0.0 || volume_min <= 0.0 || volume_max <= 0.0 || volume_step <= 0.0 ||
+      lots < volume_min || lots > volume_max)
+      return false;
+   const double aligned = volume_min + MathRound((lots - volume_min) / volume_step) * volume_step;
+   return (MathAbs(aligned - lots) <= volume_step * 1.0e-6);
+  }
+
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -635,8 +793,13 @@ bool Strategy_UpdateQuoteState()
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   // TODO: e.g. "only trade London session" or "skip if ADX<20"
-   return false;
+   datetime open_time = 0;
+   if(Strategy_FindOurPosition(open_time))
+      return false;
+   if(!Strategy_IsRoutedSymbol(_Symbol) || _Period != strategy_signal_tf ||
+      strategy_signal_tf != PERIOD_M5 || !Strategy_EnsureDependencies())
+      return true;
+   return !Strategy_UpdateQuoteState();
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
@@ -644,35 +807,80 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // TODO: build req.type / req.price / req.sl / req.tp / req.reason /
-   //       req.symbol_slot / req.expiration_seconds — set ALL fields (the
-   //       caller ZeroMemory's req; symbol_slot stays 0 for single-symbol
-   //       EAs). Lots are NOT part of QM_EntryRequest: sizing happens inside
-   //       QM_Entry via QM_LotsForRisk from req.sl.
-   return false;
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(g_pending_side == 0 || g_pending_entry_utc <= 0 ||
+      g_quote_session_index < 0 || g_attempted ||
+      g_pending_entry_utc >= g_cash_close_utc[g_quote_session_index])
+      return false;
+   MqlRates current_bar;
+   if(!QM_ReadBar(_Symbol, strategy_signal_tf, 0, current_bar) ||
+      QM_BrokerToUTC(current_bar.time) != g_pending_entry_utc)
+      return false;
+   datetime open_time = 0;
+   if(Strategy_FindOurPosition(open_time))
+      return false;
+
+   const bool is_long = (g_pending_side > 0);
+   g_attempted = true;
+   g_pending_side = 0;
+   g_pending_entry_utc = 0;
+
+   MqlTick tick;
+   if(!SymbolInfoTick(_Symbol, tick) || tick.ask <= 0.0 || tick.bid <= 0.0 || tick.ask < tick.bid)
+      return false;
+   const double entry_price = is_long ? tick.ask : tick.bid;
+   const double frozen_midpoint = Strategy_TickNormalizedPrice(g_overnight_mid);
+   // The card requires the actual market fill to remain on the risk side of
+   // the frozen midpoint; equality has zero defined risk and therefore fails.
+   if(frozen_midpoint <= 0.0 ||
+      (is_long && entry_price <= frozen_midpoint) ||
+      (!is_long && entry_price >= frozen_midpoint) ||
+      !Strategy_CostAndVolumeAllow(entry_price, frozen_midpoint))
+      return false;
+
+   req.type = is_long ? QM_BUY : QM_SELL;
+   req.sl = frozen_midpoint;
+   req.tp = 0.0;
+   req.reason = is_long ? "ONR_MID_BRK_LONG" : "ONR_MID_BRK_SHORT";
+   g_active_close_broker = QM_UTCToBroker(g_cash_close_utc[g_quote_session_index]);
+   return (g_active_close_broker > 0);
   }
 
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // TODO: e.g.
-   //   const int magic = QM_FrameworkMagic();
-   //   for(int i = PositionsTotal() - 1; i >= 0; --i) {
-   //       const ulong ticket = PositionGetTicket(i);
-   //       if(!PositionSelectByTicket(ticket)) continue;
-   //       if(PositionGetInteger(POSITION_MAGIC) != magic) continue;
-   //       QM_TM_MoveToBreakEven(ticket, /*trigger_pips=*/30, /*buffer=*/2);
-   //       QM_TM_TrailATR(ticket, /*atr_period=*/14, /*atr_mult=*/2.0);
-   //   }
+   datetime open_time = 0;
+   if(!Strategy_FindOurPosition(open_time))
+      g_active_close_broker = 0;
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   // TODO: when to close manually (separate from SL/TP and trade management)
-   return false;
+   datetime open_time = 0;
+   if(!Strategy_FindOurPosition(open_time))
+      return false;
+   if(g_active_close_broker <= 0)
+     {
+      if(!g_calendar_ready)
+         return true;
+      const datetime open_utc = QM_BrokerToUTC(open_time);
+      const int cash_date_key = Strategy_DateKey(Strategy_NewYorkLocal(open_utc));
+      const int session_index = Strategy_FindSessionByDate(cash_date_key);
+      if(session_index < 0)
+         return true;
+      g_active_close_broker = QM_UTCToBroker(g_cash_close_utc[session_index]);
+     }
+   return (g_active_close_broker > 0 && TimeCurrent() >= g_active_close_broker);
   }
 
 // Optional news-filter override. Return TRUE to suppress trading regardless
@@ -680,7 +888,8 @@ bool Strategy_ExitSignal()
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false; // defer to QM_NewsAllowsTrade(...)
+   // The approved baseline retains the framework default news pause.
+   return false;
   }
 
 // -----------------------------------------------------------------------------
@@ -758,6 +967,12 @@ void OnTick()
         }
      }
 
+   // Resolve the first closed-bar breakout before the central news gate. A
+   // blocked next-open entry is discarded, never shifted to a later bar.
+   const bool strategy_new_bar = QM_IsNewBar();
+   if(strategy_new_bar)
+      Strategy_AdvanceBreakoutOnNewBar();
+
    // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
    // per-tick recompute mistakes — EntrySignal sees one new closed bar per
    // call, not every incoming tick.
@@ -772,7 +987,7 @@ void OnTick()
    if(!news_allows)
       return;
 
-   if(!QM_IsNewBar())
+   if(!strategy_new_bar)
       return;
 
    // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
