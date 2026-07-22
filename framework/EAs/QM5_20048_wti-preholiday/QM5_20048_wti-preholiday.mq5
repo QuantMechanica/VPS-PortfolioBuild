@@ -127,7 +127,7 @@ bool Strategy_HasPosition()
 void Strategy_CloseExpired()
   {
    const int magic=QM_FrameworkMagic(); const datetime now=TimeCurrent();
-   const datetime bar=iTime(_Symbol,PERIOD_D1,0);
+   const datetime bar=iTime(_Symbol,PERIOD_D1,0); // perf-allowed: O(1) D1 position-expiry check, called behind the framework new-bar gate.
    for(int i=PositionsTotal()-1;i>=0;i--)
      {
       ulong ticket=PositionGetTicket(i);
@@ -152,7 +152,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.reason="WTI_PREHOLIDAY_LONG"; req.symbol_slot=0; req.expiration_seconds=0;
    if(Strategy_HasPosition()) return false;
    if(strategy_max_spread_points>0 && SymbolInfoInteger(_Symbol,SYMBOL_SPREAD)>strategy_max_spread_points) return false;
-   datetime bar=iTime(_Symbol,PERIOD_D1,0); if(bar<=0) return false;
+   datetime bar=iTime(_Symbol,PERIOD_D1,0); // perf-allowed: O(1) D1 holiday-calendar lookup, called behind the framework new-bar gate.
+   if(bar<=0) return false;
    int holiday_key=Strategy_UpcomingHolidayKey(bar);
    if(holiday_key<=0 || holiday_key==g_last_holiday_key) return false;
    double atr=QM_ATR(_Symbol,PERIOD_D1,strategy_atr_period,1); if(atr<=0.0) return false;
