@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-22T22:07:03.2602766Z",
-    "total":  3397,
+    "generated_at":  "2026-07-22T23:07:03.2053613Z",
+    "total":  3398,
     "items":  [
                   {
                       "slug":  "ath-breakout-atr-trail",
@@ -43,7 +43,7 @@
                       "slug":  "_TEMPLATE",
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-04-27T14:23:23.5047065Z"
+                      "last_updated_utc":  "2026-07-22T22:10:22.9805863Z"
                   },
                   {
                       "slug":  "asia-range-fade_card",
@@ -937,7 +937,7 @@
                       "slug":  "eurgbp-audjpy_card",
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-11T02:15:00.4787455Z"
+                      "last_updated_utc":  "2026-07-22T22:12:33.1108446Z"
                   },
                   {
                       "slug":  "fx-early-asia-drift_card",
@@ -955,7 +955,7 @@
                       "slug":  "fx-session-flow_card",
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-22T19:11:34.3329244Z"
+                      "last_updated_utc":  "2026-07-22T22:12:33.1138529Z"
                   },
                   {
                       "slug":  "iea-omr-brk_card",
@@ -973,7 +973,7 @@
                       "slug":  "index-mac5-rev_card",
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-17T11:12:57.2697058Z"
+                      "last_updated_utc":  "2026-07-22T22:12:33.1148554Z"
                   },
                   {
                       "slug":  "katz-seas-xti_card",
@@ -1093,7 +1093,7 @@
                       "slug":  "QM5_12971_spx-pre-fomc-drift",
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-11T14:41:08.2260050Z"
+                      "last_updated_utc":  "2026-07-22T22:12:33.1128500Z"
                   },
                   {
                       "slug":  "QM5_13135_xau-sma50-hold",
@@ -1219,7 +1219,7 @@
                       "slug":  "tokyo-fix-5m_card",
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-10T20:06:32.1906702Z"
+                      "last_updated_utc":  "2026-07-22T22:12:33.1128500Z"
                   },
                   {
                       "slug":  "tom-index-long_card",
@@ -1243,7 +1243,7 @@
                       "slug":  "usdjpy-euraud_card",
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-11T16:34:25.0007910Z"
+                      "last_updated_utc":  "2026-07-22T22:12:33.1118471Z"
                   },
                   {
                       "slug":  "williams18-xti_card",
@@ -1610,6 +1610,12 @@
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-07-20T16:07:23.6211111Z"
+                  },
+                  {
+                      "slug":  "xauxag-xmom12_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-22T22:49:39.3457787Z"
                   },
                   {
                       "slug":  "xbr-1w-mom-vol_card",
@@ -20317,7 +20323,7 @@
                       "slug":  "QM5_1137_fx-h4-filter-rule-breakout",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-22T21:53:05.8175471Z"
+                      "last_updated_utc":  "2026-07-22T22:58:21.0059268Z"
                   },
                   {
                       "slug":  "QM5_1138_gold-m30-open-range-fade-after-gap",
@@ -20335,7 +20341,7 @@
                       "slug":  "QM5_1140_index-daily-range-expansion-continuation",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-22T21:53:03.5944728Z"
+                      "last_updated_utc":  "2026-07-22T22:58:20.5487497Z"
                   },
                   {
                       "slug":  "QM5_1151_fx-london-fix-reversal",
@@ -20347,31 +20353,31 @@
                       "slug":  "QM5_1152_fx-tokyo-fix-usd-demand",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-22T21:03:13.1845578Z"
+                      "last_updated_utc":  "2026-07-22T22:40:11.5247291Z"
                   },
                   {
                       "slug":  "QM5_1153_fx-us-session-after-london-drift",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-22T21:36:32.8676976Z"
+                      "last_updated_utc":  "2026-07-22T22:09:01.5913197Z"
                   },
                   {
                       "slug":  "QM5_1154_index-hks-halfhour-lag-continuation",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-22T21:36:22.9496610Z"
+                      "last_updated_utc":  "2026-07-22T22:40:12.3393562Z"
                   },
                   {
                       "slug":  "QM5_1155_index-liquidity-shock-rebound",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-22T20:24:01.5156254Z"
+                      "last_updated_utc":  "2026-07-22T22:09:02.4736046Z"
                   },
                   {
                       "slug":  "QM5_1156_xtiusd-eia-third-halfhour-continuation",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-22T21:03:12.3052716Z"
+                      "last_updated_utc":  "2026-07-22T22:40:10.7085882Z"
                   },
                   {
                       "slug":  "QM5_1157_index-realized-skewness-fade",
