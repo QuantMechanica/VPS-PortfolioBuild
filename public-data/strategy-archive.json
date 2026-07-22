@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-22T14:07:03.2639739Z",
-    "total":  3391,
+    "generated_at":  "2026-07-22T15:07:03.4406748Z",
+    "total":  3393,
     "items":  [
                   {
                       "slug":  "ath-breakout-atr-trail",
@@ -1382,6 +1382,12 @@
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-07-20T21:48:38.9039056Z"
+                  },
+                  {
+                      "slug":  "wti-halloween-ls_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-22T14:39:59.2600572Z"
                   },
                   {
                       "slug":  "wti-halloween-winter_card",
@@ -17746,6 +17752,12 @@
                       "last_updated_utc":  "2026-07-22T13:40:49.1009304Z"
                   },
                   {
+                      "slug":  "QM5_20046_wti-halloween-ls_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-22T14:41:34.7926144Z"
+                  },
+                  {
                       "slug":  "QM5_2005_nnfx-donchian-flow",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
@@ -20299,7 +20311,7 @@
                       "slug":  "QM5_1140_index-daily-range-expansion-continuation",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-22T14:03:10.2374253Z"
+                      "last_updated_utc":  "2026-07-22T15:04:43.1456107Z"
                   },
                   {
                       "slug":  "QM5_1151_fx-london-fix-reversal",
@@ -20311,7 +20323,7 @@
                       "slug":  "QM5_1152_fx-tokyo-fix-usd-demand",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-22T12:57:41.6278759Z"
+                      "last_updated_utc":  "2026-07-22T14:55:33.5759470Z"
                   },
                   {
                       "slug":  "QM5_1153_fx-us-session-after-london-drift",
@@ -20323,19 +20335,19 @@
                       "slug":  "QM5_1154_index-hks-halfhour-lag-continuation",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-22T13:32:44.8695005Z"
+                      "last_updated_utc":  "2026-07-22T14:55:33.8165761Z"
                   },
                   {
                       "slug":  "QM5_1155_index-liquidity-shock-rebound",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-22T14:06:46.4861225Z"
+                      "last_updated_utc":  "2026-07-22T15:04:41.9783467Z"
                   },
                   {
                       "slug":  "QM5_1156_xtiusd-eia-third-halfhour-continuation",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-22T14:03:09.5867256Z"
+                      "last_updated_utc":  "2026-07-22T15:04:42.6302717Z"
                   },
                   {
                       "slug":  "QM5_1157_index-realized-skewness-fade",
@@ -20347,7 +20359,7 @@
                       "slug":  "QM5_1158_index-famous-earnings-cluster-drift",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-22T13:32:45.1241665Z"
+                      "last_updated_utc":  "2026-07-22T14:55:34.0391736Z"
                   }
               ]
 }
