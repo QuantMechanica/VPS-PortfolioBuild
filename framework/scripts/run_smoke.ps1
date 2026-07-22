@@ -360,6 +360,32 @@ function Test-TesterLogHasNoHistoryForRun {
     return $false
 }
 
+function Get-TesterLogCurrentRunText {
+    param(
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
+        [string]$TesterLogTail
+    )
+
+    if ([string]::IsNullOrWhiteSpace($TesterLogTail)) {
+        return ""
+    }
+
+    # MetaTester reuses one daily journal per terminal agent.  A copied log can
+    # therefore contain a previous EA's OnInit failure before the current run.
+    # The last test-start marker begins the only journal section relevant to
+    # the report we are classifying.
+    $matches = [regex]::Matches(
+        $TesterLogTail,
+        "(?im)^.*\btesting of Experts\\.*\.ex5\s+from\s+.*\bstarted with inputs:\s*$"
+    )
+    if ($matches.Count -eq 0) {
+        return $TesterLogTail
+    }
+
+    return $TesterLogTail.Substring($matches[$matches.Count - 1].Index)
+}
+
 function Resolve-InvalidReportVerdict {
     param(
         [Parameter(Mandatory = $false)]
@@ -2233,6 +2259,7 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
             $testerLogPath = Join-Path $runDir $testerLog.Name
             Copy-Item -LiteralPath $testerLog.FullName -Destination $testerLogPath -Force
             $testerLogTail = Get-TesterLogTailText -TesterLogPath $testerLogPath -LineCount 120
+            $testerLogTail = Get-TesterLogCurrentRunText -TesterLogTail $testerLogTail
         }
         $failureHints = New-Object System.Collections.Generic.List[string]
         if (Test-TesterLogShowsOnInitFailure -TesterLogTail $testerLogTail) {
@@ -2370,6 +2397,7 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
         $testerLogPath = Join-Path $runDir $testerLog.Name
         Copy-Item -LiteralPath $testerLog.FullName -Destination $testerLogPath -Force
         $testerLogTail = Get-TesterLogTailText -TesterLogPath $testerLogPath -LineCount 800
+        $testerLogTail = Get-TesterLogCurrentRunText -TesterLogTail $testerLogTail
     }
 
     $onInitFailure = $false
