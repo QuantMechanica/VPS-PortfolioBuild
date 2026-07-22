@@ -1,4 +1,4 @@
-﻿; ea_id: 20046
+; ea_id: 20046
 ; ea_slug: wti-halloween-ls
 ; ea_version: v5.0
 ; set_version: s20260722-001
@@ -8,7 +8,7 @@
 ; magic_slot: 0
 ; risk_mode: RISK_FIXED
 ; portfolio_weight: 1
-; build_hash:   97211b26fcfca672551fcb0aa417233b5c50cf04d1b8f5b619aeac2e31b35611
+; build_hash:   67d59c33853564c2be21f4da4166db1d5fd9fdb61ae46ea481023d8e607b8741
 ; author: Development
 ; date: 2026-07-22
 qm_ea_id=20046

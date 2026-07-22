@@ -1,16 +1,16 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_20046 WTI November-May Winter-Season Sleeve"
+#property description "QM5_20046 WTI Symmetric Halloween Long-Short Sleeve"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QM5_20046 - WTI November-May Winter-Season Sleeve
+// QM5_20046 - WTI Symmetric Halloween Long-Short Sleeve
 // -----------------------------------------------------------------------------
-// Burakov-Freidin-Solovyev alternative-two energy-season carrier:
-//   - long WTI during broker months November through May
-//   - flat during June through October
-//   - close/reopen at each in-season month boundary as disclosed V5 packaging
+// Burakov-Freidin-Solovyev alternative-one energy-season carrier:
+//   - long WTI during broker months November through April
+//   - short WTI during broker months May through October
+//   - close/reopen at each month boundary as disclosed V5 packaging
 //   - no same-month re-entry after a stop, rejection or restart
 //   - frozen ATR hard stop; no price signal, external feed or adaptive model
 // =============================================================================
@@ -41,7 +41,7 @@ input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input int    strategy_first_long_month     = 11;
-input int    strategy_last_long_month      = 5;
+input int    strategy_last_long_month      = 4;
 input int    strategy_atr_period            = 20;
 input double strategy_atr_sl_mult           = 4.0;
 input int    strategy_max_hold_days         = 35;
@@ -415,4 +415,3 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-
