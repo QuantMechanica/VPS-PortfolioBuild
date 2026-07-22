@@ -15142,3 +15142,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20040,b3-relvol-brk,2,NDX.DWX,200400002,2026-07-22,Development,active
 20041,postclose-cont,0,GDAXI.DWX,200410000,2026-07-22,Development,active
 20041,postclose-cont,1,UK100.DWX,200410001,2026-07-22,Development,active
+20046,wti-halloween-ls,0,XTIUSD.DWX,200460000,2026-07-22,Development,active
