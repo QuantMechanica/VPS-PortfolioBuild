@@ -15133,3 +15133,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20034,wmr-postfix,0,EURUSD.DWX,200340000,2026-07-22,Development,active
 20034,wmr-postfix,1,GBPUSD.DWX,200340001,2026-07-22,Development,active
 20037,lbma-pm-brk,0,XAUUSD.DWX,200370000,2026-07-22,Development,active
+20038,vwap2s-revert,0,SP500.DWX,200380000,2026-07-22,Development,active
+20038,vwap2s-revert,1,XAUUSD.DWX,200380001,2026-07-22,Development,active
