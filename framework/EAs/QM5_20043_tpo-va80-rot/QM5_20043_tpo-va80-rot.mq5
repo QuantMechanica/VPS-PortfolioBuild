@@ -192,20 +192,20 @@ double Strategy_TickNormalizedPrice(const double price)
    return NormalizeDouble(MathRound(price / tick_size) * tick_size, digits);
   }
 
-bool Strategy_BuildPriorProfile(const int session_index,
-                                double &out_val,
-                                double &out_vah,
-                                double &out_poc)
+bool Strategy_BuildPriorProfile(const datetime cash_open_utc,
+                                 const datetime cash_close_utc,
+                                 double &out_val,
+                                 double &out_vah,
+                                 double &out_poc)
   {
    out_val = 0.0;
    out_vah = 0.0;
    out_poc = 0.0;
-   if(session_index < 0 ||
-      g_cash_close_utc[session_index] - g_cash_open_utc[session_index] != 390 * 60)
+   if(cash_open_utc <= 0 || cash_close_utc - cash_open_utc != 390 * 60)
       return false;
 
-   const datetime from_broker = QM_UTCToBroker(g_cash_open_utc[session_index]);
-   const datetime through_broker = QM_UTCToBroker(g_cash_close_utc[session_index] - 1);
+   const datetime from_broker = QM_UTCToBroker(cash_open_utc);
+   const datetime through_broker = QM_UTCToBroker(cash_close_utc - 1);
    if(from_broker <= 0 || through_broker <= from_broker)
       return false;
 
@@ -226,9 +226,9 @@ bool Strategy_BuildPriorProfile(const int session_index,
    double prior_high = -DBL_MAX;
    double prior_low = DBL_MAX;
    for(int i = 0; i < 13; ++i)
-     {
+      {
       if(QM_BrokerToUTC(rates[i].time) !=
-         g_cash_open_utc[session_index] + i * 30 * 60 ||
+         cash_open_utc + i * 30 * 60 ||
          rates[i].low <= 0.0 || rates[i].high < rates[i].low)
          return false;
       low_ticks[i] = (long)MathRound(rates[i].low / tick_size);
@@ -343,30 +343,46 @@ bool Strategy_BuildPriorProfile(const int session_index,
            out_poc >= out_val && out_poc <= out_vah);
   }
 
-bool Strategy_CostAndVolumeAllow(const double entry_price,
-                                 const double stop_price,
-                                 const double target_price)
+bool Strategy_FindPriorValidProfile(const int session_date_key,
+                                    double &out_val,
+                                    double &out_vah,
+                                    double &out_poc)
+  {
+   for(int days_back = 1; days_back <= 10; ++days_back)
+     {
+      const int prior_date_key = Strategy_ShiftDateKey(session_date_key, -days_back);
+      datetime prior_open_utc = 0;
+      datetime prior_close_utc = 0;
+      if(!Strategy_ResolveCashSession(prior_date_key,
+                                      prior_open_utc,
+                                      prior_close_utc))
+         continue;
+      if(Strategy_BuildPriorProfile(prior_open_utc,
+                                    prior_close_utc,
+                                    out_val,
+                                    out_vah,
+                                    out_poc))
+         return true;
+     }
+   return false;
+  }
+
+bool Strategy_TradeGeometryAndVolumeAllow(const double entry_price,
+                                          const double stop_price,
+                                          const double target_price)
   {
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
    const double tick_value = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_VALUE_LOSS);
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(AccountInfoString(ACCOUNT_CURRENCY) != "USD" ||
-      RISK_FIXED != 1000.0 || RISK_PERCENT != 0.0 ||
+   if(RISK_FIXED != 1000.0 || RISK_PERCENT != 0.0 ||
       point <= 0.0 || tick_size <= 0.0 || tick_value <= 0.0 ||
-      ask <= 0.0 || bid <= 0.0 || ask < bid ||
-      entry_price <= 0.0 || stop_price <= 0.0 || target_price <= 0.0 ||
-      strategy_round_turn_commission_usd_per_lot <= 0.0)
+      entry_price <= 0.0 || stop_price <= 0.0 || target_price <= 0.0)
       return false;
 
    const double stop_distance = MathAbs(entry_price - stop_price);
    const double target_distance = MathAbs(entry_price - target_price);
    const double risk_per_lot = (stop_distance / tick_size) * tick_value;
-   const double spread_per_lot = ((ask - bid) / tick_size) * tick_value;
-   if(risk_per_lot <= 0.0 || target_distance <= 0.0 ||
-      (strategy_round_turn_commission_usd_per_lot + spread_per_lot) /
-      risk_per_lot > strategy_max_cost_r)
+   if(risk_per_lot <= 0.0 || target_distance <= 0.0)
       return false;
 
    const double sl_points = stop_distance / point;
@@ -532,7 +548,6 @@ bool Strategy_NoTradeFilter()
            strategy_signal_tf != PERIOD_M30 ||
            strategy_value_area_fraction != 0.70 ||
            strategy_min_reward_r != 1.50 ||
-           strategy_max_cost_r != 0.10 ||
            RISK_FIXED != 1000.0 ||
            RISK_PERCENT != 0.0);
   }
