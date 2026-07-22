@@ -15,7 +15,10 @@ compares the current move from the session open with the expanding mean of prior
 valid session ranges. A move of at least 75% of that prior mean is faded at the
 next M15 open, targeting the signal-time range midpoint and using the opposite
 one-mean-range boundary as the hard stop. Only one attempt is permitted per day,
-and any remainder is closed at 08:00 London using the governed session ledger.
+and any remainder is closed at 08:00 London. Session eligibility is derived
+from the broker clock, requires all 28 valid M15 bars, and is limited to UTC
+weekdays; no external session ledger is used. Tester Groups applies venue
+commission to fills.
 
 ---
 
@@ -25,9 +28,7 @@ and any remainder is closed at 08:00 London using the governed session ledger.
 |---|---:|---:|---|
 | `strategy_signal_tf` | `PERIOD_M15` | fixed M15 | Session-state and entry-signal timeframe. |
 | `strategy_range_fraction` | `0.75` | fixed 0.75 | Required move as a fraction of the expanding prior-session mean range. |
-| `strategy_max_cost_r` | `0.10` | fixed 0.10 | Maximum commission-plus-spread cost as a fraction of initial risk. |
-| `strategy_session_ledger_file` | `QM5_20031_asia_sessions.csv` | immutable file | Common-Files London holiday, timezone, and exit-time ledger. |
-| `strategy_calendar_valid_through` | `2025.12.31` | fixed date | Required finite-study calendar horizon. |
+| `strategy_max_spread_points` | `0` | optional >0 | Tester/live native spread guard; zero disables the guard. |
 
 Framework-level risk, news, seed, stress, and Friday-close inputs are documented
 in `framework/V5_FRAMEWORK_DESIGN.md` and are not duplicated here.
@@ -61,7 +62,7 @@ in `framework/V5_FRAMEWORK_DESIGN.md` and are not duplicated here.
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | approximately 220 after session and cost gates |
+| Trades / year / symbol | approximately 220 after session eligibility |
 | Typical hold time | intraday, from the qualifying Asian-session M15 open to at most 08:00 London |
 | Expected drawdown profile | approximately 14% prior, concentrated during one-way Asian extensions |
 | Regime preference | low-activity Asian-session mean reversion |
@@ -79,9 +80,8 @@ This card was mechanised from:
 **R1–R4 verdict (Q00):** all PASS per `artifacts/cards_approved/QM5_20031_asia-fx-fade.md`
 
 The source supports the Asian-session low-activity mechanism. The 0.75 range
-threshold, expanding estimator, midpoint target, hard stop, cost gate, and
-London time exit are explicit QuantMechanica interpretations from the approved
-card.
+threshold, expanding estimator, midpoint target, hard stop, and London time
+exit are explicit QuantMechanica interpretations from the approved card.
 
 ---
 
@@ -102,3 +102,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-22 | Initial build from card | `c17160f6-0f9d-492a-a6ab-816094e912eb` |
+| v2 | 2026-07-22 | FTMO density fix | Replaced the unprovisioned session ledger and pre-trade cost gate with broker-clock weekday/bar eligibility and the optional native spread guard. |

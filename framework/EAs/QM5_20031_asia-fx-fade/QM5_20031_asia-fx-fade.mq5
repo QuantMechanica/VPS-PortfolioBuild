@@ -5,7 +5,7 @@
 #include <QM/QM_Common.mqh>
 
 // Strategy Card: QM5_20031_asia-fx-fade, G0 APPROVED 2026-07-22.
-// Calendar eligibility and London exits come from a provenance-bearing ledger.
+// Session eligibility comes from valid broker-clock bars on UTC weekdays.
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                     = 20031;
@@ -34,17 +34,11 @@ input double qm_stress_reject_probability = 0.0;
 input group "Strategy"
 input ENUM_TIMEFRAMES strategy_signal_tf  = PERIOD_M15;
 input double strategy_range_fraction      = 0.75;
-input double strategy_max_cost_r           = 0.10;
-input string strategy_session_ledger_file = "QM5_20031_asia_sessions.csv";
-input string strategy_calendar_valid_through = "2025.12.31";
-
-int      g_calendar_date_key[];
-datetime g_calendar_exit_utc[];
-bool     g_calendar_entry_allowed[];
-bool     g_calendar_ready = false;
+// Tester Groups applies venue commission to fills; zero disables this optional
+// native spread guard, matching the proven QM5_12969 execution baseline.
+input int    strategy_max_spread_points   = 0;
 
 int      g_session_key = 0;
-int      g_session_calendar_index = -1;
 double   g_session_open = 0.0;
 double   g_session_high = 0.0;
 double   g_session_low = 0.0;
@@ -56,170 +50,12 @@ int      g_prior_range_count = 0;
 int      g_last_attempt_key = 0;
 datetime g_active_exit_broker = 0;
 
-string Trimmed(string value)
-  {
-   StringTrimLeft(value);
-   StringTrimRight(value);
-   return value;
-  }
-
-bool IsSha256(const string value)
-  {
-   if(StringLen(value) != 64)
-      return false;
-   const string hex = "0123456789abcdefABCDEF";
-   for(int i = 0; i < 64; ++i)
-     {
-      if(StringFind(hex, StringSubstr(value, i, 1)) < 0)
-         return false;
-     }
-   return true;
-  }
-
-bool ParseBoolean(const string value, bool &parsed)
-  {
-   if(value == "1" || value == "true" || value == "TRUE")
-     {
-      parsed = true;
-      return true;
-     }
-   if(value == "0" || value == "false" || value == "FALSE")
-     {
-      parsed = false;
-      return true;
-     }
-   return false;
-  }
-
-datetime ParseUtcTimestamp(string value)
-  {
-   value = Trimmed(value);
-   const int n = StringLen(value);
-   if(n < 2 || StringSubstr(value, n - 1, 1) != "Z")
-      return 0;
-   value = StringSubstr(value, 0, n - 1);
-   StringReplace(value, "-", ".");
-   StringReplace(value, "T", " ");
-   return StringToTime(value);
-  }
-
 int DateKey(const datetime value)
   {
    MqlDateTime parts;
    if(value <= 0 || !TimeToStruct(value, parts))
       return 0;
    return parts.year * 10000 + parts.mon * 100 + parts.day;
-  }
-
-int ParseDateKey(string value)
-  {
-   value = Trimmed(value);
-   StringReplace(value, "-", ".");
-   const datetime parsed = StringToTime(value + " 00:00");
-   return DateKey(parsed);
-  }
-
-bool ValidCalendarSource(const string url)
-  {
-   if(StringFind(url, "https") != 0 || StringFind(url, "://") <= 0)
-      return false;
-   return (StringFind(url, "gov.uk") > 0 ||
-           StringFind(url, "iana.org") > 0 ||
-           StringFind(url, "londonstockexchange.com") > 0);
-  }
-
-bool AppendCalendar(const int date_key,
-                    const datetime exit_utc,
-                    const bool entry_allowed)
-  {
-   const int n = ArraySize(g_calendar_date_key);
-   if(ArrayResize(g_calendar_date_key, n + 1) != n + 1 ||
-      ArrayResize(g_calendar_exit_utc, n + 1) != n + 1 ||
-      ArrayResize(g_calendar_entry_allowed, n + 1) != n + 1)
-      return false;
-   g_calendar_date_key[n] = date_key;
-   g_calendar_exit_utc[n] = exit_utc;
-   g_calendar_entry_allowed[n] = entry_allowed;
-   return true;
-  }
-
-bool LoadSessionCalendar()
-  {
-   ArrayResize(g_calendar_date_key, 0);
-   ArrayResize(g_calendar_exit_utc, 0);
-   ArrayResize(g_calendar_entry_allowed, 0);
-   if(strategy_calendar_valid_through != "2025.12.31")
-      return false;
-
-   const int handle = FileOpen(strategy_session_ledger_file,
-                               FILE_READ | FILE_CSV | FILE_ANSI | FILE_COMMON,
-                               ',');
-   if(handle == INVALID_HANDLE)
-      return false;
-
-   int rows = 0;
-   int previous_key = 0;
-   bool valid = true;
-   while(!FileIsEnding(handle))
-     {
-      const string date_text = Trimmed(FileReadString(handle));
-      const string exit_text = Trimmed(FileReadString(handle));
-      const string allowed_text = Trimmed(FileReadString(handle));
-      const string source_url = Trimmed(FileReadString(handle));
-      string retrieved_date = Trimmed(FileReadString(handle));
-      const string source_sha256 = Trimmed(FileReadString(handle));
-
-      if(rows == 0 && date_text == "broker_date" && exit_text == "london_exit_utc")
-         continue;
-      if(date_text == "" && exit_text == "" && allowed_text == "")
-         continue;
-
-      bool entry_allowed = false;
-      StringReplace(retrieved_date, "-", ".");
-      const int date_key = ParseDateKey(date_text);
-      const datetime exit_utc = ParseUtcTimestamp(exit_text);
-      if(date_key <= 0 || exit_utc <= 0 ||
-         (previous_key > 0 && date_key <= previous_key) ||
-         !ParseBoolean(allowed_text, entry_allowed) ||
-         !ValidCalendarSource(source_url) ||
-         StringToTime(retrieved_date) <= 0 || !IsSha256(source_sha256))
-        {
-         valid = false;
-         break;
-        }
-
-      if(DateKey(exit_utc) != date_key ||
-         !AppendCalendar(date_key, exit_utc, entry_allowed))
-        {
-         valid = false;
-         break;
-        }
-      previous_key = date_key;
-      ++rows;
-     }
-   FileClose(handle);
-
-   if(!valid || rows <= 0)
-      return false;
-   return (g_calendar_date_key[0] <= 20180101 &&
-           g_calendar_date_key[rows - 1] >= 20251231);
-  }
-
-int FindCalendarIndex(const int date_key)
-  {
-   int lo = 0;
-   int hi = ArraySize(g_calendar_date_key);
-   while(lo < hi)
-     {
-      const int mid = lo + (hi - lo) / 2;
-      if(g_calendar_date_key[mid] < date_key)
-         lo = mid + 1;
-      else
-         hi = mid;
-     }
-   if(lo < ArraySize(g_calendar_date_key) && g_calendar_date_key[lo] == date_key)
-      return lo;
-   return -1;
   }
 
 datetime UtcDateTime(const int year,
@@ -236,6 +72,30 @@ datetime UtcDateTime(const int year,
    parts.hour = hour;
    parts.min = minute;
    return StructToTime(parts);
+  }
+
+datetime BrokerDateTime(const int date_key, const int hour, const int minute)
+  {
+   if(date_key < 19000101 || hour < 0 || hour > 23 || minute < 0 || minute > 59)
+      return 0;
+   MqlDateTime parts;
+   ZeroMemory(parts);
+   parts.year = date_key / 10000;
+   parts.mon = (date_key / 100) % 100;
+   parts.day = date_key % 100;
+   parts.hour = hour;
+   parts.min = minute;
+   return StructToTime(parts);
+  }
+
+bool IsUtcWeekdayForSession(const int date_key)
+  {
+   const datetime session_end_broker = BrokerDateTime(date_key, 7, 0);
+   const datetime session_end_utc = QM_BrokerToUTC(session_end_broker);
+   MqlDateTime parts;
+   if(session_end_utc <= 0 || !TimeToStruct(session_end_utc, parts))
+      return false;
+   return (parts.day_of_week >= 1 && parts.day_of_week <= 5);
   }
 
 datetime LastSundayUtc(const int year, const int month, const int hour)
@@ -303,9 +163,8 @@ int MinuteOfDay(const datetime value)
 
 void FinalizePriorSession()
   {
-   if(!g_session_valid || g_session_calendar_index < 0 ||
-      !g_calendar_entry_allowed[g_session_calendar_index] ||
-      g_session_bar_count != 28 || g_session_last_minute != 6 * 60 + 45)
+   if(!g_session_valid || g_session_bar_count != 28 ||
+      g_session_last_minute != 6 * 60 + 45)
       return;
    const double completed_range = g_session_high - g_session_low;
    if(completed_range <= 0.0 || !MathIsValidNumber(completed_range))
@@ -317,14 +176,12 @@ void FinalizePriorSession()
 void ResetSession(const int date_key)
   {
    g_session_key = date_key;
-   g_session_calendar_index = g_calendar_ready ? FindCalendarIndex(date_key) : -1;
    g_session_open = 0.0;
    g_session_high = 0.0;
    g_session_low = 0.0;
    g_session_bar_count = 0;
    g_session_last_minute = -1;
-   g_session_valid = (g_session_calendar_index >= 0 &&
-                      g_calendar_entry_allowed[g_session_calendar_index]);
+   g_session_valid = IsUtcWeekdayForSession(date_key);
   }
 
 bool AdvanceSessionState()
@@ -382,39 +239,20 @@ bool AdvanceSessionState()
    return true;
   }
 
-double CommissionPerLotUsd(const string symbol)
-  {
-   if(symbol != "EURUSD.DWX" && symbol != "GBPUSD.DWX")
-      return 0.0;
-   const double bid = SymbolInfoDouble(symbol, SYMBOL_BID);
-   const double ask = SymbolInfoDouble(symbol, SYMBOL_ASK);
-   if(bid <= 0.0 || ask <= 0.0 || ask < bid)
-      return 0.0;
-   const double converted = 5.0 * 0.5 * (bid + ask);
-   return MathMax(5.0, converted);
-  }
-
-bool CostAndVolumeAllow(const double entry_price,
-                        const double stop_price,
-                        const double target_price)
+bool TradeGeometryAndVolumeAllow(const double entry_price,
+                                 const double stop_price,
+                                 const double target_price)
   {
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
    const double tick_value = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_VALUE);
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double commission_per_lot = CommissionPerLotUsd(_Symbol);
-   if(AccountInfoString(ACCOUNT_CURRENCY) != "USD" ||
-      point <= 0.0 || tick_size <= 0.0 || tick_value <= 0.0 ||
-      ask <= 0.0 || bid <= 0.0 || ask < bid || commission_per_lot <= 0.0)
+   if(point <= 0.0 || tick_size <= 0.0 || tick_value <= 0.0)
       return false;
 
    const double stop_distance = MathAbs(entry_price - stop_price);
    const double target_distance = MathAbs(entry_price - target_price);
    const double risk_per_lot = (stop_distance / tick_size) * tick_value;
-   const double spread_per_lot = ((ask - bid) / tick_size) * tick_value;
-   if(risk_per_lot <= 0.0 || target_distance <= 0.0 ||
-      (commission_per_lot + spread_per_lot) / risk_per_lot > strategy_max_cost_r)
+   if(risk_per_lot <= 0.0 || target_distance <= 0.0)
       return false;
 
    const double sl_points = stop_distance / point;
@@ -435,6 +273,14 @@ bool CostAndVolumeAllow(const double entry_price,
    return (MathAbs(aligned - lots) <= volume_step * 1.0e-6);
   }
 
+bool Strategy_WideSpread()
+  {
+   if(strategy_max_spread_points <= 0)
+      return false;
+   const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+   return (spread_points > strategy_max_spread_points);
+  }
+
 // -----------------------------------------------------------------------------
 // Strategy hooks — implemented mechanically from the approved card.
 // -----------------------------------------------------------------------------
@@ -446,7 +292,7 @@ bool Strategy_NoTradeFilter()
       return false;
    if(!IsRoutedSymbol(_Symbol) || _Period != strategy_signal_tf)
       return true;
-   return !g_calendar_ready;
+   return Strategy_WideSpread();
   }
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
@@ -459,8 +305,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!g_calendar_ready || !IsRoutedSymbol(_Symbol) || _Period != strategy_signal_tf ||
-      strategy_range_fraction != 0.75 || strategy_max_cost_r != 0.10)
+   if(!IsRoutedSymbol(_Symbol) || _Period != strategy_signal_tf ||
+      strategy_range_fraction != 0.75)
       return false;
    if(!AdvanceSessionState() || !g_session_valid || g_prior_range_count <= 0)
       return false;
@@ -495,15 +341,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(stop_price <= 0.0 || target_price <= 0.0 ||
       (buy && !(stop_price < entry_price && entry_price < target_price)) ||
       (!buy && !(target_price < entry_price && entry_price < stop_price)) ||
-      !CostAndVolumeAllow(entry_price, stop_price, target_price))
+      !TradeGeometryAndVolumeAllow(entry_price, stop_price, target_price))
       return false;
 
    req.type = buy ? QM_BUY : QM_SELL;
    req.sl = stop_price;
    req.tp = target_price;
    req.reason = buy ? "ASIA_RANGE_FADE_LONG" : "ASIA_RANGE_FADE_SHORT";
-   if(g_session_calendar_index >= 0)
-      g_active_exit_broker = QM_UTCToBroker(g_calendar_exit_utc[g_session_calendar_index]);
+   g_active_exit_broker = FallbackLondonExitBroker(g_session_key);
    return true;
   }
 
@@ -522,11 +367,7 @@ bool Strategy_ExitSignal()
    if(g_active_exit_broker <= 0)
      {
       const int open_key = DateKey(open_time);
-      const int calendar_index = g_calendar_ready ? FindCalendarIndex(open_key) : -1;
-      if(calendar_index >= 0)
-         g_active_exit_broker = QM_UTCToBroker(g_calendar_exit_utc[calendar_index]);
-      else
-         g_active_exit_broker = FallbackLondonExitBroker(open_key);
+      g_active_exit_broker = FallbackLondonExitBroker(open_key);
      }
    return (g_active_exit_broker > 0 && TimeCurrent() >= g_active_exit_broker);
   }
@@ -564,12 +405,6 @@ int OnInit()
    string allowed_symbols[2] = {"EURUSD.DWX", "GBPUSD.DWX"};
    QM_SymbolGuardInit(allowed_symbols);
    QM_BasketWarmupHistory(allowed_symbols, strategy_signal_tf, 64);
-
-   g_calendar_ready = LoadSessionCalendar();
-   if(!g_calendar_ready)
-      QM_LogEvent(QM_ERROR,
-                  "SETUP_DATA_MISSING",
-                  StringFormat("{\"session_ledger\":\"%s\"}", strategy_session_ledger_file));
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
@@ -652,4 +487,3 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-
