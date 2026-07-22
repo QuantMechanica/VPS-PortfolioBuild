@@ -1,6 +1,3 @@
-Exit code: 0
-Wall time: 0.5 seconds
-Output:
 #property strict
 #property version   "5.0"
 #property description "QM5_20046 WTI November-May Winter-Season Sleeve"
@@ -418,5 +415,4 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-
 
