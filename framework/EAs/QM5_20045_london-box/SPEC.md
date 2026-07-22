@@ -19,7 +19,8 @@ comes from broker-clock conversion and requires all twelve valid M15 bars; no
 external trading-day ledger is used. The hard stop stays at the opposite box
 boundary, the target is one box from the actual fill, unfilled orders expire
 at 12:00 Europe/London, and any surviving position closes at 16:00
-Europe/London.
+Europe/London. Tester Groups applies venue commission to fills, while the EA
+uses the tester/live `SYMBOL_SPREAD` value for an optional spread-points guard.
 
 ---
 
@@ -36,14 +37,7 @@ Europe/London.
 | strategy_pip_size | 0.0001 | frozen | Logical pip in quote units |
 | strategy_pending_expiry_hour_london | 12 | frozen | OCO expiry in Europe/London |
 | strategy_flat_hour_london | 16 | frozen | Mandatory same-day flat time |
-| strategy_max_cost_r | 0.10 | frozen | Maximum round-trip cost divided by initial risk |
-| strategy_target_cost_multiple | 4.0 | frozen | Minimum target value relative to cost |
-| strategy_round_turn_commission_account_per_lot | 0.0 | governed setfile value >0 | Round-turn account-currency commission per lot; zero fails closed |
-| strategy_commission_source_id | empty | governed non-empty ID | Commission provenance identity |
-| strategy_commission_source_sha256 | empty | 64 hex characters | Commission provenance digest |
-| strategy_expected_tick_feed_server | empty | governed server identity | Expected real-tick feed route |
-| strategy_tick_history_sha256 | empty | 64 hex characters | Per-symbol tick-history provenance digest |
-| strategy_dataset_valid_through | 2025.12.31 | frozen | Required dataset coverage |
+| strategy_max_spread_points | 0 | optional >0 | Tester/live native spread guard; zero disables the guard |
 
 > Note: framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
 > qm_news_mode, qm_rng_seed, qm_stress_reject_probability, qm_friday_close_*)
@@ -117,3 +111,4 @@ ENV→mode validation is enforced by QM_FrameworkInit (EA_INPUT_RISK_MODE_MISMAT
 |---|---|---|---|
 | v1 | 2026-07-22 | Initial build from card | 52536807-e3b8-40ef-9e68-1b41e79623ba |
 | v2 | 2026-07-22 | FTMO density prototype | Replaced the unprovisioned trading-day ledger with broker-clock UTC weekday and valid-bar eligibility. |
+| v3 | 2026-07-22 | FTMO density prototype | Removed unprovisioned per-EA execution metadata and commission gates; tester Groups owns commission and an optional native spread guard remains. |

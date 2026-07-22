@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   62b39bc8ca851589f82aa5bfbfc283d7f240f467d085ba7957ec2494bbeb2cd3
+; build_hash:   e8185665561b91eeb1e8248077b9eb28436ba84d330445bc2c283b87a8cd94c7
 ; author:       Development
 ; date:         2026-07-22
 ;==========================================================
@@ -30,11 +30,4 @@ strategy_max_box_pips=40.0
 strategy_pip_size=0.0001
 strategy_pending_expiry_hour_london=12
 strategy_flat_hour_london=16
-strategy_max_cost_r=0.10
-strategy_target_cost_multiple=4.0
-strategy_round_turn_commission_account_per_lot=0.0
-strategy_commission_source_id=""
-strategy_commission_source_sha256=""
-strategy_expected_tick_feed_server=""
-strategy_tick_history_sha256=""
-strategy_dataset_valid_through="2025.12.31"
+strategy_max_spread_points=0

@@ -44,21 +44,13 @@ input double strategy_max_box_pips        = 40.0;
 input double strategy_pip_size            = 0.0001;
 input int    strategy_pending_expiry_hour_london = 12;
 input int    strategy_flat_hour_london    = 16;
-input double strategy_max_cost_r          = 0.10;
-input double strategy_target_cost_multiple = 4.0;
-input double strategy_round_turn_commission_account_per_lot = 0.0;
-input string strategy_commission_source_id = "";
-input string strategy_commission_source_sha256 = "";
-input string strategy_expected_tick_feed_server = "";
-input string strategy_tick_history_sha256 = "";
-input string strategy_dataset_valid_through = "2025.12.31";
+// Tester Groups applies venue commission to fills; zero disables this optional
+// native spread guard, matching the proven QM5_12969 execution baseline.
+input int    strategy_max_spread_points   = 0;
 
 // =============================================================================
 // Deterministic strategy state
 // =============================================================================
-
-bool   g_execution_metadata_attempted = false;
-bool   g_execution_metadata_ready = false;
 
 int    g_consumed_date_key = 0;
 int    g_box_date_key = 0;
@@ -68,28 +60,8 @@ double g_box_size = 0.0;
 ulong  g_fill_checked_ticket = 0;
 
 // =============================================================================
-// Provenance and broker-clock helpers
+// Broker-clock helpers
 // =============================================================================
-
-string Strategy_Trimmed(string value)
-  {
-   StringTrimLeft(value);
-   StringTrimRight(value);
-   return value;
-  }
-
-bool Strategy_IsSha256(const string value)
-  {
-   if(StringLen(value) != 64)
-      return false;
-   const string hex = "0123456789abcdefABCDEF";
-   for(int i = 0; i < 64; ++i)
-     {
-      if(StringFind(hex, StringSubstr(value, i, 1)) < 0)
-         return false;
-     }
-   return true;
-  }
 
 int Strategy_DateKey(const datetime value)
   {
@@ -97,13 +69,6 @@ int Strategy_DateKey(const datetime value)
    if(value <= 0 || !TimeToStruct(value, parts))
       return 0;
    return parts.year * 10000 + parts.mon * 100 + parts.day;
-  }
-
-int Strategy_ParseDateKey(string value)
-  {
-   value = Strategy_Trimmed(value);
-   StringReplace(value, "-", ".");
-   return Strategy_DateKey(StringToTime(value + " 00:00"));
   }
 
 datetime Strategy_DateStartUtc(const int date_key)
@@ -178,31 +143,6 @@ bool Strategy_IsUtcWeekday(const int date_key)
    if(utc_start <= 0 || !TimeToStruct(utc_start, parts))
       return false;
    return (parts.day_of_week >= 1 && parts.day_of_week <= 5);
-  }
-
-bool Strategy_EnsureExecutionMetadata()
-  {
-   if(g_execution_metadata_attempted)
-      return g_execution_metadata_ready;
-   g_execution_metadata_attempted = true;
-
-   const string actual_server = AccountInfoString(ACCOUNT_SERVER);
-   g_execution_metadata_ready =
-      (Strategy_ParseDateKey(strategy_dataset_valid_through) == 20251231 &&
-       StringLen(strategy_expected_tick_feed_server) > 0 &&
-       actual_server == strategy_expected_tick_feed_server &&
-       Strategy_IsSha256(strategy_tick_history_sha256) &&
-       strategy_round_turn_commission_account_per_lot > 0.0 &&
-       StringLen(strategy_commission_source_id) > 0 &&
-       Strategy_IsSha256(strategy_commission_source_sha256));
-
-   if(!g_execution_metadata_ready)
-      QM_LogEvent(QM_ERROR,
-                  "SETUP_DATA_MISSING",
-                  StringFormat("{\"expected_server\":\"%s\",\"actual_server\":\"%s\"}",
-                               strategy_expected_tick_feed_server,
-                               actual_server));
-   return g_execution_metadata_ready;
   }
 
 // =============================================================================
@@ -357,7 +297,7 @@ bool Strategy_DateAlreadyUsed(const int date_key)
   }
 
 // =============================================================================
-// Price, cost, volume, and box helpers
+// Price, spread, volume, and box helpers
 // =============================================================================
 
 double Strategy_RoundPriceUp(const double price, const double tick_size)
@@ -376,28 +316,22 @@ double Strategy_RoundPriceDown(const double price, const double tick_size)
                                MathFloor((price + 1.0e-12) / tick_size) * tick_size);
   }
 
-bool Strategy_CostGeometryAllows(const double entry_price,
-                                 const double stop_price,
-                                 const double target_price,
-                                 double &risk_per_lot,
-                                 double &cost_per_lot)
+bool Strategy_TradeGeometryAllows(const double entry_price,
+                                  const double stop_price,
+                                  const double target_price,
+                                  double &risk_per_lot)
   {
    risk_per_lot = 0.0;
-   cost_per_lot = 0.0;
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
    const double tick_value_loss =
       SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_VALUE_LOSS);
    const double tick_value_profit =
       SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_VALUE_PROFIT);
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(AccountInfoString(ACCOUNT_CURRENCY) != "USD" ||
-      point <= 0.0 || tick_size <= 0.0 ||
-      tick_value_loss <= 0.0 || tick_value_profit <= 0.0 ||
-      ask <= 0.0 || bid <= 0.0 || ask < bid ||
-      entry_price <= 0.0 || stop_price <= 0.0 || target_price <= 0.0 ||
-      strategy_round_turn_commission_account_per_lot <= 0.0)
+       point <= 0.0 || tick_size <= 0.0 ||
+       tick_value_loss <= 0.0 || tick_value_profit <= 0.0 ||
+       entry_price <= 0.0 || stop_price <= 0.0 || target_price <= 0.0)
       return false;
 
    const double stop_distance = MathAbs(entry_price - stop_price);
@@ -405,16 +339,8 @@ bool Strategy_CostGeometryAllows(const double entry_price,
    risk_per_lot = (stop_distance / tick_size) * tick_value_loss;
    const double target_per_lot =
       (target_distance / tick_size) * tick_value_profit;
-   const double spread_per_lot =
-      ((ask - bid) / tick_size) * tick_value_loss;
-   cost_per_lot =
-      strategy_round_turn_commission_account_per_lot + spread_per_lot;
    if(stop_distance <= 0.0 || target_distance <= 0.0 ||
-      risk_per_lot <= 0.0 || target_per_lot <= 0.0 ||
-      cost_per_lot <= 0.0 ||
-      cost_per_lot / risk_per_lot > strategy_max_cost_r + 1.0e-12 ||
-      target_per_lot + 1.0e-8 <
-         strategy_target_cost_multiple * cost_per_lot)
+       risk_per_lot <= 0.0 || target_per_lot <= 0.0)
       return false;
 
    const long stop_level = SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
@@ -422,6 +348,14 @@ bool Strategy_CostGeometryAllows(const double entry_price,
       target_distance / point + 1.0e-8 < (double)stop_level)
       return false;
    return true;
+  }
+
+bool Strategy_WideSpread()
+  {
+   if(strategy_max_spread_points <= 0)
+      return false;
+   const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+   return (spread_points > strategy_max_spread_points);
   }
 
 bool Strategy_VolumeRepresentsFixedRisk(const double volume,
@@ -452,12 +386,10 @@ bool Strategy_PlacementSideAllows(const double entry_price,
                                   double &risk_per_lot)
   {
    lots = 0.0;
-   double cost_per_lot = 0.0;
-   if(!Strategy_CostGeometryAllows(entry_price,
-                                   stop_price,
-                                   target_price,
-                                   risk_per_lot,
-                                   cost_per_lot))
+   if(!Strategy_TradeGeometryAllows(entry_price,
+                                    stop_price,
+                                    target_price,
+                                    risk_per_lot))
       return false;
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    if(point <= 0.0)
@@ -699,8 +631,7 @@ bool Strategy_NoTradeFilter()
            strategy_pip_size != 0.0001 ||
            strategy_pending_expiry_hour_london != 12 ||
            strategy_flat_hour_london != 16 ||
-           strategy_max_cost_r != 0.10 ||
-           strategy_target_cost_multiple != 4.0 ||
+           Strategy_WideSpread() ||
            RISK_FIXED != 1000.0 ||
            RISK_PERCENT != 0.0);
   }
@@ -735,9 +666,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // A symbol-date is consumed by its one 06:00 attempt, including every
    // fail-closed outcome. Later bars cannot chase or retry.
    g_consumed_date_key = date_key;
-   if(!Strategy_EnsureExecutionMetadata())
-      return false;
-
    Strategy_PlaceOcoPair(date_key, box_high, box_low, box_size);
    return false;
   }
@@ -779,15 +707,13 @@ void Strategy_ManageOpenPosition()
          ? Strategy_RoundPriceUp(open_price + box_size, tick_size)
          : Strategy_RoundPriceDown(open_price - box_size, tick_size);
       double risk_per_lot = 0.0;
-      double cost_per_lot = 0.0;
       if(open_price <= 0.0 || stop_price <= 0.0 || target_price <= 0.0 ||
          (is_buy && (open_price <= stop_price || target_price <= open_price)) ||
          (!is_buy && (open_price >= stop_price || target_price >= open_price)) ||
-         !Strategy_CostGeometryAllows(open_price,
-                                      stop_price,
-                                      target_price,
-                                      risk_per_lot,
-                                      cost_per_lot) ||
+         !Strategy_TradeGeometryAllows(open_price,
+                                       stop_price,
+                                       target_price,
+                                       risk_per_lot) ||
          !Strategy_VolumeRepresentsFixedRisk(volume, risk_per_lot))
         {
          QM_TM_ClosePosition(position_ticket, QM_EXIT_STRATEGY);
