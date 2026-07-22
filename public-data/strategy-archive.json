@@ -1,6 +1,6 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-22T21:07:03.2599347Z",
+    "generated_at":  "2026-07-22T22:07:03.2602766Z",
     "total":  3397,
     "items":  [
                   {
@@ -20317,7 +20317,7 @@
                       "slug":  "QM5_1137_fx-h4-filter-rule-breakout",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-22T20:50:07.6840772Z"
+                      "last_updated_utc":  "2026-07-22T21:53:05.8175471Z"
                   },
                   {
                       "slug":  "QM5_1138_gold-m30-open-range-fade-after-gap",
@@ -20335,7 +20335,7 @@
                       "slug":  "QM5_1140_index-daily-range-expansion-continuation",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-22T20:50:07.1953472Z"
+                      "last_updated_utc":  "2026-07-22T21:53:03.5944728Z"
                   },
                   {
                       "slug":  "QM5_1151_fx-london-fix-reversal",
@@ -20353,13 +20353,13 @@
                       "slug":  "QM5_1153_fx-us-session-after-london-drift",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-22T20:24:01.2579527Z"
+                      "last_updated_utc":  "2026-07-22T21:36:32.8676976Z"
                   },
                   {
                       "slug":  "QM5_1154_index-hks-halfhour-lag-continuation",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-22T21:03:14.0086996Z"
+                      "last_updated_utc":  "2026-07-22T21:36:22.9496610Z"
                   },
                   {
                       "slug":  "QM5_1155_index-liquidity-shock-rebound",
@@ -20383,7 +20383,7 @@
                       "slug":  "QM5_1158_index-famous-earnings-cluster-drift",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-22T19:48:40.4255086Z"
+                      "last_updated_utc":  "2026-07-22T21:36:28.4602516Z"
                   }
               ]
 }

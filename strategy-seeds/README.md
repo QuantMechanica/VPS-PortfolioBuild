@@ -11,7 +11,7 @@ V5 starts from scratch on strategy bestand. This folder will hold V5 Strategy Ca
 
 ## What Goes Here
 
-V5 Strategy Cards extracted via the V5 Research process. Cards are produced by Research, reviewed by CTO, and queued for P1 Build Validation. Each card needs an economic thesis, a failure hypothesis, MT5-native data confirmation, and a citation chain back to its source.
+V5 Strategy Cards extracted via the V5 Research process. Cards are produced by Research, approved by OWNER with Quality-Business review, and then handed to Development for P1 Build Validation. Each card needs an economic thesis, a failure hypothesis, MT5-native data confirmation, and a citation chain back to its source.
 
 ## What Does NOT Go Here
 

@@ -276,7 +276,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10048,ff-toby-inside-d1,1,GBPUSD.DWX,100480001,2026-05-19,Development,active
 10048,ff-toby-inside-d1,2,USDJPY.DWX,100480002,2026-05-19,Development,active
 10048,ff-toby-inside-d1,3,EURJPY.DWX,100480003,2026-05-19,Development,active
-1001,breakout-atr,0,EURUSD.DWX,10010000,2026-04-27,CTO,active
+1001,breakout-atr,0,EURUSD.DWX,10010000,2026-04-27,Development,active
 1001,breakout-atr,1,AUDCHF.DWX,10010001,2026-05-01,Board-Advisor,active
 1001,breakout-atr,2,AUDJPY.DWX,10010002,2026-05-01,Board-Advisor,active
 1001,breakout-atr,3,AUDNZD.DWX,10010003,2026-05-01,Board-Advisor,active

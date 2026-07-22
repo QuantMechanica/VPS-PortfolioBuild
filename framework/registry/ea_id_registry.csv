@@ -3,45 +3,45 @@ ea_id,slug,strategy_id,status,owner,created_at
 11429,carter-london-open-box-breakout-m5,ec63ff86-b6dd-522b-ac8e-d90de82e2dee,active,Development,2026-06-21
 11548,carter-t-m5-session-box-breakout,42530cb3-0265-534a-89cc-150f80733ff5,active,Development,2026-06-20
 1128,daniel-momentum-crash-vol-scale,afab7a6f-c3c8-51ae-a609-f376744beb8e,active,Research,2026-05-18
-1001,breakout-atr,TBD,active,CTO,2026-04-27
-1002,davey-eu-night,SRC01_S01,active,CTO,2026-04-27
+1001,breakout-atr,TBD,active,Development,2026-04-27
+1002,davey-eu-night,SRC01_S01,active,Development,2026-04-27
 1003,davey-baseline-3bar,SRC01_S03,active,Development,2026-04-28
 1004,davey-es-breakout,SRC01_S04,active,Development,2026-04-28
-1017,chan-pairs-stat-arb,SRC02_S01,active,CTO,2026-05-01
+1017,chan-pairs-stat-arb,SRC02_S01,active,Development,2026-05-01
 1009,lien-fade-double-zeros,SRC04_S03,active,Development,2026-05-01
-1010,lien-waiting-deal,SRC04_S04,active,CTO,2026-05-01
-1011,lien-inside-day-breakout,SRC04_S05,active,CTO,2026-05-01
-1012,lien-fader,SRC04_S06,active,CTO,2026-05-01
-1013,lien-20day-breakout,SRC04_S07,active,CTO,2026-05-01
-1014,lien-channels,SRC04_S08,active,CTO,2026-05-01
-1015,lien-perfect-order,SRC04_S09,active,CTO,2026-05-01
-1016,lien-carry-trade,SRC04_S11,active,CTO,2026-05-01
-1018,williams-pro-go,SRC03_S16,active,CTO,2026-05-09
-1019,williams-pinch-paunch,SRC03_S17,active,CTO,2026-05-09
-1020,williams-vol-bo,SRC03_S01,active,CTO,2026-05-13
-1021,lien-dbb-pick-tops,SRC04_S02a,active,CTO,2026-05-13
-1022,lien-dbb-trend-join,SRC04_S02b,active,CTO,2026-05-13
-1023,chan-at-bb-pair,SRC05_S01,active,CTO,2026-05-13
-1024,chan-at-kf-pair,SRC05_S02,active,CTO,2026-05-13
-1025,chan-at-buy-on-gap-src05,SRC05_S03,active,CTO,2026-05-13
-1026,chan-at-fx-coint-pair,SRC05_S05,active,CTO,2026-05-13
-1027,chan-at-cal-spread,SRC05_S06,active,CTO,2026-05-13
-1028,chan-at-ts-mom-fut,SRC05_S07,active,CTO,2026-05-13
-1029,chan-at-fstx-gap-mom-src05,SRC05_S12,active,CTO,2026-05-13
-1030,singh-rapid-fire,SRC06_S01,active,CTO,2026-05-13
-1031,singh-piranha,SRC06_S02,active,CTO,2026-05-13
-1032,singh-fade-break,SRC06_S03,active,CTO,2026-05-13
-1033,singh-trade-break,SRC06_S04,active,CTO,2026-05-13
-1034,singh-trend-rider,SRC06_S07,active,CTO,2026-05-13
-1035,singh-trend-bouncer,SRC06_S08,active,CTO,2026-05-13
-1036,singh-fifth-element,SRC06_S09,active,CTO,2026-05-13
-1037,singh-power-ranger,SRC06_S10,active,CTO,2026-05-13
-1038,singh-pendulum,SRC06_S11,active,CTO,2026-05-13
-1039,singh-swap-fly,SRC06_S12,active,CTO,2026-05-13
-1040,singh-cmd-corr,SRC06_S13,active,CTO,2026-05-13
-1041,singh-guppy-burst,SRC06_S15,active,CTO,2026-05-13
-1042,singh-eng-bk-tea,SRC06_S16,active,CTO,2026-05-13
-1043,singh-gd-morn-asia,SRC06_S17,active,CTO,2026-05-13
+1010,lien-waiting-deal,SRC04_S04,active,Development,2026-05-01
+1011,lien-inside-day-breakout,SRC04_S05,active,Development,2026-05-01
+1012,lien-fader,SRC04_S06,active,Development,2026-05-01
+1013,lien-20day-breakout,SRC04_S07,active,Development,2026-05-01
+1014,lien-channels,SRC04_S08,active,Development,2026-05-01
+1015,lien-perfect-order,SRC04_S09,active,Development,2026-05-01
+1016,lien-carry-trade,SRC04_S11,active,Development,2026-05-01
+1018,williams-pro-go,SRC03_S16,active,Development,2026-05-09
+1019,williams-pinch-paunch,SRC03_S17,active,Development,2026-05-09
+1020,williams-vol-bo,SRC03_S01,active,Development,2026-05-13
+1021,lien-dbb-pick-tops,SRC04_S02a,active,Development,2026-05-13
+1022,lien-dbb-trend-join,SRC04_S02b,active,Development,2026-05-13
+1023,chan-at-bb-pair,SRC05_S01,active,Development,2026-05-13
+1024,chan-at-kf-pair,SRC05_S02,active,Development,2026-05-13
+1025,chan-at-buy-on-gap-src05,SRC05_S03,active,Development,2026-05-13
+1026,chan-at-fx-coint-pair,SRC05_S05,active,Development,2026-05-13
+1027,chan-at-cal-spread,SRC05_S06,active,Development,2026-05-13
+1028,chan-at-ts-mom-fut,SRC05_S07,active,Development,2026-05-13
+1029,chan-at-fstx-gap-mom-src05,SRC05_S12,active,Development,2026-05-13
+1030,singh-rapid-fire,SRC06_S01,active,Development,2026-05-13
+1031,singh-piranha,SRC06_S02,active,Development,2026-05-13
+1032,singh-fade-break,SRC06_S03,active,Development,2026-05-13
+1033,singh-trade-break,SRC06_S04,active,Development,2026-05-13
+1034,singh-trend-rider,SRC06_S07,active,Development,2026-05-13
+1035,singh-trend-bouncer,SRC06_S08,active,Development,2026-05-13
+1036,singh-fifth-element,SRC06_S09,active,Development,2026-05-13
+1037,singh-power-ranger,SRC06_S10,active,Development,2026-05-13
+1038,singh-pendulum,SRC06_S11,active,Development,2026-05-13
+1039,singh-swap-fly,SRC06_S12,active,Development,2026-05-13
+1040,singh-cmd-corr,SRC06_S13,active,Development,2026-05-13
+1041,singh-guppy-burst,SRC06_S15,active,Development,2026-05-13
+1042,singh-eng-bk-tea,SRC06_S16,active,Development,2026-05-13
+1043,singh-gd-morn-asia,SRC06_S17,active,Development,2026-05-13
 1006,davey-eu-day,SRC01_S02,active,Development,2026-05-15
 1047,halloween-sell-in-may-idx,SRC08_S03,active,Development,2026-05-16
 1048,estrada-lazy-6m-rotation,SRC08_S04,active,Development,2026-05-16
@@ -4005,30 +4005,30 @@ QM5_1491,ehlers-sinewave-leadsine-cross-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,
 13113,energy-mom-ivol,FUERTES-MOMIVOL-2015_XTI_XNG_S01,active,Codex,2026-07-10
 13114,wti-roc14-xtrm,GURRIB-WTI-ROC14-2024_S01,active,Codex,2026-07-10
 13115,energy-samecal,KELOHARJU-RETSEAS-2016_XTI_XNG_S01,active,Codex,2026-07-10
-13116,xng-signmom,PAPAILIAS-RSM-2021_XNG_S01,active,CEO+CTO mission allocation,2026-07-10
-13117,eurgbp-audjpy,SRC02_S09,active,CEO+CTO mission allocation,2026-07-10
-13118,energy-skew-rank,FERNANDEZ-SKEW-2018_XTI_XNG_S01,active,CEO+CTO mission allocation,2026-07-10
-13119,usdjpy-euraud,SRC02_S10,active,CEO+CTO mission allocation,2026-07-10
-13120,energy-momrev,BIANCHI-MOMREV-2015_XTI_XNG_S01,active,CEO+CTO mission allocation,2026-07-10
-13121,energy-tfmom,CLARE-TFMOM-2014_XTI_XNG_S01,active,CEO+CTO mission allocation,2026-07-10
-13122,tokyo-fix-5m,SRCCEO-ANOMALY-SLATE-2026-07-03_S07,active,OWNER-delegated CEO+CTO allocation,2026-07-10
-13123,energy-val-rank,AMP-VALUE-2013_XTI_XNG_S01,active,CEO+CTO mission allocation,2026-07-10
-13124,fx-early-asia-drift,CODEX-FTMO-H1-RESEARCH-2026-07-10_S01,retired,OWNER-delegated CEO+CTO allocation,2026-07-10
-13125,xau-usclose-ovnt,CODEX-FTMO-H1-RESEARCH-2026-07-10_S02,retired,OWNER-delegated CEO+CTO allocation,2026-07-10
-13126,energy-momcarry,FMR-MOMTS-2010_XTI_XNG_S01,active,CEO+CTO mission allocation,2026-07-10
-13127,et-open-atr-long,CODEX-FTMO-ORB-LONG-2026-07-10_S01,retired,OWNER-delegated CEO+CTO allocation,2026-07-10
+13116,xng-signmom,PAPAILIAS-RSM-2021_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-10
+13117,eurgbp-audjpy,SRC02_S09,active,Research+Development (OWNER research mission),2026-07-10
+13118,energy-skew-rank,FERNANDEZ-SKEW-2018_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-10
+13119,usdjpy-euraud,SRC02_S10,active,Research+Development (OWNER research mission),2026-07-10
+13120,energy-momrev,BIANCHI-MOMREV-2015_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-10
+13121,energy-tfmom,CLARE-TFMOM-2014_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-10
+13122,tokyo-fix-5m,SRCCEO-ANOMALY-SLATE-2026-07-03_S07,active,Research+Development (OWNER FTMO mission),2026-07-10
+13123,energy-val-rank,AMP-VALUE-2013_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-10
+13124,fx-early-asia-drift,CODEX-FTMO-H1-RESEARCH-2026-07-10_S01,retired,Research+Development (OWNER FTMO mission),2026-07-10
+13125,xau-usclose-ovnt,CODEX-FTMO-H1-RESEARCH-2026-07-10_S02,retired,Research+Development (OWNER FTMO mission),2026-07-10
+13126,energy-momcarry,FMR-MOMTS-2010_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-10
+13127,et-open-atr-long,CODEX-FTMO-ORB-LONG-2026-07-10_S01,retired,Research+Development (OWNER FTMO mission),2026-07-10
 13128,pre-fomc-drift-ndx,nyfed-sr512-pre-fomc-drift,active,claude,2026-07-10
-13129,energy-rsj,KISS-RSJ-2025_XTI_XNG_S01,active,CEO+CTO mission allocation,2026-07-11
-13130,xti-xng-lowmax,HOLLSTEIN-MAX-2021_XTI_XNG_S01,active,CEO+CTO mission allocation,2026-07-11
-13131,energy-kurt-rank,HOLLSTEIN-MAX-2021_XTI_XNG_S02,active,CEO+CTO mission allocation,2026-07-11
-13132,energy-bab,FRAZZINI-BAB-2014_XTI_XNG_S01,active,CEO+CTO mission allocation,2026-07-11
-13133,energy-ivol,FUERTES-MOMIVOL-2015_XTI_XNG_S02,active,CEO+CTO mission allocation,2026-07-11
-13134,energy-vr-mom,MEHLITZ-AUER-MEM-2024_XTI_S01,active,CEO+CTO mission allocation,2026-07-11
-13135,xau-sma50-hold,OWNER-FTMO-SURVIVORS-20260711_S02,retired,OWNER-delegated CEO+CTO FTMO allocation,2026-07-11
-13136,jpy-sma20-riskon,OWNER-FTMO-SURVIVORS-20260711_S03,retired,OWNER-delegated CEO+CTO FTMO allocation,2026-07-11
-13137,breadth-tue,OWNER-FTMO-SURVIVORS-20260711_S04,active,OWNER-delegated CEO+CTO FTMO allocation,2026-07-11
-13138,xau-m5-ema20,OWNER-FTMO-SURVIVORS-20260711_S05,active,OWNER-delegated CEO+CTO FTMO allocation,2026-07-11
-13139,energy-cv-rank,SZYMANOWSKA-CV-2014_XTI_XNG_S01,active,OWNER-delegated CEO+CTO mission allocation,2026-07-11
+13129,energy-rsj,KISS-RSJ-2025_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-11
+13130,xti-xng-lowmax,HOLLSTEIN-MAX-2021_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-11
+13131,energy-kurt-rank,HOLLSTEIN-MAX-2021_XTI_XNG_S02,active,Research+Development (OWNER commodity-sleeve mission),2026-07-11
+13132,energy-bab,FRAZZINI-BAB-2014_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-11
+13133,energy-ivol,FUERTES-MOMIVOL-2015_XTI_XNG_S02,active,Research+Development (OWNER commodity-sleeve mission),2026-07-11
+13134,energy-vr-mom,MEHLITZ-AUER-MEM-2024_XTI_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-11
+13135,xau-sma50-hold,OWNER-FTMO-SURVIVORS-20260711_S02,retired,Research+Development (OWNER FTMO mission),2026-07-11
+13136,jpy-sma20-riskon,OWNER-FTMO-SURVIVORS-20260711_S03,retired,Research+Development (OWNER FTMO mission),2026-07-11
+13137,breadth-tue,OWNER-FTMO-SURVIVORS-20260711_S04,active,Research+Development (OWNER FTMO mission),2026-07-11
+13138,xau-m5-ema20,OWNER-FTMO-SURVIVORS-20260711_S05,active,Research+Development (OWNER FTMO mission),2026-07-11
+13139,energy-cv-rank,SZYMANOWSKA-CV-2014_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-11
 13140,energy-aliq-rank,YIYI-ALIQ-2025_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-11
 13141,energy-ie-rank,HAN-IE-2023_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-11
 13142,energy-sal-rank,HE-SALIENCE-2025_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-11
@@ -4041,9 +4041,9 @@ QM5_1491,ehlers-sinewave-leadsine-cross-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,
 13149,energy-trend36,HOLLSTEIN-3YR-2021_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-12
 13150,wti-signmom,PAPAILIAS-RSM-2021_XTI_S02,active,Research+Development (OWNER commodity-sleeve mission),2026-07-12
 13151,energy-volbeta,HOLLSTEIN-AGGVOL-2021_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-12
-13200,ndx-convex-orb,CODEX-FTMO-CONVEX-ORB-20260711_S01,retired,OWNER-delegated CEO+CTO FTMO allocation,2026-07-11
-13201,dax-convex-orb,CODEX-FTMO-DAX-CONVEX-ORB-20260711_S01,retired,OWNER-delegated CEO+CTO FTMO allocation,2026-07-11
-13202,ws30-fri-pm-long,CODEX-FTMO-WS30-FRI-PM-20260711_S01,active,OWNER-delegated CEO+CTO FTMO allocation,2026-07-11
+13200,ndx-convex-orb,CODEX-FTMO-CONVEX-ORB-20260711_S01,retired,Research+Development (OWNER FTMO mission),2026-07-11
+13201,dax-convex-orb,CODEX-FTMO-DAX-CONVEX-ORB-20260711_S01,retired,Research+Development (OWNER FTMO mission),2026-07-11
+13202,ws30-fri-pm-long,CODEX-FTMO-WS30-FRI-PM-20260711_S01,active,Research+Development (OWNER FTMO mission),2026-07-11
 13203,energy-downbeta,HOLLSTEIN-DOWNBETA-2021_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-12
 13205,xau-xag-qc,SCHWEIKERT-QC-2018_XAU_XAG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-12
 13206,ftmo-account-governor,FTMO-RUNTIME-GOVERNOR-V2,build_test,OWNER-delegated DevOps,2026-07-13
@@ -4059,8 +4059,8 @@ QM5_1491,ehlers-sinewave-leadsine-cross-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,
 20003,vorwald-pbd-vp-reversion,NILL-VORWALD-PBD-2026,active,claude,2026-07-16
 20004,turn-of-month-index-long,fx_edge_army_A3_2026-07-16,APPROVED,claude,2026-07-17
 20005,kurisko-quad-rotation-retest,KURISKO-QUADROT-2026,active,claude,2026-07-17
-4006,fx-session-flow,SRC09_S01,active,OWNER-delegated CEO+CTO FTMO allocation,2026-07-17
-4007,index-mac5-rev,SRC10_S01,active,OWNER-delegated CEO+CTO FTMO allocation,2026-07-17
+4006,fx-session-flow,SRC09_S01,active,Research+Development (OWNER FTMO mission),2026-07-17
+4007,index-mac5-rev,SRC10_S01,active,Research+Development (OWNER FTMO mission),2026-07-17
 20007,intraday-config-engine,intraday-config-engine,active,Development,2026-07-19
 20008,wti-month-ch3,SZAKMARY-WTI-MCH3-2010,active,Research+Development (OWNER commodity-sleeve mission),2026-07-19
 20009,ict-liquidity-portfolio,ICT-OFFICIAL-2022-2023-ICYTEA-2026,active,Codex-OWNER-delegated,2026-07-19
