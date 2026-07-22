@@ -722,8 +722,13 @@ bool Strategy_CostAndVolumeAllow(const double entry_price,
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   // TODO: e.g. "only trade London session" or "skip if ADX<20"
-   return false;
+   datetime open_time = 0;
+   if(Strategy_FindOurPosition(open_time))
+      return false;
+   if(!Strategy_IsRoutedSymbol(_Symbol) || _Period != strategy_signal_tf ||
+      strategy_signal_tf != PERIOD_M15)
+      return true;
+   return !Strategy_EnsureDependencies();
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
@@ -731,35 +736,98 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // TODO: build req.type / req.price / req.sl / req.tp / req.reason /
-   //       req.symbol_slot / req.expiration_seconds — set ALL fields (the
-   //       caller ZeroMemory's req; symbol_slot stays 0 for single-symbol
-   //       EAs). Lots are NOT part of QM_EntryRequest: sizing happens inside
-   //       QM_Entry via QM_LotsForRisk from req.sl.
-   return false;
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(g_pending_session_index < 0 || g_pending_side == 0 ||
+      g_pending_entry_bar_utc <= 0 || g_pending_entry_tick_msc == 0 ||
+      g_pending_exit_utc <= 0 || g_pending_atr <= 0.0 || g_session_attempted)
+      return false;
+   MqlRates current_bar;
+   if(!QM_ReadBar(_Symbol, strategy_signal_tf, 0, current_bar) ||
+      QM_BrokerToUTC(current_bar.time) != g_pending_entry_bar_utc)
+      return false;
+   datetime open_time = 0;
+   if(Strategy_FindOurPosition(open_time))
+      return false;
+   MqlTick tick;
+   if(!SymbolInfoTick(_Symbol, tick) || (ulong)tick.time_msc != g_pending_entry_tick_msc ||
+      tick.ask <= 0.0 || tick.bid <= 0.0 || tick.ask < tick.bid)
+      return false;
+
+   const int session_index = g_pending_session_index;
+   const bool is_long = (g_pending_side > 0);
+   const double frozen_atr = g_pending_atr;
+   const datetime verified_exit_utc = g_pending_exit_utc;
+   g_session_attempted = true;
+   g_pending_session_index = -1;
+   g_pending_side = 0;
+   g_pending_entry_bar_utc = 0;
+   g_pending_entry_tick_msc = 0;
+   g_pending_exit_utc = 0;
+   g_pending_atr = 0.0;
+
+   const double entry_price = is_long ? tick.ask : tick.bid;
+   const double stop_price = QM_StopRulesNormalizePrice(_Symbol,
+                                                         is_long
+                                                         ? entry_price - strategy_atr_stop_mult * frozen_atr
+                                                         : entry_price + strategy_atr_stop_mult * frozen_atr);
+   if(stop_price <= 0.0 || (is_long && stop_price >= entry_price) ||
+      (!is_long && stop_price <= entry_price) ||
+      !Strategy_CostAndVolumeAllow(entry_price, stop_price))
+      return false;
+
+   req.type = is_long ? QM_BUY : QM_SELL;
+   req.sl = stop_price;
+   req.tp = 0.0;
+   req.reason = is_long ? "POSTCLOSE_CONT_LONG" : "POSTCLOSE_CONT_SHORT";
+   g_active_exit_broker = QM_UTCToBroker(verified_exit_utc);
+   if(g_active_exit_broker <= 0)
+      return false;
+   QM_LogEvent(QM_INFO,
+               "SESSION_ENTRY_ARMED",
+               StringFormat("{\"symbol\":\"%s\",\"session_date\":%d,\"financing_verified\":true,\"schedule\":\"%s\",\"schedule_sha256\":\"%s\",\"version\":\"%s\",\"exchange_source\":\"%s\",\"broker_source\":\"%s\",\"exit_utc\":%I64d}",
+                            _Symbol, g_session_date_key[session_index], strategy_schedule_file,
+                            strategy_schedule_sha256, strategy_schedule_version,
+                            g_exchange_source_url[session_index],
+                            g_broker_source_url[session_index], (long)verified_exit_utc));
+   return true;
   }
 
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // TODO: e.g.
-   //   const int magic = QM_FrameworkMagic();
-   //   for(int i = PositionsTotal() - 1; i >= 0; --i) {
-   //       const ulong ticket = PositionGetTicket(i);
-   //       if(!PositionSelectByTicket(ticket)) continue;
-   //       if(PositionGetInteger(POSITION_MAGIC) != magic) continue;
-   //       QM_TM_MoveToBreakEven(ticket, /*trigger_pips=*/30, /*buffer=*/2);
-   //       QM_TM_TrailATR(ticket, /*atr_period=*/14, /*atr_mult=*/2.0);
-   //   }
+   datetime open_time = 0;
+   if(!Strategy_FindOurPosition(open_time))
+      g_active_exit_broker = 0;
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   // TODO: when to close manually (separate from SL/TP and trade management)
-   return false;
+   datetime open_time = 0;
+   if(!Strategy_FindOurPosition(open_time))
+      return false;
+   if(g_active_exit_broker <= 0)
+     {
+      if(!g_schedule_ready)
+         return true;
+      const datetime open_utc = QM_BrokerToUTC(open_time);
+      const int session_index = Strategy_FindEntrySession(open_utc);
+      datetime verified_exit_utc = 0;
+      if(session_index < 0 ||
+         !Strategy_BindVerifiedExit(session_index, open_utc, verified_exit_utc))
+         return true;
+      g_active_exit_broker = QM_UTCToBroker(verified_exit_utc);
+     }
+   return (g_active_exit_broker > 0 && TimeCurrent() >= g_active_exit_broker);
   }
 
 // Optional news-filter override. Return TRUE to suppress trading regardless
@@ -767,7 +835,8 @@ bool Strategy_ExitSignal()
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false; // defer to QM_NewsAllowsTrade(...)
+   // The approved baseline retains the framework default high-impact pause.
+   return false;
   }
 
 // -----------------------------------------------------------------------------
@@ -845,6 +914,12 @@ void OnTick()
         }
      }
 
+   // Freeze the cash anchors and exactly one completed post-close observation
+   // before the central news gate. A blocked intended entry is never delayed.
+   const bool strategy_new_bar = QM_IsNewBar();
+   if(strategy_new_bar)
+      Strategy_AdvanceStateOnNewBar();
+
    // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
    // per-tick recompute mistakes — EntrySignal sees one new closed bar per
    // call, not every incoming tick.
@@ -859,7 +934,7 @@ void OnTick()
    if(!news_allows)
       return;
 
-   if(!QM_IsNewBar())
+   if(!strategy_new_bar)
       return;
 
    // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
