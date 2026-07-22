@@ -1,102 +1,93 @@
-<!--
-QuantMechanica V5 — EA Spec Document
-Required by Q01 Build & Spec gate (Vault: `03 Pipeline/Q01 Build & Spec.md`)
-Validator: `framework/scripts/validate_spec_doc.py`
+# QM5_20040_b3-relvol-brk — Strategy Spec
 
-Copy this file to:
-  framework/EAs/QM5_<NNNN>_<slug>/SPEC.md
-
-Replace every <ANGLE_BRACKETED_PLACEHOLDER>. Validator rejects placeholders.
-All seven sections below are MANDATORY for Q01 PASS.
--->
-
-# QM5_<NNNN>_<slug> — Strategy Spec
-
-**EA ID:** QM5_<NNNN>
-**Slug:** `<slug>`
-**Source:** `<source_id>` (see `strategy-seeds/sources/<source_id>/`)
+**EA ID:** QM5_20040
+**Slug:** `b3-relvol-brk`
+**Source:** SILVA-FORCA-WIN-V16-2026
 **Author of this spec:** Codex
-**Last revised:** <YYYY-MM-DD>
+**Last revised:** 2026-07-22
 
 ---
 
 ## 1. Strategy Logic
 
-Plain prose, no jargon. Describe the signal the EA trades. Include the formula
-or rule that decides entry and exit.
+On each completed M15 bar, the EA multiplies signed candle body fraction by
+relative broker tick count and clamps the result to a force score from -100 to
++100. A threshold cross qualifies only with a close beyond the prior bar and
+aligned 5/20-bar close averages, then enters at that exact next M15 open during
+the approved US session. The frozen stop is one Wilder ATR(14), the target is
+1.5R, and any surviving trade exits after six completed holding bars or at
+15:55 New York time (earlier on an approved early close).
 
-> Example: "Long when 21-EMA(close) crosses above 55-EMA(close) on the close
-> of a D1 bar AND ADX(14) > 25. Exit when 21-EMA crosses below 55-EMA, or at
-> 2× ATR(14) trailing stop, or on Friday close."
-
-<DESCRIBE THE STRATEGY LOGIC HERE>
-
----
+Tick volume is explicitly a broker tick-count proxy, not traded volume,
+aggression, order flow, book data, or tape evidence. The practitioner source
+and its performance comments remain **UNVERIFIED**.
 
 ## 2. Parameters
 
-Table of every input parameter, its default, range, and meaning.
-
 | Parameter | Default | Range | Meaning |
-|---|---|---|---|
-| `<param_1>` | <value> | <lo>-<hi> | <one-line description> |
-| `<param_2>` | <value> | <lo>-<hi> | <one-line description> |
-
-> Note: framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
-> qm_news_mode, qm_rng_seed, qm_stress_reject_probability, qm_friday_close_*)
-> are documented in `framework/V5_FRAMEWORK_DESIGN.md` — do NOT re-document
-> them here. Only list strategy-specific inputs.
-
----
+|---|---:|---|---|
+| `strategy_variant_id` | `B3_RELVOL_BRK_BASELINE` | locked | Approved variant identity. |
+| `strategy_signal_tf` | `PERIOD_M15` | locked | Signal, execution, and timeout timeframe. |
+| `strategy_force_level` | 70 | locked | Symmetric force-cross threshold. |
+| `strategy_rearm_level` | 25 | locked | Absolute-force level below which both directions may rearm. |
+| `strategy_volume_sma_period` | 20 | locked | Tick-count normalization window. |
+| `strategy_fast_sma_period` | 5 | locked | Fast close-alignment average. |
+| `strategy_slow_sma_period` | 20 | locked | Slow close-alignment average. |
+| `strategy_atr_period` | 14 | locked | Wilder ATR window frozen on the signal bar. |
+| `strategy_atr_stop_mult` | 1.0 | locked | Initial hard-stop distance in ATR units. |
+| `strategy_reward_r` | 1.5 | locked | Frozen target in initial-risk units. |
+| `strategy_timeout_bars` | 6 | locked | Completed holding bars before time exit. |
+| `strategy_max_cost_r` | 0.10 | locked | Maximum commission plus entry spread relative to initial risk. |
+| `strategy_round_turn_commission_usd_per_lot` | 0.0 | governed value required | Per-symbol commission; zero fails closed. |
+| `strategy_cash_calendar_file` | `QM5_20040_us_cash_calendar.csv` | immutable file | Common-Files official US sessions and early closes. |
+| `strategy_cash_calendar_sha256` | empty | SHA-256 | Required exact calendar-file hash. |
+| `strategy_calendar_valid_through` | `2025.12.31` | locked | Required official calendar coverage. |
+| `strategy_tzdb_version` | empty | governed value required | Pinned America/New_York tzdb identity. |
+| `strategy_expected_tick_feed_server` | empty | governed value required | Frozen broker tick-feed server identity. |
 
 ## 3. Symbol Universe
 
-Which `.DWX` symbols this EA is designed for. Be explicit about both inclusions
-and exclusions.
-
 **Designed for:**
-- `<SYMBOL_1.DWX>` — <why this fits>
-- `<SYMBOL_2.DWX>` — <why this fits>
+
+- `WS30.DWX` — primary card route for the US index participation proxy.
+- `SP500.DWX` — card-authorized US large-cap sibling route.
+- `NDX.DWX` — card-authorized US technology-index sibling route.
 
 **Explicitly NOT for:**
-- `<SYMBOL.DWX>` — <why this does not fit>
 
----
+- Other `.DWX` symbols — no other route is approved for this card's
+  feed-specific relative-tick-volume hypothesis.
 
 ## 4. Timeframe
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | `<M5 / M15 / H1 / H4 / D1>` |
-| Multi-timeframe refs | `<list any cross-TF reads>` or `none` |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
-
----
+| Base timeframe | `M15` |
+| Multi-timeframe refs | none |
+| Bar gating | one `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` edge advances the cached force/rearm state before entry gating |
 
 ## 5. Expected Behaviour
 
-How this EA should behave in production. Calibrates downstream gate expectations.
-
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `<approx number>` |
-| Typical hold time | `<minutes / hours / days>` |
-| Expected drawdown profile | `<one line>` |
-| Regime preference | `<trend / mean-revert / volatility-expansion / breakout / news-driven>` |
-| Win rate target (qualitative) | `<low/medium/high>` |
-
----
+| Trades / year / symbol | approximately 135 after all gates |
+| Typical hold time | no more than six completed M15 holding bars; often shorter at stop, target, or session exit |
+| Expected drawdown profile | approximately 12% card prior; losses may cluster across the correlated US-index family |
+| Regime preference | intraday directional participation / relative-tick-volume breakout |
+| Win rate target (qualitative) | unverified; expectancy must survive feed and price-only ablations |
 
 ## 6. Source Citation
 
 This card was mechanised from:
 
-**Source ID:** `<source_id>`
-**Source type:** `<paper / book / forum / video / OWNER / AI>`
-**Pointer:** `<URL or local path or strategy-seeds/sources/<source_id>/>`
-**R1–R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_<NNNN>_<slug>.md`
-
----
+**Source ID:** SILVA-FORCA-WIN-V16-2026
+**Source type:** unverified practitioner NTSL source code
+**Pointer:** Wesley Silva (2026), `FORCA_WIN_V16`, Git commit
+`38e83c24070054d78d82842c7c1b37043127ef58`; implementation card at
+`D:/QM/strategy_farm/artifacts/cards_approved/QM5_20040_b3-relvol-brk_card.md`.
+**R1–R4 verdict (Q00):** all PASS per
+`artifacts/cards_approved/QM5_20040_b3-relvol-brk.md`; source performance and
+US `.DWX` portability remain unverified hypotheses.
 
 ## 7. Risk Model
 
@@ -107,6 +98,8 @@ This card was mechanised from:
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
 
 ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+The approved baseline authorizes fixed-risk testing only; live sizing remains a
+later governed promotion decision.
 
 ---
 
@@ -114,8 +107,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | <YYYY-MM-DD> | Initial build from card | <build commit hash> |
-
-> When this EA cycles back to Q01 from a Q02 zero-trade event, add a row:
-> `| v2 | YYYY-MM-DD | Q02 all-symbol zero-trades; widened entry filter X | <commit> |`
-
+| v1 | 2026-07-22 | Initial build from card | 4648f988-fd51-45e5-95db-e080e5108c03 |
