@@ -14,6 +14,7 @@
 #define QM_LBMA_GOLD_PM_SOURCES_SHA256 "4F3076944D906B1A67DC9890F883F375EA19E354AF7DB8A0B8D312118A5AD8DE"
 #define QM_LBMA_GOLD_PM_TRANSITIONS_FILE "QM5_Europe_London_transitions_20180101_20251231.csv"
 #define QM_LBMA_GOLD_PM_TRANSITIONS_SHA256 "D0E5ABA84B707C02F5C045EFD56BED816F7D413E3F337CB255047E501570340C"
+#define QM_LBMA_GOLD_PM_EMBEDDED_CLOCK_SOURCE_SHA256 QM_LBMA_GOLD_PM_TRANSITIONS_SHA256
 #define QM_LBMA_GOLD_PM_GAPS_FILE "QM5_LBMA_Gold_PM_schedule_gaps.csv"
 #define QM_LBMA_GOLD_PM_GAPS_SHA256 "7A59DEAC3306A78AC3747AC2CCEC93D04C2B38E6C695145A0BBC4347451289A3"
 #define QM_LBMA_GOLD_PM_MANIFEST_FILE "QM5_LBMA_Gold_PM_schedule_manifest.json"
@@ -49,6 +50,7 @@ const int QM_LBMA_GOLD_PM_EXPECTED_TRANSITION_ROWS = 16;
 
 bool   g_qm_lbma_gold_pm_attempted = false;
 bool   g_qm_lbma_gold_pm_ready = false;
+bool   g_qm_lbma_gold_pm_embedded_clock_ready = false;
 string g_qm_lbma_gold_pm_last_error = "not_loaded";
 string g_qm_lbma_gold_pm_runtime_actual_sha256 = "";
 string g_qm_lbma_gold_pm_provenance_actual_sha256 = "";
@@ -214,8 +216,9 @@ bool QM_LbmaGoldPmCalendarFail(const string detail)
    ArrayResize(g_qm_lbma_gold_pm_schedule_status, 0);
    ArrayResize(g_qm_lbma_gold_pm_auction_start_utc, 0);
    ArrayResize(g_qm_lbma_gold_pm_london_offset_minutes, 0);
-   ArrayResize(g_qm_lbma_gold_pm_transition_utc, 0);
-   ArrayResize(g_qm_lbma_gold_pm_transition_offset_after, 0);
+   // Keep the compile-time pinned transition table available for deterministic
+   // time exits on an already-open position.  Calendar readiness remains false,
+   // so this fallback can never make a new auction date entry-eligible.
    return false;
   }
 
@@ -244,8 +247,48 @@ bool QM_LbmaGoldPmAppendTransition(const datetime transition_utc,
    return true;
   }
 
+// Generated from QM5_Europe_London_transitions_20180101_20251231.csv at
+// SHA-256 QM_LBMA_GOLD_PM_EMBEDDED_CLOCK_SOURCE_SHA256.  The embedded table is
+// an exit-only restart fallback: the external artifact and every other package
+// component must still pass their hashes before calendar entries are enabled.
+bool QM_LbmaGoldPmLoadEmbeddedClock()
+  {
+   ArrayResize(g_qm_lbma_gold_pm_transition_utc, 0);
+   ArrayResize(g_qm_lbma_gold_pm_transition_offset_after, 0);
+   g_qm_lbma_gold_pm_embedded_clock_ready = false;
+
+   static const long transition_epoch[QM_LBMA_GOLD_PM_EXPECTED_TRANSITION_ROWS] =
+     {
+      1521939600, 1540688400, 1553994000, 1572138000,
+      1585443600, 1603587600, 1616893200, 1635642000,
+      1648342800, 1667091600, 1679792400, 1698541200,
+      1711846800, 1729990800, 1743296400, 1761440400
+     };
+   static const int offset_after[QM_LBMA_GOLD_PM_EXPECTED_TRANSITION_ROWS] =
+     {
+      60, 0, 60, 0, 60, 0, 60, 0,
+      60, 0, 60, 0, 60, 0, 60, 0
+     };
+
+   for(int i = 0; i < QM_LBMA_GOLD_PM_EXPECTED_TRANSITION_ROWS; ++i)
+     {
+      if(!QM_LbmaGoldPmAppendTransition((datetime)transition_epoch[i],
+                                        offset_after[i]))
+         return QM_LbmaGoldPmCalendarFail("embedded_clock_init_failed");
+     }
+   g_qm_lbma_gold_pm_embedded_clock_ready = true;
+   return true;
+  }
+
 bool QM_LbmaGoldPmLoadTransitions()
   {
+   if(!g_qm_lbma_gold_pm_embedded_clock_ready ||
+      ArraySize(g_qm_lbma_gold_pm_transition_utc) !=
+         QM_LBMA_GOLD_PM_EXPECTED_TRANSITION_ROWS ||
+      ArraySize(g_qm_lbma_gold_pm_transition_offset_after) !=
+         QM_LBMA_GOLD_PM_EXPECTED_TRANSITION_ROWS)
+      return QM_LbmaGoldPmCalendarFail("embedded_clock_contract_failed");
+
    const int handle = FileOpen(QM_LBMA_GOLD_PM_TRANSITIONS_FILE,
                                FILE_READ | FILE_CSV | FILE_ANSI |
                                FILE_SHARE_READ | FILE_COMMON,
@@ -283,10 +326,12 @@ bool QM_LbmaGoldPmLoadTransitions()
 
       datetime transition_utc = 0;
       int transition_date_key = 0;
-      if(!QM_LbmaGoldPmParseUtc(utc_text, transition_utc, transition_date_key) ||
-         transition_date_key < QM_LBMA_GOLD_PM_REQUESTED_START ||
-         transition_date_key > QM_LBMA_GOLD_PM_REQUESTED_END ||
-         transition_utc <= previous || source_id != "IANA_TZDATA_2026C")
+       if(rows >= QM_LBMA_GOLD_PM_EXPECTED_TRANSITION_ROWS ||
+          !QM_LbmaGoldPmParseUtc(utc_text, transition_utc, transition_date_key) ||
+          transition_date_key < QM_LBMA_GOLD_PM_REQUESTED_START ||
+          transition_date_key > QM_LBMA_GOLD_PM_REQUESTED_END ||
+          transition_utc <= previous || source_id != "IANA_TZDATA_2026C" ||
+          transition_utc != g_qm_lbma_gold_pm_transition_utc[rows])
         {
          FileClose(handle);
          return QM_LbmaGoldPmCalendarFail("transitions_csv_row_invalid");
@@ -298,8 +343,8 @@ bool QM_LbmaGoldPmLoadTransitions()
                            abbreviation == "BST");
       const bool autumn = (before_text == "60" && after_text == "0" &&
                            abbreviation == "GMT");
-      if((!spring && !autumn) || before < 0 || after < 0 ||
-         !QM_LbmaGoldPmAppendTransition(transition_utc, after))
+       if((!spring && !autumn) || before < 0 || after < 0 ||
+          after != g_qm_lbma_gold_pm_transition_offset_after[rows])
         {
          FileClose(handle);
          return QM_LbmaGoldPmCalendarFail("transitions_csv_contract_invalid");
@@ -633,6 +678,10 @@ bool QM_LbmaGoldPmCalendarLoad()
    ArrayResize(g_qm_lbma_gold_pm_london_offset_minutes, 0);
    ArrayResize(g_qm_lbma_gold_pm_transition_utc, 0);
    ArrayResize(g_qm_lbma_gold_pm_transition_offset_after, 0);
+   g_qm_lbma_gold_pm_embedded_clock_ready = false;
+
+   if(!QM_LbmaGoldPmLoadEmbeddedClock())
+      return false;
 
    if(!QM_LbmaGoldPmVerifyArtifact(QM_LBMA_GOLD_PM_RUNTIME_FILE,
                                     QM_LBMA_GOLD_PM_RUNTIME_SHA256,
@@ -671,6 +720,11 @@ bool QM_LbmaGoldPmCalendarLoad()
 bool QM_LbmaGoldPmCalendarReady()
   {
    return g_qm_lbma_gold_pm_ready;
+  }
+
+bool QM_LbmaGoldPmEmbeddedClockReady()
+  {
+   return g_qm_lbma_gold_pm_embedded_clock_ready;
   }
 
 string QM_LbmaGoldPmCalendarLastError()

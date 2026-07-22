@@ -98,6 +98,8 @@ datetime g_active_exit_broker = 0;
 bool     g_lbma_calendar_ready = false;
 int      g_last_calendar_log_date_key = 0;
 string   g_last_calendar_log_detail = "";
+bool     g_exit_clock_fallback_success_logged = false;
+bool     g_exit_clock_fallback_failure_logged = false;
 
 bool Strategy_ResolveAuctionTimes(const int date_key,
                                   datetime &pre_bar_utc,
@@ -546,7 +548,37 @@ bool Strategy_ExitSignal()
                                        strategy_exit_hour_london,
                                        strategy_exit_minute_london,
                                        exit_utc))
+        {
          g_active_exit_broker = QM_UTCToBroker(exit_utc);
+         if(!g_lbma_calendar_ready && g_active_exit_broker > 0 &&
+            !g_exit_clock_fallback_success_logged)
+           {
+            g_exit_clock_fallback_success_logged = true;
+            QM_LogEvent(QM_WARN,
+                        "EXIT_CLOCK_FALLBACK",
+                        StringFormat("{\"result\":\"EXIT_CLOCK_RECONSTRUCTED\",\"scope\":\"OPEN_POSITION_ONLY\",\"entry_gate\":\"FAIL_CLOSED\",\"open_broker\":%I64d,\"date_key\":%d,\"exit_utc\":%I64d,\"exit_broker\":%I64d,\"embedded_clock_ready\":%s,\"clock_source\":\"IANA_TZDATA_2026C\",\"clock_source_sha256\":\"%s\",\"calendar_error\":\"%s\"}",
+                                     (long)open_time,
+                                     date_key,
+                                     (long)exit_utc,
+                                     (long)g_active_exit_broker,
+                                     QM_LbmaGoldPmEmbeddedClockReady() ? "true" : "false",
+                                     QM_LBMA_GOLD_PM_EMBEDDED_CLOCK_SOURCE_SHA256,
+                                     QM_LoggerEscapeJson(QM_LbmaGoldPmCalendarLastError())));
+           }
+        }
+      if(!g_lbma_calendar_ready && g_active_exit_broker <= 0 &&
+         !g_exit_clock_fallback_failure_logged)
+        {
+         g_exit_clock_fallback_failure_logged = true;
+         QM_LogEvent(QM_ERROR,
+                     "EXIT_CLOCK_FALLBACK_FAILED",
+                     StringFormat("{\"result\":\"OPEN_POSITION_EXIT_CLOCK_UNRESOLVED\",\"entry_gate\":\"FAIL_CLOSED\",\"open_broker\":%I64d,\"date_key\":%d,\"embedded_clock_ready\":%s,\"clock_source_sha256\":\"%s\",\"calendar_error\":\"%s\"}",
+                                  (long)open_time,
+                                  date_key,
+                                  QM_LbmaGoldPmEmbeddedClockReady() ? "true" : "false",
+                                  QM_LBMA_GOLD_PM_EMBEDDED_CLOCK_SOURCE_SHA256,
+                                  QM_LoggerEscapeJson(QM_LbmaGoldPmCalendarLastError())));
+        }
      }
    return (g_active_exit_broker > 0 && TimeCurrent() >= g_active_exit_broker);
   }
@@ -587,10 +619,11 @@ int OnInit()
    g_lbma_calendar_ready = QM_LbmaGoldPmCalendarLoad();
    QM_LogEvent(g_lbma_calendar_ready ? QM_INFO : QM_WARN,
                "LBMA_PM_CALENDAR_INIT",
-               StringFormat("{\"ready\":%s,\"calendar_status\":\"%s\",\"verified_start\":%d,\"verified_end\":%d,\"runtime_file\":\"%s\",\"runtime_expected_sha256\":\"%s\",\"runtime_actual_sha256\":\"%s\",\"provenance_actual_sha256\":\"%s\",\"sources_actual_sha256\":\"%s\",\"transitions_actual_sha256\":\"%s\",\"gaps_actual_sha256\":\"%s\",\"manifest_actual_sha256\":\"%s\",\"error\":\"%s\"}",
-                            g_lbma_calendar_ready ? "true" : "false",
-                            QM_LBMA_GOLD_PM_CALENDAR_STATUS,
-                            QM_LBMA_GOLD_PM_COVERAGE_START,
+                StringFormat("{\"ready\":%s,\"calendar_status\":\"%s\",\"embedded_exit_clock_ready\":%s,\"verified_start\":%d,\"verified_end\":%d,\"runtime_file\":\"%s\",\"runtime_expected_sha256\":\"%s\",\"runtime_actual_sha256\":\"%s\",\"provenance_actual_sha256\":\"%s\",\"sources_actual_sha256\":\"%s\",\"transitions_actual_sha256\":\"%s\",\"gaps_actual_sha256\":\"%s\",\"manifest_actual_sha256\":\"%s\",\"error\":\"%s\"}",
+                             g_lbma_calendar_ready ? "true" : "false",
+                             QM_LBMA_GOLD_PM_CALENDAR_STATUS,
+                             QM_LbmaGoldPmEmbeddedClockReady() ? "true" : "false",
+                             QM_LBMA_GOLD_PM_COVERAGE_START,
                             QM_LBMA_GOLD_PM_COVERAGE_END,
                             QM_LBMA_GOLD_PM_RUNTIME_FILE,
                             QM_LBMA_GOLD_PM_RUNTIME_SHA256,

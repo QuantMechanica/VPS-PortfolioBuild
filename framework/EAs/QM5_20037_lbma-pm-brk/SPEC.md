@@ -82,8 +82,12 @@ Every artifact must match its compile-time SHA-256. Runtime and provenance are
 parsed together and must agree row-for-row on date, status, qualification,
 annual source ID, and IANA clock source. The auction's 15:00 London timestamp is
 also reconciled against the pinned UTC transition table. Package failure blocks
-new entries but does not suppress management or the deterministic exit of an
-already-open position.
+new entries. The same sixteen transition instants are additionally embedded in
+the binary and statically reconciled to the hash-bound transition artifact.
+They are an exit-only restart fallback: when the external package is unavailable
+but this EA already owns an open position, it reconstructs 15:15 London, emits
+`EXIT_CLOCK_FALLBACK`, and keeps the entry gate closed. The fallback cannot
+classify or admit an auction date.
 
 ## 6. Expected Behaviour
 
@@ -136,3 +140,4 @@ full-window Q02-ready nor a validated successful strategy.
 | v1 | 2026-07-22 | Initial build from card | e7bbe65a-a948-4127-a13a-5422895208fa |
 | v2 | 2026-07-22 | FTMO density fix | Replaced the unprovisioned auction ledger and commission/cost gate with broker-clock weekday/bar eligibility and the optional native spread guard. |
 | v3 | 2026-07-22 | Restore card calendar contract | Supersedes v2's invalid weekday/bar shortcut with the strict hash-bound LBMA PM schedule and pinned Europe/London clock loader; verified technical eligibility is limited to 2020-2025. |
+| v4 | 2026-07-22 | Preserve restart time exit | Adds a hash-reconciled embedded IANA transition table used only to reconstruct the 15:15 exit for an already-open position when external calendar artifacts fail; new entries remain fail-closed. |
