@@ -1,0 +1,32 @@
+{
+  "recorded_at": "2026-07-22T14:15:29+02:00",
+  "branch": "agents/board-advisor",
+  "mission": "advance one non-duplicate market-neutral FX cointegration sleeve",
+  "frontier": {
+    "scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "approved_scan_cohort_unbuilt_count": 0,
+    "qm5_12532_latest_path": ["Q02_PASS", "Q04_PASS", "Q05_FAIL"],
+    "qm5_12533_latest_path": ["Q02_PASS", "Q04_FAIL"],
+    "qm5_12760": {
+      "pair": ["GBPUSD.DWX", "GBPJPY.DWX"],
+      "queue_row": 2,
+      "phase": "Q02",
+      "host_symbol": "GBPUSD.DWX",
+      "status": "queued"
+    }
+  },
+  "cpu_ceiling": {
+    "terminal64_process_count": 8,
+    "farm_active_work_items": 9,
+    "farm_pending_work_items": 3016,
+    "ceiling_hit": true
+  },
+  "action": "STOP_WITHOUT_BUILD_OR_ENQUEUE",
+  "mutations": {
+    "farm_queue": false,
+    "mt5_processes": false,
+    "live_state": false,
+    "autotrading": false,
+    "portfolio_gate": false
+  }
+}
