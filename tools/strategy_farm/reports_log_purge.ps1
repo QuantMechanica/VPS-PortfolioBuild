@@ -21,10 +21,14 @@
 #  300-900 GB of dead journals; D: hit 7 GB free on 2026-06-10 before the
 #  6h purge reclaimed 405 GB. Also covers D:\QM\reports\smoke (same
 #  disposable tester journals, 70 GB found uncovered).
+#  2026-07-22 (Claude, OWNER disk-fix directive): added D:\QM\reports\pipeline
+#  to roots — the per-EA pipeline dir had accumulated 154 GB of *.log the
+#  purge was missing (evidence .htm/.json/.set are tiny and kept). One-time
+#  manual reclaim freed 153.7 GB (D: 119.7->273.4 GB); this makes it durable.
 [CmdletBinding()]
 param(
     [int]$RetentionHours = 6,
-    [string[]]$ReportsRoot = @("D:\QM\reports\work_items", "D:\QM\reports\smoke"),
+    [string[]]$ReportsRoot = @("D:\QM\reports\work_items", "D:\QM\reports\smoke", "D:\QM\reports\pipeline"),
     [switch]$DryRun
 )
 $ErrorActionPreference = 'Continue'
