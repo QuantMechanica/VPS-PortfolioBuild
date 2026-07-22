@@ -10,14 +10,15 @@
 
 ## 1. Strategy Logic
 
-For each official US cash date, the EA constructs the executable-midquote
-overnight range from 18:00 New York time on the preceding session evening to
-09:30. It freezes the range and midpoint, then uses the first valid cash-session
-midquote strictly inside that range to arm only the midpoint-indicated side.
-The first closed M5 bar beyond the armed boundary enters at the immediately
-following M5 open; a close through the opposite boundary cancels the date.
-The immutable hard stop is the overnight midpoint, there is no profit target,
-and every position closes at the official cash close or early close.
+For each UTC weekday, the EA constructs the executable-midquote overnight range
+from 18:00 New York time on the preceding local date to 09:30. It freezes the
+range and midpoint, then uses the first valid cash-session midquote strictly
+inside that range to arm only the midpoint-indicated side. The first closed M5
+bar beyond the armed boundary enters at the immediately following M5 open; a
+close through the opposite boundary cancels the date. The immutable hard stop
+is the overnight midpoint, there is no profit target, and every position closes
+at the fixed 16:00 New York cash close. Valid ticks/bars replace the external
+session ledger, and Tester Groups applies venue commission to fills.
 
 The midpoint side filter is explicitly an **UNVERIFIED QM repair hypothesis**.
 It is implemented literally and is not represented as a result established by
@@ -29,12 +30,10 @@ Zarattini and Aziz (2023).
 |---|---:|---|---|
 | `strategy_variant_id` | `ONR_MID_BRK_BASELINE` | locked | Approved variant identity. |
 | `strategy_signal_tf` | `PERIOD_M5` | locked | Breakout confirmation and next-open entry timeframe. |
-| `strategy_max_cost_r` | 0.10 | locked | Maximum round-turn commission plus entry spread relative to initial risk. |
-| `strategy_round_turn_commission_usd_per_lot` | 0.0 | governed value required | Per-symbol commission; zero fails closed rather than inventing a cost. |
-| `strategy_session_ledger_file` | `QM5_20039_us_overnight_cash_calendar.csv` | immutable file | Common-Files overnight/cash session ledger. |
-| `strategy_session_ledger_sha256` | empty | SHA-256 | Required exact session-ledger hash. |
-| `strategy_calendar_valid_through` | `2025.12.31` | locked | Required official calendar coverage. |
-| `strategy_tzdb_version` | empty | governed value required | Pinned America/New_York tzdb identity. |
+| `strategy_overnight_start_*_new_york` | `18:00` | locked | Overnight-range start on the preceding New York local date. |
+| `strategy_cash_open_*_new_york` | `09:30` | locked | Cash-session freeze/open anchor in New York time. |
+| `strategy_cash_close_*_new_york` | `16:00` | locked | Mandatory cash-session flat time in New York time. |
+| `strategy_max_spread_points` | `0` | optional >0 | Tester/live native spread guard; zero disables the guard. |
 
 ## 3. Symbol Universe
 
@@ -60,7 +59,7 @@ Zarattini and Aziz (2023).
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | approximately 200 before inside-range, side, breakout, and cost exclusions |
+| Trades / year / symbol | approximately 200 before inside-range, side, and breakout exclusions |
 | Typical hold time | intraday, from the qualifying next M5 open to midpoint stop or official cash close |
 | Expected drawdown profile | approximately 12% card prior; SP500 and NDX losses may cluster as one correlated family |
 | Regime preference | overnight-range breakout / cash-session volatility expansion |
@@ -97,3 +96,4 @@ later governed promotion decision.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-22 | Initial build from card | 524c55cf-bca3-4100-a0aa-7c023b3a6f5d |
+| v2 | 2026-07-22 | FTMO density fix | Replaced the unprovisioned overnight/cash ledger and commission/cost gate with broker-clock weekday/tick/bar eligibility and the optional native spread guard. |

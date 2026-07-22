@@ -59,7 +59,7 @@ input group "News"
 // A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
-input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
+input int    qm_news_stale_max_hours      = 336;     // 14 days; framework news gate fails closed if older
 input string qm_news_min_impact           = "high";  // high / medium / low
 // Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
 // New EAs use qm_news_temporal + qm_news_compliance above and leave this OFF.
@@ -80,21 +80,20 @@ input double qm_stress_reject_probability = 0.0;
 input group "Strategy"
 input string strategy_variant_id        = "ONR_MID_BRK_BASELINE";
 input ENUM_TIMEFRAMES strategy_signal_tf = PERIOD_M5;
-input double strategy_max_cost_r        = 0.10;
-input double strategy_round_turn_commission_usd_per_lot = 0.0;
-input string strategy_session_ledger_file = "QM5_20039_us_overnight_cash_calendar.csv";
-input string strategy_session_ledger_sha256 = "";
-input string strategy_calendar_valid_through = "2025.12.31";
-input string strategy_tzdb_version      = "";
+input int    strategy_overnight_start_hour_new_york = 18;
+input int    strategy_overnight_start_minute_new_york = 0;
+input int    strategy_cash_open_hour_new_york = 9;
+input int    strategy_cash_open_minute_new_york = 30;
+input int    strategy_cash_close_hour_new_york = 16;
+input int    strategy_cash_close_minute_new_york = 0;
+// Tester Groups applies venue commission to fills; zero disables this optional
+// native spread guard, matching the proven QM5_12969 execution baseline.
+input int    strategy_max_spread_points = 0;
 
-int      g_cash_date_key[];
-datetime g_overnight_start_utc[];
-datetime g_cash_open_utc[];
-datetime g_cash_close_utc[];
-bool     g_dependencies_attempted = false;
-bool     g_calendar_ready = false;
-
-int      g_quote_session_index = -1;
+int      g_quote_session_key = 0;
+datetime g_overnight_start_utc = 0;
+datetime g_cash_open_utc = 0;
+datetime g_cash_close_utc = 0;
 bool     g_range_failed = false;
 bool     g_range_has_quote = false;
 bool     g_range_frozen = false;
@@ -109,44 +108,6 @@ int      g_pending_side = 0;
 datetime g_pending_entry_utc = 0;
 datetime g_active_close_broker = 0;
 
-string Strategy_Trimmed(string value)
-  {
-   StringTrimLeft(value);
-   StringTrimRight(value);
-   return value;
-  }
-
-string Strategy_Upper(string value)
-  {
-   StringToUpper(value);
-   return value;
-  }
-
-bool Strategy_IsSha256(const string value)
-  {
-   if(StringLen(value) != 64)
-      return false;
-   const string hex = "0123456789abcdefABCDEF";
-   for(int i = 0; i < 64; ++i)
-     {
-      if(StringFind(hex, StringSubstr(value, i, 1)) < 0)
-         return false;
-     }
-   return true;
-  }
-
-datetime Strategy_ParseUtcTimestamp(string value)
-  {
-   value = Strategy_Trimmed(value);
-   const int n = StringLen(value);
-   if(n < 2 || StringSubstr(value, n - 1, 1) != "Z")
-      return 0;
-   value = StringSubstr(value, 0, n - 1);
-   StringReplace(value, "-", ".");
-   StringReplace(value, "T", " ");
-   return StringToTime(value);
-  }
-
 int Strategy_DateKey(const datetime value)
   {
    MqlDateTime parts;
@@ -155,230 +116,105 @@ int Strategy_DateKey(const datetime value)
    return parts.year * 10000 + parts.mon * 100 + parts.day;
   }
 
-int Strategy_ParseDateKey(string value)
-  {
-   value = Strategy_Trimmed(value);
-   StringReplace(value, "-", ".");
-   return Strategy_DateKey(StringToTime(value + " 00:00"));
-  }
-
 datetime Strategy_NewYorkLocal(const datetime utc)
   {
    return utc - (QM_IsUSDSTUTC(utc) ? 4 * 60 * 60 : 5 * 60 * 60);
   }
 
-bool Strategy_NewYorkClockMatches(const datetime utc,
-                                  const int hour,
-                                  const int minute)
+datetime Strategy_DateNoon(const int date_key)
   {
+   if(date_key < 19000101)
+      return 0;
    MqlDateTime parts;
-   if(utc <= 0 || !TimeToStruct(Strategy_NewYorkLocal(utc), parts))
-      return false;
-   return (parts.hour == hour && parts.min == minute && parts.sec == 0);
+   ZeroMemory(parts);
+   parts.year = date_key / 10000;
+   parts.mon = (date_key / 100) % 100;
+   parts.day = date_key % 100;
+   parts.hour = 12;
+   return StructToTime(parts);
   }
 
-bool Strategy_ValidCashClose(const datetime utc,
-                             const int cash_date_key,
-                             int &close_minutes)
+int Strategy_ShiftDateKey(const int date_key, const int days)
   {
-   close_minutes = 0;
+   const datetime noon = Strategy_DateNoon(date_key);
+   return (noon > 0) ? Strategy_DateKey(noon + days * 24 * 60 * 60) : 0;
+  }
+
+datetime Strategy_NewYorkLocalToUtc(const int date_key,
+                                    const int hour,
+                                    const int minute)
+  {
+   if(date_key < 19000101 || hour < 0 || hour > 23 || minute < 0 || minute > 59)
+      return 0;
+   MqlDateTime parts;
+   ZeroMemory(parts);
+   parts.year = date_key / 10000;
+   parts.mon = (date_key / 100) % 100;
+   parts.day = date_key % 100;
+   parts.hour = hour;
+   parts.min = minute;
+   datetime utc = StructToTime(parts) + 5 * 60 * 60;
+   if(QM_IsUSDSTUTC(utc))
+      utc -= 60 * 60;
+   return utc;
+  }
+
+bool Strategy_IsUtcWeekday(const datetime utc)
+  {
+   MqlDateTime parts;
+   if(utc <= 0 || !TimeToStruct(utc, parts))
+      return false;
+   return (parts.day_of_week >= 1 && parts.day_of_week <= 5);
+  }
+
+bool Strategy_ResolveSessionForCashDate(const int cash_date_key,
+                                        datetime &overnight_start_utc,
+                                        datetime &cash_open_utc,
+                                        datetime &cash_close_utc)
+  {
+   const int overnight_date_key = Strategy_ShiftDateKey(cash_date_key, -1);
+   overnight_start_utc = Strategy_NewYorkLocalToUtc(
+      overnight_date_key,
+      strategy_overnight_start_hour_new_york,
+      strategy_overnight_start_minute_new_york);
+   cash_open_utc = Strategy_NewYorkLocalToUtc(cash_date_key,
+                                              strategy_cash_open_hour_new_york,
+                                              strategy_cash_open_minute_new_york);
+   cash_close_utc = Strategy_NewYorkLocalToUtc(cash_date_key,
+                                               strategy_cash_close_hour_new_york,
+                                               strategy_cash_close_minute_new_york);
+   return (overnight_start_utc > 0 && cash_open_utc > overnight_start_utc &&
+           cash_close_utc > cash_open_utc &&
+           cash_open_utc - overnight_start_utc >= 12 * 60 * 60 &&
+           cash_open_utc - overnight_start_utc <= 18 * 60 * 60 &&
+           cash_close_utc - cash_open_utc == 390 * 60 &&
+           Strategy_IsUtcWeekday(cash_open_utc));
+  }
+
+bool Strategy_ResolveSessionForUtc(const datetime utc,
+                                   int &cash_date_key,
+                                   datetime &overnight_start_utc,
+                                   datetime &cash_open_utc,
+                                   datetime &cash_close_utc)
+  {
+   cash_date_key = 0;
    const datetime local = Strategy_NewYorkLocal(utc);
    MqlDateTime parts;
-   if(!TimeToStruct(local, parts) || Strategy_DateKey(local) != cash_date_key || parts.sec != 0)
+   if(utc <= 0 || local <= 0 || !TimeToStruct(local, parts))
       return false;
-   close_minutes = parts.hour * 60 + parts.min;
-   return (close_minutes > 9 * 60 + 30 && close_minutes <= 16 * 60);
-  }
-
-bool Strategy_ValidOvernightSource(const string url)
-  {
-   return (StringFind(url, "https") == 0 && StringFind(url, "://") > 0 &&
-           StringFind(url, "cmegroup.com") > 0);
-  }
-
-bool Strategy_ValidCashSource(const string url)
-  {
-   if(StringFind(url, "https") != 0 || StringFind(url, "://") <= 0)
+   const int local_date_key = Strategy_DateKey(local);
+   const int local_minutes = parts.hour * 60 + parts.min;
+   const int overnight_minutes = strategy_overnight_start_hour_new_york * 60 +
+                                 strategy_overnight_start_minute_new_york;
+   cash_date_key = (local_minutes >= overnight_minutes)
+                   ? Strategy_ShiftDateKey(local_date_key, 1)
+                   : local_date_key;
+   if(!Strategy_ResolveSessionForCashDate(cash_date_key,
+                                          overnight_start_utc,
+                                          cash_open_utc,
+                                          cash_close_utc))
       return false;
-   return (StringFind(url, "nyse.com") > 0 || StringFind(url, "nasdaqtrader.com") > 0);
-  }
-
-bool Strategy_CommonFileSha256(const string file_name, string &hash_hex)
-  {
-   hash_hex = "";
-   const int handle = FileOpen(file_name,
-                               FILE_READ | FILE_BIN | FILE_SHARE_READ | FILE_COMMON);
-   if(handle == INVALID_HANDLE)
-      return false;
-   const int size = (int)FileSize(handle);
-   if(size <= 0)
-     {
-      FileClose(handle);
-      return false;
-     }
-   uchar bytes[];
-   if(ArrayResize(bytes, size) != size || FileReadArray(handle, bytes, 0, size) != size)
-     {
-      FileClose(handle);
-      return false;
-     }
-   FileClose(handle);
-   uchar digest[];
-   uchar key[];
-   ArrayResize(key, 0);
-   const int digest_size = CryptEncode(CRYPT_HASH_SHA256, bytes, key, digest);
-   if(digest_size <= 0)
-      return false;
-   for(int i = 0; i < digest_size; ++i)
-      hash_hex += StringFormat("%02X", digest[i]);
-   return true;
-  }
-
-bool Strategy_AppendSession(const int cash_date_key,
-                            const datetime overnight_start_utc,
-                            const datetime cash_open_utc,
-                            const datetime cash_close_utc)
-  {
-   const int n = ArraySize(g_cash_date_key);
-   if(ArrayResize(g_cash_date_key, n + 1) != n + 1 ||
-      ArrayResize(g_overnight_start_utc, n + 1) != n + 1 ||
-      ArrayResize(g_cash_open_utc, n + 1) != n + 1 ||
-      ArrayResize(g_cash_close_utc, n + 1) != n + 1)
-      return false;
-   g_cash_date_key[n] = cash_date_key;
-   g_overnight_start_utc[n] = overnight_start_utc;
-   g_cash_open_utc[n] = cash_open_utc;
-   g_cash_close_utc[n] = cash_close_utc;
-   return true;
-  }
-
-bool Strategy_LoadSessionLedger()
-  {
-   ArrayResize(g_cash_date_key, 0);
-   ArrayResize(g_overnight_start_utc, 0);
-   ArrayResize(g_cash_open_utc, 0);
-   ArrayResize(g_cash_close_utc, 0);
-   if(strategy_variant_id != "ONR_MID_BRK_BASELINE" ||
-      strategy_signal_tf != PERIOD_M5 || strategy_max_cost_r != 0.10 ||
-      Strategy_ParseDateKey(strategy_calendar_valid_through) != 20251231 ||
-      StringLen(strategy_tzdb_version) == 0 ||
-      !Strategy_IsSha256(strategy_session_ledger_sha256))
-      return false;
-
-   string actual_hash = "";
-   if(!Strategy_CommonFileSha256(strategy_session_ledger_file, actual_hash) ||
-      Strategy_Upper(actual_hash) != Strategy_Upper(strategy_session_ledger_sha256))
-      return false;
-
-   const int handle = FileOpen(strategy_session_ledger_file,
-                               FILE_READ | FILE_CSV | FILE_ANSI | FILE_COMMON,
-                               ',');
-   if(handle == INVALID_HANDLE)
-      return false;
-
-   int rows = 0;
-   int previous_date_key = 0;
-   bool valid = true;
-   while(!FileIsEnding(handle))
-     {
-      const string date_text = Strategy_Trimmed(FileReadString(handle));
-      const string overnight_text = Strategy_Trimmed(FileReadString(handle));
-      const string open_text = Strategy_Trimmed(FileReadString(handle));
-      const string close_text = Strategy_Trimmed(FileReadString(handle));
-      const string valid_through_text = Strategy_Trimmed(FileReadString(handle));
-      const string overnight_source_url = Strategy_Trimmed(FileReadString(handle));
-      const string cash_source_url = Strategy_Trimmed(FileReadString(handle));
-      string retrieved_date = Strategy_Trimmed(FileReadString(handle));
-      const string overnight_source_sha256 = Strategy_Trimmed(FileReadString(handle));
-      const string cash_source_sha256 = Strategy_Trimmed(FileReadString(handle));
-      const string tzdb_version = Strategy_Trimmed(FileReadString(handle));
-
-      if(rows == 0 && date_text == "cash_date" && overnight_text == "overnight_start_utc")
-         continue;
-      if(date_text == "" && overnight_text == "" && open_text == "")
-         continue;
-
-      const int cash_date_key = Strategy_ParseDateKey(date_text);
-      const datetime overnight_start_utc = Strategy_ParseUtcTimestamp(overnight_text);
-      const datetime cash_open_utc = Strategy_ParseUtcTimestamp(open_text);
-      const datetime cash_close_utc = Strategy_ParseUtcTimestamp(close_text);
-      int close_minutes = 0;
-      StringReplace(retrieved_date, "-", ".");
-      if(cash_date_key <= 0 || cash_date_key <= previous_date_key ||
-         overnight_start_utc <= 0 || cash_open_utc <= overnight_start_utc ||
-         cash_close_utc <= cash_open_utc ||
-         !Strategy_NewYorkClockMatches(overnight_start_utc, 18, 0) ||
-         !Strategy_NewYorkClockMatches(cash_open_utc, 9, 30) ||
-         Strategy_DateKey(Strategy_NewYorkLocal(cash_open_utc)) != cash_date_key ||
-         !Strategy_ValidCashClose(cash_close_utc, cash_date_key, close_minutes) ||
-         cash_open_utc - overnight_start_utc < 12 * 60 * 60 ||
-         cash_open_utc - overnight_start_utc > 18 * 60 * 60 ||
-         Strategy_ParseDateKey(valid_through_text) != 20251231 ||
-         !Strategy_ValidOvernightSource(overnight_source_url) ||
-         !Strategy_ValidCashSource(cash_source_url) || StringToTime(retrieved_date) <= 0 ||
-         !Strategy_IsSha256(overnight_source_sha256) || !Strategy_IsSha256(cash_source_sha256) ||
-         tzdb_version != strategy_tzdb_version ||
-         !Strategy_AppendSession(cash_date_key, overnight_start_utc,
-                                 cash_open_utc, cash_close_utc))
-        {
-         valid = false;
-         break;
-        }
-      previous_date_key = cash_date_key;
-      ++rows;
-     }
-   FileClose(handle);
-   return (valid && rows > 0 && g_cash_date_key[0] / 10000 <= 2018 &&
-           g_cash_date_key[rows - 1] / 10000 >= 2025);
-  }
-
-int Strategy_FindSessionByDate(const int cash_date_key)
-  {
-   int lo = 0;
-   int hi = ArraySize(g_cash_date_key);
-   while(lo < hi)
-     {
-      const int mid = lo + (hi - lo) / 2;
-      if(g_cash_date_key[mid] < cash_date_key)
-         lo = mid + 1;
-      else
-         hi = mid;
-     }
-   if(lo < ArraySize(g_cash_date_key) && g_cash_date_key[lo] == cash_date_key)
-      return lo;
-   return -1;
-  }
-
-int Strategy_FindSessionByUtc(const datetime utc)
-  {
-   int lo = 0;
-   int hi = ArraySize(g_overnight_start_utc);
-   while(lo < hi)
-     {
-      const int mid = lo + (hi - lo) / 2;
-      if(g_overnight_start_utc[mid] <= utc)
-         lo = mid + 1;
-      else
-         hi = mid;
-     }
-   const int index = lo - 1;
-   if(index >= 0 && utc < g_cash_close_utc[index])
-      return index;
-   return -1;
-  }
-
-bool Strategy_EnsureDependencies()
-  {
-   if(g_dependencies_attempted)
-      return g_calendar_ready;
-   g_dependencies_attempted = true;
-   g_calendar_ready = Strategy_LoadSessionLedger();
-   if(!g_calendar_ready)
-      QM_LogEvent(QM_ERROR,
-                  "SETUP_DATA_MISSING",
-                  StringFormat("{\"session_ledger\":\"%s\",\"tzdb_version\":\"%s\"}",
-                               strategy_session_ledger_file, strategy_tzdb_version));
-   return g_calendar_ready;
+   return (utc >= overnight_start_utc && utc < cash_close_utc);
   }
 
 bool Strategy_IsRoutedSymbol(const string symbol)
@@ -404,10 +240,10 @@ bool Strategy_FindOurPosition(datetime &open_time)
    return false;
   }
 
-void Strategy_RecoverAttempt(const int session_index)
+void Strategy_RecoverAttempt(const datetime cash_open_utc)
   {
    g_attempted = false;
-   const datetime from_broker = QM_UTCToBroker(g_cash_open_utc[session_index]);
+   const datetime from_broker = QM_UTCToBroker(cash_open_utc);
    if(from_broker <= 0 || !HistorySelect(from_broker, TimeCurrent()))
      {
       g_attempted = true;
@@ -442,9 +278,15 @@ void Strategy_RecoverAttempt(const int session_index)
      }
   }
 
-void Strategy_ResetQuoteSession(const int session_index)
+void Strategy_ResetQuoteSession(const int cash_date_key,
+                                const datetime overnight_start_utc,
+                                const datetime cash_open_utc,
+                                const datetime cash_close_utc)
   {
-   g_quote_session_index = session_index;
+   g_quote_session_key = cash_date_key;
+   g_overnight_start_utc = overnight_start_utc;
+   g_cash_open_utc = cash_open_utc;
+   g_cash_close_utc = cash_close_utc;
    g_range_failed = false;
    g_range_has_quote = false;
    g_range_frozen = false;
@@ -456,7 +298,7 @@ void Strategy_ResetQuoteSession(const int session_index)
    g_breakout_through_utc = 0;
    g_pending_side = 0;
    g_pending_entry_utc = 0;
-   Strategy_RecoverAttempt(session_index);
+   Strategy_RecoverAttempt(cash_open_utc);
   }
 
 bool Strategy_TickMid(const MqlTick &tick, double &mid)
@@ -481,9 +323,9 @@ void Strategy_AccumulateMid(const double mid)
    g_overnight_low = MathMin(g_overnight_low, mid);
   }
 
-bool Strategy_RebuildOvernightTicks(const int session_index, const ulong to_msc)
+bool Strategy_RebuildOvernightTicks(const ulong to_msc)
   {
-   const ulong start_msc = (ulong)g_overnight_start_utc[session_index] * 1000;
+   const ulong start_msc = (ulong)g_overnight_start_utc * 1000;
    if(to_msc < start_msc)
       return true;
    const ulong chunk_width = 30 * 60 * 1000;
@@ -514,13 +356,12 @@ bool Strategy_RebuildOvernightTicks(const int session_index, const ulong to_msc)
    return g_range_has_quote;
   }
 
-bool Strategy_FirstRthMid(const int session_index,
-                          const ulong available_to_msc,
+bool Strategy_FirstRthMid(const ulong available_to_msc,
                           double &rth_mid)
   {
    rth_mid = 0.0;
-   ulong cursor = (ulong)g_cash_open_utc[session_index] * 1000;
-   const ulong close_msc = (ulong)g_cash_close_utc[session_index] * 1000;
+   ulong cursor = (ulong)g_cash_open_utc * 1000;
+   const ulong close_msc = (ulong)g_cash_close_utc * 1000;
    const ulong stop_msc = (available_to_msc < close_msc) ? available_to_msc : close_msc - 1;
    const ulong chunk_width = 5 * 60 * 1000;
    while(cursor <= stop_msc)
@@ -556,7 +397,7 @@ double Strategy_TickNormalizedPrice(const double price)
    return QM_StopRulesNormalizePrice(_Symbol, MathRound(price / tick_size) * tick_size);
   }
 
-bool Strategy_FreezeRangeAndSide(const int session_index, const ulong available_to_msc)
+bool Strategy_FreezeRangeAndSide(const ulong available_to_msc)
   {
    if(!g_range_has_quote || g_overnight_high <= g_overnight_low)
       return false;
@@ -568,7 +409,7 @@ bool Strategy_FreezeRangeAndSide(const int session_index, const ulong available_
       return false;
 
    double rth_mid = 0.0;
-   if(!Strategy_FirstRthMid(session_index, available_to_msc, rth_mid))
+   if(!Strategy_FirstRthMid(available_to_msc, rth_mid))
       return false;
    rth_mid = Strategy_TickNormalizedPrice(rth_mid);
    g_range_frozen = true;
@@ -583,30 +424,43 @@ bool Strategy_FreezeRangeAndSide(const int session_index, const ulong available_
 
 bool Strategy_UpdateQuoteState()
   {
-   if(!g_calendar_ready || !SymbolIsSynchronized(_Symbol))
+   if(!SymbolIsSynchronized(_Symbol))
       return false;
    MqlTick tick;
    if(!SymbolInfoTick(_Symbol, tick) || tick.time_msc <= 0)
       return false;
    const datetime utc = (datetime)(tick.time_msc / 1000);
-   const int session_index = Strategy_FindSessionByUtc(utc);
-   if(session_index < 0)
+   int cash_date_key = 0;
+   datetime overnight_start_utc = 0;
+   datetime cash_open_utc = 0;
+   datetime cash_close_utc = 0;
+   if(!Strategy_ResolveSessionForUtc(utc,
+                                     cash_date_key,
+                                     overnight_start_utc,
+                                     cash_open_utc,
+                                     cash_close_utc))
       return true;
 
-   if(g_quote_session_index != session_index)
+   if(g_quote_session_key != cash_date_key ||
+      g_overnight_start_utc != overnight_start_utc ||
+      g_cash_open_utc != cash_open_utc ||
+      g_cash_close_utc != cash_close_utc)
      {
-      Strategy_ResetQuoteSession(session_index);
+      Strategy_ResetQuoteSession(cash_date_key,
+                                 overnight_start_utc,
+                                 cash_open_utc,
+                                 cash_close_utc);
       ulong rebuild_to = (ulong)tick.time_msc - 1;
-      const ulong open_msc = (ulong)g_cash_open_utc[session_index] * 1000;
+      const ulong open_msc = (ulong)g_cash_open_utc * 1000;
       if(rebuild_to >= open_msc)
          rebuild_to = open_msc - 1;
-      if(!Strategy_RebuildOvernightTicks(session_index, rebuild_to))
+      if(!Strategy_RebuildOvernightTicks(rebuild_to))
          g_range_failed = true;
      }
 
    if(g_range_failed)
       return false;
-   if(utc < g_cash_open_utc[session_index])
+   if(utc < g_cash_open_utc)
      {
       double mid = 0.0;
       if(!Strategy_TickMid(tick, mid))
@@ -619,7 +473,7 @@ bool Strategy_UpdateQuoteState()
      }
 
    if(!g_range_frozen &&
-      !Strategy_FreezeRangeAndSide(session_index, (ulong)tick.time_msc))
+      !Strategy_FreezeRangeAndSide((ulong)tick.time_msc))
      {
       g_range_failed = true;
       return false;
@@ -664,8 +518,8 @@ bool Strategy_ProcessCashBar(const MqlRates &bar,
       return true;
 
    g_cash_date_resolved = true;
-   if(!allow_entry || g_quote_session_index < 0 ||
-      next_open_utc >= g_cash_close_utc[g_quote_session_index])
+   if(!allow_entry || g_quote_session_key <= 0 ||
+      next_open_utc >= g_cash_close_utc)
       return true;
    datetime open_time = 0;
    if(Strategy_FindOurPosition(open_time))
@@ -675,13 +529,12 @@ bool Strategy_ProcessCashBar(const MqlRates &bar,
    return true;
   }
 
-bool Strategy_RebuildCashBars(const int session_index,
-                              const datetime current_open_utc)
+bool Strategy_RebuildCashBars(const datetime current_open_utc)
   {
    g_breakout_through_utc = 0;
    g_pending_side = 0;
    g_pending_entry_utc = 0;
-   const datetime start_broker = QM_UTCToBroker(g_cash_open_utc[session_index]);
+   const datetime start_broker = QM_UTCToBroker(g_cash_open_utc);
    const datetime stop_broker = QM_UTCToBroker(current_open_utc) - 1;
    if(start_broker <= 0 || stop_broker < start_broker)
       return false;
@@ -701,8 +554,8 @@ bool Strategy_RebuildCashBars(const int session_index,
    for(int i = 0; i < copied; ++i)
      {
       const datetime bar_utc = QM_BrokerToUTC(rates[i].time);
-      if(bar_utc < g_cash_open_utc[session_index] ||
-         bar_utc >= g_cash_close_utc[session_index] || bar_utc >= current_open_utc)
+      if(bar_utc < g_cash_open_utc || bar_utc >= g_cash_close_utc ||
+         bar_utc >= current_open_utc)
          continue;
       if(previous_utc > 0 && bar_utc != previous_utc + 5 * 60)
          return false;
@@ -719,8 +572,8 @@ bool Strategy_AdvanceBreakoutOnNewBar()
   {
    g_pending_side = 0;
    g_pending_entry_utc = 0;
-   if(!g_calendar_ready || !Strategy_IsRoutedSymbol(_Symbol) ||
-      _Period != strategy_signal_tf || strategy_signal_tf != PERIOD_M5)
+   if(!Strategy_IsRoutedSymbol(_Symbol) || _Period != strategy_signal_tf ||
+      strategy_signal_tf != PERIOD_M5)
       return false;
 
    MqlRates current_bar;
@@ -731,42 +584,44 @@ bool Strategy_AdvanceBreakoutOnNewBar()
    const datetime current_open_utc = QM_BrokerToUTC(current_bar.time);
    const datetime closed_bar_utc = QM_BrokerToUTC(closed_bar.time);
    const int cash_date_key = Strategy_DateKey(Strategy_NewYorkLocal(closed_bar_utc));
-   const int session_index = Strategy_FindSessionByDate(cash_date_key);
-   if(session_index < 0 || g_quote_session_index != session_index ||
+   datetime overnight_start_utc = 0;
+   datetime cash_open_utc = 0;
+   datetime cash_close_utc = 0;
+   if(!Strategy_ResolveSessionForCashDate(cash_date_key,
+                                          overnight_start_utc,
+                                          cash_open_utc,
+                                          cash_close_utc) ||
+      g_quote_session_key != cash_date_key ||
+      g_overnight_start_utc != overnight_start_utc ||
+      g_cash_open_utc != cash_open_utc || g_cash_close_utc != cash_close_utc ||
       !g_range_frozen || g_range_failed ||
-      closed_bar_utc < g_cash_open_utc[session_index] ||
-      closed_bar_utc >= g_cash_close_utc[session_index])
+      closed_bar_utc < cash_open_utc || closed_bar_utc >= cash_close_utc)
       return false;
 
    if(g_breakout_through_utc == 0 ||
       g_breakout_through_utc + 5 * 60 != closed_bar_utc)
-      return Strategy_RebuildCashBars(session_index, current_open_utc);
+      return Strategy_RebuildCashBars(current_open_utc);
 
    return Strategy_ProcessCashBar(closed_bar,
-                                  closed_bar_utc,
-                                  current_open_utc,
-                                  current_open_utc < g_cash_close_utc[session_index]);
+                                   closed_bar_utc,
+                                   current_open_utc,
+                                   current_open_utc < cash_close_utc);
   }
 
-bool Strategy_CostAndVolumeAllow(const double entry_price,
-                                 const double stop_price)
+bool Strategy_TradeGeometryAndVolumeAllow(const double entry_price,
+                                          const double stop_price)
   {
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
    const double tick_value = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_VALUE_LOSS);
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(AccountInfoString(ACCOUNT_CURRENCY) != "USD" || RISK_FIXED != 1000.0 ||
-      RISK_PERCENT != 0.0 || point <= 0.0 || tick_size <= 0.0 || tick_value <= 0.0 ||
-      ask <= 0.0 || bid <= 0.0 || ask < bid || entry_price <= 0.0 || stop_price <= 0.0 ||
-      strategy_round_turn_commission_usd_per_lot <= 0.0)
+   if(RISK_FIXED != 1000.0 || RISK_PERCENT != 0.0 ||
+      point <= 0.0 || tick_size <= 0.0 || tick_value <= 0.0 ||
+      entry_price <= 0.0 || stop_price <= 0.0)
       return false;
 
    const double stop_distance = MathAbs(entry_price - stop_price);
    const double risk_per_lot = (stop_distance / tick_size) * tick_value;
-   const double spread_per_lot = ((ask - bid) / tick_size) * tick_value;
-   if(risk_per_lot <= 0.0 ||
-      (strategy_round_turn_commission_usd_per_lot + spread_per_lot) / risk_per_lot > strategy_max_cost_r)
+   if(risk_per_lot <= 0.0)
       return false;
 
    const double sl_points = stop_distance / point;
@@ -785,6 +640,26 @@ bool Strategy_CostAndVolumeAllow(const double entry_price,
    return (MathAbs(aligned - lots) <= volume_step * 1.0e-6);
   }
 
+bool Strategy_InputsValid()
+  {
+   return (strategy_variant_id == "ONR_MID_BRK_BASELINE" &&
+           strategy_signal_tf == PERIOD_M5 &&
+           strategy_overnight_start_hour_new_york == 18 &&
+           strategy_overnight_start_minute_new_york == 0 &&
+           strategy_cash_open_hour_new_york == 9 &&
+           strategy_cash_open_minute_new_york == 30 &&
+           strategy_cash_close_hour_new_york == 16 &&
+           strategy_cash_close_minute_new_york == 0);
+  }
+
+bool Strategy_WideSpread()
+  {
+   if(strategy_max_spread_points <= 0)
+      return false;
+   const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+   return (spread_points > strategy_max_spread_points);
+  }
+
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -797,7 +672,7 @@ bool Strategy_NoTradeFilter()
    if(Strategy_FindOurPosition(open_time))
       return false;
    if(!Strategy_IsRoutedSymbol(_Symbol) || _Period != strategy_signal_tf ||
-      strategy_signal_tf != PERIOD_M5 || !Strategy_EnsureDependencies())
+      !Strategy_InputsValid())
       return true;
    return !Strategy_UpdateQuoteState();
   }
@@ -816,8 +691,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.expiration_seconds = 0;
 
    if(g_pending_side == 0 || g_pending_entry_utc <= 0 ||
-      g_quote_session_index < 0 || g_attempted ||
-      g_pending_entry_utc >= g_cash_close_utc[g_quote_session_index])
+      g_quote_session_key <= 0 || g_attempted ||
+      g_pending_entry_utc >= g_cash_close_utc)
       return false;
    MqlRates current_bar;
    if(!QM_ReadBar(_Symbol, strategy_signal_tf, 0, current_bar) ||
@@ -842,14 +717,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(frozen_midpoint <= 0.0 ||
       (is_long && entry_price <= frozen_midpoint) ||
       (!is_long && entry_price >= frozen_midpoint) ||
-      !Strategy_CostAndVolumeAllow(entry_price, frozen_midpoint))
+      Strategy_WideSpread() ||
+      !Strategy_TradeGeometryAndVolumeAllow(entry_price, frozen_midpoint))
       return false;
 
    req.type = is_long ? QM_BUY : QM_SELL;
    req.sl = frozen_midpoint;
    req.tp = 0.0;
    req.reason = is_long ? "ONR_MID_BRK_LONG" : "ONR_MID_BRK_SHORT";
-   g_active_close_broker = QM_UTCToBroker(g_cash_close_utc[g_quote_session_index]);
+   g_active_close_broker = QM_UTCToBroker(g_cash_close_utc);
    return (g_active_close_broker > 0);
   }
 
@@ -871,14 +747,17 @@ bool Strategy_ExitSignal()
       return false;
    if(g_active_close_broker <= 0)
      {
-      if(!g_calendar_ready)
-         return true;
       const datetime open_utc = QM_BrokerToUTC(open_time);
       const int cash_date_key = Strategy_DateKey(Strategy_NewYorkLocal(open_utc));
-      const int session_index = Strategy_FindSessionByDate(cash_date_key);
-      if(session_index < 0)
+      datetime overnight_start_utc = 0;
+      datetime cash_open_utc = 0;
+      datetime cash_close_utc = 0;
+      if(!Strategy_ResolveSessionForCashDate(cash_date_key,
+                                             overnight_start_utc,
+                                             cash_open_utc,
+                                             cash_close_utc))
          return true;
-      g_active_close_broker = QM_UTCToBroker(g_cash_close_utc[session_index]);
+      g_active_close_broker = QM_UTCToBroker(cash_close_utc);
      }
    return (g_active_close_broker > 0 && TimeCurrent() >= g_active_close_broker);
   }
