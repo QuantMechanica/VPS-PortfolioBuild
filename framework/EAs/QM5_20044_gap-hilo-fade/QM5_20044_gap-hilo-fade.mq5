@@ -198,6 +198,23 @@ void Strategy_LogRuntimeStateReject(const int date_key,
                             diagnostics));
   }
 
+bool     g_m30_have_previous = false;
+double   g_m30_previous_close = 0.0;
+int      g_m30_tr_count = 0;
+double   g_m30_seed_sum = 0.0;
+double   g_m30_atr = 0.0;
+double   g_recent_high[10];
+double   g_recent_low[10];
+int      g_recent_count = 0;
+
+bool     g_d1_have_previous = false;
+double   g_d1_previous_close = 0.0;
+int      g_d1_tr_count = 0;
+double   g_d1_seed_sum = 0.0;
+double   g_d1_atr = 0.0;
+int      g_history_through_date_key = 0;
+bool     g_history_state_valid = false;
+
 void Strategy_LogHiloOutcome(const int date_key,
                              const string outcome)
   {
@@ -221,23 +238,6 @@ void Strategy_LogHiloOutcome(const int date_key,
                             g_diagnostic_last_extreme_distance,
                             g_diagnostic_last_extreme_limit));
   }
-
-bool     g_m30_have_previous = false;
-double   g_m30_previous_close = 0.0;
-int      g_m30_tr_count = 0;
-double   g_m30_seed_sum = 0.0;
-double   g_m30_atr = 0.0;
-double   g_recent_high[10];
-double   g_recent_low[10];
-int      g_recent_count = 0;
-
-bool     g_d1_have_previous = false;
-double   g_d1_previous_close = 0.0;
-int      g_d1_tr_count = 0;
-double   g_d1_seed_sum = 0.0;
-double   g_d1_atr = 0.0;
-int      g_history_through_date_key = 0;
-bool     g_history_state_valid = false;
 
 int Strategy_DateKey(const datetime value)
   {
