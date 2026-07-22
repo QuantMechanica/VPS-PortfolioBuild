@@ -13,6 +13,13 @@ target_symbols: [XTIUSD.DWX]
 period: D1
 expected_trades_per_year_per_symbol: 8
 pipeline_phase: Q02
+r1_track_record: TIER_A
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+expected_pf: 1.05
+expected_dd_pct: 18.0
+review_focus: "Adds a holiday-sentiment WTI return driver; retire on source-decay, density, economics, or correlation failure."
 ---
 
 # Approved Card Copy — QM5_20048_wti-preholiday

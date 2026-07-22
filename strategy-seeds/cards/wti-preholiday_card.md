@@ -21,6 +21,9 @@ source_citations:
     location: "Highlights; Sections 1 and 3; Table 1 and holiday-result appendix; https://doi.org/10.1016/j.resourpol.2019.101435"
     quality_tier: A
     role: primary
+g0_approval_reasoning: "OWNER commodity-sleeve mission: R1 peer-reviewed Resources Policy paper; R2 deterministic eight-holiday WTI D1 carrier; R3 XTIUSD.DWX registered; R4 no ML, banned indicators, grid, martingale, or runtime external feed."
+expected_pf: 1.05
+expected_dd_pct: 18.0
 ---
 
 # WTI Pre-Holiday Sentiment Sleeve
