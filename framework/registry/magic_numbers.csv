@@ -15119,3 +15119,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20029,wti-monfri-daily,0,XTIUSD.DWX,200290000,2026-07-21,Development,active
 20030,eia-cad,0,USDCAD.DWX,200300000,2026-07-22,Development,active
 20030,eia-cad,1,XTIUSD.DWX,200300001,2026-07-22,Development,active
+20033,moc-imom,0,SP500.DWX,200330000,2026-07-22,Development,active
+20033,moc-imom,1,NDX.DWX,200330001,2026-07-22,Development,active
+20033,moc-imom,2,WS30.DWX,200330002,2026-07-22,Development,active
+20033,moc-imom,3,GDAXI.DWX,200330003,2026-07-22,Development,active
