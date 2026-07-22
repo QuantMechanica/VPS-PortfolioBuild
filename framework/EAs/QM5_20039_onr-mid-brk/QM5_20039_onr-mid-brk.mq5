@@ -419,7 +419,13 @@ bool Strategy_RebuildOvernightTicks(const ulong to_msc)
          break;
       cursor = chunk_end + 1;
      }
-   return g_range_has_quote;
+   // An overnight session commonly starts with the first quote a fraction of
+   // a second after 18:00 New York.  On that first tick the rebuild interval
+   // deliberately ends one millisecond before the current quote, so a valid
+   // empty history window must not poison the whole cash date.  The caller
+   // accumulates the current quote immediately; the cash-open freeze remains
+   // the fail-closed check that requires a non-degenerate overnight range.
+   return true;
   }
 
 bool Strategy_FirstRthMid(const ulong available_to_msc,
