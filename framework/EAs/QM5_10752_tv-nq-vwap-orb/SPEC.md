@@ -105,3 +105,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-14 | Initial build from card | 3664b2e9-ad3d-45be-b5bb-69f82bcd2aa7 |
+| v2 | 2026-07-23 | Q02 FX infrastructure recovery | Existing positions are managed before entry-only session/news filters; historical news evaluation runs once per new M5 bar instead of every tick. Strategy mechanics and parameters are unchanged. |
