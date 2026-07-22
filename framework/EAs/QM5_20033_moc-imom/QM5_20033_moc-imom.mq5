@@ -4,10 +4,12 @@
 
 #include <QM/QM_Common.mqh>
 #include <QM/QM_USCashCalendar.mqh>
+#include <QM/QM_XetraCashCalendar.mqh>
 
 // Strategy Card: QM5_20033_moc-imom, G0 APPROVED 2026-07-22.
-// US cash dates are admitted only by the provenance-locked NYSE calendar.
-// The existing broker-clock route remains the execution-clock boundary.
+// Cash dates are admitted only by the governed venue calendar.  Xetra wall
+// clocks are converted Europe/Berlin -> UTC -> broker; fixed Xetra broker-hour
+// inputs are retained only so historical setfiles still deserialize.
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                     = 20033;
@@ -41,6 +43,7 @@ input int    strategy_us_entry_hour_broker = 22;
 input int    strategy_us_entry_minute_broker = 30;
 input int    strategy_us_close_hour_broker = 23;
 input int    strategy_us_close_minute_broker = 0;
+// Legacy serialization-only fields.  The GDAXI route does not use them.
 input int    strategy_xetra_open_hour_broker = 10;
 input int    strategy_xetra_open_minute_broker = 0;
 input int    strategy_xetra_entry_hour_broker = 18;
@@ -95,6 +98,13 @@ int DateKey(const datetime value)
    return parts.year * 10000 + parts.mon * 100 + parts.day;
   }
 
+int CashDateKeyForBrokerTime(const string symbol, const datetime broker_time)
+  {
+   if(RouteIndex(symbol) == 3)
+      return QM_XetraCashBerlinDateKeyFromUTC(QM_BrokerToUTC(broker_time));
+   return DateKey(broker_time);
+  }
+
 datetime BrokerDateTime(const int date_key, const int hour, const int minute)
   {
    if(date_key < 19000101 || hour < 0 || hour > 23 || minute < 0 || minute > 59)
@@ -133,29 +143,61 @@ bool ResolveSessionTimes(const string symbol,
    if(route < 0)
       return false;
    const bool xetra = (route == 3);
-   QM_USCashSessionType us_session_type = QM_US_CASH_INVALID;
-   if(!xetra)
+   if(xetra)
      {
-      us_session_type = QM_USCashCalendarClassify(date_key);
-      if(us_session_type != QM_US_CASH_NORMAL &&
-         us_session_type != QM_US_CASH_EARLY_CLOSE)
+      const QM_XetraCashSessionType session_type =
+         QM_XetraCashCalendarClassify(date_key);
+      if(session_type != QM_XETRA_CASH_NORMAL &&
+         session_type != QM_XETRA_CASH_EARLY_CLOSE)
          return false;
+
+      datetime open_utc = 0;
+      datetime entry_utc = 0;
+      datetime exit_utc = 0;
+      const int close_hour =
+         (session_type == QM_XETRA_CASH_EARLY_CLOSE ? 14 : 17);
+      const int close_minute =
+         (session_type == QM_XETRA_CASH_EARLY_CLOSE ? 0 : 30);
+      const int entry_hour =
+         (session_type == QM_XETRA_CASH_EARLY_CLOSE ? 13 : 17);
+      const int entry_minute =
+         (session_type == QM_XETRA_CASH_EARLY_CLOSE ? 30 : 0);
+      if(!QM_XetraCashBerlinLocalToUTC(date_key, 9, 0, open_utc) ||
+         !QM_XetraCashBerlinLocalToUTC(date_key,
+                                       entry_hour,
+                                       entry_minute,
+                                       entry_utc) ||
+         !QM_XetraCashBerlinLocalToUTC(date_key,
+                                       close_hour,
+                                       close_minute,
+                                       exit_utc))
+         return false;
+      open_broker = QM_UTCToBroker(open_utc);
+      first30_broker = QM_UTCToBroker(open_utc + 30 * 60);
+      entry_broker = QM_UTCToBroker(entry_utc);
+      exit_broker = QM_UTCToBroker(exit_utc);
+      return (open_broker > 0 && first30_broker > open_broker &&
+              entry_broker >= first30_broker &&
+              exit_broker - entry_broker == 30 * 60 &&
+              QM_BrokerToUTC(open_broker) == open_utc &&
+              QM_BrokerToUTC(entry_broker) == entry_utc &&
+              QM_BrokerToUTC(exit_broker) == exit_utc);
      }
-   const int open_hour = xetra ? strategy_xetra_open_hour_broker
-                               : strategy_us_open_hour_broker;
-   const int open_minute = xetra ? strategy_xetra_open_minute_broker
-                                 : strategy_us_open_minute_broker;
-   const int entry_hour = xetra ? strategy_xetra_entry_hour_broker
-                                : strategy_us_entry_hour_broker;
-   const int entry_minute = xetra ? strategy_xetra_entry_minute_broker
-                                  : strategy_us_entry_minute_broker;
-   const int close_hour = xetra ? strategy_xetra_close_hour_broker
-                                : strategy_us_close_hour_broker;
-   const int close_minute = xetra ? strategy_xetra_close_minute_broker
-                                  : strategy_us_close_minute_broker;
+
+   QM_USCashSessionType us_session_type = QM_US_CASH_INVALID;
+   us_session_type = QM_USCashCalendarClassify(date_key);
+   if(us_session_type != QM_US_CASH_NORMAL &&
+      us_session_type != QM_US_CASH_EARLY_CLOSE)
+      return false;
+   const int open_hour = strategy_us_open_hour_broker;
+   const int open_minute = strategy_us_open_minute_broker;
+   const int entry_hour = strategy_us_entry_hour_broker;
+   const int entry_minute = strategy_us_entry_minute_broker;
+   const int close_hour = strategy_us_close_hour_broker;
+   const int close_minute = strategy_us_close_minute_broker;
    open_broker = BrokerDateTime(date_key, open_hour, open_minute);
    first30_broker = open_broker + 30 * 60;
-   if(!xetra && us_session_type == QM_US_CASH_EARLY_CLOSE)
+   if(us_session_type == QM_US_CASH_EARLY_CLOSE)
      {
       // All governed early closes in the bound calendar are 13:00 ET, three
       // hours before the regular 16:00 ET close.  The final M30 interval moves
@@ -281,15 +323,9 @@ bool Strategy_InputsValid()
            strategy_us_open_hour_broker == 16 &&
            strategy_us_open_minute_broker == 30 &&
            strategy_us_entry_hour_broker == 22 &&
-           strategy_us_entry_minute_broker == 30 &&
-           strategy_us_close_hour_broker == 23 &&
-           strategy_us_close_minute_broker == 0 &&
-           strategy_xetra_open_hour_broker == 10 &&
-           strategy_xetra_open_minute_broker == 0 &&
-           strategy_xetra_entry_hour_broker == 18 &&
-           strategy_xetra_entry_minute_broker == 0 &&
-           strategy_xetra_close_hour_broker == 18 &&
-           strategy_xetra_close_minute_broker == 30);
+            strategy_us_entry_minute_broker == 30 &&
+            strategy_us_close_hour_broker == 23 &&
+            strategy_us_close_minute_broker == 0);
   }
 
 bool Strategy_WideSpread()
@@ -311,6 +347,8 @@ bool Strategy_NoTradeFilter()
       return false;
    const int route = RouteIndex(_Symbol);
    if(route >= 0 && route < 3 && !QM_USCashCalendarReady())
+      return true;
+   if(route == 3 && !QM_XetraCashCalendarReady())
       return true;
    if(!IsRoutedSymbol(_Symbol) || _Period != strategy_signal_tf ||
       !Strategy_InputsValid())
@@ -340,7 +378,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    datetime entry_broker = 0;
    datetime exit_broker = 0;
    if(!ResolveSessionTimes(_Symbol,
-                           DateKey(broker_now),
+                           CashDateKeyForBrokerTime(_Symbol, broker_now),
                            open_broker,
                            first30_broker,
                            entry_broker,
@@ -356,7 +394,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
         {
          MqlDateTime now_parts;
          ZeroMemory(now_parts);
-         if(TimeToStruct(broker_now, now_parts) && now_parts.hour >= 21 && now_parts.hour <= 23)
+          if(TimeToStruct(broker_now, now_parts) &&
+             (RouteIndex(_Symbol) == 3 ||
+              (now_parts.hour >= 21 && now_parts.hour <= 23)))
             LogStrategyEntryReject("outside_entry_window",
                                    broker_now,
                                    current_bar_broker,
@@ -490,7 +530,7 @@ bool Strategy_ExitSignal()
       datetime entry_broker = 0;
       datetime exit_broker = 0;
       if(ResolveSessionTimes(_Symbol,
-                             DateKey(open_time),
+                             CashDateKeyForBrokerTime(_Symbol, open_time),
                              open_broker,
                              first30_broker,
                              entry_broker,
@@ -546,7 +586,23 @@ int OnInit()
                             QM_LoggerEscapeJson(QM_US_CASH_CALENDAR_RUNTIME_FILE),
                             QM_US_CASH_CALENDAR_RUNTIME_SHA256,
                             QM_USCashCalendarActualSha256(),
-                            QM_LoggerEscapeJson(QM_USCashCalendarLastError())));
+                             QM_LoggerEscapeJson(QM_USCashCalendarLastError())));
+
+   const bool xetra_calendar_required = (route == 3);
+   const bool xetra_calendar_ready =
+      (!xetra_calendar_required ||
+       QM_XetraCashCalendarLoad(QM_XETRA_CASH_CALENDAR_RUNTIME_FILE,
+                                QM_XETRA_CASH_CALENDAR_RUNTIME_SHA256));
+   QM_LogEvent(xetra_calendar_ready ? QM_INFO : QM_ERROR,
+               "XETRA_CASH_CALENDAR_STATE",
+               StringFormat("{\"required\":%s,\"ready\":%s,\"file\":\"%s\",\"expected_sha256\":\"%s\",\"actual_sha256\":\"%s\",\"manifest_sha256\":\"%s\",\"error\":\"%s\"}",
+                            xetra_calendar_required ? "true" : "false",
+                            xetra_calendar_ready ? "true" : "false",
+                            QM_LoggerEscapeJson(QM_XETRA_CASH_CALENDAR_RUNTIME_FILE),
+                            QM_XETRA_CASH_CALENDAR_RUNTIME_SHA256,
+                            QM_XetraCashCalendarActualSha256(),
+                            QM_XETRA_CASH_CALENDAR_MANIFEST_SHA256,
+                            QM_LoggerEscapeJson(QM_XetraCashCalendarLastError())));
 
    // Each setfile is an independent, single-symbol instance.  Pulling all four
    // sibling histories into every tester agent made cold runs fail when one
@@ -555,7 +611,7 @@ int OnInit()
 
    QM_LogEvent(QM_INFO,
                "INIT_OK",
-               StringFormat("{\"routed\":%s,\"period\":%d,\"signal_tf\":%d,\"inputs_valid\":%s,\"debug_entry_hooks\":%s,\"us_entry_hour\":%d,\"us_entry_minute\":%d}",
+               StringFormat("{\"routed\":%s,\"period\":%d,\"signal_tf\":%d,\"inputs_valid\":%s,\"debug_entry_hooks\":%s,\"us_entry_hour\":%d,\"us_entry_minute\":%d,\"xetra_clock_source\":\"EUROPE_BERLIN_TO_UTC_TO_BROKER\",\"legacy_xetra_broker_inputs_ignored\":true}",
                             IsRoutedSymbol(_Symbol) ? "true" : "false",
                             (int)_Period,
                             (int)strategy_signal_tf,
