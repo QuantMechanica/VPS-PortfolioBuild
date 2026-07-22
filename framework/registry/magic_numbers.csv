@@ -15155,3 +15155,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20049,wti-abret-mom,0,XTIUSD.DWX,200490000,2026-07-22,Development,active
 20050,xauxag-xmom12,0,XAUUSD.DWX,200500000,2026-07-23,Development,active
 20050,xauxag-xmom12,1,XAGUSD.DWX,200500001,2026-07-23,Development,active
+20051,energy-xmom1,0,XTIUSD.DWX,200510000,2026-07-23,Development,active
+20051,energy-xmom1,1,XNGUSD.DWX,200510001,2026-07-23,Development,active
