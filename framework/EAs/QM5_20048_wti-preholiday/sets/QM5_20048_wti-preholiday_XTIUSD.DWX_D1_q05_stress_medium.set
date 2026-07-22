@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        20048
 ; ea_slug:      wti-preholiday
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   b9eebc0ff6b0262e7a3e5b01e55cf8b54cf6f70ee7388700cc72732d95b92920
 ; author:       Development
 ; date:         2026-07-22
 ;==========================================================
