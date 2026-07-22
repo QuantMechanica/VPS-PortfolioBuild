@@ -48,9 +48,28 @@ input int    strategy_xetra_close_minute_broker = 30;
 // Tester Groups applies venue commission to fills; zero disables this optional
 // native spread guard, matching the proven QM5_12969 execution baseline.
 input int    strategy_max_spread_points   = 0;
+input bool   strategy_debug_entry_hooks   = false;
 
 datetime g_last_attempt_entry_broker = 0;
 datetime g_active_exit_broker = 0;
+bool     g_logged_no_trade_config_reject = false;
+
+void LogStrategyEntryReject(const string detail,
+                            const datetime broker_now,
+                            const datetime current_bar_broker,
+                            const datetime entry_broker,
+                            const string diagnostics = "")
+  {
+   QM_LogEvent(QM_WARN,
+               "ENTRY_REJECTED",
+               StringFormat("{\"result\":\"STRATEGY_HOOK_REJECTED\",\"symbol\":\"%s\",\"reason\":\"MOC_IMOM\",\"detail\":\"%s\",\"broker_now\":%I64d,\"current_bar_broker\":%I64d,\"entry_broker\":%I64d%s}",
+                            QM_LoggerEscapeJson(_Symbol),
+                            QM_LoggerEscapeJson(detail),
+                            (long)broker_now,
+                            (long)current_bar_broker,
+                            (long)entry_broker,
+                            diagnostics));
+  }
 
 int RouteIndex(const string symbol)
   {
@@ -162,24 +181,32 @@ bool TickMid(const MqlTick &tick, double &mid)
 
 bool OpeningIntervalMove(const datetime open_utc,
                          const datetime first30_utc,
-                         double &open_move_signed)
+                         double &open_move_signed,
+                         int &copied_ticks,
+                         int &copy_error,
+                         double &open_mid,
+                         double &close_mid)
   {
    open_move_signed = 0.0;
+   copied_ticks = 0;
+   copy_error = 0;
+   open_mid = 0.0;
+   close_mid = 0.0;
    MqlTick ticks[];
    const ulong from_msc = (ulong)open_utc * 1000;
    const ulong to_msc = (ulong)first30_utc * 1000 - 1;
-   const int copied = CopyTicksRange(_Symbol, ticks, COPY_TICKS_INFO, from_msc, to_msc);
-   if(copied <= 0)
+   ResetLastError();
+   copied_ticks = CopyTicksRange(_Symbol, ticks, COPY_TICKS_INFO, from_msc, to_msc);
+   copy_error = GetLastError();
+   if(copied_ticks <= 0)
       return false;
 
-   double open_mid = 0.0;
-   double close_mid = 0.0;
-   for(int i = 0; i < copied; ++i)
+   for(int i = 0; i < copied_ticks; ++i)
      {
       if(TickMid(ticks[i], open_mid))
          break;
      }
-   for(int i = copied - 1; i >= 0; --i)
+   for(int i = copied_ticks - 1; i >= 0; --i)
      {
       if(TickMid(ticks[i], close_mid))
          break;
@@ -275,7 +302,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!IsRoutedSymbol(_Symbol) || _Period != strategy_signal_tf ||
       !Strategy_InputsValid())
       return false;
-   const datetime current_bar_broker = iTime(_Symbol, strategy_signal_tf, 0); // perf-allowed: exact broker-clock entry bar behind QM_IsNewBar.
+   const datetime broker_now = TimeCurrent();
+   const datetime current_bar_broker = iTime(_Symbol, strategy_signal_tf, 0); // perf-allowed: session entry window behind QM_IsNewBar.
    if(current_bar_broker <= 0)
       return false;
    datetime open_broker = 0;
@@ -283,27 +311,99 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    datetime entry_broker = 0;
    datetime exit_broker = 0;
    if(!ResolveSessionTimes(_Symbol,
-                           DateKey(current_bar_broker),
+                           DateKey(broker_now),
                            open_broker,
                            first30_broker,
                            entry_broker,
-                           exit_broker) ||
-      current_bar_broker != entry_broker ||
-      !IsUtcWeekday(entry_broker) ||
-      entry_broker == g_last_attempt_entry_broker)
+                           exit_broker))
       return false;
 
+   // The card calls for the first tradable quote in the final M30 interval.
+   // Tester/broker feeds need not stamp that first tick at exactly xx:30:00,
+   // so bind to the half-hour window and never backfill after the cash close.
+   if(broker_now < entry_broker || broker_now >= exit_broker)
+     {
+      if(strategy_debug_entry_hooks)
+        {
+         MqlDateTime now_parts;
+         ZeroMemory(now_parts);
+         if(TimeToStruct(broker_now, now_parts) && now_parts.hour >= 21 && now_parts.hour <= 23)
+            LogStrategyEntryReject("outside_entry_window",
+                                   broker_now,
+                                   current_bar_broker,
+                                   entry_broker,
+                                   StringFormat(",\"exit_broker\":%I64d,\"period\":%d,\"signal_tf\":%d",
+                                                (long)exit_broker,
+                                                (int)_Period,
+                                                (int)strategy_signal_tf));
+        }
+      return false;
+     }
+   if(!IsUtcWeekday(entry_broker))
+     {
+      LogStrategyEntryReject("non_weekday", broker_now, current_bar_broker, entry_broker);
+      return false;
+     }
+   if(entry_broker == g_last_attempt_entry_broker)
+      return false;
+
+   // At most one strategy-hook attempt per symbol/cash session, including a
+   // fail-closed data/geometry rejection.  This also makes diagnostics exact.
+   g_last_attempt_entry_broker = entry_broker;
+
    double open_move_signed = 0.0;
+   int copied_ticks = 0;
+   int copy_error = 0;
+   double open_mid = 0.0;
+   double close_mid = 0.0;
    if(!OpeningIntervalMove(QM_BrokerToUTC(open_broker),
                            QM_BrokerToUTC(first30_broker),
-                           open_move_signed) || open_move_signed == 0.0)
+                           open_move_signed,
+                           copied_ticks,
+                           copy_error,
+                           open_mid,
+                           close_mid))
+     {
+      LogStrategyEntryReject("opening_interval_unavailable",
+                             broker_now,
+                             current_bar_broker,
+                             entry_broker,
+                             StringFormat(",\"open_broker\":%I64d,\"first30_broker\":%I64d,\"open_utc\":%I64d,\"first30_utc\":%I64d,\"copied_ticks\":%d,\"copy_error\":%d,\"open_mid\":%.8f,\"close_mid\":%.8f",
+                                          (long)open_broker,
+                                          (long)first30_broker,
+                                          (long)QM_BrokerToUTC(open_broker),
+                                          (long)QM_BrokerToUTC(first30_broker),
+                                          copied_ticks,
+                                          copy_error,
+                                          open_mid,
+                                          close_mid));
       return false;
+     }
+   if(open_move_signed == 0.0)
+     {
+      LogStrategyEntryReject("opening_interval_flat",
+                             broker_now,
+                             current_bar_broker,
+                             entry_broker,
+                             StringFormat(",\"copied_ticks\":%d,\"open_mid\":%.8f,\"close_mid\":%.8f",
+                                          copied_ticks,
+                                          open_mid,
+                                          close_mid));
+      return false;
+     }
 
    const bool buy = (open_move_signed > 0.0);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0 || ask < bid)
+     {
+      LogStrategyEntryReject("invalid_quote",
+                             broker_now,
+                             current_bar_broker,
+                             entry_broker,
+                             StringFormat(",\"bid\":%.8f,\"ask\":%.8f", bid, ask));
       return false;
+     }
    const double entry_price = buy ? ask : bid;
    const double open_move = MathAbs(open_move_signed);
    const double stop_price = QM_StopRulesNormalizePrice(_Symbol,
@@ -311,13 +411,34 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                                                             : entry_price + open_move);
    if(stop_price <= 0.0 || stop_price == entry_price ||
       !TradeGeometryAndVolumeAllow(entry_price, stop_price))
+     {
+      LogStrategyEntryReject("invalid_stop_or_volume",
+                             broker_now,
+                             current_bar_broker,
+                             entry_broker,
+                             StringFormat(",\"entry_price\":%.8f,\"stop_price\":%.8f,\"open_move\":%.8f,\"copied_ticks\":%d",
+                                          entry_price,
+                                          stop_price,
+                                          open_move,
+                                          copied_ticks));
       return false;
+     }
 
    req.type = buy ? QM_BUY : QM_SELL;
    req.sl = stop_price;
    req.reason = buy ? "MOC_IMOM_FIRST30_LONG" : "MOC_IMOM_FIRST30_SHORT";
-   g_last_attempt_entry_broker = entry_broker;
    g_active_exit_broker = exit_broker;
+   QM_LogEvent(QM_INFO,
+               "ENTRY_SIGNAL_FIRE",
+               StringFormat("{\"symbol\":\"%s\",\"side\":\"%s\",\"broker_now\":%I64d,\"current_bar_broker\":%I64d,\"entry_broker\":%I64d,\"exit_broker\":%I64d,\"copied_ticks\":%d,\"open_move\":%.8f}",
+                            QM_LoggerEscapeJson(_Symbol),
+                            buy ? "BUY" : "SELL",
+                            (long)broker_now,
+                            (long)current_bar_broker,
+                            (long)entry_broker,
+                            (long)exit_broker,
+                            copied_ticks,
+                            open_move_signed));
    return true;
   }
 
@@ -386,7 +507,16 @@ int OnInit()
    QM_SymbolGuardInit(allowed_symbols);
    QM_BasketWarmupHistory(allowed_symbols, strategy_signal_tf, 64);
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
+   QM_LogEvent(QM_INFO,
+               "INIT_OK",
+               StringFormat("{\"routed\":%s,\"period\":%d,\"signal_tf\":%d,\"inputs_valid\":%s,\"debug_entry_hooks\":%s,\"us_entry_hour\":%d,\"us_entry_minute\":%d}",
+                            IsRoutedSymbol(_Symbol) ? "true" : "false",
+                            (int)_Period,
+                            (int)strategy_signal_tf,
+                            Strategy_InputsValid() ? "true" : "false",
+                            strategy_debug_entry_hooks ? "true" : "false",
+                            strategy_us_entry_hour_broker,
+                            strategy_us_entry_minute_broker));
    return INIT_SUCCEEDED;
   }
 
@@ -410,7 +540,24 @@ void OnTick()
       return;
 
    if(Strategy_NoTradeFilter())
+     {
+      if(strategy_debug_entry_hooks && !g_logged_no_trade_config_reject)
+        {
+         g_logged_no_trade_config_reject = true;
+         LogStrategyEntryReject("no_trade_filter",
+                                broker_now,
+                                iTime(_Symbol, strategy_signal_tf, 0),
+                                0,
+                                StringFormat(",\"routed\":%s,\"period\":%d,\"signal_tf\":%d,\"inputs_valid\":%s,\"spread\":%I64d,\"max_spread\":%d",
+                                             IsRoutedSymbol(_Symbol) ? "true" : "false",
+                                             (int)_Period,
+                                             (int)strategy_signal_tf,
+                                             Strategy_InputsValid() ? "true" : "false",
+                                             SymbolInfoInteger(_Symbol, SYMBOL_SPREAD),
+                                             strategy_max_spread_points));
+        }
       return;
+     }
 
    Strategy_ManageOpenPosition();
 

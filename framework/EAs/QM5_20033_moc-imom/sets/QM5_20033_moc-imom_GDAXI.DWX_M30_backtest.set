@@ -35,3 +35,4 @@ strategy_xetra_entry_minute_broker=0
 strategy_xetra_close_hour_broker=18
 strategy_xetra_close_minute_broker=30
 strategy_max_spread_points=0
+strategy_debug_entry_hooks=false
