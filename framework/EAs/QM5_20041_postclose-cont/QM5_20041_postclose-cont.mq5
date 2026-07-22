@@ -3,10 +3,12 @@
 #property description "QM5_20041 cash-session post-close continuation"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_XetraCashCalendar.mqh>
 
 // Strategy Card: QM5_20041_postclose-cont, G0 APPROVED 2026-07-22.
-// Cash-session anchors use the fixed broker clock. Holiday and blackout
-// protection remains with the framework news gate and Friday guard.
+// GDAXI cash-session anchors come from the governed Xetra calendar and are
+// converted Europe/Berlin -> UTC -> broker.  The still-missing LSE and governed
+// broker-break/rollover/financing inputs are logged as evidence gaps below.
 
 // =============================================================================
 // QuantMechanica V5 EA SKELETON
@@ -83,6 +85,8 @@ input ENUM_TIMEFRAMES strategy_signal_tf = PERIOD_M15;
 input int    strategy_atr_period        = 14;
 input double strategy_atr_stop_mult     = 1.0;
 input int    strategy_hold_minutes      = 240;
+// Legacy fields remain for historical UK100 setfile serialization. GDAXI does
+// not use fixed broker-hour replacements.
 input int    strategy_cash_open_hour_broker = 10;
 input int    strategy_cash_open_minute_broker = 0;
 input int    strategy_cash_close_hour_broker = 18;
@@ -101,6 +105,7 @@ bool     g_session_attempted = false;
 datetime g_active_exit_broker = 0;
 int      g_last_state_attempt_date_key = 0;
 int      g_last_state_reject_date_key = 0;
+bool     g_xetra_calendar_ready = false;
 
 int Strategy_DateKey(const datetime value)
   {
@@ -108,6 +113,13 @@ int Strategy_DateKey(const datetime value)
    if(value <= 0 || !TimeToStruct(value, parts))
       return 0;
    return parts.year * 10000 + parts.mon * 100 + parts.day;
+  }
+
+int Strategy_CashDateKeyForBrokerTime(const datetime broker_time)
+  {
+   if(_Symbol == "GDAXI.DWX")
+      return QM_XetraCashBerlinDateKeyFromUTC(QM_BrokerToUTC(broker_time));
+   return Strategy_DateKey(broker_time);
   }
 
 datetime Strategy_BrokerDateTime(const int date_key,
@@ -140,6 +152,39 @@ bool Strategy_ResolveCashSession(const int date_key,
                                  datetime &open_utc,
                                  datetime &close_utc)
   {
+   open_broker = 0;
+   close_broker = 0;
+   open_utc = 0;
+   close_utc = 0;
+   if(_Symbol == "GDAXI.DWX")
+     {
+      if(!g_xetra_calendar_ready)
+         return false;
+      const QM_XetraCashSessionType session_type =
+         QM_XetraCashCalendarClassify(date_key);
+      if(session_type != QM_XETRA_CASH_NORMAL &&
+         session_type != QM_XETRA_CASH_EARLY_CLOSE)
+         return false;
+      const int close_hour =
+         (session_type == QM_XETRA_CASH_EARLY_CLOSE ? 14 : 17);
+      const int close_minute =
+         (session_type == QM_XETRA_CASH_EARLY_CLOSE ? 0 : 30);
+      if(!QM_XetraCashBerlinLocalToUTC(date_key, 9, 0, open_utc) ||
+         !QM_XetraCashBerlinLocalToUTC(date_key,
+                                       close_hour,
+                                       close_minute,
+                                       close_utc))
+         return false;
+      open_broker = QM_UTCToBroker(open_utc);
+      close_broker = QM_UTCToBroker(close_utc);
+      return (open_broker > 0 && close_broker > open_broker &&
+              QM_BrokerToUTC(open_broker) == open_utc &&
+              QM_BrokerToUTC(close_broker) == close_utc);
+     }
+
+   // UK100 remains on the pre-existing broker-clock route until a separately
+   // governed LSE calendar is available.  This is logged as an evidence gap;
+   // the Xetra repair must not be misrepresented as solving the UK route.
    open_broker = Strategy_BrokerDateTime(date_key,
                                          strategy_cash_open_hour_broker,
                                          strategy_cash_open_minute_broker);
@@ -404,7 +449,8 @@ bool Strategy_AdvanceStateOnNewBar()
       return false;
    const datetime entry_bar_utc = QM_BrokerToUTC(current_bar.time);
    const datetime observation_bar_utc = QM_BrokerToUTC(observation_bar.time);
-   const int session_date_key = Strategy_DateKey(observation_bar.time);
+   const int session_date_key =
+      Strategy_CashDateKeyForBrokerTime(observation_bar.time);
    datetime cash_open_broker = 0;
    datetime cash_close_broker = 0;
    datetime cash_open_utc = 0;
@@ -585,14 +631,17 @@ bool Strategy_TradeGeometryAndVolumeAllow(const double entry_price,
 
 bool Strategy_InputsValid()
   {
-   return (strategy_variant_id == "POSTCLOSE_CONT_BASELINE" &&
-           strategy_signal_tf == PERIOD_M15 && strategy_atr_period == 14 &&
-           strategy_atr_stop_mult == 1.0 && strategy_hold_minutes == 240 &&
-           strategy_cash_open_hour_broker == 10 &&
+   if(strategy_variant_id != "POSTCLOSE_CONT_BASELINE" ||
+      strategy_signal_tf != PERIOD_M15 || strategy_atr_period != 14 ||
+      strategy_atr_stop_mult != 1.0 || strategy_hold_minutes != 240 ||
+      strategy_max_spread_points < 0)
+      return false;
+   if(_Symbol == "GDAXI.DWX")
+      return true;
+   return (strategy_cash_open_hour_broker == 10 &&
            strategy_cash_open_minute_broker == 0 &&
            strategy_cash_close_hour_broker == 18 &&
-           strategy_cash_close_minute_broker == 30 &&
-           strategy_max_spread_points >= 0);
+           strategy_cash_close_minute_broker == 30);
   }
 
 bool Strategy_WideSpread()
@@ -616,6 +665,8 @@ bool Strategy_NoTradeFilter()
       return false;
    if(!Strategy_IsRoutedSymbol(_Symbol) || _Period != strategy_signal_tf ||
       !Strategy_InputsValid())
+      return true;
+   if(_Symbol == "GDAXI.DWX" && !g_xetra_calendar_ready)
       return true;
    return false;
   }
@@ -720,8 +771,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                             (long)g_active_exit_broker));
    QM_LogEvent(QM_INFO,
                "SESSION_ENTRY_ARMED",
-               StringFormat("{\"symbol\":\"%s\",\"session_date\":%d,\"session_source\":\"broker_clock\",\"exit_utc\":%I64d}",
-                            _Symbol, session_date_key, (long)verified_exit_utc));
+               StringFormat("{\"symbol\":\"%s\",\"session_date\":%d,\"session_source\":\"%s\",\"exit_utc\":%I64d}",
+                            _Symbol,
+                            session_date_key,
+                            _Symbol == "GDAXI.DWX"
+                            ? "XETRA_EUROPE_BERLIN_CALENDAR"
+                            : "LEGACY_UK_BROKER_CLOCK",
+                            (long)verified_exit_utc));
    return true;
   }
 
@@ -743,7 +799,7 @@ bool Strategy_ExitSignal()
       return false;
    if(g_active_exit_broker <= 0)
      {
-      const int session_date_key = Strategy_DateKey(open_time);
+      const int session_date_key = Strategy_CashDateKeyForBrokerTime(open_time);
       datetime cash_open_broker = 0;
       datetime cash_close_broker = 0;
       datetime cash_open_utc = 0;
@@ -800,9 +856,29 @@ int OnInit()
 
    const int expected_slot = (_Symbol == "GDAXI.DWX") ? 0 :
                              ((_Symbol == "UK100.DWX") ? 1 : -1);
+   const bool xetra_calendar_required = (_Symbol == "GDAXI.DWX");
+   g_xetra_calendar_ready =
+      (!xetra_calendar_required ||
+       QM_XetraCashCalendarLoad(QM_XETRA_CASH_CALENDAR_RUNTIME_FILE,
+                                QM_XETRA_CASH_CALENDAR_RUNTIME_SHA256));
+   QM_LogEvent(g_xetra_calendar_ready ? QM_INFO : QM_ERROR,
+               "XETRA_CASH_CALENDAR_STATE",
+               StringFormat("{\"required\":%s,\"ready\":%s,\"file\":\"%s\",\"expected_sha256\":\"%s\",\"actual_sha256\":\"%s\",\"manifest_sha256\":\"%s\",\"error\":\"%s\"}",
+                            xetra_calendar_required ? "true" : "false",
+                            g_xetra_calendar_ready ? "true" : "false",
+                            QM_LoggerEscapeJson(QM_XETRA_CASH_CALENDAR_RUNTIME_FILE),
+                            QM_XETRA_CASH_CALENDAR_RUNTIME_SHA256,
+                            QM_XetraCashCalendarActualSha256(),
+                            QM_XETRA_CASH_CALENDAR_MANIFEST_SHA256,
+                            QM_LoggerEscapeJson(QM_XetraCashCalendarLastError())));
+   QM_LogEvent(QM_WARN,
+               "STRATEGY_SETUP_COVERAGE_GAP",
+               StringFormat("{\"symbol\":\"%s\",\"broker_symbol_session_metadata\":\"unavailable\",\"daily_break_rollover_metadata\":\"unavailable\",\"financing_metadata\":\"unavailable\",\"lse_calendar\":\"%s\",\"effect\":\"evidence_not_card_complete_no_synthetic_runtime_gate\"}",
+                            QM_LoggerEscapeJson(_Symbol),
+                            _Symbol == "UK100.DWX" ? "unavailable" : "not_required"));
    QM_LogEvent(QM_INFO,
                "INIT_OK",
-               StringFormat("{\"symbol\":\"%s\",\"period\":%d,\"signal_tf\":%d,\"route_ok\":%s,\"magic_slot\":%d,\"expected_slot\":%d,\"inputs_valid\":%s,\"cash_open_broker\":\"%02d:%02d\",\"cash_close_broker\":\"%02d:%02d\",\"hold_minutes\":%d,\"tick_time_basis\":\"dwx_broker_label\"}",
+               StringFormat("{\"symbol\":\"%s\",\"period\":%d,\"signal_tf\":%d,\"route_ok\":%s,\"magic_slot\":%d,\"expected_slot\":%d,\"inputs_valid\":%s,\"cash_open_broker\":\"%02d:%02d\",\"cash_close_broker\":\"%02d:%02d\",\"hold_minutes\":%d,\"tick_time_basis\":\"dwx_broker_label\",\"gdaxi_clock_source\":\"XETRA_EUROPE_BERLIN_TO_UTC_TO_BROKER\",\"legacy_gdaxi_broker_inputs_ignored\":true}",
                             QM_LoggerEscapeJson(_Symbol),
                             (int)_Period,
                             (int)strategy_signal_tf,

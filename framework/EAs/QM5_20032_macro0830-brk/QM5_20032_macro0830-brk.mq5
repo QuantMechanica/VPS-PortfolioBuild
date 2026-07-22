@@ -3,6 +3,7 @@
 #property description "QM5_20032 scheduled 08:30 ET macro breakout"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_XetraCashCalendar.mqh>
 
 // Strategy Card: QM5_20032_macro0830-brk, G0 APPROVED 2026-07-22.
 // Eligible events and German cash exits come from a provenance-bearing ledger.
@@ -49,6 +50,7 @@ datetime g_event_entry_utc[];
 datetime g_event_exit_utc[];
 string   g_event_family[];
 bool     g_calendar_ready = false;
+bool     g_xetra_calendar_ready = false;
 datetime g_last_attempt_entry_utc = 0;
 datetime g_active_exit_broker = 0;
 
@@ -115,6 +117,52 @@ datetime Berlin1720Utc(const datetime event_utc)
    return (exit_utc > event_utc + 5 * 60 ? exit_utc : 0);
   }
 
+bool ResolveEventExitUtc(const datetime event_utc,
+                         datetime &exit_utc,
+                         bool &exchange_excluded,
+                         string &exchange_session)
+  {
+   exit_utc = 0;
+   exchange_excluded = false;
+   exchange_session = "NOT_APPLICABLE";
+   if(_Symbol != "GDAXI.DWX")
+     {
+      exit_utc = Berlin1720Utc(event_utc);
+      return (exit_utc > event_utc + 5 * 60);
+     }
+
+   if(!g_xetra_calendar_ready)
+      return false;
+   const int date_key = QM_XetraCashBerlinDateKeyFromUTC(event_utc);
+   const QM_XetraCashSessionType session_type =
+      QM_XetraCashCalendarClassify(date_key);
+   exchange_session = QM_XetraCashSessionTypeName(session_type);
+   if(session_type == QM_XETRA_CASH_FULL_CLOSE)
+     {
+      exchange_excluded = true;
+      return true;
+     }
+   if(session_type != QM_XETRA_CASH_NORMAL &&
+      session_type != QM_XETRA_CASH_EARLY_CLOSE)
+      return false;
+
+   const int exit_hour =
+      (session_type == QM_XETRA_CASH_EARLY_CLOSE ? 14 : 17);
+   const int exit_minute =
+      (session_type == QM_XETRA_CASH_EARLY_CLOSE ? 0 : 20);
+   if(!QM_XetraCashBerlinLocalToUTC(date_key,
+                                    exit_hour,
+                                    exit_minute,
+                                    exit_utc))
+      return false;
+   if(exit_utc <= event_utc + 5 * 60)
+     {
+      exchange_excluded = true;
+      exit_utc = 0;
+     }
+   return true;
+  }
+
 string EligibleFamilyForName(const string raw_name)
   {
    const string event_name = QM_NewsUpper(QM_NewsStripQuotes(raw_name));
@@ -179,6 +227,7 @@ bool LoadEventCalendar()
 
    int parsed_rows = 0;
    int eligible_rows = 0;
+   int exchange_excluded_rows = 0;
    bool valid = true;
    while(!FileIsEnding(handle))
      {
@@ -209,33 +258,55 @@ bool LoadEventCalendar()
       if(family == "")
          continue; // FOMC is present for QM5_20023 but forbidden by this card.
 
-      const datetime exit_utc = Berlin1720Utc(event_utc);
-      if(!IsExactNewYork0830(event_utc) || exit_utc <= 0 ||
-         !AppendEvent(event_utc + 5 * 60, exit_utc, family))
+      datetime exit_utc = 0;
+      bool exchange_excluded = false;
+      string exchange_session = "";
+      if(!IsExactNewYork0830(event_utc) ||
+         !ResolveEventExitUtc(event_utc,
+                              exit_utc,
+                              exchange_excluded,
+                              exchange_session))
         {
          valid = false;
          break;
         }
       ++eligible_rows;
+      if(exchange_excluded)
+        {
+         ++exchange_excluded_rows;
+         continue;
+        }
+      if(exit_utc <= 0 ||
+         !AppendEvent(event_utc + 5 * 60, exit_utc, family))
+        {
+         valid = false;
+         break;
+        }
      }
    FileClose(handle);
 
    if(!valid || parsed_rows != STRATEGY_CALENDAR_EXPECTED_ROWS ||
       eligible_rows != STRATEGY_CALENDAR_EXPECTED_ELIGIBLE_ROWS ||
-      ArraySize(g_event_entry_utc) != STRATEGY_CALENDAR_EXPECTED_ELIGIBLE_ROWS)
+      ArraySize(g_event_entry_utc) + exchange_excluded_rows !=
+         STRATEGY_CALENDAR_EXPECTED_ELIGIBLE_ROWS)
       return false;
 
    QM_LogEvent(QM_INFO,
                "STRATEGY_CALENDAR_LOADED",
-               StringFormat("{\"file\":\"%s\",\"sha256\":\"%s\",\"provenance_sha256\":\"%s\",\"source_rows\":%d,\"eligible_rows\":%d,\"families\":\"NFP,CPI,PPI\"}",
+               StringFormat("{\"file\":\"%s\",\"sha256\":\"%s\",\"provenance_sha256\":\"%s\",\"source_rows\":%d,\"eligible_rows\":%d,\"admitted_rows\":%d,\"exchange_excluded_rows\":%d,\"families\":\"NFP,CPI,PPI\"}",
                             STRATEGY_CALENDAR_PATH,
                             STRATEGY_CALENDAR_SHA256,
                             STRATEGY_PROVENANCE_SHA256,
                             parsed_rows,
-                            eligible_rows));
+                            eligible_rows,
+                            ArraySize(g_event_entry_utc),
+                            exchange_excluded_rows));
    QM_LogEvent(QM_WARN,
                "STRATEGY_CALENDAR_COVERAGE_GAP",
-               "{\"missing_families\":\"GDP,RETAIL_SALES,PERSONAL_INCOME_PCE,DURABLE_GOODS,BUSINESS_INVENTORIES,TRADE_BALANCE,HOUSING_STARTS,LEADING_INDICATORS,INITIAL_CLAIMS\",\"available_through\":\"2025-04-04\",\"required_through\":\"2025-12-31\",\"early_close_calendar\":\"unavailable\"}");
+               StringFormat("{\"missing_families\":\"GDP,RETAIL_SALES,PERSONAL_INCOME_PCE,DURABLE_GOODS,BUSINESS_INVENTORIES,TRADE_BALANCE,HOUSING_STARTS,LEADING_INDICATORS,INITIAL_CLAIMS\",\"available_through\":\"2025-04-04\",\"required_through\":\"2025-12-31\",\"issuer_ledger_complete\":false,\"xetra_calendar\":\"%s\"}",
+                            _Symbol == "GDAXI.DWX"
+                            ? (g_xetra_calendar_ready ? "ready" : "unavailable")
+                            : "not_required"));
    return true;
   }
 
@@ -316,6 +387,25 @@ int DateKey(const datetime value)
 
 datetime FallbackBerlinExitBroker(const int date_key)
   {
+   if(_Symbol == "GDAXI.DWX" && g_xetra_calendar_ready)
+     {
+      const QM_XetraCashSessionType session_type =
+         QM_XetraCashCalendarClassify(date_key);
+      if(session_type == QM_XETRA_CASH_NORMAL ||
+         session_type == QM_XETRA_CASH_EARLY_CLOSE)
+        {
+         datetime exit_utc = 0;
+         const int exit_hour =
+            (session_type == QM_XETRA_CASH_EARLY_CLOSE ? 14 : 17);
+         const int exit_minute =
+            (session_type == QM_XETRA_CASH_EARLY_CLOSE ? 0 : 20);
+         if(QM_XetraCashBerlinLocalToUTC(date_key,
+                                         exit_hour,
+                                         exit_minute,
+                                         exit_utc))
+            return QM_UTCToBroker(exit_utc);
+        }
+     }
    const int year = date_key / 10000;
    const int month = (date_key / 100) % 100;
    const int day = date_key % 100;
@@ -592,6 +682,22 @@ int OnInit()
    string warmup_symbols[1] = {_Symbol};
    QM_BasketWarmupHistory(warmup_symbols, strategy_signal_tf, 16);
 
+   const bool xetra_calendar_required = (_Symbol == "GDAXI.DWX");
+   g_xetra_calendar_ready =
+      (!xetra_calendar_required ||
+       QM_XetraCashCalendarLoad(QM_XETRA_CASH_CALENDAR_RUNTIME_FILE,
+                                QM_XETRA_CASH_CALENDAR_RUNTIME_SHA256));
+   QM_LogEvent(g_xetra_calendar_ready ? QM_INFO : QM_ERROR,
+               "XETRA_CASH_CALENDAR_STATE",
+               StringFormat("{\"required\":%s,\"ready\":%s,\"file\":\"%s\",\"expected_sha256\":\"%s\",\"actual_sha256\":\"%s\",\"manifest_sha256\":\"%s\",\"error\":\"%s\"}",
+                            xetra_calendar_required ? "true" : "false",
+                            g_xetra_calendar_ready ? "true" : "false",
+                            QM_LoggerEscapeJson(QM_XETRA_CASH_CALENDAR_RUNTIME_FILE),
+                            QM_XETRA_CASH_CALENDAR_RUNTIME_SHA256,
+                            QM_XetraCashCalendarActualSha256(),
+                            QM_XETRA_CASH_CALENDAR_MANIFEST_SHA256,
+                            QM_LoggerEscapeJson(QM_XetraCashCalendarLastError())));
+
    g_calendar_ready = LoadEventCalendar();
    if(!g_calendar_ready)
       QM_LogEvent(QM_ERROR,
@@ -602,10 +708,11 @@ int OnInit()
 
    QM_LogEvent(QM_INFO,
                "INIT_OK",
-               StringFormat("{\"calendar_ready\":%s,\"eligible_events\":%d,\"route_slot\":%d}",
+               StringFormat("{\"calendar_ready\":%s,\"eligible_events\":%d,\"route_slot\":%d,\"issuer_ledger_complete\":false,\"xetra_calendar_ready\":%s}",
                             g_calendar_ready ? "true" : "false",
                             ArraySize(g_event_entry_utc),
-                            ExpectedSlotForSymbol(_Symbol)));
+                            ExpectedSlotForSymbol(_Symbol),
+                            g_xetra_calendar_ready ? "true" : "false"));
    return INIT_SUCCEEDED;
   }
 
