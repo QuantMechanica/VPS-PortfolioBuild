@@ -10,6 +10,7 @@ created_by: Research
 uri: https://openaccess.city.ac.uk/id/eprint/6416/
 cards_extracted:
   - energy-momcarry
+  - xauxag-xmom12
 ---
 
 # Fuertes-Miffre-Rallis Momentum/Term-Structure Source Packet

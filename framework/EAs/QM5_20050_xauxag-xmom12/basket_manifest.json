@@ -1,0 +1,10 @@
+{
+  "logical_symbol": "QM5_20050_XAU_XAG_XMOM12_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+  "traded_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+  "notes": [
+    "One logical two-leg XAU/XAG monthly cross-sectional-momentum basket. Reconstruct 13 completed month-end closes, rank the arithmetic mean of 12 simple monthly returns, buy the winner and short the loser, then evaluate combined package PnL and costs at Q02."
+  ]
+}
