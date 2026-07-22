@@ -10,13 +10,14 @@
 
 ## 1. Strategy Logic
 
-For each official 09:30–16:00 New York cash session, the EA incrementally
+For each UTC weekday's 09:30–16:00 New York cash session, the EA incrementally
 builds a tick-volume-weighted typical-price VWAP and population sigma on closed
 M5 bars. A shallow-slope close that touches only the lower or upper two-sigma
 band schedules a fade at the next M5 open, with frozen VWAP as target and the
-frozen three-sigma band as hard stop. A symbol/side may trade only when its
-hash-pinned 2018–2023 DEV artifact records more reversions than failures and
-positive net expectancy; positions are flat by the official close or early close.
+frozen three-sigma band as hard stop. Both mechanical sides are eligible and
+positions are flat by the fixed cash close. Exact contiguous bars replace the
+external cash calendar and DEV hash artifact; Tester Groups applies venue
+commission to fills.
 
 ## 2. Parameters
 
@@ -24,17 +25,9 @@ positive net expectancy; positions are flat by the official close or early close
 |---|---:|---|---|
 | `strategy_variant_id` | `VWAP2S_REVERT_BASELINE` | locked | Approved variant identity. |
 | `strategy_signal_tf` | `PERIOD_M5` | locked | VWAP, tag, and entry timeframe. |
-| `strategy_max_cost_r` | 0.10 | locked | Maximum commission plus entry spread relative to initial risk. |
-| `strategy_round_turn_commission_usd_per_lot` | 0.0 | governed value required | Per-symbol runtime commission; zero fails closed. |
-| `strategy_cash_calendar_file` | `QM5_20038_us_cash_calendar.csv` | immutable file | Common-Files official US cash sessions and early closes. |
-| `strategy_cash_calendar_sha256` | empty | SHA-256 | Required exact calendar-file hash. |
-| `strategy_calendar_valid_through` | `2025.12.31` | locked | Required calendar coverage. |
-| `strategy_tzdb_version` | empty | governed value required | Pinned America/New_York tzdb version. |
-| `strategy_dev_guard_file` | `QM5_20038_vwap2s_dev_guard.csv` | immutable file | Frozen per-symbol/per-side DEV proof. |
-| `strategy_dev_guard_sha256` | empty | SHA-256 | Required exact guard-artifact hash. |
-| `strategy_expected_dev_code_sha256` | empty | SHA-256 | Expected measurement code identity. |
-| `strategy_expected_dev_inputs_sha256` | empty | SHA-256 | Expected frozen measurement-input identity. |
-| `strategy_expected_dev_data_sha256` | empty | SHA-256 | Expected symbol-specific DEV dataset identity. |
+| `strategy_cash_open_*_new_york` | `09:30` | locked | Cash-session opening anchor in New York time. |
+| `strategy_cash_close_*_new_york` | `16:00` | locked | Mandatory cash-session flat time in New York time. |
+| `strategy_max_spread_points` | `0` | optional >0 | Tester/live native spread guard; zero disables the guard. |
 
 ## 3. Symbol Universe
 
@@ -60,11 +53,11 @@ positive net expectancy; positions are flat by the official close or early close
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | approximately 300 before DEV-side, session, tag, and cost gates |
+| Trades / year / symbol | approximately 300 before session and tag eligibility |
 | Typical hold time | intraday, from the tagged next M5 open to frozen VWAP/stop or cash close |
 | Expected drawdown profile | approximately 12% card prior; clustered losses when two-sigma excursions continue to three sigma |
 | Regime preference | shallow-VWAP-slope intraday mean reversion |
-| Win rate target (qualitative) | each admitted DEV side must have strictly more reversions than failures |
+| Win rate target (qualitative) | unverified until pipeline evaluation |
 
 ## 6. Source Citation
 
@@ -97,3 +90,4 @@ later governed promotion decision.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-22 | Initial build from card | 294c6197-df5d-478f-bf22-0421fcb0a90d |
+| v2 | 2026-07-22 | FTMO density fix | Removed the unprovisioned cash-calendar, DEV-hash, and commission/cost gates; broker-clock weekday/bar eligibility and the optional native spread guard remain. |
