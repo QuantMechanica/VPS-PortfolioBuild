@@ -638,7 +638,12 @@ bool Strategy_ExitSignal()
       if(event_index >= 0)
          g_active_exit_broker = QM_UTCToBroker(g_event_exit_utc[event_index]);
       else
-         g_active_exit_broker = FallbackBerlinExitBroker(DateKey(open_utc));
+        {
+         const int exit_date_key = (_Symbol == "GDAXI.DWX")
+                                   ? QM_XetraCashBerlinDateKeyFromUTC(open_utc)
+                                   : DateKey(open_utc);
+         g_active_exit_broker = FallbackBerlinExitBroker(exit_date_key);
+        }
      }
    return (g_active_exit_broker > 0 && TimeCurrent() >= g_active_exit_broker);
   }

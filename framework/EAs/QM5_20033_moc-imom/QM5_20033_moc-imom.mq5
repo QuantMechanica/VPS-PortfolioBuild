@@ -319,8 +319,13 @@ bool TradeGeometryAndVolumeAllow(const double entry_price, const double stop_pri
 
 bool Strategy_InputsValid()
   {
-   return (strategy_signal_tf == PERIOD_M30 &&
-           strategy_us_open_hour_broker == 16 &&
+   if(strategy_signal_tf != PERIOD_M30)
+      return false;
+   // The GDAXI route is governed by the Xetra Europe/Berlin calendar and must
+   // not be disabled by legacy US broker-clock inputs that it never consumes.
+   if(RouteIndex(_Symbol) == 3)
+      return true;
+   return (strategy_us_open_hour_broker == 16 &&
            strategy_us_open_minute_broker == 30 &&
            strategy_us_entry_hour_broker == 22 &&
             strategy_us_entry_minute_broker == 30 &&
