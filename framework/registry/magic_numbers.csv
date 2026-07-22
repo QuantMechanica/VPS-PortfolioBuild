@@ -15125,3 +15125,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20033,moc-imom,3,GDAXI.DWX,200330003,2026-07-22,Development,active
 20035,xng-dom27-short,0,XNGUSD.DWX,200350000,2026-07-22,Development,active
 20036,wti-dom8-long,0,XTIUSD.DWX,200360000,2026-07-22,Development,active
+20031,asia-fx-fade,0,EURUSD.DWX,200310000,2026-07-22,Development,active
+20031,asia-fx-fade,1,GBPUSD.DWX,200310001,2026-07-22,Development,active
