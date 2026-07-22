@@ -59,7 +59,7 @@ input group "News"
 // A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
-input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
+input int    qm_news_stale_max_hours      = 336;     // 14 days; framework news gate fails closed if older
 input string qm_news_min_impact           = "high";  // high / medium / low
 // Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
 // New EAs use qm_news_temporal + qm_news_compliance above and leave this OFF.
@@ -89,23 +89,20 @@ input int    strategy_atr_period        = 14;
 input double strategy_atr_stop_mult     = 1.0;
 input double strategy_reward_r          = 1.5;
 input int    strategy_timeout_bars      = 6;
-input double strategy_max_cost_r        = 0.10;
-input double strategy_round_turn_commission_usd_per_lot = 0.0;
-input string strategy_cash_calendar_file = "QM5_20040_us_cash_calendar.csv";
-input string strategy_cash_calendar_sha256 = "";
-input string strategy_calendar_valid_through = "2025.12.31";
-input string strategy_tzdb_version      = "";
-input string strategy_expected_tick_feed_server = "";
+input int    strategy_cash_open_hour_new_york = 9;
+input int    strategy_cash_open_minute_new_york = 30;
+input int    strategy_cash_close_hour_new_york = 16;
+input int    strategy_cash_close_minute_new_york = 0;
+input int    strategy_exit_hour_new_york = 15;
+input int    strategy_exit_minute_new_york = 55;
+// Tester Groups applies venue commission to fills; zero disables this optional
+// native spread guard, matching the proven QM5_12969 execution baseline.
+input int    strategy_max_spread_points = 0;
 
-int      g_cash_date_key[];
-datetime g_cash_open_utc[];
-datetime g_cash_close_utc[];
-datetime g_strategy_exit_utc[];
-bool     g_dependencies_attempted = false;
-bool     g_calendar_ready = false;
-bool     g_feed_ready = false;
-
-int      g_state_session_index = -1;
+int      g_state_session_key = 0;
+datetime g_state_open_utc = 0;
+datetime g_state_close_utc = 0;
+datetime g_state_exit_utc = 0;
 datetime g_state_through_utc = 0;
 bool     g_long_armed = true;
 bool     g_short_armed = true;
