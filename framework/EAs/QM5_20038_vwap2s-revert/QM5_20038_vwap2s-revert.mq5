@@ -663,11 +663,11 @@ bool Strategy_RebuildSessionState(const int calendar_index,
 
    MqlRates rates[];
    ArraySetAsSeries(rates, false);
-   const int copied = CopyRates(_Symbol,
+   const int copied = CopyRates(_Symbol, // perf-allowed: bounded one-time session rebuild behind QM_IsNewBar.
                                 strategy_signal_tf,
                                 start_broker,
                                 stop_broker,
-                                rates); // perf-allowed: bounded one-time session rebuild behind QM_IsNewBar.
+                                rates);
    if(copied <= 0 || copied > 78)
       return false;
 
