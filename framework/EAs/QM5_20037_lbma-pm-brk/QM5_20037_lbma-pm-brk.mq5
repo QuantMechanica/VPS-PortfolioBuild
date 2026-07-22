@@ -624,7 +624,7 @@ int OnInit()
                              QM_LBMA_GOLD_PM_CALENDAR_STATUS,
                              QM_LbmaGoldPmEmbeddedClockReady() ? "true" : "false",
                              QM_LBMA_GOLD_PM_COVERAGE_START,
-                            QM_LBMA_GOLD_PM_COVERAGE_END,
+                             QM_LBMA_GOLD_PM_COVERAGE_END,
                             QM_LBMA_GOLD_PM_RUNTIME_FILE,
                             QM_LBMA_GOLD_PM_RUNTIME_SHA256,
                             QM_LoggerEscapeJson(QM_LbmaGoldPmRuntimeActualSha256()),

@@ -257,14 +257,14 @@ bool QM_LbmaGoldPmLoadEmbeddedClock()
    ArrayResize(g_qm_lbma_gold_pm_transition_offset_after, 0);
    g_qm_lbma_gold_pm_embedded_clock_ready = false;
 
-   static const long transition_epoch[QM_LBMA_GOLD_PM_EXPECTED_TRANSITION_ROWS] =
+   static const long transition_epoch[16] =
      {
       1521939600, 1540688400, 1553994000, 1572138000,
       1585443600, 1603587600, 1616893200, 1635642000,
       1648342800, 1667091600, 1679792400, 1698541200,
       1711846800, 1729990800, 1743296400, 1761440400
      };
-   static const int offset_after[QM_LBMA_GOLD_PM_EXPECTED_TRANSITION_ROWS] =
+   static const int offset_after[16] =
      {
       60, 0, 60, 0, 60, 0, 60, 0,
       60, 0, 60, 0, 60, 0, 60, 0
