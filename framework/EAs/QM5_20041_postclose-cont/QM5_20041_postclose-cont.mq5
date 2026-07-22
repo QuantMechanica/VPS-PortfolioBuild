@@ -99,6 +99,8 @@ datetime g_pending_exit_utc = 0;
 double   g_pending_atr = 0.0;
 bool     g_session_attempted = false;
 datetime g_active_exit_broker = 0;
+int      g_last_state_attempt_date_key = 0;
+int      g_last_state_reject_date_key = 0;
 
 int Strategy_DateKey(const datetime value)
   {
@@ -215,13 +217,16 @@ double Strategy_TickNormalizedPrice(const double price)
    return QM_StopRulesNormalizePrice(_Symbol, MathRound(price / tick_size) * tick_size);
   }
 
-bool Strategy_FirstSessionMid(const datetime cash_open_utc,
-                              const datetime cash_close_utc,
+bool Strategy_FirstSessionMid(const datetime cash_open_broker,
+                              const datetime cash_close_broker,
                               double &mid)
   {
    mid = 0.0;
-   ulong cursor = (ulong)cash_open_utc * 1000;
-   const ulong stop_msc = (ulong)cash_close_utc * 1000;
+   // .DWX custom ticks retain the broker-labelled epoch used to construct
+   // their M1/M15 rates. CopyTicksRange must therefore use the same broker
+   // labels as the bars, not the UTC-normalized audit timestamps.
+   ulong cursor = (ulong)cash_open_broker * 1000;
+   const ulong stop_msc = (ulong)cash_close_broker * 1000;
    const ulong chunk_width = 5 * 60 * 1000;
    long previous_msc = 0;
    while(cursor <= stop_msc)
@@ -248,13 +253,13 @@ bool Strategy_FirstSessionMid(const datetime cash_open_utc,
    return false;
   }
 
-bool Strategy_LastSessionMid(const datetime cash_open_utc,
-                             const datetime cash_close_utc,
+bool Strategy_LastSessionMid(const datetime cash_open_broker,
+                             const datetime cash_close_broker,
                              double &mid)
   {
    mid = 0.0;
-   const ulong start_msc = (ulong)cash_open_utc * 1000;
-   ulong window_end = (ulong)cash_close_utc * 1000;
+   const ulong start_msc = (ulong)cash_open_broker * 1000;
+   ulong window_end = (ulong)cash_close_broker * 1000;
    const ulong chunk_width = 5 * 60 * 1000;
    while(window_end >= start_msc)
      {
@@ -285,13 +290,13 @@ bool Strategy_LastSessionMid(const datetime cash_open_utc,
    return false;
   }
 
-bool Strategy_IsFirstTradableTick(const datetime entry_bar_utc,
+bool Strategy_IsFirstTradableTick(const datetime entry_bar_broker,
                                   const MqlTick &current_tick)
   {
    double current_mid = 0.0;
    if(!Strategy_TickMid(current_tick, current_mid))
       return false;
-   ulong cursor = (ulong)entry_bar_utc * 1000;
+   ulong cursor = (ulong)entry_bar_broker * 1000;
    const ulong stop_msc = (ulong)current_tick.time_msc;
    if(stop_msc < cursor)
       return false;
@@ -337,6 +342,48 @@ bool Strategy_BindClockExit(const datetime entry_utc,
    return true;
   }
 
+void Strategy_LogEntryRejected(const string detail,
+                               const datetime candidate_utc,
+                               const string context = "")
+  {
+   QM_LogEvent(QM_WARN,
+               "ENTRY_REJECTED",
+               StringFormat("{\"result\":\"STRATEGY_HOOK_REJECTED\",\"symbol\":\"%s\",\"reason\":\"POSTCLOSE_CONT\",\"detail\":\"%s\",\"candidate_utc\":%I64d,\"context\":\"%s\"}",
+                            QM_LoggerEscapeJson(_Symbol),
+                            QM_LoggerEscapeJson(detail),
+                            (long)candidate_utc,
+                            QM_LoggerEscapeJson(context)));
+  }
+
+void Strategy_LogStateAttempt(const int session_date_key,
+                              const datetime observation_bar_broker,
+                              const datetime entry_bar_broker,
+                              const datetime candidate_utc)
+  {
+   if(session_date_key <= 0 || g_last_state_attempt_date_key == session_date_key)
+      return;
+   g_last_state_attempt_date_key = session_date_key;
+   QM_LogEvent(QM_INFO,
+               "ENTRY_ATTEMPT",
+               StringFormat("{\"symbol\":\"%s\",\"session_date\":%d,\"observation_bar_broker\":%I64d,\"entry_bar_broker\":%I64d,\"candidate_utc\":%I64d,\"tick_time_basis\":\"dwx_broker_label\"}",
+                            QM_LoggerEscapeJson(_Symbol),
+                            session_date_key,
+                            (long)observation_bar_broker,
+                            (long)entry_bar_broker,
+                            (long)candidate_utc));
+  }
+
+void Strategy_LogStateRejected(const int session_date_key,
+                               const string detail,
+                               const datetime candidate_utc,
+                               const string context = "")
+  {
+   if(session_date_key > 0 && g_last_state_reject_date_key == session_date_key)
+      return;
+   g_last_state_reject_date_key = session_date_key;
+   Strategy_LogEntryRejected(detail, candidate_utc, context);
+  }
+
 bool Strategy_AdvanceStateOnNewBar()
   {
    g_pending_session_date_key = 0;
@@ -362,42 +409,130 @@ bool Strategy_AdvanceStateOnNewBar()
    datetime cash_close_broker = 0;
    datetime cash_open_utc = 0;
    datetime cash_close_utc = 0;
-   if(!Strategy_ResolveCashSession(session_date_key,
-                                   cash_open_broker,
-                                   cash_close_broker,
-                                   cash_open_utc,
-                                   cash_close_utc) ||
-      observation_bar.time != cash_close_broker || observation_bar_utc != cash_close_utc ||
-      current_bar.time != cash_close_broker + 15 * 60 ||
-      entry_bar_utc != cash_close_utc + 15 * 60 ||
-      observation_bar.open <= 0.0 || observation_bar.high <= 0.0 ||
-      observation_bar.low <= 0.0 || observation_bar.close <= 0.0)
+   const bool session_resolved = Strategy_ResolveCashSession(session_date_key,
+                                                              cash_open_broker,
+                                                              cash_close_broker,
+                                                              cash_open_utc,
+                                                              cash_close_utc);
+   // Non-candidate bars remain silent. Once the closed bar is the configured
+   // cash-close observation, every later failure is observable exactly once.
+   if(observation_bar.time != cash_close_broker)
       return false;
+
+   const datetime expected_entry_bar_broker = cash_close_broker + 15 * 60;
+   const datetime candidate_utc = QM_BrokerToUTC(expected_entry_bar_broker);
+   Strategy_LogStateAttempt(session_date_key,
+                            observation_bar.time,
+                            current_bar.time,
+                            candidate_utc);
+
+   if(!session_resolved)
+     {
+      Strategy_LogStateRejected(session_date_key,
+                                "CASH_SESSION_CLOCK_INVALID",
+                                candidate_utc);
+      return true;
+     }
+   if(observation_bar_utc != cash_close_utc ||
+      current_bar.time != expected_entry_bar_broker ||
+      entry_bar_utc != cash_close_utc + 15 * 60)
+     {
+      Strategy_LogStateRejected(session_date_key,
+                                "OBSERVATION_OR_ENTRY_BAR_MISMATCH",
+                                candidate_utc,
+                                StringFormat("observation_broker=%I64d;entry_broker=%I64d;expected_entry_broker=%I64d",
+                                             (long)observation_bar.time,
+                                             (long)current_bar.time,
+                                             (long)expected_entry_bar_broker));
+      return true;
+     }
+   if(observation_bar.open <= 0.0 || observation_bar.high <= 0.0 ||
+      observation_bar.low <= 0.0 || observation_bar.close <= 0.0)
+     {
+      Strategy_LogStateRejected(session_date_key,
+                                "OBSERVATION_BAR_INVALID",
+                                candidate_utc);
+      return true;
+     }
 
    Strategy_RecoverAttempt(cash_close_utc);
    if(g_session_attempted)
+     {
+      Strategy_LogStateRejected(session_date_key,
+                                "SESSION_ATTEMPT_ALREADY_MADE",
+                                candidate_utc);
       return true;
+     }
    MqlTick tick;
-   if(!SymbolInfoTick(_Symbol, tick) ||
-      !Strategy_IsFirstTradableTick(entry_bar_utc, tick))
+   if(!SymbolInfoTick(_Symbol, tick))
+     {
+      Strategy_LogStateRejected(session_date_key,
+                                "ENTRY_TICK_UNAVAILABLE",
+                                candidate_utc);
       return true;
+     }
+   if(!Strategy_IsFirstTradableTick(expected_entry_bar_broker, tick))
+     {
+      Strategy_LogStateRejected(session_date_key,
+                                "NOT_FIRST_TRADABLE_ENTRY_TICK",
+                                candidate_utc,
+                                StringFormat("entry_bar_broker=%I64d;current_tick_msc=%I64u",
+                                             (long)expected_entry_bar_broker,
+                                             (ulong)tick.time_msc));
+      return true;
+     }
 
    double cash_open_mid = 0.0;
    double cash_close_mid = 0.0;
-   if(!Strategy_FirstSessionMid(cash_open_utc, cash_close_utc, cash_open_mid) ||
-      !Strategy_LastSessionMid(cash_open_utc, cash_close_utc, cash_close_mid))
+   if(!Strategy_FirstSessionMid(cash_open_broker, cash_close_broker, cash_open_mid))
+     {
+      Strategy_LogStateRejected(session_date_key,
+                                "CASH_OPEN_TICK_MISSING",
+                                candidate_utc);
       return true;
+     }
+   if(!Strategy_LastSessionMid(cash_open_broker, cash_close_broker, cash_close_mid))
+     {
+      Strategy_LogStateRejected(session_date_key,
+                                "CASH_CLOSE_TICK_MISSING",
+                                candidate_utc);
+      return true;
+     }
    cash_open_mid = Strategy_TickNormalizedPrice(cash_open_mid);
    cash_close_mid = Strategy_TickNormalizedPrice(cash_close_mid);
    if(cash_open_mid <= 0.0 || cash_close_mid <= 0.0 || cash_open_mid == cash_close_mid)
+     {
+      Strategy_LogStateRejected(session_date_key,
+                                "CASH_RETURN_ZERO_OR_INVALID",
+                                candidate_utc,
+                                StringFormat("cash_open_mid=%.8f;cash_close_mid=%.8f",
+                                             cash_open_mid,
+                                             cash_close_mid));
       return true;
+     }
 
    const double frozen_atr = QM_ATR(_Symbol, strategy_signal_tf, strategy_atr_period, 1);
-   const datetime entry_tick_utc = (datetime)(tick.time_msc / 1000);
+   const datetime entry_tick_broker = (datetime)(tick.time_msc / 1000);
+   const datetime entry_tick_utc = QM_BrokerToUTC(entry_tick_broker);
    datetime verified_exit_utc = 0;
-   if(frozen_atr <= 0.0 || !MathIsValidNumber(frozen_atr) ||
-      !Strategy_BindClockExit(entry_tick_utc, verified_exit_utc))
+   if(frozen_atr <= 0.0 || !MathIsValidNumber(frozen_atr))
+     {
+      Strategy_LogStateRejected(session_date_key,
+                                "ATR_INVALID",
+                                candidate_utc,
+                                StringFormat("atr=%.8f", frozen_atr));
       return true;
+     }
+   if(entry_tick_utc <= 0 || !Strategy_BindClockExit(entry_tick_utc, verified_exit_utc))
+     {
+      Strategy_LogStateRejected(session_date_key,
+                                "EXIT_CLOCK_BIND_FAILED",
+                                candidate_utc,
+                                StringFormat("entry_tick_broker=%I64d;entry_tick_utc=%I64d",
+                                             (long)entry_tick_broker,
+                                             (long)entry_tick_utc));
+      return true;
+     }
 
    g_pending_session_date_key = session_date_key;
    g_pending_side = (cash_close_mid > cash_open_mid) ? 1 : -1;
@@ -405,6 +540,18 @@ bool Strategy_AdvanceStateOnNewBar()
    g_pending_entry_tick_msc = (ulong)tick.time_msc;
    g_pending_exit_utc = verified_exit_utc;
    g_pending_atr = frozen_atr;
+   QM_LogEvent(QM_INFO,
+               "ENTRY_CANDIDATE_READY",
+               StringFormat("{\"symbol\":\"%s\",\"session_date\":%d,\"side\":\"%s\",\"candidate_utc\":%I64d,\"entry_tick_broker\":%I64d,\"entry_tick_utc\":%I64d,\"cash_open_mid\":%.8f,\"cash_close_mid\":%.8f,\"atr\":%.8f}",
+                            QM_LoggerEscapeJson(_Symbol),
+                            session_date_key,
+                            g_pending_side > 0 ? "BUY" : "SELL",
+                            (long)entry_bar_utc,
+                            (long)entry_tick_broker,
+                            (long)entry_tick_utc,
+                            cash_open_mid,
+                            cash_close_mid,
+                            frozen_atr));
    return true;
   }
 
@@ -454,17 +601,6 @@ bool Strategy_WideSpread()
       return false;
    const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
    return (spread_points < 0 || spread_points > strategy_max_spread_points);
-  }
-
-void Strategy_LogEntryRejected(const string detail,
-                               const datetime candidate_utc)
-  {
-   QM_LogEvent(QM_WARN,
-               "ENTRY_REJECTED",
-               StringFormat("{\"result\":\"STRATEGY_HOOK_REJECTED\",\"symbol\":\"%s\",\"reason\":\"POSTCLOSE_CONT\",\"detail\":\"%s\",\"candidate_utc\":%I64d}",
-                            QM_LoggerEscapeJson(_Symbol),
-                            QM_LoggerEscapeJson(detail),
-                            (long)candidate_utc));
   }
 
 // -----------------------------------------------------------------------------
@@ -662,7 +798,23 @@ int OnInit()
                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
+   const int expected_slot = (_Symbol == "GDAXI.DWX") ? 0 :
+                             ((_Symbol == "UK100.DWX") ? 1 : -1);
+   QM_LogEvent(QM_INFO,
+               "INIT_OK",
+               StringFormat("{\"symbol\":\"%s\",\"period\":%d,\"signal_tf\":%d,\"route_ok\":%s,\"magic_slot\":%d,\"expected_slot\":%d,\"inputs_valid\":%s,\"cash_open_broker\":\"%02d:%02d\",\"cash_close_broker\":\"%02d:%02d\",\"hold_minutes\":%d,\"tick_time_basis\":\"dwx_broker_label\"}",
+                            QM_LoggerEscapeJson(_Symbol),
+                            (int)_Period,
+                            (int)strategy_signal_tf,
+                            Strategy_IsRoutedSymbol(_Symbol) ? "true" : "false",
+                            qm_magic_slot_offset,
+                            expected_slot,
+                            Strategy_InputsValid() ? "true" : "false",
+                            strategy_cash_open_hour_broker,
+                            strategy_cash_open_minute_broker,
+                            strategy_cash_close_hour_broker,
+                            strategy_cash_close_minute_broker,
+                            strategy_hold_minutes));
    return INIT_SUCCEEDED;
   }
 

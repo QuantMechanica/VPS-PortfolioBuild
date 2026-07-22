@@ -102,6 +102,23 @@ double   g_prior_cash_close = 0.0;
 double   g_session_high = 0.0;
 double   g_session_low = 0.0;
 
+#define STRATEGY_DIAG_SESSION_REJECT  1
+#define STRATEGY_DIAG_SESSION_READY   2
+#define STRATEGY_DIAG_GAP_STATE       4
+#define STRATEGY_DIAG_HILO_PREREQ     8
+#define STRATEGY_DIAG_HILO_OUTCOME   16
+#define STRATEGY_DIAG_STATE_RUNTIME  32
+
+int      g_diagnostic_date_key = 0;
+uint     g_diagnostic_mask = 0;
+int      g_diagnostic_candidate_count = 0;
+datetime g_diagnostic_last_entry_bar_utc = 0;
+double   g_diagnostic_last_candidate_close = 0.0;
+double   g_diagnostic_last_prior_high_average = 0.0;
+double   g_diagnostic_last_prior_low_average = 0.0;
+double   g_diagnostic_last_extreme_distance = 0.0;
+double   g_diagnostic_last_extreme_limit = 0.0;
+
 bool     g_pending_signal = false;
 int      g_pending_side = 0;
 datetime g_pending_entry_bar_utc = 0;
@@ -122,6 +139,87 @@ void Strategy_LogEntryReject(const int date_key,
                             (long)entry_bar_utc,
                             (long)TimeCurrent(),
                             diagnostics));
+  }
+
+void Strategy_ResetDiagnosticsForDate(const int date_key)
+  {
+   if(date_key == g_diagnostic_date_key)
+      return;
+   g_diagnostic_date_key = date_key;
+   g_diagnostic_mask = 0;
+   g_diagnostic_candidate_count = 0;
+   g_diagnostic_last_entry_bar_utc = 0;
+   g_diagnostic_last_candidate_close = 0.0;
+   g_diagnostic_last_prior_high_average = 0.0;
+   g_diagnostic_last_prior_low_average = 0.0;
+   g_diagnostic_last_extreme_distance = 0.0;
+   g_diagnostic_last_extreme_limit = 0.0;
+  }
+
+bool Strategy_ClaimDiagnostic(const int date_key,
+                              const uint diagnostic_bit)
+  {
+   Strategy_ResetDiagnosticsForDate(date_key);
+   if((g_diagnostic_mask & diagnostic_bit) != 0)
+      return false;
+   g_diagnostic_mask |= diagnostic_bit;
+   return true;
+  }
+
+void Strategy_LogSessionStateReject(const int date_key,
+                                    const string detail,
+                                    const string diagnostics = "")
+  {
+   if(!Strategy_ClaimDiagnostic(date_key, STRATEGY_DIAG_SESSION_REJECT))
+      return;
+   QM_LogEvent(QM_WARN,
+               "SESSION_STATE_REJECTED",
+               StringFormat("{\"symbol\":\"%s\",\"detail\":\"%s\",\"date_key\":%d%s}",
+                            QM_LoggerEscapeJson(_Symbol),
+                            QM_LoggerEscapeJson(detail),
+                            date_key,
+                            diagnostics));
+  }
+
+void Strategy_LogRuntimeStateReject(const int date_key,
+                                    const string detail,
+                                    const datetime current_bar_utc,
+                                    const string diagnostics = "")
+  {
+   if(!Strategy_ClaimDiagnostic(date_key, STRATEGY_DIAG_STATE_RUNTIME))
+      return;
+   QM_LogEvent(QM_WARN,
+               "SESSION_RUNTIME_REJECTED",
+               StringFormat("{\"symbol\":\"%s\",\"detail\":\"%s\",\"date_key\":%d,\"current_bar_utc\":%I64d%s}",
+                            QM_LoggerEscapeJson(_Symbol),
+                            QM_LoggerEscapeJson(detail),
+                            date_key,
+                            (long)current_bar_utc,
+                            diagnostics));
+  }
+
+void Strategy_LogHiloOutcome(const int date_key,
+                             const string outcome)
+  {
+   if(!Strategy_ClaimDiagnostic(date_key, STRATEGY_DIAG_HILO_OUTCOME))
+      return;
+   QM_LogEvent(QM_INFO,
+               "HILO_WINDOW_STATE",
+               StringFormat("{\"symbol\":\"%s\",\"outcome\":\"%s\",\"date_key\":%d,\"armed_side\":%d,\"candidate_count\":%d,\"last_entry_bar_utc\":%I64d,\"last_close\":%.8f,\"prior_high_average\":%.8f,\"prior_low_average\":%.8f,\"session_high\":%.8f,\"session_low\":%.8f,\"m30_atr\":%.8f,\"extreme_distance\":%.8f,\"extreme_limit\":%.8f}",
+                            QM_LoggerEscapeJson(_Symbol),
+                            QM_LoggerEscapeJson(outcome),
+                            date_key,
+                            g_armed_side,
+                            g_diagnostic_candidate_count,
+                            (long)g_diagnostic_last_entry_bar_utc,
+                            g_diagnostic_last_candidate_close,
+                            g_diagnostic_last_prior_high_average,
+                            g_diagnostic_last_prior_low_average,
+                            g_session_high,
+                            g_session_low,
+                            g_m30_atr,
+                            g_diagnostic_last_extreme_distance,
+                            g_diagnostic_last_extreme_limit));
   }
 
 bool     g_m30_have_previous = false;
@@ -523,6 +621,7 @@ void Strategy_ClearPending()
 bool Strategy_InitializeSession(const int date_key,
                                  const MqlRates &current_bar)
   {
+   Strategy_ResetDiagnosticsForDate(date_key);
    g_state_session_date_key = 0;
    g_armed_side = 0;
    g_session_consumed = false;
@@ -532,32 +631,107 @@ bool Strategy_InitializeSession(const int date_key,
    datetime open_utc = 0;
    datetime close_utc = 0;
    const int prior_date_key = Strategy_PreviousWeekdayDateKey(date_key);
-   if(date_key <= 0 || prior_date_key <= 0 ||
-      !Strategy_ResolveCashSession(date_key, open_utc, close_utc) ||
-      QM_BrokerToUTC(current_bar.time) != open_utc)
+   if(date_key <= 0 || prior_date_key <= 0)
+     {
+      Strategy_LogSessionStateReject(date_key,
+                                     "invalid_session_date",
+                                     StringFormat(",\"prior_date_key\":%d",
+                                                  prior_date_key));
       return false;
+     }
+   if(!Strategy_ResolveCashSession(date_key, open_utc, close_utc))
+     {
+      Strategy_LogSessionStateReject(date_key,
+                                     "cash_session_resolution_failed");
+      return false;
+     }
+   const datetime current_bar_utc = QM_BrokerToUTC(current_bar.time);
+   if(current_bar_utc != open_utc)
+     {
+      Strategy_LogSessionStateReject(date_key,
+                                     "cash_open_bar_mismatch",
+                                     StringFormat(",\"current_bar_utc\":%I64d,\"open_utc\":%I64d",
+                                                  (long)current_bar_utc,
+                                                  (long)open_utc));
+      return false;
+     }
 
    if(!g_history_state_valid ||
       g_history_through_date_key != prior_date_key)
      {
       if(!Strategy_WarmHistoryThrough(prior_date_key))
+        {
+         Strategy_LogSessionStateReject(date_key,
+                                        "history_warmup_failed",
+                                        StringFormat(",\"prior_date_key\":%d,\"history_state_valid\":%s,\"history_through_date_key\":%d,\"m30_tr_count\":%d,\"d1_tr_count\":%d,\"recent_count\":%d,\"m30_atr\":%.8f,\"d1_atr\":%.8f",
+                                                     prior_date_key,
+                                                     g_history_state_valid ? "true" : "false",
+                                                     g_history_through_date_key,
+                                                     g_m30_tr_count,
+                                                     g_d1_tr_count,
+                                                     g_recent_count,
+                                                     g_m30_atr,
+                                                     g_d1_atr));
          return false;
+        }
      }
 
    g_state_session_date_key = date_key;
    g_prior_cash_close = g_m30_previous_close;
    const double cash_open = current_bar.open;
    if(g_prior_cash_close <= 0.0 || cash_open <= 0.0 || g_d1_atr <= 0.0)
+     {
+      Strategy_LogSessionStateReject(date_key,
+                                     "invalid_session_anchors",
+                                     StringFormat(",\"prior_cash_close\":%.8f,\"cash_open\":%.8f,\"d1_atr\":%.8f",
+                                                  g_prior_cash_close,
+                                                  cash_open,
+                                                  g_d1_atr));
       return false;
+     }
+   if(Strategy_ClaimDiagnostic(date_key, STRATEGY_DIAG_SESSION_READY))
+      QM_LogEvent(QM_INFO,
+                  "SESSION_STATE_READY",
+                  StringFormat("{\"symbol\":\"%s\",\"date_key\":%d,\"prior_date_key\":%d,\"open_utc\":%I64d,\"close_utc\":%I64d,\"history_through_date_key\":%d,\"m30_tr_count\":%d,\"d1_tr_count\":%d,\"recent_count\":%d,\"prior_cash_close\":%.8f,\"cash_open\":%.8f,\"m30_atr\":%.8f,\"d1_atr\":%.8f}",
+                               QM_LoggerEscapeJson(_Symbol),
+                               date_key,
+                               prior_date_key,
+                               (long)open_utc,
+                               (long)close_utc,
+                               g_history_through_date_key,
+                               g_m30_tr_count,
+                               g_d1_tr_count,
+                               g_recent_count,
+                               g_prior_cash_close,
+                               cash_open,
+                               g_m30_atr,
+                               g_d1_atr));
    const double gap = cash_open - g_prior_cash_close;
    const double gap_ratio = MathAbs(gap) / g_d1_atr;
    g_session_high = cash_open;
    g_session_low = cash_open;
-   if(gap == 0.0 || gap_ratio < strategy_gap_atr_min ||
-      gap_ratio > strategy_gap_atr_max)
+   const bool gap_eligible =
+      (gap != 0.0 && gap_ratio >= strategy_gap_atr_min &&
+       gap_ratio <= strategy_gap_atr_max);
+   if(gap_eligible)
+      g_armed_side = (gap > 0.0) ? -1 : 1;
+   if(Strategy_ClaimDiagnostic(date_key, STRATEGY_DIAG_GAP_STATE))
+      QM_LogEvent(QM_INFO,
+                  "GAP_STATE",
+                  StringFormat("{\"symbol\":\"%s\",\"date_key\":%d,\"eligible\":%s,\"armed_side\":%d,\"prior_cash_close\":%.8f,\"cash_open\":%.8f,\"gap\":%.8f,\"d1_atr\":%.8f,\"gap_ratio\":%.8f,\"gap_atr_min\":%.8f,\"gap_atr_max\":%.8f}",
+                               QM_LoggerEscapeJson(_Symbol),
+                               date_key,
+                               gap_eligible ? "true" : "false",
+                               g_armed_side,
+                               g_prior_cash_close,
+                               cash_open,
+                               gap,
+                               g_d1_atr,
+                               gap_ratio,
+                               strategy_gap_atr_min,
+                               strategy_gap_atr_max));
+   if(!gap_eligible)
       return true;
-
-   g_armed_side = (gap > 0.0) ? -1 : 1;
    return true;
   }
 
@@ -567,25 +741,66 @@ bool Strategy_PrepareCandidateEntry(const MqlRates &candidate,
    const double prior_high_average = Strategy_RecentHighAverage();
    const double prior_low_average = Strategy_RecentLowAverage();
    if(prior_high_average <= 0.0 || prior_low_average <= 0.0)
+     {
+      if(Strategy_ClaimDiagnostic(g_state_session_date_key,
+                                  STRATEGY_DIAG_HILO_PREREQ))
+         QM_LogEvent(QM_WARN,
+                     "HILO_STATE_REJECTED",
+                     StringFormat("{\"symbol\":\"%s\",\"detail\":\"recent_average_unavailable\",\"date_key\":%d,\"entry_bar_utc\":%I64d,\"recent_count\":%d,\"prior_high_average\":%.8f,\"prior_low_average\":%.8f}",
+                                  QM_LoggerEscapeJson(_Symbol),
+                                  g_state_session_date_key,
+                                  (long)entry_bar_utc,
+                                  g_recent_count,
+                                  prior_high_average,
+                                  prior_low_average));
       return false;
+     }
 
    g_session_high = MathMax(g_session_high, candidate.high);
    g_session_low = MathMin(g_session_low, candidate.low);
-   if(!Strategy_AdvanceM30State(candidate) || g_m30_atr <= 0.0)
+   const bool state_advanced = Strategy_AdvanceM30State(candidate);
+   if(!state_advanced || g_m30_atr <= 0.0)
+     {
+      if(Strategy_ClaimDiagnostic(g_state_session_date_key,
+                                  STRATEGY_DIAG_HILO_PREREQ))
+         QM_LogEvent(QM_WARN,
+                     "HILO_STATE_REJECTED",
+                     StringFormat("{\"symbol\":\"%s\",\"detail\":\"m30_state_unavailable\",\"date_key\":%d,\"entry_bar_utc\":%I64d,\"state_advanced\":%s,\"m30_tr_count\":%d,\"m30_atr\":%.8f}",
+                                  QM_LoggerEscapeJson(_Symbol),
+                                  g_state_session_date_key,
+                                  (long)entry_bar_utc,
+                                  state_advanced ? "true" : "false",
+                                  g_m30_tr_count,
+                                  g_m30_atr));
       return false;
+     }
 
+   ++g_diagnostic_candidate_count;
+   g_diagnostic_last_entry_bar_utc = entry_bar_utc;
+   g_diagnostic_last_candidate_close = candidate.close;
+   g_diagnostic_last_prior_high_average = prior_high_average;
+   g_diagnostic_last_prior_low_average = prior_low_average;
+   g_diagnostic_last_extreme_limit =
+      strategy_extreme_atr_tolerance * g_m30_atr;
    bool qualifies = false;
    if(g_armed_side < 0)
+     {
+      g_diagnostic_last_extreme_distance = candidate.close - g_session_low;
       qualifies = (candidate.close < prior_low_average &&
-                   candidate.close - g_session_low <=
-                   strategy_extreme_atr_tolerance * g_m30_atr);
+                   g_diagnostic_last_extreme_distance <=
+                   g_diagnostic_last_extreme_limit);
+     }
    else if(g_armed_side > 0)
+     {
+      g_diagnostic_last_extreme_distance = g_session_high - candidate.close;
       qualifies = (candidate.close > prior_high_average &&
-                   g_session_high - candidate.close <=
-                   strategy_extreme_atr_tolerance * g_m30_atr);
+                   g_diagnostic_last_extreme_distance <=
+                   g_diagnostic_last_extreme_limit);
+     }
    if(!qualifies)
       return false;
 
+   Strategy_LogHiloOutcome(g_state_session_date_key, "QUALIFIED");
    g_session_consumed = true;
    g_attempt_date_key = g_state_session_date_key;
 
@@ -699,19 +914,60 @@ void Strategy_ProcessCandidate(const int date_key,
                                const datetime current_bar_utc)
   {
    if(date_key != g_state_session_date_key || !g_history_state_valid)
+     {
+      Strategy_LogRuntimeStateReject(date_key,
+                                     "session_or_history_state_mismatch",
+                                     current_bar_utc,
+                                     StringFormat(",\"state_session_date_key\":%d,\"history_state_valid\":%s,\"history_through_date_key\":%d",
+                                                  g_state_session_date_key,
+                                                  g_history_state_valid ? "true" : "false",
+                                                  g_history_through_date_key));
       return;
+     }
    datetime open_utc = 0;
    datetime close_utc = 0;
-   if(!Strategy_ResolveCashSession(date_key, open_utc, close_utc) ||
-      current_bar_utc <= open_utc || current_bar_utc > close_utc)
+   if(!Strategy_ResolveCashSession(date_key, open_utc, close_utc))
+     {
+      Strategy_LogRuntimeStateReject(date_key,
+                                     "cash_session_resolution_failed",
+                                     current_bar_utc);
       return;
+     }
+   if(current_bar_utc <= open_utc || current_bar_utc > close_utc)
+     {
+      Strategy_LogRuntimeStateReject(date_key,
+                                     "candidate_outside_cash_session",
+                                     current_bar_utc,
+                                     StringFormat(",\"open_utc\":%I64d,\"close_utc\":%I64d",
+                                                  (long)open_utc,
+                                                  (long)close_utc));
+      return;
+     }
 
    MqlRates candidate[];
    ArraySetAsSeries(candidate, false);
-   if(CopyRates(_Symbol, strategy_signal_tf, 1, 1, candidate) != 1 || // perf-allowed: one just-completed candidate bar under the framework new-bar event.
-      QM_BrokerToUTC(candidate[0].time) != current_bar_utc - 30 * 60 ||
-      QM_BrokerToUTC(candidate[0].time) < open_utc)
+   const int copied = CopyRates(_Symbol, strategy_signal_tf, 1, 1, candidate); // perf-allowed: one just-completed candidate bar under the framework new-bar event.
+   if(copied != 1)
      {
+      Strategy_LogRuntimeStateReject(date_key,
+                                     "candidate_copy_failed",
+                                     current_bar_utc,
+                                     StringFormat(",\"copy_count\":%d", copied));
+      g_session_consumed = true;
+      g_history_state_valid = false;
+      return;
+     }
+   const datetime candidate_bar_utc = QM_BrokerToUTC(candidate[0].time);
+   if(candidate_bar_utc != current_bar_utc - 30 * 60 ||
+      candidate_bar_utc < open_utc)
+     {
+      Strategy_LogRuntimeStateReject(date_key,
+                                     "candidate_bar_mismatch",
+                                     current_bar_utc,
+                                     StringFormat(",\"candidate_bar_utc\":%I64d,\"expected_candidate_bar_utc\":%I64d,\"open_utc\":%I64d",
+                                                  (long)candidate_bar_utc,
+                                                  (long)(current_bar_utc - 30 * 60),
+                                                  (long)open_utc));
       g_session_consumed = true;
       g_history_state_valid = false;
       return;
@@ -723,12 +979,21 @@ void Strategy_ProcessCandidate(const int date_key,
       Strategy_PrepareCandidateEntry(candidate[0], current_bar_utc);
    else
      {
+      if(current_bar_utc > open_utc + 180 * 60 &&
+         !g_session_consumed && g_armed_side != 0)
+         Strategy_LogHiloOutcome(date_key, "WINDOW_EXHAUSTED");
       g_session_high = MathMax(g_session_high, candidate[0].high);
       g_session_low = MathMin(g_session_low, candidate[0].low);
       Strategy_AdvanceM30State(candidate[0]);
      }
    if(g_m30_tr_count != tr_count_before + 1)
      {
+      Strategy_LogRuntimeStateReject(date_key,
+                                     "m30_state_advance_count_mismatch",
+                                     current_bar_utc,
+                                     StringFormat(",\"tr_count_before\":%d,\"tr_count_after\":%d",
+                                                  tr_count_before,
+                                                  g_m30_tr_count));
       g_session_consumed = true;
       g_history_state_valid = false;
       return;
@@ -740,6 +1005,15 @@ void Strategy_ProcessCandidate(const int date_key,
                                   g_session_low,
                                   candidate[0].close))
         {
+         Strategy_LogRuntimeStateReject(date_key,
+                                        "d1_state_advance_failed",
+                                        current_bar_utc,
+                                        StringFormat(",\"session_high\":%.8f,\"session_low\":%.8f,\"session_close\":%.8f,\"d1_tr_count\":%d,\"d1_atr\":%.8f",
+                                                     g_session_high,
+                                                     g_session_low,
+                                                     candidate[0].close,
+                                                     g_d1_tr_count,
+                                                     g_d1_atr));
          g_history_state_valid = false;
          return;
         }

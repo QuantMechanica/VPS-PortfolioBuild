@@ -583,9 +583,14 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
-   string allowed_symbols[3] = {"GDAXI.DWX", "SP500.DWX", "EURUSD.DWX"};
+   // Only the two order routes belong in the symbol guard.  EURUSD is a
+   // conditional conversion input for GDAXI commission estimates; forcing it
+   // into every basket warmup made the independent SP500 route fail before
+   // OnInit completed whenever EURUSD history was unavailable.
+   string allowed_symbols[2] = {"GDAXI.DWX", "SP500.DWX"};
    QM_SymbolGuardInit(allowed_symbols);
-   QM_BasketWarmupHistory(allowed_symbols, strategy_signal_tf, 16);
+   string warmup_symbols[1] = {_Symbol};
+   QM_BasketWarmupHistory(warmup_symbols, strategy_signal_tf, 16);
 
    g_calendar_ready = LoadEventCalendar();
    if(!g_calendar_ready)

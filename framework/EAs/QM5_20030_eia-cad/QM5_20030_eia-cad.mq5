@@ -210,8 +210,13 @@ datetime ExitDeadlineForPosition(const datetime open_time)
    return open_time + MathMax(1, strategy_time_exit_minutes - 5) * 60;
   }
 
-bool CostAndVolumeAllow(const double entry_price, const double stop_price)
+bool CostAndVolumeAllow(const double entry_price,
+                        const double stop_price,
+                        string &reject_detail,
+                        string &diagnostics)
   {
+   reject_detail = "";
+   diagnostics = "";
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
    const double tick_value = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_VALUE);
@@ -221,30 +226,70 @@ bool CostAndVolumeAllow(const double entry_price, const double stop_price)
    if(AccountInfoString(ACCOUNT_CURRENCY) != "USD" ||
       point <= 0.0 || tick_size <= 0.0 || tick_value <= 0.0 ||
       contract_size <= 0.0 || ask <= 0.0 || bid <= 0.0 || ask < bid)
+     {
+      reject_detail = "market_metadata_invalid";
+      diagnostics = StringFormat("account=%s;point=%.8f;tick_size=%.8f;tick_value=%.8f;contract_size=%.8f;ask=%.8f;bid=%.8f",
+                                 AccountInfoString(ACCOUNT_CURRENCY), point, tick_size,
+                                 tick_value, contract_size, ask, bid);
       return false;
+     }
 
    const double stop_distance = MathAbs(entry_price - stop_price);
    const double risk_per_lot = (stop_distance / tick_size) * tick_value;
    const double spread_per_lot = ((ask - bid) / tick_size) * tick_value;
    const double commission_per_lot = MathMax(0.00005 * contract_size, 5.0);
-   if(risk_per_lot <= 0.0 ||
-      (commission_per_lot + spread_per_lot) / risk_per_lot > strategy_max_cost_r)
+   const double cost_r = risk_per_lot > 0.0
+                         ? (commission_per_lot + spread_per_lot) / risk_per_lot
+                         : 0.0;
+   if(risk_per_lot <= 0.0)
+     {
+      reject_detail = "risk_per_lot_invalid";
+      diagnostics = StringFormat("stop_distance=%.8f;tick_size=%.8f;tick_value=%.8f",
+                                 stop_distance, tick_size, tick_value);
       return false;
+     }
+   if(cost_r > strategy_max_cost_r)
+     {
+      reject_detail = "estimated_cost_above_limit";
+      diagnostics = StringFormat("cost_r=%.8f;max_cost_r=%.8f;risk_per_lot=%.8f;spread_per_lot=%.8f;commission_per_lot=%.8f",
+                                 cost_r, strategy_max_cost_r, risk_per_lot,
+                                 spread_per_lot, commission_per_lot);
+      return false;
+     }
 
    const double sl_points = stop_distance / point;
    const long stop_level = SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
    if(sl_points <= 0.0 || sl_points < (double)stop_level)
+     {
+      reject_detail = "broker_stop_level";
+      diagnostics = StringFormat("sl_points=%.8f;stop_level=%I64d", sl_points, stop_level);
       return false;
+     }
 
-   const double lots = QM_LotsForRisk(_Symbol, sl_points);
+   const double lots = QM_LotsForRisk(_Symbol,
+                                      sl_points,
+                                      QM_RISK_MODE_FIXED,
+                                      RISK_FIXED);
    const double volume_min = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN);
    const double volume_max = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MAX);
    const double volume_step = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_STEP);
    if(lots <= 0.0 || volume_min <= 0.0 || volume_max <= 0.0 || volume_step <= 0.0 ||
       lots < volume_min || lots > volume_max)
+     {
+      reject_detail = "risk_sizing_or_volume_metadata_invalid";
+      diagnostics = StringFormat("lots=%.8f;volume_min=%.8f;volume_max=%.8f;volume_step=%.8f;sl_points=%.8f",
+                                 lots, volume_min, volume_max, volume_step, sl_points);
       return false;
+     }
    const double aligned = volume_min + MathRound((lots - volume_min) / volume_step) * volume_step;
-   return (MathAbs(aligned - lots) <= volume_step * 1.0e-6);
+   if(MathAbs(aligned - lots) > volume_step * 1.0e-6)
+     {
+      reject_detail = "risk_volume_not_step_aligned";
+      diagnostics = StringFormat("lots=%.8f;aligned=%.8f;volume_step=%.8f",
+                                 lots, aligned, volume_step);
+      return false;
+     }
+   return true;
   }
 
 // -----------------------------------------------------------------------------
@@ -341,9 +386,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                                     entry_price, stop_price, release_low, release_high));
       return false;
      }
-   if(!CostAndVolumeAllow(entry_price, stop_price))
+   string cost_reject = "";
+   string cost_diagnostics = "";
+   if(!CostAndVolumeAllow(entry_price,
+                          stop_price,
+                          cost_reject,
+                          cost_diagnostics))
      {
-      LogEntryRejected(event_utc, "cost_or_volume_gate_rejected");
+      LogEntryRejected(event_utc,
+                       cost_reject,
+                       cost_diagnostics);
       return false;
      }
 
