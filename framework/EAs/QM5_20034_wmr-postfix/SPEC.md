@@ -16,6 +16,9 @@ the prior 20 valid fixing days. When displacement is strictly greater than 1.5
 times that median and the completed 16:00–16:05 bar has not already reversed,
 the EA fades the move at 16:05. Frozen P0 is the target, one displacement from
 the actual entry is the hard stop, and any remainder is closed at 16:30 London.
+The endpoints are derived from the broker clock on UTC weekdays, and prior
+days enter the rolling sample only when their tick endpoints are valid; no
+external fixing calendar is used. Tester Groups applies venue commission.
 
 ---
 
@@ -26,9 +29,11 @@ the actual entry is the hard stop, and any remainder is closed at 16:30 London.
 | `strategy_signal_tf` | `PERIOD_M5` | fixed M5 | Fix confirmation and entry timeframe. |
 | `strategy_median_days` | `20` | fixed 20 | Prior valid fixing-day sample used for the displacement median. |
 | `strategy_displacement_mult` | `1.50` | fixed 1.50 | Strict qualifying multiple of the prior-20 median displacement. |
-| `strategy_max_cost_r` | `0.10` | fixed 0.10 | Maximum commission-plus-spread cost as a fraction of initial risk. |
-| `strategy_fix_ledger_file` | `QM5_20034_wmr_fix_calendar.csv` | immutable file | Common-Files London business-day and exact UTC fix ledger. |
-| `strategy_calendar_valid_through` | `2025.12.31` | fixed date | Required finite-study calendar horizon. |
+| `strategy_p0_*_london` | `15:57:30` | fixed | First WMR displacement endpoint in London time. |
+| `strategy_p1_*_london` | `16:02:30` | fixed | Second WMR displacement endpoint in London time. |
+| `strategy_entry_*_london` | `16:05` | fixed | Post-fix entry time in London time. |
+| `strategy_exit_*_london` | `16:30` | fixed | Mandatory flat time in London time. |
+| `strategy_max_spread_points` | `0` | optional >0 | Tester/live native spread guard; zero disables the guard. |
 
 Framework-level risk, news, seed, stress, and Friday-close inputs are documented
 in `framework/V5_FRAMEWORK_DESIGN.md` and are not duplicated here.
@@ -81,8 +86,8 @@ This card was mechanised from:
 
 The sources support WMR-window displacement and reversal while warning that the
 effect decayed after 2015. The endpoint window, rolling median, 1.5 threshold,
-confirmation, target, stop, cost gate, and time exit are explicit
-QuantMechanica interpretations from the approved card.
+confirmation, target, stop, and time exit are explicit QuantMechanica
+interpretations from the approved card.
 
 ---
 
@@ -103,3 +108,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-22 | Initial build from card | `a9dce427-25fd-4673-8c64-bf01ddcd4cc0` |
+| v2 | 2026-07-22 | FTMO density fix | Replaced the unprovisioned fixing ledger and pre-trade cost gate with broker-clock weekday/tick eligibility and the optional native spread guard. |

@@ -5,7 +5,7 @@
 #include <QM/QM_Common.mqh>
 
 // Strategy Card: QM5_20034_wmr-postfix, G0 APPROVED 2026-07-22.
-// London business dates and exact UTC fix endpoints come from a governed ledger.
+// London fix endpoints are derived from the broker clock on UTC weekdays.
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                     = 20034;
@@ -35,70 +35,24 @@ input group "Strategy"
 input ENUM_TIMEFRAMES strategy_signal_tf  = PERIOD_M5;
 input int    strategy_median_days         = 20;
 input double strategy_displacement_mult   = 1.50;
-input double strategy_max_cost_r          = 0.10;
-input string strategy_fix_ledger_file     = "QM5_20034_wmr_fix_calendar.csv";
-input string strategy_calendar_valid_through = "2025.12.31";
-
-int      g_fix_date_key[];
-datetime g_fix_day_start_utc[];
-datetime g_fix_p0_cutoff_utc[];
-datetime g_fix_p1_cutoff_utc[];
-datetime g_fix_entry_utc[];
-datetime g_fix_exit_utc[];
-bool     g_fix_entry_allowed[];
-bool     g_calendar_ready = false;
+input int    strategy_p0_hour_london      = 15;
+input int    strategy_p0_minute_london    = 57;
+input int    strategy_p0_second_london    = 30;
+input int    strategy_p1_hour_london      = 16;
+input int    strategy_p1_minute_london    = 2;
+input int    strategy_p1_second_london    = 30;
+input int    strategy_entry_hour_london   = 16;
+input int    strategy_entry_minute_london = 5;
+input int    strategy_exit_hour_london    = 16;
+input int    strategy_exit_minute_london  = 30;
+// Tester Groups applies venue commission to fills; zero disables this optional
+// native spread guard, matching the proven QM5_12969 execution baseline.
+input int    strategy_max_spread_points   = 0;
 
 double   g_prior_displacements[];
 bool     g_history_initialized = false;
 datetime g_last_processed_entry_utc = 0;
 datetime g_active_exit_broker = 0;
-
-string Trimmed(string value)
-  {
-   StringTrimLeft(value);
-   StringTrimRight(value);
-   return value;
-  }
-
-bool IsSha256(const string value)
-  {
-   if(StringLen(value) != 64)
-      return false;
-   const string hex = "0123456789abcdefABCDEF";
-   for(int i = 0; i < 64; ++i)
-     {
-      if(StringFind(hex, StringSubstr(value, i, 1)) < 0)
-         return false;
-     }
-   return true;
-  }
-
-bool ParseBoolean(const string value, bool &parsed)
-  {
-   if(value == "1" || value == "true" || value == "TRUE")
-     {
-      parsed = true;
-      return true;
-     }
-   if(value == "0" || value == "false" || value == "FALSE")
-     {
-      parsed = false;
-      return true;
-     }
-   return false;
-  }
-
-datetime ParseUtcTimestamp(string value)
-  {
-   value = Trimmed(value);
-   const int n = StringLen(value);
-   if(n < 2 || StringSubstr(value, n - 1, 1) != "Z")
-      return 0;
-   value = StringSubstr(value, 0, n - 1);
-   StringReplace(value, "-", ".");
-   StringReplace(value, "T", " ");
-   return StringToTime(value);
-  }
 
 datetime UtcDateTime(const int year,
                      const int month,
@@ -150,162 +104,69 @@ int DateKey(const datetime value)
    return parts.year * 10000 + parts.mon * 100 + parts.day;
   }
 
-int ParseDateKey(string value)
+datetime LondonDateTimeToUtc(const int date_key,
+                             const int hour,
+                             const int minute,
+                             const int second)
   {
-   value = Trimmed(value);
-   StringReplace(value, "-", ".");
-   return DateKey(StringToTime(value + " 00:00"));
+   if(date_key < 19000101 || hour < 0 || hour > 23 ||
+      minute < 0 || minute > 59 || second < 0 || second > 59)
+      return 0;
+   const int year = date_key / 10000;
+   const int month = (date_key / 100) % 100;
+   const int day = date_key % 100;
+   const datetime nominal = UtcDateTime(year, month, day, hour, minute) + second;
+   return nominal - (IsUKDSTUtc(nominal) ? 60 * 60 : 0);
   }
 
-bool LondonClockMatches(const datetime utc,
-                        const int date_key,
-                        const int hour,
-                        const int minute,
-                        const int second)
+bool IsUtcWeekday(const datetime utc)
   {
-   const datetime local = LondonLocal(utc);
    MqlDateTime parts;
-   if(!TimeToStruct(local, parts))
+   if(utc <= 0 || !TimeToStruct(utc, parts))
       return false;
-   return (DateKey(local) == date_key && parts.hour == hour &&
-           parts.min == minute && parts.sec == second);
+   return (parts.day_of_week >= 1 && parts.day_of_week <= 5);
   }
 
-bool ValidCalendarSource(const string url)
+int PreviousDateKey(const int date_key)
   {
-   if(StringFind(url, "https") != 0 || StringFind(url, "://") <= 0)
-      return false;
-   return (StringFind(url, "gov.uk") > 0 ||
-           StringFind(url, "iana.org") > 0 ||
-           StringFind(url, "lseg.com") > 0 ||
-           StringFind(url, "wmcompany.com") > 0 ||
-           StringFind(url, "fca.org.uk") > 0);
+   if(date_key < 19000102)
+      return 0;
+   const datetime noon = UtcDateTime(date_key / 10000,
+                                     (date_key / 100) % 100,
+                                     date_key % 100,
+                                     12,
+                                     0);
+   return DateKey(noon - 24 * 60 * 60);
   }
 
-bool AppendFixDate(const int date_key,
-                   const datetime day_start_utc,
-                   const datetime p0_cutoff_utc,
-                   const datetime p1_cutoff_utc,
-                   const datetime entry_utc,
-                   const datetime exit_utc,
-                   const bool entry_allowed)
+bool ResolveFixTimes(const int london_date_key,
+                     datetime &day_start_utc,
+                     datetime &p0_cutoff_utc,
+                     datetime &p1_cutoff_utc,
+                     datetime &entry_utc,
+                     datetime &exit_utc)
   {
-   const int n = ArraySize(g_fix_entry_utc);
-   if(ArrayResize(g_fix_date_key, n + 1) != n + 1 ||
-      ArrayResize(g_fix_day_start_utc, n + 1) != n + 1 ||
-      ArrayResize(g_fix_p0_cutoff_utc, n + 1) != n + 1 ||
-      ArrayResize(g_fix_p1_cutoff_utc, n + 1) != n + 1 ||
-      ArrayResize(g_fix_entry_utc, n + 1) != n + 1 ||
-      ArrayResize(g_fix_exit_utc, n + 1) != n + 1 ||
-      ArrayResize(g_fix_entry_allowed, n + 1) != n + 1)
-      return false;
-   g_fix_date_key[n] = date_key;
-   g_fix_day_start_utc[n] = day_start_utc;
-   g_fix_p0_cutoff_utc[n] = p0_cutoff_utc;
-   g_fix_p1_cutoff_utc[n] = p1_cutoff_utc;
-   g_fix_entry_utc[n] = entry_utc;
-   g_fix_exit_utc[n] = exit_utc;
-   g_fix_entry_allowed[n] = entry_allowed;
-   return true;
-  }
-
-bool LoadFixCalendar()
-  {
-   ArrayResize(g_fix_date_key, 0);
-   ArrayResize(g_fix_day_start_utc, 0);
-   ArrayResize(g_fix_p0_cutoff_utc, 0);
-   ArrayResize(g_fix_p1_cutoff_utc, 0);
-   ArrayResize(g_fix_entry_utc, 0);
-   ArrayResize(g_fix_exit_utc, 0);
-   ArrayResize(g_fix_entry_allowed, 0);
-   if(strategy_calendar_valid_through != "2025.12.31")
-      return false;
-
-   const int handle = FileOpen(strategy_fix_ledger_file,
-                               FILE_READ | FILE_CSV | FILE_ANSI | FILE_COMMON,
-                               ',');
-   if(handle == INVALID_HANDLE)
-      return false;
-
-   int rows = 0;
-   datetime previous_entry_utc = 0;
-   bool valid = true;
-   while(!FileIsEnding(handle))
-     {
-      const string date_text = Trimmed(FileReadString(handle));
-      const string day_start_text = Trimmed(FileReadString(handle));
-      const string p0_text = Trimmed(FileReadString(handle));
-      const string p1_text = Trimmed(FileReadString(handle));
-      const string entry_text = Trimmed(FileReadString(handle));
-      const string exit_text = Trimmed(FileReadString(handle));
-      const string allowed_text = Trimmed(FileReadString(handle));
-      const string source_url = Trimmed(FileReadString(handle));
-      string retrieved_date = Trimmed(FileReadString(handle));
-      const string source_sha256 = Trimmed(FileReadString(handle));
-
-      if(rows == 0 && date_text == "london_date" && day_start_text == "day_start_utc")
-         continue;
-      if(date_text == "" && p0_text == "" && entry_text == "")
-         continue;
-
-      const int date_key = ParseDateKey(date_text);
-      const datetime day_start_utc = ParseUtcTimestamp(day_start_text);
-      const datetime p0_cutoff_utc = ParseUtcTimestamp(p0_text);
-      const datetime p1_cutoff_utc = ParseUtcTimestamp(p1_text);
-      const datetime entry_utc = ParseUtcTimestamp(entry_text);
-      const datetime exit_utc = ParseUtcTimestamp(exit_text);
-      bool entry_allowed = false;
-      StringReplace(retrieved_date, "-", ".");
-      if(date_key <= 0 || day_start_utc <= 0 || p0_cutoff_utc <= 0 ||
-         p1_cutoff_utc <= 0 || entry_utc <= 0 || exit_utc <= 0 ||
-         (previous_entry_utc > 0 && entry_utc <= previous_entry_utc) ||
-         !LondonClockMatches(day_start_utc, date_key, 0, 0, 0) ||
-         !LondonClockMatches(p0_cutoff_utc, date_key, 15, 57, 30) ||
-         !LondonClockMatches(p1_cutoff_utc, date_key, 16, 2, 30) ||
-         !LondonClockMatches(entry_utc, date_key, 16, 5, 0) ||
-         !LondonClockMatches(exit_utc, date_key, 16, 30, 0) ||
-         p1_cutoff_utc - p0_cutoff_utc != 5 * 60 ||
-         entry_utc - p1_cutoff_utc != 150 ||
-         exit_utc - entry_utc != 25 * 60 ||
-         !ParseBoolean(allowed_text, entry_allowed) ||
-         !ValidCalendarSource(source_url) || StringToTime(retrieved_date) <= 0 ||
-         !IsSha256(source_sha256) ||
-         !AppendFixDate(date_key, day_start_utc, p0_cutoff_utc, p1_cutoff_utc,
-                        entry_utc, exit_utc, entry_allowed))
-        {
-         valid = false;
-         break;
-        }
-      previous_entry_utc = entry_utc;
-      ++rows;
-     }
-   FileClose(handle);
-
-   return (valid && rows > 0 && g_fix_date_key[0] <= 20150215 &&
-           g_fix_date_key[rows - 1] >= 20251231);
-  }
-
-int LowerBoundEntry(const datetime target_utc)
-  {
-   int lo = 0;
-   int hi = ArraySize(g_fix_entry_utc);
-   while(lo < hi)
-     {
-      const int mid = lo + (hi - lo) / 2;
-      if(g_fix_entry_utc[mid] < target_utc)
-         lo = mid + 1;
-      else
-         hi = mid;
-     }
-   return lo;
-  }
-
-int FindFixAtEntry(const datetime entry_utc)
-  {
-   const int i = LowerBoundEntry(entry_utc);
-   if(i < ArraySize(g_fix_entry_utc) && g_fix_entry_utc[i] == entry_utc)
-      return i;
-   return -1;
+   day_start_utc = LondonDateTimeToUtc(london_date_key, 0, 0, 0);
+   p0_cutoff_utc = LondonDateTimeToUtc(london_date_key,
+                                       strategy_p0_hour_london,
+                                       strategy_p0_minute_london,
+                                       strategy_p0_second_london);
+   p1_cutoff_utc = LondonDateTimeToUtc(london_date_key,
+                                       strategy_p1_hour_london,
+                                       strategy_p1_minute_london,
+                                       strategy_p1_second_london);
+   entry_utc = LondonDateTimeToUtc(london_date_key,
+                                   strategy_entry_hour_london,
+                                   strategy_entry_minute_london,
+                                   0);
+   exit_utc = LondonDateTimeToUtc(london_date_key,
+                                  strategy_exit_hour_london,
+                                  strategy_exit_minute_london,
+                                  0);
+   return (day_start_utc > 0 && p0_cutoff_utc > day_start_utc &&
+           p1_cutoff_utc - p0_cutoff_utc == 5 * 60 &&
+           entry_utc - p1_cutoff_utc == 150 &&
+           exit_utc - entry_utc == 25 * 60);
   }
 
 bool TickMid(const MqlTick &tick, double &mid)
@@ -350,12 +211,17 @@ bool LastValidMidInRange(const ulong from_msc,
    return false;
   }
 
-bool FindP0(const int fix_index, double &p0, ulong &p0_msc)
+bool FindP0(const datetime day_start_utc,
+            const datetime p0_cutoff_utc,
+            double &p0,
+            ulong &p0_msc)
   {
    p0 = 0.0;
    p0_msc = 0;
-   const ulong day_start_msc = (ulong)g_fix_day_start_utc[fix_index] * 1000;
-   ulong chunk_end = (ulong)g_fix_p0_cutoff_utc[fix_index] * 1000;
+   if(day_start_utc <= 0 || p0_cutoff_utc <= day_start_utc)
+      return false;
+   const ulong day_start_msc = (ulong)day_start_utc * 1000;
+   ulong chunk_end = (ulong)p0_cutoff_utc * 1000;
    const ulong chunk_width = 5 * 60 * 1000;
    while(chunk_end >= day_start_msc)
      {
@@ -371,21 +237,21 @@ bool FindP0(const int fix_index, double &p0, ulong &p0_msc)
    return false;
   }
 
-bool FixDisplacement(const int fix_index,
+bool FixDisplacement(const datetime day_start_utc,
+                     const datetime p0_cutoff_utc,
+                     const datetime p1_cutoff_utc,
                      double &signed_displacement,
                      double &p0)
   {
    signed_displacement = 0.0;
    p0 = 0.0;
-   if(fix_index < 0 || fix_index >= ArraySize(g_fix_entry_utc))
-      return false;
    ulong p0_msc = 0;
-   if(!FindP0(fix_index, p0, p0_msc))
+   if(!FindP0(day_start_utc, p0_cutoff_utc, p0, p0_msc))
       return false;
 
    double p1 = 0.0;
    ulong p1_msc = 0;
-   const ulong p1_cutoff_msc = (ulong)g_fix_p1_cutoff_utc[fix_index] * 1000;
+   const ulong p1_cutoff_msc = (ulong)p1_cutoff_utc * 1000;
    if(p0_msc >= p1_cutoff_msc ||
       !LastValidMidInRange(p0_msc + 1, p1_cutoff_msc, p1, p1_msc) ||
       p1_msc <= p0_msc)
@@ -414,23 +280,45 @@ void AddPriorDisplacement(const double absolute_displacement)
    g_prior_displacements[n - 1] = absolute_displacement;
   }
 
-bool InitializePriorHistory(const int current_fix_index)
+bool InitializePriorHistory(const int current_london_date_key)
   {
    if(g_history_initialized)
       return true;
    ArrayResize(g_prior_displacements, 0);
    double reverse_values[20];
    int found = 0;
-   for(int i = current_fix_index - 1; i >= 0 && found < strategy_median_days; --i)
+   int date_key = PreviousDateKey(current_london_date_key);
+   for(int scanned = 0; date_key > 0 && scanned < 60 &&
+       found < strategy_median_days; ++scanned)
      {
-      if(!g_fix_entry_allowed[i])
+      datetime day_start_utc = 0;
+      datetime p0_cutoff_utc = 0;
+      datetime p1_cutoff_utc = 0;
+      datetime entry_utc = 0;
+      datetime exit_utc = 0;
+      if(!ResolveFixTimes(date_key,
+                          day_start_utc,
+                          p0_cutoff_utc,
+                          p1_cutoff_utc,
+                          entry_utc,
+                          exit_utc) ||
+         !IsUtcWeekday(entry_utc))
+        {
+         date_key = PreviousDateKey(date_key);
          continue;
+        }
       double displacement = 0.0;
       double prior_p0 = 0.0;
-      if(!FixDisplacement(i, displacement, prior_p0))
-         continue;
-      reverse_values[found] = MathAbs(displacement);
-      ++found;
+      if(FixDisplacement(day_start_utc,
+                         p0_cutoff_utc,
+                         p1_cutoff_utc,
+                         displacement,
+                         prior_p0))
+        {
+         reverse_values[found] = MathAbs(displacement);
+         ++found;
+        }
+      date_key = PreviousDateKey(date_key);
      }
    for(int i = found - 1; i >= 0; --i)
       AddPriorDisplacement(reverse_values[i]);
@@ -475,61 +363,29 @@ bool FindOurPosition(datetime &open_time)
    return false;
   }
 
-int FindFixForOpenPosition(const datetime open_utc)
-  {
-   int i = LowerBoundEntry(open_utc + 1) - 1;
-   while(i >= 0 && open_utc - g_fix_entry_utc[i] <= 10 * 60)
-     {
-      if(open_utc >= g_fix_entry_utc[i])
-         return i;
-      --i;
-     }
-   return -1;
-  }
-
 datetime FallbackLondonExitBroker(const int london_date_key)
   {
-   const int year = london_date_key / 10000;
-   const int month = (london_date_key / 100) % 100;
-   const int day = london_date_key % 100;
-   datetime exit_utc = UtcDateTime(year, month, day, 16, 30);
-   if(IsUKDSTUtc(exit_utc))
-      exit_utc -= 60 * 60;
+   const datetime exit_utc = LondonDateTimeToUtc(london_date_key,
+                                                 strategy_exit_hour_london,
+                                                 strategy_exit_minute_london,
+                                                 0);
    return QM_UTCToBroker(exit_utc);
   }
 
-double CommissionPerLotUsd(const string symbol)
-  {
-   if(symbol != "EURUSD.DWX" && symbol != "GBPUSD.DWX")
-      return 0.0;
-   const double bid = SymbolInfoDouble(symbol, SYMBOL_BID);
-   const double ask = SymbolInfoDouble(symbol, SYMBOL_ASK);
-   if(bid <= 0.0 || ask <= 0.0 || ask < bid)
-      return 0.0;
-   return MathMax(5.0, 5.0 * 0.5 * (bid + ask));
-  }
-
-bool CostAndVolumeAllow(const double entry_price,
-                        const double stop_price,
-                        const double target_price)
+bool TradeGeometryAndVolumeAllow(const double entry_price,
+                                 const double stop_price,
+                                 const double target_price)
   {
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
    const double tick_value = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_VALUE);
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double commission_per_lot = CommissionPerLotUsd(_Symbol);
-   if(AccountInfoString(ACCOUNT_CURRENCY) != "USD" ||
-      point <= 0.0 || tick_size <= 0.0 || tick_value <= 0.0 ||
-      ask <= 0.0 || bid <= 0.0 || ask < bid || commission_per_lot <= 0.0)
+   if(point <= 0.0 || tick_size <= 0.0 || tick_value <= 0.0)
       return false;
 
    const double stop_distance = MathAbs(entry_price - stop_price);
    const double target_distance = MathAbs(entry_price - target_price);
    const double risk_per_lot = (stop_distance / tick_size) * tick_value;
-   const double spread_per_lot = ((ask - bid) / tick_size) * tick_value;
-   if(risk_per_lot <= 0.0 || target_distance <= 0.0 ||
-      (commission_per_lot + spread_per_lot) / risk_per_lot > strategy_max_cost_r)
+   if(risk_per_lot <= 0.0 || target_distance <= 0.0)
       return false;
 
    const double sl_points = stop_distance / point;
@@ -550,6 +406,31 @@ bool CostAndVolumeAllow(const double entry_price,
    return (MathAbs(aligned - lots) <= volume_step * 1.0e-6);
   }
 
+bool Strategy_InputsValid()
+  {
+   return (strategy_signal_tf == PERIOD_M5 &&
+           strategy_median_days == 20 &&
+           strategy_displacement_mult == 1.50 &&
+           strategy_p0_hour_london == 15 &&
+           strategy_p0_minute_london == 57 &&
+           strategy_p0_second_london == 30 &&
+           strategy_p1_hour_london == 16 &&
+           strategy_p1_minute_london == 2 &&
+           strategy_p1_second_london == 30 &&
+           strategy_entry_hour_london == 16 &&
+           strategy_entry_minute_london == 5 &&
+           strategy_exit_hour_london == 16 &&
+           strategy_exit_minute_london == 30);
+  }
+
+bool Strategy_WideSpread()
+  {
+   if(strategy_max_spread_points <= 0)
+      return false;
+   const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+   return (spread_points > strategy_max_spread_points);
+  }
+
 // -----------------------------------------------------------------------------
 // Strategy hooks — implemented mechanically from the approved card.
 // -----------------------------------------------------------------------------
@@ -559,9 +440,10 @@ bool Strategy_NoTradeFilter()
    datetime open_time = 0;
    if(FindOurPosition(open_time))
       return false;
-   if(!IsRoutedSymbol(_Symbol) || _Period != strategy_signal_tf)
+   if(!IsRoutedSymbol(_Symbol) || _Period != strategy_signal_tf ||
+      !Strategy_InputsValid())
       return true;
-   return !g_calendar_ready;
+   return Strategy_WideSpread();
   }
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
@@ -574,26 +456,41 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!g_calendar_ready || !IsRoutedSymbol(_Symbol) || _Period != strategy_signal_tf ||
-      strategy_median_days != 20 || strategy_displacement_mult != 1.50 ||
-      strategy_max_cost_r != 0.10)
+   if(!IsRoutedSymbol(_Symbol) || _Period != strategy_signal_tf ||
+      !Strategy_InputsValid())
       return false;
-   const datetime current_bar = iTime(_Symbol, strategy_signal_tf, 0); // perf-allowed: exact governed 16:05 London entry bar behind QM_IsNewBar.
+   const datetime current_bar = iTime(_Symbol, strategy_signal_tf, 0); // perf-allowed: exact broker-clock 16:05 London entry bar behind QM_IsNewBar.
    if(current_bar <= 0)
       return false;
    const datetime entry_utc = QM_BrokerToUTC(current_bar);
    if(entry_utc == g_last_processed_entry_utc)
       return false;
-   const int fix_index = FindFixAtEntry(entry_utc);
-   if(fix_index < 0)
+   const int london_date_key = DateKey(LondonLocal(entry_utc));
+   datetime day_start_utc = 0;
+   datetime p0_cutoff_utc = 0;
+   datetime p1_cutoff_utc = 0;
+   datetime expected_entry_utc = 0;
+   datetime exit_utc = 0;
+   if(!ResolveFixTimes(london_date_key,
+                       day_start_utc,
+                       p0_cutoff_utc,
+                       p1_cutoff_utc,
+                       expected_entry_utc,
+                       exit_utc) ||
+      entry_utc != expected_entry_utc ||
+      !IsUtcWeekday(entry_utc))
       return false;
    g_last_processed_entry_utc = entry_utc;
-   if(!g_fix_entry_allowed[fix_index] || !InitializePriorHistory(fix_index))
+   if(!InitializePriorHistory(london_date_key))
       return false;
 
    double displacement = 0.0;
    double p0 = 0.0;
-   if(!FixDisplacement(fix_index, displacement, p0))
+   if(!FixDisplacement(day_start_utc,
+                       p0_cutoff_utc,
+                       p1_cutoff_utc,
+                       displacement,
+                       p0))
       return false;
    const double median20 = PriorMedian20();
    AddPriorDisplacement(MathAbs(displacement));
@@ -625,14 +522,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(stop_price <= 0.0 || target_price <= 0.0 ||
       (buy && !(stop_price < entry_price && entry_price < target_price)) ||
       (sell && !(target_price < entry_price && entry_price < stop_price)) ||
-      !CostAndVolumeAllow(entry_price, stop_price, target_price))
+      !TradeGeometryAndVolumeAllow(entry_price, stop_price, target_price))
       return false;
 
    req.type = buy ? QM_BUY : QM_SELL;
    req.sl = stop_price;
    req.tp = target_price;
    req.reason = buy ? "WMR_POSTFIX_FADE_LONG" : "WMR_POSTFIX_FADE_SHORT";
-   g_active_exit_broker = QM_UTCToBroker(g_fix_exit_utc[fix_index]);
+   g_active_exit_broker = QM_UTCToBroker(exit_utc);
    return true;
   }
 
@@ -651,11 +548,7 @@ bool Strategy_ExitSignal()
    if(g_active_exit_broker <= 0)
      {
       const datetime open_utc = QM_BrokerToUTC(open_time);
-      const int fix_index = g_calendar_ready ? FindFixForOpenPosition(open_utc) : -1;
-      if(fix_index >= 0)
-         g_active_exit_broker = QM_UTCToBroker(g_fix_exit_utc[fix_index]);
-      else
-         g_active_exit_broker = FallbackLondonExitBroker(DateKey(LondonLocal(open_utc)));
+      g_active_exit_broker = FallbackLondonExitBroker(DateKey(LondonLocal(open_utc)));
      }
    return (g_active_exit_broker > 0 && TimeCurrent() >= g_active_exit_broker);
   }
@@ -693,12 +586,6 @@ int OnInit()
    string allowed_symbols[2] = {"EURUSD.DWX", "GBPUSD.DWX"};
    QM_SymbolGuardInit(allowed_symbols);
    QM_BasketWarmupHistory(allowed_symbols, strategy_signal_tf, 8);
-
-   g_calendar_ready = LoadFixCalendar();
-   if(!g_calendar_ready)
-      QM_LogEvent(QM_ERROR,
-                  "SETUP_DATA_MISSING",
-                  StringFormat("{\"fix_ledger\":\"%s\"}", strategy_fix_ledger_file));
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
@@ -781,4 +668,3 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-

@@ -10,7 +10,7 @@
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   9a7627f95dc19ebade50fbbd82476a9ae59e8559f3570b1ea8fb366434536973
+; build_hash:   aab0da86abbba52a79d327db7c0185dc1b235de3f368e64fe6219369ced6439a
 ; author:       Development
 ; date:         2026-07-22
 ;==========================================================
@@ -24,6 +24,14 @@ PORTFOLIO_WEIGHT=1
 strategy_signal_tf=PERIOD_M5
 strategy_median_days=20
 strategy_displacement_mult=1.50
-strategy_max_cost_r=0.10
-strategy_fix_ledger_file="QM5_20034_wmr_fix_calendar.csv"
-strategy_calendar_valid_through="2025.12.31"
+strategy_p0_hour_london=15
+strategy_p0_minute_london=57
+strategy_p0_second_london=30
+strategy_p1_hour_london=16
+strategy_p1_minute_london=2
+strategy_p1_second_london=30
+strategy_entry_hour_london=16
+strategy_entry_minute_london=5
+strategy_exit_hour_london=16
+strategy_exit_minute_london=30
+strategy_max_spread_points=0
