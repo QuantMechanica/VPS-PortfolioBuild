@@ -50,6 +50,21 @@ int      g_prior_range_count = 0;
 int      g_last_attempt_key = 0;
 datetime g_active_exit_broker = 0;
 
+void LogStrategyEntryReject(const string detail,
+                            const datetime entry_bar_broker,
+                            const string diagnostics = "")
+  {
+   QM_LogEvent(QM_WARN,
+               "ENTRY_REJECTED",
+               StringFormat("{\"result\":\"STRATEGY_HOOK_REJECTED\",\"symbol\":\"%s\",\"reason\":\"ASIA_FX_FADE\",\"detail\":\"%s\",\"session_key\":%d,\"entry_bar_broker\":%I64d,\"broker_now\":%I64d%s}",
+                            QM_LoggerEscapeJson(_Symbol),
+                            QM_LoggerEscapeJson(detail),
+                            g_session_key,
+                            (long)entry_bar_broker,
+                            (long)TimeCurrent(),
+                            diagnostics));
+  }
+
 int DateKey(const datetime value)
   {
    MqlDateTime parts;
@@ -241,36 +256,64 @@ bool AdvanceSessionState()
 
 bool TradeGeometryAndVolumeAllow(const double entry_price,
                                  const double stop_price,
-                                 const double target_price)
+                                 const double target_price,
+                                 string &out_reject_detail)
   {
+   out_reject_detail = "";
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
    const double tick_value = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_VALUE);
    if(point <= 0.0 || tick_size <= 0.0 || tick_value <= 0.0)
+     {
+      out_reject_detail = "invalid_symbol_risk_metadata";
       return false;
+     }
 
    const double stop_distance = MathAbs(entry_price - stop_price);
    const double target_distance = MathAbs(entry_price - target_price);
    const double risk_per_lot = (stop_distance / tick_size) * tick_value;
    if(risk_per_lot <= 0.0 || target_distance <= 0.0)
+     {
+      out_reject_detail = "non_positive_distance_or_risk";
       return false;
+     }
 
    const double sl_points = stop_distance / point;
    const double tp_points = target_distance / point;
    const long stop_level = SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
    if(sl_points <= 0.0 || tp_points <= 0.0 ||
       sl_points < (double)stop_level || tp_points < (double)stop_level)
+     {
+      out_reject_detail = "broker_stop_level";
       return false;
+     }
 
    const double lots = QM_LotsForRisk(_Symbol, sl_points);
    const double volume_min = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN);
    const double volume_max = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MAX);
    const double volume_step = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_STEP);
-   if(lots <= 0.0 || volume_min <= 0.0 || volume_max <= 0.0 || volume_step <= 0.0 ||
-      lots < volume_min || lots > volume_max)
+   if(lots <= 0.0)
+     {
+      out_reject_detail = "risk_sizing_unavailable";
       return false;
+     }
+   if(volume_min <= 0.0 || volume_max <= 0.0 || volume_step <= 0.0)
+     {
+      out_reject_detail = "invalid_volume_metadata";
+      return false;
+     }
+   if(lots < volume_min || lots > volume_max)
+     {
+      out_reject_detail = "sized_volume_out_of_range";
+      return false;
+     }
    const double aligned = volume_min + MathRound((lots - volume_min) / volume_step) * volume_step;
-   return (MathAbs(aligned - lots) <= volume_step * 1.0e-6);
+   if(MathAbs(aligned - lots) > volume_step * 1.0e-6)
+     {
+      out_reject_detail = "sized_volume_step_misaligned";
+      return false;
+     }
+   return true;
   }
 
 bool Strategy_WideSpread()
@@ -308,9 +351,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!IsRoutedSymbol(_Symbol) || _Period != strategy_signal_tf ||
       strategy_range_fraction != 0.75)
       return false;
-   if(!AdvanceSessionState() || !g_session_valid || g_prior_range_count <= 0)
-      return false;
-
+   const bool session_state_advanced = AdvanceSessionState();
    const datetime current_bar = iTime(_Symbol, strategy_signal_tf, 0); // perf-allowed: exact next-M15-open eligibility behind QM_IsNewBar.
    if(current_bar <= 0 || DateKey(current_bar) != g_session_key)
       return false;
@@ -318,37 +359,122 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(current_minute <= 0 || current_minute > 7 * 60 || g_last_attempt_key == g_session_key)
       return false;
 
+   if(!session_state_advanced || !g_session_valid)
+     {
+      LogStrategyEntryReject("SESSION_STATE_INVALID",
+                             current_bar,
+                             StringFormat(",\"bar_count\":%d,\"last_minute\":%d",
+                                          g_session_bar_count,
+                                          g_session_last_minute));
+      return false;
+     }
+   if(g_prior_range_count <= 0)
+     {
+      LogStrategyEntryReject("PRIOR_RANGE_MISSING",
+                             current_bar,
+                             StringFormat(",\"prior_range_count\":%d",
+                                          g_prior_range_count));
+      return false;
+     }
+
    const double signal_close = iClose(_Symbol, strategy_signal_tf, 1); // perf-allowed: card-authorized completed signal-bar close.
    const double mean_range = g_prior_range_sum / (double)g_prior_range_count;
    if(signal_close <= 0.0 || mean_range <= 0.0 || !MathIsValidNumber(mean_range))
+     {
+      LogStrategyEntryReject("PRIOR_RANGE_MISSING",
+                             current_bar,
+                             StringFormat(",\"signal_close\":%.8f,\"mean_range\":%.8f,\"prior_range_count\":%d",
+                                          signal_close,
+                                          mean_range,
+                                          g_prior_range_count));
       return false;
+     }
    const double move = signal_close - g_session_open;
    if(MathAbs(move) < strategy_range_fraction * mean_range || move == 0.0)
+     {
+      LogStrategyEntryReject("MOVE_BELOW_0_75_MEAN",
+                             current_bar,
+                             StringFormat(",\"move\":%.8f,\"abs_move\":%.8f,\"mean_range\":%.8f,\"threshold\":%.8f",
+                                          move,
+                                          MathAbs(move),
+                                          mean_range,
+                                          strategy_range_fraction * mean_range));
       return false;
+     }
 
    g_last_attempt_key = g_session_key;
    const bool buy = (move < 0.0);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0 || ask < bid)
+     {
+      LogStrategyEntryReject("TRADE_GEOMETRY_REJECTED",
+                             current_bar,
+                             StringFormat(",\"geometry_detail\":\"invalid_quote\",\"bid\":%.8f,\"ask\":%.8f,\"move\":%.8f,\"mean_range\":%.8f",
+                                          bid,
+                                          ask,
+                                          move,
+                                          mean_range));
       return false;
+     }
    const double entry_price = buy ? ask : bid;
    const double target_price = QM_StopRulesNormalizePrice(_Symbol,
                                                            0.5 * (g_session_high + g_session_low));
    const double stop_price = QM_StopRulesNormalizePrice(_Symbol,
                                                          buy ? g_session_open - mean_range
                                                              : g_session_open + mean_range);
+   string geometry_reject = "";
    if(stop_price <= 0.0 || target_price <= 0.0 ||
-      (buy && !(stop_price < entry_price && entry_price < target_price)) ||
-      (!buy && !(target_price < entry_price && entry_price < stop_price)) ||
-      !TradeGeometryAndVolumeAllow(entry_price, stop_price, target_price))
+       (buy && !(stop_price < entry_price && entry_price < target_price)) ||
+       (!buy && !(target_price < entry_price && entry_price < stop_price)))
+     {
+      LogStrategyEntryReject("TRADE_GEOMETRY_REJECTED",
+                             current_bar,
+                             StringFormat(",\"geometry_detail\":\"directional_geometry_invalid\",\"side\":\"%s\",\"entry\":%.8f,\"stop\":%.8f,\"target\":%.8f,\"move\":%.8f,\"mean_range\":%.8f",
+                                          buy ? "BUY" : "SELL",
+                                          entry_price,
+                                          stop_price,
+                                          target_price,
+                                          move,
+                                          mean_range));
       return false;
+     }
+   if(!TradeGeometryAndVolumeAllow(entry_price,
+                                   stop_price,
+                                   target_price,
+                                   geometry_reject))
+     {
+      LogStrategyEntryReject("TRADE_GEOMETRY_REJECTED",
+                             current_bar,
+                             StringFormat(",\"geometry_detail\":\"%s\",\"side\":\"%s\",\"entry\":%.8f,\"stop\":%.8f,\"target\":%.8f,\"move\":%.8f,\"mean_range\":%.8f",
+                                          QM_LoggerEscapeJson(geometry_reject),
+                                          buy ? "BUY" : "SELL",
+                                          entry_price,
+                                          stop_price,
+                                          target_price,
+                                          move,
+                                          mean_range));
+      return false;
+     }
 
    req.type = buy ? QM_BUY : QM_SELL;
    req.sl = stop_price;
    req.tp = target_price;
    req.reason = buy ? "ASIA_RANGE_FADE_LONG" : "ASIA_RANGE_FADE_SHORT";
    g_active_exit_broker = FallbackLondonExitBroker(g_session_key);
+   QM_LogEvent(QM_INFO,
+               "ENTRY_SIGNAL_FIRE",
+               StringFormat("{\"symbol\":\"%s\",\"side\":\"%s\",\"session_key\":%d,\"entry_bar_broker\":%I64d,\"entry\":%.8f,\"sl\":%.8f,\"tp\":%.8f,\"move\":%.8f,\"mean_range\":%.8f,\"exit_broker\":%I64d}",
+                            QM_LoggerEscapeJson(_Symbol),
+                            buy ? "BUY" : "SELL",
+                            g_session_key,
+                            (long)current_bar,
+                            entry_price,
+                            stop_price,
+                            target_price,
+                            move,
+                            mean_range,
+                            (long)g_active_exit_broker));
    return true;
   }
 
@@ -402,11 +528,19 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
-   string allowed_symbols[2] = {"EURUSD.DWX", "GBPUSD.DWX"};
-   QM_SymbolGuardInit(allowed_symbols);
-   QM_BasketWarmupHistory(allowed_symbols, strategy_signal_tf, 64);
-
-   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
+   // Each canonical setfile is an independent single-symbol instance.  The
+   // framework init above installs the host-symbol guard; requiring sibling
+   // history here made a valid host cold-run depend on an unrelated FX pair.
+   QM_LogEvent(QM_INFO,
+               "INIT_OK",
+               StringFormat("{\"routed\":%s,\"period\":%d,\"signal_tf\":%d,\"range_fraction\":%.8f,\"max_spread_points\":%d,\"risk_fixed\":%.2f,\"risk_percent\":%.8f,\"host_only\":true}",
+                            IsRoutedSymbol(_Symbol) ? "true" : "false",
+                            (int)_Period,
+                            (int)strategy_signal_tf,
+                            strategy_range_fraction,
+                            strategy_max_spread_points,
+                            RISK_FIXED,
+                            RISK_PERCENT));
    return INIT_SUCCEEDED;
   }
 
