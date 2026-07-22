@@ -15148,3 +15148,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20043,tpo-va80-rot,2,SP500.DWX,200430002,2026-07-22,Development,active
 20044,gap-hilo-fade,0,SP500.DWX,200440000,2026-07-22,Development,active
 20044,gap-hilo-fade,1,WS30.DWX,200440001,2026-07-22,Development,active
+20045,london-box,0,GBPUSD.DWX,200450000,2026-07-22,Development,active
+20045,london-box,1,EURGBP.DWX,200450001,2026-07-22,Development,active
