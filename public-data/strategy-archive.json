@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-22T13:07:03.1241537Z",
-    "total":  3381,
+    "generated_at":  "2026-07-22T14:07:03.2639739Z",
+    "total":  3391,
     "items":  [
                   {
                       "slug":  "ath-breakout-atr-trail",
@@ -86,6 +86,12 @@
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-07-02T08:47:27.1621846Z"
+                  },
+                  {
+                      "slug":  "brent-dom17_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-22T13:19:59.6539373Z"
                   },
                   {
                       "slug":  "brent-febsep-prem_card",
@@ -17680,10 +17686,64 @@
                       "last_updated_utc":  "2026-07-22T12:41:41.0820294Z"
                   },
                   {
+                      "slug":  "QM5_20037_lbma-pm-brk_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-22T13:08:34.4713594Z"
+                  },
+                  {
+                      "slug":  "QM5_20038_vwap2s-revert_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-22T13:08:34.7430565Z"
+                  },
+                  {
+                      "slug":  "QM5_20039_onr-mid-brk_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-22T13:08:34.9977224Z"
+                  },
+                  {
                       "slug":  "QM5_2004_nnfx-trix-momentum",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-06-12T11:44:03.7483179Z"
+                  },
+                  {
+                      "slug":  "QM5_20040_b3-relvol-brk_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-22T13:08:35.2635034Z"
+                  },
+                  {
+                      "slug":  "QM5_20041_postclose-cont_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-22T13:08:35.5161640Z"
+                  },
+                  {
+                      "slug":  "QM5_20042_brent-dom17",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-22T13:26:44.6396826Z"
+                  },
+                  {
+                      "slug":  "QM5_20043_tpo-va80-rot_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-22T13:42:56.8697959Z"
+                  },
+                  {
+                      "slug":  "QM5_20044_gap-hilo-fade_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-22T13:42:57.5690525Z"
+                  },
+                  {
+                      "slug":  "QM5_20045_london-box_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-22T13:40:49.1009304Z"
                   },
                   {
                       "slug":  "QM5_2005_nnfx-donchian-flow",
@@ -20221,7 +20281,7 @@
                       "slug":  "QM5_1137_fx-h4-filter-rule-breakout",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-22T13:04:30.9137979Z"
+                      "last_updated_utc":  "2026-07-22T14:06:45.3877852Z"
                   },
                   {
                       "slug":  "QM5_1138_gold-m30-open-range-fade-after-gap",
@@ -20239,7 +20299,7 @@
                       "slug":  "QM5_1140_index-daily-range-expansion-continuation",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-22T12:00:03.8864254Z"
+                      "last_updated_utc":  "2026-07-22T14:03:10.2374253Z"
                   },
                   {
                       "slug":  "QM5_1151_fx-london-fix-reversal",
@@ -20257,25 +20317,25 @@
                       "slug":  "QM5_1153_fx-us-session-after-london-drift",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-22T13:04:31.1614871Z"
+                      "last_updated_utc":  "2026-07-22T14:06:45.9553193Z"
                   },
                   {
                       "slug":  "QM5_1154_index-hks-halfhour-lag-continuation",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-22T12:57:42.1958678Z"
+                      "last_updated_utc":  "2026-07-22T13:32:44.8695005Z"
                   },
                   {
                       "slug":  "QM5_1155_index-liquidity-shock-rebound",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-22T13:04:31.4552580Z"
+                      "last_updated_utc":  "2026-07-22T14:06:46.4861225Z"
                   },
                   {
                       "slug":  "QM5_1156_xtiusd-eia-third-halfhour-continuation",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-22T12:00:02.8542404Z"
+                      "last_updated_utc":  "2026-07-22T14:03:09.5867256Z"
                   },
                   {
                       "slug":  "QM5_1157_index-realized-skewness-fade",
@@ -20287,7 +20347,7 @@
                       "slug":  "QM5_1158_index-famous-earnings-cluster-drift",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-22T10:56:30.3661162Z"
+                      "last_updated_utc":  "2026-07-22T13:32:45.1241665Z"
                   }
               ]
 }
