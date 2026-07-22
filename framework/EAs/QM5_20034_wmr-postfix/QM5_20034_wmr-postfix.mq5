@@ -54,6 +54,22 @@ bool     g_history_initialized = false;
 datetime g_last_processed_entry_utc = 0;
 datetime g_active_exit_broker = 0;
 
+void LogStrategyEntryReject(const string detail,
+                            const int london_date_key,
+                            const datetime entry_utc,
+                            const string diagnostics = "")
+  {
+   QM_LogEvent(QM_WARN,
+               "ENTRY_REJECTED",
+               StringFormat("{\"result\":\"STRATEGY_HOOK_REJECTED\",\"symbol\":\"%s\",\"reason\":\"WMR_POSTFIX\",\"detail\":\"%s\",\"london_date_key\":%d,\"entry_utc\":%I64d,\"broker_now\":%I64d%s}",
+                            QM_LoggerEscapeJson(_Symbol),
+                            QM_LoggerEscapeJson(detail),
+                            london_date_key,
+                            (long)entry_utc,
+                            (long)TimeCurrent(),
+                            diagnostics));
+  }
+
 datetime UtcDateTime(const int year,
                      const int month,
                      const int day,
@@ -374,36 +390,64 @@ datetime FallbackLondonExitBroker(const int london_date_key)
 
 bool TradeGeometryAndVolumeAllow(const double entry_price,
                                  const double stop_price,
-                                 const double target_price)
+                                 const double target_price,
+                                 string &out_reject_detail)
   {
+   out_reject_detail = "";
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
    const double tick_value = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_VALUE);
    if(point <= 0.0 || tick_size <= 0.0 || tick_value <= 0.0)
+     {
+      out_reject_detail = "invalid_symbol_risk_metadata";
       return false;
+     }
 
    const double stop_distance = MathAbs(entry_price - stop_price);
    const double target_distance = MathAbs(entry_price - target_price);
    const double risk_per_lot = (stop_distance / tick_size) * tick_value;
    if(risk_per_lot <= 0.0 || target_distance <= 0.0)
+     {
+      out_reject_detail = "non_positive_distance_or_risk";
       return false;
+     }
 
    const double sl_points = stop_distance / point;
    const double tp_points = target_distance / point;
    const long stop_level = SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
    if(sl_points <= 0.0 || tp_points <= 0.0 ||
       sl_points < (double)stop_level || tp_points < (double)stop_level)
+     {
+      out_reject_detail = "broker_stop_level";
       return false;
+     }
 
    const double lots = QM_LotsForRisk(_Symbol, sl_points);
    const double volume_min = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN);
    const double volume_max = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MAX);
    const double volume_step = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_STEP);
-   if(lots <= 0.0 || volume_min <= 0.0 || volume_max <= 0.0 || volume_step <= 0.0 ||
-      lots < volume_min || lots > volume_max)
+   if(lots <= 0.0)
+     {
+      out_reject_detail = "risk_sizing_unavailable";
       return false;
+     }
+   if(volume_min <= 0.0 || volume_max <= 0.0 || volume_step <= 0.0)
+     {
+      out_reject_detail = "invalid_volume_metadata";
+      return false;
+     }
+   if(lots < volume_min || lots > volume_max)
+     {
+      out_reject_detail = "sized_volume_out_of_range";
+      return false;
+     }
    const double aligned = volume_min + MathRound((lots - volume_min) / volume_step) * volume_step;
-   return (MathAbs(aligned - lots) <= volume_step * 1.0e-6);
+   if(MathAbs(aligned - lots) > volume_step * 1.0e-6)
+     {
+      out_reject_detail = "sized_volume_step_misaligned";
+      return false;
+     }
+   return true;
   }
 
 bool Strategy_InputsValid()
@@ -482,54 +526,166 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
    g_last_processed_entry_utc = entry_utc;
    if(!InitializePriorHistory(london_date_key))
+     {
+      LogStrategyEntryReject("PRIOR_MEDIAN_INCOMPLETE",
+                             london_date_key,
+                             entry_utc,
+                             StringFormat(",\"prior_count\":%d",
+                                          ArraySize(g_prior_displacements)));
       return false;
+     }
 
    double displacement = 0.0;
    double p0 = 0.0;
    if(!FixDisplacement(day_start_utc,
                        p0_cutoff_utc,
                        p1_cutoff_utc,
-                       displacement,
-                       p0))
+                        displacement,
+                        p0))
+     {
+      LogStrategyEntryReject("FIX_ENDPOINT_TICKS_MISSING",
+                             london_date_key,
+                             entry_utc,
+                             StringFormat(",\"day_start_utc\":%I64d,\"p0_cutoff_utc\":%I64d,\"p1_cutoff_utc\":%I64d",
+                                          (long)day_start_utc,
+                                          (long)p0_cutoff_utc,
+                                          (long)p1_cutoff_utc));
       return false;
+     }
    const double median20 = PriorMedian20();
    AddPriorDisplacement(MathAbs(displacement));
-   if(median20 <= 0.0 || !MathIsValidNumber(median20) ||
-      MathAbs(displacement) <= strategy_displacement_mult * median20)
+   if(median20 <= 0.0 || !MathIsValidNumber(median20))
+     {
+      const int displacement_count = ArraySize(g_prior_displacements);
+      const int prior_count_before_current =
+         (displacement_count > 0 ? displacement_count - 1 : 0);
+      LogStrategyEntryReject("PRIOR_MEDIAN_INCOMPLETE",
+                             london_date_key,
+                             entry_utc,
+                             StringFormat(",\"prior_count_before_current\":%d,\"median20\":%.8f,\"current_displacement\":%.8f",
+                                          prior_count_before_current,
+                                          median20,
+                                          displacement));
       return false;
+     }
+   if(MathAbs(displacement) <= strategy_displacement_mult * median20)
+     {
+      LogStrategyEntryReject("DISPLACEMENT_BELOW_1_5_MEDIAN",
+                             london_date_key,
+                             entry_utc,
+                             StringFormat(",\"displacement\":%.8f,\"abs_displacement\":%.8f,\"median20\":%.8f,\"threshold\":%.8f",
+                                          displacement,
+                                          MathAbs(displacement),
+                                          median20,
+                                          strategy_displacement_mult * median20));
+      return false;
+     }
 
    const datetime confirmation_bar = iTime(_Symbol, strategy_signal_tf, 1); // perf-allowed: exact completed 16:00-16:05 London confirmation bar.
    const double confirmation_close = iClose(_Symbol, strategy_signal_tf, 1); // perf-allowed: card-authorized confirmation close.
    if(confirmation_bar <= 0 || QM_BrokerToUTC(confirmation_bar) != entry_utc - 5 * 60 ||
       confirmation_close <= 0.0)
+     {
+      LogStrategyEntryReject("CONFIRMATION_REVERSED",
+                             london_date_key,
+                             entry_utc,
+                             StringFormat(",\"confirmation_detail\":\"bar_missing_or_misaligned\",\"confirmation_bar_broker\":%I64d,\"confirmation_bar_utc\":%I64d,\"expected_utc\":%I64d,\"confirmation_close\":%.8f",
+                                          (long)confirmation_bar,
+                                          (long)QM_BrokerToUTC(confirmation_bar),
+                                          (long)(entry_utc - 5 * 60),
+                                          confirmation_close));
       return false;
+     }
 
    const bool sell = (displacement > 0.0 && confirmation_close > p0);
    const bool buy = (displacement < 0.0 && confirmation_close < p0);
    if(!buy && !sell)
+     {
+      LogStrategyEntryReject("CONFIRMATION_REVERSED",
+                             london_date_key,
+                             entry_utc,
+                             StringFormat(",\"confirmation_detail\":\"direction_not_preserved\",\"displacement\":%.8f,\"p0\":%.8f,\"confirmation_close\":%.8f",
+                                          displacement,
+                                          p0,
+                                          confirmation_close));
       return false;
+     }
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0 || ask < bid)
+     {
+      LogStrategyEntryReject("TRADE_GEOMETRY_REJECTED",
+                             london_date_key,
+                             entry_utc,
+                             StringFormat(",\"geometry_detail\":\"invalid_quote\",\"bid\":%.8f,\"ask\":%.8f,\"displacement\":%.8f,\"median20\":%.8f",
+                                          bid,
+                                          ask,
+                                          displacement,
+                                          median20));
       return false;
+     }
    const double entry_price = buy ? ask : bid;
    const double target_price = QM_StopRulesNormalizePrice(_Symbol, p0);
    const double stop_distance = MathAbs(displacement);
    const double stop_price = QM_StopRulesNormalizePrice(_Symbol,
                                                          buy ? entry_price - stop_distance
                                                              : entry_price + stop_distance);
+   string geometry_reject = "";
    if(stop_price <= 0.0 || target_price <= 0.0 ||
-      (buy && !(stop_price < entry_price && entry_price < target_price)) ||
-      (sell && !(target_price < entry_price && entry_price < stop_price)) ||
-      !TradeGeometryAndVolumeAllow(entry_price, stop_price, target_price))
+       (buy && !(stop_price < entry_price && entry_price < target_price)) ||
+       (sell && !(target_price < entry_price && entry_price < stop_price)))
+     {
+      LogStrategyEntryReject("TRADE_GEOMETRY_REJECTED",
+                             london_date_key,
+                             entry_utc,
+                             StringFormat(",\"geometry_detail\":\"directional_geometry_invalid\",\"side\":\"%s\",\"entry\":%.8f,\"stop\":%.8f,\"target\":%.8f,\"displacement\":%.8f,\"median20\":%.8f",
+                                          buy ? "BUY" : "SELL",
+                                          entry_price,
+                                          stop_price,
+                                          target_price,
+                                          displacement,
+                                          median20));
       return false;
+     }
+   if(!TradeGeometryAndVolumeAllow(entry_price,
+                                   stop_price,
+                                   target_price,
+                                   geometry_reject))
+     {
+      LogStrategyEntryReject("TRADE_GEOMETRY_REJECTED",
+                             london_date_key,
+                             entry_utc,
+                             StringFormat(",\"geometry_detail\":\"%s\",\"side\":\"%s\",\"entry\":%.8f,\"stop\":%.8f,\"target\":%.8f,\"displacement\":%.8f,\"median20\":%.8f",
+                                          QM_LoggerEscapeJson(geometry_reject),
+                                          buy ? "BUY" : "SELL",
+                                          entry_price,
+                                          stop_price,
+                                          target_price,
+                                          displacement,
+                                          median20));
+      return false;
+     }
 
    req.type = buy ? QM_BUY : QM_SELL;
    req.sl = stop_price;
    req.tp = target_price;
    req.reason = buy ? "WMR_POSTFIX_FADE_LONG" : "WMR_POSTFIX_FADE_SHORT";
    g_active_exit_broker = QM_UTCToBroker(exit_utc);
+   QM_LogEvent(QM_INFO,
+               "ENTRY_SIGNAL_FIRE",
+               StringFormat("{\"symbol\":\"%s\",\"side\":\"%s\",\"london_date_key\":%d,\"entry_utc\":%I64d,\"entry\":%.8f,\"sl\":%.8f,\"tp\":%.8f,\"displacement\":%.8f,\"median20\":%.8f,\"confirmation_close\":%.8f,\"exit_broker\":%I64d}",
+                            QM_LoggerEscapeJson(_Symbol),
+                            buy ? "BUY" : "SELL",
+                            london_date_key,
+                            (long)entry_utc,
+                            entry_price,
+                            stop_price,
+                            target_price,
+                            displacement,
+                            median20,
+                            confirmation_close,
+                            (long)g_active_exit_broker));
    return true;
   }
 
@@ -583,11 +739,31 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
-   string allowed_symbols[2] = {"EURUSD.DWX", "GBPUSD.DWX"};
-   QM_SymbolGuardInit(allowed_symbols);
-   QM_BasketWarmupHistory(allowed_symbols, strategy_signal_tf, 8);
-
-   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
+   // Each canonical setfile is an independent single-symbol instance.  The
+   // framework init above installs the host-symbol guard; requiring sibling
+   // history here made a valid host cold-run depend on an unrelated FX pair.
+   QM_LogEvent(QM_INFO,
+               "INIT_OK",
+               StringFormat("{\"routed\":%s,\"period\":%d,\"signal_tf\":%d,\"inputs_valid\":%s,\"median_days\":%d,\"displacement_mult\":%.8f,\"p0_london\":\"%02d:%02d:%02d\",\"p1_london\":\"%02d:%02d:%02d\",\"entry_london\":\"%02d:%02d\",\"exit_london\":\"%02d:%02d\",\"max_spread_points\":%d,\"risk_fixed\":%.2f,\"risk_percent\":%.8f,\"host_only\":true}",
+                            IsRoutedSymbol(_Symbol) ? "true" : "false",
+                            (int)_Period,
+                            (int)strategy_signal_tf,
+                            Strategy_InputsValid() ? "true" : "false",
+                            strategy_median_days,
+                            strategy_displacement_mult,
+                            strategy_p0_hour_london,
+                            strategy_p0_minute_london,
+                            strategy_p0_second_london,
+                            strategy_p1_hour_london,
+                            strategy_p1_minute_london,
+                            strategy_p1_second_london,
+                            strategy_entry_hour_london,
+                            strategy_entry_minute_london,
+                            strategy_exit_hour_london,
+                            strategy_exit_minute_london,
+                            strategy_max_spread_points,
+                            RISK_FIXED,
+                            RISK_PERCENT));
    return INIT_SUCCEEDED;
   }
 

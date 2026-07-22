@@ -1,41 +1,41 @@
 {
-    "schema_version":  1,
-    "generated_at":  "2026-07-22T19:07:08.6060942Z",
-    "phase":  "Endausbaustufe-Modus - highest EA at P2",
-    "agents":  {
-                   "offline":  1,
-                   "online":  4,
-                   "blocked":  0
-               },
-    "pipeline":  {
-                     "eas_built":  4105,
-                     "by_phase":  {
-                                      "P5b":  0,
-                                      "P6":  0,
-                                      "P2":  3,
-                                      "P9b":  0,
-                                      "G0":  0,
-                                      "P3":  0,
-                                      "P9":  0,
-                                      "P3_5":  0,
-                                      "P8":  0,
-                                      "P4":  0,
-                                      "P10":  0,
-                                      "P5":  0,
-                                      "P7":  0,
-                                      "P1":  2,
-                                      "P5c":  0
-                                  },
-                     "strategy_cards":  3396
-                 },
-    "t6":  {
-               "status":  "offline",
-               "risk_state":  "green",
-               "autotrading":  false
-           },
-    "expenses":  {
-                     "entries":  2,
-                     "budget_eur":  1850,
-                     "spent_eur":  204
-                 }
+  "schema_version": 1,
+  "generated_at": "2026-07-22T20:00:56.8243124Z",
+  "phase": "Endausbaustufe-Modus - highest EA at P2",
+  "agents": {
+    "blocked": 0,
+    "online": 4,
+    "offline": 1
+  },
+  "pipeline": {
+    "by_phase": {
+      "P5c": 0,
+      "P4": 0,
+      "G0": 0,
+      "P3": 0,
+      "P5b": 0,
+      "P9": 0,
+      "P7": 0,
+      "P3_5": 0,
+      "P1": 2,
+      "P2": 3,
+      "P6": 0,
+      "P9b": 0,
+      "P10": 0,
+      "P5": 0,
+      "P8": 0
+    },
+    "eas_built": 4105,
+    "strategy_cards": 3396
+  },
+  "t6": {
+    "status": "offline",
+    "autotrading": false,
+    "risk_state": "green"
+  },
+  "expenses": {
+    "entries": 2,
+    "spent_eur": 0.0,
+    "budget_eur": 1850
+  }
 }
