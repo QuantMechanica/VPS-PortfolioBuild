@@ -16,8 +16,10 @@ both completed first-hour bars closed back inside it. It buys a below-value
 re-entry or sells an above-value re-entry, places an immutable stop one minimum
 tick beyond the first-hour extreme, and targets the opposite value-area edge.
 The trade is skipped unless the target offers at least 1.5 times the stop
-distance and governed costs are at most 0.10R; any survivor is closed at the
-first tradable quote at or after 16:00 New York time.
+distance; any survivor is closed at the first tradable quote at or after 16:00
+New York time. Session eligibility comes from broker-clock conversion on UTC
+weekdays. Tester Groups applies venue commission to fills, while the EA retains
+an optional native spread-points guard.
 
 ---
 
@@ -29,13 +31,9 @@ first tradable quote at or after 16:00 New York time.
 | `strategy_signal_tf` | `PERIOD_M30` | fixed | Builds the profile and acceptance sequence from M30 bars. |
 | `strategy_value_area_fraction` | `0.70` | fixed | Required fraction of prior-session TPO counts in value. |
 | `strategy_min_reward_r` | `1.50` | fixed | Minimum target distance divided by stop distance; equality qualifies. |
-| `strategy_max_cost_r` | `0.10` | fixed | Maximum governed round-turn commission plus current spread as a fraction of initial risk. |
-| `strategy_round_turn_commission_usd_per_lot` | `0.0` | governed positive value | Per-symbol round-turn commission; zero fails closed because no value was supplied. |
-| `strategy_cash_calendar_file` | `QM5_20043_us_cash_calendar.csv` | governed FILE_COMMON artifact | Provenance-locked US cash-session calendar. |
-| `strategy_cash_calendar_sha256` | empty | exact 64-hex digest | Whole-file calendar identity; empty fails closed. |
-| `strategy_calendar_valid_through` | `2025.12.31` | fixed | Required calendar coverage boundary from the card. |
-| `strategy_tzdb_version` | empty | governed non-empty identity | Pinned IANA timezone database version; empty fails closed. |
-| `strategy_expected_tick_feed_server` | empty | governed exact server identity | Binds synchronized real ticks to the approved feed; empty fails closed. |
+| `strategy_cash_open_hour_new_york` / `strategy_cash_open_minute_new_york` | `09:30` | fixed | Regular-session open converted through the broker clock. |
+| `strategy_cash_close_hour_new_york` / `strategy_cash_close_minute_new_york` | `16:00` | fixed | Regular-session close converted through the broker clock. |
+| `strategy_max_spread_points` | `0` | non-negative | Optional native spread guard; zero disables it. |
 
 ---
 
@@ -104,3 +102,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-22 | Initial build from card | d30d49fe-b535-4b03-972f-030b78d36e7a |
+| v2 | 2026-07-22 | Density gate removal | Replaced the unprovisioned cash-calendar/feed/cost gates with fixed broker-clock session eligibility and tester-applied venue costs. |

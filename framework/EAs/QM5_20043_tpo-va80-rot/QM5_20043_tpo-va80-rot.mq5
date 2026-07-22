@@ -412,18 +412,20 @@ void Strategy_ClearPending()
    g_pending_tp = 0.0;
   }
 
-bool Strategy_PrepareEntry(const int session_index,
+bool Strategy_PrepareEntry(const int date_key,
                            const datetime current_bar_utc)
   {
-   if(session_index <= 0 ||
-      g_cash_close_utc[session_index] - g_cash_open_utc[session_index] != 390 * 60 ||
-      current_bar_utc != g_cash_open_utc[session_index] + 60 * 60)
+   datetime cash_open_utc = 0;
+   datetime cash_close_utc = 0;
+   if(date_key <= 0 ||
+      !Strategy_ResolveCashSession(date_key, cash_open_utc, cash_close_utc) ||
+      current_bar_utc != cash_open_utc + 60 * 60)
       return false;
 
    double val = 0.0;
    double vah = 0.0;
    double poc = 0.0;
-   if(!Strategy_BuildPriorProfile(session_index - 1, val, vah, poc) ||
+   if(!Strategy_FindPriorValidProfile(date_key, val, vah, poc) ||
       poc < val || poc > vah)
       return false;
 
@@ -431,8 +433,8 @@ bool Strategy_PrepareEntry(const int session_index,
    ArraySetAsSeries(first_hour, false);
    const int copied = CopyRates(_Symbol, strategy_signal_tf, 1, 2, first_hour); // perf-allowed: the two card-mandated completed acceptance bars, once at 10:30 ET.
    if(copied != 2 ||
-      QM_BrokerToUTC(first_hour[0].time) != g_cash_open_utc[session_index] ||
-      QM_BrokerToUTC(first_hour[1].time) != g_cash_open_utc[session_index] + 30 * 60)
+      QM_BrokerToUTC(first_hour[0].time) != cash_open_utc ||
+      QM_BrokerToUTC(first_hour[1].time) != cash_open_utc + 30 * 60)
       return false;
 
    const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
@@ -485,9 +487,9 @@ bool Strategy_PrepareEntry(const int session_index,
    const double stop_distance = MathAbs(entry - stop);
    const double target_distance = MathAbs(target - entry);
    if(stop_distance <= 0.0 ||
-      target_distance + tick_size * 1.0e-9 <
-      strategy_min_reward_r * stop_distance ||
-      !Strategy_CostAndVolumeAllow(entry, stop, target))
+       target_distance + tick_size * 1.0e-9 <
+       strategy_min_reward_r * stop_distance ||
+       !Strategy_TradeGeometryAndVolumeAllow(entry, stop, target))
       return false;
 
    g_pending_signal = true;
@@ -496,6 +498,14 @@ bool Strategy_PrepareEntry(const int session_index,
    g_pending_sl = stop;
    g_pending_tp = target;
    return true;
+  }
+
+bool Strategy_WideSpread()
+  {
+   if(strategy_max_spread_points <= 0)
+      return false;
+   const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+   return (spread_points < 0 || spread_points > strategy_max_spread_points);
   }
 
 void Strategy_AdvanceStateOnNewBar()
@@ -521,12 +531,9 @@ void Strategy_AdvanceStateOnNewBar()
    g_attempt_date_key = date_key;
 
    datetime open_time = 0;
-   if(Strategy_FindOurPosition(open_time) || !Strategy_EnsureDependencies())
+   if(Strategy_FindOurPosition(open_time))
       return;
-   const int session_index = Strategy_FindCashSession(date_key);
-   if(session_index <= 0)
-      return;
-   Strategy_PrepareEntry(session_index, current_bar_utc);
+   Strategy_PrepareEntry(date_key, current_bar_utc);
   }
 
 // -----------------------------------------------------------------------------
@@ -545,11 +552,16 @@ bool Strategy_NoTradeFilter()
    return (!Strategy_IsRoutedSymbol(_Symbol) ||
            _Period != strategy_signal_tf ||
            strategy_variant_id != "TPO_VA80_ROT_BASELINE" ||
-           strategy_signal_tf != PERIOD_M30 ||
-           strategy_value_area_fraction != 0.70 ||
-           strategy_min_reward_r != 1.50 ||
-           RISK_FIXED != 1000.0 ||
-           RISK_PERCENT != 0.0);
+            strategy_signal_tf != PERIOD_M30 ||
+            strategy_value_area_fraction != 0.70 ||
+            strategy_min_reward_r != 1.50 ||
+            strategy_cash_open_hour_new_york != 9 ||
+            strategy_cash_open_minute_new_york != 30 ||
+            strategy_cash_close_hour_new_york != 16 ||
+            strategy_cash_close_minute_new_york != 0 ||
+            strategy_max_spread_points < 0 ||
+            RISK_FIXED != 1000.0 ||
+            RISK_PERCENT != 0.0);
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
@@ -567,7 +579,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    datetime open_time = 0;
    if(!g_pending_signal || g_pending_entry_bar_utc <= 0 ||
-      Strategy_FindOurPosition(open_time))
+      Strategy_FindOurPosition(open_time) || Strategy_WideSpread())
       return false;
 
    req.type = (g_pending_side > 0) ? QM_BUY : QM_SELL;
