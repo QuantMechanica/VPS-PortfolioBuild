@@ -424,4 +424,4 @@ When all S-sub-issues under QUA-333 close, Research authors `strategy-seeds/sour
 - DL-030 (Class 2 Review-only execution policy on Strategy Card child issues)
 - DL-032 (CEO Autonomy Waiver v3 — autonomous source-queue ordering)
 - DL-033 (extraction-discipline / Rule 1)
-- BASIS rule (verbatim-quote citation discipline): `paperclip-prompts/research.md`
+- Citation discipline: `processes/13-strategy-research.md`

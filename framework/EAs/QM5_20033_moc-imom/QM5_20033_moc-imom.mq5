@@ -503,9 +503,10 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
-   string allowed_symbols[4] = {"SP500.DWX", "NDX.DWX", "WS30.DWX", "GDAXI.DWX"};
-   QM_SymbolGuardInit(allowed_symbols);
-   QM_BasketWarmupHistory(allowed_symbols, strategy_signal_tf, 64);
+   // Each setfile is an independent, single-symbol instance.  Pulling all four
+   // sibling histories into every tester agent made cold runs fail when one
+   // unrelated symbol was unavailable and supplied no strategy data benefit.
+   // QM_FrameworkInit already installs the correct single-symbol guard.
 
    QM_LogEvent(QM_INFO,
                "INIT_OK",

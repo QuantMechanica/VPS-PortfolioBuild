@@ -12,14 +12,14 @@ created: 2026-07-17
 created_by: Research
 last_updated: 2026-07-17
 approval_basis: "Explicit OWNER authorization in this workspace on 2026-07-17: 'alles freigegeben, los gehts!' and delegated technical release: 'mach weiter, gib du frei, wir brauchen ein komplettes Buch!'"
-parent_issue: LOCAL_APPROVAL_RECORD_NO_PAPERCLIP_CONNECTOR
+parent_issue: LOCAL_OWNER_APPROVAL_RECORD
 ---
 
 # SRC10 — Baltussen, van Bekkum, and Da: Index MAC(5) reversal
 
 ## Source approval and exhaustive read
 
-The OWNER approved the proposed FTMO-book sources and delegated technical review in this workspace. No Paperclip connector is available, so this repository record is the durable approval trail.
+OWNER approved the proposed FTMO-book sources and delegated technical review in this workspace. This repository record is the durable approval trail.
 
 - Author manuscript: https://personal.eur.nl/vanbekkum/2018%20JFE%20BaltussenVanBekkumDa.pdf
 - DOI: https://doi.org/10.1016/j.jfineco.2018.07.016

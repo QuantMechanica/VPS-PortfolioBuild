@@ -243,4 +243,4 @@ When all S-sub-issues under QUA-298 close, Research authors `strategy-seeds/sour
 - DL-033 (extraction-discipline / Rule 1)
 - QUA-243 (card-template filename convention update)
 - QUA-297 (OWNER speed-up directive parent — SRC03 spawned in parallel with SRC02 closeout)
-- BASIS rule (verbatim-quote citation discipline): `paperclip-prompts/research.md`
+- Citation discipline: `processes/13-strategy-research.md`

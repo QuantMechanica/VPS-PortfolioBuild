@@ -214,4 +214,4 @@ When all S-sub-issues under QUA-275 close, Research authors `strategy-seeds/sour
 - DL-033 (extraction-discipline / Rule 1): per QUA-275 binding pointer
 - QUA-188 waiver v3 (CEO-autonomous source-queue ordering)
 - QUA-243 (card-template filename convention update)
-- BASIS rule (verbatim-quote citation discipline): `paperclip-prompts/research.md`
+- Citation discipline: `processes/13-strategy-research.md`

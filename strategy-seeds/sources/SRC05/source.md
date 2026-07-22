@@ -267,7 +267,7 @@ When all S-sub-issues under QUA-352 close, Research authors `strategy-seeds/sour
 - DL-030 (Class 2 Review-only execution policy on Strategy Card child issues)
 - DL-032 (CEO Autonomy Waiver v3 — autonomous source-queue ordering)
 - DL-033 (extraction-discipline / Rule 1)
-- BASIS rule (verbatim-quote citation discipline): `paperclip-prompts/research.md`
+- Citation discipline: `processes/13-strategy-research.md`
 - SRC02 closeout (Chan QT vocab-batch ratification): `strategy-seeds/sources/SRC02/completion_report.md` + QUA-275 + QUA-332 back-port
 - SRC03 closeout (Williams vocab-batch ratification + S13 ESCALATE precedent): `strategy-seeds/sources/SRC03/completion_report.md` + QUA-298 + QUA-334/QUA-335 back-port
 - SRC04 closeout (Lien forex-rules-tight extraction): `strategy-seeds/sources/SRC04/completion_report.md` + QUA-333

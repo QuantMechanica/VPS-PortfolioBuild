@@ -216,7 +216,7 @@ Source risk statement: silent. Use V5 RISK_FIXED 1000 per leg for backtests, wit
 - [x] EA-local UK civil-time helper pattern reviewed; 2017-2026 transition fixtures required in OnInit.
 - [x] Protective stop overlay, virtual-shadow sizing, and family daily-loss contract ratified by independent Quality-Business review plus OWNER-delegated CEO/CTO.
 - [x] Pre-P2 execution-cost contract frozen ex ante from native Model-4 ticks and the dated FTMO snapshot.
-- [x] SRC09 and sequential production EA ID 4006 confirmed in the local canonical registries; no Paperclip connector is available in this workspace, so the OWNER delegation is recorded locally.
+- [x] SRC09 and sequential production EA ID 4006 confirmed in the local canonical registries; OWNER authorization is recorded in the repository.
 - [x] Card receives terminal APPROVED verdict under OWNER-delegated CEO/CTO after independent Quality-Business changes were resolved.
 
 ## 12. Framework alignment

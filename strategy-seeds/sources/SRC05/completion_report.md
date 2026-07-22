@@ -364,7 +364,7 @@ Per DL-029 sequential workflow, no SRC06 work begins until SRC05 sub-issues comp
 - DL-030 (Class 2 Review-only execution policy on Strategy Card child issues)
 - DL-032 (CEO Autonomy Waiver v3 — autonomous source-queue ordering)
 - DL-033 (extraction-discipline / Rule 1)
-- BASIS rule (verbatim-quote citation discipline): `paperclip-prompts/research.md`
+- Citation discipline: `processes/13-strategy-research.md`
 - h1 progress comment: posted on QUA-352 — h1 scaffold + 4 cards (S01/S02/S05/S06)
 - h2 progress comment: posted on QUA-352 (id `dd15c5f7`) — 3 cards (S07/S08/S09)
 - h3 progress comment: posted on QUA-352 (id `788977c4`) — 2 cards (S12/S03); commit `b810b18`

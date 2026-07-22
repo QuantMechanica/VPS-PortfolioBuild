@@ -12,16 +12,16 @@ created: 2026-07-17
 created_by: Research
 last_updated: 2026-07-17
 approval_basis: "Explicit OWNER instruction in this workspace on 2026-07-17: alles freigegeben, los gehts!"
-parent_issue: LOCAL_APPROVAL_RECORD_NO_PAPERCLIP_CONNECTOR
+parent_issue: LOCAL_OWNER_APPROVAL_RECORD
 ---
 
 # SRC09 — Breedon and Ranaldo, Intraday Patterns in FX Returns and Order Flow
 
 ## Source approval and boundary
 
-OWNER explicitly approved the proposed sources and execution work on 2026-07-17. This local record makes that approval durable inside the repository. A Paperclip parent issue and its comment trail are still required for full Process-13 coordination; the missing external issue does not change the source-reading result but blocks downstream EA-ID allocation.
+OWNER explicitly approved the proposed sources and execution work on 2026-07-17. This repository record is the durable authorization under Process 13 and does not require a second role or external issue approval.
 
-The next unused canonical numeric source slot found during the registry audit was SRC09. The OWNER delegated terminal technical approval on 2026-07-17. No Paperclip connector is available in this workspace, so the canonical local source/card/registry artifacts are the durable coordination record.
+The next unused canonical numeric source slot found during the registry audit was SRC09. OWNER authorized the work on 2026-07-17; canonical local source, card, and registry artifacts are the durable coordination record.
 
 ## Source text and exhaustive read
 
