@@ -20,10 +20,10 @@ target_symbols: [XBRUSD.DWX]
 timeframes: [D1]
 ml_required: false
 g0_status: APPROVED
-g0_approval_reasoning: "OWNER commodity-sleeve mission: tier-B complete academic source; deterministic Brent day-17 short/next-D1-flat falsification rule; registered XBRUSD D1 route; calendar/ATR only; exact-mechanic repository search CLEAN."
+g0_approval_reasoning: "OWNER commodity-sleeve mission: tier-B complete academic source; deterministic Brent day-17 short/next-D1-flat falsification rule; calendar/ATR only; exact-mechanic repository search CLEAN. Q02 remains gated on XBRUSD.DWX custom-symbol validation."
 r1_track_record: TIER_B
 r2_mechanical: PASS
-r3_data_available: PASS
+r3_data_available: SETUP_DATA_MISMATCH
 r4_ml_forbidden: PASS
 expected_trades_per_year_per_symbol: 9
 expected_trade_frequency: "About 8-10 exact-date packages per year"
@@ -34,7 +34,8 @@ modules_used: [no_trade, trade_entry, trade_management, trade_close]
 hard_rules_at_risk: [friday_close, risk_mode_dual, low_frequency, futures_cfd_basis, multiple_comparisons, portfolio_correlation]
 q01_status: PASS
 pipeline_phase: Q02
-q02_status: PENDING
+q02_status: SETUP_DATA_MISMATCH
+build_task_id: 5f7dac4b-1cc2-4ba5-bde0-1f09b828fa17
 ---
 
 # Brent Calendar-Day-17 One-Session Short
@@ -94,4 +95,4 @@ portfolio-gate change is authorized.
 | version | date | phase | verdict |
 |---|---|---|---|
 | v1 | 2026-07-22 | Q01 | strict compile PASS, 0 errors/0 warnings |
-| v1 | 2026-07-22 | Q02 | PENDING |
+| v1 | 2026-07-22 | Q02 | BLOCKED before enqueue: XBRUSD.DWX absent from validated DWX matrix |

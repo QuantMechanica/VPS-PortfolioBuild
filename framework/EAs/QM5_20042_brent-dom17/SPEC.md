@@ -105,6 +105,15 @@ pyramiding, grid, martingale, short leg or discretionary exit.
 This build does not authorize T_Live, AutoTrading, a deploy/T_Live manifest,
 portfolio admission or any portfolio-gate change.
 
+## Q02 Handoff Status
+
+Q01 passed strict compilation with zero errors and zero warnings, followed by
+a strict build check with zero failures and zero warnings. The governed
+`farmctl record-build` handoff created no Q02 work item: `XBRUSD.DWX` is absent
+from `framework/registry/dwx_symbol_matrix.csv`. Classification is
+`SETUP_DATA_MISMATCH`; the custom-symbol time/DST validation must PASS before
+enqueue. No tester was launched and the matrix was not bypassed.
+
 ## Revision History
 
 | Version | Date | Reason | Notes |

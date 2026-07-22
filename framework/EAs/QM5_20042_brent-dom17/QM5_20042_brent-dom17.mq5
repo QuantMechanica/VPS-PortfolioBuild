@@ -54,7 +54,7 @@ bool     g_strategy_new_d1_bar = false;
 datetime g_strategy_d1_bar_time = 0;
 bool     g_entry_decision_ready = false;
 
-bool Strategy_IsXngD1()
+bool Strategy_IsBrentD1()
   {
    return (_Symbol == "XBRUSD.DWX" && _Period == PERIOD_D1);
   }
@@ -230,7 +230,7 @@ bool Strategy_ConsumeDay17Decision()
 
 bool Strategy_NoTradeFilter()
   {
-   if(!Strategy_IsXngD1())
+   if(!Strategy_IsBrentD1())
       return true;
    if(qm_ea_id != 20042 || qm_magic_slot_offset != 0)
       return true;
