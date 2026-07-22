@@ -1,65 +1,69 @@
-<!--
-QuantMechanica V5 — EA Spec Document
-Required by Q01 Build & Spec gate (Vault: `03 Pipeline/Q01 Build & Spec.md`)
-Validator: `framework/scripts/validate_spec_doc.py`
+# QM5_20045_london-box — Strategy Spec
 
-Copy this file to:
-  framework/EAs/QM5_<NNNN>_<slug>/SPEC.md
-
-Replace every <ANGLE_BRACKETED_PLACEHOLDER>. Validator rejects placeholders.
-All seven sections below are MANDATORY for Q01 PASS.
--->
-
-# QM5_<NNNN>_<slug> — Strategy Spec
-
-**EA ID:** QM5_<NNNN>
-**Slug:** `<slug>`
-**Source:** `<source_id>` (see `strategy-seeds/sources/<source_id>/`)
+**EA ID:** QM5_20045
+**Slug:** london-box
+**Source:** FF-MER071898-2010-LONBRK
 **Author of this spec:** Codex
-**Last revised:** <YYYY-MM-DD>
+**Last revised:** 2026-07-22
 
 ---
 
 ## 1. Strategy Logic
 
-Plain prose, no jargon. Describe the signal the EA trades. Include the formula
-or rule that decides entry and exit.
-
-> Example: "Long when 21-EMA(close) crosses above 55-EMA(close) on the close
-> of a D1 bar AND ADX(14) > 25. Exit when 21-EMA crosses below 55-EMA, or at
-> 2× ATR(14) trailing stop, or on Friday close."
-
-<DESCRIBE THE STRATEGY LOGIC HERE>
+At the first M15 bar after 06:00 UTC, the EA freezes the high and low of the
+exact twelve complete bars from 03:00 through 05:45 UTC. If that box is no
+wider than 40 logical pips, it places equal-volume buy-stop and sell-stop
+orders one minimum tick beyond 27% extensions of the box; the first fill
+cancels the opposite order. The hard stop stays at the opposite box boundary,
+the target is one box from the actual fill, unfilled orders expire at 12:00
+Europe/London, and any surviving position closes at 16:00 Europe/London.
 
 ---
 
 ## 2. Parameters
 
-Table of every input parameter, its default, range, and meaning.
-
 | Parameter | Default | Range | Meaning |
-|---|---|---|---|
-| `<param_1>` | <value> | <lo>-<hi> | <one-line description> |
-| `<param_2>` | <value> | <lo>-<hi> | <one-line description> |
+|---|---:|---|---|
+| strategy_variant_id | LONDON_BOX_027_BASELINE | frozen | Card variant identity |
+| strategy_timeframe | PERIOD_M15 | frozen | Box and entry timeframe |
+| strategy_box_start_hour_utc | 3 | frozen | Inclusive fixed-UTC box start |
+| strategy_box_end_hour_utc | 6 | frozen | Exclusive fixed-UTC box end |
+| strategy_extension_fraction | 0.27 | frozen | Entry extension as a box fraction |
+| strategy_max_box_pips | 40.0 | frozen | Maximum eligible box width |
+| strategy_pip_size | 0.0001 | frozen | Logical pip in quote units |
+| strategy_pending_expiry_hour_london | 12 | frozen | OCO expiry in Europe/London |
+| strategy_flat_hour_london | 16 | frozen | Mandatory same-day flat time |
+| strategy_max_cost_r | 0.10 | frozen | Maximum round-trip cost divided by initial risk |
+| strategy_target_cost_multiple | 4.0 | frozen | Minimum target value relative to cost |
+| strategy_round_turn_commission_account_per_lot | 0.0 | governed setfile value >0 | Round-turn account-currency commission per lot; zero fails closed |
+| strategy_commission_source_id | empty | governed non-empty ID | Commission provenance identity |
+| strategy_commission_source_sha256 | empty | 64 hex characters | Commission provenance digest |
+| strategy_trading_calendar_file | QM5_20045_trading_calendar.csv | governed Common Files name | Eligible fixed-UTC trading dates |
+| strategy_trading_calendar_sha256 | empty | 64 hex characters | Calendar-file digest |
+| strategy_trading_calendar_source_id | empty | governed non-empty ID | Calendar source identity |
+| strategy_calendar_valid_through | 2025.12.31 | frozen | Required calendar coverage |
+| strategy_tzdb_version | empty | governed non-empty version | Pinned Europe/London timezone database version |
+| strategy_expected_tick_feed_server | empty | governed server identity | Expected real-tick feed route |
+| strategy_tick_history_sha256 | empty | 64 hex characters | Per-symbol tick-history provenance digest |
+| strategy_dataset_valid_through | 2025.12.31 | frozen | Required dataset coverage |
 
 > Note: framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
 > qm_news_mode, qm_rng_seed, qm_stress_reject_probability, qm_friday_close_*)
-> are documented in `framework/V5_FRAMEWORK_DESIGN.md` — do NOT re-document
-> them here. Only list strategy-specific inputs.
+> are documented in framework/V5_FRAMEWORK_DESIGN.md and are not repeated
+> here.
 
 ---
 
 ## 3. Symbol Universe
 
-Which `.DWX` symbols this EA is designed for. Be explicit about both inclusions
-and exclusions.
-
 **Designed for:**
-- `<SYMBOL_1.DWX>` — <why this fits>
-- `<SYMBOL_2.DWX>` — <why this fits>
+
+- GBPUSD.DWX — the source strategy is a liquid London-session sterling breakout.
+- EURGBP.DWX — the approved card explicitly ports the same fixed-UTC box geometry to this liquid sterling cross.
 
 **Explicitly NOT for:**
-- `<SYMBOL.DWX>` — <why this does not fit>
+
+- Other .DWX instruments — their pip geometry and source-defined London-box transfer were not approved by this card.
 
 ---
 
@@ -67,23 +71,22 @@ and exclusions.
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | `<M5 / M15 / H1 / H4 / D1>` |
-| Multi-timeframe refs | `<list any cross-TF reads>` or `none` |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Base timeframe | M15 |
+| Multi-timeframe refs | none |
+| Bar gating | QM_IsNewBar(_Symbol, PERIOD_CURRENT) |
 
 ---
 
 ## 5. Expected Behaviour
 
-How this EA should behave in production. Calibrates downstream gate expectations.
-
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `<approx number>` |
-| Typical hold time | `<minutes / hours / days>` |
-| Expected drawdown profile | `<one line>` |
-| Regime preference | `<trend / mean-revert / volatility-expansion / breakout / news-driven>` |
-| Win rate target (qualitative) | `<low/medium/high>` |
+| Trades / year / symbol | 160 queue-ordering prior (untested) |
+| Trade frequency | About 3.1 trades per week per symbol before validation |
+| Typical hold time | Intraday; no later than the 16:00 Europe/London forced exit |
+| Expected drawdown profile | Approximately 14% card prior; unverified until DEV/OOS |
+| Regime preference | Volatility-expansion breakout |
+| Win rate target (qualitative) | Unverified; the source claim is not an accepted prior |
 
 ---
 
@@ -91,10 +94,10 @@ How this EA should behave in production. Calibrates downstream gate expectations
 
 This card was mechanised from:
 
-**Source ID:** `<source_id>`
-**Source type:** `<paper / book / forum / video / OWNER / AI>`
-**Pointer:** `<URL or local path or strategy-seeds/sources/<source_id>/>`
-**R1–R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_<NNNN>_<slug>.md`
+**Source ID:** FF-MER071898-2010-LONBRK  
+**Source type:** forum  
+**Pointer:** ForexFactory thread 230640, first post and author clarifications; rendered card at D:/QM/strategy_farm/artifacts/cards_approved/QM5_20045_london-box_card.md  
+**R1–R4 verdict (Q00):** all PASS per artifacts/cards_approved/QM5_20045_london-box.md
 
 ---
 
@@ -106,7 +109,7 @@ This card was mechanised from:
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV→mode validation is enforced by QM_FrameworkInit (EA_INPUT_RISK_MODE_MISMATCH).
 
 ---
 
@@ -114,7 +117,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | <YYYY-MM-DD> | Initial build from card | <build commit hash> |
-
-> When this EA cycles back to Q01 from a Q02 zero-trade event, add a row:
-> `| v2 | YYYY-MM-DD | Q02 all-symbol zero-trades; widened entry filter X | <commit> |`
+| v1 | 2026-07-22 | Initial build from card | 52536807-e3b8-40ef-9e68-1b41e79623ba |

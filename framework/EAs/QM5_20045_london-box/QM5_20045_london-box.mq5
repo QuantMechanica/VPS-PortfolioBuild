@@ -626,7 +626,7 @@ bool Strategy_BuildBox(int &date_key,
    ArraySetAsSeries(rates, false);
    // perf-allowed: exact twelve-bar fixed-UTC box, called once behind
    // the framework M15 new-bar gate.
-   if(CopyRates(_Symbol, strategy_timeframe, 1, 12, rates) != 12)
+   if(CopyRates(_Symbol, strategy_timeframe, 1, 12, rates) != 12) // perf-allowed
       return false;
 
    const datetime last_open_utc = QM_BrokerToUTC(rates[11].time);
