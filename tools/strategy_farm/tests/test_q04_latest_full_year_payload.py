@@ -11,6 +11,31 @@ from tools.strategy_farm import farmctl
 
 
 class Q04LatestFullYearPayloadTests(unittest.TestCase):
+    def test_q04_runner_uses_slugged_ea_label_from_setfile(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            ea_label = "QM5_12110_mtf-stochastic-confirmation"
+            setfile = root / "framework" / "EAs" / ea_label / "sets" / (
+                f"{ea_label}_EURJPY.DWX_H1_backtest.set"
+            )
+            setfile.parent.mkdir(parents=True)
+            setfile.write_text("RISK_FIXED=1000\n", encoding="utf-8")
+            item = {
+                "phase": "Q04",
+                "ea_id": "QM5_12110",
+                "symbol": "EURJPY.DWX",
+                "setfile_path": str(setfile),
+                "payload_json": json.dumps({"host_timeframe": "H1"}),
+            }
+
+            cmd = farmctl._phase_runner_cmd_for_work_item(
+                root, item, root / "reports", terminal="T4"  # type: ignore[arg-type]
+            )
+
+        self.assertIsNotNone(cmd)
+        assert cmd is not None
+        self.assertEqual(cmd[cmd.index("--ea") + 1], ea_label)
+
     def test_q04_work_item_payload_can_clamp_latest_full_year(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

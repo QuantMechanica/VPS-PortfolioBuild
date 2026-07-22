@@ -3373,6 +3373,12 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
     if inputs.get("missing"):
         return None
     ea_id = item_row["ea_id"]
+    # Phase runners need the canonical EA directory label, not only the numeric
+    # registry id.  A bare id can resolve ambiguously (or to no Expert at all)
+    # when the on-disk artifact is QM5_<id>_<slug>, yielding EMPTY_EXPERT /
+    # BARS_ZERO summaries at Q04 after a valid Q02 pass.
+    ea_dir = _ea_dir_from_setfile_path(item_row["setfile_path"], ea_id)
+    ea_label = ea_dir.name if ea_dir is not None else ea_id
     symbol = item_row["symbol"]
     period = _detect_ea_period(ea_id, item_row["setfile_path"])
     runner_symbol = symbol
@@ -3403,7 +3409,7 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
     cmd = [
         _console_python_executable(),
         str(script_path),
-        "--ea", ea_id,
+        "--ea", ea_label,
         "--out-prefix", str(report_root),
         "--symbol", runner_symbol,
         "--period", runner_period,
@@ -3601,6 +3607,8 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
 def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
                                       terminal: str) -> dict[str, Any]:
     phase = item_row["phase"]
+    ea_dir = _ea_dir_from_setfile_path(item_row["setfile_path"], item_row["ea_id"])
+    ea_dir_name = ea_dir.name if ea_dir is not None else item_row["ea_id"]
     # Real phase runners can run several variants for the same EA/phase in
     # parallel. Their default output names are phase-level (`summary.json`,
     # `p5b_trials.csv`, ...), so a shared pipeline directory makes work_item
@@ -3625,7 +3633,7 @@ def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
             "missing_inputs": inputs["missing"],
             "log_path": str(log_path),
             "report_root": str(report_root),
-            "ea_dir_name": item_row["ea_id"],
+            "ea_dir_name": ea_dir_name,
             "phase_runner": None,
         }
 
@@ -3641,7 +3649,7 @@ def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
             "reason": msg,
             "log_path": str(log_path),
             "report_root": str(report_root),
-            "ea_dir_name": item_row["ea_id"],
+            "ea_dir_name": ea_dir_name,
             "phase_runner": None,
         }
 
@@ -3675,7 +3683,7 @@ def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
         **process_identity,
         "log_path": str(log_path),
         "report_root": str(report_root),
-        "ea_dir_name": item_row["ea_id"],
+        "ea_dir_name": ea_dir_name,
         "phase_runner": cmd[1],
         "effective_min_trades": 5,
     }
