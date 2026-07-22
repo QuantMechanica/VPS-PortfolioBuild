@@ -1,0 +1,35 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        13108
+; ea_slug:      xti-mtsm-s2
+; ea_version:   v5.0
+; set_version:  s20260722-stress-harsh
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  q06_stress_harsh
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   4c500dd5460a2867f82b58a29433e81c38204cd8a8e6c7d3e68854abaa010282
+; author:       Codex
+; date:         2026-07-22
+;==========================================================
+qm_ea_id=13108
+qm_magic_slot_offset=0
+qm_rng_seed=99
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.1000
+qm_friday_close_enabled=true
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\approved\QM5_13108_xti-mtsm-s2_card.md
+strategy_momentum_days=30
+strategy_partial_moment_days=5
+strategy_percentile_history=252
+strategy_tail_percentile=80.0
+strategy_atr_period=20
+strategy_atr_sl_mult=3.0
+strategy_max_hold_days=8
+strategy_max_spread_points=1500
+
