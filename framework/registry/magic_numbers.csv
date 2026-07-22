@@ -15132,3 +15132,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20042,brent-dom17,0,XBRUSD.DWX,200420000,2026-07-22,Development,active
 20034,wmr-postfix,0,EURUSD.DWX,200340000,2026-07-22,Development,active
 20034,wmr-postfix,1,GBPUSD.DWX,200340001,2026-07-22,Development,active
+20037,lbma-pm-brk,0,XAUUSD.DWX,200370000,2026-07-22,Development,active
