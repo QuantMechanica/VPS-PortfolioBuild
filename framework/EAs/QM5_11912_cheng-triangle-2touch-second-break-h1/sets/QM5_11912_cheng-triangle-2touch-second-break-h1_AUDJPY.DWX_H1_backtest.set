@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        11912
 ; ea_slug:      cheng-triangle-2touch-second-break-h1
@@ -10,7 +10,7 @@
 ; magic_slot:   9
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   6fabdc65698951214badf265364adf92996fe17ce31dbdaaca33c8a757d5ca3d
+; build_hash:   0eb37ab4efd285754b763142f9564a8f6e807e102260b101f89d7e47be48ffce
 ; author:       Development
 ; date:         2026-07-10
 ;==========================================================

@@ -41,6 +41,7 @@ input int    strategy_triangle_max_bars = 200;
 input double strategy_entry_buffer_pips = 10.0;
 input double strategy_stop_buffer_pips  = 10.0;
 input int    strategy_time_stop_bars    = 240;
+input int    strategy_max_spread_points = 0;
 
 int g_zigzag_handle = INVALID_HANDLE;
 
@@ -86,6 +87,18 @@ double Strategy_PipSize()
    if(point <= 0.0)
       return 0.0;
    return ((digits == 3 || digits == 5) ? point * 10.0 : point);
+  }
+
+bool Strategy_SpreadAllowsEntry()
+  {
+   if(strategy_max_spread_points <= 0)
+      return true;
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(point <= 0.0 || ask <= 0.0 || bid <= 0.0 || ask < bid)
+      return false;
+   return ((ask - bid) / point <= (double)strategy_max_spread_points);
   }
 
 int Strategy_IndZigZag()
@@ -441,6 +454,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      }
    if(Strategy_OurPendingStopCount() > 0)
       return false;
+   if(!Strategy_SpreadAllowsEntry())
+      return false;
 
    const double pip = Strategy_PipSize();
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -454,7 +469,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.type = QM_BUY_STOP;
       req.price = QM_TM_NormalizePrice(_Symbol, upper + strategy_entry_buffer_pips * pip);
       req.sl = QM_TM_NormalizePrice(_Symbol, lower - strategy_stop_buffer_pips * pip);
-      req.tp = QM_TM_NormalizePrice(_Symbol, req.price + g_triangle_height);
+      const double initial_risk = req.price - req.sl;
+      const double target_distance = MathMin(g_triangle_height, 2.0 * initial_risk);
+      req.tp = QM_TM_NormalizePrice(_Symbol, req.price + target_distance);
       req.reason = "CHENG_TRIANGLE_SECOND_BREAK_LONG";
       return (req.price > ask && req.sl > 0.0 && req.sl < req.price && req.tp > req.price);
      }
@@ -463,7 +480,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.type = QM_SELL_STOP;
       req.price = QM_TM_NormalizePrice(_Symbol, lower - strategy_entry_buffer_pips * pip);
       req.sl = QM_TM_NormalizePrice(_Symbol, upper + strategy_stop_buffer_pips * pip);
-      req.tp = QM_TM_NormalizePrice(_Symbol, req.price - g_triangle_height);
+      const double initial_risk = req.sl - req.price;
+      const double target_distance = MathMin(g_triangle_height, 2.0 * initial_risk);
+      req.tp = QM_TM_NormalizePrice(_Symbol, req.price - target_distance);
       req.reason = "CHENG_TRIANGLE_SECOND_BREAK_SHORT";
       return (req.price < bid && req.price > 0.0 && req.sl > req.price && req.tp > 0.0 && req.tp < req.price);
      }
