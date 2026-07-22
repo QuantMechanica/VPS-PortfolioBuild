@@ -4,7 +4,7 @@
 **Slug:** brent-dom17  
 **Source:** BOROWSKI-XBR-DOM17-2016  
 **Author of this spec:** Development  
-**Last revised:** 2026-07-20
+**Last revised:** 2026-07-22
 
 ## 1. Strategy Logic
 
@@ -82,10 +82,10 @@ manufacture a later entry in that broker month.
 Borowski, K. (2016), "Analysis of Selected Seasonality Effects in Markets of
 Future Contracts with the Following Underlying Instruments: Crude Oil, Brent
 Oil, Heating Oil, Gas Oil, Natural Gas, Feeder Cattle, Live Cattle, Lean Hogs
-and Lumber," Journal of Management and Financial Sciences, issue 26, 17-44.
+and Lumber," Journal of Management and Financial Sciences, issue 26, 27-44.
 
-The paper reports its minimum Brent numbered-day mean, -0.7265%, on
-calendar day 17 over its 1990-2016 NYMEX sample, without reporting day 17 as
+The paper reports its minimum Brent numbered-day mean, -0.6962%, on
+calendar day 17 over its 1983-2016 futures sample, without reporting day 17 as
 statistically significant. It searches many calendar partitions
 without a reported multiple-comparison correction. Futures-to-CFD basis,
 post-2016 decay and realized portfolio correlation remain falsification risks.
@@ -109,4 +109,4 @@ portfolio admission or any portfolio-gate change.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-07-20 | Initial source-backed XBR day-17 build | Q02 candidate |
+| v1 | 2026-07-22 | Initial source-backed XBR day-17 build | Q02 candidate |
