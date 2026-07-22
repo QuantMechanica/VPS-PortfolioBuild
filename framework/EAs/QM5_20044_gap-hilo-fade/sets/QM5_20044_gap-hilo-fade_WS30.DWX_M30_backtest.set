@@ -10,7 +10,7 @@
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   eb6129f9fdc92009e1a096f9a7e41bfadac6bcd5ba5e8ec30e46341039c334db
+; build_hash:   75316c422bf98974ddc4ffe4186c46d29dc7c8dcce143723c935f552ceeace10
 ; author:       Development
 ; date:         2026-07-22
 ;==========================================================
@@ -33,10 +33,8 @@ strategy_stop_atr_offset=0.25
 strategy_stop_atr_min=0.75
 strategy_stop_atr_max=1.50
 strategy_min_reward_r=1.25
-strategy_max_cost_r=0.10
-strategy_round_turn_commission_usd_per_lot=0.0
-strategy_cash_calendar_file="QM5_20044_us_cash_calendar.csv"
-strategy_cash_calendar_sha256=""
-strategy_calendar_valid_through="2025.12.31"
-strategy_tzdb_version=""
-strategy_expected_tick_feed_server=""
+strategy_cash_open_hour_new_york=9
+strategy_cash_open_minute_new_york=30
+strategy_cash_close_hour_new_york=16
+strategy_cash_close_minute_new_york=0
+strategy_max_spread_points=0
