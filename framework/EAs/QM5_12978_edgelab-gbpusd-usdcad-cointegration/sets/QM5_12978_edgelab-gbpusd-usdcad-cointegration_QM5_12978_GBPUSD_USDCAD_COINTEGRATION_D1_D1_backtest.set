@@ -1,0 +1,47 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        12978
+; ea_slug:      edgelab-gbpusd-usdcad-cointegration
+; ea_version:   v5.0
+; set_version:  s20260703-001
+; symbol:       QM5_12978_GBPUSD_USDCAD_COINTEGRATION_D1
+; host_symbol:  GBPUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   1ac2c5dbbc45dc8b568181212c01c35fc0f36c09098e20843542d740884ec8d4
+; author:       Development
+; date:         2026-07-03
+;==========================================================
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; Q02 structural baseline: keep all news axes explicitly off to avoid full-tick calendar scans.
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_mode_legacy=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+; core filter library params; filter-on/off variants must be pre-declared
+qm_filter_news_enabled=0
+qm_filter_news_mode=0
+qm_filter_regime_enabled=0
+qm_filter_regime_lookback_bars=100
+qm_filter_regime_bull_return_pct=2.0
+qm_filter_regime_bear_return_pct=2.0
+qm_filter_volatility_enabled=0
+qm_filter_volatility_atr_period=14
+qm_filter_volatility_lookback_bars=50
+qm_filter_volatility_compression_ratio=0.75
+qm_filter_volatility_expansion_ratio=1.25
+; strategy-specific params from card
+strategy_z_lookback_d1=60
+strategy_beta=-1.140460285727
+strategy_entry_z=2.0
+strategy_exit_z=0.5
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=2.0
+strategy_deviation_points=20
