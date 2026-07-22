@@ -10,6 +10,7 @@ primary_url: https://econjournals.sgh.waw.pl/JMFS/Archives_2015_2016
 open_full_text_url: https://www.researchgate.net/publication/303285422_ANALYSIS_OF_SELECTED_SEASONALITY_EF-_FECTS_IN_MARKETS_OF_FUTURE_CONTRACTS_WITH_THE_FOLLOWING_UNDERLYING_INSTRUMENTS_CRUDE_OIL_BRENT_OIL_HEATING_OIL_GAS_OIL_NATURAL_GAS_FEEDER_CATTLE_LIVE_CATTLE_LEAN_HOGS_AND_LUMBER
 strategy_ids:
   - BOROWSKI-XNG-DOM15-2016_S01
+  - BOROWSKI-XNG-DOM15-2016_S02
 ---
 
 # Borowski Natural-Gas Day-15 Source
@@ -124,3 +125,13 @@ unproven and must be measured later. No portfolio-gate waiver is claimed.
 This source authorizes one `RISK_FIXED` research/backtest carrier only. It
 does not authorize a live setfile, AutoTrading, T_Live, a deploy or T_Live
 manifest, portfolio admission, or any portfolio-gate change.
+
+## Second extraction: day-27 negative extreme
+
+The same fully reviewed source reports calendar day 27 as the minimum
+natural-gas numbered-day mean, `-0.7265%`. Unlike day 15, the paper does not
+report day 27 as statistically significant, so S02 is explicitly a weak
+extreme-mean falsification hypothesis: short only the exact broker D1 session
+dated the 27th and flatten at the next D1 boundary. Repository-wide search on
+2026-07-22 found no XNG day-27 carrier. No absent date is shifted, no adjacent
+date is inferred, and no parameter sweep is authorized.

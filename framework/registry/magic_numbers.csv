@@ -15123,3 +15123,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20033,moc-imom,1,NDX.DWX,200330001,2026-07-22,Development,active
 20033,moc-imom,2,WS30.DWX,200330002,2026-07-22,Development,active
 20033,moc-imom,3,GDAXI.DWX,200330003,2026-07-22,Development,active
+20035,xng-dom27-short,0,XNGUSD.DWX,200350000,2026-07-22,Development,active
