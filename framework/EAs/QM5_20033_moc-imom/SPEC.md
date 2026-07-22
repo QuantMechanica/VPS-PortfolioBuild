@@ -14,9 +14,11 @@ The EA measures the signed move during each market's first 30 minutes. A
 positive opening move buys and a negative opening move sells at the start of
 the final cash-session M30 interval. The hard stop is one frozen opening-move
 distance from the actual entry, there is no profit target or trailing logic,
-and any remainder is closed at the fixed broker-clock cash-session close. UTC
-weekday and valid-tick eligibility replace the external session ledger, while
-Tester Groups applies venue commission to fills.
+and any remainder is closed at the cash-session close. US dates are admitted
+by the hash-bound NYSE exception calendar; its 13:00 New York early close moves
+the final M30 interval to 12:30–13:00. The Xetra route retains its existing
+broker-clock eligibility boundary. Tester Groups applies venue commission to
+fills.
 
 ---
 
@@ -109,3 +111,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 |---|---|---|---|
 | v1 | 2026-07-22 | Initial build from card | `d6c25ce6-d80e-4b25-bbf3-f1d4ecdd2b2d` |
 | v2 | 2026-07-22 | FTMO density fix | Replaced the unprovisioned session ledger and pre-trade cost gate with fixed broker-clock sessions, UTC weekday/tick eligibility, and the optional native spread guard. |
+| v3 | 2026-07-22 | US cash-calendar repair | Bound US routes to the official hash-verified 2018–2025 NYSE exception calendar; full closures fail closed and early closes move the final M30 interval. |

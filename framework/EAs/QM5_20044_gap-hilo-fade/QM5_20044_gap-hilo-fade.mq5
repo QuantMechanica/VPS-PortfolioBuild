@@ -316,10 +316,16 @@ int Strategy_PreviousWeekdayDateKey(const int date_key)
    int candidate = Strategy_ShiftDateKey(date_key, -1);
    for(int days_back = 1; days_back <= 7 && candidate > 0; ++days_back)
      {
-      datetime open_utc = 0;
-      datetime close_utc = 0;
-      if(Strategy_ResolveCashSession(candidate, open_utc, close_utc))
+      const QM_USCashSessionType session_type =
+         QM_USCashCalendarClassify(candidate);
+      if(session_type == QM_US_CASH_NORMAL)
          return candidate;
+      // Weekends and full holidays are not cash sessions, so continue to the
+      // previous trading date.  An early close is a trading session but not
+      // the complete prior 09:30-16:00 session required by this card; do not
+      // substitute an older normal close across it.
+      if(session_type != QM_US_CASH_FULL_CLOSE)
+         return 0;
       candidate = Strategy_ShiftDateKey(candidate, -1);
      }
    return 0;
@@ -1082,6 +1088,8 @@ bool Strategy_NoTradeFilter()
    datetime open_time = 0;
    if(Strategy_FindOurPosition(open_time))
       return false;
+   if(!QM_USCashCalendarReady())
+      return true;
    return (!Strategy_IsRoutedSymbol(_Symbol) ||
            _Period != strategy_signal_tf ||
            strategy_variant_id != "GAP_HILO_FADE_BASELINE" ||
@@ -1226,7 +1234,7 @@ int OnInit()
                         qm_rng_seed,
                         qm_stress_reject_probability,
                         qm_news_temporal,              // FW1 Axis A
-                         qm_news_compliance))           // FW1 Axis B
+                        qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
    const bool calendar_ready =

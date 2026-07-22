@@ -309,6 +309,9 @@ bool Strategy_NoTradeFilter()
    datetime open_time = 0;
    if(FindOurPosition(open_time))
       return false;
+   const int route = RouteIndex(_Symbol);
+   if(route >= 0 && route < 3 && !QM_USCashCalendarReady())
+      return true;
    if(!IsRoutedSymbol(_Symbol) || _Period != strategy_signal_tf ||
       !Strategy_InputsValid())
       return true;
@@ -526,7 +529,7 @@ int OnInit()
                         qm_rng_seed,
                         qm_stress_reject_probability,
                         qm_news_temporal,
-                         qm_news_compliance))
+                        qm_news_compliance))
       return INIT_FAILED;
 
    const int route = RouteIndex(_Symbol);

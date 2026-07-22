@@ -18,9 +18,11 @@ extreme, using the signal-bar extreme plus 0.25 ATR as an immutable stop and the
 prior cash close as target. The trade must satisfy the frozen stop-distance,
 1.25R target, and broker-volume gates, and any survivor is closed at the first
 tradable quote at or after 15:55 New York time. Session eligibility comes from
-broker-clock conversion on UTC weekdays and requires all thirteen fixed-session
-M30 bars. Tester Groups applies venue commission to fills, while the EA retains
-an optional native spread-points guard.
+the hash-bound NYSE exception calendar and requires all thirteen normal-session
+M30 bars. Full closures are skipped; an immediately preceding early-close
+session invalidates the next gap rather than supplying or bypassing the required
+16:00 prior close. Tester Groups applies venue commission to fills, while the EA
+retains an optional native spread-points guard.
 
 ---
 
@@ -111,3 +113,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 |---|---|---|---|
 | v1 | 2026-07-22 | Initial build from card | 0e4d6565-17ef-4321-8608-ed6396819e13 |
 | v2 | 2026-07-22 | Density gate removal | Replaced the unprovisioned cash-calendar/feed/cost gates with fixed broker-clock session eligibility and tester-applied venue costs. |
+| v3 | 2026-07-22 | US cash-calendar repair | Restored the official hash-verified 2018–2025 NYSE dependency; only complete normal current/prior sessions qualify, with missing/malformed/out-of-range data fail-closed. |

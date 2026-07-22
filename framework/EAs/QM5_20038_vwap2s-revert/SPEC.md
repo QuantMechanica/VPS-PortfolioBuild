@@ -10,14 +10,15 @@
 
 ## 1. Strategy Logic
 
-For each UTC weekday's 09:30–16:00 New York cash session, the EA incrementally
+For each calendar-approved 09:30–16:00 New York cash session, the EA incrementally
 builds a tick-volume-weighted typical-price VWAP and population sigma on closed
 M5 bars. A shallow-slope close that touches only the lower or upper two-sigma
 band schedules a fade at the next M5 open, with frozen VWAP as target and the
 frozen three-sigma band as hard stop. Both mechanical sides are eligible and
-positions are flat by the fixed cash close. Exact contiguous bars replace the
-external cash calendar and DEV hash artifact; Tester Groups applies venue
-commission to fills.
+positions are flat by 16:00 or the official 13:00 early close. A hash-bound
+NYSE exception calendar supplies holiday and early-close identity, and exact
+contiguous bars remain mandatory. Tester Groups applies venue commission to
+fills.
 
 ## 2. Parameters
 
@@ -91,3 +92,4 @@ later governed promotion decision.
 |---|---|---|---|
 | v1 | 2026-07-22 | Initial build from card | 294c6197-df5d-478f-bf22-0421fcb0a90d |
 | v2 | 2026-07-22 | FTMO density fix | Removed the unprovisioned cash-calendar, DEV-hash, and commission/cost gates; broker-clock weekday/bar eligibility and the optional native spread guard remain. |
+| v3 | 2026-07-22 | US cash-calendar repair | Restored the Card-required official, hash-verified 2018–2025 NYSE holiday/early-close dependency without changing signal thresholds. |

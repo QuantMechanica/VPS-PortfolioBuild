@@ -16,8 +16,10 @@ relative broker tick count and clamps the result to a force score from -100 to
 aligned 5/20-bar close averages, then enters at that exact next M15 open during
 the approved US session. The frozen stop is one Wilder ATR(14), the target is
 1.5R, and any surviving trade exits after six completed holding bars or at
-15:55 New York time. Session eligibility comes from the broker clock on UTC
-weekdays; the framework news gate and Friday guard handle blackout protection.
+15:55 New York time. Session eligibility comes from the hash-bound NYSE
+exception calendar. On an official 13:00 early close, the last permitted entry
+is 12:30 and the safety exit is 12:55. The framework news gate and Friday guard
+handle blackout protection.
 
 Tick volume is explicitly a broker tick-count proxy, not traded volume,
 aggression, order flow, book data, or tape evidence. The practitioner source
@@ -107,3 +109,4 @@ later governed promotion decision.
 |---|---|---|---|
 | v1 | 2026-07-22 | Initial build from card | 4648f988-fd51-45e5-95db-e080e5108c03 |
 | v2 | 2026-07-22 | Density gate removal | Replaced the unprovisioned cash-calendar/feed/cost gates with fixed broker-clock session eligibility and tester-applied venue costs. |
+| v3 | 2026-07-22 | US cash-calendar repair | Bound sessions to the official hash-verified 2018–2025 NYSE calendar and truncated early-close entry/exit clocks without changing the signal. |

@@ -520,6 +520,8 @@ bool Strategy_NoTradeFilter()
    datetime open_time = 0;
    if(Strategy_FindOurPosition(open_time))
       return false;
+   if(!QM_USCashCalendarReady())
+      return true;
    if(!Strategy_IsRoutedSymbol(_Symbol) || _Period != strategy_signal_tf ||
       !Strategy_InputsValid())
       return true;
@@ -681,7 +683,7 @@ int OnInit()
                         qm_rng_seed,
                         qm_stress_reject_probability,
                         qm_news_temporal,              // FW1 Axis A
-                         qm_news_compliance))           // FW1 Axis B
+                        qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
    const bool calendar_ready =

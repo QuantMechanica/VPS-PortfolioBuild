@@ -10,15 +10,16 @@
 
 ## 1. Strategy Logic
 
-For each UTC weekday, the EA constructs the executable-midquote overnight range
+For each calendar-approved US cash date, the EA constructs the executable-midquote overnight range
 from 18:00 New York time on the preceding local date to 09:30. It freezes the
 range and midpoint, then uses the first valid cash-session midquote strictly
 inside that range to arm only the midpoint-indicated side. The first closed M5
 bar beyond the armed boundary enters at the immediately following M5 open; a
 close through the opposite boundary cancels the date. The immutable hard stop
 is the overnight midpoint, there is no profit target, and every position closes
-at the fixed 16:00 New York cash close. Valid ticks/bars replace the external
-session ledger, and Tester Groups applies venue commission to fills.
+at 16:00 New York or the official 13:00 early close. A hash-bound NYSE
+exception calendar supplies closure identity; valid ticks and contiguous bars
+remain mandatory. Tester Groups applies venue commission to fills.
 
 The midpoint side filter is explicitly an **UNVERIFIED QM repair hypothesis**.
 It is implemented literally and is not represented as a result established by
@@ -97,3 +98,4 @@ later governed promotion decision.
 |---|---|---|---|
 | v1 | 2026-07-22 | Initial build from card | 524c55cf-bca3-4100-a0aa-7c023b3a6f5d |
 | v2 | 2026-07-22 | FTMO density fix | Replaced the unprovisioned overnight/cash ledger and commission/cost gate with broker-clock weekday/tick/bar eligibility and the optional native spread guard. |
+| v3 | 2026-07-22 | US cash-calendar repair | Bound cash dates to the official hash-verified 2018–2025 NYSE calendar and made the entry/exit window honor 13:00 early closes. |
