@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   32dffe24362a4dfe3768e747a9a15ef8a28f5b1d651fd9e3fcc1fd4e2e2e0bae
+; build_hash:   330af2fd78e2979f31251591ef10fa78b94c0bfd8230718ec20f0e9fe633a6f9
 ; author:       Development
 ; date:         2026-07-22
 ;==========================================================
@@ -22,6 +22,16 @@ PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=ea_input_defaults
 strategy_signal_tf=PERIOD_M30
-strategy_max_cost_r=0.10
-strategy_session_ledger_file="QM5_20033_cash_sessions.csv"
-strategy_calendar_valid_through="2025.12.31"
+strategy_us_open_hour_broker=16
+strategy_us_open_minute_broker=30
+strategy_us_entry_hour_broker=22
+strategy_us_entry_minute_broker=30
+strategy_us_close_hour_broker=23
+strategy_us_close_minute_broker=0
+strategy_xetra_open_hour_broker=10
+strategy_xetra_open_minute_broker=0
+strategy_xetra_entry_hour_broker=18
+strategy_xetra_entry_minute_broker=0
+strategy_xetra_close_hour_broker=18
+strategy_xetra_close_minute_broker=30
+strategy_max_spread_points=0

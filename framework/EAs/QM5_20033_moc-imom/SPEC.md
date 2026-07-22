@@ -10,12 +10,13 @@
 
 ## 1. Strategy Logic
 
-The EA reads immutable, provenance-bearing cash-session timestamps and measures
-the signed move during each market's first 30 minutes. A positive opening move
-buys and a negative opening move sells at the start of the final cash-session
-M30 interval. The hard stop is one frozen opening-move distance from the actual
-entry, there is no profit target or trailing logic, and any remainder is closed
-at the governed cash-session close.
+The EA measures the signed move during each market's first 30 minutes. A
+positive opening move buys and a negative opening move sells at the start of
+the final cash-session M30 interval. The hard stop is one frozen opening-move
+distance from the actual entry, there is no profit target or trailing logic,
+and any remainder is closed at the fixed broker-clock cash-session close. UTC
+weekday and valid-tick eligibility replace the external session ledger, while
+Tester Groups applies venue commission to fills.
 
 ---
 
@@ -24,9 +25,13 @@ at the governed cash-session close.
 | Parameter | Default | Range | Meaning |
 |---|---:|---:|---|
 | `strategy_signal_tf` | `PERIOD_M30` | fixed M30 | Opening-return and final-interval signal timeframe. |
-| `strategy_max_cost_r` | `0.10` | fixed 0.10 | Maximum commission-plus-spread cost as a fraction of initial risk. |
-| `strategy_session_ledger_file` | `QM5_20033_cash_sessions.csv` | immutable file | Common-Files exchange-session and early-close ledger. |
-| `strategy_calendar_valid_through` | `2025.12.31` | fixed date | Required finite-study calendar horizon. |
+| `strategy_us_open_*_broker` | `16:30` | fixed | US cash-session opening anchor in broker time. |
+| `strategy_us_entry_*_broker` | `22:30` | fixed | US final-M30 entry in broker time. |
+| `strategy_us_close_*_broker` | `23:00` | fixed | US cash-session close in broker time. |
+| `strategy_xetra_open_*_broker` | `10:00` | fixed | Xetra opening anchor in broker time. |
+| `strategy_xetra_entry_*_broker` | `18:00` | fixed | Xetra final-M30 entry in broker time. |
+| `strategy_xetra_close_*_broker` | `18:30` | fixed | Xetra cash-session close in broker time. |
+| `strategy_max_spread_points` | `0` | optional >0 | Tester/live native spread guard; zero disables the guard. |
 
 Framework-level risk, news, seed, stress, and Friday-close inputs are documented
 in `framework/V5_FRAMEWORK_DESIGN.md` and are not duplicated here.
@@ -62,7 +67,7 @@ in `framework/V5_FRAMEWORK_DESIGN.md` and are not duplicated here.
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | approximately 250 before calendar and cost gates |
+| Trades / year / symbol | approximately 250 before clock/bar eligibility |
 | Typical hold time | one final cash-session M30 interval |
 | Expected drawdown profile | approximately 13% prior, concentrated in index cash-close reversals |
 | Regime preference | closing-auction intraday momentum |
@@ -80,9 +85,9 @@ This card was mechanised from:
 **R1–R4 verdict (Q00):** all PASS per `artifacts/cards_approved/QM5_20033_moc-imom.md`
 
 The paper supports same-direction continuation from the first half-hour into
-the final half-hour. Exact CFD routes, session ledgers, stop construction, cost
-gate, and cash-close handling are explicit QuantMechanica interpretations from
-the approved card.
+the final half-hour. Exact CFD routes, broker-clock sessions, stop construction,
+and cash-close handling are explicit QuantMechanica interpretations from the
+approved card.
 
 ---
 
@@ -103,3 +108,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-22 | Initial build from card | `d6c25ce6-d80e-4b25-bbf3-f1d4ecdd2b2d` |
+| v2 | 2026-07-22 | FTMO density fix | Replaced the unprovisioned session ledger and pre-trade cost gate with fixed broker-clock sessions, UTC weekday/tick eligibility, and the optional native spread guard. |
