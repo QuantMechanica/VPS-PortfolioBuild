@@ -19,7 +19,7 @@ if ($sourceHash -ne $expectedSha256) {
 }
 
 $rootFull = [IO.Path]::GetFullPath($CommonFilesRoot).TrimEnd('\')
-if ($rootFull -match '(?i)\QM\mt5\T_Live(?:\|$)') {
+if ($rootFull -match '(?i)\\QM\\mt5\\T_Live(?:\\|$)') {
     throw "Refusing to provision inside T_Live: $rootFull"
 }
 $target = [IO.Path]::GetFullPath((Join-Path $rootFull $calendarName))

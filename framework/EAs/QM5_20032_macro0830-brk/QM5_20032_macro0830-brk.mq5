@@ -165,12 +165,14 @@ bool LoadEventCalendar()
    if(!CalendarHashMatches())
       return false;
 
+   // Keep the load order identical to QM_NewsReadFileBytes so the bytes that
+   // passed the SHA-256 check are also the bytes parsed below.
    int handle = FileOpen(STRATEGY_CALENDAR_PATH,
-                         FILE_READ | FILE_CSV | FILE_ANSI | FILE_SHARE_READ | FILE_COMMON,
+                         FILE_READ | FILE_CSV | FILE_ANSI | FILE_SHARE_READ,
                          ',');
    if(handle == INVALID_HANDLE)
       handle = FileOpen(STRATEGY_CALENDAR_PATH,
-                        FILE_READ | FILE_CSV | FILE_ANSI | FILE_SHARE_READ,
+                        FILE_READ | FILE_CSV | FILE_ANSI | FILE_SHARE_READ | FILE_COMMON,
                         ',');
    if(handle == INVALID_HANDLE)
       return false;
