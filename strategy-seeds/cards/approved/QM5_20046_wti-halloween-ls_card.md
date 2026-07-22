@@ -19,7 +19,7 @@ markets: [commodities, energy, crude_oil]
 timeframes: [D1]
 target_symbols: [XTIUSD.DWX]
 expected_trades_per_year_per_symbol: 12
-pipeline_phase: Q01
+pipeline_phase: Q02
 review_focus: "Adds a two-sided WTI calendar return driver; Q02 must falsify costs, CFD basis and the summer short leg before any decorrelation claim."
 r1_track_record: TIER_B
 r2_mechanical: PASS
@@ -74,3 +74,8 @@ Expected density is 12 monthly packages/year. Retire below five completed packag
 ## Safety boundary
 
 This OWNER commodity-sleeve mission authorizes the card, research build and Q02 enqueue only. No `T_Live`, AutoTrading, deploy/T_Live manifest, live preset, portfolio admission or portfolio-gate edit is authorized.
+
+## Pipeline status
+
+- Q01: PASS — strict compile 0 errors/0 warnings; build check 0 failures/0 warnings.
+- Q02: QUEUED — work item `68028ce6-8a03-4bc9-bef0-14387da6742d`.

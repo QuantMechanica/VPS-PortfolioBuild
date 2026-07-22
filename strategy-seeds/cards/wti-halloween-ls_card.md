@@ -8,7 +8,7 @@ status: APPROVED
 g0_status: APPROVED
 target_symbols: [XTIUSD.DWX]
 period: D1
-pipeline_phase: Q01
+pipeline_phase: Q02
 last_updated: 2026-07-22
 ---
 
