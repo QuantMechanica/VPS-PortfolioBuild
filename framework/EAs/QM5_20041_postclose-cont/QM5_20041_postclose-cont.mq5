@@ -5,9 +5,8 @@
 #include <QM/QM_Common.mqh>
 
 // Strategy Card: QM5_20041_postclose-cont, G0 APPROVED 2026-07-22.
-// Exchange clocks, DST, daily breaks, rollover and financing boundaries are
-// accepted only from one hash-pinned governed schedule; no numeric value is
-// invented in the EA.
+// Cash-session anchors use the fixed broker clock. Holiday and blackout
+// protection remains with the framework news gate and Friday guard.
 
 // =============================================================================
 // QuantMechanica V5 EA SKELETON
@@ -60,7 +59,7 @@ input group "News"
 // A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
-input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
+input int    qm_news_stale_max_hours      = 336;     // 14 days; framework news gate fails closed if older
 input string qm_news_min_impact           = "high";  // high / medium / low
 // Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
 // New EAs use qm_news_temporal + qm_news_compliance above and leave this OFF.
@@ -84,29 +83,18 @@ input ENUM_TIMEFRAMES strategy_signal_tf = PERIOD_M15;
 input int    strategy_atr_period        = 14;
 input double strategy_atr_stop_mult     = 1.0;
 input int    strategy_hold_minutes      = 240;
-input int    strategy_safety_buffer_minutes = 15;
-input double strategy_min_stop_to_friction = 4.0;
-input double strategy_max_cost_r        = 0.10;
-input double strategy_round_turn_commission_usd_per_lot = 0.0;
-input string strategy_schedule_file     = "QM5_20041_exchange_financing_schedule.csv";
-input string strategy_schedule_sha256   = "";
-input string strategy_schedule_version  = "";
-input string strategy_calendar_valid_through = "2025.12.31";
-input string strategy_tzdb_version      = "";
+input int    strategy_cash_open_hour_broker = 10;
+input int    strategy_cash_open_minute_broker = 0;
+input int    strategy_cash_close_hour_broker = 18;
+input int    strategy_cash_close_minute_broker = 30;
+// Tester Groups applies venue commission to fills; zero disables this optional
+// native spread guard, matching the proven QM5_12969 execution baseline.
+input int    strategy_max_spread_points = 0;
 
-int      g_session_date_key[];
-datetime g_cash_open_utc[];
-datetime g_cash_close_utc[];
-datetime g_next_break_utc[];
-datetime g_rollover_utc[];
-datetime g_financing_utc[];
-datetime g_local_day_end_utc[];
-string   g_exchange_source_url[];
-string   g_broker_source_url[];
-
-bool     g_dependencies_attempted = false;
-bool     g_schedule_ready = false;
-int      g_pending_session_index = -1;
+int      g_session_date_key = 0;
+datetime g_cash_open_utc = 0;
+datetime g_cash_close_utc = 0;
+int      g_pending_session_date_key = 0;
 int      g_pending_side = 0;
 datetime g_pending_entry_bar_utc = 0;
 ulong    g_pending_entry_tick_msc = 0;
