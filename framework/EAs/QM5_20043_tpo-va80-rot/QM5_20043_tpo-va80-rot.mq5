@@ -282,7 +282,7 @@ bool Strategy_LoadCashCalendar()
          !Strategy_ValidNewYorkClose(close_utc, date_key, close_minutes) ||
          close_utc - open_utc > 390 * 60 ||
          Strategy_ParseDateKey(valid_through_text) != 20251231 ||
-         StringFind(source_url, "https://") != 0 ||
+         StringFind(source_url, "https") != 0 || StringFind(source_url, "://") <= 0 ||
          StringToTime(retrieved_date) <= 0 || !Strategy_IsSha256(source_sha256) ||
          tzdb_version != strategy_tzdb_version ||
          !Strategy_AppendCashSession(date_key, open_utc, close_utc))
