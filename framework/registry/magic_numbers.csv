@@ -15127,3 +15127,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20036,wti-dom8-long,0,XTIUSD.DWX,200360000,2026-07-22,Development,active
 20031,asia-fx-fade,0,EURUSD.DWX,200310000,2026-07-22,Development,active
 20031,asia-fx-fade,1,GBPUSD.DWX,200310001,2026-07-22,Development,active
+20032,macro0830-brk,0,GDAXI.DWX,200320000,2026-07-22,Development,active
+20032,macro0830-brk,1,SP500.DWX,200320001,2026-07-22,Development,active
