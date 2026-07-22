@@ -11,11 +11,13 @@
 ## 1. Strategy Logic
 
 The EA trades only hash-bound issuer-calendar packages scheduled at exactly
-08:30 New York time. It freezes the high and low of the three completed M5 bars
+08:30 New York time. The currently provenance-qualified subset reuses the
+immutable QM5_20023 calendar and its row-level official-source audit: NFP, CPI,
+and PPI. It freezes the high and low of the three completed M5 bars
 before the release, then buys when the completed 08:30 release bar closes above
 that range or sells when it closes below it. The opposite range boundary is the
 hard stop, there is no profit target or trailing logic, and the position is
-closed at the governed 17:20 Berlin or documented early-close timestamp.
+closed at 17:20 Berlin with independent EU-DST conversion.
 
 ---
 
@@ -26,8 +28,15 @@ closed at the governed 17:20 Berlin or documented early-close timestamp.
 | `strategy_signal_tf` | `PERIOD_M5` | fixed M5 | Pre-release range and release-bar timeframe. |
 | `strategy_pre_release_bars` | `3` | fixed 3 | Number of completed bars in the 08:15–08:30 New York range. |
 | `strategy_max_cost_r` | `0.10` | fixed 0.10 | Maximum commission-plus-spread cost as a fraction of initial risk. |
-| `strategy_event_ledger_file` | `QM5_20032_macro0830_events.csv` | immutable file | Common-Files issuer-event and German cash-exit ledger. |
-| `strategy_calendar_valid_through` | `2025.12.31` | fixed date | Required finite-study issuer/calendar horizon. |
+
+Runtime calendar:
+`QM5_20023_announcement_calendar_20150101_20250404.csv`, SHA-256
+`411ae4af3dbe261e373705660e28b81e7c5dfc7398f38516e07effff71cd73af`.
+The EA accepts 370 exact-time NFP/CPI/PPI rows (36/year through 2024 and 10
+through 2025-04-04) and excludes the FOMC rows present in that source. The
+remaining frozen families, the rest of 2025, and a provenance-locked German
+early-close calendar are explicit data gaps; no schedule or early-close date is
+inferred.
 
 Framework-level risk, news, seed, stress, and Friday-close inputs are documented
 in `framework/V5_FRAMEWORK_DESIGN.md` and are not duplicated here.

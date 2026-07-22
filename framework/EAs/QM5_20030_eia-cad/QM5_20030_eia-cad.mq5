@@ -40,73 +40,56 @@ input int    strategy_atr_period          = 14;
 input double strategy_impulse_atr_mult    = 0.60;
 input int    strategy_time_exit_minutes   = 30;
 input double strategy_max_cost_r          = 0.10;
-input string strategy_eia_ledger_file     = "QM5_20030_eia_schedule.csv";
-input string strategy_api_ledger_file     = "QM5_20030_api_schedule.csv";
-input string strategy_calendar_valid_through = "2025.12.31";
+
+const string STRATEGY_CALENDAR_PATH =
+   "QM5_20030_eia_calendar_20180110_20251231.csv";
+const string STRATEGY_CALENDAR_SHA256 =
+   "B273DD88D27E38FE78EC85E426E0F1C8C8EF07DAE2F7E1E102BA96F492C33E04";
+const string STRATEGY_PROVENANCE_SHA256 =
+   "834540437F24E9818F8A1FC1B596F211C9D22154A20A9E3527E99FF9532F58C7";
+const int STRATEGY_CALENDAR_EXPECTED_ROWS = 352;
 
 datetime g_event_times_utc[];
 bool     g_calendar_ready = false;
 datetime g_last_attempt_event_utc = 0;
 
-string Trimmed(string value)
-  {
-   StringTrimLeft(value);
-   StringTrimRight(value);
-   return value;
-  }
-
-bool IsSha256(const string value)
-  {
-   if(StringLen(value) != 64)
-      return false;
-   const string hex = "0123456789abcdefABCDEF";
-   for(int i = 0; i < 64; ++i)
-     {
-      if(StringFind(hex, StringSubstr(value, i, 1)) < 0)
-         return false;
-     }
-   return true;
-  }
-
-datetime ParseUtcTimestamp(string value)
-  {
-   value = Trimmed(value);
-   const int n = StringLen(value);
-   if(n < 2 || StringSubstr(value, n - 1, 1) != "Z")
-      return 0;
-   value = StringSubstr(value, 0, n - 1);
-   StringReplace(value, "-", ".");
-   StringReplace(value, "T", " ");
-   return StringToTime(value);
-  }
-
-bool ValidIssuerUrl(const string url, const string issuer_domain)
-  {
-   return (StringFind(url, "https") == 0 &&
-           StringFind(url, "://") > 0 &&
-           StringFind(url, issuer_domain) > 0);
-  }
-
 bool AppendEvent(const datetime event_utc)
   {
    const int n = ArraySize(g_event_times_utc);
+   if(n > 0 && g_event_times_utc[n - 1] >= event_utc)
+      return false;
    if(ArrayResize(g_event_times_utc, n + 1) != n + 1)
       return false;
    g_event_times_utc[n] = event_utc;
    return true;
   }
 
-bool LoadEventLedger(const string file_name,
-                     const string required_type,
-                     const string issuer_domain,
-                     int &earliest_year,
-                     int &latest_year)
+bool CalendarHashMatches()
   {
-   earliest_year = 9999;
-   latest_year = 0;
-   const int handle = FileOpen(file_name,
-                               FILE_READ | FILE_CSV | FILE_ANSI | FILE_COMMON,
-                               ',');
+   uchar bytes[];
+   datetime modified_utc = 0;
+   if(!QM_NewsReadFileBytes(STRATEGY_CALENDAR_PATH, bytes, modified_utc))
+      return false;
+   string actual_hash = "";
+   if(!QM_NewsHashBytes(bytes, actual_hash))
+      return false;
+   StringToUpper(actual_hash);
+   return (actual_hash == STRATEGY_CALENDAR_SHA256);
+  }
+
+bool LoadEventCalendar()
+  {
+   ArrayResize(g_event_times_utc, 0);
+   if(!CalendarHashMatches())
+      return false;
+
+   int handle = FileOpen(STRATEGY_CALENDAR_PATH,
+                         FILE_READ | FILE_CSV | FILE_ANSI | FILE_SHARE_READ | FILE_COMMON,
+                         ',');
+   if(handle == INVALID_HANDLE)
+      handle = FileOpen(STRATEGY_CALENDAR_PATH,
+                        FILE_READ | FILE_CSV | FILE_ANSI | FILE_SHARE_READ,
+                        ',');
    if(handle == INVALID_HANDLE)
       return false;
 
@@ -114,45 +97,31 @@ bool LoadEventLedger(const string file_name,
    bool valid = true;
    while(!FileIsEnding(handle))
      {
-      const string event_type = Trimmed(FileReadString(handle));
-      const string event_utc_text = Trimmed(FileReadString(handle));
-      const string issuer_url = Trimmed(FileReadString(handle));
-      string retrieved_date = Trimmed(FileReadString(handle));
-      const string source_sha256 = Trimmed(FileReadString(handle));
-
-      if(rows == 0 && event_type == "event_type" && event_utc_text == "event_utc")
-         continue;
-      if(event_type == "" && event_utc_text == "" && issuer_url == "" &&
-         retrieved_date == "" && source_sha256 == "")
-         continue;
-
-      if(event_type != required_type ||
-         !ValidIssuerUrl(issuer_url, issuer_domain) ||
-         !IsSha256(source_sha256))
-        {
-         valid = false;
+      const string event_text = FileReadString(handle);
+      if(FileIsEnding(handle) && StringLen(event_text) == 0)
          break;
-        }
+      const string currency = FileReadString(handle);
+      const string event_name = FileReadString(handle);
+      const string impact = FileReadString(handle);
+      while(!FileIsEnding(handle) && !FileIsLineEnding(handle))
+         FileReadString(handle);
 
-      StringReplace(retrieved_date, "-", ".");
-      if(StringToTime(retrieved_date) <= 0)
-        {
-         valid = false;
-         break;
-        }
+      if(QM_NewsUpper(QM_NewsStripQuotes(event_text)) == "DATETIME")
+         continue;
+      if(StringLen(QM_NewsTrim(event_text)) == 0)
+         continue;
 
-      const datetime event_utc = ParseUtcTimestamp(event_utc_text);
+      datetime event_utc = 0;
       MqlDateTime event_parts;
-      if(event_utc <= 0 || !TimeToStruct(event_utc, event_parts) ||
-         event_parts.sec != 0 || (event_parts.min % 5) != 0)
-        {
-         valid = false;
-         break;
-        }
-
-      earliest_year = MathMin(earliest_year, event_parts.year);
-      latest_year = MathMax(latest_year, event_parts.year);
-      if(!AppendEvent(event_utc))
+      ZeroMemory(event_parts);
+      if(QM_NewsUpper(QM_NewsStripQuotes(currency)) != "USD" ||
+         QM_NewsUpper(QM_NewsStripQuotes(event_name)) != "CRUDE OIL INVENTORIES" ||
+         QM_NewsUpper(QM_NewsStripQuotes(impact)) != "HIGH" ||
+         !QM_NewsParseDateTimeUTC(event_text, event_utc) ||
+         !TimeToStruct(event_utc, event_parts) ||
+         event_parts.year < 2018 || event_parts.year > 2025 ||
+         event_parts.sec != 0 || (event_parts.min % 5) != 0 ||
+         !AppendEvent(event_utc))
         {
          valid = false;
          break;
@@ -161,32 +130,21 @@ bool LoadEventLedger(const string file_name,
      }
 
    FileClose(handle);
-   return (valid && rows > 0 && earliest_year <= 2018 && latest_year >= 2025);
-  }
-
-bool LoadEventCalendars()
-  {
-   ArrayResize(g_event_times_utc, 0);
-   if(strategy_calendar_valid_through != "2025.12.31")
+   if(!valid || rows != STRATEGY_CALENDAR_EXPECTED_ROWS ||
+      ArraySize(g_event_times_utc) != STRATEGY_CALENDAR_EXPECTED_ROWS)
       return false;
 
-   int eia_first = 0;
-   int eia_last = 0;
-   int api_first = 0;
-   int api_last = 0;
-   if(!LoadEventLedger(strategy_eia_ledger_file, "EIA", "eia.gov", eia_first, eia_last))
-      return false;
-   if(!LoadEventLedger(strategy_api_ledger_file, "API", "api.org", api_first, api_last))
-      return false;
-
-   ArraySort(g_event_times_utc);
-   const int total = ArraySize(g_event_times_utc);
-   for(int i = 1; i < total; ++i)
-     {
-      if(g_event_times_utc[i] == g_event_times_utc[i - 1])
-         return false;
-     }
-   return (total > 0);
+   QM_LogEvent(QM_INFO,
+               "STRATEGY_CALENDAR_LOADED",
+               StringFormat("{\"file\":\"%s\",\"sha256\":\"%s\",\"provenance_sha256\":\"%s\",\"eia_rows\":%d,\"api_rows\":0}",
+                            STRATEGY_CALENDAR_PATH,
+                            STRATEGY_CALENDAR_SHA256,
+                            STRATEGY_PROVENANCE_SHA256,
+                            rows));
+   QM_LogEvent(QM_WARN,
+               "STRATEGY_CALENDAR_COVERAGE_GAP",
+               "{\"event_type\":\"API\",\"reason\":\"exact_historical_timestamp_provenance_unavailable\"}");
+   return true;
   }
 
 int FindEventIndex(const datetime event_utc)
@@ -291,12 +249,25 @@ bool CostAndVolumeAllow(const double entry_price, const double stop_price)
 // Strategy hooks — implemented mechanically from the approved card.
 // -----------------------------------------------------------------------------
 
+void LogEntryRejected(const datetime event_utc,
+                      const string reason,
+                      const string context = "")
+  {
+   QM_LogEvent(QM_INFO,
+               "ENTRY_REJECTED",
+               StringFormat("{\"event_type\":\"EIA\",\"event_utc\":\"%s\",\"reason\":\"%s\",\"context\":\"%s\"}",
+                            TimeToString(event_utc, TIME_DATE | TIME_MINUTES),
+                            QM_LoggerEscapeJson(reason),
+                            QM_LoggerEscapeJson(context)));
+  }
+
 bool Strategy_NoTradeFilter()
   {
    datetime open_time = 0;
    if(FindOurPosition(open_time))
       return false;
-   if(_Symbol != "USDCAD.DWX" || _Period != strategy_signal_tf)
+   if(_Symbol != "USDCAD.DWX" || qm_magic_slot_offset != 0 ||
+      _Period != strategy_signal_tf)
       return true;
    return !g_calendar_ready;
   }
@@ -311,7 +282,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!g_calendar_ready || _Symbol != "USDCAD.DWX" || _Period != strategy_signal_tf)
+   if(!g_calendar_ready || _Symbol != "USDCAD.DWX" || qm_magic_slot_offset != 0 ||
+      _Period != strategy_signal_tf)
       return false;
 
    const datetime release_bar_broker = iTime(_Symbol, strategy_signal_tf, 1); // perf-allowed: fixed closed release bar behind QM_IsNewBar.
@@ -321,35 +293,70 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(event_utc == g_last_attempt_event_utc || FindEventIndex(event_utc) < 0)
       return false;
 
+   // Consume the exact candidate before market-data, geometry, cost or order
+   // checks. One failed prerequisite must never re-arm the same release.
+   g_last_attempt_event_utc = event_utc;
+
    const double oil_open = iOpen("XTIUSD.DWX", strategy_signal_tf, 1); // perf-allowed: synchronized fixed release bar behind QM_IsNewBar.
    const double oil_close = iClose("XTIUSD.DWX", strategy_signal_tf, 1); // perf-allowed: synchronized fixed release bar behind QM_IsNewBar.
    const double oil_atr = QM_ATR("XTIUSD.DWX", strategy_signal_tf, strategy_atr_period, 2);
    if(oil_open <= 0.0 || oil_close <= 0.0 || oil_atr <= 0.0)
+     {
+      LogEntryRejected(event_utc, "oil_release_data_or_atr_missing");
       return false;
+     }
 
    const double oil_move = oil_close - oil_open;
    if(oil_move == 0.0 || MathAbs(oil_move) < strategy_impulse_atr_mult * oil_atr)
+     {
+      LogEntryRejected(event_utc,
+                       "oil_impulse_below_threshold",
+                       StringFormat("move=%.8f;atr=%.8f;threshold=%.8f",
+                                    oil_move,
+                                    oil_atr,
+                                    strategy_impulse_atr_mult * oil_atr));
       return false;
+     }
 
    const bool buy = (oil_move < 0.0);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0 || ask < bid)
+     {
+      LogEntryRejected(event_utc, "tradable_quote_unavailable");
       return false;
+     }
 
    const double release_low = iLow(_Symbol, strategy_signal_tf, 1); // perf-allowed: synchronized fixed release-bar stop behind QM_IsNewBar.
    const double release_high = iHigh(_Symbol, strategy_signal_tf, 1); // perf-allowed: synchronized fixed release-bar stop behind QM_IsNewBar.
    const double entry_price = buy ? ask : bid;
    const double stop_price = QM_StopRulesNormalizePrice(_Symbol, buy ? release_low : release_high);
    if(stop_price <= 0.0 || (buy && entry_price <= stop_price) || (!buy && entry_price >= stop_price))
+     {
+      LogEntryRejected(event_utc,
+                       "release_bar_stop_invalid",
+                       StringFormat("entry=%.8f;stop=%.8f;low=%.8f;high=%.8f",
+                                    entry_price, stop_price, release_low, release_high));
       return false;
+     }
    if(!CostAndVolumeAllow(entry_price, stop_price))
+     {
+      LogEntryRejected(event_utc, "cost_or_volume_gate_rejected");
       return false;
+     }
 
    req.type = buy ? QM_BUY : QM_SELL;
    req.sl = stop_price;
    req.reason = buy ? "EIA_CAD_OIL_DOWN_LONG" : "EIA_CAD_OIL_UP_SHORT";
-   g_last_attempt_event_utc = event_utc;
+   QM_LogEvent(QM_INFO,
+               "ENTRY_SIGNAL_FIRE",
+               StringFormat("{\"event_type\":\"EIA\",\"event_utc\":\"%s\",\"direction\":\"%s\",\"oil_open\":%.8f,\"oil_close\":%.8f,\"oil_atr\":%.8f,\"stop\":%.8f}",
+                            TimeToString(event_utc, TIME_DATE | TIME_MINUTES),
+                            buy ? "LONG" : "SHORT",
+                            oil_open,
+                            oil_close,
+                            oil_atr,
+                            stop_price));
    return true;
   }
 
@@ -401,15 +408,19 @@ int OnInit()
    QM_SymbolGuardInit(allowed_symbols);
    QM_BasketWarmupHistory(allowed_symbols, strategy_signal_tf, 64);
 
-   g_calendar_ready = LoadEventCalendars();
+   g_calendar_ready = LoadEventCalendar();
    if(!g_calendar_ready)
       QM_LogEvent(QM_ERROR,
                   "SETUP_DATA_MISSING",
-                  StringFormat("{\"eia\":\"%s\",\"api\":\"%s\"}",
-                               strategy_eia_ledger_file,
-                               strategy_api_ledger_file));
+                  StringFormat("{\"component\":\"eia_strategy_calendar\",\"file\":\"%s\",\"expected_sha256\":\"%s\"}",
+                               STRATEGY_CALENDAR_PATH,
+                               STRATEGY_CALENDAR_SHA256));
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
+   QM_LogEvent(QM_INFO,
+               "INIT_OK",
+               StringFormat("{\"calendar_ready\":%s,\"eia_rows\":%d,\"api_data_gap\":true,\"order_symbol\":\"USDCAD.DWX\",\"signal_symbol\":\"XTIUSD.DWX\"}",
+                            g_calendar_ready ? "true" : "false",
+                            ArraySize(g_event_times_utc)));
    return INIT_SUCCEEDED;
   }
 
@@ -490,4 +501,3 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-

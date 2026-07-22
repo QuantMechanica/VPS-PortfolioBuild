@@ -24,5 +24,3 @@ PORTFOLIO_WEIGHT=1
 strategy_signal_tf=5
 strategy_pre_release_bars=3
 strategy_max_cost_r=0.10
-strategy_event_ledger_file=QM5_20032_macro0830_events.csv
-strategy_calendar_valid_through=2025.12.31

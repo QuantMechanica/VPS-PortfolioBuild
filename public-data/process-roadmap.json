@@ -1,103 +1,103 @@
 {
-  "schema_version": 1,
-  "generated_at": "2026-07-22T20:00:56.5402722Z",
-  "total": 16,
-  "items": [
-    {
-      "id": "01-ea-lifecycle",
-      "title": "01-ea-lifecycle",
-      "status": "active",
-      "last_updated_utc": "2026-07-22T19:51:17.3960493Z"
-    },
-    {
-      "id": "02-zt-recovery",
-      "title": "02-zt-recovery",
-      "status": "active",
-      "last_updated_utc": "2026-07-22T19:51:17.3960493Z"
-    },
-    {
-      "id": "03-v-portfolio-deploy",
-      "title": "03-v-portfolio-deploy",
-      "status": "active",
-      "last_updated_utc": "2026-07-22T19:51:17.3970525Z"
-    },
-    {
-      "id": "04-incident-response",
-      "title": "04-incident-response",
-      "status": "active",
-      "last_updated_utc": "2026-07-22T19:51:17.3980550Z"
-    },
-    {
-      "id": "05-dashboard-refresh",
-      "title": "05-dashboard-refresh",
-      "status": "active",
-      "last_updated_utc": "2026-07-22T19:51:17.4070782Z"
-    },
-    {
-      "id": "09-disaster-recovery",
-      "title": "09-disaster-recovery",
-      "status": "active",
-      "last_updated_utc": "2026-07-22T19:37:27.6576235Z"
-    },
-    {
-      "id": "11-disk-and-sync",
-      "title": "11-disk-and-sync",
-      "status": "active",
-      "last_updated_utc": "2026-07-22T19:51:17.4070782Z"
-    },
-    {
-      "id": "13-strategy-research",
-      "title": "13-strategy-research",
-      "status": "active",
-      "last_updated_utc": "2026-07-22T18:50:22.5379120Z"
-    },
-    {
-      "id": "14-ea-enhancement-loop",
-      "title": "14-ea-enhancement-loop",
-      "status": "active",
-      "last_updated_utc": "2026-07-22T19:51:17.4080810Z"
-    },
-    {
-      "id": "15-pipeline-op-load-balancing",
-      "title": "15-pipeline-op-load-balancing",
-      "status": "active",
-      "last_updated_utc": "2026-07-22T19:59:50.3498928Z"
-    },
-    {
-      "id": "16-backtest-execution-discipline",
-      "title": "16-backtest-execution-discipline",
-      "status": "active",
-      "last_updated_utc": "2026-07-22T19:51:17.4091087Z"
-    },
-    {
-      "id": "gemini_video_extraction_contract",
-      "title": "gemini_video_extraction_contract",
-      "status": "active",
-      "last_updated_utc": "2026-07-22T19:46:19.4737061Z"
-    },
-    {
-      "id": "process_registry",
-      "title": "process_registry",
-      "status": "active",
-      "last_updated_utc": "2026-07-22T19:59:50.3488902Z"
-    },
-    {
-      "id": "qb_reputable_source_criteria",
-      "title": "qb_reputable_source_criteria",
-      "status": "active",
-      "last_updated_utc": "2026-06-30T07:55:55.1472265Z"
-    },
-    {
-      "id": "README",
-      "title": "README",
-      "status": "active",
-      "last_updated_utc": "2026-07-22T18:51:39.9258415Z"
-    },
-    {
-      "id": "zero_trade_v2_build_pipeline",
-      "title": "zero_trade_v2_build_pipeline",
-      "status": "active",
-      "last_updated_utc": "2026-05-23T09:40:30.8159967Z"
-    }
-  ]
+    "schema_version":  1,
+    "generated_at":  "2026-07-22T20:07:02.7470648Z",
+    "total":  16,
+    "items":  [
+                  {
+                      "id":  "01-ea-lifecycle",
+                      "title":  "01-ea-lifecycle",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-07-22T19:51:17.3960493Z"
+                  },
+                  {
+                      "id":  "02-zt-recovery",
+                      "title":  "02-zt-recovery",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-07-22T19:51:17.3960493Z"
+                  },
+                  {
+                      "id":  "03-v-portfolio-deploy",
+                      "title":  "03-v-portfolio-deploy",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-07-22T19:51:17.3970525Z"
+                  },
+                  {
+                      "id":  "04-incident-response",
+                      "title":  "04-incident-response",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-07-22T19:51:17.3980550Z"
+                  },
+                  {
+                      "id":  "05-dashboard-refresh",
+                      "title":  "05-dashboard-refresh",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-07-22T19:51:17.4070782Z"
+                  },
+                  {
+                      "id":  "09-disaster-recovery",
+                      "title":  "09-disaster-recovery",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-07-22T19:37:27.6576235Z"
+                  },
+                  {
+                      "id":  "11-disk-and-sync",
+                      "title":  "11-disk-and-sync",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-07-22T19:51:17.4070782Z"
+                  },
+                  {
+                      "id":  "13-strategy-research",
+                      "title":  "13-strategy-research",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-07-22T18:50:22.5379120Z"
+                  },
+                  {
+                      "id":  "14-ea-enhancement-loop",
+                      "title":  "14-ea-enhancement-loop",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-07-22T19:51:17.4080810Z"
+                  },
+                  {
+                      "id":  "15-pipeline-op-load-balancing",
+                      "title":  "15-pipeline-op-load-balancing",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-07-22T19:59:50.3498928Z"
+                  },
+                  {
+                      "id":  "16-backtest-execution-discipline",
+                      "title":  "16-backtest-execution-discipline",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-07-22T19:51:17.4091087Z"
+                  },
+                  {
+                      "id":  "gemini_video_extraction_contract",
+                      "title":  "gemini_video_extraction_contract",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-07-22T19:46:19.4737061Z"
+                  },
+                  {
+                      "id":  "process_registry",
+                      "title":  "process_registry",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-07-22T19:59:50.3488902Z"
+                  },
+                  {
+                      "id":  "qb_reputable_source_criteria",
+                      "title":  "qb_reputable_source_criteria",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-06-30T07:55:55.1472265Z"
+                  },
+                  {
+                      "id":  "README",
+                      "title":  "README",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-07-22T18:51:39.9258415Z"
+                  },
+                  {
+                      "id":  "zero_trade_v2_build_pipeline",
+                      "title":  "zero_trade_v2_build_pipeline",
+                      "status":  "active",
+                      "last_updated_utc":  "2026-05-23T09:40:30.8159967Z"
+                  }
+              ]
 }

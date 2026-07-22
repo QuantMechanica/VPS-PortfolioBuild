@@ -10,14 +10,17 @@
 
 ## 1. Strategy Logic
 
-The EA reads immutable EIA and API release timestamps from provenance-bearing
-ledgers and evaluates only the first completed five-minute WTI bar after each
-listed release. A WTI move of at least 0.6 times its pre-release ATR arms a
+The EA reads an immutable, hash-pinned EIA release calendar built from the
+official WPSR archive and evaluates only the first completed five-minute WTI
+bar after each eligible release. A WTI move of at least 0.6 times its
+pre-release ATR arms a
 USDCAD trade in the opposite direction: rising oil sells USDCAD and falling oil
 buys it. The stop is the synchronized USDCAD release-bar extreme, there is no
 profit target or trailing logic, and the position is closed at release time plus
 30 minutes. Missing, stale, duplicate, or malformed schedule data blocks new
-entries while leaving open-position exits active.
+entries while leaving open-position exits active. API events remain ineligible:
+the available official historical schedules prove publication dates but not the
+exact timestamp required by the card.
 
 ---
 
@@ -30,9 +33,14 @@ entries while leaving open-position exits active.
 | `strategy_impulse_atr_mult` | `0.60` | fixed 0.60 | Minimum absolute WTI release-bar move in ATR units. |
 | `strategy_time_exit_minutes` | `30` | fixed 30 | Force-flat deadline measured from scheduled release time. |
 | `strategy_max_cost_r` | `0.10` | fixed 0.10 | Maximum commission-plus-spread cost as a fraction of initial risk. |
-| `strategy_eia_ledger_file` | `QM5_20030_eia_schedule.csv` | immutable file | Common-Files EIA schedule ledger. |
-| `strategy_api_ledger_file` | `QM5_20030_api_schedule.csv` | immutable file | Common-Files API schedule ledger. |
-| `strategy_calendar_valid_through` | `2025.12.31` | fixed date | Required finite-study schedule horizon. |
+
+The immutable runtime calendar is
+`QM5_20030_eia_calendar_20180110_20251231.csv` (SHA-256
+`b273dd88d27e38fe78ec85e426e0f1c8c8ef07dae2f7e1e102ba96f492c33e04`),
+provisioned through `FILE_COMMON`. It contains 352 official-archive Wednesday
+releases at the issuer-defined 10:30 New York standard time. Sixty-four
+historically shifted releases and all API releases are excluded when their
+exact timestamp cannot be proven; no weekday/time fallback is used.
 
 Framework-level risk, news, seed, stress, and Friday-close inputs are documented
 in `framework/V5_FRAMEWORK_DESIGN.md` and are not duplicated here.
@@ -106,4 +114,3 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-22 | Initial build from card | `3ba3900b-1c08-43b7-886b-20eb16cb7f6f` |
-

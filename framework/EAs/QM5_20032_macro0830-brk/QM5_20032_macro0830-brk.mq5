@@ -35,90 +35,22 @@ input group "Strategy"
 input ENUM_TIMEFRAMES strategy_signal_tf  = PERIOD_M5;
 input int    strategy_pre_release_bars    = 3;
 input double strategy_max_cost_r          = 0.10;
-input string strategy_event_ledger_file   = "QM5_20032_macro0830_events.csv";
-input string strategy_calendar_valid_through = "2025.12.31";
+
+const string STRATEGY_CALENDAR_PATH =
+   "QM5_20023_announcement_calendar_20150101_20250404.csv";
+const string STRATEGY_CALENDAR_SHA256 =
+   "411AE4AF3DBE261E373705660E28B81E7C5DFC7398F38516E07EFFFF71CD73AF";
+const string STRATEGY_PROVENANCE_SHA256 =
+   "5585DA3C1EDA2CA6BFD08CB972C9FAC05B8246D8386674C11D5B2ADE4D8AD68B";
+const int STRATEGY_CALENDAR_EXPECTED_ROWS = 451;
+const int STRATEGY_CALENDAR_EXPECTED_ELIGIBLE_ROWS = 370;
 
 datetime g_event_entry_utc[];
 datetime g_event_exit_utc[];
-bool     g_event_entry_allowed[];
+string   g_event_family[];
 bool     g_calendar_ready = false;
 datetime g_last_attempt_entry_utc = 0;
 datetime g_active_exit_broker = 0;
-
-string Trimmed(string value)
-  {
-   StringTrimLeft(value);
-   StringTrimRight(value);
-   return value;
-  }
-
-bool IsSha256(const string value)
-  {
-   if(StringLen(value) != 64)
-      return false;
-   const string hex = "0123456789abcdefABCDEF";
-   for(int i = 0; i < 64; ++i)
-     {
-      if(StringFind(hex, StringSubstr(value, i, 1)) < 0)
-         return false;
-     }
-   return true;
-  }
-
-bool ParseBoolean(const string value, bool &parsed)
-  {
-   if(value == "1" || value == "true" || value == "TRUE")
-     {
-      parsed = true;
-      return true;
-     }
-   if(value == "0" || value == "false" || value == "FALSE")
-     {
-      parsed = false;
-      return true;
-     }
-   return false;
-  }
-
-datetime ParseUtcTimestamp(string value)
-  {
-   value = Trimmed(value);
-   const int n = StringLen(value);
-   if(n < 2 || StringSubstr(value, n - 1, 1) != "Z")
-      return 0;
-   value = StringSubstr(value, 0, n - 1);
-   StringReplace(value, "-", ".");
-   StringReplace(value, "T", " ");
-   return StringToTime(value);
-  }
-
-bool IsEligibleFamily(const string family)
-  {
-   return (family == "GDP" ||
-           family == "NONFARM_PAYROLLS" ||
-           family == "RETAIL_SALES" ||
-           family == "PERSONAL_INCOME_PCE" ||
-           family == "DURABLE_GOODS" ||
-           family == "BUSINESS_INVENTORIES" ||
-           family == "TRADE_BALANCE" ||
-           family == "PPI" ||
-           family == "CPI" ||
-           family == "HOUSING_STARTS" ||
-           family == "LEADING_INDICATORS" ||
-           family == "INITIAL_CLAIMS");
-  }
-
-bool ValidIssuerUrl(const string url)
-  {
-   if(StringFind(url, "https") != 0 || StringFind(url, "://") <= 0)
-      return false;
-   return (StringFind(url, "bls.gov") > 0 ||
-           StringFind(url, "bea.gov") > 0 ||
-           StringFind(url, "census.gov") > 0 ||
-           StringFind(url, "dol.gov") > 0 ||
-           StringFind(url, "conference-board.org") > 0 ||
-           StringFind(url, "commerce.gov") > 0);
-  }
 
 bool IsExactNewYork0830(const datetime event_utc)
   {
@@ -167,46 +99,61 @@ bool IsEuropeDSTUtc(const datetime utc)
    return (utc >= starts && utc < ends);
   }
 
-bool ValidateBerlinExit(const datetime event_utc,
-                        const datetime exit_utc,
-                        const string exit_kind)
+datetime Berlin1720Utc(const datetime event_utc)
   {
-   if(exit_utc <= event_utc + 5 * 60)
-      return false;
-   const int offset_hours = IsEuropeDSTUtc(exit_utc) ? 2 : 1;
-   const datetime berlin_local = exit_utc + offset_hours * 60 * 60;
    MqlDateTime event_parts;
-   MqlDateTime exit_parts;
-   if(!TimeToStruct(event_utc, event_parts) || !TimeToStruct(berlin_local, exit_parts))
-      return false;
-   if(event_parts.year != exit_parts.year || event_parts.mon != exit_parts.mon ||
-      event_parts.day != exit_parts.day)
-      return false;
-   const int exit_minute = exit_parts.hour * 60 + exit_parts.min;
-   if(exit_kind == "normal")
-      return (exit_minute == 17 * 60 + 20 && exit_parts.sec == 0);
-   if(exit_kind == "early")
-      return (exit_minute > 0 && exit_minute < 17 * 60 + 20 && exit_parts.sec == 0);
-   return false;
+   ZeroMemory(event_parts);
+   if(event_utc <= 0 || !TimeToStruct(event_utc, event_parts))
+      return 0;
+   datetime exit_utc = UtcDateTime(event_parts.year,
+                                   event_parts.mon,
+                                   event_parts.day,
+                                   16,
+                                   20);
+   if(IsEuropeDSTUtc(exit_utc))
+      exit_utc -= 60 * 60;
+   return (exit_utc > event_utc + 5 * 60 ? exit_utc : 0);
   }
 
-bool AppendOrMergeEvent(const datetime entry_utc,
-                        const datetime exit_utc,
-                        const bool entry_allowed)
+string EligibleFamilyForName(const string raw_name)
+  {
+   const string event_name = QM_NewsUpper(QM_NewsStripQuotes(raw_name));
+   if(event_name == "NON-FARM EMPLOYMENT CHANGE" || event_name == "NONFARM PAYROLLS")
+      return "NONFARM_PAYROLLS";
+   if(event_name == "CPI M/M")
+      return "CPI";
+   if(event_name == "PPI M/M")
+      return "PPI";
+   return "";
+  }
+
+bool CalendarHashMatches()
+  {
+   uchar bytes[];
+   datetime modified_utc = 0;
+   if(!QM_NewsReadFileBytes(STRATEGY_CALENDAR_PATH, bytes, modified_utc))
+      return false;
+   string actual_hash = "";
+   if(!QM_NewsHashBytes(bytes, actual_hash))
+      return false;
+   StringToUpper(actual_hash);
+   return (actual_hash == STRATEGY_CALENDAR_SHA256);
+  }
+
+bool AppendEvent(const datetime entry_utc,
+                 const datetime exit_utc,
+                 const string family)
   {
    const int n = ArraySize(g_event_entry_utc);
-   if(n > 0 && g_event_entry_utc[n - 1] == entry_utc)
-      return (g_event_exit_utc[n - 1] == exit_utc &&
-              g_event_entry_allowed[n - 1] == entry_allowed);
-   if(n > 0 && g_event_entry_utc[n - 1] > entry_utc)
+   if(n > 0 && g_event_entry_utc[n - 1] >= entry_utc)
       return false;
    if(ArrayResize(g_event_entry_utc, n + 1) != n + 1 ||
-      ArrayResize(g_event_exit_utc, n + 1) != n + 1 ||
-      ArrayResize(g_event_entry_allowed, n + 1) != n + 1)
+       ArrayResize(g_event_exit_utc, n + 1) != n + 1 ||
+       ArrayResize(g_event_family, n + 1) != n + 1)
       return false;
    g_event_entry_utc[n] = entry_utc;
    g_event_exit_utc[n] = exit_utc;
-   g_event_entry_allowed[n] = entry_allowed;
+   g_event_family[n] = family;
    return true;
   }
 
@@ -214,66 +161,80 @@ bool LoadEventCalendar()
   {
    ArrayResize(g_event_entry_utc, 0);
    ArrayResize(g_event_exit_utc, 0);
-   ArrayResize(g_event_entry_allowed, 0);
-   if(strategy_calendar_valid_through != "2025.12.31")
+   ArrayResize(g_event_family, 0);
+   if(!CalendarHashMatches())
       return false;
 
-   const int handle = FileOpen(strategy_event_ledger_file,
-                               FILE_READ | FILE_CSV | FILE_ANSI | FILE_COMMON,
-                               ',');
+   int handle = FileOpen(STRATEGY_CALENDAR_PATH,
+                         FILE_READ | FILE_CSV | FILE_ANSI | FILE_SHARE_READ | FILE_COMMON,
+                         ',');
+   if(handle == INVALID_HANDLE)
+      handle = FileOpen(STRATEGY_CALENDAR_PATH,
+                        FILE_READ | FILE_CSV | FILE_ANSI | FILE_SHARE_READ,
+                        ',');
    if(handle == INVALID_HANDLE)
       return false;
 
-   int rows = 0;
-   int earliest_year = 9999;
-   int latest_year = 0;
+   int parsed_rows = 0;
+   int eligible_rows = 0;
    bool valid = true;
    while(!FileIsEnding(handle))
      {
-      const string family = Trimmed(FileReadString(handle));
-      const string event_text = Trimmed(FileReadString(handle));
-      const string allowed_text = Trimmed(FileReadString(handle));
-      const string exit_text = Trimmed(FileReadString(handle));
-      const string exit_kind = Trimmed(FileReadString(handle));
-      const string source_url = Trimmed(FileReadString(handle));
-      string retrieved_date = Trimmed(FileReadString(handle));
-      const string source_sha256 = Trimmed(FileReadString(handle));
+      const string event_text = FileReadString(handle);
+      if(FileIsEnding(handle) && StringLen(event_text) == 0)
+         break;
+      const string currency = FileReadString(handle);
+      const string event_name = FileReadString(handle);
+      FileReadString(handle); // impact; schedule-only strategy never reads values.
+      while(!FileIsEnding(handle) && !FileIsLineEnding(handle))
+         FileReadString(handle);
 
-      if(rows == 0 && family == "event_family" && event_text == "event_utc")
+      if(QM_NewsUpper(QM_NewsStripQuotes(event_text)) == "DATETIME")
          continue;
-      if(family == "" && event_text == "" && exit_text == "")
+      if(StringLen(QM_NewsTrim(event_text)) == 0)
          continue;
 
-      bool entry_allowed = false;
-      StringReplace(retrieved_date, "-", ".");
-      const datetime event_utc = ParseUtcTimestamp(event_text);
-      const datetime exit_utc = ParseUtcTimestamp(exit_text);
-      if(!IsEligibleFamily(family) || event_utc <= 0 ||
-         !IsExactNewYork0830(event_utc) ||
-         !ParseBoolean(allowed_text, entry_allowed) ||
-         !ValidateBerlinExit(event_utc, exit_utc, exit_kind) ||
-         !ValidIssuerUrl(source_url) || StringToTime(retrieved_date) <= 0 ||
-         !IsSha256(source_sha256) ||
-         !AppendOrMergeEvent(event_utc + 5 * 60, exit_utc, entry_allowed))
+      datetime event_utc = 0;
+      if(QM_NewsUpper(QM_NewsStripQuotes(currency)) != "USD" ||
+         !QM_NewsParseDateTimeUTC(event_text, event_utc) || event_utc <= 0)
         {
          valid = false;
          break;
         }
+      ++parsed_rows;
 
-      MqlDateTime event_parts;
-      if(!TimeToStruct(event_utc, event_parts))
+      const string family = EligibleFamilyForName(event_name);
+      if(family == "")
+         continue; // FOMC is present for QM5_20023 but forbidden by this card.
+
+      const datetime exit_utc = Berlin1720Utc(event_utc);
+      if(!IsExactNewYork0830(event_utc) || exit_utc <= 0 ||
+         !AppendEvent(event_utc + 5 * 60, exit_utc, family))
         {
          valid = false;
          break;
         }
-      earliest_year = MathMin(earliest_year, event_parts.year);
-      latest_year = MathMax(latest_year, event_parts.year);
-      ++rows;
+      ++eligible_rows;
      }
    FileClose(handle);
 
-   return (valid && rows > 0 && ArraySize(g_event_entry_utc) > 0 &&
-           earliest_year <= 2018 && latest_year >= 2025);
+   if(!valid || parsed_rows != STRATEGY_CALENDAR_EXPECTED_ROWS ||
+      eligible_rows != STRATEGY_CALENDAR_EXPECTED_ELIGIBLE_ROWS ||
+      ArraySize(g_event_entry_utc) != STRATEGY_CALENDAR_EXPECTED_ELIGIBLE_ROWS)
+      return false;
+
+   QM_LogEvent(QM_INFO,
+               "STRATEGY_CALENDAR_LOADED",
+               StringFormat("{\"file\":\"%s\",\"sha256\":\"%s\",\"provenance_sha256\":\"%s\",\"source_rows\":%d,\"eligible_rows\":%d,\"families\":\"NFP,CPI,PPI\"}",
+                            STRATEGY_CALENDAR_PATH,
+                            STRATEGY_CALENDAR_SHA256,
+                            STRATEGY_PROVENANCE_SHA256,
+                            parsed_rows,
+                            eligible_rows));
+   QM_LogEvent(QM_WARN,
+               "STRATEGY_CALENDAR_COVERAGE_GAP",
+               "{\"missing_families\":\"GDP,RETAIL_SALES,PERSONAL_INCOME_PCE,DURABLE_GOODS,BUSINESS_INVENTORIES,TRADE_BALANCE,HOUSING_STARTS,LEADING_INDICATORS,INITIAL_CLAIMS\",\"available_through\":\"2025-04-04\",\"required_through\":\"2025-12-31\",\"early_close_calendar\":\"unavailable\"}");
+   return true;
   }
 
 int LowerBoundEntry(const datetime target_utc)
@@ -302,6 +263,15 @@ int FindEventAtEntry(const datetime entry_utc)
 bool IsRoutedSymbol(const string symbol)
   {
    return (symbol == "GDAXI.DWX" || symbol == "SP500.DWX");
+  }
+
+int ExpectedSlotForSymbol(const string symbol)
+  {
+   if(symbol == "GDAXI.DWX")
+      return 0;
+   if(symbol == "SP500.DWX")
+      return 1;
+   return -1;
   }
 
 bool FindOurPosition(datetime &open_time)
@@ -438,12 +408,30 @@ bool CostAndVolumeAllow(const double entry_price, const double stop_price)
 // Strategy hooks — implemented mechanically from the approved card.
 // -----------------------------------------------------------------------------
 
+void LogEntryRejected(const int event_index,
+                      const string reason,
+                      const string context = "")
+  {
+   if(event_index < 0 || event_index >= ArraySize(g_event_entry_utc))
+      return;
+   QM_LogEvent(QM_INFO,
+               "ENTRY_REJECTED",
+               StringFormat("{\"event_family\":\"%s\",\"event_utc\":\"%s\",\"reason\":\"%s\",\"context\":\"%s\"}",
+                            QM_LoggerEscapeJson(g_event_family[event_index]),
+                            TimeToString(g_event_entry_utc[event_index] - 5 * 60,
+                                         TIME_DATE | TIME_MINUTES),
+                            QM_LoggerEscapeJson(reason),
+                            QM_LoggerEscapeJson(context)));
+  }
+
 bool Strategy_NoTradeFilter()
   {
    datetime open_time = 0;
    if(FindOurPosition(open_time))
       return false;
-   if(!IsRoutedSymbol(_Symbol) || _Period != strategy_signal_tf)
+   if(!IsRoutedSymbol(_Symbol) ||
+      qm_magic_slot_offset != ExpectedSlotForSymbol(_Symbol) ||
+      _Period != strategy_signal_tf)
       return true;
    return !g_calendar_ready;
   }
@@ -458,7 +446,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!g_calendar_ready || !IsRoutedSymbol(_Symbol) || _Period != strategy_signal_tf ||
+   if(!g_calendar_ready || !IsRoutedSymbol(_Symbol) ||
+      qm_magic_slot_offset != ExpectedSlotForSymbol(_Symbol) ||
+      _Period != strategy_signal_tf ||
       strategy_pre_release_bars != 3 || strategy_max_cost_r != 0.10)
       return false;
    const datetime current_bar = iTime(_Symbol, strategy_signal_tf, 0); // perf-allowed: exact 08:35 ET entry-bar match behind QM_IsNewBar.
@@ -468,36 +458,72 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(entry_utc == g_last_attempt_entry_utc)
       return false;
    const int event_index = FindEventAtEntry(entry_utc);
-   if(event_index < 0 || !g_event_entry_allowed[event_index])
+   if(event_index < 0)
       return false;
+
+   // Consume this exact 08:35 candidate before every downstream prerequisite.
+   // A failed bar/cost/order check may not re-arm the same event package.
+   g_last_attempt_entry_utc = entry_utc;
 
    double pre_high = 0.0;
    double pre_low = 0.0;
    double release_close = 0.0;
    if(!PreReleaseStructure(entry_utc - 5 * 60, pre_high, pre_low, release_close))
+     {
+      LogEntryRejected(event_index, "pre_release_or_release_bar_invalid");
       return false;
+     }
    const bool buy = (release_close > pre_high);
    const bool sell = (release_close < pre_low);
    if(!buy && !sell)
+     {
+      LogEntryRejected(event_index,
+                       "release_close_inside_pre_range",
+                       StringFormat("pre_high=%.8f;pre_low=%.8f;release_close=%.8f",
+                                    pre_high, pre_low, release_close));
       return false;
+     }
 
-   g_last_attempt_entry_utc = entry_utc;
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0 || ask < bid)
+     {
+      LogEntryRejected(event_index, "tradable_quote_unavailable");
       return false;
+     }
    const double entry_price = buy ? ask : bid;
    const double stop_price = QM_StopRulesNormalizePrice(_Symbol, buy ? pre_low : pre_high);
    if(stop_price <= 0.0 ||
-      (buy && stop_price >= entry_price) ||
-      (sell && stop_price <= entry_price) ||
-      !CostAndVolumeAllow(entry_price, stop_price))
+       (buy && stop_price >= entry_price) ||
+       (sell && stop_price <= entry_price))
+     {
+      LogEntryRejected(event_index,
+                       "opposite_range_stop_invalid",
+                       StringFormat("entry=%.8f;stop=%.8f", entry_price, stop_price));
       return false;
+     }
+   if(!CostAndVolumeAllow(entry_price, stop_price))
+     {
+      LogEntryRejected(event_index, "cost_or_volume_gate_rejected");
+      return false;
+     }
 
    req.type = buy ? QM_BUY : QM_SELL;
    req.sl = stop_price;
    req.reason = buy ? "MACRO0830_FIRST_BAR_LONG" : "MACRO0830_FIRST_BAR_SHORT";
    g_active_exit_broker = QM_UTCToBroker(g_event_exit_utc[event_index]);
+   QM_LogEvent(QM_INFO,
+               "ENTRY_SIGNAL_FIRE",
+               StringFormat("{\"event_family\":\"%s\",\"event_utc\":\"%s\",\"direction\":\"%s\",\"pre_high\":%.8f,\"pre_low\":%.8f,\"release_close\":%.8f,\"stop\":%.8f,\"exit_utc\":\"%s\"}",
+                            QM_LoggerEscapeJson(g_event_family[event_index]),
+                            TimeToString(entry_utc - 5 * 60, TIME_DATE | TIME_MINUTES),
+                            buy ? "LONG" : "SHORT",
+                            pre_high,
+                            pre_low,
+                            release_close,
+                            stop_price,
+                            TimeToString(g_event_exit_utc[event_index],
+                                         TIME_DATE | TIME_MINUTES)));
    return true;
   }
 
@@ -563,9 +589,16 @@ int OnInit()
    if(!g_calendar_ready)
       QM_LogEvent(QM_ERROR,
                   "SETUP_DATA_MISSING",
-                  StringFormat("{\"event_ledger\":\"%s\"}", strategy_event_ledger_file));
+                  StringFormat("{\"component\":\"macro0830_strategy_calendar\",\"file\":\"%s\",\"expected_sha256\":\"%s\"}",
+                               STRATEGY_CALENDAR_PATH,
+                               STRATEGY_CALENDAR_SHA256));
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
+   QM_LogEvent(QM_INFO,
+               "INIT_OK",
+               StringFormat("{\"calendar_ready\":%s,\"eligible_events\":%d,\"route_slot\":%d}",
+                            g_calendar_ready ? "true" : "false",
+                            ArraySize(g_event_entry_utc),
+                            ExpectedSlotForSymbol(_Symbol)));
    return INIT_SUCCEEDED;
   }
 
@@ -646,4 +679,3 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-

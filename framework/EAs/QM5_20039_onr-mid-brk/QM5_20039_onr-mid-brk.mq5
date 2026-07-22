@@ -107,6 +107,53 @@ datetime g_breakout_through_utc = 0;
 int      g_pending_side = 0;
 datetime g_pending_entry_utc = 0;
 datetime g_active_close_broker = 0;
+int      g_state_reject_mask = 0;
+bool     g_cash_state_ready_logged = false;
+
+const int STRATEGY_STATE_REJECT_OVERNIGHT = 1;
+const int STRATEGY_STATE_REJECT_FIRST_RTH = 2;
+const int STRATEGY_STATE_REJECT_CASH = 4;
+const int STRATEGY_STATE_REJECT_CLOCK = 8;
+
+void Strategy_LogStateRejected(const int reject_flag,
+                               const string detail,
+                               const int cash_date_key,
+                               const datetime observed_utc,
+                               const string diagnostics = "")
+  {
+   // Quote-state evaluation runs on every tick.  Emit each state failure at
+   // most once per cash date so recovery evidence cannot become a log bomb.
+   if((g_state_reject_mask & reject_flag) != 0)
+      return;
+   g_state_reject_mask |= reject_flag;
+   QM_LogEvent(QM_WARN,
+               "ENTRY_REJECTED",
+               StringFormat("{\"result\":\"STRATEGY_STATE_REJECTED\",\"symbol\":\"%s\",\"reason\":\"ONR_MID_BRK\",\"detail\":\"%s\",\"cash_date_key\":%d,\"observed_utc\":%I64d,\"overnight_start_utc\":%I64d,\"cash_open_utc\":%I64d,\"cash_close_utc\":%I64d%s}",
+                            QM_LoggerEscapeJson(_Symbol),
+                            QM_LoggerEscapeJson(detail),
+                            cash_date_key,
+                            (long)observed_utc,
+                            (long)g_overnight_start_utc,
+                            (long)g_cash_open_utc,
+                            (long)g_cash_close_utc,
+                            diagnostics));
+  }
+
+bool Strategy_BrokerTickToUtcMsc(const MqlTick &tick,
+                                 datetime &utc,
+                                 ulong &utc_msc)
+  {
+   utc = 0;
+   utc_msc = 0;
+   if(tick.time_msc <= 0)
+      return false;
+   const datetime broker_time = (datetime)(tick.time_msc / 1000);
+   utc = QM_BrokerToUTC(broker_time);
+   if(utc <= 0 || QM_UTCToBroker(utc) != broker_time)
+      return false;
+   utc_msc = (ulong)utc * 1000 + (ulong)(tick.time_msc % 1000);
+   return (utc_msc > 0);
+  }
 
 int Strategy_DateKey(const datetime value)
   {
@@ -309,6 +356,8 @@ void Strategy_ResetQuoteSession(const int cash_date_key,
    g_breakout_through_utc = 0;
    g_pending_side = 0;
    g_pending_entry_utc = 0;
+   g_state_reject_mask = 0;
+   g_cash_state_ready_logged = false;
    Strategy_RecoverAttempt(cash_open_utc);
   }
 
@@ -336,7 +385,13 @@ void Strategy_AccumulateMid(const double mid)
 
 bool Strategy_RebuildOvernightTicks(const ulong to_msc)
   {
-   const ulong start_msc = (ulong)g_overnight_start_utc * 1000;
+   // .DWX ticks are imported with broker-clock epoch labels.  Session
+   // membership is resolved in UTC, then translated back only at the tick-DB
+   // query boundary.
+   const datetime start_broker = QM_UTCToBroker(g_overnight_start_utc);
+   if(start_broker <= 0)
+      return false;
+   const ulong start_msc = (ulong)start_broker * 1000;
    if(to_msc < start_msc)
       return true;
    const ulong chunk_width = 30 * 60 * 1000;
@@ -371,8 +426,12 @@ bool Strategy_FirstRthMid(const ulong available_to_msc,
                           double &rth_mid)
   {
    rth_mid = 0.0;
-   ulong cursor = (ulong)g_cash_open_utc * 1000;
-   const ulong close_msc = (ulong)g_cash_close_utc * 1000;
+   const datetime open_broker = QM_UTCToBroker(g_cash_open_utc);
+   const datetime close_broker = QM_UTCToBroker(g_cash_close_utc);
+   if(open_broker <= 0 || close_broker <= open_broker)
+      return false;
+   ulong cursor = (ulong)open_broker * 1000;
+   const ulong close_msc = (ulong)close_broker * 1000;
    const ulong stop_msc = (available_to_msc < close_msc) ? available_to_msc : close_msc - 1;
    const ulong chunk_width = 5 * 60 * 1000;
    while(cursor <= stop_msc)
@@ -408,20 +467,31 @@ double Strategy_TickNormalizedPrice(const double price)
    return QM_StopRulesNormalizePrice(_Symbol, MathRound(price / tick_size) * tick_size);
   }
 
-bool Strategy_FreezeRangeAndSide(const ulong available_to_msc)
+bool Strategy_FreezeRangeAndSide(const ulong available_to_msc,
+                                 string &reject_detail)
   {
+   reject_detail = "";
    if(!g_range_has_quote || g_overnight_high <= g_overnight_low)
+     {
+      reject_detail = "OVERNIGHT_TICKS_INVALID";
       return false;
+     }
    g_overnight_high = Strategy_TickNormalizedPrice(g_overnight_high);
    g_overnight_low = Strategy_TickNormalizedPrice(g_overnight_low);
    g_overnight_mid = Strategy_TickNormalizedPrice(0.5 * (g_overnight_high + g_overnight_low));
    if(g_overnight_high <= g_overnight_low || g_overnight_mid <= g_overnight_low ||
       g_overnight_mid >= g_overnight_high)
+     {
+      reject_detail = "OVERNIGHT_TICKS_INVALID";
       return false;
+     }
 
    double rth_mid = 0.0;
    if(!Strategy_FirstRthMid(available_to_msc, rth_mid))
+     {
+      reject_detail = "FIRST_RTH_MID_MISSING";
       return false;
+     }
    rth_mid = Strategy_TickNormalizedPrice(rth_mid);
    g_range_frozen = true;
    if(rth_mid <= g_overnight_low || rth_mid >= g_overnight_high || rth_mid == g_overnight_mid)
@@ -440,7 +510,18 @@ bool Strategy_UpdateQuoteState()
    MqlTick tick;
    if(!SymbolInfoTick(_Symbol, tick) || tick.time_msc <= 0)
       return false;
-   const datetime utc = (datetime)(tick.time_msc / 1000);
+   datetime utc = 0;
+   ulong tick_utc_msc = 0;
+   if(!Strategy_BrokerTickToUtcMsc(tick, utc, tick_utc_msc))
+     {
+      Strategy_LogStateRejected(
+         STRATEGY_STATE_REJECT_CLOCK,
+         "SESSION_CLOCK_INVALID",
+         g_quote_session_key,
+         0,
+         StringFormat(",\"tick_broker_msc\":%I64d", tick.time_msc));
+      return false;
+     }
    int cash_date_key = 0;
    datetime overnight_start_utc = 0;
    datetime cash_open_utc = 0;
@@ -462,11 +543,35 @@ bool Strategy_UpdateQuoteState()
                                  cash_open_utc,
                                  cash_close_utc);
       ulong rebuild_to = (ulong)tick.time_msc - 1;
-      const ulong open_msc = (ulong)g_cash_open_utc * 1000;
+      const datetime open_broker = QM_UTCToBroker(g_cash_open_utc);
+      if(open_broker <= 0)
+        {
+         g_range_failed = true;
+         Strategy_LogStateRejected(
+            STRATEGY_STATE_REJECT_CLOCK,
+            "SESSION_CLOCK_INVALID",
+            cash_date_key,
+            utc,
+            StringFormat(",\"state_detail\":\"cash_open_conversion_failed\",\"cash_open_utc\":%I64d",
+                         (long)g_cash_open_utc));
+         return false;
+        }
+      const ulong open_msc = (ulong)open_broker * 1000;
       if(rebuild_to >= open_msc)
          rebuild_to = open_msc - 1;
       if(!Strategy_RebuildOvernightTicks(rebuild_to))
+        {
          g_range_failed = true;
+         Strategy_LogStateRejected(
+            STRATEGY_STATE_REJECT_OVERNIGHT,
+            "OVERNIGHT_TICKS_INVALID",
+            cash_date_key,
+            utc,
+            StringFormat(",\"state_detail\":\"rebuild_failed\",\"tick_broker_msc\":%I64d,\"tick_utc_msc\":%I64d,\"rebuild_to_msc\":%I64d",
+                         tick.time_msc,
+                         (long)tick_utc_msc,
+                         (long)rebuild_to));
+        }
      }
 
    if(g_range_failed)
@@ -477,17 +582,55 @@ bool Strategy_UpdateQuoteState()
       if(!Strategy_TickMid(tick, mid))
         {
          g_range_failed = true;
+         Strategy_LogStateRejected(
+            STRATEGY_STATE_REJECT_OVERNIGHT,
+            "OVERNIGHT_TICKS_INVALID",
+            cash_date_key,
+            utc,
+            StringFormat(",\"state_detail\":\"current_quote_invalid\",\"bid\":%.8f,\"ask\":%.8f",
+                         tick.bid,
+                         tick.ask));
          return false;
         }
       Strategy_AccumulateMid(mid);
       return true;
      }
 
+   string freeze_reject = "";
    if(!g_range_frozen &&
-      !Strategy_FreezeRangeAndSide((ulong)tick.time_msc))
+      !Strategy_FreezeRangeAndSide((ulong)tick.time_msc, freeze_reject))
      {
       g_range_failed = true;
+      const int reject_flag = (freeze_reject == "FIRST_RTH_MID_MISSING")
+                              ? STRATEGY_STATE_REJECT_FIRST_RTH
+                              : STRATEGY_STATE_REJECT_OVERNIGHT;
+      Strategy_LogStateRejected(
+         reject_flag,
+         freeze_reject,
+         cash_date_key,
+         utc,
+         StringFormat(",\"state_detail\":\"freeze_failed\",\"tick_broker_msc\":%I64d,\"tick_utc_msc\":%I64d,\"range_has_quote\":%s,\"overnight_high\":%.8f,\"overnight_low\":%.8f",
+                      tick.time_msc,
+                      (long)tick_utc_msc,
+                      g_range_has_quote ? "true" : "false",
+                      g_overnight_high,
+                      g_overnight_low));
       return false;
+     }
+   if(g_range_frozen && !g_cash_state_ready_logged)
+     {
+      g_cash_state_ready_logged = true;
+      QM_LogEvent(QM_INFO,
+                  "CASH_STATE_READY",
+                  StringFormat("{\"symbol\":\"%s\",\"cash_date_key\":%d,\"observed_utc\":%I64d,\"overnight_high\":%.8f,\"overnight_low\":%.8f,\"overnight_mid\":%.8f,\"armed_side\":%d,\"cash_date_resolved\":%s}",
+                               QM_LoggerEscapeJson(_Symbol),
+                               cash_date_key,
+                               (long)utc,
+                               g_overnight_high,
+                               g_overnight_low,
+                               g_overnight_mid,
+                               g_armed_side,
+                               g_cash_date_resolved ? "true" : "false"));
      }
    return true;
   }
@@ -602,21 +745,57 @@ bool Strategy_AdvanceBreakoutOnNewBar()
                                           overnight_start_utc,
                                           cash_open_utc,
                                           cash_close_utc) ||
-      g_quote_session_key != cash_date_key ||
-      g_overnight_start_utc != overnight_start_utc ||
-      g_cash_open_utc != cash_open_utc || g_cash_close_utc != cash_close_utc ||
-      !g_range_frozen || g_range_failed ||
       closed_bar_utc < cash_open_utc || closed_bar_utc >= cash_close_utc)
       return false;
 
+   if(g_quote_session_key != cash_date_key ||
+      g_overnight_start_utc != overnight_start_utc ||
+      g_cash_open_utc != cash_open_utc || g_cash_close_utc != cash_close_utc ||
+      !g_range_frozen || g_range_failed)
+     {
+      Strategy_LogStateRejected(
+         STRATEGY_STATE_REJECT_CASH,
+         "CASH_STATE_NOT_READY",
+         cash_date_key,
+         current_open_utc,
+         StringFormat(",\"state_detail\":\"quote_state_mismatch\",\"quote_session_key\":%d,\"range_has_quote\":%s,\"range_frozen\":%s,\"range_failed\":%s,\"armed_side\":%d",
+                      g_quote_session_key,
+                      g_range_has_quote ? "true" : "false",
+                      g_range_frozen ? "true" : "false",
+                      g_range_failed ? "true" : "false",
+                      g_armed_side));
+      return false;
+     }
+
    if(g_breakout_through_utc == 0 ||
       g_breakout_through_utc + 5 * 60 != closed_bar_utc)
-      return Strategy_RebuildCashBars(current_open_utc);
+     {
+      const bool rebuilt = Strategy_RebuildCashBars(current_open_utc);
+      if(!rebuilt)
+         Strategy_LogStateRejected(
+            STRATEGY_STATE_REJECT_CASH,
+            "CASH_STATE_NOT_READY",
+            cash_date_key,
+            current_open_utc,
+            StringFormat(",\"state_detail\":\"cash_bar_rebuild_failed\",\"closed_bar_utc\":%I64d,\"breakout_through_utc\":%I64d",
+                         (long)closed_bar_utc,
+                         (long)g_breakout_through_utc));
+      return rebuilt;
+     }
 
-   return Strategy_ProcessCashBar(closed_bar,
-                                   closed_bar_utc,
-                                   current_open_utc,
-                                   current_open_utc < cash_close_utc);
+   const bool advanced = Strategy_ProcessCashBar(closed_bar,
+                                                  closed_bar_utc,
+                                                  current_open_utc,
+                                                  current_open_utc < cash_close_utc);
+   if(!advanced)
+      Strategy_LogStateRejected(
+         STRATEGY_STATE_REJECT_CASH,
+         "CASH_STATE_NOT_READY",
+         cash_date_key,
+         current_open_utc,
+         StringFormat(",\"state_detail\":\"cash_bar_advance_failed\",\"closed_bar_utc\":%I64d",
+                      (long)closed_bar_utc));
+   return advanced;
   }
 
 bool Strategy_TradeGeometryAndVolumeAllow(const double entry_price,
@@ -854,7 +1033,23 @@ int OnInit()
                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
+   QM_LogEvent(QM_INFO,
+               "INIT_OK",
+               StringFormat("{\"routed\":%s,\"period\":%d,\"signal_tf\":%d,\"inputs_valid\":%s,\"variant\":\"%s\",\"overnight_start_new_york\":\"%02d:%02d\",\"cash_open_new_york\":\"%02d:%02d\",\"cash_close_new_york\":\"%02d:%02d\",\"max_spread_points\":%d,\"risk_fixed\":%.2f,\"risk_percent\":%.8f,\"state_clock\":\"BROKER_TO_UTC\",\"tick_db_clock\":\"BROKER\"}",
+                            Strategy_IsRoutedSymbol(_Symbol) ? "true" : "false",
+                            (int)_Period,
+                            (int)strategy_signal_tf,
+                            Strategy_InputsValid() ? "true" : "false",
+                            QM_LoggerEscapeJson(strategy_variant_id),
+                            strategy_overnight_start_hour_new_york,
+                            strategy_overnight_start_minute_new_york,
+                            strategy_cash_open_hour_new_york,
+                            strategy_cash_open_minute_new_york,
+                            strategy_cash_close_hour_new_york,
+                            strategy_cash_close_minute_new_york,
+                            strategy_max_spread_points,
+                            RISK_FIXED,
+                            RISK_PERCENT));
    return INIT_SUCCEEDED;
   }
 
