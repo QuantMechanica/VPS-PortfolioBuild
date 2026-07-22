@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-22T08:07:02.7439360Z",
-    "total":  3373,
+    "generated_at":  "2026-07-22T09:07:03.0440025Z",
+    "total":  3378,
     "items":  [
                   {
                       "slug":  "ath-breakout-atr-trail",
@@ -17630,6 +17630,36 @@
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-06-12T11:43:59.6385302Z"
+                  },
+                  {
+                      "slug":  "QM5_20030_eia-cad_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-22T08:34:29.2183928Z"
+                  },
+                  {
+                      "slug":  "QM5_20031_asia-fx-fade_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-22T08:35:54.8587085Z"
+                  },
+                  {
+                      "slug":  "QM5_20032_macro0830-brk_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-22T08:34:29.2193954Z"
+                  },
+                  {
+                      "slug":  "QM5_20033_moc-imom_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-22T08:34:29.2203983Z"
+                  },
+                  {
+                      "slug":  "QM5_20034_wmr-postfix_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-22T08:34:29.2203983Z"
                   },
                   {
                       "slug":  "QM5_2004_nnfx-trix-momentum",
