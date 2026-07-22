@@ -3,6 +3,7 @@
 #property description "QM5_20044 Prior-cash-close gap HiLo fade"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_USCashCalendar.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA SKELETON
@@ -36,7 +37,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 9999;
+input int    qm_ea_id                   = 20044;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -295,14 +296,19 @@ bool Strategy_ResolveCashSession(const int date_key,
                                  datetime &open_utc,
                                  datetime &close_utc)
   {
+   open_utc = 0;
+   close_utc = 0;
+   // This card requires both previous and current sessions to be NORMAL.
+   // Early closes are intentionally excluded rather than shortened.
+   if(QM_USCashCalendarClassify(date_key) != QM_US_CASH_NORMAL)
+      return false;
    open_utc = Strategy_NewYorkLocalToUtc(date_key,
                                          strategy_cash_open_hour_new_york,
                                          strategy_cash_open_minute_new_york);
    close_utc = Strategy_NewYorkLocalToUtc(date_key,
                                           strategy_cash_close_hour_new_york,
                                           strategy_cash_close_minute_new_york);
-   return (open_utc > 0 && close_utc - open_utc == 390 * 60 &&
-           Strategy_IsUtcWeekday(open_utc));
+   return (open_utc > 0 && close_utc - open_utc == 390 * 60);
   }
 
 int Strategy_PreviousWeekdayDateKey(const int date_key)
@@ -1220,8 +1226,20 @@ int OnInit()
                         qm_rng_seed,
                         qm_stress_reject_probability,
                         qm_news_temporal,              // FW1 Axis A
-                        qm_news_compliance))           // FW1 Axis B
+                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
+
+   const bool calendar_ready =
+      QM_USCashCalendarLoad(QM_US_CASH_CALENDAR_RUNTIME_FILE,
+                            QM_US_CASH_CALENDAR_RUNTIME_SHA256);
+   QM_LogEvent(calendar_ready ? QM_INFO : QM_ERROR,
+               "US_CASH_CALENDAR_STATE",
+               StringFormat("{\"required\":true,\"ready\":%s,\"file\":\"%s\",\"expected_sha256\":\"%s\",\"actual_sha256\":\"%s\",\"error\":\"%s\"}",
+                            calendar_ready ? "true" : "false",
+                            QM_LoggerEscapeJson(QM_US_CASH_CALENDAR_RUNTIME_FILE),
+                            QM_US_CASH_CALENDAR_RUNTIME_SHA256,
+                            QM_USCashCalendarActualSha256(),
+                            QM_LoggerEscapeJson(QM_USCashCalendarLastError())));
 
    QM_LogEvent(QM_INFO,
                "INIT_OK",

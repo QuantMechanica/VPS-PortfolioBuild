@@ -86,8 +86,8 @@ input int    strategy_cash_close_minute_new_york = 0;
 // Tester Groups applies venue commission to fills; zero disables this optional
 // native spread guard, matching the proven QM5_12969 execution baseline.
 input int    strategy_max_spread_points = 0;
-input string strategy_cash_calendar_file = QM_US_CASH_CALENDAR_FILE;
-input string strategy_cash_calendar_sha256 = QM_US_CASH_CALENDAR_SHA256;
+input string strategy_cash_calendar_file = QM_US_CASH_CALENDAR_RUNTIME_FILE;
+input string strategy_cash_calendar_sha256 = QM_US_CASH_CALENDAR_RUNTIME_SHA256;
 
 int      g_attempt_date_key = 0;
 bool     g_cash_calendar_ready = false;
@@ -721,9 +721,9 @@ bool Strategy_NoTradeFilter()
             strategy_cash_close_minute_new_york != 0 ||
             strategy_max_spread_points < 0 ||
             !g_cash_calendar_ready ||
-            strategy_cash_calendar_file != QM_US_CASH_CALENDAR_FILE ||
+            strategy_cash_calendar_file != QM_US_CASH_CALENDAR_RUNTIME_FILE ||
             QM_USCashUpper(strategy_cash_calendar_sha256) !=
-               QM_US_CASH_CALENDAR_SHA256 ||
+               QM_US_CASH_CALENDAR_RUNTIME_SHA256 ||
             RISK_FIXED != 1000.0 ||
             RISK_PERCENT != 0.0);
   }

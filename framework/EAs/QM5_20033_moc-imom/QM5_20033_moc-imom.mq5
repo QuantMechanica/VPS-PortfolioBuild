@@ -3,9 +3,11 @@
 #property description "QM5_20033 market-on-close intraday momentum"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_USCashCalendar.mqh>
 
 // Strategy Card: QM5_20033_moc-imom, G0 APPROVED 2026-07-22.
-// Exact session times come from fixed broker-clock inputs on UTC weekdays.
+// US cash dates are admitted only by the provenance-locked NYSE calendar.
+// The existing broker-clock route remains the execution-clock boundary.
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                     = 20033;
@@ -131,6 +133,14 @@ bool ResolveSessionTimes(const string symbol,
    if(route < 0)
       return false;
    const bool xetra = (route == 3);
+   QM_USCashSessionType us_session_type = QM_US_CASH_INVALID;
+   if(!xetra)
+     {
+      us_session_type = QM_USCashCalendarClassify(date_key);
+      if(us_session_type != QM_US_CASH_NORMAL &&
+         us_session_type != QM_US_CASH_EARLY_CLOSE)
+         return false;
+     }
    const int open_hour = xetra ? strategy_xetra_open_hour_broker
                                : strategy_us_open_hour_broker;
    const int open_minute = xetra ? strategy_xetra_open_minute_broker
@@ -145,8 +155,24 @@ bool ResolveSessionTimes(const string symbol,
                                   : strategy_us_close_minute_broker;
    open_broker = BrokerDateTime(date_key, open_hour, open_minute);
    first30_broker = open_broker + 30 * 60;
-   entry_broker = BrokerDateTime(date_key, entry_hour, entry_minute);
-   exit_broker = BrokerDateTime(date_key, close_hour, close_minute);
+   if(!xetra && us_session_type == QM_US_CASH_EARLY_CLOSE)
+     {
+      // All governed early closes in the bound calendar are 13:00 ET, three
+      // hours before the regular 16:00 ET close.  The final M30 interval moves
+      // with that close; it is never backfilled at the normal-session time.
+      const int early_close_minutes = close_hour * 60 + close_minute - 180;
+      if(early_close_minutes < 30)
+         return false;
+      exit_broker = BrokerDateTime(date_key,
+                                   early_close_minutes / 60,
+                                   early_close_minutes % 60);
+      entry_broker = exit_broker - 30 * 60;
+     }
+   else
+     {
+      entry_broker = BrokerDateTime(date_key, entry_hour, entry_minute);
+      exit_broker = BrokerDateTime(date_key, close_hour, close_minute);
+     }
    return (open_broker > 0 && first30_broker > open_broker &&
            entry_broker >= first30_broker &&
            exit_broker - entry_broker == 30 * 60);
@@ -500,8 +526,24 @@ int OnInit()
                         qm_rng_seed,
                         qm_stress_reject_probability,
                         qm_news_temporal,
-                        qm_news_compliance))
+                         qm_news_compliance))
       return INIT_FAILED;
+
+   const int route = RouteIndex(_Symbol);
+   const bool us_calendar_required = (route >= 0 && route < 3);
+   const bool us_calendar_ready =
+      (!us_calendar_required ||
+       QM_USCashCalendarLoad(QM_US_CASH_CALENDAR_RUNTIME_FILE,
+                             QM_US_CASH_CALENDAR_RUNTIME_SHA256));
+   QM_LogEvent(us_calendar_ready ? QM_INFO : QM_ERROR,
+               "US_CASH_CALENDAR_STATE",
+               StringFormat("{\"required\":%s,\"ready\":%s,\"file\":\"%s\",\"expected_sha256\":\"%s\",\"actual_sha256\":\"%s\",\"error\":\"%s\"}",
+                            us_calendar_required ? "true" : "false",
+                            us_calendar_ready ? "true" : "false",
+                            QM_LoggerEscapeJson(QM_US_CASH_CALENDAR_RUNTIME_FILE),
+                            QM_US_CASH_CALENDAR_RUNTIME_SHA256,
+                            QM_USCashCalendarActualSha256(),
+                            QM_LoggerEscapeJson(QM_USCashCalendarLastError())));
 
    // Each setfile is an independent, single-symbol instance.  Pulling all four
    // sibling histories into every tester agent made cold runs fail when one

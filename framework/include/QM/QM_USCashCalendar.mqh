@@ -5,8 +5,8 @@
 // provenance-locked ICE/NYSE releases.  The runtime file contains exceptions
 // only: an unlisted New York weekday inside coverage is a normal 09:30-16:00
 // session.  Weekends, load errors and dates outside coverage fail closed.
-#define QM_US_CASH_CALENDAR_FILE "QM5_NYSE_US_cash_session_exceptions_20180101_20251231.csv"
-#define QM_US_CASH_CALENDAR_SHA256 "C2E87E2F72B5A5FC09AE6632A2DDC47CFA3CFDD98AF7DEB67A42292BCAF5FD11"
+#define QM_US_CASH_CALENDAR_RUNTIME_FILE "QM5_NYSE_US_cash_session_exceptions_20180101_20251231.csv"
+#define QM_US_CASH_CALENDAR_RUNTIME_SHA256 "C2E87E2F72B5A5FC09AE6632A2DDC47CFA3CFDD98AF7DEB67A42292BCAF5FD11"
 #define QM_US_CASH_CALENDAR_MANIFEST_SHA256 "38CB75A7AF6E5648CCF9A2016200CD37DB634007D3A51D70D741C88F0FA32B92"
 
 enum QM_USCashSessionType

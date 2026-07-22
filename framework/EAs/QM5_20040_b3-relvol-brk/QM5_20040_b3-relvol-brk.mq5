@@ -3,6 +3,7 @@
 #property description "QM5_20040 B3 relative-tick-volume breakout"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_USCashCalendar.mqh>
 
 // Strategy Card: QM5_20040_b3-relvol-brk, G0 APPROVED 2026-07-22.
 // TickVolume is treated only as a broker tick-count proxy. This EA makes no
@@ -158,18 +159,37 @@ bool Strategy_ResolveCashSession(const int date_key,
                                  datetime &close_utc,
                                  datetime &exit_utc)
   {
+   open_utc = 0;
+   close_utc = 0;
+   exit_utc = 0;
+   const QM_USCashSessionType session_type =
+      QM_USCashCalendarClassify(date_key);
+   if(session_type != QM_US_CASH_NORMAL &&
+      session_type != QM_US_CASH_EARLY_CLOSE)
+      return false;
    open_utc = Strategy_NewYorkLocalToUtc(date_key,
                                          strategy_cash_open_hour_new_york,
                                          strategy_cash_open_minute_new_york);
+   const int close_hour = (session_type == QM_US_CASH_EARLY_CLOSE)
+                          ? 13
+                          : strategy_cash_close_hour_new_york;
+   const int close_minute = (session_type == QM_US_CASH_EARLY_CLOSE)
+                            ? 0
+                            : strategy_cash_close_minute_new_york;
    close_utc = Strategy_NewYorkLocalToUtc(date_key,
-                                          strategy_cash_close_hour_new_york,
-                                          strategy_cash_close_minute_new_york);
-   exit_utc = Strategy_NewYorkLocalToUtc(date_key,
-                                         strategy_exit_hour_new_york,
-                                         strategy_exit_minute_new_york);
-   return (open_utc > 0 && close_utc - open_utc == 390 * 60 &&
-           exit_utc > open_utc && exit_utc <= close_utc &&
-           Strategy_IsUtcWeekday(open_utc));
+                                          close_hour,
+                                          close_minute);
+   if(session_type == QM_US_CASH_EARLY_CLOSE)
+      exit_utc = close_utc - 5 * 60;
+   else
+      exit_utc = Strategy_NewYorkLocalToUtc(date_key,
+                                            strategy_exit_hour_new_york,
+                                            strategy_exit_minute_new_york);
+   const int expected_cash_minutes =
+      (session_type == QM_US_CASH_EARLY_CLOSE) ? 210 : 390;
+   return (open_utc > 0 &&
+           close_utc - open_utc == expected_cash_minutes * 60 &&
+           exit_utc > open_utc && exit_utc <= close_utc);
   }
 
 bool Strategy_IsRoutedSymbol(const string symbol)
@@ -286,13 +306,16 @@ bool Strategy_EntryClockAllowed(const datetime entry_utc)
   {
    if(entry_utc >= g_state_exit_utc)
       return false;
+   const datetime latest_entry_utc = g_state_close_utc - 30 * 60;
+   if(latest_entry_utc <= g_state_open_utc || entry_utc > latest_entry_utc)
+      return false;
    const datetime local = Strategy_NewYorkLocal(entry_utc);
    MqlDateTime parts;
    if(!TimeToStruct(local, parts) || Strategy_DateKey(local) != g_state_session_key ||
       parts.sec != 0)
       return false;
    const int minute_of_day = parts.hour * 60 + parts.min;
-   return (minute_of_day >= 9 * 60 + 45 && minute_of_day <= 15 * 60 + 30);
+   return (minute_of_day >= 9 * 60 + 45);
   }
 
 bool Strategy_ProcessSignalBar(const MqlRates &rates[],
@@ -713,8 +736,20 @@ int OnInit()
                         qm_rng_seed,
                         qm_stress_reject_probability,
                         qm_news_temporal,              // FW1 Axis A
-                        qm_news_compliance))           // FW1 Axis B
+                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
+
+   const bool calendar_ready =
+      QM_USCashCalendarLoad(QM_US_CASH_CALENDAR_RUNTIME_FILE,
+                            QM_US_CASH_CALENDAR_RUNTIME_SHA256);
+   QM_LogEvent(calendar_ready ? QM_INFO : QM_ERROR,
+               "US_CASH_CALENDAR_STATE",
+               StringFormat("{\"required\":true,\"ready\":%s,\"file\":\"%s\",\"expected_sha256\":\"%s\",\"actual_sha256\":\"%s\",\"error\":\"%s\"}",
+                            calendar_ready ? "true" : "false",
+                            QM_LoggerEscapeJson(QM_US_CASH_CALENDAR_RUNTIME_FILE),
+                            QM_US_CASH_CALENDAR_RUNTIME_SHA256,
+                            QM_USCashCalendarActualSha256(),
+                            QM_LoggerEscapeJson(QM_USCashCalendarLastError())));
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;

@@ -3,6 +3,7 @@
 #property description "QM5_20039 overnight-range midpoint-side breakout"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_USCashCalendar.mqh>
 
 // Strategy Card: QM5_20039_onr-mid-brk, G0 APPROVED 2026-07-22.
 // The midpoint side filter is an explicitly UNVERIFIED QM repair hypothesis,
@@ -219,6 +220,14 @@ bool Strategy_ResolveSessionForCashDate(const int cash_date_key,
                                         datetime &cash_open_utc,
                                         datetime &cash_close_utc)
   {
+   overnight_start_utc = 0;
+   cash_open_utc = 0;
+   cash_close_utc = 0;
+   const QM_USCashSessionType session_type =
+      QM_USCashCalendarClassify(cash_date_key);
+   if(session_type != QM_US_CASH_NORMAL &&
+      session_type != QM_US_CASH_EARLY_CLOSE)
+      return false;
    const int overnight_date_key = Strategy_ShiftDateKey(cash_date_key, -1);
    overnight_start_utc = Strategy_NewYorkLocalToUtc(
       overnight_date_key,
@@ -227,15 +236,22 @@ bool Strategy_ResolveSessionForCashDate(const int cash_date_key,
    cash_open_utc = Strategy_NewYorkLocalToUtc(cash_date_key,
                                               strategy_cash_open_hour_new_york,
                                               strategy_cash_open_minute_new_york);
+   const int close_hour = (session_type == QM_US_CASH_EARLY_CLOSE)
+                          ? 13
+                          : strategy_cash_close_hour_new_york;
+   const int close_minute = (session_type == QM_US_CASH_EARLY_CLOSE)
+                            ? 0
+                            : strategy_cash_close_minute_new_york;
    cash_close_utc = Strategy_NewYorkLocalToUtc(cash_date_key,
-                                               strategy_cash_close_hour_new_york,
-                                               strategy_cash_close_minute_new_york);
+                                               close_hour,
+                                               close_minute);
+   const int expected_cash_minutes =
+      (session_type == QM_US_CASH_EARLY_CLOSE) ? 210 : 390;
    return (overnight_start_utc > 0 && cash_open_utc > overnight_start_utc &&
            cash_close_utc > cash_open_utc &&
            cash_open_utc - overnight_start_utc >= 12 * 60 * 60 &&
            cash_open_utc - overnight_start_utc <= 18 * 60 * 60 &&
-           cash_close_utc - cash_open_utc == 390 * 60 &&
-           Strategy_IsUtcWeekday(cash_open_utc));
+           cash_close_utc - cash_open_utc == expected_cash_minutes * 60);
   }
 
 bool Strategy_ResolveSessionForUtc(const datetime utc,
@@ -1036,8 +1052,20 @@ int OnInit()
                         qm_rng_seed,
                         qm_stress_reject_probability,
                         qm_news_temporal,              // FW1 Axis A
-                        qm_news_compliance))           // FW1 Axis B
+                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
+
+   const bool calendar_ready =
+      QM_USCashCalendarLoad(QM_US_CASH_CALENDAR_RUNTIME_FILE,
+                            QM_US_CASH_CALENDAR_RUNTIME_SHA256);
+   QM_LogEvent(calendar_ready ? QM_INFO : QM_ERROR,
+               "US_CASH_CALENDAR_STATE",
+               StringFormat("{\"required\":true,\"ready\":%s,\"file\":\"%s\",\"expected_sha256\":\"%s\",\"actual_sha256\":\"%s\",\"error\":\"%s\"}",
+                            calendar_ready ? "true" : "false",
+                            QM_LoggerEscapeJson(QM_US_CASH_CALENDAR_RUNTIME_FILE),
+                            QM_US_CASH_CALENDAR_RUNTIME_SHA256,
+                            QM_USCashCalendarActualSha256(),
+                            QM_LoggerEscapeJson(QM_USCashCalendarLastError())));
 
    QM_LogEvent(QM_INFO,
                "INIT_OK",

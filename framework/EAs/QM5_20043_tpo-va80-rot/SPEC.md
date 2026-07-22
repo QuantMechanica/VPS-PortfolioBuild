@@ -17,9 +17,13 @@ re-entry or sells an above-value re-entry, places an immutable stop one minimum
 tick beyond the first-hour extreme, and targets the opposite value-area edge.
 The trade is skipped unless the target offers at least 1.5 times the stop
 distance; any survivor is closed at the first tradable quote at or after 16:00
-New York time. Session eligibility comes from broker-clock conversion on UTC
-weekdays. Tester Groups applies venue commission to fills, while the EA retains
-an optional native spread-points guard.
+New York time. Session eligibility is bound to the provenance-locked NYSE Group
+US cash-equity exception calendar for 2018-01-01 through 2025-12-31. Full
+closures and 13:00 ET early closes are ineligible, and dates outside calendar
+coverage fail closed. The prior profile uses the immediately preceding normal
+session; missing or misaligned bars on that session fail closed instead of
+falling back to an older normal day. Tester Groups applies venue commission to
+fills, while the EA retains an optional native spread-points guard.
 
 ---
 
@@ -34,6 +38,8 @@ an optional native spread-points guard.
 | `strategy_cash_open_hour_new_york` / `strategy_cash_open_minute_new_york` | `09:30` | fixed | Regular-session open converted through the broker clock. |
 | `strategy_cash_close_hour_new_york` / `strategy_cash_close_minute_new_york` | `16:00` | fixed | Regular-session close converted through the broker clock. |
 | `strategy_max_spread_points` | `0` | non-negative | Optional native spread guard; zero disables it. |
+| `strategy_cash_calendar_file` | `QM5_NYSE_US_cash_session_exceptions_20180101_20251231.csv` | fixed | Canonical runtime basename provisioned to MT5 `Common\\Files`. |
+| `strategy_cash_calendar_sha256` | `c2e87e2f…fd11` | fixed | Whole-file SHA-256 binding for the canonical runtime calendar. |
 
 ---
 
@@ -103,3 +109,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 |---|---|---|---|
 | v1 | 2026-07-22 | Initial build from card | d30d49fe-b535-4b03-972f-030b78d36e7a |
 | v2 | 2026-07-22 | Density gate removal | Replaced the unprovisioned cash-calendar/feed/cost gates with fixed broker-clock session eligibility and tester-applied venue costs. |
+| v3 | 2026-07-22 | Governed cash-calendar repair | Bound session eligibility to the shared ICE/NYSE-provenance calendar, excluded full/early closures, enforced coverage fail-closed, and removed older-normal-day profile fallback. |
