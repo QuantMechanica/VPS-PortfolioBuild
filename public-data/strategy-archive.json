@@ -1,6 +1,6 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-22T09:07:03.0440025Z",
+    "generated_at":  "2026-07-22T10:07:02.7580135Z",
     "total":  3378,
     "items":  [
                   {
@@ -20203,7 +20203,7 @@
                       "slug":  "QM5_1137_fx-h4-filter-rule-breakout",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-10T15:21:30.1532730Z"
+                      "last_updated_utc":  "2026-07-22T09:52:45.6562009Z"
                   },
                   {
                       "slug":  "QM5_1138_gold-m30-open-range-fade-after-gap",
@@ -20221,7 +20221,7 @@
                       "slug":  "QM5_1140_index-daily-range-expansion-continuation",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-10T14:22:27.8368528Z"
+                      "last_updated_utc":  "2026-07-22T09:46:48.3741413Z"
                   },
                   {
                       "slug":  "QM5_1151_fx-london-fix-reversal",
@@ -20233,13 +20233,13 @@
                       "slug":  "QM5_1152_fx-tokyo-fix-usd-demand",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-10T14:55:07.1144602Z"
+                      "last_updated_utc":  "2026-07-22T09:46:49.6253950Z"
                   },
                   {
                       "slug":  "QM5_1153_fx-us-session-after-london-drift",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-10T15:21:35.4636990Z"
+                      "last_updated_utc":  "2026-07-22T09:52:45.8948226Z"
                   },
                   {
                       "slug":  "QM5_1154_index-hks-halfhour-lag-continuation",
@@ -20257,7 +20257,7 @@
                       "slug":  "QM5_1156_xtiusd-eia-third-halfhour-continuation",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-10T15:25:48.5901160Z"
+                      "last_updated_utc":  "2026-07-22T09:52:45.4025403Z"
                   },
                   {
                       "slug":  "QM5_1157_index-realized-skewness-fade",
