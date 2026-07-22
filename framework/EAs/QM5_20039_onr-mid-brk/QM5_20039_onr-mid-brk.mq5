@@ -244,7 +244,18 @@ void Strategy_RecoverAttempt(const datetime cash_open_utc)
   {
    g_attempted = false;
    const datetime from_broker = QM_UTCToBroker(cash_open_utc);
-   if(from_broker <= 0 || !HistorySelect(from_broker, TimeCurrent()))
+   const datetime now_broker = TimeCurrent();
+   if(from_broker <= 0 || now_broker <= 0)
+     {
+      g_attempted = true;
+      return;
+     }
+   // The quote session is initialized during the overnight window, before the
+   // cash open.  There cannot be an attempt in the still-future cash session,
+   // and HistorySelect() must never be called with a future start time.
+   if(now_broker <= from_broker)
+      return;
+   if(!HistorySelect(from_broker, now_broker))
      {
       g_attempted = true;
       return;
@@ -612,18 +623,11 @@ bool Strategy_TradeGeometryAndVolumeAllow(const double entry_price,
                                           const double stop_price)
   {
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
-   const double tick_value = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_VALUE_LOSS);
    if(RISK_FIXED != 1000.0 || RISK_PERCENT != 0.0 ||
-      point <= 0.0 || tick_size <= 0.0 || tick_value <= 0.0 ||
-      entry_price <= 0.0 || stop_price <= 0.0)
+      point <= 0.0 || entry_price <= 0.0 || stop_price <= 0.0)
       return false;
 
    const double stop_distance = MathAbs(entry_price - stop_price);
-   const double risk_per_lot = (stop_distance / tick_size) * tick_value;
-   if(risk_per_lot <= 0.0)
-      return false;
-
    const double sl_points = stop_distance / point;
    const long stop_level = SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
    if(sl_points <= 0.0 || sl_points < (double)stop_level)
@@ -660,6 +664,17 @@ bool Strategy_WideSpread()
    return (spread_points > strategy_max_spread_points);
   }
 
+void Strategy_LogEntryRejected(const string detail,
+                               const datetime candidate_utc)
+  {
+   QM_LogEvent(QM_WARN,
+               "ENTRY_REJECTED",
+               StringFormat("{\"result\":\"STRATEGY_HOOK_REJECTED\",\"symbol\":\"%s\",\"reason\":\"ONR_MID_BRK\",\"detail\":\"%s\",\"candidate_utc\":%I64d}",
+                            QM_LoggerEscapeJson(_Symbol),
+                            QM_LoggerEscapeJson(detail),
+                            (long)candidate_utc));
+  }
+
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -690,17 +705,33 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(g_pending_side == 0 || g_pending_entry_utc <= 0 ||
-      g_quote_session_key <= 0 || g_attempted ||
-      g_pending_entry_utc >= g_cash_close_utc)
+   if(g_pending_side == 0)
       return false;
+   const datetime candidate_utc = g_pending_entry_utc;
+   if(candidate_utc <= 0 || g_quote_session_key <= 0 ||
+      candidate_utc >= g_cash_close_utc)
+     {
+      Strategy_LogEntryRejected("PENDING_CANDIDATE_INVALID", candidate_utc);
+      return false;
+     }
+   if(g_attempted)
+     {
+      Strategy_LogEntryRejected("ATTEMPT_ALREADY_MADE", candidate_utc);
+      return false;
+     }
    MqlRates current_bar;
    if(!QM_ReadBar(_Symbol, strategy_signal_tf, 0, current_bar) ||
-      QM_BrokerToUTC(current_bar.time) != g_pending_entry_utc)
+      QM_BrokerToUTC(current_bar.time) != candidate_utc)
+     {
+      Strategy_LogEntryRejected("ENTRY_BAR_MISMATCH", candidate_utc);
       return false;
+     }
    datetime open_time = 0;
    if(Strategy_FindOurPosition(open_time))
+     {
+      Strategy_LogEntryRejected("POSITION_ALREADY_OPEN", candidate_utc);
       return false;
+     }
 
    const bool is_long = (g_pending_side > 0);
    g_attempted = true;
@@ -709,24 +740,52 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    MqlTick tick;
    if(!SymbolInfoTick(_Symbol, tick) || tick.ask <= 0.0 || tick.bid <= 0.0 || tick.ask < tick.bid)
+     {
+      Strategy_LogEntryRejected("MARKET_QUOTE_INVALID", candidate_utc);
       return false;
+     }
    const double entry_price = is_long ? tick.ask : tick.bid;
    const double frozen_midpoint = Strategy_TickNormalizedPrice(g_overnight_mid);
    // The card requires the actual market fill to remain on the risk side of
    // the frozen midpoint; equality has zero defined risk and therefore fails.
    if(frozen_midpoint <= 0.0 ||
-      (is_long && entry_price <= frozen_midpoint) ||
-      (!is_long && entry_price >= frozen_midpoint) ||
-      Strategy_WideSpread() ||
-      !Strategy_TradeGeometryAndVolumeAllow(entry_price, frozen_midpoint))
+       (is_long && entry_price <= frozen_midpoint) ||
+       (!is_long && entry_price >= frozen_midpoint))
+     {
+      Strategy_LogEntryRejected("MIDPOINT_GEOMETRY_INVALID", candidate_utc);
       return false;
+     }
+   if(Strategy_WideSpread())
+     {
+      Strategy_LogEntryRejected("SPREAD_REJECTED", candidate_utc);
+      return false;
+     }
+   if(!Strategy_TradeGeometryAndVolumeAllow(entry_price, frozen_midpoint))
+     {
+      Strategy_LogEntryRejected("TRADE_GEOMETRY_OR_VOLUME_REJECTED", candidate_utc);
+      return false;
+     }
 
    req.type = is_long ? QM_BUY : QM_SELL;
    req.sl = frozen_midpoint;
    req.tp = 0.0;
    req.reason = is_long ? "ONR_MID_BRK_LONG" : "ONR_MID_BRK_SHORT";
    g_active_close_broker = QM_UTCToBroker(g_cash_close_utc);
-   return (g_active_close_broker > 0);
+   if(g_active_close_broker <= 0)
+     {
+      Strategy_LogEntryRejected("EXIT_CLOCK_INVALID", candidate_utc);
+      return false;
+     }
+   QM_LogEvent(QM_INFO,
+               "ENTRY_SIGNAL_FIRE",
+               StringFormat("{\"symbol\":\"%s\",\"side\":\"%s\",\"candidate_utc\":%I64d,\"entry\":%.8f,\"stop\":%.8f,\"exit_broker\":%I64d}",
+                            QM_LoggerEscapeJson(_Symbol),
+                            is_long ? "BUY" : "SELL",
+                            (long)candidate_utc,
+                            entry_price,
+                            frozen_midpoint,
+                            (long)g_active_close_broker));
+   return true;
   }
 
 // Called every tick when an open position exists for this EA's magic.

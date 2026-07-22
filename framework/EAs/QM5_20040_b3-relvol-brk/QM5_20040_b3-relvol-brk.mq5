@@ -449,17 +449,13 @@ bool Strategy_TradeGeometryAndVolumeAllow(const double entry_price,
                                           const double target_price)
   {
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
-   const double tick_value = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_VALUE_LOSS);
    if(RISK_FIXED != 1000.0 || RISK_PERCENT != 0.0 || point <= 0.0 ||
-      tick_size <= 0.0 || tick_value <= 0.0 || entry_price <= 0.0 ||
-      stop_price <= 0.0 || target_price <= 0.0)
+      entry_price <= 0.0 || stop_price <= 0.0 || target_price <= 0.0)
       return false;
 
    const double stop_distance = MathAbs(entry_price - stop_price);
    const double target_distance = MathAbs(entry_price - target_price);
-   const double risk_per_lot = (stop_distance / tick_size) * tick_value;
-   if(risk_per_lot <= 0.0 || target_distance <= 0.0)
+   if(stop_distance <= 0.0 || target_distance <= 0.0)
       return false;
 
    const double sl_points = stop_distance / point;
@@ -504,6 +500,17 @@ bool Strategy_WideSpread()
    return (spread_points < 0 || spread_points > strategy_max_spread_points);
   }
 
+void Strategy_LogEntryRejected(const string detail,
+                               const datetime candidate_utc)
+  {
+   QM_LogEvent(QM_WARN,
+               "ENTRY_REJECTED",
+               StringFormat("{\"result\":\"STRATEGY_HOOK_REJECTED\",\"symbol\":\"%s\",\"reason\":\"B3_RELVOL_BRK\",\"detail\":\"%s\",\"candidate_utc\":%I64d}",
+                            QM_LoggerEscapeJson(_Symbol),
+                            QM_LoggerEscapeJson(detail),
+                            (long)candidate_utc));
+  }
+
 datetime Strategy_FloorM15(const datetime utc)
   {
    if(utc <= 0)
@@ -541,19 +548,38 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(g_pending_side == 0 || g_pending_entry_utc <= 0 || g_pending_atr <= 0.0 ||
-      g_state_session_key <= 0 || g_session_attempts >= 2 ||
-      !Strategy_EntryClockAllowed(g_pending_entry_utc))
+   if(g_pending_side == 0)
       return false;
+   const datetime candidate_utc = g_pending_entry_utc;
+   if(candidate_utc <= 0 || g_pending_atr <= 0.0 ||
+      g_state_session_key <= 0 || !Strategy_EntryClockAllowed(candidate_utc))
+     {
+      Strategy_LogEntryRejected("PENDING_CANDIDATE_INVALID", candidate_utc);
+      return false;
+     }
+   if(g_session_attempts >= 2)
+     {
+      Strategy_LogEntryRejected("SESSION_ATTEMPT_LIMIT_REACHED", candidate_utc);
+      return false;
+     }
    MqlRates current_bar;
    if(!QM_ReadBar(_Symbol, strategy_signal_tf, 0, current_bar) ||
-      QM_BrokerToUTC(current_bar.time) != g_pending_entry_utc)
+      QM_BrokerToUTC(current_bar.time) != candidate_utc)
+     {
+      Strategy_LogEntryRejected("ENTRY_BAR_MISMATCH", candidate_utc);
       return false;
+     }
    datetime open_time = 0;
    if(Strategy_FindOurPosition(open_time))
+     {
+      Strategy_LogEntryRejected("POSITION_ALREADY_OPEN", candidate_utc);
       return false;
+     }
    if(Strategy_WideSpread())
+     {
+      Strategy_LogEntryRejected("SPREAD_REJECTED", candidate_utc);
       return false;
+     }
 
    const bool is_long = (g_pending_side > 0);
    const double frozen_atr = g_pending_atr;
@@ -564,24 +590,33 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    MqlTick tick;
    if(!SymbolInfoTick(_Symbol, tick) || tick.ask <= 0.0 || tick.bid <= 0.0 || tick.ask < tick.bid)
+     {
+      Strategy_LogEntryRejected("MARKET_QUOTE_INVALID", candidate_utc);
       return false;
+     }
    const double entry_price = is_long ? tick.ask : tick.bid;
    const double stop_price = QM_StopRulesNormalizePrice(_Symbol,
                                                          is_long
                                                          ? entry_price - strategy_atr_stop_mult * frozen_atr
                                                          : entry_price + strategy_atr_stop_mult * frozen_atr);
-   if(stop_price <= 0.0 || (is_long && stop_price >= entry_price) ||
-      (!is_long && stop_price <= entry_price))
+    if(stop_price <= 0.0 || (is_long && stop_price >= entry_price) ||
+       (!is_long && stop_price <= entry_price))
+     {
+      Strategy_LogEntryRejected("STOP_GEOMETRY_INVALID", candidate_utc);
       return false;
+     }
    const double initial_risk = MathAbs(entry_price - stop_price);
    const double target_price = QM_StopRulesNormalizePrice(_Symbol,
                                                            is_long
                                                            ? entry_price + strategy_reward_r * initial_risk
                                                            : entry_price - strategy_reward_r * initial_risk);
-   if(target_price <= 0.0 || (is_long && target_price <= entry_price) ||
-      (!is_long && target_price >= entry_price) ||
-      !Strategy_TradeGeometryAndVolumeAllow(entry_price, stop_price, target_price))
+    if(target_price <= 0.0 || (is_long && target_price <= entry_price) ||
+       (!is_long && target_price >= entry_price) ||
+       !Strategy_TradeGeometryAndVolumeAllow(entry_price, stop_price, target_price))
+     {
+      Strategy_LogEntryRejected("TRADE_GEOMETRY_OR_VOLUME_REJECTED", candidate_utc);
       return false;
+     }
 
    req.type = is_long ? QM_BUY : QM_SELL;
    req.sl = stop_price;
@@ -590,7 +625,23 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const datetime entry_bar_utc = QM_BrokerToUTC(current_bar.time);
    g_active_timeout_broker = QM_UTCToBroker(entry_bar_utc + strategy_timeout_bars * 15 * 60);
    g_active_exit_broker = QM_UTCToBroker(g_state_exit_utc);
-   return (g_active_timeout_broker > 0 && g_active_exit_broker > 0);
+   if(g_active_timeout_broker <= 0 || g_active_exit_broker <= 0)
+     {
+      Strategy_LogEntryRejected("EXIT_CLOCK_INVALID", candidate_utc);
+      return false;
+     }
+   QM_LogEvent(QM_INFO,
+               "ENTRY_SIGNAL_FIRE",
+               StringFormat("{\"symbol\":\"%s\",\"side\":\"%s\",\"candidate_utc\":%I64d,\"entry\":%.8f,\"stop\":%.8f,\"target\":%.8f,\"timeout_broker\":%I64d,\"exit_broker\":%I64d}",
+                            QM_LoggerEscapeJson(_Symbol),
+                            is_long ? "BUY" : "SELL",
+                            (long)candidate_utc,
+                            entry_price,
+                            stop_price,
+                            target_price,
+                            (long)g_active_timeout_broker,
+                            (long)g_active_exit_broker));
+   return true;
   }
 
 // Called every tick when an open position exists for this EA's magic.

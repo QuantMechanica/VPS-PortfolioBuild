@@ -59,6 +59,20 @@ double g_box_low = 0.0;
 double g_box_size = 0.0;
 ulong  g_fill_checked_ticket = 0;
 
+void Strategy_LogEntryReject(const int date_key,
+                             const string detail,
+                             const string diagnostics = "")
+  {
+   QM_LogEvent(QM_WARN,
+               "ENTRY_REJECTED",
+               StringFormat("{\"result\":\"STRATEGY_HOOK_REJECTED\",\"symbol\":\"%s\",\"reason\":\"LONDON_BOX_027_OCO\",\"detail\":\"%s\",\"date_key\":%d,\"broker_now\":%I64d%s}",
+                            QM_LoggerEscapeJson(_Symbol),
+                            QM_LoggerEscapeJson(detail),
+                            date_key,
+                            (long)TimeCurrent(),
+                            diagnostics));
+  }
+
 // =============================================================================
 // Broker-clock helpers
 // =============================================================================
@@ -319,34 +333,32 @@ double Strategy_RoundPriceDown(const double price, const double tick_size)
 bool Strategy_TradeGeometryAllows(const double entry_price,
                                   const double stop_price,
                                   const double target_price,
-                                  double &risk_per_lot)
+                                  string &out_reject_detail)
   {
-   risk_per_lot = 0.0;
+   out_reject_detail = "";
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
-   const double tick_value_loss =
-      SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_VALUE_LOSS);
-   const double tick_value_profit =
-      SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_VALUE_PROFIT);
-   if(AccountInfoString(ACCOUNT_CURRENCY) != "USD" ||
-       point <= 0.0 || tick_size <= 0.0 ||
-       tick_value_loss <= 0.0 || tick_value_profit <= 0.0 ||
+   if(point <= 0.0 ||
        entry_price <= 0.0 || stop_price <= 0.0 || target_price <= 0.0)
+     {
+      out_reject_detail = "invalid_geometry_inputs";
       return false;
+     }
 
    const double stop_distance = MathAbs(entry_price - stop_price);
    const double target_distance = MathAbs(entry_price - target_price);
-   risk_per_lot = (stop_distance / tick_size) * tick_value_loss;
-   const double target_per_lot =
-      (target_distance / tick_size) * tick_value_profit;
-   if(stop_distance <= 0.0 || target_distance <= 0.0 ||
-       risk_per_lot <= 0.0 || target_per_lot <= 0.0)
+   if(stop_distance <= 0.0 || target_distance <= 0.0)
+     {
+      out_reject_detail = "non_positive_distance";
       return false;
+     }
 
    const long stop_level = SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
    if(stop_distance / point + 1.0e-8 < (double)stop_level ||
       target_distance / point + 1.0e-8 < (double)stop_level)
+     {
+      out_reject_detail = "broker_stop_level";
       return false;
+     }
    return true;
   }
 
@@ -358,47 +370,65 @@ bool Strategy_WideSpread()
    return (spread_points > strategy_max_spread_points);
   }
 
-bool Strategy_VolumeRepresentsFixedRisk(const double volume,
-                                        const double risk_per_lot)
+bool Strategy_VolumeAllows(const double volume,
+                           string &out_reject_detail)
   {
+   out_reject_detail = "";
    const double volume_min = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN);
    const double volume_max = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MAX);
    const double volume_step = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_STEP);
-   if(volume <= 0.0 || risk_per_lot <= 0.0 ||
-      volume_min <= 0.0 || volume_max <= 0.0 || volume_step <= 0.0 ||
-      volume < volume_min - 1.0e-8 || volume > volume_max + 1.0e-8)
+   if(volume <= 0.0)
+     {
+      out_reject_detail = "risk_sizing_unavailable";
       return false;
+     }
+   if(volume_min <= 0.0 || volume_max <= 0.0 || volume_step <= 0.0)
+     {
+      out_reject_detail = "invalid_volume_metadata";
+      return false;
+     }
+   if(volume < volume_min - 1.0e-8 || volume > volume_max + 1.0e-8)
+     {
+      out_reject_detail = "sized_volume_out_of_range";
+      return false;
+     }
 
    const double steps = volume / volume_step;
    if(MathAbs(steps - MathRound(steps)) > 1.0e-6)
+     {
+      out_reject_detail = "sized_volume_step_misaligned";
       return false;
-
-   const double represented_risk = volume * risk_per_lot;
-   const double one_step_risk = volume_step * risk_per_lot;
-   return (represented_risk <= RISK_FIXED + 1.0e-6 &&
-           RISK_FIXED - represented_risk <= one_step_risk + 1.0e-6);
+     }
+   return true;
   }
 
 bool Strategy_PlacementSideAllows(const double entry_price,
                                   const double stop_price,
                                   const double target_price,
+                                  const ENUM_ORDER_TYPE order_type,
                                   double &lots,
-                                  double &risk_per_lot)
+                                  string &out_reject_detail)
   {
    lots = 0.0;
+   out_reject_detail = "";
    if(!Strategy_TradeGeometryAllows(entry_price,
                                     stop_price,
                                     target_price,
-                                    risk_per_lot))
+                                    out_reject_detail))
       return false;
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    if(point <= 0.0)
+     {
+      out_reject_detail = "invalid_point";
       return false;
-   lots = QM_LotsForRisk(_Symbol,
-                         MathAbs(entry_price - stop_price) / point,
-                         QM_RISK_MODE_FIXED,
-                         RISK_FIXED);
-   return Strategy_VolumeRepresentsFixedRisk(lots, risk_per_lot);
+     }
+   lots = QM_LotsForRiskAtEntry(_Symbol,
+                                MathAbs(entry_price - stop_price) / point,
+                                order_type,
+                                entry_price,
+                                QM_RISK_MODE_FIXED,
+                                RISK_FIXED);
+   return Strategy_VolumeAllows(lots, out_reject_detail);
   }
 
 bool Strategy_OrderVolume(const ulong ticket, double &volume)
@@ -486,7 +516,13 @@ bool Strategy_PlaceOcoPair(const int date_key,
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(tick_size <= 0.0 || point <= 0.0 ||
       ask <= 0.0 || bid <= 0.0 || ask < bid)
+     {
+      Strategy_LogEntryReject(date_key,
+                              "invalid_market_metadata_or_quote",
+                              StringFormat(",\"tick_size\":%.8f,\"point\":%.8f,\"bid\":%.8f,\"ask\":%.8f",
+                                           tick_size, point, bid, ask));
       return false;
+     }
 
    const double buy_entry =
       Strategy_RoundPriceUp(box_high +
@@ -508,7 +544,20 @@ bool Strategy_PlaceOcoPair(const int date_key,
       buy_stop <= 0.0 || sell_stop <= 0.0 ||
       buy_stop >= buy_entry || buy_target <= buy_entry ||
       sell_stop <= sell_entry || sell_target >= sell_entry)
+     {
+      Strategy_LogEntryReject(date_key,
+                              "pending_geometry_invalid",
+                              StringFormat(",\"buy_entry\":%.8f,\"sell_entry\":%.8f,\"buy_stop\":%.8f,\"sell_stop\":%.8f,\"buy_target\":%.8f,\"sell_target\":%.8f,\"bid\":%.8f,\"ask\":%.8f",
+                                           buy_entry,
+                                           sell_entry,
+                                           buy_stop,
+                                           sell_stop,
+                                           buy_target,
+                                           sell_target,
+                                           bid,
+                                           ask));
       return false;
+     }
 
    const long stop_level = SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
    const long freeze_level = SymbolInfoInteger(_Symbol, SYMBOL_TRADE_FREEZE_LEVEL);
@@ -516,28 +565,57 @@ bool Strategy_PlaceOcoPair(const int date_key,
       (double)MathMax(stop_level, freeze_level) * point;
    if(buy_entry - ask + 1.0e-12 < market_clearance ||
       bid - sell_entry + 1.0e-12 < market_clearance)
+     {
+      Strategy_LogEntryReject(date_key,
+                              "pending_market_clearance",
+                              StringFormat(",\"buy_clearance\":%.8f,\"sell_clearance\":%.8f,\"required\":%.8f",
+                                           buy_entry - ask,
+                                           bid - sell_entry,
+                                           market_clearance));
       return false;
+     }
 
    double buy_lots = 0.0;
    double sell_lots = 0.0;
-   double buy_risk_per_lot = 0.0;
-   double sell_risk_per_lot = 0.0;
+   string side_reject = "";
    if(!Strategy_PlacementSideAllows(buy_entry,
                                     buy_stop,
                                     buy_target,
+                                    ORDER_TYPE_BUY,
                                     buy_lots,
-                                    buy_risk_per_lot) ||
-      !Strategy_PlacementSideAllows(sell_entry,
+                                    side_reject))
+     {
+      Strategy_LogEntryReject(date_key,
+                              "buy_side_" + side_reject,
+                              StringFormat(",\"entry\":%.8f,\"stop\":%.8f,\"target\":%.8f,\"lots\":%.8f",
+                                           buy_entry, buy_stop, buy_target, buy_lots));
+      return false;
+     }
+   side_reject = "";
+   if(!Strategy_PlacementSideAllows(sell_entry,
                                     sell_stop,
                                     sell_target,
+                                    ORDER_TYPE_SELL,
                                     sell_lots,
-                                    sell_risk_per_lot))
+                                    side_reject))
+     {
+      Strategy_LogEntryReject(date_key,
+                              "sell_side_" + side_reject,
+                              StringFormat(",\"entry\":%.8f,\"stop\":%.8f,\"target\":%.8f,\"lots\":%.8f",
+                                           sell_entry, sell_stop, sell_target, sell_lots));
       return false;
+     }
 
    const double volume_step = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_STEP);
    if(volume_step <= 0.0 ||
       MathAbs(buy_lots - sell_lots) > volume_step * 0.5 + 1.0e-8)
+     {
+      Strategy_LogEntryReject(date_key,
+                              "oco_requested_volume_mismatch",
+                              StringFormat(",\"buy_lots\":%.8f,\"sell_lots\":%.8f,\"volume_step\":%.8f",
+                                           buy_lots, sell_lots, volume_step));
       return false;
+     }
 
    const datetime now_utc = QM_BrokerToUTC(TimeCurrent());
    const datetime expiry_utc =
@@ -545,7 +623,15 @@ bool Strategy_PlaceOcoPair(const int date_key,
                                strategy_pending_expiry_hour_london);
    const int expiration_seconds = (int)(expiry_utc - now_utc);
    if(now_utc <= 0 || expiry_utc <= now_utc || expiration_seconds <= 0)
+     {
+      Strategy_LogEntryReject(date_key,
+                              "invalid_london_expiry",
+                              StringFormat(",\"now_utc\":%I64d,\"expiry_utc\":%I64d,\"expiration_seconds\":%d",
+                                           (long)now_utc,
+                                           (long)expiry_utc,
+                                           expiration_seconds));
       return false;
+     }
 
    QM_EntryRequest buy_req;
    ZeroMemory(buy_req);
@@ -570,11 +656,17 @@ bool Strategy_PlaceOcoPair(const int date_key,
    ulong buy_ticket = 0;
    ulong sell_ticket = 0;
    if(!QM_TM_OpenPosition(buy_req,
-                          buy_ticket,
-                          0,
-                          QM_RISK_MODE_FIXED,
-                          RISK_FIXED))
+                           buy_ticket,
+                           0,
+                           QM_RISK_MODE_FIXED,
+                           RISK_FIXED))
+     {
+      Strategy_LogEntryReject(date_key,
+                              "buy_pending_rejected",
+                              StringFormat(",\"entry\":%.8f,\"sl\":%.8f,\"tp\":%.8f,\"lots\":%.8f",
+                                           buy_entry, buy_stop, buy_target, buy_lots));
       return false;
+     }
    if(!QM_TM_OpenPosition(sell_req,
                           sell_ticket,
                           0,
@@ -582,22 +674,45 @@ bool Strategy_PlaceOcoPair(const int date_key,
                           RISK_FIXED))
      {
       QM_TM_RemovePendingOrder(buy_ticket, "oco_second_leg_rejected");
+      Strategy_LogEntryReject(date_key,
+                              "sell_pending_rejected",
+                              StringFormat(",\"buy_ticket\":%I64u,\"entry\":%.8f,\"sl\":%.8f,\"tp\":%.8f,\"lots\":%.8f",
+                                           buy_ticket,
+                                           sell_entry,
+                                           sell_stop,
+                                           sell_target,
+                                           sell_lots));
       return false;
      }
 
    double actual_buy_volume = 0.0;
    double actual_sell_volume = 0.0;
+   string actual_buy_reject = "";
+   string actual_sell_reject = "";
    if(!Strategy_OrderVolume(buy_ticket, actual_buy_volume) ||
       !Strategy_OrderVolume(sell_ticket, actual_sell_volume) ||
       MathAbs(actual_buy_volume - actual_sell_volume) >
+          volume_step * 0.5 + 1.0e-8 ||
+      MathAbs(actual_buy_volume - buy_lots) >
          volume_step * 0.5 + 1.0e-8 ||
-      !Strategy_VolumeRepresentsFixedRisk(actual_buy_volume,
-                                          buy_risk_per_lot) ||
-      !Strategy_VolumeRepresentsFixedRisk(actual_sell_volume,
-                                          sell_risk_per_lot))
+      MathAbs(actual_sell_volume - sell_lots) >
+         volume_step * 0.5 + 1.0e-8 ||
+      !Strategy_VolumeAllows(actual_buy_volume, actual_buy_reject) ||
+      !Strategy_VolumeAllows(actual_sell_volume, actual_sell_reject))
      {
       QM_TM_RemovePendingOrder(buy_ticket, "oco_volume_mismatch");
       QM_TM_RemovePendingOrder(sell_ticket, "oco_volume_mismatch");
+      Strategy_LogEntryReject(date_key,
+                              "oco_actual_volume_mismatch",
+                              StringFormat(",\"buy_ticket\":%I64u,\"sell_ticket\":%I64u,\"buy_expected\":%.8f,\"sell_expected\":%.8f,\"buy_actual\":%.8f,\"sell_actual\":%.8f,\"buy_detail\":\"%s\",\"sell_detail\":\"%s\"",
+                                           buy_ticket,
+                                           sell_ticket,
+                                           buy_lots,
+                                           sell_lots,
+                                           actual_buy_volume,
+                                           actual_sell_volume,
+                                           QM_LoggerEscapeJson(actual_buy_reject),
+                                           QM_LoggerEscapeJson(actual_sell_reject)));
       return false;
      }
 
@@ -605,6 +720,25 @@ bool Strategy_PlaceOcoPair(const int date_key,
    g_box_high = box_high;
    g_box_low = box_low;
    g_box_size = box_size;
+   // This EA intentionally returns false from Strategy_EntrySignal because it
+   // submits the two pending legs atomically here.  Signal evidence is valid
+   // only after both framework entry calls were accepted and their actual
+   // broker volumes were verified.
+   QM_LogEvent(QM_INFO,
+               "ENTRY_SIGNAL_FIRE",
+               StringFormat("{\"symbol\":\"%s\",\"side\":\"OCO\",\"date_key\":%d,\"buy_ticket\":%I64u,\"sell_ticket\":%I64u,\"buy_entry\":%.8f,\"sell_entry\":%.8f,\"buy_sl\":%.8f,\"sell_sl\":%.8f,\"buy_tp\":%.8f,\"sell_tp\":%.8f,\"lots\":%.8f,\"expiry_utc\":%I64d}",
+                            QM_LoggerEscapeJson(_Symbol),
+                            date_key,
+                            buy_ticket,
+                            sell_ticket,
+                            buy_entry,
+                            sell_entry,
+                            buy_stop,
+                            sell_stop,
+                            buy_target,
+                            sell_target,
+                            actual_buy_volume,
+                            (long)expiry_utc));
    return true;
   }
 
@@ -706,15 +840,16 @@ void Strategy_ManageOpenPosition()
          is_buy
          ? Strategy_RoundPriceUp(open_price + box_size, tick_size)
          : Strategy_RoundPriceDown(open_price - box_size, tick_size);
-      double risk_per_lot = 0.0;
+      string geometry_reject = "";
+      string volume_reject = "";
       if(open_price <= 0.0 || stop_price <= 0.0 || target_price <= 0.0 ||
          (is_buy && (open_price <= stop_price || target_price <= open_price)) ||
          (!is_buy && (open_price >= stop_price || target_price >= open_price)) ||
          !Strategy_TradeGeometryAllows(open_price,
                                        stop_price,
                                        target_price,
-                                       risk_per_lot) ||
-         !Strategy_VolumeRepresentsFixedRisk(volume, risk_per_lot))
+                                       geometry_reject) ||
+         !Strategy_VolumeAllows(volume, volume_reject))
         {
          QM_TM_ClosePosition(position_ticket, QM_EXIT_STRATEGY);
          return;
@@ -819,7 +954,11 @@ int OnInit()
 
    QM_LogEvent(QM_INFO,
                "INIT_OK",
-               "{\"card\":\"QM5_20045\",\"variant\":\"LONDON_BOX_027_BASELINE\"}");
+               StringFormat("{\"card\":\"QM5_20045\",\"routed\":%s,\"period\":%d,\"strategy_tf\":%d,\"variant\":\"%s\"}",
+                            Strategy_IsRoutedSymbol(_Symbol) ? "true" : "false",
+                            (int)_Period,
+                            (int)strategy_timeframe,
+                            QM_LoggerEscapeJson(strategy_variant_id)));
    return INIT_SUCCEEDED;
   }
 
