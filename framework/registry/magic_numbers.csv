@@ -15117,3 +15117,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11896,morris-rsi10-divergence-candle-confirm,8,USDCHF.DWX,118960008,2026-07-21,Development,active
 11896,morris-rsi10-divergence-candle-confirm,9,USDJPY.DWX,118960009,2026-07-21,Development,active
 20029,wti-monfri-daily,0,XTIUSD.DWX,200290000,2026-07-21,Development,active
+20030,eia-cad,0,USDCAD.DWX,200300000,2026-07-22,Development,active
+20030,eia-cad,1,XTIUSD.DWX,200300001,2026-07-22,Development,active
