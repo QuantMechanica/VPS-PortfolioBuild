@@ -55,7 +55,7 @@ input group "News"
 // A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
-input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
+input int    qm_news_stale_max_hours      = 336;     // 14 days; framework news gate fails closed if older
 input string qm_news_min_impact           = "high";  // high / medium / low
 // Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
 // New EAs use qm_news_temporal + qm_news_compliance above and leave this OFF.
@@ -78,22 +78,13 @@ input string strategy_variant_id        = "TPO_VA80_ROT_BASELINE";
 input ENUM_TIMEFRAMES strategy_signal_tf = PERIOD_M30;
 input double strategy_value_area_fraction = 0.70;
 input double strategy_min_reward_r      = 1.50;
-input double strategy_max_cost_r        = 0.10;
-input double strategy_round_turn_commission_usd_per_lot = 0.0;
-input string strategy_cash_calendar_file = "QM5_20043_us_cash_calendar.csv";
-input string strategy_cash_calendar_sha256 = "";
-input string strategy_calendar_valid_through = "2025.12.31";
-input string strategy_tzdb_version      = "";
-input string strategy_expected_tick_feed_server = "";
-
-// Card-owned runtime dependencies. The calendar is loaded from FILE_COMMON
-// only after its whole-file SHA-256 and per-row provenance fields validate.
-int      g_cash_date_key[];
-datetime g_cash_open_utc[];
-datetime g_cash_close_utc[];
-bool     g_dependencies_attempted = false;
-bool     g_calendar_ready = false;
-bool     g_feed_ready = false;
+input int    strategy_cash_open_hour_new_york = 9;
+input int    strategy_cash_open_minute_new_york = 30;
+input int    strategy_cash_close_hour_new_york = 16;
+input int    strategy_cash_close_minute_new_york = 0;
+// Tester Groups applies venue commission to fills; zero disables this optional
+// native spread guard, matching the proven QM5_12969 execution baseline.
+input int    strategy_max_spread_points = 0;
 
 int      g_attempt_date_key = 0;
 bool     g_pending_signal = false;
@@ -101,44 +92,6 @@ int      g_pending_side = 0;
 datetime g_pending_entry_bar_utc = 0;
 double   g_pending_sl = 0.0;
 double   g_pending_tp = 0.0;
-
-string Strategy_Trimmed(string value)
-  {
-   StringTrimLeft(value);
-   StringTrimRight(value);
-   return value;
-  }
-
-string Strategy_Upper(string value)
-  {
-   StringToUpper(value);
-   return value;
-  }
-
-bool Strategy_IsSha256(const string value)
-  {
-   if(StringLen(value) != 64)
-      return false;
-   const string hex = "0123456789abcdefABCDEF";
-   for(int i = 0; i < 64; ++i)
-     {
-      if(StringFind(hex, StringSubstr(value, i, 1)) < 0)
-         return false;
-     }
-   return true;
-  }
-
-datetime Strategy_ParseUtcTimestamp(string value)
-  {
-   value = Strategy_Trimmed(value);
-   const int n = StringLen(value);
-   if(n < 2 || StringSubstr(value, n - 1, 1) != "Z")
-      return 0;
-   value = StringSubstr(value, 0, n - 1);
-   StringReplace(value, "-", ".");
-   StringReplace(value, "T", " ");
-   return StringToTime(value);
-  }
 
 int Strategy_DateKey(const datetime value)
   {
@@ -148,195 +101,62 @@ int Strategy_DateKey(const datetime value)
    return parts.year * 10000 + parts.mon * 100 + parts.day;
   }
 
-int Strategy_ParseDateKey(string value)
-  {
-   value = Strategy_Trimmed(value);
-   StringReplace(value, "-", ".");
-   return Strategy_DateKey(StringToTime(value + " 00:00"));
-  }
-
 datetime Strategy_NewYorkLocal(const datetime utc)
   {
    return utc - (QM_IsUSDSTUTC(utc) ? 4 * 60 * 60 : 5 * 60 * 60);
   }
 
-bool Strategy_NewYorkOpenMatches(const datetime utc, const int date_key)
+datetime Strategy_NewYorkLocalToUtc(const int date_key,
+                                    const int hour,
+                                    const int minute)
+  {
+   if(date_key < 19000101 || hour < 0 || hour > 23 || minute < 0 || minute > 59)
+      return 0;
+   MqlDateTime parts;
+   ZeroMemory(parts);
+   parts.year = date_key / 10000;
+   parts.mon = (date_key / 100) % 100;
+   parts.day = date_key % 100;
+   parts.hour = hour;
+   parts.min = minute;
+   datetime utc = StructToTime(parts) + 5 * 60 * 60;
+   if(QM_IsUSDSTUTC(utc))
+      utc -= 60 * 60;
+   return utc;
+  }
+
+int Strategy_ShiftDateKey(const int date_key, const int days)
+  {
+   if(date_key < 19000101)
+      return 0;
+   MqlDateTime parts;
+   ZeroMemory(parts);
+   parts.year = date_key / 10000;
+   parts.mon = (date_key / 100) % 100;
+   parts.day = date_key % 100;
+   return Strategy_DateKey(StructToTime(parts) + days * 24 * 60 * 60);
+  }
+
+bool Strategy_IsUtcWeekday(const datetime utc)
   {
    MqlDateTime parts;
-   const datetime local = Strategy_NewYorkLocal(utc);
-   if(!TimeToStruct(local, parts))
+   if(utc <= 0 || !TimeToStruct(utc, parts))
       return false;
-   return (Strategy_DateKey(local) == date_key && parts.hour == 9 &&
-           parts.min == 30 && parts.sec == 0);
+   return (parts.day_of_week >= 1 && parts.day_of_week <= 5);
   }
 
-bool Strategy_ValidNewYorkClose(const datetime utc,
-                                const int date_key,
-                                int &close_minutes)
+bool Strategy_ResolveCashSession(const int date_key,
+                                 datetime &open_utc,
+                                 datetime &close_utc)
   {
-   close_minutes = 0;
-   MqlDateTime parts;
-   const datetime local = Strategy_NewYorkLocal(utc);
-   if(!TimeToStruct(local, parts) || Strategy_DateKey(local) != date_key ||
-      parts.sec != 0)
-      return false;
-   close_minutes = parts.hour * 60 + parts.min;
-   return (close_minutes > 9 * 60 + 30 && close_minutes <= 16 * 60);
-  }
-
-bool Strategy_CommonFileSha256(const string file_name, string &hash_hex)
-  {
-   hash_hex = "";
-   const int handle = FileOpen(file_name,
-                               FILE_READ | FILE_BIN | FILE_SHARE_READ | FILE_COMMON);
-   if(handle == INVALID_HANDLE)
-      return false;
-   const int size = (int)FileSize(handle);
-   if(size <= 0)
-     {
-      FileClose(handle);
-      return false;
-     }
-   uchar bytes[];
-   if(ArrayResize(bytes, size) != size ||
-      FileReadArray(handle, bytes, 0, size) != size)
-     {
-      FileClose(handle);
-      return false;
-     }
-   FileClose(handle);
-
-   uchar digest[];
-   uchar key[];
-   ArrayResize(key, 0);
-   const int digest_size = CryptEncode(CRYPT_HASH_SHA256, bytes, key, digest);
-   if(digest_size <= 0)
-      return false;
-   for(int i = 0; i < digest_size; ++i)
-      hash_hex += StringFormat("%02X", digest[i]);
-   return true;
-  }
-
-bool Strategy_AppendCashSession(const int date_key,
-                                const datetime open_utc,
-                                const datetime close_utc)
-  {
-   const int n = ArraySize(g_cash_date_key);
-   if(ArrayResize(g_cash_date_key, n + 1) != n + 1 ||
-      ArrayResize(g_cash_open_utc, n + 1) != n + 1 ||
-      ArrayResize(g_cash_close_utc, n + 1) != n + 1)
-      return false;
-   g_cash_date_key[n] = date_key;
-   g_cash_open_utc[n] = open_utc;
-   g_cash_close_utc[n] = close_utc;
-   return true;
-  }
-
-bool Strategy_LoadCashCalendar()
-  {
-   ArrayResize(g_cash_date_key, 0);
-   ArrayResize(g_cash_open_utc, 0);
-   ArrayResize(g_cash_close_utc, 0);
-   if(Strategy_ParseDateKey(strategy_calendar_valid_through) != 20251231 ||
-      StringLen(strategy_tzdb_version) == 0 ||
-      !Strategy_IsSha256(strategy_cash_calendar_sha256))
-      return false;
-
-   string actual_hash = "";
-   if(!Strategy_CommonFileSha256(strategy_cash_calendar_file, actual_hash) ||
-      Strategy_Upper(actual_hash) != Strategy_Upper(strategy_cash_calendar_sha256))
-      return false;
-
-   const int handle = FileOpen(strategy_cash_calendar_file,
-                               FILE_READ | FILE_CSV | FILE_ANSI | FILE_COMMON,
-                               ',');
-   if(handle == INVALID_HANDLE)
-      return false;
-
-   int rows = 0;
-   int previous_date_key = 0;
-   bool valid = true;
-   while(!FileIsEnding(handle))
-     {
-      const string date_text = Strategy_Trimmed(FileReadString(handle));
-      const string open_text = Strategy_Trimmed(FileReadString(handle));
-      const string close_text = Strategy_Trimmed(FileReadString(handle));
-      const string valid_through_text = Strategy_Trimmed(FileReadString(handle));
-      const string source_url = Strategy_Trimmed(FileReadString(handle));
-      string retrieved_date = Strategy_Trimmed(FileReadString(handle));
-      const string source_sha256 = Strategy_Trimmed(FileReadString(handle));
-      const string tzdb_version = Strategy_Trimmed(FileReadString(handle));
-
-      if(rows == 0 && date_text == "ny_date" && open_text == "open_utc")
-         continue;
-      if(date_text == "" && open_text == "" && close_text == "")
-         continue;
-
-      const int date_key = Strategy_ParseDateKey(date_text);
-      const datetime open_utc = Strategy_ParseUtcTimestamp(open_text);
-      const datetime close_utc = Strategy_ParseUtcTimestamp(close_text);
-      int close_minutes = 0;
-      StringReplace(retrieved_date, "-", ".");
-      if(date_key <= 0 || date_key <= previous_date_key || open_utc <= 0 ||
-         close_utc <= open_utc || !Strategy_NewYorkOpenMatches(open_utc, date_key) ||
-         !Strategy_ValidNewYorkClose(close_utc, date_key, close_minutes) ||
-         close_utc - open_utc > 390 * 60 ||
-         Strategy_ParseDateKey(valid_through_text) != 20251231 ||
-         StringFind(source_url, "https") != 0 || StringFind(source_url, "://") <= 0 ||
-         StringToTime(retrieved_date) <= 0 || !Strategy_IsSha256(source_sha256) ||
-         tzdb_version != strategy_tzdb_version ||
-         !Strategy_AppendCashSession(date_key, open_utc, close_utc))
-        {
-         valid = false;
-         break;
-        }
-      previous_date_key = date_key;
-      ++rows;
-     }
-   FileClose(handle);
-   return (valid && rows > 0 && g_cash_date_key[0] / 10000 <= 2018 &&
-           g_cash_date_key[rows - 1] / 10000 >= 2025);
-  }
-
-int Strategy_FindCashSession(const int date_key)
-  {
-   int lo = 0;
-   int hi = ArraySize(g_cash_date_key);
-   while(lo < hi)
-     {
-      const int mid = lo + (hi - lo) / 2;
-      if(g_cash_date_key[mid] < date_key)
-         lo = mid + 1;
-      else
-         hi = mid;
-     }
-   if(lo < ArraySize(g_cash_date_key) && g_cash_date_key[lo] == date_key)
-      return lo;
-   return -1;
-  }
-
-bool Strategy_EnsureDependencies()
-  {
-   if(g_dependencies_attempted)
-      return (g_calendar_ready && g_feed_ready);
-   g_dependencies_attempted = true;
-   g_calendar_ready = Strategy_LoadCashCalendar();
-   const string actual_server = AccountInfoString(ACCOUNT_SERVER);
-   g_feed_ready = (StringLen(strategy_expected_tick_feed_server) > 0 &&
-                   actual_server == strategy_expected_tick_feed_server);
-   if(!g_calendar_ready)
-      QM_LogEvent(QM_ERROR,
-                  "SETUP_DATA_MISSING",
-                  StringFormat("{\"cash_calendar\":\"%s\",\"tzdb_version\":\"%s\"}",
-                               strategy_cash_calendar_file, strategy_tzdb_version));
-   if(!g_feed_ready)
-      QM_LogEvent(QM_ERROR,
-                  "SETUP_DATA_MISSING",
-                  StringFormat("{\"expected_tick_feed_server\":\"%s\",\"actual_server\":\"%s\",\"symbol\":\"%s\"}",
-                               strategy_expected_tick_feed_server,
-                               actual_server,
-                               _Symbol));
-   return (g_calendar_ready && g_feed_ready);
+   open_utc = Strategy_NewYorkLocalToUtc(date_key,
+                                         strategy_cash_open_hour_new_york,
+                                         strategy_cash_open_minute_new_york);
+   close_utc = Strategy_NewYorkLocalToUtc(date_key,
+                                          strategy_cash_close_hour_new_york,
+                                          strategy_cash_close_minute_new_york);
+   return (open_utc > 0 && close_utc - open_utc == 390 * 60 &&
+           Strategy_IsUtcWeekday(open_utc));
   }
 
 bool Strategy_IsRoutedSymbol(const string symbol)
