@@ -14,7 +14,7 @@ source_citations:
     location: "Abstract and trading-implication discussion; DOI 10.1016/j.eneco.2022.105817"
     quality_tier: A
     role: primary
-strategy_type_flags: [calendar-seasonality, conditional-reversal, low-frequency, atr-hard-stop, time-stop]
+strategy_type_flags: [session-close-seasonality, n-period-min-reversion, atr-hard-stop, time-stop, long-only]
 markets: [commodities, energy, crude_oil]
 timeframes: [D1]
 target_symbols: [XTIUSD.DWX]
