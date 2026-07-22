@@ -1,65 +1,56 @@
-<!--
-QuantMechanica V5 — EA Spec Document
-Required by Q01 Build & Spec gate (Vault: `03 Pipeline/Q01 Build & Spec.md`)
-Validator: `framework/scripts/validate_spec_doc.py`
+# QM5_20043_tpo-va80-rot — Strategy Spec
 
-Copy this file to:
-  framework/EAs/QM5_<NNNN>_<slug>/SPEC.md
-
-Replace every <ANGLE_BRACKETED_PLACEHOLDER>. Validator rejects placeholders.
-All seven sections below are MANDATORY for Q01 PASS.
--->
-
-# QM5_<NNNN>_<slug> — Strategy Spec
-
-**EA ID:** QM5_<NNNN>
-**Slug:** `<slug>`
-**Source:** `<source_id>` (see `strategy-seeds/sources/<source_id>/`)
+**EA ID:** QM5_20043
+**Slug:** `tpo-va80-rot`
+**Source:** `FTMO-MARKETPROFILE-80-2026`
 **Author of this spec:** Codex
-**Last revised:** <YYYY-MM-DD>
+**Last revised:** 2026-07-22
 
 ---
 
 ## 1. Strategy Logic
 
-Plain prose, no jargon. Describe the signal the EA trades. Include the formula
-or rule that decides entry and exit.
-
-> Example: "Long when 21-EMA(close) crosses above 55-EMA(close) on the close
-> of a D1 bar AND ADX(14) > 25. Exit when 21-EMA crosses below 55-EMA, or at
-> 2× ATR(14) trailing stop, or on Friday close."
-
-<DESCRIBE THE STRATEGY LOGIC HERE>
+At the 10:30 New York M30 open, the EA trades only when the 09:30 opening print
+was strictly outside the prior complete US cash session's 70% TPO value area and
+both completed first-hour bars closed back inside it. It buys a below-value
+re-entry or sells an above-value re-entry, places an immutable stop one minimum
+tick beyond the first-hour extreme, and targets the opposite value-area edge.
+The trade is skipped unless the target offers at least 1.5 times the stop
+distance and governed costs are at most 0.10R; any survivor is closed at the
+first tradable quote at or after 16:00 New York time.
 
 ---
 
 ## 2. Parameters
 
-Table of every input parameter, its default, range, and meaning.
-
 | Parameter | Default | Range | Meaning |
-|---|---|---|---|
-| `<param_1>` | <value> | <lo>-<hi> | <one-line description> |
-| `<param_2>` | <value> | <lo>-<hi> | <one-line description> |
-
-> Note: framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
-> qm_news_mode, qm_rng_seed, qm_stress_reject_probability, qm_friday_close_*)
-> are documented in `framework/V5_FRAMEWORK_DESIGN.md` — do NOT re-document
-> them here. Only list strategy-specific inputs.
+|---|---:|---|---|
+| `strategy_variant_id` | `TPO_VA80_ROT_BASELINE` | fixed | Frozen card variant identity. |
+| `strategy_signal_tf` | `PERIOD_M30` | fixed | Builds the profile and acceptance sequence from M30 bars. |
+| `strategy_value_area_fraction` | `0.70` | fixed | Required fraction of prior-session TPO counts in value. |
+| `strategy_min_reward_r` | `1.50` | fixed | Minimum target distance divided by stop distance; equality qualifies. |
+| `strategy_max_cost_r` | `0.10` | fixed | Maximum governed round-turn commission plus current spread as a fraction of initial risk. |
+| `strategy_round_turn_commission_usd_per_lot` | `0.0` | governed positive value | Per-symbol round-turn commission; zero fails closed because no value was supplied. |
+| `strategy_cash_calendar_file` | `QM5_20043_us_cash_calendar.csv` | governed FILE_COMMON artifact | Provenance-locked US cash-session calendar. |
+| `strategy_cash_calendar_sha256` | empty | exact 64-hex digest | Whole-file calendar identity; empty fails closed. |
+| `strategy_calendar_valid_through` | `2025.12.31` | fixed | Required calendar coverage boundary from the card. |
+| `strategy_tzdb_version` | empty | governed non-empty identity | Pinned IANA timezone database version; empty fails closed. |
+| `strategy_expected_tick_feed_server` | empty | governed exact server identity | Binds synchronized real ticks to the approved feed; empty fails closed. |
 
 ---
 
 ## 3. Symbol Universe
 
-Which `.DWX` symbols this EA is designed for. Be explicit about both inclusions
-and exclusions.
-
 **Designed for:**
-- `<SYMBOL_1.DWX>` — <why this fits>
-- `<SYMBOL_2.DWX>` — <why this fits>
+
+- `NDX.DWX` — liquid US cash-index proxy named by the approved card.
+- `WS30.DWX` — portable US cash-index proxy named by the approved card.
+- `SP500.DWX` — canonical S&P 500 custom symbol named by the card; build and backtest only under the stated handoff boundary.
 
 **Explicitly NOT for:**
-- `<SYMBOL.DWX>` — <why this does not fit>
+
+- `SPX500.DWX`, `SPY.DWX`, and `ES.DWX` — unavailable aliases; only `SP500.DWX` is canonical.
+- Non-US-session symbols — the edge is defined by the governed New York regular trading session.
 
 ---
 
@@ -67,23 +58,21 @@ and exclusions.
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | `<M5 / M15 / H1 / H4 / D1>` |
-| Multi-timeframe refs | `<list any cross-TF reads>` or `none` |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Base timeframe | `M30` |
+| Multi-timeframe refs | none |
+| Bar gating | Single `QM_IsNewBar()` consumption in the skeleton; the closed-bar state is advanced once before the entry-only news gate. |
 
 ---
 
 ## 5. Expected Behaviour
 
-How this EA should behave in production. Calibrates downstream gate expectations.
-
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `<approx number>` |
-| Typical hold time | `<minutes / hours / days>` |
-| Expected drawdown profile | `<one line>` |
-| Regime preference | `<trend / mean-revert / volatility-expansion / breakout / news-driven>` |
-| Win rate target (qualitative) | `<low/medium/high>` |
+| Trades / year / symbol | 45 authoring-prior trades; unverified until DEV |
+| Typical hold time | Intraday, from 10:30 ET entry to target/stop or no later than 16:00 ET (maximum about 5.5 hours) |
+| Expected drawdown profile | Card prior 15%; correlated US-index instances form one auction-value risk family |
+| Regime preference | Mean reversion after an outside-value cash open accepts back into prior-session value |
+| Win rate target (qualitative) | Not specified; the source's “80%” label is explicitly not a probability prior |
 
 ---
 
@@ -91,10 +80,10 @@ How this EA should behave in production. Calibrates downstream gate expectations
 
 This card was mechanised from:
 
-**Source ID:** `<source_id>`
-**Source type:** `<paper / book / forum / video / OWNER / AI>`
-**Pointer:** `<URL or local path or strategy-seeds/sources/<source_id>/>`
-**R1–R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_<NNNN>_<slug>.md`
+**Source ID:** `FTMO-MARKETPROFILE-80-2026`
+**Source type:** web blog, quality tier D
+**Pointer:** `https://ftmo.com/en/blog/market-profile-master-the-80-trading-strategy-hidden-magnets/`
+**R1–R4 verdict (Q00):** all PASS per `artifacts/cards_approved/QM5_20043_tpo-va80-rot.md`
 
 ---
 
@@ -114,7 +103,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | <YYYY-MM-DD> | Initial build from card | <build commit hash> |
-
-> When this EA cycles back to Q01 from a Q02 zero-trade event, add a row:
-> `| v2 | YYYY-MM-DD | Q02 all-symbol zero-trades; widened entry filter X | <commit> |`
+| v1 | 2026-07-22 | Initial build from card | d30d49fe-b535-4b03-972f-030b78d36e7a |

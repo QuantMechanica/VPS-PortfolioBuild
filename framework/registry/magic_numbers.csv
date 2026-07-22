@@ -15143,3 +15143,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20041,postclose-cont,0,GDAXI.DWX,200410000,2026-07-22,Development,active
 20041,postclose-cont,1,UK100.DWX,200410001,2026-07-22,Development,active
 20046,wti-halloween-ls,0,XTIUSD.DWX,200460000,2026-07-22,Development,active
+20043,tpo-va80-rot,0,NDX.DWX,200430000,2026-07-22,Development,active
+20043,tpo-va80-rot,1,WS30.DWX,200430001,2026-07-22,Development,active
+20043,tpo-va80-rot,2,SP500.DWX,200430002,2026-07-22,Development,active
