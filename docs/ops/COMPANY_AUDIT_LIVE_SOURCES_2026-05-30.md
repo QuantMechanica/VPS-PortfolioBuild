@@ -11,7 +11,7 @@ signals.
 - Factory MT5 terminals: `D:\QM\mt5\T1` through `D:\QM\mt5\T10`.
 - Live trading terminal: `C:\QM\mt5\T_Live`.
 - `T_Live` is the former live T6 and is not part of the factory backtest pool.
-- Factory phase names are `Q00` through `Q14`. Old `P*` keys may remain in generated
+- Factory phase names are `Q00` through `Q13`. Old `P*` keys may remain in generated
   compatibility files and should not be reported as canonical phase names.
 
 ## Audit Source Order

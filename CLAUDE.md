@@ -67,7 +67,7 @@ Work flows through a deterministic capability router, not a fixed role hierarchy
 `agent_tasks` is a state machine: `BACKLOG → TODO → IN_PROGRESS → REVIEW → APPROVED →
 PIPELINE → PASSED` (with `FAILED / RECYCLE / OPS_FIX_REQUIRED / BLOCKED` branches).
 `APPROVED` means "formally clean enough for the next deterministic process" — the
-pipeline (Q02–Q14) remains the real judge of an EA.
+pipeline (Q02–Q13) remains the real judge of an EA.
 
 Agents and their capabilities:
 
@@ -97,7 +97,7 @@ python tools/strategy_farm/agent_router.py close-review <id> --state APPROVED|BL
 ```
 
 `farmctl.py` drives the factory (`mt5-slots`, `work-items`, `pipeline`, `health`).
-Dashboards: `tools/strategy_farm/dashboards/render_dashboards.py` (current.html,
+Dashboards: `tools/strategy_farm/dashboards/render_dashboards.py` (
 strategies.html, EA detail pages) and `tools/strategy_farm/render_cockpit.py`
 (cockpit.html).
 
