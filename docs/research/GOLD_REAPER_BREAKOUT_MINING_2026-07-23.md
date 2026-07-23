@@ -60,6 +60,30 @@ reviews (idea/rules are not copyrightable). **No decompiled/pirated source was c
 math and the 9 sub-strategy internals remain proprietary/undisclosed. Vendor **tuned constants**
 (NFP 100/60, filter enum, tier buckets) are treated as marketing artifacts, **not** ported into a build.
 
+### 2a. Primary-source confirmation — his own words (Darwinex "Market Masters" interview `Q4LJyCn9_kA`, transcript fetched)
+
+The interview transcript **confirms and sharpens** the adversarial verdict — the author himself undercuts
+the marketing:
+- **He calls it a commodity strategy.** On the S/R breakout: *"it's actually a very old strategy … used by
+  many Traders … effective on many markets."* By his own account there is **no proprietary/unique edge** —
+  it is a widely-used breakout (vindicates the structural-cause lens directly from the source).
+- **The "9 strategies" are ONE level with varied exit management.** He places *"multiple pending orders at
+  the resistance level, each one … a different … stop loss management, take profit management."* So the
+  ensemble is literally one S/R zone with several exit parameterizations — exactly the "one over-parameterized
+  breakout" the overfit lens predicted, from the author's mouth.
+- **Anticipatory entry AT the zone, not a confirmed break.** He uses **zones, not lines**, and places pendings
+  *at* the level (not above it): *"I used to do above … but last year I found by doing"* entries at the level
+  works better. His real entry is anticipatory bracket-orders around a dynamic S/R zone with fast break-even
+  management — not the "momentum-confirmed break" the reviews imply.
+- **He ABANDONED the volatility-breakout.** His origin "dream EA" was a volatility breakout (*"if price moves
+  fast … price will move forward in that direction"*) but he says *"I don't use this kind of strategy at the
+  moment."* So the vol dimension is **not even in his shipped product** — our proposed vol-regime gate is a
+  QM addition, not a recovery of his method.
+- **Correction to an earlier agent claim:** there is **no "post-NY night mean-reversion scalping book."** The
+  transcript's only relevant remark is that one of his DXZ strategies *"was a scalper wasn't running so well
+  anymore"* — a passing mention of an underperforming scalper, not a mechanizable mean-reversion system.
+  (No "mean reversion", "reversion", or "fade" appears anywhere in the transcript.)
+
 ## 3. Why cloning fails — the four adversarial lenses converge
 
 1. **Structural cause — NONE as shipped.** Static horizontal S/R breakout is textbook chart lore with
@@ -135,9 +159,9 @@ duplicates that each re-discover the same base rate.
 
 ## 6. Gap-list — what agy / Codex / transcripts add next
 
-- **Primary source (fetching):** Darwinex "Market Masters" interview `Q4LJyCn9_kA` transcript (via
-  `fetch_transcript.py`) — his own words on the manual S/R method + his separate **post-NY night
-  mean-reversion "scalping" book** (NOT in the EA; a potentially distinct idea worth its own scan).
+- **Primary source (DONE):** Darwinex "Market Masters" interview `Q4LJyCn9_kA` transcript fetched and
+  folded in (see §2a). No further "night mean-reversion book" exists — that earlier agent claim was an
+  overstatement of a one-line "underperforming scalper" remark.
 - **agy (server-side, bypasses Cloudflare — lower priority given the decisive verdict):** MQL5 product
   comment threads (111357/111467), the ForexFactory reverse-engineer thread (403'd to WebFetch), and
   forexrobotlab's review — for any user-*deduced* S/R lookback / breakout-offset. No pirated source.
