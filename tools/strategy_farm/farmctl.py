@@ -6380,7 +6380,7 @@ def _prepare_codex_review_fail_reworks(root: Path, limit: int = 1) -> list[dict[
                 attempt = max(1, current_attempt)
             else:
                 attempt = current_attempt + 1
-            if attempt > 2:
+            if attempt > 10:  # rework cap 2->10 (OWNER 2026-07-23): give reworks more chances to converge
                 payload["final_failure"] = payload.get("final_failure") or "codex_review_rework_exhausted"
                 payload["last_blocked_reason"] = "codex_review_fail"
                 conn.execute(
