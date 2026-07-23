@@ -3,8 +3,8 @@
 **EA ID:** QM5_10359
 **Slug:** et-gap-fade
 **Source:** d6ae8bae-7b94-5209-9be7-fb72a1c3e3fe (see approved strategy card)
-**Author of this spec:** Codex
-**Last revised:** 2026-06-05
+**Author of this spec:** Codex / Claude
+**Last revised:** 2026-07-23
 
 ---
 
@@ -39,7 +39,7 @@ This EA trades an opening-gap fade on M5 index bars. On the first completed prim
 - GDAXI.DWX - Matrix-valid DAX custom symbol used as the available port for the card's GDAXI.DWX basket item.
 
 **Explicitly NOT for:**
-- GDAXI.DWX - Card-stated DAX name is not present in `dwx_symbol_matrix.csv`; GDAXI.DWX is registered instead.
+- GER40.DWX - Card-stated DAX name is not present in `dwx_symbol_matrix.csv`; GDAXI.DWX is registered instead.
 - SPX500.DWX, SPY.DWX, ES.DWX - Not canonical DWX symbols for this platform.
 
 ---
@@ -58,11 +58,11 @@ This EA trades an opening-gap fade on M5 index bars. On the first completed prim
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | 45 |
+| Trades / year / symbol | 6 (card frontmatter `expected_trades_per_year_per_symbol`; the prior-day H/L containment gate is stricter than the source's plain 0.6%-gap count, so qualifying days are rare - see card `expected_trade_frequency`) |
 | Typical hold time | Up to 15 M5 bars after entry. |
 | Expected drawdown profile | Mean-reversion losses cluster on trend-day continuation after large gaps. |
 | Regime preference | Mean-revert / opening-gap fade. |
-| Win rate target (qualitative) | Medium-high; source claim was 62.04% profitable. |
+| Win rate target (qualitative) | Medium-high; source claim was 62.04% profitable (source's own backtest lacked the prior-day H/L gate this V5 build enforces). |
 
 ---
 
@@ -94,3 +94,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-05 | Initial build from card | 8f2cd142-8faa-4228-89ab-b384696b6640 |
+| v2 | 2026-07-23 | Rebuild-in-place: resolved build_check EA_FRAMEWORK_RAW_SERIES_CALL by tagging the D1/M5 OHLC reads `// perf-allowed` (bespoke gap-fade structure); corrected § 5 trades/year/symbol from a stray 45 to the card frontmatter's authoritative 6; fixed § 3 NOT-for row (GER40.DWX, not GDAXI.DWX) | 8f2cd142-8faa-4228-89ab-b384696b6640 |
