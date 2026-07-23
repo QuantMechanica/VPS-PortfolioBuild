@@ -24,6 +24,8 @@ period: H1
 expected_trade_frequency: "One Friday-close to Monday-open copper position per eligible week; approximately 48 attempts/year before framework filters."
 expected_trades_per_year_per_symbol: 48
 pipeline_phase: G0
+build_blocked: true
+build_blocked_reason: "XCUUSD.DWX is absent from dwx_symbol_matrix.csv and documented unavailable on T1; build contract forbids registration outside the matrix."
 expected_pf: 1.05
 expected_dd_pct: 15.0
 g0_approval_reasoning: "R1 PASS one OWNER-approved peer-reviewed source; R2/R3/R4 PASS; non-duplicate XCU weekend calendar sleeve."
@@ -150,4 +152,5 @@ later PF/DD/correlation gates.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-07-23 | initial structural copper weekend-premium extraction | G0 | DRAFT |
+| v1 | 2026-07-23 | build pre-flight: XCUUSD.DWX absent from canonical matrix and unavailable on T1 | G0 | BLOCKED_INFRA |
 | v2 | 2026-07-23 | strict build PASS; Q02 stopped before insertion at active fleet CPU ceiling | Q01 | PASS / Q02 NOT_ENQUEUED_CPU_CEILING |
