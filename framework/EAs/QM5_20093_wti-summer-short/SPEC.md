@@ -1,90 +1,103 @@
-# QM5_20015_wti-halloween-winter - Strategy Spec
+# QM5_20093_wti-summer-short — Strategy Spec
 
-**EA ID:** QM5_20015
-**Slug:** `wti-halloween-winter`
-**Source:** `BURAKOV-WTI-HALLOWEEN-2018` (see `strategy-seeds/sources/BURAKOV-WTI-HALLOWEEN-2018/`)
-**Author of this spec:** Codex
-**Last revised:** 2026-07-20
+**EA ID:** QM5_20093
+**Slug:** `wti-summer-short`
+**Source:** `unknown` (see `strategy-seeds/sources/unknown/`)
+**Author of this spec:** auto-generated ex-post by gen_spec_md.py
+**Last revised:** 2026-07-24
+
+---
 
 ## 1. Strategy Logic
 
-The EA carries WTI long exposure during the source's November-May winter
-interval and remains flat from June through October. It packages that exposure
-as seven non-overlapping monthly trades: close the prior package at each
-broker-month boundary, reopen long in November-May, and never re-enter after a
-stop within the same month. Every entry uses a frozen D1 ATR hard stop.
+Mechanical strategy implemented per the approved card
+`artifacts/cards_approved/QM5_20093_wti-summer-short.md`. See that card's body for
+the full entry/exit/stop/sizing rules; this SPEC summarises the
+implementation surface.
+
+Entry/exit logic is encoded in the five `Strategy_*` hooks in
+`QM5_20093_wti-summer-short.mq5`. Framework wiring (risk, magic, news, Friday close)
+is inherited from `QM_Common.mqh` and is not redocumented here.
+
+---
 
 ## 2. Parameters
 
-| Parameter | Default | Authorized value | Meaning |
-|---|---:|---:|---|
-| `strategy_first_long_month` | 11 | 11 | First winter-exposure broker month |
-| `strategy_last_long_month` | 5 | 5 | Last winter-exposure broker month |
-| `strategy_atr_period` | 20 | 20 | Completed D1 ATR hard-stop period |
-| `strategy_atr_sl_mult` | 4.0 | 4.0 | Frozen ATR stop multiple |
-| `strategy_max_hold_days` | 35 | 35 | Stale guard around monthly renewal |
-| `strategy_max_spread_points` | 1500 | 1500 | WTI entry spread cap |
+| Parameter | Default | Range | Meaning |
+|---|---|---|---|
+| `strategy_first_short_month` | 6 | (see source) | (see strategy logic) |
+| `strategy_last_short_month` | 10 | (see source) | (see strategy logic) |
+| `strategy_atr_period` | 20 | (see source) | (see strategy logic) |
+| `strategy_atr_sl_mult` | 4.0 | (see source) | (see strategy logic) |
+| `strategy_max_hold_days` | 35 | (see source) | (see strategy logic) |
+| `strategy_max_spread_points` | 1500 | (see source) | (see strategy logic) |
 
-All strategy parameters are locked for Q02. A different seasonal boundary,
-continuous annual hold, summer short or price filter requires a new card.
+> Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
+> qm_news_mode, qm_rng_seed, qm_stress_reject_probability,
+> qm_friday_close_*) are documented in
+> `framework/V5_FRAMEWORK_DESIGN.md` — not re-listed here.
+
+---
 
 ## 3. Symbol Universe
 
 **Designed for:**
+- `XTIUSD.DWX` — registered in magic_numbers.csv for this EA
 
-- `XTIUSD.DWX` (slot 0) - registered Darwinex WTI CFD proxy named by the
-  OWNER commodity-sleeve mission and supported by the local D1 tester route.
+**Explicitly NOT for:** any symbol not in the list above (no implicit
+universe expansion at runtime; the `QM_SymbolGuard` framework helper
+rejects foreign symbols).
 
-**Explicitly not for:**
-
-- `XNGUSD.DWX` - the source's U.S. natural-gas row reports the reverse effect
-  and the current book already contains separate XNG logic.
-- Gold, silver, indices and FX - outside this West Texas source extraction.
+---
 
 ## 4. Timeframe
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | D1 |
-| Multi-timeframe refs | none; broker-month keys plus completed D1 ATR only |
-| Bar gating | one framework `QM_IsNewBar()` consume on the D1 host |
+| Base timeframe | `D1` |
+| Multi-timeframe refs | see `Strategy_*` hooks in the .mq5 |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
 
-The EA does not require MN1 bars or any external seasonal calendar.
+---
 
 ## 5. Expected Behaviour
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | 7 as a deterministic calendar prior; Q02 must verify at least 5 |
-| Typical hold time | one broker month, capped at 35 calendar days |
-| Expected drawdown profile | high WTI gap/financing/basis risk bounded by fixed dollar risk and a broker stop |
-| Regime preference | positive WTI November-May seasonal carry |
+| Trades / year / symbol | unspecified |
+| Cadence note | see card body |
+| Typical hold time | see card body |
+| Expected drawdown profile | bounded by RISK_FIXED + FTMO 10% total DD ceiling |
+| Regime preference | per card thesis |
+| Win rate target (qualitative) | medium |
+
+---
 
 ## 6. Source Citation
 
-**Source ID:** `BURAKOV-WTI-HALLOWEEN-2018`
-**Source type:** peer-reviewed open-full-text paper (tier B)
-**Pointer:** `strategy-seeds/sources/BURAKOV-WTI-HALLOWEEN-2018/source.md`
-**R1-R4 verdict (G0):** all PASS; see the approved card.
+This card was mechanised from:
 
-Burakov, D., Freidin, M. and Solovyev, Y. (2018), "The Halloween
-Effect on Energy Markets: An Empirical Study," *International Journal of
-Energy Economics and Policy* 8(2), 121-126.
+**Source ID:** `unknown`
+**Pointer:** `strategy-seeds/sources/unknown/`
+**R1–R4 verdict (Q00):** all PASS — see
+`artifacts/cards_approved/QM5_20093_wti-summer-short.md`
+
+---
 
 ## 7. Risk Model
 
 | Phase | Risk mode | Value |
-|---|---|---:|
-| Backtest (Q02-Q10) | `RISK_FIXED` | $1,000 per trade (HR4) |
-| Live burn-in (Q13) | `RISK_PERCENT` | Min-lot equivalent under an OWNER manifest |
-| Full live (post-Q13 PASS) | `RISK_PERCENT` | Allocated by the later portfolio process |
+|---|---|---|
+| Backtest (Q02 – Q10) | RISK_FIXED | $1,000 per trade (HR4) |
+| Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
+| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
 
-ENV-to-mode validation is enforced by `QM_FrameworkInit`. This build creates
-no live setfile and does not touch T_Live, AutoTrading, deploy/T_Live
-manifests, portfolio admission or the portfolio gate.
+ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+
+---
 
 ## Revision History
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-07-20 | Initial source-backed WTI winter-season build | task `5f18eea1-3d7e-4787-ba31-b823373c7569` |
+| v1 | 2026-07-24 | Initial spec (ex-post, generated by gen_spec_md.py) | post-PT15 remediation |
