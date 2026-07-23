@@ -1,0 +1,45 @@
+{
+  "issue": "QUA-646",
+  "checked_at_utc": "2026-05-08T06:28:57.6225949Z",
+  "workspace": "C:\\QM\\worktrees\\devops",
+  "checks": {
+    "magic_numbers_1003_1004": null,
+    "ea_id_registry_present": false,
+    "ea_id_registry_path": "C:\\QM\\worktrees\\devops\\framework\\registry\\ea_id_registry.csv",
+    "ex5_t1_t5": [
+      {
+        "terminal": "T1",
+        "qm5_1003_ex5": false,
+        "qm5_1004_ex5": false,
+        "path": "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM"
+      },
+      {
+        "terminal": "T2",
+        "qm5_1003_ex5": false,
+        "qm5_1004_ex5": false,
+        "path": "D:\\QM\\mt5\\T2\\MQL5\\Experts\\QM"
+      },
+      {
+        "terminal": "T3",
+        "qm5_1003_ex5": false,
+        "qm5_1004_ex5": false,
+        "path": "D:\\QM\\mt5\\T3\\MQL5\\Experts\\QM"
+      },
+      {
+        "terminal": "T4",
+        "qm5_1003_ex5": false,
+        "qm5_1004_ex5": false,
+        "path": "D:\\QM\\mt5\\T4\\MQL5\\Experts\\QM"
+      },
+      {
+        "terminal": "T5",
+        "qm5_1003_ex5": false,
+        "qm5_1004_ex5": false,
+        "path": "D:\\QM\\mt5\\T5\\MQL5\\Experts\\QM"
+      }
+    ]
+  },
+  "verdict": "blocked",
+  "unblock_owner": "Pipeline-Operator / CTO",
+  "unblock_action": "Compile and publish QM5_1003.ex5 + QM5_1004.ex5 to T1-T5 and ensure registry rows for 1003/1004 are active in canonical framework repo/worktree used for dispatch."
+}

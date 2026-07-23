@@ -1,0 +1,28 @@
+﻿{
+    "issue_id":  "QUA-774",
+    "checked_at_utc":  "2026-05-08T08:25:17.4743104Z",
+    "signal_fingerprint":  {
+                               "signal_path":  "docs\\ops\\QUA-774_EXTERNAL_UNBLOCK_SIGNAL.json",
+                               "signal_exists":  true,
+                               "signal_sha256":  "9D1066AE769AF811E3D3ABBFF099340AAE233A8841B0C5D59D96B649C8240326",
+                               "signal_last_write_utc":  "2026-05-08T07:30:14.6562720Z"
+                           },
+    "last_package_check":  {
+                               "status":  "ok",
+                               "issue_id":  "QUA-774",
+                               "signal_ready_to_resume":  false,
+                               "child_payload":  "docs\\ops\\QUA-774_EXTERNAL_UNBLOCK_CHILD_PAYLOAD_2026-05-08.json",
+                               "escalation_note":  "docs\\ops\\QUA-774_EXTERNAL_UNBLOCK_ESCALATION_2026-05-08.md"
+                           },
+    "last_signal_check":  {
+                              "issue_id":  "QUA-774",
+                              "status":  "waiting_external_signal",
+                              "signal_path":  "docs\\ops\\QUA-774_EXTERNAL_UNBLOCK_SIGNAL.json",
+                              "signal_exists":  true,
+                              "ready_to_resume":  false,
+                              "reason":  "ready_to_resume_false",
+                              "updated_at_utc":  "2026-05-08T07:30:00Z",
+                              "unblock_owner":  "DWX import owner",
+                              "unblock_action":  "Import/sync US500.DWX on T1..T5 and rerun QM5_1004 P2 for H1/H4/D1 reports"
+                          }
+}

@@ -1,0 +1,44 @@
+{
+  "issue": "QUA-646",
+  "checked_at_utc": "2026-05-08T06:53:58.1544303Z",
+  "run_id": "c7dfbeba-20e1-4373-af0a-560cf64d76bd",
+  "wake_reason": "issue_status_changed",
+  "checks": {
+    "magic_1003_1004_rows": null,
+    "ex5_t1_t5": [
+      {
+        "terminal": "T1",
+        "qm5_1003_ex5": false,
+        "qm5_1004_ex5": false,
+        "path": "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM"
+      },
+      {
+        "terminal": "T2",
+        "qm5_1003_ex5": false,
+        "qm5_1004_ex5": false,
+        "path": "D:\\QM\\mt5\\T2\\MQL5\\Experts\\QM"
+      },
+      {
+        "terminal": "T3",
+        "qm5_1003_ex5": false,
+        "qm5_1004_ex5": false,
+        "path": "D:\\QM\\mt5\\T3\\MQL5\\Experts\\QM"
+      },
+      {
+        "terminal": "T4",
+        "qm5_1003_ex5": false,
+        "qm5_1004_ex5": false,
+        "path": "D:\\QM\\mt5\\T4\\MQL5\\Experts\\QM"
+      },
+      {
+        "terminal": "T5",
+        "qm5_1003_ex5": false,
+        "qm5_1004_ex5": false,
+        "path": "D:\\QM\\mt5\\T5\\MQL5\\Experts\\QM"
+      }
+    ]
+  },
+  "verdict": "blocked",
+  "unblock_owner": "Pipeline-Operator / CTO",
+  "unblock_action": "Compile/publish QM5_1003.ex5 and QM5_1004.ex5 to T1-T5 and restore canonical registry readiness for dispatch workspace."
+}
