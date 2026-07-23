@@ -209,12 +209,15 @@ These items are QuantMechanica port or safety choices, not source claims:
 3. Evaluate only completed D1 bars and enter/exit on the first eligible tick of
    the next broker D1 bar, matching the source's one-bar delay and next-open
    convention.
-4. Proposed catastrophe stop: fixed `3.0 * ATR(20)` distance from entry, with
+4. If an implementation ever observes simultaneous long and short entry
+   states, remain flat and log the reject. The source defines no same-bar
+   direction priority.
+5. Proposed catastrophe stop: fixed `3.0 * ATR(20)` distance from entry, with
    ATR taken from the completed signal bar and never widened. This is a
    non-alpha FTMO risk overlay because the source supplies no protective stop.
-5. Keep the V5 Friday-close default enabled. A Friday flatten is a framework
+6. Keep the V5 Friday-close default enabled. A Friday flatten is a framework
    exit; re-entry requires a fresh valid completed-bar state.
-6. Do not reproduce the source's simplified futures commission, omitted
+7. Do not reproduce the source's simplified futures commission, omitted
    slippage, continuous-contract rollover, or one-contract sizing assumptions
    as CFD evidence.
 

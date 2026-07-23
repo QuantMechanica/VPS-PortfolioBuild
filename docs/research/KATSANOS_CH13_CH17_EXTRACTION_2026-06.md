@@ -2,11 +2,19 @@
 
 **Audit date:** 2026-07-23
 
-**Status:** REVIEW — source-audited research; no Strategy Cards created
+**Status:** APPROVED — source-audited research accepted; two Strategy Card
+Drafts await a separate OWNER G0 decision
 
 **Task:** `f96d0a4f-a0d0-4ece-8bab-47660ccb0df5`
 
 **Extraction:** agy; **source and universe audit:** Codex
+
+**Follow-up artifacts:** canonical
+[`source.md`](../../strategy-seeds/sources/KATSANOS-INTERMARKET-2008/source.md);
+Draft Cards
+[`kats-dax-maci_card.md`](../../strategy-seeds/cards/kats-dax-maci_card.md)
+and
+[`kats-eu-macisar_card.md`](../../strategy-seeds/cards/kats-eu-macisar_card.md)
 
 **Source:** Markos Katsanos, *Intermarket Trading Strategies* (Wiley, 2008), OWNER-declared licensed copy
 

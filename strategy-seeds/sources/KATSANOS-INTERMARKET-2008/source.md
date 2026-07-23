@@ -46,16 +46,16 @@ does not authorize a build, a pipeline PASS claim, T6 deployment, or live use.
 - Runtime provenance record:
   `D:/QM/strategy_farm/source_cache/katsanos_intermarket_2008.provenance.json`.
 
-Approved and reviewed scope:
+Approved and reviewed mechanical-system evidence:
 
-- Chapter 13, "Trading DAX Futures": book pp. 201–215 /
-  PDFPAGE 219–233.
-- Chapter 17, "Forex Trading Using Intermarket Analysis": book pp. 261–295 /
-  PDFPAGE 279–313.
+- Chapter 13, "Trading DAX Futures": book pp. 201–213 /
+  PDFPAGE 219–231.
+- Chapter 17, "Forex Trading Using Intermarket Analysis": book pp. 261–292 /
+  PDFPAGE 279–310.
 - Appendix A.4: book pp. 327–332 / PDFPAGE 345–350.
 - Appendix A.8: book pp. 348–355 / PDFPAGE 366–373.
 
-The complete bounded sections above were read against both the text cache and
+The complete bounded evidence above was read against both the text cache and
 the Appendix code. Material prose/code conflicts were retained rather than
 silently normalized. The source audit is:
 

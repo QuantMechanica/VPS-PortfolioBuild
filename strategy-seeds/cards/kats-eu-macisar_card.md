@@ -184,12 +184,15 @@ These items are QuantMechanica execution or safety choices:
 2. Convert the source's idealized same-day-close fill into a causal
    completed-D1-signal/next-bar-open fill. This port does not claim to reproduce
    Table 17.6.
-3. Use `EURUSD.DWX` broker D1 bars and current contract/tick-value metadata
+3. If an implementation ever observes simultaneous long and short entry
+   states, remain flat and log the reject. The source defines no same-bar
+   direction priority.
+4. Use `EURUSD.DWX` broker D1 bars and current contract/tick-value metadata
    instead of the source vendor's EUR 100,000 lot and one-pip commission model.
-4. Proposed catastrophe stop: fixed `3.0 * ATR(20)` distance from entry, using
+5. Proposed catastrophe stop: fixed `3.0 * ATR(20)` distance from entry, using
    ATR from the completed signal bar and never widening it. It is a non-alpha
    risk overlay.
-5. Keep the V5 Friday-close default enabled. Re-entry requires a fresh complete
+6. Keep the V5 Friday-close default enabled. Re-entry requires a fresh complete
    source signal after the forced flatten.
 
 The execution contract remains `BLOCKED` until OWNER G0 ratifies the
