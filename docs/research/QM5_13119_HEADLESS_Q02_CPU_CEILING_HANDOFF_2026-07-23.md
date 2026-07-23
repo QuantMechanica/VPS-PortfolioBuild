@@ -92,3 +92,25 @@ Before insertion, repeat the duplicate guard on `(ea_id, phase,
 sub_gate_config_hash)` and the CPU check. No `T_Live`, AutoTrading, deploy
 manifest, portfolio admission gate, portfolio KPI, or Q08 contribution path is
 part of this handoff.
+
+## Paced-fleet continuation check
+
+At `2026-07-23T06:44Z`, the exact queue tuple remained present once and only
+once as queue row `4`, with `status=queued`, no assigned terminal, and no
+dispatch decision. The farm database also still contained the earlier
+post-repair Q02 infrastructure-failure row, so no second queue row or ordinary
+farm work item was inserted.
+
+The canonical saturation scheduler was then run in read-only mode:
+
+```text
+python framework/scripts/mt5_saturation_scheduler.py
+  --sqlite D:/QM/reports/pipeline/mt5_queue.db
+  --dispatch-state D:/QM/reports/pipeline/dispatch_state.json
+  --dry-run
+```
+
+It returned `available_slots_before=0`, `available_slots_after=0`, and
+`scheduled=0`. The queued 13119 row was unchanged. This is the paced-fleet CPU
+ceiling stop condition: retain the one non-duplicate post-repair Q02 job for
+the existing dispatcher and do not launch or force-assign another tester.
