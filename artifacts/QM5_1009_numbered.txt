@@ -1,0 +1,398 @@
+   1: #property strict
+   2: #property version   "5.0"
+   3: #property description "QM5_1009 lien-fade-double-zeros (SRC04_S03)"
+   4: 
+   5: #include <QM/QM_Common.mqh>
+   6: #include <Trade/Trade.mqh>
+   7: 
+   8: input group "QuantMechanica V5 Framework"
+   9: input int    qm_ea_id                     = 1009;
+  10: input int    qm_magic_slot_offset         = 0;
+  11: 
+  12: input group "Risk"
+  13: enum QM5_RiskModeInput
+  14:   {
+  15:    QM5_RISK_MODE_AUTO = 0,
+  16:    QM5_RISK_MODE_FIXED = 1,
+  17:    QM5_RISK_MODE_PERCENT = 2
+  18:   };
+  19: input QM5_RiskModeInput qm_risk_mode        = QM5_RISK_MODE_AUTO;
+  20: input double RISK_PERCENT                 = 1.0;
+  21: input double RISK_FIXED                   = 1000.0;
+  22: input double PORTFOLIO_WEIGHT             = 1.0;
+  23: 
+  24: input group "News"
+  25: input QM_NewsMode qm_news_mode            = QM_NEWS_OFF;
+  26: 
+  27: input group "Friday Close"
+  28: input bool   qm_friday_close_enabled      = true;
+  29: input int    qm_friday_close_hour_broker  = 21;
+  30: 
+  31: input group "Strategy"
+  32: input int    trend_ma_period              = 20;
+  33: input double entry_offset_pips            = 12.0;
+  34: input double stop_offset_pips             = 20.0;
+  35: input double stage_max_distance_pips      = 50.0;
+  36: input bool   triple_zero_only             = false;
+  37: input bool   use_ma_trail_variant         = false;
+  38: input int    order_expiration_minutes     = 60;
+  39: 
+  40: CTrade   g_trade;
+  41: datetime g_last_bar_time = 0;
+  42: 
+  43: int StrategyMagic()
+  44:   {
+  45:    return QM_Magic(qm_ea_id, qm_magic_slot_offset);
+  46:   }
+  47: 
+  48: bool IsNewBar()
+  49:   {
+  50:    const datetime t0 = iTime(_Symbol, _Period, 0);
+  51:    if(t0 <= 0 || t0 == g_last_bar_time)
+  52:       return false;
+  53:    g_last_bar_time = t0;
+  54:    return true;
+  55:   }
+  56: 
+  57: double SMAAtShift(const int period, const int shift)
+  58:   {
+  59:    const int handle = iMA(_Symbol, _Period, period, 0, MODE_SMA, PRICE_CLOSE);
+  60:    if(handle == INVALID_HANDLE)
+  61:       return 0.0;
+  62: 
+  63:    double buffer[];
+  64:    ArraySetAsSeries(buffer, true);
+  65:    const int copied = CopyBuffer(handle, 0, shift, 1, buffer);
+  66:    IndicatorRelease(handle);
+  67:    if(copied < 1)
+  68:       return 0.0;
+  69:    return buffer[0];
+  70:   }
+  71: 
+  72: double PipSize()
+  73:   {
+  74:    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+  75:    const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
+  76:    if(digits == 3 || digits == 5)
+  77:       return point * 10.0;
+  78:    return point;
+  79:   }
+  80: 
+  81: double RoundStep()
+  82:   {
+  83:    const double pip = PipSize();
+  84:    if(pip <= 0.0)
+  85:       return 0.0;
+  86:    if(triple_zero_only)
+  87:       return pip * 1000.0;
+  88:    return pip * 100.0;
+  89:   }
+  90: 
+  91: double NearestRound(const double price)
+  92:   {
+  93:    const double step = RoundStep();
+  94:    if(step <= 0.0)
+  95:       return 0.0;
+  96:    return MathRound(price / step) * step;
+  97:   }
+  98: 
+  99: bool GetOurPosition(ulong &ticket)
+ 100:   {
+ 101:    ticket = 0;
+ 102:    const int magic = StrategyMagic();
+ 103:    const int total = PositionsTotal();
+ 104:    for(int i = 0; i < total; ++i)
+ 105:      {
+ 106:       const ulong t = PositionGetTicket(i);
+ 107:       if(t == 0 || !PositionSelectByTicket(t))
+ 108:          continue;
+ 109:       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+ 110:          continue;
+ 111:       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+ 112:          continue;
+ 113:       ticket = t;
+ 114:       return true;
+ 115:      }
+ 116:    return false;
+ 117:   }
+ 118: 
+ 119: void CancelOurPendingOrders()
+ 120:   {
+ 121:    const int magic = StrategyMagic();
+ 122:    for(int i = OrdersTotal() - 1; i >= 0; --i)
+ 123:      {
+ 124:       const ulong ticket = OrderGetTicket(i);
+ 125:       if(ticket == 0 || !OrderSelect(ticket))
+ 126:          continue;
+ 127:       if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+ 128:          continue;
+ 129:       if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+ 130:          continue;
+ 131: 
+ 132:       const ENUM_ORDER_TYPE type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
+ 133:       if(type != ORDER_TYPE_BUY_STOP && type != ORDER_TYPE_SELL_STOP)
+ 134:          continue;
+ 135: 
+ 136:       MqlTradeRequest req;
+ 137:       MqlTradeResult res;
+ 138:       ZeroMemory(req);
+ 139:       ZeroMemory(res);
+ 140:       req.action = TRADE_ACTION_REMOVE;
+ 141:       req.order = ticket;
+ 142:       req.magic = magic;
+ 143:       if(!OrderSend(req, res))
+ 144:         {
+ 145:          // Card §6 (No-Trade single-position hygiene) + §4 pending staging discipline: explicit cleanup failure logging.
+ 146:          QM_LogEvent(QM_WARN,
+ 147:                      "PENDING_CANCEL_SEND_FAIL",
+ 148:                      StringFormat("{\"order\":%I64u,\"retcode\":%u}", ticket, res.retcode));
+ 149:          continue;
+ 150:         }
+ 151:       if(res.retcode != TRADE_RETCODE_DONE)
+ 152:         {
+ 153:          QM_LogEvent(QM_WARN,
+ 154:                      "PENDING_CANCEL_RETCODE",
+ 155:                      StringFormat("{\"order\":%I64u,\"retcode\":%u}", ticket, res.retcode));
+ 156:         }
+ 157:      }
+ 158:   }
+ 159: 
+ 160: bool PlaceStopOrder(const ENUM_ORDER_TYPE order_type, const double entry, const double sl, const double tp)
+ 161:   {
+ 162:    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+ 163:    if(point <= 0.0 || entry <= 0.0 || sl <= 0.0)
+ 164:       return false;
+ 165: 
+ 166:    const double sl_points = MathAbs(entry - sl) / point;
+ 167:    const double lots = QM_LotsForRisk(_Symbol, sl_points);
+ 168:    if(lots <= 0.0)
+ 169:       return false;
+ 170: 
+ 171:    MqlTradeRequest req;
+ 172:    MqlTradeResult res;
+ 173:    ZeroMemory(req);
+ 174:    ZeroMemory(res);
+ 175: 
+ 176:    req.action = TRADE_ACTION_PENDING;
+ 177:    req.symbol = _Symbol;
+ 178:    req.magic = StrategyMagic();
+ 179:    req.type = order_type;
+ 180:    req.volume = lots;
+ 181:    req.price = entry;
+ 182:    req.sl = sl;
+ 183:    req.tp = tp;
+ 184:    req.deviation = 20;
+ 185:    req.type_time = ORDER_TIME_SPECIFIED;
+ 186:    req.expiration = TimeCurrent() + (order_expiration_minutes * 60);
+ 187:    req.type_filling = ORDER_FILLING_RETURN;
+ 188:    req.comment = "SRC04_S03";
+ 189: 
+ 190:    if(!OrderSend(req, res))
+ 191:       return false;
+ 192: 
+ 193:    return (res.retcode == TRADE_RETCODE_DONE || res.retcode == TRADE_RETCODE_PLACED);
+ 194:   }
+ 195: 
+ 196: void ApplyTrailLogic()
+ 197:   {
+ 198:    ulong ticket;
+ 199:    if(!GetOurPosition(ticket) || !PositionSelectByTicket(ticket))
+ 200:       return;
+ 201: 
+ 202:    const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+ 203:    const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+ 204:    const double sl_now = PositionGetDouble(POSITION_SL);
+ 205:    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+ 206:    const double pip = PipSize();
+ 207:    if(point <= 0.0 || pip <= 0.0)
+ 208:       return;
+ 209: 
+ 210:    const double one_r = (entry_offset_pips + stop_offset_pips) * pip;
+ 211:    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+ 212:    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+ 213:    const double vol = PositionGetDouble(POSITION_VOLUME);
+ 214:    const double min_lot = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN);
+ 215: 
+ 216:    double new_sl = sl_now;
+ 217:    if(ptype == POSITION_TYPE_BUY)
+ 218:      {
+ 219:       const bool tp1_reached = (bid - open_price >= one_r);
+ 220:       const bool be_already = (sl_now >= (open_price - 2.0 * point));
+ 221:       if(tp1_reached && !be_already && vol >= (2.0 * min_lot))
+ 222:         {
+ 223:          g_trade.SetExpertMagicNumber(StrategyMagic());
+ 224:          g_trade.PositionClosePartial(_Symbol, vol * 0.5, 20);
+ 225:         }
+ 226:       if(tp1_reached)
+ 227:          new_sl = MathMax(new_sl, open_price);
+ 228:       if(use_ma_trail_variant)
+ 229:         {
+ 230:          const double ma = SMAAtShift(trend_ma_period, 1);
+ 231:          if(ma > 0.0)
+ 232:             new_sl = MathMax(new_sl, ma - 10.0 * pip);
+ 233:         }
+ 234:       else
+ 235:         {
+ 236:          const double low2 = iLow(_Symbol, _Period, 2);
+ 237:          if(low2 > 0.0)
+ 238:             new_sl = MathMax(new_sl, low2);
+ 239:         }
+ 240:      }
+ 241:    else if(ptype == POSITION_TYPE_SELL)
+ 242:      {
+ 243:       const bool tp1_reached = (open_price - ask >= one_r);
+ 244:       const bool be_already = (sl_now > 0.0 && sl_now <= (open_price + 2.0 * point));
+ 245:       if(tp1_reached && !be_already && vol >= (2.0 * min_lot))
+ 246:         {
+ 247:          g_trade.SetExpertMagicNumber(StrategyMagic());
+ 248:          g_trade.PositionClosePartial(_Symbol, vol * 0.5, 20);
+ 249:         }
+ 250:       if(tp1_reached)
+ 251:          new_sl = (new_sl <= 0.0) ? open_price : MathMin(new_sl, open_price);
+ 252:       if(use_ma_trail_variant)
+ 253:         {
+ 254:          const double ma = SMAAtShift(trend_ma_period, 1);
+ 255:          if(ma > 0.0)
+ 256:             new_sl = (new_sl <= 0.0) ? ma + 10.0 * pip : MathMin(new_sl, ma + 10.0 * pip);
+ 257:         }
+ 258:       else
+ 259:         {
+ 260:          const double high2 = iHigh(_Symbol, _Period, 2);
+ 261:          if(high2 > 0.0)
+ 262:             new_sl = (new_sl <= 0.0) ? high2 : MathMin(new_sl, high2);
+ 263:         }
+ 264:      }
+ 265: 
+ 266:    if(new_sl > 0.0 && MathAbs(new_sl - sl_now) > (2.0 * point))
+ 267:      {
+ 268:       g_trade.SetExpertMagicNumber(StrategyMagic());
+ 269:      g_trade.PositionModify(_Symbol, new_sl, PositionGetDouble(POSITION_TP));
+ 270:      }
+ 271:   }
+ 272: 
+ 273: bool Strategy_NoTradeFilter()
+ 274:   {
+ 275:    ulong pos_ticket;
+ 276:    return GetOurPosition(pos_ticket);
+ 277:   }
+ 278: 
+ 279: void Strategy_ManageOpenPosition()
+ 280:   {
+ 281:    ApplyTrailLogic();
+ 282:   }
+ 283: 
+ 284: bool Strategy_ExitSignal()
+ 285:   {
+ 286:    return false;
+ 287:   }
+ 288: 
+ 289: void OnStrategyBar()
+ 290:   {
+ 291:    const double close1 = iClose(_Symbol, _Period, 1);
+ 292:    const double ma1 = SMAAtShift(trend_ma_period, 1);
+ 293:    if(close1 <= 0.0 || ma1 <= 0.0)
+ 294:       return;
+ 295: 
+ 296:    const double pip = PipSize();
+ 297:    if(pip <= 0.0)
+ 298:       return;
+ 299: 
+ 300:    const double round_px = NearestRound(close1);
+ 301:    if(round_px <= 0.0)
+ 302:       return;
+ 303: 
+ 304:    const double dist_pips = MathAbs(close1 - round_px) / pip;
+ 305:    if(dist_pips > stage_max_distance_pips)
+ 306:       return;
+ 307: 
+ 308:    // Keep staged stop orders alive until their explicit expiration.
+ 309:    // Cancelling on every new bar starves fills and can produce zero-trade runs.
+ 310: 
+ 311:    const double entry_buy = round_px + (entry_offset_pips * pip);
+ 312:    const double sl_buy = round_px - (stop_offset_pips * pip);
+ 313:    const double tp_buy = entry_buy + MathAbs(entry_buy - sl_buy);
+ 314: 
+ 315:    const double entry_sell = round_px - (entry_offset_pips * pip);
+ 316:    const double sl_sell = round_px + (stop_offset_pips * pip);
+ 317:    const double tp_sell = entry_sell - MathAbs(sl_sell - entry_sell);
+ 318: 
+ 319:    if(close1 < ma1 && close1 < round_px)
+ 320:      {
+ 321:       PlaceStopOrder(ORDER_TYPE_BUY_STOP, entry_buy, sl_buy, tp_buy);
+ 322:       return;
+ 323:      }
+ 324: 
+ 325:    if(close1 > ma1 && close1 > round_px)
+ 326:       PlaceStopOrder(ORDER_TYPE_SELL_STOP, entry_sell, sl_sell, tp_sell);
+ 327:   }
+ 328: 
+ 329: void Strategy_EntrySignal()
+ 330:   {
+ 331:    OnStrategyBar();
+ 332:   }
+ 333: 
+ 334: int OnInit()
+ 335:   {
+ 336:    // Card §7 (position size uses V5 dual-mode risk contract), FIX-LIST QUA-420 requires explicit selector.
+ 337:    QM5_RiskModeInput selected_mode = qm_risk_mode;
+ 338:    if(selected_mode == QM5_RISK_MODE_AUTO)
+ 339:       selected_mode = (MQLInfoInteger(MQL_TESTER) != 0) ? QM5_RISK_MODE_FIXED : QM5_RISK_MODE_PERCENT;
+ 340: 
+ 341:    double risk_percent = 0.0;
+ 342:    double risk_fixed = 0.0;
+ 343:    if(selected_mode == QM5_RISK_MODE_FIXED)
+ 344:       risk_fixed = RISK_FIXED;
+ 345:    else
+ 346:       risk_percent = RISK_PERCENT;
+ 347: 
+ 348:    if(!QM_FrameworkInit(qm_ea_id,
+ 349:                         qm_magic_slot_offset,
+ 350:                         risk_percent,
+ 351:                         risk_fixed,
+ 352:                         PORTFOLIO_WEIGHT,
+ 353:                         qm_news_mode,
+ 354:                         qm_friday_close_enabled,
+ 355:                         qm_friday_close_hour_broker))
+ 356:       return INIT_FAILED;
+ 357: 
+ 358:    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"SRC04_S03\",\"slug\":\"lien-fade-double-zeros\"}");
+ 359:    return INIT_SUCCEEDED;
+ 360:   }
+ 361: 
+ 362: void OnDeinit(const int reason)
+ 363:   {
+ 364:    QM_LogEvent(QM_INFO, "DEINIT", StringFormat("{\"reason\":%d}", reason));
+ 365:    QM_FrameworkShutdown();
+ 366:   }
+ 367: 
+ 368: void OnTick()
+ 369:   {
+ 370:    if(!QM_KillSwitchCheck())
+ 371:       return;
+ 372:    if(!QM_NewsAllowsTrade(_Symbol, TimeCurrent(), qm_news_mode))
+ 373:       return;
+ 374:    if(QM_FrameworkHandleFridayClose())
+ 375:       return;
+ 376: 
+ 377:    Strategy_ManageOpenPosition();
+ 378:    if(Strategy_ExitSignal())
+ 379:       return;
+ 380: 
+ 381:    if(!IsNewBar())
+ 382:       return;
+ 383:    if(Strategy_NoTradeFilter())
+ 384:       return;
+ 385: 
+ 386:    Strategy_EntrySignal();
+ 387:   }
+ 388: 
+ 389: void OnTimer()
+ 390:   {
+ 391:    QM_FrameworkOnTimer();
+ 392:   }
+ 393: 
+ 394: double OnTester()
+ 395:   {
+ 396:    QM_ChartUI_Refresh();
+ 397:    return QM_DefaultObjective();
+ 398:   }

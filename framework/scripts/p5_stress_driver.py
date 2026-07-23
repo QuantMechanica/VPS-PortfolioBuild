@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import subprocess
 import time
@@ -237,10 +238,25 @@ def main() -> int:
         stress_paths, stress_starts = _run_smoke_parallel(Path(args.smoke_script), jobs=stress_jobs, max_parallel=args.max_parallel, smoke_timeout_seconds=args.smoke_timeout_seconds)
         timing_evidence = clean_starts + stress_starts
         for symbol in symbols:
-            metrics_by_symbol[symbol] = {
-                "clean": _read_smoke_summary(clean_paths[f"{symbol}:clean"]),
-                "stress": _read_smoke_summary(stress_paths[f"{symbol}:stress"]),
-            }
+        metrics_by_symbol[symbol] = {
+            "clean": _read_smoke_summary(clean_paths[f"{symbol}:clean"]),
+            "stress": _read_smoke_summary(stress_paths[f"{symbol}:stress"]),
+        }
+    report_csv = out_dir / "report.csv"
+    with report_csv.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=["symbol", "clean_pf", "stress_pf", "clean_trade_count", "stress_trade_count", "dxz_verdict"])
+        writer.writeheader()
+        for symbol in symbols:
+            writer.writerow(
+                {
+                    "symbol": symbol,
+                    "clean_pf": metrics_by_symbol[symbol]["clean"]["pf"],
+                    "stress_pf": metrics_by_symbol[symbol]["stress"]["pf"],
+                    "clean_trade_count": metrics_by_symbol[symbol]["clean"]["trade_count"],
+                    "stress_trade_count": metrics_by_symbol[symbol]["stress"]["trade_count"],
+                    "dxz_verdict": "SOFT_SIGNAL_ONLY",
+                }
+            )
 
     clean_payload = {"symbols": []}
     stress_payload = {"symbols": []}

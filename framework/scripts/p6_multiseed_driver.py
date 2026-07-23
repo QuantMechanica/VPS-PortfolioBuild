@@ -216,7 +216,7 @@ def main() -> int:
     )
 
     with tmp_csv.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=["seed", "seed_pass", "profit_factor", "trade_count"])
+        writer = csv.DictWriter(handle, fieldnames=["seed", "seed_pass", "profit_factor", "trade_count", "dxz_verdict"])
         writer.writeheader()
         for seed in seeds:
             metrics = results[f"seed:{seed}"]
@@ -226,6 +226,7 @@ def main() -> int:
                     "seed_pass": "PASS" if metrics["seed_pass"] >= 1 else "FAIL",
                     "profit_factor": metrics["pf"],
                     "trade_count": int(metrics["trades"]),
+                    "dxz_verdict": "SOFT_SIGNAL_ONLY",
                 }
             )
     tmp_csv.replace(out_csv)

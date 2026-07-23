@@ -1,4 +1,4 @@
-; ea_id:        1002
+﻿; ea_id:        1002
 ; ea_slug:      davey-eu-night
 ; ea_version:   _v1
 ; set_version:  1
@@ -8,7 +8,7 @@
 ; magic_slot:   0
 ; risk_mode:    fixed
 ; portfolio_weight: 1.0
-; build_hash:   pending
+; build_hash:   cffef1329d8b9bb1c7482d3a10821c00db8953b02d235ab492f87bbbc04d4c88
 ; author:       CTO
 ; date:         2026-04-27
 ea_id=1002

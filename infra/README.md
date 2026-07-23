@@ -49,6 +49,10 @@ Idempotent infrastructure scripts for QuantMechanica V5. Re-running these script
   - Registers Task Scheduler job `QM_AggregatorState_1min` as `SYSTEM`.
   - Runs `scripts/aggregator/standalone_aggregator_loop.py --once` every minute.
   - Safe to re-run (`Register-ScheduledTask -Force`) and overlap-safe (`MultipleInstances=IgnoreNew`).
+- `scripts/Install-MultiEASchedulerTask.ps1`
+  - Registers Task Scheduler job `QM_MultiEAScheduler_30s` as `SYSTEM`.
+  - Runs `framework/scripts/multi_ea_scheduler.py` continuously (`--sleep-seconds 30`) to keep T1-T5 saturated across EAs.
+  - Safe to re-run (`Register-ScheduledTask -Force`) and overlap-safe (`MultipleInstances=IgnoreNew`).
 - `scripts/Install-PaperclipStaleLockWatchdogTask.ps1`
   - Registers Task Scheduler job `QM_PaperclipStaleLockWatchdog_15min` as `SYSTEM`.
   - Runs `monitoring/Invoke-PaperclipStaleLockWatchdog.ps1 -StaleAfterMinutes 15 -FailOnFinding` every 15 minutes (monitor-only).

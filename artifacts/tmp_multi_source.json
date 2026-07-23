@@ -1,0 +1,8 @@
+{
+  "approved_waiting_p0": [
+    {"ea_id":"QM5_1014","phase":"P0","symbol":"EURUSD.DWX","config_hash":"cfg-a"}
+  ],
+  "transition_ready": [
+    {"ea_id":"QM5_1017","phase":"P2","symbol":"XAUUSD.DWX","config_hash":"cfg-b"}
+  ]
+}

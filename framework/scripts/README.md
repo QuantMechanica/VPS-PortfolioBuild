@@ -14,6 +14,23 @@ Each runner emits deterministic JSON under `D:\QM\reports\pipeline\<ea_id>\<phas
 - `python framework/scripts/p7_statval.py --ea QM5_1001 --sweep-pass-rows framework/scripts/tests/fixtures/p7_sweep_pass_rows.csv --multiseed-rows framework/scripts/tests/fixtures/p7_multiseed_rows.csv`
 - `python framework/scripts/p8_news_impact.py --ea QM5_1001 --news-matrix framework/scripts/tests/fixtures/p8_matrix.csv --modes OFF,PAUSE,SKIP_DAY,FTMO_PAUSE,5ers_PAUSE,no_news,news_only`
 - `powershell -Command \"$a=@('--baseline-csv','framework/scripts/tests/fixtures/p35_baseline.csv','--csr-results-csv','framework/scripts/tests/fixtures/p35_csr.csv'); & framework/scripts/run_phase.ps1 -EAId QM5_1001 -Phase P3.5 -Symbols EURUSD.DWX -RunnerArgs $a\"`
+
+## Multi-EA Scheduler
+
+- Build queue from source payload:
+  - `python framework/scripts/build_multi_ea_queue.py --source D:/QM/Reports/pipeline/multi_ea_queue_source.json --out D:/QM/Reports/pipeline/multi_ea_job_queue.json`
+- Run saturator once:
+  - `python framework/scripts/multi_ea_scheduler.py --once --queue-source D:/QM/Reports/pipeline/multi_ea_queue_source.json`
+- `multi_ea_queue_source.json` schema:
+  - `approved_waiting_p0`: array of `{ea_id, phase, symbol, config_hash}`
+  - `transition_ready`: array of `{ea_id, phase, symbol, config_hash}`
+- Build transition-ready feed from phase results:
+  - `python framework/scripts/next_phase_job_decider.py --phase-results D:/QM/Reports/pipeline/phase_results_latest.json --out D:/QM/Reports/pipeline/multi_ea_transition_ready.json`
+- Evaluate saturation gate (default: >=50% avg active over 5 minutes):
+  - `python framework/scripts/measure_mt5_saturation.py --state D:/QM/Reports/pipeline/multi_ea_scheduler_state.json --min-ratio 0.5 --min-minutes 5`
+- Timed saturation monitor (supports real 5+ minute trial):
+  - `python framework/scripts/monitor_saturation_window.py --state D:/QM/Reports/pipeline/multi_ea_scheduler_state.json --duration-minutes 5 --min-ratio 0.5`
+  - Add `--no-wait` to evaluate the trailing window immediately.
 - `python framework/scripts/aggregate_phase_results.py --ea QM5_1001 --input-root D:/QM/reports/pipeline --output-root D:/QM/reports/pipeline`
 
 ## Notes

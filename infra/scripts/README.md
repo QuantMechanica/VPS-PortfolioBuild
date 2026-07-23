@@ -1,5 +1,41 @@
 # Infra Scripts Notes
 
+## `Install-MultiEASchedulerTask.ps1`
+
+- Idempotently installs a Windows Scheduled Task for cross-EA terminal saturation.
+- Default task name: `QM_MultiEAScheduler_30s`.
+- Runs:
+  - `python framework/scripts/multi_ea_scheduler.py --sleep-seconds 30`
+- Uses `SYSTEM` principal and `MultipleInstances=IgnoreNew`.
+- Preview mode:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:/QM/repo/infra/scripts/Install-MultiEASchedulerTask.ps1 -PreviewOnly`
+
+## `Run-QUA1083MultiEADemo.ps1`
+
+- Seeds a 3-EA mixed-phase source payload and runs one scheduler tick for QUA-1083 evidence.
+- Default mode is safe `--dry-run` (no MT5 process launch).
+- Live mode requires explicit `-RunLive`.
+- Example:
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File C:/QM/repo/infra/scripts/Run-QUA1083MultiEADemo.ps1 -RepoRoot C:/QM/repo`
+
+## `Run-QUA1083PipelineSmoke.ps1`
+
+- End-to-end smoke wrapper for QUA-1083:
+  - seeds source payload
+  - runs one scheduler tick
+  - evaluates saturation gate from emitted state
+- Default mode is dry-run; pass `-RunLive` for real process launch.
+- Writes artifacts to `artifacts/qua1083_smoke/`.
+
+## `Install-QUA1083SaturationMonitorTask.ps1`
+
+- Installs a recurring `SYSTEM` task to evaluate the QUA-1083 saturation gate every 5 minutes.
+- Uses:
+  - `python framework/scripts/monitor_saturation_window.py --state D:/QM/Reports/pipeline/multi_ea_scheduler_state.json --duration-minutes 5 --min-ratio 0.5 --no-wait`
+- Writes latest monitor artifact to:
+  - `artifacts/qua1083_monitor/latest_saturation_eval.json`
+- Supports `-PreviewOnly` for non-mutating validation.
+
 ## `dwx_hourly_check.py`
 
 - `spec_ok` is now evaluated by one shared helper (`is_symbol_spec_ok`) for both:

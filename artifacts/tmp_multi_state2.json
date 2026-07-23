@@ -1,0 +1,16 @@
+{
+  "history": [],
+  "idle_alarm": {
+    "active": false,
+    "last_alarm_utc": null
+  },
+  "last_active_utc": "2026-05-09T10:16:19Z",
+  "running": {},
+  "utilization_samples": [
+    {
+      "active_ratio": 0.0,
+      "active_terminals": 0,
+      "ts_utc": "2026-05-09T10:16:19Z"
+    }
+  ]
+}

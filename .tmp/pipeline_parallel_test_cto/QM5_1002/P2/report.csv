@@ -1,0 +1,16 @@
+ea_id,phase,symbol,terminal,verdict,invalidation_reason,evidence
+1002,P2,EURUSD.DWX,any,INVALID,setfile_missing:QM5_1002_davey-eu-night_EURUSD.DWX_M105_backtest.set,C:\QM\worktrees\cto\framework\EAs\QM5_1002_davey-eu-night\sets\QM5_1002_davey-eu-night_EURUSD.DWX_M105_backtest.set
+1002,P2,GBPUSD.DWX,any,INVALID,setfile_missing:QM5_1002_davey-eu-night_GBPUSD.DWX_M105_backtest.set,C:\QM\worktrees\cto\framework\EAs\QM5_1002_davey-eu-night\sets\QM5_1002_davey-eu-night_GBPUSD.DWX_M105_backtest.set
+1002,P2,USDJPY.DWX,any,INVALID,setfile_missing:QM5_1002_davey-eu-night_USDJPY.DWX_M105_backtest.set,C:\QM\worktrees\cto\framework\EAs\QM5_1002_davey-eu-night\sets\QM5_1002_davey-eu-night_USDJPY.DWX_M105_backtest.set
+1002,P2,AUDUSD.DWX,any,INVALID,setfile_missing:QM5_1002_davey-eu-night_AUDUSD.DWX_M105_backtest.set,C:\QM\worktrees\cto\framework\EAs\QM5_1002_davey-eu-night\sets\QM5_1002_davey-eu-night_AUDUSD.DWX_M105_backtest.set
+1002,P2,USDCAD.DWX,any,INVALID,setfile_missing:QM5_1002_davey-eu-night_USDCAD.DWX_M105_backtest.set,C:\QM\worktrees\cto\framework\EAs\QM5_1002_davey-eu-night\sets\QM5_1002_davey-eu-night_USDCAD.DWX_M105_backtest.set
+1002,P2,EURUSD.DWX,any,INVALID,setfile_missing:QM5_1002_davey-eu-night_EURUSD.DWX_M105_backtest.set,C:\QM\worktrees\cto\framework\EAs\QM5_1002_davey-eu-night\sets\QM5_1002_davey-eu-night_EURUSD.DWX_M105_backtest.set
+1002,P2,GBPUSD.DWX,any,INVALID,setfile_missing:QM5_1002_davey-eu-night_GBPUSD.DWX_M105_backtest.set,C:\QM\worktrees\cto\framework\EAs\QM5_1002_davey-eu-night\sets\QM5_1002_davey-eu-night_GBPUSD.DWX_M105_backtest.set
+1002,P2,USDJPY.DWX,any,INVALID,setfile_missing:QM5_1002_davey-eu-night_USDJPY.DWX_M105_backtest.set,C:\QM\worktrees\cto\framework\EAs\QM5_1002_davey-eu-night\sets\QM5_1002_davey-eu-night_USDJPY.DWX_M105_backtest.set
+1002,P2,AUDUSD.DWX,any,INVALID,setfile_missing:QM5_1002_davey-eu-night_AUDUSD.DWX_M105_backtest.set,C:\QM\worktrees\cto\framework\EAs\QM5_1002_davey-eu-night\sets\QM5_1002_davey-eu-night_AUDUSD.DWX_M105_backtest.set
+1002,P2,USDCAD.DWX,any,INVALID,setfile_missing:QM5_1002_davey-eu-night_USDCAD.DWX_M105_backtest.set,C:\QM\worktrees\cto\framework\EAs\QM5_1002_davey-eu-night\sets\QM5_1002_davey-eu-night_USDCAD.DWX_M105_backtest.set
+1002,P2,EURUSD.DWX,any,INVALID,setfile_missing:QM5_1002_davey-eu-night_EURUSD.DWX_M105_backtest.set,C:\QM\worktrees\cto\framework\EAs\QM5_1002_davey-eu-night\sets\QM5_1002_davey-eu-night_EURUSD.DWX_M105_backtest.set
+1002,P2,GBPUSD.DWX,any,INVALID,setfile_missing:QM5_1002_davey-eu-night_GBPUSD.DWX_M105_backtest.set,C:\QM\worktrees\cto\framework\EAs\QM5_1002_davey-eu-night\sets\QM5_1002_davey-eu-night_GBPUSD.DWX_M105_backtest.set
+1002,P2,USDJPY.DWX,any,INVALID,setfile_missing:QM5_1002_davey-eu-night_USDJPY.DWX_M105_backtest.set,C:\QM\worktrees\cto\framework\EAs\QM5_1002_davey-eu-night\sets\QM5_1002_davey-eu-night_USDJPY.DWX_M105_backtest.set
+1002,P2,AUDUSD.DWX,any,INVALID,setfile_missing:QM5_1002_davey-eu-night_AUDUSD.DWX_M105_backtest.set,C:\QM\worktrees\cto\framework\EAs\QM5_1002_davey-eu-night\sets\QM5_1002_davey-eu-night_AUDUSD.DWX_M105_backtest.set
+1002,P2,USDCAD.DWX,any,INVALID,setfile_missing:QM5_1002_davey-eu-night_USDCAD.DWX_M105_backtest.set,C:\QM\worktrees\cto\framework\EAs\QM5_1002_davey-eu-night\sets\QM5_1002_davey-eu-night_USDCAD.DWX_M105_backtest.set

@@ -1,0 +1,15 @@
+{
+  "ea": "QM5_1002",
+  "phase": "P2",
+  "year": 2024,
+  "period": "M105",
+  "started_at": "2026-05-09T09:29:19.327457+00:00",
+  "finished_at": "2026-05-09T09:29:19.331468+00:00",
+  "counts": {
+    "PASS": 0,
+    "FAIL": 0,
+    "INVALID": 5,
+    "DRY": 0
+  },
+  "report_csv": ".tmp\\pipeline_parallel_test_cto\\QM5_1002\\P2\\report.csv"
+}

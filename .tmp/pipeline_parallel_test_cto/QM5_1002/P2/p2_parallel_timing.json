@@ -1,0 +1,30 @@
+{
+  "starts": [
+    {
+      "symbol": "EURUSD.DWX",
+      "terminal": "T1",
+      "started_epoch": 1778318959.327458
+    },
+    {
+      "symbol": "GBPUSD.DWX",
+      "terminal": "T2",
+      "started_epoch": 1778318959.3284605
+    },
+    {
+      "symbol": "USDJPY.DWX",
+      "terminal": "T3",
+      "started_epoch": 1778318959.3284605
+    },
+    {
+      "symbol": "AUDUSD.DWX",
+      "terminal": "T4",
+      "started_epoch": 1778318959.3284605
+    },
+    {
+      "symbol": "USDCAD.DWX",
+      "terminal": "T5",
+      "started_epoch": 1778318959.3284605
+    }
+  ],
+  "max_parallel": 5
+}

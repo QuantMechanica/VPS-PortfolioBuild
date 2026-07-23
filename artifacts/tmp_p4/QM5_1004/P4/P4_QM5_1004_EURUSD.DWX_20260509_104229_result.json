@@ -1,0 +1,24 @@
+{
+  "phase": "P4",
+  "ea_id": "QM5_1004",
+  "verdict": "PASS",
+  "criterion": "P4 Monte Carlo hard gates satisfied.",
+  "details": {
+    "symbol": "EURUSD.DWX",
+    "baseline": {
+      "profit_factor": 1.42,
+      "max_drawdown_pct": 9.8
+    },
+    "monte_carlo": {
+      "profit_factor_p05": 1.11,
+      "net_profit_p05": 1250.0,
+      "max_drawdown_pct_p95": 13.7
+    },
+    "thresholds": {
+      "min_pf_p05": 1.0,
+      "max_dd_multiplier": 1.5,
+      "max_allowed_dd_pct": 14.700000000000001
+    }
+  },
+  "evidence_path": "artifacts\\tmp_p4\\QM5_1004\\P4\\P4_QM5_1004_EURUSD.DWX_20260509_104229_result.json"
+}

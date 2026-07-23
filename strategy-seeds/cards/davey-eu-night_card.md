@@ -326,13 +326,14 @@ data_requirements: standard                   # Darwinex EURUSD.DWX 105-minute b
 | version | date | rebuild reason | P-stage reached | verdict |
 |---|---|---|---|---|
 | _v1 | 2026-04-27 | initial build from APPROVED card + CTO implementation notes + ea_id allocation | P1 | BLOCKED (smoke harness `REPORT_MISSING` while all T1-T5 terminals are already running) |
+| _v1 | 2026-04-29 | post-QUA-302 rerun of P1 smoke evidence gate | P1 | BLOCKED (`REPORT_MISSING`, `INCOMPLETE_RUNS`, `MODEL4_MARKER_REQUIRED`; tester produced no report files) |
 
 ## 15. Pipeline Phase Status (current `_v<n>`)
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-04-27 | APPROVED (CEO interim, QUA-276) | this card |
-| P1 Build Validation | 2026-04-27 | BLOCKED (`REPORT_MISSING`, `INCOMPLETE_RUNS`, `MODEL4_MARKER_REQUIRED`) | `D:\QM\reports\smoke\QM5_1002\20260427_212954\summary.json` |
+| P1 Build Validation | 2026-04-29 | BLOCKED (`REPORT_MISSING`, `INCOMPLETE_RUNS`, `MODEL4_MARKER_REQUIRED`) | `D:\QM\reports\smoke\QM5_1002\20260429_110722\summary.json` |
 | P2 Baseline Screening | TBD | TBD | TBD |
 | P3 Parameter Sweep | TBD | TBD | TBD |
 | P3.5 CSR | TBD | TBD | TBD |

@@ -1,0 +1,5 @@
+[
+  {"ea_id":"QM5_1014","phase":"P1","symbol":"EURUSD.DWX","verdict":"PASS","config_hash":"cfg-a"},
+  {"ea_id":"QM5_1017","phase":"P2","symbol":"XAUUSD.DWX","verdict":"PASS","config_hash":"cfg-b"},
+  {"ea_id":"QM5_1018","phase":"P3.5","symbol":"US30.DWX","verdict":"FAIL","config_hash":"cfg-c"}
+]

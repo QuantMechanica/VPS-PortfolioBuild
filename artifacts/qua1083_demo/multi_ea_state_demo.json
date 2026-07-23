@@ -1,0 +1,65 @@
+{
+  "history": [],
+  "idle_alarm": {
+    "active": false,
+    "last_alarm_utc": null
+  },
+  "last_active_utc": "2026-05-09T10:22:52Z",
+  "running": {
+    "T1": {
+      "command": [
+        "dry_run",
+        "QM5_1017",
+        "P2",
+        "XAUUSD.DWX",
+        "T1"
+      ],
+      "config_hash": "demo-p2-b",
+      "ea_id": "QM5_1017",
+      "job_id": "QM5_1017|P2|XAUUSD.DWX|demo-p2-b",
+      "phase": "P2",
+      "pid": -1,
+      "started_at_utc": "2026-05-09T10:22:52Z",
+      "symbol": "XAUUSD.DWX"
+    },
+    "T2": {
+      "command": [
+        "dry_run",
+        "QM5_1004",
+        "P3.5",
+        "US500.DWX",
+        "T2"
+      ],
+      "config_hash": "demo-p35-c",
+      "ea_id": "QM5_1004",
+      "job_id": "QM5_1004|P3.5|US500.DWX|demo-p35-c",
+      "phase": "P3.5",
+      "pid": -1,
+      "started_at_utc": "2026-05-09T10:22:52Z",
+      "symbol": "US500.DWX"
+    },
+    "T3": {
+      "command": [
+        "dry_run",
+        "QM5_1014",
+        "P0",
+        "EURUSD.DWX",
+        "T3"
+      ],
+      "config_hash": "demo-p0-a",
+      "ea_id": "QM5_1014",
+      "job_id": "QM5_1014|P0|EURUSD.DWX|demo-p0-a",
+      "phase": "P0",
+      "pid": -1,
+      "started_at_utc": "2026-05-09T10:22:52Z",
+      "symbol": "EURUSD.DWX"
+    }
+  },
+  "utilization_samples": [
+    {
+      "active_ratio": 0.6,
+      "active_terminals": 3,
+      "ts_utc": "2026-05-09T10:22:52Z"
+    }
+  ]
+}

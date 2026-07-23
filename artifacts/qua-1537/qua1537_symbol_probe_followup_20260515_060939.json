@@ -1,0 +1,46 @@
+{
+  "timestamp": "2026-05-15T06:09:39.606916Z",
+  "terminal": "D:/QM/mt5/T1/terminal64.exe",
+  "server": "Darwinex-Live",
+  "checks": {
+    "WTI.cash.DWX": {
+      "available": false,
+      "symbol_select": false
+    },
+    "USDX.f": {
+      "available": false,
+      "symbol_select": false
+    },
+    "XTIUSD.DWX": {
+      "available": true,
+      "symbol_select": true
+    },
+    "XTIUSD": {
+      "available": true,
+      "symbol_select": true
+    },
+    "DXY": {
+      "available": false,
+      "symbol_select": false
+    },
+    "USDX": {
+      "available": false,
+      "symbol_select": false
+    },
+    "USDOLLAR": {
+      "available": false,
+      "symbol_select": false
+    }
+  },
+  "discovery": {
+    "*USDX*": [],
+    "*DXY*": [],
+    "*USD*INDEX*": [],
+    "*DOLLAR*": [],
+    "*XTI*": [
+      "XTIUSD",
+      "XTIUSD.DWX"
+    ],
+    "*WTI*": []
+  }
+}

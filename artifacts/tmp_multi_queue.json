@@ -1,0 +1,14 @@
+[
+  {
+    "config_hash": "cfg-b",
+    "ea_id": "QM5_1017",
+    "phase": "P2",
+    "symbol": "XAUUSD.DWX"
+  },
+  {
+    "config_hash": "cfg-a",
+    "ea_id": "QM5_1014",
+    "phase": "P0",
+    "symbol": "EURUSD.DWX"
+  }
+]

@@ -1,0 +1,30 @@
+{
+  "starts": [
+    {
+      "job_id": "seed:42",
+      "terminal": "T1",
+      "started_epoch": 1778318494.101813
+    },
+    {
+      "job_id": "seed:17",
+      "terminal": "T2",
+      "started_epoch": 1778318494.1108365
+    },
+    {
+      "job_id": "seed:99",
+      "terminal": "T3",
+      "started_epoch": 1778318494.1208625
+    },
+    {
+      "job_id": "seed:7",
+      "terminal": "T4",
+      "started_epoch": 1778318494.129886
+    },
+    {
+      "job_id": "seed:2026",
+      "terminal": "T5",
+      "started_epoch": 1778318494.140141
+    }
+  ],
+  "max_parallel": 5
+}

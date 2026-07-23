@@ -1,0 +1,28 @@
+{
+  "phase": "P5",
+  "ea_id": "QM5_9999",
+  "verdict": "PASS",
+  "criterion": "P5 hard gates satisfied (PF > 1.0 and trade retention >= 50%).",
+  "details": {
+    "symbol": "EURUSD.DWX",
+    "clean_run": {
+      "pf": 1.3,
+      "trade_count": 200
+    },
+    "stress_run": {
+      "pf": 1.05,
+      "trade_count": 140
+    },
+    "delta": {
+      "profit_factor": -0.25,
+      "trade_count": -60
+    },
+    "trade_retention_ratio": 0.7,
+    "full_history_window": {
+      "from": "2017-01-01",
+      "to": "2022-12-31"
+    },
+    "calibration_ready": true
+  },
+  "evidence_path": "artifacts\\qua-295\\parity-check\\QM5_9999\\P5\\P5_QM5_9999_EURUSD.DWX_20260428_014645_result.json"
+}

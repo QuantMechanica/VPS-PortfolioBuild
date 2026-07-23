@@ -1,11 +1,11 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_1003 Davey World Cup (SRC01_S05)"
+#property description "QM5_1005 Davey World Cup (SRC01_S05)"
 
 #include <QM/QM_Common.mqh>
 
 input group "QuantMechanica V5 Framework"
-input int    ea_id                    = 1003;
+input int    ea_id                    = 1005;
 input int    magic_slot_offset        = 0;
 
 input group "Risk"
@@ -274,7 +274,7 @@ int OnInit()
    if(g_h_rsi == INVALID_HANDLE || g_h_atr == INVALID_HANDLE)
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"SRC01_S05\",\"ea\":\"QM5_1003_davey_worldcup\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"SRC01_S05\",\"ea\":\"QM5_1005_davey_worldcup\"}");
    return INIT_SUCCEEDED;
   }
 
@@ -340,3 +340,4 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
+

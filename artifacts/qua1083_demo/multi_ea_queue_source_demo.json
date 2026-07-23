@@ -1,0 +1,24 @@
+﻿{
+    "transition_ready":  [
+                             {
+                                 "phase":  "P2",
+                                 "symbol":  "XAUUSD.DWX",
+                                 "ea_id":  "QM5_1017",
+                                 "config_hash":  "demo-p2-b"
+                             },
+                             {
+                                 "phase":  "P3.5",
+                                 "symbol":  "US500.DWX",
+                                 "ea_id":  "QM5_1004",
+                                 "config_hash":  "demo-p35-c"
+                             }
+                         ],
+    "approved_waiting_p0":  [
+                                {
+                                    "phase":  "P0",
+                                    "symbol":  "EURUSD.DWX",
+                                    "ea_id":  "QM5_1014",
+                                    "config_hash":  "demo-p0-a"
+                                }
+                            ]
+}

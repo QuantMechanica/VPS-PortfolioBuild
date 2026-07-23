@@ -1,0 +1,394 @@
+   1: #property strict
+   2: #property version   "5.0"
+   3: #property description "QM5_1002 Davey Euro Night (SRC01_S01) baseline build"
+   4: 
+   5: #include <QM/QM_Common.mqh>
+   6: #include <Trade/Trade.mqh>
+   7: 
+   8: input group "QuantMechanica V5 Framework"
+   9: input int    ea_id              = 1002;
+  10: input int    magic_slot_offset  = 0;
+  11: 
+  12: input group "Risk"
+  13: input double RISK_PERCENT       = 0.0;
+  14: input double RISK_FIXED         = 1000.0;
+  15: input double PORTFOLIO_WEIGHT   = 1.0;
+  16: 
+  17: input group "News"
+  18: input QM_NewsMode news_mode     = QM_NEWS_OFF;
+  19: 
+  20: input group "Friday Close"
+  21: input bool   friday_close_enabled     = true;
+  22: input int    friday_close_hour_broker = 21;
+  23: 
+  24: input group "Strategy"
+  25: input int    Nb                 = 14;
+  26: input int    NATR               = 93;
+  27: input double ATRmult            = 2.55;
+  28: input double TRmult             = 0.71;
+  29: input double Stoplo             = 425.0;
+  30: input int    FirstTime          = 1800;
+  31: input int    LastTime           = 2359;
+  32: input int    SessionCloseHHMM   = 600;
+  33: input bool   block_friday_entry = true;
+  34: 
+  35: int      g_h_ma_high            = INVALID_HANDLE;
+  36: int      g_h_ma_low             = INVALID_HANDLE;
+  37: int      g_h_atr                = INVALID_HANDLE;
+  38: datetime g_last_bar_open_time   = 0;
+  39: int      g_last_entry_day_key   = -1;
+  40: int      g_last_close_day_key   = -1;
+  41: CTrade   g_trade;
+  42: 
+  43: int DayKey(const datetime t)
+  44:   {
+  45:    MqlDateTime dt;
+  46:    TimeToStruct(t, dt);
+  47:    return (dt.year * 1000 + dt.day_of_year);
+  48:   }
+  49: 
+  50: int HHMM(const datetime t)
+  51:   {
+  52:    MqlDateTime dt;
+  53:    TimeToStruct(t, dt);
+  54:    return (dt.hour * 100 + dt.min);
+  55:   }
+  56: 
+  57: bool InWindowHHMM(const int hhmm, const int start_hhmm, const int end_hhmm)
+  58:   {
+  59:    if(start_hhmm <= end_hhmm)
+  60:       return (hhmm >= start_hhmm && hhmm <= end_hhmm);
+  61:    return (hhmm >= start_hhmm || hhmm <= end_hhmm);
+  62:   }
+  63: 
+  64: double IndicatorValue(const int handle, const int shift)
+  65:   {
+  66:    if(handle == INVALID_HANDLE)
+  67:       return 0.0;
+  68:    double buf[];
+  69:    if(CopyBuffer(handle, 0, shift, 1, buf) != 1)
+  70:       return 0.0;
+  71:    return buf[0];
+  72:   }
+  73: 
+  74: double PrevTrueRange()
+  75:   {
+  76:    const double high1  = iHigh(_Symbol, _Period, 1);
+  77:    const double low1   = iLow(_Symbol, _Period, 1);
+  78:    const double close2 = iClose(_Symbol, _Period, 2);
+  79:    if(high1 <= 0.0 || low1 <= 0.0 || close2 <= 0.0)
+  80:       return 0.0;
+  81: 
+  82:    const double a = high1 - low1;
+  83:    const double b = MathAbs(high1 - close2);
+  84:    const double c = MathAbs(low1 - close2);
+  85:    return MathMax(a, MathMax(b, c));
+  86:   }
+  87: 
+  88: double PipSize()
+  89:   {
+  90:    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+  91:    if(point <= 0.0)
+  92:       return 0.0;
+  93:    if(_Digits == 3 || _Digits == 5)
+  94:       return (10.0 * point);
+  95:    return point;
+  96:   }
+  97: 
+  98: double StoploPriceDelta()
+  99:   {
+ 100:    const double pip = PipSize();
+ 101:    if(pip <= 0.0)
+ 102:       return 0.0;
+ 103:    // Davey @EC mapping: 1 tick ($12.50) ~= 1 pip on EURUSD.
+ 104:    const double stop_pips = Stoplo / 12.5;
+ 105:    return stop_pips * pip;
+ 106:   }
+ 107: 
+ 108: int FrameworkMagic()
+ 109:   {
+ 110:    return QM_MagicChecked(ea_id, magic_slot_offset, _Symbol);
+ 111:   }
+ 112: 
+ 113: bool HasOpenPositionForMagic(const int magic)
+ 114:   {
+ 115:    const int total = PositionsTotal();
+ 116:    for(int i = 0; i < total; ++i)
+ 117:      {
+ 118:       const ulong ticket = PositionGetTicket(i);
+ 119:       if(ticket == 0 || !PositionSelectByTicket(ticket))
+ 120:          continue;
+ 121:       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+ 122:          continue;
+ 123:       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+ 124:          continue;
+ 125:       return true;
+ 126:      }
+ 127:    return false;
+ 128:   }
+ 129: 
+ 130: bool HasPendingOrderForMagic(const int magic)
+ 131:   {
+ 132:    const int total = OrdersTotal();
+ 133:    for(int i = 0; i < total; ++i)
+ 134:      {
+ 135:       const ulong ticket = OrderGetTicket(i);
+ 136:       if(ticket == 0)
+ 137:          continue;
+ 138:       if(!OrderSelect(ticket))
+ 139:          continue;
+ 140:       if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+ 141:          continue;
+ 142:       if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+ 143:          continue;
+ 144: 
+ 145:       const ENUM_ORDER_TYPE t = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
+ 146:       if(t == ORDER_TYPE_BUY_LIMIT || t == ORDER_TYPE_SELL_LIMIT || t == ORDER_TYPE_BUY_STOP || t == ORDER_TYPE_SELL_STOP)
+ 147:          return true;
+ 148:      }
+ 149:    return false;
+ 150:   }
+ 151: 
+ 152: void CancelPendingOrdersForMagic(const int magic, const string reason)
+ 153:   {
+ 154:    const int total = OrdersTotal();
+ 155:    for(int i = total - 1; i >= 0; --i)
+ 156:      {
+ 157:       const ulong ticket = OrderGetTicket(i);
+ 158:       if(ticket == 0)
+ 159:          continue;
+ 160:       if(!OrderSelect(ticket))
+ 161:          continue;
+ 162:       if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+ 163:          continue;
+ 164:       if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+ 165:          continue;
+ 166: 
+ 167:       const ENUM_ORDER_TYPE t = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
+ 168:       if(!(t == ORDER_TYPE_BUY_LIMIT || t == ORDER_TYPE_SELL_LIMIT || t == ORDER_TYPE_BUY_STOP || t == ORDER_TYPE_SELL_STOP))
+ 169:          continue;
+ 170: 
+ 171:       MqlTradeRequest req;
+ 172:       MqlTradeResult  res;
+ 173:       ZeroMemory(req);
+ 174:       ZeroMemory(res);
+ 175:       req.action = TRADE_ACTION_REMOVE;
+ 176:       req.order  = ticket;
+ 177:       if(!OrderSend(req, res))
+ 178:          QM_LogEvent(QM_WARN, "PENDING_CANCEL_FAILED", StringFormat("{\"ticket\":%I64u,\"reason\":\"%s\"}", ticket, QM_LoggerEscapeJson(reason)));
+ 179:      }
+ 180:   }
+ 181: 
+ 182: void ForceFlatAtSessionClose(const datetime now_time)
+ 183:   {
+ 184:    const int hhmm = HHMM(now_time);
+ 185:    const int day_key = DayKey(now_time);
+ 186:    if(hhmm < SessionCloseHHMM || day_key == g_last_close_day_key)
+ 187:       return;
+ 188: 
+ 189:    const int magic = FrameworkMagic();
+ 190:    if(magic <= 0)
+ 191:       return;
+ 192: 
+ 193:    const int total = PositionsTotal();
+ 194:    for(int i = total - 1; i >= 0; --i)
+ 195:      {
+ 196:       const ulong ticket = PositionGetTicket(i);
+ 197:       if(ticket == 0 || !PositionSelectByTicket(ticket))
+ 198:          continue;
+ 199:       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+ 200:          continue;
+ 201:       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+ 202:          continue;
+ 203:       g_trade.PositionClose(ticket);
+ 204:      }
+ 205: 
+ 206:    CancelPendingOrdersForMagic(magic, "session_close");
+ 207:    g_last_close_day_key = day_key;
+ 208:    QM_LogEvent(QM_INFO, "SESSION_CLOSE_FORCE_FLAT", StringFormat("{\"hhmm\":%d}", hhmm));
+ 209:   }
+ 210: 
+ 211: void RefreshOpenPositionTargets()
+ 212:   {
+ 213:    const int magic = FrameworkMagic();
+ 214:    if(magic <= 0)
+ 215:       return;
+ 216: 
+ 217:    const double tr_prev = PrevTrueRange();
+ 218:    const double stop_delta = StoploPriceDelta();
+ 219:    if(tr_prev <= 0.0 || stop_delta <= 0.0)
+ 220:       return;
+ 221: 
+ 222:    const int total = PositionsTotal();
+ 223:    for(int i = 0; i < total; ++i)
+ 224:      {
+ 225:       const ulong ticket = PositionGetTicket(i);
+ 226:       if(ticket == 0 || !PositionSelectByTicket(ticket))
+ 227:          continue;
+ 228:       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+ 229:          continue;
+ 230:       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+ 231:          continue;
+ 232: 
+ 233:       const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+ 234:       const double entry = PositionGetDouble(POSITION_PRICE_OPEN);
+ 235:       double new_sl = 0.0;
+ 236:       double new_tp = 0.0;
+ 237:       if(ptype == POSITION_TYPE_BUY)
+ 238:         {
+ 239:          new_sl = NormalizeDouble(entry - stop_delta, _Digits);
+ 240:          new_tp = NormalizeDouble(entry + TRmult * tr_prev, _Digits);
+ 241:         }
+ 242:       else if(ptype == POSITION_TYPE_SELL)
+ 243:         {
+ 244:          new_sl = NormalizeDouble(entry + stop_delta, _Digits);
+ 245:          new_tp = NormalizeDouble(entry - TRmult * tr_prev, _Digits);
+ 246:         }
+ 247:       else
+ 248:          continue;
+ 249: 
+ 250:       g_trade.PositionModify(_Symbol, new_sl, new_tp);
+ 251:      }
+ 252:   }
+ 253: 
+ 254: void EvaluateEntryOnNewBar(const datetime now_time)
+ 255:   {
+ 256:    const int hhmm = HHMM(now_time);
+ 257:    if(!InWindowHHMM(hhmm, FirstTime, LastTime))
+ 258:       return;
+ 259: 
+ 260:    MqlDateTime dt;
+ 261:    TimeToStruct(now_time, dt);
+ 262:    if(block_friday_entry && dt.day_of_week == 5)
+ 263:       return;
+ 264: 
+ 265:    const int day_key = DayKey(now_time);
+ 266:    if(day_key == g_last_entry_day_key)
+ 267:       return;
+ 268: 
+ 269:    const int magic = FrameworkMagic();
+ 270:    if(magic <= 0)
+ 271:       return;
+ 272:    if(HasOpenPositionForMagic(magic) || HasPendingOrderForMagic(magic))
+ 273:       return;
+ 274: 
+ 275:    const double avg_high = IndicatorValue(g_h_ma_high, 1);
+ 276:    const double avg_low  = IndicatorValue(g_h_ma_low, 1);
+ 277:    const double atr_val  = IndicatorValue(g_h_atr, 1);
+ 278:    const double close_1  = iClose(_Symbol, _Period, 1);
+ 279:    if(avg_high <= 0.0 || avg_low <= 0.0 || atr_val <= 0.0 || close_1 <= 0.0)
+ 280:       return;
+ 281: 
+ 282:    const double long_price  = avg_high - ATRmult * atr_val;
+ 283:    const double short_price = avg_low + ATRmult * atr_val;
+ 284:    const bool use_long = (MathAbs(close_1 - long_price) <= MathAbs(close_1 - short_price));
+ 285: 
+ 286:    const double stop_delta = StoploPriceDelta();
+ 287:    double tr_prev = PrevTrueRange();
+ 288:    if(tr_prev <= 0.0)
+ 289:       tr_prev = atr_val;
+ 290:    if(stop_delta <= 0.0 || tr_prev <= 0.0)
+ 291:       return;
+ 292: 
+ 293:    QM_EntryRequest req;
+ 294:    ZeroMemory(req);
+ 295:    req.symbol_slot = magic_slot_offset;
+ 296:    req.reason = "davey_eu_night_entry";
+ 297:    req.expiration_seconds = PeriodSeconds(_Period);
+ 298:    if(use_long)
+ 299:      {
+ 300:       req.type  = QM_BUY_LIMIT;
+ 301:       req.price = NormalizeDouble(long_price, _Digits);
+ 302:       req.sl    = NormalizeDouble(req.price - stop_delta, _Digits);
+ 303:       req.tp    = NormalizeDouble(req.price + TRmult * tr_prev, _Digits);
+ 304:      }
+ 305:    else
+ 306:      {
+ 307:       req.type  = QM_SELL_LIMIT;
+ 308:       req.price = NormalizeDouble(short_price, _Digits);
+ 309:       req.sl    = NormalizeDouble(req.price + stop_delta, _Digits);
+ 310:       req.tp    = NormalizeDouble(req.price - TRmult * tr_prev, _Digits);
+ 311:      }
+ 312: 
+ 313:    ulong ticket = 0;
+ 314:    const QM_EntryResult result = QM_Entry(req, ticket);
+ 315:    if(result == QM_ENTRY_OK)
+ 316:       g_last_entry_day_key = day_key;
+ 317:   }
+ 318: 
+ 319: bool IsNewBar()
+ 320:   {
+ 321:    const datetime bar_time = iTime(_Symbol, _Period, 0);
+ 322:    if(bar_time <= 0)
+ 323:       return false;
+ 324:    if(bar_time == g_last_bar_open_time)
+ 325:       return false;
+ 326:    g_last_bar_open_time = bar_time;
+ 327:    return true;
+ 328:   }
+ 329: 
+ 330: int OnInit()
+ 331:   {
+ 332:    if(!QM_FrameworkInit(ea_id,
+ 333:                         magic_slot_offset,
+ 334:                         RISK_PERCENT,
+ 335:                         RISK_FIXED,
+ 336:                         PORTFOLIO_WEIGHT,
+ 337:                         news_mode,
+ 338:                         friday_close_enabled,
+ 339:                         friday_close_hour_broker))
+ 340:       return INIT_FAILED;
+ 341: 
+ 342:    g_h_ma_high = iMA(_Symbol, _Period, Nb, 0, MODE_SMA, PRICE_HIGH);
+ 343:    g_h_ma_low  = iMA(_Symbol, _Period, Nb, 0, MODE_SMA, PRICE_LOW);
+ 344:    g_h_atr     = iATR(_Symbol, _Period, NATR);
+ 345:    if(g_h_ma_high == INVALID_HANDLE || g_h_ma_low == INVALID_HANDLE || g_h_atr == INVALID_HANDLE)
+ 346:       return INIT_FAILED;
+ 347: 
+ 348:    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"SRC01_S01\",\"ea\":\"QM5_1002_davey-eu-night\"}");
+ 349:    return INIT_SUCCEEDED;
+ 350:   }
+ 351: 
+ 352: void OnDeinit(const int reason)
+ 353:   {
+ 354:    if(g_h_ma_high != INVALID_HANDLE)
+ 355:       IndicatorRelease(g_h_ma_high);
+ 356:    if(g_h_ma_low != INVALID_HANDLE)
+ 357:       IndicatorRelease(g_h_ma_low);
+ 358:    if(g_h_atr != INVALID_HANDLE)
+ 359:       IndicatorRelease(g_h_atr);
+ 360:    QM_LogEvent(QM_INFO, "DEINIT", StringFormat("{\"reason\":%d}", reason));
+ 361:    QM_FrameworkShutdown();
+ 362:   }
+ 363: 
+ 364: void OnTick()
+ 365:   {
+ 366:    if(!QM_KillSwitchCheck())
+ 367:       return;
+ 368:    if(!QM_NewsAllowsTrade(_Symbol, TimeCurrent(), news_mode))
+ 369:       return;
+ 370:    if(QM_FrameworkHandleFridayClose())
+ 371:       return;
+ 372: 
+ 373:    const datetime now_time = TimeCurrent();
+ 374:    if(now_time <= 0)
+ 375:       return;
+ 376: 
+ 377:    ForceFlatAtSessionClose(now_time);
+ 378:    if(!IsNewBar())
+ 379:       return;
+ 380: 
+ 381:    RefreshOpenPositionTargets();
+ 382:    EvaluateEntryOnNewBar(now_time);
+ 383:   }
+ 384: 
+ 385: void OnTimer()
+ 386:   {
+ 387:    QM_FrameworkOnTimer();
+ 388:   }
+ 389: 
+ 390: double OnTester()
+ 391:   {
+ 392:    QM_ChartUI_Refresh();
+ 393:    return QM_DefaultObjective();
+ 394:   }

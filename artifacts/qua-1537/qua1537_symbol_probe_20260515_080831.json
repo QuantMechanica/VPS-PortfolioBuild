@@ -1,0 +1,39 @@
+{
+  "timestamp_utc": "2026-05-15T06:08:31.490111+00:00",
+  "terminal_path": "D:\\\\QM\\\\mt5\\\\T1\\\\terminal64.exe",
+  "init_ok": true,
+  "account": {
+    "login": 4000090541,
+    "server": "Darwinex-Live",
+    "company": "Tradeslide Trading Tech Limited",
+    "currency": "USD"
+  },
+  "symbols_total": 883,
+  "targets": [
+    {
+      "symbol": "WTI.cash.DWX",
+      "found_in_symbols_get": false,
+      "symbol_info_exists": false,
+      "symbol_select_true_result": false,
+      "selected_before": null,
+      "visible_before": null,
+      "path_before": null,
+      "selected_after": null,
+      "visible_after": null,
+      "path_after": null
+    },
+    {
+      "symbol": "USDX.f",
+      "found_in_symbols_get": false,
+      "symbol_info_exists": false,
+      "symbol_select_true_result": false,
+      "selected_before": null,
+      "visible_before": null,
+      "path_before": null,
+      "selected_after": null,
+      "visible_after": null,
+      "path_after": null
+    }
+  ],
+  "last_error": null
+}
