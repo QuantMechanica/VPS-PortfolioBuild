@@ -1,0 +1,36 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20062
+; ea_slug:      kats-eu-macisar
+; ea_version:   v5.0
+; set_version:  s20260723-001
+; symbol:       EURUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-07-23
+;==========================================================
+qm_ea_id=20062
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\kats-eu-macisar_card.md
+strategy_ma_period=10
+strategy_pc_stddev_period=20
+strategy_filt_mult=0.7
+strategy_ci_roc_period=39
+strategy_ci_range_period=40
+strategy_ci_ema_period=7
+strategy_ci_abs_gate=40.0
+strategy_ci_turn_threshold=3.0
+strategy_turn_lookback=3
+strategy_sar_step=0.04
+strategy_sar_max=0.10
+strategy_catastrophe_atr_period=20
+strategy_catastrophe_atr_mult=3.0

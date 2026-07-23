@@ -1,0 +1,44 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20061
+; ea_slug:      kats-dax-maci
+; ea_version:   v5.0
+; set_version:  s20260723-001
+; symbol:       GDAXI.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-07-23
+;==========================================================
+qm_ea_id=20061
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\kats-dax-maci_card.md
+ci_roc_period=39
+ci_range_period=40
+stoch_fast_k_period=5
+stoch_fast_d_period=3
+stoch_slow_k_period=40
+stoch_slow_d_period=3
+trend_long_fast_ma=15
+trend_long_slow_ma=20
+trend_short_fast_ma=10
+trend_short_slow_ma=20
+trend_short_micro_ma=2
+trend_short_macro_ma=150
+macd_fast_period=12
+macd_slow_period=26
+macd_signal_period=9
+macd_signal_ema_period=7
+exit_close_ema_period=7
+time_exit_bars=60
+catastrophe_atr_period=20
+catastrophe_atr_mult=3.0
+min_warmup_bars=200
