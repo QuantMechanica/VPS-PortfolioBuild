@@ -1,0 +1,34 @@
+﻿; ea_id: 20053
+; ea_slug: xcu-weekend-prem
+; ea_version: v5.0
+; set_version: s20260723-001
+; symbol: XCUUSD.DWX
+; timeframe: H1
+; environment: backtest
+; magic_slot: 0
+; risk_mode: RISK_FIXED
+; portfolio_weight: 1
+; build_hash:   46b9c894abea3a8c478a64352eee49bb779263ed9c1eed6eeb1d4e605e66efa4
+; author: Development
+; date: 2026-07-23
+qm_ea_id=20053
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=0
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+strategy_entry_dow=5
+strategy_entry_hour_broker=21
+strategy_entry_grace_minutes=5
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=3.0
+strategy_max_hold_days=4
+strategy_max_spread_points=1000
