@@ -4,17 +4,17 @@
 ; ea_slug:      weiss-dmi-adx
 ; ea_version:   v5.0
 ; set_version:  s20260607-001
-; symbol:       XTIUSD.DWX
+; symbol:       USDJPY.DWX
 ; timeframe:    D1
 ; environment:  backtest
-; magic_slot:   3
+; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   eaf71856a994e338e512ca7b6c279f0fd07cdb665d655c6854d7c6636e541d90
+; build_hash:   e83fe677c47866d038fa4b3d5543602e8b23a74956d7ece44671e5e6388ffbff
 ; author:       Development
 ; date:         2026-06-07
 ;==========================================================
-qm_magic_slot_offset=3
+qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
@@ -32,3 +32,10 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
+; --- ablation child 02 of QM5_11173_weiss-dmi-adx_USDJPY.DWX_D1_backtest (perturb=±25%) ---
+strategy_dmi_period=11
+strategy_adx_period=9
+strategy_ddif_entry_level=15.589173
+strategy_adx_min=20.308495
+strategy_atr_period=25
+strategy_atr_sl_mult=3.637536

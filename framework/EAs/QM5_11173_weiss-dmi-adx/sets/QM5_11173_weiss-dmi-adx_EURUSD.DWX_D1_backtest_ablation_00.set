@@ -4,17 +4,17 @@
 ; ea_slug:      weiss-dmi-adx
 ; ea_version:   v5.0
 ; set_version:  s20260607-001
-; symbol:       XTIUSD.DWX
+; symbol:       EURUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
-; magic_slot:   3
+; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   eaf71856a994e338e512ca7b6c279f0fd07cdb665d655c6854d7c6636e541d90
+; build_hash:   4af47043193f67c8d5deeaf1b792ac9145703130a17015f71aa59bb4daf486ae
 ; author:       Development
 ; date:         2026-06-07
 ;==========================================================
-qm_magic_slot_offset=3
+qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
@@ -32,3 +32,10 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
+; --- ablation child 00 of QM5_11173_weiss-dmi-adx_EURUSD.DWX_D1_backtest (perturb=±25%) ---
+strategy_dmi_period=12
+strategy_adx_period=10
+strategy_ddif_entry_level=19.033253
+strategy_adx_min=16.281875
+strategy_atr_period=16
+strategy_atr_sl_mult=2.610096

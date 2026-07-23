@@ -10,7 +10,7 @@
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   eaf71856a994e338e512ca7b6c279f0fd07cdb665d655c6854d7c6636e541d90
+; build_hash:   465c514987c73863b4f0dccf3cddf46978c2d28ddadc3c190048a61c54b5132e
 ; author:       Development
 ; date:         2026-06-07
 ;==========================================================
@@ -32,3 +32,10 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
+; --- ablation child 01 of QM5_11173_weiss-dmi-adx_XTIUSD.DWX_D1_backtest (perturb=±25%) ---
+strategy_dmi_period=9
+strategy_adx_period=7
+strategy_ddif_entry_level=19.791754
+strategy_adx_min=22.418899
+strategy_atr_period=20
+strategy_atr_sl_mult=2.787021
