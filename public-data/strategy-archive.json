@@ -1,6 +1,6 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-23T22:07:04.1987396Z",
+    "generated_at":  "2026-07-23T23:07:03.3269762Z",
     "total":  3532,
     "items":  [
                   {
@@ -12721,7 +12721,7 @@
                       "slug":  "QM5_11897_vegas-wave-ema144-169-fractal-h1-alt",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:30:31.2509830Z"
+                      "last_updated_utc":  "2026-07-23T22:11:13.8080452Z"
                   },
                   {
                       "slug":  "QM5_11899_psar-ao-ac-confluence-h1",
@@ -17935,109 +17935,109 @@
                       "slug":  "QM5_20070_antor-mtf-macd-scalper-r1-recovery",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:30:34.1362889Z"
+                      "last_updated_utc":  "2026-07-23T22:11:27.1354483Z"
                   },
                   {
                       "slug":  "QM5_20071_channel-cci-bollinger-mr-r1-recovery",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:30:40.8619356Z"
+                      "last_updated_utc":  "2026-07-23T22:11:36.8906161Z"
                   },
                   {
                       "slug":  "QM5_20072_4h-box-frankfurt-london-r1-recovery",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:30:41.4785422Z"
+                      "last_updated_utc":  "2026-07-23T22:11:46.5148187Z"
                   },
                   {
                       "slug":  "QM5_20073_pip-hunter-heiken-ashi-r1-recovery",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:31:58.6541801Z"
+                      "last_updated_utc":  "2026-07-23T22:11:56.7070980Z"
                   },
                   {
                       "slug":  "QM5_20074_trendline-horizontal-sr-retest",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:32:01.2817946Z"
+                      "last_updated_utc":  "2026-07-23T22:12:07.0781651Z"
                   },
                   {
                       "slug":  "QM5_20075_camarilla-inner-pivot-fade",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:32:04.0356164Z"
+                      "last_updated_utc":  "2026-07-23T22:12:17.0859486Z"
                   },
                   {
                       "slug":  "QM5_20076_trendline-diagonal-break-retest",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:32:07.1113781Z"
+                      "last_updated_utc":  "2026-07-23T22:12:27.3942613Z"
                   },
                   {
                       "slug":  "QM5_20077_atr-channel-trail-breakout-h1",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:32:09.7177763Z"
+                      "last_updated_utc":  "2026-07-23T22:12:40.2623460Z"
                   },
                   {
                       "slug":  "QM5_20078_volume-profile-poc-retest-intraday",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:38:09.8349715Z"
+                      "last_updated_utc":  "2026-07-23T22:12:53.8060689Z"
                   },
                   {
                       "slug":  "QM5_20079_pip-boxer-bounded-grid-h1",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:38:10.3372775Z"
+                      "last_updated_utc":  "2026-07-23T22:13:06.9178227Z"
                   },
                   {
                       "slug":  "QM5_20080_goodman-wave-theory-intersection-h1",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:38:10.7222783Z"
+                      "last_updated_utc":  "2026-07-23T22:13:20.2581518Z"
                   },
                   {
                       "slug":  "QM5_20081_renko-triple-block-flip-h1",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:38:11.1654313Z"
+                      "last_updated_utc":  "2026-07-23T22:27:19.6267948Z"
                   },
                   {
                       "slug":  "QM5_20082_connors-rsi2-pullback-h4",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:38:11.5694818Z"
+                      "last_updated_utc":  "2026-07-23T22:27:22.9056912Z"
                   },
                   {
                       "slug":  "QM5_20085_lebeau-lucas-momentum-oscillator-h4-r1-recovery",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:41:15.6781435Z"
+                      "last_updated_utc":  "2026-07-23T22:27:25.8105091Z"
                   },
                   {
                       "slug":  "QM5_20086_connors-multi-day-high-low-h4-r1-recovery",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:41:17.8404438Z"
+                      "last_updated_utc":  "2026-07-23T22:27:28.7669063Z"
                   },
                   {
                       "slug":  "QM5_20087_carney-three-drives-h4-r1-recovery",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:41:20.3625297Z"
+                      "last_updated_utc":  "2026-07-23T22:27:31.2709653Z"
                   },
                   {
                       "slug":  "QM5_20088_carney-crab-pattern-h4-r1-recovery",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:41:22.9562817Z"
+                      "last_updated_utc":  "2026-07-23T22:27:34.1887118Z"
                   },
                   {
                       "slug":  "QM5_20089_hopwood-ts4-standalone-h4-r1-recovery",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:41:25.2795511Z"
+                      "last_updated_utc":  "2026-07-23T22:27:37.5034980Z"
                   },
                   {
                       "slug":  "QM5_2010_nnfx-v2-h4-bias-h1-pullback",
