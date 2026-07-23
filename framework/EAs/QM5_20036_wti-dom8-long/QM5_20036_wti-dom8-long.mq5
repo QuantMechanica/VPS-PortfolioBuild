@@ -80,11 +80,12 @@ bool Strategy_HasOpenPosition()
 
 int Strategy_MonthKeyForTime(const datetime value)
   {
-   MqlDateTime parts;
-   ZeroMemory(parts);
-   if(value <= 0 || !TimeToStruct(value, parts))
+   if(value <= 0)
       return 0;
-   return parts.year * 100 + parts.mon;
+   const int shift = iBarShift(_Symbol, PERIOD_D1, value, false);
+   if(shift < 0)
+      return 0;
+   return QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, shift);
   }
 
 int Strategy_DayOfMonth(const datetime value)

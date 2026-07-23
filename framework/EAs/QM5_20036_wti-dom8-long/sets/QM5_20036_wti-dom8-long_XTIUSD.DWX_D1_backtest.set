@@ -3,16 +3,16 @@
 ; ea_id:        20036
 ; ea_slug:      wti-dom8-long
 ; ea_version:   v5.0
-; set_version:  s20260722-001
+; set_version:  s20260723-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   583e0c1a8d37e0338f88ad1f02fcb9ab1639338a850be1a6326936f31494079a
+; build_hash:   pending
 ; author:       Development
-; date:         2026-07-22
+; date:         2026-07-23
 ;==========================================================
 qm_ea_id=20036
 qm_magic_slot_offset=0
@@ -20,7 +20,7 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=C:\QM\repo\strategy-seeds\cards\approved\QM5_20036_wti-dom8-long_card.md
+; card_defaults_source=ea_input_defaults
 strategy_entry_day=8
 strategy_atr_period=20
 strategy_atr_sl_mult=2.75
