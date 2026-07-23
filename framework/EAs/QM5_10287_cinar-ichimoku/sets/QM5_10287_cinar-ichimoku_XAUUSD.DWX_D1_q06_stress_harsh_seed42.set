@@ -3,7 +3,7 @@
 ; ea_id:        10287
 ; ea_slug:      cinar-ichimoku
 ; ea_version:   v5.0
-; set_version:  s20260721-stress-harsh
+; set_version:  s20260723-stress-harsh
 ; symbol:       XAUUSD.DWX
 ; timeframe:    D1
 ; environment:  q06_stress_harsh
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-07-21
+; date:         2026-07-23
 ;==========================================================
 qm_magic_slot_offset=31
 qm_rng_seed=42

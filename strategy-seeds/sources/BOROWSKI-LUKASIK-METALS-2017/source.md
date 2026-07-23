@@ -5,7 +5,9 @@ status: approved
 approved_by: OWNER commodity-sleeve mission
 approved_at: 2026-07-20
 primary_url: https://econjournals.sgh.waw.pl/JMFS/article/download/740/643/
-strategy_ids: [BOROWSKI-LUKASIK-METALS-2017_S01]
+strategy_ids:
+  - BOROWSKI-LUKASIK-METALS-2017_S01
+  - BOROWSKI-LUKASIK-METALS-2017_S02
 ---
 
 # Gold/Silver weekend differential source
@@ -19,11 +21,17 @@ Table 5 rejects zero weekend return for gold (`p=0.001138788`) but not silver
 for gold and `0.0223%` for silver. The paper concludes that the weekend effect
 occurred for gold and copper, not silver, platinum or palladium.
 
-QM mechanizes one falsification candidate: at broker Friday 21:00, BUY XAU and
+QM mechanizes two falsification candidates. The first enters at broker Friday 21:00, BUY XAU and
 SELL XAG with equal USD notionals and a shared fixed-risk budget; close both at
 the first Monday H1 bar. The short-silver hedge is a QM market-neutral
 translation that isolates gold's source-supported weekend effect from broad
 precious-metal beta; it is not claimed as a source-tested portfolio.
+
+The second tests the paper's directly reported copper weekend effect without a
+hedge: BUY XCUUSD.DWX at broker Friday 21:00 and close at the first Monday H1
+bar. It uses one fixed-risk ATR stop and one position per magic. This is a
+separate commodity exposure and does not infer copper behavior from the gold
+result.
 
 Limitations are binding: sample dates and settlement boundaries differ from
 Darwinex CFDs, the gross XAU-XAG mean differential is small, financing/gaps and
