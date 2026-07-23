@@ -9386,7 +9386,13 @@ def _auto_commit_build_artifacts(root: Path, within_sec: int = 90) -> dict[str, 
         return {"committed": False, "reason": "nothing_committable", "skipped_active": skipped_active}
 
     try:
-        add = _sp.run(["git", "-C", str(REPO_ROOT), "add", "--"] + commit_paths,
+        # The allowlist contains the generated magic resolver under
+        # framework/include/QM/.  On Windows the repository's ``Include/``
+        # ignore rule matches that tracked path case-insensitively, and plain
+        # ``git add`` exits non-zero even for the already tracked resolver.
+        # These paths have already passed the narrow artifact allowlist, so
+        # force-add them to keep the dirty-guard self-healing.
+        add = _sp.run(["git", "-C", str(REPO_ROOT), "add", "--force", "--"] + commit_paths,
                       capture_output=True, text=True, timeout=120, creationflags=flags)
         if add.returncode != 0:
             return {"committed": False, "reason": "add_rc", "stderr": (add.stderr or "")[:200]}

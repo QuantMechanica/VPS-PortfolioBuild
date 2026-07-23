@@ -133,6 +133,41 @@ class RGateBuildReadinessTests(unittest.TestCase):
         )
 
 
+class ArtifactAutoCommitTests(unittest.TestCase):
+    def test_force_adds_allowlisted_tracked_resolver_under_ignored_include_dir(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp) / "farm"
+            farmctl.init_db(root)
+            status_result = mock.Mock(
+                returncode=0,
+                stdout=" M framework/include/QM/QM_MagicResolver.mqh\n",
+                stderr="",
+            )
+            add_result = mock.Mock(returncode=0, stdout="", stderr="")
+            commit_result = mock.Mock(returncode=0, stdout="", stderr="")
+
+            with (
+                mock.patch.object(farmctl, "REPO_ROOT", Path(tmp) / "repo"),
+                mock.patch.object(
+                    farmctl.subprocess,
+                    "run",
+                    side_effect=[status_result, add_result, commit_result],
+                ) as run,
+            ):
+                result = farmctl._auto_commit_build_artifacts(root)
+
+        self.assertTrue(result["committed"])
+        add_command = run.call_args_list[1].args[0]
+        self.assertEqual(
+            add_command[:6],
+            ["git", "-C", str(Path(tmp) / "repo"), "add", "--force", "--"],
+        )
+        self.assertEqual(
+            add_command[6:],
+            ["framework/include/QM/QM_MagicResolver.mqh"],
+        )
+
+
 class LowTokenBuildRoutingTests(unittest.TestCase):
     def test_claude_g0_fallback_runs_only_with_real_free_capacity(self) -> None:
         self.assertTrue(
