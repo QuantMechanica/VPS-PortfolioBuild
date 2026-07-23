@@ -7,8 +7,8 @@
 #    AI           - agent orchestration. ON: enable+start | OFF: stop+disable
 #    ALWAYS_ON    - dashboards/health/briefs/snapshot/housekeeping.
 #                   ON: ENSURE enabled (safety-net) | OFF: LEAVE ALONE
-#                   (you still get the morning brief / reboot diagnostics /
-#                    health / dashboards
+#                   (you still get the morning brief / Friday source report /
+#                    reboot diagnostics / health / dashboards
 #                    even when the factory is OFF — by design).
 #    ENFORCE_DISABLED - unsafe paths and OWNER-disabled channels that must stay OFF.
 #                   ON: force-disable if drifted on | OFF: leave disabled.
@@ -41,6 +41,7 @@ $QM_ALWAYSON_TASKS = @(
     'QM_StrategyFarm_Dashboard_Hourly',       # current/strategies/EA-detail pages
     'QM_StrategyFarm_Health_15min',           # farmctl health
     'QM_MorningBriefing_Vault',               # morning brief (vault) 06:00
+    'QM_StrategyFarm_UnreadableLinks_Friday', # OWNER source-access backlog mail Friday 06:30
     'QM_StrategyFarm_MailboxSourceIntake_Daily', # info@ source extraction + authenticated triage 06:07
     'QM_StrategyFarm_RebootDiagnostic_AtStartup', # one deduplicated cause/recovery mail per Windows boot
     # NOTE: duplicate QM_StrategyFarm_MorningBrief_0700 was deleted. The retained

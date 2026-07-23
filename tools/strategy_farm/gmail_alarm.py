@@ -16,8 +16,9 @@ Credentials: re-uses the existing Gmail SMTP setup at
 
 OWNER 2026-07-23: the separate PIPELINE FAIL/OK mail is no longer wanted.
 The scheduled task is policy-disabled and ``main()`` fails closed below.
-This module remains the canonical SMTP helper for MorningBriefing and the
-post-reboot diagnostic mail; importing/calling ``_send_mail`` is unaffected.
+This module remains the canonical SMTP helper for MorningBriefing, the weekly
+unreadable-source report, and the post-reboot diagnostic mail;
+importing/calling ``_send_mail`` is unaffected.
 """
 
 from __future__ import annotations
@@ -280,12 +281,20 @@ def _send_mail(
 ) -> dict:
     """Send via Gmail SMTP. Multipart/alternative with text fallback + HTML."""
     if not APP_PASSWORD_FILE.exists() or not SENDER_FILE.exists():
-        return {"sent": False, "reason": "Gmail credentials missing in .private/secrets/"}
+        return {
+            "sent": False,
+            "reason": "Gmail credentials missing in .private/secrets/",
+            "failure_stage": "pre_send",
+        }
     try:
         password = APP_PASSWORD_FILE.read_text(encoding="utf-8").strip()
         sender = SENDER_FILE.read_text(encoding="utf-8").strip()
     except Exception as exc:
-        return {"sent": False, "reason": f"reading creds failed: {exc!r}"}
+        return {
+            "sent": False,
+            "reason": f"reading creds failed: {exc!r}",
+            "failure_stage": "pre_send",
+        }
     if html_body:
         msg = MIMEMultipart("alternative")
         msg["Subject"] = subject
@@ -300,13 +309,43 @@ def _send_mail(
         msg["To"] = RECIPIENT
     if message_id:
         msg["Message-ID"] = message_id
+    srv = None
     try:
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=30) as srv:
-            srv.starttls()
-            srv.login(sender, password)
-            srv.sendmail(sender, [RECIPIENT], msg.as_string())
+        srv = smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=30)
+        srv.starttls()
+        srv.login(sender, password)
     except Exception as exc:
-        return {"sent": False, "reason": f"smtp failed: {exc!r}"}
+        if srv is not None:
+            try:
+                srv.close()
+            except Exception:
+                pass
+        return {
+            "sent": False,
+            "reason": f"smtp pre-send failed: {exc!r}",
+            "failure_stage": "pre_send",
+        }
+    try:
+        srv.sendmail(sender, [RECIPIENT], msg.as_string())
+    except Exception as exc:
+        try:
+            srv.close()
+        except Exception:
+            pass
+        return {
+            "sent": False,
+            "reason": f"smtp delivery outcome ambiguous: {exc!r}",
+            "failure_stage": "send_ambiguous",
+        }
+    # Gmail has accepted the message.  A QUIT/connection-close error after this
+    # point must not turn a successful handoff into a retry and duplicate mail.
+    try:
+        srv.quit()
+    except Exception:
+        try:
+            srv.close()
+        except Exception:
+            pass
     return {"sent": True, "subject": subject, "html": bool(html_body)}
 
 
@@ -318,6 +357,11 @@ def _send_mail_with_retries(subject: str, text_body: str, html_body: str | None 
         last["attempt"] = attempt
         if last.get("sent"):
             return last
+        # Only failures known to have happened before SMTP delivery are safe to
+        # retry.  Once sendmail started, the server may have accepted the mail
+        # even if the client lost the response; retrying could duplicate it.
+        if last.get("failure_stage") != "pre_send":
+            break
         if attempt < attempts:
             time.sleep(base_delay_sec * (2 ** (attempt - 1)))
     DASHBOARDS_DIR.mkdir(parents=True, exist_ok=True)

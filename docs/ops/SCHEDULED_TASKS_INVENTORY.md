@@ -1,6 +1,6 @@
 # QuantMechanica — Scheduled-Task Inventory (canonical)
 
-**Last consolidated:** 2026-07-22 (live-uptime incident hardening)
+**Last consolidated:** 2026-07-23 (weekly source-access backlog mail)
 **Single source of truth:** `tools/strategy_farm/qm_tasks.manifest.ps1`
 **Drivers:** `tools/strategy_farm/Factory_ON.ps1` / `Factory_OFF.ps1` (desktop shortcuts
 "QM Factory ON/OFF") dot-source the manifest.
@@ -20,8 +20,9 @@ this document is the complete picture.
 | **ENFORCE_DISABLED** (unsafe paths and OWNER opt-outs) | force-disable if drifted | left disabled |
 | **DECOMMISSIONED** (legacy/paused) | not touched | not touched |
 
-Key point: with the factory **OFF you still get** the morning brief, dashboards,
-health checks, reboot diagnostics, the public snapshot, and housekeeping — by design.
+Key point: with the factory **OFF you still get** the morning brief, Friday
+source-access report, dashboards, health checks, reboot diagnostics, the public
+snapshot, and housekeeping — by design.
 ON additionally re-enables any ALWAYS_ON task that drifted to Disabled (reboot / accident).
 
 ## FACTORY — dispatch engine
@@ -69,6 +70,7 @@ by Factory_ON (visible mode), and a one-shot `farmctl.py repair`.
 | `QM_StrategyFarm_Dashboard_Hourly` | hourly | `dashboards/render_dashboards.py` |
 | `QM_StrategyFarm_Health_15min` | 15 min | `farmctl.py health` |
 | `QM_MorningBriefing_Vault` | 06:00 | `morning_brief.py` — the one daily MorningBriefing mail plus Drive-vault archive |
+| `QM_StrategyFarm_UnreadableLinks_Friday` | Friday 06:30 | `run_weekly_unreadable_links_task.py` — sends one deduplicated OWNER mail per ISO week containing unchecked links from the marked Priority-A block in `Strategie Links.md` plus access-related `DEFERRED` mailbox-intake rows. Discovery-only and EA-fidelity links are excluded. An atomic pre-SMTP week claim prevents duplicate delivery after a crash/state-write failure; only proven pre-send failures are retried. Runs as interactive `qm-admin` because the G: Vault mount is user-bound; 4 scheduler retries at 15-minute intervals cover a delayed Drive mount or proven pre-send failure. Explicit OWNER authorization: 2026-07-23. |
 | `QM_StrategyFarm_MailboxSourceIntake_Daily` | 06:07 daily | `mailbox_source_intake.py` — read-only IMAP extraction plus policy-aware source triage. Runs fail-closed as interactive `qm-admin` because Codex/agy credentials are user-bound; `CODEX_HOME` is explicit. Success requires a verified terminal CSV status for every lead; `QUALIFIED` additionally requires both the matching factory-source row and a source-linked G0 card. The Codex return code remains diagnostic evidence. Failed, partial, transient-fetch, or capacity-delayed runs remain retryable. Each Codex attempt is capped at 30 minutes; a nonzero task gets 4 scheduler restarts at 15-minute intervals. |
 | `QM_StrategyFarm_RebootDiagnostic_AtStartup` | startup +5 min | `run_reboot_diagnostic_mail_task.py` — sends one deduplicated German cause/recovery mail for each new Windows boot and retries failed delivery up to six times at five-minute intervals. A verified factory-watchdog marker adds the detailed session-loss analysis; otherwise Windows 1074/BugCheck/Kernel-Power evidence is classified conservatively. |
 | `QM_Public_Snapshot_Hourly` | hourly | `run_public_snapshot_task.ps1` (quantmechanica.com JSON) |
@@ -94,7 +96,7 @@ by Factory_ON (visible mode), and a one-shot `farmctl.py repair`.
 | `QM_StrategyFarm_TerminalWorkers_AT_STARTUP` | spawned daemons as SYSTEM/session-0 (headless); workers now spawn in the user session via Factory_ON. |
 | `QM_TSCon_Console_OnDisconnect` | caused a proven session-arbitration/desktop teardown race; must remain disabled. |
 | `QM_StrategyFarm_HygieneReboot` | legacy forced-reboot path does not yet implement the live watchdog's exact recovery contracts and cancellable maintenance/process edge; keep disabled until separately hardened. |
-| `QM_StrategyFarm_GmailAlarm_Hourly` | OWNER 2026-07-23: no separate PIPELINE FAIL/OK mails. `gmail_alarm.py` remains only as the shared SMTP helper for the 06:00 MorningBriefing and reboot diagnostics. |
+| `QM_StrategyFarm_GmailAlarm_Hourly` | OWNER 2026-07-23: no separate PIPELINE FAIL/OK mails. `gmail_alarm.py` remains only as the shared SMTP helper for the 06:00 MorningBriefing, the Friday source-access backlog, and reboot diagnostics. |
 
 ## BOOTSTRAP — factory autostart (not in any manifest list)
 
