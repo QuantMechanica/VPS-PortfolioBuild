@@ -65,9 +65,13 @@ tmp_audit/
 
 # pip install --target artifacts (pypdf + other research deps installed into repo root)
 Lib/
+Include/
+Scripts/
 scripts/pip*.exe
 .tmp_*.pdf
 .tmp_*.html
+# stray factory-relative build-prompt dir (transient; canonical queue = D:\QM\strategy_farm\queue)
+queue/
 
 
 # PDF-mining binary tool (kept on disk, not tracked)
