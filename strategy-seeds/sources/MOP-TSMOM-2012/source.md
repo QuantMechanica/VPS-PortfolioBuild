@@ -35,6 +35,9 @@ only MT5 D1 price history and broker calendar state at runtime.
   by a fixed ATR-as-percent-of-price volatility corridor.
 - Extracted strategy: monthly natural-gas 12-month return-sign momentum package
   gated by a fixed ATR-as-percent-of-price volatility corridor.
+- Extracted strategy: monthly natural-gas 3-month return-sign momentum package
+  without the 12-month card's ATR/price volatility corridor; OWNER explicitly
+  expanded this source lane for the 2026-07-23 commodity-sleeve mission.
 - Extracted strategy: monthly Brent 12-month return-sign momentum package on
   `XBRUSD.DWX`, kept separate from WTI TSMOM and Brent/WTI spread baskets.
 - Runtime data deliberately excludes futures curves, open interest, inventory
