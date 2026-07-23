@@ -88,3 +88,34 @@ assigned terminal, no dispatch decision, and no error:
 
 No queue mutation or MT5 launch was made. The existing dispatcher remains the
 only continuation path after paced capacity becomes available.
+
+## Late headless continuation audit
+
+A further read-only audit at `2026-07-23T23:00:13+02:00` found six factory
+terminals running:
+
+```text
+T1, T4, T6, T7, T9, T10
+```
+
+`T_Live` and the separate FTMO terminal were observed only to exclude them
+from the factory count. The canonical scheduler dry-run, invoked as the
+repository module, returned:
+
+```json
+{"available_slots_after":0,"available_slots_before":0,"dry_run":true,"duplicate":0,"invalid":0,"no_capacity":0,"queued_scanned":0,"scheduled":0,"status":"ok"}
+```
+
+The canonical queue still has four queued rows. The two FX cointegration rows
+remain present exactly once, unassigned, and without a dispatch decision or
+error:
+
+- queue `2`: `QM5_12760`, `Q02`, `GBPUSD.DWX`,
+  `q02_fx_coint_12760_s20260629_001`
+- queue `4`: `QM5_13119`, `Q02`, `USDJPY.DWX`,
+  `q02_fx_coint_13119_s20260710_001`
+
+The canonical scheduler therefore remains the binding CPU-ceiling authority
+even though the raw terminal count changed. No queue mutation, terminal launch,
+AutoTrading change, live artifact, portfolio gate, or EA artifact change was
+made.
