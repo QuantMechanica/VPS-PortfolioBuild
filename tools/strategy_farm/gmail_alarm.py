@@ -12,8 +12,7 @@ triggers a notification (transitions matter).
 State file: state/gmail_alarm_state.json holds last-alarm fingerprint.
 
 Credentials: re-uses the existing Gmail SMTP setup at
-.private/secrets/gmail_{app_password,sender}.txt (same as
-paperclip/tools/ops/daily_status_mail.py).
+.private/secrets/gmail_{app_password,sender}.txt.
 
 Scheduled: hourly via QM_StrategyFarm_GmailAlarm_Hourly. NOT every 15min
 to keep traffic low — if a critical FAIL appears 5min after a check, you

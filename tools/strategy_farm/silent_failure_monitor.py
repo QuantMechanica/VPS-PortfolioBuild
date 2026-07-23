@@ -90,6 +90,15 @@ CONFIG = {
     # (QM_DEV<n>_SMOKE_<hex>, QM_*_SMOKE_*). They are not persistent farm infra and
     # their result codes are harness churn, not a silent-failure class — ignore them.
     "schtask_ignore_patterns": (r"_SMOKE_", r"^QM_DEV\d"),
+    # These logon-only GUI tasks are intentionally not demand-startable. Their
+    # availability is adjudicated from live_uptime_watchdog.json instead of a
+    # historical LastTaskResult (0x800710E0 is expected for a Disc-session
+    # demand-start attempt on this host).
+    "schtask_live_logon_owned_elsewhere": {
+        "QM_T_Live_AtLogon",
+        "QM_FTMO_AtLogon",
+        "QM_Live_MT5_SessionSupervisor",
+    },
     "schtask_recurring_horizon_h": 26,   # NextRun within this window ⇒ "actively recurring"
     "schtask_oneoff_recent_h": 48,       # a one-off's failure is only actionable if it ran this recently
     "schtask_parked_horizon_days": 200,  # NextRun farther out than this ⇒ parked/manual, ignore generic results
@@ -103,7 +112,7 @@ CONFIG = {
         "QM_StrategyFarm_LiveBookPulse": 30,
         "QM_StrategyFarm_CodexFleetPacer": 15,
         "QM_StrategyFarm_AgyGovernor": 15,
-        "QM_T_Live_Watchdog": 5,
+        "QM_T_Live_Watchdog": 1,
         "QM_FTMO_TrialPulse": 30,
     },
 
@@ -144,7 +153,11 @@ CONFIG = {
     "hb_cockpit_warn_min": 15,
     "hb_cockpit_fail_min": 45,
 
-    # ── check 8: GoogleDriveFS liveness (G: is a per-user mount; SYSTEM can
+    # ── check 8: both live MT5 processes + recovery readiness ──────────────
+    "live_watchdog_warn_stale_min": 3,
+    "live_watchdog_fail_stale_min": 7,
+
+    # ── check 9: GoogleDriveFS liveness (G: is a per-user mount; SYSTEM can
     #    NEVER Test-Path G:\, so this check is strictly process-based) ─────────
     # 2026-07-20 incident: GoogleDriveFS died after a console disconnect; G:
     # vanished for every consumer (nightly backup FATAL, vault sync dead,
@@ -157,7 +170,7 @@ CONFIG = {
     "gdrive_heal_task": "QM_GoogleDrive_AtLogon",
     "gdrive_heal_enabled": True,
 
-    # ── check 9 / merge: monitor self-staleness (evaluated by the consumer) ──
+    # ── check 10 / merge: monitor self-staleness (evaluated by the consumer) ─
     "monitor_self_stale_warn_min": 25,   # merge_into_health injects WARN past this
     "monitor_self_stale_fail_min": 45,   # ...and FAIL past this (monitor task dead)
 
@@ -186,6 +199,7 @@ QUOTA_GOV_LOG = REPORTS_STATE / "quota_governor.log"
 QUOTA_GOV_STATE = REPORTS_STATE / "quota_governor_state.json"
 PURGE_LOG = REPORTS_STATE / "tester_cache_purge.log"
 BACKUP_LOG = REPORTS_STATE / "backup_nightly.log"
+LIVE_UPTIME_STATE = REPORTS_STATE / "live_uptime_watchdog.json"
 
 # Outputs (this monitor's ONLY writes)
 MONITOR_STATE = REPORTS_STATE / "silent_failure_monitor_state.json"
@@ -377,6 +391,8 @@ def check_scheduled_tasks(probe: dict) -> list[dict]:
         name = str(t.get("Name") or "?")
         if any(r.search(name) for r in ignore_res):
             continue  # transient smoke/dev harness task — not persistent farm infra
+        if name in CONFIG["schtask_live_logon_owned_elsewhere"]:
+            continue  # exact live state + resident heartbeat are checked below
         state = str(t.get("State") or "")
         if state == "Disabled":
             continue  # intentionally off — never overdue, never result-alarmed
@@ -799,6 +815,132 @@ def check_heartbeats() -> list[dict]:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+#  CHECK 8 — live MT5 uptime + recoverability
+# ─────────────────────────────────────────────────────────────────────────────
+def check_live_uptime() -> list[dict]:
+    ev = str(LIVE_UPTIME_STATE)
+    if not LIVE_UPTIME_STATE.exists():
+        return [finding(
+            "live_mt5_uptime", FAIL,
+            "live_uptime_watchdog.json missing — neither live-process state nor recovery readiness is observable",
+            hint="Run/install QM_T_Live_Watchdog and verify its SYSTEM principal.",
+            evidence=ev,
+        )]
+    try:
+        state = json.loads(LIVE_UPTIME_STATE.read_text(encoding="utf-8-sig"))
+    except Exception as exc:  # noqa: BLE001
+        return [finding(
+            "live_mt5_uptime", FAIL,
+            f"live watchdog state unreadable: {type(exc).__name__}: {exc}",
+            hint="Inspect T_Live_Watchdog.ps1 and the state-file ACL/disk.", evidence=ev,
+        )]
+
+    checked = _parse_iso(state.get("last_checked_utc") or state.get("ts"))
+    age = ((_now() - checked).total_seconds() / 60.0) if checked else _file_age_min(LIVE_UPTIME_STATE)
+    if age is None or age > CONFIG["live_watchdog_fail_stale_min"]:
+        age_text = "unknown" if age is None else f"{age:.0f}min"
+        return [finding(
+            "live_mt5_uptime", FAIL,
+            f"live watchdog state stale ({age_text}); minute-level recovery may be dead",
+            value=None if age is None else round(age, 0),
+            threshold=CONFIG["live_watchdog_fail_stale_min"],
+            hint="Check QM_T_Live_Watchdog task state and LastTaskResult immediately.", evidence=ev,
+        )]
+    if age > CONFIG["live_watchdog_warn_stale_min"]:
+        return [finding(
+            "live_mt5_uptime", WARN,
+            f"live watchdog state is {age:.0f}min old",
+            value=round(age, 0), threshold=CONFIG["live_watchdog_warn_stale_min"],
+            hint="Check whether the one-minute watchdog trigger is slipping.", evidence=ev,
+        )]
+
+    dxz_running = state.get("dxz_running") is True
+    ftmo_running = state.get("ftmo_running") is True
+    if state.get("process_probe_ok") is not True:
+        return [finding(
+            "live_mt5_uptime", FAIL,
+            "live process inventory failed; watchdog correctly refused destructive recovery, but uptime is unknown",
+            hint="Repair CIM/WMI process enumeration; verify both exact terminal paths manually.", evidence=ev,
+        )]
+    if not dxz_running or not ftmo_running:
+        missing = [name for name, running in (("DXZ", dxz_running), ("FTMO", ftmo_running)) if not running]
+        return [finding(
+            "live_mt5_uptime", FAIL,
+            f"live MT5 down: {', '.join(missing)}; watchdog status={state.get('status') or state.get('last_status')}",
+            value=len(missing), threshold=0,
+            hint="Inspect live_uptime_watchdog.jsonl; recovery should relaunch or reboot after confirmation.",
+            evidence=ev,
+        )]
+
+    if state.get("session_placement_ok") is not True:
+        return [finding(
+            "live_mt5_session", FAIL,
+            f"live MT5 process is outside the qm-admin session; DXZ sessions={state.get('dxz_session_ids')}, "
+            f"FTMO sessions={state.get('ftmo_session_ids')}, target={state.get('target_session_id')}",
+            hint="Do not accept a session-0 GUI process as recovered; inspect the InteractiveToken tasks.",
+            evidence=ev,
+        )]
+
+    if state.get("maintenance") is True:
+        return [finding(
+            "live_mt5_uptime", WARN,
+            "both live MT5 processes run, but automatic recovery is suppressed by the maintenance flag",
+            hint="Remove LIVE_UPTIME_MAINTENANCE.flag after the maintenance window.", evidence=ev,
+        )]
+
+    if state.get("session_supervisor_ready") is not True:
+        return [finding(
+            "live_mt5_session_supervisor", FAIL,
+            f"resident live recovery is not ready: {state.get('session_supervisor_reason')}; "
+            f"age={state.get('session_supervisor_age_seconds')}s",
+            hint="Repair/start QM_Live_MT5_SessionSupervisor in the qm-admin desktop session.", evidence=ev,
+        )]
+
+    dxz_profile = state.get("dxz_profile")
+    ftmo_profile = state.get("ftmo_profile")
+    expected_dxz = state.get("expected_dxz_profile")
+    expected_ftmo = state.get("expected_ftmo_profile")
+    if dxz_profile != expected_dxz or ftmo_profile != expected_ftmo:
+        return [finding(
+            "live_mt5_profile", FAIL,
+            f"live profile drift: DXZ={dxz_profile!r} expected={expected_dxz!r}; "
+            f"FTMO={ftmo_profile!r} expected={expected_ftmo!r}",
+            hint="Perform a controlled OWNER-approved profile switch; do not restart a live terminal blindly.",
+            evidence=ev,
+        )]
+
+    if state.get("dxz_experts_enabled") != 1 or state.get("ftmo_experts_enabled") != 1:
+        return [finding(
+            "live_mt5_autotrading_config", FAIL,
+            f"[Experts] Enabled is not 1 for both terminals: DXZ={state.get('dxz_experts_enabled')}, "
+            f"FTMO={state.get('ftmo_experts_enabled')}",
+            hint="Inspect the approved live state and common.ini; do not toggle AutoTrading without OWNER authority.",
+            evidence=ev,
+        )]
+
+    if any(str(error).startswith("tscon_disable_failed:") for error in (state.get("errors") or [])):
+        return [finding(
+            "live_mt5_session_guard", FAIL,
+            "the watchdog could not enforce the unsafe tscon task as disabled",
+            hint="Disable QM_TSCon_Console_OnDisconnect and repair its task ACL/state.", evidence=ev,
+        )]
+
+    if state.get("autologon_ready") is not True:
+        return [finding(
+            "live_mt5_recovery_ready", FAIL,
+            f"both terminals run, but reboot recovery is blocked (LSA probe={state.get('autologon_secret_probe')})",
+            hint="Repair qm-admin Sysinternals Autologon before relying on unattended recovery.", evidence=ev,
+        )]
+
+    return [finding(
+        "live_mt5_uptime", OK,
+        f"DXZ + FTMO running; session={state.get('target_session_id')} "
+        f"({state.get('target_session_state')}); recovery ready; state age={age:.1f}min",
+        value=0, threshold=CONFIG["live_watchdog_warn_stale_min"], evidence=ev,
+    )]
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 #  Incident dedupe — carry first_seen / streak across runs
 # ─────────────────────────────────────────────────────────────────────────────
 def _load_state() -> dict:
@@ -1048,6 +1190,7 @@ def main() -> int:
     findings += _run_check("worker_health", check_worker_health, probe)
     findings += _run_check("pump_blockade", check_pump_blockade)
     findings += _run_check("heartbeats", check_heartbeats)
+    findings += _run_check("live_mt5_uptime", check_live_uptime)
     findings += _run_check("gdrive_fs", check_gdrive, probe)
 
     if con is not None:

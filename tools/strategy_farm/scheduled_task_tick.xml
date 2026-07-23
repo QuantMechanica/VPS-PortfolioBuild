@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.4" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
   <RegistrationInfo>
-    <Description>QuantMechanica V5 strategy_farm tick — advances backtest tasks every 5 minutes. Replaces the disabled Paperclip QM_* scheduled tasks.</Description>
+    <Description>QuantMechanica V5 strategy_farm tick — advances backtest tasks every 5 minutes.</Description>
     <URI>\QM_StrategyFarm_Tick_5min</URI>
   </RegistrationInfo>
   <Triggers>

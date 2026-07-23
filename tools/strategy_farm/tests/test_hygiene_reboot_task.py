@@ -55,3 +55,14 @@ def test_installer_preflights_before_replacing_task_and_sets_retries() -> None:
     assert "-RestartInterval (New-TimeSpan -Minutes 2)" in source
     assert "-Settings $hygieneSettings" in source
     assert "Microsoft-Windows-TaskScheduler/Operational" in source
+    assert "Disable-ScheduledTask -TaskName $hygieneTask" in source
+    assert "Enable-ScheduledTask -TaskName $hygieneTask" not in source
+
+
+def test_lsm_probe_does_not_flag_intentionally_disabled_task_cadence() -> None:
+    source = LSM_PROBE.read_text(encoding="ascii")
+    task_lookup = source.index("Get-ScheduledTask -TaskName $t.Name")
+    disabled_guard = source.index("$task.State -eq 'Disabled'", task_lookup)
+    info_lookup = source.index("Get-ScheduledTaskInfo -TaskName $t.Name", task_lookup)
+    assert task_lookup < disabled_guard < info_lookup
+    assert "continue" in source[disabled_guard:info_lookup]

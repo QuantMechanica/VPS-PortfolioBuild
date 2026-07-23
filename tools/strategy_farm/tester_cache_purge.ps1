@@ -9,14 +9,13 @@
 #  NEVER touches source tick data (T<n>\Bases top-level) or reports (D:\QM\reports).
 #
 #  Only acts when D: free < LowWaterGB (default 150) — most runs are no-ops.
-#  When it acts: stop factory -> clear caches -> restart factory via the
-#  FactoryON_AtLogon task (the reliable in-session recovery). Because MT5
+#  When it acts: stop only idle factory slots -> clear their caches -> start
+#  only missing workers via the interactive WorkerDedupe task. Because MT5
 #  agents read these caches mid-run, the factory MUST be stopped first.
 #
-#  MUST run as the INTERACTIVE qm-admin user (NOT SYSTEM) so the restarted
-#  worker daemons land in OWNER's visible RDP session (visible-mode policy).
-#  If qm-admin is not logged on, the task doesn't fire and the factory isn't
-#  running anyway — consistent.
+#  The controller may run as SYSTEM, but it never launches workers directly.
+#  WorkerDedupe is InteractiveToken/qm-admin, so missing daemons land in the
+#  existing desktop session. Live terminals are outside every kill/purge scope.
 # =====================================================================
 [CmdletBinding()]
 param(
@@ -93,6 +92,10 @@ $pumpTask = Get-ScheduledTask -TaskName 'QM_StrategyFarm_Pump_5min' -ErrorAction
 $tickTask = Get-ScheduledTask -TaskName 'QM_StrategyFarm_Tick_5min' -ErrorAction SilentlyContinue
 $pumpWasEnabled = ($null -ne $pumpTask -and $pumpTask.State -ne 'Disabled')
 $tickWasEnabled = ($null -ne $tickTask -and $tickTask.State -ne 'Disabled')
+$factoryOffFlag = Join-Path $FarmRoot 'state\FACTORY_OFF.flag'
+$factoryOffWasPresent = Test-Path -LiteralPath $factoryOffFlag -PathType Leaf
+$factoryRestartAuthorized = (-not $factoryOffWasPresent) -and ($pumpWasEnabled -or $tickWasEnabled)
+Log "owner state captured: pump_enabled=$pumpWasEnabled tick_enabled=$tickWasEnabled factory_off_flag=$factoryOffWasPresent restart_authorized=$factoryRestartAuthorized"
 Stop-ScheduledTask -TaskName 'QM_StrategyFarm_Pump_5min' -ErrorAction SilentlyContinue | Out-Null
 Disable-ScheduledTask -TaskName 'QM_StrategyFarm_Pump_5min' -ErrorAction SilentlyContinue | Out-Null
 Stop-ScheduledTask -TaskName 'QM_StrategyFarm_Tick_5min' -ErrorAction SilentlyContinue | Out-Null
@@ -154,24 +157,29 @@ Start-Sleep -Seconds 2
 $after = FreeGB
 Log "idle caches cleared terminals=[$($purgedTerminals -join ',')]: D: ${free}GB -> ${after}GB (reclaimed $([math]::Round($after-$free,1))GB)"
 
-# 3. restart the factory via the PROVEN interactive recovery task. The OLD
-#    run_in_console_session / CreateProcessAsUser-as-SYSTEM launcher is UNRELIABLE:
-#    it yields worker daemons whose terminal64 children instant-exit 0xC0000142, so
-#    metatester64 stays 0 and the factory never actually recovers. The factory_watchdog
-#    was migrated OFF this exact mechanism on 2026-06-24 for that reason; tester_cache_purge
-#    kept it and consequently STRANDED the factory OFF after a purge on 2026-07-21.
-#    Delegate to the SAME task the watchdog uses: QM_StrategyFarm_FactoryON_AtLogon
-#    (RunAs qm-admin, Interactive, RunLevel Highest) -> Factory_ON.ps1 -NoPause in-session:
-#    removes any FACTORY_OFF.flag, enables Factory/AI + respawn tasks, kills stale
-#    daemons/terminals, spawns exactly one worker per enabled terminal IN-SESSION, runs
-#    farmctl repair, triggers the pump. Enable first (a prior Factory_OFF disables it).
+# 3. Restart only when the captured OWNER state actually authorized the factory.
+#    A cache-maintenance task must never turn Factory OFF into Factory ON. When
+#    both dispatch tasks were disabled (or FACTORY_OFF.flag existed), leave them
+#    disabled and do not queue an InteractiveToken start.
+if (-not $factoryRestartAuthorized) {
+    Log 'factory restart SKIPPED: captured OWNER state was OFF; caches purged without changing factory state'
+    return
+}
+
+#    Restore only the dispatch tasks that were enabled on entry, then invoke the
+#    same idempotent, interactive WorkerDedupe trampoline used by the hardened
+#    factory watchdog. Unlike Factory_ON, it neither removes FACTORY_OFF nor
+#    tears down healthy/protected worker slots.
 try {
-    Enable-ScheduledTask -TaskName 'QM_StrategyFarm_FactoryON_AtLogon' -ErrorAction SilentlyContinue | Out-Null
-    Start-ScheduledTask -TaskName 'QM_StrategyFarm_FactoryON_AtLogon' -ErrorAction Stop
-    Start-Sleep -Seconds 25
+    if ($pumpWasEnabled) { Enable-ScheduledTask -TaskName 'QM_StrategyFarm_Pump_5min' -ErrorAction Stop | Out-Null }
+    if ($tickWasEnabled) { Enable-ScheduledTask -TaskName 'QM_StrategyFarm_Tick_5min' -ErrorAction Stop | Out-Null }
+    $dedupeTask = Get-ScheduledTask -TaskName 'QM_StrategyFarm_WorkerDedupe' -ErrorAction Stop
+    if ($dedupeTask.State -eq 'Disabled') { Enable-ScheduledTask -TaskName $dedupeTask.TaskName -ErrorAction Stop | Out-Null }
+    Start-ScheduledTask -TaskName $dedupeTask.TaskName -ErrorAction Stop
+    Start-Sleep -Seconds 10
     $daemons = @(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe' OR Name='python.exe'" -ErrorAction SilentlyContinue |
                  Where-Object { $_.CommandLine -match 'terminal_worker\.py' })
-    Log "factory restarted via FactoryON_AtLogon: $($daemons.Count) worker daemon(s); D: free $(FreeGB)GB"
+    Log "missing workers requested via interactive WorkerDedupe: $($daemons.Count) total worker daemon(s); D: free $(FreeGB)GB"
 } catch {
-    Log "factory RESTART FAILED (FactoryON_AtLogon): $($_.Exception.Message) - factory may be OFF, needs manual Factory_ON"
+    Log "factory missing-worker recovery FAILED (WorkerDedupe): $($_.Exception.Message) - existing protected slots were not killed"
 }

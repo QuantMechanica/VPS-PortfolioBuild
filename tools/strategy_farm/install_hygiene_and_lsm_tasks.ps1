@@ -11,10 +11,8 @@
 #  Registers two scheduled tasks -- idempotent (unregister-then-register):
 #
 #  QM_StrategyFarm_HygieneReboot
-#    Weekly, Saturday 07:00 local, SYSTEM principal, HighestPrivilege.
-#    Runs weekly_hygiene_reboot.ps1 which re-checks its own guards and
-#    exits 0 without rebooting if any guard fails.  Safe to leave
-#    permanently registered; kills switch = HYGIENE_REBOOT_DISABLED.flag.
+#    Preserved as a DISABLED legacy definition only. It must not be armed until
+#    it has the dual-live watchdog's exact recovery and cancellable-edge guards.
 #
 #  QM_StrategyFarm_LsmHealthProbe
 #    Every 6 hours, SYSTEM principal, HighestPrivilege.
@@ -154,11 +152,11 @@ Register-ScheduledTask `
     -Settings $hygieneSettings `
     -Principal $sysPrincipal `
     -Force `
-    -Description "Weekly preventive hygiene reboot (Saturday $HygieneTime local, SYSTEM). Purges LSM resource exhaustion from terminal64.exe spawns before qwinsta error 87 / task-scheduler 0x800710E0 degradation. Guards: Saturday+06-12 window, uptime>=5d, no DISABLED.flag, debounce 3d. Recovery chain: autologon -> QM_T_Live_AtLogon -> QM_StrategyFarm_FactoryON_AtLogon. Kill switch: D:\QM\reports\state\HYGIENE_REBOOT_DISABLED.flag. Log: D:\QM\reports\state\hygiene_reboot.log." `
+    -Description "DISABLED legacy hygiene reboot definition. Do not enable until it has the dual-live watchdog's exact recovery-task, Autologon, maintenance, and cancellable process guards." `
     | Out-Null
 
-Enable-ScheduledTask -TaskName $hygieneTask | Out-Null
-Write-Host "Registered: $hygieneTask (weekly Saturday $HygieneTime local, SYSTEM)"
+Disable-ScheduledTask -TaskName $hygieneTask | Out-Null
+Write-Host "Registered DISABLED: $hygieneTask (legacy definition; no automatic reboot)"
 
 # ---------------------------------------------------------------------------
 # Task 2 -- QM_StrategyFarm_LsmHealthProbe  (every 6 hours)

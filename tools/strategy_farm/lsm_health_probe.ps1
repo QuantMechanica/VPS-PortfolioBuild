@@ -101,6 +101,13 @@ foreach ($t in $TASKS_TO_CHECK) {
     $tasks_checked++
     $taskFailing = $false
     try {
+        # A deliberately disabled maintenance/factory task has no cadence to
+        # satisfy and must not masquerade as session-manager degradation.
+        # Missing or unreadable tasks still fail closed below.
+        $task = Get-ScheduledTask -TaskName $t.Name -ErrorAction Stop
+        if ($task.State -eq 'Disabled' -or $task.Settings.Enabled -ne $true) {
+            continue
+        }
         $info = Get-ScheduledTaskInfo -TaskName $t.Name -ErrorAction Stop
 
         # Failure result code check
