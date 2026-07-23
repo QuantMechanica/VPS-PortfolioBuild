@@ -91,6 +91,7 @@ bool     g_orb_formed      = false;
 int      g_session_bars    = 0;     // bars elapsed inside session window today
 bool     g_vol_regime_ok   = false;
 double   g_daily_open      = 0.0;   // for GOLD_BREAKOUT: current day's D1 open price
+double   g_mb_atr          = 0.0;   // MOMENTUM_BAND ATR, cached once/bar (read O(1) per tick)
 
 //=============================================================================
 // Helper: broker hour (0-23) from datetime
@@ -132,6 +133,7 @@ void AdvanceState_OnNewBar()
    // Vol regime: ATR_short / ATR_long >= vol_expand_ratio
    const double atr_s = QM_ATR(_Symbol, _Period, vol_short_period, 1);
    const double atr_l = QM_ATR(_Symbol, _Period, vol_long_period,  1);
+   g_mb_atr = QM_ATR(_Symbol, _Period, mb_atr_period, 1); // cache once/bar; read O(1) per tick in NoTradeFilter/ManageOpenPosition
    if(vol_expand_ratio <= 0.0)
       g_vol_regime_ok = true;
    else
@@ -203,7 +205,7 @@ bool Strategy_NoTradeFilter()
       return true;
    if(ask > bid && cost_mult > 0.0)
      {
-      const double expected_move = QM_ATR(_Symbol, _Period, mb_atr_period, 1);
+      const double expected_move = g_mb_atr; // cached once/bar (was per-tick QM_ATR at shift 1)
       if(expected_move <= 0.0 || expected_move <= cost_mult * (ask - bid))
          return true;
      }
@@ -348,7 +350,7 @@ void Strategy_ManageOpenPosition()
         {
          const ENUM_POSITION_TYPE ptype  = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
          const double             cur_sl = PositionGetDouble(POSITION_SL);
-         const double atr_half = 0.5 * QM_ATR(_Symbol, _Period, mb_atr_period, 1);
+         const double atr_half = 0.5 * g_mb_atr; // cached once/bar (was per-tick QM_ATR at shift 1)
 
          if(ptype == POSITION_TYPE_BUY)
            {
