@@ -3,7 +3,7 @@
 ; ea_id:        1230
 ; ea_slug:      carver-dynvol-mav
 ; ea_version:   v5.0
-; set_version:  s20260723-stress-med
+; set_version:  s20260724-stress-med
 ; symbol:       XAUUSD.DWX
 ; timeframe:    D1
 ; environment:  q05_stress_medium
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-07-23
+; date:         2026-07-24
 ;==========================================================
 qm_magic_slot_offset=7
 RISK_FIXED=1000
