@@ -23,18 +23,19 @@ cointegration card only when paced-fleet capacity becomes available.
 
 ## CPU ceiling
 
-Read-only process inspection found eight running factory terminals:
+The original inspection found eight running factory terminals. A read-only
+refresh at `2026-07-23T17:00:48+02:00` found seven:
 
 ```text
-T2, T3, T4, T6, T7, T8, T9, T10
+T2, T3, T4, T6, T7, T9, T10
 ```
 
 `T_Live` and the separate FTMO terminal were observed only so they could be
 excluded from the factory count. Neither was controlled or modified.
 
-Eight factory terminals exceed the seven-process ceiling documented by the
-current paced-fleet handoff. No queue row was inserted, updated, dispatched,
-or deleted.
+Seven factory terminals equal the seven-process ceiling documented by the
+current paced-fleet handoff, so capacity is still unavailable. No queue row
+was inserted, updated, dispatched, or deleted in either inspection.
 
 ## Duplicate guard and continuation target
 
@@ -47,12 +48,13 @@ are forex cointegration baskets:
 | 2 | `QM5_12760` | `GBPUSD.DWX` | Q02 | 80 | queued |
 | 4 | `QM5_13119` | `USDJPY.DWX` | Q02 | 80 | queued |
 
-They are each present exactly once and must not be duplicated. When the
-factory count drops below the ceiling, the existing dispatcher should service
-these rows before another scan-derived basket is added. If a later mission
-still requires one new fallback enqueue, repeat both the exact tuple duplicate
-guard and CPU check first, then select an approved, built basket that has no
-terminal Q02 verdict and no existing headless row.
+They remain present exactly once and must not be duplicated. The refreshed
+canonical queue still contains four queued rows total and neither FX row has
+been dispatched. When the factory count drops below the ceiling, the existing
+dispatcher should service these rows before another scan-derived basket is
+added. If a later mission still requires one new fallback enqueue, repeat both
+the exact tuple duplicate guard and CPU check first, then select an approved,
+built basket that has no terminal Q02 verdict and no existing headless row.
 
 ## Safety
 
