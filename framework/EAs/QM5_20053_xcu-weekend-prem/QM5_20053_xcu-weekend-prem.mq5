@@ -37,36 +37,19 @@ input double strategy_atr_sl_mult           = 3.0;
 input int    strategy_max_hold_days         = 4;
 input int    strategy_max_spread_points     = 1000;
 
-bool     g_is_new_bar = false;
-datetime g_host_bar = 0;
-int      g_last_attempt_day = 0;
-string   g_attempt_key = "";
+bool   g_attempt_armed = false;
+int    g_last_attempt_day = 0;
+string g_attempt_key = "";
 
-int Strategy_DayKey(const datetime value)
+bool Strategy_TimeParts(const datetime value, MqlDateTime &parts)
   {
-   MqlDateTime parts;
    ZeroMemory(parts);
-   if(value <= 0 || !TimeToStruct(value, parts))
-      return 0;
+   return (value > 0 && TimeToStruct(value, parts));
+  }
+
+int Strategy_DayKey(const MqlDateTime &parts)
+  {
    return parts.year * 10000 + parts.mon * 100 + parts.day;
-  }
-
-int Strategy_Dow(const datetime value)
-  {
-   MqlDateTime parts;
-   ZeroMemory(parts);
-   if(value <= 0 || !TimeToStruct(value, parts))
-      return -1;
-   return parts.day_of_week;
-  }
-
-int Strategy_Hour(const datetime value)
-  {
-   MqlDateTime parts;
-   ZeroMemory(parts);
-   if(value <= 0 || !TimeToStruct(value, parts))
-      return -1;
-   return parts.hour;
   }
 
 bool Strategy_IsTarget()
@@ -107,8 +90,11 @@ bool Strategy_SpreadOK()
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   return (ask > 0.0 && bid > 0.0 && point > 0.0 && ask >= bid &&
-           (ask - bid) / point <= (double)strategy_max_spread_points);
+   if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
+      return false;
+   if(ask > bid && (ask - bid) / point > (double)strategy_max_spread_points)
+      return false;
+   return true;
   }
 
 void Strategy_LoadAttemptState()
@@ -127,11 +113,26 @@ bool Strategy_RecordAttempt(const int day_key)
    return (GlobalVariableSet(g_attempt_key, (double)day_key) > 0);
   }
 
+// No Trade Filter (time, spread, news): consume the weekly attempt before the
+// framework news gate. Only the first eligible tick can arm the entry path.
 bool Strategy_NoTradeFilter()
   {
-   return (!Strategy_IsTarget() || !Strategy_InputsValid());
+   g_attempt_armed = false;
+   if(!Strategy_IsTarget() || !Strategy_InputsValid() || Strategy_HasPosition())
+      return true;
+
+   MqlDateTime now;
+   if(!Strategy_TimeParts(TimeCurrent(), now) ||
+      now.day_of_week != strategy_entry_dow ||
+      now.hour != strategy_entry_hour_broker ||
+      now.min >= strategy_entry_grace_minutes)
+      return true;
+
+   g_attempt_armed = Strategy_RecordAttempt(Strategy_DayKey(now));
+   return !g_attempt_armed;
   }
 
+// Trade Entry: one long market order with the card's D1 ATR hard stop.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    req.type = QM_BUY;
@@ -142,33 +143,31 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!g_is_new_bar || g_host_bar <= 0 || Strategy_HasPosition() ||
-      Strategy_Dow(g_host_bar) != strategy_entry_dow ||
-      Strategy_Hour(g_host_bar) != strategy_entry_hour_broker)
-      return false;
-   const long delay = (long)(TimeCurrent() - g_host_bar);
-   if(delay < 0 || delay > (long)strategy_entry_grace_minutes * 60 ||
-      !Strategy_SpreadOK())
-      return false;
-   const int day_key = Strategy_DayKey(g_host_bar);
-   if(!Strategy_RecordAttempt(day_key))
+   if(!g_attempt_armed || Strategy_HasPosition() || !Strategy_SpreadOK())
       return false;
 
    const double entry = QM_EntryMarketPrice(QM_BUY);
-   if(entry <= 0.0)
+   const double atr_d1 = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period_d1, 1);
+   if(entry <= 0.0 || atr_d1 <= 0.0)
       return false;
-   req.sl = QM_StopATR(_Symbol, QM_BUY, entry,
-                       strategy_atr_period_d1, strategy_atr_sl_mult);
+   req.sl = QM_StopATRFromValue(_Symbol, QM_BUY, entry, atr_d1,
+                                strategy_atr_sl_mult);
    return (req.sl > 0.0);
   }
 
+// Trade Management: no trailing, break-even, partial close, or scale-in.
 void Strategy_ManageOpenPosition()
   {
   }
 
+// Trade Close: first Monday H1 boundary, with a four-calendar-day stale guard.
 bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
+   MqlDateTime now;
+   if(!Strategy_TimeParts(TimeCurrent(), now))
+      return false;
+
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -176,8 +175,9 @@ bool Strategy_ExitSignal()
          PositionGetString(POSITION_SYMBOL) != _Symbol ||
          (int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
+
       const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
-      if(g_is_new_bar && g_host_bar > opened && Strategy_Dow(g_host_bar) == 1)
+      if(opened > 0 && now.day_of_week == 1 && now.hour == 0)
          return true;
       if(opened > 0 &&
          (long)(TimeCurrent() - opened) >=
@@ -187,13 +187,10 @@ bool Strategy_ExitSignal()
    return false;
   }
 
+// News Filter Hook: P8 remains callable; central framework logic gates entries.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF ||
-      qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      return !QM_NewsAllowsTrade2(_Symbol, broker_time,
-                                  qm_news_temporal, qm_news_compliance);
-   return !QM_NewsAllowsTrade(_Symbol, broker_time, qm_news_mode_legacy);
+   return false;
   }
 
 int OnInit()
@@ -208,7 +205,6 @@ int OnInit()
                         qm_rng_seed, qm_stress_reject_probability,
                         qm_news_temporal, qm_news_compliance))
       return INIT_FAILED;
-   g_host_bar = iTime(_Symbol, PERIOD_H1, 0); // perf-allowed: restart boundary anchor.
    Strategy_LoadAttemptState();
    QM_LogEvent(QM_INFO, "INIT_OK",
                "{\"card\":\"QM5_20053\",\"ea\":\"xcu-weekend-prem\"}");
@@ -229,13 +225,7 @@ void OnTick()
    if(QM_FrameworkHandleFridayClose())
       return;
 
-   g_is_new_bar = QM_IsNewBar();
-   if(!g_is_new_bar)
-      return;
-   g_host_bar = iTime(_Symbol, PERIOD_H1, 0); // perf-allowed: new-bar decision boundary.
-   QM_EquityStreamOnNewBar();
    Strategy_ManageOpenPosition();
-
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -247,12 +237,26 @@ void OnTick()
             (int)PositionGetInteger(POSITION_MAGIC) == magic)
             QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
-      return;
      }
 
-   if(Strategy_NoTradeFilter() || Strategy_HasPosition() ||
-      Strategy_NewsFilterHook(TimeCurrent()))
+   if(Strategy_NoTradeFilter())
       return;
+
+   const datetime broker_now = TimeCurrent();
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF ||
+      qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now,
+                                        qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now,
+                                       qm_news_mode_legacy);
+   if(!news_allows || !QM_IsNewBar())
+      return;
+
+   QM_EquityStreamOnNewBar();
    QM_EntryRequest req;
    ZeroMemory(req);
    if(Strategy_EntrySignal(req))
