@@ -1,0 +1,12 @@
+{
+  "logical_symbol": "QM5_20060_XCU_XAG_RSPREAD_D1",
+  "host_symbol": "XCUUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XCUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "notes": [
+    "Two-leg copper/silver return-spread reversion basket from the approved PARNES-CME-COPPERSILVER-2026 card. The EA runs from the XCUUSD.DWX host setfile and reads both D1 close series to compute log(XCU return) minus beta times log(XAG return), standardized over a fixed lookback. Q02 must evaluate the logical basket, not standalone legs."
+  ]
+}
