@@ -3,7 +3,7 @@
 ; ea_id:        2133
 ; ea_slug:      demark-td-trend-factor-h4
 ; ea_version:   v5.0
-; set_version:  s20260722-stress-harsh
+; set_version:  s20260723-stress-harsh
 ; symbol:       XTIUSD.DWX
 ; timeframe:    H4
 ; environment:  q06_stress_harsh
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   46f96fb48afb18a75d08337c5124cb3f1e12a7ba971c79c4519833a8025f4f28
 ; author:       Development
-; date:         2026-07-22
+; date:         2026-07-23
 ;==========================================================
 qm_magic_slot_offset=4
 qm_rng_seed=17
