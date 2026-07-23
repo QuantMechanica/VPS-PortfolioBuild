@@ -119,3 +119,33 @@ The canonical scheduler therefore remains the binding CPU-ceiling authority
 even though the raw terminal count changed. No queue mutation, terminal launch,
 AutoTrading change, live artifact, portfolio gate, or EA artifact change was
 made.
+
+## 2026-07-24 paced-fleet audit
+
+A fresh read-only audit at `2026-07-24T00:30:11+02:00` found seven factory
+terminals running:
+
+```text
+T1, T2, T6, T7, T8, T9, T10
+```
+
+`T_Live` and the separate FTMO terminal were observed only to exclude them
+from the factory count. Seven factory processes equal the documented ceiling,
+and the canonical scheduler dry-run independently returned:
+
+```json
+{"available_slots_after":0,"available_slots_before":0,"dry_run":true,"duplicate":0,"invalid":0,"no_capacity":0,"queued_scanned":0,"scheduled":0,"status":"ok"}
+```
+
+The canonical queue still contains exactly four queued rows. The two existing
+FX cointegration continuations remain present once each, unassigned, and
+without a dispatch decision or error:
+
+- queue `2`: `QM5_12760`, `Q02`, `GBPUSD.DWX`,
+  `q02_fx_coint_12760_s20260629_001`
+- queue `4`: `QM5_13119`, `Q02`, `USDJPY.DWX`,
+  `q02_fx_coint_13119_s20260710_001`
+
+The mission therefore stops at the CPU ceiling. No queue mutation, MT5 launch,
+terminal control, AutoTrading change, live artifact, portfolio gate, EA
+artifact, setfile, basket manifest, or registry change was made.
