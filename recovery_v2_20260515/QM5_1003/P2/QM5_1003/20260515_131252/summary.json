@@ -1,0 +1,47 @@
+{
+  "timestamp_utc": "2026-05-15T13:20:54.9913637Z",
+  "run_tag": "20260515_131252",
+  "result": "FAIL",
+  "reason_classes": [
+    "REPORT_MISSING",
+    "INCOMPLETE_RUNS"
+  ],
+  "ea_id": 1003,
+  "ea_label": "QM5_1003",
+  "expert": "QM\\QM5_1003_davey_baseline_3bar",
+  "symbol": "AUDUSD.DWX",
+  "year": 2024,
+  "terminal": "any",
+  "model": 4,
+  "period": "H1",
+  "min_trades_required": 20,
+  "deterministic": false,
+  "oninit_failure_detected": false,
+  "model4_log_marker_detected": false,
+  "report_dir": "recovery_v2_20260515\\QM5_1003\\P2\\QM5_1003\\20260515_131252",
+  "report_export_mode": "relative_with_absolute_fallback",
+  "runs": [
+    {
+      "run": "run_01",
+      "status": "FAIL",
+      "failure": "REPORT_MISSING",
+      "error": "Strategy tester did not produce report file at canonical or legacy relative export path.",
+      "exit_code": 0,
+      "report_source_path": "D:\\QM\\mt5\\T5\\QM5_1003_AUDUSD_DWX_20260515_131252_run_01.htm",
+      "report_canonical_path": "recovery_v2_20260515\\QM5_1003\\P2\\QM5_1003\\20260515_131252\\raw\\run_01\\report.htm",
+      "report_size_bytes": 0,
+      "tester_log_path": "D:\\QM\\mt5\\T5\\Tester\\logs\\20260515.log"
+    },
+    {
+      "run": "run_02",
+      "status": "FAIL",
+      "failure": "REPORT_MISSING",
+      "error": "Strategy tester did not produce report file at canonical or legacy relative export path.",
+      "exit_code": 0,
+      "report_source_path": "D:\\QM\\mt5\\T5\\QM5_1003_AUDUSD_DWX_20260515_131252_run_02.htm",
+      "report_canonical_path": "recovery_v2_20260515\\QM5_1003\\P2\\QM5_1003\\20260515_131252\\raw\\run_02\\report.htm",
+      "report_size_bytes": 0,
+      "tester_log_path": "D:\\QM\\mt5\\T5\\Tester\\logs\\20260515.log"
+    }
+  ]
+}

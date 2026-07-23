@@ -1,0 +1,15 @@
+{
+  "ea": "QM5_1003",
+  "phase": "P2",
+  "year": 2024,
+  "period": "H1",
+  "started_at": "2026-05-15T13:12:52.227151+00:00",
+  "finished_at": "2026-05-15T13:20:58.443807+00:00",
+  "counts": {
+    "PASS": 0,
+    "FAIL": 1,
+    "INVALID": 35,
+    "DRY": 0
+  },
+  "report_csv": "recovery_v2_20260515\\QM5_1003\\P2\\report.csv"
+}
