@@ -32,7 +32,8 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PENDING
-q02_status: PENDING
+q02_status: QUEUED
+q02_work_item_id: 41e49d0a-00dd-47c2-ace0-4bd1b1cb0c55
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
 hard_rules_at_risk: [friday_close, risk_mode_dual, low_frequency, cfd_source_basis, portfolio_correlation]
