@@ -400,9 +400,28 @@ def resolve_target_terminal(
     max_per_terminal: int = 3,
     now_epoch: int | None = None,
 ) -> dict[str, Any]:
-    target = str(job.get("target_terminal", "any")).upper()
+    target = str(job.get("target_terminal", "any")).strip().upper()
     if target in TERMINALS:
-        return {"status": "pinned", "terminal": target, "dedup_key": dedup_key(job)}
+        now = int(now_epoch if now_epoch is not None else time.time())
+        normalized_job = validate_job(job)
+        key = dedup_key(normalized_job)
+        dedup = state.setdefault("dedup", {})
+        if key in dedup:
+            existing = dedup.get(key, {})
+            return {"dedup_key": key, "status": "duplicate", "terminal": existing.get("terminal")}
+        running = state.setdefault("running", {name: 0 for name in TERMINALS})
+        if int(running.get(target, 0)) >= max_per_terminal:
+            return {"dedup_key": key, "status": "no_capacity", "terminal": None}
+        running[target] = int(running.get(target, 0)) + 1
+        state["last_rr_index"] = TERMINALS.index(target)
+        symbol = normalized_job["symbol"]
+        affinity = state.setdefault("symbol_affinity", {})
+        affinity[symbol] = {"terminal": target, "ts": now}
+        state.setdefault("recent_runs", {}).setdefault(target, []).append(now)
+        dedup[key] = {"symbol": symbol, "terminal": target, "ts": now, "job": dict(normalized_job)}
+        _, bucket = _ensure_matrix_bucket(state, normalized_job)
+        _upsert_matrix_row(bucket, symbol=symbol, terminal=target)
+        return {"status": "pinned", "terminal": target, "dedup_key": key}
     return dispatch_job(
         job,
         state,

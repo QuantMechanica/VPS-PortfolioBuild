@@ -180,6 +180,29 @@ class PipelineDispatcherTests(unittest.TestCase):
         decision = resolve_target_terminal(job, state, now_epoch=1000)
         self.assertEqual(decision["status"], "pinned")
         self.assertEqual(decision["terminal"], "T4")
+        key = dedup_key(job)
+        self.assertIn(key, state["dedup"])
+        self.assertEqual(state["dedup"][key]["terminal"], "T4")
+        self.assertEqual(state["running"]["T4"], 1)
+
+    def test_resolve_target_terminal_pinned_trims_whitespace(self) -> None:
+        state = {"dedup": {}, "running": {name: 0 for name in TERMINALS}}
+        job = base_job()
+        job["target_terminal"] = " t4 "
+        decision = resolve_target_terminal(job, state, now_epoch=1000)
+        self.assertEqual(decision["status"], "pinned")
+        self.assertEqual(decision["terminal"], "T4")
+
+    def test_release_job_after_pinned_resolution_is_releasable(self) -> None:
+        state = {"dedup": {}, "running": {name: 0 for name in TERMINALS}}
+        job = base_job()
+        job["target_terminal"] = "T3"
+        scheduled = resolve_target_terminal(job, state, now_epoch=1000)
+        self.assertEqual(scheduled["status"], "pinned")
+        released = release_job(job, state, now_epoch=1001, verdict="PASS")
+        self.assertEqual(released["status"], "released")
+        self.assertEqual(released["terminal"], "T3")
+        self.assertEqual(state["running"]["T3"], 0)
 
     def test_resolve_target_terminal_dispatches_any(self) -> None:
         state = {
