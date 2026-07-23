@@ -61,3 +61,30 @@ built basket that has no terminal Q02 verdict and no existing headless row.
 No portfolio admission, portfolio KPI, Q08 contribution, T_Live manifest,
 AutoTrading setting, terminal process, EA source, binary, setfile, basket
 manifest, registry, or pipeline database was changed.
+
+## Headless paced-fleet continuation audit
+
+A later read-only audit on 2026-07-23 found the ceiling had tightened rather
+than cleared. Nine factory terminals were running:
+
+```text
+T1, T2, T3, T4, T6, T7, T8, T9, T10
+```
+
+This is two processes above the seven-process ceiling. The canonical scheduler
+dry-run, invoked as a module from the repository root, returned:
+
+```json
+{"available_slots_after":0,"available_slots_before":0,"dry_run":true,"duplicate":0,"invalid":0,"no_capacity":0,"queued_scanned":0,"scheduled":0,"status":"ok"}
+```
+
+The exact queue rows remain present once each, with `status=queued`, no
+assigned terminal, no dispatch decision, and no error:
+
+- queue `2`: `QM5_12760`, `Q02`, `GBPUSD.DWX`,
+  `q02_fx_coint_12760_s20260629_001`
+- queue `4`: `QM5_13119`, `Q02`, `USDJPY.DWX`,
+  `q02_fx_coint_13119_s20260710_001`
+
+No queue mutation or MT5 launch was made. The existing dispatcher remains the
+only continuation path after paced capacity becomes available.
