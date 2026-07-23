@@ -29,3 +29,20 @@ enqueued.
 
 No T_Live path, AutoTrading state, portfolio gate, or live manifest was read or
 mutated.
+
+## Paced-fleet recheck
+
+**Observed:** 2026-07-23T22:01:12Z
+
+- A fresh read-only `farmctl.py mt5-slots` inspection again found nine active
+  factory terminals: T1, T2, T3, T4, T6, T7, T8, T9, and T10. T5 was the only
+  unoccupied factory slot.
+- The active workload comprised Q02, Q03, and Q06 runs. No new tester was
+  launched and no Q02 work item was added.
+- Duplicate screening also found the already-built market-neutral
+  gold/silver candidate `QM5_1256_desai-goldsilver-stochpair`; a new card must
+  not claim novelty merely by renaming that pair construction.
+
+The CPU-ceiling stop therefore remains binding for this fleet turn. The
+commodity sleeve still requires a later, unsaturated run to select and
+governably allocate a genuinely non-duplicate structural edge.
