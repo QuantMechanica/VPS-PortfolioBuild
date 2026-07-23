@@ -74,6 +74,9 @@ input double gb_atr_mult                 = 1.5;  // Band = daily_open +/- mult *
 input group "Stop"
 input double stop_atr_mult               = 1.5;  // Initial SL = mult * ATR(mb_atr_period) from entry
 
+input group "Cost Gate"
+input double cost_mult                   = 3.0;  // Expected ATR move must exceed spread by this multiple
+
 //=============================================================================
 // Closed-bar cached state — advanced once per bar in AdvanceState_OnNewBar
 //=============================================================================
@@ -203,6 +206,19 @@ bool Strategy_NoTradeFilter()
    if(!g_in_session)        return true;  // outside productive session hours
    if(g_session_open <= 0.0) return true; // session reference not captured yet
    if(!g_vol_regime_ok)     return true;  // vol not in expansion regime
+
+   // The tester may model zero spread on .DWX symbols. Only a genuinely
+   // positive, wide spread can fail this gate.
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
+      return true;
+   if(ask > bid && cost_mult > 0.0)
+     {
+      const double expected_move = QM_ATR(_Symbol, _Period, mb_atr_period, 1);
+      if(expected_move <= 0.0 || expected_move <= cost_mult * (ask - bid))
+         return true;
+     }
    return false;
   }
 
@@ -428,19 +444,14 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   // Q08 MAE evidence must be sampled before every possible early return.
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
-      return;
-
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
       return;
 
    if(QM_FrameworkHandleFridayClose())
@@ -473,6 +484,16 @@ void OnTick()
 
    // Per-tick: manage open position (VWAP trail, BE shift, ATR trail)
    Strategy_ManageOpenPosition();
+
+   // News blackout gates entries only. Position management and the time exit
+   // above continue to run during news windows.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
 
    // Per-bar: entry evaluation only on new closed bar
    if(!is_new_bar)

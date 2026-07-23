@@ -3,8 +3,8 @@
 **EA ID:** QM5_20007
 **Slug:** `intraday-config-engine`
 **Source:** `intraday-momentum-orb-canonical-2026-06-29` (see `artifacts/cards_approved/QM5_20007_intraday-config-engine.md`)
-**Author of this spec:** Claude
-**Last revised:** 2026-06-30
+**Author of this spec:** Development
+**Last revised:** 2026-07-23
 
 ---
 
@@ -34,6 +34,7 @@ One parameterised intraday EA with three selectable signal lanes and three deter
 | `gb_d1_atr_period` | 14 | 5-30 | D1 ATR period for gold-breakout band |
 | `gb_atr_mult` | 1.5 | 0.5-3.0 | Band = daily_open ± mult × ATR(D1) |
 | `stop_atr_mult` | 1.5 | 0.5-3.0 | Initial SL distance = mult × ATR(mb_atr_period) |
+| `cost_mult` | 3.0 | >=0 | Require the expected ATR move to exceed positive modeled spread by this multiple |
 
 ---
 
@@ -100,4 +101,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-30 | Initial build from card | 942f8c95-66dc-472b-9441-89d4bd032288 |
+| v1 | 2026-07-23 | Initial build from card | 5388420a-129e-4068-923e-dbb1f22d7886 |
