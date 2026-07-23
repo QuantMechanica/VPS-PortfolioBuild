@@ -1,6 +1,6 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-23T06:07:03.7219645Z",
+    "generated_at":  "2026-07-23T07:07:03.8877728Z",
     "total":  3402,
     "items":  [
                   {
@@ -20347,7 +20347,7 @@
                       "slug":  "QM5_1137_fx-h4-filter-rule-breakout",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T05:17:56.3827434Z"
+                      "last_updated_utc":  "2026-07-23T06:18:20.4762003Z"
                   },
                   {
                       "slug":  "QM5_1138_gold-m30-open-range-fade-after-gap",
@@ -20365,7 +20365,7 @@
                       "slug":  "QM5_1140_index-daily-range-expansion-continuation",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T04:38:37.2848453Z"
+                      "last_updated_utc":  "2026-07-23T06:43:30.8706215Z"
                   },
                   {
                       "slug":  "QM5_1151_fx-london-fix-reversal",
@@ -20377,31 +20377,31 @@
                       "slug":  "QM5_1152_fx-tokyo-fix-usd-demand",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T05:17:58.1542510Z"
+                      "last_updated_utc":  "2026-07-23T06:51:14.5162704Z"
                   },
                   {
                       "slug":  "QM5_1153_fx-us-session-after-london-drift",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T05:22:32.1856413Z"
+                      "last_updated_utc":  "2026-07-23T06:18:14.7814991Z"
                   },
                   {
                       "slug":  "QM5_1154_index-hks-halfhour-lag-continuation",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T04:38:37.0161436Z"
+                      "last_updated_utc":  "2026-07-23T06:43:29.9553472Z"
                   },
                   {
                       "slug":  "QM5_1155_index-liquidity-shock-rebound",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T04:34:39.5429028Z"
+                      "last_updated_utc":  "2026-07-23T06:43:29.1111975Z"
                   },
                   {
                       "slug":  "QM5_1156_xtiusd-eia-third-halfhour-continuation",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T05:17:57.2960302Z"
+                      "last_updated_utc":  "2026-07-23T06:51:14.2313900Z"
                   },
                   {
                       "slug":  "QM5_1157_index-realized-skewness-fade",
