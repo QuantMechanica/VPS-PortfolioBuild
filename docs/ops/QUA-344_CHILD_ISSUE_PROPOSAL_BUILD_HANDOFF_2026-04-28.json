@@ -1,0 +1,28 @@
+{
+  "parent_issue": "QUA-344",
+  "generated_at_local": "2026-04-28T11:18:00+02:00",
+  "proposal": {
+    "title": "QUA-344 follow-up — DEV build/compile binding for SRC04_S05 (lien-inside-day-breakout)",
+    "priority": "medium",
+    "assignee_role": "Dev",
+    "reviewer_role": "CTO",
+    "reason": "pipeline_operator_blocked_on_missing_executable_binding"
+  },
+  "objective": "Produce executable EA artifact and metadata required for first factory P1 baseline dispatch.",
+  "acceptance_criteria": [
+    "Assign ea_id for SRC04_S05 and update card header.",
+    "Build EA and publish compiled .ex5 artifact path.",
+    "Provide first-run setfile/inputs binding aligned to card defaults.",
+    "Provide dispatch fields: ea_id, ea_binary_path, target_terminal (or any), approved baseline date window.",
+    "Attach compile-PASS evidence note under docs/ops with timestamp."
+  ],
+  "pipeline_follow_on": {
+    "owner": "Pipeline-Operator",
+    "action": "Execute first one-symbol P1 baseline from prepared template and post filesystem-truth report evidence"
+  },
+  "evidence_docs": [
+    "docs/ops/QUA-344_CHILD_ISSUE_PROPOSAL_BUILD_HANDOFF_2026-04-28.md",
+    "docs/ops/QUA-344_P1_BASELINE_TEMPLATE_2026-04-28.json",
+    "docs/ops/QUA-344_PIPELINE_READINESS_UPDATE_2026-04-28.md"
+  ]
+}

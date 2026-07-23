@@ -1,0 +1,29 @@
+{
+  "issue_id": "QUA-344",
+  "timestamp": "2026-04-28T12:36:51.8062285+02:00",
+  "state": "blocked",
+  "signature": "blocked|DRAFT|TBD|TBD",
+  "unblock_owner": "Dev + CTO",
+  "unblock_action": "Provide executable binding fields: ea_id, non-DRAFT status, compile-pass artifact path, dispatch/baseline settings, API bindings for child issue submission.",
+  "missing_fields": [
+    "ea_id",
+    "status_transition_from_DRAFT",
+    "compile_pass_ex5_path",
+    "dispatch_terminal_profile",
+    "baseline_window",
+    "api_env:PAPERCLIP_API_BASE",
+    "api_env:PAPERCLIP_PROJECT_ID",
+    "api_env:PAPERCLIP_PARENT_ISSUE_ID",
+    "api_env:PAPERCLIP_TOKEN"
+  ],
+  "next_artifacts": [
+    "docs/ops/QUA-344_UNBLOCK_CONTRACT.md",
+    "docs/ops/QUA-344_CHILD_ISSUES_UNBLOCK.md",
+    "docs/ops/QUA-344_CHILD_ISSUE_PAYLOADS/README.md",
+    "docs/ops/Submit-QUA344ChildIssues.ps1",
+    "docs/ops/QUA-344_CHILD_ISSUE_SUBMISSION_RUNBOOK.md"
+  ],
+  "adapter_recovered_at": "2026-04-28T12:31:29.5139897+02:00",
+  "adapter_recovered_note": "codex_local usage-limit window cleared; blocker now strictly missing execution bindings",
+  "last_heartbeat": "C:\\QM\\worktrees\\research\\docs\\ops\\QUA-344_HEARTBEAT_2026-04-28T123643+0200.json"
+}

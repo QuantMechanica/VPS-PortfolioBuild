@@ -1,0 +1,7 @@
+{
+  "parent_issue": "QUA-344",
+  "title": "QUA-344-C3 Dispatch + Baseline Binding",
+  "owner": "CTO",
+  "priority": "medium",
+  "body": "Parent: QUA-344\nOwner: CTO\n\nScope\n- Define terminal/profile.\n- Define symbol/timeframe baseline (D1 minimum).\n- Define backtest window + spread/model assumptions.\n- Select initial risk mode (`risk_mode_single` or `risk_mode_dual`).\n\nAcceptance\n- One canonical executable pipeline command exists with no missing fields."
+}

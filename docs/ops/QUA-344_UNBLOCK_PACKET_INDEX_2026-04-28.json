@@ -1,0 +1,24 @@
+{
+  "issue": "QUA-344",
+  "generated_at_local": "2026-04-28T11:35:00+02:00",
+  "state": "blocked",
+  "blocker": {
+    "owner": "Dev + CTO",
+    "action": "Provide ea_id, compiled .ex5 path, target terminal routing, and approved baseline window"
+  },
+  "controller_artifacts": {
+    "status_update_payload": "docs/ops/QUA-344_ISSUE_STATUS_UPDATE_2026-04-28.json",
+    "comment_payload": "docs/ops/QUA-344_ISSUE_COMMENT_PAYLOAD_2026-04-28.json",
+    "comment_markdown": "docs/ops/QUA-344_ISSUE_COMMENT_DRAFT_2026-04-28.md",
+    "interaction_payload": "docs/ops/QUA-344_INTERACTION_SUGGEST_TASKS_2026-04-28.json",
+    "child_issue_proposal": "docs/ops/QUA-344_CHILD_ISSUE_PROPOSAL_BUILD_HANDOFF_2026-04-28.json"
+  },
+  "pipeline_assets": {
+    "p1_template": "docs/ops/QUA-344_P1_BASELINE_TEMPLATE_2026-04-28.json",
+    "readiness_note": "docs/ops/QUA-344_PIPELINE_READINESS_UPDATE_2026-04-28.md",
+    "readiness_script": "infra/scripts/Test-QUA344Readiness.ps1",
+    "readiness_output": "docs/ops/QUA-344_READINESS_CHECK_2026-04-28.json"
+  },
+  "next_action_when_unblocked": "Run one-symbol P1 baseline (EURGBP.DWX, D1) and publish filesystem-truth evidence",
+  "ops_runbook": "docs/ops/QUA-344_OPS_RUNBOOK_2026-04-28.md"
+}

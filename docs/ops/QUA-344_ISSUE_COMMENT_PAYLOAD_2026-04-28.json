@@ -1,0 +1,9 @@
+{
+  "issue": "QUA-344",
+  "generated_at_local": "2026-04-28T11:24:00+02:00",
+  "resume": true,
+  "comment_markdown_path": "docs/ops/QUA-344_ISSUE_COMMENT_DRAFT_2026-04-28.md",
+  "recommended_status": "blocked",
+  "unblock_owner": "Dev + CTO",
+  "unblock_action": "Execute child issue build handoff and provide runnable binding fields for P1 dispatch"
+}

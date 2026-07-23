@@ -1,0 +1,7 @@
+{
+  "parent_issue": "QUA-344",
+  "title": "QUA-344-C4 First Executable Run",
+  "owner": "Dev + CTO",
+  "priority": "medium",
+  "body": "Parent: QUA-344\nOwner: Dev + CTO\n\nScope\n- Execute canonical pipeline command from C2/C3 bindings.\n- Persist outputs and update heartbeat.\n\nAcceptance\n- Heartbeat signature is not `blocked|DRAFT|TBD|TBD`."
+}

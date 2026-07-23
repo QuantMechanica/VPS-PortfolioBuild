@@ -48,7 +48,7 @@ Ten Strategy Cards drafted; full set summarized in the table below. All ten carr
 | Slot | Sub-issue | Card slug | Source location | Strategy character | Author-claim type | Primary `hard_rules_at_risk` |
 |---|---|---|---|---|---|---|
 | S02a | [QUA-340](/QUA/issues/QUA-340) | `lien-dbb-pick-tops` | Ch 9 PDF pp. 103-107 | Double Bollinger Band PICK TOPS (range-mode mean-reversion): close back across 1st-σ band after outer-band-zone dwell | Verbatim rule + 1 worked example; no aggregate backtest | `enhancement_doctrine` (BB period + σ multipliers) |
-| S02b | QUA-341 (in_progress) | `lien-dbb-trend-join` | Ch 9 PDF pp. 107-110 | Double Bollinger Band TREND JOIN (trend-mode breakout): close across 1st-σ band after K-bar opposite-side dwell. Sibling of S02a sharing proposed `bband-reclaim` flag | Verbatim rule + 1 worked example; co-regime-fire suppression vs S02a documented | `enhancement_doctrine` (precondition_mode), `friday_close` (multi-day swing variant) |
+| S02b | QUA-341 (ready_for_board_close) | `lien-dbb-trend-join` | Ch 9 PDF pp. 107-110 | Double Bollinger Band TREND JOIN (trend-mode breakout): close across 1st-σ band after K-bar opposite-side dwell. Sibling of S02a sharing proposed `bband-reclaim` flag | Verbatim rule + 1 worked example; co-regime-fire suppression vs S02a documented | `enhancement_doctrine` (precondition_mode), `friday_close` (multi-day swing variant) |
 | S03 | [QUA-342](/QUA/issues/QUA-342) | `lien-fade-double-zeros` | Ch 10 PDF pp. 112-115 | Round-Number Psychological-Level FADE (M15, 20MA counter-trend filter, 10-15-pip entry offset, 20-pip stop) | Per-trade pip P&L on 3 worked examples; no aggregate backtest | `scalping_p5b_latency` (M15 + tight stops), `enhancement_doctrine` (pip offsets major-FX-calibrated) |
 | S04 | [QUA-343](/QUA/issues/QUA-343) | `lien-waiting-deal` | Ch 11 PDF pp. 117-121 | London-Open Opening-Range FALSE-BREAKOUT FADE (M5-M15; 06:00-07:00 GMT range; 25-pip spike + reverse-back-through-opposite + 10p offset; 35p stop, +50p TP1, +3R TP2). GBPUSD-specific per Lien UK-dealer-stop-hunt thesis | Per-trade pip P&L on 3 GBPUSD worked examples | `scalping_p5b_latency`, `enhancement_doctrine` (GMT session window + pip thresholds) |
 | S05 | [QUA-344](/QUA/issues/QUA-344) | `lien-inside-day-breakout` | Ch 12 PDF pp. 123-127 | Multi-Inside-Day VOLATILITY-COMPRESSION BREAKOUT (D1; ≥2 inside days; bracket stop-buy/sell at prev-inside-day extremes ±10p; stop-and-reverse at nearest-inside-day opposite extreme +10p) | Per-trade pip P&L on 3 worked examples | `friday_close` (multi-day swing), `risk_mode_dual` (Lien-verbatim 2-lot reversal exposed only as P3 variant) |
@@ -269,17 +269,25 @@ Per DL-029 sequential workflow, no SRC05 work begins until SRC04 sub-issues comp
 - [ ] **`risk_mode_dual` ratification** for SRC04_S05 lien-inside-day-breakout — CEO decision on the Lien-verbatim 2-lot reversal variant: (a) accept as P3 sweep variant only with risk_mode_dual flag; (b) drop the 2-lot variant entirely and ship V5-compliant 1-unit reversal only
 - [ ] **`friday_close` waiver consideration** — multi-day-to-multi-month-hold cards (S05, S07, S09, S11) all flagged; S11 has the STRONGEST waiver case (Lien thesis REQUIRES multi-month hold). Precedent: SRC02_S01 chan-pairs-stat-arb + SRC03_S03 williams-cdc-pattern received P3 waiver consideration on similar theses
 - [ ] **SRC05 dispatch** — open next source per `SOURCE_QUEUE.md` `proposed_order = 5` after SRC04 sub-issues progress
+- [x] **QUA-341 handoff ready** — S02b (`lien-dbb-trend-join`) artifacts synced to `ready_for_board_close` across card + source table + completion report row/chain; remaining step is board status transition only.
+- [ ] **QUA-341 board transition pending (workflow block)** — Unblock owner: CEO/Board reviewer. Unblock action: acknowledge `QUA-341_HANDOFF.md` and transition issue status from `in_progress` to close state.
 
 ## 9. Cross-references
 
 - Parent issue: [QUA-333](/QUA/issues/QUA-333)
-- Sub-issues: [QUA-340](/QUA/issues/QUA-340) (S02a `lien-dbb-pick-tops`) through [QUA-349](/QUA/issues/QUA-349) (S11 `lien-carry-trade`) per DL-029 sequential chain — first opened as `todo`, rest opened as `blocked`. Order: S02a (QUA-340), S02b (QUA-341), S03 (QUA-342), S04 (QUA-343), S05 (QUA-344), S06 (QUA-345), S07 (QUA-346), S08 (QUA-347), S09 (QUA-348), S11 (QUA-349).
+- Sub-issues: [QUA-340](/QUA/issues/QUA-340) (S02a `lien-dbb-pick-tops`) through [QUA-349](/QUA/issues/QUA-349) (S11 `lien-carry-trade`) per DL-029 sequential chain — first opened as `todo`, rest opened as `blocked`. Order: S02a (QUA-340), S02b (QUA-341), S03 (QUA-342), S04 (QUA-343), S05 (QUA-344), S06 (QUA-345), S07 (QUA-346), S08 (QUA-347), S09 (QUA-348), S11 (QUA-349). Current S02b status snapshot: `QUA-341 = ready_for_board_close`.
 - Predecessor sources: [QUA-191](/QUA/issues/QUA-191) (SRC01 Davey), [QUA-275](/QUA/issues/QUA-275) (SRC02 Chan), [QUA-298](/QUA/issues/QUA-298) (SRC03 Williams)
 - Source-text PDF: `G:\My Drive\QuantMechanica\Ebook\PDF resources\Day Trading and Swing Trading t - Kathy Lien.pdf`
 - Source queue: `strategy-seeds/sources/SOURCE_QUEUE.md` (T1 Tier A row 4)
 - Workflow doc: `processes/13-strategy-research.md`
 - Card template: `strategy-seeds/cards/_TEMPLATE.md`
 - Strategy-type vocabulary: `strategy-seeds/strategy_type_flags.md`
+- QUA-341 board-close package: `strategy-seeds/sources/SRC04/QUA-341_HANDOFF.md`
+- QUA-341 artifact index: `strategy-seeds/sources/SRC04/QUA-341_ARTIFACT_INDEX.md`
+- QUA-341 integrity manifest: `strategy-seeds/sources/SRC04/QUA-341_INTEGRITY.sha256` (includes `GeneratedUTC` snapshot timestamp)
+- QUA-341 integrity verification log: `strategy-seeds/sources/SRC04/QUA-341_INTEGRITY_VERIFY.log` (latest expected result: PASS)
+- QUA-341 close-readiness check: `strategy-seeds/sources/SRC04/QUA-341_CLOSE_READINESS_CHECK.md` (overall PASS, 2026-04-28)
+  - Freshness field: `LatestIntegrityRecheckUTC`
 - DL-029 (workflow ratification): `decisions/2026-04-27_strategy_research_workflow.md`
 - DL-030 (Class 2 Review-only execution policy)
 - DL-032 (CEO Autonomy Waiver v3 — autonomous source-queue ordering)

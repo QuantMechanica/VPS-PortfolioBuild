@@ -1,0 +1,14 @@
+# QUA-341 Integrity Manifest
+Date: 2026-04-28
+GeneratedUTC: 2026-04-28T09:38:19Z
+Algorithm: SHA256
+Note: QUA-341_INTEGRITY_VERIFY.log is intentionally excluded (append-only audit log).
+Scope: QUA-341 artifacts only; unrelated workspace files ignored.
+
+6B58663705DCAC6D555333B7071D74D1CEB3AF6C73A102C00353698CAF8627B1  C:\QM\worktrees\research\strategy-seeds\cards\lien-dbb-trend-join_card.md
+085F64CFB9B06C9AACDD8CF8FC78E645528C61CCB96AA1412BFA8B840BD339C7  C:\QM\worktrees\research\strategy-seeds\sources\SRC04\source.md
+DAB7107084D2F46532E05607210F3B01E27F81998D41FAE10A1DCD7259BFC87D  C:\QM\worktrees\research\strategy-seeds\sources\SRC04\completion_report.md
+D11077257265E0B1638580F7F0E23EB69CA1593428B4B52F4B1C9DA2D7E1C734  C:\QM\worktrees\research\strategy-seeds\sources\SRC04\QUA-341_HANDOFF.md
+26442F30EDD6FB2208D876EADBB4BB55E7611CD7950026E1C3ADEB4A3D604417  C:\QM\worktrees\research\strategy-seeds\sources\SRC04\QUA-341_ARTIFACT_INDEX.md
+B1D7E60AB2A183A42700EF40A313ABD17CE6BC8CE32327C29A291080716A0340  C:\QM\worktrees\research\strategy-seeds\sources\SRC04\QUA-341_CLOSE_READINESS_CHECK.md
+B19FDFD746CCC209E252011CA55639FC50FDF9894D57339D0659EDF317C6C1F0  C:\QM\worktrees\research\strategy-seeds\sources\SRC04\raw\ch08-12_technical.txt

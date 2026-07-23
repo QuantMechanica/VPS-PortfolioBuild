@@ -1,0 +1,50 @@
+{
+  "issue": "QUA-344",
+  "generated_at_local": "2026-04-28T11:13:00+02:00",
+  "mode": "implementation_readiness",
+  "strategy": {
+    "strategy_id": "SRC04_S05",
+    "slug": "lien-inside-day-breakout",
+    "card_path": "strategy-seeds/cards/lien-inside-day-breakout_card.md",
+    "source_path": "strategy-seeds/sources/SRC04/raw/ch08-12_technical.txt",
+    "card_status": "DRAFT",
+    "ea_id": "TBD"
+  },
+  "pipeline_action": "P1_baseline_first_run_template",
+  "runnable": false,
+  "blocker": {
+    "owner": "CTO + Dev",
+    "action": "Assign EA ID and provide compiled .ex5 binding for T1-T5"
+  },
+  "template": {
+    "phase": "P1",
+    "target_terminal": "TBD",
+    "ea_id": "TBD",
+    "ea_binary_path": "TBD",
+    "timeframe": "D1",
+    "symbols": [
+      "EURGBP.DWX"
+    ],
+    "date_window": {
+      "from": "2019-01-01",
+      "to": "2025-12-31"
+    },
+    "inputs": {
+      "inside_days_min": 2,
+      "breakout_offset_pips": 10,
+      "reverse_offset_pips": 10,
+      "tp1_rr": 2.0,
+      "reverse_lots": 1,
+      "trail_method": "two_bar_low",
+      "directional_bias_filter": "off",
+      "friday_close": "enabled"
+    },
+    "notes": [
+      "Date window is placeholder baseline span; align with CTO baseline window policy before dispatch.",
+      "Use filesystem-truth checks on report counts and NO_REPORT size checks on completion."
+    ]
+  },
+  "evidence_docs": [
+    "docs/ops/QUA-344_PIPELINE_READINESS_UPDATE_2026-04-28.md"
+  ]
+}

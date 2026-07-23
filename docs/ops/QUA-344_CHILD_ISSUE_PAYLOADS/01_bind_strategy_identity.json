@@ -1,0 +1,7 @@
+{
+  "parent_issue": "QUA-344",
+  "title": "QUA-344-C1 Bind Strategy Identity (ea_id + status)",
+  "owner": "Dev",
+  "priority": "medium",
+  "body": "Parent: QUA-344\nOwner: Dev\n\nScope\n- Assign `ea_id` in `strategy-seeds/cards/lien-inside-day-breakout_card.md`.\n- Move card status from `DRAFT` to next executable lifecycle state.\n\nAcceptance\n- Card does not contain `ea_id: TBD`.\n- Card does not contain `status: DRAFT`."
+}

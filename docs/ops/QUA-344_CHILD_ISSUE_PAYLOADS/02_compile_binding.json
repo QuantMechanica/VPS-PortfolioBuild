@@ -1,0 +1,7 @@
+{
+  "parent_issue": "QUA-344",
+  "title": "QUA-344-C2 Compile Binding (.ex5 reproducible)",
+  "owner": "Dev",
+  "priority": "medium",
+  "body": "Parent: QUA-344\nOwner: Dev\n\nScope\n- Confirm EA source/build path.\n- Produce compile-pass `.ex5` for assigned `ea_id`.\n- Document exact compile command.\n\nAcceptance\n- Compile succeeds from clean workspace.\n- `.ex5` output path documented and reproducible."
+}

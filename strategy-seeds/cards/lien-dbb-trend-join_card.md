@@ -315,7 +315,7 @@ data_requirements: standard                   # D1 OHLC on Darwinex .DWX FX symb
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
-| G0 Research Intake | 2026-04-28 | DRAFT (awaiting CEO + Quality-Business review) | this card |
+| G0 Research Intake | 2026-04-28 | DRAFT_READY_FOR_BOARD_CLOSE (QUA-341 acceptance checklist complete; pending board status transition) | this card (§17-§18 + validation evidence) |
 | P1 Build Validation | TBD | TBD | TBD |
 | P2 Baseline Screening | TBD | TBD | TBD |
 | P3 Parameter Sweep | TBD | TBD | TBD |
@@ -364,3 +364,84 @@ data_requirements: standard                   # D1 OHLC on Darwinex .DWX FX symb
   multi-leg / multi-stock / cointegration architecture concerns. Cleanest architecture-fit so
   far in SRC04 family alongside S02a. Expected G0 yield CLEAN.
 ```
+
+## 17. Acceptance Criteria (QUA-341 execution gate)
+
+- [x] Rule fidelity check passes against raw evidence (`ch08-12_technical.txt` lines 290-333): trigger is `close[t]` crossing back across inner 1-sigma band with `LOOKBACK_BARS=2` opposite-side dwell.
+- [x] TM fidelity check passes: initial stop = 65 pips, TP1 = 50 pips with 50% partial close and BE move, TP2 = 195 pips on remainder.
+- [x] Co-regime suppression check passes: if S02a and S02b both qualify on same bar, S02a priority is enforced and S02b is skipped for that bar.
+- [x] Issue-link hygiene remains consistent: SRC04 trackers map S02b to `QUA-341` (`sources/SRC04/source.md` slot table + `sources/SRC04/completion_report.md` sub-issue table/chain).
+
+Validation evidence (2026-04-28):
+- Raw rules confirmed in `sources/SRC04/raw/ch08-12_technical.txt` (Join a New Trend block): long/short trigger + 2-candle opposite-side dwell, NY 5pm entry, 65-pip stop, 50-pip TP1 with BE move, 195-pip TP2.
+- Co-regime suppression confirmed in this card § 6 and § 16 (same-bar resolver: S02a priority; skip S02b).
+- Issue-link mapping confirmed in `sources/SRC04/source.md` slot S02b and `sources/SRC04/completion_report.md` row/chain for S02b (`QUA-341 ready_for_board_close`).
+
+## 18. Deterministic Test Vectors (for IMPL/P1 sanity)
+
+```yaml
+test_vectors:
+  - id: s02b_long_fire
+    side: long
+    lookback_bars: 2
+    precondition:
+      close_t_minus_2: below_inner_lower
+      close_t_minus_1: below_inner_lower
+    trigger:
+      close_t: above_inner_lower
+    expected:
+      signal: BUY
+      entry_time: NY_17_00
+      init_stop_pips: 65
+      tp1_pips: 50
+      tp2_pips: 195
+
+  - id: s02b_short_fire
+    side: short
+    lookback_bars: 2
+    precondition:
+      close_t_minus_2: above_inner_upper
+      close_t_minus_1: above_inner_upper
+    trigger:
+      close_t: below_inner_upper
+    expected:
+      signal: SELL
+      entry_time: NY_17_00
+      init_stop_pips: 65
+      tp1_pips: 50
+      tp2_pips: 195
+
+  - id: s02b_no_fire_failed_dwell
+    side: long
+    lookback_bars: 2
+    precondition:
+      close_t_minus_2: below_inner_lower
+      close_t_minus_1: above_inner_lower
+    trigger:
+      close_t: above_inner_lower
+    expected:
+      signal: NONE
+      reason: dwell_precondition_failed
+
+  - id: s02b_suppressed_by_s02a
+    side: long
+    lookback_bars: 2
+    precondition:
+      s02a_and_s02b_true_same_bar: true
+    expected:
+      signal: NONE
+      reason: co_regime_suppression_s02a_priority
+```
+
+## 19. QUA-341 Closeout Note
+
+`QUA-341` implementation-scope documentation work is complete in-repo:
+- acceptance criteria are explicit and fully checked in § 17,
+- validation evidence is logged with source anchors,
+- deterministic test vectors are documented in § 18,
+- SRC04 tracker links map S02b to `QUA-341`.
+- status sync audit stamp: `2026-04-28` (all S02b artifacts aligned to `ready_for_board_close`).
+
+Remaining action is workflow-only: board status transition from `in_progress` after reviewer acknowledgment.
+
+Board-close package: `strategy-seeds/sources/SRC04/QUA-341_HANDOFF.md`.

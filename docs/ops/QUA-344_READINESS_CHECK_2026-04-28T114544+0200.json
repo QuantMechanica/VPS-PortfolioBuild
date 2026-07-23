@@ -1,0 +1,15 @@
+{
+    "issue":  "QUA-344",
+    "generated_at_local":  "2026-04-28T11:45:44+02:00",
+    "checks":  {
+                   "card_exists":  true,
+                   "template_exists":  true,
+                   "card_status":  "DRAFT",
+                   "ea_id":  "TBD",
+                   "ea_binary_path":  "TBD",
+                   "ea_binary_exists":  false
+               },
+    "status":  "blocked",
+    "unblock_owner":  "Dev + CTO",
+    "unblock_action":  "Provide ea_id, compiled .ex5 path, and dispatch fields"
+}

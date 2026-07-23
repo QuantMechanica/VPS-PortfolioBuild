@@ -1,0 +1,22 @@
+{
+  "issue": "QUA-344",
+  "generated_at_local": "2026-04-28T11:19:00+02:00",
+  "recommended_transition": {
+    "status": "blocked",
+    "reason": "awaiting_dev_build_compile_binding",
+    "resume": true
+  },
+  "blocker": {
+    "owner": "Dev + CTO",
+    "action": "Create/execute child issue for build+compile handoff and return executable binding fields"
+  },
+  "child_issue_proposal": {
+    "markdown": "docs/ops/QUA-344_CHILD_ISSUE_PROPOSAL_BUILD_HANDOFF_2026-04-28.md",
+    "json": "docs/ops/QUA-344_CHILD_ISSUE_PROPOSAL_BUILD_HANDOFF_2026-04-28.json"
+  },
+  "pipeline_prepared_assets": [
+    "docs/ops/QUA-344_P1_BASELINE_TEMPLATE_2026-04-28.json",
+    "docs/ops/QUA-344_PIPELINE_READINESS_UPDATE_2026-04-28.md"
+  ],
+  "next_pipeline_action_when_unblocked": "Run first P1 baseline and report filesystem-truth counts + report sizes + terminal PID evidence"
+}

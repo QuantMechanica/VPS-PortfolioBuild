@@ -1,0 +1,10 @@
+{
+  "issue": "QUA-344",
+  "generated_at_local": "2026-04-28T12:17:44+02:00",
+  "change_type": "no_change",
+  "readiness_snapshot": "C:\\QM\\worktrees\\research\\docs\\ops\\QUA-344_READINESS_CHECK_2026-04-28T121744+0200.json",
+  "signature": "blocked|DRAFT|TBD|TBD",
+  "status": "blocked",
+  "unblock_owner": "Dev + CTO",
+  "unblock_action": "Provide ea_id, compiled .ex5 path, and dispatch fields"
+}
