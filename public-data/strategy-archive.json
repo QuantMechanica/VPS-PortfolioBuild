@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-23T10:07:03.3850405Z",
-    "total":  3403,
+    "generated_at":  "2026-07-23T11:07:03.6332479Z",
+    "total":  3405,
     "items":  [
                   {
                       "slug":  "ath-breakout-atr-trail",
@@ -1616,6 +1616,12 @@
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-07-20T16:07:23.6211111Z"
+                  },
+                  {
+                      "slug":  "xauxag-xmom1_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-23T10:50:46.1082924Z"
                   },
                   {
                       "slug":  "xauxag-xmom12_card",
@@ -17822,6 +17828,12 @@
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-07-23T09:56:39.8405928Z"
+                  },
+                  {
+                      "slug":  "QM5_20057_xauxag-xmom1",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-23T10:48:59.3676114Z"
                   },
                   {
                       "slug":  "QM5_2006_nnfx-ichimoku-core",

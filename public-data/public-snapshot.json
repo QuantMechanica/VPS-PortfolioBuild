@@ -1,6 +1,6 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-23T10:07:03.4381787Z",
+    "generated_at":  "2026-07-23T11:07:03.7014253Z",
     "phase":  "Endausbaustufe-Modus - highest EA at P2",
     "agents":  {
                    "offline":  1,
@@ -8,7 +8,7 @@
                    "blocked":  0
                },
     "pipeline":  {
-                     "eas_built":  4113,
+                     "eas_built":  4114,
                      "by_phase":  {
                                       "P5b":  0,
                                       "P6":  0,
@@ -26,7 +26,7 @@
                                       "P1":  2,
                                       "P5c":  0
                                   },
-                     "strategy_cards":  3403
+                     "strategy_cards":  3405
                  },
     "t6":  {
                "status":  "offline",
