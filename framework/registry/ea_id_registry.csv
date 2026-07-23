@@ -2497,7 +2497,7 @@ QM5_11560,lien-xtreme-fade-bb3-adx25-m15,f8b7c68d-870a-5568-81ff-9b825dcddd32,ac
 11616,robo-ema8-28-cci30-m30,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,Development,2026-06-25
 11617,robo-psar001-ao-ema5-m30,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,Development,2026-06-25
 11618,robo-lwma-low-macd1526-m30,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,Development,2026-06-26
-11619,robo-psar01-ema6-11-34-h1,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,pending,Claude,2026-05-23
+11619,robo-psar01-ema6-11-34-h1,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,Development,2026-07-23
 11620,robo-bb3dev-ema50-pullback-h4,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,pending,Claude,2026-05-23
 11621,robo-ema100hl-bb10-23-reversal-h4,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,Development,2026-05-23
 11622,ba-sma12-x,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Research,2026-05-23
@@ -4133,3 +4133,18 @@ QM5_1491,ehlers-sinewave-leadsine-cross-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,
 20075,camarilla-inner-pivot-fade,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Research,2026-07-23
 20076,trendline-diagonal-break-retest,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Research,2026-07-23
 20077,atr-channel-trail-breakout-h1,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Research,2026-07-23
+20078,volume-profile-poc-retest-intraday,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Claude,2026-07-23
+20079,pip-boxer-bounded-grid-h1,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Claude,2026-07-23
+20080,goodman-wave-theory-intersection-h1,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Claude,2026-07-23
+20081,renko-triple-block-flip-h1,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Claude,2026-07-23
+20082,connors-rsi2-pullback-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Claude,2026-07-23
+20083,pricebob-sar-invalidation-flip-gbpusd,68eff294-e3b2-5010-82d8-e9dd5f4130e6,active,Research,2026-07-23
+20084,pricebob-ib30-settled-continuation-ndx,68eff294-e3b2-5010-82d8-e9dd5f4130e6,active,Research,2026-07-23
+20085,lebeau-lucas-momentum-oscillator-h4-r1-recovery,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Claude,2026-07-23
+20086,connors-multi-day-high-low-h4-r1-recovery,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Claude,2026-07-23
+20087,carney-three-drives-h4-r1-recovery,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Claude,2026-07-23
+20088,carney-crab-pattern-h4-r1-recovery,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Claude,2026-07-23
+20089,hopwood-ts4-standalone-h4-r1-recovery,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Claude,2026-07-23
+20090,pricebob-ttr-brooks-stoporder-breakout-audusd,68eff294-e3b2-5010-82d8-e9dd5f4130e6,active,Research,2026-07-23
+20091,pricebob-extreme-reversal-fade-gdaxi,68eff294-e3b2-5010-82d8-e9dd5f4130e6,active,Research,2026-07-23
+20092,pricebob-refbar-breakout-correlated-metal-xagusd,68eff294-e3b2-5010-82d8-e9dd5f4130e6,active,Research,2026-07-23

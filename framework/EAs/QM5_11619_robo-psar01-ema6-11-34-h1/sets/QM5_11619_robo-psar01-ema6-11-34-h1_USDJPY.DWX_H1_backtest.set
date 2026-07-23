@@ -1,32 +1,31 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        12517
-; ea_slug:      hlhb-trend
+; ea_id:        11619
+; ea_slug:      robo-psar01-ema6-11-34-h1
 ; ea_version:   v5.0
 ; set_version:  s20260723-001
-; symbol:       GBPUSD.DWX
+; symbol:       USDJPY.DWX
 ; timeframe:    H1
 ; environment:  backtest
-; magic_slot:   1
+; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
 ; date:         2026-07-23
 ;==========================================================
-qm_ea_id=12517
-qm_magic_slot_offset=1
+qm_ea_id=11619
+qm_magic_slot_offset=2
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12517_hlhb-trend.md
-strategy_ema_fast_period=5
-strategy_ema_slow_period=10
-strategy_rsi_period=10
-strategy_rsi_centerline=50.0
-strategy_use_adx_filter=true
-strategy_adx_period=14
-strategy_adx_min=25.0
-strategy_take_profit_pips=400
-strategy_trailing_stop_pips=150
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11619_robo-psar01-ema6-11-34-h1.md
+strategy_ema_fast_period=6
+strategy_ema_mid_period=11
+strategy_ema_slow_period=34
+strategy_psar_step=0.1
+strategy_psar_max=1.0
+strategy_atr_period=14
+strategy_atr_sl_mult=2.0
+strategy_atr_tp_mult=4.0

@@ -12405,8 +12405,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12516,inside-bar-mom,1,GBPUSD.DWX,125160001,2026-06-18,Claude,active
 12516,inside-bar-mom,2,XAUUSD.DWX,125160002,2026-06-18,Claude,active
 12516,inside-bar-mom,3,SP500.DWX,125160003,2026-06-18,Claude,active
-12517,hlhb-trend,0,EURUSD.DWX,125170000,2026-06-18,Claude,reserved
-12517,hlhb-trend,1,GBPUSD.DWX,125170001,2026-06-18,Claude,reserved
+12517,hlhb-trend,0,EURUSD.DWX,125170000,2026-06-18,Claude,active
+12517,hlhb-trend,1,GBPUSD.DWX,125170001,2026-06-18,Claude,active
 12519,atr-sma-stop,0,EURUSD.DWX,125190000,2026-06-18,Claude,reserved
 12519,atr-sma-stop,1,GBPUSD.DWX,125190001,2026-06-18,Claude,reserved
 12519,atr-sma-stop,2,XAUUSD.DWX,125190002,2026-06-18,Claude,reserved
@@ -15172,3 +15172,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20064,wti-tsmom2m,0,XTIUSD.DWX,200640000,2026-07-23,Development,active
 20061,kats-dax-maci,0,GDAXI.DWX,200610000,2026-07-23,OWNER-delegated Codex,active
 20062,kats-eu-macisar,0,EURUSD.DWX,200620000,2026-07-23,OWNER-delegated Codex,active
+11619,robo-psar01-ema6-11-34-h1,0,EURUSD.DWX,116190000,2026-07-23,Development,active
+11619,robo-psar01-ema6-11-34-h1,1,GBPUSD.DWX,116190001,2026-07-23,Development,active
+11619,robo-psar01-ema6-11-34-h1,2,USDJPY.DWX,116190002,2026-07-23,Development,active
+11619,robo-psar01-ema6-11-34-h1,3,USDCHF.DWX,116190003,2026-07-23,Development,active
+11619,robo-psar01-ema6-11-34-h1,4,AUDUSD.DWX,116190004,2026-07-23,Development,active
