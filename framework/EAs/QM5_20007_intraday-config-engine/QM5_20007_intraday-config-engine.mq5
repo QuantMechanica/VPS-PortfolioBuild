@@ -90,18 +90,7 @@ double   g_orb_low         = 0.0;
 bool     g_orb_formed      = false;
 int      g_session_bars    = 0;     // bars elapsed inside session window today
 bool     g_vol_regime_ok   = false;
-int      g_last_day_key    = 0;     // YYYYMMDD integer — detects new trading day
 double   g_daily_open      = 0.0;   // for GOLD_BREAKOUT: current day's D1 open price
-
-//=============================================================================
-// Helper: integer date key (YYYYMMDD) from broker datetime
-//=============================================================================
-int DayKey(const datetime t)
-  {
-   MqlDateTime mdt;
-   TimeToStruct(t, mdt);
-   return mdt.year * 10000 + mdt.mon * 100 + mdt.day;
-  }
 
 //=============================================================================
 // Helper: broker hour (0-23) from datetime
@@ -122,13 +111,12 @@ int BrokerHour(const datetime t)
 void AdvanceState_OnNewBar()
   {
    const datetime broker_now = TimeCurrent();
-   const int day_key  = DayKey(broker_now);
    const int hour_now = BrokerHour(broker_now);
 
-   // New trading day — reset all session state
-   if(day_key != g_last_day_key)
+   // New trading day — reset all session state. Framework calendar-period
+   // gate (never a hand-rolled iTime/TimeToStruct day key).
+   if(QM_IsNewCalendarPeriod(PERIOD_D1))
      {
-      g_last_day_key  = day_key;
       g_session_open  = 0.0;
       g_daily_open    = iOpen(_Symbol, PERIOD_D1, 0); // perf-allowed: daily open for GOLD_BREAKOUT
       g_in_session    = false;
