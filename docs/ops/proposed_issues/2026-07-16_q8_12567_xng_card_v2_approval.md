@@ -40,13 +40,13 @@ variant_id: C_XNG_BASE35_POLICY
 source_card_sha256: PENDING_REVIEW_BINDING
 owner_approval: RECORDED_UNSEALED_CHAT_DIRECTION
 quality_business_approval: PENDING
-cto_approval: PENDING
+quality_tech_review: PENDING
 ```
 
 The OWNER stated in chat on 2026-07-16 that everything on the OWNER side is
 released. This is recorded as direction to continue preparation, but it is not
 represented as the required artifact-hash-bound OWNER seal and does not supply
-the separate Research, Quality-Business, CTO or Quality-Tech approvals.
+the separate Research, Quality-Business or Quality-Tech reviews.
 
 ### Source-defined rule
 
@@ -121,8 +121,8 @@ of whether its historical metrics are better.
 - OWNER: no-weekend safety buffer, retry deadline and risk posture.
 - Research + Quality-Business: Card-v2 classification and the quarantine of
   `entry=30` as a hindsight-selected challenger.
-- CTO + Quality-Tech: session-aware framework helper/API and Master-EA/module
-  consequences.
+- Quality-Tech: review the session-aware framework helper/API and
+  Master-EA/module consequences proposed by Development.
 - Development: only after all preceding approvals, implement the exact frozen
   contract and compile it.
 

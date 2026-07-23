@@ -10,13 +10,10 @@ param(
     [int]$AggregatorSilentMinutes = 15,
     [string]$DriveLogDir = 'C:\ProgramData\Google\DriveFS\Logs',
     [int]$DriveSilentMinutes = 60,
-    [string]$QmTokenMonitorScript = 'C:\QM\repo\infra\monitoring\Invoke-QmTokenMonitor.ps1',
-    [string]$QmTokenMonitorSnapshotPath = 'C:\QM\logs\infra\health\qm_token_monitor_latest.json',
     [string]$DriveGitExclusionScript = 'C:\QM\repo\infra\monitoring\Test-DriveGitExclusion.ps1',
-    [string[]]$GitRepoRoots = @('C:\QM\repo', 'C:\QM\paperclip'),
+    [string[]]$GitRepoRoots = @('C:\QM\repo'),
     [int]$StaleIndexLockMinutes = 10,
     [string]$GitIndexLockMonitorScript = 'C:\QM\repo\infra\monitoring\Invoke-GitIndexLockMonitor.ps1',
-    [string]$PaperclipProcessPattern = 'paperclip',
     [string]$Qua95TaskName = 'QM_QUA95_BlockerRefresh',
     [string]$Qua95TaskHealthTaskName = 'QM_QUA95_TaskHealth_15min',
     [int]$Qua95TaskMaxAgeMinutes = 125,
@@ -160,16 +157,6 @@ Add-Check -Name 't_live_isolation' -Status $tLiveStatus -Meta @{
     factory_leak_pids = @($factoryLeaks | ForEach-Object { $_.ProcessId })
 }
 
-# Paperclip daemon process health
-$paperclipCandidates = @(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object {
-    $_.CommandLine -and $_.CommandLine -match [regex]::Escape($PaperclipProcessPattern)
-})
-$paperclipStatus = if ($paperclipCandidates.Count -gt 0) { 'ok' } else { 'critical' }
-Add-Check -Name 'paperclip_daemon_health' -Status $paperclipStatus -Meta @{
-    match_pattern = $PaperclipProcessPattern
-    pids = @($paperclipCandidates | ForEach-Object { $_.ProcessId })
-}
-
 # Aggregator silence check
 if (-not (Test-Path -LiteralPath $AggregatorStateFile)) {
     Add-Check -Name 'aggregator_loop_freshness' -Status 'critical' -Meta @{ reason = 'state_file_missing'; path = $AggregatorStateFile }
@@ -199,35 +186,6 @@ else {
         $ageMin = [math]::Round(((Get-Date) - $latestLog.LastWriteTime).TotalMinutes, 2)
         $status = if ($ageMin -gt $DriveSilentMinutes) { 'critical' } else { 'ok' }
         Add-Check -Name 'google_drive_sync' -Status $status -Meta @{ latest_log = $latestLog.FullName; age_minutes = $ageMin; threshold_minutes = $DriveSilentMinutes }
-    }
-}
-
-# QUA-913 token-burn watch monitor (deterministic org-cap/trend/top-consumer/anomaly output)
-if (-not (Test-Path -LiteralPath $QmTokenMonitorScript)) {
-    Add-Check -Name 'qm_token_monitor' -Status 'warn' -Meta @{
-        reason = 'monitor_script_missing'
-        path = $QmTokenMonitorScript
-    }
-}
-else {
-    $qmOut = & powershell -NoProfile -ExecutionPolicy Bypass -File $QmTokenMonitorScript 2>&1
-    $qmCode = $LASTEXITCODE
-    $qmText = ($qmOut | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
-    $qmStatus = if ($qmCode -eq 0) { 'ok' } elseif ($qmCode -eq 1) { 'warn' } else { 'critical' }
-    $qmJson = $null
-    try {
-        if ($qmText) {
-            $qmJson = $qmText | ConvertFrom-Json -ErrorAction Stop
-        }
-    }
-    catch {
-        $qmJson = $null
-    }
-    Add-Check -Name 'qm_token_monitor' -Status $qmStatus -Meta @{
-        exit_code = $qmCode
-        snapshot_path = $QmTokenMonitorSnapshotPath
-        output = $qmText
-        monitor = $qmJson
     }
 }
 

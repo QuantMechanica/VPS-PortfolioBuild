@@ -1,8 +1,8 @@
 # Pipeline Phase Spec (V5 / Q-Series)
 
 Created: 2026-04-25
-Owner: CTO + Quality-Tech
-Reviewer: CEO + Codex
+Owner: OWNER
+Reviewer: artifact-bound deterministic gates; optional worker audit
 Source of truth: `G:\My Drive\QuantMechanica\doc\pipeline-v2-1-detailed.md` (laptop), mirrored here as the canonical VPS reference.
 Supersedes: the simplified 10-phase pipeline in the older Notion `V5 Pipeline Design` page (see `decisions/2026-04-25_pipeline_15_phase_override.md`).
 Canonical numbering: `docs/ops/PIPELINE_PHASE_ID_MAP.md`. Operator-facing naming uses only Q-series IDs. Legacy runtime keys remain DB/report compatibility only.
@@ -29,7 +29,7 @@ Q11   Real News Replay                (MT5 news-mode reruns + deal replay)
 Q12   Portfolio Construction          (manual)
 Q13   Operational Readiness           (manual)
 Q14   Live Burn-In Window             (manual; minimum-lot live + KS-test kill-switch — no demo intermediary)
-→ Full Live (post-P10 promotion: position-size expansion per OWNER approval)
+→ Full Live (post-Q14 promotion: position-size expansion per OWNER approval)
 ```
 
 ## Phase Detail
@@ -84,11 +84,11 @@ The current locked 5-sleeve basket sits at the Q12 / Q13 boundary with documente
 V5 architecture: **DarwinexZero is live-only (no demo account, monthly fee).** There is no demo-broker phase between Backtest and Live — P10 is the first live exposure with minimum lot and KS-test kill-switch.
 
 1. P9b Operational Readiness sign-off
-2. P10 Live Burn-In Window — 14 days at minimum lot on T6/DXZ, AutoTrading ON
+2. Q14 Live Burn-In Window — 14 days at minimum lot on T6/DXZ; only OWNER may authorize enabling trading
 3. KS-test kill-switch active throughout — kills at p < 0.01 vs backtest distribution (per `PIPELINE_V5_SUB_GATE_SPEC.md` § P10)
 4. P10 PASS = OWNER explicit approval to proceed to position-size expansion
 5. Position-size expansion = additional manifest signed by OWNER per increment
-6. Live monitoring continuous (Observability-SRE)
+6. Continuous live monitoring through the approved read-only monitoring contract
 
 T6 is the only terminal that trades live. T1-T5 never trade live.
 
@@ -125,7 +125,8 @@ T6 is the only terminal that trades live. T1-T5 never trade live.
 ## Hard Rules
 
 - Filesystem is truth.
-- Pipeline spec changes only via R-and-D → CTO → Quality-Tech → CEO → Codex audit → Documentation-KM update (see `PIPELINE_AUTONOMY_MODEL.md`).
+- Pipeline spec changes require an explicit OWNER decision, a recorded rationale,
+  deterministic-rule review, and an update to the affected runbooks and tests.
 - No promotion of V1-V4 PASS into V5 PASS without re-test against this spec.
 - Magic numbers must be unique and deterministic per sleeve / symbol slot.
 - `.DWX` symbols stay in research/backtest workflows; stripped only at VPS deploy packaging.

@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [string[]]$RepoRoots = @("C:\QM\repo", "C:\QM\paperclip"),
+    [string[]]$RepoRoots = @("C:\QM\repo"),
     [int]$StaleAfterMinutes = 20,
     [switch]$AutoCleanup,
     [switch]$FailOnFinding,

@@ -20,7 +20,7 @@ same state.
    - manifest hashes verified before backtest jobs.
 5. Runtime tasks registered with desired-state updater:
    - `QM_PublicSnapshot_Export_Hourly` (HH:07)
-   - `DWX import hourly check` Paperclip routine (cron `7 * * * *`, UTC)
+   - `QM_DWX_HourlyCheck` Windows task (hourly at minute 7)
    - `QM_InfraHealthCheck_5min`
    - `QM_Backup_Daily_0215`
 6. Monitoring outputs written to:
@@ -29,8 +29,8 @@ same state.
 
 ## Re-run Procedure
 
-1. `powershell -File C:\QM\repo\infra\tasks\Register-QMInfraTasks.ps1`
-2. `powershell -File C:\QM\repo\infra\scripts\Install-DwxHourlyRoutine.ps1 -Apply`
+1. `powershell -File C:\QM\repo\infra\tasks\Register-QMInfraTasks.ps1 -PreviewOnly`
+2. `powershell -File C:\QM\repo\infra\tasks\Register-QMInfraTasks.ps1`
 3. `powershell -File C:\QM\repo\infra\backup.ps1 -WhatIf` for dry-run check
 4. `powershell -File C:\QM\repo\infra\monitoring\Invoke-InfraHealthCheck.ps1`
 5. `powershell -File C:\QM\repo\infra\scripts\Ensure-Mt5PortableMarker.ps1 -FailOnMissingRoot`
@@ -41,4 +41,4 @@ same state.
 - Keep `C:\QM\repo\.git\` excluded from Drive sync.
 - Use one writer process per repo at commit time (external git mutex).
 - Alert on stale `index.lock` files older than 20 minutes.
-- Prefer per-agent worktrees for concurrent automation sessions.
+- Prefer per-task worktrees for concurrent automation sessions.

@@ -1,60 +1,37 @@
 ---
-title: V-Portfolio Deploy Flow
-owner: Pipeline-Operator
-last-updated: 2026-04-19
+title: Portfolio and T6 Deployment
+owner: OWNER
+last-updated: 2026-07-22
 ---
 
-# 03 — V-Portfolio Deploy Flow
+# 03 — Portfolio and T6 Deployment
 
-Promotes a ZT-validated candidate into the virtual portfolio (V-Portfolio) and onto the live VPS trading environment.
+No research, build, smoke, or intermediate phase approval implies deployment
+permission. Deployment is an exact-artifact operation authorized by OWNER.
 
-## Trigger
+## Preconditions
 
-- EA passes G4 ZT validation and reaches P5 (candidate) in [01-ea-lifecycle.md](01-ea-lifecycle.md)
-
-## Actors
-
-- [Pipeline-Operator](/QUAA/agents/pipeline-operator) — primary deploy owner
-- [Quality-Business](/QUAA/agents/quality-business) — FTMO / compliance gate
-- [CTO](/QUAA/agents/cto) — V-Portfolio entry approval
-- [DevOps](/QUAA/agents/devops) — VPS provisioning + deploy automation
-- [Observability-SRE](/QUAA/agents/observability-sre) — monitoring hook-up
-- [Controlling](/QUAA/agents/controlling) — sizing + allocation
+- all prescribed test phases are PASS on version-bound evidence;
+- the execution contract is complete and approved;
+- the portfolio constraints and live-risk allocation are recorded;
+- an OWNER-signed deploy manifest names source, binary, setfile, symbol, timeframe,
+  magic, hashes, target terminal, and rollback artifact;
+- T6/T_Live verification follows the active live runbook with AutoTrading off.
 
 ## Steps
 
-```mermaid
-flowchart TD
-    A[P5 Candidate ready] --> B[Quality-Business compliance gate]
-    B -- fail --> KILL[Drop candidate]
-    B -- pass --> C[CTO V-Portfolio entry approval]
-    C -- reject --> KILL
-    C -- approve --> D[Controlling allocation sizing]
-    D --> E[DevOps VPS provision / slot assign]
-    E --> F[Pipeline-Operator deploy EA to VPS]
-    F --> G[Observability-SRE attach monitoring]
-    G --> H[First live heartbeat]
-    H --> I{Smoke checks ok?}
-    I -- no --> ROLL[Roll back + open incident]
-    I -- yes --> LIVE[P8 Live monitoring]
-    ROLL --> IR[04-incident-response]
-```
+1. Verify the manifest signature and every referenced hash.
+2. Confirm the target terminal and account; reject any T1-T5/T_Live path ambiguity.
+3. Capture pre-deploy terminal, process, file, chart, EA, magic, and AutoTrading
+   state read-only.
+4. Apply only the manifest-authorized copy/configuration actions.
+5. Verify deployed hashes and configuration with AutoTrading off.
+6. Record the result. Enabling trading is a separate OWNER action.
 
-## Exits
+## Exit
 
-- **Success:** EA is live on VPS with monitoring attached, sized per Controlling, visible on the dashboard.
-- **Escalation:** VPS provisioning failure or deploy rollback → [Incident Response](04-incident-response.md).
-- **Kill:** Compliance fail or CTO rejection → candidate dropped from V-Portfolio; findings archived.
-
-## SLA
-
-- **Compliance gate:** 1 business day.
-- **CTO approval:** 1 business day after compliance pass.
-- **VPS provision + deploy:** 2 business days after approval.
-- **Smoke checks:** within the first 24h of live trading; rollback decision within that window.
-
-## References
-
-- EA life-cycle: [01-ea-lifecycle.md](01-ea-lifecycle.md)
-- Incident response: [04-incident-response.md](04-incident-response.md)
-- Dashboard: [05-dashboard-refresh.md](05-dashboard-refresh.md)
+- **Verified:** exact artifacts are present and the read-only verification bundle
+  matches the manifest.
+- **Rejected:** any hash, target, account, configuration, or evidence mismatch
+  stops the deployment without substitution.
+- **Rollback:** use only the manifest-bound rollback procedure and OWNER authority.

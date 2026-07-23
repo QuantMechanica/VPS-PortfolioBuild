@@ -70,8 +70,8 @@ The core architecture is sound and several past war-wounds are verifiably healed
   for FX, matters for index/commodity sleeves.
 - **TM_CLOSE stream omits server-side fills by design** — document that live position
   truth = broker sync, never the event log (10940 lesson, contract note).
-- **build_check waiver message cites "CEO+CTO sign-off"** (`build_check.ps1:228`) —
-  stale org language in gate evidence.
+- **build_check waiver language repaired** (`build_check.ps1:237`) — warning
+  waivers now require OWNER sign-off in gate evidence.
 - **Resolver array**: keep compiled design (correct for live), prune retired rows +
   binary-search the lookup; T_Live verify must compare the EA's OWN row, never the
   whole-file SHA vs CSV.

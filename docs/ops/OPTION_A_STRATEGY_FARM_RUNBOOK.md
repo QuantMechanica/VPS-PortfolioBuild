@@ -1,9 +1,10 @@
 # Option A Strategy Farm Runbook
 
-Status: draft bootstrap, 2026-05-15
+Status: active, 2026-07-22
 
-Purpose: replace Paperclip as the critical path with a deterministic local controller.
-Paperclip may later read reports, but it must not own routing, scheduling, or state.
+Purpose: operate the strategy factory through a deterministic local controller.
+No external agent company, role hierarchy, or issue system owns routing, scheduling,
+state, or gate authority.
 
 ## Control Model
 
@@ -45,21 +46,43 @@ The repo implementation lives under:
 C:\QM\repo\tools\strategy_farm\
 ```
 
-## Agent Responsibilities
+## Authority and Responsibilities
 
-Per OWNER 2026-05-15 — division of labor:
+The OWNER is the sole human approval authority. Claude and Codex are bounded
+workers and reviewers; neither persona is a governance gate.
 
-Claude (bookends — research + EA review + final gates):
+### Gate semantics (binding)
+
+- **Source authorization:** OWNER approves a source for extraction.
+- **G0 research gate:** OWNER sets `g0_status: APPROVED` after R1-R4 review.
+  This is the complete authorization to build, instrument, debug, compile,
+  deploy to T1-T5, and run non-live backtests. A separate descriptive card
+  field such as `status: DRAFT` does not revoke or override G0 approval.
+- **Build gate:** deterministic artifacts must exist and agree: `.mq5`, `.ex5`,
+  registry rows, setfiles, compile PASS, and deployment hashes.
+- **Test gates:** phase runners decide PASS/FAIL only from version-bound evidence
+  and the numerical rules in the phase specifications. Reviewer names or agent
+  roles cannot substitute for evidence.
+- **Promotion gate:** G0, successful build, or a non-zero smoke test does not
+  authorize T6 or live trading. Promotion requires all prescribed test gates,
+  a complete execution contract, a signed deploy manifest, and explicit OWNER
+  approval.
+
+Division of labor:
+
+Claude (research and review):
 - Read one source at a time. Produce source notes and draft Strategy Cards.
 - Reject discretionary, incomplete, black-box, martingale/grid, non-codeable ideas.
 - **Review Codex-built EAs** against the card (mechanical match, HR14 no-ML,
   HR4 risk model, HR5 magic, framework architecture). Verdict:
   `APPROVE_FOR_BACKTEST` or `REJECT_REWORK` with explicit rework directives.
-- Apply gate verdicts at G0 (R1-R4) and at the final pre-T6 step.
+- Prepare evidence and a recommended verdict for OWNER at G0 and promotion.
 - Never enqueue builds or touch MT5.
 
 Codex (middle — EA build + middle-pipeline phases):
 - Build EAs only from cards with `g0_status: APPROVED`.
+- Treat that field as sufficient authorization for implementation and T1-T5
+  debugging; do not wait for obsolete role-based approvals.
 - Compile, deploy to T1-T5, generate setfiles, enqueue backtests.
 - Rework EAs based on Claude review `rework_directives`.
 - Fix tooling when deterministic checks fail.
@@ -268,12 +291,12 @@ Two log streams:
 
 ## Phase E — Dashboards (DONE 2026-05-15)
 
-The old `C:/QM/paperclip/dashboards/{current.html, strategies.html}` are dead
-along with Paperclip. v1 layout (stdlib Python, no Jinja2):
+The active dashboards are generated directly from strategy-farm state (stdlib
+Python, no Jinja2):
 
 - **Source** (committed): `tools/strategy_farm/dashboards/`
   - `render_dashboards.py` — single stdlib-only script (no deps)
-  - `style.css` — brand design system (copied from paperclip 2026-05-15, 417 lines)
+  - `style.css` — brand design system
 - **Rendered output** (generated, not committed, served locally via `file://`):
   - `D:/QM/strategy_farm/dashboards/current.html` — project progress one-pager
   - `D:/QM/strategy_farm/dashboards/strategies.html` — Strategy Archive
@@ -285,8 +308,8 @@ along with Paperclip. v1 layout (stdlib Python, no Jinja2):
 
 ### Project Progress one-pager — sections, in scroll order
 
-Designed per OWNER 2026-05-15 feedback ("show me visual progress, drop the
-Paperclip noise"). Bewusst raus: Issue-Listen, Agent-Fleet, Token-Burn,
+Designed per OWNER 2026-05-15 feedback ("show me visual progress"). Bewusst raus:
+Issue-Listen, Agent-Fleet, Token-Burn,
 Heartbeat-Status, Recovery-Cycles. Drin:
 
 1. **Header** — title + UTC timestamp + mission tagline.
@@ -343,7 +366,8 @@ The first farm acceptance test is not profit. It is deterministic motion:
 
 1. Controller selects exactly one source.
 2. Claude produces one source note + draft card(s).
-3. OWNER (or Board Advisor) flips `g0_status: APPROVED` on one card.
+3. OWNER flips `g0_status: APPROVED` on one card; this authorizes build and
+   non-live debugging even if another descriptive status field still says `DRAFT`.
 4. `farmctl build-ea` creates build_ea task + Codex prompt.
 5. Codex builds, compiles, smokes → writes JSON.
 6. `farmctl record-build` records result; task → done.
@@ -352,5 +376,5 @@ The first farm acceptance test is not profit. It is deterministic motion:
 9. `farmctl record-review` records `APPROVE_FOR_BACKTEST`.
 10. (Phase C) Controller deploys and enqueues one MT5 backtest.
 11. A result lands in `artifacts\verdicts`.
-12. `farmctl status` shows the next action without relying on Paperclip.
+12. `farmctl status` shows the next action from deterministic local state.
 

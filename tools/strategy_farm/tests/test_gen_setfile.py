@@ -34,6 +34,8 @@ def test_missing_card_falls_back_to_strategy_input_defaults(tmp_path: Path) -> N
                 'input int strategy_period = 17;',
                 'input group "Strategy"',
                 'input bool AllowShorts = false;',
+                'input ENUM_TIMEFRAMES strategy_signal_tf = PERIOD_M30;',
+                'input string strategy_variant_id = "TPO_VA80_ROT_BASELINE";',
             )
         )
         + '\n',
@@ -78,3 +80,7 @@ def test_missing_card_falls_back_to_strategy_input_defaults(tmp_path: Path) -> N
     assert "; card_defaults_source=not_found" not in content
     assert content.count("strategy_period=17") == 1
     assert content.count("AllowShorts=false") == 1
+    assert content.count("strategy_signal_tf=30") == 1
+    assert "strategy_signal_tf=PERIOD_M30" not in content
+    assert content.count("strategy_variant_id=TPO_VA80_ROT_BASELINE") == 1
+    assert 'strategy_variant_id="TPO_VA80_ROT_BASELINE"' not in content

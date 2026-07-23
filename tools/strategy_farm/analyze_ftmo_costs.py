@@ -1,4 +1,4 @@
-"""CEO ad-hoc: inject realistic FTMO costs into the 5-leg survivor portfolio and
+"""OWNER-directed ad-hoc: inject realistic FTMO costs into the 5-leg survivor portfolio and
 re-run the FTMO Challenge Monte-Carlo. Analysis-only, no pipeline side effects."""
 import os, glob, json, datetime, random, statistics
 from collections import defaultdict

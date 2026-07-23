@@ -1,7 +1,7 @@
 # Pipeline Phase ID Map
 
 Created: 2026-05-20
-Owner: Board Advisor + CTO
+Owner: OWNER
 Status: Canonical display/spec numbering. Runtime DB phase keys remain supported internally.
 
 ## Purpose

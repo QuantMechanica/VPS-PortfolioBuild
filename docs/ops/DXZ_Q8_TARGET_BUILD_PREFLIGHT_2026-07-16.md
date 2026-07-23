@@ -8,8 +8,8 @@ T_Live mutations: **0**
 
 OWNER direction received in chat: **RECORDED / UNSEALED**. It confirms that
 the human OWNER has no remaining objection to continued in-scope preparation.
-Because it contains neither the exact artifact hashes nor the separate
-Research/CEO/Quality-Business/CTO/Quality-Tech verdicts, it is not represented
+Because it contains neither the exact artifact hashes nor the required OWNER
+approval and Research/Quality-Business/Quality-Tech reviews, it is not represented
 as a Card-v2, build or framework approval.
 
 This is the mandatory `qm-build-ea-from-card` preflight for the two proposed
@@ -31,16 +31,17 @@ Checks that pass:
 Blocking checks:
 
 - no canonical, approved Card-v2 exists for the exact four-part target;
-- the approval request is `IN_REVIEW / BUILD BLOCKED`, with OWNER,
-  Research/Quality-Business and CTO/Quality-Tech decisions pending;
+- the approval request is `IN_REVIEW / BUILD BLOCKED`, with OWNER approval and
+  Research/Quality-Business/Quality-Tech reviews pending;
 - the execution registry has no exact `variant_id=C_XNG_BASE35_POLICY` row and
   explicitly blocks the current unqualified variant;
 - the current binary implements fixed Friday-close behavior, not the proposed
   session-aware no-weekend contract;
 - `ea_id_registry.csv` has duplicate active 12567 rows without a visible
-  CEO+CTO grandfathering decision;
+  OWNER-approved exception record;
 - the five-digit ID and 18-character slug conflict with the ranges stated by
-  the current build skill and therefore require explicit CTO disposition;
+  the current build skill and therefore require an OWNER-approved registry
+  exception or a Development repair;
 - the SPEC's referenced source directory and a canonical EA-local Card are
   absent.
 
@@ -64,15 +65,14 @@ Blocking checks:
 - the legacy Card says `g0_status: APPROVED` while its source artifact also
   describes itself as draft/PENDING; no adequate Card-v2 approval trail is
   present;
-- the `C_POLICY_REPAIR` packet is explicitly `IN_REVIEW`, with all required
-  Research, CEO, Quality-Business, CTO, Quality-Tech and OWNER decisions
-  pending;
-- reuse of EA ID 1556 for the material policy change is not CEO+CTO approved;
+- the `C_POLICY_REPAIR` packet is explicitly `IN_REVIEW`, with OWNER approval
+  and Research, Quality-Business and Quality-Tech reviews pending;
+- reuse of EA ID 1556 for the material policy change is not OWNER-approved;
 - the execution registry has no exact `variant_id=C_POLICY_REPAIR` row and is
   `BLOCKED`;
 - current MQ5, EX5 and XAU set are legacy artifacts, not the repaired policy;
 - the parallel Master-EA module duplicates the legacy semantics and needs an
-  explicit CTO+Quality-Tech sync-or-disable decision.
+  OWNER-authorized sync-or-disable disposition with Quality-Tech review.
 
 ## Work allowed while builds remain blocked
 

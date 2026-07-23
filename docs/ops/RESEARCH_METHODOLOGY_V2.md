@@ -20,7 +20,7 @@ Research Agent proposes a specific, bounded source:
 - A specific blog/article (URL, author, date)
 - A specific video or lecture series (URL, presenter)
 
-OWNER (or CEO agent with delegated authority) approves the source before work begins. No research without approved source.
+OWNER approves the source before work begins. No research without an approved source.
 
 ### Step 2 — Exhaustive Strategy Extraction
 
@@ -44,9 +44,9 @@ author_claims: the source's own performance claims (verbatim, with quote marks)
 initial_risk_profile: estimated risk from description
 ```
 
-### Step 3 — Cards Reviewed by CEO + Quality-Business
+### Step 3 — Cards Reviewed for R1-R4 and Decided by OWNER
 
-All Strategy Cards from a source go to CEO agent + Quality-Business agent for review. They can:
+All Strategy Cards from a source receive an evidence-based R1-R4 review. OWNER can:
 
 - APPROVE for EA build
 - REJECT (too vague, too similar to existing, data unavailable)
@@ -60,7 +60,7 @@ Approved strategies go to Development agent, **one at a time**. For each:
 2. Pipeline-Operator runs initial smoke test (1 symbol, 1 year, Fixed Risk $1K — V5 backtest convention)
 3. If smoke passes: full Baseline Sweep
 4. Quality-Tech audits the code vs. the Strategy Card (did Dev faithfully implement the source?)
-5. CEO reviews BL results: PASS/FAIL/REJECT
+5. Deterministic gates classify baseline results; OWNER decides any strategy-level exception or promotion
 6. If PASS: strategy promoted to next pipeline phase per `docs/ops/PIPELINE_PHASE_SPEC.md`
 7. **Only then** does Development start the next EA
 
@@ -69,7 +69,7 @@ Approved strategies go to Development agent, **one at a time**. For each:
 When all approved strategies from a source have been built and tested, Research Agent writes a **Source Completion Report**:
 
 - How many strategies extracted
-- How many approved by CEO
+- How many received OWNER G0 approval
 - How many PASSed baseline
 - Key observations about the source's overall quality
 - Recommendation: is this source worth deeper exploration, or move on?
@@ -78,7 +78,7 @@ This report is archived in Git under `strategy-seeds/sources/SRC{id}/source.md` 
 
 ### Step 6 — Then and Only Then, Next Source
 
-Only after Step 5 is CEO allowed to approve a new source for Research Agent.
+Only after Step 5 may OWNER authorize the next source.
 
 ## Why This Matters
 
@@ -97,7 +97,7 @@ V1's research agent produced 81+ "edge types" across 46 research rounds, but att
 - Skipping the Strategy Card step and going straight to code
 - Building 3 EAs in parallel from one source (sequential only)
 - Labeling a strategy with source "unknown" or "various"
-- Re-ordering: Research must not decide which source to work on; CEO approves queue order
+- Re-ordering: the research worker must not decide source priority; OWNER sets queue order
 
 ## Seed Source List (Proposed)
 

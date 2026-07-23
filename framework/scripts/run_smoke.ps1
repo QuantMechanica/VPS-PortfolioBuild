@@ -477,6 +477,61 @@ function Resolve-TerminalRoot {
     return (Resolve-Path -LiteralPath $root).Path
 }
 
+function Get-FileEvidenceIdentity {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path,
+        [switch]$AllowMissing
+    )
+
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        if ($AllowMissing.IsPresent) {
+            return $null
+        }
+        throw "Evidence artifact is missing: $Path"
+    }
+    $resolved = (Resolve-Path -LiteralPath $Path).Path
+    $item = Get-Item -LiteralPath $resolved
+    return [ordered]@{
+        path = $resolved
+        size_bytes = [int64]$item.Length
+        sha256 = (Get-FileHash -LiteralPath $resolved -Algorithm SHA256).Hash.ToLowerInvariant()
+        last_write_utc = $item.LastWriteTimeUtc.ToString("o")
+    }
+}
+
+function Get-TesterIniEvidence {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path
+    )
+
+    $identity = Get-FileEvidenceIdentity -Path $Path
+    $values = @{}
+    foreach ($line in (Get-Content -LiteralPath $Path)) {
+        if ($line -match '^(?<key>[^=;\s]+)=(?<value>.*)$') {
+            $values[$Matches['key']] = $Matches['value'].Trim()
+        }
+    }
+    foreach ($required in @('Expert', 'Symbol', 'Period', 'Model', 'FromDate', 'ToDate')) {
+        if (-not $values.ContainsKey($required) -or [string]::IsNullOrWhiteSpace([string]$values[$required])) {
+            throw "Generated tester.ini is missing required evidence field '$required': $Path"
+        }
+    }
+    return [ordered]@{
+        path = $identity.path
+        size_bytes = $identity.size_bytes
+        sha256 = $identity.sha256
+        expert = [string]$values['Expert']
+        expert_parameters = $(if ($values.ContainsKey('ExpertParameters')) { [string]$values['ExpertParameters'] } else { $null })
+        symbol = [string]$values['Symbol']
+        period = [string]$values['Period']
+        model = [int]$values['Model']
+        from_date = [string]$values['FromDate']
+        to_date = [string]$values['ToDate']
+    }
+}
+
 function Deploy-ExpertBinaryToTerminal {
     # Make run_smoke self-contained: copy the EA .ex5 from the repo into the
     # selected terminal's Experts subdir before invoking the tester. Without this, Codex
@@ -531,7 +586,17 @@ function Deploy-ExpertBinaryToTerminal {
     } catch {
         throw ("run_smoke.deploy_failed terminal={0} dest='{1}' err='{2}'" -f $TerminalName, $destFile, $_.Exception.Message)
     }
+    $sourceIdentity = Get-FileEvidenceIdentity -Path $repoSource
+    $deployedIdentity = Get-FileEvidenceIdentity -Path $destFile
+    if ($sourceIdentity.sha256 -cne $deployedIdentity.sha256) {
+        throw "run_smoke.deploy_failed terminal=$TerminalName dest='$destFile' err='source/deployed SHA256 mismatch'"
+    }
     Write-Host ("run_smoke.deploy_ok ea_label={0} subdir={1} terminal={2} source='{3}'" -f $eaLabel, $subdir, $TerminalName, $repoSource)
+    return [ordered]@{
+        source = $sourceIdentity
+        deployed = $deployedIdentity
+        source_matches_deployed = $true
+    }
 }
 
 function Resolve-DispatchTerminal {
@@ -1826,6 +1891,32 @@ function Wait-ForReportExport {
     return (-not $RequireCompleteMetrics -or (Test-TesterReportHasCompleteMetrics -ReportPath $ReportPath))
 }
 
+function Get-ReportExportWaitSeconds {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ReportPath,
+        [Parameter(Mandatory = $true)]
+        [bool]$WritersQuiescent,
+        [ValidateRange(0, 300)]
+        [int]$DefaultWaitSeconds = 240
+    )
+
+    # Once both the terminal and its metatester writer have stopped, an existing
+    # non-empty report cannot gain missing metrics.  Waiting the full export
+    # grace period only delays publication/classification of MT5's incomplete
+    # shell report (for example after a history-synchronization failure).
+    if ($WritersQuiescent -and (Test-Path -LiteralPath $ReportPath -PathType Leaf)) {
+        $reportInfo = Get-Item -LiteralPath $ReportPath
+        if ($reportInfo.Length -gt 0) {
+            return 0
+        }
+    }
+
+    # A missing/empty report can still materialize after process exit under
+    # filesystem contention, and an active writer must retain the full grace.
+    return $DefaultWaitSeconds
+}
+
 function Convert-RunMetricsToFingerprint {
     param(
         [Parameter(Mandatory = $true)]
@@ -2024,12 +2115,39 @@ if (-not $Expert) {
 # Codex build → compile → smoke chains failed at "Experts\QM\<EA>.ex5 not
 # found" because only p2_baseline.py deployed binaries — run_smoke had no
 # self-deploy step. 2026-05-16 QM5_1046 build hit exactly this.
-Deploy-ExpertBinaryToTerminal -ExpertPath $Expert -TerminalName $effectiveTerminal
+$expertBinaryIdentity = Deploy-ExpertBinaryToTerminal -ExpertPath $Expert -TerminalName $effectiveTerminal
+$expertRelativeBinary = if ($Expert.EndsWith('.ex5', [System.StringComparison]::OrdinalIgnoreCase)) { $Expert } else { "$Expert.ex5" }
+$deployedExpertPath = Join-Path (Join-Path $terminalRoot 'MQL5\Experts') $expertRelativeBinary
+$deployedExpertIdentity = Get-FileEvidenceIdentity -Path $deployedExpertPath -AllowMissing
+if ($null -ne $deployedExpertIdentity) {
+    if ($null -eq $expertBinaryIdentity) {
+        $expertBinaryIdentity = [ordered]@{
+            source = $null
+            deployed = $deployedExpertIdentity
+            source_matches_deployed = $null
+        }
+    } else {
+        $expertBinaryIdentity.deployed = $deployedExpertIdentity
+    }
+}
 
 if ($SetFile) {
     $SetFile = (Resolve-Path -LiteralPath $SetFile).Path
 }
 Write-Host ("run_smoke.stage=resolved_setfile setfile='{0}'" -f $SetFile)
+
+$repoRootForEvidence = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\..')).Path
+$expertLeaf = Split-Path -Leaf $Expert
+$mq5Path = Join-Path (Join-Path $repoRootForEvidence 'framework\EAs') (Join-Path $expertLeaf "$expertLeaf.mq5")
+$mq5Identity = Get-FileEvidenceIdentity -Path $mq5Path -AllowMissing
+$setfileIdentity = if ($SetFile) {
+    [ordered]@{
+        source = Get-FileEvidenceIdentity -Path $SetFile
+        deployed = $null
+        source_matches_deployed = $null
+    }
+} else { $null }
+$runSmokeIdentity = Get-FileEvidenceIdentity -Path $PSCommandPath
 
 $runTag = (Get-Date).ToUniversalTime().ToString("yyyyMMdd_HHmmss")
 $eaLabel = "QM5_{0}" -f $EAId
@@ -2081,6 +2199,7 @@ try {
     Write-Host ("run_smoke.commission_per_lot={0} native_per_side={1} terminal={2} symbol={3} injected_sha256={4}" -f $CommissionPerLot, $CommissionPerSideNative, $effectiveTerminal, $Symbol, $commissionGroupEvidence.installed_sha256)
 
 $runResults = @()
+$testerIniEvidence = New-Object System.Collections.Generic.List[object]
 $loggerSampleCaptures = New-Object System.Collections.Generic.List[object]
 $globalOnInitFailure = $false
 $globalRealTicksMarker = $true
@@ -2133,6 +2252,26 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
         -SetFilePath $SetFile `
         -CurrencyOverride $TesterCurrencyOverride `
         -DepositOverride $TesterDepositOverride
+
+    $iniEvidence = Get-TesterIniEvidence -Path $iniPath
+    if (($iniEvidence.from_date -cne $fromDate) -or ($iniEvidence.to_date -cne $toDate)) {
+        throw "Generated tester.ini window mismatch: requested=$fromDate..$toDate actual=$($iniEvidence.from_date)..$($iniEvidence.to_date) path=$iniPath"
+    }
+    if (($iniEvidence.expert -cne $Expert) -or ($iniEvidence.symbol -cne $Symbol) -or
+        ($iniEvidence.period -cne $Period) -or ($iniEvidence.model -ne $Model)) {
+        throw "Generated tester.ini execution identity mismatch: $iniPath"
+    }
+    $iniEvidence['run'] = $runName
+    $testerIniEvidence.Add([pscustomobject]$iniEvidence)
+    if ($SetFile) {
+        $deployedSetfilePath = Join-Path (Join-Path $terminalRoot 'MQL5\Profiles\Tester') (Split-Path -Leaf $SetFile)
+        $deployedSetfileIdentity = Get-FileEvidenceIdentity -Path $deployedSetfilePath
+        if ($setfileIdentity.source.sha256 -cne $deployedSetfileIdentity.sha256) {
+            throw "Tester-deployed setfile SHA256 mismatch: source='$SetFile' deployed='$deployedSetfilePath'"
+        }
+        $setfileIdentity.deployed = $deployedSetfileIdentity
+        $setfileIdentity.source_matches_deployed = $true
+    }
 
     Write-Host ("run_smoke.stage=ini_written run={0} ini='{1}'" -f $runName, $iniPath)
     if (-not [string]::IsNullOrWhiteSpace($TesterCurrencyOverride)) {
@@ -2207,8 +2346,10 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
     # can never become a schema sample. A naturally finishing/latching run may
     # leave metatester alive briefly while it flushes; skip rather than publish
     # if that bounded quiescence check cannot be proven.
+    $testerWritersQuiescent = $false
     if ($null -ne $loggerStateBefore) {
-        if (Wait-ForMetaTesterQuiescence -TerminalRoot $terminalRoot) {
+        $testerWritersQuiescent = Wait-ForMetaTesterQuiescence -TerminalRoot $terminalRoot
+        if ($testerWritersQuiescent) {
             $runLoggerSamplePath = Join-Path $runDir "logger_sample.jsonl"
             $loggerCapture = Save-QmLoggerDelta `
                 -BeforeState $loggerStateBefore `
@@ -2229,7 +2370,14 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
     # before classifying as infra REPORT_MISSING. A complete report may be latched
     # early, but an incomplete non-empty MT5 shell report is still evidence and must
     # go through INVALID_REPORT parsing instead of being hidden as missing.
-    $reportMaterialized = Wait-ForReportExport -ReportPath $sourceReportPath -TerminalRoot $terminalRoot -MaxWaitSeconds 240 -RequireCompleteMetrics
+    $reportWaitSeconds = Get-ReportExportWaitSeconds `
+        -ReportPath $sourceReportPath `
+        -WritersQuiescent $testerWritersQuiescent `
+        -DefaultWaitSeconds 240
+    if ($reportWaitSeconds -eq 0) {
+        Write-Host ("run_smoke.stage=report_wait_skipped run={0} reason=writers_quiescent_nonempty_report report='{1}'" -f $runName, $sourceReportPath)
+    }
+    $reportMaterialized = Wait-ForReportExport -ReportPath $sourceReportPath -TerminalRoot $terminalRoot -MaxWaitSeconds $reportWaitSeconds -RequireCompleteMetrics
     if (-not $reportMaterialized) {
         [void](Use-LegacyRelativeReportExport -TerminalRoot $terminalRoot -AbsoluteReportPath $reportHtmPath -LegacyRelativePath $legacyRelativeSourcePath)
         $publishedReportPath = Publish-TesterReportCandidate -SourceReportPath $sourceReportPath -CanonicalReportPath $reportHtmPath
@@ -2495,6 +2643,22 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
     Write-Host ("run_smoke.commission_groups_restored sha256={0} target='{1}'" -f $commissionGroupRestoreEvidence.installed_sha256, $commissionGroupRestoreEvidence.target_path)
 }
 
+$artifactIdentityStable = $true
+if ($null -ne $expertBinaryIdentity -and $null -ne $expertBinaryIdentity.deployed) {
+    $expertAfter = Get-FileEvidenceIdentity -Path $expertBinaryIdentity.deployed.path -AllowMissing
+    $expertBinaryIdentity['observed_after'] = $expertAfter
+    $expertStable = ($null -ne $expertAfter) -and ($expertAfter.sha256 -ceq $expertBinaryIdentity.deployed.sha256)
+    $expertBinaryIdentity['stable_during_run'] = $expertStable
+    $artifactIdentityStable = $artifactIdentityStable -and $expertStable
+}
+if ($null -ne $setfileIdentity -and $null -ne $setfileIdentity.deployed) {
+    $setfileAfter = Get-FileEvidenceIdentity -Path $setfileIdentity.deployed.path -AllowMissing
+    $setfileIdentity['observed_after'] = $setfileAfter
+    $setfileStable = ($null -ne $setfileAfter) -and ($setfileAfter.sha256 -ceq $setfileIdentity.deployed.sha256)
+    $setfileIdentity['stable_during_run'] = $setfileStable
+    $artifactIdentityStable = $artifactIdentityStable -and $setfileStable
+}
+
 $completedRuns = @($runResults | Where-Object { $_.status -eq "OK" })
 $completedRunCount = @($completedRuns).Count
 $attemptedRunCount = @($runResults).Count
@@ -2535,6 +2699,10 @@ if ($completedRunCount -eq $Runs) {
     $reasonClasses.Add("INCOMPLETE_RUNS")
 }
 
+if (-not $artifactIdentityStable) {
+    $reasonClasses.Add("EXECUTION_IDENTITY_DRIFT")
+}
+
 $realTicksGatePassed = $globalRealTicksMarker -or $AllowMissingRealTicksLogMarker.IsPresent
 if (-not $realTicksGatePassed -and -not $AllowMissingRealTicksLogMarker.IsPresent) {
     $reasonClasses.Add("MODEL4_MARKER_REQUIRED")
@@ -2546,6 +2714,7 @@ $passed = ($completedRunCount -eq $Runs) -and
     $deterministic -and
     (-not $globalTimeoutFailure) -and
     (-not $globalLogBombFailure) -and
+    $artifactIdentityStable -and
     $realTicksGatePassed
 
 if (@($reasonClasses).Count -eq 0) {
@@ -2584,7 +2753,38 @@ if ($loggerSampleCaptures.Count -gt 0) {
     }
 }
 
+if ($testerIniEvidence.Count -eq 0) {
+    throw "No generated tester.ini evidence was captured; refusing to publish an unbound summary."
+}
+$actualFromDates = @($testerIniEvidence | ForEach-Object { $_.from_date } | Select-Object -Unique)
+$actualToDates = @($testerIniEvidence | ForEach-Object { $_.to_date } | Select-Object -Unique)
+if (($actualFromDates.Count -ne 1) -or ($actualToDates.Count -ne 1)) {
+    throw "Generated tester.ini files disagree on the tested date window."
+}
+$actualFromDate = [string]$actualFromDates[0]
+$actualToDate = [string]$actualToDates[0]
+$actualYear = $null
+if (($actualFromDate -match '^\d{4}\.') -and
+    ($actualToDate -match '^\d{4}\.') -and
+    ($actualFromDate.Substring(0, 4) -ceq $actualToDate.Substring(0, 4))) {
+    $actualYear = [int]$actualFromDate.Substring(0, 4)
+}
+foreach ($runResult in $runResults) {
+    $matchingIni = $testerIniEvidence | Where-Object { $_.run -ceq $runResult.run } | Select-Object -First 1
+    if ($null -ne $matchingIni) {
+        $runResult | Add-Member -NotePropertyName tester_ini_path -NotePropertyValue $matchingIni.path -Force
+        $runResult | Add-Member -NotePropertyName tester_ini_sha256 -NotePropertyValue $matchingIni.sha256 -Force
+        $runResult | Add-Member -NotePropertyName from_date -NotePropertyValue $matchingIni.from_date -Force
+        $runResult | Add-Member -NotePropertyName to_date -NotePropertyValue $matchingIni.to_date -Force
+    }
+    if ($runResult.report_canonical_path -and (Test-Path -LiteralPath $runResult.report_canonical_path -PathType Leaf)) {
+        $reportIdentity = Get-FileEvidenceIdentity -Path $runResult.report_canonical_path
+        $runResult | Add-Member -NotePropertyName report_sha256 -NotePropertyValue $reportIdentity.sha256 -Force
+    }
+}
+
 $summary = [ordered]@{
+    evidence_schema = "run_smoke/v2"
     timestamp_utc = (Get-Date).ToUniversalTime().ToString("o")
     run_tag = $runTag
     result = $(if ($passed) { "PASS" } else { "FAIL" })
@@ -2593,7 +2793,27 @@ $summary = [ordered]@{
     ea_label = $eaLabel
     expert = $Expert
     symbol = $Symbol
-    year = $Year
+    year = $actualYear
+    requested_year = $Year
+    from_date = $actualFromDate
+    to_date = $actualToDate
+    test_window = [ordered]@{
+        from_date = $actualFromDate
+        to_date = $actualToDate
+        source = "generated_tester_ini"
+        # PowerShell 7.6 cannot bind @($genericList) when the value is a
+        # System.Collections.Generic.List[object] and throws the opaque
+        # "Argument types do not match" error. Materialize a real Object[]
+        # before ConvertTo-Json so completed runs always publish their summary.
+        tester_ini_files = $testerIniEvidence.ToArray()
+    }
+    execution_identity = [ordered]@{
+        expert_binary = $expertBinaryIdentity
+        mq5_source = $mq5Identity
+        setfile = $setfileIdentity
+        run_smoke = $runSmokeIdentity
+        stable_during_run = $artifactIdentityStable
+    }
     terminal = $Terminal
     model = $Model
     period = $Period
@@ -2631,6 +2851,8 @@ $safeSymbol = ($Symbol -replace '[^A-Za-z0-9]+', '_').Trim('_')
 if ([string]::IsNullOrWhiteSpace($safeSymbol)) {
     $safeSymbol = "symbol"
 }
+$ex5HashForEvidence = if ($null -ne $expertBinaryIdentity -and $null -ne $expertBinaryIdentity.deployed) { $expertBinaryIdentity.deployed.sha256 } else { 'missing' }
+$setfileHashForEvidence = if ($null -ne $setfileIdentity) { $setfileIdentity.source.sha256 } else { 'none' }
 $evidencePath = Join-Path $frameworkEvidenceDir ("{0}_{1}_{2}_{3}_run_smoke.md" -f $runTag, $eaLabel, $effectiveTerminal, $safeSymbol)
 $evidenceLines = @(
     "# Step 22 Smoke Evidence",
@@ -2641,7 +2863,12 @@ $evidenceLines = @(
     "- expert: $Expert",
     "- symbol: $Symbol",
     "- terminal: $Terminal",
-    "- year: $Year",
+    "- requested_year: $Year",
+    "- actual_year: $actualYear",
+    "- from_date: $actualFromDate",
+    "- to_date: $actualToDate",
+    "- ex5_sha256: $ex5HashForEvidence",
+    "- setfile_sha256: $setfileHashForEvidence",
     "- model: $Model",
     "- reason_classes: $([string]::Join(', ', $summary.reason_classes))",
     "- summary_json: $summaryPath",

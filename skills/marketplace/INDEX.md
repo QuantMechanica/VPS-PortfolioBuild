@@ -1,172 +1,47 @@
 # Marketplace Skills — Pinned Inventory
 
-Skills pinned from external marketplaces (skills.sh / Anthropic / community repos) and assigned to QuantMechanica V5 agents. Per `docs/guides/org/skills.md` § "Trust and Source Provenance" (Paperclip docs), each pinned skill must have:
+This inventory records external-skill provenance. A pin is not an approval to use a
+skill on live systems and does not grant governance authority.
 
-- **Source provenance** (GitHub repo + commit hash)
-- **Body review** before assignment
-- **Required vs. optional** classification per agent
+## Pin contract
 
-## Pin governance
+Every installed external skill requires:
 
-- **Doc-KM** authors this inventory and assignment matrix.
-- **CTO** reviews each skill body for technical correctness and fills `commit_pin` on approval.
-- **CEO** ratifies the assignment matrix.
-- **OWNER** has veto on any external skill pin (request_confirmation interaction).
+- source repository and path;
+- immutable commit SHA;
+- dated technical/body review record;
+- explicit intended use;
+- OWNER authorization for installation or assignment.
 
-`commit_pin: TBD` means CTO has not yet reviewed; the skill is **not** registered in Paperclip until pinned. After CTO review, the entry is updated with:
+`commit_pin: TBD` means the skill is unavailable until review and OWNER authorization
+are complete. Reviews should identify the individual worker or evidence artifact,
+not an invented organizational title.
 
-- `commit_pin: <SHA>`
-- `reviewed_at: YYYY-MM-DD`
-- `reviewed_by: CTO`
+## Recorded pins
 
----
+| Skill | Source / path | Commit pin | Reviewed | Intended use |
+|---|---|---|---|---|
+| `anthropics/skills/skill-creator` | `https://github.com/anthropics/skills`, `skill-creator/` | `5128e1865d670f5d6c9cef000e6dfc4e951fb5b9` | 2026-04-27 | Authoring reusable skills |
+| `anthropics/skills/pdf` | `https://github.com/anthropics/skills`, `pdf/` | `5128e1865d670f5d6c9cef000e6dfc4e951fb5b9` | 2026-04-27 | Paper and book extraction |
+| `anthropics/skills/xlsx` | `https://github.com/anthropics/skills`, `xlsx/` | `5128e1865d670f5d6c9cef000e6dfc4e951fb5b9` | 2026-04-27 | Spreadsheet/report inspection |
+| `obra/superpowers/verification-before-completion` | `https://github.com/obra/superpowers`, `verification-before-completion/` | `6efe32c9e2dd002d0c394e861e0529675d1ab32e` | 2026-04-27 | Evidence-first completion checks |
+| `obra/superpowers/using-git-worktrees` | `https://github.com/obra/superpowers`, `using-git-worktrees/` | `6efe32c9e2dd002d0c394e861e0529675d1ab32e` | 2026-04-27 | Isolated task worktrees |
+| `obra/superpowers/test-driven-development` | `https://github.com/obra/superpowers`, `test-driven-development/` | `6efe32c9e2dd002d0c394e861e0529675d1ab32e` | 2026-04-27 | Framework and tooling changes |
+| `obra/superpowers/systematic-debugging` | `https://github.com/obra/superpowers`, `systematic-debugging/` | `6efe32c9e2dd002d0c394e861e0529675d1ab32e` | 2026-04-27 | Incident and defect diagnosis |
 
-## Required skills (assign on CTO pin + CEO ratification)
+Optional candidates such as planning, code-review, scraping, paper-analysis, or MCP
+builder skills remain uninstalled until a concrete task needs them and OWNER
+authorizes the reviewed pin.
 
-### 1. `anthropics/skills/skill-creator`
+Marketing, generic frontend/mobile scaffolds, and unrelated cloud-deployment skills
+are outside the QuantMechanica strategy-farm scope.
 
-| Field | Value |
-|---|---|
-| Source | https://github.com/anthropics/skills |
-| Path | `skill-creator/` |
-| commit_pin | `5128e1865d670f5d6c9cef000e6dfc4e951fb5b9` |
-| reviewed_at | `2026-04-27` |
-| reviewed_by | `CTO` |
-| Assigned to | Documentation-KM, CTO |
-| Why | Authoring framework for the 6 custom V5 skills (eat-own-dogfood pattern) |
+## Adding a pin
 
-### 2. `anthropics/skills/pdf`
+1. Record source, path, proposed use, and `commit_pin: TBD`.
+2. Review the exact pinned body and bundled executable content.
+3. Record the immutable SHA, review artifact, and date.
+4. Obtain OWNER authorization.
+5. Install/register the exact pin and verify the resulting catalog entry.
 
-| Field | Value |
-|---|---|
-| Source | https://github.com/anthropics/skills |
-| Path | `pdf/` |
-| commit_pin | `5128e1865d670f5d6c9cef000e6dfc4e951fb5b9` |
-| reviewed_at | `2026-04-27` |
-| reviewed_by | `CTO` |
-| Assigned to | Research |
-| Why | Reading books / papers (Ernest Chan, Kaufman, Ehlers PDFs) for `qm-strategy-card-extraction` |
-
-### 3. `anthropics/skills/xlsx`
-
-| Field | Value |
-|---|---|
-| Source | https://github.com/anthropics/skills |
-| Path | `xlsx/` |
-| commit_pin | `5128e1865d670f5d6c9cef000e6dfc4e951fb5b9` |
-| reviewed_at | `2026-04-27` |
-| reviewed_by | `CTO` |
-| Assigned to | Pipeline-Operator, CTO |
-| Why | Backtest report parsing + commission table handling |
-
-### 4. `obra/superpowers/verification-before-completion`
-
-| Field | Value |
-|---|---|
-| Source | https://github.com/obra/superpowers |
-| Path | `verification-before-completion/` |
-| commit_pin | `6efe32c9e2dd002d0c394e861e0529675d1ab32e` |
-| reviewed_at | `2026-04-27` |
-| reviewed_by | `CTO` |
-| Assigned to | CEO, CTO, DevOps |
-| Why | Codifies the "verify before promote" pattern already running at QM (PC1-00 mitigation, T6 deploy verification, etc.) |
-
-### 5. `obra/superpowers/using-git-worktrees`
-
-| Field | Value |
-|---|---|
-| Source | https://github.com/obra/superpowers |
-| Path | `using-git-worktrees/` |
-| commit_pin | `6efe32c9e2dd002d0c394e861e0529675d1ab32e` |
-| reviewed_at | `2026-04-27` |
-| reviewed_by | `CTO` |
-| Assigned to | CTO, DevOps |
-| Why | Codifies PC1-00 Drive-vs-Git mitigation pattern (already running per `docs/ops/PC1-00_WORKTREE_PROOF_2026-04-27.md`) |
-
-### 6. `obra/superpowers/test-driven-development`
-
-| Field | Value |
-|---|---|
-| Source | https://github.com/obra/superpowers |
-| Path | `test-driven-development/` |
-| commit_pin | `6efe32c9e2dd002d0c394e861e0529675d1ab32e` |
-| reviewed_at | `2026-04-27` |
-| reviewed_by | `CTO` |
-| Assigned to | CTO, Development |
-| Why | TDD discipline for framework includes (`include/QM_*.mqh`) and EA build code |
-
-### 7. `obra/superpowers/systematic-debugging`
-
-| Field | Value |
-|---|---|
-| Source | https://github.com/obra/superpowers |
-| Path | `systematic-debugging/` |
-| commit_pin | `6efe32c9e2dd002d0c394e861e0529675d1ab32e` |
-| reviewed_at | `2026-04-27` |
-| reviewed_by | `CTO` |
-| Assigned to | DevOps |
-| Why | Debugging methodology for incidents (P0 / P1 incident response per `processes/04-incident-response.md`) |
-
----
-
-## Optional skills (assign on demand per role need)
-
-### `obra/superpowers/writing-plans` + `executing-plans`
-
-- **Source:** https://github.com/obra/superpowers
-- **Why:** CEO planning discipline — pin if CEO needs a structured planning skill beyond the core prompt
-- **Assign trigger:** CEO requests, OR a planning quality issue is filed
-
-### `obra/superpowers/requesting-code-review` + `receiving-code-review`
-
-- **Source:** https://github.com/obra/superpowers
-- **Why:** CTO ↔ CEO/Quality-Tech dialectic protocol
-- **Assign trigger:** Friction observed in code review handoffs, OR CTO requests
-
-### `firecrawl/cli` + `firecrawl-scrape` + `firecrawl-search`
-
-- **Source:** https://github.com/firecrawl/cli (or skills.sh listing)
-- **Why:** Research scraping (Adam Grimes blog, etc.) and structured search
-- **Assign trigger:** Research needs to scrape a non-PDF source; pinned per-source rather than always-on
-
-### `lllllllama/ai-paper-reproduction-skill/paper-context-resolver`
-
-- **Source:** https://github.com/lllllllama/ai-paper-reproduction-skill
-- **Why:** Academic paper analysis (Ehlers DSP papers etc.)
-- **Assign trigger:** Research is mining an academic paper that requires citation graph traversal
-
-### `anthropics/skills/mcp-builder`
-
-- **Source:** https://github.com/anthropics/skills
-- **Why:** Building a custom MT5 MCP — **deferred** until a real need arises
-- **Assign trigger:** OWNER approves a custom-MCP project; not before
-
----
-
-## Explicitly NOT pinned (skip)
-
-The skills.sh marketplace skews startup-frontend. The following classes are **not relevant** to QuantMechanica V5 and will not be pinned:
-
-- Marketing skills (social-media auto-post, copywriting templates)
-- Mobile / frontend design skills (React Native, Figma helpers, design-system generators)
-- Azure / Firebase / Vercel deploy skills (we run on a single Windows VPS + Drive + Git)
-- Generic web-dev scaffolds
-
-The trading-specific procedures had to be authored ourselves — that is the 6 `skills/qm/*` set.
-
----
-
-## Process for adding a new marketplace skill
-
-1. **Doc-KM proposes:** add a new entry under "Required" or "Optional" with `commit_pin: TBD` + provenance + assigned-to + why.
-2. **CTO reviews:** clones the source repo at HEAD, reviews the skill body for technical correctness, fills `commit_pin: <SHA>` + `reviewed_at` + `reviewed_by: CTO`.
-3. **CEO ratifies:** the assignment matrix changes (who gets the skill required vs. optional).
-4. **OWNER veto:** any external skill pin is subject to OWNER veto via request_confirmation.
-5. **Paperclip registration:** after pin, register via "Add Skill → marketplace" with the locked commit hash.
-
-## References
-
-- Paperclip Skills doc (Aron Prins): https://aronprins.github.io/paperclip-docs/ → `docs/guides/org/skills.md`
-- Custom V5 skills inventory: `skills/qm/`
-- Skills adoption decision: `decisions/2026-04-27_skills_adoption_v1.md`
-- Process registry skills section: `processes/process_registry.md` § Skills
+See [custom skills](../README.md) and the [process registry](../../processes/process_registry.md).

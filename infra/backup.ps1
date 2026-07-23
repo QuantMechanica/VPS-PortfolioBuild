@@ -1,7 +1,6 @@
 [CmdletBinding(SupportsShouldProcess)]
 param(
     [string]$GoogleDriveRoot = "G:\QM_Backups",
-    [string]$PaperclipDbPath = "C:\QM\paperclip\data\instances\default\paperclip.sqlite",
     [string]$LastCheckStatePath = "D:\QM\reports\state\last_check_state.json",
     [string]$NotionExportRoot = "C:\QM\notion-exports",
     [string]$RecentLogsRoot = "C:\QM\logs",
@@ -101,7 +100,6 @@ Ensure-Directory -Path $WeeklyGitLfsRoot
 $dailyTarget = Join-Path $dailyRoot $todayTag
 Ensure-Directory -Path $dailyTarget
 Copy-IfExists -SourcePath $LastCheckStatePath -DestinationPath (Join-Path $dailyTarget "last_check_state.json") | Out-Null
-Copy-IfExists -SourcePath $PaperclipDbPath -DestinationPath (Join-Path $dailyTarget "paperclip.sqlite") | Out-Null
 Copy-IfExists -SourcePath $NotionExportRoot -DestinationPath (Join-Path $dailyTarget "notion-exports") | Out-Null
 
 if (Test-Path -LiteralPath $RecentLogsRoot) {
@@ -114,16 +112,6 @@ if (Test-Path -LiteralPath $RecentLogsRoot) {
             $destination = Join-Path $dailyLogsTarget $relative
             Copy-IfExists -SourcePath $_.FullName -DestinationPath $destination | Out-Null
         }
-}
-
-# Weekly DB dump for Git LFS and Drive
-$dayOfWeek = [int](Get-Date).DayOfWeek
-if ($dayOfWeek -eq [int][System.DayOfWeek]::Sunday) {
-    $weeklyFileName = "paperclip_db_$isoWeekTag.sqlite"
-    $weeklyDriveFile = Join-Path $weeklyRoot $weeklyFileName
-    $weeklyLfsFile = Join-Path $WeeklyGitLfsRoot $weeklyFileName
-    Copy-IfExists -SourcePath $PaperclipDbPath -DestinationPath $weeklyDriveFile | Out-Null
-    Copy-IfExists -SourcePath $PaperclipDbPath -DestinationPath $weeklyLfsFile | Out-Null
 }
 
 # Monthly rolling snapshot of strategies + reports

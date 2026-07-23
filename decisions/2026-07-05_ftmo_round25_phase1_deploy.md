@@ -147,6 +147,11 @@ the cap input natively.
   `common.ini` before a cold start, so the 12-leg book reloads and AutoTrading
   resumes (login 1513845506 is pinned in `common.ini` by the terminal itself).
   Idempotency verified live (no-op while terminal running).
+- Recovery hardening 2026-07-22: before any cold/recovery start,
+  `verify_ftmo_round25_live_contract.ps1` now fails closed unless account/server,
+  the exact 12-chart/12-EA semantic profile, packaged preset inputs, and all 12
+  deployed + package `.ex5` SHA-256 values still match this approved deployment.
+  Normal chart window/object state is intentionally ignored; trading inputs are not.
 - Factory kill scripts (`Factory_OFF.ps1`/`Factory_ON.ps1`) are positively
   path-anchored to `D:\QM\mt5\` since commit `da5a42979` — the FTMO terminal and
   T_Live can structurally never match the factory kill selection.

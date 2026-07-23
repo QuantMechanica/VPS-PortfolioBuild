@@ -20,7 +20,7 @@ if ([string]::IsNullOrWhiteSpace($apiKey)) { $missing += "YOUTUBE_API_KEY" }
 
 if ($missing.Count -gt 0) {
     $status = "blocked"
-    $unblockOwner = "OWNER/CTO"
+    $unblockOwner = "OWNER"
     $unblockAction = "Provide missing prerequisites: $($missing -join ', ')"
 }
 

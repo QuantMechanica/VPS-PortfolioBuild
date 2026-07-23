@@ -1,8 +1,8 @@
 # Option A Strategy Farm
 
 This is the deterministic local controller for the QuantMechanica strategy farm.
-It replaces Paperclip as the critical path with explicit queues, SQLite state,
-and foreground commands that can later be scheduled once the loop is proven.
+It uses explicit queues, SQLite state, and foreground commands that can later be
+scheduled once the loop is proven.
 
 Runtime state lives outside the repo by default:
 

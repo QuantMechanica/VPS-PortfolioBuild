@@ -351,8 +351,9 @@ Standalone-Semantik und wird von
 `framework/EAs/QM5_MXAU_master-xauusd/QM5_MXAU_master-xauusd.mq5` eingebunden.
 Dieses Include liegt außerhalb der Development-Build-Autorität.
 
-Vor Target-Promotion müssen CTO und Quality-Tech genau eine Variante
-signieren:
+Vor Target-Promotion muss OWNER nach dem Implementierungsvorschlag von
+Development und dem technischen Review durch Quality-Tech genau eine Variante
+freigeben:
 
 1. das Modul in einem separaten, autorisierten Framework-Change auf dieselbe
    Card-v2-Semantik bringen und den Master vollständig requalifizieren; oder
@@ -366,11 +367,11 @@ Ein stiller Standalone-Fix bei weiter driftendem Master-Modul ist unzulässig.
 | Signatur | Rolle | Inhalt | Status |
 |---|---|---|---|
 | `SOURCE_SEMANTICS_ACK` | Research | trennt Quellenmechanik von allen QM-Interpretationen | PENDING |
-| `CARD_V2_APPROVED` | CEO + Quality-Business | genehmigt genau `C_POLICY_REPAIR`, Falsifikation und Auswahlregel | PENDING |
-| `EA_ID_REUSE_APPROVED` | CEO + CTO | bestätigt, dass die materielle Policy-Variante unter EA-ID 1556 verbleiben darf | PENDING |
+| `CARD_V2_APPROVED` | OWNER + Quality-Business | genehmigt genau `C_POLICY_REPAIR`, Falsifikation und Auswahlregel | PENDING |
+| `EA_ID_REUSE_APPROVED` | OWNER | bestätigt, dass die materielle Policy-Variante unter EA-ID 1556 verbleiben darf; Development dokumentiert den Registry-Eintrag | PENDING |
 | `NO_WEEKEND_OWNER_SEAL` | OWNER | signiert Cutoff, Holiday-Fallback, Reentry und No-Weekend-Zweck außerhalb aller Run-Roots | PENDING |
-| `MASTER_MODULE_DISPOSITION` | CTO + Quality-Tech | signiert Modul-Sync oder Deaktivierung | PENDING |
-| `TARGET_SOURCE_CLOSURE_ACCEPTED` | Development + CTO | bindet Source/Includes und clean compile | PENDING |
+| `MASTER_MODULE_DISPOSITION` | OWNER + Quality-Tech | autorisiert nach technischem Review Modul-Sync oder Deaktivierung | PENDING |
+| `TARGET_SOURCE_CLOSURE_ACCEPTED` | Development + Quality-Tech | bindet Source/Includes und clean compile | PENDING |
 | `TARGET_BINARY_REQUAL_PASS` | Pipeline-Operator + Quality-Tech | bindet zwei Requal-Läufe, Pair-Gate, `Q00`–`Q11`, `Q12` und Kosten | PENDING |
 | `BOOK_ADMISSION_AND_DEPLOY` | OWNER | separate finale Risiko-, Buch- und Deployentscheidung | PENDING |
 
@@ -381,10 +382,10 @@ Signaturschlüssel hergestellt werden.
 ## Freigabe-Checkliste
 
 - [ ] Research bestätigt die Source/QM-Trennung.
-- [ ] CEO + Quality-Business setzen die kanonische Card v2 auf `APPROVED`.
-- [ ] CEO + CTO bestätigen die Wiederverwendung von EA-ID 1556.
+- [ ] OWNER + Quality-Business setzen die kanonische Card v2 auf `APPROVED`.
+- [ ] OWNER bestätigt die Wiederverwendung von EA-ID 1556; Development dokumentiert sie im Registry-Eintrag.
 - [ ] OWNER versiegelt die No-Weekend-/Reentry-Entscheidung.
-- [ ] CTO + Quality-Tech schließen den Master-Modul-Blocker.
+- [ ] OWNER schließt den Master-Modul-Blocker nach Review durch Quality-Tech.
 - [ ] Erst danach implementiert Development `C_POLICY_REPAIR`.
 - [ ] Ablations-Harness bleibt non-deployable; Target-Binary enthält nur C.
 - [ ] R0-Identität und A/B/C-Ablation laufen auf den gebundenen Fenstern.

@@ -149,7 +149,7 @@ extraction:
       r4_pass: <true | false>                   # no ML; no runaway martingale; deterministic; 1-pos-per-magic compatible
       r4_concern: "<empty if r4_pass=true; else the specific Hard-Rule clash>"
 
-      # framework module mapping (best guess; CTO refines at APPROVED stage)
+      # framework module mapping (best guess; technical review refines after OWNER G0)
       modules_used:
         no_trade: <true | false>
         trade_entry: true                       # always true for any executable strategy
@@ -187,7 +187,7 @@ EDGE CASES
 - Video shows backtest results only, no rules → has_strategies=false; mention what was promised in rationale_if_none.
 - Author claims ML or AI is required → still extract the strategy if you can describe the rule chain, but mark r4_pass=false and r4_concern accordingly; downstream may still mine the non-ML logic.
 - Author uses runaway martingale (doubles indefinitely) → r4_pass=false; mark hard_rules_at_risk with grid_1pct_cap; brief description so we know to skip.
-- Author uses bounded grid (capped open positions, fixed sizing per level) → r4_pass=true; flag grid_1pct_cap so CTO documents the cap.
+- Author uses bounded grid (capped open positions, fixed sizing per level) → r4_pass=true; flag grid_1pct_cap so the Strategy Card documents the cap.
 
 DO NOT
 
@@ -233,7 +233,8 @@ Per video-task return, Claude:
      - `modules_used` + `hard_rules_at_risk` → § 12
      - `reproducibility_notes` → appended to § 11 as "Reproducibility gap noted in Gemini extraction: …"
 3. **MANDATORY 10-pattern check** — see § 7a below. A card that fails ANY of the 10 `STRATEGY_CARD_REQUIRED_BODY_PATTERNS` will be blocked by `ready_strategy_card_inventory()` and cannot enter the build queue.
-4. **Status:** new card lands in `DRAFT`. Claude reviews and bumps to `IN_REVIEW` only after a quick sanity read. CEO (OWNER + Claude proxy) then bumps to `APPROVED` if R1-R4 all pass.
+4. **Status:** a new card lands in `DRAFT`. A worker may record review findings,
+   but only OWNER records `g0_status: APPROVED` when R1-R4 pass.
 5. **Reservoir gate check after each new card** — if reservoir reaches 5, halt Gemini wave, drain pipeline, resume.
 
 ## 7a. Mandatory card-body patterns (build-ready gate)

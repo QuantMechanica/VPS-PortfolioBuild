@@ -1098,7 +1098,9 @@ def _load_fresh_summary(path: Path, payload: dict[str, Any]) -> dict[str, Any] |
         summary = json.loads(path.read_text(encoding="utf-8-sig"))
     except (OSError, json.JSONDecodeError):
         return None
-    return summary if _summary_fresh_for_claim(path, summary, payload) else None
+    if not _summary_fresh_for_claim(path, summary, payload):
+        return None
+    return summary if farmctl._summary_matches_expected_evidence(summary, payload) else None
 
 
 def _find_summary(report_root: str | None, payload: dict[str, Any] | None = None) -> Path | None:
@@ -2225,6 +2227,15 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
         "p2_run_stage": spawn.get("p2_run_stage"),
         "from_date": spawn.get("from_date"),
         "to_date": spawn.get("to_date"),
+        "evidence_binding_required": spawn.get("evidence_binding_required"),
+        "expected_from_date": spawn.get("expected_from_date"),
+        "expected_to_date": spawn.get("expected_to_date"),
+        "expected_symbol": spawn.get("expected_symbol"),
+        "expected_period": spawn.get("expected_period"),
+        "expected_expert": spawn.get("expected_expert"),
+        "expected_ex5_sha256": spawn.get("expected_ex5_sha256"),
+        "expected_setfile_sha256": spawn.get("expected_setfile_sha256"),
+        "expected_mq5_sha256": spawn.get("expected_mq5_sha256"),
     })
     def _record_spawn() -> None:
         with farmctl.connect(root) as conn:

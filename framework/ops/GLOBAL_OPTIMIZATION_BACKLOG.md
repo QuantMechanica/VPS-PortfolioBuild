@@ -34,4 +34,4 @@ This document outlines the systematic optimization plan for all EAs with time-se
 2.  **Queue Enqueue:** Add `kind: optimization`, `phase: P3` work items to `farm_state.sqlite`.
 3.  **Result Aggregation:** Pipeline-Op collects `optimization_report.csv`.
 4.  **Walk-Forward Trigger:** Top 5 settings for each symbol automatically move to `phase: P4`.
-5.  **Review:** AI-CEO/OWNER sign-off on P4 winners for sleeve deployment.
+5.  **Review:** OWNER signs off any sleeve-deployment decision after the required evidence gates.

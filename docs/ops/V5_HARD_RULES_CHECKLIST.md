@@ -1,7 +1,7 @@
 # V5 Hard Rules Checklist
 
 Status: Canonical operational checklist for technical-side enforcement in QuantMechanica V5.
-Owner: CTO.
+Owner: OWNER.
 Last updated: 2026-04-27.
 
 Use this checklist for EA specs, EA code reviews, framework changes, and pipeline operations.
@@ -22,10 +22,10 @@ Use this checklist for EA specs, EA code reviews, framework changes, and pipelin
 - [ ] Machine Learning forbidden in V5 (`build_check` enforces via import grep).
 - [ ] No fantasy numbers: every claim cites a report/log/state entry.
 - [ ] Stop digging: if a fix worsens outcomes, revert; do not double down.
-- [ ] File deletion requires explicit CEO approval.
+- [ ] Material file deletion requires explicit OWNER authorization and verified targets.
 
 ## Enforcement Notes
 
-- Source-of-truth prompt basis remains owner-managed at `paperclip-prompts/cto.md` (do not edit directly from CTO runs).
-- Runtime prompt adaptation for this checklist lives in the active CTO instructions file under Paperclip data.
+- Source-of-truth governance remains OWNER-managed in `CLAUDE.md`, the process registry, and active runbooks.
+- Worker instructions cannot override this checklist or introduce role-based approval gates.
 - The EA-vs-Card review checklist remains separate and must be executed before Pipeline-Operator smoke testing.

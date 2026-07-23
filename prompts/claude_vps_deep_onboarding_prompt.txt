@@ -1,4 +1,6 @@
-You are the QuantMechanica V5 Board Advisor running on the VPS.
+You are a QuantMechanica V5 reasoning worker running on the VPS. OWNER is the
+sole human authority; your conclusions are recommendations unless a deterministic
+gate produces the verdict.
 
 This is an onboarding and project-discovery task, not yet the DST validation task.
 
@@ -13,15 +15,12 @@ Before doing any implementation work, read these sources in order:
 Local bootstrap / control docs:
 1. C:\QM\repo\CLAUDE.md
 2. C:\QM\repo\docs\ops\CLAUDE_VPS_ONBOARDING.md
-3. C:\QM\repo\docs\ops\GOOGLE_DRIVE_AND_NOTION_SOURCE_GUIDE.md
-4. C:\QM\repo\docs\ops\PHASE0_EXECUTION_BOARD.md
-5. C:\QM\repo\docs\ops\PAPERCLIP_V2_BOOTSTRAP.md
-6. C:\QM\repo\docs\ops\PAPERCLIP_OPERATING_SYSTEM.md
-7. C:\QM\repo\docs\ops\PIPELINE_AUTONOMY_MODEL.md
-8. C:\QM\repo\docs\ops\AGENT_SKILL_MATRIX.md
-9. C:\QM\repo\docs\ops\LIVE_T6_AUTOMATION_RUNBOOK.md
-10. C:\QM\repo\docs\ops\ORG_SELF_DESIGN_MODEL.md
-11. C:\QM\repo\docs\ops\TICK_DATA_MANAGER_DARWINEX_TIME.md
+3. C:\QM\repo\docs\ops\OPTION_A_STRATEGY_FARM_RUNBOOK.md
+4. C:\QM\repo\processes\process_registry.md
+5. C:\QM\repo\docs\ops\PROJECT_CHARTER.md
+6. C:\QM\repo\docs\ops\PIPELINE_PHASE_SPEC.md
+7. C:\QM\repo\docs\ops\LIVE_T6_AUTOMATION_RUNBOOK.md
+8. C:\QM\repo\docs\ops\TICK_DATA_MANAGER_DARWINEX_TIME.md
 
 Private/local if available:
 - C:\QM\repo\.private\VPS_SERVER_RECORD.md
@@ -29,16 +28,16 @@ or
 - C:\QM\drive\QuantMechanica - VPS Portfolio Build\.private\VPS_SERVER_RECORD.md
 
 Host Google Drive and bootstrap sources if accessible:
-- G:\Meine Ablage\QuantMechanica - VPS Portfolio Build
-- G:\Meine Ablage\QuantMechanica - VPS Portfolio Build\Seeds\news_calendar
-- G:\MyDrive\QuantMechanica
+- G:\My Drive\QuantMechanica - VPS Portfolio Build
+- G:\My Drive\QuantMechanica - VPS Portfolio Build\Seeds\news_calendar
+- G:\My Drive\QuantMechanica
 
 Notion if access exists:
 - Root page: https://www.notion.so/34947da58f4a81acac28fb82f3d7e7aa
 - Relevant areas to inspect if available:
   - Project Charter
   - Infrastructure Setup
-  - Paperclip V2 Company Design
+  - historical company-design material (archive context only)
   - Research Methodology V2
   - V5 Pipeline Design
   - Website Relaunch Plan

@@ -37,6 +37,7 @@
       "encoding": "jsonl",
       "envelope": "QM_LogEvent",
       "event_names": [
+        "ANNOUNCEMENT_CALENDAR_LOADED",
         "BASKET_BOUNDARY_UNREADY",
         "BASKET_CYCLE_OPEN",
         "BASKET_DIVERGENCE_BLOCK",
@@ -151,6 +152,7 @@
         "KS_BOOK_TAG_SET",
         "KS_DAY_ANCHOR_SET",
         "KS_DISTRIBUTION_DIVERGENCE",
+        "KS_STATE_FOREIGN_CONFIG_PRESERVED",
         "KS_STATE_RESTORED_ANCHOR",
         "KS_STATE_RESTORED_HALT",
         "KS_STATE_SAVE_FAILED",
@@ -291,7 +293,7 @@
         "event",
         "payload"
       ],
-      "resolved_call_count": 5983,
+      "resolved_call_count": 6020,
       "schema_version": 1,
       "stream": "qm_events"
     }

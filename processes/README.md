@@ -1,46 +1,35 @@
 # Company Processes
 
-End-to-end flow specs for QuantMechanica V5. Scope: cross-agent choreography, not per-agent role definitions. For role scopes see each agent's V5 BASIS prompt at [`paperclip-prompts/<role>.md`](../paperclip-prompts/) (OWNER-managed). For the org self-design model see [`docs/ops/ORG_SELF_DESIGN_MODEL.md`](../docs/ops/ORG_SELF_DESIGN_MODEL.md).
+End-to-end contracts for QuantMechanica V5. The active authority and gate index is
+[process_registry.md](process_registry.md).
 
-Each process file follows the same structure:
+Each active process should state:
 
-- **Trigger** — what starts the flow
-- **Actors** — which agents are involved (linked to `/QUA/agents/<role>`)
-- **Steps** — sequence with decision points (Mermaid flowchart)
-- **Exits** — success, escalation, kill
-- **SLA** — timing expectations
+- trigger;
+- required inputs and evidence;
+- deterministic state transitions and decision thresholds;
+- safe exits, escalation, and kill conditions;
+- OWNER decisions, where human authority is actually required.
 
-## Index
+Worker names describe capability assignments only. They are not approval layers.
+Source authorization, G0, deterministic build/test gates, and OWNER promotion must
+remain distinct.
 
-| # | Process | File | Primary owner | V5 audit status |
-|---|---------|------|---------------|-----------------|
-| 1 | EA Life-Cycle (L0 → L10) | [01-ea-lifecycle.md](01-ea-lifecycle.md) | [CTO](/QUA/agents/cto) | **V5-refreshed 2026-04-27** (label collision resolved; lifecycle = L0..L10, pipeline = G0..P10) |
-| 2 | ZT / NO_REPORT Recovery | [02-zt-recovery.md](02-zt-recovery.md) | TBD (V5) | Needs full V5 rewrite — see QUA-213 audit |
-| 3 | V-Portfolio Deploy | [03-v-portfolio-deploy.md](03-v-portfolio-deploy.md) | [Pipeline-Operator](/QUA/agents/pipeline-operator) | Needs role-rename pass |
-| 4 | Incident Response | [04-incident-response.md](04-incident-response.md) | [DevOps](/QUA/agents/devops) (interim until Obs-SRE Wave 3) | Needs role-rename pass |
-| 5 | Dashboard Refresh Cadence | [05-dashboard-refresh.md](05-dashboard-refresh.md) | TBD (V5) | Needs full V5 rewrite — V4 mechanism (Strategy-Analyst routine + processes.html) is obsolete |
-| 6 | Issue Triage | [06-issue-triage.md](06-issue-triage.md) | [CEO](/QUA/agents/ceo) | Needs role-rename pass |
-| 7 | Cross-Strand CEO ↔ CTO Dialectic | [07-ceo-cto-dialectic.md](07-ceo-cto-dialectic.md) | [CEO](/QUA/agents/ceo) + [CTO](/QUA/agents/cto) | Needs role-rename pass |
-| 8 | Daily Operating Rhythm | [08-daily-operating-rhythm.md](08-daily-operating-rhythm.md) | [Documentation-KM](/QUA/agents/documentation-km) | Needs full V5 rewrite — V4 13-agent rhythm is obsolete |
-| 9 | Disaster Recovery | [09-disaster-recovery.md](09-disaster-recovery.md) | [DevOps](/QUA/agents/devops) | Needs role-rename pass |
-| 10 | Agent Re-scope | [10-agent-rescope.md](10-agent-rescope.md) | [CEO](/QUA/agents/ceo) | Needs role-rename pass |
-| 11 | Disk-Management and Drive-Sync-Maintenance | [11-disk-and-sync.md](11-disk-and-sync.md) | [DevOps](/QUA/agents/devops) (interim until Obs-SRE Wave 3) | Needs role-rename pass |
-| 12 | Board Escalation Contract | [12-board-escalation.md](12-board-escalation.md) | [Documentation-KM](/QUA/agents/documentation-km) | Needs role-rename pass |
-| 13 | Strategy Research Workflow | [13-strategy-research.md](13-strategy-research.md) | [Documentation-KM](/QUA/agents/documentation-km) | **V5-authored 2026-04-27** (QUA-242 — codifies OWNER directive on source/strategy/version tree) |
-| 14 | EA Enhancement Loop (`_v2` versioning) | 14-ea-enhancement-loop.md | [Documentation-KM](/QUA/agents/documentation-km) | Pending — QUA-245 |
-| 15 | Pipeline-Op Load Balancing (T1-T5) | [15-pipeline-op-load-balancing.md](15-pipeline-op-load-balancing.md) | [Pipeline-Operator](/QUA/agents/pipeline-operator) | **V5-authored 2026-04-28** (QUA-307 P0: 3-cap concurrency, dedup key, least-loaded round-robin with symbol affinity) |
+## Core index
 
-V5 audit detail: [`docs/ops/QUA-213_PROCESS_AUDIT_2026-04-27.md`](../docs/ops/QUA-213_PROCESS_AUDIT_2026-04-27.md). Files marked "needs full V5 rewrite" have child issues opened off QUA-213; the role-rename pass is tracked as a single follow-up.
+| # | Process | File |
+|---|---|---|
+| 1 | EA Life-Cycle | [01-ea-lifecycle.md](01-ea-lifecycle.md) |
+| 2 | Zero-trades recovery | [02-zt-recovery.md](02-zt-recovery.md) |
+| 3 | Portfolio deploy | [03-v-portfolio-deploy.md](03-v-portfolio-deploy.md) |
+| 4 | Incident response | [04-incident-response.md](04-incident-response.md) |
+| 5 | Dashboard refresh | [05-dashboard-refresh.md](05-dashboard-refresh.md) |
+| 9 | Disaster recovery | [09-disaster-recovery.md](09-disaster-recovery.md) |
+| 11 | Disk and sync | [11-disk-and-sync.md](11-disk-and-sync.md) |
+| 13 | Strategy research | [13-strategy-research.md](13-strategy-research.md) |
+| 14 | EA enhancement | [14-ea-enhancement-loop.md](14-ea-enhancement-loop.md) |
+| 15 | Pipeline load balancing | [15-pipeline-op-load-balancing.md](15-pipeline-op-load-balancing.md) |
+| 16 | Backtest execution discipline | [16-backtest-execution-discipline.md](16-backtest-execution-discipline.md) |
 
-## Ownership & review cadence
-
-[Documentation-KM](/QUA/agents/documentation-km) owns this folder. Review cadence: **quarterly**. Process maps decay fast — when any flow changes materially, the agent that owns the change must open an issue against Doc-KM to update the relevant spec before merging the behavioral change.
-
-## How agents reference these docs
-
-Agent prompts (in `paperclip-prompts/<role>.md`) and per-task instructions should **link** to the relevant process file, not duplicate steps. Example:
-
-```markdown
-## Escalation
-When a deploy decision is needed, follow [Board Escalation](../processes/12-board-escalation.md) class 5.
-```
+Other numbered files are historical until rewritten and added to the active registry.
+They cannot introduce approval gates or override current contracts.

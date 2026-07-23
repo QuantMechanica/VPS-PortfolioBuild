@@ -10,7 +10,7 @@ Authority:
   framework/registry/tester_defaults.json
   decisions/DL-038 (Seven Binding Backtest Rules)
 
-Author: Board Advisor 2026-05-01 — draft for CTO review/merge into
+Author: technical-review draft, 2026-05-01 — retained for deterministic integration into
         framework/scripts/pipeline_dispatcher.py and per-phase runners.
 """
 from __future__ import annotations

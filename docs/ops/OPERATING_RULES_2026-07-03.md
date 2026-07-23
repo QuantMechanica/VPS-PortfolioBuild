@@ -100,7 +100,7 @@ im Vault; bei Konflikt gelten Vault-Hard-Rules zuerst.
     ≥~25/Jahr/Symbol, Index/Commodity bevorzugt (Kommission irrelevant), hartes
     Intraday-DD-Design (Day-Flat, strukturelle Stops, Tages-Loss-Cap). FX-High-Freq
     bleibt tot (Kommission). Erste Slate: QM5_12985–12988
-    (CEO-PROPTRACK-SLATE-2026-07-03). Screening weiter ausschließlich auf Codex'
+    gemäß OWNER-Anweisung vom 2026-07-03. Screening weiter ausschließlich auf Codex'
     report.htm-Basis (BASIS LESSON 06-30, kein paralleler q08-Screen).
 20. **Live-Book-Puls.** Das Live-Buch (T_Live, Konto 4000090541) bekommt eine eigene
     automatisierte Überwachung (Log-basiert, strikt read-only auf T_Live-Dateien, kein

@@ -292,7 +292,7 @@ Reached only if Step 7 yielded zero candidates AND no other pending work:
 ## What you do NOT do
 
 - ❌ Do NOT message OWNER unless escalating per the boundaries.
-- ❌ Do NOT modify scheduled tasks, agent configs, or anything in `C:/QM/paperclip/`.
+- ❌ Do NOT modify scheduled tasks or agent configs.
 - ❌ Do NOT touch the Strategy Wiki at `G:/My Drive/QuantMechanica - Company Reference/09 Strategy Wiki/` — that's the long-form research graph, separate maintenance.
 - ❌ Do NOT change phase scripts under `framework/scripts/`.
 - ❌ Do NOT invoke `claude` from within Codex or chain LLMs sideways. Keep the call graph flat.

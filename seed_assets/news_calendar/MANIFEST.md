@@ -2,7 +2,7 @@
 
 Copied: 2026-04-21
 
-Purpose: preserve the V1-V5 news/calendar dataset for the fresh V5 Paperclip and VPS setup. This is a setup dependency for any EA, backtest, or validation run that uses news filters, news pauses, economic calendar windows, or event-impact analysis.
+Purpose: preserve the V1-V5 news/calendar dataset for the V5 VPS setup. This is a setup dependency for any EA, backtest, or validation run that uses news filters, news pauses, economic calendar windows, or event-impact analysis.
 
 ## Files
 
@@ -29,9 +29,9 @@ Known legacy locations to check during migration:
 <terminal-data>\MQL5\Files\forex_factory_calendar_clean.csv
 ```
 
-## Paperclip Bootstrap Instruction
+## Strategy-Farm Bootstrap Instruction
 
-Paperclip must be told during Phase 0 that this seed asset exists and is mandatory for any news-aware backtest.
+The strategy-farm setup must register this seed asset as mandatory for any news-aware backtest.
 
 Required setup issue:
 

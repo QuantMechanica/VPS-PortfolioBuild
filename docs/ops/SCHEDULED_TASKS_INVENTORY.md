@@ -1,6 +1,6 @@
 # QuantMechanica — Scheduled-Task Inventory (canonical)
 
-**Last consolidated:** 2026-06-01 (Claude, OWNER-directed)
+**Last consolidated:** 2026-07-22 (live-uptime incident hardening)
 **Single source of truth:** `tools/strategy_farm/qm_tasks.manifest.ps1`
 **Drivers:** `tools/strategy_farm/Factory_ON.ps1` / `Factory_OFF.ps1` (desktop shortcuts
 "QM Factory ON/OFF") dot-source the manifest.
@@ -17,7 +17,7 @@ this document is the complete picture.
 | **FACTORY** (dispatch engine) | enable + start | stop + disable |
 | **AI** (agent orchestration) | enable + start | stop + disable |
 | **ALWAYS_ON** (dashboards/health/alarm/briefs/snapshot/housekeeping) | **ensure enabled** | **left running** |
-| **ENFORCE_DISABLED** (session-0 respawn hazards) | force-disable if drifted | left disabled |
+| **ENFORCE_DISABLED** (unsafe respawn/session/reboot paths) | force-disable if drifted | left disabled |
 | **DECOMMISSIONED** (legacy/paused) | not touched | not touched |
 
 Key point: with the factory **OFF you still get** the morning brief, dashboards,
@@ -75,19 +75,24 @@ by Factory_ON (visible mode), and a one-shot `farmctl.py repair`.
 | `QM_StrategyFarm_WorktreeClean_4h` | 4 h | `run_worktree_clean_task.py` |
 | `QM_WorkItemLogPruner_Daily_0310` | 03:10 | `prune_workitem_logs.py` |
 | `QM_StrategyFarm_HourlyMonitor_60min` | 60 min | `hourly_monitor.ps1` — health triage: auto-fix reversible task-state drift, escalate auth/factory/T_Live to `D:\QM\reports\state\hourly_monitor.jsonl`. Install: `install_hourly_monitor_scheduled_task.ps1`. Fail-safe (DL-065). |
-| `QM_StrategyFarm_TesterCachePurge` | 3 h | `tester_cache_purge.ps1` — if D: free <80GB: stop factory, purge regenerable `T*\Tester\bases`+`Agent-*` caches, restart. **Runs as INTERACTIVE qm-admin** (not SYSTEM) so workers respawn in OWNER's visible session. Source ticks/reports never touched. Permanent fix for D: fill-up (incident 2026-06-02). Install: `install_tester_cache_purge_scheduled_task.ps1`. |
+| `QM_StrategyFarm_TesterCachePurge` | 20 min | `tester_cache_purge.ps1` — if D: free <150GB: preserve protected active slots and captured Factory ON/OFF state, purge only idle regenerable `T*\Tester\bases`+`Agent-*` caches, then request only missing workers through `QM_StrategyFarm_WorkerDedupe`. Controller runs as SYSTEM; worker launch remains INTERACTIVE qm-admin. Never touches T_Live/FTMO/source ticks/reports. |
 | `QM_StrategyFarm_QuotaPull` | 5 min | `quota_pull.py` — headless Codex+Claude limit pull. Hits the authenticated usage JSON endpoints (`chatgpt.com/backend-api/codex/usage`, `api.anthropic.com/api/oauth/usage`) with the OAuth tokens the CLIs already store, writes `quota_snapshot.json` (USED % per 5h/weekly window). **Replaces the Tampermonkey browser-scraper** (2026-06-07) — no browser, survives reboot. Runs as **SYSTEM** (reads world-readable token files). Read-only on tokens; never refreshes/writes them, so it cannot trigger the codex `refresh_token_reused` race. On 401/403 keeps last-good (health goes stale only if pulls persistently fail). |
+| `QM_T_Live_AtLogon` / `QM_FTMO_AtLogon` | qm-admin logon +15s/+30s | Logon-only, idempotent exact-path cold start for DXZ and FTMO; demand start disabled because it queues while RDP is disconnected. |
+| `QM_Live_MT5_SessionSupervisor` | qm-admin logon +45s, resident | Interactive `qm-admin`, `PT0S`, every 10s. Recovers an individually missing DXZ/FTMO inside the existing desktop session, including while RDP is disconnected. Explicit demand start is allowed only for the contract-checked `RunEx` helper, which pins the task to that session and verifies Scheduler PID = heartbeat PID. |
+| `QM_T_Live_Watchdog` | 1 min | SYSTEM dual-live/session/profile/supervisor watchdog; controlled reboot only after confirmed total loss, with fail-closed process probes, non-empty SYSTEM-only Autologon secret, and exact principal/action/trigger/settings contracts for all three interactive recovery tasks. The maintenance flag is re-read immediately before `shutdown.exe` and during every countdown second. |
 
 > Note: the duplicate **07:00 email** morning brief (`QM_StrategyFarm_MorningBrief_0700`)
 > was deleted 2026-06-01 (OWNER: keep the 06:00 vault brief, drop the email). Only
 > `QM_MorningBriefing_Vault` remains.
 
-## ENFORCE_DISABLED — must stay off (session-0 respawn hazards)
+## ENFORCE_DISABLED — unsafe paths that must stay off
 
 | Task | Why disabled |
 |---|---|
 | `QM_StrategyFarm_Repair_Hourly` | spawned SYSTEM/session-0 workers after a crash; repair now runs ONCE inline in Factory_ON. **Was found drifted to Enabled on 2026-06-01 and re-disabled.** |
 | `QM_StrategyFarm_TerminalWorkers_AT_STARTUP` | spawned daemons as SYSTEM/session-0 (headless); workers now spawn in the user session via Factory_ON. |
+| `QM_TSCon_Console_OnDisconnect` | caused a proven session-arbitration/desktop teardown race; must remain disabled. |
+| `QM_StrategyFarm_HygieneReboot` | legacy forced-reboot path does not yet implement the live watchdog's exact recovery contracts and cancellable maintenance/process edge; keep disabled until separately hardened. |
 
 ## BOOTSTRAP — factory autostart (not in any manifest list)
 
@@ -102,10 +107,10 @@ by Factory_ON (visible mode), and a one-shot `farmctl.py repair`.
 42 legacy tasks were unregistered from Task Scheduler on 2026-06-01 (`Unregister-ScheduledTask`,
 all verified Disabled first). The QM task count dropped 61 → 18. Three groups deleted:
 
-- **Paperclip-era relics (23)** (paths under `C:\QM\paperclip\...\<GUID>\`): `Backup_Daily_0215`,
+- **Obsolete pre-strategy-farm orchestration tasks (23)** (all legacy integration roots removed; selected roster): `Backup_Daily_0215`,
   `Class2ExecutionPolicySentinel_60min`, `DailyStatusMail`, `DashboardRender_Hourly`,
   `DriveGitExclusion_15min`, `DWX_WS30Gate_15min`, `InfraHealthCheck_5min`,
-  `KanbanArchive_Daily_2300`, `PaperclipStaleLockWatchdog_15min`, `PublicSnapshot_Export_Hourly`,
+  `KanbanArchive_Daily_2300`, `PublicSnapshot_Export_Hourly`,
   `PublicSnapshot_Health_15min`, `QUA1006/1016/1023_OpsCycle`, `QUA207_RuntimeHeartbeat`,
   `QUA774_ExternalUnblock{OpsSuite,Status}`, `QUA945_BlockedHeartbeat`, `QUA95_{BlockerRefresh,TaskHealth}`,
   `RecoveryOrphans_Cleanup_Daily_0310`, `RuntimeHealthScan_15min`, `SubscriptionGuardian_5m`.

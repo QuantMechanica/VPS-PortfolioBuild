@@ -263,10 +263,10 @@ if ($null -eq $highestPhase) {
 }
 
 # agents.{online,offline,blocked} from watchdog sub-agent state.
-# online = sub-agents producing runs in last 2h; offline = idle >=2h; blocked = (future: Paperclip API count).
+# online = sub-agents producing runs in last 2h; offline = idle >=2h.
 $agentsOnline = [int]$pipelineState.agents_watchdog.online_count
 $agentsOffline = [int]$pipelineState.agents_watchdog.offline_count
-$agentsBlocked = 0  # placeholder until Paperclip API integration
+$agentsBlocked = 0
 
 # pipeline.{strategy_cards,eas_built,by_phase} from pipeline_state.json.
 $byPhaseLive = @{}

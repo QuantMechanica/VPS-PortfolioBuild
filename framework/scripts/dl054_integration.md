@@ -1,10 +1,11 @@
 # DL-054 Integration Plan — Pipeline-Op launcher wiring
 
-**Author:** Board Advisor 2026-05-01 — draft for CTO review/merge Tuesday post-Codex-restore.
+**Author:** technical-review draft, 2026-05-01.
 **Authority:** DL-054, OWNER directive 2026-05-01.
 **Companion:** `framework/scripts/dl054_gates.py` — gate library.
 
-This is a candidate integration plan. Codex (CTO) was offline when authored, so this stays as a review-and-merge artifact rather than a direct edit to production runners. CTO ratifies / refines / merges Tuesday.
+This is a candidate integration plan and not a production verdict. An assigned
+technical reviewer must validate it against current runners before integration.
 
 ## Goal
 
@@ -71,7 +72,7 @@ ea_id,phase,symbol,terminal,verdict,invalidation_reason,evidence
 
 ## Ratification path Tuesday
 
-1. **CTO** (`241ccf3c-...`) — review `dl054_gates.py` for parser correctness on actual MT5 `report.htm` shape (G4). The `parse_trade_count` patterns are a starter set; CTO refines against real reports from QM5_1003 P2_postfix2 (the only known good run).
+1. **Technical review** — verify `dl054_gates.py` parser correctness on actual MT5 `report.htm` shape (G4). The `parse_trade_count` patterns are a starter set and must be refined against real reports from QM5_1003 P2_postfix2 (the only known good run).
 2. **Pipeline-Op** (`46fc11e5-...`) — refactor `pipeline_dispatcher.py` per Splice A; adapt `run_phase.ps1` to call gate library after every per-symbol run per Splice B.
 3. **Quality-Tech** (`c1f90ba8-...`) — gate-of-record per DL-054. Reviews any subsequent P2/P3.5/P5/P5b/P5c/P6/P7/P8 matrix and rejects if `report.csv` row count doesn't match all-five-gates-passed count.
 4. **Doc-KM** (`8c85f83f-...`) — DL recording the integration once committed; updates `processes/16-backtest-execution-discipline.md` with the gate workflow.
@@ -92,9 +93,9 @@ Repeat with deliberate G3 fail (force a no-history symbol e.g. XBRUSD.DWX with 2
 
 ## Out of scope for this draft
 
-- Refactor of run_phase.ps1's PowerShell to call into Python gate library — CTO designs the bridge (likely via `python -m framework.scripts.dl054_gates ...` subprocess or via the existing `_phase_utils.py` helper).
+- Refactor of run_phase.ps1's PowerShell to call into Python gate library — the implementation review designs the bridge (likely via `python -m framework.scripts.dl054_gates ...` subprocess or via the existing `_phase_utils.py` helper).
 - Per-phase ADR templates for `decisions/<date>_zero_trade_<ea>_<symbol>.md` — Doc-KM authors a template at `decisions/_TEMPLATE_zero_trade.md` once the gate library lands.
-- QUA-687 D3 follow-up (DL-054 gap triage doc) — superseded by this integration; CTO links closeout.
+- QUA-687 D3 follow-up (DL-054 gap triage doc) — superseded by this integration; record the closeout in the evidence trail.
 
 ## Cross-references
 

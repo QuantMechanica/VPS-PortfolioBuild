@@ -14,7 +14,7 @@
     },
     "EA_BUILD_REQUESTED": {
       "phase": "G0",
-      "verdict_when": "QB approved card, CEO issued build to Development",
+      "verdict_when": "OWNER recorded g0_status=APPROVED and the deterministic build request exists",
       "display_phase": "Q00"
     },
     "EA_BUILT": {
@@ -148,12 +148,12 @@
     },
     "LIVE_DEPLOYED": {
       "phase": "P10",
-      "verdict_when": "EA deployed to T_Live with AutoTrading enabled by OWNER+Board-Advisor (Hard Rule)",
+      "verdict_when": "Exact manifest-bound EA deployed to T_Live; any trading enablement is a separate OWNER action",
       "display_phase": "Q14"
     },
     "REJECTED": {
       "phase": "any",
-      "verdict_when": "OWNER or QB explicitly rejected the EA card / strategy"
+      "verdict_when": "OWNER explicitly rejected the EA card or strategy"
     },
     "REVIEW_REQUIRED": {
       "phase": "any",

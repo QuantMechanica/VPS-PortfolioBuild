@@ -49,7 +49,7 @@ TERMINALS: tuple[TerminalSpec, ...] = tuple(
     TerminalSpec(f"T{idx}", Path(rf"D:\QM\mt5\T{idx}")) for idx in range(1, 11)
 )
 
-# Hard safety exclusion from CEO scope comment + CLAUDE.md.
+# Hard safety exclusion from OWNER scope and CLAUDE.md.
 EXCLUDED_TERMINAL_ROOTS: tuple[Path, ...] = (
     Path(r"C:\QM\mt5\T_Live"),
     Path(r"D:\QM\mt5\T_Live"),

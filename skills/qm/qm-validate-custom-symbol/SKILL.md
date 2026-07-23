@@ -1,10 +1,6 @@
 ---
 name: qm-validate-custom-symbol
 description: Use for custom-symbol/DST validation with deterministic evidence checks first.
-owner: Setup
-reviewer: CTO
-last-updated: 2026-05-08
-basis: framework/scripts/skill_symbol_validation_lint.py
 ---
 
 # qm-validate-custom-symbol

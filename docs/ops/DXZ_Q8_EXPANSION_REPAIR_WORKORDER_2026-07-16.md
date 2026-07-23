@@ -210,9 +210,10 @@ The sole promotion candidate is the policy repair:
 5. include the resulting weekly turnover and costs in the Card and evidence.
 
 The standalone EA and its Master-EA strategy module currently share the defect.
-Development may not change the framework module under the build skill; CTO and
-Quality-Tech must either approve the synchronized module repair or explicitly
-exclude/disable that module while standalone qualification proceeds.
+Development may not change the framework module under the standalone build
+scope. OWNER must authorize either a synchronized module repair, subject to
+Quality-Tech validation, or explicit module exclusion while standalone
+qualification proceeds.
 
 ## Fixed qualification sequence
 
@@ -259,6 +260,6 @@ No reserve is promoted merely to reach a desired strategy count.
 
 This work can close tooling and prepare exact decision artifacts now. EA source,
 framework-module and qualification-set changes remain blocked until the proposed
-Card-v2 execution choices have the required OWNER, Research, Quality-Business,
-CTO and Quality-Tech approvals. A generic request to improve the book does not
+Card-v2 execution choices have the required OWNER approval plus Research,
+Quality-Business and Quality-Tech reviews. A generic request to improve the book does not
 stand in for those explicit semantic signatures.

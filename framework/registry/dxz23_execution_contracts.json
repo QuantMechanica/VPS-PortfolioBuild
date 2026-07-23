@@ -422,6 +422,2108 @@
         ]
       },
       "promotion": {"status": "BLOCKED", "block_reasons": ["engineering_hypothesis_not_official_ict_model", "research_contract_not_yet_qualified", "locked_2026_holdout_unread", "synchronized_ftmo_joint_replay_missing"]}
+    },
+    {
+      "ea_id": 20030,
+      "symbol": "USDCAD.DWX",
+      "timeframe": "M5",
+      "variant_id": "EIA_CAD_BASELINE",
+      "slug": "eia-cad",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20030_eia-cad_card.md",
+      "source": "framework/EAs/QM5_20030_eia-cad/QM5_20030_eia-cad.mq5",
+      "strategy_timeframe": "M5",
+      "bar_gate_timeframe": "M5",
+      "card_binding": {
+        "ea_id": 20030,
+        "slug": "eia-cad",
+        "timeframe": "M5",
+        "variant_id": "EIA_CAD_BASELINE",
+        "status": "DRAFT",
+        "execution_contract_status": "DRAFT"
+      },
+      "runtime_binding": {
+        "qm_ea_id": 20030,
+        "magic_slot_offset": 0,
+        "setfile": "framework/EAs/QM5_20030_eia-cad/sets/QM5_20030_eia-cad_USDCAD.DWX_M5_backtest.set",
+        "setfile_sha256": "766ccf532d13a2380fc49d1ce4372817c3993438229a4d99a409e19e18a1c7fd",
+        "magic_registry": "framework/registry/magic_numbers.csv"
+      },
+      "data_dependencies": [
+        {
+          "dependency_id": "eia_and_api_schedule_ledgers",
+          "type": "calendar",
+          "qualification_status": "BLOCKED",
+          "required_for": [
+            "ENTRY",
+            "PROMOTION"
+          ],
+          "block_reason": "api_historical_timestamp_ledger_missing",
+          "source_ref": "EIA_AND_API_OFFICIAL_SCHEDULE_LEDGERS",
+          "calendar_policy": "EXACT_ISSUER_TIMESTAMPS_FAIL_CLOSED",
+          "stale_behavior": "ENTRY_FAIL_CLOSED",
+          "path": "framework/EAs/QM5_20030_eia-cad/data/QM5_20030_eia_calendar_20180110_20251231.csv",
+          "sha256": "b273dd88d27e38fe78ec85e426e0f1c8c8ef07dae2f7e1e102ba96f492c33e04",
+          "coverage_start": "2018-01-10",
+          "coverage_end": "2025-12-31"
+        },
+        {
+          "dependency_id": "xti_release_bar_signal_anchor",
+          "type": "signal_anchor",
+          "qualification_status": "PASS",
+          "required_for": [
+            "SIGNAL_ONLY"
+          ],
+          "block_reason": null,
+          "symbol": "XTIUSD.DWX",
+          "timeframe": "M5",
+          "order_allowed": false,
+          "source_ref": "SYNCHRONIZED_RELEASE_BAR_ONLY"
+        }
+      ],
+      "friday_close": {
+        "enabled": true,
+        "hour_broker": 21,
+        "mode": "CARD_RULE",
+        "declaration": "CARD_V2_FRIDAY_21_SAFETY_FLATTEN",
+        "qualification_status": "PASS",
+        "card_evidence": "Card-v2 Framework execution overrides: broker-hour 21 safety flatten after the card-managed exit."
+      },
+      "calendar": {
+        "policy": "NONE"
+      },
+      "promotion": {
+        "status": "BLOCKED",
+        "block_reasons": [
+          "card_status_draft_not_approved",
+          "card_execution_contract_status_draft_not_approved",
+          "api_historical_timestamp_ledger_missing"
+        ]
+      }
+    },
+    {
+      "ea_id": 20031,
+      "symbol": "EURUSD.DWX",
+      "timeframe": "M15",
+      "variant_id": "ASIA_FX_FADE_BASELINE",
+      "slug": "asia-fx-fade",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20031_asia-fx-fade_card.md",
+      "source": "framework/EAs/QM5_20031_asia-fx-fade/QM5_20031_asia-fx-fade.mq5",
+      "strategy_timeframe": "M15",
+      "bar_gate_timeframe": "M15",
+      "card_binding": {
+        "ea_id": 20031,
+        "slug": "asia-fx-fade",
+        "timeframe": "M15",
+        "variant_id": "ASIA_FX_FADE_BASELINE",
+        "status": "DRAFT",
+        "execution_contract_status": "DRAFT"
+      },
+      "runtime_binding": {
+        "qm_ea_id": 20031,
+        "magic_slot_offset": 0,
+        "setfile": "framework/EAs/QM5_20031_asia-fx-fade/sets/QM5_20031_asia-fx-fade_EURUSD.DWX_M15_backtest.set",
+        "setfile_sha256": "0705817f82b0bf17fada604085261d62449d8662d6d8249381c295da8a76c340",
+        "magic_registry": "framework/registry/magic_numbers.csv"
+      },
+      "data_dependencies": [
+        {
+          "dependency_id": "london_public_holiday_context",
+          "type": "calendar",
+          "qualification_status": "PASS",
+          "required_for": [
+            "ENTRY",
+            "EXIT"
+          ],
+          "block_reason": null,
+          "source_ref": "GOV_UK_ENGLAND_WALES_PUBLIC_HOLIDAYS_CONTEXT_ONLY",
+          "calendar_policy": "JURISDICTIONAL_CONTEXT_NO_FX_CLOSURE_INFERENCE",
+          "stale_behavior": "ENTRY_FAIL_CLOSED",
+          "path": "framework/calendars/london/data/QM5_GOVUK_England_Wales_public_holidays_20180101_20251231.csv",
+          "sha256": "8a54e3f2fb7437fded65e8db05b4317f7b2881abc0d3090efe23db1349fe1a75"
+        },
+        {
+          "dependency_id": "broker_fx_session_exceptions",
+          "type": "session_metadata",
+          "qualification_status": "BLOCKED",
+          "required_for": [
+            "ENTRY",
+            "EXIT",
+            "PROMOTION"
+          ],
+          "block_reason": "broker_fx_session_exception_calendar_missing",
+          "metadata_kind": "SESSION_EXCEPTION_CALENDAR",
+          "source_ref": "MISSING_BROKER_ROUTE_SESSION_LEDGER"
+        }
+      ],
+      "friday_close": {
+        "enabled": true,
+        "hour_broker": 21,
+        "mode": "CARD_RULE",
+        "declaration": "CARD_V2_FRIDAY_21_SAFETY_FLATTEN",
+        "qualification_status": "PASS",
+        "card_evidence": "Card-v2 Framework execution overrides: broker-hour 21 safety flatten after the card-managed exit."
+      },
+      "calendar": {
+        "policy": "NONE"
+      },
+      "promotion": {
+        "status": "BLOCKED",
+        "block_reasons": [
+          "card_status_draft_not_approved",
+          "card_execution_contract_status_draft_not_approved",
+          "broker_fx_session_exception_calendar_missing",
+          "unresolved_semantic_conflict_card_cost_R_le_0_10R_gate_absent_from_runtime"
+        ]
+      }
+    },
+    {
+      "ea_id": 20031,
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "M15",
+      "variant_id": "ASIA_FX_FADE_BASELINE",
+      "slug": "asia-fx-fade",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20031_asia-fx-fade_card.md",
+      "source": "framework/EAs/QM5_20031_asia-fx-fade/QM5_20031_asia-fx-fade.mq5",
+      "strategy_timeframe": "M15",
+      "bar_gate_timeframe": "M15",
+      "card_binding": {
+        "ea_id": 20031,
+        "slug": "asia-fx-fade",
+        "timeframe": "M15",
+        "variant_id": "ASIA_FX_FADE_BASELINE",
+        "status": "DRAFT",
+        "execution_contract_status": "DRAFT"
+      },
+      "runtime_binding": {
+        "qm_ea_id": 20031,
+        "magic_slot_offset": 1,
+        "setfile": "framework/EAs/QM5_20031_asia-fx-fade/sets/QM5_20031_asia-fx-fade_GBPUSD.DWX_M15_backtest.set",
+        "setfile_sha256": "420654384daed845c3ed9a083f8abe82085914e5b6ac97d30f7198a6371a1ba7",
+        "magic_registry": "framework/registry/magic_numbers.csv"
+      },
+      "data_dependencies": [
+        {
+          "dependency_id": "london_public_holiday_context",
+          "type": "calendar",
+          "qualification_status": "PASS",
+          "required_for": [
+            "ENTRY",
+            "EXIT"
+          ],
+          "block_reason": null,
+          "source_ref": "GOV_UK_ENGLAND_WALES_PUBLIC_HOLIDAYS_CONTEXT_ONLY",
+          "calendar_policy": "JURISDICTIONAL_CONTEXT_NO_FX_CLOSURE_INFERENCE",
+          "stale_behavior": "ENTRY_FAIL_CLOSED",
+          "path": "framework/calendars/london/data/QM5_GOVUK_England_Wales_public_holidays_20180101_20251231.csv",
+          "sha256": "8a54e3f2fb7437fded65e8db05b4317f7b2881abc0d3090efe23db1349fe1a75"
+        },
+        {
+          "dependency_id": "broker_fx_session_exceptions",
+          "type": "session_metadata",
+          "qualification_status": "BLOCKED",
+          "required_for": [
+            "ENTRY",
+            "EXIT",
+            "PROMOTION"
+          ],
+          "block_reason": "broker_fx_session_exception_calendar_missing",
+          "metadata_kind": "SESSION_EXCEPTION_CALENDAR",
+          "source_ref": "MISSING_BROKER_ROUTE_SESSION_LEDGER"
+        }
+      ],
+      "friday_close": {
+        "enabled": true,
+        "hour_broker": 21,
+        "mode": "CARD_RULE",
+        "declaration": "CARD_V2_FRIDAY_21_SAFETY_FLATTEN",
+        "qualification_status": "PASS",
+        "card_evidence": "Card-v2 Framework execution overrides: broker-hour 21 safety flatten after the card-managed exit."
+      },
+      "calendar": {
+        "policy": "NONE"
+      },
+      "promotion": {
+        "status": "BLOCKED",
+        "block_reasons": [
+          "card_status_draft_not_approved",
+          "card_execution_contract_status_draft_not_approved",
+          "broker_fx_session_exception_calendar_missing",
+          "unresolved_semantic_conflict_card_cost_R_le_0_10R_gate_absent_from_runtime"
+        ]
+      }
+    },
+    {
+      "ea_id": 20032,
+      "symbol": "GDAXI.DWX",
+      "timeframe": "M5",
+      "variant_id": "MACRO0830_BREAKOUT_BASELINE",
+      "slug": "macro0830-brk",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20032_macro0830-brk_card.md",
+      "source": "framework/EAs/QM5_20032_macro0830-brk/QM5_20032_macro0830-brk.mq5",
+      "strategy_timeframe": "M5",
+      "bar_gate_timeframe": "M5",
+      "card_binding": {
+        "ea_id": 20032,
+        "slug": "macro0830-brk",
+        "timeframe": "M5",
+        "variant_id": "MACRO0830_BREAKOUT_BASELINE",
+        "status": "DRAFT",
+        "execution_contract_status": "DRAFT"
+      },
+      "runtime_binding": {
+        "qm_ea_id": 20032,
+        "magic_slot_offset": 0,
+        "setfile": "framework/EAs/QM5_20032_macro0830-brk/sets/QM5_20032_macro0830-brk_GDAXI.DWX_M5_backtest.set",
+        "setfile_sha256": "1fced27d24e634cd8a6fd175c2b0abede40ea8ef4f84d46718563ca37e8f88f1",
+        "magic_registry": "framework/registry/magic_numbers.csv"
+      },
+      "data_dependencies": [
+        {
+          "dependency_id": "issuer_0830_event_calendar",
+          "type": "calendar",
+          "qualification_status": "BLOCKED",
+          "required_for": [
+            "ENTRY",
+            "EXIT",
+            "PROMOTION"
+          ],
+          "block_reason": "issuer_calendar_missing_nine_card_event_families_and_2025_coverage",
+          "source_ref": "QM5_20023_NFP_CPI_PPI_SUBSET_ONLY",
+          "calendar_policy": "EXACT_OFFICIAL_0830_ET_WHITELIST_FAIL_CLOSED",
+          "stale_behavior": "ENTRY_FAIL_CLOSED",
+          "path": "framework/EAs/QM5_20023_idx-macro-announce-day/data/QM5_20023_announcement_calendar_20150101_20250404.csv",
+          "sha256": "411ae4af3dbe261e373705660e28b81e7c5dfc7398f38516e07effff71cd73af",
+          "coverage_start": "2015-01-01",
+          "coverage_end": "2025-04-04"
+        },
+        {
+          "dependency_id": "card_to_runtime_symbol_alias_map",
+          "type": "artifact",
+          "qualification_status": "BLOCKED",
+          "required_for": [
+            "ENTRY",
+            "PROMOTION"
+          ],
+          "block_reason": "card_to_runtime_symbol_alias_map_not_qualified",
+          "path": "framework/registry/dwx_symbol_matrix.csv",
+          "sha256": "e7844d9a18db8723db2b31d839581d0cc348140cf883200524a1af26d465821d"
+        },
+        {
+          "dependency_id": "xetra_cash_session_calendar",
+          "type": "calendar",
+          "qualification_status": "PASS",
+          "required_for": [
+            "EXIT"
+          ],
+          "block_reason": null,
+          "source_ref": "QM_XETRA_CASH_CALENDAR",
+          "calendar_policy": "OFFICIAL_SESSION_EXCEPTIONS_FAIL_CLOSED",
+          "stale_behavior": "ENTRY_FAIL_CLOSED",
+          "path": "framework/calendars/xetra_cash/data/QM5_XETRA_cash_session_exceptions_20180101_20251231.csv",
+          "sha256": "c6ea69e62bdd309c7253b2db9b09cacb0116ff1001e0ce9cb7ace03bda024ff2"
+        }
+      ],
+      "friday_close": {
+        "enabled": true,
+        "hour_broker": 21,
+        "mode": "CARD_RULE",
+        "declaration": "CARD_V2_FRIDAY_21_SAFETY_FLATTEN",
+        "qualification_status": "PASS",
+        "card_evidence": "Card-v2 Framework execution overrides: broker-hour 21 safety flatten after the card-managed exit."
+      },
+      "calendar": {
+        "policy": "NONE"
+      },
+      "promotion": {
+        "status": "BLOCKED",
+        "block_reasons": [
+          "card_status_draft_not_approved",
+          "card_execution_contract_status_draft_not_approved",
+          "issuer_calendar_missing_nine_card_event_families_and_2025_coverage",
+          "card_to_runtime_symbol_alias_map_not_qualified"
+        ]
+      }
+    },
+    {
+      "ea_id": 20032,
+      "symbol": "SP500.DWX",
+      "timeframe": "M5",
+      "variant_id": "MACRO0830_BREAKOUT_BASELINE",
+      "slug": "macro0830-brk",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20032_macro0830-brk_card.md",
+      "source": "framework/EAs/QM5_20032_macro0830-brk/QM5_20032_macro0830-brk.mq5",
+      "strategy_timeframe": "M5",
+      "bar_gate_timeframe": "M5",
+      "card_binding": {
+        "ea_id": 20032,
+        "slug": "macro0830-brk",
+        "timeframe": "M5",
+        "variant_id": "MACRO0830_BREAKOUT_BASELINE",
+        "status": "DRAFT",
+        "execution_contract_status": "DRAFT"
+      },
+      "runtime_binding": {
+        "qm_ea_id": 20032,
+        "magic_slot_offset": 1,
+        "setfile": "framework/EAs/QM5_20032_macro0830-brk/sets/QM5_20032_macro0830-brk_SP500.DWX_M5_backtest.set",
+        "setfile_sha256": "aee78de4c7e2ef1332c7dee4784a6970c9d40fbe7ba86e5886bcf1ae78de72f5",
+        "magic_registry": "framework/registry/magic_numbers.csv"
+      },
+      "data_dependencies": [
+        {
+          "dependency_id": "issuer_0830_event_calendar",
+          "type": "calendar",
+          "qualification_status": "BLOCKED",
+          "required_for": [
+            "ENTRY",
+            "EXIT",
+            "PROMOTION"
+          ],
+          "block_reason": "issuer_calendar_missing_nine_card_event_families_and_2025_coverage",
+          "source_ref": "QM5_20023_NFP_CPI_PPI_SUBSET_ONLY",
+          "calendar_policy": "EXACT_OFFICIAL_0830_ET_WHITELIST_FAIL_CLOSED",
+          "stale_behavior": "ENTRY_FAIL_CLOSED",
+          "path": "framework/EAs/QM5_20023_idx-macro-announce-day/data/QM5_20023_announcement_calendar_20150101_20250404.csv",
+          "sha256": "411ae4af3dbe261e373705660e28b81e7c5dfc7398f38516e07effff71cd73af",
+          "coverage_start": "2015-01-01",
+          "coverage_end": "2025-04-04"
+        },
+        {
+          "dependency_id": "card_to_runtime_symbol_alias_map",
+          "type": "artifact",
+          "qualification_status": "BLOCKED",
+          "required_for": [
+            "ENTRY",
+            "PROMOTION"
+          ],
+          "block_reason": "card_to_runtime_symbol_alias_map_not_qualified",
+          "path": "framework/registry/dwx_symbol_matrix.csv",
+          "sha256": "e7844d9a18db8723db2b31d839581d0cc348140cf883200524a1af26d465821d"
+        }
+      ],
+      "friday_close": {
+        "enabled": true,
+        "hour_broker": 21,
+        "mode": "CARD_RULE",
+        "declaration": "CARD_V2_FRIDAY_21_SAFETY_FLATTEN",
+        "qualification_status": "PASS",
+        "card_evidence": "Card-v2 Framework execution overrides: broker-hour 21 safety flatten after the card-managed exit."
+      },
+      "calendar": {
+        "policy": "NONE"
+      },
+      "promotion": {
+        "status": "BLOCKED",
+        "block_reasons": [
+          "card_status_draft_not_approved",
+          "card_execution_contract_status_draft_not_approved",
+          "issuer_calendar_missing_nine_card_event_families_and_2025_coverage",
+          "card_to_runtime_symbol_alias_map_not_qualified",
+          "sp500_dwx_to_sp500_alias_full_requalification_required"
+        ]
+      },
+      "symbol_routing": {
+        "test_symbol": "SP500.DWX",
+        "live_order_symbol": "SP500",
+        "status": "BACKTEST_ALIAS_TO_ORDER_ROUTABLE_BROKER_SYMBOL",
+        "source_registry": "framework/registry/dwx_symbol_matrix.csv",
+        "evidence_ref": "docs/ops/evidence/DXZ_11132_SP500_DIRECT_ROUTABILITY_2026-07-16.md",
+        "automatic_symbol_inference": false,
+        "qualification_status": "REQUAL_REQUIRED",
+        "full_requalification_required": true
+      }
+    },
+    {
+      "ea_id": 20033,
+      "symbol": "SP500.DWX",
+      "timeframe": "M30",
+      "variant_id": "MOC_IMOM_BASELINE",
+      "slug": "moc-imom",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20033_moc-imom_card.md",
+      "source": "framework/EAs/QM5_20033_moc-imom/QM5_20033_moc-imom.mq5",
+      "strategy_timeframe": "M30",
+      "bar_gate_timeframe": "M30",
+      "card_binding": {
+        "ea_id": 20033,
+        "slug": "moc-imom",
+        "timeframe": "M30",
+        "variant_id": "MOC_IMOM_BASELINE",
+        "status": "DRAFT",
+        "execution_contract_status": "DRAFT"
+      },
+      "runtime_binding": {
+        "qm_ea_id": 20033,
+        "magic_slot_offset": 0,
+        "setfile": "framework/EAs/QM5_20033_moc-imom/sets/QM5_20033_moc-imom_SP500.DWX_M30_backtest.set",
+        "setfile_sha256": "b20ef208410f056c560aa04e65ad711afa0fd07877a1839ec1e9f666600c83fe",
+        "magic_registry": "framework/registry/magic_numbers.csv"
+      },
+      "data_dependencies": [
+        {
+          "dependency_id": "card_to_runtime_symbol_alias_map",
+          "type": "artifact",
+          "qualification_status": "BLOCKED",
+          "required_for": [
+            "ENTRY",
+            "PROMOTION"
+          ],
+          "block_reason": "card_to_runtime_symbol_alias_map_not_qualified",
+          "path": "framework/registry/dwx_symbol_matrix.csv",
+          "sha256": "e7844d9a18db8723db2b31d839581d0cc348140cf883200524a1af26d465821d"
+        },
+        {
+          "dependency_id": "cash_session_calendar",
+          "type": "calendar",
+          "qualification_status": "PASS",
+          "required_for": [
+            "ENTRY",
+            "EXIT"
+          ],
+          "block_reason": null,
+          "source_ref": "QM_US_CASH_CALENDAR",
+          "calendar_policy": "OFFICIAL_SESSION_EXCEPTIONS_FAIL_CLOSED",
+          "stale_behavior": "ENTRY_FAIL_CLOSED",
+          "path": "framework/calendars/us_cash/data/QM5_NYSE_US_cash_session_exceptions_20180101_20251231.csv",
+          "sha256": "c2e87e2f72b5a5fc09ae6632a2ddc47cfa3cfdd98af7deb67a42292bcaf5fd11"
+        }
+      ],
+      "friday_close": {
+        "enabled": true,
+        "hour_broker": 21,
+        "mode": "CARD_RULE",
+        "declaration": "CARD_V2_FRIDAY_21_SAFETY_FLATTEN",
+        "qualification_status": "PASS",
+        "card_evidence": "Card-v2 Framework execution overrides: broker-hour 21 safety flatten after the card-managed exit."
+      },
+      "calendar": {
+        "policy": "NONE"
+      },
+      "promotion": {
+        "status": "BLOCKED",
+        "block_reasons": [
+          "card_status_draft_not_approved",
+          "card_execution_contract_status_draft_not_approved",
+          "card_to_runtime_symbol_alias_map_not_qualified",
+          "unresolved_semantic_conflict_card_cost_R_le_0_10R_gate_absent_from_runtime",
+          "sp500_dwx_to_sp500_alias_full_requalification_required"
+        ]
+      },
+      "symbol_routing": {
+        "test_symbol": "SP500.DWX",
+        "live_order_symbol": "SP500",
+        "status": "BACKTEST_ALIAS_TO_ORDER_ROUTABLE_BROKER_SYMBOL",
+        "source_registry": "framework/registry/dwx_symbol_matrix.csv",
+        "evidence_ref": "docs/ops/evidence/DXZ_11132_SP500_DIRECT_ROUTABILITY_2026-07-16.md",
+        "automatic_symbol_inference": false,
+        "qualification_status": "REQUAL_REQUIRED",
+        "full_requalification_required": true
+      }
+    },
+    {
+      "ea_id": 20033,
+      "symbol": "NDX.DWX",
+      "timeframe": "M30",
+      "variant_id": "MOC_IMOM_BASELINE",
+      "slug": "moc-imom",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20033_moc-imom_card.md",
+      "source": "framework/EAs/QM5_20033_moc-imom/QM5_20033_moc-imom.mq5",
+      "strategy_timeframe": "M30",
+      "bar_gate_timeframe": "M30",
+      "card_binding": {
+        "ea_id": 20033,
+        "slug": "moc-imom",
+        "timeframe": "M30",
+        "variant_id": "MOC_IMOM_BASELINE",
+        "status": "DRAFT",
+        "execution_contract_status": "DRAFT"
+      },
+      "runtime_binding": {
+        "qm_ea_id": 20033,
+        "magic_slot_offset": 1,
+        "setfile": "framework/EAs/QM5_20033_moc-imom/sets/QM5_20033_moc-imom_NDX.DWX_M30_backtest.set",
+        "setfile_sha256": "cba932d3359c2b2775533cdc21d999a2c5e289cb9665eb6675bf7ec767012052",
+        "magic_registry": "framework/registry/magic_numbers.csv"
+      },
+      "data_dependencies": [
+        {
+          "dependency_id": "card_to_runtime_symbol_alias_map",
+          "type": "artifact",
+          "qualification_status": "BLOCKED",
+          "required_for": [
+            "ENTRY",
+            "PROMOTION"
+          ],
+          "block_reason": "card_to_runtime_symbol_alias_map_not_qualified",
+          "path": "framework/registry/dwx_symbol_matrix.csv",
+          "sha256": "e7844d9a18db8723db2b31d839581d0cc348140cf883200524a1af26d465821d"
+        },
+        {
+          "dependency_id": "cash_session_calendar",
+          "type": "calendar",
+          "qualification_status": "PASS",
+          "required_for": [
+            "ENTRY",
+            "EXIT"
+          ],
+          "block_reason": null,
+          "source_ref": "QM_US_CASH_CALENDAR",
+          "calendar_policy": "OFFICIAL_SESSION_EXCEPTIONS_FAIL_CLOSED",
+          "stale_behavior": "ENTRY_FAIL_CLOSED",
+          "path": "framework/calendars/us_cash/data/QM5_NYSE_US_cash_session_exceptions_20180101_20251231.csv",
+          "sha256": "c2e87e2f72b5a5fc09ae6632a2ddc47cfa3cfdd98af7deb67a42292bcaf5fd11"
+        }
+      ],
+      "friday_close": {
+        "enabled": true,
+        "hour_broker": 21,
+        "mode": "CARD_RULE",
+        "declaration": "CARD_V2_FRIDAY_21_SAFETY_FLATTEN",
+        "qualification_status": "PASS",
+        "card_evidence": "Card-v2 Framework execution overrides: broker-hour 21 safety flatten after the card-managed exit."
+      },
+      "calendar": {
+        "policy": "NONE"
+      },
+      "promotion": {
+        "status": "BLOCKED",
+        "block_reasons": [
+          "card_status_draft_not_approved",
+          "card_execution_contract_status_draft_not_approved",
+          "card_to_runtime_symbol_alias_map_not_qualified",
+          "unresolved_semantic_conflict_card_cost_R_le_0_10R_gate_absent_from_runtime"
+        ]
+      }
+    },
+    {
+      "ea_id": 20033,
+      "symbol": "WS30.DWX",
+      "timeframe": "M30",
+      "variant_id": "MOC_IMOM_BASELINE",
+      "slug": "moc-imom",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20033_moc-imom_card.md",
+      "source": "framework/EAs/QM5_20033_moc-imom/QM5_20033_moc-imom.mq5",
+      "strategy_timeframe": "M30",
+      "bar_gate_timeframe": "M30",
+      "card_binding": {
+        "ea_id": 20033,
+        "slug": "moc-imom",
+        "timeframe": "M30",
+        "variant_id": "MOC_IMOM_BASELINE",
+        "status": "DRAFT",
+        "execution_contract_status": "DRAFT"
+      },
+      "runtime_binding": {
+        "qm_ea_id": 20033,
+        "magic_slot_offset": 2,
+        "setfile": "framework/EAs/QM5_20033_moc-imom/sets/QM5_20033_moc-imom_WS30.DWX_M30_backtest.set",
+        "setfile_sha256": "73ab27d0f392477621ac9c75dc9465cd03dcb2d83d95d992945d0a48e07dd1f6",
+        "magic_registry": "framework/registry/magic_numbers.csv"
+      },
+      "data_dependencies": [
+        {
+          "dependency_id": "card_to_runtime_symbol_alias_map",
+          "type": "artifact",
+          "qualification_status": "BLOCKED",
+          "required_for": [
+            "ENTRY",
+            "PROMOTION"
+          ],
+          "block_reason": "card_to_runtime_symbol_alias_map_not_qualified",
+          "path": "framework/registry/dwx_symbol_matrix.csv",
+          "sha256": "e7844d9a18db8723db2b31d839581d0cc348140cf883200524a1af26d465821d"
+        },
+        {
+          "dependency_id": "cash_session_calendar",
+          "type": "calendar",
+          "qualification_status": "PASS",
+          "required_for": [
+            "ENTRY",
+            "EXIT"
+          ],
+          "block_reason": null,
+          "source_ref": "QM_US_CASH_CALENDAR",
+          "calendar_policy": "OFFICIAL_SESSION_EXCEPTIONS_FAIL_CLOSED",
+          "stale_behavior": "ENTRY_FAIL_CLOSED",
+          "path": "framework/calendars/us_cash/data/QM5_NYSE_US_cash_session_exceptions_20180101_20251231.csv",
+          "sha256": "c2e87e2f72b5a5fc09ae6632a2ddc47cfa3cfdd98af7deb67a42292bcaf5fd11"
+        }
+      ],
+      "friday_close": {
+        "enabled": true,
+        "hour_broker": 21,
+        "mode": "CARD_RULE",
+        "declaration": "CARD_V2_FRIDAY_21_SAFETY_FLATTEN",
+        "qualification_status": "PASS",
+        "card_evidence": "Card-v2 Framework execution overrides: broker-hour 21 safety flatten after the card-managed exit."
+      },
+      "calendar": {
+        "policy": "NONE"
+      },
+      "promotion": {
+        "status": "BLOCKED",
+        "block_reasons": [
+          "card_status_draft_not_approved",
+          "card_execution_contract_status_draft_not_approved",
+          "card_to_runtime_symbol_alias_map_not_qualified",
+          "unresolved_semantic_conflict_card_cost_R_le_0_10R_gate_absent_from_runtime"
+        ]
+      }
+    },
+    {
+      "ea_id": 20033,
+      "symbol": "GDAXI.DWX",
+      "timeframe": "M30",
+      "variant_id": "MOC_IMOM_BASELINE",
+      "slug": "moc-imom",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20033_moc-imom_card.md",
+      "source": "framework/EAs/QM5_20033_moc-imom/QM5_20033_moc-imom.mq5",
+      "strategy_timeframe": "M30",
+      "bar_gate_timeframe": "M30",
+      "card_binding": {
+        "ea_id": 20033,
+        "slug": "moc-imom",
+        "timeframe": "M30",
+        "variant_id": "MOC_IMOM_BASELINE",
+        "status": "DRAFT",
+        "execution_contract_status": "DRAFT"
+      },
+      "runtime_binding": {
+        "qm_ea_id": 20033,
+        "magic_slot_offset": 3,
+        "setfile": "framework/EAs/QM5_20033_moc-imom/sets/QM5_20033_moc-imom_GDAXI.DWX_M30_backtest.set",
+        "setfile_sha256": "773e8905c11adbdfaaad618e6939af262656159ec6f89e9124a8a34fa9b72b7f",
+        "magic_registry": "framework/registry/magic_numbers.csv"
+      },
+      "data_dependencies": [
+        {
+          "dependency_id": "card_to_runtime_symbol_alias_map",
+          "type": "artifact",
+          "qualification_status": "BLOCKED",
+          "required_for": [
+            "ENTRY",
+            "PROMOTION"
+          ],
+          "block_reason": "card_to_runtime_symbol_alias_map_not_qualified",
+          "path": "framework/registry/dwx_symbol_matrix.csv",
+          "sha256": "e7844d9a18db8723db2b31d839581d0cc348140cf883200524a1af26d465821d"
+        },
+        {
+          "dependency_id": "cash_session_calendar",
+          "type": "calendar",
+          "qualification_status": "PASS",
+          "required_for": [
+            "ENTRY",
+            "EXIT"
+          ],
+          "block_reason": null,
+          "source_ref": "QM_XETRA_CASH_CALENDAR",
+          "calendar_policy": "OFFICIAL_SESSION_EXCEPTIONS_FAIL_CLOSED",
+          "stale_behavior": "ENTRY_FAIL_CLOSED",
+          "path": "framework/calendars/xetra_cash/data/QM5_XETRA_cash_session_exceptions_20180101_20251231.csv",
+          "sha256": "c6ea69e62bdd309c7253b2db9b09cacb0116ff1001e0ce9cb7ace03bda024ff2"
+        }
+      ],
+      "friday_close": {
+        "enabled": true,
+        "hour_broker": 21,
+        "mode": "CARD_RULE",
+        "declaration": "CARD_V2_FRIDAY_21_SAFETY_FLATTEN",
+        "qualification_status": "PASS",
+        "card_evidence": "Card-v2 Framework execution overrides: broker-hour 21 safety flatten after the card-managed exit."
+      },
+      "calendar": {
+        "policy": "NONE"
+      },
+      "promotion": {
+        "status": "BLOCKED",
+        "block_reasons": [
+          "card_status_draft_not_approved",
+          "card_execution_contract_status_draft_not_approved",
+          "card_to_runtime_symbol_alias_map_not_qualified",
+          "unresolved_semantic_conflict_card_cost_R_le_0_10R_gate_absent_from_runtime"
+        ]
+      }
+    },
+    {
+      "ea_id": 20034,
+      "symbol": "EURUSD.DWX",
+      "timeframe": "M5",
+      "variant_id": "WMR_POSTFIX_BASELINE",
+      "slug": "wmr-postfix",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20034_wmr-postfix_card.md",
+      "source": "framework/EAs/QM5_20034_wmr-postfix/QM5_20034_wmr-postfix.mq5",
+      "strategy_timeframe": "M5",
+      "bar_gate_timeframe": "M5",
+      "card_binding": {
+        "ea_id": 20034,
+        "slug": "wmr-postfix",
+        "timeframe": "M5",
+        "variant_id": "WMR_POSTFIX_BASELINE",
+        "status": "DRAFT",
+        "execution_contract_status": "DRAFT"
+      },
+      "runtime_binding": {
+        "qm_ea_id": 20034,
+        "magic_slot_offset": 0,
+        "setfile": "framework/EAs/QM5_20034_wmr-postfix/sets/QM5_20034_wmr-postfix_EURUSD.DWX_M5_backtest.set",
+        "setfile_sha256": "b0fcbf80a7ed87e14bc49a152b2a715fa6df0503d2cb92989b4eb79ffd0952b8",
+        "magic_registry": "framework/registry/magic_numbers.csv"
+      },
+      "data_dependencies": [
+        {
+          "dependency_id": "wmr_1600_service_calendar",
+          "type": "calendar",
+          "qualification_status": "BLOCKED",
+          "required_for": [
+            "ENTRY",
+            "EXIT",
+            "PROMOTION"
+          ],
+          "block_reason": "wmr_calendar_missing_2018_2024_card_coverage",
+          "source_ref": "WM_REUTERS_1600_SERVICE_EXCEPTIONS",
+          "calendar_policy": "OFFICIAL_FIX_SERVICE_EXCEPTIONS_FAIL_CLOSED",
+          "stale_behavior": "ENTRY_FAIL_CLOSED",
+          "path": "framework/calendars/london/data/QM5_WMR_1600_London_service_exceptions_20250101_20251231.csv",
+          "sha256": "544f347a39e82e1b4ef3354d16110591a76a7c6cce70a7f599dca886706006f2",
+          "coverage_start": "2025-01-01",
+          "coverage_end": "2025-12-31"
+        }
+      ],
+      "friday_close": {
+        "enabled": true,
+        "hour_broker": 21,
+        "mode": "CARD_RULE",
+        "declaration": "CARD_V2_FRIDAY_21_SAFETY_FLATTEN",
+        "qualification_status": "PASS",
+        "card_evidence": "Card-v2 Framework execution overrides: broker-hour 21 safety flatten after the card-managed exit."
+      },
+      "calendar": {
+        "policy": "NONE"
+      },
+      "promotion": {
+        "status": "BLOCKED",
+        "block_reasons": [
+          "card_status_draft_not_approved",
+          "card_execution_contract_status_draft_not_approved",
+          "wmr_calendar_missing_2018_2024_card_coverage",
+          "unresolved_semantic_conflict_card_cost_R_le_0_10R_gate_absent_from_runtime"
+        ]
+      }
+    },
+    {
+      "ea_id": 20034,
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "M5",
+      "variant_id": "WMR_POSTFIX_BASELINE",
+      "slug": "wmr-postfix",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20034_wmr-postfix_card.md",
+      "source": "framework/EAs/QM5_20034_wmr-postfix/QM5_20034_wmr-postfix.mq5",
+      "strategy_timeframe": "M5",
+      "bar_gate_timeframe": "M5",
+      "card_binding": {
+        "ea_id": 20034,
+        "slug": "wmr-postfix",
+        "timeframe": "M5",
+        "variant_id": "WMR_POSTFIX_BASELINE",
+        "status": "DRAFT",
+        "execution_contract_status": "DRAFT"
+      },
+      "runtime_binding": {
+        "qm_ea_id": 20034,
+        "magic_slot_offset": 1,
+        "setfile": "framework/EAs/QM5_20034_wmr-postfix/sets/QM5_20034_wmr-postfix_GBPUSD.DWX_M5_backtest.set",
+        "setfile_sha256": "e58a8b36b4df9cf3114f1677c33c0cea070e536b642042b19f495b5805b0986d",
+        "magic_registry": "framework/registry/magic_numbers.csv"
+      },
+      "data_dependencies": [
+        {
+          "dependency_id": "wmr_1600_service_calendar",
+          "type": "calendar",
+          "qualification_status": "BLOCKED",
+          "required_for": [
+            "ENTRY",
+            "EXIT",
+            "PROMOTION"
+          ],
+          "block_reason": "wmr_calendar_missing_2018_2024_card_coverage",
+          "source_ref": "WM_REUTERS_1600_SERVICE_EXCEPTIONS",
+          "calendar_policy": "OFFICIAL_FIX_SERVICE_EXCEPTIONS_FAIL_CLOSED",
+          "stale_behavior": "ENTRY_FAIL_CLOSED",
+          "path": "framework/calendars/london/data/QM5_WMR_1600_London_service_exceptions_20250101_20251231.csv",
+          "sha256": "544f347a39e82e1b4ef3354d16110591a76a7c6cce70a7f599dca886706006f2",
+          "coverage_start": "2025-01-01",
+          "coverage_end": "2025-12-31"
+        }
+      ],
+      "friday_close": {
+        "enabled": true,
+        "hour_broker": 21,
+        "mode": "CARD_RULE",
+        "declaration": "CARD_V2_FRIDAY_21_SAFETY_FLATTEN",
+        "qualification_status": "PASS",
+        "card_evidence": "Card-v2 Framework execution overrides: broker-hour 21 safety flatten after the card-managed exit."
+      },
+      "calendar": {
+        "policy": "NONE"
+      },
+      "promotion": {
+        "status": "BLOCKED",
+        "block_reasons": [
+          "card_status_draft_not_approved",
+          "card_execution_contract_status_draft_not_approved",
+          "wmr_calendar_missing_2018_2024_card_coverage",
+          "unresolved_semantic_conflict_card_cost_R_le_0_10R_gate_absent_from_runtime"
+        ]
+      }
+    },
+    {
+      "ea_id": 20037,
+      "symbol": "XAUUSD.DWX",
+      "timeframe": "M5",
+      "variant_id": "LBMA_PM_BRK_BASELINE",
+      "slug": "lbma-pm-brk",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20037_lbma-pm-brk_card.md",
+      "source": "framework/EAs/QM5_20037_lbma-pm-brk/QM5_20037_lbma-pm-brk.mq5",
+      "strategy_timeframe": "M5",
+      "bar_gate_timeframe": "M5",
+      "card_binding": {
+        "ea_id": 20037,
+        "slug": "lbma-pm-brk",
+        "timeframe": "M5",
+        "variant_id": "LBMA_PM_BRK_BASELINE",
+        "status": "DRAFT",
+        "execution_contract_status": "DRAFT"
+      },
+      "runtime_binding": {
+        "qm_ea_id": 20037,
+        "magic_slot_offset": 0,
+        "setfile": "framework/EAs/QM5_20037_lbma-pm-brk/sets/QM5_20037_lbma-pm-brk_XAUUSD.DWX_M5_backtest.set",
+        "setfile_sha256": "f498ad5395881efa2d034cc5674fa0a687274e9aee1a238f30a916ce46f1043f",
+        "magic_registry": "framework/registry/magic_numbers.csv"
+      },
+      "data_dependencies": [
+        {
+          "dependency_id": "lbma_gold_pm_auction_calendar",
+          "type": "calendar",
+          "qualification_status": "BLOCKED",
+          "required_for": [
+            "ENTRY",
+            "EXIT",
+            "PROMOTION"
+          ],
+          "block_reason": "lbma_calendar_missing_2018_2019_and_actual_occurrence_ledger",
+          "source_ref": "ICE_IBA_LBMA_GOLD_PM_SCHEDULE_PARTIAL_BLOCKED",
+          "calendar_policy": "PLANNED_SCHEDULE_PLUS_ACTUAL_OCCURRENCE_FAIL_CLOSED",
+          "stale_behavior": "ENTRY_FAIL_CLOSED",
+          "path": "framework/calendars/lbma_gold_pm/data/QM5_LBMA_Gold_PM_schedule_20200101_20251231.csv",
+          "sha256": "b71f6a2fc04565a3d7aed997b8876b7ba8b5d0b913383b4340814e56db527d94",
+          "coverage_start": "2020-01-01",
+          "coverage_end": "2025-12-31"
+        }
+      ],
+      "friday_close": {
+        "enabled": true,
+        "hour_broker": 21,
+        "mode": "CARD_RULE",
+        "declaration": "CARD_V2_FRIDAY_21_SAFETY_FLATTEN",
+        "qualification_status": "PASS",
+        "card_evidence": "Card-v2 Framework execution overrides: broker-hour 21 safety flatten after the card-managed exit."
+      },
+      "calendar": {
+        "policy": "NONE"
+      },
+      "promotion": {
+        "status": "BLOCKED",
+        "block_reasons": [
+          "card_status_draft_not_approved",
+          "card_execution_contract_status_draft_not_approved",
+          "lbma_calendar_missing_2018_2019_and_actual_occurrence_ledger",
+          "unresolved_semantic_conflict_card_cost_R_le_0_10R_gate_absent_from_runtime"
+        ]
+      }
+    },
+    {
+      "ea_id": 20038,
+      "symbol": "SP500.DWX",
+      "timeframe": "M5",
+      "variant_id": "VWAP2S_REVERT_BASELINE",
+      "slug": "vwap2s-revert",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20038_vwap2s-revert_card.md",
+      "source": "framework/EAs/QM5_20038_vwap2s-revert/QM5_20038_vwap2s-revert.mq5",
+      "strategy_timeframe": "M5",
+      "bar_gate_timeframe": "M5",
+      "card_binding": {
+        "ea_id": 20038,
+        "slug": "vwap2s-revert",
+        "timeframe": "M5",
+        "variant_id": "VWAP2S_REVERT_BASELINE",
+        "status": "DRAFT",
+        "execution_contract_status": "DRAFT"
+      },
+      "runtime_binding": {
+        "qm_ea_id": 20038,
+        "magic_slot_offset": 0,
+        "setfile": "framework/EAs/QM5_20038_vwap2s-revert/sets/QM5_20038_vwap2s-revert_SP500.DWX_M5_backtest.set",
+        "setfile_sha256": "c6ca202f1382356915ec866f30e55506a20b447265092ec36ef0dc644e93d4f1",
+        "magic_registry": "framework/registry/magic_numbers.csv"
+      },
+      "data_dependencies": [
+        {
+          "dependency_id": "dev_side_guard",
+          "type": "artifact",
+          "qualification_status": "BLOCKED",
+          "required_for": [
+            "ENTRY",
+            "PROMOTION"
+          ],
+          "block_reason": "hash_bound_dev_side_guard_artifact_missing",
+          "path": "framework/EAs/QM5_20038_vwap2s-revert/data/dev_side_guard.csv",
+          "sha256": null
+        },
+        {
+          "dependency_id": "us_cash_session_calendar",
+          "type": "calendar",
+          "qualification_status": "PASS",
+          "required_for": [
+            "ENTRY",
+            "EXIT"
+          ],
+          "block_reason": null,
+          "source_ref": "QM_US_CASH_CALENDAR",
+          "calendar_policy": "OFFICIAL_SESSION_EXCEPTIONS_FAIL_CLOSED",
+          "stale_behavior": "ENTRY_FAIL_CLOSED",
+          "path": "framework/calendars/us_cash/data/QM5_NYSE_US_cash_session_exceptions_20180101_20251231.csv",
+          "sha256": "c2e87e2f72b5a5fc09ae6632a2ddc47cfa3cfdd98af7deb67a42292bcaf5fd11"
+        }
+      ],
+      "friday_close": {
+        "enabled": true,
+        "hour_broker": 21,
+        "mode": "CARD_RULE",
+        "declaration": "CARD_V2_FRIDAY_21_SAFETY_FLATTEN",
+        "qualification_status": "PASS",
+        "card_evidence": "Card-v2 Framework execution overrides: broker-hour 21 safety flatten after the card-managed exit."
+      },
+      "calendar": {
+        "policy": "NONE"
+      },
+      "promotion": {
+        "status": "BLOCKED",
+        "block_reasons": [
+          "card_status_draft_not_approved",
+          "card_execution_contract_status_draft_not_approved",
+          "hash_bound_dev_side_guard_artifact_missing",
+          "unresolved_semantic_conflict_card_cost_R_le_0_10R_gate_absent_from_runtime",
+          "sp500_dwx_to_sp500_alias_full_requalification_required"
+        ]
+      },
+      "symbol_routing": {
+        "test_symbol": "SP500.DWX",
+        "live_order_symbol": "SP500",
+        "status": "BACKTEST_ALIAS_TO_ORDER_ROUTABLE_BROKER_SYMBOL",
+        "source_registry": "framework/registry/dwx_symbol_matrix.csv",
+        "evidence_ref": "docs/ops/evidence/DXZ_11132_SP500_DIRECT_ROUTABILITY_2026-07-16.md",
+        "automatic_symbol_inference": false,
+        "qualification_status": "REQUAL_REQUIRED",
+        "full_requalification_required": true
+      }
+    },
+    {
+      "ea_id": 20038,
+      "symbol": "XAUUSD.DWX",
+      "timeframe": "M5",
+      "variant_id": "VWAP2S_REVERT_BASELINE",
+      "slug": "vwap2s-revert",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20038_vwap2s-revert_card.md",
+      "source": "framework/EAs/QM5_20038_vwap2s-revert/QM5_20038_vwap2s-revert.mq5",
+      "strategy_timeframe": "M5",
+      "bar_gate_timeframe": "M5",
+      "card_binding": {
+        "ea_id": 20038,
+        "slug": "vwap2s-revert",
+        "timeframe": "M5",
+        "variant_id": "VWAP2S_REVERT_BASELINE",
+        "status": "DRAFT",
+        "execution_contract_status": "DRAFT"
+      },
+      "runtime_binding": {
+        "qm_ea_id": 20038,
+        "magic_slot_offset": 1,
+        "setfile": "framework/EAs/QM5_20038_vwap2s-revert/sets/QM5_20038_vwap2s-revert_XAUUSD.DWX_M5_backtest.set",
+        "setfile_sha256": "484e0256f1e39e42e5ef5fde13f7bf84802f16082fb5f35c31f769c5ae03cf4d",
+        "magic_registry": "framework/registry/magic_numbers.csv"
+      },
+      "data_dependencies": [
+        {
+          "dependency_id": "dev_side_guard",
+          "type": "artifact",
+          "qualification_status": "BLOCKED",
+          "required_for": [
+            "ENTRY",
+            "PROMOTION"
+          ],
+          "block_reason": "hash_bound_dev_side_guard_artifact_missing",
+          "path": "framework/EAs/QM5_20038_vwap2s-revert/data/dev_side_guard.csv",
+          "sha256": null
+        },
+        {
+          "dependency_id": "us_cash_session_calendar",
+          "type": "calendar",
+          "qualification_status": "PASS",
+          "required_for": [
+            "ENTRY",
+            "EXIT"
+          ],
+          "block_reason": null,
+          "source_ref": "QM_US_CASH_CALENDAR",
+          "calendar_policy": "OFFICIAL_SESSION_EXCEPTIONS_FAIL_CLOSED",
+          "stale_behavior": "ENTRY_FAIL_CLOSED",
+          "path": "framework/calendars/us_cash/data/QM5_NYSE_US_cash_session_exceptions_20180101_20251231.csv",
+          "sha256": "c2e87e2f72b5a5fc09ae6632a2ddc47cfa3cfdd98af7deb67a42292bcaf5fd11"
+        }
+      ],
+      "friday_close": {
+        "enabled": true,
+        "hour_broker": 21,
+        "mode": "CARD_RULE",
+        "declaration": "CARD_V2_FRIDAY_21_SAFETY_FLATTEN",
+        "qualification_status": "PASS",
+        "card_evidence": "Card-v2 Framework execution overrides: broker-hour 21 safety flatten after the card-managed exit."
+      },
+      "calendar": {
+        "policy": "NONE"
+      },
+      "promotion": {
+        "status": "BLOCKED",
+        "block_reasons": [
+          "card_status_draft_not_approved",
+          "card_execution_contract_status_draft_not_approved",
+          "hash_bound_dev_side_guard_artifact_missing",
+          "unresolved_semantic_conflict_card_cost_R_le_0_10R_gate_absent_from_runtime"
+        ]
+      }
+    },
+    {
+      "ea_id": 20039,
+      "symbol": "SP500.DWX",
+      "timeframe": "M5",
+      "variant_id": "ONR_MID_BRK_BASELINE",
+      "slug": "onr-mid-brk",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20039_onr-mid-brk_card.md",
+      "source": "framework/EAs/QM5_20039_onr-mid-brk/QM5_20039_onr-mid-brk.mq5",
+      "strategy_timeframe": "M5",
+      "bar_gate_timeframe": "M5",
+      "card_binding": {
+        "ea_id": 20039,
+        "slug": "onr-mid-brk",
+        "timeframe": "M5",
+        "variant_id": "ONR_MID_BRK_BASELINE",
+        "status": "DRAFT",
+        "execution_contract_status": "DRAFT"
+      },
+      "runtime_binding": {
+        "qm_ea_id": 20039,
+        "magic_slot_offset": 0,
+        "setfile": "framework/EAs/QM5_20039_onr-mid-brk/sets/QM5_20039_onr-mid-brk_SP500.DWX_M5_backtest.set",
+        "setfile_sha256": "9e2827b0d09fbeae0c4859b6d44772d4b3a2a1b9d85c5c0d1253cd002f4ff73c",
+        "magic_registry": "framework/registry/magic_numbers.csv"
+      },
+      "data_dependencies": [
+        {
+          "dependency_id": "us_cash_session_calendar",
+          "type": "calendar",
+          "qualification_status": "PASS",
+          "required_for": [
+            "ENTRY",
+            "EXIT"
+          ],
+          "block_reason": null,
+          "source_ref": "QM_US_CASH_CALENDAR",
+          "calendar_policy": "OFFICIAL_SESSION_EXCEPTIONS_FAIL_CLOSED",
+          "stale_behavior": "ENTRY_FAIL_CLOSED",
+          "path": "framework/calendars/us_cash/data/QM5_NYSE_US_cash_session_exceptions_20180101_20251231.csv",
+          "sha256": "c2e87e2f72b5a5fc09ae6632a2ddc47cfa3cfdd98af7deb67a42292bcaf5fd11"
+        }
+      ],
+      "friday_close": {
+        "enabled": true,
+        "hour_broker": 21,
+        "mode": "CARD_RULE",
+        "declaration": "CARD_V2_FRIDAY_21_SAFETY_FLATTEN",
+        "qualification_status": "PASS",
+        "card_evidence": "Card-v2 Framework execution overrides: broker-hour 21 safety flatten after the card-managed exit."
+      },
+      "calendar": {
+        "policy": "NONE"
+      },
+      "promotion": {
+        "status": "BLOCKED",
+        "block_reasons": [
+          "card_status_draft_not_approved",
+          "card_execution_contract_status_draft_not_approved",
+          "unresolved_semantic_conflict_card_cost_R_le_0_10R_gate_absent_from_runtime",
+          "sp500_dwx_to_sp500_alias_full_requalification_required"
+        ]
+      },
+      "symbol_routing": {
+        "test_symbol": "SP500.DWX",
+        "live_order_symbol": "SP500",
+        "status": "BACKTEST_ALIAS_TO_ORDER_ROUTABLE_BROKER_SYMBOL",
+        "source_registry": "framework/registry/dwx_symbol_matrix.csv",
+        "evidence_ref": "docs/ops/evidence/DXZ_11132_SP500_DIRECT_ROUTABILITY_2026-07-16.md",
+        "automatic_symbol_inference": false,
+        "qualification_status": "REQUAL_REQUIRED",
+        "full_requalification_required": true
+      }
+    },
+    {
+      "ea_id": 20039,
+      "symbol": "NDX.DWX",
+      "timeframe": "M5",
+      "variant_id": "ONR_MID_BRK_BASELINE",
+      "slug": "onr-mid-brk",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20039_onr-mid-brk_card.md",
+      "source": "framework/EAs/QM5_20039_onr-mid-brk/QM5_20039_onr-mid-brk.mq5",
+      "strategy_timeframe": "M5",
+      "bar_gate_timeframe": "M5",
+      "card_binding": {
+        "ea_id": 20039,
+        "slug": "onr-mid-brk",
+        "timeframe": "M5",
+        "variant_id": "ONR_MID_BRK_BASELINE",
+        "status": "DRAFT",
+        "execution_contract_status": "DRAFT"
+      },
+      "runtime_binding": {
+        "qm_ea_id": 20039,
+        "magic_slot_offset": 1,
+        "setfile": "framework/EAs/QM5_20039_onr-mid-brk/sets/QM5_20039_onr-mid-brk_NDX.DWX_M5_backtest.set",
+        "setfile_sha256": "319eacdd42002033928ff66a32340b4da4c0dc0a92cfeed033c37eb38be1e8ca",
+        "magic_registry": "framework/registry/magic_numbers.csv"
+      },
+      "data_dependencies": [
+        {
+          "dependency_id": "us_cash_session_calendar",
+          "type": "calendar",
+          "qualification_status": "PASS",
+          "required_for": [
+            "ENTRY",
+            "EXIT"
+          ],
+          "block_reason": null,
+          "source_ref": "QM_US_CASH_CALENDAR",
+          "calendar_policy": "OFFICIAL_SESSION_EXCEPTIONS_FAIL_CLOSED",
+          "stale_behavior": "ENTRY_FAIL_CLOSED",
+          "path": "framework/calendars/us_cash/data/QM5_NYSE_US_cash_session_exceptions_20180101_20251231.csv",
+          "sha256": "c2e87e2f72b5a5fc09ae6632a2ddc47cfa3cfdd98af7deb67a42292bcaf5fd11"
+        }
+      ],
+      "friday_close": {
+        "enabled": true,
+        "hour_broker": 21,
+        "mode": "CARD_RULE",
+        "declaration": "CARD_V2_FRIDAY_21_SAFETY_FLATTEN",
+        "qualification_status": "PASS",
+        "card_evidence": "Card-v2 Framework execution overrides: broker-hour 21 safety flatten after the card-managed exit."
+      },
+      "calendar": {
+        "policy": "NONE"
+      },
+      "promotion": {
+        "status": "BLOCKED",
+        "block_reasons": [
+          "card_status_draft_not_approved",
+          "card_execution_contract_status_draft_not_approved",
+          "unresolved_semantic_conflict_card_cost_R_le_0_10R_gate_absent_from_runtime"
+        ]
+      }
+    },
+    {
+      "ea_id": 20040,
+      "symbol": "WS30.DWX",
+      "timeframe": "M15",
+      "variant_id": "B3_RELVOL_BRK_BASELINE",
+      "slug": "b3-relvol-brk",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20040_b3-relvol-brk_card.md",
+      "source": "framework/EAs/QM5_20040_b3-relvol-brk/QM5_20040_b3-relvol-brk.mq5",
+      "strategy_timeframe": "M15",
+      "bar_gate_timeframe": "M15",
+      "card_binding": {
+        "ea_id": 20040,
+        "slug": "b3-relvol-brk",
+        "timeframe": "M15",
+        "variant_id": "B3_RELVOL_BRK_BASELINE",
+        "status": "DRAFT",
+        "execution_contract_status": "DRAFT"
+      },
+      "runtime_binding": {
+        "qm_ea_id": 20040,
+        "magic_slot_offset": 0,
+        "setfile": "framework/EAs/QM5_20040_b3-relvol-brk/sets/QM5_20040_b3-relvol-brk_WS30.DWX_M15_backtest.set",
+        "setfile_sha256": "41d779ee807a7cbfa6b5c31ce1fedc4679643d72bc28e619ccca867680153fef",
+        "magic_registry": "framework/registry/magic_numbers.csv"
+      },
+      "data_dependencies": [
+        {
+          "dependency_id": "us_cash_session_calendar",
+          "type": "calendar",
+          "qualification_status": "PASS",
+          "required_for": [
+            "ENTRY",
+            "EXIT"
+          ],
+          "block_reason": null,
+          "source_ref": "QM_US_CASH_CALENDAR",
+          "calendar_policy": "OFFICIAL_SESSION_EXCEPTIONS_FAIL_CLOSED",
+          "stale_behavior": "ENTRY_FAIL_CLOSED",
+          "path": "framework/calendars/us_cash/data/QM5_NYSE_US_cash_session_exceptions_20180101_20251231.csv",
+          "sha256": "c2e87e2f72b5a5fc09ae6632a2ddc47cfa3cfdd98af7deb67a42292bcaf5fd11"
+        }
+      ],
+      "friday_close": {
+        "enabled": true,
+        "hour_broker": 21,
+        "mode": "CARD_RULE",
+        "declaration": "CARD_V2_FRIDAY_21_SAFETY_FLATTEN",
+        "qualification_status": "PASS",
+        "card_evidence": "Card-v2 Framework execution overrides: broker-hour 21 safety flatten after the card-managed exit."
+      },
+      "calendar": {
+        "policy": "NONE"
+      },
+      "promotion": {
+        "status": "BLOCKED",
+        "block_reasons": [
+          "card_status_draft_not_approved",
+          "card_execution_contract_status_draft_not_approved",
+          "unresolved_semantic_conflict_card_cost_R_le_0_10R_gate_absent_from_runtime"
+        ]
+      }
+    },
+    {
+      "ea_id": 20040,
+      "symbol": "SP500.DWX",
+      "timeframe": "M15",
+      "variant_id": "B3_RELVOL_BRK_BASELINE",
+      "slug": "b3-relvol-brk",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20040_b3-relvol-brk_card.md",
+      "source": "framework/EAs/QM5_20040_b3-relvol-brk/QM5_20040_b3-relvol-brk.mq5",
+      "strategy_timeframe": "M15",
+      "bar_gate_timeframe": "M15",
+      "card_binding": {
+        "ea_id": 20040,
+        "slug": "b3-relvol-brk",
+        "timeframe": "M15",
+        "variant_id": "B3_RELVOL_BRK_BASELINE",
+        "status": "DRAFT",
+        "execution_contract_status": "DRAFT"
+      },
+      "runtime_binding": {
+        "qm_ea_id": 20040,
+        "magic_slot_offset": 1,
+        "setfile": "framework/EAs/QM5_20040_b3-relvol-brk/sets/QM5_20040_b3-relvol-brk_SP500.DWX_M15_backtest.set",
+        "setfile_sha256": "0d76c360dfd1fd4d9c8baaed528247fc73f70347d95d6b3ab65fc6ee85c8b169",
+        "magic_registry": "framework/registry/magic_numbers.csv"
+      },
+      "data_dependencies": [
+        {
+          "dependency_id": "us_cash_session_calendar",
+          "type": "calendar",
+          "qualification_status": "PASS",
+          "required_for": [
+            "ENTRY",
+            "EXIT"
+          ],
+          "block_reason": null,
+          "source_ref": "QM_US_CASH_CALENDAR",
+          "calendar_policy": "OFFICIAL_SESSION_EXCEPTIONS_FAIL_CLOSED",
+          "stale_behavior": "ENTRY_FAIL_CLOSED",
+          "path": "framework/calendars/us_cash/data/QM5_NYSE_US_cash_session_exceptions_20180101_20251231.csv",
+          "sha256": "c2e87e2f72b5a5fc09ae6632a2ddc47cfa3cfdd98af7deb67a42292bcaf5fd11"
+        }
+      ],
+      "friday_close": {
+        "enabled": true,
+        "hour_broker": 21,
+        "mode": "CARD_RULE",
+        "declaration": "CARD_V2_FRIDAY_21_SAFETY_FLATTEN",
+        "qualification_status": "PASS",
+        "card_evidence": "Card-v2 Framework execution overrides: broker-hour 21 safety flatten after the card-managed exit."
+      },
+      "calendar": {
+        "policy": "NONE"
+      },
+      "promotion": {
+        "status": "BLOCKED",
+        "block_reasons": [
+          "card_status_draft_not_approved",
+          "card_execution_contract_status_draft_not_approved",
+          "unresolved_semantic_conflict_card_cost_R_le_0_10R_gate_absent_from_runtime",
+          "sp500_dwx_to_sp500_alias_full_requalification_required"
+        ]
+      },
+      "symbol_routing": {
+        "test_symbol": "SP500.DWX",
+        "live_order_symbol": "SP500",
+        "status": "BACKTEST_ALIAS_TO_ORDER_ROUTABLE_BROKER_SYMBOL",
+        "source_registry": "framework/registry/dwx_symbol_matrix.csv",
+        "evidence_ref": "docs/ops/evidence/DXZ_11132_SP500_DIRECT_ROUTABILITY_2026-07-16.md",
+        "automatic_symbol_inference": false,
+        "qualification_status": "REQUAL_REQUIRED",
+        "full_requalification_required": true
+      }
+    },
+    {
+      "ea_id": 20040,
+      "symbol": "NDX.DWX",
+      "timeframe": "M15",
+      "variant_id": "B3_RELVOL_BRK_BASELINE",
+      "slug": "b3-relvol-brk",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20040_b3-relvol-brk_card.md",
+      "source": "framework/EAs/QM5_20040_b3-relvol-brk/QM5_20040_b3-relvol-brk.mq5",
+      "strategy_timeframe": "M15",
+      "bar_gate_timeframe": "M15",
+      "card_binding": {
+        "ea_id": 20040,
+        "slug": "b3-relvol-brk",
+        "timeframe": "M15",
+        "variant_id": "B3_RELVOL_BRK_BASELINE",
+        "status": "DRAFT",
+        "execution_contract_status": "DRAFT"
+      },
+      "runtime_binding": {
+        "qm_ea_id": 20040,
+        "magic_slot_offset": 2,
+        "setfile": "framework/EAs/QM5_20040_b3-relvol-brk/sets/QM5_20040_b3-relvol-brk_NDX.DWX_M15_backtest.set",
+        "setfile_sha256": "d4c5245e261d372b7be99314acaabeec6e68349c9436159044d5caba9e4c55e8",
+        "magic_registry": "framework/registry/magic_numbers.csv"
+      },
+      "data_dependencies": [
+        {
+          "dependency_id": "us_cash_session_calendar",
+          "type": "calendar",
+          "qualification_status": "PASS",
+          "required_for": [
+            "ENTRY",
+            "EXIT"
+          ],
+          "block_reason": null,
+          "source_ref": "QM_US_CASH_CALENDAR",
+          "calendar_policy": "OFFICIAL_SESSION_EXCEPTIONS_FAIL_CLOSED",
+          "stale_behavior": "ENTRY_FAIL_CLOSED",
+          "path": "framework/calendars/us_cash/data/QM5_NYSE_US_cash_session_exceptions_20180101_20251231.csv",
+          "sha256": "c2e87e2f72b5a5fc09ae6632a2ddc47cfa3cfdd98af7deb67a42292bcaf5fd11"
+        }
+      ],
+      "friday_close": {
+        "enabled": true,
+        "hour_broker": 21,
+        "mode": "CARD_RULE",
+        "declaration": "CARD_V2_FRIDAY_21_SAFETY_FLATTEN",
+        "qualification_status": "PASS",
+        "card_evidence": "Card-v2 Framework execution overrides: broker-hour 21 safety flatten after the card-managed exit."
+      },
+      "calendar": {
+        "policy": "NONE"
+      },
+      "promotion": {
+        "status": "BLOCKED",
+        "block_reasons": [
+          "card_status_draft_not_approved",
+          "card_execution_contract_status_draft_not_approved",
+          "unresolved_semantic_conflict_card_cost_R_le_0_10R_gate_absent_from_runtime"
+        ]
+      }
+    },
+    {
+      "ea_id": 20041,
+      "symbol": "GDAXI.DWX",
+      "timeframe": "M15",
+      "variant_id": "POSTCLOSE_CONT_BASELINE",
+      "slug": "postclose-cont",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20041_postclose-cont_card.md",
+      "source": "framework/EAs/QM5_20041_postclose-cont/QM5_20041_postclose-cont.mq5",
+      "strategy_timeframe": "M15",
+      "bar_gate_timeframe": "M15",
+      "card_binding": {
+        "ea_id": 20041,
+        "slug": "postclose-cont",
+        "timeframe": "M15",
+        "variant_id": "POSTCLOSE_CONT_BASELINE",
+        "status": "DRAFT",
+        "execution_contract_status": "DRAFT"
+      },
+      "runtime_binding": {
+        "qm_ea_id": 20041,
+        "magic_slot_offset": 0,
+        "setfile": "framework/EAs/QM5_20041_postclose-cont/sets/QM5_20041_postclose-cont_GDAXI.DWX_M15_backtest.set",
+        "setfile_sha256": "8d51e1c742fcc628ace12f1664e62739515a6a25fac7ddaa2fad0f83dfc0ba07",
+        "magic_registry": "framework/registry/magic_numbers.csv"
+      },
+      "data_dependencies": [
+        {
+          "dependency_id": "venue_cash_session_calendar",
+          "type": "calendar",
+          "qualification_status": "PASS",
+          "required_for": [
+            "ENTRY",
+            "EXIT"
+          ],
+          "block_reason": null,
+          "source_ref": "QM_XETRA_CASH_CALENDAR",
+          "calendar_policy": "OFFICIAL_SESSION_EXCEPTIONS_FAIL_CLOSED",
+          "stale_behavior": "ENTRY_FAIL_CLOSED",
+          "path": "framework/calendars/xetra_cash/data/QM5_XETRA_cash_session_exceptions_20180101_20251231.csv",
+          "sha256": "c6ea69e62bdd309c7253b2db9b09cacb0116ff1001e0ce9cb7ace03bda024ff2"
+        },
+        {
+          "dependency_id": "broker_symbol_session_metadata",
+          "type": "session_metadata",
+          "qualification_status": "BLOCKED",
+          "required_for": [
+            "ENTRY",
+            "EXIT",
+            "PROMOTION"
+          ],
+          "block_reason": "broker_symbol_session_metadata_missing",
+          "metadata_kind": "BROKER_SESSION",
+          "source_ref": "MISSING_BROKER_SYMBOL_SESSION_LEDGER"
+        },
+        {
+          "dependency_id": "daily_break_and_rollover_metadata",
+          "type": "session_metadata",
+          "qualification_status": "BLOCKED",
+          "required_for": [
+            "ENTRY",
+            "EXIT",
+            "PROMOTION"
+          ],
+          "block_reason": "daily_break_and_rollover_metadata_missing",
+          "metadata_kind": "ROLLOVER",
+          "source_ref": "MISSING_DAILY_BREAK_ROLLOVER_LEDGER"
+        },
+        {
+          "dependency_id": "financing_metadata",
+          "type": "session_metadata",
+          "qualification_status": "BLOCKED",
+          "required_for": [
+            "SIZING",
+            "PROMOTION"
+          ],
+          "block_reason": "financing_metadata_missing",
+          "metadata_kind": "FINANCING",
+          "source_ref": "MISSING_FINANCING_LEDGER"
+        }
+      ],
+      "friday_close": {
+        "enabled": true,
+        "hour_broker": 21,
+        "mode": "CARD_RULE",
+        "declaration": "CARD_V2_FRIDAY_21_SAFETY_FLATTEN",
+        "qualification_status": "PASS",
+        "card_evidence": "Card-v2 Framework execution overrides: broker-hour 21 safety flatten after the card-managed exit."
+      },
+      "calendar": {
+        "policy": "NONE"
+      },
+      "promotion": {
+        "status": "BLOCKED",
+        "block_reasons": [
+          "card_status_draft_not_approved",
+          "card_execution_contract_status_draft_not_approved",
+          "broker_symbol_session_metadata_missing",
+          "daily_break_and_rollover_metadata_missing",
+          "financing_metadata_missing",
+          "unresolved_semantic_conflict_card_cost_R_and_four_cost_gate_absent_from_runtime"
+        ]
+      }
+    },
+    {
+      "ea_id": 20041,
+      "symbol": "UK100.DWX",
+      "timeframe": "M15",
+      "variant_id": "POSTCLOSE_CONT_BASELINE",
+      "slug": "postclose-cont",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20041_postclose-cont_card.md",
+      "source": "framework/EAs/QM5_20041_postclose-cont/QM5_20041_postclose-cont.mq5",
+      "strategy_timeframe": "M15",
+      "bar_gate_timeframe": "M15",
+      "card_binding": {
+        "ea_id": 20041,
+        "slug": "postclose-cont",
+        "timeframe": "M15",
+        "variant_id": "POSTCLOSE_CONT_BASELINE",
+        "status": "DRAFT",
+        "execution_contract_status": "DRAFT"
+      },
+      "runtime_binding": {
+        "qm_ea_id": 20041,
+        "magic_slot_offset": 1,
+        "setfile": "framework/EAs/QM5_20041_postclose-cont/sets/QM5_20041_postclose-cont_UK100.DWX_M15_backtest.set",
+        "setfile_sha256": "a80385d911c519d286a171fbdab08bab22fd21758f3db706d4446df6e632d622",
+        "magic_registry": "framework/registry/magic_numbers.csv"
+      },
+      "data_dependencies": [
+        {
+          "dependency_id": "venue_cash_session_calendar",
+          "type": "calendar",
+          "qualification_status": "PASS",
+          "required_for": [
+            "ENTRY",
+            "EXIT"
+          ],
+          "block_reason": null,
+          "source_ref": "QM_LSE_CASH_CALENDAR",
+          "calendar_policy": "OFFICIAL_SESSION_EXCEPTIONS_FAIL_CLOSED",
+          "stale_behavior": "ENTRY_FAIL_CLOSED",
+          "path": "framework/calendars/london/data/QM5_LSE_cash_session_exceptions_20180101_20251231.csv",
+          "sha256": "166a391fbb59a49d42a363ff347286139725853cd9f70d30d8cd71a404dd7d8d"
+        },
+        {
+          "dependency_id": "broker_symbol_session_metadata",
+          "type": "session_metadata",
+          "qualification_status": "BLOCKED",
+          "required_for": [
+            "ENTRY",
+            "EXIT",
+            "PROMOTION"
+          ],
+          "block_reason": "broker_symbol_session_metadata_missing",
+          "metadata_kind": "BROKER_SESSION",
+          "source_ref": "MISSING_BROKER_SYMBOL_SESSION_LEDGER"
+        },
+        {
+          "dependency_id": "daily_break_and_rollover_metadata",
+          "type": "session_metadata",
+          "qualification_status": "BLOCKED",
+          "required_for": [
+            "ENTRY",
+            "EXIT",
+            "PROMOTION"
+          ],
+          "block_reason": "daily_break_and_rollover_metadata_missing",
+          "metadata_kind": "ROLLOVER",
+          "source_ref": "MISSING_DAILY_BREAK_ROLLOVER_LEDGER"
+        },
+        {
+          "dependency_id": "financing_metadata",
+          "type": "session_metadata",
+          "qualification_status": "BLOCKED",
+          "required_for": [
+            "SIZING",
+            "PROMOTION"
+          ],
+          "block_reason": "financing_metadata_missing",
+          "metadata_kind": "FINANCING",
+          "source_ref": "MISSING_FINANCING_LEDGER"
+        }
+      ],
+      "friday_close": {
+        "enabled": true,
+        "hour_broker": 21,
+        "mode": "CARD_RULE",
+        "declaration": "CARD_V2_FRIDAY_21_SAFETY_FLATTEN",
+        "qualification_status": "PASS",
+        "card_evidence": "Card-v2 Framework execution overrides: broker-hour 21 safety flatten after the card-managed exit."
+      },
+      "calendar": {
+        "policy": "NONE"
+      },
+      "promotion": {
+        "status": "BLOCKED",
+        "block_reasons": [
+          "card_status_draft_not_approved",
+          "card_execution_contract_status_draft_not_approved",
+          "broker_symbol_session_metadata_missing",
+          "daily_break_and_rollover_metadata_missing",
+          "financing_metadata_missing",
+          "unresolved_semantic_conflict_card_cost_R_and_four_cost_gate_absent_from_runtime"
+        ]
+      }
+    },
+    {
+      "ea_id": 20043,
+      "symbol": "NDX.DWX",
+      "timeframe": "M30",
+      "variant_id": "TPO_VA80_ROT_BASELINE",
+      "slug": "tpo-va80-rot",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20043_tpo-va80-rot_card.md",
+      "source": "framework/EAs/QM5_20043_tpo-va80-rot/QM5_20043_tpo-va80-rot.mq5",
+      "strategy_timeframe": "M30",
+      "bar_gate_timeframe": "M30",
+      "card_binding": {
+        "ea_id": 20043,
+        "slug": "tpo-va80-rot",
+        "timeframe": "M30",
+        "variant_id": "TPO_VA80_ROT_BASELINE",
+        "status": "DRAFT",
+        "execution_contract_status": "DRAFT"
+      },
+      "runtime_binding": {
+        "qm_ea_id": 20043,
+        "magic_slot_offset": 0,
+        "setfile": "framework/EAs/QM5_20043_tpo-va80-rot/sets/QM5_20043_tpo-va80-rot_NDX.DWX_M30_backtest.set",
+        "setfile_sha256": "96322ff23bef3328b904b3f6358b8c76e950faf6e9b4086c2a7c27e0e4963e4d",
+        "magic_registry": "framework/registry/magic_numbers.csv"
+      },
+      "data_dependencies": [
+        {
+          "dependency_id": "us_cash_session_calendar",
+          "type": "calendar",
+          "qualification_status": "PASS",
+          "required_for": [
+            "ENTRY",
+            "EXIT"
+          ],
+          "block_reason": null,
+          "source_ref": "QM_US_CASH_CALENDAR",
+          "calendar_policy": "OFFICIAL_SESSION_EXCEPTIONS_FAIL_CLOSED",
+          "stale_behavior": "ENTRY_FAIL_CLOSED",
+          "path": "framework/calendars/us_cash/data/QM5_NYSE_US_cash_session_exceptions_20180101_20251231.csv",
+          "sha256": "c2e87e2f72b5a5fc09ae6632a2ddc47cfa3cfdd98af7deb67a42292bcaf5fd11"
+        }
+      ],
+      "friday_close": {
+        "enabled": true,
+        "hour_broker": 21,
+        "mode": "CARD_RULE",
+        "declaration": "CARD_V2_FRIDAY_21_SAFETY_FLATTEN",
+        "qualification_status": "PASS",
+        "card_evidence": "Card-v2 Framework execution overrides: broker-hour 21 safety flatten after the card-managed exit."
+      },
+      "calendar": {
+        "policy": "NONE"
+      },
+      "promotion": {
+        "status": "BLOCKED",
+        "block_reasons": [
+          "card_status_draft_not_approved",
+          "card_execution_contract_status_draft_not_approved",
+          "unresolved_semantic_conflict_card_cost_R_le_0_10R_gate_absent_from_runtime"
+        ]
+      }
+    },
+    {
+      "ea_id": 20043,
+      "symbol": "WS30.DWX",
+      "timeframe": "M30",
+      "variant_id": "TPO_VA80_ROT_BASELINE",
+      "slug": "tpo-va80-rot",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20043_tpo-va80-rot_card.md",
+      "source": "framework/EAs/QM5_20043_tpo-va80-rot/QM5_20043_tpo-va80-rot.mq5",
+      "strategy_timeframe": "M30",
+      "bar_gate_timeframe": "M30",
+      "card_binding": {
+        "ea_id": 20043,
+        "slug": "tpo-va80-rot",
+        "timeframe": "M30",
+        "variant_id": "TPO_VA80_ROT_BASELINE",
+        "status": "DRAFT",
+        "execution_contract_status": "DRAFT"
+      },
+      "runtime_binding": {
+        "qm_ea_id": 20043,
+        "magic_slot_offset": 1,
+        "setfile": "framework/EAs/QM5_20043_tpo-va80-rot/sets/QM5_20043_tpo-va80-rot_WS30.DWX_M30_backtest.set",
+        "setfile_sha256": "b605200d6b52c553adf7e3cd50d1df5a7a23c77bf49939344b0fae9b4646993a",
+        "magic_registry": "framework/registry/magic_numbers.csv"
+      },
+      "data_dependencies": [
+        {
+          "dependency_id": "us_cash_session_calendar",
+          "type": "calendar",
+          "qualification_status": "PASS",
+          "required_for": [
+            "ENTRY",
+            "EXIT"
+          ],
+          "block_reason": null,
+          "source_ref": "QM_US_CASH_CALENDAR",
+          "calendar_policy": "OFFICIAL_SESSION_EXCEPTIONS_FAIL_CLOSED",
+          "stale_behavior": "ENTRY_FAIL_CLOSED",
+          "path": "framework/calendars/us_cash/data/QM5_NYSE_US_cash_session_exceptions_20180101_20251231.csv",
+          "sha256": "c2e87e2f72b5a5fc09ae6632a2ddc47cfa3cfdd98af7deb67a42292bcaf5fd11"
+        }
+      ],
+      "friday_close": {
+        "enabled": true,
+        "hour_broker": 21,
+        "mode": "CARD_RULE",
+        "declaration": "CARD_V2_FRIDAY_21_SAFETY_FLATTEN",
+        "qualification_status": "PASS",
+        "card_evidence": "Card-v2 Framework execution overrides: broker-hour 21 safety flatten after the card-managed exit."
+      },
+      "calendar": {
+        "policy": "NONE"
+      },
+      "promotion": {
+        "status": "BLOCKED",
+        "block_reasons": [
+          "card_status_draft_not_approved",
+          "card_execution_contract_status_draft_not_approved",
+          "unresolved_semantic_conflict_card_cost_R_le_0_10R_gate_absent_from_runtime"
+        ]
+      }
+    },
+    {
+      "ea_id": 20043,
+      "symbol": "SP500.DWX",
+      "timeframe": "M30",
+      "variant_id": "TPO_VA80_ROT_BASELINE",
+      "slug": "tpo-va80-rot",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20043_tpo-va80-rot_card.md",
+      "source": "framework/EAs/QM5_20043_tpo-va80-rot/QM5_20043_tpo-va80-rot.mq5",
+      "strategy_timeframe": "M30",
+      "bar_gate_timeframe": "M30",
+      "card_binding": {
+        "ea_id": 20043,
+        "slug": "tpo-va80-rot",
+        "timeframe": "M30",
+        "variant_id": "TPO_VA80_ROT_BASELINE",
+        "status": "DRAFT",
+        "execution_contract_status": "DRAFT"
+      },
+      "runtime_binding": {
+        "qm_ea_id": 20043,
+        "magic_slot_offset": 2,
+        "setfile": "framework/EAs/QM5_20043_tpo-va80-rot/sets/QM5_20043_tpo-va80-rot_SP500.DWX_M30_backtest.set",
+        "setfile_sha256": "43c40848bc874fbc08bf9d6702d25d8d7fc69b7f22f168badbe676bdaee50136",
+        "magic_registry": "framework/registry/magic_numbers.csv"
+      },
+      "data_dependencies": [
+        {
+          "dependency_id": "us_cash_session_calendar",
+          "type": "calendar",
+          "qualification_status": "PASS",
+          "required_for": [
+            "ENTRY",
+            "EXIT"
+          ],
+          "block_reason": null,
+          "source_ref": "QM_US_CASH_CALENDAR",
+          "calendar_policy": "OFFICIAL_SESSION_EXCEPTIONS_FAIL_CLOSED",
+          "stale_behavior": "ENTRY_FAIL_CLOSED",
+          "path": "framework/calendars/us_cash/data/QM5_NYSE_US_cash_session_exceptions_20180101_20251231.csv",
+          "sha256": "c2e87e2f72b5a5fc09ae6632a2ddc47cfa3cfdd98af7deb67a42292bcaf5fd11"
+        }
+      ],
+      "friday_close": {
+        "enabled": true,
+        "hour_broker": 21,
+        "mode": "CARD_RULE",
+        "declaration": "CARD_V2_FRIDAY_21_SAFETY_FLATTEN",
+        "qualification_status": "PASS",
+        "card_evidence": "Card-v2 Framework execution overrides: broker-hour 21 safety flatten after the card-managed exit."
+      },
+      "calendar": {
+        "policy": "NONE"
+      },
+      "promotion": {
+        "status": "BLOCKED",
+        "block_reasons": [
+          "card_status_draft_not_approved",
+          "card_execution_contract_status_draft_not_approved",
+          "unresolved_semantic_conflict_card_cost_R_le_0_10R_gate_absent_from_runtime",
+          "sp500_dwx_to_sp500_alias_full_requalification_required"
+        ]
+      },
+      "symbol_routing": {
+        "test_symbol": "SP500.DWX",
+        "live_order_symbol": "SP500",
+        "status": "BACKTEST_ALIAS_TO_ORDER_ROUTABLE_BROKER_SYMBOL",
+        "source_registry": "framework/registry/dwx_symbol_matrix.csv",
+        "evidence_ref": "docs/ops/evidence/DXZ_11132_SP500_DIRECT_ROUTABILITY_2026-07-16.md",
+        "automatic_symbol_inference": false,
+        "qualification_status": "REQUAL_REQUIRED",
+        "full_requalification_required": true
+      }
+    },
+    {
+      "ea_id": 20044,
+      "symbol": "SP500.DWX",
+      "timeframe": "M30",
+      "variant_id": "GAP_HILO_FADE_BASELINE",
+      "slug": "gap-hilo-fade",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20044_gap-hilo-fade_card.md",
+      "source": "framework/EAs/QM5_20044_gap-hilo-fade/QM5_20044_gap-hilo-fade.mq5",
+      "strategy_timeframe": "M30",
+      "bar_gate_timeframe": "M30",
+      "card_binding": {
+        "ea_id": 20044,
+        "slug": "gap-hilo-fade",
+        "timeframe": "M30",
+        "variant_id": "GAP_HILO_FADE_BASELINE",
+        "status": "DRAFT",
+        "execution_contract_status": "DRAFT"
+      },
+      "runtime_binding": {
+        "qm_ea_id": 20044,
+        "magic_slot_offset": 0,
+        "setfile": "framework/EAs/QM5_20044_gap-hilo-fade/sets/QM5_20044_gap-hilo-fade_SP500.DWX_M30_backtest.set",
+        "setfile_sha256": "ec2ed59476c69d3b1fc206117462c22bf5fdadde5a258ec28634d9b1ced08d6a",
+        "magic_registry": "framework/registry/magic_numbers.csv"
+      },
+      "data_dependencies": [
+        {
+          "dependency_id": "us_cash_session_calendar",
+          "type": "calendar",
+          "qualification_status": "PASS",
+          "required_for": [
+            "ENTRY",
+            "EXIT"
+          ],
+          "block_reason": null,
+          "source_ref": "QM_US_CASH_CALENDAR",
+          "calendar_policy": "OFFICIAL_SESSION_EXCEPTIONS_FAIL_CLOSED",
+          "stale_behavior": "ENTRY_FAIL_CLOSED",
+          "path": "framework/calendars/us_cash/data/QM5_NYSE_US_cash_session_exceptions_20180101_20251231.csv",
+          "sha256": "c2e87e2f72b5a5fc09ae6632a2ddc47cfa3cfdd98af7deb67a42292bcaf5fd11"
+        }
+      ],
+      "friday_close": {
+        "enabled": true,
+        "hour_broker": 21,
+        "mode": "CARD_RULE",
+        "declaration": "CARD_V2_FRIDAY_21_SAFETY_FLATTEN",
+        "qualification_status": "PASS",
+        "card_evidence": "Card-v2 Framework execution overrides: broker-hour 21 safety flatten after the card-managed exit."
+      },
+      "calendar": {
+        "policy": "NONE"
+      },
+      "promotion": {
+        "status": "BLOCKED",
+        "block_reasons": [
+          "card_status_draft_not_approved",
+          "card_execution_contract_status_draft_not_approved",
+          "unresolved_semantic_conflict_card_cost_R_le_0_10R_gate_absent_from_runtime",
+          "sp500_dwx_to_sp500_alias_full_requalification_required"
+        ]
+      },
+      "symbol_routing": {
+        "test_symbol": "SP500.DWX",
+        "live_order_symbol": "SP500",
+        "status": "BACKTEST_ALIAS_TO_ORDER_ROUTABLE_BROKER_SYMBOL",
+        "source_registry": "framework/registry/dwx_symbol_matrix.csv",
+        "evidence_ref": "docs/ops/evidence/DXZ_11132_SP500_DIRECT_ROUTABILITY_2026-07-16.md",
+        "automatic_symbol_inference": false,
+        "qualification_status": "REQUAL_REQUIRED",
+        "full_requalification_required": true
+      }
+    },
+    {
+      "ea_id": 20044,
+      "symbol": "WS30.DWX",
+      "timeframe": "M30",
+      "variant_id": "GAP_HILO_FADE_BASELINE",
+      "slug": "gap-hilo-fade",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20044_gap-hilo-fade_card.md",
+      "source": "framework/EAs/QM5_20044_gap-hilo-fade/QM5_20044_gap-hilo-fade.mq5",
+      "strategy_timeframe": "M30",
+      "bar_gate_timeframe": "M30",
+      "card_binding": {
+        "ea_id": 20044,
+        "slug": "gap-hilo-fade",
+        "timeframe": "M30",
+        "variant_id": "GAP_HILO_FADE_BASELINE",
+        "status": "DRAFT",
+        "execution_contract_status": "DRAFT"
+      },
+      "runtime_binding": {
+        "qm_ea_id": 20044,
+        "magic_slot_offset": 1,
+        "setfile": "framework/EAs/QM5_20044_gap-hilo-fade/sets/QM5_20044_gap-hilo-fade_WS30.DWX_M30_backtest.set",
+        "setfile_sha256": "9aa46d428de72025f33f313fbfdf480a8db1421f5d5bd62e8f788272642a9be8",
+        "magic_registry": "framework/registry/magic_numbers.csv"
+      },
+      "data_dependencies": [
+        {
+          "dependency_id": "us_cash_session_calendar",
+          "type": "calendar",
+          "qualification_status": "PASS",
+          "required_for": [
+            "ENTRY",
+            "EXIT"
+          ],
+          "block_reason": null,
+          "source_ref": "QM_US_CASH_CALENDAR",
+          "calendar_policy": "OFFICIAL_SESSION_EXCEPTIONS_FAIL_CLOSED",
+          "stale_behavior": "ENTRY_FAIL_CLOSED",
+          "path": "framework/calendars/us_cash/data/QM5_NYSE_US_cash_session_exceptions_20180101_20251231.csv",
+          "sha256": "c2e87e2f72b5a5fc09ae6632a2ddc47cfa3cfdd98af7deb67a42292bcaf5fd11"
+        }
+      ],
+      "friday_close": {
+        "enabled": true,
+        "hour_broker": 21,
+        "mode": "CARD_RULE",
+        "declaration": "CARD_V2_FRIDAY_21_SAFETY_FLATTEN",
+        "qualification_status": "PASS",
+        "card_evidence": "Card-v2 Framework execution overrides: broker-hour 21 safety flatten after the card-managed exit."
+      },
+      "calendar": {
+        "policy": "NONE"
+      },
+      "promotion": {
+        "status": "BLOCKED",
+        "block_reasons": [
+          "card_status_draft_not_approved",
+          "card_execution_contract_status_draft_not_approved",
+          "unresolved_semantic_conflict_card_cost_R_le_0_10R_gate_absent_from_runtime"
+        ]
+      }
+    },
+    {
+      "ea_id": 20045,
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "M15",
+      "variant_id": "LONDON_BOX_027_BASELINE",
+      "slug": "london-box",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20045_london-box_card.md",
+      "source": "framework/EAs/QM5_20045_london-box/QM5_20045_london-box.mq5",
+      "strategy_timeframe": "M15",
+      "bar_gate_timeframe": "M15",
+      "card_binding": {
+        "ea_id": 20045,
+        "slug": "london-box",
+        "timeframe": "M15",
+        "variant_id": "LONDON_BOX_027_BASELINE",
+        "status": "DRAFT",
+        "execution_contract_status": "DRAFT"
+      },
+      "runtime_binding": {
+        "qm_ea_id": 20045,
+        "magic_slot_offset": 0,
+        "setfile": "framework/EAs/QM5_20045_london-box/sets/QM5_20045_london-box_GBPUSD.DWX_M15_backtest.set",
+        "setfile_sha256": "75a9075ef1bdcd65754843e631b44c00e7f763cf7d2a5091c6caaeeed544b387",
+        "magic_registry": "framework/registry/magic_numbers.csv"
+      },
+      "data_dependencies": [
+        {
+          "dependency_id": "london_public_holiday_context",
+          "type": "calendar",
+          "qualification_status": "PASS",
+          "required_for": [
+            "ENTRY",
+            "EXIT"
+          ],
+          "block_reason": null,
+          "source_ref": "GOV_UK_ENGLAND_WALES_PUBLIC_HOLIDAYS_CONTEXT_ONLY",
+          "calendar_policy": "JURISDICTIONAL_CONTEXT_NO_FX_CLOSURE_INFERENCE",
+          "stale_behavior": "ENTRY_FAIL_CLOSED",
+          "path": "framework/calendars/london/data/QM5_GOVUK_England_Wales_public_holidays_20180101_20251231.csv",
+          "sha256": "8a54e3f2fb7437fded65e8db05b4317f7b2881abc0d3090efe23db1349fe1a75"
+        },
+        {
+          "dependency_id": "broker_fx_session_exceptions",
+          "type": "session_metadata",
+          "qualification_status": "BLOCKED",
+          "required_for": [
+            "ENTRY",
+            "EXIT",
+            "PROMOTION"
+          ],
+          "block_reason": "broker_fx_session_exception_calendar_missing",
+          "metadata_kind": "SESSION_EXCEPTION_CALENDAR",
+          "source_ref": "MISSING_BROKER_ROUTE_SESSION_LEDGER"
+        }
+      ],
+      "friday_close": {
+        "enabled": true,
+        "hour_broker": 21,
+        "mode": "CARD_RULE",
+        "declaration": "CARD_V2_FRIDAY_21_SAFETY_FLATTEN",
+        "qualification_status": "PASS",
+        "card_evidence": "Card-v2 Framework execution overrides: broker-hour 21 safety flatten after the card-managed exit."
+      },
+      "calendar": {
+        "policy": "NONE"
+      },
+      "promotion": {
+        "status": "BLOCKED",
+        "block_reasons": [
+          "card_status_draft_not_approved",
+          "card_execution_contract_status_draft_not_approved",
+          "broker_fx_session_exception_calendar_missing",
+          "unresolved_semantic_conflict_card_cost_R_and_four_cost_gate_absent_from_runtime"
+        ]
+      }
+    },
+    {
+      "ea_id": 20045,
+      "symbol": "EURGBP.DWX",
+      "timeframe": "M15",
+      "variant_id": "LONDON_BOX_027_BASELINE",
+      "slug": "london-box",
+      "card_ref": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20045_london-box_card.md",
+      "source": "framework/EAs/QM5_20045_london-box/QM5_20045_london-box.mq5",
+      "strategy_timeframe": "M15",
+      "bar_gate_timeframe": "M15",
+      "card_binding": {
+        "ea_id": 20045,
+        "slug": "london-box",
+        "timeframe": "M15",
+        "variant_id": "LONDON_BOX_027_BASELINE",
+        "status": "DRAFT",
+        "execution_contract_status": "DRAFT"
+      },
+      "runtime_binding": {
+        "qm_ea_id": 20045,
+        "magic_slot_offset": 1,
+        "setfile": "framework/EAs/QM5_20045_london-box/sets/QM5_20045_london-box_EURGBP.DWX_M15_backtest.set",
+        "setfile_sha256": "5efd06a68194f8f7ff05cd936cfe42f971b53abb235d7fecf71fde018fd42a8b",
+        "magic_registry": "framework/registry/magic_numbers.csv"
+      },
+      "data_dependencies": [
+        {
+          "dependency_id": "london_public_holiday_context",
+          "type": "calendar",
+          "qualification_status": "PASS",
+          "required_for": [
+            "ENTRY",
+            "EXIT"
+          ],
+          "block_reason": null,
+          "source_ref": "GOV_UK_ENGLAND_WALES_PUBLIC_HOLIDAYS_CONTEXT_ONLY",
+          "calendar_policy": "JURISDICTIONAL_CONTEXT_NO_FX_CLOSURE_INFERENCE",
+          "stale_behavior": "ENTRY_FAIL_CLOSED",
+          "path": "framework/calendars/london/data/QM5_GOVUK_England_Wales_public_holidays_20180101_20251231.csv",
+          "sha256": "8a54e3f2fb7437fded65e8db05b4317f7b2881abc0d3090efe23db1349fe1a75"
+        },
+        {
+          "dependency_id": "broker_fx_session_exceptions",
+          "type": "session_metadata",
+          "qualification_status": "BLOCKED",
+          "required_for": [
+            "ENTRY",
+            "EXIT",
+            "PROMOTION"
+          ],
+          "block_reason": "broker_fx_session_exception_calendar_missing",
+          "metadata_kind": "SESSION_EXCEPTION_CALENDAR",
+          "source_ref": "MISSING_BROKER_ROUTE_SESSION_LEDGER"
+        }
+      ],
+      "friday_close": {
+        "enabled": true,
+        "hour_broker": 21,
+        "mode": "CARD_RULE",
+        "declaration": "CARD_V2_FRIDAY_21_SAFETY_FLATTEN",
+        "qualification_status": "PASS",
+        "card_evidence": "Card-v2 Framework execution overrides: broker-hour 21 safety flatten after the card-managed exit."
+      },
+      "calendar": {
+        "policy": "NONE"
+      },
+      "promotion": {
+        "status": "BLOCKED",
+        "block_reasons": [
+          "card_status_draft_not_approved",
+          "card_execution_contract_status_draft_not_approved",
+          "broker_fx_session_exception_calendar_missing",
+          "unresolved_semantic_conflict_card_cost_R_and_four_cost_gate_absent_from_runtime"
+        ]
+      }
     }
   ]
 }

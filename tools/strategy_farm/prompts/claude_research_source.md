@@ -29,7 +29,7 @@ URI: `{{uri}}`
 - Do not switch to another source.
 - Do not code an EA.
 - Do not run backtests.
-- Do not create Paperclip issues.
+- Do not create external orchestration issues.
 - Do not use MQL5 Marketplace.
 - Reject or mark PENDING (per relaxed criteria 2026-05-15, see
   `C:/QM/repo/processes/qb_reputable_source_criteria.md`):

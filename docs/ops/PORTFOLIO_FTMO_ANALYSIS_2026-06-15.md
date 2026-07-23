@@ -1,6 +1,6 @@
 # Portfolio Buildability + FTMO Monte-Carlo — from existing backtests
 
-**Author:** Claude (CEO analysis) · **Date:** 2026-06-15 · **Data:** Q08 full-history
+**Author:** Claude (portfolio analysis) · **Date:** 2026-06-15 · **Data:** Q08 full-history
 trade streams (Common/Files/QM/q08_trades), Q07-depth survivors only.
 
 ## Portfolio (winning legs only — net>0, >=20 trades, FTMO-routable, no SP500)

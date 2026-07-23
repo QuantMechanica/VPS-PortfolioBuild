@@ -9,11 +9,24 @@ the new preventive tooling **once the VPS boots cleanly** into an interactive se
 ## Step 1 — Verify boot recovery
 
 1. Confirm autologon worked: you have an interactive Administrator desktop.
-2. Check T_Live is alive:
+2. Check **both** live terminals are alive on their exact paths:
    ```powershell
-   Get-Process -Name terminal64 -ErrorAction SilentlyContinue
+   Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" |
+     Where-Object { $_.ExecutablePath -in @(
+       'C:\QM\mt5\T_Live\MT5_Base\terminal64.exe',
+       'C:\Program Files\FTMO Global Markets MT5 Terminal\terminal64.exe'
+     ) } |
+     Select-Object ProcessId, SessionId, ExecutablePath
    ```
-   At least one `terminal64` process from `C:\QM\mt5\T_Live` should be present.
+   Expect exactly one DXZ and one FTMO process, both in the `qm-admin` session.
+   Then verify the unattended recovery state:
+   ```powershell
+   Get-Content 'D:\QM\reports\state\live_uptime_watchdog.json' -Raw
+   ```
+   Expect `dxz_running=true`, `ftmo_running=true`, `process_probe_ok=true`,
+   `session_placement_ok=true`, `session_supervisor_ready=true`, and
+   `session_supervisor_scheduler_owned=true`, `recovery_task_contract_ready=true`,
+   and `autologon_ready=true`.
 3. Check factory workers:
    ```powershell
    python C:\QM\repo\tools\strategy_farm\farmctl.py health
@@ -27,9 +40,29 @@ the new preventive tooling **once the VPS boots cleanly** into an interactive se
 
 ---
 
-## Step 2 — Install the hygiene + LSM tasks
+## Step 2 — Install live uptime + LSM tasks
 
 Open an **elevated** (Run as Administrator) PowerShell prompt:
+
+```powershell
+& "C:\QM\repo\tools\strategy_farm\install_live_uptime_tasks.ps1" -RunNow
+```
+
+This idempotently repairs the two logon-only live terminal tasks, the resident
+interactive session supervisor, and the minutely SYSTEM watchdog. It also verifies
+the SYSTEM-only Autologon LSA secret. It must complete without changing the two live
+PIDs. `QM_TSCon_Console_OnDisconnect` must remain `Disabled`.
+
+The supervisor ownership can be checked without starting anything:
+
+```powershell
+& "C:\QM\repo\tools\strategy_farm\Start_Live_SessionSupervisor.ps1" -ProbeOnly
+```
+
+Expect `scheduler_owned=true`; the helper resolves the current `qm-admin` session.
+
+Then install/repair the LSM probe and worker dedupe task. The historical hygiene
+definition is preserved but deliberately left disabled:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass
@@ -40,7 +73,7 @@ The `-RunLsmNow` flag fires the LSM probe immediately so you get confirmation it
 
 Expected output (last lines):
 ```
-Registered: QM_StrategyFarm_HygieneReboot (weekly Saturday 07:00:00 local, SYSTEM)
+Registered DISABLED: QM_StrategyFarm_HygieneReboot (legacy definition; no automatic reboot)
 Registered: QM_StrategyFarm_LsmHealthProbe (every 6h, SYSTEM)
 Registered: QM_StrategyFarm_WorkerDedupe (on-demand, qm-admin Interactive)
 Firing QM_StrategyFarm_LsmHealthProbe immediately (smoke run)...
@@ -64,7 +97,8 @@ Get-ScheduledTask -TaskName 'QM_StrategyFarm_LsmHealthProbe' | Select-Object Tas
 Get-ScheduledTask -TaskName 'QM_StrategyFarm_WorkerDedupe'   | Select-Object TaskName, State
 ```
 
-All three should show `State = Ready`.
+`QM_StrategyFarm_HygieneReboot` must show `State = Disabled`; the LSM and dedupe
+tasks should show `State = Ready`.
 
 Then verify the hardened watchdog cycles cleanly (new jsonl fields + heartbeat):
 
@@ -96,7 +130,7 @@ Note this reboot in the decisions log under `decisions/` as usual.
 
 ---
 
-## Kill switch (if needed)
+## Legacy hygiene kill switch (defence in depth)
 
 To suppress future hygiene reboots without unregistering the task:
 
@@ -104,15 +138,8 @@ To suppress future hygiene reboots without unregistering the task:
 New-Item -ItemType File -Force 'D:\QM\reports\state\HYGIENE_REBOOT_DISABLED.flag'
 ```
 
-To re-enable:
-
-```powershell
-Remove-Item 'D:\QM\reports\state\HYGIENE_REBOOT_DISABLED.flag' -Force
-```
-
-The `weekly_hygiene_reboot.ps1` script checks for this flag at Guard 3 on every run.
-The task remains registered and fires weekly, but exits 0 without rebooting while the
-flag is present.
+The task itself must remain disabled. Do not remove this flag or enable the task
+until the reboot path has been separately hardened and approved.
 
 ---
 
@@ -120,11 +147,18 @@ flag is present.
 
 | Task | Schedule | Principal | Script |
 |---|---|---|---|
-| QM_StrategyFarm_HygieneReboot | Weekly, Saturday 07:00 local | SYSTEM | `tools/strategy_farm/weekly_hygiene_reboot.ps1` |
+| QM_T_Live_AtLogon | qm-admin logon + 15s | qm-admin Interactive | `tools/strategy_farm/T_Live_ON.ps1` |
+| QM_FTMO_AtLogon | qm-admin logon + 30s | qm-admin Interactive | `tools/strategy_farm/FTMO_ON.ps1` |
+| QM_Live_MT5_SessionSupervisor | qm-admin logon + 45s, resident | qm-admin Interactive | `tools/strategy_farm/Live_MT5_SessionSupervisor.ps1` |
+| QM_T_Live_Watchdog | Every minute | SYSTEM | `tools/strategy_farm/T_Live_Watchdog.ps1` |
+| QM_StrategyFarm_HygieneReboot | **Disabled legacy definition** | SYSTEM | `tools/strategy_farm/weekly_hygiene_reboot.ps1` |
 | QM_StrategyFarm_LsmHealthProbe | Every 6 hours | SYSTEM | `tools/strategy_farm/lsm_health_probe.ps1` |
 | QM_StrategyFarm_WorkerDedupe | On-demand (watchdog-triggered) | qm-admin Interactive | `tools/strategy_farm/start_terminal_workers.py --dedupe` |
 
 State files written:
+- `D:\QM\reports\state\live_uptime_watchdog.json` — latest dual-live/session/recovery state
+- `D:\QM\reports\state\live_uptime_watchdog.jsonl` — transitions/actions plus 15-minute heartbeat
+- `D:\QM\reports\state\live_session_supervisor.json` — 10-second resident recovery heartbeat
 - `D:\QM\reports\state\hygiene_reboot_state.json` — timestamp + uptime of last hygiene reboot
 - `D:\QM\reports\state\hygiene_reboot.log` — guard evaluation log (append, UTC)
 - `D:\QM\reports\state\lsm_health.json` — latest probe result

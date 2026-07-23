@@ -11,7 +11,7 @@ used as the default factory executor while weekly quota is constrained.
 - Deep strategy critique and synthesis when the task explicitly needs `summary` or senior
   `review + strategy` reasoning.
 - Final review of complex architecture or operating-model changes before OWNER action.
-- High-signal board/CEO synthesis where a short written decision artifact is needed.
+- High-signal OWNER decision support where a short written analysis artifact is needed.
 - Selected EA review only when Codex review has already passed and the expected value of a
   second-opinion review is high.
 

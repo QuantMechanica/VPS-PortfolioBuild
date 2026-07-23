@@ -2,8 +2,8 @@
 
 Date: 2026-05-30
 
-Use this file when restarting an agent or doing a company audit. Paperclip is
-decommissioned. Do not use `C:\QM\paperclip` or old Paperclip dashboards as health
+Use this file when restarting an agent or doing a company audit. The retired
+orchestration stack is not a source of truth; do not use its old directory or dashboards as health
 signals.
 
 ## Current Runtime Model
@@ -45,8 +45,11 @@ These files can be useful as exported snapshots, but they are not sufficient for
 audit:
 
 - `public-data\public-snapshot.json`
-- `public-data\company-runtime.json`
 - `D:\QM\reports\state\pipeline_state.json`
+
+The former static `company-runtime` export was removed because it represented a
+retired agent hierarchy rather than current runtime state. Do not recreate it as a
+health source.
 
 If these mention `P2`, `P3`, `P3.5`, or old T6/T_Live assumptions, report them as stale
 or compatibility data and verify against live Qxx work-item evidence.

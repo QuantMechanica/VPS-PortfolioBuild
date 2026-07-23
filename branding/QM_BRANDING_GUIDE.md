@@ -1,7 +1,7 @@
 # QuantMechanica Brand Guide — V5 Application
 
 Created: 2026-04-26
-Owner: OWNER (brand authority), CTO (technical application), Documentation-KM (consistency)
+Owner: OWNER (brand authority); assigned workers handle technical application and consistency
 Source of truth for brand: laptop `G:\My Drive\QuantMechanica\ClaudeDesign_Upload\01_Brand_System\` (Brand Book HTML + Brand Guidelines docx + Logo files)
 Source of truth for code application: this file + `branding/brand_tokens.json`
 
@@ -167,7 +167,7 @@ Same rule. Card title is the EA's economic thesis, not its sales pitch.
 
 ### Public copy (when V5 produces any)
 
-`I run the V5 pipeline.` `I deploy after P10 PASS.` `I publish failures.` Never `we` even when describing automated pipeline behaviour — the operator is one person, Paperclip is the operator's tool.
+`I run the V5 pipeline.` `I deploy after P10 PASS.` `I publish failures.` Never `we` even when describing automated pipeline behaviour — the operator is one person and automation is tooling.
 
 ## 6. Application — Where The Brand Lives In V5
 
@@ -182,7 +182,7 @@ Same rule. Card title is the EA's economic thesis, not its sales pitch.
 | Strategy Cards | Markdown header includes brand line |
 | Decision Logs / Migration Logs | Plain markdown, brand voice in prose |
 | Compile harness output | Banner line in stdout includes wordmark |
-| Public web dashboard | Already covered by `Drive .../03_Website/style.css` and `WEBSITE_DASHBOARD_PAPERCLIP_STYLE.md` |
+| Public web dashboard | Use `Drive .../03_Website/style.css` and the active strategy-farm dashboard sources. |
 
 ## 7. Per-EA Chart UI Spec — Pointer
 

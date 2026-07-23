@@ -102,11 +102,10 @@ Evidence paths:
 
 ## Required Next Gate
 
-1. CEO + Quality-Business review the DRAFT `_v2` amendment.
+1. OWNER + Quality-Business review the DRAFT `_v2` amendment.
 2. Independently audit all official dates, exclusions, decision times, broker DST, and the missing
    2023-12-13 opportunity.
 3. Rebuild only after explicit amendment approval; preserve the existing `QM5_12971` EA ID.
 4. Run the V5 fixed USD 1,000 baseline and Model 4 where valid `.DWX` real ticks exist.
 5. Pre-register timing/ATR neighborhoods and evaluate plateau behavior without choosing dates.
 6. Run cost, news-mode, and full pipeline gates before any portfolio consideration.
-

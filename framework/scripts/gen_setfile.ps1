@@ -251,6 +251,7 @@ function Get-EAInputDefaults {
     $result = [ordered]@{
         all = [ordered]@{}
         strategy = [ordered]@{}
+        types = [ordered]@{}
     }
 
     $mq5 = Get-ChildItem -LiteralPath $EAFolder -Filter '*.mq5' -File -ErrorAction SilentlyContinue |
@@ -265,10 +266,12 @@ function Get-EAInputDefaults {
             $group = $matches[1]
             continue
         }
-        if ($line -match '^\s*input\s+(?:[A-Za-z_][A-Za-z0-9_<>]*\s+)+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*([^;]+);') {
-            $name = $matches[1].Trim()
-            $value = $matches[2].Trim()
+        if ($line -match '^\s*input\s+(?<type>[A-Za-z_][A-Za-z0-9_<>]*)\s+(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?<value>[^;]+);') {
+            $type = $matches['type'].Trim()
+            $name = $matches['name'].Trim()
+            $value = $matches['value'].Trim()
             $result.all[$name] = $value
+            $result.types[$name] = $type
             # Legacy/current EAs are not consistent about input groups.  The
             # live-set invariant below already treats strategy_* as strategy
             # parameters, so collect the same prefix even outside a group.
@@ -279,6 +282,61 @@ function Get-EAInputDefaults {
     }
 
     return $result
+}
+
+function Convert-EAInputValueForSetfile {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Name,
+        [Parameter(Mandatory = $true)]
+        [string]$Value,
+        [Parameter(Mandatory = $true)]
+        [hashtable]$InputTypes
+    )
+
+    if (-not $InputTypes.Contains($Name)) {
+        return $Value
+    }
+
+    $inputType = [string]$InputTypes[$Name]
+    if ($inputType -eq 'string') {
+        # MT5 .set files treat all text after '=' as the runtime string value.
+        # MQL source-literal quotes are therefore data here, not syntax: keeping
+        # them breaks equality checks and FileOpen paths inside the EA.
+        $candidate = $Value.Trim()
+        if ($candidate.Length -ge 2 -and
+            $candidate[0] -eq '"' -and
+            $candidate[$candidate.Length - 1] -eq '"') {
+            return $candidate.Substring(1, $candidate.Length - 2)
+        }
+        return $candidate
+    }
+
+    if ($inputType -ne 'ENUM_TIMEFRAMES') {
+        return $Value
+    }
+
+    # MT5's tester report echoes symbolic PERIOD_* text from a .set file, but
+    # the runtime enum receives zero (PERIOD_CURRENT).  Serialize the actual
+    # MQL5 ENUM_TIMEFRAMES integer so the value observed by the EA is exact.
+    $timeframeValues = @{
+        PERIOD_CURRENT = 0
+        PERIOD_M1 = 1; PERIOD_M2 = 2; PERIOD_M3 = 3; PERIOD_M4 = 4
+        PERIOD_M5 = 5; PERIOD_M6 = 6; PERIOD_M10 = 10; PERIOD_M12 = 12
+        PERIOD_M15 = 15; PERIOD_M20 = 20; PERIOD_M30 = 30
+        PERIOD_H1 = 16385; PERIOD_H2 = 16386; PERIOD_H3 = 16387
+        PERIOD_H4 = 16388; PERIOD_H6 = 16390; PERIOD_H8 = 16392
+        PERIOD_H12 = 16396; PERIOD_D1 = 16408; PERIOD_W1 = 32769
+        PERIOD_MN1 = 49153
+    }
+    $candidate = $Value.Trim()
+    if ($timeframeValues.ContainsKey($candidate)) {
+        return [string]$timeframeValues[$candidate]
+    }
+    if ($candidate -match '^-?\d+$') {
+        return $candidate
+    }
+    throw "UNSUPPORTED_TIMEFRAME_SET_VALUE: input=$Name value=$Value"
 }
 
 function Add-DefaultsMatchingInputs {
@@ -420,7 +478,8 @@ if ($cardPath) {
     if ($setDefaults.Count -gt 0) {
         $lines += "; card_defaults_source=$cardPath"
         foreach ($k in $setDefaults.Keys) {
-            $lines += "$k=$($setDefaults[$k])"
+            $serialized = Convert-EAInputValueForSetfile -Name $k -Value ([string]$setDefaults[$k]) -InputTypes $eaInputDefaults.types
+            $lines += "$k=$serialized"
         }
     }
     else {
@@ -434,7 +493,8 @@ else {
     if ($eaInputDefaults.strategy.Count -gt 0) {
         $lines += "; card_defaults_source=ea_input_defaults"
         foreach ($k in $eaInputDefaults.strategy.Keys) {
-            $lines += "$k=$($eaInputDefaults.strategy[$k])"
+            $serialized = Convert-EAInputValueForSetfile -Name $k -Value ([string]$eaInputDefaults.strategy[$k]) -InputTypes $eaInputDefaults.types
+            $lines += "$k=$serialized"
         }
     }
     else {

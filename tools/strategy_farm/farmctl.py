@@ -11,6 +11,7 @@ import argparse
 import csv
 import datetime as dt
 import glob
+import hashlib
 import json
 import os
 import re
@@ -2460,7 +2461,97 @@ def _load_summary_if_fresh(path: Path, payload: dict[str, Any]) -> dict[str, Any
         return None
     if not isinstance(summary, dict):
         return None
-    return summary if _summary_fresh_for_claim(path, summary, payload) else None
+    if not _summary_fresh_for_claim(path, summary, payload):
+        return None
+    return summary if _summary_matches_expected_evidence(summary, payload) else None
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _summary_matches_expected_evidence(summary: dict[str, Any], payload: dict[str, Any]) -> bool:
+    """Reject a fresh-looking summary that belongs to another test execution.
+
+    The binding flag is written only for newly spawned run_smoke claims, so
+    already-active legacy work remains readable. Once enabled, every required
+    field is fail-closed: missing v2 identity is not treated as a match.
+    """
+    if not payload.get("evidence_binding_required"):
+        return True
+    if summary.get("evidence_schema") != "run_smoke/v2":
+        return False
+
+    window = summary.get("test_window")
+    identity = summary.get("execution_identity")
+    if not isinstance(window, dict) or not isinstance(identity, dict):
+        return False
+    if window.get("source") != "generated_tester_ini":
+        return False
+
+    expected_pairs = (
+        (payload.get("expected_from_date"), summary.get("from_date")),
+        (payload.get("expected_to_date"), summary.get("to_date")),
+        (payload.get("expected_from_date"), window.get("from_date")),
+        (payload.get("expected_to_date"), window.get("to_date")),
+        (payload.get("expected_symbol"), summary.get("symbol")),
+        (payload.get("expected_period"), summary.get("period")),
+        (payload.get("expected_expert"), summary.get("expert")),
+    )
+    for expected, actual in expected_pairs:
+        if expected is None or str(expected).strip() == "":
+            return False
+        if str(actual) != str(expected):
+            return False
+
+    ini_files = window.get("tester_ini_files")
+    if not isinstance(ini_files, list) or not ini_files:
+        return False
+    for ini in ini_files:
+        if not isinstance(ini, dict):
+            return False
+        if (
+            ini.get("from_date") != payload.get("expected_from_date")
+            or ini.get("to_date") != payload.get("expected_to_date")
+            or ini.get("symbol") != payload.get("expected_symbol")
+            or ini.get("period") != payload.get("expected_period")
+            or ini.get("expert") != payload.get("expected_expert")
+            or not re.fullmatch(r"[0-9a-f]{64}", str(ini.get("sha256") or ""))
+        ):
+            return False
+
+    expert_binary = identity.get("expert_binary")
+    setfile = identity.get("setfile")
+    if not isinstance(expert_binary, dict) or not isinstance(setfile, dict):
+        return False
+    deployed_ex5 = expert_binary.get("deployed")
+    source_setfile = setfile.get("source")
+    if not isinstance(deployed_ex5, dict) or not isinstance(source_setfile, dict):
+        return False
+    if identity.get("stable_during_run") is not True:
+        return False
+    if expert_binary.get("stable_during_run") is not True:
+        return False
+    if setfile.get("stable_during_run") is not True:
+        return False
+    expected_ex5_hash = str(payload.get("expected_ex5_sha256") or "").lower()
+    actual_ex5_hash = str(deployed_ex5.get("sha256") or "").lower()
+    expected_set_hash = str(payload.get("expected_setfile_sha256") or "").lower()
+    actual_set_hash = str(source_setfile.get("sha256") or "").lower()
+    if not re.fullmatch(r"[0-9a-f]{64}", expected_ex5_hash) or actual_ex5_hash != expected_ex5_hash:
+        return False
+    if not re.fullmatch(r"[0-9a-f]{64}", expected_set_hash) or actual_set_hash != expected_set_hash:
+        return False
+    expected_mq5 = str(payload.get("expected_mq5_sha256") or "").lower()
+    mq5_source = identity.get("mq5_source")
+    if expected_mq5:
+        if not isinstance(mq5_source, dict) or str(mq5_source.get("sha256") or "").lower() != expected_mq5:
+            return False
+    return True
 
 
 # PT9 2026-05-23 — Q02 compile gate. Cheap inline mtime check first; full
@@ -2923,6 +3014,23 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
     min_trade_info = _effective_min_trades(root, ea_id, from_date, to_date, year)
     effective_min_trades = str(min_trade_info["effective_min_trades"])
 
+    # Freeze the exact artifacts before launch. The resulting hashes are stored
+    # in the active claim and must match run_smoke/v2 before classification.
+    expected_ex5_path = candidates[0] / f"{ea_dir_name}.ex5"
+    expected_mq5_path = candidates[0] / f"{ea_dir_name}.mq5"
+    expected_setfile_path = Path(setfile_path)
+    if not expected_ex5_path.is_file() or not expected_setfile_path.is_file():
+        return {
+            "spawned": False,
+            "reason": "evidence_identity_artifact_missing",
+            "expected_ex5_path": str(expected_ex5_path),
+            "expected_setfile_path": str(expected_setfile_path),
+        }
+    expected_ex5_sha256 = _sha256_file(expected_ex5_path)
+    expected_setfile_sha256 = _sha256_file(expected_setfile_path)
+    expected_mq5_sha256 = _sha256_file(expected_mq5_path) if expected_mq5_path.is_file() else None
+    expected_expert = f"QM\\{ea_dir_name}"
+
     cmd = [
         "pwsh.exe", "-NoProfile", "-File",
         str(REPO_ROOT / "framework" / "scripts" / "run_smoke.ps1"),
@@ -2985,6 +3093,15 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         "timeout_seconds": timeout_seconds,
         "from_date": from_date,
         "to_date": to_date,
+        "evidence_binding_required": True,
+        "expected_from_date": from_date,
+        "expected_to_date": to_date,
+        "expected_symbol": runner_symbol,
+        "expected_period": period,
+        "expected_expert": expected_expert,
+        "expected_ex5_sha256": expected_ex5_sha256,
+        "expected_setfile_sha256": expected_setfile_sha256,
+        "expected_mq5_sha256": expected_mq5_sha256,
         "setfile_path": setfile_path,
         "setfile_path_canonicalized_from": (
             original_setfile_path if canonical_setfile_path else None
@@ -5039,6 +5156,17 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 "smoke_year_count": spawn.get("smoke_year_count"),
                 "effective_min_trades": spawn.get("effective_min_trades"),
                 "phase_runner": spawn.get("phase_runner"),
+                "from_date": spawn.get("from_date"),
+                "to_date": spawn.get("to_date"),
+                "evidence_binding_required": spawn.get("evidence_binding_required"),
+                "expected_from_date": spawn.get("expected_from_date"),
+                "expected_to_date": spawn.get("expected_to_date"),
+                "expected_symbol": spawn.get("expected_symbol"),
+                "expected_period": spawn.get("expected_period"),
+                "expected_expert": spawn.get("expected_expert"),
+                "expected_ex5_sha256": spawn.get("expected_ex5_sha256"),
+                "expected_setfile_sha256": spawn.get("expected_setfile_sha256"),
+                "expected_mq5_sha256": spawn.get("expected_mq5_sha256"),
             }
             if spawn.get("setfile_path_canonicalized_from"):
                 new_payload["setfile_path_canonicalized_from"] = spawn[

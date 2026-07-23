@@ -39,7 +39,7 @@ framework/registry/*.tmp
 !.scratch/qua-696-status-flip.json
 !.scratch/qua-696-status-flip.md
 
-# QUA-186 approved artifact retention policy (CEO comment c2891fa7, 2026-04-27)
+# Artifact retention policy (historical QUA-186 record, current authority OWNER)
 framework/build/
 framework/build/step23_test/sample_report.htm
 framework/build/step23_test/sample_report.htm.bak

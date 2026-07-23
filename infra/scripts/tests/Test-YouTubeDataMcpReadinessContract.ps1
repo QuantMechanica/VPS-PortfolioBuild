@@ -20,7 +20,7 @@ try {
     }
     $json = ($out -join "`n") | ConvertFrom-Json
     if ($json.status -ne "blocked") { throw "Expected status=blocked; got '$($json.status)'" }
-    if ($json.unblock_owner -ne "OWNER/CTO") { throw "Expected unblock_owner OWNER/CTO; got '$($json.unblock_owner)'" }
+    if ($json.unblock_owner -ne "OWNER") { throw "Expected unblock_owner OWNER; got '$($json.unblock_owner)'" }
 
     Write-Host "PASS: YouTube Data MCP readiness blocked contract validated."
 }

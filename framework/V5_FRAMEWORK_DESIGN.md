@@ -1,9 +1,9 @@
 # V5 EA Framework — Design
 
 Created: 2026-04-26
-Owners: CTO + Development
+Owner: OWNER
 Reviewer: Quality-Tech (statistics + risk), Claude Board Advisor (architecture + V5 boundary)
-Implementation: Codex (laptop or VPS-CTO agent) implements the MQL5 / PowerShell against this spec.
+Implementation: an assigned development worker implements the MQL5 / PowerShell against this spec.
 Decision source: `decisions/2026-04-26_v5_framework_design.md`
 Scope: this is the *design*. Code lives under `framework/` once Codex implements.
 
@@ -55,7 +55,7 @@ V5 EAs are structured as 4 explicit modules per the V5 Hub Fragenkatalog. Strate
 | **Trade Management** | "Given I have an open position, do I modify it?" — trailing, BE, partial close, pyramiding | EA implements `void Strategy_ManageOpenPosition(ulong ticket)`; framework calls it on each tick post-No-Trade-check |
 | **Trade Close** | "Should I exit this position now?" — strategy-specific exit logic beyond SL/TP/trailing | EA implements `QM_ExitReason Strategy_ExitSignal(ulong ticket)`; framework wires the chosen reason through `QM_Exit` |
 
-This means every V5 EA is structurally identical at the framework boundary. CTO review reads four named functions; the strategy-specific code is the only delta between EAs. Codex implementation effort per new EA stays low.
+This means every V5 EA is structurally identical at the framework boundary. Technical review reads four named functions; the strategy-specific code is the only delta between EAs. Implementation effort per new EA stays low.
 
 ## Input Parameter Groups (V5 convention)
 
@@ -184,7 +184,7 @@ framework/
 | `5000` – `8999` | V5 research / sandbox / experimental EAs |
 | `9000` – `9999` | V5 framework test EAs (smoke, unit, harness) |
 
-`ea_id` is allocated by adding a row to `framework/registry/ea_id_registry.csv` before any code is written. Allocation requires CEO + CTO sign-off.
+`ea_id` is allocated by adding a row to `framework/registry/ea_id_registry.csv` before any code is written. Allocation requires OWNER G0 authorization and the deterministic registry checks.
 
 ### Set file naming
 
@@ -200,7 +200,7 @@ Examples:
 ### Strategy Card naming
 
 - `strategy-seeds/cards/QM5_NNNN_<slug>_card.md`
-- One card per ea_id. The card pre-dates the code — Research writes the card, CTO approves, then ea_id is allocated.
+- One card per ea_id. The card pre-dates the code; OWNER records G0 approval before the deterministic EA-ID allocation.
 
 ## Magic-Number Schema
 
@@ -216,8 +216,8 @@ Examples:
 
 ```
 ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
-1001,breakout-atr,0,EURUSD,10010000,2026-04-26,CTO,active
-1001,breakout-atr,1,GBPUSD,10010001,2026-04-26,CTO,active
+1001,breakout-atr,0,EURUSD,10010000,2026-04-26,OWNER,active
+1001,breakout-atr,1,GBPUSD,10010001,2026-04-26,OWNER,active
 ```
 
 `status` ∈ `{active, deprecated, retired}`.
@@ -309,7 +309,7 @@ Standard MT5 `.set` plus a mandatory header comment block:
 ; risk_mode:    PERCENT
 ; portfolio_weight: 1.00
 ; build_hash:   <set by build_check.ps1 [SPEC ONLY — NOT IMPLEMENTED]>
-; author:       CTO
+; author:       OWNER-authorized build
 ; date:         2026-04-26
 ;==========================================================
 ```
@@ -862,7 +862,7 @@ OWNER asked for a defaults proposal; below are the binding choices. Each line is
 
 - All `compile_one.ps1` calls invoke `metaeditor.exe /compile:<path>.mq5 /log:<build/path>.log`. **[SPEC ONLY — NOT IMPLEMENTED]**
 - Rejected: `terminal64.exe /compile`. Reason: `metaeditor.exe` produces a cleaner machine-parseable log (line / column / severity / code), and does not require a running terminal context. Terminal-mode compile leaves more side-effects in the data folder.
-- Strict mode default in `build_check.ps1`: 0 errors, 0 warnings. **[SPEC ONLY — NOT IMPLEMENTED]** Per-EA override possible via `framework/EAs/QM5_NNNN_<slug>/.compile-warnings-allowed` (a file listing tolerated warning codes), but use is logged and CEO + CTO sign-off required to add a code.
+- Strict mode default in `build_check.ps1`: 0 errors, 0 warnings. **[SPEC ONLY — NOT IMPLEMENTED]** Per-EA override possible via `framework/EAs/QM5_NNNN_<slug>/.compile-warnings-allowed` (a file listing tolerated warning codes), but use is logged and requires explicit OWNER authorization.
 
 ### What this unblocks
 

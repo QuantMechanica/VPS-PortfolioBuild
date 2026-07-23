@@ -34,7 +34,7 @@ The card expects roughly 68 trades per year. The current Q02 produced 213 trades
 
 ## Recommended decision
 
-Quality-Business and CTO should ratify the 120-pip stop as an implementation-only catastrophic safety overlay, not as part of the source alpha. The approved card, embedded EA card, SPEC, and setfile must then say the same thing. Risk sizing and FTMO-loss containment favor a bounded catastrophic stop over an intentionally unbounded price loss.
+OWNER should ratify the 120-pip stop after Quality-Business and Quality-Tech review, as an implementation-only catastrophic safety overlay rather than part of the source alpha. The approved card, embedded EA card, SPEC, and setfile must then say the same thing. Risk sizing and FTMO-loss containment favor a bounded catastrophic stop over an intentionally unbounded price loss.
 
 For prospective Q03, authorize exactly one safety-sensitivity axis:
 

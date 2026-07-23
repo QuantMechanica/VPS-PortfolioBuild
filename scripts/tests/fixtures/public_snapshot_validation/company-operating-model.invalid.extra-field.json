@@ -11,7 +11,7 @@
     "capability_cells": [{"id":"infrastructure-cell","name":"Infrastructure Cell","mission":"x"}],
     "process_loop": [{"step":1,"title":"Prioritize","description":"x"}],
     "sections": [{"id":"control_tower","title":"Control Tower","purpose":"x"}],
-    "first_48h_actions": [{"order":1,"action":"x","owner":"CEO"}],
+    "first_48h_actions": [{"order":1,"action":"x","owner":"RetiredRole"}],
     "stale_data_behavior": {"ui_label_template":"As of {updated_at}","ttl_note":"x","when_stale":"x"}
   },
   "leak_path": "C:/QM/private/secret.txt"

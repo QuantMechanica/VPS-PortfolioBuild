@@ -1,6 +1,6 @@
 # How to Publish an Episode Pack
 
-**Audience:** Documentation-KM, CEO, OWNER  
+**Audience:** assigned documentation worker and OWNER
 **Last updated:** 2026-05-09 (QUA-1068)
 
 ---
@@ -77,7 +77,7 @@ Key constraints from the brand guide and BASIS:
 - **No profit promises, no guaranteed returns, no "proven" claims.** These are forbidden
   per `branding/brand_tokens.json § voice.forbidden`.
 
-### 5. Submit draft to CEO + OWNER for review
+### 5. Submit draft to OWNER for review
 
 Create a comment on the relevant QUA issue with:
 
@@ -85,7 +85,7 @@ Create a comment on the relevant QUA issue with:
 Draft at: episodes/EP{nn}-{slug}/show_notes.md
 Commit: <SHA>
 Charts: assets/ (equity_curve, p3_heatmap, mc_distributions)
-Requesting CEO + OWNER sign-off before publish.
+Requesting OWNER sign-off before publish.
 ```
 
 No publish action until both sign-offs are obtained. If the issue is a Documentation-KM
@@ -135,7 +135,7 @@ is the only manual bottleneck.
 ```
 Documentation-KM fills template
         ↓
-CEO reviews metrics + claims
+OWNER reviews metrics and claims
         ↓
 OWNER reviews voice + brand + CTA separation
         ↓        (OWNER-gated checkpoint)

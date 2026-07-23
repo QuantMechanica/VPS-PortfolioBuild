@@ -13,7 +13,6 @@ $weeklyLfsRoot = Join-Path $Workspace "weekly_lfs"
 Remove-Item -LiteralPath $Workspace -Recurse -Force -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Path $sourceRoot, $driveRoot, $weeklyLfsRoot -Force | Out-Null
 
-$paperclipDb = Join-Path $sourceRoot "paperclip.sqlite"
 $lastCheck = Join-Path $sourceRoot "last_check_state.json"
 $notionExport = Join-Path $sourceRoot "notion-exports"
 $logsRoot = Join-Path $sourceRoot "logs"
@@ -21,7 +20,6 @@ $strategies = Join-Path $sourceRoot "strategies"
 $reports = Join-Path $sourceRoot "reports"
 
 New-Item -ItemType Directory -Path $notionExport, $logsRoot, $strategies, $reports -Force | Out-Null
-Set-Content -Path $paperclipDb -Value "sqlite-smoke" -Encoding ASCII
 Set-Content -Path $lastCheck -Value "{}" -Encoding ASCII
 Set-Content -Path (Join-Path $notionExport "export.json") -Value "{}" -Encoding ASCII
 Set-Content -Path (Join-Path $logsRoot "latest.log") -Value "log" -Encoding ASCII
@@ -30,7 +28,6 @@ Set-Content -Path (Join-Path $reports "r1.txt") -Value "report" -Encoding ASCII
 
 & powershell -NoProfile -ExecutionPolicy Bypass -File "C:\QM\repo\infra\backup.ps1" `
     -GoogleDriveRoot $driveRoot `
-    -PaperclipDbPath $paperclipDb `
     -LastCheckStatePath $lastCheck `
     -NotionExportRoot $notionExport `
     -RecentLogsRoot $logsRoot `
@@ -51,11 +48,10 @@ $result = [ordered]@{
     manifest_path = $manifestPath
     manifest_exists = (Test-Path -LiteralPath $manifestPath)
     copied_last_check = (Test-Path -LiteralPath (Join-Path $driveRoot ("daily\{0}\last_check_state.json" -f $todayTag)))
-    copied_paperclip_db = (Test-Path -LiteralPath (Join-Path $driveRoot ("daily\{0}\paperclip.sqlite" -f $todayTag)))
     status = "unknown"
 }
 
-if ($result.manifest_exists -and $result.copied_last_check -and $result.copied_paperclip_db) {
+if ($result.manifest_exists -and $result.copied_last_check) {
     $result.status = "ok"
     $result.message = "Backup smoke passed."
     $result | ConvertTo-Json -Depth 6

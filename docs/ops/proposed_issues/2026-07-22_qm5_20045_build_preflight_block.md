@@ -26,7 +26,7 @@ diversity priority into an ungoverned artifact and likely an OnInit failure.
 
 ## Required owner action
 
-CEO + CTO should either:
+The OWNER should either:
 
 1. approve and register the execution contract, normalize the card to an
    unambiguous approved status, and allocate collision-free magic rows for both

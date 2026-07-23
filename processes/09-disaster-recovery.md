@@ -1,101 +1,71 @@
 ---
 title: Disaster Recovery
-owner: DevOps
-last-updated: 2026-04-19
+owner: OWNER
+last-updated: 2026-07-22
 ---
 
 # 09 — Disaster Recovery
 
-How QuantMechanica detects, contains, and recovers from infrastructure-level failures that exceed the scope of normal incident response.
-
-> **Scope boundary:** This process governs infra-level failures — Paperclip DB corruption, Google Drive sync loss, VPS crash, disk-full beyond auto-pause, and daemon crashes. For live-trading strategy/data/broker anomalies use [04-incident-response.md](04-incident-response.md). For routine disk pressure managed by `paused_disk_constraint` use the proposed `11-disk-and-sync.md`. For Paperclip total failure fall back to the manual runbook in `RECOVERY.md` at repo root.
+This process covers VPS, disk, repository, terminal, data, scheduler, and backup
+failures that exceed normal incident handling. OWNER is the sole authority for
+live-capital decisions. Assigned workers execute bounded recovery steps; titles do
+not confer approval authority.
 
 ## Trigger
 
-Any of the following events that cannot auto-heal within one Obs-SRE heartbeat:
+- VPS or required storage becomes unavailable.
+- Disk pressure prevents safe writes or backtests.
+- Repository state, task definitions, data, or backup artifacts fail integrity
+  checks.
+- Factory processes disappear after an unexpected host or session failure.
+- T_Live health cannot be established without changing live state.
 
-- **Paperclip DB corruption** — agent state unreadable; API returning 5xx; issues/comments inaccessible.
-- **Google Drive sync loss** — `Company/` folder desynchronised; process docs, pipeline state files, or ALERT artefacts inaccessible to agents for >15 min.
-- **VPS crash** — `ftmo-hyonix` Tailscale status `offline, last seen >3× cadence`; LiveOps and MT5 terminal unresponsive.
-- **Disk-full beyond auto-pause** — local disk at or near 0 GB free after `paused_disk_constraint` fires; pipeline cannot resume without manual cleanup.
-- **Paperclip daemon crash** — all agent heartbeats dark; no new runs in the run log; `/api/health` non-responsive.
+## First response
 
-## Actors
+1. Record UTC time, affected components, observed process/task/terminal state, and
+   exact read-only evidence.
+2. Protect T_Live: do not toggle AutoTrading, deploy, restart, or modify it unless
+   the recovery task explicitly authorizes that exact action.
+3. Stop only the unsafe work inside the affected scope. Do not kill unrelated
+   factory workers or terminals.
+4. Classify the incident:
+   - **Sev-0:** live capital may be at immediate risk;
+   - **Sev-1:** factory or VPS is unavailable with material state uncertainty;
+   - **Sev-2:** degraded component with safe containment available;
+   - **Sev-3:** transient failure that recovered and only needs verification.
+5. Notify OWNER immediately for Sev-0 and before any action that changes live
+   trading state, destroys data, or performs an irreversible rollback.
 
-| Role | Responsibility |
-|------|---------------|
-| [Observability-SRE](/QUAA/agents/observability-sre) | Detection via `ALERT_<ts>_DR_*.md`; severity classification; liveness re-probing during and after restore |
-| [DevOps](/QUAA/agents/devops) | **Primary owner** — infra restore (VPS console, Tailscale, Paperclip daemon, disk cleanup, Drive-sync repair) |
-| [Pipeline-Operator](/QUAA/agents/pipeline-operator) | Halts active pipeline runs on DR trigger; resumes only after DevOps + Obs-SRE sign-off |
-| [CEO](/QUAA/agents/ceo) | Halt/rollback decision on wide-impact failures (Sev-0/Sev-1); cross-agent coordination |
-| Human board (Fabian) | **Sev-0: always notified** — final authority for any live-capital halt, VPS restore, or rollback affecting real money |
+## Recovery order
 
-## Steps
+1. Verify disk space, filesystem availability, and repository integrity.
+2. Verify current Windows tasks and process command lines against repository
+   installers. Do not assume a process should be running merely because an old
+   evidence file names it.
+3. Restore the deterministic strategy-farm controller and T1-T5 workers from their
+   current installers and state database.
+4. Verify data sources, setfiles, binaries, and deployed hashes before accepting
+   new test results.
+5. Verify backups by manifest and hash before using them. Prefer forward repair;
+   do not overwrite newer valid state with an older snapshot.
+6. Inspect T_Live read-only. Any live restart, deployment, or trade-state change
+   needs explicit OWNER authorization and the applicable live runbook.
 
-```mermaid
-flowchart TD
-    A[Obs-SRE detects failure\nvia liveness probe] --> B[File ALERT_ts_DR_type.md\nwith severity + failure class]
-    B --> C{Severity?}
-    C -- Sev-2 / Sev-3 --> D[DevOps owns fix\nnormal cadence\nno halt required]
-    C -- Sev-1 --> E[Page CEO + DevOps\nwithin 15 min]
-    C -- Sev-0 --> F[Page CEO + DevOps + Human Board\nimmediate]
-    E --> G[CEO: halt or continue decision]
-    F --> G
-    G -- halt --> H[Pipeline-Operator pauses\nactive runs / applies\npaused_disk_constraint]
-    G -- continue with caution --> I[DevOps starts restore\nunder Obs-SRE watch]
-    H --> I
-    D --> I
-    I --> J{Failure class}
-    J -- Paperclip DB --> K[DevOps: restore from\nlast-good DB backup\ncheck SQLite WAL / journald\nre-validate /api/health]
-    J -- Drive sync loss --> L[DevOps: force re-sync\nvalidate Company/ SHA-256\nagainst git HEAD\nreport delta]
-    J -- VPS crash --> M[DevOps: VPS console restore\nre-verify Tailscale online\nre-verify MT5 PID count\nLiveOps agent resume]
-    J -- Disk full --> N[DevOps: prune sweep_outputs\nmt5 smoke artefacts\nGoogle Drive cleanup\nfree ≥20 GB]
-    J -- Daemon crash --> O[DevOps: npx paperclipai start\nvalidate /api/health = ok\nre-verify all agent heartbeats]
-    K --> P[Obs-SRE re-probes\nliveness signals]
-    L --> P
-    M --> P
-    N --> P
-    O --> P
-    P -- all signals green --> Q[Pipeline-Operator resumes\nObs-SRE files ALERT_ts_RECOVERED.md]
-    P -- still failing --> I
-    Q --> R[Post-mortem drafted\nby DevOps + Obs-SRE\nwithin 24 h of restore]
-    R --> S[Documentation-KM archives\npost-mortem in Company/Analysis/\nand updates this doc if flow changed]
-```
+## Exit criteria
 
-## Severity Classification
+- Required filesystem paths, tasks, and processes match the current desired state.
+- Strategy-farm state is readable and no active job was silently relabeled.
+- T1-T5 tests can produce artifact-bound evidence.
+- T_Live remains isolated and its state is documented.
+- A dated incident record contains root cause, repairs, verification output, and
+  any remaining risk.
 
-| Severity | Failure class | Detect → halt target |
-|----------|--------------|---------------------|
-| Sev-0 | VPS offline with live capital at risk; Paperclip DB corrupt (state unrecoverable); Drive sync corrupted beyond read | Immediate; human board notified ≤ 10 min |
-| Sev-1 | VPS offline (no live capital in window); Paperclip daemon crash; Drive desync > 15 min | ≤ 15 min |
-| Sev-2 | Disk full (pipeline paused but restorable); partial Drive sync lag | ≤ 1 h |
-| Sev-3 | Transient daemon restart; Drive sync delay < 10 min (self-healing likely) | Normal cadence |
-
-## Exits
-
-- **Success:** All liveness signals green; Obs-SRE files `ALERT_<ts>_RECOVERED.md`; Pipeline-Operator confirms resume; post-mortem archived by [Documentation-KM](/QUAA/agents/documentation-km).
-- **Escalation:** Sev-0 always reaches human board before any live-capital halt or rollback. CEO must confirm restore before Pipeline-Operator resumes.
-- **Fallback (Paperclip total failure):** Activate the manual runbook at `RECOVERY.md` — Pipeline-Operator role reverts to this Claude Code session; CEO tasks handled directly via the assistant chat until Paperclip is restored.
-
-## SLA
-
-| Event | Target |
-|-------|--------|
-| Sev-0 detect → halt | Immediate (≤ 5 min) |
-| Sev-0 detect → human board notified | ≤ 10 min |
-| Sev-1 detect → halt | ≤ 15 min |
-| Sev-0/1 restore — Paperclip daemon | ≤ 1 h |
-| Sev-0/1 restore — VPS (Hyonix console access assumed) | ≤ 2 h |
-| Sev-0/1 restore — Drive sync | ≤ 30 min |
-| Sev-2 restore — disk cleanup | ≤ 1 h |
-| Post-mortem filed | ≤ 24 h after restore |
-| Post-mortem archived | ≤ 48 h after restore |
+If an exit criterion fails, keep the affected component contained and report the
+specific blocker to OWNER. Do not convert missing evidence into a PASS.
 
 ## References
 
-- Manual runbook (Paperclip-total-failure fallback): `RECOVERY.md` at repo root
-- Incident response (live-trading anomalies): [04-incident-response.md](04-incident-response.md)
-- Alert schema: `Company/Observability/ALERT_<ts>_<type>.md` — fields: `severity`, `target`, `measurement`, `source`, `suggested-owner`, `consequence`, `evidence`, `recommended-action`, `dedupe-policy`
-- Disk-pressure auto-pause policy: `paused_disk_constraint` — see `Company/state/pipeline_v2_orchestrator_state.json` and [QUAA-145](/QUAA/issues/QUAA-145)
-- Delegation model: `CLAUDE.md` rule 15 — cheap-reader/expensive-closer; Obs-SRE is the cheap reader (broad liveness probes), DevOps + CEO are the expensive closers (restore decisions and execution)
-- Git as canonical truth: `CLAUDE.md` rule 16 — during Drive sync loss, git HEAD is the authoritative state for `Company/` artefacts; restore validates SHA-256 against it
+- [Incident response](04-incident-response.md)
+- [Disk and sync](11-disk-and-sync.md)
+- [Infrastructure task installer](../infra/tasks/Register-QMInfraTasks.ps1)
+- [Strategy-farm runbook](../docs/ops/OPTION_A_STRATEGY_FARM_RUNBOOK.md)

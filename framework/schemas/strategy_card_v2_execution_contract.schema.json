@@ -21,7 +21,11 @@
       "dependentRequired": {
         "symbol": ["timeframe"],
         "timeframe": ["symbol"],
-        "variant_id": ["symbol", "timeframe"]
+        "variant_id": ["symbol", "timeframe"],
+        "card_binding": ["symbol", "timeframe", "variant_id"],
+        "runtime_binding": ["symbol", "timeframe", "variant_id", "card_binding"],
+        "data_dependencies": ["card_binding", "runtime_binding"],
+        "symbol_routing": ["symbol", "timeframe"]
       },
       "required": [
         "ea_id",
@@ -50,13 +54,28 @@
         "source": {"type": "string", "pattern": "\\.mq5$"},
         "strategy_timeframe": {"$ref": "#/$defs/timeframe"},
         "bar_gate_timeframe": {"$ref": "#/$defs/timeframe"},
-        "darwinex_zero_routing": {"$ref": "#/$defs/darwinexZeroRouting"},
+        "darwinex_zero_routing": {"$ref": "#/$defs/symbolRouting"},
+        "symbol_routing": {"$ref": "#/$defs/symbolRouting"},
+        "card_binding": {"$ref": "#/$defs/cardBinding"},
+        "runtime_binding": {"$ref": "#/$defs/runtimeBinding"},
+        "data_dependencies": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/dataDependency"}
+        },
         "friday_close": {"$ref": "#/$defs/fridayClose"},
         "calendar": {"$ref": "#/$defs/calendar"},
         "promotion": {"$ref": "#/$defs/promotion"}
-      }
+      },
+      "allOf": [
+        {
+          "not": {
+            "required": ["darwinex_zero_routing", "symbol_routing"]
+          }
+        }
+      ]
     },
-    "darwinexZeroRouting": {
+    "symbolRouting": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -70,15 +89,244 @@
         "full_requalification_required"
       ],
       "properties": {
-        "test_symbol": {"const": "SP500.DWX"},
-        "live_order_symbol": {"const": "SP500"},
+        "test_symbol": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9]{1,15}\\.DWX$"
+        },
+        "live_order_symbol": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9._-]{1,31}$",
+          "not": {"pattern": "\\.DWX$"}
+        },
         "status": {"const": "BACKTEST_ALIAS_TO_ORDER_ROUTABLE_BROKER_SYMBOL"},
-        "source_registry": {"const": "framework/registry/dwx_symbol_matrix.csv"},
-        "evidence_ref": {"const": "docs/ops/evidence/DXZ_11132_SP500_DIRECT_ROUTABILITY_2026-07-16.md"},
+        "source_registry": {"type": "string", "minLength": 1},
+        "evidence_ref": {"type": "string", "minLength": 1},
         "automatic_symbol_inference": {"const": false},
         "qualification_status": {"enum": ["PASS", "REQUAL_REQUIRED", "BLOCKED"]},
         "full_requalification_required": {"const": true}
       }
+    },
+    "cardBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ea_id",
+        "slug",
+        "timeframe",
+        "variant_id",
+        "status",
+        "execution_contract_status"
+      ],
+      "properties": {
+        "ea_id": {"type": "integer", "minimum": 1},
+        "slug": {"type": "string", "minLength": 1},
+        "timeframe": {"$ref": "#/$defs/timeframe"},
+        "variant_id": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]{0,63}$"
+        },
+        "status": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,31}$"
+        },
+        "execution_contract_status": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,31}$"
+        }
+      }
+    },
+    "runtimeBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["qm_ea_id", "magic_slot_offset", "setfile", "setfile_sha256"],
+      "properties": {
+        "qm_ea_id": {"type": "integer", "minimum": 1},
+        "magic_slot_offset": {"type": "integer", "minimum": 0},
+        "setfile": {"type": "string", "pattern": "\\.set$"},
+        "setfile_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "magic_registry": {"type": "string", "minLength": 1}
+      }
+    },
+    "dependencyCommon": {
+      "type": "object",
+      "required": [
+        "dependency_id",
+        "type",
+        "qualification_status",
+        "required_for",
+        "block_reason"
+      ],
+      "properties": {
+        "dependency_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{0,63}$"
+        },
+        "type": {
+          "enum": ["calendar", "artifact", "signal_anchor", "session_metadata"]
+        },
+        "qualification_status": {
+          "enum": ["PASS", "REQUAL_REQUIRED", "BLOCKED"]
+        },
+        "required_for": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": ["ENTRY", "EXIT", "SIZING", "SIGNAL_ONLY", "PROMOTION"]
+          }
+        },
+        "block_reason": {"type": ["string", "null"]}
+      }
+    },
+    "dependencyQualification": {
+      "allOf": [
+        {
+          "if": {
+            "properties": {"qualification_status": {"const": "PASS"}},
+            "required": ["qualification_status"]
+          },
+          "then": {"properties": {"block_reason": {"type": "null"}}},
+          "else": {
+            "properties": {
+              "block_reason": {"type": "string", "minLength": 1}
+            }
+          }
+        }
+      ]
+    },
+    "dataDependency": {
+      "oneOf": [
+        {"$ref": "#/$defs/calendarDependency"},
+        {"$ref": "#/$defs/artifactDependency"},
+        {"$ref": "#/$defs/signalAnchorDependency"},
+        {"$ref": "#/$defs/sessionMetadataDependency"}
+      ]
+    },
+    "calendarDependency": {
+      "type": "object",
+      "additionalProperties": false,
+      "dependentRequired": {
+        "coverage_start": ["coverage_end"],
+        "coverage_end": ["coverage_start"]
+      },
+      "required": [
+        "dependency_id",
+        "type",
+        "qualification_status",
+        "required_for",
+        "block_reason",
+        "source_ref",
+        "calendar_policy",
+        "stale_behavior"
+      ],
+      "properties": {
+        "dependency_id": {"$ref": "#/$defs/dependencyCommon/properties/dependency_id"},
+        "type": {"const": "calendar"},
+        "qualification_status": {"$ref": "#/$defs/dependencyCommon/properties/qualification_status"},
+        "required_for": {"$ref": "#/$defs/dependencyCommon/properties/required_for"},
+        "block_reason": {"$ref": "#/$defs/dependencyCommon/properties/block_reason"},
+        "source_ref": {"type": "string", "minLength": 1},
+        "calendar_policy": {"type": "string", "minLength": 1},
+        "stale_behavior": {"enum": ["NOT_APPLICABLE", "INIT_AND_ENTRY_FAIL_CLOSED", "ENTRY_FAIL_CLOSED"]},
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+        "coverage_start": {"type": "string", "format": "date"},
+        "coverage_end": {"type": "string", "format": "date"}
+      },
+      "allOf": [{"$ref": "#/$defs/dependencyQualification"}]
+    },
+    "artifactDependency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dependency_id",
+        "type",
+        "qualification_status",
+        "required_for",
+        "block_reason",
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "dependency_id": {"$ref": "#/$defs/dependencyCommon/properties/dependency_id"},
+        "type": {"const": "artifact"},
+        "qualification_status": {"$ref": "#/$defs/dependencyCommon/properties/qualification_status"},
+        "required_for": {"$ref": "#/$defs/dependencyCommon/properties/required_for"},
+        "block_reason": {"$ref": "#/$defs/dependencyCommon/properties/block_reason"},
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"}
+      },
+      "allOf": [
+        {"$ref": "#/$defs/dependencyQualification"},
+        {
+          "if": {
+            "properties": {"qualification_status": {"const": "PASS"}},
+            "required": ["qualification_status"]
+          },
+          "then": {
+            "properties": {
+              "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+            }
+          }
+        }
+      ]
+    },
+    "signalAnchorDependency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dependency_id",
+        "type",
+        "qualification_status",
+        "required_for",
+        "block_reason",
+        "symbol",
+        "timeframe",
+        "order_allowed"
+      ],
+      "properties": {
+        "dependency_id": {"$ref": "#/$defs/dependencyCommon/properties/dependency_id"},
+        "type": {"const": "signal_anchor"},
+        "qualification_status": {"$ref": "#/$defs/dependencyCommon/properties/qualification_status"},
+        "required_for": {"$ref": "#/$defs/dependencyCommon/properties/required_for"},
+        "block_reason": {"$ref": "#/$defs/dependencyCommon/properties/block_reason"},
+        "symbol": {"type": "string", "pattern": "^[A-Z][A-Z0-9]{1,15}\\.DWX$"},
+        "timeframe": {"$ref": "#/$defs/timeframe"},
+        "order_allowed": {"const": false},
+        "source_ref": {"type": "string", "minLength": 1}
+      },
+      "allOf": [{"$ref": "#/$defs/dependencyQualification"}]
+    },
+    "sessionMetadataDependency": {
+      "type": "object",
+      "additionalProperties": false,
+      "dependentRequired": {
+        "coverage_start": ["coverage_end"],
+        "coverage_end": ["coverage_start"]
+      },
+      "required": [
+        "dependency_id",
+        "type",
+        "qualification_status",
+        "required_for",
+        "block_reason",
+        "metadata_kind",
+        "source_ref"
+      ],
+      "properties": {
+        "dependency_id": {"$ref": "#/$defs/dependencyCommon/properties/dependency_id"},
+        "type": {"const": "session_metadata"},
+        "qualification_status": {"$ref": "#/$defs/dependencyCommon/properties/qualification_status"},
+        "required_for": {"$ref": "#/$defs/dependencyCommon/properties/required_for"},
+        "block_reason": {"$ref": "#/$defs/dependencyCommon/properties/block_reason"},
+        "metadata_kind": {
+          "enum": ["BROKER_SESSION", "BROKER_BREAKS", "ROLLOVER", "FINANCING", "SESSION_EXCEPTION_CALENDAR"]
+        },
+        "source_ref": {"type": "string", "minLength": 1},
+        "coverage_start": {"type": "string", "format": "date"},
+        "coverage_end": {"type": "string", "format": "date"}
+      },
+      "allOf": [{"$ref": "#/$defs/dependencyQualification"}]
     },
     "timeframe": {
       "enum": ["M1", "M5", "M15", "M30", "H1", "H4", "D1", "W1", "MN1"]
