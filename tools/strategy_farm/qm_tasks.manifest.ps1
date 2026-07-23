@@ -41,6 +41,7 @@ $QM_ALWAYSON_TASKS = @(
     'QM_StrategyFarm_Dashboard_Hourly',       # current/strategies/EA-detail pages
     'QM_StrategyFarm_Health_15min',           # farmctl health
     'QM_MorningBriefing_Vault',               # morning brief (vault) 06:00
+    'QM_StrategyFarm_MailboxSourceIntake_Daily', # info@ source extraction + authenticated triage 06:07
     'QM_StrategyFarm_RebootDiagnostic_AtStartup', # one deduplicated cause/recovery mail per Windows boot
     # NOTE: duplicate QM_StrategyFarm_MorningBrief_0700 was deleted. The retained
     # 06:00 task sends the one MorningBriefing mail and writes the vault archive.
