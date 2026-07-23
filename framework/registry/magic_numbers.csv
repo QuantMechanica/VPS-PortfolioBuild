@@ -15177,3 +15177,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11619,robo-psar01-ema6-11-34-h1,2,USDJPY.DWX,116190002,2026-07-23,Development,active
 11619,robo-psar01-ema6-11-34-h1,3,USDCHF.DWX,116190003,2026-07-23,Development,active
 11619,robo-psar01-ema6-11-34-h1,4,AUDUSD.DWX,116190004,2026-07-23,Development,active
+20093,wti-summer-short,0,XTIUSD.DWX,200930000,2026-07-24,Development,active

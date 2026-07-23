@@ -1,0 +1,38 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20093
+; ea_slug:      wti-summer-short
+; ea_version:   v5.0
+; set_version:  s20260724-001
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   1e338a6fbec61807fccf08c3728fcb64d0fee5ec52da8dfb18a723d925d8bb6d
+; author:       Development
+; date:         2026-07-24
+;==========================================================
+qm_ea_id=20093
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=false
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\wti-summer-short_card.md
+strategy_first_short_month=6
+strategy_last_short_month=10
+strategy_atr_period=20
+strategy_atr_sl_mult=4.0
+strategy_max_hold_days=35
+strategy_max_spread_points=1500

@@ -10,6 +10,7 @@ primary_url: https://www.econjournals.com/index.php/ijeep/article/view/6092
 open_full_text_url: https://www.econjournals.com/index.php/ijeep/article/download/6092/3608/15549
 strategy_ids:
   - BURAKOV-WTI-HALLOWEEN-2018_S01
+  - BURAKOV-WTI-HALLOWEEN-2018_S02
 ---
 
 # Burakov-Freidin-Solovyev WTI Winter-Season Source
@@ -125,3 +126,22 @@ correlation; that remains a later portfolio-gate measurement.
 This source authorizes one `RISK_FIXED` research/backtest carrier only. It
 does not authorize a live setfile, AutoTrading, T_Live, a deploy or T_Live
 manifest, portfolio admission, or any change to the portfolio gate.
+
+## Second extraction: WTI summer short
+
+The same fully reviewed paper reports the alternative-two WTI summer return
+(last May close through last October close) at `-5.3%`, versus `+16.65%` for
+winter, with the preferred Wilcoxon comparison reported at `p=0.0031`.
+`BURAKOV-WTI-HALLOWEEN-2018_S02` isolates that negative summer leg: short
+`XTIUSD.DWX` from June through October and remain flat November through May.
+The carrier renews once per broker month, uses a frozen `4.0 * ATR(20)` stop,
+a 35-day stale guard, and one attempt per month. Monthly renewal is disclosed
+QM execution plumbing, not a source-authored result.
+
+This is not the built S01 winter-long carrier: the exposure months, direction,
+and return leg are disjoint. It is also not `QM5_12567`, which is a
+price-conditioned cumulative-RSI2 pullback. Five eligible packages per year
+put the hypothesis exactly at the Q02 frequency floor, so any missed completed
+package requires retirement. Multiple comparisons, the pre-2017 sample,
+futures/CFD basis, costs, financing, and post-publication decay remain binding
+kill risks.
