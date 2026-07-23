@@ -114,3 +114,22 @@ It returned `available_slots_before=0`, `available_slots_after=0`, and
 `scheduled=0`. The queued 13119 row was unchanged. This is the paced-fleet CPU
 ceiling stop condition: retain the one non-duplicate post-repair Q02 job for
 the existing dispatcher and do not launch or force-assign another tester.
+
+## Headless continuation audit
+
+At `2026-07-23T13:29Z`, a new read-only fleet and queue audit confirmed the
+stop condition still applies:
+
+- Five factory terminals were running: T1, T3, T6, T8, and T10. `T_Live` and
+  the separate FTMO terminal were observed only to exclude them from the
+  factory count.
+- The canonical scheduler dry-run again returned
+  `available_slots_before=0`, `available_slots_after=0`, and `scheduled=0`.
+- Queue row `4` for `QM5_13119` remained `queued`, unassigned, and present
+  exactly once.
+- Queue row `2` for the earlier `QM5_12760` forex basket also remained
+  `queued`, unassigned, and present exactly once.
+
+No queue row, terminal, AutoTrading setting, live artifact, portfolio gate, or
+EA artifact was changed. The existing dispatcher remains the only authorized
+continuation path once paced capacity becomes available.
