@@ -15161,3 +15161,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20053,xcu-weekend-prem,0,XCUUSD.DWX,200530000,2026-07-23,Codex,active
 20054,xng-1m-contr,0,XNGUSD.DWX,200540000,2026-07-23,Development,active
 20055,wti-tsmom3m,0,XTIUSD.DWX,200550000,2026-07-23,Development,active
+20056,wti-dual-mom,0,XTIUSD.DWX,200560000,2026-07-23,Development,active

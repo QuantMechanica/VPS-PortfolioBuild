@@ -39,7 +39,8 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_momentum_lookback_d1 = 63;
+input int    strategy_fast_lookback_d1     = 63;
+input int    strategy_slow_lookback_d1     = 252;
 input double strategy_min_abs_return_pct   = 0.0;
 input int    strategy_atr_period           = 20;
 input double strategy_atr_sl_mult          = 3.5;
@@ -89,29 +90,33 @@ bool Strategy_LoadMomentum(double &momentum, int &direction)
    momentum = 0.0;
    direction = 0;
 
-   const int lookback = MathMax(21, strategy_momentum_lookback_d1);
+   const int fast_lookback = MathMax(21, strategy_fast_lookback_d1);
+   const int slow_lookback = MathMax(fast_lookback + 1, strategy_slow_lookback_d1);
    double closes[];
    ArraySetAsSeries(closes, true);
-   const int copied = CopyClose(_Symbol, PERIOD_D1, 1, lookback + 1, closes); // perf-allowed: bounded D1 3M momentum sample behind new-bar gate.
-   if(copied < lookback + 1)
+   const int copied = CopyClose(_Symbol, PERIOD_D1, 1, slow_lookback + 1, closes); // perf-allowed: bounded dual-horizon D1 momentum sample behind new-bar gate.
+   if(copied < slow_lookback + 1)
       return false;
 
    const double close_recent = closes[0];
-   const double close_past = closes[lookback];
-   if(close_recent <= 0.0 || close_past <= 0.0)
+   const double close_fast = closes[fast_lookback];
+   const double close_slow = closes[slow_lookback];
+   if(close_recent <= 0.0 || close_fast <= 0.0 || close_slow <= 0.0)
       return false;
 
-   momentum = MathLog(close_recent / close_past);
-   if(!MathIsValidNumber(momentum))
+   const double fast_momentum = MathLog(close_recent / close_fast);
+   const double slow_momentum = MathLog(close_recent / close_slow);
+   if(!MathIsValidNumber(fast_momentum) || !MathIsValidNumber(slow_momentum))
       return false;
 
    const double threshold = MathMax(0.0, strategy_min_abs_return_pct) / 100.0;
-   if(momentum > threshold)
+   if(fast_momentum > threshold && slow_momentum > threshold)
       direction = 1;
-   else if(momentum < -threshold)
+   else if(fast_momentum < -threshold && slow_momentum < -threshold)
       direction = -1;
    else
       direction = 0;
+   momentum = fast_momentum;
    return true;
   }
 
@@ -148,7 +153,8 @@ bool Strategy_NoTradeFilter()
       return true;
    if(qm_magic_slot_offset != 0)
       return true;
-   if(strategy_momentum_lookback_d1 < 21)
+   if(strategy_fast_lookback_d1 < 21 ||
+      strategy_slow_lookback_d1 <= strategy_fast_lookback_d1)
       return true;
    if(strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
       return true;

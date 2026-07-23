@@ -21,7 +21,8 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=C:\QM\repo\strategy-seeds\cards\wti-dual-mom_card.md
-strategy_momentum_lookback_d1=63
+strategy_fast_lookback_d1=63
+strategy_slow_lookback_d1=252
 strategy_min_abs_return_pct=0.0
 strategy_atr_period=20
 strategy_atr_sl_mult=3.5
