@@ -12,29 +12,12 @@
 //   QM5_12516_inside-bar-mom.md (g0_status APPROVED).
 //
 // Mechanics (closed-bar reads only; H1 primary):
-//   Inside-bar STATE : the bar just inside the mother bar is fully contained:
-//                      high[inside] < high[mother] AND low[inside] > low[mother].
-//   prior_range      : mother bar range = high[mother] - low[mother].
-//   Direction        : LONG if mother bar bullish (close[mother] > open[mother]),
-//                      SHORT if mother bar bearish (close[mother] < open[mother]).
-//   Trigger EVENT    : the breakout bar's extreme pierces the stop-entry level
-//                      (LONG: break above high[mother] + range*entry_buf_pct;
-//                       SHORT: break below low[mother] - range*entry_buf_pct).
-//                      ONE event per setup; the inside bar is STATE, the break
-//                      is the single trigger — never both on the same bar.
-//   Stop loss        : LONG  high[mother] - range*sl_pct
-//                      SHORT low[mother]  + range*sl_pct.
-//   Take profit      : LONG  high[mother] + range*tp_pct
-//                      SHORT low[mother]  - range*tp_pct.
-//
-// Bar layout used here (all CLOSED bars, shift>=1):
-//   shift 3 = mother bar, shift 2 = inside bar, shift 1 = breakout bar.
-// Evaluating the just-closed breakout bar (shift 1) means the order fires as a
-// market entry on the new closed bar after the level was crossed, which is the
-// V5 single-entry equivalent of the source's buy-/sell-stop pending order
-// (gapless .DWX CFDs => break-of-extreme, not a gap). One position per magic;
-// a fresh inside bar replaces the prior setup by closing the open position via
-// Strategy_ExitSignal (the source cancels/replaces on each new inside bar).
+//   shift 1 is the inside bar and shift 2 is the prior/mother bar.
+//   A bullish mother bar arms a buy stop 10% of its range above its high.
+//   A bearish mother bar arms a sell stop 10% of its range below its low.
+//   Stops and targets are placed at the card's exact 20% and 80% offsets.
+//   Each fresh inside bar cancels the prior pending order and closes any open
+//   position for this magic before the replacement stop-entry is submitted.
 //
 // Symbols: EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, SP500.DWX — all present in
 // dwx_symbol_matrix.csv; no porting required. SP500.DWX is backtest-only.
@@ -71,7 +54,6 @@ input group "Strategy"
 input double strategy_entry_buf_pct     = 0.10;   // stop-entry buffer = range * this beyond the mother extreme
 input double strategy_sl_pct            = 0.20;   // stop  offset from the mother extreme, as a fraction of range
 input double strategy_tp_pct            = 0.80;   // target offset from the mother extreme, as a fraction of range
-input double strategy_min_range_frac    = 0.0;    // optional: require range/close >= this (0 = off)
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -88,25 +70,17 @@ bool Strategy_NoTradeFilter()
 // Reads closed bars only (shifts 1..3); a handful of OHLC reads = perf-allowed.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // One open position per symbol/magic.
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
-      return false;
-
-   // Closed-bar OHLC: mother (3), inside (2), breakout (1). perf-allowed:
-   // a fixed, bounded set of structural reads on the entry path only.
-   const double mother_high = iHigh(_Symbol, _Period, 3);
-   const double mother_low  = iLow(_Symbol, _Period, 3);
-   const double mother_open = iOpen(_Symbol, _Period, 3);
-   const double mother_close= iClose(_Symbol, _Period, 3);
-   const double inside_high = iHigh(_Symbol, _Period, 2);
-   const double inside_low  = iLow(_Symbol, _Period, 2);
-   const double brk_high    = iHigh(_Symbol, _Period, 1);
-   const double brk_low     = iLow(_Symbol, _Period, 1);
+   // perf-allowed: fixed two-bar structural OHLC read behind QM_IsNewBar().
+   const double mother_high  = iHigh(_Symbol, _Period, 2);
+   const double mother_low   = iLow(_Symbol, _Period, 2);
+   const double mother_open  = iOpen(_Symbol, _Period, 2);
+   const double mother_close = iClose(_Symbol, _Period, 2);
+   const double inside_high  = iHigh(_Symbol, _Period, 1);
+   const double inside_low   = iLow(_Symbol, _Period, 1);
 
    if(mother_high <= 0.0 || mother_low <= 0.0 || inside_high <= 0.0 || inside_low <= 0.0)
       return false;
 
-   // --- Inside-bar STATE: bar at shift 2 fully contained in the mother bar. ---
    const bool inside_bar = (inside_high < mother_high && inside_low > mother_low);
    if(!inside_bar)
       return false;
@@ -115,70 +89,70 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(prior_range <= 0.0)
       return false;
 
-   // Optional volatility floor (range relative to price). Off by default.
-   if(strategy_min_range_frac > 0.0)
+   const int magic = QM_FrameworkMagic();
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
      {
-      if(mother_close <= 0.0)
-         return false;
-      if((prior_range / mother_close) < strategy_min_range_frac)
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+      if(!QM_TM_RemovePendingOrder(ticket, "inside_bar_replace"))
          return false;
      }
 
-   // --- Direction from the mother bar body. ---
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      if(!QM_TM_ClosePosition(ticket, QM_EXIT_OPPOSITE_SIGNAL))
+         return false;
+     }
+
    const bool mother_bull = (mother_close > mother_open);
    const bool mother_bear = (mother_close < mother_open);
    if(!mother_bull && !mother_bear)
-      return false; // doji mother bar — no directional bias
+      return false;
 
    const double entry_buf = prior_range * strategy_entry_buf_pct;
-
    if(mother_bull)
      {
-      // --- Trigger EVENT: breakout bar pierced the long stop-entry level. ---
-      const double trigger = mother_high + entry_buf;
-      if(brk_high < trigger)
-         return false; // level not yet broken — single event, wait
-
-      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      if(entry <= 0.0)
-         return false;
-
+      const double entry = QM_TM_NormalizePrice(_Symbol, mother_high + entry_buf);
       const double sl = QM_TM_NormalizePrice(_Symbol, mother_high - prior_range * strategy_sl_pct);
       const double tp = QM_TM_NormalizePrice(_Symbol, mother_high + prior_range * strategy_tp_pct);
-      if(sl <= 0.0 || tp <= 0.0)
+      if(entry <= 0.0 || sl <= 0.0 || tp <= 0.0 || !(sl < entry && tp > entry))
          return false;
-      if(!(sl < entry && tp > entry))
-         return false; // sanity: long SL below, TP above the fill
 
-      req.type   = QM_BUY;
-      req.price  = 0.0;   // framework fills market price at send
+      req.type   = QM_BUY_STOP;
+      req.price  = entry;
       req.sl     = sl;
       req.tp     = tp;
       req.reason = "inside_bar_mom_long";
+      req.symbol_slot = qm_magic_slot_offset;
+      req.expiration_seconds = 0;
       return true;
      }
 
-   // mother_bear
-   const double trigger = mother_low - entry_buf;
-   if(brk_low > trigger)
-      return false; // level not yet broken — single event, wait
-
-   const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry <= 0.0)
-      return false;
-
+   const double entry = QM_TM_NormalizePrice(_Symbol, mother_low - entry_buf);
    const double sl = QM_TM_NormalizePrice(_Symbol, mother_low + prior_range * strategy_sl_pct);
    const double tp = QM_TM_NormalizePrice(_Symbol, mother_low - prior_range * strategy_tp_pct);
-   if(sl <= 0.0 || tp <= 0.0)
+   if(entry <= 0.0 || sl <= 0.0 || tp <= 0.0 || !(sl > entry && tp < entry))
       return false;
-   if(!(sl > entry && tp < entry))
-      return false; // sanity: short SL above, TP below the fill
 
-   req.type   = QM_SELL;
-   req.price  = 0.0;
+   req.type   = QM_SELL_STOP;
+   req.price  = entry;
    req.sl     = sl;
    req.tp     = tp;
    req.reason = "inside_bar_mom_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
@@ -193,18 +167,7 @@ void Strategy_ManageOpenPosition()
 // detection per closed bar = single event; no two-cross trap.
 bool Strategy_ExitSignal()
   {
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) <= 0)
-      return false;
-
-   const double mother_high = iHigh(_Symbol, _Period, 3);
-   const double mother_low  = iLow(_Symbol, _Period, 3);
-   const double inside_high = iHigh(_Symbol, _Period, 2);
-   const double inside_low  = iLow(_Symbol, _Period, 2);
-   if(mother_high <= 0.0 || mother_low <= 0.0 || inside_high <= 0.0 || inside_low <= 0.0)
-      return false;
-
-   const bool fresh_inside = (inside_high < mother_high && inside_low > mother_low);
-   return fresh_inside;
+   return false;
   }
 
 // Defer to the central news filter.
@@ -249,18 +212,13 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
-      return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
@@ -284,12 +242,21 @@ void OnTick()
         }
      }
 
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
    if(!QM_IsNewBar())
       return;
 
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
