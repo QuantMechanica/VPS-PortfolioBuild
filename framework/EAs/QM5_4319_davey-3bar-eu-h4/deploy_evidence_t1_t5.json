@@ -1,0 +1,71 @@
+﻿{
+    "source_path":  "C:\\QM\\worktrees\\development\\framework\\EAs\\QM5_4319_davey-3bar-eu-h4\\QM5_4319_davey-3bar-eu-h4.ex5",
+    "file_name":  "QM5_4319_davey-3bar-eu-h4.ex5",
+    "deployed_at_local":  "2026-05-15T14:07:11.4981510+02:00",
+    "terminal_roots":  [
+                           "D:\\QM\\mt5\\T1",
+                           "D:\\QM\\mt5\\T2",
+                           "D:\\QM\\mt5\\T3",
+                           "D:\\QM\\mt5\\T4",
+                           "D:\\QM\\mt5\\T5"
+                       ],
+    "status_counts":  [
+                          {
+                              "status":  "created",
+                              "count":  5
+                          }
+                      ],
+    "files":  [
+                  {
+                      "terminal":  "T1",
+                      "status":  "created",
+                      "source_path":  "C:\\QM\\worktrees\\development\\framework\\EAs\\QM5_4319_davey-3bar-eu-h4\\QM5_4319_davey-3bar-eu-h4.ex5",
+                      "destination_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_4319_davey-3bar-eu-h4.ex5",
+                      "source_hash_sha256":  "A51198F3365CB3DD924EF20FA7F8581375B03DD1E463F46657DAE0DF26E81AA4",
+                      "destination_hash_before_sha256":  null,
+                      "destination_hash_after_sha256":  "A51198F3365CB3DD924EF20FA7F8581375B03DD1E463F46657DAE0DF26E81AA4",
+                      "hash_match":  true
+                  },
+                  {
+                      "terminal":  "T2",
+                      "status":  "created",
+                      "source_path":  "C:\\QM\\worktrees\\development\\framework\\EAs\\QM5_4319_davey-3bar-eu-h4\\QM5_4319_davey-3bar-eu-h4.ex5",
+                      "destination_path":  "D:\\QM\\mt5\\T2\\MQL5\\Experts\\QM\\QM5_4319_davey-3bar-eu-h4.ex5",
+                      "source_hash_sha256":  "A51198F3365CB3DD924EF20FA7F8581375B03DD1E463F46657DAE0DF26E81AA4",
+                      "destination_hash_before_sha256":  null,
+                      "destination_hash_after_sha256":  "A51198F3365CB3DD924EF20FA7F8581375B03DD1E463F46657DAE0DF26E81AA4",
+                      "hash_match":  true
+                  },
+                  {
+                      "terminal":  "T3",
+                      "status":  "created",
+                      "source_path":  "C:\\QM\\worktrees\\development\\framework\\EAs\\QM5_4319_davey-3bar-eu-h4\\QM5_4319_davey-3bar-eu-h4.ex5",
+                      "destination_path":  "D:\\QM\\mt5\\T3\\MQL5\\Experts\\QM\\QM5_4319_davey-3bar-eu-h4.ex5",
+                      "source_hash_sha256":  "A51198F3365CB3DD924EF20FA7F8581375B03DD1E463F46657DAE0DF26E81AA4",
+                      "destination_hash_before_sha256":  null,
+                      "destination_hash_after_sha256":  "A51198F3365CB3DD924EF20FA7F8581375B03DD1E463F46657DAE0DF26E81AA4",
+                      "hash_match":  true
+                  },
+                  {
+                      "terminal":  "T4",
+                      "status":  "created",
+                      "source_path":  "C:\\QM\\worktrees\\development\\framework\\EAs\\QM5_4319_davey-3bar-eu-h4\\QM5_4319_davey-3bar-eu-h4.ex5",
+                      "destination_path":  "D:\\QM\\mt5\\T4\\MQL5\\Experts\\QM\\QM5_4319_davey-3bar-eu-h4.ex5",
+                      "source_hash_sha256":  "A51198F3365CB3DD924EF20FA7F8581375B03DD1E463F46657DAE0DF26E81AA4",
+                      "destination_hash_before_sha256":  null,
+                      "destination_hash_after_sha256":  "A51198F3365CB3DD924EF20FA7F8581375B03DD1E463F46657DAE0DF26E81AA4",
+                      "hash_match":  true
+                  },
+                  {
+                      "terminal":  "T5",
+                      "status":  "created",
+                      "source_path":  "C:\\QM\\worktrees\\development\\framework\\EAs\\QM5_4319_davey-3bar-eu-h4\\QM5_4319_davey-3bar-eu-h4.ex5",
+                      "destination_path":  "D:\\QM\\mt5\\T5\\MQL5\\Experts\\QM\\QM5_4319_davey-3bar-eu-h4.ex5",
+                      "source_hash_sha256":  "A51198F3365CB3DD924EF20FA7F8581375B03DD1E463F46657DAE0DF26E81AA4",
+                      "destination_hash_before_sha256":  null,
+                      "destination_hash_after_sha256":  "A51198F3365CB3DD924EF20FA7F8581375B03DD1E463F46657DAE0DF26E81AA4",
+                      "hash_match":  true
+                  }
+              ],
+    "all_hashes_match":  true
+}

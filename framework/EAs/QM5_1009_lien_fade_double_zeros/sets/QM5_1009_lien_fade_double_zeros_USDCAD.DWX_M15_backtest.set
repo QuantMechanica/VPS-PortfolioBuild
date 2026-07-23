@@ -10,7 +10,7 @@
 ; magic_slot:        3
 ; risk_mode:         fixed
 ; portfolio_weight:  1
-; build_hash:   afbb91af058749134580a2407dd894f98984f40e937e2be1f4f196a6e6ffad66
+; build_hash:   ae20c132e23e6e58ed4c2d249ae34fcb846fcf37034a89063c59249344f23ee0
 ; author:            Pipeline-Operator
 ; date:              2026-04-29
 ENV=backtest

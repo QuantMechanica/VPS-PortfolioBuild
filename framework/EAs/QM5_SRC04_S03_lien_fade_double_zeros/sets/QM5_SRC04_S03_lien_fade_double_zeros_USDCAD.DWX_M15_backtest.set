@@ -1,4 +1,4 @@
-﻿; QuantMechanica V5 generated set file
+; QuantMechanica V5 generated set file
 ; Generator=framework/scripts/gen_setfile.ps1
 ; ea_id:             4303
 ; ea_slug:           QM5_SRC04_S03_lien_fade_double_zeros
@@ -10,7 +10,7 @@
 ; magic_slot:        3
 ; risk_mode:         fixed
 ; portfolio_weight:  1
-; build_hash:   afbb91af058749134580a2407dd894f98984f40e937e2be1f4f196a6e6ffad66
+; build_hash:   0f0eedc300d18bb7e7c6475e39f56e63dba6154efb3f7d592412d79b9c0bbd08
 ; author:            Pipeline-Operator
 ; date:              2026-04-29
 ENV=backtest

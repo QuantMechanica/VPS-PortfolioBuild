@@ -1,0 +1,32 @@
+; QuantMechanica V5 generated set file
+; Generator=Development-Codex
+; ea_id:             4320
+; ea_slug:           QM5_SRC02_S09_chan_audcad_mr
+; ea_version:        v1
+; set_version:       v1
+; symbol:            AUDCAD.DWX
+; timeframe:         D1
+; environment:       backtest
+; magic_slot:        0
+; risk_mode:         fixed
+; portfolio_weight:  1
+; build_hash:   872bac8e2fc5fbf071b6718698bc7d5a85f8fd3f61531ce7dc810667fbc0a2b0
+; author:            Development
+; date:              2026-05-15
+ENV=backtest
+qm_ea_id=4320
+qm_magic_slot_offset=0
+qm_risk_mode=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_news_mode=1
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+LOOKBACK=252
+ENTRY_Z=2.0
+EXIT_Z=0.5
+HALF_LIFE_BARS=10
+hard_stop_sigma_mult=5.0
+cadf_tstat_threshold=-3.343
+cadf_refresh_weekday=1

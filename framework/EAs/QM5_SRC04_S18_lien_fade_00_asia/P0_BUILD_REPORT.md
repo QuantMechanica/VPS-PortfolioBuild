@@ -4,12 +4,12 @@
 - Commit: `ea9d14e19`
 - Strategy Card: `QUA-1568` (`strategy-seeds/cards/lien-fade-00-asia_card.md`)
 
-### Build Artifact
+### Build Artifact (Latest)
 
 - EX5: `framework/EAs/QM5_SRC04_S18_lien_fade_00_asia/QM5_SRC04_S18_lien_fade_00_asia.ex5`
-- Size (bytes): `101654`
-- SHA256: `84E67E17F54BB21C5E26D7E13930A335FC7D01C6557602943370D42FAA5EAB66`
-- LastWriteTimeUtc: `2026-05-15T08:53:09Z`
+- Size (bytes): `101250`
+- SHA256: `061DF6E577042DAC2DEE8C10D31187CDC60DE414C352388C27DB407E7D69D410`
+- LastWriteTimeUtc: `2026-05-15T12:08:02Z`
 
 ### Verification
 
@@ -19,12 +19,14 @@
 - Warnings: `0`
 - Compile log: `framework/build/compile/20260515_085522/QM5_SRC04_S18_lien_fade_00_asia.compile.log`
 
-### Dispatch Step 6 Status
+### Dispatch Step 6 Status (Deployment to T1-T5)
 
-- Required script `deploy_ea_to_all_terminals.ps1` was not found in this workspace.
-- Checked paths: `framework/scripts`, `infra/scripts` (and filename grep under both trees).
-- Additional full-workspace search for deploy-script aliases and docs references found no executable replacement procedure for EA deployment to T1-T5.
-- Current state: deployment step blocked pending script location/provision from CTO/DevOps owner.
+- Deployment script used: `C:/QM/repo/framework/scripts/deploy_ea_to_all_terminals.ps1`
+- Command executed:
+  - `powershell -ExecutionPolicy Bypass -File C:/QM/repo/framework/scripts/deploy_ea_to_all_terminals.ps1 -EaPath C:/QM/worktrees/development/framework/EAs/QM5_SRC04_S18_lien_fade_00_asia/QM5_SRC04_S18_lien_fade_00_asia.ex5 -EvidenceJsonPath C:/QM/worktrees/development/framework/EAs/QM5_SRC04_S18_lien_fade_00_asia/deploy_evidence_t1_t5.json`
+- Result: `PASS` on T1, T2, T3, T4, T5
+- Destination hash on all terminals: `061DF6E577042DAC2DEE8C10D31187CDC60DE414C352388C27DB407E7D69D410`
+- Evidence JSON: `framework/EAs/QM5_SRC04_S18_lien_fade_00_asia/deploy_evidence_t1_t5.json`
 
 ### Dispatch Step 4 Status (`build_check.ps1`)
 
@@ -34,3 +36,28 @@
 - Unblock owner/action: CTO to approve one of:
   - run full-repo `build_check.ps1` in a clean coordinated baseline window, or
   - provide/approve a scoped build-check path for single-EA dispatch validation.
+
+### Ghost-Build Recheck (2026-05-15T12:07Z)
+
+- Board verifier command referenced in comment:
+  - `python framework/scripts/verify_build_deployment.py --ea-id 1042 --ea-dir-glob "*lien*fade*00*asia*"`
+- Result in this worktree: script path does not exist (`framework/scripts/verify_build_deployment.py` missing), command cannot be executed here.
+- Direct artifact evidence in this worktree:
+  - EA directory exists: `framework/EAs/QM5_SRC04_S18_lien_fade_00_asia`
+  - EX5 exists: `framework/EAs/QM5_SRC04_S18_lien_fade_00_asia/QM5_SRC04_S18_lien_fade_00_asia.ex5`
+  - Size (bytes): `102040` (> 50 KB gate)
+  - SHA256: `726ACF75234FBD2FAF95076EFC1A7B2D2D94FCFDCFC8F1FAE93532B913681F22`
+  - LastWriteTimeUtc: `2026-05-15T11:26:23Z`
+- Fresh compile proof:
+  - Command: `powershell -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_SRC04_S18_lien_fade_00_asia/QM5_SRC04_S18_lien_fade_00_asia.mq5`
+  - Result: `PASS` (`0` errors, `0` warnings)
+  - Compile log: `framework/build/compile/20260515_120713/QM5_SRC04_S18_lien_fade_00_asia.compile.log`
+
+### Verifier Status (Current)
+
+- Command: `python framework/scripts/verify_build_deployment.py --ea-id 1042 --ea-dir-glob "*lien*fade*00*asia*"`
+- Result: `PASS`
+- Checks:
+  - `ea_dir_exists=true`
+  - `ex5_exists=true`
+  - `ex5_size_gt_min=true`

@@ -10,7 +10,7 @@
 ; magic_slot:        0
 ; risk_mode:         fixed
 ; portfolio_weight:  1
-; build_hash:        pending
+; build_hash:   ac900b653b79a90211bbe03c799e0c47eb9e4804149acbdbef73bbaa649ff1e2
 ; author:            Development
 ; date:              2026-05-15
 ENV=backtest
