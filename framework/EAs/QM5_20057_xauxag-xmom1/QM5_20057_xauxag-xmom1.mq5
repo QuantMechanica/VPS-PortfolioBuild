@@ -8,7 +8,7 @@
 // =============================================================================
 // QM5_20057 - XAU/XAG 1-Month Cross-Sectional Momentum
 // -----------------------------------------------------------------------------
-// Monthly market-neutral energy basket:
+// Monthly market-neutral precious-metals basket:
 //   - reconstruct 2 completed broker month-end closes from native D1 history
 //   - calculate one completed monthly simple return per leg
 //   - rank the arithmetic average of those monthly returns
@@ -460,8 +460,8 @@ bool Strategy_OpenPair(const int pair_direction)
    const bool long_xti_short_xng = (pair_direction > 0);
    const QM_OrderType xti_type = long_xti_short_xng ? QM_BUY : QM_SELL;
    const QM_OrderType xng_type = long_xti_short_xng ? QM_SELL : QM_BUY;
-   const string reason = long_xti_short_xng ? "QM5_20057_LONG_XAU_SHORT_XAG_HIGH_12M_RETURN"
-                                            : "QM5_20057_SHORT_XAU_LONG_XAG_HIGH_12M_RETURN";
+   const string reason = long_xti_short_xng ? "QM5_20057_LONG_XAU_SHORT_XAG_HIGH_1M_RETURN"
+                                            : "QM5_20057_SHORT_XAU_LONG_XAG_HIGH_1M_RETURN";
    const double weight_sum = 2.0;
 
    if(!Strategy_OpenLeg(g_leg_xti, xti_type, 1.0, weight_sum, reason))
