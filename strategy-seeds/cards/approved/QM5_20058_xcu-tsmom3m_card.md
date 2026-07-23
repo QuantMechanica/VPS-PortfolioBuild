@@ -144,5 +144,5 @@ portfolio-manifest edit, or a portfolio-gate change.
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-23 | APPROVED under OWNER commodity-sleeve mission | this card |
-| Q01 Build Validation | 2026-07-23 | PENDING strict compile | `docs/ops/evidence/2026-07-23_qm5_20058_xcu_tsmom3m_q02_enqueue.md` |
+| Q01 Build Validation | 2026-07-23 | PASS: strict compile 0 errors/0 warnings | `docs/ops/evidence/2026-07-23_qm5_20058_xcu_tsmom3m_q02_enqueue.md` |
 | Q02 Baseline Screening | 2026-07-23 | pending, unclaimed | work item `425d98e6-2234-469b-9f49-ab5ae9da0d6f` |
