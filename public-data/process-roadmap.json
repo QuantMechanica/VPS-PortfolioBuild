@@ -1,6 +1,6 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-23T18:07:03.1295529Z",
+    "generated_at":  "2026-07-23T19:07:03.1160110Z",
     "total":  16,
     "items":  [
                   {
@@ -85,7 +85,7 @@
                       "id":  "qb_reputable_source_criteria",
                       "title":  "qb_reputable_source_criteria",
                       "status":  "active",
-                      "last_updated_utc":  "2026-06-30T07:55:55.1472265Z"
+                      "last_updated_utc":  "2026-07-23T19:00:35.3615219Z"
                   },
                   {
                       "id":  "README",
