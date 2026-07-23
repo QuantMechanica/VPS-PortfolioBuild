@@ -15170,3 +15170,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20060,xcu-xag-rspread,1,XAGUSD.DWX,200600001,2026-07-23,Development,active
 20063,xng-tsmom3m,0,XNGUSD.DWX,200630000,2026-07-23,Development,active
 20064,wti-tsmom2m,0,XTIUSD.DWX,200640000,2026-07-23,Development,active
+20061,kats-dax-maci,0,GDAXI.DWX,200610000,2026-07-23,OWNER-delegated Codex,active
+20062,kats-eu-macisar,0,EURUSD.DWX,200620000,2026-07-23,OWNER-delegated Codex,active
