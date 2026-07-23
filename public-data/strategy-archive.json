@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-23T16:07:04.3067321Z",
-    "total":  3406,
+    "generated_at":  "2026-07-23T18:07:03.4603975Z",
+    "total":  3410,
     "items":  [
                   {
                       "slug":  "ath-breakout-atr-trail",
@@ -982,6 +982,18 @@
                       "last_updated_utc":  "2026-07-22T22:12:33.1148554Z"
                   },
                   {
+                      "slug":  "kats-dax-maci_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-23T17:43:25.8200530Z"
+                  },
+                  {
+                      "slug":  "kats-eu-macisar_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-23T17:43:25.8210554Z"
+                  },
+                  {
                       "slug":  "katz-seas-xti_card",
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
@@ -1730,6 +1742,12 @@
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-07-23T12:37:17.4110976Z"
+                  },
+                  {
+                      "slug":  "xcu-xag-rspread_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-23T17:17:18.9069639Z"
                   },
                   {
                       "slug":  "xcu-xau-rspread_card",
@@ -17846,6 +17864,12 @@
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-06-12T11:44:11.8781153Z"
+                  },
+                  {
+                      "slug":  "QM5_20060_xcu-xag-rspread_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-23T17:17:18.9069639Z"
                   },
                   {
                       "slug":  "QM5_2007_nnfx-rsi-macd-synergy",
