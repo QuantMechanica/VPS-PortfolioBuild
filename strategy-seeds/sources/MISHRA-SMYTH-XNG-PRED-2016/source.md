@@ -11,6 +11,7 @@ institutional_record_url: https://research.monash.edu/en/publications/are-natura
 open_manuscript_url: https://www.researchgate.net/profile/Russell-Smyth/publication/288833833_Are_Natural_Gas_Spot_and_Futures_Prices_Predictable/links/5afde06b458515e9a550dd83/Are-Natural-Gas-Spot-and-Futures-Prices-Predictable.pdf
 strategy_ids:
   - MISHRA-SMYTH-XNG-2M-2016_S01
+  - MISHRA-SMYTH-XNG-1M-2016_S02
 ---
 
 # Mishra-Smyth Natural-Gas Two-Month Contrarian Source
@@ -123,3 +124,15 @@ The source and mission authorize research plus one RISK_FIXED backtest carrier
 only. They do not authorize a live setfile, AutoTrading, T_Live access, a
 deploy/T_Live manifest, portfolio admission or portfolio-gate changes.
 
+## One-Month Extraction Addendum
+
+The printed-page-18 simulation tests fixed frequencies from one day through
+four months. `MISHRA-SMYTH-XNG-1M-2016_S02` selects one month ex ante: at each
+new broker month it buys after a negative completed-month return and sells
+after a positive one; equality retains state. A 40-day stale guard and frozen
+ATR stop make the package auditable. No source performance number is imported.
+
+This monthly state path differs from the existing two-month extraction and
+from `QM5_12567`, which uses two-day RSI accumulation, SMA alignment and a
+five-bar exit. The 2026-07-23 OWNER commodity-sleeve mission authorizes this
+research card, build and Q02 only.
