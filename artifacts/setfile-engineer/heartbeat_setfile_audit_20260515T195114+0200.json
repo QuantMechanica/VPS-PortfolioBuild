@@ -1,0 +1,51 @@
+{
+  "timestamp_utc": "2026-05-15T17:51:14.1357627Z",
+  "agent_id": "ef0cf1a5-2f6c-4b11-b4f3-4f244aacc404",
+  "skill": "qm-new-setfiles",
+  "mode": "dry-run verification",
+  "assignment_found": false,
+  "company_id": "03d4dcc8-4cea-4133-9f68-90c0d99628fb",
+  "checks": [
+    {
+      "excluded_symbols": [
+        "GDAXIm.DWX",
+        "NDXm.DWX"
+      ],
+      "expected_count": 36,
+      "status": "ok",
+      "setfile_count": 36,
+      "ea": "QM5_1003_davey_baseline_3bar"
+    },
+    {
+      "excluded_symbols": [
+        "GDAXIm.DWX",
+        "NDXm.DWX"
+      ],
+      "expected_count": 37,
+      "status": "ok",
+      "setfile_count": 37,
+      "ea": "QM5_1004_davey_es_breakout"
+    },
+    {
+      "excluded_symbols": [
+        "GDAXIm.DWX",
+        "NDXm.DWX"
+      ],
+      "expected_count": 36,
+      "status": "ok",
+      "setfile_count": 36,
+      "ea": "QM5_1017_chan_pairs_stat_arb"
+    },
+    {
+      "excluded_symbols": [
+        "GDAXIm.DWX",
+        "NDXm.DWX"
+      ],
+      "expected_count": 36,
+      "status": "ok",
+      "setfile_count": 36,
+      "ea": "QM5_SRC04_S03_lien_fade_double_zeros"
+    }
+  ],
+  "next_action": "Await assignment or trigger qm-p2-baseline for ready cohorts."
+}
