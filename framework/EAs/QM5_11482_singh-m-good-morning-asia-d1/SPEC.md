@@ -4,7 +4,7 @@
 **Slug:** singh-m-good-morning-asia-d1
 **Source:** a655746e-8011-56d9-8d9b-0020a8a2ae89 (see `strategy-seeds/sources/a655746e-8011-56d9-8d9b-0020a8a2ae89/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-20
+**Last revised:** 2026-07-23
 
 ---
 
@@ -90,3 +90,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-20 | Initial build from card | 4161751f-bca4-4150-b81b-2798277a0b0c |
+| v2 | 2026-07-23 | OnTick framework-wiring fix: added `QM_FrameworkTrackOpenPositionMae()` as first statement (Q08 evidence), moved central news gate below `Strategy_ManageOpenPosition`/time-stop exit so it blocks new entries only (2026-07-02 audit rule). Strategy_ hook bodies unchanged. | 4161751f-bca4-4150-b81b-2798277a0b0c |
