@@ -8,7 +8,7 @@ publisher: Wiley
 publication_year: 2008
 print_isbn: "9780470758106"
 online_isbn: "9781119207153"
-status: EXTRACTION_COMPLETE_G0_DRAFTS_PENDING
+status: G0_APPROVED_IDS_ALLOCATED
 created: 2026-07-23
 created_by: Research
 last_updated: 2026-07-23
@@ -69,8 +69,8 @@ Two source configurations use only a currently available base series:
 
 | Slot | Candidate | Source carrier | Current research carrier | State |
 |---|---|---|---|---|
-| S01 | CI-regime MA/stochastic system | FDAX D1 | `GDAXI.DWX` D1 | [`kats-dax-maci_card.md`](../../cards/kats-dax-maci_card.md), Draft pending G0 |
-| S02 | Volatility-filtered MA/CI/SAR system | EUR/USD D1 | `EURUSD.DWX` D1 | [`kats-eu-macisar_card.md`](../../cards/kats-eu-macisar_card.md), Draft pending G0 |
+| S01 | CI-regime MA/stochastic system | FDAX D1 | `GDAXI.DWX` D1 | [`QM5_20061 kats-dax-maci`](../../cards/kats-dax-maci_card.md), G0 APPROVED |
+| S02 | Volatility-filtered MA/CI/SAR system | EUR/USD D1 | `EURUSD.DWX` D1 | [`QM5_20062 kats-eu-macisar`](../../cards/kats-eu-macisar_card.md), G0 APPROVED |
 
 The Chapter 11 gold card `QM5_12542_katsanos-gold-multidiv-d1` predates this
 canonical source record. It shares the same book but has separate historical
@@ -78,7 +78,7 @@ lineage metadata and is not modified by this extraction.
 
 ## Frozen extraction interpretations
 
-The draft Cards use the executable Appendix implementation as their source-rule
+The G0-approved Cards use the executable Appendix implementation as their source-rule
 baseline and disclose every deviation:
 
 - S01 uses Appendix A.4's exact DAX MA/CI/stochastic Boolean rules and the
@@ -96,7 +96,12 @@ baseline and disclose every deviation:
 
 ## Authorization boundary
 
-The two Cards remain `DRAFT` with `ea_id: TBD`. EA IDs and magic rows are left
-to the deterministic registry procedure after an explicit OWNER G0 decision.
-No code, compile, tester run, terminal operation, pipeline phase, or live
-artifact is authorized by this source record.
+The OWNER explicitly approved both Cards at G0 on 2026-07-23, including the
+frozen source variants and documented QM next-open, ATR20 × 3.0,
+Friday-21:00, and fail-closed tie-break interpretations. The deterministic
+registry allocated `QM5_20061` and `QM5_20062`.
+
+G0 authorizes implementation, compilation, debugging, T1-T5 deployment, and
+non-live falsification. It is not performance evidence and does not authorize
+T6/live use. Magic rows, code, builds, tests, a separately approved execution
+contract, deploy manifest, and live permission do not yet exist.

@@ -2,11 +2,11 @@
 card_schema_version: 2
 strategy_id: KATSANOS-INTERMARKET-2008_S01
 source_id: KATSANOS-INTERMARKET-2008
-ea_id: TBD
+ea_id: QM5_20061
 slug: kats-dax-maci
 type: strategy
-status: DRAFT
-g0_status: DRAFT
+status: APPROVED
+g0_status: APPROVED
 created: 2026-07-23
 created_by: Research
 last_updated: 2026-07-23
@@ -18,18 +18,26 @@ primary_target_symbols: [GDAXI.DWX]
 timeframe: D1
 variant_id: KATS_DAX_APPENDIX_A4
 execution_contract_ref: TBD
-execution_contract_status: BLOCKED
+execution_contract_status: DRAFT
 strategy_type_flags: [trend-filter-ma, time-stop, atr-hard-stop, friday-close-flatten, news-blackout, symmetric-long-short]
 expected_trades_per_year_per_symbol: 13
 expected_trade_frequency: "Source FDAX comparison: 51 trades in about 3.8 years, or 13.5/year; the GDAXI CFD port and framework exits are untested."
-expected_pf: TBD
-expected_dd_pct: TBD
+expected_pf: 1.20
+expected_dd_pct: 20.0
 risk_class: medium-high
 ml_required: false
-r1_track_record: PENDING_OWNER
-r2_mechanical: PENDING_OWNER
-r3_data_available: PENDING_OWNER
-r4_ml_forbidden: PENDING_OWNER
+r1_track_record: TIER_A
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+pipeline_phase: G0
+g0_approved_by: OWNER
+g0_approval_date: 2026-07-23
+g0_approval_reasoning: "OWNER approved Appendix A.4 on GDAXI.DWX D1 with causal next-open execution, fixed ATR20 x 3.0 catastrophe stop, Friday 21:00 framework flatten, and the documented fail-closed tie-break."
+r1_reasoning: "One OWNER-authorized licensed Wiley book with exact Chapter 13, Table 13.2, and Appendix A.4 page anchors; source tier A."
+r2_reasoning: "Deterministic CI regime, MA/stochastic entry branches, signal exits, and 60-bar time exit; every QM overlay is frozen separately."
+r3_reasoning: "GDAXI.DWX D1 is registered with 2018-2026 history and the approved port requires no external series."
+r4_reasoning: "Fixed arithmetic only; no ML, adaptive fit, grid, martingale, pyramiding, or discretionary override."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
 hard_rules_at_risk: [friday_close, risk_mode_dual, enhancement_doctrine, news_pause_default, darwinex_native_data_only]
@@ -197,7 +205,7 @@ Protective stop in source: **none**. The source uses signal and time exits only.
 - A stop or forced framework exit leaves the strategy flat until a later
   completed D1 bar independently satisfies an entry branch.
 - Backtests use `RISK_FIXED=1000` and `RISK_PERCENT=0`; any live sizing remains
-  outside this Draft Card and requires later authorization.
+  outside this G0 Card and requires later authorization.
 
 ## QM interpretations
 
@@ -221,8 +229,10 @@ These items are QuantMechanica port or safety choices, not source claims:
    slippage, continuous-contract rollover, or one-contract sizing assumptions
    as CFD evidence.
 
-The execution contract remains `BLOCKED` until OWNER G0 accepts or changes the
-catastrophe-stop and Friday-close interpretations.
+OWNER G0 accepted the catastrophe-stop, next-open, tie-break, and Friday-close
+interpretations on 2026-07-23. The execution-contract state is now `DRAFT`:
+this Card authorizes build and non-live falsification, but it is not a
+separately approved T6/live execution contract.
 
 ## Framework execution overrides
 
@@ -272,7 +282,7 @@ All alpha parameters are source locked for the first falsification build:
 | catastrophe stop | ATR20 × 3.0 | proposed fixed safety overlay |
 | Friday close | enabled | proposed fixed framework default |
 
-No alpha sweep or rescue threshold is authorized by this Draft. A change to a
+No alpha sweep or rescue threshold is authorized by this G0 baseline. A change to a
 source-locked value requires a new reviewed Card/version before testing.
 
 ## Author Claims
@@ -285,9 +295,8 @@ p. 210 / PDFPAGE 228, not `GDAXI.DWX` evidence.
 
 ## Risk
 
-- `expected_pf: TBD`; G0 may record a conservative ordering estimate, but only
-  artifact-bound tests can establish performance.
-- `expected_dd_pct: TBD`.
+- `expected_pf: 1.20`; conservative G0 ordering prior only.
+- `expected_dd_pct: 20.0`; conservative G0 ordering prior only.
 - Source cadence: 13.5/year on continuous FDAX; current planning integer is
   13/year on one symbol.
 - Main risks: no source protective stop, index gaps, futures-to-CFD basis,
@@ -296,16 +305,18 @@ p. 210 / PDFPAGE 228, not `GDAXI.DWX` evidence.
 - Risk class: medium-high until the stop/fill/cost contract and Q02 behavior are
   observed.
 
-## R1-R4 research precheck
+## R1-R4 G0 record
 
-- R1 proposed PASS: exactly one authorized source ID and precise pages.
-- R2 proposed PASS: deterministic long/short entry, signal exits, and 60-bar
+- R1 `TIER_A`: exactly one authorized licensed source ID and precise pages.
+- R2 `PASS`: deterministic long/short entry, signal exits, and 60-bar
   time exit; source stop gap is explicit.
-- R3 proposed PASS: `GDAXI.DWX` D1 is present, with a disclosed FDAX-to-CFD port.
-- R4 proposed PASS: fixed arithmetic, no adaptive fit, ML, grid, martingale,
+- R3 `PASS`: `GDAXI.DWX` D1 is present, with a disclosed FDAX-to-CFD port.
+- R4 `PASS`: fixed arithmetic, no adaptive fit, ML, grid, martingale,
   pyramiding, or more than one position per magic.
 
-These are Research findings only. OWNER has not recorded G0 approval.
+OWNER recorded G0 approval on 2026-07-23. These findings authorize
+implementation and non-live falsification only; they are not test evidence or
+live permission.
 
 ## Non-Duplicate Decision
 
@@ -350,7 +361,9 @@ asymmetric moving averages, and 60-bar exit.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| draft-v1 | 2026-07-23 | source extraction and causal CFD port proposal | G0 pending | DRAFT |
+| draft-v1 | 2026-07-23 | source extraction and causal CFD port proposal | G0 review | DRAFT |
+| g0-v1 | 2026-07-23 | OWNER accepted Appendix A.4 and all stated QM execution interpretations | G0 | APPROVED |
 
-No EA ID, magic row, code, build, test, deploy manifest, or live permission
-exists for this Card.
+EA ID `QM5_20061` is allocated. No magic row, code, build, test, deploy
+manifest, separately approved execution contract, or live permission exists
+for this Card.

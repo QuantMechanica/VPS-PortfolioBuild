@@ -65,6 +65,14 @@ double   g_d1_ema50 = 0.0;
 int      g_reversal_down_streak = 0;
 int      g_reversal_up_streak   = 0;
 
+// Card §"Exit" ATR trailing-stop reference (highest-high / lowest-low since
+// entry). Updated once per closed bar from the already-cached g_laguerre_high
+// /low[0] — NOT rescanned per tick (a per-tick iTime/iHigh/iLow bar loop was
+// the QM5_20007-class defect this build fixes: bounded history scans must be
+// cached once-per-bar, never re-walked on every incoming tick).
+double   g_trail_extreme = 0.0;
+ulong    g_trail_ticket  = 0;
+
 double NormalizeStrategyPrice(const double price)
   {
    if(price <= 0.0)
@@ -105,6 +113,9 @@ bool FindOurPosition(ulong &ticket,
 
    return false;
   }
+
+// Forward declaration — defined below; called from AdvanceState_OnNewBar.
+void UpdateTrailExtremeOnNewBar();
 
 // Card §"Mechanik" Step 2-3: 4-stage Laguerre IIR cascade + 1:2:2:1 weighted
 // output, reconstructed over a bounded lookback so the filter is fully
@@ -182,6 +193,8 @@ void AdvanceState_OnNewBar()
       g_reversal_up_streak = MathMin(g_reversal_up_streak + 1, 2);
    else
       g_reversal_up_streak = 0;
+
+   UpdateTrailExtremeOnNewBar();
   }
 
 // Cross direction of Close vs LF at cached offset `offset` (0=current closed
@@ -217,33 +230,34 @@ bool RecentCrossThrottleBlocks()
    return false;
   }
 
-double ExtremeSinceEntry(const ENUM_POSITION_TYPE position_type, const datetime open_time)
+// Called once per closed bar (from AdvanceState_OnNewBar) — reads only the
+// already-cached g_laguerre_high/low[0] for the bar that just closed, so no
+// per-tick history walk is needed. Resets/reseeds whenever the tracked
+// position ticket changes (new position opened, or position closed).
+void UpdateTrailExtremeOnNewBar()
   {
-   double extreme = 0.0;
-   const int max_scan = MathMax(2, strategy_time_stop_h4_bars + 4);
-   for(int shift = 1; shift <= max_scan; ++shift)
+   ulong ticket;
+   ENUM_POSITION_TYPE position_type;
+   double open_price;
+   datetime open_time;
+   if(!FindOurPosition(ticket, position_type, open_price, open_time))
      {
-      const datetime bar_time = iTime(_Symbol, PERIOD_H4, shift); // perf-allowed: bounded trailing-stop scan over H4 bars since entry.
-      if(bar_time <= 0)
-         break;
-      if(open_time > 0 && bar_time < open_time)
-         break;
-
-      if(position_type == POSITION_TYPE_BUY)
-        {
-         const double high = iHigh(_Symbol, PERIOD_H4, shift); // perf-allowed: bounded trailing-stop highest-high since entry.
-         if(high > 0.0 && (extreme <= 0.0 || high > extreme))
-            extreme = high;
-        }
-      else
-        {
-         const double low = iLow(_Symbol, PERIOD_H4, shift); // perf-allowed: bounded trailing-stop lowest-low since entry.
-         if(low > 0.0 && (extreme <= 0.0 || low < extreme))
-            extreme = low;
-        }
+      g_trail_extreme = 0.0;
+      g_trail_ticket = 0;
+      return;
      }
 
-   return extreme;
+   if(ticket != g_trail_ticket)
+     {
+      g_trail_ticket = ticket;
+      g_trail_extreme = (position_type == POSITION_TYPE_BUY) ? g_laguerre_high[0] : g_laguerre_low[0];
+      return;
+     }
+
+   if(position_type == POSITION_TYPE_BUY)
+      g_trail_extreme = MathMax(g_trail_extreme, g_laguerre_high[0]);
+   else
+      g_trail_extreme = MathMin(g_trail_extreme, g_laguerre_low[0]);
   }
 
 bool Strategy_NoTradeFilter()
@@ -350,7 +364,7 @@ void Strategy_ManageOpenPosition()
    if(favorable_move < strategy_trail_trigger_atr * g_atr20)
       return;
 
-   const double extreme = ExtremeSinceEntry(position_type, open_time);
+   const double extreme = g_trail_extreme;
    if(extreme <= 0.0)
       return;
 
@@ -444,6 +458,8 @@ int OnInit()
    g_d1_ema50 = 0.0;
    g_reversal_down_streak = 0;
    g_reversal_up_streak = 0;
+   g_trail_extreme = 0.0;
+   g_trail_ticket = 0;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_2131\",\"strategy\":\"ehlers_laguerre_filter_h4\"}");
    return INIT_SUCCEEDED;
