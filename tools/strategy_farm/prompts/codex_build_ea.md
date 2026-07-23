@@ -354,6 +354,18 @@ patterns. The remaining rules cover custom math the framework can't help with:
   custom seasonality math), call `CopyRates` ONCE inside a `QM_IsNewBar` gate
   and cache the result in file-scope variables. Never call it unconditionally
   from `OnTick`.
+- **Cache indicator reads used in per-tick paths.** For closed-bar / intraday
+  EAs (`closed_bar_cache_required` or `intraday: true`), any `QM_*` indicator
+  value read from a function reachable from `OnTick` BEFORE the new-bar gate —
+  e.g. a per-tick no-trade / cost-gate filter or an open-position management
+  hook — MUST be computed ONCE in the once-per-bar advance function (e.g.
+  `AdvanceState_OnNewBar`) and stored in a file-scope `g_*` var; the per-tick
+  path then READS the cached `g_*`. Do NOT call `QM_ATR(...)` (or any `QM_*`
+  reader) directly in a per-tick path, even at shift >= 1: the value is
+  constant within the bar, so a live call is redundant per-tick work and
+  violates the "reads only cached state" contract those O(1) functions
+  advertise. (QM5_20007 defect 2026-07-23: cost-gate ATR + trailing-management
+  ATR were read live per tick instead of cached.)
 - **Logging discipline.** No `Print()` / INFO / DEBUG logging inside `OnTick`
   on the per-tick code path. Gate logs by `QM_IsNewBar` or rate-limit to at
   most once per broker-time hour. In particular, per-tick logging during
