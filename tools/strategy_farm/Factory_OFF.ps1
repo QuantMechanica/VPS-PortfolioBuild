@@ -3,8 +3,8 @@
 #  Stops the MT5 backtest factory cleanly. Task lifecycle is driven by the
 #  canonical manifest qm_tasks.manifest.ps1:
 #    FACTORY + AI    -> stopped + disabled (the respawn vectors)
-#    ALWAYS_ON       -> LEFT ALONE (dashboards, health, gmail alarm, morning
-#                       brief, public snapshot, housekeeping keep running)
+#    ALWAYS_ON       -> LEFT ALONE (dashboards, health, reboot diagnostics,
+#                       morning brief, public snapshot, housekeeping keep running)
 #    ENFORCE_DISABLED-> left disabled (Repair_Hourly, TerminalWorkers)
 #  Plus: kills the 10 terminal_worker.py daemons + transient terminal64.exe.
 #  Existing manually-started AI shells are not killed.
@@ -62,7 +62,7 @@ Write-Host ''
 
 # 1. stop + disable the FACTORY + AI tasks (stop the respawn vectors).
 #    ALWAYS_ON tasks are deliberately NOT touched - you still get the
-#    morning brief, dashboards, health and gmail alarm with the factory off.
+#    morning brief, dashboards, health and reboot diagnostics with the factory off.
 foreach ($t in @($QM_FACTORY_TASKS + $QM_AI_TASKS)) {
     Stop-ScheduledTask -TaskName $t -ErrorAction SilentlyContinue | Out-Null
     Disable-ScheduledTask -TaskName $t -ErrorAction SilentlyContinue | Out-Null
@@ -152,7 +152,7 @@ if ($leftDaemons -eq 0 -and $leftTerms -eq 0 -and $leftMeta -eq 0) {
 }
 Write-Host ''
 Write-Host '  Factory + AI tasks disabled. Resurrection-vector tasks disabled.'
-Write-Host '  Always-on tasks (dashboards, health, gmail alarm, morning brief, snapshot, housekeeping) keep running.'
+Write-Host '  Always-on tasks (dashboards, health, reboot diagnostics, morning brief, snapshot, housekeeping) keep running.'
 Write-Host '  FACTORY_OFF.flag blocks pump/watchdog/sweep_enqueue/run_smoke post-run hook.'
 Write-Host '  Existing manually-started AI shells are not killed.'
 Write-Host ''

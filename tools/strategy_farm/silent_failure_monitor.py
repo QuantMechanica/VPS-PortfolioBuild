@@ -12,32 +12,23 @@ WHY THIS EXISTS
     5. Pump blocked:true streaks (build lane wedged for hours).
     6. State files mutated / going stale without an alarm trail.
   Each was individually observable in a log or a state file, but no watcher tied
-  those signals to the ONE alarm channel OWNER actually reads. This meta-monitor
-  is that watcher: it reads (never mutates) the farm's own logs/state/DB, decides
-  OK / WARN / FAIL per invariant, dedupes so each incident pages exactly ONCE and
-  re-arms on recovery, and hands the result to the EXISTING hourly Gmail alarm.
+  those signals into one durable health surface. This meta-monitor reads (never
+  mutates) the farm's own logs/state/DB, decides OK / WARN / FAIL per invariant,
+  and writes a compact sidecar for inspection and health aggregation.
 
-INTEGRATION WITH THE EXISTING ALARM CHANNEL (no new mail channel, HARD RULE)
-  gmail_alarm.py does NOT read a work-queue; it *scans a condition file* --
-  D:/QM/strategy_farm/state/health.json (produced every 15min by farmctl health) --
-  fingerprints the set of FAILing check names, and mails once per fingerprint
-  change (new FAIL, or FAIL cleared). So per the task contract ("if it scans
-  conditions itself, output a compatible alarm-condition file + document the
-  one-line wiring"), this monitor:
+INTEGRATION WITH HEALTH STATE (pipeline mail is OWNER-disabled)
+  The former hourly Gmail dispatcher consumed health.json fingerprints. OWNER
+  policy since 2026-07-23 disables that separate PIPELINE FAIL/OK mail channel;
+  this monitor therefore produces health evidence only and never sends mail.
+  For compatibility with existing readers, it:
     * writes a health.json-SHAPED sidecar: ALARM_SIDECAR (checks[] with the exact
-      name/status/detail/action_hint keys gmail_alarm consumes), and
+      name/status/detail/action_hint keys health consumers understand), and
     * exposes merge_into_health(health) -- a drop-in that folds this monitor's
       non-OK checks into a health dict, escalates `overall`, and (crucially)
       injects its OWN staleness as a FAIL if the monitor itself died.
-  WIRING (applied by the landing agent -- see report; this module does NOT edit
-  the repo or register any task):
-      # in gmail_alarm._load_health(), right before `return`:
-      import silent_failure_monitor            # same directory, on sys.path[0]
-      health = silent_failure_monitor.merge_into_health(health)
-  That single call routes every silent-failure incident through the existing
-  QM_StrategyFarm_GmailAlarm_Hourly digest -- no ping mails, no second channel.
-  (Alternative, broader: make the same call in health.py after it assembles its
-  checks list -- then the cockpit banner shows them too. Either wiring works.)
+  gmail_alarm.py still imports the merge helper for backwards compatibility,
+  but its executable PIPELINE FAIL/OK path is policy-disabled. The single daily
+  MorningBriefing and per-boot diagnostic use the shared SMTP helper directly.
 
 DESIGN CONTRACT
   * Single run-and-exit; scheduled every 15 min (pythonw direct, like the intake
@@ -1024,7 +1015,7 @@ def _summarize(findings: list[dict]) -> tuple[str, dict]:
 
 
 def _write_sidecar(findings: list[dict], now_iso: str, runtime_sec: float) -> None:
-    # Only non-OK checks go into the sidecar the alarm channel consumes.
+    # Only non-OK checks go into the durable health sidecar.
     non_ok = [f for f in findings if f["status"] in (WARN, FAIL)]
     overall, _summary_all = _summarize(findings)
     n_fail = sum(1 for f in non_ok if f["status"] == FAIL)
@@ -1062,15 +1053,14 @@ def _log(lines: list[str]) -> None:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  Consumer-side merge — folds this monitor's alarms into the existing channel
+#  Consumer-side merge — folds this monitor's findings into health state
 # ─────────────────────────────────────────────────────────────────────────────
 def merge_into_health(health: dict) -> dict:
     """Fold silent-failure alarms into a health.json-style dict IN PLACE and return it.
 
-    Wire this into gmail_alarm._load_health() (or health.py after it builds its
-    checks) so the existing hourly Gmail digest pages on silent-failure incidents.
-    Also injects the monitor's OWN staleness as WARN/FAIL — so if this monitor dies,
-    the existing channel still tells OWNER."""
+    Existing health readers may call this after building their checks. It also
+    injects the monitor's OWN staleness as WARN/FAIL so a dead monitor remains
+    visible in the resulting health state. It does not send mail."""
     if not isinstance(health, dict):
         health = {}
     checks = health.get("checks")
@@ -1122,7 +1112,7 @@ def merge_into_health(health: dict) -> dict:
 
     checks.extend(injected)
 
-    # recompute summary + overall so gmail_alarm._fingerprint() sees the new FAILs
+    # Recompute summary + overall so every health consumer sees the new FAILs.
     n_fail = sum(1 for c in checks if c.get("status") == FAIL)
     n_warn = sum(1 for c in checks if c.get("status") == WARN)
     n_ok = sum(1 for c in checks if c.get("status") == OK)

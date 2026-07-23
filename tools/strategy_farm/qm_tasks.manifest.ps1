@@ -5,11 +5,12 @@
 #  Categories drive ON/OFF behaviour:
 #    FACTORY      - dispatch engine.  ON: enable+start | OFF: stop+disable
 #    AI           - agent orchestration. ON: enable+start | OFF: stop+disable
-#    ALWAYS_ON    - dashboards/health/alarm/briefs/snapshot/housekeeping.
+#    ALWAYS_ON    - dashboards/health/briefs/snapshot/housekeeping.
 #                   ON: ENSURE enabled (safety-net) | OFF: LEAVE ALONE
-#                   (you still get the morning brief / health / dashboards
+#                   (you still get the morning brief / reboot diagnostics /
+#                    health / dashboards
 #                    even when the factory is OFF — by design).
-#    ENFORCE_DISABLED - unsafe respawn/session/reboot paths that must stay OFF.
+#    ENFORCE_DISABLED - unsafe paths and OWNER-disabled channels that must stay OFF.
 #                   ON: force-disable if drifted on | OFF: leave disabled.
 #
 #  DECOMMISSIONED_REFERENCE is documentation only — obsolete orchestration / superseded
@@ -39,10 +40,10 @@ $QM_ALWAYSON_TASKS = @(
     'QM_StrategyFarm_Cockpit_2min',           # cockpit.html every 2 min
     'QM_StrategyFarm_Dashboard_Hourly',       # current/strategies/EA-detail pages
     'QM_StrategyFarm_Health_15min',           # farmctl health
-    'QM_StrategyFarm_GmailAlarm_Hourly',      # sanctioned alarm + 06:05 digest
     'QM_MorningBriefing_Vault',               # morning brief (vault) 06:00
-    # NOTE: QM_StrategyFarm_MorningBrief_0700 (07:00 email brief) was deleted
-    # 2026-06-01 (OWNER: keep vault, drop email). Do not re-add.
+    'QM_StrategyFarm_RebootDiagnostic_AtStartup', # one deduplicated cause/recovery mail per Windows boot
+    # NOTE: duplicate QM_StrategyFarm_MorningBrief_0700 was deleted. The retained
+    # 06:00 task sends the one MorningBriefing mail and writes the vault archive.
     'QM_Public_Snapshot_Hourly',              # quantmechanica.com public JSON
     'QM_StrategyFarm_InboxCleanup_Daily',     # codex_inbox cleanup
     'QM_StrategyFarm_WorktreeClean_4h',       # agent worktree GC
@@ -62,7 +63,7 @@ $QM_ALWAYSON_TASKS = @(
     'QM_StrategyFarm_SilentFailureMonitor'    # alarm-sidecar producer
 )
 
-# --- must stay disabled: unsafe respawn/session/reboot paths --------
+# --- must stay disabled: unsafe paths + explicit OWNER opt-outs -----
 #  The first two spawn workers/repair as SYSTEM/session-0 (headless), which the
 #  interactive-visible-mode policy (2026-05-23, DL companion) eliminated.
 #  Repair now runs ONCE inline in Factory_ON; workers spawn in the user
@@ -73,7 +74,8 @@ $QM_ENFORCE_DISABLED_TASKS = @(
     'QM_StrategyFarm_Repair_Hourly',
     'QM_StrategyFarm_TerminalWorkers_AT_STARTUP',
     'QM_TSCon_Console_OnDisconnect',           # proven session-teardown race (2026-07-21)
-    'QM_StrategyFarm_HygieneReboot'            # unguarded reboot path; keep OFF until hardened
+    'QM_StrategyFarm_HygieneReboot',           # unguarded reboot path; keep OFF until hardened
+    'QM_StrategyFarm_GmailAlarm_Hourly'        # OWNER 2026-07-23: no separate PIPELINE FAIL/OK mail; morning brief remains
 )
 
 # --- decommissioned: DELETED 2026-06-01 (OWNER-approved) ------------

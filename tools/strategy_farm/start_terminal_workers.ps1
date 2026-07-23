@@ -11,6 +11,7 @@ $logDir = Join-Path $FarmRoot "logs"
 $pidFile = Join-Path $stateDir "worker_pids.json"
 $worker = Join-Path $RepoRoot "tools\strategy_farm\terminal_worker.py"
 $factoryTerminals = 1..10 | ForEach-Object { "T$_" }
+$disabledTerminalsFile = Join-Path $stateDir "disabled_terminals.txt"
 
 New-Item -ItemType Directory -Force -Path $stateDir | Out-Null
 New-Item -ItemType Directory -Force -Path $logDir | Out-Null
@@ -27,9 +28,19 @@ if (Test-Path $pidFile) {
     }
 }
 
+$disabledTerminals = @()
+if (Test-Path -LiteralPath $disabledTerminalsFile) {
+    $disabledTerminals = @(
+        Get-Content -LiteralPath $disabledTerminalsFile -ErrorAction SilentlyContinue |
+            ForEach-Object { ([string]$_).Trim().ToUpperInvariant() } |
+            Where-Object { $_ -match '^T(?:[1-9]|10)$' }
+    )
+}
+
 $updated = @{}
 $terminals = $factoryTerminals | Where-Object {
-    Test-Path -LiteralPath (Join-Path $Mt5Root (Join-Path $_ "terminal64.exe")) -PathType Leaf
+    $_ -notin $disabledTerminals -and
+    (Test-Path -LiteralPath (Join-Path $Mt5Root (Join-Path $_ "terminal64.exe")) -PathType Leaf)
 }
 foreach ($terminal in $terminals) {
     $workerPid = $existing[$terminal]

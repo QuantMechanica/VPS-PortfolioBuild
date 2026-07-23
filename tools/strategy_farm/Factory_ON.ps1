@@ -12,10 +12,9 @@
 #  Task lifecycle is driven by the canonical manifest qm_tasks.manifest.ps1:
 #    FACTORY + AI       -> enabled + started here
 #    ALWAYS_ON          -> ENSURED enabled (morning brief, dashboards,
-#                          health, gmail alarm, public snapshot, housekeeping)
+#                          health, reboot diagnostics, public snapshot, housekeeping)
 #                          so nothing silently stays off after a reboot
-#    ENFORCE_DISABLED   -> force-disabled (session-0 respawn hazards:
-#                          Repair_Hourly, TerminalWorkers_AT_STARTUP)
+#    ENFORCE_DISABLED   -> force-disabled (unsafe paths and OWNER opt-outs)
 #  Plus: spawns the 10 terminal_worker.py daemons IN THIS SESSION and runs
 #  `farmctl.py repair` ONCE synchronously (replaces the old recurring
 #  Repair_Hourly task, which spawned SYSTEM/session-0 daemons).
@@ -62,6 +61,7 @@ try {
 
 $factoryOffFlagPath = 'D:\QM\strategy_farm\state\FACTORY_OFF.flag'
 $codexParallelPath  = 'D:\QM\strategy_farm\state\codex_parallel.txt'
+$watchdogResetBlockPath = 'D:\QM\strategy_farm\state\WATCHDOG_RESET_PENDING.json'
 
 # Resurrection-vector tasks: disabled by Factory_OFF to prevent autonomous restart;
 # re-enabled here so the watchdog/auto-logon/reconciler resume normal operation.
@@ -132,7 +132,7 @@ Write-Host ''
 # 2. ALWAYS-ON support: make sure these are enabled (they run on their own
 #    schedule and are NOT torn down by Factory OFF). This is the safety net
 #    so a reboot / accidental disable can never silently kill the morning
-#    brief, dashboards, health, gmail alarm, snapshot, or housekeeping.
+#    brief, reboot diagnostics, dashboards, health, snapshot, or housekeeping.
 Write-Host '  [ALWAYS-ON] ensure enabled (left running by Factory OFF)' -ForegroundColor Green
 $alwaysFixed = 0
 foreach ($t in $QM_ALWAYSON_TASKS) {
@@ -173,6 +173,21 @@ foreach ($p in $termsBefore) { Stop-Process -Id $p.ProcessId -Force -ErrorAction
 if ($daemonsBefore.Count -gt 0 -or $termsBefore.Count -gt 0) {
     Write-Host ("  cleared: {0} old daemon(s), {1} old terminal(s)" -f $daemonsBefore.Count, $termsBefore.Count)
     Start-Sleep -Seconds 2
+}
+
+# A watchdog-triggered clean-slate handover blocks new SQLite claims before it
+# starts this task. Existing workers and terminals are now gone, so release the
+# admission block immediately before the replacement daemons are spawned.
+try {
+    if (Test-Path -LiteralPath $watchdogResetBlockPath -ErrorAction Stop) {
+        Remove-Item -LiteralPath $watchdogResetBlockPath -Force -ErrorAction Stop
+        if (Test-Path -LiteralPath $watchdogResetBlockPath -ErrorAction Stop) {
+            throw 'marker still exists after removal'
+        }
+        Write-Host '  watchdog reset admission block cleared'
+    }
+} catch {
+    throw "FACTORY ON ABORTED before worker spawn: cannot acknowledge watchdog reset handover: $($_.Exception.Message)"
 }
 
 # 5. spawn the 10 worker daemons IN THIS interactive session

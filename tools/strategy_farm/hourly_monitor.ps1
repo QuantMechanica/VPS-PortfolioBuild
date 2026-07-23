@@ -12,7 +12,8 @@
 #    3. ESCALATE (record only, never auto-act): codex_auth_broken, factory down,
 #         T_Live, code bugs. Special-case the codex token-refresh race
 #         (low auth_age + 401 = auth dying right after login).
-#    4. Append one JSON line to the triage log. NO email (GmailAlarm owns that);
+#    4. Append one JSON line to the triage log. NO email (the separate pipeline
+#       FAIL/OK mail channel was OWNER-disabled 2026-07-23);
 #       NO destructive ops; NEVER touches FACTORY/AI enable-state (OWNER's ON/OFF)
 #       or T_Live.
 # =====================================================================

@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import faulthandler
 import json
+import math
 import os
 import random
 import shutil
@@ -46,10 +47,28 @@ _last_disk_purge_trigger = [0.0]
 # terminal cap in start_terminal_workers disabled_terminals.txt). Fail-open.
 RAM_MIN_FREE_GB = 4.0
 RAM_GUARD_SLEEP_SECONDS = 20
+# Free physical RAM did not expose the 2026-07-23 failure mode: Windows still
+# had RAM available while system commit was close enough to its limit that new
+# processes failed with 0xC0000142.  Gate new claims on commit headroom too.
+# Ordinary real-tick jobs typically consume ~6-7GB; 24GB leaves room for the
+# claim-to-launch race between several worker daemons. Commit probe errors pause
+# admission briefly and retry; they must not bypass this crash-prevention gate.
+COMMIT_MIN_FREE_GB = 24.0
+COMMIT_GUARD_SLEEP_SECONDS = 20
+# A claim becomes visible in SQLite before its child has allocated the real-tick
+# working set. Reserve its expected peak during that launch/warm-up window so
+# other workers cannot all pass against the same unchanged OS measurement.
+COMMIT_RESERVATION_SECONDS = 300
+ORDINARY_COMMIT_RESERVATION_GB = 8.0
+WATCHDOG_RESET_BLOCK_FILENAME = "WATCHDOG_RESET_PENDING.json"
 # Multi-symbol real-tick jobs need materially more launch headroom than ordinary
 # single-symbol jobs. A low-memory launch can generate a syntactically valid
 # MT5 report with 0 bars and get misclassified as symbol history failure.
 MULTISYMBOL_RAM_MIN_FREE_GB = 12.0
+# Observed multi-symbol working sets range from 20-44GB.  Keep that worst case
+# plus a small system margin available before admitting another heavy job.
+MULTISYMBOL_COMMIT_MIN_FREE_GB = 48.0
+MULTISYMBOL_COMMIT_RESERVATION_GB = 44.0
 # Launch-fault guard (2026-06-20): the spawned phase-runner child vanishing far
 # faster than any real backtest (terminal64 startup + sync alone is ~6-10s) means
 # the run never actually started — a transient pwsh/host launch fault, NOT a clean
@@ -455,7 +474,15 @@ def _merge_history_window_payload(payload: dict[str, Any], history: dict[str, An
 
 
 MULTISYMBOL_REGISTRY_PATH = Path("D:/QM/strategy_farm/state/multisymbol_eas.txt")
-_multisym_cache: dict[str, Any] = {"mtime": -1.0, "ids": frozenset()}
+_multisym_cache: dict[str, Any] = {
+    "mtime": -1.0,
+    "ids": frozenset(),
+    "loaded": False,
+}
+
+
+class MultisymbolRegistryUnavailable(RuntimeError):
+    """The safety-critical registry is unavailable and has no valid cache."""
 
 
 def _multisymbol_ea_ids() -> frozenset:
@@ -467,23 +494,50 @@ def _multisymbol_ea_ids() -> frozenset:
     launch_fault wedge (2026-06-24 incident, EA QM5_1218 = 44GB x3 = 90GB).
 
     Populated by scanning EA .mq5 for basket markers (g_symbols[], QM_Basket,
-    _SYMBOL_COUNT, Strategy_GroupMembers). Cached, refreshed on file mtime change.
-    Fail-open: an unreadable/missing registry returns an empty set -> NO gating,
-    so the factory is never blocked by this feature going wrong.
+    _SYMBOL_COUNT, Strategy_GroupMembers). Cached, refreshed on file mtime
+    change. A transient read failure reuses the last valid cache; without one,
+    admission fails closed because treating a legacy multisymbol EA as ordinary
+    can recreate the commit-exhaustion incident this registry prevents.
     """
     try:
         st = MULTISYMBOL_REGISTRY_PATH.stat().st_mtime
         if st != _multisym_cache["mtime"]:
             ids = frozenset(
-                ln.strip()
+                ln.strip().split()[0]
                 for ln in MULTISYMBOL_REGISTRY_PATH.read_text(encoding="utf-8").splitlines()
                 if ln.strip() and not ln.lstrip().startswith("#")
             )
+            if not ids:
+                raise ValueError("multisymbol registry is empty")
             _multisym_cache["mtime"] = st
             _multisym_cache["ids"] = ids
+            _multisym_cache["loaded"] = True
         return _multisym_cache["ids"]
-    except Exception:
-        return frozenset()
+    except Exception as exc:
+        if _multisym_cache.get("loaded"):
+            return _multisym_cache["ids"]
+        raise MultisymbolRegistryUnavailable(
+            f"multisymbol registry unavailable: {exc!r}"
+        ) from exc
+
+
+def _watchdog_reset_admission_blocked(root: Path) -> bool:
+    """Block new claims until Factory_ON explicitly completes the handover.
+
+    This is intentionally not time-based. A delayed or hung Factory_ON must
+    never let admissions resume and then kill work it did not see in the fresh
+    pre-reset snapshot. The next watchdog run can remove a provably orphaned
+    pre-handover marker; Factory_ON removes a live marker only after terminating
+    the old worker/terminal fleet.
+    """
+
+    marker = root / "state" / WATCHDOG_RESET_BLOCK_FILENAME
+    try:
+        return marker.exists()
+    except OSError:
+        # An unreadable marker path is safety-significant, but should pause the
+        # worker cleanly rather than crash its long-running loop.
+        return True
 
 
 def _work_item_is_multisymbol(
@@ -512,6 +566,84 @@ def _work_item_is_multisymbol(
         return False
 
 
+def _commit_admission_snapshot(
+    conn: sqlite3.Connection,
+    now_iso: str,
+    multisym_ids: frozenset,
+) -> dict[str, Any]:
+    """Measure commit headroom minus recent atomic claim reservations.
+
+    Windows' commit charge does not jump at SQLite claim time. Without a durable
+    reservation, every worker can observe the same headroom and over-admit work
+    before any child reaches its peak. Active claims reserve their expected peak
+    for the bounded launch/warm-up window; afterwards the OS measurement is the
+    source of truth. The reservation is deliberately conservative and disappears
+    immediately when the work item leaves ``active``.
+    """
+    live_headroom = _commit_headroom_gb()
+    probe_ok = math.isfinite(live_headroom) or (
+        sys.platform != "win32" and math.isinf(live_headroom) and live_headroom > 0
+    )
+    now_dt = _parse_utc_iso(now_iso) or datetime.now(timezone.utc)
+    reservations: list[dict[str, Any]] = []
+    reserved_gb = 0.0
+    rows = conn.execute(
+        "SELECT id, ea_id, symbol, payload_json FROM work_items WHERE status='active'"
+    ).fetchall()
+    for row in rows:
+        payload = _json_loads(row["payload_json"])
+        until = _parse_utc_iso(payload.get("commit_reservation_until_utc"))
+        claimed_at = _parse_utc_iso(payload.get("claimed_at_iso"))
+        if until is None and claimed_at is not None:
+            until = claimed_at + timedelta(seconds=COMMIT_RESERVATION_SECONDS)
+        if until is None or until <= now_dt:
+            continue
+        item_is_multisym = _work_item_is_multisymbol(row, payload, multisym_ids)
+        default_reservation = (
+            MULTISYMBOL_COMMIT_RESERVATION_GB
+            if item_is_multisym
+            else ORDINARY_COMMIT_RESERVATION_GB
+        )
+        try:
+            reservation_gb = max(
+                0.0,
+                float(payload.get("commit_reservation_gb") or default_reservation),
+            )
+        except (TypeError, ValueError):
+            reservation_gb = default_reservation
+        reserved_gb += reservation_gb
+        reservations.append({
+            "item_id": row["id"],
+            "ea_id": row["ea_id"],
+            "reservation_gb": reservation_gb,
+            "until_utc": until.isoformat(),
+        })
+    return {
+        "probe_ok": probe_ok,
+        "live_headroom_gb": live_headroom if probe_ok else None,
+        "reserved_gb": reserved_gb,
+        "effective_headroom_gb": live_headroom - reserved_gb if probe_ok else None,
+        "reservations": reservations,
+    }
+
+
+def _set_commit_reservation(
+    payload: dict[str, Any],
+    *,
+    claimed_at_iso: str,
+    multisymbol: bool,
+) -> None:
+    claimed_at = _parse_utc_iso(claimed_at_iso) or datetime.now(timezone.utc)
+    payload["commit_reservation_gb"] = (
+        MULTISYMBOL_COMMIT_RESERVATION_GB
+        if multisymbol
+        else ORDINARY_COMMIT_RESERVATION_GB
+    )
+    payload["commit_reservation_until_utc"] = (
+        claimed_at + timedelta(seconds=COMMIT_RESERVATION_SECONDS)
+    ).isoformat()
+
+
 def _payload_avoid_terminals(payload: dict[str, Any]) -> set[str]:
     """Return factory terminals this item must not be claimed by."""
     raw = payload.get("avoid_terminals", payload.get("skip_terminals", []))
@@ -535,6 +667,8 @@ _STALE_RUNTIME_PAYLOAD_KEYS = (
     "log_path",
     "claimed_at_iso",
     "claimed_by_worker_pid",
+    "commit_reservation_gb",
+    "commit_reservation_until_utc",
     "terminal",
 )
 
@@ -672,8 +806,9 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
     anywhere in the farm blocks another item with the same symbol. Multi-symbol
     (basket) EAs are additionally serialized to AT MOST ONE active farm-wide, so
     their oversized tick-history working sets never stack and exhaust commit.
-    Multi-symbol claims also require higher free-RAM headroom than ordinary
-    single-symbol jobs to avoid empty-bar MT5 reports caused by allocator failure.
+    Every new claim requires free system-commit headroom. Multi-symbol claims
+    additionally require higher commit and physical-RAM headroom than ordinary
+    single-symbol jobs to avoid process-start and allocator failures.
     """
     def _claim() -> dict[str, Any]:
         farmctl.init_db(root)
@@ -753,6 +888,45 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     conn.commit()
                     return {"claimed": False, "reason": "terminal_process_busy", "terminal": terminal}
 
+                if _watchdog_reset_admission_blocked(root):
+                    conn.commit()
+                    return {
+                        "claimed": False,
+                        "reason": "watchdog_reset_pending",
+                        "terminal": terminal,
+                    }
+
+                try:
+                    multisym_ids = _multisymbol_ea_ids()
+                except MultisymbolRegistryUnavailable as exc:
+                    conn.commit()
+                    return {
+                        "claimed": False,
+                        "reason": "multisymbol_registry_unavailable",
+                        "error": str(exc),
+                    }
+                admission = _commit_admission_snapshot(conn, now, multisym_ids)
+                if not admission["probe_ok"]:
+                    conn.commit()
+                    return {
+                        "claimed": False,
+                        "reason": "commit_probe_failed",
+                        "commit_reserved_gb": round(admission["reserved_gb"], 1),
+                        "commit_reservation_count": len(admission["reservations"]),
+                    }
+                effective_commit_headroom = admission["effective_headroom_gb"]
+                if effective_commit_headroom < COMMIT_MIN_FREE_GB:
+                    conn.commit()
+                    return {
+                        "claimed": False,
+                        "reason": "commit_headroom_low",
+                        "commit_headroom_gb": round(admission["live_headroom_gb"], 1),
+                        "commit_reserved_gb": round(admission["reserved_gb"], 1),
+                        "effective_commit_headroom_gb": round(effective_commit_headroom, 1),
+                        "commit_reservation_count": len(admission["reservations"]),
+                        "threshold_gb": COMMIT_MIN_FREE_GB,
+                    }
+
                 active_symbols = farmctl._active_work_item_symbols(conn)
                 active_q04_eas = {
                     str(row["ea_id"])
@@ -765,7 +939,6 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 # sets must not stack and exhaust commit). BEGIN IMMEDIATE (above)
                 # makes this active-check + claim atomic across workers, so two
                 # daemons can't both pass the gate. OWNER 2026-06-24.
-                multisym_ids = _multisymbol_ea_ids()
                 multisym_active = any(
                     _work_item_is_multisymbol(row, _json_loads(row["payload_json"]), multisym_ids)
                     for row in conn.execute("SELECT ea_id, payload_json FROM work_items WHERE status='active'")
@@ -773,6 +946,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 skipped_history: list[dict[str, Any]] = []
                 skipped_launch_cooldown: list[dict[str, Any]] = []
                 skipped_multisym_ram: list[dict[str, Any]] = []
+                skipped_multisym_commit: list[dict[str, Any]] = []
                 skipped_avoid_terminal: list[dict[str, Any]] = []
                 multisym_free_ram: float | None = None
                 history_registry = farmctl._dwx_symbol_history_registry()
@@ -810,6 +984,16 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     if multisym_active and item_is_multisym:
                         continue
                     if item_is_multisym:
+                        if effective_commit_headroom < MULTISYMBOL_COMMIT_MIN_FREE_GB:
+                            skipped_multisym_commit.append({
+                                "item_id": item["id"],
+                                "ea_id": item["ea_id"],
+                                "commit_headroom_gb": round(admission["live_headroom_gb"], 1),
+                                "commit_reserved_gb": round(admission["reserved_gb"], 1),
+                                "effective_commit_headroom_gb": round(effective_commit_headroom, 1),
+                                "threshold_gb": MULTISYMBOL_COMMIT_MIN_FREE_GB,
+                            })
+                            continue
                         if multisym_free_ram is None:
                             multisym_free_ram = _free_ram_gb()
                         if multisym_free_ram < MULTISYMBOL_RAM_MIN_FREE_GB:
@@ -830,6 +1014,11 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         "claimed_by_worker_pid": os.getpid(),
                         "terminal": terminal,
                     })
+                    _set_commit_reservation(
+                        payload,
+                        claimed_at_iso=now,
+                        multisymbol=item_is_multisym,
+                    )
                     cur = conn.execute(
                         """
                         UPDATE work_items
@@ -849,6 +1038,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     "history_skipped": skipped_history,
                     "launch_cooldown_skipped": skipped_launch_cooldown,
                     "multisymbol_ram_skipped": skipped_multisym_ram,
+                    "multisymbol_commit_skipped": skipped_multisym_commit,
                     "terminal_avoid_skipped": skipped_avoid_terminal,
                 }
             except Exception:
@@ -958,7 +1148,49 @@ def claim_specific_atomic(root: Path, terminal: str, item_id: str) -> dict[str, 
                         conn.commit()
                         return {"claimed": False, "reason": "q04_ea_busy", "item_id": item_id}
 
-                multisym_ids = _multisymbol_ea_ids()
+                if _watchdog_reset_admission_blocked(root):
+                    conn.commit()
+                    return {
+                        "claimed": False,
+                        "reason": "watchdog_reset_pending",
+                        "terminal": terminal,
+                        "item_id": item_id,
+                    }
+
+                try:
+                    multisym_ids = _multisymbol_ea_ids()
+                except MultisymbolRegistryUnavailable as exc:
+                    conn.commit()
+                    return {
+                        "claimed": False,
+                        "reason": "multisymbol_registry_unavailable",
+                        "item_id": item_id,
+                        "error": str(exc),
+                    }
+                admission = _commit_admission_snapshot(conn, now, multisym_ids)
+                if not admission["probe_ok"]:
+                    conn.commit()
+                    return {
+                        "claimed": False,
+                        "reason": "commit_probe_failed",
+                        "item_id": item_id,
+                        "commit_reserved_gb": round(admission["reserved_gb"], 1),
+                        "commit_reservation_count": len(admission["reservations"]),
+                    }
+                effective_commit_headroom = admission["effective_headroom_gb"]
+                if effective_commit_headroom < COMMIT_MIN_FREE_GB:
+                    conn.commit()
+                    return {
+                        "claimed": False,
+                        "reason": "commit_headroom_low",
+                        "item_id": item_id,
+                        "commit_headroom_gb": round(admission["live_headroom_gb"], 1),
+                        "commit_reserved_gb": round(admission["reserved_gb"], 1),
+                        "effective_commit_headroom_gb": round(effective_commit_headroom, 1),
+                        "commit_reservation_count": len(admission["reservations"]),
+                        "threshold_gb": COMMIT_MIN_FREE_GB,
+                    }
+
                 item_is_multisym = _work_item_is_multisymbol(item, payload, multisym_ids)
                 if item_is_multisym:
                     multisym_active = any(
@@ -968,6 +1200,17 @@ def claim_specific_atomic(root: Path, terminal: str, item_id: str) -> dict[str, 
                     if multisym_active:
                         conn.commit()
                         return {"claimed": False, "reason": "multisymbol_busy", "item_id": item_id}
+                    if effective_commit_headroom < MULTISYMBOL_COMMIT_MIN_FREE_GB:
+                        conn.commit()
+                        return {
+                            "claimed": False,
+                            "reason": "multisymbol_commit_headroom_low",
+                            "item_id": item_id,
+                            "commit_headroom_gb": round(admission["live_headroom_gb"], 1),
+                            "commit_reserved_gb": round(admission["reserved_gb"], 1),
+                            "effective_commit_headroom_gb": round(effective_commit_headroom, 1),
+                            "threshold_gb": MULTISYMBOL_COMMIT_MIN_FREE_GB,
+                        }
                     free_ram = _free_ram_gb()
                     if free_ram < MULTISYMBOL_RAM_MIN_FREE_GB:
                         conn.commit()
@@ -999,6 +1242,11 @@ def claim_specific_atomic(root: Path, terminal: str, item_id: str) -> dict[str, 
                     "targeted_factory_off_run": True,
                     "terminal": terminal,
                 })
+                _set_commit_reservation(
+                    payload,
+                    claimed_at_iso=now,
+                    multisymbol=item_is_multisym,
+                )
                 cur = conn.execute(
                     """
                     UPDATE work_items
@@ -2259,12 +2507,16 @@ def _disk_free_gb(root: Path) -> float:
         return float("inf")
 
 
-def _free_ram_gb() -> float:
-    """Free physical RAM (GB) via the Win32 API (no psutil dependency — the SYSTEM
-    Python has none). Fail-open (inf) on any error so a measurement glitch can never
-    wedge the worker."""
+def _memory_headroom_gb() -> tuple[float, float]:
+    """Return (free physical RAM, free system commit) in GB via Win32.
+
+    ``ullAvailPageFile`` is Windows' currently available commit, despite the
+    historic field name. The SYSTEM Python has no psutil dependency. Physical
+    RAM remains fail-open on probe error; commit returns NaN so admission pauses
+    and retries instead of bypassing the crash-prevention gate.
+    """
     if sys.platform != "win32":
-        return float("inf")
+        return float("inf"), float("inf")
     try:
         import ctypes
 
@@ -2284,10 +2536,21 @@ def _free_ram_gb() -> float:
         stat = _MEMSTATEX()
         stat.dwLength = ctypes.sizeof(_MEMSTATEX)
         if not ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)):
-            return float("inf")
-        return stat.ullAvailPhys / (1024 ** 3)
+            return float("inf"), float("nan")
+        gib = 1024 ** 3
+        return stat.ullAvailPhys / gib, stat.ullAvailPageFile / gib
     except Exception:
-        return float("inf")
+        return float("inf"), float("nan")
+
+
+def _free_ram_gb() -> float:
+    """Free physical RAM in GB; fail-open on probe error."""
+    return _memory_headroom_gb()[0]
+
+
+def _commit_headroom_gb() -> float:
+    """Free system-commit headroom; NaN makes Windows admission pause on error."""
+    return _memory_headroom_gb()[1]
 
 
 def _trigger_disk_purge() -> None:
@@ -2332,6 +2595,33 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
             if claim.get("reason") == "sqlite_locked":
                 print(json.dumps({"event": "sqlite_locked", "terminal": terminal, "action": "claim_backoff"}), flush=True)
                 time.sleep(SQLITE_LOCK_BACKOFF_SECONDS + random.random())
+                continue
+            if claim.get("reason") in {"commit_probe_failed", "commit_headroom_low"}:
+                print(json.dumps({
+                    "event": (
+                        "commit_probe_failed_pause"
+                        if claim.get("reason") == "commit_probe_failed"
+                        else "commit_headroom_low_pause"
+                    ),
+                    "terminal": terminal,
+                    "commit_headroom_gb": claim.get("commit_headroom_gb"),
+                    "commit_reserved_gb": claim.get("commit_reserved_gb"),
+                    "effective_commit_headroom_gb": claim.get("effective_commit_headroom_gb"),
+                    "commit_reservation_count": claim.get("commit_reservation_count"),
+                    "threshold_gb": claim.get("threshold_gb"),
+                }), flush=True)
+                time.sleep(COMMIT_GUARD_SLEEP_SECONDS + random.uniform(0, 10))
+                continue
+            if claim.get("reason") in {
+                "multisymbol_registry_unavailable",
+                "watchdog_reset_pending",
+            }:
+                print(json.dumps({
+                    "event": f"{claim.get('reason')}_pause",
+                    "terminal": terminal,
+                    "error": claim.get("error"),
+                }), flush=True)
+                time.sleep(POLL_SLEEP_SECONDS + random.uniform(0, 5))
                 continue
             time.sleep(POLL_SLEEP_SECONDS)
             continue

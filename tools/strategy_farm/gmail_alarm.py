@@ -1,4 +1,4 @@
-"""Gmail alarm when health watchdog hits FAIL — debounced.
+"""Legacy Gmail alarm when health watchdog hits FAIL — OWNER-disabled.
 
 OWNER 2026-05-17: "Gmail-Alarm bei FAIL". Reads state/health.json (written
 by farmctl health every 15min) and sends a mail when:
@@ -14,9 +14,10 @@ State file: state/gmail_alarm_state.json holds last-alarm fingerprint.
 Credentials: re-uses the existing Gmail SMTP setup at
 .private/secrets/gmail_{app_password,sender}.txt.
 
-Scheduled: hourly via QM_StrategyFarm_GmailAlarm_Hourly. NOT every 15min
-to keep traffic low — if a critical FAIL appears 5min after a check, you
-see it within an hour, and the cockpit banner is immediate anyway.
+OWNER 2026-07-23: the separate PIPELINE FAIL/OK mail is no longer wanted.
+The scheduled task is policy-disabled and ``main()`` fails closed below.
+This module remains the canonical SMTP helper for MorningBriefing and the
+post-reboot diagnostic mail; importing/calling ``_send_mail`` is unaffected.
 """
 
 from __future__ import annotations
@@ -66,6 +67,7 @@ SENDER_FILE = SECRETS_DIR / "gmail_sender.txt"
 RECIPIENT = "fabian.grabner@gmail.com"
 SMTP_HOST = "smtp.gmail.com"
 SMTP_PORT = 587
+PIPELINE_ALERTS_ENABLED = False  # OWNER 2026-07-23; SMTP helper stays enabled.
 
 
 def _load_health() -> dict:
@@ -269,7 +271,13 @@ def _build_mail_body(health: dict) -> tuple[str, str, str]:
     return subject, text_body, body_html
 
 
-def _send_mail(subject: str, text_body: str, html_body: str | None = None) -> dict:
+def _send_mail(
+    subject: str,
+    text_body: str,
+    html_body: str | None = None,
+    *,
+    message_id: str | None = None,
+) -> dict:
     """Send via Gmail SMTP. Multipart/alternative with text fallback + HTML."""
     if not APP_PASSWORD_FILE.exists() or not SENDER_FILE.exists():
         return {"sent": False, "reason": "Gmail credentials missing in .private/secrets/"}
@@ -290,6 +298,8 @@ def _send_mail(subject: str, text_body: str, html_body: str | None = None) -> di
         msg["Subject"] = subject
         msg["From"] = sender
         msg["To"] = RECIPIENT
+    if message_id:
+        msg["Message-ID"] = message_id
     try:
         with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=30) as srv:
             srv.starttls()
@@ -322,6 +332,9 @@ def _send_mail_with_retries(subject: str, text_body: str, html_body: str | None 
 
 
 def main() -> int:
+    if not PIPELINE_ALERTS_ENABLED:
+        print("pipeline FAIL/OK mail disabled by OWNER policy (2026-07-23) — skip")
+        return 0
     health = _load_health()
     if not health:
         print("no health.json — skipping (run farmctl health first)")

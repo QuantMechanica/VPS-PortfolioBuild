@@ -10049,7 +10049,7 @@ def pump(root: Path) -> dict[str, Any]:
     result["db_backup"] = _hourly_db_backup(root)
     result["p_pass_stagnation_alarm"] = {
         "triggered": False,
-        "reason": "mail disabled in pump; health alarm mail is sent only by QM_StrategyFarm_GmailAlarm_Hourly",
+        "reason": "mail disabled in pump; separate pipeline FAIL/OK mail channel OWNER-disabled 2026-07-23",
     }
     result["ws0_clear_notifier"] = {
         "triggered": False,

@@ -20,8 +20,9 @@ No "miracle" EA needed. **Solid + manageable drawdown** is enough. Acceptance:
 - Trade count ≥ 30 over the full OOS window
 - Survives all P5/P6/P7/P8 robustness sub-gates without DEAD verdict
 
-Stop the loop as soon as this is reached. Send a celebratory Gmail + leave
-a clear summary in `D:/QM/strategy_farm/dashboards/heureka_brief.md`.
+Stop the loop as soon as this is reached. Notify OWNER in the active operator
+channel and leave a clear summary in
+`D:/QM/strategy_farm/dashboards/heureka_brief.md`.
 
 ---
 
@@ -41,8 +42,9 @@ You are Claude Code on the QuantMechanica VPS, Board Advisor role.
 | `QM_StrategyFarm_Pump_5min` | 5 min | dispatch + build + review + research |
 | `QM_StrategyFarm_Health_15min` | 15 min | 11-invariant watchdog → `state/health.json` |
 | `QM_StrategyFarm_Repair_Hourly` | 1 h | 7 anti-orphan handlers |
-| `QM_StrategyFarm_GmailAlarm_Hourly` | 1 h | mail on FAIL transition |
-| `QM_StrategyFarm_MorningBrief_0700` | daily 07:00 | brief → cockpit + Drive vault |
+| `QM_MorningBriefing_Vault` | daily 06:00 | the one daily briefing mail + Drive vault |
+| `QM_StrategyFarm_RebootDiagnostic_AtStartup` | startup +5 min | one deduplicated cause/recovery mail per Windows boot |
+| `QM_StrategyFarm_GmailAlarm_Hourly` | disabled | OWNER policy: no separate PIPELINE FAIL/OK mail |
 | `QM_StrategyFarm_QuotaReceiver` | AT STARTUP | Tampermonkey receiver :9090 |
 | `QM_StrategyFarm_Cockpit_2min` | 2 min | dashboard render |
 
@@ -89,8 +91,8 @@ Or run `farmctl health` to refresh.
 For each red invariant, decide:
 - **Code bug**? Fix it (commit + push to `agents/board-advisor-session-<date>`).
 - **Pipeline state issue**? Run `farmctl repair` to auto-fix where safe.
-- **OWNER-class** (codex login, hardware, billing)? **Escalate via Gmail
-  alarm** — do not attempt yourself.
+- **OWNER-class** (codex login, hardware, billing)? Report it directly in the
+  active OWNER/operator channel — do not invoke the disabled pipeline mailer.
 
 ### 3. Inspect what the pipeline is doing right now
 
@@ -100,8 +102,7 @@ cd C:/QM/repo && python tools/strategy_farm/farmctl.py pump > /tmp/po.json 2>&1
 ```
 
 If pump shows 0 codex spawns for >15 min AND `codex_auth_broken` is FAIL →
-notify OWNER via Gmail to run `codex login`. The watchdog already does this
-but cross-check.
+notify OWNER in the active operator channel to run `codex login`.
 
 ### 4. Look at where the candidate EAs are
 
@@ -132,7 +133,7 @@ The lead candidate is the EA with the most-advanced PASS phase.
 Pick ONE of these (most common in priority order):
 
 1. **Codex auth expired**: `auth.json` >12h old, 0 codex procs, pending builds.
-   → Gmail OWNER to run `codex login`. Wait.
+   → Tell OWNER in the active operator channel to run `codex login`. Wait.
 2. **No P3+ progression**: lots of P2 PASS but nothing advances. Check pump
    §10c P3 promotion logic, or write recovery if MT5 reports orphaned.
 3. **Orphan MT5 reports**: dispatch shows REPORT_MISSING but .htm files
@@ -165,15 +166,13 @@ backtests (~30-60 min each).
 
 ---
 
-## Escalation rules — when to ping OWNER via Gmail
+## Escalation rules — when to notify OWNER
 
-The hourly `QM_StrategyFarm_GmailAlarm_Hourly` already mails on FAIL
-transitions. If you need to escalate **between** scheduled runs:
-
-```bash
-rm D:/QM/strategy_farm/state/gmail_alarm_state.json  # reset debounce
-python tools/strategy_farm/gmail_alarm.py
-```
+`QM_StrategyFarm_GmailAlarm_Hourly` is deliberately disabled: do not send
+separate PIPELINE FAIL/OK messages and do not reset its debounce state. Notify
+OWNER through the active operator channel. The retained automatic mails are the
+single 06:00 MorningBriefing and one cause/recovery explanation after each new
+Windows boot.
 
 Escalate immediately for:
 - **Codex auth broken** (only OWNER can `codex login`)
@@ -239,9 +238,8 @@ print('written: heureka_brief.md + vault copy')
 print(text)
 "
 
-# 2. Force-send Gmail celebration
-rm D:/QM/strategy_farm/state/gmail_alarm_state.json
-python tools/strategy_farm/gmail_alarm.py
+# 2. Notify OWNER in the active operator channel. Do not invoke the
+# OWNER-disabled PIPELINE FAIL/OK mailer.
 ```
 
 Then EXIT the /goal session. Pipeline keeps running autonomously — Board
@@ -295,9 +293,8 @@ c.execute(\"UPDATE work_items SET status='pending', claimed_by=NULL WHERE status
 c.commit()
 "
 
-# Trigger Gmail alarm now (fresh fingerprint)
-rm D:/QM/strategy_farm/state/gmail_alarm_state.json
-python tools/strategy_farm/gmail_alarm.py
+# The separate PIPELINE FAIL/OK Gmail channel is OWNER-disabled.
+# Report an escalation through the active OWNER/operator channel.
 ```
 
 ---
@@ -320,4 +317,4 @@ python tools/strategy_farm/gmail_alarm.py
 Mission: **drive one solid EA through P8 with manageable DD**. Pipeline is
 the engine. You are the mechanic, not the engineer.
 
-When done: write `heureka_brief.md`, mail OWNER, exit.
+When done: write `heureka_brief.md`, notify OWNER in the active channel, exit.

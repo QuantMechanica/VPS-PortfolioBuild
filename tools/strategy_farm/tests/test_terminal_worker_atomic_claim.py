@@ -7,6 +7,7 @@ import unittest
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from unittest.mock import patch
 
 
 REPO = Path(__file__).resolve().parents[3]
@@ -15,8 +16,21 @@ sys.path.insert(0, str(REPO / "tools" / "strategy_farm"))
 import farmctl  # noqa: E402
 import terminal_worker  # noqa: E402
 
+LEGACY_WORKER_STARTER = REPO / "tools" / "strategy_farm" / "start_terminal_workers.ps1"
+FACTORY_WATCHDOG = REPO / "tools" / "strategy_farm" / "factory_watchdog.ps1"
+FACTORY_ON = REPO / "tools" / "strategy_farm" / "Factory_ON.ps1"
+
 
 class TerminalWorkerAtomicClaimTests(unittest.TestCase):
+    def setUp(self) -> None:
+        # Claim tests exercise queue semantics, not the host machine's live
+        # pressure. Individual resource-guard tests override this explicitly.
+        self._original_commit_headroom_gb = terminal_worker._commit_headroom_gb
+        terminal_worker._commit_headroom_gb = lambda: 10_000.0
+
+    def tearDown(self) -> None:
+        terminal_worker._commit_headroom_gb = self._original_commit_headroom_gb
+
     def _root(self) -> tempfile.TemporaryDirectory:
         return tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
 
@@ -63,6 +77,11 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             )
             conn.commit()
 
+    def test_legacy_worker_starter_honors_disabled_terminal_cap(self) -> None:
+        source = LEGACY_WORKER_STARTER.read_text(encoding="utf-8")
+        self.assertIn('Join-Path $stateDir "disabled_terminals.txt"', source)
+        self.assertIn("$_ -notin $disabledTerminals", source)
+
     def test_two_workers_race_claim_same_work_item_only_one_wins(self) -> None:
         with self._root() as tmp:
             root = Path(tmp) / "farm"
@@ -79,6 +98,166 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                 rows = conn.execute("SELECT status, claimed_by FROM work_items WHERE id='wi-1'").fetchall()
             self.assertEqual(rows[0][0], "active")
             self.assertIn(rows[0][1], {"T1", "T2"})
+
+    def test_claim_fails_closed_without_valid_multisymbol_registry(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "wi-registry-unknown", "EURUSD.DWX")
+            old_path = terminal_worker.MULTISYMBOL_REGISTRY_PATH
+            old_cache = terminal_worker._multisym_cache
+            try:
+                terminal_worker.MULTISYMBOL_REGISTRY_PATH = root / "missing-multisymbol-eas.txt"
+                terminal_worker._multisym_cache = {
+                    "mtime": -1.0,
+                    "ids": frozenset(),
+                    "loaded": False,
+                }
+
+                result = terminal_worker.claim_atomic(root, "T1")
+            finally:
+                terminal_worker.MULTISYMBOL_REGISTRY_PATH = old_path
+                terminal_worker._multisym_cache = old_cache
+
+            self.assertFalse(result.get("claimed"))
+            self.assertEqual(result.get("reason"), "multisymbol_registry_unavailable")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                status = conn.execute(
+                    "SELECT status FROM work_items WHERE id='wi-registry-unknown'"
+                ).fetchone()[0]
+            self.assertEqual(status, "pending")
+
+    def test_multisymbol_registry_uses_last_valid_cache_after_read_failure(self) -> None:
+        with self._root() as tmp:
+            registry = Path(tmp) / "multisymbol_eas.txt"
+            registry.write_text(
+                "# generated registry\nQM5_10718 legacy basket description\n",
+                encoding="utf-8",
+            )
+            old_path = terminal_worker.MULTISYMBOL_REGISTRY_PATH
+            old_cache = terminal_worker._multisym_cache
+            try:
+                terminal_worker.MULTISYMBOL_REGISTRY_PATH = registry
+                terminal_worker._multisym_cache = {
+                    "mtime": -1.0,
+                    "ids": frozenset(),
+                    "loaded": False,
+                }
+                first = terminal_worker._multisymbol_ea_ids()
+                registry.unlink()
+                cached = terminal_worker._multisymbol_ea_ids()
+            finally:
+                terminal_worker.MULTISYMBOL_REGISTRY_PATH = old_path
+                terminal_worker._multisym_cache = old_cache
+
+            self.assertEqual(first, frozenset({"QM5_10718"}))
+            self.assertEqual(cached, first)
+
+    def test_watchdog_reset_marker_blocks_new_claim_inside_transaction(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "wi-reset-blocked", "EURUSD.DWX")
+            marker = root / "state" / terminal_worker.WATCHDOG_RESET_BLOCK_FILENAME
+            marker.write_text(
+                json.dumps(
+                    {
+                        "expires_at_utc": (
+                            datetime.now(timezone.utc) + timedelta(minutes=5)
+                        ).isoformat()
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            result = terminal_worker.claim_atomic(root, "T1")
+
+            self.assertFalse(result.get("claimed"))
+            self.assertEqual(result.get("reason"), "watchdog_reset_pending")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                status = conn.execute(
+                    "SELECT status FROM work_items WHERE id='wi-reset-blocked'"
+                ).fetchone()[0]
+            self.assertEqual(status, "pending")
+
+    def test_watchdog_reset_marker_never_expires_without_handover_ack(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "wi-expired-reset-block", "EURUSD.DWX")
+            marker = root / "state" / terminal_worker.WATCHDOG_RESET_BLOCK_FILENAME
+            marker.write_text(
+                json.dumps(
+                    {
+                        "expires_at_utc": (
+                            datetime.now(timezone.utc) - timedelta(days=1)
+                        ).isoformat()
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            result = terminal_worker.claim_atomic(root, "T1")
+
+            self.assertFalse(result.get("claimed"))
+            self.assertEqual(result.get("reason"), "watchdog_reset_pending")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                status = conn.execute(
+                    "SELECT status FROM work_items WHERE id='wi-expired-reset-block'"
+                ).fetchone()[0]
+            self.assertEqual(status, "pending")
+
+    def test_watchdog_reset_marker_probe_error_pauses_instead_of_crashing(self) -> None:
+        with patch.object(Path, "exists", side_effect=OSError("access denied")):
+            blocked = terminal_worker._watchdog_reset_admission_blocked(Path("X:/farm"))
+
+        self.assertTrue(blocked)
+
+    def test_watchdog_reset_handover_has_transactional_claim_interlock(self) -> None:
+        watchdog = FACTORY_WATCHDOG.read_text(encoding="utf-8-sig")
+        factory_on = FACTORY_ON.read_text(encoding="utf-8-sig")
+        worker = (REPO / "tools" / "strategy_farm" / "terminal_worker.py").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("WATCHDOG_RESET_PENDING.json", watchdog)
+        self.assertNotIn("expires_at_utc", watchdog)
+        self.assertIn("owner_started_at_utc", watchdog)
+        self.assertIn("abort reset admission instead of inventing an identity", watchdog)
+        self.assertIn("reset marker path probe failed", watchdog)
+        self.assertIn("noop_reset_handover_in_progress", watchdog)
+        self.assertIn("@('Ready', 'Disabled')", watchdog)
+        self.assertIn("Unreadable/Unknown/ambiguous state remains blocked", watchdog)
+        self.assertIn("task_probe_ok", watchdog)
+        self.assertIn(
+            "Get-ScheduledTask -TaskName 'QM_StrategyFarm_FactoryON_AtLogon' -ErrorAction Stop",
+            watchdog,
+        )
+        self.assertIn("orphan cleanup failed", watchdog)
+        self.assertIn('conn.execute("BEGIN IMMEDIATE")', watchdog)
+        self.assertGreaterEqual(worker.count("_watchdog_reset_admission_blocked(root)"), 2)
+        dump_pos = watchdog.index("$dumpDetail = Invoke-StallDumpCapture")
+        guard_pos = watchdog.index(
+            "$resetGuard = Enter-GuardedFactoryReset",
+            dump_pos,
+        )
+        reset_pos = watchdog.index(
+            "Start-ScheduledTask -TaskName 'QM_StrategyFarm_FactoryON_AtLogon'",
+            guard_pos,
+        )
+        self.assertLess(dump_pos, guard_pos)
+        self.assertLess(guard_pos, reset_pos)
+
+        kill_pos = factory_on.index("foreach ($p in $termsBefore)")
+        clear_pos = factory_on.index("watchdog reset admission block cleared")
+        spawn_pos = factory_on.index("start_terminal_workers.py")
+        self.assertLess(kill_pos, clear_pos)
+        self.assertLess(clear_pos, spawn_pos)
+        clear_block = factory_on[kill_pos:spawn_pos]
+        self.assertIn("Remove-Item -LiteralPath $watchdogResetBlockPath", clear_block)
+        self.assertIn(
+            "Test-Path -LiteralPath $watchdogResetBlockPath -ErrorAction Stop",
+            clear_block,
+        )
+        self.assertIn("-ErrorAction Stop", clear_block)
+        self.assertIn("FACTORY ON ABORTED before worker spawn", clear_block)
 
     def test_claim_respects_payload_avoid_terminals(self) -> None:
         with self._root() as tmp:
@@ -153,6 +332,64 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertEqual(refused.get("reason"), "terminal_worker_busy")
             self.assertEqual(refused.get("item_id"), "already-active")
 
+    def test_specific_multisymbol_claim_waits_for_commit_headroom(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "target-basket",
+                "QM5_12751_EURUSD_EURAUD_COINTEGRATION_D1",
+                phase="Q08",
+                ea_id="QM5_12751",
+                payload={"portfolio_scope": "basket", "basket_symbol_count": 2},
+            )
+            flag = root / "state" / "FACTORY_OFF.flag"
+            flag.parent.mkdir(parents=True, exist_ok=True)
+            flag.write_text("{}", encoding="ascii")
+            terminal_worker._commit_headroom_gb = (
+                lambda: terminal_worker.MULTISYMBOL_COMMIT_MIN_FREE_GB - 1.0
+            )
+
+            refused = terminal_worker.claim_specific_atomic(root, "T2", "target-basket")
+
+            self.assertFalse(refused.get("claimed"))
+            self.assertEqual(refused.get("reason"), "multisymbol_commit_headroom_low")
+            self.assertEqual(
+                refused.get("threshold_gb"),
+                terminal_worker.MULTISYMBOL_COMMIT_MIN_FREE_GB,
+            )
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                status = conn.execute(
+                    "SELECT status FROM work_items WHERE id='target-basket'"
+                ).fetchone()[0]
+            self.assertEqual(status, "pending")
+
+    def test_ordinary_reservation_blocks_following_specific_multisymbol_claim(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "ordinary", "GBPUSD.DWX", phase="Q08")
+            self._insert_work_item(
+                root,
+                "basket",
+                "QM5_12751_EURUSD_EURAUD_COINTEGRATION_D1",
+                phase="Q08",
+                ea_id="QM5_12751",
+                payload={"portfolio_scope": "basket", "basket_symbol_count": 2},
+            )
+            flag = root / "state" / "FACTORY_OFF.flag"
+            flag.parent.mkdir(parents=True, exist_ok=True)
+            flag.write_text("{}", encoding="ascii")
+            terminal_worker._commit_headroom_gb = lambda: 55.0
+
+            first = terminal_worker.claim_specific_atomic(root, "T1", "ordinary")
+            second = terminal_worker.claim_specific_atomic(root, "T2", "basket")
+
+            self.assertTrue(first.get("claimed"))
+            self.assertFalse(second.get("claimed"))
+            self.assertEqual(second.get("reason"), "multisymbol_commit_headroom_low")
+            self.assertEqual(second.get("commit_reserved_gb"), 8.0)
+            self.assertEqual(second.get("effective_commit_headroom_gb"), 47.0)
+
     def test_per_symbol_lock_is_respected(self) -> None:
         with self._root() as tmp:
             root = Path(tmp) / "farm"
@@ -168,6 +405,145 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                 statuses = dict(conn.execute("SELECT id, status FROM work_items").fetchall())
             self.assertEqual(statuses["pending-1"], "pending")
             self.assertEqual(statuses["pending-2"], "active")
+
+    def test_claim_waits_when_system_commit_headroom_is_low(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "ordinary-q02", "GBPUSD.DWX", phase="Q02")
+            terminal_worker._commit_headroom_gb = (
+                lambda: terminal_worker.COMMIT_MIN_FREE_GB - 0.5
+            )
+
+            result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertFalse(result.get("claimed"))
+            self.assertEqual(result.get("reason"), "commit_headroom_low")
+            self.assertEqual(result.get("threshold_gb"), terminal_worker.COMMIT_MIN_FREE_GB)
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                status = conn.execute(
+                    "SELECT status FROM work_items WHERE id='ordinary-q02'"
+                ).fetchone()[0]
+            self.assertEqual(status, "pending")
+
+    def test_claim_waits_when_commit_probe_fails(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "ordinary-q02", "GBPUSD.DWX", phase="Q02")
+            terminal_worker._commit_headroom_gb = lambda: float("nan")
+
+            result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertFalse(result.get("claimed"))
+            self.assertEqual(result.get("reason"), "commit_probe_failed")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                status = conn.execute(
+                    "SELECT status FROM work_items WHERE id='ordinary-q02'"
+                ).fetchone()[0]
+            self.assertEqual(status, "pending")
+
+    def test_frozen_commit_probe_cannot_overbook_after_multisymbol_claim(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "basket-q02",
+                "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+                phase="Q02",
+                ea_id="QM5_12533",
+                payload={"portfolio_scope": "basket", "host_symbol": "EURJPY.DWX"},
+            )
+            self._insert_work_item(
+                root,
+                "ordinary-q02",
+                "GBPUSD.DWX",
+                phase="Q02",
+                ea_id="QM5_1001",
+            )
+            terminal_worker._commit_headroom_gb = lambda: 55.0
+            old_free_ram = terminal_worker._free_ram_gb
+            try:
+                terminal_worker._free_ram_gb = lambda: 64.0
+                first = terminal_worker.claim_atomic(root, "T1")
+                second = terminal_worker.claim_atomic(root, "T2")
+            finally:
+                terminal_worker._free_ram_gb = old_free_ram
+
+            self.assertTrue(first.get("claimed"))
+            self.assertEqual(first["item"]["id"], "basket-q02")
+            first_payload = json.loads(first["item"]["payload_json"])
+            self.assertEqual(
+                first_payload["commit_reservation_gb"],
+                terminal_worker.MULTISYMBOL_COMMIT_RESERVATION_GB,
+            )
+            self.assertFalse(second.get("claimed"))
+            self.assertEqual(second.get("reason"), "commit_headroom_low")
+            self.assertEqual(
+                second.get("commit_reserved_gb"),
+                terminal_worker.MULTISYMBOL_COMMIT_RESERVATION_GB,
+            )
+            self.assertEqual(second.get("effective_commit_headroom_gb"), 11.0)
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                status = conn.execute(
+                    "SELECT status FROM work_items WHERE id='ordinary-q02'"
+                ).fetchone()[0]
+            self.assertEqual(status, "pending")
+
+    def test_frozen_commit_probe_caps_parallel_ordinary_claims(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            for index, symbol in enumerate(
+                ("EURUSD.DWX", "GBPUSD.DWX", "USDJPY.DWX", "AUDUSD.DWX", "NZDUSD.DWX"),
+                start=1,
+            ):
+                self._insert_work_item(
+                    root,
+                    f"ordinary-{index}",
+                    symbol,
+                    phase="Q02",
+                    ea_id=f"QM5_90{index:02d}",
+                )
+            terminal_worker._commit_headroom_gb = lambda: 55.0
+
+            with ThreadPoolExecutor(max_workers=5) as executor:
+                results = list(
+                    executor.map(
+                        lambda terminal: terminal_worker.claim_atomic(root, terminal),
+                        ("T1", "T2", "T3", "T4", "T5"),
+                    )
+                )
+
+            self.assertEqual(sum(bool(result.get("claimed")) for result in results), 4)
+            blocked = next(result for result in results if not result.get("claimed"))
+            self.assertEqual(blocked.get("reason"), "commit_headroom_low")
+            self.assertEqual(blocked.get("commit_reserved_gb"), 32.0)
+            self.assertEqual(blocked.get("effective_commit_headroom_gb"), 23.0)
+
+    def test_expired_commit_reservation_is_ignored(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            expired_claim = (
+                datetime.now(timezone.utc)
+                - timedelta(seconds=terminal_worker.COMMIT_RESERVATION_SECONDS + 10)
+            ).isoformat()
+            self._insert_work_item(
+                root,
+                "old-active",
+                "EURUSD.DWX",
+                phase="Q02",
+                status="active",
+                claimed_by="T1",
+                payload={
+                    "claimed_at_iso": expired_claim,
+                    "commit_reservation_gb": terminal_worker.ORDINARY_COMMIT_RESERVATION_GB,
+                },
+            )
+            self._insert_work_item(root, "new-pending", "GBPUSD.DWX", phase="Q02")
+            terminal_worker._commit_headroom_gb = lambda: 30.0
+
+            result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertTrue(result.get("claimed"))
+            self.assertEqual(result["item"]["id"], "new-pending")
 
     def test_q04_claim_limits_one_active_item_per_ea(self) -> None:
         with self._root() as tmp:
@@ -283,6 +659,37 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                 statuses = dict(conn.execute("SELECT id, status FROM work_items").fetchall())
             self.assertEqual(statuses["basket-q02"], "pending")
             self.assertEqual(statuses["ordinary-q02"], "active")
+
+    def test_multisymbol_q02_waits_for_commit_headroom(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "basket-q02",
+                "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+                phase="Q02",
+                ea_id="QM5_12533",
+                payload={"portfolio_scope": "basket", "host_symbol": "EURJPY.DWX"},
+            )
+            terminal_worker._commit_headroom_gb = (
+                lambda: terminal_worker.MULTISYMBOL_COMMIT_MIN_FREE_GB - 0.5
+            )
+
+            result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertFalse(result.get("claimed"))
+            self.assertEqual(result.get("reason"), "no_pending_claimable")
+            skipped = result["multisymbol_commit_skipped"]
+            self.assertEqual(skipped[0]["item_id"], "basket-q02")
+            self.assertEqual(
+                skipped[0]["threshold_gb"],
+                terminal_worker.MULTISYMBOL_COMMIT_MIN_FREE_GB,
+            )
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                status = conn.execute(
+                    "SELECT status FROM work_items WHERE id='basket-q02'"
+                ).fetchone()[0]
+            self.assertEqual(status, "pending")
 
     def test_payload_basket_q02_waits_for_memory_headroom_without_registry_hint(self) -> None:
         with self._root() as tmp:
@@ -590,6 +997,8 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                     "log_path": "old-run.log",
                     "claimed_at_iso": "2026-07-07T20:13:41+00:00",
                     "claimed_by_worker_pid": 424242,
+                    "commit_reservation_gb": terminal_worker.ORDINARY_COMMIT_RESERVATION_GB,
+                    "commit_reservation_until_utc": "2026-07-07T20:18:41+00:00",
                     "terminal": "T1",
                     "priority_track": True,
                 },
@@ -615,7 +1024,28 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertNotIn("pid", payload)
             self.assertNotIn("started_at_iso", payload)
             self.assertNotIn("log_path", payload)
+            self.assertEqual(
+                payload["commit_reservation_gb"],
+                terminal_worker.ORDINARY_COMMIT_RESERVATION_GB,
+            )
+            self.assertNotEqual(
+                payload["commit_reservation_until_utc"],
+                "2026-07-07T20:18:41+00:00",
+            )
             self.assertNotEqual(payload.get("claimed_by_worker_pid"), 424242)
+
+    def test_stale_runtime_cleanup_removes_commit_reservation_fields(self) -> None:
+        payload = {
+            "commit_reservation_gb": terminal_worker.ORDINARY_COMMIT_RESERVATION_GB,
+            "commit_reservation_until_utc": "2026-07-07T20:18:41+00:00",
+            "priority_track": True,
+        }
+
+        terminal_worker._clear_stale_runtime_payload(payload)
+
+        self.assertNotIn("commit_reservation_gb", payload)
+        self.assertNotIn("commit_reservation_until_utc", payload)
+        self.assertTrue(payload["priority_track"])
 
     def test_live_worker_without_child_pid_keeps_terminal_busy(self) -> None:
         with self._root() as tmp:

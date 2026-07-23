@@ -16,12 +16,12 @@ this document is the complete picture.
 |---|---|---|
 | **FACTORY** (dispatch engine) | enable + start | stop + disable |
 | **AI** (agent orchestration) | enable + start | stop + disable |
-| **ALWAYS_ON** (dashboards/health/alarm/briefs/snapshot/housekeeping) | **ensure enabled** | **left running** |
-| **ENFORCE_DISABLED** (unsafe respawn/session/reboot paths) | force-disable if drifted | left disabled |
+| **ALWAYS_ON** (dashboards/health/briefs/reboot diagnostics/snapshot/housekeeping) | **ensure enabled** | **left running** |
+| **ENFORCE_DISABLED** (unsafe paths and OWNER opt-outs) | force-disable if drifted | left disabled |
 | **DECOMMISSIONED** (legacy/paused) | not touched | not touched |
 
 Key point: with the factory **OFF you still get** the morning brief, dashboards,
-health checks, the Gmail alarm, the public snapshot, and housekeeping — by design.
+health checks, reboot diagnostics, the public snapshot, and housekeeping — by design.
 ON additionally re-enables any ALWAYS_ON task that drifted to Disabled (reboot / accident).
 
 ## FACTORY — dispatch engine
@@ -68,8 +68,8 @@ by Factory_ON (visible mode), and a one-shot `farmctl.py repair`.
 | `QM_StrategyFarm_Cockpit_2min` | 2 min | `render_cockpit.py` |
 | `QM_StrategyFarm_Dashboard_Hourly` | hourly | `dashboards/render_dashboards.py` |
 | `QM_StrategyFarm_Health_15min` | 15 min | `farmctl.py health` |
-| `QM_StrategyFarm_GmailAlarm_Hourly` | hourly | `run_gmail_alarm_task.py` (sanctioned alarm + 06:05 digest) |
-| `QM_MorningBriefing_Vault` | 06:00 | `morning_brief.py` (vault) |
+| `QM_MorningBriefing_Vault` | 06:00 | `morning_brief.py` — the one daily MorningBriefing mail plus Drive-vault archive |
+| `QM_StrategyFarm_RebootDiagnostic_AtStartup` | startup +5 min | `run_reboot_diagnostic_mail_task.py` — sends one deduplicated German cause/recovery mail for each new Windows boot and retries failed delivery up to six times at five-minute intervals. A verified factory-watchdog marker adds the detailed session-loss analysis; otherwise Windows 1074/BugCheck/Kernel-Power evidence is classified conservatively. |
 | `QM_Public_Snapshot_Hourly` | hourly | `run_public_snapshot_task.ps1` (quantmechanica.com JSON) |
 | `QM_StrategyFarm_InboxCleanup_Daily` | daily | `inbox_cleanup.py --days 7` |
 | `QM_StrategyFarm_WorktreeClean_4h` | 4 h | `run_worktree_clean_task.py` |
@@ -81,11 +81,11 @@ by Factory_ON (visible mode), and a one-shot `farmctl.py repair`.
 | `QM_Live_MT5_SessionSupervisor` | qm-admin logon +45s, resident | Interactive `qm-admin`, `PT0S`, every 10s. Recovers an individually missing DXZ/FTMO inside the existing desktop session, including while RDP is disconnected. Explicit demand start is allowed only for the contract-checked `RunEx` helper, which pins the task to that session and verifies Scheduler PID = heartbeat PID. |
 | `QM_T_Live_Watchdog` | 1 min | SYSTEM dual-live/session/profile/supervisor watchdog; controlled reboot only after confirmed total loss, with fail-closed process probes, non-empty SYSTEM-only Autologon secret, and exact principal/action/trigger/settings contracts for all three interactive recovery tasks. The maintenance flag is re-read immediately before `shutdown.exe` and during every countdown second. |
 
-> Note: the duplicate **07:00 email** morning brief (`QM_StrategyFarm_MorningBrief_0700`)
-> was deleted 2026-06-01 (OWNER: keep the 06:00 vault brief, drop the email). Only
-> `QM_MorningBriefing_Vault` remains.
+> Note: the duplicate **07:00 email** task (`QM_StrategyFarm_MorningBrief_0700`)
+> was deleted 2026-06-01. The retained `QM_MorningBriefing_Vault` task is the
+> single 06:00 MorningBriefing mail and also writes the Drive-vault archive.
 
-## ENFORCE_DISABLED — unsafe paths that must stay off
+## ENFORCE_DISABLED — unsafe paths and OWNER opt-outs that must stay off
 
 | Task | Why disabled |
 |---|---|
@@ -93,13 +93,14 @@ by Factory_ON (visible mode), and a one-shot `farmctl.py repair`.
 | `QM_StrategyFarm_TerminalWorkers_AT_STARTUP` | spawned daemons as SYSTEM/session-0 (headless); workers now spawn in the user session via Factory_ON. |
 | `QM_TSCon_Console_OnDisconnect` | caused a proven session-arbitration/desktop teardown race; must remain disabled. |
 | `QM_StrategyFarm_HygieneReboot` | legacy forced-reboot path does not yet implement the live watchdog's exact recovery contracts and cancellable maintenance/process edge; keep disabled until separately hardened. |
+| `QM_StrategyFarm_GmailAlarm_Hourly` | OWNER 2026-07-23: no separate PIPELINE FAIL/OK mails. `gmail_alarm.py` remains only as the shared SMTP helper for the 06:00 MorningBriefing and reboot diagnostics. |
 
 ## BOOTSTRAP — factory autostart (not in any manifest list)
 
 | Task | Behaviour |
 |---|---|
 | `QM_StrategyFarm_FactoryON_AtLogon` | Trigger **AtLogon of `qm-admin`** (+30s), **Interactive**, **RunLevel=Highest** (skips the self-elevate UAC prompt). Runs `Factory_ON.ps1 -NoPause`. Paired with **autologon** (Sysinternals, `C:\Tools\Autologon`): the console session is created at boot, so this fires ~once per boot and brings the visible MT5 factory up independent of OWNER's (mobile) RDP connection. Added 2026-06-02. **Not** in FACTORY/AI/ALWAYS_ON/ENFORCE_DISABLED lists → Factory OFF does not tear it down. Full runbook: `FACTORY_AUTOLOGON_2026-06-02.md`. |
-| `QM_StrategyFarm_FactoryWatchdog_15min` | Every **15 min**, **Interactive** (qm-admin autologon session), **RunLevel=Highest**. Runs `factory_watchdog.ps1`: if the factory is meant ON (Pump/Tick enabled) but worker daemons < 8/10, respawns only the missing ones (`start_terminal_workers --dedupe`, idempotent, doesn't interrupt running backtests). Covers the *session-alive-but-daemons-crashed* gap that `FactoryON_AtLogon` (boot-only) and the session-0 `HourlyMonitor` (can't spawn visible terminals) miss. Respects OWNER ON/OFF (no-ops when factory OFF), never touches T_Live, no email; logs to `D:\QM\reports\state\factory_watchdog.jsonl`. Added 2026-06-02. **Not** in any manifest list → Factory OFF leaves it (it self-no-ops). |
+| `QM_StrategyFarm_FactoryWatchdog_15min` | Historical name; actually every **5 min**, **SYSTEM**, **RunLevel=Highest**. Runs `factory_watchdog.ps1`: detects worker/dispatch/session failures and delegates interactive recovery to the sanctioned qm-admin tasks. On confirmed total session loss it stages `reboot_diagnostic_pending.json` with queue/resource evidence before the controlled reboot. It never sends mail directly; the separate delayed startup diagnostic task uses that verified marker when present and otherwise classifies persistent Windows reboot events, once per boot. Respects OWNER ON/OFF and never launches factory terminals from session 0. Logs to `D:\QM\reports\state\factory_watchdog.jsonl`. **Not** in any manifest list → Factory OFF disables it as a resurrection-vector task. |
 | `QM_GoogleDrive_AtLogon` | Trigger **AtLogon of `qm-admin`**, **Interactive**, RunLevel=Limited. Runs `scripts/start_google_drive.ps1` (finds the newest `Drive File Stream\<ver>\GoogleDriveFS.exe` and launches it; idempotent — no-ops if already running). **Why:** Drive's own HKCU Run-key autostart is held back in a headless auto-logon session until an RDP client connects, so the **G: vault mount was missing after a reboot** until OWNER logged in (observed 2026-06-07: boot 02:31, Drive only up 12:44 on RDP connect). This task fires at the boot auto-logon like `FactoryON_AtLogon`, mounting G: independent of RDP. Added 2026-06-07. **Not** in any manifest list. Real validation = next reboot. |
 
 ## DECOMMISSIONED — DELETED 2026-06-01 (OWNER-approved)
@@ -122,8 +123,8 @@ all verified Disabled first). The QM task count dropped 61 → 18. Three groups 
   `ClaudeVerify_4h`, `Q08Regen_Resume`. A few have repo install scripts (e.g.
   `install_claude_verify_4h_task.ps1`) and can be re-created by re-running those if ever needed.
 
-> The 07:00 email morning brief (`QM_StrategyFarm_MorningBrief_0700`) was also deleted in the
-> same pass (vault brief retained).
+> The duplicate 07:00 email task (`QM_StrategyFarm_MorningBrief_0700`) was also
+> deleted in the same pass; the single 06:00 MorningBriefing task remains.
 
 ## Non-QM tasks (not ours)
 

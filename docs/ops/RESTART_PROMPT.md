@@ -36,8 +36,10 @@ into a running state.
 - 1–5 transient terminal64.exe procs (one per active backtest in flight)
 - `QM_StrategyFarm_QuotaReceiver` listening on 127.0.0.1:9090
 - Cockpit refreshing every 2 min at `D:/QM/strategy_farm/dashboards/cockpit.html`
-- Morning brief lands daily at 07:00 local in
-  `G:/My Drive/QuantMechanica - Company Reference/10 Morning Briefing/`
+- One MorningBriefing mail lands daily at 06:00 local and is archived in
+  `G:/My Drive/QuantMechanica - Company Reference/10 Morning Briefing/`.
+- About five minutes after each new Windows boot, one deduplicated German
+  cause/recovery diagnostic mail is sent (with scheduled retries on SMTP error).
 
 ---
 
@@ -49,7 +51,8 @@ Get-ScheduledTask -TaskName 'QM_StrategyFarm_*' |
   Format-Table -AutoSize
 ```
 
-Expected — **all of these should be Ready or Running**:
+Expected — enabled entries should be Ready or Running; the legacy pipeline
+FAIL/OK mail task must remain Disabled:
 
 | Task                                       | Trigger          | Purpose                                |
 |--------------------------------------------|------------------|----------------------------------------|
@@ -58,14 +61,16 @@ Expected — **all of these should be Ready or Running**:
 | `QM_StrategyFarm_Cockpit_2min`             | every 2 min      | Cockpit dashboard render               |
 | `QM_StrategyFarm_Health_15min`             | every 15 min     | 10-invariant watchdog → health.json    |
 | `QM_StrategyFarm_Repair_Hourly`            | every 1 h        | Auto-fix 5 stuck-state classes         |
-| `QM_StrategyFarm_GmailAlarm_Hourly`        | every 1 h        | Mail on FAIL transition (debounced)    |
-| `QM_StrategyFarm_MorningBrief_0700`        | daily 07:00      | Markdown brief → cockpit + Drive vault |
+| `QM_StrategyFarm_GmailAlarm_Hourly`        | disabled         | OWNER opt-out: no PIPELINE FAIL/OK mail|
+| `QM_MorningBriefing_Vault`                 | daily 06:00      | One briefing mail + Drive vault        |
+| `QM_StrategyFarm_RebootDiagnostic_AtStartup` | startup +5 min | One cause/recovery mail per boot       |
 | `QM_StrategyFarm_AutonomousWake_Hourly`    | hourly           | (legacy ad-hoc wake; OK if disabled)   |
 | `QM_StrategyFarm_BoardAdvisor_Hourly`      | hourly           | (legacy; OK if disabled)               |
 | `QM_StrategyFarm_Dashboard_Hourly`         | hourly           | Heureka dashboard render               |
 | `QM_StrategyFarm_Tick_5min`                | every 5 min      | Legacy dispatch tick (mostly no-op now)|
 
-If any **should-be-Ready** is `Disabled`, re-enable:
+If any **should-be-Ready** entry is `Disabled`, re-enable it. Never re-enable
+`QM_StrategyFarm_GmailAlarm_Hourly`:
 ```powershell
 Enable-ScheduledTask -TaskName '<task name>'
 ```
@@ -196,9 +201,10 @@ Keep it 6–10 lines.
   re-install with explicit python.exe path. Log content lives at
   `D:/QM/strategy_farm/logs/pump_task_<UTC>.log`.
 
-- **Watchdog Gmail alarm fires immediately after reboot** → expected; the
-  fingerprint state file was reset by the dead pump. It'll re-debounce
-  on next 1-hour cycle.
+- **No reboot explanation immediately at logon** → the diagnostic intentionally
+  waits five minutes for Windows event logs and recovery state. Check
+  `QM_StrategyFarm_RebootDiagnostic_AtStartup`; transient mail failures retry
+  every five minutes (up to six task restarts).
 
 ---
 
@@ -242,7 +248,6 @@ python tools/strategy_farm/farmctl.py pump > /tmp/pump.json
 # Show the brief
 cat D:/QM/strategy_farm/dashboards/morning_brief.md
 
-# Send fresh Gmail alarm (debounce-state reset)
-rm D:/QM/strategy_farm/state/gmail_alarm_state.json
-python tools/strategy_farm/gmail_alarm.py
+# Do NOT run gmail_alarm.py: the separate PIPELINE FAIL/OK channel is
+# OWNER-disabled. MorningBriefing and reboot diagnostics have their own tasks.
 ```
