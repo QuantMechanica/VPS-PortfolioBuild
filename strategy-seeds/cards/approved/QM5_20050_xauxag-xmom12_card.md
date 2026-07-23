@@ -178,7 +178,8 @@ portfolio admission is authorized.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-23 | initial XAU/XAG 12-month momentum basket | Q02 | Q01 PASS; Q02 ENQUEUED |
+| v1 | 2026-07-23 | initial XAU/XAG 12-month momentum basket | Q02 | DRAFT_DEFECT: zero trades |
+| v1.1 | 2026-07-23 | align history-buffer guard with approved 400-600 range; economics unchanged | Q01 | strict compile PASS; Q02 rerun deferred at CPU ceiling |
 
 ## Pipeline Phase Status
 
@@ -186,4 +187,4 @@ portfolio admission is authorized.
 |---|---|---|---|
 | G0 Research Intake | 2026-07-23 | APPROVED under OWNER mission; R1-R4 PASS | this card |
 | Q01 Build Validation | 2026-07-23 | PASS - strict compile 0 errors/0 warnings; build checks PASS | `docs/ops/evidence/2026-07-23_qm5_20050_xauxag_xmom12_q02_enqueue.md` |
-| Q02 Baseline Screening | 2026-07-23 | ENQUEUED as one logical basket | work item `8a36f351` |
+| Q02 Baseline Screening | 2026-07-23 | DRAFT_DEFECT: zero trades; repaired rerun deferred at CPU ceiling | work item `8a36f351-f5de-40fe-acfc-4b46aff0a4a2`; `docs/ops/evidence/2026-07-23_qm5_20050_zero_trades_recovery.md` |

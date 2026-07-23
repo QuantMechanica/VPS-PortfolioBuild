@@ -27,8 +27,11 @@ swap-agreement strategy and was manually rejected as a duplicate.
   0 failures, 0 warnings.
 - Compiled binary SHA256:
   `08B18D41EAABB2F8B6B6AAD87E6C4D391D853A88F4F970C5033B6CB720F48FBF`.
-- Q02 work item: `8a36f351` (full UUID begins with this stable short ID),
-  pending, attempt 0, one logical basket rather than physical-leg fanout.
+- Q02 work item: `8a36f351-f5de-40fe-acfc-4b46aff0a4a2`, one logical basket
+  rather than physical-leg fanout. It subsequently completed with zero trades
+  and verdict `DRAFT_DEFECT`; the deterministic guard repair and CPU-ceiling
+  stop are recorded in
+  `docs/ops/evidence/2026-07-23_qm5_20050_zero_trades_recovery.md`.
 
 Repository-wide dedup audit emitted pre-existing registry debt and was not used
 as a clean global assertion. Exact candidate dedup was clean; the one

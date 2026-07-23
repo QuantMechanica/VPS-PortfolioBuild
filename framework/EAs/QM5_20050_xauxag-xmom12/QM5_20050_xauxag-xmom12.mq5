@@ -482,7 +482,7 @@ bool Strategy_NoTradeFilter()
       return true;
    if(strategy_return_window_months != 12)
       return true;
-   if(strategy_history_bars < 900 || strategy_history_bars > 1600)
+   if(strategy_history_bars < 400 || strategy_history_bars > 600)
       return true;
    if(strategy_atr_period_d1 <= 0 || strategy_atr_sl_mult <= 0.0 || strategy_max_hold_days <= 0)
       return true;
