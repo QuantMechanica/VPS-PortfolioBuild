@@ -22,4 +22,14 @@ This is not `QM5_12567` cumulative-RSI2 reversion, not the `QM5_13110` weekly H4
 - Backtest setfile: `RISK_FIXED=1000`, `RISK_PERCENT=0`, D1.
 - Q02 work item: `1b23a273-e5bc-497d-b55d-aca566da98da`, pending, attempt 0.
 
+## Paced Q02 Outcome
+
+The fleet claimed the row after enqueue and completed it before closeout. Q02
+returned `FAIL / MIN_TRADES_NOT_MET`: 24 trades versus the 25-trade floor,
+profit factor 0.00, net profit -998.42, and 1.00% drawdown over 2018-07-02 to
+2022-12-31. Evidence: `D:/QM/reports/work_items/1b23a273-e5bc-497d-b55d-aca566da98da/QM5_20052/20260723_003733/summary.json`.
+
+This edge is built and falsified at Q02; it is not a certified portfolio
+addition and is not promoted or reworked in this mission.
+
 No backtest was manually started. No T_Live, AutoTrading, live setfile, deploy manifest, portfolio gate, or T_Live manifest was touched.
