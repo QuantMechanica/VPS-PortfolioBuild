@@ -22,7 +22,7 @@ execution_contract_status: DRAFT
 strategy_type_flags: [trend-filter-ma, time-stop, atr-hard-stop, friday-close-flatten, news-blackout, symmetric-long-short]
 expected_trades_per_year_per_symbol: 13
 expected_trade_frequency: "Source FDAX comparison: 51 trades in about 3.8 years, or 13.5/year; the GDAXI CFD port and framework exits are untested."
-expected_pf: 1.20
+expected_pf: 1.2
 expected_dd_pct: 20.0
 risk_class: medium-high
 ml_required: false
@@ -33,7 +33,7 @@ r4_ml_forbidden: PASS
 pipeline_phase: G0
 g0_approved_by: OWNER
 g0_approval_date: 2026-07-23
-g0_approval_reasoning: "OWNER approved Appendix A.4 on GDAXI.DWX D1 with causal next-open execution, fixed ATR20 x 3.0 catastrophe stop, Friday 21:00 framework flatten, and the documented fail-closed tie-break."
+g0_approval_reasoning: "R1 TIER_A licensed Wiley source; R2 deterministic Appendix A.4; R3 GDAXI.DWX D1 available; R4 no ML. OWNER accepts next-open, ATR20x3, Friday21, and fail-closed tie-break."
 r1_reasoning: "One OWNER-authorized licensed Wiley book with exact Chapter 13, Table 13.2, and Appendix A.4 page anchors; source tier A."
 r2_reasoning: "Deterministic CI regime, MA/stochastic entry branches, signal exits, and 60-bar time exit; every QM overlay is frozen separately."
 r3_reasoning: "GDAXI.DWX D1 is registered with 2018-2026 history and the approved port requires no external series."

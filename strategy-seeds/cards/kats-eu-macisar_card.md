@@ -22,7 +22,7 @@ execution_contract_status: DRAFT
 strategy_type_flags: [trend-filter-ma, signal-reversal-exit, atr-hard-stop, friday-close-flatten, news-blackout, symmetric-long-short]
 expected_trades_per_year_per_symbol: 12
 expected_trade_frequency: "Source conventional EUR/USD comparison: 62 trades in five years, or 12.4/year; the causal next-open DWX port and framework exits are untested."
-expected_pf: 1.20
+expected_pf: 1.2
 expected_dd_pct: 20.0
 risk_class: medium-high
 ml_required: false
@@ -33,7 +33,7 @@ r4_ml_forbidden: PASS
 pipeline_phase: G0
 g0_approved_by: OWNER
 g0_approval_date: 2026-07-23
-g0_approval_reasoning: "OWNER approved Appendix A.8 ABS(CI) > 40 on EURUSD.DWX D1 with causal next-open execution, fixed ATR20 x 3.0 catastrophe stop, Friday 21:00 framework flatten, and the documented fail-closed tie-break."
+g0_approval_reasoning: "R1 TIER_A licensed Wiley source; R2 deterministic Appendix A.8 ABS(CI)>40; R3 EURUSD.DWX D1 available without external series; R4 no ML. OWNER accepts next-open, ATR20x3, Friday21, and fail-closed tie-break."
 r1_reasoning: "One OWNER-authorized licensed Wiley book with exact Chapter 17, Table 17.6, and Appendix A.8 page anchors; source tier A."
 r2_reasoning: "Deterministic SMA-change-volatility, CI-turn, and Parabolic-SAR rules with the Appendix inequality frozen explicitly."
 r3_reasoning: "EURUSD.DWX D1 is registered with 2017-2026 history and the approved conventional variant requires no CRB, TNX, or other external series."

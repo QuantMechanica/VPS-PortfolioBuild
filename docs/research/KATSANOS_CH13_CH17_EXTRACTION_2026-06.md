@@ -2,8 +2,8 @@
 
 **Audit date:** 2026-07-23
 
-**Status:** APPROVED — source-audited research accepted; two Strategy Card
-Drafts await a separate OWNER G0 decision
+**Status:** APPROVED — source-audited research accepted; Strategy Cards
+`QM5_20061` and `QM5_20062` received OWNER G0 approval on 2026-07-23
 
 **Task:** `f96d0a4f-a0d0-4ece-8bab-47660ccb0df5`
 
@@ -11,7 +11,7 @@ Drafts await a separate OWNER G0 decision
 
 **Follow-up artifacts:** canonical
 [`source.md`](../../strategy-seeds/sources/KATSANOS-INTERMARKET-2008/source.md);
-Draft Cards
+G0-approved Cards
 [`kats-dax-maci_card.md`](../../strategy-seeds/cards/kats-dax-maci_card.md)
 and
 [`kats-eu-macisar_card.md`](../../strategy-seeds/cards/kats-eu-macisar_card.md)
