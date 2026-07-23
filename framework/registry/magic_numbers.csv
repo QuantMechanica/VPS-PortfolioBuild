@@ -15169,3 +15169,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20060,xcu-xag-rspread,0,XCUUSD.DWX,200600000,2026-07-23,Development,active
 20060,xcu-xag-rspread,1,XAGUSD.DWX,200600001,2026-07-23,Development,active
 20063,xng-tsmom3m,0,XNGUSD.DWX,200630000,2026-07-23,Development,active
+20064,wti-tsmom2m,0,XTIUSD.DWX,200640000,2026-07-23,Development,active
