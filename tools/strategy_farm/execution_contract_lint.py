@@ -70,6 +70,16 @@ NEWS_FILE_CALENDAR_FIELDS = {
     "coverage_end",
 }
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+DEPENDENCY_ID_RE = re.compile(r"^[a-z][a-z0-9_]{0,63}$")
+DATA_DEPENDENCY_TYPES = {"calendar", "artifact", "signal_anchor", "session_metadata"}
+DEPENDENCY_REQUIRED_FOR = {"ENTRY", "EXIT", "SIZING", "SIGNAL_ONLY", "PROMOTION"}
+SESSION_METADATA_KINDS = {
+    "BROKER_SESSION",
+    "BROKER_BREAKS",
+    "ROLLOVER",
+    "FINANCING",
+    "SESSION_EXCEPTION_CALENDAR",
+}
 
 EXECUTION_CALL_RE = re.compile(
     r"QM_FrameworkDeclareExecutionContract\s*\(\s*"
@@ -539,7 +549,11 @@ def _lint_ftmo_news_file_calendar(
         "compliance default": r"\bqm_news_compliance\s*=\s*QM_NEWS_COMPLIANCE_FTMO\s*;",
         "stale horizon default": r"\bqm_news_stale_max_hours\s*=\s*336\s*;",
         "impact default": r'\bqm_news_min_impact\s*=\s*"high"\s*;',
-        "entry fail-closed call": r"if\s*\(\s*!Strategy_EntryNewsAllows\s*\([^)]*\)\s*\)\s*return\s*;",
+        # Accept both the bare single-statement guard (``)) return;``) and the
+        # richer braced fail-closed block (``)) { block_reason=...; return ...; }``)
+        # used by real EAs. The ``[^{}]*`` body cannot cross a brace, so an entry
+        # branch that opens ``{`` but never returns is still correctly flagged.
+        "entry fail-closed call": r"if\s*\(\s*!Strategy_EntryNewsAllows\s*\([^)]*\)\s*\)\s*(?:\{[^{}]*)?return\b",
         "initialization fail-closed call": r"if\s*\(\s*!QM_FrameworkInit\s*\(.*?\)\s*\)\s*return\s+INIT_FAILED\s*;",
     }
     missing_runtime = [
@@ -557,6 +571,643 @@ def _lint_ftmo_news_file_calendar(
             )
         )
 
+    return issues
+
+
+def _resolve_ref(path_ref: str, repo_root: Path) -> Path:
+    path = Path(path_ref)
+    return path if path.is_absolute() else repo_root / path
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _card_ea_id(raw: str) -> int | None:
+    match = re.fullmatch(r"(?:QM5_)?([1-9][0-9]*)", raw.strip(), re.IGNORECASE)
+    return int(match.group(1)) if match else None
+
+
+def _status_reason(prefix: str, value: object) -> str:
+    token = re.sub(r"[^a-z0-9]+", "_", str(value).casefold()).strip("_") or "missing"
+    return f"{prefix}_{token}_not_approved"
+
+
+def _lint_card_binding(
+    contract: dict[str, Any],
+    *,
+    repo_root: Path,
+    promotion_status: str,
+    promotion_reasons: set[str],
+) -> list[Issue]:
+    binding = contract.get("card_binding")
+    if binding is None:
+        return []
+
+    ea_id = int(contract["ea_id"])
+    issues: list[Issue] = []
+    if not isinstance(binding, dict):
+        return [_issue("card_binding_invalid", "card_binding must be an object", ea_id=ea_id)]
+    required = (
+        "ea_id",
+        "slug",
+        "timeframe",
+        "variant_id",
+        "status",
+        "execution_contract_status",
+    )
+    binding_issues = _require_keys(binding, required, ea_id)
+    issues.extend(binding_issues)
+    if binding_issues:
+        return issues
+
+    expected = {
+        "ea_id": ea_id,
+        "slug": str(contract["slug"]),
+        "timeframe": str(contract["strategy_timeframe"]),
+        "variant_id": contract.get("variant_id"),
+    }
+    for field, expected_value in expected.items():
+        if binding.get(field) != expected_value:
+            issues.append(
+                _issue(
+                    "card_binding_contract_mismatch",
+                    f"card_binding.{field}={binding.get(field)!r} != contract {expected_value!r}",
+                    ea_id=ea_id,
+                )
+            )
+
+    card_ref = str(contract["card_ref"])
+    if card_ref == "MISSING_CANONICAL_APPROVED_CARD":
+        issues.append(
+            _issue(
+                "card_binding_missing_card",
+                "a structured card binding cannot target the missing-card sentinel",
+                ea_id=ea_id,
+            )
+        )
+        return issues
+
+    card = _resolve_ref(card_ref, repo_root)
+    issues.extend(lint_card_v2(card, contract))
+    if card.exists():
+        card_text = card.read_text(encoding="utf-8-sig", errors="replace")
+        frontmatter = _flat_frontmatter(card_text)
+        card_values: dict[str, object] = {
+            "ea_id": _card_ea_id(frontmatter.get("ea_id", "")),
+            "slug": frontmatter.get("slug"),
+            "timeframe": frontmatter.get("timeframe"),
+            "variant_id": frontmatter.get("variant_id"),
+            "status": frontmatter.get("status"),
+            "execution_contract_status": frontmatter.get("execution_contract_status"),
+        }
+        for field in required:
+            if card_values[field] != binding.get(field):
+                issues.append(
+                    _issue(
+                        "card_binding_frontmatter_mismatch",
+                        f"Card {field}={card_values[field]!r} != binding {binding.get(field)!r}",
+                        ea_id=ea_id,
+                        path=card,
+                    )
+                )
+
+    for field, reason_prefix in (
+        ("status", "card_status"),
+        ("execution_contract_status", "card_execution_contract_status"),
+    ):
+        value = binding.get(field)
+        reason = _status_reason(reason_prefix, value)
+        if str(value).upper() != "APPROVED":
+            if promotion_status != "BLOCKED":
+                issues.append(
+                    _issue(
+                        "unapproved_card_binding_not_blocked",
+                        f"card_binding.{field}={value!r} requires BLOCKED promotion",
+                        ea_id=ea_id,
+                    )
+                )
+            if reason not in promotion_reasons:
+                issues.append(
+                    _issue(
+                        "card_binding_block_reason_missing",
+                        f"promotion reasons must include {reason}",
+                        ea_id=ea_id,
+                    )
+                )
+        elif reason in promotion_reasons:
+            issues.append(
+                _issue(
+                    "card_binding_block_reason_stale",
+                    f"approved Card binding retains stale reason {reason}",
+                    ea_id=ea_id,
+                )
+            )
+    return issues
+
+
+def _lint_dependency_file(
+    dependency: dict[str, Any],
+    *,
+    repo_root: Path,
+    ea_id: int,
+) -> list[Issue]:
+    """Verify bound bytes; BLOCKED may omit bytes, but cannot bind false bytes."""
+
+    qualification = dependency.get("qualification_status")
+    path_ref = dependency.get("path")
+    expected_hash = dependency.get("sha256")
+    if qualification == "PASS" and (not isinstance(path_ref, str) or not path_ref):
+        return [
+            _issue(
+                "dependency_path_missing",
+                f"PASS dependency {dependency.get('dependency_id')!r} requires a path",
+                ea_id=ea_id,
+            )
+        ]
+    if qualification != "PASS" and (
+        not isinstance(path_ref, str)
+        or not path_ref
+        or expected_hash is None
+    ):
+        return []
+    path = _resolve_ref(path_ref, repo_root)
+    if not path.is_file():
+        return [
+            _issue(
+                "dependency_file_missing",
+                f"bound dependency {dependency.get('dependency_id')!r} does not exist",
+                ea_id=ea_id,
+                path=path,
+            )
+        ]
+    if not isinstance(expected_hash, str) or not SHA256_RE.fullmatch(expected_hash):
+        return [
+            _issue(
+                "dependency_hash_invalid",
+                f"PASS dependency {dependency.get('dependency_id')!r} requires sha256",
+                ea_id=ea_id,
+                path=path,
+            )
+        ]
+    actual_hash = _sha256_file(path)
+    if actual_hash != expected_hash:
+        return [
+            _issue(
+                "dependency_hash_mismatch",
+                f"dependency {dependency.get('dependency_id')!r} hash differs from contract",
+                ea_id=ea_id,
+                path=path,
+            )
+        ]
+    return []
+
+
+def _lint_data_dependencies(
+    contract: dict[str, Any],
+    *,
+    repo_root: Path,
+    as_of: date | None,
+    promotion_status: str,
+    promotion_reasons: set[str],
+) -> list[Issue]:
+    dependencies = contract.get("data_dependencies")
+    if dependencies is None:
+        return []
+    ea_id = int(contract["ea_id"])
+    if not isinstance(dependencies, list) or not dependencies:
+        return [
+            _issue(
+                "data_dependencies_invalid",
+                "data_dependencies must be a non-empty list",
+                ea_id=ea_id,
+            )
+        ]
+
+    issues: list[Issue] = []
+    seen_ids: set[str] = set()
+    for dependency in dependencies:
+        if not isinstance(dependency, dict):
+            issues.append(
+                _issue("data_dependency_invalid", "each dependency must be an object", ea_id=ea_id)
+            )
+            continue
+        required = (
+            "dependency_id",
+            "type",
+            "qualification_status",
+            "required_for",
+            "block_reason",
+        )
+        missing = _require_keys(dependency, required, ea_id)
+        issues.extend(missing)
+        if missing:
+            continue
+        dependency_id = str(dependency["dependency_id"])
+        if not DEPENDENCY_ID_RE.fullmatch(dependency_id):
+            issues.append(
+                _issue(
+                    "data_dependency_id_invalid",
+                    f"invalid dependency_id: {dependency_id!r}",
+                    ea_id=ea_id,
+                )
+            )
+        if dependency_id in seen_ids:
+            issues.append(
+                _issue(
+                    "data_dependency_duplicate",
+                    f"duplicate dependency_id: {dependency_id}",
+                    ea_id=ea_id,
+                )
+            )
+        seen_ids.add(dependency_id)
+
+        dependency_type = str(dependency["type"])
+        qualification = str(dependency["qualification_status"])
+        required_for = dependency["required_for"]
+        block_reason = dependency["block_reason"]
+        if dependency_type not in DATA_DEPENDENCY_TYPES:
+            issues.append(
+                _issue(
+                    "data_dependency_type_invalid",
+                    f"invalid dependency type: {dependency_type}",
+                    ea_id=ea_id,
+                )
+            )
+        if qualification not in QUALIFICATION_STATUSES:
+            issues.append(
+                _issue(
+                    "data_dependency_qualification_invalid",
+                    f"invalid dependency qualification: {qualification}",
+                    ea_id=ea_id,
+                )
+            )
+        if (
+            not isinstance(required_for, list)
+            or not required_for
+            or any(item not in DEPENDENCY_REQUIRED_FOR for item in required_for)
+        ):
+            issues.append(
+                _issue(
+                    "data_dependency_required_for_invalid",
+                    f"invalid required_for on {dependency_id}",
+                    ea_id=ea_id,
+                )
+            )
+
+        if qualification == "PASS":
+            if block_reason is not None:
+                issues.append(
+                    _issue(
+                        "data_dependency_pass_has_block_reason",
+                        f"PASS dependency {dependency_id} cannot retain a block reason",
+                        ea_id=ea_id,
+                    )
+                )
+        else:
+            if not isinstance(block_reason, str) or not block_reason:
+                issues.append(
+                    _issue(
+                        "data_dependency_block_reason_missing",
+                        f"unqualified dependency {dependency_id} requires a block reason",
+                        ea_id=ea_id,
+                    )
+                )
+            elif block_reason not in promotion_reasons:
+                issues.append(
+                    _issue(
+                        "data_dependency_promotion_reason_missing",
+                        f"promotion reasons must include {block_reason}",
+                        ea_id=ea_id,
+                    )
+                )
+            if promotion_status == "ELIGIBLE":
+                issues.append(
+                    _issue(
+                        "unqualified_dependency_promotable",
+                        f"unqualified dependency {dependency_id} cannot be promotion-eligible",
+                        ea_id=ea_id,
+                    )
+                )
+            if qualification == "BLOCKED" and promotion_status != "BLOCKED":
+                issues.append(
+                    _issue(
+                        "blocked_dependency_not_blocked",
+                        f"BLOCKED dependency {dependency_id} requires BLOCKED promotion",
+                        ea_id=ea_id,
+                    )
+                )
+
+        if dependency_type == "calendar":
+            calendar_missing = _require_keys(
+                dependency,
+                ("source_ref", "calendar_policy", "stale_behavior"),
+                ea_id,
+            )
+            issues.extend(calendar_missing)
+        if dependency_type in {"calendar", "artifact"} and "path" in dependency:
+            issues.extend(
+                _lint_dependency_file(dependency, repo_root=repo_root, ea_id=ea_id)
+            )
+        if dependency_type == "artifact":
+            artifact_missing = _require_keys(dependency, ("path", "sha256"), ea_id)
+            issues.extend(artifact_missing)
+        if dependency_type == "signal_anchor":
+            signal_missing = _require_keys(
+                dependency,
+                ("symbol", "timeframe", "order_allowed"),
+                ea_id,
+            )
+            issues.extend(signal_missing)
+            if dependency.get("order_allowed") is not False:
+                issues.append(
+                    _issue(
+                        "signal_anchor_order_forbidden",
+                        f"signal anchor {dependency_id} must set order_allowed=false",
+                        ea_id=ea_id,
+                    )
+                )
+            if not isinstance(dependency.get("symbol"), str) or not CONTRACT_SYMBOL_RE.fullmatch(
+                str(dependency.get("symbol"))
+            ):
+                issues.append(
+                    _issue(
+                        "signal_anchor_symbol_invalid",
+                        f"signal anchor {dependency_id} must use a literal .DWX symbol",
+                        ea_id=ea_id,
+                    )
+                )
+            if dependency.get("timeframe") not in TIMEFRAMES:
+                issues.append(
+                    _issue(
+                        "signal_anchor_timeframe_invalid",
+                        f"signal anchor {dependency_id} has invalid timeframe",
+                        ea_id=ea_id,
+                    )
+                )
+        if dependency_type == "session_metadata":
+            session_missing = _require_keys(
+                dependency,
+                ("metadata_kind", "source_ref"),
+                ea_id,
+            )
+            issues.extend(session_missing)
+            if dependency.get("metadata_kind") not in SESSION_METADATA_KINDS:
+                issues.append(
+                    _issue(
+                        "session_metadata_kind_invalid",
+                        f"session metadata {dependency_id} has invalid metadata_kind",
+                        ea_id=ea_id,
+                    )
+                )
+
+        coverage_start = dependency.get("coverage_start")
+        coverage_end = dependency.get("coverage_end")
+        if coverage_start is not None or coverage_end is not None:
+            try:
+                start_date = date.fromisoformat(str(coverage_start))
+                end_date = date.fromisoformat(str(coverage_end))
+            except ValueError:
+                issues.append(
+                    _issue(
+                        "data_dependency_coverage_invalid",
+                        f"dependency {dependency_id} has invalid coverage dates",
+                        ea_id=ea_id,
+                    )
+                )
+            else:
+                if start_date > end_date:
+                    issues.append(
+                        _issue(
+                            "data_dependency_coverage_invalid",
+                            f"dependency {dependency_id} coverage starts after it ends",
+                            ea_id=ea_id,
+                        )
+                    )
+                if qualification == "PASS" and as_of is not None and as_of > end_date:
+                    issues.append(
+                        _issue(
+                            "data_dependency_expired",
+                            f"qualified dependency {dependency_id} expired {end_date.isoformat()}",
+                            ea_id=ea_id,
+                        )
+                    )
+    return issues
+
+
+def _parse_setfile(path: Path) -> dict[str, str]:
+    values: dict[str, str] = {}
+    for raw_line in path.read_text(encoding="utf-8-sig", errors="replace").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith(";") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        values[key.strip()] = value.split("||", 1)[0].strip()
+    return values
+
+
+def _lint_runtime_binding(
+    contract: dict[str, Any],
+    *,
+    repo_root: Path,
+    source: Path,
+    source_text: str,
+) -> list[Issue]:
+    binding = contract.get("runtime_binding")
+    if binding is None:
+        return []
+    ea_id = int(contract["ea_id"])
+    if not isinstance(binding, dict):
+        return [_issue("runtime_binding_invalid", "runtime_binding must be an object", ea_id=ea_id)]
+    required = ("qm_ea_id", "magic_slot_offset", "setfile", "setfile_sha256")
+    issues = _require_keys(binding, required, ea_id)
+    if issues:
+        return issues
+
+    qm_ea_id = binding.get("qm_ea_id")
+    slot = binding.get("magic_slot_offset")
+    if qm_ea_id != ea_id:
+        issues.append(
+            _issue(
+                "runtime_qm_ea_id_contract_mismatch",
+                f"runtime_binding.qm_ea_id={qm_ea_id!r} != contract ea_id {ea_id}",
+                ea_id=ea_id,
+            )
+        )
+    if not isinstance(slot, int) or isinstance(slot, bool) or slot < 0:
+        issues.append(
+            _issue("runtime_magic_slot_invalid", "magic_slot_offset must be a non-negative integer", ea_id=ea_id)
+        )
+
+    source_ea = re.search(
+        r"\binput\s+(?:int|long)\s+qm_ea_id\s*=\s*([0-9]+)\s*;",
+        source_text,
+    )
+    if source_ea is None:
+        issues.append(
+            _issue("runtime_qm_ea_id_missing", "source input qm_ea_id default is missing", ea_id=ea_id, path=source)
+        )
+    elif int(source_ea.group(1)) != ea_id:
+        issues.append(
+            _issue(
+                "runtime_qm_ea_id_mismatch",
+                f"source qm_ea_id={source_ea.group(1)} != contract ea_id {ea_id}",
+                ea_id=ea_id,
+                path=source,
+            )
+        )
+    if not re.search(
+        r"\binput\s+(?:int|long)\s+qm_magic_slot_offset\s*=\s*[0-9]+\s*;",
+        source_text,
+    ):
+        issues.append(
+            _issue(
+                "runtime_magic_slot_input_missing",
+                "source input qm_magic_slot_offset default is missing",
+                ea_id=ea_id,
+                path=source,
+            )
+        )
+
+    variant_id = contract.get("variant_id")
+    source_variant = re.search(
+        r"\b(?P<storage>input|const)\s+string\s+strategy_variant_id\s*=\s*"
+        r'"(?P<value>[A-Z][A-Z0-9_]*)"\s*;',
+        source_text,
+    )
+    if source_variant is None:
+        issues.append(
+            _issue(
+                "runtime_variant_id_missing",
+                "source must bind strategy_variant_id as an input or const string",
+                ea_id=ea_id,
+                path=source,
+            )
+        )
+    elif source_variant.group("value") != variant_id:
+        issues.append(
+            _issue(
+                "runtime_variant_id_mismatch",
+                f"source variant {source_variant.group('value')!r} != contract {variant_id!r}",
+                ea_id=ea_id,
+                path=source,
+            )
+        )
+
+    friday = contract.get("friday_close", {})
+    if isinstance(friday, dict) and friday.get("enabled") is True:
+        source_hour = re.search(
+            r"\binput\s+int\s+qm_friday_close_hour(?:_broker)?\s*=\s*([0-9]+)\s*;",
+            source_text,
+        )
+        if source_hour is None:
+            issues.append(
+                _issue(
+                    "runtime_friday_hour_missing",
+                    "enabled Friday contract requires a source broker-hour input",
+                    ea_id=ea_id,
+                    path=source,
+                )
+            )
+        elif int(source_hour.group(1)) != friday.get("hour_broker"):
+            issues.append(
+                _issue(
+                    "runtime_friday_hour_mismatch",
+                    "source Friday broker hour differs from contract",
+                    ea_id=ea_id,
+                    path=source,
+                )
+            )
+
+    setfile = _resolve_ref(str(binding["setfile"]), repo_root)
+    if not setfile.is_file():
+        issues.append(_issue("runtime_setfile_missing", "bound setfile does not exist", ea_id=ea_id, path=setfile))
+        return issues
+    expected_hash = binding.get("setfile_sha256")
+    actual_hash = _sha256_file(setfile)
+    if not isinstance(expected_hash, str) or not SHA256_RE.fullmatch(expected_hash):
+        issues.append(_issue("runtime_setfile_hash_invalid", "setfile_sha256 is invalid", ea_id=ea_id, path=setfile))
+    elif actual_hash != expected_hash:
+        issues.append(_issue("runtime_setfile_hash_mismatch", "setfile hash differs from contract", ea_id=ea_id, path=setfile))
+
+    try:
+        _identity_ea, symbol, timeframe, _variant = execution_contract_identity(contract)
+    except ValueError:
+        symbol = timeframe = None
+    expected_prefix = f"QM5_{ea_id}_{contract['slug']}_"
+    if not setfile.name.startswith(expected_prefix):
+        issues.append(
+            _issue("runtime_setfile_identity_mismatch", "setfile name does not match EA identity", ea_id=ea_id, path=setfile)
+        )
+    if symbol is not None and timeframe is not None and f"_{symbol}_{timeframe}_" not in setfile.name:
+        issues.append(
+            _issue("runtime_setfile_sleeve_mismatch", "setfile name does not match sleeve symbol/timeframe", ea_id=ea_id, path=setfile)
+        )
+
+    set_values = _parse_setfile(setfile)
+    if set_values.get("qm_ea_id") != str(ea_id):
+        issues.append(
+            _issue("runtime_setfile_ea_id_mismatch", "setfile qm_ea_id differs from contract", ea_id=ea_id, path=setfile)
+        )
+    if isinstance(slot, int) and set_values.get("qm_magic_slot_offset") != str(slot):
+        issues.append(
+            _issue("runtime_setfile_slot_mismatch", "setfile magic slot differs from contract", ea_id=ea_id, path=setfile)
+        )
+    if (
+        source_variant is not None
+        and source_variant.group("storage") == "input"
+        and set_values.get("strategy_variant_id") != str(variant_id)
+    ):
+        issues.append(
+            _issue(
+                "runtime_setfile_variant_mismatch",
+                "setfile strategy_variant_id differs from contract",
+                ea_id=ea_id,
+                path=setfile,
+            )
+        )
+
+    magic_ref = str(binding.get("magic_registry", "framework/registry/magic_numbers.csv"))
+    magic_registry = _resolve_ref(magic_ref, repo_root)
+    try:
+        with magic_registry.open("r", encoding="utf-8-sig", newline="") as handle:
+            rows = list(csv.DictReader(handle))
+    except OSError as exc:
+        issues.append(
+            _issue("runtime_magic_registry_missing", str(exc), ea_id=ea_id, path=magic_registry)
+        )
+        return issues
+    matching_rows = [
+        row
+        for row in rows
+        if row.get("ea_id") == str(ea_id)
+        and row.get("symbol_slot") == str(slot)
+        and row.get("symbol") == symbol
+    ]
+    if len(matching_rows) != 1:
+        issues.append(
+            _issue(
+                "runtime_magic_registry_binding_missing",
+                f"expected one active magic row for ea_id={ea_id}, slot={slot}, symbol={symbol}; found {len(matching_rows)}",
+                ea_id=ea_id,
+                path=magic_registry,
+            )
+        )
+    else:
+        row = matching_rows[0]
+        expected_magic = ea_id * 10000 + int(slot)
+        if row.get("status", "").casefold() != "active":
+            issues.append(
+                _issue("runtime_magic_registry_inactive", "bound magic row is not active", ea_id=ea_id, path=magic_registry)
+            )
+        if row.get("magic") != str(expected_magic):
+            issues.append(
+                _issue("runtime_magic_number_mismatch", f"magic must equal {expected_magic}", ea_id=ea_id, path=magic_registry)
+            )
     return issues
 
 
@@ -711,13 +1362,65 @@ def lint_contract(
     if contract["card_ref"] == "MISSING_CANONICAL_APPROVED_CARD" and promotion_status != "BLOCKED":
         issues.append(_issue("missing_card_not_blocked", "missing canonical Card must block promotion", ea_id=ea_id))
 
-    routing = contract.get("darwinex_zero_routing")
+    reason_set = {str(item) for item in reasons} if isinstance(reasons, list) else set()
+    if contract.get("runtime_binding") is not None and contract.get("card_binding") is None:
+        issues.append(
+            _issue(
+                "runtime_binding_card_binding_missing",
+                "runtime_binding requires an exact card_binding",
+                ea_id=ea_id,
+            )
+        )
+    if contract.get("data_dependencies") is not None:
+        missing_bindings = [
+            field
+            for field in ("card_binding", "runtime_binding")
+            if contract.get(field) is None
+        ]
+        if missing_bindings:
+            issues.append(
+                _issue(
+                    "data_dependencies_binding_missing",
+                    "data_dependencies require " + ", ".join(missing_bindings),
+                    ea_id=ea_id,
+                )
+            )
+    issues.extend(
+        _lint_card_binding(
+            contract,
+            repo_root=repo_root,
+            promotion_status=promotion_status,
+            promotion_reasons=reason_set,
+        )
+    )
+    issues.extend(
+        _lint_data_dependencies(
+            contract,
+            repo_root=repo_root,
+            as_of=as_of,
+            promotion_status=promotion_status,
+            promotion_reasons=reason_set,
+        )
+    )
+
+    legacy_routing = contract.get("darwinex_zero_routing")
+    routing = contract.get("symbol_routing")
+    if legacy_routing is not None and routing is not None:
+        issues.append(
+            _issue(
+                "symbol_routing_duplicate",
+                "declare symbol_routing or darwinex_zero_routing, not both",
+                ea_id=ea_id,
+            )
+        )
+    if routing is None:
+        routing = legacy_routing
     if routing is not None:
         if not isinstance(routing, dict):
             issues.append(
                 _issue(
                     "dxz_routing_contract_invalid",
-                    "darwinex_zero_routing must be an object",
+                    "symbol routing must be an object",
                     ea_id=ea_id,
                 )
             )
@@ -896,7 +1599,6 @@ def lint_contract(
                 test_token = re.sub(r"[^a-z0-9]+", "_", test_symbol.casefold()).strip("_")
                 live_token = re.sub(r"[^a-z0-9]+", "_", live_symbol.casefold()).strip("_")
                 requal_reason = f"{test_token}_to_{live_token}_alias_full_requalification_required"
-                reason_set = {str(item) for item in reasons} if isinstance(reasons, list) else set()
                 stale_reasons = sorted(reason_set & STALE_SP500_ROUTING_REASONS)
                 if stale_reasons:
                     issues.append(
@@ -955,6 +1657,15 @@ def lint_contract(
                 path=source,
             )
         )
+
+    issues.extend(
+        _lint_runtime_binding(
+            contract,
+            repo_root=repo_root,
+            source=source,
+            source_text=text,
+        )
+    )
 
     calls = [match.groupdict() for match in EXECUTION_CALL_RE.finditer(text)]
     expected_tf_token = f"PERIOD_{strategy_tf}"
