@@ -312,6 +312,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    //--- LANE: GOLD_BREAKOUT ---
    else if(intraday_lane == LANE_GOLD_BREAKOUT)
      {
+      if(_Symbol != "XAUUSD.DWX") return false; // card: GOLD_BREAKOUT is XAUUSD-only
       if(g_daily_open <= 0.0) return false;
       const double d1_atr = QM_ATR(_Symbol, PERIOD_D1, gb_d1_atr_period, 1);
       if(d1_atr <= 0.0) return false;
