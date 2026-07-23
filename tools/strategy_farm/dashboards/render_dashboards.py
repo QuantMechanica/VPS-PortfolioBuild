@@ -3465,13 +3465,19 @@ def render_ea_detail(ea: dict, detail: dict, state: dict) -> str:
                 break
         r_tags_html = []
         for key, label_short in (
-            ("r1_track_record", "R1 Track Record"),
+            ("r1_track_record", "R1 Source (info)"),
             ("r2_mechanical", "R2 Mechanical"),
             ("r3_data_available", "R3 Data"),
             ("r4_ml_forbidden", "R4 No-ML"),
         ):
             v = fm.get(key, "UNKNOWN")
-            cls = "r-unknown" if v == "UNKNOWN" else ("r-fail" if "FAIL" in str(v) else "")
+            # OWNER 2026-07-23: R1 reputation is informational. A durable
+            # source_id means even legacy UNKNOWN/FAIL labels are non-blocking
+            # and must not be rendered as a red gate failure.
+            r1_lineaged = key == "r1_track_record" and bool(str(fm.get("source_id") or "").strip())
+            cls = "" if r1_lineaged else (
+                "r-unknown" if v == "UNKNOWN" else ("r-fail" if "FAIL" in str(v) else "")
+            )
             r_tags_html.append(f'<span class="r-tag {cls}"><strong>{e(label_short)}</strong> {e(v)}</span>')
         reasoning = fm.get("g0_approval_reasoning", "")
         # Concept / indicator chips from card frontmatter wiki-links — the

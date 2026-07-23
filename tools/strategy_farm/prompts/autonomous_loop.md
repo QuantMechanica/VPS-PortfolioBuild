@@ -135,8 +135,9 @@ Else if `artifacts/cards_draft/` has cards with `g0_status: PENDING` (or unset):
 
 - For **up to 5** cards (oldest first), apply R1-R4 per the canonical
   `C:/QM/repo/processes/qb_reputable_source_criteria.md`:
-  - **R1**: source link or PDF title exists? Anon-handle + linked URL = OK,
-    local PDF + title = OK. REJECT only if no source attribution at all.
+  - **R1**: informational lineage only. Anon-handle + linked URL, local PDF,
+    OWNER idea, and AI idea are all valid. If `source_id` is absent, set
+    `OWNER-FABIAN-GRABNER-R1-RECOVERY-20260723`; never reject for reputation.
   - **R2**: directional Entry+Exit rules exist? Side-param gaps OK
     (Codex fills defaults). REJECT only if fully discretionary, no rules.
   - **R3**: testable on ≥1 DWX instrument after porting? Crypto / equity /
@@ -145,8 +146,8 @@ Else if `artifacts/cards_draft/` has cards with `g0_status: PENDING` (or unset):
   - **R4 (binding HR14)**: no ML / no neural / no adaptive / no grid-without-
     bounded-worst-case. Strict. No exceptions without OWNER written approval.
 - For each card:
-  - All four PASS → `farmctl approve-card --card "<path>" --reasoning "<one line>"`
-  - Any FAIL → `farmctl reject-card --card "<path>" --reason "<which R + why>"`
+  - R2-R4 PASS → `farmctl approve-card --card "<path>" --reasoning "<one line>"`
+  - Any R2-R4 FAIL → `farmctl reject-card --card "<path>" --reason "<which R + why>"`
 - STOP this wake.
 
 ### Step 4 — Mining resume (cheap, deterministic)

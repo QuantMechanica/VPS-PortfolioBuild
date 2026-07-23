@@ -46,7 +46,7 @@ pipeline. Draft sources/cards flow through the normal **G0 (R1–R4) review** wh
 ## How to judge (the doctrine — apply strictly)
 A source QUALIFIES only if it plausibly yields a **mechanical, backtestable** strategy with a **structural
 cause**, per the standing doctrine:
-- **R1 track record / reputable source** · **R2 fully mechanical** (no discretion) · **R3 data available**
+- **R1 informational lineage** (book/web/forum, OWNER, or AI are valid; backfill OWNER if absent) · **R2 fully mechanical** (no discretion) · **R3 data available**
   on `.DWX` symbols we trade · **R4 no ML** (no grid/martingale). See `docs/research/` + the vault
   `04 Processes/Research Methodology` + `04 Processes/EA Authoring Doctrine`.
 - **FX-edge doctrine:** no edge without a limit-to-arbitrage / structural reason; chart-pattern lore

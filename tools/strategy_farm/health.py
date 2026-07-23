@@ -1086,8 +1086,7 @@ def chk_unbuilt_cards_count(con) -> dict:
         if ex5.exists() or _has_auto_build_task_file(ea_id) or _has_auto_build_task(con, ea_id):
             continue
         fm = _card_frontmatter(card_md)
-        if any(str(fm.get(key) or "").strip().upper() != "PASS"
-               for key in ("r1_track_record", "r2_mechanical", "r3_data_available", "r4_ml_forbidden")):
+        if not farmctl._card_r_gate_ready(fm):
             not_build_ready += 1
             continue
         unbuilt.append(ea_id)

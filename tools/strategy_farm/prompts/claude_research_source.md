@@ -33,7 +33,9 @@ URI: `{{uri}}`
 - Do not use MQL5 Marketplace.
 - Reject or mark PENDING (per relaxed criteria 2026-05-15, see
   `C:/QM/repo/processes/qb_reputable_source_criteria.md`):
-  - **No source link / unattributable** (R1 fail)
+  - **Missing source lineage**: assign the deterministic Fabian Grabner
+    (OWNER) source fallback and continue; never reject for source reputation
+    or attribution formatting alone.
   - **Purely discretionary with NO rules at all** (R2 fail). Gaps in
     side-parameters are OK — Codex fills defaults.
   - **Fundamentally untestable on any DWX instrument even after porting**
@@ -63,6 +65,10 @@ URI: `{{uri}}`
 - **Anonymous forum handles are OK** as long as you link the source URL.
   The strategy will pass or fail on its own data in P2-P7. R1 used to require
   author track record — that was dropped 2026-05-15.
+- OWNER- and AI-originated hypotheses are also valid sources. If no prior
+  book/web/forum source is identifiable, use
+  `OWNER-FABIAN-GRABNER-R1-RECOVERY-20260723`; never reject solely for source
+  reputation.
 - Preserve attribution: URL, author/handle (anon OK), post/article title, date
   if visible, and exact source location.
 

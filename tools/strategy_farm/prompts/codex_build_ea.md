@@ -540,8 +540,8 @@ build_result JSON is more valuable than masking it with a hopeful rewrite.
     - § 5 Expected Behaviour: copy the four metrics from the card
       frontmatter (`expected_trades_per_year_per_symbol`,
       `expected_trade_frequency`, hold time, regime)
-    - § 6 Source Citation: source_id + pointer + "all R1–R4 PASS per
-      `artifacts/cards_approved/{{ea_id}}_{{slug}}.md`"
+    - § 6 Source Citation: source_id + pointer + "R1 lineage recorded and
+      R2–R4 PASS per `artifacts/cards_approved/{{ea_id}}_{{slug}}.md`"
     - § 7 Risk Model: keep the template's stock table verbatim (it
       describes the framework convention, not per-EA)
     - Revision History: `| v1 | YYYY-MM-DD | Initial build from card | <build_task_id> |`

@@ -15,7 +15,8 @@ These files define the workflow. Read them all before touching the source:
    The canonical research-source workflow. Follow it EXACTLY. Codex and Claude
    produce identical artefact shapes — do NOT diverge.
 2. `C:/QM/repo/processes/qb_reputable_source_criteria.md`
-   The R1-R4 G0 reputable-source rubric. Drafts must be defensible against it.
+   The R1-R4 G0 rubric. R1 is informational lineage; drafts must be
+   mechanically defensible against R2-R4.
 3. `G:/My Drive/QuantMechanica - Company Reference/_HOME.md`
    Company context. Skim 03 Pipeline + 04 Processes + 09 Strategy Wiki for
    templates and conventions.
@@ -92,11 +93,13 @@ the pump yourself — only the final `set-source-status` invocation.
 ## Quality bar
 
 You are NOT cheaper than Claude per token, but you ARE the spare-capacity
-worker. Don't lower the bar — every draft must pass R1 (reputable source link
-with full URL + named author or institution) and R4 (no ML / adaptive online
-parameters). R2 (mechanical rules) and R3 (DWX data available) can be flagged
+worker. Don't lower the mechanical bar. Every draft must carry one `source_id`,
+but anonymous Internet/book/forum sources, OWNER ideas, and AI ideas are all
+valid; when no prior source is identifiable use
+`OWNER-FABIAN-GRABNER-R1-RECOVERY-20260723`. R4 forbids ML/adaptive online
+parameters. R2 (mechanical rules) and R3 (DWX data available) can be flagged
 UNKNOWN if non-obvious — Claude's G0 batch reviewer adjudicates.
 
-If the source is junk (anonymous forum chatter, broken paywall, ML-only papers,
-no-link claims), do NOT force 5 cards. Better to set-source-status done with 0
-cards than to flood the draft queue with rejectable drafts.
+If content is unreadable (for example a broken paywall), ML-only, or contains no
+mechanical strategy, do NOT force 5 cards. Anonymous forum chatter is not itself
+a rejection reason.

@@ -38,10 +38,18 @@ Examples that PASS:
   trail captured in `strategy-seeds/sources/<source_id>/`
 - Anonymous forum handles, local PDFs, course recordings — all still OK
 
-**REJECT** only if:
-- Card has **no** `source_id` at all (lineage broken)
-- Card claims multiple sources (must pick one canonical source per card; sister
-  cards from the same source are fine, but each card has one source ID)
+**Never reject a strategy for source reputation or a missing source label.**
+Every idea has a valid origin: the linked book/web/forum source, the OWNER, or
+the AI agent that formulated it. If an older card has no `source_id`, repair it
+deterministically before G0:
+
+- keep an existing book/web/forum source when it is identifiable;
+- otherwise set `source_id:
+  OWNER-FABIAN-GRABNER-R1-RECOVERY-20260723` and record Fabian Grabner
+  (OWNER) as the canonical source;
+- when several references informed a synthesis, choose one canonical lineage
+  (OWNER or the synthesizing AI is valid) and retain the others as supporting
+  citations.
 
 **Author track record is NOT required.** AI-developed and OWNER-developed
 ideas are first-class sources. The strategy will pass or fail on its own
@@ -124,20 +132,26 @@ explicit written exception only for any further relaxation.
 At G0 verdict, for each candidate card:
 
 ```
-R1: does the card link to its source?                   → PASS / REJECT
+R1: record one source_id; backfill OWNER if absent      → INFORMATIONAL
 R2: can Codex implement this mechanically?              → PASS / REJECT
 R3: at least one DWX symbol testable (after port)?      → PASS / REJECT
 R4: ML-free, 1-pos-per-magic, no martingale?            → PASS / REJECT
 ```
 
-All four PASS → `farmctl approve-card --card <path> --reasoning "<one-line>"`.
-Any FAIL → `farmctl reject-card --card <path> --reason "<which R + why>"`.
+R2-R4 PASS → `farmctl approve-card --card <path> --reasoning "<one-line>"`.
+Any R2-R4 FAIL → `farmctl reject-card --card <path> --reason "<which R + why>"`.
 
-## Non-retroactive
+## Retroactive source-only recovery (OWNER 2026-07-23)
 
-Cards approved before 2026-05-15 under the old strict R-criteria stay
-APPROVED. Cards rejected before 2026-05-15 stay rejected. This policy
-change applies only to **new** G0 verdicts.
+The R1/source-lineage clarification is retroactive. Cards rejected solely
+because of source reputation, an absent machine-readable source label, or
+citation formatting return to the approved research inventory after a
+documented recovery audit. Preserve the rejected original as immutable audit
+history.
+
+Cards with an independent R2, R3, or R4 failure stay rejected. Missing
+`source_id` is repaired with the deterministic Fabian Grabner (OWNER) fallback;
+it is never itself a rejection reason.
 
 ## Audit trail
 

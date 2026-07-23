@@ -37,6 +37,7 @@ try:
     from managed_codex import (
         ManagedCodexError,
         count_live_managed_codex_processes,
+        list_live_managed_codex_processes,
         reap_managed_codex_processes,
         spawn_managed_codex,
     )
@@ -44,6 +45,7 @@ except ModuleNotFoundError:
     from tools.strategy_farm.managed_codex import (
         ManagedCodexError,
         count_live_managed_codex_processes,
+        list_live_managed_codex_processes,
         reap_managed_codex_processes,
         spawn_managed_codex,
     )
@@ -892,6 +894,8 @@ def _ea_registry_slug_index(path: Path) -> dict[str, list[str]]:
     index: dict[str, list[str]] = {}
     for row in _read_csv_dicts_if_exists(path):
         row_ea = str(row.get("ea_id") or row.get("id") or "").strip()
+        if row_ea.upper().startswith("QM5_"):
+            row_ea = row_ea[4:]
         if not row_ea:
             continue
         row_slug = str(row.get("slug") or row.get("ea_slug") or "").strip()
@@ -924,6 +928,46 @@ def _read_csv_dicts_with_columns(path: Path) -> tuple[list[str], list[dict[str, 
         return list(reader.fieldnames or []), [dict(row) for row in reader]
 
 
+R1_BUILD_READY_VALUES = frozenset({"PASS", "TIER_A", "TIER_B", "TIER_C"})
+R_STRICT_PASS_FIELDS = ("r2_mechanical", "r3_data_available", "r4_ml_forbidden")
+OWNER_SOURCE_RECOVERY_ID = "OWNER-FABIAN-GRABNER-R1-RECOVERY-20260723"
+
+
+def _card_r1_build_ready(fm: dict[str, Any]) -> bool:
+    """R1 is informational: durable source lineage is the only build concern.
+
+    Historical PASS/TIER/UNKNOWN/FAIL values describe source quality under
+    different policy generations. DL-082 plus the 2026-07-23 OWNER ruling make
+    all of them non-gating. Internet/book, OWNER, and AI sources are equally
+    valid; only a missing source_id needs deterministic lineage repair.
+    """
+    return bool(str(fm.get("source_id") or "").strip())
+
+
+def _card_r_gate_ready(fm: dict[str, Any]) -> bool:
+    """Return whether a card is ready for build-task emission.
+
+    DL-082 made R1 a source/track-record tier rather than a strict PASS gate.
+    R2-R4 remain deterministic hard gates.
+    """
+    return (
+        _card_r1_build_ready(fm)
+        and all(
+            str(fm.get(key) or "").strip().upper() == "PASS"
+            for key in R_STRICT_PASS_FIELDS
+        )
+    )
+
+
+def _card_r_gate_pass_count(fm: dict[str, Any]) -> int:
+    """Comparable 0..4 readiness score with durable R1 lineage worth one pass."""
+    return int(_card_r1_build_ready(fm)) + sum(
+        1
+        for key in R_STRICT_PASS_FIELDS
+        if str(fm.get(key) or "").strip().upper() == "PASS"
+    )
+
+
 def prebuild_validate_card(root: Path, card_path: Path, fm: dict[str, Any]) -> dict[str, Any]:
     """Hard gate before creating build_ea tasks.
 
@@ -949,12 +993,13 @@ def prebuild_validate_card(root: Path, card_path: Path, fm: dict[str, Any]) -> d
 
     if fm.get("g0_status") != "APPROVED":
         errors.append(f"g0_status_not_approved:{fm.get('g0_status')!r}")
-    # DL-082 (2026-07-19): r1 (source/track-record) is a TIER, not a gate — the
-    # deterministic pipeline is the real validator. r2/r3/r4 stay strict PASS.
-    if str(fm.get("r1_track_record") or "").upper() not in ("PASS", "TIER_A", "TIER_B", "TIER_C"):
-        errors.append(f"r1_track_record_untiered:{fm.get('r1_track_record')!r}")
-    for key in ("r2_mechanical", "r3_data_available", "r4_ml_forbidden"):
-        if str(fm.get(key) or "").upper() != "PASS":
+    # DL-082 (2026-07-19): R1 source quality is informational, not a gate.
+    # Unknown author/reputation remains admissible when source_id preserves
+    # lineage; r2/r3/r4 stay strict PASS.
+    if not _card_r1_build_ready(fm):
+        errors.append(f"r1_source_id_missing:{fm.get('source_id')!r}")
+    for key in R_STRICT_PASS_FIELDS:
+        if str(fm.get(key) or "").strip().upper() != "PASS":
             errors.append(f"{key}_not_PASS:{fm.get(key)!r}")
     try:
         expected_trades = int(str(fm.get("expected_trades_per_year_per_symbol") or "").strip())
@@ -982,9 +1027,20 @@ def prebuild_validate_card(root: Path, card_path: Path, fm: dict[str, Any]) -> d
 
     slug_index = _ea_registry_slug_index(REPO_ROOT / "framework" / "registry" / "ea_id_registry.csv")
     if ea_id and slug:
-        for row_slug in slug_index.get(ea_id, []):
+        registry_ea_id = ea_id[4:] if ea_id.upper().startswith("QM5_") else ea_id
+        for row_slug in slug_index.get(registry_ea_id, []):
             if row_slug != slug:
                 errors.append(f"ea_id_registry_slug_mismatch:{ea_id}:registry={row_slug}:card={slug}")
+        slug_owners = sorted(
+            owner
+            for owner, owner_slugs in slug_index.items()
+            if owner != registry_ea_id and slug in owner_slugs
+        )
+        if slug_owners:
+            errors.append(
+                "ea_slug_registry_owned_by_other_id:"
+                f"{slug}:owners={','.join(slug_owners)}:card={ea_id}"
+            )
 
     errors.extend(_magic_registry_duplicate_errors(REPO_ROOT / "framework" / "registry" / "magic_numbers.csv"))
 
@@ -1231,8 +1287,7 @@ def _card_build_priority(root: Path, task_row: sqlite3.Row,
         expected = int(str(fm.get("expected_trades_per_year_per_symbol") or 0))
     except (TypeError, ValueError):
         expected = 0
-    r_passes = sum(1 for key in ("r1_track_record", "r2_mechanical", "r3_data_available", "r4_ml_forbidden")
-                   if str(fm.get(key) or "").upper() == "PASS")
+    r_passes = _card_r_gate_pass_count(fm)
     pscore = 0.0
     if score_map:
         ea_id = str(fm.get("ea_id") or payload.get("ea_id") or "")
@@ -1242,6 +1297,104 @@ def _card_build_priority(root: Path, task_row: sqlite3.Row,
             pscore = 0.0
     # Negative because Python sorts ascending.
     return (-pscore, -r_passes, -expected, str(task_row["updated_at"] or ""))
+
+
+def _auto_build_creation_slots(
+    *,
+    codex_spawn_budget: int,
+    codex_builds_spawned: int,
+    claude_fallback: bool,
+    claude_build_budget: int,
+    claude_pending_eligible: int,
+) -> int:
+    """Bound fresh build-ticket emission by the agent capacity that can consume it."""
+    codex_slots = max(
+        0,
+        int(codex_spawn_budget) - int(codex_builds_spawned),
+    )
+    claude_slots = 0
+    if claude_fallback:
+        claude_slots = max(
+            0,
+            int(claude_build_budget) - int(claude_pending_eligible),
+        )
+    return min(MAX_AUTO_CREATED_BUILDS_PER_PUMP, codex_slots + claude_slots)
+
+
+def _claude_g0_fallback_allowed(
+    *,
+    codex_unavailable: bool,
+    claude_disabled: bool,
+    claude_review_spawned: bool,
+    active_claude: int,
+    claude_builds_spawned: int,
+    max_parallel_claude: int,
+) -> bool:
+    """Whether Claude may consume G0 drafts while the Codex lane is unavailable."""
+    return (
+        codex_unavailable
+        and not claude_disabled
+        and int(active_claude)
+        + int(claude_builds_spawned)
+        + int(bool(claude_review_spawned))
+        < int(max_parallel_claude)
+    )
+
+
+def _claude_buildable_pending_rows(
+    rows: list[sqlite3.Row],
+    *,
+    root: Path | None = None,
+    in_flight_task_ids: set[str] | None = None,
+    excluded_eas: set[str] | None = None,
+    perma_blocked_eas: set[str] | None = None,
+) -> list[sqlite3.Row]:
+    """Return unique pending rows that _spawn_claude_for_build can consume."""
+    excluded = excluded_eas or set()
+    perma_blocked = perma_blocked_eas or set()
+    in_flight_ids = in_flight_task_ids or set()
+    in_flight_eas: set[str] = set()
+    if in_flight_ids:
+        for row in rows:
+            task_id = str(row["id"]) if "id" in row.keys() else ""
+            if task_id not in in_flight_ids:
+                continue
+            try:
+                payload = json.loads(row["payload_json"] or "{}")
+            except (json.JSONDecodeError, TypeError):
+                continue
+            ea_id = str(payload.get("ea_id") or "").strip()
+            if ea_id:
+                in_flight_eas.add(ea_id)
+    seen: set[str] = set()
+    candidates: list[sqlite3.Row] = []
+    for row in rows:
+        try:
+            payload = json.loads(row["payload_json"] or "{}")
+        except (json.JSONDecodeError, TypeError):
+            continue
+        ea_id = str(payload.get("ea_id") or "").strip()
+        if (
+            not ea_id
+            or ea_id in excluded
+            or ea_id in perma_blocked
+            or ea_id in in_flight_eas
+            or ea_id in seen
+            or not payload.get("card_path")
+        ):
+            continue
+        task_id = str(row["id"]) if "id" in row.keys() else ""
+        if in_flight_task_ids is not None and task_id in in_flight_ids:
+            continue
+        if (
+            in_flight_task_ids is None
+            and root is not None
+            and _build_task_in_flight(root, row).get("in_flight")
+        ):
+            continue
+        seen.add(ea_id)
+        candidates.append(row)
+    return candidates
 
 
 # Map every known broker-ticker alias to the ONE canonical .DWX symbol we hold data for
@@ -5384,7 +5537,7 @@ def _spawn_claude_for_review(root: Path, build_task_row: sqlite3.Row) -> dict[st
 
 
 def _g0_claim_path(card_path: Path) -> Path:
-    """Lock path for atomic G0 claim. Lives next to the card in cards_draft/."""
+    """Lock path for atomic G0 claim. Lives next to its draft/recovery card."""
     return card_path.with_suffix(card_path.suffix + ".g0_claim")
 
 
@@ -5426,6 +5579,40 @@ def _claim_g0_cards(card_paths: list[Path], reviewer: str, max_age_sec: int = 18
     return claimed
 
 
+def _g0_candidate_cards(root: Path) -> list[Path]:
+    """Pending semantic-G0 and identity-repair cards, oldest first."""
+    def _safe_mtime(path: Path) -> float:
+        try:
+            return path.stat().st_mtime
+        except OSError:
+            return float("inf")
+
+    candidates: list[Path] = []
+    for bucket in ("cards_recovery", "cards_draft"):
+        cards_dir = root / "artifacts" / bucket
+        if not cards_dir.is_dir():
+            continue
+        for card_path in cards_dir.glob("QM5_*.md"):
+            if not card_path.is_file():
+                continue
+            try:
+                fm = parse_card_frontmatter(card_path)
+            except (OSError, ValueError):
+                continue
+            status = str(fm.get("g0_status") or "PENDING").strip().upper()
+            if status not in {"", "PENDING", "DRAFT"}:
+                continue
+            candidates.append(card_path)
+    return sorted(
+        candidates,
+        key=lambda path: (
+            0 if path.parent.name == "cards_recovery" else 1,
+            _safe_mtime(path),
+            path.name,
+        ),
+    )
+
+
 def _spawn_claude_for_g0_batch(root: Path) -> dict[str, Any]:
     """Spawn Claude for G0 review of up to 5 draft cards.
 
@@ -5435,12 +5622,8 @@ def _spawn_claude_for_g0_batch(root: Path) -> dict[str, Any]:
     Bounded at 5 cards per spawn to cap token burn.
     """
     import shutil as _shutil
-    drafts_dir = root / "artifacts" / "cards_draft"
-    if not drafts_dir.is_dir():
-        return {"spawned": False, "reason": "no cards_draft dir"}
-    # Oldest first, skip already-claimed
-    drafts = sorted([f for f in drafts_dir.glob("QM5_*.md") if f.is_file()],
-                    key=lambda p: p.stat().st_mtime)
+    # Identity-repair cards are prioritized, then ordinary drafts oldest first.
+    drafts = _g0_candidate_cards(root)
     drafts = [d for d in drafts if not _g0_claim_path(d).exists() or
               (time.time() - _g0_claim_path(d).stat().st_mtime) >= 1800]
     if not drafts:
@@ -5461,24 +5644,44 @@ def _spawn_claude_for_g0_batch(root: Path) -> dict[str, Any]:
         "C:\\QM\\repo\\processes\\qb_reputable_source_criteria.md to refresh "
         "R1-R4 criteria. Then for each draft card in this batch:\n\n"
         f"{batch_paths}\n\n"
-        "Apply R1 (source link/attribution), R2 (mechanical Entry+Exit rules), "
+        "R1 is informational lineage, never a reputation gate. A book/web/forum "
+        "source, OWNER idea, or AI idea is valid. If source_id is absent, set it "
+        f"to {OWNER_SOURCE_RECOVERY_ID} and record Fabian Grabner (OWNER) as the "
+        "canonical source. For a card marked legacy_contract_repair, first repair "
+        "current scalar schema fields from its existing body: target_symbols as "
+        "testable .DWX ports and a conservative expected trade-frequency estimate. "
+        "Do not invent missing strategy mechanics. Then apply strict R2 "
+        "(mechanical Entry+Exit rules), "
         "R3 (testable on >=1 DWX symbol after porting), R4 (no ML / binding HR14). "
         "R2 also requires a plausible trade-frequency estimate. Reject cards that "
         "cannot support at least 2 expected trades/year/symbol unless they provide "
         "defensible basket-level cadence; annual one-shot seasonal edges are too "
         "sparse unless OWNER explicitly marked them approved. "
         "For each card:\n"
-        "  - All four PASS  -> also produce two CONSERVATIVE research ESTIMATES "
+        "  - R2-R4 PASS     -> also produce two CONSERVATIVE research ESTIMATES "
         "(ordering priors only, never a gate): expected_pf (profit factor ~1.1-1.6, "
         "don't inflate) and expected_dd_pct (max drawdown percent ~8-25). Then run "
         "`python C:\\QM\\repo\\tools\\strategy_farm\\farmctl.py approve-card "
         "--card \"<path>\" --reasoning \"<R1-R4 one-line rationale>\" "
         "--expected-pf <e.g. 1.3> --expected-dd-pct <e.g. 15>`\n"
-        "  - Any FAIL       -> run `python C:\\QM\\repo\\tools\\strategy_farm\\farmctl.py "
+        "  - Any R2-R4 FAIL -> run `python C:\\QM\\repo\\tools\\strategy_farm\\farmctl.py "
         "reject-card --card \"<path>\" --reason \"<which R + why>\"`\n\n"
         "Use farmctl --help if argument names differ. SP500.DWX is now backtest-only "
         "available (2026-05-16T19:15Z) — R3 PASS with T6-caveat is acceptable. "
         "Process all cards in the batch, then exit cleanly."
+    )
+    bootstrap += (
+        "\n\nIDENTITY RECOVERY: A card under artifacts/cards_recovery has an "
+        "unsafe legacy EA identity. Before G0, compare it with the conflicting "
+        "approved/registry card. If semantically already covered, set "
+        "g0_status: COVERED_DUPLICATE and recovery_status: COVERED_DUPLICATE in "
+        "place. If distinct, reserve a fresh EA ID with farmctl reserve-ea-ids "
+        "(use a unique slug, suffix -r1-recovery if needed), use the returned "
+        "numeric ID as QM5_<id>, then run `farmctl reidentify-recovery-card "
+        "--card \"<path>\" --ea-id QM5_<id> --slug <reserved-slug>`. This "
+        "moves the card and its G0 claim safely to cards_draft. Continue the "
+        "normal R2-R4 "
+        "review. Never overwrite an existing approved card, registry row, or EA."
     )
 
     # Feed the prompt via stdin — see _spawn_claude_for_review: a long -p arg
@@ -5521,11 +5724,7 @@ def _spawn_codex_for_g0_batch(root: Path) -> dict[str, Any]:
     Runs in PARALLEL with Claude G0 — claim mechanism prevents both
     workers from grabbing the same card.
     """
-    drafts_dir = root / "artifacts" / "cards_draft"
-    if not drafts_dir.is_dir():
-        return {"spawned": False, "reason": "no cards_draft dir"}
-    drafts = sorted([f for f in drafts_dir.glob("QM5_*.md") if f.is_file()],
-                    key=lambda p: p.stat().st_mtime)
+    drafts = _g0_candidate_cards(root)
     drafts = [d for d in drafts if not _g0_claim_path(d).exists() or
               (time.time() - _g0_claim_path(d).stat().st_mtime) >= 1800]
     if not drafts:
@@ -6534,7 +6733,277 @@ def _record_codex_review_result(root: Path, review_task_id: str, verdict_path: s
     }
 
 
-def _spawn_codex_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]:
+def _build_task_in_flight(
+    root: Path,
+    task_row: sqlite3.Row,
+    *,
+    log_fresh_sec: int = 180,
+) -> dict[str, Any]:
+    """Return agent-neutral evidence that a pending build task is still running.
+
+    Build rows deliberately remain ``pending`` until their result JSON is
+    recorded. Therefore status alone cannot distinguish queued work from an
+    already-dispatched Codex, Gemini, or Claude process. Check durable dispatch
+    PID metadata, validated Codex leases, and all three legacy live-log names
+    before any agent is allowed to select the row.
+    """
+    try:
+        payload = json.loads(task_row["payload_json"] or "{}")
+    except (json.JSONDecodeError, TypeError):
+        payload = {}
+    task_id = str(task_row["id"])
+    ea_id = str(payload.get("ea_id") or task_row["card_id"] or "")
+    dispatch = payload.get("build_dispatch")
+    if isinstance(dispatch, dict):
+        pid = dispatch.get("pid")
+        if pid and _pid_tree_exists(pid):
+            return {
+                "in_flight": True,
+                "reason": "dispatch_pid_live",
+                "agent": str(dispatch.get("agent") or "unknown"),
+                "task_id": task_id,
+                "ea_id": ea_id,
+                "pid": pid,
+            }
+
+    try:
+        for lease in list_live_managed_codex_processes(root, purpose="build"):
+            metadata = lease.get("metadata") or {}
+            if str(metadata.get("task_id") or "") == task_id:
+                return {
+                    "in_flight": True,
+                    "reason": "managed_codex_lease_live",
+                    "agent": "codex",
+                    "task_id": task_id,
+                    "ea_id": ea_id,
+                    "pid": lease.get("pid"),
+                    "lease_id": lease.get("lease_id"),
+                }
+    except Exception:
+        # Log evidence below remains a conservative fail-closed fallback.
+        pass
+
+    now = time.time()
+    for agent in ("codex", "gemini", "claude"):
+        live_log = root / "logs" / f"{agent}_build_{task_id}.live.log"
+        try:
+            if live_log.exists() and now - live_log.stat().st_mtime < log_fresh_sec:
+                return {
+                    "in_flight": True,
+                    "reason": "fresh_live_log",
+                    "agent": agent,
+                    "task_id": task_id,
+                    "ea_id": ea_id,
+                    "live_log": str(live_log),
+                }
+        except OSError:
+            continue
+    return {
+        "in_flight": False,
+        "task_id": task_id,
+        "ea_id": ea_id,
+    }
+
+
+def _in_flight_build_task_ids(
+    root: Path,
+    task_rows: list[sqlite3.Row],
+    *,
+    log_fresh_sec: int = 180,
+) -> set[str]:
+    """Batch variant used by pump so leases/logs are scanned only once."""
+    task_ids = {str(row["id"]) for row in task_rows}
+    in_flight: set[str] = set()
+    try:
+        for lease in list_live_managed_codex_processes(root, purpose="build"):
+            metadata = lease.get("metadata") or {}
+            task_id = str(metadata.get("task_id") or "")
+            if task_id in task_ids:
+                in_flight.add(task_id)
+    except Exception:
+        pass
+
+    now = time.time()
+    logs_dir = root / "logs"
+    for agent in ("codex", "gemini", "claude"):
+        prefix = f"{agent}_build_"
+        for live_log in logs_dir.glob(f"{prefix}*.live.log"):
+            task_id = live_log.name[len(prefix):-len(".live.log")]
+            if task_id not in task_ids:
+                continue
+            try:
+                if now - live_log.stat().st_mtime < log_fresh_sec:
+                    in_flight.add(task_id)
+            except OSError:
+                continue
+
+    for row in task_rows:
+        task_id = str(row["id"])
+        if task_id in in_flight:
+            continue
+        try:
+            payload = json.loads(row["payload_json"] or "{}")
+        except (json.JSONDecodeError, TypeError):
+            continue
+        dispatch = payload.get("build_dispatch")
+        if isinstance(dispatch, dict) and dispatch.get("pid"):
+            if _pid_tree_exists(dispatch["pid"]):
+                in_flight.add(task_id)
+    return in_flight
+
+
+def _record_build_dispatch(
+    root: Path,
+    task_id: str,
+    *,
+    agent: str,
+    pid: int,
+    live_log: Path,
+    lease_id: str | None = None,
+) -> None:
+    """Persist cross-agent dispatch evidence without changing task status."""
+    try:
+        with connect(root) as conn:
+            row = conn.execute(
+                "SELECT payload_json FROM tasks WHERE id=?",
+                (task_id,),
+            ).fetchone()
+            if not row:
+                return
+            payload = json.loads(row["payload_json"] or "{}")
+            payload["build_dispatch"] = {
+                "agent": agent,
+                "pid": int(pid),
+                "started_at": utc_now(),
+                "live_log": str(live_log),
+                **({"lease_id": lease_id} if lease_id else {}),
+            }
+            conn.execute(
+                "UPDATE tasks SET payload_json=?, updated_at=? WHERE id=?",
+                (json.dumps(payload), utc_now(), task_id),
+            )
+            conn.commit()
+    except (OSError, sqlite3.Error, json.JSONDecodeError, TypeError, ValueError):
+        # The already-open live log (and Codex lease where applicable) remains
+        # conservative in-flight evidence if this best-effort metadata write
+        # loses a transient DB race.
+        return
+
+
+def _other_in_flight_build_for_ea(
+    root: Path,
+    task_row: sqlite3.Row,
+) -> dict[str, str] | None:
+    """Find an in-flight sibling task for the same EA after dispatch claim."""
+    try:
+        current_payload = json.loads(task_row["payload_json"] or "{}")
+    except (json.JSONDecodeError, TypeError):
+        current_payload = {}
+    ea_id = str(current_payload.get("ea_id") or "").strip()
+    if not ea_id:
+        return None
+    try:
+        with connect(root) as conn:
+            rows = conn.execute(
+                "SELECT * FROM tasks WHERE kind='build_ea' AND status='pending'"
+            ).fetchall()
+    except sqlite3.Error:
+        return None
+    in_flight_ids = _in_flight_build_task_ids(root, rows)
+    for row in rows:
+        if str(row["id"]) == str(task_row["id"]):
+            continue
+        if str(row["id"]) not in in_flight_ids:
+            continue
+        try:
+            payload = json.loads(row["payload_json"] or "{}")
+        except (json.JSONDecodeError, TypeError):
+            continue
+        if str(payload.get("ea_id") or "").strip() == ea_id:
+            return {
+                "task_id": str(row["id"]),
+                "ea_id": ea_id,
+            }
+    return None
+
+
+def _acquire_build_dispatch_claim(
+    root: Path,
+    *,
+    ea_id: str,
+    task_id: str,
+    agent: str,
+    stale_sec: int = 600,
+) -> dict[str, str] | None:
+    """Atomically serialize cross-agent dispatch for one EA."""
+    claim_dir = root / "state" / "build_dispatch_claims"
+    claim_dir.mkdir(parents=True, exist_ok=True)
+    safe_ea = re.sub(r"[^A-Za-z0-9_.-]+", "_", ea_id or task_id)
+    claim_path = claim_dir / f"{safe_ea}.lock"
+    token = uuid.uuid4().hex
+    payload = json.dumps({
+        "token": token,
+        "ea_id": ea_id,
+        "task_id": task_id,
+        "agent": agent,
+        "owner_pid": os.getpid(),
+        "created_at": utc_now(),
+    })
+    for _attempt in range(2):
+        try:
+            fd = os.open(
+                str(claim_path),
+                os.O_CREAT | os.O_EXCL | os.O_WRONLY,
+            )
+            try:
+                os.write(fd, payload.encode("utf-8"))
+            finally:
+                os.close(fd)
+            return {"path": str(claim_path), "token": token}
+        except FileExistsError:
+            try:
+                existing = json.loads(claim_path.read_text(encoding="utf-8"))
+                if not isinstance(existing, dict):
+                    raise TypeError("dispatch claim payload is not an object")
+                age = time.time() - claim_path.stat().st_mtime
+                owner_alive = _pid_exists(existing.get("owner_pid"))
+            except (json.JSONDecodeError, TypeError):
+                # A truncated lock can be produced by abrupt process death.
+                # Fail closed while it is fresh, but allow deterministic stale
+                # recovery even though no owner PID can be decoded.
+                try:
+                    age = time.time() - claim_path.stat().st_mtime
+                except OSError:
+                    age = 0
+                owner_alive = False
+            except OSError:
+                age = 0
+                owner_alive = True
+            if age <= stale_sec or owner_alive:
+                return None
+            try:
+                claim_path.unlink()
+            except OSError:
+                return None
+    return None
+
+
+def _release_build_dispatch_claim(claim: dict[str, str] | None) -> None:
+    if not claim:
+        return
+    claim_path = Path(claim["path"])
+    try:
+        current = json.loads(claim_path.read_text(encoding="utf-8"))
+        if not isinstance(current, dict):
+            return
+        if str(current.get("token") or "") != claim["token"]:
+            return
+        claim_path.unlink()
+    except (OSError, json.JSONDecodeError):
+        return
+
+
+def _spawn_codex_for_build_claimed(root: Path, task_row: sqlite3.Row) -> dict[str, Any]:
     """Spawn Codex CLI as a detached process for a pending build_ea task.
 
     Idempotent: if a codex_build_<task_id>.live.log is being actively
@@ -6553,7 +7022,13 @@ def _spawn_codex_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]:
         # Render now via build-ea logic (it'll create a NEW task — but we
         # already have one. So re-derive prompt path manually).
         if not card_path:
-            return {"spawned": False, "reason": "no card_path in payload"}
+            return {
+                "spawned": False,
+                "agent": "codex",
+                "reason": "no card_path in payload",
+                "task_id": task_row["id"],
+                "ea_id": ea_id,
+            }
         prompt_path = str(root / "queue" / f"codex_build_{task_row['id']}.md")
         # Render prompt
         build_result_path = str(root / "artifacts" / "builds" / f"{task_row['id']}.json")
@@ -6584,7 +7059,13 @@ def _spawn_codex_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]:
     if live_log.exists():
         age_sec = time.time() - live_log.stat().st_mtime
         if age_sec < 60:
-            return {"spawned": False, "reason": "live log activity within 60s — codex likely still running", "task_id": task_row["id"]}
+            return {
+                "spawned": False,
+                "agent": "codex",
+                "reason": "live log activity within 60s — codex likely still running",
+                "task_id": task_row["id"],
+                "ea_id": ea_id,
+            }
 
     try:
         proc, lease = _spawn_owned_codex(
@@ -6604,6 +7085,14 @@ def _spawn_codex_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]:
             "reason": "managed_codex_registration_failed",
             "error": repr(exc),
         }
+    _record_build_dispatch(
+        root,
+        str(task_row["id"]),
+        agent="codex",
+        pid=proc.pid,
+        live_log=live_log,
+        lease_id=str(lease["lease_id"]),
+    )
     return {
         "spawned": True,
         "agent": "codex",
@@ -6615,7 +7104,7 @@ def _spawn_codex_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]:
     }
 
 
-def _spawn_gemini_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]:
+def _spawn_gemini_for_build_claimed(root: Path, task_row: sqlite3.Row) -> dict[str, Any]:
     """Spawn Gemini CLI for a pending build_ea task using the Codex build contract.
 
     Gemini is allowed to draft/implement, but completion still flows through
@@ -6628,7 +7117,13 @@ def _spawn_gemini_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]
     prompt_path = payload.get("prompt_path")
     if not prompt_path:
         if not card_path:
-            return {"spawned": False, "agent": "gemini", "reason": "no card_path in payload"}
+            return {
+                "spawned": False,
+                "agent": "gemini",
+                "reason": "no card_path in payload",
+                "task_id": task_row["id"],
+                "ea_id": ea_id,
+            }
         prompt_path = str(root / "queue" / f"gemini_build_{task_row['id']}.md")
         build_result_path = str(root / "artifacts" / "builds" / f"{task_row['id']}.json")
         Path(prompt_path).parent.mkdir(parents=True, exist_ok=True)
@@ -6664,7 +7159,13 @@ def _spawn_gemini_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]
     if live_log.exists():
         age_sec = time.time() - live_log.stat().st_mtime
         if age_sec < 60:
-            return {"spawned": False, "agent": "gemini", "reason": "live log activity within 60s - gemini likely still running", "task_id": task_row["id"]}
+            return {
+                "spawned": False,
+                "agent": "gemini",
+                "reason": "live log activity within 60s - gemini likely still running",
+                "task_id": task_row["id"],
+                "ea_id": ea_id,
+            }
 
     launcher, shell_needed = _resolve_gemini_command()
     # Antigravity CLI (agy): headless -p FILE-POINTER (agy ignores stdin); --add-dir
@@ -6698,6 +7199,13 @@ def _spawn_gemini_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]
         creationflags=creationflags,
         close_fds=True,
     )
+    _record_build_dispatch(
+        root,
+        str(task_row["id"]),
+        agent="gemini",
+        pid=proc.pid,
+        live_log=live_log,
+    )
     return {
         "spawned": True,
         "agent": "gemini",
@@ -6708,7 +7216,7 @@ def _spawn_gemini_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]
     }
 
 
-def _spawn_claude_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]:
+def _spawn_claude_for_build_claimed(root: Path, task_row: sqlite3.Row) -> dict[str, Any]:
     """Spawn Claude CLI to build one pending build_ea task.
 
     Mirror of _spawn_codex_for_build using the shared build contract
@@ -6723,7 +7231,13 @@ def _spawn_claude_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]
     slug = payload.get("slug")
     card_path = payload.get("card_path")
     if not card_path:
-        return {"spawned": False, "agent": "claude", "reason": "no card_path in payload"}
+        return {
+            "spawned": False,
+            "agent": "claude",
+            "reason": "no card_path in payload",
+            "task_id": task_row["id"],
+            "ea_id": ea_id,
+        }
     prompt_path = str(root / "queue" / f"claude_build_{task_row['id']}.md")
     build_result_path = str(root / "artifacts" / "builds" / f"{task_row['id']}.json")
     Path(prompt_path).parent.mkdir(parents=True, exist_ok=True)
@@ -6758,7 +7272,13 @@ def _spawn_claude_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]
     if live_log.exists():
         age_sec = time.time() - live_log.stat().st_mtime
         if age_sec < 60:
-            return {"spawned": False, "agent": "claude", "reason": "live log activity within 60s - claude likely still running", "task_id": task_row["id"]}
+            return {
+                "spawned": False,
+                "agent": "claude",
+                "reason": "live log activity within 60s - claude likely still running",
+                "task_id": task_row["id"],
+                "ea_id": ea_id,
+            }
 
     claude_path = _resolve_claude()
     creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0  # type: ignore[attr-defined]
@@ -6779,6 +7299,13 @@ def _spawn_claude_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]
         creationflags=creationflags,
         close_fds=True,
     )
+    _record_build_dispatch(
+        root,
+        str(task_row["id"]),
+        agent="claude",
+        pid=proc.pid,
+        live_log=live_log,
+    )
     return {
         "spawned": True,
         "agent": "claude",
@@ -6787,6 +7314,115 @@ def _spawn_claude_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]
         "pid": proc.pid,
         "live_log": str(live_log),
     }
+
+
+def _spawn_with_build_dispatch_claim(
+    root: Path,
+    task_row: sqlite3.Row,
+    *,
+    agent: str,
+    spawn_fn,
+) -> dict[str, Any]:
+    try:
+        payload = json.loads(task_row["payload_json"] or "{}")
+    except (json.JSONDecodeError, TypeError):
+        payload = {}
+    task_id = str(task_row["id"])
+    ea_id = str(payload.get("ea_id") or task_row["card_id"] or "")
+    claim = _acquire_build_dispatch_claim(
+        root,
+        ea_id=ea_id,
+        task_id=task_id,
+        agent=agent,
+    )
+    if claim is None:
+        return {
+            "spawned": False,
+            "agent": agent,
+            "task_id": task_id,
+            "ea_id": ea_id,
+            "reason": "build_dispatch_claim_busy",
+        }
+    try:
+        # Re-read after the atomic claim: another worker may have completed or
+        # otherwise transitioned the task after this pump selected its stale row.
+        try:
+            with connect(root) as conn:
+                current_row = conn.execute(
+                    "SELECT * FROM tasks WHERE id=?",
+                    (task_id,),
+                ).fetchone()
+        except sqlite3.Error as exc:
+            return {
+                "spawned": False,
+                "agent": agent,
+                "task_id": task_id,
+                "ea_id": ea_id,
+                "reason": f"task_state_recheck_failed:{exc}",
+            }
+        if current_row is None or str(current_row["status"]) != "pending":
+            return {
+                "spawned": False,
+                "agent": agent,
+                "task_id": task_id,
+                "ea_id": ea_id,
+                "reason": (
+                    "task_no_longer_pending:"
+                    f"{current_row['status'] if current_row is not None else 'missing'}"
+                ),
+            }
+        task_row = current_row
+
+        # Another pump may also have dispatched and persisted/logged the task
+        # just before this process acquired the lock.
+        in_flight = _build_task_in_flight(root, task_row)
+        if in_flight.get("in_flight"):
+            return {
+                "spawned": False,
+                "agent": agent,
+                "task_id": task_id,
+                "ea_id": ea_id,
+                "reason": f"already_in_flight:{in_flight.get('reason')}",
+            }
+        sibling = _other_in_flight_build_for_ea(root, task_row)
+        if sibling:
+            return {
+                "spawned": False,
+                "agent": agent,
+                "task_id": task_id,
+                "ea_id": ea_id,
+                "reason": f"ea_sibling_already_in_flight:{sibling['task_id']}",
+            }
+        return spawn_fn(root, task_row)
+    finally:
+        _release_build_dispatch_claim(claim)
+
+
+def _spawn_codex_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]:
+    return _spawn_with_build_dispatch_claim(
+        root,
+        task_row,
+        agent="codex",
+        spawn_fn=_spawn_codex_for_build_claimed,
+    )
+
+
+def _spawn_gemini_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]:
+    return _spawn_with_build_dispatch_claim(
+        root,
+        task_row,
+        agent="gemini",
+        spawn_fn=_spawn_gemini_for_build_claimed,
+    )
+
+
+def _spawn_claude_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]:
+    return _spawn_with_build_dispatch_claim(
+        root,
+        task_row,
+        agent="claude",
+        spawn_fn=_spawn_claude_for_build_claimed,
+    )
 
 
 def _is_zero_trade_failure_payload(payload_json: str | None, evidence_path: str | None) -> bool:
@@ -7219,15 +7855,16 @@ def _detect_unbuilt_cards(root: Path) -> list[dict[str, Any]]:
     Find approved cards where the matching EA .ex5 does not exist yet and
     no bridge auto-build task has already been written.
 
-    PT10 2026-05-23 — only return cards whose R-gate evaluations have
-    already PASSED. Pre-PT10 the function returned cards alphabetically by
+    PT10 2026-05-23 — only return cards whose R-gate evaluations are build
+    ready. Pre-PT10 the function returned cards alphabetically by
     ea_id; the low-id end of the corpus is the old pre-schema-rewrite cards
     that lack R-eval, so every pump cycle tried 10 such cards and all 10
     skipped with prebuild_validation failed → auto_build_queued stayed at 0
-    forever. Now: filter to cards with R1-R4=PASS up front (cheap
-    frontmatter parse, no heavy preflight) so the queue actually drains.
-    Unready cards (UNKNOWN/FAIL) are waiting on the separate R-eval flow
-    and will become eligible once that completes.
+    forever. Now: filter to cards with durable source_id lineage regardless
+    of the historical R1 rating, plus R2-R4=PASS (cheap frontmatter parse,
+    no heavy preflight), so the queue drains.
+    Unready cards (missing lineage or non-PASS R2-R4) wait on the
+    separate R-eval/research flow and become eligible once that completes.
     """
     cards_dir = root / "artifacts" / "cards_approved"
     if not cards_dir.is_dir():
@@ -7235,7 +7872,7 @@ def _detect_unbuilt_cards(root: Path) -> list[dict[str, Any]]:
 
     unbuilt: list[dict[str, Any]] = []
     for card_md in sorted(cards_dir.glob("QM5_*.md")):
-        m = re.match(r"(QM5_\d{4})_(.+)\.md$", card_md.name)
+        m = re.match(r"(QM5_\d+)_(.+)\.md$", card_md.name)
         if not m:
             continue
         ea_id, slug = m.group(1), m.group(2)
@@ -7246,12 +7883,11 @@ def _detect_unbuilt_cards(root: Path) -> list[dict[str, Any]]:
             continue
         if _has_auto_build_task_file(root, ea_id):
             continue
-        # PT10 — gate on the same R fields that prebuild_validate_card requires
+        # Gate on the same R fields that prebuild_validate_card requires
         # before emitting a build task.
         try:
             fm = parse_card_frontmatter(card_md)
-            if any(str(fm.get(key) or "").strip().upper() != "PASS"
-                   for key in ("r1_track_record", "r2_mechanical", "r3_data_available", "r4_ml_forbidden")):
+            if not _card_r_gate_ready(fm):
                 continue
         except Exception:
             continue
@@ -7500,10 +8136,263 @@ def _update_flat_frontmatter_file(path: Path, updates: dict[str, str]) -> None:
 
 def _card_has_unknown_r_eval(card_path: Path) -> bool:
     fm, _ = _card_frontmatter_block(card_path.read_text(encoding="utf-8", errors="ignore"))
-    for key in ("r1_track_record", "r2_mechanical", "r3_data_available", "r4_ml_forbidden"):
-        if (fm.get(key) or "UNKNOWN").upper() == "UNKNOWN":
-            return True
-    return False
+    if not _card_r1_build_ready(fm):
+        return True
+    return any(
+        str(fm.get(key) or "UNKNOWN").strip().upper() == "UNKNOWN"
+        for key in R_STRICT_PASS_FIELDS
+    )
+
+
+def _card_source_evidence(card_path: Path, fm: dict[str, Any]) -> tuple[str, str] | None:
+    """Return the strongest durable source evidence already present in a card."""
+    text = card_path.read_text(encoding="utf-8", errors="ignore")
+    _parsed_frontmatter, body = _card_frontmatter_block(text)
+
+    def _as_evidence(value: str) -> tuple[str, str] | None:
+        value = re.sub(r"\s+", " ", value).strip().strip('"').strip("'")
+        if not value:
+            return None
+        urls = re.findall(r"https?://[^\s<>\])}\"']+", value, flags=re.I)
+        without_urls = value
+        for url in urls:
+            without_urls = without_urls.replace(url, " ")
+        without_urls = re.sub(r"[\s,.;:()\-–—]+", "", without_urls)
+        if urls and not without_urls:
+            return ("url", urls[0].rstrip(".,;:"))
+        return ("citation", value[:500])
+
+    # A structured primary-source declaration outranks every supporting URL.
+    primary_line = re.search(
+        r"(?im)^\s*(?:[-*]\s*)?(?:primary|canonical)\s+"
+        r"(?:source|citation|quelle)\s*:\s*(.+)$",
+        body,
+    )
+    if primary_line:
+        evidence = _as_evidence(primary_line.group(1))
+        if evidence:
+            return evidence
+
+    # In a Source/Quelle section, take the first non-supporting bullet and
+    # include its continuation lines. This preserves paper/book attribution
+    # such as Melvin–Prins even when a later "Supporting" bullet has a URL.
+    source_section = re.search(
+        r"(?ims)^#{1,6}\s*(?:primary\s+)?(?:sources?|quellen?)\s*$"
+        r"\s*(.*?)(?=^#{1,6}\s|\Z)",
+        body,
+    )
+    if source_section:
+        section = source_section.group(1)
+        bullets = re.split(r"(?m)^\s*[-*]\s+", section)
+        for bullet in bullets[1:]:
+            candidate = re.sub(r"\s+", " ", bullet).strip()
+            if not candidate or re.match(
+                r"(?i)^(?:supporting|secondary|further|additional)\b",
+                candidate,
+            ):
+                continue
+            evidence = _as_evidence(candidate)
+            if evidence:
+                return evidence
+
+    citation = str(fm.get("source_citation") or "").strip().strip('"').strip("'")
+    owner_generic = (
+        OWNER_SOURCE_RECOVERY_ID in citation
+        or "Fabian Grabner (OWNER), strategy hypothesis/source-lineage recovery" in citation
+    )
+    if citation and not owner_generic:
+        evidence = _as_evidence(citation)
+        if evidence:
+            return evidence
+
+    for raw_line in text.splitlines():
+        line = raw_line.strip().lstrip("-*").strip()
+        if not re.match(
+            r"(?i)^(?:source|primary source|citation|quelle|book|publication|author)\s*:",
+            line,
+        ):
+            continue
+        value = line.split(":", 1)[1].strip()
+        if value and OWNER_SOURCE_RECOVERY_ID not in value:
+            evidence = _as_evidence(value)
+            if evidence:
+                return evidence
+
+    r1_reasoning = str(fm.get("r1_reasoning") or "").strip()
+    if (
+        r1_reasoning
+        and OWNER_SOURCE_RECOVERY_ID not in r1_reasoning
+        and "Fabian Grabner (OWNER)" not in r1_reasoning
+        and not re.search(
+            r"(?i)(?:\b(?:unknown|missing|unverified)\s+(?:author|source|lineage)\b"
+            r"|\bno\s+source(?:_id)?\b|\bsource\s+unavailable\b"
+            r"|\blineage\s+is\s+broken\b|\bunattribut)",
+            r1_reasoning,
+        )
+    ):
+        evidence = _as_evidence(r1_reasoning)
+        if evidence:
+            return evidence
+
+    # Unstructured URLs are useful, but are deliberately the final fallback:
+    # implementation notes and supporting references often contain links that
+    # are not the strategy's canonical origin.
+    urls = re.findall(r"https?://[^\s<>\])}\"']+", body, flags=re.I)
+    for raw_url in urls:
+        url = raw_url.rstrip(".,;:")
+        if url:
+            return ("url", url)
+    return None
+
+
+def _resolved_card_source_lineage(
+    root: Path,
+    card_path: Path,
+    fm: dict[str, Any],
+) -> dict[str, str]:
+    """Resolve existing attribution before falling back to OWNER lineage."""
+    existing = str(fm.get("source_id") or "").strip()
+    recovery_note = str(fm.get("source_lineage_recovery") or "")
+    auto_recovered_existing = bool(
+        existing
+        and existing != OWNER_SOURCE_RECOVERY_ID
+        and re.search(r"\bfrom recovered_(?:url|citation)\b", recovery_note)
+    )
+    if existing and existing != OWNER_SOURCE_RECOVERY_ID and not auto_recovered_existing:
+        return {
+            "source_id": existing,
+            "kind": "existing",
+            "citation": str(fm.get("source_citation") or "").strip(),
+        }
+    evidence = _card_source_evidence(card_path, fm)
+    if evidence:
+        evidence_kind, evidence_value = evidence
+        # Reuse an existing source row when its URI is the same URL.
+        if evidence_kind == "url" and db_path(root).exists():
+            try:
+                normalized = evidence_value.rstrip("/").lower()
+                with connect(root) as conn:
+                    for row in conn.execute("SELECT id, uri FROM sources"):
+                        uri = str(row["uri"] or "").strip()
+                        if uri and uri.rstrip("/").lower() == normalized:
+                            return {
+                                "source_id": str(row["id"]),
+                                "kind": "existing_source_row",
+                                "citation": evidence_value,
+                            }
+            except sqlite3.Error:
+                pass
+        recovered_id = source_id({
+            "source_type": f"recovered_{evidence_kind}",
+            "uri": evidence_value,
+        })
+        return {
+            "source_id": recovered_id,
+            "kind": (
+                f"corrected_recovered_{evidence_kind}"
+                if auto_recovered_existing
+                else f"recovered_{evidence_kind}"
+            ),
+            "citation": evidence_value,
+        }
+    return {
+        "source_id": OWNER_SOURCE_RECOVERY_ID,
+        "kind": "owner_fallback",
+        "citation": "Fabian Grabner (OWNER), strategy hypothesis/source-lineage recovery, 2026-07-23.",
+    }
+
+
+def _backfill_owner_source_lineage(root: Path) -> list[dict[str, str]]:
+    """Give source-less active cards deterministic OWNER lineage.
+
+    A missing machine-readable source_id must never turn a viable strategy into
+    a research rejection: found sources, OWNER hypotheses, and AI hypotheses are
+    all valid under DL-082. Rejected artifacts remain immutable audit records;
+    source-only rejects are recovered separately into cards_approved after an
+    explicit R2-R4 recovery audit.
+    """
+    repaired: list[dict[str, str]] = []
+    for bucket in ("cards_draft", "cards_approved"):
+        cards_dir = root / "artifacts" / bucket
+        if not cards_dir.is_dir():
+            continue
+        for card_path in sorted(cards_dir.glob("QM5_*.md")):
+            try:
+                fm = parse_card_frontmatter(card_path)
+            except (OSError, ValueError):
+                continue
+            source_id = str(fm.get("source_id") or "").strip()
+            resolved = _resolved_card_source_lineage(root, card_path, fm)
+            resolved_source_id = resolved["source_id"]
+            owner_lineage = resolved_source_id == OWNER_SOURCE_RECOVERY_ID
+            r1_value = str(fm.get("r1_track_record") or "").strip().upper()
+            needs_source = source_id != resolved_source_id
+            recovery_note = str(fm.get("source_lineage_recovery") or "")
+            auto_recovered_existing = bool(
+                source_id
+                and source_id != OWNER_SOURCE_RECOVERY_ID
+                and re.search(
+                    r"\bfrom recovered_(?:url|citation)\b",
+                    recovery_note,
+                )
+            )
+            current_citation = str(fm.get("source_citation") or "").strip()
+            needs_citation_correction = bool(
+                auto_recovered_existing
+                and resolved.get("citation")
+                and current_citation.strip('"').strip("'")
+                != str(resolved["citation"]).strip('"').strip("'")
+            )
+            needs_r1_normalization = (
+                bool(resolved_source_id)
+                and r1_value not in R1_BUILD_READY_VALUES
+            )
+            if (
+                not needs_source
+                and not needs_citation_correction
+                and not needs_r1_normalization
+            ):
+                continue
+            updates: dict[str, str] = {}
+            if needs_source or needs_citation_correction:
+                updates.update({
+                    "source_id": resolved_source_id,
+                    "source_lineage_recovery": json.dumps(
+                        "Canonical source lineage repaired on 2026-07-23 from "
+                        f"{resolved['kind']}; source reputation is informational.",
+                        ensure_ascii=False,
+                    ),
+                })
+                current_is_owner_generic = (
+                    OWNER_SOURCE_RECOVERY_ID in current_citation
+                    or "Fabian Grabner (OWNER), strategy hypothesis/source-lineage recovery" in current_citation
+                )
+                if (
+                    not current_citation
+                    or current_is_owner_generic
+                    or needs_citation_correction
+                ):
+                    updates["source_citation"] = json.dumps(
+                        resolved["citation"],
+                        ensure_ascii=False,
+                    )
+            if r1_value not in R1_BUILD_READY_VALUES:
+                updates["r1_track_record"] = "TIER_C"
+                source_label = "Fabian Grabner (OWNER)" if owner_lineage else "existing card attribution"
+                updates["r1_reasoning"] = json.dumps(
+                    f"{source_label} is canonical source lineage; R1 is "
+                    "informational and non-gating (2026-07-23).",
+                    ensure_ascii=False,
+                )
+            _update_flat_frontmatter_file(card_path, updates)
+            repaired.append({
+                "ea_id": str(fm.get("ea_id") or card_path.stem),
+                "card_path": str(card_path),
+                "bucket": bucket,
+                "source_id": resolved_source_id,
+                "resolution_kind": resolved["kind"],
+            })
+    return repaired
 
 
 def _auto_queue_r_eval_for_unknown_drafts(root: Path, max_tasks: int = 10) -> list[dict[str, Any]]:
@@ -7555,12 +8444,16 @@ source_bucket: {bucket}
 # Auto R-eval: {card_path.name}
 
 Read `{card_path}` and `C:/QM/repo/processes/qb_reputable_source_criteria.md`.
-Update the card frontmatter in place with PASS/FAIL for:
+Unknown author reputation is not a rejection reason. A linked Internet/book
+source, OWNER-originated idea, or AI-originated idea is valid lineage.
+If source_id is absent, set it to `{OWNER_SOURCE_RECOVERY_ID}` and record
+Fabian Grabner (OWNER) as the canonical source instead of rejecting R1.
+Preserve already-final values. For unresolved fields update:
 
-- `r1_track_record`
-- `r2_mechanical`
-- `r3_data_available`
-- `r4_ml_forbidden`
+- `r1_track_record`: TIER_A/TIER_B/TIER_C; never reject solely for source reputation
+- `r2_mechanical`: PASS/FAIL
+- `r3_data_available`: PASS/FAIL
+- `r4_ml_forbidden`: PASS/FAIL
 
 Include concise reasoning fields. No commit / no push.
 """
@@ -7580,15 +8473,17 @@ def _has_auto_task_file(root: Path, prefix: str) -> bool:
 
 def _verify_card_body_coverage(card_path: Path) -> dict[str, Any]:
     text = card_path.read_text(encoding="utf-8", errors="ignore")
-    _, body = _card_frontmatter_block(text)
+    fm, body = _card_frontmatter_block(text)
     missing: list[str] = []
     # DL-082 (2026-07-19): scholarly citation no longer mandatory — any explicit
-    # source/rationale line qualifies (tier recorded separately; pipeline is the
-    # real validator). Mechanical completeness checks below stay strict.
-    if not re.search(
+    # source/rationale line qualifies. A durable frontmatter source_id is itself
+    # sufficient lineage; body-citation formatting must not reject an otherwise
+    # mechanical card. Mechanical completeness checks below stay strict.
+    if not str(fm.get("source_id") or "").strip() and not re.search(
         r"(19|20)\d{2}.*(Journal|DOI|doi|SSRN|arXiv|Harriman|Wiley|Springer|URL|http)"
         r"|source_citation|Source|Quelle|https?://",
-        body, re.I | re.S,
+        body,
+        re.I | re.S,
     ):
         missing.append("source_citation")
     if not re.search(r"\bEntry\b", body, re.I):
@@ -8598,7 +9493,7 @@ def _reconcile_magic_resolver(root: Path) -> dict[str, Any]:
         return {"regenerated": False, "reason": f"exception:{exc!r}"[:200]}
 
 
-def pump(root: Path) -> dict[str, Any]:
+def _pump_unlocked(root: Path) -> dict[str, Any]:
     """Continuous deterministic worker — run every 5 min.
 
     Does the no-LLM-needed work that previously waited for hourly Claude
@@ -8708,6 +9603,7 @@ def pump(root: Path) -> dict[str, Any]:
 
     result["resume_mining"] = resume_mining(root)
     result["research_cards_extracted"] = _extract_cards_from_research_results(root)
+    result["owner_source_lineage_backfill"] = _backfill_owner_source_lineage(root)
     result["auto_r_eval_queued"] = _auto_queue_r_eval_for_unknown_drafts(root)
 
     result["auto_build_queued"] = []
@@ -8923,6 +9819,20 @@ def pump(root: Path) -> dict[str, Any]:
     if repo_dirty_guard.get("blocked"):
         spawn_budget = 0
         gemini_build_budget = 0
+    # Compute Claude build capacity before auto-emission (§3b). When Codex is
+    # quota-limited, fresh agent-neutral build_ea tickets can then be sized to
+    # the Claude lane that will consume them in §3c of this same pump cycle.
+    claude_disabled_build = (root / "CLAUDE_DISABLED.flag").exists()
+    claude_build_budget = 0
+    if not claude_disabled_build and not repo_dirty_guard.get("blocked"):
+        claude_build_budget = max(
+            0,
+            min(
+                MAX_PARALLEL_CLAUDE_BUILDS,
+                MAX_PARALLEL_CLAUDE - 1 - active_claude,
+            ),
+        )
+    result["claude_build_budget"] = claude_build_budget
     total_build_spawn_budget = spawn_budget + gemini_build_budget
     if repo_dirty_guard.get("blocked") and raw_codex_build_budget > 0:
         # A codex_review_fail rework necessarily starts from dirty build
@@ -8939,6 +9849,8 @@ def pump(root: Path) -> dict[str, Any]:
             "SELECT * FROM tasks WHERE kind='build_ea' AND status='pending' "
             "ORDER BY updated_at ASC"
         ).fetchall()
+        in_flight_task_ids = _in_flight_build_task_ids(root, all_pending)
+        result["build_tasks_in_flight"] = sorted(in_flight_task_ids)
         try:
             import strategy_priority as _sp
             _build_score_map = _sp.compute_scores()
@@ -8964,11 +9876,25 @@ def pump(root: Path) -> dict[str, Any]:
                 ea_id = pl.get("ea_id")
                 if ea_id:
                     perma_blocked_eas.add(ea_id)
-        seen_eas: set[str] = set()
+        in_flight_eas: set[str] = set()
+        for row in all_pending:
+            if str(row["id"]) not in in_flight_task_ids:
+                continue
+            try:
+                payload = json.loads(row["payload_json"] or "{}")
+            except (json.JSONDecodeError, TypeError):
+                continue
+            ea_id = str(payload.get("ea_id") or "").strip()
+            if ea_id:
+                in_flight_eas.add(ea_id)
+        result["build_eas_in_flight"] = sorted(in_flight_eas)
+        seen_eas: set[str] = set(in_flight_eas)
         pending_builds = []
         skipped_perma_blocked = 0
         result["duplicate_pending_builds_blocked"] = []
         for row in all_pending:
+            if str(row["id"]) in in_flight_task_ids:
+                continue
             payload = json.loads(row["payload_json"])
             duplicate_block = _block_duplicate_pending_build_if_pipelined(conn, row, payload)
             if duplicate_block:
@@ -9006,10 +9932,10 @@ def pump(root: Path) -> dict[str, Any]:
     result["codex_perma_blocked_ea_count"] = len(perma_blocked_eas)
 
     # 3b. Auto-create build_ea tasks for newly-approved cards. Without this,
-    #    pump can't reach Codex on cards that haven't yet been touched by
-    #    autonomous_wake's Step 2 — the hourly cadence becomes the real
-    #    bottleneck for fresh approved cards. Bounded by spawn_budget so we
-    #    don't pile up backlog faster than we can build it.
+    #    pump can't reach a build agent on cards that haven't yet been touched
+    #    by autonomous_wake's Step 2. Ticket creation is bounded by the agent
+    #    capacity that can consume it this cycle. In CODEX_LOW_TOKENS mode,
+    #    unused Claude build slots keep this lane moving.
     result["auto_created_builds"] = []
     result["auto_build_skipped"] = []
     with connect(root) as conn:
@@ -9034,8 +9960,55 @@ def pump(root: Path) -> dict[str, Any]:
         "active_work_items_pause_threshold": BUILD_BACKPRESSURE_ACTIVE_WORK_ITEM_LIMIT,
         "new_builds_paused": build_backpressure_paused,
     }
-    # Count actually-spawned (not skipped-due-to-fresh-log)
+    # Count actually-spawned (not skipped-due-to-fresh-log).
     actually_spawned = sum(1 for s in spawns if s.get("spawned"))
+    codex_builds_spawned = sum(
+        1
+        for spawn in spawns
+        if spawn.get("spawned") and spawn.get("agent") == "codex"
+    )
+    result["builds_spawned_before_auto"] = actually_spawned
+    result["codex_builds_spawned_before_auto"] = codex_builds_spawned
+    already_spawned_eas = {
+        str(s.get("ea_id"))
+        for s in spawns
+        if isinstance(s, dict) and s.get("spawned") and s.get("ea_id")
+    }
+    with connect(root) as conn:
+        claude_pending_before_auto = conn.execute(
+            "SELECT * FROM tasks WHERE kind='build_ea' AND status='pending' "
+            "ORDER BY updated_at ASC"
+        ).fetchall()
+    claude_pending_eligible = len(
+        _claude_buildable_pending_rows(
+            claude_pending_before_auto,
+            in_flight_task_ids=_in_flight_build_task_ids(
+                root, claude_pending_before_auto
+            ),
+            excluded_eas=already_spawned_eas,
+            perma_blocked_eas=perma_blocked_eas,
+        )
+    )
+    claude_fallback = codex_low_tokens or codex_auth_broken
+    auto_creation_slots = _auto_build_creation_slots(
+        codex_spawn_budget=spawn_budget,
+        codex_builds_spawned=codex_builds_spawned,
+        claude_fallback=claude_fallback,
+        claude_build_budget=claude_build_budget,
+        claude_pending_eligible=claude_pending_eligible,
+    )
+    result["auto_build_capacity"] = {
+        "slots": auto_creation_slots,
+        "codex_slots": max(0, spawn_budget - codex_builds_spawned),
+        "claude_fallback": claude_fallback,
+        "claude_budget": claude_build_budget,
+        "claude_pending_eligible": claude_pending_eligible,
+        "claude_slots_for_new": (
+            max(0, claude_build_budget - claude_pending_eligible)
+            if claude_fallback
+            else 0
+        ),
+    }
     if build_backpressure_paused:
         result["auto_build_skipped"].append({
             "reason": "build_backpressure",
@@ -9052,7 +10025,7 @@ def pump(root: Path) -> dict[str, Any]:
             "dirty_entries": repo_dirty_guard.get("entries", []),
             "override_env": DIRTY_REPO_BUILD_GUARD_ENV,
         })
-    elif actually_spawned < spawn_budget:
+    elif auto_creation_slots > 0:
         cards_approved_dir = root / "artifacts" / "cards_approved"
         if cards_approved_dir.is_dir():
             with connect(root) as conn:
@@ -9061,26 +10034,26 @@ def pump(root: Path) -> dict[str, Any]:
                     for r in conn.execute("SELECT payload_json FROM tasks WHERE kind='build_ea'").fetchall()
                 }
             cards_without_task = []
+            candidate_eas: set[str] = set()
             for f in sorted(cards_approved_dir.glob("QM5_*.md")):
                 parts = f.stem.split("_")
                 if len(parts) < 2:
                     continue
                 ea_id = f"{parts[0]}_{parts[1]}"
-                if ea_id not in have_task:
+                if ea_id not in have_task and ea_id not in candidate_eas:
                     if _has_auto_build_task_file(root, ea_id):
                         continue
-                    # PT10 — same R1-R4 PASS gate as _detect_unbuilt_cards.
-                    # Skip cards whose R-eval has not landed PASS yet so we don't
-                    # bombard prebuild_validate_card with cards we know will fail.
+                    # Same R gate as _detect_unbuilt_cards/prebuild: R1 source
+                    # quality is informational; R2-R4 remain strict PASS.
                     try:
                         fm = parse_card_frontmatter(f)
-                        if any(str(fm.get(key) or "").strip().upper() != "PASS"
-                               for key in ("r1_track_record", "r2_mechanical", "r3_data_available", "r4_ml_forbidden")):
+                        if not _card_r_gate_ready(fm):
                             continue
                     except Exception:
                         continue
+                    candidate_eas.add(ea_id)
                     cards_without_task.append((ea_id, f, fm))
-            slots_left = min(spawn_budget - actually_spawned, MAX_AUTO_CREATED_BUILDS_PER_PUMP)
+            slots_left = auto_creation_slots
             # Build the highest-value cards first (mirror _card_build_priority:
             # strategy_priority score, then R-passes, then expected frequency).
             def _cwt_priority(item):
@@ -9089,8 +10062,7 @@ def pump(root: Path) -> dict[str, Any]:
                     _exp = int(str(_fm.get("expected_trades_per_year_per_symbol") or 0))
                 except (TypeError, ValueError):
                     _exp = 0
-                _rp = sum(1 for _k in ("r1_track_record", "r2_mechanical", "r3_data_available", "r4_ml_forbidden")
-                          if str(_fm.get(_k) or "").upper() == "PASS")
+                _rp = _card_r_gate_pass_count(_fm)
                 try:
                     _ps = float((_build_score_map or {}).get(_ea, {}).get("score", 0.0))
                 except Exception:
@@ -9105,34 +10077,40 @@ def pump(root: Path) -> dict[str, Any]:
             # cards existed further down — and the prior attempts_cap=30 gave up
             # ONE card before the first buildable one (observed at index 30,
             # starving all builds). Scan the FULL eligible list; the
-            # spawned_here>=slots_left break keeps the normal case cheap (stops
-            # once the budget is filled), and we only walk the whole list in the
-            # pathological case where nothing is currently buildable.
-            spawned_here = 0
+            # created_here>=slots_left break keeps the normal case cheap and
+            # also prevents task floods when an agent spawn itself fails.
+            created_here = 0
+            codex_auto_slots = max(0, spawn_budget - codex_builds_spawned)
             attempts_cap = len(cards_without_task)
             attempts = 0
             for ea_id, card_path, _fm in cards_without_task:
-                if spawned_here >= slots_left:
+                if created_here >= slots_left:
                     break
                 if attempts >= attempts_cap:
                     break
                 attempts += 1
                 br = render_codex_build_prompt(root, str(card_path), None)
                 if br.get("written"):
+                    created_here += 1
+                    have_task.add(ea_id)
                     result["auto_created_builds"].append({
                         "ea_id": ea_id,
                         "task_id": br.get("task_id"),
+                        "route": "codex" if codex_auto_slots > 0 else "claude_pending",
                     })
-                    # Now spawn Codex for it immediately
-                    with connect(root) as conn:
-                        new_row = conn.execute(
-                            "SELECT * FROM tasks WHERE id=?", (br["task_id"],)
-                        ).fetchone()
-                    if new_row:
-                        sp = _spawn_codex_for_build(root, new_row)
-                        spawns.append(sp)
-                        if sp.get("spawned"):
-                            spawned_here += 1
+                    # Preserve the normal immediate-Codex path when it has
+                    # capacity. Low-token fallback tickets remain pending so
+                    # the Claude selector in §3c consumes them below.
+                    if codex_auto_slots > 0:
+                        with connect(root) as conn:
+                            new_row = conn.execute(
+                                "SELECT * FROM tasks WHERE id=?", (br["task_id"],)
+                            ).fetchone()
+                        if new_row:
+                            sp = _spawn_codex_for_build(root, new_row)
+                            spawns.append(sp)
+                            if sp.get("spawned"):
+                                codex_auto_slots -= 1
                 else:
                     result["auto_build_skipped"].append({
                         "ea_id": ea_id,
@@ -9154,41 +10132,26 @@ def pump(root: Path) -> dict[str, Any]:
     #     building this cycle and perma-blocked EAs. Existing-pending spawn
     #     (like §3 Codex) is not gated by build_backpressure.
     result["claude_build_spawns"] = []
-    claude_disabled_build = (root / "CLAUDE_DISABLED.flag").exists()
-    claude_build_budget = 0
-    if not claude_disabled_build and not repo_dirty_guard.get("blocked"):
-        claude_build_budget = max(0, min(
-            MAX_PARALLEL_CLAUDE_BUILDS,
-            MAX_PARALLEL_CLAUDE - 1 - active_claude,
-        ))
-    result["claude_build_budget"] = claude_build_budget
     if claude_build_budget > 0:
         already_spawned_eas = {
-            s.get("ea_id") for s in spawns if isinstance(s, dict) and s.get("spawned")
+            str(s.get("ea_id"))
+            for s in spawns
+            if isinstance(s, dict) and s.get("spawned") and s.get("ea_id")
         }
         with connect(root) as conn:
             claude_pending = conn.execute(
                 "SELECT * FROM tasks WHERE kind='build_ea' AND status='pending' "
                 "ORDER BY updated_at ASC"
             ).fetchall()
-        claude_seen: set[str] = set()
-        for row in claude_pending:
-            if len(result["claude_build_spawns"]) >= claude_build_budget:
-                break
-            cp = json.loads(row["payload_json"])
-            cea = cp.get("ea_id")
-            if cea in already_spawned_eas or cea in claude_seen or cea in perma_blocked_eas:
-                continue
-            # A task with neither card_path (to render a prompt from) nor a
-            # previously-rendered prompt_path can only bounce in
-            # _spawn_claude_for_build ("no card_path in payload"). Skipping it
-            # here — instead of letting the bounce append to claude_build_spawns
-            # and consume a build-budget slot — lets Claude advance to genuinely
-            # buildable tasks. (Codex front-runs §3 and tends to leave Claude the
-            # card_path-less dregs; 2026-06-23 audit saw 168 such bounces/day.)
-            if not cp.get("card_path") and not cp.get("prompt_path"):
-                continue
-            claude_seen.add(cea)
+        claude_candidates = _claude_buildable_pending_rows(
+            claude_pending,
+            in_flight_task_ids=_in_flight_build_task_ids(
+                root, claude_pending
+            ),
+            excluded_eas=already_spawned_eas,
+            perma_blocked_eas=perma_blocked_eas,
+        )
+        for row in claude_candidates[:claude_build_budget]:
             result["claude_build_spawns"].append(_spawn_claude_for_build(root, row))
 
     MAX_PARALLEL_CODEX_REVIEW = 4
@@ -9479,9 +10442,9 @@ def pump(root: Path) -> dict[str, Any]:
             except Exception as e:
                 result["review_records"].append({"task_id": row["id"], "error": str(e)})
 
-    # 7. Spawn G0 review of draft cards. G0 is a mass-review lane; Codex owns it
-    # under the 2026-05-30 Claude role policy. Claude remains available for
-    # premium review/synthesis lanes above, but not for G0 batches.
+    # 7. Spawn G0 review of draft cards. Codex normally owns the mass-review
+    # lane. When Codex is quota/auth unavailable, Claude is the bounded fallback
+    # so recovered legacy cards cannot strand indefinitely in cards_draft.
     claude_review_spawned = (
         isinstance(result.get("claude_review_spawn"), dict)
         and result["claude_review_spawn"].get("spawned")
@@ -9497,12 +10460,34 @@ def pump(root: Path) -> dict[str, Any]:
         len([s for s in (result.get("codex_review_spawns") or []) if isinstance(s, dict) and s.get("spawned")])
         + (1 if codex_review_spawned else 0)
     )
-    result["claude_g0_spawn"] = {"spawned": False, "reason": "G0 mass review routed to Codex by Claude role policy"}
+    result["claude_g0_spawn"] = {"spawned": False, "reason": "G0 mass review routed to Codex"}
     if claude_disabled:
         result["claude_g0_spawn"] = {"spawned": False, "reason": "CLAUDE_DISABLED.flag present; routed to Codex"}
 
-    if codex_low_tokens:
-        result["codex_g0_spawn"] = {"spawned": False, "reason": "CODEX_LOW_TOKENS.flag present"}
+    codex_g0_unavailable = codex_low_tokens or codex_auth_broken
+    if codex_g0_unavailable:
+        result["codex_g0_spawn"] = {
+            "spawned": False,
+            "reason": (
+                "CODEX_LOW_TOKENS.flag present"
+                if codex_low_tokens
+                else "Codex auth circuit breaker active"
+            ),
+        }
+        claude_builds_spawned_now = sum(
+            1
+            for spawn in (result.get("claude_build_spawns") or [])
+            if isinstance(spawn, dict) and spawn.get("spawned")
+        )
+        if _claude_g0_fallback_allowed(
+            codex_unavailable=True,
+            claude_disabled=claude_disabled,
+            claude_review_spawned=bool(claude_review_spawned),
+            active_claude=active_claude,
+            claude_builds_spawned=claude_builds_spawned_now,
+            max_parallel_claude=MAX_PARALLEL_CLAUDE,
+        ):
+            result["claude_g0_spawn"] = _spawn_claude_for_g0_batch(root)
     elif not spawned_other and (active_codex + g0_builds_now + g0_reviews_now) < MAX_PARALLEL_CODEX:
         result["codex_g0_spawn"] = _spawn_codex_for_g0_batch(root)
         if result["codex_g0_spawn"].get("spawned"):
@@ -9540,16 +10525,37 @@ def pump(root: Path) -> dict[str, Any]:
     result["codex_research_spawns"] = []
     research_min_backlog = 5
     research_inventory = research_backlog_inventory(root)
+    with connect(root) as conn:
+        recovery_sources_pending = int(conn.execute(
+            "SELECT COUNT(*) FROM sources "
+            "WHERE lane='recovery' AND status IN ('pending','active')"
+        ).fetchone()[0])
+    allow_recovery_research = recovery_sources_pending > 0
+    allow_replenishment_research = (
+        research_inventory.get("total", 0) < research_min_backlog
+    )
+    allow_new_research = (
+        allow_replenishment_research or allow_recovery_research
+    )
     result["research_backlog_inventory"] = research_inventory
     result["research_replenish_gate"] = {
         "min_strategy_backlog": research_min_backlog,
         "strategy_backlog": research_inventory.get("total", 0),
-        "allow_new_research": research_inventory.get("total", 0) < research_min_backlog,
+        "recovery_sources_pending": recovery_sources_pending,
+        "allow_recovery_research": allow_recovery_research,
+        "allow_new_research": allow_new_research,
     }
     if result["research_replenish_gate"]["allow_new_research"]:
         if claude_disabled:
             result["claude_research_spawn"] = {"spawned": False, "reason": "CLAUDE_DISABLED.flag present; routed to Codex"}
-        elif (active_claude_count + claude_spawns_this_cycle) < MAX_PARALLEL_CLAUDE:
+        elif (
+            active_claude_count
+            + claude_spawns_this_cycle
+            + int(
+                isinstance(result.get("claude_g0_spawn"), dict)
+                and result["claude_g0_spawn"].get("spawned")
+            )
+        ) < MAX_PARALLEL_CLAUDE:
             result["claude_research_spawn"] = _claim_research_source(root)
             if result["claude_research_spawn"].get("spawned"):
                 claude_spawns_this_cycle += 1
@@ -9581,7 +10587,7 @@ def pump(root: Path) -> dict[str, Any]:
     else:
         result["codex_research_spawns"].append({
             "spawned": False,
-            "reason": "strategy backlog >= 5; research replenish paused by OWNER 2026-05-19",
+            "reason": "strategy backlog >= 5 and no recovery source pending",
             "strategy_backlog": research_inventory.get("total", 0),
             "min_strategy_backlog": research_min_backlog,
         })
@@ -10061,6 +11067,34 @@ def pump(root: Path) -> dict[str, Any]:
     }
 
     return result
+
+
+def pump(root: Path) -> dict[str, Any]:
+    """Run one globally serialized pump cycle.
+
+    The pump computes process counts and then dispatches several independent
+    EAs. Per-EA locks prevent duplicate builds, but only this cycle-wide claim
+    makes those capacity measurements valid when scheduled/manual pumps
+    overlap. Legacy one-shot notifier channels remain
+    ``disabled_by_owner_2026_05_22`` inside the unlocked cycle; the returned
+    status still names ``ws0_clear_notifier`` and ``task_watch_notifier``.
+    """
+    claim = _acquire_build_dispatch_claim(
+        root,
+        ea_id="STRATEGY_FARM_GLOBAL_PUMP",
+        task_id=f"pump-{os.getpid()}",
+        agent="controller",
+        stale_sec=1800,
+    )
+    if claim is None:
+        return {
+            "pumped_at": utc_now(),
+            "skipped": "another strategy-farm pump cycle is already running",
+        }
+    try:
+        return _pump_unlocked(root)
+    finally:
+        _release_build_dispatch_claim(claim)
 
 
 def next_action(root: Path) -> dict[str, Any]:
@@ -12443,6 +13477,200 @@ def approve_card(root: Path, card_path_str: str, reasoning: str,
     }
 
 
+def reidentify_recovery_card(
+    root: Path,
+    card_path_str: str,
+    new_ea_id: str,
+    new_slug: str,
+) -> dict[str, Any]:
+    """Move an identity-conflicted recovery card to draft without losing G0 claim."""
+    init_db(root)
+    source = Path(card_path_str).resolve()
+    recovery_dir = (root / "artifacts" / "cards_recovery").resolve()
+    draft_dir = (root / "artifacts" / "cards_draft").resolve()
+    if not source.is_file() or source.parent != recovery_dir:
+        return {
+            "moved": False,
+            "reason": "card must be an existing direct child of cards_recovery",
+            "card_path": str(source),
+        }
+    new_ea_id = str(new_ea_id or "").strip().upper()
+    new_slug = str(new_slug or "").strip().lower()
+    if not re.fullmatch(r"QM5_\d{4,6}", new_ea_id):
+        return {"moved": False, "reason": f"invalid new EA ID: {new_ea_id!r}"}
+    if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", new_slug):
+        return {"moved": False, "reason": f"invalid new slug: {new_slug!r}"}
+
+    registry_id = new_ea_id[4:]
+    registry_slugs = _ea_registry_slug_index(
+        REPO_ROOT / "framework" / "registry" / "ea_id_registry.csv"
+    ).get(registry_id, [])
+    if new_slug not in registry_slugs:
+        return {
+            "moved": False,
+            "reason": "new EA ID/slug is not reserved in ea_id_registry.csv",
+            "ea_id": new_ea_id,
+            "slug": new_slug,
+            "registered_slugs": registry_slugs,
+        }
+
+    for bucket in ("cards_draft", "cards_approved", "cards_recovery"):
+        directory = root / "artifacts" / bucket
+        for collision in directory.glob(f"{new_ea_id}_*.md"):
+            if collision.resolve() != source:
+                return {
+                    "moved": False,
+                    "reason": f"new EA ID already has card: {collision}",
+                }
+    ea_dir_collisions = [
+        path for path in FRAMEWORK_EAS_DIR.glob(f"{new_ea_id}_*") if path.is_dir()
+    ]
+    if ea_dir_collisions:
+        return {
+            "moved": False,
+            "reason": "new EA ID already has an EA directory",
+            "collisions": [str(path) for path in ea_dir_collisions],
+        }
+
+    old_claim = _g0_claim_path(source)
+    if not old_claim.is_file():
+        return {
+            "moved": False,
+            "reason": "active G0 claim is required before identity migration",
+            "claim_path": str(old_claim),
+        }
+
+    draft_dir.mkdir(parents=True, exist_ok=True)
+    target = draft_dir / f"{new_ea_id}_{new_slug}.md"
+    target_claim = _g0_claim_path(target)
+    if target.exists():
+        return {"moved": False, "reason": f"target card already exists: {target}"}
+
+    migration_token = uuid.uuid4().hex
+    target_claim_created = False
+    staging = source.parent / f".{source.name}.{migration_token}.tmp"
+    moved = False
+    target_card_created = False
+    old_fm = parse_card_frontmatter(source)
+    old_id_match = re.match(r"^(QM5_\d+)_", source.name, flags=re.I)
+    old_ea_id = str(
+        old_fm.get("ea_id")
+        or (old_id_match.group(1).upper() if old_id_match else "")
+    )
+    try:
+        claim_payload = old_claim.read_text(encoding="utf-8", errors="ignore")
+        fd = os.open(
+            str(target_claim),
+            os.O_CREAT | os.O_EXCL | os.O_WRONLY,
+        )
+        try:
+            os.write(
+                fd,
+                (
+                    claim_payload.rstrip()
+                    + f"\nidentity_migration={migration_token}\n"
+                ).encode("utf-8"),
+            )
+        finally:
+            os.close(fd)
+        target_claim_created = True
+
+        import shutil as _shutil
+
+        _shutil.copy2(source, staging)
+        _update_flat_frontmatter_file(staging, {
+            "ea_id": new_ea_id,
+            "slug": new_slug,
+            "identity_repair_required": "false",
+            "identity_repair_conflicts": '""',
+            "identity_repair_resolved": "true",
+            "identity_repair_resolved_at": json.dumps(utc_now()),
+            "recovered_from_ea_id": json.dumps(old_ea_id),
+            "recovery_status": "IDENTITY_REPAIRED",
+            "g0_status": "PENDING",
+        })
+        staged_fm = parse_card_frontmatter(staging)
+        if (
+            str(staged_fm.get("ea_id") or "") != new_ea_id
+            or str(staged_fm.get("slug") or "") != new_slug
+        ):
+            raise ValueError("staged recovery identity validation failed")
+
+        # Target claim already exists while the old claim remains beside the
+        # source. Publish the fully edited staging copy atomically at the new
+        # name, then remove the untouched old card. If publication fails, the
+        # original filename and frontmatter are unchanged.
+        os.replace(staging, target)
+        target_card_created = True
+        try:
+            source.unlink()
+        except OSError:
+            # Roll back the published copy when the old card cannot be removed.
+            # Both claims still exist, so even a failed rollback remains
+            # fail-closed against a duplicate G0 review.
+            try:
+                target.unlink()
+                target_card_created = False
+            except OSError:
+                pass
+            raise
+        moved = True
+        try:
+            old_claim.unlink()
+        except OSError:
+            pass
+        event_warning = None
+        try:
+            with connect(root) as conn:
+                event(conn, "card", new_ea_id, "recovery_identity_reassigned", {
+                    "old_ea_id": old_ea_id,
+                    "new_ea_id": new_ea_id,
+                    "slug": new_slug,
+                    "card_path": str(target),
+                })
+                conn.commit()
+        except sqlite3.Error as exc:
+            # The durable card+claim move is authoritative. A transient audit
+            # write failure must not make the caller repeat the migration.
+            event_warning = f"event_write_failed:{exc}"
+        result = {
+            "moved": True,
+            "old_ea_id": old_ea_id,
+            "ea_id": new_ea_id,
+            "slug": new_slug,
+            "card_path": str(target),
+            "claim_path": str(target_claim),
+        }
+        if event_warning:
+            result["warning"] = event_warning
+        return result
+    except (OSError, ValueError, sqlite3.Error) as exc:
+        return {
+            "moved": False,
+            "reason": f"identity migration failed: {exc}",
+            "source": str(source),
+            "target": str(target),
+        }
+    finally:
+        try:
+            staging.unlink()
+        except OSError:
+            pass
+        if target_claim_created and not moved:
+            target_removed = not target_card_created
+            if target_card_created:
+                try:
+                    target.unlink()
+                    target_removed = True
+                except OSError:
+                    pass
+            if target_removed:
+                try:
+                    target_claim.unlink()
+                except OSError:
+                    pass
+
+
 def _find_cards_by_source_id(root: Path, target_source_id: str) -> dict[str, list[Path]]:
     """Find all cards across draft/approved/rejected dirs whose frontmatter source_id matches."""
     result: dict[str, list[Path]] = {"draft": [], "approved": [], "rejected": []}
@@ -13686,6 +14914,14 @@ def build_parser() -> argparse.ArgumentParser:
                          help="Conservative research ESTIMATE of max drawdown percent (e.g. 15). "
                               "Build/test ordering prior only, never a gate. Expected on new G0 approvals.")
 
+    reidentify = sub.add_parser(
+        "reidentify-recovery-card",
+        help="Safely assign a reserved EA ID/slug to a cards_recovery card",
+    )
+    reidentify.add_argument("--card", required=True)
+    reidentify.add_argument("--ea-id", required=True)
+    reidentify.add_argument("--slug", required=True)
+
     reject = sub.add_parser(
         "reject-card",
         help="Set g0_status: REJECTED + move draft to rejected + emit event",
@@ -13744,7 +14980,8 @@ def build_parser() -> argparse.ArgumentParser:
 _CANONICAL_CHECKOUT = Path(os.environ.get("QM_CANONICAL_REPO_ROOT", r"C:\QM\repo"))
 _STATE_MUTATING_COMMANDS = frozenset({
     "pump", "repair", "dispatch-tick", "tick", "backfill-work-items",
-    "enqueue-backtest", "approve-card", "reject-card", "seed-sources",
+    "enqueue-backtest", "approve-card", "reidentify-recovery-card",
+    "reject-card", "seed-sources",
 })
 
 
@@ -13882,6 +15119,13 @@ def main(argv: list[str] | None = None) -> int:
         print_json(approve_card(root, args.card, args.reasoning,
                                 expected_pf=args.expected_pf,
                                 expected_dd_pct=args.expected_dd_pct))
+    elif args.command == "reidentify-recovery-card":
+        print_json(reidentify_recovery_card(
+            root,
+            args.card,
+            args.ea_id,
+            args.slug,
+        ))
     elif args.command == "reject-card":
         print_json(reject_card(root, args.card, args.reason))
     elif args.command == "resume-mining":
