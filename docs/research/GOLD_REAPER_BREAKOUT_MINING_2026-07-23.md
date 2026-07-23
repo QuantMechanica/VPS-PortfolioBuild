@@ -27,6 +27,64 @@ Two independent XAU-breakout implementations converge on the same death:
 Balke's *winner* was USDJPY (OOS PF 1.20); its gold leg died (verified). The mechanism generalizes to
 FX and dies on XAU. **The Q05-DD death is not a risk to hedge — it is the predicted outcome.**
 
+> ⚠️ **The paragraph above and parts of §3.4 and §5 are CORRECTED by the REVISION section immediately
+> below** (independent Codex cross-challenge, verified). The no-clone verdict stands; the Balke
+> *equivalence/base-rate* framing, the "Q05 ceiling", the LBMA footing, the 2011–2019 OOS, and the
+> acceptance/dedup gates do not. Read the REVISION before acting.
+
+---
+
+## REVISION — independent Codex cross-challenge (2026-07-23, claims verified against repo)
+
+A cross-model review (Codex, gpt-5.6-sol, read-only) was run at the OWNER's request against this dossier —
+because every critic in the original 14-agent workflow was a Claude model and may share blind spots. It
+**upholds the no-clone verdict** but found several load-bearing errors, each verified here against the
+actual files. This section supersedes the conflicting claims below.
+
+1. **Balke "independent reproduction / reproduced base rate" — WITHDRAWN.** Balke and Gold Reaper are
+   mechanically different (Balke: fixed 03:00–06:00 broker range, forced 18:00 exit; Gold Reaper: H1/H4/D1
+   S/R zones, anticipatory zone orders, overnight carriage). They share only "XAU + breakout" → a **weak
+   family prior ("XAU breakouts whipsaw")**, not equivalence. Their live windows may overlap (not
+   independent), and Gold Reaper reports DD but no net, so a common "DD/net signature" is uncomputable.
+   Balke stands as valid **negative prior art** — nothing stronger.
+2. **Gold Reaper's "live PF 1.08 / DD 41.7%" is UNAUDITED third-party testimony** (sole source: one review
+   site; no trade stream, dates, or account history). Treat as strong *adverse testimony*, not verified OOS.
+3. **The "Q05 ceiling = MaxDD/net ≤1.3×" is INVENTED — no such gate exists.** Verified: Q05
+   (`framework/scripts/q05_stress_medium.py:50-51`) gates **PF > 1.0 AND DD < 25% of $100k AND trades ≥ 20**;
+   a DD breach is *parked for portfolio review*, not a MaxDD/net threshold. §5's acceptance bar is wrong.
+4. **The LBMA-fix anchor is NOT established footing — contradicted by our own prior study.**
+   `docs/research/XAU_FIX_DRIFT_STUDY_2026-06.md`: all t-stats < 2, no significant AM/PM pattern,
+   *"No card before a proper M1 study."* §5's "LBMA fix has real order-flow footing" over-credits it. (Not
+   fully refuted — a within-bar M1 signal isn't ruled out — but there is no established edge.)
+5. **Spec conflict:** 20007 declares **`news-blackout ON`** (card line 72); trading macro-release windows
+   contradicts the approved hypothesis. Resolve before any lane change.
+6. **"2011–2019 OOS" is data-infeasible** (earliest XAU H1 bar ≈ 2017-10 per the fix study; no M5/M15 from
+   2011) and is not true OOS without pre-registration of rules/thresholds.
+7. **DL-083 mischaracterized:** it is a **regime-split return correlation** (admit < 0.15, reject ≥ 0.40),
+   not a generic daily-Pearson boundary. Drawdown co-exceedance is a *secondary* path-risk metric, not the
+   replacement dedup gate.
+
+**Corrected acceptance test (replaces §5's bar):** compare the **gated arm vs an identical ungated arm**
+(plus a matched-random-density control) on FTMO **tail** statistics — worst rolling-12-mo DD, DD duration,
+daily expected shortfall, worst-day loss, Monte-Carlo p95 DD, and P(breaching 5% daily / 10% total at the
+actual governor) — **not** MaxDD/net vs Balke's unrelated 3.05×. Density target stays **≥250/yr** (180 is
+only the acceptable lower band; ≈$35.70/weekday vs $49.60 at 250).
+
+**Corrected disposition:** retire the *unconditional* `GOLD_BREAKOUT` ("daily open ± k×ATR, first breach" =
+price-band lore); retain **one preregistered `XAU_EVENT_VOL_BREAKOUT` hypothesis** with **10181
+(`tv-xau-ny-orb-retest`, H1 ATR-conditioned NY-ORB, ~110/yr, EOD-flat) as the MANDATORY control** and Balke
+as a second control. Note our XAU D1 survivors **10123 (standalone PF 1.51) and 10145 (PF 1.42) are
+standalone-profitable** — they failed *portfolio admission* on correlation (~0.91), so "all XAU breakout is
+dead" is too strong.
+
+**The decisive experiment (Codex's design, adopted):** a **trigger-level, common-exit factorial** — freeze
+volatility state *before* range/zone formation; hold the exit machinery IDENTICAL across arms (fixed
+15/30/60-min + EOD); race triggers {Balke-range, multi-TF zone, LBMA-window, macro-window} × {ungated,
+vol-gated, matched-random-density control}; measure forward return, MFE/MAE, FTMO tail. This isolates
+whether the *breakout trigger* carries information vs whether exit/sizing/overnight packaging destroys a
+usable trigger — without which "the breakout has no edge" and "the vol-gate is the edge" are both untested
+assertions.
+
 ---
 
 ## 1. Who / what
@@ -136,6 +194,8 @@ Deterministic, R4-clean lane enrichment:
 - **Concurrency:** one lane + one position + a setfile grid (magic-registry hygiene) — **not** 9 concurrent sub-magics. Diversification lives at the Q11 portfolio layer.
 
 ### Acceptance bar (the critical correction: DD-tail, not PF)
+> ⚠️ **SUPERSEDED by the REVISION section above** — the "Q05 ceiling ≤1.3×" is invented and the 2011–2019
+> OOS is data-infeasible. Use the matched-arm FTMO tail test in the REVISION instead.
 Because the prior-art kill is a **drawdown** kill (Balke XAU had *positive net* +$13.3k and still died on
 DD), routing falsification to Q04 net-of-cost (a *mean* test) is necessary but **insufficient**. Hard bar:
 
