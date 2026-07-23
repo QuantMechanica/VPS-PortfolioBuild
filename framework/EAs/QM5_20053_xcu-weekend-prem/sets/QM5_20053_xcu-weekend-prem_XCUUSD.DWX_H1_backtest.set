@@ -1,4 +1,4 @@
-﻿; ea_id: 20053
+; ea_id: 20053
 ; ea_slug: xcu-weekend-prem
 ; ea_version: v5.0
 ; set_version: s20260723-001
@@ -8,7 +8,7 @@
 ; magic_slot: 0
 ; risk_mode: RISK_FIXED
 ; portfolio_weight: 1
-; build_hash:   46b9c894abea3a8c478a64352eee49bb779263ed9c1eed6eeb1d4e605e66efa4
+; build_hash:   e36893adf18df3bfa6562d5de14cf4a5b9aa52be9c565617e1d96b57fe1f4d88
 ; author: Development
 ; date: 2026-07-23
 qm_ea_id=20053
