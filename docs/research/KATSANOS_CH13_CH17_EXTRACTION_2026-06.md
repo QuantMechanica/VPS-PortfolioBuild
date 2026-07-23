@@ -1,50 +1,99 @@
 # Katsanos Book Mining: Ch.13 DAX & Ch.17 Forex Systems
-**File Date:** 2026-07-23  
-**Status:** DRAFT CARD PROPOSALS  
-**Lead:** Gemini  
-**Task Reference:** Katsanos Intermarket Trading Strategies (Wiley 2008) Extraction  
+
+**Audit date:** 2026-07-23
+
+**Status:** REVIEW — source-audited research; no Strategy Cards created
+
+**Task:** `f96d0a4f-a0d0-4ece-8bab-47660ccb0df5`
+
+**Extraction:** agy; **source and universe audit:** Codex
+
+**Source:** Markos Katsanos, *Intermarket Trading Strategies* (Wiley, 2008), OWNER-declared licensed copy
+
+**Evidence cache:** `D:/QM/strategy_farm/source_cache/katsanos_intermarket_2008.txt`
+
+**Page map in the reviewed sections:** `PDFPAGE = printed book page + 18`
 
 ---
 
 ## 1. Overview & Operating Guidelines
 
-As part of the **QuantMechanica Edge Lab Program**, this document contains the exact rules, parameters, intermarket partners, and MetaStock code blocks extracted from Markos Katsanos' *Intermarket Trading Strategies* (Wiley 2008) for:
+This document inventories and audits the conventional mechanical systems in:
+
 - **Chapter 13:** Trading DAX Futures (book p. 201+)
 - **Chapter 17:** Forex Trading Using Intermarket Analysis (book p. 261+, Yen & Euro systems)
 
-All conventional (non-neural) systems described in these sections are analyzed. In accordance with the **Edge Lab Charter (2026-05-22)** and **Profitability Track (2026-05-21)**, neural network systems (such as those in Chapter 14 and Appendix B) are explicitly skipped, and any model proposed must fit our strict design box (news blackouts, risk controls, and mechanical execution).
+Neural systems in Chapter 14 and Appendix B are outside scope. Buy-and-hold columns are benchmarks, not recurring timing systems. The Australian-dollar section contains observations and correlation studies, but no rule-complete trading system.
 
-### Crucial Operating Rules Applied:
-- **No ML in EA:** These systems are strictly technical and intermarket-driven.
-- **FTMO Compliance:** Systems must run with news blackouts, swing/scalping horizons, no martingales, and tight drawdown bounds ($\le 5\%$ daily, $\le 10\%$ total).
-- **Available Symbols:** All `.DWX` FX pairs, `XAUUSD`, `XAGUSD`, `XTIUSD`, `XNGUSD`, `NDX`, `WS30`, `GDAXI` (DAX), `UK100` (FTSE), `SP500` (backtest-only).
-- **Unavailable Symbols:** Bond yields (`TNX`/yields), VIX, miners indices, CRB index, Nikkei. Systems requiring these must be flagged as `R3_FAIL` unless a robust, deterministic proxy is proposed.
+Universe checks below use `framework/registry/dwx_symbol_matrix.csv` and
+`framework/registry/dwx_symbol_history_ranges.csv` as of 2026-07-23. Relevant
+available series are `GDAXI.DWX`, `SP500.DWX`, `UK100.DWX`, `EURUSD.DWX`,
+`USDJPY.DWX`, the other `.DWX` FX pairs, and the existing commodity/equity
+index set. CAC/FCE, Euro Stoxx/FESX, TNX, CRB, DXY, Nikkei/6J futures, and the
+ten DAX component stocks are absent. A proposed substitute does not turn the
+source system into an R3 pass; it creates a different, unvalidated research
+variant.
 
----
-
-## 2. The Honest In-Sample Caveat
-
-> [!WARNING]
-> **In-Sample Optimization Bias (Katsanos, book p. 179 / PDFPAGE 197)**
-> The author explicitly admits a significant methodological shortcut in the system development:
-> *"Normally, when these type of systems are developed, two data sets should be used: one for optimization and the other for testing the optimized parameters on the new data. Since these tests were only carried out for comparison purposes, in order to simplify the process, optimization was carried out across the complete data set."*
->
-> Because optimization was conducted over the entire data set, all reported performance figures (including win rates, drawdowns, and profit factors) are heavily subject to **in-sample curve-fitting bias**. Real-world performance is highly likely to be significantly degraded. Any system marked `PASS` must undergo strict out-of-sample forward tests prior to pipeline promotion.
+Notation follows MetaStock. In particular, the source's bare `MACD()` is the
+platform 12-EMA minus 26-EMA definition; any explicitly printed 7- or 9-bar
+EMA is the separate signal comparison. [Glossary book pp. 375 and 381 /
+PDFPAGE 393 and 399]
 
 ---
 
-## 3. The Trade Frequency Problem
+## 2. Honest sample and optimization caveat
 
-> [!IMPORTANT]
-> **Extremely Low Trade Frequency**
-> Intermarket and divergence systems operating on daily charts generate very few trades. Katsanos notes that many systems trade only **2 to 4 times per year** (or 5 to 8 times per year for combined breakout models). 
-> For FTMO-style prop evaluation with tight evaluation windows (e.g., 30-day limits or active trading requirements), such low frequency will fail to meet profit targets in time. Trade frequency must be estimated honestly and must be factored into any portfolio generation logic.
+Book p. 179 / PDFPAGE 197 belongs to the Chapter 11 gold comparison and must
+not be applied as a blanket statement to Chapters 13 and 17.
+
+- Chapter 13 describes development/optimization on DAX index history and a
+  final 2004–2007 continuous-FDAX segment as out of sample. Partner selection,
+  long/short optimization, and rule-combination search still introduce
+  selection bias. The final sample is short and strongly bullish. The later
+  1999–2007 index comparison overlaps development-era history and is a regime
+  stress comparison, not untouched future evidence. See book pp. 201–213 /
+  PDFPAGE 219–231.
+- The Chapter 17 USD/JPY tests use 2001–2007 as the reported out-of-sample
+  segment after an earlier development segment, with the SPX clause adjusted
+  later. The EUR/USD comparison reserves 2003-01-22 through 2008-01-21 as
+  out of sample. These are better than full-sample optimization, but the
+  samples and trade counts remain small and the author calls for periodic
+  correlation re-evaluation. See book pp. 271–285 / PDFPAGE 289–303.
+
+All performance figures below are historical source results, not forecasts.
+Any proxy substitution invalidates direct comparison with those figures.
+
+---
+
+## 3. Trade-frequency screen
+
+The frequency field is derived from the source trade count divided by its test
+years; it is not a forward estimate. The current Q02 floor is at least five
+trades/year/symbol.
+
+- FDAX disparity: 22 trades / about 3.8 years = **5.8/year**.
+- DAX-index disparity comparison: 49 / about 8.8 = **5.5/year**.
+- Classic DAX MA/CI/stochastic: 51 / about 3.8 = **13.5/year**.
+- Enhanced DAX MA: 26 / about 3.8 = **6.9/year**.
+- Ten-stock portfolio: 116 / about 3.9 = **29.4/year in aggregate**, only
+  about **2.9/year/stock**.
+- Pure USD/JPY regression: 28 / 7 = **4.0/year**, below the floor.
+- Combined USD/JPY system: 39 / 7 = **5.6/year**.
+- Classic EUR/USD MA/CI/SAR: 62 / 5 = **12.4/year**.
+- Enhanced EUR/USD system: 38 / 5 = **7.6/year**.
+- The 6J inverse variant has no reported full test or trade count; its source
+  frequency is **unknown**.
 
 ---
 
 ## 4. Chapter 13: DAX Futures Systems
 
 ### System 13.1: DAX Daily Disparity System
+
+**Evidence:** book pp. 201–209 / PDFPAGE 219–227; results Table 13.1,
+book pp. 206–207 / PDFPAGE 224–225; Appendix A.4 book pp. 327–329 /
+PDFPAGE 345–347.
+
 * **Asset Class:** Equity Index Futures (DAX / FDAX)
 * **Intermarket Partner:** CAC 40 Futures (FCE)
 * **Periodicity:** Daily
@@ -59,7 +108,12 @@ All conventional (non-neural) systems described in these sections are analyzed. 
   * Linear Regression Slope ($LRS20$): 20 days (congestion filter)
   * Linear Regression Slope ($LRS40$): 40 days (trend reversal filter)
   * Time Exit: 80 trading days
-  * Volatility Stop: $1.6 \times ATR(8)$ of last 8 bars
+  * Protective Stop: none in the Chapter 13 FDAX system
+
+  The nearby `1.6 * ATR(8)` line belongs to the preceding Chapter 12 code,
+  before the Appendix A.4 heading. It is not part of this system. Only the
+  later ten-stock adaptation adds an ATR-based exit. [Appendix book
+  pp. 326–327 / PDFPAGE 344–345]
 
 * **Exact Entry/Exit Rules:**
   * **Long Entry (Buy next day at Open):**
@@ -78,6 +132,8 @@ All conventional (non-neural) systems described in these sections are analyzed. 
     * *OR Trend Reversal Cover:* $LLV(CI, 3) - CI < -40$.
     * *OR Trend Cover:* $MA(DAX, 10) > MA(DAX, 150)$ AND $MACD()$ crosses above $EMA(MACD(), 7)$.
     * *OR Congestion Cover:* $ABS(CI) < 30$ AND $LLV(Stoch(25,3), 4) < 30$ AND $Stoch(25,3) > 40$ AND $Stoch(5,3) > MA(Stoch(5,3), 4, S)$.
+  * **Time exit:** close either direction after 80 trading bars if no signal
+    exit fires. There is no printed FDAX protective-price or ATR stop.
 
 * **Appendix A Code Block:**
   ```metastock
@@ -132,17 +188,25 @@ All conventional (non-neural) systems described in these sections are analyzed. 
   ```
 
 * **Universe Mapping & Proxy:**
-  * Base: `GDAXI` (German DAX Index).
+  * Base: `GDAXI.DWX` (German DAX Index).
   * Intermarket Partner: CAC 40 Futures (`FCE` or `^FCHI`). *CAC 40 is not available.*
-  * **Proxy Proposal:** Use `UK100` (FTSE 100 Index) or `SP500` (S&P 500) as the intermarket partner. Both are highly correlated stock indices.
-* **R3 Verdict:** **PASS (With Proxy)**
-  * The logic does not require interest rates or unavailable data. The proxy index `UK100` or `SP500` is fully tradeable/backtestable.
-* **Proposed Card Slug:** `QM5_12543_katsanos-dax-disparity`
+  * **Proxy research variant:** `UK100.DWX` is the closest currently available
+    European-index candidate; `SP500.DWX` is a second candidate. Neither has
+    yet been validated as a deterministic replacement for CAC/FCE.
+* **R3 Verdict:** **R3_FAIL_AS_WRITTEN** (missing CAC/FCE).
+  A `UK100.DWX` substitution is `PROXY_RESEARCH_ONLY`, not a pass.
+* **Proposed Slugs:** source-faithful `katsanos-dax-disparity-d1`;
+  proxy experiment `katsanos-dax-disparity-uk100-proxy-d1`.
+  No EA ID is allocated and no card is created.
 * **Expected Trades/Year:** **5.8** (extremely low frequency).
 
 ---
 
 ### System 13.2: DAX MACrossoverSystem (Standard)
+
+**Evidence:** book pp. 209–213 / PDFPAGE 227–231; results Table 13.2,
+book p. 210 / PDFPAGE 228; Appendix A.4 book p. 329 / PDFPAGE 347.
+
 * **Asset Class:** Equity Index Futures (DAX)
 * **Intermarket Partner:** None (explores standard indicators with trend/congestion switching)
 * **Periodicity:** Daily
@@ -152,6 +216,8 @@ All conventional (non-neural) systems described in these sections are analyzed. 
   * Long-Term Trend Filter: 150 days
   * Congestion Index ($CI$): 39 days (40-period HHV/LLV)
   * Stochastic periods: 5 days (trigger), 40 days (congestion filter)
+  * Time Exit: 60 trading days
+  * Protective Stop: none printed
 
 * **Exact Entry/Exit Rules:**
   * **Long Entry (Buy next day at Open):**
@@ -164,6 +230,8 @@ All conventional (non-neural) systems described in these sections are analyzed. 
     * *OR Congestion Condition:* $ABS(CI) < 25$ AND $ROC(CI, 3, \%) < 0$ AND $Stoch(5,3) < MA(Stoch(5,3), 3, S)$ AND $HHV(Stoch(40,3), 2) > 70$.
   * **Short Exit (Buy to Cover next day at Open):**
     * $LLV(CI, 3) - CI < -40$ OR ($Cross(MACD(), EMA(MACD(), 7))$ AND $DAX > EMA(DAX, 7)$).
+  * **Time exit:** close either direction after 60 trading bars. No
+    protective-price or ATR stop is printed.
 
 * **Appendix A Code Block:**
   ```metastock
@@ -185,22 +253,30 @@ All conventional (non-neural) systems described in these sections are analyzed. 
   ```
 
 * **Universe Mapping & Proxy:**
-  * Base: `GDAXI` (DAX).
+  * Base: `GDAXI.DWX` (DAX).
   * Intermarket Partner: None.
-* **R3 Verdict:** **PASS**
+* **R3 Verdict:** **R3_PASS_AS_WRITTEN**
   * Straightforward moving average/stochastic system with no dependencies on external datasets.
-* **Proposed Card Slug:** `QM5_12544_katsanos-dax-macross`
+* **Proposed Slug:** `katsanos-dax-ma-ci-stoch-d1`.
+  No EA ID is allocated and no card is created.
 * **Expected Trades/Year:** **13.5** (higher frequency trend/congestion switcher).
 
 ---
 
 ### System 13.3: DAX Intermarket Enhanced MA Crossover System
+
+**Evidence:** book pp. 209–213 / PDFPAGE 227–231; results Table 13.2,
+book p. 210 / PDFPAGE 228; Appendix A.4 book pp. 329–331 /
+PDFPAGE 347–349.
+
 * **Asset Class:** Equity Index Futures (DAX)
 * **Intermarket Partner:** EuroStoxx 50 Futures (FESX)
 * **Periodicity:** Daily
 * **Parameters:** Same as System 13.2, plus:
   * Disparity Period ($D1$): 10 days
   * Divergence ($DIV2$): $DIS2 - DIS1$ (EuroStoxx Disparity - DAX Disparity)
+  * Time Exit: 60 trading days
+  * Protective Stop: none printed
 
 * **Exact Entry/Exit Rules:**
   * Same rules as System 13.2, but adding intermarket filters ($DIV2 > 0$ and EuroStoxx ROC filters) to eliminate false breakout/congestion entries.
@@ -213,6 +289,8 @@ All conventional (non-neural) systems described in these sections are analyzed. 
     * *Trending Condition:* $CI < -30$ AND $ROC(CI, 3, \%) < 0$ AND $DIV2 < 0$ AND $ROC(EuroStoxx, 2, \%) < -0.5\%$ AND $Stoch(5,3) < MA(Stoch(5,3), 3, S)$ AND $MA(DAX, 10) < MA(DAX, 20)$ AND $MA(DAX, 2) < MA(DAX, 150)$.
     * *OR Congestion Condition:* $ABS(CI) < 25$ AND $ROC(CI, 3, \%) < 0$ AND $Stoch(5,3) < MA(Stoch(5,3), 3, S)$ AND $HHV(Stoch(40,3), 2) > 70$ AND $ROC(EuroStoxx, 1, \%) < 0$ AND $DIV2 < 0$ AND $MA(EuroStoxx, 10) < MA(EuroStoxx, 20)$.
   * **Short Exit (Buy to Cover next day at Open):** Same as System 13.2.
+  * **Time exit:** the same 60-bar exit as System 13.2; no protective-price
+    or ATR stop is printed.
 
 * **Appendix A Code Block:**
   ```metastock
@@ -250,17 +328,25 @@ All conventional (non-neural) systems described in these sections are analyzed. 
   ```
 
 * **Universe Mapping & Proxy:**
-  * Base: `GDAXI` (DAX).
+  * Base: `GDAXI.DWX` (DAX).
   * Intermarket Partner: EuroStoxx 50 Futures (`STXEc1` or `FESX`). *EuroStoxx is not available.*
-  * **Proxy Proposal:** Use `UK100` or `SP500` as the intermarket partner.
-* **R3 Verdict:** **PASS (With Proxy)**
-  * The system is viable with `UK100` or `SP500` as a proxy intermarket partner.
-* **Proposed Card Slug:** `QM5_12545_katsanos-dax-macross-enhanced`
+  * **Proxy research variant:** `UK100.DWX`; `SP500.DWX` is a secondary
+    candidate. The source performance does not transfer to either substitute.
+* **R3 Verdict:** **R3_FAIL_AS_WRITTEN** (missing Euro Stoxx/FESX).
+  A proxy substitution remains `PROXY_RESEARCH_ONLY`.
+* **Proposed Slugs:** source-faithful `katsanos-dax-ma-intermarket-d1`;
+  proxy experiment `katsanos-dax-ma-intermarket-uk100-proxy-d1`.
+  No EA ID is allocated and no card is created.
 * **Expected Trades/Year:** **6.9** (infrequent).
 
 ---
 
 ### System 13.4: DAX Component Stock Disparity System
+
+**Evidence:** book pp. 202–203 and 209–211 / PDFPAGE 220–221 and 227–229;
+results Table 13.2, book p. 210 / PDFPAGE 228; Appendix A.4
+book pp. 331–332 / PDFPAGE 349–350.
+
 * **Asset Class:** Equities (DAX Component Stocks)
 * **Intermarket Partner:** CAC 40 Futures (FCE)
 * **Periodicity:** Daily
@@ -270,7 +356,10 @@ All conventional (non-neural) systems described in these sections are analyzed. 
 
 * **Exact Entry/Exit Rules:**
   * **Long Entry:** Same as System 13.1 Long conditions.
-  * **Long Exit:** Same as System 13.1 Sell conditions, OR if price hits Trailing Stop or 50-day Time Stop.
+  * **Long Exit:** Same as System 13.1 Sell conditions, OR
+    `Cross(STOP,L)`, OR the 50-bar time exit. In the printed TradeSim setup
+    every exit is delayed one bar and filled at the next open; the ATR
+    expression is therefore an exit trigger, not an intraday fill at `STOP`.
 
 * **Appendix A Code Block:**
   ```metastock
@@ -300,15 +389,24 @@ All conventional (non-neural) systems described in these sections are analyzed. 
   * Base: Individual German Stocks (E.ON, Siemens, BASF, SAP, etc.). *Not available in our trading universe.*
   * Intermarket Partner: CAC 40 Futures (FCE). *Not available.*
 * **R3 Verdict:** **R3_FAIL**
-  * We hold no individual German equity stock symbols (only index `GDAXI` is available). Proposing this system is mathematically unviable for our execution pipeline.
-* **Proposed Card Slug:** `QM5_12546_katsanos-dax-stocks-disparity`
-* **Expected Trades/Year:** **29.4** across a 10-stock portfolio (~2.9 trades/year per stock).
+  * We hold no individual German equity stock symbols (only index
+    `GDAXI.DWX` is available). The source portfolio cannot run in the current
+    universe.
+* **Proposed Slug:** none. This portfolio is not a current-universe card lead.
+* **Expected Trades/Year:** **29.4** across a 10-stock portfolio
+  (~2.9 trades/year per stock), hence `Q02_BELOW_FLOOR` on the required
+  per-symbol basis.
 
 ---
 
 ## 5. Chapter 17: Forex Systems (Yen & Euro)
 
 ### System 17.1: Yen (USD/YEN) Daily Intermarket Volatility System
+
+**Evidence:** book pp. 269–277 / PDFPAGE 287–295; results Tables 17.2–17.4,
+book pp. 274–276 / PDFPAGE 292–294; Appendix A.8 book pp. 348–350 /
+PDFPAGE 366–368.
+
 * **Asset Class:** Forex Spot (USD/JPY)
 * **Intermarket Partners:** S&P 500 Index (SPX), 10-year Treasury Yield (TNX), US Dollar Index (DXY)
 * **Periodicity:** Daily
@@ -322,22 +420,27 @@ All conventional (non-neural) systems described in these sections are analyzed. 
   * Trailing Stop: lower 10-day Bollinger Band (long), upper 10-day BB (short)
 
 * **Exact Entry/Exit Rules:**
-  * **Long Entry (Buy next day at Close):**
+  * **Long Entry:**
     * *Regression Divergence Trigger:* $HHV(IM, 4) > 70$ AND $IM < HHV(IM, 4) - 4$ AND $MA(USDJPY, 2) > MA(USDJPY, 10)$ AND ($DIS > 0$ OR $ROC(SPX, 1, \%) > 2$) AND $USDJPY > Open$.
     * *OR Disparity Divergence Trigger:* $HHV(DIS, 4) > 4$ AND $DIS < HHV(DIS, 4)$ AND $Stoch(5,3)$ crosses above 20.
     * *OR Volatility Breakout Trigger:* $LLV(SDADX, 3) < 0.11$ AND $USDJPY$ crosses above Bollinger Band Top (20, 1.8) AND ($DIS > 0$ OR $DXY > MA(DXY, 20)$).
-  * **Long Exit (Sell next day at Close):**
+  * **Long Exit:**
     * *Volatility Stop:* $USDJPY$ crosses below Bollinger Band Bottom (10, 2.5).
     * *OR Regression Divergence Exit:* $LLV(IM, 4) < 30$ AND $IM > LLV(IM, 4)$ AND $MACD() < EMA(MACD(), 7)$.
     * *OR Disparity Exit:* $LLV(DIS, 4) < -4$ AND $DIS > LLV(DIS, 4)$ AND $Stoch(5,3)$ crosses below 80.
-  * **Short Entry (Sell Short next day at Close):**
+  * **Short Entry:**
     * *Regression Divergence Trigger:* $LLV(IM, 4) < 30$ AND $IM > LLV(IM, 4) + 4$ AND $MA(USDJPY, 2) < MA(USDJPY, 10)$ AND ($DIS < 0$ OR $ROC(SPX, 1, \%) < -2$) AND $USDJPY < Open$.
     * *OR Disparity Divergence Trigger:* $LLV(DIS, 4) < -4$ AND $DIS > LLV(DIS, 4)$ AND $Stoch(5,3)$ crosses below 80.
     * *OR Volatility Breakout Trigger:* $LLV(SDADX, 3) < 0.11$ AND $USDJPY$ crosses below Bollinger Band Bottom (20, 1.8) AND $DIS < 0$.
-  * **Short Exit (Buy to Cover next day at Close):**
+  * **Short Exit:**
     * *Volatility Stop:* $USDJPY$ crosses above Bollinger Band Top (10, 2.5).
     * *OR Regression Divergence Cover:* $HHV(IM, 4) > 70$ AND $IM < HHV(IM, 4)$ AND $MACD() > EMA(MACD(), 9)$.
     * *OR Disparity Cover:* $HHV(DIS, 4) > 4$ AND $DIS < HHV(DIS, 4)$ AND (($USDJPY$ crosses above $MA(USDJPY, 10)$ AND $DXY > MA(DXY, 20)$) OR $Stoch(5,3)$ crosses above 20).
+
+  **Execution conflict:** Chapter 17 says signals were executed the same day at
+  the close (book p. 271 / PDFPAGE 289), while Appendix A.8 instructs the
+  tester to use the open (book p. 348 / PDFPAGE 366). The source does not
+  specify a next-bar delay. G0 must freeze one convention before reproduction.
 
 * **Appendix A Code Block:**
   ```metastock
@@ -376,7 +479,7 @@ All conventional (non-neural) systems described in these sections are analyzed. 
   MA:=MOV(C,4,E)-MOV(C,4,E)*1.2/100;
   CROSS(BBandBOT(C,10,S,2.5),C)
   OR (LLV(IM,4)<30 and IM >LLV(IM,4) AND MACD()<MOV(MACD(),7,E))
-  OR (LLV(DIS,4)<-4 and DIS >LLV(DIS,4) AND CROSS(80,STOCH(5,3))
+  OR (LLV(DIS,4)<-4 and DIS >LLV(DIS,4) AND CROSS(80,STOCH(5,3)))
 
   { Sell Short }
   SEC1:=Security("C:\Metastock Data\REUTERSINDEX\.SPX",C);
@@ -392,7 +495,7 @@ All conventional (non-neural) systems described in these sections are analyzed. 
   DIS3:=(SEC3-Mov(SEC3,10,E))/Mov(SEC3,10,E)*100;
   DIS:=MOV((DIS3-DISY),3,E);
   (LLV(IM,4)<30 and IM >LLV(IM,4)+4 AND MOV(C,2,S)<MOV(C,10,S) AND (DIS<0 OR ROC(SEC1,1,%)<-2) AND C<O)
-  OR (LLV(DIS,4)<-4 and DIS >LLV(DIS,4) AND CROSS(80,STOCH(5,3))
+  OR (LLV(DIS,4)<-4 and DIS >LLV(DIS,4) AND CROSS(80,STOCH(5,3)))
   OR (LLV(SDADX,3)<.11 AND CROSS(BBandBOT(C,20,S,1.8),C) AND DIS<0)
 
   { Buy to Cover }
@@ -415,27 +518,41 @@ All conventional (non-neural) systems described in these sections are analyzed. 
   ```
 
 * **Universe Mapping & Proxy:**
-  * Base: `USDJPY` (.DWX FX Pair)
+  * Base: `USDJPY.DWX`
   * Intermarket Partners:
-    * `SPX`: Map to `SP500`. (Available).
-    * `DXY`: *Not available directly.* Propose a deterministic log-basket proxy using EURUSD, USDJPY, GBPUSD, USDCAD, USDCHF (similar to QM5_12542). (Available).
+    * `SPX`: map to `SP500.DWX` (available for backtesting).
+    * `DXY`: no direct series. The existing weighted FX log-basket is
+      constructible but remains `PROXY_RESEARCH_ONLY`; common component history
+      is shorter than the individual EURUSD/USDJPY ranges.
     * `TNX`: US 10-year Treasury Yield. *Not available.*
 * **R3 Verdict:** **R3_FAIL**
   * This system relies directly on US 10-year Treasury yields (`TNX`) to compute the Yen-TNX disparity ($DIS$). There is no deterministic, tradeable proxy for US government bond yields in our allowed symbol set. Therefore, this system is flagged as R3_FAIL.
-* **Proposed Card Slug:** `QM5_12547_katsanos-yen-volatility`
+* **Proposed Slug:** `katsanos-usdjpy-regdiv-volbreak-d1`.
+  No EA ID is allocated and no card is created.
 * **Expected Trades/Year:** **5.6** (low frequency).
 
 ---
 
 ### System 17.2: Yen Futures (GLOBEX:6J) Daily Intermarket Volatility System
+
+**Evidence:** book pp. 268–274 / PDFPAGE 286–292; Appendix A.8
+book pp. 350–352 / PDFPAGE 368–370.
+
 * **Asset Class:** Forex Futures (JPY/USD)
 * **Intermarket Partners:** SPX, TNX, DXY
 * **Periodicity:** Daily
-* **Parameters:** Same as System 17.1 (inverse correlation adjustment: $DIS = EMA(-DIS3 - DISY, 3)$)
+* **Parameters:** Same core 200-bar regression/IMO and 15-bar volatility
+  definitions as System 17.1, with Appendix-specific inverse rules:
+  `DIS = EMA(-DIS3 - DISY,3)`, disparity thresholds ±2, 10-bar stochastic
+  branches with three-bar alerts, and altered MACD/DXY/SPX gates.
 
 * **Exact Entry/Exit Rules:**
-  * Direct inverse of System 17.1. Long signals trigger when USD/JPY falls (i.e. JPY appreciates), and short signals trigger when USD/JPY rises.
-  * Uses minus sign in the disparity formula to account for negative correlation with US bond yields (TNX).
+  * Structurally inverted from System 17.1 for the YEN/USD quotation, but not a
+    literal Boolean inverse: Appendix A.8 changes the disparity thresholds to
+    ±2, uses 10-bar stochastic branches with three-bar alerts, and changes
+    several DXY/SPX signs and alternatives.
+  * Uses a minus sign in the disparity formula to account for the inverse
+    relationship with TNX.
 
 * **Appendix A Code Block:**
   ```metastock
@@ -511,20 +628,34 @@ All conventional (non-neural) systems described in these sections are analyzed. 
   ```
 
 * **Universe Mapping & Proxy:**
-  * Same mapping as System 17.1 (requires `TNX`).
+  * The source trades full-size GLOBEX 6J, which is absent. `USDJPY.DWX`
+    provides an inverse spot orientation but does not remove the TNX dependency.
 * **R3 Verdict:** **R3_FAIL**
-  * Direct dependency on US 10-year Treasury yields (`TNX`) which are not available in our tradeable universe.
-* **Proposed Card Slug:** `QM5_12548_katsanos-jpyfut-volatility`
-* **Expected Trades/Year:** **5.6** (low frequency).
+  * Missing 6J and TNX; a spot inversion would be a materially different test.
+* **Proposed Slug:** none; the 6J version duplicates the combined yen concept
+  in inverse quotation.
+* **Expected Trades/Year:** **unknown**. The author reports only limited
+  testing and publishes no complete 6J result or trade count (book pp. 273–274 /
+  PDFPAGE 291–292).
 
 ---
 
 ### System 17.3: Yen (USD/YEN) Daily Intermarket Regression System (Pure Regression)
+
+**Evidence:** book pp. 271 and 274–276 / PDFPAGE 289 and 292–294;
+Appendix A.8 book pp. 352–355 / PDFPAGE 370–373.
+
 * **Asset Class:** Forex Spot (USD/JPY)
 * **Intermarket Partners:** SPX, TNX, DXY
 * **Periodicity:** Daily
-* **Parameters:** Same as System 17.1, but:
-  * Disparity Period ($OPT1$): 10 days
+* **Parameters:** shares System 17.1's 15-bar ROC, 200-bar regression/IMO, and
+  3-bar divergence smoothing, but uses different signal parameters: IMO
+  upper/retreat `65/10`, MA state checks `2/15` on both prior and current bars,
+  and 20-bar stochastic exits.
+  * Disparity Period (`OPT1`): **undefined in Appendix A.8**. Table 17.2
+    reports 10 days, so `OPT1=10` is an inference, not self-contained source
+    code (book p. 276 / PDFPAGE 294; Appendix pp. 352–355 /
+    PDFPAGE 370–373).
   * No volatility filter ($SDADX$) or Bollinger Band breakouts are used for entry.
 
 * **Exact Entry/Exit Rules:**
@@ -596,15 +727,89 @@ All conventional (non-neural) systems described in these sections are analyzed. 
   (HHV(IM,4)>65 AND IM<HHV(IM,4) AND MACD()>MOV(MACD(),9,E)) OR (ALERT(CROSS(STOCH(20,3),20),3) AND STOCH(20,3)>22 AND STOCH(20,3)>mov(STOCH(20,3),4,S) and HHV(DIS,2)>0 AND DIS<REF(DIS,-1))
   ```
 
-* **Universe Mapping & Proxy:** Same as System 17.1 (requires `TNX`).
+* **Execution:** the same Chapter-close versus Appendix-open conflict applies.
+* **Universe Mapping & Proxy:** `USDJPY.DWX` exists; `SP500.DWX` exists; a
+  deterministic DXY log-basket can be calculated from available FX pairs, but
+  TNX is absent.
 * **R3 Verdict:** **R3_FAIL**
   * Direct dependency on US 10-year Treasury yields (`TNX`) which are not available in our tradeable universe.
-* **Proposed Card Slug:** `QM5_12549_katsanos-yen-regression`
-* **Expected Trades/Year:** **4.0** (low frequency).
+* **Proposed Slug:** `katsanos-usdjpy-regression-d1`.
+  No EA ID is allocated and no card is created.
+* **Expected Trades/Year:** **4.0**, below the current Q02 floor even before
+  the missing-partner failure.
 
 ---
 
-### System 17.4: Euro (EURO/USD) Daily MA-Intermarket System
+### System 17.4: EUR/USD Conventional MA/CI/SAR System
+
+**Evidence:** book pp. 279–285 / PDFPAGE 297–303; results Table 17.6,
+book pp. 284–285 / PDFPAGE 302–303; shared Appendix A.8 implementation,
+book p. 355 / PDFPAGE 373.
+
+This is the separately reported pre-intermarket comparator in Table 17.6, not
+buy-and-hold. It uses only EUR/USD daily OHLC and therefore belongs in the
+conventional-system inventory. The Appendix does not print it as a separate
+four-formula block; it is the Appendix euro implementation with the CRB/TNX
+clauses removed. [book pp. 279–285 / PDFPAGE 297–303; Appendix p. 355 /
+PDFPAGE 373]
+
+* **Parameters:**
+  * `MA = SMA(C,10)`
+  * `FILT = Stdev(Log(MA / Ref(MA,-1)),20)`
+  * `CIraw = ROC(C,39,%) / (((HHV(H,40)-LLV(L,40)) /
+    (LLV(L,40)+0.01))+0.000001)`; `CI = EMA(CIraw,7)`
+  * Parabolic SAR: step `0.04`, maximum `0.10`
+* **Long entry:** `MA > LLV(MA,3) + 0.7*FILT`, `C > SAR`,
+  `ABS(CI) > 40`, and `CI > LLV(CI,3) + 3`.
+* **Long exit:** `C < SAR(0.04,0.10)`.
+* **Short entry:** `MA < HHV(MA,3) - 0.7*FILT`, `C < SAR`,
+  `ABS(CI) > 40`, and `CI < HHV(CI,3) - 3`.
+* **Short exit:** `C > SAR(0.04,0.10)`.
+
+* **Appendix-derived code block:**
+
+  ```metastock
+  PC:=Log(Mov(C,10,S)/Ref(Mov(C,10,S),-1));
+  FILT:=Stdev(PC,20);
+  CI:=ROC(C,39,%)/((HHV(H,40)-LLV(L,40))/(LLV(L,40)+.01)+.000001);
+  CI:=Mov(CI,7,E);
+
+  { Long }
+  Mov(C,10,S)>LLV(Mov(C,10,S),3)+.7*FILT
+  AND C>SAR(.04,.1) AND ABS(CI)>40 AND CI>LLV(CI,3)+3
+  { Sell } C<SAR(.04,.1)
+
+  { Sell Short }
+  Mov(C,10,S)<HHV(Mov(C,10,S),3)-.7*FILT
+  AND C<SAR(.04,.1) AND ABS(CI)>40 AND CI<HHV(CI,3)-3
+  { Buy to Cover } C>SAR(.04,.1)
+  ```
+
+* **Material source conflict:** equations 17.2 and 17.5 print
+  `ABS(CI) < 40`, while the executable Appendix block uses `ABS(CI) > 40`.
+  The prose about filtering trendless periods supports `>40`, but the source
+  never explicitly corrects the equations. Both published interpretations
+  must be retained until G0 freezes one. [book pp. 279, 281 /
+  PDFPAGE 297, 299; Appendix p. 355 / PDFPAGE 373]
+* **Execution:** same-day close as stated for the euro test in Chapter 17.
+  Appendix p. 355 specifies units and commission but does not override the
+  execution price.
+* **Universe Mapping:** base `EURUSD.DWX`; no external partner.
+* **R3 Verdict:** **R3_PASS_AS_WRITTEN** on symbol availability, but
+  **SPEC_UNRESOLVED** because of the CI inequality.
+* **Proposed Slug:** `katsanos-eurusd-ma-ci-sar-d1`.
+  No EA ID is allocated and no card is created.
+* **Expected Trades/Year:** **12.4** (62 trades in the five-year reported
+  out-of-sample segment).
+
+---
+
+### System 17.5: Euro (EUR/USD) Daily MA-Intermarket System
+
+**Evidence:** book pp. 279–285 / PDFPAGE 297–303; results Table 17.6,
+book pp. 284–285 / PDFPAGE 302–303; Appendix A.8 book p. 355 /
+PDFPAGE 373.
+
 * **Asset Class:** Forex Spot (EUR/USD)
 * **Intermarket Partners:** CRB Index (Commodities), 10-year Treasury Yield (TNX)
 * **Periodicity:** Daily
@@ -617,13 +822,13 @@ All conventional (non-neural) systems described in these sections are analyzed. 
   * Exit Stop: Parabolic SAR ($AF = 0.04$, Max $= 0.10$)
 
 * **Exact Entry/Exit Rules:**
-  * **Long Entry (Buy next day at Close):**
+  * **Long Entry:**
     * $MA(EURUSD, 10) > LLV(MA(EURUSD, 10), 3) + 0.7 \times FILT$ AND $EURUSD > SAR(0.04, 0.1)$ AND $CRB > MA(CRB, 35)$ AND $TNX < MA(TNX, 5)$ AND $ABS(CI) > 40$ AND $CI > LLV(CI, 3) + 3$.
-  * **Long Exit (Sell next day at Close):**
+  * **Long Exit:**
     * $EURUSD < SAR(0.04, 0.1)$.
-  * **Short Entry (Sell Short next day at Close):**
+  * **Short Entry:**
     * $MA(EURUSD, 10) < HHV(MA(EURUSD, 10), 3) - 0.7 \times FILT$ AND $EURUSD < SAR(0.04, 0.1)$ AND $CRB < MA(CRB, 35)$ AND $TNX > MA(TNX, 5)$ AND $ABS(CI) > 40$ AND $CI < HHV(CI, 3) - 3$.
-  * **Short Exit (Buy to Cover next day at Close):**
+  * **Short Exit:**
     * $EURUSD > SAR(0.04, 0.1)$.
 
 * **Appendix A Code Block:**
@@ -654,35 +859,95 @@ All conventional (non-neural) systems described in these sections are analyzed. 
   ```
 
 * **Universe Mapping & Proxy:**
-  * Base: `EURUSD` (.DWX FX Pair)
+  * Base: `EURUSD.DWX`
   * Intermarket Partners:
     * `CRB`: Commodity Research Bureau Index. *Not available.*
     * `TNX`: US 10-year Treasury Yield. *Not available.*
 * **R3 Verdict:** **R3_FAIL**
   * Direct dependency on two unavailable datasets (`CRB` and `TNX`). There are no deterministic, tradeable proxies in our universe that can adequately replace these macro variables.
-* **Proposed Card Slug:** `QM5_12550_katsanos-euro-ma-intermarket`
+* **Additional specification conflict:** equations 17.2/17.5 use
+  `ABS(CI)<40`; Appendix uses `ABS(CI)>40`.
+* **Proposed Slug:** `katsanos-eurusd-ma-crb-tnx-d1`.
+  No EA ID is allocated and no card is created.
 * **Expected Trades/Year:** **7.6** (infrequent).
 
 ---
 
-## 6. Summary Matrix of Card Proposals
+## 6. Audited proposal matrix
 
-| System Name | Base Symbol | Intermarket Partner(s) | Proxy Used | Expected Trades/Year | R3 Verdict | Proposed Card Slug |
-|---|---|---|---|---|---|---|
-| **DAX Disparity** | `GDAXI` | CAC 40 Futures | `UK100` | 5.8 | **PASS** | `QM5_12543_katsanos-dax-disparity` |
-| **DAX MACross** | `GDAXI` | None | None | 13.5 | **PASS** | `QM5_12544_katsanos-dax-macross` |
-| **DAX MACross Enhanced** | `GDAXI` | EuroStoxx 50 Futures | `UK100` | 6.9 | **PASS** | `QM5_12545_katsanos-dax-macross-enhanced` |
-| **DAX Component Stocks** | 10 Stocks | CAC 40 Futures | None | 29.4 (total) | **FAIL** (No Stocks) | `QM5_12546_katsanos-dax-stocks-disparity` |
-| **Yen Volatility** | `USDJPY` | SPX, TNX, DXY | DXY Basket | 5.6 | **FAIL** (No TNX) | `QM5_12547_katsanos-yen-volatility` |
-| **JPY Futures Volatility** | JPY Futures | SPX, TNX, DXY | DXY Basket | 5.6 | **FAIL** (No TNX) | `QM5_12548_katsanos-jpyfut-volatility` |
-| **Yen Regression** | `USDJPY` | SPX, TNX, DXY | DXY Basket | 4.0 | **FAIL** (No TNX) | `QM5_12549_katsanos-yen-regression` |
-| **Euro MA-Intermarket** | `EURUSD` | CRB, TNX | None | 7.6 | **FAIL** (No TNX/CRB) | `QM5_12550_katsanos-euro-ma-intermarket` |
+`Expected trades/year` below is the historical source rate. It is not a
+promise and does not survive a proxy substitution unchanged.
 
----
+| Mechanical configuration | Current base | Missing source dependency | Historical rate | Audited R3/Q02 disposition | Research slug only |
+|---|---|---|---:|---|---|
+| FDAX disparity/divergence | `GDAXI.DWX` | CAC/FCE | 5.8 | `R3_FAIL_AS_WRITTEN`; UK100 substitution is proxy research | `katsanos-dax-disparity-d1` |
+| Classic DAX MA/CI/stochastic | `GDAXI.DWX` | none | 13.5 | `R3_PASS_AS_WRITTEN`; source conflicts still require G0 normalization | `katsanos-dax-ma-ci-stoch-d1` |
+| Enhanced DAX MA | `GDAXI.DWX` | Euro Stoxx/FESX | 6.9 | `R3_FAIL_AS_WRITTEN`; UK100 substitution is proxy research | `katsanos-dax-ma-intermarket-d1` |
+| Ten-stock DAX portfolio | none | ten stocks and CAC/FCE | 29.4 total; 2.9/stock | `R3_FAIL` and `Q02_BELOW_FLOOR` per stock; no card lead | — |
+| USD/JPY regression + disparity + volatility | `USDJPY.DWX` | TNX; DXY direct | 5.6 | `R3_FAIL`; DXY basket does not solve TNX | `katsanos-usdjpy-regdiv-volbreak-d1` |
+| Inverse 6J variant | none | 6J, TNX; DXY direct | unknown | `R3_FAIL`; incomplete source test; no separate lead | — |
+| Pure USD/JPY regression | `USDJPY.DWX` | TNX; DXY direct | 4.0 | `R3_FAIL` and `Q02_BELOW_FLOOR`; `OPT1` unresolved | `katsanos-usdjpy-regression-d1` |
+| Classic EUR/USD MA/CI/SAR | `EURUSD.DWX` | none | 12.4 | `R3_PASS_AS_WRITTEN`; `SPEC_UNRESOLVED` (`ABS(CI)`) | `katsanos-eurusd-ma-ci-sar-d1` |
+| Enhanced EUR/USD MA | `EURUSD.DWX` | CRB and TNX | 7.6 | `R3_FAIL_AS_WRITTEN` | `katsanos-eurusd-ma-crb-tnx-d1` |
 
-## 7. Next Steps for Codex Review
+No allocated `QM5_*` identifier is proposed here. The identifiers
+`QM5_12543` through `QM5_12550`, used in the initial extraction draft, are
+already allocated to unrelated EAs and have therefore been removed. This task
+does not create Strategy Cards.
 
-1. **Card Screen:** Propose only the three passing DAX-based cards (`QM5_12543`, `QM5_12544`, `QM5_12545`) for backtesting.
-2. **Proxy Validation:** Ensure that using `UK100` instead of CAC 40 or EuroStoxx 50 does not introduce regime-dependent slippage or mismatch.
-3. **Out-of-Sample Verification:** Backtest the passing cards strictly from 2008 to 2026. This out-of-sample period is required to address the in-sample optimization bias (book p. 179).
-4. **Frequency Mitigation:** Because these systems trade less than 15 times per year, they cannot be deployed as standalone EAs on FTMO targets. They must be packaged as a diversified portfolio engine.
+## 7. Material source discrepancies for G0
+
+The Appendix is the closest thing to executable evidence, but it conflicts
+with the prose and tables in several places. A downstream specification must
+record an OWNER/G0 choice; it must not silently pick a convenient variant.
+
+| System | Conflict |
+|---|---|
+| FDAX disparity | Narrative divergence threshold `>2`; Appendix and Table 13.1 use `>0` (book pp. 203, 207 / PDFPAGE 221, 225; Appendix p. 327 / PDFPAGE 345). |
+| FDAX disparity | Narrative describes a roughly 35-day CI; Appendix computes ROC39 over a 40-bar range (book pp. 203–204 / PDFPAGE 221–222; Appendix pp. 327–328 / PDFPAGE 345–346). |
+| FDAX disparity | Short-entry prose says 20-bar LRS; Appendix uses 40 bars (book p. 205 / PDFPAGE 223; Appendix p. 328 / PDFPAGE 346). |
+| FDAX disparity | Cover prose says MA10 below MA150; Appendix requires MA10 above MA150 (book p. 205 / PDFPAGE 223; Appendix p. 329 / PDFPAGE 347). |
+| FDAX disparity | No ATR stop exists in the FDAX system. The `1.6*ATR(8)` line belongs to Chapter 12. The stock adaptation alone has `HHV3(C)-2.2*ATR(10)`. |
+| Classic/enhanced DAX MA | Narrative summarizes trend/congestion and stochastic “crosses”; Appendix uses directional CI limits (`>30`/`<-30`), separate congestion limits 20/25, three-bar stochastic averages, and mostly state comparisons (book pp. 211–212 / PDFPAGE 229–230; Appendix pp. 329–331 / PDFPAGE 347–349). |
+| USD/JPY systems | Chapter says same-day close; Appendix tester says open (book p. 271 / PDFPAGE 289; Appendix p. 348 / PDFPAGE 366). |
+| Pure USD/JPY | `OPT1` is undefined; Table 17.2 suggests 10. The Appendix also uses IMO upper 65/retreat 10 while Table 17.2 reports upper 70 (book p. 276 / PDFPAGE 294; Appendix pp. 352–355 / PDFPAGE 370–373). |
+| EUR/USD systems | Equations 17.2/17.5 print `ABS(CI)<40`; Appendix code uses `ABS(CI)>40` (book pp. 279, 281 / PDFPAGE 297, 299; Appendix p. 355 / PDFPAGE 373). |
+
+Other implementation details that the source does not fully freeze include
+same-bar conflict priority, pyramiding, holiday alignment between markets, and
+how a daily close-based SAR/Bollinger condition is filled.
+
+## 8. Evidence, available history, and review decision
+
+Source integrity:
+
+- PDF SHA-256:
+  `B48AA0B83A783FDF6676199F399D5AFEEE48D259EF4A5F011C5131BC32E81D99`
+- Text-cache SHA-256:
+  `C9DB82117A0AB4D9E6D015DF0BC370B2521FBF0C73C5657FA44D76E4A01A778D`
+- Provenance:
+  `D:/QM/strategy_farm/source_cache/katsanos_intermarket_2008.provenance.json`
+- Chapter 13 evidence: book pp. 201–213 / PDFPAGE 219–231; Appendix A.4
+  book pp. 327–332 / PDFPAGE 345–350.
+- Chapter 17 evidence: book pp. 261–292 / PDFPAGE 279–310; Appendix A.8
+  book pp. 348–355 / PDFPAGE 366–373.
+
+The local D1 history does not support the initial draft's proposed
+“2008–2026” run. Registry coverage is currently:
+
+| Symbol | D1 history |
+|---|---|
+| `EURUSD.DWX` | 2017–2026 |
+| `USDJPY.DWX` | 2017–2026 |
+| `GDAXI.DWX` | 2018–2026 |
+| `SP500.DWX` | 2018–2026 |
+| `UK100.DWX` | 2018–2025 |
+
+**Review decision:** retain two source-faithful current-universe leads for a
+future G0 decision: the classic DAX MA/CI/stochastic system and the classic
+EUR/USD MA/CI/SAR system. The latter cannot be carded until the CI inequality
+is frozen. The DAX lead also needs explicit resolution of source discrepancies
+and a V5 risk-design decision because the source has only signal/time exits and
+no disaster stop. All intermarket variants remain failed as written or
+proxy-research-only. No build, pipeline phase, or live authorization follows
+from this extraction.
