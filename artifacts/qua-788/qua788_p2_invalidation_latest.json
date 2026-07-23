@@ -1,0 +1,22 @@
+{
+  "issue": "QUA-788",
+  "tick_utc": "2026-05-08T06:28:40.0088881Z",
+  "ea_id": "QM5_1009",
+  "phase_target": "P2",
+  "action": "p2_baseline_dry_run",
+  "command": "python framework\\scripts\\p2_baseline.py --ea QM5_1009 --dry-run",
+  "exit_code": 1,
+  "verdict": "INVALID",
+  "dl054_reason": "SETUP_DATA_MISMATCH",
+  "invalidation_reason": "EA directory alias mismatch: runner expects framework/EAs/QM5_1009_* but only QM5_SRC04_S03_lien_fade_double_zeros exists",
+  "evidence": {
+    "magic_registry_rows_for_1009": 36,
+    "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_SRC04_S03_lien_fade_double_zeros\\QM5_SRC04_S03_lien_fade_double_zeros.ex5",
+    "runner_error": "[FATAL] EA dir not found: C:\\QM\\repo\\framework\\EAs/QM5_1009_*",
+    "qm5_1009_dir_exists": false,
+    "ex5_exists": true
+  },
+  "unblock_owner": "CTO",
+  "unblock_action": "Provide canonical EA folder/id mapping so QM5_1009 resolves to a launchable EA dir (or update dispatch target id to match compiled artifact), then rerun p2_baseline dry-run + live run",
+  "next_action": "Blocked until mapping corrected; rerun same command immediately after fix"
+}

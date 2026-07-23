@@ -1,0 +1,47 @@
+{
+  "timestamp_utc": "2026-04-28T10:38:17.7653150Z",
+  "run_tag": "20260428_103747",
+  "result": "FAIL",
+  "reason_classes": [
+    "REPORT_MISSING",
+    "INCOMPLETE_RUNS"
+  ],
+  "ea_id": 1001,
+  "ea_label": "QM5_1001",
+  "expert": "QM/QM5_1001_framework_smoke",
+  "symbol": "GOLD.DWX",
+  "year": 2022,
+  "terminal": "T1",
+  "model": 4,
+  "period": "M15",
+  "min_trades_required": 1,
+  "deterministic": false,
+  "oninit_failure_detected": false,
+  "model4_log_marker_detected": false,
+  "report_dir": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\GOLD.DWX\\c103e0b7a13cae27b99e851ef1b9b0c6bfa344569ec48ee65bc95f68059419de\\QM5_1001\\20260428_103747",
+  "report_export_mode": "relative_report_plus_postcopy",
+  "runs": [
+    {
+      "run": "run_01",
+      "status": "FAIL",
+      "failure": "REPORT_MISSING",
+      "error": "Strategy tester did not produce report file at relative export path.",
+      "exit_code": -1000012358,
+      "report_source_path": "D:\\QM\\mt5\\T1\\QM5_1001_GOLD_DWX_20260428_103747_run_01.htm",
+      "report_canonical_path": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\GOLD.DWX\\c103e0b7a13cae27b99e851ef1b9b0c6bfa344569ec48ee65bc95f68059419de\\QM5_1001\\20260428_103747\\raw\\run_01\\report.htm",
+      "report_size_bytes": 0,
+      "tester_log_path": null
+    },
+    {
+      "run": "run_02",
+      "status": "FAIL",
+      "failure": "REPORT_MISSING",
+      "error": "Strategy tester did not produce report file at relative export path.",
+      "exit_code": 0,
+      "report_source_path": "D:\\QM\\mt5\\T1\\QM5_1001_GOLD_DWX_20260428_103747_run_02.htm",
+      "report_canonical_path": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\GOLD.DWX\\c103e0b7a13cae27b99e851ef1b9b0c6bfa344569ec48ee65bc95f68059419de\\QM5_1001\\20260428_103747\\raw\\run_02\\report.htm",
+      "report_size_bytes": 0,
+      "tester_log_path": null
+    }
+  ]
+}

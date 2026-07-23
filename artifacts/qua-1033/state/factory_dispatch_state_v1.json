@@ -1,0 +1,86 @@
+{
+  "dedup": {
+    "QM5_1033|v5.0.0-qua1033|EURUSD.DWX|P3|qua1033-mini-001": {
+      "completed_ts": 1778310670,
+      "status": "complete",
+      "symbol": "EURUSD.DWX",
+      "terminal": "T1",
+      "ts": 1778310669
+    },
+    "QM5_1033|v5.0.0-qua1033|GBPUSD.DWX|P3|qua1033-mini-002": {
+      "completed_ts": 1778310670,
+      "status": "complete",
+      "symbol": "GBPUSD.DWX",
+      "terminal": "T3",
+      "ts": 1778310669
+    },
+    "QM5_1033|v5.0.0-qua1033|USDJPY.DWX|P3|qua1033-mini-003": {
+      "completed_ts": 1778310670,
+      "status": "complete",
+      "symbol": "USDJPY.DWX",
+      "terminal": "T2",
+      "ts": 1778310669
+    },
+    "QM5_1033|v5.0.0-qua1033|XAUUSD.DWX|P3|qua1033-mini-004": {
+      "completed_ts": 1778310670,
+      "status": "complete",
+      "symbol": "XAUUSD.DWX",
+      "terminal": "T4",
+      "ts": 1778310669
+    },
+    "QM5_1033|v5.0.0-qua1033|XTIUSD.DWX|P3|qua1033-mini-005": {
+      "completed_ts": 1778310670,
+      "status": "complete",
+      "symbol": "XTIUSD.DWX",
+      "terminal": "T5",
+      "ts": 1778310669
+    }
+  },
+  "last_rr_index": 4,
+  "recent_runs": {
+    "T1": [
+      1778310669
+    ],
+    "T2": [
+      1778310669
+    ],
+    "T3": [
+      1778310669
+    ],
+    "T4": [
+      1778310669
+    ],
+    "T5": [
+      1778310669
+    ]
+  },
+  "running": {
+    "T1": 0,
+    "T2": 0,
+    "T3": 0,
+    "T4": 0,
+    "T5": 0
+  },
+  "symbol_affinity": {
+    "EURUSD.DWX": {
+      "terminal": "T1",
+      "ts": 1778310669
+    },
+    "GBPUSD.DWX": {
+      "terminal": "T3",
+      "ts": 1778310669
+    },
+    "USDJPY.DWX": {
+      "terminal": "T2",
+      "ts": 1778310669
+    },
+    "XAUUSD.DWX": {
+      "terminal": "T4",
+      "ts": 1778310669
+    },
+    "XTIUSD.DWX": {
+      "terminal": "T5",
+      "ts": 1778310669
+    }
+  }
+}

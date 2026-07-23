@@ -1,0 +1,81 @@
+{
+  "ts_utc": "2026-05-09T07:12:43Z",
+  "issue": "QUA-1033",
+  "state_path": "D:\\QM\\Reports\\pipeline\\dispatch_state.json",
+  "during_running": {
+    "T1": 1,
+    "T2": 1,
+    "T3": 2,
+    "T4": 1,
+    "T5": 2
+  },
+  "during_active_terminals": [
+    "T1",
+    "T2",
+    "T3",
+    "T4",
+    "T5"
+  ],
+  "during_active_terminal_count": 5,
+  "start_decisions": [
+    {
+      "dedup_key": "QM5_1003|v5.0.0-qua1033-live|EURUSD.DWX|P3|qua1033-live-mini-001|setfile=QM5_1003_EURUSD.set",
+      "status": "scheduled",
+      "terminal": "T5"
+    },
+    {
+      "dedup_key": "QM5_1003|v5.0.0-qua1033-live|GBPUSD.DWX|P3|qua1033-live-mini-002|setfile=QM5_1003_GBPUSD.set",
+      "status": "scheduled",
+      "terminal": "T3"
+    },
+    {
+      "dedup_key": "QM5_1003|v5.0.0-qua1033-live|USDJPY.DWX|P3|qua1033-live-mini-003|setfile=QM5_1003_USDJPY.set",
+      "status": "scheduled",
+      "terminal": "T1"
+    },
+    {
+      "dedup_key": "QM5_1003|v5.0.0-qua1033-live|XAUUSD.DWX|P3|qua1033-live-mini-004|setfile=QM5_1003_XAUUSD.set",
+      "status": "scheduled",
+      "terminal": "T5"
+    },
+    {
+      "dedup_key": "QM5_1003|v5.0.0-qua1033-live|XTIUSD.DWX|P3|qua1033-live-mini-005|setfile=QM5_1003_XTIUSD.set",
+      "status": "scheduled",
+      "terminal": "T3"
+    }
+  ],
+  "complete_decisions": [
+    {
+      "dedup_key": "QM5_1003|v5.0.0-qua1033-live|EURUSD.DWX|P3|qua1033-live-mini-001|setfile=QM5_1003_EURUSD.set",
+      "status": "released",
+      "terminal": "T5"
+    },
+    {
+      "dedup_key": "QM5_1003|v5.0.0-qua1033-live|GBPUSD.DWX|P3|qua1033-live-mini-002|setfile=QM5_1003_GBPUSD.set",
+      "status": "released",
+      "terminal": "T3"
+    },
+    {
+      "dedup_key": "QM5_1003|v5.0.0-qua1033-live|USDJPY.DWX|P3|qua1033-live-mini-003|setfile=QM5_1003_USDJPY.set",
+      "status": "released",
+      "terminal": "T1"
+    },
+    {
+      "dedup_key": "QM5_1003|v5.0.0-qua1033-live|XAUUSD.DWX|P3|qua1033-live-mini-004|setfile=QM5_1003_XAUUSD.set",
+      "status": "released",
+      "terminal": "T5"
+    },
+    {
+      "dedup_key": "QM5_1003|v5.0.0-qua1033-live|XTIUSD.DWX|P3|qua1033-live-mini-005|setfile=QM5_1003_XTIUSD.set",
+      "status": "released",
+      "terminal": "T3"
+    }
+  ],
+  "reserve_complete_tuple_match_in_probe": true,
+  "log_path": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-1033\\qua1033_live_dispatch.log",
+  "snapshots": {
+    "before": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-1033\\dispatch_state_before.json",
+    "during": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-1033\\dispatch_state_during.json",
+    "after": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-1033\\dispatch_state_after.json"
+  }
+}

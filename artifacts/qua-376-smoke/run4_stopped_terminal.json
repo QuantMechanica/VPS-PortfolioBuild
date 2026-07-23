@@ -1,0 +1,20 @@
+{
+  "status": "ok",
+  "run_key": "c103e0b7a13cae27b99e851ef1b9b0c6bfa344569ec48ee65bc95f68059419de",
+  "ea_id": "QM5_1001",
+  "version": "v1",
+  "symbol": "GOLD.DWX",
+  "phase": "P3.5",
+  "sub_gate_config": "src05_s01:live-smoke:lb40:entry1_exit0",
+  "terminal": "T1",
+  "final_status": "no_report",
+  "htm_count": 0,
+  "report_bytes": 0,
+  "run_smoke_summary": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\GOLD.DWX\\c103e0b7a13cae27b99e851ef1b9b0c6bfa344569ec48ee65bc95f68059419de\\QM5_1001\\20260428_103747\\summary.json",
+  "paths": {
+    "dedup_csv": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\state\\factory_run_dedup_v1.csv",
+    "queue_jsonl": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\state\\factory_run_queue_v1.jsonl",
+    "dispatch_state_json": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\state\\factory_dispatch_state_v1.json",
+    "report_dir": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\GOLD.DWX\\c103e0b7a13cae27b99e851ef1b9b0c6bfa344569ec48ee65bc95f68059419de"
+  }
+}

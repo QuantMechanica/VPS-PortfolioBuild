@@ -1,0 +1,15 @@
+{
+  "issue": "QUA-646",
+  "captured_at_utc": "2026-05-01T07:31:40Z",
+  "task": "Start 1003/1004 baseline backtests",
+  "preflight": {
+    "magic_numbers_has_1003": false,
+    "magic_numbers_has_1004": false,
+    "ea_id_registry_has_1003": true,
+    "ea_id_registry_has_1004": false,
+    "ex5_present_t1_t5": false
+  },
+  "unblock_owner": "CTO/Development",
+  "unblock_action": "Add active registry+magic rows for 1003/1004 and deploy QM5_1003.ex5 + QM5_1004.ex5 to T1-T5 under D:\\QM\\mt5\\T*\\MQL5\\Experts\\QM\\",
+  "next_action_when_unblocked": "Run Invoke-PipelineQueuedSmokeRun.ps1 twice with unique sub_gate_config digests for 1003/1004 and publish queue/ack evidence under D:\\QM\\reports\\factory_runs\\..."
+}

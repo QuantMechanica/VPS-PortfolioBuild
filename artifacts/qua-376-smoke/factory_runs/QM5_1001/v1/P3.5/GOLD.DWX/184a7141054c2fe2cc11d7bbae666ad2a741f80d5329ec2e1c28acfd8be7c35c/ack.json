@@ -1,0 +1,10 @@
+{
+  "run_key": "184a7141054c2fe2cc11d7bbae666ad2a741f80d5329ec2e1c28acfd8be7c35c",
+  "status": "no_report",
+  "ack_ts_utc": "2026-04-28T10:38:46Z",
+  "report_dir": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\GOLD.DWX\\184a7141054c2fe2cc11d7bbae666ad2a741f80d5329ec2e1c28acfd8be7c35c",
+  "htm_count": 0,
+  "report_bytes": 0,
+  "run_smoke_summary": null,
+  "run_smoke_error": "Terminal instance is already running for D:\\QM\\mt5\\T1. Stop it first or pass -AllowRunningTerminal."
+}

@@ -1,0 +1,19 @@
+{
+  "issue": "QUA-376",
+  "generated_at_local": "2026-04-28T15:35:48+02:00",
+  "source": {
+    "heartbeat_tick_json": "C:\\QM\\worktrees\\pipeline-operator\\docs\\ops\\QUA-376_HEARTBEAT_TICK_latest.json",
+    "readiness_artifact_json": "artifacts\\\\qua-376\\\\proxy_pair_readiness.json",
+    "first_run_request_json": "docs\\\\ops\\\\QUA-376_FIRST_PAIR_RUN_REQUEST_2026-04-28.json"
+  },
+  "issue_update": {
+    "status": "blocked",
+    "reason": "waiting_on_src05_s01_expert_binary_and_magic_registry_activation",
+    "resume": true
+  },
+  "unblock": {
+    "owner": "CTO/Dev",
+    "action": "Compile/deploy QM5_SRC05_S01 expert to T1-T5 and activate corresponding magic registry row, then execute first pair-mapped queue run using XAUUSD.DWX/XTIUSD.DWX nonce-safe sub_gate_config."
+  },
+  "note": "Blocked state refreshed from latest heartbeat tick."
+}

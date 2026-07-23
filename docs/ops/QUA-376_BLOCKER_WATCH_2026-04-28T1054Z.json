@@ -1,0 +1,28 @@
+{
+  "ts_utc": "2026-04-28T10:54:34.3991131Z",
+  "issue": "QUA-376",
+  "watch": "unblock_dependency",
+  "binary_name": "QM5_SRC05_S01_chan_at_bb_pair.ex5",
+  "binary_present_all_terminals": false,
+  "terminals": [
+    "T1",
+    "T2",
+    "T3",
+    "T4",
+    "T5"
+  ],
+  "registry_active_src05_s01": false,
+  "registry_active_rows": [
+    {
+      "ea_id": "1001",
+      "ea_slug": "breakout-atr",
+      "symbol": "EURUSD.DWX",
+      "status": "active"
+    }
+  ],
+  "blocked_on": {
+    "owner": "CTO/Dev",
+    "action": "deploy binary + activate registry row"
+  },
+  "state": "no_change_blocked"
+}

@@ -1,0 +1,17 @@
+{
+  "run_key": "4ddc681cbf896113076fd4ee73805bd9f869852a20a3c199030d6e60e7a01fe2",
+  "htm_count": 2,
+  "report_bytes": 44664,
+  "files": [
+    {
+      "file": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\XAUUSD.DWX\\4ddc681cbf896113076fd4ee73805bd9f869852a20a3c199030d6e60e7a01fe2\\QM5_1001\\20260428_104135\\raw\\run_01\\report.htm",
+      "bytes": 22332,
+      "mtime_utc": "2026-04-28T10:41:40Z"
+    },
+    {
+      "file": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\XAUUSD.DWX\\4ddc681cbf896113076fd4ee73805bd9f869852a20a3c199030d6e60e7a01fe2\\QM5_1001\\20260428_104135\\raw\\run_02\\report.htm",
+      "bytes": 22332,
+      "mtime_utc": "2026-04-28T10:41:46Z"
+    }
+  ]
+}

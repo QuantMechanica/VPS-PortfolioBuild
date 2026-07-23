@@ -1,0 +1,20 @@
+{
+  "status": "ok",
+  "run_key": "ea6bd31dbd673c31a307b5f1c1582f8302703269fe3623002bfab698b8e78f23",
+  "ea_id": "QM5_1001",
+  "version": "v1",
+  "symbol": "EURUSD.DWX",
+  "phase": "P3.5",
+  "sub_gate_config": "src05_s01:control-eurusd:lb20",
+  "terminal": "T1",
+  "final_status": "succeeded",
+  "htm_count": 1,
+  "report_bytes": 609314,
+  "run_smoke_summary": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\EURUSD.DWX\\ea6bd31dbd673c31a307b5f1c1582f8302703269fe3623002bfab698b8e78f23\\QM5_1001\\20260428_103938\\summary.json",
+  "paths": {
+    "dedup_csv": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\state\\factory_run_dedup_v1.csv",
+    "queue_jsonl": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\state\\factory_run_queue_v1.jsonl",
+    "dispatch_state_json": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\state\\factory_dispatch_state_v1.json",
+    "report_dir": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\EURUSD.DWX\\ea6bd31dbd673c31a307b5f1c1582f8302703269fe3623002bfab698b8e78f23"
+  }
+}

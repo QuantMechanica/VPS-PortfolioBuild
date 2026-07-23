@@ -1,0 +1,177 @@
+{
+  "starts": [
+    {
+      "job": {
+        "ea_id": "QM5_1033",
+        "version": "v5.0.0-qua1033",
+        "symbol": "EURUSD.DWX",
+        "phase": "P3",
+        "sub_gate_config_hash": "qua1033-mini-001",
+        "target_terminal": "any"
+      },
+      "decision": {
+        "dedup_key": "QM5_1033|v5.0.0-qua1033|EURUSD.DWX|P3|qua1033-mini-001",
+        "status": "scheduled",
+        "terminal": "T1"
+      },
+      "ts": "2026-05-09T07:11:09Z"
+    },
+    {
+      "job": {
+        "ea_id": "QM5_1033",
+        "version": "v5.0.0-qua1033",
+        "symbol": "GBPUSD.DWX",
+        "phase": "P3",
+        "sub_gate_config_hash": "qua1033-mini-002",
+        "target_terminal": "any"
+      },
+      "decision": {
+        "dedup_key": "QM5_1033|v5.0.0-qua1033|GBPUSD.DWX|P3|qua1033-mini-002",
+        "status": "scheduled",
+        "terminal": "T3"
+      },
+      "ts": "2026-05-09T07:11:09Z"
+    },
+    {
+      "job": {
+        "ea_id": "QM5_1033",
+        "version": "v5.0.0-qua1033",
+        "symbol": "USDJPY.DWX",
+        "phase": "P3",
+        "sub_gate_config_hash": "qua1033-mini-003",
+        "target_terminal": "any"
+      },
+      "decision": {
+        "dedup_key": "QM5_1033|v5.0.0-qua1033|USDJPY.DWX|P3|qua1033-mini-003",
+        "status": "scheduled",
+        "terminal": "T2"
+      },
+      "ts": "2026-05-09T07:11:09Z"
+    },
+    {
+      "job": {
+        "ea_id": "QM5_1033",
+        "version": "v5.0.0-qua1033",
+        "symbol": "XAUUSD.DWX",
+        "phase": "P3",
+        "sub_gate_config_hash": "qua1033-mini-004",
+        "target_terminal": "any"
+      },
+      "decision": {
+        "dedup_key": "QM5_1033|v5.0.0-qua1033|XAUUSD.DWX|P3|qua1033-mini-004",
+        "status": "scheduled",
+        "terminal": "T4"
+      },
+      "ts": "2026-05-09T07:11:09Z"
+    },
+    {
+      "job": {
+        "ea_id": "QM5_1033",
+        "version": "v5.0.0-qua1033",
+        "symbol": "XTIUSD.DWX",
+        "phase": "P3",
+        "sub_gate_config_hash": "qua1033-mini-005",
+        "target_terminal": "any"
+      },
+      "decision": {
+        "dedup_key": "QM5_1033|v5.0.0-qua1033|XTIUSD.DWX|P3|qua1033-mini-005",
+        "status": "scheduled",
+        "terminal": "T5"
+      },
+      "ts": "2026-05-09T07:11:09Z"
+    }
+  ],
+  "completes": [
+    {
+      "job": {
+        "ea_id": "QM5_1033",
+        "version": "v5.0.0-qua1033",
+        "symbol": "EURUSD.DWX",
+        "phase": "P3",
+        "sub_gate_config_hash": "qua1033-mini-001",
+        "target_terminal": "any"
+      },
+      "decision": {
+        "dedup_key": "QM5_1033|v5.0.0-qua1033|EURUSD.DWX|P3|qua1033-mini-001",
+        "status": "released",
+        "terminal": "T1"
+      },
+      "ts": "2026-05-09T07:11:09Z"
+    },
+    {
+      "job": {
+        "ea_id": "QM5_1033",
+        "version": "v5.0.0-qua1033",
+        "symbol": "GBPUSD.DWX",
+        "phase": "P3",
+        "sub_gate_config_hash": "qua1033-mini-002",
+        "target_terminal": "any"
+      },
+      "decision": {
+        "dedup_key": "QM5_1033|v5.0.0-qua1033|GBPUSD.DWX|P3|qua1033-mini-002",
+        "status": "released",
+        "terminal": "T3"
+      },
+      "ts": "2026-05-09T07:11:10Z"
+    },
+    {
+      "job": {
+        "ea_id": "QM5_1033",
+        "version": "v5.0.0-qua1033",
+        "symbol": "USDJPY.DWX",
+        "phase": "P3",
+        "sub_gate_config_hash": "qua1033-mini-003",
+        "target_terminal": "any"
+      },
+      "decision": {
+        "dedup_key": "QM5_1033|v5.0.0-qua1033|USDJPY.DWX|P3|qua1033-mini-003",
+        "status": "released",
+        "terminal": "T2"
+      },
+      "ts": "2026-05-09T07:11:10Z"
+    },
+    {
+      "job": {
+        "ea_id": "QM5_1033",
+        "version": "v5.0.0-qua1033",
+        "symbol": "XAUUSD.DWX",
+        "phase": "P3",
+        "sub_gate_config_hash": "qua1033-mini-004",
+        "target_terminal": "any"
+      },
+      "decision": {
+        "dedup_key": "QM5_1033|v5.0.0-qua1033|XAUUSD.DWX|P3|qua1033-mini-004",
+        "status": "released",
+        "terminal": "T4"
+      },
+      "ts": "2026-05-09T07:11:10Z"
+    },
+    {
+      "job": {
+        "ea_id": "QM5_1033",
+        "version": "v5.0.0-qua1033",
+        "symbol": "XTIUSD.DWX",
+        "phase": "P3",
+        "sub_gate_config_hash": "qua1033-mini-005",
+        "target_terminal": "any"
+      },
+      "decision": {
+        "dedup_key": "QM5_1033|v5.0.0-qua1033|XTIUSD.DWX|P3|qua1033-mini-005",
+        "status": "released",
+        "terminal": "T5"
+      },
+      "ts": "2026-05-09T07:11:10Z"
+    }
+  ],
+  "duplicate_probe": {
+    "dedup_key": "QM5_1033|v5.0.0-qua1033|EURUSD.DWX|P3|qua1033-mini-001",
+    "status": "duplicate",
+    "terminal": "T1"
+  },
+  "paths": {
+    "state_json": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-1033\\state\\factory_dispatch_state_v1.json",
+    "queue_jsonl": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-1033\\state\\factory_run_queue_v1.jsonl",
+    "dedup_csv": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-1033\\state\\factory_run_dedup_v1.csv",
+    "heartbeat_json": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-1033\\heartbeat_qua1033_validation.json"
+  }
+}

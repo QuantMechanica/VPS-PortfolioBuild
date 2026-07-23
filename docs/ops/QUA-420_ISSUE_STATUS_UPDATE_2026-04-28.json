@@ -1,6 +1,23 @@
 {
-  "issue_id": "QUA-420",
-  "target_status": "blocked",
-  "reason": "pending_cto_review_gate",
-  "resume": true
+  "issue": "QUA-420",
+  "target_status": "in_review",
+  "reason": "dev_fixlist_complete_pending_cto_gate",
+  "resume": true,
+  "summary": "Development FIX-LIST remediation complete; compile is 0/0; awaiting CTO gate review.",
+  "evidence": [
+    "docs/ops/QUA-420_FIXLIST_CLOSEOUT_2026-04-28.md",
+    "docs/ops/QUA-420_CTO_REVIEW_PACKET_2026-04-28.md",
+    "docs/ops/QUA-420_EXECUTION_LEDGER_2026-04-28.md",
+    "framework/build/compile/20260428_115145/QM5_SRC04_S03_lien_fade_double_zeros.compile.log"
+  ],
+  "commits": [
+    "83c1e4c",
+    "3b6bbee",
+    "3ca59bc",
+    "4c36c0b",
+    "dcd5847",
+    "b256f32",
+    "9c4c02c",
+    "ccc5640"
+  ]
 }

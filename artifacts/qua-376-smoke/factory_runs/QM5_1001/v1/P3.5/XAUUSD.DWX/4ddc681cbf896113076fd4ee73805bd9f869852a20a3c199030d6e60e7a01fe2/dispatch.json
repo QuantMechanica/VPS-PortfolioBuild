@@ -1,0 +1,11 @@
+{
+  "ea_id": "QM5_1001",
+  "version": "v1",
+  "symbol": "XAUUSD.DWX",
+  "phase": "P3.5",
+  "sub_gate_config": "src05_s01:proxy-xau:lb20",
+  "terminal": "T1",
+  "run_key": "4ddc681cbf896113076fd4ee73805bd9f869852a20a3c199030d6e60e7a01fe2",
+  "enqueue_ts_utc": "2026-04-28T10:41:35Z",
+  "claim_ts_utc": "2026-04-28T10:41:35Z"
+}

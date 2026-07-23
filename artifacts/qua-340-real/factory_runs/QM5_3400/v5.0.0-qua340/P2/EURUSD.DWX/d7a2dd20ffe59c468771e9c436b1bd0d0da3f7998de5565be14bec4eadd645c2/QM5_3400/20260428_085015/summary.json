@@ -1,0 +1,42 @@
+{
+  "timestamp_utc": "2026-04-28T08:50:17.6193368Z",
+  "run_tag": "20260428_085015",
+  "result": "FAIL",
+  "reason_classes": [
+    "REPORT_MISSING",
+    "INCOMPLETE_RUNS"
+  ],
+  "ea_id": 3400,
+  "ea_label": "QM5_3400",
+  "expert": "QM\\QM5_3400",
+  "symbol": "EURUSD.DWX",
+  "year": 2022,
+  "terminal": "T2",
+  "model": 4,
+  "period": "M15",
+  "min_trades_required": 1,
+  "deterministic": false,
+  "oninit_failure_detected": false,
+  "model4_log_marker_detected": false,
+  "report_dir": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-340-real\\factory_runs\\QM5_3400\\v5.0.0-qua340\\P2\\EURUSD.DWX\\d7a2dd20ffe59c468771e9c436b1bd0d0da3f7998de5565be14bec4eadd645c2\\QM5_3400\\20260428_085015",
+  "runs": [
+    {
+      "run": "run_01",
+      "status": "FAIL",
+      "failure": "REPORT_MISSING",
+      "error": "Strategy tester did not produce report file.",
+      "exit_code": 0,
+      "report_path": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-340-real\\factory_runs\\QM5_3400\\v5.0.0-qua340\\P2\\EURUSD.DWX\\d7a2dd20ffe59c468771e9c436b1bd0d0da3f7998de5565be14bec4eadd645c2\\QM5_3400\\20260428_085015\\raw\\run_01\\report.htm",
+      "tester_log_path": null
+    },
+    {
+      "run": "run_02",
+      "status": "FAIL",
+      "failure": "REPORT_MISSING",
+      "error": "Strategy tester did not produce report file.",
+      "exit_code": 0,
+      "report_path": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-340-real\\factory_runs\\QM5_3400\\v5.0.0-qua340\\P2\\EURUSD.DWX\\d7a2dd20ffe59c468771e9c436b1bd0d0da3f7998de5565be14bec4eadd645c2\\QM5_3400\\20260428_085015\\raw\\run_02\\report.htm",
+      "tester_log_path": null
+    }
+  ]
+}

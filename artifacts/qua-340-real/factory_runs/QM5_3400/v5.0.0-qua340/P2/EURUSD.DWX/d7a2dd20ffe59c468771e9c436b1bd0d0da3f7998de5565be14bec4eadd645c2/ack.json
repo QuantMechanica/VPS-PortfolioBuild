@@ -1,0 +1,10 @@
+{
+  "run_key": "d7a2dd20ffe59c468771e9c436b1bd0d0da3f7998de5565be14bec4eadd645c2",
+  "status": "no_report",
+  "ack_ts_utc": "2026-04-28T08:50:17Z",
+  "report_dir": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-340-real\\factory_runs\\QM5_3400\\v5.0.0-qua340\\P2\\EURUSD.DWX\\d7a2dd20ffe59c468771e9c436b1bd0d0da3f7998de5565be14bec4eadd645c2",
+  "htm_count": 0,
+  "report_bytes": 0,
+  "run_smoke_summary": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-340-real\\factory_runs\\QM5_3400\\v5.0.0-qua340\\P2\\EURUSD.DWX\\d7a2dd20ffe59c468771e9c436b1bd0d0da3f7998de5565be14bec4eadd645c2\\QM5_3400\\20260428_085015\\summary.json",
+  "run_smoke_error": null
+}

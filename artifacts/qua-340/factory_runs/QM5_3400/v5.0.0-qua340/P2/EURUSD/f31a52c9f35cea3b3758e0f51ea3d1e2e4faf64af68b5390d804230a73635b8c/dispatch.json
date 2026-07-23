@@ -1,0 +1,11 @@
+{
+  "ea_id": "QM5_3400",
+  "version": "v5.0.0-qua340",
+  "symbol": "EURUSD",
+  "phase": "P2",
+  "sub_gate_config": "qua340-dryrun-001",
+  "terminal": "T2",
+  "run_key": "f31a52c9f35cea3b3758e0f51ea3d1e2e4faf64af68b5390d804230a73635b8c",
+  "enqueue_ts_utc": "2026-04-28T08:48:26Z",
+  "claim_ts_utc": "2026-04-28T08:48:26Z"
+}

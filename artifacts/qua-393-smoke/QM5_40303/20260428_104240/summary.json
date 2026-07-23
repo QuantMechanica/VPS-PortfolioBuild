@@ -1,0 +1,58 @@
+{
+  "timestamp_utc": "2026-04-28T10:42:49.1740627Z",
+  "run_tag": "20260428_104240",
+  "result": "FAIL",
+  "reason_classes": [
+    "NO_REAL_TICKS_MARKER",
+    "NO_HISTORY_DATA",
+    "REPORT_MISSING",
+    "INCOMPLETE_RUNS",
+    "MODEL4_MARKER_REQUIRED"
+  ],
+  "ea_id": 40303,
+  "ea_label": "QM5_40303",
+  "expert": "QM/QM5_SRC04_S03_lien_fade_double_zeros",
+  "symbol": "USDJPY.DWX",
+  "year": 2022,
+  "terminal": "T1",
+  "model": 4,
+  "period": "M15",
+  "min_trades_required": 1,
+  "deterministic": false,
+  "oninit_failure_detected": false,
+  "model4_log_marker_detected": false,
+  "report_dir": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-393-smoke\\QM5_40303\\20260428_104240",
+  "report_export_mode": "relative_report_plus_postcopy",
+  "runs": [
+    {
+      "run": "run_01",
+      "status": "OK",
+      "exit_code": 0,
+      "report_source_path": "D:\\QM\\mt5\\T1\\QM5_40303_USDJPY_DWX_20260428_104240_run_01.htm",
+      "report_canonical_path": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-393-smoke\\QM5_40303\\20260428_104240\\raw\\run_01\\report.htm",
+      "report_size_bytes": 22338,
+      "tester_log_path": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-393-smoke\\QM5_40303\\20260428_104240\\raw\\run_01\\20260428.log",
+      "oninit_failure": false,
+      "real_ticks_marker": false,
+      "total_trades": 0,
+      "total_trades_raw": "0",
+      "profit_factor": 0.0,
+      "profit_factor_raw": "0.00",
+      "drawdown": 0.0,
+      "drawdown_raw": "0 (0%)",
+      "net_profit": 0.0,
+      "net_profit_raw": "0"
+    },
+    {
+      "run": "run_02",
+      "status": "FAIL",
+      "failure": "NO_HISTORY_DATA",
+      "error": "Tester could not access required history data for requested window.",
+      "exit_code": 0,
+      "report_source_path": "D:\\QM\\mt5\\T1\\QM5_40303_USDJPY_DWX_20260428_104240_run_02.htm",
+      "report_canonical_path": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-393-smoke\\QM5_40303\\20260428_104240\\raw\\run_02\\report.htm",
+      "report_size_bytes": 0,
+      "tester_log_path": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-393-smoke\\QM5_40303\\20260428_104240\\raw\\run_02\\20260428.log"
+    }
+  ]
+}

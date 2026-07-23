@@ -9,6 +9,7 @@ from framework.scripts.pipeline_dispatcher import (
     prune_state,
     release_job,
     resolve_target_terminal,
+    validate_pair_preflight,
 )
 
 
@@ -148,6 +149,76 @@ class PipelineDispatcherTests(unittest.TestCase):
         self.assertTrue("old" not in state["dedup"])
         self.assertTrue("fresh" in state["dedup"])
         self.assertTrue("active" in state["dedup"])
+
+    def test_pair_preflight_valid_payload(self) -> None:
+        job = {
+            "ea_id": "QM5_SRC05_S01",
+            "version": "v1",
+            "phase": "P3.5",
+            "symbol": "XAUUSD.DWX",
+            "sub_gate_config_hash": "cfg001",
+            "pair_id": "xauusd-xtiusd",
+            "symbol_a": "XAUUSD.DWX",
+            "symbol_b": "XTIUSD.DWX",
+            "leg_a_direction": "long",
+            "leg_b_direction": "short",
+            "risk_per_leg_pct": 0.5,
+            "risk_total_pct": 1.0,
+            "sync_timeframe": "H1",
+            "sync_max_skew_minutes": 0,
+        }
+        verdict = validate_pair_preflight(job)
+        self.assertEqual(verdict["ok"], True)
+        self.assertEqual(verdict["missing"], [])
+        self.assertEqual(verdict["invalid"], [])
+
+    def test_pair_preflight_rejects_incomplete_payload(self) -> None:
+        job = {
+            "ea_id": "QM5_SRC05_S01",
+            "version": "v1",
+            "phase": "P3.5",
+            "symbol": "XAUUSD.DWX",
+            "sub_gate_config_hash": "cfg001",
+            "pair_id": "xauusd-xtiusd",
+            "symbol_a": "XAUUSD.DWX",
+            "leg_a_direction": "long",
+            "risk_per_leg_pct": 0.5,
+            "sync_timeframe": "H1",
+        }
+        verdict = validate_pair_preflight(job)
+        self.assertEqual(verdict["ok"], False)
+        self.assertTrue("symbol_b" in verdict["missing"])
+        self.assertTrue("leg_b_direction" in verdict["missing"])
+        self.assertTrue("risk_total_pct" in verdict["missing"])
+        self.assertTrue("sync_max_skew_minutes" in verdict["missing"])
+
+    def test_dispatch_rejects_invalid_pair_preflight(self) -> None:
+        state = {
+            "dedup": {},
+            "last_rr_index": -1,
+            "running": {"T1": 0, "T2": 0, "T3": 0, "T4": 0, "T5": 0},
+            "symbol_affinity": {},
+        }
+        job = {
+            "ea_id": "QM5_SRC05_S01",
+            "version": "v1",
+            "phase": "P3.5",
+            "symbol": "XAUUSD.DWX",
+            "sub_gate_config_hash": "cfg001",
+            "pair_id": "xauusd-xtiusd",
+            "symbol_a": "XAUUSD.DWX",
+            "symbol_b": "",
+            "leg_a_direction": "long",
+            "leg_b_direction": "short",
+            "risk_per_leg_pct": 0.5,
+            "risk_total_pct": 1.0,
+            "sync_timeframe": "H1",
+            "sync_max_skew_minutes": 0,
+        }
+        decision = dispatch_job(job, state, max_per_terminal=3, now_epoch=1000)
+        self.assertEqual(decision["status"], "invalid_preflight")
+        self.assertEqual(decision["terminal"], None)
+        self.assertEqual(state["running"], {"T1": 0, "T2": 0, "T3": 0, "T4": 0, "T5": 0})
 
 
 if __name__ == "__main__":

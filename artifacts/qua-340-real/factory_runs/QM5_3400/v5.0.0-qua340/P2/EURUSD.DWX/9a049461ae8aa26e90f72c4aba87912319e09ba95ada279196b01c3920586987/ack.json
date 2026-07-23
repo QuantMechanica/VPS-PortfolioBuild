@@ -1,0 +1,10 @@
+{
+  "run_key": "9a049461ae8aa26e90f72c4aba87912319e09ba95ada279196b01c3920586987",
+  "status": "aborted",
+  "ack_ts_utc": "2026-04-28T08:55:16Z",
+  "report_dir": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-340-real\\factory_runs\\QM5_3400\\v5.0.0-qua340\\P2\\EURUSD.DWX\\9a049461ae8aa26e90f72c4aba87912319e09ba95ada279196b01c3920586987",
+  "htm_count": 0,
+  "report_bytes": 0,
+  "run_smoke_summary": null,
+  "run_smoke_error": "EA id not active in registry: 3400 (C:\\QM\\worktrees\\pipeline-operator\\framework\\registry\\magic_numbers.csv)"
+}

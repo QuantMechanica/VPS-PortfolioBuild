@@ -1,0 +1,14 @@
+{
+  "issue": "QUA-788",
+  "tick_utc": "2026-05-08T06:52:46.5530433Z",
+  "status": "blocked",
+  "reason": "mapping_unfixed_after_status_flip",
+  "ea_id": "QM5_1009",
+  "phase": "P2",
+  "qm5_1009_dir_exists": false,
+  "observed_ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_SRC04_S03_lien_fade_double_zeros",
+  "registry_1009_rows_active": 36,
+  "unblock_owner": "CTO",
+  "unblock_action": "Create/alias canonical QM5_1009_* EA folder mapping (or retarget dispatch EA id) so p2_baseline can resolve launch target",
+  "next_action": "Rerun p2_baseline dry-run immediately when mapping is fixed"
+}

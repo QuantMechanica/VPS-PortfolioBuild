@@ -1,0 +1,11 @@
+{
+  "ea_id": "QM5_1001",
+  "version": "v1",
+  "symbol": "XTIUSD.DWX",
+  "phase": "P3.5",
+  "sub_gate_config": "src05_s01:pair_proxy=xauusd.dwx-xtiusd.dwx:xti:lb20",
+  "terminal": "T1",
+  "run_key": "f4890ddc320ccaeecc841389b76010a659ae57e5ab1f36e4148a887183746776",
+  "enqueue_ts_utc": "2026-04-28T10:42:47Z",
+  "claim_ts_utc": "2026-04-28T10:42:47Z"
+}

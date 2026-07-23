@@ -13,6 +13,7 @@ AFFINITY_TTL_SECONDS = 24 * 60 * 60
 RECENT_WINDOW_SECONDS = 24 * 60 * 60
 DEFAULT_STATE_PATH = Path(r"D:\QM\Reports\pipeline\dispatch_state.json")
 DEFAULT_COMPLETED_RETENTION_SECONDS = 48 * 60 * 60
+PAIR_DIRECTION_VALUES = {"LONG", "SHORT"}
 
 
 def dedup_key(job: dict[str, Any]) -> str:
@@ -25,6 +26,47 @@ def dedup_key(job: dict[str, Any]) -> str:
             str(job.get("sub_gate_config_hash", "")),
         ]
     )
+
+
+def _is_non_empty_value(value: Any) -> bool:
+    if value is None:
+        return False
+    if isinstance(value, str):
+        return value.strip() != ""
+    return True
+
+
+def _is_pair_job(job: dict[str, Any]) -> bool:
+    pair_markers = ("pair_id", "symbol_a", "symbol_b", "leg_a_direction", "leg_b_direction")
+    return any(_is_non_empty_value(job.get(marker)) for marker in pair_markers)
+
+
+def validate_pair_preflight(job: dict[str, Any]) -> dict[str, Any]:
+    if not _is_pair_job(job):
+        return {"ok": True, "missing": [], "invalid": []}
+
+    required_fields = (
+        "pair_id",
+        "symbol_a",
+        "symbol_b",
+        "leg_a_direction",
+        "leg_b_direction",
+        "risk_per_leg_pct",
+        "risk_total_pct",
+        "sync_timeframe",
+        "sync_max_skew_minutes",
+    )
+    missing = [field for field in required_fields if not _is_non_empty_value(job.get(field))]
+    invalid: list[str] = []
+
+    leg_a = str(job.get("leg_a_direction", "")).upper()
+    leg_b = str(job.get("leg_b_direction", "")).upper()
+    if leg_a and leg_a not in PAIR_DIRECTION_VALUES:
+        invalid.append("leg_a_direction")
+    if leg_b and leg_b not in PAIR_DIRECTION_VALUES:
+        invalid.append("leg_b_direction")
+
+    return {"ok": not missing and not invalid, "missing": missing, "invalid": invalid}
 
 
 def _round_robin_candidates(candidates: list[str], last_rr_index: int) -> list[str]:
@@ -62,6 +104,16 @@ def dispatch_job(
     max_per_terminal: int = 3,
     now_epoch: int | None = None,
 ) -> dict[str, Any]:
+    preflight = validate_pair_preflight(job)
+    if not preflight["ok"]:
+        return {
+            "dedup_key": dedup_key(job),
+            "status": "invalid_preflight",
+            "terminal": None,
+            "missing": preflight["missing"],
+            "invalid": preflight["invalid"],
+        }
+
     now = int(now_epoch if now_epoch is not None else time.time())
     key = dedup_key(job)
     dedup = state.setdefault("dedup", {})

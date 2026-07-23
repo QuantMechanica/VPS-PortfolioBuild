@@ -1,0 +1,11 @@
+{
+  "ea_id": "QM5_1001",
+  "version": "v1",
+  "symbol": "GOLD.DWX",
+  "phase": "P3.5",
+  "sub_gate_config": "src05_s01:live-smoke:lb30:entry1_exit0",
+  "terminal": "T1",
+  "run_key": "a5888b1703d5810abd6df9dc1fdbf36019fc69bef4663e3fd347b337995c08bc",
+  "enqueue_ts_utc": "2026-04-28T10:36:01Z",
+  "claim_ts_utc": "2026-04-28T10:36:01Z"
+}

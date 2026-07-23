@@ -1,0 +1,10 @@
+{
+  "run_key": "f4890ddc320ccaeecc841389b76010a659ae57e5ab1f36e4148a887183746776",
+  "status": "succeeded",
+  "ack_ts_utc": "2026-04-28T10:43:14Z",
+  "report_dir": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\XTIUSD.DWX\\f4890ddc320ccaeecc841389b76010a659ae57e5ab1f36e4148a887183746776",
+  "htm_count": 2,
+  "report_bytes": 1030500,
+  "run_smoke_summary": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\XTIUSD.DWX\\f4890ddc320ccaeecc841389b76010a659ae57e5ab1f36e4148a887183746776\\QM5_1001\\20260428_104247\\summary.json",
+  "run_smoke_error": null
+}

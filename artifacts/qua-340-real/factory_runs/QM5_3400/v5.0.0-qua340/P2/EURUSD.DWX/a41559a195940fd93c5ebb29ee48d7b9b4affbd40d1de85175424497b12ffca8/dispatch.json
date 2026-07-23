@@ -1,0 +1,11 @@
+{
+  "ea_id": "QM5_3400",
+  "version": "v5.0.0-qua340",
+  "symbol": "EURUSD.DWX",
+  "phase": "P2",
+  "sub_gate_config": "qua340-smoke-005",
+  "terminal": "T2",
+  "run_key": "a41559a195940fd93c5ebb29ee48d7b9b4affbd40d1de85175424497b12ffca8",
+  "enqueue_ts_utc": "2026-04-28T08:52:43Z",
+  "claim_ts_utc": "2026-04-28T08:52:43Z"
+}

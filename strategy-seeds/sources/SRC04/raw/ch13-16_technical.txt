@@ -1,0 +1,452 @@
+                                                                CHAPTER 13
+
+Technical Trading
+Strategy: Fader
+
+More often than not, traders will find themselves faced with a potential breakout       129
+       scenario, position for it, and then only end up seeing the trade fail miserably
+and have prices revert back to range trading. In fact, even if prices manage to break
+
+above a significant level, a continuation move is not guaranteed. If this level is
+
+very significant, we frequently see interbank dealers or other traders try to push
+
+prices beyond those levels momentarily in order to run stops. Breakout levels are
+
+very significant levels and for this very reason, there is no hard fast rule as to
+
+how much force is needed to carry prices beyond levels into a sustainable trend.
+
+Trading breakouts at key levels can involve a lot of risk and as a result, false
+
+breakouts appear more frequently than real breakouts. Sometimes prices will test
+
+the resistance level once, twice, or even three times before breaking out. This
+
+has fostered the development of a large degree of contra-trend traders who look
+
+only to fade breakouts in the currency markets. Yet fading every breakout can also
+
+result in some significant losses because once a real breakout occurs, the trend is
+
+generally strong and long-lasting. So what this boils down to is that traders need a
+
+methodology for screening out consolidation patterns for trades that have a higher
+
+potential of resulting in a false breakout. The following rules provide a good basis
+
+for screening such trades. The fader strategy is a variation of the ``waiting for the
+
+real deal'' strategy. It uses the daily charts to identify the range-bound environment
+
+and the hourly charts to pinpoint entry levels.
+                                    Strategy Rules
+
+                                                  Longs:
+
+                                                  1. Locate a currency pair whose 14-day ADX is less than 20. Ideally, the ADX
+                                                      should also be trending downward, indicating that the trend is weakening
+                                                      further
+
+                                                  2. Wait for the market to break below the previous day's low by at least 15 pips.
+                                                  3. Place an entry order to buy a few ticks above the previous day's high.
+                                                  4. After getting filled, place your initial stop no more than 20 pips away.
+                                                  5. Take profit on half of position when prices increase by the amount you risked;
+
+                                                      move stop on remaining position to breakeven.
+                                                  6. Trail the stop on the remaining position.
+
+                                   Shorts:
+
+                                   1. Locate a currency pair whose 14-day ADX is less than 20. Ideally the ADX
+
+                                   should also be trending downward, indicating that the trend is weakening
+
+                                   further
+
+                                   2. Look for a move above the previous day's high by at least 15 pips.
+
+                                   3. Place an entry order to sell a few ticks below the previous day's low.
+
+130                                4. Once filled, place the initial protective stop no more than 20-pips below your
+
+                                   entry.
+
+TECHNICAL TRADING STRATEGY: FADER  5. Protect any profits by selling half of the position when it runs 20 pips in your
+
+                                   favor.
+
+                                   6. Place a trailing stop on the remainder of the position.
+
+                                   Examples
+
+                                   Let's start by taking a look at an example to the short side. Figure 13.1 shows a
+                                   daily chart of USDJPY with the ADX below 20 and pointing downward. This is the
+                                   first signal that a trade setup is in place. In this example, the previous day's high
+                                   is 120.27. We first look for a move above the previous day's high by at least 15
+                                   pips, or 120.42. As shown in Figure 13.2 the hourly chart, that move occurs at the
+                                   start of the European session after which we place an order to sell 5 pips below the
+                                   previous day's low of 120.00. The order is filled a few hours later at 119.95. At the
+                                   time, we place our stop at 120.15 and a first target of 119.75. The first target is
+                                   reached, and the stop on the rest of the position is moved to breakeven or 119.95.
+                                   In this example, the second half of the trade remains live and will either be closed at
+                                   breakeven, or the stop will be trailed.
+
+                                      Now let's take a look at an example to the long side. Figure 13.3 shows a daily
+                                   chart of EURUSD with the ADX below 20 and pointing downward. This is the
+                                   first signal that a trade setup is in place. In this example, the previous day's high is
+FIGURE 13.1 USDJPY Daily Chart                                                                      TECHNICAL TRADING STRATEGY: FADER
+Source: eSignal
+
+                                                                                                 131
+
+FIGURE 13.2 USDJPY 60-Minute Chart
+Source: eSignal
+TECHNICAL TRADING STRATEGY: FADERFIGURE 13.3 EURUSD Daily Chart
+                                  Source: eSignal
+
+132
+
+                               FIGURE 13.4 EURUSD 60-Minute Chart
+                                  Source: eSignal
+1.0801, and the low is 1.0708. We see that the low is broken first, and when that
+happens we place an order to buy 5 pips above the previous days high at 1.0806.
+As shown in Figure 13.4, the order is triggered about 7 hours later. At the time,
+we place our stop at 1.0786 and a first target of 1.0826. The first target is reached
+shortly after, and the stop on the rest of the position is moved to breakeven, or
+1.0806. In this example, if we trail the stop on the position using a two-bar low, the
+second half of the trade is closed at 1.0818.
+
+Further Optimization
+
+The false breakout strategy works best when there are no significant economic
+reports scheduled for release that could trigger sharp unexpected movements.
+For example, prices often consolidate ahead of the U.S. nonfarm payrolls release.
+Generally speaking, they are consolidating for a reason, and that reason is because
+the market is undecided and is either positioned already or wants to wait to react
+following that release. Either way, there is a higher likelihood that any breakout on
+the back of those releases would be a real one and not one that you want to fade.
+This strategy works best with currency pairs that are less volatile and have narrower
+trading ranges.
+
+                                                                                                 133
+
+TECHNICAL TRADING STRATEGY: FADER
+                                                                               CHAPTER 14
+
+   Technical Trading
+   Strategy: 20-Day
+   Breakout Trade
+
+                                                                                                                135
+
+    Trading breakouts can be both a rewarding and frustrating endeavor as breakouts
+                    have a tendency to fail. A major reason why this can occur frequently in the
+               foreign exchange market is because it is more technically driven than others and as a
+               result, there are many market participants who intentionally look to break pairs out
+               in order to ``suck'' in other nonsuspecting traders. In an effort to filter out potential
+               false breakouts, a price action screener should be used to identify breakouts that
+               have a higher probability of success. The rules behind this strategy are specifically
+               developed to take advantage of strong trending markets that make new highs that
+               then proceed to ``fail'' by taking out a recent low and then reverse again to make
+               another new high. This type of setup tends to have a very high success rate as it
+               allows traders to enter strong trending markets after weaker players have been
+               flushed out, only to have real money players reenter the market and push the pair
+               up to new highs.
+
+ Strategy Rules
+
+               Longs:
+               1. Look for a currency pair that is making a 20-day high.
+               2. Look for the pair to reverse the same day or next to make a two-day low.
+                                                   3. Buy the pair if it takes out the 20-day high within three days of making the
+                                                       two-day low.
+
+                                                   4. Place the initial stop a few pips below the two-day low.
+                                                   5. Take profit on half of the position when it moves by the amount risked; move
+
+                                                       stop on rest to breakeven.
+                                                   6. Trail stop on the remainder of the position.
+
+                                                   Shorts:
+                                                   1. Look for a currency pair that is making a 20-day low.
+                                                   2. That day or the next the pair rallies to make a two-day high.
+                                                   3. Sell the pair if it trades below the 20-day low within three days of making the
+
+                                                       two-day high.
+                                                   4. Risk up to a few ticks above the two-day high.
+                                                   5. Take profit on half of the position when it moves by the amount risked; move
+
+                                                       stop on rest to breakeven.
+                                                   6. Trail stop on the remainder of the position.
+
+                                                   Examples
+
+                                                   Now take a look at our first example in Figure 14.1. The daily chart of GBPUSD
+
+136                                                shows the currency pair making a new 20-day high on February 5. At this point,
+
+TECHNICAL TRADING STRATEGY: 20-DAY BREAKOUT TRADE  the currency pair is on our radar, and we watch for a new two-day low to be made
+
+                                                   FIGURE 14.1 GBPUSD Daily Chart
+                                                   Source: eSignal
+within the next three days. This occurs right on schedule after which we wait for    TECHNICAL TRADING STRATEGY: 20-DAY BREAKOUT TRADE
+the currency pair to make a new 20-day high, which occurs on February 12. At the
+time, we buy GBPUSD a few pips above the previous 20-day high of 1.5352. We
+enter at 1.5360. The stop is placed a few pips below the original two-day low of
+1.5197 (or 1.5190). As the currency pair moves in our favor, we look to exit half
+of the position when it moves by the amount that we risked, which is 155 pips or
+1.5507. The stop on the remainder of the position is moved to breakeven or the
+initial entry price of 1.5352. This rest of the trade is exited 24 hours later.
+
+   Figure 14.2 provides an example of how the strategy can work in the EURUSD
+to the short side. On December 23, the currency pair makes a new 20-day low of
+1.2165. It goes on radar and we start looking for the currency pair to rebound within
+the next three days. The recovery occurs the following day, and a new two-day
+high is made. Then we look for the previous 20-day low to be broken within the
+following three days and that occurs shortly thereafter. At which point we enter
+a short EURUSD trade at 1.2155 with a stop at 1.2260, or a few pips above the
+two-day high of 1.2254. Our risk on the trade is 105 pips. When the currency pair
+drops to 1.2050, we exit the first half of the position and move the stop on the
+rest to breakeven. Then we trail the stop using a 2-bar high and end up exiting the
+remainder of the position at 1.1846.
+
+   The final example shown in Figure 14.3 is in AUDUSD. The currency starts by
+making a new 20-day low on January 26. It goes on radar and we start looking 137
+for the currency pair to rebound within the next three days. The recovery occurs
+
+FIGURE 14.2 EURUSD Daily Chart
+Source: eSignal
+                                                   FIGURE 14.3 AUDUSD Daily Chart
+                                                   Source: eSignal
+
+                                                   intraday, and a new two-day high is made right on schedule. Then we look for the
+
+138                                                previous 20-day low to be broken within the following three days it occurs 24 hours
+                                                   after the two-day high is made. At which point we enter a short AUDUSD trade a
+
+TECHNICAL TRADING STRATEGY: 20-DAY BREAKOUT TRADE  few pips below the 20-day low at 0.7850 with a stop at 0.8032, or a few pips above
+
+                                                   the two-day high of 0.8025. Our risk on the trade is 182 pips. When the currency
+
+                                                   pair drops to 0.7668, we exit the first half of the position and move the stop on the
+
+                                                   rest to breakeven. The breakeven stop is triggered the very same day that the first
+
+                                                   target is reached.
+                                                                CHAPTER 15
+
+Technical Trading
+Strategy: Channels
+
+Channel trading is a less exotic but popular trading technique for currencies. The        139
+     reason why it can work is because currencies rarely spend much time in tight
+trading ranges and have the tendency to develop strong trends. By reviewing a few
+
+charts, traders can see that channels can easily be identified and occur frequently.
+
+A common scenario would be channel trading during the Asian session and a
+
+breakout in either the London or U.S. session. There are many instances where
+
+economic releases are one of the most common triggers for a break of the channel.
+
+Therefore, it is imperative that traders keep on top of economic releases. If a channel
+
+has formed and a big U.S. number (per say) is expected to be released, and the
+
+currency pair is at the top of a channel, the probability of a break is high, so traders
+
+should be looking to buy the break out, not fade it.
+
+Channels are created when we draw a trendline, and then draw a line that is
+
+parallel to that trendline. Most if not all of the price activity of the currency pair
+
+should fall between the two channel lines. We will seek to identify situations where
+
+the price is trading within a narrow channel, and then trade in the direction of a
+
+breakout from the channel. This strategy can be particularly effective when used
+
+prior to a fundamental market event such as the release of major economic news, or
+
+prior to the ``open'' of a major financial market.
+
+Here are some rules for using this technique to find long trades:
+
+1. First, identify a channel on either an intraday or daily chart. The price should
+    be contained within a narrow range.
+
+2. Enter long as the price breaks above the upper channel line by 10 pips.
+                                      3. Place a stop at the lower channel line.
+                                      4. Exit the position when it moves by double the amount risked.
+
+                                         The short rules are the reverse.
+
+                                       Examples
+
+                                      Let examine a few examples. The first example is a USDCAD 15-minute chart
+
+                                      shown in Figure 15.1. The total range of the channel is approximately 30 pips with
+
+                                      the low being 1.2028 and the high 1.2056. In accordance with our strategy, we
+
+                                      place entry orders 10 pips above and below the channel at 1.2018 and 1.2066. The
+
+                                      order to buy gets triggered first, and almost immediately we place a stop order
+
+                                      at the low of the channel or 1.2028, which means we are risking 38 pips on the
+
+                                      trade. USDCAD then proceeds to rally and reaches our target of double the range at
+
+                                      1.2142. More conservative traders could exit half of the position when it moves by
+
+                                      the amount risked, or 38 pips, and trail the stop on the remainder of the position.
+
+                                      The next example shown in Figure 15.2 is a 15-minute chart of EURGBP. The
+
+                                      total range between the two lines is 12 pips with the low being 0.7148 and the high
+
+                                      0.7160. In accordance with our strategy, we place entry orders 10 pips above and
+
+                                      below the channel at 0.7138 and 0.7170. The order to buy gets triggered first and
+
+140                                   almost immediately we place a stop at the low of the channel or 0.7160 for 10-pip
+
+                                      risk. EURGBP then proceeds to rally and reaches our target of 20 pips or double
+
+TECHNICAL TRADING STRATEGY: CHANNELS  the amount risked.
+
+                                      FIGURE 15.1 USDCAD 15-Minute Chart
+                                      Source: eSignal
+FIGURE 15.2 EURGBP 15-Minute Chart                                                                  TECHNICAL TRADING STRATEGY: CHANNELS
+Source: eSignal
+
+                                                                                                 141
+
+FIGURE 15.3 EURUSD 15-Minute Chart
+Source: eSignal
+
+   Figure 15.3 is a 15-minute chart of the EURUSD. The total range during this
+four-hour period is 18 pips with a high of 1.1206 and a low of 1.1188. In accordance
+with our strategy, we place entry orders 10 pips above and below the channel at
+1.1216 and 1.1178. The order to sell gets triggered first and almost immediately,
+we place a stop order at the channel high of 1.1206 for a risk of 28 pips. The
+                          EURUSD then proceeds to sell off significantly but only makes it to a low of 1.1132
+                          before stopping us out a few days later. We chose to show this example because it
+                          explains why the more conservative approach of exiting half of the position when it
+                          moves by the amount risk is more desirable, even though it has worse risk reward.
+                          A move of 58 pips is sizable on an intraday basis and may be difficult to achieve.
+                          Whenever the risk is greater than 20 pips, it may be more prudent to exit half and
+                          trail the stop.
+
+142
+
+TECHNICAL TRADING STRATEGY: CHANNELS
+                                                                CHAPTER 16
+
+Technical Trading
+Strategy: Perfect
+Order
+
+                                                                                                  143
+
+Aperfect order in moving averages is defined as a set of moving averages that
+     is in sequential order. For an uptrend, a perfect order would be a situation
+in which the 10-day simple moving average (SMA) is at a higher price level than
+the 20-day SMA, which is higher than the 50-day SMA. Meanwhile, the 100-day
+SMA would be below the 50-day SMA, while the 200-day SMA would be below
+the 100-day SMA. In a downtrend, the opposite is true, where the 200-day SMA is
+at the highest level and the 10-day SMA is at the lowest level. Having the moving
+averages stacked up in sequential order are generally a strong indicator of a trending
+environment. Not only does it indicate that the momentum is on the side of trend,
+but the moving averages also serve as multiple levels of support. To optimize the
+perfect order strategy, traders should also look for ADX to be greater than 20 and
+trending upward. This represents a strong trend. Entry and exit levels are difficult
+to determine with this strategy, but generally speaking, we want to stay in the trade
+for as long as the perfect order remains in place and exit once the perfect order no
+                                           longer holds. Perfect orders do not happen often, and the premise of this strategy is
+                                           to capture the perfect order when it first happens.
+
+                                              The perfect order seeks to take advantage of a trending environment near the
+                                           beginning of the trend:
+
+                                           1. Look for a currency pair with moving averages in perfect order.
+                                           2. Look for ADX pointing upwards, ideally greater than 20.
+                                           3. Buy five candles after the initial formation of the perfect order (if it still
+
+                                               holds).
+                                           4. Initial stop is the low on the day of the initial crossover for longs and the high
+
+                                               for shorts.
+                                           5. Exit the position when the perfect order no longer holds.
+
+                                            Examples
+
+                                           Figure 16.1 is a daily chart of the EURUSD. In August 2014, the moving averages
+
+                                           in the EURUSD formed a sequential perfect order. We check and see that ADX is
+
+                                           greater than 20, and we look to enter into a short trade five candles after the initial
+
+                                           formation at 1.3390. Our initial stop is placed at the August 8 high of 1.3432. The
+
+                                           pair continues to move lower in the days and weeks that follow, and we remain in
+
+144                                        the trade until the moving averages are no longer in perfect and the 10-day SMA
+
+TECHNICAL TRADING STRATEGY: PERFECT ORDER  moves above the 20-day SMA, which occurs on October 17 when EURUSD settles
+
+                                           the day at 1.2758. The total profit on this trade is 632 pips. We risked 42 pips on
+
+                                           the trade.
+
+                                           The next example is USDSGD. In Figure 16.2, the perfect order forms on
+
+                                           November 6. We check and see that ADX is greater than 20, and we look to enter
+
+                                           into a long trade five candles after the initial formation at 1.2916. Our stop should
+
+                                           be at the November 6 low of 1.2911 but that is below our entry price so we put
+
+                                           our stop at the 20-day SMA of 1.2822. The pair continues to move higher in the
+
+                                           months that follow, and we remain in the trade until the moving averages are no
+
+                                           longer in perfect and the 10-day SMA moves below the 20-day SMA, which occurs
+
+                                           on March 27, when USD/SGD closes the day at 1.3685. The total move on this
+
+                                           trade is 770 pips for a risk of 89 pips.
+
+                                           Figure 16.3 shows a perfect-order formation on a daily chart in USDJPY. The
+
+                                           perfect order formed in October and when that occurred, we entered the trade
+
+                                           five days afterward at 116.20. Our stop was placed at 108.75, and we remained in
+
+                                           the trade until the 10-day SMA crossed below the 20-day SMA on December 19 at
+                                        145
+
+FIGURE 16.1 EURUSD Perfect Order Setup  TECHNICAL TRADING STRATEGY: PERFECT ORDER
+Source: eSignal
+TECHNICAL TRADING STRATEGY: PERFECT ORDER146
+
+                       FIGURE 16.2 USDSGD Perfect Order Setup
+                          Source: eSignal
+                                        147
+
+FIGURE 16.3 USDJPY Perfect Order Setup  TECHNICAL TRADING STRATEGY: PERFECT ORDER
+Source: eSignal
+                          119.45. In this example, the profit was 425 pips for a risk of 645 pips, which was
+                          far from ideal.
+
+                             The perfect order is a strategy that can be high profit but low probability and
+                          low frequency. This means there could be numerous stop outs before a long trend
+                          emerges. Also, when the currency pair moves more than 250 to 300 pips in profit,
+                          you may want to consider taking profit on part of the positions.
+
+148
+
+TECHNICAL TRADING STRATEGY: PERFECT ORDER

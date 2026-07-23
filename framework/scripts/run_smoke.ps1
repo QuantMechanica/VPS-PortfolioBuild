@@ -327,6 +327,33 @@ function Get-LatestTesterLog {
     return $candidate
 }
 
+function Copy-RecentTesterLogForRun {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$TerminalRoot,
+        [Parameter(Mandatory = $true)]
+        [datetime]$SinceUtc,
+        [Parameter(Mandatory = $true)]
+        [string]$RunDir
+    )
+
+    $testerLog = Get-LatestTesterLog -TerminalRoot $TerminalRoot -SinceUtc $SinceUtc
+    if (-not $testerLog) {
+        return [pscustomobject]@{
+            path = $null
+            tail = ""
+        }
+    }
+
+    $destPath = Join-Path $RunDir $testerLog.Name
+    Copy-Item -LiteralPath $testerLog.FullName -Destination $destPath -Force
+    $tail = ((Get-Content -LiteralPath $destPath | Select-Object -Last 800) -join [Environment]::NewLine)
+    return [pscustomobject]@{
+        path = $destPath
+        tail = $tail
+    }
+}
+
 function Start-TesterRun {
     param(
         [Parameter(Mandatory = $true)]
@@ -515,6 +542,22 @@ for ($i = 1; $i -le $Runs; $i++) {
 
     $reportMaterialized = Wait-ForReportExport -ReportPath $sourceReportPath -TerminalRoot $terminalRoot -MaxWaitSeconds 30
     if (-not $reportMaterialized) {
+        $recentLog = Copy-RecentTesterLogForRun -TerminalRoot $terminalRoot -SinceUtc $runStartUtc -RunDir $runDir
+        $testerLogPath = $recentLog.path
+        $testerLogTail = [string]$recentLog.tail
+        $failureCode = "REPORT_MISSING"
+        $failureError = "Strategy tester did not produce report file at relative export path."
+
+        if ($testerLogTail -and [regex]::IsMatch($testerLogTail, "(?im)symbol\s+\S+\s+not exist|cannot select symbol in market watch")) {
+            $failureCode = "SYMBOL_NOT_FOUND"
+            $failureError = "Tester symbol is unavailable in Market Watch for this terminal."
+            $reasonClasses.Add("SYMBOL_NOT_FOUND")
+        } elseif ($testerLogTail -and [regex]::IsMatch($testerLogTail, "(?im)no history data")) {
+            $failureCode = "NO_HISTORY_DATA"
+            $failureError = "Tester could not access required history data for requested window."
+            $reasonClasses.Add("NO_HISTORY_DATA")
+        }
+
         $reasonClasses.Add("REPORT_MISSING")
         $globalRealTicksMarker = $false
         $lingeringMeta = @(Get-MetaTesterProcessesForTerminalRoot -TerminalRoot $terminalRoot)
@@ -530,13 +573,13 @@ for ($i = 1; $i -le $Runs; $i++) {
         $runResults += [pscustomobject]@{
             run = $runName
             status = "FAIL"
-            failure = "REPORT_MISSING"
-            error = "Strategy tester did not produce report file at relative export path."
+            failure = $failureCode
+            error = $failureError
             exit_code = $exitCode
             report_source_path = $sourceReportPath
             report_canonical_path = $reportHtmPath
             report_size_bytes = 0
-            tester_log_path = $null
+            tester_log_path = $testerLogPath
         }
         continue
     }
@@ -607,14 +650,9 @@ for ($i = 1; $i -le $Runs; $i++) {
     $drawdown = Convert-ReportNumber -Value $drawdownRaw
     $netProfit = Convert-ReportNumber -Value $netProfitRaw
 
-    $testerLog = Get-LatestTesterLog -TerminalRoot $terminalRoot -SinceUtc $runStartUtc
-    $testerLogPath = $null
-    $testerLogTail = ""
-    if ($testerLog) {
-        $testerLogPath = Join-Path $runDir $testerLog.Name
-        Copy-Item -LiteralPath $testerLog.FullName -Destination $testerLogPath -Force
-        $testerLogTail = ((Get-Content -LiteralPath $testerLogPath | Select-Object -Last 800) -join [Environment]::NewLine)
-    }
+    $recentLog = Copy-RecentTesterLogForRun -TerminalRoot $terminalRoot -SinceUtc $runStartUtc -RunDir $runDir
+    $testerLogPath = $recentLog.path
+    $testerLogTail = [string]$recentLog.tail
 
     $onInitFailure = $false
     if ($testerLogTail) {

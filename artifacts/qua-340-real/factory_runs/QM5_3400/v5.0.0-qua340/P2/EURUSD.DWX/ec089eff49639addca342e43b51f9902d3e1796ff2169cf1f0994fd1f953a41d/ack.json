@@ -1,0 +1,10 @@
+{
+  "run_key": "ec089eff49639addca342e43b51f9902d3e1796ff2169cf1f0994fd1f953a41d",
+  "status": "no_report",
+  "ack_ts_utc": "2026-04-28T08:50:02Z",
+  "report_dir": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-340-real\\factory_runs\\QM5_3400\\v5.0.0-qua340\\P2\\EURUSD.DWX\\ec089eff49639addca342e43b51f9902d3e1796ff2169cf1f0994fd1f953a41d",
+  "htm_count": 0,
+  "report_bytes": 0,
+  "run_smoke_summary": null,
+  "run_smoke_error": "Cannot validate argument on parameter 'Runs'. The 1 argument is less than the minimum allowed range of 2. Supply an argument that is greater than or equal to 2 and then try the command again."
+}

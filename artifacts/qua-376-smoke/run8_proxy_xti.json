@@ -1,0 +1,20 @@
+{
+  "status": "ok",
+  "run_key": "e73b70bcbb7b70bb8898abb55d95e4b8506438a55004c6253e81b7489cb6645a",
+  "ea_id": "QM5_1001",
+  "version": "v1",
+  "symbol": "XTIUSD.DWX",
+  "phase": "P3.5",
+  "sub_gate_config": "src05_s01:proxy-xti:lb20",
+  "terminal": "T1",
+  "final_status": "succeeded",
+  "htm_count": 2,
+  "report_bytes": 1030500,
+  "run_smoke_summary": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\XTIUSD.DWX\\e73b70bcbb7b70bb8898abb55d95e4b8506438a55004c6253e81b7489cb6645a\\QM5_1001\\20260428_104100\\summary.json",
+  "paths": {
+    "dedup_csv": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\state\\factory_run_dedup_v1.csv",
+    "queue_jsonl": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\state\\factory_run_queue_v1.jsonl",
+    "dispatch_state_json": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\state\\factory_dispatch_state_v1.json",
+    "report_dir": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\XTIUSD.DWX\\e73b70bcbb7b70bb8898abb55d95e4b8506438a55004c6253e81b7489cb6645a"
+  }
+}

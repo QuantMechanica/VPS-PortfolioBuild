@@ -1,0 +1,56 @@
+{
+  "timestamp_utc": "2026-04-28T10:40:03.5023818Z",
+  "run_tag": "20260428_103938",
+  "result": "FAIL",
+  "reason_classes": [
+    "REPORT_MISSING",
+    "NO_REAL_TICKS_MARKER",
+    "INCOMPLETE_RUNS"
+  ],
+  "ea_id": 1001,
+  "ea_label": "QM5_1001",
+  "expert": "QM/QM5_1001_framework_smoke",
+  "symbol": "EURUSD.DWX",
+  "year": 2024,
+  "terminal": "T1",
+  "model": 4,
+  "period": "H1",
+  "min_trades_required": 1,
+  "deterministic": false,
+  "oninit_failure_detected": false,
+  "model4_log_marker_detected": false,
+  "report_dir": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\EURUSD.DWX\\ea6bd31dbd673c31a307b5f1c1582f8302703269fe3623002bfab698b8e78f23\\QM5_1001\\20260428_103938",
+  "report_export_mode": "relative_report_plus_postcopy",
+  "runs": [
+    {
+      "run": "run_01",
+      "status": "FAIL",
+      "failure": "REPORT_MISSING",
+      "error": "Strategy tester did not produce report file at relative export path.",
+      "exit_code": -1,
+      "report_source_path": "D:\\QM\\mt5\\T1\\QM5_1001_EURUSD_DWX_20260428_103938_run_01.htm",
+      "report_canonical_path": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\EURUSD.DWX\\ea6bd31dbd673c31a307b5f1c1582f8302703269fe3623002bfab698b8e78f23\\QM5_1001\\20260428_103938\\raw\\run_01\\report.htm",
+      "report_size_bytes": 0,
+      "tester_log_path": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\EURUSD.DWX\\ea6bd31dbd673c31a307b5f1c1582f8302703269fe3623002bfab698b8e78f23\\QM5_1001\\20260428_103938\\raw\\run_01\\20260428.log"
+    },
+    {
+      "run": "run_02",
+      "status": "OK",
+      "exit_code": 0,
+      "report_source_path": "D:\\QM\\mt5\\T1\\QM5_1001_EURUSD_DWX_20260428_103938_run_02.htm",
+      "report_canonical_path": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\EURUSD.DWX\\ea6bd31dbd673c31a307b5f1c1582f8302703269fe3623002bfab698b8e78f23\\QM5_1001\\20260428_103938\\raw\\run_02\\report.htm",
+      "report_size_bytes": 609314,
+      "tester_log_path": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\EURUSD.DWX\\ea6bd31dbd673c31a307b5f1c1582f8302703269fe3623002bfab698b8e78f23\\QM5_1001\\20260428_103938\\raw\\run_02\\20260428.log",
+      "oninit_failure": false,
+      "real_ticks_marker": false,
+      "total_trades": 305,
+      "total_trades_raw": "305",
+      "profit_factor": 0.67,
+      "profit_factor_raw": "0.67",
+      "drawdown": 334.85,
+      "drawdown_raw": "334.85 (3.34%)",
+      "net_profit": -297.96,
+      "net_profit_raw": "-297.96"
+    }
+  ]
+}

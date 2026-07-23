@@ -1,0 +1,63 @@
+{
+  "timestamp_utc": "2026-04-28T10:41:48.6151150Z",
+  "run_tag": "20260428_104135",
+  "result": "FAIL",
+  "reason_classes": [
+    "NO_REAL_TICKS_MARKER",
+    "MIN_TRADES_NOT_MET"
+  ],
+  "ea_id": 1001,
+  "ea_label": "QM5_1001",
+  "expert": "QM/QM5_1001_framework_smoke",
+  "symbol": "XAUUSD.DWX",
+  "year": 2024,
+  "terminal": "T1",
+  "model": 4,
+  "period": "H1",
+  "min_trades_required": 1,
+  "deterministic": true,
+  "oninit_failure_detected": false,
+  "model4_log_marker_detected": false,
+  "report_dir": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\XAUUSD.DWX\\4ddc681cbf896113076fd4ee73805bd9f869852a20a3c199030d6e60e7a01fe2\\QM5_1001\\20260428_104135",
+  "report_export_mode": "relative_report_plus_postcopy",
+  "runs": [
+    {
+      "run": "run_01",
+      "status": "OK",
+      "exit_code": 0,
+      "report_source_path": "D:\\QM\\mt5\\T1\\QM5_1001_XAUUSD_DWX_20260428_104135_run_01.htm",
+      "report_canonical_path": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\XAUUSD.DWX\\4ddc681cbf896113076fd4ee73805bd9f869852a20a3c199030d6e60e7a01fe2\\QM5_1001\\20260428_104135\\raw\\run_01\\report.htm",
+      "report_size_bytes": 22332,
+      "tester_log_path": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\XAUUSD.DWX\\4ddc681cbf896113076fd4ee73805bd9f869852a20a3c199030d6e60e7a01fe2\\QM5_1001\\20260428_104135\\raw\\run_01\\20260428.log",
+      "oninit_failure": false,
+      "real_ticks_marker": false,
+      "total_trades": 0,
+      "total_trades_raw": "0",
+      "profit_factor": 0.0,
+      "profit_factor_raw": "0.00",
+      "drawdown": 0.0,
+      "drawdown_raw": "0 (0%)",
+      "net_profit": 0.0,
+      "net_profit_raw": "0"
+    },
+    {
+      "run": "run_02",
+      "status": "OK",
+      "exit_code": 0,
+      "report_source_path": "D:\\QM\\mt5\\T1\\QM5_1001_XAUUSD_DWX_20260428_104135_run_02.htm",
+      "report_canonical_path": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\XAUUSD.DWX\\4ddc681cbf896113076fd4ee73805bd9f869852a20a3c199030d6e60e7a01fe2\\QM5_1001\\20260428_104135\\raw\\run_02\\report.htm",
+      "report_size_bytes": 22332,
+      "tester_log_path": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\XAUUSD.DWX\\4ddc681cbf896113076fd4ee73805bd9f869852a20a3c199030d6e60e7a01fe2\\QM5_1001\\20260428_104135\\raw\\run_02\\20260428.log",
+      "oninit_failure": false,
+      "real_ticks_marker": false,
+      "total_trades": 0,
+      "total_trades_raw": "0",
+      "profit_factor": 0.0,
+      "profit_factor_raw": "0.00",
+      "drawdown": 0.0,
+      "drawdown_raw": "0 (0%)",
+      "net_profit": 0.0,
+      "net_profit_raw": "0"
+    }
+  ]
+}

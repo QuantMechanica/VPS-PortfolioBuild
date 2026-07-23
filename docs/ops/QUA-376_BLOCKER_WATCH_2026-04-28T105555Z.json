@@ -1,0 +1,48 @@
+{
+  "ts_utc": "2026-04-28T10:55:55.5061059Z",
+  "issue": "QUA-376",
+  "watch": "unblock_dependency",
+  "binary_name": "QM5_SRC05_S01_chan_at_bb_pair.ex5",
+  "binary_present_all_terminals": false,
+  "terminals": [
+    {
+      "terminal": "T1",
+      "exists": false,
+      "path": "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_SRC05_S01_chan_at_bb_pair.ex5"
+    },
+    {
+      "terminal": "T2",
+      "exists": false,
+      "path": "D:\\QM\\mt5\\T2\\MQL5\\Experts\\QM\\QM5_SRC05_S01_chan_at_bb_pair.ex5"
+    },
+    {
+      "terminal": "T3",
+      "exists": false,
+      "path": "D:\\QM\\mt5\\T3\\MQL5\\Experts\\QM\\QM5_SRC05_S01_chan_at_bb_pair.ex5"
+    },
+    {
+      "terminal": "T4",
+      "exists": false,
+      "path": "D:\\QM\\mt5\\T4\\MQL5\\Experts\\QM\\QM5_SRC05_S01_chan_at_bb_pair.ex5"
+    },
+    {
+      "terminal": "T5",
+      "exists": false,
+      "path": "D:\\QM\\mt5\\T5\\MQL5\\Experts\\QM\\QM5_SRC05_S01_chan_at_bb_pair.ex5"
+    }
+  ],
+  "registry_active_src05_s01": false,
+  "registry_active_rows": [
+    {
+      "ea_id": "1001",
+      "ea_slug": "breakout-atr",
+      "symbol": "EURUSD.DWX",
+      "status": "active"
+    }
+  ],
+  "blocked_on": {
+    "owner": "CTO/Dev",
+    "action": "deploy binary + activate registry row"
+  },
+  "state": "no_change_blocked"
+}

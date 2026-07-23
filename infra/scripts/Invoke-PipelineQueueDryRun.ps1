@@ -97,90 +97,6 @@ $ackTs = Get-UtcNowIso
 $scannerPid = $PID
 
 $reportDir = Join-Path $evidenceRootFull "$EaId\$Version\$Phase\$Symbol\$runKey"
-if (-not (Test-Path -LiteralPath $reportDir)) {
-    New-Item -ItemType Directory -Path $reportDir -Force | Out-Null
-}
-
-$dispatchPayload = [ordered]@{
-    ea_id = $EaId
-    version = $Version
-    symbol = $Symbol
-    phase = $Phase
-    sub_gate_config = $SubGateConfig
-    terminal = $Terminal
-    run_key = $runKey
-    enqueue_ts_utc = $enqueueTs
-    claim_ts_utc = $claimTs
-}
-$dispatchPayload | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $reportDir "dispatch.json") -Encoding UTF8
-
-$runnerOut = "dry-run queue transition executed"
-$runnerErr = ""
-Set-Content -LiteralPath (Join-Path $reportDir "runner_stdout.log") -Value $runnerOut -Encoding UTF8
-Set-Content -LiteralPath (Join-Path $reportDir "runner_stderr.log") -Value $runnerErr -Encoding UTF8
-
-$pidPayload = [ordered]@{
-    scanner_pid = $scannerPid
-    terminal = $Terminal
-    terminal_pid = "dryrun"
-}
-$pidPayload | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $reportDir "pid_snapshot.json") -Encoding UTF8
-
-$dummyReport = Join-Path $reportDir "result_01.htm"
-"<html><body>dryrun</body></html>" | Set-Content -LiteralPath $dummyReport -Encoding UTF8
-$reportItem = Get-Item -LiteralPath $dummyReport
-$reportBytes = [int64]$reportItem.Length
-$htmCount = 1
-
-$manifest = [ordered]@{
-    run_key = $runKey
-    htm_count = $htmCount
-    report_bytes = $reportBytes
-    files = @(
-        [ordered]@{
-            file = $reportItem.Name
-            bytes = [int64]$reportItem.Length
-            mtime_utc = $reportItem.LastWriteTimeUtc.ToString("yyyy-MM-ddTHH:mm:ssZ")
-        }
-    )
-}
-$manifest | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $reportDir "report_manifest.json") -Encoding UTF8
-
-$ackPayload = [ordered]@{
-    run_key = $runKey
-    status = $FinalStatus
-    ack_ts_utc = $ackTs
-    report_dir = $reportDir
-    htm_count = $htmCount
-    report_bytes = $reportBytes
-}
-$ackPayload | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $reportDir "ack.json") -Encoding UTF8
-
-$queueEvent = [ordered]@{
-    run_key = $runKey
-    ea_id = $EaId
-    version = $Version
-    symbol = $Symbol
-    phase = $Phase
-    sub_gate_config = $SubGateConfig
-    terminal = $Terminal
-    transitions = @(
-        [ordered]@{ status = "queued"; ts_utc = $enqueueTs },
-        [ordered]@{ status = "claimed"; ts_utc = $claimTs },
-        [ordered]@{ status = "running"; ts_utc = $claimTs },
-        [ordered]@{ status = $FinalStatus; ts_utc = $ackTs }
-    )
-    report_dir = $reportDir
-}
-Ensure-ParentDir -Path $queueJsonl
-Add-Content -LiteralPath $queueJsonl -Value ($queueEvent | ConvertTo-Json -Depth 8 -Compress) -Encoding UTF8
-
-$dispatchStatePayload = [ordered]@{
-    last_run_key = $runKey
-    last_terminal = $Terminal
-    updated_utc = Get-UtcNowIso
-}
-$dispatchStatePayload | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $dispatchState -Encoding UTF8
 
 $lockStream = $null
 try {
@@ -190,6 +106,89 @@ try {
     if ($duplicate) {
         throw "Duplicate tuple detected for run_key=$runKey"
     }
+
+    if (-not (Test-Path -LiteralPath $reportDir)) {
+        New-Item -ItemType Directory -Path $reportDir -Force | Out-Null
+    }
+
+    $dispatchPayload = [ordered]@{
+        ea_id = $EaId
+        version = $Version
+        symbol = $Symbol
+        phase = $Phase
+        sub_gate_config = $SubGateConfig
+        terminal = $Terminal
+        run_key = $runKey
+        enqueue_ts_utc = $enqueueTs
+        claim_ts_utc = $claimTs
+    }
+    $dispatchPayload | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $reportDir "dispatch.json") -Encoding UTF8
+
+    Set-Content -LiteralPath (Join-Path $reportDir "runner_stdout.log") -Value "dry-run queue transition executed" -Encoding UTF8
+    Set-Content -LiteralPath (Join-Path $reportDir "runner_stderr.log") -Value "" -Encoding UTF8
+
+    $pidPayload = [ordered]@{
+        scanner_pid = $scannerPid
+        terminal = $Terminal
+        terminal_pid = "dryrun"
+    }
+    $pidPayload | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $reportDir "pid_snapshot.json") -Encoding UTF8
+
+    $dummyReport = Join-Path $reportDir "result_01.htm"
+    "<html><body>dryrun</body></html>" | Set-Content -LiteralPath $dummyReport -Encoding UTF8
+    $reportItem = Get-Item -LiteralPath $dummyReport
+    $reportBytes = [int64]$reportItem.Length
+    $htmCount = 1
+
+    $manifest = [ordered]@{
+        run_key = $runKey
+        htm_count = $htmCount
+        report_bytes = $reportBytes
+        files = @(
+            [ordered]@{
+                file = $reportItem.Name
+                bytes = [int64]$reportItem.Length
+                mtime_utc = $reportItem.LastWriteTimeUtc.ToString("yyyy-MM-ddTHH:mm:ssZ")
+            }
+        )
+    }
+    $manifest | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $reportDir "report_manifest.json") -Encoding UTF8
+
+    $ackPayload = [ordered]@{
+        run_key = $runKey
+        status = $FinalStatus
+        ack_ts_utc = $ackTs
+        report_dir = $reportDir
+        htm_count = $htmCount
+        report_bytes = $reportBytes
+    }
+    $ackPayload | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $reportDir "ack.json") -Encoding UTF8
+
+    $queueEvent = [ordered]@{
+        run_key = $runKey
+        ea_id = $EaId
+        version = $Version
+        symbol = $Symbol
+        phase = $Phase
+        sub_gate_config = $SubGateConfig
+        terminal = $Terminal
+        transitions = @(
+            [ordered]@{ status = "enqueue"; ts_utc = $enqueueTs },
+            [ordered]@{ status = "claim"; ts_utc = $claimTs },
+            [ordered]@{ status = "running"; ts_utc = $claimTs },
+            [ordered]@{ status = "ack"; ts_utc = $ackTs; final_status = $FinalStatus }
+        )
+        report_dir = $reportDir
+    }
+    Ensure-ParentDir -Path $queueJsonl
+    Add-Content -LiteralPath $queueJsonl -Value ($queueEvent | ConvertTo-Json -Depth 8 -Compress) -Encoding UTF8
+
+    $dispatchStatePayload = [ordered]@{
+        last_run_key = $runKey
+        last_terminal = $Terminal
+        updated_utc = Get-UtcNowIso
+    }
+    $dispatchStatePayload | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $dispatchState -Encoding UTF8
 
     $newRow = [PSCustomObject]@{
         run_key = $runKey
@@ -202,13 +201,14 @@ try {
         claim_ts_utc = $claimTs
         terminal = $Terminal
         scanner_pid = $scannerPid
-        status = $FinalStatus
+        status = "ack"
+        final_status = $FinalStatus
         ack_ts_utc = $ackTs
         report_dir = $reportDir
         htm_count = $htmCount
         report_bytes = $reportBytes
     }
-    $rows = @($rows + $newRow)
+    $rows = @(@($rows) + @($newRow))
     Write-DedupRows -CsvPath $dedupCsv -Rows $rows
 }
 finally {

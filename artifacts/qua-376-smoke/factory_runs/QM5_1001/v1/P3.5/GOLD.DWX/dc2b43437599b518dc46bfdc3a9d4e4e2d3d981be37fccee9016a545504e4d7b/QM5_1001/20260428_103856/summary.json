@@ -1,0 +1,49 @@
+{
+  "timestamp_utc": "2026-04-28T10:39:28.8764956Z",
+  "run_tag": "20260428_103856",
+  "result": "FAIL",
+  "reason_classes": [
+    "SYMBOL_NOT_FOUND",
+    "REPORT_MISSING",
+    "METATESTER_HUNG",
+    "INCOMPLETE_RUNS"
+  ],
+  "ea_id": 1001,
+  "ea_label": "QM5_1001",
+  "expert": "QM/QM5_1001_framework_smoke",
+  "symbol": "GOLD.DWX",
+  "year": 2022,
+  "terminal": "T1",
+  "model": 4,
+  "period": "M15",
+  "min_trades_required": 1,
+  "deterministic": false,
+  "oninit_failure_detected": false,
+  "model4_log_marker_detected": false,
+  "report_dir": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\GOLD.DWX\\dc2b43437599b518dc46bfdc3a9d4e4e2d3d981be37fccee9016a545504e4d7b\\QM5_1001\\20260428_103856",
+  "report_export_mode": "relative_report_plus_postcopy",
+  "runs": [
+    {
+      "run": "run_01",
+      "status": "FAIL",
+      "failure": "SYMBOL_NOT_FOUND",
+      "error": "Tester symbol is unavailable in Market Watch for this terminal.",
+      "exit_code": 0,
+      "report_source_path": "D:\\QM\\mt5\\T1\\QM5_1001_GOLD_DWX_20260428_103856_run_01.htm",
+      "report_canonical_path": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\GOLD.DWX\\dc2b43437599b518dc46bfdc3a9d4e4e2d3d981be37fccee9016a545504e4d7b\\QM5_1001\\20260428_103856\\raw\\run_01\\report.htm",
+      "report_size_bytes": 0,
+      "tester_log_path": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\GOLD.DWX\\dc2b43437599b518dc46bfdc3a9d4e4e2d3d981be37fccee9016a545504e4d7b\\QM5_1001\\20260428_103856\\raw\\run_01\\20260428.log"
+    },
+    {
+      "run": "run_02",
+      "status": "FAIL",
+      "failure": "SYMBOL_NOT_FOUND",
+      "error": "Tester symbol is unavailable in Market Watch for this terminal.",
+      "exit_code": 0,
+      "report_source_path": "D:\\QM\\mt5\\T1\\QM5_1001_GOLD_DWX_20260428_103856_run_02.htm",
+      "report_canonical_path": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\GOLD.DWX\\dc2b43437599b518dc46bfdc3a9d4e4e2d3d981be37fccee9016a545504e4d7b\\QM5_1001\\20260428_103856\\raw\\run_02\\report.htm",
+      "report_size_bytes": 0,
+      "tester_log_path": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\GOLD.DWX\\dc2b43437599b518dc46bfdc3a9d4e4e2d3d981be37fccee9016a545504e4d7b\\QM5_1001\\20260428_103856\\raw\\run_02\\20260428.log"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "issue": "QUA-788",
+  "tick_utc": "2026-05-08T06:26:51.3793415Z",
+  "status": "blocked",
+  "actionable_dispatch": null,
+  "wake_scope": "QUA-402/QUA-342 post-CTO-gate execution",
+  "dependency_status": [
+    {
+      "issue": "QUA-342",
+      "blocked": true,
+      "dispatch_ready": false,
+      "missing_fields": [
+        "ea_name",
+        "setfile_path"
+      ],
+      "unblock_owner": "CTO",
+      "unblock_action": "Assign ea_name + setfile_path and resolve EA ID mapping from TBD"
+    },
+    {
+      "issue": "QUA-402",
+      "blocked": true,
+      "dispatch_ready": false,
+      "missing_artifacts": true,
+      "artifact_root": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-402",
+      "unblock_owner": "CTO",
+      "unblock_action": "Provide post-gate dispatch payload/artifacts for execution"
+    }
+  ],
+  "infra_snapshot": {
+    "factory_runs_root": "D:\\QM\\reports\\factory_runs",
+    "terminal64_processes": [
+      {
+        "path": "D:\\QM\\mt5\\T4\\terminal64.exe",
+        "pid": 31676
+      }
+    ],
+    "last_check_state_exists": false,
+    "last_check_state": "D:\\QM\\reports\\pipeline\\last_check_state.json",
+    "factory_runs_root_exists": false
+  },
+  "next_action": "Await CTO unblock inputs; once delivered run dispatch immediately and write run evidence under D:\\QM\\reports\\factory_runs\\<ea_id>\\<version>\\<phase>\\<symbol>\\<run_key>\\"
+}

@@ -1,0 +1,2937 @@
+{
+  "dedup": {
+    "QM5_1002|v1|AUDCAD.DWX|P2|cfg001": {
+      "completed_ts": 1778227691,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "AUDCAD.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "AUDCAD.DWX",
+      "terminal": "T4",
+      "ts": 1778227475
+    },
+    "QM5_1002|v1|AUDCHF.DWX|P2|cfg001": {
+      "completed_ts": 1778227904,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "AUDCHF.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "AUDCHF.DWX",
+      "terminal": "T5",
+      "ts": 1778227643
+    },
+    "QM5_1002|v1|AUDJPY.DWX|P2|cfg001": {
+      "completed_ts": 1778227259,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "AUDJPY.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "AUDJPY.DWX",
+      "terminal": "T1",
+      "ts": 1778226990
+    },
+    "QM5_1002|v1|AUDNZD.DWX|P2|cfg001": {
+      "completed_ts": 1778228120,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "AUDNZD.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "AUDNZD.DWX",
+      "terminal": "T4",
+      "ts": 1778227691
+    },
+    "QM5_1002|v1|AUDUSD.DWX|P2|cfg001": {
+      "completed_ts": 1778227475,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "AUDUSD.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "AUDUSD.DWX",
+      "terminal": "T4",
+      "ts": 1778226990
+    },
+    "QM5_1002|v1|CADCHF.DWX|P2|cfg001": {
+      "completed_ts": 1778228335,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "CADCHF.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "CADCHF.DWX",
+      "terminal": "T5",
+      "ts": 1778227840
+    },
+    "QM5_1002|v1|CADJPY.DWX|P2|cfg001": {
+      "completed_ts": 1778228550,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "CADJPY.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "CADJPY.DWX",
+      "terminal": "T4",
+      "ts": 1778226990
+    },
+    "QM5_1002|v1|CHFJPY.DWX|P2|cfg001": {
+      "completed_ts": 1778228764,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "CHFJPY.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "CHFJPY.DWX",
+      "terminal": "T2",
+      "ts": 1778226990
+    },
+    "QM5_1002|v1|EURAUD.DWX|P2|cfg001": {
+      "completed_ts": 1778228979,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "EURAUD.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "EURAUD.DWX",
+      "terminal": "T5",
+      "ts": 1778226990
+    },
+    "QM5_1002|v1|EURCAD.DWX|P2|cfg001": {
+      "completed_ts": 1778229193,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "EURCAD.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "EURCAD.DWX",
+      "terminal": "T3",
+      "ts": 1778226990
+    },
+    "QM5_1002|v1|EURCHF.DWX|P2|cfg001": {
+      "completed_ts": 1778229408,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "EURCHF.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "EURCHF.DWX",
+      "terminal": "T1",
+      "ts": 1778226990
+    },
+    "QM5_1002|v1|EURGBP.DWX|P2|cfg001": {
+      "completed_ts": 1778229623,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "EURGBP.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "EURGBP.DWX",
+      "terminal": "T4",
+      "ts": 1778228120
+    },
+    "QM5_1002|v1|EURJPY.DWX|P2|cfg001": {
+      "completed_ts": 1778227045,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "EURJPY.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "EURJPY.DWX",
+      "terminal": "T5",
+      "ts": 1778226990
+    },
+    "QM5_1002|v1|EURNZD.DWX|P2|cfg001": {
+      "completed_ts": 1778229841,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "EURNZD.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "EURNZD.DWX",
+      "terminal": "T5",
+      "ts": 1778227045
+    },
+    "QM5_1002|v1|EURUSD.DWX|P2|cfg001": {
+      "completed_ts": 1778230056,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "EURUSD.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "EURUSD.DWX",
+      "terminal": "T5",
+      "ts": 1778226990
+    },
+    "QM5_1002|v1|GBPAUD.DWX|P2|cfg001": {
+      "completed_ts": 1778230271,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "GBPAUD.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "GBPAUD.DWX",
+      "terminal": "T5",
+      "ts": 1778227059
+    },
+    "QM5_1002|v1|GBPCAD.DWX|P2|cfg001": {
+      "completed_ts": 1778230485,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "GBPCAD.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "GBPCAD.DWX",
+      "terminal": "T5",
+      "ts": 1778227253
+    },
+    "QM5_1002|v1|GBPCHF.DWX|P2|cfg001": {
+      "completed_ts": 1778230701,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "GBPCHF.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "GBPCHF.DWX",
+      "terminal": "T1",
+      "ts": 1778227259
+    },
+    "QM5_1002|v1|GBPJPY.DWX|P2|cfg001": {
+      "completed_ts": 1778230919,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "GBPJPY.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "GBPJPY.DWX",
+      "terminal": "T3",
+      "ts": 1778226990
+    },
+    "QM5_1002|v1|GBPNZD.DWX|P2|cfg001": {
+      "completed_ts": 1778231134,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "GBPNZD.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "GBPNZD.DWX",
+      "terminal": "T5",
+      "ts": 1778227449
+    },
+    "QM5_1002|v1|GBPUSD.DWX|P2|cfg001": {
+      "completed_ts": 1778231350,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "GBPUSD.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "GBPUSD.DWX",
+      "terminal": "T3",
+      "ts": 1778226990
+    },
+    "QM5_1002|v1|GDAXI.DWX|P2|cfg001": {
+      "completed_ts": 1778231565,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "GDAXI.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "GDAXI.DWX",
+      "terminal": "T5",
+      "ts": 1778228811
+    },
+    "QM5_1002|v1|JPN225.DWX|P2|cfg001": {
+      "completed_ts": 1778231784,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "JPN225.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "JPN225.DWX",
+      "terminal": "T5",
+      "ts": 1778229005
+    },
+    "QM5_1002|v1|NDX.DWX|P2|cfg001": {
+      "completed_ts": 1778231999,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "NDX.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "NDX.DWX",
+      "terminal": "T2",
+      "ts": 1778228764
+    },
+    "QM5_1002|v1|NZDCAD.DWX|P2|cfg001": {
+      "completed_ts": 1778232213,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "NZDCAD.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "NZDCAD.DWX",
+      "terminal": "T5",
+      "ts": 1778227904
+    },
+    "QM5_1002|v1|NZDCHF.DWX|P2|cfg001": {
+      "completed_ts": 1778232428,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "NZDCHF.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "NZDCHF.DWX",
+      "terminal": "T5",
+      "ts": 1778228033
+    },
+    "QM5_1002|v1|NZDUSD.DWX|P2|cfg001": {
+      "completed_ts": 1778232644,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "NZDUSD.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "NZDUSD.DWX",
+      "terminal": "T4",
+      "ts": 1778226990
+    },
+    "QM5_1002|v1|UK100.DWX|P2|cfg001": {
+      "completed_ts": 1778232859,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "UK100.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "UK100.DWX",
+      "terminal": "T5",
+      "ts": 1778228979
+    },
+    "QM5_1002|v1|USDCAD.DWX|P2|cfg001": {
+      "completed_ts": 1778233074,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "USDCAD.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "USDCAD.DWX",
+      "terminal": "T2",
+      "ts": 1778226990
+    },
+    "QM5_1002|v1|USDCHF.DWX|P2|cfg001": {
+      "completed_ts": 1778233289,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "USDCHF.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "USDCHF.DWX",
+      "terminal": "T2",
+      "ts": 1778226990
+    },
+    "QM5_1002|v1|USDJPY.DWX|P2|cfg001": {
+      "completed_ts": 1778233508,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "USDJPY.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "USDJPY.DWX",
+      "terminal": "T1",
+      "ts": 1778226990
+    },
+    "QM5_1002|v1|WS30.DWX|P2|cfg001": {
+      "completed_ts": 1778233722,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "WS30.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "WS30.DWX",
+      "terminal": "T5",
+      "ts": 1778228616
+    },
+    "QM5_1002|v1|XAGUSD.DWX|P2|cfg001": {
+      "completed_ts": 1778233936,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "XAGUSD.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "XAGUSD.DWX",
+      "terminal": "T5",
+      "ts": 1778228335
+    },
+    "QM5_1002|v1|XAUUSD.DWX|P2|cfg001": {
+      "completed_ts": 1778234150,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "XAUUSD.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "XAUUSD.DWX",
+      "terminal": "T5",
+      "ts": 1778228228
+    },
+    "QM5_1002|v1|XBRUSD.DWX|P2|cfg001": {
+      "completed_ts": 1778234368,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "XBRUSD.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "XBRUSD.DWX",
+      "terminal": "T4",
+      "ts": 1778228550
+    },
+    "QM5_1002|v1|XTIUSD.DWX|P2|cfg001": {
+      "completed_ts": 1778234583,
+      "job": {
+        "ea_id": "QM5_1002",
+        "phase": "P2",
+        "setfile_path": "D:\\QM\\mt5\\T1\\MQL5\\Profiles\\Tester\\QM5_1002_davey-eu-night.set",
+        "sub_gate_config_hash": "cfg001",
+        "symbol": "XTIUSD.DWX",
+        "version": "v1"
+      },
+      "status": "complete",
+      "symbol": "XTIUSD.DWX",
+      "terminal": "T5",
+      "ts": 1778228422
+    },
+    "QM5_1003|smoke|AUDCAD.DWX|P1|H1-2024": {
+      "completed_ts": 1778206716,
+      "status": "complete",
+      "symbol": "AUDCAD.DWX",
+      "terminal": "T3",
+      "ts": 1778001620
+    },
+    "QM5_1003|smoke|AUDCHF.DWX|P1|H1-2024": {
+      "completed_ts": 1778219090,
+      "status": "complete",
+      "symbol": "AUDCHF.DWX",
+      "terminal": "T5",
+      "ts": 1778215185
+    },
+    "QM5_1003|smoke|AUDCHF.DWX|P1|M15-2024": {
+      "completed_ts": 1778308325,
+      "job": {
+        "ea_id": "QM5_1003",
+        "phase": "P1",
+        "setfile_path": "D:\\QM\\reports\\pipeline\\QM5_1003\\P3\\temp_setfiles\\AUDCHF.DWX_M15_001.set",
+        "sub_gate_config_hash": "M15-2024",
+        "symbol": "AUDCHF.DWX",
+        "version": "smoke"
+      },
+      "status": "complete",
+      "symbol": "AUDCHF.DWX",
+      "terminal": "T5",
+      "ts": 1778224334
+    },
+    "QM5_1003|smoke|AUDJPY.DWX|P1|H1-2024": {
+      "completed_ts": 1778209407,
+      "status": "complete",
+      "symbol": "AUDJPY.DWX",
+      "terminal": "T3",
+      "ts": 1778024933
+    },
+    "QM5_1003|smoke|AUDNZD.DWX|P1|H1-2024": {
+      "completed_ts": 1778216612,
+      "status": "complete",
+      "symbol": "AUDNZD.DWX",
+      "terminal": "T3",
+      "ts": 1778025175
+    },
+    "QM5_1003|smoke|EURNZD.DWX|P1|H1-2024": {
+      "completed_ts": 1778271579,
+      "status": "complete",
+      "symbol": "EURNZD.DWX",
+      "terminal": "T3",
+      "ts": 1778219091
+    },
+    "QM5_1003|smoke|EURNZD.DWX|P1|M15-2024": {
+      "completed_ts": 1778229005,
+      "job": {
+        "ea_id": "QM5_1003",
+        "phase": "P1",
+        "setfile_path": "D:\\QM\\reports\\pipeline\\QM5_1003\\P3\\temp_setfiles\\EURNZD.DWX_M15_001.set",
+        "sub_gate_config_hash": "M15-2024",
+        "symbol": "EURNZD.DWX",
+        "version": "smoke"
+      },
+      "status": "complete",
+      "symbol": "EURNZD.DWX",
+      "terminal": "T5",
+      "ts": 1778226673
+    },
+    "QM5_1003|smoke|EURUSD.DWX|P1|H1-2024": {
+      "completed_ts": 1778272304,
+      "job": {
+        "ea_id": "QM5_1003",
+        "phase": "P1",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1003_davey_baseline_3bar\\sets\\QM5_1003_davey_baseline_3bar_EURUSD.DWX_H1_backtest.set",
+        "sub_gate_config_hash": "H1-2024",
+        "symbol": "EURUSD.DWX",
+        "version": "smoke"
+      },
+      "status": "complete",
+      "symbol": "EURUSD.DWX",
+      "terminal": "T5",
+      "ts": 1778271336
+    },
+    "QM5_1003|v5.0.0-qua1033-live|EURUSD.DWX|P3|qua1033-live-mini-001|setfile=QM5_1003_EURUSD.set": {
+      "completed_ts": 1778310762,
+      "status": "complete",
+      "symbol": "EURUSD.DWX",
+      "terminal": "T5",
+      "ts": 1778310762
+    },
+    "QM5_1003|v5.0.0-qua1033-live|GBPUSD.DWX|P3|qua1033-live-mini-002|setfile=QM5_1003_GBPUSD.set": {
+      "completed_ts": 1778310762,
+      "status": "complete",
+      "symbol": "GBPUSD.DWX",
+      "terminal": "T3",
+      "ts": 1778310762
+    },
+    "QM5_1003|v5.0.0-qua1033-live|USDJPY.DWX|P3|qua1033-live-mini-003|setfile=QM5_1003_USDJPY.set": {
+      "completed_ts": 1778310762,
+      "status": "complete",
+      "symbol": "USDJPY.DWX",
+      "terminal": "T1",
+      "ts": 1778310762
+    },
+    "QM5_1003|v5.0.0-qua1033-live|XAUUSD.DWX|P3|qua1033-live-mini-004|setfile=QM5_1003_XAUUSD.set": {
+      "completed_ts": 1778310762,
+      "status": "complete",
+      "symbol": "XAUUSD.DWX",
+      "terminal": "T5",
+      "ts": 1778310762
+    },
+    "QM5_1003|v5.0.0-qua1033-live|XTIUSD.DWX|P3|qua1033-live-mini-005|setfile=QM5_1003_XTIUSD.set": {
+      "completed_ts": 1778310763,
+      "status": "complete",
+      "symbol": "XTIUSD.DWX",
+      "terminal": "T3",
+      "ts": 1778310762
+    },
+    "QM5_1004|smoke|AUDCAD.DWX|P1|H1-2024": {
+      "job": {
+        "ea_id": "QM5_1004",
+        "phase": "P1",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1004_davey_es_breakout\\sets\\QM5_1004_davey_es_breakout_AUDCAD.DWX_H1_backtest.set",
+        "sub_gate_config_hash": "H1-2024",
+        "symbol": "AUDCAD.DWX",
+        "version": "smoke"
+      },
+      "symbol": "AUDCAD.DWX",
+      "terminal": "T4",
+      "ts": 1778253155
+    },
+    "QM5_1004|smoke|AUDCHF.DWX|P1|H1-2024": {
+      "job": {
+        "ea_id": "QM5_1004",
+        "phase": "P1",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1004_davey_es_breakout\\sets\\QM5_1004_davey_es_breakout_AUDCHF.DWX_H1_backtest.set",
+        "sub_gate_config_hash": "H1-2024",
+        "symbol": "AUDCHF.DWX",
+        "version": "smoke"
+      },
+      "symbol": "AUDCHF.DWX",
+      "terminal": "T5",
+      "ts": 1778253187
+    },
+    "QM5_1004|smoke|AUDJPY.DWX|P1|H1-2024": {
+      "completed_ts": 1778254181,
+      "job": {
+        "ea_id": "QM5_1004",
+        "phase": "P1",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1004_davey_es_breakout\\sets\\QM5_1004_davey_es_breakout_AUDJPY.DWX_H1_backtest.set",
+        "sub_gate_config_hash": "H1-2024",
+        "symbol": "AUDJPY.DWX",
+        "version": "smoke"
+      },
+      "status": "complete",
+      "symbol": "AUDJPY.DWX",
+      "terminal": "T1",
+      "ts": 1778253211
+    },
+    "QM5_1004|smoke|AUDNZD.DWX|P1|H1-2024": {
+      "job": {
+        "ea_id": "QM5_1004",
+        "phase": "P1",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1004_davey_es_breakout\\sets\\QM5_1004_davey_es_breakout_AUDNZD.DWX_H1_backtest.set",
+        "sub_gate_config_hash": "H1-2024",
+        "symbol": "AUDNZD.DWX",
+        "version": "smoke"
+      },
+      "symbol": "AUDNZD.DWX",
+      "terminal": "T3",
+      "ts": 1778254182
+    },
+    "QM5_1004|smoke|AUDUSD.DWX|P1|H1-2024": {
+      "job": {
+        "ea_id": "QM5_1004",
+        "phase": "P1",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1004_davey_es_breakout\\sets\\QM5_1004_davey_es_breakout_AUDUSD.DWX_H1_backtest.set",
+        "sub_gate_config_hash": "H1-2024",
+        "symbol": "AUDUSD.DWX",
+        "version": "smoke"
+      },
+      "symbol": "AUDUSD.DWX",
+      "terminal": "T2",
+      "ts": 1778254213
+    },
+    "QM5_1004|smoke|CADCHF.DWX|P1|H1-2024": {
+      "completed_ts": 1778255217,
+      "job": {
+        "ea_id": "QM5_1004",
+        "phase": "P1",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1004_davey_es_breakout\\sets\\QM5_1004_davey_es_breakout_CADCHF.DWX_H1_backtest.set",
+        "sub_gate_config_hash": "H1-2024",
+        "symbol": "CADCHF.DWX",
+        "version": "smoke"
+      },
+      "status": "complete",
+      "symbol": "CADCHF.DWX",
+      "terminal": "T1",
+      "ts": 1778254249
+    },
+    "QM5_1004|smoke|CADJPY.DWX|P1|H1-2024": {
+      "completed_ts": 1778256186,
+      "job": {
+        "ea_id": "QM5_1004",
+        "phase": "P1",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1004_davey_es_breakout\\sets\\QM5_1004_davey_es_breakout_CADJPY.DWX_H1_backtest.set",
+        "sub_gate_config_hash": "H1-2024",
+        "symbol": "CADJPY.DWX",
+        "version": "smoke"
+      },
+      "status": "complete",
+      "symbol": "CADJPY.DWX",
+      "terminal": "T1",
+      "ts": 1778255218
+    },
+    "QM5_1004|smoke|CHFJPY.DWX|P1|H1-2024": {
+      "completed_ts": 1778257154,
+      "job": {
+        "ea_id": "QM5_1004",
+        "phase": "P1",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1004_davey_es_breakout\\sets\\QM5_1004_davey_es_breakout_CHFJPY.DWX_H1_backtest.set",
+        "sub_gate_config_hash": "H1-2024",
+        "symbol": "CHFJPY.DWX",
+        "version": "smoke"
+      },
+      "status": "complete",
+      "symbol": "CHFJPY.DWX",
+      "terminal": "T1",
+      "ts": 1778256186
+    },
+    "QM5_1004|smoke|EURAUD.DWX|P1|H1-2024": {
+      "completed_ts": 1778257637,
+      "job": {
+        "ea_id": "QM5_1004",
+        "phase": "P1",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1004_davey_es_breakout\\sets\\QM5_1004_davey_es_breakout_EURAUD.DWX_H1_backtest.set",
+        "sub_gate_config_hash": "H1-2024",
+        "symbol": "EURAUD.DWX",
+        "version": "smoke"
+      },
+      "status": "complete",
+      "symbol": "EURAUD.DWX",
+      "terminal": "T5",
+      "ts": 1778257155
+    },
+    "QM5_1004|smoke|EURCAD.DWX|P1|H1-2024": {
+      "completed_ts": 1778258616,
+      "job": {
+        "ea_id": "QM5_1004",
+        "phase": "P1",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1004_davey_es_breakout\\sets\\QM5_1004_davey_es_breakout_EURCAD.DWX_H1_backtest.set",
+        "sub_gate_config_hash": "H1-2024",
+        "symbol": "EURCAD.DWX",
+        "version": "smoke"
+      },
+      "status": "complete",
+      "symbol": "EURCAD.DWX",
+      "terminal": "T1",
+      "ts": 1778257649
+    },
+    "QM5_1004|smoke|EURCHF.DWX|P1|H1-2024": {
+      "completed_ts": 1778259585,
+      "job": {
+        "ea_id": "QM5_1004",
+        "phase": "P1",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1004_davey_es_breakout\\sets\\QM5_1004_davey_es_breakout_EURCHF.DWX_H1_backtest.set",
+        "sub_gate_config_hash": "H1-2024",
+        "symbol": "EURCHF.DWX",
+        "version": "smoke"
+      },
+      "status": "complete",
+      "symbol": "EURCHF.DWX",
+      "terminal": "T1",
+      "ts": 1778258617
+    },
+    "QM5_1004|smoke|EURGBP.DWX|P1|H1-2024": {
+      "completed_ts": 1778260552,
+      "job": {
+        "ea_id": "QM5_1004",
+        "phase": "P1",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1004_davey_es_breakout\\sets\\QM5_1004_davey_es_breakout_EURGBP.DWX_H1_backtest.set",
+        "sub_gate_config_hash": "H1-2024",
+        "symbol": "EURGBP.DWX",
+        "version": "smoke"
+      },
+      "status": "complete",
+      "symbol": "EURGBP.DWX",
+      "terminal": "T1",
+      "ts": 1778259585
+    },
+    "QM5_1004|smoke|NZDCHF.DWX|P1|H1-2024": {
+      "completed_ts": 1778223245,
+      "status": "complete",
+      "symbol": "NZDCHF.DWX",
+      "terminal": "T4",
+      "ts": 1778223222
+    },
+    "QM5_1004|smoke|NZDJPY.DWX|P1|H1-2024": {
+      "completed_ts": 1778223275,
+      "status": "complete",
+      "symbol": "NZDJPY.DWX",
+      "terminal": "T4",
+      "ts": 1778223246
+    },
+    "QM5_1004|smoke|NZDUSD.DWX|P1|H1-2024": {
+      "completed_ts": 1778223301,
+      "status": "complete",
+      "symbol": "NZDUSD.DWX",
+      "terminal": "T4",
+      "ts": 1778223277
+    },
+    "QM5_1004|smoke|UK100.DWX|P1|H1-2024": {
+      "completed_ts": 1778223321,
+      "status": "complete",
+      "symbol": "UK100.DWX",
+      "terminal": "T4",
+      "ts": 1778223301
+    },
+    "QM5_1004|smoke|US500.DWX|P1|H1-2024": {
+      "completed_ts": 1778223699,
+      "status": "complete",
+      "symbol": "US500.DWX",
+      "terminal": "T1",
+      "ts": 1778081159
+    },
+    "QM5_1004|smoke|USDCAD.DWX|P1|H1-2024": {
+      "completed_ts": 1778223904,
+      "job": {
+        "ea_id": "QM5_1004",
+        "phase": "P1",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1004_davey_es_breakout\\sets\\QM5_1004_davey_es_breakout_USDCAD.DWX_H1_backtest.set",
+        "sub_gate_config_hash": "H1-2024",
+        "symbol": "USDCAD.DWX",
+        "version": "smoke"
+      },
+      "status": "complete",
+      "symbol": "USDCAD.DWX",
+      "terminal": "T1",
+      "ts": 1778223699
+    },
+    "QM5_1004|smoke|USDCHF.DWX|P1|H1-2024": {
+      "completed_ts": 1778223925,
+      "job": {
+        "ea_id": "QM5_1004",
+        "phase": "P1",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1004_davey_es_breakout\\sets\\QM5_1004_davey_es_breakout_USDCHF.DWX_H1_backtest.set",
+        "sub_gate_config_hash": "H1-2024",
+        "symbol": "USDCHF.DWX",
+        "version": "smoke"
+      },
+      "status": "complete",
+      "symbol": "USDCHF.DWX",
+      "terminal": "T2",
+      "ts": 1778223905
+    },
+    "QM5_1004|smoke|USDJPY.DWX|P1|H1-2024": {
+      "completed_ts": 1778223946,
+      "job": {
+        "ea_id": "QM5_1004",
+        "phase": "P1",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1004_davey_es_breakout\\sets\\QM5_1004_davey_es_breakout_USDJPY.DWX_H1_backtest.set",
+        "sub_gate_config_hash": "H1-2024",
+        "symbol": "USDJPY.DWX",
+        "version": "smoke"
+      },
+      "status": "complete",
+      "symbol": "USDJPY.DWX",
+      "terminal": "T3",
+      "ts": 1778223926
+    },
+    "QM5_1004|smoke|WS30.DWX|P1|H1-2024": {
+      "completed_ts": 1778223968,
+      "job": {
+        "ea_id": "QM5_1004",
+        "phase": "P1",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1004_davey_es_breakout\\sets\\QM5_1004_davey_es_breakout_WS30.DWX_H1_backtest.set",
+        "sub_gate_config_hash": "H1-2024",
+        "symbol": "WS30.DWX",
+        "version": "smoke"
+      },
+      "status": "complete",
+      "symbol": "WS30.DWX",
+      "terminal": "T5",
+      "ts": 1778223947
+    },
+    "QM5_1004|smoke|XAGUSD.DWX|P1|H1-2024": {
+      "completed_ts": 1778224175,
+      "job": {
+        "ea_id": "QM5_1004",
+        "phase": "P1",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1004_davey_es_breakout\\sets\\QM5_1004_davey_es_breakout_XAGUSD.DWX_H1_backtest.set",
+        "sub_gate_config_hash": "H1-2024",
+        "symbol": "XAGUSD.DWX",
+        "version": "smoke"
+      },
+      "status": "complete",
+      "symbol": "XAGUSD.DWX",
+      "terminal": "T1",
+      "ts": 1778223968
+    },
+    "QM5_1004|smoke|XAUUSD.DWX|P1|H1-2024": {
+      "completed_ts": 1778224192,
+      "job": {
+        "ea_id": "QM5_1004",
+        "phase": "P1",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1004_davey_es_breakout\\sets\\QM5_1004_davey_es_breakout_XAUUSD.DWX_H1_backtest.set",
+        "sub_gate_config_hash": "H1-2024",
+        "symbol": "XAUUSD.DWX",
+        "version": "smoke"
+      },
+      "status": "complete",
+      "symbol": "XAUUSD.DWX",
+      "terminal": "T5",
+      "ts": 1778224175
+    },
+    "QM5_1004|smoke|XNGUSD.DWX|P1|H1-2024": {
+      "completed_ts": 1778224211,
+      "job": {
+        "ea_id": "QM5_1004",
+        "phase": "P1",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1004_davey_es_breakout\\sets\\QM5_1004_davey_es_breakout_XNGUSD.DWX_H1_backtest.set",
+        "sub_gate_config_hash": "H1-2024",
+        "symbol": "XNGUSD.DWX",
+        "version": "smoke"
+      },
+      "status": "complete",
+      "symbol": "XNGUSD.DWX",
+      "terminal": "T4",
+      "ts": 1778224193
+    },
+    "QM5_1004|smoke|XTIUSD.DWX|P1|H1-2024": {
+      "completed_ts": 1778224229,
+      "job": {
+        "ea_id": "QM5_1004",
+        "phase": "P1",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1004_davey_es_breakout\\sets\\QM5_1004_davey_es_breakout_XTIUSD.DWX_H1_backtest.set",
+        "sub_gate_config_hash": "H1-2024",
+        "symbol": "XTIUSD.DWX",
+        "version": "smoke"
+      },
+      "status": "complete",
+      "symbol": "XTIUSD.DWX",
+      "terminal": "T2",
+      "ts": 1778224211
+    },
+    "QM5_1009|smoke|XAGUSD.DWX|P1|M15-2024": {
+      "completed_ts": 1778200485,
+      "status": "complete",
+      "symbol": "XAGUSD.DWX",
+      "terminal": "T1",
+      "ts": 1778200468
+    },
+    "QM5_1009|smoke|XNGUSD.DWX|P1|M15-2024": {
+      "completed_ts": 1778200502,
+      "status": "complete",
+      "symbol": "XNGUSD.DWX",
+      "terminal": "T4",
+      "ts": 1778200485
+    },
+    "QM5_1009|smoke|XTIUSD.DWX|P1|M15-2024": {
+      "completed_ts": 1778200521,
+      "status": "complete",
+      "symbol": "XTIUSD.DWX",
+      "terminal": "T2",
+      "ts": 1778200503
+    },
+    "QM5_1017|smoke|AUDCAD.DWX|P1|D1-2024": {
+      "completed_ts": 1778221560,
+      "status": "complete",
+      "symbol": "AUDCAD.DWX",
+      "terminal": "T3",
+      "ts": 1778191879
+    },
+    "QM5_1017|smoke|AUDUSD.DWX|P1|D1-2024": {
+      "completed_ts": 1778221577,
+      "status": "complete",
+      "symbol": "AUDUSD.DWX",
+      "terminal": "T1",
+      "ts": 1778191753
+    },
+    "QM5_1017|smoke|EURUSD.DWX|P1|D1-2024": {
+      "completed_ts": 1778221594,
+      "status": "complete",
+      "symbol": "EURUSD.DWX",
+      "terminal": "T2",
+      "ts": 1778191793
+    },
+    "QM5_1017|smoke|GBPUSD.DWX|P1|D1-2024": {
+      "completed_ts": 1778221610,
+      "status": "complete",
+      "symbol": "GBPUSD.DWX",
+      "terminal": "T4",
+      "ts": 1778191814
+    },
+    "QM5_1017|smoke|NZDUSD.DWX|P1|D1-2024": {
+      "completed_ts": 1778221628,
+      "status": "complete",
+      "symbol": "NZDUSD.DWX",
+      "terminal": "T3",
+      "ts": 1778191773
+    },
+    "QM5_1017|smoke|XAGUSD.DWX|P1|D1-2024": {
+      "completed_ts": 1778221645,
+      "status": "complete",
+      "symbol": "XAGUSD.DWX",
+      "terminal": "T1",
+      "ts": 1778191858
+    },
+    "QM5_1017|smoke|XAUUSD.DWX|P1|D1-2024": {
+      "completed_ts": 1778221662,
+      "status": "complete",
+      "symbol": "XAUUSD.DWX",
+      "terminal": "T5",
+      "ts": 1778191836
+    }
+  },
+  "dispatch_state_lane": {},
+  "last_rr_index": 2,
+  "ops_resets": [
+    {
+      "action": "reset_matrix_bucket_due_to_phantom_pass_contamination",
+      "bucket": "QM5_1003_v1_P2",
+      "issue": "QUA-736",
+      "ts_utc": "20260505T154058Z"
+    }
+  ],
+  "pending_matrix_jobs": {},
+  "phase_matrix_index": {
+    "QM5_1002_v1_P2": {
+      "matrix": [
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURUSD.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPUSD.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "USDJPY.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "AUDUSD.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "USDCAD.DWX",
+          "terminal": "T2",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "USDCHF.DWX",
+          "terminal": "T2",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "NZDUSD.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURJPY.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPJPY.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "AUDJPY.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "CADJPY.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "CHFJPY.DWX",
+          "terminal": "T2",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURAUD.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURCAD.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURCHF.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURNZD.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPAUD.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPCAD.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPCHF.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPNZD.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "AUDCAD.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "AUDCHF.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "AUDNZD.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "CADCHF.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "NZDCAD.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "NZDCHF.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURGBP.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "XAUUSD.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "XAGUSD.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "XTIUSD.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "XBRUSD.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "WS30.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "NDX.DWX",
+          "terminal": "T2",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GDAXI.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "UK100.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "JPN225.DWX",
+          "terminal": "T5",
+          "verdict": null
+        }
+      ],
+      "next_strategy_unblocked": null,
+      "phase_verdict": null
+    },
+    "QM5_1003_smoke_P1": {
+      "matrix": [
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "AUDCAD.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURAUD.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPAUD.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "NDXm.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "NZDCAD.DWX",
+          "terminal": "T2",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "USDCHF.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "AUDCHF.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "AUDJPY.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "AUDNZD.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "AUDUSD.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "CADCHF.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "CADJPY.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "CHFJPY.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURCAD.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURCHF.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURGBP.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURJPY.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURNZD.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURUSD.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPCAD.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPCHF.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPJPY.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPNZD.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPUSD.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GDAXIm.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "NZDCHF.DWX",
+          "terminal": "T2",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "NZDJPY.DWX",
+          "terminal": "T2",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "NZDUSD.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "UK100.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "USDCAD.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "USDJPY.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "WS30.DWX",
+          "terminal": "T2",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "XAGUSD.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "XAUUSD.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "XNGUSD.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "XTIUSD.DWX",
+          "terminal": "T3",
+          "verdict": null
+        }
+      ],
+      "next_strategy_unblocked": null,
+      "phase_verdict": null
+    },
+    "QM5_1003_v1_P2": {
+      "matrix": [
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "AUDCAD.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "AUDCHF.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "AUDJPY.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "AUDNZD.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "AUDUSD.DWX",
+          "terminal": "T2",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "CADCHF.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "CADJPY.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "CHFJPY.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURAUD.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURCAD.DWX",
+          "terminal": "T2",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURCHF.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURGBP.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURJPY.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURNZD.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURUSD.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPAUD.DWX",
+          "terminal": "T2",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPCAD.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPCHF.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPJPY.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPNZD.DWX",
+          "terminal": "T2",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPUSD.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GDAXIm.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "NDXm.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "NZDCAD.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "NZDCHF.DWX",
+          "terminal": "T2",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "NZDJPY.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "NZDUSD.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "UK100.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "USDCAD.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "USDCHF.DWX",
+          "terminal": "T2",
+          "verdict": null
+        },
+        {
+          "evidence": "QUA-736:forced_release_wave3:20260505T154939Z",
+          "invalidation_reason": null,
+          "symbol": "USDJPY.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": "QUA-736:forced_release_wave3:20260505T154939Z",
+          "invalidation_reason": null,
+          "symbol": "WS30.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": "QUA-736:forced_release_wave3:20260505T154939Z",
+          "invalidation_reason": null,
+          "symbol": "XAGUSD.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": "QUA-736:forced_release_wave3:20260505T154939Z",
+          "invalidation_reason": null,
+          "symbol": "XAUUSD.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": "QUA-736:forced_release_wave3:20260505T154939Z",
+          "invalidation_reason": null,
+          "symbol": "XNGUSD.DWX",
+          "terminal": "T2",
+          "verdict": null
+        },
+        {
+          "evidence": "QUA-736:forced_release_wave3:20260505T154939Z",
+          "invalidation_reason": null,
+          "symbol": "XTIUSD.DWX",
+          "terminal": "T3",
+          "verdict": null
+        }
+      ],
+      "next_strategy_unblocked": null,
+      "phase_verdict": null
+    },
+    "QM5_1004_smoke_P1": {
+      "matrix": [
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "AUDCAD.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "AUDCHF.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "AUDJPY.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "AUDNZD.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "AUDUSD.DWX",
+          "terminal": "T2",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "CADCHF.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURUSD.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPUSD.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "USDJPY.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "USDCAD.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "NZDUSD.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "XAUUSD.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "XAGUSD.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURJPY.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPJPY.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURGBP.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "NDXm.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURAUD.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPAUD.DWX",
+          "terminal": "T2",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "USDCHF.DWX",
+          "terminal": "T2",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "NZDCAD.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "UK100.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "CHFJPY.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "CADJPY.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURCAD.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURCHF.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURNZD.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPCAD.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPCHF.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPNZD.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GDAXIm.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "NZDCHF.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "NZDJPY.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "WS30.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "XNGUSD.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "XTIUSD.DWX",
+          "terminal": "T2",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "US500.DWX",
+          "terminal": "T1",
+          "verdict": null
+        }
+      ],
+      "next_strategy_unblocked": null,
+      "phase_verdict": null
+    },
+    "QM5_1009_smoke_P1": {
+      "matrix": [
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURUSD.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPUSD.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "USDJPY.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "XAUUSD.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "AUDUSD.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "AUDCAD.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "AUDCHF.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "AUDJPY.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "AUDNZD.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "CADCHF.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "CADJPY.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "CHFJPY.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURAUD.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURCAD.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURCHF.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "USDCAD.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "NZDUSD.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "XAGUSD.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURJPY.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPJPY.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURGBP.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURNZD.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPAUD.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPCAD.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPCHF.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPNZD.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GDAXIm.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "NDXm.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "NZDCAD.DWX",
+          "terminal": "T2",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "NZDCHF.DWX",
+          "terminal": "T2",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "NZDJPY.DWX",
+          "terminal": "T2",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "UK100.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "USDCHF.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "WS30.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "XNGUSD.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "XTIUSD.DWX",
+          "terminal": "T2",
+          "verdict": null
+        }
+      ],
+      "next_strategy_unblocked": null,
+      "phase_verdict": null
+    },
+    "QM5_1017_smoke_P1": {
+      "matrix": [
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "AUDUSD.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURUSD.DWX",
+          "terminal": "T2",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "XAUUSD.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "AUDCAD.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPUSD.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "USDJPY.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "USDCAD.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "NZDUSD.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "XAGUSD.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURJPY.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPJPY.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURGBP.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "AUDCHF.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "AUDJPY.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "AUDNZD.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "CADCHF.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "CADJPY.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "CHFJPY.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURAUD.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURCAD.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURCHF.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURNZD.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPAUD.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPCAD.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPCHF.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPNZD.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GDAXIm.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "NDXm.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "NZDCAD.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "NZDCHF.DWX",
+          "terminal": "T2",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "NZDJPY.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "UK100.DWX",
+          "terminal": "T4",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "USDCHF.DWX",
+          "terminal": "T3",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "WS30.DWX",
+          "terminal": "T5",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "XNGUSD.DWX",
+          "terminal": "T2",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "XTIUSD.DWX",
+          "terminal": "T3",
+          "verdict": null
+        }
+      ],
+      "next_strategy_unblocked": null,
+      "phase_verdict": null
+    },
+    "QM5_9999_v1_P2": {
+      "matrix": [
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "EURUSD.DWX",
+          "terminal": "T1",
+          "verdict": null
+        },
+        {
+          "evidence": null,
+          "invalidation_reason": null,
+          "symbol": "GBPUSD.DWX",
+          "terminal": "T2",
+          "verdict": null
+        }
+      ],
+      "next_strategy_unblocked": null,
+      "phase_verdict": null
+    }
+  },
+  "recent_runs": {
+    "T1": [
+      1778224443,
+      1778224443,
+      1778224443,
+      1778224460,
+      1778226617,
+      1778226990,
+      1778226990,
+      1778226990,
+      1778227259,
+      1778253211,
+      1778254249,
+      1778255218,
+      1778256186,
+      1778257649,
+      1778258617,
+      1778259585,
+      1778310762
+    ],
+    "T2": [
+      1778224443,
+      1778224443,
+      1778224443,
+      1778225108,
+      1778225325,
+      1778225970,
+      1778226990,
+      1778226990,
+      1778226990,
+      1778228764,
+      1778254213
+    ],
+    "T3": [
+      1778224443,
+      1778224443,
+      1778224443,
+      1778226400,
+      1778226990,
+      1778226990,
+      1778226990,
+      1778254182,
+      1778310762,
+      1778310762
+    ],
+    "T4": [
+      1778224443,
+      1778224443,
+      1778224443,
+      1778224675,
+      1778224892,
+      1778226990,
+      1778226990,
+      1778226990,
+      1778227475,
+      1778227691,
+      1778228120,
+      1778228550,
+      1778253155
+    ],
+    "T5": [
+      1778191836,
+      1778215185,
+      1778223133,
+      1778223133,
+      1778223133,
+      1778223229,
+      1778223229,
+      1778223229,
+      1778223947,
+      1778224175,
+      1778224334,
+      1778224443,
+      1778224443,
+      1778224530,
+      1778224726,
+      1778224921,
+      1778225115,
+      1778225309,
+      1778225505,
+      1778225539,
+      1778225699,
+      1778225753,
+      1778225894,
+      1778226087,
+      1778226185,
+      1778226277,
+      1778226471,
+      1778226673,
+      1778226905,
+      1778226905,
+      1778226990,
+      1778226990,
+      1778226990,
+      1778227045,
+      1778227059,
+      1778227253,
+      1778227449,
+      1778227643,
+      1778227840,
+      1778227904,
+      1778228033,
+      1778228228,
+      1778228335,
+      1778228422,
+      1778228616,
+      1778228811,
+      1778228979,
+      1778229005,
+      1778253187,
+      1778257155,
+      1778271336,
+      1778310762,
+      1778310762
+    ]
+  },
+  "running": {
+    "T1": 0,
+    "T2": 1,
+    "T3": 0,
+    "T4": 1,
+    "T5": 0
+  },
+  "symbol_affinity": {
+    "": {
+      "terminal": "T3",
+      "ts": 1777457609
+    },
+    "AUDCAD.DWX": {
+      "terminal": "T4",
+      "ts": 1778253155
+    },
+    "AUDCHF.DWX": {
+      "terminal": "T5",
+      "ts": 1778253187
+    },
+    "AUDJPY.DWX": {
+      "terminal": "T1",
+      "ts": 1778253211
+    },
+    "AUDNZD.DWX": {
+      "terminal": "T3",
+      "ts": 1778254182
+    },
+    "AUDUSD.DWX": {
+      "terminal": "T2",
+      "ts": 1778254213
+    },
+    "CADCHF.DWX": {
+      "terminal": "T1",
+      "ts": 1778254249
+    },
+    "CADJPY.DWX": {
+      "terminal": "T1",
+      "ts": 1778255218
+    },
+    "CHFJPY.DWX": {
+      "terminal": "T1",
+      "ts": 1778256186
+    },
+    "EURAUD.DWX": {
+      "terminal": "T5",
+      "ts": 1778257155
+    },
+    "EURCAD.DWX": {
+      "terminal": "T1",
+      "ts": 1778257649
+    },
+    "EURCHF.DWX": {
+      "terminal": "T1",
+      "ts": 1778258617
+    },
+    "EURGBP.DWX": {
+      "terminal": "T1",
+      "ts": 1778259585
+    },
+    "EURJPY.DWX": {
+      "terminal": "T5",
+      "ts": 1778226990
+    },
+    "EURNZD.DWX": {
+      "terminal": "T5",
+      "ts": 1778227045
+    },
+    "EURUSD.DWX": {
+      "terminal": "T5",
+      "ts": 1778310762
+    },
+    "GBPAUD.DWX": {
+      "terminal": "T5",
+      "ts": 1778227059
+    },
+    "GBPCAD.DWX": {
+      "terminal": "T5",
+      "ts": 1778227253
+    },
+    "GBPCHF.DWX": {
+      "terminal": "T1",
+      "ts": 1778227259
+    },
+    "GBPJPY.DWX": {
+      "terminal": "T3",
+      "ts": 1778226990
+    },
+    "GBPNZD.DWX": {
+      "terminal": "T5",
+      "ts": 1778227449
+    },
+    "GBPUSD.DWX": {
+      "terminal": "T3",
+      "ts": 1778310762
+    },
+    "GDAXI.DWX": {
+      "terminal": "T5",
+      "ts": 1778228811
+    },
+    "GDAXIm.DWX": {
+      "terminal": "T5",
+      "ts": 1778043209
+    },
+    "JPN225.DWX": {
+      "terminal": "T5",
+      "ts": 1778229005
+    },
+    "NDX.DWX": {
+      "terminal": "T2",
+      "ts": 1778228764
+    },
+    "NDXm.DWX": {
+      "terminal": "T4",
+      "ts": 1778058946
+    },
+    "NZDCAD.DWX": {
+      "terminal": "T5",
+      "ts": 1778227904
+    },
+    "NZDCHF.DWX": {
+      "terminal": "T5",
+      "ts": 1778228033
+    },
+    "NZDJPY.DWX": {
+      "terminal": "T4",
+      "ts": 1778223246
+    },
+    "NZDUSD.DWX": {
+      "terminal": "T4",
+      "ts": 1778226990
+    },
+    "UK100.DWX": {
+      "terminal": "T5",
+      "ts": 1778228979
+    },
+    "US500.DWX": {
+      "terminal": "T1",
+      "ts": 1778081913
+    },
+    "USDCAD.DWX": {
+      "terminal": "T2",
+      "ts": 1778226990
+    },
+    "USDCHF.DWX": {
+      "terminal": "T2",
+      "ts": 1778226990
+    },
+    "USDJPY.DWX": {
+      "terminal": "T1",
+      "ts": 1778310762
+    },
+    "WS30.DWX": {
+      "terminal": "T5",
+      "ts": 1778228616
+    },
+    "XAGUSD.DWX": {
+      "terminal": "T5",
+      "ts": 1778228335
+    },
+    "XAUUSD.DWX": {
+      "terminal": "T5",
+      "ts": 1778310762
+    },
+    "XBRUSD.DWX": {
+      "terminal": "T4",
+      "ts": 1778228550
+    },
+    "XNGUSD.DWX": {
+      "terminal": "T4",
+      "ts": 1778224193
+    },
+    "XTIUSD.DWX": {
+      "terminal": "T3",
+      "ts": 1778310762
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "timestamp_utc": "2026-04-28T10:42:47.3726737Z",
+  "run_tag": "20260428_104244",
+  "result": "FAIL",
+  "reason_classes": [
+    "NO_HISTORY_DATA",
+    "REPORT_MISSING",
+    "INCOMPLETE_RUNS"
+  ],
+  "ea_id": 1001,
+  "ea_label": "QM5_1001",
+  "expert": "QM/QM5_1001_framework_smoke",
+  "symbol": "XAUUSD.DWX",
+  "year": 2024,
+  "terminal": "T1",
+  "model": 4,
+  "period": "H1",
+  "min_trades_required": 1,
+  "deterministic": false,
+  "oninit_failure_detected": false,
+  "model4_log_marker_detected": false,
+  "report_dir": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\XAUUSD.DWX\\46a39c0c3f18e028f266cfb2a28fc3b69d23721162786c9ea1555a84812c9639\\QM5_1001\\20260428_104244",
+  "report_export_mode": "relative_report_plus_postcopy",
+  "runs": [
+    {
+      "run": "run_01",
+      "status": "FAIL",
+      "failure": "NO_HISTORY_DATA",
+      "error": "Tester could not access required history data for requested window.",
+      "exit_code": 0,
+      "report_source_path": "D:\\QM\\mt5\\T1\\QM5_1001_XAUUSD_DWX_20260428_104244_run_01.htm",
+      "report_canonical_path": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\XAUUSD.DWX\\46a39c0c3f18e028f266cfb2a28fc3b69d23721162786c9ea1555a84812c9639\\QM5_1001\\20260428_104244\\raw\\run_01\\report.htm",
+      "report_size_bytes": 0,
+      "tester_log_path": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\XAUUSD.DWX\\46a39c0c3f18e028f266cfb2a28fc3b69d23721162786c9ea1555a84812c9639\\QM5_1001\\20260428_104244\\raw\\run_01\\20260428.log"
+    },
+    {
+      "run": "run_02",
+      "status": "FAIL",
+      "failure": "NO_HISTORY_DATA",
+      "error": "Tester could not access required history data for requested window.",
+      "exit_code": 0,
+      "report_source_path": "D:\\QM\\mt5\\T1\\QM5_1001_XAUUSD_DWX_20260428_104244_run_02.htm",
+      "report_canonical_path": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\XAUUSD.DWX\\46a39c0c3f18e028f266cfb2a28fc3b69d23721162786c9ea1555a84812c9639\\QM5_1001\\20260428_104244\\raw\\run_02\\report.htm",
+      "report_size_bytes": 0,
+      "tester_log_path": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\XAUUSD.DWX\\46a39c0c3f18e028f266cfb2a28fc3b69d23721162786c9ea1555a84812c9639\\QM5_1001\\20260428_104244\\raw\\run_02\\20260428.log"
+    }
+  ]
+}

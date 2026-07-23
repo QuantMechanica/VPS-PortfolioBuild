@@ -33,7 +33,7 @@ source_citations:
     role: primary
 ```
 
-Raw evidence: `strategy-seeds/sources/SRC04/raw/ch13-16_technical.txt` lines 134-156 (chapter intro + thesis on shaking-out-weak-hands), lines 157-181 (Long + Short rule lists verbatim, including pullback-precondition + 3-day re-break window + half-off-at-1R + BE move + trail), lines 183-236 (three worked examples with explicit pip arithmetic). Source PDF on disk at `G:\My Drive\QuantMechanica\Ebook\PDF resources\Day Trading and Swing Trading t - Kathy Lien.pdf`.
+Raw evidence: `strategy-seeds/sources/SRC04/raw/ch13-16_technical.txt` lines 143-155 (chapter intro + thesis on shaking-out-weak-hands), lines 157-181 (Long + Short rule lists verbatim, including pullback-precondition + 3-day re-break window + half-off-at-1R + BE move + trail), lines 183-236 (three worked examples with explicit pip arithmetic). Source PDF on disk at `G:\My Drive\QuantMechanica\Ebook\PDF resources\Day Trading and Swing Trading t - Kathy Lien.pdf`.
 
 ## 2. Concept
 
@@ -102,6 +102,13 @@ STATE MACHINE (long side; short is mirror):
    - if intra-bar high reaches stop-buy: OPEN_LONG; record entry; advance to IN_POSITION.
    - if 3-bar window expires without fill: cancel order; return to ARMED_SCAN.
 
+STATE-TRANSITION PRECEDENCE (implementation guardrails):
+- While in ARMED_PULLBACK or ARMED_REBREAK, IGNORE any fresh 20-day extreme prints.
+- Do NOT replace or re-anchor an in-flight setup with a newer 20-day extreme.
+- On fill OR expiry (pullback-timing expiry or re-break-window expiry), reset to ARMED_SCAN, then
+  evaluate new 20-day extremes on subsequent bars only.
+- Single active setup at a time (no parallel setup stack).
+
 ON ENTRY (long side):
 - entry_price        = new_20d_high_value + BREAKOUT_OFFSET_PIPS
 - initial_stop_price = two_day_low_value - STOP_ANCHOR_OFFSET_PIPS
@@ -152,6 +159,13 @@ EACH-BAR (in long position):
 - exit on trail-stop fire OR on initial_stop fire (whichever first)
 
 EACH-BAR (in short position): mirror — TP1 at -1R, BE move, 2-bar-high trail.
+
+BAR-COLLISION POLICY (deterministic backtest/live alignment):
+- If TP1 threshold and stop threshold are both crossed in the same bar, apply conservative
+  ordering: stop event first, then ignore TP1 for that bar.
+- If trail-stop and hard-stop are both crossed in the same bar, execute the closer-to-entry
+  protective stop first (worst-case fill assumption).
+- Apply identical policy for long and short sides.
 
 FRIDAY CLOSE: D1 swing strategy with multi-day-to-multi-week holds (Lien EURUSD example
 PDF p. 137 trail extends across multiple bars). Friday-close-flatten WILL be load-bearing.
@@ -397,9 +411,8 @@ data_requirements: standard                   # D1 OHLC on Darwinex .DWX FX symb
 - 2026-04-28: The 3-state state machine (ARMED_SCAN → ARMED_PULLBACK → ARMED_REBREAK) is the
   FIRST multi-state entry pattern in the SRC card library. All prior SRC cards use
   single-bar entry triggers (signal evaluated each bar, fires immediately on condition).
-  CTO will need to validate state-machine bookkeeping discipline at IMPL — particularly
-  state-reset on PULLBACK_TIMING expiry vs REBREAK_WINDOW expiry, and overlap handling if a
-  new 20-day extreme prints while an existing setup is in ARMED_PULLBACK or ARMED_REBREAK.
+  State-machine precedence is now explicit in § 4: single active setup, ignore fresh
+  20-day extremes while ARMED, no in-flight re-anchoring, reset-to-scan only after fill/expiry.
 
 - 2026-04-28: Friday-close is load-bearing — Lien's worked examples trail across multiple bars
   (EURUSD example PDF p. 137 trails from 1.2050 partial-take to 1.1846 trail-exit). Default

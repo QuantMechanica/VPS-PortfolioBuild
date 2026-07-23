@@ -1,0 +1,22 @@
+{
+  "ts_utc": "2026-04-28T09:19:01.0170848Z",
+  "issue": "QUA-340",
+  "strategy_card": "C:\\QM\\worktrees\\research\\strategy-seeds\\cards\\lien-dbb-pick-tops_card.md",
+  "card_parse": {
+    "found": true,
+    "ea_id": null,
+    "raw": "TBD",
+    "reason": "ea_id_tbd"
+  },
+  "magic_registry": {
+    "path": "C:\\QM\\worktrees\\pipeline-operator\\framework\\registry\\magic_numbers.csv",
+    "exists": true,
+    "active_match": null
+  },
+  "ex5_parity": [],
+  "readiness": {
+    "ready_for_queued_smoke": false,
+    "unblock_owner": "CEO+CTO / Development",
+    "unblock_action": "Allocate ea_id in card+registry and deploy QM5_<ea_id>.ex5 to T1-T5."
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "timestamp_utc": "2026-04-28T10:44:59.9508718Z",
+  "run_tag": "20260428_104448",
+  "result": "FAIL",
+  "reason_classes": [
+    "REPORT_MISSING",
+    "INCOMPLETE_RUNS"
+  ],
+  "ea_id": 40303,
+  "ea_label": "QM5_40303",
+  "expert": "QM/QM5_SRC04_S03_lien_fade_double_zeros",
+  "symbol": "EURUSD.DWX",
+  "year": 2022,
+  "terminal": "T1",
+  "model": 4,
+  "period": "M15",
+  "min_trades_required": 1,
+  "deterministic": false,
+  "oninit_failure_detected": false,
+  "model4_log_marker_detected": false,
+  "report_dir": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-393-smoke\\QM5_40303\\20260428_104448",
+  "report_export_mode": "relative_report_plus_postcopy",
+  "runs": [
+    {
+      "run": "run_01",
+      "status": "FAIL",
+      "failure": "REPORT_MISSING",
+      "error": "Strategy tester did not produce report file at relative export path.",
+      "exit_code": 0,
+      "report_source_path": "D:\\QM\\mt5\\T1\\QM5_40303_EURUSD_DWX_20260428_104448_run_01.htm",
+      "report_canonical_path": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-393-smoke\\QM5_40303\\20260428_104448\\raw\\run_01\\report.htm",
+      "report_size_bytes": 0,
+      "tester_log_path": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-393-smoke\\QM5_40303\\20260428_104448\\raw\\run_01\\20260428.log"
+    },
+    {
+      "run": "run_02",
+      "status": "FAIL",
+      "failure": "REPORT_MISSING",
+      "error": "Strategy tester did not produce report file at relative export path.",
+      "exit_code": 0,
+      "report_source_path": "D:\\QM\\mt5\\T1\\QM5_40303_EURUSD_DWX_20260428_104448_run_02.htm",
+      "report_canonical_path": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-393-smoke\\QM5_40303\\20260428_104448\\raw\\run_02\\report.htm",
+      "report_size_bytes": 0,
+      "tester_log_path": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-393-smoke\\QM5_40303\\20260428_104448\\raw\\run_02\\20260428.log"
+    }
+  ]
+}

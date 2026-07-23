@@ -1,0 +1,11 @@
+{
+  "ea_id": "QM5_1001",
+  "version": "v1",
+  "symbol": "EURUSD.DWX",
+  "phase": "P3.5",
+  "sub_gate_config": "src05_s01:control-eurusd:lb20",
+  "terminal": "T1",
+  "run_key": "ea6bd31dbd673c31a307b5f1c1582f8302703269fe3623002bfab698b8e78f23",
+  "enqueue_ts_utc": "2026-04-28T10:39:38Z",
+  "claim_ts_utc": "2026-04-28T10:39:38Z"
+}

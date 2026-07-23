@@ -1,0 +1,66 @@
+{
+  "ts_utc": "2026-04-28T10:50:38.9630958Z",
+  "issue": "QUA-376",
+  "pair": "XAUUSD.DWX/XTIUSD.DWX",
+  "readiness": "ready",
+  "legs": [
+    {
+      "leg": "xau",
+      "symbol": "XAUUSD.DWX",
+      "sub_gate_config": "src05_s01:pair_proxy=xauusd.dwx-xtiusd.dwx:xau:lb20:20260428T104951Z",
+      "exit_code": 0,
+      "output_tail": [
+        "{\r\n  \"status\": \"ok\",\r\n  \"run_key\": \"979d013ab0b309f8a5e1fefc4ce97be9f502cc22108938b07351ef6959ff40cd\",\r\n  \"ea_id\": \"QM5_1001\",\r\n  \"version\": \"v1\",\r\n  \"symbol\": \"XAUUSD.DWX\",\r\n  \"phase\": \"P3.5\",\r\n  \"sub_gate_config\": \"src05_s01:pair_proxy=xauusd.dwx-xtiusd.dwx:xau:lb20:20260428T104951Z\",\r\n  \"terminal\": \"T1\",\r\n  \"final_status\": \"succeeded\",\r\n  \"htm_count\": 2,\r\n  \"report_bytes\": 44664,\r\n  \"run_smoke_summary\": \"C:\\\\QM\\\\worktrees\\\\pipeline-operator\\\\artifacts\\\\qua-376-smoke\\\\factory_runs\\\\QM5_1001\\\\v1\\\\P3.5\\\\XAUUSD.DWX\\\\979d013ab0b309f8a5e1fefc4ce97be9f502cc22108938b07351ef6959ff40cd\\\\QM5_1001\\\\20260428_104953\\\\summary.json\",\r\n  \"paths\": {\r\n    \"dedup_csv\": \"C:\\\\QM\\\\worktrees\\\\pipeline-operator\\\\artifacts\\\\qua-376-smoke\\\\state\\\\factory_run_dedup_v1.csv\",\r\n    \"queue_jsonl\": \"C:\\\\QM\\\\worktrees\\\\pipeline-operator\\\\artifacts\\\\qua-376-smoke\\\\state\\\\factory_run_queue_v1.jsonl\",\r\n    \"dispatch_state_json\": \"C:\\\\QM\\\\worktrees\\\\pipeline-operator\\\\artifacts\\\\qua-376-smoke\\\\state\\\\factory_dispatch_state_v1.json\",\r\n    \"report_dir\": \"C:\\\\QM\\\\worktrees\\\\pipeline-operator\\\\artifacts\\\\qua-376-smoke\\\\factory_runs\\\\QM5_1001\\\\v1\\\\P3.5\\\\XAUUSD.DWX\\\\979d013ab0b309f8a5e1fefc4ce97be9f502cc22108938b07351ef6959ff40cd\"\r\n  }\r\n}"
+      ],
+      "result": {
+        "status": "ok",
+        "run_key": "979d013ab0b309f8a5e1fefc4ce97be9f502cc22108938b07351ef6959ff40cd",
+        "ea_id": "QM5_1001",
+        "version": "v1",
+        "symbol": "XAUUSD.DWX",
+        "phase": "P3.5",
+        "sub_gate_config": "src05_s01:pair_proxy=xauusd.dwx-xtiusd.dwx:xau:lb20:20260428T104951Z",
+        "terminal": "T1",
+        "final_status": "succeeded",
+        "htm_count": 2,
+        "report_bytes": 44664,
+        "run_smoke_summary": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\XAUUSD.DWX\\979d013ab0b309f8a5e1fefc4ce97be9f502cc22108938b07351ef6959ff40cd\\QM5_1001\\20260428_104953\\summary.json",
+        "paths": {
+          "dedup_csv": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\state\\factory_run_dedup_v1.csv",
+          "queue_jsonl": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\state\\factory_run_queue_v1.jsonl",
+          "dispatch_state_json": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\state\\factory_dispatch_state_v1.json",
+          "report_dir": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\XAUUSD.DWX\\979d013ab0b309f8a5e1fefc4ce97be9f502cc22108938b07351ef6959ff40cd"
+        }
+      }
+    },
+    {
+      "leg": "xti",
+      "symbol": "XTIUSD.DWX",
+      "sub_gate_config": "src05_s01:pair_proxy=xauusd.dwx-xtiusd.dwx:xti:lb20:20260428T104951Z",
+      "exit_code": 0,
+      "output_tail": [
+        "{\r\n  \"status\": \"ok\",\r\n  \"run_key\": \"6d4c9f886b08a088f91107cfc293dbeb98fc8d175b907c245ba6024768648d67\",\r\n  \"ea_id\": \"QM5_1001\",\r\n  \"version\": \"v1\",\r\n  \"symbol\": \"XTIUSD.DWX\",\r\n  \"phase\": \"P3.5\",\r\n  \"sub_gate_config\": \"src05_s01:pair_proxy=xauusd.dwx-xtiusd.dwx:xti:lb20:20260428T104951Z\",\r\n  \"terminal\": \"T1\",\r\n  \"final_status\": \"succeeded\",\r\n  \"htm_count\": 2,\r\n  \"report_bytes\": 1030500,\r\n  \"run_smoke_summary\": \"C:\\\\QM\\\\worktrees\\\\pipeline-operator\\\\artifacts\\\\qua-376-smoke\\\\factory_runs\\\\QM5_1001\\\\v1\\\\P3.5\\\\XTIUSD.DWX\\\\6d4c9f886b08a088f91107cfc293dbeb98fc8d175b907c245ba6024768648d67\\\\QM5_1001\\\\20260428_105008\\\\summary.json\",\r\n  \"paths\": {\r\n    \"dedup_csv\": \"C:\\\\QM\\\\worktrees\\\\pipeline-operator\\\\artifacts\\\\qua-376-smoke\\\\state\\\\factory_run_dedup_v1.csv\",\r\n    \"queue_jsonl\": \"C:\\\\QM\\\\worktrees\\\\pipeline-operator\\\\artifacts\\\\qua-376-smoke\\\\state\\\\factory_run_queue_v1.jsonl\",\r\n    \"dispatch_state_json\": \"C:\\\\QM\\\\worktrees\\\\pipeline-operator\\\\artifacts\\\\qua-376-smoke\\\\state\\\\factory_dispatch_state_v1.json\",\r\n    \"report_dir\": \"C:\\\\QM\\\\worktrees\\\\pipeline-operator\\\\artifacts\\\\qua-376-smoke\\\\factory_runs\\\\QM5_1001\\\\v1\\\\P3.5\\\\XTIUSD.DWX\\\\6d4c9f886b08a088f91107cfc293dbeb98fc8d175b907c245ba6024768648d67\"\r\n  }\r\n}"
+      ],
+      "result": {
+        "status": "ok",
+        "run_key": "6d4c9f886b08a088f91107cfc293dbeb98fc8d175b907c245ba6024768648d67",
+        "ea_id": "QM5_1001",
+        "version": "v1",
+        "symbol": "XTIUSD.DWX",
+        "phase": "P3.5",
+        "sub_gate_config": "src05_s01:pair_proxy=xauusd.dwx-xtiusd.dwx:xti:lb20:20260428T104951Z",
+        "terminal": "T1",
+        "final_status": "succeeded",
+        "htm_count": 2,
+        "report_bytes": 1030500,
+        "run_smoke_summary": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\XTIUSD.DWX\\6d4c9f886b08a088f91107cfc293dbeb98fc8d175b907c245ba6024768648d67\\QM5_1001\\20260428_105008\\summary.json",
+        "paths": {
+          "dedup_csv": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\state\\factory_run_dedup_v1.csv",
+          "queue_jsonl": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\state\\factory_run_queue_v1.jsonl",
+          "dispatch_state_json": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\state\\factory_dispatch_state_v1.json",
+          "report_dir": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376-smoke\\factory_runs\\QM5_1001\\v1\\P3.5\\XTIUSD.DWX\\6d4c9f886b08a088f91107cfc293dbeb98fc8d175b907c245ba6024768648d67"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "status": "ok",
+  "run_key": "ec089eff49639addca342e43b51f9902d3e1796ff2169cf1f0994fd1f953a41d",
+  "ea_id": "QM5_3400",
+  "version": "v5.0.0-qua340",
+  "symbol": "EURUSD.DWX",
+  "phase": "P2",
+  "sub_gate_config": "qua340-smoke-002",
+  "terminal": "T2",
+  "final_status": "no_report",
+  "htm_count": 0,
+  "report_bytes": 0,
+  "run_smoke_summary": null,
+  "paths": {
+    "dedup_csv": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-340-real\\state\\factory_run_dedup_v1.csv",
+    "queue_jsonl": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-340-real\\state\\factory_run_queue_v1.jsonl",
+    "dispatch_state_json": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-340-real\\state\\factory_dispatch_state_v1.json",
+    "report_dir": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-340-real\\factory_runs\\QM5_3400\\v5.0.0-qua340\\P2\\EURUSD.DWX\\ec089eff49639addca342e43b51f9902d3e1796ff2169cf1f0994fd1f953a41d"
+  }
+}

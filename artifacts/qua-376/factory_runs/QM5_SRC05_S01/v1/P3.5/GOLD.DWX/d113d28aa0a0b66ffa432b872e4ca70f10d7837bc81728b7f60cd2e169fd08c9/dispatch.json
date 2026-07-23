@@ -1,0 +1,11 @@
+{
+  "ea_id": "QM5_SRC05_S01",
+  "version": "v1",
+  "symbol": "GOLD.DWX",
+  "phase": "P3.5",
+  "sub_gate_config": "src05_s01:gld_uso_proxy:lb30:entry1_exit0",
+  "terminal": "T3",
+  "run_key": "d113d28aa0a0b66ffa432b872e4ca70f10d7837bc81728b7f60cd2e169fd08c9",
+  "enqueue_ts_utc": "2026-04-28T10:34:20Z",
+  "claim_ts_utc": "2026-04-28T10:34:20Z"
+}

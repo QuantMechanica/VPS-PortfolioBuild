@@ -1,0 +1,47 @@
+{
+  "ts_utc": "2026-04-28T10:51:50.4237218Z",
+  "issue": "QUA-376",
+  "status": "blocked_pending_cto_dev",
+  "heartbeat_type": "no_change",
+  "queue_depth": 0,
+  "terminals": [
+    {
+      "terminal": "T1",
+      "running": true
+    },
+    {
+      "terminal": "T2",
+      "running": true
+    },
+    {
+      "terminal": "T3",
+      "running": true
+    },
+    {
+      "terminal": "T4",
+      "running": true
+    },
+    {
+      "terminal": "T5",
+      "running": true
+    }
+  ],
+  "claimed_terminals": "T1",
+  "dedup_row_count": 15,
+  "ack_status_counts": [
+    {
+      "status": "no_report",
+      "count": 7
+    },
+    {
+      "status": "succeeded",
+      "count": 8
+    }
+  ],
+  "readiness": "ready",
+  "readiness_artifact": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-376\\proxy_pair_readiness.json",
+  "blocked_on": {
+    "owner": "CTO/Dev",
+    "action": "deploy SRC05_S01 binary + activate registry row"
+  }
+}

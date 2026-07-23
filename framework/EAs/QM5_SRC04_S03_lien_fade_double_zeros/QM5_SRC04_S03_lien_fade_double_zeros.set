@@ -1,0 +1,15 @@
+qm_ea_id=40303
+qm_magic_slot_offset=0
+RISK_PERCENT=0.0
+RISK_FIXED=1000.0
+PORTFOLIO_WEIGHT=1.0
+qm_news_mode=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+trend_ma_period=20
+entry_offset_pips=12.0
+stop_offset_pips=20.0
+stage_max_distance_pips=50.0
+triple_zero_only=false
+use_ma_trail_variant=false
+order_expiration_minutes=60

@@ -1,0 +1,62 @@
+{
+  "timestamp_utc": "2026-04-28T10:48:40.0268849Z",
+  "run_tag": "20260428_104755",
+  "result": "PASS",
+  "reason_classes": [
+    "NO_REAL_TICKS_MARKER"
+  ],
+  "ea_id": 40303,
+  "ea_label": "QM5_40303",
+  "expert": "QM/QM5_SRC04_S03_lien_fade_double_zeros",
+  "symbol": "EURUSD.DWX",
+  "year": 2022,
+  "terminal": "T1",
+  "model": 4,
+  "period": "M15",
+  "min_trades_required": 1,
+  "deterministic": true,
+  "oninit_failure_detected": false,
+  "model4_log_marker_detected": false,
+  "report_dir": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-393-smoke\\QM5_40303\\20260428_104755",
+  "report_export_mode": "relative_report_plus_postcopy",
+  "runs": [
+    {
+      "run": "run_01",
+      "status": "OK",
+      "exit_code": 0,
+      "report_source_path": "D:\\QM\\mt5\\T1\\QM5_40303_EURUSD_DWX_20260428_104755_run_01.htm",
+      "report_canonical_path": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-393-smoke\\QM5_40303\\20260428_104755\\raw\\run_01\\report.htm",
+      "report_size_bytes": 2430572,
+      "tester_log_path": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-393-smoke\\QM5_40303\\20260428_104755\\raw\\run_01\\20260428.log",
+      "oninit_failure": false,
+      "real_ticks_marker": false,
+      "total_trades": 1249,
+      "total_trades_raw": "1249",
+      "profit_factor": 0.82,
+      "profit_factor_raw": "0.82",
+      "drawdown": 545.77,
+      "drawdown_raw": "545.77 (5.44%)",
+      "net_profit": -504.18,
+      "net_profit_raw": "-504.18"
+    },
+    {
+      "run": "run_02",
+      "status": "OK",
+      "exit_code": 0,
+      "report_source_path": "D:\\QM\\mt5\\T1\\QM5_40303_EURUSD_DWX_20260428_104755_run_02.htm",
+      "report_canonical_path": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-393-smoke\\QM5_40303\\20260428_104755\\raw\\run_02\\report.htm",
+      "report_size_bytes": 2430572,
+      "tester_log_path": "C:\\QM\\worktrees\\pipeline-operator\\artifacts\\qua-393-smoke\\QM5_40303\\20260428_104755\\raw\\run_02\\20260428.log",
+      "oninit_failure": false,
+      "real_ticks_marker": false,
+      "total_trades": 1249,
+      "total_trades_raw": "1249",
+      "profit_factor": 0.82,
+      "profit_factor_raw": "0.82",
+      "drawdown": 545.77,
+      "drawdown_raw": "545.77 (5.44%)",
+      "net_profit": -504.18,
+      "net_profit_raw": "-504.18"
+    }
+  ]
+}
