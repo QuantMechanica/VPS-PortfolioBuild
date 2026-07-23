@@ -22,7 +22,7 @@ primary_target_symbols: [XAUUSD.DWX, XAGUSD.DWX]
 single_symbol_only: false
 logical_symbol: QM5_20057_XAU_XAG_XMOM1_D1
 period: D1
-expected_trade_frequency: "One XAU/XAG cross-sectional-momentum package per broker month after 13 completed month-end closes; approximately 12 packages/year before Q02 validation."
+expected_trade_frequency: "One XAU/XAG cross-sectional-momentum package per broker month after two completed month-end closes; approximately 12 packages/year before Q02 validation."
 expected_trades_per_year_per_symbol: 12
 expected_pf: 1.01
 expected_dd_pct: 25.0
@@ -178,12 +178,12 @@ portfolio admission is authorized.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-23 | initial XAU/XAG 1-month momentum basket | Q01 | pending |
+| v1 | 2026-07-23 | initial XAU/XAG 1-month momentum basket | Q02 | Q01 PASS; Q02 ENQUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-23 | APPROVED under OWNER mission; R1-R4 PASS | this card |
-| Q01 Build Validation | 2026-07-23 | pending | this card |
-| Q02 Baseline Screening | 2026-07-23 | pending | enqueue after Q01 PASS |
+| Q01 Build Validation | 2026-07-23 | PASS: strict compile 0 errors/0 warnings; schema lint PASS | `docs/ops/evidence/2026-07-23_qm5_20057_xauxag_xmom1_q02_enqueue.md` |
+| Q02 Baseline Screening | 2026-07-23 | ENQUEUED, not dispatched | work item `96c14d4d-0a62-4935-85ec-dd75f570aafa` |

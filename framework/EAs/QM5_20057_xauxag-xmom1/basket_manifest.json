@@ -5,6 +5,6 @@
   "basket_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
   "traded_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
   "notes": [
-    "One logical two-leg XAU/XAG monthly cross-sectional-momentum basket. Reconstruct 13 completed month-end closes, rank the arithmetic mean of 12 simple monthly returns, buy the winner and short the loser, then evaluate combined package PnL and costs at Q02."
+    "One logical two-leg XAU/XAG monthly cross-sectional-momentum basket. Reconstruct two completed month-end closes, rank the immediately completed simple monthly return, buy the winner and short the loser, then evaluate combined package PnL and costs at Q02."
   ]
 }
