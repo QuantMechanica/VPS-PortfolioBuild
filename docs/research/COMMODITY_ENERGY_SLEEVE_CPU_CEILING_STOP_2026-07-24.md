@@ -155,3 +155,25 @@ read-only dedup preflight because it is only a horizon variant of existing
 `QM5_20013` and `QM5_20054`, not a load-bearing new mechanic. No source,
 registry, card, EA, queue, tester, portfolio, manifest, or live-state mutation
 was made.
+
+## Recheck at 09:29Z
+
+A sixth read-only check at `2026-07-24T09:29:25Z` found eight active factory
+MT5 testers, one above the documented paced-fleet ceiling of seven:
+
+| Terminal | EA | Phase | Symbol |
+|---|---|---|---|
+| T1 | QM5_10911 | Q03 | GDAXI.DWX |
+| T2 | QM5_10961 | Q03 | EURUSD.DWX |
+| T3 | QM5_1642 | Q03 | XTIUSD.DWX |
+| T4 | QM5_10582 | Q07 | XAUUSD.DWX |
+| T6 | QM5_1127 | Q03 | USDCHF.DWX |
+| T8 | QM5_13213 | pipeline baseline | tester configuration |
+| T9 | QM5_11478 | Q03 | GBPUSD.DWX |
+| T10 | QM5_9940 | Q02 | SP500.DWX |
+
+The path-anchored `farmctl.py mt5-slots` scan separately identified `T_Live`
+and the FTMO terminal as non-pipeline processes; neither was touched. Because
+the ceiling was exceeded, this turn stopped before source approval, card or ID
+allocation, EA build, compilation, Q02 enqueue, tester launch, or any
+portfolio/live mutation.
