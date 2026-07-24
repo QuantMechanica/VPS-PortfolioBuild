@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_989445_magic-100.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_989445_magic-100.pdf",
+      "source_pages": "1-12",
+      "source_ref": "\"Magic 100\" EMA-100 trend-continuation pullback system, thread started by user Minotawr (with rule clarifications by xkwisit2001), ForexFactory thread 989445, first 3 pages / 60 posts, n.d. (approx. 2021-2023). https://www.forexfactory.com/thread/989445-magic-100",
+      "strategy_name": "Magic 100 EMA Pullback Breakout",
+      "concept": "Trend-continuation: in the direction of a 100EMA-defined trend, place a pending stop order just past the last counter-trend retracement candle (SL at that candle's opposite extreme, TP=2R), rolling the pending order to each new retrace candle until triggered.",
+      "market": "FX",
+      "timeframe": "H1",
+      "session": "London",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Deterministic pure-MQL5 pending-stop breakout with EMA100 trend filter, hard SL at candle extreme and 2R TP (FTMO/DXZ-compatible); FX-major H1 data available via .DWX.",
+      "priority_hint": "LOW",
+      "notes": "Core mechanic well-specified (EMA100 direction; buy-stop above / sell-stop below the retracement candle 'just the spread away'; SL at the same candle's low/high; TP 2R at ~1:2-1:3; roll the pending order to each newer retrace candle on close until filled; 1 trade/day/pair, major pairs, Frankfurt+London session). PARTIAL because the load-bearing 'strong trend vs sideways = don't trade' filter and 'which retracement candle' are discretionary/unquantified (mechanizable via EMA100 slope + first-opposite-color-close). Generic EMA-pullback archetype; anonymous beginner-oriented FF thread with no backtest evidence -> low priority. Variants mentioned: HTF confirmation (4H/D1 trend, 1H entry) and applying on D1/H4 directly; treated as parameterizations of the same core."
+    }
+  ],
+  "notes": []
+}

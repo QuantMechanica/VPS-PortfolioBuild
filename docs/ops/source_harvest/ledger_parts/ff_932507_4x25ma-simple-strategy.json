@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_932507_4x25ma-simple-strategy.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_932507_4x25ma-simple-strategy.pdf",
+      "source_pages": "1,5",
+      "source_ref": "foff00, \"4x25MA Simple Strategy,\" Forex Factory thread 932507 (year not stated in thread; MT4-era), https://www.forexfactory.com/thread/932507",
+      "strategy_name": "4x25MA MTF EMA-Alignment Trend",
+      "concept": "Go long only when price closes above the 25 EMA on all four timeframes (M15, H1, H4, D1) simultaneously, riding confirmed multi-timeframe trend agreement with ATR-scaled stop and target.",
+      "market": "FX",
+      "timeframe": "H4",
+      "session": "London",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Pure-MQL5 deterministic MTF 25-EMA trend with ATR(14) SL=2xATR / TP=3-4xATR on FX majors and JPY crosses; all data via .DWX, FTMO/DXZ-compatible with a defined stop.",
+      "priority_hint": "MED",
+      "notes": "Entry: price above 25 EMA on M15+H1+H4+D1 with 1-3 closed bars (shorts mirror). Exit: SL 2xATR, TP 3-4xATR (ATR timeframe unstated, presumably H4). Session filter: enter only after London open, not after NY close (London-through-NY window). Author later tested an M15 scalper variant with trailing-stop-only (original had NO SL) - anecdotal forward-test evidence only, no rigorous backtest. Secondary reference in-thread: reteid2222 'Strategy I: 3 EMAs with trend filter' links external site forexmt4indicators.com plus NRTR_ATR_STOP.ex4 - rules not stated in thread, not classified. Much of thread (pages 8-17) is off-topic drama about a 'MACD Sample' .ex4 flagged as malware/HTML payload - ignore; not a strategy. Low source reputability (anonymous forum, weak evidence) caps priority."
+    }
+  ],
+  "notes": []
+}

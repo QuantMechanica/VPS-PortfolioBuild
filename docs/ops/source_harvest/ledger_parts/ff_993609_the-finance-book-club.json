@@ -1,0 +1,26 @@
+{
+  "pdf": "ff_993609_the-finance-book-club.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_993609_the-finance-book-club.pdf",
+      "source_pages": "1-192",
+      "source_ref": "clemmo17, 'The Finance Book Club', ForexFactory thread 993609, 2019-2020, https://www.forexfactory.com/thread/993609/the-finance-book-club",
+      "strategy_name": "n/a (book-review / course-summary meta-thread)",
+      "concept": "A running review of ~30 trading books plus Coursera (Shiller 'Financial Markets') and Tickmill (Munnelly) course notes; it argues trading philosophy and critiques technical analysis rather than specifying any complete mechanical system.",
+      "market": "FX",
+      "timeframe": "n/a",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "No source in the thread presents a complete deterministic entry+exit+param system; it is book reviews, course notes and TA-skepticism. The closest concrete content is generic textbook TA the summarizer explicitly dismisses.",
+      "priority_hint": "LOW",
+      "notes": "In-depth sections: Mark Tier '23 habits', Shiller Coursera notes (portfolio/CAPM/behavioral finance), Taleb 'Fooled by Randomness', Munnelly Tickmill course, Aronson 'Evidence-Based TA'. The Aronson review's own conclusion is that ~6400 data-mined binary S&P500 buy/sell rules fail significance testing (upward bias) - an anti-strategy result. Munnelly's only quasi-rules: Bollinger-band 'fade' of the outer band in a low-volatility London session (mean reversion) and a pullback-to-MA trend continuation in high vol - both stated without parameters/vol thresholds and dismissed by clemmo as 'traditional TA garbage'. Munnelly money-management scheme (80-pip stop, 160-pip TP, scale out 2/3, trail final third +80 pips) is position management, not an entry edge. Books with reputed concrete systems (Alan Hull 'Trade My Way', Naked Forex 'Big Shadow', Owens&Lizotte, Jeff Cooper 'Hit and Run', Trader Vic 2B) appear only in the graded table of contents with no rule write-up. Nothing implementable harvested."
+    }
+  ],
+  "notes": [
+    "PDF text extracted via pypdf (Read tool needs poppler, unavailable); 192 pages scanned in full.",
+    "Zero usable candidate strategies; single REJECTED summary row per schema.",
+    "Meta book-club thread, not a strategy thread; forum precedent (Balke) considered but no mechanical rules exist here to harvest."
+  ]
+}
