@@ -127,6 +127,16 @@ The canonical saturation scheduler again returned
 Q02 enqueue, dispatch, tester launch, queue mutation, or terminal control
 followed.
 
+A fifth read-only refresh at `2026-07-24T22:01:07Z`
+(`2026-07-25T00:01:07+02:00`) found every factory terminal `T1` through `T10`
+running from its exact executable path under `D:/QM/mt5/`. `T_Live` was
+observed separately and excluded from both the factory count and any control.
+The canonical saturation scheduler independently returned
+`available_slots_before=0`, `available_slots_after=0`, `scheduled=0`, and
+`status=ok`. With all ten factory terminals occupied and no valid unbuilt
+scan pair, the mission stopped before any card, build, enqueue, dispatch,
+tester launch, queue mutation, or terminal action.
+
 ## Safety
 
 - No portfolio admission, portfolio KPI, or Q08 contribution file changed.
