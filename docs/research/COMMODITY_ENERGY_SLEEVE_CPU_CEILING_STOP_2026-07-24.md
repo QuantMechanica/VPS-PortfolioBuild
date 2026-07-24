@@ -88,3 +88,26 @@ active factory pipeline terminals:
 The scan separately identified `T_Live` and the FTMO terminal as non-pipeline
 processes. They were not touched. This recheck made no registry, card, EA,
 queue, portfolio, manifest, terminal, or AutoTrading mutation.
+
+## Recheck at 05:30Z
+
+A third read-only check at `2026-07-24T05:30:58Z` found eight active factory
+terminals, one above the documented paced-fleet ceiling of seven:
+
+| Terminal | EA | Phase | Symbol |
+|---|---|---|---|
+| T1 | QM5_10687 | Q02 | USDJPY.DWX |
+| T2 | QM5_10582 | Q07 | XAUUSD.DWX |
+| T4 | QM5_12538 | Q02 | NZDUSD.DWX |
+| T6 | QM5_10470 | Q03 | GDAXI.DWX |
+| T7 | QM5_11478 | Q03 | GBPUSD.DWX |
+| T8 | QM5_20039 | Q02 | NDX.DWX |
+| T9 | QM5_12538 | Q02 | GBPJPY.DWX |
+| T10 | QM5_20007 | Q02 | SP500.DWX |
+
+The path-anchored scan excluded `T_Live` and the FTMO terminal from the
+factory count. The canonical saturation scheduler was then run with
+`--dry-run`; it returned `available_slots_before=0`,
+`available_slots_after=0`, and `scheduled=0`. Per the explicit CPU-ceiling
+stop rule, this check made no strategy, registry, queue, terminal, portfolio,
+manifest, or live-state mutation.
