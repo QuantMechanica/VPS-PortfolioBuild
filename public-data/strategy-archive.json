@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-24T17:07:03.2781294Z",
-    "total":  3533,
+    "generated_at":  "2026-07-24T18:07:04.2923644Z",
+    "total":  3534,
     "items":  [
                   {
                       "slug":  "ath-breakout-atr-trail",
@@ -18056,6 +18056,12 @@
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-07-23T19:31:54.5163007Z"
+                  },
+                  {
+                      "slug":  "QM5_20110_xti-xng-fri-rv_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-24T17:21:00.4451922Z"
                   },
                   {
                       "slug":  "QM5_2012_nnfx-v2-fx-basket-top3-trend",
