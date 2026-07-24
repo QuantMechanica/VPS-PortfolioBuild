@@ -243,3 +243,24 @@ a non-pipeline process; it was not touched. Because the ceiling was reached,
 this turn stopped before source approval, card or ID/magic allocation, EA
 build, compilation, Q02 enqueue, tester launch, or any portfolio/live
 mutation.
+
+## Recheck at 21:15Z
+
+A tenth read-only check at `2026-07-24T21:15:08Z` found exactly seven active
+factory tester terminals, matching the documented paced-fleet ceiling:
+
+| Terminal | EA | Phase | Symbol |
+|---|---|---|---|
+| T1 | QM5_13213 | pipeline baseline | tester configuration |
+| T2 | QM5_11903 | Q04 | GBPUSD.DWX |
+| T3 | QM5_9454 | Q04 | XTIUSD.DWX |
+| T4 | QM5_9454 | Q02 | USDCAD.DWX |
+| T6 | QM5_10911 | Q03 | GDAXI.DWX |
+| T7 | QM5_1230 | Q07 | XAUUSD.DWX |
+| T8 | QM5_10581 | Q04 | GBPJPY.DWX |
+
+The canonical path-anchored `farmctl.py mt5-slots` scan separately identified
+`T_Live` as a non-pipeline process; it was not touched. Because the ceiling
+was reached, this turn stopped before source approval, card or ID/magic
+allocation, EA build, compilation, Q02 enqueue, tester launch, or any
+portfolio/live mutation.
