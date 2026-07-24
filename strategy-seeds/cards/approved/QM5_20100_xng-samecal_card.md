@@ -43,8 +43,9 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
-q01_status: PENDING
-q02_status: NOT_QUEUED
+q01_status: PASS
+q02_status: PENDING
+q02_work_item_id: 67dff6ba-5b40-4a7e-bbf5-98bef9b9043e
 review_focus: "Falsify a monthly XNG seasonal-sign stream that is structurally distinct from QM5_12567's cumulative-RSI2 pullback; the source proves only a broad commodity rank, and Q09 alone may judge realized book correlation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -253,12 +254,12 @@ manifests, portfolio admission, portfolio-gate changes, or correlation waivers.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-24 | initial source-backed XNG same-calendar carrier | G0 | APPROVED |
+| v1 | 2026-07-24 | strict build PASS and paced single-item enqueue | Q02 | PENDING `67dff6ba-5b40-4a7e-bbf5-98bef9b9043e` |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-24 | APPROVED under OWNER mission; R1-R4 PASS | this card |
-| Q01 Build Validation | - | PENDING | `framework/EAs/QM5_20100_xng-samecal/` |
-| Q02 Baseline Screening | - | NOT QUEUED | paced fleet after strict build |
+| Q01 Build Validation | 2026-07-24 | PASS; strict compile and build check, 0 errors/warnings | `D:\QM\reports\framework\21\build_check_20260724_131511.json` |
+| Q02 Baseline Screening | 2026-07-24 | PENDING, unclaimed | work item `67dff6ba-5b40-4a7e-bbf5-98bef9b9043e` |

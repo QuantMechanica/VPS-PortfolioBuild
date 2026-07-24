@@ -140,9 +140,13 @@ pullback state with a short holding period. The port is therefore a new
 XNG-carrier/mechanic combination, while Q09 remains the only authority on
 realized correlation.
 
-Repository dedup was run before allocation with slug `energy-samecal`, strategy
-ID `KELOHARJU-RETSEAS-2016_XTI_XNG_S01`, and the complete mechanic fingerprint;
-the verdict was `CLEAN`.
+Repository dedup was run before each allocation. The original
+`energy-samecal` basket returned `CLEAN`. The later single-carrier checks used
+their own strategy IDs and complete mechanic fingerprints; each surfaced the
+expected sibling for manual review rather than an exact duplicate. The XNG
+check used slug `xng-samecal`, strategy ID
+`KELOHARJU-RETSEAS-2016_XNG_S03`, and mechanic
+`single-XNG historical same-calendar-month average-sign monthly renewal`.
 
 ## Runtime Guardrails
 
