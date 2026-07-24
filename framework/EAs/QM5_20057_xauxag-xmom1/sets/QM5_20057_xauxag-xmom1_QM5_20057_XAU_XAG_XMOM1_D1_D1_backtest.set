@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        20057
 ; ea_slug:      xauxag-xmom1
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   d4c9f9643e4659bc27ea4916b751f2b258cbd5dd57f6642bcee94d9c4c184dba
+; build_hash:   02cd9f94b5b2ebb01befceb184700c0094ae88a3076f90c57374ca92fc5b583e
 ; author:       Development
 ; date:         2026-07-23
 ;==========================================================
