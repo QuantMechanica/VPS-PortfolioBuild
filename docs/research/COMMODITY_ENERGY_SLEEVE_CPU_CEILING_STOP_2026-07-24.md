@@ -67,3 +67,24 @@ whose exact signal, holding clock, and exposure are absent. Only then:
 
 No portfolio gate, T_Live manifest, live setfile, AutoTrading state, or live
 terminal was changed.
+
+## Recheck at 04:44Z
+
+A second paced-fleet check at `2026-07-24T04:44:22Z` again reached the
+mission's CPU-ceiling stop condition. `farmctl.py mt5-slots` reported eight
+active factory pipeline terminals:
+
+| Terminal | EA | Phase | Symbol |
+|---|---|---|---|
+| T1 | QM5_12538 | Q02 | AUDUSD.DWX |
+| T2 | QM5_10582 | Q07 | XAUUSD.DWX |
+| T3 | QM5_12538 | Q02 | EURJPY.DWX |
+| T4 | QM5_10485 | Q02 | USDJPY.DWX |
+| T6 | QM5_11235 | Q02 | GBPUSD.DWX |
+| T7 | QM5_1560 | Q02 | NDX.DWX |
+| T8 | QM5_12528 | Q03 | WS30.DWX |
+| T9 | QM5_9940 | Q02 | SP500.DWX |
+
+The scan separately identified `T_Live` and the FTMO terminal as non-pipeline
+processes. They were not touched. This recheck made no registry, card, EA,
+queue, portfolio, manifest, terminal, or AutoTrading mutation.
