@@ -43,15 +43,28 @@ PULSE_APPEND_LOG = Path(r"D:\QM\reports\state\live_book_pulse.log")
 STATE_JSON = Path(r"D:\QM\reports\state\live_book_dd_guard_state.json")
 GUARD_LOG = Path(r"D:\QM\reports\state\live_book_dd_guard.log")
 ALARM_LOG = Path(r"D:\QM\strategy_farm\state\health_alarms.log")
-# Paths polled by the deployed post-fix binaries (QM_KillSwitch.mqh:486-496:
-# sandbox-relative default + FILE_COMMON fallback). The sandbox halt dir is the
-# live channel (it already carries the ks_state_*.state files).
+# TERMINAL-LOCAL ONLY (codex impl-review 2026-07-24 findings 6+7): the FILE_COMMON
+# form is machine-wide — with no EA calling QM_KillSwitchSetBookTag anywhere, a
+# common-scoped signal would also trip the FTMO terminal's untagged sleeves; and a
+# SYSTEM scheduled task resolves %APPDATA% into systemprofile (dead path anyway).
+# The T_Live sandbox halt dir reaches every DXZ sleeve (it already carries the
+# ks_state_*.state files). Revisit FILE_COMMON only after book tagging is deployed.
 SIGNAL_TARGETS = (
     Path(r"C:\QM\mt5\T_Live\MT5_Base\MQL5\Files\QM\halt\portfolio_dd.signal"),
-    Path(os.environ.get("APPDATA", r"C:\Users\Administrator\AppData\Roaming"))
-    / "MetaQuotes" / "Terminal" / "Common" / "Files" / "QM" / "halt" / "portfolio_dd.signal",
 )
 DEFAULT_HALT_DD_PCT = float(os.environ.get("QM_BOOK_DD_HALT_PCT", "10.0"))
+# Max age of the EQUITY OBSERVATION itself (ea_logs.book_equity.ts_utc) — the
+# wrapper regenerates every 30min but can repackage an hours-old equity value
+# (codex finding 5: wrapper 3.5min old, equity 7h old). Measured EQUITY_SNAPSHOT
+# reality (3-day window, 2026-07-24): event-driven bursts with intraweek gaps up
+# to 20.6h and full-weekend silence — so the default is 3000min (50h) to cover
+# Fri-close→Sun-reopen without false BLINDs. This makes the guard a SLOW
+# backstop; the fast rails remain the per-EA 3% daily-loss kill and broker-side
+# VaR. Tighten via env once a timer-driven snapshot cadence ships with the
+# recompile wave (NEEDS_FABIAN item 6). Beyond the limit the guard goes BLIND
+# loudly (escalating alarm), never auto-halts on telemetry loss.
+DEFAULT_MAX_EQUITY_AGE_MIN = float(os.environ.get("QM_BOOK_DD_MAX_EQUITY_AGE_MIN", "3000"))
+BLIND_ESCALATION_RUNS = 3  # consecutive BLIND runs before the alarm escalates to CRITICAL
 STARTING_CAPITAL_FLOOR = 100000.0  # DXZ book inception equity; HWM never below this
 
 
@@ -79,25 +92,41 @@ def _alarm(severity: str, detail: str) -> None:
         pass
 
 
-def _read_pulse() -> tuple[float | None, dt.datetime | None, str]:
+def _parse_ts(raw: object) -> dt.datetime | None:
+    """Strict ISO parse; rejects empty, non-ISO, and future (>+5min) stamps."""
+    try:
+        ts = dt.datetime.fromisoformat(str(raw or "").replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=dt.UTC)
+    if ts > _now_utc() + dt.timedelta(minutes=5):
+        return None  # future timestamp = invalid telemetry
+    return ts
+
+
+def _read_pulse() -> tuple[float | None, dt.datetime | None, dt.datetime | None, str]:
+    """Returns (equity, equity_ts, wrapper_ts, error). Both timestamps must be
+    independently validated by the caller — the wrapper regenerates on schedule
+    while the equity observation inside it can be much older (finding 5)."""
     try:
         payload = json.loads(PULSE_JSON.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
-        return None, None, f"pulse_unreadable:{exc!r}"
-    equity = None
+        return None, None, None, f"pulse_unreadable:{exc!r}"
+    book = ((payload.get("ea_logs") or {}).get("book_equity") or {})
     try:
-        equity = float(payload["ea_logs"]["book_equity"]["equity"])
+        equity = float(book["equity"])
     except (KeyError, TypeError, ValueError):
-        return None, None, "pulse_missing_book_equity"
-    generated = None
-    raw = str(payload.get("generated_at_utc") or "")
-    try:
-        generated = dt.datetime.fromisoformat(raw.replace("Z", "+00:00"))
-        if generated.tzinfo is None:
-            generated = generated.replace(tzinfo=dt.UTC)
-    except ValueError:
-        pass
-    return equity, generated, ""
+        return None, None, None, "pulse_missing_book_equity"
+    if not (equity == equity and abs(equity) != float("inf")):  # NaN/inf guard
+        return None, None, None, "pulse_equity_not_finite"
+    equity_ts = _parse_ts(book.get("ts_utc") or book.get("ts_broker_utc"))
+    wrapper_ts = _parse_ts(payload.get("generated_at_utc"))
+    if wrapper_ts is None:
+        return None, None, None, "pulse_generated_at_invalid"
+    if equity_ts is None:
+        return None, None, None, "pulse_equity_ts_invalid"
+    return equity, equity_ts, wrapper_ts, ""
 
 
 QM_LOG_DIR = Path(r"C:\QM\mt5\T_Live\MT5_Base\MQL5\Files\QM")
@@ -167,10 +196,38 @@ def _write_signals(payload: dict, dry_run: bool) -> list[str]:
     return written
 
 
+def _handle_blind(state: dict, args, reason: str, detail: str) -> int:
+    """Telemetry unusable: alarm loudly (escalating), maintain any latched
+    breach signal, never act on the bad data. Deliberately NOT auto-halt on
+    telemetry loss (NEEDS_FABIAN item 6): the per-EA 3% daily-loss kill stays
+    armed, and flattening 24 live positions on a monitoring outage is an OWNER
+    risk decision."""
+    runs = int(state.get("blind_runs") or 0) + 1
+    severity = "CRITICAL" if runs >= BLIND_ESCALATION_RUNS else "WARN"
+    _log(f"BLIND {reason} {detail} consecutive={runs}")
+    _alarm(severity, f"dd_guard_blind:{reason}:{detail}:consecutive={runs}")
+    if state.get("breached"):
+        # Latch must survive telemetry loss: keep the halt signal asserted.
+        _write_signals({
+            "source": "live_book_dd_guard",
+            "reason": "breach_latched_blind",
+            "ts_utc": _now_utc().replace(microsecond=0).isoformat(),
+            "note": f"telemetry blind ({reason}); latched breach re-asserted",
+        }, args.dry_run)
+    state["blind_runs"] = runs
+    state["last_run_utc"] = _now_utc().replace(microsecond=0).isoformat()
+    if not args.dry_run:
+        _save_state(state)
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--halt-dd-pct", type=float, default=DEFAULT_HALT_DD_PCT)
-    parser.add_argument("--max-pulse-age-min", type=float, default=120.0)
+    parser.add_argument("--max-pulse-age-min", type=float, default=120.0,
+                        help="Max age of the pulse WRAPPER (generated_at_utc).")
+    parser.add_argument("--max-equity-age-min", type=float, default=DEFAULT_MAX_EQUITY_AGE_MIN,
+                        help="Max age of the equity OBSERVATION (book_equity.ts_utc).")
     parser.add_argument("--dry-run", action="store_true",
                         help="Compute and log; never write signal files.")
     parser.add_argument("--status", action="store_true", help="Print state and exit.")
@@ -181,18 +238,19 @@ def main() -> int:
         print(json.dumps(state, indent=1, sort_keys=True))
         return 0
 
-    equity, generated, err = _read_pulse()
+    equity, equity_ts, wrapper_ts, err = _read_pulse()
     if equity is None:
-        _log(f"BLIND pulse_error={err}")
-        _alarm("WARN", f"dd_guard_blind:{err}")
-        return 0
-    age_min = None
-    if generated is not None:
-        age_min = (_now_utc() - generated).total_seconds() / 60.0
-        if age_min > args.max_pulse_age_min:
-            _log(f"BLIND stale_pulse age_min={age_min:.1f} equity={equity:.2f}")
-            _alarm("WARN", f"dd_guard_blind_stale_pulse:age_min={age_min:.1f}")
-            return 0
+        return _handle_blind(state, args, "pulse_error", err)
+    wrapper_age_min = (_now_utc() - wrapper_ts).total_seconds() / 60.0
+    equity_age_min = (_now_utc() - equity_ts).total_seconds() / 60.0
+    if wrapper_age_min > args.max_pulse_age_min:
+        return _handle_blind(state, args, "stale_wrapper",
+                             f"wrapper_age_min={wrapper_age_min:.1f}")
+    if equity_age_min > args.max_equity_age_min:
+        return _handle_blind(state, args, "stale_equity_observation",
+                             f"equity_age_min={equity_age_min:.1f}")
+    state["blind_runs"] = 0
+    age_min = wrapper_age_min
 
     hwm = float(state.get("hwm_equity") or 0.0)
     if hwm <= 0.0:
@@ -221,7 +279,8 @@ def main() -> int:
         _log(f"BREACH dd={dd_pct:.4f}% equity={equity:.2f} hwm={hwm:.2f} signals={written}")
     else:
         _log(f"OK dd={dd_pct:.4f}% equity={equity:.2f} hwm={hwm:.2f} "
-             f"threshold={args.halt_dd_pct:.2f}% pulse_age_min={-1 if age_min is None else round(age_min, 1)}")
+             f"threshold={args.halt_dd_pct:.2f}% wrapper_age_min={round(age_min, 1)} "
+             f"equity_age_min={round(equity_age_min, 1)}")
 
     state.update({
         "hwm_equity": round(hwm, 2),

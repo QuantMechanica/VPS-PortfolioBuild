@@ -9386,12 +9386,24 @@ def _auto_commit_build_artifacts(root: Path, within_sec: int = 90) -> dict[str, 
             p = p.split(" -> ", 1)[1]
         return p.strip().strip('"')
 
+    def _allowlisted(pu: str) -> bool:
+        # Directory entries (trailing '/') match by prefix; file entries match
+        # EXACTLY — startswith() on file entries also admitted sibling suffixes
+        # like event_vocabulary.json.tmp/.bak (codex impl-review 2026-07-24 #2).
+        for pre in ARTIFACT_COMMIT_ALLOWLIST:
+            if pre.endswith("/"):
+                if pu.startswith(pre):
+                    return True
+            elif pu == pre:
+                return True
+        return False
+
     commit_set: set[str] = set()
     skipped_active: list[str] = []
     for line in entries:
         p = _path_of(line)
         pu = p.replace("\\", "/")
-        if not any(pu.startswith(pre) for pre in ARTIFACT_COMMIT_ALLOWLIST):
+        if not _allowlisted(pu):
             continue
         m = re.match(r"(framework/EAs/(QM5_\d+)_[^/]+)/", pu)
         if m:

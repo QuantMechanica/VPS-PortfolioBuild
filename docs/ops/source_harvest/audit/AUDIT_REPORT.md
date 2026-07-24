@@ -107,6 +107,24 @@ Read-only scan; nothing deleted. Detail: `evidence/orphans__*.txt`.
 
 All other findings are documented in `FIX_BACKLOG.md` (nothing else met the "P1 + compliance-relevant + <20 lines" bar without touching build/deploy surfaces this audit must not move).
 
+**Implementation run (same day, OWNER directive "alles umsetzen"):** the full backlog
+FB-01…FB-14 and the escalation recommendations were implemented in a follow-on run —
+per-item status + commit hashes in the `FIX_BACKLOG.md` header, OWNER countersigns in
+`NEEDS_FABIAN.md`. Highlights: Q03's real root cause found and fixed (evidence-binding
+None-date regression `bd9c3e049`, not the suspected spawn args), live book-DD guard
+built and scheduled (`8b00df9c9`, ESC-01), 24-sleeve as-deployed manifest live in the
+pulse (`bf3f03a1a`), pulse preset parser repaired (`5562e8463`), pipeline_state per-EA
+rewired to the DB (`b2469ef66`), DB/queue hygiene executed (`6e79b9ea9`), FB-11
+corrected as a phantom finding (`7e11856d4`). Closing adversarial Codex review of the
+implementation diff: task `2aa92baa` returned 7 CONFIRM + 7 DEFECTS. Disposition:
+5 fixed same-run (#2 allowlist exact-match, #5 equity-observation freshness +
+strict timestamp validation, #6 dead SYSTEM-profile common path removed, #7 signal
+scoped terminal-local until book tagging exists, #10 downstream-FAIL now beats
+READY — all re-verified), #11 became FB-15 (public-schema Q-label migration),
+#13 rebutted with evidence (factory sets are UTF-8-no-BOM by convention,
+gen_setfile.ps1:510). One deliberate divergence escalated to OWNER: no auto-halt
+on telemetry loss (NEEDS_FABIAN item 6).
+
 ## 8. Risks / Blockers
 
 - Q03 INFRA_FAIL class is live and eating queue throughput (mitigated by routed triage; root cause unconfirmed at audit time).

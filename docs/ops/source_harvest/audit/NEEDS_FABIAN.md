@@ -21,3 +21,10 @@ Nothing here blocks the factory; each item is one written line from you.
    11 dead-KS-channel binaries, P0.1 deinit-kill on all 24, the full P0/P1 bundle,
    13128's calendar-horizon guard, and the 2 news-MISSING selftest gaps. If it slips
    >1 week I recommend an interim rebuild of only the 11 dead-channel sleeves.
+6. **DD-guard stale-telemetry policy (codex review finding 5).** Today the guard
+   goes loudly BLIND on stale equity telemetry (escalating alarm) but does NOT
+   auto-halt the book; codex recommends fail-closed (halt on prolonged telemetry
+   loss). Auto-halt would flatten all 24 positions on a monitoring outage — your
+   call. Also recommended for the wave: a timer-driven EQUITY_SNAPSHOT emission
+   (currently event-driven, gaps up to 20.6h) so the staleness limit can tighten
+   from 50h to ~2h.

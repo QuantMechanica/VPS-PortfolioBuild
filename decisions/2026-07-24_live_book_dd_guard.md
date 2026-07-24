@@ -42,3 +42,24 @@ OWNER directed implementation of the full audit package ("alles umsetzen", chat
 (2026-07-24 06:47–06:48Z: HWM_SEEDED 101871.44, OK dd=0.1846%), state JSON, scheduled
 task run result 0. No signal written (no breach). T_Live untouched beyond the
 (unused) signal path.
+
+
+## Addendum (same day) — codex implementation-review hardening
+
+Codex adversarial review (task 2aa92baa, findings 5-7) drove three changes:
+1. **Freshness now measured on the equity OBSERVATION** (`book_equity.ts_utc`),
+   not just the pulse wrapper; strict ISO parse, future stamps rejected; invalid
+   `generated_at_utc` no longer bypasses the gate. Measured EQUITY_SNAPSHOT
+   cadence (gaps up to 20.6h intraweek, silent weekends) sets the default
+   equity-age limit to 3000min (env `QM_BOOK_DD_MAX_EQUITY_AGE_MIN`).
+2. **Signal is TERMINAL-LOCAL only** — the FILE_COMMON target was removed: no EA
+   anywhere calls `QM_KillSwitchSetBookTag`, so a common-scoped signal would also
+   trip the FTMO terminal's sleeves; and under the SYSTEM task `%APPDATA%`
+   resolved into systemprofile (dead path). Revisit after book tagging ships.
+3. **BLIND behavior hardened:** escalating alarm (WARN, CRITICAL from the 3rd
+   consecutive blind run), latched breach signal re-asserted even while blind.
+   DELIBERATE divergence from the review's fail-closed-halt recommendation:
+   auto-flattening 24 live positions on a telemetry outage is an OWNER risk
+   decision (NEEDS_FABIAN item 6); the per-EA 3% daily-loss kill stays armed
+   throughout. A timer-driven EQUITY_SNAPSHOT cadence (wave item) will let the
+   staleness limit tighten to ~2h.

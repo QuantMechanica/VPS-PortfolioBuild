@@ -98,3 +98,17 @@ are required.
   `6e967762-…`); dedup checks key on it (`research_dedup_check.py:69`). Audit the
   column once, document intended semantics. Evidence: `framework/registry/ea_id_registry.csv`
   lines 2/805.
+
+## Post-review additions (codex implementation review 2026-07-24, task 2aa92baa)
+
+- **FB-15 (M): Public snapshot still renders legacy P-labels** (codex #11). The
+  public-data schema requires the 15 legacy P-keys (`additionalProperties:false`)
+  and the site renders "highest EA at P9" — violates the Qxx-only surface rule.
+  Migrate schema + rendering to Q-labels in a coordinated website-contract change;
+  until then the legacy `by_phase` stays a wire-compat field fed from Qxx.
+- **FB-16 (S, wave item): Timer-driven EQUITY_SNAPSHOT cadence** so the DD guard's
+  equity-staleness limit can drop from 3000min to ~120min (codex #5 follow-on).
+- **Codex #13 REBUTTED with evidence:** factory set files are UTF-8-no-BOM by
+  convention (`gen_setfile.ps1:510` `UTF8Encoding($false)`; 13301/13213 sets all
+  UTF-8). Only DEPLOYED T_Live presets are UTF-16. The 10145 patch preserved the
+  original encoding — no transcode needed.

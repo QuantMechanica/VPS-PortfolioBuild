@@ -442,6 +442,14 @@ def _classify_status(latest_pass: str | None, phases: dict[str, tuple]) -> tuple
     if not phases:
         return "NOT_RUN", "UNKNOWN"
     if latest_pass in TERMINAL_QXX:
+        # A fail-family verdict at a phase RANKED AFTER the latest pass must win
+        # (codex impl-review 2026-07-24 #10: Q10 PASS + Q11 FAIL_PORTFOLIO was
+        # exported as READY). The decisive gate is the furthest one, not the
+        # furthest passing one.
+        lp_rank = QXX_RANK.get(latest_pass, -1)
+        if any(rank == 1 and QXX_RANK.get(ph, -1) > lp_rank
+               for ph, (rank, _verdict) in phases.items()):
+            return "BLOCKED", "BLOCKED"
         return "READY", "READY"
     if any(rank == 1 for rank, _ in phases.values()):
         return "BLOCKED", "BLOCKED"
