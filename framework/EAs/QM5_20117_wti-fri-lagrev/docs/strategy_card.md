@@ -134,7 +134,7 @@ The entry, management, and exit rules below are the complete authorized v1
 baseline. Changing the threshold, weekday, direction, hold, gap treatment, or
 adding a trend/event filter creates a new card.
 
-## Entry Rules
+## 4. Entry Rules
 
 1. Require exact `XTIUSD.DWX`, D1, magic slot 0, and every locked strategy
    input.
@@ -156,7 +156,7 @@ adding a trend/event filter creates a new card.
 8. SELL at market with a broker hard stop `3.0 * ATR(20)` above the executable
    price. ATR uses the completed Thursday D1 bar. No take-profit is authorized.
 
-## Exit Rules
+## 5. Exit Rules
 
 1. Broker-side hard stop.
 2. At broker Friday hour 21 or later, close the position. The explicit strategy
@@ -170,7 +170,7 @@ adding a trend/event filter creates a new card.
 News filtering may block new risk only. It may not delay Friday, non-Friday,
 hard-stop, stale, or kill-switch exits.
 
-## Filters
+## 6. Filters (No-Trade Module)
 
 - Fail closed for an invalid symbol/timeframe/slot, unlocked parameter, missing
   bar, broken Wednesday-Thursday-Friday sequence, non-positive close, invalid
@@ -179,7 +179,7 @@ hard-stop, stale, or kill-switch exits.
 - No external futures chain, inventory, CFTC, API, CSV, analyst forecast,
   GARCH runtime model, or portfolio signal is permitted.
 
-## Trade Management Rules
+## 7. Trade Management Rules
 
 - Short only; one position per magic/symbol.
 - One consumed attempt per Friday, even when news, spread, price, risk sizing,
