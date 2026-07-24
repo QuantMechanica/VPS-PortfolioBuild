@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-23T23:07:03.3269762Z",
-    "total":  3532,
+    "generated_at":  "2026-07-24T00:07:03.8734433Z",
+    "total":  3533,
     "items":  [
                   {
                       "slug":  "ath-breakout-atr-trail",
@@ -1550,6 +1550,12 @@
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-07-12T02:15:06.7560876Z"
+                  },
+                  {
+                      "slug":  "wti-summer-short_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-23T23:34:57.2725031Z"
                   },
                   {
                       "slug":  "wti-thu-prem_card",
