@@ -117,6 +117,11 @@ TRANSIENT_INFRA_BACKOFF_MAX_SECONDS = 600.0
 # (T9 07-19: 1.6 GB). Scan only the tail of the most recently-written logs.
 HISTORY_LOCK_SCAN_TAIL_BYTES = 256 * 1024
 HISTORY_LOCK_SCAN_MAX_FILES = 6
+# farmctl's run_smoke launcher always supplies -Year 2024. Q03 intentionally
+# omits an explicit window, so run_smoke resolves that year to these dates.
+# Evidence binding must freeze the same resolved window instead of persisting
+# null expected dates (which makes every valid run_smoke/v2 summary fail closed).
+DEFAULT_RUN_SMOKE_YEAR = 2024
 # Log-bomb guard. Some EAs spam the MT5 tester journal per-tick (framework
 # symbol_slot resolver logging on every tick), producing 50-60GB .log files that
 # burn D: at ~10GB/min — that is a BUG to kill. But a legit multi-position /
@@ -170,6 +175,16 @@ def _json_loads(text: str | None) -> dict[str, Any]:
     except json.JSONDecodeError:
         return {}
     return value if isinstance(value, dict) else {}
+
+
+def _resolved_evidence_window(spawn: dict[str, Any]) -> tuple[str | None, str | None]:
+    """Return the exact run_smoke window used for evidence binding."""
+    from_date = spawn.get("expected_from_date")
+    to_date = spawn.get("expected_to_date")
+    if spawn.get("evidence_binding_required") and not from_date and not to_date:
+        year = int(spawn.get("year") or DEFAULT_RUN_SMOKE_YEAR)
+        return f"{year:04d}.01.01", f"{year:04d}.12.31"
+    return from_date, to_date
 
 
 def _parse_utc_iso(value: object) -> datetime | None:
@@ -2456,6 +2471,7 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
         return {"action": "spawn_failed", "item_id": item["id"], "reason": spawn.get("reason")}
 
     payload = _json_loads(row["payload_json"])
+    expected_from_date, expected_to_date = _resolved_evidence_window(spawn)
     payload.update({
         "started_at_iso": now,
         "pid": spawn["pid"],
@@ -2476,8 +2492,8 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
         "from_date": spawn.get("from_date"),
         "to_date": spawn.get("to_date"),
         "evidence_binding_required": spawn.get("evidence_binding_required"),
-        "expected_from_date": spawn.get("expected_from_date"),
-        "expected_to_date": spawn.get("expected_to_date"),
+        "expected_from_date": expected_from_date,
+        "expected_to_date": expected_to_date,
         "expected_symbol": spawn.get("expected_symbol"),
         "expected_period": spawn.get("expected_period"),
         "expected_expert": spawn.get("expected_expert"),

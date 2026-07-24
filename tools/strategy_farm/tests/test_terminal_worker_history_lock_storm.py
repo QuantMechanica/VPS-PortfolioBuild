@@ -369,6 +369,30 @@ class HistoryLockStormDetectionTests(unittest.TestCase):
         self.assertEqual(terminal_worker._transient_infra_backoff_seconds(99), cap)
         self.assertEqual(terminal_worker._transient_infra_backoff_seconds("bad"), base)
 
+    def test_q03_default_year_is_bound_to_resolved_run_smoke_window(self) -> None:
+        self.assertEqual(
+            terminal_worker._resolved_evidence_window(
+                {
+                    "evidence_binding_required": True,
+                    "expected_from_date": None,
+                    "expected_to_date": None,
+                }
+            ),
+            ("2024.01.01", "2024.12.31"),
+        )
+
+    def test_explicit_evidence_window_is_preserved(self) -> None:
+        self.assertEqual(
+            terminal_worker._resolved_evidence_window(
+                {
+                    "evidence_binding_required": True,
+                    "expected_from_date": "2018.07.02",
+                    "expected_to_date": "2022.12.31",
+                }
+            ),
+            ("2018.07.02", "2022.12.31"),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
