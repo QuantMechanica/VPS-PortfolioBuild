@@ -1,0 +1,32 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        11422
+; ea_slug:      williams-18ma-outside-bar-entry-d1
+; ea_version:   v5.0
+; set_version:  s20260724-stress-harsh
+; symbol:       USDCAD.DWX
+; timeframe:    D1
+; environment:  q06_stress_harsh
+; magic_slot:   4
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   3c2a199e64147a254708f26f609c759b5a777ce372dcba16f20e781b2284db9d
+; author:       Development
+; date:         2026-07-24
+;==========================================================
+qm_ea_id=11422
+qm_magic_slot_offset=4
+qm_rng_seed=17
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.1000
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11422_williams-18ma-outside-bar-entry-d1.md
+strategy_ma_period=18
+strategy_atr_period=14
+strategy_tp_r_multiple=2.0
+strategy_entry_offset_pips=1.0
+strategy_max_stop_pips=80.0
+strategy_spread_cap_pips=25.0
+strategy_pending_expiry_days=7
