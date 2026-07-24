@@ -4,13 +4,13 @@
 **Slug:** qt-dual-thrust
 **Source:** 72f9fcfa-6c75-5544-80c4-31e15c9817ab (see strategy-seeds/sources/72f9fcfa-6c75-5544-80c4-31e15c9817ab/)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-08
+**Last revised:** 2026-07-24
 
 ---
 
 ## 1. Strategy Logic
 
-At each source session open, the EA computes the Dual Thrust range from the prior five completed source sessions: range1 is the rolling high minus the minimum close, range2 is the maximum close minus the rolling low, and the active range is the larger of the two. The long threshold is session open plus 0.50 times that range; the short threshold is session open minus 0.50 times that range. The EA enters long when price exceeds the upper threshold, enters short when price falls below the lower threshold, closes and reverses when the opposite threshold is crossed, and force-closes any open position at the source session close.
+The EA accumulates each fixed-EST source session's open, high, low, and close in O(1) state from incoming prices. At the next session open it computes the Dual Thrust range from the prior five completed sessions: range1 is the rolling high minus the minimum close, range2 is the maximum close minus the rolling low, and the active range is the larger of the two. The long threshold is session open plus 0.50 times that range; the short threshold is session open minus 0.50 times that range. At M1 entry cadence the EA enters long above the upper threshold or short below the lower threshold; it closes on an opposite threshold and can re-enter in the opposite direction, while all positions are force-closed at the source session close.
 
 ---
 
@@ -20,8 +20,8 @@ At each source session open, the EA computes the Dual Thrust range from the prio
 |---|---:|---|---|
 | strategy_range_sessions | 5 | 3-10 | Number of completed source sessions used for the rolling Dual Thrust range. |
 | strategy_threshold_param | 0.50 | 0.35-0.65 | Threshold split used in upper and lower breakout formulas. |
-| strategy_source_open_hhmm_est | 300 | 0000-2359 | Fixed EST source-session open used to set the daily thresholds. |
-| strategy_source_close_hhmm_est | 1200 | 0000-2359 | Fixed EST source-session close used for force-flat exits. |
+| strategy_source_open_hhmm_est | 300 | valid HHMM, 0000-2359 | Fixed EST source-session open used to set the daily thresholds. |
+| strategy_source_close_hhmm_est | 1200 | valid HHMM, 0000-2359 | Fixed EST source-session close used for force-flat exits. |
 | strategy_atr_period | 14 | 14 | ATR period for the catastrophic M30 stop. |
 | strategy_atr_sl_mult | 1.50 | 1.0-2.0 | ATR multiplier for the catastrophic stop. |
 | strategy_spread_max_frac | 0.10 | 0.0-0.25 | Maximum current spread as a fraction of the upper-lower threshold distance. |
@@ -50,7 +50,7 @@ Framework-level inputs are documented in framework/V5_FRAMEWORK_DESIGN.md and ar
 |---|---|
 | Base timeframe | M1 |
 | Multi-timeframe refs | M30 ATR for catastrophic stop |
-| Bar gating | QM_IsNewBar(_Symbol, PERIOD_CURRENT) (framework default) |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` for entries; O(1) session OHLC state advances on ticks so news blackouts cannot erase range observations |
 
 ---
 
@@ -58,7 +58,7 @@ Framework-level inputs are documented in framework/V5_FRAMEWORK_DESIGN.md and ar
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | 120 |
+| Trades / year / symbol | About 120 (card range: 80-160) |
 | Typical hold time | Intraday; closed by the 12:00 EST source-session close |
 | Expected drawdown profile | Medium-high because daily breakouts can overtrade in choppy sessions and the source has no native stop. |
 | Regime preference | Volatility-expansion breakout |
@@ -94,3 +94,4 @@ ENV->mode validation is enforced by QM_FrameworkInit (EA_INPUT_RISK_MODE_MISMATC
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-08 | Initial build from card | bf45d336-fba5-4b4c-a795-edec2649b385 |
+| v1.1 | 2026-07-24 | Compile and framework-order recovery; strategy rules unchanged | 6b05565a-ea78-45bb-9194-5a4b40ad9556 |
