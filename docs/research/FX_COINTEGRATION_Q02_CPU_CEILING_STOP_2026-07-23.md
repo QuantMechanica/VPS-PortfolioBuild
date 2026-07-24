@@ -259,3 +259,35 @@ and every qualifying sign-aware extension already has a build. Per the
 CPU-ceiling stop rule, no duplicate enqueue, MT5 launch, terminal control,
 AutoTrading change, live artifact, portfolio gate, EA artifact, setfile,
 basket manifest, or registry change was made.
+
+## 2026-07-24 06:15 paced-fleet audit
+
+A fresh path-anchored process check found seven factory terminals running:
+
+```text
+T1, T2, T4, T6, T8, T9, T10
+```
+
+`T_Live` and the separate FTMO terminal were explicitly excluded and were not
+controlled. Seven factory processes equal the documented ceiling. The
+canonical scheduler dry-run independently reported zero available slots:
+
+```json
+{"available_slots_after":0,"available_slots_before":0,"dry_run":true,"duplicate":0,"invalid":0,"no_capacity":0,"queued_scanned":0,"scheduled":0,"status":"ok"}
+```
+
+The canonical queue still contains four queued rows. The two forex
+cointegration continuations remain present exactly once, unassigned, and
+without a dispatch decision or error:
+
+- queue `2`: `QM5_12760`, `Q02`, `GBPUSD.DWX`,
+  `q02_fx_coint_12760_s20260629_001`
+- queue `4`: `QM5_13119`, `Q02`, `USDJPY.DWX`,
+  `q02_fx_coint_13119_s20260710_001`
+
+The scan remains exhausted: both positive-hedge survivors are Q02-cleared and
+all strict sign-aware qualifiers are built. The existing non-duplicate Q02
+rows are therefore the only valid fallback work, and capacity prevents their
+dispatch. No queue mutation, MT5 launch, terminal control, AutoTrading change,
+live artifact, portfolio gate, EA artifact, setfile, basket manifest, or
+registry change was made.
