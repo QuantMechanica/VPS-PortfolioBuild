@@ -22,8 +22,8 @@ input double strategy_trail_pips = 15.0;
 Bands on close. Cross-out upper (BUY): Close(3) <= Upper(3) AND Close(2) >
 Upper(2); confirms: StochMain(1) > StochSignal(1), bar 1 bullish
 (close>open), StochMain(1) < 80.
-Cross-back upper (SELL): Close(3) >= Upper(3)... NO — cross from above =
-Close(3) > Upper(3) AND Close(2) < Upper(2); confirms: main(1) <
+Cross-back upper (SELL): Close(3) > Upper(3) AND Close(2) < Upper(2)
+(the crossing bar closes back inside from above); confirms: main(1) <
 signal(1), bar 1 bearish, main(1) > 20.
 Lower-band mirror: cross-out lower (SELL; main<signal, bearish, main>20);
 cross-back lower (BUY; main>signal, bullish, main<80).
