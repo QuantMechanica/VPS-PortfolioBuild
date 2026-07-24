@@ -1,0 +1,22 @@
+{
+  "pdf": "forex-sma-20151009.html.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forex-sma-20151009.html.pdf",
+      "source_pages": "1",
+      "source_ref": "Intended source: babypips.com forex SMA page (captured 2015-10-09), per filename forex-sma-20151009.html.pdf. Captured content is a Cloudflare 'Sorry, you have been blocked / You are unable to access babypips.com' interstitial (Cloudflare Ray ID a1fad7e2185211d5), not the article body.",
+      "strategy_name": "n/a - blocked capture",
+      "concept": "No strategy content present; the saved page is a Cloudflare access-denied block page rather than the intended babypips SMA article.",
+      "market": "FX",
+      "timeframe": "M1",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "Captured PDF contains only a Cloudflare block page, no strategy rules or edge to harvest.",
+      "priority_hint": "LOW",
+      "notes": "Readable text, not image-only, but zero usable content. If a re-fetch of the babypips SMA article is desired, retrieve via a non-blocked path; generic single-SMA crossover material is typically low-value regardless."
+    }
+  ],
+  "notes": ["cloudflare_block_page_no_content"]
+}

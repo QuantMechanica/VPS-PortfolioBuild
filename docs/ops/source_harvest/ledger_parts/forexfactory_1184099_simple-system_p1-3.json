@@ -1,0 +1,25 @@
+{
+  "pdf": "forexfactory_1184099_simple-system_p1-3.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forexfactory_1184099_simple-system_p1-3.pdf",
+      "source_pages": "1-4",
+      "source_ref": "sharpiemomo, \"Simple System\", ForexFactory thread 1184099, year n.d. (archived 2026-07-24), https://www.forexfactory.com/thread/1184099-simple-system",
+      "strategy_name": "APB Heiken-Ashi Color-Flip NY-Open Reversal Scalp (US30)",
+      "concept": "Enter on the first opposite-color APB (modified Heiken-Ashi) bar close during the NY open on US30, stopping at the prior momentum extreme, to capitalize on price rejections at tops/bottoms.",
+      "market": "Indices",
+      "timeframe": "M5",
+      "session": "NY",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Entry+stop are mechanical (first opposite modified-HA close, stop at prior swing extreme, US30 NY 09:30-12:00 EST) and testable on WS30 M5/M15 .DWX data; exit is fully discretionary ('no TP rule', fast partials ~0.5RR, scratch runners) and must be mechanized (opposite-flip or session-flat) before backtest.",
+      "priority_hint": "LOW",
+      "notes": "APB = modified Heiken-Ashi indicator (APB.mq4/.ex4 attached, MT4). Single discretionary scalp system, not multiple strategies. Author frames it as only a 'marginal edge' relying on discretionary 'Risk Per Click' sizing (1-4 clicks, non-%; replace with RISK_FIXED). Range-bar variant is not testable in the time-based tester (optional, ignore). Rejected member's TP variant (APB flip touching 5 EMA). Fits session-structure driver rather than swing-MR, but plain HA color-flip is a weak mechanical prior; LOW due to forum source + discretionary exit/sizing core."
+    }
+  ],
+  "notes": [
+    "Text extracted via pypdf (Read tool could not render pages: poppler/pdftoppm not installed).",
+    "One core strategy across all 46 pages; remainder of thread is trade-screenshot chatter with no additional distinct rules."
+  ]
+}

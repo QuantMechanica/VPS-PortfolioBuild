@@ -1,0 +1,22 @@
+{
+  "pdf": "forexfactory_423512_best-trading-system-only-momentum_p1-4.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forexfactory_423512_best-trading-system-only-momentum_p1-4.pdf",
+      "source_pages": "1-5",
+      "source_ref": "muhiuddin, \"Best Trading System (Only Momentum)\" / MOMENTUM PRICE SYSTEM, ForexFactory forum thread #423512 (n.d., archived 2026-07-24), https://www.forexfactory.com/thread/423512-best-trading-system-only-momentum",
+      "strategy_name": "Momentum Divergence Reversal (28-period)",
+      "concept": "Reversal at momentum exhaustion: enter against price when the Momentum(28) indicator diverges from price and then breaks its own prior swing extreme (point F).",
+      "market": "FX",
+      "timeframe": "H4",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Momentum divergence + momentum-swing-break trigger, price-based stop (point C) and measured-move TPs are mechanizable in pure MQL5 (pivot-lookback divergence detection); no ML/external runtime; FX/JPY/crude data available; defined stops = FTMO/DXZ compatible.",
+      "priority_hint": "MED",
+      "notes": "Rules: Momentum period 28 (close), divergence drawn over 8-28 bars; SHORT = price higher-high while momentum lower-high (mark highest price C, lowest momentum F); enter on close when F penetrated with 2 lots; SL at price C; TP1 = |C - entry| (exit 1 lot, SL->BE); TP2 = 2xTP1 (trail 50% of profit); TP3 = 4xTP1; LONG is the mirror. Divergence-line identification is subjective and must be parameterized (pivot lookback) to be deterministic -> PARTIAL. Evidence is forum anecdote only: author self-reports 3.5-10%/month with 32% DD over 11 months, forward-tested, no backtest; one member reported very few H4 signals. Author claims it works on all FX pairs incl. JPY crosses (CADJPY/GBPJPY examples) and crude oil (XTIUSD in our universe), untested on gold/silver; H4-D1 swing (avg hold ~4 days). Variants mentioned in thread (same core concept, not separate rows): CCI14 divergence on M15/H1 (PAMPAQ #51), and homealbum's vague EMA(21,8)+Bollinger 'price action' comment (#56) too vague to build. A community MT4 divergence indicator (Momentum Divergence2_mtf+alerts.mq4) was attached, confirming the divergence detection is automatable."
+    }
+  ],
+  "notes": ["single-author momentum-divergence system; forum discussion otherwise; CCI14 and EMA+Bollinger mentions folded into notes as variants/chatter"]
+}

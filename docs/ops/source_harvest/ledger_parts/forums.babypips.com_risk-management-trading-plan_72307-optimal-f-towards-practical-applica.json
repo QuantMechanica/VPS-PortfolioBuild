@@ -1,0 +1,22 @@
+{
+  "pdf": "forums.babypips.com_risk-management-trading-plan_72307-optimal-f-towards-practical-application.html.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_risk-management-trading-plan_72307-optimal-f-towards-practical-application.html.pdf",
+      "source_pages": "1-4",
+      "source_ref": "PhilipPirrip, \"Optimal f: Towards a Practical Application\" (with replies from Xskppy, azz33, mihk, ragzs), Risk Management Practices, BabyPips forum, 2015-2016, https://forums.babypips.com/t/optimal-f-towards-practical-application/72307",
+      "strategy_name": "Optimal f position-sizing (money management only)",
+      "concept": "Position-sizing/capital-allocation discussion (Ralph Vince optimal f, Larry Williams risk-per-biggest-loss, fractional-deposit reset) with no trade signal.",
+      "market": "FX",
+      "timeframe": "none",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "No entry/exit edge — author explicitly confirms it is 'just a money management system and not a trade signal indicator'; nothing to backtest as a strategy, and optimal f's near-ruin drawdowns are also incompatible with FTMO/DXZ DD limits.",
+      "priority_hint": "LOW",
+      "notes": "Thread proposes a 'fraction of original investment' variant (deposit $1000, keep $9000 in bank, re-deposit after wipeout) as a drawdown workaround; still a bankroll scheme, not a signal. No parameters or rules for any market/timeframe."
+    }
+  ],
+  "notes": ["Money-management/position-sizing thread with zero entry/exit signal rules; single REJECTED summary row."]
+}

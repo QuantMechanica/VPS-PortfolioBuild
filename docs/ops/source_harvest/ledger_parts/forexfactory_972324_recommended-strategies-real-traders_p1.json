@@ -1,0 +1,22 @@
+{
+  "pdf": "forexfactory_972324_recommended-strategies-real-traders_p1.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forexfactory_972324_recommended-strategies-real-traders_p1.pdf",
+      "source_pages": "1-2",
+      "source_ref": "scherzi et al., \"Recommended Strategies on Forex Factory - Real Traders\", Forex Factory forum thread #972324, https://www.forexfactory.com/thread/972324-recommended-strategies-on-forex-factory-real-traders",
+      "strategy_name": "FF meta-discussion: which threads are actually useful",
+      "concept": "Meta thread asking real traders which FF threads carry real edge; contains no self-contained rule set of its own.",
+      "market": "FX",
+      "timeframe": "n/a",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "No implementable rules in this document; only a request for recommendations, a vague trend aphorism, and pointers to external threads.",
+      "priority_hint": "LOW",
+      "notes": "Two threads are name-dropped as useful but their rules are NOT in this PDF: a TMA (Triangular Moving Average) strategy thread t=874421 (scherzi calls it 'a lot of ideas / interesting study field', says he does not follow it), and t=345838 (Empiric1 uses 'modified versions of a couple of the methods'). tiborf71's only rule-like statement is 'trade always in the direction of the trend and let the position run' -- too vague to mechanize. If harvesting the TMA edge is desired, source thread 874421 directly rather than this pointer thread."
+    }
+  ],
+  "notes": ["Forum meta-thread; zero self-contained strategy candidates -> one REJECTED summary row.", "External threads referenced for potential follow-up: FF t=874421 (TMA strategy), FF t=345838."]
+}
