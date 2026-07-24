@@ -77,3 +77,16 @@ Also recorded: realized fill frequency 516/yr on XAUUSD vs the 8–25/yr spec
 estimate — the per-side state machine re-arms after each completed trade within
 the same week (mechanically allowed by the final spec; economics judged by
 Q02+, not the build gate).
+
+### Explicit frequency reconciliation (2026-07-24, closing codex ACK condition)
+
+**Decision: per-side re-arming within the week STAYS.** The source (p.14-15,
+p.25) defines setup mechanics per sweep/OB event and nowhere limits entries to
+one per week/side; imposing such a cap would be an unsourced restriction
+(worse fidelity) and a hidden frequency parameter. Consequences accepted:
+realized ~516-542 fills/yr/symbol (vs the 8-25 pre-build guess, which was an
+estimate error, not a spec deviation). The Q02+ economic gates judge churn; if
+they fail on it, a `strategy_one_setup_per_week` variant is the documented
+first recalibration candidate (card note, new G0 round required).
+The card's frequency-estimate line is annotated accordingly in the next codex
+review bundle (builder≠approver).
