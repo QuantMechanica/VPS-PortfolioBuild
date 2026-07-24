@@ -50,9 +50,17 @@ EXPERT_REMOVED_RE = re.compile(
     re.IGNORECASE,
 )
 # Safety fallback only.  Production expectation is loaded from --book-manifest.
-EXPECTED_LIVE_SLEEVES = 23
+EXPECTED_LIVE_SLEEVES = 24
 PRESET_FILE_RE = re.compile(
     r"^slot(?P<slot>\d+)_(?P<symbol>[^_]+)_(?P<tf>[^_]+)_QM5_(?P<ea_id>\d+)_.*_magic(?P<magic>\d+)(?:_[^.]+)?\.set$",
+    re.IGNORECASE,
+)
+# Deployed naming since the 2026-07 rename: NN_SYMBOL_TF_QM5_<id>_<slug>.set.
+# The filename carries no slot/magic; slot comes from the qm_magic_slot_offset
+# input inside the set (all 24 deployed presets carry it, audit 2026-07-24)
+# and magic is reconstructed as ea_id*10000+slot.
+NUMBERED_PRESET_FILE_RE = re.compile(
+    r"^(?P<order>\d+)_(?P<symbol>[^_]+)_(?P<tf>[^_]+)_QM5_(?P<ea_id>\d+)_(?P<slug>[^.]+)\.set$",
     re.IGNORECASE,
 )
 SYNC_RE = re.compile(
@@ -580,22 +588,36 @@ def load_live_presets(terminal_roots: list[Path]) -> list[dict[str, Any]]:
         preset_dir = root / "MQL5" / "Presets"
         if not preset_dir.is_dir():
             continue
-        for path in sorted(preset_dir.glob("slot*.set")):
+        for path in sorted(preset_dir.glob("*.set")):
             match = PRESET_FILE_RE.match(path.name)
-            if not match:
+            numbered = None if match else NUMBERED_PRESET_FILE_RE.match(path.name)
+            if not match and not numbered:
                 continue
             values = _read_setfile_values(path)
-            symbol = match.group("symbol")
-            tf = match.group("tf")
+            if match:
+                slot = int(match.group("slot"))
+                magic = int(match.group("magic"))
+                ea_id = int(match.group("ea_id"))
+                symbol = match.group("symbol")
+                tf = match.group("tf")
+            else:
+                slot_raw = str(values.get("qm_magic_slot_offset") or "").strip()
+                if not slot_raw.isdigit():
+                    continue
+                slot = int(slot_raw)
+                ea_id = int(numbered.group("ea_id"))
+                magic = ea_id * 10000 + slot
+                symbol = numbered.group("symbol")
+                tf = numbered.group("tf")
             presets.append(
                 {
-                    "slot": int(match.group("slot")),
-                    "ea_id": int(match.group("ea_id")),
+                    "slot": slot,
+                    "ea_id": ea_id,
                     "symbol": symbol,
                     "symbol_norm": normalize_symbol(symbol),
                     "preset_tf": tf,
                     "preset_tf_norm": normalize_timeframe(tf),
-                    "magic": int(match.group("magic")),
+                    "magic": magic,
                     "qm_magic_slot_offset": values.get("qm_magic_slot_offset"),
                     "risk_percent": values.get("RISK_PERCENT"),
                     "risk_fixed": values.get("RISK_FIXED"),
