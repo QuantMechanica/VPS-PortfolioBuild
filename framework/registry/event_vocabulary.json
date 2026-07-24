@@ -281,6 +281,7 @@
         "STRATEGY_CALENDAR_COVERAGE_GAP",
         "STRATEGY_CALENDAR_LOADED",
         "STRATEGY_ENTRY",
+        "STRATEGY_EXIT",
         "STRATEGY_REBALANCE_DONE",
         "STRATEGY_REBALANCE_OPEN",
         "STRATEGY_SETUP_COVERAGE_GAP",
@@ -318,7 +319,7 @@
         "event",
         "payload"
       ],
-      "resolved_call_count": 6165,
+      "resolved_call_count": 6184,
       "schema_version": 1,
       "stream": "qm_events"
     }

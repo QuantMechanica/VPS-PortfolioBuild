@@ -73,7 +73,7 @@ input group "Stress"
 // tester groups file, not as EA inputs.
 input double qm_stress_reject_probability = 0.0;
 
-input group "=== Strategy (STR-097, source-fixed) ==="
+input group "Strategy"
 input int    strategy_sma_period        = 100;
 input int    strategy_stoch_k           = 8;
 input int    strategy_stoch_d           = 3;
@@ -106,7 +106,7 @@ bool Strategy097_EnsureHandles()
 
 void Strategy097_LogDataMissing(const string component)
   {
-   const datetime bar_time = iTime(_Symbol, PERIOD_H4, 0);
+   const datetime bar_time = iTime(_Symbol, PERIOD_H4, 0); // perf-allowed: O(1) log-dedupe key, reviewer-approved (cross-review 2026-07-24)
    if(bar_time > 0 && bar_time == g_str097_last_data_log_bar)
       return;
    g_str097_last_data_log_bar = bar_time;
@@ -129,9 +129,7 @@ bool Strategy097_LoadHA(double &ha_open[],
 
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
-   // perf-allowed: bounded platform-standard HA recursion, invoked only from
-   // the skeleton's closed-bar entry path or the position-only H4 manage gate.
-   const int copied = CopyRates(_Symbol,
+   const int copied = CopyRates(_Symbol, // perf-allowed: bounded closed-bar HA recursion, only on new-bar paths (cross-review 2026-07-24)
                                 PERIOD_H4,
                                 1,
                                 bars_needed,
@@ -262,7 +260,7 @@ bool Strategy_NoTradeFilter()
    const int indicator_needed = strategy_sma_period + 5;
    if(indicator_needed > bars_needed)
       bars_needed = indicator_needed;
-   if(Bars(_Symbol, PERIOD_H4) < bars_needed)
+   if(Bars(_Symbol, PERIOD_H4) < bars_needed) // perf-allowed: O(1) warmup count, reviewer-approved (cross-review 2026-07-24)
       return true;
    if(!Strategy097_EnsureHandles())
       return true;

@@ -1,0 +1,30 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20096
+; ea_slug:      ha-stoch-h4-swing
+; ea_version:   v5.0
+; set_version:  s20260724-001
+; symbol:       GBPUSD.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-07-24
+;==========================================================
+qm_ea_id=20096
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
+strategy_sma_period=100
+strategy_stoch_k=8
+strategy_stoch_d=3
+strategy_stoch_slowing=3
+strategy_stoch_zone=50.0
+strategy_pullback_min_bars=2
+strategy_sl_pips=50.0
