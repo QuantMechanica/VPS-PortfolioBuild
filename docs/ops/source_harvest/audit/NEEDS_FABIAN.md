@@ -1,6 +1,8 @@
 # NEEDS FABIAN — decisions/countersigns from the 2026-07-24 audit implementation
 
-Nothing here blocks the factory; each item is one written line from you.
+> **ALL 6 ANSWERED by OWNER 2026-07-24** — see
+> `decisions/2026-07-24_owner_approvals_audit_package.md` for the per-item record.
+> Retained for provenance; the Vault mirror carries the ticked checkboxes.
 
 1. **Live-book manifest countersign (ESC-02).** New as-deployed 24-sleeve manifest
    `D:\QM\reports\portfolio\portfolio_manifest_live_24sleeve_20260724.json`

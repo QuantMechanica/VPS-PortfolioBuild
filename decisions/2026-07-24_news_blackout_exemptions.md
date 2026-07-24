@@ -1,9 +1,8 @@
-> **RATIFIED 2026-07-24 → promoted to `decisions/2026-07-24_news_blackout_exemptions.md`** (this draft is retained for provenance)
+# 2026-07-24 — News-blackout exemption classes (ESC-05) — RATIFIED
 
-# DRAFT for OWNER ratification — News-blackout exemption classes (ESC-05)
-
-Status: **PENDING OWNER SIGN-OFF** — becomes a dated decision file under `decisions/`
-once ratified (or is discarded if OWNER picks option (b)).
+Status: **RATIFIED by OWNER 2026-07-24** (chat "alles freigegeben" + vault checkbox;
+record: decisions/2026-07-24_owner_approvals_audit_package.md). Matrix cells for
+12778/13117/13128 re-graded PASS_EXEMPT; annex added to Vault 01 Identity/Hard Rules.
 
 ## Proposed rule
 

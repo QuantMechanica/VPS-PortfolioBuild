@@ -7,7 +7,7 @@ applicable cells, captured 05:34Z). **All divergent cells resolved to the more
 restrictive verdict** (§ Divergence resolution). Verdicts: PASS / FAIL / MISSING /
 N_A (not applicable, excluded from denominators).
 
-**Live totals (24 instances × 8 checks = 192 cells): 150 PASS / 40 FAIL / 2 MISSING.**
+**Live totals (24 instances × 8 checks = 192 cells): 150 PASS / 3 PASS_EXEMPT / 37 FAIL / 2 MISSING** *(2026-07-24 late: OWNER ratified the news-exemption classes — decisions/2026-07-24_news_blackout_exemptions.md — re-grading the three deliberate news opt-outs from FAIL to PASS_EXEMPT).*
 
 ## Evidence key (per-cell shorthand → concrete path)
 
@@ -37,7 +37,7 @@ risk mode has **no runtime ENV enforcement** — values drive mode (`QM_Common.m
 | 03 | 1567 demark-td-rev | EURUSD | 15670007 | PASS R | PASS S | PASS S(0.179) | PASS Q | PASS Q | FAIL Q,F | PASS F | PASS Q,V(07-15) |
 | 04 | 10919 grimes-overshoot | XTIUSD | 109190001 | PASS R | **FAIL** S,CX#4 (header `environment=backtest, risk_mode=FIXED` on live preset; values live-conform RF=0/RP=0.9181) | PASS S(0.918) | **MISSING** Q,CX#5 (calendar loaded rows=96123 but no per-magic native SELFTEST) | PASS Q | FAIL Q,F | PASS F | **FAIL** Q(`D:\QM\data\halt`),V(07-03) |
 | 05 | 11165 weiss-rsi-ma | AUDCAD | 111650002 | PASS R | PASS S | PASS S(0.523) | PASS Q | PASS Q | FAIL Q,F | PASS F | PASS Q,V(07-17) |
-| 06 | 12778 cointegration | AUDUSD | 127780000 | PASS R | PASS S | PASS S(0.491) | **FAIL** S(`qm_filter_news_enabled=0`),Q(`all_news_axes_off`),CX#9 | PASS Q | FAIL Q,F | PASS F | PASS Q,V(07-13) |
+| 06 | 12778 cointegration | AUDUSD | 127780000 | PASS R | PASS S | PASS S(0.491) | **PASS_EXEMPT** (basket class, decisions/2026-07-24_news_blackout_exemptions.md; was FAIL) S,Q,CX#9 | PASS Q | FAIL Q,F | PASS F | PASS Q,V(07-13) |
 | 07 | 11421 ohlc-squeeze | AUDUSD | 114210003 | PASS R | PASS S | PASS S(0.361) | PASS Q | PASS Q | FAIL Q,F | PASS F | **FAIL** Q,V(06-28) |
 | 08 | 11165 weiss-rsi-ma | EURUSD | 111650000 | PASS R | PASS S | PASS S(0.413) | PASS Q | PASS Q | FAIL Q,F | PASS F | PASS Q,V(07-17) |
 | 09 | 11421 ohlc-squeeze | EURUSD | 114210000 | PASS R | PASS S | PASS S(0.336) | PASS Q | PASS Q | FAIL Q,F | PASS F | **FAIL** Q,V(06-28) |
@@ -45,7 +45,7 @@ risk mode has **no runtime ENV enforcement** — values drive mode (`QM_Common.m
 | 11 | 10706 tv-mon-ls | GBPUSD | 107060001 | PASS R | PASS S | PASS S(0.053) | PASS Q | PASS Q | FAIL Q,F | PASS S(custom 18:30, stricter) | PASS Q,V(07-13) |
 | 12 | 10939 grimes-context | GBPUSD | 109390001 | PASS R | PASS S | PASS S(0.189) | PASS Q | PASS Q | FAIL Q,F | PASS F | **FAIL** Q,V(06-28) |
 | 13 | 10911 grimes-complex | GDAXI | 109110003 | PASS R | PASS S | PASS S(0.128) | PASS Q | PASS Q | FAIL Q,F | PASS F | **FAIL** Q,V(06-28) |
-| 14 | 13128 pre-fomc-drift | NDX | 131280000 | PASS R | PASS S | PASS S(1.000, at ceiling) | **FAIL** Q(`all_news_axes_off`; deliberate: qm gate would block the strategy's own in-blackout exit — see source :17,:328. Deployed 07-13 binary predates the 07-15 calendar-horizon fail-close 2b7e73b83; HEAD source fails closed after 20261231, reaches live with the 26.07 rebuild),CX#22 | PASS Q | FAIL Q,F | PASS Q | PASS Q,V(07-13) |
+| 14 | 13128 pre-fomc-drift | NDX | 131280000 | PASS R | PASS S | PASS S(1.000, at ceiling) | **PASS_EXEMPT** (event class, decisions/2026-07-24_news_blackout_exemptions.md; was FAIL. Deployed 07-13 binary predates the 07-15 calendar-horizon fail-close; wave closes the gap),CX#22 | PASS Q | FAIL Q,F | PASS Q | PASS Q,V(07-13) |
 | 15 | 10440 mql5-ohlc-mtf | NDX | 104400003 | PASS R | PASS S | PASS S(0.058) | PASS Q | PASS Q | FAIL Q,F | PASS F | **FAIL** Q,V(06-28) |
 | 16 | 11132 tm-cum-rsi2 | SP500 | 111320000 | PASS R | PASS S | PASS S(0.456) | PASS Q | PASS Q | FAIL Q,F | PASS F | **FAIL** Q,V(06-28) |
 | 17 | 12969 gotobi-nakane | USDJPY | 129690000 | PASS R | PASS S | PASS S(0.510) | **MISSING** Q,CX#28 (loaded rows=96123, no native SELFTEST) | PASS Q | FAIL Q,F | PASS F | PASS Q,V(07-13) |
@@ -55,7 +55,7 @@ risk mode has **no runtime ENV enforcement** — values drive mode (`QM_Common.m
 | 21 | 12989 grimes-nested | XAUUSD | 129890003 | PASS R | **FAIL** S,CX#35 (header `PERCENT_DRAFT_INVOL_SUMRISK_CAPPED_S3-D2D-15` — draft label on live preset; values conform) | PASS S(0.242) | PASS Q | PASS Q | FAIL Q,F | PASS F | **FAIL** Q,V(07-04) |
 | 22 | 1556 aa-zak-mom12 | XAUUSD | 15560004 | PASS R | PASS S | PASS S(0.602) | PASS Q | PASS Q | FAIL Q,F | PASS Q(closed=1 07-17) | PASS Q,V(07-13) |
 | 23 | 12567 cum-rsi2-cmdty | XNGUSD | 125670002 | PASS R | PASS S | PASS S(0.980) | PASS Q | PASS Q | FAIL Q,F | PASS F | **FAIL** Q,V(06-28) |
-| 24 | 13117 eurgbp-audjpy | EURGBP | 131170000 | PASS R | PASS S | PASS S(0.420) | **FAIL** S(`qm_filter_news_enabled=0`),Q,CX#41 | PASS Q | FAIL Q,F | PASS F | PASS Q,V(07-14) |
+| 24 | 13117 eurgbp-audjpy | EURGBP | 131170000 | PASS R | PASS S | PASS S(0.420) | **PASS_EXEMPT** (basket class, decisions/2026-07-24_news_blackout_exemptions.md; was FAIL) S,Q,CX#41 | PASS Q | FAIL Q,F | PASS F | PASS Q,V(07-14) |
 
 ¹ 13213 was missing from `ea_id_registry.csv` (not `magic_numbers.csv`) at audit start — backfilled, commit `51778300b`.
 
@@ -68,9 +68,9 @@ risk mode has **no runtime ENV enforcement** — values drive mode (`QM_Common.m
   the dead absolute `D:\QM\data\halt\...` path in KILL_SWITCH_INIT — these sleeves
   cannot be halted via the file channel (KS_MANUAL + KS_PORTFOLIO_DD both dead).
   Retired by the planned 26.07 recompile wave → ESC-03.
-- **News FAIL ×3** are deliberate set/source-level opt-outs (12778/13117 basket EAs;
-  13128 event-EA by documented design, deployed binary pre-dates the 07-15
-  calendar-horizon fail-close — see row 14) — policy decision needed → ESC-05. MISSING ×2 (10919, 12969) = native-calendar proof gap on old
+- **News: PASS_EXEMPT ×3** (12778/13117 basket class; 13128 event class) — OWNER
+  ratified the exemption classes 2026-07-24 (decisions/2026-07-24_news_blackout_exemptions.md,
+  compensating controls documented there); previously FAIL, ESC-05 closed. MISSING ×2 (10919, 12969) = native-calendar proof gap on old
   binaries; self-resolves with the 26.07 rebuild (current template emits SELFTEST).
 - **Additionally (not a column):** ALL 24 deployed binaries predate the 2026-07-20
   P0/P1 framework bundle (newest live build 07-17) — every live sleeve still carries

@@ -17,8 +17,9 @@ OWNER directed implementation of the full audit package ("alles umsetzen", chat
   seeded from a one-time EQUITY_SNAPSHOT scan of the T_Live QM logs
   (seed 2026-07-24: HWM 101,871.44).
 - **Halt threshold: 10.0% book drawdown from HWM** (Edge-Lab charter total-DD bound;
-  env override `QM_BOOK_DD_HALT_PCT`). ⚠ OWNER may retune — flagged in
-  NEEDS_FABIAN.md.
+  env override `QM_BOOK_DD_HALT_PCT`). **OWNER-confirmed 10.0% on 2026-07-24**
+  (decisions/2026-07-24_owner_approvals_audit_package.md). Alarm-not-auto-halt
+  stale-telemetry policy likewise OWNER-approved same day.
 - On breach: writes `portfolio_dd.signal` (JSON payload with dd/hwm/equity/ts) to
   BOTH paths the post-fix binaries poll: T_Live sandbox
   `MQL5\Files\QM\halt\portfolio_dd.signal` and FILE_COMMON

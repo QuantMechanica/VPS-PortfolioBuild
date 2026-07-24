@@ -1,5 +1,11 @@
 # Escalations — Factory Audit 2026-07-24
 
+> **ALL DECIDED 2026-07-24** (OWNER: "alles freigegeben"; record
+> `decisions/2026-07-24_owner_approvals_audit_package.md`): ESC-01 built+10%
+> confirmed · ESC-02 countersigned · ESC-03 wave confirmed Sunday 26.07 ·
+> ESC-04 rule amended · ESC-05 exemptions ratified · ESC-06 10145 re-gated,
+> 20048 deferred to Q12. Text below retained as decision context.
+
 Decisions only OWNER can make. Each item is decision-ready: context, options, and the
 audit's recommendation. Nothing here blocks the factory today; ESC-01/ESC-03 are
 live-money-relevant.
