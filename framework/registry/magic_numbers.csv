@@ -15257,3 +15257,13 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20123,dailyopen-h1-basket,0,EURUSD.DWX,201230000,2026-07-24T21:19:37Z,claude,active
 20123,dailyopen-h1-basket,1,GBPUSD.DWX,201230001,2026-07-24T21:19:37Z,claude,active
 20124,xng-stor-m30,0,XNGUSD.DWX,201240000,2026-07-24T22:32:36Z,codex,active
+20125,rsi2-obos-scalp-m15,0,EURUSD.DWX,201250000,2026-07-24T23:15:19Z,claude,active
+20125,rsi2-obos-scalp-m15,1,GBPUSD.DWX,201250001,2026-07-24T23:15:19Z,claude,active
+20126,abo-atr-straddle-h1,0,EURUSD.DWX,201260000,2026-07-24T23:15:19Z,claude,active
+20127,sisyphus-2ma-rsi2-d1,0,EURUSD.DWX,201270000,2026-07-24T23:15:19Z,claude,active
+20127,sisyphus-2ma-rsi2-d1,1,GBPUSD.DWX,201270001,2026-07-24T23:15:19Z,claude,active
+20127,sisyphus-2ma-rsi2-d1,2,AUDUSD.DWX,201270002,2026-07-24T23:15:19Z,claude,active
+20127,sisyphus-2ma-rsi2-d1,3,NZDUSD.DWX,201270003,2026-07-24T23:15:19Z,claude,active
+20127,sisyphus-2ma-rsi2-d1,4,USDJPY.DWX,201270004,2026-07-24T23:15:19Z,claude,active
+20127,sisyphus-2ma-rsi2-d1,5,USDCHF.DWX,201270005,2026-07-24T23:15:19Z,claude,active
+20127,sisyphus-2ma-rsi2-d1,6,USDCAD.DWX,201270006,2026-07-24T23:15:19Z,claude,active
