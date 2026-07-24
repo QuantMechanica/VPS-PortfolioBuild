@@ -1,6 +1,6 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-24T07:07:03.5707215Z",
+    "generated_at":  "2026-07-24T08:07:02.6382911Z",
     "phase":  "Endausbaustufe-Modus - highest EA at P9",
     "agents":  {
                    "offline":  1,
@@ -12,14 +12,14 @@
                      "by_phase":  {
                                       "P5b":  0,
                                       "P6":  154,
-                                      "P2":  1337,
+                                      "P2":  1339,
                                       "P9b":  0,
                                       "G0":  0,
                                       "P3":  675,
                                       "P9":  23,
                                       "P3_5":  0,
                                       "P8":  6,
-                                      "P4":  314,
+                                      "P4":  315,
                                       "P10":  0,
                                       "P5":  164,
                                       "P7":  122,
