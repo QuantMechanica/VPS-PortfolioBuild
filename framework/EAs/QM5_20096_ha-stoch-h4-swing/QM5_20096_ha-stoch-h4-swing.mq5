@@ -91,13 +91,13 @@ bool Strategy097_EnsureHandles()
   {
    if(g_str097_h_sma == INVALID_HANDLE)
       g_str097_h_sma = QM_IndMA(_Symbol,
-                                PERIOD_H4,
+                                PERIOD_CURRENT,
                                 strategy_sma_period,
                                 MODE_SMA,
                                 PRICE_CLOSE);
    if(g_str097_h_stoch == INVALID_HANDLE)
       g_str097_h_stoch = QM_IndStoch(_Symbol,
-                                    PERIOD_H4,
+                                    PERIOD_CURRENT,
                                     strategy_stoch_k,
                                     strategy_stoch_d,
                                     strategy_stoch_slowing);
