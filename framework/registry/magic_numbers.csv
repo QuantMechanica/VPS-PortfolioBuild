@@ -15250,3 +15250,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20119,macd50-ukgrid-gbpusd,0,GBPUSD.DWX,201190000,2026-07-24T20:08:24Z,claude,active
 20120,simple-daily-3rise,0,GBPUSD.DWX,201200000,2026-07-24T20:08:24Z,claude,active
 20120,simple-daily-3rise,1,EURUSD.DWX,201200001,2026-07-24T20:08:24Z,claude,active
+20121,mtf-rsi2-align-m15,0,EURUSD.DWX,201210000,2026-07-24T21:19:37Z,claude,active
+20121,mtf-rsi2-align-m15,1,GBPUSD.DWX,201210001,2026-07-24T21:19:37Z,claude,active
+20122,bb-stoch-bandcross-h1,0,EURUSD.DWX,201220000,2026-07-24T21:19:37Z,claude,active
+20122,bb-stoch-bandcross-h1,1,GBPUSD.DWX,201220001,2026-07-24T21:19:37Z,claude,active
+20123,dailyopen-h1-basket,0,EURUSD.DWX,201230000,2026-07-24T21:19:37Z,claude,active
+20123,dailyopen-h1-basket,1,GBPUSD.DWX,201230001,2026-07-24T21:19:37Z,claude,active
