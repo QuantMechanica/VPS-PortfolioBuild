@@ -291,3 +291,45 @@ rows are therefore the only valid fallback work, and capacity prevents their
 dispatch. No queue mutation, MT5 launch, terminal control, AutoTrading change,
 live artifact, portfolio gate, EA artifact, setfile, basket manifest, or
 registry change was made.
+
+## 2026-07-24 10:59 paced-fleet audit
+
+A fresh path-anchored process check found six factory terminals running:
+
+```text
+T2, T3, T4, T6, T8, T10
+```
+
+`T_Live` and the separate FTMO terminal were explicitly excluded and were not
+controlled. Although the raw factory count was one below the documented
+seven-process ceiling, the canonical scheduler remained the binding capacity
+authority:
+
+```text
+python -m framework.scripts.mt5_saturation_scheduler
+  --sqlite D:/QM/reports/pipeline/mt5_queue.db
+  --dispatch-state D:/QM/reports/pipeline/dispatch_state.json
+  --dry-run
+```
+
+It returned:
+
+```json
+{"available_slots_after":0,"available_slots_before":0,"dry_run":true,"duplicate":0,"invalid":0,"no_capacity":0,"queued_scanned":0,"scheduled":0,"status":"ok"}
+```
+
+The canonical queue still contains four queued rows. The two forex
+cointegration continuations remain present exactly once, unassigned, and
+without a dispatch decision or error:
+
+- queue `2`: `QM5_12760`, `Q02`, `GBPUSD.DWX`,
+  `q02_fx_coint_12760_s20260629_001`
+- queue `4`: `QM5_13119`, `Q02`, `USDJPY.DWX`,
+  `q02_fx_coint_13119_s20260710_001`
+
+The scan remains exhausted: both positive-hedge survivors are Q02-cleared and
+all strict sign-aware qualifiers are built. The existing non-duplicate Q02
+rows remain the correct fallback work, but scheduler capacity prevents their
+dispatch. Per the CPU-ceiling stop rule, no new card, build, queue mutation,
+MT5 launch, terminal control, AutoTrading change, live artifact, portfolio
+gate, EA artifact, setfile, basket manifest, or registry change was made.
