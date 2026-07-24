@@ -12,6 +12,7 @@ uri: https://www.eia.gov/naturalgas/storage/
 strategy_ids:
   - EIA-XNG-STORAGE-AFTERSHOCK-2026
   - EIA-XNG-STORAGE-INTRADAY-2026_S01
+  - EIA-XNG-STORAGE-INTRADAY-2026_S02
 ---
 
 # EIA Weekly Natural Gas Storage Report Aftershock Source
@@ -31,6 +32,9 @@ Two mechanically distinct cards are bounded by this official event source:
 - `xng-stor-m30`: XNGUSD.DWX M30 standard-Thursday release-bar impulse
   continuation, entered only after the 10:30-11:00 New York bar closes and
   flattened in the same New York session.
+- `xng-stor-fade`: XNGUSD.DWX M30 standard-Thursday failed-release-break
+  reclaim, entered only after the 11:00-11:30 New York confirmation bar closes
+  back inside the pre-release range and flattened in the same New York session.
 
 ## Evidence Notes
 
@@ -52,6 +56,11 @@ Two mechanically distinct cards are bounded by this official event source:
   skips holiday-shifted releases because the EA has no external schedule feed.
   Its continuation direction, price filters, stop, and session exit are QM
   hypotheses; EIA supplies event identity and timing, not a profitability claim.
+- The second M30 extraction waits one additional completed bar. It fades only
+  when the 10:30 release impulse broke the prior hour but the 11:00 bar closes
+  back inside that prior range and through the impulse midpoint. Its reclaim
+  rule, release-open target, structural stop, and session exit are likewise QM
+  hypotheses rather than EIA findings.
 
 ## Guardrails
 

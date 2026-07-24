@@ -15267,3 +15267,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20127,sisyphus-2ma-rsi2-d1,4,USDJPY.DWX,201270004,2026-07-24T23:15:19Z,claude,active
 20127,sisyphus-2ma-rsi2-d1,5,USDCHF.DWX,201270005,2026-07-24T23:15:19Z,claude,active
 20127,sisyphus-2ma-rsi2-d1,6,USDCAD.DWX,201270006,2026-07-24T23:15:19Z,claude,active
+20128,xng-stor-fade,0,XNGUSD.DWX,201280000,2026-07-24T23:22:45Z,codex,active

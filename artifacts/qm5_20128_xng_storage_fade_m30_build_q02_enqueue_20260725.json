@@ -1,0 +1,51 @@
+{
+  "task_id": "382d3008-3590-4687-9f8a-64274f6d940b",
+  "ea_id": "QM5_20128",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_20128_xng-stor-fade",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_20128_xng-stor-fade/QM5_20128_xng-stor-fade.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_20128_xng-stor-fade/QM5_20128_xng-stor-fade.ex5",
+  "magic_base": 201280000,
+  "symbols_registered": [
+    "XNGUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_20128_xng-stor-fade/sets/QM5_20128_xng-stor-fade_XNGUSD.DWX_M30_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_20128_xng-stor-fade/SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_log_path": "C:/QM/repo/framework/build/compile/20260724_232702/QM5_20128_xng-stor-fade.compile.log",
+  "build_check_report_path": "D:/QM/reports/framework/21/build_check_20260724_233226.json",
+  "build_check_status": "PASS",
+  "build_check_failures": 0,
+  "build_check_warnings": 0,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "FACTORY_OFF.flag is authoritative; paced Q02 owns the first Model-4 trade-generation run",
+  "smoke_report_path": null,
+  "blocked_reason": "",
+  "build_recorded": true,
+  "build_task_status": "done",
+  "q02_work_item_id": "7120d80d-a807-4353-901a-6cde7013a88f",
+  "q02_phase": "Q02",
+  "q02_status": "pending",
+  "q02_attempt_count": 0,
+  "q02_created_at_utc": "2026-07-24T23:31:51+00:00",
+  "q02_setfile": "QM5_20128_xng-stor-fade_XNGUSD.DWX_M30_backtest.set",
+  "q02_symbol": "XNGUSD.DWX",
+  "q02_timeframe": "M30",
+  "q02_auto_enqueue_count": 1,
+  "q02_auto_enqueue_skipped": 0,
+  "factory_off_observed": true,
+  "factory_off_path": "D:/QM/strategy_farm/state/FACTORY_OFF.flag",
+  "backtest_terminal_count_observed": 0,
+  "manual_backtest_started": false,
+  "t_live_touched": false,
+  "portfolio_gate_touched": false,
+  "source_sha256": "9E5C099EBD4262C50332E626A7C067E52ECD27B6DF8A09A3BFC5EA82E7CE7186",
+  "ex5_sha256": "FF038468DDEBC2BF295BB0269639974B58B3CD4B8B0AE3C74687FF61E4BFFCDC",
+  "setfile_sha256": "4E3B838F75552BA00EBAEA53E4CA863F361954A50FAD37A8DC37AA46CA55F58D",
+  "open_questions": [
+    "Q02 must falsify whether the completed false-break sequence produces enough trades after exact-clock, spread, and reward/risk gates.",
+    "No decorrelation or portfolio-admission claim is made before governed downstream evidence."
+  ]
+}
