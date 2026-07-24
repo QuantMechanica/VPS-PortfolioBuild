@@ -71,3 +71,18 @@ prev_d1_extreme, ob_high, ob_low, sweep_time}; pending cancels logged.
 
 Standard Q01 checklist. Broker-time W1/D1 anchors (UTC fidelity note in card).
 Friday-close ON. Frequency est. 8–25 fills/yr/symbol — Q02-floor watch flagged.
+
+---
+
+## Amendment 2026-07-24 — Hook 3 completion (TP-attach race)
+
+Hook 3 gains two clauses (defect fix, evidence
+`D:\QM\reports\smoke\QM5_20098\20260724_123426\`, 653k rejected 10016 modifies):
+- If the market already trades at/beyond the computed 2R target when the TP
+  would be attached → close position at market
+  (`STRATEGY_EXIT reason=rr_target_attained_pre_tp`) instead of requesting a
+  wrong-side TP.
+- A broker-rejected TP modify is retried at most once per closed M15 bar
+  (global wait-bar latch `g_str021_tp_retry_wait_bar`).
+
+See `03_reconciliation.md` amendment for rationale and tie-break basis.

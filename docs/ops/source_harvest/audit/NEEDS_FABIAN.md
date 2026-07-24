@@ -30,3 +30,25 @@
    call. Also recommended for the wave: a timer-driven EQUITY_SNAPSHOT emission
    (currently event-driven, gaps up to 20.6h) so the staleness limit can tighten
    from 50h to ~2h.
+
+---
+
+## New from the 2026-07-24 harvest build run (ANSWERED same day)
+
+7. **ANSWERED by OWNER 2026-07-24:** *"die neuen EAs einfach in die Factory einreihen, keine Priorisierung!"* — all three harvest EAs enqueued into the normal Q02 queue at default priority; the ad-hoc smoke requirement is waived (Q02 performs the aliveness check). T5 repair remains optional backlog, not a blocker. Original item below for provenance.
+
+   **Smoke host for indicator EAs / T5 repair (build run 2026-07-24).**
+   QM5_20096 and QM5_20097 are built, G0-approved and compile-clean, but their
+   mandatory build smoke has no valid host: the factory is saturated until the
+   wave (2311 pending), and **T5's tester never computes built-in indicators**
+   (`BarsCalculated=-1` all year; control EA QM5_11144 also produced 0 trades
+   there — full forensics in
+   `docs/ops/source_harvest/strategies/STR-097-ha-stoch-h4-swing/06_smoke.md`).
+   T_Export has no tick data; DEV1/DEV2 are QMDev1-identity-guarded.
+   **Plan (no decision needed unless you object): I smoke both EAs in the
+   Sunday 26.07 wave OFF window before the workers restart, then enqueue Q02.**
+   Optional additionally: repair T5 (terminal-state rebuild or fresh install
+   into `D:\QM\mt5\T5` + fleet history re-share) so a permanent ad-hoc smoke
+   host exists — say go and I'll set it up as a task with Codex.
+   Note: T5 remains valid for **indicator-free** EAs — QM5_20098's smoke PASSed
+   there (516 trades, deterministic).

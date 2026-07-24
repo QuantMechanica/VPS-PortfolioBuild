@@ -49,3 +49,31 @@ episodic frequency documented; framework overlay (news, Friday-close).
 ## Frequency
 8–25 filled/yr/symbol (codex, fill-adjusted) — above floor but the thinnest of
 the three; flagged for Q02 watch.
+
+---
+
+## Amendment 2026-07-24 (post-smoke defect fix, evidence-driven)
+
+First valid smoke (T5, XAUUSD.DWX M15 2024, `D:\QM\reports\smoke\QM5_20098\20260724_123426\`)
+PASSed with 516 trades but exposed a management defect: when the market trades
+through the 2R target before the deferred TP can be attached (limit fill at the
+OB retest with immediate continuation), the TP-modify sits on the wrong side of
+the price and is rejected (`10016 Invalid stops`) — the hook then retried every
+tick (**653,089 rejected modify requests** vs 515 successful TP attaches).
+
+Fix (within the spec's stated intent "TP computed at ACTUAL fill"):
+1. **Attained-target close:** if bid/ask is already at/beyond the 2R target at
+   management time, the exit condition is fulfilled → close at market, log
+   `STRATEGY_EXIT reason=rr_target_attained_pre_tp`. Source-faithful: the trade
+   achieved its 2R objective.
+2. **Retry pacing:** a rejected TP modify is retried at most once per M15 bar
+   (global wait-bar latch), bounding worst-case request/log volume.
+
+No entry, sweep, OB, invalidation, or risk logic touched. Tie-break rule 2/3
+(more restrictive / conservative-testable) applied; codex review requested as
+build-closure ACK.
+
+Also recorded: realized fill frequency 516/yr on XAUUSD vs the 8–25/yr spec
+estimate — the per-side state machine re-arms after each completed trade within
+the same week (mechanically allowed by the final spec; economics judged by
+Q02+, not the build gate).
