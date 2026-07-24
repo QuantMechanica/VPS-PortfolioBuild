@@ -34,3 +34,7 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
+; audit 2026-07-24 ESC-06/FB re-gate: effective news axes added - legacy
+; qm_filter_news_* keys are ignored by the current source inputs.
+qm_news_temporal=3
+qm_news_compliance=1

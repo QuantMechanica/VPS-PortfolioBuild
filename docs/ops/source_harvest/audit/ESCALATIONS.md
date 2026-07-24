@@ -46,9 +46,12 @@ re-enabled lane (update the rule text) or order it disabled again.
 ## ESC-05 — News-blackout opt-outs by design (3 live sleeves)
 
 12778 + 13117 (basket EAs, `qm_filter_news_enabled=0` in deployed sets) and 13128
-(pre-FOMC drift, all news axes off, FOMC dates **compiled into the binary** with no
-stale-calendar fail-closed guard) violate the letter of the mandatory-news-blackout
-charter item; graded FAIL ×3 in the matrix. **Ask:** (a) grant a documented exemption
+(pre-FOMC drift, all news axes off by documented design — the qm gate would block the
+strategy's own pre-statement exit inside the blackout window; source :17,:328) violate
+the letter of the mandatory-news-blackout charter item; graded FAIL ×3 in the matrix.
+Implementation update 2026-07-24: 13128's compiled FOMC table DOES have a
+fail-closed validity horizon (20261231) in HEAD since commit 2b7e73b83 (07-15) —
+the deployed 07-13 binary just predates it; the 26.07 rebuild closes that gap. **Ask:** (a) grant a documented exemption
 class for basket/event sleeves (with rationale recorded next to the Hard Rules), or
 (b) order news filters enabled / 13128 given a maintained calendar source with a
 stale-guard. Until decided, the FAILs stand.
@@ -65,6 +68,5 @@ stale-guard. Until decided, the FAILs stand.
 
 ## Cross-review note
 
-No verdict divergences between Claude and Codex remain unresolved — all 5 contested
-cells adopted the stricter reading (see `COMPLIANCE_MATRIX.md` § Divergence resolution).
+No verdict divergences between Claude and Codex remain unresolved — all 8 contested cells (6 divergence classes) adopted the stricter reading (see `COMPLIANCE_MATRIX.md` § Divergence resolution).
 The items above are policy questions, not evidence disputes.

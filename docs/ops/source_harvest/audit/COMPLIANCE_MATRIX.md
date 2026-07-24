@@ -45,7 +45,7 @@ risk mode has **no runtime ENV enforcement** — values drive mode (`QM_Common.m
 | 11 | 10706 tv-mon-ls | GBPUSD | 107060001 | PASS R | PASS S | PASS S(0.053) | PASS Q | PASS Q | FAIL Q,F | PASS S(custom 18:30, stricter) | PASS Q,V(07-13) |
 | 12 | 10939 grimes-context | GBPUSD | 109390001 | PASS R | PASS S | PASS S(0.189) | PASS Q | PASS Q | FAIL Q,F | PASS F | **FAIL** Q,V(06-28) |
 | 13 | 10911 grimes-complex | GDAXI | 109110003 | PASS R | PASS S | PASS S(0.128) | PASS Q | PASS Q | FAIL Q,F | PASS F | **FAIL** Q,V(06-28) |
-| 14 | 13128 pre-fomc-drift | NDX | 131280000 | PASS R | PASS S | PASS S(1.000, at ceiling) | **FAIL** Q(`all_news_axes_off`; compiled-in FOMC list, no stale-guard),CX#22 | PASS Q | FAIL Q,F | PASS Q | PASS Q,V(07-13) |
+| 14 | 13128 pre-fomc-drift | NDX | 131280000 | PASS R | PASS S | PASS S(1.000, at ceiling) | **FAIL** Q(`all_news_axes_off`; deliberate: qm gate would block the strategy's own in-blackout exit — see source :17,:328. Deployed 07-13 binary predates the 07-15 calendar-horizon fail-close 2b7e73b83; HEAD source fails closed after 20261231, reaches live with the 26.07 rebuild),CX#22 | PASS Q | FAIL Q,F | PASS Q | PASS Q,V(07-13) |
 | 15 | 10440 mql5-ohlc-mtf | NDX | 104400003 | PASS R | PASS S | PASS S(0.058) | PASS Q | PASS Q | FAIL Q,F | PASS F | **FAIL** Q,V(06-28) |
 | 16 | 11132 tm-cum-rsi2 | SP500 | 111320000 | PASS R | PASS S | PASS S(0.456) | PASS Q | PASS Q | FAIL Q,F | PASS F | **FAIL** Q,V(06-28) |
 | 17 | 12969 gotobi-nakane | USDJPY | 129690000 | PASS R | PASS S | PASS S(0.510) | **MISSING** Q,CX#28 (loaded rows=96123, no native SELFTEST) | PASS Q | FAIL Q,F | PASS F | PASS Q,V(07-13) |
@@ -68,9 +68,9 @@ risk mode has **no runtime ENV enforcement** — values drive mode (`QM_Common.m
   the dead absolute `D:\QM\data\halt\...` path in KILL_SWITCH_INIT — these sleeves
   cannot be halted via the file channel (KS_MANUAL + KS_PORTFOLIO_DD both dead).
   Retired by the planned 26.07 recompile wave → ESC-03.
-- **News FAIL ×3** are deliberate set/source-level opt-outs (12778/13117 basket EAs,
-  13128 event-EA with compiled-in FOMC dates and no stale-guard) — policy decision
-  needed → ESC-05. MISSING ×2 (10919, 12969) = native-calendar proof gap on old
+- **News FAIL ×3** are deliberate set/source-level opt-outs (12778/13117 basket EAs;
+  13128 event-EA by documented design, deployed binary pre-dates the 07-15
+  calendar-horizon fail-close — see row 14) — policy decision needed → ESC-05. MISSING ×2 (10919, 12969) = native-calendar proof gap on old
   binaries; self-resolves with the 26.07 rebuild (current template emits SELFTEST).
 - **Additionally (not a column):** ALL 24 deployed binaries predate the 2026-07-20
   P0/P1 framework bundle (newest live build 07-17) — every live sleeve still carries
