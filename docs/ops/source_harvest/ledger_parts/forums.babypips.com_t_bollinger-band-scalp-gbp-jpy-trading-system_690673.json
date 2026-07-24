@@ -1,0 +1,25 @@
+{
+  "pdf": "forums.babypips.com_t_bollinger-band-scalp-gbp-jpy-trading-system_690673.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_bollinger-band-scalp-gbp-jpy-trading-system_690673.pdf",
+      "source_pages": "1-2",
+      "source_ref": "wdmenet, \"Bollinger Band scalp GBP/JPY Trading System\", BabyPips forum, 2022-02-13, https://forums.babypips.com/t/bollinger-band-scalp-gbp-jpy-trading-system/690673",
+      "strategy_name": "BB-Fade GBPJPY Scalp",
+      "concept": "Fade extreme Bollinger-band penetration on GBP/JPY, entering counter-trend when price pushes past the 2-sigma band toward the 3-4 sigma bands and profiting from the retrace back to the middle band.",
+      "market": "FX",
+      "timeframe": "M5",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Standard MQL5 Bollinger indicators, deterministic band-cross entry and 5-10 pip / middle-band exit; stop is left to 'money management' (vague) but a framework default fills it.",
+      "priority_hint": "LOW",
+      "notes": "Three BB overlays, all period 50, deviations 2 (red) / 3 (orange) / 4 (yellow). Short when price crosses the upper 2-sigma band at least halfway to the 3-sigma band (better if it reaches 4-sigma); long is the mirror between lower 2/4-sigma bands. Exit 5-10 pips or middle band. M1/M5 variants listed (same core rules). Stop = time-based (close if no move in planned window) + loss-based via money management, no fixed value. Low priority: unreputable single-post forum source, tight-spread ECN dependency (max 2-pip spread) with tiny 5-10 pip targets makes it heavily cost-sensitive on M1/M5, and it is another mean-reversion band-fade variant; JPY-cross is the only diversifying angle."
+    }
+  ],
+  "notes": [
+    "Text extracted via pypdf (Read tool could not render; poppler absent). Single-post thread, full content captured.",
+    "One core strategy with M1/M5 variants collapsed into one row."
+  ]
+}

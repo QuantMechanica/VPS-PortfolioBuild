@@ -1,0 +1,22 @@
+{
+  "pdf": "forums.babypips.com_t_best-strategy-to-use_514920.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_best-strategy-to-use_514920.pdf",
+      "source_pages": "1-4",
+      "source_ref": "\"Best Strategy to use\" thread, started by user tembophd990, BabyPips forum, 2021-2024, https://forums.babypips.com/t/best-strategy-to-use/514920",
+      "strategy_name": "None (generic best-strategy opinion thread)",
+      "concept": "Open-ended forum discussion asking which trading strategy is best; replies are generic opinions with no mechanical, testable rule set.",
+      "market": "FX",
+      "timeframe": "D1",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "No implementable edge — thread is generic advice ('no best strategy', 'practice on demo', 'price action', scalping opinions); no deterministic entry/exit/params anywhere.",
+      "priority_hint": "LOW",
+      "notes": "Closest to a strategy is post 2 (tommor): trend-follow strongest-vs-weakest currency on daily, enter on pullback recovery, variable SL, 1% risk, pyramid winners, exit before next pullback -- but strength ranking, pullback definition, pyramid and stop rules are all undefined, so VAGUE, not mechanizable. Post 3/11 references an external MT4 Elliott-wave/Fib/S&R/MACD strategy in another thread (discretionary, out of scope). Remainder is pure chatter."
+    }
+  ],
+  "notes": ["single_reject_summary_row"]
+}

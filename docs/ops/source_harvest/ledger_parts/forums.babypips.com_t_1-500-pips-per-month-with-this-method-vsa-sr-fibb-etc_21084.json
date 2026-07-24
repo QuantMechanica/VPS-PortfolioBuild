@@ -1,0 +1,22 @@
+{
+  "pdf": "forums.babypips.com_t_1-500-pips-per-month-with-this-method-vsa-sr-fibb-etc_21084.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_1-500-pips-per-month-with-this-method-vsa-sr-fibb-etc_21084.pdf",
+      "source_pages": "5, 33",
+      "source_ref": "petefader, \"1,500 PIPS PER MONTH with this method, VSA/SR/fibb etc\", babypips.com forums, 2009 (posts #9 and #136). https://forums.babypips.com/t/1-500-pips-per-month-with-this-method-vsa-sr-fibb-etc/21084",
+      "strategy_name": "Volume-Spike Wick Rejection at S/R-Fib Level",
+      "concept": "Fade a resistance or 50-61.8% fib level when price hits it and prints a candle with a >=40% rejection wick on a tick-volume spike, signaling smart-money absorption/exhaustion.",
+      "market": "FX",
+      "timeframe": "M5",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Entry is a deterministic MQL5 primitive (tick volume available; wick-% + volume-vs-recent-range + proximity to level), no ML/external feed; but exits and the level definition are unspecified and must be operationalized.",
+      "priority_hint": "LOW",
+      "notes": "Rule stated twice verbatim: (1) move up to .50-.618 fib or resistance; (2) M5/M15 candle with >=40% wick on top + volume spike vs recent range; (3) enter short on reversal; mirror for longs. Variants: M15 anchor, M1 for finer scalp entry. Source is a 2009 discretionary trader repeatedly accused of running a paid signal room with zero posted track record; VSA-on-forex tick volume is disputed within the thread itself, and no SL/TP system is defined (trade examples use ad-hoc 20-pip SL / ~40-pip targets / lock-at-BE). Other ideas floated in-thread are too vague for rows: an undisclosed '1hr strategy, 90% win ratio' (never revealed), a range-breakout-via-volume-asymmetry read, and an MA5/MA-cross pullback (pete states he does not trade a strict crossover). Could rise to MED if reframed as a session-open exhaustion fade on JPY crosses (he traded GBPJPY/EURJPY/USDJPY across Asia->London->NY) with a defined ATR/fixed-pip stop."
+    }
+  ],
+  "notes": ["classified_from_pdf"]
+}
