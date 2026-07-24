@@ -39,3 +39,13 @@ must be STATED, not inferred) and the card validator's expectations.
 
 Codex sample artifacts: `D:\QM\reports\source_harvest_codex_sample\CODEX_SAMPLE_LEDGER.csv`
 (34 rows: 16/6/12). Claude ledger: `SOURCE_LEDGER.csv` (143 rows: 97/1/45).
+
+## RESOLVED 2026-07-24 (OWNER: Option A)
+
+Option A applied: 51 PARTIAL-ELIGIBLE -> ELIGIBLE_NEEDS_SPEC, 1 VAGUE-ELIGIBLE -> REJECTED.
+Residual divergence re-measured: **6/26 = 23% < 30% -> gate PASSED, ledger VALIDATED.**
+Row settlements on codex control evidence: STR-014 THV -> PARKED (withheld indicator
+formulas, discretionary exits); STR-025 fractals -> REJECTED (published immediate-entry
+rule is look-ahead/repainting - fractal confirms 2 bars later). The 4 remaining cases are
+completeness-direction (codex ELIGIBLE vs Claude NEEDS_SPEC) - restrictive reading stands
+per tie-break. Final distribution: 43 ELIGIBLE / 51 NEEDS_SPEC / 2 PARKED / 47 REJECTED.
