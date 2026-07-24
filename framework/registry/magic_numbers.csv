@@ -15256,3 +15256,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20122,bb-stoch-bandcross-h1,1,GBPUSD.DWX,201220001,2026-07-24T21:19:37Z,claude,active
 20123,dailyopen-h1-basket,0,EURUSD.DWX,201230000,2026-07-24T21:19:37Z,claude,active
 20123,dailyopen-h1-basket,1,GBPUSD.DWX,201230001,2026-07-24T21:19:37Z,claude,active
+20124,xng-stor-m30,0,XNGUSD.DWX,201240000,2026-07-24T22:32:36Z,codex,active

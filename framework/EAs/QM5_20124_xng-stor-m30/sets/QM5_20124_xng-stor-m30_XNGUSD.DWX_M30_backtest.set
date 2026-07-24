@@ -1,0 +1,43 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20124
+; ea_slug:      xng-stor-m30
+; ea_version:   v5.0
+; set_version:  s20260725-001
+; symbol:       XNGUSD.DWX
+; timeframe:    M30
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   2d4bb0c3acc298285102e9aa26445588078bc3a7bea4c5050d844f86c3b9ef68
+; author:       Development
+; date:         2026-07-25
+;==========================================================
+qm_ea_id=20124
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; The storage release is the strategy event; no external calendar dependency.
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_mode_legacy=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_friday_close_enabled=1
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+; strategy-specific locked baseline
+strategy_release_hhmm_ny=1030
+strategy_entry_hhmm_ny=1100
+strategy_pre_release_bars=2
+strategy_min_release_range_atr=0.75
+strategy_min_body_ratio=0.50
+strategy_atr_period=20
+strategy_atr_sl_mult=2.0
+strategy_entry_grace_minutes=15
+strategy_session_flat_hhmm_ny=1555
+strategy_max_hold_hours=8
+strategy_max_spread_points=2500
