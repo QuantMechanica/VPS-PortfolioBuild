@@ -29,7 +29,9 @@ DEFAULT_ALARM_LOG = Path(r"D:\QM\strategy_farm\state\health_alarms.log")
 DEFAULT_BOOK_MANIFEST = Path(
     os.environ.get(
         "QM_DXZ_BOOK_MANIFEST",
-        r"D:\QM\reports\portfolio\portfolio_manifest_sunday_23sleeve_DRAFT_20260711.json",
+        # 24-sleeve as-deployed manifest, audit 2026-07-24 (ESC-02); replaced the
+        # stale 23-sleeve DRAFT 20260711 (3 ghosts, 4 unlisted live sleeves).
+        r"D:\QM\reports\portfolio\portfolio_manifest_live_24sleeve_20260724.json",
     )
 )
 DEFAULT_TAIL_BYTES = 4 * 1024 * 1024
