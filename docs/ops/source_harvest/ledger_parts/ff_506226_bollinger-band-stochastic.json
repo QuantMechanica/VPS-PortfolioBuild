@@ -1,0 +1,40 @@
+{
+  "pdf": "ff_506226_bollinger-band-stochastic.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_506226_bollinger-band-stochastic.pdf",
+      "source_pages": "1-5",
+      "source_ref": "StingrayEA, 'Bollinger Band & Stochastic', ForexFactory thread 506226 (27 posts, 2 pages), retail forex forum, ~2019 (thread references Bitcoin trading and 2019-era handles), https://www.forexfactory.com/thread/506226-bollinger-band-stochastic",
+      "strategy_name": "BB + Stochastic band-cross entry (StingrayEA)",
+      "concept": "Price crossing a Bollinger band confirmed by a Stochastic main/signal cross and a reversal candlestick triggers a directional entry.",
+      "market": "FX",
+      "timeframe": "H1",
+      "session": "none",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Pure-MQL5 indicator combo (BB 20/2, Stoch 14/3/3), deterministic, FX H1 .DWX data available, fixed SL 50 / TP 50 / trailing 15 compatible with FTMO/DXZ.",
+      "priority_hint": "LOW",
+      "notes": "Generic retail BB+Stochastic combo with no equity curve or backtest evidence; multiple skeptics in-thread (dkrock: stochastic wrong tool, price 'walks the band'; billbss: 'I don't see many winners'). OP's stated breakout framing ('price crosses upper band from below = breakout') conflicts with the reversion logic in Magix's posted MQL4 snippet (fade the band tag on a reversal candle, Stoch overbought/oversold) — one core idea, two directional interpretations. 'Bullish/bearish engulfing' is the reversal-candle filter. Yet-another indicator-swing variant, not an uncorrelated driver."
+    },
+    {
+      "source_file": "ff_506226_bollinger-band-stochastic.pdf",
+      "source_pages": "8-9",
+      "source_ref": "TampaDave (reply in StingrayEA's thread), 'Bollinger Band & Stochastic', ForexFactory thread 506226, retail forex forum, ~2019, https://www.forexfactory.com/thread/506226-bollinger-band-stochastic",
+      "strategy_name": "BB + Stochastic 10-pip reversion scalp (TampaDave)",
+      "concept": "Enter when price sits outside a Bollinger band and Stochastic crosses back from an extreme (below 20 up / above 80 down), scalping a fixed ~10-pip mean-reversion move.",
+      "market": "FX",
+      "timeframe": "M15",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Implementable in pure MQL5 once the Stochastic cross is mechanized and a fixed/ATR SL is chosen; FX M15/M30 .DWX data available; but no stop-loss is ever specified.",
+      "priority_hint": "LOW",
+      "notes": "Discretionary self-report on a live 0.01-lot account (2 weeks), no logs/backtest. Fixed 10-pip target criticized as non-portable across pairs (reteid2222), who suggests ATR-based SL and SMA20 / EMA100-150 exits; 'decisive crossover' is subjective (author warns against entering on a mere touch). Same indicators as Row 1 but clear mean-reversion logic vs Row 1's breakout framing, hence a separate row; author also mentions trading Bitcoin (crypto, out of universe) and M30 as an alternative TF."
+    }
+  ],
+  "notes": [
+    "Two distinct approaches in one FF thread: OP StingrayEA H1 band-cross entry (Row 1) and TampaDave M15/M30 10-pip reversion scalp (Row 2).",
+    "Reputable-source concern: retail forum with no verifiable track record; lowers priority per Q00 R1-R4 but does not reject (Balke precedent)."
+  ]
+}

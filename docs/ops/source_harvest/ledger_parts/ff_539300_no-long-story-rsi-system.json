@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_539300_no-long-story-rsi-system.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_539300_no-long-story-rsi-system.pdf",
+      "source_pages": "1-2",
+      "source_ref": "Kosomolate, \"No long story - RSI system\", ForexFactory thread 539300, 2015, https://www.forexfactory.com/thread/539300-no-long-story-rsi-system",
+      "strategy_name": "No-Long-Story RSI(2) OBOS Mean-Reversion",
+      "concept": "Counter-trend mean-reversion buying when a very short RSI(2) drops below 30 and selling when it rises above 70, expecting a snap-back from the overbought/oversold extreme.",
+      "market": "FX",
+      "timeframe": "M15",
+      "session": "none",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Pure-MQL5 RSI(2) OBOS with explicit stop (SL 25) and TP 10 + break-even mgmt; deterministic, EURUSD M15 data available, FTMO/DXZ-compatible. But OP's headline backtests (1k->68k over 10y) were not reproducible by two forum members.",
+      "priority_hint": "LOW",
+      "notes": "RSI period 2, upper 70 / lower 30; entry buy RSI<30 / sell RSI>70; SL 25, TP 10, break-even trigger 5 with BE+ 1 (pips, MT4 EA). Symbol unstated by OP but backtested/discussed on EURUSD M15. Reputability: OP posted only equity-curve images (600% claims), MathTrader7 could not replicate with the attached EA and argues a single unfiltered OBOS signal has no structural edge (RSI in trend = 'power zones', not reversal). Classic Connors-style RSI(2) MR variant — yet another OBOS mean-reversion, not an uncorrelated driver; low edge plausibility despite complete rules."
+    }
+  ],
+  "notes": []
+}

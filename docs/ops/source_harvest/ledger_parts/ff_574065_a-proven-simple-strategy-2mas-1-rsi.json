@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_574065_a-proven-simple-strategy-2mas-1-rsi.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_574065_a-proven-simple-strategy-2mas-1-rsi.pdf",
+      "source_pages": "1-2",
+      "source_ref": "Sis.yphus, \"A Proven Simple Strategy (2MAs, 1 RSI)\", ForexFactory thread 574065, ~2016 (tests Jan 2010-Dec 2015). https://www.forexfactory.com/thread/574065/a-proven-simple-strategy-2mas-1-rsi",
+      "strategy_name": "RSI-2 Pullback (200/5 MA, RSI2)",
+      "concept": "Short-term counter-move entry within a trend: when a 2-period RSI hits an extreme and price pulls back to the fast 5 MA while staying on the 200 MA's trend side, fade the pullback and exit when price closes back across the 5 MA.",
+      "market": "FX",
+      "timeframe": "D1",
+      "session": "none",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Deterministic MA/RSI mean-reversion on FX majors daily; pure MQL5, no ML, single fixed-lot position, low reported per-pair DD (~6%), FTMO/DXZ-compatible; classic Connors RSI-2 variant.",
+      "priority_hint": "MED",
+      "notes": "Long: close>200MA AND close<5MA AND RSI(2)<5. Short: close<200MA AND close>5MA AND RSI(2)>95. Exit at close of candle that touches/crosses 5MA (Option 1) or immediately on touch (Option 2). No hard SL/TP by design (author found none improved it); 5MA exit is the risk cap, framework overlay adds DD guards. Tested EU/GU/AU/NU/UJ/UCHF/UCAD, avg PF 1.31 / avg maxDD 6.19% in-sample (NZDUSD losing at PF 0.95). VARIANTS discussed in thread (same core rules): H1 (dafa: best TF for EU), M15/M5 intraday tests; RSI thresholds 30/70 instead of 5/95 (BillYon/dafa); optional fixed SL + trailing-stop exit (Shemski/abokwaik) gave lower DD on H1. TwoMA_OneRSI.ex4 posted by abokwaik as reference. Reputability: retail forum, in-sample only, modest edge (PF ~1.1-1.3), a swing/short-term-MR FX variant of which the farm likely holds several -> MED not HIGH."
+    }
+  ],
+  "notes": ["extracted_via_pdftotext_layout"]
+}

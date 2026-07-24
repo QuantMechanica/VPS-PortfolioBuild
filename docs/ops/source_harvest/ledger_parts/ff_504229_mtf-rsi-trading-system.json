@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_504229_mtf-rsi-trading-system.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_504229_mtf-rsi-trading-system.pdf",
+      "source_pages": "1-2,7,17",
+      "source_ref": "txfxtrader (originator), with indicators by Groenie ('Hitman') and Nonor ('dashboardRSI55'), 'MTF RSI Trading System', ForexFactory thread #504229, 2014. https://www.forexfactory.com/thread/504229",
+      "strategy_name": "MTF RSI-50 Alignment Trend Entry",
+      "concept": "Take the RSI of the last closed bar on each selected timeframe (M1-D1); go long only when RSI is above 50 on ALL of them and short only when below 50 on all, i.e. a multi-timeframe momentum-alignment filter with fixed TP/SL.",
+      "market": "FX",
+      "timeframe": "M15",
+      "session": "none",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Deterministic MTF RSI-vs-50 alignment with fixed SL/TP; pure-indicator, no ML, FX data available via .DWX, and FTMO/DXZ-compatible once the optional progressive MM is dropped in favor of RISK_FIXED.",
+      "priority_hint": "LOW",
+      "notes": "Forum retail system; edge evidence purely anecdotal (~10%/month ROI claim, author admits no backtesting, disclaimer 'what works today may not work tomorrow'). Signal uses the PREVIOUS closed bar per timeframe and the threshold is the 50 line (not classic 30/70). Variants collapse to one core rule set: RSI period 2 or 3 (Groenie 'Hitman' indi) or 55 (Nonor dashboard); TP/SL 30/20 pips or later 60/30; D1 optional, H4 added mid-thread as a noise filter. Pair screen: spread < 4 pips (later <3) and 5-day ADR > 60 pips. Optional flat-close at end of traded session. A progressive/martingale MM (0.1,0.1,0.2,0.4,0.8; cap 5 entries, ~2% cumulative) was proposed then EXPLICITLY REMOVED by the author to avoid confusion, so the core carries per-trade stops and is not a stopless martingale. Trigger timeframe is under-specified (lowest aligned bar); M15 chosen as a representative execution TF for the MTF confluence."
+    }
+  ],
+  "notes": []
+}
