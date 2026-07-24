@@ -280,9 +280,11 @@
         "SPREAD_LEG_OPEN_FAIL",
         "STRATEGY_CALENDAR_COVERAGE_GAP",
         "STRATEGY_CALENDAR_LOADED",
+        "STRATEGY_DIAG",
         "STRATEGY_ENTRY",
         "STRATEGY_EXIT",
         "STRATEGY_REBALANCE_DONE",
+        "STRATEGY_REBALANCE_FAILED",
         "STRATEGY_REBALANCE_OPEN",
         "STRATEGY_SETUP_COVERAGE_GAP",
         "STRESS_SIGNAL_ON",
@@ -296,6 +298,7 @@
         "TM_MODIFY_SKIPPED",
         "TM_OPEN",
         "TM_PARTIAL_CLOSE",
+        "TM_PARTIAL_RETRY_DEFERRED",
         "TM_REMOVE_PENDING",
         "TRIANGLE_FIRST_BREAK_IGNORED",
         "TRIANGLE_FORMED",
@@ -319,7 +322,7 @@
         "event",
         "payload"
       ],
-      "resolved_call_count": 6184,
+      "resolved_call_count": 6224,
       "schema_version": 1,
       "stream": "qm_events"
     }
