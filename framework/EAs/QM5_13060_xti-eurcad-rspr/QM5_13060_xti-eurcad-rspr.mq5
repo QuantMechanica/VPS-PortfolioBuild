@@ -461,7 +461,17 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
-   string basket_symbols[2] = {g_leg_xti, g_leg_eurcad};
+   // EURCAD settles and margins outside the USD tester currency. MT5 requests
+   // USDCAD for CAD P/L conversion and EURUSD for EUR margin conversion when
+   // the off-host leg first trades. Warm both manifest-declared history-only
+   // routes with the traded legs so valuation cannot arrive late at entry.
+   string basket_symbols[4] =
+     {
+      g_leg_xti,
+      g_leg_eurcad,
+      "USDCAD.DWX",
+      "EURUSD.DWX"
+     };
    QM_SymbolGuardInit(basket_symbols);
    QM_BasketWarmupHistory(basket_symbols,
                           PERIOD_D1,

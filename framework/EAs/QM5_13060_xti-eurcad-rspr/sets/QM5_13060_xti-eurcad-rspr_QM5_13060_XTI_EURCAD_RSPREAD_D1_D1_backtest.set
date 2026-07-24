@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        13060
 ; ea_slug:      xti-eurcad-rspr
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   555bb8ccc6ebaff7681f4f6d2cfdb121a0a2cf0cdbde2843c88897986cb4f839
+; build_hash:   a226357e79dba558910d93c57c957d07386f6cb31a4a084c491e779e0353c04e
 ; author:       Development
 ; date:         2026-07-08
 ;==========================================================
