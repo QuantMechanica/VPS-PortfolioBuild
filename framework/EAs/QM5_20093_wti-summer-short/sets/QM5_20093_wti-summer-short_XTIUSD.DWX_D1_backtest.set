@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        20093
 ; ea_slug:      wti-summer-short
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   1e338a6fbec61807fccf08c3728fcb64d0fee5ec52da8dfb18a723d925d8bb6d
+; build_hash:   cb23f82cf70e6ee1a3e1ec6f629928b4fc5daef45e8da4ba189c6d6b4f9395bc
 ; author:       Development
 ; date:         2026-07-24
 ;==========================================================
