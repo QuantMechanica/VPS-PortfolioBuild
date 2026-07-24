@@ -36,11 +36,11 @@ risk mode has **no runtime ENV enforcement** — values drive mode (`QM_Common.m
 | 02 | 13213 balke-gmt3 | USDJPY | 132130000 | PASS R¹ | PASS S | PASS S(0.043) | PASS Q | PASS Q | FAIL Q,F | PASS F | PASS Q,V(07-14) |
 | 03 | 1567 demark-td-rev | EURUSD | 15670007 | PASS R | PASS S | PASS S(0.179) | PASS Q | PASS Q | FAIL Q,F | PASS F | PASS Q,V(07-15) |
 | 04 | 10919 grimes-overshoot | XTIUSD | 109190001 | PASS R | **FAIL** S,CX#4 (header `environment=backtest, risk_mode=FIXED` on live preset; values live-conform RF=0/RP=0.9181) | PASS S(0.918) | **MISSING** Q,CX#5 (calendar loaded rows=96123 but no per-magic native SELFTEST) | PASS Q | FAIL Q,F | PASS F | **FAIL** Q(`D:\QM\data\halt`),V(07-03) |
-| 05 | 11165 weiss-rsi-ma | AUDCAD | 111650000 | PASS R | PASS S | PASS S(0.523) | PASS Q | PASS Q | FAIL Q,F | PASS F | PASS Q,V(07-17) |
+| 05 | 11165 weiss-rsi-ma | AUDCAD | 111650002 | PASS R | PASS S | PASS S(0.523) | PASS Q | PASS Q | FAIL Q,F | PASS F | PASS Q,V(07-17) |
 | 06 | 12778 cointegration | AUDUSD | 127780000 | PASS R | PASS S | PASS S(0.491) | **FAIL** S(`qm_filter_news_enabled=0`),Q(`all_news_axes_off`),CX#9 | PASS Q | FAIL Q,F | PASS F | PASS Q,V(07-13) |
-| 07 | 11421 ohlc-squeeze | AUDUSD | 114210000 | PASS R | PASS S | PASS S(0.361) | PASS Q | PASS Q | FAIL Q,F | PASS F | **FAIL** Q,V(06-28) |
-| 08 | 11165 weiss-rsi-ma | EURUSD | 111650002 | PASS R | PASS S | PASS S(0.413) | PASS Q | PASS Q | FAIL Q,F | PASS F | PASS Q,V(07-17) |
-| 09 | 11421 ohlc-squeeze | EURUSD | 114210003 | PASS R | PASS S | PASS S(0.336) | PASS Q | PASS Q | FAIL Q,F | PASS F | **FAIL** Q,V(06-28) |
+| 07 | 11421 ohlc-squeeze | AUDUSD | 114210003 | PASS R | PASS S | PASS S(0.361) | PASS Q | PASS Q | FAIL Q,F | PASS F | **FAIL** Q,V(06-28) |
+| 08 | 11165 weiss-rsi-ma | EURUSD | 111650000 | PASS R | PASS S | PASS S(0.413) | PASS Q | PASS Q | FAIL Q,F | PASS F | PASS Q,V(07-17) |
+| 09 | 11421 ohlc-squeeze | EURUSD | 114210000 | PASS R | PASS S | PASS S(0.336) | PASS Q | PASS Q | FAIL Q,F | PASS F | **FAIL** Q,V(06-28) |
 | 10 | 11708 anon-squeeze | EURUSD | 117080000 | PASS R | PASS S | PASS S(0.508) | PASS Q | PASS Q | FAIL Q,F | PASS F | PASS Q,V(07-13) |
 | 11 | 10706 tv-mon-ls | GBPUSD | 107060001 | PASS R | PASS S | PASS S(0.053) | PASS Q | PASS Q | FAIL Q,F | PASS S(custom 18:30, stricter) | PASS Q,V(07-13) |
 | 12 | 10939 grimes-context | GBPUSD | 109390001 | PASS R | PASS S | PASS S(0.189) | PASS Q | PASS Q | FAIL Q,F | PASS F | **FAIL** Q,V(06-28) |
@@ -51,10 +51,10 @@ risk mode has **no runtime ENV enforcement** — values drive mode (`QM_Common.m
 | 17 | 12969 gotobi-nakane | USDJPY | 129690000 | PASS R | PASS S | PASS S(0.510) | **MISSING** Q,CX#28 (loaded rows=96123, no native SELFTEST) | PASS Q | FAIL Q,F | PASS F | PASS Q,V(07-13) |
 | 18 | 10403 et-turtle20x | XAUUSD | 104030002 | PASS R | PASS S | PASS S(0.220) | PASS Q | PASS Q | FAIL Q,F | PASS F | PASS Q,V(07-13) |
 | 19 | 10513 mql5-ichimoku | XAUUSD | 105130003 | PASS R | PASS S | PASS S(0.305) | PASS Q | PASS Q | FAIL Q,F | PASS F | **FAIL** Q,V(06-28) |
-| 20 | 12567 cum-rsi2-cmdty | XAUUSD | 125670002 | PASS R | PASS S | PASS S(0.747) | PASS Q | PASS Q | FAIL Q,F | PASS F | **FAIL** Q,V(06-28) |
+| 20 | 12567 cum-rsi2-cmdty | XAUUSD | 125670003 | PASS R | PASS S | PASS S(0.747) | PASS Q | PASS Q | FAIL Q,F | PASS F | **FAIL** Q,V(06-28) |
 | 21 | 12989 grimes-nested | XAUUSD | 129890003 | PASS R | **FAIL** S,CX#35 (header `PERCENT_DRAFT_INVOL_SUMRISK_CAPPED_S3-D2D-15` — draft label on live preset; values conform) | PASS S(0.242) | PASS Q | PASS Q | FAIL Q,F | PASS F | **FAIL** Q,V(07-04) |
 | 22 | 1556 aa-zak-mom12 | XAUUSD | 15560004 | PASS R | PASS S | PASS S(0.602) | PASS Q | PASS Q | FAIL Q,F | PASS Q(closed=1 07-17) | PASS Q,V(07-13) |
-| 23 | 12567 cum-rsi2-cmdty | XNGUSD | 125670003 | PASS R | PASS S | PASS S(0.980) | PASS Q | PASS Q | FAIL Q,F | PASS F | **FAIL** Q,V(06-28) |
+| 23 | 12567 cum-rsi2-cmdty | XNGUSD | 125670002 | PASS R | PASS S | PASS S(0.980) | PASS Q | PASS Q | FAIL Q,F | PASS F | **FAIL** Q,V(06-28) |
 | 24 | 13117 eurgbp-audjpy | EURGBP | 131170000 | PASS R | PASS S | PASS S(0.420) | **FAIL** S(`qm_filter_news_enabled=0`),Q,CX#41 | PASS Q | FAIL Q,F | PASS F | PASS Q,V(07-14) |
 
 ¹ 13213 was missing from `ea_id_registry.csv` (not `magic_numbers.csv`) at audit start — backfilled, commit `51778300b`.
@@ -112,5 +112,23 @@ outside both sweeps and belong to the Q12 pre-live review anyway.
 | 10145 news (cand., ×3) | UNKNOWN | FAIL | **FAIL** | legacy news keys ineffective vs current source inputs; Q10 metadata contradicts effective config |
 | 20048 friday (cand.) | UNKNOWN | FAIL | **FAIL** | source hardcodes friday_close=false |
 
-No unresolved verdict divergences remain; policy-level questions escalated in
-`ESCALATIONS.md`. Codex's evidence CSV: `D:\QM\reports\audit\codex_compliance_2026-07-24\EVIDENCE_EXTRACT_CODEX.csv`.
+The table's 6 resolution rows cover **8 cells** (2 live risk-mode, 2 live news, 3×10145
+candidate news, 1×20048 candidate Friday). No unresolved verdict divergences remain;
+policy-level questions escalated in `ESCALATIONS.md`. Codex's evidence CSV:
+`D:\QM\reports\audit\codex_compliance_2026-07-24\EVIDENCE_EXTRACT_CODEX.csv`.
+
+## Cross-review outcome (Codex reviewing the merged matrix — single round, closed)
+
+`D:\QM\reports\audit\codex_compliance_2026-07-24\CROSS_REVIEW_CODEX.md`: 6× CONFIRM
+(totals arithmetic, max-DD ×24 with fresh external scan, killswitch 11-instance set
+re-derived from primary logs, stricter-wins completeness, 10 fresh spot-checked cells,
+registry/preset arithmetic), 2× DISPUTE — **both accepted and fixed in this file**:
+
+1. Six magic cell identities in the dual-symbol rows (05/08, 07/09, 20/23) were
+   pair-swapped — a transcription defect inherited from
+   `evidence/inventory__live_eas.json` (the agent's magic↔symbol pairing for the three
+   dual-symbol EAs is reversed there; the JSON is retained unmodified as originally
+   captured — THIS table, verified against preset primary evidence lines 7/10/17, is
+   authoritative). Verdict totals unaffected.
+2. The earlier "5 divergent cells" phrasing undercounted — corrected to 8 cells in 6
+   divergence classes (above).
