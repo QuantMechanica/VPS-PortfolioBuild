@@ -2,7 +2,10 @@
 
 **Implementation run 2026-07-24 (OWNER: "alles umsetzen") — status:**
 FB-01 DONE `550603304` · FB-02 DONE `bd9c3e049` (root cause was the 07-23
-evidence-binding regression, not the suspected spawn args) · FB-03 DONE `5562e8463` ·
+evidence-binding regression, not the suspected spawn args; NOTE: long-running
+worker daemons hold pre-fix code until restart — idle T1 recycled 07-24 ~07:50Z,
+the remaining 8 pick the fix up at the 26.07 wave OFF/ON; residual Q03
+INFRA_FAILs until then are this stale-code tail and sweep-recoverable) · FB-03 DONE `5562e8463` ·
 FB-04/ESC-02 DONE `bf3f03a1a` (manifest pending OWNER countersign) · FB-05 DONE (see
 below) · FB-06 DONE `550603304` · FB-07 DONE `6e79b9ea9` · FB-08 DONE `6e79b9ea9` ·
 FB-09 DONE (9/9 tasks deleted, XML backups in `evidence/purge__task_xml/`) · FB-10 DONE
