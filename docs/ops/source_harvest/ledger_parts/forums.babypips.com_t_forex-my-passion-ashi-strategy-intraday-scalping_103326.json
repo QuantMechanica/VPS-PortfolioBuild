@@ -1,0 +1,23 @@
+{
+  "pdf": "forums.babypips.com_t_forex-my-passion-ashi-strategy-intraday-scalping_103326.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_forex-my-passion-ashi-strategy-intraday-scalping_103326.pdf",
+      "source_pages": "1,4,10-11",
+      "source_ref": "Gloriar (handle), thread \"Forex My Passion - Ashi Strategy (Intraday & Scalping)\", BabyPips forum, 2012-2013, https://forums.babypips.com/t/forex-my-passion-ashi-strategy-intraday-scalping/103326",
+      "strategy_name": "Ashi Envelope Trend Confluence",
+      "concept": "Enter in the direction of a Heiken-Ashi-Smoothed trend only when price closes outside a 14-Envelope and ADX>22 with AO and MACD both confirming the same side, i.e. a multi-indicator momentum-confluence breakout of a volatility band.",
+      "market": "FX",
+      "timeframe": "H1",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Deterministic entry from native/custom MQL5 indicators (Envelopes, iADX, iAO, iMACD, Heiken-Ashi-Smoothed), SL = 5 pips beyond swing high/low, FX majors available on .DWX; exit/TP are discretionary in the thread but mechanizable (opposite-close-back-inside-envelope exit + fixed pip target).",
+      "priority_hint": "LOW",
+      "notes": "Two variants share ONE core rule set: (1) Intraday H1/Daily targeting 5-30 pips; (2) Scalping M30/H1 that re-enters for 5-20 pips while Heiken Ashi stays same color and price stays outside the envelope. Pairs tested: AUD/USD, EUR/USD, GBP/USD, USD/CHF (author also tried GBP/JPY, gold, silver). Envelope: MA Simple, Apply-to-Close, Deviation 0.10%. Generic indicator-soup FX trend follower with no structural/limit-to-arbitrage edge and highly curve-fittable parameter stack -> low conviction per FX-edge doctrine; entry is deterministic but TP/SL are admitted to be discretionary ('grey area', 'being lazy' on SL). Anecdotal forum evidence only, no verified backtest. Author also mentions an undescribed 'London Breakout' cheesy system in-progress -> no rules stated, not a usable candidate.",
+      "notes_secondary": "NewNine suggests Schaff Trend Cycle as MACD substitute; not part of core rules."
+    }
+  ],
+  "notes": ["single BabyPips thread; intraday + scalping are variants of one core rule set -> one row"]
+}

@@ -1,0 +1,25 @@
+{
+  "pdf": "forums.babypips.com_t_bollinger-bands-moving-average-bbma-oma-ally-forex-trading-technique_136067.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_bollinger-bands-moving-average-bbma-oma-ally-forex-trading-technique_136067.pdf",
+      "source_pages": "1-2",
+      "source_ref": "Zilla.A, 'Bollinger Bands + Moving Average (BBMA Oma Ally) - Forex Trading Technique', Babypips forum thread, 2018, https://forums.babypips.com/t/bollinger-bands-moving-average-bbma-oma-ally-forex-trading-technique/136067",
+      "strategy_name": "BBMA Oma Ally (BB dynamic S/R candlestick method)",
+      "concept": "Bollinger Bands act as dynamic support/resistance so price or weighted MAs poking outside the band signals exhaustion and reverts inside, traded via discretionary Extrem/MHV/Re-entry candle setups.",
+      "market": "FX",
+      "timeframe": "H1",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "Discretionary candlestick method: no deterministic entry trigger, no SL/TP levels, timeframe unspecified ('follow TF'), entries keyed to subjective 'reversal candle'/'momentum'/'highest volume'; not mechanizable as stated.",
+      "priority_hint": "LOW",
+      "notes": "Indicators are specified (BB 20/2/Close; LWMA5-High, LWMA10-High, LWMA5-Low, LWMA10-Low; EMA50-Close) but the three setups (Extrem, MHV loss-volume, Re-entry) are all one core discretionary framework, not distinct mechanizable strategies. Poster #10 argues the primary 'MA outside 2-SD BB' signal is near-degenerate (rarely if ever triggers). 'Highest/lowest volume' entry is ambiguous on FX (tick volume only). Only 1 of 5 MHV types disclosed. Multiple posters flag it as a vendor/MLM upsell for an 'advanced' paid course (reputability low). Generic BB mean-reversion kernel is implementable in principle but the source's actual system is underspecified; classified as one REJECTED summary row (zero mechanizable-as-stated candidates)."
+    }
+  ],
+  "notes": [
+    "Single discretionary BBMA framework; no distinct mechanizable candidates. Rules lack deterministic entry/exit and SL/TP.",
+    "Extracted text via pypdf (Read tool PDF rendering unavailable: pdftoppm/poppler not installed). Text layer was clean and complete across all 11 pages."
+  ]
+}

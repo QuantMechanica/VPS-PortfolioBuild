@@ -1,0 +1,26 @@
+{
+  "pdf": "forums.babypips.com_t_i-have-found-the-holy-grail_18683.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_i-have-found-the-holy-grail_18683.pdf",
+      "source_pages": "1-42",
+      "source_ref": "shakesfx, \"I have found the Holy Grail!\", BabyPips.com forum thread (2009), https://forums.babypips.com/t/i-have-found-the-holy-grail/18683 ; embeds Linda Bradford Raschke, \"Tape Reading\" article",
+      "strategy_name": "Holy Grail is within you — discretionary tape reading",
+      "concept": "Edge rests entirely on discretionary tick-by-tick price/tape reading and trader intuition, with no indicators and no defined mechanical rules.",
+      "market": "FX",
+      "timeframe": "M1",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "Pure discretionary tape reading ('the Holy Grail is within you') with no deterministic entry/exit or parameters — unmechanizable; the only concrete concept in the thread (mp6140's linear-regression-channel bounce-to-midline) is paramless and explicitly paired with a 'no stop loss EVER' doctrine incompatible with FTMO/DXZ.",
+      "priority_hint": "LOW",
+      "notes": "Thread is 90% forum chatter/flame-war plus later accusations the OP was self-promotion/signal-fishing. Secondary concepts noted but none usable: (1) embedded Linda Raschke 'Tape Reading' article — discretionary pivot-point (prev-day H/L, open) and 'whoosh' impulsive-continuation-2/3-of-the-time observation, not a mechanical system; (2) mp6140 LRC channel mean-reversion (bounce off band, hold to midpoint) — real concept but no channel period/deviation/timeframe and no-stop doctrine, would be just another MR variant with LOW fit. Zero implementable deterministic candidates."
+    }
+  ],
+  "notes": [
+    "Read via pdftotext -layout (Read tool lacked pdftoppm); full 1906-line text reviewed.",
+    "Zero usable candidates -> single REJECTED summary row per schema.",
+    "Discretionary/psychology thread; only concrete rule fragment (LRC bounce-to-midline) is paramless + no-stop, folded into notes."
+  ]
+}

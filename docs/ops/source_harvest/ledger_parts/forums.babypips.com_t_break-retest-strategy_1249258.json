@@ -1,0 +1,22 @@
+{
+  "pdf": "forums.babypips.com_t_break-retest-strategy_1249258.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_break-retest-strategy_1249258.pdf",
+      "source_pages": "1-2, 22, 39, 43-45",
+      "source_ref": "MattyMoney et al., \"Break & Retest Strategy\", BabyPips forum thread (forums.babypips.com), 2024-2025, https://forums.babypips.com/t/break-retest-strategy/1249258 (112 posts, complete)",
+      "strategy_name": "B&R HTF-trend support/resistance retest swing",
+      "concept": "Enter in the direction of the higher-timeframe (D1/W1) trend after price breaks a support/resistance zone and pulls back to retest it, optionally confirmed by a 20MA close-cross.",
+      "market": "FX",
+      "timeframe": "H4",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "Edge rests on manually-drawn, explicitly subjective S/R zones ('Everything is done manually', 'S/R levels are subjective') with no mechanical level-detection, zone-width, touch-count, break/retest tolerance or entry-timing rule specified, so entry is non-deterministic as described (fails deterministic-rules test); generic S&R break-retest swing variant already falsified by our Balke + chart-pattern doctrine.",
+      "priority_hint": "LOW",
+      "notes": "Discretionary trading journal, not a rule set. Exit heuristic ~1:1 RR (sometimes 1:1.5), SL behind prior swing/SR level, scale-in on pullbacks with manual trailing SL. Applied across FX majors+crosses, indices (Russ2000/AU200/JP225), metals (gold/silver/platinum/copper) and oil; H1 used later as author shifted preference, analysis on D1/W1/MN. Secondary sub-idea 'the 3-Bar Gap' is explicitly acknowledged as a Fair Value Gap continuation pattern but is given no parameters either. Author states B&R 'is not really a strategy on its own'. Forum reputability fine (precedent: Balke EA from a forum thread); rejection is on rule vagueness/discretion, not source. Revisit only if paired with a concrete mechanical S/R primitive (N-bar pivots, prior-day/session range, Donchian) and defined break/retest tolerances -- at which point it becomes a new build, not a harvest."
+    }
+  ],
+  "notes": []
+}

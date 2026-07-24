@@ -1,0 +1,22 @@
+{
+  "pdf": "forums.babypips.com_t_holy-grail-system_57359.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_holy-grail-system_57359.pdf",
+      "source_pages": "1-18",
+      "source_ref": "Proximus, \"Holy Grail System\" thread, BabyPips forum, 2013, https://forums.babypips.com/t/holy-grail-system/57359",
+      "strategy_name": "Holy Grail arrow indicator (stop-and-reverse)",
+      "concept": "A closed-source custom MT4 arrow indicator flags reversals (green arrow below = buy, red above = sell); you are always in the market and stop-and-reverse on the opposite arrow with a ~10-15 pip SL.",
+      "market": "FX",
+      "timeframe": "M15",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "Signal engine is an undisclosed proprietary black box the author refuses/cannot decompose ('specially modified PSAR/ADX/ATR + special volume filter, only works together'); early fractal versions admittedly repaint (look-ahead, non-deterministic) and later v2.5 'divergence scalper' / v4 'PRECISION' internals are never stated - the actual entry rule can never be reconstructed from the text.",
+      "priority_hint": "LOW",
+      "notes": "Only the trade-management shell is disclosed (opposite-arrow exit, SL ~10-15 pips, no TP, EUR/USD USD/CHF GBP/USD USD/JPY, M15+); that is not an edge without the signal logic. Community-added filter variants (50/55 EMA trend gate, braintrend trailing stop) all still hinge on the black-box arrow. Thread verdict across 147 posts: repaints, lags, 'useless system, all signals repaint'; OP abandoned it (last post ~2013). No martingale/grid, but not implementable as a deterministic rule set."
+    }
+  ],
+  "notes": []
+}

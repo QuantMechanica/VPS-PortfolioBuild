@@ -1,0 +1,22 @@
+{
+  "pdf": "forums.babypips.com_t_brb-bollinger-ribbon-bands_1309168.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_brb-bollinger-ribbon-bands_1309168.pdf",
+      "source_pages": "1-3",
+      "source_ref": "jaeleone, 'BRB - Bollinger Ribbon Bands', Babypips forum thread, 2026, https://forums.babypips.com/t/brb-bollinger-ribbon-bands/1309168",
+      "strategy_name": "BRB Bollinger Ribbon Confluence",
+      "concept": "Price on the correct side of a multi-deviation Bollinger 'ribbon' envelope, confirmed by EMA13 direction and MACD zero-line, taken for a 2:1 target on index M1 during NY-morning sessions.",
+      "market": "Indices",
+      "timeframe": "M1",
+      "session": "NY",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Native BB/EMA/MACD confluence, deterministic core with swing-based stop + 2:1 target on available index M1 data; but which band pair is the 'Double White Lines' is unspecified among 8 BB settings, and divergence (ABCD)/higher-timeframe checks are discretionary.",
+      "priority_hint": "LOW",
+      "notes": "Indicators: BB(21) at devs 2/0.08/0.5/0.75/1/1.25/1.5/1.75, EMA(13), MACD(8,13,9). Entry: price above/below DWL for buy/sell + EMA colour match + MACD above/below zero. Stop at last swing high/low, target 2x. Author trades primarily indices (US30/WS30, NAS100/NDX, GER40/GDAXI, UK100), also FX majors. A community EA (BRB_Quantitative_Engine.ex5 by Mahdifd_1) automates the same rules; a US30 M1 set file cites Thu+Fri 08:00-11:00 NY as optimal, self-reported 43% win rate / 2:1 R:R / +4.8%/month with no OOS evidence. Source is a promotional forum (author pushes YouTube/live sessions, declines to publish results) and EmeraldEyes acknowledges curve-fitting risk -> low priority."
+    }
+  ],
+  "notes": ["single core strategy; referenced EA + set file are an automation of the same rules, folded into notes not a separate row"]
+}
