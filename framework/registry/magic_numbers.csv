@@ -15187,3 +15187,17 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12512,bt-pairs-thresh,5,NZDUSD.DWX,125120005,2026-07-24,Codex,active
 20095,auag-mon-diff,0,XAUUSD.DWX,200950000,2026-07-24,Development,active
 20095,auag-mon-diff,1,XAGUSD.DWX,200950001,2026-07-24,Development,active
+20096,ha-stoch-h4-swing,0,GBPUSD.DWX,200960000,2026-07-24,Claude,active
+20096,ha-stoch-h4-swing,1,EURAUD.DWX,200960001,2026-07-24,Claude,active
+20096,ha-stoch-h4-swing,2,USDCHF.DWX,200960002,2026-07-24,Claude,active
+20096,ha-stoch-h4-swing,3,EURCAD.DWX,200960003,2026-07-24,Claude,active
+20097,three-little-pigs-mtf-sma,0,AUDUSD.DWX,200970000,2026-07-24,Claude,active
+20097,three-little-pigs-mtf-sma,1,EURGBP.DWX,200970001,2026-07-24,Claude,active
+20097,three-little-pigs-mtf-sma,2,EURJPY.DWX,200970002,2026-07-24,Claude,active
+20097,three-little-pigs-mtf-sma,3,EURUSD.DWX,200970003,2026-07-24,Claude,active
+20097,three-little-pigs-mtf-sma,4,GBPUSD.DWX,200970004,2026-07-24,Claude,active
+20097,three-little-pigs-mtf-sma,5,USDCAD.DWX,200970005,2026-07-24,Claude,active
+20097,three-little-pigs-mtf-sma,6,USDCHF.DWX,200970006,2026-07-24,Claude,active
+20097,three-little-pigs-mtf-sma,7,USDJPY.DWX,200970007,2026-07-24,Claude,active
+20098,weekly-open-liquidity-sweep,0,XAUUSD.DWX,200980000,2026-07-24,Claude,active
+20098,weekly-open-liquidity-sweep,1,XAGUSD.DWX,200980001,2026-07-24,Claude,active
