@@ -15245,3 +15245,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20114,h4-engulf-sma50-stop,1,GBPUSD.DWX,201140001,2026-07-24T19:01:47Z,claude,active
 20116,ema512-rsi7-m15,0,EURUSD.DWX,201160000,2026-07-24T19:01:47Z,claude,active
 20117,wti-fri-lagrev,0,XTIUSD.DWX,201170000,2026-07-24T19:14:08Z,codex,active
+20118,dtrt-cci-h1,0,EURUSD.DWX,201180000,2026-07-24T20:08:24Z,claude,active
+20118,dtrt-cci-h1,1,GBPUSD.DWX,201180001,2026-07-24T20:08:24Z,claude,active
+20119,macd50-ukgrid-gbpusd,0,GBPUSD.DWX,201190000,2026-07-24T20:08:24Z,claude,active
+20120,simple-daily-3rise,0,GBPUSD.DWX,201200000,2026-07-24T20:08:24Z,claude,active
+20120,simple-daily-3rise,1,EURUSD.DWX,201200001,2026-07-24T20:08:24Z,claude,active
