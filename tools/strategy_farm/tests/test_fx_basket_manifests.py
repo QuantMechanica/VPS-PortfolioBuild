@@ -229,6 +229,21 @@ def test_qm5_13119_routes_host_through_trade_manager_and_declares_conversion_his
     assert _mq5_allowed_symbols(ea_dir) <= declared
 
 
+def test_qm5_13060_declares_and_warms_usd_account_conversion_history() -> None:
+    ea_dir = REPO / "framework" / "EAs" / "QM5_13060_xti-eurcad-rspr"
+    source = (ea_dir / "QM5_13060_xti-eurcad-rspr.mq5").read_text(
+        encoding="utf-8", errors="ignore"
+    )
+    manifest = json.loads((ea_dir / "basket_manifest.json").read_text(encoding="utf-8-sig"))
+    declared = {manifest["host_symbol"], *manifest["basket_symbols"]}
+
+    assert manifest["tester_currency"] == "USD"
+    assert {"XTIUSD.DWX", "EURCAD.DWX", "USDCAD.DWX", "EURUSD.DWX"} <= declared
+    assert 'string basket_symbols[4]' in source
+    assert "QM_BasketWarmupHistory(basket_symbols" in source
+    assert _mq5_allowed_symbols(ea_dir) <= declared
+
+
 def test_qm5_13117_zscore_uses_strictly_prior_calibration_window() -> None:
     ea_dir = REPO / "framework" / "EAs" / "QM5_13117_eurgbp-audjpy"
     source = (ea_dir / "QM5_13117_eurgbp-audjpy.mq5").read_text(
