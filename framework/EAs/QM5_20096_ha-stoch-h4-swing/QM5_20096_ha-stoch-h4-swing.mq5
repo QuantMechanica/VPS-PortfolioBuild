@@ -238,8 +238,28 @@ bool Strategy097_StopLegal(const ENUM_POSITION_TYPE position_type,
    return (ask > 0.0 && candidate - ask >= minimum);
   }
 
+// TEMP DIAG (smoke diagnosis 2026-07-24) — remove before commit
+long g_diag_ntf_calls = 0, g_diag_ntf_param = 0, g_diag_ntf_mode = 0,
+     g_diag_ntf_warm = 0, g_diag_ntf_handle = 0, g_diag_ntf_calc = 0,
+     g_diag_ntf_pass = 0, g_diag_news_block = 0, g_diag_edges = 0;
+
+void Strategy097_DiagDump(const string where)
+  {
+   QM_LogEvent(QM_INFO,
+               "STRATEGY_DIAG",
+               StringFormat("{\"where\":\"%s\",\"ntf_calls\":%I64d,\"ntf_param\":%I64d,\"ntf_mode\":%I64d,\"ntf_warm\":%I64d,\"ntf_handle\":%I64d,\"ntf_calc\":%I64d,\"ntf_pass\":%I64d,\"news_block\":%I64d,\"edges\":%I64d}",
+                            where, g_diag_ntf_calls, g_diag_ntf_param,
+                            g_diag_ntf_mode, g_diag_ntf_warm,
+                            g_diag_ntf_handle, g_diag_ntf_calc,
+                            g_diag_ntf_pass, g_diag_news_block,
+                            g_diag_edges));
+  }
+
 bool Strategy_NoTradeFilter()
   {
+   g_diag_ntf_calls++;
+   if(g_diag_ntf_calls % 1000000 == 0)
+      Strategy097_DiagDump("ntf");
    if(_Period != PERIOD_H4 ||
       strategy_sma_period <= 1 ||
       strategy_stoch_k <= 0 ||
@@ -249,27 +269,28 @@ bool Strategy_NoTradeFilter()
       strategy_stoch_zone >= 100.0 ||
       strategy_pullback_min_bars < 1 ||
       strategy_sl_pips <= 0.0)
-      return true;
+     { g_diag_ntf_param++; return true; }
 
    const ENUM_SYMBOL_TRADE_MODE trade_mode =
       (ENUM_SYMBOL_TRADE_MODE)SymbolInfoInteger(_Symbol,
                                                 SYMBOL_TRADE_MODE);
    if(trade_mode == SYMBOL_TRADE_MODE_DISABLED)
-      return true;
+     { g_diag_ntf_mode++; return true; }
 
    int bars_needed = 150;
    const int indicator_needed = strategy_sma_period + 5;
    if(indicator_needed > bars_needed)
       bars_needed = indicator_needed;
    if(Bars(_Symbol, PERIOD_H4) < bars_needed) // perf-allowed: O(1) warmup count, reviewer-approved (cross-review 2026-07-24)
-      return true;
+     { g_diag_ntf_warm++; return true; }
    if(!Strategy097_EnsureHandles())
-      return true;
+     { g_diag_ntf_handle++; return true; }
    if(BarsCalculated(g_str097_h_sma) < indicator_needed ||
       BarsCalculated(g_str097_h_stoch) <
          strategy_stoch_k + strategy_stoch_d +
          strategy_stoch_slowing + 5)
-      return true;
+     { g_diag_ntf_calc++; return true; }
+   g_diag_ntf_pass++;
    return false;
   }
 
@@ -614,10 +635,13 @@ void OnTick()
    else
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
    if(!news_allows)
-      return;
+     { g_diag_news_block++; return; } // TEMP DIAG
 
    if(!QM_IsNewBar())
       return;
+   g_diag_edges++; // TEMP DIAG
+   if(g_diag_edges % 500 == 1)
+      Strategy097_DiagDump("edge");
 
    // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
    // since last tick. Cheap: most calls early-return on same-day check.
