@@ -32,6 +32,7 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q02_status: PENDING
+q02_work_item_id: 56d4a26f-bef1-43df-8d98-ac93fddeef71
 review_focus: "Falsify the weak XNG Friday short after costs and futures/CFD calendar-basis risk; Q09 alone measures realized book correlation."
 g0_approval_reasoning: "OWNER commodity-sleeve mission: one fully reviewed peer-reviewed source; deterministic XNG Friday short/next-D1-flat rule; registered XNG D1 carrier; calendar and ATR only; exact-mechanic repository search CLEAN."
 ---
@@ -141,4 +142,4 @@ contract breach. Q09 correlation remains authoritative.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-24 | initial source-backed XNG Friday short | Q02 | PENDING |
+| v1 | 2026-07-24 | strict compile PASS and paced enqueue | Q02 | PENDING `56d4a26f-bef1-43df-8d98-ac93fddeef71` |
