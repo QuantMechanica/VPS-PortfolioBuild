@@ -15203,3 +15203,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20098,weekly-open-liquidity-sweep,1,XAGUSD.DWX,200980001,2026-07-24,Claude,active
 20099,wti-samecal,0,XTIUSD.DWX,200990000,2026-07-24,Development,active
 20100,xng-samecal,0,XNGUSD.DWX,201000000,2026-07-24,Development,active
+20101,simplicity-ha-ema100-london,0,EURUSD.DWX,201010000,2026-07-24T14:23:06Z,claude,active
+20101,simplicity-ha-ema100-london,1,GBPUSD.DWX,201010001,2026-07-24T14:23:06Z,claude,active
+20101,simplicity-ha-ema100-london,2,USDCHF.DWX,201010002,2026-07-24T14:23:06Z,claude,active
+20101,simplicity-ha-ema100-london,3,USDJPY.DWX,201010003,2026-07-24T14:23:06Z,claude,active
+20102,prevday-breakout-close-edge,0,EURUSD.DWX,201020000,2026-07-24T14:23:06Z,claude,active
+20102,prevday-breakout-close-edge,1,GBPUSD.DWX,201020001,2026-07-24T14:23:06Z,claude,active
+20103,daylight-wpr-smma-m15,0,NDX.DWX,201030000,2026-07-24T14:23:06Z,claude,active
+20103,daylight-wpr-smma-m15,1,GDAXI.DWX,201030001,2026-07-24T14:23:06Z,claude,active
