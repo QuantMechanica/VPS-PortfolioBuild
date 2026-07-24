@@ -1,34 +1,47 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        1403
 ; ea_slug:      harmonic-5-0-pattern-h4
 ; ea_version:   v5.0
-; set_version:  s20260626-001
+; set_version:  s20260724-001
 ; symbol:       NZDUSD.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   6
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   def05409b7c998f9266c19902c5ea0233ac61444ddaee330ab3baa4973dc6f7a
+; build_hash:   pending
 ; author:       Development
-; date:         2026-06-26
+; date:         2026-07-24
 ;==========================================================
+qm_ea_id=1403
 qm_magic_slot_offset=6
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1403_harmonic-5-0-pattern-h4.md
+strategy_fractal_wing_bars=2
+strategy_min_xd_bars=25
+strategy_max_xd_bars=80
+strategy_scan_bars=96
+strategy_fib_tolerance_pct=0.03
+strategy_ab_xa_min=1.13
+strategy_ab_xa_max=1.618
+strategy_bc_ab_min=1.618
+strategy_bc_ab_max=2.24
+strategy_atr_period=14
+strategy_sl_atr_mult=0.5
+strategy_sl_cap_atr_mult=2.5
+strategy_tp1_cd_retracement=0.500
+strategy_tp2_cd_retracement=0.886
+strategy_tp1_close_fraction=0.50
+strategy_macro_bias_enabled=true
+strategy_macro_fast_sma_d1=50
+strategy_macro_slow_sma_d1=200
+strategy_reuse_guard_bars=20
+strategy_spread_filter_enabled=true
+strategy_spread_avg_multiplier=1.5
+strategy_time_filter_enabled=false
+strategy_start_hour_broker=0
+strategy_end_hour_broker=24
