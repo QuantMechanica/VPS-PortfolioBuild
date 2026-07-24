@@ -1,0 +1,38 @@
+===== 10128_XAUUSD_backtest exists=True =====
+  path: D:\QM\reports\work_items\4f70d70b-e536-4837-a42a-a6e6165fd484\QM5_10128\Q04\F1\QM5_10128_bb-breakout_XAUUSD.DWX_D1_backtest_ablation_01_q04comm.set
+    HDR ['; environment:  backtest', '; risk_mode:    FIXED']
+    RISK_FIXED=1000
+    RISK_PERCENT=0
+    PORTFOLIO_WEIGHT=1
+    qm_filter_news_enabled=1
+    qm_filter_news_mode=3
+===== 20048_XTIUSD_backtest exists=True =====
+  path: D:\QM\reports\work_items\178597bc-8469-4982-9999-223998119d0b\QM5_20048\Q04\F1\QM5_20048_wti-preholiday_XTIUSD.DWX_D1_backtest_q04comm.set
+    HDR ['; environment:  backtest', '; risk_mode:    FIXED']
+    RISK_FIXED=1000
+    RISK_PERCENT=0
+    PORTFOLIO_WEIGHT=1
+===== 10476_USDCAD_stagedLIVE_s4 exists=True =====
+  path: D:\QM\strategy_farm\artifacts\portfolio\s4_composite_2026-07-06\staged_s4_live_presets\slot4_USDCAD_H1_QM5_10476_mql5-pamxa_magic104760004_s4_live.set
+    HDR ['; environment:  live', '; risk_mode:    PERCENT_INVOL_SUMRISK_CAPPED_S4-17-PROBATION']
+    RISK_FIXED=0
+    RISK_PERCENT=0.2061
+    PORTFOLIO_WEIGHT=1.0
+    qm_filter_news_enabled=1
+    qm_filter_news_mode=3
+===== 10715_USDJPY_stagedLIVE exists=True =====
+  path: D:\QM\strategy_farm\artifacts\portfolio\d2c_variant_b_v2_2026-07-03\staged_live_presets\slot3_USDJPY_M15_QM5_10715_tv-asian-box_magic107150004_riskparity_capped_v2_frozen_live.set
+    HDR ['; environment:  live', '; risk_mode:    PERCENT_DRAFT_INVOL_SUMRISK_CAPPED_V2_FROZEN']
+    RISK_FIXED=0
+    RISK_PERCENT=0.5011
+    PORTFOLIO_WEIGHT=1.0
+    qm_filter_news_enabled=1
+    qm_filter_news_mode=3
+===== 10940 preset hunt =====
+  D:\QM\strategy_farm: 14
+     D:\QM\strategy_farm\artifacts\portfolio\d2c_invvol_sumrisk_2026-07-03\staged_live_presets\slot6_XAUUSD_H4_QM5_10940_grimes-nested-pb_magic109400003_riskparity_live.set
+     D:\QM\strategy_farm\artifacts\portfolio\d2c_invvol_sumrisk_2026-07-03\variant_b\staged_live_presets\slot6_XAUUSD_H4_QM5_10940_grimes-nested-pb_magic109400003_riskparity_capped_live.set
+     D:\QM\strategy_farm\artifacts\portfolio\d2c_variant_b_v2_2026-07-03\staged_live_presets\slot6_XAUUSD_H4_QM5_10940_grimes-nested-pb_magic109400003_riskparity_capped_v2_frozen_live.set
+     D:\QM\strategy_farm\artifacts\portfolio\d2d_composite_2026-07-03\staged_live_presets_s2\slot8_XAUUSD_H4_QM5_10940_grimes-nested-pb_magic109400003_d2d_s2_live.set
+     D:\QM\strategy_farm\scratch\q12_opt\20260627T175510Z\sets\QM5_10940_grimes-nested-pb\QM5_10940_grimes-nested-pb_XAUUSD.DWX_H4_q12opt_atr_pct_10.set
+  D:\QM\reports: 0

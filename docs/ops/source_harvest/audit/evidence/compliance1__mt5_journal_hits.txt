@@ -1,0 +1,150 @@
+===== TERMINAL 20260724.log (10 hits) =====
+  L25: DG	0	05:17:01.807	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully
+  L27: HO	0	05:17:01.856	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully
+  L31: KP	0	05:17:01.946	Experts	expert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully
+  L32: HF	0	05:17:01.964	Experts	expert QM5_13128_pre-fomc-drift-ndx (NDX,H1) loaded successfully
+  L33: LG	0	05:17:01.979	Experts	expert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully
+  L34: IN	0	05:17:01.995	Experts	expert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully
+  L35: DH	0	05:17:02.014	Experts	expert QM5_12969_usdjpy-gotobi-nakane-fix (USDJPY,M30) loaded successfully
+  L38: OM	0	05:17:02.083	Experts	expert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully
+  L40: MK	0	05:17:02.160	Experts	expert QM5_1556_aa-zak-mom12 (XAUUSD,Daily) loaded successfully
+  L41: JP	0	05:17:02.175	Experts	expert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully
+===== TERMINAL 20260723.log (10 hits) =====
+  L26: QI	0	05:51:57.467	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully
+  L30: OF	0	05:51:57.539	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully
+  L36: CO	0	05:51:58.018	Experts	expert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully
+  L37: GQ	0	05:51:58.101	Experts	expert QM5_13128_pre-fomc-drift-ndx (NDX,H1) loaded successfully
+  L38: QJ	0	05:51:58.129	Experts	expert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully
+  L39: RM	0	05:51:58.161	Experts	expert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully
+  L40: OL	0	05:51:58.180	Experts	expert QM5_12969_usdjpy-gotobi-nakane-fix (USDJPY,M30) loaded successfully
+  L43: KP	0	05:51:58.240	Experts	expert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully
+  L45: KG	0	05:51:58.271	Experts	expert QM5_1556_aa-zak-mom12 (XAUUSD,Daily) loaded successfully
+  L46: LE	0	05:51:58.286	Experts	expert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully
+===== TERMINAL 20260722.log (40 hits) =====
+  L10: JK	0	06:17:31.430	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully
+  L12: PS	0	06:17:31.595	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully
+  L18: FL	0	06:17:31.756	Experts	expert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully
+  L19: PR	0	06:17:31.777	Experts	expert QM5_13128_pre-fomc-drift-ndx (NDX,H1) loaded successfully
+  L20: MK	0	06:17:31.819	Experts	expert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully
+  L21: LJ	0	06:17:31.871	Experts	expert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully
+  L22: NS	0	06:17:32.012	Experts	expert QM5_12969_usdjpy-gotobi-nakane-fix (USDJPY,M30) loaded successfully
+  L27: GR	0	06:17:32.258	Experts	expert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully
+  L29: ED	0	06:17:32.308	Experts	expert QM5_1556_aa-zak-mom12 (XAUUSD,Daily) loaded successfully
+  L31: EN	0	06:17:32.390	Experts	expert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully
+  L52: HE	0	07:24:06.943	Experts	expert QM5_13128_pre-fomc-drift-ndx (NDX,H1) removed
+  L56: IS	0	07:24:11.777	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) removed
+  L58: IL	0	07:24:12.073	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) removed
+  L60: RD	0	07:24:12.184	Experts	expert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) removed
+  L61: IJ	0	07:24:12.200	Experts	expert QM5_10440_mql5-ohlc-mtf (NDX,H1) removed
+  L62: QL	0	07:24:12.209	Experts	expert QM5_10911_grimes-complex-pb (GDAXI,H1) removed
+  L65: RR	0	07:24:12.233	Experts	expert QM5_12969_usdjpy-gotobi-nakane-fix (USDJPY,M30) removed
+  L68: OS	0	07:24:12.250	Experts	expert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) removed
+  L71: MI	0	07:24:12.256	Experts	expert QM5_11132_tm-cum-rsi2 (SP500,Daily) removed
+  L72: DE	0	07:24:12.270	Experts	expert QM5_1556_aa-zak-mom12 (XAUUSD,Daily) removed
+  L84: DG	0	07:25:59.746	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully
+  L88: GO	0	07:26:00.232	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully
+  L94: CD	0	07:26:01.737	Experts	expert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully
+  L95: OJ	0	07:26:02.230	Experts	expert QM5_13128_pre-fomc-drift-ndx (NDX,H1) loaded successfully
+  L96: MS	0	07:26:02.698	Experts	expert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully
+  L97: QR	0	07:26:03.069	Experts	expert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully
+  L98: QD	0	07:26:03.469	Experts	expert QM5_12969_usdjpy-gotobi-nakane-fix (USDJPY,M30) loaded successfully
+  L101: HI	0	07:26:04.224	Experts	expert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully
+  L103: QO	0	07:26:04.603	Experts	expert QM5_1556_aa-zak-mom12 (XAUUSD,Daily) loaded successfully
+  L104: LL	0	07:26:04.803	Experts	expert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully
+  L125: PM	0	13:25:22.101	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully
+  L127: ME	0	13:25:22.142	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully
+  L131: LF	0	13:25:22.238	Experts	expert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully
+  L132: QH	0	13:25:22.267	Experts	expert QM5_13128_pre-fomc-drift-ndx (NDX,H1) loaded successfully
+  L133: IM	0	13:25:22.290	Experts	expert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully
+  L134: CD	0	13:25:22.330	Experts	expert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully
+  L135: CE	0	13:25:22.419	Experts	expert QM5_12969_usdjpy-gotobi-nakane-fix (USDJPY,M30) loaded successfully
+  L140: OK	0	13:25:22.564	Experts	expert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully
+  L142: JM	0	13:25:22.611	Experts	expert QM5_1556_aa-zak-mom12 (XAUUSD,Daily) loaded successfully
+  L143: NO	0	13:25:22.641	Experts	expert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully
+===== TERMINAL 20260721.log (30 hits) =====
+  L66: GG	0	19:15:28.354	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully
+  L68: CO	0	19:15:28.457	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully
+  L74: KP	0	19:15:29.019	Experts	expert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully
+  L75: IF	0	19:15:29.135	Experts	expert QM5_13128_pre-fomc-drift-ndx (NDX,H1) loaded successfully
+  L76: JD	0	19:15:29.170	Experts	expert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully
+  L79: KS	0	19:15:29.202	Experts	expert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully
+  L80: JK	0	19:15:29.232	Experts	expert QM5_12969_usdjpy-gotobi-nakane-fix (USDJPY,M30) loaded successfully
+  L83: EN	0	19:15:29.414	Experts	expert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully
+  L85: PH	0	19:15:29.488	Experts	expert QM5_1556_aa-zak-mom12 (XAUUSD,Daily) loaded successfully
+  L86: JS	0	19:15:29.517	Experts	expert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully
+  L97: GI	0	19:16:58.808	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully
+  L99: HP	0	19:16:58.836	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully
+  L103: KM	0	19:16:58.937	Experts	expert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully
+  L104: NS	0	19:16:58.953	Experts	expert QM5_13128_pre-fomc-drift-ndx (NDX,H1) loaded successfully
+  L105: KI	0	19:16:58.972	Experts	expert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully
+  L106: FK	0	19:16:59.043	Experts	expert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully
+  L107: FR	0	19:16:59.083	Experts	expert QM5_12969_usdjpy-gotobi-nakane-fix (USDJPY,M30) loaded successfully
+  L110: QG	0	19:16:59.221	Experts	expert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully
+  L112: HQ	0	19:16:59.246	Experts	expert QM5_1556_aa-zak-mom12 (XAUUSD,Daily) loaded successfully
+  L113: IK	0	19:16:59.259	Experts	expert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully
+  L146: KL	0	20:26:00.440	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully
+  L150: RF	0	20:26:00.614	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully
+  L154: JK	0	20:26:01.645	Experts	expert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully
+  L155: MM	0	20:26:01.685	Experts	expert QM5_13128_pre-fomc-drift-ndx (NDX,H1) loaded successfully
+  L156: GO	0	20:26:01.720	Experts	expert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully
+  L157: DI	0	20:26:01.771	Experts	expert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully
+  L158: GP	0	20:26:01.796	Experts	expert QM5_12969_usdjpy-gotobi-nakane-fix (USDJPY,M30) loaded successfully
+  L161: PE	0	20:26:01.978	Experts	expert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully
+  L163: NS	0	20:26:02.018	Experts	expert QM5_1556_aa-zak-mom12 (XAUUSD,Daily) loaded successfully
+  L164: KI	0	20:26:02.034	Experts	expert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully
+===== TERMINAL 20260719.log (50 hits) =====
+  L8: KS	0	04:10:05.662	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully
+  L10: QK	0	04:10:05.752	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully
+  L16: NE	0	04:10:05.880	Experts	expert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully
+  L17: KJ	0	04:10:05.912	Experts	expert QM5_13128_pre-fomc-drift-ndx (NDX,H1) loaded successfully
+  L18: GP	0	04:10:06.005	Experts	expert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully
+  L22: PM	0	04:10:06.090	Experts	expert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully
+  L24: OI	0	04:10:06.170	Experts	expert QM5_12969_usdjpy-gotobi-nakane-fix (USDJPY,M30) loaded successfully
+  L28: LK	0	04:10:06.343	Experts	expert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully
+  L30: RM	0	04:10:06.459	Experts	expert QM5_1556_aa-zak-mom12 (XAUUSD,Daily) loaded successfully
+  L31: GO	0	04:10:06.497	Experts	expert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully
+  L102: CL	0	15:33:53.897	Experts	expert QM5_13128_pre-fomc-drift-ndx (NDX,H1) removed
+  L107: KM	0	15:33:58.371	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) removed
+  L108: KP	0	15:33:58.457	Experts	expert QM5_12969_usdjpy-gotobi-nakane-fix (USDJPY,M30) removed
+  L110: JK	0	15:33:58.470	Experts	expert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) removed
+  L111: HP	0	15:33:58.479	Experts	expert QM5_10440_mql5-ohlc-mtf (NDX,H1) removed
+  L114: OS	0	15:33:58.489	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) removed
+  L116: HQ	0	15:33:58.500	Experts	expert QM5_10911_grimes-complex-pb (GDAXI,H1) removed
+  L117: KM	0	15:33:58.504	Experts	expert QM5_1556_aa-zak-mom12 (XAUUSD,Daily) removed
+  L120: ME	0	15:33:58.513	Experts	expert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) removed
+  L121: ND	0	15:33:58.513	Experts	expert QM5_11132_tm-cum-rsi2 (SP500,Daily) removed
+  L132: HK	0	15:34:02.091	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully
+  L134: IS	0	15:34:02.139	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully
+  L138: EL	0	15:34:02.244	Experts	expert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully
+  L139: MR	0	15:34:02.272	Experts	expert QM5_13128_pre-fomc-drift-ndx (NDX,H1) loaded successfully
+  L140: RK	0	15:34:02.299	Experts	expert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully
+  L141: CJ	0	15:34:02.330	Experts	expert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully
+  L142: IL	0	15:34:02.367	Experts	expert QM5_12969_usdjpy-gotobi-nakane-fix (USDJPY,M30) loaded successfully
+  L145: HQ	0	15:34:02.471	Experts	expert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully
+  L147: LG	0	15:34:02.532	Experts	expert QM5_1556_aa-zak-mom12 (XAUUSD,Daily) loaded successfully
+  L148: FD	0	15:34:02.564	Experts	expert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully
+  L160: CE	0	15:50:27.208	Experts	expert QM5_13128_pre-fomc-drift-ndx (NDX,H1) removed
+  L162: IH	0	15:50:27.272	Experts	expert QM5_11132_tm-cum-rsi2 (SP500,Daily) removed
+  L163: PL	0	15:50:27.282	Experts	expert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) removed
+  L164: DQ	0	15:50:27.282	Experts	expert QM5_12969_usdjpy-gotobi-nakane-fix (USDJPY,M30) removed
+  L165: MF	0	15:50:27.282	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) removed
+  L167: PM	0	15:50:27.282	Experts	expert QM5_10911_grimes-complex-pb (GDAXI,H1) removed
+  L169: MD	0	15:50:27.291	Experts	expert QM5_1556_aa-zak-mom12 (XAUUSD,Daily) removed
+  L170: HP	0	15:50:27.302	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) removed
+  L180: FG	0	15:50:27.328	Experts	expert QM5_10440_mql5-ohlc-mtf (NDX,H1) removed
+  L181: IL	0	15:50:27.329	Experts	expert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) removed
+  L191: NH	0	15:50:30.443	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully
+  L193: PF	0	15:50:30.634	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully
+  L197: RK	0	15:50:30.835	Experts	expert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully
+  L198: CM	0	15:50:30.888	Experts	expert QM5_13128_pre-fomc-drift-ndx (NDX,H1) loaded successfully
+  L199: GN	0	15:50:30.936	Experts	expert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully
+  L202: KF	0	15:50:30.980	Experts	expert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully
+  L203: MP	0	15:50:31.024	Experts	expert QM5_12969_usdjpy-gotobi-nakane-fix (USDJPY,M30) loaded successfully
+  L208: EQ	0	15:50:31.166	Experts	expert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully
+  L210: CP	0	15:50:31.274	Experts	expert QM5_1556_aa-zak-mom12 (XAUUSD,Daily) loaded successfully
+  L211: CD	0	15:50:31.325	Experts	expert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully
+===== EXPERT 20260722.log (2 hits) =====
+  L2: HE	2	07:24:11.683	QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,D1)	Abnormal termination
+  L4: LK	2	07:24:12.011	QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,D1)	Abnormal termination
+===== EXPERT 20260719.log (1 hits) =====
+  L2: JE	2	15:33:58.315	QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,D1)	Abnormal termination

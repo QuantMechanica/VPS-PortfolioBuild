@@ -1,0 +1,284 @@
+{
+ "1567_XAGUSD": {
+  "expected_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1567_demark-td-reverse-sequential-h4\\sets\\QM5_1567_demark-td-reverse-sequential-h4_XAGUSD.DWX_H4_backtest.set",
+  "exists": true,
+  "mtime_iso": "2026-07-17T17:19:28.591361",
+  "total_lines": 33,
+  "head": [
+   ";==========================================================",
+   "; QM5 Set File",
+   "; ea_id:        1567",
+   "; ea_slug:      demark-td-reverse-sequential-h4",
+   "; ea_version:   v5.0",
+   "; set_version:  s20260717-002",
+   "; symbol:       XAGUSD.DWX",
+   "; timeframe:    H4",
+   "; environment:  backtest",
+   "; magic_slot:   0",
+   "; risk_mode:    FIXED",
+   "; portfolio_weight: 1",
+   "; build_hash:   9a234c515ddc697bd157f32592fafa579819572ae70ccd89a621b8ee240f3e07",
+   "; author:       Development",
+   "; date:         2026-05-19",
+   ";=========================================================="
+  ],
+  "matched_lines": [
+   {
+    "line": 9,
+    "text": "; environment:  backtest"
+   },
+   {
+    "line": 10,
+    "text": "; magic_slot:   0"
+   },
+   {
+    "line": 11,
+    "text": "; risk_mode:    FIXED"
+   },
+   {
+    "line": 17,
+    "text": "qm_magic_slot_offset=10"
+   },
+   {
+    "line": 18,
+    "text": "RISK_FIXED=1000"
+   },
+   {
+    "line": 19,
+    "text": "RISK_PERCENT=0"
+   }
+  ]
+ },
+ "10145_XAUUSD": {
+  "expected_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10145_tsm-meanret\\sets\\QM5_10145_tsm-meanret_XAUUSD.DWX_D1_backtest.set",
+  "exists": true,
+  "mtime_iso": "2026-06-09T23:33:30.116976",
+  "total_lines": 34,
+  "head": [
+   ";==========================================================",
+   "; QM5 Set File",
+   "; ea_id:        10145",
+   "; ea_slug:      tsm-meanret",
+   "; ea_version:   v5.0",
+   "; set_version:  s20260609-001",
+   "; symbol:       XAUUSD.DWX",
+   "; timeframe:    D1",
+   "; environment:  backtest",
+   "; magic_slot:   34",
+   "; risk_mode:    FIXED",
+   "; portfolio_weight: 1",
+   "; build_hash:   pending",
+   "; author:       Development",
+   "; date:         2026-06-09",
+   ";=========================================================="
+  ],
+  "matched_lines": [
+   {
+    "line": 9,
+    "text": "; environment:  backtest"
+   },
+   {
+    "line": 10,
+    "text": "; magic_slot:   34"
+   },
+   {
+    "line": 11,
+    "text": "; risk_mode:    FIXED"
+   },
+   {
+    "line": 17,
+    "text": "qm_magic_slot_offset=34"
+   },
+   {
+    "line": 18,
+    "text": "RISK_FIXED=1000"
+   },
+   {
+    "line": 19,
+    "text": "RISK_PERCENT=0"
+   },
+   {
+    "line": 22,
+    "text": "qm_filter_news_enabled=1"
+   },
+   {
+    "line": 23,
+    "text": "qm_filter_news_mode=3"
+   }
+  ]
+ },
+ "10692_NDX": {
+  "expected_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10692_tv-ls-ms\\sets\\QM5_10692_tv-ls-ms_NDX.DWX_H1_backtest.set",
+  "exists": true,
+  "mtime_iso": "2026-07-12T07:57:42.020847",
+  "total_lines": 49,
+  "head": [
+   ";==========================================================",
+   "; QM5 Set File",
+   "; ea_id:        10692",
+   "; ea_slug:      tv-ls-ms",
+   "; ea_version:   v5.0",
+   "; set_version:  s20260531-001",
+   "; symbol:       NDX.DWX",
+   "; timeframe:    H1",
+   "; environment:  backtest",
+   "; magic_slot:   5",
+   "; risk_mode:    FIXED",
+   "; portfolio_weight: 1",
+   "; build_hash:   7219acfe77b365e7b6a5928941c93b5545fddddf6dc4aee097b7a1c5d4e435b1",
+   "; author:       Development",
+   "; date:         2026-05-31",
+   ";=========================================================="
+  ],
+  "matched_lines": [
+   {
+    "line": 9,
+    "text": "; environment:  backtest"
+   },
+   {
+    "line": 10,
+    "text": "; magic_slot:   5"
+   },
+   {
+    "line": 11,
+    "text": "; risk_mode:    FIXED"
+   },
+   {
+    "line": 17,
+    "text": "qm_magic_slot_offset=5"
+   },
+   {
+    "line": 18,
+    "text": "RISK_FIXED=1000"
+   },
+   {
+    "line": 19,
+    "text": "RISK_PERCENT=0"
+   },
+   {
+    "line": 22,
+    "text": "qm_filter_news_enabled=1"
+   },
+   {
+    "line": 23,
+    "text": "qm_filter_news_mode=3"
+   }
+  ]
+ },
+ "10815_EURUSD": {
+  "expected_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10815_tv-post-vwap\\sets\\QM5_10815_tv-post-vwap_EURUSD.DWX_H1_backtest.set",
+  "exists": true,
+  "mtime_iso": "2026-07-11T01:50:07.584579",
+  "total_lines": 34,
+  "head": [
+   ";==========================================================",
+   "; QM5 Set File",
+   "; ea_id:        10815",
+   "; ea_slug:      tv-post-vwap",
+   "; ea_version:   v5.0",
+   "; set_version:  s20260605-001",
+   "; symbol:       EURUSD.DWX",
+   "; timeframe:    H1",
+   "; environment:  backtest",
+   "; magic_slot:   0",
+   "; risk_mode:    FIXED",
+   "; portfolio_weight: 1",
+   "; build_hash:   f01f3f0aedb16460220dcf1889a8f7693c68a94d2329bc24267efa0ef028d18d",
+   "; author:       Development",
+   "; date:         2026-06-05",
+   ";=========================================================="
+  ],
+  "matched_lines": [
+   {
+    "line": 9,
+    "text": "; environment:  backtest"
+   },
+   {
+    "line": 10,
+    "text": "; magic_slot:   0"
+   },
+   {
+    "line": 11,
+    "text": "; risk_mode:    FIXED"
+   },
+   {
+    "line": 17,
+    "text": "qm_magic_slot_offset=0"
+   },
+   {
+    "line": 18,
+    "text": "RISK_FIXED=1000"
+   },
+   {
+    "line": 19,
+    "text": "RISK_PERCENT=0"
+   },
+   {
+    "line": 22,
+    "text": "qm_filter_news_enabled=1"
+   },
+   {
+    "line": 23,
+    "text": "qm_filter_news_mode=3"
+   }
+  ]
+ },
+ "12474_GBPUSD": {
+  "expected_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12474_gh-dual-thrust\\sets\\QM5_12474_gh-dual-thrust_GBPUSD.DWX_M1_backtest.set",
+  "exists": true,
+  "mtime_iso": "2026-07-14T15:19:43.897506",
+  "total_lines": 40,
+  "head": [
+   ";==========================================================",
+   "; QM5 Set File",
+   "; ea_id:        12474",
+   "; ea_slug:      gh-dual-thrust",
+   "; ea_version:   v5.0",
+   "; set_version:  s20260611-001",
+   "; symbol:       GBPUSD.DWX",
+   "; timeframe:    M1",
+   "; environment:  backtest",
+   "; magic_slot:   1",
+   "; risk_mode:    FIXED",
+   "; portfolio_weight: 1",
+   "; build_hash:   pending",
+   "; author:       Development",
+   "; date:         2026-06-11",
+   ";=========================================================="
+  ],
+  "matched_lines": [
+   {
+    "line": 9,
+    "text": "; environment:  backtest"
+   },
+   {
+    "line": 10,
+    "text": "; magic_slot:   1"
+   },
+   {
+    "line": 11,
+    "text": "; risk_mode:    FIXED"
+   },
+   {
+    "line": 17,
+    "text": "qm_magic_slot_offset=1"
+   },
+   {
+    "line": 18,
+    "text": "RISK_FIXED=1000"
+   },
+   {
+    "line": 19,
+    "text": "RISK_PERCENT=0"
+   },
+   {
+    "line": 22,
+    "text": "qm_filter_news_enabled=1"
+   },
+   {
+    "line": 23,
+    "text": "qm_filter_news_mode=3"
+   }
+  ]
+ }
+}

@@ -47,9 +47,17 @@ Discrepancies (detail in evidence files):
 
 ## 3. Compliance Audit (Scope 3)
 
-See `COMPLIANCE_MATRIX.md` (EA × check, evidence path per cell) — synthesized from three independent per-EA evidence agents + framework ground truth, then diffed against Codex's independent audit (`D:\QM\reports\audit\codex_compliance_2026-07-24\COMPLIANCE_MATRIX_CODEX.md`); divergences resolved strictly to the more restrictive verdict, unresolved ones in `ESCALATIONS.md`.
+Authoritative cell-level result: `COMPLIANCE_MATRIX.md` (EA × check, evidence ref per cell) — synthesized from three independent per-EA evidence agents + framework ground truth + one deterministic whole-book scan of the QM event logs (`evidence/compliancefinal__qm_event_scan.json`, all 24 magics) and deployed presets (`evidence/compliancefinal__set_risk_scan.txt`), then cross-diffed against Codex's independent audit (44 FAIL / 2 MISSING over 232 applicable cells, 18-minute sol-max run). The two audits agreed on every material call (max-DD ×24, killswitch ×11, news-off ×3, magic/cap/daily-loss clean); all 5 divergent cells were resolved to the stricter verdict.
 
-*(Section completed after cross-review — see matrix file for the authoritative cell-level result.)*
+**Live book result (24 instances × 8 checks): 150 PASS / 40 FAIL / 2 MISSING.**
+
+- Clean columns: magic registration (24/24, registry-wide 0 collisions over 15,186 rows), per-trade cap (all 0.04–1.0%, ≤ 1% ceiling; runtime cap 1% armed), daily-loss kill (KILL_SWITCH_INIT `daily_loss_halt_pct=3.0` log-evidenced for every magic), Friday close (default-on framework-wide; 10706 custom earlier 18:30; runtime FRIDAY_CLOSE events 07-17; **no separate weekend filter exists** — documented, not scored).
+- **Max-DD kill: FAIL ×24** — channel armed in existence-trip mode but no producer writes any signal file (ESC-01). Not a per-EA defect; one decision fixes the book.
+- **KillSwitch halt channel: FAIL ×11 instances / 9 EAs** — binaries predate fix `47f1d9709` (2026-07-05); runtime KILL_SWITCH_INIT shows the dead absolute `D:\QM\data\halt\...` path. These sleeves cannot be halted via the file channel at all (KS_MANUAL + KS_PORTFOLIO_DD). Retired by the 26.07 wave (ESC-03).
+- **News filter: FAIL ×3** deliberate opt-outs (12778/13117 baskets set-disabled; 13128 compiled-in FOMC list, no stale-guard — ESC-05), **MISSING ×2** (10919/12969: calendar-loaded evidence but no per-magic native-calendar SELFTEST on those older binaries).
+- **Risk mode: FAIL ×2** (10919 live preset carries `environment=backtest, risk_mode=FIXED` header; 12989 carries a DRAFT header label) — values behave correctly (PERCENT, RF=0), but no runtime enforcement exists to catch a mis-generated set, so the header contract is the only guard and it is violated (adopted from Codex, stricter-wins).
+- **Framework-audit reconciliation** (EA_FRAMEWORK_AUDIT_2026-07-20 vs HEAD): P0.1/P0.2/P0.4/P0.5/P0.6 + P1.1–P1.6 are FIXED_IN_TREE (commits `5b21b9b1d`, `37196e79d`, `6e92c8062`, 07-20); P0.3 PARTIAL (recompile debt only); P1.7 OPEN (SeedRNG untouched, deferred); P1.8 PARTIAL (diagnostic added, dump not run). **Every fix requires a rebuild — no live binary (newest 07-17) carries the 07-20 bundle**, so P0.1 deinit-kill exposure is still live on all 24 sleeves until the 26.07 wave (ESC-03). Detail: `evidence/framework__audit_reconciliation.txt`.
+- Candidates (15 rows incl. Codex's 8 strict Q10-PASS configs): magic/risk-mode/cap clean except 3 former-live rows MISSING factory sets; **10145 news-FAIL ×3** (legacy keys ineffective, Q10 metadata contradicts effective config) and **20048 friday-FAIL** (source-hardcoded off) both need re-gate/sign-off before admission (ESC-06).
 
 ## 4. State Drift (Scope 4)
 

@@ -1,0 +1,34 @@
+KS_PORTFOLIO_DD (max-DD kill) — channel wiring vs live feed. Read-only 2026-07-24.
+
+CODE (framework/include/QM/QM_KillSwitch.mqh):
+  :21   g_qm_ks_portfolio_dd_halt_pct = 0.0            (DEFAULT OFF)
+  :215  (QM_Common.mqh) QM_KillSwitchInit(ea_id,magic,3.0,0.0,1.0)  -> portfolio_dd_halt_pct=0.0
+  :435-436  if(halt_pct<=0.0) return true;   => MERE EXISTENCE of signal file trips halt
+  :438-442  if halt_pct>0: trip when signal_value>=halt_pct; unparseable => fail-safe halt
+  :495-496  default signal path (sandbox-relative): "QM\halt\portfolio_dd.signal"
+  :539-558  QM_KillSwitchSetBookTag -> "QM\halt\book_<tag>\portfolio_dd.signal"
+  :662-697  QM_KillSwitchCheck: skipped entirely in tester; live polls 1x per broker-second
+            (FileIsExist local MQL5\Files then FILE_COMMON fallback)
+
+FileIsExist drive-path fix (2026-07-05): FIXED in HEAD. commit 47f1d9709 (2026-07-05 21:12).
+  Old absolute D:\QM\data\halt\ paths were unresolvable by the MQL5 sandbox -> channel silently
+  dead since introduction. Now sandbox-relative + FILE_COMMON. Present at :486-496 in HEAD.
+
+WHO WRITES THE SIGNAL FILE TODAY?
+  Only writer in repo: tools/strategy_farm/ftmo_trial_pulse.py
+    :39-40  BOOK_DD_SIGNAL = ...\Common\Files\QM\halt\book_ftmo_r25\portfolio_dd.signal
+    :231-241 writes ONLY if D:\QM\reports\state\FTMO_DD_FLOOR_ARMED.flag exists AND total_dd>=8%
+    scheduled: QM_FTMO_TrialPulse (Ready) runs ftmo_trial_pulse.py
+  DISK CHECK 2026-07-24:
+    D:\QM\reports\state\FTMO_DD_FLOOR_ARMED.flag = ABSENT  -> writer INERT by design
+    Common\Files\QM\halt tree = EMPTY (no signal files any terminal)
+    C:\QM\mt5\T_Live\MQL5\Files\QM\halt = ABSENT/empty
+  DXZ live book default path "QM\halt\portfolio_dd.signal": NO writer anywhere in repo.
+
+CONCLUSION: KS_PORTFOLIO_DD max-DD kill is DEAD IN PRACTICE. Channel is code-correct and
+armed (existence-trips because halt_pct=0), but NO live process feeds any signal file:
+FTMO writer is flag-gated + flag absent + book-tag rollout pending; DXZ book has no producer.
+
+KS_DAILY_LOSS (contrast): ARMED and live. halt_pct hardcoded 3.0 at QM_Common.mqh:215;
+INIT log KILL_SWITCH_INIT prints daily_loss_halt_pct (KS.mqh:526-535); check at :700-711
+requires halt_pct>0 && day_start_equity>0 (both hold). No set-file input — literal 3.0.

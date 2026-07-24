@@ -1,0 +1,1735 @@
+{
+ "live": {
+  "15560004": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_1556_ea-1556.log",
+   "n_lines": 182,
+   "first_ts": "2026-07-13T06:36:06.843Z",
+   "last_ts": "2026-07-24T03:22:55.328Z",
+   "event_counts": {
+    "SYMBOL_GUARD_INIT": 29,
+    "NEWS_CALENDAR_LOADED": 14,
+    "KILL_SWITCH_INIT": 14,
+    "KS_BASELINE_ABSENT": 14,
+    "CHART_UI_INIT": 14,
+    "INIT": 14,
+    "BASKET_WARMUP": 14,
+    "INIT_OK": 14,
+    "KS_STATE_RESTORED_ANCHOR": 13,
+    "NEWS_LIVE_CALENDAR_SELFTEST": 11,
+    "EQUITY_SNAPSHOT": 9,
+    "DEINIT": 8,
+    "CHART_UI_SHUTDOWN": 4,
+    "TM_OPEN": 3,
+    "ENTRY_ACCEPTED": 2,
+    "BROKER_OTHER": 1,
+    "ENTRY_REJECTED": 1,
+    "TM_CLOSE": 1,
+    "FRIDAY_CLOSE": 1,
+    "RNG_SEED_SET": 1
+   },
+   "magics_seen": {
+    "15560004": 182
+   },
+   "KILL_SWITCH_INIT": [
+    {
+     "line": 151,
+     "ts": "2026-07-22T11:30:31.843Z",
+     "magic": 15560004,
+     "payload": {
+      "ea_id": 1556,
+      "magic": 15560004,
+      "daily_loss_halt_pct": 3.0,
+      "portfolio_dd_halt_pct": 0.0,
+      "per_trade_risk_cap_pct": 1.0,
+      "manual_halt_file": "QM\\halt\\1556.halt",
+      "portfolio_dd_signal_file": "QM\\halt\\portfolio_dd.signal"
+     }
+    },
+    {
+     "line": 163,
+     "ts": "2026-07-23T03:57:08.031Z",
+     "magic": 15560004,
+     "payload": {
+      "ea_id": 1556,
+      "magic": 15560004,
+      "daily_loss_halt_pct": 3.0,
+      "portfolio_dd_halt_pct": 0.0,
+      "per_trade_risk_cap_pct": 1.0,
+      "manual_halt_file": "QM\\halt\\1556.halt",
+      "portfolio_dd_signal_file": "QM\\halt\\portfolio_dd.signal"
+     }
+    },
+    {
+     "line": 175,
+     "ts": "2026-07-24T03:22:05.234Z",
+     "magic": 15560004,
+     "payload": {
+      "ea_id": 1556,
+      "magic": 15560004,
+      "daily_loss_halt_pct": 3.0,
+      "portfolio_dd_halt_pct": 0.0,
+      "per_trade_risk_cap_pct": 1.0,
+      "manual_halt_file": "QM\\halt\\1556.halt",
+      "portfolio_dd_signal_file": "QM\\halt\\portfolio_dd.signal"
+     }
+    }
+   ],
+   "KILL_SWITCH_UNCONFIGURED_count": 0,
+   "KILL_SWITCH_UNCONFIGURED_sample": [],
+   "FRIDAY_CLOSE_count": 1,
+   "FRIDAY_CLOSE_sample": [
+    {
+     "line": 32,
+     "ts": "2026-07-17T17:59:56.250Z",
+     "magic": 15560004,
+     "event": "FRIDAY_CLOSE",
+     "payload": {
+      "closed": 1,
+      "hour": 21,
+      "day_key": 2026197
+     }
+    }
+   ],
+   "INIT_sample": [
+    {
+     "line": 154,
+     "ts": "2026-07-22T11:30:31.890Z",
+     "magic": 15560004,
+     "payload": {
+      "magic": 15560004,
+      "symbol": "XAUUSD"
+     }
+    },
+    {
+     "line": 166,
+     "ts": "2026-07-23T03:57:08.078Z",
+     "magic": 15560004,
+     "payload": {
+      "magic": 15560004,
+      "symbol": "XAUUSD"
+     }
+    },
+    {
+     "line": 178,
+     "ts": "2026-07-24T03:22:05.296Z",
+     "magic": 15560004,
+     "payload": {
+      "magic": 15560004,
+      "symbol": "XAUUSD"
+     }
+    }
+   ],
+   "NEWS_events_count": 25,
+   "NEWS_events_sample": [
+    {
+     "line": 2,
+     "ts": "2026-07-13T06:37:19.375Z",
+     "magic": 15560004,
+     "event": "NEWS_CALENDAR_LOADED",
+     "payload": {
+      "hash": "F99F1AA9A1E69F12FA699D1F54A0F50306CDBC1B0D8B25E0B3F477C2119E7BDE",
+      "rows": 95991,
+      "modified_utc": "2026.07.13 05:30:01"
+     }
+    },
+    {
+     "line": 10,
+     "ts": "2026-07-13T06:37:20.484Z",
+     "magic": 15560004,
+     "event": "NEWS_LIVE_CALENDAR_SELFTEST",
+     "payload": {
+      "healthy": true,
+      "window7d_total": 253,
+      "min_impact": "HIGH",
+      "next_high_impact": "USD CPI m/m",
+      "next_time_srv": "2026.07.14 15:30"
+     }
+    },
+    {
+     "line": 15,
+     "ts": "2026-07-13T20:52:05.125Z",
+     "magic": 15560004,
+     "event": "NEWS_CALENDAR_LOADED",
+     "payload": {
+      "hash": "F99F1AA9A1E69F12FA699D1F54A0F50306CDBC1B0D8B25E0B3F477C2119E7BDE",
+      "rows": 95991,
+      "modified_utc": "2026.07.13 05:30:01"
+     }
+    },
+    {
+     "line": 24,
+     "ts": "2026-07-13T20:52:06.078Z",
+     "magic": 15560004,
+     "event": "NEWS_LIVE_CALENDAR_SELFTEST",
+     "payload": {
+      "healthy": true,
+      "window7d_total": 257,
+      "min_impact": "HIGH",
+      "next_high_impact": "USD CPI m/m",
+      "next_time_srv": "2026.07.14 15:30"
+     }
+    }
+   ],
+   "ea_id": 1556
+  },
+  "104400003": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_10440_ea-10440.log",
+   "n_lines": 243,
+   "first_ts": "2026-06-28T09:12:45.265Z",
+   "last_ts": "2026-07-24T03:23:45.390Z",
+   "event_counts": {
+    "SYMBOL_GUARD_INIT": 26,
+    "NEWS_CALENDAR_LOADED": 25,
+    "KILL_SWITCH_INIT": 25,
+    "KS_BASELINE_ABSENT": 25,
+    "CHART_UI_INIT": 25,
+    "INIT": 25,
+    "INIT_OK": 25,
+    "NEWS_LIVE_CALENDAR_SELFTEST": 19,
+    "EQUITY_SNAPSHOT": 19,
+    "DEINIT": 12,
+    "CHART_UI_SHUTDOWN": 6,
+    "TM_OPEN": 3,
+    "ENTRY_ACCEPTED": 2,
+    "RNG_SEED_SET": 2,
+    "FRIDAY_CLOSE": 2,
+    "BROKER_OTHER": 1,
+    "ENTRY_REJECTED": 1
+   },
+   "magics_seen": {
+    "104400003": 243
+   },
+   "KILL_SWITCH_INIT": [
+    {
+     "line": 220,
+     "ts": "2026-07-22T11:31:30.609Z",
+     "magic": 104400003,
+     "payload": {
+      "ea_id": 10440,
+      "magic": 104400003,
+      "daily_loss_halt_pct": 3.0,
+      "portfolio_dd_halt_pct": 0.0,
+      "per_trade_risk_cap_pct": 1.0,
+      "manual_halt_file": "D:\\QM\\data\\halt\\10440.halt",
+      "portfolio_dd_signal_file": "D:\\QM\\data\\halt\\portfolio_dd.signal"
+     }
+    },
+    {
+     "line": 229,
+     "ts": "2026-07-23T03:56:40.343Z",
+     "magic": 104400003,
+     "payload": {
+      "ea_id": 10440,
+      "magic": 104400003,
+      "daily_loss_halt_pct": 3.0,
+      "portfolio_dd_halt_pct": 0.0,
+      "per_trade_risk_cap_pct": 1.0,
+      "manual_halt_file": "D:\\QM\\data\\halt\\10440.halt",
+      "portfolio_dd_signal_file": "D:\\QM\\data\\halt\\portfolio_dd.signal"
+     }
+    },
+    {
+     "line": 238,
+     "ts": "2026-07-24T03:22:55.375Z",
+     "magic": 104400003,
+     "payload": {
+      "ea_id": 10440,
+      "magic": 104400003,
+      "daily_loss_halt_pct": 3.0,
+      "portfolio_dd_halt_pct": 0.0,
+      "per_trade_risk_cap_pct": 1.0,
+      "manual_halt_file": "D:\\QM\\data\\halt\\10440.halt",
+      "portfolio_dd_signal_file": "D:\\QM\\data\\halt\\portfolio_dd.signal"
+     }
+    }
+   ],
+   "KILL_SWITCH_UNCONFIGURED_count": 0,
+   "KILL_SWITCH_UNCONFIGURED_sample": [],
+   "FRIDAY_CLOSE_count": 2,
+   "FRIDAY_CLOSE_sample": [
+    {
+     "line": 101,
+     "ts": "2026-07-10T17:59:56.562Z",
+     "magic": 104400003,
+     "event": "FRIDAY_CLOSE",
+     "payload": {
+      "closed": 0,
+      "hour": 21,
+      "day_key": 2026190
+     }
+    },
+    {
+     "line": 129,
+     "ts": "2026-07-17T17:59:56.953Z",
+     "magic": 104400003,
+     "event": "FRIDAY_CLOSE",
+     "payload": {
+      "closed": 0,
+      "hour": 21,
+      "day_key": 2026197
+     }
+    }
+   ],
+   "INIT_sample": [
+    {
+     "line": 223,
+     "ts": "2026-07-22T11:31:30.609Z",
+     "magic": 104400003,
+     "payload": {
+      "magic": 104400003,
+      "symbol": "NDX"
+     }
+    },
+    {
+     "line": 232,
+     "ts": "2026-07-23T03:56:40.468Z",
+     "magic": 104400003,
+     "payload": {
+      "magic": 104400003,
+      "symbol": "NDX"
+     }
+    },
+    {
+     "line": 241,
+     "ts": "2026-07-24T03:22:55.375Z",
+     "magic": 104400003,
+     "payload": {
+      "magic": 104400003,
+      "symbol": "NDX"
+     }
+    }
+   ],
+   "NEWS_events_count": 44,
+   "NEWS_events_sample": [
+    {
+     "line": 2,
+     "ts": "2026-06-28T09:15:07.656Z",
+     "magic": 104400003,
+     "event": "NEWS_CALENDAR_LOADED",
+     "payload": {
+      "hash": "F99F1AA9A1E69F12FA699D1F54A0F50306CDBC1B0D8B25E0B3F477C2119E7BDE",
+      "rows": 95991,
+      "modified_utc": "2026.06.26 05:30:02"
+     }
+    },
+    {
+     "line": 9,
+     "ts": "2026-06-28T13:33:16.609Z",
+     "magic": 104400003,
+     "event": "NEWS_CALENDAR_LOADED",
+     "payload": {
+      "hash": "F99F1AA9A1E69F12FA699D1F54A0F50306CDBC1B0D8B25E0B3F477C2119E7BDE",
+      "rows": 95991,
+      "modified_utc": "2026.06.26 05:30:02"
+     }
+    },
+    {
+     "line": 15,
+     "ts": "2026-06-28T22:00:01.187Z",
+     "magic": 104400003,
+     "event": "NEWS_LIVE_CALENDAR_SELFTEST",
+     "payload": {
+      "healthy": true,
+      "window7d_total": 279,
+      "min_impact": "HIGH",
+      "next_high_impact": "JPY Retail Sales m/m",
+      "next_time_srv": "2026.06.29 02:50"
+     }
+    },
+    {
+     "line": 20,
+     "ts": "2026-07-01T06:47:06.828Z",
+     "magic": 104400003,
+     "event": "NEWS_CALENDAR_LOADED",
+     "payload": {
+      "hash": "F99F1AA9A1E69F12FA699D1F54A0F50306CDBC1B0D8B25E0B3F477C2119E7BDE",
+      "rows": 95991,
+      "modified_utc": "2026.07.01 05:30:01"
+     }
+    }
+   ],
+   "ea_id": 10440
+  },
+  "109110003": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_10911_ea-10911.log",
+   "n_lines": 250,
+   "first_ts": "2026-06-28T09:13:31.546Z",
+   "last_ts": "2026-07-24T03:23:43.031Z",
+   "event_counts": {
+    "SYMBOL_GUARD_INIT": 26,
+    "NEWS_CALENDAR_LOADED": 25,
+    "KILL_SWITCH_INIT": 25,
+    "KS_BASELINE_ABSENT": 25,
+    "CHART_UI_INIT": 25,
+    "INIT": 25,
+    "INIT_OK": 25,
+    "NEWS_LIVE_CALENDAR_SELFTEST": 19,
+    "EQUITY_SNAPSHOT": 19,
+    "DEINIT": 12,
+    "CHART_UI_SHUTDOWN": 6,
+    "ENTRY_ACCEPTED": 5,
+    "TM_OPEN": 5,
+    "TM_CLOSE": 3,
+    "FRIDAY_CLOSE": 3,
+    "RNG_SEED_SET": 2
+   },
+   "magics_seen": {
+    "109110003": 250
+   },
+   "KILL_SWITCH_INIT": [
+    {
+     "line": 225,
+     "ts": "2026-07-22T11:30:29.281Z",
+     "magic": 109110003,
+     "payload": {
+      "ea_id": 10911,
+      "magic": 109110003,
+      "daily_loss_halt_pct": 3.0,
+      "portfolio_dd_halt_pct": 0.0,
+      "per_trade_risk_cap_pct": 1.0,
+      "manual_halt_file": "D:\\QM\\data\\halt\\10911.halt",
+      "portfolio_dd_signal_file": "D:\\QM\\data\\halt\\portfolio_dd.signal"
+     }
+    },
+    {
+     "line": 234,
+     "ts": "2026-07-23T03:57:14.078Z",
+     "magic": 109110003,
+     "payload": {
+      "ea_id": 10911,
+      "magic": 109110003,
+      "daily_loss_halt_pct": 3.0,
+      "portfolio_dd_halt_pct": 0.0,
+      "per_trade_risk_cap_pct": 1.0,
+      "manual_halt_file": "D:\\QM\\data\\halt\\10911.halt",
+      "portfolio_dd_signal_file": "D:\\QM\\data\\halt\\portfolio_dd.signal"
+     }
+    },
+    {
+     "line": 245,
+     "ts": "2026-07-24T03:22:53.843Z",
+     "magic": 109110003,
+     "payload": {
+      "ea_id": 10911,
+      "magic": 109110003,
+      "daily_loss_halt_pct": 3.0,
+      "portfolio_dd_halt_pct": 0.0,
+      "per_trade_risk_cap_pct": 1.0,
+      "manual_halt_file": "D:\\QM\\data\\halt\\10911.halt",
+      "portfolio_dd_signal_file": "D:\\QM\\data\\halt\\portfolio_dd.signal"
+     }
+    }
+   ],
+   "KILL_SWITCH_UNCONFIGURED_count": 0,
+   "KILL_SWITCH_UNCONFIGURED_sample": [],
+   "FRIDAY_CLOSE_count": 3,
+   "FRIDAY_CLOSE_sample": [
+    {
+     "line": 40,
+     "ts": "2026-07-03T18:00:00.312Z",
+     "magic": 109110003,
+     "event": "FRIDAY_CLOSE",
+     "payload": {
+      "closed": 0,
+      "hour": 21,
+      "day_key": 2026183
+     }
+    },
+    {
+     "line": 111,
+     "ts": "2026-07-10T17:59:58.562Z",
+     "magic": 109110003,
+     "event": "FRIDAY_CLOSE",
+     "payload": {
+      "closed": 0,
+      "hour": 21,
+      "day_key": 2026190
+     }
+    },
+    {
+     "line": 136,
+     "ts": "2026-07-17T18:00:00.546Z",
+     "magic": 109110003,
+     "event": "FRIDAY_CLOSE",
+     "payload": {
+      "closed": 0,
+      "hour": 21,
+      "day_key": 2026197
+     }
+    }
+   ],
+   "INIT_sample": [
+    {
+     "line": 228,
+     "ts": "2026-07-22T11:30:30.328Z",
+     "magic": 109110003,
+     "payload": {
+      "magic": 109110003,
+      "symbol": "GDAXI"
+     }
+    },
+    {
+     "line": 237,
+     "ts": "2026-07-23T03:57:14.109Z",
+     "magic": 109110003,
+     "payload": {
+      "magic": 109110003,
+      "symbol": "GDAXI"
+     }
+    },
+    {
+     "line": 248,
+     "ts": "2026-07-24T03:22:53.937Z",
+     "magic": 109110003,
+     "payload": {
+      "magic": 109110003,
+      "symbol": "GDAXI"
+     }
+    }
+   ],
+   "NEWS_events_count": 44,
+   "NEWS_events_sample": [
+    {
+     "line": 2,
+     "ts": "2026-06-28T09:15:26.859Z",
+     "magic": 109110003,
+     "event": "NEWS_CALENDAR_LOADED",
+     "payload": {
+      "hash": "F99F1AA9A1E69F12FA699D1F54A0F50306CDBC1B0D8B25E0B3F477C2119E7BDE",
+      "rows": 95991,
+      "modified_utc": "2026.06.26 05:30:02"
+     }
+    },
+    {
+     "line": 9,
+     "ts": "2026-06-28T13:33:15.171Z",
+     "magic": 109110003,
+     "event": "NEWS_CALENDAR_LOADED",
+     "payload": {
+      "hash": "F99F1AA9A1E69F12FA699D1F54A0F50306CDBC1B0D8B25E0B3F477C2119E7BDE",
+      "rows": 95991,
+      "modified_utc": "2026.06.26 05:30:02"
+     }
+    },
+    {
+     "line": 15,
+     "ts": "2026-06-29T00:30:01.015Z",
+     "magic": 109110003,
+     "event": "NEWS_LIVE_CALENDAR_SELFTEST",
+     "payload": {
+      "healthy": true,
+      "window7d_total": 282,
+      "min_impact": "HIGH",
+      "next_high_impact": "EUR Consumer Price Expectations",
+      "next_time_srv": "2026.06.29 12:00"
+     }
+    },
+    {
+     "line": 22,
+     "ts": "2026-07-01T06:47:14.640Z",
+     "magic": 109110003,
+     "event": "NEWS_CALENDAR_LOADED",
+     "payload": {
+      "hash": "F99F1AA9A1E69F12FA699D1F54A0F50306CDBC1B0D8B25E0B3F477C2119E7BDE",
+      "rows": 95991,
+      "modified_utc": "2026.07.01 05:30:01"
+     }
+    }
+   ],
+   "ea_id": 10911
+  },
+  "111320000": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_11132_ea-11132.log",
+   "n_lines": 246,
+   "first_ts": "2026-06-28T09:12:45.281Z",
+   "last_ts": "2026-07-24T03:22:56.718Z",
+   "event_counts": {
+    "SYMBOL_GUARD_INIT": 26,
+    "NEWS_CALENDAR_LOADED": 25,
+    "KILL_SWITCH_INIT": 25,
+    "KS_BASELINE_ABSENT": 25,
+    "CHART_UI_INIT": 25,
+    "INIT": 25,
+    "INIT_OK": 25,
+    "NEWS_LIVE_CALENDAR_SELFTEST": 19,
+    "EQUITY_SNAPSHOT": 19,
+    "DEINIT": 12,
+    "CHART_UI_SHUTDOWN": 6,
+    "TM_OPEN": 4,
+    "ENTRY_ACCEPTED": 2,
+    "TM_CLOSE": 2,
+    "RNG_SEED_SET": 2,
+    "FRIDAY_CLOSE": 2,
+    "ENTRY_REJECTED": 2
+   },
+   "magics_seen": {
+    "111320000": 246
+   },
+   "KILL_SWITCH_INIT": [
+    {
+     "line": 223,
+     "ts": "2026-07-22T11:29:46.234Z",
+     "magic": 111320000,
+     "payload": {
+      "ea_id": 11132,
+      "magic": 111320000,
+      "daily_loss_halt_pct": 3.0,
+      "portfolio_dd_halt_pct": 0.0,
+      "per_trade_risk_cap_pct": 1.0,
+      "manual_halt_file": "D:\\QM\\data\\halt\\11132.halt",
+      "portfolio_dd_signal_file": "D:\\QM\\data\\halt\\portfolio_dd.signal"
+     }
+    },
+    {
+     "line": 232,
+     "ts": "2026-07-23T03:57:06.265Z",
+     "magic": 111320000,
+     "payload": {
+      "ea_id": 11132,
+      "magic": 111320000,
+      "daily_loss_halt_pct": 3.0,
+      "portfolio_dd_halt_pct": 0.0,
+      "per_trade_risk_cap_pct": 1.0,
+      "manual_halt_file": "D:\\QM\\data\\halt\\11132.halt",
+      "portfolio_dd_signal_file": "D:\\QM\\data\\halt\\portfolio_dd.signal"
+     }
+    },
+    {
+     "line": 241,
+     "ts": "2026-07-24T03:22:05.265Z",
+     "magic": 111320000,
+     "payload": {
+      "ea_id": 11132,
+      "magic": 111320000,
+      "daily_loss_halt_pct": 3.0,
+      "portfolio_dd_halt_pct": 0.0,
+      "per_trade_risk_cap_pct": 1.0,
+      "manual_halt_file": "D:\\QM\\data\\halt\\11132.halt",
+      "portfolio_dd_signal_file": "D:\\QM\\data\\halt\\portfolio_dd.signal"
+     }
+    }
+   ],
+   "KILL_SWITCH_UNCONFIGURED_count": 0,
+   "KILL_SWITCH_UNCONFIGURED_sample": [],
+   "FRIDAY_CLOSE_count": 2,
+   "FRIDAY_CLOSE_sample": [
+    {
+     "line": 102,
+     "ts": "2026-07-10T17:59:56.546Z",
+     "magic": 111320000,
+     "event": "FRIDAY_CLOSE",
+     "payload": {
+      "closed": 0,
+      "hour": 21,
+      "day_key": 2026190
+     }
+    },
+    {
+     "line": 127,
+     "ts": "2026-07-17T17:59:56.859Z",
+     "magic": 111320000,
+     "event": "FRIDAY_CLOSE",
+     "payload": {
+      "closed": 0,
+      "hour": 21,
+      "day_key": 2026197
+     }
+    }
+   ],
+   "INIT_sample": [
+    {
+     "line": 226,
+     "ts": "2026-07-22T11:29:46.281Z",
+     "magic": 111320000,
+     "payload": {
+      "magic": 111320000,
+      "symbol": "SP500"
+     }
+    },
+    {
+     "line": 235,
+     "ts": "2026-07-23T03:57:06.281Z",
+     "magic": 111320000,
+     "payload": {
+      "magic": 111320000,
+      "symbol": "SP500"
+     }
+    },
+    {
+     "line": 244,
+     "ts": "2026-07-24T03:22:05.328Z",
+     "magic": 111320000,
+     "payload": {
+      "magic": 111320000,
+      "symbol": "SP500"
+     }
+    }
+   ],
+   "NEWS_events_count": 44,
+   "NEWS_events_sample": [
+    {
+     "line": 2,
+     "ts": "2026-06-28T09:14:56.296Z",
+     "magic": 111320000,
+     "event": "NEWS_CALENDAR_LOADED",
+     "payload": {
+      "hash": "F99F1AA9A1E69F12FA699D1F54A0F50306CDBC1B0D8B25E0B3F477C2119E7BDE",
+      "rows": 95991,
+      "modified_utc": "2026.06.26 05:30:02"
+     }
+    },
+    {
+     "line": 9,
+     "ts": "2026-06-28T13:32:58.765Z",
+     "magic": 111320000,
+     "event": "NEWS_CALENDAR_LOADED",
+     "payload": {
+      "hash": "F99F1AA9A1E69F12FA699D1F54A0F50306CDBC1B0D8B25E0B3F477C2119E7BDE",
+      "rows": 95991,
+      "modified_utc": "2026.06.26 05:30:02"
+     }
+    },
+    {
+     "line": 15,
+     "ts": "2026-06-28T22:00:01.140Z",
+     "magic": 111320000,
+     "event": "NEWS_LIVE_CALENDAR_SELFTEST",
+     "payload": {
+      "healthy": true,
+      "window7d_total": 279,
+      "min_impact": "HIGH",
+      "next_high_impact": "JPY Retail Sales m/m",
+      "next_time_srv": "2026.06.29 02:50"
+     }
+    },
+    {
+     "line": 23,
+     "ts": "2026-07-01T06:47:28.218Z",
+     "magic": 111320000,
+     "event": "NEWS_CALENDAR_LOADED",
+     "payload": {
+      "hash": "F99F1AA9A1E69F12FA699D1F54A0F50306CDBC1B0D8B25E0B3F477C2119E7BDE",
+      "rows": 95991,
+      "modified_utc": "2026.07.01 05:30:01"
+     }
+    }
+   ],
+   "ea_id": 11132
+  },
+  "114210000": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_11421_ea-11421.log",
+   "n_lines": 528,
+   "first_ts": "2026-06-28T09:12:45.281Z",
+   "last_ts": "2026-07-24T03:23:45.281Z",
+   "event_counts": {
+    "NEWS_CALENDAR_LOADED": 50,
+    "KILL_SWITCH_INIT": 50,
+    "KS_BASELINE_ABSENT": 50,
+    "CHART_UI_INIT": 50,
+    "INIT": 50,
+    "INIT_OK": 50,
+    "SYMBOL_GUARD_INIT": 42,
+    "NEWS_LIVE_CALENDAR_SELFTEST": 37,
+    "EQUITY_SNAPSHOT": 36,
+    "TM_OPEN": 25,
+    "DEINIT": 22,
+    "ENTRY_ACCEPTED": 20,
+    "TM_REMOVE_PENDING": 14,
+    "CHART_UI_SHUTDOWN": 11,
+    "FRIDAY_CLOSE": 6,
+    "BROKER_OTHER": 5,
+    "RNG_SEED_SET": 4,
+    "ENTRY_REJECTED": 4
+   },
+   "magics_seen": {
+    "114210000": 265,
+    "114210003": 261
+   },
+   "KILL_SWITCH_INIT": [
+    {
+     "line": 475,
+     "ts": "2026-07-22T11:31:11.718Z",
+     "magic": 114210000,
+     "payload": {
+      "ea_id": 11421,
+      "magic": 114210000,
+      "daily_loss_halt_pct": 3.0,
+      "portfolio_dd_halt_pct": 0.0,
+      "per_trade_risk_cap_pct": 1.0,
+      "manual_halt_file": "D:\\QM\\data\\halt\\11421.halt",
+      "portfolio_dd_signal_file": "D:\\QM\\data\\halt\\portfolio_dd.signal"
+     }
+    },
+    {
+     "line": 490,
+     "ts": "2026-07-23T03:56:42.546Z",
+     "magic": 114210000,
+     "payload": {
+      "ea_id": 11421,
+      "magic": 114210000,
+      "daily_loss_halt_pct": 3.0,
+      "portfolio_dd_halt_pct": 0.0,
+      "per_trade_risk_cap_pct": 1.0,
+      "manual_halt_file": "D:\\QM\\data\\halt\\11421.halt",
+      "portfolio_dd_signal_file": "D:\\QM\\data\\halt\\portfolio_dd.signal"
+     }
+    },
+    {
+     "line": 519,
+     "ts": "2026-07-24T03:22:55.265Z",
+     "magic": 114210000,
+     "payload": {
+      "ea_id": 11421,
+      "magic": 114210000,
+      "daily_loss_halt_pct": 3.0,
+      "portfolio_dd_halt_pct": 0.0,
+      "per_trade_risk_cap_pct": 1.0,
+      "manual_halt_file": "D:\\QM\\data\\halt\\11421.halt",
+      "portfolio_dd_signal_file": "D:\\QM\\data\\halt\\portfolio_dd.signal"
+     }
+    }
+   ],
+   "KILL_SWITCH_UNCONFIGURED_count": 0,
+   "KILL_SWITCH_UNCONFIGURED_sample": [],
+   "FRIDAY_CLOSE_count": 3,
+   "FRIDAY_CLOSE_sample": [
+    {
+     "line": 80,
+     "ts": "2026-07-03T17:59:56.812Z",
+     "magic": 114210000,
+     "event": "FRIDAY_CLOSE",
+     "payload": {
+      "closed": 1,
+      "hour": 21,
+      "day_key": 2026183
+     }
+    },
+    {
+     "line": 215,
+     "ts": "2026-07-10T17:59:56.578Z",
+     "magic": 114210000,
+     "event": "FRIDAY_CLOSE",
+     "payload": {
+      "closed": 0,
+      "hour": 21,
+      "day_key": 2026190
+     }
+    },
+    {
+     "line": 276,
+     "ts": "2026-07-17T17:59:58.875Z",
+     "magic": 114210000,
+     "event": "FRIDAY_CLOSE",
+     "payload": {
+      "closed": 0,
+      "hour": 21,
+      "day_key": 2026197
+     }
+    }
+   ],
+   "INIT_sample": [
+    {
+     "line": 478,
+     "ts": "2026-07-22T11:31:11.718Z",
+     "magic": 114210000,
+     "payload": {
+      "magic": 114210000,
+      "symbol": "EURUSD"
+     }
+    },
+    {
+     "line": 493,
+     "ts": "2026-07-23T03:56:42.609Z",
+     "magic": 114210000,
+     "payload": {
+      "magic": 114210000,
+      "symbol": "EURUSD"
+     }
+    },
+    {
+     "line": 522,
+     "ts": "2026-07-24T03:22:55.265Z",
+     "magic": 114210000,
+     "payload": {
+      "magic": 114210000,
+      "symbol": "EURUSD"
+     }
+    }
+   ],
+   "NEWS_events_count": 44,
+   "NEWS_events_sample": [
+    {
+     "line": 3,
+     "ts": "2026-06-28T09:15:01.843Z",
+     "magic": 114210000,
+     "event": "NEWS_CALENDAR_LOADED",
+     "payload": {
+      "hash": "F99F1AA9A1E69F12FA699D1F54A0F50306CDBC1B0D8B25E0B3F477C2119E7BDE",
+      "rows": 95991,
+      "modified_utc": "2026.06.26 05:30:02"
+     }
+    },
+    {
+     "line": 17,
+     "ts": "2026-06-28T13:32:48.109Z",
+     "magic": 114210000,
+     "event": "NEWS_CALENDAR_LOADED",
+     "payload": {
+      "hash": "F99F1AA9A1E69F12FA699D1F54A0F50306CDBC1B0D8B25E0B3F477C2119E7BDE",
+      "rows": 95991,
+      "modified_utc": "2026.06.26 05:30:02"
+     }
+    },
+    {
+     "line": 29,
+     "ts": "2026-06-28T21:05:02.468Z",
+     "magic": 114210000,
+     "event": "NEWS_LIVE_CALENDAR_SELFTEST",
+     "payload": {
+      "healthy": true,
+      "window7d_total": 279,
+      "min_impact": "HIGH",
+      "next_high_impact": "EUR Consumer Price Expectations",
+      "next_time_srv": "2026.06.29 12:00"
+     }
+    },
+    {
+     "line": 51,
+     "ts": "2026-07-01T06:47:26.625Z",
+     "magic": 114210000,
+     "event": "NEWS_CALENDAR_LOADED",
+     "payload": {
+      "hash": "F99F1AA9A1E69F12FA699D1F54A0F50306CDBC1B0D8B25E0B3F477C2119E7BDE",
+      "rows": 95991,
+      "modified_utc": "2026.07.01 05:30:01"
+     }
+    }
+   ],
+   "ea_id": 11421
+  },
+  "125670002": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_12567_ea-12567.log",
+   "n_lines": 483,
+   "first_ts": "2026-06-28T09:12:45.281Z",
+   "last_ts": "2026-07-24T03:23:45.828Z",
+   "event_counts": {
+    "NEWS_CALENDAR_LOADED": 52,
+    "KILL_SWITCH_INIT": 52,
+    "KS_BASELINE_ABSENT": 52,
+    "CHART_UI_INIT": 52,
+    "INIT": 52,
+    "INIT_OK": 52,
+    "SYMBOL_GUARD_INIT": 46,
+    "NEWS_LIVE_CALENDAR_SELFTEST": 38,
+    "EQUITY_SNAPSHOT": 35,
+    "DEINIT": 28,
+    "CHART_UI_SHUTDOWN": 14,
+    "RNG_SEED_SET": 6,
+    "FRIDAY_CLOSE": 4
+   },
+   "magics_seen": {
+    "125670002": 250,
+    "125670003": 233
+   },
+   "KILL_SWITCH_INIT": [
+    {
+     "line": 443,
+     "ts": "2026-07-22T11:31:11.750Z",
+     "magic": 125670002,
+     "payload": {
+      "ea_id": 12567,
+      "magic": 125670002,
+      "daily_loss_halt_pct": 3.0,
+      "portfolio_dd_halt_pct": 0.0,
+      "per_trade_risk_cap_pct": 1.0,
+      "manual_halt_file": "D:\\QM\\data\\halt\\12567.halt",
+      "portfolio_dd_signal_file": "D:\\QM\\data\\halt\\portfolio_dd.signal"
+     }
+    },
+    {
+     "line": 460,
+     "ts": "2026-07-23T03:57:57.171Z",
+     "magic": 125670002,
+     "payload": {
+      "ea_id": 12567,
+      "magic": 125670002,
+      "daily_loss_halt_pct": 3.0,
+      "portfolio_dd_halt_pct": 0.0,
+      "per_trade_risk_cap_pct": 1.0,
+      "manual_halt_file": "D:\\QM\\data\\halt\\12567.halt",
+      "portfolio_dd_signal_file": "D:\\QM\\data\\halt\\portfolio_dd.signal"
+     }
+    },
+    {
+     "line": 471,
+     "ts": "2026-07-24T03:22:37.718Z",
+     "magic": 125670002,
+     "payload": {
+      "ea_id": 12567,
+      "magic": 125670002,
+      "daily_loss_halt_pct": 3.0,
+      "portfolio_dd_halt_pct": 0.0,
+      "per_trade_risk_cap_pct": 1.0,
+      "manual_halt_file": "D:\\QM\\data\\halt\\12567.halt",
+      "portfolio_dd_signal_file": "D:\\QM\\data\\halt\\portfolio_dd.signal"
+     }
+    }
+   ],
+   "KILL_SWITCH_UNCONFIGURED_count": 0,
+   "KILL_SWITCH_UNCONFIGURED_sample": [],
+   "FRIDAY_CLOSE_count": 2,
+   "FRIDAY_CLOSE_sample": [
+    {
+     "line": 214,
+     "ts": "2026-07-10T17:59:58.906Z",
+     "magic": 125670002,
+     "event": "FRIDAY_CLOSE",
+     "payload": {
+      "closed": 0,
+      "hour": 21,
+      "day_key": 2026190
+     }
+    },
+    {
+     "line": 263,
+     "ts": "2026-07-17T18:00:04.718Z",
+     "magic": 125670002,
+     "event": "FRIDAY_CLOSE",
+     "payload": {
+      "closed": 0,
+      "hour": 21,
+      "day_key": 2026197
+     }
+    }
+   ],
+   "INIT_sample": [
+    {
+     "line": 446,
+     "ts": "2026-07-22T11:31:11.796Z",
+     "magic": 125670002,
+     "payload": {
+      "magic": 125670002,
+      "symbol": "XNGUSD"
+     }
+    },
+    {
+     "line": 463,
+     "ts": "2026-07-23T03:57:57.171Z",
+     "magic": 125670002,
+     "payload": {
+      "magic": 125670002,
+      "symbol": "XNGUSD"
+     }
+    },
+    {
+     "line": 474,
+     "ts": "2026-07-24T03:22:37.796Z",
+     "magic": 125670002,
+     "payload": {
+      "magic": 125670002,
+      "symbol": "XNGUSD"
+     }
+    }
+   ],
+   "NEWS_events_count": 46,
+   "NEWS_events_sample": [
+    {
+     "line": 3,
+     "ts": "2026-06-28T09:15:07.718Z",
+     "magic": 125670002,
+     "event": "NEWS_CALENDAR_LOADED",
+     "payload": {
+      "hash": "F99F1AA9A1E69F12FA699D1F54A0F50306CDBC1B0D8B25E0B3F477C2119E7BDE",
+      "rows": 95991,
+      "modified_utc": "2026.06.26 05:30:02"
+     }
+    },
+    {
+     "line": 20,
+     "ts": "2026-06-28T09:22:24.375Z",
+     "magic": 125670002,
+     "event": "NEWS_CALENDAR_LOADED",
+     "payload": {
+      "hash": "F99F1AA9A1E69F12FA699D1F54A0F50306CDBC1B0D8B25E0B3F477C2119E7BDE",
+      "rows": 95991,
+      "modified_utc": "2026.06.26 05:30:02"
+     }
+    },
+    {
+     "line": 34,
+     "ts": "2026-06-28T13:33:12.125Z",
+     "magic": 125670002,
+     "event": "NEWS_CALENDAR_LOADED",
+     "payload": {
+      "hash": "F99F1AA9A1E69F12FA699D1F54A0F50306CDBC1B0D8B25E0B3F477C2119E7BDE",
+      "rows": 95991,
+      "modified_utc": "2026.06.26 05:30:02"
+     }
+    },
+    {
+     "line": 40,
+     "ts": "2026-06-28T22:00:10.890Z",
+     "magic": 125670002,
+     "event": "NEWS_LIVE_CALENDAR_SELFTEST",
+     "payload": {
+      "healthy": true,
+      "window7d_total": 279,
+      "min_impact": "HIGH",
+      "next_high_impact": "USD MNI Chicago Business Barometer",
+      "next_time_srv": "2026.06.30 16:45"
+     }
+    }
+   ],
+   "ea_id": 12567
+  },
+  "129690000": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_12969_ea-12969.log",
+   "n_lines": 126,
+   "first_ts": "2026-07-13T06:33:06.890Z",
+   "last_ts": "2026-07-24T03:22:36.437Z",
+   "event_counts": {
+    "SYMBOL_GUARD_INIT": 15,
+    "NEWS_CALENDAR_LOADED": 14,
+    "KILL_SWITCH_INIT": 14,
+    "KS_BASELINE_ABSENT": 14,
+    "CHART_UI_INIT": 14,
+    "INIT": 14,
+    "INIT_OK": 14,
+    "KS_STATE_RESTORED_ANCHOR": 13,
+    "DEINIT": 8,
+    "CHART_UI_SHUTDOWN": 4,
+    "FRIDAY_CLOSE": 1,
+    "RNG_SEED_SET": 1
+   },
+   "magics_seen": {
+    "129690000": 126
+   },
+   "KILL_SWITCH_INIT": [
+    {
+     "line": 106,
+     "ts": "2026-07-22T11:30:29.531Z",
+     "magic": 129690000,
+     "payload": {
+      "ea_id": 12969,
+      "magic": 129690000,
+      "daily_loss_halt_pct": 3.0,
+      "portfolio_dd_halt_pct": 0.0,
+      "per_trade_risk_cap_pct": 1.0,
+      "manual_halt_file": "QM\\halt\\12969.halt",
+      "portfolio_dd_signal_file": "QM\\halt\\portfolio_dd.signal"
+     }
+    },
+    {
+     "line": 114,
+     "ts": "2026-07-23T03:57:57.140Z",
+     "magic": 129690000,
+     "payload": {
+      "ea_id": 12969,
+      "magic": 129690000,
+      "daily_loss_halt_pct": 3.0,
+      "portfolio_dd_halt_pct": 0.0,
+      "per_trade_risk_cap_pct": 1.0,
+      "manual_halt_file": "QM\\halt\\12969.halt",
+      "portfolio_dd_signal_file": "QM\\halt\\portfolio_dd.signal"
+     }
+    },
+    {
+     "line": 122,
+     "ts": "2026-07-24T03:22:36.390Z",
+     "magic": 129690000,
+     "payload": {
+      "ea_id": 12969,
+      "magic": 129690000,
+      "daily_loss_halt_pct": 3.0,
+      "portfolio_dd_halt_pct": 0.0,
+      "per_trade_risk_cap_pct": 1.0,
+      "manual_halt_file": "QM\\halt\\12969.halt",
+      "portfolio_dd_signal_file": "QM\\halt\\portfolio_dd.signal"
+     }
+    }
+   ],
+   "KILL_SWITCH_UNCONFIGURED_count": 0,
+   "KILL_SWITCH_UNCONFIGURED_sample": [],
+   "FRIDAY_CLOSE_count": 1,
+   "FRIDAY_CLOSE_sample": [
+    {
+     "line": 16,
+     "ts": "2026-07-17T17:59:56.906Z",
+     "magic": 129690000,
+     "event": "FRIDAY_CLOSE",
+     "payload": {
+      "closed": 0,
+      "hour": 21,
+      "day_key": 2026197
+     }
+    }
+   ],
+   "INIT_sample": [
+    {
+     "line": 109,
+     "ts": "2026-07-22T11:30:29.703Z",
+     "magic": 129690000,
+     "payload": {
+      "magic": 129690000,
+      "symbol": "USDJPY"
+     }
+    },
+    {
+     "line": 117,
+     "ts": "2026-07-23T03:57:57.140Z",
+     "magic": 129690000,
+     "payload": {
+      "magic": 129690000,
+      "symbol": "USDJPY"
+     }
+    },
+    {
+     "line": 125,
+     "ts": "2026-07-24T03:22:36.437Z",
+     "magic": 129690000,
+     "payload": {
+      "magic": 129690000,
+      "symbol": "USDJPY"
+     }
+    }
+   ],
+   "NEWS_events_count": 14,
+   "NEWS_events_sample": [
+    {
+     "line": 2,
+     "ts": "2026-07-13T06:34:01.671Z",
+     "magic": 129690000,
+     "event": "NEWS_CALENDAR_LOADED",
+     "payload": {
+      "hash": "F99F1AA9A1E69F12FA699D1F54A0F50306CDBC1B0D8B25E0B3F477C2119E7BDE",
+      "rows": 95991,
+      "modified_utc": "2026.07.13 05:30:01"
+     }
+    },
+    {
+     "line": 9,
+     "ts": "2026-07-13T20:52:06.562Z",
+     "magic": 129690000,
+     "event": "NEWS_CALENDAR_LOADED",
+     "payload": {
+      "hash": "F99F1AA9A1E69F12FA699D1F54A0F50306CDBC1B0D8B25E0B3F477C2119E7BDE",
+      "rows": 95991,
+      "modified_utc": "2026.07.13 05:30:01"
+     }
+    },
+    {
+     "line": 18,
+     "ts": "2026-07-19T02:12:22.796Z",
+     "magic": 129690000,
+     "event": "NEWS_CALENDAR_LOADED",
+     "payload": {
+      "hash": "F99F1AA9A1E69F12FA699D1F54A0F50306CDBC1B0D8B25E0B3F477C2119E7BDE",
+      "rows": 95991,
+      "modified_utc": "2026.07.18 05:30:02"
+     }
+    },
+    {
+     "line": 29,
+     "ts": "2026-07-19T13:37:26.796Z",
+     "magic": 129690000,
+     "event": "NEWS_CALENDAR_LOADED",
+     "payload": {
+      "hash": "F99F1AA9A1E69F12FA699D1F54A0F50306CDBC1B0D8B25E0B3F477C2119E7BDE",
+      "rows": 95991,
+      "modified_utc": "2026.07.19 05:30:01"
+     }
+    }
+   ],
+   "ea_id": 12969
+  },
+  "131280000": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_13128_ea-13128.log",
+   "n_lines": 133,
+   "first_ts": "2026-07-13T06:29:55.421Z",
+   "last_ts": "2026-07-24T03:17:02.375Z",
+   "event_counts": {
+    "SYMBOL_GUARD_INIT": 14,
+    "NEWS_CALENDAR_SKIPPED": 14,
+    "KILL_SWITCH_INIT": 14,
+    "KS_BASELINE_ABSENT": 14,
+    "CHART_UI_INIT": 14,
+    "INIT": 14,
+    "INIT_OK": 14,
+    "KS_STATE_RESTORED_ANCHOR": 13,
+    "EQUITY_SNAPSHOT": 9,
+    "DEINIT": 8,
+    "CHART_UI_SHUTDOWN": 4,
+    "FRIDAY_CLOSE": 1
+   },
+   "magics_seen": {
+    "131280000": 133
+   },
+   "KILL_SWITCH_INIT": [
+    {
+     "line": 111,
+     "ts": "2026-07-22T11:25:23.531Z",
+     "magic": 131280000,
+     "payload": {
+      "ea_id": 13128,
+      "magic": 131280000,
+      "daily_loss_halt_pct": 3.0,
+      "portfolio_dd_halt_pct": 0.0,
+      "per_trade_risk_cap_pct": 1.0,
+      "manual_halt_file": "QM\\halt\\13128.halt",
+      "portfolio_dd_signal_file": "QM\\halt\\portfolio_dd.signal"
+     }
+    },
+    {
+     "line": 120,
+     "ts": "2026-07-23T03:51:58.546Z",
+     "magic": 131280000,
+     "payload": {
+      "ea_id": 13128,
+      "magic": 131280000,
+      "daily_loss_halt_pct": 3.0,
+      "portfolio_dd_halt_pct": 0.0,
+      "per_trade_risk_cap_pct": 1.0,
+      "manual_halt_file": "QM\\halt\\13128.halt",
+      "portfolio_dd_signal_file": "QM\\halt\\portfolio_dd.signal"
+     }
+    },
+    {
+     "line": 129,
+     "ts": "2026-07-24T03:17:02.281Z",
+     "magic": 131280000,
+     "payload": {
+      "ea_id": 13128,
+      "magic": 131280000,
+      "daily_loss_halt_pct": 3.0,
+      "portfolio_dd_halt_pct": 0.0,
+      "per_trade_risk_cap_pct": 1.0,
+      "manual_halt_file": "QM\\halt\\13128.halt",
+      "portfolio_dd_signal_file": "QM\\halt\\portfolio_dd.signal"
+     }
+    }
+   ],
+   "KILL_SWITCH_UNCONFIGURED_count": 0,
+   "KILL_SWITCH_UNCONFIGURED_sample": [],
+   "FRIDAY_CLOSE_count": 1,
+   "FRIDAY_CLOSE_sample": [
+    {
+     "line": 20,
+     "ts": "2026-07-17T17:59:56.875Z",
+     "magic": 131280000,
+     "event": "FRIDAY_CLOSE",
+     "payload": {
+      "closed": 0,
+      "hour": 21,
+      "day_key": 2026197
+     }
+    }
+   ],
+   "INIT_sample": [
+    {
+     "line": 114,
+     "ts": "2026-07-22T11:25:23.671Z",
+     "magic": 131280000,
+     "payload": {
+      "magic": 131280000,
+      "symbol": "NDX"
+     }
+    },
+    {
+     "line": 123,
+     "ts": "2026-07-23T03:51:58.625Z",
+     "magic": 131280000,
+     "payload": {
+      "magic": 131280000,
+      "symbol": "NDX"
+     }
+    },
+    {
+     "line": 132,
+     "ts": "2026-07-24T03:17:02.375Z",
+     "magic": 131280000,
+     "payload": {
+      "magic": 131280000,
+      "symbol": "NDX"
+     }
+    }
+   ],
+   "NEWS_events_count": 14,
+   "NEWS_events_sample": [
+    {
+     "line": 2,
+     "ts": "2026-07-13T06:29:55.421Z",
+     "magic": 131280000,
+     "event": "NEWS_CALENDAR_SKIPPED",
+     "payload": {
+      "reason": "all_news_axes_off",
+      "news_mode": "OFF",
+      "news_temporal": "OFF",
+      "news_compliance": "NONE"
+     }
+    },
+    {
+     "line": 9,
+     "ts": "2026-07-13T20:46:48.609Z",
+     "magic": 131280000,
+     "event": "NEWS_CALENDAR_SKIPPED",
+     "payload": {
+      "reason": "all_news_axes_off",
+      "news_mode": "OFF",
+      "news_temporal": "OFF",
+      "news_compliance": "NONE"
+     }
+    },
+    {
+     "line": 22,
+     "ts": "2026-07-19T02:10:07.406Z",
+     "magic": 131280000,
+     "event": "NEWS_CALENDAR_SKIPPED",
+     "payload": {
+      "reason": "all_news_axes_off",
+      "news_mode": "OFF",
+      "news_temporal": "OFF",
+      "news_compliance": "NONE"
+     }
+    },
+    {
+     "line": 33,
+     "ts": "2026-07-19T13:34:03.359Z",
+     "magic": 131280000,
+     "event": "NEWS_CALENDAR_SKIPPED",
+     "payload": {
+      "reason": "all_news_axes_off",
+      "news_mode": "OFF",
+      "news_temporal": "OFF",
+      "news_compliance": "NONE"
+     }
+    }
+   ],
+   "ea_id": 13128
+  }
+ },
+ "candidate_former_live": {
+  "10692": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_10692_ea-10692.log",
+   "n_lines": 138,
+   "first_ts": "2026-06-28T09:12:45.296Z",
+   "last_ts": "2026-07-19T13:28:56.421Z",
+   "event_counts": {
+    "SYMBOL_GUARD_INIT": 14,
+    "NEWS_CALENDAR_LOADED": 14,
+    "KILL_SWITCH_INIT": 14,
+    "KS_BASELINE_ABSENT": 14,
+    "CHART_UI_INIT": 14,
+    "INIT": 14,
+    "INIT_OK": 14,
+    "EQUITY_SNAPSHOT": 14,
+    "NEWS_LIVE_CALENDAR_SELFTEST": 10,
+    "DEINIT": 6,
+    "CHART_UI_SHUTDOWN": 3,
+    "ENTRY_ACCEPTED": 2,
+    "TM_OPEN": 2,
+    "FRIDAY_CLOSE": 2,
+    "RNG_SEED_SET": 1
+   },
+   "magics_seen": {
+    "106920005": 138
+   },
+   "KILL_SWITCH_INIT": [
+    {
+     "line": 110,
+     "ts": "2026-07-13T06:32:28.156Z",
+     "magic": 106920005,
+     "payload": {
+      "ea_id": 10692,
+      "magic": 106920005,
+      "daily_loss_halt_pct": 3.0,
+      "portfolio_dd_halt_pct": 0.0,
+      "per_trade_risk_cap_pct": 1.0,
+      "manual_halt_file": "D:\\QM\\data\\halt\\10692.halt",
+      "portfolio_dd_signal_file": "D:\\QM\\data\\halt\\portfolio_dd.signal"
+     }
+    },
+    {
+     "line": 118,
+     "ts": "2026-07-13T20:52:05.687Z",
+     "magic": 106920005,
+     "payload": {
+      "ea_id": 10692,
+      "magic": 106920005,
+      "daily_loss_halt_pct": 3.0,
+      "portfolio_dd_halt_pct": 0.0,
+      "per_trade_risk_cap_pct": 1.0,
+      "manual_halt_file": "D:\\QM\\data\\halt\\10692.halt",
+      "portfolio_dd_signal_file": "D:\\QM\\data\\halt\\portfolio_dd.signal"
+     }
+    },
+    {
+     "line": 131,
+     "ts": "2026-07-19T02:12:43.234Z",
+     "magic": 106920005,
+     "payload": {
+      "ea_id": 10692,
+      "magic": 106920005,
+      "daily_loss_halt_pct": 3.0,
+      "portfolio_dd_halt_pct": 0.0,
+      "per_trade_risk_cap_pct": 1.0,
+      "manual_halt_file": "D:\\QM\\data\\halt\\10692.halt",
+      "portfolio_dd_signal_file": "D:\\QM\\data\\halt\\portfolio_dd.signal"
+     }
+    }
+   ],
+   "KILL_SWITCH_UNCONFIGURED_count": 0,
+   "KILL_SWITCH_UNCONFIGURED_sample": [],
+   "FRIDAY_CLOSE_count": 2,
+   "FRIDAY_CLOSE_sample": [
+    {
+     "line": 103,
+     "ts": "2026-07-10T17:59:57.796Z",
+     "magic": 106920005,
+     "event": "FRIDAY_CLOSE",
+     "payload": {
+      "closed": 1,
+      "hour": 21,
+      "day_key": 2026190
+     }
+    },
+    {
+     "line": 128,
+     "ts": "2026-07-17T17:59:56.890Z",
+     "magic": 106920005,
+     "event": "FRIDAY_CLOSE",
+     "payload": {
+      "closed": 0,
+      "hour": 21,
+      "day_key": 2026197
+     }
+    }
+   ],
+   "INIT_sample": [
+    {
+     "line": 113,
+     "ts": "2026-07-13T06:32:28.187Z",
+     "magic": 106920005,
+     "payload": {
+      "magic": 106920005,
+      "symbol": "NDX"
+     }
+    },
+    {
+     "line": 121,
+     "ts": "2026-07-13T20:52:06.734Z",
+     "magic": 106920005,
+     "payload": {
+      "magic": 106920005,
+      "symbol": "NDX"
+     }
+    },
+    {
+     "line": 134,
+     "ts": "2026-07-19T02:12:43.265Z",
+     "magic": 106920005,
+     "payload": {
+      "magic": 106920005,
+      "symbol": "NDX"
+     }
+    }
+   ],
+   "NEWS_events_count": 24,
+   "NEWS_events_sample": [
+    {
+     "line": 2,
+     "ts": "2026-06-28T09:15:02.000Z",
+     "magic": 106920005,
+     "event": "NEWS_CALENDAR_LOADED",
+     "payload": {
+      "hash": "F99F1AA9A1E69F12FA699D1F54A0F50306CDBC1B0D8B25E0B3F477C2119E7BDE",
+      "rows": 95991,
+      "modified_utc": "2026.06.26 05:30:02"
+     }
+    },
+    {
+     "line": 9,
+     "ts": "2026-06-28T13:33:00.656Z",
+     "magic": 106920005,
+     "event": "NEWS_CALENDAR_LOADED",
+     "payload": {
+      "hash": "F99F1AA9A1E69F12FA699D1F54A0F50306CDBC1B0D8B25E0B3F477C2119E7BDE",
+      "rows": 95991,
+      "modified_utc": "2026.06.26 05:30:02"
+     }
+    },
+    {
+     "line": 15,
+     "ts": "2026-06-28T22:00:01.187Z",
+     "magic": 106920005,
+     "event": "NEWS_LIVE_CALENDAR_SELFTEST",
+     "payload": {
+      "healthy": true,
+      "window7d_total": 279,
+      "min_impact": "HIGH",
+      "next_high_impact": "JPY Retail Sales m/m",
+      "next_time_srv": "2026.06.29 02:50"
+     }
+    },
+    {
+     "line": 20,
+     "ts": "2026-07-01T06:47:25.062Z",
+     "magic": 106920005,
+     "event": "NEWS_CALENDAR_LOADED",
+     "payload": {
+      "hash": "F99F1AA9A1E69F12FA699D1F54A0F50306CDBC1B0D8B25E0B3F477C2119E7BDE",
+      "rows": 95991,
+      "modified_utc": "2026.07.01 05:30:01"
+     }
+    }
+   ]
+  },
+  "1567": {
+   "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\QM5_1567_ea-1567.log",
+   "n_lines": 106,
+   "first_ts": "2026-07-19T13:31:13.921Z",
+   "last_ts": "2026-07-24T03:23:44.046Z",
+   "event_counts": {
+    "SYMBOL_GUARD_INIT": 12,
+    "NEWS_CALENDAR_LOADED": 11,
+    "KILL_SWITCH_INIT": 11,
+    "KS_BASELINE_ABSENT": 11,
+    "CHART_UI_INIT": 11,
+    "INIT": 11,
+    "INIT_OK": 11,
+    "KS_STATE_RESTORED_ANCHOR": 10,
+    "NEWS_LIVE_CALENDAR_SELFTEST": 9,
+    "DEINIT": 6,
+    "CHART_UI_SHUTDOWN": 3
+   },
+   "magics_seen": {
+    "15670007": 106
+   },
+   "KILL_SWITCH_INIT": [
+    {
+     "line": 83,
+     "ts": "2026-07-22T11:31:11.546Z",
+     "magic": 15670007,
+     "payload": {
+      "ea_id": 1567,
+      "magic": 15670007,
+      "daily_loss_halt_pct": 3.0,
+      "portfolio_dd_halt_pct": 0.0,
+      "per_trade_risk_cap_pct": 1.0,
+      "manual_halt_file": "QM\\halt\\1567.halt",
+      "portfolio_dd_signal_file": "QM\\halt\\portfolio_dd.signal"
+     }
+    },
+    {
+     "line": 92,
+     "ts": "2026-07-23T03:57:56.953Z",
+     "magic": 15670007,
+     "payload": {
+      "ea_id": 1567,
+      "magic": 15670007,
+      "daily_loss_halt_pct": 3.0,
+      "portfolio_dd_halt_pct": 0.0,
+      "per_trade_risk_cap_pct": 1.0,
+      "manual_halt_file": "QM\\halt\\1567.halt",
+      "portfolio_dd_signal_file": "QM\\halt\\portfolio_dd.signal"
+     }
+    },
+    {
+     "line": 101,
+     "ts": "2026-07-24T03:22:54.984Z",
+     "magic": 15670007,
+     "payload": {
+      "ea_id": 1567,
+      "magic": 15670007,
+      "daily_loss_halt_pct": 3.0,
+      "portfolio_dd_halt_pct": 0.0,
+      "per_trade_risk_cap_pct": 1.0,
+      "manual_halt_file": "QM\\halt\\1567.halt",
+      "portfolio_dd_signal_file": "QM\\halt\\portfolio_dd.signal"
+     }
+    }
+   ],
+   "KILL_SWITCH_UNCONFIGURED_count": 0,
+   "KILL_SWITCH_UNCONFIGURED_sample": [],
+   "FRIDAY_CLOSE_count": 0,
+   "FRIDAY_CLOSE_sample": [],
+   "INIT_sample": [
+    {
+     "line": 86,
+     "ts": "2026-07-22T11:31:11.640Z",
+     "magic": 15670007,
+     "payload": {
+      "magic": 15670007,
+      "symbol": "EURUSD"
+     }
+    },
+    {
+     "line": 95,
+     "ts": "2026-07-23T03:57:56.953Z",
+     "magic": 15670007,
+     "payload": {
+      "magic": 15670007,
+      "symbol": "EURUSD"
+     }
+    },
+    {
+     "line": 104,
+     "ts": "2026-07-24T03:22:54.000Z",
+     "magic": 15670007,
+     "payload": {
+      "magic": 15670007,
+      "symbol": "EURUSD"
+     }
+    }
+   ],
+   "NEWS_events_count": 20,
+   "NEWS_events_sample": [
+    {
+     "line": 2,
+     "ts": "2026-07-19T13:31:50.515Z",
+     "magic": 15670007,
+     "event": "NEWS_CALENDAR_LOADED",
+     "payload": {
+      "hash": "F99F1AA9A1E69F12FA699D1F54A0F50306CDBC1B0D8B25E0B3F477C2119E7BDE",
+      "rows": 95991,
+      "modified_utc": "2026.07.19 05:30:01"
+     }
+    },
+    {
+     "line": 12,
+     "ts": "2026-07-19T13:37:58.140Z",
+     "magic": 15670007,
+     "event": "NEWS_CALENDAR_LOADED",
+     "payload": {
+      "hash": "F99F1AA9A1E69F12FA699D1F54A0F50306CDBC1B0D8B25E0B3F477C2119E7BDE",
+      "rows": 95991,
+      "modified_utc": "2026.07.19 05:30:01"
+     }
+    },
+    {
+     "line": 23,
+     "ts": "2026-07-19T13:54:46.109Z",
+     "magic": 15670007,
+     "event": "NEWS_CALENDAR_LOADED",
+     "payload": {
+      "hash": "F99F1AA9A1E69F12FA699D1F54A0F50306CDBC1B0D8B25E0B3F477C2119E7BDE",
+      "rows": 95991,
+      "modified_utc": "2026.07.19 05:30:01"
+     }
+    },
+    {
+     "line": 30,
+     "ts": "2026-07-19T21:05:02.859Z",
+     "magic": 15670007,
+     "event": "NEWS_LIVE_CALENDAR_SELFTEST",
+     "payload": {
+      "healthy": true,
+      "window7d_total": 163,
+      "min_impact": "HIGH",
+      "next_high_impact": "USD EIA Crude Oil Stocks Change",
+      "next_time_srv": "2026.07.22 17:30"
+     }
+    }
+   ]
+  }
+ }
+}

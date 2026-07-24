@@ -1,0 +1,48 @@
+FRAMEWORK GROUND-TRUTH FACTS (HEAD) — read-only 2026-07-24. file:line in C:\QM\repo\framework.
+
+1. KS_DAILY_LOSS (3% daily halt):
+   - Hardcoded: QM_Common.mqh:215  QM_KillSwitchInit(ea_id, g_qm_fw_magic, 3.0, 0.0, 1.0)
+     (arg3 daily_loss_halt_pct=3.0). No set-file input; not an EA input in EA_Skeleton.mq5.
+   - INIT log: QM_KillSwitch.mqh:526-535 event "KILL_SWITCH_INIT" JSON with key
+     "daily_loss_halt_pct":%.4f (also portfolio_dd_halt_pct, per_trade_risk_cap_pct,
+     manual_halt_file, portfolio_dd_signal_file).
+   - Check: QM_KillSwitch.mqh:700-711, trips when pnl_pct <= -halt_pct (baseline max(bal,eq)).
+
+2. KS_PORTFOLIO_DD: default 0.0 (off) QM_KillSwitch.mqh:21 & init arg4=0.0.
+   Existence-trips (halt_pct<=0 => any signal file present halts). Signal path default
+   "QM\halt\portfolio_dd.signal" (:495-496), book-scoped via SetBookTag (:552). Polled 1x/broker-sec
+   live, skipped in tester (:662-668). FileIsExist drive-path fix = FIXED in HEAD, commit 47f1d9709
+   (2026-07-05 21:12), sandbox-relative+FILE_COMMON. NO live writer feeds it (FTMO writer inert:
+   FTMO_DD_FLOOR_ARMED.flag ABSENT; DXZ book no producer; halt dirs empty on disk).
+   => MAX-DD KILL DEAD IN PRACTICE. (detail: framework__killswitch_portfolio_dd.txt)
+
+3. Friday-Close: enabled by default.
+   - EA_Skeleton.mq5:65  input bool qm_friday_close_enabled = true; :66 hour=21 broker.
+   - Globals: QM_Common.mqh:32 g_qm_fw_friday_close_enabled=true, :33 hour=21;
+     QM_Exit.mqh:28 g_qm_exit_friday_close_enabled=true, :29 hour=21.
+   - Disable input: set qm_friday_close_enabled=false (feeds QM_FrameworkInit arg friday_close_enabled).
+   - Logic: QM_Common.mqh QM_FrameworkFridayCloseNow (day_of_week==5 && hour>=21) + QM_Exit sweep.
+   - NO separate weekend filter exists (grep weekend/Weekend in *.mqh = none). Friday close IS the flat.
+
+4. News filter:
+   - Switch = MQLInfoInteger(MQL_TESTER). Live/real-time -> native MQL5 Calendar
+     (CalendarValueHistory), tester -> CSV D:\QM\data\news_calendar. QM_NewsFilter.mqh:1008-1016,
+     1743-1745. FAIL-CLOSED on live: native calendar unreachable/unpopulated blocks (:1016).
+   - Stale guard: qm_news_stale_max_hours default 336h/14d (EA_Skeleton.mq5:58; g_ var :139);
+     tester stale/parse-fail handling :677-720.
+   - P0.6 live-degrade: CSV missing/parse-fail/zero-rows -> WARN "NEWS_CSV_DEGRADED_LIVE" outside
+     tester (:662-668,694-701,713-720) instead of INIT_FAILED.
+   - symbol_slot UB fix: EA_Skeleton.mq5:235-237 ZeroMemory(req) in canonical OnTick template
+     (symbol_slot defaults 0=host slot, not garbage). Template/generator convention; needs rebuild
+     for pre-template EAs.
+
+5. Risk-mode semantics: NO framework runtime ENV enforcement.
+   - QM_Common.mqh:171-173  mode = FIXED if risk_fixed>0 else PERCENT (driven by nonzero input only).
+     EA never sees its ENV. FIXED keeps frozen money cap; PERCENT follows live equity (cap_pct).
+   - Generator convention only: framework/scripts/gen_setfile.ps1:453 risk_mode = backtest?FIXED:PERCENT;
+     :408-413 backtest requires RiskFixed>0 & RiskPercent==0; :505-506 live requires strategy_* params.
+
+6. KillSwitch halt channel (P0.3): fix commit 47f1d9709 (author 2026-07-05 21:12).
+   files: QM_KillSwitch.mqh(+37/-3), QM_Common.mqh(4), docs KILLSWITCH_HALT_CHANNEL_FIX_2026-07-05.md.
+   In HEAD at QM_KillSwitch.mqh:486-496. It is a RECOMPILE-DEBT issue: binaries built pre-2026-07-05
+   carry dead absolute-path default; only a rebuild reaches the fixed default.
