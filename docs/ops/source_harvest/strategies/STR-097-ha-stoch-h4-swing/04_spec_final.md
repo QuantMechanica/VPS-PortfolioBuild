@@ -5,7 +5,7 @@ USDCHF.DWX, EURCAD.DWX (slots 0–3) · Base: `framework/templates/EA_Skeleton.m
 (only the 5 hooks + inputs are strategy code; risk/news/Friday-close/KillSwitch =
 framework).
 
-## Inputs (group "=== Strategy (STR-097, source-fixed) ===")
+## Inputs (group "Strategy" — literal name required by build_check)
 
 ```
 input int    strategy_sma_period        = 100;  // H4 SMA of close (trend gate)

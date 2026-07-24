@@ -19,3 +19,12 @@
   (backtest sets) / PERCENT intent live; per-trade cap framework 1%; news filter
   framework fail-closed; KS_DAILY_LOSS 3% hardcoded; KS_PORTFOLIO_DD external
   guard live (QM_StrategyFarm_LiveBookDDGuard); Friday-close default-on.
+
+## Cross-review closure (task 20cb7145)
+
+Codex integration review: 6x CONFIRM (splice line-identical, skeleton contract
+sha-verified, closed-bar discipline, strategy fidelity, guardrails PASS,
+validators PASS) + 1 P3 defect (input-group rename) — **REBUTTED with
+evidence**: build_check ERRORs on any group name other than the literal
+"Strategy" (EA_INPUT_GROUP_MISSING, report build_check_20260724_111725.json);
+the framework guardrail forced the rename. Specs amended to codify it.
