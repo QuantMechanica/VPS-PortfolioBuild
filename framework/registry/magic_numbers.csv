@@ -15202,3 +15202,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20098,weekly-open-liquidity-sweep,0,XAUUSD.DWX,200980000,2026-07-24,Claude,active
 20098,weekly-open-liquidity-sweep,1,XAGUSD.DWX,200980001,2026-07-24,Claude,active
 20099,wti-samecal,0,XTIUSD.DWX,200990000,2026-07-24,Development,active
+20100,xng-samecal,0,XNGUSD.DWX,201000000,2026-07-24,Development,active

@@ -10,6 +10,7 @@ created_by: Codex
 cards_extracted:
   - energy-samecal
   - wti-samecal
+  - xng-samecal
 ---
 
 # Keloharju, Linnainmaa, and Nyberg Return-Seasonality Source Packet
@@ -40,14 +41,17 @@ commodities by their average return in that calendar month over prior history,
 using at least five years of data, then buys the high-ranked group and sells the
 low-ranked group.
 
-This packet extracts two constrained energy carriers. `energy-samecal` ranks
+This packet extracts three constrained energy carriers. `energy-samecal` ranks
 only `XTIUSD.DWX` and `XNGUSD.DWX` by their historical same-calendar-month
 returns, buys the higher seasonal leg, and shorts the lower seasonal leg.
 `wti-samecal` tests the WTI component as an absolute seasonal-sign carrier:
 buy WTI when its own historical same-calendar average is positive and sell it
-when that average is negative. The source uses a broad 24-future cross-section
-and up to 20 years of history. Both DWX ports are falsifiable reductions, not
-replications of the paper's diversified portfolio.
+when that average is negative. `xng-samecal` applies the same locked
+absolute-sign translation to natural gas as a monthly structural carrier that
+is materially different from the incumbent short-horizon cumulative-RSI2
+pullback. The source uses a broad 24-future cross-section and up to 20 years of
+history. All three DWX ports are falsifiable reductions, not replications of
+the paper's diversified portfolio.
 
 ## QM Translation
 
@@ -75,6 +79,14 @@ requires at least five prior same-month samples, and never trades either leg
 of `energy-samecal`. This absolute-sign translation is not a result separately
 reported by the paper; Q02 must reject it if the broad cross-sectional finding
 does not survive the single-CFD reduction.
+
+The XNG-only extraction is the corresponding natural-gas falsification port.
+It averages only `XNGUSD.DWX` returns from the same calendar month in prior
+years, compares that average with zero, and holds the resulting sign for one
+broker month. It never reads or trades WTI. The source explicitly includes
+natural-gas futures in its 24-contract panel, but it does not report a
+standalone natural-gas time-series sign result. That gap is binding and no
+source performance claim is transferred to the CFD carrier.
 
 ## Evidence And Limitations
 
@@ -117,6 +129,17 @@ contiguous-return trend systems, and the one-year stock-seasonality EA use
 different signals or markets. No exact single-WTI historical same-calendar
 average-sign carrier exists in the repository.
 
+For `xng-samecal`, the helper again reports the expected `energy-samecal`
+fuzzy sibling. Manual repository review also identifies `wti-samecal` as the
+same estimator on a different carrier. The new EA is a governed symbol port,
+not a claim to a globally new signal family: it compares XNG with zero, owns
+one XNG position, and cannot read or trade XTI. No existing EA combines that
+single-XNG information object with the historical same-calendar average-sign
+rule. `QM5_12567` instead uses a 200-day trend filter and cumulative RSI(2)
+pullback state with a short holding period. The port is therefore a new
+XNG-carrier/mechanic combination, while Q09 remains the only authority on
+realized correlation.
+
 Repository dedup was run before allocation with slug `energy-samecal`, strategy
 ID `KELOHARJU-RETSEAS-2016_XTI_XNG_S01`, and the complete mechanic fingerprint;
 the verdict was `CLEAN`.
@@ -130,7 +153,8 @@ the verdict was `CLEAN`.
   pyramiding.
 - Backtests use `RISK_FIXED=1000`, `RISK_PERCENT=0`, split equally across the
   two legs for `energy-samecal`; `wti-samecal` applies the same fixed budget to
-  its sole WTI position. No live setfile is created.
+  its sole WTI position and `xng-samecal` applies it to its sole XNG position.
+  No live setfile is created.
 - Friday close is disabled for the source-aligned monthly package; monthly
   reset, per-leg ATR stops, orphan repair, and the 35-day stale guard remain.
 
