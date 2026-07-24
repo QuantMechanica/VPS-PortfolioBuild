@@ -1,0 +1,23 @@
+{
+  "pdf": "forums.babypips.com_t_simple-asian-breakout-strategy-100-gain-in-the-last-20-days-4-1-risk-reward_38113.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_simple-asian-breakout-strategy-100-gain-in-the-last-20-days-4-1-risk-reward_38113.pdf",
+      "source_pages": "1-4",
+      "source_ref": "marvindoriot, \"SIMPLE Asian Breakout Strategy 100% gain in the last 20 days (4:1 risk reward)\", BabyPips forum, 2011, https://forums.babypips.com/t/simple-asian-breakout-strategy-100-gain-in-the-last-20-days-4-1-risk-reward/38113 (core rules in posts #1, #7, #11; time-zone clarifications #34-#36)",
+      "strategy_name": "USD/JPY Pre-Tokyo Range Breakout Straddle",
+      "concept": "Straddle the high/low of the 6-8pm EST (22:00-00:00 GMT) pre-Tokyo range on USD/JPY and trade a 2-pip breakout within a 2-hour window, capturing new Asian-session order flow with a tight stop and dual 40/70-pip targets.",
+      "market": "FX",
+      "timeframe": "M15",
+      "session": "Asia",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Fully deterministic session-breakout on USD/JPY (FX major, .DWX available); hard SL 15pips+spread, fixed TP 40/70, one-trade-per-day OCO, Friday-close compatible; pure MQL5, no ML.",
+      "priority_hint": "MED",
+      "notes": "Complete rule set: range = high/low of 6-8pm EST (22:00-00:00 GMT); entry on break of range +/- exactly 2.0 pips after 8pm EST, buy on high-break / sell on low-break; skip if not triggered by 10pm EST (2h window); two half-lots, SL=15pips+spread, TP1=40 / TP2=70, move TP2 to breakeven once TP1 hits; delete opposite pending once one triggers (single directional trade/day); 3% risk, weekly compounding off Friday balance. Fits the wanted session-structure + JPY-cross uncorrelated driver, but forum-sourced with '100%/20 days' hype; participants and one 180-day manual backtest (ThreeLittlePips #99) report ~40% win/60% loss vs the claimed 60/40, and double-trigger whipsaw offsetting profits is repeatedly noted. Trades held overnight into London/NY -> inject JPY swap in Q09. Variants (all same core, one row): octapop #87 TP30/SL15; 40-pip trailing stop on runner (#101/#106); single-order-double-lot via J16 trade manager (#75) is mechanically identical. Precedent for forum sources: live Balke EA came from ForexFactory. Detection best on M15/M5 for the exact 2-pip trigger; range defined by two H1 candles.",
+      "market_note": "USD/JPY"
+    }
+  ],
+  "notes": ["single core strategy with minor variants folded into one row"]
+}

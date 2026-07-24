@@ -1,0 +1,22 @@
+{
+  "pdf": "forums.babypips.com_t_sharing-my-mt4-strategy-set-up-elliot-waves-fib-levels-support-resistance-macd_528347.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_sharing-my-mt4-strategy-set-up-elliot-waves-fib-levels-support-resistance-macd_528347.pdf",
+      "source_pages": "1-3",
+      "source_ref": "neji63, \"Sharing my MT4 strategy & set up - Elliot Waves, Fib levels, Support & Resistance, MACD\", Babypips forum, 2021, https://forums.babypips.com/t/sharing-my-mt4-strategy-set-up-elliot-waves-fib-levels-support-resistance-macd/528347",
+      "strategy_name": "Elliott Wave + Fib + MACD discretionary swing",
+      "concept": "Enter at end of a trend on Elliott wave count 0/2 when a proprietary arrow appears and a restyled-MACD trend indicator confirms direction, with TPs on Fib projections.",
+      "market": "FX",
+      "timeframe": "M15",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "Discretionary Elliott wave counting plus undefined proprietary 'arrow' / 'JBR trend' indicators (black-box .ex4 shared via Google Drive) with no MACD or Fib parameters disclosed — not deterministically implementable in MQL5.",
+      "priority_hint": "LOW",
+      "notes": "M15 entry, H1 swing exits. Trend indicator is a 'restyled MACD' (JBR) with no params; later posters report it installs blank / won't run, and ask the author for the MACD figures. TP 'based on Fib projections' unspecified. Secondary suggestion thv-trix-v-6-01 also undefined. No edge left once the black-box indicators are removed."
+    }
+  ],
+  "notes": ["single REJECTED summary row: discretionary Elliott-wave setup dependent on undefined proprietary indicators; no implementable deterministic rules or parameters"]
+}

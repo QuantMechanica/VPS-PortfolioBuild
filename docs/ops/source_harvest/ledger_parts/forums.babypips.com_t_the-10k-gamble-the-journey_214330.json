@@ -1,0 +1,41 @@
+{
+  "pdf": "forums.babypips.com_t_the-10k-gamble-the-journey_214330.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_the-10k-gamble-the-journey_214330.pdf",
+      "source_pages": "15-16",
+      "source_ref": "The £10K Gamble - [The Journey], trade-journal thread by user The_Baller (post #63), forums.babypips.com, 2019. https://forums.babypips.com/t/the-10k-gamble-the-journey/214330",
+      "strategy_name": "Ichimoku Chikou-Cloud Breakout (H4)",
+      "concept": "Enter in the trend direction when the Ichimoku Chikou Span (lagging line) pierces completely through the Kumo cloud, using only Chikou plus the cloud with Tenkan/Kijun removed.",
+      "market": "FX",
+      "timeframe": "H4",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Entry is a deterministic standard-Ichimoku signal implementable in pure MQL5; exit/stop/TP are left to the trader so we would define our own within the framework.",
+      "priority_hint": "LOW",
+      "notes": "Author frames it as a beginner trend strategy on H4, S/R plotted off the daily (post #65). No exit, stop or position-size rules given. Generic trend/breakout with low orthogonality vs existing index/metal trend variants; the 'Chikou pierces the cloud completely' trigger needs a precise definition (lagging line clearing both Senkou spans)."
+    },
+    {
+      "source_file": "forums.babypips.com_t_the-10k-gamble-the-journey_214330.pdf",
+      "source_pages": "6, 19-20",
+      "source_ref": "The £10K Gamble - [The Journey], trade-journal thread by user The_Baller (post #16 steps; posts #79-80), forums.babypips.com, 2019. https://forums.babypips.com/t/the-10k-gamble-the-journey/214330",
+      "strategy_name": "Weekly S/R Swing 'Follow the Big Players'",
+      "concept": "Discretionary swing trading: hand-draw support/resistance on the monthly then the weekly chart within a trend, enter 'somewhere' at a zone, and set a very wide stop out of the noise.",
+      "market": "FX",
+      "timeframe": "D1",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "No mechanical rules: subjective hand-drawn S/R zones, 'you'll find an entry in there somewhere', Chikou Span used only as a visual S/R marker — no deterministic entry/exit trigger to implement.",
+      "priority_hint": "LOW",
+      "notes": "Thread's headline method (post #16, page 6). Traded off the weekly chart with monthly-trend context (W1 not in the testable enum; D1-native is the closest proxy). Stated risk 5-10% per trade (above DXZ/FTMO caps, though we set our own). Entirely discretionary; not mechanizable."
+    }
+  ],
+  "notes": [
+    "Text extracted with pdfplumber (Read tool could not render — poppler missing); text layer is clean.",
+    "Thread is mostly forum chatter/banter; two rule statements found: post #16 (discretionary weekly S/R) and post #63 (Ichimoku Chikou-cloud breakout).",
+    "Only the Ichimoku breakout has a deterministic entry; the headline S/R method is discretionary and rejected."
+  ]
+}

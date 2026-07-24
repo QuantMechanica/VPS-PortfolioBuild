@@ -1,0 +1,22 @@
+{
+  "pdf": "forums.babypips.com_t_the-best-strategy-that-your-broker-does-not-want-you-to-know_820107.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_the-best-strategy-that-your-broker-does-not-want-you-to-know_820107.pdf",
+      "source_pages": "1-9",
+      "source_ref": "zrrsys, 'The best strategy that your broker does not want you to know', BabyPips forum thread (2022), https://forums.babypips.com/t/the-best-strategy-that-your-broker-does-not-want-you-to-know/820107",
+      "strategy_name": "Hedged Grid (No-Stop Dual-Position Cash-In)",
+      "concept": "Open equal buy and sell legs simultaneously with no stops, bank the winning leg and reopen two fresh opposite legs, holding losing legs indefinitely on the bet that the market is 'in a range 70% of the time' and price returns.",
+      "market": "FX",
+      "timeframe": "M5",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "Hedged grid with NO stop losses plus martingale size-up and open-ended holding of losing legs; unbounded drawdown tail on any trend/breakout is incompatible with FTMO daily-loss/max-DD and DXZ 5%/20% DD hard rule.",
+      "priority_hint": "LOW",
+      "notes": "Exit timing is explicitly discretionary ('I wait for the best time that I think it is good to take profit'), entry selection is a vague 'wide double top/bottom' pattern. Trendswithbenefits' variant adds a Close-All circuit breaker when price breaches the ranging channel top/bottom, but it is the same grid-hedging core and still stated only vaguely. Every technical poster (MattyMoney, chesterjohn, tommor, MarchFX) demonstrates the account-blowup math on a sustained trend. Demo 'results' (18%/ROI 50%) are one-week unverified screenshots, not evidence. Forexop links (Hedged Grid / Double Grid / Vertical Grid) referenced in the thread are all further grid/hedging concepts, not separate implementable rule sets."
+    }
+  ],
+  "notes": ["single-concept thread: hedged grid without stops; REJECTED per martingale/grid-without-stops hard rule"]
+}

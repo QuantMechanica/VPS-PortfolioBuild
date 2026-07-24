@@ -1,0 +1,22 @@
+{
+  "pdf": "forums.babypips.com_t_scalping-strategy-to-finish-the-year-strong_970430.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_scalping-strategy-to-finish-the-year-strong_970430.pdf",
+      "source_pages": "1-14",
+      "source_ref": "AmericanTrader (OP), \"Scalping strategy to finish the year strong\", Babypips forum thread, 2022, https://forums.babypips.com/t/scalping-strategy-to-finish-the-year-strong/970430 (posts #1-#121; coder backtests by dastultz #33 and missionhb #49-#68)",
+      "strategy_name": "High-Close-Low triple-EMA channel scalp (EURUSD M5)",
+      "concept": "Fast EMA6 crossing a High/Low 32-EMA channel signals a momentum breakout to ride intraday trends on EURUSD 5-minute during high-volume London/NY hours.",
+      "market": "FX",
+      "timeframe": "M5",
+      "session": "London",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Pure-MQL5 EMA/PSAR indicators, deterministic entry (EMA6 crosses both 32-High and 32-Low EMAs; or EMA14 crosses a green), SL below the opposite green EMA, EURUSD M5 data available, has stops (FTMO/DXZ-compatible); exit is discretionary but mechanizable as 'candle closes on wrong side of EMA6'.",
+      "priority_hint": "LOW",
+      "notes": "Params: White=EMA6(Close), Upper green=EMA32(High), Lower green=EMA32(Low), Yellow=EMA14(Close), PSAR 0.0092/0.07 (year-end setting; author tried 0.02/0.5, 0.0009/0.3). Trade high-volume windows: London open ~07:45 London, NY 08:00-12:00 EST, around USD news. EDGE CLAIM FALSIFIED IN-THREAD: OP claims >80% win / 'never lose' but that is discretionary eyeballing with in-trade SL tightening; the two coders who backtested it got mechanical results far below the claim. missionhb (#51,#68): full-year ~280 trades, 28% win rate, ~39-40% drawdown, ~300% ROI raw (high-variance trend capture, DD collapses ROI when risk cut to <15% DD). dastultz (#33): plain EMA-cross coded EURUSD NY-session got 47% WR / 2% return @1:1R over 23 trades/7wk; a MODIFIED variant (2-candle or 1xATR SL whichever greater, snipe SL to 1R/2R/3R, +volume-MA & candle-direction confirmation) got 62% WR / 21% return over 39 trades/7wk (tiny in-sample, selection-biased). Variants folded into this row. Classic crowded EURUSD-M5 EMA-crossover scalp; per FX-edge doctrine and ~1.6% FX Q04 survival, likely a Q04/Q05-DD casualty -- but positive raw expectancy makes it a legitimate pipeline test rather than a hard REJECT."
+    }
+  ],
+  "notes": []
+}
