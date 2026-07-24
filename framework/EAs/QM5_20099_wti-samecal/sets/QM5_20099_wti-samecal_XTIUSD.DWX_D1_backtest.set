@@ -1,0 +1,30 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20099
+; ea_slug:      wti-samecal
+; ea_version:   v5.0
+; set_version:  s20260724-001
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   7d905c7eec1610a1c0a59996cdcf14a7575f12c61b018b5eeaef9fb1b69cf003
+; author:       Development
+; date:         2026-07-24
+;==========================================================
+qm_ea_id=20099
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
+strategy_history_years=10
+strategy_min_history_years=5
+strategy_history_bars=3000
+strategy_atr_period=20
+strategy_atr_sl_mult=3.5
+strategy_max_hold_days=35
+strategy_max_spread_points=1500
