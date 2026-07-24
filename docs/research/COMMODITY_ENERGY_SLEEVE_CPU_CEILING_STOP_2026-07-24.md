@@ -132,3 +132,26 @@ terminal as non-pipeline processes; neither was touched. Because the ceiling
 was reached, this turn stopped before source approval, card or ID allocation,
 EA build, compilation, Q02 enqueue, tester launch, or any portfolio/live
 mutation.
+
+## Recheck at 07:20Z
+
+A fifth read-only check at `2026-07-24T07:20:09Z` again found exactly seven
+active factory pipeline terminals:
+
+| Terminal | EA | Phase | Symbol |
+|---|---|---|---|
+| T1 | QM5_1642 | Q03 | XTIUSD.DWX |
+| T2 | QM5_12365 | Q07 | XAUUSD.DWX |
+| T3 | QM5_11916 | Q02 | AUDJPY.DWX |
+| T4 | QM5_10911 | Q03 | GDAXI.DWX |
+| T7 | QM5_9940 | Q02 | SP500.DWX |
+| T8 | QM5_13213 | Q08 | pipeline baseline |
+| T10 | QM5_10201 | Q02 | GBPUSD.DWX |
+
+The same path-anchored scan separately identified `T_Live` and the FTMO
+terminal as non-pipeline processes; neither was touched. A proposed
+Mishra-Smyth unconditional weekly XNG contrarian was also rejected during the
+read-only dedup preflight because it is only a horizon variant of existing
+`QM5_20013` and `QM5_20054`, not a load-bearing new mechanic. No source,
+registry, card, EA, queue, tester, portfolio, manifest, or live-state mutation
+was made.
