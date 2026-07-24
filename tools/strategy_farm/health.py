@@ -596,8 +596,32 @@ def chk_cards_ready_stagnation(con) -> dict:
     return _check("cards_ready_stagnation", "OK", 0, 3, detail, "")
 
 
+def _pid_alive_no_signal(pid: int) -> bool:
+    """PID liveness via OpenProcess/GetExitCodeProcess. Never use os.kill(pid, 0)
+    on Windows — CPython maps unsupported signals to TerminateProcess and can
+    kill the probed process (see run_agent_orchestration_task.process_alive)."""
+    if pid <= 0 or sys.platform != "win32":
+        return False
+    import ctypes
+    PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+    STILL_ACTIVE = 259
+    handle = ctypes.windll.kernel32.OpenProcess(
+        PROCESS_QUERY_LIMITED_INFORMATION, False, int(pid))
+    if not handle:
+        return False
+    try:
+        code = ctypes.c_ulong()
+        ok = ctypes.windll.kernel32.GetExitCodeProcess(handle, ctypes.byref(code))
+        return bool(ok) and code.value == STILL_ACTIVE
+    finally:
+        ctypes.windll.kernel32.CloseHandle(handle)
+
+
 def chk_pump_task_health() -> dict:
-    """Scheduled task QM_StrategyFarm_Pump_5min LastResult must be 0."""
+    """Scheduled task QM_StrategyFarm_Pump_5min LastResult must be 0, and the
+    pump lock must not be orphaned by a dead PID (audit 2026-07-24 FB-06: a
+    killed pump run left logs/pump_task.lock behind; 3 cycles silently no-opped
+    on the not-yet-stale lock while LastResult=0 masked the outage)."""
     try:
         out = subprocess.run(
             ["powershell.exe", "-NoProfile", "-Command",
@@ -618,6 +642,23 @@ def chk_pump_task_health() -> dict:
                       f"pump last exit code {result} (non-zero)",
                       "Run canonical pump manually: python C:\\QM\\repo\\tools\\strategy_farm\\farmctl.py pump; "
                       "check error output. Code 112 = ERROR_DISK_FULL (also: any script abort)")
+    lock_path = ROOT / "logs" / "pump_task.lock"
+    if lock_path.exists():
+        try:
+            age_sec = dt.datetime.now().timestamp() - lock_path.stat().st_mtime
+            pid_txt = lock_path.read_text(encoding="ascii", errors="ignore").strip()
+            pid = int(pid_txt) if pid_txt.isdigit() else 0
+        except OSError:
+            age_sec, pid = 0.0, 0
+        if not _pid_alive_no_signal(pid):
+            # run_pump_task LOCK_STALE_SECONDS=1200 self-heals; beyond that a
+            # surviving lock means the staleness path itself is broken -> FAIL.
+            sev = "FAIL" if age_sec > 1200 else "WARN"
+            return _check("pump_task_lastresult", sev, f"orphan_lock_pid={pid}", 0,
+                          f"pump_task.lock held by dead PID {pid}, age {int(age_sec)}s; "
+                          "pump cycles no-op until the 1200s stale threshold clears it",
+                          "If FAIL: verify no pump is running, then delete "
+                          "D:\\QM\\strategy_farm\\logs\\pump_task.lock")
     return _check("pump_task_lastresult", "OK", 0, 0, "last run exit 0", "")
 
 
