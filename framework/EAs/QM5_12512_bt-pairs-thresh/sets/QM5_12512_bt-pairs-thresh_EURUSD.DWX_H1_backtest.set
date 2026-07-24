@@ -1,0 +1,33 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        12512
+; ea_slug:      bt-pairs-thresh
+; ea_version:   v5.0
+; set_version:  s20260724-001
+; symbol:       EURUSD.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   9988a23fb1f9637594a133b50c017bf3296a54a268db1846ba096718973c6b0e
+; author:       Development
+; date:         2026-07-24
+;==========================================================
+qm_ea_id=12512
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12512_bt-pairs-thresh.md
+spread_lookback_bars=240
+fixed_beta=1.0
+z_entry=2.0
+z_exit=0.25
+z_pair_stop=3.5
+max_holding_bars=5
+atr_period=20
+atr_stop_mult=2.0
+median_spread_bars=1440
+median_spread_multiple=2.0
