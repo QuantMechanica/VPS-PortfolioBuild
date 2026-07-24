@@ -111,3 +111,24 @@ factory count. The canonical saturation scheduler was then run with
 `available_slots_after=0`, and `scheduled=0`. Per the explicit CPU-ceiling
 stop rule, this check made no strategy, registry, queue, terminal, portfolio,
 manifest, or live-state mutation.
+
+## Recheck at 06:29Z
+
+A fourth read-only check at `2026-07-24T06:29:43Z` found exactly seven active
+factory pipeline terminals, matching the documented paced-fleet ceiling:
+
+| Terminal | EA | Phase | Symbol |
+|---|---|---|---|
+| T1 | QM5_10485 | Q02 | USDJPY.DWX |
+| T2 | QM5_12365 | Q07 | XAUUSD.DWX |
+| T3 | QM5_12538 | Q02 | USDCAD.DWX |
+| T6 | QM5_11010 | Q04 | GDAXI.DWX |
+| T7 | QM5_1235 | Q03 | GBPUSD.DWX |
+| T9 | QM5_9940 | Q02 | SP500.DWX |
+| T10 | QM5_12591 | Q02 | XTIUSD.DWX |
+
+The path-anchored process scan separately identified `T_Live` and the FTMO
+terminal as non-pipeline processes; neither was touched. Because the ceiling
+was reached, this turn stopped before source approval, card or ID allocation,
+EA build, compilation, Q02 enqueue, tester launch, or any portfolio/live
+mutation.
