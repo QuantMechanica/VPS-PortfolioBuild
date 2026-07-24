@@ -9,6 +9,7 @@ created: 2026-07-10
 created_by: Codex
 cards_extracted:
   - energy-samecal
+  - wti-samecal
 ---
 
 # Keloharju, Linnainmaa, and Nyberg Return-Seasonality Source Packet
@@ -39,12 +40,14 @@ commodities by their average return in that calendar month over prior history,
 using at least five years of data, then buys the high-ranked group and sells the
 low-ranked group.
 
-This packet extracts one constrained energy carrier: `energy-samecal`. It ranks
+This packet extracts two constrained energy carriers. `energy-samecal` ranks
 only `XTIUSD.DWX` and `XNGUSD.DWX` by their historical same-calendar-month
-returns, buys the higher seasonal leg, and shorts the lower seasonal leg. The
-source uses a broad 24-future cross-section and up to 20 years of history. The
-two-leg DWX port is therefore a falsifiable market-neutral carrier test, not a
-replication of the paper's diversified portfolio.
+returns, buys the higher seasonal leg, and shorts the lower seasonal leg.
+`wti-samecal` tests the WTI component as an absolute seasonal-sign carrier:
+buy WTI when its own historical same-calendar average is positive and sell it
+when that average is negative. The source uses a broad 24-future cross-section
+and up to 20 years of history. Both DWX ports are falsifiable reductions, not
+replications of the paper's diversified portfolio.
 
 ## QM Translation
 
@@ -63,6 +66,15 @@ A positive signal opens long XTI / short XNG; a negative signal opens short XTI
 / long XNG. Both legs close and rerank at the next month transition. Per-leg
 ATR hard stops, orphan cleanup, and a 35-day stale guard implement the V5 risk
 contract without changing the source ranking direction.
+
+The WTI-only extraction uses the same completed-month estimator but compares
+WTI's own historical average with zero instead of comparing it with XNG. A
+positive average opens one long `XTIUSD.DWX` package and a negative average
+opens one short package. It closes and recomputes at the next month boundary,
+requires at least five prior same-month samples, and never trades either leg
+of `energy-samecal`. This absolute-sign translation is not a result separately
+reported by the paper; Q02 must reject it if the broad cross-sectional finding
+does not survive the single-CFD reduction.
 
 ## Evidence And Limitations
 
@@ -96,6 +108,15 @@ contract without changing the source ranking direction.
 - Not `QM5_12567_cum-rsi2-commodity`: no RSI, pullback, oscillator, or
   directional single-leg commodity logic.
 
+For `wti-samecal`, the deterministic helper reports the expected fuzzy match
+to `energy-samecal`; manual review resolves it as non-identical. The existing
+EA compares the XTI seasonal estimate with the XNG seasonal estimate and
+requires a jointly sized two-leg basket. The WTI card compares only the XTI
+estimate with zero and forbids an XNG leg. Fixed-direction month cards,
+contiguous-return trend systems, and the one-year stock-seasonality EA use
+different signals or markets. No exact single-WTI historical same-calendar
+average-sign carrier exists in the repository.
+
 Repository dedup was run before allocation with slug `energy-samecal`, strategy
 ID `KELOHARJU-RETSEAS-2016_XTI_XNG_S01`, and the complete mechanic fingerprint;
 the verdict was `CLEAN`.
@@ -108,7 +129,8 @@ the verdict was `CLEAN`.
   EIA, weather, external file, API, ML, adaptive PnL fit, grid, martingale, or
   pyramiding.
 - Backtests use `RISK_FIXED=1000`, `RISK_PERCENT=0`, split equally across the
-  two legs. No live setfile is created.
+  two legs for `energy-samecal`; `wti-samecal` applies the same fixed budget to
+  its sole WTI position. No live setfile is created.
 - Friday close is disabled for the source-aligned monthly package; monthly
   reset, per-leg ATR stops, orphan repair, and the 35-day stale guard remain.
 
@@ -122,4 +144,3 @@ the verdict was `CLEAN`.
 - R3: PASS. Registered XTIUSD.DWX and XNGUSD.DWX D1 data only.
 - R4: PASS. Deterministic arithmetic; no banned indicator, ML, external runtime
   data, grid, martingale, pyramiding, or adaptive fitting.
-
