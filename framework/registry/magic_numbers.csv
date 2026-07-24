@@ -15185,3 +15185,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12512,bt-pairs-thresh,3,GBPJPY.DWX,125120003,2026-07-24,Codex,active
 12512,bt-pairs-thresh,4,AUDUSD.DWX,125120004,2026-07-24,Codex,active
 12512,bt-pairs-thresh,5,NZDUSD.DWX,125120005,2026-07-24,Codex,active
+20095,auag-mon-diff,0,XAUUSD.DWX,200950000,2026-07-24,Development,active
+20095,auag-mon-diff,1,XAGUSD.DWX,200950001,2026-07-24,Development,active
