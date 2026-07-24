@@ -62,10 +62,12 @@ are required.
   tasks (3a32ab4b, 31bc37a1, 62b407a5, 19983f60, 589b946f) and the 2 obsolete
   52.7d BLOCKED Q11-spec tasks (4b3026f0, 75a1670d — spec delivered). Evidence:
   `evidence/state__agent_tasks_review_blocked_inprogress.txt`.
-- **FB-11 (S): QM_Branding.mqh divergence.** Fold the newer orphaned copy
-  (`framework/include/QM/QM_Branding.mqh`, edited 05-07, included by nothing) into the
-  compiled root copy (`framework/include/QM_Branding.mqh`) and delete the orphan.
-  Evidence: `evidence/orphans__item4_includes.txt`.
+- **FB-11 (S): QM_Branding.mqh — RESOLVED as phantom (2026-07-24).** Deep verification
+  showed both copies byte-identical (same git blob 68186a2e; the orphan scan's
+  "divergent" SHAs were an autocrlf hash artifact) and `sync_brand_tokens.ps1` wrote
+  both paths. Cleanup applied instead: orphan `framework/include/QM/QM_Branding.mqh`
+  deleted + generator now emits only the compiled root copy. Evidence:
+  `evidence/fb11__branding_analysis.md`.
 - **FB-12 (M): Relic purge (reviewed delete list).** P*-era report dirs with zero
   readers (`reports/pipeline/QM5_*/P2|P3`, `master_ea_p2_gate`, `master_ea_p25_gate`,
   `pipeline_operator`, `tmp_codex_p8_test`), 7 merged-branch worktrees + 12 merged

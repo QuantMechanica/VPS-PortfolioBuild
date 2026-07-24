@@ -57,9 +57,12 @@ if (-not $TokenPath) {
     $TokenPath = Join-Path $repoRootPath "branding\brand_tokens.json"
 }
 if (-not $OutputPaths -or $OutputPaths.Count -eq 0) {
+    # Single canonical output: the root copy is what QM_ChartUI.mqh includes
+    # ('..\QM_Branding.mqh'). The former second copy under include\QM\ was
+    # included by nothing and only invited divergence suspicion (audit
+    # 2026-07-24 FB-11: copies were byte-identical; orphan deleted).
     $OutputPaths = @(
-        (Join-Path $repoRootPath "framework\include\QM_Branding.mqh"),
-        (Join-Path $repoRootPath "framework\include\QM\QM_Branding.mqh")
+        (Join-Path $repoRootPath "framework\include\QM_Branding.mqh")
     )
 }
 

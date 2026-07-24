@@ -129,3 +129,14 @@ im Vault; bei Konflikt gelten Vault-Hard-Rules zuerst.
     absoluter EA-Dir-Anker, Kanon-Selbstcheck mit Hard-Abort, Mass-Invalidation-
     Circuit-Breaker (>200 Items/Lauf → Abbruch + Alarm). Agenten-Prompts für
     Factory-Ops müssen `cd C:/QM/repo` explizit vorgeben.
+
+## Amendment 2026-07-24 (OWNER-approved audit implementation)
+
+**Rule 13 superseded.** The "gemini" scheduled lane runs **agy headless** and is
+**operational**, not defective — it completed a real dispatch on 2026-07-23 16:30Z (rc=0)
+and its lane heartbeats are healthy (audit evidence
+`docs/ops/source_harvest/audit/evidence/pipeline__scheduled_tasks.txt`;
+`QM_StrategyFarm_GeminiOrchestration_15min` enabled). The lane **stays ENABLED**; the old
+"keep disabled until Codex-Fix" text is stale and no longer binds. agy job constraints per
+current memory are unchanged (server-side headless `agy -p --dangerously-skip-permissions`,
+≤6 URLs/job, citations mandatory). Reference: `docs/ops/source_harvest/audit/AUDIT_REPORT.md` §1.
