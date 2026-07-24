@@ -10,6 +10,7 @@ primary_url: https://econjournals.sgh.waw.pl/JMFS/Archives_2015_2016
 open_full_text_url: https://www.researchgate.net/publication/303285422_ANALYSIS_OF_SELECTED_SEASONALITY_EF-_FECTS_IN_MARKETS_OF_FUTURE_CONTRACTS_WITH_THE_FOLLOWING_UNDERLYING_INSTRUMENTS_CRUDE_OIL_BRENT_OIL_HEATING_OIL_GAS_OIL_NATURAL_GAS_FEEDER_CATTLE_LIVE_CATTLE_LEAN_HOGS_AND_LUMBER
 strategy_ids:
   - BOROWSKI-COMM-DOW-2016_S01
+  - BOROWSKI-COMM-DOW-2016_S02
 ---
 
 # Borowski Natural-Gas Wednesday Source
@@ -121,3 +122,18 @@ test. No portfolio-gate waiver is claimed.
 This source authorizes one `RISK_FIXED` research/backtest carrier only. It does
 not authorize a live setfile, AutoTrading, T_Live, a deploy/T_Live manifest,
 portfolio admission, or any portfolio-gate change.
+
+## Second extraction: natural-gas Friday short
+
+The same fully reviewed weekday table reports a negative Friday natural-gas
+mean of `-0.1274%`. `BOROWSKI-COMM-DOW-2016_S02` isolates that observation as
+an unconditional Friday D1 short closed at the next D1 boundary. The Friday
+mean is not reported statistically significant, so this is explicitly a weak
+falsification candidate rather than a confirmed anomaly. The exact weekday,
+short direction, ATR(20) x 2.75 stop, 2500-point spread cap, restart-safe daily
+attempt, and one-day stale exit are locked before Q02.
+
+Repository-wide exact-mechanic searches found no unconditional XNG Friday
+short/next-D1-flat carrier. Existing XNG weekend, storage, weekday, trend, and
+QM5_12567 RSI logic use different information sets. Multiple comparisons,
+post-2016 decay, broker-session basis, and costs are binding kill risks.

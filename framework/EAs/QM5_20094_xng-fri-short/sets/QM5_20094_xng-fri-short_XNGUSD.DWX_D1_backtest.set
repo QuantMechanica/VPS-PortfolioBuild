@@ -1,27 +1,28 @@
 ;==========================================================
 ; QM5 Set File
 ; ea_id:        20094
-; ea_slug:      brent-dom8
+; ea_slug:      xng-fri-short
 ; ea_version:   v5.0
-; set_version:  s20260722-001
-; symbol:       XBRUSD.DWX
+; set_version:  s20260720-001
+; symbol:       XNGUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
-; risk_mode:    FIXED
+; risk_mode:    RISK_FIXED
 ; portfolio_weight: 1
-; build_hash:   3c9492150455f47675b7bab9f3bde84e887d435b4ba66abcd62d5c545c8b8832
+; build_hash:   2d0443d3c38b9319ea79b08f9991ca6c95d02db2a2a5f0143effd7bb3bce28c7
 ; author:       Development
-; date:         2026-07-22
+; date:         2026-07-20
 ;==========================================================
 qm_ea_id=20094
 qm_magic_slot_offset=0
+qm_rng_seed=42
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=C:\QM\repo\strategy-seeds\cards\approved\QM5_20094_brent-dom8_card.md
-strategy_entry_day=8
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\approved\QM5_20094_xng-fri-short_card.md
+strategy_entry_dow=5
 strategy_atr_period=20
 strategy_atr_sl_mult=2.75
 strategy_max_hold_days=1
