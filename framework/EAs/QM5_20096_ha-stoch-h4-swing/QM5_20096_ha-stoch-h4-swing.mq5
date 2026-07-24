@@ -247,12 +247,13 @@ void Strategy097_DiagDump(const string where)
   {
    QM_LogEvent(QM_INFO,
                "STRATEGY_DIAG",
-               StringFormat("{\"where\":\"%s\",\"ntf_calls\":%I64d,\"ntf_param\":%I64d,\"ntf_mode\":%I64d,\"ntf_warm\":%I64d,\"ntf_handle\":%I64d,\"ntf_calc\":%I64d,\"ntf_pass\":%I64d,\"news_block\":%I64d,\"edges\":%I64d}",
-                            where, g_diag_ntf_calls, g_diag_ntf_param,
-                            g_diag_ntf_mode, g_diag_ntf_warm,
-                            g_diag_ntf_handle, g_diag_ntf_calc,
-                            g_diag_ntf_pass, g_diag_news_block,
-                            g_diag_edges));
+               StringFormat("{\"where\":\"%s\",\"ntf_calls\":%I64d,\"ntf_calc\":%I64d,\"ntf_pass\":%I64d,\"edges\":%I64d,\"h_sma\":%d,\"h_sto\":%d,\"bc_sma\":%d,\"bc_sto\":%d,\"bars\":%d}",
+                            where, g_diag_ntf_calls, g_diag_ntf_calc,
+                            g_diag_ntf_pass, g_diag_edges,
+                            g_str097_h_sma, g_str097_h_stoch,
+                            BarsCalculated(g_str097_h_sma),
+                            BarsCalculated(g_str097_h_stoch),
+                            (int)Bars(_Symbol, PERIOD_H4)));
   }
 
 bool Strategy_NoTradeFilter()
