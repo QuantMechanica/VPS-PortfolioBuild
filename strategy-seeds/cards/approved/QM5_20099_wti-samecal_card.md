@@ -43,8 +43,9 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
-q01_status: PENDING
-q02_status: NOT_QUEUED
+q01_status: PASS
+q02_status: PENDING
+q02_work_item_id: cc304262-dbfa-410d-b273-7318751374e5
 review_focus: "Falsify the absolute-sign single-WTI translation after its five-year warm-up; the source proves only a broad cross-sectional effect, and Q09 alone may judge realized book correlation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -249,12 +250,12 @@ manifests, portfolio admission, portfolio-gate changes or correlation waivers.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-24 | initial source-backed WTI same-calendar carrier | G0 | APPROVED |
+| v1 | 2026-07-24 | strict build PASS and paced single-item enqueue | Q02 | PENDING `cc304262-dbfa-410d-b273-7318751374e5` |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-24 | APPROVED under OWNER mission; R1-R4 PASS | this card |
-| Q01 Build Validation | - | PENDING | `framework/EAs/QM5_20099_wti-samecal/` |
-| Q02 Baseline Screening | - | NOT QUEUED | paced fleet after strict build |
+| Q01 Build Validation | 2026-07-24 | PASS; strict compile and build check, 0 errors/warnings | `D:\QM\reports\framework\21\build_check_20260724_113212.json` |
+| Q02 Baseline Screening | 2026-07-24 | PENDING, unclaimed | work item `cc304262-dbfa-410d-b273-7318751374e5` |
