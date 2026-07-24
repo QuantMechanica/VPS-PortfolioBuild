@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_166910_ashfx-system-v2-steve-hopwoods-trading-robot.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_166910_ashfx-system-v2-steve-hopwoods-trading-robot.pdf",
+      "source_pages": "2-13",
+      "source_ref": "SteveHopwood, \"AshFX system, V2: Steve Hopwood's trading robot\", ForexFactory Thread 166910 (2009), https://www.forexfactory.com/thread/166910 - core Ash V2 manual rules in companion thread https://www.forexfactory.com/thread/156889",
+      "strategy_name": "AshFX V2 PSAR-flip trend follower",
+      "concept": "A Parabolic SAR flip on the trading timeframe, confirmed by a higher-timeframe trend filter (MACD, PSAR or 64 SMA) plus stochastic, is harvested with an OZFX-style 5-order scale-out and a trailing runner.",
+      "market": "FX",
+      "timeframe": "H4",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Standard indicators (PSAR/MACD/Stochastic/MA) implementable in pure MQL5 on FX majors + JPY crosses; carries a fixed SL so the 5-order scale-out is not martingale; but the full Ash V2 entry confluence is deferred to companion thread 156889.",
+      "priority_hint": "LOW",
+      "notes": "Generic multi-indicator trend-following confluence; forum-amateur provenance with unverified '10,000 pips/week' claims and no backtest evidence. Pairs cited: EURUSD/GBPUSD/USDJPY/USDCHF + GBPJPY/EURJPY/EURCHF; also run on H1. Exit params (5-digit points): TP=2500, SL=1250, BreakEven=2000@200, JumpingStop(trailing)=1000, MinPipsToNextSupport=300; break-even at ~50 pips, 4 orders scale out in 50-pip steps, 5th is a runner. V1.5 variant swaps MACD for a 64-SMA regime filter (long only above, short only below) - same core, one row. FFCal news filter replaceable by framework news calendar. Full AO/AC/stochastic entry rules live in companion manual thread 156889, not this PDF."
+    }
+  ],
+  "notes": []
+}

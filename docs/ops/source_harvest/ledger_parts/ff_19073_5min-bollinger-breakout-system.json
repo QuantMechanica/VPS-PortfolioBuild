@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_19073_5min-bollinger-breakout-system.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_19073_5min-bollinger-breakout-system.pdf",
+      "source_pages": "1",
+      "source_ref": "brue, '5min Bollinger breakout system' (a.k.a. the 'Bands Breakout' MT4 EA), ForexFactory Thread 19073, 2007, https://www.forexfactory.com/thread/19073-5min-bollinger-breakout-system",
+      "strategy_name": "EURUSD M5 BB-touch trend breakout (ADX+DeMarker gate, 10xATR stop)",
+      "concept": "In a strong trend (ADX>=40, DeMarker at an extreme), enter in the breakout direction when 5-min EURUSD price comes within 5 pips of a Bollinger band, scalping a fixed 20-pip target behind a very wide 10x-H4-ATR catastrophic stop.",
+      "market": "FX",
+      "timeframe": "M5",
+      "session": "none",
+      "rules_completeness": "FULL",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "Apparent profitability is a documented in-thread artifact of invalid in-bar M5 tick backtesting on poor IBFX data (linear equity curves flagged by posters) plus a ~20:1 tight-20pip-TP / wide-250-500pip-SL profile; author states any risk-sane (smaller) stop 'loses lots of money', so no risk-compatible edge survives and the only profitable form breaches FTMO daily-loss / DXZ 5% DD at its 10% VAR sizing.",
+      "priority_hint": "LOW",
+      "notes": "Not martingale/grid/HFT (single position, real stop present) so rejected on edge/(d)-compatibility grounds, not those. Indicators: BB(14,2SD; low-price upper band, high-price lower band), DeMarker(14), ADX(14, typical price), ATR(H4,100), EMA(14) profit-exit (long exit = profitable & close<EMA; short exit = profitable & close>EMA); VAR-based lot sizing. Variants in-thread are the same core rules: fixed-stoploss version, fixed-lot version, period=10 tweak, int->double lot fix -- one row. Many users report the EA 'does not trade at all' (very restrictive gate), and critics (Skyline, Craig) diagnosed the >20:1 R/R as an eventual account-blower. Classic retail EURUSD indicator combo -- not an uncorrelated return driver."
+    }
+  ],
+  "notes": ["one distinct strategy in the thread; variants are re-parametrizations of the same core rules", "pages 2-12 are forum chatter and repeated quotes of the page-1 rule set, no second strategy"]
+}

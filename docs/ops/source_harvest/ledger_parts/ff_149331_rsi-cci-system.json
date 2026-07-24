@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_149331_rsi-cci-system.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_149331_rsi-cci-system.pdf",
+      "source_pages": "1-8",
+      "source_ref": "Thierry89, \"RSI & CCI system\", ForexFactory thread 149331, 2009, https://www.forexfactory.com/thread/149331",
+      "strategy_name": "RSI+CCI momentum crossover (M5 FX)",
+      "concept": "Go long/short when a fast oscillator (RSI) and a trend/momentum indicator (CCI) simultaneously confirm the same directional bias at bar close.",
+      "market": "FX",
+      "timeframe": "M5",
+      "session": "London",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Entry fully deterministic (RSI8>50 & CCI14>0 buy / RSI8<50 & CCI14<0 sell on candle close); exit named (reverse signal / trailing stop / TP) but stop and target distances unspecified.",
+      "priority_hint": "LOW",
+      "notes": "Pairs EUR/USD, USD/CHF, EUR/JPY, GBP/USD (touches JPY cross). Best during European/London session (arubin, p17). Variants (all same core, one row): RSI 55/45 no-trade band instead of 50 (DirkH143 p4-5); RSI period 14 vs 8; CCI threshold +/-100 instead of 0 and CCI 89/21 or 170/34 (ClearTrade p16); ADX(14)>20 chop filter (arubin p17); 200-EMA trend filter (Zuke p5); H4/M30/M5 MTF confirmation (samer960 p19). Forum anecdote only (\"400 pips in two days\"), no backtest; author trades manually and declines EA. Weak edge fit: RSI and CCI are redundant momentum measures (arthurb p27: \"they tell the same story\") -> effectively a single-factor momentum crossover, low orthogonality."
+    }
+  ],
+  "notes": ["extracted_via_pdfplumber"]
+}

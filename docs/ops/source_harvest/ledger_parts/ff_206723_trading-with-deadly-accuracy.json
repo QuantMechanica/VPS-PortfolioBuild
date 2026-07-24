@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_206723_trading-with-deadly-accuracy.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_206723_trading-with-deadly-accuracy.pdf",
+      "source_pages": "7-16",
+      "source_ref": "'Trading with Deadly Accuracy' by user wmd (wmd4x), ForexFactory thread 206723 (n.d., c. 2010); https://www.forexfactory.com/thread/206723-trading-with-deadly-accuracy",
+      "strategy_name": "Untested S/R Breakout-Retest ('Deadly')",
+      "concept": "After a breakout, a support/resistance level that was breached but never retested becomes an 'untested' level where resting orders accumulate; trade the eventual return to that level expecting it to hold (broken resistance turns support, or vice versa).",
+      "market": "FX",
+      "timeframe": "H4",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Mechanizable in pure MQL5 (pivot-based S/R + breakout / untested-retest detection) with a defined SL (10x spread) and half-off-at-1:1 exit; FX/metals data available, hard stops present so FTMO/DXZ compatible; downgraded because level and 'failed parabola' identification is eyeball/discretionary.",
+      "priority_hint": "LOW",
+      "notes": "Entry: aggressive = pending order AT the untested level; conservative = wait for a to-the-pip bounce then enter with SL 10x spread beyond the level. Exit: close half at 1:1 RnR or the next S/R (whichever first), trail the rest, kill only on a level breach. SL table (10x spread): EURUSD 20-25, GBPUSD 30-40, EURJPY 35-50, GBPJPY 60-80, USDCAD 40-50 pips. Examples mostly AUDUSD, Gold/XAUUSD, GBPUSD, NZDUSD, EURUSD on H1+H4; author says news 'tends not to affect the outcome' (pure technical). Caveats: wmd/wmd4x sells a trading room + 50h of videos (wmd4x.com) and frames it as '100% accuracy' marketing hype. Thread also teases but does NOT give rules for sub-methods (diagonal/trend-line day-trade, reversal patterns, 'SAM / Simple Accuracy Method') - no harvestable rules in this excerpt."
+    }
+  ],
+  "notes": ["one_candidate_harvested", "sub_methods_teased_only_no_rules"]
+}
