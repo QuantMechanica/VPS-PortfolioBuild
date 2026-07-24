@@ -38,3 +38,11 @@ procedure).
 
 XAUUSD.DWX Q02 was still `pending` and needs no action — dispatch deploys the
 fixed binary from the repo automatically.
+
+## Follow-up 13:52Z
+
+Requeued Q02 re-ran with the fixed binary: **PASS** (13:26Z, evidence
+`...e02998af...\QM5_20098\20260724_131930\summary.json`). The cascade did NOT
+create a successor Q04 item (deduped against the historical old-binary FAIL
+row) — as anticipated above, the Q04 XAGUSD row was reopened in place as
+`pending` (backup `farm_state_before_qm5_20098_xagusd_q04_reopen_20260724T135251Z.sqlite`).
