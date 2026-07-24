@@ -15233,3 +15233,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20109,vr-gap-fade-d1,1,GDAXI.DWX,201090001,2026-07-24T16:37:31Z,claude,active
 20110,xti-xng-fri-rv,0,XTIUSD.DWX,201100000,2026-07-24T17:11:25Z,codex,active
 20110,xti-xng-fri-rv,1,XNGUSD.DWX,201100001,2026-07-24T17:11:25Z,codex,active
+20111,london-box-fib-straddle,0,EURUSD.DWX,201110000,2026-07-24T17:48:24Z,claude,active
+20111,london-box-fib-straddle,1,GBPUSD.DWX,201110001,2026-07-24T17:48:24Z,claude,active
+20111,london-box-fib-straddle,2,USDJPY.DWX,201110002,2026-07-24T17:48:24Z,claude,active
+20111,london-box-fib-straddle,3,EURJPY.DWX,201110003,2026-07-24T17:48:24Z,claude,active
+20111,london-box-fib-straddle,4,USDCHF.DWX,201110004,2026-07-24T17:48:24Z,claude,active
+20112,ema9-pullback-m15,0,GBPUSD.DWX,201120000,2026-07-24T17:48:24Z,claude,active
+20113,ema369-cross-m5,0,EURUSD.DWX,201130000,2026-07-24T17:48:24Z,claude,active
+20113,ema369-cross-m5,1,GBPUSD.DWX,201130001,2026-07-24T17:48:24Z,claude,active
