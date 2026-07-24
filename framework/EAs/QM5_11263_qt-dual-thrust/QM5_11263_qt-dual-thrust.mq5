@@ -19,7 +19,8 @@
 //   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
 //   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
 //   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
-//   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
+//   - QM_FrameworkTrackOpenPositionMae / QM_FrameworkHandleFridayClose /
+//     QM_KillSwitchCheck / QM_NewsAllowsTrade
 //
 // DO NOT
 //   - Write per-EA IsNewBar() — use QM_IsNewBar()
@@ -109,6 +110,11 @@ int HhmmToMinutes(const int hhmm)
    return (hhmm / 100) * 60 + (hhmm % 100);
   }
 
+bool HhmmValid(const int hhmm)
+  {
+   return (hhmm >= 0 && hhmm <= 2359 && (hhmm % 100) < 60);
+  }
+
 int EstMinuteOfDay(const datetime broker_time)
   {
    datetime utc_time = QM_BrokerToUTC(broker_time);
@@ -155,9 +161,9 @@ bool StrategyParamsValid()
       return false;
    if(strategy_threshold_param <= 0.0 || strategy_threshold_param >= 1.0)
       return false;
-   if(strategy_source_open_hhmm_est < 0 || strategy_source_open_hhmm_est > 2359)
+   if(!HhmmValid(strategy_source_open_hhmm_est))
       return false;
-   if(strategy_source_close_hhmm_est < 0 || strategy_source_close_hhmm_est > 2359)
+   if(!HhmmValid(strategy_source_close_hhmm_est))
       return false;
    if(strategy_source_open_hhmm_est == strategy_source_close_hhmm_est)
       return false;
@@ -229,12 +235,19 @@ bool BuildDualThrustLevels(const double session_open)
    return g_levels_ready;
   }
 
-void StartSourceSession(const datetime broker_time)
+double CurrentSessionPrice()
+  {
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(bid > 0.0)
+      return bid;
+   return SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+  }
+
+void StartSourceSession(const datetime broker_time, const double session_open)
   {
    if(g_active_valid)
       ArchiveActiveSession();
 
-   const double session_open = iOpen(_Symbol, _Period, 0); // perf-allowed: source-session open captured once on framework new bar.
    g_active_day_key = EstDayKey(broker_time);
    g_active_open = session_open;
    g_active_high = session_open;
@@ -244,32 +257,12 @@ void StartSourceSession(const datetime broker_time)
    BuildDualThrustLevels(session_open);
   }
 
-void UpdateActiveSessionFromClosedBar()
+void AdvanceSessionStateOnTick(const datetime broker_time)
   {
-   if(!g_active_valid)
-      return;
-
-   const datetime bar_time = iTime(_Symbol, _Period, 1); // perf-allowed: bespoke session OHLC cache, once per framework new bar.
-   if(bar_time <= 0 || EstDayKey(bar_time) != g_active_day_key || !IsInsideSourceSession(bar_time))
-      return;
-
-   const double bar_high = iHigh(_Symbol, _Period, 1); // perf-allowed: bespoke source-session high cache, once per framework new bar.
-   const double bar_low = iLow(_Symbol, _Period, 1); // perf-allowed: bespoke source-session low cache, once per framework new bar.
-   const double bar_close = iClose(_Symbol, _Period, 1); // perf-allowed: bespoke source-session close cache, once per framework new bar.
-   if(bar_high <= 0.0 || bar_low <= 0.0 || bar_close <= 0.0)
-      return;
-
-   g_active_high = MathMax(g_active_high, bar_high);
-   g_active_low = MathMin(g_active_low, bar_low);
-   g_active_close = bar_close;
-  }
-
-void AdvanceStateOnNewBar()
-  {
-   const datetime broker_now = TimeCurrent();
-   if(!IsInsideSourceSession(broker_now))
+   const bool inside_session = IsInsideSourceSession(broker_time);
+   if(!inside_session)
      {
-      if(g_active_valid && IsAtOrPastSourceClose(broker_now))
+      if(g_active_valid && IsAtOrPastSourceClose(broker_time))
         {
          ArchiveActiveSession();
          g_active_valid = false;
@@ -278,11 +271,17 @@ void AdvanceStateOnNewBar()
       return;
      }
 
-   const int day_key = EstDayKey(broker_now);
-   if(!g_active_valid || g_active_day_key != day_key)
-      StartSourceSession(broker_now);
+   const double price = CurrentSessionPrice();
+   if(price <= 0.0)
+      return;
 
-   UpdateActiveSessionFromClosedBar();
+   const int day_key = EstDayKey(broker_time);
+   if(!g_active_valid || g_active_day_key != day_key)
+      StartSourceSession(broker_time, price);
+
+   g_active_high = MathMax(g_active_high, price);
+   g_active_low = MathMin(g_active_low, price);
+   g_active_close = price;
   }
 
 bool SelectOurPosition(ENUM_POSITION_TYPE &ptype)
@@ -319,7 +318,8 @@ bool SpreadAllowed()
    if(!g_levels_ready)
       return true;
 
-   const double threshold_distance = g_session_upper - g_session_lower;
+   const double threshold_distance = MathMin(g_session_upper - g_active_open,
+                                              g_active_open - g_session_lower);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double spread = ask - bid;
@@ -350,10 +350,12 @@ int CurrentDualThrustSignal()
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   // No Trade Filter: time, spread, and news. News is handled by the framework
-   // before this hook; this hook keeps source-session and spread gates local.
+   // Cache source-session OHLC on every tick before any entry-only news gate.
+   // This is O(1): no lookback or indicator work occurs on the per-tick path.
    if(!StrategyParamsValid())
       return true;
+
+   AdvanceSessionStateOnTick(TimeCurrent());
 
    if(HasOurPosition())
       return false;
@@ -369,8 +371,6 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   AdvanceStateOnNewBar();
-
    req.type = QM_BUY;
    req.price = 0.0;
    req.sl = 0.0;
@@ -446,7 +446,6 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    // News Filter Hook: central two-axis framework blackout handles entries and
    // reversals; no card-specific calendar override is defined.
-   (void)broker_time;
    return false; // defer to QM_NewsAllowsTrade(...)
   }
 
@@ -486,21 +485,13 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   // Q08 evidence lifecycle must run before every early-return guard.
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
-   // when both new axes are at their OFF defaults.
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
@@ -525,6 +516,19 @@ void OnTick()
         }
      }
 
+   // News blackout gates new entries and reversals only. Session-state
+   // accumulation, position management, and exits keep running through it.
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
    // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
    // per-tick recompute mistakes — EntrySignal sees one new closed bar per
    // call, not every incoming tick.
@@ -536,6 +540,7 @@ void OnTick()
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
