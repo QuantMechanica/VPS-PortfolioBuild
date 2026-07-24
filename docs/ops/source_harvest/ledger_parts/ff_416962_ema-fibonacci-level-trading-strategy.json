@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_416962_ema-fibonacci-level-trading-strategy.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_416962_ema-fibonacci-level-trading-strategy.pdf",
+      "source_pages": "1",
+      "source_ref": "MIH Bobby, 'EMA Fibonacci Level Trading Strategy', ForexFactory thread 416962 (14 posts, complete), https://www.forexfactory.com/thread/416962-ema-fibonacci-level-trading-strategy",
+      "strategy_name": "EMA-Fibonacci Momentum Confluence",
+      "concept": "Enter on the open of the next candle when price closes above/below (or bounces off) EMA(20) while RSI(10) crosses its 50 line and Stochastic(10,3,3) exits an OB/OS zone, taking profit at Fibonacci-offset levels (0.382/0.618) around the EMA.",
+      "market": "FX",
+      "timeframe": "M15",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Pure-MQL5 indicator confluence (EMA/RSI/Stoch) with stated SL/TP; FTMO/DXZ-compatible, but the 'trending vs sideway' regime filter and 'bounce back from EMA' entry are undefined.",
+      "priority_hint": "LOW",
+      "notes": "Generic MA+RSI+Stoch indicator-soup momentum combo with no structural edge and no correlated-driver fit (not event/energy/JPY/long-vol/session). Author's 'Fibonacci levels' are just 0.382/0.618 offset lines added to the EMA 'Level' tab. No backtest or trading results posted; thread replies (Davit, 4xplosion) themselves debunk OB/OS timing as lagging and suggest divergence instead. Author states M5/M15/H1 all viable (M15 chosen as central). TP variants: EMA-0.382 level or 0.618 level; SL 5-10 pips beyond EMA or 0.382 level for 1:2 RR. Low forum reputability."
+    }
+  ],
+  "notes": []
+}

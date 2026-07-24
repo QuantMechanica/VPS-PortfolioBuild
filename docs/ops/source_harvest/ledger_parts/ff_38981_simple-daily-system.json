@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_38981_simple-daily-system.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_38981_simple-daily-system.pdf",
+      "source_pages": "1,7,13-14",
+      "source_ref": "TheThing (handle 'Dimy'), 'Simple Daily System', ForexFactory thread 38981 (2007), https://www.forexfactory.com/thread/38981-simple-daily-system — poster states he is not the author, only a follower; idea attributed to the forex-tsd.com community.",
+      "strategy_name": "Simple Daily 3-Candle Continuation",
+      "concept": "Daily-bar trend continuation: three consecutive same-direction candles (by open/close vs prior day), optionally with 20>50 EMA and positive slope, trigger an entry on the next daily open with a two-step scale-out.",
+      "market": "FX",
+      "timeframe": "D1",
+      "session": "none",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Fully mechanical daily FX rules (entry/stop/TP/scale-out all stated); pure MQL5, no ML, DXZ/.DWX FX daily data available; fixed-pip stop is FTMO/DXZ DD-compatible.",
+      "priority_hint": "MED",
+      "notes": "Two variants of ONE core rule: (A) original requires 20/50 EMA(close) alignment + positive slope on both; (B) later 'NO Indicators' version (p7/p13) drops the EMA filter. Entry on OPEN of 4th daily candle after 3 consecutive days of Close>Open (long) / Close<Open (short). Candle qualification later clarified as higher open AND higher close vs prior day (not merely a bullish/bearish body). Stop = 2 pips beyond prior candle OR 90 pips, 'whichever is lower' (wording ambiguous; poster clarifies he uses ~80-90 pip fixed stop). TP1 30 pips (close half, move SL->BE), TP2 100 pips; per-pair TP tuning suggested (GBP/USD 39/80 or 20/60). Opens 2 lots. No time-based exit — only SL/TP closes. Ignore Sunday candle. Daily open = 00:00 GMT+2 broker time. JPY-cross tilt (GBP/JPY, CAD/JPY, EUR/JPY best in self-tests). Evidence = unverified 2007 self-reported paper trading; forum source lowers conviction; an in-thread member (Ebenst) noted <50% continuation after 3 consecutive daily bars."
+    }
+  ],
+  "notes": ["one core strategy with EMA-filter and no-indicator variants merged into a single row"]
+}

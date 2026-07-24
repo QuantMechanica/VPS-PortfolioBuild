@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_390300_multiple-modified-trading-system.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_390300_multiple-modified-trading-system.pdf",
+      "source_pages": "1-3",
+      "source_ref": "shovon (handle), 'Multiple & Modified Trading System', ForexFactory thread 390300 (forum discussion, undated), https://www.forexfactory.com/thread/390300 — SMA-trend + engulfing/signal-candle swing system; idea credited to FF member '60 minuteman'.",
+      "strategy_name": "SMA-Trend Engulfing Signal-Candle Swing",
+      "concept": "Enter a bullish/bearish engulfing (or a defined range-close signal candle) in the direction of a 10/20/50 SMA trend stack, sizing reward:risk to how strongly the SMAs align.",
+      "market": "FX",
+      "timeframe": "D1",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Deterministic SMA-trend + engulfing/range-close signal candle with defined SL and per-trend RR TP on FX majors/crosses (D1/H4); pure-MQL5, no ML, FTMO/DXZ-compatible.",
+      "priority_hint": "LOW",
+      "notes": "One strategy only; thread pages 5-7 and 9-11 duplicate 1-3 (pagination repeat); pages 4/8/12/13 are off-topic fundamentals chatter. Trend classes: overall = price vs 50 SMA; perfect = 10 SMA above/below both 20 & 50; temporary = 10 SMA between 20 & 50. Entry next-candle-open after signal candle; SL 1-2 pip beyond signal or prior candle extreme; TP keyed to trend (perfect 1:2, overall 1:1, temporary 2:1), 2% risk. Alternate signal candle precisely defined: close in top/bottom 25% of range AND its (or prior candle's) extreme = highest-high/lowest-low of last 5. Author excludes AUD/USD and commodities. PARTIAL: trend-direction filter stated as 'advised' not a hard rule, leaving one degree of freedom on which trend condition must hold to enter. Generic MA+engulfing pattern class (chart-pattern edges largely dead per FX-edge doctrine); low-reputability forum source, self-admitted inexperienced author, unverified '100% success' claim. Weekly/H4 are variants of the same core rules."
+    }
+  ],
+  "notes": []
+}
