@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_316616_demark-indicator-trading-setups.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_316616_demark-indicator-trading-setups.pdf",
+      "source_pages": "1",
+      "source_ref": "\"Demark Indicator Trading setups\", thread started by StrategyCode with replies from Norok and Crust, ForexFactory Trading Systems forum, thread 316616, https://www.forexfactory.com/thread/316616-demark-indicator-trading-setups (year n/a). Thread references an external attachment 'DeMark Indicators-Jason Perl.pdf' (Jason Perl, DeMark Indicators, Bloomberg Press) that is NOT included in this scrape.",
+      "strategy_name": "DeMark indicator trading setups (referenced only)",
+      "concept": "Trend-reversal setups built on Thomas DeMark's TD indicators (e.g. TD Sequential/Combo), but the actual rules live only in an external attached PDF not present here.",
+      "market": "FX",
+      "timeframe": "D1",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "Thread contains no entry/exit rules or parameters; the setups are only referenced in an external attachment (Jason Perl book PDF) not included, and the post is an explicit commercial pitch to sell coded MT4 indicators.",
+      "priority_hint": "LOW",
+      "notes": "3-post thread, complete. Post 1 (StrategyCode) advertises coding DeMark indicators for MT4 'for a small fee'; posts 2-3 are interest/chatter, no rules. DeMark TD indicators are mechanical and would be re-harvestable IF the Jason Perl source PDF itself is obtained separately, but this file supplies nothing implementable."
+    }
+  ],
+  "notes": ["ForexFactory thread 316616, 3 posts, fully extracted via pdftotext. Actual DeMark setups reside in a referenced external attachment not included in this scrape; no implementable rules present in the thread text."]
+}

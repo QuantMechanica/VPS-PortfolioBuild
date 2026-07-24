@@ -1,0 +1,55 @@
+{
+  "pdf": "ff_325369_tasayc-system.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_325369_tasayc-system.pdf",
+      "source_pages": "1-2, 34-63",
+      "source_ref": "Forexcube, \"TASAYC System\" (Trade As Simple As You Can), ForexFactory thread 325369, 2011-2012, https://www.forexfactory.com/thread/325369/tasayc-system",
+      "strategy_name": "TASAYC CCI Top/Bottom multi-timeframe (Forexcube)",
+      "concept": "Discretionary reading of CCI(14) tops/bottoms in confluence with pivot points, Bollinger Bands and divergence across many timeframes to fade or ride turns.",
+      "market": "FX",
+      "timeframe": "H1",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "Author states explicitly it is not rule-based ('Trading is not to follow any rules in a strict way'); entries are eyeballed CCI/pivot/BB/divergence confluence with no deterministic trigger, and money management is a scale-in 1/10-lot averaging scheme across pairs/TFs often without a stop loss (links to 'no stop loss' strategies) - both un-mechanizable and incompatible with FTMO/DXZ DD limits.",
+      "priority_hint": "LOW",
+      "notes": "The thread's own named 'system'. MTF from M1 to Monthly; scalping examples cluster around London-close evening. Sub-labels (Time-Cell-Trading, CCI-Range-Trading at M5, Loss Order Management/LOM) are the same discretionary method plus a loss-recovery MM overlay. Reject on vagueness + no-SL scale-in, not on data/runtime."
+    },
+    {
+      "source_file": "ff_325369_tasayc-system.pdf",
+      "source_pages": "19-22",
+      "source_ref": "Kathy Lien & Boris Schlossberg, \"Do the Right Thing - Trade Breakouts\" (Investopedia CCI article), reposted in ForexFactory thread 325369 by Forexcube, https://www.forexfactory.com/thread/325369/tasayc-system",
+      "strategy_name": "Do-the-Right-Thing CCI momentum breakout",
+      "concept": "Momentum continuation: go with the trend when CCI(20) prints a fresh extreme above +100/below -100 that exceeds its prior peak/trough, betting the last top/bottom-pickers capitulate.",
+      "market": "FX",
+      "timeframe": "H1",
+      "session": "none",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Fully deterministic: CCI(20) on H1/D1; long when CCI re-crosses above +100 and exceeds the prior recorded peak, enter at candle close, stop at candle low; at +1R take half and move to breakeven, final target +2R (short mirror). Pure MQL5, no ML, FX data available, stop-based so DD-compatible.",
+      "priority_hint": "MED",
+      "notes": "Well-known published Investopedia strategy (edge likely partly arbed) - reputability fine, keep priority moderate. Simpler mechanical variants in the same CCI momentum-continuation family also appear in the thread (Lambert classic: buy>+100 / exit<+100; Woodies 'Zero-Line Cross': buy on CCI zero cross up, sell on cross down) - treat as parameter variants of this row, not separate edges. Setup is infrequent; low trade frequency is a Q02 floor risk on D1."
+    },
+    {
+      "source_file": "ff_325369_tasayc-system.pdf",
+      "source_pages": "29-32",
+      "source_ref": "Ken Wood's \"Woodies CCI\" system (ZLR/TLB/Tony Trade/GB100/FAMIR/Vegas/Ghost patterns), reposted in ForexFactory thread 325369 by Forexcube, https://www.forexfactory.com/thread/325369/tasayc-system",
+      "strategy_name": "Woodies CCI pattern system",
+      "concept": "Trade a fixed catalogue of CCI(14) chart-shape patterns (zero-line reject, trendline break, cup/rounding reversals) confirmed by proprietary Chop-Zone/Sidewinder/LSMA overlays.",
+      "market": "FX",
+      "timeframe": "M30",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "Patterns are enumerated but rest on discretionary shape recognition ('cup OR peaks and valleys', 'a Ghost is a Ghost') and intra-bar '20 secs to bar close' triggers; not deterministically implementable. The only clean sub-rule (CCI zero-line cross) is a generic momentum trigger with no standalone edge and is already captured by the Do-the-Right-Thing row.",
+      "priority_hint": "LOW",
+      "notes": "No external-data/ML blocker (all overlays are computable in MQL5), so this is a vagueness reject, not a park. Custom indicators referenced (Real_Woodie_CCI.mq4, i-GentorCCIM/LSMA). If ever revisited, isolate a single pattern (e.g. ZLR) with fixed numeric thresholds on bar close."
+    }
+  ],
+  "notes": [
+    "64-page thread; 3 distinct candidates extracted (TASAYC core, Do-the-Right-Thing CCI breakout, Woodies CCI). Bulk of the PDF is reposted third-party CCI education articles (Lambert calc, CCI zones, dual-CCI(10)/CCI(60) divergence, Timing-Trades cycle-length interval) and forum chatter - folded into row notes, not separate rows.",
+    "Only one genuinely harvestable mechanical candidate: the Do-the-Right-Thing CCI momentum breakout (ELIGIBLE, MED)."
+  ]
+}

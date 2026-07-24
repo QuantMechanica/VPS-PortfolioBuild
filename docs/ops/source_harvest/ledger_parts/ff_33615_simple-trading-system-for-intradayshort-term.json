@@ -1,0 +1,42 @@
+{
+  "pdf": "ff_33615_simple-trading-system-for-intradayshort-term.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_33615_simple-trading-system-for-intradayshort-term.pdf",
+      "source_pages": "1-2",
+      "source_ref": "Olaha (thread starter), 'Simple Trading system for Intraday/short term', ForexFactory thread 33615, 2007, https://www.forexfactory.com/thread/33615-simple-trading-system-for-intradayshort-term",
+      "strategy_name": "Tokyo-open fixed-pip Fib breakout",
+      "concept": "Daily-open (Tokyo) directional breakout: pending stop orders at a fixed Fibonacci-pip offset (+/-34) from the session open, riding the day's expansion to further fib levels (+/-89/+/-144) as staged targets.",
+      "market": "FX",
+      "timeframe": "M15",
+      "session": "Asia",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Open-anchored pending-stop breakout with SL=open and staged TPs is pure-MQL5 deterministic, FX majors data available, has hard stops (FTMO/DXZ-compatible); forum-sourced with no stats and GBPUSD-tuned static pip offsets lower priority.",
+      "priority_hint": "MED",
+      "notes": "Core is fully mechanical: Buy Stop at Open+34, SL=Open, TP1=Open+89, TP2=Open+144 (mirror for Sell Stop at Open-34); OCO flip on fill (if buy fills, reset sell to Open with SL=former buy level). Confirmation filters (SMA70 trend, RSI21>50/<50, Stochastic 15,3,3 above 60 buy / below 30 sell, EMA5&12 S/R) applied 'when order triggered' -- chart TF for these is ambiguous (hence PARTIAL). Move SL to +3 after 20 pips (breakeven). News filter: close 5-15 min before releases. Static pip offsets are cable-tuned; JPY-cross variants given (USDJPY 21/34/55/89, GBPJPY 34/55/89/144) and need per-symbol pip scaling. A discretionary 'trendline-as-fib' S/R tip and a manual retrace re-entry ('after price retraces, re-enter at TP1') are mentioned but not mechanized. Session-structure / open-range breakout class = uncorrelated driver vs index/metal swing-MR; forum-breakout precedent = live Balke EA."
+    },
+    {
+      "source_file": "ff_33615_simple-trading-system-for-intradayshort-term.pdf",
+      "source_pages": "15-20",
+      "source_ref": "Olaha (thread starter), 'Simple Trading system for Intraday/short term', ForexFactory thread 33615, 2007, https://www.forexfactory.com/thread/33615-simple-trading-system-for-intradayshort-term",
+      "strategy_name": "Floor-trader Pivot Point day trade",
+      "concept": "Standard floor-trader pivots (PP/R1-R3/S1-S3 + midpoints) with open-above/below-pivot bias, trading discretionary reversals or breakouts of S/R levels toward the next level (target R2/M4).",
+      "market": "FX",
+      "timeframe": "D1",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "Discretionary pivot S/R trading -- no deterministic entry trigger ('look for a reversal or break through of the S/R levels'); as stated it cannot be mechanized.",
+      "priority_hint": "LOW",
+      "notes": "Pivot math itself is deterministic and computable (PP=(H+L+C)/3, R1=2PP-L, R2=PP+(H-L), etc.), but entry/exit is left to trader judgement; presented by the author as an alternative to the fib-break system. Could only be revisited if a concrete mechanical trigger (e.g. break-and-close beyond a level with fixed SL/TP) were specified."
+    }
+  ],
+  "notes": [
+    "ForexFactory thread 33615 (60 posts, first 3 pages captured); author 'Olaha', mid-2007 (GBPUSD near 2.00).",
+    "Two distinct systems presented: (1) Tokyo-open fixed-pip Fib breakout = ELIGIBLE/MED; (2) discretionary floor-trader pivot points = REJECTED/vague.",
+    "Thread is anecdotal retail chatter (daily pip tallies, no backtest/statistics); reputability low, lowers priority but does not auto-reject (forum precedent = live Balke EA).",
+    "Page 18 was image-only (chart attachment), no text; all rule statements captured from text pages."
+  ]
+}

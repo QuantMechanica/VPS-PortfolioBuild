@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_373796_genesis-matrix-trading.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_373796_genesis-matrix-trading.pdf",
+      "source_pages": "1-22",
+      "source_ref": "realjumper (RJ), 'Genesis Matrix Trading', ForexFactory thread 373796, opened 2012 (first ~3 pages / opening posts of a 60-post excerpt); https://www.forexfactory.com/thread/373796 — a Symphonie-Trader-derived multi-timeframe indicator-confluence system using the proprietary 'Genesis Matrix', ASCTrend, GenesisArrowMatrix and MTF Stochastic indicators.",
+      "strategy_name": "Genesis Matrix HA-M5 confluence trend",
+      "concept": "Discretionary intraday trend-following on Heiken Ashi M5: enter when a proprietary multi-timeframe 'Matrix' of stochastic/arrow indicators is all one colour, stochastic turns from an OB/OS extreme, and an HA candle opens beyond the yellow 5-EMA; exit subjectively at pivot/S-R levels.",
+      "market": "FX",
+      "timeframe": "M5",
+      "session": "London",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "Core entry signal depends on undisclosed proprietary indicators (Genesis Matrix, ASCTrend, GenesisArrowMatrix) whose logic/thresholds are never stated, and the exit is fully discretionary (subjective S/R, 'idea in my head', 'comes with experience') — no deterministic rule set to ever implement.",
+      "priority_hint": "LOW",
+      "notes": "Symphonie-Trader spin-off; gated members-only thread, no backtest or edge evidence, closed .ex4 indicators. Individual components (MTF-stochastic OB/OS reversal, 5-EMA HA-candle break, Frankfurt-open-to-post-NY session window, daily-pivot S1/S2 targets, SL beyond prior swing, trail from +20 pips) are each mechanizable, but the aggregating 'Matrix' colour logic is a black box; any reconstruction would collapse to a generic MTF-stochastic + EMA trend filter that duplicates existing index/FX momentum variants. Works on 'any pair', gold and oil per FAQ; risk 1-5% (RJ uses 2%). Arrow confirmation is explicitly optional."
+    }
+  ],
+  "notes": ["single REJECTED summary row: discretionary confluence system on undisclosed proprietary indicators with subjective S/R exit"]
+}
