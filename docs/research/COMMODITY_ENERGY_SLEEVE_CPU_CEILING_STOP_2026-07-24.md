@@ -177,3 +177,24 @@ and the FTMO terminal as non-pipeline processes; neither was touched. Because
 the ceiling was exceeded, this turn stopped before source approval, card or ID
 allocation, EA build, compilation, Q02 enqueue, tester launch, or any
 portfolio/live mutation.
+
+## Recheck at 12:15Z
+
+A seventh read-only check at `2026-07-24T12:15:05Z` found exactly seven active
+factory tester terminals, matching the documented paced-fleet ceiling:
+
+| Terminal | EA | Phase | Symbol |
+|---|---|---|---|
+| T1 | QM5_11016 | Q04 | GDAXI.DWX |
+| T2 | QM5_10412 | Q03 | NDX.DWX |
+| T3 | QM5_10582 | Q07 | XAUUSD.DWX |
+| T4 | QM5_11016 | Q02 | GBPUSD.DWX |
+| T6 | QM5_10961 | Q03 | EURUSD.DWX |
+| T8 | QM5_13213 | pipeline baseline | tester configuration |
+| T10 | QM5_10565 | Q02 | USDCAD.DWX |
+
+The path-anchored `farmctl.py mt5-slots` scan separately identified `T_Live`
+and the FTMO terminal as non-pipeline processes; neither was touched. The
+mission's CPU-ceiling condition therefore stopped this turn before source
+approval, card or ID allocation, EA build, compilation, Q02 enqueue, tester
+launch, or any portfolio/live mutation.
