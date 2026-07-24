@@ -222,3 +222,24 @@ build, compilation, Q02 enqueue, tester launch, or any portfolio/live
 mutation. The unrelated pre-existing
 `framework/include/QM/QM_MagicResolver.mqh` worktree modification was also
 left untouched and excluded from the stop-record commit.
+
+## Recheck at 20:15Z
+
+A ninth read-only check at `2026-07-24T20:15:07Z` found exactly seven active
+factory tester terminals, matching the documented paced-fleet ceiling:
+
+| Terminal | EA | Phase | Symbol |
+|---|---|---|---|
+| T1 | QM5_13213 | pipeline baseline | tester configuration |
+| T2 | QM5_10217 | Q02 | NDX.DWX |
+| T3 | QM5_13203 | Q02 | QM5_13203_XTI_XNG_DOWNBETA_D1 |
+| T4 | QM5_11016 | Q02 | GBPUSD.DWX |
+| T6 | QM5_11903 | Q02 | AUDUSD.DWX |
+| T7 | QM5_1230 | Q07 | XAUUSD.DWX |
+| T9 | QM5_9940 | Q02 | SP500.DWX |
+
+The canonical `farmctl.py mt5-slots` scan separately identified `T_Live` as
+a non-pipeline process; it was not touched. Because the ceiling was reached,
+this turn stopped before source approval, card or ID/magic allocation, EA
+build, compilation, Q02 enqueue, tester launch, or any portfolio/live
+mutation.
