@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_1299635_best-proven-trading-systems.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_1299635_best-proven-trading-systems.pdf",
+      "source_pages": "1-2",
+      "source_ref": "\"Best proven trading systems\", ForexFactory thread by ZeusDaMan (6 posts, 2021), https://www.forexfactory.com/thread/1299635/best-proven-trading-systems",
+      "strategy_name": "(none — meta-discussion thread)",
+      "concept": "A trader asks the forum which 'proven' systems have credible proof, pointing at the 'Trading Made Simple' thread, but no trading rules are given.",
+      "market": "FX",
+      "timeframe": "H1",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "No strategy content: thread is purely a request for proof/screenshots, references TMS thread but states no entry/exit/params to implement.",
+      "priority_hint": "LOW",
+      "notes": "Mentions 'Trading Made Simple' (TMS) thread as most 'proof-having' (screenshots only, no myfxbook/TE links) and emmanuel7788 MT5 backtests; TMS itself is a separate 7000+ page thread not included here. Nothing actionable in this PDF."
+    }
+  ],
+  "notes": []
+}

@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_1207682_golden-cross-trading-idea.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_1207682_golden-cross-trading-idea.pdf",
+      "source_pages": "2-3,18",
+      "source_ref": "SwingMan, \"Golden-Cross Trading-Idea\", ForexFactory thread 1207682, 2025, https://www.forexfactory.com/thread/1207682/golden-cross-trading-idea (method draws on Dimitris Tsokakis, \"Anticipating Moving Average Crossover\", Technical Analysis of Stocks & Commodities, Feb 2007)",
+      "strategy_name": "LWMA Open/Close Golden-Cross + Elder Triple-Screen",
+      "concept": "Go with the trend defined by a period-5 LWMA of Close crossing a period-5 LWMA of Open, taken only in the direction of the higher-timeframe trend (Elder triple screen), entering via a stop order at the mathematically anticipated crossover price.",
+      "market": "FX",
+      "timeframe": "D1",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Core is pure-MQL5 deterministic (LWMA(5,Close) x LWMA(5,Open) cross + MTF trend filter + ATR/channel stops), FX data on .DWX, FTMO/DXZ-compatible with stops; but exact entry trigger, SL/TP multiples and MM are left to the trader.",
+      "priority_hint": "LOW",
+      "notes": "Author explicitly says entry/risk/exit and money-management are 'the job of the trader' — it is an indicator toolkit, not a finished system. Lagging MA-crossover = generic trend follower, no structural/limit-to-arbitrage edge; forum member (MickyMouseFX) flags the lag eats most of each move. Distinctive twist is placing a buy-stop/sell-stop at the predicted crossing price (Tsokakis anticipation). Suggested TP/SL = min(ATR, ChannelOsc channel range). Inherently multi-timeframe (Elder triple screen: D1-H4-H1, W1-D1-H4, H4-H1-M15 etc.); primary example trades D1 with entries on H4 in direction of W1 trend, plus incidental London-open FX entries (EURUSD/EURGBP/EURJPY/GBPJPY/USDCAD/AUDUSD). Variant mentioned by emmanuel7788: 5LWMA Close shift0 / 5EMA Typical shift+2 for signal. 'SmallWick' companion indicator is named but never given mechanical rules; no separate candidate. All artifacts are .ex4/MT4 indicators (no EA); source code not posted."
+    }
+  ],
+  "notes": []
+}

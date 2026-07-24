@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_1299658_range-breakout-system.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_1299658_range-breakout-system.pdf",
+      "source_pages": "1-3",
+      "source_ref": "Knodlz, 'Range Breakout System', ForexFactory forum thread #1299658 (undated; references JPY drop of 11 July, ~15R on the short), https://www.forexfactory.com/thread/1299658-range-breakout-system",
+      "strategy_name": "Asian-Range Breakout (Knodlz)",
+      "concept": "Straddle the Asian-session range with buy/sell stop orders at the range high/low, stop-loss on the opposite range side, no take-profit, trail the stop on new highs/lows and flatten at the NY-session close.",
+      "market": "FX",
+      "timeframe": "M15",
+      "session": "Asia",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Deterministic session range-breakout, pure MQL5, SL on opposite range side + time-based exit (no martingale/grid, FTMO/DXZ-compatible); USDJPY/GBPUSD/NAS100 all in .DWX universe.",
+      "priority_hint": "MED",
+      "notes": "Rules FULL only for USDJPY: range 01:00-06:00 GMT+3 (author corrected GMT vs server-time confusion -> 00:00-05:00 Berlin/UTC+2), buy-stop on range high, sell-stop on range low, SL on opposite border, no TP, delete untriggered pendings 1.5h before NY open, trail SL on highs/lows, close all at 20:00 GMT+3. Promised GBPUSD/NAS100 (Indices) variants 'differ slightly' but parameters were never posted despite repeated requests -> those extensions are VAGUE. Distinguishing feature vs a fixed-R breakout is the no-TP + trailing-stop + hard time-exit. HAZARD: range/opening-range breakout family is Balke-adjacent (repo evidence: edge real but dies at Q05-DD ~21-23%, does not generalize) -> validate against that failure mode. Single unverified forum source, no backtest, one anecdotal example ('10 years', '15R'); reputability low -> priority capped at MED despite favorable session-structure + JPY-cross fit."
+    }
+  ],
+  "notes": []
+}

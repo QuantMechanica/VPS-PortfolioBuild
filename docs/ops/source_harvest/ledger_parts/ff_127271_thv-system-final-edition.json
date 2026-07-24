@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_127271_thv-system-final-edition.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_127271_thv-system-final-edition.pdf",
+      "source_pages": "1,19-20",
+      "source_ref": "cobraforex (idea from 'Turhovach' + THV team), 'THV system, final edition', ForexFactory thread 127271 (2008-2009); deterministic EA variant coded by user 'fxid10t'. https://www.forexfactory.com/thread/127271",
+      "strategy_name": "THV Trend-Confluence Scalp",
+      "concept": "Enter when price sits on the same side of a Hull MA, a T3 MA and the Ichimoku cloud with a matching Heiken-Ashi color, and exit when any of those confluence conditions flips.",
+      "market": "FX",
+      "timeframe": "M5",
+      "session": "none",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "A deterministic coded EA variant (Hull 55/0.2 + T3 8/0.04 + Ichimoku 2/5/8 + Heiken-Ashi + OsMA 12/26/7, fixed 50-pip SL) exists in-thread; pure-MQL5, no ML, EURUSD/AUDUSD M1/M5 data available via .DWX.",
+      "priority_hint": "LOW",
+      "notes": "Core system is discretionary: author refuses an EA and leans on price action, pivots, S&R, psych levels and 'feeling'; but user fxid10t posted full working MQL4 source (pages 19-20) giving a codeable entry/exit/SL rule set. Manual V4 rules (page 1) cite the THV Trix cross as the 'heart'; the coded EA substitutes OsMA and omits Trix. Confluence of lagging MAs (Hull, T3, Ichimoku, HA) with no structural edge; fajst_k flags 'many false signals', Gofer Pips and final poster report the EA overtrades ('takes too many trades... will never work'). Best-time note: London/NY overlap high-volume hours (not a session-structural rule). Variants folded in: M1 extreme-scalp vs M5; long-only above Coral / short-only below. Scalping on M1/M5 is cost-sensitive - must be tested net of spread/commission."
+    }
+  ],
+  "notes": ["Text extracted via PyMuPDF (Read tool lacked poppler/pdftoppm); PDF has a clean text layer, not image-only.", "One core system with discretionary manual rules plus an in-thread deterministic EA coding = single ELIGIBLE row; variants mentioned in notes."]
+}
