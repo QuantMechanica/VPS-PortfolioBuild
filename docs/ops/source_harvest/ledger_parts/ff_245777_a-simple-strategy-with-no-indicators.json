@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_245777_a-simple-strategy-with-no-indicators.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_245777_a-simple-strategy-with-no-indicators.pdf",
+      "source_pages": "1-14",
+      "source_ref": "ashraf999, 'A simple strategy with no indicators', ForexFactory thread 245777 (c. 2010), https://www.forexfactory.com/thread/245777-a-simple-strategy-with-no-indicators",
+      "strategy_name": "Large-Body Daily Candle Continuation (Ashraf 3-Candle)",
+      "concept": "A completed daily candle whose real body exceeds the bodies of the prior two candles, prints opposite in color to the preceding candle and closes beyond it, is expected to carry momentum into the next day toward round-number (00/50) levels.",
+      "market": "FX",
+      "timeframe": "D1",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Deterministic pure price-action D1 pattern on FX majors/crosses, no indicators/ML; entry fully specified but TP/SL at 'psychological 00/50 levels' is author-admitted subjective and needs a deterministic round-level mechanization.",
+      "priority_hint": "LOW",
+      "notes": "Entry rules (long): body[1] > body[2] AND body[1] > body[3]; candle[2] bearish; close[1] > close[2]; enter at open of next daily candle after signal completes. Short = mirror (candle[2] bullish, close[1] < close[2]). One trade per pair per day max; use last full D1 candle, skip partial Sunday candle; broker-day close is decisive (author uses FX Solutions, 21:00 GMT day start). Claimed ~7/10 hit rate but self-described untested (~2 weeks live) — forum source, low reputability lowers priority. Plain FX daily momentum/continuation, not an uncorrelated return driver; overnight hold => FX swap injection matters. VARIANTS (same core edge, note only): (1) cmac0351 drops the two-candle-body rule, uses only the longer real body, SL=75 pips, no fixed TP, trails stop to 2/3 winning-candle length daily, closes on adverse daily close; (2) fguru multi-TF confirmation: D1 signal + same formation on H4/H1 before entry. Not martingale/grid; explicit stops used."
+    }
+  ],
+  "notes": []
+}

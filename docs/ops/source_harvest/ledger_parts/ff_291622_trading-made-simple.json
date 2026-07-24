@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_291622_trading-made-simple.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_291622_trading-made-simple.pdf",
+      "source_pages": "2,4-5,14-17",
+      "source_ref": "eelfranz, \"Trading Made Simple\", ForexFactory thread 291622 (2011), https://www.forexfactory.com/thread/291622-trading-made-simple ; a simplified variation of Dean Malone's Synergy/TDI method (compassfx.com).",
+      "strategy_name": "TDI Green/Red Cross (Trading Made Simple)",
+      "concept": "Momentum crossover: go with the trade when the TDI fast price line (green) crosses its signal line (red) at the open of a fresh Heiken-Ashi candle, in the direction confirmed by Stochastic(8,3,3).",
+      "market": "FX",
+      "timeframe": "H4",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Deterministic TDI green/red crossover entry (candle 1-2 only, not 3+) plus swing-high/low stop is pure-MQL5 implementable, no ML; but the exit ('green TDI goes flat / hooks over / makes a check-mark reversal') is discretionary and TDI parameters are only implied by a '5-MA TDI' template, so it needs mechanization.",
+      "priority_hint": "LOW",
+      "notes": "Single core method; variants folded in: 'bounce trade' (re-enter when green bounces off red and continues) and Dean-Malone Synergy channel stop (SlushFund: stop on the opposite 5-EMA of a two-5-EMA channel). Setup is CROSS, not merely green touching red. Direction rule: TDI rising=long, falling=short. Author-preferred TFs H4 (night) and H1 (first 3h of USA/NY open); one M5 example shown; claimed on '8 pairs' (unspecified) and '70-80% wins' (unverified retail claim). Retail forum source, no backtest evidence -> reputability lowers priority. Yet-another FX momentum-crossover swing variant, low orthogonality to existing sleeves."
+    }
+  ],
+  "notes": []
+}

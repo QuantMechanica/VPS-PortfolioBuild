@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_315572_symphonie-trader-system.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_315572_symphonie-trader-system.pdf",
+      "source_pages": "1-8",
+      "source_ref": "Thread \"Symphonie Trader System\" (aka SEFC GoldSuperCycle Trading System), opening posts by user handle 'Evaluator', ForexFactory, 2011-2012, https://www.forexfactory.com/thread/315572-symphonie-trader-system",
+      "strategy_name": "Symphonie Trader System (SEFC 4-indicator confluence)",
+      "concept": "Enter at candle close when four stacked indicators (Extreme/Cycle spike, SEFC BullBear momentum, Goldminer/ZigZag emotion, Supertrend trendline) all change to the same color/direction, exit on the opposite extreme spike or a trendline color flip.",
+      "market": "FX",
+      "timeframe": "M5",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "Core signal generators are self-admittedly repainting indicators (Cycle Identifier, Fisher-transform BullBear, ZigZag-based Goldminer) so the entry is non-deterministic and cannot be faithfully backtested; violates the deterministic rule-based requirement (b).",
+      "priority_hint": "LOW",
+      "notes": "Author repeatedly acknowledges repaint ('prone to repaint', 'in lower timeframes they will repaint'); chjungen confirms SEFC BullBear is 'a repainting version of the fisher-transform'; participants report signals shifting position on timeframe change / chart refresh. Three exit variants (conservative trendline-flip / moderate half-off at extreme / aggressive signal-to-signal reversal) plus discretionary 'wait 3-4 bars to see if extreme holds' -> not mechanical. SL = fixed 50 pip with dynamic move-to-BE+3 after 30 pips; ARS money-management (1000 basis = 0.10 lot) and a 5%/week growth plan are position-sizing/marketing, not edge. 'Evidence' is anecdotal cherry-picked trade updates and unverifiable demo 'trials', no statement/CSV. Non-repaint kernel would reduce to a generic Supertrend+oscillator confluence on EURUSD M5 with no structural edge (author explicitly denies it is just Supertrend). No distinct mechanizable candidate -> single REJECTED summary row."
+    }
+  ],
+  "notes": ["zero usable candidates: system built on repainting indicators + discretionary exits + anecdotal marketing evidence"]
+}

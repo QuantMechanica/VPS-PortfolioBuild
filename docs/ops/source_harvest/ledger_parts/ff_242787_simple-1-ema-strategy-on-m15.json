@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_242787_simple-1-ema-strategy-on-m15.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_242787_simple-1-ema-strategy-on-m15.pdf",
+      "source_pages": "2-5, 13-14",
+      "source_ref": "ForexFactory thread #242787 'Simple 1 EMA Strategy on M15', started by user Feliks S. (~2010), 45 posts across 3 pages, forexfactory.com; https://www.forexfactory.com/thread/242787-simple-1-ema-strategy-on-m15 . Core idea attributed by the author to 'The Outsider Method' article.",
+      "strategy_name": "EMA Pullback Breakout (Outsider Method)",
+      "concept": "After price closes across a 9-EMA, enter on the pullback candle that stays a fixed pip gap off the MA and closes beyond the prior candle's extreme, riding trend continuation at a fixed 2:1 reward-to-risk.",
+      "market": "FX",
+      "timeframe": "M15",
+      "session": "none",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Deterministic MA-pullback breakout implementable in pure MQL5 with stated entry, SL (prior candle extreme +1pip+spread) and TP (2xSL); no ML/external data; but low reputability (retail forum, no verified backtest).",
+      "priority_hint": "LOW",
+      "notes": "Core: 9-EMA on GBPUSD M15; buy when price closes above EMA AND pullback candle low >=~5 pips from EMA AND its close > prior candle high (sell mirror); no trade if 3-4 candles pass after cross, if SL ~10 pips, if candle gaps open, or if MA is too flat/horizontal. Variants (same core edge, one row): (1) 14-SMA multi-timeframe version - H4 & H1 close above 14-SMA as trend filter, M15 pullback below/back above 14-SMA, 40 SL / 120 TP, breakeven at +40, close half at +80 and trail rest by 40 pips (p13); (2) gonso's EUR/USD 1m London-open session variant 0800-1000 CET, drops the pip-gap requirement, skips hammer/doji/oversized candles (p14). Prodi's SMA + MTF-MACD + RSI system mentioned but too vague to spec. Fuzzy secondary filters (MA slope/angle, 'large candle', gap-open) need quantifying. Author's own friend and two other posters (finally, roundrock's skepticism) reported no usable edge; only anecdotal manual-trade screenshots, no logged statement."
+    }
+  ],
+  "notes": []
+}
