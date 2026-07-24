@@ -81,6 +81,7 @@ input int    strategy_stoch_slowing     = 3;
 input double strategy_stoch_zone        = 50.0;
 input int    strategy_pullback_min_bars = 2;
 input double strategy_sl_pips           = 50.0;
+input int    strategy_cross_window     = 3;    // stoch cross within last N closed bars (variant HASTOCH_097_XWIN3)
 
 int      g_str097_h_sma              = INVALID_HANDLE;
 int      g_str097_h_stoch            = INVALID_HANDLE;
@@ -311,15 +312,38 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       QM_IndicatorReadBuffer(g_str097_h_stoch, 0, 1);
    const double d1 =
       QM_IndicatorReadBuffer(g_str097_h_stoch, 1, 1);
-   const double k2 =
-      QM_IndicatorReadBuffer(g_str097_h_stoch, 0, 2);
-   const double d2 =
-      QM_IndicatorReadBuffer(g_str097_h_stoch, 1, 2);
-   if(sma1 <= 0.0 ||
-      (k1 == 0.0 && d1 == 0.0 && k2 == 0.0 && d2 == 0.0))
+   if(sma1 <= 0.0 || (k1 == 0.0 && d1 == 0.0))
      {
       Strategy097_LogDataMissing("indicator_buffers");
       return false;
+     }
+
+   // Variant HASTOCH_097_XWIN3 (reconciliation amendment 2026-07-24): the HA
+   // flip lags the stochastic cross by design (HA is smoothed), so requiring
+   // the cross on the flip bar itself produced an EMPTY strategy (0 trades,
+   // GBPUSD H4 2024 smoke, zone-independent). Source prose couples flip and a
+   // recent "smooth cross"; mechanized as: cross occurred within the last
+   // strategy_cross_window closed bars, is still in force on the flip bar, and
+   // the zone test applies at the cross bar.
+   int  long_cross_bar = 0;
+   int  short_cross_bar = 0;
+   for(int c = 1; c <= strategy_cross_window && long_cross_bar == 0; ++c)
+     {
+      const double kc = QM_IndicatorReadBuffer(g_str097_h_stoch, 0, c);
+      const double dc = QM_IndicatorReadBuffer(g_str097_h_stoch, 1, c);
+      const double kp = QM_IndicatorReadBuffer(g_str097_h_stoch, 0, c + 1);
+      const double dp = QM_IndicatorReadBuffer(g_str097_h_stoch, 1, c + 1);
+      if(kc > dc && kp <= dp && dc < strategy_stoch_zone)
+         long_cross_bar = c;
+     }
+   for(int c = 1; c <= strategy_cross_window && short_cross_bar == 0; ++c)
+     {
+      const double kc = QM_IndicatorReadBuffer(g_str097_h_stoch, 0, c);
+      const double dc = QM_IndicatorReadBuffer(g_str097_h_stoch, 1, c);
+      const double kp = QM_IndicatorReadBuffer(g_str097_h_stoch, 0, c + 1);
+      const double dp = QM_IndicatorReadBuffer(g_str097_h_stoch, 1, c + 1);
+      if(kc < dc && kp >= dp && dc > 100.0 - strategy_stoch_zone)
+         short_cross_bar = c;
      }
 
    bool long_pullback = (Strategy097_HAColor(ha_open, ha_close, 1) == 1);
@@ -337,15 +361,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const bool long_signal =
       signal_bar.close > sma1 &&
       long_pullback &&
-      k2 <= d2 &&
-      k1 > d1 &&
-      d1 < strategy_stoch_zone;
+      long_cross_bar > 0 &&
+      k1 > d1;
    const bool short_signal =
       signal_bar.close < sma1 &&
       short_pullback &&
-      k2 >= d2 &&
-      k1 < d1 &&
-      d1 > 100.0 - strategy_stoch_zone;
+      short_cross_bar > 0 &&
+      k1 < d1;
    if(!long_signal && !short_signal)
       return false;
 

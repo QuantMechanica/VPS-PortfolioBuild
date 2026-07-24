@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        20096
 ; ea_slug:      ha-stoch-h4-swing
@@ -10,7 +10,7 @@
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   64cd03173281a017da0981250689e45e2a204995f011d4c0e30c8175b5a6fbe0
 ; author:       Development
 ; date:         2026-07-24
 ;==========================================================
