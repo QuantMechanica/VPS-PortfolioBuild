@@ -1,0 +1,20 @@
+{
+  "logical_symbol": "QM5_20110_XTI_XNG_FRI_RV_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "q02_from_date": "2018.01.02",
+  "q02_to_date": "2024.12.31",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "One source-backed Friday-session package: BUY XTI and SELL XNG, target 1:1 absolute USD notionals, and cap both ATR stops to one RISK_FIXED=1000 budget. Enter only on a synchronized broker-Friday D1 boundary and flatten at broker hour 21. The paper reports the two separate weekday coefficients but does not test this pair, CFD carrier, covariance, costs, or neutrality. Existing standalone Friday legs are known component overlap; only combined logical-package PnL is valid. No standalone result, live preset, portfolio admission, or decorrelation claim is authorized."
+  ]
+}
