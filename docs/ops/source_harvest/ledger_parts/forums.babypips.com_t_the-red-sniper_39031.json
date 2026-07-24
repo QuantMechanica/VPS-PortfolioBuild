@@ -1,0 +1,22 @@
+{
+  "pdf": "forums.babypips.com_t_the-red-sniper_39031.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_the-red-sniper_39031.pdf",
+      "source_pages": "1-2",
+      "source_ref": "joy22, \"The Red Sniper\", BabyPips forum thread (2011), https://forums.babypips.com/t/the-red-sniper/39031",
+      "strategy_name": "Red Sniper HMA/LSMA + Direction arrow trend follow",
+      "concept": "Trend-following on H4/Daily entering on a proprietary 'Direction' arrow signal confirmed by matching HMA34 and LSMA(34) color, exiting on arrow reversal.",
+      "market": "FX",
+      "timeframe": "H4",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "Core entry trigger is an undisclosed proprietary 'Direction' arrow indicator (hidden template internals; users report it crashed their MT4); cannot be reproduced faithfully, and the definable remainder is a generic dual-MA color trend-follower with no structural edge.",
+      "priority_hint": "LOW",
+      "notes": "Also names D1 timeframe. HMA34 and LSMA(34) color are implementable in pure MQL5 but are only confirmations; the 'Direction' arrow that fires entries is opaque. Marketing tone ('Simple and Effective', poster claims 3/3 winners, fixed 40-pip SL/40-pip TP variant). Thread only 7 posts, mostly reports of platform crashes on load; no edge evidence."
+    }
+  ],
+  "notes": []
+}

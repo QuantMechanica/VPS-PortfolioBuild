@@ -1,0 +1,22 @@
+{
+  "pdf": "forums.babypips.com_t_the-most-profitable-trading-pattern-you-will-ever-encounter_70731.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_the-most-profitable-trading-pattern-you-will-ever-encounter_70731.pdf",
+      "source_pages": "1-6",
+      "source_ref": "PhilipPirrip, \"The Most Profitable Trading Pattern You Will Ever Encounter\", BabyPips forum thread (started 2015-02-15), https://forums.babypips.com/t/the-most-profitable-trading-pattern-you-will-ever-encounter/70731 (extract, 120 of 1734 posts)",
+      "strategy_name": "EMA-Cross Stochastic-Hook Trend-Continuation (Fib-Trail)",
+      "concept": "After a 20/50 EMA cross flags a fresh impulse, enter the pullback when the stochastic hooks back out of the opposite extreme, riding the trend continuation with a Fibonacci-extension trailing stop.",
+      "market": "FX",
+      "timeframe": "H4",
+      "session": "none",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Deterministic 20/50-EMA(close) cross + full stochastic(14,3,1) extreme-and-crossover entry with an explicit Fibonacci-extension trailing exit; fully mechanizable in MQL5. CAVEAT: author's signature 'hold losers until opposite signal, never honor the initial stop' (down 350 pips in his own example) is incompatible with FTMO/DXZ DD limits and must be replaced by a hard swing-based stop.",
+      "priority_hint": "LOW",
+      "notes": "Rules: (1) 20 EMA cross 50 EMA on close (no shift) = impulse flag; counter-intuitively a cross-up = strong up-move about to correct. (2) On the cross, stochastic sits at the opposite extreme (cross-up -> overbought). Wait for stoch to travel to the other extreme (cross-up -> oversold) and cross out of it, enter next candle open in the EMA-trend direction (buy on stoch cross-up out of oversold after 20>50). (3) Initial stop = swing high before cross (sell) / swing low before pullback (buy) +/-10 pips, used mainly for 1% (H4/D1/W1) or 0.2% (H1/M5) position sizing. (4) Exit = fib extension drawn over the impulse leg (levels 1, 1.272, 1.618, 2, 2.618...); trail stop two fib levels behind price (close above 1.272 -> stop = close below 1; close above 1.618 -> stop = close below 1.272; etc.). Variants (all ONE core): daily/weekly TF (longer holds, smaller size); M15/H1 (author says win-rate drops ~70%->40-50%, more false signals, commit to 1-2 pairs); scale-in on 2nd/3rd stochastic crossover (author disprefers). Author claims ~75% win rate and multi-pair basket hedging (e.g. short EURCAD + long GBPCAD) but provides no verifiable backtest/report, only forum anecdotes and follower screenshots. Gold(weekly)/silver(M15) shown as illustrative, not as a distinct system. Odds_on (post #8) notes the stochastic-hook trigger predates this thread (attributed to poster 'Carll' and referenced in Captain Currency's '3 Ducks' thread); Bobkat (post #129) likens it to Hector Deville's 3-SMA method. Low priority: generic MA+oscillator pullback with no structural/limit-to-arbitrage edge basis (per FX-edge doctrine such indicator-combo systems have consistently died at Q04/Q08), forum-anecdote evidence only, and its defining risk management is un-implementable as stated."
+    }
+  ],
+  "notes": ["single core strategy; TF/scale-in/hold-through-loss variants folded into notes"]
+}

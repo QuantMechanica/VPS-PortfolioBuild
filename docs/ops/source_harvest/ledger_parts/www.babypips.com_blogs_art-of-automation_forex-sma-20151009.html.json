@@ -1,0 +1,22 @@
+{
+  "pdf": "www.babypips.com_blogs_art-of-automation_forex-sma-20151009.html.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "www.babypips.com_blogs_art-of-automation_forex-sma-20151009.html.pdf",
+      "source_pages": "3-4",
+      "source_ref": "Robopip, \"Risk Adjustments: SMA Crossover Pullback Forex System,\" Babypips.com Art of Automation blog, 2015-10-09, https://www.babypips.com/blogs/art-of-automation/forex-sma-20151009",
+      "strategy_name": "SMA Crossover Pullback (Robopip) with breakeven trail",
+      "concept": "Dual-SMA crossover trend system entered on a pullback after the cross, managed with a fixed 150-pip stop and 300-pip target that switches to a trail-to-entry (breakeven) once price moves 150 pips in the trade's favor.",
+      "market": "FX",
+      "timeframe": "H4",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Deterministic, pure-MQL5 SMA-crossover pullback system with hard 150-pip stop / 300-pip target and breakeven trail (FTMO/DXZ-compatible, no ML); but this addendum only fully states exit/risk management — the entry SMA periods and timeframe live in prior blog posts, not here.",
+      "priority_hint": "LOW",
+      "notes": "This PDF is a Q3-2015 risk-adjustment follow-up, not the base system spec; only the added trailing stop (BE at +150 pips) is new here. Entry SMA periods and timeframe not stated in this doc — timeframe H4 inferred from the 150/300-pip stop/target scale, treat as a design choice to recover. Generic MA-crossover FX trend variant, likely correlated with existing trend/swing sleeves; author explicitly rejected a ranging-market filter and any fundamentals. Pages 4-9 are partner ads and site boilerplate."
+    }
+  ],
+  "notes": ["Text extracted via pdfplumber (Read tool lacked poppler); strategy content confined to pages 3-4, remainder is advertising/boilerplate."]
+}

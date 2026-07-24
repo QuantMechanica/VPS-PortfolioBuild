@@ -1,0 +1,22 @@
+{
+  "pdf": "forums.babypips.com_t_trading-system-educational-books_1130926.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_trading-system-educational-books_1130926.pdf",
+      "source_pages": "1-3",
+      "source_ref": "Trading System Educational Books, thread started by Pauley1, BabyPips Forums, 2023, https://forums.babypips.com/t/trading-system-educational-books/1130926",
+      "strategy_name": "(none - book recommendation thread)",
+      "concept": "Thread contains only recommendations of trading books; no mechanical strategy rules are stated.",
+      "market": "FX",
+      "timeframe": "D1",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "No usable edge; thread is purely a list of book titles (Davey, Lien, Elder, Weissman, Pardo, Kaufman) with no entry/exit/parameter rules to implement.",
+      "priority_hint": "LOW",
+      "notes": "16-post BabyPips thread. Books mentioned: 'Entry and Exit Confessions of a Champion Trader' & 'Building Winning Algorithmic Trading Systems' (Kevin J. Davey), 'The Little Book of Currency Trading' (Kathy Lien), 'Trading for a Living' (Alexander Elder), 'Mechanical Trading Systems' (Weissman), 'The Evaluation and Optimization of Trading Strategies' (Pardo), 'Trading Systems and Methods' (Kaufman). These are secondary book pointers only, no rules."
+    }
+  ],
+  "notes": ["book-recommendation thread; no mechanical strategy rules present"]
+}

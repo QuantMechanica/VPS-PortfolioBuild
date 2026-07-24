@@ -1,0 +1,22 @@
+{
+  "pdf": "forums.babypips.com_t_vamos-falar-sobre-forex-usd-chf_1208729.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_vamos-falar-sobre-forex-usd-chf_1208729.pdf",
+      "source_pages": "1",
+      "source_ref": "\"Vamos falar sobre Forex USD/CHF\", started by FranciscoAlves, BabyPips forum, 2023, https://forums.babypips.com/t/vamos-falar-sobre-forex-usd-chf/1208729",
+      "strategy_name": "USD/CHF chit-chat (no strategy)",
+      "concept": "Casual newcomer introduction asking whether USD/CHF will rise or fall after gold closed lower; no method described.",
+      "market": "FX",
+      "timeframe": "none",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "3-post social introduction thread with zero rule statements, entries, exits or edge; nothing to mechanize.",
+      "priority_hint": "LOW",
+      "notes": "Portuguese-language thread, 3/3 posts complete. Pure directional small-talk (gold-close intuition), no parameters or setup."
+    }
+  ],
+  "notes": ["zero usable candidates - social/discussion thread, no mechanical edge"]
+}

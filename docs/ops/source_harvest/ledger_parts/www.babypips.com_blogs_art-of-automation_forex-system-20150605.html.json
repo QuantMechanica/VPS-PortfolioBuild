@@ -1,0 +1,22 @@
+{
+  "pdf": "www.babypips.com_blogs_art-of-automation_forex-system-20150605.html.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "www.babypips.com_blogs_art-of-automation_forex-system-20150605.html.pdf",
+      "source_pages": "3",
+      "source_ref": "Robopip, \"Forex Mechanical System: SMA Crossover Pullback\", babypips.com Art of Automation blog, 2015-06-05, based on Big Pippin's Daily Chart Art framework. URL: https://www.babypips.com/blogs/art-of-automation/forex-system-20150605",
+      "strategy_name": "SMA Crossover Pullback (100/200 SMA + Stochastic)",
+      "concept": "Trade in the direction of a 100/200 SMA crossover, triggering on the first stochastic (14,3,3) exit from oversold/overbought as a trend-continuation pullback entry.",
+      "market": "FX",
+      "timeframe": "H1",
+      "session": "none",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Fully mechanizable in pure MQL5 (SMA + Stochastic, deterministic entries, fixed 150/300-pip SL/TP + breakeven); EURUSD H1 data available via .DWX; FTMO/DXZ compatible.",
+      "priority_hint": "LOW",
+      "notes": "Exit: 150-pip stop, 300-pip target (2:1 RR), move stop to entry once price moves 150 pips in favor. Illustrated on EURUSD H1 but applies to FX majors. Generic dual-SMA trend-follow + stochastic-pullback variant with no structural limit-to-arbitrage; source presents NO backtest evidence ('let's see how it fares over the next few months first' - proposal stage). Aligns with prior shop findings that classic indicator/trend-follow FX systems lack structural edge (FX-Edge-Doktrin). Complete rules keep it ELIGIBLE but low-priority."
+    }
+  ],
+  "notes": ["Single strategy defined on page 3; pages 4-8 are partner ads and blog boilerplate; page 9 empty."]
+}
