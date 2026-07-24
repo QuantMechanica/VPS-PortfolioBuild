@@ -177,3 +177,46 @@ cointegration continuations remain non-duplicate, unassigned, and unchanged:
 The CPU ceiling is therefore binding. No build, queue mutation, MT5 launch,
 terminal control, AutoTrading change, live artifact, portfolio gate, EA
 artifact, setfile, basket manifest, or registry change was made.
+
+## 2026-07-24 01:59 paced-fleet audit
+
+A fresh path-anchored process check found eight factory terminals running:
+
+```text
+T1, T2, T3, T4, T7, T8, T9, T10
+```
+
+`T_Live` was explicitly excluded and was not controlled. Eight factory
+processes exceed the seven-process ceiling. The canonical scheduler module
+was then run read-only:
+
+```text
+python -m framework.scripts.mt5_saturation_scheduler
+  --sqlite D:/QM/reports/pipeline/mt5_queue.db
+  --dispatch-state D:/QM/reports/pipeline/dispatch_state.json
+  --dry-run
+```
+
+It returned:
+
+```json
+{"available_slots_after":0,"available_slots_before":0,"dry_run":true,"duplicate":0,"invalid":0,"no_capacity":0,"queued_scanned":0,"scheduled":0,"status":"ok"}
+```
+
+A read-only query of `mt5_job_queue` confirmed four queued rows total. The two
+forex continuation rows remain present exactly once, with `status=queued`, no
+assigned terminal, no dispatch decision, and no error:
+
+- queue `2`: `QM5_12760`, `Q02`, `GBPUSD.DWX`,
+  `q02_fx_coint_12760_s20260629_001`
+- queue `4`: `QM5_13119`, `Q02`, `USDJPY.DWX`,
+  `q02_fx_coint_13119_s20260710_001`
+
+The scan selection remains exhausted rather than under-built: the only two
+positive-hedge survivors (`QM5_12532`, `QM5_12533`) and all seven strict
+sign-aware qualifying rows already have builds. The mission fallback is
+therefore already represented by the two non-duplicate Q02 jobs above.
+
+Per the explicit CPU-ceiling stop rule, no new card, build, queue mutation,
+MT5 launch, terminal control, AutoTrading change, live artifact, portfolio
+gate, EA artifact, setfile, basket manifest, or registry change was made.
