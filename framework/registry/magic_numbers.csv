@@ -15231,3 +15231,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20108,ema144-displaced-breach-m5,2,USDJPY.DWX,201080002,2026-07-24T16:37:31Z,claude,active
 20109,vr-gap-fade-d1,0,NDX.DWX,201090000,2026-07-24T16:37:31Z,claude,active
 20109,vr-gap-fade-d1,1,GDAXI.DWX,201090001,2026-07-24T16:37:31Z,claude,active
+20110,xti-xng-fri-rv,0,XTIUSD.DWX,201100000,2026-07-24T17:11:25Z,codex,active
+20110,xti-xng-fri-rv,1,XNGUSD.DWX,201100001,2026-07-24T17:11:25Z,codex,active

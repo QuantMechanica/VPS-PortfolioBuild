@@ -133,7 +133,7 @@ The entry, management, and exit sections below are the complete authorized v1
 baseline. A weekday, direction, standalone leg, gap filter, return filter,
 trend filter, or hold-window change creates a new card.
 
-## Entry rules
+## 4. Entry Rules
 
 1. Require the exact `XTIUSD.DWX` D1 host, slot 0, registered foreign symbol,
    and all locked strategy inputs.
@@ -159,7 +159,7 @@ trend filter, or hold-window change creates a new card.
 9. Confirm the first leg before sending the second. If the second fails, close
    the first immediately and consume the week.
 
-## Exit rules
+## 5. Exit Rules
 
 1. Broker-side hard stop on either leg.
 2. Every-tick malformed-package repair: a foreign magic, duplicate leg,
@@ -178,7 +178,15 @@ trend filter, or hold-window change creates a new card.
 News filtering may block new risk only. It may never delay package repair,
 Friday close, hard-stop handling, next-D1 close, or stale close.
 
-## Trade management rules
+## 6. Filters (No-Trade Module)
+
+- Do not enter unless both `XTIUSD.DWX` and `XNGUSD.DWX` expose synchronized, closed D1 bars whose Friday date matches.
+- Do not enter outside the first five minutes after the first tradable tick of the Friday D1 session.
+- Do not enter when either leg lacks 20 complete D1 bars, has a stale bar older than three calendar days, has a non-positive quote, or cannot support a valid 3 x ATR(20) hard stop.
+- Do not enter if the package marker already records an entry for that Friday, either leg already has an EA-owned position, either leg fails symbol/trade checks, or the calculated equal-notional sizes differ by more than 20% in absolute USD notional.
+- Do not retry a rejected package later in the session. A partial second-leg failure triggers immediate first-leg rollback.
+
+## 7. Trade Management Rules
 
 - One position per magic and exactly two positions per healthy package.
 - One long host leg and one short foreign leg; no pending-order lifecycle.
