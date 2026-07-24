@@ -1,0 +1,24 @@
+{
+  "logical_symbol": "QM5_12512_FX_PAIRS_THRESHOLD_H1",
+  "host_symbol": "EURUSD.DWX",
+  "host_timeframe": "H1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "EURJPY.DWX",
+    "GBPJPY.DWX",
+    "AUDUSD.DWX",
+    "NZDUSD.DWX"
+  ],
+  "pairs": [
+    ["EURUSD.DWX", "GBPUSD.DWX"],
+    ["EURJPY.DWX", "GBPJPY.DWX"],
+    ["AUDUSD.DWX", "NZDUSD.DWX"]
+  ],
+  "notes": [
+    "Each chart symbol maps deterministically to one configured pair; both legs are opened and flattened as one logical trade.",
+    "The P2 baseline uses fixed beta 1.0 and never estimates or adapts weights at runtime."
+  ]
+}

@@ -15179,3 +15179,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11619,robo-psar01-ema6-11-34-h1,4,AUDUSD.DWX,116190004,2026-07-23,Development,active
 20093,wti-summer-short,0,XTIUSD.DWX,200930000,2026-07-24,Development,active
 20094,xng-fri-short,0,XNGUSD.DWX,200940000,2026-07-24,Development,active
+12512,bt-pairs-thresh,0,EURUSD.DWX,125120000,2026-07-24,Codex,active
+12512,bt-pairs-thresh,1,GBPUSD.DWX,125120001,2026-07-24,Codex,active
+12512,bt-pairs-thresh,2,EURJPY.DWX,125120002,2026-07-24,Codex,active
+12512,bt-pairs-thresh,3,GBPJPY.DWX,125120003,2026-07-24,Codex,active
+12512,bt-pairs-thresh,4,AUDUSD.DWX,125120004,2026-07-24,Codex,active
+12512,bt-pairs-thresh,5,NZDUSD.DWX,125120005,2026-07-24,Codex,active
