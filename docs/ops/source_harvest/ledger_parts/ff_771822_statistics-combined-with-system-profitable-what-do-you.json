@@ -1,0 +1,57 @@
+{
+  "pdf": "ff_771822_statistics-combined-with-system-profitable-what-do-you.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_771822_statistics-combined-with-system-profitable-what-do-you.pdf",
+      "source_pages": "1-6",
+      "source_ref": "ForexFactory thread 771822, \"Statistics combined with system. Profitable? What do you think\", started by user michaellobry (c.2018), https://www.forexfactory.com/thread/771822-statistics-combined-with-system-profitable-what-do-you",
+      "strategy_name": "Wick Asymmetry Direction (Wick System 1.00)",
+      "concept": "Enter each bar in the direction implied by the previous candle's wick asymmetry (buy when lower wick exceeds upper wick = low rejection, sell otherwise) with symmetric fixed TP/SL.",
+      "market": "FX",
+      "timeframe": "H1",
+      "session": "none",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Pure-MQL5 deterministic candlestick rule with fixed 50-pip SL/TP; EURUSD data available; not martingale/grid (fixed lot, hard stop).",
+      "priority_hint": "LOW",
+      "notes": "Author claims M1-D1; example uses H1. Base rule fires every bar; thread proposes many optional filter params (reverse/anti-trade switch, only-trade-N-candles-after-swing HH/HL/LH/LL, prev-candle >X pips, lower-wick >X pips, lower-wick >150% of upper-wick, prev-candle >200% of prior 4 candles) -- treat as one parametrized EA (variants, not separate strategies). Edge is a candle-wick direction bet; contradicts FX chart-pattern-dead doctrine, hence LOW. Every-bar entry raises Q02 economics + pending-stacking concerns. Community backtests (Fauzaan, lassame) inconclusive; one user repurposed the .ex4 for rebate churning (not a strategy)."
+    },
+    {
+      "source_file": "ff_771822_statistics-combined-with-system-profitable-what-do-you.pdf",
+      "source_pages": "20-21",
+      "source_ref": "AR(1) autoregressive trading EA by user MathTrader7, reposted in ForexFactory thread 771822 (michaellobry); original ForexFactory thread 562689 (https://www.forexfactory.com/showthread.php?t=562689); this PDF https://www.forexfactory.com/thread/771822-statistics-combined-with-system-profitable-what-do-you",
+      "strategy_name": "AR(1) Detrended Mean-Reversion (Autoregressive EA)",
+      "concept": "At each daily open, detrend the last N closes, fit an AR(1) model, confirm stationarity via a Dickey-Fuller test, then go long/short (stop-and-reverse) based on the model's one-step-ahead prediction versus the current detrended value.",
+      "market": "FX",
+      "timeframe": "D1",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Classical econometrics (AR(1) OLS/Yule-Walker + Dickey-Fuller test), not ML libraries -- implementable in pure MQL5 arithmetic; EURUSD D1 data available.",
+      "priority_hint": "MED",
+      "notes": "Distinct statistical return driver vs the wick bet. Lookback N unspecified; SL/TP left as an open question (base exit is reversal-only) -- needs a hard stop for FTMO daily-loss/max-DD. Author reports a 2000-2015 EURUSD backtest via attached .ex4 (not verifiable here). Thread also floats ARMA/ARIMA/GARCH extensions -- no non-ML barrier but higher curve-fit risk; tzamo explicitly warns against over-optimization."
+    },
+    {
+      "source_file": "ff_771822_statistics-combined-with-system-profitable-what-do-you.pdf",
+      "source_pages": "24-26",
+      "source_ref": "Neural-network MACD pattern system by user vladi1979 in ForexFactory thread 771822 (michaellobry), uses R + h2o deep-learning framework bridged to MT4; https://www.forexfactory.com/thread/771822-statistics-combined-with-system-profitable-what-do-you",
+      "strategy_name": "Neural-Network MACD Pattern (R/h2o)",
+      "concept": "Train a deep neural network on MACD-indicator patterns across 28 pairs (JPY scaled by /100) to predict the next price change and automate entries/exits.",
+      "market": "FX",
+      "timeframe": "H1",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "PARKED",
+      "eligibility_reason": "Deep neural network + external R/h2o runtime -- violates the V5 no-ML hard rule and the no-external-runtime constraint; rules only sketched (author defers to a personal website).",
+      "priority_hint": "LOW",
+      "notes": "Timeframe unstated in thread. Revisit trigger: only if reduced to a fully-specified non-ML linear/arithmetic proxy -- under V5's permanent no-ML hard rule the NN form itself is never eligible. Demo-only (148 trades over 3 weeks), unverifiable."
+    }
+  ],
+  "notes": [
+    "Thread also dumps many non-strategy artifacts not rowed: HOLO/HoLo 'frequency distribution' indicators and PDFs, various wick indicators (Wick-O-Gram, WickPercentage), and a pile of econometrics research PDFs (wavelet/Hurst/ARMA-GARCH/Fourier) -- reference material, no implementable rule set.",
+    "billytt's 'Frequency Distribution' breakout description (measure retracement wick sizes over 100 candles, target a few pips) is too vague to implement (no defined breakout trigger/entry/stop) -- REJECTED as VAGUE, not rowed.",
+    "GotyMetal's TradingView pinescript observation (bull trends show more upper wicks, bear trends more lower wicks) supports the wick-direction premise but is an observation, not a strategy.",
+    "michaellobry's consecutive-candle-streak stats and M-pattern/scaling musings are exploratory questions, not rule sets."
+  ]
+}

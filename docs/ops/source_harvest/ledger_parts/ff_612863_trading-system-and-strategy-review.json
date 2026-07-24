@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_612863_trading-system-and-strategy-review.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_612863_trading-system-and-strategy-review.pdf",
+      "source_pages": "1-4",
+      "source_ref": "Trading System and Strategy Review, thread by mrhigurashi (with TheJube, thorn, profitfarmer, kraven), ForexFactory, thread 612863, https://www.forexfactory.com/thread/612863-trading-system-and-strategy-review",
+      "strategy_name": "FF system-review meta-thread (no strategy)",
+      "concept": "A discussion thread inviting unbiased reviews of other traders' systems; it contains opinions and pointers to other threads but no self-contained tradable rule set.",
+      "market": "FX",
+      "timeframe": "none",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "Meta/review discussion with no concrete entry/exit/parameter definitions; only references to external threads (a 'fuzzy' trend-pullback system explicitly stated to have no exit strategy, and thread t=590623 described only in generalities) plus generic HH/HL pullback commentary.",
+      "priority_hint": "LOW",
+      "notes": "Points to other FF threads (post 9224087 trend-pullback system; thread 590623 'simple entry/exit + position management, fixed SL, no martingale') that would be the actual sources if harvested separately, but no rules are reproduced here. kraven's HH/HL break-then-pullback remark is too underspecified to implement."
+    }
+  ],
+  "notes": ["PDF rendered via pypdf text extraction (poppler/pdftoppm unavailable); text layer complete across all 4 pages."]
+}

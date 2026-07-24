@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_604020_trading-strategy-bladerunner.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_604020_trading-strategy-bladerunner.pdf",
+      "source_pages": "1-5",
+      "source_ref": "\"Trading Strategy Bladerunner\", posted by ruben-trader (copy-paste of Erron's article, AuthenticFX), ForexFactory thread 604020, https://www.forexfactory.com/thread/604020 ; original source authenticfx.com free-forex-... (Bladerunner strategy)",
+      "strategy_name": "Bladerunner 20 EMA Retest",
+      "concept": "Trend continuation: use the 20 EMA (or Bollinger mid-band) as a polarity line and enter on a successful retest/rejection of the EMA in the direction price is currently respecting.",
+      "market": "FX",
+      "timeframe": "M5",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Pure-MQL5 codeable (20 EMA + candlestick logic), deterministic SL (2 pips beyond signal candle) and 1R/2R TP with breakeven trail; FX M5 data available; FTMO/DXZ-safe (fixed stops, no grid). Core mechanic testable but relies on discretionary overlays (breakout-of-consolidation precondition, S/R + round-number + fundamentals confluence, 'convincing' close).",
+      "priority_hint": "LOW",
+      "notes": "Generic 20-EMA pullback/retest trend-continuation, one of countless similar; author explicitly warns no entry on naked EMA rejection alone (needs confluence/fundamentals we cannot mechanize) -> low mechanical-edge plausibility, no unique return driver. Variants (ONE row): (1) single order vs two split orders (TP1=1R closes half, remainder to breakeven), (2) 20 EMA vs Bollinger 20 mid-band vs combined 'forex polarity indicator' ribbon. Buy/sell-stop 2 pips beyond confirmatory candle, orders expire at next candle open. Built-in news filter: no entry 30-45 min before scheduled news, wait 15 min after. Forum content is an acknowledged copy-paste of Erron/AuthenticFX -> reputability caveat, lowers priority. Pages 6-7 are only thread chatter."
+    }
+  ],
+  "notes": []
+}
