@@ -1,0 +1,14 @@
+# Item1: Legacy P* report folders/files
+## Pipeline writer now uses Qxx subdirs (phase_ids.py: Qxx canonical end-to-end). Legacy P subdir tallies under reports/pipeline:
+P2=24 dirs P3=23 dirs P1=2 dirs (Qxx active: Q04=133 Q05=131 Q06=123 Q08=106 Q07=96 ...)
+## mtimes of P relics (mostly 2026-05-26..28):
+2026-05-28 reports/pipeline/QM5_10467/P2
+2026-05-28 reports/pipeline/QM5_10467/P3
+2026-07-08 reports/pipeline/QM5_1257/P2
+2026-07-12 reports/pipeline/QM5_11160/P1
+2026-07-20 reports/pipeline/QM5_20018/P1
+2026-07-21 reports/pipeline_evidence_archive/QM5_10023/P2
+2026-07-21 reports/pipeline_evidence_archive/QM5_10026/P2
+2026-07-21 reports/pipeline_evidence_archive/QM5_10042/P2
+## Reader check (grep tools/): NO tool references master_ea_p2_gate|master_ea_p25_gate|tmp_codex_p8_test|pipeline_operator|pipeline_evidence_archive
+## Back-compat shim: phase_ids.LEGACY_P_TO_Q + farmctl P5/P5b sentinels exist but NO active writer creates new P-dirs (new work_items use Qxx).

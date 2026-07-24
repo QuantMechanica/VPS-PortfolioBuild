@@ -1,0 +1,321 @@
+========== MAGIC 15560004 :: 22_XAUUSD_D1_QM5_1556_aa-zak-mom12.set ==========
+  1| ;==========================================================
+  2| ; QM5 Set File
+  3| ; ea_id:        1556
+  4| ; ea_slug:      aa-zak-mom12
+  5| ; ea_version:   v5.0
+  6| ; set_version:  s20260627-001
+  7| ; symbol:       XAUUSD.DWX
+  8| ; timeframe:    D1
+  9| ; environment:  live
+ 10| ; magic_slot:   4
+ 11| ; risk_mode:    PERCENT
+ 12| ; portfolio_weight: 1
+ 13| ; build_hash:   07671ebebee019ab9d385b94936a8abc48575413ed7a32b7265b97f92bb050aa
+ 14| ; author:       Development
+ 15| ; date:         2026-06-27
+ 16| ;==========================================================
+ 17| qm_magic_slot_offset=4
+ 18| RISK_FIXED=0
+ 19| RISK_PERCENT=0.6017
+ 20| PORTFOLIO_WEIGHT=1
+ 21| ; core filter library params; filter-on/off variants must be pre-declared
+ 22| qm_filter_news_enabled=1
+ 23| qm_filter_news_mode=3
+ 24| qm_filter_regime_enabled=0
+ 25| qm_filter_regime_lookback_bars=100
+ 26| qm_filter_regime_bull_return_pct=2.0
+ 27| qm_filter_regime_bear_return_pct=2.0
+ 28| qm_filter_volatility_enabled=0
+ 29| qm_filter_volatility_atr_period=14
+ 30| qm_filter_volatility_lookback_bars=50
+ 31| qm_filter_volatility_compression_ratio=0.75
+ 32| qm_filter_volatility_expansion_ratio=1.25
+ 33| ; strategy-specific params from card must be appended below this line
+ 34| ; card_defaults_source=not_found
+
+========== MAGIC 104400003 :: 15_NDX_H1_QM5_10440_mql5-ohlc-mtf.set ==========
+  1| ;==========================================================
+  2| ; QM5 Set File
+  3| ; ea_id:        10440
+  4| ; ea_slug:      mql5-ohlc-mtf
+  5| ; ea_version:   v5.0
+  6| ; set_version:  s20260628-d2c-r075
+  7| ; symbol:       NDX.DWX
+  8| ; timeframe:    H1
+  9| ; environment:  live
+ 10| ; magic_slot:   3
+ 11| ; risk_mode:    PERCENT
+ 12| ; portfolio_weight: 1.0
+ 13| ; build_hash:   pending
+ 14| ; author:       Claude
+ 15| ; date:         2026-06-28
+ 16| ;==========================================================
+ 17| qm_magic_slot_offset=3
+ 18| RISK_FIXED=0
+ 19| RISK_PERCENT=0.0577
+ 20| PORTFOLIO_WEIGHT=1.0
+ 21| ; core filter library params; filter-on/off variants must be pre-declared
+ 22| qm_filter_news_enabled=1
+ 23| qm_filter_news_mode=3
+ 24| qm_filter_regime_enabled=0
+ 25| qm_filter_regime_lookback_bars=100
+ 26| qm_filter_regime_bull_return_pct=2.0
+ 27| qm_filter_regime_bear_return_pct=2.0
+ 28| qm_filter_volatility_enabled=0
+ 29| qm_filter_volatility_atr_period=14
+ 30| qm_filter_volatility_lookback_bars=50
+ 31| qm_filter_volatility_compression_ratio=0.75
+ 32| qm_filter_volatility_expansion_ratio=1.25
+ 33| ; strategy-specific params from card must be appended below this line
+ 34| ; card_defaults_source=backtest_setfile:QM5_10440_mql5-ohlc-mtf_NDX.DWX_H1_backtest_grid_035.set
+ 35| strategy_atr_period=14
+ 36| strategy_entry_atr_offset_mult=0.07
+ 37| strategy_stop_min_atr_mult=0.65
+ 38| strategy_stop_max_atr_mult=3.25
+ 39| strategy_take_profit_r=2.00
+ 40| strategy_role_reversal_bars=3
+ 41| strategy_pending_expiry_minutes=240
+ 42| strategy_day_blackout_minutes=30
+
+========== MAGIC 109110003 :: 13_GDAXI_H1_QM5_10911_grimes-complex-pb.set ==========
+  1| ;==========================================================
+  2| ; QM5 Set File
+  3| ; ea_id:        10911
+  4| ; ea_slug:      grimes-complex-pb
+  5| ; ea_version:   v5.0
+  6| ; set_version:  s20260628-d2c-r075
+  7| ; symbol:       GDAXI.DWX
+  8| ; timeframe:    H1
+  9| ; environment:  live
+ 10| ; magic_slot:   3
+ 11| ; risk_mode:    PERCENT
+ 12| ; portfolio_weight: 1.0
+ 13| ; build_hash:   pending
+ 14| ; author:       Claude
+ 15| ; date:         2026-06-28
+ 16| ;==========================================================
+ 17| qm_magic_slot_offset=3
+ 18| RISK_FIXED=0
+ 19| RISK_PERCENT=0.1276
+ 20| PORTFOLIO_WEIGHT=1.0
+ 21| ; core filter library params; filter-on/off variants must be pre-declared
+ 22| qm_filter_news_enabled=1
+ 23| qm_filter_news_mode=3
+ 24| qm_filter_regime_enabled=0
+ 25| qm_filter_regime_lookback_bars=100
+ 26| qm_filter_regime_bull_return_pct=2.0
+ 27| qm_filter_regime_bear_return_pct=2.0
+ 28| qm_filter_volatility_enabled=0
+ 29| qm_filter_volatility_atr_period=14
+ 30| qm_filter_volatility_lookback_bars=50
+ 31| qm_filter_volatility_compression_ratio=0.75
+ 32| qm_filter_volatility_expansion_ratio=1.25
+ 33| ; strategy-specific params from card must be appended below this line
+ 34| ; card_defaults_source=backtest_setfile:QM5_10911_grimes-complex-pb_GDAXI.DWX_H1_backtest.set
+ 35| strategy_ema_trend_period=50
+ 36| strategy_ema_exit_period=20
+ 37| strategy_atr_period=14
+ 38| strategy_thrust_lookback_bars=20
+ 39| strategy_thrust_prior_high_bars=20
+ 40| strategy_thrust_range_atr_mult=1.00
+ 41| strategy_pullback_atr_mult=0.80
+ 42| strategy_failure_window_bars=5
+ 43| strategy_min_thrust_to_entry_bars=8
+ 44| strategy_stop_buffer_atr_mult=0.20
+ 45| strategy_target_r_mult=1.50
+ 46| strategy_max_hold_bars=30
+
+========== MAGIC 111320000 :: 16_SP500_D1_QM5_11132_tm-cum-rsi2.set ==========
+  1| ;==========================================================
+  2| ; QM5 Set File
+  3| ; ea_id:        11132
+  4| ; ea_slug:      tm-cum-rsi2
+  5| ; ea_version:   v5.0
+  6| ; set_version:  s20260628-d2c-r075
+  7| ; symbol:       SP500.DWX
+  8| ; timeframe:    D1
+  9| ; environment:  live
+ 10| ; magic_slot:   0
+ 11| ; risk_mode:    PERCENT
+ 12| ; portfolio_weight: 1.0
+ 13| ; build_hash:   pending
+ 14| ; author:       Claude
+ 15| ; date:         2026-06-28
+ 16| ;==========================================================
+ 17| qm_magic_slot_offset=0
+ 18| RISK_FIXED=0
+ 19| RISK_PERCENT=0.4562
+ 20| PORTFOLIO_WEIGHT=1.0
+ 21| ; core filter library params; filter-on/off variants must be pre-declared
+ 22| qm_filter_news_enabled=1
+ 23| qm_filter_news_mode=3
+ 24| qm_filter_regime_enabled=0
+ 25| qm_filter_regime_lookback_bars=100
+ 26| qm_filter_regime_bull_return_pct=2.0
+ 27| qm_filter_regime_bear_return_pct=2.0
+ 28| qm_filter_volatility_enabled=0
+ 29| qm_filter_volatility_atr_period=14
+ 30| qm_filter_volatility_lookback_bars=50
+ 31| qm_filter_volatility_compression_ratio=0.75
+ 32| qm_filter_volatility_expansion_ratio=1.25
+ 33| ; strategy-specific params from card must be appended below this line
+ 34| ; card_defaults_source=ea_input_defaults:QM5_11132_tm-cum-rsi2.mq5
+ 35| strategy_rsi_period=2
+ 36| strategy_cum_window=2
+ 37| strategy_cum_rsi_entry=38.0
+ 38| strategy_rsi_exit=66.0
+ 39| strategy_sma_period=165
+ 40| strategy_atr_period=12
+ 41| strategy_atr_sl_mult=2.0
+ 42| strategy_max_hold_bars=5
+ 43| strategy_max_spread_points=300
+
+========== MAGIC 114210000 :: 09_EURUSD_D1_QM5_11421_ohlc-daily-squeeze-reversal-d1.set ==========
+  1| ;==========================================================
+  2| ; QM5 Set File
+  3| ; ea_id:        11421
+  4| ; ea_slug:      ohlc-daily-squeeze-reversal-d1
+  5| ; ea_version:   v5.0
+  6| ; set_version:  s20260628-d2c-r075
+  7| ; symbol:       EURUSD.DWX
+  8| ; timeframe:    D1
+  9| ; environment:  live
+ 10| ; magic_slot:   0
+ 11| ; risk_mode:    PERCENT
+ 12| ; portfolio_weight: 1.0
+ 13| ; build_hash:   f0e51cffb345a100c9d3b81621d14550fec0a35fa4011093d5bec4230e032a8b
+ 14| ; author:       Claude
+ 15| ; date:         2026-06-28
+ 16| ;==========================================================
+ 17| qm_magic_slot_offset=0
+ 18| RISK_FIXED=0
+ 19| RISK_PERCENT=0.3364
+ 20| PORTFOLIO_WEIGHT=1.0
+ 21| ; core filter library params; filter-on/off variants must be pre-declared
+ 22| qm_filter_news_enabled=1
+ 23| qm_filter_news_mode=3
+ 24| qm_filter_regime_enabled=0
+ 25| qm_filter_regime_lookback_bars=100
+ 26| qm_filter_regime_bull_return_pct=2.0
+ 27| qm_filter_regime_bear_return_pct=2.0
+ 28| qm_filter_volatility_enabled=0
+ 29| qm_filter_volatility_atr_period=14
+ 30| qm_filter_volatility_lookback_bars=50
+ 31| qm_filter_volatility_compression_ratio=0.75
+ 32| qm_filter_volatility_expansion_ratio=1.25
+ 33| ; strategy-specific params from card must be appended below this line
+ 34| ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11421_ohlc-daily-squeeze-reversal-d1.md
+ 35| strategy_entry_range_mult=1.0
+ 36| strategy_sl_range_mult=1.5
+ 37| strategy_tp_range_mult=1.0
+ 38| strategy_min_range_pips=30.0
+ 39| strategy_sl_cap_pips=80.0
+ 40| strategy_pending_ttl_bars=1
+ 41| strategy_spread_cap_pips=25.0
+ 42| strategy_enable_long=true
+
+========== MAGIC 125670002 :: 23_XNGUSD_D1_QM5_12567_cum-rsi2-commodity.set ==========
+  1| ;==========================================================
+  2| ; QM5 Set File
+  3| ; ea_id:        12567
+  4| ; ea_slug:      cum-rsi2-commodity
+  5| ; ea_version:   v5.0
+  6| ; set_version:  s20260628-d2c-r075
+  7| ; symbol:       XNGUSD.DWX
+  8| ; timeframe:    D1
+  9| ; environment:  live
+ 10| ; magic_slot:   2
+ 11| ; risk_mode:    PERCENT
+ 12| ; portfolio_weight: 1.0
+ 13| ; build_hash:   pending
+ 14| ; author:       Claude
+ 15| ; date:         2026-06-28
+ 16| ;==========================================================
+ 17| qm_magic_slot_offset=2
+ 18| RISK_FIXED=0
+ 19| RISK_PERCENT=0.9797
+ 20| PORTFOLIO_WEIGHT=1.0
+ 21| ; core filter library params; filter-on/off variants must be pre-declared
+ 22| qm_filter_news_enabled=1
+ 23| qm_filter_news_mode=3
+ 24| qm_filter_regime_enabled=0
+ 25| qm_filter_regime_lookback_bars=100
+ 26| qm_filter_regime_bull_return_pct=2.0
+ 27| qm_filter_regime_bear_return_pct=2.0
+ 28| qm_filter_volatility_enabled=0
+ 29| qm_filter_volatility_atr_period=14
+ 30| qm_filter_volatility_lookback_bars=50
+ 31| qm_filter_volatility_compression_ratio=0.75
+ 32| qm_filter_volatility_expansion_ratio=1.25
+ 33| ; strategy-specific params from card must be appended below this line
+ 34| ; card_defaults_source=q12_opt:20260627T155555Z:entry_30
+ 35| strategy_rsi_period=2
+ 36| strategy_cum_window=2
+ 37| strategy_cum_rsi_entry=30.0
+ 38| strategy_rsi_exit=65.0
+ 39| strategy_sma_period=200
+ 40| strategy_atr_period=14
+ 41| strategy_atr_sl_mult=2.5
+ 42| strategy_max_hold_bars=5
+ 43| strategy_max_spread_points=300
+
+========== MAGIC 129690000 :: 17_USDJPY_M30_QM5_12969_usdjpy-gotobi-nakane-fix.set ==========
+  1| ;==========================================================
+  2| ; QM5 Set File
+  3| ; ea_id:        12969
+  4| ; ea_slug:      usdjpy-gotobi-nakane-fix
+  5| ; ea_version:   v5.0
+  6| ; set_version:  s20260703-001
+  7| ; symbol:       USDJPY.DWX
+  8| ; timeframe:    M30
+  9| ; environment:  live
+ 10| ; magic_slot:   0
+ 11| ; risk_mode:    PERCENT
+ 12| ; portfolio_weight: 1
+ 13| ; build_hash:   1cf133ed963ccd3e27178c0a82de9f2fd46a4899d7edc804cff9e8900b658fca
+ 14| ; author:       Development
+ 15| ; date:         2026-07-03
+ 16| ;==========================================================
+ 17| qm_ea_id=12969
+ 18| qm_magic_slot_offset=0
+ 19| RISK_FIXED=0
+ 20| RISK_PERCENT=0.5100
+ 21| PORTFOLIO_WEIGHT=1
+ 22| ; strategy-specific params from card/input defaults must be appended below this line
+ 23| ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12969_usdjpy-gotobi-nakane-fix.md
+ 24| strategy_entry_jst_hhmm=200
+ 25| strategy_exit_jst_hhmm=955
+ 26| strategy_holiday_volume_proxy_enabled=true
+ 27| strategy_risk_stop_pips=120
+ 28| strategy_max_spread_points=0
+
+========== MAGIC 131280000 :: 14_NDX_H1_QM5_13128_pre-fomc-drift-ndx.set ==========
+  1| ;==========================================================
+  2| ; QM5 Set File
+  3| ; ea_id:        13128
+  4| ; ea_slug:      pre-fomc-drift-ndx
+  5| ; ea_version:   v5.0
+  6| ; set_version:  s20260710-001
+  7| ; symbol:       NDX.DWX
+  8| ; timeframe:    H1
+  9| ; environment:  live
+ 10| ; magic_slot:   0
+ 11| ; risk_mode:    PERCENT
+ 12| ; portfolio_weight: 1
+ 13| ; build_hash:   pending
+ 14| ; author:       Development
+ 15| ; date:         2026-07-10
+ 16| ;==========================================================
+ 17| qm_ea_id=13128
+ 18| qm_magic_slot_offset=0
+ 19| RISK_FIXED=0
+ 20| RISK_PERCENT=1.0000
+ 21| PORTFOLIO_WEIGHT=1
+ 22| ; strategy-specific params from card/input defaults must be appended below this line
+ 23| ; card_defaults_source=not_found
+ 24| strategy_timeframe=16385
+ 25| strategy_entry_hour=21
+ 26| strategy_exit_hour=20
+ 27| strategy_atr_period=14
+ 28| strategy_stop_atr_mult=2.0

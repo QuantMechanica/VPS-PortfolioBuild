@@ -1,0 +1,14 @@
+
+ProcessId CL
+--------- --
+     5912 C:\Users\Administrator\AppData\Local\Programs\Python\Python311\pythonw.exe -u C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T1 --root D:\QM\strategy_farm
+     6088 C:\Users\Administrator\AppData\Local\Programs\Python\Python311\pythonw.exe -u C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T2 --root D:\QM\strategy_farm
+     8580 C:\Users\Administrator\AppData\Local\Programs\Python\Python311\pythonw.exe -u C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T3 --root D:\QM\strategy_farm
+    10720 C:\Users\Administrator\AppData\Local\Programs\Python\Python311\pythonw.exe -u C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T4 --root D:\QM\strategy_farm
+    10844 C:\Users\Administrator\AppData\Local\Programs\Python\Python311\pythonw.exe -u C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T6 --root D:\QM\strategy_farm
+     8088 C:\Users\Administrator\AppData\Local\Programs\Python\Python311\pythonw.exe -u C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T7 --root D:\QM\strategy_farm
+     4300 C:\Users\Administrator\AppData\Local\Programs\Python\Python311\pythonw.exe -u C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T8 --root D:\QM\strategy_farm
+     6848 C:\Users\Administrator\AppData\Local\Programs\Python\Python311\pythonw.exe -u C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T9 --root D:\QM\strategy_farm
+     6808 C:\Users\Administrator\AppData\Local\Programs\Python\Python311\pythonw.exe -u C:\QM\repo\tools\strategy_farm\terminal_worker.py --terminal T10 --root D:\QM\strategy_farm
+
+

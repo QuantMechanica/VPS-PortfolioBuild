@@ -1,0 +1,53 @@
+STATE-DRIFT + APPROVAL-QUEUE AUDIT — evidence summary (2026-07-24, READ-ONLY)
+DB: D:/QM/strategy_farm/state/farm_state.sqlite (opened mode=ro)
+
+1. GOALS.md / TODO.md at C:/QM/repo root: ABSENT (Glob {GOALS,TODO}.md -> No files found).
+
+2. work_items (172,384 rows):
+   status: done 52072, failed 47998, pending 2353, active 9
+   phase:  Q02 72332, Q04 15065, Q03 12494, Q05 828, Q08 495, P2 446, Q06 358,
+           Q07 306, Q09_PORTFOLIO 100, Q10 8
+   Non-terminal (pending/active) stale >14d (cutoff 2026-07-10): 1318
+     = Q02 pending 1317 (oldest 2026-06-09, QM5_1081/1048 UK100) + Q03 pending 1.
+   TIMESTAMP CORRUPTION:
+     - 189 rows created_at='2027-01-01T00:00:00+00:00' (future sentinel); ea_ids
+       QM5_1081/1101/1209-1221; status failed 177/done 4/pending 8.
+       Prior audit FULL_SYSTEM_FTMO_READINESS_AUDIT_2026-07-09.md l.151 noted only
+       THREE; grew to 189, recommended future-timestamp health check (l.156) NOT added.
+     - 2 rows updated_at is integer epoch not ISO: 17d1c78d '1781000103',
+       0c976922 '1781000208' (both QM5 UK100 Q02 pending).
+
+3. agent_tasks (650 rows):
+   by state: RECYCLE 420, APPROVED 149, PIPELINE 43, PASSED 17, BLOCKED 12,
+             REVIEW 7, FAILED 1, IN_PROGRESS 1  (no TODO/BACKLOG/OPS_FIX_REQUIRED)
+   by assigned_agent: codex 459, claude 70, gemini 48, None 43,
+                      codex:agents/board-advisor 30  <-- MALFORMED label
+   agent_registry agent_ids = {codex, claude, gemini} ONLY (no composite id).
+   RECYCLE = terminal close disposition (router routes only BACKLOG/TODO; no
+     RECYCLE->TODO path). 346 codex + 41 claude RECYCLE = historical, not backlog.
+   MALFORMED 'codex:agents/board-advisor' (30): payload carries keys
+     active_repair_claim/active_repair_result (0 source files) + review_close_*;
+     assigned_agent composite = agent 'codex' + branch 'agents/board-advisor'.
+     NOT producible by router claim (only stamps registry agent_ids) -> written by
+     ad-hoc board-advisor agent session via direct DB write. Consequence: excluded
+     from cockpit codex attribution (render_cockpit.py l.1650 exact match
+     assigned_agent='codex'). States: PIPELINE 23, PASSED 5, BLOCKED 2.
+   IN_PROGRESS 014c58ce (task_type review_ea, payload kind=independent_compliance_audit,
+     requested_by claude, created 2026-07-24T05:06) = THIS audit's dispatch. EXPECTED.
+
+4. pipeline_state.json (D:/QM/reports/state, generated_at 2026-07-24T05:07 by
+   scripts/build_pipeline_state.py): legacy P* keys present (by_phase P1..P10, 14 keys).
+   by_phase totals 5 (P1=2,P2=3); by_status NOT_RUN=188/IN_PROGRESS=2/BLOCKED=1;
+   per_ea 191 entries ALL status=NOT_RUN, latest_pass_phase=null, phase_verdicts={},
+   final_verdict=UNKNOWN. 5/5 spot-checks DISAGREE with work_items ground truth:
+     QM5_10013 DB Q02 PASSx31/Q03 PASSx5/Q04 FAILx8 ; json NOT_RUN
+     QM5_10017 DB thru Q05 (Q04 PASS_LOWFREQ) ; json NOT_RUN
+     QM5_10028 DB Q03 PASSx56 ; json NOT_RUN
+     QM5_10035 DB Q04 PASS_SOFT/Q05 ; json NOT_RUN
+     QM5_10048 DB Q03 PASSx118 ; json NOT_RUN
+   Generated artifact fully decoupled from work_items; DB/filesystem win.
+
+5. Card reservoir: cards_approved 3048, cards_review 244, cards_draft 109.
+   Threshold 5; generic replenishment FROZEN (edge-lab primary). cards_review oldest
+   2026-05-21 (~64d), newest 2026-07-21. portfolio_candidates 33 (Q12_REVIEW_READY 26,
+   EVIDENCE_STALE 5, DUPLICATE_SUPERSEDED 2), last updated 2026-07-20.

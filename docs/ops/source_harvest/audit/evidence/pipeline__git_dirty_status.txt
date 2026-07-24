@@ -1,0 +1,11 @@
+ M framework/registry/event_vocabulary.json
+ M public-data/process-roadmap.json
+ M public-data/public-snapshot.json
+ M public-data/strategy-archive.json
+?? docs/ops/source_harvest/audit/evidence/
+DIRTY_GUARD_BLOCKED= True blocking_count= 5
+  BLOCK:  M framework/registry/event_vocabulary.json
+  BLOCK:  M public-data/process-roadmap.json
+  BLOCK:  M public-data/public-snapshot.json
+  BLOCK:  M public-data/strategy-archive.json
+  BLOCK: ?? docs/ops/source_harvest/audit/evidence/

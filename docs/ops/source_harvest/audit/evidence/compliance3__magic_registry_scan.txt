@@ -1,0 +1,21 @@
+=== MY MAGIC ROWS ===
+magic 104030002: line 3666 :: 10403,et-turtle20x,2,XAUUSD.DWX,104030002,2026-05-25,Development,active
+magic 107060001: line 5645 :: 10706,tv-mon-ls,1,GBPUSD.DWX,107060001,2026-06-05,Development,active
+magic 109390001: line 6231 :: 10939,grimes-context-pb,1,GBPUSD.DWX,109390001,2026-06-06,Development,active
+magic 111650002: line 6657 :: 11165,weiss-rsi-ma,2,AUDCAD.DWX,111650002,2026-06-07,Development,active
+magic 117080000: line 11672 :: 11708,anon-market-squeeze-d1,0,EURUSD.DWX,117080000,2026-06-18,Development,active
+magic 127780000: line 13888 :: 12778,edgelab-audusd-eurjpy-cointegration,0,AUDUSD.DWX,127780000,2026-06-29,Development,active
+magic 131170000: line 14932 :: 13117,eurgbp-audjpy,0,EURGBP.DWX,131170000,2026-07-10,Codex,active
+magic 133010010: line 15056 :: 13301,balke-minute-range-breakout,10,GDAXI.DWX,133010010,2026-07-15,Claude,active
+=== DUP SCAN (magics appearing >1) ===
+NO duplicate magic values in entire registry
+=== do any of MY magics collide? ===
+104030002 occurrences= 1 lines [3666]
+107060001 occurrences= 1 lines [5645]
+109390001 occurrences= 1 lines [6231]
+111650002 occurrences= 1 lines [6657]
+117080000 occurrences= 1 lines [11672]
+127780000 occurrences= 1 lines [13888]
+131170000 occurrences= 1 lines [14932]
+133010010 occurrences= 1 lines [15056]
+total data rows= 15186

@@ -1,0 +1,183 @@
+{
+  "count": 2195,
+  "eas": [
+    {
+      "build": {
+        "blocked_reason": null,
+        "smoke": null,
+        "status": "done",
+        "task_id": "1787fe71-aa41-41fc-95e8-60cbc2f7f99c"
+      },
+      "current_stage": "Q03_infra_fail",
+      "ea_id": "QM5_10000",
+      "last_activity": "2026-07-23T07:45:57+00:00",
+      "phases": {
+        "Q03": {
+          "attempts": 0,
+          "status": "done",
+          "surviving_symbols": [],
+          "task_id": "a0324aa3-f18e-4dc1-ba73-d73d38a2645d",
+          "verdict": "INFRA_FAIL"
+        }
+      },
+      "review": {
+        "status": "done",
+        "task_id": "d0281096-28cd-426b-a424-dd7d9d1cf24e",
+        "verdict": "APPROVE_FOR_BACKTEST"
+      },
+      "slug": "ff-tasayc-cci-breakout",
+      "total_attempts": 3
+    },
+    {
+      "build": {
+        "blocked_reason": null,
+        "smoke": null,
+        "status": "done",
+        "task_id": "1e0f8486-4193-4f89-8c06-59ef47e6f3d6"
+      },
+      "current_stage": "review_approved",
+      "ea_id": "QM5_10001",
+      "last_activity": "2026-06-29T03:44:11+00:00",
+      "phases": {},
+      "review": {
+        "status": "done",
+        "task_id": "345cdefd-8a19-4287-8df3-bea3f1b33345",
+        "verdict": "APPROVE_FOR_BACKTEST"
+      },
+      "slug": "ff-static-fib-open",
+      "total_attempts": 4
+    },
+    {
+      "build": {
+        "blocked_reason": null,
+        "smoke": null,
+        "status": "done",
+        "task_id": "041de22a-0f3c-4012-99a9-5c6980df8daf"
+      },
+      "current_stage": "review_approved",
+      "ea_id": "QM5_10002",
+      "last_activity": "2026-06-29T03:44:12+00:00",
+      "phases": {
+        "Q03": {
+          "attempts": 0,
+          "status": "done",
+          "surviving_symbols": [],
+          "task_id": "aa5fd093-5e1d-41b8-b235-b1a3e81b6516",
+          "verdict": "STRATEGY_FAIL"
+        }
+      },
+      "review": {
+        "status": "done",
+        "task_id": "61660f00-da65-407a-85b8-37dd04483db8",
+        "verdict": "APPROVE_FOR_BACKTEST"
+      },
+      "slug": "ff-sisyphus-2ma-rsi-d1",
+      "total_attempts": 4
+    },
+    {
+      "build": {
+        "blocked_reason": null,
+        "smoke": null,
+        "status": "failed",
+        "task_id": "e99bcbe6-0e10-4887-b889-82b4624ad5aa"
+      },
+      "current_stage": "Q03_strategy_fail",
+      "ea_id": "QM5_10003",
+      "last_activity": "2026-06-07T20:55:30+00:00",
+      "phases": {
+        "Q03": {
+          "attempts": 0,
+          "status": "done",
+          "surviving_symbols": [],
+          "task_id": "1d56a99a-57e1-485a-9458-441c9b0daf05",
+          "verdict": "STRATEGY_FAIL"
+        }
+      },
+      "review": null,
+      "slug": "ff-xaron-morning-breakout",
+      "total_attempts": 3
+    },
+    {
+      "build": {
+        "blocked_reason": null,
+        "smoke": null,
+        "status": "failed",
+        "task_id": "f7c1cfb3-8819-4488-bd20-e8d41d6a8b43"
+      },
+      "current_stage": "build_failed",
+      "ea_id": "QM5_10004",
+      "last_activity": "2026-05-23T16:21:12.701948Z",
+      "phases": {},
+      "review": null,
+      "slug": "ff-razor-h1-5pip",
+      "total_attempts": 3
+    },
+    {
+      "build": {
+        "blocked_reason": null,
+        "smoke": null,
+        "status": "failed",
+        "task_id": "72475d4b-e949-49fa-a411-889913564c6d"
+      },
+      "current_stage": "build_failed",
+      "ea_id": "QM5_10005",
+      "last_activity": "2026-05-23T16:21:12.701948Z",
+      "phases": {},
+      "review": null,
+      "slug": "ff-profigenics-channel",
+      "total_attempts": 3
+    },
+    {
+      "build": {
+        "blocked_reason": null,
+        "smoke": null,
+        "status": "failed",
+        "task_id": "4c621328-d170-4ec9-873d-b11c7026b0f1"
+      },
+      "current_stage": "Q03_pass",
+      "ea_id": "QM5_10006",
+      "last_activity": "2026-05-26T17:28:57+00:00",
+      "phases": {
+        "Q03": {
+          "attempts": 0,
+          "status": "done",
+          "surviving_symbols": [
+            "XAUUSD.DWX",
+            "XAUUSD.DWX",
+            "XAUUSD.DWX",
+            "XAUUSD.DWX",
+            "XAUUSD.DWX",
+            "EURUSD.DWX",
+            "EURUSD.DWX",
+            "EURUSD.DWX",
+            "EURUSD.DWX",
+            "USDJPY.DWX",
+            "USDJPY.DWX",
+            "GBPUSD.DWX",
+            "USDJPY.DWX",
+            "GBPUSD.DWX",
+            "EURUSD.DWX",
+            "GBPUSD.DWX",
+            "GBPUSD.DWX",
+            "GBPUSD.DWX",
+            "XAUUSD.DWX",
+            "EURUSD.DWX",
+            "GBPUSD.DWX",
+            "USDJPY.DWX"
+          ],
+          "task_id": "a2e0cac0-ff82-4016-8176-4c8330feef26",
+          "verdict": "PASS"
+        }
+      },
+      "review": null,
+      "slug": "ff-weekly-stop-straddle",
+      "total_attempts": 3
+    },
+    {
+      "build": {
+        "blocked_reason": null,
+        "smoke": null,
+        "status": "done",
+        "task_id": "11bae803-496c-4a8b-bc28-0994821bb9a5"
+      },
+      "current_stage": "Q02_strategy_fail

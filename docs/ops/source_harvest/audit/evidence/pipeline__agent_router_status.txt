@@ -1,0 +1,371 @@
+{
+  "agents": [
+    {
+      "agent_id": "claude",
+      "capabilities": [
+        "code",
+        "tests",
+        "repo_edit",
+        "repo",
+        "ops",
+        "research",
+        "review",
+        "strategy",
+        "summary"
+      ],
+      "enabled": false,
+      "max_parallel": 0,
+      "running": 0
+    },
+    {
+      "agent_id": "codex",
+      "capabilities": [
+        "code",
+        "tests",
+        "repo_edit",
+        "review",
+        "ops",
+        "research",
+        "strategy"
+      ],
+      "enabled": true,
+      "max_parallel": 5,
+      "running": 1
+    },
+    {
+      "agent_id": "gemini",
+      "capabilities": [
+        "code",
+        "tests",
+        "repo_edit",
+        "research",
+        "strategy",
+        "source_discovery",
+        "video_analysis"
+      ],
+      "enabled": true,
+      "max_parallel": 2,
+      "running": 0
+    }
+  ],
+  "tasks": [
+    {
+      "assigned_agent": null,
+      "count": 1,
+      "state": "APPROVED",
+      "task_type": "build_ea"
+    },
+    {
+      "assigned_agent": "gemini",
+      "count": 1,
+      "state": "APPROVED",
+      "task_type": "build_ea"
+    },
+    {
+      "assigned_agent": "claude",
+      "count": 3,
+      "state": "BLOCKED",
+      "task_type": "build_ea"
+    },
+    {
+      "assigned_agent": "codex",
+      "count": 2,
+      "state": "PASSED",
+      "task_type": "build_ea"
+    },
+    {
+      "assigned_agent": null,
+      "count": 9,
+      "state": "PIPELINE",
+      "task_type": "build_ea"
+    },
+    {
+      "assigned_agent": "codex",
+      "count": 5,
+      "state": "PIPELINE",
+      "task_type": "build_ea"
+    },
+    {
+      "assigned_agent": "codex:agents/board-advisor",
+      "count": 4,
+      "state": "PIPELINE",
+      "task_type": "build_ea"
+    },
+    {
+      "assigned_agent": null,
+      "count": 11,
+      "state": "RECYCLE",
+      "task_type": "build_ea"
+    },
+    {
+      "assigned_agent": "claude",
+      "count": 40,
+      "state": "RECYCLE",
+      "task_type": "build_ea"
+    },
+    {
+      "assigned_agent": "codex",
+      "count": 339,
+      "state": "RECYCLE",
+      "task_type": "build_ea"
+    },
+    {
+      "assigned_agent": "gemini",
+      "count": 20,
+      "state": "RECYCLE",
+      "task_type": "build_ea"
+    },
+    {
+      "assigned_agent": null,
+      "count": 1,
+      "state": "REVIEW",
+      "task_type": "build_ea"
+    },
+    {
+      "assigned_agent": "codex",
+      "count": 2,
+      "state": "APPROVED",
+      "task_type": "card_review"
+    },
+    {
+      "assigned_agent": "codex:agents/board-advisor",
+      "count": 1,
+      "state": "PASSED",
+      "task_type": "infra_repair"
+    },
+    {
+      "assigned_agent": "codex:agents/board-advisor",
+      "count": 1,
+      "state": "PIPELINE",
+      "task_type": "infra_repair"
+    },
+    {
+      "assigned_agent": null,
+      "count": 3,
+      "state": "APPROVED",
+      "task_type": "ops_issue"
+    },
+    {
+      "assigned_agent": "claude",
+      "count": 15,
+      "state": "APPROVED",
+      "task_type": "ops_issue"
+    },
+    {
+      "assigned_agent": "codex",
+      "count": 56,
+      "state": "APPROVED",
+      "task_type": "ops_issue"
+    },
+    {
+      "assigned_agent": "gemini",
+      "count": 1,
+      "state": "APPROVED",
+      "task_type": "ops_issue"
+    },
+    {
+      "assigned_agent": null,
+      "count": 2,
+      "state": "BLOCKED",
+      "task_type": "ops_issue"
+    },
+    {
+      "assigned_agent": "codex",
+      "count": 1,
+      "state": "BLOCKED",
+      "task_type": "ops_issue"
+    },
+    {
+      "assigned_agent": null,
+      "count": 3,
+      "state": "PASSED",
+      "task_type": "ops_issue"
+    },
+    {
+      "assigned_agent": "codex",
+      "count": 3,
+      "state": "PASSED",
+      "task_type": "ops_issue"
+    },
+    {
+      "assigned_agent": "codex:agents/board-advisor",
+      "count": 1,
+      "state": "PASSED",
+      "task_type": "ops_issue"
+    },
+    {
+      "assigned_agent": null,
+      "count": 2,
+      "state": "PIPELINE",
+      "task_type": "ops_issue"
+    },
+    {
+      "assigned_agent": "codex",
+      "count": 3,
+      "state": "PIPELINE",
+      "task_type": "ops_issue"
+    },
+    {
+      "assigned_agent": "codex:agents/board-advisor",
+      "count": 1,
+      "state": "PIPELINE",
+      "task_type": "ops_issue"
+    },
+    {
+      "assigned_agent": null,
+      "count": 1,
+      "state": "RECYCLE",
+      "task_type": "ops_issue"
+    },
+    {
+      "assigned_agent": "claude",
+      "count": 1,
+      "state": "RECYCLE",
+      "task_type": "ops_issue"
+    },
+    {
+      "assigned_agent": "codex",
+      "count": 7,
+      "state": "RECYCLE",
+      "task_type": "ops_issue"
+    },
+    {
+      "assigned_agent": "codex",
+      "count": 2,
+      "state": "REVIEW",
+      "task_type": "ops_issue"
+    },
+    {
+      "assigned_agent": "codex:agents/board-advisor",
+      "count": 3,
+      "state": "PIPELINE",
+      "task_type": "q02_infra_repair"
+    },
+    {
+      "assigned_agent": "codex",
+      "count": 1,
+      "state": "REVIEW",
+      "task_type": "q02_infra_repair"
+    },
+    {
+      "assigned_agent": null,
+      "count": 7,
+      "state": "APPROVED",
+      "task_type": "research_strategy"
+    },
+    {
+      "assigned_agent": "claude",
+      "count": 6,
+      "state": "APPROVED",
+      "task_type": "research_strategy"
+    },
+    {
+      "assigned_agent": "codex",
+      "count": 1,
+      "state": "APPROVED",
+      "task_type": "research_strategy"
+    },
+    {
+      "assigned_agent": "gemini",
+      "count": 25,
+      "state": "APPROVED",
+      "task_type": "research_strategy"
+    },
+    {
+      "assigned_agent": null,
+      "count": 1,
+      "state": "BLOCKED",
+      "task_type": "research_strategy"
+    },
+    {
+      "assigned_agent": "gemini",
+      "count": 1,
+      "state": "RECYCLE",
+      "task_type": "research_strategy"
+    },
+    {
+      "assigned_agent": "claude",
+      "count": 1,
+      "state": "APPROVED",
+      "task_type": "review_ea"
+    },
+    {
+      "assigned_agent": "codex",
+      "count": 22,
+      "state": "APPROVED",
+      "task_type": "review_ea"
+    },
+    {
+      "assigned_agent": "claude",
+      "count": 1,
+      "state": "BLOCKED",
+      "task_type": "review_ea"
+    },
+    {
+      "assigned_agent": "codex",
+      "count": 1,
+      "state": "IN_PROGRESS",
+      "task_type": "review_ea"
+    },
+    {
+      "assigned_agent": "codex",
+      "count": 3,
+      "state": "APPROVED",
+      "task_type": "review_strategy"
+    },
+    {
+      "assigned_agent": "claude",
+      "count": 3,
+      "state": "REVIEW",
+      "task_type": "review_strategy"
+    },
+    {
+      "assigned_agent": "codex",
+      "count": 5,
+      "state": "APPROVED",
+      "task_type": "triage_failure"
+    },
+    {
+      "assigned_agent": "codex",
+      "count": 2,
+      "state": "BLOCKED",
+      "task_type": "triage_failure"
+    },
+    {
+      "assigned_agent": "codex:agents/board-advisor",
+      "count": 2,
+      "state": "BLOCKED",
+      "task_type": "triage_failure"
+    },
+    {
+      "assigned_agent": null,
+      "count": 1,
+      "state": "FAILED",
+      "task_type": "triage_failure"
+    },
+    {
+      "assigned_agent": "codex",
+      "count": 4,
+      "state": "PASSED",
+      "task_type": "triage_failure"
+    },
+    {
+      "assigned_agent": "codex:agents/board-advisor",
+      "count": 3,
+      "state": "PASSED",
+      "task_type": "triage_failure"
+    },
+    {
+      "assigned_agent": null,
+      "count": 1,
+      "state": "PIPELINE",
+      "task_type": "triage_failure"
+    },
+    {
+      "assigned_agent": "codex:agents/board-advisor",
+      "count": 14,
+      "state": "PIPELINE",
+      "task_type": "triage_failure"
+    }
+  ]
+}

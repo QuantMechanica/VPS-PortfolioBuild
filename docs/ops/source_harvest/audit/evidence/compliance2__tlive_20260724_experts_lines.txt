@@ -1,0 +1,26 @@
+=== ALL source=Experts lines in 20260724.log ===
+L23: RG	0	05:17:01.726	Experts	expert QM5_11165_weiss-rsi-ma (AUDCAD,H1) loaded successfully
+L24: LK	0	05:17:01.760	Experts	expert QM5_12778_edgelab-audusd-eurjpy-cointegration (AUDUSD,Daily) loaded successfully
+L25: DG	0	05:17:01.807	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (AUDUSD,Daily) loaded successfully
+L26: PO	0	05:17:01.838	Experts	expert QM5_11165_weiss-rsi-ma (EURUSD,H1) loaded successfully
+L27: HO	0	05:17:01.856	Experts	expert QM5_11421_ohlc-daily-squeeze-reversal-d1 (EURUSD,Daily) loaded successfully
+L28: ID	0	05:17:01.893	Experts	expert QM5_11708_anon-market-squeeze-d1 (EURUSD,Daily) loaded successfully
+L29: NJ	0	05:17:01.910	Experts	expert QM5_10706_tv-mon-ls (GBPUSD,H1) loaded successfully
+L30: DQ	0	05:17:01.929	Experts	expert QM5_10939_grimes-context-pb (GBPUSD,H4) loaded successfully
+L31: KP	0	05:17:01.946	Experts	expert QM5_10911_grimes-complex-pb (GDAXI,H1) loaded successfully
+L32: HF	0	05:17:01.964	Experts	expert QM5_13128_pre-fomc-drift-ndx (NDX,H1) loaded successfully
+L33: LG	0	05:17:01.979	Experts	expert QM5_10440_mql5-ohlc-mtf (NDX,H1) loaded successfully
+L34: IN	0	05:17:01.995	Experts	expert QM5_11132_tm-cum-rsi2 (SP500,Daily) loaded successfully
+L35: DH	0	05:17:02.014	Experts	expert QM5_12969_usdjpy-gotobi-nakane-fix (USDJPY,M30) loaded successfully
+L36: PJ	0	05:17:02.030	Experts	expert QM5_10403_et-turtle20x (XAUUSD,Daily) loaded successfully
+L37: PE	0	05:17:02.048	Experts	expert QM5_10513_mql5-ichimoku (XAUUSD,Daily) loaded successfully
+L38: OM	0	05:17:02.083	Experts	expert QM5_12567_cum-rsi2-commodity (XAUUSD,Daily) loaded successfully
+L39: KH	0	05:17:02.144	Experts	expert QM5_12989_grimes-nested-pb-v2 (XAUUSD,H4) loaded successfully
+L40: MK	0	05:17:02.160	Experts	expert QM5_1556_aa-zak-mom12 (XAUUSD,Daily) loaded successfully
+L41: JP	0	05:17:02.175	Experts	expert QM5_12567_cum-rsi2-commodity (XNGUSD,Daily) loaded successfully
+L42: OO	0	05:17:02.193	Experts	expert QM5_10919_grimes-overshoot (XTIUSD,H4) loaded successfully
+L43: GF	0	05:17:02.209	Experts	expert QM5_13117_eurgbp-audjpy (EURGBP,Daily) loaded successfully
+L46: KD	0	05:17:02.224	Experts	expert QM5_13301_balke-minute-range-breakout (GDAXI,M5) loaded successfully
+L47: CF	0	05:17:02.239	Experts	expert QM5_13213_balke-gmt3-range-breakout (USDJPY,H1) loaded successfully
+L48: ML	0	05:17:02.254	Experts	expert QM5_1567_demark-td-reverse-sequential-h4 (EURUSD,H4) loaded successfully
+L49: DO	0	05:17:02.271	Experts	expert QM_AccountMonitor (EURUSD,H1) loaded successfully

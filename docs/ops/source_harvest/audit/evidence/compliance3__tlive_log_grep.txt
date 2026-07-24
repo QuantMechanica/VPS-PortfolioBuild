@@ -1,0 +1,60 @@
+
+=================== FILE C:\QM\mt5\T_Live\MT5_Base\logs\20260724.log lines= 60 ===================
+23: RG	0	05:17:01.726	Experts	expert QM5_11165_weiss-rsi-ma (AUDCAD,H1) loaded successfully
+24: LK	0	05:17:01.760	Experts	expert QM5_12778_edgelab-audusd-eurjpy-cointegration (AUDUSD,Daily) loaded successfully
+26: PO	0	05:17:01.838	Experts	expert QM5_11165_weiss-rsi-ma (EURUSD,H1) loaded successfully
+28: ID	0	05:17:01.893	Experts	expert QM5_11708_anon-market-squeeze-d1 (EURUSD,Daily) loaded successfully
+29: NJ	0	05:17:01.910	Experts	expert QM5_10706_tv-mon-ls (GBPUSD,H1) loaded successfully
+30: DQ	0	05:17:01.929	Experts	expert QM5_10939_grimes-context-pb (GBPUSD,H4) loaded successfully
+36: PJ	0	05:17:02.030	Experts	expert QM5_10403_et-turtle20x (XAUUSD,Daily) loaded successfully
+43: GF	0	05:17:02.209	Experts	expert QM5_13117_eurgbp-audjpy (EURGBP,Daily) loaded successfully
+46: KD	0	05:17:02.224	Experts	expert QM5_13301_balke-minute-range-breakout (GDAXI,M5) loaded successfully
+
+=================== FILE C:\QM\mt5\T_Live\MT5_Base\logs\20260723.log lines= 103 ===================
+24: MM	0	05:51:57.300	Experts	expert QM5_11165_weiss-rsi-ma (AUDCAD,H1) loaded successfully
+25: GQ	0	05:51:57.320	Experts	expert QM5_12778_edgelab-audusd-eurjpy-cointegration (AUDUSD,Daily) loaded successfully
+27: FE	0	05:51:57.514	Experts	expert QM5_11165_weiss-rsi-ma (EURUSD,H1) loaded successfully
+31: OM	0	05:51:57.904	Experts	expert QM5_11708_anon-market-squeeze-d1 (EURUSD,Daily) loaded successfully
+34: NI	0	05:51:57.937	Experts	expert QM5_10706_tv-mon-ls (GBPUSD,H1) loaded successfully
+35: LE	0	05:51:57.979	Experts	expert QM5_10939_grimes-context-pb (GBPUSD,H4) loaded successfully
+41: GI	0	05:51:58.210	Experts	expert QM5_10403_et-turtle20x (XAUUSD,Daily) loaded successfully
+48: IS	0	05:51:58.374	Experts	expert QM5_13117_eurgbp-audjpy (EURGBP,Daily) loaded successfully
+49: RI	0	05:51:58.390	Experts	expert QM5_13301_balke-minute-range-breakout (GDAXI,M5) loaded successfully
+
+=================== FILE C:\QM\mt5\T_Live\MT5_Base\logs\20260722.log lines= 173 ===================
+8: DR	0	06:17:31.232	Experts	expert QM5_11165_weiss-rsi-ma (AUDCAD,H1) loaded successfully
+9: ED	0	06:17:31.275	Experts	expert QM5_12778_edgelab-audusd-eurjpy-cointegration (AUDUSD,Daily) loaded successfully
+11: DK	0	06:17:31.494	Experts	expert QM5_11165_weiss-rsi-ma (EURUSD,H1) loaded successfully
+15: MP	0	06:17:31.640	Experts	expert QM5_11708_anon-market-squeeze-d1 (EURUSD,Daily) loaded successfully
+16: ON	0	06:17:31.694	Experts	expert QM5_10706_tv-mon-ls (GBPUSD,H1) loaded successfully
+17: QD	0	06:17:31.735	Experts	expert QM5_10939_grimes-context-pb (GBPUSD,H4) loaded successfully
+25: EK	0	06:17:32.123	Experts	expert QM5_10403_et-turtle20x (XAUUSD,Daily) loaded successfully
+32: ED	0	06:17:32.506	Experts	expert QM5_13117_eurgbp-audjpy (EURGBP,Daily) loaded successfully
+33: KF	0	06:17:32.547	Experts	expert QM5_13301_balke-minute-range-breakout (GDAXI,M5) loaded successfully
+51: MH	0	07:24:06.906	Experts	expert QM5_12778_edgelab-audusd-eurjpy-cointegration (AUDUSD,Daily) removed
+54: GI	0	07:24:06.962	Experts	expert QM5_13117_eurgbp-audjpy (EURGBP,Daily) removed
+55: RS	0	07:24:11.493	Experts	expert QM5_11165_weiss-rsi-ma (AUDCAD,H1) removed
+57: II	0	07:24:11.917	Experts	expert QM5_11165_weiss-rsi-ma (EURUSD,H1) removed
+59: GM	0	07:24:12.172	Experts	expert QM5_11708_anon-market-squeeze-d1 (EURUSD,Daily) removed
+63: JG	0	07:24:12.217	Experts	expert QM5_13301_balke-minute-range-breakout (GDAXI,M5) removed
+64: HM	0	07:24:12.226	Experts	expert QM5_10403_et-turtle20x (XAUUSD,Daily) removed
+66: HF	0	07:24:12.235	Experts	expert QM5_10706_tv-mon-ls (GBPUSD,H1) removed
+70: KN	0	07:24:12.254	Experts	expert QM5_10939_grimes-context-pb (GBPUSD,H4) removed
+82: CG	0	07:25:59.464	Experts	expert QM5_11165_weiss-rsi-ma (AUDCAD,H1) loaded successfully
+83: PK	0	07:25:59.557	Experts	expert QM5_12778_edgelab-audusd-eurjpy-cointegration (AUDUSD,Daily) loaded successfully
+85: CO	0	07:25:59.950	Experts	expert QM5_11165_weiss-rsi-ma (EURUSD,H1) loaded successfully
+91: GH	0	07:26:00.472	Experts	expert QM5_11708_anon-market-squeeze-d1 (EURUSD,Daily) loaded successfully
+92: IF	0	07:26:00.859	Experts	expert QM5_10706_tv-mon-ls (GBPUSD,H1) loaded successfully
+93: IM	0	07:26:01.252	Experts	expert QM5_10939_grimes-context-pb (GBPUSD,H4) loaded successfully
+99: IF	0	07:26:03.786	Experts	expert QM5_10403_et-turtle20x (XAUUSD,Daily) loaded successfully
+106: OJ	0	07:26:05.316	Experts	expert QM5_13117_eurgbp-audjpy (EURGBP,Daily) loaded successfully
+107: GQ	0	07:26:05.744	Experts	expert QM5_13301_balke-minute-range-breakout (GDAXI,M5) loaded successfully
+123: OI	0	13:25:21.990	Experts	expert QM5_11165_weiss-rsi-ma (AUDCAD,H1) loaded successfully
+124: HM	0	13:25:22.006	Experts	expert QM5_12778_edgelab-audusd-eurjpy-cointegration (AUDUSD,Daily) loaded successfully
+126: IQ	0	13:25:22.120	Experts	expert QM5_11165_weiss-rsi-ma (EURUSD,H1) loaded successfully
+128: FJ	0	13:25:22.185	Experts	expert QM5_11708_anon-market-squeeze-d1 (EURUSD,Daily) loaded successfully
+129: IP	0	13:25:22.204	Experts	expert QM5_10706_tv-mon-ls (GBPUSD,H1) loaded successfully
+130: LN	0	13:25:22.221	Experts	expert QM5_10939_grimes-context-pb (GBPUSD,H4) loaded successfully
+138: IP	0	13:25:22.444	Experts	expert QM5_10403_et-turtle20x (XAUUSD,Daily) loaded successfully
+145: HI	0	13:25:22.754	Experts	expert QM5_13117_eurgbp-audjpy (EURGBP,Daily) loaded successfully
+148: OO	0	13:25:22.804	Experts	expert QM5_13301_balke-minute-range-breakout (GDAXI,M5) loaded successfully

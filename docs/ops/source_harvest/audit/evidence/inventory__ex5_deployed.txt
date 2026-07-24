@@ -1,0 +1,25 @@
+24 QM5 .ex5 under C:/QM/mt5/T_Live/.../Experts/Live EAs
+2026-07-13T06:46:21  C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_10403_et-turtle20x.ex5
+2026-06-28T09:10:53  C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_10440_mql5-ohlc-mtf.ex5
+2026-07-04T00:18:32  C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_10476_mql5-pamxa.ex5
+2026-06-28T09:11:02  C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_10513_mql5-ichimoku.ex5
+2026-06-28T09:11:11  C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_10692_tv-ls-ms.ex5
+2026-07-13T06:46:46  C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_10706_tv-mon-ls.ex5
+2026-06-28T09:11:19  C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_10715_tv-asian-box.ex5
+2026-06-28T09:11:28  C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_10911_grimes-complex-pb.ex5
+2026-07-04T00:18:32  C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_10919_grimes-overshoot.ex5
+2026-06-28T09:11:37  C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_10939_grimes-context-pb.ex5
+2026-06-28T09:11:55  C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_11132_tm-cum-rsi2.ex5
+2026-07-17T16:30:45  C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_11165_weiss-rsi-ma.ex5
+2026-06-28T09:12:13  C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_11421_ohlc-daily-squeeze-reversal-d1.ex5
+2026-07-13T06:47:25  C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_11708_anon-market-squeeze-d1.ex5
+2026-06-28T09:12:22  C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_12567_cum-rsi2-commodity.ex5
+2026-07-13T06:47:35  C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_12778_edgelab-audusd-eurjpy-cointegration.ex5
+2026-07-13T06:47:40  C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_12969_usdjpy-gotobi-nakane-fix.ex5
+2026-07-04T00:18:32  C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_12989_grimes-nested-pb-v2.ex5
+2026-07-14T15:21:18  C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_13117_eurgbp-audjpy.ex5
+2026-07-13T06:47:54  C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_13128_pre-fomc-drift-ndx.ex5
+2026-07-14T14:49:23  C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_13213_balke-gmt3-range-breakout.ex5
+2026-07-16T07:02:28  C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_13301_balke-minute-range-breakout.ex5
+2026-07-13T06:47:49  C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_1556_aa-zak-mom12.ex5
+2026-07-15T13:45:25  C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_1567_demark-td-reverse-sequential-h4.ex5

@@ -1,0 +1,106 @@
+============================================================
+SETFILE 10513_XAUUSD bytes 1340
+L1: ;==========================================================
+L2: ; QM5 Set File
+L3: ; ea_id:        10513
+L4: ; ea_slug:      mql5-ichimoku
+L5: ; ea_version:   v5.0
+L6: ; set_version:  s20260628-d2c-r075
+L7: ; symbol:       XAUUSD.DWX
+L8: ; timeframe:    D1
+L9: ; environment:  live
+L10: ; magic_slot:   3
+L11: ; risk_mode:    PERCENT
+L12: ; portfolio_weight: 1.0
+L13: ; build_hash:   pending
+L14: ; author:       Claude
+L15: ; date:         2026-06-28
+L16: ;==========================================================
+L17: qm_magic_slot_offset=3
+L18: RISK_FIXED=0
+L19: RISK_PERCENT=0.3050
+L20: PORTFOLIO_WEIGHT=1.0
+L21: ; core filter library params; filter-on/off variants must be pre-declared
+L22: qm_filter_news_enabled=1
+L23: qm_filter_news_mode=3
+L24: qm_filter_regime_enabled=0
+L25: qm_filter_regime_lookback_bars=100
+L26: qm_filter_regime_bull_return_pct=2.0
+L27: qm_filter_regime_bear_return_pct=2.0
+L28: qm_filter_volatility_enabled=0
+L29: qm_filter_volatility_atr_period=14
+L30: qm_filter_volatility_lookback_bars=50
+L31: qm_filter_volatility_compression_ratio=0.75
+L32: qm_filter_volatility_expansion_ratio=1.25
+L33: ; strategy-specific params from card must be appended below this line
+L34: ; card_defaults_source=q12_opt:20260627T132146Z:q06_6_18_68_18
+L35: ; q12_selection: 20260627T132146Z / q06_6_18_68_18
+L36: ; q12_evidence: D:\QM\strategy_farm\scratch\q12_opt\20260627T132146Z\results.csv
+L37: strategy_tenkan_period=6
+L38: strategy_kijun_period=18
+L39: strategy_senkou_b_period=68
+L40: strategy_atr_period=18
+L41: 
+============================================================
+SETFILE 1567_EURUSD bytes 1033
+L1: ;==========================================================
+L2: ; QM5 Set File
+L3: ; ea_id:        1567
+L4: ; ea_slug:      demark-td-reverse-sequential-h4
+L5: ; ea_version:   v5.0
+L6: ; set_version:  s20260519-001
+L7: ; symbol:       EURUSD.DWX
+L8: ; timeframe:    H4
+L9: ; environment:  live
+L10: ; magic_slot:   7
+L11: ; risk_mode:    PERCENT
+L12: ; portfolio_weight: 1
+L13: ; build_hash:   71c2f84b3e694210176e928fcaf688eff3f59c7efacdb275511e474c35a9e45c
+L14: ; author:       Development
+L15: ; date:         2026-07-19
+L16: ;==========================================================
+L17: qm_magic_slot_offset=7
+L18: RISK_FIXED=0
+L19: RISK_PERCENT=0.1791
+L20: PORTFOLIO_WEIGHT=1
+L21: ; strategy-specific params from card must be appended below this line
+L22: ; card_defaults_source=ea_input_defaults (materialized 2026-07-19 push: setgen param-empty repair)
+L23: strategy_setup_bars=9
+L24: strategy_countdown_bars=13
+L25: strategy_countdown_timeout=24
+L26: strategy_atr_period=14
+L27: strategy_sl_atr_buffer=0.5
+L28: strategy_sl_atr_cap=3.0
+L29: strategy_tp_atr_mult=1.5
+L30: strategy_spread_atr_mult=0.4
+L31: strategy_regime_sma_period=200
+L32: strategy_time_stop_h4_bars=12
+============================================================
+SETFILE 13213_USDJPY bytes 801
+L1: ;==========================================================
+L2: ; QM5 Set File
+L3: ; ea_id:        13213
+L4: ; ea_slug:      balke-gmt3-range-breakout
+L5: ; ea_version:   v5.0
+L6: ; set_version:  s20260714-001
+L7: ; symbol:       USDJPY.DWX
+L8: ; timeframe:    H1
+L9: ; environment:  live
+L10: ; magic_slot:   0
+L11: ; risk_mode:    PERCENT
+L12: ; portfolio_weight: 1
+L13: ; build_hash:   321b1dca0064686100ee85d0ba614b0bcf0cd3096ca1bf9d5380ddade8a9ad4a
+L14: ; author:       Development
+L15: ; date:         2026-07-19
+L16: ;==========================================================
+L17: qm_ea_id=13213
+L18: qm_magic_slot_offset=0
+L19: RISK_FIXED=0
+L20: RISK_PERCENT=0.0431
+L21: PORTFOLIO_WEIGHT=1
+L22: ; strategy-specific params from card/input defaults must be appended below this line
+L23: ; card_defaults_source=not_found
+L24: strategy_range_start_hour=3
+L25: strategy_range_end_hour=6
+L26: strategy_exit_hour=18
+L27: 

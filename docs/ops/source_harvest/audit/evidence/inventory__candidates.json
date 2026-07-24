@@ -1,0 +1,126 @@
+{
+ "generated_from": "recon inventory agent 2026-07-24",
+ "count": 15,
+ "candidates": [
+  {
+   "ea_id": 10123,
+   "symbol": "XAUUSD.DWX",
+   "work_item_id": "c042c58f-14f6-40a3-b661-585e1a55e4bf",
+   "state": "Q10_PASS(done)",
+   "q10_evidence": "D:\\QM\\reports\\work_items\\c042c58f-14f6-40a3-b661-585e1a55e4bf\\QM5_10123\\Q10\\XAUUSD_DWX\\aggregate.json",
+   "source": "work_items phase=Q10 verdict=PASS; not in live book"
+  },
+  {
+   "ea_id": 13013,
+   "symbol": "NDX.DWX",
+   "work_item_id": "f8a81085-838d-40f4-82d2-ac91b7484351",
+   "state": "Q10_PASS(done)",
+   "q10_evidence": "D:\\QM\\reports\\work_items\\f8a81085-838d-40f4-82d2-ac91b7484351\\QM5_13013\\Q10\\NDX_DWX\\aggregate.json",
+   "source": "work_items phase=Q10 verdict=PASS; not in live book"
+  },
+  {
+   "ea_id": 10128,
+   "symbol": "XAUUSD.DWX",
+   "work_item_id": "c3ea0dcb-96f9-4f3f-a79f-7dde50417f62",
+   "state": "Q10_PASS(done)",
+   "q10_evidence": "D:\\QM\\reports\\work_items\\c3ea0dcb-96f9-4f3f-a79f-7dde50417f62\\QM5_10128\\Q10\\XAUUSD_DWX\\aggregate.json",
+   "source": "work_items phase=Q10 verdict=PASS; not in live book"
+  },
+  {
+   "ea_id": 10145,
+   "symbol": "XAUUSD.DWX",
+   "work_item_id": "7c0b521a-83fb-43db-9286-2c6b9db63e9c",
+   "state": "Q10_PASS(done)",
+   "q10_evidence": "D:\\QM\\reports\\work_items\\7c0b521a-83fb-43db-9286-2c6b9db63e9c\\QM5_10145\\Q10\\XAUUSD_DWX\\aggregate.json",
+   "source": "work_items phase=Q10 verdict=PASS (latest of 3 Q10-PASS wis: 8eafc3ce,a4c37b83,7c0b521a); not in live book"
+  },
+  {
+   "ea_id": 10183,
+   "symbol": "XAUUSD.DWX",
+   "work_item_id": "2e13a544-899a-4bf2-9d23-eb2cfa196b69",
+   "state": "Q10_PASS(done)",
+   "q10_evidence": "D:\\QM\\reports\\work_items\\2e13a544-899a-4bf2-9d23-eb2cfa196b69\\QM5_10183\\Q10\\XAUUSD_DWX\\aggregate.json",
+   "source": "work_items phase=Q10 verdict=PASS; not in live book"
+  },
+  {
+   "ea_id": 20048,
+   "symbol": "XTIUSD.DWX",
+   "work_item_id": "25adbc0c-7b9e-4340-9f60-c288ba32b3d3",
+   "state": "Q10_PASS(done)",
+   "q10_evidence": "D:\\QM\\reports\\work_items\\25adbc0c-7b9e-4340-9f60-c288ba32b3d3\\QM5_20048\\Q10\\XTIUSD_DWX\\aggregate.json",
+   "source": "work_items phase=Q10 verdict=PASS; not in live book"
+  },
+  {
+   "ea_id": 10700,
+   "symbol": "XAUUSD.DWX",
+   "work_item_id": "55af03d6-12d2-485e-a154-e890cb02790a",
+   "state": "Q12_REVIEW_READY",
+   "q10_evidence": "D:\\QM\\reports\\work_items\\55af03d6-12d2-485e-a154-e890cb02790a\\QM5_10700\\Q09_PORTFOLIO\\XAUUSD_DWX\\aggregate.json",
+   "source": "portfolio_candidates table (explicit Q11-Q13 queue); not in live book"
+  },
+  {
+   "ea_id": 10815,
+   "symbol": "EURUSD.DWX",
+   "work_item_id": "a7398b69-db24-4d47-99d7-ee7bf1584583",
+   "state": "Q12_REVIEW_READY",
+   "q10_evidence": "D:\\QM\\reports\\work_items\\a7398b69-db24-4d47-99d7-ee7bf1584583\\QM5_10815\\Q09_PORTFOLIO\\EURUSD_DWX\\aggregate.json",
+   "source": "portfolio_candidates; not in live book"
+  },
+  {
+   "ea_id": 10815,
+   "symbol": "GDAXI.DWX",
+   "work_item_id": "ae828ece-f1ab-4670-9f87-214b0400dc5a",
+   "state": "Q12_REVIEW_READY",
+   "q10_evidence": "D:\\QM\\reports\\work_items\\ae828ece-f1ab-4670-9f87-214b0400dc5a\\QM5_10815\\Q09_PORTFOLIO\\GDAXI_DWX\\aggregate.json",
+   "source": "portfolio_candidates; not in live book"
+  },
+  {
+   "ea_id": 12474,
+   "symbol": "GBPUSD.DWX",
+   "work_item_id": "c028199b-4e70-4948-a9d9-0450492ec852",
+   "state": "Q12_REVIEW_READY",
+   "q10_evidence": "D:\\QM\\reports\\work_items\\c028199b-4e70-4948-a9d9-0450492ec852\\QM5_12474\\Q09_PORTFOLIO\\GBPUSD_DWX\\aggregate.json",
+   "source": "portfolio_candidates; not in live book"
+  },
+  {
+   "ea_id": 1567,
+   "symbol": "XAGUSD.DWX",
+   "work_item_id": "acee11e2-7a30-417c-ba86-40b05b2076b5",
+   "state": "Q12_REVIEW_READY",
+   "q10_evidence": "D:\\QM\\reports\\work_items\\acee11e2-7a30-417c-ba86-40b05b2076b5\\QM5_1567\\Q09_PORTFOLIO\\XAGUSD_DWX\\aggregate.json",
+   "source": "portfolio_candidates; ea 1567 live on EURUSD only, XAGUSD sleeve is a distinct not-live candidate"
+  },
+  {
+   "ea_id": 10476,
+   "symbol": "USDCAD.DWX",
+   "work_item_id": "6e9bc500-5280-490f-9704-afd15259ce90",
+   "state": "Q12_REVIEW_READY (FORMER-LIVE, swapped out)",
+   "q10_evidence": "D:\\QM\\reports\\work_items\\6e9bc500-5280-490f-9704-afd15259ce90\\QM5_10476\\Q09_PORTFOLIO\\USDCAD_DWX\\aggregate.json",
+   "source": "portfolio_candidates; in DRAFT manifest but NOT loaded live (swapped out ~07-19); ex5 retained in Live EAs"
+  },
+  {
+   "ea_id": 10692,
+   "symbol": "NDX.DWX",
+   "work_item_id": "607f7b0c-ecd8-4f72-a3e7-ca84bbd0b0ca",
+   "state": "EVIDENCE_STALE (FORMER-LIVE, swapped out)",
+   "q10_evidence": "D:\\QM\\reports\\portfolio\\recert_20260627T113037+0000\\summary.json",
+   "source": "portfolio_candidates; in DRAFT manifest but NOT loaded live; ex5 retained"
+  },
+  {
+   "ea_id": 10715,
+   "symbol": "USDJPY.DWX",
+   "work_item_id": "58d8956f-b849-42aa-8734-407d8a48de65",
+   "state": "EVIDENCE_STALE (FORMER-LIVE, swapped out)",
+   "q10_evidence": "D:\\QM\\reports\\work_items\\58d8956f-b849-42aa-8734-407d8a48de65\\QM5_10715\\Q09_PORTFOLIO\\USDJPY_DWX\\aggregate.json",
+   "source": "portfolio_candidates; in DRAFT manifest but NOT loaded live; ex5 retained"
+  },
+  {
+   "ea_id": 10940,
+   "symbol": "XAUUSD.DWX",
+   "work_item_id": "e25da444-2e84-402c-9ff1-a4f7493731a6",
+   "state": "Q12_REVIEW_READY (FORMER-LIVE, fully retired)",
+   "q10_evidence": "D:\\QM\\reports\\portfolio\\recert_20260627T113037+0000\\summary.json",
+   "source": "portfolio_candidates; EA log last event 2026-07-05, no .ex5 deployed, not loaded"
+  }
+ ]
+}

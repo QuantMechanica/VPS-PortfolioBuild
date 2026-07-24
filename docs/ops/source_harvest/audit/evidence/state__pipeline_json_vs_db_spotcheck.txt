@@ -1,0 +1,48 @@
+===  QM5_10013  ===
+  pipeline_state.json: status=NOT_RUN latest_pass_phase=None final_verdict=UNKNOWN phase_verdicts={}
+  work_items: Q02 done PASS x31
+  work_items: Q03 done PASS x5
+  work_items: Q04 done FAIL x8
+  work_items last updated: 2026-06-16T21:22:54+00:00
+===  QM5_10017  ===
+  pipeline_state.json: status=NOT_RUN latest_pass_phase=None final_verdict=UNKNOWN phase_verdicts={}
+  work_items: Q02 done FAIL x2
+  work_items: Q02 done INFRA_FAIL x1
+  work_items: Q02 done PASS x7
+  work_items: Q03 done FAIL x5
+  work_items: Q03 done INFRA_FAIL x8
+  work_items: Q03 done PASS x48
+  work_items: Q04 done FAIL x48
+  work_items: Q04 done INFRA_FAIL x2
+  work_items: Q04 done PASS_LOWFREQ x1
+  work_items: Q05 done FAIL x1
+  work_items last updated: 2026-07-03T22:12:55+00:00
+===  QM5_10028  ===
+  pipeline_state.json: status=NOT_RUN latest_pass_phase=None final_verdict=UNKNOWN phase_verdicts={}
+  work_items: Q02 done FAIL x5
+  work_items: Q02 done INFRA_FAIL x1
+  work_items: Q02 done PASS x10
+  work_items: Q02 failed None x3
+  work_items: Q02 failed INFRA_FAIL x8
+  work_items: Q02 pending None x1
+  work_items: Q03 done PASS x56
+  work_items: Q04 done FAIL x55
+  work_items: Q04 done INFRA_FAIL x1
+  work_items last updated: 2026-07-23T04:20:12+00:00
+===  QM5_10035  ===
+  pipeline_state.json: status=NOT_RUN latest_pass_phase=None final_verdict=UNKNOWN phase_verdicts={}
+  work_items: Q02 done INFRA_FAIL x2
+  work_items: Q02 done PASS x25
+  work_items: Q03 done INFRA_FAIL x3
+  work_items: Q03 done PASS x54
+  work_items: Q04 done FAIL x58
+  work_items: Q04 done PASS_SOFT x1
+  work_items: Q05 done FAIL x1
+  work_items last updated: 2026-07-20T05:04:12+00:00
+===  QM5_10048  ===
+  pipeline_state.json: status=NOT_RUN latest_pass_phase=None final_verdict=UNKNOWN phase_verdicts={}
+  work_items: Q02 done PASS x48
+  work_items: Q03 done PASS x118
+  work_items: Q04 done FAIL x122
+  work_items: Q04 done INFRA_FAIL x1
+  work_items last updated: 2026-06-22T06:12:40+00:00

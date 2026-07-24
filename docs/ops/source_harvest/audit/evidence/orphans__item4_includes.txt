@@ -1,0 +1,11 @@
+# Item4: duplicate .mqh in framework + terminal include divergence
+## Only duplicate basename in framework: QM_Branding.mqh (2 copies, DIFFERENT content)
+include/QM_Branding.mqh      sha=acadbb5f... (ROOT - the compiled one, included by include/QM/QM_ChartUI.mqh via ..\QM_Branding.mqh; git last-touch 2026-04-27)
+include/QM/QM_Branding.mqh   sha=0be8df2d... (ORPHAN - nothing #includes QM/QM_Branding.mqh; git last-touch 2026-05-07, NEWER edit went to non-included copy)
+## repo-wide #include of QM_Branding: ONLY framework/include/QM/QM_ChartUI.mqh:4 -> ..\QM_Branding.mqh (resolves to root copy)
+## EA-local .mqh (unique basenames, not dupes): TrendContinuationReader/ICT_LiquidityRules/Strategy_SessionClock/Strategy_MAC5Core/_mql5_codebase_rebuild_common
+## Terminal Include/QM divergence vs repo (BENIGN - compile_one.ps1 Sync-FrameworkIncludes re-copies before each compile, lines 154-167 called 233):
+T1: match=42 diff=0 missing_in_terminal=0 (repo total=42)
+T5: match=20 diff=14 missing_in_terminal=8 (repo total=42)
+T10: match=4 diff=33 missing_in_terminal=5 (repo total=42)
+T_Live Include/QM = EMPTY (0 files)

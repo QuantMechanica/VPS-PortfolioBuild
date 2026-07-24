@@ -1,0 +1,44 @@
+=== agent_tasks total ===
+650
+
+=== agent_tasks by state ===
+RECYCLE 420
+APPROVED 149
+PIPELINE 43
+PASSED 17
+BLOCKED 12
+REVIEW 7
+FAILED 1
+IN_PROGRESS 1
+
+=== agent_tasks by (assigned_agent, state) ===
+None PIPELINE 12
+None RECYCLE 12
+None APPROVED 11
+None BLOCKED 3
+None PASSED 3
+None FAILED 1
+None REVIEW 1
+'claude' RECYCLE 41
+'claude' APPROVED 22
+'claude' BLOCKED 4
+'claude' REVIEW 3
+'codex' RECYCLE 346
+'codex' APPROVED 89
+'codex' PASSED 9
+'codex' PIPELINE 8
+'codex' BLOCKED 3
+'codex' REVIEW 3
+'codex' IN_PROGRESS 1
+'codex:agents/board-advisor' PIPELINE 23
+'codex:agents/board-advisor' PASSED 5
+'codex:agents/board-advisor' BLOCKED 2
+'gemini' APPROVED 27
+'gemini' RECYCLE 21
+
+=== distinct assigned_agent values ===
+'codex' 459
+'claude' 70
+'gemini' 48
+None 43
+'codex:agents/board-advisor' 30

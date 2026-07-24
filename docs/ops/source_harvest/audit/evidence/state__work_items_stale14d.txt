@@ -1,0 +1,73 @@
+cutoff (14d): 2026-07-10T00:00:00+00:00
+
+total pending+active: 2361
+stale (updated_at >14d old) pending/active: 1318
+malformed updated_at: 0
+
+=== stale non-terminal by phase/status ===
+('Q02', 'pending') 1317
+('Q03', 'pending') 1
+
+=== stale items detail (up to 60, oldest first) ===
+2026-06-09 Q02 pending QM5_1081 UK100.DWX att=0 claimed=None 17d1c78d
+2026-06-09 Q02 pending QM5_1048 UK100.DWX att=0 claimed=None 0c976922
+2026-06-25 Q02 pending QM5_1081 EURUSD.DWX att=0 claimed=None 59b4fb58
+2026-06-25 Q02 pending QM5_1081 WS30.DWX att=0 claimed=None 859bac1f
+2026-06-25 Q02 pending QM5_1081 GDAXI.DWX att=0 claimed=None 0c4b0dae
+2026-06-25 Q02 pending QM5_1081 GBPUSD.DWX att=0 claimed=None 8ed4d54c
+2026-06-25 Q02 pending QM5_1081 USDJPY.DWX att=0 claimed=None d1a35ad7
+2026-06-25 Q02 pending QM5_1081 AUDUSD.DWX att=0 claimed=None 9b1fa63a
+2026-06-25 Q02 pending QM5_1081 USDCAD.DWX att=0 claimed=None 3fcc3e2b
+2026-06-25 Q02 pending QM5_1081 USDCHF.DWX att=0 claimed=None 6c45e162
+2026-06-25 Q02 pending QM5_1081 NZDUSD.DWX att=0 claimed=None ff897587
+2026-06-27 Q02 pending QM5_1099 CADCHF.DWX att=0 claimed=None 3b0e6e25
+2026-06-27 Q02 pending QM5_1099 AUDNZD.DWX att=0 claimed=None 1b345cb1
+2026-06-27 Q02 pending QM5_1099 AUDCHF.DWX att=0 claimed=None cc7c3763
+2026-06-27 Q02 pending QM5_1099 AUDJPY.DWX att=0 claimed=None b3ca8f10
+2026-06-27 Q02 pending QM5_1099 AUDCAD.DWX att=0 claimed=None 5d663394
+2026-06-27 Q02 pending QM5_1132 AUDJPY.DWX att=0 claimed=None aaef4d09
+2026-06-27 Q02 pending QM5_1132 AUDCHF.DWX att=0 claimed=None 19965d7b
+2026-06-27 Q02 pending QM5_1132 AUDCAD.DWX att=0 claimed=None c7c98cbb
+2026-06-27 Q02 pending QM5_1132 AUDUSD.DWX att=0 claimed=None af0f09d9
+2026-06-27 Q02 pending QM5_1132 CADCHF.DWX att=0 claimed=None 54457d24
+2026-06-27 Q02 pending QM5_1132 CADJPY.DWX att=0 claimed=None 79a8fea3
+2026-06-27 Q02 pending QM5_1132 CHFJPY.DWX att=0 claimed=None b8a4623b
+2026-06-27 Q02 pending QM5_1132 EURCAD.DWX att=0 claimed=None be7b677b
+2026-06-27 Q02 pending QM5_1132 EURCHF.DWX att=0 claimed=None 414c112d
+2026-06-27 Q02 pending QM5_1132 EURAUD.DWX att=0 claimed=None 8cdfe089
+2026-06-27 Q02 pending QM5_1132 EURGBP.DWX att=0 claimed=None 86a8ab69
+2026-06-27 Q02 pending QM5_1132 EURJPY.DWX att=0 claimed=None bea14df9
+2026-06-27 Q02 pending QM5_1132 EURNZD.DWX att=0 claimed=None 48ce07a2
+2026-06-27 Q02 pending QM5_1132 GBPAUD.DWX att=0 claimed=None 044898a9
+2026-06-27 Q02 pending QM5_1132 GBPJPY.DWX att=0 claimed=None 591469eb
+2026-06-27 Q02 pending QM5_1132 GBPNZD.DWX att=0 claimed=None 0aa0e276
+2026-06-27 Q02 pending QM5_1132 GBPCAD.DWX att=0 claimed=None ce282008
+2026-06-27 Q02 pending QM5_1132 NZDCHF.DWX att=0 claimed=None 66f605e8
+2026-06-27 Q02 pending QM5_1132 NZDJPY.DWX att=0 claimed=None 2604452e
+2026-06-27 Q02 pending QM5_1132 NZDUSD.DWX att=0 claimed=None fdcc39ee
+2026-06-27 Q02 pending QM5_1132 USDCAD.DWX att=0 claimed=None 675abf3b
+2026-06-27 Q02 pending QM5_10025 AUDCAD.DWX att=0 claimed=None 8734e7b5
+2026-06-27 Q02 pending QM5_10025 AUDJPY.DWX att=0 claimed=None 07e7f112
+2026-06-27 Q02 pending QM5_10025 AUDUSD.DWX att=0 claimed=None e5ab9d0f
+2026-06-27 Q02 pending QM5_10025 CADCHF.DWX att=0 claimed=None ca7d0735
+2026-06-27 Q02 pending QM5_10025 CHFJPY.DWX att=0 claimed=None 5d2c95d6
+2026-06-27 Q02 pending QM5_10025 CADJPY.DWX att=0 claimed=None 60e26cc5
+2026-06-27 Q02 pending QM5_1099 AUDUSD.DWX att=0 claimed=None 047aa7f9
+2026-06-27 Q02 pending QM5_1099 CADJPY.DWX att=0 claimed=None a6a96316
+2026-06-27 Q02 pending QM5_10081 XAUUSD.DWX att=0 claimed=None f75ce612
+2026-06-27 Q02 pending QM5_1132 USDJPY.DWX att=0 claimed=None 1028d20f
+2026-06-27 Q02 pending QM5_10050 GBPUSD.DWX att=0 claimed=None eb0f9c58
+2026-06-27 Q02 pending QM5_1132 EURUSD.DWX att=0 claimed=None 08c75930
+2026-06-27 Q02 pending QM5_1132 GBPUSD.DWX att=0 claimed=None 77a0540d
+2026-06-27 Q02 pending QM5_9107 XAUUSD.DWX att=0 claimed=None 34b76994
+2026-06-27 Q02 pending QM5_1066 XAUUSD.DWX att=0 claimed=None b7d71540
+2026-06-27 Q02 pending QM5_10034 XAUUSD.DWX att=0 claimed=None d7364501
+2026-06-27 Q02 pending QM5_2002 XAUUSD.DWX att=0 claimed=None 2aaff504
+2026-06-27 Q02 pending QM5_1383 USDJPY.DWX att=0 claimed=None f9efd58b
+2026-06-27 Q02 pending QM5_1387 USDJPY.DWX att=0 claimed=None da76f739
+2026-06-27 Q02 pending QM5_1400 USDJPY.DWX att=0 claimed=None 5f8e3fb4
+2026-06-27 Q02 pending QM5_1433 USDJPY.DWX att=0 claimed=None 26f2c39f
+2026-06-27 Q02 pending QM5_1434 USDJPY.DWX att=0 claimed=None 9a550d7e
+2026-06-27 Q02 pending QM5_1435 USDJPY.DWX att=0 claimed=None bcd6a05e
+
+=== malformed updated_at rows ===

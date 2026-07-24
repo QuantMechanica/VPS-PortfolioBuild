@@ -1,0 +1,25 @@
+24 deployed numbered presets (active live book) in C:/QM/mt5/T_Live/MT5_Base/MQL5/Presets/
+01_GDAXI_M5_QM5_13301_balke-minute-range-breakout.set
+02_USDJPY_H1_QM5_13213_balke-gmt3-range-breakout.set
+03_EURUSD_H4_QM5_1567_demark-td-reverse-sequential-h4.set
+04_XTIUSD_H4_QM5_10919_grimes-overshoot.set
+05_AUDCAD_H1_QM5_11165_weiss-rsi-ma.set
+06_AUDUSD_D1_QM5_12778_edgelab-audusd-eurjpy-cointegration.set
+07_AUDUSD_D1_QM5_11421_ohlc-daily-squeeze-reversal-d1.set
+08_EURUSD_H1_QM5_11165_weiss-rsi-ma.set
+09_EURUSD_D1_QM5_11421_ohlc-daily-squeeze-reversal-d1.set
+10_EURUSD_D1_QM5_11708_anon-market-squeeze-d1.set
+11_GBPUSD_H1_QM5_10706_tv-mon-ls.set
+12_GBPUSD_H4_QM5_10939_grimes-context-pb.set
+13_GDAXI_H1_QM5_10911_grimes-complex-pb.set
+14_NDX_H1_QM5_13128_pre-fomc-drift-ndx.set
+15_NDX_H1_QM5_10440_mql5-ohlc-mtf.set
+16_SP500_D1_QM5_11132_tm-cum-rsi2.set
+17_USDJPY_M30_QM5_12969_usdjpy-gotobi-nakane-fix.set
+18_XAUUSD_D1_QM5_10403_et-turtle20x.set
+19_XAUUSD_D1_QM5_10513_mql5-ichimoku.set
+20_XAUUSD_D1_QM5_12567_cum-rsi2-commodity.set
+21_XAUUSD_H4_QM5_12989_grimes-nested-pb-v2.set
+22_XAUUSD_D1_QM5_1556_aa-zak-mom12.set
+23_XNGUSD_D1_QM5_12567_cum-rsi2-commodity.set
+24_EURGBP_D1_QM5_13117_eurgbp-audjpy.set

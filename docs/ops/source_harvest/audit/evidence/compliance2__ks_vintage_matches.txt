@@ -1,0 +1,11 @@
+EXISTS: True
+HEADER: "file","last_write","size_bytes","ks_halt_channel"
+--- rows matching my ea_ids ---
+"C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_10513_mql5-ichimoku.ex5","2026-06-28 09:11:02","286118","DEAD_PRE_FIX"
+"C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_10919_grimes-overshoot.ex5","2026-07-04 00:18:32","206326","DEAD_PRE_FIX"
+"C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_11165_weiss-rsi-ma.ex5","2026-07-17 16:30:45","323322","OK_POST_FIX"
+"C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_11421_ohlc-daily-squeeze-reversal-d1.ex5","2026-06-28 09:12:13","278902","DEAD_PRE_FIX"
+"C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_12567_cum-rsi2-commodity.ex5","2026-06-28 09:12:22","282416","DEAD_PRE_FIX"
+"C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_12989_grimes-nested-pb-v2.ex5","2026-07-04 00:18:32","309006","DEAD_PRE_FIX"
+"C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_13213_balke-gmt3-range-breakout.ex5","2026-07-14 14:49:23","330342","OK_POST_FIX"
+"C:\QM\mt5\T_Live\MT5_Base\MQL5\Experts\Live EAs\QM5_1567_demark-td-reverse-sequential-h4.ex5","2026-07-15 13:45:25","311150","OK_POST_FIX"

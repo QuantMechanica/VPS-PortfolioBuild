@@ -1,0 +1,41 @@
+live_book_pulse.json generated_at_utc=2026-07-24T05:00:02Z verdict=ALARM schema=2
+account_id=4000090541 accounts_seen={'4000090541': 507}
+latest_terminal_start(broker)=2026-07-24T05:17:01.014000
+last_terminal_sync={'file': 'C:\\QM\\mt5\\T_Live\\MT5_Base\\logs\\20260724.log', 'line': "HG 0 05:17:02.438 Network '4000090541': terminal synchronized with Tradeslide Trading Tech Limited: 3 positions, 5 orders, 841 symbols, 0 spreads", 'orders': 5, 'positions': 3, 'ts_terminal': '2026-07-24T05:17:02.438000'}
+loaded_sleeve_count=24  ea_log_sleeve_count=28  active_TM_entries=37
+book_equity={'day_pnl': -147.11, 'equity': 101683.41, 'month_pnl': -147.11, 'ts_broker': '2026-07-24T03:30:04', 'ts_utc': '2026-07-24T00:30:01.546Z'}
+experts_enabled_config=True
+live_presets.preset_count=0 discovered=0  <-- PARSER MISS: PRESET_FILE_RE expects slotN_..._magicNNN naming; deployed files renamed NN_SYMBOL_TF_QM5_..
+book_manifest path=D:\QM\reports\portfolio\portfolio_manifest_sunday_23sleeve_DRAFT_20260711.json status=DRAFT declared=23 actual=23 sha256=493fff6f18594928ec5727fed616b5a736acfdefeb636df76961acc9a24b8db1
+
+=== 24 LOADED SLEEVES (terminal journal, filtered to latest_terminal_start) ===
+  ea_id=1556 sym=XAUUSD tf=Daily ts=2026-07-24T05:17:02.160000
+  ea_id=1567 sym=EURUSD tf=H4 ts=2026-07-24T05:17:02.254000
+  ea_id=10403 sym=XAUUSD tf=Daily ts=2026-07-24T05:17:02.030000
+  ea_id=10440 sym=NDX tf=H1 ts=2026-07-24T05:17:01.979000
+  ea_id=10513 sym=XAUUSD tf=Daily ts=2026-07-24T05:17:02.048000
+  ea_id=10706 sym=GBPUSD tf=H1 ts=2026-07-24T05:17:01.910000
+  ea_id=10911 sym=GDAXI tf=H1 ts=2026-07-24T05:17:01.946000
+  ea_id=10919 sym=XTIUSD tf=H4 ts=2026-07-24T05:17:02.193000
+  ea_id=10939 sym=GBPUSD tf=H4 ts=2026-07-24T05:17:01.929000
+  ea_id=11132 sym=SP500 tf=Daily ts=2026-07-24T05:17:01.995000
+  ea_id=11165 sym=AUDCAD tf=H1 ts=2026-07-24T05:17:01.726000
+  ea_id=11165 sym=EURUSD tf=H1 ts=2026-07-24T05:17:01.838000
+  ea_id=11421 sym=AUDUSD tf=Daily ts=2026-07-24T05:17:01.807000
+  ea_id=11421 sym=EURUSD tf=Daily ts=2026-07-24T05:17:01.856000
+  ea_id=11708 sym=EURUSD tf=Daily ts=2026-07-24T05:17:01.893000
+  ea_id=12567 sym=XAUUSD tf=Daily ts=2026-07-24T05:17:02.083000
+  ea_id=12567 sym=XNGUSD tf=Daily ts=2026-07-24T05:17:02.175000
+  ea_id=12778 sym=AUDUSD tf=Daily ts=2026-07-24T05:17:01.760000
+  ea_id=12969 sym=USDJPY tf=M30 ts=2026-07-24T05:17:02.014000
+  ea_id=12989 sym=XAUUSD tf=H4 ts=2026-07-24T05:17:02.144000
+  ea_id=13117 sym=EURGBP tf=Daily ts=2026-07-24T05:17:02.209000
+  ea_id=13128 sym=NDX tf=H1 ts=2026-07-24T05:17:01.964000
+  ea_id=13213 sym=USDJPY tf=H1 ts=2026-07-24T05:17:02.239000
+  ea_id=13301 sym=GDAXI tf=M5 ts=2026-07-24T05:17:02.224000
+
+=== EA-LOG SLEEVES NOT IN LIVE BOOK (stale streams) ===
+  STALE ea_id=10476 sym=USDCAD magic=104760004 last_event_utc=2026-07-19T13:28:22.062Z src=C:\QM\mt5\T_Live\MT5_Base\MQL5\Files\QM\QM5_10476_ea-10476.log
+  STALE ea_id=10692 sym=NDX magic=106920005 last_event_utc=2026-07-19T13:28:56.421Z src=C:\QM\mt5\T_Live\MT5_Base\MQL5\Files\QM\QM5_10692_ea-10692.log
+  STALE ea_id=10715 sym=USDJPY magic=107150004 last_event_utc=2026-07-19T13:28:31.406Z src=C:\QM\mt5\T_Live\MT5_Base\MQL5\Files\QM\QM5_10715_ea-10715.log
+  STALE ea_id=10940 sym=XAUUSD magic=109400003 last_event_utc=2026-07-05T14:13:09.015Z src=C:\QM\mt5\T_Live\MT5_Base\MQL5\Files\QM\QM5_10940_ea-10940.log

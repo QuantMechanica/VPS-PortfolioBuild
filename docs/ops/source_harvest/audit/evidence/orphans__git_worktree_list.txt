@@ -1,0 +1,41 @@
+C:/QM/repo                                           bd399eb0f [agents/board-advisor]
+C:/QM/runtime_worktrees/QM5_10834_WS30_ALT002        e39e54093 (detached HEAD)
+C:/QM/runtime_worktrees/QM5_10834_WS30_ALT002_FIX001 7adf44f94 (detached HEAD)
+C:/QM/runtime_worktrees/ws30_20260721_01             b26eaf2a7 (detached HEAD)
+C:/QM/worktrees/board-advisor-13203                  86571fa0f (detached HEAD)
+C:/QM/worktrees/claude-orchestration-1               21f3d6904 [agents/claude-orchestration-1]
+C:/QM/worktrees/claude-orchestration-2               8c134094a [agents/claude-orchestration-2]
+C:/QM/worktrees/claude-orchestration-3               61f7a1184 [agents/claude-orchestration-3]
+C:/QM/worktrees/claude-orchestration-4               aa3cf1101 [agents/claude-orchestration-4]
+C:/QM/worktrees/claude-orchestration-5               ffead9b29 [agents/claude-orchestration-5]
+C:/QM/worktrees/codex                                9e45805f1 [agents/codex]
+C:/QM/worktrees/codex-13119-repair-20260711          5254aabb4 (detached HEAD)
+C:/QM/worktrees/codex-13141-index-20260711-1122      242205368 (detached HEAD)
+C:/QM/worktrees/codex-harden                         83cb432e2 [codex/dl065-hardening]
+C:/QM/worktrees/codex-orchestration-1                fb5c5d106 [agents/codex-orchestration-1]
+C:/QM/worktrees/codex-q08-regen                      73f229776 [codex/q08-regen]
+C:/QM/worktrees/cto_main                             b74868681 [main]
+C:/QM/worktrees/development-claude                   a9f06829e [agents/development-claude]
+C:/QM/worktrees/docs-km                              b4061be31 [agents/docs-km]
+C:/QM/worktrees/ftmo-arch                            df225e149 [agents/codex-ftmo-arch]
+C:/QM/worktrees/ftmo-engine                          2bb37167d [agents/codex-ftmo-engine]
+C:/QM/worktrees/ftmo-source                          fb7f42627 [agents/codex-ftmo-source]
+C:/QM/worktrees/gemini-orchestration-1               1bea1f58b [agents/gemini-orchestration-1]
+C:/QM/worktrees/gmail-monitor                        5107da4b5 [agents/gmail-monitor]
+C:/QM/worktrees/pdf-analyst                          cb667adb6 [agents/pdf-analyst]
+C:/QM/worktrees/pipeline-operations                  17372b39c [agents/pipeline-operations]
+C:/QM/worktrees/q08-main-fix                         cd4712e6a (detached HEAD)
+C:/QM/worktrees/qua-296-cto                          443e0fe4e [qua-296-restore-phase-utils]
+C:/QM/worktrees/sonnet-balke-rangebreakout           fa6cf389d [agents/sonnet-balke-rangebreakout]
+C:/QM/worktrees/sonnet-secret06                      a973b2531 [agents/sonnet-secret06]
+C:/QM/worktrees/sonnet-xau-adx-turtle                120b643b5 [agents/sonnet-xau-adx-turtle]
+C:/QM/worktrees/src-china-taiwan                     78523f242 [agents/codex-src-china-taiwan]
+C:/QM/worktrees/src-eastasia-retail                  c22bf9bdb [agents/codex-src-eastasia-retail]
+C:/QM/worktrees/src-futures-orderflow                ffe63bfca [codex/qm5-20023-wave2-rebuild] locked
+C:/QM/worktrees/src-india-intraday                   47d6f2024 [agents/codex-src-india-intraday]
+C:/QM/worktrees/src-latam-b3                         71261ffbc [agents/codex-src-latam-b3]
+C:/QM/worktrees/src-mql5-forexfactory                4ab170c32 [agents/codex-src-mql5-forexfactory]
+C:/QM/worktrees/src-prop-native                      99c317623 [agents/codex-src-prop-native]
+C:/QM/worktrees/src-russia-mql                       2ec3530a7 [agents/codex-src-russia-mql]
+C:/QM/worktrees/src-wf-cards                         7a34dfe8f [agents/codex-src-wf-cards]
+C:/QM/worktrees/youtube-analyst                      cb667adb6 [agents/youtube-analyst]

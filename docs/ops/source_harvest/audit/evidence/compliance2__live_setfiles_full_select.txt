@@ -1,0 +1,11 @@
+Could not find platform independent libraries <prefix>
+======================================================================
+SETFILE 10513_XAUUSD enc=utf-16 bytes=1340 newlines=0
+--- FULL (repr-safe) ---
+Traceback (most recent call last):
+  File "C:\Users\ADMINI~1\AppData\Local\Temp\1\claude\C--QM-repo\a0e959b8-fc51-4286-88d8-9272f2bf980e\scratchpad\dump_sets.py", line 25, in <module>
+    print(f"L{i}: {l}")
+  File "C:\Python311\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode characters in position 4-44: character maps to <undefined>

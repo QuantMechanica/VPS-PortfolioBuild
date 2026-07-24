@@ -1,0 +1,111 @@
+Could not find platform independent libraries <prefix>
+======================================================================
+SETFILE: 1567_EURUSD
+PATH: C:\QM\mt5\T_Live\MT5_Base\MQL5\Presets\03_EURUSD_H4_QM5_1567_demark-td-reverse-sequential-h4.set
+ENCODING: utf-8
+TOTAL_LINES: 32
+L9: ; environment:  live
+L10: ; magic_slot:   7
+L11: ; risk_mode:    PERCENT
+L12: ; portfolio_weight: 1
+L17: qm_magic_slot_offset=7
+L18: RISK_FIXED=0
+L19: RISK_PERCENT=0.1791
+L20: PORTFOLIO_WEIGHT=1
+======================================================================
+SETFILE: 10513_XAUUSD
+PATH: C:\QM\mt5\T_Live\MT5_Base\MQL5\Presets\19_XAUUSD_D1_QM5_10513_mql5-ichimoku.set
+ENCODING: utf-16-le
+TOTAL_LINES: 1
+======================================================================
+SETFILE: 10919_XTIUSD
+PATH: C:\QM\mt5\T_Live\MT5_Base\MQL5\Presets\04_XTIUSD_H4_QM5_10919_grimes-overshoot.set
+ENCODING: utf-8
+TOTAL_LINES: 34
+L9: ; environment:  backtest
+L10: ; magic_slot:   1
+L11: ; risk_mode:    FIXED
+L12: ; portfolio_weight: 1
+L17: qm_magic_slot_offset=1
+L18: RISK_FIXED=0
+L19: RISK_PERCENT=0.9181
+L20: PORTFOLIO_WEIGHT=1.0
+L22: qm_filter_news_enabled=1
+L23: qm_filter_news_mode=3
+======================================================================
+SETFILE: 11165_EURUSD
+PATH: C:\QM\mt5\T_Live\MT5_Base\MQL5\Presets\08_EURUSD_H1_QM5_11165_weiss-rsi-ma.set
+ENCODING: utf-8
+TOTAL_LINES: 34
+L9: ; environment:  live
+L10: ; magic_slot:   0
+L11: ; risk_mode:    PERCENT
+L12: ; portfolio_weight: 1
+L17: qm_magic_slot_offset=0
+L18: RISK_FIXED=0
+L19: RISK_PERCENT=0.4127
+L20: PORTFOLIO_WEIGHT=1
+L22: qm_filter_news_enabled=1
+L23: qm_filter_news_mode=3
+======================================================================
+SETFILE: 11421_AUDUSD
+PATH: C:\QM\mt5\T_Live\MT5_Base\MQL5\Presets\07_AUDUSD_D1_QM5_11421_ohlc-daily-squeeze-reversal-d1.set
+ENCODING: utf-8
+TOTAL_LINES: 42
+L4: ; ea_slug:      ohlc-daily-squeeze-reversal-d1
+L9: ; environment:  live
+L10: ; magic_slot:   3
+L11: ; risk_mode:    PERCENT
+L12: ; portfolio_weight: 1.0
+L13: ; build_hash:   177b366a0af3f432fb312d5605c6153c96c9231de0b025966179867c4dd1242b
+L17: qm_magic_slot_offset=3
+L18: RISK_FIXED=0
+L19: RISK_PERCENT=0.3614
+L20: PORTFOLIO_WEIGHT=1.0
+L22: qm_filter_news_enabled=1
+L23: qm_filter_news_mode=3
+L34: ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11421_ohlc-daily-squeeze-reversal-d1.md
+======================================================================
+SETFILE: 12567_XAUUSD
+PATH: C:\QM\mt5\T_Live\MT5_Base\MQL5\Presets\20_XAUUSD_D1_QM5_12567_cum-rsi2-commodity.set
+ENCODING: utf-8
+TOTAL_LINES: 43
+L9: ; environment:  live
+L10: ; magic_slot:   3
+L11: ; risk_mode:    PERCENT
+L12: ; portfolio_weight: 1.0
+L17: qm_magic_slot_offset=3
+L18: RISK_FIXED=0
+L19: RISK_PERCENT=0.7465
+L20: PORTFOLIO_WEIGHT=1.0
+L22: qm_filter_news_enabled=1
+L23: qm_filter_news_mode=3
+======================================================================
+SETFILE: 12989_XAUUSD
+PATH: C:\QM\mt5\T_Live\MT5_Base\MQL5\Presets\21_XAUUSD_H4_QM5_12989_grimes-nested-pb-v2.set
+ENCODING: utf-8
+TOTAL_LINES: 40
+L11: ; environment:  live
+L12: ; magic_slot:   3
+L13: ; risk_mode:    PERCENT_DRAFT_INVOL_SUMRISK_CAPPED_S3-D2D-15-SWAP
+L14: ; portfolio_weight: 1.0
+L19: qm_magic_slot_offset=3
+L20: RISK_FIXED=0
+L21: RISK_PERCENT=0.2420
+L22: PORTFOLIO_WEIGHT=1.0
+L24: qm_filter_news_enabled=1
+L25: qm_filter_news_mode=3
+======================================================================
+SETFILE: 13213_USDJPY
+PATH: C:\QM\mt5\T_Live\MT5_Base\MQL5\Presets\02_USDJPY_H1_QM5_13213_balke-gmt3-range-breakout.set
+ENCODING: utf-8
+TOTAL_LINES: 26
+L9: ; environment:  live
+L10: ; magic_slot:   0
+L11: ; risk_mode:    PERCENT
+L12: ; portfolio_weight: 1
+L13: ; build_hash:   321b1dca0064686100ee85d0ba614b0bcf0cd3096ca1bf9d5380ddade8a9ad4a
+L18: qm_magic_slot_offset=0
+L19: RISK_FIXED=0
+L20: RISK_PERCENT=0.0431
+L21: PORTFOLIO_WEIGHT=1

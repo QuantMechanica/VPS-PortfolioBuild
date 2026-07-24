@@ -1,0 +1,74 @@
+===== magic 104030002 enc=utf-8 file=18_XAUUSD_D1_QM5_10403_et-turtle20x.set =====
+  # ; environment:  live
+  # ; risk_mode:    PERCENT
+   RISK_FIXED=0
+   RISK_PERCENT=0.2204
+   PORTFOLIO_WEIGHT=1
+   qm_filter_news_enabled=1
+   qm_filter_news_mode=3
+===== magic 107060001 enc=utf-8 file=11_GBPUSD_H1_QM5_10706_tv-mon-ls.set =====
+  # ; environment:  live
+  # ; risk_mode:    PERCENT
+   RISK_FIXED=0
+   RISK_PERCENT=0.0530
+   PORTFOLIO_WEIGHT=1
+   qm_filter_news_enabled=1
+   qm_filter_news_mode=3
+   FridayExitHourBroker=18
+   FridayExitMinuteBroker=30
+===== magic 109390001 enc=utf-8 file=12_GBPUSD_H4_QM5_10939_grimes-context-pb.set =====
+  # ; environment:  live
+  # ; risk_mode:    PERCENT
+   RISK_FIXED=0
+   RISK_PERCENT=0.1887
+   PORTFOLIO_WEIGHT=1.0
+   qm_filter_news_enabled=1
+   qm_filter_news_mode=3
+===== magic 111650002 enc=utf-8 file=05_AUDCAD_H1_QM5_11165_weiss-rsi-ma.set =====
+  # ; environment:  live
+  # ; risk_mode:    PERCENT
+   RISK_FIXED=0
+   RISK_PERCENT=0.5230
+   PORTFOLIO_WEIGHT=1.0
+   qm_filter_news_enabled=1
+   qm_filter_news_mode=3
+===== magic 117080000 enc=utf-8 file=10_EURUSD_D1_QM5_11708_anon-market-squeeze-d1.set =====
+  # ; environment:  live
+  # ; risk_mode:    PERCENT
+   RISK_FIXED=0
+   RISK_PERCENT=0.5080
+   PORTFOLIO_WEIGHT=1
+   qm_filter_news_enabled=1
+   qm_filter_news_mode=3
+===== magic 127780000 enc=utf-8 file=06_AUDUSD_D1_QM5_12778_edgelab-audusd-eurjpy-cointegration.set =====
+  # ; environment:  live
+  # ; risk_mode:    PERCENT
+   RISK_FIXED=0
+   RISK_PERCENT=0.4905
+   PORTFOLIO_WEIGHT=1
+   qm_news_temporal=0
+   qm_news_compliance=0
+   qm_news_mode_legacy=0
+   qm_news_stale_max_hours=336
+   qm_news_min_impact=high
+   qm_filter_news_enabled=0
+   qm_filter_news_mode=0
+===== magic 131170000 enc=utf-8 file=24_EURGBP_D1_QM5_13117_eurgbp-audjpy.set =====
+  # ; environment:  live
+  # ; risk_mode:    PERCENT
+   RISK_FIXED=0
+   RISK_PERCENT=0.4199
+   PORTFOLIO_WEIGHT=1
+   qm_news_temporal=0
+   qm_news_compliance=0
+   qm_news_mode_legacy=0
+   qm_news_stale_max_hours=336
+   qm_news_min_impact=high
+   qm_filter_news_enabled=0
+   qm_filter_news_mode=0
+===== magic 133010010 enc=utf-8 file=01_GDAXI_M5_QM5_13301_balke-minute-range-breakout.set =====
+  # ; environment:  live
+  # ; risk_mode:    PERCENT
+   RISK_FIXED=0
+   RISK_PERCENT=0.0692
+   PORTFOLIO_WEIGHT=1
