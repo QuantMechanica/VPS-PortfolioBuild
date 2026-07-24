@@ -899,9 +899,36 @@ void Strategy_ManageOpenPosition()
                stop));
          continue;
         }
-      QM_TM_MoveTP(ticket,
-                   target,
-                   "STR021_ACTUAL_FILL_2R");
+      // Fast-move race: the market can trade through the 2R target before the
+      // TP is attached (limit fill at the OB retest, immediate continuation).
+      // The exit condition is then already attained — close at market. A TP
+      // modify would sit on the wrong side of the price and be rejected
+      // (retcode 10016) forever.
+      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      const bool target_attained =
+         (side == QM_BUY) ? (bid > 0.0 && bid >= target)
+                          : (ask > 0.0 && ask <= target);
+      if(target_attained)
+        {
+         QM_LogEvent(
+            QM_INFO,
+            "STRATEGY_EXIT",
+            StringFormat(
+               "{\"strategy\":\"STR-021\",\"ticket\":%I64u,\"reason\":\"rr_target_attained_pre_tp\",\"fill\":%.8f,\"target\":%.8f}",
+               ticket,
+               fill,
+               target));
+         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+         continue;
+        }
+
+      if(g_str021_tp_retry_wait_bar == cur_bar)
+         continue;
+      if(!QM_TM_MoveTP(ticket,
+                       target,
+                       "STR021_ACTUAL_FILL_2R"))
+         g_str021_tp_retry_wait_bar = cur_bar;
      }
   }
 
