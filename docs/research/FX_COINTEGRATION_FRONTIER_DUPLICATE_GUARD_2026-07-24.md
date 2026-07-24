@@ -32,6 +32,25 @@ contains no built EA lacking a terminal Q02 result. The only cointegration
 cards without terminal Q02 evidence are two already-pending cross-asset
 XBR/FX relative-spread rows, not new pure-FX pairs.
 
+## Pure-FX umbrella exception
+
+A fresh manifest-to-work-item reconciliation at `2026-07-24T16:47Z` found one
+pure-FX pairs basket without a terminal Q02 verdict:
+`QM5_12512_bt-pairs-thresh`. It is not an unbuilt next-best scan pair or a
+valid mission fallback:
+
+- its manifest bundles three relationships rather than one concrete pair;
+- EURUSD/GBPUSD, EURJPY/GBPJPY, and AUDUSD/NZDUSD already have dedicated
+  builds (`QM5_12732`, `QM5_12533`, and `QM5_12532`, respectively);
+- it is an H1, five-bar maximum-hold threshold strategy, not the requested
+  low-frequency D1 cointegration sleeve; and
+- all six declared leg symbols already have canonical Q02 work items with
+  `status=pending`.
+
+Re-enqueueing or extracting any one of those relationships would therefore
+duplicate existing research, code, or queue state. This exception does not
+change the exhausted-frontier decision above.
+
 ## Legacy queue correction
 
 The legacy headless database
@@ -73,6 +92,13 @@ Its dispatch ledger records all T1-T10 slots at their configured maximum, so
 the scheduler exposes no dispatch capacity even though the process snapshot is
 lower. Per the mission's explicit CPU-ceiling rule, no MT5 run, queue mutation,
 or speculative fallback enqueue was attempted.
+
+A read-only refresh at `2026-07-24T16:47Z` reached the same binding result.
+The path-aware scan observed four running factory terminals (`T1`, `T3`, `T6`,
+and `T8`) and excluded `T_Live`; the canonical farm health snapshot reported
+seven active work items, while the saturation scheduler again returned zero
+available slots and scheduled zero jobs. The lower process snapshot therefore
+does not authorize bypassing either scheduler's capacity accounting.
 
 ## Safety
 
