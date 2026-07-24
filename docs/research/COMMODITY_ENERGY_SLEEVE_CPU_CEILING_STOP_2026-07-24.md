@@ -198,3 +198,27 @@ and the FTMO terminal as non-pipeline processes; neither was touched. The
 mission's CPU-ceiling condition therefore stopped this turn before source
 approval, card or ID allocation, EA build, compilation, Q02 enqueue, tester
 launch, or any portfolio/live mutation.
+
+## Recheck at 18:00Z
+
+An eighth read-only check at `2026-07-24T18:00:22Z` found eight active factory
+tester terminals, one above the documented paced-fleet ceiling of seven:
+
+| Terminal | EA | Phase | Symbol |
+|---|---|---|---|
+| T1 | QM5_13213 | pipeline baseline | tester configuration |
+| T2 | QM5_11910 | Q02 | EURUSD.DWX |
+| T3 | QM5_11910 | Q03 | AUDJPY.DWX |
+| T4 | QM5_10911 | Q03 | GDAXI.DWX |
+| T6 | QM5_11910 | Q02 | EURJPY.DWX |
+| T7 | QM5_12365 | Q07 | XAUUSD.DWX |
+| T8 | QM5_11016 | Q02 | GBPUSD.DWX |
+| T9 | QM5_20039 | Q03 | NDX.DWX |
+
+The path-anchored `farmctl.py mt5-slots` scan separately identified `T_Live`
+as a non-pipeline process; it was not touched. Because the ceiling was
+exceeded, this turn stopped before source approval, card or ID allocation, EA
+build, compilation, Q02 enqueue, tester launch, or any portfolio/live
+mutation. The unrelated pre-existing
+`framework/include/QM/QM_MagicResolver.mqh` worktree modification was also
+left untouched and excluded from the stop-record commit.
