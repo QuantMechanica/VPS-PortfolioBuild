@@ -118,6 +118,15 @@ canonical saturation scheduler still returned
 `status=ok`. This is the mission's binding CPU-ceiling stop: no additional
 candidate search, queue mutation, tester launch, or terminal control followed.
 
+A fourth read-only refresh at `2026-07-24T21:00:21Z` found five running
+factory terminals (`T1`, `T2`, `T3`, `T6`, and `T7`) using exact executable
+paths under `D:/QM/mt5/T1..T10`; `T_Live` was observed separately and excluded.
+The canonical saturation scheduler again returned
+`available_slots_before=0`, `available_slots_after=0`, `scheduled=0`, and
+`status=ok`. Its dispatch ledger remains the binding capacity authority, so no
+Q02 enqueue, dispatch, tester launch, queue mutation, or terminal control
+followed.
+
 ## Safety
 
 - No portfolio admission, portfolio KPI, or Q08 contribution file changed.
