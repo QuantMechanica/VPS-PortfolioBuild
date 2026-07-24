@@ -1,0 +1,21 @@
+# STR-097 — Build record (QM5_20096)
+
+- ea_id **20096** reserved via farmctl reserve_ea_ids (atomic; strategy_id
+  WEB-SOURCES-HARVEST-2026-07), row in `framework/registry/ea_id_registry.csv`.
+- Magic rows: 200960000-200960003 for GBPUSD.DWX(0) EURAUD.DWX(1) USDCHF.DWX(2) EURCAD.DWX(3) in `framework/registry/magic_numbers.csv`
+  (collision-guarded append under registry lock); resolver regenerated via
+  `update_magic_resolver.py` and all magics verified present (commit 664902bc4).
+- Skeleton: `framework/templates/EA_Skeleton.mq5` copy, only inputs + 5 hooks
+  filled (codex bodies, task 18d690d2; integrated via Edit — no blind apply);
+  conventions: input group "Strategy", perf-allowed markers reviewer-signed.
+- Card: `D:\QM\strategy_farmrtifacts\cards_approved\QM5_20096_ha-stoch-h4-swing_card.md`
+  (G0 cross-approved by codex — builder!=approver).
+- SPEC.md: validate_spec_doc PASS. build_check.ps1 PASS. compile_one.ps1 -Strict:
+  0 errors / 0 warnings, fresh .ex5 (build+commit atomic, commit 67d9a3d24).
+- Set files: 4 sets H4 backtest (FIXED 1000/0), gen_setfile.ps1 (-Env backtest; RISK_FIXED=1000,
+  RISK_PERCENT=0). NOTE: build_hash header line empty — Get-FileHash missing in
+  the constrained shell (provenance-only; run_smoke hashes independently).
+- Compliance (Q01 checklist): magic registered + verified; risk mode FIXED
+  (backtest sets) / PERCENT intent live; per-trade cap framework 1%; news filter
+  framework fail-closed; KS_DAILY_LOSS 3% hardcoded; KS_PORTFOLIO_DD external
+  guard live (QM_StrategyFarm_LiveBookDDGuard); Friday-close default-on.
