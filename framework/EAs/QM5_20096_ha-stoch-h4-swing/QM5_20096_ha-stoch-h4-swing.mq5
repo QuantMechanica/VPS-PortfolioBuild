@@ -275,6 +275,12 @@ bool Strategy_NoTradeFilter()
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   // TEMP DIAG (smoke diagnosis 2026-07-24) — remove before commit
+   static long dn_calls = 0, dn_flat = 0, dn_data = 0,
+               dn_trend_l = 0, dn_flip_l = 0, dn_cross_l = 0,
+               dn_k1d1_l = 0, dn_sig_l = 0, dn_sig_s = 0;
+   dn_calls++;
+
    ZeroMemory(req);
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
@@ -283,6 +289,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    ENUM_POSITION_TYPE existing_type = POSITION_TYPE_BUY;
    if(Strategy097_HasOwnPosition(existing_ticket, existing_type))
       return false;
+   dn_flat++;
    if(!Strategy097_EnsureHandles())
      {
       Strategy097_LogDataMissing("indicator_handles");
@@ -317,6 +324,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       Strategy097_LogDataMissing("indicator_buffers");
       return false;
      }
+   dn_data++; // TEMP DIAG
 
    // Variant HASTOCH_097_XWIN3 (reconciliation amendment 2026-07-24): the HA
    // flip lags the stochastic cross by design (HA is smoothed), so requiring
@@ -368,6 +376,21 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       short_pullback &&
       short_cross_bar > 0 &&
       k1 < d1;
+   // TEMP DIAG — per-conjunct counters + periodic dump
+   if(signal_bar.close > sma1) dn_trend_l++;
+   if(long_pullback) dn_flip_l++;
+   if(long_cross_bar > 0) dn_cross_l++;
+   if(k1 > d1) dn_k1d1_l++;
+   if(long_signal) dn_sig_l++;
+   if(short_signal) dn_sig_s++;
+   if(dn_calls % 400 == 0)
+      QM_LogEvent(QM_INFO,
+                  "STRATEGY_DIAG",
+                  StringFormat("{\"calls\":%I64d,\"flat\":%I64d,\"data\":%I64d,\"trend_l\":%I64d,\"flip_l\":%I64d,\"cross_l\":%I64d,\"k1d1_l\":%I64d,\"sig_l\":%I64d,\"sig_s\":%I64d}",
+                               dn_calls, dn_flat, dn_data, dn_trend_l,
+                               dn_flip_l, dn_cross_l, dn_k1d1_l,
+                               dn_sig_l, dn_sig_s));
+
    if(!long_signal && !short_signal)
       return false;
 
