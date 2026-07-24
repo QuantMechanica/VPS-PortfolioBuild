@@ -15211,3 +15211,17 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20102,prevday-breakout-close-edge,1,GBPUSD.DWX,201020001,2026-07-24T14:23:06Z,claude,active
 20103,daylight-wpr-smma-m15,0,NDX.DWX,201030000,2026-07-24T14:23:06Z,claude,active
 20103,daylight-wpr-smma-m15,1,GDAXI.DWX,201030001,2026-07-24T14:23:06Z,claude,active
+20104,notable-number-fade-m5,0,EURUSD.DWX,201040000,2026-07-24T15:38:44Z,claude,active
+20104,notable-number-fade-m5,1,GBPUSD.DWX,201040001,2026-07-24T15:38:44Z,claude,active
+20104,notable-number-fade-m5,2,EURGBP.DWX,201040002,2026-07-24T15:38:44Z,claude,active
+20104,notable-number-fade-m5,3,AUDUSD.DWX,201040003,2026-07-24T15:38:44Z,claude,active
+20104,notable-number-fade-m5,4,USDCAD.DWX,201040004,2026-07-24T15:38:44Z,claude,active
+20104,notable-number-fade-m5,5,AUDNZD.DWX,201040005,2026-07-24T15:38:44Z,claude,active
+20104,notable-number-fade-m5,6,AUDCAD.DWX,201040006,2026-07-24T15:38:44Z,claude,active
+20104,notable-number-fade-m5,7,EURCAD.DWX,201040007,2026-07-24T15:38:44Z,claude,active
+20105,notable-number-breakout-m5,0,CADJPY.DWX,201050000,2026-07-24T15:38:44Z,claude,active
+20106,daily-wick-stop-breakout,0,EURUSD.DWX,201060000,2026-07-24T15:38:44Z,claude,active
+20106,daily-wick-stop-breakout,1,GBPUSD.DWX,201060001,2026-07-24T15:38:44Z,claude,active
+20106,daily-wick-stop-breakout,2,AUDUSD.DWX,201060002,2026-07-24T15:38:44Z,claude,active
+20106,daily-wick-stop-breakout,3,USDJPY.DWX,201060003,2026-07-24T15:38:44Z,claude,active
+20106,daily-wick-stop-breakout,4,EURAUD.DWX,201060004,2026-07-24T15:38:44Z,claude,active
