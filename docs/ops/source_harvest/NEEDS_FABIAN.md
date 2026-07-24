@@ -23,3 +23,11 @@ These threads point at material outside the captured PDFs. None is required to f
 
 - None require an OWNER decision. Whether to build any of the un-built ELIGIBLE candidates (`overlaps_existing = none`) is a routine capability-router / pipeline call, not a money-gate or hard-rule question.
 - One HIGH-priority row (**STR-086, DIBS**) is already built (ff-dibs-breakout, FAILED Q04); flagged 'no rebuild'. Confirming that is a pipeline judgment, not an OWNER gate.
+
+## 2026-07-24 — Cross-check verdict (BLOCKING for build sequencing)
+
+Codex control sample diverged 38% (>30% stop condition) — systematic
+PARTIAL-rules/eligibility ambiguity, not model noise. Decision needed:
+rubric Option A (strict: ELIGIBLE requires FULL rules; PARTIAL -> ELIGIBLE_NEEDS_SPEC,
+recommended) vs Option B (permissive). Details: CROSSCHECK_DIVERGENCE_2026-07-24.md.
+After your call: one cheap re-grade pass over the existing 143 rows, no PDF re-read.

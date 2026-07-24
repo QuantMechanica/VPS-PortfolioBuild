@@ -1,3 +1,8 @@
+> ⚠️ **NOT VALIDATED — cross-check divergence 38% (>30% gate) → run aborted at validation.**
+> Do not use for build sequencing until OWNER picks the eligibility rubric —
+> see `CROSSCHECK_DIVERGENCE_2026-07-24.md`. ELIGIBLE counts are inflated by the
+> PARTIAL→ELIGIBLE reading (51/97).
+
 # Source Harvest — Master Ledger
 
 _Finalized 2026-07-24. Mechanical assembly of the Web-Sources strategy harvest (ForexFactory + BabyPips PDFs), with dedup clustering and existing-EA overlap applied._
