@@ -2646,16 +2646,28 @@ def _summary_matches_expected_evidence(summary: dict[str, Any], payload: dict[st
     if window.get("source") != "generated_tester_ini":
         return False
 
-    expected_pairs = (
+    # Date bounds: None/empty expected date = FULL-HISTORY run (unconstrained),
+    # not a defect. Fail-closing on it rejected every legitimate full-history
+    # Q03 summary and INFRA_FAILed the whole gate from 2026-07-23 (audit FB-02,
+    # regression introduced with the binding in 0edb2cf9d). Identity fields
+    # (symbol/period/expert) stay fail-closed below.
+    date_pairs = (
         (payload.get("expected_from_date"), summary.get("from_date")),
         (payload.get("expected_to_date"), summary.get("to_date")),
         (payload.get("expected_from_date"), window.get("from_date")),
         (payload.get("expected_to_date"), window.get("to_date")),
+    )
+    for expected, actual in date_pairs:
+        if expected is None or str(expected).strip() == "":
+            continue  # unconstrained bound (full-history)
+        if str(actual) != str(expected):
+            return False
+    identity_pairs = (
         (payload.get("expected_symbol"), summary.get("symbol")),
         (payload.get("expected_period"), summary.get("period")),
         (payload.get("expected_expert"), summary.get("expert")),
     )
-    for expected, actual in expected_pairs:
+    for expected, actual in identity_pairs:
         if expected is None or str(expected).strip() == "":
             return False
         if str(actual) != str(expected):
@@ -2664,12 +2676,14 @@ def _summary_matches_expected_evidence(summary: dict[str, Any], payload: dict[st
     ini_files = window.get("tester_ini_files")
     if not isinstance(ini_files, list) or not ini_files:
         return False
+    expected_from = payload.get("expected_from_date")
+    expected_to = payload.get("expected_to_date")
     for ini in ini_files:
         if not isinstance(ini, dict):
             return False
         if (
-            ini.get("from_date") != payload.get("expected_from_date")
-            or ini.get("to_date") != payload.get("expected_to_date")
+            (expected_from is not None and ini.get("from_date") != expected_from)
+            or (expected_to is not None and ini.get("to_date") != expected_to)
             or ini.get("symbol") != payload.get("expected_symbol")
             or ini.get("period") != payload.get("expected_period")
             or ini.get("expert") != payload.get("expected_expert")

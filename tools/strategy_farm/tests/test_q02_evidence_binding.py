@@ -148,3 +148,30 @@ $summary | ConvertTo-Json -Depth 4 -Compress
     assert payload["tester_ini_files"] == [
         {"run": "run_01", "from_date": "2022.07.01"}
     ]
+
+
+def test_full_history_null_dates_are_unconstrained_not_fail_closed() -> None:
+    """Regression (audit FB-02, 2026-07-24): full-history Q03 dispatch stamps
+    evidence_binding_required=True with expected_from/to_date=None. The matcher
+    fail-closed on the None dates and rejected every legitimate full-history
+    summary -> the whole gate INFRA_FAILed from 2026-07-23 (root commit
+    0edb2cf9d). None/empty expected DATE = unconstrained; identity fields
+    (symbol/period/expert/hashes) stay fail-closed."""
+    payload = bound_payload()
+    payload["expected_from_date"] = None
+    payload["expected_to_date"] = None
+    assert farmctl._summary_matches_expected_evidence(bound_summary(), payload)
+
+    # identity remains fail-closed even with unconstrained dates
+    payload_bad_symbol = dict(payload)
+    payload_bad_symbol["expected_symbol"] = None
+    assert not farmctl._summary_matches_expected_evidence(bound_summary(), payload_bad_symbol)
+
+    summary_wrong_symbol = bound_summary()
+    summary_wrong_symbol["symbol"] = "EURUSD.DWX"
+    assert not farmctl._summary_matches_expected_evidence(summary_wrong_symbol, payload)
+
+    # windowed claims (non-None dates) still enforce the window strictly
+    summary_wrong_window = bound_summary()
+    summary_wrong_window["from_date"] = "2024.01.01"
+    assert not farmctl._summary_matches_expected_evidence(summary_wrong_window, bound_payload())
