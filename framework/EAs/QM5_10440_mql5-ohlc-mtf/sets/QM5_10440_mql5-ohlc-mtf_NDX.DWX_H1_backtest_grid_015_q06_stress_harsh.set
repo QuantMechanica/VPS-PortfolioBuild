@@ -1,0 +1,40 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10440
+; ea_slug:      mql5-ohlc-mtf
+; ea_version:   v5.0
+; set_version:  s20260703-stress-harsh
+; symbol:       NDX.DWX
+; timeframe:    H1
+; environment:  q06_stress_harsh
+; magic_slot:   3
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   8ff6653bc5bc0bd5f912ea8da584aacad1cd3246d08aa748d0cfd8d55ab15bbe
+; author:       Development
+; date:         2026-07-03
+;==========================================================
+qm_magic_slot_offset=3
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.1000
+; core filter library params; filter-on/off variants must be pre-declared
+qm_filter_news_enabled=1
+qm_filter_news_mode=3
+qm_filter_regime_enabled=0
+qm_filter_regime_lookback_bars=100
+qm_filter_regime_bull_return_pct=2.0
+qm_filter_regime_bear_return_pct=2.0
+qm_filter_volatility_enabled=0
+qm_filter_volatility_atr_period=14
+qm_filter_volatility_lookback_bars=50
+qm_filter_volatility_compression_ratio=0.75
+qm_filter_volatility_expansion_ratio=1.25
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found
+; --- grid child 015/050 of QM5_10440_mql5-ohlc-mtf_NDX.DWX_H1_backtest (n_dims=4 m_per_dim=3 perturb=±30%) ---
+strategy_atr_period=10
+strategy_entry_atr_offset_mult=0.1
+strategy_stop_min_atr_mult=0.65
+strategy_stop_max_atr_mult=1.75
