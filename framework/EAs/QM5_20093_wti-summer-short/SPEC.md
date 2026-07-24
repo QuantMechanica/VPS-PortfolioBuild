@@ -2,8 +2,8 @@
 
 **EA ID:** QM5_20093
 **Slug:** `wti-summer-short`
-**Source:** `unknown` (see `strategy-seeds/sources/unknown/`)
-**Author of this spec:** auto-generated ex-post by gen_spec_md.py
+**Source:** Burakov, Freidin and Solovyev (2018), `BURAKOV-WTI-HALLOWEEN-2018`
+**Author of this spec:** Research+Development
 **Last revised:** 2026-07-24
 
 ---
@@ -64,9 +64,9 @@ rejects foreign symbols).
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | unspecified |
-| Cadence note | see card body |
-| Typical hold time | see card body |
+| Trades / year / symbol | 5 completed monthly packages required at Q02 |
+| Cadence note | One short package at each June-October month boundary |
+| Typical hold time | Until the next month boundary, hard-capped at 35 calendar days |
 | Expected drawdown profile | bounded by RISK_FIXED + FTMO 10% total DD ceiling |
 | Regime preference | per card thesis |
 | Win rate target (qualitative) | medium |
@@ -77,10 +77,11 @@ rejects foreign symbols).
 
 This card was mechanised from:
 
-**Source ID:** `unknown`
-**Pointer:** `strategy-seeds/sources/unknown/`
+**Source ID:** `BURAKOV-WTI-HALLOWEEN-2018`
+**Citation:** Burakov, D., Freidin, M. and Solovyev, Y. (2018), “The Halloween Effect on Energy Markets: An Empirical Study,” *International Journal of Energy Economics and Policy* 8(2), 121-126.
+**Pointer:** https://www.econjournals.com/index.php/ijeep/article/view/6092
 **R1–R4 verdict (Q00):** all PASS — see
-`artifacts/cards_approved/QM5_20093_wti-summer-short.md`
+`strategy-seeds/cards/wti-summer-short_card.md`
 
 ---
 
