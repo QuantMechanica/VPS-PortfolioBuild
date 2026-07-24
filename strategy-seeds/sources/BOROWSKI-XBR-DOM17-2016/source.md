@@ -8,7 +8,7 @@ approved_by: OWNER commodity-sleeve mission
 approved_at: 2026-07-22
 primary_url: https://econjournals.sgh.waw.pl/JMFS/Archives_2015_2016
 open_full_text_url: https://www.researchgate.net/publication/303285422_ANALYSIS_OF_SELECTED_SEASONALITY_EFFECTS_IN_MARKETS_OF_FUTURE_CONTRACTS
-strategy_ids: [BOROWSKI-XBR-DOM17-2016_S01]
+strategy_ids: [BOROWSKI-XBR-DOM17-2016_S01, BOROWSKI-XBR-DOM17-2016_S02]
 ---
 
 # Borowski Brent Day-17 Source Packet
@@ -37,3 +37,16 @@ momentum, ratio, and relative-spread builds use different triggers and holds.
 The source and mission authorize only a `RISK_FIXED` Q02 test, never live
 deployment, AutoTrading, T_Live, a manifest, portfolio admission, or a
 portfolio-gate change.
+
+## Second extraction: Brent day 8 long
+
+The same completed article reports Brent day 8 as a positive numbered-session
+anomaly and rejects equality versus the other calendar dates at `p=0.0412`.
+`BOROWSKI-XBR-DOM17-2016_S02` mechanizes that distinct result as a long
+`XBRUSD.DWX` package opened only on a genuine D1 bar dated 8 and closed at the
+next D1 boundary. No missing eighth is shifted. ATR risk, spread control,
+restart-safe attempt state, and fixed sizing are disclosed QM plumbing.
+
+Repository-wide exact-mechanic searches found no Brent day-8 long carrier.
+The multiple-testing burden, futures/CFD basis, old sample, and transaction
+costs remain binding Q02 kill risks.
