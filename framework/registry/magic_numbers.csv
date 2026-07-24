@@ -6232,11 +6232,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10939,grimes-context-pb,2,USDJPY.DWX,109390002,2026-06-06,Development,active
 10939,grimes-context-pb,3,XAUUSD.DWX,109390003,2026-06-06,Development,active
 10939,grimes-context-pb,4,GDAXI.DWX,109390004,2026-06-06,Development,active
-10940,grimes-nested-pb,0,EURUSD.DWX,109400000,2026-06-06,Development,active
-10940,grimes-nested-pb,1,GBPUSD.DWX,109400001,2026-06-06,Development,active
-10940,grimes-nested-pb,2,USDJPY.DWX,109400002,2026-06-06,Development,active
-10940,grimes-nested-pb,3,XAUUSD.DWX,109400003,2026-06-06,Development,active
-10940,grimes-nested-pb,4,GDAXI.DWX,109400004,2026-06-06,Development,active
+10940,grimes-nested-pb,0,EURUSD.DWX,109400000,2026-06-06,Development,retired
+10940,grimes-nested-pb,1,GBPUSD.DWX,109400001,2026-06-06,Development,retired
+10940,grimes-nested-pb,2,USDJPY.DWX,109400002,2026-06-06,Development,retired
+10940,grimes-nested-pb,3,XAUUSD.DWX,109400003,2026-06-06,Development,retired
+10940,grimes-nested-pb,4,GDAXI.DWX,109400004,2026-06-06,Development,retired
 10941,grimes-keltner-pb,0,EURUSD.DWX,109410000,2026-06-06,Development,active
 10941,grimes-keltner-pb,1,GBPUSD.DWX,109410001,2026-06-06,Development,active
 10941,grimes-keltner-pb,2,USDJPY.DWX,109410002,2026-06-06,Development,active

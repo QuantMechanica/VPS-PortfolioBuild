@@ -1,0 +1,15 @@
+{
+ "future_created_remaining": 0,
+ "epoch_updated_remaining": 0,
+ "composite_agent_remaining": 0,
+ "repaired_counts": {
+  "epoch_updated": 2,
+  "future_created": 187,
+  "composite_agent": 30
+ },
+ "repaired_at_utc": "2026-07-24T06:55:49+00:00",
+ "sentinel_pair_rows_normalized_to_repair_time": [
+  "3567089c-702b-4918-9fc8-76140ef23e23",
+  "07dcce1f-5b15-4ccc-9154-aa760d933d67"
+ ]
+}

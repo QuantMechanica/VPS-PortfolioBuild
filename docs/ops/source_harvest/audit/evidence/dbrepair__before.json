@@ -1,0 +1,1907 @@
+{
+ "future_created": [
+  {
+   "id": "aeababc5-78bd-438b-be9a-659e3fbe48b3",
+   "ea_id": "QM5_1214",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "45b16a45-3a65-4caa-9a6e-30261b383150",
+   "ea_id": "QM5_1214",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "c8384bbe-d624-4abf-9150-5d8ee7728eaa",
+   "ea_id": "QM5_1217",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "ba94916c-6410-4fe8-976d-f3ad2d341a63",
+   "ea_id": "QM5_1217",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "c6a9e44c-b131-46f6-b1fa-cb1e356e810f",
+   "ea_id": "QM5_1218",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "581e11cf-32af-4c7d-bb68-b32aa1a88d6c",
+   "ea_id": "QM5_1215",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "done",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-06-26T19:46:33+00:00"
+  },
+  {
+   "id": "f9551dca-c3f9-47bc-b50d-91ed5bf46d0f",
+   "ea_id": "QM5_1215",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-06-26T19:48:09+00:00"
+  },
+  {
+   "id": "6973ea5d-7e68-4a99-8193-83b56fe59dc7",
+   "ea_id": "QM5_1220",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "9fa7b2a8-849d-4c02-ba01-6d2d3a9e4cd8",
+   "ea_id": "QM5_1212",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "ba7ba134-e3ba-4e04-85ad-a105a1d5a1ec",
+   "ea_id": "QM5_1210",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "12872b36-9458-4bcd-b20f-a31bc103281b",
+   "ea_id": "QM5_1209",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "ad649ff3-8711-4feb-b909-a0af97df2dd5",
+   "ea_id": "QM5_1210",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "368864e9-6726-4fbe-a12e-4ef85186f79c",
+   "ea_id": "QM5_1211",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "daa162be-55b6-4a85-9763-8ab2d951a472",
+   "ea_id": "QM5_1212",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "a1c00107-a85a-4d40-af39-eff309770431",
+   "ea_id": "QM5_1220",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "81290c1f-4bc7-4e1c-8eb2-48d6f20141a3",
+   "ea_id": "QM5_1221",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "dfef01bf-cb06-466e-935e-03dbd7b53d85",
+   "ea_id": "QM5_1209",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "8b3c39f5-2ceb-4a73-8d23-11f425572cec",
+   "ea_id": "QM5_1210",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "c7c2d792-aecd-42d5-92b2-9f936c23dddc",
+   "ea_id": "QM5_1210",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "85af6203-31aa-4028-ade0-0729a9b1386a",
+   "ea_id": "QM5_1211",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "07c71663-4f05-403e-b8a9-7cc147ba7ace",
+   "ea_id": "QM5_1212",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "0892e9d3-b598-477a-9bba-4950814e1053",
+   "ea_id": "QM5_1212",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "b990f511-b664-4cde-a17d-da75ff5a021b",
+   "ea_id": "QM5_1214",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "19848bc1-1a59-45a0-81a4-456987c9b72e",
+   "ea_id": "QM5_1214",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "6a6f36c0-a985-473c-9b63-3c6cee4cb3ef",
+   "ea_id": "QM5_1215",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-06-26T19:49:09+00:00"
+  },
+  {
+   "id": "cac8aef6-1c84-412f-ac76-84d44b983657",
+   "ea_id": "QM5_1215",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-06-26T19:55:17+00:00"
+  },
+  {
+   "id": "1effee30-1d1c-42de-aaa3-c66df2c72247",
+   "ea_id": "QM5_1217",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "9b9bf204-9288-4997-91eb-f7f32b8bed9d",
+   "ea_id": "QM5_1217",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "bd31d266-e3f9-4467-8e54-51fd32dd4ccc",
+   "ea_id": "QM5_1218",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "31ea9496-4565-4812-aeab-abe0ab3cb3b4",
+   "ea_id": "QM5_1220",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "8a8cde0f-4c5b-4b14-9dc5-2b6f29be189a",
+   "ea_id": "QM5_1209",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "efd4c1d2-02d9-4770-919c-7bc2b0ca854a",
+   "ea_id": "QM5_1210",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "dfcd9892-25a6-4539-94a9-1eb48f421967",
+   "ea_id": "QM5_1210",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "0a17fffb-aeea-4210-95d4-3ee7f6bde018",
+   "ea_id": "QM5_1211",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "30dc6f2a-a948-4d9a-be5a-5eec2248837f",
+   "ea_id": "QM5_1212",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "a077a427-330d-4f5e-8567-f20d54270e1a",
+   "ea_id": "QM5_1212",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "498a6a22-2c8f-459c-aa00-eae323ef7d19",
+   "ea_id": "QM5_1214",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "5283b856-657e-43f8-a037-8960d662b107",
+   "ea_id": "QM5_1214",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "3c0524c9-4464-4bb9-beae-c0199743e7e0",
+   "ea_id": "QM5_1217",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "659be807-6716-405f-bb5d-5169c8ee394a",
+   "ea_id": "QM5_1217",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "a33e565b-0e58-4722-b83b-4c21b4e5ba79",
+   "ea_id": "QM5_1218",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "74041777-64ac-4caf-a6ea-8beca4523082",
+   "ea_id": "QM5_1220",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "8b1471a7-9eaf-439d-9774-05da7ffa908e",
+   "ea_id": "QM5_1220",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "73bc2a97-92f5-4e45-94e9-149ef961a0f2",
+   "ea_id": "QM5_1221",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "b19c09fd-fecf-42aa-8961-8449bde13ce0",
+   "ea_id": "QM5_1209",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "07f0f7e9-c92b-4d77-a258-9423c5db7f72",
+   "ea_id": "QM5_1210",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-14T14:21:55Z"
+  },
+  {
+   "id": "cc63c96a-4492-479d-97c4-e46204cc6158",
+   "ea_id": "QM5_1210",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "49ca523a-f48a-42e2-a217-b79e5e1f5dca",
+   "ea_id": "QM5_1211",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "629a9a99-272a-4525-b015-49c1a399c82f",
+   "ea_id": "QM5_1212",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "64bb8ee8-7854-4995-a43a-ae2010d2363f",
+   "ea_id": "QM5_1212",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "72f08326-c1da-4e83-b155-afac1009522e",
+   "ea_id": "QM5_1214",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "9c16832b-ba34-4459-a2d1-c17a01fc828f",
+   "ea_id": "QM5_1214",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "070de041-1048-4ee9-bf50-efeb2114830b",
+   "ea_id": "QM5_1217",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "1068ba54-2c0c-4935-895c-539040803402",
+   "ea_id": "QM5_1217",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "pending",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "4046f2cd-fd20-4393-b83c-61fbd5c43c4a",
+   "ea_id": "QM5_1218",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "42b18b64-315b-401a-9efa-47a6fd2ee9df",
+   "ea_id": "QM5_1220",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "d5e8658d-c3ce-4aab-9899-ce3e06e61c10",
+   "ea_id": "QM5_1220",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "f4ec3c8e-232f-4ebe-9368-effeb60695b4",
+   "ea_id": "QM5_1221",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "73691861-ac4b-4d80-aa40-8ea2199b897e",
+   "ea_id": "QM5_1209",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "db97f8e7-d00e-4b86-b5a0-4ce04d67a023",
+   "ea_id": "QM5_1210",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "0f17c38e-4e36-4901-9ee5-ab417283c2f8",
+   "ea_id": "QM5_1210",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "pending",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "7dfa66ae-0f56-41da-a629-06e03499768a",
+   "ea_id": "QM5_1211",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "033c93ea-141d-4ccb-b3e3-4f55093816b1",
+   "ea_id": "QM5_1212",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-14T14:21:55Z"
+  },
+  {
+   "id": "11266554-2b6a-4fc5-b9e7-a4f0e2570a32",
+   "ea_id": "QM5_1212",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "cf801350-eb41-4e60-8f05-46e45bb4f6b6",
+   "ea_id": "QM5_1214",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "2033ee65-c213-475c-bb43-233c2e56ad2c",
+   "ea_id": "QM5_1214",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "status": "pending",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "8c00520e-0aeb-41f9-a467-f8222bd3b3dc",
+   "ea_id": "QM5_1217",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "188c0b07-978b-4992-b3e2-22169103b089",
+   "ea_id": "QM5_1217",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "f7d4cb26-8f84-450f-867a-36e794fe2d39",
+   "ea_id": "QM5_1218",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "c2a500c7-9cca-4a7a-8316-e0bfe4bfb6a5",
+   "ea_id": "QM5_1220",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "9260a933-8f29-408c-a9a2-1dff71e57e30",
+   "ea_id": "QM5_1220",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "8d3cf5a8-dba3-45b7-b30a-57a3cf00dd14",
+   "ea_id": "QM5_1221",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "1fe5781a-9566-4b89-bdae-93087c67df59",
+   "ea_id": "QM5_1209",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-14T14:21:55Z"
+  },
+  {
+   "id": "adc2baaa-5ecc-4c64-a69d-1702e9e3f40d",
+   "ea_id": "QM5_1210",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "c9a1e0b4-7e77-40a0-8818-2a31885b26aa",
+   "ea_id": "QM5_1211",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "89a7497b-958b-4753-9189-6730b19155f4",
+   "ea_id": "QM5_1212",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "67f6e8da-7458-42dc-8268-6d69497fb8d0",
+   "ea_id": "QM5_1212",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "4cd7e0d1-4fac-4655-8ef0-edc760020cd8",
+   "ea_id": "QM5_1214",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "bb811b18-97f2-4366-8b35-02b89dc526e3",
+   "ea_id": "QM5_1214",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "7d9d271c-12b6-4b0d-b538-b5b3051832db",
+   "ea_id": "QM5_1215",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "status": "done",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-06-27T01:14:46+00:00"
+  },
+  {
+   "id": "ee355a11-c4c9-453d-85c4-d7199afe9de3",
+   "ea_id": "QM5_1217",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "a561adf9-0591-4cae-882f-02611bf2b88e",
+   "ea_id": "QM5_1217",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "cf791d16-875b-42e0-93eb-61c55fc97023",
+   "ea_id": "QM5_1218",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "645b9152-2c69-4b77-b286-19ae0fd0cc00",
+   "ea_id": "QM5_1220",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "bcd092cf-db51-4d8a-858f-d047a0b1d918",
+   "ea_id": "QM5_1220",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "0f111af9-bb1f-4e9b-81ce-ed8ab64fdc24",
+   "ea_id": "QM5_1221",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-14T14:21:55Z"
+  },
+  {
+   "id": "c9de1f53-2f90-4949-940f-df4b36bee52a",
+   "ea_id": "QM5_1218",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "4d19b648-c4ea-45b5-9b07-532727f5b4b7",
+   "ea_id": "QM5_1214",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "4ba27ac5-4c14-439e-96ef-153cc14be706",
+   "ea_id": "QM5_1214",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "f1ba26d7-8447-4fcd-a6ed-0ac3a003f2e6",
+   "ea_id": "QM5_1214",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "586ce604-9e6b-4d5c-ab9b-e635812b598e",
+   "ea_id": "QM5_1214",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "dbc65a94-5bfa-480e-b2c1-184809ce3821",
+   "ea_id": "QM5_1209",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "3def4220-f896-41bc-9ee2-68e54cfd89ee",
+   "ea_id": "QM5_1211",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "0240fe1a-fb5a-4ce0-9200-0dbc4e1496be",
+   "ea_id": "QM5_1214",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-14T14:21:55Z"
+  },
+  {
+   "id": "381c42ed-4dce-4890-b034-9fe74a0c0c32",
+   "ea_id": "QM5_1214",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "34ee96f6-f2dc-40fc-b8d0-a2be9da7ec41",
+   "ea_id": "QM5_1215",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-14T14:21:55Z"
+  },
+  {
+   "id": "53753bdf-0a45-4612-b192-ee46b7202961",
+   "ea_id": "QM5_1217",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "94eeeb83-2099-4a99-804a-a12d204c39f6",
+   "ea_id": "QM5_1217",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "f96c548c-8e3d-4fed-b4cf-735396b15120",
+   "ea_id": "QM5_1220",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "43303abb-0421-4978-b23a-e832db42b61d",
+   "ea_id": "QM5_1220",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "pending",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "904e4e20-9d5c-4688-9434-2ff1677c8f43",
+   "ea_id": "QM5_1212",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "04ab7ca7-e61e-4665-9670-be6f954bdb53",
+   "ea_id": "QM5_1212",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "pending",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "3f5c64fa-2bb6-49ca-a7c6-ec1612e42ba1",
+   "ea_id": "QM5_1221",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "08196e09-81b7-45f9-8de2-3c00fd83965f",
+   "ea_id": "QM5_1210",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "fe3e70f0-2980-4328-8f3d-3bc6be69473b",
+   "ea_id": "QM5_1210",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "21c59e92-d9f1-4341-93cb-f34e0948793d",
+   "ea_id": "QM5_1214",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "6eab335b-5876-4210-a4b4-d7c4376d7139",
+   "ea_id": "QM5_1214",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "00249e12-fe15-4fff-9adf-9ba161517f96",
+   "ea_id": "QM5_1218",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-14T14:21:55Z"
+  },
+  {
+   "id": "84dbee9e-a1c3-45d8-a5d1-3727a3c512bf",
+   "ea_id": "QM5_1214",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "4ea6f27b-a047-4799-8f9e-4ed9989e5210",
+   "ea_id": "QM5_1214",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "7c6cd124-437c-4b46-a079-b129e65f50dd",
+   "ea_id": "QM5_1209",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "cdac958d-4f4e-4d1b-a9d9-7035bf6ccdee",
+   "ea_id": "QM5_1214",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "38d85438-90af-444c-a141-d941adec8700",
+   "ea_id": "QM5_1214",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "fc66b479-c5de-4f5f-80c4-0215b6df779b",
+   "ea_id": "QM5_1210",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "6071f432-b382-4f06-b3e2-179675a28e6e",
+   "ea_id": "QM5_1210",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "78ce9519-4fa4-4348-a1c0-a8276dd37b98",
+   "ea_id": "QM5_1211",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "902f9f70-82ca-4bcf-b4ed-38f4bd99cc93",
+   "ea_id": "QM5_1212",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "19a6cb96-38ab-48b3-a248-9a54fc44a840",
+   "ea_id": "QM5_1212",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "99f14b21-3d2b-4be7-892c-3420068f8da1",
+   "ea_id": "QM5_1215",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "4dc1fcc8-a600-4733-9bd8-3bbcf50a57fc",
+   "ea_id": "QM5_1215",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "72f231e0-9332-4bb8-adb5-7c49ab8af024",
+   "ea_id": "QM5_1217",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "1b77e828-4c45-4f0b-ab26-821ecd7d7417",
+   "ea_id": "QM5_1217",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "ebbefd09-45df-409c-8d33-8baa1e09208f",
+   "ea_id": "QM5_1220",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "fbf3a9c7-c6cb-4a7c-8a0d-29b65a6d8f4b",
+   "ea_id": "QM5_1220",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "f96b82b3-74cc-4f5f-ab3b-21d8ac33abe6",
+   "ea_id": "QM5_1221",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "9dfbd0f5-2700-4ab7-b7d3-f9ac4d3fd553",
+   "ea_id": "QM5_1218",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "b77ed869-71ec-43ee-a553-96312b775a35",
+   "ea_id": "QM5_1209",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "515f2436-bfbf-4a87-9f8e-fc2a4b07b485",
+   "ea_id": "QM5_1210",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "7cd72427-20a6-4d17-951a-9c07381ce080",
+   "ea_id": "QM5_1210",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "1b29f0da-689d-4d1a-a74f-0d38934badcb",
+   "ea_id": "QM5_1211",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-14T14:21:55Z"
+  },
+  {
+   "id": "1d836800-469d-4653-893f-6eae7a2fc080",
+   "ea_id": "QM5_1212",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "7a27fa45-1b5d-437b-8bee-fa9b098b6610",
+   "ea_id": "QM5_1212",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "cc3cc023-2c61-4aac-96e8-d017f01e03a0",
+   "ea_id": "QM5_1215",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "17af0696-8c5e-45dd-9d04-7da4f2b83d1f",
+   "ea_id": "QM5_1215",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "status": "done",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-23T01:57:21+00:00"
+  },
+  {
+   "id": "018a44bb-a295-430c-ad36-3761afbbe655",
+   "ea_id": "QM5_1217",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-14T14:21:55Z"
+  },
+  {
+   "id": "c34e88a7-7ce2-4658-8c74-9430c16a54ba",
+   "ea_id": "QM5_1217",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "1bc1edc5-8e50-4581-bf47-d66c4785fe0f",
+   "ea_id": "QM5_1220",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "c4ca0103-a664-4823-87b6-c5c30bbfa0c6",
+   "ea_id": "QM5_1220",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "1249cb89-8453-48b8-ba1e-2ba45e39e655",
+   "ea_id": "QM5_1221",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "9d29a818-954e-453e-bd5b-44b600de08f8",
+   "ea_id": "QM5_1218",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "b575c9ae-5164-4e55-9b12-5f2b9f9923a0",
+   "ea_id": "QM5_1209",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "1f012121-c6ba-40c1-86d2-a5398f56b31c",
+   "ea_id": "QM5_1210",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "dc652ef4-98b4-476a-a5af-87a7f03dfe3f",
+   "ea_id": "QM5_1210",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "d9e24f50-bf44-42b3-8bb2-c022ae917415",
+   "ea_id": "QM5_1211",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "480ea526-4b69-4a70-9a09-6061414b21f4",
+   "ea_id": "QM5_1212",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "628fc59e-737b-4bdb-8a09-68ea55903a01",
+   "ea_id": "QM5_1212",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "d684cc8c-aec8-4324-975d-f7dc45216d67",
+   "ea_id": "QM5_1215",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "9a068a53-db92-4617-9381-144e670ddd53",
+   "ea_id": "QM5_1215",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "81dbacb0-8152-49c8-8040-7fc8cf46c7f5",
+   "ea_id": "QM5_1217",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "56083b97-3c90-416d-a672-921c55ac4fec",
+   "ea_id": "QM5_1217",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "07860d5a-1ff0-4aae-b805-f777d45f8b8b",
+   "ea_id": "QM5_1220",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-14T14:21:55Z"
+  },
+  {
+   "id": "be34f28f-a427-41ee-a67e-974b694ce82a",
+   "ea_id": "QM5_1220",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "d9b8f86a-90d0-445f-bbd3-bfc144a4e844",
+   "ea_id": "QM5_1221",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "4f61390f-e598-45b4-ae14-c1e36b05ad05",
+   "ea_id": "QM5_1218",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "e2f0d0d7-fb7f-42bd-9b78-2e467cc36797",
+   "ea_id": "QM5_1218",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "33d1d772-cbe2-41f7-b83c-5557cbda9101",
+   "ea_id": "QM5_1209",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "8038bb8d-af8e-40d0-a733-cd4c856a6b6a",
+   "ea_id": "QM5_1210",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "20ae7234-969b-473f-afa5-97429c439dd0",
+   "ea_id": "QM5_1210",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "6e8139b2-c100-4ad0-8df3-ffb0388a5d36",
+   "ea_id": "QM5_1211",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "1ee97588-7d2e-4da4-913e-e5b52399df0b",
+   "ea_id": "QM5_1212",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "2a2f5c97-5034-4308-b557-4921816bb24a",
+   "ea_id": "QM5_1212",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "914a22a5-506a-4304-ae8d-1a13cfc0c0da",
+   "ea_id": "QM5_1215",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "96c0c1da-f595-4921-8dbf-dea469dea249",
+   "ea_id": "QM5_1215",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "10560c43-468b-4538-9e7c-eaffecace9f6",
+   "ea_id": "QM5_1217",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "eaa25a1a-5509-40ac-94bd-a485e51dc8c7",
+   "ea_id": "QM5_1217",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "6953aca7-bf8a-4aa5-a886-d3f2c0843260",
+   "ea_id": "QM5_1220",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "fe0179f8-bd8a-41b6-bb0d-59a258d39c21",
+   "ea_id": "QM5_1220",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "445d7212-1cfe-4cc9-bf85-0d45e104b681",
+   "ea_id": "QM5_1221",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "54ff8b52-9234-4ede-8e6a-574ece915642",
+   "ea_id": "QM5_1218",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "922b4acc-2e62-4286-b3e0-92a9b2e56585",
+   "ea_id": "QM5_1209",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "370e2253-f5ec-4c9f-a9c9-a64c00e6c6a5",
+   "ea_id": "QM5_1210",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "a0f6a6e4-a8e3-475f-bbe6-260362dd1dc3",
+   "ea_id": "QM5_1210",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "c30983d2-8957-4f52-b7c7-07f3f4f01f9f",
+   "ea_id": "QM5_1211",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "1652712e-2237-4436-bb32-30140846d8f6",
+   "ea_id": "QM5_1212",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "6f8e1c72-2e18-47c8-82d5-28a5cfcc6d9a",
+   "ea_id": "QM5_1212",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "6c8a9deb-0379-40c0-b2e4-bc2baa6c3963",
+   "ea_id": "QM5_1215",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "734b350e-635d-417a-a680-9648467988a7",
+   "ea_id": "QM5_1215",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "13f94a2a-26fd-470a-be6e-6fd367412266",
+   "ea_id": "QM5_1217",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "bd1b4ce5-645a-46b8-b607-4f38126dd481",
+   "ea_id": "QM5_1217",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "3e480a70-7cf9-45a4-a0f8-989895e2660f",
+   "ea_id": "QM5_1220",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "ed0ccc72-3c41-4a62-bb30-b4f2b979e435",
+   "ea_id": "QM5_1220",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "abe84a10-e21c-474f-9255-46787c7b5e20",
+   "ea_id": "QM5_1221",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "c35fab91-6bd8-4efb-87d1-6d2b2dda2cf1",
+   "ea_id": "QM5_1210",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-10T13:12:50.865058Z"
+  },
+  {
+   "id": "3567089c-702b-4918-9fc8-76140ef23e23",
+   "ea_id": "QM5_1081",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "status": "pending",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2027-01-01T00:00:00+00:00"
+  },
+  {
+   "id": "07dcce1f-5b15-4ccc-9154-aa760d933d67",
+   "ea_id": "QM5_1081",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "pending",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2027-01-01T00:00:00+00:00"
+  },
+  {
+   "id": "8ae35a35-7668-49b1-a637-a056a1058745",
+   "ea_id": "QM5_1081",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-14T14:21:55Z"
+  },
+  {
+   "id": "2e4e4da7-2681-4232-ad8e-bce805de1e7b",
+   "ea_id": "QM5_1101",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "status": "failed",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-14T14:21:55Z"
+  },
+  {
+   "id": "fea800d8-ca82-422a-9c83-20dd3b82c59e",
+   "ea_id": "QM5_1101",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "status": "done",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-22T22:01:09+00:00"
+  },
+  {
+   "id": "fc06fa1a-9eb3-4ea9-adb4-d13f422baadd",
+   "ea_id": "QM5_1101",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "status": "pending",
+   "created_at": "2027-01-01T00:00:00+00:00",
+   "updated_at": "2026-07-03T12:33:34.631444Z"
+  }
+ ],
+ "epoch_updated": [
+  {
+   "id": "17d1c78d-d093-44dd-93be-ed6529498186",
+   "ea_id": "QM5_1081",
+   "symbol": "UK100.DWX",
+   "phase": "Q02",
+   "status": "pending",
+   "created_at": "2026-06-25T21:52:59+00:00",
+   "updated_at": "1781000103"
+  },
+  {
+   "id": "0c976922-d19d-4e8b-8dfb-5924046cae46",
+   "ea_id": "QM5_1048",
+   "symbol": "UK100.DWX",
+   "phase": "Q02",
+   "status": "pending",
+   "created_at": "2026-06-27T21:52:58+00:00",
+   "updated_at": "1781000208"
+  }
+ ],
+ "composite_agent": [
+  {
+   "id": "e9dc4e21-6376-428e-97a7-c2ebd8f0e519",
+   "task_type": "triage_failure",
+   "state": "BLOCKED",
+   "assigned_agent": "codex:agents/board-advisor"
+  },
+  {
+   "id": "27143c34-0501-41b4-82cf-bab05cd82edc",
+   "task_type": "triage_failure",
+   "state": "BLOCKED",
+   "assigned_agent": "codex:agents/board-advisor"
+  },
+  {
+   "id": "4ec8a39e-2bb0-4b01-945a-733b5f87c432",
+   "task_type": "ops_issue",
+   "state": "PASSED",
+   "assigned_agent": "codex:agents/board-advisor"
+  },
+  {
+   "id": "346c6bc7-8cb8-48f3-bea9-ba8d9aa053b3",
+   "task_type": "triage_failure",
+   "state": "PASSED",
+   "assigned_agent": "codex:agents/board-advisor"
+  },
+  {
+   "id": "cc782678-a6d9-48ba-a464-6d10e14529c3",
+   "task_type": "triage_failure",
+   "state": "PASSED",
+   "assigned_agent": "codex:agents/board-advisor"
+  },
+  {
+   "id": "fc2b0463-99da-46fa-a2a7-18b95beaaf41",
+   "task_type": "triage_failure",
+   "state": "PASSED",
+   "assigned_agent": "codex:agents/board-advisor"
+  },
+  {
+   "id": "e541771d-4650-4182-aceb-6f608fd864ad",
+   "task_type": "infra_repair",
+   "state": "PASSED",
+   "assigned_agent": "codex:agents/board-advisor"
+  },
+  {
+   "id": "53d907d1-a86b-411d-8459-d526faceadee",
+   "task_type": "build_ea",
+   "state": "PIPELINE",
+   "assigned_agent": "codex:agents/board-advisor"
+  },
+  {
+   "id": "f601517d-3f99-4a0d-9aaa-6231778ee113",
+   "task_type": "build_ea",
+   "state": "PIPELINE",
+   "assigned_agent": "codex:agents/board-advisor"
+  },
+  {
+   "id": "35726d80-e5cb-4d01-bdc2-ce08c03ad2ee",
+   "task_type": "build_ea",
+   "state": "PIPELINE",
+   "assigned_agent": "codex:agents/board-advisor"
+  },
+  {
+   "id": "813a5fe2-e18c-4aed-95ac-de9c6daf551f",
+   "task_type": "ops_issue",
+   "state": "PIPELINE",
+   "assigned_agent": "codex:agents/board-advisor"
+  },
+  {
+   "id": "b8fa4324-a2cf-4e0a-807d-0f2c855bbde2",
+   "task_type": "triage_failure",
+   "state": "PIPELINE",
+   "assigned_agent": "codex:agents/board-advisor"
+  },
+  {
+   "id": "d41f8ede-c94f-4218-aa16-1d05629c54b0",
+   "task_type": "triage_failure",
+   "state": "PIPELINE",
+   "assigned_agent": "codex:agents/board-advisor"
+  },
+  {
+   "id": "5ad9abf1-6a9c-46fd-8d55-74154febaad0",
+   "task_type": "triage_failure",
+   "state": "PIPELINE",
+   "assigned_agent": "codex:agents/board-advisor"
+  },
+  {
+   "id": "d96c13e5-466c-44b5-abb3-e7e17cf73dbe",
+   "task_type": "triage_failure",
+   "state": "PIPELINE",
+   "assigned_agent": "codex:agents/board-advisor"
+  },
+  {
+   "id": "82fc6aa5-5a27-4c28-b4c4-970283480b4a",
+   "task_type": "triage_failure",
+   "state": "PIPELINE",
+   "assigned_agent": "codex:agents/board-advisor"
+  },
+  {
+   "id": "66870ba5-b818-4507-b727-7ed41e61a532",
+   "task_type": "triage_failure",
+   "state": "PIPELINE",
+   "assigned_agent": "codex:agents/board-advisor"
+  },
+  {
+   "id": "7b3d32a2-7b77-44e6-917b-bb682075ad18",
+   "task_type": "triage_failure",
+   "state": "PIPELINE",
+   "assigned_agent": "codex:agents/board-advisor"
+  },
+  {
+   "id": "6e6d8338-c313-403d-b771-8f8eaa3fdd2a",
+   "task_type": "triage_failure",
+   "state": "PIPELINE",
+   "assigned_agent": "codex:agents/board-advisor"
+  },
+  {
+   "id": "78c294d1-e6cc-4e6e-bcfb-ab809d884763",
+   "task_type": "triage_failure",
+   "state": "PIPELINE",
+   "assigned_agent": "codex:agents/board-advisor"
+  },
+  {
+   "id": "20285037-c663-40c9-bb3e-d8d3eb42d3dd",
+   "task_type": "triage_failure",
+   "state": "PIPELINE",
+   "assigned_agent": "codex:agents/board-advisor"
+  },
+  {
+   "id": "2e5d94cd-b0c8-4ced-a8bf-3df7d0e614d6",
+   "task_type": "triage_failure",
+   "state": "PIPELINE",
+   "assigned_agent": "codex:agents/board-advisor"
+  },
+  {
+   "id": "d6e022d7-227c-4df6-beac-0860112ef807",
+   "task_type": "triage_failure",
+   "state": "PIPELINE",
+   "assigned_agent": "codex:agents/board-advisor"
+  },
+  {
+   "id": "2ce555a1-f57a-4949-8d33-2f36dfb7ea29",
+   "task_type": "triage_failure",
+   "state": "PIPELINE",
+   "assigned_agent": "codex:agents/board-advisor"
+  },
+  {
+   "id": "babba558-999c-4a5a-823d-f9866cf3035c",
+   "task_type": "triage_failure",
+   "state": "PIPELINE",
+   "assigned_agent": "codex:agents/board-advisor"
+  },
+  {
+   "id": "0b1f5462-c77d-43a3-a452-8b376ff2bf12",
+   "task_type": "build_ea",
+   "state": "PIPELINE",
+   "assigned_agent": "codex:agents/board-advisor"
+  },
+  {
+   "id": "2e7d1235-913c-494d-af25-6efcb94a4196",
+   "task_type": "q02_infra_repair",
+   "state": "PIPELINE",
+   "assigned_agent": "codex:agents/board-advisor"
+  },
+  {
+   "id": "99ba519a-337c-4399-8cd4-87c30951dbe6",
+   "task_type": "q02_infra_repair",
+   "state": "PIPELINE",
+   "assigned_agent": "codex:agents/board-advisor"
+  },
+  {
+   "id": "69f4867f-9005-4b3a-94a3-c99f798ab635",
+   "task_type": "infra_repair",
+   "state": "PIPELINE",
+   "assigned_agent": "codex:agents/board-advisor"
+  },
+  {
+   "id": "976751af-bb96-4249-9385-20eacf058ea3",
+   "task_type": "q02_infra_repair",
+   "state": "PIPELINE",
+   "assigned_agent": "codex:agents/board-advisor"
+  }
+ ]
+}

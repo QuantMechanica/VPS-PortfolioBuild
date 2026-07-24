@@ -1,0 +1,65 @@
+Q03 INFRA_FAIL CLASS — ROOT CAUSE, MECHANISM, FIX  (read-only investigation 2026-07-24)
+
+ROOT CAUSE (file:line)
+  tools/strategy_farm/farmctl.py:2658-2662  (function _summary_matches_expected_evidence)
+    for expected, actual in expected_pairs:
+        if expected is None or str(expected).strip() == "":
+            return False          # <-- fail-CLOSED on a None expected date
+  The first four expected_pairs (2649-2653) are the from_date/to_date bounds.
+  Companion enforcement that also breaks on None dates: farmctl.py:2670-2673 (ini loop).
+
+TRIGGER / DISPATCH CONTRADICTION
+  tools/strategy_farm/farmctl.py:3249-3251 (spawn stamping):
+        "evidence_binding_required": True,
+        "expected_from_date": from_date,   # == None for full-history Q03/Q02 runs
+        "expected_to_date":   to_date,     # == None for full-history Q03/Q02 runs
+  Full-history runs legitimately dispatch with from_date/to_date = None, so the matcher
+  can NEVER bind their summary -> returns False for EVERY summary of such an item.
+
+FAILURE CHAIN (terminal_worker.py)
+  1. run_smoke completes, writes a valid summary.json (result PASS or FAIL). exit_code 0.
+  2. _finish_work_item -> _find_work_item_summary_data (1580) -> _find_summary (1414) ->
+     _load_fresh_summary (1344) -> _summary_matches_expected_evidence returns False (None date)
+     -> summary treated as MISSING.
+  3. Falls into shared-bases history-lock STORM path (1660-1732). _detect_history_lock_storm
+     (747) scans the terminal's MT5 log tail and matches HISTORY_LOCK_STORM_TOKENS (102-105).
+  4. Token "some error after pass finished" (line 104) is a BENIGN, near-ubiquitous MT5
+     pass-completion line -> matches on healthy terminals -> misclassified as transient storm.
+  5. Requeues up to TRANSIENT_INFRA_RETRY_CAP=6 (line 113); on exhaustion sets
+     verdict=INFRA_FAIL, final_failure=shared_bases_history_lock_transient_cap_exhausted,
+     no evidence_path  (terminal_worker.py:1711-1720).
+  Retry counter lives on payload.transient_infra_attempts, claimed_by nulled on release ->
+  DB rows show attempt_count=0, claimed_by=None, evidence_path=None (matches audit).
+
+FEEDBACK LOOP
+  tools/strategy_farm/sweep_enqueue_built_eas.py (enqueued_by
+  "claude_sweep_enqueue_2026-06-10.stranded_infra_fail") re-injects every stranded
+  INFRA_FAIL item; each re-run is stamped binding+null-date again -> re-INFRA_FAILs.
+
+ONSET
+  commit 0edb2cf9d  2026-07-23 07:14 local / 05:14 UTC
+  ("chore: company maintenance sweep - decommission legacy agent-OS + doc purge")
+  introduced BOTH the evidence_binding_required flag AND the expected_from_date matcher
+  pairs into farmctl.py at once. Last Q03 PASS ever = 2026-07-23T02:54Z; zero PASS since.
+
+MT5 LOG TOKEN SCAN (benign-token proof, 2026-07-24 tails)
+  D:\QM\mt5\T7\logs\20260724.log : "some error after pass finished" x69, "history
+     synchronization error" x0, "sharing violation" x0  (healthy: "processing 24%").
+  D:\QM\mt5\T8\logs\20260724.log : token x22, sync-error x0, and a test
+     "passed with result 'successfully finished'".
+  D:\QM\mt5\T4\Tester\Agent-127.0.0.1-3003\logs\20260724.log : genuine sync errors x28
+     BUT that agent log is shared across many work items; also 7 completed passes.
+
+DISCARDED VERDICTS (summaries exist on disk, were rejected)
+  de5749bd (QM5_1240 AUDUSD.DWX): newest summary 20260724_061503 result=PASS (OK) —
+     ex5/mq5/setfile/expert/symbol/period all == payload expected_* — DISCARDED -> INFRA_FAIL.
+  a9ec1926 (QM5_12836 GDAXI.DWX): newest summary result=FAIL (BARS_ZERO) — masked as INFRA_FAIL.
+
+PROPOSED MINIMAL FIX (matcher-side, farmctl.py _summary_matches_expected_evidence)
+  Treat a None/empty expected date as UNCONSTRAINED, not fail-closed. Keep symbol/period/
+  expert/hash pairs fail-closed on None.
+  (a) Split expected_pairs: date pairs -> `continue` when expected is None; identity pairs
+      keep `return False` on None.
+  (b) ini loop (2670-2673): guard from_date/to_date comparisons with `expected is not None`.
+  Identity binding (expert+symbol+period+ex5/setfile/mq5 sha + ini sha256) still holds, and
+  per-work-item report_root isolation + _summary_fresh_for_claim still scope to the claim.

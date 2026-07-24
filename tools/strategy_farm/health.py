@@ -617,6 +617,28 @@ def _pid_alive_no_signal(pid: int) -> bool:
         ctypes.windll.kernel32.CloseHandle(handle)
 
 
+def chk_work_items_timestamp_sanity(con) -> dict:
+    """Future created_at or non-ISO updated_at rows in work_items.
+
+    Recommended by FULL_SYSTEM_FTMO_READINESS_AUDIT_2026-07-09 (3 rows then),
+    never implemented; the anomaly grew 63x to 189 before the 2026-07-24 audit
+    repaired it (evidence: docs/ops/source_harvest/audit/evidence/dbrepair__*.json).
+    Guard against recurrence: any writer stamping sentinel/epoch timestamps."""
+    horizon = (dt.datetime.now(dt.timezone.utc) + dt.timedelta(days=1)).isoformat()
+    n_future = con.execute(
+        "SELECT COUNT(*) FROM work_items WHERE created_at > ?", (horizon,)).fetchone()[0]
+    n_noniso = con.execute(
+        "SELECT COUNT(*) FROM work_items WHERE updated_at NOT LIKE '____-__-__%' "
+        "OR created_at NOT LIKE '____-__-__%'").fetchone()[0]
+    total = int(n_future) + int(n_noniso)
+    if total:
+        return _check("work_items_timestamp_sanity", "WARN", total, 0,
+                      f"{n_future} future created_at + {n_noniso} non-ISO timestamp rows",
+                      "Find the writer (enqueue path) stamping bad timestamps; repair per "
+                      "docs/ops/source_harvest/audit/evidence/dbrepair__before.json pattern")
+    return _check("work_items_timestamp_sanity", "OK", 0, 0, "timestamps sane", "")
+
+
 def chk_pump_task_health() -> dict:
     """Scheduled task QM_StrategyFarm_Pump_5min LastResult must be 0, and the
     pump lock must not be orphaned by a dead PID (audit 2026-07-24 FB-06: a
@@ -1806,6 +1828,7 @@ ALL_CHECKS = [
     ("codex_review_fail_rate", chk_codex_review_fail_rate, True),  # needs con
     ("cards_ready_stagnation", chk_cards_ready_stagnation, True),
     ("pump_task_health",       chk_pump_task_health,       False),
+    ("work_items_timestamp_sanity", chk_work_items_timestamp_sanity, True),
     ("p2_pass_no_p3",          chk_p2_pass_no_p3,          True),
     ("ea_metrics_fresh",       chk_ea_metrics_fresh,       True),
     ("ablation_grandchildren", chk_ablation_grandchildren, True),
