@@ -4,7 +4,7 @@
 **Slug:** `xti-eurcad-rspr`
 **Source:** `BOC-EURCAD-OIL-RSPREAD-2026` (see `strategy-seeds/sources/BOC-EURCAD-OIL-RSPREAD-2026/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-07-08
+**Last revised:** 2026-07-24
 
 ---
 
@@ -109,4 +109,5 @@ ENV to mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MI
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-08 | Initial build from approved card | manual-codex-2026-07-08-xti-eurcad-rspr |
+| v2 | 2026-07-24 | Route the XTI host leg through `QM_TM_OpenPosition`; retain EURCAD as the off-host basket leg | farm ops claim `721f3d6d-54cb-4d6b-963f-4ee64de2b71b` |
 
