@@ -61,16 +61,16 @@ history-store lock window.
 - SPEC validation: PASS.
 - Strict compile: PASS, zero errors and zero warnings.
 - Compile log:
-  `framework/build/compile/20260724_162821/QM5_13060_xti-eurcad-rspr.compile.log`.
+  `framework/build/compile/20260724_163207/QM5_13060_xti-eurcad-rspr.compile.log`.
 - Build check: PASS, zero failures and zero warnings.
 - Build-check report:
-  `D:/QM/reports/framework/21/build_check_20260724_162843.json`.
+  `D:/QM/reports/framework/21/build_check_20260724_163222.json`.
 - MQ5 SHA-256:
   `4f1d15c8c32a92aaa437a2b5e79d87e9789cc79a8c8c96024c30904bd456ae2b`.
 - EX5 SHA-256:
-  `4897eb78af2807b47a296536ebb5ccecd1ab1959943f832c8b33b3f5fc9e53b9`.
+  `120a746b97dd16631b637e70ec3a3651e18cbf56b42e2784afa4b2ea5a1d35e3`.
 - Setfile SHA-256:
-  `a11399907b46c6778059b2399e95d97bd9decaf586dfe9b242d2c7911491eb4b`.
+  `c7c3ef2c3091405321f82b10305d765376c54946ec5156b18481267a805e1842`.
 
 No manual MT5 run was launched; Q02 CPU remains owned by the paced fleet.
 
