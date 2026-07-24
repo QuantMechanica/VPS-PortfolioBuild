@@ -110,6 +110,14 @@ separately without controlling it. The canonical saturation scheduler returned
 Accordingly, no fallback card was reprioritized, no duplicate Q02 row was
 inserted, and no MT5 process was launched.
 
+A third read-only refresh at `2026-07-24T20:01:29Z` found six running factory
+terminals (`T1`, `T2`, `T4`, `T7`, `T8`, and `T9`) using exact executable
+paths under `D:/QM/mt5/T1..T10`; `T_Live` was excluded by construction. The
+canonical saturation scheduler still returned
+`available_slots_before=0`, `available_slots_after=0`, `scheduled=0`, and
+`status=ok`. This is the mission's binding CPU-ceiling stop: no additional
+candidate search, queue mutation, tester launch, or terminal control followed.
+
 ## Safety
 
 - No portfolio admission, portfolio KPI, or Q08 contribution file changed.
