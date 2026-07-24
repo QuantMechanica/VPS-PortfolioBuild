@@ -199,4 +199,4 @@ or T_Live manifest, portfolio admission, or a portfolio-gate change.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-24 | new OWNER commodity-sleeve card | Q02 | PENDING |
+| v1 | 2026-07-24 | source/card/build/strict compile complete | Q01 | PASS; Q02 enqueue deferred at CPU ceiling |
