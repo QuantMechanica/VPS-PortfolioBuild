@@ -1,0 +1,51 @@
+# STR-021 — Reconciliation (Claude spec ↔ Codex spec)
+
+## Consensus
+Weekly-open level primacy; M15 closed-bar state machine; OB candle geometry
+(bearish candle below level for longs, mirror), close-beyond-extreme
+confirmation, limit at OB edge, SL beyond opposite extreme; 2R as the only
+self-contained exit; no market chase on missed retrace; metals transfer risk +
+episodic frequency documented; framework overlay (news, Friday-close).
+
+## Divergences → decisions
+
+1. **Final rule hierarchy (p.25).** Codex surfaced the author's final evolution:
+   "only enter after liquidity has been taken out and an order block has formed
+   afterward. Volumes serve only as confirmation." Claude had extreme-volume as a
+   HARD OB qualifier. → **Codex wins (source-final):** sequence = sweep → OB
+   (formed AFTER the sweep) → confirmation close → limit. Volume becomes an
+   OPTIONAL confirmation input, **default OFF** (author himself rejects FX/CFD
+   tick volume; metals have no source-approved feed).
+2. **Liquidity-sweep definition** (unstated in source; both flagged): →
+   deterministic minimal reading anchored in the thread's level framework:
+   sell-side sweep (long case) = an M15 bar that trades below the weekly open AND
+   below the **previous day's low** (the nearest canonical sell-side pool in the
+   author's MOP/WOP/DOP level system). Mirror for buy-side. Recorded as
+   reconciliation definition.
+3. **OB selection:** most recent qualifying opposing candle formed after the
+   sweep, entirely beyond the weekly open (long: High < weekly_open, Close<Open);
+   newer qualifying candles replace older ones until confirmation. ("First vs
+   most recent" unstated; most-recent = nearest liquidity, consistent with the
+   author's worked entries.)
+4. **Exit mode:** fixed 2R from ACTUAL fill (codex's R-from-fill precision
+   adopted). Other three source options documented, not built.
+5. **Pending management** (unstated): expiry at week end; invalidation cancel if
+   an M15 close breaches the OB's far extreme before fill (long: close < OB.low);
+   one pending OR one position per symbol; opposite setups ignored while
+   pending/position exists. (Restrictive composite of both specs.)
+6. **SL buffer:** none stated → SL = OB extreme ∓ 1 tick ("below the low"
+   minimal reading; no pip buffer invented). Stops-level too tight → SKIP setup
+   and log (geometry is the trade; no widening). [both restrictive]
+7. **Week/day boundary:** author "clock set to UTC"; our platform = broker time
+   (NY-close GMT+2/+3). → use BROKER W1/D1 bars (deterministic, data-native);
+   UTC-offset fidelity noted in card (constant 2-3h shift of level anchors).
+8. **Weekly-open break semantics:** wick sufficient for the SWEEP leg (codex:
+   "a wick may perform the sweep"), but OB qualification and confirmation use
+   closes. Break-below-level = `Low < weekly_open` intra-week precondition
+   folded into the sweep condition (#2).
+9. **Symbols:** XAUUSD.DWX + XAGUSD.DWX (Claude) — codex neutral ("metals").
+   Kept; XTIUSD deferred (venue costs/session differ).
+
+## Frequency
+8–25 filled/yr/symbol (codex, fill-adjusted) — above floor but the thinnest of
+the three; flagged for Q02 watch.
