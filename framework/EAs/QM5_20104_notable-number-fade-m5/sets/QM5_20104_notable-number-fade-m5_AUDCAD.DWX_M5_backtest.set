@@ -1,0 +1,29 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20104
+; ea_slug:      notable-number-fade-m5
+; ea_version:   v5.0
+; set_version:  s20260724-001
+; symbol:       AUDCAD.DWX
+; timeframe:    M5
+; environment:  backtest
+; magic_slot:   6
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   0696be3940aad99a7c8bcf04043a5c99d4b1c1561c64cc0873d7444e908f2768
+; author:       Development
+; date:         2026-07-24
+;==========================================================
+qm_ea_id=20104
+qm_magic_slot_offset=6
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
+strategy_notable_suffix=55
+strategy_lookback_d1_bars=43
+strategy_sl_price_pct=0.6
+strategy_tp_price_pct=0.4
+strategy_window_start_hhmm=1500
+strategy_window_end_hhmm=1800
