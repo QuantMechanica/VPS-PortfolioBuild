@@ -846,9 +846,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    return true;
   }
 
+// Retry pacing for the deferred-TP attach: a broker-rejected TP modify is
+// retried at most once per M15 bar instead of every tick (653,089 rejected
+// wrong-side requests in the 2024 XAUUSD smoke 20260724_123426 before this fix).
+datetime g_str021_tp_retry_wait_bar = 0;
+
 void Strategy_ManageOpenPosition()
   {
    const int magic = QM_FrameworkMagic();
+   const datetime cur_bar = iTime(_Symbol, PERIOD_M15, 0); // perf-allowed: O(1) retry-pacing key (TP-storm fix 2026-07-24)
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
