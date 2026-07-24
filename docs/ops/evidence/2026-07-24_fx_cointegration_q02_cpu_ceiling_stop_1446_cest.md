@@ -1,5 +1,11 @@
 # FX Cointegration Q02 Continuation — CPU-Ceiling Stop (14:46 CEST)
 
+> **SUPERSEDED — do not dispatch legacy queue rows 2 or 4.** Later
+> cross-ledger reconciliation found canonical terminal Q02 PASS evidence for
+> both `QM5_12760` and `QM5_13119`; their headless rows are stale duplicates,
+> not valid continuations. See
+> [FX_COINTEGRATION_FRONTIER_DUPLICATE_GUARD_2026-07-24.md](../../research/FX_COINTEGRATION_FRONTIER_DUPLICATE_GUARD_2026-07-24.md).
+
 **Observed:** 2026-07-24T14:46:33.9033752+02:00
 
 **Branch:** `agents/board-advisor`

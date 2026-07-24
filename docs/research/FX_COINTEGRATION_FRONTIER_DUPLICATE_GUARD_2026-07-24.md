@@ -65,8 +65,10 @@ as FX cointegration continuations:
 These rows are not valid mission fallbacks. They are cross-ledger duplicates
 of terminal Strategy Farm work and must not be dispatched or copied into
 another queue. This finding supersedes the continuation language in
-`docs/research/FX_COINTEGRATION_Q02_CPU_CEILING_STOP_2026-07-23.md` that treated
-the two rows as unfinished Q02 work.
+`docs/research/FX_COINTEGRATION_Q02_CPU_CEILING_STOP_2026-07-23.md`,
+`docs/research/QM5_13119_HEADLESS_Q02_CPU_CEILING_HANDOFF_2026-07-23.md`, and
+`docs/ops/evidence/2026-07-24_fx_cointegration_q02_cpu_ceiling_stop_1446_cest.md`
+where they treat either row as unfinished Q02 work.
 
 No external queue row was updated or deleted. Retiring or invalidating legacy
 rows is a separate scheduler-governance action and is not inferred from this

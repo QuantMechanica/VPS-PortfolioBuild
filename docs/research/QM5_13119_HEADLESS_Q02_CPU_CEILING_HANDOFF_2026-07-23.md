@@ -1,5 +1,11 @@
 # QM5_13119 Headless Q02 CPU-Ceiling Handoff
 
+> **SUPERSEDED — do not dispatch queue row 4.** Canonical Strategy Farm
+> evidence now contains terminal Q02 PASS results for `QM5_13119` (most
+> recently 2026-07-19), so the legacy headless row is a cross-ledger
+> duplicate, not unfinished Q02 work. See
+> [FX_COINTEGRATION_FRONTIER_DUPLICATE_GUARD_2026-07-24.md](FX_COINTEGRATION_FRONTIER_DUPLICATE_GUARD_2026-07-24.md).
+
 **Date:** 2026-07-23  
 **Branch:** `agents/board-advisor`  
 **EA:** `QM5_13119_usdjpy-euraud`  
