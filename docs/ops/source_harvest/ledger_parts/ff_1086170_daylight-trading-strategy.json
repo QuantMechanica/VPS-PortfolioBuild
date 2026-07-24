@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_1086170_daylight-trading-strategy.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_1086170_daylight-trading-strategy.pdf",
+      "source_pages": "1-4, 17, 23",
+      "source_ref": "LauraT, 'Daylight Trading Strategy', ForexFactory thread 1086170 (2021), https://www.forexfactory.com/thread/1086170/daylight-trading-strategy (TradingView port by pedrobhs referenced p.23)",
+      "strategy_name": "Daylight WPR/MA trend-continuation",
+      "concept": "Take trend-continuation entries when a fast price MA and two smoothed MAs of a hidden Williams %R all separate into a confirmed gap ('daylight') and price closes back beyond the fast MA in the trend direction.",
+      "market": "Indices",
+      "timeframe": "M15",
+      "session": "none",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Fully mechanical entry (WPR 14 hidden + SMMA 8/21 sub-window, 5-SMMA and 5-SMMA-shift-5 on price, daylight>=~4) and deterministic exit options exist (MA cross-back or ADR/ATR target); pure MQL5, no ML, data available on .DWX.",
+      "priority_hint": "LOW",
+      "notes": "Colors: main chart Green=5-SMMA, Red=5-SMMA shifted +5; sub-window Red=8-SMMA, Blue=21-SMMA applied to Williams %R(14). Short = Red>Green with daylight on price AND price closes below Green AND Red>Blue with daylight in sub-window; long is mirror. Exit: 4 stated options (sub-window MAs slope reverse, red/green cross, red/blue cross, or ADR%/ATR-multiple target) — pick a deterministic one; author uses only a far 'emergency' stop and discretionary TP (the vague part; mechanize with cross-back exit + wide catastrophic stop). Market/TF are variants of one core: author prefers indices/gold/oil, M5 endorsed for indices, D1 usable with smaller size; M15 recommended floor for FX. Advises flat before major FX news. Generic MA-cross trend follower — no structural/limit-to-arbitrage edge (crosses our FX-edge doctrine caution), hence LOW despite clean rules. Linked-but-not-in-PDF variants: 'Aggressive Hourly', '15m Aggressive', '-50 trend filter', 'Standalone -50 Strategy' (rules absent here, cannot classify)."
+    }
+  ],
+  "notes": ["Thread first 3 pages / 60 posts captured; core rules on pp.1-4, daylight-threshold clarification p.17, TradingView feature list p.23. Page 24 empty. Single core strategy with market/timeframe variants -> one row."]
+}

@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_110278.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_110278.pdf",
+      "source_pages": "1",
+      "source_ref": "ForexFactory thread 110278, https://www.forexfactory.com/thread/110278 - empty capture; PDF contains only a placeholder notice stating '0 Beitraege (0 posts), KOMPLETT (1 page)'",
+      "strategy_name": "n/a - empty thread capture",
+      "concept": "No strategy content present; the capture holds only a notice that the ForexFactory thread has zero posts.",
+      "market": "FX",
+      "timeframe": "H1",
+      "session": "none",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "Empty source: thread captured with 0 posts, no entry/exit rules or edge to classify.",
+      "priority_hint": "LOW",
+      "notes": "Placeholder-only PDF (69 chars, no images). Confirmed via pypdf and pdfplumber. market/timeframe/session are non-applicable placeholders required by schema enums."
+    }
+  ],
+  "notes": ["empty_thread_zero_posts"]
+}

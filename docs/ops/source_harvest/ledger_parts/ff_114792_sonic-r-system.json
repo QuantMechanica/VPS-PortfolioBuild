@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_114792_sonic-r-system.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_114792_sonic-r-system.pdf",
+      "source_pages": "7-10,34",
+      "source_ref": "sonicdeejay (Sonic) & traderathome (TAH), 'Sonic R. System', ForexFactory thread 114792, 2008 (opening post revised 2014), https://www.forexfactory.com/thread/114792/sonic-r-system",
+      "strategy_name": "Sonic R EMA-Wave Session Breakout",
+      "concept": "A 34-EMA high/low/close band (the 'wave') defines trend, and price closing beyond the band during the London/NY window triggers a buy/sell stop a few pips past the breakout candle's extreme, confirmed by MACD slope and Stochastic direction.",
+      "market": "FX",
+      "timeframe": "M15",
+      "session": "London",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Pure-MQL5 mechanizable EMA-band session breakout with MACD/Stoch confirmation and hard stops (FTMO/DXZ-safe); discretionary S&R-based exits and slope/SHI-channel bias filters must be operationalized.",
+      "priority_hint": "LOW",
+      "notes": "Core = 34 EMA on High, Low and Close (the 'wave'), confirmed pg34. Trading windows 1-4AM & 7-11AM EST = London + NY overlap (pg10) - session field set to London but NY window applies too. Entry (pg10): wait for breakout candle to close beyond band, place buy/sell stop few pips beyond its high/low + MACD sloping in trade direction + Stoch pointing that way. Whipsaw filters (pg7): EMA slope angle (long 1-2 o'clock, short 4-5, avoid flat 3 o'clock ranging), multi-TF H1/D1 bias via SHI-channel trendline indicator, no-chase. Inspired by Raghee Horner 'Forex Trading for Maximum Profit'. M5 scalp and M15 swing are the same core rules on different TFs = one row. JPY-crosses (EUR/JPY) prominent in the author's examples. Extremely popular retail system -> likely crowded / edge-decayed and no structural limit-to-arbitrage argument; author states 'not 100% pure mechanical' (pg28) and exits (TP at S&R / 'M-shape broken', SL at nearest support) are discretionary. PVSRA and 'Scout' trades are referenced but detailed only in external linked PDFs (not in this thread); PVSRA is explicitly an analysis method, not an entry method."
+    }
+  ],
+  "notes": ["Pages 24-37 are mostly image-only follow-up chart posts (page 37 has zero extractable text); all concrete rules are on pages 1-10 and 34.", "Single core strategy; M5 scalp vs M15 swing are variants of the same rules."]
+}

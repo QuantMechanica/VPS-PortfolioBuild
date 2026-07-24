@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_1010582_trading-system-simplicity.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_1010582_trading-system-simplicity.pdf",
+      "source_pages": "1-3",
+      "source_ref": "zeiman (Mantas, UK), \"Trading System Simplicity\", ForexFactory thread 1010582 (12 posts, n.d.), https://www.forexfactory.com/thread/1010582",
+      "strategy_name": "Simplicity HA + 100EMA London-Session Trend",
+      "concept": "In a 100-EMA-defined trend during the London session, enter on a Heiken Ashi candle color flip and scale out three equal-lot orders (two at 1:1, one trailed below each new HA candle).",
+      "market": "FX",
+      "timeframe": "H1",
+      "session": "London",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Fully mechanical HA color-change + 100EMA trend filter on FX majors H1 with stated SL (entry candle), TP=SL, 1% risk per order and HA-trailing exit — implementable in pure MQL5, FTMO/DXZ compatible.",
+      "priority_hint": "LOW",
+      "notes": "Forum thread, only 12 posts. Author concedes heavy whipsaw/stop-outs in flat markets. Generic HA+EMA trend signal with weak/common edge; distinguishing features are the 06:00 GMT +8-9h session window and the A/B/C 3-order scale-out MM (borrowed from Peter Crown 'The Dibs'). Pairs: EUR/USD, GBP/USD, USD/CHF, USD/JPY. HA color is deterministic from HA open/close. Poster cfudge suggested an HA-histogram variant using the actual candle for SL/TP to survive flats."
+    }
+  ],
+  "notes": []
+}
