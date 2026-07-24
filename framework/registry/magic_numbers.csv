@@ -15225,3 +15225,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20106,daily-wick-stop-breakout,2,AUDUSD.DWX,201060002,2026-07-24T15:38:44Z,claude,active
 20106,daily-wick-stop-breakout,3,USDJPY.DWX,201060003,2026-07-24T15:38:44Z,claude,active
 20106,daily-wick-stop-breakout,4,EURAUD.DWX,201060004,2026-07-24T15:38:44Z,claude,active
+20107,asian-range-straddle-m15,0,USDJPY.DWX,201070000,2026-07-24T16:37:31Z,claude,active
+20108,ema144-displaced-breach-m5,0,EURUSD.DWX,201080000,2026-07-24T16:37:31Z,claude,active
+20108,ema144-displaced-breach-m5,1,GBPUSD.DWX,201080001,2026-07-24T16:37:31Z,claude,active
+20108,ema144-displaced-breach-m5,2,USDJPY.DWX,201080002,2026-07-24T16:37:31Z,claude,active
+20109,vr-gap-fade-d1,0,NDX.DWX,201090000,2026-07-24T16:37:31Z,claude,active
+20109,vr-gap-fade-d1,1,GDAXI.DWX,201090001,2026-07-24T16:37:31Z,claude,active
