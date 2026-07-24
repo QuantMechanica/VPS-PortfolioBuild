@@ -1,0 +1,22 @@
+{
+  "pdf": "forums.babypips.com_t_london-breakout-strategy-1h-timeframe-modified_326993.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_london-breakout-strategy-1h-timeframe-modified_326993.pdf",
+      "source_pages": "1,28-29,42",
+      "source_ref": "London Breakout Strategy - 1H Timeframe Modified, by Cloudninee (Cloud Nguyen), BabyPips.com Forums, 2020, https://forums.babypips.com/t/london-breakout-strategy-1h-timeframe-modified/326993",
+      "strategy_name": "London Opening-Range Breakout (H1, Asian-3-candle range)",
+      "concept": "Trade the London-open volatility expansion by entering on the H1 close that breaks the high/low of the last 3 Asian-session candles, SL at the opposite range end, fixed 1.5 R:R, forced flat before NY close.",
+      "market": "FX",
+      "timeframe": "H1",
+      "session": "London",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Deterministic session ORB, pure-MQL5, fixed SL/opposite-range-end + 1.5 R:R TP + EOD-flat; FX majors/crosses all on .DWX; FTMO/DXZ-compatible (stops + Friday-close exist).",
+      "priority_hint": "MED",
+      "notes": "Core rules (p1): range = H/L incl. wicks of last 3 H1 Asian candles before London open; enter at CLOSE of first candle that breaks AND closes clearly outside range (no pending orders, avoids fakeouts); SL = entry-to-opposite-range-end (p29 #68), TP = 1.5x SL, close before NY/US close if neither hit (p1); lot = risk/SLpips/10 (p42 #119); risk 1-2% (later 1%). Symbols: started EURGBP/EURUSD/GBPJPY/GBPUSD/USDCHF/USDJPY, dropped the 2 USD pairs -> kept EURUSD,EURGBP,GBPUSD,GBPJPY. tommor (#28): select by ATR spike at London open (~2x daily ATR low) -> GBP/USD strongest, EUR/USD next, USD/JPY has no spike -> avoid. Independent backtests ~42-50% WR (izner 42% #102, soundscape8 40-50% #108, thebrettski2 ~50/50 #99); TradeOrBeASlaveForever (#32) got negative results since 2013 -> edge marginal/crowded, spread+commission matter. VARIANTS (same core, one row): SamDavies EA uses Tokyo-close->NY-open range window + entry offsets + auto-close 6pm GMT+1 (his GBPJPY Martingale sub-variant is REJECTED-incompatible); thebrettski2 adds Aroon Up/Down 67-line filter (#99); range-def variants (#90) = whole Asian session / last Asian candle / first London candle; also a 15m-TF version. Discretionary bits (skip large-Asian-range days, mid-range SL on strong breakout, skip NFP/news days per #107/#115) must be fixed as deterministic params. Same range-breakout family as live Balke but intraday-flat (EOD close) vs Balke overnight hold -> fits session-structure intraday-flat sourcing direction. Forum source: lower priority for reputability but precedent (Balke) allows it."
+    }
+  ],
+  "notes": []
+}

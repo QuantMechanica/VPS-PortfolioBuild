@@ -1,0 +1,22 @@
+{
+  "pdf": "forums.babypips.com_t_isakas-sekelper-trading-system_707386.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_isakas-sekelper-trading-system_707386.pdf",
+      "source_pages": "1",
+      "source_ref": "wdmenet, 'Isakas Sekelper Trading System', Babypips forum thread #707386, 2022-03-12, https://forums.babypips.com/t/isakas-sekelper-trading-system/707386",
+      "strategy_name": "Isakas Sekelper Indicator-Confluence Scalp",
+      "concept": "Scalp long/short when three custom indicators (NonLagMA dots, HMA, FX Fisher mod) all agree in color/direction, exiting on a fixed ~30-point target or a color flip.",
+      "market": "FX",
+      "timeframe": "M5",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "All three indicators (NonLagMA, HMA, Fisher transform) are standard and reimplementable in pure MQL5, no ML; entry = color agreement, exit = fixed 30-point TP; but SL 'nearest support/resistance' is discretionary and needs a swing-lookback substitution.",
+      "priority_hint": "LOW",
+      "notes": "Yet-another FX-majors momentum-confluence scalp; correlated with existing technical trend systems, not an uncorrelated driver. Dead DOWNLOAD link so original custom indicators unavailable (must reconstruct). 30 points likely = 3 pips on a 5-digit broker -> spread/cost sensitive under .DWX. Reputability dubious: reply #2 (Spooky.Cookie, 2025-10-28) suspects the post is SEO traffic-generation content and 'Sekelper' may be a duplicated typo of 'Scalper' -- lowers priority, does not reject."
+    }
+  ],
+  "notes": ["Two-post thread: post #1 = full rule statement; post #2 = skeptical commentary on authenticity, no additional rules."]
+}

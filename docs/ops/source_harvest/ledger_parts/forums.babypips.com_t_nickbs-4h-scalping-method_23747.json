@@ -1,0 +1,25 @@
+{
+  "pdf": "forums.babypips.com_t_nickbs-4h-scalping-method_23747.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_nickbs-4h-scalping-method_23747.pdf",
+      "source_pages": "1-3",
+      "source_ref": "NickB's 4H Scalping Method (method by Nick Bencino / 'NickB', forex4noobs.com), thread started by user phil838, Babypips forum, 2009. https://forums.babypips.com/t/nickbs-4h-scalping-method/23747",
+      "strategy_name": "NickB Scalp-Line Level Break (GBP/JPY H4)",
+      "concept": "Trade the break of a horizontal 'scalp line' drawn at a prior swing high/low that produced a large, sustained reversal, betting resurgent order-flow momentum as price revisits and breaks that level.",
+      "market": "FX",
+      "timeframe": "H4",
+      "session": "London",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Fixed 50-pip SL/TP + pending-order break with 5-7 pip buffer is fully mechanical; the 'scalp line' qualification (swing pivot with >=~350-400 pip move over >=4-6 candles, line-age expiry) is mechanizable as a pivot/retracement filter, but participants stress it is discretionary ('a thinking man's system, not mechanical').",
+      "priority_hint": "LOW",
+      "notes": "Core rules: GBP/JPY H4, no indicators; entry = pending stop order on break of scalp line with 5-7 pip buffer (= broker spread) to filter fake breaks; SL 50 / TP 50 pips (1R), some let winners run to 100+; scalp-line validity 2 months (strong) / 1 month (weak), single-use (invalid once traded through); only trade after London open (needs momentum; Asian low-vol breaks skipped); ebook wants V/U/L-shaped bounces. Variants in same core (ONE row): manual S&R line-break (needs price-spike confirmation, no pending order), 'master candle' break, and reversal-off-line all trade price interaction at horizontal levels. Extends to USD/CAD, EUR/JPY, NZD/JPY, EUR/USD per posters. CAVEATS: forum source, unverified 70-80% win-rate marketing claims; overlaps shop doctrine that discretionary S&R/chart-pattern breakouts have shown no durable mechanical FX edge (cf. Balke range-breakout: edge real but died Q05 DD). Mild fit as JPY-cross + London-session-structure driver keeps it ELIGIBLE for a mechanical-proxy test rather than a clone."
+    }
+  ],
+  "notes": [
+    "Single core strategy across the thread; discretionary variants folded into one row per schema.",
+    "Name says 'scalping' but it is an H4 swing/level-break method (0-3 trades/week, +50-100 pips/trade)."
+  ]
+}

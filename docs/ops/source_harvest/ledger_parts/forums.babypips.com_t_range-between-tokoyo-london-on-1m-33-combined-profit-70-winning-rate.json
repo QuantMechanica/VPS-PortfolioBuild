@@ -1,0 +1,22 @@
+{
+  "pdf": "forums.babypips.com_t_range-between-tokoyo-london-on-1m-33-combined-profit-70-winning-rate-majors_1282228.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "forums.babypips.com_t_range-between-tokoyo-london-on-1m-33-combined-profit-70-winning-rate-majors_1282228.pdf",
+      "source_pages": "1-4",
+      "source_ref": "KGMK, \"Range Between Tokoyo/London on 1m [33% Combined Profit, 70% Winning Rate, Majors]\", BabyPips forum, 2025, https://forums.babypips.com/t/range-between-tokoyo-london-on-1m-33-combined-profit-70-winning-rate-majors/1282228",
+      "strategy_name": "Tokyo/London Session Range (M1 Majors)",
+      "concept": "An intraday session-range edge on M1 FX majors/crosses traded across the Tokyo-to-London transition window, with long/short entries tagged by four session rules.",
+      "market": "FX",
+      "timeframe": "M1",
+      "session": "London",
+      "rules_completeness": "VAGUE",
+      "eligibility": "REJECTED",
+      "eligibility_reason": "Results-dump only: the four entry/exit 'Rules' are referenced by number but never defined; no methodology, thresholds, or parameters stated, so the strategy cannot be implemented as written.",
+      "priority_hint": "LOW",
+      "notes": "Concept (session-structure range on M1 majors during Tokyo/London window) fits our favored uncorrelated-driver bucket, but is un-harvestable as posted. Single-post thread marked COMPLETE (no follow-up rules). ~30-day forward-test sample (Apr 2025) on EURUSD/GBPUSD/USDCHF/USDJPY/USDCAD/AUDUSD + AUD/EUR/CHF/JPY crosses; claimed 33% combined / 70% win, but the table includes several large 'END OF DAY' losing exits (e.g. AUDUSD -2.66, USDCHF -2.07). Referenced images (screenshots) may hold the rules but are image-only; no OCR attempted. Session value approximate (Tokyo-to-London transition; exact boundaries not stated)."
+    }
+  ],
+  "notes": []
+}
