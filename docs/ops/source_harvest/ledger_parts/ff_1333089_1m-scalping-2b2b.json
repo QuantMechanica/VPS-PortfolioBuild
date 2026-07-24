@@ -1,0 +1,25 @@
+{
+  "pdf": "ff_1333089_1m-scalping-2b2b.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_1333089_1m-scalping-2b2b.pdf",
+      "source_pages": "1-2, 5-6, 16-17, 27-28",
+      "source_ref": "Forum thread 'M1 Scalping 2B2B (2 Breaks 2 Bases)', author handle Inthebox, ForexFactory, 2025 (thread references 27feb25). https://www.forexfactory.com/thread/1333089-1m-scalping-2b2b",
+      "strategy_name": "2B2B session-open liquidity-sweep engulf",
+      "concept": "Enter with the HTF trend at a market-session open on an M1 liquidity sweep that reverses into a break-and-retest 'base' (engulfing origin) at a prior-session/HTF key level, with a fixed 40-60 pip TP and SL beyond the base.",
+      "market": "Metals",
+      "timeframe": "M1",
+      "session": "London",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Skeletal but mechanizable price-action rules (session-open filter, HHHL/LHLL trend, prior-session high/low sweep, engulfing 'base' entry, candle-cannot-close-beyond-base invalidation, SL beyond base, fixed 40-60 pip TP); HTF key-level and base selection need mechanical proxies (prior-day/session OHLC, fractal swings).",
+      "priority_hint": "LOW",
+      "notes": "Discretionary SMC/liquidity-sweep family: author explicitly calls key-level/break/base selection 'a judgement call' and distrusts backtesting ('testing experiment, forward testing'). Same core rules cover the aggressive 1B1B variant (1 break 1 base, trend continuation, M1 and above) and the 'MTF engulf + 1B1B combo' update -> one row. Demonstrated almost exclusively on GOLD (XAUUSD), avg 40-60 pip range; author says other pairs need their own range calibration. In-thread tight-spread/scalping cost warning (Mandariin recommends futures). Overlaps QM's already-mined gold-ORB/breakout and retired SMC/ICT chart-pattern lines -> treat as low-confidence; pipeline judges edge."
+    }
+  ],
+  "notes": [
+    "Single discretionary price-action method (2B2B core + 1B1B variant); one candidate row.",
+    "Forum source is not auto-rejected (Balke precedent); reputability/discretion lowered priority_hint to LOW, not eligibility."
+  ]
+}

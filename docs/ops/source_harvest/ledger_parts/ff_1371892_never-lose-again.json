@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_1371892_never-lose-again.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_1371892_never-lose-again.pdf",
+      "source_pages": "2-3",
+      "source_ref": "\"Never Lose Again\" thread by Erebus (with kleybenny, driven18, notabdullah1, T721), ForexFactory thread 1371892, 2025-2026, https://www.forexfactory.com/thread/1371892/never-lose-again",
+      "strategy_name": "Weekly Range Breakout (Never Lose Again)",
+      "concept": "Break of the previous week's high/low in the direction of the prevailing weekly bias, held as a swing with SL at the recent swing point and all positions flat by Friday close.",
+      "market": "FX",
+      "timeframe": "D1",
+      "session": "none",
+      "rules_completeness": "PARTIAL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Pure-MQL5 prior-week high/low breakout with a stop and Friday-flat exit; FX/metals data on .DWX; discretionary overlay (bias, swing SL, ADR TP moves) must be mechanized.",
+      "priority_hint": "LOW",
+      "notes": "Entry anchor (prior-week high/low breakout) and Friday-close exit are objective; SL 'at recent swing point', 'weekly bias', and 'move TP daily using ADR targets' are explicitly discretionary (author: 'not a system with hard entries', 'individual discretion'). Risk <=2%/position, initial RR 1:1 scalable to daily/weekly/monthly ADR targets, later variants 3:1 + trailing stop. Maps directly onto the already-explored Balke weekly-range-breakout family (a poster even calls it 'Good Ole Range Breakout... for a weekly as a range') which the shop found edge-real but Q05-DD-fatal and non-generalizing -> low novelty. Live evidence is a small ~3-week journal; author repeatedly flags Gold as the losing leg (FX-only did better). Attached 'Previous Week High Low.mq4' only plots the levels, not a strategy. Secondary forum chatter (Dow Futures 5m breakout, 'go opposite gold breakouts') are undefined asides, not separate candidates. Forum-source reputability caveat."
+    }
+  ],
+  "notes": []
+}

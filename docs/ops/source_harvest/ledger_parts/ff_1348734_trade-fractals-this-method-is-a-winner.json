@@ -1,0 +1,22 @@
+{
+  "pdf": "ff_1348734_trade-fractals-this-method-is-a-winner.pdf",
+  "unreadable": false,
+  "rows": [
+    {
+      "source_file": "ff_1348734_trade-fractals-this-method-is-a-winner.pdf",
+      "source_pages": "1-6",
+      "source_ref": "jamesagnew, 'trade fractals, this method is a winner', ForexFactory thread 1348734 (forum discussion, 41 posts), https://www.forexfactory.com/thread/1348734/trade-fractals-this-method-is-a-winner",
+      "strategy_name": "Fractal Breakout H4 (Bill Williams)",
+      "concept": "Breakout 5 pips past a confirmed Bill Williams fractal - buy above a down-fractal swing low, sell below an up-fractal swing high - with a fixed 2:1 reward:risk.",
+      "market": "FX",
+      "timeframe": "H4",
+      "session": "none",
+      "rules_completeness": "FULL",
+      "eligibility": "ELIGIBLE",
+      "eligibility_reason": "Deterministic fractal-breakout, fixed SL 50 / TP 100 pips, H4 FX (USDCAD) data via .DWX, FTMO/DXZ-compatible; forum author admits not trading/testing and it is a generic breakout, hence low priority.",
+      "priority_hint": "LOW",
+      "notes": "Base rule: down fractal -> buy stop at signal-candle high +5 pips; up fractal -> sell stop at low -5 pips; TP 100 / SL 50 pips; H4 USDCAD, 'works on any pair'. Bill Williams fractal only confirms after 2 closed bars each side, so entry must arm on the confirmed fractal to avoid the repaint that FerruFx flags. Optional confirmation-candle filter variant (page 6): take buy only if the candle right of a down fractal is higher-high+higher-low, sell only if lower-high+lower-low - fold as a parameter, not a separate row. Thread widely panned as untested spam (author has ~58 similar threads). Secondary idea by perth1985 (Heikin-Ashi 1:1 RR with MA/trend confirmation from an external video) is too VAGUE to classify - not a candidate."
+    }
+  ],
+  "notes": []
+}
