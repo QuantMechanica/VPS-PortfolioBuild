@@ -102,6 +102,14 @@ seven active work items, while the saturation scheduler again returned zero
 available slots and scheduled zero jobs. The lower process snapshot therefore
 does not authorize bypassing either scheduler's capacity accounting.
 
+A second read-only refresh at `2026-07-24T18:47:24Z` again reached the same
+binding result. `farmctl mt5-slots` observed six path-anchored factory
+terminals (`T1`, `T6`, `T7`, `T8`, `T9`, and `T10`) and observed `T_Live`
+separately without controlling it. The canonical saturation scheduler returned
+`available_slots_before=0`, `available_slots_after=0`, and `scheduled=0`.
+Accordingly, no fallback card was reprioritized, no duplicate Q02 row was
+inserted, and no MT5 process was launched.
+
 ## Safety
 
 - No portfolio admission, portfolio KPI, or Q08 contribution file changed.
