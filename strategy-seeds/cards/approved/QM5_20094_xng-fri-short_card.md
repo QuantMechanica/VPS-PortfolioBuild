@@ -68,6 +68,11 @@ unchanged.
 - Use MT5 broker calendar, D1 OHLC/ATR, spread, history and position state only.
 - Backtest risk is `RISK_FIXED=1000`, `RISK_PERCENT=0`, weight 1.
 
+## rules
+
+The entry, exit, and management sections below are the complete authorized
+baseline. Anything not stated there is out of scope.
+
 ## Entry rules
 
 - On a genuine D1 bar with broker `day_of_week == 5`, consume the daily
