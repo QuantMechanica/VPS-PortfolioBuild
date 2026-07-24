@@ -1,0 +1,30 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        20097
+; ea_slug:      three-little-pigs-mtf-sma
+; ea_version:   v5.0
+; set_version:  s20260724-001
+; symbol:       EURJPY.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-07-24
+;==========================================================
+qm_ea_id=20097
+qm_magic_slot_offset=2
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
+strategy_sma_w1=55
+strategy_sma_d1=21
+strategy_sma_h4=34
+strategy_atr_period=14
+strategy_atr_lookback=30
+strategy_atr_offset_fact=0.25
+strategy_max_sl_pips=100.0
