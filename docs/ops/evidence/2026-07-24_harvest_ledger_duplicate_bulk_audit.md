@@ -40,3 +40,23 @@ gates (DL-083) will catch identical twins; flagged here for the record.
 ELIGIBLE+NEW backlog: 27 → 17 (1 built this tranche + 9 duplicates
 resolved). Build throughput is preserved for genuinely distinct or
 faithfully-corrective candidates only.
+
+---
+
+## CORRECTION (2026-07-24 ~22:30, codex counter-review G0_REVIEW_T6)
+
+Codex's independent artifact-level check (full prior SPECs/sources, and for
+the SPEC-less 10015/10017 their cards and .mq5 strategy sections) CONTESTED
+all nine RESOLVED-DUPLICATE retirements: every named prior build adds
+unsourced gates/exits (ATR/spread/session vetoes, time exits, pending
+expiries) or drops source realizations (partial closes, two-lot campaigns,
+basket coupling) — under the same fidelity standard that justified the
+STR-044 rebuild, none is rule-identical. My audit's one-line-SPEC scan was
+too shallow; the blanket retirements are REVERSED (rows restored to NEW
+with the concrete deltas recorded). Five of six suspects are likewise
+cleared as rebuild-justified; STR-067 remains suspect (the source itself
+contains mutually opposite entry readings — variant split required).
+STR-042→QM5_9999 stays resolved: both reviews confirm rule-identity.
+Net ledger effect of the whole audit: backlog 27 → 26 (only the true
+duplicate removed). Process note: this is the two-agent review working as
+designed — the shallow bulk retirement did not survive counter-review.
