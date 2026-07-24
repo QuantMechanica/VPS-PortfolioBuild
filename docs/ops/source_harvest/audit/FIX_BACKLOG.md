@@ -1,5 +1,20 @@
 # Fix Backlog — Factory Audit 2026-07-24
 
+**Implementation run 2026-07-24 (OWNER: "alles umsetzen") — status:**
+FB-01 DONE `550603304` · FB-02 DONE `bd9c3e049` (root cause was the 07-23
+evidence-binding regression, not the suspected spawn args) · FB-03 DONE `5562e8463` ·
+FB-04/ESC-02 DONE `bf3f03a1a` (manifest pending OWNER countersign) · FB-05 DONE (see
+below) · FB-06 DONE `550603304` · FB-07 DONE `6e79b9ea9` · FB-08 DONE `6e79b9ea9` ·
+FB-09 DONE (9/9 tasks deleted, XML backups in `evidence/purge__task_xml/`) · FB-10 DONE
+(REVIEW queue 0; two rows honestly re-dispositioned, see commit msg) · FB-11 RESOLVED
+as phantom `7e11856d4` · FB-12 DONE-with-residue (5 quarantine moves, 12 branches;
+7 dirty worktrees + stray codex-13140 dir documented for OWNER review,
+`evidence/purge__actions.log`) · FB-13 DONE for 10940 (`6e79b9ea9`; 10476/10692/10715
+deliberately kept active — live Q12-pool candidates) · FB-14 DOCUMENTED
+(`evidence/fb14__strategy_id_semantics.md`). ESC-01 implemented (DD guard live);
+ESC-04 amended; ESC-05 draft awaiting sign-off; ESC-06 10145 re-gated (Q10 requeued),
+20048 to Q12. Open OWNER items: `NEEDS_FABIAN.md`.
+
 Prioritized. Effort: S ≤ 1h, M ≤ half day, L ≥ day. Fixes applied during the audit
 itself (event_vocabulary commit `8154d302f`, 13213 registry backfill `51778300b`) are
 listed in `AUDIT_REPORT.md` §7, not here. Compliance-matrix-driven items (killswitch

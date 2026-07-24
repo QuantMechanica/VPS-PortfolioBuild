@@ -1,13 +1,25 @@
 """Build pipeline_state.json — single source of truth for EA pipeline state.
 
-Reads filesystem state under D:/QM/reports/pipeline, the V5 EA registry,
-strategy cards, the aggregator's last_check_state.json, the watchdog's latest.json,
-and the dispatcher's dispatch_state.json. Produces an atomic
+Per-EA pipeline state (per_ea, by_status, and the automated-gate slice of
+by_phase) is derived READ-ONLY from the Strategy Farm work_items DB
+(D:/QM/strategy_farm/state/farm_state.sqlite) — the authoritative record of
+gate verdicts. Environment/summary fields (MT5 saturation, sub-agent watchdog,
+dispatcher stats, registry/card counts) still come from their respective disk
+artifacts (last_check_state.json, watchdog latest.json, dispatch_state.json,
+ea_id_registry.csv, strategy cards). Produces an atomic
 D:/QM/reports/state/pipeline_state.json that downstream consumers
-(dashboards, public snapshot exporter, daily summary) read.
+(public snapshot exporter, daily summary) read.
+
+FB-05 fix (audit docs/ops/source_harvest/audit): per_ea previously came from
+D:/QM/reports/pipeline/*/*_result.json filesystem artifacts, which no longer
+track live gate outcomes — every EA showed NOT_RUN while the DB held ~23k PASS
+verdicts. The old filesystem path is retained ONLY as a resilience fallback for
+the (rare) case where the DB cannot be opened; the top-level "per_ea_source"
+field records which path produced the per-EA block ("work_items" vs
+"filesystem_fallback").
 
 Design:
-- Pure derivation from existing artifacts on disk. No agent calls, no DB.
+- Primary derivation from work_items (read-only URI, mode=ro — never written).
 - Atomic temp-then-rename write.
 - Idempotent: identical inputs → identical output bytes (except generated_at).
 
@@ -334,34 +346,248 @@ def dispatch_state_summary() -> dict:
     }
 
 
+# ---------------------------------------------------------------------------
+# work_items (farm_state.sqlite) derivation — the AUTHORITATIVE per-EA source.
+#
+# The DB stores canonical Qxx phase keys (Q02..Q10, plus residual legacy "P2"
+# rows and "Q09_PORTFOLIO"). Legacy P* by_phase keys are kept as a COMPATIBILITY
+# VIEW mapped from Qxx (public-snapshot.schema.json / export_public_snapshot.ps1
+# require exactly the 15 P-keys). The maps below faithfully mirror
+# tools/strategy_farm/phase_ids.py (Q_TO_LEGACY_P, PHASE_ORDER) — kept inlined so
+# this SYSTEM-scheduled script has no cross-package import dependency.
+# ---------------------------------------------------------------------------
+
+# Qxx -> dominant legacy P-key. Mirror of phase_ids.Q_TO_LEGACY_P for the funnel
+# keys the public snapshot expects. Q02..Q08 are the automated evidence gates;
+# Q11 (portfolio) maps to legacy P9. Q10/Q12/Q13 have no slot in the legacy
+# 15-key funnel and are intentionally not surfaced in the compat by_phase view.
+DB_Q_TO_LEGACY_P = {
+    "Q00": "G0", "Q01": "P1", "Q02": "P2", "Q03": "P3", "Q04": "P4",
+    "Q05": "P5", "Q06": "P6", "Q07": "P7", "Q08": "P8",
+    "Q11": "P9", "Q12": "P9b", "Q13": "P10",
+}
+
+# Canonical Qxx ordering for latest-pass ranking (mirror phase_ids.PHASE_ORDER).
+QXX_ORDER = ["Q00", "Q01", "Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08",
+             "Q09", "Q10", "Q11", "Q12", "Q13"]
+QXX_RANK = {q: i for i, q in enumerate(QXX_ORDER)}
+TERMINAL_QXX = {"Q10", "Q11", "Q12", "Q13"}
+
+# DB phase-key normalization: residual legacy P-keys / odd variants -> canonical
+# Qxx (mirror phase_ids.LEGACY_P_TO_Q for the keys that appear in this DB).
+DB_PHASE_NORMALIZE = {
+    "P2": "Q02", "P3": "Q03", "P4": "Q04", "P5": "Q05", "P6": "Q07",
+    "P7": "Q08", "P8": "Q08",
+    "Q09_PORTFOLIO": "Q11",  # portfolio construction; DB labels it Q09_PORTFOLIO
+}
+
+# Verdict families. Pass-family = clean gate advance (specific string preserved,
+# e.g. PASS_SOFT / PASS_LOWFREQ, so the per-EA history matches the DB exactly).
+DB_PASS_VERDICTS = {
+    "PASS", "AUTO_PASS", "MODE_SELECTED", "MULTI_SEED_PASS", "MULTI_SEED_MIXED",
+    "PASS_SOFT", "PASS_LOWFREQ", "PASS_PORTFOLIO",
+}
+DB_FAIL_VERDICTS = {
+    "FAIL", "FAIL_SOFT", "FAIL_HARD", "INVALID", "INVALID_BUILD_STATIC_FIDELITY",
+    "FAIL_PORTFOLIO", "FAIL_DD_PORTFOLIO_REVIEW", "ZERO_TRADES", "DRAFT_DEFECT",
+}
+# Everything else (INFRA_FAIL, NULL, NEED_MORE_DATA, SUPERSEDED*/RETIRED*/
+# OBSOLETE*/CANCELLED*/PENDING*) is infra/lifecycle noise, NOT gate evidence,
+# and is ignored for phase reachability + status classification.
+
+
+def _canon_ea_id(raw: object) -> str:
+    """Normalize a work_items ea_id to the canonical QM5_<digits> form.
+
+    A handful of rows store a bare numeric id (e.g. '20022') that collides with
+    its 'QM5_20022' sibling; folding them prevents double-counting / stray rows.
+    """
+    ea = str(raw or "").strip()
+    if re.fullmatch(r"\d+", ea):
+        return f"QM5_{ea}"
+    return ea
+
+
+def _norm_db_phase(raw: object) -> str:
+    ph = str(raw or "").strip().upper()
+    return DB_PHASE_NORMALIZE.get(ph, ph)
+
+
+def _verdict_rank(verdict: str) -> int:
+    """2 = pass-family (dominates), 1 = fail-family, 0 = ignore."""
+    if verdict in DB_PASS_VERDICTS:
+        return 2
+    if verdict in DB_FAIL_VERDICTS:
+        return 1
+    return 0
+
+
+def _bump_last(slot: dict, ts: object) -> None:
+    text = str(ts).strip() if ts is not None else ""
+    if not text:
+        return
+    if slot["last"] is None or text > slot["last"]:
+        slot["last"] = text
+
+
+def _classify_status(latest_pass: str | None, phases: dict[str, tuple]) -> tuple[str, str]:
+    """Coarse board status from the per-phase dominant verdicts.
+
+    Precedence: NOT_RUN (no clean evidence) -> READY (pass at a terminal gate)
+    -> BLOCKED (any fail-family dominant) -> IN_PROGRESS (pass, mid-pipeline).
+    REVIEW_REQUIRED is retained as a valid bucket but the DB carries no verdict
+    that maps to it. final_verdict mirrors status (no consumer reads it per-EA;
+    kept for schema/back-compat with the old index.json-sourced field).
+    """
+    if not phases:
+        return "NOT_RUN", "UNKNOWN"
+    if latest_pass in TERMINAL_QXX:
+        return "READY", "READY"
+    if any(rank == 1 for rank, _ in phases.values()):
+        return "BLOCKED", "BLOCKED"
+    if latest_pass is not None:
+        return "IN_PROGRESS", "IN_PROGRESS"
+    return "NOT_RUN", "UNKNOWN"
+
+
+def load_per_ea_from_db() -> tuple[list[dict], bool]:
+    """Derive per-EA state from work_items (READ-ONLY). Returns (per_ea, ok).
+
+    ok=False means the DB could not be opened; the caller then falls back to the
+    legacy filesystem derivation (resilience only — never the primary source).
+
+    Per (EA, phase) the DB holds many rows (one per symbol/config/attempt); the
+    dominant verdict for a phase is its highest-ranked verdict (pass beats fail
+    beats infra/lifecycle noise). Only phases with a clean pass/fail dominant are
+    recorded; EAs with no clean gate evidence at all are omitted entirely.
+    """
+    if not FARM_DB.is_file():
+        return [], False
+
+    con = None
+    try:
+        con = sqlite3.connect(f"file:{FARM_DB.as_posix()}?mode=ro", uri=True)
+        con.row_factory = sqlite3.Row
+        con.execute("PRAGMA busy_timeout=4000")
+        rows = con.execute(
+            "SELECT ea_id, phase, verdict, updated_at FROM work_items "
+            "WHERE status='done' AND verdict IS NOT NULL"
+        ).fetchall()
+    except sqlite3.Error:
+        return [], False
+    finally:
+        try:
+            if con is not None:
+                con.close()
+        except Exception:
+            pass
+
+    # ea_id -> {"phases": {Qxx: (rank, verdict)}, "last": iso_str|None}
+    per: dict[str, dict] = {}
+    for row in rows:
+        ea = _canon_ea_id(row["ea_id"])
+        if not ea:
+            continue
+        phase = _norm_db_phase(row["phase"])
+        verdict = str(row["verdict"] or "").strip().upper()
+        rank = _verdict_rank(verdict)
+        slot = per.setdefault(ea, {"phases": {}, "last": None})
+        _bump_last(slot, row["updated_at"])
+        if rank == 0 or phase not in QXX_RANK:
+            continue  # infra/lifecycle noise, or an out-of-model phase key
+        cur = slot["phases"].get(phase)
+        if cur is None or rank > cur[0]:
+            slot["phases"][phase] = (rank, verdict)
+
+    out: list[dict] = []
+    for ea in sorted(per):
+        slot = per[ea]
+        phases = slot["phases"]
+        if not phases:
+            continue  # DB activity but no clean gate evidence -> omit
+        latest_pass = None
+        for phase, (rank, _v) in phases.items():
+            if rank == 2 and (latest_pass is None or QXX_RANK[phase] > QXX_RANK[latest_pass]):
+                latest_pass = phase
+        phase_verdicts = {ph: v for ph, (_r, v) in sorted(phases.items(), key=lambda kv: QXX_RANK[kv[0]])}
+        phase_blockers = [
+            {"phase": ph, "verdict": v}
+            for ph, (rank, v) in sorted(phases.items(), key=lambda kv: QXX_RANK[kv[0]])
+            if rank == 1
+        ]
+        status, final_verdict = _classify_status(latest_pass, phases)
+        out.append({
+            "ea_id": ea,
+            "latest_pass_phase": latest_pass,       # canonical Qxx (None if no pass)
+            "phase_verdicts": phase_verdicts,        # {Qxx: raw verdict string}
+            "status": status,
+            "final_verdict": final_verdict,
+            "phase_blockers": phase_blockers,        # DB-derived (fail-family gates)
+            "last_run_utc": slot["last"],
+        })
+    return out, True
+
+
+def db_by_phase_legacy(per_ea: list[dict]) -> dict[str, int]:
+    """Legacy P-keyed funnel (compat view for the public snapshot): distinct EAs
+    with a pass-family verdict at each Qxx gate, mapped to legacy P-keys.
+
+    All 15 legacy keys are always present (0 default). Q02..Q08 populate P2..P8;
+    Q11 (portfolio) populates P9. Folded/manual keys (P3_5, P5b, P5c, G0, P1,
+    P9b, P10) stay 0 — no Qxx gate feeds them.
+    """
+    qxx_pass: dict[str, set[str]] = {}
+    for ea in per_ea:
+        for phase, verdict in ea.get("phase_verdicts", {}).items():
+            if str(verdict).upper() in DB_PASS_VERDICTS:
+                qxx_pass.setdefault(phase, set()).add(ea["ea_id"])
+    legacy = {PHASE_TO_KEY[p]: 0 for p in PHASES}
+    for phase, eas in qxx_pass.items():
+        key = DB_Q_TO_LEGACY_P.get(phase)
+        if key and key in legacy:
+            legacy[key] = len(eas)
+    return legacy
+
+
 def build() -> dict:
-    eas = []
-    if PIPELINE_ROOT.is_dir():
-        for d in sorted(PIPELINE_ROOT.iterdir()):
-            if d.is_dir() and d.name.startswith("QM5_"):
-                eas.append(per_ea_state(d))
+    per_ea, db_ok = load_per_ea_from_db()
+    per_ea_source = "work_items"
+
+    if db_ok:
+        by_phase = db_by_phase_legacy(per_ea)
+    else:
+        # Resilience fallback ONLY: the farm DB could not be opened. Reconstruct
+        # the coarse/incomplete legacy view from filesystem artifacts (FB-05:
+        # this path under-reports gate state and is not the source of truth).
+        per_ea_source = "filesystem_fallback"
+        per_ea = []
+        if PIPELINE_ROOT.is_dir():
+            for d in sorted(PIPELINE_ROOT.iterdir()):
+                if d.is_dir() and d.name.startswith("QM5_"):
+                    per_ea.append(per_ea_state(d))
+        by_phase = aggregate_by_phase(per_ea)
+        db_by_phase = farm_db_by_phase()
+        if sum(db_by_phase.values()) > 0:
+            for phase in ("P2", "P3", "P3.5", "P4", "P5", "P5b", "P5c", "P6", "P7", "P8"):
+                by_phase[PHASE_TO_KEY[phase]] = db_by_phase[PHASE_TO_KEY[phase]]
 
     registry = read_ea_registry()
     cards = count_strategy_cards()
 
-    by_phase = aggregate_by_phase(eas)
-    db_by_phase = farm_db_by_phase()
-    if sum(db_by_phase.values()) > 0:
-        for phase in ("P2", "P3", "P3.5", "P4", "P5", "P5b", "P5c", "P6", "P7", "P8"):
-            by_phase[PHASE_TO_KEY[phase]] = db_by_phase[PHASE_TO_KEY[phase]]
-
     state = {
         "schema_version": 1,
         "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_by": "scripts/build_pipeline_state.py",
+        "per_ea_source": per_ea_source,
         "strategy_cards_count": cards,
         "eas_registered_count": len(registry),
-        "eas_with_reports_count": len(eas),
+        "eas_with_reports_count": len(per_ea),
         "by_phase": by_phase,
-        "by_status": aggregate_by_status(eas),
+        "by_status": aggregate_by_status(per_ea),
         "mt5": mt5_state(),
         "agents_watchdog": agents_watchdog_state(),
         "dispatch": dispatch_state_summary(),
-        "per_ea": eas,
+        "per_ea": per_ea,
     }
     return state
 
