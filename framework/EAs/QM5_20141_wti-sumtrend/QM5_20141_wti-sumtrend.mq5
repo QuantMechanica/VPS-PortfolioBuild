@@ -78,7 +78,7 @@ int Strategy_WeekKey(const datetime value)
    parts.min = 0;
    parts.sec = 0;
    const datetime monday_noon =
-      StructToTime(parts) - (long)days_since_monday * 86400;
+      (datetime)(StructToTime(parts) - (long)days_since_monday * 86400);
    if(monday_noon <= 0)
       return 0;
 
@@ -232,11 +232,11 @@ bool Strategy_LoadMomentum(double &momentum,
    const int required =
       strategy_momentum_lookback_d1 + 1;
    const int copied =
-      CopyClose(_Symbol,
-                PERIOD_D1,
-                1,
-                required,
-                closes); // perf-allowed: bounded weekly D1 momentum sample.
+      CopyClose(_Symbol, // perf-allowed: bounded weekly D1 momentum sample.
+                 PERIOD_D1,
+                 1,
+                 required,
+                 closes);
    if(copied < required)
       return false;
 
