@@ -53,10 +53,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    const double atr = QM_ATR(_Symbol, PERIOD_M15, strategy_atr_period, 1);
    // perf-allowed: four fixed closed-bar reads implement the bespoke spike body/range.
-   const double bar_open  = iOpen(_Symbol, PERIOD_M15, 1);
-   const double bar_high  = iHigh(_Symbol, PERIOD_M15, 1);
-   const double bar_low   = iLow(_Symbol, PERIOD_M15, 1);
-   const double bar_close = iClose(_Symbol, PERIOD_M15, 1);
+   const double bar_open  = iOpen(_Symbol, PERIOD_M15, 1);  // perf-allowed: fixed bespoke spike bar
+   const double bar_high  = iHigh(_Symbol, PERIOD_M15, 1);  // perf-allowed: fixed bespoke spike bar
+   const double bar_low   = iLow(_Symbol, PERIOD_M15, 1);   // perf-allowed: fixed bespoke spike bar
+   const double bar_close = iClose(_Symbol, PERIOD_M15, 1); // perf-allowed: fixed bespoke spike bar
    if(atr <= 0.0 || bar_open <= 0.0 || bar_high <= bar_low || bar_close <= 0.0)
       return false;
 
@@ -151,7 +151,7 @@ bool Strategy_ExitSignal()
 
    // The card's close-through invalidation is evaluated on the last closed bar.
    // perf-allowed: one fixed bespoke structural read; no lookback loop.
-   const double last_close = iClose(_Symbol, PERIOD_M15, 1);
+   const double last_close = iClose(_Symbol, PERIOD_M15, 1); // perf-allowed: fixed zone invalidation
    if(last_close <= 0.0 || g_zone_low <= 0.0 || g_zone_high <= g_zone_low)
       return false;
 
