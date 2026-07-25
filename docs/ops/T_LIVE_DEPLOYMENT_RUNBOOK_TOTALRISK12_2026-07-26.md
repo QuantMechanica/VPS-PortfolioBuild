@@ -12,7 +12,7 @@ the manifest **in writing** (Decision B below).
 |---|---|---|
 | Book risk | TOTAL_RISK 9.75 | **12.0** — same 24 sleeves, same magics, capped inverse-vol, 3 at cap, all others ×1.313 |
 | Manifest | `portfolio_manifest_sunday_final_24sleeve_DRAFT_20260719.json` | `portfolio_manifest_sunday_FINAL24b_TOTALRISK12_20260726.json` — FINAL24b: −10440/NDX (Q10 FAIL dd 31.0 %), +11422/USDCAD (clean admit) per decisions/2026-07-26_book_final24b_minus10440_plus11422.md (Sharpe 2.3440, MaxDD faithful 3.4952 %) |
-| Presets | 24 deployed (mtime 07-19) | staged at `D:\QM\exports\tlive_presets_TOTALRISK12_20260726\` — 24/24, patch-proven (only RISK_PERCENT + 2 listed header comments change; `_staging_report.json` holds per-file diffs + SHA256) |
+| Presets | 24 deployed (mtime 07-19) | staged at `D:\QM\exports\tlive_presets_FINAL24b_20260726\` — 23 patched incumbents + NEW `25_USDCAD_D1_QM5_11422…` (magic 114220004, RISK_PERCENT 0.195664); preset 15 (10440/NDX) deliberately ABSENT. Diff proof: `D:/QM/reports/portfolio/staging_report_FINAL24b_20260726.json`. (The earlier `tlive_presets_TOTALRISK12_20260726\` dir is the superseded same-composition staging — do not deploy it.) |
 | Binaries | live mtimes 06-28…07-17, **0/21 match repo** | Thursday-recompiled repo `.ex5` + the two basket EAs recompiled with WP-9 (Decision A) |
 
 ## OWNER decisions required before execution
