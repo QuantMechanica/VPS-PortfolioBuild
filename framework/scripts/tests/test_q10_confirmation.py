@@ -1,3 +1,6 @@
+import argparse
+import contextlib
+import io
 import json
 import os
 import subprocess
@@ -209,13 +212,19 @@ class Q10ConfirmationTests(unittest.TestCase):
                 "<html><body><table><tr><td>no</td><td>header</td></tr></table></body></html>"
             )
 
-    def test_write_baseline_uses_tmp_dir_and_expected_schema(self) -> None:
+    def test_write_baseline_defaults_to_staging_and_expected_schema(self) -> None:
+        # write_baseline with no out_dir must fall back to STAGING (safe by
+        # default), never the live Common dir (WP-11 OWNER gate). We patch
+        # STAGING_DIR to a tmp dir; if the fallback ever regressed to
+        # BASELINE_DIR the write would land elsewhere and .name/schema below
+        # would still be checked from the returned path.
         with tempfile.TemporaryDirectory() as tmp:
-            with mock.patch.object(gen_q10_baseline, "BASELINE_DIR", Path(tmp)):
+            with mock.patch.object(gen_q10_baseline, "STAGING_DIR", Path(tmp)):
                 out_path = gen_q10_baseline.write_baseline(1056, "NDX.DWX", [10.0, -2.0, 4.0])
 
             payload = json.loads(out_path.read_text(encoding="utf-8"))
 
+        self.assertEqual(Path(out_path).parent, Path(tmp))
         self.assertEqual(out_path.name, "QM5_1056_NDX_DWX.json")
         self.assertEqual(payload["ea_id"], 1056)
         self.assertEqual(payload["symbol"], "NDX.DWX")
@@ -223,6 +232,132 @@ class Q10ConfirmationTests(unittest.TestCase):
         self.assertEqual(payload["n"], 3)
         self.assertEqual(payload["trades_sorted"], [-2.0, 4.0, 10.0])
         self.assertIn("hash", payload)
+
+    def test_resolve_out_dir_defaults_to_staging_not_common(self) -> None:
+        # Default (no --out-dir, no --deploy-live) MUST be staging, never the
+        # live Common kill-switch dir. This is the WP-11 OWNER gate in code.
+        ns = argparse.Namespace(out_dir=None, deploy_live=False)
+        resolved = gen_q10_baseline._resolve_out_dir(ns)
+        self.assertEqual(resolved, gen_q10_baseline.STAGING_DIR)
+        self.assertNotEqual(resolved, gen_q10_baseline.BASELINE_DIR)
+
+    def test_resolve_out_dir_requires_deploy_live_for_common(self) -> None:
+        # The live Common dir is reachable ONLY via the explicit --deploy-live
+        # flag; nothing else resolves to it.
+        ns = argparse.Namespace(out_dir=None, deploy_live=True)
+        self.assertEqual(gen_q10_baseline._resolve_out_dir(ns), gen_q10_baseline.BASELINE_DIR)
+
+    def test_resolve_out_dir_explicit_out_dir_overrides(self) -> None:
+        explicit = Path("D:/QM/reports/state/q10_baselines_regen")
+        ns = argparse.Namespace(out_dir=explicit, deploy_live=False)
+        self.assertEqual(gen_q10_baseline._resolve_out_dir(ns), explicit)
+
+    def test_resolve_out_dir_refuses_live_out_dir_without_deploy_live(self) -> None:
+        # WP-11: `--out-dir <exact live BASELINE_DIR>` without --deploy-live must
+        # be refused, so --deploy-live stays the ONLY route into live Common.
+        # Patch BASELINE_DIR to a throwaway dir — never touch the real live path.
+        with tempfile.TemporaryDirectory() as tmp:
+            with mock.patch.object(gen_q10_baseline, "BASELINE_DIR", Path(tmp)):
+                ns = argparse.Namespace(out_dir=Path(tmp), deploy_live=False)
+                err = io.StringIO()
+                with contextlib.redirect_stderr(err):
+                    with self.assertRaises(SystemExit) as cm:
+                        gen_q10_baseline._resolve_out_dir(ns)
+        self.assertEqual(cm.exception.code, 2)
+        self.assertIn("REFUSED", err.getvalue())
+        self.assertIn("--deploy-live", err.getvalue())
+
+    def test_resolve_out_dir_refuses_path_nested_in_live_dir(self) -> None:
+        # Sneaky equivalent: a path that resolves INTO the live dir (a nested
+        # subdirectory) is refused just like the live dir itself.
+        with tempfile.TemporaryDirectory() as tmp:
+            with mock.patch.object(gen_q10_baseline, "BASELINE_DIR", Path(tmp)):
+                nested = Path(tmp) / "sub" / "deeper"
+                ns = argparse.Namespace(out_dir=nested, deploy_live=False)
+                with contextlib.redirect_stderr(io.StringIO()):
+                    with self.assertRaises(SystemExit) as cm:
+                        gen_q10_baseline._resolve_out_dir(ns)
+        self.assertEqual(cm.exception.code, 2)
+
+    def test_resolve_out_dir_deploy_live_alone_allowed_with_warning(self) -> None:
+        # --deploy-live ALONE (no --out-dir) resolves to the live Common dir and
+        # prints the loud warning — the sanctioned promotion route.
+        with tempfile.TemporaryDirectory() as tmp:
+            with mock.patch.object(gen_q10_baseline, "BASELINE_DIR", Path(tmp)):
+                ns = argparse.Namespace(out_dir=None, deploy_live=True)
+                err = io.StringIO()
+                with contextlib.redirect_stderr(err):
+                    resolved = gen_q10_baseline._resolve_out_dir(ns)
+                self.assertEqual(resolved, Path(tmp))
+        self.assertIn("--deploy-live", err.getvalue())
+        self.assertIn("LIVE MT5 Common", err.getvalue())
+
+    def test_write_baseline_into_live_dir_requires_allow_live(self) -> None:
+        # Function-level guard: a direct caller passing the live dir WITHOUT
+        # allow_live=True must raise, never silently move the live distribution.
+        with tempfile.TemporaryDirectory() as tmp:
+            with mock.patch.object(gen_q10_baseline, "BASELINE_DIR", Path(tmp)):
+                with self.assertRaises(gen_q10_baseline.LiveBaselineGuardError):
+                    gen_q10_baseline.write_baseline(
+                        1056, "NDX.DWX", [10.0, -2.0, 4.0], out_dir=Path(tmp)
+                    )
+                # ...and with allow_live=True (the --deploy-live route) it writes.
+                out_path = gen_q10_baseline.write_baseline(
+                    1056, "NDX.DWX", [10.0, -2.0, 4.0],
+                    out_dir=Path(tmp), allow_live=True,
+                )
+                self.assertTrue(out_path.exists())
+                self.assertEqual(out_path.parent, Path(tmp))
+
+    def test_write_baseline_scratch_dir_unaffected_by_guard(self) -> None:
+        # Staging / other dirs are unaffected: a scratch out_dir distinct from
+        # the live dir writes fine with the default allow_live=False.
+        with tempfile.TemporaryDirectory() as live, tempfile.TemporaryDirectory() as scratch:
+            with mock.patch.object(gen_q10_baseline, "BASELINE_DIR", Path(live)):
+                out_path = gen_q10_baseline.write_baseline(
+                    1056, "NDX.DWX", [10.0, -2.0, 4.0], out_dir=Path(scratch)
+                )
+                self.assertTrue(out_path.exists())
+                self.assertEqual(out_path.parent, Path(scratch))
+
+    def test_main_deploy_live_and_out_dir_remain_mutually_exclusive(self) -> None:
+        # The pre-existing mutual-exclusion guard survives the new refusal logic:
+        # passing both flags returns 2 with the mutual-exclusion message before
+        # any directory resolution/refusal runs.
+        with tempfile.TemporaryDirectory() as scratch:
+            argv = [
+                "gen_q10_baseline.py",
+                "--deploy-live",
+                "--out-dir", scratch,
+                "--ea-id", "1056",
+                "--symbol", "NDX.DWX",
+                "--report", "does_not_matter.htm",
+            ]
+            err = io.StringIO()
+            with mock.patch.object(sys, "argv", argv):
+                with contextlib.redirect_stderr(err):
+                    rc = gen_q10_baseline.main()
+        self.assertEqual(rc, 2)
+        self.assertIn("mutually exclusive", err.getvalue())
+
+    def test_trigger_baseline_capture_targets_staging_not_common(self) -> None:
+        # The automated Q10-PASS trigger must pass --out-dir=STAGING and never
+        # --deploy-live, so an automated PASS cannot publish into live Common.
+        captured: dict = {}
+
+        def fake_run(args, **_kwargs):
+            captured["args"] = args
+            return subprocess.CompletedProcess(args=args, returncode=0, stdout="ok", stderr="")
+
+        with mock.patch.object(q10_confirmation.subprocess, "run", side_effect=fake_run):
+            ok = q10_confirmation.trigger_baseline_capture(1056, "NDX.DWX", "C:/x/report.htm")
+
+        self.assertTrue(ok)
+        args = captured["args"]
+        self.assertIn("--out-dir", args)
+        out_dir_val = args[args.index("--out-dir") + 1]
+        self.assertEqual(Path(out_dir_val), gen_q10_baseline.STAGING_DIR)
+        self.assertNotIn("--deploy-live", args)
 
     def _run_confirmation_with_summary(self, summary: dict) -> dict:
         with tempfile.TemporaryDirectory() as tmp:

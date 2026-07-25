@@ -5,10 +5,14 @@ Per Vault Q10 spec (the closing per-(EA, symbol) verdict):
   Params:   Q03 plateau-median (locked)
   News:     Q09 chosen mode (default Mode 3)
   Stress:   none (baseline commission $7/lot only)
-  Verdict:  PF > 1.0 AND DD < 15%
+  Verdict:  PF > 1.0 AND DD < 25%
 
 After PASS: triggers `gen_q10_baseline.py` to capture the per-trade
-distribution for the Q13 KS-test kill-switch.
+distribution for the Q13 KS-test kill-switch. Capture writes to the STAGING
+baseline dir (D:/QM/reports/state/q10_baselines_staging), never the live MT5
+Common dir. The live EA reads its baseline only from Common at OnInit, so a
+Q10 PASS does not move any live kill-switch distribution; promoting a staged
+baseline into Common is OWNER-gated (gen_q10_baseline.py --deploy-live).
 """
 
 from __future__ import annotations
@@ -26,7 +30,7 @@ if __package__ in (None, ""):
 
 from framework.scripts._phase_utils import (ensure_dir, utc_now_iso, write_json,
                                             resolve_ea_expert_path, period_from_setfile,
-                                            full_history_window)
+                                            full_history_window, run_with_launch_fault_retry)
 from framework.scripts.q05_stress_medium import (
     _parse_pf_dd_trades,
     _select_run_summary,
@@ -34,6 +38,7 @@ from framework.scripts.q05_stress_medium import (
     STARTING_EQUITY,
     summary_invalid_reason,
 )
+from framework.scripts.gen_q10_baseline import STAGING_DIR
 
 # Wrapper must outlive the tester budget (2026-07-06 audit G16).
 RUNNER_HEADROOM_SEC = 120
@@ -112,9 +117,13 @@ def run_confirmation(*, ea_id: int, ea_expert: str, symbol: str,
     output_text = ""
     started_at = time.time()
     try:
-        proc = subprocess.run(args, capture_output=True, text=True,
-                              timeout=timeout_sec + RUNNER_HEADROOM_SEC,
-                              creationflags=creationflags)
+        proc = run_with_launch_fault_retry(
+            args,
+            capture_output=True,
+            text=True,
+            timeout=timeout_sec + RUNNER_HEADROOM_SEC,
+            creationflags=creationflags,
+        )
         exit_code = proc.returncode
         output_text = _text_from_completed_process(proc)
     except subprocess.TimeoutExpired as exc:
@@ -204,13 +213,22 @@ def _find_report_htm(summary_path: Path, *, started_at: float) -> str | None:
 
 
 def trigger_baseline_capture(ea_id: int, symbol: str, report_htm: str) -> bool:
-    """After Q10 PASS, generate the per-trade baseline for the KS kill-switch."""
+    """After Q10 PASS, generate the per-trade baseline for the KS kill-switch.
+
+    Writes into the STAGING baseline dir, never the live MT5 Common dir. The
+    live loader (QM_KillSwitchKS.mqh) reads its baseline only from Common at
+    OnInit, so an automated Q10 PASS leaves live/running EAs untouched: the
+    corrected baseline stays staged until an OWNER-gated promotion into Common
+    (gen_q10_baseline.py --deploy-live). WP-11 OWNER gate, Codex review
+    2026-07-25 — automated capture must not publish into the live kill-switch
+    path ahead of the manual Q11-Q13/OWNER decision."""
     repo_root = Path(__file__).resolve().parents[2]
     gen_script = repo_root / "framework" / "scripts" / "gen_q10_baseline.py"
     args = [sys.executable, str(gen_script),
             "--ea-id", str(ea_id),
             "--symbol", symbol,
-            "--report", report_htm]
+            "--report", report_htm,
+            "--out-dir", str(STAGING_DIR)]
     creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
     proc = subprocess.run(args, capture_output=True, text=True,
                           timeout=60, creationflags=creationflags)
