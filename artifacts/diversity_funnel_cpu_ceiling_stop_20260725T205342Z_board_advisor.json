@@ -1,0 +1,77 @@
+{
+  "schema_version": "1.0",
+  "observed_at_utc": "2026-07-25T20:53:42Z",
+  "agent": "codex:agents/board-advisor",
+  "branch": "agents/board-advisor",
+  "mission": "advance V5 strategy farm toward more certified portfolio sleeves",
+  "outcome": "STOP_CPU_CEILING",
+  "farm_db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+  "cpu_ceiling": 7,
+  "active_factory_terminals": [
+    "T1",
+    "T3",
+    "T6",
+    "T7",
+    "T8",
+    "T9",
+    "T10"
+  ],
+  "observed_active_work_items": [
+    {
+      "ea_id": "QM5_9940",
+      "symbol": "SP500.DWX",
+      "phase": "Q02",
+      "terminal": "T10"
+    },
+    {
+      "ea_id": "QM5_10582",
+      "symbol": "XAUUSD.DWX",
+      "phase": "Q07",
+      "terminal": "T7"
+    },
+    {
+      "ea_id": "QM5_10185",
+      "symbol": "GBPJPY.DWX",
+      "phase": "Q07",
+      "terminal": "T9"
+    },
+    {
+      "ea_id": "QM5_11028",
+      "symbol": "GBPUSD.DWX",
+      "phase": "Q02",
+      "terminal": "T8"
+    }
+  ],
+  "backlog_review": {
+    "pending_build_tasks": 3,
+    "highest_diversity_buildable_candidate": "QM5_20062_kats-eu-macisar",
+    "candidate_task_id": "ee2fe37e-5509-4371-8979-c58db2966313",
+    "candidate_instrument": "EURUSD.DWX",
+    "candidate_timeframe": "D1",
+    "candidate_status": "strict compile and build-check PASS; claim released on terminal no-capacity; smoke not launched; Q02 not enqueued",
+    "blocked_candidates": [
+      {
+        "ea_id": "QM5_1459",
+        "reason": "approved DWX lumber and intermediate-Treasury inputs unavailable"
+      },
+      {
+        "ea_id": "QM5_1457",
+        "reason": "approved DWX Treasury-yield, IEF, BIL, and DBC inputs unavailable"
+      }
+    ]
+  },
+  "collision_avoidance": {
+    "farm_task_claimed": false,
+    "work_item_inserted": false,
+    "queue_mutated": false,
+    "backtest_launched": false,
+    "reason": "The seven active factory terminals equal the seven-job backtest CPU ceiling. Claiming QM5_20062 or launching its required smoke would violate the paced-fleet stop condition."
+  },
+  "protected_surfaces_untouched": [
+    "portfolio gate",
+    "T_Live manifest",
+    "AutoTrading",
+    "T_Live"
+  ],
+  "recommended_next_action": "When active factory terminals fall below seven, atomically re-read and claim QM5_20062 if it remains pending, run its single required smoke, then record-build and enqueue exactly one RISK_FIXED Q02 row."
+}
