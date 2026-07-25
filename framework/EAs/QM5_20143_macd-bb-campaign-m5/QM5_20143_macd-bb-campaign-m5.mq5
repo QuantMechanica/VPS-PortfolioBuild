@@ -237,13 +237,13 @@ bool Strategy104_BandSelfTest()
    const double manual_upper = mean + strategy_bb_dev * sigma;
    const double manual_lower = mean - strategy_bb_dev * sigma;
 
-   double upper[1];
-   double lower[1];
    const int source_shift =
       1 + strategy_bb_shift;
-   if(CopyBuffer(g_str104_bands_handle, 1, source_shift, 1, upper) != 1) // perf-allowed: one-value OnInit-only shifted-BB upper self-test at the source bar displayed on closed bar 1
-      return false;
-   if(CopyBuffer(g_str104_bands_handle, 2, source_shift, 1, lower) != 1) // perf-allowed: one-value OnInit-only shifted-BB lower self-test at the source bar displayed on closed bar 1
+   double upper[1];
+   double lower[1];
+   upper[0] = QM_IndicatorReadBuffer(g_str104_bands_handle, 1, source_shift);
+   lower[0] = QM_IndicatorReadBuffer(g_str104_bands_handle, 2, source_shift);
+   if(upper[0] <= 0.0 || lower[0] <= 0.0)
       return false;
 
    const double tick =

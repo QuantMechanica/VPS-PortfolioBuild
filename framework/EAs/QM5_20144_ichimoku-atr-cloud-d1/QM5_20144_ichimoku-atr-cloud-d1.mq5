@@ -246,9 +246,9 @@ bool Strategy118_CloudSelfTest()
       1 + strategy_kijun;
    double native_a[1];
    double native_b[1];
-   if(CopyBuffer(g_str118_ichimoku_handle, 2, source_shift, 1, native_a) != 1) // perf-allowed: one-value OnInit-only native Senkou-A displacement check
-      return false;
-   if(CopyBuffer(g_str118_ichimoku_handle, 3, source_shift, 1, native_b) != 1) // perf-allowed: one-value OnInit-only native Senkou-B displacement check
+   native_a[0] = QM_IndicatorReadBuffer(g_str118_ichimoku_handle, 2, source_shift);
+   native_b[0] = QM_IndicatorReadBuffer(g_str118_ichimoku_handle, 3, source_shift);
+   if(native_a[0] <= 0.0 || native_b[0] <= 0.0)
       return false;
 
    double manual_tenkan = 0.0;
