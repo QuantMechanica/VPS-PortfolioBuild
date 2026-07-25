@@ -1,0 +1,133 @@
+{
+  "date": "2026-07-25",
+  "branch": "agents/board-advisor",
+  "task_id": "23cb27a1-f8ce-4772-bea5-607597baebb9",
+  "ea_id": "QM5_20136",
+  "slug": "wti-caltrend",
+  "ea_slug": "wti-caltrend",
+  "strategy_id": "KELOHARJU-MOP-WTI-CALTREND-2026_S01",
+  "source_id": "KELOHARJU-MOP-WTI-CALTREND-2026",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_20136_wti-caltrend",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_20136_wti-caltrend/QM5_20136_wti-caltrend.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_20136_wti-caltrend/QM5_20136_wti-caltrend.ex5",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_20136_wti-caltrend/SPEC.md",
+  "card_path": "C:/QM/repo/strategy-seeds/cards/approved/QM5_20136_wti-caltrend_card.md",
+  "evidence_path": "C:/QM/repo/docs/ops/evidence/2026-07-25_qm5_20136_wti_caltrend_build_q02_enqueue.md",
+  "magic_base": 201360000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_20136_wti-caltrend/sets/QM5_20136_wti-caltrend_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "source_retrieval": {
+    "status": "EXISTING_APPROVED_PACKETS",
+    "packets": [
+      "KELOHARJU-RETSEAS-2016",
+      "MOP-TSMOM-2012"
+    ],
+    "bounded_packets_read_completely": true,
+    "new_web_claims_imported": false
+  },
+  "dedup": {
+    "registry_rows_scanned_pre_allocation": 4193,
+    "research_cards_scanned_pre_allocation": 376,
+    "exact_duplicates": 0,
+    "deterministic_verdict": "CLEAN",
+    "manual_neighbors": [
+      "QM5_20099_wti-samecal",
+      "QM5_20055_wti-tsmom3m",
+      "QM5_20135_wti-winter-trend",
+      "QM5_13115_energy-samecal",
+      "QM5_12576_eia-wti-season",
+      "QM5_12983_wti-tom-mom",
+      "QM5_12567_cum-rsi2-commodity"
+    ],
+    "manual_resolution": "new load-bearing state is the predeclared agreement of WTI's prior-year same-calendar average-return sign and its completed 63-D1 return sign; neither parent state alone is the candidate"
+  },
+  "validation": {
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "spec_validation": "PASS",
+    "candidate_registry_validation": "PASS",
+    "build_guardrails": "PASS",
+    "build_check": "PASS",
+    "build_check_failures": 0,
+    "build_check_warnings": 0,
+    "build_check_report_path": "D:/QM/reports/framework/21/build_check_20260725_044238.json",
+    "strict_compile": "PASS",
+    "compile_succeeded": true,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "compile_log_path": "C:/QM/repo/framework/build/compile/20260725_044238/QM5_20136_wti-caltrend.compile.log"
+  },
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_log_path": "C:/QM/repo/framework/build/compile/20260725_044238/QM5_20136_wti-caltrend.compile.log",
+  "build_check_report_path": "D:/QM/reports/framework/21/build_check_20260725_044238.json",
+  "build_check_status": "PASS",
+  "build_check_failures": 0,
+  "build_check_warnings": 0,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "FACTORY_OFF.flag is authoritative; paced Q02 owns the first Model-4 trade-generation run",
+  "smoke_report_path": null,
+  "blocked_reason": "",
+  "q02": {
+    "work_item_id": "1dc49254-5e14-401c-b2cb-440d98817ff4",
+    "phase": "Q02",
+    "status": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "created_at": "2026-07-25T04:45:06+00:00",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile": "C:/QM/repo/framework/EAs/QM5_20136_wti-caltrend/sets/QM5_20136_wti-caltrend_XTIUSD.DWX_D1_backtest.set",
+    "initial_auto_enqueue_count": 1,
+    "initial_auto_enqueue_skipped": 0,
+    "exact_q02_row_count": 1
+  },
+  "factory_state": {
+    "factory_off_observed": true,
+    "factory_off_path": "D:/QM/strategy_farm/state/FACTORY_OFF.flag",
+    "running_pipeline_mt5_terminals": 0,
+    "terminal64_processes_observed": 1,
+    "observed_process_scope": "pre-existing T_Live terminal only",
+    "backtest_cpu_ceiling_hit": false,
+    "manual_backtest_started": false
+  },
+  "hashes_sha256": {
+    "card": "477C7B7A0E044DB9B402C688CEFF66C04307DC6900403F6141390DC18F10C7A6",
+    "source_packet": "311CDB1B5EC735D61CF4AC3D990E471D07C40CD992141B5B9BC097EB2821A45A",
+    "mq5": "699B1EFAD359A794AD0298C8F8D98050D20021E6237CAB21F2991B8516FB06EA",
+    "ex5": "6B3659DFD0CFE94CC63EE556DCD330D3DD4910291D644B91B3F56DC5401AE8B4",
+    "spec": "E7AAE5C8CFDDADA72F463D71FE63077E211AA4C7C2F485CF2D65FB2D91CF568B",
+    "setfile": "596542225C0E9F219DBB369DFD05B4155A1166A6612D74EBCA40500A8C5A9E87",
+    "ea_id_registry": "5509737C737D5AFE5D63371C26AD85F503035E9EB48930B8095EF2A2F6A63E33",
+    "magic_registry": "4AA41E92E4B1DE711CC12048DBA42EAE7EC3EF88B6F15BB9512276A08DC05696",
+    "magic_resolver": "D47E7E8CDDF6674BF9A65554C01C482E7ADCF0D64F736D41AB4DE5F84B211B74"
+  },
+  "resolver_note": "Regenerated from the canonical registry after the EA directory and magic row existed; generated magic 201360000 was verified.",
+  "build_recorded": true,
+  "build_task_status": "done",
+  "manual_backtest_started": false,
+  "t_live_touched": false,
+  "autotrading_touched": false,
+  "t_live_manifest_touched": false,
+  "portfolio_gate_touched": false,
+  "portfolio_admission_claimed": false,
+  "correlation_claimed": false,
+  "open_questions": [
+    "Q02 must falsify whether the sign-agreement carrier clears the five-trades-per-year floor after warm-up and WTI CFD costs.",
+    "Q09 and the unchanged portfolio gate remain authoritative for realized correlation and any admission."
+  ]
+}
