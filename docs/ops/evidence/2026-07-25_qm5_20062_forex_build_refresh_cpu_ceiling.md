@@ -52,6 +52,18 @@ execution stopped without retrying, rewriting strategy logic, or manually
 occupying a terminal. The refreshed binary is ready for the next capacity-aware
 handoff.
 
+## Capacity recheck at 17:30 UTC
+
+A later paced wake atomically reclaimed the same pending farm task only after
+confirming that `QM5_20062` had no open work item and no competing agent task.
+The canonical smoke command was submitted once more with the same EURUSD.DWX D1
+2024 `RISK_FIXED` setfile. Terminal resolution again returned
+`status=no_capacity` before any tester process launched.
+
+The claim was released without changing the EA, rerunning compilation, creating
+a build-result artifact, or enqueueing Q02. This remains the highest-diversity
+approved forex build ready for the next genuinely available factory slot.
+
 ## Safety
 
 No T_Live path, AutoTrading setting, portfolio gate, or live manifest was
