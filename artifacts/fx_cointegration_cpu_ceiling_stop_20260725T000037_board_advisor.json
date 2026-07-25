@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-07-25T00:00:37+00:00",
+  "branch": "agents/board-advisor",
+  "mission": "fx_cointegration_q02",
+  "outcome": "STOP_CPU_CEILING",
+  "selection": {
+    "unbuilt_qualifying_pair_found": false,
+    "documented_frontier_state": "fully_mechanized",
+    "anchor_state": {
+      "QM5_12532": {
+        "pair": "AUDUSD.DWX/NZDUSD.DWX",
+        "q02": "PASS",
+        "later_terminal_outcome": "Q05 FAIL"
+      },
+      "QM5_12533": {
+        "pair": "EURJPY.DWX/GBPJPY.DWX",
+        "q02": "PASS",
+        "later_terminal_outcome": "Q04 FAIL"
+      }
+    },
+    "legacy_fx_queue_rows": [
+      {
+        "id": 2,
+        "ea_id": "QM5_12760",
+        "phase": "Q02",
+        "status": "queued",
+        "canonical_conflict": "Q02 PASS; later Q04 FAIL"
+      },
+      {
+        "id": 4,
+        "ea_id": "QM5_13119",
+        "phase": "Q02",
+        "status": "queued",
+        "canonical_conflict": "Q02 PASS"
+      }
+    ],
+    "fallback_decision": "Do not dispatch or duplicate stale cross-ledger Q02 rows."
+  },
+  "factory_capacity": {
+    "farmctl_scanned_at": "2026-07-25T00:00:37+00:00",
+    "observed_factory_process_count": 0,
+    "observed_factory_terminals": [],
+    "observed_excluded_processes": [
+      {
+        "pid": 9908,
+        "executable_path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\terminal64.exe"
+      }
+    ],
+    "dispatch_state_running": {
+      "T1": 3,
+      "T2": 3,
+      "T3": 3,
+      "T4": 3,
+      "T5": 3,
+      "T6": 3,
+      "T7": 3,
+      "T8": 3,
+      "T9": 3,
+      "T10": 3
+    },
+    "scheduler_is_binding": true,
+    "scheduler_dry_run": {
+      "available_slots_after": 0,
+      "available_slots_before": 0,
+      "dry_run": true,
+      "duplicate": 0,
+      "invalid": 0,
+      "no_capacity": 0,
+      "queued_scanned": 0,
+      "scheduled": 0,
+      "status": "ok"
+    },
+    "diagnosis": "Unreconciled legacy dispatch ledger reports saturation despite zero observed factory processes."
+  },
+  "queue_snapshot": {
+    "queued_count": 4,
+    "queue_changed": false
+  },
+  "mutations": {
+    "card_created": false,
+    "ea_built": false,
+    "queue_changed": false,
+    "terminal_launched_or_controlled": false,
+    "portfolio_gate_changed": false,
+    "t_live_changed": false
+  }
+}

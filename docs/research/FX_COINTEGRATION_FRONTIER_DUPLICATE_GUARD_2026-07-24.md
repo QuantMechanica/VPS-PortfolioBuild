@@ -137,6 +137,21 @@ The canonical saturation scheduler independently returned
 scan pair, the mission stopped before any card, build, enqueue, dispatch,
 tester launch, queue mutation, or terminal action.
 
+A sixth read-only refresh at `2026-07-25T00:00:37Z`
+(`2026-07-25T02:00:37+02:00`) exposed a scheduler-accounting mismatch rather
+than usable capacity. `farmctl mt5-slots` found no running factory terminal in
+`T1` through `T10`; the only `terminal64.exe` process was the separately
+excluded `T_Live` instance. In contrast, the legacy `dispatch_state.json`
+still recorded `running=3` for every factory terminal, and the canonical
+saturation scheduler returned `available_slots_before=0`,
+`available_slots_after=0`, and `scheduled=0`. The scheduler verdict remains
+the binding CPU-ceiling signal, but this snapshot narrows the blocker to an
+unreconciled legacy dispatch ledger rather than current factory process load.
+Clearing or rewriting that external ledger is a separate scheduler-governance
+action and was not inferred. The machine-readable snapshot is
+`artifacts/fx_cointegration_cpu_ceiling_stop_20260725T000037_board_advisor.json`.
+No stale forex queue row was dispatched or duplicated.
+
 ## Safety
 
 - No portfolio admission, portfolio KPI, or Q08 contribution file changed.
