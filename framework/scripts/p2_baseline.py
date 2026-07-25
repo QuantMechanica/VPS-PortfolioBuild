@@ -258,8 +258,16 @@ Q02_STARTING_EQUITY = 100_000.0   # HR4: fixed-risk backtest deposit
 # the cheap classes leaves margin; FX net checks still bind at Q04). The 5/yr
 # frequency floor is UNTOUCHED; Q07 PBO/DSR stays the selection-bias guard and
 # gets MORE load-bearing in the many-sleeves regime (DL-082 §1 guard).
+# DISABLED by OWNER 2026-07-25 (decisions/2026-07-25_q02_pf_floor_120_to_110.md): the Q02 PF
+# floor is now FLAT 1.10 for every sample size. Rationale for why this is less exposed than it
+# reads: the trades floor (max(5*window_years, Q02_TRADES_MIN)) is evaluated BEFORE the PF gate,
+# so a full-history window already discards anything under ~45 trades — exactly the region where
+# the curve was doing its work. Measured over 1288 unique (EA, symbol) Q02 FAILs with recorded
+# metrics, only 2 have n >= 45. Selection-bias protection therefore rests on the 5/yr frequency
+# floor and on Q07 PBO/DSR, per the DL-082 §1 guard, not on this curve.
+# Re-enable by flipping "enabled" back to True; the curve itself is unchanged and still tested.
 Q02_EVIDENCE_FLOOR = {
-    "enabled": True,
+    "enabled": False,
     "t_ref": 1.94,           # anchor: PF 1.20 == ~2σ evidence at N=450
     "hard_bottom_pf": 1.10,  # cost-noise bottom (DL-082 §4), NOT the old 1.20 headline
 }
