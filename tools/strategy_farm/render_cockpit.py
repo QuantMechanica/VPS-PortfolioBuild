@@ -28,6 +28,7 @@ import datetime as dt
 import glob
 import html
 import json
+import math
 import os
 import re
 import sqlite3
@@ -59,6 +60,13 @@ FACTORY_OFF_FLAG = ROOT / "state" / "FACTORY_OFF.flag"
 TLIVE_ROOT = Path(r"C:\QM\mt5\T_Live")
 TLIVE_JOURNAL_DIR = TLIVE_ROOT / "MT5_Base" / "logs"
 TLIVE_EA_LOG_DIR = TLIVE_ROOT / "MT5_Base" / "MQL5" / "Files" / "QM"
+# Broker deal history exported read-only by the AccountMonitor EA (~60s after
+# new deals). Σ(profit+swap+commission+fee) over all rows incl. the BALANCE
+# deposit row = account balance after the last recorded deal — equals true
+# equity whenever the book is flat. Commission AND swap are broker-booked per
+# deal on the DXZ account (verified 2026-07-25: 52/55 deals commission,
+# both sides charged; Σ comm −$44.30, Σ swap −$48.36).
+TLIVE_DEALS_CSV = TLIVE_EA_LOG_DIR / "journal" / "live_deals_normalized.csv"
 LIVE_BOOK_SLEEVES = 24  # current live book size (label denominator only)
 
 PHASE_DISPLAY = {
@@ -477,6 +485,51 @@ def _age_minutes(iso_ts: str | None) -> int | None:
         return None
 
 
+def tlive_deal_balance() -> dict:
+    """READ-ONLY account balance from the AccountMonitor deal export.
+
+    balance = Σ(profit+swap+commission+fee) over ALL rows including the
+    BALANCE deposit row. This is exact realized truth (costs included) and
+    equals current equity whenever the book is flat — fresher than the
+    EA day-close EQUITY_SNAPSHOT, which can lag a full weekend.
+    """
+    out: dict = {"balance": None, "last_deal_ts": None, "age_min": None}
+    fields = ("profit", "swap", "commission", "fee")
+    try:
+        with TLIVE_DEALS_CSV.open(encoding="utf-8-sig", newline="") as fh:
+            reader = csv.DictReader(fh)
+            headers = set(reader.fieldnames or ())
+            # STRICT (Codex review 2026-07-25): a missing header or a single
+            # unparsable/non-finite monetary field voids the WHOLE figure —
+            # a partial sum shown as primary equity is an invented number.
+            if not headers.issuperset(fields) or "time_utc" not in headers:
+                return out
+            bal = 0.0
+            last_ts = ""
+            n_rows = 0
+            for r in reader:
+                n_rows += 1
+                for k in fields:
+                    try:
+                        v = float((r.get(k) or "").strip())
+                    except (TypeError, ValueError):
+                        return out
+                    if not math.isfinite(v):
+                        return out
+                    bal += v
+                ts = str(r.get("time_utc") or "")
+                if ts > last_ts:
+                    last_ts = ts
+        if not n_rows:
+            return out
+        out["balance"] = round(bal, 2)
+        out["last_deal_ts"] = last_ts or None
+        out["age_min"] = _age_minutes(last_ts) if last_ts else None
+    except Exception:
+        pass
+    return out
+
+
 def live_money_snapshot() -> dict:
     """Read-only DXZ live-book + FTMO trial pulse state for the LIVE MONEY row.
 
@@ -505,6 +558,10 @@ def live_money_snapshot() -> dict:
             # pulse file — the tile must never sell a stale figure as fresh.
             "equity_age_min": _age_minutes(be.get("ts_utc")),
         }
+        _deals = tlive_deal_balance()
+        out["dxz"]["deal_balance"] = _deals.get("balance")
+        out["dxz"]["deal_last_ts"] = _deals.get("last_deal_ts")
+        out["dxz"]["deal_age_min"] = _deals.get("age_min")
     except Exception:
         pass
     try:
@@ -1570,30 +1627,47 @@ def main() -> int:
     if dxz:
         _sleeves = dxz.get("sleeves")
         _eq = dxz.get("equity")
-        dxz_val = (
-            f"${_eq:,.0f}" if isinstance(_eq, (int, float))
-            else (f"{_sleeves} SLEEVES" if _sleeves is not None else "PULSE?")
-        )
+        _pos = dxz.get("positions")
+        _dbal = dxz.get("deal_balance")
+        _dbal_age = dxz.get("deal_age_min")
+        # Flat book → the deal-history balance IS current equity (realized
+        # truth, commission+swap broker-booked per deal) and beats the EA
+        # day-close snapshot, which lags a full weekend (OWNER 2026-07-25:
+        # the snapshot figure missed Friday's realized -$319).
+        _use_balance = _pos == 0 and isinstance(_dbal, (int, float))
+        if _use_balance:
+            dxz_val = f"${_dbal:,.0f}"
+        elif isinstance(_eq, (int, float)):
+            dxz_val = f"${_eq:,.0f}"
+        else:
+            dxz_val = f"{_sleeves} SLEEVES" if _sleeves is not None else "PULSE?"
         dxz_cls = _tile_cls(dxz.get("verdict", "?"), dxz.get("alarms", 0))
         _at = str(dxz.get("autotrading") or "?").upper()
-        _pos = dxz.get("positions")
         _age = dxz.get("age_min")
         _dp = dxz.get("day_pnl")
         _eqa = dxz.get("equity_age_min")
         # Day-close cadence is ~24h; >78h covers the weekend gap. Older than
         # that with an OK verdict still deserves amber — the figure is stale.
-        if isinstance(_eqa, int) and _eqa > 78 * 60 and dxz_cls == "ok":
+        if (not _use_balance and isinstance(_eqa, int) and _eqa > 78 * 60
+                and dxz_cls == "ok"):
             dxz_cls = "warn"
         bits: list[str] = [f"acct {dxz.get('account') or '?'}"]
         if _sleeves is not None:
             bits.append(f"{_sleeves} sleeves")
         bits.append(f"AT {_at}")
-        if isinstance(_dp, (int, float)):
-            bits.append(f"day P&L {_fmt_pnl(_dp)}")
-        if _eqa is not None:
-            bits.append(f"eq close {_fmt_age_min(_eqa)} old")
-        if _pos is not None:
-            bits.append(f"{_pos} open pos")
+        if _use_balance:
+            bits.append(f"balance, flat book, last deal {_fmt_age_min(_dbal_age)} ago")
+            if isinstance(_eq, (int, float)):
+                bits.append(f"day-close snap ${_eq:,.0f} ({_fmt_age_min(_eqa)} old)")
+        else:
+            if isinstance(_dp, (int, float)):
+                bits.append(f"day P&L {_fmt_pnl(_dp)}")
+            if _eqa is not None:
+                bits.append(f"eq close {_fmt_age_min(_eqa)} old")
+            if isinstance(_dbal, (int, float)):
+                bits.append(f"bal after deals ${_dbal:,.0f} ({_fmt_age_min(_dbal_age)} ago)")
+            if _pos is not None:
+                bits.append(f"{_pos} open pos")
         bits.append(f"verdict {dxz.get('verdict', '?')}")
         if _age is not None:
             bits.append(f"pulse {_age}m ago")
@@ -2153,7 +2227,14 @@ def main() -> int:
             f" // day P&L {'+' if _edp >= 0 else '-'}${abs(_edp):,.2f}"
             if isinstance(_edp, (int, float)) else ""
         )
-        lb_eq_sub = f"last day-close equity (EA-emitted) // {_ets}Z{_dp_txt} // NOT real-time"
+        _dxz_bal = (money.get("dxz") or {}).get("deal_balance")
+        _bal_txt = (
+            f" // bal after deals ${_dxz_bal:,.2f}"
+            if isinstance(_dxz_bal, (int, float)) else ""
+        )
+        lb_eq_sub = (
+            f"last day-close equity (EA-emitted) // {_ets}Z{_dp_txt}{_bal_txt} // NOT real-time"
+        )
     else:
         lb_eq_sub = "no EQUITY_SNAPSHOT in EA logs — n/a"
 
