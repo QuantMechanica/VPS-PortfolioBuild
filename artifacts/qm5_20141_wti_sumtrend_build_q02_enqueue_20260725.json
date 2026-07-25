@@ -1,0 +1,118 @@
+{
+  "date": "2026-07-25",
+  "branch": "agents/board-advisor",
+  "task_id": "9ec1daba-d13f-4ef9-9266-a8654e98d3c3",
+  "ea_id": "QM5_20141",
+  "slug": "wti-sumtrend",
+  "ea_slug": "wti-sumtrend",
+  "strategy_id": "EWALD-MOP-WTI-SUMTREND-2026_S01",
+  "source_id": "EWALD-MOP-WTI-SUMTREND-2026",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_20141_wti-sumtrend",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_20141_wti-sumtrend/QM5_20141_wti-sumtrend.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_20141_wti-sumtrend/QM5_20141_wti-sumtrend.ex5",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_20141_wti-sumtrend/SPEC.md",
+  "card_path": "C:/QM/repo/strategy-seeds/cards/approved/QM5_20141_wti-sumtrend_card.md",
+  "evidence_path": "C:/QM/repo/docs/ops/evidence/2026-07-25_qm5_20141_wti_sumtrend_build_q02_enqueue.md",
+  "magic_base": 201410000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_20141_wti-sumtrend/sets/QM5_20141_wti-sumtrend_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "source_retrieval": {
+    "status": "EXISTING_APPROVED_PACKETS",
+    "packets": [
+      "EWALD-WTI-TRDTIME-2022",
+      "MOP-TSMOM-2012"
+    ],
+    "bounded_packets_read_completely": true,
+    "new_web_claims_imported": false
+  },
+  "dedup": {
+    "registry_rows_scanned_pre_allocation": 4198,
+    "research_cards_scanned_pre_allocation": 376,
+    "exact_duplicates": 0,
+    "deterministic_verdict": "CLEAN",
+    "manual_neighbors": [
+      "QM5_13107_wti-weekly-season",
+      "QM5_12603_tsmom12m",
+      "QM5_20135_wti-winter-trend",
+      "QM5_20093_wti-summer-short",
+      "QM5_20136_wti-caltrend",
+      "QM5_12567_cum-rsi2-commodity"
+    ],
+    "manual_resolution": "new load-bearing state is a fixed July-November weekly WTI short permitted only when the completed 252-D1 WTI log return is strictly negative; neither the seasonal nor trend parent alone is this candidate"
+  },
+  "validation": {
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "spec_validation": "PASS",
+    "candidate_build_guard": "PASS",
+    "build_guardrails": "PASS",
+    "build_check": "PASS",
+    "build_check_failures": 0,
+    "build_check_warnings": 0,
+    "build_check_report_path": "D:/QM/reports/framework/21/build_check_20260725_071427.json",
+    "strict_compile": "PASS",
+    "compile_succeeded": true,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "compile_log_path": "C:/QM/repo/framework/build/compile/20260725_071427/QM5_20141_wti-sumtrend.compile.log"
+  },
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_log_path": "C:/QM/repo/framework/build/compile/20260725_071427/QM5_20141_wti-sumtrend.compile.log",
+  "build_check_report_path": "D:/QM/reports/framework/21/build_check_20260725_071427.json",
+  "build_check_status": "PASS",
+  "build_check_failures": 0,
+  "build_check_warnings": 0,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "build-only skill boundary and paced-fleet handoff; Q02 owns the first Model-4 trade-generation run and no manual tester was started",
+  "smoke_report_path": null,
+  "blocked_reason": "",
+  "factory_state": {
+    "factory_off_observed": false,
+    "factory_off_path": "D:/QM/strategy_farm/state/FACTORY_OFF.flag",
+    "running_pipeline_mt5_terminals_observed": 6,
+    "terminal64_processes_observed": 7,
+    "observed_process_scope": "six pre-existing paced pipeline terminals plus the pre-existing T_Live terminal",
+    "backtest_cpu_ceiling_hit": false,
+    "manual_backtest_started": false
+  },
+  "hashes_sha256": {
+    "card_pre_q02_annotation": "9A69EE4167F6FE43D64C31C2FB336DC56FC128ACF3E33E5A2C29CB5261F00C6A",
+    "source_packet": "CAAC9C70EFAA77F76999F927F3790E8E4A57A18303878F8BBD086B7624753E9C",
+    "mq5": "5F555CAB6B3DB7EF837ECE956FD8463129C5BA8B2C6E75073E0F798F31934A10",
+    "ex5": "311D9D19C31E54F1FE7D9D9068055CF45A30CDFD841B8F469566FF74FDB620D7",
+    "spec": "309ED35A0C71D682B54C54397F0B0373754E886EDF704ADCA139D66FF55CE4D1",
+    "setfile": "C056F90E13B2EACB4DACCF11429BFFE636B5C4B77BB28D8775EA4C1366354E69",
+    "ea_id_registry": "B01731CB65486781376270561DE7E4BF4894F2DF822BB212D727365E25B27EDF",
+    "magic_registry": "D339D90DF1F8BEC078745D51353ECF6029C84FF630D28B7DA7BA3636471A96A8",
+    "magic_resolver": "27C445998184D902F5856C9B5391972533E1E77FC17573EB3F93370B3837C982"
+  },
+  "resolver_note": "Regenerated from the canonical registry after the EA directory and magic row existed; generated magic 201410000 was verified.",
+  "build_recorded": false,
+  "build_task_status": "pending_record",
+  "manual_backtest_started": false,
+  "t_live_touched": false,
+  "autotrading_touched": false,
+  "t_live_manifest_touched": false,
+  "portfolio_gate_touched": false,
+  "portfolio_admission_claimed": false,
+  "correlation_claimed": false,
+  "open_questions": [
+    "Q02 must falsify whether the seasonal-plus-negative-trend carrier clears the five-trades-per-year floor after warm-up and WTI CFD costs.",
+    "Q09 and the unchanged portfolio gate remain authoritative for realized correlation and any admission."
+  ]
+}
