@@ -15299,3 +15299,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20144,ichimoku-atr-cloud-d1,2,USDJPY.DWX,201440002,2026-07-25T09:55:00Z,claude,active
 20144,ichimoku-atr-cloud-d1,3,USDCHF.DWX,201440003,2026-07-25T09:55:00Z,claude,active
 20145,wti-fri-trend,0,XTIUSD.DWX,201450000,2026-07-25T07:46:01Z,codex,active
+20146,london-orb-3candle-h1,0,EURGBP.DWX,201460000,2026-07-25T12:20:00Z,claude,active
+20146,london-orb-3candle-h1,1,EURUSD.DWX,201460001,2026-07-25T12:20:00Z,claude,active
+20146,london-orb-3candle-h1,2,GBPJPY.DWX,201460002,2026-07-25T12:20:00Z,claude,active
+20146,london-orb-3candle-h1,3,GBPUSD.DWX,201460003,2026-07-25T12:20:00Z,claude,active
+20147,ndx-ema50-momentum-d1,0,NDX.DWX,201470000,2026-07-25T12:20:00Z,claude,active
+20148,usdjpy-pretokyo-straddle,0,USDJPY.DWX,201480000,2026-07-25T12:20:00Z,claude,active
