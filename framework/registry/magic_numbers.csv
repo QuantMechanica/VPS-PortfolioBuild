@@ -15332,3 +15332,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20161,xauxag-ols-rv,0,XAUUSD.DWX,201610000,2026-07-25T21:30:00Z,Codex,active
 20161,xauxag-ols-rv,1,XAGUSD.DWX,201610001,2026-07-25T21:30:00Z,Codex,active
 20162,xng-winter-dualtrend,0,XNGUSD.DWX,201620000,2026-07-26T00:30:00Z,Codex,active
+20163,xng-thu-trend,0,XNGUSD.DWX,201630000,2026-07-26T01:30:00Z,Codex,active
