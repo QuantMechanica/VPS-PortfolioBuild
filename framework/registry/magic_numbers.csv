@@ -15279,3 +15279,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20134,wti-wpsr-fail,0,XTIUSD.DWX,201340000,2026-07-25T02:35:03Z,codex,active
 20135,wti-winter-trend,0,XTIUSD.DWX,201350000,2026-07-25T03:39:59Z,codex,active
 20136,wti-caltrend,0,XTIUSD.DWX,201360000,2026-07-25T04:38:40Z,codex,active
+20137,wti-seas-pb,0,XTIUSD.DWX,201370000,2026-07-25T05:36:52Z,codex,active

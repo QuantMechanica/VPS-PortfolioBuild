@@ -1,0 +1,116 @@
+{
+  "date": "2026-07-25",
+  "branch": "agents/board-advisor",
+  "task_id": "5beef69c-8a2b-4792-bd69-a5c654566f14",
+  "ea_id": "QM5_20137",
+  "slug": "wti-seas-pb",
+  "ea_slug": "wti-seas-pb",
+  "strategy_id": "KELOHARJU-YANG-WTI-SEASPULL-2026_S01",
+  "source_id": "KELOHARJU-YANG-WTI-SEASPULL-2026",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_20137_wti-seas-pb",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_20137_wti-seas-pb/QM5_20137_wti-seas-pb.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_20137_wti-seas-pb/QM5_20137_wti-seas-pb.ex5",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_20137_wti-seas-pb/SPEC.md",
+  "card_path": "C:/QM/repo/strategy-seeds/cards/approved/QM5_20137_wti-seas-pb_card.md",
+  "evidence_path": "C:/QM/repo/docs/ops/evidence/2026-07-25_qm5_20137_wti_seasonal_pullback_build_q02_enqueue.md",
+  "magic_base": 201370000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_20137_wti-seas-pb/sets/QM5_20137_wti-seas-pb_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "source_retrieval": {
+    "status": "EXISTING_GOVERNED_PACKETS",
+    "packets": [
+      "KELOHARJU-RETSEAS-2016",
+      "YANG-COMM-REVERSAL-2017"
+    ],
+    "bounded_packets_read_completely": true,
+    "new_web_claims_imported": false
+  },
+  "dedup": {
+    "registry_rows_scanned_pre_allocation": 4194,
+    "research_cards_scanned_pre_allocation": 376,
+    "exact_duplicates": 0,
+    "deterministic_verdict": "CLEAN",
+    "manual_neighbors": [
+      "QM5_20099_wti-samecal",
+      "QM5_20136_wti-caltrend",
+      "QM5_12709_commodity-reversal-1m",
+      "QM5_12594_yang-wti-reversal",
+      "QM5_20047_wti-mon-loss-bnc",
+      "QM5_13120_energy-momrev",
+      "QM5_12567_cum-rsi2-commodity"
+    ],
+    "manual_resolution": "the load-bearing information object follows WTI's historical same-calendar-month sign only when the exact immediately completed broker-month return has the opposite non-zero sign"
+  },
+  "validation": {
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "spec_validation": "PASS",
+    "candidate_registry_validation": "PASS",
+    "build_guardrails": "PASS",
+    "build_check": "PASS",
+    "build_check_failures": 0,
+    "build_check_warnings": 0,
+    "build_check_report_path": "D:/QM/reports/framework/21/build_check_20260725_054012.json",
+    "strict_compile": "PASS",
+    "compile_succeeded": true,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "compile_log_path": "C:/QM/repo/framework/build/compile/20260725_054012/QM5_20137_wti-seas-pb.compile.log"
+  },
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_log_path": "C:/QM/repo/framework/build/compile/20260725_054012/QM5_20137_wti-seas-pb.compile.log",
+  "build_check_report_path": "D:/QM/reports/framework/21/build_check_20260725_054012.json",
+  "build_check_status": "PASS",
+  "build_check_failures": 0,
+  "build_check_warnings": 0,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "paced Q02 owns the first Model-4 trade-generation run; no manual tester was started",
+  "smoke_report_path": null,
+  "blocked_reason": "",
+  "q02": {
+    "status": "NOT_YET_RECORDED"
+  },
+  "factory_state": {
+    "factory_off_observed": true,
+    "factory_off_path": "D:/QM/strategy_farm/state/FACTORY_OFF.flag",
+    "running_pipeline_mt5_terminals_at_pre_record_check": 4,
+    "terminal64_processes_observed_at_pre_record_check": 5,
+    "backtest_cpu_ceiling_hit": false,
+    "manual_backtest_started": false
+  },
+  "hashes_sha256": {
+    "card": "CFF9FBCEAD2A32435B62195D2931C52D43F62D3FD16BFC4D7AD1D3FBAFAA12D3",
+    "source_packet": "29F0E8AF6FCA5BF7F36EE2177FC70162D602E9E573BFB6637FCDE48C8257A916",
+    "mq5": "47CE5BBEEDF40B4163F08C771DE738750AB837B78ADA4825CEFCE48A54F7C5D5",
+    "ex5": "035A3ED0ADE1F0980E22BA9880676CD3BFA08FEF2733B21D220F04A4CD4A4453",
+    "spec": "4035A6DD6DB709B90ACBE856CEEF3757CE21CE42C82DFDC9939D0BA473ADDAC5",
+    "setfile": "C3DEFAB8335284BFED8B9FCD3236641317614FC91268226F488F24ABD1B7B675",
+    "ea_id_registry": "129AB15E10AE087B40317E467C93266F624F300A1D560FD7D7E769890E194FE3",
+    "magic_registry": "62FD46F57E183489729201327CC34AEEBB54EB8B5105511C95080E42220D4FE5",
+    "magic_resolver": "FEF1461E8A65DDF734BBB96B6F7D98E2D605A7D3F0F907D31E1C537424A174EB"
+  },
+  "resolver_note": "Regenerated from the canonical registry after the EA directory and slot row existed; generated magic 201370000 was verified.",
+  "build_recorded": false,
+  "build_task_status": "pending_record",
+  "manual_backtest_started": false,
+  "t_live_touched": false,
+  "autotrading_touched": false,
+  "t_live_manifest_touched": false,
+  "portfolio_gate_touched": false,
+  "portfolio_admission_claimed": false,
+  "correlation_claimed": false,
+  "open_questions": [
+    "Q02 must falsify whether the sign-disagreement carrier clears the five-completed-packages-per-year floor after the five-year warm-up and WTI CFD costs.",
+    "Q09 and the unchanged portfolio gate remain authoritative for realized correlation and any admission."
+  ]
+}
