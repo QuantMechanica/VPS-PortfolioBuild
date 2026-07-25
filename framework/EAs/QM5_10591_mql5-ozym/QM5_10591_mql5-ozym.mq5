@@ -86,7 +86,10 @@ double OzymandiasHighestHigh(const int shift, const int length)
    double highest = 0.0;
    for(int i = 0; i < length; ++i)
      {
-      const double value = iHigh(_Symbol, _Period, shift + i);
+      MqlRates bar;
+      if(!QM_ReadBar(_Symbol, (ENUM_TIMEFRAMES)_Period, shift + i, bar))
+         return 0.0;
+      const double value = bar.high;
       if(value <= 0.0)
          return 0.0;
       if(i == 0 || value > highest)
@@ -100,7 +103,10 @@ double OzymandiasLowestLow(const int shift, const int length)
    double lowest = 0.0;
    for(int i = 0; i < length; ++i)
      {
-      const double value = iLow(_Symbol, _Period, shift + i);
+      MqlRates bar;
+      if(!QM_ReadBar(_Symbol, (ENUM_TIMEFRAMES)_Period, shift + i, bar))
+         return 0.0;
+      const double value = bar.low;
       if(value <= 0.0)
          return 0.0;
       if(i == 0 || value < lowest)
@@ -112,12 +118,7 @@ double OzymandiasLowestLow(const int shift, const int length)
 int OzymandiasTrendAt(const int target_shift)
   {
    const int length = MathMax(strategy_ozymandias_length, 2);
-   const int bars = Bars(_Symbol, _Period);
-   if(bars <= target_shift + length + 5)
-      return 0;
-
-   const int available = bars - target_shift - length - 2;
-   const int warmup = MathMax(20, MathMin(strategy_ozymandias_lookback_bars, available));
+   const int warmup = MathMax(20, strategy_ozymandias_lookback_bars);
    if(warmup <= 2)
       return 0;
 
@@ -134,9 +135,14 @@ int OzymandiasTrendAt(const int target_shift)
       const double ll = OzymandiasLowestLow(bar, length);
       const double lma = QM_SMA(_Symbol, _Period, length, bar, PRICE_LOW);
       const double hma = QM_SMA(_Symbol, _Period, length, bar, PRICE_HIGH);
-      const double close_bar = iClose(_Symbol, _Period, bar);
-      const double prev_low = iLow(_Symbol, _Period, bar + 1);
-      const double prev_high = iHigh(_Symbol, _Period, bar + 1);
+      MqlRates current_bar;
+      MqlRates previous_bar;
+      if(!QM_ReadBar(_Symbol, (ENUM_TIMEFRAMES)_Period, bar, current_bar) ||
+         !QM_ReadBar(_Symbol, (ENUM_TIMEFRAMES)_Period, bar + 1, previous_bar))
+         return 0;
+      const double close_bar = current_bar.close;
+      const double prev_low = previous_bar.low;
+      const double prev_high = previous_bar.high;
       if(hh <= 0.0 || ll <= 0.0 || lma <= 0.0 || hma <= 0.0 ||
          close_bar <= 0.0 || prev_low <= 0.0 || prev_high <= 0.0)
          return 0;
