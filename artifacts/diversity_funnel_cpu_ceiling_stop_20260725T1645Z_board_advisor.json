@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0",
+  "observed_at_utc": "2026-07-25T16:45:07Z",
+  "agent": "codex:agents/board-advisor",
+  "branch": "agents/board-advisor",
+  "mission": "advance V5 strategy farm toward more certified portfolio sleeves",
+  "outcome": "STOP_CPU_CEILING",
+  "farm_db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+  "active_pipeline_jobs": 8,
+  "cpu_ceiling": 7,
+  "active_terminals": [
+    "T1",
+    "T2",
+    "T3",
+    "T4",
+    "T7",
+    "T8",
+    "T9",
+    "T10"
+  ],
+  "active_diverse_jobs": [
+    {
+      "ea_id": "QM5_11297",
+      "symbol": "GBPUSD.DWX",
+      "phase": "Q04",
+      "terminal": "T10"
+    },
+    {
+      "ea_id": "QM5_13213",
+      "symbol": "USDJPY.DWX",
+      "phase": "Q08",
+      "terminal": "T4"
+    },
+    {
+      "ea_id": "QM5_9454",
+      "symbol": "EURUSD.DWX",
+      "phase": "Q02",
+      "terminal": "T8"
+    }
+  ],
+  "backlog_review": {
+    "pending_build_tasks": 3,
+    "highest_diversity_buildable_candidate": "QM5_20062_kats-eu-macisar",
+    "candidate_instrument": "EURUSD.DWX",
+    "candidate_timeframe": "D1",
+    "candidate_status": "strict compile and build-check PASS; farm claim released after terminal no-capacity response; smoke not launched; Q02 not enqueued",
+    "candidate_task_id": "ee2fe37e-5509-4371-8979-c58db2966313",
+    "rates_candidate": "QM5_1457_as-predict-bonds",
+    "rates_candidate_status": "deterministically blocked by unavailable approved DWX rates/bond inputs"
+  },
+  "collision_avoidance": {
+    "farm_task_claimed": false,
+    "work_item_inserted": false,
+    "queue_mutated": false,
+    "backtest_launched": false,
+    "reason": "Eight active paced pipeline jobs exceed the seven-job CPU ceiling. QM5_20062 was already refreshed and released on the same no-capacity condition, so claiming or enqueueing it now would duplicate an unresolved handoff."
+  },
+  "protected_surfaces_untouched": [
+    "portfolio gate",
+    "T_Live manifest",
+    "AutoTrading",
+    "T_Live"
+  ],
+  "recommended_next_action": "After active paced jobs fall below seven, atomically re-read and claim QM5_20062 if it remains pending and unclaimed, run its single required smoke, then record-build to enqueue exactly one RISK_FIXED Q02 row."
+}
