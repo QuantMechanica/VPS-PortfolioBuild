@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        20161
 ; ea_slug:      xauxag-ols-rv
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   7a257057c1ea0e8e9ac0fc1960fe84c1d96755fad93659376d990dbf0cb1a8b1
+; build_hash:   0a88f6fdb8d15ed653e8054bebd1f2267e95fef347bda44699fee76f883019ba
 ; author:       Codex
 ; date:         2026-07-25
 ;==========================================================
