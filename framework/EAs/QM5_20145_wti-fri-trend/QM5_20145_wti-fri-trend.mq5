@@ -113,9 +113,7 @@ bool Strategy_IsGenuineFridayBoundary(const datetime current_bar)
    if(!Strategy_IsFridayBar(current_bar))
       return false;
    const datetime prior_bar =
-      iTime(_Symbol,
-            PERIOD_D1,
-            1); // perf-allowed: prior completed D1 calendar gate.
+      iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: prior completed D1 calendar gate.
    return Strategy_IsThursdayBar(prior_bar);
   }
 
@@ -282,9 +280,7 @@ bool Strategy_LoadMomentum(double &momentum,
 void Strategy_CloseExpiredPositions()
   {
    const datetime current_bar =
-      iTime(_Symbol,
-            PERIOD_D1,
-            0); // perf-allowed: Friday D1 lifecycle gate.
+      iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: Friday D1 lifecycle gate.
    if(current_bar <= 0)
       return;
 
@@ -355,9 +351,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.expiration_seconds = 0;
 
    const datetime current_bar =
-      iTime(_Symbol,
-            PERIOD_D1,
-            0); // perf-allowed: Friday D1 entry calendar.
+      iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: Friday D1 entry calendar.
    if(!Strategy_IsGenuineFridayBoundary(current_bar) ||
       !Strategy_EntryWithinGrace(current_bar))
       return false;
