@@ -3,21 +3,23 @@
 ; ea_id:        10815
 ; ea_slug:      tv-post-vwap
 ; ea_version:   v5.0
-; set_version:  s20260605-001
-; symbol:       WS30.DWX
+; set_version:  s20260720-stress-harsh
+; symbol:       EURUSD.DWX
 ; timeframe:    H1
-; environment:  backtest
-; magic_slot:   6
+; environment:  q06_stress_harsh
+; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   cc02f458626c05d4e7b641c60a9864f10767064134105e148a23962fc22e1b65
+; build_hash:   f01f3f0aedb16460220dcf1889a8f7693c68a94d2329bc24267efa0ef028d18d
 ; author:       Development
-; date:         2026-06-05
+; date:         2026-07-20
 ;==========================================================
-qm_magic_slot_offset=6
+qm_magic_slot_offset=0
+qm_rng_seed=99
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.1000
 ; core filter library params; filter-on/off variants must be pre-declared
 qm_filter_news_enabled=1
 qm_filter_news_mode=3
@@ -31,18 +33,16 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=framework/EAs/QM5_10815_tv-post-vwap/SPEC.md
-strategy_atr_period=14
-strategy_volume_lookback=20
-strategy_vwap_stretch_atr=0.50
-strategy_volume_ratio=1.50
-strategy_wick_share=0.55
-strategy_stop_buffer_atr=0.25
-strategy_max_stop_atr=2.50
-strategy_target_rr=0.0
-strategy_time_stop_m15_bars=24
-strategy_time_stop_h1_bars=12
-strategy_session_filter=true
-strategy_session_start_hour=7
-strategy_session_end_hour=21
-strategy_max_spread_points=0
+; card_defaults_source=not_found
+; --- ablation child 01 of QM5_10815_tv-post-vwap_EURUSD.DWX_H1_backtest (perturb=±25%) ---
+strategy_atr_period=15
+strategy_volume_lookback=17
+strategy_vwap_stretch_atr=0.505493
+strategy_volume_ratio=1.679834
+strategy_wick_share=0.533113
+strategy_stop_buffer_atr=0.252837
+strategy_max_stop_atr=2.724407
+strategy_time_stop_m15_bars=19
+strategy_time_stop_h1_bars=14
+strategy_session_start_hour=8
+strategy_session_end_hour=24

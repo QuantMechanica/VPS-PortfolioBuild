@@ -37,6 +37,10 @@
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 1567;
 input int    qm_magic_slot_offset       = 0;
+// FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
+// All other phases use 42 by default. Stress / noise dimensions read from
+// this single seed so reproducibility is guaranteed across re-runs.
+input uint   qm_rng_seed                = 42;
 
 input group "Risk"
 input double RISK_PERCENT               = 0.0;
@@ -49,6 +53,15 @@ input QM_NewsMode qm_news_mode          = QM_NEWS_PAUSE;
 input group "Friday Close"
 input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
+
+input group "Stress"
+// FW2 2026-05-23 — only populated by Q05 MED / Q06 HARSH stress setfiles.
+// Default 0.0 = no rejection (Q02/Q03/Q04/Q07-baseline/Q08/Q09/Q10/Q13 backtests).
+// Q06 HARSH sets to 0.10 (10% of entries randomly dropped before broker send,
+// deterministic per qm_rng_seed). Q07 varies qm_rng_seed over this HARSH baseline,
+// so the seed only bites when this probability is > 0. MED slip/spread/commission
+// live in the tester groups file, not as EA inputs.
+input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input int    strategy_setup_bars         = 9;
@@ -313,7 +326,13 @@ int OnInit()
                         PORTFOLIO_WEIGHT,
                         qm_news_mode,
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        30,                            // news pause-before minutes (framework default)
+                        30,                            // news pause-after minutes (framework default)
+                        24 * 14,                       // news stale-max hours (framework default)
+                        "high",                        // news min-impact (framework default)
+                        qm_rng_seed,
+                        qm_stress_reject_probability))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");

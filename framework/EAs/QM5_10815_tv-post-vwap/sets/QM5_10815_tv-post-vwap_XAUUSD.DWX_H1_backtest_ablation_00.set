@@ -4,17 +4,17 @@
 ; ea_slug:      tv-post-vwap
 ; ea_version:   v5.0
 ; set_version:  s20260605-001
-; symbol:       WS30.DWX
+; symbol:       XAUUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
-; magic_slot:   6
+; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   cc02f458626c05d4e7b641c60a9864f10767064134105e148a23962fc22e1b65
+; build_hash:   dab984d3bf89c81cd307bcfce23cf3d09f98c786775d41bccab0414ce17e6254
 ; author:       Development
 ; date:         2026-06-05
 ;==========================================================
-qm_magic_slot_offset=6
+qm_magic_slot_offset=3
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
@@ -31,18 +31,16 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=framework/EAs/QM5_10815_tv-post-vwap/SPEC.md
-strategy_atr_period=14
-strategy_volume_lookback=20
-strategy_vwap_stretch_atr=0.50
-strategy_volume_ratio=1.50
-strategy_wick_share=0.55
-strategy_stop_buffer_atr=0.25
-strategy_max_stop_atr=2.50
-strategy_target_rr=0.0
-strategy_time_stop_m15_bars=24
-strategy_time_stop_h1_bars=12
-strategy_session_filter=true
+; card_defaults_source=not_found
+; --- ablation child 00 of QM5_10815_tv-post-vwap_XAUUSD.DWX_H1_backtest (perturb=±25%) ---
+strategy_atr_period=13
+strategy_volume_lookback=24
+strategy_vwap_stretch_atr=0.560601
+strategy_volume_ratio=1.696498
+strategy_wick_share=0.616264
+strategy_stop_buffer_atr=0.23584
+strategy_max_stop_atr=2.9698
+strategy_time_stop_m15_bars=25
+strategy_time_stop_h1_bars=13
 strategy_session_start_hour=7
-strategy_session_end_hour=21
-strategy_max_spread_points=0
+strategy_session_end_hour=20
