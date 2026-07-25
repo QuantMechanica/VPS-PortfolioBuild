@@ -3,7 +3,7 @@
 ; ea_id:        20061
 ; ea_slug:      kats-dax-maci
 ; ea_version:   v5.0
-; set_version:  s20260723-001
+; set_version:  s20260725-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    D1
 ; environment:  backtest
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-07-23
+; date:         2026-07-25
 ;==========================================================
 qm_ea_id=20061
 qm_magic_slot_offset=0

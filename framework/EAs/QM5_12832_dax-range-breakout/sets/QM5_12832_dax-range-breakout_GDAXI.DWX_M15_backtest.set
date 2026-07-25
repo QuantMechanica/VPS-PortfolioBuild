@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1.0
-; build_hash:   pending
+; build_hash:   0dca107782fe5d7b0a6684bf2f7270fa07173023e3efada9626ae47fd47d28e2
 ; author:       Development
 ; date:         2026-07-01
 ; notes:        v2: 60-min opening range defaults (range_start=10, range_end=11 broker).
