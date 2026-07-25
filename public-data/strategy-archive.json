@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-25T07:07:20.1333820Z",
-    "total":  3545,
+    "generated_at":  "2026-07-25T08:07:34.6972127Z",
+    "total":  3546,
     "items":  [
                   {
                       "slug":  "ath-breakout-atr-trail",
@@ -18145,7 +18145,13 @@
                       "slug":  "QM5_20141_wti-sumtrend_card",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-25T07:04:46.4310154Z"
+                      "last_updated_utc":  "2026-07-25T07:25:17.5088332Z"
+                  },
+                  {
+                      "slug":  "QM5_20145_wti-fri-trend_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-25T08:01:21.5981663Z"
                   },
                   {
                       "slug":  "QM5_2020_chaikin-volatility-h4",
