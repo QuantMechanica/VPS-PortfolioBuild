@@ -208,3 +208,23 @@ The current machine-readable snapshot is
 `artifacts/fx_cointegration_frontier_stop_20260725T094728Z_board_advisor.json`.
 No card, build, enqueue, dispatch, tester launch, terminal control, portfolio
 gate, or live artifact change followed.
+
+## 2026-07-25 13:00Z capacity refresh
+
+The non-duplicate frontier decision remains unchanged: `QM5_12532` and
+`QM5_12533` are already Q02-cleared and subsequently failed Q05 and Q04,
+respectively, while all seven governed scan pairs are built with terminal Q02
+evidence. There is no eligible unbuilt pure-FX pair or legitimate open
+successor to enqueue.
+
+The path-aware process scan observed three factory terminals (`T4`, `T9`, and
+`T10`). `T_Live` and the external FTMO terminal were observed only to exclude
+them and were not controlled. The canonical saturation scheduler remained the
+binding capacity authority and returned `available_slots_before=0`,
+`available_slots_after=0`, and `scheduled=0`.
+
+The machine-readable snapshot is
+`artifacts/fx_cointegration_frontier_stop_20260725T130020Z_board_advisor.json`.
+Per the explicit CPU-ceiling rule, no card, build, enqueue, dispatch, tester
+launch, terminal control, portfolio-gate change, or live-artifact change
+followed.
