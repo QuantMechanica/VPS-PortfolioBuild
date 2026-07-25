@@ -1,11 +1,11 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_20163 XNG Wednesday Weakness Negative-Trend Agreement"
+#property description "QM5_20163 XNG Thursday Weakness Negative-Trend Agreement"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QM5_20163 - XNG Wednesday Weakness / Slow-Trend Agreement
+// QM5_20163 - XNG Thursday Weakness / Slow-Trend Agreement
 // -----------------------------------------------------------------------------
 // D1 structural crude-oil sleeve:
 //   - first observed tick of a genuine broker-calendar Thursday D1 bar
@@ -98,14 +98,14 @@ bool Strategy_IsThursdayBar(const datetime value)
            parts.day_of_week == 4);
   }
 
-bool Strategy_IsTuesdayBar(const datetime value)
+bool Strategy_IsWednesdayBar(const datetime value)
   {
    if(value <= 0)
       return false;
    MqlDateTime parts;
    ZeroMemory(parts);
    return (TimeToStruct(value, parts) &&
-           parts.day_of_week == 2);
+           parts.day_of_week == 3);
   }
 
 bool Strategy_IsGenuineThursdayBoundary(const datetime current_bar)
@@ -114,7 +114,7 @@ bool Strategy_IsGenuineThursdayBoundary(const datetime current_bar)
       return false;
    const datetime prior_bar =
       iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: prior completed D1 calendar gate.
-   return Strategy_IsTuesdayBar(prior_bar);
+   return Strategy_IsWednesdayBar(prior_bar);
   }
 
 bool Strategy_EntryWithinGrace(const datetime current_bar)
@@ -457,7 +457,7 @@ int OnInit()
 
    QM_LogEvent(QM_INFO,
                "INIT_OK",
-               "{\"card\":\"QM5_20163\",\"ea\":\"xng-wed-trend\"}");
+               "{\"card\":\"QM5_20163\",\"ea\":\"xng-thu-trend\"}");
    return INIT_SUCCEEDED;
   }
 
