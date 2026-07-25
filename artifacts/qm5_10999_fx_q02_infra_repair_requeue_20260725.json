@@ -1,0 +1,197 @@
+{
+  "artifact_version": 1,
+  "generated_at_utc": "2026-07-25T00:02:57Z",
+  "mission": "priority_2_diverse_fx_q02_infrastructure_recovery",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_10999",
+  "ea_label": "QM5_10999_the5ers-outside-bollinger",
+  "selection": {
+    "priority_1_not_executable": [
+      {
+        "ea_id": "QM5_1457",
+        "reason": "approved rates/bond inputs are unavailable in the native DWX data contract"
+      },
+      {
+        "ea_id": "QM5_1459",
+        "reason": "the approved card requires unavailable lumber and IEF series"
+      }
+    ],
+    "priority_2_reason": "Five approved FX carriers had only infrastructure failures at Q02, no business verdict, no downstream completion, and no open retry or competing claim."
+  },
+  "claim": {
+    "agent_task_id": "3ae59cb8-0886-4c75-8010-5a8afaab874c",
+    "claim_key": "manual:codex:agents/board-advisor:QM5_10999:q02-infra-recovery",
+    "claimed_by": "codex:agents/board-advisor"
+  },
+  "strategy_contract": {
+    "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10999_the5ers-outside-bollinger.md",
+    "card_sha256": "7961384e44b818b53cf744b47b89124bac3887cfc06fdab8d98dd7d135277ab8",
+    "g0_status": "APPROVED",
+    "source_id": "1d445184-7c47-57da-9856-a123682a932d",
+    "source_title": "Forex Trading Strategy Outside Bollinger Bands",
+    "source_url": "https://the5ers.com/outside-bolinger-bands/",
+    "reputable_source_criteria": "PASS under the current single-lineage, mechanical, reproducible-source criteria",
+    "mechanic": "H1 closed-body outside Bollinger band reversal with fixed ATR stop, middle-band or hard-R exit, and an 18-bar time stop",
+    "structural_only": true,
+    "ml_adaptive_grid_martingale": false,
+    "expected_trades_per_year_per_symbol": 55
+  },
+  "diagnosis": {
+    "original_build_task_id": "90a99255-d52b-4851-a649-c3ff8e26999a",
+    "original_review_task_id": "e31e2b4e-7b02-4128-91c6-03cb0e199951",
+    "original_review_blocker": "USDJPY.DWX history synchronization timeout; the review explicitly found no EA code defect",
+    "latest_prior_q02": [
+      {
+        "symbol": "AUDUSD.DWX",
+        "work_item_id": "ce63230d-3d85-4381-8b10-886bb1688579",
+        "verdict": "INFRA_FAIL",
+        "failure": "summary_missing_retries_exhausted"
+      },
+      {
+        "symbol": "EURJPY.DWX",
+        "work_item_id": "76343374-f5e4-479f-943f-41c85f811237",
+        "verdict": "INFRA_FAIL",
+        "failure": "summary_missing_retries_exhausted"
+      },
+      {
+        "symbol": "EURUSD.DWX",
+        "work_item_id": "a975ba32-defe-47df-b850-ddc097df0e20",
+        "verdict": "INFRA_FAIL",
+        "failure": "summary_missing_retries_exhausted"
+      },
+      {
+        "symbol": "GBPUSD.DWX",
+        "work_item_id": "49798058-c498-458b-81b3-5bbee6ee0fd9",
+        "verdict": "INFRA_FAIL",
+        "failure": "summary_missing_retries_exhausted"
+      },
+      {
+        "symbol": "USDJPY.DWX",
+        "work_item_id": "a4bd65b7-d189-4d72-a477-0183b2028831",
+        "verdict": "INFRA_FAIL",
+        "failure": "summary_missing_retries_exhausted"
+      }
+    ],
+    "retained_prior_evidence": "All five referenced log paths and report roots are absent, so the rows contain no tester summary or strategy verdict.",
+    "current_history_cache_precheck_2017_2022": {
+      "AUDUSD.DWX": "PASS",
+      "EURJPY.DWX": "PASS",
+      "EURUSD.DWX": "PASS",
+      "GBPUSD.DWX": "PASS",
+      "USDJPY.DWX": "PASS"
+    },
+    "stale_binary": {
+      "tracked_sha256": "fb7d90b3f2d0492ec88409696e63dc81ffd0cd4bd01b936a8584a6b86623f7e4",
+      "tracked_length_bytes": 245964,
+      "repaired_sha256": "5994607e2babe0eb76253896309846805fef06e2d7dab29f9c3e5eee54cffacf",
+      "repaired_length_bytes": 342622,
+      "note": "The scheduled worktree janitor restored the first unstaged rebuild at 00:00 UTC. The final strict rebuild was staged immediately, and the pending cohort was rebound to the final staged hash."
+    }
+  },
+  "repair": {
+    "source_changed": false,
+    "mq5_sha256": "f95624e27107ce3ef674f338f80c07c057db1cd193caae50e1ef6a8effb333f7",
+    "spec_sha256": "fb23f5f4224134716c9dc6cb0c4be381da229b6d78d33b9f64eb2e5a477f0eea",
+    "ex5_sha256": "5994607e2babe0eb76253896309846805fef06e2d7dab29f9c3e5eee54cffacf",
+    "ex5_length_bytes": 342622,
+    "strict_compile": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "C:/QM/repo/framework/build/compile/20260725_000143/QM5_10999_the5ers-outside-bollinger.compile.log"
+    },
+    "strict_build_check": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260725_000143.json"
+    },
+    "setfiles": [
+      {
+        "symbol": "AUDUSD.DWX",
+        "sha256": "4e7ee28557a792f3e6f7b9aa71091ca3b16bf430ed47210d723a975c7c145537",
+        "build_hash": "02e5f31698bb8c1bc40808a314ce23372fdedcbe74fbe5860d1fe24bd5e99700",
+        "risk_fixed": 1000,
+        "risk_percent": 0
+      },
+      {
+        "symbol": "EURJPY.DWX",
+        "sha256": "857e960ddab814ba5c709390bf39b46692ff77fef1e11870ca2ddc7e396bab02",
+        "build_hash": "a23cf024c558b5623e840ef6861dbb0ffbc3445fea1ae202c1d7ac6e66263c9b",
+        "risk_fixed": 1000,
+        "risk_percent": 0
+      },
+      {
+        "symbol": "EURUSD.DWX",
+        "sha256": "f096989a34e7bf675aa899d7e002ec374e48ece6b6f522b4bcd5b9fb9743d8b8",
+        "build_hash": "e9921a534d720d452cc5bc2413754e00b4a7cb4589a916c784cabe8cb21f1c5b",
+        "risk_fixed": 1000,
+        "risk_percent": 0
+      },
+      {
+        "symbol": "GBPUSD.DWX",
+        "sha256": "33ff846c2b7706fdf7c682672cf2c0a85da53d2d9e76ca63ff3d2b43ceb0e16c",
+        "build_hash": "5525ec9fea369cdb4841cb03173685df428ef03ff0a6239287fc0ef610ad0fce",
+        "risk_fixed": 1000,
+        "risk_percent": 0
+      },
+      {
+        "symbol": "USDJPY.DWX",
+        "sha256": "7efe5c09d9bdddaa4553d706ad0a6beb6ec8aabf623bec62feeca3d1aa6230a7",
+        "build_hash": "74e67ca4e032100f6d6353b2d58754d95e627dd637da876b7e36b48a0506e178",
+        "risk_fixed": 1000,
+        "risk_percent": 0
+      }
+    ]
+  },
+  "q02_handoff": {
+    "db_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_10999_q02_enqueue_20260725T000004Z.sqlite",
+    "parent_task_id": "10158698-f2fc-478b-9f23-1bdb53c6dab3",
+    "parent_task_status": "pending",
+    "work_items": [
+      {
+        "symbol": "AUDUSD.DWX",
+        "id": "2f4b8867-06ca-4c72-84c0-8e39ff375284",
+        "status": "pending",
+        "attempt_count": 0
+      },
+      {
+        "symbol": "EURJPY.DWX",
+        "id": "1bf7f9f1-0035-48cd-b10d-b17b60e06621",
+        "status": "pending",
+        "attempt_count": 0
+      },
+      {
+        "symbol": "EURUSD.DWX",
+        "id": "4e80a30b-0a38-4705-b5ba-d0d13ce906b2",
+        "status": "pending",
+        "attempt_count": 0
+      },
+      {
+        "symbol": "GBPUSD.DWX",
+        "id": "0dad2348-0ef6-47a7-b500-4624e4a9c1bb",
+        "status": "pending",
+        "attempt_count": 0
+      },
+      {
+        "symbol": "USDJPY.DWX",
+        "id": "4e8f064e-cd70-4d90-ad6a-d5c3f89a48f0",
+        "status": "pending",
+        "attempt_count": 0
+      }
+    ],
+    "skipped": [],
+    "factory_off_observed": true,
+    "manual_dispatch": false
+  },
+  "safety": {
+    "factory_backtest_terminals_observed": 0,
+    "cpu_ceiling_reached": false,
+    "manual_backtest_started": false,
+    "t_live_process_observed_read_only": true,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}

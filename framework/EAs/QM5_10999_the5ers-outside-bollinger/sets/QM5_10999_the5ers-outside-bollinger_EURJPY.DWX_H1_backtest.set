@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        10999
 ; ea_slug:      the5ers-outside-bollinger
@@ -10,7 +10,7 @@
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   ed62ac1835a1385e3e5eb57554d0c6a1b7cfa9677433323feec26804b1d34c31
+; build_hash:   a23cf024c558b5623e840ef6861dbb0ffbc3445fea1ae202c1d7ac6e66263c9b
 ; author:       Development
 ; date:         2026-06-18
 ;==========================================================
