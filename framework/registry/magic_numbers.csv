@@ -15289,3 +15289,12 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20140,roundnum-sma50-h1,0,GBPUSD.DWX,201400000,2026-07-25T08:05:00Z,claude,active
 20140,roundnum-sma50-h1,1,EURJPY.DWX,201400001,2026-07-25T08:05:00Z,claude,active
 20141,wti-sumtrend,0,XTIUSD.DWX,201410000,2026-07-25T06:57:42Z,codex,active
+20142,mtf-ema25-align-h4,0,EURUSD.DWX,201420000,2026-07-25T09:55:00Z,claude,active
+20142,mtf-ema25-align-h4,1,GBPUSD.DWX,201420001,2026-07-25T09:55:00Z,claude,active
+20142,mtf-ema25-align-h4,2,USDJPY.DWX,201420002,2026-07-25T09:55:00Z,claude,active
+20143,macd-bb-campaign-m5,0,EURUSD.DWX,201430000,2026-07-25T09:55:00Z,claude,active
+20143,macd-bb-campaign-m5,1,GBPUSD.DWX,201430001,2026-07-25T09:55:00Z,claude,active
+20144,ichimoku-atr-cloud-d1,0,EURUSD.DWX,201440000,2026-07-25T09:55:00Z,claude,active
+20144,ichimoku-atr-cloud-d1,1,GBPUSD.DWX,201440001,2026-07-25T09:55:00Z,claude,active
+20144,ichimoku-atr-cloud-d1,2,USDJPY.DWX,201440002,2026-07-25T09:55:00Z,claude,active
+20144,ichimoku-atr-cloud-d1,3,USDCHF.DWX,201440003,2026-07-25T09:55:00Z,claude,active
