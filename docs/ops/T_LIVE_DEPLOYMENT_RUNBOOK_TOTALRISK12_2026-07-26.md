@@ -11,7 +11,7 @@ the manifest **in writing** (Decision B below).
 | artifact | from | to |
 |---|---|---|
 | Book risk | TOTAL_RISK 9.75 | **12.0** — same 24 sleeves, same magics, capped inverse-vol, 3 at cap, all others ×1.313 |
-| Manifest | `portfolio_manifest_sunday_final_24sleeve_DRAFT_20260719.json` | `portfolio_manifest_sunday_24sleeve_TOTALRISK12_20260726.json` (Sharpe 2.3737, MaxDD 3.3851 %) |
+| Manifest | `portfolio_manifest_sunday_final_24sleeve_DRAFT_20260719.json` | `portfolio_manifest_sunday_FINAL24b_TOTALRISK12_20260726.json` — FINAL24b: −10440/NDX (Q10 FAIL dd 31.0 %), +11422/USDCAD (clean admit) per decisions/2026-07-26_book_final24b_minus10440_plus11422.md (Sharpe 2.3440, MaxDD faithful 3.4952 %) |
 | Presets | 24 deployed (mtime 07-19) | staged at `D:\QM\exports\tlive_presets_TOTALRISK12_20260726\` — 24/24, patch-proven (only RISK_PERCENT + 2 listed header comments change; `_staging_report.json` holds per-file diffs + SHA256) |
 | Binaries | live mtimes 06-28…07-17, **0/21 match repo** | Thursday-recompiled repo `.ex5` + the two basket EAs recompiled with WP-9 (Decision A) |
 
@@ -58,6 +58,18 @@ the manifest **in writing** (Decision B below).
    preset verification, calendar check, Q07 rerun outcomes and both OWNER decisions. Mirror the
    runbook to the Vault. Then **`Factory_ON.ps1 -NoPause`** — and per the WP-1b audit, no new bulk
    synth/ablation injection waves.
+
+
+## FINAL24b additions to the sequence
+
+- Step 2 addition: **11422 is a NEW EA on T_Live** — copy its `.ex5` (sha `159e6168…`), open a
+  USDCAD D1 chart (broker symbol, no .DWX), attach with preset 25. Verify `KILL_SWITCH_INIT`
+  and `NEWS_CALENDAR_LOADED` appear in its `MQL5\Files\QM\` log after attach.
+- Step 3 addition: **remove** the deployed `15_NDX…QM5_10440` preset and close the 10440 chart
+  (sleeve removed; decision record has the Q10 FAIL evidence).
+- Verification addition: 11422's preset carries no explicit `qm_filter_*` block (relies on EA
+  defaults + `qm_news_compliance=DXZ` / `PRE30_POST30`) — confirm the news self-test line for
+  11422 specifically.
 
 ## Rollback
 
