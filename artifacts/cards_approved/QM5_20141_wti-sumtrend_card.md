@@ -56,7 +56,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0
+pipeline_phase: Q01
 review_focus: "Falsify whether the load-bearing conjunction of the WTI July-November trading-time short and negative completed 252-D1 trend clears density and costs while adding direct crude-oil exposure."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -298,7 +298,7 @@ Ambiguous history or state must fail closed.
 
 ## Safety Boundary
 
-This approval request covers one card, deterministic registries, one EA build,
+This approval covers one card, deterministic registries, one EA build,
 strict compile, one `RISK_FIXED` backtest setfile, and one paced Q02 enqueue.
 It does not authorize a manual backtest, live setfile, AutoTrading, `T_Live`,
 deploy or T_Live manifest change, portfolio admission, portfolio-gate change,
@@ -308,13 +308,12 @@ portfolio KPI claim, or correlation waiver.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-25 | initial source-backed WTI summer/trend interaction card | G0 | PENDING |
+| v1 | 2026-07-25 | initial source-backed WTI summer/trend interaction card | G0 | APPROVED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
-| G0 Research Intake | 2026-07-25 | PENDING | this card |
+| G0 Research Intake | 2026-07-25 | APPROVED | this card |
 | Q01 Build Validation | - | NOT RUN | - |
 | Q02 Baseline Screening | - | NOT ENQUEUED | - |
-

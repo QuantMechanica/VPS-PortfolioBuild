@@ -15288,3 +15288,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20139,dibs-inside-bar-h1,1,GBPUSD.DWX,201390001,2026-07-25T08:05:00Z,claude,active
 20140,roundnum-sma50-h1,0,GBPUSD.DWX,201400000,2026-07-25T08:05:00Z,claude,active
 20140,roundnum-sma50-h1,1,EURJPY.DWX,201400001,2026-07-25T08:05:00Z,claude,active
+20141,wti-sumtrend,0,XTIUSD.DWX,201410000,2026-07-25T06:57:42Z,codex,active
