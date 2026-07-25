@@ -31,12 +31,25 @@ class Q10ConfirmationTests(unittest.TestCase):
         self.assertTrue(result["reason"].startswith("pf_below_floor:"))
 
     def test_run_confirmation_fails_when_drawdown_above_ceiling(self) -> None:
+        # Ceiling is 25.0, not the historical 15.0: the 2026-07-15 OWNER decision raised the
+        # per-EA DD ceiling and its affected-files list missed q10_confirmation.py because Q10
+        # had never been executed at that point (first run 2026-07-20). Aligned 2026-07-25 —
+        # see decisions/2026-07-15_dd_ceiling_25pct_portfolio_rationale.md, amendment section.
         result = self._run_confirmation_with_summary(
-            {"runs": [{"profit_factor": 1.2, "drawdown": 16000.0, "total_trades": 42}]}
+            {"runs": [{"profit_factor": 1.2, "drawdown": 26000.0, "total_trades": 42}]}
         )
 
         self.assertEqual(result["verdict"], "FAIL")
         self.assertTrue(result["reason"].startswith("dd_above_ceiling:"))
+        self.assertEqual(result["dd_pct"], 26.0)
+
+    def test_run_confirmation_passes_between_the_old_and_current_ceiling(self) -> None:
+        """16% DD used to FAIL and now PASSes — the concrete effect of the 15->25 alignment."""
+        result = self._run_confirmation_with_summary(
+            {"runs": [{"profit_factor": 1.2, "drawdown": 16000.0, "total_trades": 42}]}
+        )
+
+        self.assertEqual(result["verdict"], "PASS")
         self.assertEqual(result["dd_pct"], 16.0)
 
     def test_run_confirmation_passes_when_pf_and_drawdown_are_inside_bounds(self) -> None:
@@ -152,16 +165,49 @@ class Q10ConfirmationTests(unittest.TestCase):
 
         self.assertIsNone(selected)
 
-    def test_extract_per_trade_profits_from_synthetic_mt5_html(self) -> None:
+    def test_extract_per_trade_nets_named_columns(self) -> None:
+        # Named-column parse: net = Profit + Swap + Commission (the exact
+        # quantity the live KS path feeds). The opening ('in') and balance rows
+        # are skipped; the third closing deal is the spaced-thousands +
+        # numeric-comment case ('-1 023.75' / 'sl 0.74059') that the old
+        # positional regex mis-read as +023.75 (WP-11 regression guard).
         htm = """
         <html><body><table>
-          <tr><td>2024.01.01</td><td>buy</td><td>in</td><td>0.00</td><td>1000.00</td></tr>
-          <tr><td>2024.01.02</td><td>sell</td><td>out</td><td>12.34</td><td>1012.34</td></tr>
-          <tr><td>2024.01.03</td><td>sell</td><td>out</td><td>-5.67</td><td>1006.67</td></tr>
+          <tr><td>Time</td><td>Deal</td><td>Symbol</td><td>Type</td><td>Direction</td>
+              <td>Volume</td><td>Price</td><td>Order</td><td>Commission</td><td>Swap</td>
+              <td>Profit</td><td>Balance</td><td>Comment</td></tr>
+          <tr><td>2024.01.01</td><td>1</td><td></td><td>balance</td><td></td><td></td>
+              <td></td><td></td><td>0.00</td><td>0.00</td><td>100 000.00</td>
+              <td>100 000.00</td><td></td></tr>
+          <tr><td>2024.01.02</td><td>2</td><td>EURUSD</td><td>buy</td><td>in</td><td>1.00</td>
+              <td>1.10</td><td>3</td><td>-2.00</td><td>0.00</td><td>0.00</td>
+              <td>99 998.00</td><td>squeeze_long</td></tr>
+          <tr><td>2024.01.03</td><td>3</td><td>EURUSD</td><td>sell</td><td>out</td><td>1.00</td>
+              <td>1.11</td><td>4</td><td>-2.00</td><td>1.00</td><td>12.34</td>
+              <td>100 009.34</td><td>qm_tm_close</td></tr>
+          <tr><td>2024.01.04</td><td>4</td><td>EURUSD</td><td>buy</td><td>out</td><td>1.00</td>
+              <td>1.10</td><td>5</td><td>-2.00</td><td>0.00</td><td>-5.67</td>
+              <td>100 001.67</td><td>sl 1.09912</td></tr>
+          <tr><td>2024.01.05</td><td>5</td><td>AUDUSD</td><td>buy</td><td>out</td><td>1.25</td>
+              <td>0.74</td><td>6</td><td>-2.31</td><td>-8.26</td><td>-1 023.75</td>
+              <td>98 665.86</td><td>sl 0.74059</td></tr>
         </table></body></html>
         """
+        # deal3: 12.34 + 1.00 + -2.00 = 11.34
+        # deal4: -5.67 + 0.00 + -2.00 = -7.67
+        # deal5: -1023.75 + -8.26 + -2.31 = -1034.32 (never +023.75)
+        self.assertEqual(
+            gen_q10_baseline.extract_per_trade_nets(htm),
+            [11.34, -7.67, -1034.32],
+        )
 
-        self.assertEqual(gen_q10_baseline.extract_per_trade_profits(htm), [12.34, -5.67])
+    def test_extract_per_trade_nets_fails_loud_without_header(self) -> None:
+        # A report whose deals header cannot be resolved must raise, never
+        # return a short/empty baseline that would still load in the live EA.
+        with self.assertRaises(gen_q10_baseline.ReportParseError):
+            gen_q10_baseline.extract_per_trade_nets(
+                "<html><body><table><tr><td>no</td><td>header</td></tr></table></body></html>"
+            )
 
     def test_write_baseline_uses_tmp_dir_and_expected_schema(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
