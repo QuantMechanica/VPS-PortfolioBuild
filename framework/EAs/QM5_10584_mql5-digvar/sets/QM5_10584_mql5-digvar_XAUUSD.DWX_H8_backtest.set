@@ -1,0 +1,37 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10584
+; ea_slug:      mql5-digvar
+; ea_version:   v5.0
+; set_version:  s20260725-001
+; symbol:       XAUUSD.DWX
+; timeframe:    H8
+; environment:  backtest
+; magic_slot:   3
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   f9872ce33d9828a2b1143ea8791c3e198910be6948e2d332a58e67a1cb213a19
+; author:       Development
+; date:         2026-07-25
+;==========================================================
+qm_ea_id=10584
+qm_magic_slot_offset=3
+qm_rng_seed=42
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=3
+qm_news_compliance=0
+qm_news_mode_legacy=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_friday_close_enabled=1
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+strategy_signal_tf=16392
+strategy_dig_period=12
+strategy_dig_smooth_power=1
+strategy_atr_period=14
+strategy_atr_sl_mult=2.0
+strategy_tp_r_mult=1.5
+strategy_max_spread_points=250.0
