@@ -15306,3 +15306,13 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20147,ndx-ema50-momentum-d1,0,NDX.DWX,201470000,2026-07-25T12:20:00Z,claude,active
 20148,usdjpy-pretokyo-straddle,0,USDJPY.DWX,201480000,2026-07-25T12:20:00Z,claude,active
 20149,wti-montrend,0,XTIUSD.DWX,201490000,2026-07-25T09:15:00Z,codex,active
+20150,emacross-stochhook-fib-h4,0,EURUSD.DWX,201500000,2026-07-25T13:10:00Z,claude,active
+20150,emacross-stochhook-fib-h4,1,USDJPY.DWX,201500001,2026-07-25T13:10:00Z,claude,active
+20151,dual-supertrend-confluence-h1,0,EURUSD.DWX,201510000,2026-07-25T13:10:00Z,claude,active
+20151,dual-supertrend-confluence-h1,1,GBPUSD.DWX,201510001,2026-07-25T13:10:00Z,claude,active
+20151,dual-supertrend-confluence-h1,2,USDJPY.DWX,201510002,2026-07-25T13:10:00Z,claude,active
+20151,dual-supertrend-confluence-h1,3,USDCAD.DWX,201510003,2026-07-25T13:10:00Z,claude,active
+20151,dual-supertrend-confluence-h1,4,AUDUSD.DWX,201510004,2026-07-25T13:10:00Z,claude,active
+20151,dual-supertrend-confluence-h1,5,USDCHF.DWX,201510005,2026-07-25T13:10:00Z,claude,active
+20151,dual-supertrend-confluence-h1,6,NZDUSD.DWX,201510006,2026-07-25T13:10:00Z,claude,active
+20152,sma-cross-pullback-h1,0,EURUSD.DWX,201520000,2026-07-25T13:10:00Z,claude,active
