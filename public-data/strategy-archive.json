@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-24T21:07:02.4026464Z",
-    "total":  3534,
+    "generated_at":  "2026-07-25T06:07:12.5145062Z",
+    "total":  3544,
     "items":  [
                   {
                       "slug":  "ath-breakout-atr-trail",
@@ -1946,6 +1946,18 @@
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-07-10T14:31:59.4487831Z"
+                  },
+                  {
+                      "slug":  "xng-stor-fade_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-24T23:33:11.3210388Z"
+                  },
+                  {
+                      "slug":  "xng-stor-m30_card",
+                      "source":  "strategy-seeds/cards",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-24T22:44:50.5940969Z"
                   },
                   {
                       "slug":  "xng-svol-brk_card",
@@ -18070,10 +18082,58 @@
                       "last_updated_utc":  "2026-07-23T19:31:54.5173032Z"
                   },
                   {
+                      "slug":  "QM5_20124_xng-stor-m30_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-24T22:46:50.0955660Z"
+                  },
+                  {
+                      "slug":  "QM5_20128_xng-stor-fade_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-24T23:33:11.3210388Z"
+                  },
+                  {
                       "slug":  "QM5_2013_nnfx-v2-carry-momentum-filter",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-07-23T19:31:54.5193083Z"
+                  },
+                  {
+                      "slug":  "QM5_20132_xng-stor-orb_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-25T00:54:30.0086586Z"
+                  },
+                  {
+                      "slug":  "QM5_20133_wti-wpsr-pb_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-25T01:46:40.8744691Z"
+                  },
+                  {
+                      "slug":  "QM5_20134_wti-wpsr-fail_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-25T02:41:20.2605222Z"
+                  },
+                  {
+                      "slug":  "QM5_20135_wti-winter-trend_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-25T03:41:13.8955654Z"
+                  },
+                  {
+                      "slug":  "QM5_20136_wti-caltrend_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-25T04:45:50.3079001Z"
+                  },
+                  {
+                      "slug":  "QM5_20137_wti-seas-pb_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-25T05:43:21.4594627Z"
                   },
                   {
                       "slug":  "QM5_2014_nnfx-v2-range-filter-meanrev",
