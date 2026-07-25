@@ -74,66 +74,472 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-// TODO: declare strategy-specific input params here, e.g.:
-//   input int    strategy_atr_period   = 14;
-//   input double strategy_atr_sl_mult  = 2.0;
-//   input double strategy_atr_tp_mult  = 3.0;
-input int    strategy_placeholder       = 0;
+input double strategy_tp_pips = 50.0;
+input double strategy_sl_pips = 50.0;
 
-// -----------------------------------------------------------------------------
-// Strategy hooks — implement these against the card mechanically.
-// -----------------------------------------------------------------------------
+datetime g_str082_desired_eval_bar = 0;
+datetime g_str082_desired_source_bar = 0;
+datetime g_str082_last_entry_bar = 0;
+datetime g_str082_last_exit_attempt_bar = 0;
+datetime g_str082_last_data_log_bar = 0;
+int      g_str082_desired_direction = 0;
+double   g_str082_lower_wick = 0.0;
+double   g_str082_upper_wick = 0.0;
+ulong    g_str082_exit_position_id = 0;
+bool     g_str082_exit_latched = false;
 
-// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
-// regime filter). Cheap O(1) checks only — runs on every tick.
+bool Strategy082_ConfigValid()
+  {
+   return (MathIsValidNumber(strategy_tp_pips) &&
+           MathIsValidNumber(strategy_sl_pips) &&
+           strategy_tp_pips > 0.0 &&
+           strategy_sl_pips > 0.0);
+  }
+
+bool Strategy082_CurrentBar(datetime &bar_time)
+  {
+   bar_time =
+      (datetime)SeriesInfoInteger(
+         _Symbol,
+         PERIOD_H1,
+         SERIES_LASTBAR_DATE); // perf-allowed: O(1) immutable forming-H1 clock for desired-state, entry, exit, and retry guards
+   return (bar_time > 0);
+  }
+
+void Strategy082_LogDataMissing(const string component,
+                                const datetime bar_time)
+  {
+   if(bar_time > 0 &&
+      bar_time == g_str082_last_data_log_bar)
+      return;
+   g_str082_last_data_log_bar = bar_time;
+   QM_LogEvent(
+      QM_WARN,
+      SETUP_DATA_MISSING,
+      StringFormat(
+         "{\"strategy\":\"STR-082\",\"component\":\"%s\",\"bar_time\":%I64d,\"slot\":%d}",
+         QM_LoggerEscapeJson(component),
+         (long)bar_time,
+         qm_magic_slot_offset));
+  }
+
+bool Strategy082_ValidBar(const MqlRates &bar)
+  {
+   return (bar.time > 0 &&
+           MathIsValidNumber(bar.open) &&
+           MathIsValidNumber(bar.high) &&
+           MathIsValidNumber(bar.low) &&
+           MathIsValidNumber(bar.close) &&
+           bar.open > 0.0 &&
+           bar.high >= bar.open &&
+           bar.high >= bar.close &&
+           bar.low <= bar.open &&
+           bar.low <= bar.close);
+  }
+
+bool Strategy082_UpdateDesired(datetime &forming_time)
+  {
+   if(!Strategy082_CurrentBar(forming_time))
+      return false;
+   if(g_str082_desired_eval_bar == forming_time)
+      return true;
+
+   MqlRates bar1;
+   if(!QM_ReadBar(_Symbol,
+                  PERIOD_H1,
+                  1,
+                  bar1)) // perf-allowed: one closed-H1 OHLC read behind the owned desired-state bar guard
+     {
+      Strategy082_LogDataMissing("closed_h1_wick_bar",
+                                 forming_time);
+      return false;
+     }
+   if(!Strategy082_ValidBar(bar1))
+     {
+      Strategy082_LogDataMissing(
+         "closed_h1_wick_geometry",
+         forming_time);
+      return false;
+     }
+
+   const double body_high =
+      MathMax(bar1.open, bar1.close);
+   const double body_low =
+      MathMin(bar1.open, bar1.close);
+   g_str082_upper_wick =
+      MathMax(0.0, bar1.high - body_high);
+   g_str082_lower_wick =
+      MathMax(0.0, body_low - bar1.low);
+   g_str082_desired_direction = 0;
+   if(g_str082_lower_wick >
+      g_str082_upper_wick)
+      g_str082_desired_direction = 1;
+   else if(g_str082_lower_wick <
+           g_str082_upper_wick)
+      g_str082_desired_direction = -1;
+
+   g_str082_desired_source_bar = bar1.time;
+   g_str082_desired_eval_bar = forming_time;
+   return true;
+  }
+
+bool Strategy082_FindOwnPosition(
+   ulong &ticket,
+   ENUM_POSITION_TYPE &position_type,
+   ulong &position_id)
+  {
+   ticket = 0;
+   position_type = POSITION_TYPE_BUY;
+   position_id = 0;
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong candidate = PositionGetTicket(i);
+      if(candidate == 0 ||
+         !PositionSelectByTicket(candidate))
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic ||
+         PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      ticket = candidate;
+      position_type =
+         (ENUM_POSITION_TYPE)PositionGetInteger(
+            POSITION_TYPE);
+      position_id =
+         (ulong)PositionGetInteger(
+            POSITION_IDENTIFIER);
+      return true;
+     }
+   return false;
+  }
+
+bool Strategy082_OpenedSince(const datetime since_time)
+  {
+   if(since_time <= 0)
+      return true;
+   if(!HistorySelect(since_time, TimeCurrent()))
+     {
+      Strategy082_LogDataMissing(
+         "same_bar_entry_history",
+         since_time);
+      return true;
+     }
+   const int magic = QM_FrameworkMagic();
+   const int total = HistoryDealsTotal();
+   for(int i = 0; i < total; ++i)
+     {
+      const ulong deal = HistoryDealGetTicket(i);
+      if(deal == 0 ||
+         (int)HistoryDealGetInteger(deal,
+                                    DEAL_MAGIC) != magic ||
+         HistoryDealGetString(deal,
+                              DEAL_SYMBOL) != _Symbol)
+         continue;
+      const ENUM_DEAL_ENTRY entry_kind =
+         (ENUM_DEAL_ENTRY)HistoryDealGetInteger(
+            deal,
+            DEAL_ENTRY);
+      if(entry_kind == DEAL_ENTRY_IN ||
+         entry_kind == DEAL_ENTRY_INOUT)
+         return true;
+     }
+   return false;
+  }
+
+double Strategy082_PipSize()
+  {
+   const double point =
+      SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const int digits =
+      (int)SymbolInfoInteger(_Symbol,
+                             SYMBOL_DIGITS);
+   if(point <= 0.0)
+      return 0.0;
+   return ((digits == 3 || digits == 5)
+           ? 10.0 * point
+           : point);
+  }
+
+double Strategy082_TradeTick()
+  {
+   double tick =
+      SymbolInfoDouble(_Symbol,
+                       SYMBOL_TRADE_TICK_SIZE);
+   if(tick <= 0.0)
+      tick = SymbolInfoDouble(_Symbol,
+                              SYMBOL_POINT);
+   return tick;
+  }
+
+double Strategy082_AlignPrice(const double raw_price,
+                              const int direction)
+  {
+   const double tick = Strategy082_TradeTick();
+   if(raw_price <= 0.0 || tick <= 0.0)
+      return 0.0;
+   const double scaled = raw_price / tick;
+   double units = MathRound(scaled);
+   if(direction < 0)
+      units = MathFloor(scaled + 1e-9);
+   else if(direction > 0)
+      units = MathCeil(scaled - 1e-9);
+   return QM_TM_NormalizePrice(_Symbol,
+                               units * tick);
+  }
+
+bool Strategy082_StopsLegal(const QM_OrderType side,
+                            const double sl,
+                            const double tp)
+  {
+   const double point =
+      SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const double tick = Strategy082_TradeTick();
+   const double bid =
+      SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double ask =
+      SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   if(point <= 0.0 || tick <= 0.0 ||
+      bid <= 0.0 || ask <= 0.0 || ask < bid ||
+      sl <= 0.0 || tp <= 0.0)
+      return false;
+   const long stops_level =
+      SymbolInfoInteger(_Symbol,
+                        SYMBOL_TRADE_STOPS_LEVEL);
+   const long freeze_level =
+      SymbolInfoInteger(_Symbol,
+                        SYMBOL_TRADE_FREEZE_LEVEL);
+   const long broker_level =
+      (stops_level > freeze_level)
+      ? stops_level
+      : freeze_level;
+   const double minimum =
+      MathMax(tick,
+              (double)broker_level * point);
+   if(side == QM_BUY)
+      return (sl < bid && tp > ask &&
+              bid - sl + tick * 0.1 >= minimum &&
+              tp - ask + tick * 0.1 >= minimum);
+   if(side == QM_SELL)
+      return (sl > ask && tp < bid &&
+              sl - ask + tick * 0.1 >= minimum &&
+              bid - tp + tick * 0.1 >= minimum);
+   return false;
+  }
+
 bool Strategy_NoTradeFilter()
   {
-   // TODO: e.g. "only trade London session" or "skip if ADX<20"
-   return false;
+   if(_Period != PERIOD_H1 ||
+      !Strategy082_ConfigValid())
+      return true;
+   if((ENUM_SYMBOL_TRADE_MODE)SymbolInfoInteger(
+         _Symbol,
+         SYMBOL_TRADE_MODE) ==
+      SYMBOL_TRADE_MODE_DISABLED)
+      return true;
+   const long bars_available =
+      SeriesInfoInteger(_Symbol,
+                        PERIOD_H1,
+                        SERIES_BARS_COUNT); // perf-allowed: O(1) three-bar warmup gate shared by both registered slots
+   return (bars_available < 3);
   }
 
-// Populate `req` with entry order parameters and return TRUE if a NEW entry
-// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
-// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // TODO: build req.type / req.price / req.sl / req.tp / req.reason /
-   //       req.symbol_slot / req.expiration_seconds — set ALL fields (the
-   //       caller ZeroMemory's req; symbol_slot stays 0 for single-symbol
-   //       EAs). Lots are NOT part of QM_EntryRequest: sizing happens inside
-   //       QM_Entry via QM_LotsForRisk from req.sl.
-   return false;
+   ZeroMemory(req);
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   datetime forming_time = 0;
+   if(!Strategy082_UpdateDesired(forming_time))
+      return false;
+   if(forming_time == g_str082_last_entry_bar)
+      return false;
+   g_str082_last_entry_bar = forming_time;
+   if(g_str082_desired_direction == 0)
+      return false;
+
+   // ExitSignal owns an opposite-position close. The new desired direction
+   // may enter only at the next H1 evaluation, never later in the same tick.
+   if(g_str082_last_exit_attempt_bar == forming_time)
+      return false;
+   ulong ticket = 0;
+   ENUM_POSITION_TYPE position_type =
+      POSITION_TYPE_BUY;
+   ulong position_id = 0;
+   if(Strategy082_FindOwnPosition(ticket,
+                                  position_type,
+                                  position_id) ||
+      Strategy082_OpenedSince(forming_time))
+      return false;
+
+   const double bid =
+      SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double ask =
+      SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double pip = Strategy082_PipSize();
+   if(bid <= 0.0 || ask <= 0.0 ||
+      ask < bid || pip <= 0.0)
+     {
+      Strategy082_LogDataMissing("entry_quotes_or_pip",
+                                 forming_time);
+      return false;
+     }
+   const bool long_signal =
+      (g_str082_desired_direction > 0);
+   const double entry =
+      long_signal ? ask : bid;
+   req.type = long_signal ? QM_BUY : QM_SELL;
+   req.price = 0.0;
+   req.sl =
+      Strategy082_AlignPrice(
+         long_signal
+         ? entry - strategy_sl_pips * pip
+         : entry + strategy_sl_pips * pip,
+         long_signal ? -1 : 1);
+   req.tp =
+      Strategy082_AlignPrice(
+         long_signal
+         ? entry + strategy_tp_pips * pip
+         : entry - strategy_tp_pips * pip,
+         long_signal ? 1 : -1);
+   if(!Strategy082_StopsLegal(req.type,
+                              req.sl,
+                              req.tp))
+     {
+      QM_LogEvent(
+         QM_WARN,
+         "SETUP_CONFIG_INVALID",
+         StringFormat(
+            "{\"strategy\":\"STR-082\",\"reason\":\"fixed_stop_target_geometry\",\"dir\":\"%s\",\"bar_time\":%I64d,\"entry\":%.8f,\"sl\":%.8f,\"tp\":%.8f}",
+            QM_LoggerEscapeJson(
+               long_signal ? "LONG" : "SHORT"),
+            (long)forming_time,
+            entry,
+            req.sl,
+            req.tp));
+      return false;
+     }
+
+   req.reason =
+      StringFormat(long_signal
+                   ? "STR082_L_S%d_%I64d"
+                   : "STR082_S_S%d_%I64d",
+                   qm_magic_slot_offset,
+                   (long)forming_time);
+   QM_LogEvent(
+      QM_INFO,
+      "STRATEGY_ENTRY",
+      StringFormat(
+         "{\"strategy\":\"STR-082\",\"projection\":\"single_position_latest_signal\",\"dir\":\"%s\",\"slot\":%d,\"symbol\":\"%s\",\"source_bar\":%I64d,\"eval_bar\":%I64d,\"lower_wick\":%.8f,\"upper_wick\":%.8f,\"entry\":%.8f,\"sl\":%.8f,\"tp\":%.8f}",
+         QM_LoggerEscapeJson(
+            long_signal ? "LONG" : "SHORT"),
+         qm_magic_slot_offset,
+         QM_LoggerEscapeJson(_Symbol),
+         (long)g_str082_desired_source_bar,
+         (long)forming_time,
+         g_str082_lower_wick,
+         g_str082_upper_wick,
+         entry,
+         req.sl,
+         req.tp));
+   return true;
   }
 
-// Called every tick when an open position exists for this EA's magic.
-// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // TODO: e.g.
-   //   const int magic = QM_FrameworkMagic();
-   //   for(int i = PositionsTotal() - 1; i >= 0; --i) {
-   //       const ulong ticket = PositionGetTicket(i);
-   //       if(!PositionSelectByTicket(ticket)) continue;
-   //       if(PositionGetInteger(POSITION_MAGIC) != magic) continue;
-   //       QM_TM_MoveToBreakEven(ticket, /*trigger_pips=*/30, /*buffer=*/2);
-   //       QM_TM_TrailATR(ticket, /*atr_period=*/14, /*atr_mult=*/2.0);
-   //   }
   }
 
-// Return TRUE to close the open position now (e.g. opposite-signal exit,
-// max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   // TODO: when to close manually (separate from SL/TP and trade management)
-   return false;
+   datetime forming_time = 0;
+   if(!Strategy082_UpdateDesired(forming_time))
+      return false;
+
+   ulong ticket = 0;
+   ENUM_POSITION_TYPE position_type =
+      POSITION_TYPE_BUY;
+   ulong position_id = 0;
+   if(!Strategy082_FindOwnPosition(ticket,
+                                   position_type,
+                                   position_id))
+     {
+      // Keep this bar's attempt marker through the later EntrySignal call.
+      if(forming_time !=
+         g_str082_last_exit_attempt_bar)
+        {
+         g_str082_exit_latched = false;
+         g_str082_exit_position_id = 0;
+         g_str082_last_exit_attempt_bar = 0;
+        }
+      return false;
+     }
+
+   if(position_id != g_str082_exit_position_id)
+     {
+      g_str082_exit_position_id = position_id;
+      g_str082_exit_latched = false;
+      g_str082_last_exit_attempt_bar = 0;
+     }
+
+   const bool position_long =
+      (position_type == POSITION_TYPE_BUY);
+   const bool opposite_desired =
+      (g_str082_desired_direction != 0 &&
+       ((position_long &&
+         g_str082_desired_direction < 0) ||
+        (!position_long &&
+         g_str082_desired_direction > 0)));
+
+   // The projection is governed by the latest completed candle. If a prior
+   // rejected close is superseded by SAME/NONE, the position is held.
+   if(!opposite_desired)
+     {
+      if(forming_time !=
+         g_str082_last_exit_attempt_bar)
+        {
+         g_str082_exit_latched = false;
+         g_str082_last_exit_attempt_bar = 0;
+        }
+      return false;
+     }
+
+   if(g_str082_exit_latched &&
+      forming_time ==
+      g_str082_last_exit_attempt_bar)
+      return false;
+
+   const bool retry = g_str082_exit_latched;
+   g_str082_exit_latched = true;
+   g_str082_last_exit_attempt_bar =
+      forming_time;
+   QM_LogEvent(
+      QM_INFO,
+      "STRATEGY_EXIT",
+      StringFormat(
+         "{\"strategy\":\"STR-082\",\"projection\":\"single_position_latest_signal\",\"ticket\":%I64u,\"slot\":%d,\"symbol\":\"%s\",\"reason\":\"%s\",\"held_dir\":\"%s\",\"desired_dir\":\"%s\",\"source_bar\":%I64d,\"eval_bar\":%I64d,\"lower_wick\":%.8f,\"upper_wick\":%.8f}",
+         ticket,
+         qm_magic_slot_offset,
+         QM_LoggerEscapeJson(_Symbol),
+         QM_LoggerEscapeJson(
+            retry
+            ? "opposite_desired_retry"
+            : "opposite_desired"),
+         QM_LoggerEscapeJson(
+            position_long ? "LONG" : "SHORT"),
+         QM_LoggerEscapeJson(
+            g_str082_desired_direction > 0
+            ? "LONG"
+            : "SHORT"),
+         (long)g_str082_desired_source_bar,
+         (long)forming_time,
+         g_str082_lower_wick,
+         g_str082_upper_wick));
+   return true;
   }
 
-// Optional news-filter override. Return TRUE to suppress trading regardless
-// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
-// custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false; // defer to QM_NewsAllowsTrade(...)
+   return false;
   }
 
 // -----------------------------------------------------------------------------
