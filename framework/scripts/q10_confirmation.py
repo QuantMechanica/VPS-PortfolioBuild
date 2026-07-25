@@ -40,7 +40,14 @@ RUNNER_HEADROOM_SEC = 120
 
 GATE_NAME = "Q10"
 PF_FLOOR = 1.0
-DD_PCT_MAX = 15.0
+# 15->25 to match Q02/Q05/Q06. The OWNER decision of 2026-07-15 raised the per-EA DD
+# ceiling to 25% at norm risk but listed only p2_baseline.py and q05_stress_medium.py as
+# affected — Q10 had never been executed at that point (first run 2026-07-20), so it
+# produced no dd_above_ceiling FAIL for the audit to catch. Leaving it at 15 made the
+# gates contradict each other on the same measurement: QM5_13213/USDJPY scored dd 21.50
+# at Q05 (gross full-history, PASS at 25) and dd 22.80 at Q10 (full-history confirmation,
+# FAIL at 15). See decisions/2026-07-15_dd_ceiling_25pct_portfolio_rationale.md.
+DD_PCT_MAX = 25.0
 DEFAULT_NEWS_TEMPORAL = "QM_NEWS_TEMPORAL_PRE30_POST30"   # Mode 3
 DEFAULT_NEWS_COMPLIANCE = "QM_NEWS_COMPLIANCE_DXZ"
 
