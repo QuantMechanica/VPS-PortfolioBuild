@@ -1645,5 +1645,35 @@ class Q05Q07VerdictTests(unittest.TestCase):
         self.assertIn("harsh_label=99", result["invalid_reason"])
 
 
+
+    # ---- Second axis (OWNER 2026-07-25, decisions/2026-07-25_q07_second_axis_worst_seed_pf.md)
+    def _seed_rows(self, pfs):
+        return [dict(seed=s, pf=p, trades=100, exit_code=0, summary_path="x", report_path="y")
+                for s, p in zip([42, 17, 99, 7, 2026], pfs)]
+
+    def test_q07_second_axis_passes_bounded_variance_on_strong_worst_seed(self):
+        # The real 12567/XAUUSD rerun evidence: variance 32.35, worst seed 1.61.
+        v, reason, m = q07.evaluate_seeds(self._seed_rows([1.82, 1.61, 1.69, 1.80, 2.20]))
+        self.assertEqual(v, "PASS")
+        self.assertTrue(reason.startswith("second_axis:"))
+        self.assertGreaterEqual(m["min_pf"], q07.SECOND_AXIS_MIN_PF)
+
+    def test_q07_second_axis_refuses_weak_worst_seed(self):
+        v, reason, _ = q07.evaluate_seeds(self._seed_rows([1.05, 1.02, 1.35, 1.08, 1.06]))
+        self.assertEqual(v, "FAIL")
+        self.assertIn("second_axis_not_met", reason)
+
+    def test_q07_second_axis_refuses_extreme_dispersion(self):
+        # Worst seed clears 1.10 but dispersion is pathological — the 40% guard holds.
+        v, reason, _ = q07.evaluate_seeds(self._seed_rows([1.20, 4.00, 1.30, 1.25, 1.40]))
+        self.assertEqual(v, "FAIL")
+        self.assertIn("second_axis_not_met", reason)
+
+    def test_q07_losing_seed_still_fails_regardless_of_axis(self):
+        v, reason, _ = q07.evaluate_seeds(self._seed_rows([1.50, 0.95, 1.60, 1.55, 1.52]))
+        self.assertEqual(v, "FAIL")
+        self.assertIn("per_seed_pf_below_floor", reason)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -45,6 +45,17 @@ from framework.scripts.q06_stress_harsh import gen_harsh_setfile_for, _basket_lo
 GATE_NAME = "Q07"
 PF_VARIANCE_PCT_MAX = 20.0
 PER_SEED_PF_MIN = 1.0
+# Second axis (OWNER 2026-07-25, decisions/2026-07-25_q07_second_axis_worst_seed_pf.md):
+# the variance metric is RELATIVE, so it systematically fails the strongest sleeves — a
+# PF~2 sleeve whose seeds span 1.6-2.2 breaches 20% while every seed is deeply
+# profitable, and a PF~1.05 sleeve with seeds 1.00-1.10 passes. Variance in
+# [20%, 40%) is therefore tolerated when the WORST seed still clears the ratified
+# cost-noise bottom (1.10, aligned with Q02's hard bottom per DL-082 §4 and the
+# 2026-07-25 Q02 decision). Variance >= 40% fails regardless — extreme dispersion is
+# overfit-to-fill-sequence territory no worst-seed floor excuses. A losing seed
+# (< PER_SEED_PF_MIN) fails regardless, unchanged.
+SECOND_AXIS_MIN_PF = 1.10
+SECOND_AXIS_VARIANCE_PCT_MAX = 40.0
 DEFAULT_SEED_TIMEOUT_SEC = 5400
 
 
@@ -636,8 +647,17 @@ def evaluate_seeds(seed_results: list[dict]) -> tuple[str, str, dict]:
                 f"per_seed_pf_below_floor:seeds={floor_breach}:floor={PER_SEED_PF_MIN}",
                 metrics)
     if variance_pct >= PF_VARIANCE_PCT_MAX:
+        # Second axis: high-but-bounded relative variance with a comfortably
+        # profitable worst seed passes; the reason string names the axis so the
+        # evidence trail distinguishes it from a primary variance pass.
+        if variance_pct < SECOND_AXIS_VARIANCE_PCT_MAX and min(pfs) >= SECOND_AXIS_MIN_PF:
+            return ("PASS",
+                    f"second_axis:variance_pct={variance_pct:.2f}<{SECOND_AXIS_VARIANCE_PCT_MAX}"
+                    f":min_pf={min(pfs):.3f}>={SECOND_AXIS_MIN_PF}",
+                    metrics)
         return ("FAIL",
-                f"pf_variance_pct={variance_pct:.2f}>={PF_VARIANCE_PCT_MAX}",
+                f"pf_variance_pct={variance_pct:.2f}>={PF_VARIANCE_PCT_MAX}"
+                f":min_pf={min(pfs):.3f}:second_axis_not_met",
                 metrics)
     return ("PASS",
             f"variance_pct={variance_pct:.2f}<{PF_VARIANCE_PCT_MAX}:min_pf={min(pfs):.3f}",
