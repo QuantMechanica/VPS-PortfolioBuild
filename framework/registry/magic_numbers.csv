@@ -15280,3 +15280,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20135,wti-winter-trend,0,XTIUSD.DWX,201350000,2026-07-25T03:39:59Z,codex,active
 20136,wti-caltrend,0,XTIUSD.DWX,201360000,2026-07-25T04:38:40Z,codex,active
 20137,wti-seas-pb,0,XTIUSD.DWX,201370000,2026-07-25T05:36:52Z,codex,active
+20138,stoch-ema50-pullback-h4,0,EURUSD.DWX,201380000,2026-07-25T08:05:00Z,claude,active
+20138,stoch-ema50-pullback-h4,1,GBPUSD.DWX,201380001,2026-07-25T08:05:00Z,claude,active
+20138,stoch-ema50-pullback-h4,2,XAUUSD.DWX,201380002,2026-07-25T08:05:00Z,claude,active
+20138,stoch-ema50-pullback-h4,3,XAGUSD.DWX,201380003,2026-07-25T08:05:00Z,claude,active
+20139,dibs-inside-bar-h1,0,EURUSD.DWX,201390000,2026-07-25T08:05:00Z,claude,active
+20139,dibs-inside-bar-h1,1,GBPUSD.DWX,201390001,2026-07-25T08:05:00Z,claude,active
+20140,roundnum-sma50-h1,0,GBPUSD.DWX,201400000,2026-07-25T08:05:00Z,claude,active
+20140,roundnum-sma50-h1,1,EURJPY.DWX,201400001,2026-07-25T08:05:00Z,claude,active

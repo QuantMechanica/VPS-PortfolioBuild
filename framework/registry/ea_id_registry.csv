@@ -4194,3 +4194,6 @@ QM5_1491,ehlers-sinewave-leadsine-cross-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,
 20135,wti-winter-trend,BURAKOV-MOP-WTI-WINTER-TREND-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-25
 20136,wti-caltrend,KELOHARJU-MOP-WTI-CALTREND-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-25
 20137,wti-seas-pb,KELOHARJU-YANG-WTI-SEASPULL-2026_S01,active,Research+Development (OWNER commodity/energy sleeve mission),2026-07-25
+20138,stoch-ema50-pullback-h4,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-25
+20139,dibs-inside-bar-h1,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-25
+20140,roundnum-sma50-h1,WEB-SOURCES-HARVEST-2026-07,active,Research,2026-07-25
