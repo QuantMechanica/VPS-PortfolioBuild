@@ -188,3 +188,23 @@ The machine-readable snapshot is
 `artifacts/fx_cointegration_frontier_stop_20260725T072755Z_board_advisor.json`.
 No card, EA, setfile, manifest, queue row, terminal, portfolio gate, or live
 artifact was changed by this refresh.
+
+## 2026-07-25 09:47Z capacity refresh
+
+The non-duplicate decision remains binding. The two anchor baskets are still
+past Q02 (`QM5_12532` PASS then Q05 FAIL; `QM5_12533` PASS then Q04 FAIL), all
+21 approved pair-card filenames containing `cointegration` or `coint` still
+have matching EA directories, and no eligible unbuilt pure-FX pair exists.
+
+The canonical farm contained eight active and 2,264 pending work items. Its
+dispatch ledger reported `running=3` for every T1-T10 slot, and the scheduler
+dry-run returned zero available slots and scheduled zero jobs. A path-anchored
+process snapshot found no factory `terminal64.exe` child at that instant; the
+only observed terminal was the separately excluded `T_Live` process. This is
+a scheduler-accounting mismatch, not authorization to bypass the canonical
+capacity decision.
+
+The current machine-readable snapshot is
+`artifacts/fx_cointegration_frontier_stop_20260725T094728Z_board_advisor.json`.
+No card, build, enqueue, dispatch, tester launch, terminal control, portfolio
+gate, or live artifact change followed.
