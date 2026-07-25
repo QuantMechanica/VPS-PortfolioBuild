@@ -1,0 +1,45 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11165
+; ea_slug:      weiss-rsi-ma
+; ea_version:   v5.0
+; set_version:  s20260725-stress-harsh
+; symbol:       AUDCAD.DWX
+; timeframe:    H1
+; environment:  q06_stress_harsh
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   95a31d61ee4c1dbff4e8c85745c154ed9a1db30791d16ad2c8776eb3979a6805
+; author:       Development
+; date:         2026-07-25
+;==========================================================
+qm_magic_slot_offset=2
+qm_rng_seed=7
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.1000
+; core filter library params; filter-on/off variants must be pre-declared
+qm_filter_news_enabled=1
+qm_filter_news_mode=3
+qm_filter_regime_enabled=0
+qm_filter_regime_lookback_bars=100
+qm_filter_regime_bull_return_pct=2.0
+qm_filter_regime_bear_return_pct=2.0
+qm_filter_volatility_enabled=0
+qm_filter_volatility_atr_period=14
+qm_filter_volatility_lookback_bars=50
+qm_filter_volatility_compression_ratio=0.75
+qm_filter_volatility_expansion_ratio=1.25
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=ea_input_defaults (materialized 2026-07-17 wave: setgen param-empty repair)
+strategy_timeframe=16385
+strategy_rsi_period=9
+strategy_sma_period=200
+strategy_long_rsi=25.0
+strategy_short_rsi=75.0
+strategy_exit_rsi=50.0
+strategy_stop_pct=1.0
+strategy_max_hold_bars=60
+strategy_max_spread_pts=0
