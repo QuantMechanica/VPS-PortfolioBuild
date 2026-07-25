@@ -8,6 +8,8 @@
 #include "QM_RiskSizer.mqh"
 #include "QM_MagicResolver.mqh"
 #include "QM_Logger.mqh"
+#include "QM_SeedRNG.mqh"   // WP-9: central seeded RNG for the stress-rejection hook
+#include "QM_Entry.mqh"     // WP-9: shared stress-reject probability (g_qm_entry_stress_reject_prob, set by QM_EntryConfigure)
 
 struct QM_BasketOrderRequest
 {
@@ -146,6 +148,85 @@ bool QM_BasketOpenPosition(const int ea_id,
    {
       QM_BasketLogReject(req, "QM_BASKET_REJECTED_DUPLICATE", "open_position_same_magic_symbol");
       return false;
+   }
+
+   // FW2 (2026-05-23) — Q06 HARSH stress trade-rejection simulation, basket path.
+   // WP-9 (2026-07-25): until now QM_BasketOpenPosition reached QM_TradeContextSend
+   // with no RNG, so for every basket EA Q06's 10% rejection was a no-op and Q07 could
+   // not diverge across seeds — the real legs open here while the standard-order hook
+   // (QM_Entry.mqh) never fires. This mirrors that hook: the same central seeded RNG,
+   // the same "entry_reject" sub-stream, and the same probability global
+   // (g_qm_entry_stress_reject_prob, set once via QM_EntryConfigure in QM_FrameworkInit;
+   // Q05 MED and live run at 0.0 = no-op, Q06/Q07 run at 0.10). Placement is AFTER the
+   // kill-switch/news/duplicate safety checks so a stress reject can never mask a safety
+   // reject, and BEFORE price/lot resolution and QM_TradeContextSend so no broker
+   // round-trip is wasted.
+   //
+   // WP-9 REVISED (2026-07-25, after Codex CHANGES-REQUIRED review). Granularity is
+   // ONE DRAW PER BASKET TRANSACTION, not per leg. Scar tissue — the first cut drew
+   // once per leg and assumed every caller rolls a partial spread back. Two shipped
+   // callers do NOT: QM5_10009 loops three legs on `any_opened` with an EMPTY
+   // ManageOpenPosition, and QM5_10025 treats either pair leg as a valid entry. For
+   // those "any-open" callers a per-leg reject does not net to all-or-nothing — the
+   // dominant event is a CORRUPTED PARTIAL package (at p=0.10 the whole two-leg entry
+   // is rejected by this hook alone with only p^2=1%, but a lopsided half-spread is
+   // far more likely), which is strictly worse than the clean whole-basket reject the
+   // gate intends. The per-leg cut also STACKED a second draw on QM5_20123, which
+   // already preflights every member with its own "entry_reject" draw: 0.9^4 = 34.4%
+   // reject instead of the intended ~19%.
+   //
+   // The fix: draw ONCE per logical basket and memoize the verdict in static state
+   // keyed on (ea_id, TimeCurrent()). Verified per-caller (10009/10025/20123/12821/
+   // 12778/13117/13140/10309): every basket caller opens ALL of its legs inside a
+   // single OnTick, and MT5 does not advance TimeCurrent() within one OnTick execution
+   // (it is the last-known server time, refreshed only between incoming ticks), and each
+   // caller is new-bar gated + guarded against a second concurrent basket. So the first
+   // leg of an entry draws; every later leg of the SAME entry (same ea_id, same tick)
+   // reuses that one verdict. That gives all-or-nothing for EVERY caller BY CONSTRUCTION
+   // — 10009's three legs now all open or none open, with no rollback code required —
+   // restores single-order semantics (one logical entry, ONE draw at p, cleaner than the
+   // previous 1-(1-p)^legs which over-rejected multi-leg baskets), and consumes exactly
+   // ONE RNG stream advance per basket instead of one per leg.
+   //
+   // Key = (ea_id, TimeCurrent()). It deliberately EXCLUDES symbol/symbol_slot: legs of
+   // one basket carry different slots and therefore different magics (magic = ea_id*10000
+   // + slot), but must share the verdict — keying on the per-leg magic would re-introduce
+   // the per-leg bug. ea_id is the EA-level identity, identical across every leg (each
+   // caller passes a constant qm_ea_id); we use the parameter directly rather than
+   // re-deriving ea_id = magic/10000 (same value, available here without coupling to the
+   // magic formula). Static hygiene: MQL5 zero-inits the memo at the start of each tester
+   // pass (s_memo_ea_id = 0) and ea_id is > 0 here (guarded above), so the initial key
+   // can never collide with a real basket; the (ea_id, time) compare also forces a redraw
+   // for any new bar, so a stale memo from a prior bar is never leaked. At p=0.0 the whole
+   // block is skipped — no draw, no static touched — so Q05 MED / live determinism and RNG
+   // cursor position are byte-identical to a no-hook build.
+   //
+   // RESOLVED (2026-07-25) — QM5_20123 double-stress. QM5_20123 previously ran its
+   // OWN per-member "entry_reject" preflight (2 draws for its 2 members) ON TOP of this
+   // basket draw, so a two-member package accepted with only 0.9^2 * 0.9 = 0.9^3 = 72.9%
+   // (27.1% reject) instead of the intended single-draw 90%. That redundant preflight has
+   // now been removed from QM5_20123_dailyopen-h1-basket.mq5 (its news gate is retained),
+   // so this memoized basket hook is the SOLE stress rail for that EA. Every sampled
+   // caller now draws ONLY here.
+   if(g_qm_entry_stress_reject_prob > 0.0)
+   {
+      static int      s_memo_ea_id  = 0;
+      static datetime s_memo_time   = 0;
+      static bool     s_memo_reject = false;
+      const datetime now = TimeCurrent();
+      if(s_memo_ea_id != ea_id || s_memo_time != now)
+      {
+         // First leg of this basket transaction: one draw, memoized for the rest.
+         s_memo_ea_id  = ea_id;
+         s_memo_time   = now;
+         s_memo_reject = QM_RandBoolTagged("entry_reject", g_qm_entry_stress_reject_prob);
+      }
+      if(s_memo_reject)
+      {
+         QM_BasketLogReject(req, "QM_BASKET_REJECTED_STRESS",
+                            StringFormat("stress_reject_prob=%.4f", g_qm_entry_stress_reject_prob));
+         return false;
+      }
    }
 
    const double entry_price = QM_BasketResolvePrice(req);

@@ -549,29 +549,17 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const datetime broker_time = TimeCurrent();
    for(int i = 0; i < planned; ++i)
      {
+      // WP-9 (2026-07-25): the per-member "entry_reject" preflight draw was
+      // removed here. QM_BasketOpenPosition now draws the Q06/Q07 stress
+      // rejection ONCE per basket transaction (memoized on (ea_id, tick)),
+      // so a second per-member draw at this site stacked the rejection to
+      // 0.9^3 = 72.9% accept for a two-member package instead of the intended
+      // single-draw 90%. The news gate below stays as the pre-open all-or-
+      // nothing safety check; the header hook is now the only stress rail.
       if(!Strategy069_NewsAllowsMember(
             requests[i].symbol,
             broker_time))
          return false;
-
-      // QM_BasketOrder predates QM_Entry's Q06 rejection rail. Mirror the
-      // central seeded rejection before any leg is opened so a stress drop
-      // cannot leave an unintended half-basket.
-      if(qm_stress_reject_probability > 0.0 &&
-         QM_RandBoolTagged("entry_reject",
-                           qm_stress_reject_probability))
-        {
-         QM_LogEvent(
-            QM_WARN,
-            "BASKET_ORDER_REJECTED",
-            StringFormat(
-               "{\"result\":\"QM_BASKET_REJECTED_STRESS\",\"host_symbol\":\"%s\",\"symbol\":\"%s\",\"reason\":\"%s\",\"symbol_slot\":%d}",
-               QM_LoggerEscapeJson(_Symbol),
-               QM_LoggerEscapeJson(requests[i].symbol),
-               QM_LoggerEscapeJson(requests[i].reason),
-               requests[i].symbol_slot));
-         return false;
-        }
      }
 
    ulong opened_tickets[STR069_MEMBER_COUNT] = {0, 0};
