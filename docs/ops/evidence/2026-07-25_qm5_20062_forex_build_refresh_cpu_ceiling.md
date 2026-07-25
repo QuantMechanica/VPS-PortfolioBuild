@@ -64,6 +64,18 @@ The claim was released without changing the EA, rerunning compilation, creating
 a build-result artifact, or enqueueing Q02. This remains the highest-diversity
 approved forex build ready for the next genuinely available factory slot.
 
+## Capacity recheck at 19:15 UTC
+
+Farm process inspection showed no running T1-T10 pipeline terminals, so the
+pending build task was claimed transactionally before another single canonical
+smoke submission. The capacity resolver nevertheless returned
+`status=no_capacity` before launching MT5. This indicates reserved factory
+capacity not visible in the process-only scan, rather than an EA, history, or
+binary defect.
+
+The claim was released immediately. No tester process or Q02 work item was
+created, and the one-pass build artifact remains unchanged.
+
 ## Safety
 
 No T_Live path, AutoTrading setting, portfolio gate, or live manifest was
