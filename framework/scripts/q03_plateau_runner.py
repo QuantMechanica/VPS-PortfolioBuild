@@ -64,6 +64,7 @@ import math
 import os
 import re
 import socket
+import stat
 import subprocess
 import sys
 import time
@@ -77,6 +78,7 @@ from typing import Any, Iterator, Mapping, Sequence
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
+from framework.scripts._phase_utils import run_with_launch_fault_retry  # noqa: E402
 from framework.scripts.q05_stress_medium import (  # noqa: E402
     _normalize_expert,
     _parse_report_float,
@@ -1397,7 +1399,7 @@ def run_cell(
     )
     started_at = time.time()
     try:
-        proc = subprocess.run(
+        proc = run_with_launch_fault_retry(
             command,
             capture_output=True,
             text=True,
@@ -1643,10 +1645,19 @@ def _write_json_exclusive(path: Path, payload: Mapping[str, Any]) -> None:
             os.fsync(handle.fileno())
     except BaseException:
         try:
-            path.unlink()
+            _unlink_readonly_file(path)
         except OSError:
             pass
         raise
+
+
+def _unlink_readonly_file(path: Path) -> None:
+    """Delete an exact lock path even when Windows mapped mode 0444 to readonly."""
+    try:
+        path.unlink()
+    except PermissionError:
+        os.chmod(path, stat.S_IWRITE)
+        path.unlink()
 
 
 def _pid_is_alive(pid: int) -> bool:
@@ -1686,7 +1697,7 @@ def _acquire_execution_lock(out_dir: Path, contract: GridContract) -> tuple[Path
                 owner_pid = -1
             commit_exists = (out_dir / "plateau_pick.json").exists()
             if attempt == 0 and not commit_exists and same_host and not _pid_is_alive(owner_pid):
-                lock_path.unlink()
+                _unlink_readonly_file(lock_path)
                 continue
             raise ContractError("Q03 execution lock is already held")
     raise ContractError("could not acquire Q03 execution lock")
@@ -1696,7 +1707,7 @@ def _release_execution_lock(lock_path: Path, token: str) -> None:
     try:
         current = _read_json_object(lock_path, "Q03 execution lock")
         if current.get("token") == token:
-            lock_path.unlink()
+            _unlink_readonly_file(lock_path)
     except (ContractError, FileNotFoundError, OSError):
         pass
 

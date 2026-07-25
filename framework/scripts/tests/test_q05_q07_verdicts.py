@@ -879,6 +879,22 @@ class Q05Q07VerdictTests(unittest.TestCase):
         self.assertEqual(result["pf"], 1.07)
         self.assertEqual(result["trades"], 228)
 
+    @staticmethod
+    def _write_seed_report(report_path: Path, seed: int | None) -> None:
+        """Minimal MT5 report.htm carrying the effective qm_rng_seed input."""
+        report_path.parent.mkdir(parents=True, exist_ok=True)
+        seed_row = (
+            f"<tr><td colspan=10><b>qm_rng_seed={seed}</b></td></tr>"
+            if seed is not None else ""
+        )
+        report_path.write_text(
+            "<html><body><table>"
+            "<tr><td>Expert:</td><td><b>demo</b></td></tr>"
+            f"{seed_row}"
+            "</table></body></html>",
+            encoding="utf-8",
+        )
+
     def test_q07_recovers_existing_valid_seed_summary(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -889,6 +905,7 @@ class Q05Q07VerdictTests(unittest.TestCase):
                 "ExpertParameters=QM5_12772_demo_LOGICAL_D1_q06_stress_harsh_seed42.set\n",
                 encoding="utf-8",
             )
+            self._write_seed_report(raw_dir / "report.htm", 42)
             summary = run_dir / "summary.json"
             summary.write_text(
                 json.dumps({
@@ -938,6 +955,7 @@ class Q05Q07VerdictTests(unittest.TestCase):
                 "ExpertParameters=QM5_12772_demo_LOGICAL_D1_q06_stress_harsh_seed17.set\n",
                 encoding="utf-8",
             )
+            self._write_seed_report(raw_dir / "report.htm", 17)
             summary = run_dir / "summary.json"
             summary.write_text(
                 json.dumps({
@@ -984,6 +1002,8 @@ class Q05Q07VerdictTests(unittest.TestCase):
                 "ExpertParameters=QM5_13138_demo_q06_stress_harsh_seed42.set\n",
                 encoding="utf-8",
             )
+            # Effective seed establishes cleanly, but the EA identity is foreign.
+            self._write_seed_report(foreign_raw / "report.htm", 42)
             (foreign_run / "summary.json").write_text(
                 json.dumps({
                     "result": "PASS",
@@ -1003,6 +1023,8 @@ class Q05Q07VerdictTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
+            # Matching identity, but no report.htm: the effective seed cannot be
+            # established, so the run must be re-run rather than silently accepted.
             unproven_run = root / "QM5_12969" / "20260713_071015"
             unproven_raw = unproven_run / "raw" / "run_01"
             unproven_raw.mkdir(parents=True)
@@ -1039,6 +1061,105 @@ class Q05Q07VerdictTests(unittest.TestCase):
                 symbol="USDJPY.DWX",
                 period="M30",
                 terminal="T1",
+            )
+
+        self.assertEqual(recovered, {})
+
+    def test_q07_recovery_rejects_seed_label_laundering(self) -> None:
+        # QM5_10569 pattern: five set-files labeled 42/17/99/7/2026 whose reports
+        # all ran effective seed 42 (pre-1224d518b injector defect). Only the one
+        # genuine effective-42 slot may recover; 17/99/7/2026 must be re-run.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            labels = [42, 17, 99, 7, 2026]
+            for idx, label in enumerate(labels):
+                run_dir = root / "QM5_10569" / f"20260707_1500{idx:02d}"
+                raw_dir = run_dir / "raw" / "run_01"
+                raw_dir.mkdir(parents=True)
+                (raw_dir / "tester.ini").write_text(
+                    "ExpertParameters="
+                    f"QM5_10569_supertrend_XAUUSD.DWX_H4_q06_stress_harsh_seed{label}.set\n",
+                    encoding="utf-8",
+                )
+                # Effective seed is 42 for every run regardless of the filename label.
+                self._write_seed_report(raw_dir / "report.htm", 42)
+                (run_dir / "summary.json").write_text(
+                    json.dumps({
+                        "result": "PASS",
+                        "ea_id": 10569,
+                        "expert": r"QM\QM5_10569_supertrend",
+                        "symbol": "XAUUSD.DWX",
+                        "period": "H4",
+                        "terminal": "T7",
+                        "runs": [{
+                            "status": "OK",
+                            "report_canonical_path": str(raw_dir / "report.htm"),
+                            "profit_factor": 1.18,
+                            "drawdown": 14853.67,
+                            "total_trades": 242,
+                        }],
+                    }),
+                    encoding="utf-8",
+                )
+
+            recovered = q07._recover_existing_seed_results(
+                root,
+                labels,
+                latest_full_year=None,
+                full_history_from="2017.01.01",
+                ea_id=10569,
+                ea_expert=r"QM\QM5_10569_supertrend",
+                symbol="XAUUSD.DWX",
+                period="H4",
+                terminal="T7",
+            )
+
+        self.assertEqual(sorted(recovered), [42])
+        self.assertNotIn(17, recovered)
+        self.assertNotIn(2026, recovered)
+
+    def test_q07_recovery_rejects_unestablished_effective_seed(self) -> None:
+        # Matching identity and a valid summary, but the report carries no
+        # qm_rng_seed input, so the effective seed cannot be authenticated.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            run_dir = root / "QM5_12772" / "20260703_112954"
+            raw_dir = run_dir / "raw" / "run_01"
+            raw_dir.mkdir(parents=True)
+            (raw_dir / "tester.ini").write_text(
+                "ExpertParameters=QM5_12772_demo_LOGICAL_D1_q06_stress_harsh_seed42.set\n",
+                encoding="utf-8",
+            )
+            self._write_seed_report(raw_dir / "report.htm", None)
+            (run_dir / "summary.json").write_text(
+                json.dumps({
+                    "result": "PASS",
+                    "ea_id": 12772,
+                    "expert": r"QM\QM5_12772_demo",
+                    "symbol": "EURGBP.DWX",
+                    "period": "D1",
+                    "terminal": "T8",
+                    "runs": [{
+                        "status": "OK",
+                        "report_canonical_path": str(raw_dir / "report.htm"),
+                        "profit_factor": 1.01,
+                        "drawdown": 3343.50,
+                        "total_trades": 226,
+                    }],
+                }),
+                encoding="utf-8",
+            )
+
+            recovered = q07._recover_existing_seed_results(
+                root,
+                [42, 17, 99, 7, 2026],
+                latest_full_year=None,
+                full_history_from="2017.01.01",
+                ea_id=12772,
+                ea_expert=r"QM\QM5_12772_demo",
+                symbol="EURGBP.DWX",
+                period="D1",
+                terminal="T8",
             )
 
         self.assertEqual(recovered, {})

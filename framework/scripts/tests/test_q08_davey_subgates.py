@@ -1294,6 +1294,71 @@ class Q08DurableSleeveStreamTests(unittest.TestCase):
             self.assertIn('"event": "TRADE_CLOSED"', line)
             self.assertIn('"volume": 0.2', line)
 
+    def test_serialises_authoritative_set_when_common_copy_undercounts(self) -> None:
+        # WP-6 defect-4 (gate-repair 2026-07-25, Codex review wp2346): a PARTIAL Common\Files
+        # copy alongside a fuller authoritative in-memory set must NOT be copied verbatim.
+        # The undercount guard serialises the authoritative set so the durable stream count
+        # equals n_trades, and reports the true persisted row count (not len(raw_trades)
+        # unconditionally, and not the short common-copy count).
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            common_log = root / "common" / "77_NDX_DWX.jsonl"
+            common_log.parent.mkdir(parents=True)
+            # Volatile copy holds only 3 of the 5 authoritative trades (a truncated export).
+            partial = "".join(
+                json.dumps({"event": "TRADE_CLOSED", "time": i, "net": 1.0,
+                            "volume": 0.1, "notional": 1000.0, "symbol": "NDX.DWX"}) + "\n"
+                for i in range(3)
+            )
+            common_log.write_text(partial, encoding="utf-8")
+            authoritative = [
+                {"time": i, "net": 1.0, "profit": 1.0, "swap": 0.0, "commission": 0.0,
+                 "volume": 0.1, "notional": 1000.0, "symbol": "NDX.DWX"}
+                for i in range(5)
+            ]
+            with patch.object(aggregate, "DURABLE_STREAM_ROOT", root / "durable"), \
+                 patch.object(aggregate, "_common_q08_trade_log", return_value=common_log):
+                res = aggregate._persist_durable_sleeve_stream(77, "NDX.DWX", authoritative)
+            self.assertTrue(res["persisted"])
+            self.assertEqual(res["source"], "serialized_undercount_guard")
+            self.assertEqual(res["n"], 5)              # true persisted count (authoritative)
+            self.assertEqual(res["common_copy_n"], 3)  # the short volatile copy it rejected
+            written = Path(res["path"]).read_text(encoding="utf-8").strip().splitlines()
+            self.assertEqual(len(written), 5)          # durable stream matches n_trades
+
+    def test_serialises_authoritative_when_common_copy_is_equal_count_foreign(self) -> None:
+        # WP-6 defect-3 (round 2, 2026-07-25 Codex re-review): a volatile copy with the SAME
+        # row count but DIFFERENT trades (a foreign run) must NOT be copied verbatim — count
+        # equality is not identity. The identity guard detects the divergence and serialises
+        # the authoritative in-memory set instead, so the durable stream is the graded bytes.
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            common_log = root / "common" / "88_NDX_DWX.jsonl"
+            common_log.parent.mkdir(parents=True)
+            # Foreign volatile copy: 3 rows, but different times / symbols / P&L.
+            foreign = "".join(
+                json.dumps({"event": "TRADE_CLOSED", "time": 9000 + i, "net": -7.0,
+                            "volume": 0.9, "notional": 5000.0, "symbol": "WRONG.DWX"}) + "\n"
+                for i in range(3)
+            )
+            common_log.write_text(foreign, encoding="utf-8")
+            authoritative = [
+                {"time": i, "net": 1.0, "profit": 1.0, "swap": 0.0, "commission": 0.0,
+                 "volume": 0.1, "notional": 1000.0, "symbol": "NDX.DWX"}
+                for i in range(3)
+            ]
+            with patch.object(aggregate, "DURABLE_STREAM_ROOT", root / "durable"), \
+                 patch.object(aggregate, "_common_q08_trade_log", return_value=common_log):
+                res = aggregate._persist_durable_sleeve_stream(88, "NDX.DWX", authoritative)
+            self.assertTrue(res["persisted"])
+            self.assertEqual(res["source"], "serialized_foreign_content_guard")
+            self.assertEqual(res["n"], 3)               # authoritative count, not laundered
+            self.assertEqual(res["common_copy_n"], 3)   # the equal-count foreign copy it rejected
+            written = Path(res["path"]).read_text(encoding="utf-8")
+            # The durable stream carries the authoritative set, NOT the foreign volatile bytes.
+            self.assertIn('"symbol": "NDX.DWX"', written)
+            self.assertNotIn("WRONG.DWX", written)
+
     def test_skips_volume_less_report_fallback_trades(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)

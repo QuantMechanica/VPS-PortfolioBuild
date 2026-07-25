@@ -21,6 +21,7 @@ class Q04LatestFullYearPayloadTests(unittest.TestCase):
             setfile.parent.mkdir(parents=True)
             setfile.write_text("RISK_FIXED=1000\n", encoding="utf-8")
             item = {
+                "id": "wi-q04-slug",
                 "phase": "Q04",
                 "ea_id": "QM5_12110",
                 "symbol": "EURJPY.DWX",
@@ -35,6 +36,15 @@ class Q04LatestFullYearPayloadTests(unittest.TestCase):
         self.assertIsNotNone(cmd)
         assert cmd is not None
         self.assertEqual(cmd[cmd.index("--ea") + 1], ea_label)
+        self.assertEqual(
+            Path(cmd[cmd.index("--report-root") + 1]),
+            farmctl.PIPELINE_REPORT_ROOT,
+        )
+        self.assertEqual(
+            Path(cmd[cmd.index("--scratch-root") + 1]),
+            root / "reports",
+        )
+        self.assertEqual(cmd[cmd.index("--evidence-key") + 1], "wi-q04-slug")
 
     def test_q04_work_item_payload_can_clamp_latest_full_year(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -45,6 +55,7 @@ class Q04LatestFullYearPayloadTests(unittest.TestCase):
             )
             setfile.write_text("RISK_FIXED=1000\n", encoding="utf-8")
             item = {
+                "id": "wi-q04-clamp",
                 "phase": "Q04",
                 "ea_id": "QM5_12712",
                 "symbol": "QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1",

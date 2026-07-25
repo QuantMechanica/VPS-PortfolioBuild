@@ -23,6 +23,7 @@ import argparse
 import datetime as dt
 import hashlib
 import json
+import os
 import re
 import shutil
 import sys
@@ -48,7 +49,7 @@ else:
         sub_8_11_mc_shuffle_dd,
     )
 
-from framework.scripts._phase_utils import period_from_setfile
+from framework.scripts._phase_utils import period_from_setfile, run_with_launch_fault_retry
 from framework.scripts.q08_5_neighborhood_runner import (
     ENGINE_VERSION as NEIGHBORHOOD_ENGINE_VERSION,
     EVIDENCE_SCHEMA_VERSION as NEIGHBORHOOD_SCHEMA_VERSION,
@@ -568,6 +569,138 @@ def _common_q08_trade_log(ea_id: int, symbol: str) -> Path:
 DURABLE_STREAM_ROOT = Path(r"D:\QM\reports\portfolio\sleeve_streams")
 
 
+def _count_trade_closed_rows(path: Path) -> int:
+    """TRADE_CLOSED row count in a jsonl stream (-1 if the file cannot be read)."""
+    try:
+        count = 0
+        with path.open("r", encoding="utf-8", errors="replace") as fh:
+            for line in fh:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    row = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if row.get("event", "TRADE_CLOSED") == "TRADE_CLOSED":
+                    count += 1
+        return count
+    except OSError:
+        return -1
+
+
+_STREAM_IDENTITY_FIELDS = (
+    "time", "net", "profit", "swap", "commission", "volume", "notional", "symbol",
+)
+
+
+def _stream_matches_authoritative(common_log: Path, raw_trades: list[dict]) -> bool:
+    """True iff the volatile ``common_log`` rows ARE the authoritative in-memory set.
+
+    Equal row COUNT does not prove identity: a foreign run of the same length would be
+    laundered by a verbatim copy (WP-6 defect-3, 2026-07-25 Codex re-review). Compare, per
+    row and in order, the identity-bearing fields the authoritative in-memory trade
+    actually carries. The volatile stream is allowed to be RICHER (extra fields such as
+    entry_time / mae_acct — the very reason a verbatim copy is preferred), so a field
+    ABSENT (or None) in the in-memory trade is not a conflict; a field PRESENT but
+    DIFFERENT is. Any per-row divergence, row-count divergence, or unparseable / unreadable
+    row => not a match, and the caller serializes the authoritative set rather than copy
+    foreign bytes.
+    """
+    try:
+        rows: list[dict] = []
+        with common_log.open("r", encoding="utf-8", errors="replace") as fh:
+            for line in fh:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    row = json.loads(line)
+                except json.JSONDecodeError:
+                    return False
+                if row.get("event", "TRADE_CLOSED") != "TRADE_CLOSED":
+                    continue
+                rows.append(row)
+    except OSError:
+        return False
+    if len(rows) != len(raw_trades):
+        return False
+    for raw, row in zip(raw_trades, rows):
+        for field in _STREAM_IDENTITY_FIELDS:
+            if field not in raw:
+                continue
+            expected = raw.get(field)
+            if expected is None:
+                continue
+            actual = row.get(field)
+            if field == "symbol":
+                if str(actual) != str(expected):
+                    return False
+                continue
+            try:
+                if abs(float(actual) - float(expected)) > 1e-9:
+                    return False
+            except (TypeError, ValueError):
+                return False
+    return True
+
+
+def _atomic_replace_bytes(dst: Path, data: bytes) -> None:
+    """Write ``data`` to a temp sibling then os.replace into ``dst`` (atomic on same FS).
+
+    Gate-repair WP-6 defect-3 (2026-07-25): a crash mid-write must never leave a truncated
+    durable stream — that partial-write failure mode is exactly what stranded the Q09 sleeves.
+    """
+    tmp = dst.with_name(f"{dst.name}.persist.{os.getpid()}.tmp")
+    try:
+        tmp.write_bytes(data)
+        os.replace(tmp, dst)
+    finally:
+        try:
+            if tmp.exists():
+                tmp.unlink()
+        except OSError:
+            pass
+
+
+def _atomic_copyfile(src: Path, dst: Path) -> None:
+    """Copy ``src`` to a temp sibling of ``dst`` then os.replace into place (atomic)."""
+    tmp = dst.with_name(f"{dst.name}.persist.{os.getpid()}.tmp")
+    try:
+        shutil.copyfile(src, tmp)
+        os.replace(tmp, dst)
+    finally:
+        try:
+            if tmp.exists():
+                tmp.unlink()
+        except OSError:
+            pass
+
+
+def _serialize_trades_to_stream(dst: Path, raw_trades: list[dict], symbol: str) -> int:
+    """Write the authoritative in-memory trades to the durable store in builder format.
+
+    Caller guarantees every trade carries ``volume`` (checked before calling), so the
+    portfolio commission model is never fed volume-less rows. Returns the row count.
+    The write is atomic (temp file + os.replace) so a crash cannot truncate the stream.
+    """
+    lines = []
+    for t in raw_trades:
+        lines.append(json.dumps({
+            "event": "TRADE_CLOSED",
+            "time": int(t.get("time") or 0),
+            "net": float(t.get("net") or 0.0),
+            "profit": float(t.get("profit") or 0.0),
+            "swap": float(t.get("swap") or 0.0),
+            "commission": float(t.get("commission") or 0.0),
+            "volume": float(t.get("volume") or 0.0),
+            "notional": t.get("notional"),
+            "symbol": t.get("symbol") or symbol,
+        }))
+    _atomic_replace_bytes(dst, ("\n".join(lines) + "\n").encode("utf-8"))
+    return len(lines)
+
+
 def _persist_durable_sleeve_stream(ea_id: int, symbol: str,
                                    raw_trades: list[dict],
                                    common_log_override: "Path | None" = None) -> dict:
@@ -597,42 +730,66 @@ def _persist_durable_sleeve_stream(ea_id: int, symbol: str,
 
     def _mirror_host_copy() -> None:
         if host_dst is not None:
-            shutil.copyfile(dst, host_dst)
+            _atomic_copyfile(dst, host_dst)
 
     if not raw_trades:
         return {"persisted": False, "reason": "no_trades", "n": 0}
+    raw_n = len(raw_trades)
+    all_have_volume = all("volume" in t for t in raw_trades)
     try:
         dst.parent.mkdir(parents=True, exist_ok=True)
         common_log = common_log_override or _common_q08_trade_log(ea_id, symbol)
         if common_log.exists() and common_log.stat().st_size > 0:
-            shutil.copyfile(common_log, dst)
-            _mirror_host_copy()
-            return {"persisted": True, "source": "common_copy",
-                    "path": str(dst), "n": len(raw_trades),
-                    "host_copy": str(host_dst) if host_dst else None}
-        if all("volume" in t for t in raw_trades):
-            lines = []
-            for t in raw_trades:
-                lines.append(json.dumps({
-                    "event": "TRADE_CLOSED",
-                    "time": int(t.get("time") or 0),
-                    "net": float(t.get("net") or 0.0),
-                    "profit": float(t.get("profit") or 0.0),
-                    "swap": float(t.get("swap") or 0.0),
-                    "commission": float(t.get("commission") or 0.0),
-                    "volume": float(t.get("volume") or 0.0),
-                    "notional": t.get("notional"),
-                    "symbol": t.get("symbol") or symbol,
-                }))
-            dst.write_text("\n".join(lines) + "\n", encoding="utf-8")
+            # Root-cause guard (gate-repair WP-6, 2026-07-25; Codex review wp2346): the
+            # Common\Files stream is a volatile working area that sub-gate perturbation/fold
+            # runs and re-validation churn can leave holding only a PARTIAL (or over-written
+            # foreign) copy of the baseline trades. Copying a stream whose row count differs
+            # from the authoritative in-memory set — while the aggregate records the full
+            # baseline n_trades — is exactly what strands a Q08 passer at Q09 NEED_MORE_DATA.
+            # Round-2 identity guard (2026-07-25 Codex re-review, defect-3): count equality
+            # ALONE does not prove identity — a foreign run of the SAME length would be
+            # laundered by a verbatim copy. Rule: ONLY copy the live stream verbatim when its
+            # count EXACTLY matches the authoritative in-memory set AND its rows ARE that set
+            # (same run, intact — verbatim then preserves the richest original per-trade
+            # fields). On ANY count mismatch (under- OR over-count, unreadable) OR equal-count
+            # foreign content, serialize the authoritative in-memory trades instead when they
+            # carry volume, so the durable stream count == n_trades and the bytes are the
+            # graded set. WP-7 identity binding runs AFTER this in run_all and hashes the
+            # bytes THIS guard actually writes — the correct order.
+            copied_n = _count_trade_closed_rows(common_log)
+            if copied_n == raw_n and _stream_matches_authoritative(common_log, raw_trades):
+                _atomic_copyfile(common_log, dst)
+                _mirror_host_copy()
+                return {"persisted": True, "source": "common_copy",
+                        "path": str(dst), "n": copied_n,
+                        "host_copy": str(host_dst) if host_dst else None}
+            if all_have_volume:
+                serialized_n = _serialize_trades_to_stream(dst, raw_trades, symbol)
+                _mirror_host_copy()
+                if copied_n == raw_n:
+                    guard = "serialized_foreign_content_guard"
+                elif 0 <= copied_n < raw_n:
+                    guard = "serialized_undercount_guard"
+                else:
+                    guard = "serialized_count_mismatch_guard"
+                return {"persisted": True, "source": guard,
+                        "path": str(dst), "n": serialized_n, "common_copy_n": copied_n,
+                        "host_copy": str(host_dst) if host_dst else None}
+            # Count mismatch AND the in-memory trades are volume-less (HTML-report fallback):
+            # neither a verbatim copy nor a serialize can produce a faithful, volume-bearing
+            # durable stream, so refuse rather than persist a wrong-count or volume-less file.
+            return {"persisted": False, "reason": "report_fallback_no_volume",
+                    "n": raw_n, "common_copy_n": copied_n}
+        if all_have_volume:
+            serialized_n = _serialize_trades_to_stream(dst, raw_trades, symbol)
             _mirror_host_copy()
             return {"persisted": True, "source": "serialized",
-                    "path": str(dst), "n": len(lines),
+                    "path": str(dst), "n": serialized_n,
                     "host_copy": str(host_dst) if host_dst else None}
         return {"persisted": False, "reason": "report_fallback_no_volume",
-                "n": len(raw_trades)}
+                "n": raw_n}
     except OSError as exc:
-        return {"persisted": False, "reason": f"oserror:{exc}", "n": len(raw_trades)}
+        return {"persisted": False, "reason": f"oserror:{exc}", "n": raw_n}
 
 
 def _latest_structured_qm_log(ea_id: int, symbol: str, terminal: str | None = None) -> Path | None:
@@ -755,7 +912,14 @@ def _run_baseline_for_trades(ea_id: int, symbol: str, terminal: str | None,
     ]
     flags = 0x08000000 if sys.platform == "win32" else 0
     try:
-        p = _sp.run(args, capture_output=True, text=True, timeout=timeout_proc, creationflags=flags)
+        p = run_with_launch_fault_retry(
+            args,
+            runner=_sp.run,
+            capture_output=True,
+            text=True,
+            timeout=timeout_proc,
+            creationflags=flags,
+        )
         summary = _latest_baseline_summary(report_root, ea_id, wait_seconds=10,
                                            expected_symbol=test_symbol)
         out = {"exit_code": p.returncode, "expert": expert, "period": period,
@@ -796,22 +960,206 @@ def _latest_baseline_summary(report_root: Path, ea_id: int, wait_seconds: int = 
         time.sleep(1)
 
 
+def _artifact_identity(path: Path | str | None) -> dict:
+    if not path:
+        return {}
+    candidate = Path(str(path))
+    try:
+        if not candidate.is_file():
+            return {"path": str(candidate)}
+        digest = hashlib.sha256()
+        with candidate.open("rb") as handle:
+            for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                digest.update(chunk)
+        return {
+            "path": str(candidate),
+            "sha256": digest.hexdigest(),
+            "size_bytes": candidate.stat().st_size,
+        }
+    except OSError:
+        return {"path": str(candidate)}
+
+
 def _baseline_report_metadata(summary_path: Path) -> dict:
     try:
         data = json.loads(summary_path.read_text(encoding="utf-8-sig"))
     except (OSError, json.JSONDecodeError):
         return {"baseline_summary_path": str(summary_path)}
-    runs = data.get("runs") or []
-    run = runs[0] if runs else {}
+    runs = [row for row in (data.get("runs") or []) if isinstance(row, dict)]
+    run = next(
+        (row for row in reversed(runs) if str(row.get("status") or "").upper() == "OK"),
+        runs[-1] if runs else {},
+    )
     report_path = run.get("report_canonical_path") or run.get("report_source_path")
+    report_identity = _artifact_identity(report_path)
+    summary_identity = _artifact_identity(summary_path)
+    execution_identity = (
+        data.get("execution_identity")
+        if isinstance(data.get("execution_identity"), dict)
+        else {}
+    )
+    expert_binary = (
+        execution_identity.get("expert_binary")
+        if isinstance(execution_identity.get("expert_binary"), dict)
+        else {}
+    )
+    deployed_ex5 = (
+        expert_binary.get("deployed")
+        if isinstance(expert_binary.get("deployed"), dict)
+        else {}
+    )
+    setfile_identity = (
+        execution_identity.get("setfile")
+        if isinstance(execution_identity.get("setfile"), dict)
+        else {}
+    )
+    source_setfile = (
+        setfile_identity.get("source")
+        if isinstance(setfile_identity.get("source"), dict)
+        else {}
+    )
+    mq5_source = (
+        execution_identity.get("mq5_source")
+        if isinstance(execution_identity.get("mq5_source"), dict)
+        else {}
+    )
     return {
         "baseline_summary_path": str(summary_path),
+        "baseline_summary_sha256": summary_identity.get("sha256"),
         "baseline_result": data.get("result"),
         "baseline_reason_classes": data.get("reason_classes"),
         "baseline_report_path": report_path,
+        "baseline_report_sha256": (
+            run.get("report_sha256") or report_identity.get("sha256")
+        ),
+        "baseline_ex5_path": deployed_ex5.get("path"),
+        "baseline_ex5_sha256": deployed_ex5.get("sha256"),
+        "baseline_setfile_path": source_setfile.get("path"),
+        "baseline_setfile_sha256": source_setfile.get("sha256"),
+        "baseline_mq5_path": mq5_source.get("path"),
+        "baseline_mq5_sha256": mq5_source.get("sha256"),
         "baseline_total_trades": run.get("total_trades"),
         "baseline_profit_factor": run.get("profit_factor"),
     }
+
+
+def _bind_portfolio_stream_identity(
+    *,
+    ea_id: int,
+    symbol: str,
+    portfolio_stream: dict,
+    source_kind: str | None,
+    source_path: Path | None,
+    baseline_run: dict | None,
+) -> dict:
+    """Embed immutable stream/source/report identities into the Q08 aggregate.
+
+    The report hash is included only when a baseline report was actually
+    recorded for the run that produced the source stream. Older paths can lack
+    that artifact; those remain stream/source-bound and state the missing report
+    binding explicitly rather than claiming provenance the evidence cannot show.
+    """
+    bound = dict(portfolio_stream)
+    bound["identity_schema"] = "q08_portfolio_stream/v2"
+    stream_identity = _artifact_identity(bound.get("path"))
+    host_identity = _artifact_identity(bound.get("host_copy"))
+    source_identity = _artifact_identity(source_path)
+    report_identity = _artifact_identity(
+        baseline_run.get("baseline_report_path") if baseline_run else None
+    )
+    summary_identity = _artifact_identity(
+        baseline_run.get("baseline_summary_path") if baseline_run else None
+    )
+
+    bound["content_sha256"] = stream_identity.get("sha256")
+    bound["content_size_bytes"] = stream_identity.get("size_bytes")
+    bound["host_copy_sha256"] = host_identity.get("sha256")
+    bound["host_copy_size_bytes"] = host_identity.get("size_bytes")
+    bound["content_row_count"] = (
+        _count_trade_closed_rows(Path(str(bound["path"])))
+        if bound.get("path")
+        else None
+    )
+    bound["source_artifact_kind"] = source_kind
+    bound["source_artifact_path"] = (
+        str(source_path) if source_path is not None else None
+    )
+    bound["source_artifact_sha256"] = source_identity.get("sha256")
+    bound["source_artifact_size_bytes"] = source_identity.get("size_bytes")
+    bound["source_report_path"] = report_identity.get("path")
+    bound["source_report_sha256"] = (
+        (baseline_run or {}).get("baseline_report_sha256")
+        or report_identity.get("sha256")
+    )
+    bound["source_report_size_bytes"] = report_identity.get("size_bytes")
+    bound["source_summary_path"] = summary_identity.get("path")
+    bound["source_summary_sha256"] = (
+        (baseline_run or {}).get("baseline_summary_sha256")
+        or summary_identity.get("sha256")
+    )
+    bound["source_ex5_path"] = (baseline_run or {}).get("baseline_ex5_path")
+    bound["source_ex5_sha256"] = (baseline_run or {}).get("baseline_ex5_sha256")
+    bound["source_setfile_path"] = (baseline_run or {}).get("baseline_setfile_path")
+    bound["source_setfile_sha256"] = (baseline_run or {}).get(
+        "baseline_setfile_sha256"
+    )
+    bound["source_mq5_path"] = (baseline_run or {}).get("baseline_mq5_path")
+    bound["source_mq5_sha256"] = (baseline_run or {}).get("baseline_mq5_sha256")
+
+    if not bound.get("persisted"):
+        identity_status = "UNAVAILABLE_STREAM_NOT_PERSISTED"
+    elif not bound.get("content_sha256"):
+        identity_status = "UNAVAILABLE_STREAM_UNREADABLE"
+    elif (
+        bound.get("host_copy")
+        and bound.get("host_copy_sha256") != bound.get("content_sha256")
+    ):
+        identity_status = "INVALID_HOST_COPY_HASH_MISMATCH"
+    elif (
+        bound.get("source_report_sha256")
+        and bound.get("source_artifact_sha256")
+        and bound.get("source_ex5_sha256")
+        and bound.get("source_setfile_sha256")
+    ):
+        identity_status = "BOUND_STREAM_BUILD_SETFILE_SOURCE_AND_REPORT"
+    elif bound.get("source_report_sha256") and bound.get("source_artifact_sha256"):
+        identity_status = "BOUND_STREAM_SOURCE_AND_REPORT_BUILD_BINDING_UNAVAILABLE"
+    elif bound.get("source_artifact_sha256"):
+        identity_status = "BOUND_STREAM_AND_SOURCE_REPORT_UNAVAILABLE"
+    else:
+        identity_status = "BOUND_STREAM_ONLY_REPORT_UNAVAILABLE"
+    bound["identity_status"] = identity_status
+    bound["source_report_binding"] = (
+        "baseline_run_report"
+        if bound.get("source_report_sha256")
+        else (
+            "not_available_for_recorded_source"
+            if source_kind
+            else "source_artifact_unavailable"
+        )
+    )
+    identity_payload = {
+        "content_row_count": bound.get("content_row_count"),
+        "content_sha256": bound.get("content_sha256"),
+        "ea_id": int(ea_id),
+        "host_copy_sha256": bound.get("host_copy_sha256"),
+        "n": bound.get("n"),
+        "source_artifact_kind": source_kind,
+        "source_artifact_sha256": bound.get("source_artifact_sha256"),
+        "source_ex5_sha256": bound.get("source_ex5_sha256"),
+        "source_mq5_sha256": bound.get("source_mq5_sha256"),
+        "source_report_sha256": bound.get("source_report_sha256"),
+        "source_setfile_sha256": bound.get("source_setfile_sha256"),
+        "symbol": symbol,
+    }
+    bound["identity_sha256"] = (
+        hashlib.sha256(
+            json.dumps(identity_payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        ).hexdigest()
+        if bound.get("content_sha256")
+        else None
+    )
+    return bound
 
 
 def _float_or_none(value) -> float | None:
@@ -1189,6 +1537,8 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
         else symbol
     )
     trades = common.load_trades_from_log(log_path)
+    trade_source_kind: str | None = "input_log" if trades else None
+    trade_source_path: Path | None = log_path if trades else None
     equity_stream = common.load_equity_stream(log_path, symbol=equity_symbol)
     if not equity_stream:
         structured_log = _latest_structured_qm_log(ea_id, equity_symbol, terminal)
@@ -1231,6 +1581,9 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
             if retry_summary is not None:
                 baseline_run.update(_baseline_report_metadata(retry_summary))
         trades = common.load_trades_from_log(common_log)
+        if trades:
+            trade_source_kind = "fresh_baseline_common_stream"
+            trade_source_path = common_log
         equity_stream = common.load_equity_stream(
             common_log, symbol=equity_symbol
         ) or equity_stream
@@ -1238,6 +1591,9 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
         # the baseline, the EA used _Symbol (physical chart symbol) as its TRADE_CLOSED key.
         if not trades and host_log is not None:
             trades = common.load_trades_from_log(host_log)
+            if trades:
+                trade_source_kind = "basket_host_stream"
+                trade_source_path = host_log
             equity_stream = common.load_equity_stream(
                 host_log, symbol=equity_symbol
             ) or equity_stream
@@ -1251,13 +1607,25 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
             if baseline_run is not None:
                 baseline_run["structured_log_path"] = str(structured_log)
         if not trades and baseline_run and baseline_run.get("baseline_report_path"):
-            trades = common.load_trades_from_mt5_report(Path(str(baseline_run["baseline_report_path"])))
+            report_path = Path(str(baseline_run["baseline_report_path"]))
+            trades = common.load_trades_from_mt5_report(report_path)
+            if trades:
+                trade_source_kind = "baseline_mt5_report"
+                trade_source_path = report_path
 
     # Snapshot the per-trade list BEFORE worst-case commission mutates it; the durable
     # portfolio stream carries gross-of-worst-case net (the builder reapplies its own
     # commission model), matching the raw Common\Files stream format.
     raw_trades = [dict(t) for t in trades]
     portfolio_stream = _persist_durable_sleeve_stream(ea_id, symbol, raw_trades, host_log)
+    portfolio_stream = _bind_portfolio_stream_identity(
+        ea_id=ea_id,
+        symbol=symbol,
+        portfolio_stream=portfolio_stream,
+        source_kind=trade_source_kind,
+        source_path=trade_source_path,
+        baseline_run=baseline_run,
+    )
 
     trades, commission_info = _apply_worst_case_commission(trades, symbol)
 
@@ -1313,6 +1681,7 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
         sub_results, trades, commission_info.get("cost_cushion_tier"))
 
     aggregate = {
+        "evidence_schema": "q08_aggregate/v2",
         "ea_id": ea_id,
         "symbol": symbol,
         "phase": "Q08",

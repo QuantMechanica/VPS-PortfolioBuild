@@ -216,9 +216,10 @@ def _summary_identity_matches(
 
 def _summary_matches_run(
         summary_path: Path, *, started_at: float, ea_id: int,
-        ea_expert: str, symbol: str, period: str, terminal: str) -> bool:
+        ea_expert: str, symbol: str, period: str, terminal: str,
+        require_fresh: bool = True) -> bool:
     try:
-        if summary_path.stat().st_mtime < started_at:
+        if require_fresh and summary_path.stat().st_mtime < started_at:
             return False
     except OSError:
         return False
@@ -247,7 +248,7 @@ def _summary_from_run_smoke_output(
         if _summary_matches_run(
                 path, started_at=started_at, ea_id=ea_id,
                 ea_expert=ea_expert, symbol=symbol, period=period,
-                terminal=terminal):
+                terminal=terminal, require_fresh=False):
             return path
     return None
 

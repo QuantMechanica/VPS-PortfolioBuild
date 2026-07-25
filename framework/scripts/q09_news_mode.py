@@ -34,7 +34,8 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from framework.scripts._phase_utils import (ensure_dir, utc_now_iso, write_json,
-                                            resolve_ea_expert_path, period_from_setfile)
+                                            resolve_ea_expert_path, period_from_setfile,
+                                            run_with_launch_fault_retry)
 from framework.scripts.q05_stress_medium import (
     _parse_pf_dd_trades,
     _select_run_summary,
@@ -174,8 +175,13 @@ def main() -> int:
         creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
         started_at = time.time()
         try:
-            proc = subprocess.run(args_list, capture_output=True, text=True,
-                                  timeout=args.timeout_sec, creationflags=creationflags)
+            proc = run_with_launch_fault_retry(
+                args_list,
+                capture_output=True,
+                text=True,
+                timeout=args.timeout_sec,
+                creationflags=creationflags,
+            )
         except subprocess.TimeoutExpired:
             matrix_rows.append({"temporal": temporal, "tag": tag,
                                  "pf": None, "trades": 0, "status": "TIMEOUT"})

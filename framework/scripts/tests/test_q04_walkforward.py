@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import subprocess
 import tempfile
 import unittest
@@ -40,6 +41,33 @@ class Q04CommissionFallbackTests(unittest.TestCase):
 
 
 class Q04WalkForwardTests(unittest.TestCase):
+    @staticmethod
+    def _prepare_fold_preflight(
+        root: Path,
+        *,
+        expert: str,
+        terminal: str,
+        symbol: str,
+        year: int = 2023,
+    ) -> tuple[Path, Path]:
+        expert_leaf = expert.replace("/", "\\").split("\\")[-1]
+        ea_dir = root / "framework" / "EAs" / expert_leaf
+        ea_dir.mkdir(parents=True, exist_ok=True)
+        (ea_dir / f"{expert_leaf}.ex5").write_bytes(b"compiled")
+        mt5_root = root / "mt5"
+        history = (
+            mt5_root
+            / terminal
+            / "Bases"
+            / "Custom"
+            / "history"
+            / symbol
+            / f"{year}.hcc"
+        )
+        history.parent.mkdir(parents=True, exist_ok=True)
+        history.write_bytes(b"warm")
+        return root, mt5_root
+
     def test_period_inference_accepts_non_backtest_set_suffix(self) -> None:
         mod = _load_module()
 
@@ -182,6 +210,12 @@ class Q04WalkForwardTests(unittest.TestCase):
             summary = root / "summary.json"
             summary.write_text("{}", encoding="utf-8")
             captured = {}
+            repo_root, mt5_root = self._prepare_fold_preflight(
+                root,
+                expert=r"QM\QM5_1001_test",
+                terminal="T6",
+                symbol="EURUSD.DWX",
+            )
 
             def fake_run(args, **kwargs):
                 captured["args"] = args
@@ -205,6 +239,8 @@ class Q04WalkForwardTests(unittest.TestCase):
                     terminal="T6",
                     period="H1",
                     timeout_sec=60,
+                    repo_root=repo_root,
+                    mt5_root=mt5_root,
                 )
 
             args = captured["args"]
@@ -212,7 +248,14 @@ class Q04WalkForwardTests(unittest.TestCase):
             self.assertIn("-AllowMissingRealTicksLogMarker", args)
             self.assertEqual(args[args.index("-FromDate") + 1], "2023.01.01")
             self.assertEqual(args[args.index("-ToDate") + 1], "2023.12.31")
-            self.assertEqual(result["summary_path"], str(summary))
+            self.assertEqual(result["source_summary_path"], str(summary))
+            self.assertTrue(Path(result["summary_path"]).is_file())
+            self.assertEqual(
+                json.loads(Path(result["summary_path"]).read_text(encoding="utf-8"))[
+                    "verdict_reason"
+                ],
+                "STRATEGY_ZERO_TRADES",
+            )
             self.assertTrue(Path(result["log_path"]).exists())
 
     def test_run_fold_retries_windows_launch_fault_before_grading(self) -> None:
@@ -224,6 +267,12 @@ class Q04WalkForwardTests(unittest.TestCase):
             summary = root / "summary.json"
             summary.write_text("{}", encoding="utf-8")
             calls = []
+            repo_root, mt5_root = self._prepare_fold_preflight(
+                root,
+                expert=r"QM\QM5_12728_test",
+                terminal="T6",
+                symbol="USDJPY.DWX",
+            )
 
             def fake_run(args, **kwargs):
                 calls.append(args)
@@ -250,11 +299,14 @@ class Q04WalkForwardTests(unittest.TestCase):
                     terminal="T6",
                     period="D1",
                     timeout_sec=60,
+                    repo_root=repo_root,
+                    mt5_root=mt5_root,
                 )
 
             self.assertEqual(len(calls), 2)
             sleep_mock.assert_called_once()
-            self.assertEqual(result["summary_path"], str(summary))
+            self.assertEqual(result["source_summary_path"], str(summary))
+            self.assertTrue(Path(result["summary_path"]).is_file())
             self.assertIn("launch_fault_retry", Path(result["log_path"]).read_text(encoding="utf-8"))
 
     def test_run_fold_passes_basket_manifest_tester_overrides(self) -> None:
@@ -273,6 +325,12 @@ class Q04WalkForwardTests(unittest.TestCase):
             summary = root / "summary.json"
             summary.write_text("{}", encoding="utf-8")
             captured = {}
+            repo_root, mt5_root = self._prepare_fold_preflight(
+                root,
+                expert=r"QM\QM5_12533_test",
+                terminal="T10",
+                symbol="EURJPY.DWX",
+            )
 
             def fake_run(args, **kwargs):
                 captured["args"] = args
@@ -296,6 +354,8 @@ class Q04WalkForwardTests(unittest.TestCase):
                     terminal="T10",
                     period="D1",
                     timeout_sec=60,
+                    repo_root=repo_root,
+                    mt5_root=mt5_root,
                 )
 
             args = captured["args"]

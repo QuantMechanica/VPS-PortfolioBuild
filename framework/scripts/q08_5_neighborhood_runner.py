@@ -46,7 +46,7 @@ from typing import Any
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from framework.scripts._phase_utils import period_from_setfile
+from framework.scripts._phase_utils import period_from_setfile, run_with_launch_fault_retry
 from framework.scripts.q05_stress_medium import summary_invalid_reason
 
 # Wrapper must outlive the tester budget, or a run finishing at the buzzer
@@ -455,9 +455,10 @@ def _normalize_expert(expert: str | None) -> str:
 
 def _summary_matches_invocation(
         summary_path: Path, *, started_at: float, ea_id: int, ea_expert: str,
-        symbol: str, period: str, terminal: str) -> bool:
+        symbol: str, period: str, terminal: str,
+        require_fresh: bool = True) -> bool:
     try:
-        if summary_path.stat().st_mtime < started_at:
+        if require_fresh and summary_path.stat().st_mtime < started_at:
             return False
         data = json.loads(summary_path.read_text(encoding="utf-8-sig"))
         summary_ea_id = int(data.get("ea_id"))
@@ -510,7 +511,8 @@ def _summary_from_run_smoke_output(
         path = Path(match.group("path").strip().strip('"'))
         if _summary_matches_invocation(
                 path, started_at=started_at, ea_id=ea_id, ea_expert=ea_expert,
-                symbol=symbol, period=period, terminal=terminal):
+                symbol=symbol, period=period, terminal=terminal,
+                require_fresh=False):
             return path
     return None
 
@@ -569,7 +571,7 @@ def fire_backtest_details(*, ea_id: int, ea_expert: str, symbol: str,
     return_code: int | None = None
     timed_out = False
     try:
-        proc = subprocess.run(
+        proc = run_with_launch_fault_retry(
             args, capture_output=True, text=True,
             timeout=timeout_sec + RUNNER_HEADROOM_SEC,
             creationflags=creationflags,

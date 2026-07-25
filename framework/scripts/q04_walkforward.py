@@ -26,7 +26,9 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import hashlib
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -35,7 +37,7 @@ from pathlib import Path
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from framework.scripts._phase_utils import ensure_dir, run_with_launch_fault_retry, utc_now_iso, write_json
+from framework.scripts._phase_utils import ensure_dir, run_with_launch_fault_retry, utc_now_iso
 
 GATE_NAME = "Q04"
 # DL-082 §2 (OWNER-ratified 2026-07-19): the Q04 cost input is now the per-symbol,
@@ -115,6 +117,162 @@ FOLDS = [
     {"id": "F3", "dev_start": "2017-01-01", "dev_end": "2024-12-31",
      "oos_start": "2025-01-01", "oos_end": "2025-12-31"},
 ]
+
+
+def sha256_file(path: Path) -> str | None:
+    try:
+        digest = hashlib.sha256()
+        with Path(path).open("rb") as handle:
+            for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                digest.update(chunk)
+        return digest.hexdigest()
+    except OSError:
+        return None
+
+
+def _safe_path_component(value: str, fallback: str) -> str:
+    cleaned = re.sub(r"[^A-Za-z0-9_.-]+", "_", str(value or "").strip()).strip("._")
+    return cleaned or fallback
+
+
+def q04_evidence_leaf(symbol: str, evidence_key: str) -> str:
+    """Unique one-level Q04 leaf compatible with the existing aggregate ingester."""
+    return (
+        f"{_safe_path_component(symbol, 'UNKNOWN_SYMBOL')}"
+        f"__{_safe_path_component(evidence_key, 'UNKNOWN_EVIDENCE')}"
+    )
+
+
+def _write_json_atomic(path: Path, data: dict) -> None:
+    """Publish JSON atomically so a reader never observes a partial verdict."""
+    ensure_dir(path.parent)
+    temp = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+    try:
+        with temp.open("w", encoding="utf-8", newline="\n") as handle:
+            json.dump(data, handle, indent=2, sort_keys=True)
+            handle.write("\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temp, path)
+    finally:
+        try:
+            if temp.exists():
+                temp.unlink()
+        except OSError:
+            pass
+
+
+def _resolved_ex5(repo_root: Path, ea_expert: str) -> Path | None:
+    expert_leaf = re.split(r"[\\/]+", str(ea_expert or "").strip())[-1]
+    if not expert_leaf or expert_leaf in {".", ".."}:
+        return None
+    candidate = Path(repo_root) / "framework" / "EAs" / expert_leaf / f"{expert_leaf}.ex5"
+    try:
+        return candidate.resolve() if candidate.is_file() and candidate.stat().st_size > 0 else None
+    except OSError:
+        return None
+
+
+def _basket_history_symbols(setfile: Path, runner_symbol: str) -> list[str]:
+    symbols = [str(runner_symbol).strip()]
+    manifest = None
+    for candidate in (
+        Path(setfile).parent / "basket_manifest.json",
+        Path(setfile).parent.parent / "basket_manifest.json",
+    ):
+        try:
+            if candidate.is_file():
+                loaded = json.loads(candidate.read_text(encoding="utf-8-sig"))
+                if isinstance(loaded, dict):
+                    manifest = loaded
+                    break
+        except (OSError, json.JSONDecodeError):
+            continue
+    if manifest:
+        host = str(manifest.get("host_symbol") or "").strip()
+        if host and not host.startswith("_"):
+            symbols.append(host)
+        basket = manifest.get("basket_symbols")
+        if isinstance(basket, list):
+            symbols.extend(str(value).strip() for value in basket)
+    unique: list[str] = []
+    seen: set[str] = set()
+    for symbol in symbols:
+        key = symbol.casefold()
+        if not symbol or key in seen:
+            continue
+        seen.add(key)
+        unique.append(symbol)
+    return unique
+
+
+def _fold_preflight(
+    *,
+    repo_root: Path,
+    mt5_root: Path,
+    terminal: str,
+    ea_expert: str,
+    setfile: Path,
+    symbol: str,
+    fold: dict,
+) -> tuple[str | None, dict]:
+    """Read-only preflight for the exact binary and OOS source-history years."""
+    source_set = Path(setfile)
+    try:
+        if not source_set.is_file() or source_set.stat().st_size <= 0:
+            return "SETFILE_NOT_RESOLVED", {"setfile_path": str(source_set)}
+    except OSError:
+        return "SETFILE_NOT_RESOLVED", {"setfile_path": str(source_set)}
+
+    ex5 = _resolved_ex5(repo_root, ea_expert)
+    if ex5 is None:
+        expert_leaf = re.split(r"[\\/]+", str(ea_expert or "").strip())[-1]
+        return "EX5_NOT_RESOLVED", {
+            "ea_expert": ea_expert,
+            "expected_ex5_path": str(
+                Path(repo_root)
+                / "framework"
+                / "EAs"
+                / expert_leaf
+                / f"{expert_leaf}.ex5"
+            ),
+        }
+
+    first_year = int(str(fold["oos_start"])[:4])
+    last_year = int(str(fold["oos_end"])[:4])
+    history_paths: list[str] = []
+    missing: list[str] = []
+    for history_symbol in _basket_history_symbols(source_set, symbol):
+        for year in range(first_year, last_year + 1):
+            hcc = (
+                Path(mt5_root)
+                / str(terminal)
+                / "Bases"
+                / "Custom"
+                / "history"
+                / history_symbol
+                / f"{year}.hcc"
+            )
+            try:
+                if not hcc.is_file() or hcc.stat().st_size <= 0:
+                    missing.append(str(hcc))
+                else:
+                    history_paths.append(str(hcc))
+            except OSError:
+                missing.append(str(hcc))
+    evidence = {
+        "ex5_path": str(ex5),
+        "ex5_sha256": sha256_file(ex5),
+        "setfile_path": str(source_set.resolve()),
+        "setfile_sha256": sha256_file(source_set),
+        "history_paths": history_paths,
+        "history_years": [first_year, last_year],
+        "history_symbols": _basket_history_symbols(source_set, symbol),
+    }
+    if missing:
+        evidence["missing_history_paths"] = missing
+        return "OOS_HISTORY_NOT_WARM", evidence
+    return None, evidence
 
 
 def folds_for_year(latest_full_year: int = 2025) -> list[dict]:
@@ -577,7 +735,8 @@ def _mt5_date(iso_date: str) -> str:
 
 def _summary_from_log(log_path: Path) -> Path | None:
     try:
-        for line in log_path.read_text(encoding="utf-8", errors="replace").splitlines():
+        lines = log_path.read_text(encoding="utf-8", errors="replace").splitlines()
+        for line in reversed(lines):
             if line.startswith("run_smoke.summary="):
                 candidate = Path(line.partition("=")[2].strip())
                 if candidate.exists():
@@ -587,143 +746,304 @@ def _summary_from_log(log_path: Path) -> Path | None:
     return None
 
 
+def _run_smoke_report_identity(summary_path: Path | None) -> dict:
+    if summary_path is None or not summary_path.is_file():
+        return {}
+    summary = _load_summary(summary_path)
+    if not isinstance(summary, dict):
+        return {}
+    runs = [row for row in (summary.get("runs") or []) if isinstance(row, dict)]
+    selected = next(
+        (row for row in reversed(runs) if str(row.get("status") or "").upper() == "OK"),
+        runs[-1] if runs else None,
+    )
+    evidence = {
+        "source_summary_path": str(summary_path),
+        "source_summary_sha256": sha256_file(summary_path),
+    }
+    if selected:
+        report_raw = selected.get("report_canonical_path") or selected.get("report_source_path")
+        if report_raw:
+            report_path = Path(str(report_raw))
+            evidence["source_report_path"] = str(report_path)
+            evidence["source_report_sha256"] = (
+                str(selected.get("report_sha256"))
+                if selected.get("report_sha256")
+                else sha256_file(report_path)
+            )
+    return evidence
+
+
+def _write_fold_summary(evidence_dir: Path, result: dict) -> dict:
+    """Write the deterministic, classifiable record for every fold outcome."""
+    summary_path = Path(evidence_dir) / "folds" / str(result["id"]) / "summary.json"
+    result["summary_path"] = str(summary_path)
+    durable = {
+        "evidence_schema": "q04_fold/v2",
+        "phase": GATE_NAME,
+        **{key: value for key, value in result.items() if key != "oos_nets"},
+    }
+    _write_json_atomic(summary_path, durable)
+    return result
+
+
+def _fold_failure(
+    *,
+    evidence_dir: Path,
+    fold: dict,
+    reason: str,
+    log_path: Path,
+    preflight: dict | None = None,
+    exit_code: int | None = None,
+) -> dict:
+    return _write_fold_summary(
+        evidence_dir,
+        {
+            **fold,
+            "pf_net": None,
+            "trades": 0,
+            "sim_commission_total": None,
+            "gross_total": None,
+            "commission_basis": None,
+            "report_pf": None,
+            "report_trades": 0,
+            "report_guard_reason": None,
+            "oos_nets": [],
+            "status": "INVALID",
+            "verdict_reason": reason,
+            "invalid_reason": reason,
+            "exit_code": exit_code,
+            "log_path": str(log_path),
+            "preflight": preflight or {},
+        },
+    )
+
+
 def run_fold_via_smoke(*, ea_id: int, ea_expert: str, symbol: str,
                         setfile: Path, fold: dict, report_root: Path,
                         terminal: str, period: str, timeout_sec: int = 1800,
-                        cost_variant: str = DEFAULT_COST_VARIANT) -> dict:
-    """Invoke run_smoke.ps1 for a single OOS fold. Returns fold-result dict.
+                        cost_variant: str = DEFAULT_COST_VARIANT,
+                        scratch_root: Path | None = None,
+                        evidence_dir: Path | None = None,
+                        repo_root: Path | None = None,
+                        mt5_root: Path = Path("D:/QM/mt5")) -> dict:
+    """Invoke run_smoke for one OOS fold and always publish its durable summary.
 
-    Bridges to the existing MT5 tester harness — the runner doesn't
-    re-implement tester glue. The fold window is encoded in the OOS year
-    range; run_smoke handles tester ini generation per-year.
+    ``report_root`` is the durable evidence root. Tester reports, logs, and the
+    injected setfile stay below ``scratch_root`` (the work-item directory in
+    factory dispatch). The read-only binary/history preflight runs before every
+    fold and never imports or mutates custom-symbol history.
     """
     import subprocess
+
     oos_year = int(fold["oos_end"][:4])
     run_id = f"q04_{fold['id']}_{oos_year}"
-
-    repo_root = Path(__file__).resolve().parents[2]
-    run_smoke_ps1 = repo_root / "framework" / "scripts" / "run_smoke.ps1"
-
-    # Inject the EA-side simulated commission into a fold-local setfile copy. The tester
-    # cannot commission custom .DWX symbols; the EA self-accounts InpQMSimCommissionPerLot
-    # and writes PF-net to Common\Files (read back below).
-    fold_dir = report_root / f"QM5_{ea_id}" / "Q04" / fold["id"]
-    fold_dir.mkdir(parents=True, exist_ok=True)
-    fold_set = fold_dir / f"{Path(setfile).stem}_q04comm.set"
-    base_text = Path(setfile).read_text(encoding="utf-8", errors="ignore") if Path(setfile).exists() else ""
-    sim_comm_per_lot = _ea_side_sim_commission_per_lot(symbol, cost_variant)
-    if "InpQMSimCommissionPerLot" not in base_text:
-        base_text = base_text.rstrip("\r\n") + f"\r\nInpQMSimCommissionPerLot={sim_comm_per_lot}\r\n"
-    fold_set.write_text(base_text, encoding="utf-8")
-    tester_currency, tester_deposit = _basket_tester_overrides(Path(setfile))
-
-    # Clear any stale EA result + per-trade stream before this fold (folds run
-    # sequentially per ea/symbol) so the post-hoc stream read picks up ONLY this
-    # fold's trades. Q08 regenerates the stream from its own full-history baseline.
-    for stale in (_q04_sim_result_path(ea_id, symbol), _q08_trade_stream_path(ea_id, symbol)):
-        try:
-            if stale.exists():
-                stale.unlink()
-        except OSError:
-            pass
-
-    args = [
-        "pwsh.exe", "-NoProfile", "-File", str(run_smoke_ps1),
-        "-EAId", str(ea_id),
-        "-Expert", ea_expert,
-        "-Symbol", symbol,
-        "-Year", str(oos_year),
-        "-Terminal", terminal,
-        "-Period", period,
-        "-DispatchSubGateHash", run_id,
-        "-DispatchPhase", "Q04",
-        "-DispatchVersion", "q04_walkforward",
-        "-Runs", "1",
-        "-MinTrades", "5",
-        "-Model", "4",
-        "-SetFile", str(fold_set),
-        "-ReportRoot", str(report_root),
-        "-TimeoutSeconds", str(timeout_sec),
-        "-FromDate", _mt5_date(fold["oos_start"]),
-        "-ToDate", _mt5_date(fold["oos_end"]),
-        "-AllowRunningTerminal",
-        "-AllowMissingRealTicksLogMarker",
-    ]
-    if tester_currency:
-        args.extend(["-TesterCurrencyOverride", tester_currency])
-    if tester_deposit:
-        args.extend(["-TesterDepositOverride", str(tester_deposit)])
-    creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
-    log_path = fold_dir / "run_smoke.log"
-    try:
-        with log_path.open("w", encoding="utf-8") as log:
-            proc = run_with_launch_fault_retry(
-                args,
-                runner=subprocess.run,
-                stdout=log,
-                stderr=subprocess.STDOUT,
-                text=True,
-                timeout=timeout_sec,
-                creationflags=creationflags,
-            )
-    except subprocess.TimeoutExpired:
-        return {**fold, "pf_net": None, "trades": 0, "status": "TIMEOUT",
-                "summary_path": None, "invalid_reason": "timeout", "log_path": str(log_path)}
-
-    summary_path = _summary_from_log(log_path) or report_root / f"QM5_{ea_id}" / "Q04" / fold["id"] / "summary.json"
-    invalid_reason = summary_invalid_reason(summary_path) if summary_path.exists() else None
-    report_pf, report_trades = parse_pf_from_report_summary(summary_path) if summary_path.exists() else (None, 0)
-
-    # DL-082 §2: grade from the per-symbol venue model applied post-hoc to the per-trade
-    # stream this fold just emitted (preferred), under the active cost variant. Fall back to
-    # the EA's self-report (now graded at the per-SYMBOL venue flat rate) only when the
-    # stream is unavailable (older EA / stream skipped).
-    pf_net, trades, comm_total, gross_total, oos_nets = pf_net_from_stream(
-        ea_id, symbol, fold, cost_variant)
-    commission_basis = f"venue_{cost_variant}_stream"
-    if pf_net is None:
-        pf_net, trades, comm_total = read_pf_net_from_ea(ea_id, symbol)
-        gross_total = None
-        oos_nets = []  # per-symbol flat fallback has no per-trade stream → no low-freq pooling
-        commission_basis = f"venue_{cost_variant}_ea_side_flat"
-
-    pf_net, trades, commission_basis, report_guard_reason = guard_pf_net_against_report_summary(
-        pf_net=pf_net,
-        trades=trades,
-        commission_basis=commission_basis,
-        report_pf=report_pf,
-        report_trades=report_trades,
+    actual_repo_root = Path(repo_root) if repo_root is not None else Path(__file__).resolve().parents[2]
+    durable_dir = (
+        Path(evidence_dir)
+        if evidence_dir is not None
+        else Path(report_root) / f"QM5_{ea_id}" / "Q04" / _safe_path_component(symbol, "UNKNOWN_SYMBOL")
     )
-    if report_guard_reason:
-        comm_total = None
-        gross_total = None
-        oos_nets = []
-    # G8 (2026-07-06 audit): both net-evidence channels lost (Common stream +
-    # EA self-report) while the report proves the fold ran AND traded — that
-    # is infra (volatile-dir churn), not a strategy result. INVALID → re-run,
-    # never FAIL.
-    if not invalid_reason and pf_net is None and (report_trades or 0) > 0:
-        invalid_reason = "stream_and_selfreport_missing"
-    status = "INVALID" if invalid_reason else ("OK" if (pf_net is not None and proc.returncode == 0) else "FAIL")
-    return {
-        **fold,
-        "pf_net": pf_net,
-        "trades": trades,
-        "sim_commission_total": comm_total,
-        "gross_total": gross_total,
-        "cost_variant": cost_variant,
-        "commission_per_lot_used": sim_comm_per_lot,
-        "commission_basis": commission_basis,
-        "report_pf": report_pf,
-        "report_trades": report_trades,
-        "report_guard_reason": report_guard_reason,
-        "oos_nets": oos_nets,
-        "status": status,
-        "summary_path": str(summary_path) if summary_path.exists() else None,
-        "invalid_reason": invalid_reason,
-        "exit_code": proc.returncode,
-        "log_path": str(log_path),
-    }
+    scratch = Path(scratch_root) if scratch_root is not None else Path(report_root)
+    fold_dir = (
+        scratch
+        / f"QM5_{ea_id}"
+        / "Q04"
+        / _safe_path_component(durable_dir.name, "evidence")
+        / str(fold["id"])
+    )
+    fold_dir.mkdir(parents=True, exist_ok=True)
+    log_path = fold_dir / "run_smoke.log"
+
+    preflight_reason, preflight = _fold_preflight(
+        repo_root=actual_repo_root,
+        mt5_root=Path(mt5_root),
+        terminal=terminal,
+        ea_expert=ea_expert,
+        setfile=Path(setfile),
+        symbol=symbol,
+        fold=fold,
+    )
+    if preflight_reason:
+        return _fold_failure(
+            evidence_dir=durable_dir,
+            fold=fold,
+            reason=preflight_reason,
+            log_path=log_path,
+            preflight=preflight,
+        )
+
+    try:
+        run_smoke_ps1 = actual_repo_root / "framework" / "scripts" / "run_smoke.ps1"
+        # Inject the EA-side simulated commission into a scratch-local copy.
+        fold_set = fold_dir / f"{Path(setfile).stem}_q04comm.set"
+        base_text = Path(setfile).read_text(encoding="utf-8", errors="ignore")
+        sim_comm_per_lot = _ea_side_sim_commission_per_lot(symbol, cost_variant)
+        if "InpQMSimCommissionPerLot" not in base_text:
+            base_text = (
+                base_text.rstrip("\r\n")
+                + f"\r\nInpQMSimCommissionPerLot={sim_comm_per_lot}\r\n"
+            )
+        fold_set.write_text(base_text, encoding="utf-8")
+        tester_currency, tester_deposit = _basket_tester_overrides(Path(setfile))
+
+        # Clear only the fold's volatile Common outputs. No .DWX history import
+        # or history mutation is performed by this runner.
+        for stale in (
+            _q04_sim_result_path(ea_id, symbol),
+            _q08_trade_stream_path(ea_id, symbol),
+        ):
+            try:
+                if stale.exists():
+                    stale.unlink()
+            except OSError:
+                pass
+
+        args = [
+            "pwsh.exe", "-NoProfile", "-File", str(run_smoke_ps1),
+            "-EAId", str(ea_id),
+            "-Expert", ea_expert,
+            "-Symbol", symbol,
+            "-Year", str(oos_year),
+            "-Terminal", terminal,
+            "-Period", period,
+            "-DispatchSubGateHash", run_id,
+            "-DispatchPhase", "Q04",
+            "-DispatchVersion", "q04_walkforward",
+            "-Runs", "1",
+            "-MinTrades", "5",
+            "-Model", "4",
+            "-SetFile", str(fold_set),
+            "-ReportRoot", str(scratch),
+            "-TimeoutSeconds", str(timeout_sec),
+            "-FromDate", _mt5_date(fold["oos_start"]),
+            "-ToDate", _mt5_date(fold["oos_end"]),
+            "-AllowRunningTerminal",
+            "-AllowMissingRealTicksLogMarker",
+        ]
+        if tester_currency:
+            args.extend(["-TesterCurrencyOverride", tester_currency])
+        if tester_deposit:
+            args.extend(["-TesterDepositOverride", str(tester_deposit)])
+        creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+        try:
+            with log_path.open("w", encoding="utf-8") as log:
+                proc = run_with_launch_fault_retry(
+                    args,
+                    runner=subprocess.run,
+                    stdout=log,
+                    stderr=subprocess.STDOUT,
+                    text=True,
+                    timeout=timeout_sec,
+                    creationflags=creationflags,
+                )
+        except subprocess.TimeoutExpired:
+            return _fold_failure(
+                evidence_dir=durable_dir,
+                fold=fold,
+                reason="FOLD_TIMEOUT",
+                log_path=log_path,
+                preflight=preflight,
+            )
+        except OSError:
+            return _fold_failure(
+                evidence_dir=durable_dir,
+                fold=fold,
+                reason="RUN_SMOKE_LAUNCH_ERROR",
+                log_path=log_path,
+                preflight=preflight,
+            )
+
+        source_summary = _summary_from_log(log_path)
+        if source_summary is None:
+            legacy = scratch / f"QM5_{ea_id}" / "Q04" / str(fold["id"]) / "summary.json"
+            source_summary = legacy if legacy.is_file() else None
+        if source_summary is None:
+            return _fold_failure(
+                evidence_dir=durable_dir,
+                fold=fold,
+                reason="SOURCE_SUMMARY_MISSING",
+                log_path=log_path,
+                preflight=preflight,
+                exit_code=proc.returncode,
+            )
+
+        invalid_reason = summary_invalid_reason(source_summary)
+        report_pf, report_trades = parse_pf_from_report_summary(source_summary)
+
+        # Grade from the per-symbol venue model applied to the emitted stream,
+        # falling back to the EA self-report only when no usable stream exists.
+        pf_net, trades, comm_total, gross_total, oos_nets = pf_net_from_stream(
+            ea_id, symbol, fold, cost_variant
+        )
+        commission_basis = f"venue_{cost_variant}_stream"
+        if pf_net is None:
+            pf_net, trades, comm_total = read_pf_net_from_ea(ea_id, symbol)
+            gross_total = None
+            oos_nets = []
+            commission_basis = f"venue_{cost_variant}_ea_side_flat"
+
+        pf_net, trades, commission_basis, report_guard_reason = (
+            guard_pf_net_against_report_summary(
+                pf_net=pf_net,
+                trades=trades,
+                commission_basis=commission_basis,
+                report_pf=report_pf,
+                report_trades=report_trades,
+            )
+        )
+        if report_guard_reason:
+            comm_total = None
+            gross_total = None
+            oos_nets = []
+        if not invalid_reason and pf_net is None and (report_trades or 0) > 0:
+            invalid_reason = "stream_and_selfreport_missing"
+
+        status = (
+            "INVALID"
+            if invalid_reason
+            else ("OK" if (pf_net is not None and proc.returncode == 0) else "FAIL")
+        )
+        if invalid_reason:
+            verdict_reason = invalid_reason
+        elif pf_net is None or trades <= 0:
+            verdict_reason = "STRATEGY_ZERO_TRADES"
+        elif proc.returncode != 0:
+            verdict_reason = "STRATEGY_MIN_TRADES_NOT_MET"
+        elif pf_net <= PF_NET_FLOOR_PER_FOLD:
+            verdict_reason = "STRATEGY_PF_AT_OR_BELOW_FLOOR"
+        else:
+            verdict_reason = "FOLD_COMPLETE"
+        result = {
+            **fold,
+            "pf_net": pf_net,
+            "trades": trades,
+            "sim_commission_total": comm_total,
+            "gross_total": gross_total,
+            "cost_variant": cost_variant,
+            "commission_per_lot_used": sim_comm_per_lot,
+            "commission_basis": commission_basis,
+            "report_pf": report_pf,
+            "report_trades": report_trades,
+            "report_guard_reason": report_guard_reason,
+            "oos_nets": oos_nets,
+            "status": status,
+            "verdict_reason": verdict_reason,
+            "invalid_reason": invalid_reason,
+            "exit_code": proc.returncode,
+            "log_path": str(log_path),
+            "preflight": preflight,
+            **_run_smoke_report_identity(source_summary),
+        }
+        return _write_fold_summary(durable_dir, result)
+    except Exception as exc:
+        return _fold_failure(
+            evidence_dir=durable_dir,
+            fold=fold,
+            reason=f"FOLD_ERROR_{type(exc).__name__.upper()}",
+            log_path=log_path,
+            preflight=preflight,
+        )
 
 
 def main() -> int:
@@ -739,7 +1059,12 @@ def main() -> int:
     ap.add_argument("--expert",
                     help="Optional pre-deployed MT5 expert path override, e.g. QM\\QM5_10377_locked")
     ap.add_argument("--terminal", default="T2", help="MT5 terminal (T1-T10)")
-    ap.add_argument("--report-root", type=Path, default=Path("D:/QM/reports/pipeline"))
+    ap.add_argument("--report-root", type=Path, default=Path("D:/QM/reports/pipeline"),
+                    help="Durable aggregate/fold-summary root")
+    ap.add_argument("--scratch-root", type=Path,
+                    help="Volatile tester/report workspace (defaults to --report-root)")
+    ap.add_argument("--evidence-key",
+                    help="Immutable work-item identity used to isolate the durable Q04 leaf")
     ap.add_argument("--latest-full-year", type=int, default=2025,
                     help="Last closed calendar year (excludes folds past this)")
     ap.add_argument("--timeout-sec", type=int, default=1800)
@@ -758,17 +1083,32 @@ def main() -> int:
     repo_root = Path(__file__).resolve().parents[2]
     ea_expert = args.expert or resolve_ea_expert_path(repo_root, args.ea)
     if ea_expert is None:
-        print(f"cannot resolve EA dir for {args.ea} under framework/EAs", file=sys.stderr)
-        return 2
+        ea_expert = ""
+        print(
+            f"cannot resolve EA dir for {args.ea} under framework/EAs; "
+            "publishing classifiable fold failures",
+            file=sys.stderr,
+        )
     period = args.period or period_from_setfile(args.setfile)
     runner_symbol = args.symbol
     evidence_symbol = args.logical_symbol or args.symbol
+    setfile_sha256 = sha256_file(args.setfile)
+    evidence_key = args.evidence_key or f"set_{(setfile_sha256 or 'missing')[:16]}"
+    evidence_leaf = q04_evidence_leaf(evidence_symbol, evidence_key)
+    out_dir = ensure_dir(
+        args.report_root / f"QM5_{ea_id}" / "Q04" / evidence_leaf
+    )
+    scratch_root = args.scratch_root or args.report_root
 
     folds = folds_for_year(args.latest_full_year)
     label = evidence_symbol if evidence_symbol == runner_symbol else f"{evidence_symbol} via {runner_symbol}"
-    venue = _venue_model()
-    per_lot_used = venue.per_lot_rt(runner_symbol, cost_variant)
-    cost_source = venue.source_tag()
+    try:
+        venue = _venue_model()
+        per_lot_used = venue.per_lot_rt(runner_symbol, cost_variant)
+        cost_source = venue.source_tag()
+    except Exception:
+        per_lot_used = COMMISSION_PER_LOT_ROUND_TRIP
+        cost_source = "venue_cost_model_unavailable:flat7_hard_fallback"
     print(f"Q04 {args.ea} {label} {period}  expert={ea_expert}  folds={[f['id'] for f in folds]}  "
           f"cost-variant={cost_variant} ({cost_source}; {runner_symbol} "
           f"${per_lot_used:.2f}/lot headline; DL-082 §2)")
@@ -782,6 +1122,9 @@ def main() -> int:
             report_root=args.report_root, terminal=args.terminal,
             period=period, timeout_sec=args.timeout_sec,
             cost_variant=cost_variant,
+            scratch_root=scratch_root,
+            evidence_dir=out_dir,
+            repo_root=repo_root,
         )
         pf_str = f"{res['pf_net']:.3f}" if res.get("pf_net") is not None else "n/a"
         print(f"    -> PF-net={pf_str}  trades={res['trades']}  status={res['status']}")
@@ -803,16 +1146,42 @@ def main() -> int:
         else:
             reason = f"{reason} || lowfreq:{lowfreq_verdict}:{lowfreq_reason}"
 
-    out_dir = ensure_dir(args.report_root / f"QM5_{ea_id}" / "Q04" / evidence_symbol)
     # DL-082 §2: report the basis actually used across folds (venue stream model unless a
     # fold had to fall back to the per-symbol EA-side flat self-report).
     bases = sorted({f.get("commission_basis") for f in fold_results if f.get("commission_basis")})
-    write_json(out_dir / "aggregate.json", {
+    first_preflight = next(
+        (
+            f.get("preflight")
+            for f in fold_results
+            if isinstance(f.get("preflight"), dict) and f.get("preflight")
+        ),
+        {},
+    )
+    aggregate_path = out_dir / "aggregate.json"
+    identity_payload = {
+        "ea_id": ea_id,
+        "evidence_key": evidence_key,
+        "runner_symbol": runner_symbol,
+        "setfile_sha256": setfile_sha256,
+        "symbol": evidence_symbol,
+    }
+    aggregate_identity = hashlib.sha256(
+        json.dumps(identity_payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    _write_json_atomic(aggregate_path, {
+        "evidence_schema": "q04_aggregate/v2",
         "phase": GATE_NAME,
         "ea_id": ea_id,
         "ea": args.ea,
         "symbol": evidence_symbol,
         "runner_symbol": runner_symbol,
+        "evidence_key": evidence_key,
+        "evidence_leaf": evidence_leaf,
+        "aggregate_identity_sha256": aggregate_identity,
+        "setfile_path": str(args.setfile),
+        "setfile_sha256": setfile_sha256,
+        "ex5_path": first_preflight.get("ex5_path"),
+        "ex5_sha256": first_preflight.get("ex5_sha256"),
         # DL-082 §2 evidence provenance (per run):
         "cost_variant": cost_variant,
         "commission_per_lot_used": per_lot_used,
@@ -822,6 +1191,7 @@ def main() -> int:
         "commission_per_lot_round_trip_fallback": COMMISSION_PER_LOT_ROUND_TRIP,
         "verdict": verdict,
         "reason": reason,
+        "verdict_reason": reason,
         "lowfreq_verdict": lowfreq_verdict,       # DL-076: pooled tier outcome if attempted
         "lowfreq_reason": lowfreq_reason,
         "generated_at_utc": utc_now_iso(),
@@ -832,6 +1202,7 @@ def main() -> int:
     })
     print(f"Q04 verdict for {args.ea} {label}: {verdict}")
     print(f"  reason: {reason}")
+    print(f"  aggregate: {aggregate_path}")
     return exit_code_for_verdict(verdict)
 
 

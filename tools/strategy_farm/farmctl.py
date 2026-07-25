@@ -3691,6 +3691,21 @@ PHASE_RUNNER_TIMEOUT_HEADROOM_SEC = 300
 PHASE_RUNNER_TIMEOUT_MAX_SEC = 28800
 
 
+def _q04_evidence_leaf(symbol: str, evidence_key: str) -> str:
+    """Mirror q04_walkforward.q04_evidence_leaf without importing a runner."""
+    def _safe(value: str, fallback: str) -> str:
+        cleaned = re.sub(r"[^A-Za-z0-9_.-]+", "_", str(value or "").strip()).strip("._")
+        return cleaned or fallback
+
+    return f"{_safe(symbol, 'UNKNOWN_SYMBOL')}__{_safe(evidence_key, 'UNKNOWN_EVIDENCE')}"
+
+
+def _q04_durable_aggregate_path(item_row: sqlite3.Row) -> Path:
+    ea_num = str(item_row["ea_id"]).replace("QM5_", "").split("_", 1)[0]
+    leaf = _q04_evidence_leaf(str(item_row["symbol"] or ""), str(item_row["id"]))
+    return PIPELINE_REPORT_ROOT / f"QM5_{ea_num}" / "Q04" / leaf / "aggregate.json"
+
+
 def _phase_runner_timeout_sec_from_payload(payload: dict[str, Any]) -> int | None:
     """Convert a work-item timeout_min payload into a child runner budget."""
     try:
@@ -3836,7 +3851,17 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
     # Each new runner has a slightly different CLI; bridge from the generic
     # worker args (--ea, --symbol, --period, --setfile) here.
     elif phase == "Q04":
-        cmd.extend(["--terminal", terminal or "T1"])
+        # Q04 raw tester output remains isolated in the volatile work-item
+        # directory, but fold summaries and aggregate evidence publish to the
+        # durable pipeline root. The item id makes concurrent set variants
+        # collision-free while retaining the ingester's Q04/*/aggregate shape.
+        out_index = cmd.index("--out-prefix")
+        cmd[out_index + 1] = str(PIPELINE_REPORT_ROOT)
+        cmd.extend([
+            "--terminal", terminal or "T1",
+            "--scratch-root", str(report_root),
+            "--evidence-key", str(item_row["id"]),
+        ])
         latest_full_year = payload.get("q04_latest_full_year", payload.get("latest_full_year"))
         if latest_full_year is not None:
             try:
@@ -4035,6 +4060,11 @@ def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
         "ea_dir_name": ea_dir_name,
         "phase_runner": cmd[1],
         "effective_min_trades": 5,
+        "phase_evidence_path": (
+            str(_q04_durable_aggregate_path(item_row))
+            if phase == "Q04"
+            else None
+        ),
     }
 
 

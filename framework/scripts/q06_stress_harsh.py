@@ -7,7 +7,7 @@ parameters to run_smoke. The implemented (and ratified) test is:
   Trade-rejection: 10% via the FW2 EA hook qm_stress_reject_probability=0.10
   (seeded, deterministic; set by gen_stress_setfile.py --level HARSH)
   Window: full available history per symbol, Q03 plateau-median params
-  Verdict: PF > 1.0 AND DD < 15% AND >= 20 trades (gross, like every tester run)
+  Verdict: PF > 1.0 AND DD < 25% AND >= 20 trades (gross, like every tester run)
 Cost STRESS lives at Q08 (DL-072 cost-cushion: gross >= 2x worst-case
 commission); cost REALISM at Q04. All historical Q06 verdicts remain valid.
 """

@@ -25,6 +25,7 @@ from pathlib import Path
 from typing import Any
 
 import farmctl
+from framework.scripts._phase_utils import cold_cache_summary_signature
 
 
 POLL_SLEEP_SECONDS = 2.0
@@ -1384,6 +1385,13 @@ def _find_summary(report_root: str | None, payload: dict[str, Any] | None = None
 def _find_work_item_summary_data(item: sqlite3.Row, payload: dict[str, Any]) -> tuple[Path, dict[str, Any]] | None:
     phase = str(item["phase"])
     if phase in farmctl.REAL_PHASE_RUNNER_PHASES:
+        exact_evidence = payload.get("phase_evidence_path")
+        if exact_evidence:
+            evidence_path = Path(str(exact_evidence))
+            if not evidence_path.is_file():
+                return None
+            summary = _load_fresh_summary(evidence_path, payload)
+            return (evidence_path, summary) if summary is not None else None
         report_root = payload.get("report_root")
         if report_root:
             summary_path = Path(str(report_root)) / str(item["ea_id"]) / phase / "summary.json"
@@ -1457,7 +1465,9 @@ def _mirror_real_phase_artifacts(item: sqlite3.Row, summary_path: Path, verdict:
         return
     source_dir = summary_path.parent
     target_dir = farmctl._ea_phase_dir(str(item["ea_id"]), str(item["phase"]))
-    if source_dir.resolve() == target_dir.resolve():
+    source_resolved = source_dir.resolve()
+    target_resolved = target_dir.resolve()
+    if source_resolved == target_resolved or source_resolved.is_relative_to(target_resolved):
         return
     target_dir.mkdir(parents=True, exist_ok=True)
     for source in source_dir.iterdir():
@@ -1595,6 +1605,105 @@ def _finish_work_item(root: Path, item_id: str, exit_code: int | None) -> dict[s
             summary_data = _find_work_item_summary_data(item, payload)
             if summary_data:
                 summary_path, summary = summary_data
+                cold_signature = (
+                    cold_cache_summary_signature(summary)
+                    if str(item["phase"]).upper() in {"P2", "P3", "Q02", "Q03"}
+                    else None
+                )
+                if cold_signature:
+                    retry_attempt = int(item["attempt_count"] or 0) + 1
+                    failed_terminal = str(item["claimed_by"] or "").strip().upper()
+                    payload.update({
+                        "prior_failure": "cold_cache_invalid_summary",
+                        "cold_cache_retry_attempt": retry_attempt,
+                        "cold_cache_retry_cap": MAX_WORK_ITEM_RETRIES,
+                        "cold_cache_signature": cold_signature,
+                        "cold_cache_summary_path": str(summary_path),
+                        "run_smoke_exit_code": exit_code,
+                        "verdict_reason": f"cold_cache_retry:{cold_signature}",
+                    })
+                    if failed_terminal:
+                        _accumulate_avoid_terminal(payload, failed_terminal)
+                    payload["launch_not_before_utc"] = (
+                        datetime.now(timezone.utc)
+                        + timedelta(seconds=SUMMARY_MISSING_RETRY_COOLDOWN_SECONDS)
+                    ).isoformat()
+                    _clear_stale_runtime_payload(payload)
+                    print(
+                        json.dumps({
+                            "event": "cold_cache_retry",
+                            "item_id": item_id,
+                            "phase": item["phase"],
+                            "attempt": retry_attempt,
+                            "max_attempts": MAX_WORK_ITEM_RETRIES,
+                            "matched_signature": cold_signature,
+                            "action": (
+                                "requeue"
+                                if retry_attempt < MAX_WORK_ITEM_RETRIES
+                                else "exhausted"
+                            ),
+                        }),
+                        flush=True,
+                    )
+                    if retry_attempt < MAX_WORK_ITEM_RETRIES:
+                        conn.execute(
+                            """
+                            UPDATE work_items
+                            SET status='pending', verdict=NULL, attempt_count=?,
+                                claimed_by=NULL, evidence_path=NULL,
+                                payload_json=?, updated_at=?
+                            WHERE id=?
+                            """,
+                            (
+                                retry_attempt,
+                                json.dumps(payload, sort_keys=True),
+                                now,
+                                item_id,
+                            ),
+                        )
+                        conn.commit()
+                        return {
+                            "finished": True,
+                            "status": "pending",
+                            "verdict": None,
+                            "reason": payload["verdict_reason"],
+                            "attempt": retry_attempt,
+                            "matched_signature": cold_signature,
+                            "aggregate": None,
+                        }
+                    payload["final_failure"] = "cold_cache_retries_exhausted"
+                    payload["verdict_reason"] = (
+                        f"cold_cache_retries_exhausted:{cold_signature}"
+                    )
+                    payload["verdict_taxonomy"] = "infra"
+                    conn.execute(
+                        """
+                        UPDATE work_items
+                        SET status='failed', verdict='INFRA_FAIL', attempt_count=?,
+                            evidence_path=?, claimed_by=NULL,
+                            payload_json=?, updated_at=?
+                        WHERE id=?
+                        """,
+                        (
+                            retry_attempt,
+                            str(summary_path),
+                            json.dumps(payload, sort_keys=True),
+                            now,
+                            item_id,
+                        ),
+                    )
+                    conn.commit()
+                    return {
+                        "finished": True,
+                        "status": "failed",
+                        "verdict": "INFRA_FAIL",
+                        "reason": payload["verdict_reason"],
+                        "attempt": retry_attempt,
+                        "matched_signature": cold_signature,
+                        "aggregate": _aggregate_finished_parent(
+                            root, item["parent_task_id"]
+                        ),
+                    }
                 effective_min_trades = int(
                     payload.get("effective_min_trades")
                     or summary.get("min_trades_required")
@@ -1917,6 +2026,7 @@ _STALE_PREFLIGHT_PAYLOAD_KEYS = (
     "repair_handler",
     "repair_note",
     "report_root",
+    "phase_evidence_path",
     "pid",
     "started_at_iso",
     "log_path",
@@ -2479,6 +2589,7 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
         "pid": spawn["pid"],
         "log_path": spawn["log_path"],
         "report_root": spawn["report_root"],
+        "phase_evidence_path": spawn.get("phase_evidence_path"),
         "ea_dir_name": spawn["ea_dir_name"],
         "terminal": terminal,
         "expected_trades_per_year_per_symbol": spawn.get("expected_trades_per_year_per_symbol"),
