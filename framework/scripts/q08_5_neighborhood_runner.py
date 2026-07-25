@@ -658,22 +658,46 @@ def resolve_backtest_context(
     tester_symbol = str(identity.get("host_symbol") or logical_symbol)
     manifest_path = baseline_setfile.parent.parent / "basket_manifest.json"
     manifest: dict[str, Any] = {}
+    dependency_symbols: list[str] = []
     if manifest_path.exists():
         try:
             candidate = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
-            if str(candidate.get("logical_symbol") or "").casefold() == logical_symbol.casefold():
+            raw_symbols = (
+                candidate.get("basket_symbols")
+                or candidate.get("symbols")
+                or []
+            )
+            if isinstance(raw_symbols, list):
+                dependency_symbols = list(dict.fromkeys(
+                    str(symbol).strip()
+                    for symbol in raw_symbols
+                    if str(symbol).strip()
+                ))
+            logical_matches = (
+                str(candidate.get("logical_symbol") or "").casefold()
+                == logical_symbol.casefold()
+            )
+            dependency_matches = (
+                len(dependency_symbols) > 1
+                and logical_symbol.casefold()
+                in {symbol.casefold() for symbol in dependency_symbols}
+            )
+            if logical_matches or dependency_matches:
                 manifest = candidate
-                tester_symbol = str(candidate.get("host_symbol") or tester_symbol)
+                if logical_matches:
+                    tester_symbol = str(candidate.get("host_symbol") or tester_symbol)
                 period = str(candidate.get("host_timeframe") or period)
         except (OSError, json.JSONDecodeError):
             manifest = {}
+            dependency_symbols = []
 
-    is_basket = tester_symbol.casefold() != logical_symbol.casefold()
-    effective_from = from_date or ("2018.07.02" if is_basket else "2017.01.01")
+    is_logical_basket = tester_symbol.casefold() != logical_symbol.casefold()
+    is_basket = is_logical_basket or len(dependency_symbols) > 1
+    effective_from = from_date or ("2018.07.02" if is_logical_basket else "2017.01.01")
     effective_to = to_date or "2025.12.31"
     # Data-honest clamp for late-start (2018+) symbols like the rebuilt NDX store:
     # a 2017 request hard-fails tester history sync (wave evidence 2026-07-18).
-    if not is_basket and effective_from < "2018":
+    if not is_logical_basket and effective_from < "2018":
         _reg = Path(__file__).resolve().parents[1] / "registry" / "dwx_symbol_history_ranges.csv"
         try:
             with _reg.open("r", encoding="utf-8-sig", newline="") as _fh:
@@ -688,7 +712,8 @@ def resolve_backtest_context(
     latest_full_year = manifest.get("latest_full_year")
     if is_basket and not latest_full_year:
         symbols = {
-            str(symbol).casefold() for symbol in (manifest.get("basket_symbols") or [tester_symbol])
+            str(symbol).casefold()
+            for symbol in (dependency_symbols or [tester_symbol])
         }
         registry = Path(__file__).resolve().parents[1] / "registry" / "dwx_symbol_history_ranges.csv"
         years: list[int] = []
@@ -728,6 +753,8 @@ def resolve_backtest_context(
         "to_date": effective_to,
         "timeout_sec": effective_timeout,
         "is_basket": is_basket,
+        "is_logical_basket": is_logical_basket,
+        "basket_symbols": dependency_symbols,
         "manifest_path": str(manifest_path.resolve()) if manifest_path.exists() else None,
         "latest_full_year": int(latest_full_year) if latest_full_year else None,
     }

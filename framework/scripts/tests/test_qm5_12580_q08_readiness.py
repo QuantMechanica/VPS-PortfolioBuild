@@ -26,6 +26,12 @@ def test_qm5_12580_q08_baseline_is_a_fixed_risk_basket_with_perturbable_params()
     params = q08_5_neighborhood_runner.load_params_from_setfile(
         BASELINE_SETFILE
     )["params"]
+    context = q08_5_neighborhood_runner.resolve_backtest_context(
+        BASELINE_SETFILE,
+        "AUDUSD.DWX",
+        "D1",
+        900,
+    )
 
     assert manifest["timeframe"] == "D1"
     assert set(manifest["symbols"]) == {
@@ -50,3 +56,10 @@ def test_qm5_12580_q08_baseline_is_a_fixed_risk_basket_with_perturbable_params()
         "strategy_stop_atr_mult",
         "strategy_hold_bars",
     }
+    assert context["is_basket"] is True
+    assert context["is_logical_basket"] is False
+    assert context["tester_symbol"] == "AUDUSD.DWX"
+    assert context["period"] == "D1"
+    assert context["from_date"] == "2017.01.01"
+    assert context["timeout_sec"] == 3600
+    assert set(context["basket_symbols"]) == set(manifest["symbols"])

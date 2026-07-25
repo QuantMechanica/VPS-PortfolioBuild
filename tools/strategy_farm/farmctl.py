@@ -4636,6 +4636,24 @@ def _promotion_payload_with_basket_context(
         for key in BASKET_CONTEXT_PAYLOAD_KEYS:
             if key in manifest_payload:
                 payload[key] = manifest_payload[key]
+    else:
+        dependency_manifest = _load_multisymbol_dependency_manifest(ea_id)
+        dependency_symbols = (dependency_manifest or {}).get("basket_symbols") or []
+        if (
+            dependency_manifest
+            and symbol.casefold()
+            in {str(item).casefold() for item in dependency_symbols}
+        ):
+            dependency_payload = {
+                "basket_manifest": dependency_manifest["manifest_path"],
+                "basket_symbol_count": len(dependency_symbols),
+                "basket_symbols": list(dependency_symbols),
+                "host_symbol": symbol,
+                "host_timeframe": dependency_manifest["host_timeframe"],
+            }
+            for key in BASKET_CONTEXT_PAYLOAD_KEYS:
+                if key in dependency_payload:
+                    payload[key] = dependency_payload[key]
     return payload
 
 
@@ -10934,7 +10952,7 @@ def _pump_unlocked(root: Path) -> dict[str, Any]:
                 )
                 if next_phase in {"Q04", "Q05"}:
                     _apply_q04_latest_full_year_from_history(wi, payload)
-                if next_phase in {"Q05", "Q06"}:
+                if next_phase in {"Q05", "Q06", "Q08"}:
                     _apply_phase_timeout_min(payload, next_phase)
                 if next_phase in {"Q05", "Q06", "Q07", "Q10"}:
                     _apply_q_phase_full_history_from(payload, next_phase)
@@ -11724,6 +11742,35 @@ def _load_basket_manifest(ea_id: str) -> dict[str, Any] | None:
     return manifest
 
 
+def _load_multisymbol_dependency_manifest(ea_id: str) -> dict[str, Any] | None:
+    """Load either logical-basket or legacy shared-signal dependency metadata."""
+    ea_dir = _find_single_ea_dir(ea_id)
+    if ea_dir is None:
+        return None
+    manifest_path = ea_dir / "basket_manifest.json"
+    if not manifest_path.exists():
+        return None
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if not isinstance(manifest, dict):
+        return None
+    raw_symbols = manifest.get("basket_symbols") or manifest.get("symbols") or []
+    if not isinstance(raw_symbols, list):
+        return None
+    symbols = _unique_text_values(raw_symbols)
+    host_timeframe = str(
+        manifest.get("host_timeframe") or manifest.get("timeframe") or ""
+    ).strip()
+    if len(symbols) <= 1 or not host_timeframe:
+        return None
+    manifest["basket_symbols"] = symbols
+    manifest["host_timeframe"] = host_timeframe
+    manifest["manifest_path"] = str(manifest_path.resolve())
+    return manifest
+
+
 def _history_window_for_work_item(
     work_item: sqlite3.Row,
     from_year: int,
@@ -12401,7 +12448,7 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
                 _apply_q04_latest_full_year_from_history(prev, payload)
             elif phase == "Q05":
                 _apply_q04_latest_full_year_from_history(prev, payload)
-            if phase in {"Q05", "Q06"}:
+            if phase in {"Q05", "Q06", "Q08"}:
                 _apply_phase_timeout_min(payload, phase)
             if phase in {"Q05", "Q06", "Q07", "Q10"}:
                 _apply_q_phase_full_history_from(payload, phase)
