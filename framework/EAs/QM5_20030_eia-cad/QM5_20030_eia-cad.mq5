@@ -5,8 +5,9 @@
 #include <QM/QM_Common.mqh>
 
 // Strategy Card: QM5_20030_eia-cad, G0 APPROVED 2026-07-22.
-// The event ledgers are deliberately fail-closed. Missing or malformed ledger
-// data blocks new entries, but never prevents management of an open position.
+// Entries are anchored to the framework news calendar deployed by the pipeline.
+// Missing or malformed calendar data blocks new entries, but never prevents
+// management of an open position.
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                     = 20030;
@@ -39,17 +40,11 @@ input ENUM_TIMEFRAMES strategy_signal_tf = PERIOD_M5;
 input int    strategy_atr_period          = 14;
 input double strategy_impulse_atr_mult    = 0.60;
 input int    strategy_time_exit_minutes   = 30;
-input double strategy_max_cost_r          = 0.10;
 
 const string strategy_variant_id = "EIA_CAD_BASELINE";
 
 const string STRATEGY_CALENDAR_PATH =
-   "QM5_20030_eia_calendar_20180110_20251231.csv";
-const string STRATEGY_CALENDAR_SHA256 =
-   "B273DD88D27E38FE78EC85E426E0F1C8C8EF07DAE2F7E1E102BA96F492C33E04";
-const string STRATEGY_PROVENANCE_SHA256 =
-   "834540437F24E9818F8A1FC1B596F211C9D22154A20A9E3527E99FF9532F58C7";
-const int STRATEGY_CALENDAR_EXPECTED_ROWS = 352;
+   "D:\\QM\\data\\news_calendar\\news_calendar_2015_2025.csv";
 
 datetime g_event_times_utc[];
 bool     g_calendar_ready = false;
@@ -66,38 +61,27 @@ bool AppendEvent(const datetime event_utc)
    return true;
   }
 
-bool CalendarHashMatches()
+int OpenDeployedNewsCalendar()
   {
-   uchar bytes[];
-   datetime modified_utc = 0;
-   if(!QM_NewsReadFileBytes(STRATEGY_CALENDAR_PATH, bytes, modified_utc))
-      return false;
-   string actual_hash = "";
-   if(!QM_NewsHashBytes(bytes, actual_hash))
-      return false;
-   StringToUpper(actual_hash);
-   return (actual_hash == STRATEGY_CALENDAR_SHA256);
+   int handle = FileOpen(STRATEGY_CALENDAR_PATH,
+                         FILE_READ | FILE_CSV | FILE_ANSI | FILE_SHARE_READ,
+                         ',');
+   if(handle == INVALID_HANDLE)
+      handle = FileOpen(QM_NewsBasename(STRATEGY_CALENDAR_PATH),
+                        FILE_READ | FILE_CSV | FILE_ANSI | FILE_SHARE_READ | FILE_COMMON,
+                        ',');
+   return handle;
   }
 
 bool LoadEventCalendar()
   {
    ArrayResize(g_event_times_utc, 0);
-   if(!CalendarHashMatches())
-      return false;
-
-   // Keep the load order identical to QM_NewsReadFileBytes so the bytes that
-   // passed the SHA-256 check are also the bytes parsed below.
-   int handle = FileOpen(STRATEGY_CALENDAR_PATH,
-                         FILE_READ | FILE_CSV | FILE_ANSI | FILE_SHARE_READ,
-                         ',');
-   if(handle == INVALID_HANDLE)
-      handle = FileOpen(STRATEGY_CALENDAR_PATH,
-                        FILE_READ | FILE_CSV | FILE_ANSI | FILE_SHARE_READ | FILE_COMMON,
-                        ',');
+   int handle = OpenDeployedNewsCalendar();
    if(handle == INVALID_HANDLE)
       return false;
 
-   int rows = 0;
+   int source_rows = 0;
+   int eia_rows = 0;
    bool valid = true;
    while(!FileIsEnding(handle))
      {
@@ -116,38 +100,38 @@ bool LoadEventCalendar()
          continue;
 
       datetime event_utc = 0;
+      if(!QM_NewsParseDateTimeUTC(event_text, event_utc) || event_utc <= 0)
+        {
+         valid = false;
+         break;
+        }
+      ++source_rows;
+      if(QM_NewsUpper(QM_NewsStripQuotes(currency)) != "USD" ||
+         QM_NewsUpper(QM_NewsStripQuotes(event_name)) != "CRUDE OIL INVENTORIES")
+         continue;
       MqlDateTime event_parts;
       ZeroMemory(event_parts);
-      if(QM_NewsUpper(QM_NewsStripQuotes(currency)) != "USD" ||
-         QM_NewsUpper(QM_NewsStripQuotes(event_name)) != "CRUDE OIL INVENTORIES" ||
-         QM_NewsUpper(QM_NewsStripQuotes(impact)) != "HIGH" ||
-         !QM_NewsParseDateTimeUTC(event_text, event_utc) ||
-         !TimeToStruct(event_utc, event_parts) ||
-         event_parts.year < 2018 || event_parts.year > 2025 ||
+      if(!TimeToStruct(event_utc, event_parts) ||
          event_parts.sec != 0 || (event_parts.min % 5) != 0 ||
          !AppendEvent(event_utc))
         {
          valid = false;
          break;
         }
-      ++rows;
+      ++eia_rows;
      }
 
    FileClose(handle);
-   if(!valid || rows != STRATEGY_CALENDAR_EXPECTED_ROWS ||
-      ArraySize(g_event_times_utc) != STRATEGY_CALENDAR_EXPECTED_ROWS)
+   if(!valid || source_rows <= 0 || eia_rows <= 0 ||
+      ArraySize(g_event_times_utc) != eia_rows)
       return false;
 
    QM_LogEvent(QM_INFO,
                "STRATEGY_CALENDAR_LOADED",
-               StringFormat("{\"file\":\"%s\",\"sha256\":\"%s\",\"provenance_sha256\":\"%s\",\"eia_rows\":%d,\"api_rows\":0}",
+               StringFormat("{\"file\":\"%s\",\"source\":\"deployed_news_calendar\",\"source_rows\":%d,\"eia_rows\":%d}",
                             STRATEGY_CALENDAR_PATH,
-                            STRATEGY_CALENDAR_SHA256,
-                            STRATEGY_PROVENANCE_SHA256,
-                            rows));
-   QM_LogEvent(QM_WARN,
-               "STRATEGY_CALENDAR_COVERAGE_GAP",
-               "{\"event_type\":\"API\",\"reason\":\"exact_historical_timestamp_provenance_unavailable\"}");
+                            source_rows,
+                            eia_rows));
    return true;
   }
 
@@ -212,37 +196,28 @@ datetime ExitDeadlineForPosition(const datetime open_time)
    return open_time + MathMax(1, strategy_time_exit_minutes - 5) * 60;
   }
 
-bool CostAndVolumeAllow(const double entry_price,
-                        const double stop_price,
-                        string &reject_detail,
-                        string &diagnostics)
+bool TradeGeometryAndVolumeAllow(const double entry_price,
+                                 const double stop_price,
+                                 string &reject_detail,
+                                 string &diagnostics)
   {
    reject_detail = "";
    diagnostics = "";
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
    const double tick_value = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_VALUE);
-   const double contract_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_CONTRACT_SIZE);
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(AccountInfoString(ACCOUNT_CURRENCY) != "USD" ||
-      point <= 0.0 || tick_size <= 0.0 || tick_value <= 0.0 ||
-      contract_size <= 0.0 || ask <= 0.0 || bid <= 0.0 || ask < bid)
+      point <= 0.0 || tick_size <= 0.0 || tick_value <= 0.0)
      {
       reject_detail = "market_metadata_invalid";
-      diagnostics = StringFormat("account=%s;point=%.8f;tick_size=%.8f;tick_value=%.8f;contract_size=%.8f;ask=%.8f;bid=%.8f",
+      diagnostics = StringFormat("account=%s;point=%.8f;tick_size=%.8f;tick_value=%.8f",
                                  AccountInfoString(ACCOUNT_CURRENCY), point, tick_size,
-                                 tick_value, contract_size, ask, bid);
+                                 tick_value);
       return false;
      }
 
    const double stop_distance = MathAbs(entry_price - stop_price);
    const double risk_per_lot = (stop_distance / tick_size) * tick_value;
-   const double spread_per_lot = ((ask - bid) / tick_size) * tick_value;
-   const double commission_per_lot = MathMax(0.00005 * contract_size, 5.0);
-   const double cost_r = risk_per_lot > 0.0
-                         ? (commission_per_lot + spread_per_lot) / risk_per_lot
-                         : 0.0;
    if(risk_per_lot <= 0.0)
      {
       reject_detail = "risk_per_lot_invalid";
@@ -250,15 +225,6 @@ bool CostAndVolumeAllow(const double entry_price,
                                  stop_distance, tick_size, tick_value);
       return false;
      }
-   if(cost_r > strategy_max_cost_r)
-     {
-      reject_detail = "estimated_cost_above_limit";
-      diagnostics = StringFormat("cost_r=%.8f;max_cost_r=%.8f;risk_per_lot=%.8f;spread_per_lot=%.8f;commission_per_lot=%.8f",
-                                 cost_r, strategy_max_cost_r, risk_per_lot,
-                                 spread_per_lot, commission_per_lot);
-      return false;
-     }
-
    const double sl_points = stop_distance / point;
    const long stop_level = SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
    if(sl_points <= 0.0 || sl_points < (double)stop_level)
@@ -342,7 +308,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(event_utc == g_last_attempt_event_utc || FindEventIndex(event_utc) < 0)
       return false;
 
-   // Consume the exact candidate before market-data, geometry, cost or order
+   // Consume the exact candidate before market-data, geometry, or order
    // checks. One failed prerequisite must never re-arm the same release.
    g_last_attempt_event_utc = event_utc;
 
@@ -388,16 +354,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                                     entry_price, stop_price, release_low, release_high));
       return false;
      }
-   string cost_reject = "";
-   string cost_diagnostics = "";
-   if(!CostAndVolumeAllow(entry_price,
-                          stop_price,
-                          cost_reject,
-                          cost_diagnostics))
+   string geometry_reject = "";
+   string geometry_diagnostics = "";
+   if(!TradeGeometryAndVolumeAllow(entry_price,
+                                   stop_price,
+                                   geometry_reject,
+                                   geometry_diagnostics))
      {
       LogEntryRejected(event_utc,
-                       cost_reject,
-                       cost_diagnostics);
+                       geometry_reject,
+                       geometry_diagnostics);
       return false;
      }
 
@@ -431,7 +397,7 @@ bool Strategy_ExitSignal()
 
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   // The immutable event ledger gates entries; management and time exits must
+   // The deployed event calendar gates entries; management and time exits must
    // remain live through the release window.
    return false;
   }
@@ -474,13 +440,12 @@ int OnInit()
    if(!g_calendar_ready)
       QM_LogEvent(QM_ERROR,
                   "SETUP_DATA_MISSING",
-                  StringFormat("{\"component\":\"eia_strategy_calendar\",\"file\":\"%s\",\"expected_sha256\":\"%s\"}",
-                               STRATEGY_CALENDAR_PATH,
-                               STRATEGY_CALENDAR_SHA256));
+                  StringFormat("{\"component\":\"eia_strategy_calendar\",\"file\":\"%s\"}",
+                               STRATEGY_CALENDAR_PATH));
 
    QM_LogEvent(QM_INFO,
                "INIT_OK",
-               StringFormat("{\"calendar_ready\":%s,\"eia_rows\":%d,\"api_data_gap\":true,\"order_symbol\":\"USDCAD.DWX\",\"signal_symbol\":\"XTIUSD.DWX\"}",
+               StringFormat("{\"calendar_ready\":%s,\"eia_rows\":%d,\"calendar_source\":\"deployed_news_calendar\",\"order_symbol\":\"USDCAD.DWX\",\"signal_symbol\":\"XTIUSD.DWX\"}",
                             g_calendar_ready ? "true" : "false",
                             ArraySize(g_event_times_utc)));
    return INIT_SUCCEEDED;

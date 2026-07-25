@@ -10,8 +10,8 @@
 
 ## 1. Strategy Logic
 
-The EA reads an immutable, hash-pinned EIA release calendar built from the
-official WPSR archive and evaluates only the first completed five-minute WTI
+The EA reads the framework news calendar deployed by the pipeline and evaluates
+only the first completed five-minute WTI
 bar after each eligible release. A WTI move of at least 0.6 times its
 pre-release ATR arms a
 USDCAD trade in the opposite direction: rising oil sells USDCAD and falling oil
@@ -32,15 +32,10 @@ exact timestamp required by the card.
 | `strategy_atr_period` | `14` | fixed 14 | Wilder ATR bars ending before the release bar. |
 | `strategy_impulse_atr_mult` | `0.60` | fixed 0.60 | Minimum absolute WTI release-bar move in ATR units. |
 | `strategy_time_exit_minutes` | `30` | fixed 30 | Force-flat deadline measured from scheduled release time. |
-| `strategy_max_cost_r` | `0.10` | fixed 0.10 | Maximum commission-plus-spread cost as a fraction of initial risk. |
-
-The immutable runtime calendar is
-`QM5_20030_eia_calendar_20180110_20251231.csv` (SHA-256
-`b273dd88d27e38fe78ec85e426e0f1c8c8ef07dae2f7e1e102ba96f492c33e04`),
-provisioned through `FILE_COMMON`. It contains 352 official-archive Wednesday
-releases at the issuer-defined 10:30 New York standard time. Sixty-four
-historically shifted releases and all API releases are excluded when their
-exact timestamp cannot be proven; no weekday/time fallback is used.
+Runtime events come from the deployed framework `news_calendar_2015_2025.csv`.
+The EA selects exact USD `Crude Oil Inventories` rows, including calendar-listed
+Thursday holiday shifts; it does not infer weekday or broker-clock release
+times. Tester Groups and live fills realize trading costs in results.
 
 Framework-level risk, news, seed, stress, and Friday-close inputs are documented
 in `framework/V5_FRAMEWORK_DESIGN.md` and are not duplicated here.
@@ -114,3 +109,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-22 | Initial build from card | `3ba3900b-1c08-43b7-886b-20eb16cb7f6f` |
+| v2 | 2026-07-25 | Group-B calendar repair | Replaced the bespoke EIA ledger with the deployed framework news calendar and removed the pre-trade cost gate. |

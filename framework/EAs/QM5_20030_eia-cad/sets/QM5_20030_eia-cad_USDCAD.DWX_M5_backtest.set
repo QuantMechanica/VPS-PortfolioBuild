@@ -25,4 +25,3 @@ strategy_signal_tf=5
 strategy_atr_period=14
 strategy_impulse_atr_mult=0.60
 strategy_time_exit_minutes=30
-strategy_max_cost_r=0.10
