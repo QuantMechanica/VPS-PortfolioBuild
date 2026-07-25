@@ -4,7 +4,7 @@
 **Slug:** atc-wma-rev
 **Source:** 9441393d-5ffc-5b43-87be-bd532110f204
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-07-25
 
 ---
 
@@ -96,3 +96,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-18 | Initial build from card | 92d8b27b-c955-49b9-be5d-37b2ae5849aa |
+| v1.1 | 2026-07-25 | Q02 infrastructure recovery | Current-framework rebuild; completed-bar exit cadence; explicit fixed-risk setfiles; farm claim 11f06b54-f767-43a9-815c-c4bb9f746c61 |

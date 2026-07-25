@@ -1,0 +1,110 @@
+{
+  "artifact_type": "q02_infrastructure_repair_handoff",
+  "branch": "agents/board-advisor",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11028_atc-wma-rev.md",
+  "claim_id": "11f06b54-f767-43a9-815c-c4bb9f746c61",
+  "claim_key": "manual:codex:agents/board-advisor:QM5_11028:q02-infra-recovery",
+  "database_backups": [
+    "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_qm5_11028_q02_repair_20260725T025012Z.sqlite",
+    "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_qm5_11028_q02_enqueue_20260725T025729Z.sqlite",
+    "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_qm5_11028_claim_close_20260725T030311Z.sqlite"
+  ],
+  "diagnosis": {
+    "economic_q02_verdicts_before_claim": 0,
+    "failure_classes": [
+      "REPORT_MISSING",
+      "METATESTER_HUNG",
+      "INCOMPLETE_RUNS"
+    ],
+    "historical_q02_infra_rows": 48,
+    "later_phase_rows_before_claim": 0,
+    "open_q02_q03_rows_before_claim": 0,
+    "root_causes": [
+      "historical smoke terminal contamination and zero-byte report",
+      "completed-bar WMA exit reads executed on every Model-4 tick",
+      "stale June EX5 predating current framework"
+    ]
+  },
+  "ea_id": "QM5_11028",
+  "ea_label": "QM5_11028_atc-wma-rev",
+  "evidence_doc": "docs/ops/evidence/2026-07-25_qm5_11028_fx_q02_infra_repair.md",
+  "hashes_sha256": {
+    "ex5": "e6403a7092f5a1ebff3c7b95662f90d647e0092a44dfcd152b33292d17198069",
+    "mq5": "552bb8d5b6da383bee6484316a54637db9d28bd5e20f50f8f850ad73cb2ce325",
+    "setfiles": {
+      "EURJPY.DWX": "4ffe7e85c6b1968358e93db4fa37bdb567682a1d0ed19bc2fcc3b6586172318a",
+      "GBPJPY.DWX": "65bb9335cf3e6afce7b0d45e60d564a45ed0dfa400f4484b39ba8cba8a2579aa",
+      "GBPUSD.DWX": "3022c68319d7c037d7f42d8b6a1489d2f4106e75a7d63147131a99f4c5a04182",
+      "USDJPY.DWX": "7a0af9fadfa6fea8872cf03c0d0bb8fe1fd8e6f67c5307fd90540d39da525463"
+    }
+  },
+  "q02": {
+    "deferred": [
+      {
+        "state": "staged_deferred",
+        "symbol": "EURJPY.DWX"
+      }
+    ],
+    "enqueued": [
+      {
+        "state": "pending",
+        "symbol": "GBPJPY.DWX",
+        "work_item_id": "2e639cf0-df3c-423f-bdb6-15ee35c98d7c"
+      },
+      {
+        "state": "pending",
+        "symbol": "GBPUSD.DWX",
+        "work_item_id": "274ffe0a-6c9e-452c-af19-98f1aae26aaa"
+      },
+      {
+        "state": "pending",
+        "symbol": "USDJPY.DWX",
+        "work_item_id": "7b54f466-4af0-4b55-850f-13817bc12358"
+      }
+    ],
+    "factory_off": true,
+    "manual_dispatch": false,
+    "priority_track": true
+  },
+  "repair": {
+    "entry_exit_mechanics_changed": false,
+    "framework_wiring_refreshed": true,
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0
+    },
+    "strategy_parameters_changed": false,
+    "symbols": [
+      "GBPJPY.DWX",
+      "GBPUSD.DWX",
+      "USDJPY.DWX",
+      "EURJPY.DWX"
+    ]
+  },
+  "safety": {
+    "autotrading_touched": false,
+    "live_setfiles_touched": false,
+    "pipeline_phase_run": false,
+    "portfolio_gate_touched": false,
+    "smoke_run": false,
+    "t_live_touched": false,
+    "t_live_manifest_touched": false
+  },
+  "sidecar_backup": "D:\\QM\\strategy_farm\\state\\backups\\q02_deferred_symbols_before_qm5_11028_20260725T025729Z.json",
+  "verification": {
+    "build_check": {
+      "failures": 0,
+      "report": "D:\\QM\\reports\\framework\\21\\build_check_20260725_025510.json",
+      "status": "PASS",
+      "warnings": 0
+    },
+    "build_guardrails": "PASS",
+    "compile": {
+      "errors": 0,
+      "log": "C:\\QM\\repo\\framework\\build\\compile\\20260725_030215\\QM5_11028_atc-wma-rev.compile.log",
+      "status": "PASS",
+      "warnings": 0
+    },
+    "spec_validation": "PASS"
+  }
+}
