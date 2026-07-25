@@ -12,6 +12,7 @@ approved_at: 2026-07-25
 uri: https://www.eia.gov/petroleum/supply/weekly/
 strategy_ids:
   - EIA-WTI-WPSR-INTRADAY-2026_S01
+  - EIA-WTI-WPSR-INTRADAY-2026_S02
 ---
 
 # EIA Weekly Petroleum Status Report Intraday WTI Source
@@ -30,12 +31,18 @@ strategy_ids:
 
 ## Mining scope
 
-One mechanically bounded card is authorized from this packet:
+Two mechanically bounded cards are authorized from this packet:
 
 - `wti-wpsr-pb`: `XTIUSD.DWX` M30 standard-Wednesday WPSR release impulse
   followed by one completed shallow counter-direction pullback bar. Entry is
   at 11:30 New York in the original impulse direction, with a structural
   event-sequence stop, fixed-R target, and same-session exit.
+- `wti-wpsr-fail`: `XTIUSD.DWX` M30 standard-Wednesday WPSR release impulse
+  that closes beyond the completed pre-release range, followed by one
+  opposite-direction bar that reclaims through the far half of that range.
+  Entry is at 11:30 New York opposite the failed impulse, with a stop beyond
+  the complete event-sequence extreme, a target at the opposite side of the
+  frozen pre-release range, and a same-session exit.
 
 ## Evidence notes
 
@@ -54,10 +61,10 @@ One mechanically bounded card is authorized from this packet:
   It trades only native Darwinex `XTIUSD.DWX` timestamps, M30 OHLC, ATR,
   executable quotes, positions, and deal history.
 - EIA supports the event identity and official schedule lineage only. The
-  impulse threshold, shallow-pullback definition, continuation direction,
-  stop, target, and same-session lifecycle are QM research hypotheses. EIA
-  does not claim they are profitable and does not certify a Darwinex CFD as a
-  futures replica.
+  impulse thresholds, shallow-pullback and deep-reclaim definitions,
+  continuation or failure direction, stops, targets, and same-session
+  lifecycles are QM research hypotheses. EIA does not claim they are
+  profitable and does not certify a Darwinex CFD as a futures replica.
 - Version 1 trades only the standard Wednesday clock and deliberately skips
   holiday-shifted releases rather than inferring them without an authorized
   runtime calendar.
