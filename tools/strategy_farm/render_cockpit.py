@@ -789,6 +789,10 @@ def ops_heartbeats_snapshot() -> list[dict]:
         ("QUOTA GOVERNOR", REPORTS_STATE / "quota_governor.log", 20 * 60),
         ("CACHE PURGE", REPORTS_STATE / "tester_cache_purge.log", 10 * 60),
         ("HEALTH.JSON", ROOT / "state" / "health.json", 20 * 60),
+        # Resident live-terminal supervisor writes its state every ~10s cycle.
+        # It died silently Fri 2026-07-24 ~15:00 and nothing noticed for ~23h
+        # (FTMO terminal stayed dead) — this tile makes that class visible.
+        ("LIVE SUPERVISOR", REPORTS_STATE / "live_session_supervisor.json", 5 * 60),
     ]
     out = []
     for label, path, warn_sec in specs:
@@ -2872,7 +2876,7 @@ a.frontier-tile:hover { background: var(--surface-2); }
 
 /* v7 OPS HEARTBEATS */
 .hb-grid {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px;
   background: var(--border); border: 1px solid var(--border);
 }
 .hb-tile { background: var(--surface-1); padding: 14px 18px; }
