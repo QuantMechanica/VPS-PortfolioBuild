@@ -1,6 +1,6 @@
 # T_Live deployment runbook — Sunday 2026-07-26, TOTAL_RISK 9.75 → 12.0
 
-Status: **DRAFT** until the Q07 rerun lands and OWNER signs. This file is canonical; the Vault
+Status: OWNER-approved (A+B, 2026-07-25). Execution window: **Sunday 2026-07-26 EVENING** (OWNER chart session). Q07 rerun landed; composition = FINAL24b. This file is canonical; the Vault
 copy (`G:\My Drive\QuantMechanica - Company Reference\`) is a mirror made at sign-off.
 
 Authority: T_Live AutoTrading = OWNER + Claude only. Deployment executes only after OWNER approves
