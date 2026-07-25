@@ -84,10 +84,72 @@ external safety channels plus the distribution channel cannot be presumed armed.
 provenance inference from EX5 mtimes, not a decompilation. Combined with WP-11 it means the KS
 kill-switch should not be counted on for the current book.
 
+---
+
+## REVISION 2, 2026-07-25 — Codex review REJECTED this plan
+
+`docs/ops/evidence/2026-07-25_codex_review_wp2346.md`. The rejection is correct on all three counts
+and the plan is rewritten below rather than patched.
+
+### WP-1 was specified against the wrong identity key — WITHDRAWN AS WRITTEN
+
+`work_items` is explicitly a per-**(EA, symbol, phase, setfile)** table (schema comment near
+`farmctl.py:683`). My spec proposed a partial unique index on `(ea_id, symbol, phase)` only. That
+would have collapsed legitimate Q03 grids, ablations and every other per-setfile variant — it would
+have made later work cheaper by silently discarding real work.
+
+Independently re-measured (read-only, `mode=ro`):
+
+| measurement | result |
+|---|---:|
+| open groups with >1 row per (ea, symbol, phase) | 35 groups / 105 rows |
+| open groups with >1 row per (ea, symbol, phase, **setfile**) | **0** |
+| QM5_10042 / AUDUSD / Q04 rows | 387 |
+| QM5_10042 / AUDUSD / Q04 **distinct setfiles** | **387** |
+
+**There is no dispatch-duplication defect.** The 386-row example in the original plan was
+misdiagnosed: it is 387 distinct setfiles fed by 387 distinct Q03 setfiles. That may be an
+unwanted grid→Q04 fan-out *policy*, which belongs at the promotion step that creates it — not
+behind a uniqueness constraint that hides it.
+
+The "~9 600 wasted backtest launches" claim in the original synthesis therefore does not survive,
+and with it the argument for scheduling WP-1 first. **WP-1 is replaced by WP-1b.**
+
+### WP-1b — grid→Q04 fan-out policy audit (replaces WP-1)  ·  Codex  ·  review: Claude
+
+Establish whether promoting every Q03 plateau-grid setfile into its own Q04 work item is intended.
+387 Q04 runs for one (EA, symbol) is either a deliberate walk-forward sweep or a policy accident
+that consumed thousands of backtests. **Measure first, decide second, change nothing until the
+answer is known.** If it is an accident, fix it at the promotion policy with an explicit cap and a
+recorded rationale — never with a uniqueness constraint.
+
+Deliverable is an evidence document plus a recommendation, not a schema change.
+
+### Missing specifications — now written
+
+The REVISION above named WP-9/10/11 but never specified them; the review matrix ended at WP-7. All
+three are now built and specified in their own evidence sections; the review matrix below covers
+them.
+
+### The staged-requeue gates were inconsistent — corrected
+
+The prose said R-1 is blocked on WP-9 and WP-10 while the table still gated it on WP-1 alone. R-1
+now requires, all of them:
+
+1. WP-9 and WP-10 reviewed and deployed;
+2. the affected basket EAs **recompiled**, with EX5 provenance bound to the fixed framework header
+   (the WP-9 fix is inert until the binaries are rebuilt);
+3. old Q07 recovery artifacts quarantined or rejected by WP-10's effective-seed check;
+4. **a sealed cohort definition.** "12 book sleeves" is the stale ever-PASS join. Latest-PASS gives
+   11; latest-overall-state gives 10. The cohort must be fixed in writing before the requeue, not
+   chosen afterwards from whichever number looks best.
+
 ### Revised ordering
 
-WP-1 → WP-9 → WP-10 → WP-2 → WP-3 → WP-4 → WP-5 → WP-6 → WP-11 → WP-7.
-R-1/R-2 (Q07 requeues) are **blocked on WP-9 and WP-10**, not merely on WP-1.
+WP-9 → WP-10 → WP-3 → WP-4 → WP-2 → WP-6 → WP-11 → WP-5 → WP-7 → WP-1b.
+
+WP-3 and WP-4 move ahead of WP-2 and WP-6 because they are the two the review approved outright.
+WP-1b moves last: it is now an audit, not a prerequisite.
 
 ---
 
@@ -298,3 +360,112 @@ released at full scale on inference alone.
 - Every DB mutation is preceded by a snapshot and is reversible.
 - Commit with explicit pathspecs only (`git commit <paths>`), never `-a`.
 - Work on `agents/board-advisor`; do not touch `main`.
+
+---
+
+## WP-9 — basket stress-rejection bypass  ·  Opus  ·  review: Codex  ·  BUILT
+
+**File:** `framework/include/QM/QM_BasketOrder.mqh`.
+
+`QM_Entry.mqh:264-269` holds the framework's only stochastic stress-rejection hook.
+`QM_BasketOpenPosition` called `QM_TradeContextSend` directly with no RNG and no rejection check, so
+for every basket EA Q06's seeded 10 % rejection was a no-op and Q07 could not diverge across seeds.
+174 active-source EAs take that path.
+
+Implemented per-leg, mirroring the helper's existing per-leg false-return contract, which the
+reference caller already rolls back — so it nets to all-or-nothing at the basket level. Effective
+per-basket rejection is `1-(1-p)^legs` (~19 % for two legs at p=0.10): stricter than the
+single-order path, never weaker. Tag `"entry_reject"` reused, because the seed drives divergence and
+the tag only salts the chain; this is the same semantic decision, so it belongs in the same
+sub-stream. Placed after kill-switch and news so a stress rejection can never mask a safety one, and
+before any broker round-trip.
+
+**Invalidates:** 15 basket Q06 PASS pairs and 13 basket Q07 PASS pairs (11 of the 13 carry
+`variance_pct=0.00`). **Two are live book sleeves — QM5_12778/AUDUSD and QM5_13117/EURGBP, together
+0.9104 of 9.75 = 9.34 % of book risk.** Their Q06 HARSH and Q07 multiseed certifications were
+produced under a no-op stress.
+
+**Inert until the 174 basket EAs are recompiled.** Do that atomically (build+commit together).
+
+**Related, latent, not fixed here:** `QM_TM_Grid.mqh` bypasses the same hook and, per its own header,
+also the news and kill-switch checks — but `QM_GridOpenNextLevel` has **zero callers** in the repo.
+A landmine for future grid EAs, not current exposure. Also unhooked: a confirmed list of EAs using
+raw `OrderSend` or `CTrade` directly — none is in the book.
+
+## WP-10 — Q07 effective-seed authentication  ·  Sonnet  ·  review: Codex  ·  BUILT
+
+**File:** `framework/scripts/q07_multiseed.py`.
+
+`_recover_existing_seed_results` authenticated a recovered run by the seeded setfile **filename** in
+`tester.ini`, never against the seed the report was actually produced with. The effective seed is
+authoritative in the `report.htm` inputs table (`qm_rng_seed=<N>`); `summary.json` has no seed field
+at all, and the `tester.ini` label is exactly what lies.
+
+Proven on the real archive for QM5_10569: five runs labelled 42/17/99/7/2026, **every report shows
+`qm_rng_seed=42`**. Under the old code all five laundered into an instant PASS. Under the fix only
+the genuine 42 recovers; the other four are rejected and must be re-run.
+
+**Blast radius:** 3 confirmed unsafe Q07 PASSes (10569/XAUUSD, 11267/XAUUSD, 12781 basket) — **none
+in the book.** But 15 of 24 book sleeves have a Q07 PASS row whose aggregate is purged, so their
+provenance is *unverifiable*, not clean. Only a requeue re-establishes it.
+
+`1224d518b` is a real repair of the writer (`_write_seeded_setfile` silently no-op'd whenever
+`qm_magic_slot_offset != 0`) but left the reader trusting the filename. This closes it.
+
+## WP-11 — KS baseline parser + gross/net  ·  Sonnet  ·  review: Codex  ·  BUILT
+
+**File:** `framework/scripts/gen_q10_baseline.py`.
+
+The live kill-switch feeds **net = profit + swap + commission** (`QM_Common.mqh:805-808`, fed at
+`:835`). The generator stored the **gross profit column** — the wrong quantity, independent of the
+parser bug — and read it by positional regex rather than by named column.
+
+Now resolves the deals-table header by name with en/de/fr aliases, sums the three named columns,
+fails loud on an unparseable report instead of writing a short baseline, and adds `--verify` and
+`--audit` read-only modes plus `--out-dir` so nothing writes into the live sandbox.
+
+**Audit of all 27 existing baselines:** 27/27 change. 24/27 carry positional corruption,
+**2 380 of 6 569 closing deals mis-parsed**. **17/27 self-diverge** — they would flag their own
+correctly-parsed source history as KS-divergent, a false-kill signature.
+
+**Book impact:** 20/24 sleeves have a baseline, 4 have none. **8 sleeves are post-path-fix,
+baseline-present and self-divergent = ~2.32 % of book risk with active false-kill exposure.**
+Five more self-diverge but run pre-path-fix binaries whose KS path is dormant. Net: 16/24 dormant,
+8/24 false-kill-prone — **no sleeve has reliable KS protection.**
+
+Not a capital-safety emergency: the load path is fail-open, the independent 3 % daily-loss halt is
+unaffected, and a false kill costs opportunity, not drawdown. But leaving it is the worst option —
+no protection *and* false-kill risk.
+
+Corrected NET baselines staged at `D:/QM/reports/state/q10_baselines_regen_wp11_20260725/`, audit
+table alongside. **Live directory untouched — writing into the live kill path is OWNER-gated.**
+
+---
+
+## Review matrix (final)
+
+| WP | built by | reviewed by | status |
+|---|---|---|---|
+| WP-1b fan-out audit | Codex | Claude | not started — replaces the withdrawn WP-1 |
+| WP-2 aggregate ingester | Sonnet | Codex | CHANGES-REQUIRED, fixes in flight |
+| WP-3 verdict_reason | Sonnet | Codex | **APPROVED** |
+| WP-4 ACTIVE_TIMEOUT | Sonnet | Codex | **APPROVED** |
+| WP-5 cold-cache retry | Codex | Claude | not started |
+| WP-6 Q09 stream repair | Sonnet | Codex | CHANGES-REQUIRED, fixes in flight |
+| WP-7 Q04 durable evidence | Codex | Claude | not started |
+| WP-9 basket bypass | Opus | Codex | built, review pending |
+| WP-10 Q07 seed auth | Sonnet | Codex | built, review pending |
+| WP-11 KS baseline | Sonnet | Codex | built, review pending |
+
+## Apply order
+
+Both approved packages apply only after **real quiescence** — verified by process scan for workers,
+pump and orphaned phase runners — and a **full DB backup**, with row counts re-taken immediately
+before the snapshot. WP-3 then WP-4. Everything else waits on its review.
+
+**Operational finding, recorded because it bit this run:** `Factory_OFF.ps1` kills worker daemons,
+`run_smoke` wrappers, `terminal64` and `metatester64`, but **not the phase-runner python processes**.
+Two orphaned `q07_multiseed.py` survived the shutdown and kept spawning fresh `run_smoke` →
+`terminal64`, which is why the script's own final check reported terminals still running and why
+they reappeared after being killed. Quiescence must be verified by process scan, never assumed from
+the script's exit. The script should reap phase runners.
