@@ -46,6 +46,25 @@ ones to FAIL. That is the point: right now we do not know which.
 **Correction to a related gate:** the gate should grade `variance_pct == 0.00` with identical trade
 counts as INVALID, not PASS, so the class fails loud. That is a criteria change and needs OWNER.
 
+> **CORRECTION 2026-07-25, after the audit was written.** The synthesis called the Q10 ingester
+> "the single highest-leverage fix — 20 EA-symbol pairs unblocked for live" and ranked it above a
+> mass Q02 requeue on that basis. That ranking is wrong. **All 20 orphaned pairs are already in the
+> DXZ Sunday book** (measured: intersection of the 20 against
+> `portfolio_manifest_sunday_final_24sleeve_DRAFT_20260719.json` = 20 of 20, 0 outside). They are
+> the sleeves revalidated overnight, which are already trading. The ingester yields **zero new live
+> sleeves.**
+>
+> `ftmo_qualification.py` is not the DXZ admission path. Its own module docstring: *"The DXZ
+> portfolio-rescue route intentionally accepts selected Q08 soft fails. That state is useful for
+> portfolio research but is not sufficient evidence for a paid prop challenge. This tool keeps the
+> two contracts separate."* So the block was on the **FTMO challenge track only**.
+>
+> What the ingester is still worth: it makes the DB describe reality (dashboards, cockpit and
+> morning_brief currently under-report the book's gate status), it makes those 20 eligible for the
+> FTMO challenge track — a named company objective — and it closes the KS-baseline-vs-qualification
+> split below. That is real value, but it is not a density lever, and the synthesis's arithmetic
+> comparing it against a Q02 requeue compared two different things.
+
 ## Second finding: 20 Q10 passes exist on disk and in no database
 
 `q10_confirmation.py` writes `aggregate.json` plus a Q13 KS baseline, and writes nothing to sqlite.
