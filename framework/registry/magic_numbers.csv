@@ -15318,3 +15318,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20152,sma-cross-pullback-h1,0,EURUSD.DWX,201520000,2026-07-25T13:10:00Z,claude,active
 20153,wti-thu-trend,0,XTIUSD.DWX,201530000,2026-07-25T10:20:00Z,codex,active
 20154,wti-wed-trend,0,XTIUSD.DWX,201540000,2026-07-25T13:20:00Z,codex,active
+20155,wti-tue-trend,0,XTIUSD.DWX,201550000,2026-07-25T14:05:00Z,codex,active
