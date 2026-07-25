@@ -155,6 +155,37 @@ def snapshot_age_minutes(timestamp: str | None, now: datetime | None = None) -> 
     return max(0.0, (reference - parsed.astimezone(timezone.utc)).total_seconds() / 60.0)
 
 
+MONITOR_SNAPSHOT = QM_DIR / "journal" / "account_snapshot.json"
+MONITOR_FRESH_MINUTES = 10
+
+
+def read_monitor_snapshot(now: datetime) -> dict | None:
+    """AccountMonitor account_snapshot.json (deployed 2026-07-25): terminal-
+    truth equity incl. floating on a 60s timer. Preferred over the EA
+    day-close EQUITY_SNAPSHOT, which lags days across weekends — on
+    2026-07-25 the day-close figure hid 2.3% of real drawdown ($92,315
+    shown vs $90,002 actual).
+    """
+    try:
+        d = json.loads(MONITOR_SNAPSHOT.read_text(encoding="utf-8"))
+        eq = d.get("equity")
+        if not isinstance(eq, (int, float)) or eq <= 0:
+            return None
+        ts = datetime.strptime(
+            str(d.get("time_utc") or ""), "%Y-%m-%dT%H:%M:%SZ"
+        ).replace(tzinfo=timezone.utc)
+        age = (now - ts).total_seconds() / 60.0
+        return {
+            "equity": float(eq),
+            "daily_pnl": float(d.get("daily_pnl") or 0.0),
+            "open_positions": d.get("open_positions"),
+            "age_minutes": age,
+            "fresh": 0 <= age <= MONITOR_FRESH_MINUTES,
+        }
+    except Exception:
+        return None
+
+
 def assess_loss_limits(equity: float, day_pnl: float) -> tuple[float, float, list[str], list[str]]:
     total_dd_pct = max(0.0, (BASE_EQUITY - equity) / BASE_EQUITY * 100.0)
     day_loss_pct = max(0.0, -day_pnl / BASE_EQUITY * 100.0)
@@ -205,6 +236,12 @@ def main() -> int:
     snap = eas.get("equity_snapshot") or {}
     equity = float(snap.get("equity") or 0.0)
     day_pnl = float(snap.get("day_pnl") or 0.0)
+    equity_source = "ea_day_close_snapshot" if equity else None
+    mon = read_monitor_snapshot(now)
+    if mon and mon.get("fresh"):
+        equity = mon["equity"]
+        day_pnl = mon["daily_pnl"]
+        equity_source = "account_monitor"
     if equity:
         total_dd_pct, day_loss_pct, risk_alarms, risk_warns = assess_loss_limits(equity, day_pnl)
         alarms.extend(risk_alarms)
@@ -248,7 +285,10 @@ def main() -> int:
         "magics_seen": eas["magics_seen"],
         "expected_magics": len(EXPECTED_MAGICS),
         "equity": equity or None,
-        "day_pnl": day_pnl if snap else None,
+        "day_pnl": day_pnl if equity_source else None,
+        "equity_source": equity_source,
+        "monitor_age_minutes": (mon or {}).get("age_minutes"),
+        "open_positions": (mon or {}).get("open_positions"),
         "total_dd_pct": total_dd_pct,
         "day_loss_pct": day_loss_pct,
         "equity_snapshot_ts": eas["equity_snapshot_ts"],

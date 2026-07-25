@@ -66,7 +66,15 @@ TLIVE_EA_LOG_DIR = TLIVE_ROOT / "MT5_Base" / "MQL5" / "Files" / "QM"
 # equity whenever the book is flat. Commission AND swap are broker-booked per
 # deal on the DXZ account (verified 2026-07-25: 52/55 deals commission,
 # both sides charged; Σ comm −$44.30, Σ swap −$48.36).
-TLIVE_DEALS_CSV = TLIVE_EA_LOG_DIR / "journal" / "live_deals_normalized.csv"
+TLIVE_MONITOR_DIR = TLIVE_EA_LOG_DIR / "journal"
+TLIVE_DEALS_CSV = TLIVE_MONITOR_DIR / "live_deals_normalized.csv"
+# FTMO terminal (non-portable install): AccountMonitor deployed 2026-07-25
+# (OWNER "ja, deploy es!"), chart13 in the contract-verified Default profile.
+FTMO_MONITOR_DIR = Path(
+    r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal"
+    r"\81A933A9AFC5DE3C23B15CAB19C63850\MQL5\Files\QM\journal"
+)
+FTMO_DEALS_CSV = FTMO_MONITOR_DIR / "live_deals_normalized.csv"
 LIVE_BOOK_SLEEVES = 24  # current live book size (label denominator only)
 
 PHASE_DISPLAY = {
@@ -485,8 +493,35 @@ def _age_minutes(iso_ts: str | None) -> int | None:
         return None
 
 
-def tlive_deal_balance() -> dict:
-    """READ-ONLY account balance from the AccountMonitor deal export.
+def monitor_account_snapshot(journal_dir: Path) -> dict:
+    """READ-ONLY account_snapshot.json from the QM_AccountMonitor EA.
+
+    Timer-driven (60s, fires on weekends too): terminal-truth equity
+    INCLUDING floating P&L, plus position count. The freshest per-account
+    figure available — callers must gate on age_min before trusting it.
+    """
+    out: dict = {"equity": None, "balance": None, "positions": None,
+                 "floating": None, "age_min": None}
+    try:
+        d = json.loads(
+            (journal_dir / "account_snapshot.json").read_text(encoding="utf-8")
+        )
+        eq = d.get("equity")
+        if isinstance(eq, (int, float)) and math.isfinite(eq):
+            out["equity"] = eq
+        bal = d.get("balance")
+        if isinstance(bal, (int, float)) and math.isfinite(bal):
+            out["balance"] = bal
+        out["positions"] = d.get("open_positions")
+        out["floating"] = d.get("floating_pnl")
+        out["age_min"] = _age_minutes(d.get("time_utc"))
+    except Exception:
+        pass
+    return out
+
+
+def deal_history_balance(deals_csv: Path) -> dict:
+    """READ-ONLY account balance from an AccountMonitor deal export.
 
     balance = Σ(profit+swap+commission+fee) over ALL rows including the
     BALANCE deposit row. This is exact realized truth (costs included) and
@@ -496,7 +531,7 @@ def tlive_deal_balance() -> dict:
     out: dict = {"balance": None, "last_deal_ts": None, "age_min": None}
     fields = ("profit", "swap", "commission", "fee")
     try:
-        with TLIVE_DEALS_CSV.open(encoding="utf-8-sig", newline="") as fh:
+        with deals_csv.open(encoding="utf-8-sig", newline="") as fh:
             reader = csv.DictReader(fh)
             headers = set(reader.fieldnames or ())
             # STRICT (Codex review 2026-07-25): a missing header or a single
@@ -558,10 +593,15 @@ def live_money_snapshot() -> dict:
             # pulse file — the tile must never sell a stale figure as fresh.
             "equity_age_min": _age_minutes(be.get("ts_utc")),
         }
-        _deals = tlive_deal_balance()
+        _deals = deal_history_balance(TLIVE_DEALS_CSV)
         out["dxz"]["deal_balance"] = _deals.get("balance")
         out["dxz"]["deal_last_ts"] = _deals.get("last_deal_ts")
         out["dxz"]["deal_age_min"] = _deals.get("age_min")
+        _mon = monitor_account_snapshot(TLIVE_MONITOR_DIR)
+        out["dxz"]["mon_equity"] = _mon.get("equity")
+        out["dxz"]["mon_positions"] = _mon.get("positions")
+        out["dxz"]["mon_floating"] = _mon.get("floating")
+        out["dxz"]["mon_age_min"] = _mon.get("age_min")
     except Exception:
         pass
     try:
@@ -585,6 +625,10 @@ def live_money_snapshot() -> dict:
                 else _age_minutes(ft.get("equity_snapshot_ts"))
             ),
         }
+        _fmon = monitor_account_snapshot(FTMO_MONITOR_DIR)
+        out["ftmo"]["mon_equity"] = _fmon.get("equity")
+        out["ftmo"]["mon_positions"] = _fmon.get("positions")
+        out["ftmo"]["mon_age_min"] = _fmon.get("age_min")
     except Exception:
         pass
     return out
@@ -1630,12 +1674,24 @@ def main() -> int:
         _pos = dxz.get("positions")
         _dbal = dxz.get("deal_balance")
         _dbal_age = dxz.get("deal_age_min")
-        # Flat book → the deal-history balance IS current equity (realized
-        # truth, commission+swap broker-booked per deal) and beats the EA
-        # day-close snapshot, which lags a full weekend (OWNER 2026-07-25:
-        # the snapshot figure missed Friday's realized -$319).
-        _use_balance = _pos == 0 and isinstance(_dbal, (int, float))
-        if _use_balance:
+        _mon_eq = dxz.get("mon_equity")
+        _mon_pos = dxz.get("mon_positions")
+        _mon_flt = dxz.get("mon_floating")
+        _mon_age = dxz.get("mon_age_min")
+        # Source priority (OWNER 2026-07-25): (1) AccountMonitor snapshot —
+        # terminal-truth equity incl. floating, 60s timer — when fresh;
+        # (2) flat book → deal-history balance (realized truth, costs
+        # broker-booked); (3) EA day-close snapshot, honestly aged.
+        _use_monitor = (
+            isinstance(_mon_eq, (int, float))
+            and isinstance(_mon_age, int) and _mon_age <= 5
+        )
+        _use_balance = (
+            not _use_monitor and _pos == 0 and isinstance(_dbal, (int, float))
+        )
+        if _use_monitor:
+            dxz_val = f"${_mon_eq:,.0f}"
+        elif _use_balance:
             dxz_val = f"${_dbal:,.0f}"
         elif isinstance(_eq, (int, float)):
             dxz_val = f"${_eq:,.0f}"
@@ -1648,14 +1704,20 @@ def main() -> int:
         _eqa = dxz.get("equity_age_min")
         # Day-close cadence is ~24h; >78h covers the weekend gap. Older than
         # that with an OK verdict still deserves amber — the figure is stale.
-        if (not _use_balance and isinstance(_eqa, int) and _eqa > 78 * 60
-                and dxz_cls == "ok"):
+        if (not _use_monitor and not _use_balance and isinstance(_eqa, int)
+                and _eqa > 78 * 60 and dxz_cls == "ok"):
             dxz_cls = "warn"
         bits: list[str] = [f"acct {dxz.get('account') or '?'}"]
         if _sleeves is not None:
             bits.append(f"{_sleeves} sleeves")
         bits.append(f"AT {_at}")
-        if _use_balance:
+        if _use_monitor:
+            bits.append(f"monitor eq {_fmt_age_min(_mon_age)} ago")
+            if _mon_pos is not None:
+                bits.append(f"{_mon_pos} open pos")
+            if isinstance(_mon_flt, (int, float)) and _mon_flt != 0:
+                bits.append(f"floating {_fmt_pnl(_mon_flt)}")
+        elif _use_balance:
             bits.append(f"balance, flat book, last deal {_fmt_age_min(_dbal_age)} ago")
             if isinstance(_eq, (int, float)):
                 bits.append(f"day-close snap ${_eq:,.0f} ({_fmt_age_min(_eqa)} old)")
@@ -1677,9 +1739,23 @@ def main() -> int:
 
     if ftmo:
         _eq = ftmo.get("equity")
-        ftmo_val = f"${_eq:,.0f}" if isinstance(_eq, (int, float)) else "PULSE?"
+        _mon_eq = ftmo.get("mon_equity")
+        _mon_pos = ftmo.get("mon_positions")
+        _mon_age = ftmo.get("mon_age_min")
+        _use_monitor = (
+            isinstance(_mon_eq, (int, float))
+            and isinstance(_mon_age, int) and _mon_age <= 5
+        )
+        if _use_monitor:
+            ftmo_val = f"${_mon_eq:,.0f}"
+            # Live DD against the 100k base — the pulse's figure derives from
+            # the EA day-close snapshot, which can lag days (it hid 2.3% of
+            # drawdown on 2026-07-25).
+            _dd = max(0.0, (100_000.0 - _mon_eq) / 100_000.0 * 100.0)
+        else:
+            ftmo_val = f"${_eq:,.0f}" if isinstance(_eq, (int, float)) else "PULSE?"
+            _dd = ftmo.get("total_dd_pct")
         _dl = ftmo.get("day_loss_pct")
-        _dd = ftmo.get("total_dd_pct")
         _soft_warn = (isinstance(_dl, (int, float)) and _dl >= 3.5) or (
             isinstance(_dd, (int, float)) and _dd >= 6.0)
         ftmo_cls = _tile_cls(ftmo.get("verdict", "?"), ftmo.get("alarms", 0), warn=_soft_warn)
@@ -1689,12 +1765,16 @@ def main() -> int:
         bits = []
         if not ftmo.get("terminal_up"):
             bits.append("TERMINAL DOWN")
-        if isinstance(_dp, (int, float)):
+        if _use_monitor:
+            bits.append(f"monitor eq {_fmt_age_min(_mon_age)} ago")
+            if _mon_pos is not None:
+                bits.append(f"{_mon_pos} open pos")
+        elif isinstance(_dp, (int, float)):
             _dlf = f" ({_dl:.1f}% of 5%)" if isinstance(_dl, (int, float)) else ""
             bits.append(f"day P&L {_fmt_pnl(_dp)}{_dlf}")
         if isinstance(_dd, (int, float)):
-            bits.append(f"total DD {_dd:.1f}% of 10%")
-        if _eqa is not None:
+            bits.append(f"total DD {_dd:.2f}% of 10%")
+        if not _use_monitor and _eqa is not None:
             bits.append(f"eq snap {_fmt_age_min(_eqa)} old")
         if ftmo.get("magics_seen") is not None:
             bits.append(f"{ftmo.get('magics_seen')}/{ftmo.get('expected_magics')} magics")
@@ -1702,6 +1782,10 @@ def main() -> int:
         if _age is not None:
             bits.append(f"pulse {_age}m ago")
         ftmo_sub = " // ".join(bits)
+        # A book 0.03% above the hard 10% floor is red regardless of what the
+        # (possibly stale) pulse verdict says.
+        if isinstance(_dd, (int, float)) and _dd >= 9.0:
+            ftmo_cls = "alert"
     else:
         ftmo_val, ftmo_cls, ftmo_sub = "NO PULSE", "alert", "ftmo_trial_pulse.json unreadable"
 

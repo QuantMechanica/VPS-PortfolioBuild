@@ -8,8 +8,10 @@
   - account/server identity in common.ini;
   - the exact 12-chart Default profile and one enabled EA per chart;
   - chart symbol/timeframe, EA path, EA id, magic slot and risk inputs;
-  - every applicable parameter from the SHA-pinned deployment preset; and
-  - both the deployed and recovery-package .ex5 SHA-256 values.
+  - every applicable parameter from the SHA-pinned deployment preset;
+  - both the deployed and recovery-package .ex5 SHA-256 values; and
+  - the read-only QM_AccountMonitor telemetry chart (chart13, OWNER-approved
+    2026-07-25 — mirrors the T_Live LiveOps pattern; zero trade calls).
 
   Chart window geometry and graphical objects are deliberately excluded: MT5 may
   save those fields during normal operation. The trading contract is not excluded.
@@ -51,6 +53,13 @@ $legs = @(
     [pscustomobject]@{ chart='chart12.chr'; ea_id=10286; slug='cinar-supertrend'; symbol='USOIL.cash'; period_size='24'; slot=36; risk='518'; cap='1.0'; preset='r25p1_USOIL.cash_D1_QM5_10286_cinar-supertrend_magic102860036.set'; preset_sha='A475CE1BBD177F73994C3C8C771D5E21D942171ED210374290B0E9D9B004B349'; binary_sha='F6740C0A9C1E21F38F9E4CC8D3EDC142C0784680723B9312D6753BC4C0D3A02C' }
 )
 
+# Read-only account monitor (deal-history exporter, zero OrderSend calls).
+# OWNER-approved 2026-07-25 ("ja, deploy es!") to close the FTMO per-trade-$
+# evidence gap the DXZ book already closed via the T_Live LiveOps profile.
+$monitorChartName = 'chart13.chr'
+$monitorBinaryRel = 'MQL5\Experts\QM_AccountMonitor.ex5'
+$monitorBinarySha = '39B8300595953A3E7AE4E08BF1D2A836067EF431156EB4077F21ACDACE3E4133'
+
 function Assert-True {
     param([bool]$Condition, [string]$Message)
     if (-not $Condition) { throw $Message }
@@ -84,7 +93,7 @@ function Get-PresetAssignments {
 }
 
 function Assert-ExactProfileFiles {
-    $expected = @($legs | ForEach-Object chart) + 'order.wnd'
+    $expected = @($legs | ForEach-Object chart) + $monitorChartName + 'order.wnd'
     $actual = @((Get-ChildItem -LiteralPath $profileDir -File | ForEach-Object Name | Sort-Object))
     $expected = @($expected | Sort-Object)
     Assert-True ([string]::Join('|', $actual) -ceq [string]::Join('|', $expected)) (
@@ -167,13 +176,27 @@ function Assert-LegContract {
     Assert-True ((Get-Sha256 $packageBinary) -ceq [string]$Leg.binary_sha) "package binary hash mismatch: $eaName"
 }
 
+function Assert-MonitorContract {
+    $chartPath = Join-Path $profileDir $monitorChartName
+    Assert-True (Test-Path -LiteralPath $chartPath -PathType Leaf) "missing monitor chart: $chartPath"
+    $text = [IO.File]::ReadAllText($chartPath)
+    $experts = [regex]::Matches($text, '(?ms)<expert>\s*.*?</expert>')
+    Assert-True ($experts.Count -eq 1) "expected exactly one expert in $monitorChartName"
+    $expert = $experts[0].Value
+    Assert-True ((Get-UniqueValue $expert 'name' $monitorChartName) -ceq 'QM_AccountMonitor') 'monitor EA name mismatch'
+    Assert-True ((Get-UniqueValue $expert 'path' $monitorChartName) -ceq 'Experts\QM_AccountMonitor.ex5') 'monitor EA path mismatch'
+    Assert-True ((Get-UniqueValue $expert 'expertmode' $monitorChartName) -ceq '1') 'monitor expert disabled'
+    Assert-True ((Get-Sha256 (Join-Path $dataDir $monitorBinaryRel)) -ceq $monitorBinarySha) 'monitor binary hash mismatch'
+}
+
 try {
     Assert-True (Test-Path -LiteralPath $profileDir -PathType Container) "missing FTMO Default profile: $profileDir"
     Assert-ExactProfileFiles
     Assert-CommonContract
     Assert-PackageManifest
     foreach ($leg in $legs) { Assert-LegContract $leg }
-    Write-Host 'VERIFIED: FTMO account 1513845506 / Default = approved Round25 12-leg profile + 12 SHA-pinned binaries'
+    Assert-MonitorContract
+    Write-Host 'VERIFIED: FTMO account 1513845506 / Default = approved Round25 12-leg profile + 12 SHA-pinned binaries + AccountMonitor telemetry chart'
     exit 0
 } catch {
     Write-Error "FTMO Round25 live contract verification failed: $($_.Exception.Message)"
