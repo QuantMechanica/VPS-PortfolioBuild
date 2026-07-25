@@ -96,6 +96,29 @@ No external source is read at runtime. The EA uses only registered
 `XTIUSD.DWX` D1 OHLC, ATR, executable quotes, spread, broker calendar,
 positions, deal history, and V5 framework state.
 
+## Source-Defined Rules
+
+- Ewald et al. identify a WTI trading-time pattern whose source strategy
+  shorts in July and takes the offsetting position in December.
+- Moskowitz, Ooi, and Pedersen define the slow directional state from the sign
+  of an instrument's own completed trailing return, with 12 months as the
+  canonical horizon.
+- Neither source defines the weekly CFD package, ATR stop, spread ceiling,
+  attempt persistence, or QuantMechanica risk mode.
+
+## QM Interpretations
+
+- `XTIUSD.DWX` is a continuous-CFD carrier, not a matched-maturity futures
+  panel. The card tests only the directional carrier of the source effect.
+- July-November is the entry window; December is the source cover boundary and
+  therefore has no new short entry.
+- Weekly D1 packages and Friday flattening are the governed CFD translation
+  used to avoid overlapping positions and expose enough independent decisions
+  to Q02.
+- `Close[1] / Close[253]`, a strict negative sign, `ATR(20) * 3.0`, the
+  1,500-point spread cap, and one consumed attempt per week are fixed,
+  pre-result execution choices rather than source claims.
+
 ## Non-Duplicate Decision
 
 The deterministic pre-allocation check scanned 4,198 EA-registry rows and 376
@@ -225,6 +248,25 @@ are jointly load-bearing.
 - Friday close: enabled at broker hour 21.
 - Framework kill switch and broker hard stop: authoritative.
 - Forced session flatten: none beyond the Friday framework control.
+
+## Exit Precedence
+
+1. Framework kill switch and the server-side hard stop.
+2. Framework Friday close at broker hour 21.
+3. Older-week, outside-window, or unexpected-long cleanup on the next D1 bar.
+4. Seven-calendar-day stale close.
+5. No discretionary or signal-reversal exit.
+
+## Runtime Data Dependencies
+
+- Exact chart and signal route: `XTIUSD.DWX`, D1.
+- Native tester data: completed D1 closes, ATR, current executable quote,
+  spread, symbol metadata, broker calendar, positions, deals, and terminal
+  persistent state.
+- No wall-clock event dependency; the broker-week key anchors calendar state.
+- No external calendar, futures contract chain, finite CSV dataset, API, or
+  cross-symbol history.
+- Tester account currency and fixed-risk lot sizing remain framework-owned.
 
 ## Author Claims
 
