@@ -501,6 +501,9 @@ def live_money_snapshot() -> dict:
             "autotrading": str((at[-1] or {}).get("state") or "?") if at else "?",
             "account": str(tj.get("account_id") or ""),
             "age_min": _age_minutes(lb.get("generated_at_utc")),
+            # Age of the equity NUMBER itself (day-close snapshot), not of the
+            # pulse file — the tile must never sell a stale figure as fresh.
+            "equity_age_min": _age_minutes(be.get("ts_utc")),
         }
     except Exception:
         pass
@@ -517,6 +520,13 @@ def live_money_snapshot() -> dict:
             "expected_magics": ft.get("expected_magics"),
             "terminal_up": bool(ft.get("terminal_up")),
             "age_min": _age_minutes(ft.get("checked_at_utc")),
+            # Age of the equity snapshot the numbers come from (pulse age alone
+            # hides a dead terminal serving day-old figures).
+            "eq_age_min": (
+                int(ft["equity_snapshot_age_minutes"])
+                if isinstance(ft.get("equity_snapshot_age_minutes"), (int, float))
+                else _age_minutes(ft.get("equity_snapshot_ts"))
+            ),
         }
     except Exception:
         pass
@@ -709,6 +719,12 @@ def q12_review_ready_count() -> int:
         return 0
 
 
+def _ell(s: str, n: int) -> str:
+    """Truncate with a visible ellipsis — a hard cut mid-word reads as a bug."""
+    s = str(s)
+    return s if len(s) <= n else s[: n - 1].rstrip() + "…"
+
+
 def owner_decision_rows(q12_count: int) -> list[dict]:
     """Genuine OWNER decisions only (OWNER call 2026-07-07).
 
@@ -725,9 +741,9 @@ def owner_decision_rows(q12_count: int) -> list[dict]:
         for item in data.get("items") or []:
             detail = str(item.get("detail") or "").replace("{q12_count}", str(q12_count))
             rows.append({
-                "cat": str(item.get("cat") or "DECISION")[:16],
-                "title": str(item.get("title") or "?")[:52],
-                "detail": detail[:74],
+                "cat": _ell(str(item.get("cat") or "DECISION"), 16),
+                "title": _ell(str(item.get("title") or "?"), 64),
+                "detail": _ell(detail, 96),
                 "due": str(item.get("due") or ""),
                 "alert": str(item.get("severity") or "").lower() in ("alert", "action"),
             })
@@ -759,7 +775,7 @@ def owner_decision_rows(q12_count: int) -> list[dict]:
         rows.append({
             "cat": "UNBLOCK",
             "title": f"{str(b.get('task_type') or 'task')} {str(b.get('id') or '')[:8]}",
-            "detail": str(b.get("verdict") or "")[:74],
+            "detail": _ell(str(b.get("verdict") or ""), 96),
             "due": "",
             "alert": False,
         })
@@ -839,6 +855,32 @@ def live_worker_terminals() -> set[str]:
         if result.returncode == 0:
             for line in result.stdout.splitlines():
                 m = re.search(r"--terminal\s+(T\d+)", line, re.IGNORECASE)
+                if m:
+                    out.add(m.group(1).upper())
+    except Exception:
+        pass
+    return out
+
+
+def factory_terminal_procs() -> set[str]:
+    """{T1, T8, ...} — path-anchored terminal64.exe processes under D:\\QM\\mt5.
+
+    The farm DB can report 0 running while ad-hoc harnesses (Q07 rerun) or a
+    leaked phase runner still hold terminals; quiescence is only provable by
+    process scan (OWNER 2026-07-25). T_Live (C:) never matches this anchor.
+    """
+    out: set[str] = set()
+    try:
+        result = subprocess.run(
+            ["powershell.exe", "-NoProfile", "-Command",
+             "Get-CimInstance Win32_Process -Filter \"Name='terminal64.exe'\" | "
+             "Select-Object -ExpandProperty ExecutablePath"],
+            capture_output=True, text=True, timeout=15,
+            creationflags=(subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0),
+        )
+        if result.returncode == 0:
+            for line in result.stdout.splitlines():
+                m = re.match(r"(?i)^D:\\QM\\mt5\\(T\d{1,2})\\terminal64\.exe\s*$", line.strip())
                 if m:
                     out.add(m.group(1).upper())
     except Exception:
@@ -1468,12 +1510,11 @@ def main() -> int:
         factory_off = False
     if factory_off:
         pill_label = "MAINTENANCE"; pill_class = "warn"
-        if _factory_fail_checks:
-            msg = "FACTORY OFF (intentional) // " + " // ".join(
-                f"{c.get('name')}: {str(c.get('detail'))[:70]}" for c in _factory_fail_checks[:1]
-            )
-        else:
-            msg = "FACTORY OFF (intentional) — workers paused by FACTORY_OFF.flag"
+        # Pump/worker/orchestrator FAILs are implied by an intentional OFF —
+        # narrating a dead pump's exit code next to "intentional" reads as a
+        # contradiction (OWNER 2026-07-25). Non-factory FAILs still surface
+        # through the WARN branch below and the heartbeat panel.
+        msg = "FACTORY OFF (intentional) — workers paused by FACTORY_OFF.flag"
     elif _factory_fail:
         pill_label = "CRITICAL"; pill_class = "crit"
         # Topbar must explain the CRITICAL, not narrate the build queue —
@@ -1513,6 +1554,19 @@ def main() -> int:
             return "alert"
         return "warn" if warn else "ok"
 
+    def _fmt_age_min(m) -> str:
+        if not isinstance(m, (int, float)):
+            return "?"
+        m = int(m)
+        if m < 90:
+            return f"{m}m"
+        if m < 48 * 60:
+            return f"{m / 60:.0f}h"
+        return f"{m / 1440:.1f}d"
+
+    def _fmt_pnl(v) -> str:
+        return f"{'+' if v >= 0 else '-'}${abs(v):,.0f}"
+
     if dxz:
         _sleeves = dxz.get("sleeves")
         _eq = dxz.get("equity")
@@ -1525,17 +1579,25 @@ def main() -> int:
         _pos = dxz.get("positions")
         _age = dxz.get("age_min")
         _dp = dxz.get("day_pnl")
-        _slv = f"{_sleeves} sleeves // " if _sleeves is not None else ""
-        _dpf = (
-            f"day {'+' if isinstance(_dp, (int, float)) and _dp >= 0 else ''}{_dp:,.0f} // "
-            if isinstance(_dp, (int, float)) else ""
-        )
-        dxz_sub = (
-            f"acct {dxz.get('account') or '?'} // {_slv}AT {_at} // "
-            f"{_dpf}{_pos if _pos is not None else '?'} open pos // "
-            f"verdict {dxz.get('verdict', '?')} // pulse {_age}m ago" if _age is not None else
-            f"acct {dxz.get('account') or '?'} // {_slv}AT {_at} // verdict {dxz.get('verdict', '?')}"
-        )
+        _eqa = dxz.get("equity_age_min")
+        # Day-close cadence is ~24h; >78h covers the weekend gap. Older than
+        # that with an OK verdict still deserves amber — the figure is stale.
+        if isinstance(_eqa, int) and _eqa > 78 * 60 and dxz_cls == "ok":
+            dxz_cls = "warn"
+        bits: list[str] = [f"acct {dxz.get('account') or '?'}"]
+        if _sleeves is not None:
+            bits.append(f"{_sleeves} sleeves")
+        bits.append(f"AT {_at}")
+        if isinstance(_dp, (int, float)):
+            bits.append(f"day P&L {_fmt_pnl(_dp)}")
+        if _eqa is not None:
+            bits.append(f"eq close {_fmt_age_min(_eqa)} old")
+        if _pos is not None:
+            bits.append(f"{_pos} open pos")
+        bits.append(f"verdict {dxz.get('verdict', '?')}")
+        if _age is not None:
+            bits.append(f"pulse {_age}m ago")
+        dxz_sub = " // ".join(bits)
     else:
         dxz_val, dxz_cls, dxz_sub = "NO PULSE", "alert", "live_book_pulse.json unreadable"
 
@@ -1549,16 +1611,23 @@ def main() -> int:
         ftmo_cls = _tile_cls(ftmo.get("verdict", "?"), ftmo.get("alarms", 0), warn=_soft_warn)
         _dp = ftmo.get("day_pnl")
         _age = ftmo.get("age_min")
-        ftmo_sub = (
-            f"day {'+' if isinstance(_dp, (int, float)) and _dp >= 0 else ''}{_dp:,.0f}"
-            f" ({_dl:.1f}% of 5) // total DD {_dd:.1f}% of 10 // "
-            f"{ftmo.get('magics_seen')}/{ftmo.get('expected_magics')} magics // "
-            f"verdict {ftmo.get('verdict', '?')}"
-            + (f" // {_age}m ago" if _age is not None else "")
-            if isinstance(_dp, (int, float)) and isinstance(_dl, (int, float))
-            and isinstance(_dd, (int, float))
-            else f"verdict {ftmo.get('verdict', '?')}"
-        )
+        _eqa = ftmo.get("eq_age_min")
+        bits = []
+        if not ftmo.get("terminal_up"):
+            bits.append("TERMINAL DOWN")
+        if isinstance(_dp, (int, float)):
+            _dlf = f" ({_dl:.1f}% of 5%)" if isinstance(_dl, (int, float)) else ""
+            bits.append(f"day P&L {_fmt_pnl(_dp)}{_dlf}")
+        if isinstance(_dd, (int, float)):
+            bits.append(f"total DD {_dd:.1f}% of 10%")
+        if _eqa is not None:
+            bits.append(f"eq snap {_fmt_age_min(_eqa)} old")
+        if ftmo.get("magics_seen") is not None:
+            bits.append(f"{ftmo.get('magics_seen')}/{ftmo.get('expected_magics')} magics")
+        bits.append(f"verdict {ftmo.get('verdict', '?')}")
+        if _age is not None:
+            bits.append(f"pulse {_age}m ago")
+        ftmo_sub = " // ".join(bits)
     else:
         ftmo_val, ftmo_cls, ftmo_sub = "NO PULSE", "alert", "ftmo_trial_pulse.json unreadable"
 
@@ -1597,13 +1666,18 @@ def main() -> int:
     # Only genuine OWNER decisions (OWNER call 2026-07-07: "was muss ich da
     # alles entscheiden?" — the old panel listed Claude review tasks and
     # zombie BLOCKED rows, none of which OWNER can act on).
-    review_pending = db_rows(
-        "SELECT b.id, b.payload_json FROM tasks b "
-        "WHERE b.kind='build_ea' AND b.status='done' "
-        "AND NOT EXISTS (SELECT 1 FROM tasks r WHERE r.kind='ea_review' "
-        "AND r.payload_json LIKE '%\"build_task_id\": \"' || b.id || '\"%') "
-        "LIMIT 8"
+    # Uncapped COUNT — the old LIMIT-8 row fetch silently capped both the
+    # Claude QUE readout and the funnel BUILT stage at 8 (audit 2026-07-25).
+    # json_extract join instead of correlated NOT-EXISTS-LIKE: same result,
+    # ~0.2s vs ~20s in the 2-min render loop (Codex review 2026-07-25).
+    _review_rows = db_rows(
+        "SELECT COUNT(*) AS c FROM tasks b "
+        "LEFT JOIN (SELECT DISTINCT json_extract(payload_json, '$.build_task_id') AS id "
+        "           FROM tasks WHERE kind='ea_review' AND json_valid(payload_json)) r "
+        "  ON r.id = b.id "
+        "WHERE b.kind='build_ea' AND b.status='done' AND r.id IS NULL"
     )
+    review_pending_count = int(_review_rows[0]["c"] or 0) if _review_rows else 0
     attention_rows: list[str] = []
     for d in decisions[:8]:
         row_cls = "attention-row alert" if d.get("alert") else "attention-row"
@@ -1632,7 +1706,7 @@ def main() -> int:
     claude_act = len(claude_workers)
     codex_act = len(codex_workers)
     mt5_act = len(mt5_work)
-    review_q_count = len(review_pending)
+    review_q_count = review_pending_count
 
     # Today's completed work_items counts as "DONE TODAY" for MT5
     cw_today = controlling["windows"]["today"]
@@ -1693,19 +1767,26 @@ def main() -> int:
         + len(q.get("pending_backtests_list", []) or [])
         + q.get("work_items_pending", 0)
     )
-    # T1..T10 fleet — active when an mt5_work entry's terminal matches
+    # T1..T10 fleet — farm-active when an mt5_work entry's terminal matches;
+    # amber when a terminal64 process is alive without a farm claim (ad-hoc
+    # harness or leaked runner — visible instead of lying "idle").
     active_terms = {str(w.get("terminal") or "").upper() for w in mt5_work}
+    proc_terms = factory_terminal_procs()
     term_cells = []
     for i in range(1, 11):
         tname = f"T{i}"
         is_active = any(tname in t or t == tname for t in active_terms)
-        cls = "active" if is_active else "idle"
-        dot = "■" if is_active else "□"
+        is_proc = tname in proc_terms
+        cls = "active" if is_active else ("proc" if is_proc else "idle")
+        dot = "■" if (is_active or is_proc) else "□"
         term_cells.append(
             f'<div class="term {cls}"><div class="id">{tname}</div><div class="dot">{dot}</div></div>'
         )
     term_row_html = "".join(term_cells)
-    fleet_label = f"T1–T10 Workers // {len(active_terms)} of 10 saturated"
+    fleet_label = (
+        f"T1–T10 Workers // {len(active_terms)} of 10 farm-active // "
+        f"{len(proc_terms)} terminal proc{'s' if len(proc_terms) != 1 else ''} up"
+    )
 
     # Watchdog pulse: last self-heal action + interactive-session state. Answers
     # OWNER's recurring "ist die Factory eigentlich gelaufen?" without log-digging.
@@ -1748,9 +1829,18 @@ def main() -> int:
                     pass
 
                 if age_min is not None and age_min > 30:
-                    # Watchdog stopped cycling — show explicit STALE label
-                    watchdog_str = f"WATCHDOG-STALE since {freshness_ts} // {age_min}m ago"
-                    watchdog_cls = "wd-crit"
+                    if factory_off:
+                        # Watchdog task is disabled together with the factory —
+                        # expected during MAINTENANCE, never CRIT (OWNER rule:
+                        # CRITICAL is reserved for a genuinely down factory).
+                        watchdog_str = (
+                            f"paused with factory (MAINTENANCE) // last beat {age_min}m ago"
+                        )
+                        watchdog_cls = "wd-warn"
+                    else:
+                        # Watchdog stopped cycling — show explicit STALE label
+                        watchdog_str = f"WATCHDOG-STALE since {freshness_ts} // {age_min}m ago"
+                        watchdog_cls = "wd-crit"
                 elif last_op:
                     act = str(last_op.get("action") or "?")
                     sess = "SESSION LOST" if last_op.get("session_lost") else "session ok"
@@ -1767,32 +1857,57 @@ def main() -> int:
         pass
 
     # ---------- 5. PIPELINE FUNNEL ----------
-    # Stage counts:
-    # SRC      — sources pending  (input reservoir)
-    # CARDS    — cards_ready / approved (write-ready EAs)
-    # BUILT    — build_ea active+pending+done not yet reviewed (EAs being built)
-    # BACKTEST Q02  — work_items at Q02 (plus legacy P2 rows)
-    # ROBUST Q05-Q07 — work_items at Q05-Q07 (plus legacy rows)
-    # PORTFOLIO Q11 — work_items PASS at Q11 (plus legacy P8 rows)
+    # One basis across the whole row (numeric audit 2026-07-25): every stage
+    # shows the CUMULATIVE count that reached it, and backtest phases use the
+    # same unit as the prog-strip — distinct (ea_id, symbol) PASS pairs.
+    # Reservoir stocks (pending sources, in-flight builds) live in the meta
+    # lines; the old row mixed stocks (1, 11) with lifetime totals (73203,
+    # dominated 68% by INFRA_FAIL requeues) under flow-implying arrows.
     src_pending = backlog["sources"].get("pending", 0)
     src_done = backlog["sources"].get("done", 0)
     cards_ready = backlog["sources"].get("cards_ready", 0)
-    cards_cum_approved = q.get("cards_approved", 0)
-    # Builds: pending + active + waiting review
-    built_count = q.get("builds_pending", 0) + q.get("builds_active", 0) + review_q_count
-    # Backtest Q02 — count Q02 and any legacy P2 rows.
-    q02_total = 0
-    for r in db_rows("SELECT status, verdict, COUNT(*) AS c FROM work_items WHERE phase IN ('Q02','P2') GROUP BY status, verdict"):
-        q02_total += int(r.get("c") or 0)
-    # ROBUST Q05-Q07: operator surfaces show Qxx only.
-    robust_rows = db_rows(
-        "SELECT phase, COUNT(DISTINCT ea_id) AS c FROM work_items "
-        "WHERE verdict='PASS' AND phase IN ('Q05','Q06','Q07','P4','P5','P5b') GROUP BY phase"
+
+    # Cards total + EAs built (filesystem truth) — also feed section 5b.
+    cards_dir = ROOT / "artifacts" / "cards_approved"
+    cards_total = (sum(1 for p in cards_dir.iterdir()
+                       if p.is_file() and p.suffix == ".md")
+                   if cards_dir.exists() else 0)
+    ea_dir_root = Path(r"C:\QM\repo\framework\EAs")
+    eas_built = 0
+    if ea_dir_root.exists():
+        for d in ea_dir_root.iterdir():
+            if d.is_dir() and d.name.startswith("QM5_"):
+                # Counted as "built" only if the .ex5 exists
+                if any(p.suffix == ".ex5" for p in d.iterdir()):
+                    eas_built += 1
+    eas_to_build = max(0, cards_total - eas_built)
+    builds_inflight = (
+        q.get("builds_pending", 0) + q.get("builds_active", 0) + review_q_count
     )
-    robust_count = sum(int(r.get("c") or 0) for r in robust_rows)
+
+    def _pass_pairs(phases: tuple[str, ...]) -> int:
+        ph = ",".join(f"'{p}'" for p in phases)
+        rows_ = db_rows(
+            "SELECT COUNT(DISTINCT ea_id || '|' || symbol) AS c FROM work_items "
+            f"WHERE verdict='PASS' AND phase IN ({ph})"
+        )
+        return int(rows_[0]["c"] or 0) if rows_ else 0
+
+    q02_pass_pairs = _pass_pairs(("Q02", "P2"))
+    # ROBUST Q05-Q07: deduped across the band (an EA that reached Q07 also has
+    # Q05+Q06 PASS rows — summing per-phase counts triple-counts it).
     _p_to_q = {"P4": "Q05", "P5": "Q06", "P5b": "Q07"}
+    robust_by_q: dict[str, int] = {}
+    for r in db_rows(
+        "SELECT phase, COUNT(DISTINCT ea_id || '|' || symbol) AS c FROM work_items "
+        "WHERE verdict='PASS' AND phase IN ('Q05','Q06','Q07','P4','P5','P5b') GROUP BY phase"
+    ):
+        qk = _p_to_q.get(str(r.get("phase")), str(r.get("phase")))
+        robust_by_q[qk] = robust_by_q.get(qk, 0) + int(r.get("c") or 0)
+    robust_pairs = _pass_pairs(("Q05", "Q06", "Q07", "P4", "P5", "P5b"))
+    q05_pairs = robust_by_q.get("Q05", 0)
     robust_meta = " // ".join(
-        f"{_p_to_q.get(r['phase'], r['phase'])}:{r['c']}" for r in robust_rows
+        f"{k}:{robust_by_q[k]}" for k in ("Q05", "Q06", "Q07") if k in robust_by_q
     ) or "0 PASS"
     portfolio_count = backlog.get("p8_pass_total", 0)
     portfolio_meta = f"TARGET 5 // {portfolio_count}/5"
@@ -1810,42 +1925,40 @@ def main() -> int:
     q03_spark = sparkline_str(_last7("_q03_pass")) if trend else "▁▁▁▁▁▁▁"
     q11_spark = "▁▁▁▁▁▁▁"
 
-    # Funnel drop-off labels
-    review_drop = ""
-    if cards_cum_approved:
-        review_drop = f"▼ {int(100 - 100 * built_count / max(1, cards_cum_approved))}% TO REVIEW"
+    # Funnel drop-off labels — same unit on both ends of every ratio.
+    built_meta = f"{eas_to_build} TO BUILD // {builds_inflight} IN FLIGHT"
     q02_drop = ""
-    if q02_total:
-        q02_drop = f"▼ {int(100 - 100 * robust_count / max(1, q02_total))}% TO Q05"
+    if q02_pass_pairs:
+        q02_drop = f"▼ {int(100 - 100 * q05_pairs / max(1, q02_pass_pairs))}% TO Q05"
 
     funnel_html_inner = (
         '<div class="funnel-stage{src_empty}">'
-        '<div class="stg-lbl">SRC</div>'
-        f'<div class="stg-num">{src_pending}</div>'
-        f'<div class="stg-meta">{src_done} DONE // {src_pending} PEND</div>'
+        '<div class="stg-lbl">SRC DONE</div>'
+        f'<div class="stg-num">{src_done}</div>'
+        f'<div class="stg-meta">{src_pending} PEND</div>'
         '<span class="stg-spark-lbl">7D INTAKE</span>'
         f'<div class="stg-spark">{src_spark}</div>'
         '</div>'
         '<div class="funnel-arrow">→</div>'
         '<div class="funnel-stage{cards_empty}">'
-        '<div class="stg-lbl">CARDS</div>'
-        f'<div class="stg-num">{cards_ready}</div>'
-        f'<div class="stg-meta">{cards_cum_approved} APPROVED CUM</div>'
+        '<div class="stg-lbl">CARDS APPROVED</div>'
+        f'<div class="stg-num">{cards_total:,}</div>'
+        f'<div class="stg-meta">{cards_ready} SRC CARDS-READY</div>'
         '<span class="stg-spark-lbl">7D APPROVED</span>'
         f'<div class="stg-spark">{cards_spark}</div>'
         '</div>'
         '<div class="funnel-arrow">→</div>'
         '<div class="funnel-stage{built_empty}">'
-        '<div class="stg-lbl">BUILT</div>'
-        f'<div class="stg-num">{built_count}</div>'
-        f'<div class="stg-meta drop">{e(review_drop) or "—"}</div>'
+        '<div class="stg-lbl">EAS BUILT</div>'
+        f'<div class="stg-num">{eas_built:,}</div>'
+        f'<div class="stg-meta drop">{e(built_meta)}</div>'
         '<span class="stg-spark-lbl">7D BUILD</span>'
         f'<div class="stg-spark">{build_spark}</div>'
         '</div>'
         '<div class="funnel-arrow">→</div>'
         '<div class="funnel-stage{p2_empty}">'
-        '<div class="stg-lbl">BACKTEST Q02</div>'
-        f'<div class="stg-num">{q02_total}</div>'
+        '<div class="stg-lbl">Q02 PASS PAIRS</div>'
+        f'<div class="stg-num">{q02_pass_pairs:,}</div>'
         f'<div class="stg-meta drop">{e(q02_drop) or "—"}</div>'
         '<span class="stg-spark-lbl">7D Q02 PASS</span>'
         f'<div class="stg-spark">{q02_spark}</div>'
@@ -1853,7 +1966,7 @@ def main() -> int:
         '<div class="funnel-arrow">→</div>'
         '<div class="funnel-stage{robust_empty}">'
         '<div class="stg-lbl">ROBUST Q05-Q07</div>'
-        f'<div class="stg-num">{robust_count}</div>'
+        f'<div class="stg-num">{robust_pairs}</div>'
         f'<div class="stg-meta">{e(robust_meta)}</div>'
         '<span class="stg-spark-lbl">7D Q03 PASS</span>'
         f'<div class="stg-spark">{q03_spark}</div>'
@@ -1868,11 +1981,11 @@ def main() -> int:
         '</div>'
     )
     funnel_html_inner = funnel_html_inner.format(
-        src_empty=" empty" if src_pending == 0 else "",
-        cards_empty=" empty" if cards_ready == 0 else "",
-        built_empty=" empty" if built_count == 0 else "",
-        p2_empty=" empty" if q02_total == 0 else "",
-        robust_empty=" empty" if robust_count == 0 else "",
+        src_empty=" empty" if src_done == 0 else "",
+        cards_empty=" empty" if cards_total == 0 else "",
+        built_empty=" empty" if eas_built == 0 else "",
+        p2_empty=" empty" if q02_pass_pairs == 0 else "",
+        robust_empty=" empty" if robust_pairs == 0 else "",
         portfolio_empty=" empty" if portfolio_count == 0 else "",
     )
 
@@ -1880,26 +1993,8 @@ def main() -> int:
     # snapshot counts still feed the COMPANY FRONTIER Q08-cohort tile.
 
     # ---------- 5b. PIPELINE PROGRESS (per-Q breakdown — OWNER call) ----------
-    # Cards total: filesystem count of cards_approved/
-    cards_dir = ROOT / "artifacts" / "cards_approved"
-    cards_total = (sum(1 for p in cards_dir.iterdir()
-                       if p.is_file() and p.suffix == ".md")
-                   if cards_dir.exists() else 0)
-
-    # EAs built: registry rows where the on-disk EA dir exists
-    ea_registry_path = ROOT.parent.parent.parent / "QM" / "repo" / "framework" / "registry" / "ea_id_registry.csv"
-    if not ea_registry_path.exists():
-        # Try the canonical repo path
-        ea_registry_path = Path(r"C:\QM\repo\framework\registry\ea_id_registry.csv")
-    ea_dir_root = Path(r"C:\QM\repo\framework\EAs")
-    eas_built = 0
-    if ea_dir_root.exists():
-        for d in ea_dir_root.iterdir():
-            if d.is_dir() and d.name.startswith("QM5_"):
-                # Counted as "built" only if the .ex5 exists
-                if any(p.suffix == ".ex5" for p in d.iterdir()):
-                    eas_built += 1
-    eas_to_build = max(0, cards_total - eas_built)
+    # cards_total / eas_built / eas_to_build come from the funnel section
+    # above (single filesystem walk, shared basis).
 
     # Backtest queue totals
     bt_done = 0
@@ -1921,19 +2016,14 @@ def main() -> int:
     q_counts: dict[str, int] = {q: 0 for q in Q_DISPLAY_ORDER}
     # Q01 = EAs built (registry intersection w/ disk)
     q_counts["Q01"] = eas_built
-    # Q02..Q10 = distinct (ea_id, symbol) PASS pairs at each Qxx
-    for r in db_rows(
-        "SELECT phase, COUNT(DISTINCT ea_id || '|' || symbol) AS c "
-        "FROM work_items WHERE verdict='PASS' GROUP BY phase"
-    ):
-        phase_raw = r.get("phase") or ""
-        # Map legacy P-keys to Qxx for display
-        _legacy = {"P2": "Q02", "P3": "Q03", "P3.5": "Q04", "P4": "Q05",
-                   "P5": "Q06", "P5b": "Q07", "P5c": "Q08",
-                   "P6": "Q09", "P7": "Q10", "P8": "Q11"}
-        qid = phase_raw if phase_raw in q_counts else _legacy.get(phase_raw)
-        if qid and qid in q_counts:
-            q_counts[qid] += int(r.get("c") or 0)
+    # Q02..Q10 = distinct (ea_id, symbol) PASS pairs at each Qxx. Each Q is
+    # counted over the UNION of its Qxx + legacy P key — summing the two key
+    # spaces double-counts pairs that exist under both (audit 2026-07-25).
+    _q_with_legacy = {"Q02": "P2", "Q03": "P3", "Q04": "P3.5", "Q05": "P4",
+                      "Q06": "P5", "Q07": "P5b", "Q08": "P5c",
+                      "Q09": "P6", "Q10": "P7", "Q11": "P8"}
+    for qid, legacy in _q_with_legacy.items():
+        q_counts[qid] = _pass_pairs((qid, legacy))
     # Q11..Q13 are OWNER-only phases (no work_items yet) — leave at 0 until
     # the agent_tasks table tracks them. Future iteration.
 
@@ -2043,9 +2133,13 @@ def main() -> int:
     lb_deals_val = f"{_deals} DEALS" if isinstance(_deals, int) else "n/a"
     lb_deals_cls = "hot" if isinstance(_deals, int) and _deals > 0 else ""
     if _jage is not None:
+        _fills = (
+            "fills logged today" if isinstance(_deals, int) and _deals > 0
+            else "no fills logged today"
+        )
         lb_deals_sub = (
             f"journal {live_book.get('journal_date') or '?'} // last write "
-            f"{_age_short(_jage)} ago // fills logged today"
+            f"{_age_short(_jage)} ago // {_fills}"
         )
     else:
         lb_deals_sub = "today journal not found (pre-open / rollover) — n/a"
@@ -2056,7 +2150,7 @@ def main() -> int:
     _ets = str(live_book.get("equity_ts") or "")[:16].replace("T", " ")
     if isinstance(_eq, (int, float)):
         _dp_txt = (
-            f" // day {'+' if isinstance(_edp, (int, float)) and _edp >= 0 else ''}{_edp:,.2f}"
+            f" // day P&L {'+' if _edp >= 0 else '-'}${abs(_edp):,.2f}"
             if isinstance(_edp, (int, float)) else ""
         )
         lb_eq_sub = f"last day-close equity (EA-emitted) // {_ets}Z{_dp_txt} // NOT real-time"
@@ -2358,6 +2452,9 @@ body { padding: 32px; min-height: 100vh; }
 .agent-limits .lim-reset { color: var(--text-3); font-size: 10px; }
 .agent-limits .lim-stale { color: var(--warn); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
 .agent-limits .sep { margin: 0 8px; color: var(--border); }
+/* A row followed by its limits line must not draw a bottom border — the
+   limits block is pulled up (-8px) and the border would strike through it. */
+.agent-row.with-limits { border-bottom: none; }
 .watchdog-row {
   display: grid; grid-template-columns: 80px 1fr; gap: 16px;
   padding: 12px 20px; align-items: baseline;
@@ -2396,6 +2493,8 @@ body { padding: 32px; min-height: 100vh; }
 .term.active .dot { color: var(--text); }
 .term.idle   .dot { color: var(--text-3); }
 .term.active .id  { color: var(--text-2); }
+.term.proc .dot { color: var(--warn); }
+.term.proc .id  { color: var(--text-2); }
 
 /* PIPELINE PROGRESS — top-line counters + per-Q chip strip (OWNER call) */
 .prog-counters {
@@ -2760,7 +2859,7 @@ a.frontier-tile:hover { background: var(--surface-2); }
       <span class="section-aux">Claude // Codex // MT5</span>
     </div>
     <div class="agent-status">
-      <div class="agent-row">
+      <div class="agent-row with-limits">
         <span class="name">CLAUDE</span>
         <span class="agent-readout">
           <span class="v">{claude_act}</span><span class="k">ACT</span><span class="sep">&middot;</span>
@@ -2769,7 +2868,7 @@ a.frontier-tile:hover { background: var(--surface-2); }
         </span>
       </div>
       <div class="agent-limits">{claude_limits_html}</div>
-      <div class="agent-row">
+      <div class="agent-row with-limits">
         <span class="name">CODEX</span>
         <span class="agent-readout">
           <span class="v">{codex_act}</span><span class="k">ACT</span><span class="sep">&middot;</span>
