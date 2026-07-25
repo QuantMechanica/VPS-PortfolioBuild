@@ -60,3 +60,30 @@ STR-042→QM5_9999 stays resolved: both reviews confirm rule-identity.
 Net ledger effect of the whole audit: backlog 27 → 26 (only the true
 duplicate removed). Process note: this is the two-agent review working as
 designed — the shallow bulk retirement did not survive counter-review.
+
+## CORRECTION 2 (2026-07-25, Claude — STR-086 late reversal)
+
+The bulk audit's DEDUP remark on STR-086 ("DIBS already built
+ff-dibs-breakout QM5_9581, FAILED Q04 — no rebuild") was never covered
+by the codex CORRECTION above (grep: no STR-086/9581 entry) yet the row
+stayed machine-ELIGIBLE and entered tranche 11. Artifact-level check of
+`framework/EAs/QM5_9581_ff-dibs-breakout/` (SPEC.md + .mq5) performed
+2026-07-25 before Q02 execution:
+
+QM5_9581 deltas vs the STR-086 source (thread 86766):
+- Anchor: 00:00-GMT reference **close** vs the source's 06:00-GMT daily
+  **open** ("0600GMT is always 0600GMT") — different reference concept.
+- Entry/SL buffers: 0.1×ATR(14) vs the source's 1 pip + spread.
+- Invented ATR inside-bar range filters (0.15–1.25 ATR), unsourced.
+- Fixed TP 2R; the source's core MM (half close at 1R / FTT, initial
+  stop retained, MA20 runner trail) is entirely absent.
+- 10-bar time stop, 16:00 hard cancellation, opposite-breakout close —
+  all unsourced.
+
+Verdict: NOT rule-identical; the Q04 FAIL of QM5_9581 does not falsify
+faithful DIBS. Rebuild QM5_20139 justified (same standard as the nine
+codex-contested reversals). Ledger note amended in place.
+
+Lesson reinforced: prose DEDUP remarks and machine eligibility drifted
+apart — the audit trail must be checked row-by-row when a tranche picks
+up a row whose note still says "no rebuild".
