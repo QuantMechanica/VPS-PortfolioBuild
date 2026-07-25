@@ -3,7 +3,7 @@
 ; ea_id:        9123
 ; ea_slug:      aa-tes01325-cross
 ; ea_version:   v5.0
-; set_version:  s20260724-stress-harsh
+; set_version:  s20260725-stress-harsh
 ; symbol:       SP500.DWX
 ; timeframe:    D1
 ; environment:  q06_stress_harsh
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   601f4a6e5895a23814ee432edca27343c509f041637512fefdc28f4192b76f39
 ; author:       Development
-; date:         2026-07-24
+; date:         2026-07-25
 ;==========================================================
 qm_magic_slot_offset=0
 qm_rng_seed=17
