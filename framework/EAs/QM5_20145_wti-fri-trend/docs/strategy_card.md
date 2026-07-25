@@ -56,8 +56,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0
-q01_status: PENDING
+pipeline_phase: Q01
+q01_status: PASS
 q02_status: PENDING
 review_focus: "Falsify whether the WTI Friday premium survives only in positive slow-trend states after the omitted overnight gap, CFD/futures basis, costs, and post-source decay."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -358,11 +358,12 @@ portfolio KPI claim, or correlation waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-07-25 | initial source-backed WTI Friday/trend interaction card | G0 | APPROVED |
+| v2 | 2026-07-25 | strict V5 build and compile | Q01 | PASS; Q02 not enqueued because all seven factory terminals were active |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-25 | APPROVED | this card |
-| Q01 Build Validation | 2026-07-25 | PENDING | — |
-| Q02 Baseline Screening | 2026-07-25 | PENDING | — |
+| Q01 Build Validation | 2026-07-25 | PASS | `docs/ops/evidence/2026-07-25_qm5_20145_wti_fri_trend_build_q02_cpu_ceiling_stop.md` |
+| Q02 Baseline Screening | 2026-07-25 | PENDING — NOT ENQUEUED (CPU CEILING) | same evidence |
