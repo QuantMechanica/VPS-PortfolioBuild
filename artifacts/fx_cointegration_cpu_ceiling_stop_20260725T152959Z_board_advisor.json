@@ -1,0 +1,105 @@
+{
+  "after": {
+    "counts": {
+      "queued": 4
+    },
+    "db_exists": true,
+    "dispatched_top": [],
+    "queued_top": [
+      {
+        "ea_id": "QM5_12760",
+        "id": 2,
+        "phase": "Q02",
+        "priority": 80,
+        "status": "queued",
+        "symbol": "GBPUSD.DWX"
+      },
+      {
+        "ea_id": "QM5_13086",
+        "id": 3,
+        "phase": "Q02",
+        "priority": 80,
+        "status": "queued",
+        "symbol": "XBRUSD.DWX"
+      },
+      {
+        "ea_id": "QM5_13119",
+        "id": 4,
+        "phase": "Q02",
+        "priority": 80,
+        "status": "queued",
+        "symbol": "USDJPY.DWX"
+      },
+      {
+        "ea_id": "QM5_12757",
+        "id": 1,
+        "phase": "Q02",
+        "priority": 70,
+        "status": "queued",
+        "symbol": "XTIUSD.DWX"
+      }
+    ],
+    "schema": "legacy_saturation",
+    "sqlite": "D:\\QM\\reports\\pipeline\\mt5_queue.db",
+    "worker_heartbeat_top": []
+  },
+  "before": {
+    "counts": {
+      "queued": 4
+    },
+    "db_exists": true,
+    "dispatched_top": [],
+    "queued_top": [
+      {
+        "ea_id": "QM5_12760",
+        "id": 2,
+        "phase": "Q02",
+        "priority": 80,
+        "status": "queued",
+        "symbol": "GBPUSD.DWX"
+      },
+      {
+        "ea_id": "QM5_13086",
+        "id": 3,
+        "phase": "Q02",
+        "priority": 80,
+        "status": "queued",
+        "symbol": "XBRUSD.DWX"
+      },
+      {
+        "ea_id": "QM5_13119",
+        "id": 4,
+        "phase": "Q02",
+        "priority": 80,
+        "status": "queued",
+        "symbol": "USDJPY.DWX"
+      },
+      {
+        "ea_id": "QM5_12757",
+        "id": 1,
+        "phase": "Q02",
+        "priority": 70,
+        "status": "queued",
+        "symbol": "XTIUSD.DWX"
+      }
+    ],
+    "schema": "legacy_saturation",
+    "sqlite": "D:\\QM\\reports\\pipeline\\mt5_queue.db",
+    "worker_heartbeat_top": []
+  },
+  "dispatch_state": "D:\\QM\\reports\\pipeline\\dispatch_state.json",
+  "dry_run": true,
+  "sqlite": "D:\\QM\\reports\\pipeline\\mt5_queue.db",
+  "tick": {
+    "available_slots_after": 0,
+    "available_slots_before": 0,
+    "dry_run": true,
+    "duplicate": 0,
+    "invalid": 0,
+    "no_capacity": 0,
+    "queued_scanned": 0,
+    "scheduled": 0,
+    "status": "ok"
+  },
+  "timestamp_utc": "2026-07-25T15:30:15Z"
+}
