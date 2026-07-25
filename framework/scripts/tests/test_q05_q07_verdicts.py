@@ -881,16 +881,30 @@ class Q05Q07VerdictTests(unittest.TestCase):
 
     @staticmethod
     def _write_seed_report(report_path: Path, seed: int | None) -> None:
-        """Minimal MT5 report.htm carrying the effective qm_rng_seed input."""
+        """Minimal MT5 report.htm carrying the effective qm_rng_seed in its Inputs table.
+
+        Mirrors the real strategy-tester settings header: a row labelled ``Inputs:``
+        whose first bold cell is an EA input, followed by continuation rows (empty
+        colspan-3 label cell) each holding one ``<b>name=value</b>``, terminated by
+        the next labelled settings row (``Company:``). The seed row is only emitted
+        when a seed is given; ``seed=None`` yields an Inputs region with no
+        qm_rng_seed cell, so the effective seed is (correctly) unestablished.
+        """
         report_path.parent.mkdir(parents=True, exist_ok=True)
         seed_row = (
-            f"<tr><td colspan=10><b>qm_rng_seed={seed}</b></td></tr>"
+            '<tr align="right"><td nowrap colspan="3"></td>'
+            f'<td nowrap colspan="10" align="left"><b>qm_rng_seed={seed}</b></td></tr>'
             if seed is not None else ""
         )
         report_path.write_text(
             "<html><body><table>"
-            "<tr><td>Expert:</td><td><b>demo</b></td></tr>"
+            '<tr align="right"><td nowrap colspan="3">Expert:</td>'
+            '<td nowrap colspan="10" align="left"><b>demo</b></td></tr>'
+            '<tr align="right"><td nowrap colspan="3">Inputs:</td>'
+            '<td nowrap colspan="10" align="left"><b>qm_chartui_enabled=true</b></td></tr>'
             f"{seed_row}"
+            '<tr align="right"><td nowrap colspan="3">Company:</td>'
+            '<td nowrap colspan="10" align="left"><b>Tradeslide Trading Tech Limited</b></td></tr>'
             "</table></body></html>",
             encoding="utf-8",
         )
@@ -1163,6 +1177,472 @@ class Q05Q07VerdictTests(unittest.TestCase):
             )
 
         self.assertEqual(recovered, {})
+
+    # ---- WP-10 CHANGES-REQUIRED regression coverage -----------------------
+
+    def test_q07_effective_seed_scoped_to_inputs_table_cell(self) -> None:
+        """Blocker 2: only the <b>qm_rng_seed=N</b> inputs cell authenticates."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+
+            good = root / "good.htm"
+            good.write_text(
+                "<html><body><table>"
+                "<tr><td nowrap colspan=3>Inputs:</td>"
+                "<td nowrap colspan=10 align=left><b>qm_rng_seed=42</b></td></tr>"
+                "</table></body></html>",
+                encoding="utf-8",
+            )
+            self.assertEqual(q07._effective_seed_from_report(good), 42)
+
+            # Comment-only mention, no inputs-table cell -> unauthenticated.
+            comment = root / "comment.htm"
+            comment.write_text(
+                "<html><body><!-- qm_rng_seed=99 --><table>"
+                "<tr><td>Expert:</td><td><b>demo</b></td></tr>"
+                "</table></body></html>",
+                encoding="utf-8",
+            )
+            self.assertIsNone(q07._effective_seed_from_report(comment))
+
+            # Plain-text mention outside any bold cell -> unauthenticated.
+            plain = root / "plain.htm"
+            plain.write_text(
+                "<html><body><p>note: qm_rng_seed=7 requested</p>"
+                "<table><tr><td>Expert:</td><td><b>demo</b></td></tr></table>"
+                "</body></html>",
+                encoding="utf-8",
+            )
+            self.assertIsNone(q07._effective_seed_from_report(plain))
+
+    def test_q07_recovery_rejects_forged_non_harsh_summary(self) -> None:
+        """Blocker 1: matching identity + effective seed but NO Q07 HARSH seeded
+        set-file label in tester.ini must not recover — effective seed alone is
+        insufficient."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            run_dir = root / "QM5_12772" / "20260703_120000"
+            raw_dir = run_dir / "raw" / "run_01"
+            raw_dir.mkdir(parents=True)
+            # No tester.ini at all -> no seeded-setfile provenance label.
+            self._write_seed_report(raw_dir / "report.htm", 42)
+            summary = run_dir / "summary.json"
+            summary.write_text(
+                json.dumps({
+                    "result": "PASS",
+                    "ea_id": 12772,
+                    "expert": r"QM\QM5_12772_demo",
+                    "symbol": "EURGBP.DWX",
+                    "period": "D1",
+                    "terminal": "T8",
+                    "runs": [{
+                        "status": "OK",
+                        "report_canonical_path": str(raw_dir / "report.htm"),
+                        "profit_factor": 1.20,
+                        "drawdown": 1000.0,
+                        "total_trades": 100,
+                    }],
+                }),
+                encoding="utf-8",
+            )
+
+            recovered = q07._recover_existing_seed_results(
+                root,
+                [42, 17, 99, 7, 2026],
+                latest_full_year=None,
+                full_history_from="2017.01.01",
+                ea_id=12772,
+                ea_expert=r"QM\QM5_12772_demo",
+                symbol="EURGBP.DWX",
+                period="D1",
+                terminal="T8",
+            )
+
+            # The per-summary authenticator also refuses it directly: the harsh
+            # seeded-setfile axis is absent even though the effective seed matches.
+            direct = q07._result_from_existing_seed_summary(
+                summary_path=summary,
+                seed=42,
+                latest_full_year=None,
+                full_history_from="2017.01.01",
+                ea_id=12772,
+                ea_expert=r"QM\QM5_12772_demo",
+                symbol="EURGBP.DWX",
+                period="D1",
+                terminal="T8",
+            )
+
+        self.assertEqual(recovered, {})
+        self.assertIsNone(direct)
+
+    def test_q07_fresh_run_rejects_effective_seed_mismatch(self) -> None:
+        """Blocker 3: a fresh run whose report ran a different effective seed than
+        requested is a hard INVALID (injector regressed), never graded."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            setfile = root / "demo_seed17.set"
+            setfile.write_text("RISK_FIXED=1000\n", encoding="utf-8")
+            seed_summary = root / "QM5_12781" / "20260701_010101" / "summary.json"
+            seed_report = seed_summary.parent / "raw" / "run_01" / "report.htm"
+
+            def fake_run(args, **_kwargs):
+                seed_summary.parent.mkdir(parents=True, exist_ok=True)
+                seed_summary.write_text(
+                    json.dumps({
+                        "result": "PASS",
+                        "ea_id": 12781,
+                        "expert": r"QM\QM5_12781_demo",
+                        "symbol": "USDJPY.DWX",
+                        "period": "D1",
+                        "terminal": "T8",
+                        "runs": [{
+                            "status": "OK",
+                            "profit_factor": 1.30,
+                            "drawdown": 1800.0,
+                            "total_trades": 300,
+                        }],
+                    }),
+                    encoding="utf-8",
+                )
+                # Report ran the WRONG effective seed (42, not requested 17).
+                self._write_seed_report(seed_report, 42)
+                return SimpleNamespace(
+                    returncode=0,
+                    stdout=f"run_smoke.summary={seed_summary}\n",
+                    stderr="",
+                )
+
+            with patch.object(q07.subprocess, "run", side_effect=fake_run):
+                result = q07._run_seed(
+                    ea_id=12781,
+                    ea_expert=r"QM\QM5_12781_demo",
+                    symbol="USDJPY.DWX",
+                    setfile=setfile,
+                    seed=17,
+                    terminal="T8",
+                    report_root=root,
+                    timeout_sec=30,
+                    period="D1",
+                )
+
+        self.assertIsNotNone(result["invalid_reason"])
+        self.assertIn("effective_seed_mismatch", result["invalid_reason"])
+
+        verdict, reason, _metrics = q07.evaluate_seeds([
+            result,
+            {"seed": 42, "pf": 1.2, "trades": 25, "summary_path": "summary.json", "exit_code": 0},
+        ])
+        self.assertEqual(verdict, "INVALID")
+        self.assertIn("seeds_invalid_evidence", reason)
+
+    def test_q07_fresh_run_accepts_matching_effective_seed(self) -> None:
+        """Happy path: fresh run whose report ran the requested seed AND whose
+        tester.ini names the requested seed's Q07 HARSH set-file is graded normally
+        (authentication does not over-reject when both axes are present and agree)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            setfile = root / "demo_seed17.set"
+            setfile.write_text("RISK_FIXED=1000\n", encoding="utf-8")
+            seed_summary = root / "QM5_12781" / "20260701_020202" / "summary.json"
+            seed_report = seed_summary.parent / "raw" / "run_01" / "report.htm"
+
+            def fake_run(args, **_kwargs):
+                seed_summary.parent.mkdir(parents=True, exist_ok=True)
+                seed_summary.write_text(
+                    json.dumps({
+                        "result": "PASS",
+                        "ea_id": 12781,
+                        "expert": r"QM\QM5_12781_demo",
+                        "symbol": "USDJPY.DWX",
+                        "period": "D1",
+                        "terminal": "T8",
+                        "runs": [{
+                            "status": "OK",
+                            "profit_factor": 1.30,
+                            "drawdown": 1800.0,
+                            "total_trades": 300,
+                        }],
+                    }),
+                    encoding="utf-8",
+                )
+                self._write_seed_report(seed_report, 17)
+                # Both authentication axes present and equal to the requested seed:
+                # the report ran effective 17 and tester.ini names seed17's HARSH set.
+                (seed_report.parent / "tester.ini").write_text(
+                    "ExpertParameters=QM5_12781_demo_LOGICAL_D1_q06_stress_harsh_seed17.set\n",
+                    encoding="utf-8",
+                )
+                return SimpleNamespace(
+                    returncode=0,
+                    stdout=f"run_smoke.summary={seed_summary}\n",
+                    stderr="",
+                )
+
+            with patch.object(q07.subprocess, "run", side_effect=fake_run):
+                result = q07._run_seed(
+                    ea_id=12781,
+                    ea_expert=r"QM\QM5_12781_demo",
+                    symbol="USDJPY.DWX",
+                    setfile=setfile,
+                    seed=17,
+                    terminal="T8",
+                    report_root=root,
+                    timeout_sec=30,
+                    period="D1",
+                )
+
+        self.assertIsNone(result["invalid_reason"])
+        self.assertEqual(result["pf"], 1.30)
+        self.assertEqual(result["trades"], 300)
+
+    # ---- WP-10 round-3 CHANGES-REQUIRED regression coverage ----------------
+
+    def test_q07_effective_seed_ignores_out_of_inputs_bold_fragment(self) -> None:
+        """Round-3 blocker 1: a bold ``<b>qm_rng_seed=N</b>`` fragment OUTSIDE the
+        Inputs region (deals-table cell, chart caption, post-Results chrome) must
+        not authenticate. The prior document-wide regex would latch it."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+
+            # (a) The Inputs block carries no seed; a bold seed fragment lives only
+            # after the Results header. It must NOT authenticate.
+            outside_only = root / "outside_only.htm"
+            outside_only.write_text(
+                "<html><body><table>"
+                '<tr align="right"><td nowrap colspan="3">Inputs:</td>'
+                '<td nowrap colspan="10" align="left"><b>qm_chartui_enabled=true</b></td></tr>'
+                '<tr align="right"><td nowrap colspan="3"></td>'
+                '<td nowrap colspan="10" align="left"><b>qm_magic_slot_offset=2</b></td></tr>'
+                '<tr align="right"><td nowrap colspan="3">Company:</td>'
+                '<td nowrap colspan="10" align="left"><b>Tradeslide</b></td></tr>'
+                '<tr><td colspan="13" align="center"><b>Results</b></td></tr>'
+                # bold seed fragment AFTER Results -> out of the Inputs region
+                "<tr><td>caption</td><td><b>qm_rng_seed=99</b></td></tr>"
+                "</table></body></html>",
+                encoding="utf-8",
+            )
+            self.assertIsNone(q07._effective_seed_from_report(outside_only))
+
+            # (b) The Inputs block carries seed 42; an out-of-region qm_rng_seed=99
+            # fragment must neither corrupt it into ambiguity nor win.
+            both = root / "both.htm"
+            both.write_text(
+                "<html><body><table>"
+                '<tr align="right"><td nowrap colspan="3">Inputs:</td>'
+                '<td nowrap colspan="10" align="left"><b>qm_chartui_enabled=true</b></td></tr>'
+                '<tr align="right"><td nowrap colspan="3"></td>'
+                '<td nowrap colspan="10" align="left"><b>qm_rng_seed=42</b></td></tr>'
+                '<tr align="right"><td nowrap colspan="3">Company:</td>'
+                '<td nowrap colspan="10" align="left"><b>Tradeslide</b></td></tr>'
+                "<tr><td>caption</td><td><b>qm_rng_seed=99</b></td></tr>"
+                "</table></body></html>",
+                encoding="utf-8",
+            )
+            self.assertEqual(q07._effective_seed_from_report(both), 42)
+
+    def test_q07_recovery_refuses_split_sibling_label_and_effective(self) -> None:
+        """Round-3 blocker 2: label and effective seed must come from the SAME run
+        the summary references. A mislabeled accepted run (tester.ini seed17 but a
+        report that ran effective 42) must not be laundered into slot 17 by borrowing
+        a sibling run's honest effective-17 report."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            run_dir = root / "QM5_12772" / "20260703_112954"
+            # Accepted run (referenced by the summary): HARSH label 17, but the
+            # report proves the tester actually ran effective seed 42.
+            accepted = run_dir / "raw" / "run_02"
+            accepted.mkdir(parents=True)
+            (accepted / "tester.ini").write_text(
+                "ExpertParameters=QM5_12772_demo_LOGICAL_D1_q06_stress_harsh_seed17.set\n",
+                encoding="utf-8",
+            )
+            self._write_seed_report(accepted / "report.htm", 42)
+            # Sibling run with a genuine effective-17 report the OLD independent
+            # sorted-rglob would borrow (run_01 sorts before run_02).
+            sibling = run_dir / "raw" / "run_01"
+            sibling.mkdir(parents=True)
+            (sibling / "tester.ini").write_text(
+                "ExpertParameters=QM5_12772_demo_LOGICAL_D1_q06_stress_harsh_seed17.set\n",
+                encoding="utf-8",
+            )
+            self._write_seed_report(sibling / "report.htm", 17)
+            summary = run_dir / "summary.json"
+            summary.write_text(
+                json.dumps({
+                    "result": "PASS",
+                    "ea_id": 12772,
+                    "expert": r"QM\QM5_12772_demo",
+                    "symbol": "EURGBP.DWX",
+                    "period": "D1",
+                    "terminal": "T8",
+                    "runs": [{
+                        "status": "OK",
+                        "report_canonical_path": str(accepted / "report.htm"),
+                        "tester_ini_path": str(accepted / "tester.ini"),
+                        "profit_factor": 1.01,
+                        "drawdown": 3343.50,
+                        "total_trades": 226,
+                    }],
+                }),
+                encoding="utf-8",
+            )
+
+            recovered = q07._recover_existing_seed_results(
+                root,
+                [42, 17, 99, 7, 2026],
+                latest_full_year=None,
+                full_history_from="2017.01.01",
+                ea_id=12772,
+                ea_expert=r"QM\QM5_12772_demo",
+                symbol="EURGBP.DWX",
+                period="D1",
+                terminal="T8",
+            )
+            direct = q07._result_from_existing_seed_summary(
+                summary_path=summary,
+                seed=17,
+                latest_full_year=None,
+                full_history_from="2017.01.01",
+                ea_id=12772,
+                ea_expert=r"QM\QM5_12772_demo",
+                symbol="EURGBP.DWX",
+                period="D1",
+                terminal="T8",
+            )
+            # Both axes are bound to the accepted run only.
+            label = q07._seed_from_summary_path(summary)
+            effective = q07._effective_seed_from_summary_path(summary)
+
+        # The accepted run's co-located pair is (label=17, effective=42): they
+        # disagree, so nothing recovers — and the sibling's effective 17 is never
+        # substituted in.
+        self.assertEqual(recovered, {})
+        self.assertIsNone(direct)
+        self.assertEqual(label, 17)
+        self.assertEqual(effective, 42)
+
+    def test_q07_fresh_run_without_effective_seed_is_invalid(self) -> None:
+        """Round-3 blocker 3: a fresh run whose report carries no qm_rng_seed input
+        cannot prove which seed ran; the absent effective axis is a hard INVALID even
+        when the HARSH label and metrics are present."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            setfile = root / "demo_seed17.set"
+            setfile.write_text("RISK_FIXED=1000\n", encoding="utf-8")
+            seed_summary = root / "QM5_12781" / "20260701_030303" / "summary.json"
+            run_raw = seed_summary.parent / "raw" / "run_01"
+
+            def fake_run(args, **_kwargs):
+                run_raw.mkdir(parents=True, exist_ok=True)
+                (run_raw / "tester.ini").write_text(
+                    "ExpertParameters=QM5_12781_demo_LOGICAL_D1_q06_stress_harsh_seed17.set\n",
+                    encoding="utf-8",
+                )
+                self._write_seed_report(run_raw / "report.htm", None)  # no qm_rng_seed input
+                seed_summary.write_text(
+                    json.dumps({
+                        "result": "PASS",
+                        "ea_id": 12781,
+                        "expert": r"QM\QM5_12781_demo",
+                        "symbol": "USDJPY.DWX",
+                        "period": "D1",
+                        "terminal": "T8",
+                        "runs": [{
+                            "status": "OK",
+                            "profit_factor": 1.30,
+                            "drawdown": 1800.0,
+                            "total_trades": 300,
+                        }],
+                    }),
+                    encoding="utf-8",
+                )
+                return SimpleNamespace(
+                    returncode=0,
+                    stdout=f"run_smoke.summary={seed_summary}\n",
+                    stderr="",
+                )
+
+            with patch.object(q07.subprocess, "run", side_effect=fake_run):
+                result = q07._run_seed(
+                    ea_id=12781,
+                    ea_expert=r"QM\QM5_12781_demo",
+                    symbol="USDJPY.DWX",
+                    setfile=setfile,
+                    seed=17,
+                    terminal="T8",
+                    report_root=root,
+                    timeout_sec=30,
+                    period="D1",
+                )
+
+        self.assertIsNotNone(result["invalid_reason"])
+        self.assertIn("seed_evidence_missing", result["invalid_reason"])
+
+        verdict, reason, _metrics = q07.evaluate_seeds([
+            result,
+            {"seed": 42, "pf": 1.2, "trades": 25, "summary_path": "summary.json", "exit_code": 0},
+        ])
+        self.assertEqual(verdict, "INVALID")
+        self.assertIn("seeds_invalid_evidence", reason)
+
+    def test_q07_fresh_run_with_wrong_harsh_label_is_invalid(self) -> None:
+        """Round-3 blocker 3: a fresh run whose report ran the requested seed but
+        whose tester.ini names a DIFFERENT HARSH seed set-file is not a proven Q07
+        HARSH dispatch for this slot; the label axis must be present AND equal."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            setfile = root / "demo_seed17.set"
+            setfile.write_text("RISK_FIXED=1000\n", encoding="utf-8")
+            seed_summary = root / "QM5_12781" / "20260701_040404" / "summary.json"
+            run_raw = seed_summary.parent / "raw" / "run_01"
+
+            def fake_run(args, **_kwargs):
+                run_raw.mkdir(parents=True, exist_ok=True)
+                # tester.ini names seed99's HARSH set-file, but the report ran 17.
+                (run_raw / "tester.ini").write_text(
+                    "ExpertParameters=QM5_12781_demo_LOGICAL_D1_q06_stress_harsh_seed99.set\n",
+                    encoding="utf-8",
+                )
+                self._write_seed_report(run_raw / "report.htm", 17)
+                seed_summary.write_text(
+                    json.dumps({
+                        "result": "PASS",
+                        "ea_id": 12781,
+                        "expert": r"QM\QM5_12781_demo",
+                        "symbol": "USDJPY.DWX",
+                        "period": "D1",
+                        "terminal": "T8",
+                        "runs": [{
+                            "status": "OK",
+                            "profit_factor": 1.30,
+                            "drawdown": 1800.0,
+                            "total_trades": 300,
+                        }],
+                    }),
+                    encoding="utf-8",
+                )
+                return SimpleNamespace(
+                    returncode=0,
+                    stdout=f"run_smoke.summary={seed_summary}\n",
+                    stderr="",
+                )
+
+            with patch.object(q07.subprocess, "run", side_effect=fake_run):
+                result = q07._run_seed(
+                    ea_id=12781,
+                    ea_expert=r"QM\QM5_12781_demo",
+                    symbol="USDJPY.DWX",
+                    setfile=setfile,
+                    seed=17,
+                    terminal="T8",
+                    report_root=root,
+                    timeout_sec=30,
+                    period="D1",
+                )
+
+        self.assertIsNotNone(result["invalid_reason"])
+        self.assertIn("seed_evidence_missing", result["invalid_reason"])
+        self.assertIn("harsh_label=99", result["invalid_reason"])
 
 
 if __name__ == "__main__":
