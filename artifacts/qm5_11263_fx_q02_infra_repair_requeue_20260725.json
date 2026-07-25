@@ -1,0 +1,34 @@
+{
+  "task_id": "9b529028-ac29-40f7-b88a-0635946fed9f",
+  "ea_id": "QM5_11263",
+  "ea_label": "QM5_11263_qt-dual-thrust",
+  "mission_unit": "priority_2_diverse_fx_q02_infra_recovery",
+  "source_work_item_id": "8395f5cc-4094-4573-b29c-ff2fd03f6c06",
+  "source_symbol": "EURUSD.DWX",
+  "source_verdict": "INFRA_FAIL",
+  "source_reason": "run_smoke_fail:NO_HISTORY;BARS_ZERO;INCOMPLETE_RUNS",
+  "diagnosis": "Artifacts were identity-stable, GBPUSD.DWX passed Q02 with the same build, and the EURUSD.DWX prescreen passed before the full run returned empty history shells. This is terminal-local history infrastructure, not a strategy defect.",
+  "strict_compile": {
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "summary": "D:\\QM\\reports\\compile\\20260725_183111\\summary.csv",
+    "ex5_sha256": "1e375839ff0f33f2edd44d703cf7f30aaea2c35d710054747a5034572eb5c068"
+  },
+  "repair": {
+    "q02_work_item_id": "2bba81cf-f6f5-47b6-a4ec-f8becd01098a",
+    "status": "pending",
+    "avoid_terminals": [
+      "T1",
+      "T6"
+    ],
+    "risk_mode": "RISK_FIXED",
+    "manual_tester_launched": false
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
