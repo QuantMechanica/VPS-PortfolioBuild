@@ -1,0 +1,133 @@
+{
+  "date": "2026-07-25",
+  "branch": "agents/board-advisor",
+  "task_id": "697cad68-6a97-4f33-9cf6-3e24fb54d437",
+  "ea_id": "QM5_20133",
+  "slug": "wti-wpsr-pb",
+  "ea_slug": "wti-wpsr-pb",
+  "strategy_id": "EIA-WTI-WPSR-INTRADAY-2026_S01",
+  "source_id": "EIA-WTI-WPSR-INTRADAY-2026",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_20133_wti-wpsr-pb",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_20133_wti-wpsr-pb/QM5_20133_wti-wpsr-pb.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_20133_wti-wpsr-pb/QM5_20133_wti-wpsr-pb.ex5",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_20133_wti-wpsr-pb/SPEC.md",
+  "card_path": "C:/QM/repo/strategy-seeds/cards/approved/QM5_20133_wti-wpsr-pb_card.md",
+  "evidence_path": "C:/QM/repo/docs/ops/evidence/2026-07-25_qm5_20133_wti_wpsr_pullback_build_q02_enqueue.md",
+  "magic_base": 201330000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_20133_wti-wpsr-pb/sets/QM5_20133_wti-wpsr-pb_XTIUSD.DWX_M30_backtest.set"
+  ],
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "source_retrieval": {
+    "status": "DEFERRED:SOURCE_POLICY",
+    "urls_attempted": [
+      "https://www.eia.gov/petroleum/supply/weekly/",
+      "https://www.eia.gov/petroleum/supply/weekly/schedule.php"
+    ],
+    "lineage_used": "existing repository EIA WPSR packets and governed QM5_1121 standard-clock implementation",
+    "new_web_claims_imported": false
+  },
+  "dedup": {
+    "registry_rows_scanned": 4190,
+    "research_cards_scanned": 376,
+    "approved_cards_targeted_searched": 304,
+    "exact_duplicates": 0,
+    "deterministic_verdict": "CLEAN",
+    "manual_neighbors": [
+      "QM5_1121_unger-crude-inventory-release",
+      "QM5_10319_eia-oil-momo",
+      "QM5_12579_eia-wti-aftershock",
+      "QM5_12590_eia-wti-wpsr-fade",
+      "QM5_12752_eia-wti-wpsr-idbrk",
+      "QM5_12988_xti-eia-inventory-momentum",
+      "QM5_13042_xti-distdraw-mom",
+      "QM5_13044_xti-padd3-draw",
+      "QM5_13063_xti-padd2-draw",
+      "QM5_20124_xng-stor-m30",
+      "QM5_20128_xng-stor-fade",
+      "QM5_12567_cum-rsi2-commodity"
+    ],
+    "manual_resolution": "new EA waits for a completed WTI 10:30 release-range break plus a separate 11:00 shallow counter-bar that still holds outside the pre-release range, then enters continuation at 11:30 and is flat the same session"
+  },
+  "validation": {
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "spec_validation": "PASS",
+    "build_guardrails": "PASS",
+    "build_check": "PASS",
+    "build_check_failures": 0,
+    "build_check_warnings": 0,
+    "build_check_report_path": "D:/QM/reports/framework/21/build_check_20260725_014229.json",
+    "strict_compile": "PASS",
+    "compile_succeeded": true,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "compile_log_path": "C:/QM/repo/framework/build/compile/20260725_014229/QM5_20133_wti-wpsr-pb.compile.log"
+  },
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_log_path": "C:/QM/repo/framework/build/compile/20260725_014229/QM5_20133_wti-wpsr-pb.compile.log",
+  "build_check_report_path": "D:/QM/reports/framework/21/build_check_20260725_014229.json",
+  "build_check_status": "PASS",
+  "build_check_failures": 0,
+  "build_check_warnings": 0,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "FACTORY_OFF.flag is authoritative; paced Q02 owns the first Model-4 trade-generation run",
+  "smoke_report_path": null,
+  "blocked_reason": "",
+  "q02": {
+    "work_item_id": "c8f77304-f43b-4d5b-bd00-a4b9afbaa482",
+    "phase": "Q02",
+    "status": "pending",
+    "attempt_count": 0,
+    "created_at_utc": "2026-07-25T01:45:58+00:00",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "M30",
+    "setfile": "QM5_20133_wti-wpsr-pb_XTIUSD.DWX_M30_backtest.set",
+    "initial_auto_enqueue_count": 1,
+    "initial_auto_enqueue_skipped": 0,
+    "idempotent_record_recheck": "existing_q02_pending",
+    "idempotent_existing_work_item_prefix": "c8f77304"
+  },
+  "factory_state": {
+    "factory_off_observed": true,
+    "factory_off_path": "D:/QM/strategy_farm/state/FACTORY_OFF.flag",
+    "running_pipeline_mt5_terminals": 0,
+    "terminal64_processes_observed": 1,
+    "observed_process_scope": "pre-existing T_Live terminal only",
+    "backtest_cpu_ceiling_hit": false,
+    "manual_backtest_started": false
+  },
+  "hashes_sha256": {
+    "card": "CA9150D936427A7BBB5E2966C2EA1C6425C36537CCB4CF16CF525BB233284287",
+    "source_packet": "83C863389F0CD85B5F5C838EF696CDE3F8F04A833D3C76FFEC36C511FBB9D48B",
+    "mq5": "C97C977289EBAA7AB6EC404A0A3348D9B7FBAC08E52D250ADD5786C4B6002894",
+    "ex5": "06702D7E26D1AC795F20A6C2FF73424D15B3FA025855B38C6EF6A23AC230230E",
+    "spec": "A06F85504A9011DE731DDFF9EA87EDC21BF107F9AECC38D3DECA656AA85BCC5E",
+    "setfile": "273694DD2C51FD52DCC1C008DDC68FEBF9D6DF1378E49D0CF311746E3DABB017",
+    "ea_id_registry": "D7B9F16811FB113E3F60541DCA2AD42DB05971FF329251931B604492565FB07B",
+    "magic_registry": "F138E9D9BBC7694CD7A43E54F06D126AF37CB60495E34C10CA16C7EE20240E3C",
+    "magic_resolver": "6D714D5D48F9B6F4BF075B8EA1400ED1F2C1F96B289842C44C234E27D5AF2E85"
+  },
+  "resolver_note": "Regenerated from the canonical registry; retained current active rows and added 20133 without hand editing.",
+  "build_recorded": true,
+  "build_task_status": "done",
+  "manual_backtest_started": false,
+  "t_live_touched": false,
+  "autotrading_touched": false,
+  "t_live_manifest_touched": false,
+  "portfolio_gate_touched": false,
+  "portfolio_admission_claimed": false,
+  "correlation_claimed": false,
+  "open_questions": [
+    "Q02 must falsify whether the exact-clock impulse and shallow-pullback gates clear the five-trades-per-year floor after WTI CFD costs and entry-gap controls.",
+    "Q09 and the unchanged portfolio gate remain authoritative for realized correlation and any admission."
+  ]
+}
