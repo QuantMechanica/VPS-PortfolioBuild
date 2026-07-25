@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        20153
 ; ea_slug:      wti-thu-trend
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   83a9b178cc1f0bff2ec2b7da01f47f9f4ce3c95ade8d30dadd58e0fb959b5818
+; build_hash:   fac8e5ff4b502855a680fa1886c51bd44d4e29845a320412c665b1ab2177ac42
 ; author:       Development
 ; date:         2026-07-25
 ;==========================================================
