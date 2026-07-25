@@ -62,7 +62,9 @@ This card estimates `log(XAU) = alpha + beta*log(XAG) + residual` on every
 completed D1 bar, bounds beta before use, and sizes the XAG risk leg by the
 frozen entry beta. It is a distinct adaptive-hedge relative-value exposure.
 
-## Entry
+## Rules
+
+### Entry
 
 1. Host one logical D1 basket on `XAUUSD.DWX`; trade both registered legs.
 2. From 120 completed observations, estimate OLS alpha and beta of log XAU on
@@ -74,7 +76,7 @@ frozen entry beta. It is a distinct adaptive-hedge relative-value exposure.
    and XAG weight `abs(beta)`. Give each leg a `2.5*ATR(20,D1)` hard stop.
 6. No entry with either leg open. If only one order succeeds, close the orphan.
 
-## Exit and management
+### Exit and management
 
 - Close both legs when `abs(z) < 0.50`, after 60 calendar days, or when the
   rolling beta leaves `[0.25,2.50]`.

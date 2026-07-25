@@ -22,6 +22,7 @@ PORTFOLIO_WEIGHT=1
 qm_news_temporal=0
 qm_news_compliance=0
 qm_news_mode_legacy=0
+; strategy-specific params from card
 strategy_ols_lookback_d1=120
 strategy_entry_z=2.25
 strategy_exit_z=0.5
