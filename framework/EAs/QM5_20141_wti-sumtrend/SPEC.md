@@ -120,5 +120,4 @@ correlation authorization.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-07-25 | Initial build from approved G0 card | Q02 handoff pending strict validation |
-
+| v1 | 2026-07-25 | Initial build from approved G0 card | Q01 PASS; paced Q02 work item `a32fabb1-63c1-4ff9-abc1-8a6638709999` PASS; fleet-created Q04 item `e0dcbc7a-a704-4f01-a94b-bf5e02d680a3` pending |

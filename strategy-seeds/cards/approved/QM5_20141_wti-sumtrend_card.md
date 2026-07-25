@@ -56,12 +56,17 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
+pipeline_phase: Q04
+q01_status: PASS
+q02_status: PASS
+q02_work_item_id: a32fabb1-63c1-4ff9-abc1-8a6638709999
+q04_status: PENDING
+q04_work_item_id: e0dcbc7a-a704-4f01-a94b-bf5e02d680a3
 review_focus: "Falsify whether the load-bearing conjunction of the WTI July-November trading-time short and negative completed 252-D1 trend clears density and costs while adding direct crude-oil exposure."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
 hard_rules_at_risk: [low_frequency, friday_close, risk_mode_dual, enhancement_doctrine, cfd_futures_basis, restart_attempt_state, portfolio_correlation]
-g0_approval_reasoning: "OWNER commodity/energy sleeve mission: R1 PASS two peer-reviewed governed source lineages; R2 PASS locked July-November weekly WTI short gated by strictly negative completed 252-D1 return, frozen ATR stop, Friday close, stale exit, and restart-safe consumed attempt; R3 PASS registered XTIUSD.DWX D1;"
+g0_approval_reasoning: "OWNER commodity/energy sleeve mission: R1 PASS two peer-reviewed governed source lineages; R2 PASS locked July-November weekly WTI short gated by strictly negative completed 252-D1 return, frozen ATR stop, Friday close, stale exit, and restart-safe consumed attempt; R3 PASS registered XTIUSD.DWX D1; R4 PASS deterministic native MT5 data only with no ML, banned indicator, external feed, grid, martingale, scale-in, or pyramiding. Deterministic dedup CLEAN across 4,198 registry rows and 376 cards plus manual parent/neighbor resolution."
 ---
 
 # QM5_20141 WTI Summer Trading-Time Trend Short
@@ -351,11 +356,15 @@ portfolio KPI claim, or correlation waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-07-25 | initial source-backed WTI summer/trend interaction card | G0 | APPROVED |
+| v1 | 2026-07-25 | strict compile and targeted build validation complete | Q01 | PASS |
+| v1 | 2026-07-25 | paced baseline handoff and automatic Model-4 run | Q02 | PASS |
+| v1 | 2026-07-25 | paced fleet auto-fanout after Q02 PASS | Q04 | ENQUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-25 | APPROVED | this card |
-| Q01 Build Validation | - | NOT RUN | - |
-| Q02 Baseline Screening | - | NOT ENQUEUED | - |
+| Q01 Build Validation | 2026-07-25 | PASS: strict compile 0 errors/0 warnings; schema/spec/build checks PASS | `docs/ops/evidence/2026-07-25_qm5_20141_wti_sumtrend_build_q02_enqueue.md` |
+| Q02 Baseline Screening | 2026-07-25 | PASS: Model 4, 44 trades, PF 1.04, DD 3.36%, net +340.10 | work item `a32fabb1-63c1-4ff9-abc1-8a6638709999`; `D:/QM/reports/work_items/a32fabb1-63c1-4ff9-abc1-8a6638709999/QM5_20141/20260725_071952/summary.json` |
+| Q04 Robustness Screening | 2026-07-25 | ENQUEUED by paced fleet after Q02 PASS | work item `e0dcbc7a-a704-4f01-a94b-bf5e02d680a3`; no agent-started run |
