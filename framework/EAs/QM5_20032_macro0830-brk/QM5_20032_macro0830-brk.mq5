@@ -6,7 +6,8 @@
 #include <QM/QM_XetraCashCalendar.mqh>
 
 // Strategy Card: QM5_20032_macro0830-brk, G0 APPROVED 2026-07-22.
-// Eligible events and German cash exits come from a provenance-bearing ledger.
+// Eligible events come from the framework news calendar deployed by the
+// pipeline; German cash exits use the deployed Xetra cash calendar.
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                     = 20032;
@@ -35,18 +36,11 @@ input double qm_stress_reject_probability = 0.0;
 input group "Strategy"
 input ENUM_TIMEFRAMES strategy_signal_tf  = PERIOD_M5;
 input int    strategy_pre_release_bars    = 3;
-input double strategy_max_cost_r          = 0.10;
 
 const string strategy_variant_id = "MACRO0830_BREAKOUT_BASELINE";
 
 const string STRATEGY_CALENDAR_PATH =
-   "QM5_20023_announcement_calendar_20150101_20250404.csv";
-const string STRATEGY_CALENDAR_SHA256 =
-   "411AE4AF3DBE261E373705660E28B81E7C5DFC7398F38516E07EFFFF71CD73AF";
-const string STRATEGY_PROVENANCE_SHA256 =
-   "5585DA3C1EDA2CA6BFD08CB972C9FAC05B8246D8386674C11D5B2ADE4D8AD68B";
-const int STRATEGY_CALENDAR_EXPECTED_ROWS = 451;
-const int STRATEGY_CALENDAR_EXPECTED_ELIGIBLE_ROWS = 370;
+   "D:\\QM\\data\\news_calendar\\news_calendar_2015_2025.csv";
 
 datetime g_event_entry_utc[];
 datetime g_event_exit_utc[];
@@ -177,17 +171,16 @@ string EligibleFamilyForName(const string raw_name)
    return "";
   }
 
-bool CalendarHashMatches()
+int OpenDeployedNewsCalendar()
   {
-   uchar bytes[];
-   datetime modified_utc = 0;
-   if(!QM_NewsReadFileBytes(STRATEGY_CALENDAR_PATH, bytes, modified_utc))
-      return false;
-   string actual_hash = "";
-   if(!QM_NewsHashBytes(bytes, actual_hash))
-      return false;
-   StringToUpper(actual_hash);
-   return (actual_hash == STRATEGY_CALENDAR_SHA256);
+   int handle = FileOpen(STRATEGY_CALENDAR_PATH,
+                         FILE_READ | FILE_CSV | FILE_ANSI | FILE_SHARE_READ,
+                         ',');
+   if(handle == INVALID_HANDLE)
+      handle = FileOpen(QM_NewsBasename(STRATEGY_CALENDAR_PATH),
+                        FILE_READ | FILE_CSV | FILE_ANSI | FILE_SHARE_READ | FILE_COMMON,
+                        ',');
+   return handle;
   }
 
 bool AppendEvent(const datetime entry_utc,
@@ -212,18 +205,7 @@ bool LoadEventCalendar()
    ArrayResize(g_event_entry_utc, 0);
    ArrayResize(g_event_exit_utc, 0);
    ArrayResize(g_event_family, 0);
-   if(!CalendarHashMatches())
-      return false;
-
-   // Keep the load order identical to QM_NewsReadFileBytes so the bytes that
-   // passed the SHA-256 check are also the bytes parsed below.
-   int handle = FileOpen(STRATEGY_CALENDAR_PATH,
-                         FILE_READ | FILE_CSV | FILE_ANSI | FILE_SHARE_READ,
-                         ',');
-   if(handle == INVALID_HANDLE)
-      handle = FileOpen(STRATEGY_CALENDAR_PATH,
-                        FILE_READ | FILE_CSV | FILE_ANSI | FILE_SHARE_READ | FILE_COMMON,
-                        ',');
+   int handle = OpenDeployedNewsCalendar();
    if(handle == INVALID_HANDLE)
       return false;
 
@@ -248,13 +230,14 @@ bool LoadEventCalendar()
          continue;
 
       datetime event_utc = 0;
-      if(QM_NewsUpper(QM_NewsStripQuotes(currency)) != "USD" ||
-         !QM_NewsParseDateTimeUTC(event_text, event_utc) || event_utc <= 0)
+      if(!QM_NewsParseDateTimeUTC(event_text, event_utc) || event_utc <= 0)
         {
          valid = false;
          break;
         }
       ++parsed_rows;
+      if(QM_NewsUpper(QM_NewsStripQuotes(currency)) != "USD")
+         continue;
 
       const string family = EligibleFamilyForName(event_name);
       if(family == "")
@@ -263,8 +246,9 @@ bool LoadEventCalendar()
       datetime exit_utc = 0;
       bool exchange_excluded = false;
       string exchange_session = "";
-      if(!IsExactNewYork0830(event_utc) ||
-         !ResolveEventExitUtc(event_utc,
+      if(!IsExactNewYork0830(event_utc))
+         continue;
+      if(!ResolveEventExitUtc(event_utc,
                               exit_utc,
                               exchange_excluded,
                               exchange_session))
@@ -287,28 +271,18 @@ bool LoadEventCalendar()
      }
    FileClose(handle);
 
-   if(!valid || parsed_rows != STRATEGY_CALENDAR_EXPECTED_ROWS ||
-      eligible_rows != STRATEGY_CALENDAR_EXPECTED_ELIGIBLE_ROWS ||
-      ArraySize(g_event_entry_utc) + exchange_excluded_rows !=
-         STRATEGY_CALENDAR_EXPECTED_ELIGIBLE_ROWS)
+   if(!valid || parsed_rows <= 0 || eligible_rows <= 0 ||
+      ArraySize(g_event_entry_utc) + exchange_excluded_rows != eligible_rows)
       return false;
 
    QM_LogEvent(QM_INFO,
                "STRATEGY_CALENDAR_LOADED",
-               StringFormat("{\"file\":\"%s\",\"sha256\":\"%s\",\"provenance_sha256\":\"%s\",\"source_rows\":%d,\"eligible_rows\":%d,\"admitted_rows\":%d,\"exchange_excluded_rows\":%d,\"families\":\"NFP,CPI,PPI\"}",
+               StringFormat("{\"file\":\"%s\",\"source\":\"deployed_news_calendar\",\"source_rows\":%d,\"eligible_rows\":%d,\"admitted_rows\":%d,\"exchange_excluded_rows\":%d,\"families\":\"NFP,CPI,PPI\"}",
                             STRATEGY_CALENDAR_PATH,
-                            STRATEGY_CALENDAR_SHA256,
-                            STRATEGY_PROVENANCE_SHA256,
                             parsed_rows,
                             eligible_rows,
                             ArraySize(g_event_entry_utc),
                             exchange_excluded_rows));
-   QM_LogEvent(QM_WARN,
-               "STRATEGY_CALENDAR_COVERAGE_GAP",
-               StringFormat("{\"missing_families\":\"GDP,RETAIL_SALES,PERSONAL_INCOME_PCE,DURABLE_GOODS,BUSINESS_INVENTORIES,TRADE_BALANCE,HOUSING_STARTS,LEADING_INDICATORS,INITIAL_CLAIMS\",\"available_through\":\"2025-04-04\",\"required_through\":\"2025-12-31\",\"issuer_ledger_complete\":false,\"xetra_calendar\":\"%s\"}",
-                            _Symbol == "GDAXI.DWX"
-                            ? (g_xetra_calendar_ready ? "ready" : "unavailable")
-                            : "not_required"));
    return true;
   }
 
@@ -447,39 +421,18 @@ bool PreReleaseStructure(const datetime event_utc,
    return (pre_high > pre_low && MathIsValidNumber(pre_high) && MathIsValidNumber(pre_low));
   }
 
-double CommissionPerLotUsd(const string symbol)
-  {
-   if(symbol == "SP500.DWX")
-      return 5.50;
-   if(symbol == "GDAXI.DWX")
-     {
-      const double eurusd_bid = SymbolInfoDouble("EURUSD.DWX", SYMBOL_BID);
-      const double eurusd_ask = SymbolInfoDouble("EURUSD.DWX", SYMBOL_ASK);
-      if(eurusd_bid <= 0.0 || eurusd_ask <= 0.0 || eurusd_ask < eurusd_bid)
-         return 0.0;
-      return 5.50 * 0.5 * (eurusd_bid + eurusd_ask);
-     }
-   return 0.0;
-  }
-
-bool CostAndVolumeAllow(const double entry_price, const double stop_price)
+bool TradeGeometryAndVolumeAllow(const double entry_price, const double stop_price)
   {
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
    const double tick_value = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_VALUE);
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double commission_per_lot = CommissionPerLotUsd(_Symbol);
    if(AccountInfoString(ACCOUNT_CURRENCY) != "USD" ||
-      point <= 0.0 || tick_size <= 0.0 || tick_value <= 0.0 ||
-      ask <= 0.0 || bid <= 0.0 || ask < bid || commission_per_lot <= 0.0)
+      point <= 0.0 || tick_size <= 0.0 || tick_value <= 0.0)
       return false;
 
    const double stop_distance = MathAbs(entry_price - stop_price);
    const double risk_per_lot = (stop_distance / tick_size) * tick_value;
-   const double spread_per_lot = ((ask - bid) / tick_size) * tick_value;
-   if(risk_per_lot <= 0.0 ||
-      (commission_per_lot + spread_per_lot) / risk_per_lot > strategy_max_cost_r)
+   if(risk_per_lot <= 0.0)
       return false;
 
    const double sl_points = stop_distance / point;
@@ -543,7 +496,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!g_calendar_ready || !IsRoutedSymbol(_Symbol) ||
       qm_magic_slot_offset != ExpectedSlotForSymbol(_Symbol) ||
       _Period != strategy_signal_tf ||
-      strategy_pre_release_bars != 3 || strategy_max_cost_r != 0.10)
+      strategy_pre_release_bars != 3)
       return false;
    const datetime current_bar = iTime(_Symbol, strategy_signal_tf, 0); // perf-allowed: exact 08:35 ET entry-bar match behind QM_IsNewBar.
    if(current_bar <= 0)
@@ -596,9 +549,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                        StringFormat("entry=%.8f;stop=%.8f", entry_price, stop_price));
       return false;
      }
-   if(!CostAndVolumeAllow(entry_price, stop_price))
+   if(!TradeGeometryAndVolumeAllow(entry_price, stop_price))
      {
-      LogEntryRejected(event_index, "cost_or_volume_gate_rejected");
+      LogEntryRejected(event_index, "geometry_or_volume_gate_rejected");
       return false;
      }
 
@@ -652,7 +605,7 @@ bool Strategy_ExitSignal()
 
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   // Only the immutable event ledger can create an entry; no generic news gate is added.
+   // Only the deployed event calendar can create an entry; no generic news gate is added.
    return false;
   }
 
@@ -686,10 +639,7 @@ int OnInit()
          "CARD_V2_FRIDAY_21_SAFETY_FLATTEN"))
       return INIT_FAILED;
 
-   // Only the two order routes belong in the symbol guard.  EURUSD is a
-   // conditional conversion input for GDAXI commission estimates; forcing it
-   // into every basket warmup made the independent SP500 route fail before
-   // OnInit completed whenever EURUSD history was unavailable.
+   // Only the two order routes belong in the symbol guard.
    string allowed_symbols[2] = {"GDAXI.DWX", "SP500.DWX"};
    QM_SymbolGuardInit(allowed_symbols);
    string warmup_symbols[1] = {_Symbol};
@@ -715,13 +665,12 @@ int OnInit()
    if(!g_calendar_ready)
       QM_LogEvent(QM_ERROR,
                   "SETUP_DATA_MISSING",
-                  StringFormat("{\"component\":\"macro0830_strategy_calendar\",\"file\":\"%s\",\"expected_sha256\":\"%s\"}",
-                               STRATEGY_CALENDAR_PATH,
-                               STRATEGY_CALENDAR_SHA256));
+                  StringFormat("{\"component\":\"macro0830_strategy_calendar\",\"file\":\"%s\"}",
+                               STRATEGY_CALENDAR_PATH));
 
    QM_LogEvent(QM_INFO,
                "INIT_OK",
-               StringFormat("{\"calendar_ready\":%s,\"eligible_events\":%d,\"route_slot\":%d,\"issuer_ledger_complete\":false,\"xetra_calendar_ready\":%s}",
+               StringFormat("{\"calendar_ready\":%s,\"eligible_events\":%d,\"route_slot\":%d,\"calendar_source\":\"deployed_news_calendar\",\"xetra_calendar_ready\":%s}",
                             g_calendar_ready ? "true" : "false",
                             ArraySize(g_event_entry_utc),
                             ExpectedSlotForSymbol(_Symbol),

@@ -23,4 +23,3 @@ PORTFOLIO_WEIGHT=1
 ; card_defaults_source=ea_input_defaults
 strategy_signal_tf=5
 strategy_pre_release_bars=3
-strategy_max_cost_r=0.10

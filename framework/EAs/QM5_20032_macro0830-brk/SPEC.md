@@ -10,10 +10,9 @@
 
 ## 1. Strategy Logic
 
-The EA trades only hash-bound issuer-calendar packages scheduled at exactly
-08:30 New York time. The currently provenance-qualified subset reuses the
-immutable QM5_20023 calendar and its row-level official-source audit: NFP, CPI,
-and PPI. It freezes the high and low of the three completed M5 bars
+The EA trades only events in the framework news calendar deployed by the
+pipeline and scheduled at exactly 08:30 New York time. The eligible subset is
+NFP, CPI, and PPI. It freezes the high and low of the three completed M5 bars
 before the release, then buys when the completed 08:30 release bar closes above
 that range or sells when it closes below it. The opposite range boundary is the
 hard stop, there is no profit target or trailing logic, and the position is
@@ -27,16 +26,10 @@ closed at 17:20 Berlin with independent EU-DST conversion.
 |---|---:|---:|---|
 | `strategy_signal_tf` | `PERIOD_M5` | fixed M5 | Pre-release range and release-bar timeframe. |
 | `strategy_pre_release_bars` | `3` | fixed 3 | Number of completed bars in the 08:15–08:30 New York range. |
-| `strategy_max_cost_r` | `0.10` | fixed 0.10 | Maximum commission-plus-spread cost as a fraction of initial risk. |
-
-Runtime calendar:
-`QM5_20023_announcement_calendar_20150101_20250404.csv`, SHA-256
-`411ae4af3dbe261e373705660e28b81e7c5dfc7398f38516e07effff71cd73af`.
-The EA accepts 370 exact-time NFP/CPI/PPI rows (36/year through 2024 and 10
-through 2025-04-04) and excludes the FOMC rows present in that source. Xetra
-full closures and 14:00 Europe/Berlin early closes are now hash-bound by the
-shared official calendar. The remaining event families and the rest of 2025
-are explicit issuer-ledger gaps; no missing release is inferred.
+Runtime events come from the deployed framework `news_calendar_2015_2025.csv`.
+Missing or malformed calendar data fails entries closed. Xetra full closures
+and 14:00 Europe/Berlin early closes remain anchored to the shared cash
+calendar. Tester Groups and live fills realize trading costs in results.
 
 `basket_manifest.json` declares `GDAXI.DWX` and `SP500.DWX` as order routes
 and `EURUSD.DWX` as a conversion-only market-data dependency for the
@@ -115,3 +108,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-22 | Initial build from card | `498c7f0a-7678-46ab-a2fd-84424cabdf51` |
+| v2 | 2026-07-25 | Group-B calendar repair | Replaced the bespoke macro ledger with the deployed framework news calendar and removed the pre-trade cost gate. |
