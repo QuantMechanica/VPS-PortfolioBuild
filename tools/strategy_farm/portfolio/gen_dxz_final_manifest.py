@@ -8,16 +8,31 @@ Stream basis = sealed bundle dxz_final_20260719 (dxz24 frozen basis minus remova
 Also prints the OWNER decision alternates (with/without XNG).
 Methodology identical to gen_dxz24 (capped inverse-vol, CAP 1.0, TOTAL 9.75).
 """
-import sys, json, math, csv, glob, os
+import sys, json, math, csv, glob, os, argparse
 sys.path.insert(0, r"C:/QM/repo")
 from pathlib import Path
 from tools.strategy_farm.portfolio.portfolio_common import load_streams, to_daily_pnl, align
 
-STARTING_CAPITAL = 100_000.0; TOTAL_RISK = 9.75; CAP = 1.0
+DEFAULT_OUT = r"D:/QM/reports/portfolio/portfolio_manifest_sunday_final_24sleeve_DRAFT_20260719.json"
+
+# TOTAL_RISK and OUT are CLI-settable as of 2026-07-25. Two reasons, both learned the hard way:
+# importing or invoking this module used to REGENERATE AND OVERWRITE the deployed manifest as an
+# import side effect — a `--help` probe was enough to rewrite the live artifact. And the OWNER
+# decision of 2026-07-24 raising the book to TOTAL_RISK 12.0 could not be expressed at all without
+# editing the constant. Defaults reproduce the 2026-07-19 manifest exactly.
+_ap = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
+_ap.add_argument("--total-risk", type=float, default=9.75,
+                 help="book TOTAL_RISK %% (default 9.75, the 2026-07-19 deployed value)")
+_ap.add_argument("--cap", type=float, default=1.0, help="per-sleeve cap %% (OWNER hard constraint)")
+_ap.add_argument("--out", default=DEFAULT_OUT,
+                 help="output manifest path; point it away from the deployed file for a what-if")
+_args = _ap.parse_args()
+
+STARTING_CAPITAL = 100_000.0; TOTAL_RISK = _args.total_risk; CAP = _args.cap
 BUNDLE = Path(r"D:/QM/reports/portfolio/dxz_final_20260719")
 D24 = json.load(open(r"D:/QM/reports/portfolio/portfolio_manifest_weekend_24sleeve_DRAFT_20260717.json"))
 REG = r"C:/QM/repo/framework/registry/magic_numbers.csv"
-OUT = r"D:/QM/reports/portfolio/portfolio_manifest_sunday_final_24sleeve_DRAFT_20260719.json"
+OUT = _args.out
 
 REMOVE = [(10715, "USDJPY.DWX"), (10692, "NDX.DWX")]
 NEW2 = [(13213, "USDJPY.DWX"), (1567, "EURUSD.DWX")]
@@ -101,7 +116,8 @@ for ea, sym in bookF:
 
 manifest = dict(
     book="DXZ", status="DRAFT", n_sleeves=len(sleeves), starting_capital=STARTING_CAPITAL,
-    total_risk_pct=TOTAL_RISK, weight_method="capped_inverse_vol_cap1.0_total9.75",
+    total_risk_pct=TOTAL_RISK,
+    weight_method=f"capped_inverse_vol_cap{CAP:g}_total{TOTAL_RISK:g}",
     risk_application_contract={"RISK_PERCENT": "absolute_allocated_sleeve_risk",
         "PORTFOLIO_WEIGHT": 1.0, "effective_risk_formula": "RISK_PERCENT * PORTFOLIO_WEIGHT",
         "relative_weights_are_analytics_only": True},
