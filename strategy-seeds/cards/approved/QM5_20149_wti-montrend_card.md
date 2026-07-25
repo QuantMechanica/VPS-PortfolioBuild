@@ -57,8 +57,8 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
-q01_status: PENDING
-q02_status: NOT_STARTED
+q01_status: PASS
+q02_status: PENDING_NOT_ENQUEUED_CPU_CEILING
 review_focus: "Falsify whether the load-bearing conjunction of WTI Monday weakness and a negative completed 252-D1 trend clears density and costs while adding direct crude-oil exposure."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -360,11 +360,13 @@ KPI claim, or correlation waiver.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-07-25 | initial source-backed WTI Monday/trend interaction card | G0 | APPROVED |
+| v1 | 2026-07-25 | strict compile and targeted build validation complete | Q01 | PASS |
+| v1 | 2026-07-25 | immediate paced-fleet capacity scan reached seven-terminal ceiling | Q02 | NOT ENQUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-25 | APPROVED | this card |
-| Q01 Build Validation | — | PENDING | — |
-| Q02 Baseline Screening | — | NOT STARTED | — |
+| Q01 Build Validation | 2026-07-25 | PASS: strict compile 0 errors/0 warnings; schema/spec/build checks PASS | `docs/ops/evidence/2026-07-25_qm5_20149_wti_montrend_build_q02_cpu_ceiling_stop.md` |
+| Q02 Baseline Screening | 2026-07-25 | PENDING — NOT ENQUEUED (CPU CEILING) | same evidence |

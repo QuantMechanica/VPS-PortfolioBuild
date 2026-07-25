@@ -121,4 +121,4 @@ deploy, certification, portfolio, or correlation authorization.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-07-25 | Initial build from approved G0 card | Q01 pending |
+| v1 | 2026-07-25 | Initial build from approved G0 card | Q01 PASS; Q02 not enqueued because the seven-terminal factory CPU ceiling was occupied |
