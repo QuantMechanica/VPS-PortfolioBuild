@@ -248,6 +248,16 @@ class Q10ConfirmationTests(unittest.TestCase):
                     payload["runs"] = runs
                 summary_dir.mkdir(parents=True, exist_ok=True)
                 summary_path.write_text(json.dumps(payload), encoding="utf-8")
+                # `_summary_matches_run` rejects a summary whose mtime predates the
+                # invocation's `started_at`. That guard is right for production, where the
+                # tester takes minutes, but this fake writes the file within microseconds of
+                # `time.time()` being sampled — and `st_mtime` and `time.time()` do not share
+                # a clock, so the comparison can go either way. Push the mtime unambiguously
+                # forward so the test exercises the verdict logic instead of the race.
+                future = time.time() + 5
+                os.utime(summary_path, (future, future))
+                if runs:
+                    os.utime(report_path, (future, future))
                 return subprocess.CompletedProcess(
                     args=["pwsh.exe"],
                     returncode=0,

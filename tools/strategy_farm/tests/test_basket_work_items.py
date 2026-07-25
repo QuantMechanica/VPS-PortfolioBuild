@@ -64,7 +64,7 @@ class BasketWorkItemsTests(unittest.TestCase):
             old_stop_pid = farmctl._stop_pid
             old_stop_terminal_slot = farmctl._stop_terminal_slot
             try:
-                farmctl._stop_pid = lambda _pid: False
+                farmctl._stop_pid = lambda _pid, **_kw: False
                 farmctl._stop_terminal_slot = lambda _terminal: False
                 with farmctl.connect(root) as conn:
                     flagged = farmctl._detect_active_age_timeout(conn)
@@ -78,7 +78,9 @@ class BasketWorkItemsTests(unittest.TestCase):
             self.assertEqual(len(flagged), 1)
             self.assertEqual(flagged[0]["timeout_min"], farmctl.BASKET_Q02_ACTIVE_TIMEOUT_MIN)
             self.assertEqual(row[0], "failed")
-            self.assertEqual(row[1], "FAIL")
+            # WP-4 (2026-07-25): an active-age reap is a harness kill -> INFRA_FAIL,
+            # not a strategy FAIL. verdict_reason stays 'ACTIVE_TIMEOUT'.
+            self.assertEqual(row[1], "INFRA_FAIL")
             self.assertEqual(json.loads(row[2])["verdict_reason"], "ACTIVE_TIMEOUT")
 
     def test_payload_timeout_extends_phase_active_timeout(self) -> None:

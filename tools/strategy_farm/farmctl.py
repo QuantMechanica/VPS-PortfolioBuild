@@ -2022,6 +2022,58 @@ def _normalize_phase(phase: str | None) -> str:
     return PHASE_NOMENCLATURE.get(p, p)
 
 
+def _ensure_verdict_reason(payload: dict[str, Any]) -> dict[str, Any]:
+    """Guarantee a terminal work-item payload carries a `verdict_reason`.
+
+    `verdict_reason` is the canonical key every reason survey reads. Several
+    terminal write paths only stamp a sibling key (`final_failure`,
+    `prior_failure`, `transient_infra_signature`) and leave `verdict_reason`
+    NULL — which is how the summary_missing_retries_exhausted class (the
+    factory's single largest failure mode) stayed invisible to every reason
+    histogram. Backfill in the ratified fallback order; never clobber an
+    existing reason. Mutates and returns `payload`.
+    """
+    if not isinstance(payload, dict):
+        return payload
+    existing = payload.get("verdict_reason")
+    if isinstance(existing, str) and existing.strip():
+        return payload
+    for key in ("final_failure", "prior_failure", "transient_infra_signature"):
+        val = payload.get(key)
+        if isinstance(val, str) and val.strip():
+            payload["verdict_reason"] = val
+            break
+    return payload
+
+
+def _q08_dominant_invalid_reason(summary: dict[str, Any]) -> str:
+    """Preserve the real Q08 sub-gate detail behind an aggregate INVALID.
+
+    The Q08 (P5c) aggregate collapses to a bare INVALID with no top-level
+    `reason`, so the tail of the INVALID branch below would stamp every one of
+    them `phase_runner_invalid_report` and erase which sub-gate actually
+    blocked. The blocking INVALIDs are 8.5 (neighborhood) / 8.7 (PBO); prefer
+    those, else the first INVALID sub-gate, and carry its name+detail through so
+    the honest reason (e.g. neighborhood artifact_missing,
+    pbo insufficient_distinct_configs) survives on the work item.
+    """
+    sub_gates = summary.get("sub_gates")
+    if not isinstance(sub_gates, list):
+        return ""
+    invalid = [
+        g for g in sub_gates
+        if isinstance(g, dict) and str(g.get("status") or "").upper() == "INVALID"
+    ]
+    if not invalid:
+        return ""
+    blocking = [g for g in invalid if str(g.get("name") or "").startswith(("8.5", "8.7"))]
+    chosen = (blocking or invalid)[0]
+    name = str(chosen.get("name") or "sub_gate").strip()
+    detail = str(chosen.get("detail") or "").strip()
+    reason = f"q08_{name}" + (f":{detail}" if detail else "")
+    return reason[:200]
+
+
 def _derive_phase_runner_verdict(summary: dict[str, Any], min_trades: int = 5, phase: str | None = None) -> tuple[str, str]:
     """Derive honest work_item verdicts from real phase-runner result JSON."""
     raw_verdict = str(summary.get("verdict") or summary.get("result") or "").strip()
@@ -2073,6 +2125,13 @@ def _derive_phase_runner_verdict(summary: dict[str, Any], min_trades: int = 5, p
             or summary.get("n_trades") is not None
         ):
             return "FAIL", reason or "phase_runner_invalid_gate_result"
+        # Q08 (P5c) aggregate INVALID carries no top-level reason; preserve the
+        # dominant blocking sub-gate (8.5 neighborhood / 8.7 PBO) detail instead
+        # of collapsing every one to the generic phase_runner_invalid_report.
+        if not reason and phase_key == "P5c":
+            q08_reason = _q08_dominant_invalid_reason(summary)
+            if q08_reason:
+                return "INFRA_FAIL", q08_reason
         return "INFRA_FAIL", reason or "phase_runner_invalid_report"
     # DL-082 §3a: Q08 aggregate INFRA_RECYCLE = degenerate (0-trade) Q08.5
     # neighborhood baseline. Main baseline traded (n_trades>0), so this is a
@@ -3870,6 +3929,12 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
         q08_summary = payload.get("q08_evidence_path")
         if q08_summary:
             cmd.extend(["--q08-summary", str(q08_summary)])
+        # Authoritative backtest trade count. Q09 counts the exported stream, not the
+        # backtest; passing this lets the runner re-export a truncated sleeve stream from
+        # durable Q08 evidence before applying the trade-count floor (WP-6).
+        q08_trade_count = payload.get("q08_trade_count")
+        if q08_trade_count is not None:
+            cmd.extend(["--q08-trade-count", str(q08_trade_count)])
         if payload:
             cmd.extend(["--lineage-payload-json", json.dumps(payload, sort_keys=True)])
     # PT3 bridge (2026-05-29): the rewritten Qxx runners (q04-q10) use
@@ -4332,10 +4397,14 @@ def _detect_active_age_timeout(con: sqlite3.Connection) -> list[dict[str, Any]]:
             "worker_stopped": worker_stopped,
             "terminal_stopped": terminal_stopped,
         })
+        # WP-4 (2026-07-25): an active-age reap is a harness kill, not a strategy
+        # rejection. Record it as INFRA_FAIL (verdict_reason stays 'ACTIVE_TIMEOUT'
+        # so the taxonomy remains readable) so the stranded-INFRA sweep can requeue
+        # the pair instead of freezing it at a terminal strategy FAIL.
         con.execute(
             """
             UPDATE work_items
-            SET status='failed', verdict='FAIL', claimed_by=NULL,
+            SET status='failed', verdict='INFRA_FAIL', claimed_by=NULL,
                 payload_json=?, updated_at=?
             WHERE id=? AND status='active'
             """,
@@ -5158,10 +5227,13 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                                 "worker_pid": worker_pid,
                                 "terminal_stopped": terminal_stopped})
             else:
+                final_payload = _ensure_verdict_reason(
+                    {**updated_payload, "final_failure": f"{fast_failure}_retries_exhausted"}
+                )
                 with connect(root) as conn2:
                     conn2.execute(
                         "UPDATE work_items SET status='failed', verdict='INFRA_FAIL', payload_json=?, updated_at=? WHERE id=?",
-                        (json.dumps({**updated_payload, "final_failure": f"{fast_failure}_retries_exhausted"}, sort_keys=True),
+                        (json.dumps(final_payload, sort_keys=True),
                          started_iso, item["id"]),
                     )
                     conn2.commit()
@@ -5185,10 +5257,13 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 busy_terminals.discard(terminal)
                 actions.append({"action": "retry_timeout", "item_id": item["id"], "attempt": attempt, "terminal_stopped": terminal_stopped})
             else:
+                final_payload = _ensure_verdict_reason(
+                    {**payload, "final_failure": "retries_exhausted", "terminal_stopped_on_release": terminal_stopped}
+                )
                 with connect(root) as conn2:
                     conn2.execute(
                         "UPDATE work_items SET status='failed', verdict='INFRA_FAIL', payload_json=?, updated_at=? WHERE id=?",
-                        (json.dumps({**payload, "final_failure": "retries_exhausted", "terminal_stopped_on_release": terminal_stopped}, sort_keys=True),
+                        (json.dumps(final_payload, sort_keys=True),
                          started_iso, item["id"]),
                     )
                     conn2.commit()

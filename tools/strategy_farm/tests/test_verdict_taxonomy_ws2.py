@@ -87,7 +87,10 @@ class VerdictTaxonomyWs2Tests(unittest.TestCase):
         self.assertEqual(verdict, "INFRA_FAIL")
         self.assertIn("without_real_mt5", reason)
 
-    def test_q08_invalid_gate_report_remains_infra_fail(self) -> None:
+    def test_q08_invalid_preserves_dominant_sub_gate_detail(self) -> None:
+        # WP-3: a Q08 aggregate INVALID stays INFRA_FAIL, but the reason now carries
+        # the dominant sub-gate detail instead of collapsing to the generic
+        # phase_runner_invalid_report (which erased which sub-gate blocked).
         verdict, reason = farmctl._derive_phase_runner_verdict(
             {
                 "phase": "Q08",
@@ -97,6 +100,32 @@ class VerdictTaxonomyWs2Tests(unittest.TestCase):
                     {"name": "8.2_dsr_mc_fdr", "status": "INVALID", "detail": "insufficient_daily_returns"}
                 ],
             },
+            phase="Q08",
+        )
+        self.assertEqual(verdict, "INFRA_FAIL")
+        self.assertEqual(reason, "q08_8.2_dsr_mc_fdr:insufficient_daily_returns")
+
+    def test_q08_invalid_prefers_blocking_neighborhood_pbo_gate(self) -> None:
+        # Blocking INVALIDs (8.5 neighborhood / 8.7 PBO) win over a non-blocking one.
+        verdict, reason = farmctl._derive_phase_runner_verdict(
+            {
+                "phase": "Q08",
+                "verdict": "INVALID",
+                "n_trades": 3,
+                "sub_gates": [
+                    {"name": "8.2_dsr_mc_fdr", "status": "INVALID", "detail": "insufficient_daily_returns"},
+                    {"name": "8.5_neighborhood", "status": "INVALID", "detail": "artifact_missing"},
+                ],
+            },
+            phase="Q08",
+        )
+        self.assertEqual(verdict, "INFRA_FAIL")
+        self.assertEqual(reason, "q08_8.5_neighborhood:artifact_missing")
+
+    def test_q08_invalid_without_sub_gates_keeps_generic_reason(self) -> None:
+        # No sub-gate evidence -> generic fallback is retained (backward compatible).
+        verdict, reason = farmctl._derive_phase_runner_verdict(
+            {"phase": "Q08", "verdict": "INVALID"},
             phase="Q08",
         )
         self.assertEqual(verdict, "INFRA_FAIL")

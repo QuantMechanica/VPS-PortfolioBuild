@@ -1725,6 +1725,7 @@ def _finish_work_item(root: Path, item_id: str, exit_code: int | None) -> dict[s
                     }
                 # Transient cap exhausted -> real INFRA_FAIL for manual attention.
                 payload["final_failure"] = "shared_bases_history_lock_transient_cap_exhausted"
+                farmctl._ensure_verdict_reason(payload)
                 conn.execute(
                     """
                     UPDATE work_items
@@ -1768,6 +1769,7 @@ def _finish_work_item(root: Path, item_id: str, exit_code: int | None) -> dict[s
                 verdict = None
             else:
                 payload["final_failure"] = "summary_missing_retries_exhausted"
+                farmctl._ensure_verdict_reason(payload)
                 conn.execute(
                     """
                     UPDATE work_items
