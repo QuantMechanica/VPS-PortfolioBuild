@@ -1,0 +1,127 @@
+{
+  "date": "2026-07-25",
+  "branch": "agents/board-advisor",
+  "task_id": "cbc28003-dc43-4c3c-8ee2-ac2a71fb6e06",
+  "ea_id": "QM5_20135",
+  "slug": "wti-winter-trend",
+  "ea_slug": "wti-winter-trend",
+  "strategy_id": "BURAKOV-MOP-WTI-WINTER-TREND-2026_S01",
+  "source_id": "BURAKOV-MOP-WTI-WINTER-TREND-2026",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_20135_wti-winter-trend",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_20135_wti-winter-trend/QM5_20135_wti-winter-trend.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_20135_wti-winter-trend/QM5_20135_wti-winter-trend.ex5",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_20135_wti-winter-trend/SPEC.md",
+  "card_path": "C:/QM/repo/strategy-seeds/cards/approved/QM5_20135_wti-winter-trend_card.md",
+  "evidence_path": "C:/QM/repo/docs/ops/evidence/2026-07-25_qm5_20135_wti_winter_trend_build_q02_enqueue.md",
+  "magic_base": 201350000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_20135_wti-winter-trend/sets/QM5_20135_wti-winter-trend_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "source_retrieval": {
+    "status": "EXISTING_APPROVED_PACKETS",
+    "packets": [
+      "BURAKOV-WTI-HALLOWEEN-2018",
+      "MOP-TSMOM-2012"
+    ],
+    "bounded_packets_read_completely": true,
+    "new_web_claims_imported": false
+  },
+  "dedup": {
+    "registry_rows_scanned_pre_allocation": 4192,
+    "research_cards_scanned_pre_allocation": 376,
+    "exact_duplicates": 0,
+    "deterministic_verdict": "CLEAN",
+    "manual_neighbors": [
+      "QM5_12603_wti-tsmom12m",
+      "QM5_20015_wti-halloween-winter",
+      "QM5_20046_wti-halloween-ls",
+      "QM5_12576_eia-wti-season",
+      "QM5_20052_xng-seas-trend",
+      "QM5_12963_wti-winter-exhaust",
+      "QM5_12567_cum-rsi2-commodity"
+    ],
+    "manual_resolution": "new load-bearing state is the conjunction of the fixed WTI November-May regime and the completed 252-D1 own-return sign; neither parent rule alone is the candidate"
+  },
+  "validation": {
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "spec_validation": "PASS",
+    "candidate_registry_validation": "PASS",
+    "build_guardrails": "PASS",
+    "build_check": "PASS",
+    "build_check_failures": 0,
+    "build_check_warnings": 0,
+    "build_check_report_path": "D:/QM/reports/framework/21/build_check_20260725_034652.json",
+    "strict_compile": "PASS",
+    "compile_succeeded": true,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "compile_log_path": "C:/QM/repo/framework/build/compile/20260725_034639/QM5_20135_wti-winter-trend.compile.log"
+  },
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_log_path": "C:/QM/repo/framework/build/compile/20260725_034639/QM5_20135_wti-winter-trend.compile.log",
+  "build_check_report_path": "D:/QM/reports/framework/21/build_check_20260725_034652.json",
+  "build_check_status": "PASS",
+  "build_check_failures": 0,
+  "build_check_warnings": 0,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "FACTORY_OFF.flag is authoritative; paced Q02 owns the first Model-4 trade-generation run",
+  "smoke_report_path": null,
+  "blocked_reason": "",
+  "q02": {
+    "work_item_id": "063e9d6c-8a54-461a-8113-a3f098e3e5e7",
+    "phase": "Q02",
+    "status": "pending",
+    "attempt_count": 0,
+    "created_at": "2026-07-25T03:48:28+00:00",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile": "C:/QM/repo/framework/EAs/QM5_20135_wti-winter-trend/sets/QM5_20135_wti-winter-trend_XTIUSD.DWX_D1_backtest.set",
+    "initial_auto_enqueue_count": 1,
+    "initial_auto_enqueue_skipped": 0,
+    "exact_q02_row_count": 1
+  },
+  "factory_state": {
+    "factory_off_observed": true,
+    "factory_off_path": "D:/QM/strategy_farm/state/FACTORY_OFF.flag",
+    "running_pipeline_mt5_terminals": 0,
+    "terminal64_processes_observed": 1,
+    "observed_process_scope": "pre-existing T_Live terminal only",
+    "backtest_cpu_ceiling_hit": false,
+    "manual_backtest_started": false
+  },
+  "hashes_sha256": {
+    "card": "E32F62B35CADBCF0DB0032F5F8D1AD58393575ADFD482B8925C31F7A14483900",
+    "source_packet": "F8440E8E0F2C31EAFB8CC37D03ACD1C19376A41DBF4FCA9269181313774B09DF",
+    "mq5": "2C402F0448ADFC416A981B28555BB085B567E15743D9C86AF973852A7C4EC8DB",
+    "ex5": "41881C9F35C84B4C4CEC9EA84A1FE7D5F65D5A93E9C9BF04FF5C05795D3A0E85",
+    "spec": "C3EEB8A002503FF1F0507AAF25C2C5AFDD4A189BE31F50835BAAEC7B48EC8E10",
+    "setfile": "96F32ADE3733834D4616E09A2B4C2AB1A8BC9EBDE71EAAA224DC93C17BDEE25D",
+    "ea_id_registry": "203E3600DF4206DC5C37EDA74C206E73489C3591EECBC00A532715AF511C332F",
+    "magic_registry": "3BDD53B5F337375E6558E1069A3CB5668F7A711900B05EBF0DAFAE81DC232A85",
+    "magic_resolver": "A31983BC01889D6EC521C2F1CD9A9429FC13E76A65AF7035B72E104F3AF82701"
+  },
+  "resolver_note": "Regenerated from the canonical registry after the EA directory and magic row existed; generated magic 201350000 was verified.",
+  "build_recorded": true,
+  "build_task_status": "done",
+  "manual_backtest_started": false,
+  "t_live_touched": false,
+  "autotrading_touched": false,
+  "t_live_manifest_touched": false,
+  "portfolio_gate_touched": false,
+  "portfolio_admission_claimed": false,
+  "correlation_claimed": false,
+  "open_questions": [
+    "Q02 must falsify whether the seven eligible packages clear the five-trades-per-year floor after WTI CFD costs and warm-up.",
+    "Q09 and the unchanged portfolio gate remain authoritative for realized correlation and any admission."
+  ]
+}

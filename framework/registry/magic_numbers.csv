@@ -15277,3 +15277,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20132,xng-stor-orb,0,XNGUSD.DWX,201320000,2026-07-25T00:45:15Z,codex,active
 20133,wti-wpsr-pb,0,XTIUSD.DWX,201330000,2026-07-25T01:36:57Z,codex,active
 20134,wti-wpsr-fail,0,XTIUSD.DWX,201340000,2026-07-25T02:35:03Z,codex,active
+20135,wti-winter-trend,0,XTIUSD.DWX,201350000,2026-07-25T03:39:59Z,codex,active
