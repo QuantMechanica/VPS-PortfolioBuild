@@ -13,6 +13,7 @@ strategy_ids:
   - EIA-XNG-STORAGE-AFTERSHOCK-2026
   - EIA-XNG-STORAGE-INTRADAY-2026_S01
   - EIA-XNG-STORAGE-INTRADAY-2026_S02
+  - EIA-XNG-STORAGE-INTRADAY-2026_S03
 ---
 
 # EIA Weekly Natural Gas Storage Report Aftershock Source
@@ -26,7 +27,7 @@ strategy_ids:
 
 ## Mining Scope
 
-Two mechanically distinct cards are bounded by this official event source:
+Four mechanically distinct cards are bounded by this official event source:
 
 - `eia-xng-storage`: XNGUSD.DWX D1 weekly storage-report reaction aftershock.
 - `xng-stor-m30`: XNGUSD.DWX M30 standard-Thursday release-bar impulse
@@ -35,6 +36,10 @@ Two mechanically distinct cards are bounded by this official event source:
 - `xng-stor-fade`: XNGUSD.DWX M30 standard-Thursday failed-release-break
   reclaim, entered only after the 11:00-11:30 New York confirmation bar closes
   back inside the pre-release range and flattened in the same New York session.
+- `xng-stor-orb`: XNGUSD.DWX M30 standard-Thursday live release-window
+  breakout. The completed 09:30-10:30 New York range must be ATR-bounded; the
+  first 10:30-11:00 escape consumes the date, enters once in the break
+  direction, and is flattened in the same New York session.
 
 ## Evidence Notes
 
@@ -61,6 +66,17 @@ Two mechanically distinct cards are bounded by this official event source:
   back inside that prior range and through the impulse midpoint. Its reclaim
   rule, release-open target, structural stop, and session exit are likewise QM
   hypotheses rather than EIA findings.
+- The third M30 extraction freezes the opposite execution question before
+  testing: whether the first live escape from a completed, compressed
+  pre-release range carries through the standard release window. Its
+  ATR-bounded setup, breakout buffer, one-shot market entry, opposite-range
+  stop, fixed-R target, and session exit are QM hypotheses. Unlike the first
+  M30 extraction it does not wait for the release bar to close; unlike the
+  second it never waits for or fades a reclaim.
+- A fresh generic-URL retrieval attempt on 2026-07-25 was classified
+  `DEFERRED:SOURCE_POLICY` by the governed source router. This extraction
+  therefore relies only on the existing same-day OWNER-approved repository
+  packet and does not claim a newly retrieved schedule or source fact.
 
 ## Guardrails
 
