@@ -15305,3 +15305,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20146,london-orb-3candle-h1,3,GBPUSD.DWX,201460003,2026-07-25T12:20:00Z,claude,active
 20147,ndx-ema50-momentum-d1,0,NDX.DWX,201470000,2026-07-25T12:20:00Z,claude,active
 20148,usdjpy-pretokyo-straddle,0,USDJPY.DWX,201480000,2026-07-25T12:20:00Z,claude,active
+20149,wti-montrend,0,XTIUSD.DWX,201490000,2026-07-25T09:15:00Z,codex,active
