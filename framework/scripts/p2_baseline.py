@@ -231,7 +231,11 @@ def parse_summary(summary_path: Path) -> dict:
 # rate-based `min_trades` (= 5 * window_years) passed in by the caller; this
 # constant is only an absolute lower bound for sub-year windows.
 #
-Q02_PF_MIN = 1.20         # profit factor HARD BOTTOM (per symbol); never softened below this
+Q02_PF_MIN = 1.10         # profit factor hard bottom (per symbol). 1.20->1.10 OWNER 2026-07-25,
+                          # decisions/2026-07-25_q02_pf_floor_120_to_110.md. Was already the
+                          # operative bottom via Q02_EVIDENCE_FLOOR['hard_bottom_pf'] (DL-082 §4);
+                          # this constant is the fallback when the evidence curve is disabled and
+                          # the value reported in the pf_below_q02_floor reason string.
 Q02_TRADES_MIN = 5        # absolute sample-size floor (per symbol); 5/yr rate set by caller
 Q02_DD_PCT_MAX = 25.0     # max drawdown ceiling, % of starting equity (15->25 OWNER 2026-07-15, see decisions/)
 Q02_STARTING_EQUITY = 100_000.0   # HR4: fixed-risk backtest deposit
@@ -377,8 +381,9 @@ def derive_verdict(summary: dict, min_trades: int) -> tuple[str, str, str]:
                 report_dir)
 
     # Profit-factor gate. DL-082 §4: the floor is evidence-strength-conditional
-    # (frequency-aware) — the 1.20 hard bottom is RAISED at low N per track C's
-    # constant-evidence curve, and never lowered below 1.20. See
+    # (frequency-aware) — max(hard_bottom, constant-evidence curve through the
+    # PF 1.20 @ N=450 anchor). The curve RAISES the bar below N=450 (N=100 -> 1.47)
+    # and descends toward the hard bottom above it. See
     # evidence_conditional_pf_floor / Q02_EVIDENCE_FLOOR.
     if pf is None:
         return ("FAIL",
