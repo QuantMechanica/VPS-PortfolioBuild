@@ -78,7 +78,19 @@
   "smoke_report_path": null,
   "blocked_reason": "",
   "q02": {
-    "status": "NOT_YET_RECORDED"
+    "work_item_id": "7dff45e1-d4c7-4f5c-b8e0-2f2ea254a725",
+    "phase": "Q02",
+    "status": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "created_at": "2026-07-25T05:41:13+00:00",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile": "C:/QM/repo/framework/EAs/QM5_20137_wti-seas-pb/sets/QM5_20137_wti-seas-pb_XTIUSD.DWX_D1_backtest.set",
+    "record_build_auto_enqueue_count": 0,
+    "record_build_auto_enqueue_skipped": 1,
+    "idempotent_record_recheck": "existing_q02_pending",
+    "exact_q02_row_count": 1
   },
   "factory_state": {
     "factory_off_observed": true,
@@ -89,19 +101,19 @@
     "manual_backtest_started": false
   },
   "hashes_sha256": {
-    "card": "CFF9FBCEAD2A32435B62195D2931C52D43F62D3FD16BFC4D7AD1D3FBAFAA12D3",
+    "card": "7BA8B3ED293E4C827C0C7ED2E060FB0C9C993023EABE7AB3D082CAC3FB756874",
     "source_packet": "29F0E8AF6FCA5BF7F36EE2177FC70162D602E9E573BFB6637FCDE48C8257A916",
     "mq5": "47CE5BBEEDF40B4163F08C771DE738750AB837B78ADA4825CEFCE48A54F7C5D5",
     "ex5": "035A3ED0ADE1F0980E22BA9880676CD3BFA08FEF2733B21D220F04A4CD4A4453",
-    "spec": "4035A6DD6DB709B90ACBE856CEEF3757CE21CE42C82DFDC9939D0BA473ADDAC5",
-    "setfile": "C3DEFAB8335284BFED8B9FCD3236641317614FC91268226F488F24ABD1B7B675",
+    "spec": "32230D48189AE5B4EBEC4B62FA6333F4B80BBB10FD2321A0FB4B509B1EEFABC9",
+    "setfile": "7895EE51A9E73FFC50488677697F01CA9F0359D248B570C2DE9E19F808F75CCA",
     "ea_id_registry": "129AB15E10AE087B40317E467C93266F624F300A1D560FD7D7E769890E194FE3",
     "magic_registry": "62FD46F57E183489729201327CC34AEEBB54EB8B5105511C95080E42220D4FE5",
     "magic_resolver": "FEF1461E8A65DDF734BBB96B6F7D98E2D605A7D3F0F907D31E1C537424A174EB"
   },
   "resolver_note": "Regenerated from the canonical registry after the EA directory and slot row existed; generated magic 201370000 was verified.",
-  "build_recorded": false,
-  "build_task_status": "pending_record",
+  "build_recorded": true,
+  "build_task_status": "done",
   "manual_backtest_started": false,
   "t_live_touched": false,
   "autotrading_touched": false,
