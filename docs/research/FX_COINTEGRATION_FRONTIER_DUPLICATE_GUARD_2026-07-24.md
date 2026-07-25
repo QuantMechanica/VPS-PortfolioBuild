@@ -163,3 +163,28 @@ No stale forex queue row was dispatched or duplicated.
 The next valid action requires either a newly OWNER-approved hypothesis outside
 the exhausted scan or a scheduler-governed reconciliation of the saturated
 legacy dispatch ledger. Neither is authorized implicitly by this stop record.
+
+## 2026-07-25 canonical-farm capacity refresh
+
+A current read-only reconciliation at `2026-07-25T07:27:55Z` confirms that the
+mission still has no non-duplicate pure-FX pair to card or build:
+
+- all 21 approved pair cards whose filenames contain `cointegration` or `coint`
+  have matching EA directories;
+- `QM5_12532` remains Q02 `PASS` followed by Q05 `FAIL`;
+- `QM5_12533` remains Q02 `PASS` followed by Q04 `FAIL`; and
+- the only open rows returned by the wider cointegration-text reconciliation
+  are the cross-asset XBR/FX rows `QM5_13087` and `QM5_13092`, plus the metals
+  basket `QM5_20012`. None is a new pure-FX pair from the governed scan.
+
+The canonical farm had nine active work items and nine live terminal-worker
+daemons, with 2,289 pending items. Six factory `terminal64.exe` processes were
+present under exact `D:/QM/mt5/T<n>/` paths; the separately observed `T_Live`
+process was excluded. Because every live worker already owned an active work
+item, paced capacity was unavailable even though not every phase had an MT5
+child process at the instant of inspection.
+
+The machine-readable snapshot is
+`artifacts/fx_cointegration_frontier_stop_20260725T072755Z_board_advisor.json`.
+No card, EA, setfile, manifest, queue row, terminal, portfolio gate, or live
+artifact was changed by this refresh.
