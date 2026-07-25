@@ -1,4 +1,8 @@
 ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
+9584,ff-brv-spikebase,0,EURUSD.DWX,95840000,2026-07-25,Codex,active
+9584,ff-brv-spikebase,1,EURJPY.DWX,95840001,2026-07-25,Codex,active
+9584,ff-brv-spikebase,2,GBPUSD.DWX,95840002,2026-07-25,Codex,active
+9584,ff-brv-spikebase,3,XAUUSD.DWX,95840003,2026-07-25,Codex,active
 1490,raschke-anti-pullback-reversal-h4,0,EURUSD.DWX,14900000,2026-06-28,Development,active
 1490,raschke-anti-pullback-reversal-h4,1,GBPUSD.DWX,14900001,2026-06-28,Development,active
 1490,raschke-anti-pullback-reversal-h4,2,USDJPY.DWX,14900002,2026-06-28,Development,active

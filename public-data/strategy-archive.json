@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-25T09:07:28.7320064Z",
-    "total":  3546,
+    "generated_at":  "2026-07-25T20:07:44.8532565Z",
+    "total":  3551,
     "items":  [
                   {
                       "slug":  "ath-breakout-atr-trail",
@@ -1700,12 +1700,6 @@
                       "source":  "strategy-seeds/cards",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-07-09T08:53:06.6081255Z"
-                  },
-                  {
-                      "slug":  "xbr-nzdcad-rspr_card",
-                      "source":  "strategy-seeds/cards",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-07-09T05:56:39.7041294Z"
                   },
                   {
                       "slug":  "xbr-vrp-proxy_card",
@@ -15772,6 +15766,12 @@
                       "last_updated_utc":  "2026-07-09T04:01:14.1898533Z"
                   },
                   {
+                      "slug":  "QM5_13082_xbr-nzdcad-rspr",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-25T17:47:12.5219588Z"
+                  },
+                  {
                       "slug":  "QM5_13083_xbr-cadjpy-rspr",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
@@ -18152,6 +18152,36 @@
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-07-25T08:01:21.5981663Z"
+                  },
+                  {
+                      "slug":  "QM5_20155_wti-tue-trend_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-25T14:07:55.5761043Z"
+                  },
+                  {
+                      "slug":  "QM5_20156_xng-wed-trend_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-25T15:03:24.5645036Z"
+                  },
+                  {
+                      "slug":  "QM5_20157_xau-xag-ratio_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-25T15:51:47.8526036Z"
+                  },
+                  {
+                      "slug":  "QM5_20158_xng-tue-trend_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-25T17:18:29.6004941Z"
+                  },
+                  {
+                      "slug":  "QM5_20159_xng-mon-trend_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-25T18:17:28.6637841Z"
                   },
                   {
                       "slug":  "QM5_2020_chaikin-volatility-h4",
