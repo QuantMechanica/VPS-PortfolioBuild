@@ -148,6 +148,13 @@ this session, a stopgap keeper now runs detached in the interactive factory sess
 "nothing running", so a transient error cannot make it spawn into a healthy fleet. Log:
 `D:\QM\strategy_farm\logs\interactive_worker_keeper.log`.
 
+**Acceptance-tested, not assumed** (the mistake made earlier tonight was declaring a change
+proven on two minutes of silence). T10's worker was deliberately killed at 17:27:53Z; the
+keeper logged `respawning missing=["T10"]` at 17:28:22Z and the replacement (pid 8080) was
+up at 17:28:25Z — **32 seconds from kill to restored fleet**, with the log lines to show
+it. Note the keeper is silent while the fleet is complete, so silence in its log means
+"nothing to do", not "not running".
+
 This is a substitute, not the fix — delete it when ticket `7abd518a` lands. Stop it with:
 
 ```powershell
