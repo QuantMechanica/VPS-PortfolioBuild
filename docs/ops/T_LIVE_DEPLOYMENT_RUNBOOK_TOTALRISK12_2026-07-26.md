@@ -27,6 +27,19 @@ the manifest **in writing** (Decision B below).
   track (12778/13117 Q06+Q07 on WP-9 binaries). If a sleeve fails, composition — not the 12.0 —
   is what changes, and the manifest is regenerated over the survivors
   (`gen_dxz_final_manifest.py --total-risk 12.0 --out <new path>`).
+- **Decision C (new 2026-07-26) — 12567/XNGUSD keep or drop.** Its fresh sealed Q08 is
+  **FAIL_HARD twice** (07-18 + 07-25, identical pattern): `8.8_edge_decay` 41.5 % (PF first half
+  1.764 → last half **1.032**, threshold 40), `8.4_seasonal` 9/12, `8.10_regime` low-vol P&L
+  negative. Q10 full-history PASS (the closing verdict) stands; neighborhood / chopping-block /
+  MC-shuffle all PASS; the sleeve sits **at cap 1.0**. Evidence:
+  `D:\QM\reports\work_items\084a05e0-…\QM5_12567\Q08\XNGUSD_DWX\aggregate.json`.
+  **KEEP** → deploy FINAL24b exactly as approved (A+B). **DROP** → deploy the staged OPTION B:
+  manifest `portfolio_manifest_sunday_FINAL23_TOTALRISK12_20260726.json` (Sharpe 2.2953 vs
+  2.3440, MaxDD faithful 3.9871 % vs 3.4952 % — the *historical* composite worsens because
+  XNGUSD diversified; the case for dropping is *forward* decay, not history), presets
+  `D:\QM\exports\tlive_presets_FINAL23_20260726\` (23 files, RISK_PERCENT sum 12.0 verified,
+  report `D:\QM\reports\portfolio\staging_report_FINAL23_20260726.json`), close the XNGUSD
+  chart, no preset 23.
 
 ## Execution sequence (Claude, after A+B)
 
