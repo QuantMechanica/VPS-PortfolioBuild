@@ -53,6 +53,30 @@ the manifest **in writing** (Decision B below).
   (computed against both FINAL24b and FINAL23 bases). Park as documented challengers; if OWNER
   opts in tonight, the manifest+presets regenerate in-session via the gen_dxz pattern.
 
+## OWNER decisions ANSWERED (2026-07-26 midday chat) — deploy target is now FINAL22
+
+- **Decision C: DROP 12567/XNGUSD** („1: deine Empfehlung") **PLUS remove 10939/GBPUSD with
+  re-qualification** („2: entfernen und Re-Qualifikation" — overrides the keep-recommendation;
+  sealed Q08 re-qual enqueued). 10919/XTI (UNKNOWN, low-N) and 13128/NDX (WATCH) stay,
+  explicitly acknowledged. → **Deploy target = FINAL22**:
+  manifest `D:\QM\reports\portfolio\portfolio_manifest_sunday_FINAL22_TOTALRISK12_20260726.json`
+  (Sharpe 2.2058, MaxDD faithful 4.0065 %, base-verify exact vs FINAL24b, weight err 4.3e-7),
+  presets `D:\QM\exports\tlive_presets_FINAL22_20260726\` (22 files, sum 12.0 verified, report
+  `staging_report_FINAL22_20260726.json`). Close the XNGUSD **and** GBPUSD-H4(10939) charts;
+  presets 12 and 23 deliberately absent. **Decision B's written approval tonight applies to the
+  FINAL22 manifest** (composition changed after the original „2 ja").
+- **Decision D: PARK 10938/10692** („3: parken").
+- **KS baselines: DEPLOY** („4: ja") — step 7 executes.
+- **Swap capture: YES** („5: ja") — new step: at the terminal, snapshot
+  SYMBOL_SWAP_MODE/LONG/SHORT/ROLLOVER3DAYS per the capture spec in
+  `D:\QM\reports\ultracode_20260726\wsd\swap_rates_current_scenario.json` to close the
+  current-rate scenario.
+- **Recency axis: RATIFIED per recommendation** („6") — enforcement from the next Q10 cohort
+  once the WS-C shadow patch merges tonight; quarterly rolling sealed re-Q08 for live sleeves
+  (decision record `decisions/2026-07-26_q10_recency_axis_enforcement.md`).
+- **FTMO B1 contract D1-D6: RATIFIED** („7: ja"; D5 min-trading-days read from the NEW trial
+  account, which OWNER creates tonight — „9: ja heute Abend").
+
 ## Execution sequence (Claude, after A+B)
 
 1. **Verify quiescence & T_Live health.** T_Live terminal running, watchdog tasks Running/Ready.
