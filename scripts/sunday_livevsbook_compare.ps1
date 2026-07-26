@@ -1,28 +1,104 @@
 <#
   Sunday live-vs-book reconciliation (OWNER request 2026-07-08).
   Compares T_Live live trading against the book (backtest) expectation via the
-  read-only live burn-in module, and writes a dated report for the Sunday
-  dual-book admission session. Does NOT touch trading state.
+  read-only live-vs-book comparator (portfolio_live_forward_from_logs.py) and writes a
+  dated report for the Sunday dual-book admission session. Does NOT touch trading state.
 
   Wired as scheduled task QM_NewBook_LiveVsBook_Sunday (one-time 2026-07-12).
-  Re-point --manifest to the deployed book after any new-book deploy.
+  CADENCE STAYS SUNDAY. Promotion to a daily / money-gate cadence requires the E4' fixtures
+  + read-only historical replay to pass Codex review AND an OWNER decision (ULTRACODE WS-E4).
+
+  E4' repair (2026-07-26): the comparator is bound to ONE signed manifest (by SHA256) and an
+  explicit deployment epoch, filters the live logs to exactly that book's EA/magic/symbol
+  identities, matches the observation window on ts_utc, derives ATTACHMENT / TELEMETRY /
+  ACTIVITY as three INDEPENDENT per-sleeve states, and takes the drawdown reference ONLY
+  from a SUM-of-sleeves Monte-Carlo bound to this book (no placeholder). Incomplete inputs
+  produce UNKNOWN sections, never a silent green.
+
+  E4' round-2 (Codex WS-E4 CHANGES-REQUIRED): the default -Manifest now points at the
+  SIGNED, OWNER-approved live manifest (status LIVE + approved_by), NOT a DRAFT. Binding a
+  DRAFT manifest by SHA does not make it signed; -RequireSigned refuses an unsigned manifest.
+  The default DXZ live book composition is identical across the signed live manifest and the
+  07-19 draft (same 24 ea/symbol/magic tuples), so the epoch stays the 2026-07-19 go-live.
+
+  Re-point -Manifest / -DeploymentEpoch (and, once a bound SUM-of-sleeves MC exists for the
+  new book, -McArtifact) after any new-book T_Live deploy. Defaults below track the CURRENTLY
+  deployed book (DXZ Sunday FINAL-24, go-live 2026-07-19,
+  decisions/2026-07-19_t_live_dxz_sunday_final_book.md). After tonight's TOTAL_RISK12 deploy,
+  OWNER/Claude repoints to the SIGNED FINAL24b manifest (once approved) with
+  -DeploymentEpoch 2026-07-26 -- do NOT point at the DRAFT.
 #>
+[CmdletBinding()]
+param(
+    # SIGNED, OWNER-approved live manifest (status LIVE + approved_by); same 24-sleeve
+    # composition as the 07-19 draft. A DRAFT bound only by SHA is NOT signed.
+    [string]$Manifest        = 'D:\QM\reports\portfolio\portfolio_manifest_live_24sleeve_20260724.json',
+    [string]$DeploymentEpoch = '2026-07-19',
+    [long]  $ExpectedAccount = 4000090541,   # DXZ live account (decisions/2026-07-19_t_live_dxz_sunday_final_book.md)
+    [string]$McArtifact      = '',            # bound SUM-of-sleeves MC; empty -> DD check UNKNOWN (never placeholder)
+    [switch]$RequireSigned,                   # refuse (exit 2) unless the manifest is SIGNED
+    [string]$LogDir          = 'C:\QM\mt5\T_Live\MT5_Base\MQL5\Files\QM',
+    [string]$OutDir          = 'D:\QM\reports\portfolio\live_burnin'
+)
+
 $ErrorActionPreference = 'Stop'
-$py       = 'C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.exe'
-$tool     = 'C:\QM\repo\tools\strategy_farm\portfolio\portfolio_live_forward_from_logs.py'
-# Repointed 2026-07-13: DXZ-23 book deployed 2026-07-13 (decisions/2026-07-12_t_live_dxz_23sleeve.md);
-# the 23-sleeve manifest is the deployed basis (risk sum 9.75, Sharpe 2.348 / MaxDD 3.32% ref).
-$manifest = 'D:\QM\reports\portfolio\portfolio_manifest_sunday_23sleeve_DRAFT_20260711.json'
-$stamp    = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
-$date     = (Get-Date).ToString('yyyyMMdd')
-$out      = "D:\QM\reports\portfolio\live_burnin\livevsbook_sunday_$date.json"
-$log      = 'D:\QM\reports\state\sunday_livevsbook_compare.log'
+$py    = 'C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.exe'
+$tool  = 'C:\QM\repo\tools\strategy_farm\portfolio\portfolio_live_forward_from_logs.py'
+$stamp = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+$date  = (Get-Date).ToString('yyyyMMdd')
+$out   = Join-Path $OutDir "livevsbook_sunday_$date.json"
+$log   = 'D:\QM\reports\state\sunday_livevsbook_compare.log'
+
+if (-not (Test-Path $Manifest)) { throw "manifest not found: $Manifest" }
+$manifestSha = (Get-FileHash -Algorithm SHA256 -Path $Manifest).Hash.ToLower()
+
+# Signed-manifest deploy-stamp: SIGNED iff status in {LIVE,APPROVED,SIGNED,DEPLOYED} AND
+# (signed=true OR approved_by present). Logged for the audit trail; a DRAFT is UNSIGNED.
+try {
+    $mf = Get-Content -Raw -Path $Manifest | ConvertFrom-Json
+    $mfStatus = "$($mf.status)".ToUpper()
+    $mfApprover = if ($mf.approved_by) { $mf.approved_by } else { $mf.declared_approved_by }
+    $mfSignedOk = ($mfStatus -in @('LIVE','APPROVED','SIGNED','DEPLOYED')) -and `
+                  ((($null -ne $mf.signed) -and [bool]$mf.signed) -or ($mfApprover))
+    $mfLabel = if ($mfSignedOk) { 'SIGNED' } elseif ($mfStatus -eq 'DRAFT') { 'DRAFT' } else { 'UNSIGNED' }
+} catch {
+    $mfStatus = 'UNPARSEABLE'; $mfSignedOk = $false; $mfLabel = 'UNSIGNED'
+}
 
 "$stamp  START sunday live-vs-book compare -> $out" | Out-File -Append -Encoding utf8 $log
+"$stamp  manifest=$Manifest sha256=$manifestSha epoch=$DeploymentEpoch account=$ExpectedAccount" |
+    Out-File -Append -Encoding utf8 $log
+"$stamp  manifest_signature=$mfLabel status=$mfStatus signed=$mfSignedOk require_signed=$($RequireSigned.IsPresent)" |
+    Out-File -Append -Encoding utf8 $log
+
+if ($RequireSigned -and (-not $mfSignedOk)) {
+    "$stamp  REFUSED: --RequireSigned set but manifest is $mfLabel (status=$mfStatus)." |
+        Out-File -Append -Encoding utf8 $log
+    throw "manifest is $mfLabel (status=$mfStatus); refusing under -RequireSigned. Binding a manifest by SHA does not make it signed."
+}
+
+# Bind the exact identity set + deployment epoch. No placeholder MC: the drawdown check is
+# UNKNOWN unless a manifest-bound SUM-of-sleeves reference is supplied via -McArtifact.
+$argsList = @(
+    $tool,
+    '--manifest', $Manifest,
+    '--deployment-epoch', $DeploymentEpoch,
+    '--expected-account', $ExpectedAccount,
+    '--log-dir', $LogDir,
+    '--generated-at-utc', $stamp,
+    '--out', $out
+)
+if ($McArtifact -and (Test-Path $McArtifact)) {
+    $argsList += @('--mc-artifact', $McArtifact)
+}
+if ($RequireSigned) {
+    $argsList += '--require-signed'
+}
+
 # PS 5.1: with ErrorActionPreference=Stop, python's harmless stderr warning
 # ("Could not find platform independent libraries") became a terminating
 # NativeCommandError via 2>&1 and killed the run right after START.
 $ErrorActionPreference = 'Continue'
-& $py $tool --manifest $manifest --generated-at-utc $stamp --out $out 2>&1 |
+& $py @argsList 2>&1 |
     Tee-Object -Variable result | Out-File -Append -Encoding utf8 $log
 "$stamp  DONE exit=$LASTEXITCODE" | Out-File -Append -Encoding utf8 $log
