@@ -101,6 +101,28 @@ bad luck — it is the signature of the gates correctly removing strategies whos
 speed came from a handful of trades. The pipeline is working, and what it reveals is that we
 do not own fast, robust edge.
 
+## Avenue tested and closed: the daily-loss rule cannot buy speed
+
+One plausible way out was that FTMO's own 5 % daily-loss limit might *help*. Every prior
+analysis treats it purely as a constraint to survive, but a daily stop also truncates the
+worst sessions — and if a sleeve's drawdown came from a few terrible days rather than a long
+grind, enforcing the stop would cut the denominator of speed more than the numerator.
+
+Simulated over all 70 gate-surviving sleeves by walking their trades in close order,
+accumulating per-session P&L and dropping the remainder of any session that breached −5 %:
+
+**The stop never triggered once. Zero trades skipped, drawdown unchanged, speed unchanged,
+across all 70.**
+
+None of our sleeves ever loses 5 % of the account in a single session at gate sizing. Their
+drawdowns are slow erosion across many sessions, not blow-up days. Good for survival,
+useless for speed.
+
+That result also closes the sizing argument for good: **speed is sizing-invariant.** Scaling
+risk scales return and drawdown together, so the ratio does not move. The gap to a
+challenge-grade book cannot be closed by position sizing, by the governor, or by portfolio
+construction — only by owning strategies with more edge per unit of risk.
+
 ## What this means, plainly
 
 **P(pass) ≥ 0.80 in 30 days is not reachable by stacking strategies of the quality we
