@@ -36,9 +36,10 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
-q01_status: PENDING
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: ENQUEUED
+q02_work_item_id: f4f28101-9b4e-40db-8a46-4a30511a3433
 review_focus: "Adds summer electric-power-demand trend exposure distinct from the incumbent XNG RSI pullback. The May-Sep window plus rising 21/84-D1 trend stack are jointly load-bearing; Q09 alone may establish realized orthogonality."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -130,3 +131,11 @@ authoritative; structural difference does not guarantee decorrelation.
 This authorizes card, build, strict compile, one RISK_FIXED setfile and Q02
 enqueue only. It does not authorize a live setfile, T_Live access,
 AutoTrading, deploy manifest, portfolio gate or portfolio manifest change.
+
+## Pipeline history
+
+| phase | date | verdict | evidence |
+|---|---|---|---|
+| G0 | 2026-07-26 | APPROVED | this card and governed source packet |
+| Q01 | 2026-07-26 | PASS | `docs/ops/evidence/2026-07-26_qm5_20164_xng_summer_dualtrend_build_q02_enqueue.md` |
+| Q02 | 2026-07-26 | ENQUEUED | work item `f4f28101-9b4e-40db-8a46-4a30511a3433` |
