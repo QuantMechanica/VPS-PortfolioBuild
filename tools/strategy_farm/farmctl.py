@@ -759,6 +759,11 @@ def pending_claim_order_sql() -> str:
             ELSE 3 END AS _asset_rank
         FROM work_items w
         WHERE w.status='pending'
+          AND NOT EXISTS (
+            SELECT 1 FROM poison_pill_quarantine q
+            WHERE q.ea_id=w.ea_id AND q.symbol=w.symbol AND q.phase=w.phase
+              AND q.active=1
+          )
         ORDER BY _recovery_rank ASC, _priority_track_rank ASC, _phase_rank ASC,
                  _basket_q02_rank ASC, _winner_rank ASC, _asset_rank ASC,
                  w.updated_at ASC, w.created_at ASC
@@ -914,6 +919,22 @@ def init_db(root: Path) -> None:
                 ON work_items(parent_task_id);
             CREATE INDEX IF NOT EXISTS idx_work_items_ea_phase
                 ON work_items(ea_id, phase);
+
+            CREATE TABLE IF NOT EXISTS poison_pill_quarantine (
+                ea_id TEXT NOT NULL,
+                symbol TEXT NOT NULL,
+                phase TEXT NOT NULL,
+                active INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0,1)),
+                verdict_reason TEXT NOT NULL,
+                consecutive_failures INTEGER NOT NULL,
+                successes_ever INTEGER NOT NULL,
+                evidence_path TEXT,
+                quarantined_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                released_at TEXT,
+                release_note TEXT,
+                PRIMARY KEY (ea_id, symbol, phase)
+            );
 
             -- ULTRACODE WS-A (2026-07-26): durable rolling ledger of successful
             -- claims (class 'priority'|'recovery'), shared by every claimant. Backs
@@ -5646,6 +5667,9 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
     free_terminals = [t for t in factory_terminals if t not in busy_terminals]
     if free_terminals:
         with connect(root) as conn:
+            import poison_pill_quarantine
+            poison_pill_quarantine.refresh_pending(conn)
+            conn.commit()
             active_symbol_keys = _active_work_item_symbols(conn)
             pending = conn.execute(pending_claim_order_sql()).fetchall()
         claimed_symbol_keys = dict(active_symbol_keys)

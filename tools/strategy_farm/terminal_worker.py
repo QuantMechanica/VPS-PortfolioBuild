@@ -1116,6 +1116,8 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 skipped_avoid_terminal: list[dict[str, Any]] = []
                 multisym_free_ram: float | None = None
                 history_registry = farmctl._dwx_symbol_history_registry()
+                import poison_pill_quarantine
+                poison_pill_quarantine.refresh_pending(conn)
                 # ULTRACODE WS-A (2026-07-26): recovery idle-cap. Recovery-class rows
                 # sort LAST (pending_claim_order_sql _recovery_rank), so the loop only
                 # reaches one after every eligible priority/frontier row was claimed
