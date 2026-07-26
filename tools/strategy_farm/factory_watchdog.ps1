@@ -7,11 +7,11 @@
 #  producing without a manual "Factory ON" click.
 #
 #  RUNS AS SYSTEM (QM_StrategyFarm_FactoryWatchdog_15min, ServiceAccount) —
-#  it must therefore NEVER spawn workers/terminals directly: a SYSTEM/
-#  session-0 child spawn yields workers whose terminal64 die 0xC0000142
-#  (2026-06-24 broken-respawn class). ALL healing is delegated via
-#  Start-ScheduledTask to interactive qm-admin tasks (FactoryON_AtLogon
-#  for clean-slate, QM_StrategyFarm_WorkerDedupe for surgical spawns).
+#  it must therefore NEVER spawn workers/terminals as a normal SYSTEM/
+#  session-0 child: those workers' terminal64 die 0xC0000142 (2026-06-24
+#  broken-respawn class). Surgical healing uses WTSQueryUserToken +
+#  CreateProcessAsUser to place start_terminal_workers.py in qm-admin's
+#  existing interactive session. Clean-slate healing remains separate.
 #
 #  Deterministic + respects OWNER's ON/OFF:
 #    - OWNER intent is read from the FACTORY tasks' enable-state
@@ -40,6 +40,68 @@ $stallDumpDir = 'D:\QM\reports\state\worker_stalldump'
 $rebootDiagnosticPending = 'D:\QM\reports\state\reboot_diagnostic_pending.json'
 $resetAdmissionBlock = 'D:\QM\strategy_farm\state\WATCHDOG_RESET_PENDING.json'
 . (Join-Path $PSScriptRoot 'qm_tasks.manifest.ps1')
+
+function Invoke-InteractiveWorkerDedupe {
+    param(
+        [Parameter(Mandatory = $true)][string]$PythonExe,
+        [Parameter(Mandatory = $true)][int]$WorkersBefore,
+        [Parameter(Mandatory = $true)][int]$ExpectedWorkers
+    )
+
+    $launcher = Join-Path $PSScriptRoot 'run_in_console_session.ps1'
+    $starter = Join-Path $PSScriptRoot 'start_terminal_workers.py'
+    if (-not (Test-Path -LiteralPath $launcher)) { throw "interactive-session launcher missing: $launcher" }
+    if (-not (Test-Path -LiteralPath $starter)) { throw "worker starter missing: $starter" }
+
+    $targetUser = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' -ErrorAction SilentlyContinue).DefaultUserName
+    if (-not $targetUser) { $targetUser = 'qm-admin' }
+    # The cached user environment can contain stale PYTHONHOME/PYTHONPATH values
+    # even though the already-running desktop processes are healthy. A token-spawned
+    # Python inherited C:\Python311 and failed importing _ctypes during acceptance.
+    # Clear only those interpreter override variables before starting the pinned exe;
+    # the worker daemons inherit this sanitized interactive-session environment.
+    $spawnScript = @"
+Remove-Item Env:PYTHONHOME -ErrorAction SilentlyContinue
+Remove-Item Env:PYTHONPATH -ErrorAction SilentlyContinue
+& '$PythonExe' '$starter' --repo-root '$repo' --farm-root 'D:\QM\strategy_farm' --dedupe
+exit `$LASTEXITCODE
+"@
+    $encodedSpawn = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($spawnScript))
+    $sessionShell = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+    $starterArgs = "-NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand $encodedSpawn"
+    $launchOutput = @(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass `
+        -File $launcher -Exe $sessionShell -Arguments $starterArgs -WorkDir $repo `
+        -TargetUser $targetUser -WaitSeconds 180 2>&1)
+    if ($LASTEXITCODE -ne 0) {
+        throw "CreateProcessAsUser launcher rc=$LASTEXITCODE output=$($launchOutput -join ' ')"
+    }
+    $launchText = $launchOutput -join ' '
+    if ($launchText -notmatch 'LAUNCHED pid=\d+ into (?:interactive )?session (\d+)') {
+        throw "CreateProcessAsUser launcher returned no session evidence: $launchText"
+    }
+    $targetSession = [int]$matches[1]
+    if ($launchText -notmatch 'WAIT_EXIT pid=\d+ code=0') {
+        throw "interactive worker starter did not complete cleanly: $launchText"
+    }
+    if ($targetSession -eq 0) { throw "refusing worker heal into session 0" }
+
+    Start-Sleep -Seconds 20
+    $workers = @(Get-CimInstance Win32_Process -Filter "Name='python.exe' OR Name='pythonw.exe'" -ErrorAction SilentlyContinue |
+                 Where-Object { $_.CommandLine -match 'terminal_worker\.py' })
+    $workersAfter = $workers.Count
+    $wrongSession = @($workers | Where-Object { $_.SessionId -ne $targetSession }).Count
+    if ($wrongSession -gt 0) {
+        throw "$wrongSession terminal workers are outside target session $targetSession"
+    }
+    if ($WorkersBefore -lt $ExpectedWorkers -and $workersAfter -le $WorkersBefore) {
+        throw "dedupe launch made no progress: workers_before=$WorkersBefore workers_after=$workersAfter"
+    }
+    return [pscustomobject]@{
+        workers_after = $workersAfter
+        session_id = $targetSession
+        launch = $launchText
+    }
+}
 
 # FACTORY_OFF.flag master switch: owner/claude sets it to suspend all automation.
 # Watchdog must no-op immediately so it cannot resurrect the factory.
@@ -1111,22 +1173,20 @@ else {
         # FIX 3: PURE WORKER SHORTAGE — session alive, no stall, no launch_fault wedge.
         # Surgical dedupe spawn: only fills the missing worker slots; never kills
         # in-flight terminals or interrupts running backtests.
-        # This watchdog runs as SYSTEM: a direct child spawn here would put workers in
-        # session 0 and their terminal64 dies 0xC0000142 (2026-06-24 broken-respawn
-        # class). Delegate to the on-demand interactive task (qm-admin, Interactive,
-        # Highest) exactly like the FactoryON_AtLogon escalation path.
+        # This watchdog runs as SYSTEM: use the logged-on qm-admin token to create the
+        # idempotent starter in that user's existing nonzero session. This bypasses the
+        # Task Scheduler InteractiveToken queue failure without ever making a session-0
+        # worker. run_in_console_session.ps1 selects Active first, then Disconnected.
         # Emits action 'worker_dedupe_heal' with workers_before / workers_after counts.
         $workersBefore = $nWorkers
         try {
-            Start-ScheduledTask -TaskName 'QM_StrategyFarm_WorkerDedupe' -ErrorAction Stop
-            Start-Sleep -Seconds 20
-            $workersAfter = @(Get-CimInstance Win32_Process -Filter "Name='python.exe' OR Name='pythonw.exe'" -ErrorAction SilentlyContinue |
-                              Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
+            $heal = Invoke-InteractiveWorkerDedupe -PythonExe $py -WorkersBefore $workersBefore -ExpectedWorkers $ExpectWorkers
+            $workersAfter = $heal.workers_after
             $action = 'worker_dedupe_heal'
-            $detail += " -> dedupe via QM_StrategyFarm_WorkerDedupe: workers_before=$workersBefore workers_after=$workersAfter/$ExpectWorkers tLiveRunning=$tLiveRunning"
+            $detail += " -> dedupe via CreateProcessAsUser: session=$($heal.session_id) workers_before=$workersBefore workers_after=$workersAfter/$ExpectWorkers tLiveRunning=$tLiveRunning"
         } catch {
             $action = 'heal_failed'
-            $detail += " -> ERROR: $_ (QM_StrategyFarm_WorkerDedupe task missing? register via install_hygiene_and_lsm_tasks.ps1)"
+            $detail += " -> ERROR: $_ (interactive token worker heal failed)"
         }
     }
 }

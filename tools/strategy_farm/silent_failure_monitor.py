@@ -75,16 +75,16 @@ CONFIG = {
     "schtask_benign_results": {0, 267009, 267011},
     # Codes that are ALWAYS a hard failure on a live/recurring task:
     #   267014     = 0x4130A killed at the ExecutionTimeLimit  (the motivating bug)
-    #   2147943648 = 0x800710E0 the task launch was refused / an instance is already running past window
-    "schtask_hardfail_results": {267014, 2147943648},
+    #   2147946720 = 0x800710E0 Task Scheduler queued an InteractiveToken launch
+    #                instead of starting it (observed permanently after session handover)
+    "schtask_hardfail_results": {267014, 2147946720},
     # Transient/ad-hoc tasks the run_smoke + compile harness register and tear down
     # (QM_DEV<n>_SMOKE_<hex>, QM_*_SMOKE_*). They are not persistent farm infra and
     # their result codes are harness churn, not a silent-failure class — ignore them.
     "schtask_ignore_patterns": (r"_SMOKE_", r"^QM_DEV\d"),
-    # These logon-only GUI tasks are intentionally not demand-startable. Their
-    # availability is adjudicated from live_uptime_watchdog.json instead of a
-    # historical LastTaskResult (0x800710E0 is expected for a Disc-session
-    # demand-start attempt on this host).
+    # These logon-only GUI tasks are adjudicated elsewhere only for ordinary
+    # historical results. 0x800710E0 must still alarm: after a session handover
+    # it means Task Scheduler is queueing every InteractiveToken launch forever.
     "schtask_live_logon_owned_elsewhere": {
         "QM_T_Live_AtLogon",
         "QM_FTMO_AtLogon",
@@ -382,12 +382,12 @@ def check_scheduled_tasks(probe: dict) -> list[dict]:
         name = str(t.get("Name") or "?")
         if any(r.search(name) for r in ignore_res):
             continue  # transient smoke/dev harness task — not persistent farm infra
-        if name in CONFIG["schtask_live_logon_owned_elsewhere"]:
-            continue  # exact live state + resident heartbeat are checked below
         state = str(t.get("State") or "")
         if state == "Disabled":
             continue  # intentionally off — never overdue, never result-alarmed
         result = int(t.get("LastResult") or 0)
+        if name in CONFIG["schtask_live_logon_owned_elsewhere"] and result != 2147946720:
+            continue  # exact live state + resident heartbeat are checked below
         next_run = _parse_iso(t.get("NextRun"))
         last_run = _parse_iso(t.get("LastRun"))
         cadence = _task_cadence_min(name)
@@ -398,17 +398,30 @@ def check_scheduled_tasks(probe: dict) -> list[dict]:
         ev = f"Get-ScheduledTaskInfo {name}"
 
         # ── result-code adjudication ─────────────────────────────────────────
-        if result in benign:
+        if result == 2147946720:
+            # Unlike ordinary historical non-zero results this code is itself
+            # current evidence that an enabled InteractiveToken task was queued
+            # rather than executed. It must not age out or depend on NextRun.
+            findings.append(finding(
+                f"schtask:{name}", FAIL,
+                f"{name} LastTaskResult 0x{result:08X} interactive-launch-queued",
+                value=result, threshold=0,
+                hint="Task Scheduler is queueing this InteractiveToken task after a session handover; "
+                     "repair its execution path or principal.",
+                evidence=ev))
+        elif result in benign:
             pass
         elif result in hardfail:
-            label = "267014 killed@time-limit" if result == 267014 else f"0x{result:08X} launch-refused"
+            label = "267014 killed@time-limit" if result == 267014 else f"0x{result:08X} interactive-launch-queued"
             if recurring:
                 findings.append(finding(
                     f"schtask:{name}", FAIL,
                     f"{name} LastTaskResult {label} (recurring, next {t.get('NextRun')})",
                     value=result, threshold=0,
-                    hint="Task is dying at its ExecutionTimeLimit / refusing launch; raise the "
-                         "limit or fix the workload. This is the 267014 class that went unwatched.",
+                    hint=("Task Scheduler is queueing this InteractiveToken task after a session handover; "
+                          "repair its execution path or principal."
+                          if result == 2147946720 else
+                          "Task is dying at its ExecutionTimeLimit; raise the limit or fix the workload."),
                     evidence=ev))
             elif ran_recently and not parked:
                 findings.append(finding(

@@ -125,7 +125,7 @@ def test_live_uptime_missing_state_is_a_hard_failure(tmp_path, monkeypatch) -> N
     assert result[0]["status"] == monitor.FAIL
 
 
-def test_logon_only_live_tasks_do_not_alarm_on_historical_demand_refusal() -> None:
+def test_logon_only_live_tasks_alarm_on_interactive_launch_queued() -> None:
     probe = {
         "tasks": [{
             "Name": "QM_T_Live_AtLogon",
@@ -137,4 +137,30 @@ def test_logon_only_live_tasks_do_not_alarm_on_historical_demand_refusal() -> No
         "worker_count": 0,
     }
 
-    assert monitor.check_scheduled_tasks(probe) == []
+    findings = monitor.check_scheduled_tasks(probe)
+
+    assert len(findings) == 1
+    assert findings[0]["name"] == "schtask:QM_T_Live_AtLogon"
+    assert findings[0]["status"] == monitor.FAIL
+    assert findings[0]["value"] == 2147946720
+    assert "0x800710E0" in findings[0]["detail"]
+
+
+def test_recurring_task_interactive_launch_queued_is_hard_failure(monkeypatch) -> None:
+    monkeypatch.setattr(monitor, "_now", lambda: NOW)
+    probe = {
+        "tasks": [{
+            "Name": "QM_StrategyFarm_CodexFleetPacer",
+            "State": "Ready",
+            "LastResult": 2147946720,
+            "LastRun": "2026-07-22T07:58:00Z",
+            "NextRun": "2026-07-22T08:13:00Z",
+        }],
+        "worker_count": 0,
+    }
+
+    findings = monitor.check_scheduled_tasks(probe)
+
+    assert len(findings) == 1
+    assert findings[0]["status"] == monitor.FAIL
+    assert findings[0]["value"] == 2147946720
