@@ -156,6 +156,27 @@ def test_missing_seed_is_not_created_or_appended(tmp_path: Path) -> None:
     assert "append skipped" in (result.stdout + result.stderr)
 
 
+def test_common_copy_failure_is_loud_and_nonzero(tmp_path: Path) -> None:
+    base = tmp_path / "base"
+    _write_seed(base / PRIMARY_NAME, PRIMARY_HEADER)
+    _write_seed(base / SECONDARY_NAME, SECONDARY_HEADER)
+    feed = tmp_path / "feed.json"
+    feed.write_text("[]", encoding="ascii")
+    # A regular file where the Common directory must be makes both copies fail.
+    common = tmp_path / "common"
+    common.write_text("not a directory", encoding="ascii")
+
+    result = _run_refresh(
+        base=base, common=common, state=tmp_path / "state", feed=feed,
+        now_utc="2026-07-19T00:00:00Z",
+    )
+
+    assert result.returncode != 0
+    output = result.stdout + result.stderr
+    assert "Common copy FAILED" in output
+    assert str(common / PRIMARY_NAME) in output
+
+
 @pytest.mark.skipif(os.name != "nt", reason="Windows PowerShell 5.1 only")
 def test_refresh_script_is_ascii_and_parses_in_windows_powershell() -> None:
     assert all(byte < 128 for byte in SCRIPT.read_bytes())

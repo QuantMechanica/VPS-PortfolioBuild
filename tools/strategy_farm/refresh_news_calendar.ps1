@@ -241,6 +241,7 @@ if ($seedsValid -and $events.Count -gt 0) {
   Write-Host "appended: primary +$appendedPrimary, secondary +$appendedSecondary"
 }
 
+$copyFailures = New-Object 'System.Collections.Generic.List[string]'
 if (-not (Test-Path -LiteralPath $Common -PathType Container)) {
   New-Item -ItemType Directory -Path $Common -Force | Out-Null
 }
@@ -259,7 +260,9 @@ foreach ($pair in @(
       Copy-Item -LiteralPath $pair.Seed -Destination $destination -Force -ErrorAction Stop
     }
     catch {
-      Write-Warning "Common copy skipped: $($pair.Name): $_"
+      $copyFailure = "Common copy FAILED: source='$($pair.Seed)' destination='$destination' error='$_'"
+      $copyFailures.Add($copyFailure)
+      Write-Error $copyFailure
     }
     if (Test-Path -LiteralPath $destination) {
       try {
@@ -273,6 +276,9 @@ foreach ($pair in @(
   else {
     Write-Warning "seed MISSING: $($pair.Seed)"
   }
+}
+if ($copyFailures.Count -gt 0) {
+  throw "news-calendar refresh failed: $($copyFailures.Count) Common copy operation(s) failed"
 }
 
 $primaryRowsForCoverage = @(Read-Rows $primaryPath)

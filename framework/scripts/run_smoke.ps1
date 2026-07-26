@@ -2014,32 +2014,57 @@ function Get-ExpectedTradesPerYear {
 }
 
 function Resolve-NewsCalendarDiagnostics {
-    $baseDir = "D:\QM\data\news_calendar"
-    $primary = Join-Path $baseDir "news_calendar_2015_2025.csv"
-    $secondary = Join-Path $baseDir "forex_factory_calendar_clean.csv"
+    $sourceDir = "D:\QM\data\news_calendar"
+    $commonDir = Join-Path $env:APPDATA "MetaQuotes\Terminal\Common\Files"
+    $names = @("news_calendar_2015_2025.csv", "forex_factory_calendar_clean.csv")
+    $sourcePaths = @($names | ForEach-Object { Join-Path $sourceDir $_ })
+    $commonPaths = @($names | ForEach-Object { Join-Path $commonDir $_ })
     $maxAgeHours = 24 * 14
-    $paths = @($primary, $secondary)
-    $missing = @($paths | Where-Object { -not (Test-Path -LiteralPath $_ -PathType Leaf) })
+    $missingSource = @($sourcePaths | Where-Object { -not (Test-Path -LiteralPath $_ -PathType Leaf) })
+    $missingCommon = @($commonPaths | Where-Object { -not (Test-Path -LiteralPath $_ -PathType Leaf) })
     $latestModifiedUtc = $null
-    if (@($missing).Count -eq 0) {
-        $latestModifiedUtc = ($paths | ForEach-Object { (Get-Item -LiteralPath $_).LastWriteTimeUtc } | Sort-Object -Descending | Select-Object -First 1)
+    if (@($missingCommon).Count -eq 0) {
+        # Both files are required by QM_NewsInit, so freshness is bounded by the older copy.
+        $latestModifiedUtc = ($commonPaths | ForEach-Object { (Get-Item -LiteralPath $_).LastWriteTimeUtc } | Sort-Object | Select-Object -First 1)
     }
     $ageHours = $null
     $status = "OK"
-    if (@($missing).Count -gt 0) {
-        $status = "MISSING"
+    $mismatches = @()
+    if (@($missingSource).Count -gt 0) {
+        $status = "MISSING_SOURCE"
+    } elseif (@($missingCommon).Count -gt 0) {
+        $status = "MISSING_COMMON"
     } elseif ($null -ne $latestModifiedUtc) {
         $ageHours = [int][Math]::Floor(((Get-Date).ToUniversalTime() - $latestModifiedUtc).TotalHours)
         if ($ageHours -gt $maxAgeHours) {
-            $status = "STALE"
+            $status = "STALE_COMMON"
+        }
+        foreach ($name in $names) {
+            $sourcePath = Join-Path $sourceDir $name
+            $commonPath = Join-Path $commonDir $name
+            $sourceHash = (Get-FileHash -LiteralPath $sourcePath -Algorithm SHA256).Hash
+            $commonHash = (Get-FileHash -LiteralPath $commonPath -Algorithm SHA256).Hash
+            if ($sourceHash -cne $commonHash) {
+                $mismatches += [pscustomobject]@{
+                    name = $name
+                    source_sha256 = $sourceHash
+                    common_sha256 = $commonHash
+                }
+            }
+        }
+        if (@($mismatches).Count -gt 0) {
+            $status = "COMMON_MISMATCH"
         }
     }
     return [pscustomobject]@{
         status = $status
-        base_dir = $baseDir
-        primary_path = $primary
-        secondary_path = $secondary
-        missing_paths = @($missing)
+        source_dir = $sourceDir
+        common_dir = $commonDir
+        primary_path = $commonPaths[0]
+        secondary_path = $commonPaths[1]
+        missing_source_paths = @($missingSource)
+        missing_common_paths = @($missingCommon)
+        mismatches = @($mismatches)
         latest_modified_utc = $(if ($null -ne $latestModifiedUtc) { $latestModifiedUtc.ToString("o") } else { $null })
         age_hours = $ageHours
         max_age_hours = $maxAgeHours
@@ -2165,7 +2190,10 @@ New-Item -ItemType Directory -Path $frameworkEvidenceDir -Force | Out-Null
 $fromDate = if ($FromDate) { $FromDate } else { "{0}.01.01" -f $Year }
 $toDate = if ($ToDate) { $ToDate } else { "{0}.12.31" -f $Year }
 $newsCalendarDiagnostics = Resolve-NewsCalendarDiagnostics
-Write-Host ("run_smoke.news_calendar_status={0} latest_modified_utc='{1}' age_hours={2} max_age_hours={3}" -f $newsCalendarDiagnostics.status, $newsCalendarDiagnostics.latest_modified_utc, $newsCalendarDiagnostics.age_hours, $newsCalendarDiagnostics.max_age_hours)
+Write-Host ("run_smoke.news_calendar_status={0} common_path='{1}' latest_modified_utc='{2}' age_hours={3} max_age_hours={4}" -f $newsCalendarDiagnostics.status, $newsCalendarDiagnostics.common_dir, $newsCalendarDiagnostics.latest_modified_utc, $newsCalendarDiagnostics.age_hours, $newsCalendarDiagnostics.max_age_hours)
+if ($newsCalendarDiagnostics.status -ne "OK") {
+    throw ("NEWS_CALENDAR_{0}: EA-readable Common path '{1}' failed pre-run validation" -f $newsCalendarDiagnostics.status, $newsCalendarDiagnostics.common_dir)
+}
 # Q02 trade floor (OWNER 2026-06-26): flat 5 trades/year, NOT coupled to the card's
 # declared frequency. The old `expected * years * 0.5` rule killed genuine low-freq edges
 # whose cards over-declared (ICT Silver Bullet QM5_12571: card 100/yr, reality ~8-14/yr ->
