@@ -228,3 +228,23 @@ The machine-readable snapshot is
 Per the explicit CPU-ceiling rule, no card, build, enqueue, dispatch, tester
 launch, terminal control, portfolio-gate change, or live-artifact change
 followed.
+
+## 2026-07-26 03:02Z capacity refresh
+
+The governed frontier remains exhausted and the anchor baskets remain past
+Q02: `QM5_12532` has a logical-basket Q02 PASS followed by Q05 FAIL, while
+`QM5_12533` has a logical-basket Q02 PASS followed by Q04 FAIL. Creating
+another sleeve from the seven-row governed scan would duplicate an existing
+build and terminal Q02 evidence.
+
+The canonical farm reported all nine enabled terminal-worker daemons active
+with 2,252 pending work items. A contemporaneous process snapshot observed
+seven factory terminals (`T1`, `T2`, `T6`, `T7`, `T8`, `T9`, and `T10`);
+the unrelated FTMO terminal was excluded. The canonical saturation scheduler
+independently returned zero available slots and scheduled zero jobs.
+
+The machine-readable snapshot is
+`artifacts/fx_cointegration_frontier_stop_20260726T030230Z_board_advisor.json`.
+Per the mission's CPU-ceiling rule, no card, build, enqueue, dispatch, tester
+launch, terminal control, portfolio-gate change, or live-artifact change
+followed.
