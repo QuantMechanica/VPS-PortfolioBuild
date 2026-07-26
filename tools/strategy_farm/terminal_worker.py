@@ -528,25 +528,34 @@ def _work_item_is_multisymbol(
 
 
 _PROCESS_SNAPSHOT_TTL_SECONDS = 3.0
-_process_snapshot_cache: dict[str, Any] = {"at": -1e9, "children": {}, "private": {}}
+_process_snapshot_cache: dict[str, Any] = {
+    "at": -1e9, "children": {}, "private": {}, "alive": set(),
+}
 
 
-def _process_private_snapshot() -> tuple[dict[int, list[int]], dict[int, int]]:
-    """(children-by-parent-pid, private-commit-bytes-by-pid) for every process.
+def _process_private_snapshot() -> tuple[dict[int, list[int]], dict[int, int], set[int]]:
+    """(children-by-parent-pid, private-commit-bytes-by-pid, all-live-pids).
 
     Toolhelp32 + psapi via ctypes: the admission gate runs on every poll of every
     worker, so the PowerShell-based probes in ``farmctl`` (hundreds of ms each)
     are unusable here. Cached for ``_PROCESS_SNAPSHOT_TTL_SECONDS`` because nine
     workers poll independently. Returns empty maps on any failure — callers must
     treat that as "unknown", never as "zero usage".
+
+    ``alive`` carries every pid Toolhelp32 reported, including those whose
+    ``OpenProcess`` failed. Without it a running-but-unreadable process is
+    indistinguishable from a dead one (Codex review 2026-07-26).
     """
     now = time.monotonic()
     if now - _process_snapshot_cache["at"] < _PROCESS_SNAPSHOT_TTL_SECONDS:
-        return _process_snapshot_cache["children"], _process_snapshot_cache["private"]
+        return (_process_snapshot_cache["children"],
+                _process_snapshot_cache["private"],
+                _process_snapshot_cache["alive"])
     children: dict[int, list[int]] = {}
     private: dict[int, int] = {}
+    alive: set[int] = set()
     if sys.platform != "win32":
-        return children, private
+        return children, private, alive
     try:
         import ctypes
         from ctypes import wintypes
@@ -589,7 +598,7 @@ def _process_private_snapshot() -> tuple[dict[int, list[int]], dict[int, int]]:
 
         snapshot = kernel32.CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0)
         if snapshot == INVALID_HANDLE_VALUE:
-            return children, private
+            return children, private, alive
         try:
             entry = _PROCESSENTRY32W()
             entry.dwSize = ctypes.sizeof(_PROCESSENTRY32W)
@@ -603,6 +612,7 @@ def _process_private_snapshot() -> tuple[dict[int, list[int]], dict[int, int]]:
 
         for pid, ppid in pids:
             children.setdefault(ppid, []).append(pid)
+            alive.add(pid)
             handle = kernel32.OpenProcess(
                 PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_VM_READ, False, pid
             )
@@ -622,12 +632,13 @@ def _process_private_snapshot() -> tuple[dict[int, list[int]], dict[int, int]]:
             finally:
                 kernel32.CloseHandle(handle)
     except Exception:
-        return {}, {}
+        return {}, {}, set()
 
     _process_snapshot_cache["at"] = now
     _process_snapshot_cache["children"] = children
     _process_snapshot_cache["private"] = private
-    return children, private
+    _process_snapshot_cache["alive"] = alive
+    return children, private, alive
 
 
 def _measured_subtree_gb(pid: Any) -> float | None:
@@ -643,26 +654,37 @@ def _measured_subtree_gb(pid: Any) -> float | None:
         root_pid = int(pid)
     except (TypeError, ValueError):
         return None
-    children, private = _process_private_snapshot()
-    if not private:
+    children, private, alive = _process_private_snapshot()
+    if not alive:
         return None
     total = 0
     seen: set[int] = set()
     queue = [root_pid]
-    found = False
+    any_alive = False
+    any_readable = False
     while queue:
         current = queue.pop()
         if current in seen:
             continue
         seen.add(current)
+        if current in alive:
+            any_alive = True
         if current in private:
             total += private[current]
-            found = True
+            any_readable = True
         queue.extend(children.get(current, ()))
-    if not found:
-        # Nothing of this lineage is alive any more: the job's processes are
-        # gone, so there is no future growth left to reserve for.
+    if not any_alive:
+        # No process of this lineage exists any more: the job is over, so there
+        # is no future growth left to reserve for.
         return float("inf")
+    if not any_readable:
+        # The lineage IS running but every OpenProcess failed (access denied,
+        # protected or exiting process). Codex review 2026-07-26 (33a18bb2e):
+        # the earlier version could not tell this apart from a vanished tree and
+        # released the reservation for a job that was still allocating — exactly
+        # the over-admission this mechanism exists to prevent. Unknown must stay
+        # unknown, so the caller keeps the full reservation.
+        return None
     return total / (1024 ** 3)
 
 
@@ -950,6 +972,13 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
         farmctl.init_db(root)
         now = farmctl.utc_now()
         db_path = root / farmctl.DB_REL
+        # Warm the process snapshot BEFORE taking the write lock. The admission
+        # gate needs it, and a cold Toolhelp32+psapi scan costs ~8ms — which is
+        # cheap in itself but must not be paid while holding BEGIN IMMEDIATE with
+        # nine workers contending, least of all when the box is paging
+        # (Codex review 2026-07-26, 33a18bb2e). Inside the transaction the call
+        # is then a ~0.4us cache hit. Fail-open: errors are swallowed there.
+        _process_private_snapshot()
         with sqlite3.connect(db_path, timeout=30) as conn:
             conn.row_factory = sqlite3.Row
             conn.execute("PRAGMA busy_timeout=30000")
@@ -1243,6 +1272,13 @@ def claim_specific_atomic(root: Path, terminal: str, item_id: str) -> dict[str, 
         farmctl.init_db(root)
         now = farmctl.utc_now()
         db_path = root / farmctl.DB_REL
+        # Warm the process snapshot BEFORE taking the write lock. The admission
+        # gate needs it, and a cold Toolhelp32+psapi scan costs ~8ms — which is
+        # cheap in itself but must not be paid while holding BEGIN IMMEDIATE with
+        # nine workers contending, least of all when the box is paging
+        # (Codex review 2026-07-26, 33a18bb2e). Inside the transaction the call
+        # is then a ~0.4us cache hit. Fail-open: errors are swallowed there.
+        _process_private_snapshot()
         with sqlite3.connect(db_path, timeout=30) as conn:
             conn.row_factory = sqlite3.Row
             conn.execute("PRAGMA busy_timeout=30000")

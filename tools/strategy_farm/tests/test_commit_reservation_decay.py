@@ -175,9 +175,57 @@ class CommitReservationDecayTests(unittest.TestCase):
 
 
 class MeasuredSubtreeTests(unittest.TestCase):
+    """Exercise the real probe, not a stand-in for it.
+
+    Codex review 2026-07-26 (33a18bb2e) found the decay tests mostly mocked
+    ``_measured_subtree_gb`` and therefore asserted the formula back to itself.
+    These cases drive the actual ctypes walk and its live/unreadable/gone
+    classification.
+    """
+
     def test_garbage_pid_is_unknown_not_zero(self):
         self.assertIsNone(terminal_worker._measured_subtree_gb("not-a-pid"))
         self.assertIsNone(terminal_worker._measured_subtree_gb(None))
+
+    def test_snapshot_returns_three_maps_and_alive_covers_private(self):
+        children, private, alive = terminal_worker._process_private_snapshot()
+        if not alive:  # non-win32 / probe unavailable
+            self.skipTest("process snapshot unavailable on this platform")
+        # Every readable pid must also be listed as alive, otherwise the
+        # live-but-unreadable classification cannot be trusted.
+        self.assertTrue(set(private).issubset(alive))
+        self.assertGreater(len(alive), 1)
+
+    @unittest.skipUnless(sys.platform == "win32", "ctypes probe is Windows-only")
+    def test_live_but_unreadable_lineage_is_unknown_not_gone(self):
+        """The defect Codex rejected the first version for.
+
+        A process that exists but cannot be opened must NOT look like a vanished
+        tree — that released the reservation for a job still allocating, which is
+        precisely the over-admission this mechanism prevents.
+        """
+        real_snapshot = terminal_worker._process_private_snapshot
+        try:
+            # pid 4242 is alive and parents nothing; no pid is readable.
+            terminal_worker._process_private_snapshot = lambda: ({}, {}, {4242})
+            self.assertIsNone(terminal_worker._measured_subtree_gb(4242))
+            # Same shape, but the pid is absent from the process table entirely.
+            terminal_worker._process_private_snapshot = lambda: ({}, {}, {99})
+            self.assertEqual(terminal_worker._measured_subtree_gb(4242), float("inf"))
+        finally:
+            terminal_worker._process_private_snapshot = real_snapshot
+
+    @unittest.skipUnless(sys.platform == "win32", "ctypes probe is Windows-only")
+    def test_partially_readable_lineage_sums_what_it_can(self):
+        real_snapshot = terminal_worker._process_private_snapshot
+        try:
+            terminal_worker._process_private_snapshot = lambda: (
+                {10: [11, 12]}, {11: 2 * 1024 ** 3}, {10, 11, 12},
+            )
+            measured = terminal_worker._measured_subtree_gb(10)
+            self.assertAlmostEqual(measured, 2.0, places=3)
+        finally:
+            terminal_worker._process_private_snapshot = real_snapshot
 
     @unittest.skipUnless(sys.platform == "win32", "ctypes probe is Windows-only")
     def test_own_process_tree_is_measurable(self):
