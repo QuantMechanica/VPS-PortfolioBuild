@@ -123,6 +123,33 @@ XAUUSD and therefore mis-dispatched onto NDX/GDAXI/SP500. That is wrong. The loc
 an `else if(intraday_lane == LANE_GOLD_BREAKOUT)` branch, and **all four setfiles select
 `LANE_MOMENTUM_BAND`**, so the guard never executes. 20007 is not mis-dispatched.
 
+## ✅ FIXED AND PROVEN AT RUNTIME (2026-07-26 21:39)
+
+Cohort derived from the DB rather than the journal scan — every EA with ≥3 runs since
+07-10 and ≥90 % `ONINIT_FAILED`: **27 EAs**, most with a clean 12-of-12 failure record,
+~310 wasted runs between them.
+
+All 27 recompiled against the current resolver (`b06b36fd8`); every one returned `COMPILED`,
+which the `MAGIC_NOT_IN_RESOLVER` guard would have refused had the row still been absent.
+
+**The proof that matters is not the compile log but the run.** QM5_12610 — 11 of 11 previous
+runs `ONINIT_FAILED` — was requeued immediately after its recompile:
+
+```
+canary QM5_12610 Q02: status=done verdict=PASS   2026-07-26T19:39:55   terminal T10
+```
+
+Requeued one run per (EA, symbol, phase) for the whole cohort — 30 items, deliberately
+**not** on the priority track so the FTMO evidence re-runs stay ahead. Reversible from
+`D:\QM\reports\state\requeue_stale_resolver_cohort_20260726.json`.
+
+Still open, and it decides whether this recurs: the `MAGIC_NOT_IN_RESOLVER` guard exists
+since `91027e955` (2026-07-03), yet three cohort members carry `.ex5` timestamps *after* it
+(20035 07-22, 20054 07-23, 12746 07-25). Either a second compile path bypasses
+`compile_ea.py`, or `update_magic_resolver.py` can drop a row a binary already depends on,
+or those mtimes reflect a deploy rather than a compile. Until that is answered the backlog
+is cleared but the mechanism is not.
+
 ## The ONINIT_FAILED thread
 
 `OnInit` in these EAs is a single `QM_FrameworkInit(...)` call returning `INIT_FAILED`, and
