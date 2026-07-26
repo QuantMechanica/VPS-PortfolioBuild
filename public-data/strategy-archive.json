@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-26T03:07:09.7941066Z",
-    "total":  3554,
+    "generated_at":  "2026-07-26T04:07:08.3826003Z",
+    "total":  3555,
     "items":  [
                   {
                       "slug":  "ath-breakout-atr-trail",
@@ -18200,6 +18200,12 @@
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-07-26T02:33:42.9983624Z"
+                  },
+                  {
+                      "slug":  "QM5_20168_xng-autumn-dualtrend_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-26T03:33:15.8472552Z"
                   },
                   {
                       "slug":  "QM5_2020_chaikin-volatility-h4",
