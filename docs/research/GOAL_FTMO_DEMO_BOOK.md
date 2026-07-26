@@ -117,6 +117,51 @@ available now.
 There is also **no manifest builder** — the 2026-07-22 manifest was assembled by hand. One
 will be needed, and it is a natural companion to the cascade driver.
 
+## ★ The finding that reshapes this goal (2026-07-26 22:40): swap, not merit
+
+The stage-3 chain now runs end to end — manifest builder → stream reconciliation (PASS on
+both ready sleeves) → joint simulator. The first result over a real, tool-built candidate
+set is decisive, and it is not what the qualification contract measures:
+
+| sleeve | trades | FTMO net | FTMO swap | FTMO commission |
+|---|---:|---:|---:|---:|
+| 10128 XAUUSD | 433 | **−7,556** | −9,792 | 463 |
+| 10145 XAUUSD | 314 | +1,775 | −16,612 | 452 |
+| **book** | | **−5,780** | **−26,404** | 915 |
+
+**Without swap the same book earns +20,624.** Commission is noise by comparison — 915
+against a swap bill 29× larger. Both sleeves hold gold overnight, and FTMO's gold swap
+consumes the entire edge.
+
+So our two `CHALLENGE_READY` sleeves — which pass all eight strict gates, reconcile cleanly
+and are the only qualified sleeves the farm has ever produced — are **not FTMO-viable**.
+That is not a defect in them; they were validated against Darwinex costs, where they work.
+
+**This is a gap in the qualification contract.** `challenge_ready` certifies robustness and
+evidence integrity, and says nothing about whether a strategy survives the venue it is
+being sent to. A sleeve can be flawless by every gate we run and still be structurally
+unable to make money at FTMO.
+
+Consequences, and they are large:
+
+1. **Adding more overnight sleeves to this book is pointless.** The three stage-1
+   candidates in flight (11421 EURUSD, 13013 NDX, 12567 XAUUSD) must be re-checked under
+   FTMO swap before they count toward the goal — passing Q02–Q10 is necessary, not
+   sufficient.
+2. **An FTMO book has to be intraday-flat.** No overnight position means no swap, which is
+   precisely why 12969 (gotobi, PF 1.54 at 2.0 % DD) and 20039 (onr-mid-brk) are the
+   archetypes. The density programme is not a parallel nice-to-have; it is the only route
+   to a viable book.
+3. **An eighth condition belongs in this goal:** every sleeve must show **net > 0 under FTMO
+   costs** in the joint simulator, not merely `CHALLENGE_READY`. A demo book of
+   swap-negative sleeves would falsify nothing — it would only re-measure the swap bill.
+
+The 30-day scenario grid confirms it from the other side: at 2 % risk the book breaches
+neither the daily nor the total cap (0.00 % both) but reaches +10 % in 0 % of runs; pushing
+sizing to 16 % lifts pass probability only to 12.5 % while daily-breach risk climbs to
+60 %. Safe and far too slow — the density conclusion, now measured on this book rather than
+inferred.
+
 ## Known blockers between here and done
 
 1. **Deep-gate starvation.** The pending queue is 96 % Q02 with one pending Q08 and no
