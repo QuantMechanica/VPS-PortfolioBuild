@@ -134,6 +134,41 @@ the manifest **in writing** (Decision B below).
   defaults + `qm_news_compliance=DXZ` / `PRE30_POST30`) — confirm the news self-test line for
   11422 specifically.
 
+## Evening-window activation appendix (post-round-3, 2026-07-26)
+
+Codex round-3 verdict (`docs/ops/evidence/2026-07-26_codex_review_round3.md`):
+WAVE-READY(wsa2, wsc1, wsc2, wsd2, WS-E1, wse32, wse42, wsg2) — cumulative merge simulated
+clean, 382 tests green after all eight. Sequence for the Factory-OFF window, BEFORE the
+T_Live deployment steps above:
+
+1. **Factory_OFF** + quiescence proven by process scan (echo '' | Factory_OFF.ps1; verify
+   no terminal64/phase-runner/pump lineage remains — Factory_OFF does not reap runners).
+2. **Patch merges in Codex's exact order** (re-run `git apply --check` at the live HEAD
+   first): wsa2 → wsc1 → wsc2 → wsd2 → wse1 → wse32 → wse42 → wsg2 (+ wse23 and wsf3 in
+   their slots — after WS-E1/wse32 resp. before wsg2 — once their micro-review passes).
+   Patches live under `D:\QM\reports\ultracode_20260726\<ws>*\`. Preserve LF on the
+   watchdog file. Commit series with explicit pathspecs, one commit per workstream.
+3. **WS-E1 activation edge:** the minute-task rereads the watchdog script — the merge IS
+   the activation; do not install/start anything. Verify `live_alarm_state.json` appears.
+4. **Worker restart + claim canary** (one worker, observe ordering: priority_track >
+   frontier > recovery idle-cap ≤1/5), then **requeue canary-50**
+   (`requeue_stranded_infra.py --limit 50 --apply --snapshot-out <journal>`), verify, then
+   full Factory_ON only AFTER the T_Live session completes.
+5. **Recovery-classifier apply** (CAS-tag ~1,678 rows, census regenerated Factory-OFF
+   first) + regenerate WS-A census.
+6. **FINAL22 deploy-stamp (NEW, before written approval):** stamp the manifest with
+   account 4000090541, server, deployment_epoch, manifest SHA-256, phase, and per-sleeve
+   ex5_sha256 pins (fields per wse32/wse22 deploy-stamp contract), then OWNER signs.
+   Close the wse32 pre-deploy diff: restore 12778, add 11422 chart, remove
+   10939/10440/XNGUSD charts+presets, apply 19 risk re-sizes — then re-run
+   `verify_live_deployment_contract` and require GREEN before the AutoTrading flip.
+7. **Open diagnostics carried into the session:** 12969 five-market-day telemetry silence
+   (binary/runtime — check deployed binary age vs source emit-call); 1567 lacks
+   QM_EquityStreamOnNewBar entirely (source gap — schedule with its pending requal
+   rebuild, do NOT hot-patch tonight).
+8. Activation stays blocked for: WS-G MQL parity/compile (terminal work, separate),
+   wse22/wsf2 until micro-review passes, wsb2 doc artifact (fixed, pending re-check).
+
 ## Rollback
 
 Presets: the deployed 07-19 files are preserved in the staging report (deployed SHA256) and on
