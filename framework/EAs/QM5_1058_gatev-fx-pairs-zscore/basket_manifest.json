@@ -12,6 +12,12 @@
     "AUDUSD.DWX",
     "NZDUSD.DWX"
   ],
+  "traded_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "AUDUSD.DWX",
+    "NZDUSD.DWX"
+  ],
   "pairs": [
     {
       "name": "Pair A",
