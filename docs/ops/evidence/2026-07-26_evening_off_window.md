@@ -58,8 +58,29 @@ Verified against the filesystem, not the runbook text:
 three Q07 multiseed runs, four Q02/Q04). All were reconciled by `farmctl repair` and are
 back in the queue — 13059 re-claimed within seconds of restart.
 
+## Post-restart finding: workers die silently in the pause loop (ticket `4e8bcf47`)
+
+Within a minute of Factory_ON, T6 and T10 vanished at 18:29:47 / 18:29:53 with
+`commit_headroom_low_pause` (effective 19.8 GB < 24 GB, reserved 92 GB over 7
+reservations) as their last log line and **no traceback in `.log.err`** — identical
+signature to the 17:45 deaths of T4/T9/T10 (which logged `ram_low_pause`), i.e. the defect
+predates tonight's change. The claim path returns cleanly on a low-headroom verdict and the
+poll loop should just retry, so the processes are being terminated externally or exit
+through an unlogged path. Manual `start_terminal_workers.py --dedupe` restored 9/9; stable
+2 minutes later.
+
+Second defect in the same evidence: `QM_StrategyFarm_FactoryWatchdog_15min` reported
+`workers=9` at 16:30:04Z while a direct WMI scan seconds later showed 7 — the census that
+decides whether a heal fires disagrees with process truth, which is why the dedupe-heal has
+never actually respawned a worker today (three manual restorations were needed).
+
+The pause behaviour itself is correct and must not be reverted: the 92 GB of reservations
+is exactly the over-admission brake that was missing at 17:45. Enqueued as ops ticket
+`4e8bcf47` (priority 85).
+
 ## Open
 
+- Silent worker deaths + watchdog census mismatch — ticket `4e8bcf47`.
 - T5 remains in `disabled_terminals.txt` (Factory_ON warns about it) — rebuild ticket
   `61cfbaf3` in the Codex lane.
 - Stranded-INFRA triage: run the classifier's output against the re-fail population before
