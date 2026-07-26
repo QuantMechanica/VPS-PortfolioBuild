@@ -62,6 +62,75 @@ MT5_SATURATION_MIN_WORKERS = 7
 # (OWNER 2026-07-07: cockpit cried CRITICAL on a healthy 6/6-enabled fleet).
 DISABLED_TERMINALS_FILE = ROOT / "state" / "disabled_terminals.txt"
 
+# --- WS-F standing vacuousness audit (ULTRACODE 2026-07-26) ------------------
+# Detectors that authenticate provenance before flagging a gate as vacuous. Every
+# threshold below is deliberately exposed as a named constant so the audit can be
+# retuned from one place and so the rollback is "revert these constants". All reads
+# are read-only (DB via _connect()'s mode=ro handle; filesystem/live-log tails via
+# open('rb')). Nothing here writes the factory DB or anything under T_Live.
+#
+# ea_metrics is the authoritative phase-evidence store (WP-2 ingester); the full
+# aggregate.json (per_seed_detail, unrounded KPIs, stress fields) lives at the row's
+# evidence_path under D:\QM\reports\work_items — the on-disk pipeline aggregates are
+# purged by the cache sweeper, so the DB row + its evidence_path is the durable pair.
+VACUOUSNESS_WINDOW_DAYS = 14          # trailing window (evidence_mtime) for (a)(b)(e)
+INVALID_RATE_WINDOW_DAYS = 7          # detector (c) — plan's "trailing-7d INVALID rate"
+INVALID_RATE_MIN_SAMPLE = 20          # need this many runs in a phase before judging
+INVALID_RATE_WARN_PCT = 10.0
+INVALID_RATE_FAIL_PCT = 25.0
+# Q05 MEDIUM applies qm_stress_reject_probability=0.00 (gen_stress_setfile LEVEL MED);
+# Q06 HARSH applies 0.10 (10% seeded, deterministic, short-circuits before OrderSend).
+# So a wired EA MUST drop trades / move PF between Q05 and Q06. Byte-identical KPIs on a
+# cohort where a 10% seeded rejection is near-certain to bite => the reject input is not
+# honoured (WP-9 basket-stress bypass / 1567 missing-input class). Cohort floor 40:
+# P(0 of 40 trades rejected at p=0.10) = 0.9**40 ≈ 1.5%, so below 40 an identical result
+# is not yet damning and is reported benign (below_cohort).
+STRESS_IDENTITY_COHORT_MIN_TRADES = 40
+# WARN surfaces the vacuous sleeves (evidence-quality signal, actionable — retire/fix);
+# only a systemic spike escalates to FAIL. The threshold is set above the known legacy
+# backlog (~12 pre-fix sleeves on 2026-07-26) so a standing WARN is not a permanent red
+# banner, while a genuine new regression (many EAs suddenly ignoring the reject input)
+# still FAILs. Retune here; tests patch it low to exercise the FAIL branch.
+STRESS_IDENTITY_FAIL_COUNT = 20       # systemic spike escalates WARN -> FAIL
+Q07_ZERO_VARIANCE_FAIL_COUNT = 5      # flagged (non-deterministic) zero-variance spike
+SEED_AUTH_FAIL_WARN = 1               # any authenticated seed-auth failure warns
+SEED_AUTH_FAIL_FAIL_PCT = 5.0         # rate over Q07 runs in-window that escalates to FAIL
+EVIDENCE_READ_CAP = 400               # hard cap on evidence-file opens per detector run
+# --- Two-tier provenance (Codex round-2, ULTRACODE 2026-07-26) --------------
+# Codex challenge: a heuristic match (identical KPIs / zero variance) is only a
+# CANDIDATE. It becomes an AUTHENTICATED finding ONLY when the evidence payload
+# also cryptographically binds the full deployment identity — EA source, set-file,
+# compiled binary, and native report hashes — plus the unrounded KPIs and the
+# per-run stress/seed telemetry. The current durable aggregates carry none of
+# those sha256 blocks (verified 2026-07-26 against live Q06/Q07 aggregate.json),
+# so every live detection publishes as a CANDIDATE. No detector may claim a "true
+# positive" / "0 false positives" from the CANDIDATE tier. The pipeline provenance
+# schema is nested {"path":..., "sha256":...} blocks (q03_plateau_runner.py), so
+# these aliases reach a real AUTHENTICATED tier the moment an aggregate carries them.
+PROVENANCE_HASH_ALIASES = {
+    "ea":     ("ea_sha256", "source_sha256", "mq5", "source", "ea"),
+    "set":    ("set_sha256", "setfile_sha256", "baseline_setfile", "setfile", "set"),
+    "binary": ("ex5_sha256", "binary_sha256", "ex5", "binary"),
+    "report": ("report_sha256", "native_report_sha256", "report"),
+}
+TIER_CANDIDATE = "CANDIDATE"
+TIER_AUTHENTICATED = "AUTHENTICATED"
+# KS divergence kill-switch baseline dormancy (detector d). Live QM EA logs for the DXZ
+# book, the deployed manifest, and the live Common baseline dir. QM_DXZ_BOOK_MANIFEST
+# mirrors live_book_pulse.py's pointer so both consume the same signed book.
+LIVE_QM_LOG_DIR = Path(r"C:\QM\mt5\T_Live\MT5_Base\MQL5\Files\QM")
+LIVE_COMMON_BASELINE_DIR = Path(
+    r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\Common\Files\QM\baselines"
+)
+DXZ_BOOK_MANIFEST = Path(
+    os.environ.get(
+        "QM_DXZ_BOOK_MANIFEST",
+        r"D:\QM\reports\portfolio\portfolio_manifest_live_24sleeve_20260724.json",
+    )
+)
+KS_LOG_TAIL_BYTES = 512 * 1024        # bounded tail per live log (latest events only)
+KS_LOG_FILE_CAP = 60                  # bounded number of live logs scanned
+
 
 def _disabled_terminals() -> set[str]:
     try:
@@ -96,8 +165,22 @@ def _parse_utc_ts(value: str | None) -> dt.datetime | None:
 
 
 def _connect() -> sqlite3.Connection:
-    con = sqlite3.connect(str(DB))
+    """Production DB handle — enforced read-only (URI ``mode=ro`` + ``PRAGMA
+    query_only=ON``).
+
+    WS-F (ULTRACODE 2026-07-26, Codex challenge): the health checker only ever
+    *queries* the live factory DB (``D:\\QM\\strategy_farm\\state\\farm_state.sqlite``);
+    it must never be able to write it. Two independent locks are used because each
+    covers a different failure mode: ``mode=ro`` blocks the VFS from opening the
+    file for writing at all (so a stray write raises instead of racing the factory's
+    writers), and ``PRAGMA query_only=ON`` blocks writes at the SQL layer even if a
+    future caller reopened rw. Health OUTPUTS (health.json, alarms log) are written
+    in ``run_all()`` through their own separate state paths, never through this
+    handle. The empirical read of this exact WAL DB in the Codex challenge confirms
+    ``mode=ro`` reads succeed against the live writer."""
+    con = sqlite3.connect(f"{DB.as_uri()}?mode=ro", uri=True, timeout=5.0)
     con.row_factory = sqlite3.Row
+    con.execute("PRAGMA query_only = ON")
     return con
 
 
@@ -1856,6 +1939,539 @@ def chk_lsm_session_health() -> dict:
     return _check("lsm_session_health", "OK", verdict, "ok", detail, "")
 
 
+# ===========================================================================
+# WS-F standing vacuousness audit — five provenance-authenticated detectors.
+# Each emits one _check tuple; read-only DB + filesystem/live-log tails. The
+# guiding rule (Codex challenge): never flag naive equality/zero-variance as
+# corrupt — authenticate provenance (distinct runs, unrounded KPIs, stress
+# telemetry, min cohort, or q07's own seed-auth evidence) first, and emit a
+# reason-specific benign class when the identity is legitimate.
+# ===========================================================================
+
+
+def _read_json_path(path) -> dict | None:
+    """Load a JSON file read-only; None on any error. utf-8-sig tolerant."""
+    if not path:
+        return None
+    try:
+        data = json.loads(Path(path).read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError, ValueError, UnicodeError):
+        return None
+    return data if isinstance(data, dict) else None
+
+
+def _ea_id_int(value) -> int | None:
+    """Coerce an ea_id field ('QM5_1567', '1567', 1567) to its integer id.
+
+    The 'QM5_' prefix is stripped FIRST — a naive first-number match would return
+    the 5 of 'QM5', mislabelling every row in the evidence trail."""
+    if value is None:
+        return None
+    s = str(value)
+    m = re.match(r"\s*QM5_(\d+)", s, re.IGNORECASE)
+    if m:
+        return int(m.group(1))
+    m = re.search(r"(\d+)", s)
+    return int(m.group(1)) if m else None
+
+
+def _norm_symbol(sym) -> str:
+    """Normalise a symbol for cross-source matching: strip a trailing '.DWX'
+    broker suffix and upper-case (manifest 'XAUUSD.DWX' == live-log 'XAUUSD')."""
+    s = str(sym or "").strip().upper()
+    if s.endswith(".DWX"):
+        s = s[:-4]
+    return s
+
+
+def _window_cutoff_ts(days: int) -> float:
+    return _utc_now().timestamp() - days * 86400
+
+
+def _extract_hash(ev: dict | None, aliases: tuple[str, ...]) -> str | None:
+    """Pull one sha256 out of an evidence payload, tolerating both a flat
+    ``{"ex5_sha256": "..."}`` field and the pipeline's nested
+    ``{"ex5": {"path": ..., "sha256": ...}}`` provenance block. Returns None when
+    the payload carries no such hash (i.e. provenance for that facet is unbound)."""
+    if not isinstance(ev, dict):
+        return None
+    for a in aliases:
+        v = ev.get(a)
+        if isinstance(v, str) and v.strip():
+            return v.strip()
+        if isinstance(v, dict):
+            h = v.get("sha256") or v.get("hash")
+            if isinstance(h, str) and h.strip():
+                return h.strip()
+    return None
+
+
+# A bound provenance hash must be a real sha256 digest: exactly 64 lowercase hex
+# chars. Presence of *some* non-empty string is NOT authentication (Codex round-3
+# WSF2: ea=set=ex5=report="x" previously returned AUTHENTICATED). Uppercase, short,
+# long, or non-hex all fail with reason code `malformed_hash`.
+_SHA256_HEX_RE = re.compile(r"^[0-9a-f]{64}$")
+# Facets that pin the *deployment identity* (must be identical across paired runs);
+# the report facet is the per-run artifact (must differ across paired runs).
+_PROV_IDENTITY_FACETS = ("ea", "set", "binary")
+
+
+def _valid_sha256(h) -> bool:
+    """True iff ``h`` is a syntactically valid sha256 digest (64 lowercase hex chars).
+    This is the syntactic floor of authentication — it does not by itself prove the
+    digest matches an on-disk artifact, but a value failing it can never be trusted."""
+    return isinstance(h, str) and bool(_SHA256_HEX_RE.match(h))
+
+
+def _provenance_tier(
+    payloads, *, unrounded_ok: bool, telemetry_ok: bool
+) -> tuple[str, list[str]]:
+    """Classify a heuristic detection into the CANDIDATE vs AUTHENTICATED tier.
+
+    Codex round-3 (WSF2) contract — the AUTHENTICATED tier is *real validation*, never
+    presence-checking. A detection is AUTHENTICATED only when EVERY condition holds:
+      (1) each facet hash (EA source, set-file, compiled binary, native report) on
+          every backing payload is a valid 64-hex lowercase sha256 — a present but
+          non-conforming value is `malformed_hash`; an absent one is `<facet>_hash`;
+      (2) when >=2 paired runs back the finding (the Q05/Q06 pair), they bind the SAME
+          EA/set/binary identity tuple — divergence is `identity_mismatch`;
+      (3) those paired runs carry DISTINCT report hashes — an identical report hash is
+          one run re-read, not a genuine pair, and is `report_hash_not_distinct`;
+      (4) the caller confirms UNROUNDED KPIs were compared (`unrounded_kpis`) and the
+          per-run stress/seed telemetry is present (`telemetry`).
+    Anything missing => CANDIDATE, with every violated reason code named so the gap is
+    explicit rather than silently downgraded. `payloads` is one evidence dict or an
+    iterable of them (all must satisfy the boundary to authenticate)."""
+    if isinstance(payloads, dict) or payloads is None:
+        payloads = [payloads]
+    payloads = list(payloads)
+    missing: list[str] = []
+    if not unrounded_ok:
+        missing.append("unrounded_kpis")
+    if not telemetry_ok:
+        missing.append("telemetry")
+    if not payloads or any(p is None for p in payloads):
+        missing.append("evidence_payload")
+        return TIER_CANDIDATE, missing
+
+    # (1) Per facet, per payload: the hash must be PRESENT and a valid 64-hex sha256.
+    #     Absent => unbound `<facet>_hash`; present-but-not-64-hex => `malformed_hash`.
+    facet_hashes: dict[str, list] = {}
+    for facet, aliases in PROVENANCE_HASH_ALIASES.items():
+        vals = [_extract_hash(p, aliases) for p in payloads]
+        facet_hashes[facet] = vals
+        if any(v is None for v in vals):
+            missing.append(f"{facet}_hash")
+        elif any(not _valid_sha256(v) for v in vals):
+            missing.append("malformed_hash")
+
+    # (2)+(3) Paired-run identity binding only applies when >=2 runs back the finding.
+    if len(payloads) >= 2:
+        # (2) EA/set/binary identity must be IDENTICAL across the paired runs.
+        for facet in _PROV_IDENTITY_FACETS:
+            vals = facet_hashes[facet]
+            if all(v is not None for v in vals) and len(set(vals)) != 1:
+                missing.append("identity_mismatch")
+                break
+        # (3) Each run's report hash must be DISTINCT (identical => one run, not a pair).
+        reports = facet_hashes["report"]
+        if all(v is not None for v in reports) and len(set(reports)) != len(reports):
+            missing.append("report_hash_not_distinct")
+
+    # Stable, de-duplicated reason list (`malformed_hash` can be hit on many facets).
+    missing = list(dict.fromkeys(missing))
+    tier = TIER_AUTHENTICATED if not missing else TIER_CANDIDATE
+    return tier, missing
+
+
+def chk_q05_q06_stress_identity(con) -> dict:
+    """(a) Vacuous Q06 stress gate: HARSH 10% seeded trade-rejection yields KPIs
+    byte-identical to the unstressed Q05 MEDIUM run (reject_prob 0.00), on a cohort
+    where the rejection was near-certain to bite — i.e. the EA does not honour
+    qm_stress_reject_probability (WP-9 basket-stress bypass / 1567 missing-input class).
+
+    Heuristic match (CANDIDATE tier) requires: (1) two DISTINCT runs (different
+    summary/report provenance — not shared evidence), (2) UNROUNDED pf+dd_money+trades
+    all equal from the evidence files (not just DB-rounded), (3) stress telemetry
+    present (Q06 reject probability > 0), (4) trades >= cohort floor. Legitimate
+    identities are reported with a benign reason (rounded_equality, below_cohort,
+    stress_not_configured, distinct_kpis) and never flag.
+
+    Two-tier output (Codex round-2): a match is only ever a CANDIDATE unless the
+    evidence ALSO binds the full provenance tuple (EA/set/binary/report sha256 +
+    unrounded KPIs + stress telemetry) — then it is AUTHENTICATED. The current durable
+    aggregates carry no such hashes, so live findings publish as source-corroborated
+    CANDIDATES. This detector never claims a "true positive"; that word is reserved for
+    the AUTHENTICATED tier."""
+    cutoff = _window_cutoff_ts(VACUOUSNESS_WINDOW_DAYS)
+
+    def latest(phase: str) -> dict:
+        out: dict = {}
+        for r in con.execute(
+            "SELECT ea_id, symbol, profit_factor, trades, evidence_path, evidence_mtime "
+            "FROM ea_metrics WHERE phase=? AND evidence_mtime IS NOT NULL "
+            "AND evidence_mtime >= ? ORDER BY evidence_mtime ASC",
+            (phase, cutoff),
+        ):
+            out[(r["ea_id"], r["symbol"])] = r
+        return out
+
+    q05, q06 = latest("Q05"), latest("Q06")
+    reads = 0
+    flagged: list[tuple] = []
+    benign = {"rounded_equality": 0, "below_cohort": 0,
+              "stress_not_configured": 0, "distinct_kpis": 0, "evidence_unavailable": 0}
+    for key in sorted(set(q05) & set(q06)):
+        a, b = q05[key], q06[key]
+        if a["profit_factor"] is None or b["profit_factor"] is None:
+            continue
+        # Cheap DB pre-filter: only rows whose already-rounded PF AND trade count
+        # coincide can be raw-identical. Everything else is the healthy majority.
+        if not (a["profit_factor"] == b["profit_factor"] and a["trades"] == b["trades"]):
+            benign["distinct_kpis"] += 1
+            continue
+        if reads + 2 > EVIDENCE_READ_CAP:
+            break
+        ev5, ev6 = _read_json_path(a["evidence_path"]), _read_json_path(b["evidence_path"])
+        reads += 2
+        if not ev5 or not ev6 or ev5.get("pf") is None or ev6.get("pf") is None:
+            benign["evidence_unavailable"] += 1
+            continue
+        raw_ident = (ev5.get("pf") == ev6.get("pf")
+                     and ev5.get("dd_money") == ev6.get("dd_money")
+                     and ev5.get("trades") == ev6.get("trades"))
+        if not raw_ident:
+            benign["rounded_equality"] += 1
+            continue
+        rp6 = ev6.get("rejection_probability")
+        if not rp6 or float(rp6) <= 0:
+            benign["stress_not_configured"] += 1
+            continue
+        if int(ev6.get("trades") or 0) < STRESS_IDENTITY_COHORT_MIN_TRADES:
+            benign["below_cohort"] += 1
+            continue
+        s5 = ev5.get("summary_path") or ev5.get("report_path")
+        s6 = ev6.get("summary_path") or ev6.get("report_path")
+        reason = "shared_evidence" if (s5 and s5 == s6) else "harsh_reject_no_effect"
+        # unrounded KPIs were just compared (raw_ident) and stress telemetry (rp6>0)
+        # is present, so the tier turns purely on whether the provenance hashes bind.
+        tier, missing = _provenance_tier((ev5, ev6), unrounded_ok=True, telemetry_ok=True)
+        flagged.append((_ea_id_int(key[0]), key[1], ev6.get("pf"), ev6.get("trades"),
+                        reason, tier, missing))
+
+    n = len(flagged)
+    candidates = [f for f in flagged if f[5] == TIER_CANDIDATE]
+    authenticated = [f for f in flagged if f[5] == TIER_AUTHENTICATED]
+    top = "; ".join(f"{e}/{s} pf={pf} tr={tr} {rz} tier={tier}"
+                    for e, s, pf, tr, rz, tier, _m in flagged[:6])
+    benign_str = " ".join(f"{k}={v}" for k, v in benign.items() if v)
+    unbound = sorted({m for _e, _s, _p, _t, _r, _tier, mm in flagged for m in mm})
+    detail = (f"db={DB} window={VACUOUSNESS_WINDOW_DAYS}d evidence_reads={reads} "
+              f"stress_identity={n} candidates={len(candidates)} "
+              f"authenticated={len(authenticated)} unbound_provenance={unbound} "
+              f"benign[{benign_str}] {top}").strip()
+    hint = ("Vacuous Q06 CANDIDATES: 10% seeded trade-rejection changed nothing on a cohort "
+            "where it must have (source-corroborated by distinct runs, provenance hashes NOT yet "
+            "bound). Authenticate the EA/set/binary/report hashes then audit "
+            "qm_stress_reject_probability wiring or retire the sleeve.")
+    if n == 0:
+        return _check("q05q06_stress_identity", "OK", 0, STRESS_IDENTITY_FAIL_COUNT, detail, "")
+    status = "FAIL" if n >= STRESS_IDENTITY_FAIL_COUNT else "WARN"
+    return _check("q05q06_stress_identity", status, n, STRESS_IDENTITY_FAIL_COUNT, detail, hint)
+
+
+def _classify_q07_zero_variance(verdict, agg_reason, ev) -> str:
+    """Consume q07_multiseed's own per-seed authentication evidence to name why a
+    zero-variance Q07 aggregate is zero-variance. Never re-derives seed identity
+    from filenames — reads the stored per_seed_detail.invalid_reason (which
+    q07_multiseed computed from the report's effective-seed cell + the HARSH set-file
+    label) and the per-seed summary provenance."""
+    if ev is None:
+        rz = str(agg_reason or "")
+        if "effective_seed_mismatch" in rz:
+            return "seed_alias"
+        if "seed_evidence_missing" in rz:
+            return "set_mismatch"
+        return "evidence_unavailable"
+    psd = ev.get("per_seed_detail") or []
+    reasons = [str(s.get("invalid_reason") or "") for s in psd]
+    summaries = [s.get("summary_path") or s.get("report_path") for s in psd]
+    if any("effective_seed_mismatch" in x for x in reasons):
+        # all seeds ran the same effective seed — the classic Q07 paper-stamp
+        return "seed_alias"
+    if any("seed_evidence_missing" in x for x in reasons):
+        # report unreadable/absent => stale_report; HARSH label named a wrong seed => set_mismatch
+        if any(("harsh_label=" in x and "harsh_label=None" not in x) for x in reasons):
+            return "set_mismatch"
+        return "stale_report"
+    present = [s for s in summaries if s]
+    if len(present) >= 2 and len(set(present)) < len(present):
+        return "shared_evidence"
+    if len(psd) < 2 or len(present) < len(psd):
+        return "insufficient_seed_evidence"
+    # Five authenticated, distinct-run seeds with identical PF: legitimate for a
+    # deterministic EA (Codex: zero cross-seed variance can be legitimate).
+    return "deterministic_by_design"
+
+
+_Q07_ZV_FLAG_REASONS = {"seed_alias", "set_mismatch", "stale_report", "shared_evidence"}
+
+
+def chk_q07_zero_variance(con) -> dict:
+    """(b) Vacuous Q07: zero cross-seed PF variance. Legitimate for a deterministic EA
+    (deterministic_by_design, benign). Flagged only for corruption:
+    seed_alias (effective seed collapsed to one), set_mismatch / stale_report (seed
+    evidence broken), or shared_evidence (seeds share a run). Consumes
+    q07_multiseed's per-seed invalid_reason; does not re-derive seed identity.
+
+    Two-tier output (Codex round-2): each flagged corruption finding is a CANDIDATE
+    unless the aggregate binds the full provenance tuple (EA/set/binary/report sha256).
+    The seed-auth telemetry IS consumed here, but the deployment hashes are absent from
+    current aggregates, so flagged findings publish as CANDIDATES, not "true positives"."""
+    cutoff = _window_cutoff_ts(VACUOUSNESS_WINDOW_DAYS)
+    rows = con.execute(
+        "SELECT ea_id, symbol, verdict, evidence_path, detail_json FROM ea_metrics "
+        "WHERE phase='Q07' AND evidence_mtime IS NOT NULL AND evidence_mtime >= ? "
+        "ORDER BY evidence_mtime DESC",
+        (cutoff,),
+    ).fetchall()
+    reads = 0
+    flagged: list[tuple] = []
+    classes: dict[str, int] = {}
+    for r in rows:
+        dj = _json_obj(r["detail_json"])
+        metrics = dj.get("metrics") or {}
+        var, spread = metrics.get("variance_pct"), metrics.get("spread")
+        if not (var == 0 or spread == 0):
+            continue
+        ev = None
+        if reads < EVIDENCE_READ_CAP:
+            ev = _read_json_path(r["evidence_path"])
+            reads += 1
+        reason = _classify_q07_zero_variance(r["verdict"], dj.get("reason"), ev)
+        classes[reason] = classes.get(reason, 0) + 1
+        if reason in _Q07_ZV_FLAG_REASONS:
+            # seed telemetry present iff ev carries per_seed_detail; hashes still absent.
+            has_seed_ev = bool(isinstance(ev, dict) and ev.get("per_seed_detail"))
+            tier, missing = _provenance_tier(
+                ev, unrounded_ok=has_seed_ev, telemetry_ok=has_seed_ev)
+            flagged.append((_ea_id_int(r["ea_id"]), r["symbol"], reason, tier, missing))
+
+    n = len(flagged)
+    candidates = [f for f in flagged if f[3] == TIER_CANDIDATE]
+    authenticated = [f for f in flagged if f[3] == TIER_AUTHENTICATED]
+    top = "; ".join(f"{e}/{s} {rz} tier={tier}" for e, s, rz, tier, _m in flagged[:6])
+    classes_str = " ".join(f"{k}={v}" for k, v in sorted(classes.items()))
+    unbound = sorted({m for _e, _s, _r, _tier, mm in flagged for m in mm})
+    detail = (f"db={DB} window={VACUOUSNESS_WINDOW_DAYS}d evidence_reads={reads} "
+              f"flagged={n} candidates={len(candidates)} authenticated={len(authenticated)} "
+              f"unbound_provenance={unbound} classes[{classes_str}] {top}").strip()
+    hint = ("Zero-variance Q07 CANDIDATES that are NOT deterministic-by-design: seed alias / "
+            "broken seed evidence let all seeds collapse (provenance hashes NOT yet bound). "
+            "Re-run Q07 with the fixed injector before trusting PASS.")
+    if n == 0:
+        return _check("q07_zero_variance", "OK", 0, Q07_ZERO_VARIANCE_FAIL_COUNT, detail, "")
+    status = "FAIL" if n >= Q07_ZERO_VARIANCE_FAIL_COUNT else "WARN"
+    return _check("q07_zero_variance", status, n, Q07_ZERO_VARIANCE_FAIL_COUNT, detail, hint)
+
+
+def chk_phase_invalid_rate_7d(con) -> dict:
+    """(c) Trailing-7d INVALID rate per phase. A phase emitting INVALID (missing /
+    unauthenticatable evidence — a run that produced no gradeable verdict) above
+    threshold means the gate executes but does not actually test. Read-only DB;
+    keyed on evidence_mtime so it tracks when runs were produced, not when re-ingested."""
+    cutoff = _window_cutoff_ts(INVALID_RATE_WINDOW_DAYS)
+    rows = con.execute(
+        "SELECT phase, SUM(CASE WHEN verdict='INVALID' THEN 1 ELSE 0 END) inv, "
+        "COUNT(*) tot FROM ea_metrics WHERE evidence_mtime IS NOT NULL "
+        "AND evidence_mtime >= ? GROUP BY phase",
+        (cutoff,),
+    ).fetchall()
+    worst_phase, worst_rate = None, 0.0
+    parts: list[str] = []
+    for r in rows:
+        tot, inv = (r["tot"] or 0), (r["inv"] or 0)
+        if tot < INVALID_RATE_MIN_SAMPLE:
+            continue
+        rate = 100.0 * inv / tot
+        parts.append(f"{r['phase']}={inv}/{tot}={rate:.1f}%")
+        if rate > worst_rate:
+            worst_rate, worst_phase = rate, r["phase"]
+    detail = (f"db={DB} window={INVALID_RATE_WINDOW_DAYS}d min_sample={INVALID_RATE_MIN_SAMPLE} "
+              f"warn>={INVALID_RATE_WARN_PCT}% fail>={INVALID_RATE_FAIL_PCT}% "
+              f"worst={worst_phase}:{worst_rate:.1f}% [{' '.join(parts)}]")
+    hint = ("A phase's trailing-7d INVALID rate is high: the gate runs but yields no verdict "
+            "(unauthenticatable / missing evidence). Investigate the phase runner / tester health.")
+    if worst_rate >= INVALID_RATE_FAIL_PCT:
+        return _check("phase_invalid_rate_7d", "FAIL", round(worst_rate, 1), INVALID_RATE_FAIL_PCT, detail, hint)
+    if worst_rate >= INVALID_RATE_WARN_PCT:
+        return _check("phase_invalid_rate_7d", "WARN", round(worst_rate, 1), INVALID_RATE_WARN_PCT, detail, hint)
+    return _check("phase_invalid_rate_7d", "OK", round(worst_rate, 1), INVALID_RATE_WARN_PCT, detail, "")
+
+
+def _baseline_hash_for(ea_id: int, symbol: str) -> str | None:
+    """Expected KS baseline hash for a live sleeve — the 'hash' field of the on-disk
+    Common baseline file (canonical or the suffix-stripped alias; both carry the same
+    content hash). This binds expected identity to the deployed baseline, so the check
+    is 'the loaded distribution matches THIS baseline', never merely 'a file exists'."""
+    symc = str(symbol).replace(".", "_")
+    cands = [LIVE_COMMON_BASELINE_DIR / f"QM5_{ea_id}_{symc}.json"]
+    if symc.upper().endswith("_DWX"):
+        cands.append(LIVE_COMMON_BASELINE_DIR / f"QM5_{ea_id}_{symc[:-4]}.json")
+    for c in cands:
+        d = _read_json_path(c)
+        if d and d.get("hash"):
+            return str(d["hash"])
+    return None
+
+
+def _scan_ks_events(log_dir: Path) -> tuple[dict, str]:
+    """Latest KS_BASELINE_LOADED/ABSENT event per (ea_id, norm_symbol) from the live QM
+    EA JSONL logs. Strictly read-only (open 'rb', bounded tail). Returns ({}, status)
+    when the dir is missing/empty so the caller fails to UNKNOWN, never green."""
+    log_dir = Path(log_dir)
+    if not log_dir.is_dir():
+        return {}, "log_dir_missing"
+    logs = sorted(log_dir.glob("QM5_*.log"))
+    if not logs:
+        return {}, "no_logs"
+    observed: dict = {}
+    files_read = 0
+    for lf in logs:
+        if files_read >= KS_LOG_FILE_CAP:
+            break
+        try:
+            size = lf.stat().st_size
+            with open(lf, "rb") as fh:
+                fh.seek(max(0, size - KS_LOG_TAIL_BYTES))
+                tail = fh.read().decode("utf-8", errors="ignore")
+        except OSError:
+            continue
+        files_read += 1
+        for line in tail.splitlines():
+            if "KS_BASELINE" not in line:
+                continue
+            try:
+                rec = json.loads(line)
+            except (json.JSONDecodeError, ValueError):
+                continue
+            event = rec.get("event")
+            if event not in ("KS_BASELINE_LOADED", "KS_BASELINE_ABSENT"):
+                continue
+            ea = _ea_id_int(rec.get("ea_id"))
+            if ea is None:
+                continue
+            key = (ea, _norm_symbol(rec.get("symbol")))
+            ts = str(rec.get("ts_utc") or "")
+            prev = observed.get(key)
+            if prev is None or ts >= prev["ts"]:
+                payload = rec.get("payload") or {}
+                observed[key] = {"event": event, "ts": ts, "hash": payload.get("hash")}
+    return observed, "ok"
+
+
+def chk_ks_baseline_dormancy() -> dict:
+    """(d) KS divergence kill-switch dormancy on live sleeves. Binds each manifest sleeve
+    to its on-disk baseline hash and requires an observed KS_BASELINE_LOADED event whose
+    payload hash matches — file-exists is explicitly NOT the check. Missing manifest or
+    live logs => UNKNOWN/WARN (never green-by-absence). hash_mismatch (a live EA loaded a
+    baseline that no longer matches the deployed one) escalates to FAIL."""
+    manifest = _read_json_path(DXZ_BOOK_MANIFEST)
+    if not manifest or not isinstance(manifest.get("sleeves"), list):
+        return _check("ks_baseline_dormancy", "WARN", "manifest_unavailable", "loaded",
+                      f"manifest={DXZ_BOOK_MANIFEST} unreadable — cannot bind expected live sleeves",
+                      "Restore the signed DXZ book manifest; KS dormancy cannot be judged without it.")
+    expected: dict = {}
+    for s in manifest["sleeves"]:
+        ea, sym = _ea_id_int(s.get("ea_id")), s.get("symbol")
+        if ea is None or not sym:
+            continue
+        expected[(ea, _norm_symbol(sym))] = _baseline_hash_for(ea, sym)
+
+    observed, log_status = _scan_ks_events(LIVE_QM_LOG_DIR)
+    if log_status != "ok":
+        return _check("ks_baseline_dormancy", "WARN", log_status, "loaded",
+                      f"live_qm_logs={LIVE_QM_LOG_DIR} status={log_status} — cannot confirm "
+                      "loaded baselines (never green by absence)",
+                      "Live KS event logs unavailable; confirm T_Live is up and writing QM logs.")
+
+    loaded_ok = 0
+    dormant: list[str] = []
+    no_file: list[str] = []
+    mismatch: list[str] = []
+    for (ea, nsym), exp_hash in sorted(expected.items()):
+        label = f"{ea}/{nsym}"
+        obs = observed.get((ea, nsym))
+        if exp_hash is None:
+            no_file.append(label)
+            continue
+        if obs is None or obs["event"] == "KS_BASELINE_ABSENT":
+            dormant.append(label)
+            continue
+        if obs.get("hash") and obs["hash"] != exp_hash:
+            mismatch.append(label)
+            continue
+        loaded_ok += 1
+
+    total = len(expected)
+    dormant_total = len(dormant) + len(no_file)
+    detail = (f"manifest={DXZ_BOOK_MANIFEST.name} live_logs={LIVE_QM_LOG_DIR} sleeves={total} "
+              f"loaded_ok={loaded_ok} dormant={len(dormant)} no_baseline_file={len(no_file)} "
+              f"hash_mismatch={len(mismatch)} dormant_list={dormant[:8]} "
+              f"nofile={no_file[:8]} mismatch={mismatch[:8]}")
+    hint = ("Live sleeves without a loaded KS baseline run with the divergence kill-switch DORMANT. "
+            "Generate/deploy the Q10 baseline (gen_q10_baseline.py --deploy-live, OWNER-gated) and "
+            "confirm KS_BASELINE_LOADED in the live QM logs.")
+    if mismatch:
+        return _check("ks_baseline_dormancy", "FAIL", f"hash_mismatch={len(mismatch)}", 0, detail,
+                      "A live sleeve loaded a baseline whose hash != the deployed on-disk baseline "
+                      "(stale / wrong distribution). " + hint)
+    if dormant_total:
+        return _check("ks_baseline_dormancy", "WARN", dormant_total, 0, detail, hint)
+    return _check("ks_baseline_dormancy", "OK", 0, 0, detail, "")
+
+
+def chk_seed_auth_failure_rate(con) -> dict:
+    """(e) Q07 seed-authentication failure rate. Counts in-window Q07 runs whose stored
+    reason carries an authenticated seed-auth failure (effective_seed_mismatch — the
+    tester ran a seed different from the one requested; or seed_evidence_missing — the
+    run could not be authenticated). Consumes q07_multiseed's own evidence; never
+    re-derives seed identity. Read-only DB."""
+    cutoff = _window_cutoff_ts(VACUOUSNESS_WINDOW_DAYS)
+    rows = con.execute(
+        "SELECT ea_id, symbol, verdict, detail_json FROM ea_metrics WHERE phase='Q07' "
+        "AND evidence_mtime IS NOT NULL AND evidence_mtime >= ?",
+        (cutoff,),
+    ).fetchall()
+    total = len(rows)
+    failures: list[tuple] = []
+    for r in rows:
+        reason = str((_json_obj(r["detail_json"]) or {}).get("reason") or "")
+        if "effective_seed_mismatch" in reason or "seed_evidence_missing" in reason:
+            failures.append((_ea_id_int(r["ea_id"]), r["symbol"]))
+    n = len(failures)
+    rate = (100.0 * n / total) if total else 0.0
+    detail = (f"db={DB} window={VACUOUSNESS_WINDOW_DAYS}d q07_runs={total} seed_auth_failures={n} "
+              f"rate={rate:.1f}% warn>={SEED_AUTH_FAIL_WARN} fail>={SEED_AUTH_FAIL_FAIL_PCT}% "
+              f"offenders={failures[:6]}")
+    hint = ("Q07 seed authentication failing: the tester did not run the requested effective seed "
+            "(injector regression / seed-alias laundering). Fix the seed injector before trusting Q07 PASSes.")
+    if total == 0:
+        # Zero denominator => the failure RATE is undefined, not zero. Emitting OK here
+        # would be green-by-absence (Codex round-2). Surface UNKNOWN as a WARN (never OK):
+        # the health summary only counts OK/WARN/FAIL, so WARN is the only non-green status
+        # that stays visible instead of being silently dropped.
+        return _check("seed_auth_failure_rate", "WARN", "UNKNOWN", SEED_AUTH_FAIL_FAIL_PCT,
+                      detail + " -> UNKNOWN (no Q07 runs in window; rate undefined, not OK)",
+                      "No Q07 runs in the window: seed-auth health is UNKNOWN. Confirm Q07 is "
+                      "running and re-check once runs land in-window.")
+    if rate >= SEED_AUTH_FAIL_FAIL_PCT:
+        return _check("seed_auth_failure_rate", "FAIL", round(rate, 1), SEED_AUTH_FAIL_FAIL_PCT, detail, hint)
+    if n >= SEED_AUTH_FAIL_WARN:
+        return _check("seed_auth_failure_rate", "WARN", n, SEED_AUTH_FAIL_WARN, detail, hint)
+    return _check("seed_auth_failure_rate", "OK", 0, SEED_AUTH_FAIL_FAIL_PCT, detail, "")
+
+
 ALL_CHECKS = [
     ("ea_id_slug_uniqueness", chk_ea_id_slug_uniqueness, False),
     ("stranded_ea_improvements", chk_stranded_ea_improvements, False),
@@ -1882,23 +2498,42 @@ ALL_CHECKS = [
     ("quota_snapshot_fresh",   chk_quota_snapshot_fresh,   False),
     ("lsm_session_health",     chk_lsm_session_health,     False),
     ("codex_auth_broken",      chk_codex_auth_broken,      True),
+    # WS-F standing vacuousness audit (ULTRACODE 2026-07-26)
+    ("q05q06_stress_identity", chk_q05_q06_stress_identity, True),
+    ("q07_zero_variance",      chk_q07_zero_variance,       True),
+    ("phase_invalid_rate_7d",  chk_phase_invalid_rate_7d,   True),
+    ("ks_baseline_dormancy",   chk_ks_baseline_dormancy,    False),
+    ("seed_auth_failure_rate", chk_seed_auth_failure_rate,  True),
 ]
 
 
 def run_all() -> dict:
-    """Run all health checks. Returns the result dict and writes health.json."""
-    con = _connect()
+    """Run all health checks. Returns the result dict and writes health.json.
+
+    The DB handle is read-only (see _connect). If the read-only connect itself fails
+    (e.g. the factory DB is absent), con-needing checks degrade to a single WARN each
+    rather than crashing the whole pass — health OUTPUT still gets written."""
+    try:
+        con = _connect()
+    except sqlite3.Error:
+        con = None
     results = []
     try:
-        for _, fn, needs_con in ALL_CHECKS:
+        for name, fn, needs_con in ALL_CHECKS:
             try:
+                if needs_con and con is None:
+                    results.append(_check(name, "WARN", "no_db", "ok",
+                                          f"read-only DB connect failed: {DB}",
+                                          "Confirm farm_state.sqlite exists and is readable."))
+                    continue
                 results.append(fn(con) if needs_con else fn())
             except Exception as exc:
                 results.append(_check(fn.__name__, "WARN", "exception", "?",
                                       f"check raised: {exc!r}",
                                       "Investigate health.py — check code"))
     finally:
-        con.close()
+        if con is not None:
+            con.close()
 
     summary = {"ok": 0, "warn": 0, "fail": 0}
     for r in results:
