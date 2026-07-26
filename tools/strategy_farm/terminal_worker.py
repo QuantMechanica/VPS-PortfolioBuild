@@ -70,12 +70,6 @@ MULTISYMBOL_RAM_MIN_FREE_GB = 12.0
 # plus a small system margin available before admitting another heavy job.
 MULTISYMBOL_COMMIT_MIN_FREE_GB = 48.0
 MULTISYMBOL_COMMIT_RESERVATION_GB = 44.0
-# Multi-symbol loaders materialize their 20-44GB working set over tens of
-# minutes, not the ordinary 5-minute launch window; expiring their reservation
-# at 300s re-admits ordinary jobs into the balloon phase (2026-07-26: pagefile
-# storm at T+10min killed workers T4/T9/T10). Hold the reservation until the
-# OS commit measurement carries the real footprint.
-MULTISYMBOL_COMMIT_RESERVATION_SECONDS = 3600
 # Launch-fault guard (2026-06-20): the spawned phase-runner child vanishing far
 # faster than any real backtest (terminal64 startup + sync alone is ~6-10s) means
 # the run never actually started — a transient pwsh/host launch fault, NOT a clean
@@ -551,17 +545,13 @@ def _commit_admission_snapshot(
     ).fetchall()
     for row in rows:
         payload = _json_loads(row["payload_json"])
-        item_is_multisym = _work_item_is_multisymbol(row, payload, multisym_ids)
         until = _parse_utc_iso(payload.get("commit_reservation_until_utc"))
         claimed_at = _parse_utc_iso(payload.get("claimed_at_iso"))
         if until is None and claimed_at is not None:
-            until = claimed_at + timedelta(
-                seconds=MULTISYMBOL_COMMIT_RESERVATION_SECONDS
-                if item_is_multisym
-                else COMMIT_RESERVATION_SECONDS
-            )
+            until = claimed_at + timedelta(seconds=COMMIT_RESERVATION_SECONDS)
         if until is None or until <= now_dt:
             continue
+        item_is_multisym = _work_item_is_multisymbol(row, payload, multisym_ids)
         default_reservation = (
             MULTISYMBOL_COMMIT_RESERVATION_GB
             if item_is_multisym
@@ -603,11 +593,7 @@ def _set_commit_reservation(
         else ORDINARY_COMMIT_RESERVATION_GB
     )
     payload["commit_reservation_until_utc"] = (
-        claimed_at + timedelta(
-            seconds=MULTISYMBOL_COMMIT_RESERVATION_SECONDS
-            if multisymbol
-            else COMMIT_RESERVATION_SECONDS
-        )
+        claimed_at + timedelta(seconds=COMMIT_RESERVATION_SECONDS)
     ).isoformat()
 
 
