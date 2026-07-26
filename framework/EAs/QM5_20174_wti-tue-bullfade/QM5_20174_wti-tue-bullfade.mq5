@@ -1,14 +1,14 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_20173 WTI Monday Weakness Positive-Trend Countertrend"
+#property description "QM5_20174 WTI Tuesday Weakness Positive-Trend Countertrend"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QM5_20173 - WTI Monday Weakness / Positive-Trend Countertrend
+// QM5_20174 - WTI Tuesday Weakness / Positive-Trend Countertrend
 // -----------------------------------------------------------------------------
 // D1 structural crude-oil sleeve:
-//   - first observed tick of a genuine broker-calendar Monday D1 bar
+//   - first observed tick of a genuine broker-calendar Tuesday D1 bar
 //   - SELL only when the completed 252-D1 WTI log return is positive
 //   - one consumed attempt per broker week, persisted before fallible gates
 //   - next-D1 flatten, frozen ATR stop, and two-day stale repair
@@ -16,7 +16,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                     = 20173;
+input int    qm_ea_id                     = 20174;
 input int    qm_magic_slot_offset         = 0;
 input uint   qm_rng_seed                  = 42;
 
@@ -70,22 +70,32 @@ int Strategy_WeekKey(const datetime value)
    if(!TimeToStruct(value, parts))
       return 0;
 
-   const int days_since_monday =
-      (parts.day_of_week + 6) % 7;
+   const int days_since_tuesday =
+      (parts.day_of_week + 5) % 7;
    parts.hour = 12;
    parts.min = 0;
    parts.sec = 0;
-   const datetime monday_noon =
+   const datetime tuesday_noon =
       (datetime)(StructToTime(parts) -
-                 (long)days_since_monday * 86400);
-   if(monday_noon <= 0)
+                 (long)days_since_tuesday * 86400);
+   if(tuesday_noon <= 0)
       return 0;
 
-   MqlDateTime monday;
-   ZeroMemory(monday);
-   if(!TimeToStruct(monday_noon, monday))
+   MqlDateTime tuesday;
+   ZeroMemory(tuesday);
+   if(!TimeToStruct(tuesday_noon, tuesday))
       return 0;
-   return monday.year * 1000 + monday.day_of_year;
+   return tuesday.year * 1000 + tuesday.day_of_year;
+  }
+
+bool Strategy_IsTuesdayBar(const datetime value)
+  {
+   if(value <= 0)
+      return false;
+   MqlDateTime parts;
+   ZeroMemory(parts);
+   return (TimeToStruct(value, parts) &&
+           parts.day_of_week == 2);
   }
 
 bool Strategy_IsMondayBar(const datetime value)
@@ -98,23 +108,13 @@ bool Strategy_IsMondayBar(const datetime value)
            parts.day_of_week == 1);
   }
 
-bool Strategy_IsFridayBar(const datetime value)
+bool Strategy_IsGenuineTuesdayBoundary(const datetime current_bar)
   {
-   if(value <= 0)
-      return false;
-   MqlDateTime parts;
-   ZeroMemory(parts);
-   return (TimeToStruct(value, parts) &&
-           parts.day_of_week == 5);
-  }
-
-bool Strategy_IsGenuineMondayBoundary(const datetime current_bar)
-  {
-   if(!Strategy_IsMondayBar(current_bar))
+   if(!Strategy_IsTuesdayBar(current_bar))
       return false;
    const datetime prior_bar =
       iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: prior completed D1 calendar gate.
-   return Strategy_IsFridayBar(prior_bar);
+   return Strategy_IsMondayBar(prior_bar);
   }
 
 bool Strategy_EntryWithinGrace(const datetime current_bar)
@@ -248,7 +248,7 @@ bool Strategy_LoadMomentum(double &momentum,
    const int required =
       strategy_momentum_lookback_d1 + 1;
    const int copied =
-      CopyClose(_Symbol, // perf-allowed: bounded Monday D1 momentum sample.
+      CopyClose(_Symbol, // perf-allowed: bounded Tuesday D1 momentum sample.
                 PERIOD_D1,
                 1,
                 required,
@@ -280,12 +280,12 @@ bool Strategy_LoadMomentum(double &momentum,
 void Strategy_CloseExpiredPositions()
   {
    const datetime current_bar =
-      iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: Monday D1 lifecycle gate.
+      iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: Tuesday D1 lifecycle gate.
    if(current_bar <= 0)
       return;
 
-   const bool current_bar_is_monday =
-      Strategy_IsMondayBar(current_bar);
+   const bool current_bar_is_tuesday =
+      Strategy_IsTuesdayBar(current_bar);
    const datetime now = TimeCurrent();
    const long hold_seconds =
       (long)MathMax(1, strategy_max_hold_days) * 86400;
@@ -302,7 +302,7 @@ void Strategy_CloseExpiredPositions()
       const long position_type =
          PositionGetInteger(POSITION_TYPE);
       bool should_close =
-         !current_bar_is_monday ||
+         !current_bar_is_tuesday ||
          position_type != POSITION_TYPE_SELL;
       if(opened <= 0 ||
          (long)(now - opened) >= hold_seconds)
@@ -317,7 +317,7 @@ bool Strategy_NoTradeFilter()
   {
    if(!Strategy_IsWtiD1())
       return true;
-   if(qm_ea_id != 20173 ||
+   if(qm_ea_id != 20174 ||
       qm_magic_slot_offset != 0)
       return true;
    if(strategy_momentum_lookback_d1 != 252 ||
@@ -351,8 +351,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.expiration_seconds = 0;
 
    const datetime current_bar =
-      iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: Monday D1 entry calendar.
-   if(!Strategy_IsGenuineMondayBoundary(current_bar) ||
+      iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: Tuesday D1 entry calendar.
+   if(!Strategy_IsGenuineTuesdayBoundary(current_bar) ||
       !Strategy_EntryWithinGrace(current_bar))
       return false;
 
@@ -451,13 +451,13 @@ int OnInit()
       return INIT_FAILED;
 
    g_attempt_state_key =
-      StringFormat("QM5_20173_WEEK_ATTEMPT_%d",
+      StringFormat("QM5_20174_WEEK_ATTEMPT_%d",
                    QM_FrameworkMagic());
    Strategy_LoadAttemptState(TimeCurrent());
 
    QM_LogEvent(QM_INFO,
                "INIT_OK",
-               "{\"card\":\"QM5_20173\",\"ea\":\"wti-mon-bullfade\"}");
+               "{\"card\":\"QM5_20174\",\"ea\":\"wti-tue-bullfade\"}");
    return INIT_SUCCEEDED;
   }
 
@@ -551,5 +551,7 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
+
+
 
 

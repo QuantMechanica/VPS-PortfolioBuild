@@ -1,8 +1,8 @@
-# QM5_20173_wti-mon-bullfade — Strategy Spec
+# QM5_20174_wti-tue-bullfade — Strategy Spec
 
-**EA ID:** QM5_20173
-**Slug:** `wti-mon-bullfade`
-**Source:** `QUAY-MOP-WTI-MONBULL-2026`
+**EA ID:** QM5_20174
+**Slug:** `wti-tue-bullfade`
+**Source:** `GORSKA-MOP-WTI-TUEBULL-2026`
 **Author of this spec:** Codex
 **Last revised:** 2026-07-25
 
@@ -10,13 +10,13 @@
 
 ## 1. Strategy Logic
 
-On the first observed tick of each genuine Monday D1 bar immediately following
-a completed Friday D1 bar, the EA computes WTI's strictly completed 252-D1 log
+On the first observed tick of each genuine Tuesday D1 bar immediately following
+a completed Monday D1 bar, the EA computes WTI's strictly completed 252-D1 log
 return. It opens one short `XTIUSD.DWX` position only when that return is
 strictly positive.
 
 The package has a frozen `3.0 * ATR(20)` hard stop, no profit target, and a
-two-day stale repair. The first non-Monday D1 bar is the ordinary exit. The
+two-day stale repair. The first non-Tuesday D1 bar is the ordinary exit. The
 broker week is consumed before fallible gates, so a non-positive trend state,
 rejection, blocked gate, stop, or restart cannot retry the week.
 
@@ -28,7 +28,7 @@ rejection, blocked gate, stop, or restart cannot retry the week.
 |---|---:|---|---|
 | `strategy_momentum_lookback_d1` | 252 | locked | Completed WTI return horizon |
 | `strategy_min_abs_return_pct` | 0.0 | locked | Strict positive sign; no deadband |
-| `strategy_entry_grace_minutes` | 5 | locked | Maximum Monday-bar attachment delay |
+| `strategy_entry_grace_minutes` | 5 | locked | Maximum Tuesday-bar attachment delay |
 | `strategy_atr_period` | 20 | locked | Completed D1 ATR estimator |
 | `strategy_atr_sl_mult` | 3.0 | locked | Frozen hard-stop distance |
 | `strategy_max_hold_days` | 2 | locked | Missed-next-bar stale repair |
@@ -43,7 +43,7 @@ Framework risk, news, stress, magic, and Friday-close inputs are documented in
 
 **Designed for:**
 
-- `XTIUSD.DWX` — registered Darwinex WTI CFD carrier for the cited Monday
+- `XTIUSD.DWX` — registered Darwinex WTI CFD carrier for the cited Tuesday
   weakness and own-return trend interaction.
 
 **Explicitly NOT for:**
@@ -62,11 +62,11 @@ Framework risk, news, stress, magic, and Friday-close inputs are documented in
 | Base timeframe | `D1` |
 | Multi-timeframe refs | none |
 | Bar gating | framework `QM_IsNewBar()` |
-| Calendar gate | current bar Monday and prior completed bar Friday |
-| Attempt key | Monday-anchored broker week derived from D1 bar time |
+| Calendar gate | current bar Tuesday and prior completed bar Monday |
+| Attempt key | Tuesday-anchored broker week derived from D1 bar time |
 
-Only completed D1 history enters the trend state. The current Monday bar's
-first executable quote determines entry; the Friday-close to Monday-open gap
+Only completed D1 history enters the trend state. The current Tuesday bar's
+first executable quote determines entry; the Monday-close to Tuesday-open gap
 is not captured and is a declared falsification risk.
 
 ---
@@ -76,9 +76,9 @@ is not captured and is a declared falsification risk.
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | approximately 12-30; retire below five completed on average |
-| Typical hold time | Monday session only, bounded at two calendar days |
+| Typical hold time | Tuesday session only, bounded at two calendar days |
 | Expected drawdown profile | WTI gaps and short squeezes during positive slow-trend states |
-| Regime preference | Monday weakness counter to positive 252-D1 WTI trend |
+| Regime preference | Tuesday weakness counter to positive 252-D1 WTI trend |
 | Win rate target | unknown; no source performance claim |
 
 The candidate is low-frequency and uses a physical-energy information clock
@@ -89,16 +89,16 @@ authoritative.
 
 ## 6. Source Citation
 
-- **Source ID:** `QUAY-MOP-WTI-MONBULL-2026`
+- **Source ID:** `GORSKA-MOP-WTI-TUEBULL-2026`
 - **Source type:** governed composite of two peer-reviewed journal papers
 - **Pointer:**
-  `strategy-seeds/sources/QUAY-MOP-WTI-MONBULL-2026/source.md`
+  `strategy-seeds/sources/GORSKA-MOP-WTI-TUEBULL-2026/source.md`
 - **R1-R4 verdict (G0):** all PASS; see
-  `strategy-seeds/cards/approved/QM5_20173_wti-mon-bullfade_card.md`
+  `strategy-seeds/cards/approved/QM5_20174_wti-tue-bullfade_card.md`
 
-Quayyum, Khan, and Ali supply the WTI Monday direction. Moskowitz, Ooi, and
+Gorska and Krawiec supply the WTI Tuesday direction. Moskowitz, Ooi, and
 Pedersen supply the completed 12-month own-return sign. Their conjunction and
-the continuous-CFD Monday-open package are QM hypotheses.
+the continuous-CFD Tuesday-open package are QM hypotheses.
 
 ---
 
@@ -122,4 +122,5 @@ deploy, certification, portfolio, or correlation authorization.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-26 | Initial build from approved G0 card | Q01 PASS; Q02 pending paced enqueue |
+
 

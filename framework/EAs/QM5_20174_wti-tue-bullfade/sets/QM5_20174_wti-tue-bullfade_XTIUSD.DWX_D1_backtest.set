@@ -1,7 +1,7 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
-; ea_id:        20173
-; ea_slug:      wti-mon-bullfade
+; ea_id:        20174
+; ea_slug:      wti-tue-bullfade
 ; ea_version:   v5.0
 ; set_version:  s20260726-001
 ; symbol:       XTIUSD.DWX
@@ -10,11 +10,11 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   235492f0dc5869b3a359c38a5aa65798e2d5af8216d4b044e48476f9f4597014
+; build_hash:   c0e616f35de0e681d2f2393c035eb8ae19b0edde0a70ad9fdd6d7afb6e7e979b
 ; author:       Development
 ; date:         2026-07-26
 ;==========================================================
-qm_ea_id=20173
+qm_ea_id=20174
 qm_magic_slot_offset=0
 qm_rng_seed=42
 RISK_FIXED=1000
@@ -26,7 +26,7 @@ qm_news_compliance=0
 qm_news_mode_legacy=0
 qm_news_stale_max_hours=336
 qm_news_min_impact=high
-; Monday-session packages close at the next D1 boundary.
+; Tuesday-session packages close at the next D1 boundary.
 qm_friday_close_enabled=true
 qm_friday_close_hour_broker=21
 qm_stress_reject_probability=0.0
@@ -39,4 +39,6 @@ strategy_atr_period=20
 strategy_atr_sl_mult=3.0
 strategy_max_hold_days=2
 strategy_max_spread_points=1500
+
+
 

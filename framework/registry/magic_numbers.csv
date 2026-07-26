@@ -15344,3 +15344,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20171,brent-tsmom3m,0,XBRUSD.DWX,201710000,2026-07-26T08:10:00Z,Codex,active
 20172,wti-fri-bear,0,XTIUSD.DWX,201720000,2026-07-26T09:55:00Z,Codex,active
 20173,wti-mon-bullfade,0,XTIUSD.DWX,201730000,2026-07-26T12:45:00Z,Codex,active
+20174,wti-tue-bullfade,0,XTIUSD.DWX,201740000,2026-07-26T13:30:00Z,Codex,active
