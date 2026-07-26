@@ -36,14 +36,42 @@ XAU/XAG 0.005% notional RT (≈$20.37/$9.50 per full lot); oil/gas cash CFDs $0 
 unresolved in the registry, so **any non-intraday-flat card is conservatively failed** — the motor
 archetype must be EOD-flat.
 
+> ## ⚠ RETARGETED 2026-07-26: the primary filter is SPEED, not density
+>
+> Density was the wrong headline number and this document's criterion 2 was the wrong
+> target. Measured across 175 sleeve trade streams (`GOAL_FTMO_PHASE1_P080.md`):
+>
+>     speed = (account-% per year) / drawdown-%
+>
+> A +10 % run inside 22 sessions is ≈114 %/yr; at a book drawdown the 10 % cap tolerates
+> (~6 %) the **book** needs speed ≈19. The best sleeve that survives the robustness gates
+> measures **0.96**. Density does not fix that: QM5_13036 carries 1,352 trades with exactly
+> one overnight hold — a textbook density motor by criterion 2 — and delivers 1.82 per
+> session against the 455 the target needs.
+>
+> Speed is also **sizing-invariant** (scaling risk scales return and drawdown together), so
+> the gap cannot be closed by position sizing, by the FTMO governor — its 5 % daily stop
+> never triggers on any of our 70 gate-surviving sleeves — or by portfolio construction.
+>
+> **New criterion 2: speed ≥ 5** on the sleeve's own equity curve, net of real FTMO cost.
+> Density remains necessary (a fast sleeve trading twice a year cannot compound inside 22
+> sessions) but is no longer sufficient, and it is no longer the screen. The criteria below
+> stand, with 2 replaced.
+
 ## 3. The motor archetype (what qualifies for sourcing)
 
 A card is a **density motor** only if it clears ALL of:
 
 1. **Structural cause** — session / event / calendar / relative-value anchor with a limit-to-
    arbitrage story. Pure chart-pattern lore (Wyckoff/SMC/ICT/first-swing) is falsified and excluded.
-2. **Density** — ≥250 tr/yr/symbol is the target band; 180–249 acceptable; <100 is not a motor.
+2. **Speed ≥ 5** — account-% per year per 1 % of drawdown, net of real FTMO cost.
+   (Superseded: "≥250 tr/yr/symbol". Density is still required as a floor — roughly
+   ≥120 tr/yr, or the sleeve cannot compound inside 22 sessions — but a dense, slow sleeve
+   is not a motor. Our whole pool sits at speed ≤ 0.96 and that, not trade count, is why no
+   book of it passes.)
 3. **Intraday-flat** — single-session entry, forced MOC flat, **no overnight hold** (no swap exposure).
+   Measured, not asserted: swap turned a +20,624 book into −5,780 on the two qualified gold
+   sleeves, and overnight share is directly observable from the trade stream.
 4. **Net-carry-positive after real FTMO cost** — an explicit cost gate (expected move > k×(spread+
    commission)) is a strong prior; a bare PF *target* is not evidence.
 5. **Orthogonal** — distinct session/mechanism/symbol from existing survivors and from each other;
