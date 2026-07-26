@@ -228,6 +228,53 @@ deep gates directly is what broke the cascade earlier tonight.
 Runner-up worth checking once this lands: **10938 GDAXI** at 16.4 % overnight, which pays
 some swap but far less than the gold sleeves.
 
+## ★★ The density census nobody had run (2026-07-26 23:35)
+
+The density hunt has been a sourcing programme for weeks — find new intraday-flat
+strategies — while nobody measured how many the farm already holds. With swap exposure now
+known to be the binding property, and directly observable from the trade streams, the whole
+population can be swept instead of the fourteen that happen to carry a strict Q08 PASS.
+
+188 durable Q08 streams on disk, 117 with ≥30 parseable trades. **Seven are intraday-flat
+(under 5 % overnight):**
+
+| EA | symbol | trades | overnight | Q08 verdict |
+|---|---|---:|---:|---|
+| 13213 | USDJPY | 1,596 | 0.0 % | FAIL_SOFT |
+| 10715 | USDJPY | 1,466 | 0.1 % | FAIL_HARD |
+| **13036** | **GDAXI** | **1,352** | **0.1 %** | **PASS** |
+| 9936 | USDJPY | 1,252 | 0.0 % | INFRA_FAIL |
+| 13301 | GDAXI | 742 | 0.1 % | FAIL_SOFT |
+| 12474 | GBPUSD | 442 | 0.2 % | FAIL_HARD |
+| 12474 | XAUUSD | 418 | 0.0 % | FAIL_HARD |
+
+Plus five "mostly intraday" (5–20 %), of which 11476/USDJPY carries 2,719 trades. The other
+105 sleeves are overnight-heavy and will pay swap.
+
+**This corrects the standing assumption.** The campaign notes record "only two density
+motors above 100 trades/year Q10-confirmed" and conclude the backlog is motor-dry. Measured
+against the streams, the farm holds **seven swap-immune sleeves carrying 418 to 1,596
+trades each**. They are not missing — they are *stuck at Q08*:
+
+- **13036 GDAXI is the only one with a strict PASS**, and its sole gap is a Q03 that never
+  existed (cascade started).
+- **9936 USDJPY, 1,252 trades at 0.0 % overnight, fails on INFRA_FAIL** — no merit verdict at
+  all. Its Q08 was already requeued tonight as a free retry.
+- **13213 (1,596 trades) and 13301 (742) are FAIL_SOFT** — a soft fail is a judgement about
+  robustness sub-gates, not a structural impossibility, and both are worth understanding
+  before being written off.
+- 10715 and 12474 are FAIL_HARD; 12474 is a documented overfit (PBO 54 %). Those are dead.
+
+So the realistic FTMO-viable pool is **one confirmed plus three recoverable**, against a
+requirement of five. That is a materially better position than "the backlog is motor-dry",
+and it points the work at Q08 recovery for named sleeves rather than at open-ended sourcing.
+
+**Method note, because it is the reusable part:** this could not be answered by reading EA
+source. The regex detector was validated first and failed — it missed 12969
+(`Strategy_InExitWindow`) and 20039 (`cash_close_new_york`) while catching only the EA that
+uses the literal token `eod_flat`. Measuring the trade streams is author-independent and
+measures the thing itself rather than a proxy for it.
+
 ## Known blockers between here and done
 
 1. **Deep-gate starvation.** The pending queue is 96 % Q02 with one pending Q08 and no
