@@ -521,18 +521,18 @@ bool Strategy_NoTradeFilter()
 
 bool Strategy_EntryWindowReady()
   {
+   const datetime broker_now = TimeCurrent();
    if(!g_is_new_bar || g_current_host_bar <= 0 ||
-      Strategy_DayOfWeek(g_current_host_bar) != strategy_entry_dow ||
+      Strategy_DayOfWeek(broker_now) != strategy_entry_dow ||
       Strategy_OpenOwnedPositionCount() > 0)
-      return false;
-   const long opening_delay = (long)(TimeCurrent() - g_current_host_bar);
-   if(opening_delay < 0 ||
-      opening_delay > (long)strategy_entry_grace_minutes * 60)
       return false;
    if(!Strategy_D1HistoryReady(g_leg_xti, g_current_host_bar) ||
       !Strategy_D1HistoryReady(g_leg_xng, g_current_host_bar))
       return false;
-   const int day_key = Strategy_DayKey(g_current_host_bar);
+   // Darwinex energy D1 bars are session-labelled with the prior calendar
+   // date.  The genuine QM_IsNewBar() tick is the executable session open;
+   // use its broker date for the card's Friday decision and attempt key.
+   const int day_key = Strategy_DayKey(broker_now);
    if(day_key <= 0 || Strategy_DayAlreadyEntered(day_key, g_current_host_bar) ||
       !Strategy_SymbolReady(g_leg_xti) || !Strategy_SymbolReady(g_leg_xng))
       return false;
@@ -636,6 +636,9 @@ int OnInit()
    QM_BasketWarmupHistory(basket_symbols, PERIOD_D1, 80);
    g_current_host_bar =
       iTime(g_leg_xti, PERIOD_D1, 0); // perf-allowed: restart state anchor.
+   // Prime the shared tracker so attaching after the session open cannot turn
+   // the current bar into a synthetic "new" bar and bypass the grace contract.
+   QM_IsNewBar();
    Strategy_LoadAttemptState(g_current_host_bar);
    g_pair_entry_time = Strategy_CurrentPairEntryTime();
    QM_LogEvent(QM_INFO, "INIT_OK",
