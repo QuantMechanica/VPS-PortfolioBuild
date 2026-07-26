@@ -138,6 +138,26 @@ Tried and did not help: `schtasks /end` on the stuck instance then `/run`; re-re
 the task XML. A logoff/logon would restore the binding but is **unsafe** — T_Live's
 terminal64 (pid 16388) runs in this session, so a logoff kills live trading.
 
+## Interim mitigation running (`interactive_worker_keeper.py`)
+
+Because the self-healing path is dead and a logoff is not an option while T_Live lives in
+this session, a stopgap keeper now runs detached in the interactive factory session
+(pid 1584, session 3): every 60 s it fills missing worker slots via the same idempotent
+`start_terminal_workers.py --dedupe` the dead task would have called. It does nothing while
+`FACTORY_OFF.flag` exists, and a failed process probe is treated as "unknown" rather than
+"nothing running", so a transient error cannot make it spawn into a healthy fleet. Log:
+`D:\QM\strategy_farm\logs\interactive_worker_keeper.log`.
+
+This is a substitute, not the fix — delete it when ticket `7abd518a` lands. Stop it with:
+
+```powershell
+Get-CimInstance Win32_Process -Filter "Name='pythonw.exe'" |
+  Where-Object { $_.CommandLine -match 'interactive_worker_keeper' } |
+  ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
+```
+
+Note it dies with the session, exactly like the factory it serves.
+
 ## Throughput was not harmed
 
 Since 19:00 local: 5 completions (3 PASS, 2 FAIL, **zero INFRA_FAIL**) in 14 minutes,
