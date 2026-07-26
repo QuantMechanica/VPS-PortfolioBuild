@@ -39,6 +39,11 @@ from framework.scripts.q05_stress_medium import (
     summary_invalid_reason,
 )
 from framework.scripts.gen_q10_baseline import STAGING_DIR
+from framework.scripts.q10_recency import (
+    RECENCY_AXIS_ENFORCED,
+    RECENCY_SCHEMA_VERSION,
+    compute_recency_shadow,
+)
 
 # Wrapper must outlive the tester budget (2026-07-06 audit G16).
 RUNNER_HEADROOM_SEC = 120
@@ -55,6 +60,44 @@ PF_FLOOR = 1.0
 DD_PCT_MAX = 25.0
 DEFAULT_NEWS_TEMPORAL = "QM_NEWS_TEMPORAL_PRE30_POST30"   # Mode 3
 DEFAULT_NEWS_COMPLIANCE = "QM_NEWS_COMPLIANCE_DXZ"
+
+
+def _decide_verdict(*, timed_out: bool, invalid_reason, pf, dd_money,
+                    dd_pct, timeout_sec: int) -> tuple[str, str]:
+    """Q10 verdict decision — extracted VERBATIM from run_confirmation so the
+    ULTRACODE WS-C recency shadow cannot influence it and so a fixture battery
+    can prove the verdict logic is byte-identical. PF_FLOOR/DD_PCT_MAX unchanged
+    (still the module constants 1.0 / 25.0 — the ratified 2026-07-15 ceiling).
+
+    RECENCY_AXIS_ENFORCED is intentionally NOT an input here: the recency axis is
+    shadow-only. Changing that is an OWNER-ratified DL decision, not a code edit.
+    """
+    if timed_out:
+        return "INVALID", f"timeout_expired:timeout_sec={timeout_sec}"
+    if invalid_reason:
+        return "INVALID", invalid_reason
+    if pf is None or dd_money is None:
+        return "INVALID", "missing_pf_or_dd_in_summary"
+    if pf <= PF_FLOOR:
+        return "FAIL", f"pf_below_floor:pf={pf:.3f}:floor={PF_FLOOR}"
+    if dd_pct > DD_PCT_MAX:
+        return "FAIL", f"dd_above_ceiling:dd_pct={dd_pct:.2f}:max={DD_PCT_MAX}"
+    return "PASS", f"pf={pf:.3f}:dd_pct={dd_pct:.2f}"
+
+
+def _resolve_ex5_source(repo_root: Path, ea_expert: str | None) -> Path | None:
+    """Best-effort resolve the source .ex5 for the confirmed EA so the recency
+    shadow can bind its SHA-256. `ea_expert` is the canonical MT5 path
+    'QM\\<dir>' (from resolve_ea_expert_path); the source binary lives at
+    framework/EAs/<dir>/<dir>.ex5. Returns None (-> identity ex5_sha256 UNKNOWN)
+    when it cannot be located rather than guessing."""
+    if not ea_expert:
+        return None
+    name = str(ea_expert).replace("QM\\", "").replace("QM/", "").strip("\\/")
+    if not name:
+        return None
+    cand = Path(repo_root) / "framework" / "EAs" / name / f"{name}.ex5"
+    return cand if cand.exists() else None
 
 
 def write_canonical_setfile(baseline: Path, news_temporal: str,
@@ -149,18 +192,29 @@ def run_confirmation(*, ea_id: int, ea_expert: str, symbol: str,
     # terminal FAILs at the final confirmation gate.
     invalid_reason = summary_invalid_reason(summary) if summary else None
 
-    if timed_out:
-        verdict, reason = "INVALID", f"timeout_expired:timeout_sec={timeout_sec}"
-    elif invalid_reason:
-        verdict, reason = "INVALID", invalid_reason
-    elif pf is None or dd_money is None:
-        verdict, reason = "INVALID", "missing_pf_or_dd_in_summary"
-    elif pf <= PF_FLOOR:
-        verdict, reason = "FAIL", f"pf_below_floor:pf={pf:.3f}:floor={PF_FLOOR}"
-    elif dd_pct > DD_PCT_MAX:
-        verdict, reason = "FAIL", f"dd_above_ceiling:dd_pct={dd_pct:.2f}:max={DD_PCT_MAX}"
-    else:
-        verdict, reason = "PASS", f"pf={pf:.3f}:dd_pct={dd_pct:.2f}"
+    verdict, reason = _decide_verdict(
+        timed_out=timed_out, invalid_reason=invalid_reason, pf=pf,
+        dd_money=dd_money, dd_pct=dd_pct, timeout_sec=timeout_sec,
+    )
+
+    report_htm = _find_report_htm(summary, started_at=started_at) if summary else None
+
+    # ULTRACODE WS-C — recency-axis SHADOW metrics + evidence-identity binding.
+    # Computed from the native report trade list and persisted under a versioned
+    # key ALWAYS. Fully guarded (compute_recency_shadow never raises);
+    # RECENCY_AXIS_ENFORCED is False, so this has no effect on `verdict`/`reason`
+    # above. The identity block binds report / set / EX5 SHA-256 + window endpoint
+    # into the aggregate so the evidence tuple is cryptographically self-describing
+    # (unresolvable hash => explicit UNKNOWN; the live runner has no signed
+    # manifest, so manifest_ref is UNKNOWN here and is filled in by the audit).
+    ex5_source = _resolve_ex5_source(repo_root, ea_expert)
+    recency_shadow = compute_recency_shadow(
+        report_htm,
+        setfile_path=setfile,
+        ex5_path=ex5_source,
+        window_endpoint=history_to,
+        manifest_ref=None,
+    )
 
     return {
         "phase": GATE_NAME,
@@ -174,13 +228,16 @@ def run_confirmation(*, ea_id: int, ea_expert: str, symbol: str,
         "trades": trades,
         "exit_code": exit_code,
         "summary_path": str(summary) if summary else None,
-        "report_htm": _find_report_htm(summary, started_at=started_at) if summary else None,
+        "report_htm": report_htm,
         "history_year": history_year,
         "history_from": history_from,
         "history_to": history_to,
         "latest_full_year": latest_full_year,
         "full_history_from_override": full_history_from,
         "generated_at_utc": utc_now_iso(),
+        "recency_axis_enforced": RECENCY_AXIS_ENFORCED,
+        "evidence_identity": recency_shadow.get("identity"),
+        RECENCY_SCHEMA_VERSION: recency_shadow,
     }
 
 
