@@ -10,6 +10,7 @@ created_by: Codex
 cards_extracted:
   - xng-invlev-brk
   - xti-levbrk
+  - energy-lev-conv
 ---
 
 # Kristoufek Energy-Futures Leverage-Effect Source
@@ -88,4 +89,15 @@ the approved missions:
 
 Brent is not extracted because it would be a carrier port of the same crude
 result rather than a distinct strategy. Heating oil is not a registered target
-symbol. No further card remains open under this source.
+symbol.
+
+The 2026-07-26 OWNER commodity/energy sleeve mission additionally authorizes
+`energy-lev-conv`, a market-neutral falsification test intersecting the
+paper's opposite WTI and XNG signs. It opens only after a completed negative
+WTI return, positive XNG return, and extreme standardized one-day relative
+shock, then holds long WTI/short XNG for convergence. The paper does not claim
+cross-market convergence; the threshold, paired direction, ATR stops and
+ten-day hold are disclosed QM hypotheses. This is distinct from the two
+single-market cards and generic two-sided multiweek return-spread reversion.
+
+No further card remains open under this source.
