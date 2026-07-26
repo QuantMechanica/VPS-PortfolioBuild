@@ -64,13 +64,76 @@ trade streams from `D:\QM\reports\portfolio\sleeve_streams\QM\q08_trades`.
   prediction of 72.5 % — they share failure days, and assuming independence would
   have overstated the campaign.
 
-## What this number is not
+## UPDATE — the floating-P&L gap is closed, from the streams themselves
 
-- **Floating P&L on open positions is still not modelled.** A position 4 % under
-  water at noon breaches FTMO even if it closes green, and no closed-trade record
-  can show that. 80.7 % remains an upper bound; closing this gap needs per-bar
-  equity from the tester, not the trade stream. **This is the single largest
-  remaining uncertainty and should be resolved before any fee is paid.**
+The trade streams carry **`mae_acct`**: maximum adverse excursion per trade, in
+account currency. The very first record in 13213's stream is the exact failure
+case that worried me — `mae_acct −610.47` against `net +35.92`, a trade that sat
+deeply red and closed green.
+
+So the gap did not need a per-bar equity export. `challenge_campaign_mae.py`
+computes **both** bounds:
+
+- **upper** — closed P&L only, floating loss invisible (the 80.7 % above);
+- **lower** — every open position assumed to sit at its own worst point
+  *simultaneously*, at every instant it is open. That cannot physically occur, so
+  it understates the pass rate as surely as the upper bound overstates it.
+
+| accounts | upper | **lower** | books |
+|---|---|---|---|
+| 1 | 55.8 % | 53.9 % | 9936/USDJPY @4× |
+| 2 | 75.9 % | 73.3 % | + 10848/XAUUSD @5× |
+| 3 | 83.3 % | **81.1 %** | + 10553/XAUUSD @8× |
+| 4 | 87.7 % | **85.4 %** | + 13213/USDJPY @4× |
+
+**Both bounds clear 80 % at three accounts.** The goal holds under the most
+pessimistic floating-loss assumption available, so the answer no longer depends on
+the unmodelled term.
+
+(9936/USDJPY re-enters the pool because its `INFRA_FAIL` Q08 row was invalidated by
+the requeue. Its Q08 is therefore **pending, not passed** — the campaign's strongest
+member is not yet gate-confirmed, and that is a caveat, not a result.)
+
+## The binding constraint is now margin, not statistics
+
+Peak **concurrent** notional per account, as a multiple of 100 k equity, at
+leverage 1.0 — measured from the `notional` field:
+
+| sleeve | at 1.0× | at its campaign leverage |
+|---|---|---|
+| 13213/USDJPY | 18.5× | 73.8× @4× |
+| 9936/USDJPY | 16.5× | 65.9× @4× |
+| 10848/XAUUSD | 4.3× | 21.5× @5× |
+| 10553/XAUUSD | 2.5× | 19.9× @8× |
+| 12823/USDJPY | 0.8× | — |
+
+Margin required = exposure ÷ broker leverage. At 1:100 the USDJPY sleeves use
+66–74 % of the account; at 1:30 they need 220–246 % and are simply impossible.
+**`venue_cost_model.json` carries FTMO commissions but no leverage or margin
+fields**, and the Hard Rules bar inventing one — so the result is instead reported
+against an explicit exposure cap (`challenge_campaign_capped.py`), and the row
+matching FTMO's real leverage can be read off once it is known:
+
+| exposure cap | accounts | upper | lower |
+|---|---|---|---|
+| 10× | 3 | 60.3 % | 58.5 % |
+| 20× | 5 | 79.5 % | 74.7 % |
+| 30× | 5 | 81.9 % | 77.2 % |
+| **50×** | 5 | 91.0 % | **84.7 %** |
+| 75× | 5 | 93.4 % | 86.0 % |
+
+Research enqueued for the cited figure: agent task `9b7c6aaf` (priority 94),
+official FTMO leverage per symbol class plus stop-out level, with a proposed
+`venue_cost_model.json` patch so it becomes a registry fact.
+
+**A second caveat on the capped table**: it reaches its best rows by running
+low-exposure sleeves at very high multipliers (12823 at 61–91×). Those are
+extrapolations far outside the tested size — the `.DWX` history includes spread
+but not market impact, and ~700 lots of USDJPY does not fill at backtest prices.
+The uncapped 3–4 account configuration at 4–8× is the defensible one; the capped
+table exists to show how the answer moves with margin, not to recommend 91×.
+
+## What this number is still not
 - **The confidence interval reaches below the goal.** ~37 independent windows give
   68–94 %. The point estimate meets 80 %; the lower bound does not.
 - **Two of the three accounts are XAUUSD** (10848, 10553). Their joint behaviour
@@ -115,10 +178,16 @@ the three-account figure rises materially — 9936 scored 55.6 % solo against
 
 ## Recommended next steps
 
-1. **Resolve the floating-P&L gap** before any money moves: re-run the three
-   campaign sleeves with per-bar equity export and re-measure the daily-cap
-   breaches. This can only lower the 80.7 %; the question is by how much.
-2. Let 9936/USDJPY Q08 complete and re-run the campaign measurement.
-3. Translate 4×–8× into `RISK_PERCENT` per symbol with a margin check.
-4. **OWNER money-gate**: three parallel challenge accounts means three fees. That
-   decision is OWNER's alone and is not assumed anywhere above.
+1. ~~Resolve the floating-P&L gap~~ — **done**, from `mae_acct` in the streams.
+   Both bounds clear 80 % at three accounts. Codex ticket `a5768d03` (per-bar
+   equity export) is now a refinement rather than a blocker: it would replace the
+   two bounds with a single figure, but it can no longer change the verdict.
+2. **Confirm FTMO's margin leverage** — agent task `9b7c6aaf`. This is the only
+   remaining external unknown, and it decides whether the 4×–8× configuration is
+   fundable as-is or must be rebuilt around the low-exposure sleeves.
+3. Let 9936/USDJPY Q08 complete (work item `7be51839`) — it is the strongest
+   member and currently pending, not passed.
+4. Translate the surviving multipliers into `RISK_PERCENT` set files once (2) is
+   known; `RISK_FIXED=0` for live per the Hard Rules.
+5. **OWNER money-gate**: three or four parallel challenge accounts means three or
+   four fees. That decision is OWNER's alone and is not assumed anywhere above.
