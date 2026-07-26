@@ -15337,3 +15337,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20165,energy-lev-conv,0,XTIUSD.DWX,201650000,2026-07-26T02:50:00Z,Codex,active
 20165,energy-lev-conv,1,XNGUSD.DWX,201650001,2026-07-26T02:50:00Z,Codex,active
 20166,xng-shoulder-brk,0,XNGUSD.DWX,201660000,2026-07-26T04:00:00Z,Codex,active
+20167,xng-spring-dualtrend,0,XNGUSD.DWX,201670000,2026-07-26T04:45:00Z,Codex,active
