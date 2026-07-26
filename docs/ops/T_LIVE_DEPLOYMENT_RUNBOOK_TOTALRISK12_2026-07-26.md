@@ -65,6 +65,14 @@ the manifest **in writing** (Decision B below).
 - Step 2 addition: **11422 is a NEW EA on T_Live** — copy its `.ex5` (sha `159e6168…`), open a
   USDCAD D1 chart (broker symbol, no .DWX), attach with preset 25. Verify `KILL_SWITCH_INIT`
   and `NEWS_CALENDAR_LOADED` appear in its `MQL5\Files\QM\` log after attach.
+- Step 3 addition (reboot damage 2026-07-26): **12778/AUDUSD's chart is MISSING from the live
+  profile** since the 00:27 VPS reboot — the unclean shutdown profile save dropped it (clean
+  DEINIT reason 9 at 00:24, no load line after the 06:36 restart; the profile now has one AUDUSD
+  chart instead of two, plus one expert-less EURUSD chart). Recreate the AUDUSD D1 chart, attach
+  QM5_12778 with staged preset 06, delete the orphan EURUSD chart, verify `INIT_OK` +
+  `KILL_SWITCH_INIT` in `MQL5\Files\QM\QM5_12778_ea-12778.log`. **Post-deploy invariant: chart
+  inventory == manifest (24 EA charts + QM_AccountMonitor), count per symbol verified** — the
+  profile save has proven lossy across unclean shutdowns.
 - Step 3 addition: **remove** the deployed `15_NDX…QM5_10440` preset and close the 10440 chart
   (sleeve removed; decision record has the Q10 FAIL evidence).
 - Verification addition: 11422's preset carries no explicit `qm_filter_*` block (relies on EA
