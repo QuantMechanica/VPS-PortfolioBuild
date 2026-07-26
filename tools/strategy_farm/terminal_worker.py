@@ -8,6 +8,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import atexit
 import faulthandler
 import json
 import math
@@ -2945,6 +2946,51 @@ def _acquire_instance_mutex(terminal: str):
     return handle
 
 
+def _install_exit_tracer(terminal: str) -> None:
+    """Log every *orderly* exit path so a hard kill is identifiable by silence.
+
+    Workers have been vanishing with a resource-pause event as their last line
+    and an empty stderr (2026-07-26: T4/T9/T10 17:45, T6/T10 18:29, T2/T8/T10
+    18:40, T4/T7 19:10). No traceback means it is not an unhandled exception,
+    but "no log line either" left clean-exit and external termination
+    indistinguishable. Windows runs neither atexit handlers nor signal handlers
+    on TerminateProcess, so from now on:
+
+        worker_exit present  -> the worker chose to stop (or was signalled)
+        worker_exit absent   -> something killed the process outright
+
+    which is the discriminator the next investigation needs.
+    """
+    def _emit(reason: str, detail: dict[str, Any] | None = None) -> None:
+        try:
+            print(json.dumps({
+                "event": "worker_exit",
+                "terminal": terminal,
+                "reason": reason,
+                "pid": os.getpid(),
+                "free_ram_gb": round(_free_ram_gb(), 1),
+                **(detail or {}),
+            }, sort_keys=True), flush=True)
+        except Exception:
+            pass
+
+    atexit.register(_emit, "atexit")
+    for signal_name in ("SIGTERM", "SIGINT", "SIGBREAK"):
+        handler_signal = getattr(signal, signal_name, None)
+        if handler_signal is None:
+            continue
+        try:
+            signal.signal(
+                handler_signal,
+                lambda signum, frame, _n=signal_name: (
+                    _emit("signal", {"signal": _n}),
+                    sys.exit(128),
+                ),
+            )
+        except (ValueError, OSError):
+            pass
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--terminal", required=True, choices=farmctl.MT5_TERMINALS)
@@ -2960,6 +3006,12 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps({"event": "duplicate_instance_exit", "terminal": args.terminal}))
         return 0
     faulthandler.enable()
+    _install_exit_tracer(args.terminal)
+    print(json.dumps({
+        "event": "worker_start",
+        "terminal": args.terminal,
+        "pid": os.getpid(),
+    }, sort_keys=True), flush=True)
     _start_stalldump_watcher(args.terminal)
     if args.work_item_id:
         claim = claim_specific_atomic(args.root, args.terminal, args.work_item_id)
