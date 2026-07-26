@@ -2891,6 +2891,9 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
                     "commit_reserved_gb": claim.get("commit_reserved_gb"),
                     "effective_commit_headroom_gb": claim.get("effective_commit_headroom_gb"),
                     "commit_reservation_count": claim.get("commit_reservation_count"),
+                    # Per-claim expected peak / measured usage / residual: without
+                    # it a starving fleet looks identical to a busy one (2026-07-26).
+                    "commit_reservation_detail": claim.get("commit_reservation_detail"),
                     "threshold_gb": claim.get("threshold_gb"),
                 }), flush=True)
                 time.sleep(COMMIT_GUARD_SLEEP_SECONDS + random.uniform(0, 10))
