@@ -81,18 +81,22 @@ Valid porting examples:
 - Mean-reversion on US equities → port to forex pairs or indices
 - Momentum on commodity futures → port to XAUUSD or oil CFD
 
-**SP500/S&P500-equivalent strategies — backtest-only via SP500.DWX Custom Symbol:**
+**SP500/S&P500-equivalent strategies — backtest AND live via SP500.DWX / SP500:**
 - `SP500.DWX` is in `dwx_symbol_matrix.csv` (since 2026-05-16T19:15Z).
-  OWNER-provided ticks 2018-07→2026-05 on T1-T5. Suitable for P0-P9 backtest
+  OWNER-provided ticks 2018-07→2026-05 on T1-T5. Suitable for the full backtest
   pipeline. Evidence: `docs/ops/evidence/2026-05-16T191500Z_sp500_dwx_custom_symbol_t2_t5_rollout.md`.
-- **R3 PASS** for SPY/SPX-intraday-specific edges — card includes the
-  standard T6-live-promotion caveat (see `claude_research_source.md`):
-  broker DXZ doesn't route orders on SP500, so T6 AutoTrading enable
-  requires parallel-validation on NDX.DWX or WS30.DWX (Board Advisor
-  T6-gate enforcement).
+- **Live trading on SP500 is CONFIRMED ROUTABLE** (2026-07-16). `SP500.DWX` is the
+  T1-T10 backtest alias; live orders use the bare broker symbol `SP500`. Proven by
+  an accepted entry and close on Darwinex-Live —
+  `ORDER_ROUTABLE_CONFIRMED` in `dwx_symbol_matrix.csv`, evidence
+  `docs/ops/evidence/DXZ_11132_SP500_DIRECT_ROUTABILITY_2026-07-16.md`. QM5_11132
+  has traded SP500 in the deployed DXZ book since 2026-07-19 (preset
+  `16_SP500_D1_QM5_11132_tm-cum-rsi2.set`). This **supersedes** the 2026-05-16
+  non-routability assertion; no parallel NDX/WS30 validation is required.
+- **R3 PASS** for SPY/SPX-intraday-specific edges, with no live-promotion caveat.
 - `SPY` / `ES.f` / `SPX` individual instrument variants → port to `SP500.DWX`.
-- US large-cap basket is now: **SP500.DWX** (backtest-only), **NDX.DWX**
-  (Nasdaq 100, live-tradable), **WS30.DWX** (Dow 30, live-tradable).
+- US large-cap basket: **SP500.DWX/SP500**, **NDX.DWX** (Nasdaq 100) and
+  **WS30.DWX** (Dow 30) — all three live-tradable.
 
 **REJECT** otherwise only if the strategy fundamentally requires a feature
 unavailable in CFD trading — e.g., options chain pricing, ETF order flow,

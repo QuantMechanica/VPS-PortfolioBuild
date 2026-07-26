@@ -73,11 +73,19 @@ hit a self-inflicted schedule-ledger trap that produced zero trades, and were re
   effectively still in force for these.
 - **Never executed at all: three.** 20031, 20037, 20045 — queue items still `pending`.
 - **QM5_20007, the decisive experiment: never had a single clean run.** 21 work items, 100 %
-  INFRA_FAIL — MT5 journal bombs (~2251 MB/min tripping `LOG_BOMB`) plus `NO_HISTORY`
-  cold-cache. The grid motor-factory that was supposed to settle whether intraday density is
-  achievable on our instruments **has never been evaluated**. Its own card states the
-  falsification: if no lane clears Q04+Q08 net, intraday-on-our-instruments is empirically
-  closed. We do not know, because infrastructure ate every attempt.
+  INFRA_FAIL — every one of them on `SP500.DWX`, all with the same
+  `shared_bases_history_lock_storm` signature. The grid motor-factory that was supposed to
+  settle whether intraday density is achievable on our instruments **has never been
+  evaluated**. Its own card states the falsification: if no lane clears Q04+Q08 net,
+  intraday-on-our-instruments is empirically closed. We do not know, because one symbol's
+  history contention ate every attempt while its NDX / XAUUSD / GDAXI runs sat unclaimed.
+  **Correction 2026-07-26 (OWNER):** an earlier version of this note called SP500 a
+  backtest-only symbol and used that to justify skipping it. That is wrong — SP500 is
+  live-tradable and QM5_11132 has traded it in the deployed DXZ book since 2026-07-19
+  (`ORDER_ROUTABLE_CONFIRMED`, evidence
+  `docs/ops/evidence/DXZ_11132_SP500_DIRECT_ROUTABILITY_2026-07-16.md`). The SP500 lane is a
+  legitimate FTMO candidate and its history-lock storm is a defect to fix, not a reason to
+  drop the symbol.
 - **QM5_1581 does not exist** — an unbuilt `.mq5` stub with no `.ex5` and zero work items.
   It is not the Baltussen sleeve the campaign notes assume.
 

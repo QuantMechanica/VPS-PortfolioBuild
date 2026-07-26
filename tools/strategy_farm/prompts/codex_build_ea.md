@@ -84,17 +84,20 @@ setfiles via `gen_setfile.ps1` (see workflow step 9) inherit this pattern.
   full set; the broker does NOT provide tick data for anything outside it.
 - **SP500.DWX is available as a Custom Symbol on T1-T5 since 2026-05-16T19:15Z**
   (OWNER-provided ticks 2018-07→2026-05, 9.4GB; evidence=`docs/ops/evidence/2026-05-16T191500Z_sp500_dwx_custom_symbol_t2_t5_rollout.md`).
-  It is **backtest-only**: the broker does NOT route orders on SP500, so live
-  promotion to T6 is forbidden for SP500.DWX-only EAs — that's a Board Advisor
-  T6-gate concern, not yours. At build time: SP500.DWX is a valid
-  `magic_numbers.csv` registration target exactly like NDX.DWX or WS30.DWX.
-  Use it when the card calls for SP500/SPX/SPY.
+  It is the **backtest alias**; live orders use the bare broker symbol `SP500`,
+  which is **confirmed routable** (accepted entry+close on Darwinex-Live,
+  `ORDER_ROUTABLE_CONFIRMED` in `dwx_symbol_matrix.csv`, evidence
+  `docs/ops/evidence/DXZ_11132_SP500_DIRECT_ROUTABILITY_2026-07-16.md`; QM5_11132
+  trades it in the deployed book). The earlier "backtest-only / live promotion
+  forbidden" rule is **superseded** — do not re-apply it. At build time:
+  SP500.DWX is a valid `magic_numbers.csv` registration target exactly like
+  NDX.DWX or WS30.DWX. Use it when the card calls for SP500/SPX/SPY.
 - **Permanently unavailable** (still): `SPX500.DWX`, `SPY.DWX`, `ES.DWX`, etc.
   — these are NOT the canonical Custom Symbol name. The single available
   Custom Symbol for the S&P 500 is `SP500.DWX`. Do not invent variants.
-- For US large-cap exposure, the available basket is now: **SP500.DWX**
-  (S&P 500, backtest-only), **NDX.DWX** (Nasdaq 100, live-tradable), **WS30.DWX**
-  (Dow 30, live-tradable).
+- For US large-cap exposure, the available basket is: **SP500.DWX/SP500**
+  (S&P 500), **NDX.DWX** (Nasdaq 100), **WS30.DWX** (Dow 30) — all three
+  live-tradable.
 - Other "card-stated symbol not in matrix" cases — port to nearest available
   DWX equivalent and document the choice in `open_questions`:
   - Russell 2000 / IWM → fall back to **WS30.DWX** (no Russell CFD).

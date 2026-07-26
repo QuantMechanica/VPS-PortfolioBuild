@@ -41,14 +41,16 @@ URI: `{{uri}}`
   - **Fundamentally untestable on any DWX instrument even after porting**
     (R3 fail). Crypto / equity / options strategies that PORT to Forex,
     indices, or CFDs are valid — note the porting plan in the card.
-    Special case: **SP500 → SP500.DWX (Custom Symbol, backtest-only,
-    OWNER-provided ticks 2018-07→2026-05).** Available since 2026-05-16T19:15Z
-    on T1-T5. R3 PASS for SPY/SPX-intraday-specific edges. Card MUST note
-    in `## R3` section: "Live promotion T6 gate: SP500.DWX is not
-    broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy
-    requires a parallel-validation on NDX.DWX or WS30.DWX before
-    AutoTrading enable." This is Board Advisor's T6-gate enforcement, not
-    yours — but the card must flag it so it doesn't surprise anyone at P10.
+    Special case: **SP500 → SP500.DWX** (Custom Symbol backtest alias,
+    OWNER-provided ticks 2018-07→2026-05, available since 2026-05-16T19:15Z).
+    R3 PASS for SPY/SPX-intraday-specific edges, **with no live-promotion
+    caveat**: live orders use the bare broker symbol `SP500` and are
+    **confirmed routable** (accepted entry+close on Darwinex-Live,
+    `ORDER_ROUTABLE_CONFIRMED` in `dwx_symbol_matrix.csv`, evidence
+    `docs/ops/evidence/DXZ_11132_SP500_DIRECT_ROUTABILITY_2026-07-16.md`;
+    QM5_11132 trades SP500 in the deployed DXZ book). Do NOT re-add the old
+    "not broker-routable / parallel-validate on NDX or WS30" note — it was
+    superseded on 2026-07-16.
     Other US-equity instruments (SPY ETF, ES futures, individual stocks)
     remain unavailable — port them to SP500.DWX / NDX.DWX / WS30.DWX per
     the card edge.

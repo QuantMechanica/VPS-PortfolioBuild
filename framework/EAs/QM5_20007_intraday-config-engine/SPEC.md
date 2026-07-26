@@ -43,7 +43,7 @@ One parameterised intraday EA with three selectable signal lanes and three deter
 **Designed for:**
 - `GDAXI.DWX` — German 40 index; DAX cash session 10:00-17:00 broker; low spread vs 15-min move; lead instrument
 - `NDX.DWX` — Nasdaq 100; US cash session 16:00-22:00 broker; high liquidity, low cost; live-tradable
-- `SP500.DWX` — S&P 500 custom symbol (backtest-only; broker does not route live orders); backtest diversification
+- `SP500.DWX` — S&P 500 backtest alias; live orders route on the bare broker symbol `SP500`, confirmed by an accepted entry+close on Darwinex-Live (`ORDER_ROUTABLE_CONFIRMED`, evidence `docs/ops/evidence/DXZ_11132_SP500_DIRECT_ROUTABILITY_2026-07-16.md`). Live-tradable, not backtest-only
 - `XAUUSD.DWX` — Gold spot; 24h market; GOLD_BREAKOUT lane designed for this instrument; overnight drift excluded by EOD-flat
 
 **Explicitly NOT for:**
