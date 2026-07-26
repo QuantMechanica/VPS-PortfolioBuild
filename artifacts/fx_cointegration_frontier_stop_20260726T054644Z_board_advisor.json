@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0",
+  "captured_at_utc": "2026-07-26T05:46:44Z",
+  "branch": "agents/board-advisor",
+  "inspected_head": "887a7b0a1e443f6242de3818de17e8f9e31f493f",
+  "mission": "grow certified V5 portfolio with new forex cointegration sleeves",
+  "decision": "STOP_CPU_CEILING",
+  "frontier": {
+    "unbuilt_eligible_pair_found": false,
+    "anchor_status": {
+      "QM5_12532": "Q02_PASS_THEN_Q05_FAIL",
+      "QM5_12533": "Q02_PASS_THEN_Q04_FAIL"
+    },
+    "strict_scan_status": "ALL_SEVEN_PAIRS_BUILT_WITH_TERMINAL_Q02_EVIDENCE",
+    "fallback_status": "NO_NON_DUPLICATE_OPEN_SCAN_SUCCESSOR"
+  },
+  "capacity": {
+    "farm_health_scanned_at": "2026-07-26T05:37:36Z",
+    "enabled_terminal_workers_active": 9,
+    "enabled_terminal_workers_capacity": 9,
+    "pending_work_items": 2196,
+    "active_work_items": 8,
+    "factory_terminal_processes_observed": [
+      "T2",
+      "T4",
+      "T6",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "factory_terminal_process_count": 6,
+    "live_terminal_observed_excluded": true,
+    "external_ftmo_terminal_observed_excluded": true,
+    "scheduler_dry_run": {
+      "available_slots_before": 0,
+      "available_slots_after": 0,
+      "scheduled": 0,
+      "status": "ok"
+    },
+    "classification": "PACED_FLEET_SATURATED"
+  },
+  "actions": {
+    "card_created": false,
+    "ea_built": false,
+    "queue_mutated": false,
+    "mt5_launched": false,
+    "terminal_controlled": false,
+    "autotrading_changed": false,
+    "portfolio_gate_changed": false,
+    "live_manifest_changed": false
+  },
+  "commands": [
+    "python -m tools.strategy_farm.farmctl health",
+    "python -m tools.strategy_farm.farmctl mt5-slots",
+    "python -m tools.strategy_farm.farmctl work-items --ea QM5_12532",
+    "python -m tools.strategy_farm.farmctl work-items --ea QM5_12533",
+    "python -m framework.scripts.mt5_saturation_scheduler --sqlite D:/QM/reports/pipeline/mt5_queue.db --dispatch-state D:/QM/reports/pipeline/dispatch_state.json --dry-run"
+  ]
+}

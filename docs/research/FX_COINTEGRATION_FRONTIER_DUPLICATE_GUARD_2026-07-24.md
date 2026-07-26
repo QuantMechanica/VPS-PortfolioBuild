@@ -248,3 +248,24 @@ The machine-readable snapshot is
 Per the mission's CPU-ceiling rule, no card, build, enqueue, dispatch, tester
 launch, terminal control, portfolio-gate change, or live-artifact change
 followed.
+
+## 2026-07-26 05:46Z capacity refresh
+
+The governed 66-pair frontier remains exhausted. `QM5_12532` and
+`QM5_12533` are already beyond Q02, all seven strict scan qualifiers have
+builds and terminal Q02 evidence, and there is no non-duplicate open scan
+successor to mechanize or enqueue.
+
+The canonical farm health snapshot reported all nine enabled terminal-worker
+daemons active, 2,196 pending work items, and eight active work items. A
+path-aware process snapshot observed six factory terminals (`T2`, `T4`, `T6`,
+`T7`, `T8`, and `T9`); `T_Live` and the unrelated FTMO terminal were observed
+only to exclude them. The canonical saturation scheduler independently
+returned `available_slots_before=0`, `available_slots_after=0`, and
+`scheduled=0`.
+
+The machine-readable snapshot is
+`artifacts/fx_cointegration_frontier_stop_20260726T054644Z_board_advisor.json`.
+Per the mission's CPU-ceiling rule, no card, build, enqueue, dispatch, tester
+launch, terminal control, portfolio-gate change, or live-artifact change
+followed.
