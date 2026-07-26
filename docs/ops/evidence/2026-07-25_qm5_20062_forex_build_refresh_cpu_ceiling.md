@@ -76,6 +76,26 @@ binary defect.
 The claim was released immediately. No tester process or Q02 work item was
 created, and the one-pass build artifact remains unchanged.
 
+## Capacity recheck at 06:17 UTC on 2026-07-26
+
+The paced board-advisor wake selected `QM5_20062` ahead of the pending Brent
+energy build because EURUSD adds the missing forex instrument class. The two
+older build tasks remain deterministically blocked by absent DWX lumber/rates
+inputs. The farm task was reclaimed transactionally under
+`codex:agents/board-advisor`.
+
+Preflight again passed the SPEC validator, the active EA/magic rows, and
+`build_check` with zero failures and zero warnings. The deterministic compile
+refreshed the binary and source-bound setfile hash:
+
+- EX5 SHA-256: `3b69638018502a4521d27e923e2701638f248d3671ef2afdaadf65f26f101bd`
+- Backtest risk mode: `RISK_FIXED=1000`, `RISK_PERCENT=0`
+
+The single permitted `-Terminal any` smoke submission then returned
+`status=no_capacity` before MT5 launch. Although T2/T3 worker processes were
+idle, the capacity resolver had no admissible tester slot. Execution stopped
+without retry, Q02 enqueue, strategy mutation, or tester-process interference.
+
 ## Safety
 
 No T_Live path, AutoTrading setting, portfolio gate, or live manifest was
