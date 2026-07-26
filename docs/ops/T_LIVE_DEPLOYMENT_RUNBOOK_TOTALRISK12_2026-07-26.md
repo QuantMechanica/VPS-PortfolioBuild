@@ -40,6 +40,14 @@ the manifest **in writing** (Decision B below).
   `D:\QM\exports\tlive_presets_FINAL23_20260726\` (23 files, RISK_PERCENT sum 12.0 verified,
   report `D:\QM\reports\portfolio\staging_report_FINAL23_20260726.json`), close the XNGUSD
   chart, no preset 23.
+- **Decision D (optional, 2026-07-26) — two fresh Q10-certified candidates; recommendation: no
+  add tonight.** 10938/GDAXI (Q10 PASS pf 1.27 / dd 6.87 % / Q08 61 trades, sha-sealed stream)
+  and 10692/NDX (Q10 PASS pf 1.08 / dd 14.87 % / 687 trades). Both are ~zero-corr to the
+  composite, but **neither is Sharpe-accretive at 12.0** (10938 ΔSharpe −0.0016; 10692 −0.0055,
+  though it improves faithful MaxDD by 0.42 pp at corr −0.018). Full arithmetic:
+  `D:\QM\reports\portfolio\admission_eval_20260726\admission_10938_10692_20260726.json`
+  (computed against both FINAL24b and FINAL23 bases). Park as documented challengers; if OWNER
+  opts in tonight, the manifest+presets regenerate in-session via the gen_dxz pattern.
 
 ## Execution sequence (Claude, after A+B)
 
