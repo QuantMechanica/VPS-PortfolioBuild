@@ -79,6 +79,50 @@ not a handful of bad apples — it is a systemic absence of any "this will never
 pending Q08 and no pending Q10; a large share of that backlog is work the factory has
 already proven it cannot complete.
 
+## ⚠ CORRECTION (same evening): the ONINIT_FAILED attribution below is WRONG
+
+The section that follows blamed the sandboxed news calendar. A population audit found the
+real cause, and I verified it directly rather than accepting it: the MT5 tester journals
+contain the EA's own runtime error, once per cohort member:
+
+```
+EA_MAGIC_NOT_REGISTERED: ea_id=12621 slot=0 magic=126210000
+EA_MAGIC_NOT_REGISTERED: ea_id=12734 slot=0 magic=127340000
+EA_MAGIC_NOT_REGISTERED: ea_id=12746 slot=0 magic=127460000   (and the rest of the cohort)
+```
+
+`QM_MagicRegistered()` returns false **inside the compiled `.ex5`**, so `QM_FrameworkInit`
+bails at `QM_Common.mqh:148-150` — *before* `QM_LoggerInit` at line 162. That is precisely
+why run_smoke reports "expected exactly one growing logger file, found 0". The binaries
+embed an older generation of `QM_MagicResolver.mqh` that predates their own magic row; the
+current header contains all 2,966 ea_ids, so **a clean recompile against the current header
+fixes the cohort** — no source or CSV change needed.
+
+Three things disprove my calendar attribution outright:
+
+1. The failing QM5_12706 run logged `news_calendar_status=OK … age_hours=4` — the calendar
+   was **fresh** at the time of failure.
+2. A working energy EA (20049) and a failing one (12706) carry **identical** news settings,
+   so news cannot be the differentiator.
+3. Decisive and purely logical, which I should have checked myself: the news failure path
+   **logs** (`QM_Common.mqh:203`) before returning false. It therefore can never produce the
+   "zero logger files" signature that defines this class.
+
+What I got right and still stands: the failures are deterministic per (EA, symbol), they are
+not resource-driven, and the pipeline has no notion of "never succeeded". What I got wrong
+was the mechanism for the 20 % ONINIT class. The calendar finding remains real as a separate
+diagnostic gap — run_smoke validating the `D:` source while the EA reads `Common\Files` — but
+it is **not** what killed these runs.
+
+Bonus finding in the same journal scan: `EA_MAGIC_NOT_REGISTERED: invalid symbol_slot=-1300668464`
+— an uninitialised `symbol_slot` reaching the resolver as garbage, the known
+must-ZeroMemory trap, still occurring.
+
+**Also corrected, in the other direction:** the audit flagged QM5_20007 as symbol-locked to
+XAUUSD and therefore mis-dispatched onto NDX/GDAXI/SP500. That is wrong. The lock sits inside
+an `else if(intraday_lane == LANE_GOLD_BREAKOUT)` branch, and **all four setfiles select
+`LANE_MOMENTUM_BAND`**, so the guard never executes. 20007 is not mis-dispatched.
+
 ## The ONINIT_FAILED thread
 
 `OnInit` in these EAs is a single `QM_FrameworkInit(...)` call returning `INIT_FAILED`, and
