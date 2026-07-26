@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-26T08:07:09.7907490Z",
-    "total":  3556,
+    "generated_at":  "2026-07-26T09:07:11.8242130Z",
+    "total":  3557,
     "items":  [
                   {
                       "slug":  "ath-breakout-atr-trail",
@@ -15782,6 +15782,12 @@
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-07-09T08:02:02.2460425Z"
+                  },
+                  {
+                      "slug":  "QM5_13086_xbr-cadchf-rspr",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-22T18:03:05.2445334Z"
                   },
                   {
                       "slug":  "QM5_13087_xbr-gbpcad-rspr",
