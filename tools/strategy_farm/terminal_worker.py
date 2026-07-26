@@ -1116,8 +1116,16 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 skipped_avoid_terminal: list[dict[str, Any]] = []
                 multisym_free_ram: float | None = None
                 history_registry = farmctl._dwx_symbol_history_registry()
-                import poison_pill_quarantine
-                poison_pill_quarantine.refresh_pending(conn)
+                # NOTE: do NOT refresh the poison-pill table here. Measured cost of
+                # poison_pill_quarantine.refresh_pending() on the live DB is ~413ms
+                # (full scan + one upsert per finding, 371 today), and this point is
+                # inside BEGIN IMMEDIATE. Nine workers claiming every ~2s would demand
+                # ~3.7s of write lock per 2s window and serialise the whole fleet.
+                # The claim query already excludes quarantined rows through an indexed
+                # NOT EXISTS on the table's primary key, so it only needs the table to
+                # be CURRENT, not freshly rebuilt per claim — and farmctl's dispatch
+                # path already refreshes it every pump cycle in its own transaction
+                # (farmctl.py, before the free-terminal loop).
                 # ULTRACODE WS-A (2026-07-26): recovery idle-cap. Recovery-class rows
                 # sort LAST (pending_claim_order_sql _recovery_rank), so the loop only
                 # reaches one after every eligible priority/frontier row was claimed
