@@ -26,8 +26,8 @@ symbol: XNGUSD.DWX
 period: D1
 timeframe: D1
 timeframes: [D1]
-expected_trade_frequency: "Friday-segmented April-May trend packages; approximately 8-18 completed trades/year when the dual-trend state is valid."
-expected_trades_per_year_per_symbol: 10
+expected_trade_frequency: "Friday-segmented April-May trend packages; approximately 5-10 completed trades/year when the dual-trend state is valid."
+expected_trades_per_year_per_symbol: 7
 expected_pf: 1.01
 expected_dd_pct: 25.0
 risk_class: high
@@ -36,14 +36,15 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
-q01_status: PENDING
-q02_status: NOT_ENQUEUED
-review_focus: "Adds winter heating-demand trend exposure distinct from the incumbent XNG RSI pullback. The Apr-May window plus falling 21/84-D1 trend stack are jointly load-bearing; Q09 alone may establish realized orthogonality."
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: ENQUEUED
+q02_work_item_id: 3be82258-5dda-4e5b-b82c-9ea3ef546e62
+review_focus: "Adds spring-shoulder short trend exposure distinct from the incumbent XNG RSI pullback. The April-May window plus falling 21/84-D1 trend stack are jointly load-bearing; Q09 alone may establish realized orthogonality."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
 hard_rules_at_risk: [low_frequency_sample, natural_gas_gaps, friday_close, magic_schema, risk_mode_dual, portfolio_correlation]
-g0_approval_reasoning: "APPROVED under the OWNER commodity/energy sleeve mission: R1 PASS official EIA seasonality plus peer-reviewed JFE trend lineage; R2 PASS fixed Apr-May window, falling 21/84-D1 trend stack, ATR stop and deterministic exits; R3 PASS registered XNGUSD.DWX D1 carrier; R4 PASS native MT5 data only with no ML, banned indicator, grid or martingale. Non-duplicate versus QM5_12567 RSI pullback, QM5_12702 calendar-only spring allocation, and pure monthly return-sign TSMOM."
+g0_approval_reasoning: "APPROVED under the OWNER commodity/energy sleeve mission: R1 PASS official EIA seasonality plus peer-reviewed JFE trend lineage; R2 PASS fixed April-May window, falling 21/84-D1 trend stack, ATR stop and deterministic exits; R3 PASS registered XNGUSD.DWX D1 carrier; R4 PASS native MT5 data only with no ML, banned indicator, grid or martingale. Non-duplicate versus QM5_12567 RSI pullback, QM5_12703 calendar-only spring allocation, QM5_20166 autumn channel breakout, and winter/summer long dual-trend variants."
 ---
 
 # QM5_20167 XNG Spring-Shoulder Dual-Trend Short
@@ -103,8 +104,8 @@ or exit logic is a new card, not a rescue sweep.
 
 - `QM5_12567` buys short-horizon cumulative-RSI pullbacks; this uses no
   oscillator or oversold condition.
-- `QM5_12702` checks only a monthly winter close above one SMA; this requires
-  a daily positive 21/84 stack with both five-day slopes rising.
+- `QM5_12703` checks a spring calendar state with one slow-mean confirmation;
+  this requires a daily negative 21/84 stack with both five-day slopes falling.
 - `QM5_20063` uses a monthly 63-D1 return sign in either direction and no
   seasonal window; this is short-only and spring-gated.
 - Existing XNG freeze, storage, expiry, LNG, weekday and breakout cards use
@@ -121,7 +122,7 @@ authoritative; structural difference does not guarantee decorrelation.
 ## Framework alignment
 
 - no_trade: exact carrier, timeframe, slot and locked-input validation.
-- trade_entry: spring-only rising dual-SMA long entry with spread/ATR guards.
+- trade_entry: spring-shoulder falling dual-SMA short entry with spread/ATR guards.
 - trade_management: season, trend-state and max-hold exits.
 - trade_close: framework strategy close or broker ATR stop.
 
