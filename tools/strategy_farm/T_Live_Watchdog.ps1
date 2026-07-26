@@ -49,6 +49,23 @@ $ftmoLauncher = Join-Path $repoRoot 'tools\strategy_farm\FTMO_ON.ps1'
 $sessionSupervisorScript = Join-Path $repoRoot 'tools\strategy_farm\Live_MT5_SessionSupervisor.ps1'
 $sessionSupervisorStarter = Join-Path $repoRoot 'tools\strategy_farm\Start_Live_SessionSupervisor.ps1'
 
+# WS-E1 observability: transition-deduplicated per-session alarm STATE for the
+# briefing/cockpit/WS-E2 consumers. This helper only translates facts the chain
+# already observed into an atomic state file; it never recovers, launches, probes
+# a process, or sends mail. It is loaded fail-closed: if the helper is ever
+# absent or fails to load, alarm emission is skipped and recovery is unchanged.
+$alarmStateFile = Join-Path $stateDir 'live_alarm_state.json'
+$alarmHelperScript = Join-Path $PSScriptRoot 'Live_Alarm_State.ps1'
+$alarmHelperLoaded = $false
+try {
+    if (Test-Path -LiteralPath $alarmHelperScript -PathType Leaf) {
+        . $alarmHelperScript
+        $alarmHelperLoaded = $true
+    }
+} catch {
+    $alarmHelperLoaded = $false
+}
+
 $dxzPath = 'C:\QM\mt5\T_Live\MT5_Base\terminal64.exe'
 $ftmoPath = 'C:\Program Files\FTMO Global Markets MT5 Terminal\terminal64.exe'
 $dxzCommon = 'C:\QM\mt5\T_Live\MT5_Base\config\common.ini'
@@ -750,6 +767,34 @@ $record = [ordered]@{
 }
 
 Write-Evidence -State $state -Record $record
+
+# WS-E1 observability: emit the transition-deduplicated per-session alarm STATE
+# for briefing/cockpit/WS-E2 consumers. This reflects the main evaluation of this
+# cycle; the reboot state machine below is left byte-for-byte unchanged and never
+# depends on this block. Any failure here is swallowed so recovery is unaffected.
+if ($alarmHelperLoaded) {
+    try {
+        $rebootSuppressed = [bool](@($actions | Where-Object {
+            $_ -like 'reboot_suppressed*' -or $_ -like 'reboot_cancelled*' -or $_ -like 'reboot_countdown_aborted*'
+        }).Count -gt 0)
+        $supervisorAlarmFacts = Get-SupervisorAlarmFacts -StateFilePath $sessionSupervisorStateFile -NowUtc $nowUtc
+        $dxzPlacementOk = (-not $session.exists) -or (@($proc.dxz | Where-Object { $_.SessionId -ne $session.id }).Count -eq 0)
+        $ftmoPlacementOk = (-not $session.exists) -or (@($proc.ftmo | Where-Object { $_.SessionId -ne $session.id }).Count -eq 0)
+        $tliveAlarmCondition = Get-LiveAlarmCondition -Maintenance $maintenance -ProbeOk $proc.probe_ok `
+            -Running $proc.dxz_running -ProcessCount @($proc.dxz).Count -SessionExists $session.exists `
+            -PlacementOk $dxzPlacementOk -SupervisorHeartbeatReady $sessionSupervisor.heartbeat_ready `
+            -SupervisorReason $sessionSupervisor.reason -SupervisorLaunchFailed ($supervisorAlarmFacts.fresh -and $supervisorAlarmFacts.dxz_launch_failed)
+        $ftmoAlarmCondition = Get-LiveAlarmCondition -Maintenance $maintenance -ProbeOk $proc.probe_ok `
+            -Running $proc.ftmo_running -ProcessCount @($proc.ftmo).Count -SessionExists $session.exists `
+            -PlacementOk $ftmoPlacementOk -SupervisorHeartbeatReady $sessionSupervisor.heartbeat_ready `
+            -SupervisorReason $sessionSupervisor.reason -SupervisorLaunchFailed ($supervisorAlarmFacts.fresh -and $supervisorAlarmFacts.ftmo_launch_failed)
+        Write-LiveAlarmState -AlarmFilePath $alarmStateFile -NowStamp $stamp -WatchdogStatus $status `
+            -Maintenance $maintenance -RebootSuppressed $rebootSuppressed `
+            -Sessions @{ T_LIVE = $tliveAlarmCondition; FTMO = $ftmoAlarmCondition } -DryRun:$DryRun.IsPresent | Out-Null
+    } catch {
+        Write-Warning "Live alarm state emission failed (non-fatal): $($_.Exception.Message)"
+    }
+}
 
 if ($actions -contains 'controlled_reboot_requested') {
     # Keep a short cancellable window. A late InteractiveToken recovery must not
