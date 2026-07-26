@@ -1,0 +1,12 @@
+{
+  "logical_symbol": "QM5_20165_ENERGY_LEV_CONV_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "Two-leg XTI/XNG convergence basket conditioned on the joint WTI-negative/XNG-positive leverage-divergence shock documented in Kristoufek (2014). Q02 must evaluate the logical basket, not standalone legs."
+  ]
+}
