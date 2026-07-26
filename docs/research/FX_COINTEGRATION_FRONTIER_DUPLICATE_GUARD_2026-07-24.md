@@ -289,3 +289,23 @@ The machine-readable snapshot is
 Per the explicit CPU-ceiling rule, no card, build, queue mutation, MT5 launch,
 terminal control, AutoTrading change, portfolio-gate change, or live-artifact
 change followed.
+
+## 2026-07-26 14:32Z capacity refresh
+
+The governed frontier remains exhausted. A current read-only query confirms
+that `QM5_12532` still has Q02 PASS followed by Q05 FAIL and `QM5_12533`
+still has Q02 PASS followed by Q04 FAIL. The other five strict scan qualifiers
+also retain terminal Q02 evidence, so carding or enqueueing another scan row
+would be duplicate work.
+
+All nine enabled terminal-worker daemons currently own active work items. A
+path-aware process scan observed six factory terminals (`T2`, `T4`, `T6`,
+`T7`, `T8`, and `T9`); the separately observed `T_Live` process was excluded
+and not controlled. The canonical saturation scheduler independently returned
+`available_slots_before=0`, `available_slots_after=0`, and `scheduled=0`.
+
+The machine-readable snapshot is
+`artifacts/fx_cointegration_frontier_stop_20260726T143203Z_board_advisor.json`.
+Per the mission's explicit CPU-ceiling rule, no card, build, queue mutation,
+MT5 launch, terminal control, AutoTrading change, portfolio-gate change, or
+live-artifact change followed.
