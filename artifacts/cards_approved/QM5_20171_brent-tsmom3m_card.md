@@ -1,5 +1,5 @@
 ---
-strategy_id: MOP-TSMOM-2012_XBR_S03
+strategy_id: MOP-TSMOM-2012_XBR_S09
 source_id: MOP-TSMOM-2012
 ea_id: QM5_20171
 slug: brent-tsmom3m
@@ -30,7 +30,9 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q02
+pipeline_phase: Q01
+q01_status: PASS
+q02_status: DEFERRED_CPU_CEILING
 review_focus: "Adds a medium-horizon Brent trend carrier to the XAU/SP500/NDX/XNG book; falsify costs, CFD/futures basis, trend whipsaw, and later book correlation."
 g0_approval_reasoning: "APPROVED under the 2026-07-26 OWNER commodity-sleeve mission: peer-reviewed JFE commodity-futures lineage; deterministic monthly three-month return sign; registered XBR D1 carrier and twelve packages/year; no ML, banned indicator, external feed, grid, or martingale."
 ---
@@ -49,12 +51,13 @@ profitable; Q02 and later gates must falsify those translations.
 ## Non-Duplicate Decision
 
 No existing EA uses the completed three-month Brent return as its sole signal.
-`QM5_12603` uses a 12-month return, while `QM5_12616` requires a 9-month signal
-and uses three months only as same-sign confirmation. `QM5_13150` counts the
-signs of twelve separate monthly returns. Event, calendar, inventory, reversal,
+`QM5_12849_brent-tsmom12m` uses a 12-month return, while
+`QM5_12859_brent-52w-anchor` requires proximity to an annual price extreme plus
+a 63-D1 confirmation. WTI, XNG, and copper have separate three-month carriers,
+but they are different underlying return streams. Event, calendar, reversal,
 Donchian, RSI, and XBR/XNG relative-value builds have different triggers. This
-card is therefore a distinct medium-horizon Brent state, not a parameter sweep of
-an existing approved execution contract.
+card is therefore a distinct medium-horizon Brent state, not a parameter sweep
+of an existing Brent execution contract.
 
 ## Markets And Timeframe
 
@@ -145,4 +148,4 @@ portfolio-manifest edit, or a portfolio-gate change.
 |---|---|---|---|
 | G0 Research Intake | 2026-07-26 | APPROVED under OWNER commodity-sleeve mission | this card |
 | Q01 Build Validation | 2026-07-26 | PASS: strict compile 0 errors/0 warnings | `docs/ops/evidence/2026-07-26_qm5_20171_brent_tsmom3m_q02_enqueue.md` |
-| Q02 Baseline Screening | 2026-07-26 | pending, unclaimed | work item `425d98e6-2234-469b-9f49-ab5ae9da0d6f` |
+| Q02 Baseline Screening | 2026-07-26 | DEFERRED: CPU ceiling reached before enqueue | `docs/ops/evidence/2026-07-26_qm5_20171_brent_tsmom3m_build_q02_cpu_ceiling.md` |

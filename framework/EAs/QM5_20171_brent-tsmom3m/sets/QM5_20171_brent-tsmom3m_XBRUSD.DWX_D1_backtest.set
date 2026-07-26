@@ -3,14 +3,14 @@
 ; ea_id:        20171
 ; ea_slug:      brent-tsmom3m
 ; ea_version:   v5.0
-; set_version:  s20260723-001
+; set_version:  s20260726-001
 ; symbol:       XBRUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   cb187e829febacae7a8bffa2896bf54ad1a86969092179a3252e729e80fc1d4a
+; build_hash:   b09c5e616aa99cf3adc491ad677c25d975d475888a6edb8eb7db2c3e4fe16f2a
 ; author:       Development
 ; date:         2026-07-26
 ;==========================================================
@@ -20,7 +20,7 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=C:\QM\repo\strategy-seeds\cards\brent-tsmom3m_card.md
+; card_defaults_source=ea_input_defaults
 strategy_momentum_lookback_d1=63
 strategy_min_abs_return_pct=0.0
 strategy_atr_period=20

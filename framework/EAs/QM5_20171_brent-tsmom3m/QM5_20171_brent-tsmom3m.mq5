@@ -146,13 +146,19 @@ bool Strategy_NoTradeFilter()
   {
    if(!Strategy_IsXbrD1())
       return true;
-   if(qm_magic_slot_offset != 0)
+   if(qm_ea_id != 20171 || qm_magic_slot_offset != 0)
       return true;
-   if(strategy_momentum_lookback_d1 < 21)
+   if(strategy_momentum_lookback_d1 != 63 ||
+      MathAbs(strategy_min_abs_return_pct) > 1.0e-12)
       return true;
-   if(strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
+   if(strategy_atr_period != 20 ||
+      MathAbs(strategy_atr_sl_mult - 3.5) > 1.0e-12)
       return true;
-   if(strategy_max_hold_days <= 0)
+   if(strategy_max_hold_days != 31 ||
+      strategy_max_spread_points != 1000)
+      return true;
+   if(!qm_friday_close_enabled ||
+      qm_friday_close_hour_broker != 21)
       return true;
    return false;
   }
@@ -182,7 +188,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(strategy_max_spread_points > 0)
      {
       const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-      if(spread_points > strategy_max_spread_points)
+      if(spread_points < 0 ||
+         spread_points > strategy_max_spread_points)
          return false;
      }
 
@@ -333,4 +340,3 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-
