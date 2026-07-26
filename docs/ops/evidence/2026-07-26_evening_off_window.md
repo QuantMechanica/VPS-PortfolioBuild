@@ -78,8 +78,35 @@ The pause behaviour itself is correct and must not be reverted: the 92 GB of res
 is exactly the over-admission brake that was missing at 17:45. Enqueued as ops ticket
 `4e8bcf47` (priority 85).
 
+## Root cause of the bleed: the box is too small for multisym + ordinary concurrency
+
+Correction to the first stability claim in this file — a 2-minute observation was too short.
+The fleet kept bleeding: 9 → 7 → (manual respawn 9) → 6 within 20 minutes, three manual
+`start_terminal_workers.py --dedupe` runs needed today.
+
+Measured at 18:46 while the 13059 Q08 multisym neighborhood run was active
+(`Win32_Process` private bytes):
+
+| process | private | working set |
+|---|---|---|
+| metatester64 (multisym) | **26.38 GB** | 21.11 GB |
+| metatester64 (ordinary) | 11.60 GB | 11.50 GB |
+| metatester64 (ordinary) | 9.98 GB | 9.92 GB |
+
+≈48 GB of a 63 GB box. Free physical RAM hit **0.4 GB** at 18:40 and T2/T8/T10 died there.
+
+**The reservation brake works and must not be reverted.** At that moment the workers logged
+`commit_headroom_low_pause` with `commit_reserved_gb=68.0` (44 multisym + 3 × 8 ordinary)
+and `effective_commit_headroom_gb=-5.4` — they correctly refused to admit more work. The
+two real gaps are: (a) ordinary jobs admitted in the first minutes, *before* the multisym
+balloons, are together with it enough to exhaust RAM — a headroom gate cannot see a job
+that has not grown yet; (b) the paused workers die instead of idling. Enqueued as ticket
+`213aa9c3` (priority 88), asking whether multisym admission must additionally require a
+quiet fleet, and whether the neighborhood runner should cap its own tester footprint.
+
 ## Open
 
+- Memory-capacity gate for multisym admission — ticket `213aa9c3`.
 - Silent worker deaths + watchdog census mismatch — ticket `4e8bcf47`.
 - T5 remains in `disabled_terminals.txt` (Factory_ON warns about it) — rebuild ticket
   `61cfbaf3` in the Codex lane.
