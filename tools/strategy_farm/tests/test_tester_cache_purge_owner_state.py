@@ -29,10 +29,14 @@ def test_tester_cache_purge_parses_in_windows_powershell_51() -> None:
 def test_purge_preserves_factory_owner_state_before_interactive_restart() -> None:
     source = SCRIPT.read_text(encoding="utf-8")
     guard = source.index("if (-not $factoryRestartAuthorized)")
-    start = source.index("Start-ScheduledTask -TaskName $dedupeTask.TaskName")
+    start = source.index("$launchEvidence = Invoke-InteractiveWorkerDedupe")
     assert guard < start
     assert "$factoryOffWasPresent" in source
     assert "$pumpWasEnabled -or $tickWasEnabled" in source
     assert "factory restart SKIPPED: captured OWNER state was OFF" in source
     assert "QM_StrategyFarm_FactoryON_AtLogon" not in source
-    assert "QM_StrategyFarm_WorkerDedupe" in source
+    assert "run_in_console_session.ps1" in source
+    assert "start_terminal_workers.py" in source
+    assert "--dedupe" in source
+    assert "Start-ScheduledTask -TaskName $dedupeTask.TaskName" not in source
+    assert "QM_StrategyFarm_WorkerDedupe" not in source

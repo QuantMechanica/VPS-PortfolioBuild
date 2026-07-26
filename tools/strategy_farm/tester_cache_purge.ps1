@@ -10,12 +10,13 @@
 #
 #  Only acts when D: free < LowWaterGB (default 150) — most runs are no-ops.
 #  When it acts: stop only idle factory slots -> clear their caches -> start
-#  only missing workers via the interactive WorkerDedupe task. Because MT5
+#  only missing workers via the interactive-session token launcher. Because MT5
 #  agents read these caches mid-run, the factory MUST be stopped first.
 #
-#  The controller may run as SYSTEM, but it never launches workers directly.
-#  WorkerDedupe is InteractiveToken/qm-admin, so missing daemons land in the
-#  existing desktop session. Live terminals are outside every kill/purge scope.
+#  The controller may run as SYSTEM, but run_in_console_session.ps1 uses the
+#  logged-on user's token, so missing daemons land in the existing desktop
+#  session rather than as session-0 children. Live terminals are outside every
+#  kill/purge scope.
 # =====================================================================
 [CmdletBinding()]
 param(
@@ -32,6 +33,35 @@ $log = "D:\QM\reports\state\tester_cache_purge.log"
 function Now { (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ') }
 function FreeGB { [math]::Round((Get-PSDrive D).Free/1GB,2) }
 function Log($m) { $line = "$(Now) $m"; Write-Output $line; try { Add-Content -Path $log -Value $line -Encoding UTF8 } catch {} }
+function Invoke-InteractiveWorkerDedupe {
+    $launcher = Join-Path $RepoRoot 'tools\strategy_farm\run_in_console_session.ps1'
+    $starter = Join-Path $RepoRoot 'tools\strategy_farm\start_terminal_workers.py'
+    if (-not (Test-Path -LiteralPath $launcher)) { throw "interactive-session launcher missing: $launcher" }
+    if (-not (Test-Path -LiteralPath $starter)) { throw "worker starter missing: $starter" }
+
+    $targetUser = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' -ErrorAction SilentlyContinue).DefaultUserName
+    if (-not $targetUser) { $targetUser = 'qm-admin' }
+    $spawnScript = @"
+Remove-Item Env:PYTHONHOME -ErrorAction SilentlyContinue
+Remove-Item Env:PYTHONPATH -ErrorAction SilentlyContinue
+& '$py' '$starter' --repo-root '$RepoRoot' --farm-root '$FarmRoot' --dedupe
+exit `$LASTEXITCODE
+"@
+    $encodedSpawn = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($spawnScript))
+    $sessionShell = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+    $starterArgs = "-NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand $encodedSpawn"
+    $launchOutput = @(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass `
+        -File $launcher -Exe $sessionShell -Arguments $starterArgs -WorkDir $RepoRoot `
+        -TargetUser $targetUser -WaitSeconds 180 2>&1)
+    if ($LASTEXITCODE -ne 0) {
+        throw "CreateProcessAsUser launcher rc=$LASTEXITCODE output=$($launchOutput -join ' ')"
+    }
+    $launchText = $launchOutput -join ' '
+    if ($launchText -notmatch 'LAUNCHED pid=\d+ into (?:interactive )?session (\d+)') {
+        throw "CreateProcessAsUser launcher returned no session evidence: $launchText"
+    }
+    return $launchText
+}
 function Get-FactoryTerminalFromCommandLine {
     param([string]$CommandLine)
     if (-not $CommandLine) { return $null }
@@ -167,19 +197,17 @@ if (-not $factoryRestartAuthorized) {
 }
 
 #    Restore only the dispatch tasks that were enabled on entry, then invoke the
-#    same idempotent, interactive WorkerDedupe trampoline used by the hardened
+#    same idempotent, interactive-session token launcher used by the hardened
 #    factory watchdog. Unlike Factory_ON, it neither removes FACTORY_OFF nor
 #    tears down healthy/protected worker slots.
 try {
     if ($pumpWasEnabled) { Enable-ScheduledTask -TaskName 'QM_StrategyFarm_Pump_5min' -ErrorAction Stop | Out-Null }
     if ($tickWasEnabled) { Enable-ScheduledTask -TaskName 'QM_StrategyFarm_Tick_5min' -ErrorAction Stop | Out-Null }
-    $dedupeTask = Get-ScheduledTask -TaskName 'QM_StrategyFarm_WorkerDedupe' -ErrorAction Stop
-    if ($dedupeTask.State -eq 'Disabled') { Enable-ScheduledTask -TaskName $dedupeTask.TaskName -ErrorAction Stop | Out-Null }
-    Start-ScheduledTask -TaskName $dedupeTask.TaskName -ErrorAction Stop
+    $launchEvidence = Invoke-InteractiveWorkerDedupe
     Start-Sleep -Seconds 10
     $daemons = @(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe' OR Name='python.exe'" -ErrorAction SilentlyContinue |
                  Where-Object { $_.CommandLine -match 'terminal_worker\.py' })
-    Log "missing workers requested via interactive WorkerDedupe: $($daemons.Count) total worker daemon(s); D: free $(FreeGB)GB"
+    Log "missing workers requested via interactive-session token launcher: $($daemons.Count) total worker daemon(s); D: free $(FreeGB)GB; $launchEvidence"
 } catch {
-    Log "factory missing-worker recovery FAILED (WorkerDedupe): $($_.Exception.Message) - existing protected slots were not killed"
+    Log "factory missing-worker recovery FAILED (interactive-session token launcher): $($_.Exception.Message) - existing protected slots were not killed"
 }
