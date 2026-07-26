@@ -78,6 +78,12 @@ the manifest **in writing** (Decision B below).
 - Step 2 addition: **11422 is a NEW EA on T_Live** — copy its `.ex5` (sha `159e6168…`), open a
   USDCAD D1 chart (broker symbol, no .DWX), attach with preset 25. Verify `KILL_SWITCH_INIT`
   and `NEWS_CALENDAR_LOADED` appear in its `MQL5\Files\QM\` log after attach.
+- Step 2 OVERRIDE for 1567 (2026-07-26 05:56Z): the repo working tree now holds a NEW seed-wired
+  1567 build (sha `87486226…`, exposes `qm_rng_seed`/stress inputs) whose fresh Q07/Q10 evidence
+  is still queued. **Do NOT copy 1567 from `framework/EAs\` tonight unless a Q10 PASS on sha
+  `87486226…` has landed.** Default deploy source = the evidence-anchored Thursday binary staged
+  at `D:\QM\exports\tlive_binary_1567_thursday_20260726\` (sha `ee2a437d…`, git `a181f57c286f`,
+  SHA proof in `SHA256.txt`; the 07-25 Q10 PASS ran on THIS blob).
 - Step 3 addition (reboot damage 2026-07-26): **12778/AUDUSD's chart is MISSING from the live
   profile** since the 00:27 VPS reboot — the unclean shutdown profile save dropped it (clean
   DEINIT reason 9 at 00:24, no load line after the 06:36 restart; the profile now has one AUDUSD
