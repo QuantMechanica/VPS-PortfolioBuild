@@ -129,7 +129,11 @@ if ($seedsValid) {
       $response = Invoke-WebRequest -Uri $FeedUrl -UseBasicParsing -TimeoutSec 40 -ErrorAction Stop
       $feedJson = $response.Content
     }
-    $events = @($feedJson | ConvertFrom-Json -ErrorAction Stop)
+    # Parameter form + re-wrap: PS 5.1 pipeline emits a JSON array as ONE object,
+    # which @(pipeline) wraps into a single pseudo-event. Assignment + @() keeps
+    # element count correct on both PS 5.1 and pwsh 7.
+    $parsedFeed = ConvertFrom-Json -InputObject $feedJson -ErrorAction Stop
+    $events = @($parsedFeed)
     Write-Host "feed OK: $($events.Count) events"
   }
   catch {
