@@ -104,9 +104,41 @@ that has not grown yet; (b) the paused workers die instead of idling. Enqueued a
 `213aa9c3` (priority 88), asking whether multisym admission must additionally require a
 quiet fleet, and whether the neighborhood runner should cap its own tester footprint.
 
+## The multisym reservation change was WRONG and has been reverted (`347859ad3`)
+
+Measured at 18:49:45–18:49:59, six workers (T2/T4/T7/T8/T9/T10) logged this immediately
+before dying — with **11.9 GB free RAM**, i.e. no memory pressure at all:
+
+```
+commit_headroom_gb: 64.5      <- real OS headroom, plenty
+commit_reserved_gb: 44.0      <- the multisym reservation ALONE
+commit_reservation_count: 1
+effective_commit_headroom_gb: 20.4   <- below the 24 GB threshold => pause
+```
+
+**The defect is double-counting.** `_commit_headroom_gb()` is an OS commit measurement that
+already includes the multisym job's real consumption. Reserving its 44 GB peak *on top of
+that* is only valid during the launch/warm-up race, before the process has allocated —
+exactly what the original 300 s window encodes, and what the function's own docstring
+states: *"Active claims reserve their expected peak for the bounded launch/warm-up window;
+afterwards the OS measurement is the source of truth."* By stretching the multisym window
+to 3600 s, `d88a89392` subtracted a phantom 44 GB for a full hour and pinned the entire
+fleet below the admission threshold on a box that had 64 GB of headroom. Result: no work
+admitted at all, and the paralysed workers then died.
+
+Reverted in `347859ad3`; all nine workers restarted on the restored code. The original
+problem it tried to solve (a multisym that balloons over tens of minutes while its
+reservation has already expired) is real but needs a reservation that **decays with actual
+measured usage**, not a longer flat hold — folded into ticket `213aa9c3`.
+
+Lesson for the next attempt: any change to the admission arithmetic must be validated
+against a live fleet for longer than two minutes, watching `effective_commit_headroom_gb`
+versus real free memory — the failure mode is silent starvation, not an error.
+
 ## Open
 
-- Memory-capacity gate for multisym admission — ticket `213aa9c3`.
+- Reservation redesign (decay with measured usage) + memory-capacity gate for multisym
+  admission — ticket `213aa9c3`.
 - Silent worker deaths + watchdog census mismatch — ticket `4e8bcf47`.
 - T5 remains in `disabled_terminals.txt` (Factory_ON warns about it) — rebuild ticket
   `61cfbaf3` in the Codex lane.
