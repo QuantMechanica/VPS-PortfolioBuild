@@ -19,6 +19,12 @@ param([switch]$VerifyOnly)
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+# Shared .chr parsing grammar (single source of truth; see WS-E3). Dot-sourcing
+# this module is side-effect-free -- it only defines Assert-True, Get-Sha256,
+# Get-ChartContract, Get-UniqueValue, etc. The same grammar backs
+# verify_ftmo_round25_live_contract.ps1 and the Python verify_live_deployment_contract.py.
+. (Join-Path $PSScriptRoot 'liveops_profile_contract.ps1')
+
 $profileRoot = 'C:\QM\mt5\T_Live\MT5_Base\MQL5\Profiles\Charts'
 $sealedName = 'DarwinexZero_V2'
 $operationalName = 'DarwinexZero_V2_LiveOps'
@@ -58,16 +64,8 @@ $sealedSha256 = [ordered]@{
 $monitorChartSha256 = '57AA19FF44B8361446D314BEB201BB97D57CC21B6EAACD96852B40147802DDBB'
 $monitorBinarySha256 = '8699ADC79BC0448563B6A53D59163EC149A30B6EF767E2F99FE148E5EFB4B9E5'
 
-function Assert-True {
-    param([bool]$Condition, [string]$Message)
-    if (-not $Condition) { throw $Message }
-}
-
-function Get-Sha256 {
-    param([string]$Path)
-    Assert-True (Test-Path -LiteralPath $Path -PathType Leaf) "missing file: $Path"
-    return (Get-FileHash -Algorithm SHA256 -LiteralPath $Path).Hash.ToUpperInvariant()
-}
+# Assert-True and Get-Sha256 are provided by liveops_profile_contract.ps1
+# (dot-sourced above) -- the single shared implementation.
 
 function Assert-ExactFiles {
     param([string]$Directory, [string[]]$ExpectedNames)
@@ -79,23 +77,9 @@ function Assert-ExactFiles {
     )
 }
 
-function Get-ChartContract {
-    param([string]$Path)
-    $text = [IO.File]::ReadAllText($Path)
-    $experts = [regex]::Matches($text, '(?ms)<expert>\s*.*?</expert>')
-    Assert-True ($experts.Count -eq 1) "expected exactly one expert in $Path"
-    $prefix = $text.Substring(0, $experts[0].Index)
-    $symbol = [regex]::Match($prefix, '(?m)^symbol=(.+?)\r?$')
-    $periodType = [regex]::Match($prefix, '(?m)^period_type=(.+?)\r?$')
-    $periodSize = [regex]::Match($prefix, '(?m)^period_size=(.+?)\r?$')
-    Assert-True ($symbol.Success -and $periodType.Success -and $periodSize.Success) "chart header incomplete: $Path"
-    return [pscustomobject]@{
-        symbol = $symbol.Groups[1].Value.Trim()
-        period_type = $periodType.Groups[1].Value.Trim()
-        period_size = $periodSize.Groups[1].Value.Trim()
-        expert = $experts[0].Value.Trim()
-    }
-}
+# Get-ChartContract is provided by liveops_profile_contract.ps1 (dot-sourced
+# above). Its object is a superset of the fields this script previously used
+# (.symbol/.period_type/.period_size/.expert), so all callers below are unchanged.
 
 function Assert-SealedProfile {
     $names = @($sealedSha256.Keys)

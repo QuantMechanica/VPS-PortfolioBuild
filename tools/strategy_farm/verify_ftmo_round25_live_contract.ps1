@@ -24,6 +24,12 @@ param()
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+# Shared .chr parsing grammar (single source of truth; see WS-E3). Dot-sourcing
+# this module is side-effect-free -- it only defines Assert-True, Get-Sha256,
+# Get-UniqueValue, Get-ChartContract, etc. The same grammar backs
+# prepare_dxz_v2_liveops_profile.ps1 and the Python verify_live_deployment_contract.py.
+. (Join-Path $PSScriptRoot 'liveops_profile_contract.ps1')
+
 $dataDir = 'C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\81A933A9AFC5DE3C23B15CAB19C63850'
 $profileDir = Join-Path $dataDir 'MQL5\Profiles\Charts\Default'
 $terminalExpertsDir = Join-Path $dataDir 'MQL5\Experts\Live EAs'
@@ -60,23 +66,9 @@ $monitorChartName = 'chart13.chr'
 $monitorBinaryRel = 'MQL5\Experts\QM_AccountMonitor.ex5'
 $monitorBinarySha = '39B8300595953A3E7AE4E08BF1D2A836067EF431156EB4077F21ACDACE3E4133'
 
-function Assert-True {
-    param([bool]$Condition, [string]$Message)
-    if (-not $Condition) { throw $Message }
-}
-
-function Get-Sha256 {
-    param([string]$Path)
-    Assert-True (Test-Path -LiteralPath $Path -PathType Leaf) "missing file: $Path"
-    return (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToUpperInvariant()
-}
-
-function Get-UniqueValue {
-    param([string]$Text, [string]$Key, [string]$Context)
-    $matches = [regex]::Matches($Text, "(?m)^$([regex]::Escape($Key))=([^`r`n]*)`r?$")
-    Assert-True ($matches.Count -eq 1) "expected exactly one '$Key' in $Context; found $($matches.Count)"
-    return $matches[0].Groups[1].Value
-}
+# Assert-True, Get-Sha256 and Get-UniqueValue are provided by
+# liveops_profile_contract.ps1 (dot-sourced above) -- the single shared
+# implementation. Chart parsing below delegates to the shared Get-ChartContract.
 
 function Get-PresetAssignments {
     param([string]$Path)
@@ -131,15 +123,14 @@ function Assert-LegContract {
     param([pscustomobject]$Leg)
 
     $chartPath = Join-Path $profileDir $Leg.chart
-    Assert-True (Test-Path -LiteralPath $chartPath -PathType Leaf) "missing chart: $chartPath"
-    $text = [IO.File]::ReadAllText($chartPath)
-    $experts = [regex]::Matches($text, '(?ms)<expert>\s*.*?</expert>')
-    Assert-True ($experts.Count -eq 1) "expected exactly one expert in $($Leg.chart)"
-    $expert = $experts[0].Value
+    # Shared strict parser: asserts the chart exists, has exactly one expert, and
+    # a complete symbol/period header (same contract this script enforced inline).
+    $contract = Get-ChartContract $chartPath
+    $expert = $contract.expert
     Assert-True ([regex]::Matches($expert, '(?m)^<inputs>\r?$').Count -eq 1) "missing inputs in $($Leg.chart)"
     Assert-True ([regex]::Matches($expert, '(?m)^</inputs>\r?$').Count -eq 1) "unterminated inputs in $($Leg.chart)"
 
-    $prefix = $text.Substring(0, $experts[0].Index)
+    $prefix = $contract.prefix
     $eaName = "QM5_$($Leg.ea_id)_$($Leg.slug)"
     $expectedPath = "Experts\Live EAs\$eaName.ex5"
     $expectedMagic = ([int]$Leg.ea_id * 10000) + [int]$Leg.slot
@@ -178,11 +169,8 @@ function Assert-LegContract {
 
 function Assert-MonitorContract {
     $chartPath = Join-Path $profileDir $monitorChartName
-    Assert-True (Test-Path -LiteralPath $chartPath -PathType Leaf) "missing monitor chart: $chartPath"
-    $text = [IO.File]::ReadAllText($chartPath)
-    $experts = [regex]::Matches($text, '(?ms)<expert>\s*.*?</expert>')
-    Assert-True ($experts.Count -eq 1) "expected exactly one expert in $monitorChartName"
-    $expert = $experts[0].Value
+    # Shared strict parser (exactly one expert + complete header).
+    $expert = (Get-ChartContract $chartPath).expert
     Assert-True ((Get-UniqueValue $expert 'name' $monitorChartName) -ceq 'QM_AccountMonitor') 'monitor EA name mismatch'
     Assert-True ((Get-UniqueValue $expert 'path' $monitorChartName) -ceq 'Experts\QM_AccountMonitor.ex5') 'monitor EA path mismatch'
     Assert-True ((Get-UniqueValue $expert 'expertmode' $monitorChartName) -ceq '1') 'monitor expert disabled'
