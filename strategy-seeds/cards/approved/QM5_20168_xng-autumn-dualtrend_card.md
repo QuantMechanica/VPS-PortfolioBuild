@@ -38,7 +38,8 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: ENQUEUED
+q02_work_item_id: bf21065b-53cf-49ce-bbce-9a3f95e550af
 review_focus: "Adds autumn natural-gas transition trend exposure distinct from the incumbent XNG RSI pullback. The September-November window and symmetric 21/84-D1 trend state are jointly load-bearing; Q09 alone may establish realized orthogonality."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
