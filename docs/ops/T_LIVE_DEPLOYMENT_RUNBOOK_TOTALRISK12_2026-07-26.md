@@ -1,6 +1,12 @@
-# T_Live deployment runbook — Sunday 2026-07-26, TOTAL_RISK 9.75 → 12.0
+# T_Live deployment runbook — TOTAL_RISK 9.75 → 12.0 (FINAL22)
 
-Status: OWNER-approved (A+B, 2026-07-25). Execution window: **Sunday 2026-07-26 EVENING** (OWNER chart session). Q07 rerun landed; composition = FINAL24b. This file is canonical; the Vault
+Status: **DEPLOYMENT DEFERRED** (OWNER 2026-07-26 afternoon,
+`decisions/2026-07-26_deployment_deferral_final22_staged.md`): the live book stays as
+deployed 07-19 @ 9.75; FINAL22 is the staged next-book candidate, deployed only when
+significantly better book numbers exist. The activation appendix (patch merges, canaries,
+classifier) was executed the same afternoon in a Factory-OFF window. The T_Live steps
+below stay valid for the future deployment window. Outstanding T_Live maintenance
+(independent of the book change): 12778 chart restore, KS-baseline deploy, swap capture. Q07 rerun landed; composition = FINAL24b. This file is canonical; the Vault
 copy (`G:\My Drive\QuantMechanica - Company Reference\`) is a mirror made at sign-off.
 
 Authority: T_Live AutoTrading = OWNER + Claude only. Deployment executes only after OWNER approves
