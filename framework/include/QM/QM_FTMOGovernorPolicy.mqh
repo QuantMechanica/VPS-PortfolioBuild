@@ -24,7 +24,13 @@ enum QM_FTMO_GovernorReason
    QM_FTMO_GOVERNOR_ENTRY_HALT = 7,
    QM_FTMO_GOVERNOR_UNKNOWN_EXPOSURE = 8,
    QM_FTMO_GOVERNOR_STATE_INVALID = 9,
-   QM_FTMO_GOVERNOR_INVALID_INPUT = 10
+   QM_FTMO_GOVERNOR_INVALID_INPUT = 10,
+   // Target reached (equity/balance at or above the evaluation target) before
+   // the four minimum opening days are recorded. The gains are captured and the
+   // account stays latched flat/entry-locked; completion is deliberately
+   // withheld until the opening-day count is met. Distinct code so LiveOps can
+   // see "captured, awaiting minimum days" instead of a generic target capture.
+   QM_FTMO_GOVERNOR_TARGET_MIN_DAYS_PENDING = 11
   };
 
 struct QM_FTMO_GovernorPolicy

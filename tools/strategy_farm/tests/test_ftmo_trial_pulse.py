@@ -38,3 +38,30 @@ def test_snapshot_age_is_utc_aware() -> None:
 
 def test_snapshot_age_rejects_invalid_timestamp() -> None:
     assert ftmo_trial_pulse.snapshot_age_minutes("not-a-time") is None
+
+
+def test_pulse_is_observer_only_no_halt_signal_emission() -> None:
+    """One-authority tombstone (WS-G' round 2): the FTMO pulse must never emit a
+    halt/liquidation signal. The single armed halt authority is the
+    account-governor EA QM5_13206. This source guard prevents any future edit or
+    bad merge from silently reintroducing the removed `portfolio_dd.signal`
+    second-authority write path."""
+    src = (ROOT / "tools" / "strategy_farm" / "ftmo_trial_pulse.py").read_text(encoding="utf-8")
+    # The removed halt-emission identifiers must not come back.
+    assert "BOOK_DD_SIGNAL" not in src
+    assert "DD_FLOOR_PCT" not in src
+    assert "dd_floor_signal" not in src
+    # Exactly one write in the whole module — the read-only state JSON. A second
+    # write (a halt-signal file) reintroduces a competing authority and trips
+    # this tripwire.
+    assert src.count(".write_text(") == 1
+    # Tombstone + refusal are present; the retired arm flag is ignored, not honored.
+    assert "ONE-AUTHORITY TOMBSTONE" in src
+    assert "LEGACY_ARM_FLAG" in src
+    assert "ftmo_dd_floor_arm_flag_present_but_ignored" in src
+
+
+def test_pulse_declares_observer_role_and_governor_authority() -> None:
+    src = (ROOT / "tools" / "strategy_farm" / "ftmo_trial_pulse.py").read_text(encoding="utf-8")
+    assert '"role": "observer_only"' in src
+    assert "governor_QM5_13206" in src

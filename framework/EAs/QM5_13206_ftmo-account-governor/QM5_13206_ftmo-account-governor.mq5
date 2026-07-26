@@ -59,6 +59,7 @@ bool g_total_lock=true;
 bool g_target_lock=true;
 bool g_target_complete=false;
 bool g_flatten_pending=false;
+int g_last_logged_reason=-1;
 
 string StateKey(const string suffix)
   {
@@ -585,10 +586,22 @@ void EvaluateAndPublish()
    int publish_reason=(int)decision.reason;
    if(g_target_complete && !g_day_lock && !g_total_lock)
       publish_reason=QM_FTMO_GOVERNOR_TARGET_COMPLETE;
+   else if(g_target_lock && !g_target_complete && !g_day_lock && !g_total_lock &&
+           g_trading_days < g_policy.minimum_trading_days)
+      // Target captured before the four minimum opening days: stay latched flat
+      // and entry-locked (gains protected), but do NOT declare completion.
+      publish_reason=QM_FTMO_GOVERNOR_TARGET_MIN_DAYS_PENDING;
    else if(g_target_lock && !g_day_lock && !g_total_lock)
       publish_reason=QM_FTMO_GOVERNOR_TARGET_CAPTURE;
    else if(unknown_exposure && !g_day_lock && !g_total_lock && !g_target_lock)
       publish_reason=QM_FTMO_GOVERNOR_UNKNOWN_EXPOSURE;
+
+   if(publish_reason != g_last_logged_reason &&
+      publish_reason == QM_FTMO_GOVERNOR_TARGET_MIN_DAYS_PENDING)
+      PrintFormat("FTMO_GOVERNOR_TARGET_REACHED_MIN_DAYS_PENDING days=%d/%d "
+                  "gains_captured_entry_locked_completion_withheld",
+                  g_trading_days,g_policy.minimum_trading_days);
+   g_last_logged_reason=publish_reason;
 
    const bool must_lock=(g_day_lock || g_total_lock || g_target_lock ||
                          unknown_exposure || !decision.entry_allowed ||

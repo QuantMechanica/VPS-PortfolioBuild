@@ -35,9 +35,25 @@ TOTAL_WARN_PCT = 5.0
 SERVER_REQUEST_WARN = 1_500
 SERVER_REQUEST_LIMIT = 2_000
 EQUITY_SNAPSHOT_STALE_MINUTES = 180
-DD_FLOOR_PCT = 8.0        # H2 book floor: write book-scoped halt signal (gated by flag)
-BOOK_DD_SIGNAL = Path(r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal"
-                      r"\Common\Files\QM\halt\book_ftmo_r25\portfolio_dd.signal")
+
+# --- ONE-AUTHORITY TOMBSTONE (permanent; WS-G' round 2, 2026-07-26) ----------
+# This pulse is a CODE-LEVEL OBSERVER ONLY. It never writes a halt, kill, or
+# liquidation signal of any kind. The single armed FTMO money-control authority
+# is the account-governor EA QM5_13206
+# (framework/EAs/QM5_13206_ftmo-account-governor), armed only against an
+# OWNER-signed deploy manifest.
+#
+# HISTORY: a prior revision could write the book-scoped `portfolio_dd.signal`
+# (Common\Files\QM\halt\book_ftmo_r25\portfolio_dd.signal) when
+# `FTMO_DD_FLOOR_ARMED.flag` was present and book DD reached an 8% floor
+# (KILLSWITCH_HALT_CHANNEL_FIX_2026-07-05). That halt-emission path is
+# PERMANENTLY REMOVED. Two competing halt authorities on one account is a
+# fail-open hazard: a lagging/torn observer racing the governor can flatten on
+# stale equity or mask the governor's own decision. Do NOT reintroduce any
+# signal-writing path in this monitor — arming belongs to the governor + a
+# signed manifest, never to this read-only pulse. The legacy arm flag is now
+# inert: if present it is reported as an ignored no-op (see main()).
+LEGACY_ARM_FLAG = Path(r"D:\QM\reports\state\FTMO_DD_FLOOR_ARMED.flag")
 
 EXPECTED_MAGICS = {
     114760002, 109110003, 129580000, 106920005, 108480002, 107000003,
@@ -261,26 +277,25 @@ def main() -> int:
     elif request_count >= SERVER_REQUEST_WARN:
         warns.append(f"server_request_warning:{request_count}_vs_limit_{SERVER_REQUEST_LIMIT}")
 
-    # H2 total-DD floor (KILLSWITCH_HALT_CHANNEL_FIX_2026-07-05): when ARMED and
-    # book DD reaches the floor, write the book-scoped portfolio_dd signal. EAs
-    # honor it only after the qm_ks_book_tag rollout (challenge rebuild) — until
-    # then this is inert by design. Arm via the flag file, never by default.
-    floor_flag = Path(r"D:\QM\reports\state\FTMO_DD_FLOOR_ARMED.flag")
-    if floor_flag.exists() and total_dd_pct is not None and total_dd_pct >= DD_FLOOR_PCT:
-        try:
-            BOOK_DD_SIGNAL.parent.mkdir(parents=True, exist_ok=True)
-            if not BOOK_DD_SIGNAL.exists():
-                BOOK_DD_SIGNAL.write_text(f"{total_dd_pct:.2f}\n", encoding="ascii")
-                alarms.append(f"dd_floor_signal_written:{total_dd_pct:.2f}pct")
-            else:
-                alarms.append("dd_floor_signal_active")
-        except OSError as exc:
-            alarms.append(f"dd_floor_signal_write_failed:{exc}")
+    # ONE-AUTHORITY (see tombstone near the top): this observer NEVER emits a
+    # halt/liquidation signal. Even if the retired arm flag is still on disk, we
+    # refuse to write anything and instead surface the stale flag as a WARN so an
+    # operator who set it learns it is now a no-op and that the account-governor
+    # EA (QM5_13206) is the sole armed halt authority.
+    if LEGACY_ARM_FLAG.exists():
+        warns.append(
+            "ftmo_dd_floor_arm_flag_present_but_ignored:"
+            "pulse_is_observer_only_governor_QM5_13206_is_sole_halt_authority"
+        )
 
     verdict = "ALARM" if alarms else ("WARN" if warns else "OK")
     out = {
         "checked_at_utc": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "verdict": verdict,
+        # Code-level one-authority: this pulse observes and never halts. The
+        # armed FTMO halt authority is the account-governor EA QM5_13206.
+        "role": "observer_only",
+        "halt_authority": "governor_QM5_13206",
         "terminal_up": up,
         "magics_seen": eas["magics_seen"],
         "expected_magics": len(EXPECTED_MAGICS),
