@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-26T06:07:10.4518351Z",
-    "total":  3555,
+    "generated_at":  "2026-07-26T07:07:10.9766085Z",
+    "total":  3556,
     "items":  [
                   {
                       "slug":  "ath-breakout-atr-trail",
@@ -18206,6 +18206,12 @@
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-07-26T03:33:15.8472552Z"
+                  },
+                  {
+                      "slug":  "QM5_20171_brent-tsmom3m_card",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-26T06:09:41.8695401Z"
                   },
                   {
                       "slug":  "QM5_2020_chaikin-volatility-h4",
