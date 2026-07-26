@@ -1,0 +1,55 @@
+{
+  "observed_at": "2026-07-26T07:30:53Z",
+  "branch": "agents/board-advisor",
+  "mission": "fx_cointegration_frontier",
+  "outcome": "CPU_CEILING_STOP",
+  "frontier": {
+    "governed_scan": "66-pair FX cointegration scan",
+    "eligible_unbuilt_pairs": 0,
+    "qualifying_pairs_built_and_q02_terminal": 7,
+    "anchors": {
+      "QM5_12532": {
+        "pair": ["AUDUSD.DWX", "NZDUSD.DWX"],
+        "q02": "PASS",
+        "later_terminal": "Q05_FAIL"
+      },
+      "QM5_12533": {
+        "pair": ["EURJPY.DWX", "GBPJPY.DWX"],
+        "q02": "PASS",
+        "later_terminal": "Q04_FAIL"
+      }
+    }
+  },
+  "capacity": {
+    "factory_terminals_running": ["T2", "T4", "T6", "T7", "T8", "T9", "T10"],
+    "factory_terminal_count": 7,
+    "documented_process_ceiling": 7,
+    "terminal_workers_running": ["T1", "T2", "T3", "T4", "T6", "T7", "T8", "T9", "T10"],
+    "scheduler_dry_run": {
+      "available_slots_before": 0,
+      "available_slots_after": 0,
+      "scheduled": 0,
+      "status": "ok"
+    }
+  },
+  "excluded_processes": [
+    "C:/QM/mt5/T_Live/MT5_Base/terminal64.exe",
+    "C:/Program Files/FTMO Global Markets MT5 Terminal/terminal64.exe"
+  ],
+  "mutations": {
+    "card": false,
+    "ea": false,
+    "basket_manifest": false,
+    "farm_queue": false,
+    "tester_launch": false,
+    "portfolio_gate": false,
+    "t_live": false,
+    "autotrading": false
+  },
+  "evidence_sources": [
+    "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "docs/research/FX_COINTEGRATION_FRONTIER_DUPLICATE_GUARD_2026-07-24.md",
+    "python tools/strategy_farm/farmctl.py mt5-slots",
+    "python framework/scripts/mt5_saturation_scheduler.py --sqlite D:/QM/reports/pipeline/mt5_queue.db --dispatch-state D:/QM/reports/pipeline/dispatch_state.json --dry-run"
+  ]
+}
