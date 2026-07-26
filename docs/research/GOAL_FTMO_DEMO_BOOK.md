@@ -162,6 +162,34 @@ sizing to 16 % lifts pass probability only to 12.5 % while daily-breach risk cli
 60 %. Safe and far too slow — the density conclusion, now measured on this book rather than
 inferred.
 
+## Where that leaves the candidate pool (2026-07-26 23:00) — the intersection is empty
+
+Putting the eight conditions against what actually exists:
+
+| candidate | intraday-flat | FTMO-viable | Q08 strict PASS | stream reconciles | verdict |
+|---|---|---|---|---|---|
+| 10128 XAUUSD | no (overnight gold) | **no** — net −7,556, swap −9,792 | yes | yes | qualified, unusable |
+| 10145 XAUUSD | no (overnight gold) | marginal — net +1,775 on swap −16,612 | yes | yes | qualified, marginal |
+| 12969 USDJPY (gotobi) | **yes** — the archetype | untested | **no — FAIL_SOFT** | **no** — net delta 43.19 vs tolerance 3.31 | blocked twice |
+| 20039 NDX (onr-mid-brk) | **yes** | untested | not reached — stalled at Q05 | n/a | too early |
+
+**No sleeve satisfies all eight conditions, and the two sets barely overlap:** what is
+`CHALLENGE_READY` is not FTMO-viable, and what is FTMO-viable in principle is not
+`CHALLENGE_READY`. That is not a scheduling problem to be waited out — it is a statement
+about the pool.
+
+Actions taken from this: 12969's Q08 requeued to regenerate a stream that reconciles (its
+current one breaks the reconciler's one-entry/one-exit assumption, and the tool is right to
+refuse it); 20039's Q05 remains the other live thread. Both are prerequisites, neither is
+sufficient — 12969 also needs its Q08 to move from `FAIL_SOFT` to a strict PASS, which is a
+merit question, not an evidence one.
+
+**Honest read:** the demo book is gated on the density programme producing intraday-flat
+sleeves that survive Q08 strictly. Everything built tonight — the manifest builder, the
+reconciliation path, the FX bars, the cascade driver — is the machinery that will evaluate
+those sleeves the moment they exist, and it is now proven to work end to end. What it
+cannot do is manufacture a sleeve that is both robust and swap-immune.
+
 ## Known blockers between here and done
 
 1. **Deep-gate starvation.** The pending queue is 96 % Q02 with one pending Q08 and no
