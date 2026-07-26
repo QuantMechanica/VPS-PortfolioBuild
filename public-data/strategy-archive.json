@@ -1,6 +1,6 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-26T22:07:17.6419646Z",
+    "generated_at":  "2026-07-26T23:07:16.7120305Z",
     "total":  3559,
     "items":  [
                   {
@@ -10168,6 +10168,18 @@
                       "last_updated_utc":  "2026-06-11T06:43:56.2057131Z"
                   },
                   {
+                      "slug":  "QM5_11362_robo-one-two-bb-reversal",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-26T22:41:37.5267980Z"
+                  },
+                  {
+                      "slug":  "QM5_11363_robo-vol-channel-breakout",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-26T22:41:42.3523606Z"
+                  },
+                  {
                       "slug":  "QM5_11364_robo-gbpjpy-night-range",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
@@ -10262,6 +10274,12 @@
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-06-16T11:51:13.1890396Z"
+                  },
+                  {
+                      "slug":  "QM5_11380_macd12-stoch8-extreme-m1m5",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-26T22:41:46.3698194Z"
                   },
                   {
                       "slug":  "QM5_11381_psar-ao-ac-trend-align-h1",
@@ -11110,6 +11128,12 @@
                       "last_updated_utc":  "2026-06-11T08:44:20.0933880Z"
                   },
                   {
+                      "slug":  "QM5_11517_carter-t-ema5-15-50-100-macd-h4",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-26T22:41:50.4745051Z"
+                  },
+                  {
                       "slug":  "QM5_11518_carter-t-ema5-100-mtf-m15-h1",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
@@ -11240,6 +11264,12 @@
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-07-26T20:41:34.1360239Z"
+                  },
+                  {
+                      "slug":  "QM5_11539_carter-t-h1-ema5-10-rsi10-median",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-26T22:42:03.3209508Z"
                   },
                   {
                       "slug":  "QM5_1154_unger-dax-4h-high-breakout",
@@ -12950,6 +12980,12 @@
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-06-12T00:59:40.7316378Z"
+                  },
+                  {
+                      "slug":  "QM5_11904_grimes-sperandeo-failure-test-2b-h1",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-26T22:42:07.8527497Z"
                   },
                   {
                       "slug":  "QM5_11905_hui-chan-shiryaev-zhou-3day-d1",
@@ -16180,6 +16216,12 @@
                       "last_updated_utc":  "2026-07-10T16:10:28.9196895Z"
                   },
                   {
+                      "slug":  "QM5_1312_ha-sma-smoothed-flip-h1",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-26T22:56:21.6513163Z"
+                  },
+                  {
                       "slug":  "QM5_13120_energy-momrev",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
@@ -17260,6 +17302,12 @@
                       "last_updated_utc":  "2026-06-20T06:52:26.2057231Z"
                   },
                   {
+                      "slug":  "QM5_1528_hopwood-pause-ea-h4",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-26T22:57:13.3749329Z"
+                  },
+                  {
                       "slug":  "QM5_1529_ehlers-reflex-indicator-h4",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
@@ -17318,6 +17366,18 @@
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-06-25T15:12:22.5643820Z"
+                  },
+                  {
+                      "slug":  "QM5_1541_connors-pullback-channel-exit-h4",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-26T22:57:18.8958194Z"
+                  },
+                  {
+                      "slug":  "QM5_1545_bressert-composite-index-h4",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-26T22:57:25.8654634Z"
                   },
                   {
                       "slug":  "QM5_1546_connors-multi-day-high-low-h4",
@@ -17414,6 +17474,18 @@
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-06-20T06:52:26.2057231Z"
+                  },
+                  {
+                      "slug":  "QM5_1564_hopwood-bermaui-rsi-mtf-h4",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-26T23:05:25.1427151Z"
+                  },
+                  {
+                      "slug":  "QM5_1566_connors-streak-reversal-h4",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-26T23:05:25.7536019Z"
                   },
                   {
                       "slug":  "QM5_1567_demark-td-reverse-sequential-h4",
@@ -17618,6 +17690,12 @@
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-06-20T06:52:26.2057231Z"
+                  },
+                  {
+                      "slug":  "QM5_1626_hopwood-bermaui-stoch-h4",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-26T23:05:26.1812178Z"
                   },
                   {
                       "slug":  "QM5_1629_ehlers-cybernetic-cycle-h4",
@@ -20932,18 +21010,6 @@
                       "last_updated_utc":  "2026-07-23T19:42:22.5067177Z"
                   },
                   {
-                      "slug":  "QM5_11362_robo-one-two-bb-reversal",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:13:51.1963805Z"
-                  },
-                  {
-                      "slug":  "QM5_11363_robo-vol-channel-breakout",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:13:51.3397540Z"
-                  },
-                  {
                       "slug":  "QM5_1137_fx-h4-filter-rule-breakout",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
@@ -20954,12 +21020,6 @@
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-07-23T19:42:26.2162948Z"
-                  },
-                  {
-                      "slug":  "QM5_11380_macd12-stoch8-extreme-m1m5",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:13:51.8114966Z"
                   },
                   {
                       "slug":  "QM5_11388_russ-horn-golden-smma55-wpr55-stoch555",
@@ -21010,12 +21070,6 @@
                       "last_updated_utc":  "2026-07-23T20:13:53.2291902Z"
                   },
                   {
-                      "slug":  "QM5_11517_carter-t-ema5-15-50-100-macd-h4",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:13:53.3424855Z"
-                  },
-                  {
                       "slug":  "QM5_1152_fx-tokyo-fix-usd-demand",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
@@ -21032,12 +21086,6 @@
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-07-26T20:32:05.2821900Z"
-                  },
-                  {
-                      "slug":  "QM5_11539_carter-t-h1-ema5-10-rsi10-median",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:13:54.1769127Z"
                   },
                   {
                       "slug":  "QM5_1154_index-hks-halfhour-lag-continuation",
@@ -21068,12 +21116,6 @@
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-07-23T19:22:37.1753837Z"
-                  },
-                  {
-                      "slug":  "QM5_11904_grimes-sperandeo-failure-test-2b-h1",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:13:54.8867621Z"
                   },
                   {
                       "slug":  "QM5_1201_qp-sp500-vixrv-long",
@@ -21109,19 +21151,13 @@
                       "slug":  "QM5_12941_hopwood-bermaui-macd-h4-card",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:13:57.5037128Z"
+                      "last_updated_utc":  "2026-07-26T22:50:11.3531820Z"
                   },
                   {
                       "slug":  "QM5_12942_ehlers-ebsw-cycle-composite-h4",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:13:57.6250288Z"
-                  },
-                  {
-                      "slug":  "QM5_1312_ha-sma-smoothed-flip-h1",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:13:57.7423345Z"
+                      "last_updated_utc":  "2026-07-26T22:50:11.6379206Z"
                   },
                   {
                       "slug":  "QM5_1321_ha-smoothed-mtf-confluence-h1",
@@ -21152,42 +21188,6 @@
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-07-23T20:13:58.7424515Z"
-                  },
-                  {
-                      "slug":  "QM5_1528_hopwood-pause-ea-h4",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:13:59.2362498Z"
-                  },
-                  {
-                      "slug":  "QM5_1541_connors-pullback-channel-exit-h4",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:13:59.3525528Z"
-                  },
-                  {
-                      "slug":  "QM5_1545_bressert-composite-index-h4",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:13:59.4648454Z"
-                  },
-                  {
-                      "slug":  "QM5_1564_hopwood-bermaui-rsi-mtf-h4",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:13:59.8267885Z"
-                  },
-                  {
-                      "slug":  "QM5_1566_connors-streak-reversal-h4",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:13:59.9481045Z"
-                  },
-                  {
-                      "slug":  "QM5_1626_hopwood-bermaui-stoch-h4",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:14:00.5953482Z"
                   },
                   {
                       "slug":  "QM5_1627_hopwood-bermaui-cci-h4",
