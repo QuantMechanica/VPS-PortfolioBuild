@@ -1,6 +1,6 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-26T20:07:24.8882523Z",
+    "generated_at":  "2026-07-26T21:07:38.6741574Z",
     "total":  3559,
     "items":  [
                   {
@@ -10153,7 +10153,7 @@
                       "slug":  "QM5_11364_robo-gbpjpy-night-range",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-26T20:02:32.5724016Z"
+                      "last_updated_utc":  "2026-07-26T20:12:11.9984662Z"
                   },
                   {
                       "slug":  "QM5_11365_connors-rsi2-sma200-pullback-d1",
@@ -10213,13 +10213,13 @@
                       "slug":  "QM5_11375_kathy-lien-double-bb-1-2sigma-m15",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-26T20:02:13.9961323Z"
+                      "last_updated_utc":  "2026-07-26T20:12:20.0873565Z"
                   },
                   {
                       "slug":  "QM5_11376_4h-macd-5-13-ma5-cascade-h4",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-26T20:02:14.4051944Z"
+                      "last_updated_utc":  "2026-07-26T20:12:25.9992634Z"
                   },
                   {
                       "slug":  "QM5_11377_vegas-wave-ema144-169-fractal-h1",
@@ -10570,6 +10570,12 @@
                       "last_updated_utc":  "2026-05-23T17:15:39.0316269Z"
                   },
                   {
+                      "slug":  "QM5_11435_carter-t-adx35-priorday-range-h1",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-26T20:12:38.0928067Z"
+                  },
+                  {
                       "slug":  "QM5_11436_carter-t-sma150-rsi3-stoch-d1",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
@@ -10688,6 +10694,18 @@
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-06-11T07:59:15.1646794Z"
+                  },
+                  {
+                      "slug":  "QM5_11455_davey-donchian-close-breakout",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-26T20:13:00.9899613Z"
+                  },
+                  {
+                      "slug":  "QM5_11457_goodwin-6day-extreme-3day-stop-entry-d1",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-26T20:12:48.9866886Z"
                   },
                   {
                       "slug":  "QM5_11458_goodwin-friday-monday-gap-d1",
@@ -11056,6 +11074,12 @@
                       "last_updated_utc":  "2026-06-11T08:44:20.0933880Z"
                   },
                   {
+                      "slug":  "QM5_11518_carter-t-ema5-100-mtf-m15-h1",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-26T20:26:28.4585551Z"
+                  },
+                  {
                       "slug":  "QM5_11519_carter-t-ema7-21-pullback",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
@@ -11140,6 +11164,24 @@
                       "last_updated_utc":  "2026-05-23T20:12:48.6239012Z"
                   },
                   {
+                      "slug":  "QM5_11531_carter-t-h1-ema6-23-stoch-macd",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-26T20:26:35.9054560Z"
+                  },
+                  {
+                      "slug":  "QM5_11532_carter-t-h1-ema5-15-60-pullback",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-26T20:26:40.0582714Z"
+                  },
+                  {
+                      "slug":  "QM5_11533_carter-t-h1-ema3-5-13-21-80-rsi21",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-26T20:41:31.4490252Z"
+                  },
+                  {
                       "slug":  "QM5_11534_carter-t-h1-bb20-ema3-macd617-rsi14",
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
@@ -11156,6 +11198,12 @@
                       "source":  "strategy_farm/artifacts/cards_approved",
                       "visibility":  "public",
                       "last_updated_utc":  "2026-06-11T08:58:25.8555272Z"
+                  },
+                  {
+                      "slug":  "QM5_11537_carter-t-h1-ema5s5-ema75-bb-rsi",
+                      "source":  "strategy_farm/artifacts/cards_approved",
+                      "visibility":  "public",
+                      "last_updated_utc":  "2026-07-26T20:41:34.1360239Z"
                   },
                   {
                       "slug":  "QM5_1154_unger-dax-4h-high-breakout",
@@ -20878,24 +20926,6 @@
                       "last_updated_utc":  "2026-07-23T20:13:52.2967610Z"
                   },
                   {
-                      "slug":  "QM5_11435_carter-t-adx35-priorday-range-h1",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:13:52.4110588Z"
-                  },
-                  {
-                      "slug":  "QM5_11455_davey-donchian-close-breakout",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:13:52.5223486Z"
-                  },
-                  {
-                      "slug":  "QM5_11457_goodwin-6day-extreme-3day-stop-entry-d1",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:13:52.7579626Z"
-                  },
-                  {
                       "slug":  "QM5_11461_goodwin-j-outside-bar-daily-reversion-d1",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
@@ -20932,12 +20962,6 @@
                       "last_updated_utc":  "2026-07-23T20:13:53.3424855Z"
                   },
                   {
-                      "slug":  "QM5_11518_carter-t-ema5-100-mtf-m15-h1",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:13:53.4537754Z"
-                  },
-                  {
                       "slug":  "QM5_1152_fx-tokyo-fix-usd-demand",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
@@ -20950,34 +20974,10 @@
                       "last_updated_utc":  "2026-07-23T19:22:37.1723761Z"
                   },
                   {
-                      "slug":  "QM5_11531_carter-t-h1-ema6-23-stoch-macd",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:13:53.5670707Z"
-                  },
-                  {
-                      "slug":  "QM5_11532_carter-t-h1-ema5-15-60-pullback",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:13:53.6743502Z"
-                  },
-                  {
-                      "slug":  "QM5_11533_carter-t-h1-ema3-5-13-21-80-rsi21",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:13:53.7976730Z"
-                  },
-                  {
-                      "slug":  "QM5_11537_carter-t-h1-ema5s5-ema75-bb-rsi",
-                      "source":  "strategy_farm/artifacts/cards_draft",
-                      "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:13:53.9262596Z"
-                  },
-                  {
                       "slug":  "QM5_11538_carter-t-h1-ema3-5-34-89-rsi3-stoch-adx",
                       "source":  "strategy_farm/artifacts/cards_draft",
                       "visibility":  "public",
-                      "last_updated_utc":  "2026-07-23T20:13:54.0495810Z"
+                      "last_updated_utc":  "2026-07-26T20:32:05.2821900Z"
                   },
                   {
                       "slug":  "QM5_11539_carter-t-h1-ema5-10-rsi10-median",
