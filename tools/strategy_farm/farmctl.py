@@ -629,6 +629,206 @@ def _with_sqlite_write_retry(fn, retries: int = 8, base_sleep_seconds: float = 1
     raise RuntimeError("unreachable sqlite retry state")
 
 
+# --- ULTRACODE WS-A (2026-07-26): one claim-ordering contract + durable recovery idle-cap ---
+# Single source of truth for pending-work ordering, used by EVERY claimant
+# (terminal_worker.claim_atomic AND the farmctl dispatch_work_items secondary path)
+# so the two can never diverge again. Recovery-class rows — pending Q02 rows tagged
+# by classify_recovery_pending.py with payload["recovery_class"] — sort LAST (idle-
+# only) and are additionally gated by a durable rolling cap so recovery work never
+# pre-empts eligible priority/frontier work (Operating Rule 22, idle-capacity only).
+RECOVERY_CLASS_PAYLOAD_KEY = "recovery_class"
+# LIKE pattern for the SQL rank. Robust to the ": " vs ":" JSON spacing.
+RECOVERY_MARKER_LIKE = '%"recovery_class":%'
+# Rolling idle-cap semantics (documented in the decision record):
+#   * worker-set = ALL terminal workers claiming against this one farm DB; they
+#     share ONE global ledger, so the cap is a fleet-wide rolling cap on SUCCESSFUL
+#     claims (Codex: "one in five claims" = successful eligible claims, not query
+#     attempts).
+#   * window denominator = the last CLAIM_RECOVERY_WINDOW successful claims.
+#   * recovery may take at most CLAIM_RECOVERY_MAX_IN_WINDOW of any such window, i.e.
+#     a recovery claim is allowed only when none of the immediately-preceding
+#     (CLAIM_RECOVERY_WINDOW - 1) recorded claims was recovery. Long-run recovery
+#     share is therefore <= 1/CLAIM_RECOVERY_WINDOW (20%) AND only on idle capacity,
+#     so the realised share is far lower.
+#   * restart behaviour: the ledger is a DB table (not an in-memory counter), so a
+#     worker restart / VPS reboot does NOT reset the window — the next claim reads
+#     the last (WINDOW-1) rows and continues.
+CLAIM_RECOVERY_WINDOW = 5
+CLAIM_RECOVERY_MAX_IN_WINDOW = 1
+# Keep the ledger bounded: retain a tail far larger than the window and prune older
+# rows inside the same claim transaction. Only the last (WINDOW-1) rows are ever read.
+CLAIM_LEDGER_RETAIN = 64
+CLAIM_CLASS_LEDGER_DDL = (
+    "CREATE TABLE IF NOT EXISTS claim_class_ledger ("
+    " seq INTEGER PRIMARY KEY AUTOINCREMENT,"
+    " claimed_at_utc TEXT NOT NULL,"
+    " terminal TEXT,"
+    " work_item_id TEXT,"
+    " claim_class TEXT NOT NULL CHECK (claim_class in ('priority', 'recovery'))"
+    ")"
+)
+
+
+def ensure_claim_class_ledger(conn: sqlite3.Connection) -> None:
+    """Create the durable claim-class ledger if absent (idempotent).
+
+    init_db also creates it at schema-activation time; this helper lets any
+    claimant self-heal a pre-schema DB inside its own transaction so the cap is
+    never silently skipped on a DB that predates the ULTRACODE schema.
+    """
+    conn.execute(CLAIM_CLASS_LEDGER_DDL)
+
+
+def is_recovery_payload(payload: "dict[str, Any] | None") -> bool:
+    """True iff a work-item payload carries the recovery-class marker."""
+    if not isinstance(payload, dict):
+        return False
+    return bool(payload.get(RECOVERY_CLASS_PAYLOAD_KEY))
+
+
+def pending_claim_order_sql() -> str:
+    """Canonical pending-work ordering — the ONE selector every claimant uses.
+
+    Preserves the pre-ULTRACODE priority_track/frontier ordering EXACTLY and only
+    PREPENDS a recovery-last rank, so recovery-class rows are reached only after
+    every eligible priority/frontier row (idle-only). Inert until
+    classify_recovery_pending.py tags rows: with zero recovery-tagged rows every row
+    has _recovery_rank=0, so the emitted order is byte-identical to the previous
+    terminal_worker._priority_pending_query contract. The recovery idle-cap is
+    enforced in the claim loop, not in SQL.
+    """
+    return """
+        SELECT w.*,
+          CASE
+            -- Recovery-class rows (classify_recovery_pending.py marker) sort LAST so
+            -- they are only ever reached when no eligible priority/frontier row
+            -- remains (idle-only, Operating Rule 22). The claim loop applies the
+            -- durable rolling cap before actually taking one.
+            WHEN w.payload_json LIKE '%"recovery_class":%' THEN 1
+            ELSE 0 END AS _recovery_rank,
+          CASE
+            WHEN w.payload_json LIKE '%"priority_track": true%' THEN 0
+            ELSE 1 END AS _priority_track_rank,
+          CASE w.phase
+            -- Downstream phases first so work drains rather than re-pooling at the
+            -- head of the pipeline. Legacy P-keys preserved at their original ranks.
+            WHEN 'Q10'  THEN 0
+            WHEN 'Q09_PORTFOLIO' THEN 1
+            WHEN 'Q09'  THEN 1
+            WHEN 'Q08'  THEN 2
+            WHEN 'Q07'  THEN 3
+            WHEN 'Q06'  THEN 4
+            WHEN 'Q05'  THEN 5
+            WHEN 'Q04'  THEN 6
+            WHEN 'Q03'  THEN 7
+            WHEN 'Q02'  THEN 8
+            WHEN 'P8'   THEN 0
+            WHEN 'P7'   THEN 1
+            WHEN 'P6'   THEN 2
+            WHEN 'P5c'  THEN 3
+            WHEN 'P5b'  THEN 4
+            WHEN 'P5'   THEN 5
+            WHEN 'P4'   THEN 6
+            WHEN 'P3.5' THEN 7
+            WHEN 'P3'   THEN 8
+            WHEN 'P2'   THEN 9
+            ELSE 9 END AS _phase_rank,
+          CASE
+            WHEN w.phase='Q02' AND w.payload_json LIKE '%"portfolio_scope": "basket"%' THEN 0
+            ELSE 1 END AS _basket_q02_rank,
+          CASE WHEN EXISTS (
+            SELECT 1 FROM work_items wp
+            WHERE wp.ea_id=w.ea_id AND wp.status='done' AND wp.verdict='PASS'
+          ) THEN 0 ELSE 1 END AS _winner_rank,
+          -- Asset-class tie-break (2026-07-09): within an otherwise-equal tier prefer
+          -- the classes that survive the Q04 net/commission gate
+          -- (METAL 12.2% > INDEX 6.9% > ENERGY 2.4% > FX 1.6%). Only reorders
+          -- pre-screens; promoted Q04+ survivors always beat any Q02 via _phase_rank.
+          CASE
+            WHEN upper(w.symbol) LIKE 'XAU%' OR upper(w.symbol) LIKE 'XAG%'
+              OR upper(w.symbol) LIKE 'XPT%' OR upper(w.symbol) LIKE 'XCU%' THEN 0
+            WHEN upper(w.symbol) LIKE 'SP500%' OR upper(w.symbol) LIKE 'NDX%'
+              OR upper(w.symbol) LIKE 'WS30%' OR upper(w.symbol) LIKE 'US30%'
+              OR upper(w.symbol) LIKE 'US2000%' OR upper(w.symbol) LIKE 'GDAXI%'
+              OR upper(w.symbol) LIKE 'GER40%' OR upper(w.symbol) LIKE 'UK100%'
+              OR upper(w.symbol) LIKE 'STOXX%' OR upper(w.symbol) LIKE '%225%'
+              OR upper(w.symbol) LIKE 'DAX%' THEN 1
+            WHEN upper(w.symbol) LIKE 'XTI%' OR upper(w.symbol) LIKE 'XBR%'
+              OR upper(w.symbol) LIKE 'XNG%' OR upper(w.symbol) LIKE 'WTI%'
+              OR upper(w.symbol) LIKE 'NGAS%' OR upper(w.symbol) LIKE '%OIL%' THEN 2
+            ELSE 3 END AS _asset_rank
+        FROM work_items w
+        WHERE w.status='pending'
+        ORDER BY _recovery_rank ASC, _priority_track_rank ASC, _phase_rank ASC,
+                 _basket_q02_rank ASC, _winner_rank ASC, _asset_rank ASC,
+                 w.updated_at ASC, w.created_at ASC
+    """
+
+
+def recovery_claim_allowed(conn: sqlite3.Connection) -> bool:
+    """Durable rolling idle-cap check. MUST be called inside the claim transaction.
+
+    Returns True iff a recovery-class row may be claimed now.
+
+    Two regimes (the RATIFIED idle-only contract — see the decision record):
+      * FRONTIER HAS WORK (at least one non-recovery pending row exists anywhere):
+        throttle recovery to the rolling cap — allowed only when none of the last
+        (CLAIM_RECOVERY_WINDOW - 1) recorded successful claims was recovery, so
+        adding this recovery claim keeps at most CLAIM_RECOVERY_MAX_IN_WINDOW
+        recovery in any window of CLAIM_RECOVERY_WINDOW successful claims. This
+        bounds recovery's share of throughput while priority/frontier work flows.
+      * FRONTIER GLOBALLY EMPTY (no non-recovery pending row exists at all): the
+        RATIFIED idle-only escape — with nothing to protect, EVERY recovery row is
+        eligible and recovery drains freely (the cap protects the frontier, not an
+        absolute throttle). This is a deliberate, ratified deadlock/drain-stall
+        escape, not an implicit exception: a pure "share of successful claims"
+        window would never advance if recovery were the only producer of claims.
+
+    Reads the shared durable ledger, so the decision survives worker restarts.
+    """
+    ensure_claim_class_ledger(conn)
+    frontier_pending = conn.execute(
+        "SELECT 1 FROM work_items WHERE status='pending' AND payload_json NOT LIKE ? LIMIT 1",
+        (RECOVERY_MARKER_LIKE,),
+    ).fetchone()
+    if frontier_pending is None:
+        return True  # ratified idle-only escape: nothing to protect -> recovery drains freely
+    rows = conn.execute(
+        "SELECT claim_class FROM claim_class_ledger ORDER BY seq DESC LIMIT ?",
+        (CLAIM_RECOVERY_WINDOW - 1,),
+    ).fetchall()
+    recent_recovery = sum(1 for r in rows if str(r[0]) == "recovery")
+    return recent_recovery < CLAIM_RECOVERY_MAX_IN_WINDOW
+
+
+def record_claim_ledger(
+    conn: sqlite3.Connection,
+    terminal: "str | None",
+    work_item_id: str,
+    claim_class: str,
+    now: str,
+) -> None:
+    """Advance the durable ledger with ONE successful claim.
+
+    Call inside the SAME transaction that took the row (BEGIN IMMEDIATE in
+    claim_atomic / dispatch_work_items) so the window read + advance is atomic
+    against competing workers. Records BOTH classes ('priority' | 'recovery') so
+    the window reflects reality; prunes the ledger to a bounded tail.
+    """
+    ensure_claim_class_ledger(conn)
+    normalized = "recovery" if claim_class == "recovery" else "priority"
+    conn.execute(
+        "INSERT INTO claim_class_ledger (claimed_at_utc, terminal, work_item_id, claim_class) "
+        "VALUES (?,?,?,?)",
+        (now, terminal, str(work_item_id), normalized),
+    )
+    conn.execute(
+        "DELETE FROM claim_class_ledger WHERE seq <= "
+        "(SELECT COALESCE(MAX(seq), 0) FROM claim_class_ledger) - ?",
+        (CLAIM_LEDGER_RETAIN,),
+    )
+
+
 def init_dirs(root: Path) -> None:
     for rel in RUNTIME_DIRS:
         (root / rel).mkdir(parents=True, exist_ok=True)
@@ -714,6 +914,19 @@ def init_db(root: Path) -> None:
                 ON work_items(parent_task_id);
             CREATE INDEX IF NOT EXISTS idx_work_items_ea_phase
                 ON work_items(ea_id, phase);
+
+            -- ULTRACODE WS-A (2026-07-26): durable rolling ledger of successful
+            -- claims (class 'priority'|'recovery'), shared by every claimant. Backs
+            -- the recovery idle-cap (recovery <= 1 of the last CLAIM_RECOVERY_WINDOW
+            -- successful claims). Survives worker restarts. See pending_claim_order_sql
+            -- / recovery_claim_allowed / record_claim_ledger.
+            CREATE TABLE IF NOT EXISTS claim_class_ledger (
+                seq INTEGER PRIMARY KEY AUTOINCREMENT,
+                claimed_at_utc TEXT NOT NULL,
+                terminal TEXT,
+                work_item_id TEXT,
+                claim_class TEXT NOT NULL CHECK (claim_class in ('priority', 'recovery'))
+            );
             """
         )
         # --- migrations (idempotent) ---
@@ -2074,6 +2287,105 @@ def _q08_dominant_invalid_reason(summary: dict[str, Any]) -> str:
     return reason[:200]
 
 
+# --- ULTRACODE WS-H (2026-07-26): Q08 insufficient-trades reason preservation ---
+# The explicit Q08 insufficient-trades / INSUFFICIENT_* family: sub-gate details
+# meaning "the SAMPLE was too thin to compute a merit verdict" (the EA did not trade
+# enough for the Davey battery). A Q08 run the harness mislabelled INFRA_FAIL/ERROR/
+# TIMEOUT whose ONLY blocking sub-gates are in this family is a merit-adjacent
+# could-not-compute (INVALID), not a retry-owed transport failure — retrying will
+# never manufacture more trades.
+Q08_INSUFFICIENT_TRADES_DETAIL_TOKENS = (
+    "insufficient_trade_count",
+    "insufficient_trades",
+    "insufficient_daily_returns",
+    "insufficient_month_coverage",          # also matches _swing suffix
+    "insufficient_history",
+    "insufficient_candidate_history",
+    "months_with_no_trades",
+    "regimes_with_zero_trades",
+)
+# If ANY of these appears in a non-PASS sub-gate detail OR in the top-level reason,
+# the run is genuine/mixed infrastructure and the top-level verdict is PRESERVED.
+# (Includes launch/transport/report/timeout AND tooling-lineage / plumbing tokens so
+# a lineage-invalid or regime-join-failed sub-gate never reads as "insufficient".)
+Q08_GENUINE_INFRA_DETAIL_TOKENS = (
+    "no_history", "no_real_ticks", "report_format_drift", "invalid_report",
+    "bars_zero", "empty_expert", "empty_symbol", "m0_1970",
+    "summary_missing", "missing_summary", "summary_parse_error",
+    "history_context_invalid", "run_status_invalid",
+    "launch_fault", "metatester_hung", "timeout", "active_timeout",
+    "sub_gate_exception", "lineage_invalid", "artifact_missing",
+    "artifact_unreadable", "output_missing", "baseline_setfile_defect",
+    "regime_input_missing", "regime_join_failed", "regime_join_incomplete",
+    "scores_or_meta_stale", "refresh_timeout", "refresh_exception",
+    "degenerate_baseline",
+)
+
+
+def _q08_insufficient_trades_reason(summary: dict[str, Any]) -> str:
+    """Authenticated dominant-sub-gate evaluator for a Q08 top-level infra summary.
+
+    Returns a non-empty reason string ONLY when the summary is an AUTHENTICATED,
+    dominant, SOLE-blocking insufficient-trades case that should reclassify from a
+    generic INFRA_FAIL to INVALID; returns "" (preserve top-level INFRA_FAIL) for
+    genuine infra, mixed, missing, or unauthenticated evidence.
+
+    Authentication requires ALL of:
+      * `sub_gates` present as a non-empty list of dicts (the run actually
+        computed — missing/malformed evidence is unauthenticated -> preserve);
+      * a real observed trade count `n_trades` (int) > 0 — a 0-trade Q08 baseline is
+        the separate infra condition `q08_zero_trade_baseline` and stays INFRA_FAIL;
+      * NO genuine-infra token in the top-level reason;
+      * NO blocking (non-PASS/non-INFORMATIONAL) sub-gate is a computed FAIL, a
+        genuine-infra INVALID, or any non-insufficient INVALID (that would be
+        mixed -> preserve);
+      * at least one blocking sub-gate is in the insufficient-trades family (or has
+        a status starting 'INSUFFICIENT').
+    """
+    sub_gates = summary.get("sub_gates")
+    if not isinstance(sub_gates, list) or not sub_gates:
+        return ""  # missing sub-gate evidence -> unauthenticated
+    top_reason = str(summary.get("reason") or summary.get("criterion") or "").lower()
+    if any(tok in top_reason for tok in Q08_GENUINE_INFRA_DETAIL_TOKENS):
+        return ""  # top-level reason names genuine infra -> preserve
+    n_trades = summary.get("n_trades")
+    try:
+        n_trades = int(n_trades)
+    except (TypeError, ValueError):
+        return ""  # no authenticated trade count -> unauthenticated
+    if n_trades <= 0:
+        return ""  # zero-trade baseline is an infra condition -> preserve
+
+    dominant: dict[str, Any] | None = None
+    for gate in sub_gates:
+        if not isinstance(gate, dict):
+            return ""  # malformed evidence -> unauthenticated
+        status = str(gate.get("status") or "").upper()
+        if status in {"PASS", "INFORMATIONAL"}:
+            continue
+        detail = str(gate.get("detail") or "").lower()
+        if any(tok in detail for tok in Q08_GENUINE_INFRA_DETAIL_TOKENS):
+            return ""  # mixed with genuine infra -> preserve
+        is_insufficient = (
+            status.startswith("INSUFFICIENT")
+            or any(tok in detail for tok in Q08_INSUFFICIENT_TRADES_DETAIL_TOKENS)
+        )
+        if status == "FAIL":
+            return ""  # a COMPUTED merit breach must not be masked -> preserve
+        if status == "INVALID" and not is_insufficient:
+            return ""  # a non-insufficient (tooling/other) INVALID -> preserve
+        if is_insufficient and dominant is None:
+            dominant = gate
+    if dominant is None:
+        return ""  # no insufficient-trades signal among blocking sub-gates
+    name = str(dominant.get("name") or "sub_gate").strip()
+    detail = str(dominant.get("detail") or "").strip()
+    reason = f"q08_insufficient_trades:{name}:n_trades={n_trades}"
+    if detail:
+        reason += f":{detail}"
+    return reason[:200]
+
+
 def _derive_phase_runner_verdict(summary: dict[str, Any], min_trades: int = 5, phase: str | None = None) -> tuple[str, str]:
     """Derive honest work_item verdicts from real phase-runner result JSON."""
     raw_verdict = str(summary.get("verdict") or summary.get("result") or "").strip()
@@ -2085,6 +2397,19 @@ def _derive_phase_runner_verdict(summary: dict[str, Any], min_trades: int = 5, p
         return verdict_upper, reason or "phase runner not implemented yet"
     if verdict_upper == "WAITING_INPUT":
         return verdict_upper, reason or "phase runner waiting for required input"
+    # ULTRACODE WS-H (2026-07-26): for Q08 ONLY, evaluate the authenticated dominant
+    # sub-gate evidence BEFORE the generic top-level infra return. A Q08 run the
+    # harness labelled INFRA_FAIL/ERROR/TIMEOUT whose ONLY blocking sub-gates are the
+    # explicit insufficient-trades / INSUFFICIENT_* family (and which carries no
+    # genuine-infra signal) actually COMPUTED — it is a merit-adjacent could-not-
+    # compute (INVALID), not a retry-owed transport failure. Genuine launch/transport/
+    # report/timeout failures, and any mixed/missing/unauthenticated evidence, keep
+    # the top-level INFRA_FAIL below untouched. Forward-only: zero historical rows
+    # reclassify on the current corpus (see decision record / corpus_report_wsh).
+    if phase_key == "P5c" and verdict_upper in {"INFRA_FAIL", "ERROR", "TIMEOUT"}:
+        q08_insufficient = _q08_insufficient_trades_reason(summary)
+        if q08_insufficient:
+            return "INVALID", q08_insufficient
     if verdict_upper in {"INFRA_FAIL", "ERROR", "TIMEOUT"}:
         return "INFRA_FAIL", reason or raw_verdict or "phase_runner_infra_fail"
     if phase_key == "P5c" and summary.get("n_trades") is not None:
@@ -5306,75 +5631,34 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
     #      because they're already known winners advancing toward Live.
     #   2. EA-of-a-known-winner before greenfield (ea_id with prior PASSes).
     #   3. Then FIFO within tier (updated_at ASC).
-    # The CASE WHEN encodes the priority. Lower number = sooner.
+    # ULTRACODE WS-A (2026-07-26): this secondary claimant now (a) shares the ONE
+    # canonical ordering selector with terminal_worker.claim_atomic
+    # (pending_claim_order_sql — recovery-class rows sort LAST, idle-only) and (b) is
+    # CLAIM-THEN-SPAWN with full compare-and-swap. For every candidate the recovery
+    # idle-cap decision is read AND the DB claim is SECURED inside ONE BEGIN IMMEDIATE
+    # (UPDATE ... AND status='pending', rowcount==1 as the CAS outcome) and the durable
+    # class ledger is advanced in that SAME transaction — all BEFORE any runner spawn.
+    # A lost CAS (row already taken by claim_atomic or a prior pass) never spawns and
+    # never overwrites the winning claimant. This closes the race Codex flagged: the
+    # old order spawned MT5 first, then wrote status='active' by id with no pending
+    # guard and no ledger, so it could double-run a row another claimant already won.
     factory_terminals = active_mt5_terminals()
     free_terminals = [t for t in factory_terminals if t not in busy_terminals]
     if free_terminals:
         with connect(root) as conn:
             active_symbol_keys = _active_work_item_symbols(conn)
-            pending = conn.execute(
-                """
-                SELECT w.*,
-                  CASE w.phase
-                    -- Q-rewrite phases first (downstream-priority). Without
-                    -- these the Q-rewrite work all ties at ELSE 9 against
-                    -- the legacy P-keys and FIFO hands claims to whichever
-                    -- phase has the freshest inflow (typically Q02), starving
-                    -- Q04+ promotion-chain work. Same fix in
-                    -- terminal_worker.py:_priority_pending_query.
-                    WHEN 'Q10'  THEN 0
-                    WHEN 'Q09_PORTFOLIO' THEN 1
-                    WHEN 'Q09'  THEN 1
-                    WHEN 'Q08'  THEN 2
-                    WHEN 'Q07'  THEN 3
-                    WHEN 'Q06'  THEN 4
-                    WHEN 'Q05'  THEN 5
-                    WHEN 'Q04'  THEN 6
-                    WHEN 'Q03'  THEN 7
-                    WHEN 'Q02'  THEN 8
-                    WHEN 'P8'   THEN 0
-                    WHEN 'P7'   THEN 1
-                    WHEN 'P6'   THEN 2
-                    WHEN 'P5c'  THEN 3
-                    WHEN 'P5b'  THEN 4
-                    WHEN 'P5'   THEN 5
-                    WHEN 'P4'   THEN 6
-                    WHEN 'P3.5' THEN 7
-                    WHEN 'P3'   THEN 8
-                    WHEN 'P2'   THEN 9
-                    ELSE 9 END AS _phase_rank,
-                  CASE WHEN EXISTS (
-                    SELECT 1 FROM work_items wp
-                    WHERE wp.ea_id=w.ea_id AND wp.status='done' AND wp.verdict='PASS'
-                  ) THEN 0 ELSE 1 END AS _winner_rank,
-                  -- Asset-class tie-break (2026-07-09) — twin of
-                  -- terminal_worker.py:_priority_pending_query. Prefer classes that
-                  -- survive Q04 (METAL 12.2% > INDEX 6.9% > ENERGY 2.4% > FX 1.6%,
-                  -- evidence docs/ops/evidence/q02_q04_survival_by_assetclass_2026-07-09.csv);
-                  -- only breaks the FIFO tie within a (phase, winner) tier, never
-                  -- delays a promoted survivor. Keep both queries in sync.
-                  CASE
-                    WHEN upper(w.symbol) LIKE 'XAU%' OR upper(w.symbol) LIKE 'XAG%'
-                      OR upper(w.symbol) LIKE 'XPT%' OR upper(w.symbol) LIKE 'XCU%' THEN 0
-                    WHEN upper(w.symbol) LIKE 'SP500%' OR upper(w.symbol) LIKE 'NDX%'
-                      OR upper(w.symbol) LIKE 'WS30%' OR upper(w.symbol) LIKE 'US30%'
-                      OR upper(w.symbol) LIKE 'US2000%' OR upper(w.symbol) LIKE 'GDAXI%'
-                      OR upper(w.symbol) LIKE 'GER40%' OR upper(w.symbol) LIKE 'UK100%'
-                      OR upper(w.symbol) LIKE 'STOXX%' OR upper(w.symbol) LIKE '%225%'
-                      OR upper(w.symbol) LIKE 'DAX%' THEN 1
-                    WHEN upper(w.symbol) LIKE 'XTI%' OR upper(w.symbol) LIKE 'XBR%'
-                      OR upper(w.symbol) LIKE 'XNG%' OR upper(w.symbol) LIKE 'WTI%'
-                      OR upper(w.symbol) LIKE 'NGAS%' OR upper(w.symbol) LIKE '%OIL%' THEN 2
-                    ELSE 3 END AS _asset_rank
-                FROM work_items w
-                WHERE w.status='pending'
-                ORDER BY _phase_rank ASC, _winner_rank ASC, _asset_rank ASC, w.updated_at ASC, w.created_at ASC
-                """
-            ).fetchall()
+            pending = conn.execute(pending_claim_order_sql()).fetchall()
         claimed_symbol_keys = dict(active_symbol_keys)
         for item in pending:
             if not free_terminals:
                 break
+            try:
+                item_payload = json.loads(item["payload_json"] or "{}")
+                if not isinstance(item_payload, dict):
+                    item_payload = {}
+            except (TypeError, ValueError):
+                item_payload = {}
+            item_is_recovery = is_recovery_payload(item_payload)
             item_symbol = item["symbol"]
             item_symbol_key = str(item_symbol or "").upper()
             if item_symbol_key and item_symbol_key in claimed_symbol_keys:
@@ -5388,6 +5672,69 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 })
                 continue
             terminal = free_terminals.pop(0)
+            # --- CLAIM-THEN-SPAWN, full CAS (all inside ONE BEGIN IMMEDIATE) ---
+            # A pre-spawn claim payload that carries claimed_by_worker_pid so a
+            # concurrent terminal_worker.claim_atomic for this same terminal treats the
+            # row as worker-busy (not a stale claim to release) during the spawn window.
+            claim_payload = {
+                **item_payload,
+                "started_at_iso": started_iso,
+                "claimed_at_iso": started_iso,
+                "claimed_by_worker_pid": os.getpid(),
+                "claim_stage": "claimed_pending_spawn",
+                "terminal": terminal,
+            }
+            claim_won = False
+            recovery_capped = False
+            with connect(root) as conn2:
+                try:
+                    conn2.execute("BEGIN IMMEDIATE")
+                    # Recovery idle-cap decision read INSIDE the claim transaction.
+                    if item_is_recovery and not recovery_claim_allowed(conn2):
+                        recovery_capped = True
+                    else:
+                        cur = conn2.execute(
+                            "UPDATE work_items SET status='active', claimed_by=?, "
+                            "payload_json=?, updated_at=? WHERE id=? AND status='pending'",
+                            (terminal, json.dumps(claim_payload, sort_keys=True),
+                             started_iso, item["id"]),
+                        )
+                        # rowcount==1 IS the compare-and-swap outcome.
+                        if cur.rowcount == 1:
+                            record_claim_ledger(
+                                conn2, terminal, item["id"],
+                                "recovery" if item_is_recovery else "priority", started_iso,
+                            )
+                            claim_won = True
+                    conn2.commit()
+                except Exception:
+                    conn2.rollback()
+                    raise
+            if recovery_capped:
+                # Recovery-class rows sort LAST, so once the cap is hit nothing else is
+                # claimable this pass. Return the terminal and stop.
+                free_terminals.insert(0, terminal)
+                actions.append({
+                    "action": "recovery_capped",
+                    "reason": "recovery_idle_cap_reached",
+                    "item_id": item["id"],
+                    "ea_id": item["ea_id"],
+                })
+                break
+            if not claim_won:
+                # Lost the compare-and-swap: another claimant (claim_atomic) took this
+                # row between the selector snapshot and our BEGIN IMMEDIATE. NEVER spawn
+                # for a row we did not win; return the terminal and try the next row.
+                free_terminals.insert(0, terminal)
+                actions.append({
+                    "action": "claim_lost",
+                    "reason": "row_no_longer_pending",
+                    "item_id": item["id"],
+                    "ea_id": item["ea_id"],
+                })
+                continue
+            # We now OWN the row (status='active', claimed_by=terminal, ledger advanced).
+            # ONLY NOW spawn the runner.
             spawn = _spawn_work_item_runner(root, item, terminal)
             if not spawn.get("spawned"):
                 if spawn.get("waiting_input"):
@@ -5399,7 +5746,7 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                     }
                     with connect(root) as conn2:
                         conn2.execute(
-                            "UPDATE work_items SET status='done', verdict='WAITING_INPUT', payload_json=?, updated_at=? WHERE id=?",
+                            "UPDATE work_items SET status='done', verdict='WAITING_INPUT', claimed_by=NULL, payload_json=?, updated_at=? WHERE id=?",
                             (json.dumps(payload, sort_keys=True), started_iso, item["id"]),
                         )
                         conn2.commit()
@@ -5414,17 +5761,17 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                     }
                     with connect(root) as conn2:
                         conn2.execute(
-                            "UPDATE work_items SET status='done', verdict='PENDING_RUNNER', payload_json=?, updated_at=? WHERE id=?",
+                            "UPDATE work_items SET status='done', verdict='PENDING_RUNNER', claimed_by=NULL, payload_json=?, updated_at=? WHERE id=?",
                             (json.dumps(payload, sort_keys=True), started_iso, item["id"]),
                         )
                         conn2.commit()
                     actions.append({"action": "pending_runner", "item_id": item["id"], "phase": item["phase"], "reason": spawn.get("reason")})
                     free_terminals.insert(0, terminal)
                     continue
-                # Mark failed if spawn impossible
+                # Spawn impossible — we own the row, so mark it failed and release.
                 with connect(root) as conn2:
                     conn2.execute(
-                        "UPDATE work_items SET status='failed', verdict='INFRA_FAIL', updated_at=? WHERE id=?",
+                        "UPDATE work_items SET status='failed', verdict='INFRA_FAIL', claimed_by=NULL, updated_at=? WHERE id=?",
                         (started_iso, item["id"]),
                     )
                     conn2.commit()
@@ -5433,6 +5780,8 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 continue
             new_payload = {
                 "started_at_iso": started_iso,
+                "claimed_at_iso": started_iso,
+                "claimed_by_worker_pid": os.getpid(),
                 "pid": spawn["pid"],
                 "process_creation_key": spawn["process_creation_key"],
                 "process_image_path": spawn.get("process_image_path"),
@@ -5462,16 +5811,28 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 new_payload["setfile_path_canonicalized_from"] = spawn[
                     "setfile_path_canonicalized_from"
                 ]
+            # ULTRACODE WS-A: preserve the recovery-class provenance across the claim
+            # (this path rebuilds payload from scratch) so a requeued recovery row
+            # stays in the recovery lane, mirroring claim_atomic's payload.update.
+            if item_is_recovery:
+                for _rk in (RECOVERY_CLASS_PAYLOAD_KEY, "recovery_batch",
+                            "recovery_tagged_at_utc", "recovery_pre_image_sha256"):
+                    if _rk in item_payload:
+                        new_payload[_rk] = item_payload[_rk]
             with connect(root) as conn2:
+                # We already own the row via the CAS claim above; enrich in place
+                # (ownership-guarded) rather than re-racing the pending -> active edge.
                 conn2.execute(
                     "UPDATE work_items SET status='active', claimed_by=?, "
-                    "setfile_path=?, payload_json=?, updated_at=? WHERE id=?",
+                    "setfile_path=?, payload_json=?, updated_at=? "
+                    "WHERE id=? AND claimed_by=?",
                     (
                         terminal,
                         new_payload["setfile_path"],
                         json.dumps(new_payload, sort_keys=True),
                         started_iso,
                         item["id"],
+                        terminal,
                     ),
                 )
                 conn2.commit()
@@ -5482,6 +5843,7 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 "symbol": item["symbol"],
                 "terminal": terminal,
                 "pid": spawn["pid"],
+                "claim_class": "recovery" if item_is_recovery else "priority",
                 "phase_runner": spawn.get("phase_runner"),
                 "effective_min_trades": spawn.get("effective_min_trades"),
                 "setfile_path": new_payload["setfile_path"],

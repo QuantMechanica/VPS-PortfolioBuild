@@ -262,76 +262,13 @@ def _start_stalldump_watcher(terminal: str) -> None:
 
 
 def _priority_pending_query() -> str:
-    return """
-        SELECT w.*,
-          CASE
-            WHEN w.payload_json LIKE '%"priority_track": true%' THEN 0
-            ELSE 1 END AS _priority_track_rank,
-          CASE w.phase
-            -- Downstream phases first so work drains rather than re-pooling
-            -- at the head of the pipeline. Without this Q04+ stars in
-            -- 'ELSE 9' alongside Q02 and lose every FIFO tie to fresh Q02
-            -- inflow, leaving Q03-PASS-promoted Q04 rows starved.
-            -- Legacy P-keys preserved at their original ranks for any work
-            -- still using the old nomenclature.
-            WHEN 'Q10'  THEN 0
-            WHEN 'Q09_PORTFOLIO' THEN 1
-            WHEN 'Q09'  THEN 1
-            WHEN 'Q08'  THEN 2
-            WHEN 'Q07'  THEN 3
-            WHEN 'Q06'  THEN 4
-            WHEN 'Q05'  THEN 5
-            WHEN 'Q04'  THEN 6
-            WHEN 'Q03'  THEN 7
-            WHEN 'Q02'  THEN 8
-            WHEN 'P8'   THEN 0
-            WHEN 'P7'   THEN 1
-            WHEN 'P6'   THEN 2
-            WHEN 'P5c'  THEN 3
-            WHEN 'P5b'  THEN 4
-            WHEN 'P5'   THEN 5
-            WHEN 'P4'   THEN 6
-            WHEN 'P3.5' THEN 7
-            WHEN 'P3'   THEN 8
-            WHEN 'P2'   THEN 9
-            ELSE 9 END AS _phase_rank,
-          CASE
-            WHEN w.phase='Q02' AND w.payload_json LIKE '%"portfolio_scope": "basket"%' THEN 0
-            ELSE 1 END AS _basket_q02_rank,
-          CASE WHEN EXISTS (
-            SELECT 1 FROM work_items wp
-            WHERE wp.ea_id=w.ea_id AND wp.status='done' AND wp.verdict='PASS'
-          ) THEN 0 ELSE 1 END AS _winner_rank,
-          -- Asset-class tie-break (2026-07-09, Claude). Within an otherwise-equal
-          -- (track, phase, basket, winner) tier, prefer the classes that actually
-          -- survive the Q04 net/commission gate. Measured Q04 net-pass by class
-          -- (docs/ops/evidence/q02_q04_survival_by_assetclass_2026-07-09.csv):
-          --   METAL 12.2% > INDEX 6.9% > ENERGY 2.4% > FX 1.6%.
-          -- FX passes the $0-commission Q02 gross pre-screen best (68.6%) but dies
-          -- at Q04, so FIFO order was spending the scarce Q02 CPU front-loading the
-          -- lowest-yield class (FX = 51% of the pending queue). This ONLY reorders
-          -- pre-screens: promoted Q04+ survivors still beat any Q02 via _phase_rank,
-          -- so FX *survivors* are never delayed — only FX *pre-screens* wait behind
-          -- metal/index. Executes OWNER's 2026-07-06 "Index/Metalle zuerst" mandate.
-          -- Reversible; ordering is never a gate. Baskets already jump via
-          -- _basket_q02_rank, so they need no asset boost here.
-          CASE
-            WHEN upper(w.symbol) LIKE 'XAU%' OR upper(w.symbol) LIKE 'XAG%'
-              OR upper(w.symbol) LIKE 'XPT%' OR upper(w.symbol) LIKE 'XCU%' THEN 0
-            WHEN upper(w.symbol) LIKE 'SP500%' OR upper(w.symbol) LIKE 'NDX%'
-              OR upper(w.symbol) LIKE 'WS30%' OR upper(w.symbol) LIKE 'US30%'
-              OR upper(w.symbol) LIKE 'US2000%' OR upper(w.symbol) LIKE 'GDAXI%'
-              OR upper(w.symbol) LIKE 'GER40%' OR upper(w.symbol) LIKE 'UK100%'
-              OR upper(w.symbol) LIKE 'STOXX%' OR upper(w.symbol) LIKE '%225%'
-              OR upper(w.symbol) LIKE 'DAX%' THEN 1
-            WHEN upper(w.symbol) LIKE 'XTI%' OR upper(w.symbol) LIKE 'XBR%'
-              OR upper(w.symbol) LIKE 'XNG%' OR upper(w.symbol) LIKE 'WTI%'
-              OR upper(w.symbol) LIKE 'NGAS%' OR upper(w.symbol) LIKE '%OIL%' THEN 2
-            ELSE 3 END AS _asset_rank
-        FROM work_items w
-        WHERE w.status='pending'
-        ORDER BY _priority_track_rank ASC, _phase_rank ASC, _basket_q02_rank ASC, _winner_rank ASC, _asset_rank ASC, w.updated_at ASC, w.created_at ASC
-    """
+    # ULTRACODE WS-A (2026-07-26): the pending-work ordering now lives in ONE place —
+    # farmctl.pending_claim_order_sql — shared by this production claimant AND the
+    # farmctl.dispatch_work_items secondary claimant, so the two can never diverge.
+    # It preserves the previous priority_track/phase/basket/winner/asset ordering
+    # EXACTLY and only prepends a recovery-last rank (inert until rows are tagged).
+    # The recovery idle-cap is applied in claim_atomic below, not in SQL.
+    return farmctl.pending_claim_order_sql()
 
 
 TERMINAL_NO_SYMBOL_HISTORY_REASON = "TERMINAL_NO_SYMBOL_HISTORY_FOR_PERIOD"
@@ -966,8 +903,28 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 skipped_avoid_terminal: list[dict[str, Any]] = []
                 multisym_free_ram: float | None = None
                 history_registry = farmctl._dwx_symbol_history_registry()
+                # ULTRACODE WS-A (2026-07-26): recovery idle-cap. Recovery-class rows
+                # sort LAST (pending_claim_order_sql _recovery_rank), so the loop only
+                # reaches one after every eligible priority/frontier row was claimed
+                # (→ returned) or skipped by a resource filter — i.e. the priority lane
+                # is idle for this worker (Operating Rule 22, incl. the resource-filter
+                # fallback). The durable rolling ledger then caps recovery to at most 1
+                # of the last CLAIM_RECOVERY_WINDOW successful claims fleet-wide. The
+                # decision is computed once (recovery rows are contiguous at the tail);
+                # if capped, nothing else is claimable this cycle → stop.
+                recovery_gate_checked = False
+                recovery_allowed = False
+                recovery_capped = False
                 for item in conn.execute(_priority_pending_query()).fetchall():
                     payload = _json_loads(item["payload_json"])
+                    item_is_recovery = farmctl.is_recovery_payload(payload)
+                    if item_is_recovery:
+                        if not recovery_gate_checked:
+                            recovery_allowed = farmctl.recovery_claim_allowed(conn)
+                            recovery_gate_checked = True
+                        if not recovery_allowed:
+                            recovery_capped = True
+                            break
                     avoid_terminals = _payload_avoid_terminals(payload)
                     if str(terminal).upper() in avoid_terminals:
                         skipped_avoid_terminal.append({
@@ -1044,9 +1001,21 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         (terminal, json.dumps(payload, sort_keys=True), now, item["id"]),
                     )
                     if cur.rowcount == 1:
+                        # Advance the durable claim-class ledger in the SAME
+                        # BEGIN IMMEDIATE transaction as the claim so the fleet-wide
+                        # recovery idle-cap read+advance is atomic against competing
+                        # workers (Codex: "successful eligible claims, not attempts").
+                        farmctl.record_claim_ledger(
+                            conn, terminal, item["id"],
+                            "recovery" if item_is_recovery else "priority", now,
+                        )
                         conn.commit()
                         row = conn.execute("SELECT * FROM work_items WHERE id=?", (item["id"],)).fetchone()
-                        return {"claimed": True, "item": dict(row)}
+                        return {
+                            "claimed": True,
+                            "item": dict(row),
+                            "claim_class": "recovery" if item_is_recovery else "priority",
+                        }
                 conn.commit()
                 return {
                     "claimed": False,
@@ -1056,6 +1025,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     "multisymbol_ram_skipped": skipped_multisym_ram,
                     "multisymbol_commit_skipped": skipped_multisym_commit,
                     "terminal_avoid_skipped": skipped_avoid_terminal,
+                    "recovery_capped": recovery_capped,
                 }
             except Exception:
                 conn.rollback()
