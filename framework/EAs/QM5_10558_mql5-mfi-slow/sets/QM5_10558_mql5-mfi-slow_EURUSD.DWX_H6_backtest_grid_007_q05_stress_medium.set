@@ -3,22 +3,22 @@
 ; ea_id:        10558
 ; ea_slug:      mql5-mfi-slow
 ; ea_version:   v5.0
-; set_version:  s20260726-stress-harsh
+; set_version:  s20260628-stress-med
 ; symbol:       EURUSD.DWX
 ; timeframe:    H6
-; environment:  q06_stress_harsh
+; environment:  q05_stress_medium
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
 ; build_hash:   ecbfed93c487fe12608d9dbe572eaaa91085758c39e24482ea691cee30608e32
 ; author:       Development
-; date:         2026-07-26
+; date:         2026-06-28
 ;==========================================================
 qm_magic_slot_offset=2
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-qm_stress_reject_probability=0.1000
+qm_stress_reject_probability=0.0000
 ; strategy-specific params from card must be appended below this line
 strategy_signal_tf=PERIOD_H6
 strategy_mfi_period=14
@@ -31,3 +31,8 @@ strategy_reward_r_multiple=1.5
 strategy_ema_filter_enabled=false
 strategy_ema_period=200
 strategy_max_spread_points=0
+; --- grid child 007/050 of QM5_10558_mql5-mfi-slow_EURUSD.DWX_H6_backtest (n_dims=4 m_per_dim=3 perturb=±30%) ---
+strategy_mfi_period=10
+strategy_oversold_level=21
+strategy_overbought_level=91
+strategy_slowdown_bars=2
