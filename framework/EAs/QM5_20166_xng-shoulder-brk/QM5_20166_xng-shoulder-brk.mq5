@@ -51,7 +51,7 @@ bool Channel(const int start,double &hi,double &lo,double &avg)
    hi=-DBL_MAX; lo=DBL_MAX; avg=0.0;
    for(int i=start;i<start+strategy_channel_days;++i)
      {
-      double h=iHigh(_Symbol,PERIOD_D1,i),l=iLow(_Symbol,PERIOD_D1,i);
+      double h=iHigh(_Symbol,PERIOD_D1,i),l=iLow(_Symbol,PERIOD_D1,i); // perf-allowed: once per D1 new-bar signal evaluation.
       if(h<=l || l<=0.0) return false;
       hi=MathMax(hi,h); lo=MathMin(lo,l); avg+=(h-l);
      }
@@ -82,12 +82,12 @@ bool Strategy_NoTradeFilter()
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    CloseExpired();
-   if(Owned() || !IsShoulder(iTime(_Symbol,PERIOD_D1,1))) return false;
+   if(Owned() || !IsShoulder(iTime(_Symbol,PERIOD_D1,1))) return false; // perf-allowed: one completed-bar timestamp per D1 signal.
    long spread=SymbolInfoInteger(_Symbol,SYMBOL_SPREAD);
    if(spread<0 || spread>strategy_max_spread_points) return false;
    double hi,lo,avg,atr=QM_ATR(_Symbol,PERIOD_D1,strategy_atr_period,1);
    if(atr<=0.0 || !Channel(2,hi,lo,avg) || avg>atr*strategy_compression_mult) return false;
-   double c=iClose(_Symbol,PERIOD_D1,1);
+   double c=iClose(_Symbol,PERIOD_D1,1); // perf-allowed: one completed close per D1 signal.
    if(c>hi) req.type=QM_BUY;
    else if(c<lo) req.type=QM_SELL;
    else return false;
