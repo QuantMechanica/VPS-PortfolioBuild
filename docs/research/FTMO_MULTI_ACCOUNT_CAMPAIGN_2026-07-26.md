@@ -122,9 +122,78 @@ matching FTMO's real leverage can be read off once it is known:
 | **50×** | 5 | 91.0 % | **84.7 %** |
 | 75× | 5 | 93.4 % | 86.0 % |
 
-Research enqueued for the cited figure: agent task `9b7c6aaf` (priority 94),
-official FTMO leverage per symbol class plus stop-out level, with a proposed
-`venue_cost_model.json` patch so it becomes a registry fact.
+### RESOLVED 2026-07-27 — FTMO's published leverage
+
+From ftmo.com directly (blog *"A few answers to your questions"*, and the account
+specifications FAQ), for the **Normal** account type:
+
+> forex **1:100** · indices **1:50** (1:30 for HK50.cash, US2000.cash, SPN35.cash)
+> · metals **1:30** · crypto/equity CFD/commodities 1:3.3
+> Swing accounts: up to 1:30 throughout.
+
+Applied per account — and separate challenge accounts share margin with nothing:
+
+| account | exposure | FTMO leverage | margin used | margin level at −10 % equity |
+|---|---|---|---|---|
+| 9936/USDJPY @4 % | 65.9× | 1:100 | 65.9 % | 137 % |
+| 13213/USDJPY @4 % | 73.8× | 1:100 | 73.8 % | 122 % |
+| 10848/XAUUSD @5 % | 21.5× | 1:30 | 71.7 % | 126 % |
+| 10553/XAUUSD @8 % | 19.9× | 1:30 | 66.3 % | 136 % |
+
+**All four fit.** And the decisive part: at the equity where FTMO's total-loss rule
+has *already* ended the challenge (90 k), every account still stands above 120 %
+margin level. A broker stop-out sits far below that, so **the FTMO rule binds
+before any margin call** — which means the stop-out percentage FTMO does not
+publish (it tells you to read it off the platform) cannot change the verdict. The
+simulation's assumption that positions are held to their modelled outcome holds.
+
+The thin part, stated because a backtest cannot show it: free margin is only
+26–34 %. A position opened while the book already sits near peak exposure could be
+rejected outright. That is an execution risk, it is exactly what a demo run
+surfaces, and it is the reason to demo before paying a fee.
+
+Research task `9b7c6aaf` remains open for the `venue_cost_model.json` patch, so
+this becomes a registry fact rather than a document footnote.
+
+## Deployable artifacts
+
+Four set files, one per challenge account, committed:
+
+| account | set file | RISK_PERCENT | SHA256 (12) |
+|---|---|---|---|
+| 9936/USDJPY H1 | `..._USDJPY.DWX_H1_ftmo_challenge.set` | 4 | `9943718b23ca` |
+| 13213/USDJPY H1 | `..._USDJPY.DWX_H1_ftmo_challenge.set` | 4 | `0c81c93ed2a3` |
+| 10848/XAUUSD H1 | `..._XAUUSD.DWX_H1_ftmo_challenge.set` | 5 | `adbcf57b1c8f` |
+| 10553/XAUUSD H4 | `..._XAUUSD.DWX_H4_ftmo_challenge.set` | 8 | `8d578b6007a0` |
+
+Manifest: `docs/ops/evidence/2026-07-27_ftmo_challenge_deploy_manifest.json`.
+All four `.ex5` binaries verified present.
+
+**Why these are derived from the backtest sets and not regenerated.** Running
+`gen_setfile.ps1 -Env demo` produced set files that would have silently run a
+different strategy from the one measured:
+
+- **10848** — the backtest set carries `qm_filter_news_enabled=1` and
+  `qm_filter_news_mode=3`; the regenerated demo set omitted both, leaving the news
+  filter to whatever the EA compiles in.
+- **9936** — its backtest set records `card_defaults_source=not_found`, so the
+  measured run used the EA's own input defaults, while a regenerated set writes
+  card values over them.
+- **13213** — card lookup returned null and fell back to `ea_input_defaults`.
+
+The campaign's 81 % came from runs using the *backtest* sets, so the deployable
+artifact is those files with only the risk block changed. `make_challenge_setfiles.py`
+does that and verifies parameter identity: all four are byte-identical to their
+source apart from `RISK_FIXED`/`RISK_PERCENT`.
+
+Sizing translation is exact rather than fitted — `tester_defaults.json` sets
+`initial_deposit = 100000` and all four EAs backtest at `RISK_FIXED = 1000`, i.e.
+1 % of account, so multiplier L becomes `RISK_PERCENT = L`.
+
+One behavioural difference that survives and should be watched on the demo:
+`RISK_PERCENT` sizes off live equity, so position size drifts upward as the
+account gains, while `RISK_FIXED` did not. Over a 22-day run reaching +10 % that is
+second-order, but it is real.
 
 **A second caveat on the capped table**: it reaches its best rows by running
 low-exposure sleeves at very high multipliers (12823 at 61–91×). Those are
@@ -182,12 +251,17 @@ the three-account figure rises materially — 9936 scored 55.6 % solo against
    Both bounds clear 80 % at three accounts. Codex ticket `a5768d03` (per-bar
    equity export) is now a refinement rather than a blocker: it would replace the
    two bounds with a single figure, but it can no longer change the verdict.
-2. **Confirm FTMO's margin leverage** — agent task `9b7c6aaf`. This is the only
-   remaining external unknown, and it decides whether the 4×–8× configuration is
-   fundable as-is or must be rebuilt around the low-exposure sleeves.
-3. Let 9936/USDJPY Q08 complete (work item `7be51839`) — it is the strongest
-   member and currently pending, not passed.
-4. Translate the surviving multipliers into `RISK_PERCENT` set files once (2) is
-   known; `RISK_FIXED=0` for live per the Hard Rules.
-5. **OWNER money-gate**: three or four parallel challenge accounts means three or
-   four fees. That decision is OWNER's alone and is not assumed anywhere above.
+2. ~~Confirm FTMO's margin leverage~~ — **done**, cited above. All four accounts
+   fit, and the FTMO loss rule binds before any margin call.
+3. ~~Translate multipliers into `RISK_PERCENT` set files~~ — **done**, four files
+   committed with `RISK_FIXED=0`, parameter-identical to the measured runs.
+4. **Run it on an FTMO demo/free-trial account.** This is now the next real step
+   and it costs nothing. What the demo is actually testing, beyond "does it
+   trade": whether positions fill at 26–34 % free margin, whether FTMO's spreads
+   on XAUUSD and USDJPY resemble the `.DWX` history, and whether `RISK_PERCENT`
+   sizing reproduces the tested lot sizes at a 100 k balance.
+5. 9936/USDJPY Q08 is **active** (work item `7be51839`). Until it returns, the
+   strongest member is pending rather than passed — the 3-account configuration
+   excluding it (13213 + 10848 + 10553, 80.7 %) is the fully gate-backed one.
+6. **OWNER money-gate**: paying for challenge accounts is OWNER's decision alone
+   and is not assumed anywhere above. The demo step does not require it.
