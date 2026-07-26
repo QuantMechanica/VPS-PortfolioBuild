@@ -778,6 +778,93 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
             "EDGE_HARD",
         )
 
+    # ---- NARROW C2 (OWNER 2026-07-25): Q08.5/8.7 could-not-compute INVALID -> INFRA_FAIL ----
+    # decisions/2026-07-25_q08_tooling_invalid_is_infra.md
+
+    def test_narrow_c2_invalid_is_tooling_whitelist(self) -> None:
+        is_tooling = aggregate._q08_invalid_is_tooling
+        # could-not-compute (tooling) harness states -> True
+        self.assertTrue(is_tooling("neighborhood_evidence_lineage_invalid:artifact_missing"))
+        self.assertTrue(is_tooling("pbo_refresh_lineage_invalid:fresh_scores_or_meta_missing"))
+        self.assertTrue(is_tooling("perturbations_runner_output_missing:D:/x/perturbations.json"))
+        self.assertTrue(is_tooling("insufficient_distinct_configs:got=1:need>=2"))
+        # deterministic build/setgen defect -> excluded, stays a blocking INVALID
+        self.assertFalse(is_tooling(
+            "neighborhood_evidence_lineage_invalid:baseline_setfile_defect:empty_strategy_params"
+        ))
+        # unknown / genuine / computed details -> not tooling
+        self.assertFalse(is_tooling("degenerate"))
+        self.assertFalse(is_tooling("degenerate_baseline:trades=0:pf=None"))
+        self.assertFalse(is_tooling("3_perturbation_breaches"))
+        self.assertFalse(is_tooling("PBO=88.60%:max=40%"))
+        self.assertFalse(is_tooling(""))
+
+    def test_narrow_c2_neighborhood_lineage_tooling_invalid_is_infra_fail(self) -> None:
+        # 8.5 neighborhood support artifact un-lineage-verifiable = could-not-compute
+        # (harness state) -> INFRA_FAIL (retry-owed), not a terminal blocking INVALID.
+        trades = [_trade(dt.datetime(2024, 1, d), 10.0) for d in range(1, 20)]
+        trades.append(_trade(dt.datetime(2024, 2, 1), -5.0))
+        subs = [
+            {"name": "8.1_correlation", "status": "PASS"},
+            {"name": "8.7_pbo", "status": "PASS"},
+            {"name": "8.5_neighborhood", "status": "INVALID",
+             "detail": "neighborhood_evidence_lineage_invalid:artifact_missing"},
+        ]
+        verdict, classification = aggregate._aggregate_verdict(subs, trades=trades)
+        self.assertEqual(verdict, "INFRA_FAIL")
+        self.assertEqual(classification["8.5_neighborhood"], "INVALID")
+
+    def test_narrow_c2_pbo_insufficient_configs_tooling_invalid_is_infra_fail(self) -> None:
+        # 8.7 PBO on a fixed-param card: <2 distinct configs -> could-not-compute -> INFRA_FAIL.
+        trades = [_trade(dt.datetime(2024, 1, d), 10.0) for d in range(1, 20)]
+        trades.append(_trade(dt.datetime(2024, 2, 1), -5.0))
+        subs = [
+            {"name": "8.5_neighborhood", "status": "PASS"},
+            {"name": "8.7_pbo", "status": "INVALID",
+             "detail": "insufficient_distinct_configs:got=1:need>=2"},
+        ]
+        verdict, classification = aggregate._aggregate_verdict(subs, trades=trades)
+        self.assertEqual(verdict, "INFRA_FAIL")
+        self.assertEqual(classification["8.7_pbo"], "INVALID")
+
+    def test_narrow_c2_setfile_defect_invalid_stays_blocking(self) -> None:
+        # OTHER DIRECTION: a deterministic build/setgen defect is NOT retry-owed —
+        # re-derivation reproduces it (07-19 RCA), so it stays a blocking INVALID.
+        trades = [_trade(dt.datetime(2024, 1, d), 10.0) for d in range(1, 20)]
+        trades.append(_trade(dt.datetime(2024, 2, 1), -5.0))
+        subs = [
+            {"name": "8.7_pbo", "status": "PASS"},
+            {"name": "8.5_neighborhood", "status": "INVALID",
+             "detail": "neighborhood_evidence_lineage_invalid:baseline_setfile_defect:empty_strategy_params"},
+        ]
+        verdict, _ = aggregate._aggregate_verdict(subs, trades=trades)
+        self.assertEqual(verdict, "INVALID")
+
+    def test_narrow_c2_unknown_non_tooling_invalid_stays_blocking(self) -> None:
+        # An unknown / non-whitelisted 8.7 INVALID stays fail-closed as a blocking INVALID.
+        trades = [_trade(dt.datetime(2024, 1, d), 10.0) for d in range(1, 20)]
+        trades.append(_trade(dt.datetime(2024, 2, 1), -5.0))
+        subs = [
+            {"name": "8.7_pbo", "status": "INVALID", "detail": "some_unrecognized_pbo_condition"},
+            {"name": "8.5_neighborhood", "status": "PASS"},
+        ]
+        verdict, _ = aggregate._aggregate_verdict(subs, trades=trades)
+        self.assertEqual(verdict, "INVALID")
+
+    def test_narrow_c2_mixed_tooling_invalid_and_computed_fail_fail_wins(self) -> None:
+        # BOUNDARY: one tooling could-not-compute INVALID + one COMPUTED robustness breach
+        # (status FAIL) -> FAIL wins. A tooling INVALID never rescues a real hard failure.
+        trades = [_trade(dt.datetime(2024, 1, d), 10.0) for d in range(1, 20)]
+        trades.append(_trade(dt.datetime(2024, 2, 1), -5.0))
+        subs = [
+            {"name": "8.7_pbo", "status": "INVALID",
+             "detail": "insufficient_distinct_configs:got=1:need>=2"},
+            {"name": "8.5_neighborhood", "status": "FAIL", "detail": "3_perturbation_breaches"},
+        ]
+        verdict, classification = aggregate._aggregate_verdict(subs, trades=trades)
+        self.assertEqual(verdict, "FAIL_HARD")
+        self.assertEqual(classification["8.5_neighborhood"], "EDGE_HARD")
+
     def test_structured_qm_log_loader_finds_tester_agent_equity_stream(self) -> None:
         # Guard the helper's contract directly without requiring a live MT5 tree.
         self.assertTrue(hasattr(aggregate, "_latest_structured_qm_log"))

@@ -1361,9 +1361,49 @@ def _net_profit_factor(trades: list[dict]) -> float | None:
     return common.profit_factor(profits)
 
 
+# NARROW C2 (OWNER 2026-07-25 push-directive; decisions/2026-07-25_q08_tooling_invalid_is_infra.md).
+# Q08.5 (neighborhood) and Q08.7 (PBO) need a >=2-config optimization grid / neighborhood-support
+# artifact that a fixed-param card EA's Q03 never publishes. When that artifact is ABSENT or
+# un-lineage-verifiable the sub-gate returns INVALID with one of these EXACT detail prefixes. That
+# is a could-not-compute TOOLING state — a retry-owed infrastructure condition (same taxonomy as
+# WP-4 ACTIVE_TIMEOUT / WP-3), NOT a robustness verdict — so the aggregate resolves it to
+# INFRA_FAIL rather than a terminal blocking INVALID. Matched by exact prefix, never loose
+# substring, so the whitelist can never silently absorb a real verdict.
+Q08_TOOLING_INVALID_DETAIL_PREFIXES = (
+    "neighborhood_evidence_lineage_invalid",  # 8.5 lineage un-verifiable (aggregate._neighborhood_lineage_invalid_result)
+    "pbo_refresh_lineage_invalid",            # 8.7 refresh un-verifiable (aggregate._pbo_refresh_invalid_result)
+    "perturbations_runner_output_missing",    # 8.5 neighborhood artifact absent (sub_8_5_neighborhood.run)
+    "insufficient_distinct_configs",          # 8.7 <2-config grid — the fixed-param card case (sub_8_7_pbo.run)
+)
+
+# EXCLUDED — these stay a genuine blocking INVALID and are NEVER reclassified to INFRA_FAIL:
+#   * baseline_setfile_defect:* — a DETERMINISTIC build/setgen defect (07-19 RCA): re-derivation
+#     re-reads the same broken setfile and reproduces it, so it must stay INVALID precisely so the
+#     stranded-INFRA sweep refuses the doomed re-enqueue. It is not retry-owed.
+# (A COMPUTED breach — 8.5 'N_perturbation_breaches' / 8.7 'PBO=..%' FAIL — carries status FAIL,
+#  never INVALID, so it never reaches this classifier and keeps the existing FAIL_HARD path.
+#  A degenerate_baseline INVALID is already routed to INFRA_RECYCLE upstream, DL-082 §3a.)
+Q08_TOOLING_INVALID_EXCLUDE_TOKENS = (
+    "baseline_setfile_defect",
+)
+
+
+def _q08_invalid_is_tooling(detail: str) -> bool:
+    """True iff an 8.5/8.7 INVALID detail is a could-not-compute (tooling) harness state.
+
+    Enumerated whitelist, matched by EXACT prefix (never loose substring). A deterministic
+    build/setgen defect is explicitly excluded and stays a blocking INVALID. See
+    decisions/2026-07-25_q08_tooling_invalid_is_infra.md.
+    """
+    d = str(detail or "").strip().lower()
+    if any(token in d for token in Q08_TOOLING_INVALID_EXCLUDE_TOKENS):
+        return False
+    return any(d.startswith(prefix) for prefix in Q08_TOOLING_INVALID_DETAIL_PREFIXES)
+
+
 def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None,
                        cost_cushion_tier: str | None = None) -> tuple[str, dict[str, str]]:
-    """Combine sub-gate statuses into PASS/FAIL_SOFT/FAIL_HARD/INVALID/INFRA_RECYCLE.
+    """Combine sub-gate statuses into PASS/FAIL_SOFT/FAIL_HARD/INVALID/INFRA_RECYCLE/INFRA_FAIL.
 
     DL-082 §3 recalibration:
       - §3a degenerate (0-trade) Q08.5 neighborhood baseline -> INFRA_RECYCLE (an
@@ -1374,10 +1414,15 @@ def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None
       - §3c explicit PASS: all merit gates pass and every remaining soft signal is
         within the ratified non-merit allowance (EDGE_SOFT of 8.4/8.6/8.10/8.11 +
         LOW_SAMPLE + INFORMATIONAL). Anything outside that allowance -> FAIL_SOFT.
+      - NARROW C2 (OWNER 2026-07-25): a blocking 8.5/8.7 INVALID whose detail is a
+        could-not-compute TOOLING state (see _q08_invalid_is_tooling) -> INFRA_FAIL
+        (retry-owed infra), never a terminal block. A deterministic build/setgen defect
+        or a COMPUTED FAIL still blocks.
     """
     classification: dict[str, str] = {}
     hard = False
     blocking_invalid = False
+    tooling_invalid = False
     degenerate_recycle = False
 
     for result in sub_results:
@@ -1426,7 +1471,16 @@ def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None
         ):
             classification[name] = "INVALID"
             if name.startswith(("8.5", "8.7")):
-                blocking_invalid = True
+                # NARROW C2 (OWNER 2026-07-25): split the blocking 8.5/8.7 INVALID label
+                # into (a) a could-not-compute TOOLING state — the >=2-config optimization
+                # grid a fixed-param card EA never publishes was absent / un-verifiable
+                # (retry-owed infra, WP-4 precedent) -> INFRA_FAIL; and (b) a genuine
+                # blocking INVALID (a deterministic build/setgen defect, or an unknown
+                # non-tooling INVALID) that must keep failing. See _q08_invalid_is_tooling.
+                if _q08_invalid_is_tooling(detail_lower):
+                    tooling_invalid = True
+                else:
+                    blocking_invalid = True
             continue
         tier = _classify_fail(result)
         classification[name] = tier
@@ -1481,11 +1535,26 @@ def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None
     if degenerate_recycle:
         return "INFRA_RECYCLE", classification
 
-    # OWNER 2026-07-17 (untouched): unresolved neighborhood/PBO tooling evidence is not
-    # admissible. It stays a genuine blocking INVALID until the configured robustness
-    # family is genuinely evaluable; other Davey passes cannot soften this condition.
+    # OWNER 2026-07-17 (untouched): a GENUINE blocking 8.5/8.7 INVALID — a deterministic
+    # build/setgen defect (baseline_setfile_defect: re-derivation re-reads the same broken
+    # setfile, 07-19 RCA) or an unknown non-tooling INVALID — is not admissible and stays a
+    # blocking INVALID; other Davey passes cannot soften it. The only 07-17 record governs
+    # neighborhood FAIL and genuine non-evaluable INVALID, NOT a harness could-not-compute
+    # state (verified: no ratifying record blocks the tooling class —
+    # docs/ops/evidence/2026-07-25_codex_review_wp2346.md; decisions/2026-07-25_q08_tooling_invalid_is_infra.md).
     if blocking_invalid:
         return "INVALID", classification
+
+    # NARROW C2 (OWNER 2026-07-25 push-directive): the only blocking 8.5/8.7 INVALIDs are
+    # could-not-compute TOOLING states (the >=2-config grid / neighborhood-support artifact a
+    # fixed-param card EA never publishes was absent or un-lineage-verifiable). That is a
+    # retry-owed infrastructure condition, NOT a robustness verdict — the same taxonomy as
+    # WP-3/WP-4 (ACTIVE_TIMEOUT). Resolve to INFRA_FAIL so the item re-runs when the grid
+    # exists, instead of terminally blocking a fixed-param card EA on evidence it structurally
+    # cannot produce. A COMPUTED FAIL in ANY sub-gate outranks this (handled by `hard` above);
+    # a genuine blocking INVALID outranks it (handled just above).
+    if tooling_invalid:
+        return "INFRA_FAIL", classification
 
     # DL-077 (2026-06-26, OWNER): the Davey statistical battery mostly CANNOT COMPUTE for the
     # low-frequency structural edges this funnel selects (8.2 DSR, 8.6, 8.8, 8.9, 8.10 go
