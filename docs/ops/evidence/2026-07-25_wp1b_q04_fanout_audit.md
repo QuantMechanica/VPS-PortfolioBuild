@@ -2,7 +2,11 @@
 
 Built by Opus (Claude side) per the plan's REVISION 2, replacing the withdrawn WP-1. Read-only
 throughout (`mode=ro`, DB snapshot 2026-07-25T13:00Z); no gate, cap, setfile or DB row changed.
-Codex review pending (Claude-built → Codex reviews).
+Codex review 2026-07-25 (batch 2): CHANGES-REQUIRED on the multi-setfile headline only — the
+original 787/10 440/68.8 % figure measured pairs with multiple *rows*, not multiple distinct
+setfiles; corrected below per Codex's reconstruction (716 pairs / 10 298 rows / 67.875 %). All
+other findings verified (synth 1/1 334 PASS reproduced; promotion loop confirmed globally
+uncapped, `LIMIT 10` is per pump iteration). See `2026-07-25_codex_review_batch2.md`.
 
 ## Verdict in one line
 
@@ -16,8 +20,9 @@ change what gets tested and are therefore OWNER decisions.
 ## 1. Fan-out quantified
 
 Q04: 5 519 (ea, symbol) pairs, 15 172 rows. Median rows/pair **1**, p90 = 2, p99 = 55, max **387**
-(QM5_10042/AUDUSD). 787 multi-setfile pairs carry **10 440 rows = 68.8 % of all Q04 work**;
-4 732 pairs have exactly one row. The distribution is bimodal: a cluster at 50–57 rows (~111
+(QM5_10042/AUDUSD). 716 multi-setfile pairs carry **10 298 rows = 67.9 % of all Q04 work**
+(the multi-*row* population — which includes 71 retry-only pairs whose rows share one setfile —
+is 787 pairs / 10 440 rows / 68.8 %); 4 732 pairs have exactly one row. The distribution is bimodal: a cluster at 50–57 rows (~111
 pairs, a recurring ~56-variant grid) plus 6 runaway pairs (165–387).
 
 **Q03→Q04 is a strict 1:1 mirror.** 5 410 of 5 519 pairs have rowcount == distinct setfiles; the
