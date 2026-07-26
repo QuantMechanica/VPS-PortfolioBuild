@@ -27,6 +27,11 @@ DEFAULT_REPO_ROOT = Path(r"C:\QM\repo")
 STRICT_PHASES = ("Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08", "Q10")
 RESEARCH_LEAD_Q08_VERDICTS = {"FAIL_SOFT"}
 KEY_RE = re.compile(r"^(?:QM5_)?(?P<ea_id>\d+):(?P<symbol>.+)$", re.IGNORECASE)
+# Basket EAs carry a logical composite work-item symbol (QM5_<id>_..., never a
+# real MT5 symbol). The magic registry is keyed by the real broker legs, so a
+# direct symbol lookup can never match a basket candidate — the logical symbol
+# must be resolved to its real legs before the registry is consulted.
+BASKET_SYMBOL_RE = re.compile(r"^QM5_\d+_", re.IGNORECASE)
 
 
 def normalize_ea_label(value: Any) -> str:
@@ -78,19 +83,125 @@ def _latest_phase_row(
     ).fetchone()
 
 
-def _active_magic_registered(registry_path: Path, ea_id: str, symbol: str) -> bool:
+def _norm_symbols(values: Any) -> list[str]:
+    """Upper-case, de-duplicated symbol list preserving first-seen order."""
+    out: list[str] = []
+    for value in values or []:
+        token = str(value or "").strip().upper()
+        if token and token not in out:
+            out.append(token)
+    return out
+
+
+def _basket_manifest_for(repo_root: Path, ea_id: str) -> dict[str, Any] | None:
+    """Load the EA's basket_manifest.json when it declares one (single EA dir)."""
+    dirs = sorted((repo_root / "framework" / "EAs").glob(f"{ea_id}_*"))
+    if len(dirs) != 1:
+        return None
+    manifest_path = dirs[0] / "basket_manifest.json"
+    if not manifest_path.exists():
+        return None
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    return manifest if isinstance(manifest, dict) else None
+
+
+def _basket_required_legs(manifest: dict[str, Any]) -> list[str] | None:
+    """Precise set of legs that must own an active magic row, or None if unknown.
+
+    ``traded_symbols`` is authoritative when the manifest declares it. Otherwise,
+    when the manifest separates conversion-only legs, the traded set is the
+    complete derivation ``basket_symbols`` minus ``conversion_symbols``. When
+    neither key is present the precise traded set is unknowable here:
+    ``basket_symbols`` also lists conversion/history-only legs (e.g. EUR-account
+    FX conversion pairs) that correctly never receive a magic number, so
+    requiring all of them would manufacture false blockers while a genuinely
+    traded leg with a missing registry row would hide among them. ``None`` thus
+    means "traded set undeclared" and the caller rejects the basket fail-closed
+    rather than guessing.
+    """
+    if "traded_symbols" in manifest:
+        # A DECLARED traded_symbols key is always authoritative — even when
+        # malformed. An empty list, blank/whitespace entries, or a non-list
+        # value reject rather than falling through to the derivation
+        # (adversarial reviews 2026-07-26 batches 3+4: `[]` fell through).
+        traded = manifest["traded_symbols"]
+        if isinstance(traded, list):
+            return _norm_symbols(traded) or None
+        return None
+    conversion = manifest.get("conversion_symbols")
+    basket = manifest.get("basket_symbols")
+    if isinstance(conversion, list) and conversion and isinstance(basket, list):
+        conversion_set = set(_norm_symbols(conversion))
+        # An empty derivation (every basket leg listed as conversion) leaves the
+        # traded set unknowable — same fail-closed rejection as undeclared.
+        return [leg for leg in _norm_symbols(basket) if leg not in conversion_set] or None
+    return None
+
+
+def _active_magic_registered(
+    registry_path: Path,
+    ea_id: str,
+    symbol: str,
+    *,
+    repo_root: Path = DEFAULT_REPO_ROOT,
+) -> tuple[bool, str | None]:
+    """Return (registered, blocker_reason).
+
+    Plain single-symbol EAs keep the original contract: an active row for the
+    exact ``(ea_id, symbol)`` pair. Basket candidates carry a logical symbol that
+    can never match the registry (keyed by real broker legs), so the logical name
+    is resolved to its real legs via basket_manifest.json and every leg must own
+    an active registry row.
+    """
     if not registry_path.exists():
-        return False
+        return False, "active_magic_missing"
     numeric = str(int(ea_id.removeprefix("QM5_")))
+    active: set[str] = set()
     with registry_path.open(encoding="utf-8-sig", newline="") as handle:
         for row in csv.DictReader(handle):
             if str(row.get("ea_id") or "").strip() != numeric:
                 continue
-            if str(row.get("symbol") or "").strip().upper() != symbol:
-                continue
             if str(row.get("status") or "").strip().lower() == "active":
-                return True
-    return False
+                active.add(str(row.get("symbol") or "").strip().upper())
+
+    symbol_u = symbol.strip().upper()
+    # Basket candidates (QM5_<id>_ logical symbols) must NEVER take the direct-
+    # match path: an active registry row for the logical name is not evidence
+    # that every real broker leg owns an active row (adversarial review
+    # 2026-07-26 batch 3). Plain symbols keep the exact original contract: an
+    # active row for the exact (ea_id, symbol) pair, else the original blocker.
+    if not BASKET_SYMBOL_RE.match(symbol_u):
+        if symbol_u in active:
+            return True, None
+        return False, "active_magic_missing"
+
+    manifest = _basket_manifest_for(repo_root, ea_id)
+    if manifest is None:
+        return False, "active_magic_missing:basket_manifest_unavailable"
+    logical = str(manifest.get("logical_symbol") or "").strip().upper()
+    if logical and logical != symbol_u:
+        return False, "active_magic_missing:logical_symbol_mismatch"
+
+    # Fail-closed: a basket clears the magic-completeness check ONLY when its
+    # traded legs are authoritatively known -- traded_symbols, or a complete
+    # basket_symbols - conversion_symbols derivation. Without either, the precise
+    # traded set is unknowable here: basket_symbols also lists conversion-only
+    # legs, so a genuinely traded leg whose registry row is missing is
+    # indistinguishable from an absent conversion leg. A host + registry-
+    # consistency heuristic would silently pass that hole (adversarial review
+    # 2026-07-26), contradicting this module's fail-closed contract, so an
+    # undeclared traded set is rejected. The fix is to declare traded_symbols
+    # (or conversion_symbols) in basket_manifest.json.
+    required = _basket_required_legs(manifest)
+    if required is None:
+        return False, "active_magic_unknown_legs:" + symbol_u + ":traded_symbols_undeclared"
+    missing = [leg for leg in required if leg not in active]
+    if missing:
+        return False, "active_magic_missing_legs:" + ",".join(missing)
+    return True, None
 
 
 def _mtime_utc(path: Path) -> str | None:
@@ -199,9 +310,11 @@ def evaluate_candidate(
         blockers.append(f"build_not_clean:{build_detail}")
 
     registry_path = repo_root / "framework" / "registry" / "magic_numbers.csv"
-    registry_ok = _active_magic_registered(registry_path, ea_id, symbol)
+    registry_ok, registry_reason = _active_magic_registered(
+        registry_path, ea_id, symbol, repo_root=repo_root
+    )
     if not registry_ok:
-        blockers.append("active_magic_missing")
+        blockers.append(registry_reason or "active_magic_missing")
 
     q08_verdict = None
     q08_evidence_path: Path | None = None
