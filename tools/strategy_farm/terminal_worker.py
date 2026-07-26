@@ -70,6 +70,13 @@ MULTISYMBOL_RAM_MIN_FREE_GB = 12.0
 # plus a small system margin available before admitting another heavy job.
 MULTISYMBOL_COMMIT_MIN_FREE_GB = 48.0
 MULTISYMBOL_COMMIT_RESERVATION_GB = 44.0
+# A multisymbol loader materializes its working set over tens of minutes, so the
+# ordinary 300s window expires long before it stops growing and other jobs get
+# admitted into the balloon phase (2026-07-26 17:45 pagefile storm). Holding the
+# window open is only safe because the reservation decays against measured
+# usage — see _commit_admission_snapshot; a flat hold double-counts and starves
+# the fleet (reverted 347859ad3).
+MULTISYMBOL_COMMIT_RESERVATION_SECONDS = 3600
 # Launch-fault guard (2026-06-20): the spawned phase-runner child vanishing far
 # faster than any real backtest (terminal64 startup + sync alone is ~6-10s) means
 # the run never actually started — a transient pwsh/host launch fault, NOT a clean
@@ -519,19 +526,167 @@ def _work_item_is_multisymbol(
         return False
 
 
+_PROCESS_SNAPSHOT_TTL_SECONDS = 3.0
+_process_snapshot_cache: dict[str, Any] = {"at": -1e9, "children": {}, "private": {}}
+
+
+def _process_private_snapshot() -> tuple[dict[int, list[int]], dict[int, int]]:
+    """(children-by-parent-pid, private-commit-bytes-by-pid) for every process.
+
+    Toolhelp32 + psapi via ctypes: the admission gate runs on every poll of every
+    worker, so the PowerShell-based probes in ``farmctl`` (hundreds of ms each)
+    are unusable here. Cached for ``_PROCESS_SNAPSHOT_TTL_SECONDS`` because nine
+    workers poll independently. Returns empty maps on any failure — callers must
+    treat that as "unknown", never as "zero usage".
+    """
+    now = time.monotonic()
+    if now - _process_snapshot_cache["at"] < _PROCESS_SNAPSHOT_TTL_SECONDS:
+        return _process_snapshot_cache["children"], _process_snapshot_cache["private"]
+    children: dict[int, list[int]] = {}
+    private: dict[int, int] = {}
+    if sys.platform != "win32":
+        return children, private
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        class _PROCESSENTRY32W(ctypes.Structure):
+            _fields_ = [
+                ("dwSize", wintypes.DWORD),
+                ("cntUsage", wintypes.DWORD),
+                ("th32ProcessID", wintypes.DWORD),
+                ("th32DefaultHeapID", ctypes.POINTER(ctypes.c_ulong)),
+                ("th32ModuleID", wintypes.DWORD),
+                ("cntThreads", wintypes.DWORD),
+                ("th32ParentProcessID", wintypes.DWORD),
+                ("pcPriClassBase", ctypes.c_long),
+                ("dwFlags", wintypes.DWORD),
+                ("szExeFile", ctypes.c_wchar * 260),
+            ]
+
+        class _PROCESS_MEMORY_COUNTERS_EX(ctypes.Structure):
+            _fields_ = [
+                ("cb", wintypes.DWORD),
+                ("PageFaultCount", wintypes.DWORD),
+                ("PeakWorkingSetSize", ctypes.c_size_t),
+                ("WorkingSetSize", ctypes.c_size_t),
+                ("QuotaPeakPagedPoolUsage", ctypes.c_size_t),
+                ("QuotaPagedPoolUsage", ctypes.c_size_t),
+                ("QuotaPeakNonPagedPoolUsage", ctypes.c_size_t),
+                ("QuotaNonPagedPoolUsage", ctypes.c_size_t),
+                ("PagefileUsage", ctypes.c_size_t),
+                ("PeakPagefileUsage", ctypes.c_size_t),
+                ("PrivateUsage", ctypes.c_size_t),
+            ]
+
+        kernel32 = ctypes.windll.kernel32
+        psapi = ctypes.windll.psapi
+        TH32CS_SNAPPROCESS = 0x00000002
+        INVALID_HANDLE_VALUE = ctypes.c_void_p(-1).value
+        PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+        PROCESS_VM_READ = 0x0010
+
+        snapshot = kernel32.CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0)
+        if snapshot == INVALID_HANDLE_VALUE:
+            return children, private
+        try:
+            entry = _PROCESSENTRY32W()
+            entry.dwSize = ctypes.sizeof(_PROCESSENTRY32W)
+            more = kernel32.Process32FirstW(snapshot, ctypes.byref(entry))
+            pids: list[tuple[int, int]] = []
+            while more:
+                pids.append((int(entry.th32ProcessID), int(entry.th32ParentProcessID)))
+                more = kernel32.Process32NextW(snapshot, ctypes.byref(entry))
+        finally:
+            kernel32.CloseHandle(snapshot)
+
+        for pid, ppid in pids:
+            children.setdefault(ppid, []).append(pid)
+            handle = kernel32.OpenProcess(
+                PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_VM_READ, False, pid
+            )
+            if not handle:
+                handle = kernel32.OpenProcess(
+                    PROCESS_QUERY_LIMITED_INFORMATION, False, pid
+                )
+            if not handle:
+                continue
+            try:
+                counters = _PROCESS_MEMORY_COUNTERS_EX()
+                counters.cb = ctypes.sizeof(_PROCESS_MEMORY_COUNTERS_EX)
+                if psapi.GetProcessMemoryInfo(
+                    handle, ctypes.byref(counters), counters.cb
+                ):
+                    private[pid] = int(counters.PrivateUsage)
+            finally:
+                kernel32.CloseHandle(handle)
+    except Exception:
+        return {}, {}
+
+    _process_snapshot_cache["at"] = now
+    _process_snapshot_cache["children"] = children
+    _process_snapshot_cache["private"] = private
+    return children, private
+
+
+def _measured_subtree_gb(pid: Any) -> float | None:
+    """Private commit (GB) held by ``pid`` and every descendant, or None.
+
+    Walks the children map rather than the live parent links: a phase driver's
+    Python parent often exits while its run_smoke/pwsh child keeps running, and
+    Windows leaves the dead parent's id in the child's PPID field, so the
+    subtree stays discoverable. None means "could not measure" — the caller then
+    keeps the full reservation instead of assuming the job uses nothing.
+    """
+    try:
+        root_pid = int(pid)
+    except (TypeError, ValueError):
+        return None
+    children, private = _process_private_snapshot()
+    if not private:
+        return None
+    total = 0
+    seen: set[int] = set()
+    queue = [root_pid]
+    found = False
+    while queue:
+        current = queue.pop()
+        if current in seen:
+            continue
+        seen.add(current)
+        if current in private:
+            total += private[current]
+            found = True
+        queue.extend(children.get(current, ()))
+    if not found:
+        # Nothing of this lineage is alive any more: the job's processes are
+        # gone, so there is no future growth left to reserve for.
+        return float("inf")
+    return total / (1024 ** 3)
+
+
 def _commit_admission_snapshot(
     conn: sqlite3.Connection,
     now_iso: str,
     multisym_ids: frozenset,
 ) -> dict[str, Any]:
-    """Measure commit headroom minus recent atomic claim reservations.
+    """Measure commit headroom minus the *unmaterialized* part of active claims.
 
     Windows' commit charge does not jump at SQLite claim time. Without a durable
     reservation, every worker can observe the same headroom and over-admit work
-    before any child reaches its peak. Active claims reserve their expected peak
-    for the bounded launch/warm-up window; afterwards the OS measurement is the
-    source of truth. The reservation is deliberately conservative and disappears
-    immediately when the work item leaves ``active``.
+    before any child reaches its peak. Active claims therefore reserve their
+    expected peak — but only the portion that has not been allocated yet:
+
+        reservation = max(0, expected_peak - measured_subtree_private_bytes)
+
+    The OS commit measurement already contains whatever a running job has really
+    taken, so reserving its full peak on top of that double-counts it. Holding a
+    flat 44GB for a ballooning multisymbol job pinned the entire fleet below the
+    admission threshold on a box with 64GB free (2026-07-26, reverted in
+    347859ad3). Decaying against the measurement keeps the launch-race
+    protection at full strength (nothing allocated yet -> full reservation) and
+    fades to zero once the job is at peak, which is what lets the window stay
+    open for the whole balloon phase instead of expiring mid-growth.
     """
     live_headroom = _commit_headroom_gb()
     probe_ok = math.isfinite(live_headroom) or (
@@ -545,30 +700,50 @@ def _commit_admission_snapshot(
     ).fetchall()
     for row in rows:
         payload = _json_loads(row["payload_json"])
+        item_is_multisym = _work_item_is_multisymbol(row, payload, multisym_ids)
+        window_seconds = (
+            MULTISYMBOL_COMMIT_RESERVATION_SECONDS
+            if item_is_multisym
+            else COMMIT_RESERVATION_SECONDS
+        )
         until = _parse_utc_iso(payload.get("commit_reservation_until_utc"))
         claimed_at = _parse_utc_iso(payload.get("claimed_at_iso"))
         if until is None and claimed_at is not None:
-            until = claimed_at + timedelta(seconds=COMMIT_RESERVATION_SECONDS)
+            until = claimed_at + timedelta(seconds=window_seconds)
         if until is None or until <= now_dt:
             continue
-        item_is_multisym = _work_item_is_multisymbol(row, payload, multisym_ids)
         default_reservation = (
             MULTISYMBOL_COMMIT_RESERVATION_GB
             if item_is_multisym
             else ORDINARY_COMMIT_RESERVATION_GB
         )
         try:
-            reservation_gb = max(
+            expected_peak_gb = max(
                 0.0,
                 float(payload.get("commit_reservation_gb") or default_reservation),
             )
         except (TypeError, ValueError):
-            reservation_gb = default_reservation
+            expected_peak_gb = default_reservation
+        # Decay the reservation against what the job has already allocated; the
+        # live headroom above already accounts for that part.
+        pid = payload.get("pid")
+        measured_gb = _measured_subtree_gb(pid) if pid else None
+        if measured_gb is None:
+            # Not spawned yet, or the probe failed: keep the full peak reserved.
+            reservation_gb = expected_peak_gb
+        else:
+            reservation_gb = max(0.0, expected_peak_gb - measured_gb)
         reserved_gb += reservation_gb
         reservations.append({
             "item_id": row["id"],
             "ea_id": row["ea_id"],
-            "reservation_gb": reservation_gb,
+            "reservation_gb": round(reservation_gb, 2),
+            "expected_peak_gb": expected_peak_gb,
+            "measured_gb": (
+                None
+                if measured_gb is None or math.isinf(measured_gb)
+                else round(measured_gb, 2)
+            ),
             "until_utc": until.isoformat(),
         })
     return {
@@ -593,7 +768,14 @@ def _set_commit_reservation(
         else ORDINARY_COMMIT_RESERVATION_GB
     )
     payload["commit_reservation_until_utc"] = (
-        claimed_at + timedelta(seconds=COMMIT_RESERVATION_SECONDS)
+        claimed_at
+        + timedelta(
+            seconds=(
+                MULTISYMBOL_COMMIT_RESERVATION_SECONDS
+                if multisymbol
+                else COMMIT_RESERVATION_SECONDS
+            )
+        )
     ).isoformat()
 
 
@@ -877,6 +1059,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         "commit_reserved_gb": round(admission["reserved_gb"], 1),
                         "effective_commit_headroom_gb": round(effective_commit_headroom, 1),
                         "commit_reservation_count": len(admission["reservations"]),
+                        "commit_reservation_detail": admission["reservations"],
                         "threshold_gb": COMMIT_MIN_FREE_GB,
                     }
 
@@ -1174,6 +1357,7 @@ def claim_specific_atomic(root: Path, terminal: str, item_id: str) -> dict[str, 
                         "commit_reserved_gb": round(admission["reserved_gb"], 1),
                         "effective_commit_headroom_gb": round(effective_commit_headroom, 1),
                         "commit_reservation_count": len(admission["reservations"]),
+                        "commit_reservation_detail": admission["reservations"],
                         "threshold_gb": COMMIT_MIN_FREE_GB,
                     }
 
