@@ -770,27 +770,61 @@ def chk_ablation_grandchildren(con) -> dict:
     return _check("ablation_grandchildren", "OK", 0, 0, "no grandchildren", "")
 
 
+def _parse_task_payload(payload_json) -> dict | None:
+    """RATIFIED payload contract for the starvation check (2026-07-26, batch-3
+    review): only VALID JSON OBJECTS count, and keys are read at TOP LEVEL only.
+    This deliberately supersedes the legacy SQL LIKE substring semantics (which
+    were format-sensitive on JSON spacing yet case-insensitive on the verdict):
+    the farm's own task writers emit canonical flat json.dumps objects, so a
+    malformed payload is producer breakage to surface elsewhere, not signal."""
+    try:
+        parsed = json.loads(payload_json or "")
+    except (TypeError, ValueError):
+        return None
+    return parsed if isinstance(parsed, dict) else None
+
+
+def _count_starved_builds(tasks) -> int:
+    """Count done build_ea tasks that a done codex_review PASSed (top-level
+    verdict == "PASS", case-sensitive, naming the build via top-level
+    build_task_id) but that no ea_review of ANY status covers."""
+    builds: list[str] = []
+    codex_passed: set[str] = set()
+    reviewed: set[str] = set()
+    for t in tasks:
+        kind = t["kind"]
+        if kind == "build_ea":
+            if t["status"] == "done":
+                builds.append(t["id"])
+        elif kind == "codex_review":
+            if t["status"] == "done":
+                p = _parse_task_payload(t["payload_json"])
+                tid = p.get("build_task_id") if p else None
+                # build_task_id must be a non-empty STRING (batch-4 review: a
+                # list/dict-valued ID crashed the check instead of not matching)
+                if p and p.get("verdict") == "PASS" and isinstance(tid, str) and tid:
+                    codex_passed.add(tid)
+        elif kind == "ea_review":
+            p = _parse_task_payload(t["payload_json"])
+            tid = p.get("build_task_id") if p else None
+            if isinstance(tid, str) and tid:
+                reviewed.add(tid)
+    return sum(1 for b in builds if b in codex_passed and b not in reviewed)
+
+
 def chk_claude_review_starved(con) -> dict:
     """Lots of done builds with passing codex_review but no Claude review
     spawn — Claude is silently absent or the gate logic is wrong."""
     cutoff = (_utc_now() - dt.timedelta(hours=4)).strftime("%Y-%m-%dT%H:%M:%SZ")
-    # Build_ea done with PASSed codex_review but no ea_review yet
-    n_starved = con.execute(
-        """
-        SELECT COUNT(*) FROM tasks b
-        WHERE b.kind='build_ea' AND b.status='done'
-          AND EXISTS (
-            SELECT 1 FROM tasks cr
-            WHERE cr.kind='codex_review' AND cr.status='done'
-              AND cr.payload_json LIKE '%"build_task_id": "' || b.id || '"%'
-              AND cr.payload_json LIKE '%"verdict": "PASS"%'
-          )
-          AND NOT EXISTS (
-            SELECT 1 FROM tasks r WHERE r.kind='ea_review'
-              AND r.payload_json LIKE '%"build_task_id": "' || b.id || '"%'
-          )
-        """
-    ).fetchone()[0]
+    # Build_ea done with PASSed codex_review but no ea_review yet — in-memory
+    # resolution (replaces the old N^2 LIKE scan) under the RATIFIED payload
+    # contract documented on _parse_task_payload / _count_starved_builds.
+    tasks = con.execute(
+        "SELECT id, kind, status, payload_json FROM tasks "
+        "WHERE kind IN ('build_ea', 'codex_review', 'ea_review')"
+    ).fetchall()
+    n_starved = _count_starved_builds(tasks)
+
     # Last claude_review spawn (any kind) — proxy via ea_review tasks created
     n_recent = con.execute(
         "SELECT COUNT(*) FROM tasks WHERE kind='ea_review' AND created_at >= ?",
