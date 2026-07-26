@@ -15340,3 +15340,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20167,xng-spring-dualtrend,0,XNGUSD.DWX,201670000,2026-07-26T04:45:00Z,Codex,active
 20168,xng-autumn-dualtrend,0,XNGUSD.DWX,201680000,2026-07-26T05:40:00Z,Codex,active
 20169,wti-thu-bear,0,XTIUSD.DWX,201690000,2026-07-26T06:30:00Z,Codex,active
+20170,wti-wed-bear,0,XTIUSD.DWX,201700000,2026-07-26T07:20:00Z,Codex,active

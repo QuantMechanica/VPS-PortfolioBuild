@@ -88,14 +88,14 @@ int Strategy_WeekKey(const datetime value)
    return monday.year * 1000 + monday.day_of_year;
   }
 
-bool Strategy_IsTuesdayBar(const datetime value)
+bool Strategy_IsWednesdayBar(const datetime value)
   {
    if(value <= 0)
       return false;
    MqlDateTime parts;
    ZeroMemory(parts);
    return (TimeToStruct(value, parts) &&
-           parts.day_of_week == 2);
+           parts.day_of_week == 3);
   }
 
 bool Strategy_IsTuesdayBar(const datetime value)
@@ -110,7 +110,7 @@ bool Strategy_IsTuesdayBar(const datetime value)
 
 bool Strategy_IsGenuineWednesdayBoundary(const datetime current_bar)
   {
-   if(!Strategy_IsTuesdayBar(current_bar))
+   if(!Strategy_IsWednesdayBar(current_bar))
       return false;
    const datetime prior_bar =
       iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: prior completed D1 calendar gate.
@@ -285,7 +285,7 @@ void Strategy_CloseExpiredPositions()
       return;
 
    const bool current_bar_is_wednesday =
-      Strategy_IsTuesdayBar(current_bar);
+      Strategy_IsWednesdayBar(current_bar);
    const datetime now = TimeCurrent();
    const long hold_seconds =
       (long)MathMax(1, strategy_max_hold_days) * 86400;
@@ -346,7 +346,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "WTI_WED_TREND";
+   req.reason = "WTI_WED_BEAR";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
@@ -407,7 +407,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       !MathIsValidNumber(req.sl))
       return false;
 
-   req.reason = "WTI_WED_POS252_LONG";
+   req.reason = "WTI_WED_NEG252_LONG";
    return true;
   }
 
