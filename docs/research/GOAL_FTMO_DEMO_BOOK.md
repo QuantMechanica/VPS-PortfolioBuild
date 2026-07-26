@@ -82,6 +82,41 @@ left Q02/Q03 in flight.
 Consequence for the timeline: stage 1 is **six sequential gates per EA**, not eighteen
 parallel backtests. Q07 multiseed is the expensive one. Hours, not minutes.
 
+## Stage-3 prerequisite audit (2026-07-26 20:20) — one hard constraint found
+
+Checked the joint simulator's inputs ahead of time rather than discovering them at
+assembly. Per sleeve it needs the Q08 summary, the Q08 trade stream
+(`Common\Files\QM\q08_trades\*.jsonl`, 6,530 present), an M15 bar CSV from the export
+terminal, and a cost block (`framework/registry/venue_cost_model.json` exists).
+
+| sleeve | Q08 summary | trade stream | M15 bars |
+|---|---|---|---|
+| 10128 XAUUSD | ✅ | 33 KB | 8 MB |
+| 10145 XAUUSD | ✅ | 25 KB | 8 MB |
+| 12567 XAUUSD | ✅ | 14 KB | 8 MB |
+| 13013 NDX | ✅ | 11 KB | 6 MB |
+| **11421 EURUSD** | ✅ | 2 KB | **MISSING** |
+
+**The export terminal holds nine M15 series and not one of them is FX**: GDAXI, NDX, SP500,
+UK100, WS30, XAGUSD, XAUUSD, XNGUSD, XTIUSD. So condition 4 — book drawdown from the joint
+simulator over the real candidate set — **cannot currently be evaluated for any FX sleeve**.
+
+Two ways out, and the choice matters for the goal:
+
+- **Export the missing FX M15 series.** Restores EURUSD as a diversification candidate and
+  unblocks every future FX sleeve. The export terminal already produced the other nine.
+- **Build the demo book from symbols that have bars.** Metals (XAU, XAG), indices (NDX,
+  GDAXI, SP500, WS30, UK100) and energy (XTI, XNG) already satisfy "≥ 3 symbols, ≥ 2 asset
+  classes" without any FX. Tonight's recompile of the 27 stale-resolver EAs makes **energy a
+  live asset class again** — those are almost all WTI and natural gas strategies that had
+  been failing silently for weeks.
+
+Preferred: do both, but do not let the FX export block the book. The second path is
+available now.
+
+There is also **no manifest builder** — the 2026-07-22 manifest was assembled by hand. One
+will be needed, and it is a natural companion to the cascade driver.
+
 ## Known blockers between here and done
 
 1. **Deep-gate starvation.** The pending queue is 96 % Q02 with one pending Q08 and no
