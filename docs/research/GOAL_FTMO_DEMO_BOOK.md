@@ -190,6 +190,44 @@ reconciliation path, the FX bars, the cascade driver — is the machinery that w
 those sleeves the moment they exist, and it is now proven to work end to end. What it
 cannot do is manufacture a sleeve that is both robust and swap-immune.
 
+## ★ Best FTMO candidate found by measuring, not by reading code (2026-07-26 23:20)
+
+The swap finding makes intraday-flat a hard requirement, so the obvious next question is
+which EAs actually are. I first tried to answer it with a regex over EA source and
+**validated the detector before trusting it** — it failed: it missed both known
+intraday-flat EAs (12969 expresses its rule as `Strategy_InExitWindow`/`exit_minute`,
+20039 as `cash_close_new_york`) and caught only 20007, which happens to use the literal
+token `eod_flat`. A pattern list that misses one author's idiom produces a confidently
+wrong answer, so that approach was discarded rather than published.
+
+The property is directly observable instead: a trade that opens and closes on the same day
+pays no swap. Walking the Q08 trade streams of every strict-Q08-PASS sleeve:
+
+| EA | symbol | trades | overnight | share |
+|---|---|---:|---:|---:|
+| **13036** | **GDAXI** | **1,352** | **1** | **0.1 %** |
+| 10938 | GDAXI | 61 | 10 | 16.4 % |
+| 13013 | NDX | 68 | 21 | 30.9 % |
+| 10911 | GDAXI | 312 | 113 | 36.2 % |
+| 10692 | NDX | 687 | 405 | 59.0 % |
+| 11421 | EURUSD | 91 | 67 | 73.6 % |
+| 10128 / 10145 / 10183 | XAUUSD | 433 / 314 / 347 | 386 / 289 / 344 | 89–99 % |
+| 20048 | XTIUSD | 60 | 60 | 100 % |
+
+**QM5_13036 on GDAXI is the find: 1,352 trades and exactly one overnight hold.** It is
+dense *and* swap-immune, and it already carries Q02, Q04–Q08 and Q10 as PASS — Q08 at
+PF 1.04 on 1,352 trades, net +3,433, drawdown 8.1 %. A low edge repeated very often with
+no overnight exposure is precisely the FTMO shape; the gold sleeves have the opposite
+profile and that is why swap eats them.
+
+Its only structural gap is Q03: **no work item for that phase has ever existed**, and
+`enqueue-backtest` handles only cascade phases from Q04 up. Requeued its Q02 so
+`dispatch_tick` auto-enqueues Q03 on the PASS and the chain advances in order — driving the
+deep gates directly is what broke the cascade earlier tonight.
+
+Runner-up worth checking once this lands: **10938 GDAXI** at 16.4 % overnight, which pays
+some swap but far less than the gold sleeves.
+
 ## Known blockers between here and done
 
 1. **Deep-gate starvation.** The pending queue is 96 % Q02 with one pending Q08 and no
