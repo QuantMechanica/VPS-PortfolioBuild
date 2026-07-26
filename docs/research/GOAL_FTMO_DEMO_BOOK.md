@@ -61,6 +61,27 @@ The single number is `ready_count` from a fresh qualification run. It went **0 �
 | manifest + presets + SHA verification | not started |
 | decision record | not started |
 
+## Operational lesson from stage 1 (2026-07-26 20:05) — requeue the shallowest gate only
+
+I requeued Q02–Q07 for all three stage-1 candidates in one go. The workers then claimed the
+**deep** gates first, and they died exactly as they must: Q07 at 19:17
+(`seeds_invalid_evidence`, every seed `exit_code=1`), Q06 19:19 and Q05 19:21
+(`summary_missing`), Q04 19:41 (`F1:SOURCE_SUMMARY_MISSING;F2;F3`) — while Q02 only passed
+at **19:50**.
+
+The pipeline is a cascade: Q04 consumes Q03's summary, Q05 consumes Q04's. Flipping all six
+rows to `pending` simultaneously destroyed the very evidence the deep gates read. Four
+wasted deep-gate runs, self-inflicted.
+
+**Correct shape, and it is already built in:** requeue only the shallowest missing gate.
+`dispatch_tick` auto-enqueues the next phase on every PASS (`farmctl.py:5933`), so the
+cascade drives itself in order. Restored the ten deep-gate rows from the snapshot (skipping
+the two a worker was actively running — never yank a row out from under a live process) and
+left Q02/Q03 in flight.
+
+Consequence for the timeline: stage 1 is **six sequential gates per EA**, not eighteen
+parallel backtests. Q07 multiseed is the expensive one. Hours, not minutes.
+
 ## Known blockers between here and done
 
 1. **Deep-gate starvation.** The pending queue is 96 % Q02 with one pending Q08 and no
