@@ -22,7 +22,11 @@ the manifest **in writing** (Decision B below).
   lands nowhere. The recompiled binaries carry the relative `QM\halt\` fix. Keeping old binaries
   keeps the dead channel.
 - **Decision B — written approval of the 12.0 manifest** (it is `status: DRAFT`,
-  `manual_approval_required: true`).
+  `manual_approval_required: true`). Evidence-completeness precondition (Codex challenge
+  2026-07-26): before the written approval, OWNER sees the WS-C decay audit and WS-D swap
+  scenario for the composition — or explicitly acknowledges each `UNKNOWN` sleeve. The
+  12.0 raise scales uncapped sleeves ×~1.313 while decay/swap were unquantified; tonight
+  they are quantified or acknowledged, not silent.
 - Pending input: **Q07 rerun results** for the sealed cohort (11 vacuous + 13128) and the basket
   track (12778/13117 Q06+Q07 on WP-9 binaries). If a sleeve fails, composition — not the 12.0 —
   is what changes, and the manifest is regenerated over the survivors
