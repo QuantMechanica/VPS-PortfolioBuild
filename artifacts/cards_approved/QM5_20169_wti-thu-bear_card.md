@@ -28,7 +28,7 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
 q01_status: PASS
-q02_status: READY
+q02_status: ENQUEUED
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 g0_approval_reasoning: "OWNER commodity/energy sleeve mission: R1 PASS governed peer-reviewed composite packet; R2 PASS genuine Thursday boundary, negative completed 252-D1 return, one BUY, ATR stop, next-D1 exit, and persistent weekly attempt; R3 PASS registered XTIUSD.DWX D1; R4 PASS deterministic native MT5 data only, no ML/grid/martingale. Semantically distinct from positive-trend and unconditional Thursday variants."
 ---
