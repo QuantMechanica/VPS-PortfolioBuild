@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "generated_utc": "2026-07-26T07:40:04Z",
+  "author": "T_Live_Watchdog",
+  "watchdog_status": "maintenance",
+  "maintenance": true,
+  "reboot_suppressed": false,
+  "any_alarm": false,
+  "sessions": {
+    "T_LIVE": {
+      "session": "T_LIVE",
+      "condition": "maintenance",
+      "detail": "maintenance_flag_active",
+      "alarm": false,
+      "since_utc": "2026-07-26T07:40:04Z",
+      "last_change": "2026-07-26T07:40:04Z",
+      "transitions": 0,
+      "previous_condition": null
+    },
+    "FTMO": {
+      "session": "FTMO",
+      "condition": "maintenance",
+      "detail": "maintenance_flag_active",
+      "alarm": false,
+      "since_utc": "2026-07-26T07:40:04Z",
+      "last_change": "2026-07-26T07:40:04Z",
+      "transitions": 0,
+      "previous_condition": null
+    }
+  }
+}
