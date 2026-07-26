@@ -64,6 +64,43 @@ The two calculations disagree on the exact number — 40 versus ~1,500 — becau
 different assumptions about sizing headroom. They agree on the thing that matters: **we are
 one to two orders of magnitude short, not twenty percent short.**
 
+## Re-measured on the full population (the four-point sample was not good enough)
+
+The recommendation below is consequential enough that basing it on four sleeves — all the
+gate-metric join could match, because Q08 carries net and Q10 carries drawdown in separate
+rows — was not defensible. Recomputed directly from the trade streams, where both quantities
+come from one consistent source: **175 sleeves scored**.
+
+That first pass produced an apparent contradiction: **QM5_12361 on WS30 at speed 9.50** —
+122 trades, +320,244, 4.84 % drawdown, zero overnight. Twenty times better than anything in
+the small sample, and at that quality the book would need only **four** such sleeves.
+
+**Checked before believing it: the pipeline had already killed it.** 12361 is `Q05 FAIL` and
+`Q08 FAIL_HARD`. In-sample speed means nothing if the edge does not survive stress testing,
+which is precisely what those gates exist to establish. Its +320k across 122 trades is the
+signature of a few outsized winners, not a repeatable edge.
+
+Re-ranked over the **70 sleeves whose robustness verdicts are PASS or FAIL_SOFT** (i.e. not
+hard-rejected):
+
+| EA | symbol | trades | net | DD % | %/yr | speed | o/n % | Q08 |
+|---|---|---:|---:|---:|---:|---:|---:|---|
+| 10815 | GDAXI | 66 | 9,825 | 1.40 | 1.34 | **0.96** | 0.0 | FAIL_SOFT |
+| 13301 | GDAXI | 742 | 82,354 | 13.69 | 12.79 | 0.93 | 0.1 | FAIL_SOFT |
+| 12969 | USDJPY | 300 | 10,849 | 1.48 | 1.32 | 0.89 | 99.3 | FAIL_SOFT |
+| 13213 | USDJPY | 1,596 | 123,918 | 22.62 | 15.07 | 0.67 | 0.0 | FAIL_SOFT |
+| 10145 | XAUUSD | 314 | 18,839 | 4.04 | 2.40 | 0.59 | 92.0 | **PASS** |
+| 12567 | XAUUSD | 72 | 5,139 | 1.69 | 0.75 | 0.45 | 84.7 | **PASS** |
+
+**Best surviving speed: 0.96. Book speed 19 would need ~395 sleeves of that quality.**
+Sixteen of the seventy are swap-immune.
+
+**The deeper point, and it is the one that matters:** speed and robustness are in tension in
+our pool. The fast sleeve was gate-rejected; what survives the gates is slow. That is not
+bad luck — it is the signature of the gates correctly removing strategies whose apparent
+speed came from a handful of trades. The pipeline is working, and what it reveals is that we
+do not own fast, robust edge.
+
 ## What this means, plainly
 
 **P(pass) ≥ 0.80 in 30 days is not reachable by stacking strategies of the quality we
