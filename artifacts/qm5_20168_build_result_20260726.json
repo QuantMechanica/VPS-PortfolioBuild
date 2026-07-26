@@ -1,0 +1,13 @@
+{
+  "task_id": "4ccd63b7-de6e-4cd3-9b1a-3adaedaab00c",
+  "ea_id": "QM5_20168",
+  "slug": "xng-autumn-dualtrend",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_20168_xng-autumn-dualtrend/QM5_20168_xng-autumn-dualtrend.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_20168_xng-autumn-dualtrend/QM5_20168_xng-autumn-dualtrend.ex5",
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "smoke_result": "passed",
+  "blocked_reason": ""
+}
