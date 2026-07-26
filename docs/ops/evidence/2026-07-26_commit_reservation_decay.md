@@ -78,6 +78,35 @@ floor (`RAM_MIN_FREE_GB` 4.0) is the operative brake in that regime, not the com
 That is pre-existing behaviour, unchanged here, and it is the reason the memory-capacity
 question in ticket `213aa9c3` still stands on its own.
 
+## Exit tracer for the silent-death defect (`3455bcf2b`, diagnostic only)
+
+Workers kept vanishing during the observation window (T4/T7 at 19:10) with a resource-pause
+event as their last line and an empty stderr. That is **not** this change: the ctypes probe
+is wrapped in a blanket `try/except` returning empty maps, no traceback ever appeared, and
+the identical signature predates every change tonight (T4/T9/T10 at 17:45).
+
+To stop guessing, `main()` now installs an atexit + signal tracer emitting `worker_exit`,
+plus a `worker_start` line for lifetime correlation. Windows runs neither handler on
+`TerminateProcess`, so the line's presence classifies the death. **Validated in both
+directions before trusting it:**
+
+| case | result |
+|---|---|
+| orderly exit | `{"event": "worker_exit", "reason": "atexit", ...}` emitted |
+| `Stop-Process -Force` (TerminateProcess) | no line — silence confirmed |
+
+New lead for ticket `4e8bcf47`: `QM_StrategyFarm_WorkerDedupe` last ran at **19:10:10**,
+the two deaths fell in 19:09–19:10. Its action is
+`start_terminal_workers.py --dedupe`, whose only kill path fires when `_scan_running_workers()`
+returns more than one pid for the same terminal — worth auditing against the named-mutex
+guard, since every manual run tonight reported `stopped_duplicates: {}`.
+
+## Throughput was not harmed
+
+Since 19:00 local: 5 completions (3 PASS, 2 FAIL, **zero INFRA_FAIL**) in 14 minutes,
+against a daytime rate of 10–20 per hour. The fleet pauses on the real RAM floor now, and
+still clears work at the day's normal pace.
+
 ## What this does not solve
 
 The box remains undersized for a 26 GB multisym plus several 8-11 GB ordinary jobs
