@@ -1032,7 +1032,15 @@ def update_task(
     }
 
 
-def _task_artifact_path(root: Path, row: sqlite3.Row, artifact_path: str | None) -> Path | None:
+def _task_artifact_paths(root: Path, row: sqlite3.Row, artifact_path: str | None) -> list[Path]:
+    """Every artifact a task cites, as absolute paths.
+
+    Agents that produce several pieces of evidence record them as one
+    semicolon-separated string. Treating that string as a single filename made
+    every such task permanently unapprovable with reason 'artifact_missing' -
+    four review_strategy tasks sat in REVIEW for two days that way, each with all
+    of its artifacts present on disk.
+    """
     candidate = artifact_path or row["artifact_path"]
     if not candidate:
         try:
@@ -1041,11 +1049,23 @@ def _task_artifact_path(root: Path, row: sqlite3.Row, artifact_path: str | None)
             payload = {}
         candidate = payload.get("closeout_artifact") or payload.get("expected_artifact")
     if not candidate:
-        return None
-    path = Path(str(candidate))
-    if not path.is_absolute():
-        path = farmctl.REPO_ROOT / path
-    return path
+        return []
+    out = []
+    for part in str(candidate).split(";"):
+        part = part.strip()
+        if not part:
+            continue
+        path = Path(part)
+        if not path.is_absolute():
+            path = farmctl.REPO_ROOT / path
+        out.append(path)
+    return out
+
+
+def _task_artifact_path(root: Path, row: sqlite3.Row, artifact_path: str | None) -> Path | None:
+    """The task's primary artifact - the first one it cites."""
+    paths = _task_artifact_paths(root, row, artifact_path)
+    return paths[0] if paths else None
 
 
 try:
@@ -1075,16 +1095,18 @@ def close_review_task(
             return {"closed": False, "task_id": task_id, "reason": "task_not_found"}
         if row["state"] != "REVIEW":
             return {"closed": False, "task_id": task_id, "reason": f"not_in_review:{row['state']}"}
-        evidence = _task_artifact_path(root, row, artifact_path)
+        all_evidence = _task_artifact_paths(root, row, artifact_path)
+        evidence = all_evidence[0] if all_evidence else None
         if close_state == "APPROVED":
             if evidence is None:
                 return {"closed": False, "task_id": task_id, "reason": "approval_requires_artifact"}
-            if not evidence.exists():
+            missing = [p for p in all_evidence if not p.exists()]
+            if missing:
                 return {
                     "closed": False,
                     "task_id": task_id,
                     "reason": "artifact_missing",
-                    "artifact_path": str(evidence),
+                    "artifact_path": ";".join(str(p) for p in missing),
                 }
             # Hard-Rule backstop: never approve a build that violates the deterministic
             # build guardrails - news-staleness bypass (qm_news_stale_max_hours > 336) or

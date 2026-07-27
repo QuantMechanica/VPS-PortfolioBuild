@@ -225,17 +225,27 @@ def main():
         with open(mq5_path, 'w', encoding='utf-8') as f:
             f.write(mq5_code)
             
-        # Insert task into DB to satisfy the router cockpit
+        # Queue the real build. This writes a skeleton whose entry logic is still
+        # empty, so it enters the state machine at BACKLOG with no verdict and is
+        # dispatched, built and reviewed like any other build_ea task.
+        #
+        # It used to insert directly at state='REVIEW' carrying a hardcoded
+        # "PASS: Auto-generated structural MQL5 skeleton ... Core entry logic
+        # pending" verdict, with the comment "to satisfy the router cockpit".
+        # That fabricated both the review state and the pass: on 2026-07-25 it
+        # seeded 25 tasks in one second, every one claiming PASS for a file that
+        # no longer existed anywhere in the tree or on origin/main, and every one
+        # then sat in the review queue as if a build had happened. Nothing may
+        # write a verdict it did not earn.
         task_id = str(uuid.uuid4())
         now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
         payload = json.dumps({"ea_id": ea_id.replace('QM5_', ''), "slug": slug, "target_agent_profile": "codex"})
         artifact = mq5_path.replace('\\', '/')
-        verdict = f"PASS: Auto-generated structural MQL5 skeleton for {ea_id}. Inputs mapped from YAML. Core entry logic pending."
-        
+
         cursor.execute('''
             INSERT INTO agent_tasks (id, task_type, state, payload_json, assigned_agent, created_at, updated_at, artifact_path, verdict, required_capabilities_json)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (task_id, 'build_ea', 'REVIEW', payload, 'codex', now_iso, now_iso, artifact, verdict, '[]'))
+        ''', (task_id, 'build_ea', 'BACKLOG', payload, None, now_iso, now_iso, artifact, None, '[]'))
         
         count += 1
         if count % 100 == 0:
