@@ -11,8 +11,8 @@
 
 | Disposition | Count |
 |---|---:|
-| COMPLETABLE | 1 |
-| NEEDS-SOURCE | 409 |
+| COMPLETABLE | 0 |
+| NEEDS-SOURCE | 410 |
 | RETIRE | 1 |
 | NOT-A-BUILD | 20 |
 
@@ -327,7 +327,7 @@
 | 305 | 50 | `f3b6bf03-fa59-4d17-8336-bb440cf90a0d` | `build_ea` | `9972` | **NEEDS-SOURCE** | Missing: anchored magic row, OWNER-approved mandatory-news revision. |
 | 306 | 50 | `86377647-2659-4308-a435-727c070515c4` | `build_ea` | `9983` | **NEEDS-SOURCE** | Missing: anchored magic row, OWNER-approved mandatory-news revision. |
 | 307 | 50 | `a0768e09-7427-4ebe-87c1-19b4b17c9de1` | `build_ea` | `9979` | **NEEDS-SOURCE** | Missing: anchored magic row, OWNER-approved mandatory-news revision. |
-| 308 | 50 | `5766506d-8630-44b8-b85c-229d93051449` | `build_ea` | `1619` | **COMPLETABLE** | All governed build preflight evidence resolved. |
+| 308 | 50 | `5766506d-8630-44b8-b85c-229d93051449` | `build_ea` | `1619` | **NEEDS-SOURCE** | Slug identity is ambiguous: both `QM5_1619_aa-overnight-mom` and `QM5_1619_ehlers-adaptive-cg-h4` exist, while the deterministic registry allocates 1619 only to `aa-overnight-mom`; build preflight requires an unambiguous card/registry/folder slug match. |
 | 309 | 50 | `e22dac9b-351f-41ca-9214-164a7a607ab1` | `build_ea` | `1157` | **NEEDS-SOURCE** | Missing: OWNER-approved mandatory-news revision. |
 | 310 | 35 | `20cfbf8d-0ce9-4fa7-acc8-9d45ce319df4` | `ops_issue` | `—` | **NOT-A-BUILD** | Requires individual non-build disposal; no build-lane action authorized. |
 | 311 | 35 | `bb105489-2a1f-4af4-8cff-1ada6e43394b` | `ops_issue` | `—` | **NOT-A-BUILD** | Requires individual non-build disposal; no build-lane action authorized. |
@@ -485,7 +485,9 @@
 
 ## Remaining work and tester-cost estimate
 
-- Remaining at census: 308 completable builds, 102 needing source, 1 retire candidates, and 20 non-build rows requiring individual disposal.
+- Remaining at census: 0 immediately completable builds, 410 needing source or
+  registry/card correction, 1 retire candidate, and 20 non-build rows requiring
+  individual disposal.
 - Tester cost is **NOT ESTABLISHED** from the recycle task table alone. A defensible estimate requires the symbol/setfile count and historical Q02 wall time for each completed build; no queue-capacity claim is inferred here.
 
 ## Guardrails
