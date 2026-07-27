@@ -455,7 +455,33 @@
 ## Bounded completion batches
 
 - Census committed before any completion work, as required.
-- Batch 1: pending selection from COMPLETABLE rows; maximum 20, serial governed build path. No Q02 enqueue is authorized.
+- Batch 1 preflight: 20 source-backed rows inspected serially under
+  `qm-build-ea-from-card`; **0 were eligible to compile**. No RECYCLE exit was
+  applied because every row failed a deterministic prerequisite before build.
+  No Q02 enqueue is authorized or performed.
+
+| Task | EA | Preflight result |
+|---|---|---|
+| `3dd18aa1-c4e8-4a77-b30e-01022dc4bcce` | `QM5_20160` | BLOCKED: approved card and anchored registry rows exist, but the card/EA/setfile lock news mode OFF; mandatory Edge Lab news blackout forbids acceptance without a new OWNER-approved card revision. |
+| `27fb255a-232e-4a06-9e12-f80e263f98e3` | `QM5_12612` | NEEDS-SOURCE: no approved card resolved and no anchored `^12612,` magic row. |
+| `11468a5a-89fc-4872-b6ec-2a78250ae792` | `QM5_12922` | NEEDS-SOURCE: no approved card resolved and no anchored `^12922,` magic row. |
+| `19c8295f-c2aa-47b6-9e55-47e0fa465b0f` | `QM5_12920` | NEEDS-SOURCE: no approved card resolved and no anchored `^12920,` magic row. |
+| `63c95ae9-d593-403a-928b-c51ac9848a1b` | `QM5_12921` | NEEDS-SOURCE: no approved card resolved and no anchored `^12921,` magic row. |
+| `655d9d8a-f593-4dad-b359-a035d5f67d38` | `QM5_12924` | NEEDS-SOURCE: no approved card resolved and no anchored `^12924,` magic row. |
+| `a8942b7a-e32e-4ac1-b819-cdcf1afa19cb` | `QM5_12925` | NEEDS-SOURCE: no approved card resolved and no anchored `^12925,` magic row. |
+| `f9e1abeb-a14c-4f02-9869-b9d99fcbf303` | `QM5_12923` | NEEDS-SOURCE: no approved card resolved and no anchored `^12923,` magic row. |
+| `10f2e21f-344a-451a-ae1d-3531c600ba26` | `QM5_12926` | NEEDS-SOURCE: no approved card resolved and no anchored `^12926,` magic row. |
+| `3b5aa26f-a1b7-4089-8de5-5c425c6444a1` | `QM5_12928` | NEEDS-SOURCE: no approved card resolved and no anchored `^12928,` magic row. |
+| `718716e3-087b-478c-ab26-fd2e49eb8d3e` | `QM5_12927` | NEEDS-SOURCE: no approved card resolved and no anchored `^12927,` magic row. |
+| `7b431d7a-a902-4947-a932-ffa8ef3a54d7` | `QM5_12929` | NEEDS-SOURCE: no approved card resolved and no anchored `^12929,` magic row. |
+| `adec96fb-48a5-4dcd-b949-aa337c89f7ee` | `QM5_12930` | NEEDS-SOURCE: no approved card resolved and no anchored `^12930,` magic row. |
+| `0a7dec9e-8ff0-488b-a587-6dc3ad49af61` | `QM5_12937` | NEEDS-SOURCE: no approved card resolved and no anchored `^12937,` magic row. |
+| `2a3580e3-ddbf-4853-b012-0cab4471109e` | `QM5_12939` | NEEDS-SOURCE: no approved card resolved and no anchored `^12939,` magic row. |
+| `8393fe44-f0b1-4105-be77-0595d6761efe` | `QM5_12938` | NEEDS-SOURCE: no approved card resolved and no anchored `^12938,` magic row. |
+| `ab171f6d-bd52-4b39-9386-936314d5439e` | `QM5_12931` | NEEDS-SOURCE: no approved card resolved and no anchored `^12931,` magic row. |
+| `c4f759a4-6be6-4465-aa92-a691fbbf5c68` | `QM5_12936` | NEEDS-SOURCE: no approved card resolved and no anchored `^12936,` magic row. |
+| `d9a93eb1-ac7a-489c-bf8d-5e45162142dd` | `QM5_12932` | NEEDS-SOURCE: no approved card resolved and no anchored `^12932,` magic row. |
+| `01bd8a9d-bd3f-4da5-a275-be9192a763ed` | `QM5_12944` | NEEDS-SOURCE: no approved card resolved and no anchored `^12944,` magic row. |
 
 ## Remaining work and tester-cost estimate
 
