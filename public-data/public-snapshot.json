@@ -1,6 +1,6 @@
 {
     "schema_version":  1,
-    "generated_at":  "2026-07-27T00:07:44.1972314Z",
+    "generated_at":  "2026-07-27T01:07:08.6984411Z",
     "phase":  "Endausbaustufe-Modus - highest EA at P9",
     "agents":  {
                    "offline":  1,
@@ -8,11 +8,11 @@
                    "blocked":  0
                },
     "pipeline":  {
-                     "eas_built":  4233,
+                     "eas_built":  4236,
                      "by_phase":  {
                                       "P5b":  0,
                                       "P6":  167,
-                                      "P2":  1419,
+                                      "P2":  1425,
                                       "P9b":  0,
                                       "G0":  0,
                                       "P3":  720,
