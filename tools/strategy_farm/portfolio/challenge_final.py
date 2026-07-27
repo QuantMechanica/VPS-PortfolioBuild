@@ -35,11 +35,15 @@ from pathlib import Path
 
 STREAMS = Path(r"D:\QM\reports\portfolio\sleeve_streams\QM\q08_trades")
 ACCOUNT, TARGET, DAILY_CAP, TOTAL_CAP = 100_000.0, 0.10, 0.05, 0.10
-WINDOW, MIN_DAYS, SPLIT = 22, 600, 0.60
+# 500 rather than 600: 13301/GDAXI has 551 trading days and its measured
+# correlation against the USDJPY family is +0.009/+0.012 -- the closest thing to
+# an independent bet in the pool. 500 days still leaves ~470 windows / ~21
+# independent samples per sleeve, so the bar costs little and buys a diversifier.
+WINDOW, MIN_DAYS, SPLIT = 22, 500, 0.60
 LEVERAGES = (2, 3, 4, 5, 6, 8)
 DAILY_STOPS = (None, 0.040, 0.030, 0.025, 0.020)
 DERISK = (None, (0.05, 0.5), (0.06, 0.5), (0.05, 0.25))
-EARLY_OK = {"PASS", "PASS_SOFT"}
+EARLY_OK = {"PASS", "PASS_SOFT", "PASS_LOWFREQ"}  # Q04_PASSISH, farmctl/analyze_q04_survivor_cohort.py:37
 Q08_OK = {"PASS", "PASS_SOFT", "MULTI_SEED_PASS", "FAIL_SOFT"}
 
 
