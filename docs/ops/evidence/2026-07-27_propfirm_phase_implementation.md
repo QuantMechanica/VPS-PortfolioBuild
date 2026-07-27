@@ -299,3 +299,170 @@ adopter: add `#include <QM/QM_PropFirm.mqh>` and the §1 OnInit chain, set
   `docs/ops/evidence/2026-07-27_propfirm_design_adversarial_review.md`.
 - Clamp analysis: `docs/ops/evidence/2026-07-27_risk_cap_clamp_analysis.md`.
 - FTMO rules: `docs/ops/evidence/2026-07-27_ftmo_phase2_and_funded_rules.md`.
+
+---
+
+## 8. First adopter wired — QM5_9936 (USDJPY sprint sleeve), 2026-07-27
+
+**Author:** Claude (board-advisor worktree). **Scope:** wires the §1 reference
+OnInit chain into a concrete EA and produces its Phase 1 / Phase 2 set files. No
+Factory OFF/ON, no T_Live touched, no running backtest interrupted. Compilation ran
+through `metaeditor64.exe` (a separate process from the tester's `terminal64.exe`).
+
+### 8.1 Which sleeve, and why 3×
+
+The target is the sleeve the single-account measurement named best. The measurement
+note `docs/ops/evidence/2026-07-27_single_account_measurement.md` **does not exist**
+(confirmed by `2026-07-27_single_account_adversarial_review.md §0`), but that review
+reproduces the headline from `challenge_single_account.py` exactly:
+`9936:USDJPY@3x → OOS 35.7%, breach 44%, median 33d` (§1). So the sleeve is
+**9936:USDJPY at 3×** and the EA is `framework/EAs/QM5_9936_ff-range-breakout-gmt3-h1`.
+
+`3×` = three times the 1% base the framework enforces. `tester_defaults.json:7,12`
+sets `initial_deposit=100000` and the backtest set carries `RISK_FIXED=1000` (= 1% of
+account), so the 3× sleeve deploys as `RISK_PERCENT=3`. The per-trade cap **must** be
+raised to 3 in the same set: without it, PERCENT sizing of 3% is clamped back to the
+1% ceiling at `QM_RiskSizer.mqh:111-114` (the 79.5→4.7 wiring gap). Note this is the
+sizing the first-passage measurement (`2026-07-27_ftmo_first_passage_measurement.md`)
+argues *against* on a no-deadline barrier problem; under the OWNER-retained 60/30 KPI
+the single-account measurement chose 3× as the deadline optimum, and this wiring
+implements that choice. It does not re-litigate it.
+
+### 8.2 EA edits (`QM5_9936_ff-range-breakout-gmt3-h1.mq5`)
+
+Four edits, all in the EA — no framework header changed by this step:
+
+1. `#include <QM/QM_PropFirm.mqh>` after the `QM_Common.mqh` include (brings in the
+   `prop_phase` enum input group and the validators/getters). Guard-protected shared
+   deps (`Trade`, `QM_Errors`, `QM_Logger`) do not double-define.
+2. New `input double qm_risk_cap_pct = 1.0;` in the Risk group. Default 1.0 keeps the
+   framework behaviour identical (no override, no log) for every existing set; a
+   sprint set raises it to 3.
+3. OnInit chain, inserted after `QM_FrameworkInit` succeeds and before `INIT_OK`,
+   in the §1 order: `QM_PropPhaseValidateCap(qm_risk_cap_pct)` →
+   `QM_FrameworkSetRiskCapPct(qm_risk_cap_pct)` (separate statement, wins over the
+   `QM_Common.mqh:182` 1.0) → `QM_PropLogEffectiveCap(qm_risk_cap_pct,
+   g_qm_risk_per_trade_cap_pct)` (effective cap read back from the sizer global) →
+   `QM_PropPhaseValidateWeekend(qm_friday_close_enabled)` → `QM_PropInit(qm_ea_id)`.
+   Each returns `INIT_FAILED` on a false — an illegal cap fails the EA closed rather
+   than arming a wrong size.
+4. OnTick gate, inserted after the Friday-close check:
+   `QM_PropEntryAllowed(QM_FrameworkMagic())` runs every tick (flatten-at-target /
+   daily-halt for sprint phases; OFF and FUNDED return true immediately). The entry
+   call is short-circuited on its result (`if(qm_prop_entry_allowed &&
+   Strategy_EntrySignal(req))`). **Because this EA arms two pending stop orders per
+   day and `QM_PropFlattenAll` closes positions only**, when the gate blocks we also
+   call the EA's existing `Strategy_RemoveOurPendingOrders("PROP_ENTRY_BLOCKED")` so a
+   resting breakout cannot re-open exposure after the target is locked.
+
+**OFF-path is behaviourally identical to before.** With `prop_phase=OFF` (the default,
+and what every existing set uses) `QM_PropPhaseValidateCap(1.0)`/`ValidateWeekend`
+return true, `QM_FrameworkSetRiskCapPct(1.0)` is a no-op that emits no
+`RISK_CAP_OVERRIDE`, `QM_PropInit` early-returns true, and `QM_PropEntryAllowed`
+returns true every tick — so trade logic and results are unchanged; only two extra
+INFO log lines appear at init (`PROP_EFFECTIVE_CAP` matched, `prop_anchor_not_wired`
+is NOT emitted under OFF since `QM_PropInit` early-returns before it). The backtest
+sets therefore still reproduce.
+
+### 8.3 Set files produced (risk block only, derived from the backtest set)
+
+Generator: `tools/strategy_farm/portfolio/make_9936_ftmo_phase_setfiles.py`
+(same method as `make_challenge_setfiles.py` — patch the backtest set, do NOT
+`gen_setfile.ps1 -Env demo`). Source:
+`sets/QM5_9936_ff-range-breakout-gmt3-h1_USDJPY.DWX_H1_backtest.set`.
+
+| set file | RISK_FIXED | RISK_PERCENT | qm_risk_cap_pct | prop_phase | sha256 |
+|---|---|---|---|---|---|
+| `..._USDJPY.DWX_H1_ftmo_phase1.set` | 0 | 3 | 3 | 1 (target +10%) | `1dcc333e9b3eb108…88831c6` |
+| `..._USDJPY.DWX_H1_ftmo_phase2.set` | 0 | 3 | 3 | 2 (target +5%) | `eab08a6c3bb4bfff…0f75a1a6` |
+
+Hard rule honoured: **RISK_PERCENT for live/demo, RISK_FIXED=0 — never mixed.**
+`environment: demo`, `risk_mode: PERCENT`. The news-filter block that
+`gen_setfile.ps1 -Env demo` previously dropped (`qm_filter_news_enabled=1`,
+`qm_filter_news_mode=3`) is preserved verbatim. `prop_expected_login` is left at its
+compiled default 0 (off): the H3 account binding must be set to the real challenge
+login at deploy time under the T_Live-style manifest/SHA gate (OWNER+Claude) — the
+demo login is not known here.
+
+### 8.4 Parameter-identity verification (requirement #3)
+
+`diff backtest → ftmo_phase1` — only the risk block and its metadata changed; no
+strategy or filter parameter touched:
+
+```
+6a7  > ; derived_from: backtest set, risk block only (FTMO phase selector)
+9c10 < ; environment:  backtest   ---   > ; environment:  demo
+11c12 < ; risk_mode:    FIXED      ---   > ; risk_mode:    PERCENT
+18,19c19,20 < RISK_FIXED=1000 / RISK_PERCENT=0  ---  > RISK_FIXED=0 / RISK_PERCENT=3
+46a48,50 > ; --- FTMO phase selector (QM_PropFirm.mqh) ---
+         > prop_phase=1
+         > qm_risk_cap_pct=3
+```
+
+`diff ftmo_phase1 → ftmo_phase2` — a single line, the phase:
+
+```
+49c49 < prop_phase=1   ---   > prop_phase=2
+```
+
+Key-level check (generator, excluding the intended risk block
+{RISK_FIXED, RISK_PERCENT, qm_risk_cap_pct, prop_phase}): **non-risk-block keys
+IDENTICAL** for both phases; `keys(src)=24 → keys(dst)=26` (delta = the two appended
+selector keys, exactly).
+
+### 8.5 Compile result (requirement #4)
+
+`python tools/strategy_farm/compile_ea.py --ea-label
+QM5_9936_ff-range-breakout-gmt3-h1 --force`:
+
+```
+verdict=COMPILED  errors=0  warnings=0  symbol_scope=SINGLE_SYMBOL_OK  cached=false
+ex5=…/QM5_9936_ff-range-breakout-gmt3-h1.ex5 (363842 bytes)
+```
+
+Compile log `framework/build/compile/20260727_083910/…compile.log`:
+`Result: 0 errors, 0 warnings, 5739 ms elapsed`. Fresh rebuild (`compile_one.ps1`
+deletes the target .ex5 first — not a cache skip). Includes were synced to the
+install/roaming terminal include dirs under `%APPDATA%\MetaQuotes\Terminal\…` (build-
+lane normal); **`C:\QM\mt5\T_Live` is portable and outside that root — untouched.**
+The build guardrails passed: the phase sets are classified as neither backtest nor
+live (filename not `_backtest`/`_live`, `environment: demo`), so the backtest
+RISK_FIXED rule and the live `card_defaults_source=not_found` trap do not fire on them
+— the same reason `make_challenge_setfiles.py`'s demo sets pass. All prop symbols
+(`QM_PropPhaseValidateCap/Weekend`, `QM_PropLogEffectiveCap`, `QM_PropInit`,
+`QM_PropEntryAllowed`, `g_qm_risk_per_trade_cap_pct`) are referenced by the EA, so
+unused-code elision could not have hidden a signature error.
+
+### 8.6 Risks / blockers carried forward
+
+- **Q08 re-confirmation owed.** Adding `qm_risk_cap_pct` + the `prop_*` inputs changed
+  9936's parameter surface. Its Q08 8.5-neighborhood and set-file parameter-identity
+  must be re-confirmed for the sprint sets before any admission (per §6 of this note).
+  Not run here.
+- **`prop_expected_login` unset (H3 residual).** The set files ship with login binding
+  off; a live/demo deploy MUST set it to the challenge login and pass the T_Live
+  manifest/SHA/phase-vs-account verification (OWNER+Claude).
+- **RISK_PERCENT equity drift.** As in `make_challenge_setfiles.py`: PERCENT sizes off
+  live equity, so size drifts up as the account gains, unlike the RISK_FIXED backtest.
+  `QM_PropRiskBasis` (anchor-to-start) is defined but not wired into the entry path
+  (L2), so the drift is not yet neutralised.
+- **Running factory 9936 is unaffected.** The rebuilt `.ex5` is committed to the repo;
+  any in-flight factory backtest keeps using its already-loaded binary until the
+  pipeline redeploys. This wiring changes no factory behaviour on its own.
+- **Demo-verification protocol §4 (a)-(d) still owed** before any live consideration —
+  especially the observable-size check (d): assert realised per-trade `risk_money` ≈
+  3% of anchored balance, not merely the cap log.
+
+### 8.7 Evidence index (this step)
+
+- `framework/EAs/QM5_9936_ff-range-breakout-gmt3-h1/QM5_9936_ff-range-breakout-gmt3-h1.mq5`
+  — include + `qm_risk_cap_pct` input + OnInit chain + OnTick gate.
+- `framework/EAs/QM5_9936_ff-range-breakout-gmt3-h1/QM5_9936_ff-range-breakout-gmt3-h1.ex5`
+  — rebuilt binary (0/0).
+- `framework/EAs/QM5_9936_ff-range-breakout-gmt3-h1/sets/…_USDJPY.DWX_H1_ftmo_phase1.set`,
+  `…_ftmo_phase2.set` — the two phase sets.
+- `tools/strategy_farm/portfolio/make_9936_ftmo_phase_setfiles.py` — reproducible
+  generator + parameter-identity check.
+- `framework/build/compile/20260727_083910/QM5_9936_ff-range-breakout-gmt3-h1.compile.log`,
+  `D:/QM/reports/compile/QM5_9936_ff-range-breakout-gmt3-h1/result.json` — compile
+  evidence.
