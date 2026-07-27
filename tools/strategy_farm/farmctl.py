@@ -15572,6 +15572,14 @@ def build_parser() -> argparse.ArgumentParser:
     em.add_argument("--no-build", action="store_true",
                     help="skip the incremental freshness build before querying")
 
+    fs = sub.add_parser(
+        "fund-score",
+        help="Query the screening-only FUND_SCORE for Q08 sleeve streams.",
+    )
+    fs.add_argument("--ea")
+    fs.add_argument("--symbol")
+    fs.add_argument("--refresh-cache", action="store_true")
+
     return parser
 
 
@@ -15696,6 +15704,25 @@ def main(argv: list[str] | None = None) -> int:
                 pass  # a build hiccup must never block a read
         _em.run_query(args, _con)
         _con.close()
+    elif args.command == "fund-score":
+        import sys as _sys
+        _portfolio = Path(__file__).resolve().parent / "portfolio"
+        _sys.path.insert(0, str(_portfolio))
+        import fund_score as _fs
+        payload = _fs.refresh_cache() if args.refresh_cache else {
+            "metric": "FUND_SCORE",
+            "screening_only": True,
+            "gate_override_allowed": False,
+            "rows": _fs.score_all(),
+        }
+        rows = payload["rows"]
+        if args.ea:
+            bare = str(args.ea).upper().replace("QM5_", "")
+            rows = [r for r in rows if r["sleeve"].split(":", 1)[0] == bare]
+        if args.symbol:
+            symbol = str(args.symbol).upper().replace(".DWX", "")
+            rows = [r for r in rows if r["sleeve"].split(":", 1)[-1] == symbol]
+        print_json({**payload, "rows": rows})
     elif args.command == "mt5-slots":
         print_json(get_mt5_status(root))
     elif args.command == "reconcile-mt5":

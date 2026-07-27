@@ -4534,12 +4534,15 @@ def _render_portfolio_montecarlo(mc: dict[str, Any] | None, error: str | None) -
 
 def _render_portfolio_sleeves(manifest: dict[str, Any] | None,
                               corr: dict[str, Any] | None,
-                              manifest_error: str | None) -> str:
+                              manifest_error: str | None,
+                              fund_scores: dict[str, Any] | None = None) -> str:
     keys = _portfolio_selected_keys(manifest, corr)
     if not manifest or not keys:
         return _placeholder("Per-sleeve table", manifest_error or "selected sleeve manifest not generated yet")
     per_series = corr.get("per_series") if corr and isinstance(corr.get("per_series"), dict) else {}
     weights = _portfolio_weights(manifest)
+    score_rows = (fund_scores or {}).get("rows") or []
+    score_map = {str(r.get("sleeve")): r for r in score_rows if isinstance(r, dict)}
     rows = []
     for key in keys:
         stats = per_series.get(key) if isinstance(per_series.get(key), dict) else {}
@@ -4554,17 +4557,27 @@ def _render_portfolio_sleeves(manifest: dict[str, Any] | None,
         trades = stats.get("trades", "—")
         active_days = stats.get("active_days", "—")
         weight = weights.get(key)
+        short_key = _portfolio_short_key(key)
+        score = score_map.get(short_key) or score_map.get(str(key))
+        score_text = "—"
+        if score:
+            score_text = (
+                f"{float(score['fund_score']):.2f}"
+                if score.get("status") == "SCORED" and score.get("fund_score") is not None
+                else "UNSCORABLE"
+            )
         rows.append(
             f'<tr><td title="{e(key)}">{e(_portfolio_short_key(key))}</td>'
             f'<td class="num">{e(fmt_pct(weight * 100, 2) if weight is not None else "—")}</td>'
             f'<td class="num">{e(trades)}</td>'
             f'<td class="num">{e(active_days)}</td>'
             f'<td class="num {net_cls}">{e(fmt_dollar(net))}</td>'
+            f'<td class="num">{e(score_text)}</td>'
             f'<td>{e(note)}</td></tr>'
         )
     return f"""
 <table class="portfolio-table">
-  <thead><tr><th>Key</th><th class="num">Weight</th><th class="num">Trades</th><th class="num">Active days</th><th class="num">Net-of-cost</th><th>Diversification note</th></tr></thead>
+  <thead><tr><th>Key</th><th class="num">Weight</th><th class="num">Trades</th><th class="num">Active days</th><th class="num">Net-of-cost</th><th class="num">FUND_SCORE</th><th>Diversification note</th></tr></thead>
   <tbody>{''.join(rows)}</tbody>
 </table>
 """
@@ -4574,6 +4587,7 @@ def render_portfolio(root: Path) -> str:
     manifest, manifest_error, _manifest_path = _load_portfolio_json(root, "portfolio_manifest_dev.json")
     corr, corr_error, _corr_path = _load_portfolio_json(root, "correlation_dev.json")
     mc, mc_error, _mc_path = _load_portfolio_json(root, "portfolio_montecarlo_dev.json")
+    fund_scores, _fund_error, _fund_path = _load_portfolio_json(root, "fund_scores.json")
     errors = {
         "manifest": manifest_error,
         "correlation": corr_error,
@@ -4628,7 +4642,7 @@ def render_portfolio(root: Path) -> str:
 
   <section class="portfolio-section">
     <h2>Per-sleeve table</h2>
-    {_render_portfolio_sleeves(manifest, corr, manifest_error)}
+    {_render_portfolio_sleeves(manifest, corr, manifest_error, fund_scores)}
   </section>
 
   <div class="portfolio-foot">
@@ -4669,6 +4683,14 @@ def main() -> int:
                   f"{_mres.get('skipped')} unchanged", file=sys.stderr)
     except Exception as _exc:  # noqa: BLE001 — never block the render
         print(f"WARN: ea_metrics refresh skipped: {_exc!r}", file=sys.stderr)
+
+    # FUND_SCORE is historical screening metadata only. Refreshing its cache here
+    # gives every dashboard cycle automatic coverage without changing a gate row.
+    try:
+        from tools.strategy_farm.portfolio import fund_score as _fund_score
+        _fund_score.refresh_cache(root / "artifacts" / "portfolio" / "fund_scores.json")
+    except Exception as _exc:  # noqa: BLE001 — never block the render
+        print(f"WARN: FUND_SCORE refresh skipped: {_exc!r}", file=sys.stderr)
 
     # Sync style.css from repo template into output dir if newer
     src_css = Path(__file__).parent / "style.css"
