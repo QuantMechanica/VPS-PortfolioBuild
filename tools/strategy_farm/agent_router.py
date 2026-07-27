@@ -60,11 +60,47 @@ TASK_TYPE_CAPABILITIES: dict[str, list[str]] = {
     "review_strategy": ["review", "strategy"],
     "build_ea": ["code"],
     "review_ea": ["review", "code"],
-    "pipeline_run": ["pipeline"],
     "triage_failure": ["ops", "review"],
     "ops_issue": ["ops", "code"],
     "agent_learn": ["research"],
 }
+
+# Task types deliberately removed from the agent lane. `pipeline_run` required
+# capability `pipeline`, which no enabled agent declares — so it was
+# deterministically unroutable (census 2026-07-27 rank 12: a priority-99 row
+# returned no_available_agent three times and had to be re-filed). It is NOT
+# re-added by giving an agent the `pipeline` capability: a pipeline VERDICT is
+# produced only by the deterministic Q02–Q10 backtest factory (work_items +
+# phase runners + T1–T10), never by an AI worker (Hard Rule: "Pipeline verdicts
+# come only from the pipeline"). Running a pipeline phase is factory work
+# (farmctl pump / phase runners), not an agent_tasks lane. Code/ops work that a
+# `pipeline_run` row was standing in for must be filed as `ops_issue`.
+REMOVED_TASK_TYPES: dict[str, str] = {
+    "pipeline_run": (
+        "pipeline_run is retired from the agent router: pipeline verdicts come "
+        "only from the Q02–Q10 factory, not an agent. File code/ops work as ops_issue."
+    ),
+}
+
+# Contractual exit semantics for the three limbo states that the deterministic
+# router never selects (census 2026-07-27 ranks 4/5/8). The canonical contract
+# (AI Agent Routing and Role Contracts.md) is
+#   BACKLOG -> TODO -> IN_PROGRESS -> REVIEW -> APPROVED -> PIPELINE -> PASSED
+#   \-> FAILED / RECYCLE / OPS_FIX_REQUIRED / BLOCKED
+# and defines APPROVED as "formally clean enough for the next deterministic
+# process to start". For a build that next process is the backtest pipeline, so
+# build_ea APPROVED advances to PIPELINE. For every other task type there is NO
+# further deterministic pipeline (a research card / review / ops report / triage
+# has no MT5 gate), so APPROVED is already the accepted terminal and resolves to
+# PASSED — pushing those into PIPELINE would only mint a new dead end where no
+# pipeline verdict can ever arrive.
+PIPELINE_BOUND_TASK_TYPES = {"build_ea"}
+# A recycled task is re-queued for another attempt, but bounded so a permanently
+# unbuildable card cannot loop forever; past the cap it parks in BLOCKED for a
+# human. Closing phases whose PASS/FAIL is the per-EA verdict.
+RECYCLE_MAX_ATTEMPTS = 3
+CLOSING_PIPELINE_PHASES = ("Q10", "P8")
+LIMBO_STATES = ("RECYCLE", "APPROVED", "PIPELINE")
 
 DEFAULT_AGENT_REGISTRY: dict[str, dict[str, Any]] = {
     "codex": {
@@ -148,6 +184,42 @@ class RouteDecision:
 
 def _json(data: Any) -> str:
     return json.dumps(data, sort_keys=True, separators=(",", ":"))
+
+
+def _directory_artifact_error(artifact_path: str | None) -> dict[str, str] | None:
+    """Refuse to RECORD a directory where a task artifact must be a FILE.
+
+    Census 2026-07-27 rank 9: a directory recorded in artifact_path expanded the
+    build-guardrail scan to the whole framework/EAs tree and timed out repeatedly
+    on close-review. The multi-path semicolon form (fixed the same day, four
+    review_strategy tasks depend on it) is preserved: each part is checked
+    independently. Only an *existing* directory is rejected — a not-yet-written
+    file path is allowed, because artifacts are often recorded before they land.
+    """
+    if not artifact_path:
+        return None
+    for part in str(artifact_path).split(";"):
+        part = part.strip()
+        if not part:
+            continue
+        path = Path(part)
+        if not path.is_absolute():
+            path = farmctl.REPO_ROOT / path
+        try:
+            is_dir = path.is_dir()
+        except OSError:
+            continue
+        if is_dir:
+            return {
+                "reason": "artifact_must_be_file_not_directory",
+                "artifact_path": part,
+                "detail": (
+                    "a task artifact must be a single evidence file, not a directory; "
+                    "point at the specific file (e.g. build_result.json / a report.csv), "
+                    "not the EA folder"
+                ),
+            }
+    return None
 
 
 def _effective_claude_disabled_flag(root: Path, claude_disabled_flag: Path) -> Path:
@@ -291,10 +363,15 @@ def enqueue_task(
     artifact_path: str | None = None,
     payload: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    if task_type in REMOVED_TASK_TYPES:
+        raise ValueError(REMOVED_TASK_TYPES[task_type])
     if task_type not in TASK_TYPE_CAPABILITIES:
         raise ValueError(f"unknown task_type: {task_type}")
     if state not in TASK_STATES:
         raise ValueError(f"unknown state: {state}")
+    dir_err = _directory_artifact_error(artifact_path)
+    if dir_err is not None:
+        raise ValueError(f"{dir_err['reason']}: {dir_err['artifact_path']}")
     capabilities = required_capabilities or TASK_TYPE_CAPABILITIES[task_type]
     skills = required_skills or []
     task_id = str(uuid.uuid4())
@@ -889,6 +966,9 @@ def update_task(
         row = conn.execute("SELECT * FROM agent_tasks WHERE id=?", (task_id,)).fetchone()
         if not row:
             return {"updated": False, "task_id": task_id, "reason": "task_not_found"}
+        dir_err = _directory_artifact_error(artifact_path)
+        if dir_err is not None:
+            return {"updated": False, "task_id": task_id, **dir_err}
         if row["task_type"] == "research_strategy" and state == "REVIEW" and artifact_path:
             try:
                 resolved_artifact = Path(artifact_path).resolve()
@@ -1095,6 +1175,9 @@ def close_review_task(
             return {"closed": False, "task_id": task_id, "reason": "task_not_found"}
         if row["state"] != "REVIEW":
             return {"closed": False, "task_id": task_id, "reason": f"not_in_review:{row['state']}"}
+        dir_err = _directory_artifact_error(artifact_path)
+        if dir_err is not None:
+            return {"closed": False, "task_id": task_id, **dir_err}
         all_evidence = _task_artifact_paths(root, row, artifact_path)
         evidence = all_evidence[0] if all_evidence else None
         if close_state == "APPROVED":
@@ -1107,6 +1190,19 @@ def close_review_task(
                     "task_id": task_id,
                     "reason": "artifact_missing",
                     "artifact_path": ";".join(str(p) for p in missing),
+                }
+            # Never hand a directory to the build guardrails: evidence.parent on a
+            # directory artifact is the EAs root, which made validate_path walk the
+            # whole framework/EAs tree and time out (census rank 9). Refuse here so
+            # a pre-existing directory row cannot trip the scan on close.
+            dir_evidence = [str(p) for p in all_evidence if p.is_dir()]
+            if dir_evidence:
+                return {
+                    "closed": False,
+                    "task_id": task_id,
+                    "reason": "artifact_must_be_file_not_directory",
+                    "artifact_path": ";".join(dir_evidence),
+                    "detail": "point the artifact at a single evidence file, not the EA folder",
                 }
             # Hard-Rule backstop: never approve a build that violates the deterministic
             # build guardrails - news-staleness bypass (qm_news_stale_max_hours > 336) or
@@ -1154,6 +1250,172 @@ def close_review_task(
         "state": close_state,
         "verdict": verdict,
         "artifact_path": str(evidence) if evidence else artifact_path,
+    }
+
+
+def _task_ea_id(payload: dict[str, Any]) -> str | None:
+    """The EA a task references, normalized to the 'QM5_<num>' work_items key."""
+    raw = payload.get("ea_id") or payload.get("card_id")
+    if not raw:
+        return None
+    m = re.search(r"(\d{3,6})", str(raw))
+    return f"QM5_{m.group(1)}" if m else None
+
+
+def _ea_pipeline_verdict(conn: sqlite3.Connection, ea_id: str | None) -> str | None:
+    """The pipeline's closing verdict for an EA, READ from work_items — never
+    manufactured (Hard Rule: pipeline verdicts come only from the pipeline).
+
+    PASS wins over FAIL when both exist (a later full-history PASS supersedes an
+    earlier fail). Returns None while the EA is still in flight — no closing-phase
+    (Q10/P8) terminal row — so an in-flight PIPELINE task is LEFT in place rather
+    than forced to a verdict it has not earned.
+    """
+    if not ea_id:
+        return None
+    placeholders = ",".join("?" for _ in CLOSING_PIPELINE_PHASES)
+    for want in ("PASS", "FAIL"):
+        try:
+            row = conn.execute(
+                f"""
+                SELECT 1 FROM work_items
+                WHERE ea_id=? AND phase IN ({placeholders})
+                  AND status='done' AND verdict=? LIMIT 1
+                """,
+                (ea_id, *CLOSING_PIPELINE_PHASES, want),
+            ).fetchone()
+        except sqlite3.OperationalError:
+            return None  # work_items table absent (never in production) -> in flight
+        if row:
+            return want
+    return None
+
+
+def _compute_task_exit(
+    conn: sqlite3.Connection, row: sqlite3.Row
+) -> tuple[str | None, str, dict[str, Any]]:
+    """Deterministic, type-aware exit for a limbo-state task.
+
+    Returns (target_state, reason, payload_updates); target_state None means
+    "leave in place" (a legitimately in-flight PIPELINE row, or a non-limbo row).
+    See PIPELINE_BOUND_TASK_TYPES / RECYCLE_MAX_ATTEMPTS for the contract mapping.
+    """
+    state = row["state"]
+    task_type = row["task_type"]
+    try:
+        payload = json.loads(row["payload_json"] or "{}")
+    except (TypeError, json.JSONDecodeError):
+        payload = {}
+
+    # Retired task type (pipeline_run): give the orphan row a terminal home
+    # instead of leaving it structurally unroutable (census rank 12).
+    if task_type in REMOVED_TASK_TYPES:
+        return "BLOCKED", "pipeline_run_retired_not_agent_lane", {}
+
+    if state == "APPROVED":
+        if task_type in PIPELINE_BOUND_TASK_TYPES:
+            return "PIPELINE", "approved_build_handed_to_pipeline", {}
+        # research / review / ops / triage: APPROVED already IS the accepted
+        # verdict; there is no further MT5 pipeline, so PASSED is the terminal.
+        return "PASSED", "approved_accepted_terminal", {}
+
+    if state == "PIPELINE":
+        verdict = _ea_pipeline_verdict(conn, _task_ea_id(payload))
+        if verdict == "PASS":
+            return "PASSED", "pipeline_closing_verdict_pass", {}
+        if verdict == "FAIL":
+            return "FAILED", "pipeline_closing_verdict_fail", {}
+        return None, "pipeline_in_flight_no_closing_verdict", {}
+
+    if state == "RECYCLE":
+        recycle_count = int(payload.get("recycle_count") or 0)
+        if recycle_count >= RECYCLE_MAX_ATTEMPTS:
+            # Bounded: a permanently unbuildable card cannot loop forever.
+            return "BLOCKED", "recycle_attempts_exhausted", {}
+        return "TODO", "recycle_requeue", {"recycle_count": recycle_count + 1}
+
+    return None, "not_a_limbo_state", {}
+
+
+def reconcile_task_exits(
+    root: Path = DEFAULT_ROOT,
+    *,
+    apply: bool = False,
+    limit: int | None = None,
+    states: tuple[str, ...] | list[str] | None = None,
+) -> dict[str, Any]:
+    """Give the three no-exit limbo states their contractual exit (census ranks
+    4/5/8). DRY-RUN by default: it reports what WOULD move and moves nothing.
+
+    It is deliberately NOT wired into the autonomous run_once tick. RECYCLE->TODO
+    re-queues 411 build_ea rows into the build lane — a mass requeue and an OWNER
+    capacity decision — and even the terminal APPROVED->PASSED reclassification
+    of ~200 rows must be a visible, opted-in action, not a silent side effect of
+    a routing tick. Detection (health invariant) runs continuously; remediation
+    is an explicit operator call. Bound it with `limit` and `states` when
+    applying so a single run cannot flood a lane.
+    """
+    target_states = tuple(states) if states else LIMBO_STATES
+    for s in target_states:
+        if s not in LIMBO_STATES:
+            raise ValueError(f"reconcile state must be one of {LIMBO_STATES}: {s}")
+    now = farmctl.utc_now()
+    moved: list[dict[str, Any]] = []
+    would_move: dict[str, int] = {}
+    left_in_place: dict[str, int] = {}
+    placeholders = ",".join("?" for _ in target_states)
+    with closing(connect(root)) as conn:
+        if apply:
+            conn.execute("BEGIN IMMEDIATE")
+        rows = conn.execute(
+            f"SELECT * FROM agent_tasks WHERE state IN ({placeholders}) ORDER BY state, updated_at ASC",
+            tuple(target_states),
+        ).fetchall()
+        n_applied = 0
+        for row in rows:
+            target, reason, payload_updates = _compute_task_exit(conn, row)
+            if target is None:
+                left_in_place[reason] = left_in_place.get(reason, 0) + 1
+                continue
+            key = f"{row['state']}->{target}:{reason}"
+            would_move[key] = would_move.get(key, 0) + 1
+            if not apply or (limit is not None and n_applied >= limit):
+                continue
+            try:
+                payload = json.loads(row["payload_json"] or "{}")
+            except (TypeError, json.JSONDecodeError):
+                payload = {}
+            payload.update(payload_updates)
+            history = list(payload.get("exit_reconciliations") or [])
+            history.append(
+                {"reconciled_at": now, "from_state": row["state"], "to_state": target, "reason": reason}
+            )
+            payload["exit_reconciliations"] = history[-5:]
+            conn.execute(
+                "UPDATE agent_tasks SET state=?, payload_json=?, updated_at=? WHERE id=? AND state=?",
+                (target, _json(payload), now, row["id"], row["state"]),
+            )
+            _release_task_lease(conn, row["id"])
+            n_applied += 1
+            moved.append(
+                {
+                    "task_id": row["id"],
+                    "task_type": row["task_type"],
+                    "from_state": row["state"],
+                    "to_state": target,
+                    "reason": reason,
+                }
+            )
+        if apply:
+            conn.commit()
+    return {
+        "apply": apply,
+        "limit": limit,
+        "states": list(target_states),
+        "would_move": would_move,
+        "left_in_place": left_in_place,
+        "moved_count": len(moved),
+        "moved": moved[:50],
     }
 
 
@@ -1307,6 +1569,18 @@ def main(argv: list[str] | None = None) -> int:
     close.add_argument("--verdict", required=True)
     close.add_argument("--artifact-path")
     close.add_argument("--note")
+    reconcile = sub.add_parser(
+        "reconcile-exits",
+        help="Report/apply contractual exits for the RECYCLE/APPROVED/PIPELINE limbo states (dry-run by default)",
+    )
+    reconcile.add_argument("--apply", action="store_true", help="Perform the transitions (default: dry-run report only)")
+    reconcile.add_argument("--limit", type=int, default=None, help="Max rows to move in one run (bounds a lane flood)")
+    reconcile.add_argument(
+        "--state",
+        action="append",
+        choices=sorted(LIMBO_STATES),
+        help="Restrict to these limbo states (repeatable); default all three",
+    )
     sync_q11 = sub.add_parser("sync-q11-candidates")
     sync_q11.add_argument("--no-admission", action="store_true",
                           help="legacy mirror-all (skip the DL-064 R-064-2 diversification gate)")
@@ -1355,6 +1629,13 @@ def main(argv: list[str] | None = None) -> int:
             verdict=args.verdict,
             artifact_path=args.artifact_path,
             note=args.note,
+        )
+    elif args.command == "reconcile-exits":
+        result = reconcile_task_exits(
+            args.root,
+            apply=args.apply,
+            limit=args.limit,
+            states=args.state,
         )
     elif args.command == "sync-q11-candidates":
         result = sync_q11_candidates(args.root, apply_admission=not args.no_admission)

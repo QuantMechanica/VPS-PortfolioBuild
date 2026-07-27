@@ -2516,6 +2516,73 @@ def chk_seed_auth_failure_rate(con) -> dict:
     return _check("seed_auth_failure_rate", "OK", 0, SEED_AUTH_FAIL_FAIL_PCT, detail, "")
 
 
+# --- Agent-task state-machine liveness (census 2026-07-27 ranks 4/5/8/9) ------
+# The deterministic router selects only BACKLOG/TODO; RECYCLE, APPROVED and
+# PIPELINE have no router exit, so a task can sit in one indefinitely. This
+# invariant makes that visible: it counts limbo-state tasks (with a staleness
+# split) and any directory-valued artifact_path (rank 9, which timed out the
+# build-guardrail scan). Remediation is the explicit, dry-run-first
+# `agent_router.py reconcile-exits`, never a silent bulk move.
+STRANDED_LIMBO_STATES = ("RECYCLE", "APPROVED", "PIPELINE")
+STRANDED_TASK_STALE_DAYS = 3
+# Set above the known ~700-row legacy backlog (census 2026-07-27) so today's
+# inherited tail reads as an actionable WARN, not a permanent red banner, while
+# genuine growth beyond it (a new leak) escalates to FAIL. Retune here.
+STRANDED_TASK_FAIL_TOTAL = 900
+
+
+def chk_agent_task_state_stranded(con) -> dict:
+    """Agent tasks parked in a router-exitless limbo state (RECYCLE/APPROVED/
+    PIPELINE), plus directory-valued artifact paths. Surfaces the census rank
+    4/5/8/9 dead ends so work never strands invisibly."""
+    tbl = con.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='agent_tasks'"
+    ).fetchone()
+    if not tbl:
+        return _check("agent_task_state_stranded", "OK", 0, STRANDED_TASK_FAIL_TOTAL,
+                      "agent_tasks table absent", "")
+    placeholders = ",".join("?" for _ in STRANDED_LIMBO_STATES)
+    by_state = {
+        r["state"]: int(r["n"])
+        for r in con.execute(
+            f"SELECT state, COUNT(*) n FROM agent_tasks WHERE state IN ({placeholders}) GROUP BY state",
+            STRANDED_LIMBO_STATES,
+        ).fetchall()
+    }
+    total = sum(by_state.values())
+    stale_cutoff = (_utc_now() - dt.timedelta(days=STRANDED_TASK_STALE_DAYS)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    stale = con.execute(
+        f"SELECT COUNT(*) FROM agent_tasks WHERE state IN ({placeholders}) AND updated_at < ?",
+        (*STRANDED_LIMBO_STATES, stale_cutoff),
+    ).fetchone()[0]
+    dir_artifacts = 0
+    for r in con.execute(
+        "SELECT artifact_path FROM agent_tasks WHERE artifact_path IS NOT NULL AND artifact_path != ''"
+    ).fetchall():
+        first = str(r["artifact_path"]).split(";")[0].strip()
+        if not first:
+            continue
+        p = Path(first)
+        if not p.is_absolute():
+            p = REPO_ROOT / first
+        try:
+            if p.is_dir():
+                dir_artifacts += 1
+        except OSError:
+            continue
+    order = ", ".join(f"{s}={by_state.get(s, 0)}" for s in STRANDED_LIMBO_STATES)
+    detail = (f"limbo tasks: {order} total={total} (>{STRANDED_TASK_STALE_DAYS}d stale={stale}); "
+              f"directory_artifacts={dir_artifacts}")
+    hint = ("Report/apply exits with `python tools/strategy_farm/agent_router.py reconcile-exits` "
+            "(dry-run first); RECYCLE->TODO re-queues builds and is an OWNER capacity decision. "
+            "See docs/ops/evidence/2026-07-27_state_machine_exits_fix.md")
+    if total >= STRANDED_TASK_FAIL_TOTAL:
+        return _check("agent_task_state_stranded", "FAIL", total, STRANDED_TASK_FAIL_TOTAL, detail, hint)
+    if total > 0 or dir_artifacts > 0:
+        return _check("agent_task_state_stranded", "WARN", total, STRANDED_TASK_FAIL_TOTAL, detail, hint)
+    return _check("agent_task_state_stranded", "OK", 0, STRANDED_TASK_FAIL_TOTAL, detail, "")
+
+
 ALL_CHECKS = [
     ("ea_id_slug_uniqueness", chk_ea_id_slug_uniqueness, False),
     ("stranded_ea_improvements", chk_stranded_ea_improvements, False),
@@ -2549,6 +2616,8 @@ ALL_CHECKS = [
     ("phase_invalid_rate_7d",  chk_phase_invalid_rate_7d,   True),
     ("ks_baseline_dormancy",   chk_ks_baseline_dormancy,    False),
     ("seed_auth_failure_rate", chk_seed_auth_failure_rate,  True),
+    # Agent-task state-machine liveness (census 2026-07-27 ranks 4/5/8/9)
+    ("agent_task_state_stranded", chk_agent_task_state_stranded, True),
 ]
 
 
