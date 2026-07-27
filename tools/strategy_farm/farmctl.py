@@ -283,6 +283,8 @@ def available_mt5_terminals(mt5_root: Path | None = None) -> tuple[str, ...]:
 
 
 DISABLED_TERMINALS_FILE = Path(r"D:\QM\strategy_farm\state\disabled_terminals.txt")
+TERMINAL_RESERVATIONS_REL = Path("state") / "terminal_reservations.json"
+DEFAULT_TERMINAL_RESERVATION_MINUTES = 60
 
 
 def disabled_mt5_terminals() -> set[str]:
@@ -296,6 +298,88 @@ def disabled_mt5_terminals() -> set[str]:
         if is_factory_terminal_name(terminal):
             disabled.add(terminal)
     return disabled
+
+
+def terminal_reservations(root: Path | None = None, now: dt.datetime | None = None) -> dict[str, dict[str, Any]]:
+    """Return live terminal reservations; malformed/expired entries fail open."""
+    farm_root = root or DEFAULT_ROOT
+    path = farm_root / TERMINAL_RESERVATIONS_REL
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8-sig"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return {}
+    current = now or dt.datetime.now(dt.timezone.utc)
+    live: dict[str, dict[str, Any]] = {}
+    entries = raw.get("reservations", raw) if isinstance(raw, dict) else {}
+    if not isinstance(entries, dict):
+        return {}
+    for key, value in entries.items():
+        terminal = str(key).strip().upper()
+        if not is_factory_terminal_name(terminal) or not isinstance(value, dict):
+            continue
+        try:
+            until = dt.datetime.fromisoformat(str(value["until_utc"]).replace("Z", "+00:00"))
+            if until.tzinfo is None:
+                until = until.replace(tzinfo=dt.timezone.utc)
+            until = until.astimezone(dt.timezone.utc)
+        except (KeyError, TypeError, ValueError):
+            continue
+        if until <= current:
+            continue
+        live[terminal] = {
+            "terminal": terminal,
+            "reserved_by": str(value.get("reserved_by") or "unknown"),
+            "reason": str(value.get("reason") or ""),
+            "created_at_utc": str(value.get("created_at_utc") or ""),
+            "until_utc": until.isoformat(),
+        }
+    return live
+
+
+def terminal_reservation(root: Path, terminal: str) -> dict[str, Any] | None:
+    return terminal_reservations(root).get(str(terminal).strip().upper())
+
+
+def set_terminal_reservation(
+    root: Path,
+    terminal: str,
+    reserved_by: str,
+    minutes: int = DEFAULT_TERMINAL_RESERVATION_MINUTES,
+    reason: str = "",
+) -> dict[str, Any]:
+    terminal = str(terminal).strip().upper()
+    if not is_factory_terminal_name(terminal):
+        raise ValueError(f"not a factory terminal: {terminal}")
+    if minutes <= 0:
+        raise ValueError("minutes must be greater than zero")
+    now = dt.datetime.now(dt.timezone.utc)
+    reservations = terminal_reservations(root, now)
+    reservation = {
+        "terminal": terminal,
+        "reserved_by": str(reserved_by).strip() or "unknown",
+        "reason": str(reason).strip(),
+        "created_at_utc": now.isoformat(),
+        "until_utc": (now + dt.timedelta(minutes=minutes)).isoformat(),
+    }
+    reservations[terminal] = reservation
+    path = root / TERMINAL_RESERVATIONS_REL
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(path.suffix + f".{os.getpid()}.tmp")
+    tmp.write_text(json.dumps({"reservations": reservations}, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    tmp.replace(path)
+    return reservation
+
+
+def release_terminal_reservation(root: Path, terminal: str) -> dict[str, Any]:
+    terminal = str(terminal).strip().upper()
+    reservations = terminal_reservations(root)
+    removed = reservations.pop(terminal, None)
+    path = root / TERMINAL_RESERVATIONS_REL
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(path.suffix + f".{os.getpid()}.tmp")
+    tmp.write_text(json.dumps({"reservations": reservations}, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    tmp.replace(path)
+    return {"released": removed is not None, "terminal": terminal, "reservation": removed}
 
 
 def active_mt5_terminals(mt5_root: Path | None = None) -> tuple[str, ...]:
@@ -12011,6 +12095,7 @@ def get_mt5_status(root: Path | None = None) -> dict[str, Any]:
     terminals_running = sorted({p["terminal"] for p in processes if p.get("terminal")})
     duplicate_workers = {terminal: pids for terminal, pids in workers.items() if len(pids) > 1}
 
+    reservations = terminal_reservations(root or DEFAULT_ROOT)
     return {
         "scanned_at": scan_at,
         "terminal64_running_count": len(processes),
@@ -12019,6 +12104,7 @@ def get_mt5_status(root: Path | None = None) -> dict[str, Any]:
         "terminal_workers": workers,
         "duplicate_terminal_workers": duplicate_workers,
         "orphaned_terminal_processes": [p for p in processes if p.get("orphaned_work_item_process")],
+        "terminal_reservations": [reservations[key] for key in sorted(reservations)],
     }
 
 
@@ -15479,6 +15565,13 @@ def build_parser() -> argparse.ArgumentParser:
     record_review.add_argument("--result-file", required=True, help="Path to Claude's verdict JSON")
 
     sub.add_parser("mt5-slots", help="Show MT5 terminal process scan with per factory slot attribution")
+    reserve_terminal = sub.add_parser("reserve-terminal", help="Reserve a T1-T10 slot after its current item finishes")
+    reserve_terminal.add_argument("terminal")
+    reserve_terminal.add_argument("--by", required=True, dest="reserved_by")
+    reserve_terminal.add_argument("--minutes", type=int, default=DEFAULT_TERMINAL_RESERVATION_MINUTES)
+    reserve_terminal.add_argument("--reason", default="")
+    release_terminal = sub.add_parser("release-terminal", help="Release a live T1-T10 reservation")
+    release_terminal.add_argument("terminal")
     reconcile_mt5 = sub.add_parser("reconcile-mt5", help="Report MT5/worker slot mismatches; optionally repair safe slot blockers")
     reconcile_mt5.add_argument("--fix-workers", action="store_true", help="Stop duplicate terminal_worker.py daemons and start missing ones")
     reconcile_mt5.add_argument("--fix-orphan-terminals", action="store_true", help="Stop factory terminal64.exe processes whose work_item is no longer active")
@@ -15725,6 +15818,12 @@ def main(argv: list[str] | None = None) -> int:
         print_json({**payload, "rows": rows})
     elif args.command == "mt5-slots":
         print_json(get_mt5_status(root))
+    elif args.command == "reserve-terminal":
+        print_json(set_terminal_reservation(
+            root, args.terminal, args.reserved_by, minutes=args.minutes, reason=args.reason,
+        ))
+    elif args.command == "release-terminal":
+        print_json(release_terminal_reservation(root, args.terminal))
     elif args.command == "reconcile-mt5":
         print_json(reconcile_mt5_slots(root, fix_workers=args.fix_workers, fix_orphan_terminals=args.fix_orphan_terminals))
     elif args.command == "enqueue-backtest":

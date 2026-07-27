@@ -99,6 +99,53 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertEqual(rows[0][0], "active")
             self.assertIn(rows[0][1], {"T1", "T2"})
 
+    def test_live_terminal_reservation_declines_claim_and_logs(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "wi-reserved", "EURUSD.DWX", phase="P3")
+            reservation = farmctl.set_terminal_reservation(
+                root, "T4", "codex-test", minutes=30, reason="ad-hoc evaluation",
+            )
+
+            with patch("builtins.print") as logged:
+                result = terminal_worker.claim_atomic(root, "T4")
+
+            self.assertFalse(result["claimed"])
+            self.assertEqual(result["reason"], "terminal_reserved")
+            self.assertEqual(result["reserved_by"], "codex-test")
+            self.assertEqual(result["until_utc"], reservation["until_utc"])
+            self.assertTrue(any(
+                "terminal_reservation_claim_declined" in str(call)
+                for call in logged.call_args_list
+            ))
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status, claimed_by FROM work_items WHERE id='wi-reserved'"
+                ).fetchone()
+            self.assertEqual(row, ("pending", None))
+
+    def test_expired_terminal_reservation_fails_open(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(root, "wi-expired", "EURUSD.DWX", phase="P3")
+            path = root / farmctl.TERMINAL_RESERVATIONS_REL
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(json.dumps({
+                "reservations": {
+                    "T3": {
+                        "reserved_by": "codex-test",
+                        "reason": "expired",
+                        "created_at_utc": "2026-01-01T00:00:00+00:00",
+                        "until_utc": "2026-01-01T00:30:00+00:00",
+                    }
+                }
+            }), encoding="utf-8")
+
+            result = terminal_worker.claim_atomic(root, "T3")
+
+            self.assertTrue(result["claimed"])
+            self.assertEqual(result["item"]["id"], "wi-expired")
+
     def test_claim_fails_closed_without_valid_multisymbol_registry(self) -> None:
         with self._root() as tmp:
             root = Path(tmp) / "farm"

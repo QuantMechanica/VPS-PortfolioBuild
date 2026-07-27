@@ -1053,6 +1053,19 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     conn.commit()
                     return {"claimed": False, "reason": "terminal_process_busy", "terminal": terminal}
 
+                reservation = farmctl.terminal_reservation(root, terminal)
+                if reservation:
+                    decline = {
+                        "event": "terminal_reservation_claim_declined",
+                        "terminal": terminal,
+                        "reserved_by": reservation["reserved_by"],
+                        "until_utc": reservation["until_utc"],
+                        "reason": reservation["reason"],
+                    }
+                    print(json.dumps(decline, sort_keys=True), flush=True)
+                    conn.commit()
+                    return {"claimed": False, **reservation, "reason": "terminal_reserved"}
+
                 if _watchdog_reset_admission_blocked(root):
                     conn.commit()
                     return {

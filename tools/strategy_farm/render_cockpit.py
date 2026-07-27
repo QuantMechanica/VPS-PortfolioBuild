@@ -1934,20 +1934,33 @@ def main() -> int:
     # harness or leaked runner — visible instead of lying "idle").
     active_terms = {str(w.get("terminal") or "").upper() for w in mt5_work}
     proc_terms = factory_terminal_procs()
+    try:
+        import farmctl
+        reserved_terms = farmctl.terminal_reservations(ROOT)
+    except Exception:
+        reserved_terms = {}
     term_cells = []
     for i in range(1, 11):
         tname = f"T{i}"
         is_active = any(tname in t or t == tname for t in active_terms)
         is_proc = tname in proc_terms
-        cls = "active" if is_active else ("proc" if is_proc else "idle")
-        dot = "■" if (is_active or is_proc) else "□"
+        reservation = reserved_terms.get(tname)
+        cls = "active" if is_active else ("reserved" if reservation else ("proc" if is_proc else "idle"))
+        dot = "■" if (is_active or is_proc) else ("R" if reservation else "□")
+        title = ""
+        if reservation:
+            title = (
+                f' title="reserved by {e(reservation["reserved_by"])} '
+                f'until {e(reservation["until_utc"])}: {e(reservation["reason"])}"'
+            )
         term_cells.append(
-            f'<div class="term {cls}"><div class="id">{tname}</div><div class="dot">{dot}</div></div>'
+            f'<div class="term {cls}"{title}><div class="id">{tname}</div><div class="dot">{dot}</div></div>'
         )
     term_row_html = "".join(term_cells)
     fleet_label = (
         f"T1–T10 Workers // {len(active_terms)} of 10 farm-active // "
-        f"{len(proc_terms)} terminal proc{'s' if len(proc_terms) != 1 else ''} up"
+        f"{len(proc_terms)} terminal proc{'s' if len(proc_terms) != 1 else ''} up // "
+        f"{len(reserved_terms)} reserved"
     )
 
     # Watchdog pulse: last self-heal action + interactive-session state. Answers
@@ -2662,6 +2675,8 @@ body { padding: 32px; min-height: 100vh; }
 .term.active .dot { color: var(--text); }
 .term.idle   .dot { color: var(--text-3); }
 .term.active .id  { color: var(--text-2); }
+.term.reserved .dot { color: var(--danger); font-size: 9px; }
+.term.reserved .id  { color: var(--danger); }
 .term.proc .dot { color: var(--warn); }
 .term.proc .id  { color: var(--text-2); }
 
