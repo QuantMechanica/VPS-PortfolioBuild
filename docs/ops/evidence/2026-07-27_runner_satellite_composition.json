@@ -1,0 +1,2202 @@
+{
+  "runner": "9936:USDJPY",
+  "split_day": "2022-09-16",
+  "pool": [
+    "10128:XAUUSD",
+    "10145:XAUUSD",
+    "10183:XAUUSD",
+    "10291:SP500",
+    "10553:XAUUSD",
+    "10700:XAUUSD",
+    "10848:XAUUSD",
+    "12969:USDJPY",
+    "13036:GDAXI",
+    "13108:XTIUSD",
+    "13213:USDJPY",
+    "13301:GDAXI",
+    "20010:XAUUSD",
+    "9403:GDAXI",
+    "9936:USDJPY"
+  ],
+  "thresholds": {
+    "corr_admit_max": 0.15,
+    "corr_reject_min": 0.4,
+    "sharpe_delta_admit": 0.02,
+    "min_overlap_days": 60,
+    "regime_window": 20,
+    "regime_quantile": 0.75,
+    "min_regime_days": 20
+  },
+  "runner_is": {
+    "med60": 2.933345,
+    "worst_day": -1.7643699999999998,
+    "wdd_p90": 6.8648099999999985,
+    "fund_score": 0.42730170245061416,
+    "windows": 1222,
+    "censored": 44,
+    "effective_n": 30
+  },
+  "runner_oos": {
+    "med60": 4.525034999999999,
+    "worst_day": -1.6642400000000002,
+    "wdd_p90": 9.290289999999999,
+    "fund_score": 0.48707144771584093,
+    "windows": 804,
+    "censored": 40,
+    "effective_n": 20
+  },
+  "pairwise_is_daily_correlation": {
+    "10128:XAUUSD|10145:XAUUSD": 0.5688047972,
+    "10128:XAUUSD|10183:XAUUSD": 0.3714608606,
+    "10128:XAUUSD|10291:SP500": -0.1054735277,
+    "10128:XAUUSD|10553:XAUUSD": -0.0238960799,
+    "10128:XAUUSD|10700:XAUUSD": -0.00231564,
+    "10128:XAUUSD|10848:XAUUSD": 0.0290264879,
+    "10128:XAUUSD|12969:USDJPY": 0.0222077239,
+    "10128:XAUUSD|13036:GDAXI": -0.0754897614,
+    "10128:XAUUSD|13108:XTIUSD": 0.0260387118,
+    "10128:XAUUSD|13213:USDJPY": -0.0746248522,
+    "10128:XAUUSD|13301:GDAXI": -0.0417925386,
+    "10128:XAUUSD|20010:XAUUSD": 0.2096353657,
+    "10128:XAUUSD|9403:GDAXI": -0.0021625267,
+    "10128:XAUUSD|9936:USDJPY": -0.0736876888,
+    "10145:XAUUSD|10183:XAUUSD": 0.4668260514,
+    "10145:XAUUSD|10291:SP500": -0.0009260045,
+    "10145:XAUUSD|10553:XAUUSD": -0.0021581987,
+    "10145:XAUUSD|10700:XAUUSD": 0.0295583144,
+    "10145:XAUUSD|10848:XAUUSD": 0.1344273427,
+    "10145:XAUUSD|12969:USDJPY": -0.0090547444,
+    "10145:XAUUSD|13036:GDAXI": -0.0520140879,
+    "10145:XAUUSD|13108:XTIUSD": -0.0071170286,
+    "10145:XAUUSD|13213:USDJPY": -0.046107766,
+    "10145:XAUUSD|13301:GDAXI": 0.0012917272,
+    "10145:XAUUSD|20010:XAUUSD": 0.3699341086,
+    "10145:XAUUSD|9403:GDAXI": 0.0040906936,
+    "10145:XAUUSD|9936:USDJPY": -0.0528295051,
+    "10183:XAUUSD|10291:SP500": -0.0900335545,
+    "10183:XAUUSD|10553:XAUUSD": 0.0005323668,
+    "10183:XAUUSD|10700:XAUUSD": 0.0167294663,
+    "10183:XAUUSD|10848:XAUUSD": 0.0708677939,
+    "10183:XAUUSD|12969:USDJPY": -0.0288396362,
+    "10183:XAUUSD|13036:GDAXI": -0.0427637074,
+    "10183:XAUUSD|13108:XTIUSD": 0.0260895188,
+    "10183:XAUUSD|13213:USDJPY": -0.0079367126,
+    "10183:XAUUSD|13301:GDAXI": 0.0421194421,
+    "10183:XAUUSD|20010:XAUUSD": 0.2482915715,
+    "10183:XAUUSD|9403:GDAXI": -0.024795038,
+    "10183:XAUUSD|9936:USDJPY": -0.01472006,
+    "10291:SP500|10553:XAUUSD": 0.0752000479,
+    "10291:SP500|10700:XAUUSD": -0.0098990977,
+    "10291:SP500|10848:XAUUSD": 0.0677756978,
+    "10291:SP500|12969:USDJPY": 0.0533894308,
+    "10291:SP500|13036:GDAXI": 0.1178137451,
+    "10291:SP500|13108:XTIUSD": -0.0341576111,
+    "10291:SP500|13213:USDJPY": 0.0058687261,
+    "10291:SP500|13301:GDAXI": 0.0347005335,
+    "10291:SP500|20010:XAUUSD": -0.0869275075,
+    "10291:SP500|9403:GDAXI": -0.0070517286,
+    "10291:SP500|9936:USDJPY": 0.0245235339,
+    "10553:XAUUSD|10700:XAUUSD": 0.1604089627,
+    "10553:XAUUSD|10848:XAUUSD": 0.2046693737,
+    "10553:XAUUSD|12969:USDJPY": -0.0102231927,
+    "10553:XAUUSD|13036:GDAXI": 0.0640061944,
+    "10553:XAUUSD|13108:XTIUSD": -0.0388270336,
+    "10553:XAUUSD|13213:USDJPY": -0.0047361188,
+    "10553:XAUUSD|13301:GDAXI": 0.032321909,
+    "10553:XAUUSD|20010:XAUUSD": -0.0266920029,
+    "10553:XAUUSD|9403:GDAXI": -0.0410534565,
+    "10553:XAUUSD|9936:USDJPY": 0.0003901644,
+    "10700:XAUUSD|10848:XAUUSD": 0.0802997497,
+    "10700:XAUUSD|12969:USDJPY": -0.0037229094,
+    "10700:XAUUSD|13036:GDAXI": 0.0351076368,
+    "10700:XAUUSD|13108:XTIUSD": 0.0154410179,
+    "10700:XAUUSD|13213:USDJPY": -0.0248833243,
+    "10700:XAUUSD|13301:GDAXI": -0.0020975345,
+    "10700:XAUUSD|20010:XAUUSD": -0.0335316858,
+    "10700:XAUUSD|9403:GDAXI": -0.0508547265,
+    "10700:XAUUSD|9936:USDJPY": -0.013455115,
+    "10848:XAUUSD|12969:USDJPY": -0.0329679097,
+    "10848:XAUUSD|13036:GDAXI": 0.0009461948,
+    "10848:XAUUSD|13108:XTIUSD": 0.0184238703,
+    "10848:XAUUSD|13213:USDJPY": -0.0186193082,
+    "10848:XAUUSD|13301:GDAXI": 0.0285901969,
+    "10848:XAUUSD|20010:XAUUSD": 0.2370915948,
+    "10848:XAUUSD|9403:GDAXI": -0.0233949684,
+    "10848:XAUUSD|9936:USDJPY": -0.0235161801,
+    "12969:USDJPY|13036:GDAXI": -0.0375625614,
+    "12969:USDJPY|13108:XTIUSD": 0.0142433732,
+    "12969:USDJPY|13213:USDJPY": 0.061833763,
+    "12969:USDJPY|13301:GDAXI": -0.0062511856,
+    "12969:USDJPY|20010:XAUUSD": -0.0082315831,
+    "12969:USDJPY|9403:GDAXI": -0.0261707009,
+    "12969:USDJPY|9936:USDJPY": 0.0609556292,
+    "13036:GDAXI|13108:XTIUSD": 0.0257804222,
+    "13036:GDAXI|13213:USDJPY": -0.0072243735,
+    "13036:GDAXI|13301:GDAXI": 0.0564038461,
+    "13036:GDAXI|20010:XAUUSD": -0.0534953999,
+    "13036:GDAXI|9403:GDAXI": -0.0129860313,
+    "13036:GDAXI|9936:USDJPY": -0.0026827027,
+    "13108:XTIUSD|13213:USDJPY": -0.0297240922,
+    "13108:XTIUSD|13301:GDAXI": -0.0288180906,
+    "13108:XTIUSD|20010:XAUUSD": -0.0043758339,
+    "13108:XTIUSD|9403:GDAXI": -0.0162026481,
+    "13108:XTIUSD|9936:USDJPY": -0.0213279026,
+    "13213:USDJPY|13301:GDAXI": 0.0726716733,
+    "13213:USDJPY|20010:XAUUSD": -0.018699382,
+    "13213:USDJPY|9403:GDAXI": 0.0389864247,
+    "13213:USDJPY|9936:USDJPY": 0.8330966134,
+    "13301:GDAXI|20010:XAUUSD": 0.0618389232,
+    "13301:GDAXI|9403:GDAXI": 0.0323347492,
+    "13301:GDAXI|9936:USDJPY": 0.0818794433,
+    "20010:XAUUSD|9403:GDAXI": 0.0528924463,
+    "20010:XAUUSD|9936:USDJPY": -0.0111524112,
+    "9403:GDAXI|9936:USDJPY": 0.0526583046
+  },
+  "passing_sets": [
+    {
+      "members": [
+        "9936:USDJPY",
+        "10145:XAUUSD",
+        "13301:GDAXI"
+      ],
+      "gates": [
+        {
+          "candidate": "10145:XAUUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": -0.0528295051,
+          "corr_regime": -0.1032940255,
+          "corr_eff": -0.0528295051,
+          "regime_days": 314,
+          "delta_sharpe": 0.050165699556740995,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "13301:GDAXI",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0818794433,
+          "corr_regime": 0.1853492805,
+          "corr_eff": 0.1853492805,
+          "regime_days": 313,
+          "delta_sharpe": 0.23057709372550939,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 1.6382433333333335,
+        "worst_day": -0.8934233333333332,
+        "wdd_p90": 2.505596666666667,
+        "fund_score": 0.6538336178076014,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 2.2215383333333336,
+        "worst_day": -0.8874966666666666,
+        "wdd_p90": 3.4641233333333328,
+        "fund_score": 0.6412988567574097,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "12969:USDJPY",
+        "13301:GDAXI"
+      ],
+      "gates": [
+        {
+          "candidate": "12969:USDJPY",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0609556292,
+          "corr_regime": 0.0876466526,
+          "corr_eff": 0.0876466526,
+          "regime_days": 314,
+          "delta_sharpe": 0.06198095077566279,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "13301:GDAXI",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0818794433,
+          "corr_regime": 0.1731444498,
+          "corr_eff": 0.1731444498,
+          "regime_days": 313,
+          "delta_sharpe": 0.22947087373076092,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 1.5651583333333334,
+        "worst_day": -0.6821499999999999,
+        "wdd_p90": 2.40767,
+        "fund_score": 0.6500717844776625,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 2.340985,
+        "worst_day": -0.8149233333333333,
+        "wdd_p90": 3.3023933333333333,
+        "fund_score": 0.7088752803522294,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "13108:XTIUSD",
+        "13301:GDAXI"
+      ],
+      "gates": [
+        {
+          "candidate": "13108:XTIUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": -0.0213279026,
+          "corr_regime": -0.0233400094,
+          "corr_eff": -0.0213279026,
+          "regime_days": 314,
+          "delta_sharpe": 0.03941230982724897,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "13301:GDAXI",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0818794433,
+          "corr_regime": 0.1709538405,
+          "corr_eff": 0.1709538405,
+          "regime_days": 313,
+          "delta_sharpe": 0.2347762357972265,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 1.5432416666666673,
+        "worst_day": -0.8170766666666668,
+        "wdd_p90": 2.4013566666666666,
+        "fund_score": 0.6426540830391712,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 2.3168450000000003,
+        "worst_day": -0.8469766666666666,
+        "wdd_p90": 4.006616666666667,
+        "fund_score": 0.5782547203168094,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "10145:XAUUSD",
+        "12969:USDJPY",
+        "13301:GDAXI"
+      ],
+      "gates": [
+        {
+          "candidate": "10145:XAUUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": -0.0528295051,
+          "corr_regime": -0.1032940255,
+          "corr_eff": -0.0528295051,
+          "regime_days": 314,
+          "delta_sharpe": 0.050165699556740995,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "12969:USDJPY",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0609556292,
+          "corr_regime": 0.0805419445,
+          "corr_eff": 0.0805419445,
+          "regime_days": 313,
+          "delta_sharpe": 0.061427569168199136,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "13301:GDAXI",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0818794433,
+          "corr_regime": 0.1852666645,
+          "corr_eff": 0.1852666645,
+          "regime_days": 313,
+          "delta_sharpe": 0.22288277110553167,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 1.2765425000000001,
+        "worst_day": -0.6700674999999999,
+        "wdd_p90": 1.8410849999999992,
+        "fund_score": 0.6382712500000001,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 1.90617375,
+        "worst_day": -0.6656224999999999,
+        "wdd_p90": 2.3861375000000002,
+        "fund_score": 0.7988532722862784,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "20010:XAUUSD",
+        "10145:XAUUSD",
+        "13301:GDAXI"
+      ],
+      "gates": [
+        {
+          "candidate": "20010:XAUUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": -0.0111524112,
+          "corr_regime": -0.0598114576,
+          "corr_eff": -0.0111524112,
+          "regime_days": 314,
+          "delta_sharpe": 0.009512859430522047,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "10145:XAUUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": 0.3699341086,
+          "corr_regime": 0.2839487612,
+          "corr_eff": 0.3699341086,
+          "regime_days": 313,
+          "delta_sharpe": 0.04197606068065385,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "13301:GDAXI",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0818794433,
+          "corr_regime": 0.1824330351,
+          "corr_eff": 0.1824330351,
+          "regime_days": 313,
+          "delta_sharpe": 0.2269469671989075,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 1.2447074999999999,
+        "worst_day": -0.9172675,
+        "wdd_p90": 1.98435,
+        "fund_score": 0.6223537499999999,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 1.8247387499999996,
+        "worst_day": -0.8073425000000001,
+        "wdd_p90": 2.73814,
+        "fund_score": 0.6664154316433782,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "12969:USDJPY",
+        "13108:XTIUSD",
+        "13301:GDAXI"
+      ],
+      "gates": [
+        {
+          "candidate": "12969:USDJPY",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0609556292,
+          "corr_regime": 0.0876466526,
+          "corr_eff": 0.0876466526,
+          "regime_days": 314,
+          "delta_sharpe": 0.06198095077566279,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "13108:XTIUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": 0.0142433732,
+          "corr_regime": -0.0095712642,
+          "corr_eff": 0.0142433732,
+          "regime_days": 313,
+          "delta_sharpe": 0.03824882067077029,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "13301:GDAXI",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0818794433,
+          "corr_regime": 0.1728964773,
+          "corr_eff": 0.1728964773,
+          "regime_days": 313,
+          "delta_sharpe": 0.22727422487236004,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 1.2277950000000002,
+        "worst_day": -0.60376,
+        "wdd_p90": 1.8199150000000004,
+        "fund_score": 0.6138975000000001,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 1.8306062500000002,
+        "worst_day": -0.6111925,
+        "wdd_p90": 2.9719699999999993,
+        "fund_score": 0.6159571765529264,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "10145:XAUUSD",
+        "13108:XTIUSD",
+        "13301:GDAXI"
+      ],
+      "gates": [
+        {
+          "candidate": "10145:XAUUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": -0.0528295051,
+          "corr_regime": -0.1032940255,
+          "corr_eff": -0.0528295051,
+          "regime_days": 314,
+          "delta_sharpe": 0.050165699556740995,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "13108:XTIUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": -0.0071170286,
+          "corr_regime": 0.1609306938,
+          "corr_eff": 0.1609306938,
+          "regime_days": 313,
+          "delta_sharpe": 0.03892206389317221,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "13301:GDAXI",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0818794433,
+          "corr_regime": 0.178994883,
+          "corr_eff": 0.178994883,
+          "regime_days": 313,
+          "delta_sharpe": 0.22825782774407677,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 1.223175,
+        "worst_day": -0.6333025,
+        "wdd_p90": 1.8793200000000003,
+        "fund_score": 0.6115875,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 1.87483125,
+        "worst_day": -0.8567224999999999,
+        "wdd_p90": 3.0513925,
+        "fund_score": 0.6144182533056629,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "12969:USDJPY",
+        "13301:GDAXI",
+        "20010:XAUUSD"
+      ],
+      "gates": [
+        {
+          "candidate": "12969:USDJPY",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0609556292,
+          "corr_regime": 0.0876466526,
+          "corr_eff": 0.0876466526,
+          "regime_days": 314,
+          "delta_sharpe": 0.06198095077566279,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "13301:GDAXI",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0818794433,
+          "corr_regime": 0.1731444498,
+          "corr_eff": 0.1731444498,
+          "regime_days": 313,
+          "delta_sharpe": 0.22947087373076092,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "20010:XAUUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": 0.0618389232,
+          "corr_regime": 0.0378579498,
+          "corr_eff": 0.0618389232,
+          "regime_days": 313,
+          "delta_sharpe": 0.0048503263741765945,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 1.21148,
+        "worst_day": -0.7577375,
+        "wdd_p90": 1.8970924999999998,
+        "fund_score": 0.60574,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 1.79286875,
+        "worst_day": -0.6111925,
+        "wdd_p90": 2.3402174999999996,
+        "fund_score": 0.7661120173659074,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "13301:GDAXI",
+        "20010:XAUUSD"
+      ],
+      "gates": [
+        {
+          "candidate": "13301:GDAXI",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0818794433,
+          "corr_regime": 0.1760965408,
+          "corr_eff": 0.1760965408,
+          "regime_days": 314,
+          "delta_sharpe": 0.23738852270696875,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "20010:XAUUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": 0.0618389232,
+          "corr_regime": 0.0382288743,
+          "corr_eff": 0.0618389232,
+          "regime_days": 313,
+          "delta_sharpe": 0.005028719938279913,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 1.5186300000000001,
+        "worst_day": -1.0103166666666668,
+        "wdd_p90": 2.53247,
+        "fund_score": 0.5996635695585734,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 2.231596666666667,
+        "worst_day": -0.8469766666666666,
+        "wdd_p90": 3.3300500000000004,
+        "fund_score": 0.6701390870006957,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "13108:XTIUSD",
+        "13301:GDAXI",
+        "9403:GDAXI"
+      ],
+      "gates": [
+        {
+          "candidate": "13108:XTIUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": -0.0213279026,
+          "corr_regime": -0.0233400094,
+          "corr_eff": -0.0213279026,
+          "regime_days": 314,
+          "delta_sharpe": 0.03941230982724897,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "13301:GDAXI",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0818794433,
+          "corr_regime": 0.1709538405,
+          "corr_eff": 0.1709538405,
+          "regime_days": 313,
+          "delta_sharpe": 0.2347762357972265,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "9403:GDAXI",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0526583046,
+          "corr_regime": 0.0610169637,
+          "corr_eff": 0.0610169637,
+          "regime_days": 313,
+          "delta_sharpe": 0.039924134023535895,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 1.30953375,
+        "worst_day": -1.0422649999999998,
+        "wdd_p90": 2.2165074999999996,
+        "fund_score": 0.5908095280525782,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 1.8860999999999999,
+        "worst_day": -0.7656375000000001,
+        "wdd_p90": 2.954035,
+        "fund_score": 0.6384826178430519,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "10145:XAUUSD",
+        "13301:GDAXI",
+        "9403:GDAXI"
+      ],
+      "gates": [
+        {
+          "candidate": "10145:XAUUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": -0.0528295051,
+          "corr_regime": -0.1032940255,
+          "corr_eff": -0.0528295051,
+          "regime_days": 314,
+          "delta_sharpe": 0.050165699556740995,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "13301:GDAXI",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0818794433,
+          "corr_regime": 0.1853492805,
+          "corr_eff": 0.1853492805,
+          "regime_days": 313,
+          "delta_sharpe": 0.23057709372550939,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "9403:GDAXI",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0526583046,
+          "corr_regime": 0.0973902891,
+          "corr_eff": 0.0973902891,
+          "regime_days": 313,
+          "delta_sharpe": 0.03754040748653065,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 1.39503,
+        "worst_day": -1.0230124999999999,
+        "wdd_p90": 2.3618325000000007,
+        "fund_score": 0.5906557725833647,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 1.95044875,
+        "worst_day": -0.8295149999999999,
+        "wdd_p90": 2.7413375,
+        "fund_score": 0.7114953011075797,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "12969:USDJPY",
+        "13301:GDAXI",
+        "9403:GDAXI"
+      ],
+      "gates": [
+        {
+          "candidate": "12969:USDJPY",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0609556292,
+          "corr_regime": 0.0876466526,
+          "corr_eff": 0.0876466526,
+          "regime_days": 314,
+          "delta_sharpe": 0.06198095077566279,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "13301:GDAXI",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0818794433,
+          "corr_regime": 0.1731444498,
+          "corr_eff": 0.1731444498,
+          "regime_days": 313,
+          "delta_sharpe": 0.22947087373076092,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "9403:GDAXI",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0526583046,
+          "corr_regime": 0.0913908524,
+          "corr_eff": 0.0913908524,
+          "regime_days": 313,
+          "delta_sharpe": 0.037672032389079124,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 1.3564862499999997,
+        "worst_day": -1.0230124999999999,
+        "wdd_p90": 2.3218799999999997,
+        "fund_score": 0.5842189303495443,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 1.8742249999999998,
+        "worst_day": -0.7656375000000001,
+        "wdd_p90": 2.575235,
+        "fund_score": 0.7277879494492734,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "13108:XTIUSD",
+        "20010:XAUUSD",
+        "13301:GDAXI"
+      ],
+      "gates": [
+        {
+          "candidate": "13108:XTIUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": -0.0213279026,
+          "corr_regime": -0.0233400094,
+          "corr_eff": -0.0213279026,
+          "regime_days": 314,
+          "delta_sharpe": 0.03941230982724897,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "20010:XAUUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": -0.0043758339,
+          "corr_regime": 0.0612433428,
+          "corr_eff": 0.0612433428,
+          "regime_days": 313,
+          "delta_sharpe": 0.009410118573451642,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "13301:GDAXI",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0818794433,
+          "corr_regime": 0.1795765561,
+          "corr_eff": 0.1795765561,
+          "regime_days": 313,
+          "delta_sharpe": 0.23032569171606365,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 1.1370362500000002,
+        "worst_day": -0.6515899999999999,
+        "wdd_p90": 1.737925,
+        "fund_score": 0.5685181250000001,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 1.83806875,
+        "worst_day": -0.74888,
+        "wdd_p90": 2.9508374999999996,
+        "fund_score": 0.622897313050956,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "10145:XAUUSD",
+        "13108:XTIUSD",
+        "9403:GDAXI"
+      ],
+      "gates": [
+        {
+          "candidate": "10145:XAUUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": -0.0528295051,
+          "corr_regime": -0.1032940255,
+          "corr_eff": -0.0528295051,
+          "regime_days": 314,
+          "delta_sharpe": 0.050165699556740995,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "13108:XTIUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": -0.0071170286,
+          "corr_regime": 0.1609306938,
+          "corr_eff": 0.1609306938,
+          "regime_days": 313,
+          "delta_sharpe": 0.03892206389317221,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "9403:GDAXI",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": 0.0526583046,
+          "corr_regime": 0.0305729767,
+          "corr_eff": 0.0526583046,
+          "regime_days": 313,
+          "delta_sharpe": 0.053776617053896025,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 1.1288399999999998,
+        "worst_day": -0.7899099999999999,
+        "wdd_p90": 2.01189,
+        "fund_score": 0.5610843535183334,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 1.6106274999999999,
+        "worst_day": -0.8567224999999999,
+        "wdd_p90": 2.8985125,
+        "fund_score": 0.5556738154484412,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "13301:GDAXI",
+        "20010:XAUUSD",
+        "9403:GDAXI"
+      ],
+      "gates": [
+        {
+          "candidate": "13301:GDAXI",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0818794433,
+          "corr_regime": 0.1760965408,
+          "corr_eff": 0.1760965408,
+          "regime_days": 314,
+          "delta_sharpe": 0.23738852270696875,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "20010:XAUUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": 0.0618389232,
+          "corr_regime": 0.0382288743,
+          "corr_eff": 0.0618389232,
+          "regime_days": 313,
+          "delta_sharpe": 0.005028719938279913,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "9403:GDAXI",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0528924463,
+          "corr_regime": 0.0947080861,
+          "corr_eff": 0.0947080861,
+          "regime_days": 313,
+          "delta_sharpe": 0.03897437239537371,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 1.2732674999999998,
+        "worst_day": -1.0699124999999998,
+        "wdd_p90": 2.3568525,
+        "fund_score": 0.5402406387332257,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 1.9686125,
+        "worst_day": -0.7656375000000001,
+        "wdd_p90": 2.6965925,
+        "fund_score": 0.7300370745672549,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "13301:GDAXI",
+        "9403:GDAXI"
+      ],
+      "gates": [
+        {
+          "candidate": "13301:GDAXI",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0818794433,
+          "corr_regime": 0.1760965408,
+          "corr_eff": 0.1760965408,
+          "regime_days": 314,
+          "delta_sharpe": 0.23738852270696875,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "9403:GDAXI",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0526583046,
+          "corr_regime": 0.0929850521,
+          "corr_eff": 0.0929850521,
+          "regime_days": 313,
+          "delta_sharpe": 0.0411312393536849,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 1.6881883333333336,
+        "worst_day": -1.3640166666666667,
+        "wdd_p90": 3.146480000000001,
+        "fund_score": 0.5365323578517369,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 2.4373983333333333,
+        "worst_day": -1.02085,
+        "wdd_p90": 3.4803600000000006,
+        "fund_score": 0.7003293720572966,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "10145:XAUUSD",
+        "13108:XTIUSD"
+      ],
+      "gates": [
+        {
+          "candidate": "10145:XAUUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": -0.0528295051,
+          "corr_regime": -0.1032940255,
+          "corr_eff": -0.0528295051,
+          "regime_days": 314,
+          "delta_sharpe": 0.050165699556740995,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "13108:XTIUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": -0.0071170286,
+          "corr_regime": 0.1609306938,
+          "corr_eff": 0.1609306938,
+          "regime_days": 313,
+          "delta_sharpe": 0.03892206389317221,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 1.22724,
+        "worst_day": -0.6607866666666667,
+        "wdd_p90": 2.3086266666666666,
+        "fund_score": 0.5315887656153443,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 1.9270533333333333,
+        "worst_day": -1.1422966666666665,
+        "wdd_p90": 3.65923,
+        "fund_score": 0.5266280975323588,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "12969:USDJPY",
+        "13108:XTIUSD",
+        "9403:GDAXI"
+      ],
+      "gates": [
+        {
+          "candidate": "12969:USDJPY",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0609556292,
+          "corr_regime": 0.0876466526,
+          "corr_eff": 0.0876466526,
+          "regime_days": 314,
+          "delta_sharpe": 0.06198095077566279,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "13108:XTIUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": 0.0142433732,
+          "corr_regime": -0.0095712642,
+          "corr_eff": 0.0142433732,
+          "regime_days": 313,
+          "delta_sharpe": 0.03824882067077029,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "9403:GDAXI",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": 0.0526583046,
+          "corr_regime": 0.0234702289,
+          "corr_eff": 0.0526583046,
+          "regime_days": 313,
+          "delta_sharpe": 0.05386912712025649,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 1.0851600000000001,
+        "worst_day": -0.7899099999999999,
+        "wdd_p90": 2.0600075,
+        "fund_score": 0.5267747811597774,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 1.4519499999999994,
+        "worst_day": -0.7653675000000001,
+        "wdd_p90": 2.5730875,
+        "fund_score": 0.5642831811976854,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "10145:XAUUSD",
+        "12969:USDJPY",
+        "9403:GDAXI"
+      ],
+      "gates": [
+        {
+          "candidate": "10145:XAUUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": -0.0528295051,
+          "corr_regime": -0.1032940255,
+          "corr_eff": -0.0528295051,
+          "regime_days": 314,
+          "delta_sharpe": 0.050165699556740995,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "12969:USDJPY",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0609556292,
+          "corr_regime": 0.0805419445,
+          "corr_eff": 0.0805419445,
+          "regime_days": 313,
+          "delta_sharpe": 0.061427569168199136,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "9403:GDAXI",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": 0.0526583046,
+          "corr_regime": 0.0300592982,
+          "corr_eff": 0.0526583046,
+          "regime_days": 313,
+          "delta_sharpe": 0.05043393579022082,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 1.1250087500000006,
+        "worst_day": -0.7706575,
+        "wdd_p90": 2.207385,
+        "fund_score": 0.5096567884623664,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 1.5173112499999997,
+        "worst_day": -0.7653675000000001,
+        "wdd_p90": 2.3570300000000004,
+        "fund_score": 0.6437386244553525,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "13108:XTIUSD",
+        "9403:GDAXI"
+      ],
+      "gates": [
+        {
+          "candidate": "13108:XTIUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": -0.0213279026,
+          "corr_regime": -0.0233400094,
+          "corr_eff": -0.0213279026,
+          "regime_days": 314,
+          "delta_sharpe": 0.03941230982724897,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "9403:GDAXI",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": 0.0526583046,
+          "corr_regime": 0.0233747971,
+          "corr_eff": 0.0526583046,
+          "regime_days": 313,
+          "delta_sharpe": 0.05865374556715808,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 1.4076266666666668,
+        "worst_day": -1.0532133333333333,
+        "wdd_p90": 2.7721866666666672,
+        "fund_score": 0.5077676346951143,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 1.9310733333333336,
+        "worst_day": -1.0204900000000001,
+        "wdd_p90": 3.634699999999999,
+        "fund_score": 0.5312882310323642,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "13108:XTIUSD",
+        "20010:XAUUSD",
+        "9403:GDAXI"
+      ],
+      "gates": [
+        {
+          "candidate": "13108:XTIUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": -0.0213279026,
+          "corr_regime": -0.0233400094,
+          "corr_eff": -0.0213279026,
+          "regime_days": 314,
+          "delta_sharpe": 0.03941230982724897,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "20010:XAUUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": -0.0043758339,
+          "corr_regime": 0.0612433428,
+          "corr_eff": 0.0612433428,
+          "regime_days": 313,
+          "delta_sharpe": 0.009410118573451642,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "9403:GDAXI",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": 0.0528924463,
+          "corr_regime": 0.0385961207,
+          "corr_eff": 0.0528924463,
+          "regime_days": 313,
+          "delta_sharpe": 0.05560873465348215,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 1.0627774999999997,
+        "worst_day": -0.8368099999999999,
+        "wdd_p90": 2.1044549999999997,
+        "fund_score": 0.5050131744323352,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 1.5586487500000001,
+        "worst_day": -0.7653675000000001,
+        "wdd_p90": 2.8498425000000003,
+        "fund_score": 0.5469245230218863,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "12969:USDJPY",
+        "13108:XTIUSD"
+      ],
+      "gates": [
+        {
+          "candidate": "12969:USDJPY",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0609556292,
+          "corr_regime": 0.0876466526,
+          "corr_eff": 0.0876466526,
+          "regime_days": 314,
+          "delta_sharpe": 0.06198095077566279,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "13108:XTIUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": 0.0142433732,
+          "corr_regime": -0.0095712642,
+          "corr_eff": 0.0142433732,
+          "regime_days": 313,
+          "delta_sharpe": 0.03824882067077029,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 1.1722466666666664,
+        "worst_day": -0.6607866666666667,
+        "wdd_p90": 2.378026666666667,
+        "fund_score": 0.4929493361442539,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 1.9748250000000005,
+        "worst_day": -0.8095466666666665,
+        "wdd_p90": 3.2181433333333334,
+        "fund_score": 0.6136535248585366,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "10145:XAUUSD",
+        "12969:USDJPY"
+      ],
+      "gates": [
+        {
+          "candidate": "10145:XAUUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": -0.0528295051,
+          "corr_regime": -0.1032940255,
+          "corr_eff": -0.0528295051,
+          "regime_days": 314,
+          "delta_sharpe": 0.050165699556740995,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "12969:USDJPY",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0609556292,
+          "corr_regime": 0.0805419445,
+          "corr_eff": 0.0805419445,
+          "regime_days": 313,
+          "delta_sharpe": 0.061427569168199136,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 1.182361666666667,
+        "worst_day": -0.6204066666666667,
+        "wdd_p90": 2.4375133333333334,
+        "fund_score": 0.4850687996236603,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 1.791975,
+        "worst_day": -0.8874966666666666,
+        "wdd_p90": 3.2518233333333333,
+        "fund_score": 0.5510677599336578,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "10145:XAUUSD",
+        "9403:GDAXI"
+      ],
+      "gates": [
+        {
+          "candidate": "10145:XAUUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": -0.0528295051,
+          "corr_regime": -0.1032940255,
+          "corr_eff": -0.0528295051,
+          "regime_days": 314,
+          "delta_sharpe": 0.050165699556740995,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "9403:GDAXI",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": 0.0526583046,
+          "corr_regime": 0.0300597946,
+          "corr_eff": 0.0526583046,
+          "regime_days": 313,
+          "delta_sharpe": 0.055379660207512504,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 1.4341666666666661,
+        "worst_day": -1.0275433333333335,
+        "wdd_p90": 2.9602433333333336,
+        "fund_score": 0.48447593835191455,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 1.9726599999999996,
+        "worst_day": -1.0204900000000001,
+        "wdd_p90": 3.3214166666666665,
+        "fund_score": 0.5939212685350126,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "20010:XAUUSD",
+        "10145:XAUUSD",
+        "9403:GDAXI"
+      ],
+      "gates": [
+        {
+          "candidate": "20010:XAUUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": -0.0111524112,
+          "corr_regime": -0.0598114576,
+          "corr_eff": -0.0111524112,
+          "regime_days": 314,
+          "delta_sharpe": 0.009512859430522047,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "10145:XAUUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": 0.3699341086,
+          "corr_regime": 0.2839487612,
+          "corr_eff": 0.3699341086,
+          "regime_days": 313,
+          "delta_sharpe": 0.04197606068065385,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "9403:GDAXI",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": 0.0528924463,
+          "corr_regime": 0.0451144764,
+          "corr_eff": 0.0528924463,
+          "regime_days": 313,
+          "delta_sharpe": 0.05363548543802832,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 1.0690724999999999,
+        "worst_day": -0.8175574999999999,
+        "wdd_p90": 2.2330699999999997,
+        "fund_score": 0.47874562821586425,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 1.5728187499999997,
+        "worst_day": -0.8073425000000001,
+        "wdd_p90": 2.714459999999999,
+        "fund_score": 0.5794223344606295,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "10145:XAUUSD",
+        "12969:USDJPY",
+        "13108:XTIUSD"
+      ],
+      "gates": [
+        {
+          "candidate": "10145:XAUUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": -0.0528295051,
+          "corr_regime": -0.1032940255,
+          "corr_eff": -0.0528295051,
+          "regime_days": 314,
+          "delta_sharpe": 0.050165699556740995,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "12969:USDJPY",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0609556292,
+          "corr_regime": 0.0805419445,
+          "corr_eff": 0.0805419445,
+          "regime_days": 313,
+          "delta_sharpe": 0.061427569168199136,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "13108:XTIUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0142433732,
+          "corr_regime": 0.1588858378,
+          "corr_eff": 0.1588858378,
+          "regime_days": 313,
+          "delta_sharpe": 0.03779297376018764,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 0.9525762500000001,
+        "worst_day": -0.49559000000000003,
+        "wdd_p90": 1.7394925,
+        "fund_score": 0.47628812500000006,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 1.5230099999999995,
+        "worst_day": -0.8567224999999999,
+        "wdd_p90": 2.65421,
+        "fund_score": 0.5738091560200586,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "20010:XAUUSD",
+        "10145:XAUUSD"
+      ],
+      "gates": [
+        {
+          "candidate": "20010:XAUUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": -0.0111524112,
+          "corr_regime": -0.0598114576,
+          "corr_eff": -0.0111524112,
+          "regime_days": 314,
+          "delta_sharpe": 0.009512859430522047,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "10145:XAUUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": 0.3699341086,
+          "corr_regime": 0.2839487612,
+          "corr_eff": 0.3699341086,
+          "regime_days": 313,
+          "delta_sharpe": 0.04197606068065385,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 1.1493233333333333,
+        "worst_day": -0.8833433333333333,
+        "wdd_p90": 2.479246666666667,
+        "fund_score": 0.4635776458978129,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 1.8467883333333333,
+        "worst_day": -1.0764566666666668,
+        "wdd_p90": 3.611743333333333,
+        "fund_score": 0.5113287858218054,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "13108:XTIUSD",
+        "20010:XAUUSD",
+        "10145:XAUUSD"
+      ],
+      "gates": [
+        {
+          "candidate": "13108:XTIUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": -0.0213279026,
+          "corr_regime": -0.0233400094,
+          "corr_eff": -0.0213279026,
+          "regime_days": 314,
+          "delta_sharpe": 0.03941230982724897,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "20010:XAUUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": -0.0043758339,
+          "corr_regime": 0.0612433428,
+          "corr_eff": 0.0612433428,
+          "regime_days": 313,
+          "delta_sharpe": 0.009410118573451642,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "10145:XAUUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": 0.3699341086,
+          "corr_regime": 0.2192940925,
+          "corr_eff": 0.3699341086,
+          "regime_days": 313,
+          "delta_sharpe": 0.04145616178976996,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 0.9157487499999999,
+        "worst_day": -0.5803625,
+        "wdd_p90": 1.741335,
+        "fund_score": 0.45787437499999994,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 1.50038125,
+        "worst_day": -0.9984425,
+        "wdd_p90": 2.8975349999999995,
+        "fund_score": 0.517812985865572,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "13108:XTIUSD",
+        "20010:XAUUSD"
+      ],
+      "gates": [
+        {
+          "candidate": "13108:XTIUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": -0.0213279026,
+          "corr_regime": -0.0233400094,
+          "corr_eff": -0.0213279026,
+          "regime_days": 314,
+          "delta_sharpe": 0.03941230982724897,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "20010:XAUUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": -0.0043758339,
+          "corr_regime": 0.0612433428,
+          "corr_eff": 0.0612433428,
+          "regime_days": 313,
+          "delta_sharpe": 0.009410118573451642,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 1.0351016666666666,
+        "worst_day": -0.6607866666666667,
+        "wdd_p90": 2.26233,
+        "fund_score": 0.4575378776158503,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 1.8668533333333341,
+        "worst_day": -0.9985066666666667,
+        "wdd_p90": 3.542576666666667,
+        "fund_score": 0.5269761275455814,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "12969:USDJPY",
+        "20010:XAUUSD"
+      ],
+      "gates": [
+        {
+          "candidate": "12969:USDJPY",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0609556292,
+          "corr_regime": 0.0876466526,
+          "corr_eff": 0.0876466526,
+          "regime_days": 314,
+          "delta_sharpe": 0.06198095077566279,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "20010:XAUUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": -0.0082315831,
+          "corr_regime": -0.0250074347,
+          "corr_eff": -0.0082315831,
+          "regime_days": 313,
+          "delta_sharpe": 0.009343942477566314,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 1.0400133333333337,
+        "worst_day": -0.6706366666666667,
+        "wdd_p90": 2.2826633333333337,
+        "fund_score": 0.45561398308116696,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 1.798088333333333,
+        "worst_day": -0.7437066666666666,
+        "wdd_p90": 3.28674,
+        "fund_score": 0.5470734932891963,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "12969:USDJPY",
+        "9403:GDAXI"
+      ],
+      "gates": [
+        {
+          "candidate": "12969:USDJPY",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0609556292,
+          "corr_regime": 0.0876466526,
+          "corr_eff": 0.0876466526,
+          "regime_days": 314,
+          "delta_sharpe": 0.06198095077566279,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "9403:GDAXI",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": 0.0526583046,
+          "corr_regime": 0.0253745709,
+          "corr_eff": 0.0526583046,
+          "regime_days": 313,
+          "delta_sharpe": 0.05532552280636871,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 1.3371200000000003,
+        "worst_day": -1.0275433333333335,
+        "wdd_p90": 2.946450000000001,
+        "fund_score": 0.4538071238269782,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 1.868595,
+        "worst_day": -1.0204900000000001,
+        "wdd_p90": 2.956973333333333,
+        "fund_score": 0.6319282554684295,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "12969:USDJPY",
+        "20010:XAUUSD",
+        "9403:GDAXI"
+      ],
+      "gates": [
+        {
+          "candidate": "12969:USDJPY",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0609556292,
+          "corr_regime": 0.0876466526,
+          "corr_eff": 0.0876466526,
+          "regime_days": 314,
+          "delta_sharpe": 0.06198095077566279,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "20010:XAUUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": -0.0082315831,
+          "corr_regime": -0.0250074347,
+          "corr_eff": -0.0082315831,
+          "regime_days": 313,
+          "delta_sharpe": 0.009343942477566314,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "9403:GDAXI",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": 0.0528924463,
+          "corr_regime": 0.0373353898,
+          "corr_eff": 0.0528924463,
+          "regime_days": 313,
+          "delta_sharpe": 0.052243113766077265,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 1.0008275000000006,
+        "worst_day": -0.8175574999999999,
+        "wdd_p90": 2.2214925,
+        "fund_score": 0.45052031460830977,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 1.5286724999999999,
+        "worst_day": -0.7653675000000001,
+        "wdd_p90": 2.2456674999999997,
+        "fund_score": 0.6807207656520834,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "12969:USDJPY",
+        "20010:XAUUSD",
+        "10145:XAUUSD"
+      ],
+      "gates": [
+        {
+          "candidate": "12969:USDJPY",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0609556292,
+          "corr_regime": 0.0876466526,
+          "corr_eff": 0.0876466526,
+          "regime_days": 314,
+          "delta_sharpe": 0.06198095077566279,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "20010:XAUUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": -0.0082315831,
+          "corr_regime": -0.0250074347,
+          "corr_eff": -0.0082315831,
+          "regime_days": 313,
+          "delta_sharpe": 0.009343942477566314,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "10145:XAUUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": 0.3699341086,
+          "corr_regime": 0.2844725165,
+          "corr_eff": 0.3699341086,
+          "regime_days": 313,
+          "delta_sharpe": 0.04115591525989881,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 0.8974462500000002,
+        "worst_day": -0.6625074999999999,
+        "wdd_p90": 1.8354174999999997,
+        "fund_score": 0.4487231250000001,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 1.40911125,
+        "worst_day": -0.8073425000000001,
+        "wdd_p90": 2.6622650000000005,
+        "fund_score": 0.5292903786813108,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "20010:XAUUSD",
+        "9403:GDAXI"
+      ],
+      "gates": [
+        {
+          "candidate": "20010:XAUUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": -0.0111524112,
+          "corr_regime": -0.0598114576,
+          "corr_eff": -0.0111524112,
+          "regime_days": 314,
+          "delta_sharpe": 0.009512859430522047,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "9403:GDAXI",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": 0.0528924463,
+          "corr_regime": 0.0375041307,
+          "corr_eff": 0.0528924463,
+          "regime_days": 313,
+          "delta_sharpe": 0.057384705566766,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 1.291515,
+        "worst_day": -1.0900766666666666,
+        "wdd_p90": 2.9652766666666666,
+        "fund_score": 0.4355462053568919,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 1.9603416666666666,
+        "worst_day": -1.0204900000000001,
+        "wdd_p90": 3.13299,
+        "fund_score": 0.6257095192345544,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    },
+    {
+      "members": [
+        "9936:USDJPY",
+        "12969:USDJPY",
+        "13108:XTIUSD",
+        "20010:XAUUSD"
+      ],
+      "gates": [
+        {
+          "candidate": "12969:USDJPY",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": 0.0609556292,
+          "corr_regime": 0.0876466526,
+          "corr_eff": 0.0876466526,
+          "regime_days": 314,
+          "delta_sharpe": 0.06198095077566279,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "13108:XTIUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_full",
+          "corr_full": 0.0142433732,
+          "corr_regime": -0.0095712642,
+          "corr_eff": 0.0142433732,
+          "regime_days": 313,
+          "delta_sharpe": 0.03824882067077029,
+          "marginal_positive": true
+        },
+        {
+          "candidate": "20010:XAUUSD",
+          "admit": true,
+          "reason": "admitted",
+          "basis": "corr_regime",
+          "corr_full": -0.0043758339,
+          "corr_regime": 0.0693360507,
+          "corr_eff": 0.0693360507,
+          "regime_days": 313,
+          "delta_sharpe": 0.009254718718347377,
+          "marginal_positive": true
+        }
+      ],
+      "is": {
+        "med60": 0.8339075,
+        "worst_day": -0.49559000000000003,
+        "wdd_p90": 1.660315,
+        "fund_score": 0.41695375,
+        "windows": 1222,
+        "censored": 44,
+        "effective_n": 30
+      },
+      "oos": {
+        "med60": 1.54542125,
+        "worst_day": -0.74888,
+        "wdd_p90": 2.588625,
+        "fund_score": 0.5970046839538365,
+        "windows": 804,
+        "censored": 40,
+        "effective_n": 20
+      }
+    }
+  ]
+}
