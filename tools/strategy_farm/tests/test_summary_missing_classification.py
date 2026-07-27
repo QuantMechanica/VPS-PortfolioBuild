@@ -167,9 +167,23 @@ class HistoricalCascade(unittest.TestCase):
             registry_status=registry, setfile_cache={},
         )
 
-    def test_log_bomb(self):
-        self._ins("a", "QM5_1", "EURUSD", "failed", "INFRA_FAIL", att=99)
+    def test_log_bomb_requires_genuine_marker(self):
+        # verdict_reason=LOG_BOMB is the genuine journal-flood kill marker.
+        self._ins("a", "QM5_1", "EURUSD", "failed", "INFRA_FAIL",
+                  payload=_gy_payload(verdict_reason="LOG_BOMB"))
         self.assertEqual(self._classify("a"), (csm.CLASS_DETERMINISTIC, "log_bomb"))
+
+    def test_log_bomb_marker_in_reason_classes(self):
+        self._ins("a", "QM5_1", "EURUSD", "failed", "INFRA_FAIL",
+                  payload=_gy_payload(reason_classes=["LOG_BOMB"]))
+        self.assertEqual(self._classify("a"), (csm.CLASS_DETERMINISTIC, "log_bomb"))
+
+    def test_attempt_count_99_alone_is_not_log_bomb(self):
+        # Regression guard: a bare attempt_count>=99 with NO genuine marker must NOT be
+        # stamped log_bomb (the 4,236-row mislabel of 2026-07-27). It falls through to the
+        # honest cascade -> a pair that only ever INFRA_FAILed is never_worked.
+        self._ins("a", "QM5_1", "EURUSD", "failed", "INFRA_FAIL", att=99)
+        self.assertEqual(self._classify("a"), (csm.CLASS_DETERMINISTIC, "never_worked"))
 
     def test_superseded(self):
         self._ins("a", "QM5_1", "EURUSD", "failed", "INFRA_FAIL")

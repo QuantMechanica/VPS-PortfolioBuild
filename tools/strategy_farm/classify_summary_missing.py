@@ -18,7 +18,12 @@ log instead, and both emit the SAME action vocabulary (farmctl.SM_CLASS_*).
 
 Disjoint cascade (first match wins), measured 2026-07-27:
 
-    LOG_BOMB        4236  DETERMINISTIC  attempt_count>=99 / LOG_BOMB marker (journal flood)
+    LOG_BOMB          ~0  DETERMINISTIC  genuine journal-flood marker ONLY (verdict_reason=
+                          LOG_BOMB / reason_classes / log_bomb_journal_*). The former bare
+                          attempt_count>=99 trigger was removed 2026-07-27: it mislabelled
+                          4,236 summary-missing transport rows carrying NO genuine marker,
+                          which now re-bucket to SUPERSEDED / NEVER_WORKED / IN_FLIGHT below
+                          (docs/ops/evidence/2026-07-27_logbomb_family_diagnosis.md).
     SUPERSEDED     26651  SUPERSEDED     the (ea,symbol) pair already has a real Q02 verdict
     INPUT_MISSING    181  DETERMINISTIC  set file absent or EA registry status != active
     IN_FLIGHT       4517  IN_FLIGHT      the pair still has a pending/active successor
@@ -75,9 +80,11 @@ CLASS_TRANSIENT = "TRANSIENT"
 CLASS_SUPERSEDED = "SUPERSEDED"
 CLASS_IN_FLIGHT = "IN_FLIGHT"
 
-# attempt_count / marker that means the run flooded the tester journal (a deterministic
-# EA defect deliberately quarantined with a poison sentinel).
-LOG_BOMB_ATTEMPT_FLOOR = 99
+# NOTE: a bare attempt_count>=99 was formerly treated as log_bomb here. It is NOT
+# log-bomb-specific (the older exhaustion/poison paths stamped 99 for ~8 different causes),
+# and it mislabelled 4,236 summary-missing transport rows that carried no genuine journal
+# marker. _has_log_bomb now requires a genuine kill marker; the sentinel is gone.
+# See docs/ops/evidence/2026-07-27_logbomb_family_diagnosis.md.
 
 # Explicit transient run_smoke tokens (kept in sync with farmctl.SM_TRANSIENT_TOKENS;
 # INCOMPLETE_RUNS is intentionally excluded — it discriminates nothing).
@@ -113,11 +120,17 @@ def _load_registry_status(path: Path) -> dict[int, str]:
 
 
 def _has_log_bomb(payload: dict[str, Any], attempt_count: int) -> bool:
-    if attempt_count >= LOG_BOMB_ATTEMPT_FLOOR:
-        return True
+    # A genuine journal-flood kill stamps a distinctive record (terminal_worker.py:2595-2633):
+    # verdict_reason='LOG_BOMB', reason_classes+=['LOG_BOMB'], log_bomb_journal_gb=<size>.
+    # attempt_count>=99 ALONE is NOT one of those markers, so it is deliberately no longer a
+    # trigger (see the census note above): require a genuine marker and let every other
+    # summary-missing row fall through to the honest SUPERSEDED / never_worked / IN_FLIGHT
+    # rules. `attempt_count` is retained in the signature for call-site parity only.
     if str(payload.get("verdict_reason") or "").upper() == "LOG_BOMB":
         return True
-    return any(str(x).upper() == "LOG_BOMB" for x in (payload.get("reason_classes") or []))
+    if any(str(x).upper() == "LOG_BOMB" for x in (payload.get("reason_classes") or [])):
+        return True
+    return any(str(k).startswith("log_bomb_journal") for k in payload)
 
 
 def _classify_row(
