@@ -1,0 +1,15 @@
+CS	0	05:47:02.797	Ticks	EURJPY.DWX : real ticks begin from 2018.07.02 00:00:00
+CS	0	08:25:54.463	Ticks	EURJPY.DWX : real ticks begin from 2018.07.02 00:00:00
+CS	0	09:47:04.316	Ticks	EURJPY.DWX : real ticks begin from 2018.07.02 00:00:00
+CS	0	15:03:11.891	Ticks	AUDUSD.DWX : real ticks begin from 2018.07.02 00:00:00
+CS	0	15:03:32.429	Tester	AUDUSD.DWX,H1: 22823329 ticks, 6133 bars generated. Environment synchronized in 0:00:01.337. Test passed in 0:00:58.919 (including ticks preprocessing 0:00:01.485).
+CS	0	15:03:32.429	Tester	AUDUSD.DWX,H1: total time from login to stop testing 0:01:00.256 (including 0:00:01.337 for history data synchronization)
+CS	0	18:29:43.546	Tester	expert file added: Experts\QM\QM5_ONTIMER_PROBE.ex5. 13020 bytes loaded
+CS	0	18:29:43.645	Tester	USDJPY.DWX,H1: testing of Experts\QM\QM5_ONTIMER_PROBE.ex5 from 2018.01.02 00:00 to 2018.01.05 00:00 started with inputs:
+CS	0	18:29:43.791	QM5_ONTIMER_PROBE (USDJPY.DWX,H1)	2018.01.02 00:00:00   PROBE_INIT host=USDJPY.DWX sec=XAUUSD.DWX sec_warm_bars=300 in_tester=1 in_opt=0 use_ms=1 ms=100 sec=1 sim_start=2018.01.02 00:00:00
+CS	0	18:29:43.845	Ticks	USDJPY.DWX : real ticks begin from 2018.01.02 00:00:00
+CS	0	18:29:43.910	Ticks	XAUUSD.DWX : real ticks begin from 2018.01.02 00:00:00
+CS	0	18:29:44.178	QM5_ONTIMER_PROBE (USDJPY.DWX,H1)	2018.01.04 23:59:58   PROBE_DONE reason=1 ticks=769186 timers=2591989 sim_span_s=259196 wall_ms=532 csv_rows=3960 fires_per_sim_sec=10.0001 max_fires_per_sim_sec=797 warm_bars=300
+CS	0	18:29:44.185	Tester	USDJPY.DWX,H1: 769186 ticks, 72 bars generated. Environment synchronized in 0:00:00.033. Test passed in 0:00:00.614 (including ticks preprocessing 0:00:00.078).
+CS	0	18:29:44.185	Tester	USDJPY.DWX,H1: total time from login to stop testing 0:00:00.647 (including 0:00:00.164 for history data synchronization)
+CS	0	18:29:44.185	Tester	test Experts\QM\QM5_ONTIMER_PROBE.ex5 on USDJPY.DWX,H1 thread finished
