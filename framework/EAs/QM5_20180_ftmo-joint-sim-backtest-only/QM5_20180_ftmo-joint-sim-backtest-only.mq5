@@ -247,6 +247,14 @@ void OnTick()
 
    const datetime broker_now = TimeCurrent();
 
+   // Per-tick account-equity low sampler — runs UNCONDITIONALLY, BEFORE the news
+   // and Friday-close early-returns, so a gold-free intraday low or a broker-day
+   // start anchor is never missed just because a news window blocked trading.
+   // Read-only (equity/position reads + file write) — it cannot affect the trade
+   // stream, so singleton-replay fidelity is unchanged. USDJPY-only => every tick
+   // is a host tick => full-resolution intraday equity low (review C4 N/A).
+   QM_FJ_Eq_OnTick();
+
    // News gate — identical to both gated sleeves (host _Symbol = USDJPY,
    // PRE30_POST30 + DXZ). One gate serves both sleeves because both are USDJPY.
    bool news_allows = true;
@@ -261,10 +269,6 @@ void OnTick()
    // as each gated sleeve closes its own.
    if(QM_FrameworkHandleFridayClose())
       return;
-
-   // Per-tick account-equity low sampler. USDJPY-only => every tick is a host
-   // tick => full-resolution intraday equity low (review C4 does not apply).
-   QM_FJ_Eq_OnTick();
 
    // Per-sleeve management + discretionary exit. The two sleeves are independent
    // state machines, each filtered to its own (symbol, magic).
