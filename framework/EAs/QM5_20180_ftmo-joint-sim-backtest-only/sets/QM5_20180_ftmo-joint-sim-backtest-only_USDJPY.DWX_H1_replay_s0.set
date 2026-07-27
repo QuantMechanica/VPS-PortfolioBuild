@@ -1,0 +1,35 @@
+;==========================================================
+; QM5 Set File — SINGLETON REPLAY (sleeve 0 only) — fidelity control
+; ea_id:        20180
+; purpose:      run ONLY sleeve 0 (QM5_9936) so its Q08 stream can be diffed
+;               trade-for-trade against the gated 9936 USDJPY stream
+;               (docs .../sleeve_streams/QM/q08_trades/9936_USDJPY_DWX.jsonl).
+; environment:  backtest (BACKTEST-ONLY)
+;==========================================================
+qm_ea_id=20180
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_risk_cap_pct=1.0
+qm_stress_reject_probability=0.0
+s0_enabled=1
+s0_range_start_hr=1
+s0_range_end_hr=6
+s0_cancel_hr=13
+s0_close_hr=20
+s0_atr_period=14
+s0_min_range_atr_mult=0.4
+s0_max_range_atr_mult=2.5
+s0_trail_trigger_r=1.0
+s0_range_scan_bars=36
+s1_enabled=0
+s1_range_start_hr=3
+s1_range_end_hr=6
+s1_cancel_hr=18
+s1_close_hr=18
+s1_atr_period=14
+s1_min_range_atr_mult=0.4
+s1_max_range_atr_mult=2.5
+s1_trail_trigger_r=1.0
+s1_range_scan_bars=36
