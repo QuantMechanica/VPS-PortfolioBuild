@@ -15,12 +15,30 @@ is a plausible principal cause of the 163 farm-wide Q08 INFRA_FAIL rows (34% of
 all Q08 runs) -- an entire class of EAs permanently stuck at the last automated
 gate for a set-file reason rather than a strategy one.
 
-THE FIX, and why it is safe. The values are taken from the EA's OWN compiled-in
-`input` defaults, not from the strategy card. A set file that omits a parameter
-leaves the EA using its default, so writing that same default explicitly cannot
-change behaviour -- the run is bit-identical, and prior gate evidence stays valid.
-Taking card values instead COULD change behaviour, which is why this tool refuses
-to use them.
+THE FIX. The values are taken from the EA's OWN compiled-in `input` defaults, not
+from the strategy card. A set file that omits a parameter leaves the EA using its
+default, so writing that same default explicitly cannot change behaviour -- the
+run is bit-identical. Taking card values instead COULD differ, which is why this
+tool refuses to use them.
+
+WHERE THE SAFETY CLAIM STOPS -- a correction to my own first version, which said
+"prior gate evidence stays valid" without checking. It does not, universally:
+
+    Q04-Q07 aggregates store NO set-file hash (0/15 sampled per gate) -> unaffected
+    Q08     stores baseline_run.baseline_setfile_sha256 and
+            portfolio_stream.source_setfile_sha256
+    Q10     stores a set-file hash in 3/15 sampled aggregates
+
+So editing a set file breaks the identity binding of any Q08 and Q10 evidence
+already recorded against it. For the 389 EAs this targets that is mostly harmless
+-- their Q08 is precisely the INFRA_FAIL we are trying to clear, so there is no
+valid Q08 evidence to lose. Q10 is different: it is the closing per-(EA, symbol)
+verdict, and 7 of the 389 already hold Q10 evidence, 6 of them PASS -- including
+10128 and 10145 on XAUUSD, the only two challenge_ready sleeves in the book.
+
+Editing those would silently invalidate the strongest evidence we own. The tool
+therefore SKIPS any EA holding Q10 evidence unless --allow-q10-rebind is passed,
+and prints what it skipped. Clearing an INFRA_FAIL is not worth breaking a PASS.
 
 Verified per file before writing: every parameter added must be absent from the
 set file, and the file must gain nothing else.
@@ -33,7 +51,32 @@ import argparse
 import glob
 import os
 import re
+import sqlite3
 import sys
+
+DB = r"D:\QM\strategy_farm\state\farm_state.sqlite"
+
+
+def eas_with_q10_evidence():
+    """Bare ea_ids holding any Q10 verdict. Their set-file hash is bound into
+    that evidence, so a rewrite silently breaks the closing gate's identity."""
+    try:
+        con = sqlite3.connect(f"file:{DB.replace(os.sep, '/')}?mode=ro", uri=True)
+    except sqlite3.Error:
+        return None                      # unknown, not "none" -- caller must fail closed
+    try:
+        rows = con.execute(
+            "select distinct ea_id, verdict from work_items "
+            "where phase='Q10' and status='done'").fetchall()
+    except sqlite3.Error:
+        return None
+    finally:
+        con.close()
+    out = {}
+    for ea_id, verdict in rows:
+        bare = str(ea_id).replace("QM5_", "").split("_")[0]
+        out.setdefault(bare, set()).add(str(verdict or ""))
+    return out
 
 INPUT_RE = re.compile(
     r"^\s*input\s+(?:const\s+)?\w+\s+(strategy_\w+)\s*=\s*([^;]+);", re.M)
@@ -86,14 +129,33 @@ def main():
     ap.add_argument("--ea", help="bare or full slug, e.g. QM5_9936")
     ap.add_argument("--all", action="store_true")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--allow-q10-rebind", action="store_true",
+                    help="edit set files even for EAs holding Q10 evidence; this "
+                         "breaks the identity hash bound into that closing verdict")
     args = ap.parse_args()
     if not args.ea and not args.all:
         ap.error("pass --ea or --all")
 
+    q10 = eas_with_q10_evidence()
+    if q10 is None and not args.allow_q10_rebind:
+        print("ERROR: cannot read the farm DB to check for Q10 evidence.", file=sys.stderr)
+        print("Failing closed -- editing a set file bound into a Q10 verdict would",
+              file=sys.stderr)
+        print("break it silently. Re-run when the DB is readable, or pass",
+              file=sys.stderr)
+        print("--allow-q10-rebind if you have verified this another way.", file=sys.stderr)
+        return 2
+
     pattern = f"framework/EAs/{args.ea}*" if args.ea else "framework/EAs/*"
     touched = skipped_no_defaults = 0
+    skipped_q10 = []
     for ea_dir in sorted(glob.glob(pattern)):
         if not os.path.isdir(ea_dir):
+            continue
+        bare = os.path.basename(ea_dir).replace("QM5_", "").split("_")[0]
+        if not args.allow_q10_rebind and q10 and bare in q10:
+            verdicts = ",".join(sorted(v for v in q10[bare] if v))
+            skipped_q10.append((os.path.basename(ea_dir), verdicts))
             continue
         defaults = ea_defaults(ea_dir)
         sets = glob.glob(os.path.join(ea_dir, "sets", "*_backtest.set"))
@@ -116,6 +178,14 @@ def main():
                         print(f"      {k}={defaults[k]}")
     print()
     print(f"set files {'that would be ' if args.dry_run else ''}updated: {touched}")
+    if skipped_q10:
+        print()
+        print(f"SKIPPED -- these hold Q10 evidence whose identity hash binds this "
+              f"set file ({len(skipped_q10)}):")
+        for ea, verdicts in skipped_q10:
+            print(f"   {ea:46} Q10={verdicts or 'unknown'}")
+        print("  Clearing an INFRA_FAIL is not worth invalidating a closing verdict.")
+        print("  To include them anyway, pass --allow-q10-rebind and plan a Q10 re-run.")
     if skipped_no_defaults:
         print(f"EAs skipped -- no strategy_* inputs in the .mq5 either: "
               f"{skipped_no_defaults}")
