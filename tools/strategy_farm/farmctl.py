@@ -9804,10 +9804,9 @@ def _admit_q09_portfolio_passes(
 
 
 ARTIFACT_COMMIT_ALLOWLIST = (
-    "framework/EAs/",
     "framework/registry/magic_numbers.csv",
     "framework/registry/ea_id_registry.csv",
-    "framework/include/QM/",
+    "framework/include/QM/QM_MagicResolver.mqh",
     # Pump-generated P5 slippage/latency calibration auto-stub. NOT including it here
     # caused a dirty-guard build deadlock: the pump writes this stub, it stays dirty,
     # repo_dirty_build_guard blocks ALL builds, and the build-gated auto-commit can never
@@ -9821,7 +9820,6 @@ ARTIFACT_COMMIT_ALLOWLIST = (
     # 2026-07-24, finding FB-01; unblock commit 8154d302f).
     "framework/registry/event_vocabulary.json",
     "public-data/",
-    "strategy-seeds/",
     # Agent/factory evidence outputs (build_result JSONs, validation/research JSONs,
     # card drafts). NOT being here meant the pump never swept artifacts/ at all:
     # 957 files accumulated by 2026-07-14 and (with uncommitted source on top)
@@ -9830,6 +9828,28 @@ ARTIFACT_COMMIT_ALLOWLIST = (
     # code -> sweep it like public-data/. git add also stages deletions. (2026-07-14)
     "artifacts/",
 )
+
+
+def _is_generated_factory_artifact(path: str) -> bool:
+    """Return true only for machine-generated factory outputs.
+
+    EA source/SPEC files and arbitrary include headers are deliberately excluded:
+    they require an intentional feature commit even when they sit beside generated
+    binaries and set files.
+    """
+    pu = path.replace("\\", "/")
+    ea_output = re.fullmatch(
+        r"framework/EAs/QM5_\d+_[^/]+/(?:[^/]+\.ex5|sets/[^/]+\.set)",
+        pu,
+    )
+    if ea_output:
+        return True
+    for allowed in ARTIFACT_COMMIT_ALLOWLIST:
+        if allowed.endswith("/") and pu.startswith(allowed):
+            return True
+        if pu == allowed:
+            return True
+    return False
 
 
 def _auto_commit_build_artifacts(root: Path, within_sec: int = 90) -> dict[str, Any]:
@@ -9895,36 +9915,31 @@ def _auto_commit_build_artifacts(root: Path, within_sec: int = 90) -> dict[str, 
             p = p.split(" -> ", 1)[1]
         return p.strip().strip('"')
 
-    def _allowlisted(pu: str) -> bool:
-        # Directory entries (trailing '/') match by prefix; file entries match
-        # EXACTLY — startswith() on file entries also admitted sibling suffixes
-        # like event_vocabulary.json.tmp/.bak (codex impl-review 2026-07-24 #2).
-        for pre in ARTIFACT_COMMIT_ALLOWLIST:
-            if pre.endswith("/"):
-                if pu.startswith(pre):
-                    return True
-            elif pu == pre:
-                return True
-        return False
-
     commit_set: set[str] = set()
     skipped_active: list[str] = []
+    rejected_dirty: list[str] = []
     for line in entries:
         p = _path_of(line)
         pu = p.replace("\\", "/")
-        if not _allowlisted(pu):
+        if not _is_generated_factory_artifact(pu):
+            rejected_dirty.append(pu)
             continue
         m = re.match(r"(framework/EAs/(QM5_\d+)_[^/]+)/", pu)
         if m:
             if m.group(2) in active_eas:
                 skipped_active.append(pu)
                 continue
-            commit_set.add(m.group(1))  # collapse to the EA dir
+            commit_set.add(pu)
         else:
             commit_set.add(pu)
     commit_paths = sorted(commit_set)
     if not commit_paths:
-        return {"committed": False, "reason": "nothing_committable", "skipped_active": skipped_active}
+        return {
+            "committed": False,
+            "reason": "nothing_committable",
+            "skipped_active": skipped_active,
+            "rejected_dirty_paths": sorted(set(rejected_dirty))[:100],
+        }
 
     try:
         # The allowlist contains the generated magic resolver under
@@ -9956,6 +9971,7 @@ def _auto_commit_build_artifacts(root: Path, within_sec: int = 90) -> dict[str, 
         "n_paths": len(commit_paths),
         "paths": commit_paths[:25],
         "skipped_active_build_eas": sorted(set(skipped_active))[:25],
+        "rejected_dirty_paths": sorted(set(rejected_dirty))[:100],
     }
 
 

@@ -167,6 +167,32 @@ class ArtifactAutoCommitTests(unittest.TestCase):
             ["framework/include/QM/QM_MagicResolver.mqh"],
         )
 
+    def test_source_file_is_reported_and_not_swept_with_generated_output(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp) / "farm"
+            farmctl.init_db(root)
+            status_result = mock.Mock(
+                returncode=0,
+                stdout=(
+                    " M framework/include/QM/QM_PropFirm.mqh\n"
+                    " M framework/EAs/QM5_9936_demo/QM5_9936_demo.ex5\n"
+                ),
+                stderr="",
+            )
+            ok = mock.Mock(returncode=0, stdout="", stderr="")
+            with (
+                mock.patch.object(farmctl, "REPO_ROOT", Path(tmp) / "repo"),
+                mock.patch.object(farmctl.subprocess, "run", side_effect=[status_result, ok, ok]) as run,
+            ):
+                result = farmctl._auto_commit_build_artifacts(root)
+
+        self.assertTrue(result["committed"])
+        self.assertEqual(result["rejected_dirty_paths"], ["framework/include/QM/QM_PropFirm.mqh"])
+        self.assertEqual(
+            run.call_args_list[1].args[0][6:],
+            ["framework/EAs/QM5_9936_demo/QM5_9936_demo.ex5"],
+        )
+
 
 class LowTokenBuildRoutingTests(unittest.TestCase):
     def test_claude_g0_fallback_runs_only_with_real_free_capacity(self) -> None:
