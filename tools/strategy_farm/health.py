@@ -1587,6 +1587,50 @@ def chk_phase_infra_graveyard(con) -> dict:
                   "no gate is INFRA_FAIL-saturated", "")
 
 
+def chk_q02_stranded_exhausted_pairs(con) -> dict:
+    """Detect Q02 pairs that exhausted the ordinary INFRA retry budget and vanished.
+
+    A pair is stranded only when it has no real Q02 verdict, no pending/active
+    successor, and at least the canonical sweep retry cap worth of INFRA_FAIL
+    rows. This is deliberately pair-level: counting raw failure rows hides how
+    many distinct EA/symbol candidates silently left the pipeline.
+    """
+    retry_cap = 12  # sweep_enqueue_built_eas.MAX_INFRA_ATTEMPTS
+    real_verdicts = (
+        "PASS", "PASS_SOFT", "PASS_LOWFREQ", "FAIL", "FAIL_HARD",
+        "FAIL_SOFT", "RETIRE", "MULTI_SEED_PASS",
+    )
+    placeholders = ",".join("?" for _ in real_verdicts)
+    row = con.execute(
+        f"""
+        SELECT COUNT(*)
+        FROM (
+            SELECT ea_id, symbol
+            FROM work_items
+            WHERE phase='Q02'
+            GROUP BY ea_id, symbol
+            HAVING SUM(CASE WHEN verdict IN ({placeholders}) THEN 1 ELSE 0 END)=0
+               AND SUM(CASE WHEN status IN ('pending','active') THEN 1 ELSE 0 END)=0
+               AND SUM(CASE WHEN verdict='INFRA_FAIL' THEN 1 ELSE 0 END) >= ?
+        )
+        """,
+        (*real_verdicts, retry_cap),
+    ).fetchone()
+    stranded = int(row[0] or 0)
+    if stranded:
+        return _check(
+            "q02_stranded_exhausted_pairs", "FAIL", stranded, 0,
+            f"{stranded} Q02 EA/symbol pairs have no real verdict, no queued "
+            f"successor, and >= {retry_cap} INFRA_FAIL rows",
+            "Classify the cohort by row-bound aggregate and verdict_reason; "
+            "run an OWNER-sized governed canary before any bulk requeue.",
+        )
+    return _check(
+        "q02_stranded_exhausted_pairs", "OK", 0, 0,
+        "no retry-exhausted Q02 pair has vanished without a verdict", "",
+    )
+
+
 def chk_codex_auth_broken(con) -> dict:
     """Detect Codex authentication failures.
 
@@ -2495,6 +2539,7 @@ ALL_CHECKS = [
     ("disk_free_space",        chk_disk_free_space,        True),
     ("p_pass_stagnation",      chk_p_pass_stagnation,      True),
     ("phase_infra_graveyard",  chk_phase_infra_graveyard,  True),
+    ("q02_stranded_exhausted_pairs", chk_q02_stranded_exhausted_pairs, True),
     ("quota_snapshot_fresh",   chk_quota_snapshot_fresh,   False),
     ("lsm_session_health",     chk_lsm_session_health,     False),
     ("codex_auth_broken",      chk_codex_auth_broken,      True),
