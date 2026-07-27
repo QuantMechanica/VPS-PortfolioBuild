@@ -278,9 +278,19 @@ void Strategy_ManageOpenPosition()
          target_tp = QM_TM_NormalizePrice(_Symbol, ma_low - spread - profit_offset);
         }
 
-      if(target_sl > 0.0 && MathAbs(target_sl - current_sl) > point)
+      // LOG_BOMB fix 2026-07-27: the SELL targets include `spread`, which
+      // jitters every tick, and the old modify threshold was one POINT - so
+      // nearly every tick re-issued MoveSL/MoveTP and logged TM_MODIFY,
+      // producing a deterministic 4.03 GB tester log that tripped the log-bomb
+      // guard on 07-24 and 07-27 (evidence:
+      // docs/ops/evidence/2026-07-27_fresh_infra_fail_diagnosis.md). The band
+      // itself comes from CLOSED bars and moves at most once per bar, so real
+      // adjustments are pip-sized while the spread jitter is sub-pip. A one-PIP
+      // threshold kills the modify storm and preserves the band-trailing
+      // behaviour.
+      if(target_sl > 0.0 && MathAbs(target_sl - current_sl) > pip)
          QM_TM_MoveSL(ticket, target_sl, "ma_band_sl_update");
-      if(target_tp > 0.0 && MathAbs(target_tp - current_tp) > point)
+      if(target_tp > 0.0 && MathAbs(target_tp - current_tp) > pip)
          QM_TM_MoveTP(ticket, target_tp, "ma_band_tp_update");
      }
 
