@@ -865,6 +865,160 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
         self.assertEqual(verdict, "FAIL_HARD")
         self.assertEqual(classification["8.5_neighborhood"], "EDGE_HARD")
 
+    # ---- Census rank 7 (2026-07-27): fixed-parameter strategies have NO neighborhood /
+    #      PBO config family BY CONSTRUCTION -> distinct, non-punitive NOT_APPLICABLE.
+    #      docs/ops/evidence/2026-07-27_q08_evidence_defects_fix.md ----
+
+    def _write_neighborhood_payload(self, tmp, payload) -> Path:
+        p = Path(tmp) / "perturbations.json"
+        p.write_text(json.dumps(payload), encoding="utf-8")
+        return p
+
+    def test_neighborhood_structurally_inapplicable_is_not_applicable_not_invalid(self) -> None:
+        # MECHANISM 1: the runner proved the card has no perturbable parameter, so a
+        # +/-10% neighborhood is undefined. The baseline (the card) traded, so this is
+        # not degenerate. It must be NOT_APPLICABLE, never the punitive vacuous-pass
+        # INVALID (which -> INFRA_FAIL that no retry can ever resolve).
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self._write_neighborhood_payload(tmp, {
+                "baseline": {"status": "VALID", "trades": 220, "pf": 1.42, "dd": 8500},
+                "perturbations": [],
+                "evidence_status": "INVALID_NO_PERTURBABLE_PARAMS",
+                "structurally_inapplicable": True,
+            })
+            result = sub_8_5_neighborhood.run(perturbations_path=path)
+        self.assertEqual(result["status"], "NOT_APPLICABLE")
+        self.assertFalse(result["passed"])
+        self.assertTrue(result["detail"].startswith("not_applicable"))
+        self.assertIn("no_neighborhood", result["detail"])
+
+    def test_neighborhood_empty_perturbations_without_structural_flag_stays_invalid(self) -> None:
+        # GUARD the other direction: an empty perturbation list that the runner did NOT
+        # mark structurally inapplicable is a genuine could-not-compute (vacuous pass)
+        # and must stay INVALID — NOT silently excused as NOT_APPLICABLE.
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self._write_neighborhood_payload(tmp, {
+                "baseline": {"status": "VALID", "trades": 220, "pf": 1.42, "dd": 8500},
+                "perturbations": [],
+                "evidence_status": "INVALID_INSUFFICIENT_VALID_PERTURBATIONS",
+                "structurally_inapplicable": False,
+            })
+            result = sub_8_5_neighborhood.run(perturbations_path=path)
+        self.assertEqual(result["status"], "INVALID")
+        self.assertIn("vacuous", result["detail"])
+
+    def test_baseline_is_structurally_inapplicable_helper(self) -> None:
+        # Runner Gap-B fix: structural inapplicability is a property of the FULL strategy
+        # inventory, so an all-fixed card (no continuous/discrete knob) is flagged even
+        # though the fixed-stripped Q03 pick would be empty.
+        fn = q08_5_neighborhood_runner.baseline_is_structurally_inapplicable
+        with tempfile.TemporaryDirectory() as tmp:
+            all_fixed = Path(tmp) / "all_fixed.set"
+            all_fixed.write_text(
+                "\n".join([
+                    "; symbol: EURUSD.DWX",
+                    "RISK_FIXED=1000",
+                    "; strategy-specific params from card must be appended below this line",
+                    "strategy_use_slope_filter=1",
+                    "strategy_direction_mode=1",
+                    "strategy_beta=-0.12202869296345396",
+                    "strategy_pair_name=EURGBP_AUDJPY",
+                ]),
+                encoding="utf-8",
+            )
+            has_knob = Path(tmp) / "has_knob.set"
+            has_knob.write_text(
+                "\n".join([
+                    "; symbol: EURUSD.DWX",
+                    "; strategy-specific params from card must be appended below this line",
+                    "strategy_use_slope_filter=1",
+                    "strategy_beta=-0.12",
+                    "strategy_period=20",
+                ]),
+                encoding="utf-8",
+            )
+            all_fixed_asg = q08_5_neighborhood_runner.parse_setfile_assignments(all_fixed)
+            has_knob_asg = q08_5_neighborhood_runner.parse_setfile_assignments(has_knob)
+        self.assertTrue(fn(all_fixed_asg))
+        self.assertFalse(fn(has_knob_asg))   # a continuous knob exists -> applicable
+        self.assertFalse(fn({}))             # no strategy params at all -> not "structural"
+
+    def test_pbo_meta_invalid_na_is_not_applicable_not_invalid(self) -> None:
+        # MECHANISM 2: the PBO runner's status=INVALID_NA is the authoritative structural
+        # determination (neighborhood proved no perturbable param) -> a >=2-config family
+        # is undefined. Must be NOT_APPLICABLE, not INVALID/INFRA_FAIL.
+        with tempfile.TemporaryDirectory() as tmp:
+            scores = Path(tmp) / "scores.csv"
+            scores.write_text("config_id,slice_id,score\n", encoding="utf-8")
+            scores.with_name("scores_meta.json").write_text(
+                json.dumps({
+                    "schema_version": 2,
+                    "status": "INVALID_NA",
+                    "reason": "structurally_inapplicable_config_family",
+                    "n_configs": 1,
+                    "config_source": "Q08.5_neighborhood",
+                }),
+                encoding="utf-8",
+            )
+            result = sub_8_7_pbo.run(scores_path=scores)
+        self.assertEqual(result["status"], "NOT_APPLICABLE")
+        self.assertFalse(result["passed"])
+        self.assertTrue(result["detail"].startswith("not_applicable"))
+        self.assertIn("structurally_inapplicable_config_family", result["detail"])
+
+    def test_pbo_meta_plain_invalid_stays_invalid(self) -> None:
+        # GUARD: a plain meta INVALID (not proven structural) stays INVALID so NARROW C2
+        # keeps routing the ambiguous <2-config case to INFRA_FAIL, never NOT_APPLICABLE.
+        with tempfile.TemporaryDirectory() as tmp:
+            scores = Path(tmp) / "scores.csv"
+            scores.write_text("config_id,slice_id,score\n", encoding="utf-8")
+            scores.with_name("scores_meta.json").write_text(
+                json.dumps({
+                    "schema_version": 2,
+                    "status": "INVALID",
+                    "reason": "insufficient_distinct_configs:got=0:need>=2",
+                    "n_configs": 0,
+                }),
+                encoding="utf-8",
+            )
+            result = sub_8_7_pbo.run(scores_path=scores)
+        self.assertEqual(result["status"], "INVALID")
+        self.assertIn("insufficient_distinct_configs", result["detail"])
+
+    def test_not_applicable_subgates_do_not_block_clean_pass(self) -> None:
+        # DOWNSTREAM non-punitiveness: a fixed-parameter EA whose 8.5/8.7 are structurally
+        # NOT_APPLICABLE is judged on its APPLICABLE merit gates. With a real quality pass
+        # and profitable trades it earns a clean PASS — never INVALID/INFRA_FAIL/FAIL.
+        trades = [_trade(dt.datetime(2024, 1, d), 10.0) for d in range(1, 20)]
+        trades.append(_trade(dt.datetime(2024, 2, 1), -5.0))
+        subs = [
+            {"name": "8.1_correlation", "status": "PASS"},
+            {"name": "8.3_tail_dependence", "status": "PASS"},
+            {"name": "8.2_dsr_mc_fdr", "status": "PASS"},
+            {"name": "8.5_neighborhood", "status": "NOT_APPLICABLE",
+             "detail": "not_applicable:fixed_parameter_strategy_has_no_neighborhood"},
+            {"name": "8.7_pbo", "status": "NOT_APPLICABLE",
+             "detail": "not_applicable:structurally_inapplicable_config_family"},
+        ]
+        verdict, classification = aggregate._aggregate_verdict(subs, trades=trades)
+        self.assertEqual(verdict, "PASS")
+        self.assertEqual(classification["8.5_neighborhood"], "NOT_APPLICABLE")
+        self.assertEqual(classification["8.7_pbo"], "NOT_APPLICABLE")
+
+    def test_not_applicable_never_rescues_a_genuine_hard_fail(self) -> None:
+        # PRECEDENCE: NOT_APPLICABLE carries no weight, so a computed robustness breach
+        # elsewhere still fails hard. NA never launders a real failure into a PASS.
+        trades = [_trade(dt.datetime(2024, 1, d), 10.0) for d in range(1, 20)]
+        trades.append(_trade(dt.datetime(2024, 2, 1), -5.0))
+        subs = [
+            {"name": "8.7_pbo", "status": "NOT_APPLICABLE",
+             "detail": "not_applicable:structurally_inapplicable_config_family"},
+            {"name": "8.5_neighborhood", "status": "FAIL", "detail": "3_perturbation_breaches"},
+        ]
+        verdict, classification = aggregate._aggregate_verdict(subs, trades=trades)
+        self.assertEqual(verdict, "FAIL_HARD")
+        self.assertEqual(classification["8.7_pbo"], "NOT_APPLICABLE")
+
     def test_structured_qm_log_loader_finds_tester_agent_equity_stream(self) -> None:
         # Guard the helper's contract directly without requiring a live MT5 tree.
         self.assertTrue(hasattr(aggregate, "_latest_structured_qm_log"))

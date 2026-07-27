@@ -240,6 +240,38 @@ def is_perturbable_param(key: str, value: int | float) -> bool:
     return classify_param(key, value)["class"] in {"continuous", "discrete"}
 
 
+def baseline_is_structurally_inapplicable(
+        baseline_assignments: dict[str, dict[str, Any]],
+        param_type_overrides: dict[str, str] | None = None) -> bool:
+    """True iff the baseline setfile has strategy params but NONE is perturbable.
+
+    A fixed-parameter strategy — every strategy input is fixed / structural / a
+    categorical flag, with no continuous or discrete tuning knob — has no ±10%
+    neighborhood and (downstream, in Q08.7) no >=2-config family BY CONSTRUCTION.
+    The gate is Not-Applicable, not a failure and not a retry-owed infra state.
+
+    Derived from the FULL baseline strategy-param inventory (2026-07-27 census-rank-7
+    fix), not the post-filtered Q03 pick: the setfile-fallback pick strips fixed
+    params before classification, which made an all-fixed card look like it had an
+    empty (hence non-structural) classification set and mis-route to INFRA_FAIL.
+    ``parse_setfile_assignments`` already excludes framework/RISK inputs, so every
+    key here is a strategy parameter.
+    """
+    overrides = param_type_overrides or {}
+    strategy_params = 0
+    perturbable = 0
+    for key, meta in baseline_assignments.items():
+        strategy_params += 1
+        value = meta.get("value")
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            continue
+        if classify_param(key, value, meta, overrides.get(key))["class"] in {
+            "continuous", "discrete"
+        }:
+            perturbable += 1
+    return strategy_params > 0 and perturbable == 0
+
+
 def load_plateau_pick(plateau_path: Path) -> dict:
     """Load Q03's plateau-median parameter pick.
 
@@ -982,10 +1014,18 @@ def main() -> int:
         evidence_status = "INVALID_NO_PERTURBABLE_PARAMS"
     else:
         evidence_status = "INVALID_INSUFFICIENT_VALID_PERTURBATIONS"
-    excluded_classes = {row["class"] for row in classifications if not row["candidate_values"]}
-    structurally_inapplicable = bool(classifications) and not eligible and excluded_classes <= {
-        "fixed", "structural"
-    }
+    # Structural inapplicability is a property of the WHOLE strategy parameter set, not
+    # just the (possibly fixed-stripped) Q03 pick: an all-fixed card has an empty pick and
+    # would otherwise look non-structural and mis-route to INFRA_FAIL (2026-07-27 census
+    # rank 7). Determine it from the full baseline inventory. `not eligible` stays a
+    # necessary condition so a pick that simply omitted an existing perturbable param is a
+    # production gap (retry-owed), NOT a structural NA.
+    structurally_inapplicable = (
+        not eligible
+        and baseline_is_structurally_inapplicable(
+            baseline_assignments, param_type_overrides
+        )
+    )
 
     payload = {
         "schema_version": EVIDENCE_SCHEMA_VERSION,

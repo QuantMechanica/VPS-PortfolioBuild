@@ -2441,9 +2441,10 @@ def _q08_insufficient_trades_reason(summary: dict[str, Any]) -> str:
       * a real observed trade count `n_trades` (int) > 0 — a 0-trade Q08 baseline is
         the separate infra condition `q08_zero_trade_baseline` and stays INFRA_FAIL;
       * NO genuine-infra token in the top-level reason;
-      * NO blocking (non-PASS/non-INFORMATIONAL) sub-gate is a computed FAIL, a
-        genuine-infra INVALID, or any non-insufficient INVALID (that would be
-        mixed -> preserve);
+      * NO blocking (non-PASS/non-INFORMATIONAL/non-NOT_APPLICABLE) sub-gate is a
+        computed FAIL, a genuine-infra INVALID, or any non-insufficient INVALID (that
+        would be mixed -> preserve). NOT_APPLICABLE (8.5/8.7 structurally undefined for a
+        fixed-parameter strategy) carries no verdict weight, like INFORMATIONAL;
       * at least one blocking sub-gate is in the insufficient-trades family (or has
         a status starting 'INSUFFICIENT').
     """
@@ -2466,7 +2467,7 @@ def _q08_insufficient_trades_reason(summary: dict[str, Any]) -> str:
         if not isinstance(gate, dict):
             return ""  # malformed evidence -> unauthenticated
         status = str(gate.get("status") or "").upper()
-        if status in {"PASS", "INFORMATIONAL"}:
+        if status in {"PASS", "INFORMATIONAL", "NOT_APPLICABLE"}:
             continue
         detail = str(gate.get("detail") or "").lower()
         if any(tok in detail for tok in Q08_GENUINE_INFRA_DETAIL_TOKENS):

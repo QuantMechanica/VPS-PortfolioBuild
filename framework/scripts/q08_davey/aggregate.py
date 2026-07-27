@@ -120,12 +120,16 @@ def _label_within_pass_allowance(gate_name: str, label: str) -> bool:
       - PASS (the gate passed on merit)
       - INFORMATIONAL (a frequency-aware gate that is structurally inapplicable at
         this EA's frequency class — recorded, carries no soft-fail signal; DL-082 §3b)
+      - NOT_APPLICABLE (a parameter-space gate — 8.5 neighborhood / 8.7 PBO — that is
+        structurally undefined for a fixed-parameter strategy: no perturbable parameter
+        means no ±10% neighborhood and no >=2-config family EXISTS BY CONSTRUCTION.
+        Recorded, carries no soft-fail signal and is NOT retry-owed. 2026-07-27.)
       - LOW_SAMPLE (the Davey statistical battery could-not-compute at low N)
       - EDGE_SOFT of the frequency-aware trio + MC-shuffle (8.4/8.6/8.10/8.11)
     Any other label (EDGE_HARD is handled separately as a hard fail; EDGE_SOFT of a
     non-allowance gate; a genuine INVALID; INFRA_RECYCLE) is OUTSIDE the allowance.
     """
-    if label in ("PASS", "INFORMATIONAL", "LOW_SAMPLE"):
+    if label in ("PASS", "INFORMATIONAL", "LOW_SAMPLE", "NOT_APPLICABLE"):
         return True
     if label == "EDGE_SOFT" and str(gate_name).startswith(ALLOWANCE_SOFT_GATES):
         return True
@@ -1439,6 +1443,21 @@ def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None
         if status == "INFORMATIONAL":
             classification[name] = "INFORMATIONAL"
             continue
+        # 2026-07-27 (census rank 7 — Q08 evidence defects): a parameter-space gate
+        # (8.5 neighborhood / 8.7 PBO) that is STRUCTURALLY UNDEFINED for a
+        # fixed-parameter strategy reports NOT_APPLICABLE. A card EA with no perturbable
+        # parameter has no ±10% neighborhood and no >=2-config family by construction —
+        # there is nothing to compute and retrying can never manufacture the evidence, so
+        # this is neither a robustness verdict (INVALID/FAIL) nor a retry-owed infra
+        # condition (INFRA_FAIL). It is recorded with no verdict weight and, per DL-082
+        # §3c, is within the non-merit allowance for a clean PASS. Distinct from the
+        # NARROW C2 'insufficient_distinct_configs' TOOLING INVALID, which the sub-gate
+        # cannot prove is structural from scores.csv alone and which stays INFRA_FAIL;
+        # NOT_APPLICABLE is emitted ONLY on the runner's authoritative
+        # structurally_inapplicable determination.
+        if status == "NOT_APPLICABLE":
+            classification[name] = "NOT_APPLICABLE"
+            continue
         # DL-082 §3a: a degenerate (0-trade) Q08.5 neighborhood baseline is an
         # infra/setfile condition — the perturbation baseline could not reproduce the
         # strategy, so nothing was tested. Route the whole item to setfile
@@ -1787,6 +1806,9 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
             "n_pass":    sum(1 for r in sub_results if r["status"] == "PASS"),
             "n_fail":    sum(1 for r in sub_results if r["status"] == "FAIL"),
             "n_invalid": sum(1 for r in sub_results if r["status"] == "INVALID"),
+            "n_not_applicable": sum(
+                1 for r in sub_results if r["status"] == "NOT_APPLICABLE"
+            ),
         },
     }
     if mc_shuffle_dd:
@@ -1824,7 +1846,8 @@ def _print_summary(agg: dict) -> None:
     print(f"\nQ08 · QM5_{agg['ea_id']} {agg['symbol']}  ->  {agg['verdict']}")
     print(f"    trades={agg['n_trades']}  equity_snaps={agg['n_equity_snapshots']}")
     for r in agg["sub_gates"]:
-        flag = {"PASS": "OK", "FAIL": "X ", "INVALID": "? "}.get(r["status"], "  ")
+        flag = {"PASS": "OK", "FAIL": "X ", "INVALID": "? ",
+                "NOT_APPLICABLE": "NA"}.get(r["status"], "  ")
         val = r.get("value")
         thr = r.get("threshold")
         print(f"    {flag} {r['name']:30s}  value={val}  threshold={thr}")
