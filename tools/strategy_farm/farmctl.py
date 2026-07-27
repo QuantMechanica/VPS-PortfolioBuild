@@ -230,6 +230,12 @@ PHASE_ACTIVE_TIMEOUT_MIN = {
     "Q09": 120,    # news-mode sweep (1 or 7 modes)
     "Q10": 60,     # full-history canonical confirmation
 }
+ACTIVE_PROGRESS_STALL_MIN = 20
+ACTIVE_OUTER_HEADROOM_MIN = 10
+_MT5_PROGRESS_RE = re.compile(
+    r"\b(?P<time>\d{2}:\d{2}:\d{2}(?:\.\d+)?)\s+AutoTesting\s+processing\s+(?P<pct>\d{1,3})\s*%",
+    re.IGNORECASE,
+)
 # Baskets pay a one-time N-symbol cold tick-sync (a 28-symbol basket like T-WIN
 # needs ~3-5h just to sync member ticks over the full window) that single-symbol
 # EAs never incur, so the 45-min Q02 budget starved them into INFRA_FAIL. This is
@@ -4942,8 +4948,90 @@ def _release_dispatch_lock(lock: tuple[int, Path] | None) -> None:
         pass
 
 
-def _detect_active_age_timeout(con: sqlite3.Connection) -> list[dict[str, Any]]:
-    now_dt = dt.datetime.now(dt.UTC)
+def _terminal_progress_evidence(
+    item_id: str,
+    terminal: str | None,
+    claimed_at: dt.datetime,
+    *,
+    now_dt: dt.datetime | None = None,
+    mt5_root: Path | None = None,
+) -> dict[str, Any]:
+    """Return work-item-bound MT5 progress evidence.
+
+    A terminal log can contain many sequential jobs.  The work-item UUID in the
+    tester.ini launch path is the binding marker; only progress lines after its
+    last marker are considered.  Timestamps in MT5 terminal logs are local
+    machine time.
+    """
+    now_dt = now_dt or dt.datetime.now(dt.UTC)
+    root = mt5_root or MT5_ROOT
+    terminal_name = str(terminal or "")
+    if not is_factory_terminal_name(terminal_name):
+        return {"determined": False, "reason": "invalid_terminal"}
+
+    log_dir = root / terminal_name / "logs"
+    candidates: list[Path] = []
+    for day_delta in (0, 1):
+        local_day = (now_dt.astimezone() - dt.timedelta(days=day_delta)).strftime("%Y%m%d")
+        path = log_dir / f"{local_day}.log"
+        if path.exists():
+            candidates.append(path)
+    if not candidates:
+        return {"determined": False, "reason": "terminal_log_missing"}
+
+    marker_found = False
+    latest_pct = 0
+    latest_at = claimed_at
+    source_path: Path | None = None
+    for path in candidates:
+        try:
+            # MT5 terminal logs are UTF-16LE (unlike Strategy Farm text logs).
+            lines = path.read_text(encoding="utf-16", errors="replace").splitlines()
+        except OSError:
+            continue
+        marker_indexes = [i for i, line in enumerate(lines) if item_id.lower() in line.lower()]
+        if not marker_indexes:
+            continue
+        marker_found = True
+        source_path = path
+        for line in lines[marker_indexes[-1] + 1:]:
+            match = _MT5_PROGRESS_RE.search(line)
+            if not match:
+                continue
+            pct = min(100, int(match.group("pct")))
+            time_text = match.group("time")
+            try:
+                clock = dt.time.fromisoformat(time_text)
+                local_stamp = dt.datetime.combine(
+                    dt.datetime.strptime(path.stem, "%Y%m%d").date(),
+                    clock,
+                ).astimezone()
+                stamp = local_stamp.astimezone(dt.UTC)
+            except ValueError:
+                continue
+            if stamp >= claimed_at and pct > latest_pct:
+                latest_pct = pct
+                latest_at = stamp
+
+    if not marker_found:
+        return {"determined": False, "reason": "work_item_marker_missing"}
+    return {
+        "determined": True,
+        "reason": "work_item_bound_progress",
+        "progress_pct": latest_pct,
+        "progress_at": latest_at.replace(microsecond=0).isoformat(),
+        "stalled_min": round(max(0.0, (now_dt - latest_at).total_seconds() / 60.0), 2),
+        "log_path": str(source_path) if source_path else None,
+    }
+
+
+def _detect_active_age_timeout(
+    con: sqlite3.Connection,
+    *,
+    now_dt: dt.datetime | None = None,
+    mt5_root: Path | None = None,
+) -> list[dict[str, Any]]:
+    now_dt = now_dt or dt.datetime.now(dt.UTC)
     now = now_dt.replace(microsecond=0).isoformat()
     rows = con.execute(
         """
@@ -4962,9 +5050,34 @@ def _detect_active_age_timeout(con: sqlite3.Connection) -> list[dict[str, Any]]:
         if updated is None:
             continue
         age_min = (now_dt - updated).total_seconds() / 60.0
-        if age_min < float(timeout_min):
-            continue
         payload = json.loads(r["payload_json"] or "{}")
+        try:
+            inner_timeout_sec = int(payload.get("timeout_seconds") or 0)
+        except (TypeError, ValueError):
+            inner_timeout_sec = 0
+        inner_budget_min = max(0, (inner_timeout_sec + 59) // 60)
+        absolute_ceiling_min = max(
+            int(timeout_min),
+            inner_budget_min + ACTIVE_OUTER_HEADROOM_MIN,
+        )
+        progress = _terminal_progress_evidence(
+            str(r["id"]),
+            r["claimed_by"],
+            updated,
+            now_dt=now_dt,
+            mt5_root=mt5_root,
+        )
+        progress_stalled = (
+            bool(progress.get("determined"))
+            and float(progress.get("stalled_min") or 0) >= ACTIVE_PROGRESS_STALL_MIN
+        )
+        absolute_expired = age_min >= float(absolute_ceiling_min)
+        if not progress_stalled and not absolute_expired:
+            continue
+        if progress_stalled:
+            reap_reason = "NO_FORWARD_PROGRESS"
+        else:
+            reap_reason = "OUTER_ABSOLUTE_CEILING"
         reason_classes = payload.get("reason_classes") or []
         if "ACTIVE_TIMEOUT" not in [str(x).upper() for x in reason_classes]:
             reason_classes.append("ACTIVE_TIMEOUT")
@@ -4980,7 +5093,11 @@ def _detect_active_age_timeout(con: sqlite3.Connection) -> list[dict[str, Any]]:
             "reason_classes": reason_classes,
             "verdict_reason": "ACTIVE_TIMEOUT",
             "timeout_min": timeout_min,
+            "inner_budget_min": inner_budget_min,
+            "absolute_ceiling_min": absolute_ceiling_min,
             "active_age_min": round(age_min, 2),
+            "reap_reason": reap_reason,
+            "progress_evidence": progress,
             "killed_at": now,
             "worker_pid": worker_pid,
             "worker_stopped": worker_stopped,
@@ -5007,6 +5124,10 @@ def _detect_active_age_timeout(con: sqlite3.Connection) -> list[dict[str, Any]]:
             "terminal": terminal,
             "age_min": round(age_min, 2),
             "timeout_min": timeout_min,
+            "inner_budget_min": inner_budget_min,
+            "absolute_ceiling_min": absolute_ceiling_min,
+            "reap_reason": reap_reason,
+            "progress_evidence": progress,
             "worker_pid": worker_pid,
             "worker_stopped": worker_stopped,
             "terminal_stopped": terminal_stopped,
@@ -5105,6 +5226,15 @@ def _active_timeout_min_for_work_item(phase: str, payload_json: str | None) -> i
         payload_timeout_min = 0
     if payload_timeout_min > 0:
         timeout_min = max(int(timeout_min), payload_timeout_min)
+    try:
+        inner_timeout_sec = int(payload.get("timeout_seconds") or 0)
+    except (TypeError, ValueError):
+        inner_timeout_sec = 0
+    if inner_timeout_sec > 0:
+        timeout_min = max(
+            int(timeout_min),
+            (inner_timeout_sec + 59) // 60 + ACTIVE_OUTER_HEADROOM_MIN,
+        )
     if (
         str(phase or "").upper() == "Q02"
         and str(payload.get("portfolio_scope") or "").lower() == "basket"
