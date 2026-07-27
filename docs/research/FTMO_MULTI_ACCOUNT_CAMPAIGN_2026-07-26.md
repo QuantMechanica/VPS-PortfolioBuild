@@ -3,8 +3,45 @@
 Date: 2026-07-26
 Author: Claude
 Status: measured, pending OWNER money-gate and one deployment check
+**CORRECTED 2026-07-27** after three adversarial reviews (corrections block directly
+below). Several claims are withdrawn or downgraded; the originals are left in place,
+struck or annotated, so the record of what was wrong survives.
 Supersedes the recommendation in `FTMO_BOOK_STATE_2026-07-26.md` ("no challenge
 account against this book")
+
+## CORRECTIONS — 2026-07-27 adversarial review
+
+Review prompts: `scratchpad/challenge_A_campaign.md`, `challenge_B_deploy.md`,
+`challenge_C_gates.md`. Five claims did not survive review and are corrected below.
+
+- **A. This book is NOT pipeline-admitted today.** `Q09_PORTFOLIO = FAIL_PORTFOLIO`
+  is the current farm-state verdict on 13213/USDJPY (2026-07-25), 10848/XAUUSD
+  (2026-07-14) and 10553/XAUUSD (2026-07-16); 13036/GDAXI is `Q09_PORTFOLIO = pending`
+  (never judged). **None of the four sleeves is Q09-admitted.** Whatever the merit of
+  the "Q09 judges a shared-equity book, not separate accounts" argument (§"Why one
+  book fails and three accounts work"), the pipeline has not admitted this material.
+  This document is a research proposal, not a gate-cleared deployment, and no number
+  in it changes that.
+- **B. "Target awareness is worth +28.8pp" was a strawman.** That claim never appeared
+  in this file's tables, but it drove the earlier six-account framing
+  (`tools/strategy_farm/portfolio/challenge_final.py`: 86.3 % "with" vs 57.5 % "must
+  END ≥ +10 %"). FTMO does **not** close the account at target — per ftmo.com, once the
+  objectives are met the account is "set for review" (1–4 business days). The
+  **touch-based** measure this file already uses (`scratchpad/parallel_accounts.py:154`
+  — the window passes the instant equity ≥ +10 %) is the correct one; the
+  "must END ≥ +10 %" counterfactual does not describe an unmodified EA. Flattening at
+  target is a **safety measure to protect the review window, not a probability lever.**
+- **C. The margin verdict is unsupported, not proven** — FTMO's broker stop-out level
+  was never captured, so "the FTMO rule binds before any margin call" is undetermined.
+  See §"The binding constraint is now margin, not statistics".
+- **D. The margin/notional tables are a gross-exposure approximation, not a margin
+  proof** — `notional` is a closing-price product and "exposure ÷ leverage" is not the
+  MT5 margin formula. The authoritative figure is `OrderCalcMargin` on the real
+  account. See the same section.
+- **E. 10848 is deployed at @4×, not @5×, and the tables mix measurement runs.** The
+  committed set files / manifest are the ground truth (13213@4, 10848@4, 10553@8,
+  13036@8; no 9936 set file exists). See the corrected "Deployable artifacts" table
+  and the inline notes on the pass-rate and margin tables.
 
 ## Summary
 
@@ -25,6 +62,16 @@ Measured directly, with FTMO's rules applied window by window:
 | 3 | **80.7 %** | 68–94 % | + 10553/XAUUSD @ 8× |
 | 4 | 81.8 % | 69–94 % | + 12823/USDJPY @ 8× |
 
+> **CORRECTION 2026-07-27 (run attribution, per correction E).** This table is the
+> **touch-based upper measurement** (`scratchpad/parallel_accounts.py`) with
+> **10848 at @5×** and 12823 as the fourth account. The **deployed** book (manifest
+> `2026-07-27_ftmo_challenge_deploy_manifest.json`, set files verified) is
+> **13213@4× · 10848@4× · 10553@8× · 13036@8×** — 10848 is @4× not @5×, and 13036
+> replaces both 9936 and 12823. These pass rates were therefore **not** measured on
+> the deployed set files and cannot be attributed to them without a re-run at
+> 10848@4× with 13036. They stand only as the figures for the book/leverage stated in
+> the "books" column.
+
 ## Why one book fails and three accounts work
 
 Every multi-sleeve **book** scored *worse* than its best single member — without
@@ -43,6 +90,14 @@ campaign succeeds if any one of them reaches target. This is also why
 gate judges sleeves sharing a single equity curve and a single 10 % cap. The
 campaign proposes the opposite structure.
 
+> **CORRECTION 2026-07-27 (per correction A).** This is an argument, not an admission.
+> `Q09_PORTFOLIO = FAIL_PORTFOLIO` is the live verdict on 13213/USDJPY, 10848/XAUUSD
+> and 10553/XAUUSD, and 13036/GDAXI is `Q09_PORTFOLIO = pending` — so **as of today
+> not one book sleeve is pipeline-admitted**, whether or not the transfer argument is
+> correct. There is no "Q09-for-separate-accounts" gate that has passed this
+> structure; the claim that the verdict "does not transfer" has not itself been
+> adjudicated by the pipeline. Treat the book as un-admitted research material.
+
 ## Method
 
 `scratchpad/parallel_accounts.py` and the gate-strict variant. Per sleeve, daily
@@ -51,6 +106,15 @@ trade streams from `D:\QM\reports\portfolio\sleeve_streams\QM\q08_trades`.
 - **Rules per window**: +10 % target, −5 % daily cap, −10 % total cap, 22 trading
   days ≈ 30 calendar days (OWNER's constraint; FTMO itself dropped the time limit
   in 2024, so this is the harder test).
+- **Pass = equity *touches* +10 % at any instant, not "ends ≥ +10 %"**
+  (`scratchpad/parallel_accounts.py:154` breaks the window the moment `eq ≥ TARGET`).
+  This is deliberate and correct (CORRECTION 2026-07-27, per correction B): FTMO sets
+  the account "for review" once objectives are met (ftmo.com, 1–4 business days) — it
+  does not liquidate at target. An earlier six-account analysis reported a
+  "+28.8pp target-awareness" lever (86.3 % touch vs 57.5 % "must END ≥ +10 %"); the
+  "must END" branch was a strawman counterfactual — no unmodified EA is forced to end
+  a window exactly at +10 % — and it is **withdrawn**. Flattening at target is a safety
+  measure protecting the review window, not a probability lever.
 - **Daily cap checked intraday.** An earlier cut checked it against the day's
   *closed* P&L, which silently survives any day that sinks 6 % at midday and
   recovers by the close. Re-checked at trade-close granularity, the single-sleeve
@@ -86,6 +150,14 @@ computes **both** bounds:
 | 3 | 83.3 % | **81.1 %** | + 10553/XAUUSD @8× |
 | 4 | 87.7 % | **85.4 %** | + 13213/USDJPY @4× |
 
+> **CORRECTION 2026-07-27 (run attribution, per correction E).** This MAE-bounds run
+> (`tools/strategy_farm/portfolio/challenge_campaign_mae.py`) uses **10848 at @5×** and
+> takes **9936/USDJPY** as its first account — 9936 whose Q08 is still `INFRA_FAIL`
+> and pending re-run (see below). The deployed book is 10848**@4×** with **13036** in
+> place of 9936. So neither the 81.1 % lower bound nor the 85.4 % four-account figure
+> was measured on the deployed set files; both belong to the book in the "books"
+> column, not to the artifact that ships.
+
 **Both bounds clear 80 % at three accounts.** The goal holds under the most
 pessimistic floating-loss assumption available, so the answer no longer depends on
 the unmodelled term.
@@ -106,6 +178,25 @@ leverage 1.0 — measured from the `notional` field:
 | 10848/XAUUSD | 4.3× | 21.5× @5× |
 | 10553/XAUUSD | 2.5× | 19.9× @8× |
 | 12823/USDJPY | 0.8× | — |
+
+> **CORRECTION 2026-07-27 (exposure method, per correction D).** These `notional`
+> figures are a **gross-exposure approximation, not a margin proof.** Per-trade
+> `notional` is `QM_Common.mqh:753` = `volume × contract_size × close_price` — it uses
+> the trade's **closing** price and is then applied retroactively across the whole
+> holding interval, so it is neither the entry exposure nor the mark-to-market
+> exposure at each instant. When the profit-currency→account-currency rate is
+> unavailable it falls through **unconverted** at `QM_Common.mqh:767` (a
+> `Q08_NOTIONAL_CONVERSION_FALLBACK` warning), so for non-USD-profit symbols the
+> account-currency scale can be wrong. Summed peak-concurrent notional therefore
+> mis-times and can mis-scale true exposure. Separately, **10848's "@5×" row (4.3× →
+> 21.5×) is stale**: the deployed set file is @4×, i.e. 4.3× → **17.2×**.
+>
+> **"Margin required = exposure ÷ broker leverage" is not the universal MT5 margin
+> formula.** MT5 margin depends on the symbol's calculation mode, margin-rate tiers,
+> and hedged/netting rules; it is not simply notional/leverage. The authoritative
+> per-account figure is `OrderCalcMargin` (or the platform-reported margin) on the
+> **real FTMO account** — the table below is an estimate to be confirmed there, not a
+> proof.
 
 Margin required = exposure ÷ broker leverage. At 1:100 the USDJPY sleeves use
 66–74 % of the account; at 1:30 they need 220–246 % and are simply impossible.
@@ -133,6 +224,10 @@ specifications FAQ), for the **Normal** account type:
 
 Applied per account — and separate challenge accounts share margin with nothing:
 
+_Table as originally written (SUPERSEDED, per correction E — mixes 9936, which is
+not in the deployed book, with 10848 at @5×; margin figures use the exposure÷leverage
+estimate flagged above):_
+
 | account | exposure | FTMO leverage | margin used | margin level at −10 % equity |
 |---|---|---|---|---|
 | 9936/USDJPY @4 % | 65.9× | 1:100 | 65.9 % | 137 % |
@@ -140,12 +235,33 @@ Applied per account — and separate challenge accounts share margin with nothin
 | 10848/XAUUSD @5 % | 21.5× | 1:30 | 71.7 % | 126 % |
 | 10553/XAUUSD @8 % | 19.9× | 1:30 | 66.3 % | 136 % |
 
-**All four fit.** And the decisive part: at the equity where FTMO's total-loss rule
+**CORRECTED 2026-07-27 to the deployed book** (from
+`docs/ops/evidence/2026-07-27_ftmo_challenge_deploy_manifest.json`; still the
+exposure÷leverage estimate, to be confirmed with `OrderCalcMargin` on the real
+account, per correction D):
+
+| account | exposure | FTMO leverage | margin used | margin level at −10 % equity |
+|---|---|---|---|---|
+| 13213/USDJPY @4 % | 73.8× | 1:100 | 73.8 % | 122 % |
+| 10848/XAUUSD @4 % | 17.2× | 1:30 | 57.3 % | 157 % |
+| 10553/XAUUSD @8 % | 19.9× | 1:30 | 66.3 % | 136 % |
+| 13036/GDAXI @8 %  | 5.2×  | 1:50 | 10.4 % | 865 % |
+
+~~**All four fit.** And the decisive part: at the equity where FTMO's total-loss rule
 has *already* ended the challenge (90 k), every account still stands above 120 %
 margin level. A broker stop-out sits far below that, so **the FTMO rule binds
 before any margin call** — which means the stop-out percentage FTMO does not
 publish (it tells you to read it off the platform) cannot change the verdict. The
-simulation's assumption that positions are held to their modelled outcome holds.
+simulation's assumption that positions are held to their modelled outcome holds.~~
+
+> **CORRECTION 2026-07-27 (stop-out unsupported, per correction C).** The struck claim
+> does not stand. FTMO's broker **stop-out level was never captured** — "a broker
+> stop-out sits far below 120 %" has no measurement behind it. Until
+> `ACCOUNT_MARGIN_SO_SO` and `ACCOUNT_MARGIN_SO_CALL` are read from a real FTMO
+> account, whether the −10 % loss rule or a margin call binds first is
+> **undetermined**; and (per correction D) the margin-level column above is itself an
+> approximation, not the true MT5 margin. "The unpublished stop-out cannot change the
+> verdict" is withdrawn pending those two account values.
 
 The thin part, stated because a backtest cannot show it: free margin is only
 26–34 %. A position opened while the book already sits near peak exposure could be
@@ -157,7 +273,10 @@ this becomes a registry fact rather than a document footnote.
 
 ## Deployable artifacts
 
-Four set files, one per challenge account, committed:
+Four set files, one per challenge account, committed.
+
+_Table as originally written (SUPERSEDED, per correction E — 9936 has no committed
+set file, and 10848 was listed at @5× with a SHA that is not the committed file):_
 
 | account | set file | RISK_PERCENT | SHA256 (12) |
 |---|---|---|---|
@@ -166,8 +285,23 @@ Four set files, one per challenge account, committed:
 | 10848/XAUUSD H1 | `..._XAUUSD.DWX_H1_ftmo_challenge.set` | 5 | `adbcf57b1c8f` |
 | 10553/XAUUSD H4 | `..._XAUUSD.DWX_H4_ftmo_challenge.set` | 8 | `8d578b6007a0` |
 
+**CORRECTED 2026-07-27** — the actually committed set files (SHA256 recomputed from
+disk; matches `2026-07-27_ftmo_challenge_deploy_manifest.json`). There is **no 9936
+challenge set file**; the fourth deployed sleeve is **13036/GDAXI @8×**, and 10848 is
+**@4×**:
+
+| account | set file | RISK_PERCENT | SHA256 (12) |
+|---|---|---|---|
+| 13213/USDJPY H1 | `..._USDJPY.DWX_H1_ftmo_challenge.set` | 4 | `0c81c93ed2a3` |
+| 10848/XAUUSD H1 | `..._XAUUSD.DWX_H1_ftmo_challenge.set` | 4 | `a094d0ea125d` |
+| 10553/XAUUSD H4 | `..._XAUUSD.DWX_H4_ftmo_challenge.set` | 8 | `8d578b6007a0` |
+| 13036/GDAXI M15 | `..._GDAXI.DWX_M15_ftmo_challenge.set` | 8 | `7e4c87af0561` |
+
 Manifest: `docs/ops/evidence/2026-07-27_ftmo_challenge_deploy_manifest.json`.
-All four `.ex5` binaries verified present.
+All four deployed `.ex5` binaries verified present. **Note (per correction E):** the
+pass-rate tables above were measured on an earlier book (10848@5×, with 9936/12823 as
+members), so they do not describe these deployed set files; a re-run at 10848@4× with
+13036 is required before any pass rate can be attributed to what actually ships.
 
 **Why these are derived from the backtest sets and not regenerated.** Running
 `gen_setfile.ps1 -Env demo` produced set files that would have silently run a
@@ -251,8 +385,13 @@ the three-account figure rises materially — 9936 scored 55.6 % solo against
    Both bounds clear 80 % at three accounts. Codex ticket `a5768d03` (per-bar
    equity export) is now a refinement rather than a blocker: it would replace the
    two bounds with a single figure, but it can no longer change the verdict.
-2. ~~Confirm FTMO's margin leverage~~ — **done**, cited above. All four accounts
-   fit, and the FTMO loss rule binds before any margin call.
+2. ~~Confirm FTMO's margin leverage~~ — leverage **values** are confirmed from
+   ftmo.com (forex 1:100 / metals 1:30 / indices 1:50). But ~~All four accounts fit,
+   and the FTMO loss rule binds before any margin call~~ is **withdrawn**
+   (corrections C, D): the "fit" rests on a gross-exposure approximation
+   (`notional` = closing-price product, `QM_Common.mqh:753`) and the stop-out level
+   was never captured, so margin adequacy is **unconfirmed pending `OrderCalcMargin`
+   and `ACCOUNT_MARGIN_SO_SO`/`ACCOUNT_MARGIN_SO_CALL` on a real FTMO account.**
 3. ~~Translate multipliers into `RISK_PERCENT` set files~~ — **done**, four files
    committed with `RISK_FIXED=0`, parameter-identical to the measured runs.
 4. **Run it on an FTMO demo/free-trial account.** This is now the next real step
@@ -262,6 +401,12 @@ the three-account figure rises materially — 9936 scored 55.6 % solo against
    sizing reproduces the tested lot sizes at a 100 k balance.
 5. 9936/USDJPY Q08 is **active** (work item `7be51839`). Until it returns, the
    strongest member is pending rather than passed — the 3-account configuration
-   excluding it (13213 + 10848 + 10553, 80.7 %) is the fully gate-backed one.
+   excluding it (13213 + 10848 + 10553, 80.7 %) is ~~the fully gate-backed one~~
+   **NOT gate-backed** (correction A): all three sleeves carry `Q09_PORTFOLIO =
+   FAIL_PORTFOLIO`, so no configuration in this file is pipeline-admitted today.
 6. **OWNER money-gate**: paying for challenge accounts is OWNER's decision alone
    and is not assumed anywhere above. The demo step does not require it.
+7. **Re-measure the campaign on the deployed book** (correction E): the pass-rate
+   tables were computed with 10848 at @5× and with 9936/12823 as members, but the
+   committed set files are 10848**@4×** with **13036** replacing them. No pass rate
+   in this file describes the artifact that ships until that re-run exists.
