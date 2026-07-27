@@ -136,6 +136,13 @@ int OnInit()
       Print("QM5_20180 is a measurement instrument: qm_stress_reject_probability must be 0.");
       return INIT_FAILED;
      }
+   // Host symbol is HARD-CODED to USDJPY.DWX: both sleeves (9936 + 13213) are
+   // USDJPY range breakouts and the slot magics are registered for USDJPY.DWX.
+   if(_Symbol != "USDJPY.DWX")
+     {
+      Print("QM5_20180 is hard-coded to USDJPY.DWX; attached chart is ", _Symbol, ".");
+      return INIT_FAILED;
+     }
 
    // ---- Framework init (single-symbol: default guard {_Symbol=USDJPY}). Both
    //      sleeves are host-symbol, so NO QM_SymbolGuardInit / basket warmup is
