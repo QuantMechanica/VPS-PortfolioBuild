@@ -2583,6 +2583,115 @@ def chk_agent_task_state_stranded(con) -> dict:
     return _check("agent_task_state_stranded", "OK", 0, STRANDED_TASK_FAIL_TOTAL, detail, "")
 
 
+# --- Pending tail-age + summary-missing classification detectors (census ranks 1/3) ---
+# The queue drains in aggregate (net-negative most days) but an inherited tail of old
+# pending rows does NOT resolve FIFO: within Q02 the claim order is deliberately
+# priority-first (frontier/winner/metal>index>fx), with created_at only the final
+# tie-break, and ~87% of the old tail is `recovery_class`-tagged and idle-capped by the
+# ratified Operating-Rule-22 throttle. That ordering is intentional; the fix for rank 3
+# is to make the tail's AGE visible, not to change the claim path. See
+# docs/ops/evidence/2026-07-27_failure_classification_fix.md.
+PENDING_TAIL_STALE_DAYS = 14
+# Above the inherited >14d tail (census 1,458; measured ~1,410 on 2026-07-27) so the
+# standing recovery-capped backlog reads as an actionable amber while genuine REGROWTH
+# (a new leak / a drain stall) escalates to red. Retune here.
+PENDING_TAIL_FAIL_TOTAL = 1900
+
+# Rising-unclassified detector: new Q02 summary-missing terminals must land with a
+# failure_class (the forward classifier stamps one on every exhaustion). A recent window
+# where a large share carry NO failure_class means the classifier regressed; a large
+# share of failure_class=UNCLASSIFIED means a new failure mode the signatures don't cover.
+SM_UNCLASSIFIED_WINDOW_H = 48
+SM_UNCLASSIFIED_MIN_VOL = 20
+SM_MISSING_CLASS_FAIL_FRAC = 0.50
+SM_UNCLASSIFIED_WARN_FRAC = 0.50
+
+
+def chk_pending_tail_age(con) -> dict:
+    """Surface the old-pending tail (census rank 3). Deliberate priority ordering means
+    old Q02/recovery rows do not drain FIFO; this makes their age visible so a growing
+    tail or a drain stall is caught, without touching the throughput-critical claim path."""
+    cutoff = (_utc_now() - dt.timedelta(days=PENDING_TAIL_STALE_DAYS)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    old = con.execute(
+        "SELECT COUNT(*) FROM work_items WHERE status='pending' AND created_at < ?",
+        (cutoff,),
+    ).fetchone()[0]
+    if not old:
+        return _check("pending_tail_age", "OK", 0, PENDING_TAIL_FAIL_TOTAL,
+                      f"no pending row older than {PENDING_TAIL_STALE_DAYS}d", "")
+    by_phase = {
+        r["phase"]: int(r["n"])
+        for r in con.execute(
+            "SELECT phase, COUNT(*) n FROM work_items WHERE status='pending' AND created_at < ? "
+            "GROUP BY phase ORDER BY n DESC",
+            (cutoff,),
+        ).fetchall()
+    }
+    recovery = con.execute(
+        "SELECT COUNT(*) FROM work_items WHERE status='pending' AND created_at < ? "
+        "AND payload_json LIKE '%\"recovery_class\":%'",
+        (cutoff,),
+    ).fetchone()[0]
+    oldest = con.execute(
+        "SELECT MIN(created_at) FROM work_items WHERE status='pending'"
+    ).fetchone()[0]
+    phase_str = ", ".join(f"{k}={v}" for k, v in list(by_phase.items())[:5])
+    detail = (f"{old} pending >{PENDING_TAIL_STALE_DAYS}d ({phase_str}); recovery_class={recovery} "
+              f"(idle-capped by design); oldest_created={oldest}")
+    hint = ("Ordering is deliberate (priority/frontier/asset-class, created_at last tie-break); "
+            "recovery_class rows are Operating-Rule-22 idle-capped. Investigate the claim path "
+            "only if this GROWS while the queue is otherwise draining.")
+    if old >= PENDING_TAIL_FAIL_TOTAL:
+        return _check("pending_tail_age", "FAIL", old, PENDING_TAIL_FAIL_TOTAL, detail, hint)
+    return _check("pending_tail_age", "WARN", old, PENDING_TAIL_FAIL_TOTAL, detail, hint)
+
+
+def chk_q02_summary_missing_unclassified(con) -> dict:
+    """Catch a rising unclassified-failure rate (census rank 1). Every new Q02
+    summary-missing terminal must carry a failure_class from the forward classifier;
+    a recent window where many carry none (classifier regressed) or many are UNCLASSIFIED
+    (a new failure mode the signatures miss) surfaces here."""
+    cutoff = (_utc_now() - dt.timedelta(hours=SM_UNCLASSIFIED_WINDOW_H)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    rows = con.execute(
+        "SELECT payload_json FROM work_items "
+        "WHERE phase='Q02' AND verdict IN ('INFRA_FAIL','INVALID') AND updated_at >= ? "
+        "AND json_extract(payload_json,'$.final_failure')='summary_missing_retries_exhausted'",
+        (cutoff,),
+    ).fetchall()
+    vol = len(rows)
+    missing = 0
+    unclassified = 0
+    for r in rows:
+        try:
+            p = json.loads(r["payload_json"] or "{}")
+        except (json.JSONDecodeError, TypeError):
+            p = {}
+        cls = p.get("failure_class")
+        if not cls:
+            missing += 1
+        elif cls == "UNCLASSIFIED":
+            unclassified += 1
+    if vol < SM_UNCLASSIFIED_MIN_VOL:
+        return _check("q02_summary_missing_unclassified", "OK", 0, SM_MISSING_CLASS_FAIL_FRAC,
+                      f"only {vol} recent summary-missing terminals (<{SM_UNCLASSIFIED_MIN_VOL}); no signal", "")
+    miss_frac = missing / vol
+    unc_frac = unclassified / vol
+    detail = (f"{vol} summary-missing terminals in {SM_UNCLASSIFIED_WINDOW_H}h: "
+              f"no failure_class={missing} ({miss_frac:.0%}), UNCLASSIFIED={unclassified} ({unc_frac:.0%})")
+    hint = ("no failure_class => forward classifier regressed (farmctl.classify_summary_missing_run "
+            "not wired at the exhaustion boundary); high UNCLASSIFIED => a new summary-missing "
+            "signature the classifier does not yet cover. See "
+            "docs/ops/evidence/2026-07-27_failure_classification_fix.md")
+    if miss_frac >= SM_MISSING_CLASS_FAIL_FRAC:
+        return _check("q02_summary_missing_unclassified", "FAIL", round(miss_frac, 2),
+                      SM_MISSING_CLASS_FAIL_FRAC, detail, hint)
+    if unc_frac >= SM_UNCLASSIFIED_WARN_FRAC:
+        return _check("q02_summary_missing_unclassified", "WARN", round(unc_frac, 2),
+                      SM_UNCLASSIFIED_WARN_FRAC, detail, hint)
+    return _check("q02_summary_missing_unclassified", "OK", round(max(miss_frac, unc_frac), 2),
+                  SM_MISSING_CLASS_FAIL_FRAC, detail, "")
+
+
 ALL_CHECKS = [
     ("ea_id_slug_uniqueness", chk_ea_id_slug_uniqueness, False),
     ("stranded_ea_improvements", chk_stranded_ea_improvements, False),
@@ -2618,6 +2727,9 @@ ALL_CHECKS = [
     ("seed_auth_failure_rate", chk_seed_auth_failure_rate,  True),
     # Agent-task state-machine liveness (census 2026-07-27 ranks 4/5/8/9)
     ("agent_task_state_stranded", chk_agent_task_state_stranded, True),
+    # Failure-classification + tail detectors (census 2026-07-27 ranks 1/3)
+    ("pending_tail_age", chk_pending_tail_age, True),
+    ("q02_summary_missing_unclassified", chk_q02_summary_missing_unclassified, True),
 ]
 
 

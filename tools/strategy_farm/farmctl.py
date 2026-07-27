@@ -2364,6 +2364,124 @@ def _ensure_verdict_reason(payload: dict[str, Any]) -> dict[str, Any]:
     return payload
 
 
+# --- Q02/Q03 summary-missing failure classification (census rank 1, 2026-07-27) ---
+# `summary_missing_retries_exhausted` was ONE graveyard label — 43,736 Q02 rows, 68%
+# of all Q02 failures — covering three operationally distinct causes conflated into a
+# retryable INFRA_FAIL: a DETERMINISTIC EA/build defect (the run finishes but yields no
+# usable summary — stale magic-resolver, OnInit abort, no report), a genuine TRANSIENT
+# (timeout / launch fault / cold data), and rows whose (ea,symbol) pair was already
+# RESOLVED elsewhere. This reuses the Q08 INVALID/INFRA_FAIL boundary vocabulary
+# (docs/ops/evidence/2026-07-27_q08_invalid_boundary_fix.md) rather than inventing a
+# second one: a deterministic no-summary is NOT a retry-owed transport failure, so it
+# maps to the non-retryable INVALID verdict; only an allow-list of transient signatures
+# stays retryable INFRA_FAIL. Measured distribution + rationale:
+# docs/ops/evidence/2026-07-27_failure_classification_fix.md.
+
+# Action classes (the disposition axis). The forward classifier emits the first three;
+# the historical reclassifier adds SUPERSEDED / IN_FLIGHT (which only a DB join can see).
+SM_CLASS_DETERMINISTIC = "DETERMINISTIC_NO_SUMMARY"   # non-retryable -> INVALID
+SM_CLASS_TRANSIENT = "TRANSIENT"                       # retryable    -> INFRA_FAIL
+SM_CLASS_UNCLASSIFIED = "UNCLASSIFIED"                 # retryable    -> INFRA_FAIL (fail-open)
+SM_CLASS_SUPERSEDED = "SUPERSEDED"                     # a real verdict already exists
+SM_CLASS_IN_FLIGHT = "IN_FLIGHT"                       # an open successor is already queued
+
+# verdict_reason run_smoke tokens that mean "the run deterministically produced no usable
+# summary; re-running the same inputs cannot help". Checked BEFORE transient tokens so a
+# defect token wins over the generic `INCOMPLETE_RUNS` suffix it co-occurs with.
+SM_DETERMINISTIC_TOKENS = (
+    "ONINIT_FAILED", "REPORT_FORMAT_DRIFT", "INVALID_REPORT",
+    "BARS_ZERO", "EMPTY_EXPERT", "EMPTY_SYMBOL", "M0_1970", "SETFILE_MISSING",
+)
+# Tokens meaning "transient transport/data fault, a later retry may succeed". NOTE:
+# `INCOMPLETE_RUNS` is deliberately excluded — it is a generic suffix present on almost
+# every reason and therefore discriminates nothing.
+SM_TRANSIENT_TOKENS = (
+    "ACTIVE_TIMEOUT", "NO_HISTORY", "METATESTER_HUNG", "NO_REAL_TICKS", "TIMEOUT",
+    "LAUNCH_FAULT",
+)
+
+_SM_TERMINAL_EXIT_RE = re.compile(
+    r"run_smoke\.stage=terminal_exit\b[^\r\n]*?\btimed_out=(?P<to>\w+)"
+    r"[^\r\n]*?\bvalid_report_latched=(?P<vr>\w+)[^\r\n]*?\blog_bomb=(?P<lb>\w+)"
+)
+
+
+def classify_summary_missing_run(
+    payload: dict[str, Any], log_text: str | None = None
+) -> dict[str, Any]:
+    """Classify a Q02/Q03 summary-missing exhaustion from row-bound evidence.
+
+    Evidence used, in order of authority: the fresh run_smoke log's LAST
+    ``terminal_exit`` signature (``timed_out`` / ``valid_report_latched`` /
+    ``log_bomb``), then the explicit ``verdict_reason`` run_smoke tokens, then whether
+    the log ever reached ``terminal_start``. Returns a dict with keys ``failure_class``
+    (the action axis above), ``failure_subclass`` (the specific signature),
+    ``retryable`` (bool) and ``evidence`` (a short human string).
+
+    FAIL-OPEN by contract: any unreadable / ambiguous evidence yields
+    ``UNCLASSIFIED`` + ``retryable=True`` so a recoverable run is never permanently
+    demoted to a non-retryable verdict by a misread. Deterministic is asserted only on
+    an authenticated positive signature (clean terminal exit / report latched /
+    log-bomb / an explicit deterministic token).
+    """
+    vr = str(payload.get("verdict_reason") or "").upper()
+
+    def _result(cls: str, sub: str, retryable: bool, evidence: str) -> dict[str, Any]:
+        return {
+            "failure_class": cls,
+            "failure_subclass": sub,
+            "retryable": retryable,
+            "evidence": evidence,
+        }
+
+    exit_match = None
+    saw_terminal_start = False
+    if log_text:
+        for exit_match in _SM_TERMINAL_EXIT_RE.finditer(log_text):
+            pass  # keep the LAST terminal_exit (a run may relaunch)
+        saw_terminal_start = (
+            "run_smoke.stage=terminal_start" in log_text
+            or "run_smoke.stage=terminal_spawn_confirmed" in log_text
+        )
+
+    # 1. Authoritative log signature.
+    if exit_match is not None:
+        timed_out = exit_match.group("to").strip().lower() == "true"
+        latched = exit_match.group("vr").strip().lower() == "true"
+        log_bomb = exit_match.group("lb").strip().lower() == "true"
+        if log_bomb:
+            return _result(SM_CLASS_DETERMINISTIC, "log_bomb", False,
+                           "run_smoke terminal_exit log_bomb=True")
+        if timed_out:
+            return _result(SM_CLASS_TRANSIENT, "terminal_timeout", True,
+                           "run_smoke terminal_exit timed_out=True")
+        # Clean exit, no timeout: an explicit transient token (rare here) still wins,
+        # otherwise the run finished deterministically without a usable summary.
+        if any(tok in vr for tok in SM_TRANSIENT_TOKENS):
+            return _result(SM_CLASS_TRANSIENT, "transient_token", True,
+                           f"clean_exit+transient_token:{vr[:80]}")
+        if latched:
+            return _result(SM_CLASS_DETERMINISTIC, "report_unparsed", False,
+                           "clean_exit valid_report_latched=True but no summary")
+        return _result(SM_CLASS_DETERMINISTIC, "no_report", False,
+                       "clean_exit valid_report_latched=False (no report produced)")
+
+    # 2. No terminal_exit line — fall back to explicit tokens.
+    if any(tok in vr for tok in SM_DETERMINISTIC_TOKENS):
+        return _result(SM_CLASS_DETERMINISTIC, "deterministic_token", False,
+                       f"verdict_reason token:{vr[:80]}")
+    if any(tok in vr for tok in SM_TRANSIENT_TOKENS):
+        return _result(SM_CLASS_TRANSIENT, "transient_token", True,
+                       f"verdict_reason token:{vr[:80]}")
+    # 3. Log reached spawn but no terminal_exit, or no launch at all.
+    if log_text and not saw_terminal_start:
+        return _result(SM_CLASS_TRANSIENT, "launch_fault", True,
+                       "log never reached terminal_start")
+    # 4. Fail open: no discriminating evidence survived.
+    return _result(SM_CLASS_UNCLASSIFIED, "unclassified", True,
+                   "no terminal_exit signature and no discriminating token")
+
+
 def _q08_dominant_invalid_reason(summary: dict[str, Any]) -> str:
     """Preserve the real Q08 sub-gate detail behind an aggregate INVALID.
 

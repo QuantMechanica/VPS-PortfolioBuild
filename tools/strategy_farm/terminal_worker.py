@@ -2091,19 +2091,49 @@ def _finish_work_item(root: Path, item_id: str, exit_code: int | None) -> dict[s
                 status = "pending"
                 verdict = None
             else:
+                # Census rank 1 (2026-07-27): stop flattening every summary-missing
+                # exhaustion into a retryable INFRA_FAIL. Classify the fresh run_smoke
+                # log's terminal_exit signature; a DETERMINISTIC no-summary (clean exit
+                # with no report / report latched but unparseable / log-bomb / an
+                # explicit defect token) is not retry-owed transport failure and maps to
+                # the non-retryable INVALID verdict, exactly as the Q08 boundary fix does.
+                # Only transient / unclassified signatures stay retryable INFRA_FAIL.
+                # Fail-open: an unreadable log yields UNCLASSIFIED -> INFRA_FAIL, i.e. the
+                # prior behaviour, so a recoverable run is never wrongly demoted.
                 payload["final_failure"] = "summary_missing_retries_exhausted"
+                log_text = None
+                log_path = payload.get("log_path")
+                if log_path:
+                    try:
+                        log_text = Path(str(log_path)).read_text(
+                            encoding="utf-8-sig", errors="ignore"
+                        )
+                    except OSError:
+                        log_text = None
+                classification = farmctl.classify_summary_missing_run(payload, log_text)
+                payload["failure_class"] = classification["failure_class"]
+                payload["failure_subclass"] = classification["failure_subclass"]
+                payload["failure_class_evidence"] = classification["evidence"]
+                payload["verdict_reason"] = (
+                    f"summary_missing:{classification['failure_subclass']}"
+                )
+                if classification["retryable"]:
+                    verdict = "INFRA_FAIL"
+                    payload["verdict_taxonomy"] = "infra"
+                else:
+                    verdict = "INVALID"
+                    payload["verdict_taxonomy"] = "invalid"
                 farmctl._ensure_verdict_reason(payload)
                 conn.execute(
                     """
                     UPDATE work_items
-                    SET status='failed', verdict='INFRA_FAIL', claimed_by=NULL,
+                    SET status='failed', verdict=?, claimed_by=NULL,
                         payload_json=?, updated_at=?
                     WHERE id=?
                     """,
-                    (json.dumps(payload, sort_keys=True), now, item_id),
+                    (verdict, json.dumps(payload, sort_keys=True), now, item_id),
                 )
                 status = "failed"
-                verdict = "INFRA_FAIL"
             conn.commit()
             aggregate = _aggregate_finished_parent(root, item["parent_task_id"]) if status == "failed" else None
             return {"finished": True, "status": status, "verdict": verdict, "attempt": attempt, "aggregate": aggregate}
