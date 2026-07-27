@@ -3,7 +3,7 @@
 ; ea_id:        1077
 ; ea_slug:      as-sector-rs
 ; ea_version:   v5.0
-; set_version:  s20260722-stress-harsh
+; set_version:  s20260727-stress-harsh
 ; symbol:       XAUUSD.DWX
 ; timeframe:    D1
 ; environment:  q06_stress_harsh
@@ -12,7 +12,7 @@
 ; portfolio_weight: 0.333333
 ; build_hash:   c46a7fe3b4b120bc895305dffb1c337c423b1c8f508b6fd2b11b619e6320cad2
 ; author:       Development
-; date:         2026-07-22
+; date:         2026-07-27
 ;==========================================================
 qm_magic_slot_offset=4
 qm_rng_seed=7
