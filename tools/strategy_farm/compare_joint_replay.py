@@ -48,6 +48,41 @@ def key(o: dict) -> tuple[int, int]:
     return (int(o.get("entry_time", 0)), int(o.get("time", 0)))
 
 
+def classify(joint: list[dict], gated: list[dict], money_tol: float, vol_tol: float) -> dict:
+    """Pair deterministically and classify every non-exact trade."""
+    remaining = list(gated)
+    counts = {
+        "exact": 0,
+        "same_entry_same_volume_shifted_exit": 0,
+        "different_entry": 0,
+        "extra": 0,
+        "missing": 0,
+    }
+    for row in joint:
+        exact = next((g for g in remaining
+                      if key(row) == key(g)
+                      and abs(float(row.get("net", 0)) - float(g.get("net", 0))) <= money_tol
+                      and abs(float(row.get("volume", 0)) - float(g.get("volume", 0))) <= vol_tol), None)
+        if exact is not None:
+            counts["exact"] += 1
+            remaining.remove(exact)
+            continue
+        shifted = next((g for g in remaining
+                        if int(row.get("entry_time", 0)) == int(g.get("entry_time", 0))
+                        and abs(float(row.get("volume", 0)) - float(g.get("volume", 0))) <= vol_tol), None)
+        if shifted is not None:
+            counts["same_entry_same_volume_shifted_exit"] += 1
+            remaining.remove(shifted)
+            continue
+        same_ordinal = remaining.pop(0) if remaining else None
+        if same_ordinal is not None:
+            counts["different_entry"] += 1
+        else:
+            counts["extra"] += 1
+    counts["missing"] = len(remaining)
+    return counts
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -65,6 +100,7 @@ def main() -> int:
 
     joint = load_closed(args.joint)
     gated = load_closed(args.gated)
+    categories = classify(joint, gated, args.money_tol, args.vol_tol)
 
     gated_by_key: dict[tuple[int, int], list[dict]] = {}
     for o in gated:
@@ -103,6 +139,7 @@ def main() -> int:
         "unmatched_joint": unmatched_joint,
         "unmatched_gated": leftover_gated,
         "match_rate": round(match_rate, 6),
+        "mismatch_categories": categories,
     }, indent=2))
     if mismatches:
         print("first mismatches:")

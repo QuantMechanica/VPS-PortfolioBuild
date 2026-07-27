@@ -8,9 +8,9 @@ for non-host satellites while the host runner stays on OnTick.
 Built piece by piece (OWNER 2026-07-27, "Stück für Stück"), each sleeve admitted only at
 `match_rate == 1.0` before the next is added:
 
-- **Step 1 (this file):** scaffold + RUNNER only — 9936:USDJPY on the host chart, OnTick,
-  byte-faithful. OnTimer scaffold present but dormant (no satellite enabled).
-- Step 2: satellite-1 10145:XAUUSD (OnTimer, TIMER-SAFE).
+- **Step 1:** scaffold + RUNNER only — 9936:USDJPY on the host chart, OnTick.
+- **Step 2 (this file):** satellite-1 10145:XAUUSD is fully wired on OnTimer and
+  remains input-disabled until its fidelity measurement.
 - Step 3: satellite-2, measurement-gated GDAXI vs 12969:USDJPY.
 
 ## Architecture
@@ -24,11 +24,10 @@ Built piece by piece (OWNER 2026-07-27, "Stück für Stück"), each sleeve admit
   wins.
 - **OnTimer (model-second, `EventSetTimer(1)`).** Drives the account-equity sampler at 1 s
   resolution and the non-host satellite dispatch (per-symbol new-bar detection via
-  `QM_IsNewBar(sym, tf)`). Dormant in step 1.
-- **Single-symbol vs basket.** Basket mode (`QM_SymbolGuardInit` + `QM_BasketWarmupHistory`)
-  activates only when >1 distinct enabled sleeve symbol exists. Step 1 = {USDJPY} =>
-  single-symbol mode => byte-identical framework path to standalone 9936. Fidelity
-  (recon) is prioritised over the plan's "warm all three in the scaffold" (Step 0).
+  a restart-persisted closed-bar timestamp).
+- **Isolation.** The host framework remains in single-symbol mode even with a
+  satellite enabled. The satellite warms its own history and uses the explicit
+  `QM_BasketOrder` symbol/magic path; it never mutates slot 0's framework ownership.
 - **Magic.** Slot-pinned: slot 0 = USDJPY.DWX (magic 201810000), slot 1 = XAUUSD.DWX
   (201810001, registered ahead for step 2). `magic = ea_id*10000 + slot`.
 

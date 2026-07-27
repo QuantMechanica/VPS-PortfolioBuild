@@ -3,6 +3,7 @@
 #property description "QM5_20181 FTMO JOINT MULTI-SYMBOL (OnTimer) — BACKTEST-ONLY measurement instrument. STEP 1: runner 9936:USDJPY only."
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_BasketOrder.mqh>
 #include <QM/QM_PropFirm.mqh>   // phase selector — used at OFF only (RECORD, never ENFORCE)
 #include <QM/modules/QM_Mod_FtmoJointRangeBreakout_20180.mqh>   // host runner (9936) — line-verified vs 9936
 #include <QM/modules/QM_Mod_FtmoJointEquitySampler_20180.mqh>   // N-magic account-equity sampler
@@ -130,10 +131,15 @@ input double s0_max_range_atr_mult = 2.5;
 input double s0_trail_trigger_r    = 1.0;
 input int    s0_range_scan_bars    = 36;
 
-input group "Sleeve 1 — SATELLITE-1 10145:XAUUSD (OnTimer, TIMER-SAFE) — WIRED IN STEP 2"
-input bool   s1_enabled            = false;          // step 1: OFF. Enabling it in step 1 fails OnInit.
+input group "Sleeve 1 — SATELLITE-1 10145:XAUUSD (OnTimer, TIMER-SAFE)"
+input bool   s1_enabled            = false;
 input string s1_symbol             = "XAUUSD.DWX";
 input double s1_risk_fixed         = 1000.0;
+input int    s1_lookback_n         = 15;
+input bool   s1_shorts_enabled     = false;
+input int    s1_atr_period         = 14;
+input double s1_atr_stop_mult      = 3.0;
+input double s1_min_abs_mean_return = 0.0;
 
 // -----------------------------------------------------------------------------
 // Runner sleeve state (host, OnTick). The satellite registry below is the
@@ -153,6 +159,7 @@ struct QM_JT_Sat
    int             magic;
    int             kind;        // strategy-family id (unimplemented in step 1)
    double          risk_fixed;
+   datetime        last_closed_bar;
   };
 QM_JT_Sat g_sats[];
 int       g_sat_count = 0;
@@ -204,22 +211,12 @@ int OnInit()
       return INIT_FAILED;
      }
 
-   // ---- STEP 1 GUARD: no satellite is wired yet. A non-host sleeve enabled in
-   //      step 1 would have no strategy module, so refuse loudly rather than
-   //      silently trade nothing. Satellite dispatch lands in step 2.
-   if(s1_enabled)
-     {
-      Print("QM5_20181 step 1 admits the RUNNER ONLY. Satellite sleeve 1 (", s1_symbol,
-            ") is not wired until step 2 — set s1_enabled=false.");
-      return INIT_FAILED;
-     }
-
    // ---- Active enabled-symbol set decides single vs basket mode ------------
    //      Step 1: {host} only => single-symbol mode (no QM_SymbolGuardInit /
    //      warmup) => byte-identical framework path to standalone 9936.
    //      (Basket mode + per-symbol warmup activate in step 2 when a non-host
    //      sleeve is enabled — see the header note.)
-   const bool basket_mode = false;   // step 1: runner-only => single-symbol
+   const bool basket_mode = false;   // deliberately invariant: runner always owns single-symbol framework context
 
    // ---- Framework init (single-symbol: default guard {_Symbol=USDJPY}) ------
    if(!QM_FrameworkInit(qm_ea_id,
@@ -280,15 +277,41 @@ int OnInit()
    g_s0.reason_prefix      = "FF_RANGE";
    QM_FJ_RB_StateInit(g_s0_state);
 
-   // ---- Non-host satellite registry: EMPTY in step 1 (runner-only) ---------
-   g_sat_count = 0;
-   ArrayResize(g_sats, 0);
+   // Satellite isolation is by construction: do not call QM_SymbolGuardInit or
+   // QM_BasketWarmupHistory. Those mutate process-global framework ownership and
+   // would alter slot 0. The timer sleeve selects/warms only its own symbol and
+   // uses QM_BasketOrder with an explicit symbol/magic.
+   g_sat_count = s1_enabled ? 1 : 0;
+   ArrayResize(g_sats, g_sat_count);
+   if(s1_enabled)
+     {
+      if(s1_symbol == "" || s1_symbol == host_symbol || s1_risk_fixed <= 0.0)
+         return INIT_FAILED;
+      if(!SymbolSelect(s1_symbol, true))
+         return INIT_FAILED;
+      double warmup[];
+      if(CopyClose(s1_symbol, PERIOD_D1, 0, MathMax(64, s1_lookback_n + s1_atr_period + 10), warmup) <= 0)
+         return INIT_FAILED;
+      g_sats[0].slot = 1;
+      g_sats[0].symbol = s1_symbol;
+      g_sats[0].tf = PERIOD_D1;
+      g_sats[0].magic = QM_MagicChecked(qm_ea_id, 1, s1_symbol);
+      g_sats[0].kind = 10145;
+      g_sats[0].risk_fixed = s1_risk_fixed;
+      const string bar_key = StringFormat("QM.20181.1.%s.lastbar", s1_symbol);
+      g_sats[0].last_closed_bar = GlobalVariableCheck(bar_key)
+                                  ? (datetime)GlobalVariableGet(bar_key) : 0;
+      if(g_sats[0].magic <= 0)
+         return INIT_FAILED;
+     }
 
    // ---- Equity sampler: per-sleeve floating breakdown keyed on the enabled
    //      sleeves' magics (step 1: the runner only).
    long eqmagics[];
-   ArrayResize(eqmagics, 1);
+   ArrayResize(eqmagics, 1 + g_sat_count);
    eqmagics[0] = m0;
+   if(g_sat_count > 0)
+      eqmagics[1] = g_sats[0].magic;
    QM_FJ_Eq_Configure(eqmagics);
 
    // ---- Model-second timer. RECON A: OnTimer fires on simulated time; the
@@ -304,6 +327,83 @@ int OnInit()
                             basket_mode ? "true" : "false",
                             m0, s0_enabled ? "true" : "false", g_sat_count));
    return INIT_SUCCEEDED;
+  }
+
+bool QM20181_HasPosition(const QM_JT_Sat &sat, ulong &ticket)
+  {
+   ticket = 0;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong t = PositionGetTicket(i);
+      if(t == 0 || !PositionSelectByTicket(t))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) == sat.symbol &&
+         (int)PositionGetInteger(POSITION_MAGIC) == sat.magic)
+        {
+         ticket = t;
+         return true;
+        }
+     }
+   return false;
+  }
+
+double QM20181_MeanReturn(const string symbol)
+  {
+   const double recent = iClose(symbol, PERIOD_D1, 1);
+   const double old = iClose(symbol, PERIOD_D1, 1 + s1_lookback_n);
+   if(recent <= 0.0 || old <= 0.0 || s1_lookback_n <= 0)
+      return 0.0;
+   return MathLog(recent / old) / (double)s1_lookback_n;
+  }
+
+void QM20181_Run10145(QM_JT_Sat &sat)
+  {
+   const datetime closed_bar = iTime(sat.symbol, PERIOD_D1, 1);
+   if(closed_bar <= 0 || closed_bar == sat.last_closed_bar)
+      return;
+   sat.last_closed_bar = closed_bar;
+   GlobalVariableSet(StringFormat("QM.20181.%d.%s.lastbar", sat.slot, sat.symbol),
+                     (double)closed_bar);
+
+   const double mean_return = QM20181_MeanReturn(sat.symbol);
+   ulong ticket = 0;
+   if(QM20181_HasPosition(sat, ticket))
+     {
+      const ENUM_POSITION_TYPE side = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      if((side == POSITION_TYPE_BUY && mean_return <= 0.0) ||
+         (side == POSITION_TYPE_SELL && s1_shorts_enabled && mean_return > 0.0))
+         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+      return;
+     }
+
+   const double threshold = MathMax(0.0, s1_min_abs_mean_return);
+   QM_OrderType side = QM_BUY;
+   if(mean_return > threshold)
+      side = QM_BUY;
+   else if(s1_shorts_enabled && mean_return <= -threshold)
+      side = QM_SELL;
+   else
+      return;
+
+   const double entry = QM_BasketMarketPrice(sat.symbol, side);
+   const double sl = QM_StopATR(sat.symbol, side, entry, s1_atr_period, s1_atr_stop_mult);
+   const double point = SymbolInfoDouble(sat.symbol, SYMBOL_POINT);
+   if(entry <= 0.0 || sl <= 0.0 || point <= 0.0)
+      return;
+
+   QM_BasketOrderRequest req;
+   req.symbol = sat.symbol;
+   req.type = side;
+   req.price = 0.0;
+   req.sl = sl;
+   req.tp = 0.0;
+   req.lots = QM_LotsForRisk(sat.symbol, MathAbs(entry - sl) / point,
+                             QM_RISK_MODE_FIXED, sat.risk_fixed);
+   req.reason = (side == QM_BUY) ? "TSM_MEANRET_LONG" : "TSM_MEANRET_SHORT";
+   req.symbol_slot = sat.slot;
+   req.expiration_seconds = 0;
+   if(req.lots > 0.0)
+      QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, req, ticket);
   }
 
 void OnDeinit(const int reason)
@@ -400,11 +500,8 @@ void OnTimer()
 
    for(int i = 0; i < g_sat_count; ++i)
      {
-      // STEP 2 inserts here (in order): per-sleeve news on g_sats[i].symbol;
-      // TIMER-SAFE manage/exit; then the once-per-bar entry below.
-      if(!QM_IsNewBar(g_sats[i].symbol, g_sats[i].tf))
-         continue;
-      // STEP 2: satellite entry once per that symbol's closed bar.
+      if(g_sats[i].kind == 10145)
+         QM20181_Run10145(g_sats[i]);
      }
   }
 
