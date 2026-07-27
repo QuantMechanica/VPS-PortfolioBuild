@@ -37,11 +37,21 @@ import os
 import re
 from datetime import datetime, timezone
 
+# (slug, symbol, RISK_PERCENT, peak concurrent notional as x equity, FTMO leverage)
+#
+# Revised 2026-07-27 after the leak-free re-measurement:
+#   - 13036/GDAXI added. It is the ONLY sleeve in the pool with Q08 = PASS rather
+#     than FAIL_SOFT, and at 5.2x exposure / 10.4% margin it is by far the most
+#     margin-efficient account in the book.
+#   - 10848 lowered 5% -> 4%: the earlier 5% was picked under a combination search
+#     that leaked the scoring period.
+#   - 9936 held back: its Q08 was requeued after an INFRA_FAIL and is still
+#     running, so it is pending rather than passed.
 BOOK = [
-    ("QM5_9936_ff-range-breakout-gmt3-h1", "USDJPY", 4.0, 65.9, 100),
     ("QM5_13213_balke-gmt3-range-breakout", "USDJPY", 4.0, 73.8, 100),
-    ("QM5_10848_tv-mtf-ambush", "XAUUSD", 5.0, 21.5, 30),
+    ("QM5_10848_tv-mtf-ambush", "XAUUSD", 4.0, 17.2, 30),
     ("QM5_10553_mql5-rsioma", "XAUUSD", 8.0, 19.9, 30),
+    ("QM5_13036_balke-go-long-regime", "GDAXI", 8.0, 5.2, 50),
 ]
 ACCOUNT = 100_000.0
 
