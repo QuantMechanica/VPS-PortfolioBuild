@@ -3,6 +3,7 @@
 #property description "QM5_9936 ForexFactory Range Breakout GMT+3 H1"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_PropFirm.mqh>   // FTMO phase selector (prop_phase, cap validators, target-flatten)
 
 // =============================================================================
 // QuantMechanica V5 EA SKELETON
@@ -46,6 +47,13 @@ input group "Risk"
 input double RISK_PERCENT               = 0.0;
 input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
+// Per-trade risk cap %, OWNER-ratified band (0,5.0] (QM_Common.mqh:315-330).
+// 1.0 = framework default (no override; leaves the backtest sets byte-identical
+// in behaviour). A prop sprint phase (prop_phase 1/2) MUST raise this to the
+// sleeve's sizing (9936:USDJPY = 3.0) or RISK_PERCENT is clamped back to 1% at
+// QM_RiskSizer.mqh:111. Validated for the selected phase in OnInit BEFORE the
+// override is applied (QM_PropPhaseValidateCap).
+input double qm_risk_cap_pct            = 1.0;
 
 input group "News"
 // FW1 2026-05-23 — Two-axis news filter per Vault Q09.
@@ -441,6 +449,27 @@ int OnInit()
                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
+   // Prop-firm phase selector (QM_PropFirm.mqh). OFF (default) leaves the
+   // framework byte-identical; PHASE_1/PHASE_2/FUNDED change target/flatten and
+   // the legal risk-cap band. Ordering per the phase-implementation note
+   // (docs/ops/evidence/2026-07-27_propfirm_phase_implementation.md §1):
+   //   1. validate the operator cap FOR THE PHASE (loud refusal of an illegal
+   //      or silent-1x cap) BEFORE anything is applied;
+   //   2. apply the ratified override as a SEPARATE statement AFTER
+   //      QM_FrameworkInit, so it wins over the unconditional 1.0 set at
+   //      QM_Common.mqh:182 (sequential program order);
+   //   3. log the effective cap read back from the sizer global (proof-of-effect);
+   //   4. weekend legality (Funded only) and the account-bound challenge anchor.
+   if(!QM_PropPhaseValidateCap(qm_risk_cap_pct))
+      return INIT_FAILED;
+   if(!QM_FrameworkSetRiskCapPct(qm_risk_cap_pct))
+      return INIT_FAILED;
+   QM_PropLogEffectiveCap(qm_risk_cap_pct, g_qm_risk_per_trade_cap_pct);
+   if(!QM_PropPhaseValidateWeekend(qm_friday_close_enabled))
+      return INIT_FAILED;
+   if(!QM_PropInit(qm_ea_id))
+      return INIT_FAILED;
+
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
   }
@@ -470,6 +499,18 @@ void OnTick()
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
+
+   // Prop-firm phase gate — runs every tick. In a sprint phase (PHASE_1/PHASE_2)
+   // QM_PropEntryAllowed flattens open positions on the +target equity trip and
+   // blocks new entries once the target is locked; OFF and FUNDED normally allow
+   // entry. When blocked we also cancel this EA's resting stop orders: the range
+   // breakout arms two pending stops per day and QM_PropFlattenAll closes
+   // positions only, so a still-pending breakout could otherwise re-open exposure
+   // after the target flatten.
+   const long qm_prop_magic = (long)QM_FrameworkMagic();
+   const bool qm_prop_entry_allowed = QM_PropEntryAllowed(qm_prop_magic);
+   if(!qm_prop_entry_allowed)
+      Strategy_RemoveOurPendingOrders("PROP_ENTRY_BLOCKED");
 
    if(Strategy_NoTradeFilter())
       return;
@@ -503,7 +544,7 @@ void OnTick()
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
-   if(Strategy_EntrySignal(req))
+   if(qm_prop_entry_allowed && Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
       QM_TM_OpenPosition(req, out_ticket);
