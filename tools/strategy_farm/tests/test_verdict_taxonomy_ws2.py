@@ -88,7 +88,7 @@ class VerdictTaxonomyWs2Tests(unittest.TestCase):
         self.assertIn("without_real_mt5", reason)
 
     def test_q08_invalid_preserves_dominant_sub_gate_detail(self) -> None:
-        # WP-3: a Q08 aggregate INVALID stays INFRA_FAIL, but the reason now carries
+        # A Q08 aggregate INVALID stays non-retryable and carries
         # the dominant sub-gate detail instead of collapsing to the generic
         # phase_runner_invalid_report (which erased which sub-gate blocked).
         verdict, reason = farmctl._derive_phase_runner_verdict(
@@ -102,7 +102,7 @@ class VerdictTaxonomyWs2Tests(unittest.TestCase):
             },
             phase="Q08",
         )
-        self.assertEqual(verdict, "INFRA_FAIL")
+        self.assertEqual(verdict, "INVALID")
         self.assertEqual(reason, "q08_8.2_dsr_mc_fdr:insufficient_daily_returns")
 
     def test_q08_invalid_prefers_blocking_neighborhood_pbo_gate(self) -> None:
@@ -119,17 +119,24 @@ class VerdictTaxonomyWs2Tests(unittest.TestCase):
             },
             phase="Q08",
         )
-        self.assertEqual(verdict, "INFRA_FAIL")
+        self.assertEqual(verdict, "INVALID")
         self.assertEqual(reason, "q08_8.5_neighborhood:artifact_missing")
 
     def test_q08_invalid_without_sub_gates_keeps_generic_reason(self) -> None:
-        # No sub-gate evidence -> generic fallback is retained (backward compatible).
+        # Missing evidence is itself non-retryable evidence-invalid, not transport.
         verdict, reason = farmctl._derive_phase_runner_verdict(
             {"phase": "Q08", "verdict": "INVALID"},
             phase="Q08",
         )
-        self.assertEqual(verdict, "INFRA_FAIL")
-        self.assertEqual(reason, "phase_runner_invalid_report")
+        self.assertEqual(verdict, "INVALID")
+        self.assertEqual(reason, "q08_evidence_invalid")
+
+    def test_q08_transient_invalid_remains_retryable_infra(self) -> None:
+        verdict, reason = farmctl._derive_phase_runner_verdict(
+            {"phase": "Q08", "verdict": "INVALID", "reason": "ACTIVE_TIMEOUT"},
+            phase="Q08",
+        )
+        self.assertEqual((verdict, reason), ("INFRA_FAIL", "ACTIVE_TIMEOUT"))
 
     def test_q08_soft_and_hard_verdicts_are_preserved(self) -> None:
         soft, soft_reason = farmctl._derive_phase_runner_verdict(

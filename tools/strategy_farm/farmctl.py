@@ -2441,6 +2441,23 @@ def _derive_phase_runner_verdict(summary: dict[str, Any], min_trades: int = 5, p
         if q08_n_trades == 0:
             return "INFRA_FAIL", "q08_zero_trade_baseline"
     if verdict_upper == "INVALID":
+        # Q08 has already run its aggregate at this boundary. Preserve its
+        # evidence-invalid class so deterministic insufficiency/tooling evidence
+        # cannot enter the generic retry lane. Only explicitly transient runner
+        # loss remains INFRA_FAIL; FAIL_HARD is handled unchanged below.
+        if phase_key == "P5c":
+            q08_reason = reason or _q08_dominant_invalid_reason(summary) or "q08_evidence_invalid"
+            transient_tokens = (
+                "active_timeout",
+                "runner_lost",
+                "worker_lost",
+                "metatester_hung",
+                "launch_fault",
+                "process_exit",
+            )
+            if any(token in q08_reason.lower() for token in transient_tokens):
+                return "INFRA_FAIL", q08_reason
+            return "INVALID", q08_reason
         infra_invalid_tokens = (
             "summary_missing",
             "missing_summary",
@@ -2471,13 +2488,6 @@ def _derive_phase_runner_verdict(summary: dict[str, Any], min_trades: int = 5, p
             or summary.get("n_trades") is not None
         ):
             return "FAIL", reason or "phase_runner_invalid_gate_result"
-        # Q08 (P5c) aggregate INVALID carries no top-level reason; preserve the
-        # dominant blocking sub-gate (8.5 neighborhood / 8.7 PBO) detail instead
-        # of collapsing every one to the generic phase_runner_invalid_report.
-        if not reason and phase_key == "P5c":
-            q08_reason = _q08_dominant_invalid_reason(summary)
-            if q08_reason:
-                return "INFRA_FAIL", q08_reason
         return "INFRA_FAIL", reason or "phase_runner_invalid_report"
     # DL-082 §3a: Q08 aggregate INFRA_RECYCLE = degenerate (0-trade) Q08.5
     # neighborhood baseline. Main baseline traded (n_trades>0), so this is a
