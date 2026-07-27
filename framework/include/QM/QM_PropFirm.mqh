@@ -229,6 +229,23 @@ bool QM_PropPhaseValidateCap(const double cap_pct)
                                      QM_PropPhaseName(prop_phase), cap_pct));
             return false;
            }
+         // Verification FINDING 1 (2026-07-27): prop_expected_login defaults to 0
+         // and neither shipped phase set carries it, so the account guard at
+         // QM_PropInit was inert exactly where it mattered. An oversized sprint
+         // cap could therefore arm on ANY attached account, including a Funded
+         // one whose legal band is (0,1.0]. Live, a cap above the Funded band now
+         // REQUIRES the set file to name its account. The tester is exempt: it
+         // runs RISK_FIXED with a synthetic login, and demanding a real login
+         // there would break every backtest without protecting any capital.
+         if(!MQLInfoInteger(MQL_TESTER) && cap_pct > 1.0 && prop_expected_login == 0)
+           {
+            QM_LogEvent(QM_ERROR, "PROP_PHASE_CAP_REJECT",
+                        StringFormat("{\"phase\":\"%s\",\"cap_pct\":%.4f,"
+                                     "\"reason\":\"sprint_cap_above_funded_band_without_account_binding\","
+                                     "\"fix\":\"set prop_expected_login to the challenge account login\"}",
+                                     QM_PropPhaseName(prop_phase), cap_pct));
+            return false;
+           }
          // review M2: (4.0,5.0] is a one-stop-out daily-limit breach against the
          // -5% FTMO daily loss. Legal (5.0 is OWNER-ratified) but flagged loudly.
          if(cap_pct > 4.0)
