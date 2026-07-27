@@ -27,11 +27,20 @@ are inside a challenge. Three overlay rules attack the breach directly:
   give-up floor   below some drawdown the attempt is statistically lost; trading
                   smaller only prolongs it. Modelled implicitly by the de-risk.
 
-Third, the time limit. FTMO removed both the minimum trading days and the
-calendar limit in 2024, so a window that simply fails to reach +10% in 22 days is
-NOT a failure - trading continues. Only a breach is terminal. Both horizons are
-reported: OWNER's 30-day constraint, and the unlimited horizon FTMO actually
-offers, where the question becomes "does it reach +10% before breaching".
+Third, the time limit. FTMO removed the calendar limit in 2024, so a window that
+simply fails to reach +10% in 22 days is NOT a failure - trading continues. Only
+a breach is terminal. Both horizons are reported: OWNER's 30-day constraint, and
+the unlimited horizon FTMO actually offers, where the question becomes "does it
+reach +10% before breaching".
+
+CORRECTION 2026-07-27: this file previously also claimed FTMO removed the MINIMUM
+TRADING DAYS. That is false. Both the 2-Step Challenge and the Verification still
+require 4 Trading Days, and a Trading Day is a CE(S)T calendar day on which a
+position is OPENED - closing one does not create a Trading Day. Codex caught this
+against ftmo.com/en/trading-objectives under router task
+docs/ops/evidence/2026-07-27_ftmo_phase2_and_funded_rules.md. Only the calendar
+deadline was removed. The later models (challenge_two_phase.py,
+challenge_book_60d.py) enforce the four-day minimum.
 """
 import itertools
 import json

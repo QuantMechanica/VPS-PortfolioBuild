@@ -37,6 +37,30 @@ Inherited unchanged: calendar-day deadlines, dormancy at 30 idle days = blocked,
 target on end-of-day balance, four trading days minimum per phase, both phases,
 starts that run out of data counted as failures, nothing fitted on the scoring
 period.
+
+RULE PROVENANCE, checked against ftmo.com by Codex on 2026-07-27
+(docs/ops/evidence/2026-07-27_ftmo_phase2_and_funded_rules.md):
+
+- Verification is +5% with the same -5% daily / -10% static total caps and no
+  deadline. Modelled correctly here.
+- The 30-day dormancy block is **OWNER-confirmed, not officially published**.
+  FTMO's own announcement says only that it contacts a trader after "a few weeks"
+  of inactivity and that a freeze can be requested. Treating it as a hard failure
+  is the conservative choice, but it must never be cited as an official rule.
+- A Trading Day requires a position to be **opened**, not closed. This model
+  counts days on which a trade closes, which for the intraday-flat sleeves is the
+  same day and for multi-day sleeves is slightly stricter than FTMO.
+- The target rule is "balance above target with all positions closed"; testing it
+  at end of day is this model's approximation of that, not FTMO's wording.
+- **Allocation is capped at $400,000 per trader OR STRATEGY.** Five $100k accounts
+  would exceed it. Since every objective here is a percentage, per-account pass
+  probability does not depend on account size, so the same five-account book fits
+  the cap at smaller account sizes. That is a live design lever and a hard limit,
+  not a preference.
+- Standard funded accounts must close before weekends and any market break over
+  two hours. This does not bind during Challenge or Verification, but 10553 and
+  10848 - both in the best book - hold positions over a day 45% and 40% of the
+  time and would need enforced exits or a Swing account once funded.
 """
 import itertools
 import json
