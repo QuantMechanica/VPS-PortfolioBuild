@@ -15345,3 +15345,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20172,wti-fri-bear,0,XTIUSD.DWX,201720000,2026-07-26T09:55:00Z,Codex,active
 20173,wti-mon-bullfade,0,XTIUSD.DWX,201730000,2026-07-26T12:45:00Z,Codex,active
 20174,wti-tue-bullfade,0,XTIUSD.DWX,201740000,2026-07-26T13:30:00Z,Codex,active
+20180,ftmo-joint-sim-backtest-only,0,USDJPY.DWX,201800000,2026-07-27T00:00:00Z,Claude,active
+20180,ftmo-joint-sim-backtest-only,1,USDJPY.DWX,201800001,2026-07-27T00:00:00Z,Claude,active
