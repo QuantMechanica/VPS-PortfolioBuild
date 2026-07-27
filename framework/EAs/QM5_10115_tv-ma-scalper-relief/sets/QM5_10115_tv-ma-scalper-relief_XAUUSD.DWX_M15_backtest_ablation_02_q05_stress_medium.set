@@ -10,7 +10,7 @@
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   1e6e6d7d035022a1d08bba76ff67e884312fb0d966c2200e6327fe28f792db8d
 ; author:       Development
 ; date:         2026-07-27
 ;==========================================================
@@ -33,3 +33,14 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
+; --- ablation child 02 of QM5_10115_tv-ma-scalper-relief_XAUUSD.DWX_M15_backtest (perturb=±25%) ---
+strategy_sma_fast_period=9
+strategy_sma_mid_period=44
+strategy_sma_slow_period=98
+strategy_sma_regime_period=217
+strategy_sma_slope_bars=16
+strategy_atr_period=15
+strategy_atr_sl_mult=1.565016
+strategy_structure_lookback=22
+strategy_max_hold_bars=79
+strategy_max_spread_stop_frac=0.109104
