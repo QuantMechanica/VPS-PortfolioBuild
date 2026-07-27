@@ -57,7 +57,10 @@ exit `$LASTEXITCODE
         throw "CreateProcessAsUser launcher rc=$LASTEXITCODE output=$($launchOutput -join ' ')"
     }
     $launchText = $launchOutput -join ' '
-    if ($launchText -notmatch 'LAUNCHED pid=\d+ into (?:interactive )?session (\d+)') {
+    # Accept any session-label word: run_in_console_session.ps1 emits "console session"
+    # (never "interactive session"), so the old "(?:interactive )?session" pattern threw
+    # on every successful respawn. See 2026-07-27_interactive_task_selfheal_fix.md.
+    if ($launchText -notmatch 'LAUNCHED pid=\d+ into (?:\w+ )?session (\d+)') {
         throw "CreateProcessAsUser launcher returned no session evidence: $launchText"
     }
     return $launchText

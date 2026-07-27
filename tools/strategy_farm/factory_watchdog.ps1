@@ -76,7 +76,15 @@ exit `$LASTEXITCODE
         throw "CreateProcessAsUser launcher rc=$LASTEXITCODE output=$($launchOutput -join ' ')"
     }
     $launchText = $launchOutput -join ' '
-    if ($launchText -notmatch 'LAUNCHED pid=\d+ into (?:interactive )?session (\d+)') {
+    # run_in_console_session.ps1 emits "LAUNCHED pid=<n> into console session <sid>"
+    # (line 158). The session-label word is descriptive ("console"; historically
+    # "interactive") and MUST NOT be pinned: matching only "(?:interactive )?session"
+    # made this throw on every real heal even though the worker starter completed
+    # cleanly (WAIT_EXIT code=0), mislabelling a successful spawn as heal_failed and
+    # skipping the post-spawn verification below (evidence:
+    # docs/ops/evidence/2026-07-27_interactive_task_selfheal_fix.md). Accept any
+    # single session-label word.
+    if ($launchText -notmatch 'LAUNCHED pid=\d+ into (?:\w+ )?session (\d+)') {
         throw "CreateProcessAsUser launcher returned no session evidence: $launchText"
     }
     $targetSession = [int]$matches[1]
