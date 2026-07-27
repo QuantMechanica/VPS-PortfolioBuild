@@ -2608,9 +2608,7 @@ SM_UNCLASSIFIED_WARN_FRAC = 0.50
 
 
 def chk_pending_tail_age(con) -> dict:
-    """Surface the old-pending tail (census rank 3). Deliberate priority ordering means
-    old Q02/recovery rows do not drain FIFO; this makes their age visible so a growing
-    tail or a drain stall is caught, without touching the throughput-critical claim path."""
+    """Surface the old-pending tail and the claim-time age credit."""
     cutoff = (_utc_now() - dt.timedelta(days=PENDING_TAIL_STALE_DAYS)).strftime("%Y-%m-%dT%H:%M:%SZ")
     old = con.execute(
         "SELECT COUNT(*) FROM work_items WHERE status='pending' AND created_at < ?",
@@ -2635,12 +2633,17 @@ def chk_pending_tail_age(con) -> dict:
     oldest = con.execute(
         "SELECT MIN(created_at) FROM work_items WHERE status='pending'"
     ).fetchone()[0]
+    max_age_weeks = con.execute(
+        "SELECT MAX(MAX(0, CAST(COALESCE(julianday('now') - julianday(created_at), 0) / 7 AS INTEGER))) "
+        "FROM work_items WHERE status='pending'"
+    ).fetchone()[0] or 0
     phase_str = ", ".join(f"{k}={v}" for k, v in list(by_phase.items())[:5])
     detail = (f"{old} pending >{PENDING_TAIL_STALE_DAYS}d ({phase_str}); recovery_class={recovery} "
-              f"(idle-capped by design); oldest_created={oldest}")
-    hint = ("Ordering is deliberate (priority/frontier/asset-class, created_at last tie-break); "
-            "recovery_class rows are Operating-Rule-22 idle-capped. Investigate the claim path "
-            "only if this GROWS while the queue is otherwise draining.")
+              f"(idle-capped by design); oldest_created={oldest}; "
+              f"max_age_credit_weeks={max_age_weeks}")
+    hint = ("Claim-time effective priority subtracts one point per whole age week; "
+            "recovery_class rows remain Operating-Rule-22 idle-capped. Investigate "
+            "only if this grows while the queue is otherwise draining.")
     if old >= PENDING_TAIL_FAIL_TOTAL:
         return _check("pending_tail_age", "FAIL", old, PENDING_TAIL_FAIL_TOTAL, detail, hint)
     return _check("pending_tail_age", "WARN", old, PENDING_TAIL_FAIL_TOTAL, detail, hint)

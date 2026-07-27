@@ -29,7 +29,7 @@ def _insert_old_fifo_row(conn: sqlite3.Connection) -> None:
     conn.commit()
 
 
-def test_fresh_build_q02_is_priority_and_outranks_aged_fifo(tmp_path: Path) -> None:
+def test_age_credit_eventually_outranks_fresh_priority_q02(tmp_path: Path) -> None:
     root = tmp_path / "farm"
     farmctl.init_db(root)
     with farmctl.connect(root) as conn:
@@ -53,7 +53,38 @@ def test_fresh_build_q02_is_priority_and_outranks_aged_fifo(tmp_path: Path) -> N
         ordered = conn.execute(terminal_worker._priority_pending_query()).fetchall()
 
     assert json.loads(fresh[0])["priority_track"] is True
-    assert [row["ea_id"] for row in ordered[:2]] == ["QM5_9000", "QM5_8000"]
+    assert [row["ea_id"] for row in ordered[:2]] == ["QM5_8000", "QM5_9000"]
+
+
+def test_malformed_created_at_fails_open_without_age_credit(tmp_path: Path) -> None:
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    with farmctl.connect(root) as conn:
+        conn.execute(
+            """
+            INSERT INTO work_items(
+                id, kind, phase, ea_id, symbol, setfile_path, status,
+                attempt_count, payload_json, created_at, updated_at
+            ) VALUES (
+                'bad-date', 'backtest', 'Q02', 'QM5_8001', 'EURUSD.DWX',
+                'bad.set', 'pending', 0, '{}', 'not-a-date', 'not-a-date'
+            )
+            """
+        )
+        conn.execute(
+            """
+            INSERT INTO work_items(
+                id, kind, phase, ea_id, symbol, setfile_path, status,
+                attempt_count, payload_json, created_at, updated_at
+            ) VALUES (
+                'fresh-priority', 'backtest', 'Q02', 'QM5_9001', 'EURUSD.DWX',
+                'fresh.set', 'pending', 0, '{"priority_track": true}',
+                datetime('now'), datetime('now')
+            )
+            """
+        )
+        rows = conn.execute(terminal_worker._priority_pending_query()).fetchall()
+    assert [row["ea_id"] for row in rows[:2]] == ["QM5_9001", "QM5_8001"]
 
 
 def test_force_build_does_not_depend_on_strategy_priority(tmp_path: Path) -> None:

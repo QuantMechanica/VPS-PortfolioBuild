@@ -779,13 +779,12 @@ def is_recovery_payload(payload: "dict[str, Any] | None") -> bool:
 def pending_claim_order_sql() -> str:
     """Canonical pending-work ordering — the ONE selector every claimant uses.
 
-    Preserves the pre-ULTRACODE priority_track/frontier ordering EXACTLY and only
-    PREPENDS a recovery-last rank, so recovery-class rows are reached only after
-    every eligible priority/frontier row (idle-only). Inert until
-    classify_recovery_pending.py tags rows: with zero recovery-tagged rows every row
-    has _recovery_rank=0, so the emitted order is byte-identical to the previous
-    terminal_worker._priority_pending_query contract. The recovery idle-cap is
-    enforced in the claim loop, not in SQL.
+    Recovery rows remain last/idle-capped.  Within that boundary, effective
+    priority is ``priority_track*10 + phase_rank - whole_age_weeks``.  Thus age
+    eventually wins without a write-side restamp: an ordinary Q02 row (18)
+    crosses a fresh priority Q08 row (2) after 16 whole weeks.  SQLite
+    ``julianday`` returns NULL for malformed dates; COALESCE makes those rows
+    receive zero age credit (fail open, preserving their normal priority).
     """
     return """
         SELECT w.*,
@@ -799,6 +798,8 @@ def pending_claim_order_sql() -> str:
           CASE
             WHEN w.payload_json LIKE '%"priority_track": true%' THEN 0
             ELSE 1 END AS _priority_track_rank,
+          MAX(0, CAST(COALESCE(julianday('now') - julianday(w.created_at), 0) / 7 AS INTEGER))
+            AS _age_weeks,
           CASE w.phase
             -- Downstream phases first so work drains rather than re-pooling at the
             -- head of the pipeline. Legacy P-keys preserved at their original ranks.
@@ -854,7 +855,8 @@ def pending_claim_order_sql() -> str:
             WHERE q.ea_id=w.ea_id AND q.symbol=w.symbol AND q.phase=w.phase
               AND q.active=1
           )
-        ORDER BY _recovery_rank ASC, _priority_track_rank ASC, _phase_rank ASC,
+        ORDER BY _recovery_rank ASC,
+                 (_priority_track_rank * 10 + _phase_rank - _age_weeks) ASC,
                  _basket_q02_rank ASC, _winner_rank ASC, _asset_rank ASC,
                  w.updated_at ASC, w.created_at ASC
     """
