@@ -141,6 +141,19 @@ input int    s1_atr_period         = 14;
 input double s1_atr_stop_mult      = 3.0;
 input double s1_min_abs_mean_return = 0.0;
 
+input group "Sleeve 2 — SATELLITE-2 13108:XTIUSD (OnTimer, TIMER-SAFE; disabled pending OWNER confirm)"
+input bool   s2_enabled                    = false;
+input string s2_symbol                     = "XTIUSD.DWX";
+input double s2_risk_fixed                 = 1000.0;
+input int    s2_momentum_days              = 30;
+input int    s2_partial_moment_days         = 5;
+input int    s2_percentile_history          = 252;
+input double s2_tail_percentile             = 80.0;
+input int    s2_atr_period                  = 20;
+input double s2_atr_sl_mult                 = 3.0;
+input int    s2_max_hold_days               = 8;
+input int    s2_max_spread_points           = 1500;
+
 // -----------------------------------------------------------------------------
 // Runner sleeve state (host, OnTick). The satellite registry below is the
 // OnTimer scaffold; it is EMPTY in step 1 (runner-only).
@@ -160,6 +173,8 @@ struct QM_JT_Sat
    int             kind;        // strategy-family id (unimplemented in step 1)
    double          risk_fixed;
    datetime        last_closed_bar;
+   int             target_state;
+   bool            state_valid;
   };
 QM_JT_Sat g_sats[];
 int       g_sat_count = 0;
@@ -281,8 +296,9 @@ int OnInit()
    // QM_BasketWarmupHistory. Those mutate process-global framework ownership and
    // would alter slot 0. The timer sleeve selects/warms only its own symbol and
    // uses QM_BasketOrder with an explicit symbol/magic.
-   g_sat_count = s1_enabled ? 1 : 0;
+   g_sat_count = (s1_enabled ? 1 : 0) + (s2_enabled ? 1 : 0);
    ArrayResize(g_sats, g_sat_count);
+   int sat_index = 0;
    if(s1_enabled)
      {
       if(s1_symbol == "" || s1_symbol == host_symbol || s1_risk_fixed <= 0.0)
@@ -292,16 +308,48 @@ int OnInit()
       double warmup[];
       if(CopyClose(s1_symbol, PERIOD_D1, 0, MathMax(64, s1_lookback_n + s1_atr_period + 10), warmup) <= 0)
          return INIT_FAILED;
-      g_sats[0].slot = 1;
-      g_sats[0].symbol = s1_symbol;
-      g_sats[0].tf = PERIOD_D1;
-      g_sats[0].magic = QM_MagicChecked(qm_ea_id, 1, s1_symbol);
-      g_sats[0].kind = 10145;
-      g_sats[0].risk_fixed = s1_risk_fixed;
+      g_sats[sat_index].slot = 1;
+      g_sats[sat_index].symbol = s1_symbol;
+      g_sats[sat_index].tf = PERIOD_D1;
+      g_sats[sat_index].magic = QM_FrameworkRegisterMagicSymbol(qm_ea_id, 1, s1_symbol);
+      g_sats[sat_index].kind = 10145;
+      g_sats[sat_index].risk_fixed = s1_risk_fixed;
       const string bar_key = StringFormat("QM.20181.1.%s.lastbar", s1_symbol);
-      g_sats[0].last_closed_bar = GlobalVariableCheck(bar_key)
+      g_sats[sat_index].last_closed_bar = GlobalVariableCheck(bar_key)
                                   ? (datetime)GlobalVariableGet(bar_key) : 0;
-      if(g_sats[0].magic <= 0)
+      g_sats[sat_index].target_state = 0;
+      g_sats[sat_index].state_valid = false;
+      if(g_sats[sat_index].magic <= 0)
+         return INIT_FAILED;
+      ++sat_index;
+     }
+   if(s2_enabled)
+     {
+      if(s2_symbol == "" || s2_symbol == host_symbol || s2_symbol == s1_symbol ||
+         s2_risk_fixed <= 0.0 || s2_momentum_days < 2 ||
+         s2_partial_moment_days != 5 || s2_percentile_history < 100 ||
+         s2_tail_percentile != 80.0 || s2_atr_period <= 1 ||
+         s2_atr_sl_mult <= 0.0 || s2_max_hold_days <= 0 ||
+         s2_max_hold_days > 14 || s2_max_spread_points < 0)
+         return INIT_FAILED;
+      if(!SymbolSelect(s2_symbol, true))
+         return INIT_FAILED;
+      double warmup2[];
+      const int required = s2_percentile_history + s2_partial_moment_days + 1;
+      if(CopyClose(s2_symbol, PERIOD_D1, 1, required, warmup2) != required)
+         return INIT_FAILED;
+      g_sats[sat_index].slot = 2;
+      g_sats[sat_index].symbol = s2_symbol;
+      g_sats[sat_index].tf = PERIOD_D1;
+      g_sats[sat_index].magic = QM_FrameworkRegisterMagicSymbol(qm_ea_id, 2, s2_symbol);
+      g_sats[sat_index].kind = 13108;
+      g_sats[sat_index].risk_fixed = s2_risk_fixed;
+      const string bar_key2 = StringFormat("QM.20181.2.%s.lastbar", s2_symbol);
+      g_sats[sat_index].last_closed_bar = GlobalVariableCheck(bar_key2)
+                                         ? (datetime)GlobalVariableGet(bar_key2) : 0;
+      g_sats[sat_index].target_state = 0;
+      g_sats[sat_index].state_valid = false;
+      if(g_sats[sat_index].magic <= 0)
          return INIT_FAILED;
      }
 
@@ -310,8 +358,8 @@ int OnInit()
    long eqmagics[];
    ArrayResize(eqmagics, 1 + g_sat_count);
    eqmagics[0] = m0;
-   if(g_sat_count > 0)
-      eqmagics[1] = g_sats[0].magic;
+   for(int i = 0; i < g_sat_count; ++i)
+      eqmagics[1 + i] = g_sats[i].magic;
    QM_FJ_Eq_Configure(eqmagics);
 
    // ---- Model-second timer. RECON A: OnTimer fires on simulated time; the
@@ -400,6 +448,143 @@ void QM20181_Run10145(QM_JT_Sat &sat)
    req.lots = QM_LotsForRisk(sat.symbol, MathAbs(entry - sl) / point,
                              QM_RISK_MODE_FIXED, sat.risk_fixed);
    req.reason = (side == QM_BUY) ? "TSM_MEANRET_LONG" : "TSM_MEANRET_SHORT";
+   req.symbol_slot = sat.slot;
+   req.expiration_seconds = 0;
+   if(req.lots > 0.0)
+      QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, req, ticket);
+  }
+
+bool QM20181_13108PartialMoments(const double &closes[],
+                                 const int base_shift,
+                                 double &upm,
+                                 double &lpm)
+  {
+   upm = 0.0;
+   lpm = 0.0;
+   for(int j = 0; j < s2_partial_moment_days; ++j)
+     {
+      const int current_index = base_shift + j - 1;
+      const int prior_index = current_index + 1;
+      if(current_index < 0 || prior_index >= ArraySize(closes))
+         return false;
+      const double daily_return = closes[current_index] / closes[prior_index] - 1.0;
+      if(!MathIsValidNumber(daily_return))
+         return false;
+      if(daily_return > 0.0)
+         upm += daily_return * daily_return;
+      else if(daily_return < 0.0)
+         lpm += daily_return * daily_return;
+     }
+   upm /= s2_partial_moment_days;
+   lpm /= s2_partial_moment_days;
+   return true;
+  }
+
+double QM20181_13108Percentile(double &values[])
+  {
+   const int count = ArraySize(values);
+   if(count <= 0)
+      return -1.0;
+   ArraySort(values);
+   int rank = (int)MathCeil(s2_tail_percentile * count / 100.0) - 1;
+   rank = MathMax(0, MathMin(count - 1, rank));
+   return values[rank];
+  }
+
+bool QM20181_13108Target(const string symbol, int &target_state)
+  {
+   target_state = 0;
+   const int required = MathMax(s2_momentum_days + 1,
+                                s2_percentile_history + s2_partial_moment_days + 1);
+   double closes[];
+   ArrayResize(closes, required);
+   ArraySetAsSeries(closes, true);
+   if(CopyClose(symbol, PERIOD_D1, 1, required, closes) != required)
+      return false;
+
+   double momentum_return = 0.0;
+   for(int j = 0; j < s2_momentum_days; ++j)
+      momentum_return += closes[j] / closes[j + 1] - 1.0;
+
+   double current_upm = 0.0;
+   double current_lpm = 0.0;
+   if(!QM20181_13108PartialMoments(closes, 1, current_upm, current_lpm))
+      return false;
+   double historical_upm[];
+   double historical_lpm[];
+   ArrayResize(historical_upm, s2_percentile_history);
+   ArrayResize(historical_lpm, s2_percentile_history);
+   for(int i = 0; i < s2_percentile_history; ++i)
+     {
+      if(!QM20181_13108PartialMoments(closes, i + 2,
+                                     historical_upm[i], historical_lpm[i]))
+         return false;
+     }
+   const double up_reference = QM20181_13108Percentile(historical_upm);
+   const double low_reference = QM20181_13108Percentile(historical_lpm);
+   if(up_reference <= 0.0 || low_reference <= 0.0)
+      return false;
+
+   const bool up_tail = current_upm >= up_reference;
+   const bool low_tail = current_lpm >= low_reference;
+   if(up_tail && low_tail)
+      target_state = 0;
+   else if(!up_tail && low_tail)
+      target_state = 1;
+   else if(up_tail && !low_tail)
+      target_state = -1;
+   else
+      target_state = (momentum_return > 0.0) ? 1 : -1;
+   return true;
+  }
+
+void QM20181_Run13108(QM_JT_Sat &sat)
+  {
+   const datetime closed_bar = iTime(sat.symbol, PERIOD_D1, 1);
+   if(closed_bar <= 0 || closed_bar == sat.last_closed_bar)
+      return;
+   sat.last_closed_bar = closed_bar;
+   GlobalVariableSet(StringFormat("QM.20181.%d.%s.lastbar", sat.slot, sat.symbol),
+                     (double)closed_bar);
+   sat.state_valid = QM20181_13108Target(sat.symbol, sat.target_state);
+
+   ulong ticket = 0;
+   if(QM20181_HasPosition(sat, ticket))
+     {
+      const int position_state =
+         PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY ? 1 : -1;
+      const datetime opened_at = (datetime)PositionGetInteger(POSITION_TIME);
+      const bool stale = opened_at > 0 &&
+                         TimeCurrent() - opened_at >= MathMax(1, s2_max_hold_days) * 86400;
+      if(stale || !sat.state_valid || sat.target_state == 0 ||
+         position_state != sat.target_state)
+         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+      return;
+     }
+   if(!sat.state_valid || sat.target_state == 0)
+      return;
+   if(s2_max_spread_points > 0 &&
+      SymbolInfoInteger(sat.symbol, SYMBOL_SPREAD) > s2_max_spread_points)
+      return;
+
+   const QM_OrderType side = sat.target_state > 0 ? QM_BUY : QM_SELL;
+   const double entry = QM_BasketMarketPrice(sat.symbol, side);
+   const double atr = QM_ATR(sat.symbol, PERIOD_D1, s2_atr_period, 1);
+   const double sl = QM_StopRulesNormalizePrice(
+      sat.symbol, QM_StopATRFromValue(sat.symbol, side, entry, atr, s2_atr_sl_mult));
+   const double point = SymbolInfoDouble(sat.symbol, SYMBOL_POINT);
+   if(entry <= 0.0 || atr <= 0.0 || sl <= 0.0 || point <= 0.0)
+      return;
+
+   QM_BasketOrderRequest req;
+   req.symbol = sat.symbol;
+   req.type = side;
+   req.price = 0.0;
+   req.sl = sl;
+   req.tp = 0.0;
+   req.lots = QM_LotsForRisk(sat.symbol, MathAbs(entry - sl) / point,
+                             QM_RISK_MODE_FIXED, sat.risk_fixed);
+   req.reason = side == QM_BUY ? "XTI_MTSM_S2_LONG" : "XTI_MTSM_S2_SHORT";
    req.symbol_slot = sat.slot;
    req.expiration_seconds = 0;
    if(req.lots > 0.0)
@@ -502,6 +687,8 @@ void OnTimer()
      {
       if(g_sats[i].kind == 10145)
          QM20181_Run10145(g_sats[i]);
+      else if(g_sats[i].kind == 13108)
+         QM20181_Run13108(g_sats[i]);
      }
   }
 

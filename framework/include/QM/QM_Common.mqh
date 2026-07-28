@@ -376,6 +376,44 @@ int QM_MagicFor(const int ea_id, const int slot)
    return magic;
   }
 
+int QM_FrameworkRegisterMagicSymbol(const int ea_id,
+                                    const int slot,
+                                    const string context_symbol)
+  {
+   if(!g_qm_fw_initialized)
+      return -1;
+
+   if(context_symbol == "")
+      return -1;
+   const int magic = QM_MagicChecked(ea_id, slot, context_symbol);
+   if(magic <= 0)
+      return -1;
+
+   if(magic == g_qm_fw_magic)
+      return QM_KillSwitchRegisterMagic((long)magic) ? magic : -1;
+
+   const int count = ArraySize(g_qm_fw_magic_contexts);
+   for(int i = 0; i < count; ++i)
+     {
+      if(g_qm_fw_magic_contexts[i].magic == magic &&
+         g_qm_fw_magic_contexts[i].symbol == context_symbol)
+         return QM_KillSwitchRegisterMagic((long)magic) ? magic : -1;
+     }
+
+   if(ArrayResize(g_qm_fw_magic_contexts, count + 1) != count + 1)
+      return -1;
+   g_qm_fw_magic_contexts[count].ea_id = ea_id;
+   g_qm_fw_magic_contexts[count].slot = slot;
+   g_qm_fw_magic_contexts[count].magic = magic;
+   g_qm_fw_magic_contexts[count].symbol = context_symbol;
+   if(!QM_KillSwitchRegisterMagic((long)magic))
+     {
+      ArrayResize(g_qm_fw_magic_contexts, count);
+      return -1;
+     }
+   return magic;
+  }
+
 int QM_FrameworkMagicContextCount()
   {
    return ArraySize(g_qm_fw_magic_contexts);
