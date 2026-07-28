@@ -1,255 +1,244 @@
 # Multi-symbol steps 2 & 3 — execution shepherd (governed)
 
 **Date:** 2026-07-28 (live-verified against `farm_state.sqlite`, the shared MT5
-`Common\Files\QM`, and the source tree)
+`Common\Files\QM`, the step-2 run logger, and the source tree)
 **Author:** Claude (board-advisor worktree) — STEP 2 & 3 execution shepherd
 **Goal (OWNER, verbatim):** *"Ziel ist, dass der FTMO Backtest EA endlich gefahren werden
 kann und wir sehen, ob er das Bestehen einer Challenge wahrscheinlicher macht!"*
 
-This document is the shepherd's honest close-out of steps 2 (2-sleeve de-risk) and 3
-(3-sleeve joint book). Per the mandate, it is **not a general audit**: every finding names
-the concrete thing standing between NOW and a completed 3-sleeve joint measurement with a
-P(pass) answer. It is evidence-first (file:line / query / command); inferences are marked
-NOT ESTABLISHED.
+This is the shepherd's honest close-out of step 2 (2-sleeve de-risk) and step 3 (3-sleeve
+book). Per the mandate a failed gate is a **complete outcome**: this document reports the
+exact gate that stopped the full measurement, with the mismatch decomposition. No gate was
+tuned; no run beyond the one governed step-2 item was launched; T5/T_Live untouched.
 
 ---
 
-## Bottom line (the exact gate that stopped the full measurement)
+## Bottom line
 
-**The full 3-sleeve joint P(pass) measurement cannot run in this session because the
-20181 EA binary physically has no third sleeve — the Codex-lane slot-2 (13108) build has
-not landed.** The source still hard-caps at one satellite (`g_sat_count = s1_enabled ? 1 :
-0`, `…mq5:284`; only `QM20181_Run10145` exists, `…mq5:359`; no `s2_*`/`Run13108` tokens;
-`.mq5` sha256 `f102f620…` **unchanged** since step-1). A 3-sleeve set cannot even be
-authored against a binary that exposes no `s2_*` inputs, and enqueuing one would silently
-run only 2 sleeves. **This is the single blocking gate for OWNER's deliverable.**
+**Step 2 FAILED its admission gate, and the failure is more fundamental than the step-3
+Codex build blocker: the joint EA cannot produce a harvestable, faithful satellite in a
+single-symbol tester.** The step-2 run completed (`done/PASS`, account net 204,018 / PF
+1.35), and the 10145 satellite *did* trade the account (149 XAUUSD fills, ~$73.7k of the
+account P&L) — but:
 
-A **second, independent finding** surfaced while gating step 2 and matters regardless of
-timing: **the joint EA's 10145 satellite silently drops the standalone 10145's news
-filter.** It is source-verified. For XAUUSD/D1 specifically the filter is **empirically
-inert** (all 10145 entries fire at the D1 bar-open, 01:01 broker, where no high-impact news
-window falls), so it does not change the in-sample stream — but it is a real fidelity/
-robustness defect the deployable book must not carry, of the same class the 13301 rejection
-warned against.
+1. **The satellite's trades are un-harvestable.** Zero satellite TRADE_CLOSED rows reach the
+   q08 stream every downstream gate and the P(pass) machinery consume. Root cause is a
+   design conflict (§3.1): the EA deliberately stays **out of basket mode** to keep the
+   runner byte-identical, but `QM_FrameworkOwnsMagicSymbol` only recognises a foreign-symbol
+   satellite as *owned* when in basket mode (or via a registered magic-context the satellite
+   never got). So the satellite fidelity gate — the entire point of step 2 — **cannot be
+   computed**.
+2. **The satellite is not the admitted 10145 anyway.** 34 of its ~183 entry attempts were
+   dropped "Market closed" (retcode 10018) because its fixed `OnTimer` entry fires at 01:00
+   broker when XAUUSD is sometimes shut; the native standalone enters on the first open tick
+   and would not drop these. It also fired far fewer entries than the standalone (149 vs 314
+   archived) — a further execution divergence (§3.2).
+3. **Runner invariance missed 1.0:** step-2 runner vs the proven runner-alone reference =
+   **0.999125** (1142/1143 exact; one 2020-08-11 4.12-lot trade with a shifted exit that flips
+   +1401 → −714). Attributable to enabling the satellite, not vintage (§2).
 
-The **runner-invariance half** of the step-2 gate (does enabling the satellite perturb the
-proven runner?) was gated cleanly and needs no new reference run. The **satellite
-execution-fidelity half** (does the OnTimer/basket harness reproduce native 10145 entry
-prices/exits at match_rate == 1.0?) is **NOT ESTABLISHED** — it requires a fresh,
-same-vintage standalone 10145 reference that **was never enqueued** (a gap in the prior
-`2026-07-28_goal_implementation.md` workflow). The recipe to produce it is recorded in §4.
+**Step 3 remains independently blocked:** the 20181 binary still wires only ONE satellite
+(`g_sat_count = s1_enabled ? 1 : 0`, `…mq5:284`; `.mq5` sha `f102f620…` unchanged; no
+`s2_*`/`Run13108`). The Codex-lane slot-2 (13108) build has not landed. But even once it
+does, findings §3.1 and §3.2 must be fixed first, or the 3-sleeve run will be un-harvestable
+and infidelic the same way.
 
-No terminal was launched, no history imported, no work item mass-mutated; T5/T_Live
-untouched. One governed priority item (step-2 `c0192be6`) was monitored to completion; no
-new run was enqueued (see §4 for why enqueuing a reference against a Codex-blocked,
-not-yet-news-fixed binary was judged premature).
-
-| # | Gate | Result |
+| Gate | Criterion | Result |
 |---|---|---|
-| Step-2 runner-invariance | runner trades unchanged with satellite enabled | **PENDING — step-2 running on T1; gated on completion (§2)** |
-| Step-2 satellite news fidelity | satellite reproduces 10145's news gating | **INFIDELIC by source, but INERT in-sample** (XAUUSD/D1 entries at 01:01) |
-| Step-2 satellite execution fidelity | satellite ≡ fresh standalone 10145 @ 1.0 | **NOT ESTABLISHED** — fresh reference never enqueued (§4) |
-| Step-3 (3-sleeve joint) | binary exists, run, harvest, P(pass) | **BLOCKED — Codex slot-2 (13108) build not landed** |
+| Step-2 runner-invariance | runner unchanged with satellite on | **FAIL — 0.999125** (1 shifted exit) |
+| Step-2 satellite fidelity | satellite ≡ fresh standalone 10145 @ 1.0 | **CANNOT COMPUTE — satellite un-harvestable** (§3.1) |
+| Step-2 satellite deployability | satellite reproduces admitted 10145 | **FAIL — 34 market-closed drops + entry shortfall** (§3.2) |
+| Step-3 (3-sleeve joint) | binary exists, run, P(pass) | **BLOCKED — Codex slot-2 build not landed** |
+
+**Decision: STOP. Do not proceed to step 3; do not tune.** The 2-sleeve de-risk did its job
+— it caught two blocking defects (un-harvestable satellite, timer-entry market-closed drops)
+and a runner-invariance miss, before any 3-sleeve run was built.
 
 ---
 
-## §1 — The blocking gate: 20181 wires only ONE satellite (step 3 cannot run)
+## §1 — Step-2 run provenance (governed, integrity-verified)
 
-Verified live against the tree at shepherd time:
+Work item `c0192be6-2490-4f3b-ae1e-48bf6922d9e6` (QM5_20181 USDJPY.DWX Q02, priority-track):
+- enqueued 12:30:44Z; **claimed T1 12:52:59Z; done 13:16:40Z** (~24 min wall-clock); `PASS`.
+- **terminal T1**; Model 4; H1; FromDate 2018.07.02; ToDate 2025.12.31; Deposit 100000.
+- **staged-EX5 integrity:** `pre_run_sha256 == post_run_sha256 == required == 60ee13b7…`
+  (`…/20260728_125300/summary.json:staged_ex5`) — the immutable binary contract held; set
+  sha `7d2a061f…`; mq5 sha `f102f620…`.
+- magics (registry `magic_numbers.csv:15369-15370`): runner slot-0 = **201810000** (USDJPY);
+  satellite slot-1 = **201810001** (XAUUSD).
+- account net (runner+satellite combined) 204,018.36 / PF 1.35 (`summary.json`).
 
-- `framework/EAs/QM5_20181_ftmo-joint-multisym-timer/QM5_20181_ftmo-joint-multisym-timer.mq5`
-  `.mq5` sha256 = `f102f6208c30804d20ff725c8d52669268a5b142ffc431f212a91788589fe11f`
-  — **identical** to the step-1/step-2 binding (`…goal_implementation.md:91`). Codex has
-  not touched it.
-- `…mq5:284` `g_sat_count = s1_enabled ? 1 : 0;` — hard cap of one satellite.
-- `…mq5:501-505` the OnTimer dispatch loop only routes `kind == 10145`
-  (`QM20181_Run10145`). There is no `s2_*` input group, no `Run13108` sleeve fn, no
-  `eqmagics[2]`. `grep -nE "s2_|Run13108|13108"` over the `.mq5` returns nothing.
-
-Consequently: a 3-sleeve run against the current binary would run **2 sleeves**, not 3.
-Step 3 is not "not enqueued"; it is **not buildable as a work item** until B1 lands. The
-blocker chain (`2026-07-28_goal_blocker_chain.md` §B1) assigns B1 (wire slot-2 13108,
-recompile, publish new ex5 SHA) to the **Codex lane**. That build has not occurred. Only
-two joint EAs exist in the tree (`QM5_20180`, `QM5_20181`); there is no step-3 sibling
-binary.
-
-**Third-member decision status (STATE item asked to confirm):** RESOLVED = **13108**
-(timer-safe, deployable). The repair doc (`2026-07-27_20181_repair.md:51-65`) kept **13301**
-as the *documented* candidate while recording that no comparable timer-safe replacement
-exists and accepting 13301's fidelity-gate failure "as an accepted finding". The **newer**
-blocker chain (§B3-decision) supersedes that and **decides 13108**: 13301's per-tick
-structural H1 trailing (`QM5_13301…mq5:344-397`) cannot be reproduced from the joint EA's
-`OnTimer(1)`, so a 13301 slot-2 would be a *different strategy* than the standalone that
-scored OOS 0.641 — an undeployable book. 13108 gates management/exit/entry behind its D1
-new-bar latch (`QM5_13108_xti-mtsm-s2.mq5:379-397`) → timer-safe; rank-17 composition
-`9936+10145+13108`, OOS FUND_SCORE **0.527**. **This decision is on record but still needs
-the OWNER one-line confirm the blocker chain flagged, and then the Codex B1 build.**
+**Harvested (shared `Common\Files\QM`, volatile — copied promptly):**
+- runner q08 stream → `…/c0192be6…/harvest_steps23/step2_runner_20181_USDJPY_DWX.jsonl`
+  (1,143 rows, sha `d8d3733b…`).
+- account equity stream (per-bar + intraday lows, 309,018 rows) →
+  `…/harvest_steps23/step2_equity_20181_USDJPY_DWX.jsonl` (sha `81c8bf19…`).
+- full event logger (satellite evidence) →
+  `…/c0192be6…/QM5_20181/20260728_125300/logger_sample.jsonl` (4.09 MB).
+- tester report → `…/20260728_125300/raw/run_01/report.htm`.
+- **satellite q08 trade stream → DOES NOT EXIST** (`20181_XAUUSD_DWX.jsonl` never written;
+  and the runner file carries zero magic-201810001 rows). This is finding §3.1.
 
 ---
 
-## §2 — Step-2 (2-sleeve 9936+10145) governed run + runner-invariance gate
+## §2 — GATE A: runner invariance — FAIL (0.999125)
 
-**Run (governed, priority-track, staged-EX5 SHA-bound):** work item
-`c0192be6-2490-4f3b-ae1e-48bf6922d9e6`, QM5_20181 USDJPY.DWX Q02.
-- enqueued 12:30:44Z; **claimed T1 12:52:59Z**; running at the time of writing (this doc
-  is committed as an interim checkpoint; the runner-invariance result is appended on
-  completion by re-running the staged harvest/gate).
-- tester.ini (`…c0192be6…/QM5_20181/20260728_125300/raw/run_01/tester.ini`):
-  `Expert=QM\QM5_20181_ftmo-joint-multisym-timer`, `Symbol=USDJPY.DWX`, `Period=H1`,
-  `Model=4`, `FromDate=2018.07.02`, `ToDate=2025.12.31`, `Deposit=100000`,
-  `ExpertParameters=…_USDJPY.DWX_H1_book2_9936_10145.set`.
-- staged EX5 sha256 `60ee13b7…` == expected (pinned before/after); set sha `7d2a061f…`.
-- magics (registry `magic_numbers.csv:15369-15370`): runner slot-0 = **201810000**
-  (USDJPY.DWX), satellite slot-1 = **201810001** (XAUUSD.DWX).
+`compare_joint_replay.py --joint <step2 runner> --gated <588af557 standalone-9936 fresh>`
+(the reference itself proven `match_rate=1.0` vs the step-1 joint runner):
 
-**Harvest (shared `Common\Files\QM`, volatile — copied promptly to a durable path):**
-per `QM_Common.mqh:967` the joint EA writes one TRADE_CLOSED file per (ea_id, symbol):
-`20181_USDJPY_DWX.jsonl` (runner) and `20181_XAUUSD_DWX.jsonl` (satellite), plus the
-account equity stream `q08_equity\20181_USDJPY_DWX.jsonl`. Durable copies + SHAs:
-`D:\QM\reports\work_items\c0192be6…\harvest_steps23\`. (Harvest SHAs/row-counts/date-ranges
-appended on completion.)
+```
+joint_trades 1143  gated_trades 1143  matched 1142  match_rate 0.999125
+mismatch_categories: exact 1142, same_entry_same_volume_shifted_exit 1
+mismatch: joint entry=1597138045 (2020-08-11) close=… net=-713.84 vol=4.12  -> shifted exit
+```
 
-**GATE A — runner invariance (admission part 1):** compare the step-2 runner substream
-(magic 201810000) against the proven same-vintage standalone-9936 stream
-(`588af557…/q08_trades_9936_USDJPY_DWX.fresh.jsonl`, 1,143 rows, sha `352b9e3e…`, itself
-proven `match_rate=1.0` vs the step-1 joint runner). Tool:
-`tools/strategy_farm/compare_joint_replay.py` (keys on entry_time/close_time/net/volume;
-exit 0 iff match_rate == 1.0).
-**Result: PENDING** — appended when step-2 reaches `done` (harvest+gate script staged and
-pre-validated; see below).
+The two streams reconcile exactly: `Σnet` differs by 2115.00, wholly explained by that one
+trade (step-2 −713.84 vs the reference's paired +1401.16). Same entry, same 4.12-lot volume,
+**shifted exit** — enabling the satellite turned one runner winner into a loser.
 
-*Pipeline pre-validated:* the pre-step-2 runner-only stream in Common (1,143 rows, sha
-`fdb632fb…`) diffs to the 9936 fresh reference at **match_rate 1.0** (1143 exact / 0
-mismatch), confirming the comparator invocation and the runner reference are consistent
-before step-2 landed.
+**Attribution (satellite, not vintage).** The reference is 07-27 vintage; step-2 is 07-28
+(the news calendar refreshed 07-28 05:30). The vintage probe already established that the
+07-27→07-28 calendar change does **not** move 9936's trades (`2026-07-28_goal_blocker_chain.md`
+§B0: standalone-9936 07-28 arm `9f79065c` ≡ 07-27 `588af557`, trade-event symdiff 0). Since
+the calendar is inert for the runner, the one shifted exit is attributable to **enabling the
+satellite** — the satellite's open XAUUSD positions and the tester's now multi-symbol tick
+interleaving perturbed one runner trailing-stop exit. This contradicts the F3 "runner
+invariant by construction" claim (`2026-07-27_20181_repair.md` §F3). *A maximally rigorous
+attribution would diff step-2's runner against a same-07-28-vintage runner-alone TRADE_CLOSED
+stream; that stream was not harvested (only `9f79065c`'s raw logger exists), so this rests on
+the probe's symdiff-0 result.* Either way the strict gate (1.0) is **not met**.
 
 ---
 
-## §3 — Satellite 10145 fidelity: the news-filter divergence (source-verified)
+## §3 — GATE B: satellite fidelity — CANNOT COMPUTE / FAIL
 
-**Finding: the joint EA's 10145 satellite does not apply the standalone 10145's news
-filter.** This is by source, not inference:
+The satellite fired exactly as designed and at the predicted time — every attempt at **01:00
+broker** (the XAUUSD D1 bar-open). From the step-2 logger (magic 201810001):
 
-- Standalone `QM5_10145_tsm-meanret.mq5:261-266` applies the FW1 two-axis filter
-  `QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance)`, and its
-  canonical XAUUSD/D1 backtest set turns it **on**: `qm_news_temporal=3`
-  (`PRE30_POST30`), `qm_news_compliance=1` (`DXZ`).
-- The joint satellite entry (`…20181…mq5:406`) calls
-  `QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, req, ticket)` with
-  `qm_news_mode_legacy = QM_NEWS_OFF` (`…20181…mq5:105`). Inside
-  `QM_BasketOrder.mqh:126` the *only* news check is the **legacy single-axis**
-  `QM_NewsAllowsTrade(req.symbol, TimeCurrent(), news_mode)` — it never calls
-  `QM_NewsAllowsTrade2` and never reads the FW1 temporal/compliance globals. The OnTimer
-  satellite dispatch (`…20181…mq5:501-505`) wraps the call in no FW1 news gate. The host
-  OnTick FW1 news gate (`…20181…mq5:437-443`) is keyed on `_Symbol` (USDJPY) and only
-  early-returns the host path.
+- **149 `BASKET_ORDER_ACCEPTED`** (retcode 10009 `DONE`) — XAUUSD positions really opened
+  (e.g. ticket 215, XAUUSD BUY 1.46 lots @ 1226.35, SL 1219.54).
+- **34 `BASKET_ORDER_REJECTED` / `BROKER_OTHER` retcode 10018 "Market closed"**.
+- **12 `TM_CLOSE` (QM_EXIT_STRATEGY)** satellite strategy-exits.
 
-So the joint book's 10145 sleeve runs **news-OFF**, while the admitted/Q09-scored 10145 is
-**news-ON**. By the exact standard used to reject 13301 ("a different strategy than the
-standalone that scored → undeployable book"), this is a fidelity defect the deployable
-joint book must not carry.
+### §3.1 — The satellite is un-harvestable (blocking) — root cause
 
-**Materiality (evidence, not inference): empirically INERT for XAUUSD/D1.** Every one of
-the 314 trades in the admitted 10145 XAUUSD stream
-(`…sleeve_streams\QM\q08_trades\10145_XAUUSD_DWX.jsonl`, 2018-02-27 … 2025-12-30) has its
-entry at broker **01:01** (entry-hour histogram: `{1: 314}` — the D1 bar-open). US
-high-impact news (NFP/CPI 12:30–13:30 GMT, FOMC 18:00–19:00 GMT) never falls within a
-`PRE30_POST30` (±30 min) window of 01:01, so the news filter blocks **zero** 10145 XAUUSD/D1
-entries. The satellite's dropped filter therefore cannot change the in-sample stream for
-this symbol/timeframe. It is a **latent robustness gap** (it would bite only on a
-symbol/timeframe whose entries coincide with news), not an in-sample divergence.
+Despite 149 opens and ≥12 closes, **zero** satellite trades reach the q08 TRADE_CLOSED
+stream. Mechanism, by source:
 
-**What is still open: satellite EXECUTION fidelity — NOT ESTABLISHED.** With news shown
-inert, the remaining question is whether the OnTimer(1s)/`QM_BasketOrder` harness reproduces
-native 10145 execution at match_rate == 1.0: the standalone enters on the first *tick* of
-the new D1 bar via `QM_TM_OpenPosition`; the satellite enters on the first *timer fire*
-after the new D1 bar via `QM_BasketMarketPrice` + `QM_BasketOrder`. Entry price, ATR stop,
-and thus exact fills/exits could differ by a tick. **This can only be settled by a fresh,
-same-vintage standalone 10145 run** (the satellite substream vs that reference on the common
-window). That reference does not exist (§4). A descriptive cross-check of the step-2
-satellite substream vs the *archived* 10145 stream is recorded below, but it is **not** the
-1.0 gate — vintage (07-20 vs 07-28 calendar), window, and the news config all differ. (Appended on step-2 completion.)
+- The q08 emitter names its output file by the **chart symbol** (`QM_Common.mqh:965-967`,
+  `q08_sym = _Symbol` = USDJPY) → there is only ever `20181_USDJPY_DWX.jsonl`; a satellite
+  XAUUSD close could only appear *inside* it, tagged by `symbol`/`magic`. It does not: the
+  harvested file is 1,143 rows, **all magic 201810000**.
+- Pass 1 of the emitter (`QM_Common.mqh:900-904`) keeps only deals whose opening magic is
+  *owned* per `QM_FrameworkOwnsMagicSymbol` (`QM_Common.mqh:400-429`). That predicate returns
+  true for a foreign-symbol satellite magic only (a) if the magic is a **registered
+  magic-context** (`:405-412`) or (b) **when in basket mode** (`:414-415`
+  `if(!QM_SymbolGuardIsBasket()) return false;`).
+- The joint EA **deliberately stays out of basket mode** to keep the runner byte-identical
+  (`…mq5:280-283`; F3), and bound the satellite magic with `QM_MagicChecked` (`…mq5:298`),
+  which does **not** register a `(magic, symbol)` context (unlike the runner's `QM_MagicFor`,
+  `…mq5:256`). So `QM_FrameworkOwnsMagicSymbol(201810001, "XAUUSD.DWX")` returns **false** →
+  the satellite's XAUUSD closing deals are excluded → never emitted.
 
----
+**This is a design contradiction, not a tuning issue:** runner-fidelity-by-avoiding-basket-
+mode is mutually exclusive with satellite-harvest-via-ownership, as the framework is written.
+Consequence: the satellite fidelity gate (satellite vs fresh standalone 10145) **cannot be
+computed** — there is no satellite trade stream — and the per-sleeve inputs the paired
+first-passage P(pass) needs (`…measurement_preregistration.md` §2) do not exist for any
+non-host sleeve. **Fix (Codex lane):** register each satellite's `(magic, symbol)` as a
+framework magic-context at init so `QM_FrameworkOwnsMagicSymbol` (`:405-412`) recognises it
+without basket mode — then the existing q08 Pass-2 loop emits the satellite closes (already
+symbol-tagged) into the single stream, and the harvester splits by `magic`/`symbol`.
 
-## §4 — The missing reference run (gap) + exact recipe
+### §3.2 — Even if harvestable, the satellite ≠ admitted 10145 (blocking)
 
-The task expected a fresh standalone 10145 run "enqueued alongside" step 2; **it was never
-enqueued** (verified: the newest QM5_10145 work items are all 2026-07-20/21; nothing after).
-The archived 10145 stream is genuinely vintage-suspect — the news calendar was refreshed
-`2026-07-28 05:30` (`…\news_calendar\forex_factory_calendar_clean.csv` +
-`news_calendar_2015_2025.csv`), and the tree 10145 `.ex5` (mtime 2026-07-14, sha
-`268c2281…`) predates the **2026-07-20** framework include changes (`QM_Common`, `QM_Entry`,
-`QM_TradeManagement`, `QM_NewsFilter` all last-touched 07-20), whereas the joint binary was
-compiled 07-27 against that newer framework. A valid same-vintage reference must therefore
-be **recompiled**, not taken from the stale tree binary.
+- **34 dropped entries.** The standalone 10145 enters on the first available tick of the new
+  D1 bar; the joint satellite enters on the first `OnTimer` fire at ~01:00 broker and is
+  refused when XAUUSD is closed (weekend/holiday D1 opens, session gaps). Those 34 entries
+  simply vanish. This is an `OnTimer`-vs-native execution divergence intrinsic to the timer
+  harness.
+- **Entry shortfall.** 149 fills + 34 refusals = 183 attempts vs 314 in the admitted XAUUSD
+  stream (`10145_XAUUSD_DWX.jsonl`, overlapping-and-then-some window). The satellite fires
+  materially fewer entries than the native EA — a signal/bar-detection divergence
+  (`iTime(XAUUSD,D1,1)` polled from a USDJPY-primary tester vs native XAUUSD/D1 new-bar) that
+  cannot be quantified further without a harvestable stream + a fresh reference.
 
-**Why the shepherd did not enqueue it this session (judgment, on the record):** (a) step 3
-is hard-blocked on the Codex build regardless, so no run completes OWNER's deliverable now;
-(b) the satellite carries a source-level news defect that should be fixed (wire FW1 news into
-the satellite basket call) before a satellite is "admitted", so gating the *current* binary's
-satellite is premature — the fixed binary will have a new SHA and must be re-run; (c) a
-time-pressured recompile+stage+enqueue against a not-yet-final binary risks muddying the
-evidence trail for a refinement (execution fidelity) that does not change the top-line.
-The clean sequence is **fix → re-stage → run step-2+reference together**.
+### §3.3 — The news-filter divergence (source-verified, but secondary here)
 
-**Recipe (for the next actor, after B1/news fix):**
-1. Recompile 10145 from the current tree so its framework includes match the joint's vintage
-   (`compile_one.ps1 -EAPath …/QM5_10145_tsm-meanret.mq5 -Strict`); record the new ex5 sha;
-   copy it to `…/ex5_staging/ref_10145/` and `git checkout` the tree `.ex5` to keep the tree
-   clean (no factory side-effect).
-2. Enqueue ONE governed **priority-track**, staged-EX5 SHA-bound work item: QM5_10145,
-   `XAUUSD.DWX`/`D1`, canonical set `…_XAUUSD.DWX_D1_backtest.set` (news-ON — the admitted
-   config), Model 4, `2017→2025` (tester will floor), `timeout_min=150`, `skip_terminals=[T5]`.
-   It runs on XAUUSD, serialising with any factory XAUUSD run on the symbol lock (protecting
-   the shared `10145_XAUUSD_DWX.jsonl` Common file from collision).
-3. On completion, harvest `Common\Files\QM\q08_trades\10145_XAUUSD_DWX.jsonl` and diff the
-   step-2 satellite substream (magic 201810001) against it on the common
-   `[2018-07-02, 2025-12-31]` window: `compare_joint_replay.py --joint <satellite> --gated
-   <fresh_10145>`. **ADMISSION = match_rate 1.0.**
+Independently, the satellite drops the standalone's FW1 news filter: it calls
+`QM_BasketOpenPosition(…, qm_news_mode_legacy=QM_NEWS_OFF, …)` (`…mq5:406`) and the basket
+path applies only the legacy single-axis `QM_NewsAllowsTrade` (`QM_BasketOrder.mqh:126`),
+never the `QM_NewsAllowsTrade2(PRE30_POST30, DXZ)` the standalone uses
+(`QM5_10145…mq5:261-266`, set `qm_news_temporal=3/qm_news_compliance=1`). For XAUUSD/D1 this
+is **empirically inert** — all 314 admitted entries fire at 01:01 broker (entry-hour
+histogram `{1:314}`), where no high-impact news window falls — so it does not change the
+in-sample stream. It remains a latent robustness gap the deployable book must not carry, and
+the satellite fix should wire FW1 news at the same time.
 
 ---
 
-## §5 — What remains, and the recommended path to OWNER's answer
+## §4 — The missing reference run (context)
 
-| item | blocked on | owner |
-|---|---|---|
-| Fix satellite news (wire FW1 `QM_NewsAllowsTrade2` into the satellite basket entry) | source change + recompile → new joint ex5 SHA | **Codex lane** |
-| B1 — wire slot-2 (13108): `s2_*` inputs, `Run13108`, `g_sat_count→2`, `eqmagics[2]` | source change + recompile → new joint ex5 SHA | **Codex lane** |
-| OWNER confirm slot-2 = 13108 | one-line decision | **OWNER** |
-| Fresh standalone 10145 reference | recompile + governed enqueue (§4) | shepherd (after fix) |
-| Step-2 satellite execution-fidelity gate | reference run + harvest | shepherd |
-| Step-3 3-sleeve run + paired first-passage P(pass) | all of the above | shepherd / Answer agent |
+The task expected a fresh standalone 10145 run "enqueued alongside" step 2; it was **never
+enqueued** (newest QM5_10145 items are all 2026-07-20/21). The shepherd did **not** enqueue
+one this session because §3.1 makes the comparison moot — there is no satellite stream to
+compare against a reference, and the satellite binary is not final (needs the ownership +
+timer + news fixes). Recompiling a reference now would burn a governed slot against a build
+that must change. The reference belongs **after** the §3 fixes, run alongside a re-staged
+2-sleeve binary. Recipe (for that point): recompile 10145 from the current tree (its ex5 is
+07-14, pre the 07-20 framework changes — stale), stage it, enqueue one governed priority-track
+XAUUSD/D1 item with the canonical news-ON set, then diff the (now harvestable) satellite
+substream vs it on `[2018-07-02, 2025-12-31]`; ADMISSION = 1.0.
 
-**Recommended next step (single critical path):** Codex, in one build pass, (1) wires FW1
-news into the satellite basket entry so the 10145 sleeve is the admitted news-ON strategy,
-and (2) wires slot-2 (13108) per §B1 — both are the same file, one recompile, one new ex5
-SHA. Then this workflow generates the 3-sleeve set, enqueues one governed priority-track
-basket run **plus** the fresh standalone 10145 reference, gates satellite + 13108 fidelity in
-isolation, confirms the runner and 10145 remain unperturbed in the joint run, and hands the
-harvested per-magic trade streams + account equity path to the paired first-passage P(pass)
-estimator (`…measurement_preregistration.md` §2). The runner-alone anchor is already fixed
-at first-passage **85.1%** at 1× (`…goal_implementation.md` item 5); the joint run measures
-whether the composed book clears that bar.
+---
+
+## §5 — What must happen before a valid 3-sleeve P(pass) is possible
+
+| # | Blocker | Fix | Owner |
+|---|---|---|---|
+| 1 | Satellite un-harvestable (§3.1) | register satellite `(magic,symbol)` context at init so `QM_FrameworkOwnsMagicSymbol` owns it without basket mode; verify q08 emits per-magic satellite closes | **Codex lane** |
+| 2 | Satellite drops market-closed entries + entry shortfall (§3.2) | reconcile the `OnTimer` new-bar/entry path with native 10145 (entry on first open tick, not a fixed 01:00 timer); re-establish signal parity | **Codex lane** |
+| 3 | Runner not invariant (§2) | diagnose the satellite→runner exit perturbation (margin/tick-interleave); restore F3 or accept+document | **Codex lane** |
+| 4 | Satellite drops FW1 news (§3.3) | wire `QM_NewsAllowsTrade2(PRE30_POST30,DXZ)` into the satellite basket entry | **Codex lane** |
+| 5 | 3rd sleeve not wired (step 3) | B1: `s2_*`, `Run13108`, `g_sat_count→2`, `eqmagics[2]`, recompile → new ex5 SHA | **Codex lane** |
+| 6 | OWNER confirm slot-2 = 13108 | one-line decision | **OWNER** |
+| 7 | Re-run 2-sleeve + fresh 10145 reference, gate; then 3-sleeve + paired P(pass) | governed enqueue + harvest + `challenge_firstpassage` | shepherd / Answer agent |
+
+**Third-member decision (confirmed):** slot-2 = **13108** (timer-safe, deployable, OOS
+FUND_SCORE 0.527), superseding the repair doc's provisionally-kept 13301 (per-tick trailing
+`QM5_13301…mq5:344-397` is not reproducible from `OnTimer` → undeployable). Still needs the
+OWNER one-line confirm before B1.
+
+**Recommended next step:** one Codex build pass fixes §3.1 (satellite ownership/harvest),
+§3.2 (timer entry vs native), §3.3 (satellite news), §2 (runner invariance), and §5.5 (wire
+slot-2 13108) — they are all the same file and one recompile. Then this workflow re-runs the
+2-sleeve de-risk (now harvestable) + the fresh 10145 reference, gates satellite + 13108
+fidelity in isolation, confirms the runner is unperturbed, and only then enqueues the
+3-sleeve run and hands the per-magic streams + account equity to the paired first-passage
+estimator. The runner-alone anchor is already fixed at first-passage **85.1%** at 1×
+(`…goal_implementation.md` item 5); the joint run then measures whether the composed book
+clears it. **Until §3.1 in particular is fixed, no multi-symbol joint run can be measured at
+the per-sleeve level — this is the single highest-leverage fix for OWNER's goal.**
 
 ---
 
 ## Evidence index
 
-- Step-3 blocker: `QM5_20181…mq5:284,359,501-505`; `.mq5` sha `f102f620…` (unchanged);
-  `grep -nE "s2_|Run13108"` → empty; only `QM5_20180`,`QM5_20181` joint EAs in tree.
-- Third-member: `2026-07-28_goal_blocker_chain.md` §B3-decision (13108);
-  `2026-07-27_20181_repair.md:51-65` (13301 kept as documented candidate); `13108` timer-safe
-  latch `QM5_13108_xti-mtsm-s2.mq5:379-397`.
-- Satellite news divergence: satellite `…20181…mq5:105,406,501-505`; `QM_BasketOrder.mqh:126`;
-  standalone `QM5_10145_tsm-meanret.mq5:261-266`; set `…10145…_XAUUSD.DWX_D1_backtest.set`
-  (`qm_news_temporal=3`,`qm_news_compliance=1`). Inert: `10145_XAUUSD_DWX.jsonl` entry-hour
-  histogram `{1:314}`.
-- Step-2 run: work item `c0192be6…`; tester.ini
-  `…c0192be6…/QM5_20181/20260728_125300/raw/run_01/tester.ini`; magics
-  `magic_numbers.csv:15369-15370`.
-- Runner reference: `588af557…/q08_trades_9936_USDJPY_DWX.fresh.jsonl` (sha `352b9e3e…`,
-  1,143 rows); comparator `tools/strategy_farm/compare_joint_replay.py`.
-- Reference-run gap/vintage: no QM5_10145 item after 2026-07-21; news calendar refreshed
-  2026-07-28 05:30; tree 10145 ex5 07-14 (sha `268c2281…`) < framework 07-20 changes;
-  joint compiled 07-27.
+- Step-2 run: `c0192be6…` (`done/PASS`, T1, 12:52:59Z→13:16:40Z); staged-EX5 pre==post==
+  required `60ee13b7…` (`…/20260728_125300/summary.json`); tester.ini Model 4 / H1 /
+  2018.07.02–2025.12.31; magics `magic_numbers.csv:15369-15370`.
+- Harvest: `…/c0192be6…/harvest_steps23/step2_runner_20181_USDJPY_DWX.jsonl` (1143, sha
+  `d8d3733b…`); `…/step2_equity_20181_USDJPY_DWX.jsonl` (309018, sha `81c8bf19…`);
+  `…/20260728_125300/logger_sample.jsonl`; `…/raw/run_01/report.htm`.
+- GATE A: `compare_joint_replay.py` step2 runner vs `588af557…/q08_trades_9936_USDJPY_DWX.fresh.jsonl`
+  → 0.999125, 1 shifted exit (2020-08-11); pre-step-2 runner (sha `fdb632fb…`) vs same ref → 1.0.
+  Vintage inertness: `2026-07-28_goal_blocker_chain.md` §B0 (`9f79065c` ≡ `588af557` symdiff 0).
+- GATE B: step-2 logger magic 201810001 — 149 `BASKET_ORDER_ACCEPTED` (rc 10009), 34 `BROKER_OTHER`
+  rc 10018 "Market closed", 12 `TM_CLOSE`; zero satellite rows in the q08 stream.
+- Un-harvestable root cause: `QM_Common.mqh:965-967` (file keyed on `_Symbol`),
+  `QM_Common.mqh:400-429` (`QM_FrameworkOwnsMagicSymbol`; `:414-415` basket-mode gate),
+  `…20181…mq5:280-283,298` (isolation, `QM_MagicChecked` no context).
+- News divergence: `…20181…mq5:406`; `QM_BasketOrder.mqh:126`; `QM5_10145…mq5:261-266`;
+  entry-hour histogram `{1:314}` from `10145_XAUUSD_DWX.jsonl`.
+- Step-3 blocker: `…20181…mq5:284,359,501-505`; `.mq5` sha `f102f620…` unchanged; only
+  `QM5_20180`,`QM5_20181` joint EAs exist.
