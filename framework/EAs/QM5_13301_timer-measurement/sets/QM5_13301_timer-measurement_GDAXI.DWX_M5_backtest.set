@@ -1,0 +1,18 @@
+; QM5_13301 backtest-only 1-second timer measurement
+; Source parameters are identical to the gated GDAXI.DWX M5 backtest set.
+qm_ea_id=13301
+qm_magic_slot_offset=10
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+strategy_range_start_hour=8
+strategy_range_start_minute=1
+strategy_range_end_hour=11
+strategy_range_end_minute=30
+strategy_exit_hour=20
+strategy_exit_minute=55
+strategy_atr_period=14
+strategy_min_range_atr_mult=0.4
+strategy_max_range_atr_mult=2.5
+strategy_trail_trigger_r=1.0
+strategy_range_scan_bars=432
