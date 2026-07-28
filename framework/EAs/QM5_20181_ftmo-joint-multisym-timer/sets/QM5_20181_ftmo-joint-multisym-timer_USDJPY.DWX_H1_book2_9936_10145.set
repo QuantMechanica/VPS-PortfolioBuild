@@ -1,0 +1,49 @@
+;==========================================================
+; QM5 Set File — 2-SLEEVE BOOK (runner 9936:USDJPY + satellite 10145:XAUUSD)
+; ea_id:        20181
+; ea_slug:      ftmo-joint-multisym-timer
+; purpose:      Step-2 governed measurement (multisym). Runner slot-0 (9936:USDJPY)
+;               is proven 1.000000 invariant to satellite enablement
+;               (2026-07-27_multisym_step1_EXECUTED.md:50). This set ENABLES
+;               satellite slot-1 (10145:XAUUSD, D1 rolling-mean-return, TIMER-SAFE,
+;               processed once per closed D1 bar). The s1 strategy params below are
+;               the QM5_10145 EA defaults (lookback 15 / ATR14 / stop 3.0 / no
+;               shorts), which equal the canonical 10145 XAUUSD base backtest config
+;               (sets/..._XAUUSD.DWX_D1_backtest.set overrides none), so slot-1 is a
+;               faithful standalone-10145 replay for the fidelity gate.
+; environment:  backtest (BACKTEST-ONLY instrument)
+; host_symbol:  USDJPY.DWX  (satellite XAUUSD.DWX traded internally via QM_BasketOrder)
+; sizing:       RISK_FIXED=1000 per sleeve, RISK_PERCENT=0 (HR4). 1x book.
+; NOTE: news inputs left at EA defaults (PRE30_POST30 + DXZ) exactly as 9936's gated
+;       backtest set and the step-1 runner set. Do NOT add FW1 news inputs here.
+;==========================================================
+qm_ea_id=20181
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_risk_cap_pct=1.0
+qm_stress_reject_probability=0.0
+host_symbol=USDJPY.DWX
+; --- Sleeve 0 : RUNNER — QM5_9936 gated backtest params (range 01-06, cancel 13, close 20) ---
+s0_enabled=1
+s0_symbol=USDJPY.DWX
+s0_risk_fixed=1000
+s0_range_start_hr=1
+s0_range_end_hr=6
+s0_cancel_hr=13
+s0_close_hr=20
+s0_atr_period=14
+s0_min_range_atr_mult=0.4
+s0_max_range_atr_mult=2.5
+s0_trail_trigger_r=1.0
+s0_range_scan_bars=36
+; --- Sleeve 1 : SATELLITE-1 (10145:XAUUSD) — ENABLED (D1 mean-reversion, timer-safe) ---
+s1_enabled=1
+s1_symbol=XAUUSD.DWX
+s1_risk_fixed=1000
+s1_lookback_n=15
+s1_shorts_enabled=0
+s1_atr_period=14
+s1_atr_stop_mult=3.0
+s1_min_abs_mean_return=0.0
