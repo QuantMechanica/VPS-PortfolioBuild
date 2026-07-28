@@ -1,0 +1,23 @@
+{
+  "task_id": "d057ac14-8af6-494f-b2bb-5cc190c763ce",
+  "ea_id": "QM5_20110",
+  "ea_dir": "framework/EAs/QM5_20110_xti-xng-fri-rv",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_20110_xti-xng-fri-rv\\QM5_20110_xti-xng-fri-rv.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_20110_xti-xng-fri-rv\\QM5_20110_xti-xng-fri-rv.ex5",
+  "magic_base": 201100000,
+  "symbols_registered": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_20110_xti-xng-fri-rv\\sets\\QM5_20110_xti-xng-fri-rv_QM5_20110_XTI_XNG_FRI_RV_D1_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_20110_xti-xng-fri-rv\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "logical-basket trade generation is delegated to the paced Q02 work item; no manual tester was launched",
+  "blocked_reason": null,
+  "open_questions": []
+}
